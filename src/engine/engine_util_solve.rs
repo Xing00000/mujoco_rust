@@ -527,7 +527,31 @@ pub fn mju_solve_lu_sparse(res: *mut f64, LU: *const f64, vec: *const f64, n: i3
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mju_solve3(x: *mut f64, A: *const f64, b: *const f64) {
-    todo!() // mju_solve3
+    unsafe {
+        // C: mjtNum M[3][4] = {{A[0],A[1],A[2],b[0]}, {A[3],A[4],A[5],b[1]}, {A[6],A[7],A[8],b[2]}}
+        let mut M: [[f64; 4]; 3] = [
+            [*A.add(0), *A.add(1), *A.add(2), *b.add(0)],
+            [*A.add(3), *A.add(4), *A.add(5), *b.add(1)],
+            [*A.add(6), *A.add(7), *A.add(8), *b.add(2)],
+        ];
+        for i in 0..3_usize { // C: for (int i=0; i<3; i++)
+            let pivot = M[i][i]; // C: mjtNum pivot = M[i][i]
+            for j in i..4_usize { // C: for (int j=i; j<4; j++)
+                M[i][j] /= pivot; // C: M[i][j] /= pivot
+            }
+            for k in 0..3_usize { // C: for (int k=0; k<3; k++)
+                if k != i { // C: if (k != i)
+                    let factor = M[k][i]; // C: mjtNum factor = M[k][i]
+                    for j in i..4_usize { // C: for (int j=i; j<4; j++)
+                        M[k][j] -= factor * M[i][j]; // C: M[k][j] -= factor * M[i][j]
+                    }
+                }
+            }
+        }
+        *x.add(0) = M[0][3]; // C: x[0] = M[0][3]
+        *x.add(1) = M[1][3]; // C: x[1] = M[1][3]
+        *x.add(2) = M[2][3]; // C: x[2] = M[2][3]
+    }
 }
 
 /// C: mju_eig3 (engine/engine_util_solve.h:121)

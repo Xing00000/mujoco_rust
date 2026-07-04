@@ -838,7 +838,23 @@ pub fn mju_scatter_int(res: *mut i32, vec: *const i32, ind: *const i32, n: i32) 
 /// C: mju_sparseMap (engine/engine_util_misc.h:300)
 #[allow(unused_variables, non_snake_case)]
 pub fn mju_sparse_map(map: *mut i32, nr: i32, res_rowadr: *const i32, res_rownnz: *const i32, res_colind: *const i32, src_rowadr: *const i32, src_rownnz: *const i32, src_colind: *const i32) {
-    todo!() // mju_sparseMap
+    unsafe {
+        for i in 0..nr { // C: for (int i = 0; i < nr; i++)
+            let mut res_cursor = *res_rowadr.add(i as usize); // C: int res_cursor = res_rowadr[i]
+            let res_end = res_cursor + *res_rownnz.add(i as usize); // C: int res_end = res_cursor + res_rownnz[i]
+            let mut src_cursor = *src_rowadr.add(i as usize); // C: int src_cursor = src_rowadr[i]
+            let src_end = src_cursor + *src_rownnz.add(i as usize); // C: int src_end = src_cursor + src_rownnz[i]
+            while res_cursor < res_end { // C: while (res_cursor < res_end)
+                let res_col = *res_colind.add(res_cursor as usize); // C: int res_col = res_colind[res_cursor]
+                while src_cursor < src_end && *src_colind.add(src_cursor as usize) < res_col { // C: while (src_cursor < src_end && src_colind[src_cursor] < res_col)
+                    src_cursor += 1; // C: src_cursor++
+                }
+                *map.add(res_cursor as usize) = src_cursor; // C: map[res_cursor] = src_cursor
+                res_cursor += 1; // C: res_cursor++
+                src_cursor += 1; // C: src_cursor++
+            }
+        }
+    }
 }
 
 /// C: mju_lower2SymMap (engine/engine_util_misc.h:306)
