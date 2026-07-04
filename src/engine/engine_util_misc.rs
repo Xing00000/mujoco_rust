@@ -533,7 +533,7 @@ pub fn mju_print_mat_sparse(mat: *const f64, nr: i32, rownnz: *const i32, rowadr
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mju_min(a: f64, b: f64) -> f64 {
-    todo!() // mju_min
+    if a <= b { a } else { b } // C: return a <= b ? a : b
 }
 
 /// C: mju_max (engine/engine_util_misc.h:228)
@@ -544,7 +544,7 @@ pub fn mju_min(a: f64, b: f64) -> f64 {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mju_max(a: f64, b: f64) -> f64 {
-    todo!() // mju_max
+    if a >= b { a } else { b } // C: return a >= b ? a : b
 }
 
 /// C: mju_clip (engine/engine_util_misc.h:231)
@@ -555,7 +555,13 @@ pub fn mju_max(a: f64, b: f64) -> f64 {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mju_clip(x: f64, min: f64, max: f64) -> f64 {
-    todo!() // mju_clip
+    if x < min { // C: if (x < min)
+        min // C: return min
+    } else if x > max { // C: else if (x > max)
+        max // C: return max
+    } else {
+        x // C: return x
+    }
 }
 
 /// C: mju_sign (engine/engine_util_misc.h:234)
@@ -566,7 +572,13 @@ pub fn mju_clip(x: f64, min: f64, max: f64) -> f64 {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mju_sign(x: f64) -> f64 {
-    todo!() // mju_sign
+    if x < 0.0 { // C: if (x < 0)
+        -1.0 // C: return -1
+    } else if x > 0.0 { // C: else if (x > 0)
+        1.0 // C: return 1
+    } else {
+        0.0 // C: return 0
+    }
 }
 
 /// C: mju_round (engine/engine_util_misc.h:237)
@@ -577,7 +589,13 @@ pub fn mju_sign(x: f64) -> f64 {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mju_round(x: f64) -> i32 {
-    todo!() // mju_round
+    let lower = x.floor(); // C: mjtNum lower = floor(x)
+    let upper = x.ceil(); // C: mjtNum upper = ceil(x)
+    if x - lower < upper - x { // C: if (x-lower < upper-x)
+        lower as i32 // C: return (int)lower
+    } else {
+        upper as i32 // C: return (int)upper
+    }
 }
 
 /// C: mju_type2Str (engine/engine_util_misc.h:240)
@@ -600,7 +618,9 @@ pub fn mju_str2type(str: *const i8) -> i32 {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mju_is_bad(x: f64) -> i32 {
-    todo!() // mju_isBad
+    const mjMAXVAL: f64 = 1e10; // C: mjMAXVAL
+    // C: return (x != x || x > mjMAXVAL || x < -mjMAXVAL)
+    (x.is_nan() || x > mjMAXVAL || x < -mjMAXVAL) as i32
 }
 
 /// C: mju_isZero (engine/engine_util_misc.h:255)
@@ -611,31 +631,61 @@ pub fn mju_is_bad(x: f64) -> i32 {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mju_is_zero(vec: *const f64, n: i32) -> i32 {
-    todo!() // mju_isZero
+    unsafe {
+        for i in 0..n { // C: for (int i=0; i < n; i++)
+            if *vec.add(i as usize) != 0.0 { // C: if (vec[i] != 0)
+                return 0; // C: return 0
+            }
+        }
+    }
+    1 // C: return 1
 }
 
 /// C: mju_isZeroByte (engine/engine_util_misc.h:258)
 #[allow(unused_variables, non_snake_case)]
 pub fn mju_is_zero_byte(vec: *const u8, n: i32) -> i32 {
-    todo!() // mju_isZeroByte
+    unsafe {
+        // C: if (!n || *vec) return !n
+        if n == 0 {
+            return 1;
+        }
+        if *vec != 0 {
+            return 0;
+        }
+        // C: return memcmp(vec, vec + 1, n - 1) == 0
+        for i in 1..n {
+            if *vec.add(i as usize) != *vec {
+                return 0;
+            }
+        }
+        1
+    }
 }
 
 /// C: mju_zeroInt (engine/engine_util_misc.h:261)
 #[allow(unused_variables, non_snake_case)]
 pub fn mju_zero_int(res: *mut i32, n: i32) {
-    todo!() // mju_zeroInt
+    unsafe {
+        std::ptr::write_bytes(res, 0, n as usize); // C: memset(res, 0, n*sizeof(int))
+    }
 }
 
 /// C: mju_copyInt (engine/engine_util_misc.h:264)
 #[allow(unused_variables, non_snake_case)]
 pub fn mju_copy_int(res: *mut i32, vec: *const i32, n: i32) {
-    todo!() // mju_copyInt
+    unsafe {
+        std::ptr::copy_nonoverlapping(vec, res, n as usize); // C: memcpy(res, vec, n*sizeof(int))
+    }
 }
 
 /// C: mju_fillInt (engine/engine_util_misc.h:267)
 #[allow(unused_variables, non_snake_case)]
 pub fn mju_fill_int(res: *mut i32, val: i32, n: i32) {
-    todo!() // mju_fillInt
+    unsafe {
+        for i in 0..n { // C: for (int i = 0; i < n; i++)
+            *res.add(i as usize) = val; // C: res[i] = val
+        }
+    }
 }
 
 /// C: mju_standardNormal (engine/engine_util_misc.h:270)
@@ -657,7 +707,11 @@ pub fn mju_standard_normal(num2: *mut f64) -> f64 {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mju_f2n(res: *mut f64, vec: *const f32, n: i32) {
-    todo!() // mju_f2n
+    unsafe {
+        for i in 0..n { // C: for (int i=0; i < n; i++)
+            *res.add(i as usize) = *vec.add(i as usize) as f64; // C: res[i] = (mjtNum) vec[i]
+        }
+    }
 }
 
 /// C: mju_n2f (engine/engine_util_misc.h:276)
@@ -668,7 +722,11 @@ pub fn mju_f2n(res: *mut f64, vec: *const f32, n: i32) {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mju_n2f(res: *mut f32, vec: *const f64, n: i32) {
-    todo!() // mju_n2f
+    unsafe {
+        for i in 0..n { // C: for (int i=0; i < n; i++)
+            *res.add(i as usize) = *vec.add(i as usize) as f32; // C: res[i] = (float) vec[i]
+        }
+    }
 }
 
 /// C: mju_d2n (engine/engine_util_misc.h:279)
@@ -679,7 +737,11 @@ pub fn mju_n2f(res: *mut f32, vec: *const f64, n: i32) {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mju_d2n(res: *mut f64, vec: *const f64, n: i32) {
-    todo!() // mju_d2n
+    unsafe {
+        for i in 0..n { // C: for (int i=0; i < n; i++)
+            *res.add(i as usize) = *vec.add(i as usize); // C: res[i] = (mjtNum) vec[i]
+        }
+    }
 }
 
 /// C: mju_n2d (engine/engine_util_misc.h:282)
@@ -690,7 +752,11 @@ pub fn mju_d2n(res: *mut f64, vec: *const f64, n: i32) {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mju_n2d(res: *mut f64, vec: *const f64, n: i32) {
-    todo!() // mju_n2d
+    unsafe {
+        for i in 0..n { // C: for (int i=0; i < n; i++)
+            *res.add(i as usize) = *vec.add(i as usize); // C: res[i] = (double) vec[i]
+        }
+    }
 }
 
 /// C: mju_gather (engine/engine_util_misc.h:285)
@@ -702,7 +768,15 @@ pub fn mju_n2d(res: *mut f64, vec: *const f64, n: i32) {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mju_gather(res: *mut f64, vec: *const f64, ind: *const i32, n: i32) {
-    todo!() // mju_gather
+    unsafe {
+        if ind.is_null() { // C: if (!ind)
+            crate::engine::engine_util_blas::mju_copy(res, vec, n); // C: mju_copy(res, vec, n)
+            return; // C: return
+        }
+        for i in 0..n { // C: for (int i=0; i < n; i++)
+            *res.add(i as usize) = *vec.add(*ind.add(i as usize) as usize); // C: res[i] = vec[ind[i]]
+        }
+    }
 }
 
 /// C: mju_gatherMasked (engine/engine_util_misc.h:288)
@@ -713,7 +787,12 @@ pub fn mju_gather(res: *mut f64, vec: *const f64, ind: *const i32, n: i32) {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mju_gather_masked(res: *mut f64, vec: *const f64, ind: *const i32, n: i32) {
-    todo!() // mju_gatherMasked
+    unsafe {
+        for i in 0..n { // C: for (int i=0; i < n; i++)
+            let idx = *ind.add(i as usize); // C: ind[i]
+            *res.add(i as usize) = if idx >= 0 { *vec.add(idx as usize) } else { 0.0 }; // C: res[i] = ind[i] >= 0 ? vec[ind[i]] : 0
+        }
+    }
 }
 
 /// C: mju_scatter (engine/engine_util_misc.h:291)
@@ -725,19 +804,35 @@ pub fn mju_gather_masked(res: *mut f64, vec: *const f64, ind: *const i32, n: i32
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mju_scatter(res: *mut f64, vec: *const f64, ind: *const i32, n: i32) {
-    todo!() // mju_scatter
+    unsafe {
+        if ind.is_null() { // C: if (!ind)
+            crate::engine::engine_util_blas::mju_copy(res, vec, n); // C: mju_copy(res, vec, n)
+            return; // C: return
+        }
+        for i in 0..n { // C: for (int i=0; i < n; i++)
+            *res.add(*ind.add(i as usize) as usize) = *vec.add(i as usize); // C: res[ind[i]] = vec[i]
+        }
+    }
 }
 
 /// C: mju_gatherInt (engine/engine_util_misc.h:294)
 #[allow(unused_variables, non_snake_case)]
 pub fn mju_gather_int(res: *mut i32, vec: *const i32, ind: *const i32, n: i32) {
-    todo!() // mju_gatherInt
+    unsafe {
+        for i in 0..n { // C: for (int i=0; i < n; i++)
+            *res.add(i as usize) = *vec.add(*ind.add(i as usize) as usize); // C: res[i] = vec[ind[i]]
+        }
+    }
 }
 
 /// C: mju_scatterInt (engine/engine_util_misc.h:297)
 #[allow(unused_variables, non_snake_case)]
 pub fn mju_scatter_int(res: *mut i32, vec: *const i32, ind: *const i32, n: i32) {
-    todo!() // mju_scatterInt
+    unsafe {
+        for i in 0..n { // C: for (int i=0; i < n; i++)
+            *res.add(*ind.add(i as usize) as usize) = *vec.add(i as usize); // C: res[ind[i]] = vec[i]
+        }
+    }
 }
 
 /// C: mju_sparseMap (engine/engine_util_misc.h:300)
