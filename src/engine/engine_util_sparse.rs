@@ -12,7 +12,35 @@ use crate::types::*;
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mju_dot_sparse2(vec1: *const f64, ind1: *const i32, nnz1: i32, vec2: *const f64, ind2: *const i32, nnz2: i32) -> f64 {
-    todo!() // mju_dotSparse2
+    unsafe {
+        let mut i1: i32 = 0; // C: int i1 = 0
+        let mut i2: i32 = 0; // C: int i2 = 0
+        let mut res: f64 = 0.0; // C: mjtNum res = 0
+
+        // C: if (!nnz1 || !nnz2) { return 0.0; }
+        if nnz1 == 0 || nnz2 == 0 {
+            return 0.0;
+        }
+
+        // C: while (i1 < nnz1 && i2 < nnz2)
+        while i1 < nnz1 && i2 < nnz2 {
+            let adr1: i32 = *ind1.add(i1 as usize); // C: int adr1 = ind1[i1]
+            let adr2: i32 = *ind2.add(i2 as usize); // C: int adr2 = ind2[i2]
+
+            if adr1 == adr2 {
+                // C: res += vec1[i1++] * vec2[i2++]
+                res += *vec1.add(i1 as usize) * *vec2.add(i2 as usize);
+                i1 += 1;
+                i2 += 1;
+            } else if adr1 < adr2 {
+                i1 += 1; // C: i1++
+            } else {
+                i2 += 1; // C: i2++
+            }
+        }
+
+        res // C: return res
+    }
 }
 
 /// C: mju_dotSparseX3 (engine/engine_util_sparse.h:36)
@@ -23,7 +51,25 @@ pub fn mju_dot_sparse2(vec1: *const f64, ind1: *const i32, nnz1: i32, vec2: *con
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mju_dot_sparse_x3(res0: *mut f64, res1: *mut f64, res2: *mut f64, vec10: *const f64, vec11: *const f64, vec12: *const f64, vec2: *const f64, nnz1: i32, ind1: *const i32) {
-    todo!() // mju_dotSparseX3
+    unsafe {
+        let mut i: i32 = 0; // C: int i = 0
+        let mut RES0: f64 = 0.0; // C: mjtNum RES0 = 0
+        let mut RES1: f64 = 0.0; // C: mjtNum RES1 = 0
+        let mut RES2: f64 = 0.0; // C: mjtNum RES2 = 0
+
+        // C: for (; i < nnz1; i++)
+        while i < nnz1 {
+            let v2: f64 = *vec2.add(*ind1.add(i as usize) as usize); // C: mjtNum v2 = vec2[ind1[i]]
+            RES0 += *vec10.add(i as usize) * v2; // C: RES0 += vec10[i] * v2
+            RES1 += *vec11.add(i as usize) * v2; // C: RES1 += vec11[i] * v2
+            RES2 += *vec12.add(i as usize) * v2; // C: RES2 += vec12[i] * v2
+            i += 1;
+        }
+
+        *res0 = RES0; // C: *res0 = RES0
+        *res1 = RES1; // C: *res1 = RES1
+        *res2 = RES2; // C: *res2 = RES2
+    }
 }
 
 /// C: mju_dense2sparse (engine/engine_util_sparse.h:42)
@@ -34,7 +80,37 @@ pub fn mju_dot_sparse_x3(res0: *mut f64, res1: *mut f64, res2: *mut f64, vec10: 
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mju_dense2sparse(res: *mut f64, mat: *const f64, nr: i32, nc: i32, rownnz: *mut i32, rowadr: *mut i32, colind: *mut i32, nnz: i32) -> i32 {
-    todo!() // mju_dense2sparse
+    unsafe {
+        // C: if (nnz <= 0) { return 1; }
+        if nnz <= 0 {
+            return 1;
+        }
+
+        let mut adr: i32 = 0; // C: int adr = 0
+
+        // C: for (int r=0; r < nr; r++)
+        for r in 0..nr {
+            *rownnz.add(r as usize) = 0; // C: rownnz[r] = 0
+            *rowadr.add(r as usize) = adr; // C: rowadr[r] = adr
+
+            // C: for (int c=0; c < nc; c++)
+            for c in 0..nc {
+                // C: if (mat[r*nc+c] != 0.0)
+                if *mat.add((r * nc + c) as usize) != 0.0 {
+                    // C: if (adr >= nnz) { return 1; }
+                    if adr >= nnz {
+                        return 1;
+                    }
+                    *colind.add(adr as usize) = c; // C: colind[adr] = c
+                    *rownnz.add(r as usize) += 1; // C: rownnz[r]++
+                    *res.add(adr as usize) = *mat.add((r * nc + c) as usize); // C: res[adr++] = mat[r*nc+c]
+                    adr += 1;
+                }
+            }
+        }
+
+        0 // C: return 0
+    }
 }
 
 /// C: mju_sparse2dense (engine/engine_util_sparse.h:46)
@@ -46,7 +122,20 @@ pub fn mju_dense2sparse(res: *mut f64, mat: *const f64, nr: i32, nc: i32, rownnz
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mju_sparse2dense(res: *mut f64, mat: *const f64, nr: i32, nc: i32, rownnz: *const i32, rowadr: *const i32, colind: *const i32) {
-    todo!() // mju_sparse2dense
+    unsafe {
+        crate::engine::engine_util_blas::mju_zero(res, nr * nc); // C: mju_zero(res, nr*nc)
+
+        // C: for (int r=0; r < nr; r++)
+        for r in 0..nr {
+            // C: for (int i=0; i < rownnz[r]; i++)
+            for i in 0..*rownnz.add(r as usize) {
+                let row_adr: i32 = *rowadr.add(r as usize); // C: rowadr[r]
+                let col: i32 = *colind.add((row_adr + i) as usize); // C: colind[rowadr[r]+i]
+                // C: res[r*nc + colind[rowadr[r]+i]] = mat[rowadr[r]+i]
+                *res.add((r * nc + col) as usize) = *mat.add((row_adr + i) as usize);
+            }
+        }
+    }
 }
 
 /// C: mju_sym2dense (engine/engine_util_sparse.h:50)
@@ -58,7 +147,26 @@ pub fn mju_sparse2dense(res: *mut f64, mat: *const f64, nr: i32, nc: i32, rownnz
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mju_sym2dense(res: *mut f64, mat: *const f64, n: i32, rownnz: *const i32, rowadr: *const i32, colind: *const i32) {
-    todo!() // mju_sym2dense
+    unsafe {
+        crate::engine::engine_util_blas::mju_zero(res, n * n); // C: mju_zero(res, n*n)
+
+        // C: for (int i = 0; i < n; i++)
+        for i in 0..n {
+            let adr: i32 = *rowadr.add(i as usize); // C: int adr = rowadr[i]
+
+            // C: for (int j = 0; j < rownnz[i]; j++)
+            for j in 0..*rownnz.add(i as usize) {
+                let col: i32 = *colind.add((adr + j) as usize); // C: int col = colind[adr+j]
+
+                // C: if (col <= i)
+                if col <= i {
+                    let val: f64 = *mat.add((adr + j) as usize); // C: mat[adr+j]
+                    *res.add((i * n + col) as usize) = val; // C: res[i*n+col] = mat[adr+j]
+                    *res.add((col * n + i) as usize) = val; // C: res[col*n+i] = mat[adr+j]
+                }
+            }
+        }
+    }
 }
 
 /// C: mju_copySparse (engine/engine_util_sparse.h:54)
@@ -70,7 +178,16 @@ pub fn mju_sym2dense(res: *mut f64, mat: *const f64, n: i32, rownnz: *const i32,
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mju_copy_sparse(res: *mut f64, mat: *const f64, rownnz: *const i32, rowadr: *const i32, row: *const i32, nrow: i32) {
-    todo!() // mju_copySparse
+    unsafe {
+        // C: for (int i=0; i < nrow; i++)
+        for i in 0..nrow {
+            let r: i32 = *row.add(i as usize); // C: int r = row[i]
+            let adr: i32 = *rowadr.add(r as usize); // C: rowadr[r]
+            let nnz: i32 = *rownnz.add(r as usize); // C: rownnz[r]
+            // C: mju_copy(res + rowadr[r], mat + rowadr[r], rownnz[r])
+            crate::engine::engine_util_blas::mju_copy(res.add(adr as usize), mat.add(adr as usize), nnz);
+        }
+    }
 }
 
 /// C: mju_zeroSparse (engine/engine_util_sparse.h:58)
@@ -82,7 +199,16 @@ pub fn mju_copy_sparse(res: *mut f64, mat: *const f64, rownnz: *const i32, rowad
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mju_zero_sparse(res: *mut f64, rownnz: *const i32, rowadr: *const i32, row: *const i32, nrow: i32) {
-    todo!() // mju_zeroSparse
+    unsafe {
+        // C: for (int i=0; i < nrow; i++)
+        for i in 0..nrow {
+            let r: i32 = *row.add(i as usize); // C: int r = row[i]
+            let adr: i32 = *rowadr.add(r as usize); // C: rowadr[r]
+            let nnz: i32 = *rownnz.add(r as usize); // C: rownnz[r]
+            // C: mju_zero(res + rowadr[r], rownnz[r])
+            crate::engine::engine_util_blas::mju_zero(res.add(adr as usize), nnz);
+        }
+    }
 }
 
 /// C: mju_mulMatVecSparse (engine/engine_util_sparse.h:61)
@@ -94,7 +220,15 @@ pub fn mju_zero_sparse(res: *mut f64, rownnz: *const i32, rowadr: *const i32, ro
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mju_mul_mat_vec_sparse(res: *mut f64, mat: *const f64, vec: *const f64, nr: i32, rownnz: *const i32, rowadr: *const i32, colind: *const i32, rowsuper: *const i32) {
-    todo!() // mju_mulMatVecSparse
+    unsafe {
+        // C: for (int r=0; r < nr; r++)
+        for r in 0..nr {
+            let adr: i32 = *rowadr.add(r as usize); // C: rowadr[r]
+            let nnz: i32 = *rownnz.add(r as usize); // C: rownnz[r]
+            // C: res[r] = mju_dotSparse(mat+rowadr[r], vec, rownnz[r], colind+rowadr[r])
+            *res.add(r as usize) = mju_dot_sparse(mat.add(adr as usize), vec, nnz, colind.add(adr as usize));
+        }
+    }
 }
 
 /// C: mju_mulMatTVecSparse (engine/engine_util_sparse.h:66)
@@ -106,7 +240,26 @@ pub fn mju_mul_mat_vec_sparse(res: *mut f64, mat: *const f64, vec: *const f64, n
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mju_mul_mat_t_vec_sparse(res: *mut f64, mat: *const f64, vec: *const f64, nr: i32, nc: i32, rownnz: *const i32, rowadr: *const i32, colind: *const i32) {
-    todo!() // mju_mulMatTVecSparse
+    unsafe {
+        crate::engine::engine_util_blas::mju_zero(res, nc); // C: mju_zero(res, nc)
+
+        // C: for (int i=0; i < nr; i++)
+        for i in 0..nr {
+            // C: if (vec[i] != 0.0)
+            if *vec.add(i as usize) != 0.0 {
+                let nnz: i32 = *rownnz.add(i as usize); // C: int nnz = rownnz[i]
+                let adr: i32 = *rowadr.add(i as usize); // C: int adr = rowadr[i]
+                let vec_i: f64 = *vec.add(i as usize); // C: vec[i]
+
+                // C: for (int j=0; j < nnz; j++)
+                for j in 0..nnz {
+                    let col: i32 = *colind.add((adr + j) as usize); // C: colind[adr+j]
+                    // C: res[colind[adr+j]] += mat[adr+j] * vec[i]
+                    *res.add(col as usize) += *mat.add((adr + j) as usize) * vec_i;
+                }
+            }
+        }
+    }
 }
 
 /// C: mju_addToMatSparse (engine/engine_util_sparse.h:70)
@@ -333,7 +486,38 @@ pub fn mju_block_diag_sparse(res: *mut f64, res_rownnz: *mut i32, res_rowadr: *m
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mju_dot_sparse(vec1: *const f64, vec2: *const f64, nnz1: i32, ind1: *const i32) -> f64 {
-    todo!() // mju_dotSparse
+    unsafe {
+        let mut i: i32 = 0; // C: int i = 0
+        let n_4: i32 = nnz1 - 4; // C: int n_4 = nnz1 - 4
+        let mut res0: f64 = 0.0; // C: mjtNum res0 = 0
+        let mut res1: f64 = 0.0; // C: mjtNum res1 = 0
+        let mut res2: f64 = 0.0; // C: mjtNum res2 = 0
+        let mut res3: f64 = 0.0; // C: mjtNum res3 = 0
+
+        // C: for (; i <= n_4; i+=4)
+        while i <= n_4 {
+            // C: res0 += vec1[i+0] * vec2[ind1[i+0]]
+            res0 += *vec1.add((i + 0) as usize) * *vec2.add(*ind1.add((i + 0) as usize) as usize);
+            // C: res1 += vec1[i+1] * vec2[ind1[i+1]]
+            res1 += *vec1.add((i + 1) as usize) * *vec2.add(*ind1.add((i + 1) as usize) as usize);
+            // C: res2 += vec1[i+2] * vec2[ind1[i+2]]
+            res2 += *vec1.add((i + 2) as usize) * *vec2.add(*ind1.add((i + 2) as usize) as usize);
+            // C: res3 += vec1[i+3] * vec2[ind1[i+3]]
+            res3 += *vec1.add((i + 3) as usize) * *vec2.add(*ind1.add((i + 3) as usize) as usize);
+            i += 4;
+        }
+
+        // C: res = (res0 + res2) + (res1 + res3)
+        let mut res: f64 = (res0 + res2) + (res1 + res3);
+
+        // C: for (; i < nnz1; i++) { res += vec1[i] * vec2[ind1[i]]; }
+        while i < nnz1 {
+            res += *vec1.add(i as usize) * *vec2.add(*ind1.add(i as usize) as usize);
+            i += 1;
+        }
+
+        res // C: return res
+    }
 }
 
 /// C: mju_compare (engine/engine_util_sparse.h:231)
