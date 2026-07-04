@@ -563,7 +563,78 @@ pub fn mju_add_chains(res: *mut i32, n: i32, NV1: i32, NV2: i32, chain1: *const 
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mju_transpose_sparse(res: *mut f64, mat: *const f64, nr: i32, nc: i32, res_rownnz: *mut i32, res_rowadr: *mut i32, res_colind: *mut i32, res_rowsuper: *mut i32, rownnz: *const i32, rowadr: *const i32, colind: *const i32) {
-    todo!() // mju_transposeSparse
+    unsafe {
+        // C: if (!nr || !nc) return
+        if nr == 0 || nc == 0 { return; }
+
+        // C: mju_zeroInt(res_rownnz, nc)
+        crate::engine::engine_util_misc::mju_zero_int(res_rownnz, nc);
+
+        // C: int row_offset = rowadr[0]
+        let row_offset = *rowadr.add(0);
+
+        // C: count non-zeros for each row of transposed
+        for r in 0..nr { // C: for (int r = 0; r < nr; r++)
+            let start = *rowadr.add(r as usize) - row_offset; // C: int start = rowadr[r] - row_offset
+            let end = start + *rownnz.add(r as usize); // C: int end = start + rownnz[r]
+            for j in start..end { // C: for (int j = start; j < end; j++)
+                let col = *colind.add(j as usize); // C: colind[j]
+                *res_rownnz.add(col as usize) += 1; // C: res_rownnz[colind[j]]++
+            }
+        }
+
+        // C: init res_rowsuper
+        if !res_rowsuper.is_null() { // C: if (res_rowsuper)
+            for i in 0..(nc - 1) { // C: for (int i = 0; i < nc - 1; i++)
+                *res_rowsuper.add(i as usize) = (*res_rownnz.add(i as usize) == *res_rownnz.add((i + 1) as usize)) as i32; // C: res_rowsuper[i] = (res_rownnz[i] == res_rownnz[i+1])
+            }
+            *res_rowsuper.add((nc - 1) as usize) = 0; // C: res_rowsuper[nc-1] = 0
+        }
+
+        // C: compute row addresses
+        *res_rowadr.add(0) = 0; // C: res_rowadr[0] = 0
+        for i in 1..nc { // C: for (int i = 1; i < nc; i++)
+            *res_rowadr.add(i as usize) = *res_rowadr.add((i - 1) as usize) + *res_rownnz.add((i - 1) as usize); // C: res_rowadr[i] = res_rowadr[i-1] + res_rownnz[i-1]
+        }
+
+        // C: iterate through each row of mat
+        for r in 0..nr { // C: for (int r = 0; r < nr; r++)
+            let mut c_prev: i32 = -1; // C: int c_prev = -1
+            let start = *rowadr.add(r as usize) - row_offset; // C: int start = rowadr[r] - row_offset
+            let end = start + *rownnz.add(r as usize); // C: int end = start + rownnz[r]
+            for i in start..end { // C: for (int i = start; i < end; i++)
+                let c = *colind.add(i as usize); // C: int c = colind[i]
+                let adr = *res_rowadr.add(c as usize); // C: int adr = res_rowadr[c]++
+                *res_rowadr.add(c as usize) += 1;
+                *res_colind.add(adr as usize) = r; // C: res_colind[adr] = r
+                if !res.is_null() { // C: if (res)
+                    *res.add(adr as usize) = *mat.add(i as usize); // C: res[adr] = mat[i]
+                }
+                // C: mark non-supernodes
+                if !res_rowsuper.is_null() { // C: if (res_rowsuper)
+                    if c > 0 && c != c_prev + 1 && *res_rowsuper.add((c - 1) as usize) != 0 {
+                        *res_rowsuper.add((c - 1) as usize) = 0; // C: res_rowsuper[c-1] = 0
+                    }
+                    c_prev = c; // C: c_prev = c
+                }
+            }
+        }
+
+        // C: shift back row addresses
+        for i in (1..nc).rev() { // C: for (int i = nc-1; i > 0; i--)
+            *res_rowadr.add(i as usize) = *res_rowadr.add((i - 1) as usize); // C: res_rowadr[i] = res_rowadr[i-1]
+        }
+        *res_rowadr.add(0) = 0; // C: res_rowadr[0] = 0
+
+        // C: accumulate supernodes
+        if !res_rowsuper.is_null() { // C: if (res_rowsuper)
+            for i in (0..(nc - 1)).rev() { // C: for (int i = nc - 2; i >= 0; i--)
+                if *res_rowsuper.add(i as usize) != 0 { // C: if (res_rowsuper[i])
+                    *res_rowsuper.add(i as usize) += *res_rowsuper.add((i + 1) as usize); // C: res_rowsuper[i] += res_rowsuper[i+1]
+                }
+            }
+        }
+    }
 }
 
 /// C: mju_superSparse (engine/engine_util_sparse.h:115)

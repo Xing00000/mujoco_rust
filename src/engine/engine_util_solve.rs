@@ -704,7 +704,119 @@ pub fn mju_solve3(x: *mut f64, A: *const f64, b: *const f64) {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mju_eig3(eigval: *mut f64, eigvec: *mut f64, quat: *mut f64, mat: *const f64) -> i32 {
-    todo!() // mju_eig3
+    unsafe {
+        const eigEPS: f64 = 1e-15 * 1000.0; // C: static const mjtNum eigEPS = mjMINVAL * 1000
+        let mut D: [f64; 9] = [0.0; 9]; // C: mjtNum D[9]
+        let mut tmp: [f64; 9] = [0.0; 9]; // C: mjtNum tmp[9]
+        let mut tau: f64;
+        let mut t: f64;
+        let mut c: f64;
+        let mut iter: i32;
+        let mut rk: i32;
+        let mut ck: i32;
+        let mut rotk: i32;
+
+        // C: quat[0] = 1; quat[1] = quat[2] = quat[3] = 0
+        *quat.add(0) = 1.0;
+        *quat.add(1) = 0.0;
+        *quat.add(2) = 0.0;
+        *quat.add(3) = 0.0;
+
+        // C: Jacobi iteration
+        iter = 0;
+        while iter < 500 { // C: for (iter=0; iter < 500; iter++)
+            // C: mju_quat2Mat(eigvec, quat)
+            crate::engine::engine_util_spatial::mju_quat2mat(eigvec, quat);
+            // C: mji_mulMatTMat3(tmp, eigvec, mat) - use non-restrict version
+            crate::engine::engine_util_blas::mju_mul_mat_t_mat3(tmp.as_mut_ptr(), eigvec, mat);
+            // C: mji_mulMatMat3(D, tmp, eigvec)
+            crate::engine::engine_util_blas::mju_mul_mat_mat3(D.as_mut_ptr(), tmp.as_ptr(), eigvec);
+
+            // C: eigval[0] = D[0]; eigval[1] = D[4]; eigval[2] = D[8]
+            *eigval.add(0) = D[0];
+            *eigval.add(1) = D[4];
+            *eigval.add(2) = D[8];
+
+            // C: find max off-diagonal element
+            if D[1].abs() > D[2].abs() && D[1].abs() > D[5].abs() {
+                rk = 0; ck = 1; rotk = 2;
+            } else if D[2].abs() > D[5].abs() {
+                rk = 0; ck = 2; rotk = 1;
+            } else {
+                rk = 1; ck = 2; rotk = 0;
+            }
+
+            // C: if (mju_abs(D[3*rk+ck]) < eigEPS) break
+            if D[(3 * rk + ck) as usize].abs() < eigEPS {
+                break;
+            }
+
+            // C: tau = (D[4*ck]-D[4*rk])/(2*D[3*rk+ck])
+            tau = (D[(4 * ck) as usize] - D[(4 * rk) as usize]) / (2.0 * D[(3 * rk + ck) as usize]);
+            // C: if (tau >= 0) t = ... else t = ...
+            if tau >= 0.0 {
+                t = 1.0 / (tau + (1.0 + tau * tau).sqrt());
+            } else {
+                t = -1.0 / (-tau + (1.0 + tau * tau).sqrt());
+            }
+            // C: c = 1.0/mju_sqrt(1 + t*t)
+            c = 1.0 / (1.0 + t * t).sqrt();
+
+            // C: if (c > 1.0-eigEPS) break
+            if c > 1.0 - eigEPS {
+                break;
+            }
+
+            // C: express rotation as quaternion
+            tmp[1] = 0.0; tmp[2] = 0.0; tmp[3] = 0.0;
+            // C: tmp[rotk+1] = (tau >= 0 ? -mju_sqrt(0.5-0.5*c) : mju_sqrt(0.5-0.5*c))
+            tmp[(rotk + 1) as usize] = if tau >= 0.0 {
+                -(0.5 - 0.5 * c).sqrt()
+            } else {
+                (0.5 - 0.5 * c).sqrt()
+            };
+            // C: if (rotk == 1) tmp[rotk+1] = -tmp[rotk+1]
+            if rotk == 1 {
+                tmp[(rotk + 1) as usize] = -tmp[(rotk + 1) as usize];
+            }
+            // C: tmp[0] = mju_sqrt(1.0 - tmp[rotk+1]*tmp[rotk+1])
+            tmp[0] = (1.0 - tmp[(rotk + 1) as usize] * tmp[(rotk + 1) as usize]).sqrt();
+            // C: mju_normalize4(tmp)
+            crate::engine::engine_util_blas::mju_normalize4(tmp.as_mut_ptr());
+
+            // C: mju_mulQuat(quat, quat, tmp)
+            crate::engine::engine_util_spatial::mju_mul_quat(quat, quat as *const f64, tmp.as_ptr());
+            // C: mju_normalize4(quat)
+            crate::engine::engine_util_blas::mju_normalize4(quat);
+
+            iter += 1;
+        }
+
+        // C: sort eigenvalues in decreasing order (bubble sort: 0, 1, 0)
+        for j in 0..3_i32 { // C: for (int j=0; j < 3; j++)
+            let j1 = (j % 2) as usize; // C: int j1 = j%2
+
+            // C: if (eigval[j1]+eigEPS < eigval[j1+1])
+            if *eigval.add(j1) + eigEPS < *eigval.add(j1 + 1) {
+                // C: swap eigenvalues
+                t = *eigval.add(j1); // C: t = eigval[j1]
+                *eigval.add(j1) = *eigval.add(j1 + 1); // C: eigval[j1] = eigval[j1+1]
+                *eigval.add(j1 + 1) = t; // C: eigval[j1+1] = t
+
+                // C: rotate quaternion
+                tmp[0] = 0.707106781186548; // C: tmp[0] = 0.707106781186548
+                tmp[1] = 0.0; tmp[2] = 0.0; tmp[3] = 0.0;
+                tmp[((j1 as i32 + 2) % 3 + 1) as usize] = tmp[0]; // C: tmp[(j1+2)%3+1] = tmp[0]
+                crate::engine::engine_util_spatial::mju_mul_quat(quat, quat as *const f64, tmp.as_ptr());
+                crate::engine::engine_util_blas::mju_normalize4(quat);
+            }
+        }
+
+        // C: mju_quat2Mat(eigvec, quat)
+        crate::engine::engine_util_spatial::mju_quat2mat(eigvec, quat);
+
+        iter // C: return iter
+    }
 }
 
 /// C: mju_QCQP2 (engine/engine_util_solve.h:126)
