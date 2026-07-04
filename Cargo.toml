@@ -1,0 +1,10 @@
+[package]
+name = "mujoco_rust"
+version = "0.1.0"
+edition = "2021"
+
+[lib]
+name = "mujoco_rust"
+path = "src/lib.rs"
+
+# Pure Rust — zero external dependencies
