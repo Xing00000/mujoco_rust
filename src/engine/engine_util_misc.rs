@@ -88,7 +88,23 @@ pub fn add_weight(nb: *mut i32, body: *mut i32, bweight: *mut f64, b: i32, w: f6
 /// C: _decode (engine/engine_util_misc.c:1217)
 #[allow(unused_variables, non_snake_case)]
 pub fn decode(ch: i8) -> i32 {
-    todo!() // _decode
+    let c = ch as u8; // C: char ch (treat as unsigned for comparison)
+    if c >= b'A' && c <= b'Z' { // C: if (ch >= 'A' && ch <= 'Z')
+        return (c - b'A') as i32; // C: return ch - 'A'
+    }
+    if c >= b'a' && c <= b'z' { // C: if (ch >= 'a' && ch <= 'z')
+        return (c - b'a') as i32 + 26; // C: return (ch - 'a') + 26
+    }
+    if c >= b'0' && c <= b'9' { // C: if (ch >= '0' && ch <= '9')
+        return (c - b'0') as i32 + 52; // C: return (ch - '0') + 52
+    }
+    if c == b'+' { // C: if (ch == '+')
+        return 62; // C: return 62
+    }
+    if c == b'/' { // C: if (ch == '/')
+        return 63; // C: return 63
+    }
+    0 // C: return 0
 }
 
 /// C: mju_encodeBase64 (engine/engine_util_misc.c:1244)
@@ -112,7 +128,8 @@ pub fn mju_decode_base64(buf: *mut i32, s: *const i8) -> i32 {
 /// C: historyPhysicalIndex (engine/engine_util_misc.c:1359)
 #[allow(unused_variables, non_snake_case)]
 pub fn history_physical_index(cursor: i32, n: i32, logical: i32) -> i32 {
-    todo!() // historyPhysicalIndex
+    // C: return (cursor + 1 + logical) % n
+    (cursor + 1 + logical) % n
 }
 
 /// C: historyFindIndex (engine/engine_util_misc.c:1367)
@@ -124,7 +141,39 @@ pub fn history_physical_index(cursor: i32, n: i32, logical: i32) -> i32 {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn history_find_index(times: *const f64, n: i32, cursor: i32, t: f64) -> i32 {
-    todo!() // historyFindIndex
+    unsafe {
+        // C: int oldest_phys = historyPhysicalIndex(cursor, n, 0)
+        let oldest_phys = history_physical_index(cursor, n, 0);
+        // C: int newest_phys = historyPhysicalIndex(cursor, n, n-1)
+        let newest_phys = history_physical_index(cursor, n, n - 1);
+        // C: mjtNum t_oldest = times[oldest_phys]
+        let t_oldest = *times.add(oldest_phys as usize);
+        // C: mjtNum t_newest = times[newest_phys]
+        let t_newest = *times.add(newest_phys as usize);
+
+        // C: if (t <= t_oldest) { return 0; }
+        if t <= t_oldest {
+            return 0;
+        }
+        // C: if (t > t_newest) { return n; }
+        if t > t_newest {
+            return n;
+        }
+
+        // C: circular binary search
+        let mut lo: i32 = 0; // C: int lo = 0
+        let mut hi: i32 = n - 1; // C: int hi = n - 1
+        while hi - lo > 1 { // C: while (hi - lo > 1)
+            let mid = (lo + hi) / 2; // C: int mid = (lo + hi) / 2
+            let mid_phys = history_physical_index(cursor, n, mid); // C: int mid_phys = historyPhysicalIndex(...)
+            if *times.add(mid_phys as usize) < t { // C: if (times[mid_phys] < t)
+                lo = mid; // C: lo = mid
+            } else {
+                hi = mid; // C: hi = mid
+            }
+        }
+        hi // C: return hi
+    }
 }
 
 /// C: mju_writeNumBytes (engine/engine_util_misc.c:1972)
@@ -159,7 +208,30 @@ pub fn mju_wrap(wpnt: *mut f64, x0: *const f64, x1: *const f64, xpos: *const f64
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mju_muscle_gain_length(length: f64, lmin: f64, lmax: f64) -> f64 {
-    todo!() // mju_muscleGainLength
+    const mjMINVAL: f64 = 1e-15;
+    if lmin <= length && length <= lmax { // C: if (lmin <= length && length <= lmax)
+        let a = 0.5 * (lmin + 1.0); // C: mjtNum a = 0.5*(lmin+1)
+        let b = 0.5 * (1.0 + lmax); // C: mjtNum b = 0.5*(1+lmax)
+        if length <= a { // C: if (length <= a)
+            let denom = if a - lmin > mjMINVAL { a - lmin } else { mjMINVAL }; // C: mjMAX(mjMINVAL, a-lmin)
+            let x = (length - lmin) / denom; // C: mjtNum x = (length-lmin) / mjMAX(...)
+            0.5 * x * x // C: return 0.5*x*x
+        } else if length <= 1.0 { // C: else if (length <= 1)
+            let denom = if 1.0 - a > mjMINVAL { 1.0 - a } else { mjMINVAL }; // C: mjMAX(mjMINVAL, 1-a)
+            let x = (1.0 - length) / denom; // C: mjtNum x = (1-length) / mjMAX(...)
+            1.0 - 0.5 * x * x // C: return 1 - 0.5*x*x
+        } else if length <= b { // C: else if (length <= b)
+            let denom = if b - 1.0 > mjMINVAL { b - 1.0 } else { mjMINVAL }; // C: mjMAX(mjMINVAL, b-1)
+            let x = (length - 1.0) / denom; // C: mjtNum x = (length-1) / mjMAX(...)
+            1.0 - 0.5 * x * x // C: return 1 - 0.5*x*x
+        } else { // C: else
+            let denom = if lmax - b > mjMINVAL { lmax - b } else { mjMINVAL }; // C: mjMAX(mjMINVAL, lmax-b)
+            let x = (lmax - length) / denom; // C: mjtNum x = (lmax-length) / mjMAX(...)
+            0.5 * x * x // C: return 0.5*x*x
+        }
+    } else {
+        0.0 // C: return 0.0
+    }
 }
 
 /// C: mju_muscleGain (engine/engine_util_misc.h:39)
@@ -171,7 +243,57 @@ pub fn mju_muscle_gain_length(length: f64, lmin: f64, lmax: f64) -> f64 {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mju_muscle_gain(len: f64, vel: f64, lengthrange: *const f64, acc0: f64, prm: *const f64) -> f64 {
-    todo!() // mju_muscleGain
+    const mjMINVAL: f64 = 1e-15;
+    unsafe {
+        // C: unpack parameters
+        let range0 = *prm.add(0); // C: mjtNum range[2] = {prm[0], prm[1]}
+        let range1 = *prm.add(1);
+        let mut force = *prm.add(2); // C: mjtNum force = prm[2]
+        let scale = *prm.add(3); // C: mjtNum scale = prm[3]
+        let lmin = *prm.add(4); // C: mjtNum lmin = prm[4]
+        let lmax = *prm.add(5); // C: mjtNum lmax = prm[5]
+        let vmax = *prm.add(6); // C: mjtNum vmax = prm[6]
+        let fvmax = *prm.add(8); // C: mjtNum fvmax = prm[8]
+
+        // C: if (force < 0) { force = scale / mjMAX(mjMINVAL, acc0); }
+        if force < 0.0 {
+            let denom = if acc0 > mjMINVAL { acc0 } else { mjMINVAL };
+            force = scale / denom;
+        }
+
+        // C: mjtNum L0 = (lengthrange[1]-lengthrange[0]) / mjMAX(mjMINVAL, range[1]-range[0])
+        let denom = if range1 - range0 > mjMINVAL { range1 - range0 } else { mjMINVAL };
+        let L0 = (*lengthrange.add(1) - *lengthrange.add(0)) / denom;
+
+        // C: mjtNum L = range[0] + (len-lengthrange[0]) / mjMAX(mjMINVAL, L0)
+        let denom_L0 = if L0 > mjMINVAL { L0 } else { mjMINVAL };
+        let L = range0 + (len - *lengthrange.add(0)) / denom_L0;
+
+        // C: mjtNum V = vel / mjMAX(mjMINVAL, L0*vmax)
+        let l0vmax = L0 * vmax;
+        let denom_v = if l0vmax > mjMINVAL { l0vmax } else { mjMINVAL };
+        let V = vel / denom_v;
+
+        // C: mjtNum FL = mju_muscleGainLength(L, lmin, lmax)
+        let FL = mju_muscle_gain_length(L, lmin, lmax);
+
+        // C: velocity curve
+        let y = fvmax - 1.0; // C: mjtNum y = fvmax-1
+        let FV: f64;
+        if V <= -1.0 { // C: if (V <= -1)
+            FV = 0.0;
+        } else if V <= 0.0 { // C: else if (V <= 0)
+            FV = (V + 1.0) * (V + 1.0); // C: FV = (V+1)*(V+1)
+        } else if V <= y { // C: else if (V <= y)
+            let denom_y = if y > mjMINVAL { y } else { mjMINVAL }; // C: mjMAX(mjMINVAL, y)
+            FV = fvmax - (y - V) * (y - V) / denom_y; // C: FV = fvmax - (y-V)*(y-V) / mjMAX(...)
+        } else {
+            FV = fvmax; // C: FV = fvmax
+        }
+
+        // C: return -force*FL*FV
+        -force * FL * FV
+    }
 }
 
 /// C: mju_muscleBias (engine/engine_util_misc.h:43)
@@ -182,7 +304,44 @@ pub fn mju_muscle_gain(len: f64, vel: f64, lengthrange: *const f64, acc0: f64, p
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mju_muscle_bias(len: f64, lengthrange: *const f64, acc0: f64, prm: *const f64) -> f64 {
-    todo!() // mju_muscleBias
+    const mjMINVAL: f64 = 1e-15;
+    unsafe {
+        let range0 = *prm.add(0); // C: mjtNum range[2] = {prm[0], prm[1]}
+        let range1 = *prm.add(1);
+        let mut force = *prm.add(2); // C: mjtNum force = prm[2]
+        let scale = *prm.add(3); // C: mjtNum scale = prm[3]
+        let lmax = *prm.add(5); // C: mjtNum lmax = prm[5]
+        let fpmax = *prm.add(7); // C: mjtNum fpmax = prm[7]
+
+        // C: if (force < 0) { force = scale / mjMAX(mjMINVAL, acc0); }
+        if force < 0.0 {
+            let denom = if acc0 > mjMINVAL { acc0 } else { mjMINVAL };
+            force = scale / denom;
+        }
+
+        // C: mjtNum L0 = (lengthrange[1]-lengthrange[0]) / mjMAX(mjMINVAL, range[1]-range[0])
+        let denom = if range1 - range0 > mjMINVAL { range1 - range0 } else { mjMINVAL };
+        let L0 = (*lengthrange.add(1) - *lengthrange.add(0)) / denom;
+
+        // C: mjtNum L = range[0] + (len-lengthrange[0]) / mjMAX(mjMINVAL, L0)
+        let denom_L0 = if L0 > mjMINVAL { L0 } else { mjMINVAL };
+        let L = range0 + (len - *lengthrange.add(0)) / denom_L0;
+
+        // C: mjtNum b = 0.5*(1+lmax)
+        let b = 0.5 * (1.0 + lmax);
+
+        if L <= 1.0 { // C: if (L <= 1)
+            0.0 // C: return 0
+        } else if L <= b { // C: else if (L <= b)
+            let denom_b = if b - 1.0 > mjMINVAL { b - 1.0 } else { mjMINVAL }; // C: mjMAX(mjMINVAL, b-1)
+            let x = (L - 1.0) / denom_b; // C: mjtNum x = (L-1) / mjMAX(...)
+            -force * fpmax * 0.5 * x * x // C: return -force*fpmax*0.5*x*x
+        } else { // C: else
+            let denom_b = if b - 1.0 > mjMINVAL { b - 1.0 } else { mjMINVAL }; // C: mjMAX(mjMINVAL, b-1)
+            let x = (L - b) / denom_b; // C: mjtNum x = (L-b) / mjMAX(...)
+            -force * fpmax * (0.5 + x) // C: return -force*fpmax*(0.5 + x)
+        }
+    }
 }
 
 /// C: mju_muscleDynamicsTimescale (engine/engine_util_misc.h:47)
@@ -194,7 +353,14 @@ pub fn mju_muscle_bias(len: f64, lengthrange: *const f64, acc0: f64, prm: *const
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mju_muscle_dynamics_timescale(dctrl: f64, tau_act: f64, tau_deact: f64, smoothing_width: f64) -> f64 {
-    todo!() // mju_muscleDynamicsTimescale
+    const mjMINVAL: f64 = 1e-15;
+    // C: if (smoothing_width < mjMINVAL) { tau = dctrl > 0 ? tau_act : tau_deact; }
+    if smoothing_width < mjMINVAL {
+        if dctrl > 0.0 { tau_act } else { tau_deact }
+    } else {
+        // C: tau = tau_deact + (tau_act-tau_deact)*mju_sigmoid(dctrl/smoothing_width + 0.5)
+        tau_deact + (tau_act - tau_deact) * mju_sigmoid(dctrl / smoothing_width + 0.5)
+    }
 }
 
 /// C: mju_muscleDynamics (engine/engine_util_misc.h:51)
@@ -206,7 +372,26 @@ pub fn mju_muscle_dynamics_timescale(dctrl: f64, tau_act: f64, tau_deact: f64, s
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mju_muscle_dynamics(ctrl: f64, act: f64, prm: *const f64) -> f64 {
-    todo!() // mju_muscleDynamics
+    const mjMINVAL: f64 = 1e-15;
+    unsafe {
+        // C: mjtNum ctrlclamp = mju_clip(ctrl, 0, 1)
+        let ctrlclamp = mju_clip(ctrl, 0.0, 1.0);
+        // C: mjtNum actclamp = mju_clip(act, 0, 1)
+        let actclamp = mju_clip(act, 0.0, 1.0);
+        // C: mjtNum tau_act = prm[0] * (0.5 + 1.5*actclamp)
+        let tau_act = *prm.add(0) * (0.5 + 1.5 * actclamp);
+        // C: mjtNum tau_deact = prm[1] / (0.5 + 1.5*actclamp)
+        let tau_deact = *prm.add(1) / (0.5 + 1.5 * actclamp);
+        // C: mjtNum smoothing_width = prm[2]
+        let smoothing_width = *prm.add(2);
+        // C: mjtNum dctrl = ctrlclamp - act
+        let dctrl = ctrlclamp - act;
+        // C: mjtNum tau = mju_muscleDynamicsTimescale(...)
+        let tau = mju_muscle_dynamics_timescale(dctrl, tau_act, tau_deact, smoothing_width);
+        // C: return dctrl / mjMAX(mjMINVAL, tau)
+        let denom = if tau > mjMINVAL { tau } else { mjMINVAL };
+        dctrl / denom
+    }
 }
 
 /// C: mj_lugreStribeck (engine/engine_util_misc.h:54)
@@ -218,7 +403,12 @@ pub fn mju_muscle_dynamics(ctrl: f64, act: f64, prm: *const f64) -> f64 {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_lugre_stribeck(velocity: f64, F_C: f64, F_S: f64, v_S: f64) -> f64 {
-    todo!() // mj_lugreStribeck
+    const mjMINVAL: f64 = 1e-15;
+    // C: mjtNum ratio = velocity / mju_max(mjMINVAL, v_S)
+    let denom = crate::engine::engine_util_misc::mju_max(mjMINVAL, v_S);
+    let ratio = velocity / denom;
+    // C: return F_C + (F_S - F_C) * mju_exp(-ratio*ratio)
+    F_C + (F_S - F_C) * (-ratio * ratio).exp()
 }
 
 /// C: mj_dcmotorSlots (engine/engine_util_misc.h:68)
@@ -939,6 +1129,13 @@ pub fn mju_poly_potential(linear: f64, poly: *const f64, x: f64, n: i32, flg_odd
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mju_sigmoid(x: f64) -> f64 {
-    todo!() // mju_sigmoid
+    if x <= 0.0 { // C: if (x <= 0)
+        return 0.0; // C: return 0
+    }
+    if x >= 1.0 { // C: if (x >= 1)
+        return 1.0; // C: return 1
+    }
+    // C: return x*x*x * (3*x * (2*x - 5) + 10)
+    x * x * x * (3.0 * x * (2.0 * x - 5.0) + 10.0)
 }
 
