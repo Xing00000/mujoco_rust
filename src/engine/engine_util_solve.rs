@@ -213,7 +213,93 @@ pub fn mju_chol_update_sparse(mat: *mut f64, x: *const f64, n: i32, flg_plus: i3
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mju_chol_factor_band(mat: *mut f64, ntotal: i32, nband: i32, ndense: i32, diagadd: f64, diagmul: f64) -> f64 {
-    todo!() // mju_cholFactorBand
+    unsafe {
+        let mjMINVAL: f64 = 1e-15_f64; // C: mjMINVAL
+        let nsparse: i32 = ntotal - ndense; // C: int nsparse = ntotal - ndense;
+        let mut mindiag: f64 = -1.0; // C: mjtNum mindiag = -1.0;
+
+        // sparse part
+        let mut j: i32 = 0; // C: int j=0;
+        while j < nsparse { // C: for (int j=0; j < nsparse; j++)
+            let width_jj: i32 = if j < nband - 1 { j } else { nband - 1 }; // C: int width_jj = (j < nband-1) ? j : nband-1;
+            let height: i32 = if nsparse - j - 1 < nband - 1 { nsparse - j - 1 } else { nband - 1 }; // C: int height = (nsparse-j-1 < nband-1) ? nsparse-j-1 : nband-1;
+            let adr_jj: i32 = (j + 1) * nband - 1; // C: int adr_jj = (j+1)*nband-1;
+
+            let mut left_ij: f64 = if width_jj > 0 { // C: mjtNum left_ij = width_jj > 0 ? mju_dot(mat+adr_jj-width_jj, mat+adr_jj-width_jj, width_jj) : 0.0;
+                crate::engine::engine_util_blas::mju_dot(mat.add((adr_jj - width_jj) as usize), mat.add((adr_jj - width_jj) as usize), width_jj)
+            } else {
+                0.0
+            };
+            let mut Ljj: f64 = diagadd + diagmul * *mat.add(adr_jj as usize) + *mat.add(adr_jj as usize) - left_ij; // C: mjtNum Ljj = diagadd + diagmul*mat[adr_jj] + mat[adr_jj] - left_ij;
+
+            if Ljj < mindiag || mindiag < 0.0 { // C: if (Ljj < mindiag || mindiag < 0.0)
+                mindiag = Ljj; // C: mindiag = Ljj;
+            }
+            if Ljj < mjMINVAL { // C: if (Ljj < mjMINVAL)
+                return 0.0; // C: return 0.0;
+            }
+
+            Ljj = Ljj.sqrt(); // C: Ljj = mju_sqrt(Ljj);
+            let scale: f64 = 1.0 / Ljj; // C: mjtNum scale = 1.0/Ljj;
+
+            let mut i: i32 = j + 1; // C: int i=j+1;
+            while i <= j + height { // C: for (int i=j+1; i <= j+height; i++)
+                let width_ij: i32 = if j < nband - 1 - i + j { j } else { nband - 1 - i + j }; // C: int width_ij = (j < nband-1-i+j) ? j : nband-1-i+j;
+                let adr_ij: i32 = (i + 1) * nband - 1 - i + j; // C: int adr_ij = (i+1)*nband-1-i+j;
+                left_ij = if width_ij > 0 { // C: left_ij = width_ij > 0 ? mju_dot(mat+adr_jj-width_ij, mat+adr_ij-width_ij, width_ij) : 0.0;
+                    crate::engine::engine_util_blas::mju_dot(mat.add((adr_jj - width_ij) as usize), mat.add((adr_ij - width_ij) as usize), width_ij)
+                } else {
+                    0.0
+                };
+                *mat.add(adr_ij as usize) = scale * (*mat.add(adr_ij as usize) - left_ij); // C: mat[adr_ij] = scale * (mat[adr_ij] - left_ij);
+                i += 1;
+            }
+
+            let mut i: i32 = nsparse; // C: int i=nsparse;
+            while i < ntotal { // C: for (int i=nsparse; i < ntotal; i++)
+                let adr_ij: i32 = nsparse * nband + (i - nsparse) * ntotal + j; // C: int adr_ij = nsparse*nband + (i-nsparse)*ntotal + j;
+                left_ij = if width_jj > 0 { // C: left_ij = width_jj > 0 ? mju_dot(mat+adr_jj-width_jj, mat+adr_ij-width_jj, width_jj) : 0.0;
+                    crate::engine::engine_util_blas::mju_dot(mat.add((adr_jj - width_jj) as usize), mat.add((adr_ij - width_jj) as usize), width_jj)
+                } else {
+                    0.0
+                };
+                *mat.add(adr_ij as usize) = scale * (*mat.add(adr_ij as usize) - left_ij); // C: mat[adr_ij] = scale * (mat[adr_ij] - left_ij);
+                i += 1;
+            }
+
+            *mat.add(adr_jj as usize) = Ljj; // C: mat[adr_jj] = Ljj;
+            j += 1;
+        }
+
+        // dense part
+        let mut j: i32 = nsparse; // C: int j=nsparse;
+        while j < ntotal { // C: for (int j=nsparse; j < ntotal; j++)
+            let adr_jj: i32 = nsparse * nband + (j - nsparse) * ntotal + j; // C: int adr_jj = nsparse*nband + (j-nsparse)*ntotal + j;
+            let mut Ljj: f64 = diagadd + diagmul * *mat.add(adr_jj as usize) + *mat.add(adr_jj as usize) - crate::engine::engine_util_blas::mju_dot(mat.add((adr_jj - j) as usize), mat.add((adr_jj - j) as usize), j); // C: mjtNum Ljj = diagadd + diagmul*mat[adr_jj] + mat[adr_jj] - mju_dot(mat+adr_jj-j, mat+adr_jj-j, j);
+
+            if Ljj < mindiag || mindiag < 0.0 { // C: if (Ljj < mindiag || mindiag < 0.0)
+                mindiag = Ljj; // C: mindiag = Ljj;
+            }
+            if Ljj < mjMINVAL { // C: if (Ljj < mjMINVAL)
+                return 0.0; // C: return 0.0;
+            }
+
+            Ljj = Ljj.sqrt(); // C: Ljj = mju_sqrt(Ljj);
+            let scale: f64 = 1.0 / Ljj; // C: mjtNum scale = 1.0/Ljj;
+
+            let mut i: i32 = j + 1; // C: int i=j+1;
+            while i < ntotal { // C: for (int i=j+1; i < ntotal; i++)
+                let adr_ij: i32 = adr_jj + ntotal * (i - j); // C: int adr_ij = adr_jj + ntotal*(i-j);
+                *mat.add(adr_ij as usize) = scale * (*mat.add(adr_ij as usize) - crate::engine::engine_util_blas::mju_dot(mat.add((adr_jj - j) as usize), mat.add((adr_ij - j) as usize), j)); // C: mat[adr_ij] = scale * (mat[adr_ij] - mju_dot(mat+adr_jj-j, mat+adr_ij-j, j));
+                i += 1;
+            }
+
+            *mat.add(adr_jj as usize) = Ljj; // C: mat[adr_jj] = Ljj;
+            j += 1;
+        }
+
+        mindiag // C: return mindiag;
+    }
 }
 
 /// C: mju_cholSolveBand (engine/engine_util_solve.h:80)
@@ -225,7 +311,62 @@ pub fn mju_chol_factor_band(mat: *mut f64, ntotal: i32, nband: i32, ndense: i32,
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mju_chol_solve_band(res: *mut f64, mat: *const f64, vec: *const f64, ntotal: i32, nband: i32, ndense: i32) {
-    todo!() // mju_cholSolveBand
+    unsafe {
+        let nsparse: i32 = ntotal - ndense; // C: int nsparse = ntotal - ndense;
+
+        if res != vec as *mut f64 { // C: if (res != vec)
+            crate::engine::engine_util_blas::mju_copy(res, vec, ntotal); // C: mju_copy(res, vec, ntotal);
+        }
+
+        // forward substitution: sparse part
+        let mut i: i32 = 0; // C: int i=0;
+        while i < nsparse { // C: for (int i=0; i < nsparse; i++)
+            let width: i32 = if i < nband - 1 { i } else { nband - 1 }; // C: width = mjMIN(i, nband-1);
+            if width > 0 { // C: if (width > 0)
+                *res.add(i as usize) -= crate::engine::engine_util_blas::mju_dot(mat.add(((i + 1) * nband - 1 - width) as usize), res.add((i - width) as usize) as *const f64, width); // C: res[i] -= mju_dot(mat+(i+1)*nband-1-width, res+i-width, width);
+            }
+            *res.add(i as usize) /= *mat.add(((i + 1) * nband - 1) as usize); // C: res[i] /= mat[(i+1)*nband-1];
+            i += 1;
+        }
+
+        // forward substitution: dense part
+        let mut i: i32 = nsparse; // C: int i=nsparse;
+        while i < ntotal { // C: for (int i=nsparse; i < ntotal; i++)
+            *res.add(i as usize) -= crate::engine::engine_util_blas::mju_dot(mat.add((nsparse * nband + (i - nsparse) * ntotal) as usize), res as *const f64, i); // C: res[i] -= mju_dot(mat+nsparse*nband+(i-nsparse)*ntotal, res, i);
+            *res.add(i as usize) /= *mat.add((nsparse * nband + (i - nsparse) * ntotal + i) as usize); // C: res[i] /= mat[nsparse*nband+(i-nsparse)*ntotal+i];
+            i += 1;
+        }
+
+        // backward substitution: dense part
+        let mut i: i32 = ntotal - 1; // C: int i=ntotal-1;
+        while i >= nsparse { // C: for (int i=ntotal-1; i >= nsparse; i--)
+            let mut j: i32 = i + 1; // C: int j=i+1;
+            while j < ntotal { // C: for (int j=i+1; j < ntotal; j++)
+                *res.add(i as usize) -= *mat.add((nsparse * nband + (j - nsparse) * ntotal + i) as usize) * *res.add(j as usize); // C: res[i] -= mat[nsparse*nband+(j-nsparse)*ntotal+i] * res[j];
+                j += 1;
+            }
+            *res.add(i as usize) /= *mat.add((nsparse * nband + (i - nsparse) * ntotal + i) as usize); // C: res[i] /= mat[nsparse*nband+(i-nsparse)*ntotal+i];
+            i -= 1;
+        }
+
+        // backward substitution: sparse part
+        let mut i: i32 = nsparse - 1; // C: int i=nsparse-1;
+        while i >= 0 { // C: for (int i=nsparse-1; i >= 0; i--)
+            let height: i32 = if nsparse - 1 - i < nband - 1 { nsparse - 1 - i } else { nband - 1 }; // C: height = mjMIN(nsparse-1-i, nband-1);
+            let mut j: i32 = i + 1; // C: int j=i+1;
+            while j <= i + height { // C: for (int j=i+1; j <= i+height; j++)
+                *res.add(i as usize) -= *mat.add(((j + 1) * nband - 1 - (j - i)) as usize) * *res.add(j as usize); // C: res[i] -= mat[(j+1)*nband-1-(j-i)] * res[j];
+                j += 1;
+            }
+            let mut j: i32 = nsparse; // C: int j=nsparse;
+            while j < ntotal { // C: for (int j=nsparse; j < ntotal; j++)
+                *res.add(i as usize) -= *mat.add((nsparse * nband + (j - nsparse) * ntotal + i) as usize) * *res.add(j as usize); // C: res[i] -= mat[nsparse*nband+(j-nsparse)*ntotal+i] * res[j];
+                j += 1;
+            }
+            *res.add(i as usize) /= *mat.add(((i + 1) * nband - 1) as usize); // C: res[i] /= mat[(i+1)*nband-1];
+            i -= 1;
+        }
+    }
 }
 
 /// C: mju_band2Dense (engine/engine_util_solve.h:84)

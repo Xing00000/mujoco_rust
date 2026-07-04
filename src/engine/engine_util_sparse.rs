@@ -282,7 +282,30 @@ pub fn mju_add_to_mat_sparse(dst: *mut f64, rownnz: *mut i32, rowadr: *mut i32, 
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mju_add_to_sym_sparse(res: *mut f64, mat: *const f64, n: i32, rownnz: *const i32, rowadr: *const i32, colind: *const i32, flg_upper: i32) {
-    todo!() // mju_addToSymSparse
+    unsafe {
+        // C: for (int i=0; i < n; i++)
+        for i in 0..n {
+            let start: i32 = *rowadr.add(i as usize); // C: int start = rowadr[i]
+            let end: i32 = start + *rownnz.add(i as usize); // C: int end = start + rownnz[i]
+
+            // C: for (int adr=start; adr < end; adr++)
+            let mut adr = start;
+            while adr < end {
+                let val: f64 = *mat.add(adr as usize); // C: mjtNum val = mat[adr]
+                let j: i32 = *colind.add(adr as usize); // C: int j = colind[adr]
+
+                // C: res[i*n + j] += val
+                *res.add((i * n + j) as usize) += val;
+
+                // C: if (flg_upper && j < i) { res[j*n + i] += val; }
+                if flg_upper != 0 && j < i {
+                    *res.add((j * n + i) as usize) += val;
+                }
+
+                adr += 1;
+            }
+        }
+    }
 }
 
 /// C: mju_mulSymVecSparse (engine/engine_util_sparse.h:81)
@@ -294,7 +317,35 @@ pub fn mju_add_to_sym_sparse(res: *mut f64, mat: *const f64, n: i32, rownnz: *co
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mju_mul_sym_vec_sparse(res: *mut f64, mat: *const f64, vec: *const f64, n: i32, rownnz: *const i32, rowadr: *const i32, colind: *const i32) {
-    todo!() // mju_mulSymVecSparse
+    unsafe {
+        crate::engine::engine_util_blas::mju_zero(res, n); // C: mju_zero(res, n)
+
+        // C: for (int i=0; i < n; i++)
+        for i in 0..n {
+            let adr: i32 = *rowadr.add(i as usize); // C: int adr = rowadr[i]
+            let diag: i32 = *rownnz.add(i as usize) - 1; // C: int diag = rownnz[i] - 1
+            let row: *const f64 = mat.add(adr as usize); // C: const mjtNum* row = mat + adr
+
+            // C: res[i] = row[diag] * vec[i]
+            *res.add(i as usize) = *row.add(diag as usize) * *vec.add(i as usize);
+
+            let ind: *const i32 = colind.add(adr as usize); // C: const int* ind = colind + adr
+
+            // C: for (int k=diag-1; k >= 0; k--)
+            let mut k = diag - 1;
+            while k >= 0 {
+                let j: i32 = *ind.add(k as usize); // C: int j = ind[k]
+                let val: f64 = *row.add(k as usize); // C: mjtNum val = row[k]
+
+                // C: res[i] += val * vec[j]
+                *res.add(i as usize) += val * *vec.add(j as usize);
+                // C: res[j] += val * vec[i]
+                *res.add(j as usize) += val * *vec.add(i as usize);
+
+                k -= 1;
+            }
+        }
+    }
 }
 
 /// C: mju_compressSparse (engine/engine_util_sparse.h:85)
@@ -305,13 +356,79 @@ pub fn mju_mul_sym_vec_sparse(res: *mut f64, mat: *const f64, vec: *const f64, n
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mju_compress_sparse(mat: *mut f64, nr: i32, nc: i32, rownnz: *mut i32, rowadr: *mut i32, colind: *mut i32, minval: f64) -> i32 {
-    todo!() // mju_compressSparse
+    unsafe {
+        let remove_small: i32 = if minval >= 0.0 { 1 } else { 0 }; // C: int remove_small = (minval >= 0.0)
+        let mut adr: i32 = 0; // C: int adr = 0
+
+        // C: for (int r=0; r < nr; r++)
+        for r in 0..nr {
+            let rowadr_old: i32 = *rowadr.add(r as usize); // C: int rowadr_old = rowadr[r]
+            *rowadr.add(r as usize) = adr; // C: rowadr[r] = adr
+            let mut nnz: i32 = 0; // C: int nnz = 0
+            let end: i32 = rowadr_old + *rownnz.add(r as usize); // C: int end = rowadr_old + rownnz[r]
+
+            // C: for (int adr_old=rowadr_old; adr_old < end; adr_old++)
+            let mut adr_old = rowadr_old;
+            while adr_old < end {
+                // C: if (remove_small && mju_abs(mat[adr_old]) <= minval) { continue; }
+                if remove_small != 0 && (*mat.add(adr_old as usize)).abs() <= minval {
+                    adr_old += 1;
+                    continue;
+                }
+
+                // C: if (adr != adr_old) { mat[adr] = mat[adr_old]; colind[adr] = colind[adr_old]; }
+                if adr != adr_old {
+                    *mat.add(adr as usize) = *mat.add(adr_old as usize);
+                    *colind.add(adr as usize) = *colind.add(adr_old as usize);
+                }
+
+                adr += 1; // C: adr++
+                // C: if (remove_small) nnz++
+                if remove_small != 0 {
+                    nnz += 1;
+                }
+
+                adr_old += 1;
+            }
+
+            // C: if (remove_small) rownnz[r] = nnz
+            if remove_small != 0 {
+                *rownnz.add(r as usize) = nnz;
+            }
+        }
+
+        // C: return rowadr[nr-1] + rownnz[nr-1]
+        *rowadr.add((nr - 1) as usize) + *rownnz.add((nr - 1) as usize)
+    }
 }
 
 /// C: mju_combineSparseCount (engine/engine_util_sparse.h:89)
 #[allow(unused_variables, non_snake_case)]
 pub fn mju_combine_sparse_count(a_nnz: i32, b_nnz: i32, a_ind: *const i32, b_ind: *const i32) -> i32 {
-    todo!() // mju_combineSparseCount
+    unsafe {
+        let mut a: i32 = 0; // C: int a = 0
+        let mut b: i32 = 0; // C: int b = 0
+        let mut c_nnz: i32 = 0; // C: int c_nnz = 0
+
+        // C: while (a < a_nnz && b < b_nnz)
+        while a < a_nnz && b < b_nnz {
+            if *a_ind.add(a as usize) == *b_ind.add(b as usize) {
+                // C: if (a_ind[a] == b_ind[b]) { c_nnz++; a++; b++; }
+                c_nnz += 1;
+                a += 1;
+                b += 1;
+            } else if *a_ind.add(a as usize) < *b_ind.add(b as usize) {
+                // C: else if (a_ind[a] < b_ind[b]) { a++; }
+                a += 1;
+            } else {
+                // C: else { b++; }
+                b += 1;
+            }
+        }
+
+        // C: return a_nnz + b_nnz - c_nnz
+        a_nnz + b_nnz - c_nnz
+    }
 }
 
 /// C: mju_combineSparseInc (engine/engine_util_sparse.h:92)
@@ -334,7 +451,34 @@ pub fn mju_combine_sparse_inc(dst: *mut f64, src: *const f64, n: i32, a: f64, b:
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mju_add_to_scl_sparse_inc(dst: *mut f64, src: *const f64, nnzdst: i32, inddst: *const i32, nnzsrc: i32, indsrc: *const i32, scl: f64) {
-    todo!() // mju_addToSclSparseInc
+    unsafe {
+        // C: if (!nnzdst || !nnzsrc) { return; }
+        if nnzdst == 0 || nnzsrc == 0 {
+            return;
+        }
+
+        let mut adrs: i32 = 0; // C: int adrs = 0
+        let mut adrd: i32 = 0; // C: int adrd = 0
+
+        // C: while (adrs < nnzsrc && adrd < nnzdst)
+        while adrs < nnzsrc && adrd < nnzdst {
+            let inds: i32 = *indsrc.add(adrs as usize); // C: int inds = indsrc[adrs]
+            let indd: i32 = *inddst.add(adrd as usize); // C: int indd = inddst[adrd]
+
+            if inds == indd {
+                // C: dst[adrd] += scl * src[adrs]; adrs++; adrd++;
+                *dst.add(adrd as usize) += scl * *src.add(adrs as usize);
+                adrs += 1;
+                adrd += 1;
+            } else if inds < indd {
+                // C: else if (inds < indd) { adrs++; }
+                adrs += 1;
+            } else {
+                // C: else { adrd++; }
+                adrd += 1;
+            }
+        }
+    }
 }
 
 /// C: mju_addToSparseMat (engine/engine_util_sparse.h:101)
@@ -353,7 +497,61 @@ pub fn mju_add_to_sparse_mat(dst: *mut f64, src: *const f64, n: i32, nrow: i32, 
 /// Calls: mju_compare, mju_copyInt
 #[allow(unused_variables, non_snake_case)]
 pub fn mju_add_chains(res: *mut i32, n: i32, NV1: i32, NV2: i32, chain1: *const i32, chain2: *const i32) -> i32 {
-    todo!() // mju_addChains
+    unsafe {
+        // C: if (NV1 == NV2)
+        if NV1 == NV2 {
+            // C: if (NV1 == 0) { return 0; }
+            if NV1 == 0 {
+                return 0;
+            }
+            // C: if (mju_compare(chain1, chain2, NV1))
+            if mju_compare(chain1, chain2, NV1) != 0 {
+                // C: mju_copyInt(res, chain1, NV1)
+                crate::engine::engine_util_misc::mju_copy_int(res, chain1, NV1);
+                return NV1; // C: return NV1
+            }
+        }
+
+        let mut i1: i32 = 0; // C: int i1 = 0
+        let mut i2: i32 = 0; // C: int i2 = 0
+        let mut NV: i32 = 0; // C: int NV = 0
+
+        // C: int adr1 = NV1 ? chain1[0] : n+1
+        let mut adr1: i32 = if NV1 != 0 { *chain1.add(0) } else { n + 1 };
+        // C: int adr2 = NV2 ? chain2[0] : n+1
+        let mut adr2: i32 = if NV2 != 0 { *chain2.add(0) } else { n + 1 };
+
+        // C: while (i1 < NV1 || i2 < NV2)
+        while i1 < NV1 || i2 < NV2 {
+            if adr1 == adr2 {
+                // C: res[NV++] = adr1; i1++; i2++;
+                *res.add(NV as usize) = adr1;
+                NV += 1;
+                i1 += 1;
+                i2 += 1;
+                // C: adr1 = i1 < NV1 ? chain1[i1] : n+1
+                adr1 = if i1 < NV1 { *chain1.add(i1 as usize) } else { n + 1 };
+                // C: adr2 = i2 < NV2 ? chain2[i2] : n+1
+                adr2 = if i2 < NV2 { *chain2.add(i2 as usize) } else { n + 1 };
+            } else if adr1 < adr2 {
+                // C: res[NV++] = adr1; i1++;
+                *res.add(NV as usize) = adr1;
+                NV += 1;
+                i1 += 1;
+                // C: adr1 = i1 < NV1 ? chain1[i1] : n+1
+                adr1 = if i1 < NV1 { *chain1.add(i1 as usize) } else { n + 1 };
+            } else {
+                // C: res[NV++] = adr2; i2++;
+                *res.add(NV as usize) = adr2;
+                NV += 1;
+                i2 += 1;
+                // C: adr2 = i2 < NV2 ? chain2[i2] : n+1
+                adr2 = if i2 < NV2 { *chain2.add(i2 as usize) } else { n + 1 };
+            }
+        }
+
+        NV // C: return NV
+    }
 }
 
 /// C: mju_transposeSparse (engine/engine_util_sparse.h:110)
@@ -372,7 +570,40 @@ pub fn mju_transpose_sparse(res: *mut f64, mat: *const f64, nr: i32, nc: i32, re
 /// Calls: mju_compare
 #[allow(unused_variables, non_snake_case)]
 pub fn mju_super_sparse(nr: i32, rowsuper: *mut i32, rownnz: *const i32, rowadr: *const i32, colind: *const i32) {
-    todo!() // mju_superSparse
+    unsafe {
+        // C: if (!nr) { return; }
+        if nr == 0 {
+            return;
+        }
+
+        // C: for (int r=0; r < nr-1; r++)
+        for r in 0..(nr - 1) {
+            // C: if (rownnz[r] != rownnz[r+1]) { rowsuper[r] = 0; }
+            if *rownnz.add(r as usize) != *rownnz.add((r + 1) as usize) {
+                *rowsuper.add(r as usize) = 0;
+            } else {
+                // C: else { rowsuper[r] = mju_compare(colind+rowadr[r], colind+rowadr[r+1], rownnz[r]); }
+                *rowsuper.add(r as usize) = mju_compare(
+                    colind.add(*rowadr.add(r as usize) as usize),
+                    colind.add(*rowadr.add((r + 1) as usize) as usize),
+                    *rownnz.add(r as usize),
+                );
+            }
+        }
+
+        // C: rowsuper[nr-1] = 0
+        *rowsuper.add((nr - 1) as usize) = 0;
+
+        // C: for (int r=nr-2; r >= 0; r--)
+        let mut r = nr - 2;
+        while r >= 0 {
+            // C: if (rowsuper[r] != 0) { rowsuper[r] += rowsuper[r+1]; }
+            if *rowsuper.add(r as usize) != 0 {
+                *rowsuper.add(r as usize) += *rowsuper.add((r + 1) as usize);
+            }
+            r -= 1;
+        }
+    }
 }
 
 /// C: mju_sqrMatTDSparse (engine/engine_util_sparse.h:119)
@@ -523,7 +754,17 @@ pub fn mju_dot_sparse(vec1: *const f64, vec2: *const f64, nnz1: i32, ind1: *cons
 /// C: mju_compare (engine/engine_util_sparse.h:231)
 #[allow(unused_variables, non_snake_case)]
 pub fn mju_compare(vec1: *const i32, vec2: *const i32, n: i32) -> i32 {
-    todo!() // mju_compare
+    unsafe {
+        // C: for (int i=0; i < n; i++)
+        for i in 0..n {
+            // C: if (vec1[i] != vec2[i]) { return 0; }
+            if *vec1.add(i as usize) != *vec2.add(i as usize) {
+                return 0;
+            }
+        }
+        // C: return 1
+        1
+    }
 }
 
 /// C: mj_mergeSorted (engine/engine_util_sparse.h:243)
