@@ -1,5 +1,5 @@
 //! Port of: engine/engine_derivative.c
-//! IR hash: 1b139f44af8230f9
+//! IR hash: 699b5f0da57e8d78
 //! CODEGEN: signatures locked. Only fill todo!() bodies.
 
 use crate::types::*;
@@ -13,7 +13,10 @@ use crate::types::*;
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjd_cross(a: *const f64, b: *const f64, Da: mjtNum__restrict, Db: mjtNum__restrict) {
-    todo!() // mjd_cross
+    // WARNING: signature changed — verify body
+    // Previous params: (a : * const f64, b : * const f64, Da : mjtNum__restrict, Db : mjtNum__restrict)
+    // Previous return: ()
+    todo ! ()
 }
 
 /// C: mjd_crossMotion_vel (engine/engine_derivative.c:65)
@@ -25,7 +28,10 @@ pub fn mjd_cross(a: *const f64, b: *const f64, Da: mjtNum__restrict, Db: mjtNum_
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjd_cross_motion_vel(D: *mut f64, v: *const f64) {
-    todo!() // mjd_crossMotion_vel
+    // WARNING: signature changed — verify body
+    // Previous params: (D : * mut f64, v : * const f64)
+    // Previous return: ()
+    todo ! ()
 }
 
 /// C: mjd_crossForce_vel (engine/engine_derivative.c:101)
@@ -37,7 +43,10 @@ pub fn mjd_cross_motion_vel(D: *mut f64, v: *const f64) {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjd_cross_force_vel(D: *mut f64, f: *const f64) {
-    todo!() // mjd_crossForce_vel
+    // WARNING: signature changed — verify body
+    // Previous params: (D : * mut f64, f : * const f64)
+    // Previous return: ()
+    todo ! ()
 }
 
 /// C: mjd_crossForce_frc (engine/engine_derivative.c:137)
@@ -49,7 +58,10 @@ pub fn mjd_cross_force_vel(D: *mut f64, f: *const f64) {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjd_cross_force_frc(D: *mut f64, vel: *const f64) {
-    todo!() // mjd_crossForce_frc
+    // WARNING: signature changed — verify body
+    // Previous params: (D : * mut f64, vel : * const f64)
+    // Previous return: ()
+    todo ! ()
 }
 
 /// C: mjd_mulInertVec_vel (engine/engine_derivative.c:173)
@@ -61,7 +73,10 @@ pub fn mjd_cross_force_frc(D: *mut f64, vel: *const f64) {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjd_mul_inert_vec_vel(D: *mut f64, i: *const f64) {
-    todo!() // mjd_mulInertVec_vel
+    // WARNING: signature changed — verify body
+    // Previous params: (D : * mut f64, i : * const f64)
+    // Previous return: ()
+    todo ! ()
 }
 
 /// C: mjd_comVel_vel_dense (engine/engine_derivative.c:321)
@@ -73,7 +88,10 @@ pub fn mjd_mul_inert_vec_vel(D: *mut f64, i: *const f64) {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjd_com_vel_vel_dense(m: *const mjModel, d: *mut mjData, Dcvel: *mut f64, Dcdofdot: *mut f64) {
-    todo!() // mjd_comVel_vel_dense
+    // WARNING: signature changed — verify body
+    // Previous params: (m : * const mjModel, d : * mut mjData, Dcvel : * mut f64, Dcdofdot : * mut f64)
+    // Previous return: ()
+    todo ! ()
 }
 
 /// C: copyFromParent (engine/engine_derivative.c:468)
@@ -85,7 +103,10 @@ pub fn mjd_com_vel_vel_dense(m: *const mjModel, d: *mut mjData, Dcvel: *mut f64,
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn copy_from_parent(m: *const mjModel, d: *mut mjData, mat: *mut f64, n: i32) {
-    todo!() // copyFromParent
+    // WARNING: signature changed — verify body
+    // Previous params: (m : * const mjModel, d : * mut mjData, mat : * mut f64, n : i32)
+    // Previous return: ()
+    todo ! ()
 }
 
 /// C: addToParent (engine/engine_derivative.c:491)
@@ -97,7 +118,10 @@ pub fn copy_from_parent(m: *const mjModel, d: *mut mjData, mat: *mut f64, n: i32
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn add_to_parent(m: *const mjModel, d: *mut mjData, mat: *mut f64, n: i32) {
-    todo!() // addToParent
+    // WARNING: signature changed — verify body
+    // Previous params: (m : * const mjModel, d : * mut mjData, mat : * mut f64, n : i32)
+    // Previous return: ()
+    todo ! ()
 }
 
 /// C: mjd_comVel_vel (engine/engine_derivative.c:524)
@@ -109,14 +133,20 @@ pub fn add_to_parent(m: *const mjModel, d: *mut mjData, mat: *mut f64, n: i32) {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjd_com_vel_vel(m: *const mjModel, d: *mut mjData, Dcvel: *mut f64, Dcdofdot: *mut f64) {
-    todo!() // mjd_comVel_vel
+    // WARNING: signature changed — verify body
+    // Previous params: (m : * const mjModel, d : * mut mjData, Dcvel : * mut f64, Dcdofdot : * mut f64)
+    // Previous return: ()
+    todo ! ()
 }
 
 /// C: mjd_rne_vel (engine/engine_derivative.c:596)
 /// Calls: addToParent, copyFromParent, mj_freeStack, mj_markStack, mjd_comVel_vel, mjd_crossForce_frc, mjd_crossForce_vel, mjd_mulInertVec_vel, mju_addTo, mju_addToScl, mju_mulInertVec, mju_mulMatMat, mju_mulMatVec, mju_subFrom, mju_transpose, mju_zero
 #[allow(unused_variables, non_snake_case)]
 pub fn mjd_rne_vel(m: *const mjModel, d: *mut mjData) {
-    todo!() // mjd_rne_vel
+    // WARNING: signature changed — verify body
+    // Previous params: (m : * const mjModel, d : * mut mjData)
+    // Previous return: ()
+    todo ! ()
 }
 
 /// C: addJTBJ (engine/engine_derivative.c:711)
@@ -128,7 +158,10 @@ pub fn mjd_rne_vel(m: *const mjModel, d: *mut mjData) {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn add_jtbj(m: *const mjModel, d: *mut mjData, J: *const f64, B: *const f64, n: i32) {
-    todo!() // addJTBJ
+    // WARNING: signature changed — verify body
+    // Previous params: (m : * const mjModel, d : * mut mjData, J : * const f64, B : * const f64, n : i32)
+    // Previous return: ()
+    todo ! ()
 }
 
 /// C: addJTBJSparse (engine/engine_derivative.c:746)
@@ -140,7 +173,10 @@ pub fn add_jtbj(m: *const mjModel, d: *mut mjData, J: *const f64, B: *const f64,
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn add_jtbj_sparse(m: *const mjModel, d: *mut mjData, J: *const f64, B: *const f64, n: i32, offset: i32, J_rownnz: *const i32, J_rowadr: *const i32, J_colind: *const i32) {
-    todo!() // addJTBJSparse
+    // WARNING: signature changed — verify body
+    // Previous params: (m : * const mjModel, d : * mut mjData, J : * const f64, B : * const f64, n : i32, offset : i32, J_rownnz : * const i32, J_rowadr : * const i32, J_colind : * const i32)
+    // Previous return: ()
+    todo ! ()
 }
 
 /// C: mjd_muscleGain_vel (engine/engine_derivative.c:781)
@@ -152,7 +188,10 @@ pub fn add_jtbj_sparse(m: *const mjModel, d: *mut mjData, J: *const f64, B: *con
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjd_muscle_gain_vel(len: f64, vel: f64, lengthrange: *const f64, acc0: f64, prm: *const f64) -> f64 {
-    todo!() // mjd_muscleGain_vel
+    // WARNING: signature changed — verify body
+    // Previous params: (len : f64, vel : f64, lengthrange : * const f64, acc0 : f64, prm : * const f64)
+    // Previous return: f64
+    todo ! ()
 }
 
 /// C: addJTBJ_mulSparse (engine/engine_derivative.c:832)
@@ -164,7 +203,10 @@ pub fn mjd_muscle_gain_vel(len: f64, vel: f64, lengthrange: *const f64, acc0: f6
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn add_jtbj_mul_sparse(m: *const mjModel, d: *mut mjData, res: *mut f64, vec: *const f64, J_rownnz: *const i32, J_rowadr: *const i32, J_colind: *const i32, J: *const f64, B: *const f64, n: i32) {
-    todo!() // addJTBJ_mulSparse
+    // WARNING: signature changed — verify body
+    // Previous params: (m : * const mjModel, d : * mut mjData, res : * mut f64, vec : * const f64, J_rownnz : * const i32, J_rowadr : * const i32, J_colind : * const i32, J : * const f64, B : * const f64, n : i32)
+    // Previous return: ()
+    todo ! ()
 }
 
 /// C: mjd_flexInterp_kernel (engine/engine_derivative.c:872)
@@ -176,7 +218,10 @@ pub fn add_jtbj_mul_sparse(m: *const mjModel, d: *mut mjData, res: *mut f64, vec
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjd_flex_interp_kernel(m: *const mjModel, d: *mut mjData, res: *mut f64, vec: *const f64, s1: f64, s2: f64, K_rot_cache: *const f64, K_rot_out: *mut f64) {
-    todo!() // mjd_flexInterp_kernel
+    // WARNING: signature changed — verify body
+    // Previous params: (m : * const mjModel, d : * mut mjData, res : * mut f64, vec : * const f64, s1 : f64, s2 : f64, K_rot_cache : * const f64, K_rot_out : * mut f64)
+    // Previous return: ()
+    todo ! ()
 }
 
 /// C: pow2 (engine/engine_derivative.c:1339)
@@ -187,7 +232,10 @@ pub fn mjd_flex_interp_kernel(m: *const mjModel, d: *mut mjData, res: *mut f64, 
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn pow2(val: f64) -> f64 {
-    todo!() // pow2
+    // WARNING: signature changed — verify body
+    // Previous params: (val : f64)
+    // Previous return: f64
+    todo ! ()
 }
 
 /// C: ellipsoid_max_moment (engine/engine_derivative.c:1344)
@@ -199,7 +247,10 @@ pub fn pow2(val: f64) -> f64 {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn ellipsoid_max_moment(size: *const f64, dir: i32) -> f64 {
-    todo!() // ellipsoid_max_moment
+    // WARNING: signature changed — verify body
+    // Previous params: (size : * const f64, dir : i32)
+    // Previous return: f64
+    todo ! ()
 }
 
 /// C: addToQuadrant (engine/engine_derivative.c:1354)
@@ -210,7 +261,10 @@ pub fn ellipsoid_max_moment(size: *const f64, dir: i32) -> f64 {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn add_to_quadrant(B: mjtNum__restrict, D: *const f64, col_quad: i32, row_quad: i32) {
-    todo!() // addToQuadrant
+    // WARNING: signature changed — verify body
+    // Previous params: (B : mjtNum__restrict, D : * const f64, col_quad : i32, row_quad : i32)
+    // Previous return: ()
+    todo ! ()
 }
 
 /// C: mjd_addedMassForces (engine/engine_derivative.c:1371)
@@ -222,7 +276,10 @@ pub fn add_to_quadrant(B: mjtNum__restrict, D: *const f64, col_quad: i32, row_qu
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjd_added_mass_forces(B: mjtNum__restrict, local_vels: *const f64, fluid_density: f64, virtual_mass: *const f64, virtual_inertia: *const f64) {
-    todo!() // mjd_addedMassForces
+    // WARNING: signature changed — verify body
+    // Previous params: (B : mjtNum__restrict, local_vels : * const f64, fluid_density : f64, virtual_mass : * const f64, virtual_inertia : * const f64)
+    // Previous return: ()
+    todo ! ()
 }
 
 /// C: mjd_viscous_torque (engine/engine_derivative.c:1416)
@@ -234,7 +291,10 @@ pub fn mjd_added_mass_forces(B: mjtNum__restrict, local_vels: *const f64, fluid_
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjd_viscous_torque(D: mjtNum__restrict, lvel: *const f64, fluid_density: f64, fluid_viscosity: f64, size: *const f64, slender_drag_coef: f64, ang_drag_coef: f64) {
-    todo!() // mjd_viscous_torque
+    // WARNING: signature changed — verify body
+    // Previous params: (D : mjtNum__restrict, lvel : * const f64, fluid_density : f64, fluid_viscosity : f64, size : * const f64, slender_drag_coef : f64, ang_drag_coef : f64)
+    // Previous return: ()
+    todo ! ()
 }
 
 /// C: mjd_viscous_drag (engine/engine_derivative.c:1469)
@@ -246,7 +306,10 @@ pub fn mjd_viscous_torque(D: mjtNum__restrict, lvel: *const f64, fluid_density: 
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjd_viscous_drag(D: mjtNum__restrict, lvel: *const f64, fluid_density: f64, fluid_viscosity: f64, size: *const f64, blunt_drag_coef: f64, slender_drag_coef: f64) {
-    todo!() // mjd_viscous_drag
+    // WARNING: signature changed — verify body
+    // Previous params: (D : mjtNum__restrict, lvel : * const f64, fluid_density : f64, fluid_viscosity : f64, size : * const f64, blunt_drag_coef : f64, slender_drag_coef : f64)
+    // Previous return: ()
+    todo ! ()
 }
 
 /// C: mjd_kutta_lift (engine/engine_derivative.c:1536)
@@ -258,7 +321,10 @@ pub fn mjd_viscous_drag(D: mjtNum__restrict, lvel: *const f64, fluid_density: f6
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjd_kutta_lift(D: mjtNum__restrict, lvel: *const f64, fluid_density: f64, size: *const f64, kutta_lift_coef: f64) {
-    todo!() // mjd_kutta_lift
+    // WARNING: signature changed — verify body
+    // Previous params: (D : mjtNum__restrict, lvel : * const f64, fluid_density : f64, size : * const f64, kutta_lift_coef : f64)
+    // Previous return: ()
+    todo ! ()
 }
 
 /// C: mjd_magnus_force (engine/engine_derivative.c:1589)
@@ -270,21 +336,30 @@ pub fn mjd_kutta_lift(D: mjtNum__restrict, lvel: *const f64, fluid_density: f64,
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjd_magnus_force(B: mjtNum__restrict, lvel: *const f64, fluid_density: f64, size: *const f64, magnus_lift_coef: f64) {
-    todo!() // mjd_magnus_force
+    // WARNING: signature changed — verify body
+    // Previous params: (B : mjtNum__restrict, lvel : * const f64, fluid_density : f64, size : * const f64, magnus_lift_coef : f64)
+    // Previous return: ()
+    todo ! ()
 }
 
 /// C: mjd_ellipsoidFluid (engine/engine_derivative.c:1618)
 /// Calls: addJTBJ, addJTBJSparse, addToQuadrant, mj_bodyChain, mj_freeStack, mj_isSparse, mj_jacGeom, mj_jacSparse, mj_markStack, mj_objectVelocity, mjd_addedMassForces, mjd_kutta_lift, mjd_magnus_force, mjd_viscous_drag, mjd_viscous_torque, mju_copy, mju_copy3, mju_geomSemiAxes, mju_mulMatTMat, mju_subFrom3, mju_symmetrize, mju_transformSpatial, mju_zero, readFluidGeomInteraction
 #[allow(unused_variables, non_snake_case)]
 pub fn mjd_ellipsoid_fluid(m: *const mjModel, d: *mut mjData, bodyid: i32) {
-    todo!() // mjd_ellipsoidFluid
+    // WARNING: signature changed — verify body
+    // Previous params: (m : * const mjModel, d : * mut mjData, bodyid : i32)
+    // Previous return: ()
+    todo ! ()
 }
 
 /// C: mjd_inertiaBoxFluid (engine/engine_derivative.c:1724)
 /// Calls: addJTBJ, addJTBJSparse, mj_bodyChain, mj_freeStack, mj_isSparse, mj_jacBodyCom, mj_jacSparse, mj_markStack, mj_objectVelocity, mju_copy, mju_copy3, mju_max, mju_mulMatTMat, mju_subFrom3, mju_transformSpatial, mju_zero
 #[allow(unused_variables, non_snake_case)]
 pub fn mjd_inertia_box_fluid(m: *const mjModel, d: *mut mjData, i: i32) {
-    todo!() // mjd_inertiaBoxFluid
+    // WARNING: signature changed — verify body
+    // Previous params: (m : * const mjModel, d : * mut mjData, i : i32)
+    // Previous return: ()
+    todo ! ()
 }
 
 /// C: mjd_subQuat (engine/engine_derivative.h:27)
@@ -296,7 +371,10 @@ pub fn mjd_inertia_box_fluid(m: *const mjModel, d: *mut mjData, i: i32) {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjd_sub_quat(qa: *const f64, qb: *const f64, Da: *mut f64, Db: *mut f64) {
-    todo!() // mjd_subQuat
+    // WARNING: signature changed — verify body
+    // Previous params: (qa : * const f64, qb : * const f64, Da : * mut f64, Db : * mut f64)
+    // Previous return: ()
+    todo ! ()
 }
 
 /// C: mjd_quatIntegrate (engine/engine_derivative.h:30)
@@ -308,35 +386,50 @@ pub fn mjd_sub_quat(qa: *const f64, qb: *const f64, Da: *mut f64, Db: *mut f64) 
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjd_quat_integrate(vel: *const f64, scale: f64, Dquat: *mut f64, Dvel: *mut f64, Dscale: *mut f64) {
-    todo!() // mjd_quatIntegrate
+    // WARNING: signature changed — verify body
+    // Previous params: (vel : * const f64, scale : f64, Dquat : * mut f64, Dvel : * mut f64, Dscale : * mut f64)
+    // Previous return: ()
+    todo ! ()
 }
 
 /// C: mjd_smooth_vel (engine/engine_derivative.h:35)
 /// Calls: mjd_actuator_vel, mjd_passive_vel, mjd_rne_vel, mju_zero, mju_zeroSparse
 #[allow(unused_variables, non_snake_case)]
 pub fn mjd_smooth_vel(m: *const mjModel, d: *mut mjData, flg_bias: i32) {
-    todo!() // mjd_smooth_vel
+    // WARNING: signature changed — verify body
+    // Previous params: (m : * const mjModel, d : * mut mjData, flg_bias : i32)
+    // Previous return: ()
+    todo ! ()
 }
 
 /// C: mjd_actuator_vel (engine/engine_derivative.h:38)
 /// Calls: addJTBJSparse, mj_actuatorDisabled, mj_nextActivation, mj_sleepState, mjd_muscleGain_vel, mju_max
 #[allow(unused_variables, non_snake_case)]
 pub fn mjd_actuator_vel(m: *const mjModel, d: *mut mjData) {
-    todo!() // mjd_actuator_vel
+    // WARNING: signature changed — verify body
+    // Previous params: (m : * const mjModel, d : * mut mjData)
+    // Previous return: ()
+    todo ! ()
 }
 
 /// C: mjd_passive_vel (engine/engine_derivative.h:41)
 /// Calls: addJTBJSparse, mj_actuatorDamping, mjd_ellipsoidFluid, mjd_inertiaBoxFluid, mjd_xPolyForce, mju_copy
 #[allow(unused_variables, non_snake_case)]
 pub fn mjd_passive_vel(m: *const mjModel, d: *mut mjData) {
-    todo!() // mjd_passive_vel
+    // WARNING: signature changed — verify body
+    // Previous params: (m : * const mjModel, d : * mut mjData)
+    // Previous return: ()
+    todo ! ()
 }
 
 /// C: mjd_rne_vel_dense (engine/engine_derivative.h:44)
 /// Calls: mj_freeStack, mj_markStack, mjd_comVel_vel_dense, mjd_crossForce_frc, mjd_crossForce_vel, mjd_mulInertVec_vel, mju_addTo, mju_addToScl, mju_copy, mju_mulInertVec, mju_mulMatMat, mju_scl, mju_zero
 #[allow(unused_variables, non_snake_case)]
 pub fn mjd_rne_vel_dense(m: *const mjModel, d: *mut mjData) {
-    todo!() // mjd_rne_vel_dense
+    // WARNING: signature changed — verify body
+    // Previous params: (m : * const mjModel, d : * mut mjData)
+    // Previous return: ()
+    todo ! ()
 }
 
 /// C: mjd_flexInterp_mul (engine/engine_derivative.h:48)
@@ -347,7 +440,10 @@ pub fn mjd_rne_vel_dense(m: *const mjModel, d: *mut mjData) {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjd_flex_interp_mul(m: *const mjModel, d: *mut mjData, res: *mut f64, vec: *const f64, s1: f64, s2: f64, K_rot_cache: *const f64) {
-    todo!() // mjd_flexInterp_mul
+    // WARNING: signature changed — verify body
+    // Previous params: (m : * const mjModel, d : * mut mjData, res : * mut f64, vec : * const f64, s1 : f64, s2 : f64, K_rot_cache : * const f64)
+    // Previous return: ()
+    todo ! ()
 }
 
 /// C: mjd_flexInterp_cacheKrot (engine/engine_derivative.h:52)
@@ -358,7 +454,10 @@ pub fn mjd_flex_interp_mul(m: *const mjModel, d: *mut mjData, res: *mut f64, vec
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjd_flex_interp_cache_krot(m: *const mjModel, d: *mut mjData, K_rot_out: *mut f64) {
-    todo!() // mjd_flexInterp_cacheKrot
+    // WARNING: signature changed — verify body
+    // Previous params: (m : * const mjModel, d : * mut mjData, K_rot_out : * mut f64)
+    // Previous return: ()
+    todo ! ()
 }
 
 /// C: mjd_flexBend_mul (engine/engine_derivative.h:56)
@@ -369,6 +468,9 @@ pub fn mjd_flex_interp_cache_krot(m: *const mjModel, d: *mut mjData, K_rot_out: 
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjd_flex_bend_mul(m: *const mjModel, d: *mut mjData, res: *mut f64, vec: *const f64, s1: f64, s2: f64) {
-    todo!() // mjd_flexBend_mul
+    // WARNING: signature changed — verify body
+    // Previous params: (m : * const mjModel, d : * mut mjData, res : * mut f64, vec : * const f64, s1 : f64, s2 : f64)
+    // Previous return: ()
+    todo ! ()
 }
 

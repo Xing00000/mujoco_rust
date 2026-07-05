@@ -1,5 +1,5 @@
 //! Port of: xml/xml_numeric_format.h
-//! IR hash: 1b139f44af8230f9
+//! IR hash: 699b5f0da57e8d78
 //! CODEGEN: signatures locked. Only fill todo!() bodies.
 
 use crate::types::*;
@@ -7,12 +7,15 @@ use crate::types::*;
 /// C: _mjPRIVATE__get_xml_precision (xml/xml_numeric_format.h:23)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_private_get_xml_precision() -> i32 {
-    todo!() // _mjPRIVATE__get_xml_precision
+    todo ! ()
 }
 
 /// C: _mjPRIVATE__set_xml_precision (xml/xml_numeric_format.h:24)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_private_set_xml_precision(precision: i32) {
-    todo!() // _mjPRIVATE__set_xml_precision
+    // WARNING: signature changed — verify body
+    // Previous params: (precision : i32)
+    // Previous return: ()
+    todo ! ()
 }
 

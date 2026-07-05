@@ -1,5 +1,5 @@
 //! Port of: render/classic/render_gl2.c
-//! IR hash: 1b139f44af8230f9
+//! IR hash: 699b5f0da57e8d78
 //! CODEGEN: signatures locked. Only fill todo!() bodies.
 
 use crate::types::*;
@@ -8,14 +8,14 @@ use crate::types::*;
 /// Calls: mju_warning
 #[allow(unused_variables, non_snake_case)]
 pub fn warn_about_arb_clip_control() {
-    todo!() // warnAboutARBClipControl
+    todo ! ()
 }
 
 /// C: warnAboutARBDepthBuffer (render/classic/render_gl2.c:110)
 /// Calls: mju_warning
 #[allow(unused_variables, non_snake_case)]
 pub fn warn_about_arb_depth_buffer() {
-    todo!() // warnAboutARBDepthBuffer
+    todo ! ()
 }
 
 /// C: flipDepthIfRequired (render/classic/render_gl2.c:122)
@@ -27,13 +27,16 @@ pub fn warn_about_arb_depth_buffer() {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn flip_depth_if_required(depth: *mut f32, viewport: mjrRect, con: *const mjrContext) {
-    todo!() // flipDepthIfRequired
+    // WARNING: signature changed — verify body
+    // Previous params: (depth : * mut f32, viewport : mjrRect, con : * const mjrContext)
+    // Previous return: ()
+    todo ! ()
 }
 
 /// C: init2D (render/classic/render_gl2.c:407)
 #[allow(unused_variables, non_snake_case)]
 pub fn init2d() {
-    todo!() // init2D
+    todo ! ()
 }
 
 /// C: draw_overlay (render/classic/render_gl2.c:476)
@@ -45,7 +48,10 @@ pub fn init2d() {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn draw_overlay(font: i32, viewport: mjrRect, skip: i32, gridpos: i32, red: f32, green: f32, blue: f32, overlay: *const i8, con: *const mjrContext) -> i32 {
-    todo!() // draw_overlay
+    // WARNING: signature changed — verify body
+    // Previous params: (font : i32, viewport : mjrRect, skip : i32, gridpos : i32, red : f32, green : f32, blue : f32, overlay : * const i8, con : * const mjrContext)
+    // Previous return: i32
+    todo ! ()
 }
 
 /// C: maketext (render/classic/render_gl2.c:749)
@@ -56,19 +62,28 @@ pub fn draw_overlay(font: i32, viewport: mjrRect, skip: i32, gridpos: i32, red: 
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn maketext(format: *const i8, txt: *mut i8, num: f32, txt_sz: i32) {
-    todo!() // maketext
+    // WARNING: signature changed — verify body
+    // Previous params: (format : * const i8, txt : * mut i8, num : f32, txt_sz : i32)
+    // Previous return: ()
+    todo ! ()
 }
 
 /// C: textwidth (render/classic/render_gl2.c:787)
 #[allow(unused_variables, non_snake_case)]
 pub fn textwidth(con: *const mjrContext, text: *const i8) -> i32 {
-    todo!() // textwidth
+    // WARNING: signature changed — verify body
+    // Previous params: (con : * const mjrContext, text : * const i8)
+    // Previous return: i32
+    todo ! ()
 }
 
 /// C: mjr_restoreBuffer (render/classic/render_gl2.h:27)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjr_restore_buffer(con: *const mjrContext) {
-    todo!() // mjr_restoreBuffer
+    // WARNING: signature changed — verify body
+    // Previous params: (con : * const mjrContext)
+    // Previous return: ()
+    todo ! ()
 }
 
 /// C: mjr_textActual (render/classic/render_gl2.h:30)
@@ -79,14 +94,20 @@ pub fn mjr_restore_buffer(con: *const mjrContext) {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjr_text_actual(font: i32, txt: *const i8, con: *const mjrContext, x: f32, y: f32, z: f32, r: f32, g: f32, b: f32) {
-    todo!() // mjr_textActual
+    // WARNING: signature changed — verify body
+    // Previous params: (font : i32, txt : * const i8, con : * const mjrContext, x : f32, y : f32, z : f32, r : f32, g : f32, b : f32)
+    // Previous return: ()
+    todo ! ()
 }
 
 /// C: mjr_setBuffer (render/classic/render_gl2.h:35)
 /// Calls: mju_error
 #[allow(unused_variables, non_snake_case)]
 pub fn mjr_set_buffer(framebuffer: i32, con: *mut mjrContext) {
-    todo!() // mjr_setBuffer
+    // WARNING: signature changed — verify body
+    // Previous params: (framebuffer : i32, con : * mut mjrContext)
+    // Previous return: ()
+    todo ! ()
 }
 
 /// C: mjr_readPixels (render/classic/render_gl2.h:39)
@@ -98,7 +119,10 @@ pub fn mjr_set_buffer(framebuffer: i32, con: *mut mjrContext) {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjr_read_pixels(rgb: *mut u8, depth: *mut f32, viewport: mjrRect, con: *const mjrContext) {
-    todo!() // mjr_readPixels
+    // WARNING: signature changed — verify body
+    // Previous params: (rgb : * mut u8, depth : * mut f32, viewport : mjrRect, con : * const mjrContext)
+    // Previous return: ()
+    todo ! ()
 }
 
 /// C: mjr_drawPixels (render/classic/render_gl2.h:44)
@@ -109,28 +133,40 @@ pub fn mjr_read_pixels(rgb: *mut u8, depth: *mut f32, viewport: mjrRect, con: *c
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjr_draw_pixels(rgb: *const u8, depth: *const f32, viewport: mjrRect, con: *const mjrContext) {
-    todo!() // mjr_drawPixels
+    // WARNING: signature changed — verify body
+    // Previous params: (rgb : * const u8, depth : * const f32, viewport : mjrRect, con : * const mjrContext)
+    // Previous return: ()
+    todo ! ()
 }
 
 /// C: mjr_blitBuffer (render/classic/render_gl2.h:49)
 /// Calls: mjr_restoreBuffer
 #[allow(unused_variables, non_snake_case)]
 pub fn mjr_blit_buffer(src: mjrRect, dst: mjrRect, flg_color: i32, flg_depth: i32, con: *const mjrContext) {
-    todo!() // mjr_blitBuffer
+    // WARNING: signature changed — verify body
+    // Previous params: (src : mjrRect, dst : mjrRect, flg_color : i32, flg_depth : i32, con : * const mjrContext)
+    // Previous return: ()
+    todo ! ()
 }
 
 /// C: mjr_setAux (render/classic/render_gl2.h:53)
 /// Calls: mju_error
 #[allow(unused_variables, non_snake_case)]
 pub fn mjr_set_aux(index: i32, con: *const mjrContext) {
-    todo!() // mjr_setAux
+    // WARNING: signature changed — verify body
+    // Previous params: (index : i32, con : * const mjrContext)
+    // Previous return: ()
+    todo ! ()
 }
 
 /// C: mjr_blitAux (render/classic/render_gl2.h:56)
 /// Calls: mjr_restoreBuffer, mju_error
 #[allow(unused_variables, non_snake_case)]
 pub fn mjr_blit_aux(index: i32, src: mjrRect, left: i32, bottom: i32, con: *const mjrContext) {
-    todo!() // mjr_blitAux
+    // WARNING: signature changed — verify body
+    // Previous params: (index : i32, src : mjrRect, left : i32, bottom : i32, con : * const mjrContext)
+    // Previous return: ()
+    todo ! ()
 }
 
 /// C: mjr_text (render/classic/render_gl2.h:60)
@@ -142,20 +178,29 @@ pub fn mjr_blit_aux(index: i32, src: mjrRect, left: i32, bottom: i32, con: *cons
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjr_text(font: i32, txt: *const i8, con: *const mjrContext, x: f32, y: f32, r: f32, g: f32, b: f32) {
-    todo!() // mjr_text
+    // WARNING: signature changed — verify body
+    // Previous params: (font : i32, txt : * const i8, con : * const mjrContext, x : f32, y : f32, r : f32, g : f32, b : f32)
+    // Previous return: ()
+    todo ! ()
 }
 
 /// C: mjr_overlay (render/classic/render_gl2.h:64)
 /// Calls: draw_overlay, init2D
 #[allow(unused_variables, non_snake_case)]
 pub fn mjr_overlay(font: i32, gridpos: i32, viewport: mjrRect, overlay: *const i8, overlay2: *const i8, con: *const mjrContext) {
-    todo!() // mjr_overlay
+    // WARNING: signature changed — verify body
+    // Previous params: (font : i32, gridpos : i32, viewport : mjrRect, overlay : * const i8, overlay2 : * const i8, con : * const mjrContext)
+    // Previous return: ()
+    todo ! ()
 }
 
 /// C: mjr_maxViewport (render/classic/render_gl2.h:68)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjr_max_viewport(con: *const mjrContext) -> mjrRect {
-    todo!() // mjr_maxViewport
+    // WARNING: signature changed — verify body
+    // Previous params: (con : * const mjrContext)
+    // Previous return: mjrRect
+    todo ! ()
 }
 
 /// C: mjr_rectangle (render/classic/render_gl2.h:71)
@@ -167,7 +212,10 @@ pub fn mjr_max_viewport(con: *const mjrContext) -> mjrRect {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjr_rectangle(viewport: mjrRect, r: f32, g: f32, b: f32, a: f32) {
-    todo!() // mjr_rectangle
+    // WARNING: signature changed — verify body
+    // Previous params: (viewport : mjrRect, r : f32, g : f32, b : f32, a : f32)
+    // Previous return: ()
+    todo ! ()
 }
 
 /// C: mjr_label (render/classic/render_gl2.h:74)
@@ -178,13 +226,19 @@ pub fn mjr_rectangle(viewport: mjrRect, r: f32, g: f32, b: f32, a: f32) {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjr_label(viewport: mjrRect, font: i32, txt: *const i8, r: f32, g: f32, b: f32, a: f32, rt: f32, gt: f32, bt: f32, con: *const mjrContext) {
-    todo!() // mjr_label
+    // WARNING: signature changed — verify body
+    // Previous params: (viewport : mjrRect, font : i32, txt : * const i8, r : f32, g : f32, b : f32, a : f32, rt : f32, gt : f32, bt : f32, con : * const mjrContext)
+    // Previous return: ()
+    todo ! ()
 }
 
 /// C: mjr_figure (render/classic/render_gl2.h:79)
 /// Calls: init2D, maketext, mjr_textActual, textwidth
 #[allow(unused_variables, non_snake_case)]
 pub fn mjr_figure(viewport: mjrRect, fig: *mut mjvFigure, con: *const mjrContext) {
-    todo!() // mjr_figure
+    // WARNING: signature changed — verify body
+    // Previous params: (viewport : mjrRect, fig : * mut mjvFigure, con : * const mjrContext)
+    // Previous return: ()
+    todo ! ()
 }
 

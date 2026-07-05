@@ -1,5 +1,5 @@
 //! Port of: engine/engine_collision_primitive.c
-//! IR hash: 1b139f44af8230f9
+//! IR hash: 699b5f0da57e8d78
 //! CODEGEN: signatures locked. Only fill todo!() bodies.
 
 use crate::types::*;
@@ -13,7 +13,10 @@ use crate::types::*;
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjraw_plane_sphere(con: *mut mjPreContact, margin: f64, pos1: *const f64, mat1: *const f64, size1: *const f64, pos2: *const f64, mat2: *const f64, size2: *const f64) -> i32 {
-    todo!() // mjraw_PlaneSphere
+    // WARNING: signature changed — verify body
+    // Previous params: (con : * mut mjPreContact, margin : f64, pos1 : * const f64, mat1 : * const f64, size1 : * const f64, pos2 : * const f64, mat2 : * const f64, size2 : * const f64)
+    // Previous return: i32
+    todo ! ()
 }
 
 /// C: mjraw_SphereSphere (engine/engine_collision_primitive.c:262)
@@ -25,7 +28,10 @@ pub fn mjraw_plane_sphere(con: *mut mjPreContact, margin: f64, pos1: *const f64,
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjraw_sphere_sphere(con: *mut mjPreContact, margin: f64, pos1: *const f64, mat1: *const f64, size1: *const f64, pos2: *const f64, mat2: *const f64, size2: *const f64) -> i32 {
-    todo!() // mjraw_SphereSphere
+    // WARNING: signature changed — verify body
+    // Previous params: (con : * mut mjPreContact, margin : f64, pos1 : * const f64, mat1 : * const f64, size1 : * const f64, pos2 : * const f64, mat2 : * const f64, size2 : * const f64)
+    // Previous return: i32
+    todo ! ()
 }
 
 /// C: areaSign (engine/engine_collision_primitive.c:534)
@@ -37,7 +43,10 @@ pub fn mjraw_sphere_sphere(con: *mut mjPreContact, margin: f64, pos1: *const f64
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn area_sign(p1: *const f64, p2: *const f64, p3: *const f64) -> f64 {
-    todo!() // areaSign
+    // WARNING: signature changed — verify body
+    // Previous params: (p1 : * const f64, p2 : * const f64, p3 : * const f64)
+    // Previous return: f64
+    todo ! ()
 }
 
 /// C: pointSegment (engine/engine_collision_primitive.c:540)
@@ -49,7 +58,10 @@ pub fn area_sign(p1: *const f64, p2: *const f64, p3: *const f64) -> f64 {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn point_segment(res: *mut f64, p: *const f64, u: *const f64, v: *const f64) -> f64 {
-    todo!() // pointSegment
+    // WARNING: signature changed — verify body
+    // Previous params: (res : * mut f64, p : * const f64, u : * const f64, v : * const f64)
+    // Previous return: f64
+    todo ! ()
 }
 
 /// C: mjraw_SphereCapsule (engine/engine_collision_primitive.h:28)
@@ -61,7 +73,10 @@ pub fn point_segment(res: *mut f64, p: *const f64, u: *const f64, v: *const f64)
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjraw_sphere_capsule(con: *mut mjPreContact, margin: f64, pos1: *const f64, mat1: *const f64, size1: *const f64, pos2: *const f64, mat2: *const f64, size2: *const f64) -> i32 {
-    todo!() // mjraw_SphereCapsule
+    // WARNING: signature changed — verify body
+    // Previous params: (con : * mut mjPreContact, margin : f64, pos1 : * const f64, mat1 : * const f64, size1 : * const f64, pos2 : * const f64, mat2 : * const f64, size2 : * const f64)
+    // Previous return: i32
+    todo ! ()
 }
 
 /// C: mjraw_CapsuleCapsule (engine/engine_collision_primitive.h:31)
@@ -73,7 +88,10 @@ pub fn mjraw_sphere_capsule(con: *mut mjPreContact, margin: f64, pos1: *const f6
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjraw_capsule_capsule(con: *mut mjPreContact, margin: f64, pos1: *const f64, mat1: *const f64, size1: *const f64, pos2: *const f64, mat2: *const f64, size2: *const f64) -> i32 {
-    todo!() // mjraw_CapsuleCapsule
+    // WARNING: signature changed — verify body
+    // Previous params: (con : * mut mjPreContact, margin : f64, pos1 : * const f64, mat1 : * const f64, size1 : * const f64, pos2 : * const f64, mat2 : * const f64, size2 : * const f64)
+    // Previous return: i32
+    todo ! ()
 }
 
 /// C: mjraw_CapsuleBox (engine/engine_collision_primitive.h:34)
@@ -85,7 +103,10 @@ pub fn mjraw_capsule_capsule(con: *mut mjPreContact, margin: f64, pos1: *const f
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjraw_capsule_box(con: *mut mjPreContact, margin: f64, pos1: *const f64, mat1: *const f64, size1: *const f64, pos2: *const f64, mat2: *const f64, size2: *const f64) -> i32 {
-    todo!() // mjraw_CapsuleBox
+    // WARNING: signature changed — verify body
+    // Previous params: (con : * mut mjPreContact, margin : f64, pos1 : * const f64, mat1 : * const f64, size1 : * const f64, pos2 : * const f64, mat2 : * const f64, size2 : * const f64)
+    // Previous return: i32
+    todo ! ()
 }
 
 /// C: mjraw_SphereTriangle (engine/engine_collision_primitive.h:37)
@@ -97,7 +118,10 @@ pub fn mjraw_capsule_box(con: *mut mjPreContact, margin: f64, pos1: *const f64, 
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjraw_sphere_triangle(con: *mut mjPreContact, margin: f64, s: *const f64, rs: f64, t1: *const f64, t2: *const f64, t3: *const f64, rt: f64) -> i32 {
-    todo!() // mjraw_SphereTriangle
+    // WARNING: signature changed — verify body
+    // Previous params: (con : * mut mjPreContact, margin : f64, s : * const f64, rs : f64, t1 : * const f64, t2 : * const f64, t3 : * const f64, rt : f64)
+    // Previous return: i32
+    todo ! ()
 }
 
 /// C: mjraw_BoxTriangle (engine/engine_collision_primitive.h:39)
@@ -109,7 +133,10 @@ pub fn mjraw_sphere_triangle(con: *mut mjPreContact, margin: f64, s: *const f64,
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjraw_box_triangle(con: *mut mjPreContact, margin: f64, pos: *const f64, mat: *const f64, size: *const f64, t1: *const f64, t2: *const f64, t3: *const f64, rt: f64) -> i32 {
-    todo!() // mjraw_BoxTriangle
+    // WARNING: signature changed — verify body
+    // Previous params: (con : * mut mjPreContact, margin : f64, pos : * const f64, mat : * const f64, size : * const f64, t1 : * const f64, t2 : * const f64, t3 : * const f64, rt : f64)
+    // Previous return: i32
+    todo ! ()
 }
 
 /// C: mjraw_CapsuleTriangle (engine/engine_collision_primitive.h:42)
@@ -121,7 +148,10 @@ pub fn mjraw_box_triangle(con: *mut mjPreContact, margin: f64, pos: *const f64, 
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjraw_capsule_triangle(con: *mut mjPreContact, margin: f64, pos: *const f64, mat: *const f64, size: *const f64, t1: *const f64, t2: *const f64, t3: *const f64, rt: f64) -> i32 {
-    todo!() // mjraw_CapsuleTriangle
+    // WARNING: signature changed — verify body
+    // Previous params: (con : * mut mjPreContact, margin : f64, pos : * const f64, mat : * const f64, size : * const f64, t1 : * const f64, t2 : * const f64, t3 : * const f64, rt : f64)
+    // Previous return: i32
+    todo ! ()
 }
 
 /// C: mjc_PlaneSphere (engine/engine_collision_primitive.h:47)
@@ -133,7 +163,10 @@ pub fn mjraw_capsule_triangle(con: *mut mjPreContact, margin: f64, pos: *const f
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjc_plane_sphere(m: *const mjModel, d: *mut mjData, con: *mut mjPreContact, g1: i32, g2: i32, margin: f64) -> i32 {
-    todo!() // mjc_PlaneSphere
+    // WARNING: signature changed — verify body
+    // Previous params: (m : * const mjModel, d : * mut mjData, con : * mut mjPreContact, g1 : i32, g2 : i32, margin : f64)
+    // Previous return: i32
+    todo ! ()
 }
 
 /// C: mjc_PlaneCapsule (engine/engine_collision_primitive.h:49)
@@ -145,7 +178,10 @@ pub fn mjc_plane_sphere(m: *const mjModel, d: *mut mjData, con: *mut mjPreContac
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjc_plane_capsule(m: *const mjModel, d: *mut mjData, con: *mut mjPreContact, g1: i32, g2: i32, margin: f64) -> i32 {
-    todo!() // mjc_PlaneCapsule
+    // WARNING: signature changed — verify body
+    // Previous params: (m : * const mjModel, d : * mut mjData, con : * mut mjPreContact, g1 : i32, g2 : i32, margin : f64)
+    // Previous return: i32
+    todo ! ()
 }
 
 /// C: mjc_PlaneCylinder (engine/engine_collision_primitive.h:51)
@@ -157,7 +193,10 @@ pub fn mjc_plane_capsule(m: *const mjModel, d: *mut mjData, con: *mut mjPreConta
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjc_plane_cylinder(m: *const mjModel, d: *mut mjData, con: *mut mjPreContact, g1: i32, g2: i32, margin: f64) -> i32 {
-    todo!() // mjc_PlaneCylinder
+    // WARNING: signature changed — verify body
+    // Previous params: (m : * const mjModel, d : * mut mjData, con : * mut mjPreContact, g1 : i32, g2 : i32, margin : f64)
+    // Previous return: i32
+    todo ! ()
 }
 
 /// C: mjc_PlaneBox (engine/engine_collision_primitive.h:53)
@@ -169,7 +208,10 @@ pub fn mjc_plane_cylinder(m: *const mjModel, d: *mut mjData, con: *mut mjPreCont
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjc_plane_box(m: *const mjModel, d: *mut mjData, con: *mut mjPreContact, g1: i32, g2: i32, margin: f64) -> i32 {
-    todo!() // mjc_PlaneBox
+    // WARNING: signature changed — verify body
+    // Previous params: (m : * const mjModel, d : * mut mjData, con : * mut mjPreContact, g1 : i32, g2 : i32, margin : f64)
+    // Previous return: i32
+    todo ! ()
 }
 
 /// C: mjc_SphereSphere (engine/engine_collision_primitive.h:57)
@@ -181,7 +223,10 @@ pub fn mjc_plane_box(m: *const mjModel, d: *mut mjData, con: *mut mjPreContact, 
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjc_sphere_sphere(m: *const mjModel, d: *mut mjData, con: *mut mjPreContact, g1: i32, g2: i32, margin: f64) -> i32 {
-    todo!() // mjc_SphereSphere
+    // WARNING: signature changed — verify body
+    // Previous params: (m : * const mjModel, d : * mut mjData, con : * mut mjPreContact, g1 : i32, g2 : i32, margin : f64)
+    // Previous return: i32
+    todo ! ()
 }
 
 /// C: mjc_SphereCapsule (engine/engine_collision_primitive.h:59)
@@ -193,7 +238,10 @@ pub fn mjc_sphere_sphere(m: *const mjModel, d: *mut mjData, con: *mut mjPreConta
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjc_sphere_capsule(m: *const mjModel, d: *mut mjData, con: *mut mjPreContact, g1: i32, g2: i32, margin: f64) -> i32 {
-    todo!() // mjc_SphereCapsule
+    // WARNING: signature changed — verify body
+    // Previous params: (m : * const mjModel, d : * mut mjData, con : * mut mjPreContact, g1 : i32, g2 : i32, margin : f64)
+    // Previous return: i32
+    todo ! ()
 }
 
 /// C: mjc_SphereCylinder (engine/engine_collision_primitive.h:61)
@@ -205,7 +253,10 @@ pub fn mjc_sphere_capsule(m: *const mjModel, d: *mut mjData, con: *mut mjPreCont
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjc_sphere_cylinder(m: *const mjModel, d: *mut mjData, con: *mut mjPreContact, g1: i32, g2: i32, margin: f64) -> i32 {
-    todo!() // mjc_SphereCylinder
+    // WARNING: signature changed — verify body
+    // Previous params: (m : * const mjModel, d : * mut mjData, con : * mut mjPreContact, g1 : i32, g2 : i32, margin : f64)
+    // Previous return: i32
+    todo ! ()
 }
 
 /// C: mjc_CapsuleCapsule (engine/engine_collision_primitive.h:63)
@@ -217,7 +268,10 @@ pub fn mjc_sphere_cylinder(m: *const mjModel, d: *mut mjData, con: *mut mjPreCon
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjc_capsule_capsule(m: *const mjModel, d: *mut mjData, con: *mut mjPreContact, g1: i32, g2: i32, margin: f64) -> i32 {
-    todo!() // mjc_CapsuleCapsule
+    // WARNING: signature changed — verify body
+    // Previous params: (m : * const mjModel, d : * mut mjData, con : * mut mjPreContact, g1 : i32, g2 : i32, margin : f64)
+    // Previous return: i32
+    todo ! ()
 }
 
 /// C: mjc_CapsuleBox (engine/engine_collision_primitive.h:67)
@@ -229,7 +283,10 @@ pub fn mjc_capsule_capsule(m: *const mjModel, d: *mut mjData, con: *mut mjPreCon
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjc_capsule_box(m: *const mjModel, d: *mut mjData, con: *mut mjPreContact, g1: i32, g2: i32, margin: f64) -> i32 {
-    todo!() // mjc_CapsuleBox
+    // WARNING: signature changed — verify body
+    // Previous params: (m : * const mjModel, d : * mut mjData, con : * mut mjPreContact, g1 : i32, g2 : i32, margin : f64)
+    // Previous return: i32
+    todo ! ()
 }
 
 /// C: mjc_SphereBox (engine/engine_collision_primitive.h:69)
@@ -241,7 +298,10 @@ pub fn mjc_capsule_box(m: *const mjModel, d: *mut mjData, con: *mut mjPreContact
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjc_sphere_box(m: *const mjModel, d: *mut mjData, con: *mut mjPreContact, g1: i32, g2: i32, margin: f64) -> i32 {
-    todo!() // mjc_SphereBox
+    // WARNING: signature changed — verify body
+    // Previous params: (m : * const mjModel, d : * mut mjData, con : * mut mjPreContact, g1 : i32, g2 : i32, margin : f64)
+    // Previous return: i32
+    todo ! ()
 }
 
 /// C: mjc_BoxBox (engine/engine_collision_primitive.h:71)
@@ -253,6 +313,9 @@ pub fn mjc_sphere_box(m: *const mjModel, d: *mut mjData, con: *mut mjPreContact,
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjc_box_box(m: *const mjModel, d: *mut mjData, con: *mut mjPreContact, g1: i32, g2: i32, margin: f64) -> i32 {
-    todo!() // mjc_BoxBox
+    // WARNING: signature changed — verify body
+    // Previous params: (m : * const mjModel, d : * mut mjData, con : * mut mjPreContact, g1 : i32, g2 : i32, margin : f64)
+    // Previous return: i32
+    todo ! ()
 }
 

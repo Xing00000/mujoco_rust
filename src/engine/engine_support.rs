@@ -1,5 +1,5 @@
 //! Port of: engine/engine_support.c
-//! IR hash: 1b139f44af8230f9
+//! IR hash: 699b5f0da57e8d78
 //! CODEGEN: signatures locked. Only fill todo!() bodies.
 
 use crate::types::*;
@@ -8,7 +8,10 @@ use crate::types::*;
 /// Calls: mju_message
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_state_elem_size(m: *const mjModel, sig: mjtState) -> i32 {
-    todo!() // mj_stateElemSize
+    // WARNING: signature changed — verify body
+    // Previous params: (m : * const mjModel, sig : mjtState)
+    // Previous return: i32
+    todo ! ()
 }
 
 /// C: mj_stateElemPtr (engine/engine_support.c:162)
@@ -20,7 +23,10 @@ pub fn mj_state_elem_size(m: *const mjModel, sig: mjtState) -> i32 {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_state_elem_ptr(m: *const mjModel, d: *mut mjData, sig: mjtState) -> *mut f64 {
-    todo!() // mj_stateElemPtr
+    // WARNING: signature changed — verify body
+    // Previous params: (m : * const mjModel, d : * mut mjData, sig : mjtState)
+    // Previous return: * mut f64
+    todo ! ()
 }
 
 /// C: mj_stateElemConstPtr (engine/engine_support.c:184)
@@ -32,7 +38,10 @@ pub fn mj_state_elem_ptr(m: *const mjModel, d: *mut mjData, sig: mjtState) -> *m
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_state_elem_const_ptr(m: *const mjModel, d: *const mjData, sig: mjtState) -> *const f64 {
-    todo!() // mj_stateElemConstPtr
+    // WARNING: signature changed — verify body
+    // Previous params: (m : * const mjModel, d : * const mjData, sig : mjtState)
+    // Previous return: * const f64
+    todo ! ()
 }
 
 /// C: mj_geomDistanceCCD (engine/engine_support.c:519)
@@ -44,14 +53,20 @@ pub fn mj_state_elem_const_ptr(m: *const mjModel, d: *const mjData, sig: mjtStat
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_geom_distance_ccd(m: *const mjModel, d: *mut mjData, g1: i32, g2: i32, distmax: f64, fromto: *mut f64) -> f64 {
-    todo!() // mj_geomDistanceCCD
+    // WARNING: signature changed — verify body
+    // Previous params: (m : * const mjModel, d : * mut mjData, g1 : i32, g2 : i32, distmax : f64, fromto : * mut f64)
+    // Previous return: f64
+    todo ! ()
 }
 
 /// C: mj_stateSize (engine/engine_support.h:41)
 /// Calls: mj_stateElemSize, mju_message
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_state_size(m: *const mjModel, sig: i32) -> i32 {
-    todo!() // mj_stateSize
+    // WARNING: signature changed — verify body
+    // Previous params: (m : * const mjModel, sig : i32)
+    // Previous return: i32
+    todo ! ()
 }
 
 /// C: mj_getState (engine/engine_support.h:44)
@@ -63,7 +78,10 @@ pub fn mj_state_size(m: *const mjModel, sig: i32) -> i32 {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_get_state(m: *const mjModel, d: *const mjData, state: *mut f64, sig: i32) {
-    todo!() // mj_getState
+    // WARNING: signature changed — verify body
+    // Previous params: (m : * const mjModel, d : * const mjData, state : * mut f64, sig : i32)
+    // Previous return: ()
+    todo ! ()
 }
 
 /// C: mj_extractState (engine/engine_support.h:47)
@@ -75,7 +93,10 @@ pub fn mj_get_state(m: *const mjModel, d: *const mjData, state: *mut f64, sig: i
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_extract_state(m: *const mjModel, src: *const f64, srcsig: i32, dst: *mut f64, dstsig: i32) {
-    todo!() // mj_extractState
+    // WARNING: signature changed — verify body
+    // Previous params: (m : * const mjModel, src : * const f64, srcsig : i32, dst : * mut f64, dstsig : i32)
+    // Previous return: ()
+    todo ! ()
 }
 
 /// C: mj_setState (engine/engine_support.h:51)
@@ -87,21 +108,30 @@ pub fn mj_extract_state(m: *const mjModel, src: *const f64, srcsig: i32, dst: *m
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_set_state(m: *const mjModel, d: *mut mjData, state: *const f64, sig: i32) {
-    todo!() // mj_setState
+    // WARNING: signature changed — verify body
+    // Previous params: (m : * const mjModel, d : * mut mjData, state : * const f64, sig : i32)
+    // Previous return: ()
+    todo ! ()
 }
 
 /// C: mj_copyState (engine/engine_support.h:54)
 /// Calls: mj_stateElemConstPtr, mj_stateElemPtr, mj_stateElemSize, mju_copy, mju_message
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_copy_state(m: *const mjModel, src: *const mjData, dst: *mut mjData, sig: i32) {
-    todo!() // mj_copyState
+    // WARNING: signature changed — verify body
+    // Previous params: (m : * const mjModel, src : * const mjData, dst : * mut mjData, sig : i32)
+    // Previous return: ()
+    todo ! ()
 }
 
 /// C: mj_setKeyframe (engine/engine_support.h:57)
 /// Calls: mju_copy, mju_message
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_set_keyframe(m: *mut mjModel, d: *const mjData, k: i32) {
-    todo!() // mj_setKeyframe
+    // WARNING: signature changed — verify body
+    // Previous params: (m : * mut mjModel, d : * const mjData, k : i32)
+    // Previous return: ()
+    todo ! ()
 }
 
 /// C: mj_fullM (engine/engine_support.h:62)
@@ -113,7 +143,10 @@ pub fn mj_set_keyframe(m: *mut mjModel, d: *const mjData, k: i32) {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_full_m(m: *const mjModel, d: *const mjData, dst: *mut f64) {
-    todo!() // mj_fullM
+    // WARNING: signature changed — verify body
+    // Previous params: (m : * const mjModel, d : * const mjData, dst : * mut f64)
+    // Previous return: ()
+    todo ! ()
 }
 
 /// C: mj_mulM (engine/engine_support.h:65)
@@ -125,7 +158,10 @@ pub fn mj_full_m(m: *const mjModel, d: *const mjData, dst: *mut f64) {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_mul_m(m: *const mjModel, d: *const mjData, res: *mut f64, vec: *const f64) {
-    todo!() // mj_mulM
+    // WARNING: signature changed — verify body
+    // Previous params: (m : * const mjModel, d : * const mjData, res : * mut f64, vec : * const f64)
+    // Previous return: ()
+    todo ! ()
 }
 
 /// C: mj_mulM2 (engine/engine_support.h:68)
@@ -137,7 +173,10 @@ pub fn mj_mul_m(m: *const mjModel, d: *const mjData, res: *mut f64, vec: *const 
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_mul_m2(m: *const mjModel, d: *const mjData, res: *mut f64, vec: *const f64) {
-    todo!() // mj_mulM2
+    // WARNING: signature changed — verify body
+    // Previous params: (m : * const mjModel, d : * const mjData, res : * mut f64, vec : * const f64)
+    // Previous return: ()
+    todo ! ()
 }
 
 /// C: mj_addM (engine/engine_support.h:72)
@@ -149,7 +188,10 @@ pub fn mj_mul_m2(m: *const mjModel, d: *const mjData, res: *mut f64, vec: *const
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_add_m(m: *const mjModel, d: *mut mjData, dst: *mut f64, rownnz: *mut i32, rowadr: *mut i32, colind: *mut i32) {
-    todo!() // mj_addM
+    // WARNING: signature changed — verify body
+    // Previous params: (m : * const mjModel, d : * mut mjData, dst : * mut f64, rownnz : * mut i32, rowadr : * mut i32, colind : * mut i32)
+    // Previous return: ()
+    todo ! ()
 }
 
 /// C: mj_applyFT (engine/engine_support.h:79)
@@ -161,7 +203,10 @@ pub fn mj_add_m(m: *const mjModel, d: *mut mjData, dst: *mut f64, rownnz: *mut i
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_apply_ft(m: *const mjModel, d: *mut mjData, force: *const f64, torque: *const f64, point: *const f64, body: i32, qfrc_target: *mut f64) {
-    todo!() // mj_applyFT
+    // WARNING: signature changed — verify body
+    // Previous params: (m : * const mjModel, d : * mut mjData, force : * const f64, torque : * const f64, point : * const f64, body : i32, qfrc_target : * mut f64)
+    // Previous return: ()
+    todo ! ()
 }
 
 /// C: mj_xfrcAccumulate (engine/engine_support.h:84)
@@ -173,7 +218,10 @@ pub fn mj_apply_ft(m: *const mjModel, d: *mut mjData, force: *const f64, torque:
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_xfrc_accumulate(m: *const mjModel, d: *mut mjData, qfrc: *mut f64) {
-    todo!() // mj_xfrcAccumulate
+    // WARNING: signature changed — verify body
+    // Previous params: (m : * const mjModel, d : * mut mjData, qfrc : * mut f64)
+    // Previous return: ()
+    todo ! ()
 }
 
 /// C: mj_geomDistance (engine/engine_support.h:90)
@@ -185,7 +233,10 @@ pub fn mj_xfrc_accumulate(m: *const mjModel, d: *mut mjData, qfrc: *mut f64) {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_geom_distance(m: *const mjModel, d: *mut mjData, geom1: i32, geom2: i32, distmax: f64, fromto: *mut f64) -> f64 {
-    todo!() // mj_geomDistance
+    // WARNING: signature changed — verify body
+    // Previous params: (m : * const mjModel, d : * mut mjData, geom1 : i32, geom2 : i32, distmax : f64, fromto : * mut f64)
+    // Previous return: f64
+    todo ! ()
 }
 
 /// C: mj_differentiatePos (engine/engine_support.h:94)
@@ -197,7 +248,10 @@ pub fn mj_geom_distance(m: *const mjModel, d: *mut mjData, geom1: i32, geom2: i3
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_differentiate_pos(m: *const mjModel, qvel: *mut f64, dt: f64, qpos1: *const f64, qpos2: *const f64) {
-    todo!() // mj_differentiatePos
+    // WARNING: signature changed — verify body
+    // Previous params: (m : * const mjModel, qvel : * mut f64, dt : f64, qpos1 : * const f64, qpos2 : * const f64)
+    // Previous return: ()
+    todo ! ()
 }
 
 /// C: mj_integratePosInd (engine/engine_support.h:98)
@@ -209,7 +263,10 @@ pub fn mj_differentiate_pos(m: *const mjModel, qvel: *mut f64, dt: f64, qpos1: *
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_integrate_pos_ind(m: *const mjModel, qpos: *mut f64, qvel: *const f64, dt: f64, index: *const i32, nbody: i32) {
-    todo!() // mj_integratePosInd
+    // WARNING: signature changed — verify body
+    // Previous params: (m : * const mjModel, qpos : * mut f64, qvel : * const f64, dt : f64, index : * const i32, nbody : i32)
+    // Previous return: ()
+    todo ! ()
 }
 
 /// C: mj_integratePos (engine/engine_support.h:102)
@@ -220,7 +277,10 @@ pub fn mj_integrate_pos_ind(m: *const mjModel, qpos: *mut f64, qvel: *const f64,
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_integrate_pos(m: *const mjModel, qpos: *mut f64, qvel: *const f64, dt: f64) {
-    todo!() // mj_integratePos
+    // WARNING: signature changed — verify body
+    // Previous params: (m : * const mjModel, qpos : * mut f64, qvel : * const f64, dt : f64)
+    // Previous return: ()
+    todo ! ()
 }
 
 /// C: mj_normalizeQuat (engine/engine_support.h:105)
@@ -232,13 +292,19 @@ pub fn mj_integrate_pos(m: *const mjModel, qpos: *mut f64, qvel: *const f64, dt:
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_normalize_quat(m: *const mjModel, qpos: *mut f64) {
-    todo!() // mj_normalizeQuat
+    // WARNING: signature changed — verify body
+    // Previous params: (m : * const mjModel, qpos : * mut f64)
+    // Previous return: ()
+    todo ! ()
 }
 
 /// C: mj_actuatorDisabled (engine/engine_support.h:108)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_actuator_disabled(m: *const mjModel, i: i32) -> i32 {
-    todo!() // mj_actuatorDisabled
+    // WARNING: signature changed — verify body
+    // Previous params: (m : * const mjModel, i : i32)
+    // Previous return: i32
+    todo ! ()
 }
 
 /// C: mj_nextActivation (engine/engine_support.h:111)
@@ -250,7 +316,10 @@ pub fn mj_actuator_disabled(m: *const mjModel, i: i32) -> i32 {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_next_activation(m: *const mjModel, d: *const mjData, actuator_id: i32, act_adr: i32, act_dot: f64) -> f64 {
-    todo!() // mj_nextActivation
+    // WARNING: signature changed — verify body
+    // Previous params: (m : * const mjModel, d : * const mjData, actuator_id : i32, act_adr : i32, act_dot : f64)
+    // Previous return: f64
+    todo ! ()
 }
 
 /// C: mj_getTotalmass (engine/engine_support.h:115)
@@ -261,7 +330,10 @@ pub fn mj_next_activation(m: *const mjModel, d: *const mjData, actuator_id: i32,
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_get_totalmass(m: *const mjModel) -> f64 {
-    todo!() // mj_getTotalmass
+    // WARNING: signature changed — verify body
+    // Previous params: (m : * const mjModel)
+    // Previous return: f64
+    todo ! ()
 }
 
 /// C: mj_setTotalmass (engine/engine_support.h:118)
@@ -273,31 +345,43 @@ pub fn mj_get_totalmass(m: *const mjModel) -> f64 {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_set_totalmass(m: *mut mjModel, newmass: f64) {
-    todo!() // mj_setTotalmass
+    // WARNING: signature changed — verify body
+    // Previous params: (m : * mut mjModel, newmass : f64)
+    // Previous return: ()
+    todo ! ()
 }
 
 /// C: mj_version (engine/engine_support.h:121)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_version() -> i32 {
-    todo!() // mj_version
+    todo ! ()
 }
 
 /// C: mj_versionString (engine/engine_support.h:124)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_version_string() -> *const i8 {
-    todo!() // mj_versionString
+    // WARNING: signature changed — verify body
+    // Previous params: ()
+    // Previous return: * const i8
+    todo ! ()
 }
 
 /// C: mju_condataSize (engine/engine_support.h:127)
 #[allow(unused_variables, non_snake_case)]
 pub fn mju_condata_size(dataSpec: i32) -> i32 {
-    todo!() // mju_condataSize
+    // WARNING: signature changed — verify body
+    // Previous params: (dataSpec : i32)
+    // Previous return: i32
+    todo ! ()
 }
 
 /// C: mju_raydataSize (engine/engine_support.h:130)
 #[allow(unused_variables, non_snake_case)]
 pub fn mju_raydata_size(dataspec: i32) -> i32 {
-    todo!() // mju_raydataSize
+    // WARNING: signature changed — verify body
+    // Previous params: (dataspec : i32)
+    // Previous return: i32
+    todo ! ()
 }
 
 /// C: mju_camIntrinsics (engine/engine_support.h:134)
@@ -308,7 +392,10 @@ pub fn mju_raydata_size(dataspec: i32) -> i32 {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mju_cam_intrinsics(m: *const mjModel, camid: i32, fx: *mut f64, fy: *mut f64, cx: *mut f64, cy: *mut f64, ortho_extent: *mut f64) {
-    todo!() // mju_camIntrinsics
+    // WARNING: signature changed — verify body
+    // Previous params: (m : * const mjModel, camid : i32, fx : * mut f64, fy : * mut f64, cx : * mut f64, cy : * mut f64, ortho_extent : * mut f64)
+    // Previous return: ()
+    todo ! ()
 }
 
 /// C: mj_readCtrl (engine/engine_support.h:141)
@@ -320,7 +407,10 @@ pub fn mju_cam_intrinsics(m: *const mjModel, camid: i32, fx: *mut f64, fy: *mut 
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_read_ctrl(m: *const mjModel, d: *const mjData, id: i32, time: f64, interp: i32) -> f64 {
-    todo!() // mj_readCtrl
+    // WARNING: signature changed — verify body
+    // Previous params: (m : * const mjModel, d : * const mjData, id : i32, time : f64, interp : i32)
+    // Previous return: f64
+    todo ! ()
 }
 
 /// C: mj_readSensor (engine/engine_support.h:147)
@@ -332,7 +422,10 @@ pub fn mj_read_ctrl(m: *const mjModel, d: *const mjData, id: i32, time: f64, int
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_read_sensor(m: *const mjModel, d: *const mjData, id: i32, time: f64, result: *mut f64, interp: i32) -> *const f64 {
-    todo!() // mj_readSensor
+    // WARNING: signature changed — verify body
+    // Previous params: (m : * const mjModel, d : * const mjData, id : i32, time : f64, result : * mut f64, interp : i32)
+    // Previous return: * const f64
+    todo ! ()
 }
 
 /// C: mj_initCtrlHistory (engine/engine_support.h:152)
@@ -344,7 +437,10 @@ pub fn mj_read_sensor(m: *const mjModel, d: *const mjData, id: i32, time: f64, r
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_init_ctrl_history(m: *const mjModel, d: *mut mjData, id: i32, times: *const f64, values: *const f64) {
-    todo!() // mj_initCtrlHistory
+    // WARNING: signature changed — verify body
+    // Previous params: (m : * const mjModel, d : * mut mjData, id : i32, times : * const f64, values : * const f64)
+    // Previous return: ()
+    todo ! ()
 }
 
 /// C: mj_initSensorHistory (engine/engine_support.h:158)
@@ -356,6 +452,9 @@ pub fn mj_init_ctrl_history(m: *const mjModel, d: *mut mjData, id: i32, times: *
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_init_sensor_history(m: *const mjModel, d: *mut mjData, id: i32, times: *const f64, values: *const f64, phase: f64) {
-    todo!() // mj_initSensorHistory
+    // WARNING: signature changed — verify body
+    // Previous params: (m : * const mjModel, d : * mut mjData, id : i32, times : * const f64, values : * const f64, phase : f64)
+    // Previous return: ()
+    todo ! ()
 }
 

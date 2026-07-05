@@ -1,5 +1,5 @@
 //! Port of: user/user_composite.cc
-//! IR hash: 1b139f44af8230f9
+//! IR hash: 699b5f0da57e8d78
 //! CODEGEN: signatures locked. Only fill todo!() bodies.
 
 use crate::types::*;
@@ -8,35 +8,47 @@ use crate::types::*;
 /// Calls: mju_strncpy
 #[allow(unused_variables, non_snake_case)]
 pub fn comperr(error: *mut i8, msg: *const i8, error_sz: i32) -> bool {
-    todo!() // comperr
+    // WARNING: signature changed — verify body
+    // Previous params: (error : * mut i8, msg : * const i8, error_sz : i32)
+    // Previous return: bool
+    todo ! ()
 }
 
 /// C: mjCComposite::SetDefault (user/user_composite.h:61)
 /// Calls: mjCComposite::AddDefaultJoint
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_composite_set_default() {
-    todo!() // mjCComposite::SetDefault
+    todo ! ()
 }
 
 /// C: mjCComposite::AddDefaultJoint (user/user_composite.h:62)
 /// Calls: comperr
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_composite_add_default_joint(error: *mut i8, error_sz: i32) -> bool {
-    todo!() // mjCComposite::AddDefaultJoint
+    // WARNING: signature changed — verify body
+    // Previous params: (error : * mut i8, error_sz : i32)
+    // Previous return: bool
+    todo ! ()
 }
 
 /// C: mjCComposite::Make (user/user_composite.h:64)
 /// Calls: comperr, mjCComposite::MakeCable
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_composite_make(spec: *mut mjSpec, body: *mut mjsBody, error: *mut i8, error_sz: i32) -> bool {
-    todo!() // mjCComposite::Make
+    // WARNING: signature changed — verify body
+    // Previous params: (spec : * mut mjSpec, body : * mut mjsBody, error : * mut i8, error_sz : i32)
+    // Previous return: bool
+    todo ! ()
 }
 
 /// C: mjCComposite::MakeCable (user/user_composite.h:65)
 /// Calls: comperr, mjCComposite::AddCableBody, mju_error, mjuu_rotVecQuat, mjuu_setvec
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_composite_make_cable(model: *mut mjCModel, body: *mut mjsBody, error: *mut i8, error_sz: i32) -> bool {
-    todo!() // mjCComposite::MakeCable
+    // WARNING: signature changed — verify body
+    // Previous params: (model : * mut mjCModel, body : * mut mjsBody, error : * mut i8, error_sz : i32)
+    // Previous return: bool
+    todo ! ()
 }
 
 /// C: mjCComposite::MakeSkin2 (user/user_composite.h:67)
@@ -48,7 +60,10 @@ pub fn mj_c_composite_make_cable(model: *mut mjCModel, body: *mut mjsBody, error
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_composite_make_skin2(model: *mut mjCModel, inflate: f64) {
-    todo!() // mjCComposite::MakeSkin2
+    // WARNING: signature changed — verify body
+    // Previous params: (model : * mut mjCModel, inflate : f64)
+    // Previous return: ()
+    todo ! ()
 }
 
 /// C: mjCComposite::MakeSkin2Subgrid (user/user_composite.h:68)
@@ -60,19 +75,28 @@ pub fn mj_c_composite_make_skin2(model: *mut mjCModel, inflate: f64) {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_composite_make_skin2subgrid(model: *mut mjCModel, inflate: f64) {
-    todo!() // mjCComposite::MakeSkin2Subgrid
+    // WARNING: signature changed — verify body
+    // Previous params: (model : * mut mjCModel, inflate : f64)
+    // Previous return: ()
+    todo ! ()
 }
 
 /// C: mjCComposite::MakeCableBones (user/user_composite.h:69)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_composite_make_cable_bones(model: *mut mjCModel, skin: *mut mjsSkin) {
-    todo!() // mjCComposite::MakeCableBones
+    // WARNING: signature changed — verify body
+    // Previous params: (model : * mut mjCModel, skin : * mut mjsSkin)
+    // Previous return: ()
+    todo ! ()
 }
 
 /// C: mjCComposite::MakeCableBonesSubgrid (user/user_composite.h:70)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_composite_make_cable_bones_subgrid(model: *mut mjCModel, skin: *mut mjsSkin) {
-    todo!() // mjCComposite::MakeCableBonesSubgrid
+    // WARNING: signature changed — verify body
+    // Previous params: (model : * mut mjCModel, skin : * mut mjsSkin)
+    // Previous return: ()
+    todo ! ()
 }
 
 /// C: mjCComposite::AddCableBody (user/user_composite.h:112)
@@ -84,12 +108,18 @@ pub fn mj_c_composite_make_cable_bones_subgrid(model: *mut mjCModel, skin: *mut 
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_composite_add_cable_body(model: *mut mjCModel, body: *mut mjsBody, ix: i32, normal: *mut f64, prev_quat: *mut f64) -> *mut mjsBody {
-    todo!() // mjCComposite::AddCableBody
+    // WARNING: signature changed — verify body
+    // Previous params: (model : * mut mjCModel, body : * mut mjsBody, ix : i32, normal : * mut f64, prev_quat : * mut f64)
+    // Previous return: * mut mjsBody
+    todo ! ()
 }
 
 /// C: mjCComposite::CopyIntoSkin (user/user_composite.h:115)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_composite_copy_into_skin(skin: *mut mjsSkin) {
-    todo!() // mjCComposite::CopyIntoSkin
+    // WARNING: signature changed — verify body
+    // Previous params: (skin : * mut mjsSkin)
+    // Previous return: ()
+    todo ! ()
 }
 

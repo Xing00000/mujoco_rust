@@ -1,5 +1,5 @@
 //! Port of: engine/engine_util_misc.c
-//! IR hash: 1b139f44af8230f9
+//! IR hash: 699b5f0da57e8d78
 //! CODEGEN: signatures locked. Only fill todo!() bodies.
 
 use crate::types::*;
@@ -12,7 +12,10 @@ use crate::types::*;
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn is_intersect(p1: *const f64, p2: *const f64, p3: *const f64, p4: *const f64) -> mjtBool {
-    todo!() // is_intersect
+    // WARNING: signature changed — verify body
+    // Previous params: (p1 : * const f64, p2 : * const f64, p3 : * const f64, p4 : * const f64)
+    // Previous return: mjtBool
+    todo ! ()
 }
 
 /// C: length_circle (engine/engine_util_misc.c:55)
@@ -24,7 +27,10 @@ pub fn is_intersect(p1: *const f64, p2: *const f64, p3: *const f64, p4: *const f
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn length_circle(p0: *const f64, p1: *const f64, ind: i32, radius: f64) -> f64 {
-    todo!() // length_circle
+    // WARNING: signature changed — verify body
+    // Previous params: (p0 : * const f64, p1 : * const f64, ind : i32, radius : f64)
+    // Previous return: f64
+    todo ! ()
 }
 
 /// C: wrap_circle (engine/engine_util_misc.c:78)
@@ -36,7 +42,10 @@ pub fn length_circle(p0: *const f64, p1: *const f64, ind: i32, radius: f64) -> f
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn wrap_circle(pnt: *mut f64, end: *const f64, side: *const f64, radius: f64) -> f64 {
-    todo!() // wrap_circle
+    // WARNING: signature changed — verify body
+    // Previous params: (pnt : * mut f64, end : * const f64, side : * const f64, radius : f64)
+    // Previous return: f64
+    todo ! ()
 }
 
 /// C: wrap_inside (engine/engine_util_misc.c:158)
@@ -48,7 +57,10 @@ pub fn wrap_circle(pnt: *mut f64, end: *const f64, side: *const f64, radius: f64
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn wrap_inside(pnt: *mut f64, end: *const f64, radius: f64) -> f64 {
-    todo!() // wrap_inside
+    // WARNING: signature changed — verify body
+    // Previous params: (pnt : * mut f64, end : * const f64, radius : f64)
+    // Previous return: f64
+    todo ! ()
 }
 
 /// C: flexInterpRotation (engine/engine_util_misc.c:694)
@@ -60,7 +72,10 @@ pub fn wrap_inside(pnt: *mut f64, end: *const f64, radius: f64) -> f64 {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn flex_interp_rotation(order: i32, xpos_c: *const f64, local: *const f64, quat: *mut f64) {
-    todo!() // flexInterpRotation
+    // WARNING: signature changed — verify body
+    // Previous params: (order : i32, xpos_c : * const f64, local : * const f64, quat : * mut f64)
+    // Previous return: ()
+    todo ! ()
 }
 
 /// C: nodeAt (engine/engine_util_misc.c:902)
@@ -71,7 +86,10 @@ pub fn flex_interp_rotation(order: i32, xpos_c: *const f64, local: *const f64, q
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn node_at(nodexpos: *const f64, ny: i32, nz: i32, i: i32, j: i32, k: i32) -> *const f64 {
-    todo!() // nodeAt
+    // WARNING: signature changed — verify body
+    // Previous params: (nodexpos : * const f64, ny : i32, nz : i32, i : i32, j : i32, k : i32)
+    // Previous return: * const f64
+    todo ! ()
 }
 
 /// C: addWeight (engine/engine_util_misc.c:984)
@@ -82,53 +100,54 @@ pub fn node_at(nodexpos: *const f64, ny: i32, nz: i32, i: i32, j: i32, k: i32) -
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn add_weight(nb: *mut i32, body: *mut i32, bweight: *mut f64, b: i32, w: f64) {
-    todo!() // addWeight
+    // WARNING: signature changed — verify body
+    // Previous params: (nb : * mut i32, body : * mut i32, bweight : * mut f64, b : i32, w : f64)
+    // Previous return: ()
+    todo ! ()
 }
 
 /// C: _decode (engine/engine_util_misc.c:1217)
 #[allow(unused_variables, non_snake_case)]
 pub fn decode(ch: i8) -> i32 {
-    let c = ch as u8; // C: char ch (treat as unsigned for comparison)
-    if c >= b'A' && c <= b'Z' { // C: if (ch >= 'A' && ch <= 'Z')
-        return (c - b'A') as i32; // C: return ch - 'A'
-    }
-    if c >= b'a' && c <= b'z' { // C: if (ch >= 'a' && ch <= 'z')
-        return (c - b'a') as i32 + 26; // C: return (ch - 'a') + 26
-    }
-    if c >= b'0' && c <= b'9' { // C: if (ch >= '0' && ch <= '9')
-        return (c - b'0') as i32 + 52; // C: return (ch - '0') + 52
-    }
-    if c == b'+' { // C: if (ch == '+')
-        return 62; // C: return 62
-    }
-    if c == b'/' { // C: if (ch == '/')
-        return 63; // C: return 63
-    }
-    0 // C: return 0
+    // WARNING: signature changed — verify body
+    // Previous params: (ch : i8)
+    // Previous return: i32
+    let c = ch as u8 ; if c >= b'A' && c <= b'Z' { return (c - b'A') as i32 ; } if c >= b'a' && c <= b'z' { return (c - b'a') as i32 + 26 ; } if c >= b'0' && c <= b'9' { return (c - b'0') as i32 + 52 ; } if c == b'+' { return 62 ; } if c == b'/' { return 63 ; } 0
 }
 
 /// C: mju_encodeBase64 (engine/engine_util_misc.c:1244)
 #[allow(unused_variables, non_snake_case)]
 pub fn mju_encode_base64(buf: *mut i8, data: *const i32, ndata: i32) -> i32 {
-    todo!() // mju_encodeBase64
+    // WARNING: signature changed — verify body
+    // Previous params: (buf : * mut i8, data : * const i32, ndata : i32)
+    // Previous return: i32
+    todo ! ()
 }
 
 /// C: mju_isValidBase64 (engine/engine_util_misc.c:1297)
 #[allow(unused_variables, non_snake_case)]
 pub fn mju_is_valid_base64(s: *const i8) -> i32 {
-    todo!() // mju_isValidBase64
+    // WARNING: signature changed — verify body
+    // Previous params: (s : * const i8)
+    // Previous return: i32
+    todo ! ()
 }
 
 /// C: mju_decodeBase64 (engine/engine_util_misc.c:1327)
 #[allow(unused_variables, non_snake_case)]
 pub fn mju_decode_base64(buf: *mut i32, s: *const i8) -> i32 {
-    todo!() // mju_decodeBase64
+    // WARNING: signature changed — verify body
+    // Previous params: (buf : * mut i32, s : * const i8)
+    // Previous return: i32
+    todo ! ()
 }
 
 /// C: historyPhysicalIndex (engine/engine_util_misc.c:1359)
 #[allow(unused_variables, non_snake_case)]
 pub fn history_physical_index(cursor: i32, n: i32, logical: i32) -> i32 {
-    // C: return (cursor + 1 + logical) % n
+    // WARNING: signature changed — verify body
+    // Previous params: (cursor : i32, n : i32, logical : i32)
+    // Previous return: i32
     (cursor + 1 + logical) % n
 }
 
@@ -141,51 +160,28 @@ pub fn history_physical_index(cursor: i32, n: i32, logical: i32) -> i32 {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn history_find_index(times: *const f64, n: i32, cursor: i32, t: f64) -> i32 {
-    unsafe {
-        // C: int oldest_phys = historyPhysicalIndex(cursor, n, 0)
-        let oldest_phys = history_physical_index(cursor, n, 0);
-        // C: int newest_phys = historyPhysicalIndex(cursor, n, n-1)
-        let newest_phys = history_physical_index(cursor, n, n - 1);
-        // C: mjtNum t_oldest = times[oldest_phys]
-        let t_oldest = *times.add(oldest_phys as usize);
-        // C: mjtNum t_newest = times[newest_phys]
-        let t_newest = *times.add(newest_phys as usize);
-
-        // C: if (t <= t_oldest) { return 0; }
-        if t <= t_oldest {
-            return 0;
-        }
-        // C: if (t > t_newest) { return n; }
-        if t > t_newest {
-            return n;
-        }
-
-        // C: circular binary search
-        let mut lo: i32 = 0; // C: int lo = 0
-        let mut hi: i32 = n - 1; // C: int hi = n - 1
-        while hi - lo > 1 { // C: while (hi - lo > 1)
-            let mid = (lo + hi) / 2; // C: int mid = (lo + hi) / 2
-            let mid_phys = history_physical_index(cursor, n, mid); // C: int mid_phys = historyPhysicalIndex(...)
-            if *times.add(mid_phys as usize) < t { // C: if (times[mid_phys] < t)
-                lo = mid; // C: lo = mid
-            } else {
-                hi = mid; // C: hi = mid
-            }
-        }
-        hi // C: return hi
-    }
+    // WARNING: signature changed — verify body
+    // Previous params: (times : * const f64, n : i32, cursor : i32, t : f64)
+    // Previous return: i32
+    unsafe { let oldest_phys = history_physical_index (cursor , n , 0) ; let newest_phys = history_physical_index (cursor , n , n - 1) ; let t_oldest = * times . add (oldest_phys as usize) ; let t_newest = * times . add (newest_phys as usize) ; if t <= t_oldest { return 0 ; } if t > t_newest { return n ; } let mut lo : i32 = 0 ; let mut hi : i32 = n - 1 ; while hi - lo > 1 { let mid = (lo + hi) / 2 ; let mid_phys = history_physical_index (cursor , n , mid) ; if * times . add (mid_phys as usize) < t { lo = mid ; } else { hi = mid ; } } hi }
 }
 
 /// C: mju_writeNumBytes (engine/engine_util_misc.c:1972)
 #[allow(unused_variables, non_snake_case)]
 pub fn mju_write_num_bytes(nbytes: i32) -> *const i8 {
-    todo!() // mju_writeNumBytes
+    // WARNING: signature changed — verify body
+    // Previous params: (nbytes : i32)
+    // Previous return: * const i8
+    todo ! ()
 }
 
 /// C: mju_warningText (engine/engine_util_misc.c:1992)
 #[allow(unused_variables, non_snake_case)]
 pub fn mju_warning_text(warning: i32, info: i32) -> *const i8 {
-    todo!() // mju_warningText
+    // WARNING: signature changed — verify body
+    // Previous params: (warning : i32, info : i32)
+    // Previous return: * const i8
+    todo ! ()
 }
 
 /// C: mju_wrap (engine/engine_util_misc.h:32)
@@ -197,7 +193,10 @@ pub fn mju_warning_text(warning: i32, info: i32) -> *const i8 {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mju_wrap(wpnt: *mut f64, x0: *const f64, x1: *const f64, xpos: *const f64, xmat: *const f64, radius: f64, r#type: i32, side: *const f64) -> f64 {
-    todo!() // mju_wrap
+    // WARNING: signature changed — verify body
+    // Previous params: (wpnt : * mut f64, x0 : * const f64, x1 : * const f64, xpos : * const f64, xmat : * const f64, radius : f64, r#type : i32, side : * const f64)
+    // Previous return: f64
+    todo ! ()
 }
 
 /// C: mju_muscleGainLength (engine/engine_util_misc.h:36)
@@ -208,30 +207,10 @@ pub fn mju_wrap(wpnt: *mut f64, x0: *const f64, x1: *const f64, xpos: *const f64
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mju_muscle_gain_length(length: f64, lmin: f64, lmax: f64) -> f64 {
-    const mjMINVAL: f64 = 1e-15;
-    if lmin <= length && length <= lmax { // C: if (lmin <= length && length <= lmax)
-        let a = 0.5 * (lmin + 1.0); // C: mjtNum a = 0.5*(lmin+1)
-        let b = 0.5 * (1.0 + lmax); // C: mjtNum b = 0.5*(1+lmax)
-        if length <= a { // C: if (length <= a)
-            let denom = if a - lmin > mjMINVAL { a - lmin } else { mjMINVAL }; // C: mjMAX(mjMINVAL, a-lmin)
-            let x = (length - lmin) / denom; // C: mjtNum x = (length-lmin) / mjMAX(...)
-            0.5 * x * x // C: return 0.5*x*x
-        } else if length <= 1.0 { // C: else if (length <= 1)
-            let denom = if 1.0 - a > mjMINVAL { 1.0 - a } else { mjMINVAL }; // C: mjMAX(mjMINVAL, 1-a)
-            let x = (1.0 - length) / denom; // C: mjtNum x = (1-length) / mjMAX(...)
-            1.0 - 0.5 * x * x // C: return 1 - 0.5*x*x
-        } else if length <= b { // C: else if (length <= b)
-            let denom = if b - 1.0 > mjMINVAL { b - 1.0 } else { mjMINVAL }; // C: mjMAX(mjMINVAL, b-1)
-            let x = (length - 1.0) / denom; // C: mjtNum x = (length-1) / mjMAX(...)
-            1.0 - 0.5 * x * x // C: return 1 - 0.5*x*x
-        } else { // C: else
-            let denom = if lmax - b > mjMINVAL { lmax - b } else { mjMINVAL }; // C: mjMAX(mjMINVAL, lmax-b)
-            let x = (lmax - length) / denom; // C: mjtNum x = (lmax-length) / mjMAX(...)
-            0.5 * x * x // C: return 0.5*x*x
-        }
-    } else {
-        0.0 // C: return 0.0
-    }
+    // WARNING: signature changed — verify body
+    // Previous params: (length : f64, lmin : f64, lmax : f64)
+    // Previous return: f64
+    const mjMINVAL : f64 = 1e-15 ; if lmin <= length && length <= lmax { let a = 0.5 * (lmin + 1.0) ; let b = 0.5 * (1.0 + lmax) ; if length <= a { let denom = if a - lmin > mjMINVAL { a - lmin } else { mjMINVAL } ; let x = (length - lmin) / denom ; 0.5 * x * x } else if length <= 1.0 { let denom = if 1.0 - a > mjMINVAL { 1.0 - a } else { mjMINVAL } ; let x = (1.0 - length) / denom ; 1.0 - 0.5 * x * x } else if length <= b { let denom = if b - 1.0 > mjMINVAL { b - 1.0 } else { mjMINVAL } ; let x = (length - 1.0) / denom ; 1.0 - 0.5 * x * x } else { let denom = if lmax - b > mjMINVAL { lmax - b } else { mjMINVAL } ; let x = (lmax - length) / denom ; 0.5 * x * x } } else { 0.0 }
 }
 
 /// C: mju_muscleGain (engine/engine_util_misc.h:39)
@@ -243,57 +222,10 @@ pub fn mju_muscle_gain_length(length: f64, lmin: f64, lmax: f64) -> f64 {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mju_muscle_gain(len: f64, vel: f64, lengthrange: *const f64, acc0: f64, prm: *const f64) -> f64 {
-    const mjMINVAL: f64 = 1e-15;
-    unsafe {
-        // C: unpack parameters
-        let range0 = *prm.add(0); // C: mjtNum range[2] = {prm[0], prm[1]}
-        let range1 = *prm.add(1);
-        let mut force = *prm.add(2); // C: mjtNum force = prm[2]
-        let scale = *prm.add(3); // C: mjtNum scale = prm[3]
-        let lmin = *prm.add(4); // C: mjtNum lmin = prm[4]
-        let lmax = *prm.add(5); // C: mjtNum lmax = prm[5]
-        let vmax = *prm.add(6); // C: mjtNum vmax = prm[6]
-        let fvmax = *prm.add(8); // C: mjtNum fvmax = prm[8]
-
-        // C: if (force < 0) { force = scale / mjMAX(mjMINVAL, acc0); }
-        if force < 0.0 {
-            let denom = if acc0 > mjMINVAL { acc0 } else { mjMINVAL };
-            force = scale / denom;
-        }
-
-        // C: mjtNum L0 = (lengthrange[1]-lengthrange[0]) / mjMAX(mjMINVAL, range[1]-range[0])
-        let denom = if range1 - range0 > mjMINVAL { range1 - range0 } else { mjMINVAL };
-        let L0 = (*lengthrange.add(1) - *lengthrange.add(0)) / denom;
-
-        // C: mjtNum L = range[0] + (len-lengthrange[0]) / mjMAX(mjMINVAL, L0)
-        let denom_L0 = if L0 > mjMINVAL { L0 } else { mjMINVAL };
-        let L = range0 + (len - *lengthrange.add(0)) / denom_L0;
-
-        // C: mjtNum V = vel / mjMAX(mjMINVAL, L0*vmax)
-        let l0vmax = L0 * vmax;
-        let denom_v = if l0vmax > mjMINVAL { l0vmax } else { mjMINVAL };
-        let V = vel / denom_v;
-
-        // C: mjtNum FL = mju_muscleGainLength(L, lmin, lmax)
-        let FL = mju_muscle_gain_length(L, lmin, lmax);
-
-        // C: velocity curve
-        let y = fvmax - 1.0; // C: mjtNum y = fvmax-1
-        let FV: f64;
-        if V <= -1.0 { // C: if (V <= -1)
-            FV = 0.0;
-        } else if V <= 0.0 { // C: else if (V <= 0)
-            FV = (V + 1.0) * (V + 1.0); // C: FV = (V+1)*(V+1)
-        } else if V <= y { // C: else if (V <= y)
-            let denom_y = if y > mjMINVAL { y } else { mjMINVAL }; // C: mjMAX(mjMINVAL, y)
-            FV = fvmax - (y - V) * (y - V) / denom_y; // C: FV = fvmax - (y-V)*(y-V) / mjMAX(...)
-        } else {
-            FV = fvmax; // C: FV = fvmax
-        }
-
-        // C: return -force*FL*FV
-        -force * FL * FV
-    }
+    // WARNING: signature changed — verify body
+    // Previous params: (len : f64, vel : f64, lengthrange : * const f64, acc0 : f64, prm : * const f64)
+    // Previous return: f64
+    const mjMINVAL : f64 = 1e-15 ; unsafe { let range0 = * prm . add (0) ; let range1 = * prm . add (1) ; let mut force = * prm . add (2) ; let scale = * prm . add (3) ; let lmin = * prm . add (4) ; let lmax = * prm . add (5) ; let vmax = * prm . add (6) ; let fvmax = * prm . add (8) ; if force < 0.0 { let denom = if acc0 > mjMINVAL { acc0 } else { mjMINVAL } ; force = scale / denom ; } let denom = if range1 - range0 > mjMINVAL { range1 - range0 } else { mjMINVAL } ; let L0 = (* lengthrange . add (1) - * lengthrange . add (0)) / denom ; let denom_L0 = if L0 > mjMINVAL { L0 } else { mjMINVAL } ; let L = range0 + (len - * lengthrange . add (0)) / denom_L0 ; let l0vmax = L0 * vmax ; let denom_v = if l0vmax > mjMINVAL { l0vmax } else { mjMINVAL } ; let V = vel / denom_v ; let FL = mju_muscle_gain_length (L , lmin , lmax) ; let y = fvmax - 1.0 ; let FV : f64 ; if V <= - 1.0 { FV = 0.0 ; } else if V <= 0.0 { FV = (V + 1.0) * (V + 1.0) ; } else if V <= y { let denom_y = if y > mjMINVAL { y } else { mjMINVAL } ; FV = fvmax - (y - V) * (y - V) / denom_y ; } else { FV = fvmax ; } - force * FL * FV }
 }
 
 /// C: mju_muscleBias (engine/engine_util_misc.h:43)
@@ -304,44 +236,10 @@ pub fn mju_muscle_gain(len: f64, vel: f64, lengthrange: *const f64, acc0: f64, p
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mju_muscle_bias(len: f64, lengthrange: *const f64, acc0: f64, prm: *const f64) -> f64 {
-    const mjMINVAL: f64 = 1e-15;
-    unsafe {
-        let range0 = *prm.add(0); // C: mjtNum range[2] = {prm[0], prm[1]}
-        let range1 = *prm.add(1);
-        let mut force = *prm.add(2); // C: mjtNum force = prm[2]
-        let scale = *prm.add(3); // C: mjtNum scale = prm[3]
-        let lmax = *prm.add(5); // C: mjtNum lmax = prm[5]
-        let fpmax = *prm.add(7); // C: mjtNum fpmax = prm[7]
-
-        // C: if (force < 0) { force = scale / mjMAX(mjMINVAL, acc0); }
-        if force < 0.0 {
-            let denom = if acc0 > mjMINVAL { acc0 } else { mjMINVAL };
-            force = scale / denom;
-        }
-
-        // C: mjtNum L0 = (lengthrange[1]-lengthrange[0]) / mjMAX(mjMINVAL, range[1]-range[0])
-        let denom = if range1 - range0 > mjMINVAL { range1 - range0 } else { mjMINVAL };
-        let L0 = (*lengthrange.add(1) - *lengthrange.add(0)) / denom;
-
-        // C: mjtNum L = range[0] + (len-lengthrange[0]) / mjMAX(mjMINVAL, L0)
-        let denom_L0 = if L0 > mjMINVAL { L0 } else { mjMINVAL };
-        let L = range0 + (len - *lengthrange.add(0)) / denom_L0;
-
-        // C: mjtNum b = 0.5*(1+lmax)
-        let b = 0.5 * (1.0 + lmax);
-
-        if L <= 1.0 { // C: if (L <= 1)
-            0.0 // C: return 0
-        } else if L <= b { // C: else if (L <= b)
-            let denom_b = if b - 1.0 > mjMINVAL { b - 1.0 } else { mjMINVAL }; // C: mjMAX(mjMINVAL, b-1)
-            let x = (L - 1.0) / denom_b; // C: mjtNum x = (L-1) / mjMAX(...)
-            -force * fpmax * 0.5 * x * x // C: return -force*fpmax*0.5*x*x
-        } else { // C: else
-            let denom_b = if b - 1.0 > mjMINVAL { b - 1.0 } else { mjMINVAL }; // C: mjMAX(mjMINVAL, b-1)
-            let x = (L - b) / denom_b; // C: mjtNum x = (L-b) / mjMAX(...)
-            -force * fpmax * (0.5 + x) // C: return -force*fpmax*(0.5 + x)
-        }
-    }
+    // WARNING: signature changed — verify body
+    // Previous params: (len : f64, lengthrange : * const f64, acc0 : f64, prm : * const f64)
+    // Previous return: f64
+    const mjMINVAL : f64 = 1e-15 ; unsafe { let range0 = * prm . add (0) ; let range1 = * prm . add (1) ; let mut force = * prm . add (2) ; let scale = * prm . add (3) ; let lmax = * prm . add (5) ; let fpmax = * prm . add (7) ; if force < 0.0 { let denom = if acc0 > mjMINVAL { acc0 } else { mjMINVAL } ; force = scale / denom ; } let denom = if range1 - range0 > mjMINVAL { range1 - range0 } else { mjMINVAL } ; let L0 = (* lengthrange . add (1) - * lengthrange . add (0)) / denom ; let denom_L0 = if L0 > mjMINVAL { L0 } else { mjMINVAL } ; let L = range0 + (len - * lengthrange . add (0)) / denom_L0 ; let b = 0.5 * (1.0 + lmax) ; if L <= 1.0 { 0.0 } else if L <= b { let denom_b = if b - 1.0 > mjMINVAL { b - 1.0 } else { mjMINVAL } ; let x = (L - 1.0) / denom_b ; - force * fpmax * 0.5 * x * x } else { let denom_b = if b - 1.0 > mjMINVAL { b - 1.0 } else { mjMINVAL } ; let x = (L - b) / denom_b ; - force * fpmax * (0.5 + x) } }
 }
 
 /// C: mju_muscleDynamicsTimescale (engine/engine_util_misc.h:47)
@@ -353,14 +251,10 @@ pub fn mju_muscle_bias(len: f64, lengthrange: *const f64, acc0: f64, prm: *const
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mju_muscle_dynamics_timescale(dctrl: f64, tau_act: f64, tau_deact: f64, smoothing_width: f64) -> f64 {
-    const mjMINVAL: f64 = 1e-15;
-    // C: if (smoothing_width < mjMINVAL) { tau = dctrl > 0 ? tau_act : tau_deact; }
-    if smoothing_width < mjMINVAL {
-        if dctrl > 0.0 { tau_act } else { tau_deact }
-    } else {
-        // C: tau = tau_deact + (tau_act-tau_deact)*mju_sigmoid(dctrl/smoothing_width + 0.5)
-        tau_deact + (tau_act - tau_deact) * mju_sigmoid(dctrl / smoothing_width + 0.5)
-    }
+    // WARNING: signature changed — verify body
+    // Previous params: (dctrl : f64, tau_act : f64, tau_deact : f64, smoothing_width : f64)
+    // Previous return: f64
+    const mjMINVAL : f64 = 1e-15 ; if smoothing_width < mjMINVAL { if dctrl > 0.0 { tau_act } else { tau_deact } } else { tau_deact + (tau_act - tau_deact) * mju_sigmoid (dctrl / smoothing_width + 0.5) }
 }
 
 /// C: mju_muscleDynamics (engine/engine_util_misc.h:51)
@@ -372,26 +266,10 @@ pub fn mju_muscle_dynamics_timescale(dctrl: f64, tau_act: f64, tau_deact: f64, s
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mju_muscle_dynamics(ctrl: f64, act: f64, prm: *const f64) -> f64 {
-    const mjMINVAL: f64 = 1e-15;
-    unsafe {
-        // C: mjtNum ctrlclamp = mju_clip(ctrl, 0, 1)
-        let ctrlclamp = mju_clip(ctrl, 0.0, 1.0);
-        // C: mjtNum actclamp = mju_clip(act, 0, 1)
-        let actclamp = mju_clip(act, 0.0, 1.0);
-        // C: mjtNum tau_act = prm[0] * (0.5 + 1.5*actclamp)
-        let tau_act = *prm.add(0) * (0.5 + 1.5 * actclamp);
-        // C: mjtNum tau_deact = prm[1] / (0.5 + 1.5*actclamp)
-        let tau_deact = *prm.add(1) / (0.5 + 1.5 * actclamp);
-        // C: mjtNum smoothing_width = prm[2]
-        let smoothing_width = *prm.add(2);
-        // C: mjtNum dctrl = ctrlclamp - act
-        let dctrl = ctrlclamp - act;
-        // C: mjtNum tau = mju_muscleDynamicsTimescale(...)
-        let tau = mju_muscle_dynamics_timescale(dctrl, tau_act, tau_deact, smoothing_width);
-        // C: return dctrl / mjMAX(mjMINVAL, tau)
-        let denom = if tau > mjMINVAL { tau } else { mjMINVAL };
-        dctrl / denom
-    }
+    // WARNING: signature changed — verify body
+    // Previous params: (ctrl : f64, act : f64, prm : * const f64)
+    // Previous return: f64
+    const mjMINVAL : f64 = 1e-15 ; unsafe { let ctrlclamp = mju_clip (ctrl , 0.0 , 1.0) ; let actclamp = mju_clip (act , 0.0 , 1.0) ; let tau_act = * prm . add (0) * (0.5 + 1.5 * actclamp) ; let tau_deact = * prm . add (1) / (0.5 + 1.5 * actclamp) ; let smoothing_width = * prm . add (2) ; let dctrl = ctrlclamp - act ; let tau = mju_muscle_dynamics_timescale (dctrl , tau_act , tau_deact , smoothing_width) ; let denom = if tau > mjMINVAL { tau } else { mjMINVAL } ; dctrl / denom }
 }
 
 /// C: mj_lugreStribeck (engine/engine_util_misc.h:54)
@@ -403,12 +281,10 @@ pub fn mju_muscle_dynamics(ctrl: f64, act: f64, prm: *const f64) -> f64 {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_lugre_stribeck(velocity: f64, F_C: f64, F_S: f64, v_S: f64) -> f64 {
-    const mjMINVAL: f64 = 1e-15;
-    // C: mjtNum ratio = velocity / mju_max(mjMINVAL, v_S)
-    let denom = crate::engine::engine_util_misc::mju_max(mjMINVAL, v_S);
-    let ratio = velocity / denom;
-    // C: return F_C + (F_S - F_C) * mju_exp(-ratio*ratio)
-    F_C + (F_S - F_C) * (-ratio * ratio).exp()
+    // WARNING: signature changed — verify body
+    // Previous params: (velocity : f64, F_C : f64, F_S : f64, v_S : f64)
+    // Previous return: f64
+    const mjMINVAL : f64 = 1e-15 ; let denom = crate :: engine :: engine_util_misc :: mju_max (mjMINVAL , v_S) ; let ratio = velocity / denom ; F_C + (F_S - F_C) * (- ratio * ratio) . exp ()
 }
 
 /// C: mj_dcmotorSlots (engine/engine_util_misc.h:68)
@@ -419,7 +295,10 @@ pub fn mj_lugre_stribeck(velocity: f64, F_C: f64, F_S: f64, v_S: f64) -> f64 {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_dcmotor_slots(dynprm: *const f64, gainprm: *const f64) -> mjDCMotorSlots {
-    todo!() // mj_dcmotorSlots
+    // WARNING: signature changed — verify body
+    // Previous params: (dynprm : * const f64, gainprm : * const f64)
+    // Previous return: mjDCMotorSlots
+    todo ! ()
 }
 
 /// C: mju_geomSemiAxes (engine/engine_util_misc.h:71)
@@ -430,7 +309,10 @@ pub fn mj_dcmotor_slots(dynprm: *const f64, gainprm: *const f64) -> mjDCMotorSlo
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mju_geom_semi_axes(semiaxes: *mut f64, size: *const f64, r#type: mjtGeom) {
-    todo!() // mju_geomSemiAxes
+    // WARNING: signature changed — verify body
+    // Previous params: (semiaxes : * mut f64, size : * const f64, r#type : mjtGeom)
+    // Previous return: ()
+    todo ! ()
 }
 
 /// C: mju_insideGeom (engine/engine_util_misc.h:74)
@@ -442,7 +324,10 @@ pub fn mju_geom_semi_axes(semiaxes: *mut f64, size: *const f64, r#type: mjtGeom)
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mju_inside_geom(pos: *const f64, mat: *const f64, size: *const f64, r#type: mjtGeom, point: *const f64) -> i32 {
-    todo!() // mju_insideGeom
+    // WARNING: signature changed — verify body
+    // Previous params: (pos : * const f64, mat : * const f64, size : * const f64, r#type : mjtGeom, point : * const f64)
+    // Previous return: i32
+    todo ! ()
 }
 
 /// C: mju_camPixelRay (engine/engine_util_misc.h:79)
@@ -454,7 +339,10 @@ pub fn mju_inside_geom(pos: *const f64, mat: *const f64, size: *const f64, r#typ
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mju_cam_pixel_ray(origin: *mut f64, direction: *mut f64, cam_xpos: *const f64, cam_xmat: *const f64, col: i32, row: i32, fx: f64, fy: f64, cx: f64, cy: f64, projection: i32, ortho_extent: f64) {
-    todo!() // mju_camPixelRay
+    // WARNING: signature changed — verify body
+    // Previous params: (origin : * mut f64, direction : * mut f64, cam_xpos : * const f64, cam_xmat : * const f64, col : i32, row : i32, fx : f64, fy : f64, cx : f64, cy : f64, projection : i32, ortho_extent : f64)
+    // Previous return: ()
+    todo ! ()
 }
 
 /// C: mju_defGradient (engine/engine_util_misc.h:87)
@@ -466,7 +354,10 @@ pub fn mju_cam_pixel_ray(origin: *mut f64, direction: *mut f64, cam_xpos: *const
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mju_def_gradient(res: *mut f64, p: *const f64, dof: *const f64, order: i32) {
-    todo!() // mju_defGradient
+    // WARNING: signature changed — verify body
+    // Previous params: (res : * mut f64, p : * const f64, dof : * const f64, order : i32)
+    // Previous return: ()
+    todo ! ()
 }
 
 /// C: mju_evalBasis (engine/engine_util_misc.h:90)
@@ -478,7 +369,10 @@ pub fn mju_def_gradient(res: *mut f64, p: *const f64, dof: *const f64, order: i3
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mju_eval_basis(x: *const f64, i: i32, order: i32) -> f64 {
-    todo!() // mju_evalBasis
+    // WARNING: signature changed — verify body
+    // Previous params: (x : * const f64, i : i32, order : i32)
+    // Previous return: f64
+    todo ! ()
 }
 
 /// C: mju_evalBasisArray (engine/engine_util_misc.h:93)
@@ -490,7 +384,10 @@ pub fn mju_eval_basis(x: *const f64, i: i32, order: i32) -> f64 {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mju_eval_basis_array(basis: *mut f64, x: *const f64, order: i32) {
-    todo!() // mju_evalBasisArray
+    // WARNING: signature changed — verify body
+    // Previous params: (basis : * mut f64, x : * const f64, order : i32)
+    // Previous return: ()
+    todo ! ()
 }
 
 /// C: mju_cellLookup (engine/engine_util_misc.h:96)
@@ -502,7 +399,10 @@ pub fn mju_eval_basis_array(basis: *mut f64, x: *const f64, order: i32) {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mju_cell_lookup(coord: *const f64, cellnum: *const i32, order: i32, local: *mut f64, nodeindices: *mut i32) -> i32 {
-    todo!() // mju_cellLookup
+    // WARNING: signature changed — verify body
+    // Previous params: (coord : * const f64, cellnum : * const i32, order : i32, local : * mut f64, nodeindices : * mut i32)
+    // Previous return: i32
+    todo ! ()
 }
 
 /// C: mju_interpolate3D (engine/engine_util_misc.h:100)
@@ -514,7 +414,10 @@ pub fn mju_cell_lookup(coord: *const f64, cellnum: *const i32, order: i32, local
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mju_interpolate3d(res: *mut f64, x: *const f64, coeff: *const f64, order: i32, nodeindices: *const i32) {
-    todo!() // mju_interpolate3D
+    // WARNING: signature changed — verify body
+    // Previous params: (res : * mut f64, x : * const f64, coeff : * const f64, order : i32, nodeindices : * const i32)
+    // Previous return: ()
+    todo ! ()
 }
 
 /// C: mju_flexGatherCellState (engine/engine_util_misc.h:104)
@@ -526,7 +429,10 @@ pub fn mju_interpolate3d(res: *mut f64, x: *const f64, coeff: *const f64, order:
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mju_flex_gather_cell_state(order: i32, cy: i32, cz: i32, ci: i32, cj: i32, ck: i32, xpos_g: *const f64, vel_g: *const f64, xpos0_g: *const f64, xpos_c: *mut f64, vel_c: *mut f64, xpos0_c: *mut f64, nodeindices: *mut i32, quat: *mut f64) {
-    todo!() // mju_flexGatherCellState
+    // WARNING: signature changed — verify body
+    // Previous params: (order : i32, cy : i32, cz : i32, ci : i32, cj : i32, ck : i32, xpos_g : * const f64, vel_g : * const f64, xpos0_g : * const f64, xpos_c : * mut f64, vel_c : * mut f64, xpos0_c : * mut f64, nodeindices : * mut i32, quat : * mut f64)
+    // Previous return: ()
+    todo ! ()
 }
 
 /// C: mju_flexGatherFaceState (engine/engine_util_misc.h:110)
@@ -538,7 +444,10 @@ pub fn mju_flex_gather_cell_state(order: i32, cy: i32, cz: i32, ci: i32, cj: i32
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mju_flex_gather_face_state(order: i32, cx: i32, cy: i32, cz: i32, face_elem_idx: i32, xpos_g: *const f64, vel_g: *const f64, xpos0_g: *const f64, xpos_f: *mut f64, vel_f: *mut f64, xpos0_f: *mut f64, nodeindices: *mut i32, quat: *mut f64) {
-    todo!() // mju_flexGatherFaceState
+    // WARNING: signature changed — verify body
+    // Previous params: (order : i32, cx : i32, cy : i32, cz : i32, face_elem_idx : i32, xpos_g : * const f64, vel_g : * const f64, xpos0_g : * const f64, xpos_f : * mut f64, vel_f : * mut f64, xpos0_f : * mut f64, nodeindices : * mut i32, quat : * mut f64)
+    // Previous return: ()
+    todo ! ()
 }
 
 /// C: mju_flexInterpRotation2D (engine/engine_util_misc.h:118)
@@ -550,7 +459,10 @@ pub fn mju_flex_gather_face_state(order: i32, cx: i32, cy: i32, cz: i32, face_el
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mju_flex_interp_rotation2d(order: i32, xpos_f: *const f64, npe: i32, axis0: i32, axis1: i32, normal_axis: i32, local: *const f64, quat: *mut f64) {
-    todo!() // mju_flexInterpRotation2D
+    // WARNING: signature changed — verify body
+    // Previous params: (order : i32, xpos_f : * const f64, npe : i32, axis0 : i32, axis1 : i32, normal_axis : i32, local : * const f64, quat : * mut f64)
+    // Previous return: ()
+    todo ! ()
 }
 
 /// C: mju_flexFaceNormal2D (engine/engine_util_misc.h:124)
@@ -562,7 +474,10 @@ pub fn mju_flex_interp_rotation2d(order: i32, xpos_f: *const f64, npe: i32, axis
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mju_flex_face_normal2d(normal: *mut f64, t1: *mut f64, t2: *mut f64, order: i32, xpos_f: *const f64, local: *const f64) {
-    todo!() // mju_flexFaceNormal2D
+    // WARNING: signature changed — verify body
+    // Previous params: (normal : * mut f64, t1 : * mut f64, t2 : * mut f64, order : i32, xpos_f : * const f64, local : * const f64)
+    // Previous return: ()
+    todo ! ()
 }
 
 /// C: mju_flexPhi (engine/engine_util_misc.h:130)
@@ -573,7 +488,10 @@ pub fn mju_flex_face_normal2d(normal: *mut f64, t1: *mut f64, t2: *mut f64, orde
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mju_flex_phi(s: f64, i: i32, order: i32) -> f64 {
-    todo!() // mju_flexPhi
+    // WARNING: signature changed — verify body
+    // Previous params: (s : f64, i : i32, order : i32)
+    // Previous return: f64
+    todo ! ()
 }
 
 /// C: mju_flexDphi (engine/engine_util_misc.h:141)
@@ -584,7 +502,10 @@ pub fn mju_flex_phi(s: f64, i: i32, order: i32) -> f64 {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mju_flex_dphi(s: f64, i: i32, order: i32) -> f64 {
-    todo!() // mju_flexDphi
+    // WARNING: signature changed — verify body
+    // Previous params: (s : f64, i : i32, order : i32)
+    // Previous return: f64
+    todo ! ()
 }
 
 /// C: mju_shellTrackInterior (engine/engine_util_misc.h:151)
@@ -596,7 +517,10 @@ pub fn mju_flex_dphi(s: f64, i: i32, order: i32) -> f64 {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mju_shell_track_interior(nodexpos: *mut f64, nx: i32, ny: i32, nz: i32) {
-    todo!() // mju_shellTrackInterior
+    // WARNING: signature changed — verify body
+    // Previous params: (nodexpos : * mut f64, nx : i32, ny : i32, nz : i32)
+    // Previous return: ()
+    todo ! ()
 }
 
 /// C: mju_shellTFIWeights (engine/engine_util_misc.h:154)
@@ -608,7 +532,10 @@ pub fn mju_shell_track_interior(nodexpos: *mut f64, nx: i32, ny: i32, nz: i32) {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mju_shell_tfi_weights(nx: i32, ny: i32, nz: i32, i: i32, j: i32, k: i32, w: f64, nb: *mut i32, body: *mut i32, bweight: *mut f64, nodebodyid: *const i32, nstart: i32) {
-    todo!() // mju_shellTFIWeights
+    // WARNING: signature changed — verify body
+    // Previous params: (nx : i32, ny : i32, nz : i32, i : i32, j : i32, k : i32, w : f64, nb : * mut i32, body : * mut i32, bweight : * mut f64, nodebodyid : * const i32, nstart : i32)
+    // Previous return: ()
+    todo ! ()
 }
 
 /// C: mju_historyInit (engine/engine_util_misc.h:184)
@@ -620,7 +547,10 @@ pub fn mju_shell_tfi_weights(nx: i32, ny: i32, nz: i32, i: i32, j: i32, k: i32, 
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mju_history_init(buf: *mut f64, n: i32, dim: i32, times: *const f64, values: *const f64, user: f64) {
-    todo!() // mju_historyInit
+    // WARNING: signature changed — verify body
+    // Previous params: (buf : * mut f64, n : i32, dim : i32, times : * const f64, values : * const f64, user : f64)
+    // Previous return: ()
+    todo ! ()
 }
 
 /// C: mju_historyInsert (engine/engine_util_misc.h:189)
@@ -632,7 +562,10 @@ pub fn mju_history_init(buf: *mut f64, n: i32, dim: i32, times: *const f64, valu
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mju_history_insert(buf: *mut f64, n: i32, dim: i32, t: f64) -> *mut f64 {
-    todo!() // mju_historyInsert
+    // WARNING: signature changed — verify body
+    // Previous params: (buf : * mut f64, n : i32, dim : i32, t : f64)
+    // Previous return: * mut f64
+    todo ! ()
 }
 
 /// C: mju_historyRead (engine/engine_util_misc.h:194)
@@ -644,7 +577,10 @@ pub fn mju_history_insert(buf: *mut f64, n: i32, dim: i32, t: f64) -> *mut f64 {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mju_history_read(buf: *const f64, n: i32, dim: i32, res: *mut f64, t: f64, interp: i32) -> *const f64 {
-    todo!() // mju_historyRead
+    // WARNING: signature changed — verify body
+    // Previous params: (buf : * const f64, n : i32, dim : i32, res : * mut f64, t : f64, interp : i32)
+    // Previous return: * const f64
+    todo ! ()
 }
 
 /// C: mju_encodePyramid (engine/engine_util_misc.h:200)
@@ -656,7 +592,10 @@ pub fn mju_history_read(buf: *const f64, n: i32, dim: i32, res: *mut f64, t: f64
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mju_encode_pyramid(pyramid: *mut f64, force: *const f64, mu: *const f64, dim: i32) {
-    todo!() // mju_encodePyramid
+    // WARNING: signature changed — verify body
+    // Previous params: (pyramid : * mut f64, force : * const f64, mu : * const f64, dim : i32)
+    // Previous return: ()
+    todo ! ()
 }
 
 /// C: mju_decodePyramid (engine/engine_util_misc.h:204)
@@ -667,7 +606,10 @@ pub fn mju_encode_pyramid(pyramid: *mut f64, force: *const f64, mu: *const f64, 
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mju_decode_pyramid(force: *mut f64, pyramid: *const f64, mu: *const f64, dim: i32) {
-    todo!() // mju_decodePyramid
+    // WARNING: signature changed — verify body
+    // Previous params: (force : * mut f64, pyramid : * const f64, mu : * const f64, dim : i32)
+    // Previous return: ()
+    todo ! ()
 }
 
 /// C: mju_springDamper (engine/engine_util_misc.h:208)
@@ -678,7 +620,10 @@ pub fn mju_decode_pyramid(force: *mut f64, pyramid: *const f64, mu: *const f64, 
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mju_spring_damper(pos0: f64, vel0: f64, Kp: f64, Kv: f64, dt: f64) -> f64 {
-    todo!() // mju_springDamper
+    // WARNING: signature changed — verify body
+    // Previous params: (pos0 : f64, vel0 : f64, Kp : f64, Kv : f64, dt : f64)
+    // Previous return: f64
+    todo ! ()
 }
 
 /// C: mju_outsideBox (engine/engine_util_misc.h:213)
@@ -690,7 +635,10 @@ pub fn mju_spring_damper(pos0: f64, vel0: f64, Kp: f64, Kv: f64, dt: f64) -> f64
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mju_outside_box(point: *const f64, pos: *const f64, mat: *const f64, size: *const f64, inflate: f64) -> i32 {
-    todo!() // mju_outsideBox
+    // WARNING: signature changed — verify body
+    // Previous params: (point : * const f64, pos : * const f64, mat : * const f64, size : * const f64, inflate : f64)
+    // Previous return: i32
+    todo ! ()
 }
 
 /// C: mju_printMat (engine/engine_util_misc.h:217)
@@ -701,7 +649,10 @@ pub fn mju_outside_box(point: *const f64, pos: *const f64, mat: *const f64, size
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mju_print_mat(mat: *const f64, nr: i32, nc: i32) {
-    todo!() // mju_printMat
+    // WARNING: signature changed — verify body
+    // Previous params: (mat : * const f64, nr : i32, nc : i32)
+    // Previous return: ()
+    todo ! ()
 }
 
 /// C: mju_printMatSparse (engine/engine_util_misc.h:220)
@@ -712,7 +663,10 @@ pub fn mju_print_mat(mat: *const f64, nr: i32, nc: i32) {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mju_print_mat_sparse(mat: *const f64, nr: i32, rownnz: *const i32, rowadr: *const i32, colind: *const i32) {
-    todo!() // mju_printMatSparse
+    // WARNING: signature changed — verify body
+    // Previous params: (mat : * const f64, nr : i32, rownnz : * const i32, rowadr : * const i32, colind : * const i32)
+    // Previous return: ()
+    todo ! ()
 }
 
 /// C: mju_min (engine/engine_util_misc.h:225)
@@ -723,7 +677,10 @@ pub fn mju_print_mat_sparse(mat: *const f64, nr: i32, rownnz: *const i32, rowadr
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mju_min(a: f64, b: f64) -> f64 {
-    if a <= b { a } else { b } // C: return a <= b ? a : b
+    // WARNING: signature changed — verify body
+    // Previous params: (a : f64, b : f64)
+    // Previous return: f64
+    if a <= b { a } else { b }
 }
 
 /// C: mju_max (engine/engine_util_misc.h:228)
@@ -734,7 +691,10 @@ pub fn mju_min(a: f64, b: f64) -> f64 {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mju_max(a: f64, b: f64) -> f64 {
-    if a >= b { a } else { b } // C: return a >= b ? a : b
+    // WARNING: signature changed — verify body
+    // Previous params: (a : f64, b : f64)
+    // Previous return: f64
+    if a >= b { a } else { b }
 }
 
 /// C: mju_clip (engine/engine_util_misc.h:231)
@@ -745,13 +705,10 @@ pub fn mju_max(a: f64, b: f64) -> f64 {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mju_clip(x: f64, min: f64, max: f64) -> f64 {
-    if x < min { // C: if (x < min)
-        min // C: return min
-    } else if x > max { // C: else if (x > max)
-        max // C: return max
-    } else {
-        x // C: return x
-    }
+    // WARNING: signature changed — verify body
+    // Previous params: (x : f64, min : f64, max : f64)
+    // Previous return: f64
+    if x < min { min } else if x > max { max } else { x }
 }
 
 /// C: mju_sign (engine/engine_util_misc.h:234)
@@ -762,13 +719,10 @@ pub fn mju_clip(x: f64, min: f64, max: f64) -> f64 {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mju_sign(x: f64) -> f64 {
-    if x < 0.0 { // C: if (x < 0)
-        -1.0 // C: return -1
-    } else if x > 0.0 { // C: else if (x > 0)
-        1.0 // C: return 1
-    } else {
-        0.0 // C: return 0
-    }
+    // WARNING: signature changed — verify body
+    // Previous params: (x : f64)
+    // Previous return: f64
+    if x < 0.0 { - 1.0 } else if x > 0.0 { 1.0 } else { 0.0 }
 }
 
 /// C: mju_round (engine/engine_util_misc.h:237)
@@ -779,25 +733,28 @@ pub fn mju_sign(x: f64) -> f64 {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mju_round(x: f64) -> i32 {
-    let lower = x.floor(); // C: mjtNum lower = floor(x)
-    let upper = x.ceil(); // C: mjtNum upper = ceil(x)
-    if x - lower < upper - x { // C: if (x-lower < upper-x)
-        lower as i32 // C: return (int)lower
-    } else {
-        upper as i32 // C: return (int)upper
-    }
+    // WARNING: signature changed — verify body
+    // Previous params: (x : f64)
+    // Previous return: i32
+    let lower = x . floor () ; let upper = x . ceil () ; if x - lower < upper - x { lower as i32 } else { upper as i32 }
 }
 
 /// C: mju_type2Str (engine/engine_util_misc.h:240)
 #[allow(unused_variables, non_snake_case)]
 pub fn mju_type2str(r#type: i32) -> *const i8 {
-    todo!() // mju_type2Str
+    // WARNING: signature changed — verify body
+    // Previous params: (r#type : i32)
+    // Previous return: * const i8
+    todo ! ()
 }
 
 /// C: mju_str2Type (engine/engine_util_misc.h:243)
 #[allow(unused_variables, non_snake_case)]
 pub fn mju_str2type(str: *const i8) -> i32 {
-    todo!() // mju_str2Type
+    // WARNING: signature changed — verify body
+    // Previous params: (str : * const i8)
+    // Previous return: i32
+    todo ! ()
 }
 
 /// C: mju_isBad (engine/engine_util_misc.h:252)
@@ -808,9 +765,10 @@ pub fn mju_str2type(str: *const i8) -> i32 {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mju_is_bad(x: f64) -> i32 {
-    const mjMAXVAL: f64 = 1e10; // C: mjMAXVAL
-    // C: return (x != x || x > mjMAXVAL || x < -mjMAXVAL)
-    (x.is_nan() || x > mjMAXVAL || x < -mjMAXVAL) as i32
+    // WARNING: signature changed — verify body
+    // Previous params: (x : f64)
+    // Previous return: i32
+    const mjMAXVAL : f64 = 1e10 ; (x . is_nan () || x > mjMAXVAL || x < - mjMAXVAL) as i32
 }
 
 /// C: mju_isZero (engine/engine_util_misc.h:255)
@@ -821,61 +779,46 @@ pub fn mju_is_bad(x: f64) -> i32 {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mju_is_zero(vec: *const f64, n: i32) -> i32 {
-    unsafe {
-        for i in 0..n { // C: for (int i=0; i < n; i++)
-            if *vec.add(i as usize) != 0.0 { // C: if (vec[i] != 0)
-                return 0; // C: return 0
-            }
-        }
-    }
-    1 // C: return 1
+    // WARNING: signature changed — verify body
+    // Previous params: (vec : * const f64, n : i32)
+    // Previous return: i32
+    unsafe { for i in 0 .. n { if * vec . add (i as usize) != 0.0 { return 0 ; } } } 1
 }
 
 /// C: mju_isZeroByte (engine/engine_util_misc.h:258)
 #[allow(unused_variables, non_snake_case)]
 pub fn mju_is_zero_byte(vec: *const u8, n: i32) -> i32 {
-    unsafe {
-        // C: if (!n || *vec) return !n
-        if n == 0 {
-            return 1;
-        }
-        if *vec != 0 {
-            return 0;
-        }
-        // C: return memcmp(vec, vec + 1, n - 1) == 0
-        for i in 1..n {
-            if *vec.add(i as usize) != *vec {
-                return 0;
-            }
-        }
-        1
-    }
+    // WARNING: signature changed — verify body
+    // Previous params: (vec : * const u8, n : i32)
+    // Previous return: i32
+    unsafe { if n == 0 { return 1 ; } if * vec != 0 { return 0 ; } for i in 1 .. n { if * vec . add (i as usize) != * vec { return 0 ; } } 1 }
 }
 
 /// C: mju_zeroInt (engine/engine_util_misc.h:261)
 #[allow(unused_variables, non_snake_case)]
 pub fn mju_zero_int(res: *mut i32, n: i32) {
-    unsafe {
-        std::ptr::write_bytes(res, 0, n as usize); // C: memset(res, 0, n*sizeof(int))
-    }
+    // WARNING: signature changed — verify body
+    // Previous params: (res : * mut i32, n : i32)
+    // Previous return: ()
+    unsafe { std :: ptr :: write_bytes (res , 0 , n as usize) ; }
 }
 
 /// C: mju_copyInt (engine/engine_util_misc.h:264)
 #[allow(unused_variables, non_snake_case)]
 pub fn mju_copy_int(res: *mut i32, vec: *const i32, n: i32) {
-    unsafe {
-        std::ptr::copy_nonoverlapping(vec, res, n as usize); // C: memcpy(res, vec, n*sizeof(int))
-    }
+    // WARNING: signature changed — verify body
+    // Previous params: (res : * mut i32, vec : * const i32, n : i32)
+    // Previous return: ()
+    unsafe { std :: ptr :: copy_nonoverlapping (vec , res , n as usize) ; }
 }
 
 /// C: mju_fillInt (engine/engine_util_misc.h:267)
 #[allow(unused_variables, non_snake_case)]
 pub fn mju_fill_int(res: *mut i32, val: i32, n: i32) {
-    unsafe {
-        for i in 0..n { // C: for (int i = 0; i < n; i++)
-            *res.add(i as usize) = val; // C: res[i] = val
-        }
-    }
+    // WARNING: signature changed — verify body
+    // Previous params: (res : * mut i32, val : i32, n : i32)
+    // Previous return: ()
+    unsafe { for i in 0 .. n { * res . add (i as usize) = val ; } }
 }
 
 /// C: mju_standardNormal (engine/engine_util_misc.h:270)
@@ -886,7 +829,10 @@ pub fn mju_fill_int(res: *mut i32, val: i32, n: i32) {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mju_standard_normal(num2: *mut f64) -> f64 {
-    todo!() // mju_standardNormal
+    // WARNING: signature changed — verify body
+    // Previous params: (num2 : * mut f64)
+    // Previous return: f64
+    todo ! ()
 }
 
 /// C: mju_f2n (engine/engine_util_misc.h:273)
@@ -897,11 +843,10 @@ pub fn mju_standard_normal(num2: *mut f64) -> f64 {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mju_f2n(res: *mut f64, vec: *const f32, n: i32) {
-    unsafe {
-        for i in 0..n { // C: for (int i=0; i < n; i++)
-            *res.add(i as usize) = *vec.add(i as usize) as f64; // C: res[i] = (mjtNum) vec[i]
-        }
-    }
+    // WARNING: signature changed — verify body
+    // Previous params: (res : * mut f64, vec : * const f32, n : i32)
+    // Previous return: ()
+    unsafe { for i in 0 .. n { * res . add (i as usize) = * vec . add (i as usize) as f64 ; } }
 }
 
 /// C: mju_n2f (engine/engine_util_misc.h:276)
@@ -912,11 +857,10 @@ pub fn mju_f2n(res: *mut f64, vec: *const f32, n: i32) {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mju_n2f(res: *mut f32, vec: *const f64, n: i32) {
-    unsafe {
-        for i in 0..n { // C: for (int i=0; i < n; i++)
-            *res.add(i as usize) = *vec.add(i as usize) as f32; // C: res[i] = (float) vec[i]
-        }
-    }
+    // WARNING: signature changed — verify body
+    // Previous params: (res : * mut f32, vec : * const f64, n : i32)
+    // Previous return: ()
+    unsafe { for i in 0 .. n { * res . add (i as usize) = * vec . add (i as usize) as f32 ; } }
 }
 
 /// C: mju_d2n (engine/engine_util_misc.h:279)
@@ -927,11 +871,10 @@ pub fn mju_n2f(res: *mut f32, vec: *const f64, n: i32) {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mju_d2n(res: *mut f64, vec: *const f64, n: i32) {
-    unsafe {
-        for i in 0..n { // C: for (int i=0; i < n; i++)
-            *res.add(i as usize) = *vec.add(i as usize); // C: res[i] = (mjtNum) vec[i]
-        }
-    }
+    // WARNING: signature changed — verify body
+    // Previous params: (res : * mut f64, vec : * const f64, n : i32)
+    // Previous return: ()
+    unsafe { for i in 0 .. n { * res . add (i as usize) = * vec . add (i as usize) ; } }
 }
 
 /// C: mju_n2d (engine/engine_util_misc.h:282)
@@ -942,11 +885,10 @@ pub fn mju_d2n(res: *mut f64, vec: *const f64, n: i32) {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mju_n2d(res: *mut f64, vec: *const f64, n: i32) {
-    unsafe {
-        for i in 0..n { // C: for (int i=0; i < n; i++)
-            *res.add(i as usize) = *vec.add(i as usize); // C: res[i] = (double) vec[i]
-        }
-    }
+    // WARNING: signature changed — verify body
+    // Previous params: (res : * mut f64, vec : * const f64, n : i32)
+    // Previous return: ()
+    unsafe { for i in 0 .. n { * res . add (i as usize) = * vec . add (i as usize) ; } }
 }
 
 /// C: mju_gather (engine/engine_util_misc.h:285)
@@ -958,15 +900,10 @@ pub fn mju_n2d(res: *mut f64, vec: *const f64, n: i32) {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mju_gather(res: *mut f64, vec: *const f64, ind: *const i32, n: i32) {
-    unsafe {
-        if ind.is_null() { // C: if (!ind)
-            crate::engine::engine_util_blas::mju_copy(res, vec, n); // C: mju_copy(res, vec, n)
-            return; // C: return
-        }
-        for i in 0..n { // C: for (int i=0; i < n; i++)
-            *res.add(i as usize) = *vec.add(*ind.add(i as usize) as usize); // C: res[i] = vec[ind[i]]
-        }
-    }
+    // WARNING: signature changed — verify body
+    // Previous params: (res : * mut f64, vec : * const f64, ind : * const i32, n : i32)
+    // Previous return: ()
+    unsafe { if ind . is_null () { crate :: engine :: engine_util_blas :: mju_copy (res , vec , n) ; return ; } for i in 0 .. n { * res . add (i as usize) = * vec . add (* ind . add (i as usize) as usize) ; } }
 }
 
 /// C: mju_gatherMasked (engine/engine_util_misc.h:288)
@@ -977,12 +914,10 @@ pub fn mju_gather(res: *mut f64, vec: *const f64, ind: *const i32, n: i32) {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mju_gather_masked(res: *mut f64, vec: *const f64, ind: *const i32, n: i32) {
-    unsafe {
-        for i in 0..n { // C: for (int i=0; i < n; i++)
-            let idx = *ind.add(i as usize); // C: ind[i]
-            *res.add(i as usize) = if idx >= 0 { *vec.add(idx as usize) } else { 0.0 }; // C: res[i] = ind[i] >= 0 ? vec[ind[i]] : 0
-        }
-    }
+    // WARNING: signature changed — verify body
+    // Previous params: (res : * mut f64, vec : * const f64, ind : * const i32, n : i32)
+    // Previous return: ()
+    unsafe { for i in 0 .. n { let idx = * ind . add (i as usize) ; * res . add (i as usize) = if idx >= 0 { * vec . add (idx as usize) } else { 0.0 } ; } }
 }
 
 /// C: mju_scatter (engine/engine_util_misc.h:291)
@@ -994,64 +929,47 @@ pub fn mju_gather_masked(res: *mut f64, vec: *const f64, ind: *const i32, n: i32
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mju_scatter(res: *mut f64, vec: *const f64, ind: *const i32, n: i32) {
-    unsafe {
-        if ind.is_null() { // C: if (!ind)
-            crate::engine::engine_util_blas::mju_copy(res, vec, n); // C: mju_copy(res, vec, n)
-            return; // C: return
-        }
-        for i in 0..n { // C: for (int i=0; i < n; i++)
-            *res.add(*ind.add(i as usize) as usize) = *vec.add(i as usize); // C: res[ind[i]] = vec[i]
-        }
-    }
+    // WARNING: signature changed — verify body
+    // Previous params: (res : * mut f64, vec : * const f64, ind : * const i32, n : i32)
+    // Previous return: ()
+    unsafe { if ind . is_null () { crate :: engine :: engine_util_blas :: mju_copy (res , vec , n) ; return ; } for i in 0 .. n { * res . add (* ind . add (i as usize) as usize) = * vec . add (i as usize) ; } }
 }
 
 /// C: mju_gatherInt (engine/engine_util_misc.h:294)
 #[allow(unused_variables, non_snake_case)]
 pub fn mju_gather_int(res: *mut i32, vec: *const i32, ind: *const i32, n: i32) {
-    unsafe {
-        for i in 0..n { // C: for (int i=0; i < n; i++)
-            *res.add(i as usize) = *vec.add(*ind.add(i as usize) as usize); // C: res[i] = vec[ind[i]]
-        }
-    }
+    // WARNING: signature changed — verify body
+    // Previous params: (res : * mut i32, vec : * const i32, ind : * const i32, n : i32)
+    // Previous return: ()
+    unsafe { for i in 0 .. n { * res . add (i as usize) = * vec . add (* ind . add (i as usize) as usize) ; } }
 }
 
 /// C: mju_scatterInt (engine/engine_util_misc.h:297)
 #[allow(unused_variables, non_snake_case)]
 pub fn mju_scatter_int(res: *mut i32, vec: *const i32, ind: *const i32, n: i32) {
-    unsafe {
-        for i in 0..n { // C: for (int i=0; i < n; i++)
-            *res.add(*ind.add(i as usize) as usize) = *vec.add(i as usize); // C: res[ind[i]] = vec[i]
-        }
-    }
+    // WARNING: signature changed — verify body
+    // Previous params: (res : * mut i32, vec : * const i32, ind : * const i32, n : i32)
+    // Previous return: ()
+    unsafe { for i in 0 .. n { * res . add (* ind . add (i as usize) as usize) = * vec . add (i as usize) ; } }
 }
 
 /// C: mju_sparseMap (engine/engine_util_misc.h:300)
 #[allow(unused_variables, non_snake_case)]
 pub fn mju_sparse_map(map: *mut i32, nr: i32, res_rowadr: *const i32, res_rownnz: *const i32, res_colind: *const i32, src_rowadr: *const i32, src_rownnz: *const i32, src_colind: *const i32) {
-    unsafe {
-        for i in 0..nr { // C: for (int i = 0; i < nr; i++)
-            let mut res_cursor = *res_rowadr.add(i as usize); // C: int res_cursor = res_rowadr[i]
-            let res_end = res_cursor + *res_rownnz.add(i as usize); // C: int res_end = res_cursor + res_rownnz[i]
-            let mut src_cursor = *src_rowadr.add(i as usize); // C: int src_cursor = src_rowadr[i]
-            let src_end = src_cursor + *src_rownnz.add(i as usize); // C: int src_end = src_cursor + src_rownnz[i]
-            while res_cursor < res_end { // C: while (res_cursor < res_end)
-                let res_col = *res_colind.add(res_cursor as usize); // C: int res_col = res_colind[res_cursor]
-                while src_cursor < src_end && *src_colind.add(src_cursor as usize) < res_col { // C: while (src_cursor < src_end && src_colind[src_cursor] < res_col)
-                    src_cursor += 1; // C: src_cursor++
-                }
-                *map.add(res_cursor as usize) = src_cursor; // C: map[res_cursor] = src_cursor
-                res_cursor += 1; // C: res_cursor++
-                src_cursor += 1; // C: src_cursor++
-            }
-        }
-    }
+    // WARNING: signature changed — verify body
+    // Previous params: (map : * mut i32, nr : i32, res_rowadr : * const i32, res_rownnz : * const i32, res_colind : * const i32, src_rowadr : * const i32, src_rownnz : * const i32, src_colind : * const i32)
+    // Previous return: ()
+    unsafe { for i in 0 .. nr { let mut res_cursor = * res_rowadr . add (i as usize) ; let res_end = res_cursor + * res_rownnz . add (i as usize) ; let mut src_cursor = * src_rowadr . add (i as usize) ; let src_end = src_cursor + * src_rownnz . add (i as usize) ; while res_cursor < res_end { let res_col = * res_colind . add (res_cursor as usize) ; while src_cursor < src_end && * src_colind . add (src_cursor as usize) < res_col { src_cursor += 1 ; } * map . add (res_cursor as usize) = src_cursor ; res_cursor += 1 ; src_cursor += 1 ; } } }
 }
 
 /// C: mju_lower2SymMap (engine/engine_util_misc.h:306)
 /// Calls: mju_fillInt
 #[allow(unused_variables, non_snake_case)]
 pub fn mju_lower2sym_map(map: *mut i32, nr: i32, res_rowadr: *const i32, res_rownnz: *const i32, res_colind: *const i32, src_rowadr: *const i32, src_rownnz: *const i32, src_colind: *const i32, cursor: *mut i32) {
-    todo!() // mju_lower2SymMap
+    // WARNING: signature changed — verify body
+    // Previous params: (map : * mut i32, nr : i32, res_rowadr : * const i32, res_rownnz : * const i32, res_colind : * const i32, src_rowadr : * const i32, src_rownnz : * const i32, src_colind : * const i32, cursor : * mut i32)
+    // Previous return: ()
+    todo ! ()
 }
 
 /// C: mju_insertionSort (engine/engine_util_misc.h:312)
@@ -1062,13 +980,19 @@ pub fn mju_lower2sym_map(map: *mut i32, nr: i32, res_rowadr: *const i32, res_row
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mju_insertion_sort(list: *mut f64, n: i32) {
-    todo!() // mju_insertionSort
+    // WARNING: signature changed — verify body
+    // Previous params: (list : * mut f64, n : i32)
+    // Previous return: ()
+    todo ! ()
 }
 
 /// C: mju_insertionSortInt (engine/engine_util_misc.h:315)
 #[allow(unused_variables, non_snake_case)]
 pub fn mju_insertion_sort_int(list: *mut i32, n: i32) {
-    todo!() // mju_insertionSortInt
+    // WARNING: signature changed — verify body
+    // Previous params: (list : * mut i32, n : i32)
+    // Previous return: ()
+    todo ! ()
 }
 
 /// C: mju_Halton (engine/engine_util_misc.h:318)
@@ -1079,13 +1003,19 @@ pub fn mju_insertion_sort_int(list: *mut i32, n: i32) {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mju_halton(index: i32, base: i32) -> f64 {
-    todo!() // mju_Halton
+    // WARNING: signature changed — verify body
+    // Previous params: (index : i32, base : i32)
+    // Previous return: f64
+    todo ! ()
 }
 
 /// C: mju_strncpy (engine/engine_util_misc.h:321)
 #[allow(unused_variables, non_snake_case)]
 pub fn mju_strncpy(dst: *mut i8, src: *const i8, n: i32) -> *mut i8 {
-    todo!() // mju_strncpy
+    // WARNING: signature changed — verify body
+    // Previous params: (dst : * mut i8, src : * const i8, n : i32)
+    // Previous return: * mut i8
+    todo ! ()
 }
 
 /// C: mju_polyForce (engine/engine_util_misc.h:326)
@@ -1096,7 +1026,10 @@ pub fn mju_strncpy(dst: *mut i8, src: *const i8, n: i32) -> *mut i8 {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mju_poly_force(linear: f64, poly: *const f64, x: f64, n: i32, flg_odd: i32) -> f64 {
-    todo!() // mju_polyForce
+    // WARNING: signature changed — verify body
+    // Previous params: (linear : f64, poly : * const f64, x : f64, n : i32, flg_odd : i32)
+    // Previous return: f64
+    todo ! ()
 }
 
 /// C: mjd_xPolyForce (engine/engine_util_misc.h:329)
@@ -1107,7 +1040,10 @@ pub fn mju_poly_force(linear: f64, poly: *const f64, x: f64, n: i32, flg_odd: i3
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjd_x_poly_force(linear: f64, poly: *const f64, x: f64, n: i32, flg_odd: i32) -> f64 {
-    todo!() // mjd_xPolyForce
+    // WARNING: signature changed — verify body
+    // Previous params: (linear : f64, poly : * const f64, x : f64, n : i32, flg_odd : i32)
+    // Previous return: f64
+    todo ! ()
 }
 
 /// C: mju_polyPotential (engine/engine_util_misc.h:332)
@@ -1118,7 +1054,10 @@ pub fn mjd_x_poly_force(linear: f64, poly: *const f64, x: f64, n: i32, flg_odd: 
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mju_poly_potential(linear: f64, poly: *const f64, x: f64, n: i32, flg_odd: i32) -> f64 {
-    todo!() // mju_polyPotential
+    // WARNING: signature changed — verify body
+    // Previous params: (linear : f64, poly : * const f64, x : f64, n : i32, flg_odd : i32)
+    // Previous return: f64
+    todo ! ()
 }
 
 /// C: mju_sigmoid (engine/engine_util_misc.h:335)
@@ -1129,13 +1068,9 @@ pub fn mju_poly_potential(linear: f64, poly: *const f64, x: f64, n: i32, flg_odd
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mju_sigmoid(x: f64) -> f64 {
-    if x <= 0.0 { // C: if (x <= 0)
-        return 0.0; // C: return 0
-    }
-    if x >= 1.0 { // C: if (x >= 1)
-        return 1.0; // C: return 1
-    }
-    // C: return x*x*x * (3*x * (2*x - 5) + 10)
-    x * x * x * (3.0 * x * (2.0 * x - 5.0) + 10.0)
+    // WARNING: signature changed — verify body
+    // Previous params: (x : f64)
+    // Previous return: f64
+    if x <= 0.0 { return 0.0 ; } if x >= 1.0 { return 1.0 ; } x * x * x * (3.0 * x * (2.0 * x - 5.0) + 10.0)
 }
 

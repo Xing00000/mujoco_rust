@@ -1,5 +1,5 @@
 //! Port of: engine/engine_ray.c
-//! IR hash: 1b139f44af8230f9
+//! IR hash: 699b5f0da57e8d78
 //! CODEGEN: signatures locked. Only fill todo!() bodies.
 
 use crate::types::*;
@@ -12,7 +12,10 @@ use crate::types::*;
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn ray_map(pos: *const f64, mat: *const f64, pnt: *const f64, vec: *const f64, lpnt: *mut f64, lvec: *mut f64) {
-    todo!() // ray_map
+    // WARNING: signature changed — verify body
+    // Previous params: (pos : * const f64, mat : * const f64, pnt : * const f64, vec : * const f64, lpnt : * mut f64, lvec : * mut f64)
+    // Previous return: ()
+    todo ! ()
 }
 
 /// C: longitude (engine/engine_ray.c:56)
@@ -23,7 +26,10 @@ pub fn ray_map(pos: *const f64, mat: *const f64, pnt: *const f64, vec: *const f6
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn longitude(vec: *const f64) -> f64 {
-    todo!() // longitude
+    // WARNING: signature changed — verify body
+    // Previous params: (vec : * const f64)
+    // Previous return: f64
+    todo ! ()
 }
 
 /// C: latitude (engine/engine_ray.c:62)
@@ -34,13 +40,19 @@ pub fn longitude(vec: *const f64) -> f64 {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn latitude(vec: *const f64) -> f64 {
-    todo!() // latitude
+    // WARNING: signature changed — verify body
+    // Previous params: (vec : * const f64)
+    // Previous return: f64
+    todo ! ()
 }
 
 /// C: ray_eliminate (engine/engine_ray.c:68)
 #[allow(unused_variables, non_snake_case)]
 pub fn ray_eliminate(m: *const mjModel, d: *const mjData, geomid: i32, geomgroup: *const u8, flg_static: mjtBool, bodyexclude: i32) -> i32 {
-    todo!() // ray_eliminate
+    // WARNING: signature changed — verify body
+    // Previous params: (m : * const mjModel, d : * const mjData, geomid : i32, geomgroup : * const u8, flg_static : mjtBool, bodyexclude : i32)
+    // Previous return: i32
+    todo ! ()
 }
 
 /// C: ray_quad (engine/engine_ray.c:103)
@@ -51,7 +63,10 @@ pub fn ray_eliminate(m: *const mjModel, d: *const mjData, geomid: i32, geomgroup
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn ray_quad(a: f64, b: f64, c: f64, x: *mut f64) -> f64 {
-    todo!() // ray_quad
+    // WARNING: signature changed — verify body
+    // Previous params: (a : f64, b : f64, c : f64, x : * mut f64)
+    // Previous return: f64
+    todo ! ()
 }
 
 /// C: ray_plane (engine/engine_ray.c:204)
@@ -63,7 +78,10 @@ pub fn ray_quad(a: f64, b: f64, c: f64, x: *mut f64) -> f64 {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn ray_plane(pos: *const f64, mat: *const f64, size: *const f64, pnt: *const f64, vec: *const f64, normal: *mut f64) -> f64 {
-    todo!() // ray_plane
+    // WARNING: signature changed — verify body
+    // Previous params: (pos : * const f64, mat : * const f64, size : * const f64, pnt : * const f64, vec : * const f64, normal : * mut f64)
+    // Previous return: f64
+    todo ! ()
 }
 
 /// C: ray_sphere (engine/engine_ray.c:242)
@@ -75,7 +93,10 @@ pub fn ray_plane(pos: *const f64, mat: *const f64, size: *const f64, pnt: *const
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn ray_sphere(pos: *const f64, mat: *const f64, dist_sqr: f64, pnt: *const f64, vec: *const f64, normal: *mut f64) -> f64 {
-    todo!() // ray_sphere
+    // WARNING: signature changed — verify body
+    // Previous params: (pos : * const f64, mat : * const f64, dist_sqr : f64, pnt : * const f64, vec : * const f64, normal : * mut f64)
+    // Previous return: f64
+    todo ! ()
 }
 
 /// C: ray_capsule (engine/engine_ray.c:272)
@@ -87,7 +108,10 @@ pub fn ray_sphere(pos: *const f64, mat: *const f64, dist_sqr: f64, pnt: *const f
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn ray_capsule(pos: *const f64, mat: *const f64, size: *const f64, pnt: *const f64, vec: *const f64, normal: *mut f64) -> f64 {
-    todo!() // ray_capsule
+    // WARNING: signature changed — verify body
+    // Previous params: (pos : * const f64, mat : * const f64, size : * const f64, pnt : * const f64, vec : * const f64, normal : * mut f64)
+    // Previous return: f64
+    todo ! ()
 }
 
 /// C: ray_ellipsoid (engine/engine_ray.c:358)
@@ -99,7 +123,10 @@ pub fn ray_capsule(pos: *const f64, mat: *const f64, size: *const f64, pnt: *con
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn ray_ellipsoid(pos: *const f64, mat: *const f64, size: *const f64, pnt: *const f64, vec: *const f64, normal: *mut f64) -> f64 {
-    todo!() // ray_ellipsoid
+    // WARNING: signature changed — verify body
+    // Previous params: (pos : * const f64, mat : * const f64, size : * const f64, pnt : * const f64, vec : * const f64, normal : * mut f64)
+    // Previous return: f64
+    todo ! ()
 }
 
 /// C: ray_cylinder (engine/engine_ray.c:401)
@@ -111,7 +138,10 @@ pub fn ray_ellipsoid(pos: *const f64, mat: *const f64, size: *const f64, pnt: *c
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn ray_cylinder(pos: *const f64, mat: *const f64, size: *const f64, pnt: *const f64, vec: *const f64, normal: *mut f64) -> f64 {
-    todo!() // ray_cylinder
+    // WARNING: signature changed — verify body
+    // Previous params: (pos : * const f64, mat : * const f64, size : * const f64, pnt : * const f64, vec : * const f64, normal : * mut f64)
+    // Previous return: f64
+    todo ! ()
 }
 
 /// C: ray_box (engine/engine_ray.c:490)
@@ -123,7 +153,10 @@ pub fn ray_cylinder(pos: *const f64, mat: *const f64, size: *const f64, pnt: *co
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn ray_box(pos: *const f64, mat: *const f64, size: *const f64, pnt: *const f64, vec: *const f64, all: *mut f64, normal: *mut f64) -> f64 {
-    todo!() // ray_box
+    // WARNING: signature changed — verify body
+    // Previous params: (pos : * const f64, mat : * const f64, size : * const f64, pnt : * const f64, vec : * const f64, all : * mut f64, normal : * mut f64)
+    // Previous return: f64
+    todo ! ()
 }
 
 /// C: mju_raySlab (engine/engine_ray.c:743)
@@ -135,7 +168,10 @@ pub fn ray_box(pos: *const f64, mat: *const f64, size: *const f64, pnt: *const f
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mju_ray_slab(aabb: *const f64, xpos: *const f64, xmat: *const f64, pnt: *const f64, vec: *const f64) -> i32 {
-    todo!() // mju_raySlab
+    // WARNING: signature changed — verify body
+    // Previous params: (aabb : * const f64, xpos : * const f64, xmat : * const f64, pnt : * const f64, vec : * const f64)
+    // Previous return: i32
+    todo ! ()
 }
 
 /// C: mju_rayTree (engine/engine_ray.c:771)
@@ -147,7 +183,10 @@ pub fn mju_ray_slab(aabb: *const f64, xpos: *const f64, xmat: *const f64, pnt: *
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mju_ray_tree(m: *const mjModel, d: *const mjData, id: i32, pnt: *const f64, vec: *const f64, normal: *mut f64) -> f64 {
-    todo!() // mju_rayTree
+    // WARNING: signature changed — verify body
+    // Previous params: (m : * const mjModel, d : * const mjData, id : i32, pnt : * const f64, vec : * const f64, normal : * mut f64)
+    // Previous return: f64
+    todo ! ()
 }
 
 /// C: mj_raySdf (engine/engine_ray.c:885)
@@ -159,7 +198,10 @@ pub fn mju_ray_tree(m: *const mjModel, d: *const mjData, id: i32, pnt: *const f6
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_ray_sdf(m: *const mjModel, d: *const mjData, g: i32, pnt: *const f64, vec: *const f64, normal: *mut f64) -> f64 {
-    todo!() // mj_raySdf
+    // WARNING: signature changed — verify body
+    // Previous params: (m : * const mjModel, d : * const mjData, g : i32, pnt : * const f64, vec : * const f64, normal : * mut f64)
+    // Previous return: f64
+    todo ! ()
 }
 
 /// C: point_in_box (engine/engine_ray.c:1283)
@@ -171,7 +213,10 @@ pub fn mj_ray_sdf(m: *const mjModel, d: *const mjData, g: i32, pnt: *const f64, 
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn point_in_box(aabb: *const f64, xpos: *const f64, xmat: *const f64, pnt: *const f64) -> i32 {
-    todo!() // point_in_box
+    // WARNING: signature changed — verify body
+    // Previous params: (aabb : * const f64, xpos : * const f64, xmat : * const f64, pnt : * const f64)
+    // Previous return: i32
+    todo ! ()
 }
 
 /// C: mju_singleRay (engine/engine_ray.c:1457)
@@ -183,7 +228,10 @@ pub fn point_in_box(aabb: *const f64, xpos: *const f64, xmat: *const f64, pnt: *
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mju_single_ray(m: *const mjModel, d: *mut mjData, pnt: *const f64, vec: *const f64, ray_eliminate: *mut i32, geom_ba: *mut f64, geomid: *mut i32, normal: *mut f64) -> f64 {
-    todo!() // mju_singleRay
+    // WARNING: signature changed — verify body
+    // Previous params: (m : * const mjModel, d : * mut mjData, pnt : * const f64, vec : * const f64, ray_eliminate : * mut i32, geom_ba : * mut f64, geomid : * mut i32, normal : * mut f64)
+    // Previous return: f64
+    todo ! ()
 }
 
 /// C: mju_multiRayPrepare (engine/engine_ray.h:26)
@@ -195,7 +243,10 @@ pub fn mju_single_ray(m: *const mjModel, d: *mut mjData, pnt: *const f64, vec: *
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mju_multi_ray_prepare(m: *const mjModel, d: *const mjData, pnt: *const f64, ray_xmat: *const f64, geomgroup: *const u8, flg_static: mjtBool, bodyexclude: i32, cutoff: f64, geom_ba: *mut f64, geom_eliminate: *mut i32) {
-    todo!() // mju_multiRayPrepare
+    // WARNING: signature changed — verify body
+    // Previous params: (m : * const mjModel, d : * const mjData, pnt : * const f64, ray_xmat : * const f64, geomgroup : * const u8, flg_static : mjtBool, bodyexclude : i32, cutoff : f64, geom_ba : * mut f64, geom_eliminate : * mut i32)
+    // Previous return: ()
+    todo ! ()
 }
 
 /// C: mj_multiRay (engine/engine_ray.h:34)
@@ -207,7 +258,10 @@ pub fn mju_multi_ray_prepare(m: *const mjModel, d: *const mjData, pnt: *const f6
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_multi_ray(m: *const mjModel, d: *mut mjData, pnt: *const f64, vec: *const f64, geomgroup: *const u8, flg_static: mjtBool, bodyexclude: i32, geomid: *mut i32, dist: *mut f64, normal: *mut f64, nray: i32, cutoff: f64) {
-    todo!() // mj_multiRay
+    // WARNING: signature changed — verify body
+    // Previous params: (m : * const mjModel, d : * mut mjData, pnt : * const f64, vec : * const f64, geomgroup : * const u8, flg_static : mjtBool, bodyexclude : i32, geomid : * mut i32, dist : * mut f64, normal : * mut f64, nray : i32, cutoff : f64)
+    // Previous return: ()
+    todo ! ()
 }
 
 /// C: mj_ray (engine/engine_ray.h:42)
@@ -219,7 +273,10 @@ pub fn mj_multi_ray(m: *const mjModel, d: *mut mjData, pnt: *const f64, vec: *co
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_ray(m: *const mjModel, d: *const mjData, pnt: *const f64, vec: *const f64, geomgroup: *const u8, flg_static: mjtBool, bodyexclude: i32, geomid: *mut i32, normal: *mut f64) -> f64 {
-    todo!() // mj_ray
+    // WARNING: signature changed — verify body
+    // Previous params: (m : * const mjModel, d : * const mjData, pnt : * const f64, vec : * const f64, geomgroup : * const u8, flg_static : mjtBool, bodyexclude : i32, geomid : * mut i32, normal : * mut f64)
+    // Previous return: f64
+    todo ! ()
 }
 
 /// C: mj_rayHfield (engine/engine_ray.h:47)
@@ -231,7 +288,10 @@ pub fn mj_ray(m: *const mjModel, d: *const mjData, pnt: *const f64, vec: *const 
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_ray_hfield(m: *const mjModel, d: *const mjData, geomid: i32, pnt: *const f64, vec: *const f64, normal: *mut f64) -> f64 {
-    todo!() // mj_rayHfield
+    // WARNING: signature changed — verify body
+    // Previous params: (m : * const mjModel, d : * const mjData, geomid : i32, pnt : * const f64, vec : * const f64, normal : * mut f64)
+    // Previous return: f64
+    todo ! ()
 }
 
 /// C: ray_triangle (engine/engine_ray.h:51)
@@ -242,8 +302,11 @@ pub fn mj_ray_hfield(m: *const mjModel, d: *const mjData, geomid: i32, pnt: *con
 ///   3. No algebraic simplification
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
-pub fn ray_triangle(v: Option<unsafe extern "C" fn()>, lpnt: *const f64, lvec: *const f64, b0: *const f64, b1: *const f64, normal: *mut f64) -> f64 {
-    todo!() // ray_triangle
+pub fn ray_triangle(v: *mut f64, lpnt: *const f64, lvec: *const f64, b0: *const f64, b1: *const f64, normal: *mut f64) -> f64 {
+    // WARNING: signature changed — verify body
+    // Previous params: (v : * mut f64, lpnt : * const f64, lvec : * const f64, b0 : * const f64, b1 : * const f64, normal : * mut f64)
+    // Previous return: f64
+    todo ! ()
 }
 
 /// C: mj_rayMesh (engine/engine_ray.h:55)
@@ -255,7 +318,10 @@ pub fn ray_triangle(v: Option<unsafe extern "C" fn()>, lpnt: *const f64, lvec: *
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_ray_mesh(m: *const mjModel, d: *const mjData, geomid: i32, pnt: *const f64, vec: *const f64, normal: *mut f64) -> f64 {
-    todo!() // mj_rayMesh
+    // WARNING: signature changed — verify body
+    // Previous params: (m : * const mjModel, d : * const mjData, geomid : i32, pnt : * const f64, vec : * const f64, normal : * mut f64)
+    // Previous return: f64
+    todo ! ()
 }
 
 /// C: mju_rayGeom (engine/engine_ray.h:59)
@@ -267,7 +333,10 @@ pub fn mj_ray_mesh(m: *const mjModel, d: *const mjData, geomid: i32, pnt: *const
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mju_ray_geom(pos: *const f64, mat: *const f64, size: *const f64, pnt: *const f64, vec: *const f64, geomtype: i32, normal: *mut f64) -> f64 {
-    todo!() // mju_rayGeom
+    // WARNING: signature changed — verify body
+    // Previous params: (pos : * const f64, mat : * const f64, size : * const f64, pnt : * const f64, vec : * const f64, geomtype : i32, normal : * mut f64)
+    // Previous return: f64
+    todo ! ()
 }
 
 /// C: mj_rayFlex (engine/engine_ray.h:64)
@@ -279,7 +348,10 @@ pub fn mju_ray_geom(pos: *const f64, mat: *const f64, size: *const f64, pnt: *co
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_ray_flex(m: *const mjModel, d: *const mjData, flex_layer: i32, flg_vert: mjtBool, flg_edge: mjtBool, flg_face: mjtBool, flg_skin: mjtBool, flexid: i32, pnt: *const f64, vec: *const f64, vertid: *mut i32, normal: *mut f64) -> f64 {
-    todo!() // mj_rayFlex
+    // WARNING: signature changed — verify body
+    // Previous params: (m : * const mjModel, d : * const mjData, flex_layer : i32, flg_vert : mjtBool, flg_edge : mjtBool, flg_face : mjtBool, flg_skin : mjtBool, flexid : i32, pnt : * const f64, vec : * const f64, vertid : * mut i32, normal : * mut f64)
+    // Previous return: f64
+    todo ! ()
 }
 
 /// C: mju_raySkin (engine/engine_ray.h:70)
@@ -291,6 +363,9 @@ pub fn mj_ray_flex(m: *const mjModel, d: *const mjData, flex_layer: i32, flg_ver
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mju_ray_skin(nface: i32, nvert: i32, face: *const i32, vert: *const f32, pnt: *const f64, vec: *const f64, vertid: *mut i32) -> f64 {
-    todo!() // mju_raySkin
+    // WARNING: signature changed — verify body
+    // Previous params: (nface : i32, nvert : i32, face : * const i32, vert : * const f32, pnt : * const f64, vec : * const f64, vertid : * mut i32)
+    // Previous return: f64
+    todo ! ()
 }
 
