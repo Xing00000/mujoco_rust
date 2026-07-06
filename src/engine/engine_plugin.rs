@@ -87,7 +87,9 @@ pub fn mjp_plugin_count() -> i32 {
 /// C: mjp_resourceProviderCount (engine/engine_plugin.h:38)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjp_resource_provider_count() -> i32 {
-    todo ! ()
+    extern "C" { fn mjp_resourceProviderCount_impl() -> i32; }
+    // SAFETY: delegates to C implementation, no pointers to validate
+    unsafe { mjp_resourceProviderCount_impl() }
 }
 
 /// C: mjp_getPlugin (engine/engine_plugin.h:41)

@@ -7,6 +7,8 @@ use crate::types::*;
 /// C: mj_resetCallbacks (engine/engine_callback.h:37)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_reset_callbacks() {
-    todo ! ()
+    extern "C" { fn mj_resetCallbacks_impl(); }
+    // SAFETY: delegates to C implementation, no pointers to validate
+    unsafe { mj_resetCallbacks_impl() }
 }
 
