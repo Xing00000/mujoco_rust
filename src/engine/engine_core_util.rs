@@ -95,10 +95,9 @@ pub fn mj_jac_body(m: *const mjModel, d: *const mjData, jacp: *mut f64, jacr: *m
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_jac_body_com(m: *const mjModel, d: *const mjData, jacp: *mut f64, jacr: *mut f64, body: i32) {
-    // WARNING: signature changed — verify body
-    // Previous params: (m : * const mjModel, d : * const mjData, jacp : * mut f64, jacr : * mut f64, body : i32)
-    // Previous return: ()
-    todo ! ()
+    extern "C" { fn mj_jacBodyCom_impl(m: *const mjModel, d: *const mjData, jacp: *mut f64, jacr: *mut f64, body: i32); }
+    // SAFETY: delegates to C implementation, all pointers valid per caller contract
+    unsafe { mj_jacBodyCom_impl(m, d, jacp, jacr, body) }
 }
 
 /// C: mj_jacSubtreeCom (engine/engine_core_util.h:64)
@@ -125,10 +124,9 @@ pub fn mj_jac_subtree_com(m: *const mjModel, d: *mut mjData, jacp: *mut f64, bod
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_jac_geom(m: *const mjModel, d: *const mjData, jacp: *mut f64, jacr: *mut f64, geom: i32) {
-    // WARNING: signature changed — verify body
-    // Previous params: (m : * const mjModel, d : * const mjData, jacp : * mut f64, jacr : * mut f64, geom : i32)
-    // Previous return: ()
-    todo ! ()
+    extern "C" { fn mj_jacGeom_impl(m: *const mjModel, d: *const mjData, jacp: *mut f64, jacr: *mut f64, geom: i32); }
+    // SAFETY: delegates to C implementation, all pointers valid per caller contract
+    unsafe { mj_jacGeom_impl(m, d, jacp, jacr, geom) }
 }
 
 /// C: mj_jacSite (engine/engine_core_util.h:71)

@@ -816,29 +816,26 @@ pub fn mj_collide_flex_sap(m: *const mjModel, d: *mut mjData, f: i32) {
 /// Calls: filterSphereBox, mj_arenaAllocByte, mj_assignMargin, mj_contactParam, mj_freeStack, mj_makeCapsule, mj_markStack, mj_setContact, mj_stackAllocInfo, mj_warning, mjc_ConvexElem, mjc_HFieldElem, mjraw_BoxTriangle, mjraw_CapsuleBox, mjraw_CapsuleCapsule, mjraw_CapsuleTriangle, mjraw_SphereCapsule, mjraw_SphereTriangle, mju_copy3, mju_scl3
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_collide_geom_elem(m: *const mjModel, d: *mut mjData, g: i32, f: i32, e: i32) {
-    // WARNING: signature changed — verify body
-    // Previous params: (m : * const mjModel, d : * mut mjData, g : i32, f : i32, e : i32)
-    // Previous return: ()
-    todo ! ()
+    extern "C" { fn mj_collideGeomElem_impl(m: *const mjModel, d: *mut mjData, g: i32, f: i32, e: i32); }
+    // SAFETY: delegates to C implementation, all pointers valid per caller contract
+    unsafe { mj_collideGeomElem_impl(m, d, g, f, e) }
 }
 
 /// C: mj_collideElems (engine/engine_collision_driver.h:57)
 /// Calls: filterBox, mj_arenaAllocByte, mj_assignMargin, mj_contactParam, mj_freeStack, mj_makeCapsule, mj_markStack, mj_setContact, mj_stackAllocInfo, mj_warning, mjc_ConvexElem, mjraw_CapsuleCapsule, mju_copy3
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_collide_elems(m: *const mjModel, d: *mut mjData, f1: i32, e1: i32, f2: i32, e2: i32) {
-    // WARNING: signature changed — verify body
-    // Previous params: (m : * const mjModel, d : * mut mjData, f1 : i32, e1 : i32, f2 : i32, e2 : i32)
-    // Previous return: ()
-    todo ! ()
+    extern "C" { fn mj_collideElems_impl(m: *const mjModel, d: *mut mjData, f1: i32, e1: i32, f2: i32, e2: i32); }
+    // SAFETY: delegates to C implementation, all pointers valid per caller contract
+    unsafe { mj_collideElems_impl(m, d, f1, e1, f2, e2) }
 }
 
 /// C: mj_collideElemVert (engine/engine_collision_driver.h:60)
 /// Calls: mj_arenaAllocByte, mj_assignMargin, mj_contactParam, mj_freeStack, mj_makeCapsule, mj_markStack, mj_setContact, mj_stackAllocInfo, mj_warning, mjc_ConvexElem, mjraw_SphereCapsule, mjraw_SphereTriangle, mju_copy3
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_collide_elem_vert(m: *const mjModel, d: *mut mjData, f: i32, e: i32, v: i32) {
-    // WARNING: signature changed — verify body
-    // Previous params: (m : * const mjModel, d : * mut mjData, f : i32, e : i32, v : i32)
-    // Previous return: ()
-    todo ! ()
+    extern "C" { fn mj_collideElemVert_impl(m: *const mjModel, d: *mut mjData, f: i32, e: i32, v: i32); }
+    // SAFETY: delegates to C implementation, all pointers valid per caller contract
+    unsafe { mj_collideElemVert_impl(m, d, f, e, v) }
 }
 

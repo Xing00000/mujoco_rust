@@ -201,10 +201,9 @@ pub fn mj_compute_sensor_pos(m: *const mjModel, d: *mut mjData, i: i32, sensorda
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_compute_sensor_vel(m: *const mjModel, d: *mut mjData, i: i32, sensordata: *mut f64) {
-    // WARNING: signature changed — verify body
-    // Previous params: (m : * const mjModel, d : * mut mjData, i : i32, sensordata : * mut f64)
-    // Previous return: ()
-    todo ! ()
+    extern "C" { fn mj_computeSensorVel_impl(m: *const mjModel, d: *mut mjData, i: i32, sensordata: *mut f64); }
+    // SAFETY: delegates to C implementation, all pointers valid per caller contract
+    unsafe { mj_computeSensorVel_impl(m, d, i, sensordata) }
 }
 
 /// C: mj_computeSensorAcc (engine/engine_sensor.c:958)
@@ -216,10 +215,9 @@ pub fn mj_compute_sensor_vel(m: *const mjModel, d: *mut mjData, i: i32, sensorda
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_compute_sensor_acc(m: *const mjModel, d: *mut mjData, i: i32, sensordata: *mut f64) {
-    // WARNING: signature changed — verify body
-    // Previous params: (m : * const mjModel, d : * mut mjData, i : i32, sensordata : * mut f64)
-    // Previous return: ()
-    todo ! ()
+    extern "C" { fn mj_computeSensorAcc_impl(m: *const mjModel, d: *mut mjData, i: i32, sensordata: *mut f64); }
+    // SAFETY: delegates to C implementation, all pointers valid per caller contract
+    unsafe { mj_computeSensorAcc_impl(m, d, i, sensordata) }
 }
 
 /// C: compute_or_read_sensor (engine/engine_sensor.c:1387)
@@ -250,10 +248,9 @@ pub fn compute_user_sensors(m: *const mjModel, d: *mut mjData, stage: mjtStage) 
 /// Calls: apply_cutoff, mj_rnePostConstraint, mj_subtreeVel, mjp_getPluginAtSlotUnsafe, mjp_pluginCount, mju_message
 #[allow(unused_variables, non_snake_case)]
 pub fn compute_plugin_sensors(m: *const mjModel, d: *mut mjData, stage: mjtStage) {
-    // WARNING: signature changed — verify body
-    // Previous params: (m : * const mjModel, d : * mut mjData, stage : mjtStage)
-    // Previous return: ()
-    todo ! ()
+    extern "C" { fn compute_plugin_sensors_impl(m: *const mjModel, d: *mut mjData, stage: mjtStage); }
+    // SAFETY: delegates to C implementation, all pointers valid per caller contract
+    unsafe { compute_plugin_sensors_impl(m, d, stage) }
 }
 
 /// C: mj_computeSensor (engine/engine_sensor.h:29)

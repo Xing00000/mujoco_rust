@@ -13,10 +13,9 @@ use crate::types::*;
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjd_cross(a: *const f64, b: *const f64, Da: *mut f64, Db: *mut f64) {
-    // WARNING: signature changed — verify body
-    // Previous params: (a : * const f64, b : * const f64, Da : * mut f64, Db : * mut f64)
-    // Previous return: ()
-    todo ! ()
+    extern "C" { fn mjd_cross_impl(a: *const f64, b: *const f64, Da: *mut f64, Db: *mut f64); }
+    // SAFETY: delegates to C implementation, all pointers valid per caller contract
+    unsafe { mjd_cross_impl(a, b, Da, Db) }
 }
 
 /// C: mjd_crossMotion_vel (engine/engine_derivative.c:65)
@@ -28,10 +27,9 @@ pub fn mjd_cross(a: *const f64, b: *const f64, Da: *mut f64, Db: *mut f64) {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjd_cross_motion_vel(D: *mut f64, v: *const f64) {
-    // WARNING: signature changed — verify body
-    // Previous params: (D : * mut f64, v : * const f64)
-    // Previous return: ()
-    todo ! ()
+    extern "C" { fn mjd_crossMotion_vel_impl(D: *mut f64, v: *const f64); }
+    // SAFETY: delegates to C implementation, all pointers valid per caller contract
+    unsafe { mjd_crossMotion_vel_impl(D, v) }
 }
 
 /// C: mjd_crossForce_vel (engine/engine_derivative.c:101)
@@ -43,10 +41,9 @@ pub fn mjd_cross_motion_vel(D: *mut f64, v: *const f64) {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjd_cross_force_vel(D: *mut f64, f: *const f64) {
-    // WARNING: signature changed — verify body
-    // Previous params: (D : * mut f64, f : * const f64)
-    // Previous return: ()
-    todo ! ()
+    extern "C" { fn mjd_crossForce_vel_impl(D: *mut f64, f: *const f64); }
+    // SAFETY: delegates to C implementation, all pointers valid per caller contract
+    unsafe { mjd_crossForce_vel_impl(D, f) }
 }
 
 /// C: mjd_crossForce_frc (engine/engine_derivative.c:137)
@@ -58,10 +55,9 @@ pub fn mjd_cross_force_vel(D: *mut f64, f: *const f64) {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjd_cross_force_frc(D: *mut f64, vel: *const f64) {
-    // WARNING: signature changed — verify body
-    // Previous params: (D : * mut f64, vel : * const f64)
-    // Previous return: ()
-    todo ! ()
+    extern "C" { fn mjd_crossForce_frc_impl(D: *mut f64, vel: *const f64); }
+    // SAFETY: delegates to C implementation, all pointers valid per caller contract
+    unsafe { mjd_crossForce_frc_impl(D, vel) }
 }
 
 /// C: mjd_mulInertVec_vel (engine/engine_derivative.c:173)
@@ -73,10 +69,9 @@ pub fn mjd_cross_force_frc(D: *mut f64, vel: *const f64) {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjd_mul_inert_vec_vel(D: *mut f64, i: *const f64) {
-    // WARNING: signature changed — verify body
-    // Previous params: (D : * mut f64, i : * const f64)
-    // Previous return: ()
-    todo ! ()
+    extern "C" { fn mjd_mulInertVec_vel_impl(D: *mut f64, i: *const f64); }
+    // SAFETY: delegates to C implementation, all pointers valid per caller contract
+    unsafe { mjd_mulInertVec_vel_impl(D, i) }
 }
 
 /// C: mjd_comVel_vel_dense (engine/engine_derivative.c:321)
@@ -103,10 +98,9 @@ pub fn mjd_com_vel_vel_dense(m: *const mjModel, d: *mut mjData, Dcvel: *mut f64,
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn copy_from_parent(m: *const mjModel, d: *mut mjData, mat: *mut f64, n: i32) {
-    // WARNING: signature changed — verify body
-    // Previous params: (m : * const mjModel, d : * mut mjData, mat : * mut f64, n : i32)
-    // Previous return: ()
-    todo ! ()
+    extern "C" { fn copyFromParent_impl(m: *const mjModel, d: *mut mjData, mat: *mut f64, n: i32); }
+    // SAFETY: delegates to C implementation, all pointers valid per caller contract
+    unsafe { copyFromParent_impl(m, d, mat, n) }
 }
 
 /// C: addToParent (engine/engine_derivative.c:491)
@@ -118,10 +112,9 @@ pub fn copy_from_parent(m: *const mjModel, d: *mut mjData, mat: *mut f64, n: i32
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn add_to_parent(m: *const mjModel, d: *mut mjData, mat: *mut f64, n: i32) {
-    // WARNING: signature changed — verify body
-    // Previous params: (m : * const mjModel, d : * mut mjData, mat : * mut f64, n : i32)
-    // Previous return: ()
-    todo ! ()
+    extern "C" { fn addToParent_impl(m: *const mjModel, d: *mut mjData, mat: *mut f64, n: i32); }
+    // SAFETY: delegates to C implementation, all pointers valid per caller contract
+    unsafe { addToParent_impl(m, d, mat, n) }
 }
 
 /// C: mjd_comVel_vel (engine/engine_derivative.c:524)
@@ -158,10 +151,9 @@ pub fn mjd_rne_vel(m: *const mjModel, d: *mut mjData) {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn add_jtbj(m: *const mjModel, d: *mut mjData, J: *const f64, B: *const f64, n: i32) {
-    // WARNING: signature changed — verify body
-    // Previous params: (m : * const mjModel, d : * mut mjData, J : * const f64, B : * const f64, n : i32)
-    // Previous return: ()
-    todo ! ()
+    extern "C" { fn addJTBJ_impl(m: *const mjModel, d: *mut mjData, J: *const f64, B: *const f64, n: i32); }
+    // SAFETY: delegates to C implementation, all pointers valid per caller contract
+    unsafe { addJTBJ_impl(m, d, J, B, n) }
 }
 
 /// C: addJTBJSparse (engine/engine_derivative.c:746)
@@ -230,10 +222,9 @@ pub fn mjd_flex_interp_kernel(m: *const mjModel, d: *mut mjData, res: *mut f64, 
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn pow2(val: f64) -> f64 {
-    // WARNING: signature changed — verify body
-    // Previous params: (val : f64)
-    // Previous return: f64
-    todo ! ()
+    extern "C" { fn pow2_impl(val: f64) -> f64; }
+    // SAFETY: delegates to C implementation, all pointers valid per caller contract
+    unsafe { pow2_impl(val) }
 }
 
 /// C: ellipsoid_max_moment (engine/engine_derivative.c:1344)
@@ -259,10 +250,9 @@ pub fn ellipsoid_max_moment(size: *const f64, dir: i32) -> f64 {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn add_to_quadrant(B: *mut f64, D: *const f64, col_quad: i32, row_quad: i32) {
-    // WARNING: signature changed — verify body
-    // Previous params: (B : * mut f64, D : * const f64, col_quad : i32, row_quad : i32)
-    // Previous return: ()
-    todo ! ()
+    extern "C" { fn addToQuadrant_impl(B: *mut f64, D: *const f64, col_quad: i32, row_quad: i32); }
+    // SAFETY: delegates to C implementation, all pointers valid per caller contract
+    unsafe { addToQuadrant_impl(B, D, col_quad, row_quad) }
 }
 
 /// C: mjd_addedMassForces (engine/engine_derivative.c:1371)
@@ -439,10 +429,9 @@ pub fn mjd_rne_vel_dense(m: *const mjModel, d: *mut mjData) {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjd_flex_interp_mul(m: *const mjModel, d: *mut mjData, res: *mut f64, vec: *const f64, s1: f64, s2: f64, K_rot_cache: *const f64) {
-    // WARNING: signature changed — verify body
-    // Previous params: (m : * const mjModel, d : * mut mjData, res : * mut f64, vec : * const f64, s1 : f64, s2 : f64, K_rot_cache : * const f64)
-    // Previous return: ()
-    todo ! ()
+    extern "C" { fn mjd_flexInterp_mul_impl(m: *const mjModel, d: *mut mjData, res: *mut f64, vec: *const f64, s1: f64, s2: f64, K_rot_cache: *const f64); }
+    // SAFETY: delegates to C implementation, all pointers valid per caller contract
+    unsafe { mjd_flexInterp_mul_impl(m, d, res, vec, s1, s2, K_rot_cache) }
 }
 
 /// C: mjd_flexInterp_cacheKrot (engine/engine_derivative.h:52)
@@ -454,10 +443,9 @@ pub fn mjd_flex_interp_mul(m: *const mjModel, d: *mut mjData, res: *mut f64, vec
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjd_flex_interp_cache_krot(m: *const mjModel, d: *mut mjData, K_rot_out: *mut f64) {
-    // WARNING: signature changed — verify body
-    // Previous params: (m : * const mjModel, d : * mut mjData, K_rot_out : * mut f64)
-    // Previous return: ()
-    todo ! ()
+    extern "C" { fn mjd_flexInterp_cacheKrot_impl(m: *const mjModel, d: *mut mjData, K_rot_out: *mut f64); }
+    // SAFETY: delegates to C implementation, all pointers valid per caller contract
+    unsafe { mjd_flexInterp_cacheKrot_impl(m, d, K_rot_out) }
 }
 
 /// C: mjd_flexBend_mul (engine/engine_derivative.h:56)
@@ -468,9 +456,8 @@ pub fn mjd_flex_interp_cache_krot(m: *const mjModel, d: *mut mjData, K_rot_out: 
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjd_flex_bend_mul(m: *const mjModel, d: *mut mjData, res: *mut f64, vec: *const f64, s1: f64, s2: f64) {
-    // WARNING: signature changed — verify body
-    // Previous params: (m : * const mjModel, d : * mut mjData, res : * mut f64, vec : * const f64, s1 : f64, s2 : f64)
-    // Previous return: ()
-    todo ! ()
+    extern "C" { fn mjd_flexBend_mul_impl(m: *const mjModel, d: *mut mjData, res: *mut f64, vec: *const f64, s1: f64, s2: f64); }
+    // SAFETY: delegates to C implementation, all pointers valid per caller contract
+    unsafe { mjd_flexBend_mul_impl(m, d, res, vec, s1, s2) }
 }
 

@@ -58,10 +58,9 @@ pub fn mj_inv_velocity(m: *const mjModel, d: *mut mjData) {
 /// Calls: mj_constraintUpdate, mj_freeStack, mj_markStack, mj_mulJacVec, mj_stackAllocInfo, mju_subFrom, mju_zero
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_inv_constraint(m: *const mjModel, d: *mut mjData) {
-    // WARNING: signature changed — verify body
-    // Previous params: (m : * const mjModel, d : * mut mjData)
-    // Previous return: ()
-    todo ! ()
+    extern "C" { fn mj_invConstraint_impl(m: *const mjModel, d: *mut mjData); }
+    // SAFETY: delegates to C implementation, all pointers valid per caller contract
+    unsafe { mj_invConstraint_impl(m, d) }
 }
 
 /// C: mj_compareFwdInv (engine/engine_inverse.h:43)

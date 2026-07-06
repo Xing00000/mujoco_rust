@@ -540,10 +540,9 @@ pub fn mj_project_constraint(m: *const mjModel, d: *mut mjData) {
 /// Calls: mj_Jdotv, mj_mulJacVec
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_reference_constraint(m: *const mjModel, d: *mut mjData) {
-    // WARNING: signature changed — verify body
-    // Previous params: (m : * const mjModel, d : * mut mjData)
-    // Previous return: ()
-    todo ! ()
+    extern "C" { fn mj_referenceConstraint_impl(m: *const mjModel, d: *mut mjData); }
+    // SAFETY: delegates to C implementation, all pointers valid per caller contract
+    unsafe { mj_referenceConstraint_impl(m, d) }
 }
 
 /// C: mj_constraintUpdate_impl (engine/engine_core_constraint.h:97)

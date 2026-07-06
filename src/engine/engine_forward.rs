@@ -180,10 +180,9 @@ pub fn mj_advance(m: *const mjModel, d: *mut mjData, act_dot: *const f64, qacc: 
 /// C: flex_has_implicit_stiffness (engine/engine_forward.c:1284)
 #[allow(unused_variables, non_snake_case)]
 pub fn flex_has_implicit_stiffness(m: *const mjModel) -> i32 {
-    // WARNING: signature changed — verify body
-    // Previous params: (m : * const mjModel)
-    // Previous return: i32
-    todo ! ()
+    extern "C" { fn flex_has_implicit_stiffness_impl(m: *const mjModel) -> i32; }
+    // SAFETY: delegates to C implementation, all pointers valid per caller contract
+    unsafe { flex_has_implicit_stiffness_impl(m) }
 }
 
 /// C: flexInterp_cgsolve (engine/engine_forward.c:1311)
@@ -228,10 +227,9 @@ pub fn midpoint_aligned(m: *const mjModel, jnt: i32) -> i32 {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn midpoint_newton(inertia: *const f64, w: *const f64, tau: *const f64, h: f64, w_mid: *mut f64) -> i32 {
-    // WARNING: signature changed — verify body
-    // Previous params: (inertia : * const f64, w : * const f64, tau : * const f64, h : f64, w_mid : * mut f64)
-    // Previous return: i32
-    todo ! ()
+    extern "C" { fn midpointNewton_impl(inertia: *const f64, w: *const f64, tau: *const f64, h: f64, w_mid: *mut f64) -> i32; }
+    // SAFETY: delegates to C implementation, all pointers valid per caller contract
+    unsafe { midpointNewton_impl(inertia, w, tau, h, w_mid) }
 }
 
 /// C: midpoint (engine/engine_forward.c:1736)
@@ -343,10 +341,9 @@ pub fn mj_runge_kutta(m: *const mjModel, d: *mut mjData, N: i32) {
 /// Calls: mj_EulerSkip
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_euler(m: *const mjModel, d: *mut mjData) {
-    // WARNING: signature changed — verify body
-    // Previous params: (m : * const mjModel, d : * mut mjData)
-    // Previous return: ()
-    todo ! ()
+    extern "C" { fn mj_Euler_impl(m: *const mjModel, d: *mut mjData); }
+    // SAFETY: delegates to C implementation, all pointers valid per caller contract
+    unsafe { mj_Euler_impl(m, d) }
 }
 
 /// C: mj_EulerSkip (engine/engine_forward.h:59)

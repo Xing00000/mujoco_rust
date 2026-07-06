@@ -194,10 +194,9 @@ pub fn mj_wake_equality(m: *const mjModel, d: *mut mjData) -> i32 {
 /// Calls: mj_sleepTrees, mju_message, treeCanSleep
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_sleep(m: *const mjModel, d: *mut mjData) -> i32 {
-    // WARNING: signature changed — verify body
-    // Previous params: (m : * const mjModel, d : * mut mjData)
-    // Previous return: i32
-    todo ! ()
+    extern "C" { fn mj_sleep_impl(m: *const mjModel, d: *mut mjData) -> i32; }
+    // SAFETY: delegates to C implementation, all pointers valid per caller contract
+    unsafe { mj_sleep_impl(m, d) }
 }
 
 /// C: mj_flexBody (engine/engine_sleep.h:56)

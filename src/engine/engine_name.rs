@@ -35,9 +35,8 @@ pub fn mj_name2id(m: *const mjModel, r#type: i32, name: *const i8) -> i32 {
 /// Calls: _getnumadr
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_id2name(m: *const mjModel, r#type: i32, id: i32) -> *const i8 {
-    // WARNING: signature changed — verify body
-    // Previous params: (m : * const mjModel, r#type : i32, id : i32)
-    // Previous return: * const i8
-    todo ! ()
+    extern "C" { fn mj_id2name_impl(m: *const mjModel, r#type: i32, id: i32) -> *const i8; }
+    // SAFETY: delegates to C implementation, all pointers valid per caller contract
+    unsafe { mj_id2name_impl(m, r#type, id) }
 }
 

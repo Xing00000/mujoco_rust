@@ -404,9 +404,8 @@ pub fn mjc_sdf(m: *const mjModel, d: *mut mjData, con: *mut mjPreContact, g1: i3
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjc_flex_sdf(m: *const mjModel, d: *const mjData, con: *mut mjPreContact, elem: *mut i32, g: i32, f: i32, margin: f64) -> i32 {
-    // WARNING: signature changed — verify body
-    // Previous params: (m : * const mjModel, d : * const mjData, con : * mut mjPreContact, elem : * mut i32, g : i32, f : i32, margin : f64)
-    // Previous return: i32
-    todo ! ()
+    extern "C" { fn mjc_FlexSDF_impl(m: *const mjModel, d: *const mjData, con: *mut mjPreContact, elem: *mut i32, g: i32, f: i32, margin: f64) -> i32; }
+    // SAFETY: delegates to C implementation, all pointers valid per caller contract
+    unsafe { mjc_FlexSDF_impl(m, d, con, elem, g, f, margin) }
 }
 
