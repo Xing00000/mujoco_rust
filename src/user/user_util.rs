@@ -179,10 +179,12 @@ pub fn mjuu_dot3(a: *const f64, b: *const f64) -> f64 {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjuu_dist3(a: *const f64, b: *const f64) -> f64 {
-    // WARNING: signature changed — verify body
-    // Previous params: (a : * const f64, b : * const f64)
-    // Previous return: f64
-    todo ! ()
+    unsafe {
+        let d0 = *a.add(0) - *b.add(0);
+        let d1 = *a.add(1) - *b.add(1);
+        let d2 = *a.add(2) - *b.add(2);
+        (d0*d0 + d1*d1 + d2*d2).sqrt()
+    }
 }
 
 /// C: mjuu_L1 (user/user_util.h:74)

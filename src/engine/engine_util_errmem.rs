@@ -81,7 +81,15 @@ pub fn mju_legacy_text(msg: *const mjLogMessage, buf: *mut i8, bufsz: i32) -> *c
 /// C: mju_activeHandler (engine/engine_util_errmem.c:292)
 #[allow(unused_variables, non_snake_case)]
 pub fn mju_active_handler() -> mjfLogHandler {
-    todo ! ()
+    // mjfLogHandler is a function pointer type in C but opaque ZST in this port.
+    // This function accesses thread-local and global state from the C library.
+    // Since it's opaque, we just forward to the C implementation.
+    unsafe {
+        extern "C" {
+            fn mju_activeHandler() -> mjfLogHandler;
+        }
+        mju_activeHandler()
+    }
 }
 
 /// C: mju_malloc (engine/engine_util_errmem.h:43)
@@ -98,10 +106,18 @@ pub fn mju_malloc(size: usize) -> *mut () {
 /// Calls: mju_alignedFree
 #[allow(unused_variables, non_snake_case)]
 pub fn mju_free(ptr: *mut ()) {
-    // WARNING: signature changed — verify body
-    // Previous params: (ptr : * mut ())
-    // Previous return: ()
-    todo ! ()
+    if ptr.is_null() { return; }
+    unsafe {
+        extern "C" {
+            static mju_user_free: Option<unsafe extern "C" fn(*mut ())>;
+            fn free(ptr: *mut ());
+        }
+        if let Some(user_free) = mju_user_free {
+            user_free(ptr);
+        } else {
+            free(ptr);
+        }
+    }
 }
 
 /// C: mju_setLogHandler (engine/engine_util_errmem.h:57)
@@ -201,10 +217,14 @@ pub fn mju_write_log(r#type: *const i8, msg: *const i8) {
 /// C: _mjPRIVATE_setTlsLogHandler (engine/engine_util_errmem.h:93)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_private_set_tls_log_handler(handler: mjfLogHandler) -> mjfLogHandler {
-    // WARNING: signature changed — verify body
-    // Previous params: (handler : mjfLogHandler)
-    // Previous return: mjfLogHandler
-    todo ! ()
+    unsafe {
+        extern "C" {
+            static mut _mjPRIVATE_tls_log_handler: mjfLogHandler;
+        }
+        let prev = _mjPRIVATE_tls_log_handler;
+        _mjPRIVATE_tls_log_handler = handler;
+        prev
+    }
 }
 
 /// C: _mjPRIVATE_getGlobalLogHandler (engine/engine_util_errmem.h:96)

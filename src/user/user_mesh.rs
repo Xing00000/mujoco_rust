@@ -12,10 +12,12 @@ use crate::types::*;
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn fovea(x: f64, gamma: f64) -> f64 {
-    // WARNING: signature changed — verify body
-    // Previous params: (x : f64, gamma : f64)
-    // Previous return: f64
-    todo ! ()
+    // Quick return
+    if gamma == 0.0 { return x; }
+
+    // Foveal deformation
+    let g: f64 = if gamma < 0.0 { 0.0 } else if gamma > 1.0 { 1.0 } else { gamma };
+    g * x.powi(5) + (1.0 - g) * x
 }
 
 /// C: LinSpace (user/user_mesh.cc:93)
@@ -25,11 +27,15 @@ pub fn fovea(x: f64, gamma: f64) -> f64 {
 ///   3. No algebraic simplification
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
-pub fn lin_space(lower: f64, upper: f64, n: i32, array: [f64; 0]) {
-    // WARNING: signature changed — verify body
-    // Previous params: (lower : f64, upper : f64, n : i32, array : [f64 ; 0])
-    // Previous return: ()
-    todo ! ()
+pub fn lin_space(mut lower: f64, upper: f64, n: i32, array: [f64; 0]) {
+    unsafe {
+        let ptr = array.as_ptr() as *mut f64;
+        let increment: f64 = if n > 1 { (upper - lower) / (n - 1) as f64 } else { 0.0 };
+        for i in 0..n as usize {
+            *ptr.add(i) = lower;
+            lower += increment;
+        }
+    }
 }
 
 /// C: BinEdges (user/user_mesh.cc:103)
