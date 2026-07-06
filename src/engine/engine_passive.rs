@@ -37,10 +37,12 @@ pub fn mj_flex_passive_interp(m: *const mjModel, d: *mut mjData, f: i32, enbl_sp
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mju_dphi2d(s0: f64, l0: i32, s1: f64, l1: i32, order: i32, dir: i32) -> f64 {
-    // WARNING: signature changed — verify body
-    // Previous params: (s0 : f64, l0 : i32, s1 : f64, l1 : i32, order : i32, dir : i32)
-    // Previous return: f64
-    todo ! ()
+    use crate::engine::engine_util_misc::{mju_flex_phi, mju_flex_dphi};
+    if dir == 0 {
+        mju_flex_dphi(s0, l0, order) * mju_flex_phi(s1, l1, order)
+    } else {
+        mju_flex_phi(s0, l0, order) * mju_flex_dphi(s1, l1, order)
+    }
 }
 
 /// C: mj_flexPassiveBendInterp (engine/engine_passive.c:236)
