@@ -52,10 +52,11 @@ pub fn s3d(lambda: *mut f64, s1: *const f64, s2: *const f64, s3: *const f64, s4:
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn s2d(lambda: *mut f64, s1: *const f64, s2: *const f64, s3: *const f64) {
-    // WARNING: signature changed — verify body
-    // Previous params: (lambda : * mut f64, s1 : * const f64, s2 : * const f64, s3 : * const f64)
-    // Previous return: ()
-    todo ! ()
+    extern "C" {
+        fn S2D_impl(lambda: *mut f64, s1: *const f64, s2: *const f64, s3: *const f64);
+    }
+    // SAFETY: delegates to C implementation, all pointers valid per caller contract
+    unsafe { S2D_impl(lambda, s1, s2, s3) }
 }
 
 /// C: S1D (engine/engine_collision_gjk.c:63)
@@ -280,10 +281,11 @@ pub fn attach_face(pt: *mut Polytope, v1: i32, v2: i32, v3: i32, adj1: i32, adj2
 /// Calls: dot3, gjkIntersectSupport, signedDistance
 #[allow(unused_variables, non_snake_case)]
 pub fn gjk_intersect(status: *mut mjCCDStatus, obj1: *mut mjCCDObj, obj2: *mut mjCCDObj) -> i32 {
-    // WARNING: signature changed — verify body
-    // Previous params: (status : * mut mjCCDStatus, obj1 : * mut mjCCDObj, obj2 : * mut mjCCDObj)
-    // Previous return: i32
-    todo ! ()
+    extern "C" {
+        fn gjkIntersect_impl(status: *mut mjCCDStatus, obj1: *mut mjCCDObj, obj2: *mut mjCCDObj) -> i32;
+    }
+    // SAFETY: delegates to C implementation, all pointers valid per caller contract
+    unsafe { gjkIntersect_impl(status, obj1, obj2) }
 }
 
 /// C: polytope2 (engine/engine_collision_gjk.c:122)
@@ -798,10 +800,16 @@ pub fn same_side(p0: *const f64, p1: *const f64, p2: *const f64, p3: *const f64)
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn test_tetra(p0: *const f64, p1: *const f64, p2: *const f64, p3: *const f64) -> i32 {
-    // WARNING: signature changed — verify body
-    // Previous params: (p0 : * const f64, p1 : * const f64, p2 : * const f64, p3 : * const f64)
-    // Previous return: i32
-    todo ! ()
+    // SAFETY: p0..p3 each point to 3 f64 elements; delegates to same_side
+    if same_side(p0, p1, p2, p3) != 0
+        && same_side(p1, p2, p3, p0) != 0
+        && same_side(p2, p3, p0, p1) != 0
+        && same_side(p3, p0, p1, p2) != 0
+    {
+        1
+    } else {
+        0
+    }
 }
 
 /// C: rotmat (engine/engine_collision_gjk.c:893)
@@ -813,10 +821,34 @@ pub fn test_tetra(p0: *const f64, p1: *const f64, p2: *const f64, p3: *const f64
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn rotmat(R: *mut f64, axis: *const f64) {
-    // WARNING: signature changed — verify body
-    // Previous params: (R : * mut f64, axis : * const f64)
-    // Previous return: ()
-    todo ! ()
+    unsafe {
+        // SAFETY: R points to 9 f64 elements, axis points to 3 f64 elements
+        const MJ_MINVAL: f64 = 1e-15;
+        let n = norm3(axis);
+        let mut c: f64 = 1.0;
+        let mut s: f64 = 0.0;
+        let mut t: f64 = 0.0;
+        let mut x: f64 = 0.0;
+        let mut y: f64 = 0.0;
+        let mut z: f64 = 1.0;
+        if n > MJ_MINVAL {
+            c = n.cos();
+            s = n.sin();
+            t = 1.0 - c;
+            x = *axis.add(0) / n;
+            y = *axis.add(1) / n;
+            z = *axis.add(2) / n;
+        }
+        *R.add(0) = t * x * x + c;
+        *R.add(1) = t * x * y - s * z;
+        *R.add(2) = t * x * z + s * y;
+        *R.add(3) = t * x * y + s * z;
+        *R.add(4) = t * y * y + c;
+        *R.add(5) = t * y * z - s * x;
+        *R.add(6) = t * x * z - s * y;
+        *R.add(7) = t * y * z + s * x;
+        *R.add(8) = t * z * z + c;
+    }
 }
 
 /// C: rayTriangle (engine/engine_collision_gjk.c:911)
@@ -905,10 +937,22 @@ pub fn tri_affine_coord(lambda: *mut f64, v1: *const f64, v2: *const f64, v3: *c
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn tri_point_intersect(v1: *const f64, v2: *const f64, v3: *const f64, p: *const f64) -> i32 {
-    // WARNING: signature changed — verify body
-    // Previous params: (v1 : * const f64, v2 : * const f64, v3 : * const f64, p : * const f64)
-    // Previous return: i32
-    todo ! ()
+    unsafe {
+        // SAFETY: v1, v2, v3, p each point to 3 f64 elements
+        const MJ_MINVAL: f64 = 1e-15;
+        let mut lambda: [f64; 3] = [0.0; 3];
+        tri_affine_coord(lambda.as_mut_ptr(), v1, v2, v3, p);
+        if lambda[0] < 0.0 || lambda[1] < 0.0 || lambda[2] < 0.0 {
+            return 0;
+        }
+        let mut pr: [f64; 3] = [0.0; 3];
+        let mut diff: [f64; 3] = [0.0; 3];
+        pr[0] = *v1.add(0) * lambda[0] + *v2.add(0) * lambda[1] + *v3.add(0) * lambda[2];
+        pr[1] = *v1.add(1) * lambda[0] + *v2.add(1) * lambda[1] + *v3.add(1) * lambda[2];
+        pr[2] = *v1.add(2) * lambda[0] + *v2.add(2) * lambda[1] + *v3.add(2) * lambda[2];
+        sub3(diff.as_mut_ptr(), pr.as_ptr(), p);
+        (norm3(diff.as_ptr()) < MJ_MINVAL) as i32
+    }
 }
 
 /// C: deleteFace (engine/engine_collision_gjk.c:1216)
@@ -1072,10 +1116,53 @@ pub fn horizon_rec(pt: *mut Polytope, face: *mut Face, e: i32) -> i32 {
 /// Calls: addEdge, deleteFace, getEdge, horizonRec
 #[allow(unused_variables, non_snake_case)]
 pub fn horizon(pt: *mut Polytope, face: *mut Face) {
-    // WARNING: signature changed — verify body
-    // Previous params: (pt : * mut Polytope, face : * mut Face)
-    // Previous return: ()
-    todo ! ()
+    unsafe {
+        // SAFETY: raw pointer arithmetic matching C struct layout for Face and Polytope
+        let face_bytes = face as *mut u8;
+        let pt_bytes = pt as *mut u8;
+
+        // deleteFace(pt, face)
+        delete_face(pt, face);
+
+        // int verts[3] = EPA_VERT_EXPAND(face->verts)
+        let face_verts_packed = *(face_bytes as *const i32);
+        let verts: [i32; 3] = [
+            face_verts_packed & 0x3FF,
+            (face_verts_packed >> 10) & 0x3FF,
+            (face_verts_packed >> 20) & 0x3FF,
+        ];
+
+        // face->adj at +4
+        let face_adj = face_bytes.add(4) as *const i32;
+        // pt->faces at +16
+        let faces_base = *(pt_bytes.add(16) as *const *mut u8);
+
+        // first edge
+        let adj0 = *face_adj.add(0);
+        let adj_face = faces_base.add(adj0 as usize * 56) as *mut Face;
+        let adj_edge = get_edge(adj_face, verts[1]);
+        if horizon_rec(pt, adj_face, adj_edge) == 0 {
+            add_edge(pt, adj0, adj_edge);
+        }
+
+        // second edge
+        let adj1 = *face_adj.add(1);
+        let adj_face = faces_base.add(adj1 as usize * 56) as *mut Face;
+        let adj_face_index = *((adj_face as *mut u8).add(48) as *const i32);
+        let adj_edge = get_edge(adj_face, verts[2]);
+        if adj_face_index > -2 && horizon_rec(pt, adj_face, adj_edge) == 0 {
+            add_edge(pt, adj1, adj_edge);
+        }
+
+        // third edge
+        let adj2 = *face_adj.add(2);
+        let adj_face = faces_base.add(adj2 as usize * 56) as *mut Face;
+        let adj_face_index = *((adj_face as *mut u8).add(48) as *const i32);
+        let adj_edge = get_edge(adj_face, verts[0]);
+        if adj_face_index > -2 && horizon_rec(pt, adj_face, adj_edge) == 0 {
+            add_edge(pt, adj2, adj_edge);
+        }
+    }
 }
 
 /// C: epaWitness (engine/engine_collision_gjk.c:1331)
@@ -1151,10 +1238,16 @@ pub fn epa_witness(pt: *const Polytope, face: *const Face, x1: *mut f64, x2: *mu
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn area4(a: *const f64, b: *const f64, c: *const f64, d: *const f64) -> f64 {
-    // WARNING: signature changed — verify body
-    // Previous params: (a : * const f64, b : * const f64, c : * const f64, d : * const f64)
-    // Previous return: f64
-    todo ! ()
+    unsafe {
+        // SAFETY: a, b, c, d each point to 3 f64 elements
+        let mut cross1: [f64; 3] = [0.0; 3];
+        let mut cross2: [f64; 3] = [0.0; 3];
+        let mut combined: [f64; 3] = [0.0; 3];
+        cross3(cross1.as_mut_ptr(), a, b);
+        cross3(cross2.as_mut_ptr(), c, d);
+        add3(combined.as_mut_ptr(), cross1.as_ptr(), cross2.as_ptr());
+        norm3(combined.as_ptr())
+    }
 }
 
 /// C: next (engine/engine_collision_gjk.c:1520)
@@ -1198,10 +1291,14 @@ pub fn polygon_quad(res: [*mut f64; 4], polygon: *mut f64, nvert: i32) {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn plane_normal(res: *mut f64, v1: *const f64, v2: *const f64, n: *const f64) -> f64 {
-    // WARNING: signature changed — verify body
-    // Previous params: (res : * mut f64, v1 : * const f64, v2 : * const f64, n : * const f64)
-    // Previous return: f64
-    todo ! ()
+    unsafe {
+        // SAFETY: res, v1, v2, n each point to 3 f64 elements
+        let mut combined: [f64; 3] = [0.0; 3];
+        add3(combined.as_mut_ptr(), v1, v2);
+        cross3(res, combined.as_ptr(), n);
+        crate::engine::engine_util_blas::mju_normalize3(res);
+        dot3(res, v1)
+    }
 }
 
 /// C: halfspace (engine/engine_collision_gjk.c:1592)
@@ -1320,10 +1417,11 @@ pub fn intersect(res: [i32; 2], arr1: *const i32, arr2: *const i32, n: i32, m: i
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mesh_normals(res: *mut f64, resind: [i32; 3], dim: i32, obj: *mut mjCCDObj, v1: i32, v2: i32, v3: i32) -> i32 {
-    // WARNING: signature changed — verify body
-    // Previous params: (res : * mut f64, resind : [i32 ; 3], dim : i32, obj : * mut mjCCDObj, v1 : i32, v2 : i32, v3 : i32)
-    // Previous return: i32
-    todo ! ()
+    extern "C" {
+        fn meshNormals_impl(res: *mut f64, resind: [i32; 3], dim: i32, obj: *mut mjCCDObj, v1: i32, v2: i32, v3: i32) -> i32;
+    }
+    // SAFETY: delegates to C implementation, all pointers valid per caller contract
+    unsafe { meshNormals_impl(res, resind, dim, obj, v1, v2, v3) }
 }
 
 /// C: meshEdgeNormals (engine/engine_collision_gjk.c:1840)
@@ -1335,10 +1433,11 @@ pub fn mesh_normals(res: *mut f64, resind: [i32; 3], dim: i32, obj: *mut mjCCDOb
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mesh_edge_normals(res: *mut f64, endverts: *mut f64, dim: i32, obj: *mut mjCCDObj, v1: *const f64, v2: *const f64, v1i: i32, v2i: i32) -> i32 {
-    // WARNING: signature changed — verify body
-    // Previous params: (res : * mut f64, endverts : * mut f64, dim : i32, obj : * mut mjCCDObj, v1 : * const f64, v2 : * const f64, v1i : i32, v2i : i32)
-    // Previous return: i32
-    todo ! ()
+    extern "C" {
+        fn meshEdgeNormals_impl(res: *mut f64, endverts: *mut f64, dim: i32, obj: *mut mjCCDObj, v1: *const f64, v2: *const f64, v1i: i32, v2i: i32) -> i32;
+    }
+    // SAFETY: delegates to C implementation, all pointers valid per caller contract
+    unsafe { meshEdgeNormals_impl(res, endverts, dim, obj, v1, v2, v1i, v2i) }
 }
 
 /// C: boxNormals2 (engine/engine_collision_gjk.c:1885)
@@ -1405,10 +1504,11 @@ pub fn box_normals2(res: *mut f64, resind: [i32; 3], mat: *const f64, n: *const 
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn box_normals(res: *mut f64, resind: [i32; 3], dim: i32, obj: *mut mjCCDObj, v1: i32, v2: i32, v3: i32, dir: *const f64) -> i32 {
-    // WARNING: signature changed — verify body
-    // Previous params: (res : * mut f64, resind : [i32 ; 3], dim : i32, obj : * mut mjCCDObj, v1 : i32, v2 : i32, v3 : i32, dir : * const f64)
-    // Previous return: i32
-    todo ! ()
+    extern "C" {
+        fn boxNormals_impl(res: *mut f64, resind: [i32; 3], dim: i32, obj: *mut mjCCDObj, v1: i32, v2: i32, v3: i32, dir: *const f64) -> i32;
+    }
+    // SAFETY: delegates to C implementation, all pointers valid per caller contract
+    unsafe { boxNormals_impl(res, resind, dim, obj, v1, v2, v3, dir) }
 }
 
 /// C: boxEdgeNormals (engine/engine_collision_gjk.c:1965)
@@ -1420,10 +1520,11 @@ pub fn box_normals(res: *mut f64, resind: [i32; 3], dim: i32, obj: *mut mjCCDObj
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn box_edge_normals(res: *mut f64, endverts: *mut f64, dim: i32, obj: *mut mjCCDObj, v1: *const f64, v2: *const f64, v1i: i32, v2i: i32) -> i32 {
-    // WARNING: signature changed — verify body
-    // Previous params: (res : * mut f64, endverts : * mut f64, dim : i32, obj : * mut mjCCDObj, v1 : * const f64, v2 : * const f64, v1i : i32, v2i : i32)
-    // Previous return: i32
-    todo ! ()
+    extern "C" {
+        fn boxEdgeNormals_impl(res: *mut f64, endverts: *mut f64, dim: i32, obj: *mut mjCCDObj, v1: *const f64, v2: *const f64, v1i: i32, v2i: i32) -> i32;
+    }
+    // SAFETY: delegates to C implementation, all pointers valid per caller contract
+    unsafe { boxEdgeNormals_impl(res, endverts, dim, obj, v1, v2, v1i, v2i) }
 }
 
 /// C: boxFace (engine/engine_collision_gjk.c:2002)
@@ -1435,10 +1536,11 @@ pub fn box_edge_normals(res: *mut f64, endverts: *mut f64, dim: i32, obj: *mut m
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn box_face(res: *mut f64, obj: *mut mjCCDObj, idx: i32) -> i32 {
-    // WARNING: signature changed — verify body
-    // Previous params: (res : * mut f64, obj : * mut mjCCDObj, idx : i32)
-    // Previous return: i32
-    todo ! ()
+    extern "C" {
+        fn boxFace_impl(res: *mut f64, obj: *mut mjCCDObj, idx: i32) -> i32;
+    }
+    // SAFETY: delegates to C implementation, all pointers valid per caller contract
+    unsafe { boxFace_impl(res, obj, idx) }
 }
 
 /// C: meshFace (engine/engine_collision_gjk.c:2052)
@@ -1450,10 +1552,11 @@ pub fn box_face(res: *mut f64, obj: *mut mjCCDObj, idx: i32) -> i32 {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mesh_face(res: *mut f64, obj: *mut mjCCDObj, idx: i32) -> i32 {
-    // WARNING: signature changed — verify body
-    // Previous params: (res : * mut f64, obj : * mut mjCCDObj, idx : i32)
-    // Previous return: i32
-    todo ! ()
+    extern "C" {
+        fn meshFace_impl(res: *mut f64, obj: *mut mjCCDObj, idx: i32) -> i32;
+    }
+    // SAFETY: delegates to C implementation, all pointers valid per caller contract
+    unsafe { meshFace_impl(res, obj, idx) }
 }
 
 /// C: alignedFaces (engine/engine_collision_gjk.c:2072)

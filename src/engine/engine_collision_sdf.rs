@@ -13,10 +13,11 @@ use crate::types::*;
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn box_projection(point: *mut f64, r#box: *const f64) -> f64 {
-    // WARNING: signature changed — verify body
-    // Previous params: (point : * mut f64, r#box : * const f64)
-    // Previous return: f64
-    todo ! ()
+    extern "C" {
+        fn boxProjection_impl(point: *mut f64, r#box: *const f64) -> f64;
+    }
+    // SAFETY: delegates to C implementation, all pointers valid per caller contract
+    unsafe { boxProjection_impl(point, r#box) }
 }
 
 /// C: findOct (engine/engine_collision_sdf.c:69)
@@ -73,10 +74,18 @@ pub fn oct_gradient(m: *const mjModel, grad: *mut f64, point: *const f64, meshid
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn radial_field3d(field: *mut f64, a: *const f64, x: *const f64, size: *const f64) {
-    // WARNING: signature changed — verify body
-    // Previous params: (field : * mut f64, a : * const f64, x : * const f64, size : * const f64)
-    // Previous return: ()
-    todo ! ()
+    unsafe {
+        // SAFETY: field, a, x, size each point to at least 3 f64 elements
+        *field.add(0) = -*size.add(0) / *a.add(0);
+        *field.add(1) = -*size.add(1) / *a.add(1);
+        *field.add(2) = -*size.add(2) / *a.add(2);
+        crate::engine::engine_util_blas::mju_normalize3(field);
+
+        // flip sign if necessary
+        if *x.add(0) < 0.0 { *field.add(0) = -*field.add(0); }
+        if *x.add(1) < 0.0 { *field.add(1) = -*field.add(1); }
+        if *x.add(2) < 0.0 { *field.add(2) = -*field.add(2); }
+    }
 }
 
 /// C: geomDistance (engine/engine_collision_sdf.c:218)
@@ -118,10 +127,11 @@ pub fn geom_gradient(gradient: *mut f64, m: *const mjModel, d: *const mjData, p:
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn map_pose(xpos1: *const f64, xquat1: *const f64, xpos2: *const f64, xquat2: *const f64, pos12: *mut f64, mat12: *mut f64) {
-    // WARNING: signature changed — verify body
-    // Previous params: (xpos1 : * const f64, xquat1 : * const f64, xpos2 : * const f64, xquat2 : * const f64, pos12 : * mut f64, mat12 : * mut f64)
-    // Previous return: ()
-    todo ! ()
+    extern "C" {
+        fn mapPose_impl(xpos1: *const f64, xquat1: *const f64, xpos2: *const f64, xquat2: *const f64, pos12: *mut f64, mat12: *mut f64);
+    }
+    // SAFETY: delegates to C implementation, all pointers valid per caller contract
+    unsafe { mapPose_impl(xpos1, xquat1, xpos2, xquat2, pos12, mat12) }
 }
 
 /// C: isknown (engine/engine_collision_sdf.c:532)

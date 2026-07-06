@@ -82,10 +82,13 @@ pub fn mjraw_sphere_sphere(con: *mut mjPreContact, margin: f64, pos1: *const f64
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn area_sign(p1: *const f64, p2: *const f64, p3: *const f64) -> f64 {
-    // WARNING: signature changed — verify body
-    // Previous params: (p1 : * const f64, p2 : * const f64, p3 : * const f64)
-    // Previous return: f64
-    todo ! ()
+    unsafe {
+        // SAFETY: p1, p2, p3 each point to at least 2 f64 elements
+        crate::engine::engine_util_misc::mju_sign(
+            (*p1.add(0) - *p3.add(0)) * (*p2.add(1) - *p3.add(1))
+            - (*p2.add(0) - *p3.add(0)) * (*p1.add(1) - *p3.add(1))
+        )
+    }
 }
 
 /// C: pointSegment (engine/engine_collision_primitive.c:540)
@@ -97,10 +100,37 @@ pub fn area_sign(p1: *const f64, p2: *const f64, p3: *const f64) -> f64 {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn point_segment(res: *mut f64, p: *const f64, u: *const f64, v: *const f64) -> f64 {
-    // WARNING: signature changed — verify body
-    // Previous params: (res : * mut f64, p : * const f64, u : * const f64, v : * const f64)
-    // Previous return: f64
-    todo ! ()
+    unsafe {
+        // SAFETY: res, p, u, v each point to at least 2 f64 elements
+        const MJ_MINVAL: f64 = 1e-15;
+
+        // make u the origin
+        let uv: [f64; 2] = [*v.add(0) - *u.add(0), *v.add(1) - *u.add(1)];
+        let up: [f64; 2] = [*p.add(0) - *u.add(0), *p.add(1) - *u.add(1)];
+
+        // project: find a s.t. uv is orthogonal to (up-a*uv)
+        let a = crate::engine::engine_util_blas::mju_dot(uv.as_ptr(), up.as_ptr(), 2)
+            / crate::engine::engine_util_misc::mju_max(
+                MJ_MINVAL,
+                crate::engine::engine_util_blas::mju_dot(uv.as_ptr(), uv.as_ptr(), 2),
+            );
+
+        // find nearest point to p, clamp to u or v if a is not in (0,1)
+        if a <= 0.0 {
+            *res.add(0) = *u.add(0);
+            *res.add(1) = *u.add(1);
+        } else if a >= 1.0 {
+            *res.add(0) = *v.add(0);
+            *res.add(1) = *v.add(1);
+        } else {
+            crate::engine::engine_util_blas::mju_add_scl(res, u, uv.as_ptr(), a, 2);
+        }
+
+        // compute distance
+        ((*res.add(0) - *p.add(0)) * (*res.add(0) - *p.add(0))
+            + (*res.add(1) - *p.add(1)) * (*res.add(1) - *p.add(1)))
+        .sqrt()
+    }
 }
 
 /// C: mjraw_SphereCapsule (engine/engine_collision_primitive.h:28)

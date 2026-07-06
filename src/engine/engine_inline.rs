@@ -234,10 +234,12 @@ pub fn mji_mul_mat_vec3(res: *mut f64, mat: *const f64, vec: *const f64) {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mji_mul_mat_t_vec3(res: *mut f64, mat: *const f64, vec: *const f64) {
-    // WARNING: signature changed — verify body
-    // Previous params: (res : * mut f64, mat : * const f64, vec : * const f64)
-    // Previous return: ()
-    todo ! ()
+    // SAFETY: raw pointer arithmetic, caller guarantees valid non-overlapping buffers of sufficient size
+    unsafe {
+        *res.add(0) = *mat.add(0) * *vec.add(0) + *mat.add(3) * *vec.add(1) + *mat.add(6) * *vec.add(2);
+        *res.add(1) = *mat.add(1) * *vec.add(0) + *mat.add(4) * *vec.add(1) + *mat.add(7) * *vec.add(2);
+        *res.add(2) = *mat.add(2) * *vec.add(0) + *mat.add(5) * *vec.add(1) + *mat.add(8) * *vec.add(2);
+    }
 }
 
 /// C: mji_mulMatMat3 (engine/engine_inline.h:168)

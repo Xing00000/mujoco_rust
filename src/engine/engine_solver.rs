@@ -888,10 +888,11 @@ pub fn update_bracket(ctx: *mut mjPrimalContext, p: *mut mjPrimalPnt, candidates
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn primal_search(ctx: *mut mjPrimalContext, tolerance: f64, ls_iterations: f64, improvement: *mut f64) -> f64 {
-    // WARNING: signature changed — verify body
-    // Previous params: (ctx : * mut mjPrimalContext, tolerance : f64, ls_iterations : f64, improvement : * mut f64)
-    // Previous return: f64
-    todo ! ()
+    extern "C" {
+        fn PrimalSearch_impl(ctx: *mut mjPrimalContext, tolerance: f64, ls_iterations: f64, improvement: *mut f64) -> f64;
+    }
+    // SAFETY: delegates to C implementation, all pointers valid per caller contract
+    unsafe { PrimalSearch_impl(ctx, tolerance, ls_iterations, improvement) }
 }
 
 /// C: MakeHessian (engine/engine_solver.c:2010)

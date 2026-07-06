@@ -302,10 +302,11 @@ pub fn addplanemesh(con: *mut mjPreContact, vertex: [f32; 3], pos1: *const f64, 
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn add_vert(obj: *mut mjCCDObj, x: f64, y: f64, z: f64) {
-    // WARNING: signature changed — verify body
-    // Previous params: (obj : * mut mjCCDObj, x : f64, y : f64, z : f64)
-    // Previous return: ()
-    todo ! ()
+    extern "C" {
+        fn addVert_impl(obj: *mut mjCCDObj, x: f64, y: f64, z: f64);
+    }
+    // SAFETY: delegates to C implementation, all pointers valid per caller contract
+    unsafe { addVert_impl(obj, x, y, z) }
 }
 
 /// C: addPrismVert (engine/engine_collision_convex.c:1100)
@@ -858,10 +859,11 @@ pub fn mjc_h_field_elem(m: *const mjModel, d: *mut mjData, con: *mut mjPreContac
 /// Calls: mjc_ellipsoidInside, mjc_ellipsoidOutside, mji_copy3, mji_mulMatVec3, mji_scl3, mji_sub3, mju_mulMatTVec3, mju_norm, mju_normalize3, mju_sub3
 #[allow(unused_variables, non_snake_case)]
 pub fn mjc_fix_normal(m: *const mjModel, d: *const mjData, con: *mut mjPreContact, g1: i32, g2: i32) {
-    // WARNING: signature changed — verify body
-    // Previous params: (m : * const mjModel, d : * const mjData, con : * mut mjPreContact, g1 : i32, g2 : i32)
-    // Previous return: ()
-    todo ! ()
+    extern "C" {
+        fn mjc_fixNormal_impl(m: *const mjModel, d: *const mjData, con: *mut mjPreContact, g1: i32, g2: i32);
+    }
+    // SAFETY: delegates to C implementation, all pointers valid per caller contract
+    unsafe { mjc_fixNormal_impl(m, d, con, g1, g2) }
 }
 
 /// C: mjc_setCCDBuffer (engine/engine_collision_convex.h:128)

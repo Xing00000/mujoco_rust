@@ -110,10 +110,16 @@ pub fn filter_box(aabb1: *const f64, aabb2: *const f64, margin: f64) -> i32 {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn filter_sphere_box(s: *const f64, bound: f64, aabb: *const f64) -> i32 {
-    // WARNING: signature changed — verify body
-    // Previous params: (s : * const f64, bound : f64, aabb : * const f64)
-    // Previous return: i32
-    todo ! ()
+    unsafe {
+        // SAFETY: s points to 3 f64 elements, aabb points to 6 f64 elements
+        if *s.add(0) + bound < *aabb.add(0) - *aabb.add(3) { return 1; }
+        if *s.add(1) + bound < *aabb.add(1) - *aabb.add(4) { return 1; }
+        if *s.add(2) + bound < *aabb.add(2) - *aabb.add(5) { return 1; }
+        if *s.add(0) - bound > *aabb.add(0) + *aabb.add(3) { return 1; }
+        if *s.add(1) - bound > *aabb.add(1) + *aabb.add(4) { return 1; }
+        if *s.add(2) - bound > *aabb.add(2) + *aabb.add(5) { return 1; }
+        0
+    }
 }
 
 /// C: filterSphere (engine/engine_collision_driver.c:258)
@@ -219,10 +225,11 @@ pub fn mj_narrowphase(m: *const mjModel, d: *mut mjData, buffer: *const mjcPair,
 /// Calls: mj_addContact, mj_assignMargin, mj_contactParam, mj_setContact, mju_addScl3, mju_copy3, mju_dot3, mju_zero3
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_collide_plane_flex(m: *const mjModel, d: *mut mjData, g: i32, f: i32) {
-    // WARNING: signature changed — verify body
-    // Previous params: (m : * const mjModel, d : * mut mjData, g : i32, f : i32)
-    // Previous return: ()
-    todo ! ()
+    extern "C" {
+        fn mj_collidePlaneFlex_impl(m: *const mjModel, d: *mut mjData, g: i32, f: i32);
+    }
+    // SAFETY: delegates to C implementation, all pointers valid per caller contract
+    unsafe { mj_collidePlaneFlex_impl(m, d, g, f) }
 }
 
 /// C: mj_collideSdfFlex (engine/engine_collision_driver.c:374)
@@ -728,10 +735,11 @@ pub fn collision_task(m: *const mjModel, d: *mut mjData, arg: *mut (), thread_id
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn plane_vertex(con: *mut mjPreContact, pos: *const f64, rad: f64, t0: i32, t1: i32, t2: i32, v: i32) -> i32 {
-    // WARNING: signature changed — verify body
-    // Previous params: (con : * mut mjPreContact, pos : * const f64, rad : f64, t0 : i32, t1 : i32, t2 : i32, v : i32)
-    // Previous return: i32
-    todo ! ()
+    extern "C" {
+        fn planeVertex_impl(con: *mut mjPreContact, pos: *const f64, rad: f64, t0: i32, t1: i32, t2: i32, v: i32) -> i32;
+    }
+    // SAFETY: delegates to C implementation, all pointers valid per caller contract
+    unsafe { planeVertex_impl(con, pos, rad, t0, t1, t2, v) }
 }
 
 /// C: mj_maxContact (engine/engine_collision_driver.h:33)
@@ -771,10 +779,15 @@ pub fn mj_collide_obb(aabb1: *const f64, aabb2: *const f64, xpos1: *const f64, x
 /// C: mj_isElemActive (engine/engine_collision_driver.h:45)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_is_elem_active(m: *const mjModel, f: i32, e: i32) -> i32 {
-    // WARNING: signature changed — verify body
-    // Previous params: (m : * const mjModel, f : i32, e : i32)
-    // Previous return: i32
-    todo ! ()
+    unsafe {
+        // SAFETY: m is valid mjModel pointer, f is valid flex index, e is valid elem index
+        if (*m).flex_dim.add(f as usize).read() < 3 {
+            1
+        } else {
+            ((*m).flex_elemlayer.add(((*m).flex_elemadr.add(f as usize).read() + e) as usize).read()
+                < (*m).flex_activelayers.add(f as usize).read()) as i32
+        }
+    }
 }
 
 /// C: mj_broadphase (engine/engine_collision_driver.h:48)

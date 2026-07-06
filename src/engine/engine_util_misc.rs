@@ -1005,10 +1005,21 @@ pub fn mju_insertion_sort_int(list: *mut i32, n: i32) {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mju_halton(index: i32, base: i32) -> f64 {
-    // WARNING: signature changed — verify body
-    // Previous params: (index : i32, base : i32)
-    // Previous return: f64
-    todo ! ()
+    // SAFETY: pure arithmetic, no pointer operations
+    let mut n0 = index;
+    let b = base as f64;
+    let mut f = 1.0 / b;
+    let mut hn: f64 = 0.0;
+
+    while n0 > 0 {
+        let n1 = n0 / base;
+        let r = n0 - n1 * base;
+        hn += f * r as f64;
+        f /= b;
+        n0 = n1;
+    }
+
+    hn
 }
 
 /// C: mju_strncpy (engine/engine_util_misc.h:321)
