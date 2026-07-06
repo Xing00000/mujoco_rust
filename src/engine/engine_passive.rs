@@ -121,10 +121,7 @@ pub fn mj_contact_passive(m: *const mjModel, d: *mut mjData) -> i32 {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mji_pow4(val: f64) -> f64 {
-    // WARNING: signature changed — verify body
-    // Previous params: (val : f64)
-    // Previous return: f64
-    todo ! ()
+    (val * val) * (val * val)
 }
 
 /// C: mji_pow2 (engine/engine_passive.c:1219)
@@ -135,10 +132,7 @@ pub fn mji_pow4(val: f64) -> f64 {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mji_pow2(val: f64) -> f64 {
-    // WARNING: signature changed — verify body
-    // Previous params: (val : f64)
-    // Previous return: f64
-    todo ! ()
+    val * val
 }
 
 /// C: mji_ellipsoid_max_moment (engine/engine_passive.c:1223)
@@ -150,10 +144,13 @@ pub fn mji_pow2(val: f64) -> f64 {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mji_ellipsoid_max_moment(size: *const f64, dir: i32) -> f64 {
-    // WARNING: signature changed — verify body
-    // Previous params: (size : * const f64, dir : i32)
-    // Previous return: f64
-    todo ! ()
+    unsafe {
+        let d0 = *size.add(dir as usize);
+        let d1 = *size.add(((dir + 1) % 3) as usize);
+        let d2 = *size.add(((dir + 2) % 3) as usize);
+        let max_d = if d1 > d2 { d1 } else { d2 };
+        8.0 / 15.0 * std::f64::consts::PI * d0 * mji_pow4(max_d)
+    }
 }
 
 /// C: mj_passive (engine/engine_passive.h:29)
