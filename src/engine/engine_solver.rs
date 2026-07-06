@@ -82,10 +82,27 @@ pub fn residual(m: *const mjModel, d: *const mjData, res: *mut f64, i: i32, dim:
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn cost_change(A: *const f64, force: *mut f64, oldforce: *const f64, res: *const f64, dim: i32) -> f64 {
-    // WARNING: signature changed — verify body
-    // Previous params: (A : * const f64, force : * mut f64, oldforce : * const f64, res : * const f64, dim : i32)
-    // Previous return: f64
-    todo ! ()
+    unsafe {
+        use crate::engine::engine_util_blas::{mju_sub, mju_dot, mju_copy, mju_mul_vec_mat_vec};
+        let change: f64;
+
+        if dim == 1 {
+            let delta: f64 = *force.add(0) - *oldforce.add(0);
+            change = 0.5 * delta * delta * *A.add(0) + delta * *res.add(0);
+        } else {
+            let mut delta: [f64; 6] = [0.0; 6];
+            mju_sub(delta.as_mut_ptr(), force as *const f64, oldforce, dim);
+            change = 0.5 * mju_mul_vec_mat_vec(delta.as_ptr(), A, delta.as_ptr(), dim) + mju_dot(delta.as_ptr(), res, dim);
+        }
+
+        // positive change: restore force
+        if change > 1e-10 {
+            mju_copy(force, oldforce, dim);
+            return 0.0;
+        }
+
+        change
+    }
 }
 
 /// C: pcg32_next (engine/engine_solver.c:247)
