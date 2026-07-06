@@ -1,5 +1,5 @@
 //! Port of: xml/mjz/mjz_decoder.cc
-//! IR hash: 545f394232195ad9
+//! IR hash: 05737965add36adb
 //! CODEGEN: signatures locked. Only fill todo!() bodies.
 
 use crate::types::*;

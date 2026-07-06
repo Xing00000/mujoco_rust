@@ -1,5 +1,5 @@
 //! Port of: engine/engine_core_util.h
-//! IR hash: 545f394232195ad9
+//! IR hash: 05737965add36adb
 //! CODEGEN: signatures locked. Only fill todo!() bodies.
 
 use crate::types::*;
@@ -16,52 +16,10 @@ pub fn mj_is_pyramidal(m: *const mjModel) -> i32 {
 /// C: mj_isSparse (engine/engine_core_util.h:34)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_is_sparse(m: *const mjModel) -> i32 {
-    // mjJAC_SPARSE = 1, mjJAC_AUTO = 2
-    const MJ_JAC_SPARSE: i32 = 1;
-    const MJ_JAC_AUTO: i32 = 2;
-
-    // Local repr(C) structs matching C layout for field access
-    #[repr(C)]
-    struct MjOptionPartial {
-        timestep: f64,
-        impratio: f64,
-        tolerance: f64,
-        ls_tolerance: f64,
-        noslip_tolerance: f64,
-        ccd_tolerance: f64,
-        sleep_tolerance: f64,
-        gravity: [f64; 3],
-        wind: [f64; 3],
-        magnetic: [f64; 3],
-        density: f64,
-        viscosity: f64,
-        o_margin: f64,
-        o_solref: [f64; 2],
-        o_solimp: [f64; 5],
-        o_friction: [f64; 5],
-        integrator: i32,
-        cone: i32,
-        jacobian: i32,
-    }
-
-    #[repr(C)]
-    struct MjModelPartial {
-        nq: i64,
-        nv: i64,
-        _sizes: [i64; 90],  // remaining mjtSize fields (nu through nbuffer)
-        opt: MjOptionPartial,
-    }
-
-    unsafe {
-        let mp = m as *const MjModelPartial;
-        let jacobian = (*mp).opt.jacobian;
-        let nv = (*mp).nv;
-        if jacobian == MJ_JAC_SPARSE || (jacobian == MJ_JAC_AUTO && nv >= 60) {
-            return 1;
-        } else {
-            return 0;
-        }
-    }
+    // WARNING: signature changed — verify body
+    // Previous params: (m : * const mjModel)
+    // Previous return: i32
+    const MJ_JAC_SPARSE : i32 = 1 ; const MJ_JAC_AUTO : i32 = 2 ; # [repr (C)] struct MjOptionPartial { timestep : f64 , impratio : f64 , tolerance : f64 , ls_tolerance : f64 , noslip_tolerance : f64 , ccd_tolerance : f64 , sleep_tolerance : f64 , gravity : [f64 ; 3] , wind : [f64 ; 3] , magnetic : [f64 ; 3] , density : f64 , viscosity : f64 , o_margin : f64 , o_solref : [f64 ; 2] , o_solimp : [f64 ; 5] , o_friction : [f64 ; 5] , integrator : i32 , cone : i32 , jacobian : i32 , } # [repr (C)] struct MjModelPartial { nq : i64 , nv : i64 , _sizes : [i64 ; 90] , opt : MjOptionPartial , } unsafe { let mp = m as * const MjModelPartial ; let jacobian = (* mp) . opt . jacobian ; let nv = (* mp) . nv ; if jacobian == MJ_JAC_SPARSE || (jacobian == MJ_JAC_AUTO && nv >= 60) { return 1 ; } else { return 0 ; } }
 }
 
 /// C: mj_mergeChain (engine/engine_core_util.h:40)
@@ -85,11 +43,10 @@ pub fn mj_merge_chain_simple(m: *const mjModel, chain: *mut i32, b1: i32, b2: i3
 /// C: mj_bodyChain (engine/engine_core_util.h:46)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_body_chain(m: *const mjModel, body: i32, chain: *mut i32) -> i32 {
-    extern "C" {
-        fn mj_bodyChain_impl(m: *const mjModel, body: i32, chain: *mut i32) -> i32;
-    }
-    // SAFETY: Forwarding to linked C/C++ implementation.
-    unsafe { mj_bodyChain_impl(m, body, chain) }
+    // WARNING: signature changed — verify body
+    // Previous params: (m : * const mjModel, body : i32, chain : * mut i32)
+    // Previous return: i32
+    extern "C" { fn mj_bodyChain_impl (m : * const mjModel , body : i32 , chain : * mut i32) -> i32 ; } unsafe { mj_bodyChain_impl (m , body , chain) }
 }
 
 /// C: mj_jac (engine/engine_core_util.h:52)
@@ -101,11 +58,10 @@ pub fn mj_body_chain(m: *const mjModel, body: i32, chain: *mut i32) -> i32 {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_jac(m: *const mjModel, d: *const mjData, jacp: *mut f64, jacr: *mut f64, point: *const f64, body: i32) {
-    extern "C" {
-        fn mj_jac_impl(m: *const mjModel, d: *const mjData, jacp: *mut f64, jacr: *mut f64, point: *const f64, body: i32);
-    }
-    // SAFETY: Forwarding to linked C/C++ implementation.
-    unsafe { mj_jac_impl(m, d, jacp, jacr, point, body) }
+    // WARNING: signature changed — verify body
+    // Previous params: (m : * const mjModel, d : * const mjData, jacp : * mut f64, jacr : * mut f64, point : * const f64, body : i32)
+    // Previous return: ()
+    extern "C" { fn mj_jac_impl (m : * const mjModel , d : * const mjData , jacp : * mut f64 , jacr : * mut f64 , point : * const f64 , body : i32) ; } unsafe { mj_jac_impl (m , d , jacp , jacr , point , body) }
 }
 
 /// C: mj_jacBody (engine/engine_core_util.h:56)
@@ -207,11 +163,10 @@ pub fn mj_jac_point_axis(m: *const mjModel, d: *mut mjData, jacPoint: *mut f64, 
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_jac_sparse(m: *const mjModel, d: *const mjData, jacp: *mut f64, jacr: *mut f64, point: *const f64, body: i32, NV: i32, chain: *const i32, flg_skipcommon: i32) {
-    extern "C" {
-        fn mj_jacSparse_impl(m: *const mjModel, d: *const mjData, jacp: *mut f64, jacr: *mut f64, point: *const f64, body: i32, NV: i32, chain: *const i32, flg_skipcommon: i32);
-    }
-    // SAFETY: Forwarding to linked C/C++ implementation.
-    unsafe { mj_jacSparse_impl(m, d, jacp, jacr, point, body, NV, chain, flg_skipcommon) }
+    // WARNING: signature changed — verify body
+    // Previous params: (m : * const mjModel, d : * const mjData, jacp : * mut f64, jacr : * mut f64, point : * const f64, body : i32, NV : i32, chain : * const i32, flg_skipcommon : i32)
+    // Previous return: ()
+    extern "C" { fn mj_jacSparse_impl (m : * const mjModel , d : * const mjData , jacp : * mut f64 , jacr : * mut f64 , point : * const f64 , body : i32 , NV : i32 , chain : * const i32 , flg_skipcommon : i32) ; } unsafe { mj_jacSparse_impl (m , d , jacp , jacr , point , body , NV , chain , flg_skipcommon) }
 }
 
 /// C: mj_jacSparseSimple (engine/engine_core_util.h:85)
@@ -343,11 +298,10 @@ pub fn mj_object_acceleration(m: *const mjModel, d: *const mjData, objtype: i32,
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_local2global(d: *mut mjData, xpos: *mut f64, xmat: *mut f64, pos: *const f64, quat: *const f64, body: i32, sameframe: u8) {
-    extern "C" {
-        fn mj_local2Global_impl(d: *mut mjData, xpos: *mut f64, xmat: *mut f64, pos: *const f64, quat: *const f64, body: i32, sameframe: u8);
-    }
-    // SAFETY: Forwarding to linked C/C++ implementation.
-    unsafe { mj_local2Global_impl(d, xpos, xmat, pos, quat, body, sameframe) }
+    // WARNING: signature changed — verify body
+    // Previous params: (d : * mut mjData, xpos : * mut f64, xmat : * mut f64, pos : * const f64, quat : * const f64, body : i32, sameframe : u8)
+    // Previous return: ()
+    extern "C" { fn mj_local2Global_impl (d : * mut mjData , xpos : * mut f64 , xmat : * mut f64 , pos : * const f64 , quat : * const f64 , body : i32 , sameframe : u8) ; } unsafe { mj_local2Global_impl (d , xpos , xmat , pos , quat , body , sameframe) }
 }
 
 /// C: mju_flexGatherState (engine/engine_core_util.h:133)
@@ -428,10 +382,9 @@ pub fn mj_actuator_armature(m: *const mjModel, r#type: mjtObj, id: i32) -> f64 {
 /// Calls: mju_message, mju_warning, mju_warningText
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_warning(d: *mut mjData, warning: i32, info: i32) {
-    extern "C" {
-        fn mj_warning_impl(d: *mut mjData, warning: i32, info: i32);
-    }
-    // SAFETY: Forwarding to linked C/C++ implementation.
-    unsafe { mj_warning_impl(d, warning, info) }
+    // WARNING: signature changed — verify body
+    // Previous params: (d : * mut mjData, warning : i32, info : i32)
+    // Previous return: ()
+    extern "C" { fn mj_warning_impl (d : * mut mjData , warning : i32 , info : i32) ; } unsafe { mj_warning_impl (d , warning , info) }
 }
 

@@ -1,5 +1,5 @@
 //! Port of: engine/engine_util_solve.c
-//! IR hash: 545f394232195ad9
+//! IR hash: 05737965add36adb
 //! CODEGEN: signatures locked. Only fill todo!() bodies.
 
 use crate::types::*;
@@ -97,11 +97,10 @@ pub fn mju_chol_factor_sparse(mat: *mut f64, n: i32, mindiag: f64, rownnz: *mut 
 /// Calls: mj_freeStack, mj_markStack, mj_stackAllocInfo
 #[allow(unused_variables, non_snake_case)]
 pub fn mju_chol_factor_symbolic(L_colind: *mut i32, L_rownnz: *mut i32, L_rowadr: *mut i32, LT_colind: *mut i32, LT_rownnz: *mut i32, LT_rowadr: *mut i32, LT_map: *mut i32, rownnz: *const i32, rowadr: *const i32, colind: *const i32, n: i32, d: *mut mjData) -> i32 {
-    extern "C" {
-        fn mju_cholFactorSymbolic_impl(L_colind: *mut i32, L_rownnz: *mut i32, L_rowadr: *mut i32, LT_colind: *mut i32, LT_rownnz: *mut i32, LT_rowadr: *mut i32, LT_map: *mut i32, rownnz: *const i32, rowadr: *const i32, colind: *const i32, n: i32, d: *mut mjData) -> i32;
-    }
-    // SAFETY: Forwarding to linked C/C++ implementation.
-    unsafe { mju_cholFactorSymbolic_impl(L_colind, L_rownnz, L_rowadr, LT_colind, LT_rownnz, LT_rowadr, LT_map, rownnz, rowadr, colind, n, d) }
+    // WARNING: signature changed — verify body
+    // Previous params: (L_colind : * mut i32, L_rownnz : * mut i32, L_rowadr : * mut i32, LT_colind : * mut i32, LT_rownnz : * mut i32, LT_rowadr : * mut i32, LT_map : * mut i32, rownnz : * const i32, rowadr : * const i32, colind : * const i32, n : i32, d : * mut mjData)
+    // Previous return: i32
+    extern "C" { fn mju_cholFactorSymbolic_impl (L_colind : * mut i32 , L_rownnz : * mut i32 , L_rowadr : * mut i32 , LT_colind : * mut i32 , LT_rownnz : * mut i32 , LT_rowadr : * mut i32 , LT_map : * mut i32 , rownnz : * const i32 , rowadr : * const i32 , colind : * const i32 , n : i32 , d : * mut mjData) -> i32 ; } unsafe { mju_cholFactorSymbolic_impl (L_colind , L_rownnz , L_rowadr , LT_colind , LT_rownnz , LT_rowadr , LT_map , rownnz , rowadr , colind , n , d) }
 }
 
 /// C: mju_cholFactorNumeric (engine/engine_util_solve.h:53)
@@ -113,11 +112,10 @@ pub fn mju_chol_factor_symbolic(L_colind: *mut i32, L_rownnz: *mut i32, L_rowadr
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mju_chol_factor_numeric(L: *mut f64, n: i32, mindiag: f64, L_rownnz: *const i32, L_rowadr: *const i32, L_colind: *const i32, LT_rownnz: *const i32, LT_rowadr: *const i32, LT_colind: *const i32, LT_map: *const i32, H: *const f64, H_rownnz: *const i32, H_rowadr: *const i32, H_colind: *const i32, d: *mut mjData) -> i32 {
-    extern "C" {
-        fn mju_cholFactorNumeric_impl(L: *mut f64, n: i32, mindiag: f64, L_rownnz: *const i32, L_rowadr: *const i32, L_colind: *const i32, LT_rownnz: *const i32, LT_rowadr: *const i32, LT_colind: *const i32, LT_map: *const i32, H: *const f64, H_rownnz: *const i32, H_rowadr: *const i32, H_colind: *const i32, d: *mut mjData) -> i32;
-    }
-    // SAFETY: Forwarding to linked C/C++ implementation.
-    unsafe { mju_cholFactorNumeric_impl(L, n, mindiag, L_rownnz, L_rowadr, L_colind, LT_rownnz, LT_rowadr, LT_colind, LT_map, H, H_rownnz, H_rowadr, H_colind, d) }
+    // WARNING: signature changed — verify body
+    // Previous params: (L : * mut f64, n : i32, mindiag : f64, L_rownnz : * const i32, L_rowadr : * const i32, L_colind : * const i32, LT_rownnz : * const i32, LT_rowadr : * const i32, LT_colind : * const i32, LT_map : * const i32, H : * const f64, H_rownnz : * const i32, H_rowadr : * const i32, H_colind : * const i32, d : * mut mjData)
+    // Previous return: i32
+    extern "C" { fn mju_cholFactorNumeric_impl (L : * mut f64 , n : i32 , mindiag : f64 , L_rownnz : * const i32 , L_rowadr : * const i32 , L_colind : * const i32 , LT_rownnz : * const i32 , LT_rowadr : * const i32 , LT_colind : * const i32 , LT_map : * const i32 , H : * const f64 , H_rownnz : * const i32 , H_rowadr : * const i32 , H_colind : * const i32 , d : * mut mjData) -> i32 ; } unsafe { mju_cholFactorNumeric_impl (L , n , mindiag , L_rownnz , L_rowadr , L_colind , LT_rownnz , LT_rowadr , LT_colind , LT_map , H , H_rownnz , H_rowadr , H_colind , d) }
 }
 
 /// C: mju_cholSolveSparse (engine/engine_util_solve.h:61)
@@ -129,11 +127,10 @@ pub fn mju_chol_factor_numeric(L: *mut f64, n: i32, mindiag: f64, L_rownnz: *con
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mju_chol_solve_sparse(res: *mut f64, mat: *const f64, vec: *const f64, n: i32, rownnz: *const i32, rowadr: *const i32, colind: *const i32) {
-    extern "C" {
-        fn mju_cholSolveSparse_impl(res: *mut f64, mat: *const f64, vec: *const f64, n: i32, rownnz: *const i32, rowadr: *const i32, colind: *const i32);
-    }
-    // SAFETY: Forwarding to linked C/C++ implementation.
-    unsafe { mju_cholSolveSparse_impl(res, mat, vec, n, rownnz, rowadr, colind) }
+    // WARNING: signature changed — verify body
+    // Previous params: (res : * mut f64, mat : * const f64, vec : * const f64, n : i32, rownnz : * const i32, rowadr : * const i32, colind : * const i32)
+    // Previous return: ()
+    extern "C" { fn mju_cholSolveSparse_impl (res : * mut f64 , mat : * const f64 , vec : * const f64 , n : i32 , rownnz : * const i32 , rowadr : * const i32 , colind : * const i32) ; } unsafe { mju_cholSolveSparse_impl (res , mat , vec , n , rownnz , rowadr , colind) }
 }
 
 /// C: mju_cholUpdateSparse (engine/engine_util_solve.h:66)
@@ -145,11 +142,10 @@ pub fn mju_chol_solve_sparse(res: *mut f64, mat: *const f64, vec: *const f64, n:
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mju_chol_update_sparse(mat: *mut f64, x: *const f64, n: i32, flg_plus: i32, rownnz: *const i32, rowadr: *const i32, colind: *const i32, x_nnz: i32, x_ind: *const i32, d: *mut mjData) -> i32 {
-    extern "C" {
-        fn mju_cholUpdateSparse_impl(mat: *mut f64, x: *const f64, n: i32, flg_plus: i32, rownnz: *const i32, rowadr: *const i32, colind: *const i32, x_nnz: i32, x_ind: *const i32, d: *mut mjData) -> i32;
-    }
-    // SAFETY: Forwarding to linked C/C++ implementation.
-    unsafe { mju_cholUpdateSparse_impl(mat, x, n, flg_plus, rownnz, rowadr, colind, x_nnz, x_ind, d) }
+    // WARNING: signature changed — verify body
+    // Previous params: (mat : * mut f64, x : * const f64, n : i32, flg_plus : i32, rownnz : * const i32, rowadr : * const i32, colind : * const i32, x_nnz : i32, x_ind : * const i32, d : * mut mjData)
+    // Previous return: i32
+    extern "C" { fn mju_cholUpdateSparse_impl (mat : * mut f64 , x : * const f64 , n : i32 , flg_plus : i32 , rownnz : * const i32 , rowadr : * const i32 , colind : * const i32 , x_nnz : i32 , x_ind : * const i32 , d : * mut mjData) -> i32 ; } unsafe { mju_cholUpdateSparse_impl (mat , x , n , flg_plus , rownnz , rowadr , colind , x_nnz , x_ind , d) }
 }
 
 /// C: mju_cholFactorBand (engine/engine_util_solve.h:76)
@@ -332,11 +328,10 @@ pub fn mju_eig3(eigval: *mut f64, eigvec: *mut f64, quat: *mut f64, mat: *const 
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mju_qcqp2(res: *mut f64, Ain: *const f64, bin: *const f64, d: *const f64, r: f64) -> i32 {
-    extern "C" {
-        fn mju_QCQP2_impl(res: *mut f64, Ain: *const f64, bin: *const f64, d: *const f64, r: f64) -> i32;
-    }
-    // SAFETY: Forwarding to linked C/C++ implementation.
-    unsafe { mju_QCQP2_impl(res, Ain, bin, d, r) }
+    // WARNING: signature changed — verify body
+    // Previous params: (res : * mut f64, Ain : * const f64, bin : * const f64, d : * const f64, r : f64)
+    // Previous return: i32
+    extern "C" { fn mju_QCQP2_impl (res : * mut f64 , Ain : * const f64 , bin : * const f64 , d : * const f64 , r : f64) -> i32 ; } unsafe { mju_QCQP2_impl (res , Ain , bin , d , r) }
 }
 
 /// C: mju_QCQP3 (engine/engine_util_solve.h:131)
@@ -347,11 +342,10 @@ pub fn mju_qcqp2(res: *mut f64, Ain: *const f64, bin: *const f64, d: *const f64,
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mju_qcqp3(res: *mut f64, Ain: *const f64, bin: *const f64, d: *const f64, r: f64) -> i32 {
-    extern "C" {
-        fn mju_QCQP3_impl(res: *mut f64, Ain: *const f64, bin: *const f64, d: *const f64, r: f64) -> i32;
-    }
-    // SAFETY: Forwarding to linked C/C++ implementation.
-    unsafe { mju_QCQP3_impl(res, Ain, bin, d, r) }
+    // WARNING: signature changed — verify body
+    // Previous params: (res : * mut f64, Ain : * const f64, bin : * const f64, d : * const f64, r : f64)
+    // Previous return: i32
+    extern "C" { fn mju_QCQP3_impl (res : * mut f64 , Ain : * const f64 , bin : * const f64 , d : * const f64 , r : f64) -> i32 ; } unsafe { mju_QCQP3_impl (res , Ain , bin , d , r) }
 }
 
 /// C: mju_QCQP (engine/engine_util_solve.h:136)
@@ -363,11 +357,10 @@ pub fn mju_qcqp3(res: *mut f64, Ain: *const f64, bin: *const f64, d: *const f64,
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mju_qcqp(res: *mut f64, Ain: *const f64, bin: *const f64, d: *const f64, r: f64, n: i32) -> i32 {
-    extern "C" {
-        fn mju_QCQP_impl(res: *mut f64, Ain: *const f64, bin: *const f64, d: *const f64, r: f64, n: i32) -> i32;
-    }
-    // SAFETY: Forwarding to linked C/C++ implementation.
-    unsafe { mju_QCQP_impl(res, Ain, bin, d, r, n) }
+    // WARNING: signature changed — verify body
+    // Previous params: (res : * mut f64, Ain : * const f64, bin : * const f64, d : * const f64, r : f64, n : i32)
+    // Previous return: i32
+    extern "C" { fn mju_QCQP_impl (res : * mut f64 , Ain : * const f64 , bin : * const f64 , d : * const f64 , r : f64 , n : i32) -> i32 ; } unsafe { mju_QCQP_impl (res , Ain , bin , d , r , n) }
 }
 
 /// C: mju_boxQP (engine/engine_util_solve.h:141)

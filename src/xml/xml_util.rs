@@ -1,5 +1,5 @@
 //! Port of: xml/xml_util.cc
-//! IR hash: 545f394232195ad9
+//! IR hash: 05737965add36adb
 //! CODEGEN: signatures locked. Only fill todo!() bodies.
 
 use crate::types::*;
@@ -29,11 +29,7 @@ pub fn accumulate_files(files: *mut i32, root: *mut tinyxml2__XMLElement, model_
     // WARNING: signature changed — verify body
     // Previous params: (files : * mut i32, root : * mut tinyxml2__XMLElement, model_dir : * const FilePath)
     // Previous return: ()
-    extern "C" {
-        fn AccumulateFiles_impl(files: *mut i32, root: *mut tinyxml2__XMLElement, model_dir: *const FilePath);
-    }
-    // SAFETY: Forwarding to linked C++ implementation of AccumulateFiles.
-    unsafe { AccumulateFiles_impl(files, root, model_dir) }
+    extern "C" { fn AccumulateFiles_impl (files : * mut i32 , root : * mut tinyxml2__XMLElement , model_dir : * const FilePath) ; } unsafe { AccumulateFiles_impl (files , root , model_dir) }
 }
 
 /// C: mju_getXMLDependencies (xml/xml_util.cc:224)
@@ -123,21 +119,19 @@ pub fn mj_x_util_write_vector(self_ptr: *mut mjXUtil, elem: *mut XMLElement, nam
 /// C: mjCopyError (xml/xml_util.h:32)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_copy_error(dst: *mut i8, src: *const i8, maxlen: i32) {
-    extern "C" {
-        fn mjCopyError_impl(dst: *mut i8, src: *const i8, maxlen: i32);
-    }
-    // SAFETY: Forwarding to linked C++ implementation.
-    unsafe { mjCopyError_impl(dst, src, maxlen) }
+    // WARNING: signature changed — verify body
+    // Previous params: (dst : * mut i8, src : * const i8, maxlen : i32)
+    // Previous return: ()
+    extern "C" { fn mjCopyError_impl (dst : * mut i8 , src : * const i8 , maxlen : i32) ; } unsafe { mjCopyError_impl (dst , src , maxlen) }
 }
 
 /// C: FirstChildElement (xml/xml_util.h:36)
 #[allow(unused_variables, non_snake_case)]
 pub fn first_child_element(e: *mut XMLElement, name: *const i8) -> *mut XMLElement {
-    extern "C" {
-        fn FirstChildElement_impl(e: *mut XMLElement, name: *const i8) -> *mut XMLElement;
-    }
-    // SAFETY: Forwarding to linked C++ implementation.
-    unsafe { FirstChildElement_impl(e, name) }
+    // WARNING: signature changed — verify body
+    // Previous params: (e : * mut XMLElement, name : * const i8)
+    // Previous return: * mut XMLElement
+    extern "C" { fn FirstChildElement_impl (e : * mut XMLElement , name : * const i8) -> * mut XMLElement ; } unsafe { FirstChildElement_impl (e , name) }
 }
 
 /// C: NextSiblingElement (xml/xml_util.h:37)

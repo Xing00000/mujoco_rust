@@ -1,5 +1,5 @@
 //! Port of: engine/engine_collision_box.c
-//! IR hash: 545f394232195ad9
+//! IR hash: 05737965add36adb
 //! CODEGEN: signatures locked. Only fill todo!() bodies.
 
 use crate::types::*;
@@ -13,15 +13,10 @@ use crate::types::*;
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mju_clamp_vec(vec: *mut f64, limit: *const f64, n: i32) {
-    unsafe {
-        for i in 0..n as usize {
-            if *limit.add(i) > 0.0 {
-                let lim = *limit.add(i);
-                let v = *vec.add(i);
-                *vec.add(i) = if v < -lim { -lim } else if v > lim { lim } else { v };
-            }
-        }
-    }
+    // WARNING: signature changed — verify body
+    // Previous params: (vec : * mut f64, limit : * const f64, n : i32)
+    // Previous return: ()
+    unsafe { for i in 0 .. n as usize { if * limit . add (i) > 0.0 { let lim = * limit . add (i) ; let v = * vec . add (i) ; * vec . add (i) = if v < - lim { - lim } else if v > lim { lim } else { v } ; } } }
 }
 
 /// C: mjraw_SphereBox (engine/engine_collision_box.c:34)

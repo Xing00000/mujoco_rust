@@ -1,5 +1,5 @@
 //! Port of: user/user_resolver.cc
-//! IR hash: 545f394232195ad9
+//! IR hash: 05737965add36adb
 //! CODEGEN: signatures locked. Only fill todo!() bodies.
 
 use crate::types::*;
@@ -49,11 +49,10 @@ pub fn visit_conflicts(parent: *mut mjSpec, child: *const mjSpec, r: *mut Resolv
 /// C: ConflictSubject (user/user_resolver.cc:395)
 #[allow(unused_variables, non_snake_case)]
 pub fn conflict_subject(parent: *const mjSpec, child: *const mjSpec) -> std__string {
-    extern "C" {
-        fn ConflictSubject_impl(parent: *const mjSpec, child: *const mjSpec) -> std__string;
-    }
-    // SAFETY: Forwarding to linked C++ implementation of ConflictSubject.
-    unsafe { ConflictSubject_impl(parent, child) }
+    // WARNING: signature changed — verify body
+    // Previous params: (parent : * const mjSpec, child : * const mjSpec)
+    // Previous return: std__string
+    extern "C" { fn ConflictSubject_impl (parent : * const mjSpec , child : * const mjSpec) -> std__string ; } unsafe { ConflictSubject_impl (parent , child) }
 }
 
 /// C: ResolveConflicts (user/user_resolver.h:28)

@@ -1,5 +1,5 @@
 //! Port of: engine/engine_sleep.c
-//! IR hash: 545f394232195ad9
+//! IR hash: 05737965add36adb
 //! CODEGEN: signatures locked. Only fill todo!() bodies.
 
 use crate::types::*;
@@ -56,11 +56,10 @@ pub fn mj_sleep_trees(m: *const mjModel, d: *mut mjData, tree: *const i32, n: i3
 /// C: mj_tendonSleepState (engine/engine_sleep.c:634)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_tendon_sleep_state(m: *const mjModel, d: *const mjData, i: i32) -> mjtSleepState {
-    extern "C" {
-        fn mj_tendonSleepState_impl(m: *const mjModel, d: *const mjData, i: i32) -> mjtSleepState;
-    }
-    // SAFETY: Forwarding to linked C/C++ implementation.
-    unsafe { mj_tendonSleepState_impl(m, d, i) }
+    // WARNING: signature changed — verify body
+    // Previous params: (m : * const mjModel, d : * const mjData, i : i32)
+    // Previous return: mjtSleepState
+    extern "C" { fn mj_tendonSleepState_impl (m : * const mjModel , d : * const mjData , i : i32) -> mjtSleepState ; } unsafe { mj_tendonSleepState_impl (m , d , i) }
 }
 
 /// C: mj_actuatorSleepState (engine/engine_sleep.c:659)

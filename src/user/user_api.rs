@@ -1,5 +1,5 @@
 //! Port of: user/user_api.cc
-//! IR hash: 545f394232195ad9
+//! IR hash: 05737965add36adb
 //! CODEGEN: signatures locked. Only fill todo!() bodies.
 
 use crate::types::*;
@@ -122,35 +122,28 @@ pub fn mjs_get_warning(spec: *const mjSpec, index: i32) -> *const i8 {
 /// C: FlexcompTypeFromStr (user/user_api.cc:709)
 #[allow(unused_variables, non_snake_case)]
 pub fn flexcomp_type_from_str(r#type: *const i8) -> mjtFcompType {
-    extern "C" {
-        fn FlexcompTypeFromStr_impl(r#type: *const i8) -> mjtFcompType;
-    }
-    // SAFETY: Forwarding to linked C++ implementation.
-    unsafe { FlexcompTypeFromStr_impl(r#type) }
+    // WARNING: signature changed — verify body
+    // Previous params: (r#type : * const i8)
+    // Previous return: mjtFcompType
+    extern "C" { fn FlexcompTypeFromStr_impl (r#type : * const i8) -> mjtFcompType ; } unsafe { FlexcompTypeFromStr_impl (r#type) }
 }
 
 /// C: FlexcompDofFromStr (user/user_api.cc:724)
 #[allow(unused_variables, non_snake_case)]
 pub fn flexcomp_dof_from_str(dof: *const i8) -> mjtDof {
-    extern "C" {
-        fn FlexcompDofFromStr_impl(dof: *const i8) -> mjtDof;
-    }
-    // SAFETY: Forwarding to linked C++ implementation.
-    unsafe { FlexcompDofFromStr_impl(dof) }
+    // WARNING: signature changed — verify body
+    // Previous params: (dof : * const i8)
+    // Previous return: mjtDof
+    extern "C" { fn FlexcompDofFromStr_impl (dof : * const i8) -> mjtDof ; } unsafe { FlexcompDofFromStr_impl (dof) }
 }
 
 /// C: mjs_getCompiler (user/user_api.cc:1553)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjs_get_compiler(element: *const mjsElement) -> *mut mjsCompiler {
-    // C++: static_cast<const mjCBase*>(element)->compiler
-    // Requires C++ class layout knowledge (vtable + fields). Forward to C++.
-    extern "C" {
-        fn mjs_getCompiler_impl(element: *const mjsElement) -> *mut mjsCompiler;
-    }
-    // SAFETY: element pointer validity is caller's responsibility.
-    unsafe {
-        mjs_getCompiler_impl(element)
-    }
+    // WARNING: signature changed — verify body
+    // Previous params: (element : * const mjsElement)
+    // Previous return: * mut mjsCompiler
+    extern "C" { fn mjs_getCompiler_impl (element : * const mjsElement) -> * mut mjsCompiler ; } unsafe { mjs_getCompiler_impl (element) }
 }
 
 /// C: mjs_setBuffer (user/user_api.cc:2230)
@@ -353,11 +346,10 @@ pub fn mjs_is_warning(s: *mut mjSpec) -> i32 {
 /// Calls: mjCModel::Release
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_delete_spec(s: *mut mjSpec) {
-    extern "C" {
-        fn mj_deleteSpec_impl(s: *mut mjSpec);
-    }
-    // SAFETY: Forwarding to linked C/C++ implementation.
-    unsafe { mj_deleteSpec_impl(s) }
+    // WARNING: signature changed — verify body
+    // Previous params: (s : * mut mjSpec)
+    // Previous return: ()
+    extern "C" { fn mj_deleteSpec_impl (s : * mut mjSpec) ; } unsafe { mj_deleteSpec_impl (s) }
 }
 
 /// C: mjs_addSpec (user/user_api.h:61)
@@ -892,11 +884,10 @@ pub fn mjs_get_spec(element: *const mjsElement) -> *mut mjSpec {
 /// Calls: mjCModel::FindSpec
 #[allow(unused_variables, non_snake_case)]
 pub fn mjs_get_origin_spec(element: *const mjsElement) -> *mut mjSpec {
-    extern "C" {
-        fn mjs_getOriginSpec_impl(element: *const mjsElement) -> *mut mjSpec;
-    }
-    // SAFETY: Forwarding to linked C++ implementation of mjs_getOriginSpec.
-    unsafe { mjs_getOriginSpec_impl(element) }
+    // WARNING: signature changed — verify body
+    // Previous params: (element : * const mjsElement)
+    // Previous return: * mut mjSpec
+    extern "C" { fn mjs_getOriginSpec_impl (element : * const mjsElement) -> * mut mjSpec ; } unsafe { mjs_getOriginSpec_impl (element) }
 }
 
 /// C: mjs_findSpec (user/user_api.h:240)
@@ -1026,27 +1017,20 @@ pub fn mjs_next_child(body: *const mjsBody, child: *const mjsElement, recurse: i
 /// Calls: mjCModel::NextObject
 #[allow(unused_variables, non_snake_case)]
 pub fn mjs_first_element(s: *const mjSpec, r#type: mjtObj) -> *mut mjsElement {
-    // C++: const mjCModel* modelC = static_cast<mjCModel*>(s->element);
-    //      return modelC->NextObject(NULL, type);
-    // Requires C++ class hierarchy and virtual method call. Forward to C++.
-    extern "C" {
-        fn mjs_firstElement_impl(s: *const mjSpec, r#type: mjtObj) -> *mut mjsElement;
-    }
-    // SAFETY: s pointer validity is caller's responsibility. C++ handles null checks.
-    unsafe {
-        mjs_firstElement_impl(s, r#type)
-    }
+    // WARNING: signature changed — verify body
+    // Previous params: (s : * const mjSpec, r#type : mjtObj)
+    // Previous return: * mut mjsElement
+    extern "C" { fn mjs_firstElement_impl (s : * const mjSpec , r#type : mjtObj) -> * mut mjsElement ; } unsafe { mjs_firstElement_impl (s , r#type) }
 }
 
 /// C: mjs_nextElement (user/user_api.h:286)
 /// Calls: mjCModel::NextObject
 #[allow(unused_variables, non_snake_case)]
 pub fn mjs_next_element(s: *const mjSpec, element: *const mjsElement) -> *mut mjsElement {
-    extern "C" {
-        fn mjs_nextElement_impl(s: *const mjSpec, element: *const mjsElement) -> *mut mjsElement;
-    }
-    // SAFETY: Forwarding to linked C++ implementation of mjs_nextElement.
-    unsafe { mjs_nextElement_impl(s, element) }
+    // WARNING: signature changed — verify body
+    // Previous params: (s : * const mjSpec, element : * const mjsElement)
+    // Previous return: * mut mjsElement
+    extern "C" { fn mjs_nextElement_impl (s : * const mjSpec , element : * const mjsElement) -> * mut mjsElement ; } unsafe { mjs_nextElement_impl (s , element) }
 }
 
 /// C: mjs_getWrapTarget (user/user_api.h:289)
@@ -1264,62 +1248,37 @@ pub fn mjs_as_key(element: *mut mjsElement) -> *mut mjsKey {
 /// C: mjs_asMesh (user/user_api.h:355)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjs_as_mesh(element: *mut mjsElement) -> *mut mjsMesh {
-    // C++: if (element && element->elemtype == mjOBJ_MESH)
-    //        return &(static_cast<mjCMesh*>(element)->spec);
-    //      return nullptr;
-    // Requires C++ class layout (vtable, elemtype offset, spec offset). Forward to C++.
-    extern "C" {
-        fn mjs_asMesh_impl(element: *mut mjsElement) -> *mut mjsMesh;
-    }
-    // SAFETY: element pointer validity is caller's responsibility; null is handled by C++ side.
-    unsafe {
-        mjs_asMesh_impl(element)
-    }
+    // WARNING: signature changed — verify body
+    // Previous params: (element : * mut mjsElement)
+    // Previous return: * mut mjsMesh
+    extern "C" { fn mjs_asMesh_impl (element : * mut mjsElement) -> * mut mjsMesh ; } unsafe { mjs_asMesh_impl (element) }
 }
 
 /// C: mjs_asHField (user/user_api.h:358)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjs_as_h_field(element: *mut mjsElement) -> *mut mjsHField {
-    // C++: if (element && element->elemtype == mjOBJ_HFIELD)
-    //        return &(static_cast<mjCHField*>(element)->spec);
-    //      return nullptr;
-    extern "C" {
-        fn mjs_asHField_impl(element: *mut mjsElement) -> *mut mjsHField;
-    }
-    // SAFETY: element pointer validity is caller's responsibility; null is handled by C++ side.
-    unsafe {
-        mjs_asHField_impl(element)
-    }
+    // WARNING: signature changed — verify body
+    // Previous params: (element : * mut mjsElement)
+    // Previous return: * mut mjsHField
+    extern "C" { fn mjs_asHField_impl (element : * mut mjsElement) -> * mut mjsHField ; } unsafe { mjs_asHField_impl (element) }
 }
 
 /// C: mjs_asSkin (user/user_api.h:361)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjs_as_skin(element: *mut mjsElement) -> *mut mjsSkin {
-    // C++: if (element && element->elemtype == mjOBJ_SKIN)
-    //        return &(static_cast<mjCSkin*>(element)->spec);
-    //      return nullptr;
-    extern "C" {
-        fn mjs_asSkin_impl(element: *mut mjsElement) -> *mut mjsSkin;
-    }
-    // SAFETY: element pointer validity is caller's responsibility; null is handled by C++ side.
-    unsafe {
-        mjs_asSkin_impl(element)
-    }
+    // WARNING: signature changed — verify body
+    // Previous params: (element : * mut mjsElement)
+    // Previous return: * mut mjsSkin
+    extern "C" { fn mjs_asSkin_impl (element : * mut mjsElement) -> * mut mjsSkin ; } unsafe { mjs_asSkin_impl (element) }
 }
 
 /// C: mjs_asTexture (user/user_api.h:364)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjs_as_texture(element: *mut mjsElement) -> *mut mjsTexture {
-    // C++: if (element && element->elemtype == mjOBJ_TEXTURE)
-    //        return &(static_cast<mjCTexture*>(element)->spec);
-    //      return nullptr;
-    extern "C" {
-        fn mjs_asTexture_impl(element: *mut mjsElement) -> *mut mjsTexture;
-    }
-    // SAFETY: element pointer validity is caller's responsibility; null is handled by C++ side.
-    unsafe {
-        mjs_asTexture_impl(element)
-    }
+    // WARNING: signature changed — verify body
+    // Previous params: (element : * mut mjsElement)
+    // Previous return: * mut mjsTexture
+    extern "C" { fn mjs_asTexture_impl (element : * mut mjsElement) -> * mut mjsTexture ; } unsafe { mjs_asTexture_impl (element) }
 }
 
 /// C: mjs_asMaterial (user/user_api.h:367)
@@ -1541,10 +1500,9 @@ pub fn mj_clear_cache(cache: *mut mjCache) {
 /// Calls: mjCCache::Capacity
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_get_cache() -> *mut mjCache {
-    extern "C" {
-        fn mj_getCache_impl() -> *mut mjCache;
-    }
-    // SAFETY: Forwarding to linked C++ implementation of mj_getCache.
-    unsafe { mj_getCache_impl() }
+    // WARNING: signature changed — verify body
+    // Previous params: ()
+    // Previous return: * mut mjCache
+    extern "C" { fn mj_getCache_impl () -> * mut mjCache ; } unsafe { mj_getCache_impl () }
 }
 

@@ -1,5 +1,5 @@
 //! Port of: user/user_flexcomp.cc
-//! IR hash: 545f394232195ad9
+//! IR hash: 05737965add36adb
 //! CODEGEN: signatures locked. Only fill todo!() bodies.
 
 use crate::types::*;
@@ -25,11 +25,10 @@ pub fn read_str_from_buffer(dest: *mut i8, src: *const i8, maxlen: i32) {
 /// C: IsValidElementOrNodeHeader22 (user/user_flexcomp.cc:65)
 #[allow(unused_variables, non_snake_case)]
 pub fn is_valid_element_or_node_header22(line: *const std__string) -> bool {
-    extern "C" {
-        fn IsValidElementOrNodeHeader22_impl(line: *const std__string) -> bool;
-    }
-    // SAFETY: Forwarding to linked C/C++ implementation.
-    unsafe { IsValidElementOrNodeHeader22_impl(line) }
+    // WARNING: signature changed — verify body
+    // Previous params: (line : * const std__string)
+    // Previous return: bool
+    extern "C" { fn IsValidElementOrNodeHeader22_impl (line : * const std__string) -> bool ; } unsafe { IsValidElementOrNodeHeader22_impl (line) }
 }
 
 /// C: mat2lin (user/user_flexcomp.cc:1103)

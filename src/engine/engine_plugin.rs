@@ -1,5 +1,5 @@
 //! Port of: engine/engine_plugin.cc
-//! IR hash: 545f394232195ad9
+//! IR hash: 05737965add36adb
 //! CODEGEN: signatures locked. Only fill todo!() bodies.
 
 use crate::types::*;
@@ -7,15 +7,10 @@ use crate::types::*;
 /// C: strklen (engine/engine_plugin.cc:58)
 #[allow(unused_variables, non_snake_case)]
 pub fn strklen(s: *const i8) -> i32 {
-    const K_MAX_NAME_LENGTH: i32 = 1024;
-    unsafe {
-        for i in 0..K_MAX_NAME_LENGTH {
-            if *s.add(i as usize) == 0 {
-                return i;
-            }
-        }
-        -1
-    }
+    // WARNING: signature changed — verify body
+    // Previous params: (s : * const i8)
+    // Previous return: i32
+    const K_MAX_NAME_LENGTH : i32 = 1024 ; unsafe { for i in 0 .. K_MAX_NAME_LENGTH { if * s . add (i as usize) == 0 { return i ; } } - 1 }
 }
 
 /// C: getext (engine/engine_plugin.cc:68)
@@ -31,21 +26,19 @@ pub fn getext(filename: string_view) -> std__string {
 /// Calls: strklen
 #[allow(unused_variables, non_snake_case)]
 pub fn copy_name(s: *const i8) -> i32 {
-    extern "C" {
-        fn CopyName_impl(s: *const i8) -> i32;
-    }
-    // SAFETY: Forwarding to linked C++ implementation of CopyName.
-    unsafe { CopyName_impl(s) }
+    // WARNING: signature changed — verify body
+    // Previous params: (s : * const i8)
+    // Previous return: i32
+    extern "C" { fn CopyName_impl (s : * const i8) -> i32 ; } unsafe { CopyName_impl (s) }
 }
 
 /// C: IsValidURISchemeFormat (engine/engine_plugin.cc:93)
 #[allow(unused_variables, non_snake_case)]
 pub fn is_valid_uri_scheme_format(prefix: *const i8) -> bool {
-    extern "C" {
-        fn IsValidURISchemeFormat_impl(prefix: *const i8) -> bool;
-    }
-    // SAFETY: Forwarding to linked C/C++ implementation.
-    unsafe { IsValidURISchemeFormat_impl(prefix) }
+    // WARNING: signature changed — verify body
+    // Previous params: (prefix : * const i8)
+    // Previous return: bool
+    extern "C" { fn IsValidURISchemeFormat_impl (prefix : * const i8) -> bool ; } unsafe { IsValidURISchemeFormat_impl (prefix) }
 }
 
 /// C: PluginAttrSeek (engine/engine_plugin.cc:119)
@@ -89,11 +82,7 @@ pub fn mjp_register_resource_provider(provider: *const mjpResourceProvider) -> i
 /// C: mjp_pluginCount (engine/engine_plugin.h:35)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjp_plugin_count() -> i32 {
-    extern "C" {
-        fn mjp_pluginCount_impl() -> i32;
-    }
-    // SAFETY: Forwarding to linked C/C++ implementation.
-    unsafe { mjp_pluginCount_impl() }
+    extern "C" { fn mjp_pluginCount_impl () -> i32 ; } unsafe { mjp_pluginCount_impl () }
 }
 
 /// C: mjp_resourceProviderCount (engine/engine_plugin.h:38)
@@ -132,17 +121,10 @@ pub fn mjp_get_resource_provider(resource_name: *const i8) -> *const mjpResource
 /// C: mjp_getPluginAtSlot (engine/engine_plugin.h:50)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjp_get_plugin_at_slot(slot: i32) -> *const mjpPlugin {
-    // C++ implementation: GlobalTable<mjpPlugin>::GetSingleton().GetAtSlot(slot)
-    // This is a C++ template singleton that cannot be replicated in Rust.
-    // Forward to C++ implementation via extern "C" linkage.
-    extern "C" {
-        fn mjp_getPluginAtSlot_impl(slot: i32) -> *const mjpPlugin;
-    }
-    // SAFETY: slot is a plain integer; the C++ implementation handles
-    // bounds checking internally.
-    unsafe {
-        mjp_getPluginAtSlot_impl(slot)
-    }
+    // WARNING: signature changed — verify body
+    // Previous params: (slot : i32)
+    // Previous return: * const mjpPlugin
+    extern "C" { fn mjp_getPluginAtSlot_impl (slot : i32) -> * const mjpPlugin ; } unsafe { mjp_getPluginAtSlot_impl (slot) }
 }
 
 /// C: mjp_getResourceProviderAtSlot (engine/engine_plugin.h:53)
@@ -254,10 +236,9 @@ pub fn mjp_get_plugin_unsafe(name: *const i8, slot: *mut i32, nslot: i32) -> *co
 /// C: mjp_getPluginAtSlotUnsafe (engine/engine_plugin.h:98)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjp_get_plugin_at_slot_unsafe(slot: i32, nslot: i32) -> *const mjpPlugin {
-    extern "C" {
-        fn mjp_getPluginAtSlotUnsafe_impl(slot: i32, nslot: i32) -> *const mjpPlugin;
-    }
-    // SAFETY: Forwarding to linked C/C++ implementation.
-    unsafe { mjp_getPluginAtSlotUnsafe_impl(slot, nslot) }
+    // WARNING: signature changed — verify body
+    // Previous params: (slot : i32, nslot : i32)
+    // Previous return: * const mjpPlugin
+    extern "C" { fn mjp_getPluginAtSlotUnsafe_impl (slot : i32 , nslot : i32) -> * const mjpPlugin ; } unsafe { mjp_getPluginAtSlotUnsafe_impl (slot , nslot) }
 }
 

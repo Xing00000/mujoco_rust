@@ -1,5 +1,5 @@
 //! Port of: engine/engine_io.c
-//! IR hash: 545f394232195ad9
+//! IR hash: 05737965add36adb
 //! CODEGEN: signatures locked. Only fill todo!() bodies.
 
 use crate::types::*;
@@ -79,11 +79,10 @@ pub fn free_model_buffers(m: *mut mjModel) {
 /// Calls: mju_message
 #[allow(unused_variables, non_snake_case)]
 pub fn check_db_sparse(m: *const mjModel) {
-    extern "C" {
-        fn checkDBSparse_impl(m: *const mjModel);
-    }
-    // SAFETY: Forwarding to linked C/C++ implementation.
-    unsafe { checkDBSparse_impl(m) }
+    // WARNING: signature changed — verify body
+    // Previous params: (m : * const mjModel)
+    // Previous return: ()
+    extern "C" { fn checkDBSparse_impl (m : * const mjModel) ; } unsafe { checkDBSparse_impl (m) }
 }
 
 /// C: copyM2Sparse (engine/engine_io.c:915)
@@ -110,11 +109,10 @@ pub fn mj_set_ptr_data(m: *const mjModel, d: *mut mjData) {
 /// Calls: mjp_getPluginAtSlot, mju_free
 #[allow(unused_variables, non_snake_case)]
 pub fn free_data_buffers(d: *mut mjData) {
-    extern "C" {
-        fn freeDataBuffers_impl(d: *mut mjData);
-    }
-    // SAFETY: Forwarding to linked C/C++ implementation.
-    unsafe { freeDataBuffers_impl(d) }
+    // WARNING: signature changed — verify body
+    // Previous params: (d : * mut mjData)
+    // Previous return: ()
+    extern "C" { fn freeDataBuffers_impl (d : * mut mjData) ; } unsafe { freeDataBuffers_impl (d) }
 }
 
 /// C: mj_copyDataVisual (engine/engine_io.c:1142)
@@ -359,10 +357,9 @@ pub fn mj_init_plugin(m: *const mjModel, d: *mut mjData) {
 /// Calls: freeDataBuffers, mju_free, mju_threadpool
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_delete_data(d: *mut mjData) {
-    extern "C" {
-        fn mj_deleteData_impl(d: *mut mjData);
-    }
-    // SAFETY: Forwarding to linked C/C++ implementation.
-    unsafe { mj_deleteData_impl(d) }
+    // WARNING: signature changed — verify body
+    // Previous params: (d : * mut mjData)
+    // Previous return: ()
+    extern "C" { fn mj_deleteData_impl (d : * mut mjData) ; } unsafe { mj_deleteData_impl (d) }
 }
 

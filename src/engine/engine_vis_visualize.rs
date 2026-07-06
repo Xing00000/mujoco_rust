@@ -1,5 +1,5 @@
 //! Port of: engine/engine_vis_visualize.c
-//! IR hash: 545f394232195ad9
+//! IR hash: 05737965add36adb
 //! CODEGEN: signatures locked. Only fill todo!() bodies.
 
 use crate::types::*;
@@ -12,9 +12,10 @@ use crate::types::*;
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn f2f(dest: *mut f32, src: *const f32, n: i32) {
-    unsafe {
-        core::ptr::copy_nonoverlapping(src, dest, n as usize);
-    }
+    // WARNING: signature changed — verify body
+    // Previous params: (dest : * mut f32, src : * const f32, n : i32)
+    // Previous return: ()
+    unsafe { core :: ptr :: copy_nonoverlapping (src , dest , n as usize) ; }
 }
 
 /// C: makeLabel (engine/engine_vis_visualize.c:55)

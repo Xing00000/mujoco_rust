@@ -1,5 +1,5 @@
 //! Port of: user/user_model.cc
-//! IR hash: 545f394232195ad9
+//! IR hash: 05737965add36adb
 //! CODEGEN: signatures locked. Only fill todo!() bodies.
 
 use crate::types::*;
@@ -7,11 +7,10 @@ use crate::types::*;
 /// C: IsSameVec (user/user_model.cc:72)
 #[allow(unused_variables, non_snake_case)]
 pub fn is_same_vec(pos1: [T; 3], pos2: [T; 3]) -> bool {
-    extern "C" {
-        fn IsSameVec_impl(pos1: [T; 3], pos2: [T; 3]) -> bool;
-    }
-    // SAFETY: Forwarding to linked C/C++ implementation.
-    unsafe { IsSameVec_impl(pos1, pos2) }
+    // WARNING: signature changed — verify body
+    // Previous params: (pos1 : [T ; 3], pos2 : [T ; 3])
+    // Previous return: bool
+    extern "C" { fn IsSameVec_impl (pos1 : [T ; 3] , pos2 : [T ; 3]) -> bool ; } unsafe { IsSameVec_impl (pos1 , pos2) }
 }
 
 /// C: NumCompilerThreads (user/user_model.cc:79)
@@ -26,42 +25,38 @@ pub fn num_compiler_threads(upper_bound: i32) -> u32 {
 /// C: IsSameQuat (user/user_model.cc:93)
 #[allow(unused_variables, non_snake_case)]
 pub fn is_same_quat(quat1: [T; 4], quat2: [T; 4]) -> bool {
-    extern "C" {
-        fn IsSameQuat_impl(quat1: [T; 4], quat2: [T; 4]) -> bool;
-    }
-    // SAFETY: Forwarding to linked C++ implementation.
-    unsafe { IsSameQuat_impl(quat1, quat2) }
+    // WARNING: signature changed — verify body
+    // Previous params: (quat1 : [T ; 4], quat2 : [T ; 4])
+    // Previous return: bool
+    extern "C" { fn IsSameQuat_impl (quat1 : [T ; 4] , quat2 : [T ; 4]) -> bool ; } unsafe { IsSameQuat_impl (quat1 , quat2) }
 }
 
 /// C: IsSamePose (user/user_model.cc:111)
 #[allow(unused_variables, non_snake_case)]
 pub fn is_same_pose(pos1: [T; 3], pos2: [T; 3], quat1: [T; 4], quat2: [T; 4]) -> bool {
-    extern "C" {
-        fn IsSamePose_impl(pos1: [T; 3], pos2: [T; 3], quat1: [T; 4], quat2: [T; 4]) -> bool;
-    }
-    // SAFETY: Forwarding to linked C++ implementation.
-    unsafe { IsSamePose_impl(pos1, pos2, quat1, quat2) }
+    // WARNING: signature changed — verify body
+    // Previous params: (pos1 : [T ; 3], pos2 : [T ; 3], quat1 : [T ; 4], quat2 : [T ; 4])
+    // Previous return: bool
+    extern "C" { fn IsSamePose_impl (pos1 : [T ; 3] , pos2 : [T ; 3] , quat1 : [T ; 4] , quat2 : [T ; 4]) -> bool ; } unsafe { IsSamePose_impl (pos1 , pos2 , quat1 , quat2) }
 }
 
 /// C: IsNullPose (user/user_model.cc:127)
 #[allow(unused_variables, non_snake_case)]
 pub fn is_null_pose(pos: [T; 3], quat: [T; 4]) -> bool {
-    extern "C" {
-        fn IsNullPose_impl(pos: [T; 3], quat: [T; 4]) -> bool;
-    }
-    // SAFETY: Forwarding to linked C++ implementation.
-    unsafe { IsNullPose_impl(pos, quat) }
+    // WARNING: signature changed — verify body
+    // Previous params: (pos : [T ; 3], quat : [T ; 4])
+    // Previous return: bool
+    extern "C" { fn IsNullPose_impl (pos : [T ; 3] , quat : [T ; 4]) -> bool ; } unsafe { IsNullPose_impl (pos , quat) }
 }
 
 /// C: GetBodyIdFromWrap (user/user_model.cc:134)
 /// Calls: mjCWrap::Type
 #[allow(unused_variables, non_snake_case)]
 pub fn get_body_id_from_wrap(wrap: *const mjCWrap) -> i32 {
-    extern "C" {
-        fn GetBodyIdFromWrap_impl(wrap: *const mjCWrap) -> i32;
-    }
-    // SAFETY: Forwarding to linked C/C++ implementation.
-    unsafe { GetBodyIdFromWrap_impl(wrap) }
+    // WARNING: signature changed — verify body
+    // Previous params: (wrap : * const mjCWrap)
+    // Previous return: i32
+    extern "C" { fn GetBodyIdFromWrap_impl (wrap : * const mjCWrap) -> i32 ; } unsafe { GetBodyIdFromWrap_impl (wrap) }
 }
 
 /// C: mjCModel::CopyList (user/user_model.cc:261)
@@ -94,11 +89,10 @@ pub fn mj_c_model_copy_plugin(self_ptr: *mut mjCModel, source: *const i32, list:
 /// C: IsPluginActive (user/user_model.cc:440)
 #[allow(unused_variables, non_snake_case)]
 pub fn is_plugin_active(plugin: *const mjpPlugin, active_plugins: *const i32) -> bool {
-    extern "C" {
-        fn IsPluginActive_impl(plugin: *const mjpPlugin, active_plugins: *const i32) -> bool;
-    }
-    // SAFETY: Forwarding to linked C++ implementation.
-    unsafe { IsPluginActive_impl(plugin, active_plugins) }
+    // WARNING: signature changed — verify body
+    // Previous params: (plugin : * const mjpPlugin, active_plugins : * const i32)
+    // Previous return: bool
+    extern "C" { fn IsPluginActive_impl (plugin : * const mjpPlugin , active_plugins : * const i32) -> bool ; } unsafe { IsPluginActive_impl (plugin , active_plugins) }
 }
 
 /// C: mjCModel::RemoveFromList (user/user_model.cc:508)
@@ -160,11 +154,10 @@ pub fn mj_c_model_add_object_default(self_ptr: *mut mjCModel, list: *mut i32, r#
 /// C: GetNext (user/user_model.cc:1411)
 #[allow(unused_variables, non_snake_case)]
 pub fn get_next(list: *const i32, child: *const mjsElement) -> *mut mjsElement {
-    extern "C" {
-        fn GetNext_impl(list: *const i32, child: *const mjsElement) -> *mut mjsElement;
-    }
-    // SAFETY: Forwarding to linked C++ implementation.
-    unsafe { GetNext_impl(list, child) }
+    // WARNING: signature changed — verify body
+    // Previous params: (list : * const i32, child : * const mjsElement)
+    // Previous return: * mut mjsElement
+    extern "C" { fn GetNext_impl (list : * const i32 , child : * const mjsElement) -> * mut mjsElement ; } unsafe { GetNext_impl (list , child) }
 }
 
 /// C: findobject (user/user_model.cc:1596)
@@ -197,31 +190,28 @@ pub fn mj_c_model_delete_material(self_ptr: *mut mjCModel, list: *mut i32, name:
 /// C: DeleteAllTextures (user/user_model.cc:1790)
 #[allow(unused_variables, non_snake_case)]
 pub fn delete_all_textures(list: *mut i32) {
-    extern "C" {
-        fn DeleteAllTextures_impl(list: *mut i32);
-    }
-    // SAFETY: Forwarding to linked C++ implementation.
-    unsafe { DeleteAllTextures_impl(list) }
+    // WARNING: signature changed — verify body
+    // Previous params: (list : * mut i32)
+    // Previous return: ()
+    extern "C" { fn DeleteAllTextures_impl (list : * mut i32) ; } unsafe { DeleteAllTextures_impl (list) }
 }
 
 /// C: DeleteTexcoord (user/user_model.cc:1799)
 #[allow(unused_variables, non_snake_case)]
 pub fn delete_texcoord(list: *mut i32) {
-    extern "C" {
-        fn DeleteTexcoord_impl(list: *mut i32);
-    }
-    // SAFETY: Forwarding to linked C++ implementation.
-    unsafe { DeleteTexcoord_impl(list) }
+    // WARNING: signature changed — verify body
+    // Previous params: (list : * mut i32)
+    // Previous return: ()
+    extern "C" { fn DeleteTexcoord_impl (list : * mut i32) ; } unsafe { DeleteTexcoord_impl (list) }
 }
 
 /// C: DeleteElements (user/user_model.cc:1810)
 #[allow(unused_variables, non_snake_case)]
 pub fn delete_elements(elements: *mut i32, discard: *const i32) {
-    extern "C" {
-        fn DeleteElements_impl(elements: *mut i32, discard: *const i32);
-    }
-    // SAFETY: Forwarding to linked C++ implementation.
-    unsafe { DeleteElements_impl(elements, discard) }
+    // WARNING: signature changed — verify body
+    // Previous params: (elements : * mut i32, discard : * const i32)
+    // Previous return: ()
+    extern "C" { fn DeleteElements_impl (elements : * mut i32 , discard : * const i32) ; } unsafe { DeleteElements_impl (elements , discard) }
 }
 
 /// C: mjCModel::Delete (user/user_model.cc:1848)
@@ -373,22 +363,20 @@ pub fn compiler_log_handler(msg: *const mjLogMessage) {
 /// Calls: _mjPRIVATE_setTlsLogHandler, mjCMesh::Compile
 #[allow(unused_variables, non_snake_case)]
 pub fn compile_mesh(mesh: *mut mjCMesh, vfs: *const mjVFS, exception: *mut std__exception_ptr, exception_mutex: *mut std__mutex, warningtext: *mut string) {
-    extern "C" {
-        fn CompileMesh_impl(mesh: *mut mjCMesh, vfs: *const mjVFS, exception: *mut std__exception_ptr, exception_mutex: *mut std__mutex, warningtext: *mut string);
-    }
-    // SAFETY: Forwarding to linked C/C++ implementation.
-    unsafe { CompileMesh_impl(mesh, vfs, exception, exception_mutex, warningtext) }
+    // WARNING: signature changed — verify body
+    // Previous params: (mesh : * mut mjCMesh, vfs : * const mjVFS, exception : * mut std__exception_ptr, exception_mutex : * mut std__mutex, warningtext : * mut string)
+    // Previous return: ()
+    extern "C" { fn CompileMesh_impl (mesh : * mut mjCMesh , vfs : * const mjVFS , exception : * mut std__exception_ptr , exception_mutex : * mut std__mutex , warningtext : * mut string) ; } unsafe { CompileMesh_impl (mesh , vfs , exception , exception_mutex , warningtext) }
 }
 
 /// C: CompileTexture (user/user_model.cc:4790)
 /// Calls: _mjPRIVATE_setTlsLogHandler, mjCTexture::Compile
 #[allow(unused_variables, non_snake_case)]
 pub fn compile_texture(texture: *mut mjCTexture, vfs: *const mjVFS, exception: *mut std__exception_ptr, exception_mutex: *mut std__mutex, warningtext: *mut string) {
-    extern "C" {
-        fn CompileTexture_impl(texture: *mut mjCTexture, vfs: *const mjVFS, exception: *mut std__exception_ptr, exception_mutex: *mut std__mutex, warningtext: *mut string);
-    }
-    // SAFETY: Forwarding to linked C++ implementation.
-    unsafe { CompileTexture_impl(texture, vfs, exception, exception_mutex, warningtext) }
+    // WARNING: signature changed — verify body
+    // Previous params: (texture : * mut mjCTexture, vfs : * const mjVFS, exception : * mut std__exception_ptr, exception_mutex : * mut std__mutex, warningtext : * mut string)
+    // Previous return: ()
+    extern "C" { fn CompileTexture_impl (texture : * mut mjCTexture , vfs : * const mjVFS , exception : * mut std__exception_ptr , exception_mutex : * mut std__mutex , warningtext : * mut string) ; } unsafe { CompileTexture_impl (texture , vfs , exception , exception_mutex , warningtext) }
 }
 
 /// C: PrintIndent (user/user_model.cc:5457)
@@ -644,11 +632,7 @@ pub fn mj_c_model_next_object(self_ptr: *mut mjCModel, object: *const mjsElement
     // WARNING: signature changed — verify body
     // Previous params: (self_ptr : * mut mjCModel, object : * const mjsElement, r#type : mjtObj)
     // Previous return: * mut mjsElement
-    extern "C" {
-        fn mjCModel_NextObject_impl(self_ptr: *mut mjCModel, object: *const mjsElement, r#type: mjtObj) -> *mut mjsElement;
-    }
-    // SAFETY: Forwarding to linked C++ implementation of mjCModel::NextObject.
-    unsafe { mjCModel_NextObject_impl(self_ptr, object, r#type) }
+    extern "C" { fn mjCModel_NextObject_impl (self_ptr : * mut mjCModel , object : * const mjsElement , r#type : mjtObj) -> * mut mjsElement ; } unsafe { mjCModel_NextObject_impl (self_ptr , object , r#type) }
 }
 
 /// C: mjCModel::IsCompiled (user/user_model.h:249)
@@ -785,11 +769,7 @@ pub fn mj_c_model_find_spec(self_ptr: *mut mjCModel, name: string) -> *mut mjSpe
     // WARNING: signature changed — verify body
     // Previous params: (self_ptr : * mut mjCModel, name : string)
     // Previous return: * mut mjSpec
-    extern "C" {
-        fn mjCModel_FindSpec_impl(self_ptr: *mut mjCModel, name: string) -> *mut mjSpec;
-    }
-    // SAFETY: Forwarding to linked C++ implementation of mjCModel::FindSpec.
-    unsafe { mjCModel_FindSpec_impl(self_ptr, name) }
+    extern "C" { fn mjCModel_FindSpec_impl (self_ptr : * mut mjCModel , name : string) -> * mut mjSpec ; } unsafe { mjCModel_FindSpec_impl (self_ptr , name) }
 }
 
 /// C: mjCModel::ActivatePlugin (user/user_model.h:278)
@@ -1136,11 +1116,10 @@ pub fn mj_c_model_get_ref(self_ptr: *mut mjCModel) -> i32 {
 /// C: mjCModel::Release (user/user_model.h:361)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_model_release(self_ptr: *mut mjCModel) {
-    extern "C" {
-        fn mjCModel_Release_impl(self_ptr: *mut mjCModel);
-    }
-    // SAFETY: Forwarding to linked C++ implementation.
-    unsafe { mjCModel_Release_impl(self_ptr) }
+    // WARNING: signature changed — verify body
+    // Previous params: (self_ptr : * mut mjCModel)
+    // Previous return: ()
+    extern "C" { fn mjCModel_Release_impl (self_ptr : * mut mjCModel) ; } unsafe { mjCModel_Release_impl (self_ptr) }
 }
 
 /// C: mjCModel::MakeTreeLists (user/user_model.h:377)

@@ -1,5 +1,5 @@
 //! Port of: user/user_vfs.cc
-//! IR hash: 545f394232195ad9
+//! IR hash: 05737965add36adb
 //! CODEGEN: signatures locked. Only fill todo!() bodies.
 
 use crate::types::*;
@@ -28,22 +28,17 @@ pub fn close_file(resource: *mut mjResource) {
     // WARNING: signature changed — verify body
     // Previous params: (resource : * mut mjResource)
     // Previous return: ()
-    extern "C" {
-        fn CloseFile_impl(resource: *mut mjResource);
-    }
-    // SAFETY: Forwarding to linked C++ implementation of CloseFile.
-    unsafe { CloseFile_impl(resource) }
+    extern "C" { fn CloseFile_impl (resource : * mut mjResource) ; } unsafe { CloseFile_impl (resource) }
 }
 
 /// C: FileModified (user/user_vfs.cc:79)
 /// Calls: mju_decodeBase64
 #[allow(unused_variables, non_snake_case)]
 pub fn file_modified(resource: *const mjResource, timestamp: *const i8) -> i32 {
-    extern "C" {
-        fn FileModified_impl(resource: *const mjResource, timestamp: *const i8) -> i32;
-    }
-    // SAFETY: Forwarding to linked C++ implementation.
-    unsafe { FileModified_impl(resource, timestamp) }
+    // WARNING: signature changed — verify body
+    // Previous params: (resource : * const mjResource, timestamp : * const i8)
+    // Previous return: i32
+    extern "C" { fn FileModified_impl (resource : * const mjResource , timestamp : * const i8) -> i32 ; } unsafe { FileModified_impl (resource , timestamp) }
 }
 
 /// C: StripPathAndLower (user/user_vfs.cc:94)
@@ -108,11 +103,10 @@ pub fn mj_unmount_vfs(vfs: *mut mjVFS, filename: *const i8) -> i32 {
 /// Calls: VFS::Mount, VFS::Upcast, mju_decodeBase64, mju_encodeBase64, mju_error, mju_isValidBase64
 #[allow(unused_variables, non_snake_case)]
 pub fn buffer_provider_mount(vfs: *mut mjVFS, args: Args) -> i32 {
-    extern "C" {
-        fn BufferProvider_Mount_impl(vfs: *mut mjVFS, args: Args) -> i32;
-    }
-    // SAFETY: Forwarding to linked C++ implementation of BufferProvider::Mount.
-    unsafe { BufferProvider_Mount_impl(vfs, args) }
+    // WARNING: signature changed — verify body
+    // Previous params: (vfs : * mut mjVFS, args : Args)
+    // Previous return: i32
+    extern "C" { fn BufferProvider_Mount_impl (vfs : * mut mjVFS , args : Args) -> i32 ; } unsafe { BufferProvider_Mount_impl (vfs , args) }
 }
 
 /// C: mj_addFileVFS (user/user_vfs.cc:496)
@@ -176,22 +170,20 @@ pub fn vfs_open(self_ptr: *mut VFS, dir: *const i8, name: *const i8) -> *mut mjR
 /// C: VFS::Read (user/user_vfs.h:80)
 #[allow(unused_variables, non_snake_case)]
 pub fn vfs_read(self_ptr: *mut VFS, resource: *mut mjResource, buffer: *const *mut ()) -> i32 {
-    extern "C" {
-        fn VFS_Read_impl(self_ptr: *mut VFS, resource: *mut mjResource, buffer: *const *mut ()) -> i32;
-    }
-    // SAFETY: Forwarding to linked C++ implementation of VFS::Read.
-    unsafe { VFS_Read_impl(self_ptr, resource, buffer) }
+    // WARNING: signature changed — verify body
+    // Previous params: (self_ptr : * mut VFS, resource : * mut mjResource, buffer : * const * mut ())
+    // Previous return: i32
+    extern "C" { fn VFS_Read_impl (self_ptr : * mut VFS , resource : * mut mjResource , buffer : * const * mut ()) -> i32 ; } unsafe { VFS_Read_impl (self_ptr , resource , buffer) }
 }
 
 /// C: VFS::Close (user/user_vfs.h:84)
 /// Calls: VFS::MaybeSelfDestruct
 #[allow(unused_variables, non_snake_case)]
 pub fn vfs_close(self_ptr: *mut VFS, resource: *mut mjResource) -> Status {
-    extern "C" {
-        fn VFS_Close_impl(self_ptr: *mut VFS, resource: *mut mjResource) -> Status;
-    }
-    // SAFETY: Forwarding to linked C/C++ implementation.
-    unsafe { VFS_Close_impl(self_ptr, resource) }
+    // WARNING: signature changed — verify body
+    // Previous params: (self_ptr : * mut VFS, resource : * mut mjResource)
+    // Previous return: Status
+    extern "C" { fn VFS_Close_impl (self_ptr : * mut VFS , resource : * mut mjResource) -> Status ; } unsafe { VFS_Close_impl (self_ptr , resource) }
 }
 
 /// C: VFS::Mount (user/user_vfs.h:88)
@@ -200,11 +192,7 @@ pub fn vfs_mount(self_ptr: *mut VFS, path: *const FilePath, provider: *const mjp
     // WARNING: signature changed — verify body
     // Previous params: (self_ptr : * mut VFS, path : * const FilePath, provider : * const mjpResourceProvider)
     // Previous return: Status
-    extern "C" {
-        fn VFS_Mount_impl(self_ptr: *mut VFS, path: *const FilePath, provider: *const mjpResourceProvider) -> Status;
-    }
-    // SAFETY: Forwarding to linked C++ implementation of VFS::Mount.
-    unsafe { VFS_Mount_impl(self_ptr, path, provider) }
+    extern "C" { fn VFS_Mount_impl (self_ptr : * mut VFS , path : * const FilePath , provider : * const mjpResourceProvider) -> Status ; } unsafe { VFS_Mount_impl (self_ptr , path , provider) }
 }
 
 /// C: VFS::Unmount (user/user_vfs.h:91)
@@ -250,11 +238,7 @@ pub fn vfs_upcast(vfs: *mut mjVFS) -> *mut VFS {
     // WARNING: signature changed — verify body
     // Previous params: (vfs : * mut mjVFS)
     // Previous return: * mut VFS
-    extern "C" {
-        fn VFS_Upcast_impl(vfs: *mut mjVFS) -> *mut VFS;
-    }
-    // SAFETY: Forwarding to linked C++ implementation of VFS::Upcast.
-    unsafe { VFS_Upcast_impl(vfs) }
+    extern "C" { fn VFS_Upcast_impl (vfs : * mut mjVFS) -> * mut VFS ; } unsafe { VFS_Upcast_impl (vfs) }
 }
 
 /// C: VFS::CreateResource (user/user_vfs.h:113)
@@ -270,10 +254,9 @@ pub fn vfs_create_resource(self_ptr: *mut VFS, name: string_view, provider: *con
 /// C: VFS::MaybeSelfDestruct (user/user_vfs.h:124)
 #[allow(unused_variables, non_snake_case)]
 pub fn vfs_maybe_self_destruct(self_ptr: *mut VFS) {
-    extern "C" {
-        fn VFS_MaybeSelfDestruct_impl(self_ptr: *mut VFS);
-    }
-    // SAFETY: Forwarding to linked C++ implementation.
-    unsafe { VFS_MaybeSelfDestruct_impl(self_ptr) }
+    // WARNING: signature changed — verify body
+    // Previous params: (self_ptr : * mut VFS)
+    // Previous return: ()
+    extern "C" { fn VFS_MaybeSelfDestruct_impl (self_ptr : * mut VFS) ; } unsafe { VFS_MaybeSelfDestruct_impl (self_ptr) }
 }
 

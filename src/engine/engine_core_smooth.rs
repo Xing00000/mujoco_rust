@@ -1,5 +1,5 @@
 //! Port of: engine/engine_core_smooth.c
-//! IR hash: 545f394232195ad9
+//! IR hash: 05737965add36adb
 //! CODEGEN: signatures locked. Only fill todo!() bodies.
 
 use crate::types::*;
@@ -62,22 +62,20 @@ pub fn mj_kinematics(m: *const mjModel, d: *mut mjData) {
 /// Calls: mji_addTo3, mji_copy3, mji_scl3, mji_sub3, mju_dofCom, mju_inertCom, mju_scl3, mju_zero
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_com_pos(m: *const mjModel, d: *mut mjData) {
-    extern "C" {
-        fn mj_comPos_impl(m: *const mjModel, d: *mut mjData);
-    }
-    // SAFETY: Forwarding to linked C/C++ implementation.
-    unsafe { mj_comPos_impl(m, d) }
+    // WARNING: signature changed — verify body
+    // Previous params: (m : * const mjModel, d : * mut mjData)
+    // Previous return: ()
+    extern "C" { fn mj_comPos_impl (m : * const mjModel , d : * mut mjData) ; } unsafe { mj_comPos_impl (m , d) }
 }
 
 /// C: mj_camlight (engine/engine_core_smooth.h:41)
 /// Calls: mj_local2Global, mji_add3, mji_copy3, mji_copy9, mji_cross, mji_rotVecQuat, mji_sub3, mju_normalize3, mju_transpose
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_camlight(m: *const mjModel, d: *mut mjData) {
-    extern "C" {
-        fn mj_camlight_impl(m: *const mjModel, d: *mut mjData);
-    }
-    // SAFETY: Forwarding to linked C/C++ implementation.
-    unsafe { mj_camlight_impl(m, d) }
+    // WARNING: signature changed — verify body
+    // Previous params: (m : * const mjModel, d : * mut mjData)
+    // Previous return: ()
+    extern "C" { fn mj_camlight_impl (m : * const mjModel , d : * mut mjData) ; } unsafe { mj_camlight_impl (m , d) }
 }
 
 /// C: mj_flex (engine/engine_core_smooth.h:44)
@@ -218,11 +216,10 @@ pub fn mj_solve_ld_legacy(m: *const mjModel, x: *mut f64, n: i32, qLD: *const f6
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_solve_ld(x: *mut f64, qLD: *const f64, qLDiagInv: *const f64, nv: i32, n: i32, rownnz: *const i32, rowadr: *const i32, colind: *const i32, index: *const i32) {
-    extern "C" {
-        fn mj_solveLD_impl(x: *mut f64, qLD: *const f64, qLDiagInv: *const f64, nv: i32, n: i32, rownnz: *const i32, rowadr: *const i32, colind: *const i32, index: *const i32);
-    }
-    // SAFETY: Forwarding to linked C/C++ implementation.
-    unsafe { mj_solveLD_impl(x, qLD, qLDiagInv, nv, n, rownnz, rowadr, colind, index) }
+    // WARNING: signature changed — verify body
+    // Previous params: (x : * mut f64, qLD : * const f64, qLDiagInv : * const f64, nv : i32, n : i32, rownnz : * const i32, rowadr : * const i32, colind : * const i32, index : * const i32)
+    // Previous return: ()
+    extern "C" { fn mj_solveLD_impl (x : * mut f64 , qLD : * const f64 , qLDiagInv : * const f64 , nv : i32 , n : i32 , rownnz : * const i32 , rowadr : * const i32 , colind : * const i32 , index : * const i32) ; } unsafe { mj_solveLD_impl (x , qLD , qLDiagInv , nv , n , rownnz , rowadr , colind , index) }
 }
 
 /// C: mj_solveM (engine/engine_core_smooth.h:88)
@@ -234,11 +231,10 @@ pub fn mj_solve_ld(x: *mut f64, qLD: *const f64, qLDiagInv: *const f64, nv: i32,
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_solve_m(m: *const mjModel, d: *mut mjData, x: *mut f64, y: *const f64, n: i32) {
-    extern "C" {
-        fn mj_solveM_impl(m: *const mjModel, d: *mut mjData, x: *mut f64, y: *const f64, n: i32);
-    }
-    // SAFETY: Forwarding to linked C/C++ implementation.
-    unsafe { mj_solveM_impl(m, d, x, y, n) }
+    // WARNING: signature changed — verify body
+    // Previous params: (m : * const mjModel, d : * mut mjData, x : * mut f64, y : * const f64, n : i32)
+    // Previous return: ()
+    extern "C" { fn mj_solveM_impl (m : * const mjModel , d : * mut mjData , x : * mut f64 , y : * const f64 , n : i32) ; } unsafe { mj_solveM_impl (m , d , x , y , n) }
 }
 
 /// C: mj_solveM2 (engine/engine_core_smooth.h:91)

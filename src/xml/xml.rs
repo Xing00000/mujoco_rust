@@ -1,5 +1,5 @@
 //! Port of: xml/xml.cc
-//! IR hash: 545f394232195ad9
+//! IR hash: 05737965add36adb
 //! CODEGEN: signatures locked. Only fill todo!() bodies.
 
 use crate::types::*;
@@ -14,11 +14,10 @@ pub fn locale_override_posix_locale() -> i32 {
 /// Calls: FilePath::IsAbs, FilePath::Str, FilePath::c_str, mjXReader::ModelFileDir, mjXReader::SetAssetDir, mjXReader::SetMeshDir, mjXReader::SetTextureDir, mju_closeResource, mju_getResourceDir, mju_readResource
 #[allow(unused_variables, non_snake_case)]
 pub fn include_xml(reader: *mut mjXReader, elem: *mut XMLElement, dir: *const FilePath, vfs: *const mjVFS, included: *mut i32) {
-    extern "C" {
-        fn IncludeXML_impl(reader: *mut mjXReader, elem: *mut XMLElement, dir: *const FilePath, vfs: *const mjVFS, included: *mut i32);
-    }
-    // SAFETY: Forwarding to linked C/C++ implementation.
-    unsafe { IncludeXML_impl(reader, elem, dir, vfs, included) }
+    // WARNING: signature changed — verify body
+    // Previous params: (reader : * mut mjXReader, elem : * mut XMLElement, dir : * const FilePath, vfs : * const mjVFS, included : * mut i32)
+    // Previous return: ()
+    extern "C" { fn IncludeXML_impl (reader : * mut mjXReader , elem : * mut XMLElement , dir : * const FilePath , vfs : * const mjVFS , included : * mut i32) ; } unsafe { IncludeXML_impl (reader , elem , dir , vfs , included) }
 }
 
 /// C: SpecFromXML (xml/xml.cc:243)

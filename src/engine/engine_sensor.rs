@@ -1,5 +1,5 @@
 //! Port of: engine/engine_sensor.c
-//! IR hash: 545f394232195ad9
+//! IR hash: 05737965add36adb
 //! CODEGEN: signatures locked. Only fill todo!() bodies.
 
 use crate::types::*;
@@ -7,22 +7,20 @@ use crate::types::*;
 /// C: ContactInfoCompare (engine/engine_sensor.c:52)
 #[allow(unused_variables, non_snake_case)]
 pub fn contact_info_compare(a: *const ContactInfo, b: *const ContactInfo, context: *mut ()) -> i32 {
-    extern "C" {
-        fn ContactInfoCompare_impl(a: *const ContactInfo, b: *const ContactInfo, context: *mut ()) -> i32;
-    }
-    // SAFETY: Forwarding to linked C implementation of ContactInfoCompare.
-    unsafe { ContactInfoCompare_impl(a, b, context) }
+    // WARNING: signature changed — verify body
+    // Previous params: (a : * const ContactInfo, b : * const ContactInfo, context : * mut ())
+    // Previous return: i32
+    extern "C" { fn ContactInfoCompare_impl (a : * const ContactInfo , b : * const ContactInfo , context : * mut ()) -> i32 ; } unsafe { ContactInfoCompare_impl (a , b , context) }
 }
 
 /// C: ContactSelect (engine/engine_sensor.c:61)
 /// Calls: ContactInfoCompare
 #[allow(unused_variables, non_snake_case)]
 pub fn contact_select(arr: *mut ContactInfo, buf: *mut ContactInfo, n: i32, k: i32, context: *mut ()) {
-    extern "C" {
-        fn ContactSelect_impl(arr: *mut ContactInfo, buf: *mut ContactInfo, n: i32, k: i32, context: *mut ());
-    }
-    // SAFETY: Forwarding to linked C implementation of ContactSelect.
-    unsafe { ContactSelect_impl(arr, buf, n, k, context) }
+    // WARNING: signature changed — verify body
+    // Previous params: (arr : * mut ContactInfo, buf : * mut ContactInfo, n : i32, k : i32, context : * mut ())
+    // Previous return: ()
+    extern "C" { fn ContactSelect_impl (arr : * mut ContactInfo , buf : * mut ContactInfo , n : i32 , k : i32 , context : * mut ()) ; } unsafe { ContactSelect_impl (arr , buf , n , k , context) }
 }
 
 /// C: tactile_taxel_batch (engine/engine_sensor.c:80)
@@ -308,10 +306,9 @@ pub fn mj_energy_pos(m: *const mjModel, d: *mut mjData) {
 /// Calls: mj_freeStack, mj_markStack, mj_mulM, mj_stackAllocInfo, mju_dot
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_energy_vel(m: *const mjModel, d: *mut mjData) {
-    extern "C" {
-        fn mj_energyVel_impl(m: *const mjModel, d: *mut mjData);
-    }
-    // SAFETY: Forwarding to linked C/C++ implementation.
-    unsafe { mj_energyVel_impl(m, d) }
+    // WARNING: signature changed — verify body
+    // Previous params: (m : * const mjModel, d : * mut mjData)
+    // Previous return: ()
+    extern "C" { fn mj_energyVel_impl (m : * const mjModel , d : * mut mjData) ; } unsafe { mj_energyVel_impl (m , d) }
 }
 

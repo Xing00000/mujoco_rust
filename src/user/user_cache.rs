@@ -1,5 +1,5 @@
 //! Port of: user/user_cache.cc
-//! IR hash: 545f394232195ad9
+//! IR hash: 05737965add36adb
 //! CODEGEN: signatures locked. Only fill todo!() bodies.
 
 use crate::types::*;
@@ -221,11 +221,7 @@ pub fn mj_c_cache_capacity(self_ptr: *mut mjCCache) -> std__size_t {
     // WARNING: signature changed — verify body
     // Previous params: (self_ptr : * mut mjCCache)
     // Previous return: std__size_t
-    extern "C" {
-        fn mjCCache_Capacity_impl(self_ptr: *mut mjCCache) -> std__size_t;
-    }
-    // SAFETY: Forwarding to linked C++ implementation of mjCCache::Capacity.
-    unsafe { mjCCache_Capacity_impl(self_ptr) }
+    extern "C" { fn mjCCache_Capacity_impl (self_ptr : * mut mjCCache) -> std__size_t ; } unsafe { mjCCache_Capacity_impl (self_ptr) }
 }
 
 /// C: mjCCache::Size (user/user_cache.h:160)

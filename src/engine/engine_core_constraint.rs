@@ -1,5 +1,5 @@
 //! Port of: engine/engine_core_constraint.c
-//! IR hash: 545f394232195ad9
+//! IR hash: 05737965add36adb
 //! CODEGEN: signatures locked. Only fill todo!() bodies.
 
 use crate::types::*;
@@ -28,20 +28,10 @@ pub fn cell_pos_and_jac(m: *const mjModel, d: *mut mjData, flex_id: i32, npc: i3
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn cell_strain_jacobian(npc: i32, cell_nnz: i32, dSdx_local: *const f64, cell_node_jac: *const f64, strain_jac: *mut f64) {
-    unsafe {
-        use crate::engine::engine_util_blas::mju_zero;
-        mju_zero(strain_jac, cell_nnz);
-        for n in 0..npc as usize {
-            for c in 0..3usize {
-                let w: f64 = *dSdx_local.add(3 * n + c);
-                if w == 0.0 { continue; }
-                let row = 3 * n + c;
-                for k in 0..cell_nnz as usize {
-                    *strain_jac.add(k) += w * *cell_node_jac.add(row * cell_nnz as usize + k);
-                }
-            }
-        }
-    }
+    // WARNING: signature changed — verify body
+    // Previous params: (npc : i32, cell_nnz : i32, dSdx_local : * const f64, cell_node_jac : * const f64, strain_jac : * mut f64)
+    // Previous return: ()
+    unsafe { use crate :: engine :: engine_util_blas :: mju_zero ; mju_zero (strain_jac , cell_nnz) ; for n in 0 .. npc as usize { for c in 0 .. 3usize { let w : f64 = * dSdx_local . add (3 * n + c) ; if w == 0.0 { continue ; } let row = 3 * n + c ; for k in 0 .. cell_nnz as usize { * strain_jac . add (k) += w * * cell_node_jac . add (row * cell_nnz as usize + k) ; } } } }
 }
 
 /// C: arenaAllocEfc (engine/engine_core_constraint.c:130)
@@ -182,13 +172,10 @@ pub fn getposdim(m: *const mjModel, d: *const mjData, i: i32, pos: *mut f64, dim
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn power(a: f64, b: f64) -> f64 {
-    if b == 1.0 {
-        a
-    } else if b == 2.0 {
-        a * a
-    } else {
-        a.powf(b)
-    }
+    // WARNING: signature changed — verify body
+    // Previous params: (a : f64, b : f64)
+    // Previous return: f64
+    if b == 1.0 { a } else if b == 2.0 { a * a } else { a . powf (b) }
 }
 
 /// C: getimpedance (engine/engine_core_constraint.c:2100)
@@ -314,11 +301,10 @@ pub fn mj_is_dual(m: *const mjModel) -> i32 {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_mul_jac_vec(m: *const mjModel, d: *const mjData, res: *mut f64, vec: *const f64) {
-    extern "C" {
-        fn mj_mulJacVec_impl(m: *const mjModel, d: *const mjData, res: *mut f64, vec: *const f64);
-    }
-    // SAFETY: Forwarding to linked C/C++ implementation.
-    unsafe { mj_mulJacVec_impl(m, d, res, vec) }
+    // WARNING: signature changed — verify body
+    // Previous params: (m : * const mjModel, d : * const mjData, res : * mut f64, vec : * const f64)
+    // Previous return: ()
+    extern "C" { fn mj_mulJacVec_impl (m : * const mjModel , d : * const mjData , res : * mut f64 , vec : * const f64) ; } unsafe { mj_mulJacVec_impl (m , d , res , vec) }
 }
 
 /// C: mj_mulJacTVec (engine/engine_core_constraint.h:37)
@@ -330,11 +316,10 @@ pub fn mj_mul_jac_vec(m: *const mjModel, d: *const mjData, res: *mut f64, vec: *
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_mul_jac_t_vec(m: *const mjModel, d: *const mjData, res: *mut f64, vec: *const f64) {
-    extern "C" {
-        fn mj_mulJacTVec_impl(m: *const mjModel, d: *const mjData, res: *mut f64, vec: *const f64);
-    }
-    // SAFETY: Forwarding to linked C/C++ implementation.
-    unsafe { mj_mulJacTVec_impl(m, d, res, vec) }
+    // WARNING: signature changed — verify body
+    // Previous params: (m : * const mjModel, d : * const mjData, res : * mut f64, vec : * const f64)
+    // Previous return: ()
+    extern "C" { fn mj_mulJacTVec_impl (m : * const mjModel , d : * const mjData , res : * mut f64 , vec : * const f64) ; } unsafe { mj_mulJacTVec_impl (m , d , res , vec) }
 }
 
 /// C: mj_Jdotv (engine/engine_core_constraint.h:40)
@@ -376,11 +361,10 @@ pub fn mj_assign_ref(m: *const mjModel, target: *mut f64, source: *const f64) {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_assign_imp(m: *const mjModel, target: *mut f64, source: *const f64) {
-    extern "C" {
-        fn mj_assignImp_impl(m: *const mjModel, target: *mut f64, source: *const f64);
-    }
-    // SAFETY: Forwarding to linked C/C++ implementation.
-    unsafe { mj_assignImp_impl(m, target, source) }
+    // WARNING: signature changed — verify body
+    // Previous params: (m : * const mjModel, target : * mut f64, source : * const f64)
+    // Previous return: ()
+    extern "C" { fn mj_assignImp_impl (m : * const mjModel , target : * mut f64 , source : * const f64) ; } unsafe { mj_assignImp_impl (m , target , source) }
 }
 
 /// C: mj_assignFriction (engine/engine_core_constraint.h:52)
@@ -392,11 +376,10 @@ pub fn mj_assign_imp(m: *const mjModel, target: *mut f64, source: *const f64) {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_assign_friction(m: *const mjModel, target: *mut f64, source: *const f64) {
-    extern "C" {
-        fn mj_assignFriction_impl(m: *const mjModel, target: *mut f64, source: *const f64);
-    }
-    // SAFETY: Forwarding to linked C/C++ implementation.
-    unsafe { mj_assignFriction_impl(m, target, source) }
+    // WARNING: signature changed — verify body
+    // Previous params: (m : * const mjModel, target : * mut f64, source : * const f64)
+    // Previous return: ()
+    extern "C" { fn mj_assignFriction_impl (m : * const mjModel , target : * mut f64 , source : * const f64) ; } unsafe { mj_assignFriction_impl (m , target , source) }
 }
 
 /// C: mj_assignMargin (engine/engine_core_constraint.h:55)
@@ -407,11 +390,10 @@ pub fn mj_assign_friction(m: *const mjModel, target: *mut f64, source: *const f6
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_assign_margin(m: *const mjModel, source: f64) -> f64 {
-    extern "C" {
-        fn mj_assignMargin_impl(m: *const mjModel, source: f64) -> f64;
-    }
-    // SAFETY: Forwarding to linked C/C++ implementation.
-    unsafe { mj_assignMargin_impl(m, source) }
+    // WARNING: signature changed — verify body
+    // Previous params: (m : * const mjModel, source : f64)
+    // Previous return: f64
+    extern "C" { fn mj_assignMargin_impl (m : * const mjModel , source : f64) -> f64 ; } unsafe { mj_assignMargin_impl (m , source) }
 }
 
 /// C: mj_addContact (engine/engine_core_constraint.h:58)
@@ -518,11 +500,10 @@ pub fn mj_reference_constraint(m: *const mjModel, d: *mut mjData) {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_constraint_update_impl(ne: i32, nf: i32, nefc: i32, D: *const f64, R: *const f64, floss: *const f64, jar: *const f64, r#type: *const i32, id: *const i32, contact: *mut mjContact, state: *mut i32, force: *mut f64, cost: *mut f64, flg_coneHessian: i32) {
-    extern "C" {
-        fn mj_constraintUpdate_impl_impl(ne: i32, nf: i32, nefc: i32, D: *const f64, R: *const f64, floss: *const f64, jar: *const f64, r#type: *const i32, id: *const i32, contact: *mut mjContact, state: *mut i32, force: *mut f64, cost: *mut f64, flg_coneHessian: i32);
-    }
-    // SAFETY: Forwarding to linked C/C++ implementation.
-    unsafe { mj_constraintUpdate_impl_impl(ne, nf, nefc, D, R, floss, jar, r#type, id, contact, state, force, cost, flg_coneHessian) }
+    // WARNING: signature changed — verify body
+    // Previous params: (ne : i32, nf : i32, nefc : i32, D : * const f64, R : * const f64, floss : * const f64, jar : * const f64, r#type : * const i32, id : * const i32, contact : * mut mjContact, state : * mut i32, force : * mut f64, cost : * mut f64, flg_coneHessian : i32)
+    // Previous return: ()
+    extern "C" { fn mj_constraintUpdate_impl_impl (ne : i32 , nf : i32 , nefc : i32 , D : * const f64 , R : * const f64 , floss : * const f64 , jar : * const f64 , r#type : * const i32 , id : * const i32 , contact : * mut mjContact , state : * mut i32 , force : * mut f64 , cost : * mut f64 , flg_coneHessian : i32) ; } unsafe { mj_constraintUpdate_impl_impl (ne , nf , nefc , D , R , floss , jar , r#type , id , contact , state , force , cost , flg_coneHessian) }
 }
 
 /// C: mj_constraintUpdate (engine/engine_core_constraint.h:105)
@@ -534,10 +515,9 @@ pub fn mj_constraint_update_impl(ne: i32, nf: i32, nefc: i32, D: *const f64, R: 
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_constraint_update(m: *const mjModel, d: *mut mjData, jar: *const f64, cost: *mut f64, flg_coneHessian: i32) {
-    extern "C" {
-        fn mj_constraintUpdate_impl(m: *const mjModel, d: *mut mjData, jar: *const f64, cost: *mut f64, flg_coneHessian: i32);
-    }
-    // SAFETY: Forwarding to linked C/C++ implementation.
-    unsafe { mj_constraintUpdate_impl(m, d, jar, cost, flg_coneHessian) }
+    // WARNING: signature changed — verify body
+    // Previous params: (m : * const mjModel, d : * mut mjData, jar : * const f64, cost : * mut f64, flg_coneHessian : i32)
+    // Previous return: ()
+    extern "C" { fn mj_constraintUpdate_impl (m : * const mjModel , d : * mut mjData , jar : * const f64 , cost : * mut f64 , flg_coneHessian : i32) ; } unsafe { mj_constraintUpdate_impl (m , d , jar , cost , flg_coneHessian) }
 }
 

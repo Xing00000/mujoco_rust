@@ -1,5 +1,5 @@
 //! Port of: engine/engine_memory.c
-//! IR hash: 545f394232195ad9
+//! IR hash: 05737965add36adb
 //! CODEGEN: signatures locked. Only fill todo!() bodies.
 
 use crate::types::*;
@@ -16,11 +16,10 @@ pub fn fastmod(a: usize, b: usize) -> usize {
 /// C: get_stack_info_from_data (engine/engine_memory.c:74)
 #[allow(unused_variables, non_snake_case)]
 pub fn get_stack_info_from_data(d: *const mjData) -> mjStackInfo {
-    extern "C" {
-        fn get_stack_info_from_data_impl(d: *const mjData) -> mjStackInfo;
-    }
-    // SAFETY: Forwarding to linked C++ implementation.
-    unsafe { get_stack_info_from_data_impl(d) }
+    // WARNING: signature changed — verify body
+    // Previous params: (d : * const mjData)
+    // Previous return: mjStackInfo
+    extern "C" { fn get_stack_info_from_data_impl (d : * const mjData) -> mjStackInfo ; } unsafe { get_stack_info_from_data_impl (d) }
 }
 
 /// C: stackallocinternal (engine/engine_memory.c:144)
@@ -47,21 +46,19 @@ pub fn stackalloc(d: *mut mjData, size: usize, alignment: usize, caller: *const 
 /// Calls: stackallocinternal
 #[allow(unused_variables, non_snake_case)]
 pub fn markstackinternal(d: *mut mjData, stack_info: *mut mjStackInfo) {
-    extern "C" {
-        fn markstackinternal_impl(d: *mut mjData, stack_info: *mut mjStackInfo);
-    }
-    // SAFETY: Forwarding to linked C++ implementation.
-    unsafe { markstackinternal_impl(d, stack_info) }
+    // WARNING: signature changed — verify body
+    // Previous params: (d : * mut mjData, stack_info : * mut mjStackInfo)
+    // Previous return: ()
+    extern "C" { fn markstackinternal_impl (d : * mut mjData , stack_info : * mut mjStackInfo) ; } unsafe { markstackinternal_impl (d , stack_info) }
 }
 
 /// C: freestackinternal (engine/engine_memory.c:292)
 #[allow(unused_variables, non_snake_case)]
 pub fn freestackinternal(stack_info: *mut mjStackInfo) {
-    extern "C" {
-        fn freestackinternal_impl(stack_info: *mut mjStackInfo);
-    }
-    // SAFETY: Forwarding to linked C++ implementation.
-    unsafe { freestackinternal_impl(stack_info) }
+    // WARNING: signature changed — verify body
+    // Previous params: (stack_info : * mut mjStackInfo)
+    // Previous return: ()
+    extern "C" { fn freestackinternal_impl (stack_info : * mut mjStackInfo) ; } unsafe { freestackinternal_impl (stack_info) }
 }
 
 /// C: mj_arenaAllocByte (engine/engine_memory.h:35)
@@ -78,22 +75,20 @@ pub fn mj_arena_alloc_byte(d: *mut mjData, bytes: usize, alignment: usize) -> *m
 /// Calls: get_stack_info_from_data, markstackinternal
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_mark_stack(d: *mut mjData) {
-    extern "C" {
-        fn mj_markStack_impl(d: *mut mjData);
-    }
-    // SAFETY: Forwarding to linked C++ implementation.
-    unsafe { mj_markStack_impl(d) }
+    // WARNING: signature changed — verify body
+    // Previous params: (d : * mut mjData)
+    // Previous return: ()
+    extern "C" { fn mj_markStack_impl (d : * mut mjData) ; } unsafe { mj_markStack_impl (d) }
 }
 
 /// C: mj_freeStack (engine/engine_memory.h:43)
 /// Calls: freestackinternal, get_stack_info_from_data
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_free_stack(d: *mut mjData) {
-    extern "C" {
-        fn mj_freeStack_impl(d: *mut mjData);
-    }
-    // SAFETY: Forwarding to linked C++ implementation.
-    unsafe { mj_freeStack_impl(d) }
+    // WARNING: signature changed — verify body
+    // Previous params: (d : * mut mjData)
+    // Previous return: ()
+    extern "C" { fn mj_freeStack_impl (d : * mut mjData) ; } unsafe { mj_freeStack_impl (d) }
 }
 
 /// C: mj_stackAllocByte (engine/engine_memory.h:53)
@@ -144,10 +139,9 @@ pub fn mj_stack_alloc_int(d: *mut mjData, size: usize) -> *mut i32 {
 /// C: mj_clearEfc (engine/engine_memory.h:70)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_clear_efc(d: *mut mjData) {
-    extern "C" {
-        fn mj_clearEfc_impl(d: *mut mjData);
-    }
-    // SAFETY: Forwarding to linked C/C++ implementation.
-    unsafe { mj_clearEfc_impl(d) }
+    // WARNING: signature changed — verify body
+    // Previous params: (d : * mut mjData)
+    // Previous return: ()
+    extern "C" { fn mj_clearEfc_impl (d : * mut mjData) ; } unsafe { mj_clearEfc_impl (d) }
 }
 

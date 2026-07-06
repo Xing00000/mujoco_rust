@@ -1,5 +1,5 @@
 //! Port of: user/user_resource.cc
-//! IR hash: 545f394232195ad9
+//! IR hash: 05737965add36adb
 //! CODEGEN: signatures locked. Only fill todo!() bodies.
 
 use crate::types::*;
@@ -18,32 +18,29 @@ pub fn mju_open_resource(dir: *const i8, name: *const i8, vfs: *const mjVFS, err
 /// Calls: VFS::Close, VFS::Upcast
 #[allow(unused_variables, non_snake_case)]
 pub fn mju_close_resource(resource: *mut mjResource) {
-    extern "C" {
-        fn mju_closeResource_impl(resource: *mut mjResource);
-    }
-    // SAFETY: Forwarding to linked C/C++ implementation.
-    unsafe { mju_closeResource_impl(resource) }
+    // WARNING: signature changed — verify body
+    // Previous params: (resource : * mut mjResource)
+    // Previous return: ()
+    extern "C" { fn mju_closeResource_impl (resource : * mut mjResource) ; } unsafe { mju_closeResource_impl (resource) }
 }
 
 /// C: mju_readResource (user/user_resource.cc:75)
 /// Calls: VFS::Read, VFS::Upcast
 #[allow(unused_variables, non_snake_case)]
 pub fn mju_read_resource(resource: *mut mjResource, buffer: *const *mut ()) -> i32 {
-    extern "C" {
-        fn mju_readResource_impl(resource: *mut mjResource, buffer: *const *mut ()) -> i32;
-    }
-    // SAFETY: Forwarding to linked C/C++ implementation.
-    unsafe { mju_readResource_impl(resource, buffer) }
+    // WARNING: signature changed — verify body
+    // Previous params: (resource : * mut mjResource, buffer : * const * mut ())
+    // Previous return: i32
+    extern "C" { fn mju_readResource_impl (resource : * mut mjResource , buffer : * const * mut ()) -> i32 ; } unsafe { mju_readResource_impl (resource , buffer) }
 }
 
 /// C: mju_getResourceDir (user/user_resource.cc:82)
 #[allow(unused_variables, non_snake_case)]
 pub fn mju_get_resource_dir(resource: *mut mjResource, dir: *const *mut i8, ndir: *mut i32) {
-    extern "C" {
-        fn mju_getResourceDir_impl(resource: *mut mjResource, dir: *const *mut i8, ndir: *mut i32);
-    }
-    // SAFETY: Forwarding to linked C++ implementation.
-    unsafe { mju_getResourceDir_impl(resource, dir, ndir) }
+    // WARNING: signature changed — verify body
+    // Previous params: (resource : * mut mjResource, dir : * const * mut i8, ndir : * mut i32)
+    // Previous return: ()
+    extern "C" { fn mju_getResourceDir_impl (resource : * mut mjResource , dir : * const * mut i8 , ndir : * mut i32) ; } unsafe { mju_getResourceDir_impl (resource , dir , ndir) }
 }
 
 /// C: mju_isModifiedResource (user/user_resource.cc:105)

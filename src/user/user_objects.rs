@@ -1,5 +1,5 @@
 //! Port of: user/user_objects.cc
-//! IR hash: 545f394232195ad9
+//! IR hash: 05737965add36adb
 //! CODEGEN: signatures locked. Only fill todo!() bodies.
 
 use crate::types::*;
@@ -293,11 +293,10 @@ pub fn mj_c_body_get_list(self_ptr: *mut mjCBody) -> *const i32 {
 /// C: GetNextBody (user/user_objects.cc:2380)
 #[allow(unused_variables, non_snake_case)]
 pub fn get_next_body(body: *const mjCBody, child: *const mjsElement, found: *mut bool, recursive: bool) -> *mut mjsElement {
-    extern "C" {
-        fn GetNextBody_impl(body: *const mjCBody, child: *const mjsElement, found: *mut bool, recursive: bool) -> *mut mjsElement;
-    }
-    // SAFETY: Forwarding to linked C++ implementation.
-    unsafe { GetNextBody_impl(body, child, found, recursive) }
+    // WARNING: signature changed — verify body
+    // Previous params: (body : * const mjCBody, child : * const mjsElement, found : * mut bool, recursive : bool)
+    // Previous return: * mut mjsElement
+    extern "C" { fn GetNextBody_impl (body : * const mjCBody , child : * const mjsElement , found : * mut bool , recursive : bool) -> * mut mjsElement ; } unsafe { GetNextBody_impl (body , child , found , recursive) }
 }
 
 /// C: randomdot (user/user_objects.cc:4973)
@@ -1193,7 +1192,10 @@ pub fn mj_c_body_find_object(self_ptr: *mut mjCBody, r#type: mjtObj, name: *cons
 /// Calls: mjCBody::NameSpace_
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_body_name_space(self_ptr: *mut mjCBody, m: *const mjCModel) {
-    mj_c_body_name_space_1(self_ptr, m, true);
+    // WARNING: signature changed — verify body
+    // Previous params: (self_ptr : * mut mjCBody, m : * const mjCModel)
+    // Previous return: ()
+    mj_c_body_name_space_1 (self_ptr , m , true) ;
 }
 
 /// C: mjCBody::MakeInertialExplicit (user/user_objects.h:545)
@@ -1374,212 +1376,10 @@ pub fn mj_c_body_point_to_local(self_ptr: *mut mjCBody) {
 /// C: mjCBody::NameSpace_ (user/user_objects.h:617)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_body_name_space_1(self_ptr: *mut mjCBody, m: *const mjCModel, propagate: bool) {
-    // Translates mjCBody::NameSpace_(const mjCModel* m, bool propagate).
-    //
-    // This function accesses C++ class fields through raw pointer byte offsets.
-    // All offsets are ABI-dependent (Itanium ABI, libc++, macOS arm64/x86_64).
-    // They MUST be validated via an offsetof() harness; golden tests catch misalignment.
-    //
-    // Layout notes:
-    //   std::string (libc++ SSO) = 24 bytes
-    //   std::vector<T*> = 24 bytes {begin, end, end_cap}
-    //   mjCBase: vptr(8) + mjsElement(16) + id(4) + pad(4) + name(24) + classname(24) +
-    //            info(24) + prefix(24) + suffix(24) + frame(8) + model(8) = 168
-    //   mjCModel_ (no vtable): mjsElement(16) + prefix(24) + suffix(24) + ... = prefix@16, suffix@40
-    //   mjCBody_: extends mjCBase(168) + parent(8) + weldid(4) + dofnum(4) + mocapid(4) +
-    //             contype(4) + conaffinity(4) + pad(4) + margin(8) + xpos0(24) + xquat0(32) +
-    //             lastdof(4) + subtreedofs(4) + tree(BVH, size TBD) + plugin_name(24) +
-    //             plugin_instance_name(24) + ...
-    //   mjCBody: mjCBody_ + mjsBody(private) + bodies(24) + geoms(24) + frames(24) +
-    //            joints(24) + sites(24) + cameras(24) + lights(24)
-    //
-    // TODO: Replace placeholder offsets (0) with actual values from offsetof() dump.
-    //       Without correct offsets, the field-access sections are guarded by `offset != 0`
-    //       checks that effectively skip them. Once offsets are known, remove the guards.
-
-    unsafe {
-        // --- Byte offset constants (PLACEHOLDERS until offsetof() dump is available) ---
-        // mjCBase field offsets (from start of any mjCBase-derived object)
-        const BASE_PREFIX: usize = 104;  // mjCBase_::prefix (std::string)
-        const BASE_SUFFIX: usize = 128;  // mjCBase_::suffix (std::string)
-        // mjCModel_ field offsets (no vtable)
-        const MODEL_PREFIX: usize = 16;  // mjCModel_::prefix (std::string)
-        const MODEL_SUFFIX: usize = 40;  // mjCModel_::suffix (std::string)
-        // mjCBody_ / mjCBody field offsets (PLACEHOLDER = 0 means "skip until verified")
-        const BODY_PLUGIN_INSTANCE_NAME: usize = 0; // TODO: needs sizeof(BVH)
-        const BODY_BODIES_VEC: usize = 0;  // TODO: needs full layout
-        const BODY_JOINTS_VEC: usize = 0;  // TODO
-        const BODY_GEOMS_VEC: usize = 0;   // TODO
-        const BODY_SITES_VEC: usize = 0;   // TODO
-        const BODY_CAMERAS_VEC: usize = 0; // TODO
-        const BODY_LIGHTS_VEC: usize = 0;  // TODO
-        const BODY_FRAMES_VEC: usize = 0;  // TODO
-
-        // --- libc++ std::string ABI helpers (inline) ---
-        // Short mode: byte[0] bit 0 == 0, size = byte[0] >> 1, data at byte[1..]
-        // Long mode: byte[0] bit 0 == 1, cap@0(with flag), size@8, data_ptr@16
-
-        /// Returns true if the libc++ string at `s` is empty.
-        #[inline(always)]
-        unsafe fn str_is_empty(s: *const u8) -> bool {
-            let b0 = *s;
-            if b0 & 1 == 0 { (b0 >> 1) == 0 }
-            else { *(s.add(8) as *const usize) == 0 }
-        }
-
-        /// Returns (data_ptr, len) for the libc++ string at `s`.
-        #[inline(always)]
-        unsafe fn str_parts(s: *const u8) -> (*const u8, usize) {
-            let b0 = *s;
-            if b0 & 1 == 0 {
-                (s.add(1), (b0 >> 1) as usize)
-            } else {
-                (*(s.add(16) as *const *const u8), *(s.add(8) as *const usize))
-            }
-        }
-
-        /// Write `data[0..len]` into the libc++ string at `dst`, handling SSO/heap.
-        /// Frees old heap buffer if needed, allocates new one if len > 22.
-        #[inline(always)]
-        unsafe fn str_set(dst: *mut u8, data: *const u8, len: usize) {
-            // Free old long-mode buffer
-            if *dst & 1 != 0 {
-                let old_cap = (*(dst as *const usize)) >> 1;
-                let old_ptr = *(dst.add(16) as *const *mut u8);
-                if !old_ptr.is_null() && old_cap > 0 {
-                    let layout = std::alloc::Layout::from_size_align_unchecked(old_cap + 1, 1);
-                    std::alloc::dealloc(old_ptr, layout);
-                }
-            }
-            if len <= 22 {
-                // Write as short string
-                core::ptr::write_bytes(dst, 0, 24);
-                *dst = (len as u8) << 1;
-                core::ptr::copy_nonoverlapping(data, dst.add(1), len);
-            } else {
-                // Allocate and write as long string
-                let cap = len;
-                let layout = std::alloc::Layout::from_size_align_unchecked(cap + 1, 1);
-                let buf = std::alloc::alloc(layout);
-                core::ptr::copy_nonoverlapping(data, buf, len);
-                *buf.add(len) = 0;
-                *(dst as *mut usize) = (cap << 1) | 1;
-                *(dst.add(8) as *mut usize) = len;
-                *(dst.add(16) as *mut *mut u8) = buf;
-            }
-        }
-
-        /// Assign src string to dst string (deep copy).
-        #[inline(always)]
-        unsafe fn str_assign(dst: *mut u8, src: *const u8) {
-            let (data, len) = str_parts(src);
-            str_set(dst, data, len);
-        }
-
-        /// Set dst = a + b + c (concatenation of three strings).
-        #[inline(always)]
-        unsafe fn str_concat3(dst: *mut u8, a: *const u8, b: *const u8, c: *const u8) {
-            let (a_d, a_l) = str_parts(a);
-            let (b_d, b_l) = str_parts(b);
-            let (c_d, c_l) = str_parts(c);
-            let total = a_l + b_l + c_l;
-            // Build concatenated content in a temp buffer, then assign
-            // (needed because dst might alias b)
-            let layout = std::alloc::Layout::from_size_align_unchecked(total + 1, 1);
-            let tmp = std::alloc::alloc(layout);
-            core::ptr::copy_nonoverlapping(a_d, tmp, a_l);
-            core::ptr::copy_nonoverlapping(b_d, tmp.add(a_l), b_l);
-            core::ptr::copy_nonoverlapping(c_d, tmp.add(a_l + b_l), c_l);
-            *tmp.add(total) = 0;
-            str_set(dst, tmp, total);
-            std::alloc::dealloc(tmp, layout);
-        }
-
-        /// Returns the number of pointer-sized elements in a std::vector<T*> at `v`.
-        #[inline(always)]
-        unsafe fn vec_len(v: *const u8) -> usize {
-            let begin = *(v as *const usize);
-            let end = *(v.add(8) as *const usize);
-            if begin == 0 { 0 } else { (end - begin) / core::mem::size_of::<usize>() }
-        }
-
-        /// Returns the i-th pointer from a std::vector<T*> at `v`.
-        #[inline(always)]
-        unsafe fn vec_get(v: *const u8, i: usize) -> *mut u8 {
-            let begin = *(v as *const *const *mut u8);
-            *begin.add(i) as *mut u8
-        }
-
-        // === 1. mjCBase::NameSpace(m) ===
-        mj_c_base_name_space(self_ptr as *mut mjCBase, m);
-
-        let s = self_ptr as *mut u8;
-        let mp = m as *const u8;
-
-        // === 2. plugin_instance_name = m->prefix + plugin_instance_name + m->suffix ===
-        if BODY_PLUGIN_INSTANCE_NAME != 0 {
-            let pin = s.add(BODY_PLUGIN_INSTANCE_NAME);
-            if !str_is_empty(pin) {
-                str_concat3(pin, mp.add(MODEL_PREFIX), pin as *const u8, mp.add(MODEL_SUFFIX));
-            }
-        }
-
-        // === 3. for body in bodies: prefix/suffix assign + recurse ===
-        if BODY_BODIES_VEC != 0 {
-            let bv = s.add(BODY_BODIES_VEC);
-            let n = vec_len(bv);
-            for i in 0..n {
-                let body = vec_get(bv, i);
-                str_assign(body.add(BASE_PREFIX), mp.add(MODEL_PREFIX));
-                str_assign(body.add(BASE_SUFFIX), mp.add(MODEL_SUFFIX));
-                mj_c_body_name_space_1(body as *mut mjCBody, m, propagate);
-            }
-        }
-
-        if !propagate { return; }
-
-        // === 4. joints → mjCBase::NameSpace (no override) ===
-        if BODY_JOINTS_VEC != 0 {
-            let jv = s.add(BODY_JOINTS_VEC);
-            let n = vec_len(jv);
-            for i in 0..n { mj_c_base_name_space(vec_get(jv, i) as *mut mjCBase, m); }
-        }
-
-        // === 5. geoms → mjCGeom::NameSpace (override) ===
-        if BODY_GEOMS_VEC != 0 {
-            let gv = s.add(BODY_GEOMS_VEC);
-            let n = vec_len(gv);
-            for i in 0..n { mj_c_geom_name_space(vec_get(gv, i) as *mut mjCGeom, m); }
-        }
-
-        // === 6. sites → mjCSite::NameSpace (override) ===
-        if BODY_SITES_VEC != 0 {
-            let sv = s.add(BODY_SITES_VEC);
-            let n = vec_len(sv);
-            for i in 0..n { mj_c_site_name_space(vec_get(sv, i) as *mut mjCSite, m); }
-        }
-
-        // === 7. cameras → mjCCamera::NameSpace (override) ===
-        if BODY_CAMERAS_VEC != 0 {
-            let cv = s.add(BODY_CAMERAS_VEC);
-            let n = vec_len(cv);
-            for i in 0..n { mj_c_camera_name_space(vec_get(cv, i) as *mut mjCCamera, m); }
-        }
-
-        // === 8. lights → mjCLight::NameSpace (override) ===
-        if BODY_LIGHTS_VEC != 0 {
-            let lv = s.add(BODY_LIGHTS_VEC);
-            let n = vec_len(lv);
-            for i in 0..n { mj_c_light_name_space(vec_get(lv, i) as *mut mjCLight, m); }
-        }
-
-        // === 9. frames → mjCBase::NameSpace (no override) ===
-        if BODY_FRAMES_VEC != 0 {
-            let fv = s.add(BODY_FRAMES_VEC);
-            let n = vec_len(fv);
-            for i in 0..n { mj_c_base_name_space(vec_get(fv, i) as *mut mjCBase, m); }
-        }
-    }
+    // WARNING: signature changed — verify body
+    // Previous params: (self_ptr : * mut mjCBody, m : * const mjCModel, propagate : bool)
+    // Previous return: ()
+    unsafe { const BASE_PREFIX : usize = 104 ; const BASE_SUFFIX : usize = 128 ; const MODEL_PREFIX : usize = 16 ; const MODEL_SUFFIX : usize = 40 ; const BODY_PLUGIN_INSTANCE_NAME : usize = 0 ; const BODY_BODIES_VEC : usize = 0 ; const BODY_JOINTS_VEC : usize = 0 ; const BODY_GEOMS_VEC : usize = 0 ; const BODY_SITES_VEC : usize = 0 ; const BODY_CAMERAS_VEC : usize = 0 ; const BODY_LIGHTS_VEC : usize = 0 ; const BODY_FRAMES_VEC : usize = 0 ; # [doc = " Returns true if the libc++ string at `s` is empty."] # [inline (always)] unsafe fn str_is_empty (s : * const u8) -> bool { let b0 = * s ; if b0 & 1 == 0 { (b0 >> 1) == 0 } else { * (s . add (8) as * const usize) == 0 } } # [doc = " Returns (data_ptr, len) for the libc++ string at `s`."] # [inline (always)] unsafe fn str_parts (s : * const u8) -> (* const u8 , usize) { let b0 = * s ; if b0 & 1 == 0 { (s . add (1) , (b0 >> 1) as usize) } else { (* (s . add (16) as * const * const u8) , * (s . add (8) as * const usize)) } } # [doc = " Write `data[0..len]` into the libc++ string at `dst`, handling SSO/heap."] # [doc = " Frees old heap buffer if needed, allocates new one if len > 22."] # [inline (always)] unsafe fn str_set (dst : * mut u8 , data : * const u8 , len : usize) { if * dst & 1 != 0 { let old_cap = (* (dst as * const usize)) >> 1 ; let old_ptr = * (dst . add (16) as * const * mut u8) ; if ! old_ptr . is_null () && old_cap > 0 { let layout = std :: alloc :: Layout :: from_size_align_unchecked (old_cap + 1 , 1) ; std :: alloc :: dealloc (old_ptr , layout) ; } } if len <= 22 { core :: ptr :: write_bytes (dst , 0 , 24) ; * dst = (len as u8) << 1 ; core :: ptr :: copy_nonoverlapping (data , dst . add (1) , len) ; } else { let cap = len ; let layout = std :: alloc :: Layout :: from_size_align_unchecked (cap + 1 , 1) ; let buf = std :: alloc :: alloc (layout) ; core :: ptr :: copy_nonoverlapping (data , buf , len) ; * buf . add (len) = 0 ; * (dst as * mut usize) = (cap << 1) | 1 ; * (dst . add (8) as * mut usize) = len ; * (dst . add (16) as * mut * mut u8) = buf ; } } # [doc = " Assign src string to dst string (deep copy)."] # [inline (always)] unsafe fn str_assign (dst : * mut u8 , src : * const u8) { let (data , len) = str_parts (src) ; str_set (dst , data , len) ; } # [doc = " Set dst = a + b + c (concatenation of three strings)."] # [inline (always)] unsafe fn str_concat3 (dst : * mut u8 , a : * const u8 , b : * const u8 , c : * const u8) { let (a_d , a_l) = str_parts (a) ; let (b_d , b_l) = str_parts (b) ; let (c_d , c_l) = str_parts (c) ; let total = a_l + b_l + c_l ; let layout = std :: alloc :: Layout :: from_size_align_unchecked (total + 1 , 1) ; let tmp = std :: alloc :: alloc (layout) ; core :: ptr :: copy_nonoverlapping (a_d , tmp , a_l) ; core :: ptr :: copy_nonoverlapping (b_d , tmp . add (a_l) , b_l) ; core :: ptr :: copy_nonoverlapping (c_d , tmp . add (a_l + b_l) , c_l) ; * tmp . add (total) = 0 ; str_set (dst , tmp , total) ; std :: alloc :: dealloc (tmp , layout) ; } # [doc = " Returns the number of pointer-sized elements in a std::vector<T*> at `v`."] # [inline (always)] unsafe fn vec_len (v : * const u8) -> usize { let begin = * (v as * const usize) ; let end = * (v . add (8) as * const usize) ; if begin == 0 { 0 } else { (end - begin) / core :: mem :: size_of :: < usize > () } } # [doc = " Returns the i-th pointer from a std::vector<T*> at `v`."] # [inline (always)] unsafe fn vec_get (v : * const u8 , i : usize) -> * mut u8 { let begin = * (v as * const * const * mut u8) ; * begin . add (i) as * mut u8 } mj_c_base_name_space (self_ptr as * mut mjCBase , m) ; let s = self_ptr as * mut u8 ; let mp = m as * const u8 ; if BODY_PLUGIN_INSTANCE_NAME != 0 { let pin = s . add (BODY_PLUGIN_INSTANCE_NAME) ; if ! str_is_empty (pin) { str_concat3 (pin , mp . add (MODEL_PREFIX) , pin as * const u8 , mp . add (MODEL_SUFFIX)) ; } } if BODY_BODIES_VEC != 0 { let bv = s . add (BODY_BODIES_VEC) ; let n = vec_len (bv) ; for i in 0 .. n { let body = vec_get (bv , i) ; str_assign (body . add (BASE_PREFIX) , mp . add (MODEL_PREFIX)) ; str_assign (body . add (BASE_SUFFIX) , mp . add (MODEL_SUFFIX)) ; mj_c_body_name_space_1 (body as * mut mjCBody , m , propagate) ; } } if ! propagate { return ; } if BODY_JOINTS_VEC != 0 { let jv = s . add (BODY_JOINTS_VEC) ; let n = vec_len (jv) ; for i in 0 .. n { mj_c_base_name_space (vec_get (jv , i) as * mut mjCBase , m) ; } } if BODY_GEOMS_VEC != 0 { let gv = s . add (BODY_GEOMS_VEC) ; let n = vec_len (gv) ; for i in 0 .. n { mj_c_geom_name_space (vec_get (gv , i) as * mut mjCGeom , m) ; } } if BODY_SITES_VEC != 0 { let sv = s . add (BODY_SITES_VEC) ; let n = vec_len (sv) ; for i in 0 .. n { mj_c_site_name_space (vec_get (sv , i) as * mut mjCSite , m) ; } } if BODY_CAMERAS_VEC != 0 { let cv = s . add (BODY_CAMERAS_VEC) ; let n = vec_len (cv) ; for i in 0 .. n { mj_c_camera_name_space (vec_get (cv , i) as * mut mjCCamera , m) ; } } if BODY_LIGHTS_VEC != 0 { let lv = s . add (BODY_LIGHTS_VEC) ; let n = vec_len (lv) ; for i in 0 .. n { mj_c_light_name_space (vec_get (lv , i) as * mut mjCLight , m) ; } } if BODY_FRAMES_VEC != 0 { let fv = s . add (BODY_FRAMES_VEC) ; let n = vec_len (fv) ; for i in 0 .. n { mj_c_base_name_space (vec_get (fv , i) as * mut mjCBase , m) ; } } }
 }
 
 /// C: mjCBody::CopyPlugin (user/user_objects.h:618)
@@ -2445,11 +2245,7 @@ pub fn mj_c_mesh_copy_from_spec(self_ptr: *mut mjCMesh) {
     // WARNING: signature changed — verify body
     // Previous params: (self_ptr : * mut mjCMesh)
     // Previous return: ()
-    extern "C" {
-        fn mjCMesh_CopyFromSpec_impl(self_ptr: *mut mjCMesh);
-    }
-    // SAFETY: Forwarding to linked C++ implementation of mjCMesh::CopyFromSpec.
-    unsafe { mjCMesh_CopyFromSpec_impl(self_ptr) }
+    extern "C" { fn mjCMesh_CopyFromSpec_impl (self_ptr : * mut mjCMesh) ; } unsafe { mjCMesh_CopyFromSpec_impl (self_ptr) }
 }
 
 /// C: mjCMesh::PointToLocal (user/user_objects.h:1152)
@@ -2766,11 +2562,7 @@ pub fn mj_c_mesh_nvert(self_ptr: *mut mjCMesh) -> i32 {
     // WARNING: signature changed — verify body
     // Previous params: (self_ptr : * mut mjCMesh)
     // Previous return: i32
-    extern "C" {
-        fn mjCMesh_nvert_impl(self_ptr: *mut mjCMesh) -> i32;
-    }
-    // SAFETY: Forwarding to linked C++ implementation of mjCMesh::nvert.
-    unsafe { mjCMesh_nvert_impl(self_ptr) }
+    extern "C" { fn mjCMesh_nvert_impl (self_ptr : * mut mjCMesh) -> i32 ; } unsafe { mjCMesh_nvert_impl (self_ptr) }
 }
 
 /// C: mjCMesh::nnormal (user/user_objects.h:1193)
@@ -2779,11 +2571,7 @@ pub fn mj_c_mesh_nnormal(self_ptr: *mut mjCMesh) -> i32 {
     // WARNING: signature changed — verify body
     // Previous params: (self_ptr : * mut mjCMesh)
     // Previous return: i32
-    extern "C" {
-        fn mjCMesh_nnormal_impl(self_ptr: *mut mjCMesh) -> i32;
-    }
-    // SAFETY: Forwarding to linked C++ implementation of mjCMesh::nnormal.
-    unsafe { mjCMesh_nnormal_impl(self_ptr) }
+    extern "C" { fn mjCMesh_nnormal_impl (self_ptr : * mut mjCMesh) -> i32 ; } unsafe { mjCMesh_nnormal_impl (self_ptr) }
 }
 
 /// C: mjCMesh::ntexcoord (user/user_objects.h:1194)
@@ -2801,11 +2589,7 @@ pub fn mj_c_mesh_nface(self_ptr: *mut mjCMesh) -> i32 {
     // WARNING: signature changed — verify body
     // Previous params: (self_ptr : * mut mjCMesh)
     // Previous return: i32
-    extern "C" {
-        fn mjCMesh_nface_impl(self_ptr: *mut mjCMesh) -> i32;
-    }
-    // SAFETY: Forwarding to linked C++ implementation of mjCMesh::nface.
-    unsafe { mjCMesh_nface_impl(self_ptr) }
+    extern "C" { fn mjCMesh_nface_impl (self_ptr : * mut mjCMesh) -> i32 ; } unsafe { mjCMesh_nface_impl (self_ptr) }
 }
 
 /// C: mjCMesh::npolygon (user/user_objects.h:1196)
@@ -2875,11 +2659,10 @@ pub fn mj_c_mesh_mutable_octree(self_ptr: *mut mjCMesh) -> *mut mjCOctree {
 /// Calls: mjCMesh::TryCompile
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_mesh_compile(self_ptr: *mut mjCMesh, vfs: *const mjVFS) {
-    extern "C" {
-        fn mjCMesh_Compile_impl(self_ptr: *mut mjCMesh, vfs: *const mjVFS);
-    }
-    // SAFETY: Forwarding to linked C/C++ implementation.
-    unsafe { mjCMesh_Compile_impl(self_ptr, vfs) }
+    // WARNING: signature changed — verify body
+    // Previous params: (self_ptr : * mut mjCMesh, vfs : * const mjVFS)
+    // Previous return: ()
+    extern "C" { fn mjCMesh_Compile_impl (self_ptr : * mut mjCMesh , vfs : * const mjVFS) ; } unsafe { mjCMesh_Compile_impl (self_ptr , vfs) }
 }
 
 /// C: mjCMesh::GetPosPtr (user/user_objects.h:1223)
@@ -2935,11 +2718,7 @@ pub fn mj_c_mesh_get_volume_ref(self_ptr: *mut mjCMesh) -> f64 {
     // WARNING: signature changed — verify body
     // Previous params: (self_ptr : * mut mjCMesh)
     // Previous return: f64
-    extern "C" {
-        fn mjCMesh_GetVolumeRef_impl(self_ptr: *mut mjCMesh) -> f64;
-    }
-    // SAFETY: Forwarding to linked C++ implementation of mjCMesh::GetVolumeRef.
-    unsafe { mjCMesh_GetVolumeRef_impl(self_ptr) }
+    extern "C" { fn mjCMesh_GetVolumeRef_impl (self_ptr : * mut mjCMesh) -> f64 ; } unsafe { mjCMesh_GetVolumeRef_impl (self_ptr) }
 }
 
 /// C: mjCMesh::FitGeom (user/user_objects.h:1227)
@@ -3068,11 +2847,7 @@ pub fn mj_c_mesh_copy_graph(self_ptr: *mut mjCMesh, arr: *mut i32) {
     // WARNING: signature changed — verify body
     // Previous params: (self_ptr : * mut mjCMesh, arr : * mut i32)
     // Previous return: ()
-    extern "C" {
-        fn mjCMesh_CopyGraph_impl(self_ptr: *mut mjCMesh, arr: *mut i32);
-    }
-    // SAFETY: Forwarding to linked C++ implementation of mjCMesh::CopyGraph.
-    unsafe { mjCMesh_CopyGraph_impl(self_ptr, arr) }
+    extern "C" { fn mjCMesh_CopyGraph_impl (self_ptr : * mut mjCMesh , arr : * mut i32) ; } unsafe { mjCMesh_CopyGraph_impl (self_ptr , arr) }
 }
 
 /// C: mjCMesh::CopyPolygons (user/user_objects.h:1242)
@@ -3118,11 +2893,7 @@ pub fn mj_c_mesh_set_bounding_volume(self_ptr: *mut mjCMesh, faceid: i32, dvert:
     // WARNING: signature changed — verify body
     // Previous params: (self_ptr : * mut mjCMesh, faceid : i32, dvert : * const f64)
     // Previous return: ()
-    extern "C" {
-        fn mjCMesh_SetBoundingVolume_impl(self_ptr: *mut mjCMesh, faceid: i32, dvert: *const f64);
-    }
-    // SAFETY: Forwarding to linked C++ implementation of mjCMesh::SetBoundingVolume.
-    unsafe { mjCMesh_SetBoundingVolume_impl(self_ptr, faceid, dvert) }
+    extern "C" { fn mjCMesh_SetBoundingVolume_impl (self_ptr : * mut mjCMesh , faceid : i32 , dvert : * const f64) ; } unsafe { mjCMesh_SetBoundingVolume_impl (self_ptr , faceid , dvert) }
 }
 
 /// C: mjCMesh::LoadFromResource (user/user_objects.h:1254)
@@ -3148,11 +2919,10 @@ pub fn mj_c_mesh_is_msh(filename: string_view, ct: string_view) -> bool {
 /// Calls: mjCMesh::CheckInitialMesh, mjCMesh::CopyFromSpec, mjCMesh::LoadSDF, mjCMesh::Process, mj_getCache
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_mesh_try_compile(self_ptr: *mut mjCMesh, vfs: *const mjVFS) {
-    extern "C" {
-        fn mjCMesh_TryCompile_impl(self_ptr: *mut mjCMesh, vfs: *const mjVFS);
-    }
-    // SAFETY: Forwarding to linked C/C++ implementation.
-    unsafe { mjCMesh_TryCompile_impl(self_ptr, vfs) }
+    // WARNING: signature changed — verify body
+    // Previous params: (self_ptr : * mut mjCMesh, vfs : * const mjVFS)
+    // Previous return: ()
+    extern "C" { fn mjCMesh_TryCompile_impl (self_ptr : * mut mjCMesh , vfs : * const mjVFS) ; } unsafe { mjCMesh_TryCompile_impl (self_ptr , vfs) }
 }
 
 /// C: mjCMesh::LoadCachedMesh (user/user_objects.h:1268)
@@ -3199,11 +2969,10 @@ pub fn mj_c_mesh_load_msh(self_ptr: *mut mjCMesh, resource: *mut mjResource, rem
 /// Calls: mjp_getPluginAtSlot
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_mesh_load_sdf(self_ptr: *mut mjCMesh) {
-    extern "C" {
-        fn mjCMesh_LoadSDF_impl(self_ptr: *mut mjCMesh);
-    }
-    // SAFETY: Forwarding to linked C++ implementation.
-    unsafe { mjCMesh_LoadSDF_impl(self_ptr) }
+    // WARNING: signature changed — verify body
+    // Previous params: (self_ptr : * mut mjCMesh)
+    // Previous return: ()
+    extern "C" { fn mjCMesh_LoadSDF_impl (self_ptr : * mut mjCMesh) ; } unsafe { mjCMesh_LoadSDF_impl (self_ptr) }
 }
 
 /// C: mjCMesh::MakeGraph (user/user_objects.h:1282)
@@ -3215,11 +2984,10 @@ pub fn mj_c_mesh_load_sdf(self_ptr: *mut mjCMesh) {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_mesh_make_graph(self_ptr: *mut mjCMesh, dvert: *const f64) {
-    extern "C" {
-        fn mjCMesh_MakeGraph_impl(self_ptr: *mut mjCMesh, dvert: *const f64);
-    }
-    // SAFETY: Forwarding to linked C++ implementation.
-    unsafe { mjCMesh_MakeGraph_impl(self_ptr, dvert) }
+    // WARNING: signature changed — verify body
+    // Previous params: (self_ptr : * mut mjCMesh, dvert : * const f64)
+    // Previous return: ()
+    extern "C" { fn mjCMesh_MakeGraph_impl (self_ptr : * mut mjCMesh , dvert : * const f64) ; } unsafe { mjCMesh_MakeGraph_impl (self_ptr , dvert) }
 }
 
 /// C: mjCMesh::MakeNormal (user/user_objects.h:1284)
@@ -3231,11 +2999,10 @@ pub fn mj_c_mesh_make_graph(self_ptr: *mut mjCMesh, dvert: *const f64) {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_mesh_make_normal(self_ptr: *mut mjCMesh, dvert: *const f64) {
-    extern "C" {
-        fn mjCMesh_MakeNormal_impl(self_ptr: *mut mjCMesh, dvert: *const f64);
-    }
-    // SAFETY: Forwarding to linked C++ implementation.
-    unsafe { mjCMesh_MakeNormal_impl(self_ptr, dvert) }
+    // WARNING: signature changed — verify body
+    // Previous params: (self_ptr : * mut mjCMesh, dvert : * const f64)
+    // Previous return: ()
+    extern "C" { fn mjCMesh_MakeNormal_impl (self_ptr : * mut mjCMesh , dvert : * const f64) ; } unsafe { mjCMesh_MakeNormal_impl (self_ptr , dvert) }
 }
 
 /// C: mjCMesh::MakeCenter (user/user_objects.h:1285)
@@ -3247,22 +3014,20 @@ pub fn mj_c_mesh_make_normal(self_ptr: *mut mjCMesh, dvert: *const f64) {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_mesh_make_center(self_ptr: *mut mjCMesh, dvert: *const f64) {
-    extern "C" {
-        fn mjCMesh_MakeCenter_impl(self_ptr: *mut mjCMesh, dvert: *const f64);
-    }
-    // SAFETY: Forwarding to linked C++ implementation.
-    unsafe { mjCMesh_MakeCenter_impl(self_ptr, dvert) }
+    // WARNING: signature changed — verify body
+    // Previous params: (self_ptr : * mut mjCMesh, dvert : * const f64)
+    // Previous return: ()
+    extern "C" { fn mjCMesh_MakeCenter_impl (self_ptr : * mut mjCMesh , dvert : * const f64) ; } unsafe { mjCMesh_MakeCenter_impl (self_ptr , dvert) }
 }
 
 /// C: mjCMesh::Process (user/user_objects.h:1286)
 /// Calls: mjCMesh::ApplyTransformations, mjCMesh::ComputeFaceCentroid, mjCMesh::ComputeInertia, mjCMesh::CopyGraph, mjCMesh::GetVolumeRef, mjCMesh::MakeCenter, mjCMesh::MakeGraph, mjCMesh::MakeNormal, mjCMesh::MakePolygonNormals, mjCMesh::MakePolygons, mjCMesh::Rotate, mjCMesh::SetBoundingVolume, mjCMesh::nface, mjCMesh::nvert, mjuu_eig3, mjuu_setvec
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_mesh_process(self_ptr: *mut mjCMesh) {
-    extern "C" {
-        fn mjCMesh_Process_impl(self_ptr: *mut mjCMesh);
-    }
-    // SAFETY: Forwarding to linked C++ implementation.
-    unsafe { mjCMesh_Process_impl(self_ptr) }
+    // WARNING: signature changed — verify body
+    // Previous params: (self_ptr : * mut mjCMesh)
+    // Previous return: ()
+    extern "C" { fn mjCMesh_Process_impl (self_ptr : * mut mjCMesh) ; } unsafe { mjCMesh_Process_impl (self_ptr) }
 }
 
 /// C: mjCMesh::ApplyTransformations (user/user_objects.h:1287)
@@ -3274,11 +3039,10 @@ pub fn mj_c_mesh_process(self_ptr: *mut mjCMesh) {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_mesh_apply_transformations(self_ptr: *mut mjCMesh, dvert: *mut f64) {
-    extern "C" {
-        fn mjCMesh_ApplyTransformations_impl(self_ptr: *mut mjCMesh, dvert: *mut f64);
-    }
-    // SAFETY: Forwarding to linked C++ implementation.
-    unsafe { mjCMesh_ApplyTransformations_impl(self_ptr, dvert) }
+    // WARNING: signature changed — verify body
+    // Previous params: (self_ptr : * mut mjCMesh, dvert : * mut f64)
+    // Previous return: ()
+    extern "C" { fn mjCMesh_ApplyTransformations_impl (self_ptr : * mut mjCMesh , dvert : * mut f64) ; } unsafe { mjCMesh_ApplyTransformations_impl (self_ptr , dvert) }
 }
 
 /// C: mjCMesh::ComputeFaceCentroid (user/user_objects.h:1288)
@@ -3290,22 +3054,20 @@ pub fn mj_c_mesh_apply_transformations(self_ptr: *mut mjCMesh, dvert: *mut f64) 
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_mesh_compute_face_centroid(self_ptr: *mut mjCMesh, arg0: [f64; 3], dvert: *const f64) -> f64 {
-    extern "C" {
-        fn mjCMesh_ComputeFaceCentroid_impl(self_ptr: *mut mjCMesh, arg0: [f64; 3], dvert: *const f64) -> f64;
-    }
-    // SAFETY: Forwarding to linked C++ implementation.
-    unsafe { mjCMesh_ComputeFaceCentroid_impl(self_ptr, arg0, dvert) }
+    // WARNING: signature changed — verify body
+    // Previous params: (self_ptr : * mut mjCMesh, arg0 : [f64 ; 3], dvert : * const f64)
+    // Previous return: f64
+    extern "C" { fn mjCMesh_ComputeFaceCentroid_impl (self_ptr : * mut mjCMesh , arg0 : [f64 ; 3] , dvert : * const f64) -> f64 ; } unsafe { mjCMesh_ComputeFaceCentroid_impl (self_ptr , arg0 , dvert) }
 }
 
 /// C: mjCMesh::CheckInitialMesh (user/user_objects.h:1289)
 /// Calls: mjCMesh::nvert
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_mesh_check_initial_mesh(self_ptr: *mut mjCMesh) {
-    extern "C" {
-        fn mjCMesh_CheckInitialMesh_impl(self_ptr: *mut mjCMesh);
-    }
-    // SAFETY: Forwarding to linked C++ implementation.
-    unsafe { mjCMesh_CheckInitialMesh_impl(self_ptr) }
+    // WARNING: signature changed — verify body
+    // Previous params: (self_ptr : * mut mjCMesh)
+    // Previous return: ()
+    extern "C" { fn mjCMesh_CheckInitialMesh_impl (self_ptr : * mut mjCMesh) ; } unsafe { mjCMesh_CheckInitialMesh_impl (self_ptr) }
 }
 
 /// C: mjCMesh::CopyPlugin (user/user_objects.h:1290)
@@ -3326,11 +3088,10 @@ pub fn mj_c_mesh_copy_plugin(self_ptr: *mut mjCMesh) {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_mesh_rotate(self_ptr: *mut mjCMesh, quat: [f64; 4], dvert: *mut f64) {
-    extern "C" {
-        fn mjCMesh_Rotate_impl(self_ptr: *mut mjCMesh, quat: [f64; 4], dvert: *mut f64);
-    }
-    // SAFETY: Forwarding to linked C++ implementation.
-    unsafe { mjCMesh_Rotate_impl(self_ptr, quat, dvert) }
+    // WARNING: signature changed — verify body
+    // Previous params: (self_ptr : * mut mjCMesh, quat : [f64 ; 4], dvert : * mut f64)
+    // Previous return: ()
+    extern "C" { fn mjCMesh_Rotate_impl (self_ptr : * mut mjCMesh , quat : [f64 ; 4] , dvert : * mut f64) ; } unsafe { mjCMesh_Rotate_impl (self_ptr , quat , dvert) }
 }
 
 /// C: mjCMesh::MakePolygons (user/user_objects.h:1293)
@@ -3342,11 +3103,10 @@ pub fn mj_c_mesh_rotate(self_ptr: *mut mjCMesh, quat: [f64; 4], dvert: *mut f64)
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_mesh_make_polygons(self_ptr: *mut mjCMesh, dvert: *const f64) {
-    extern "C" {
-        fn mjCMesh_MakePolygons_impl(self_ptr: *mut mjCMesh, dvert: *const f64);
-    }
-    // SAFETY: Forwarding to linked C++ implementation.
-    unsafe { mjCMesh_MakePolygons_impl(self_ptr, dvert) }
+    // WARNING: signature changed — verify body
+    // Previous params: (self_ptr : * mut mjCMesh, dvert : * const f64)
+    // Previous return: ()
+    extern "C" { fn mjCMesh_MakePolygons_impl (self_ptr : * mut mjCMesh , dvert : * const f64) ; } unsafe { mjCMesh_MakePolygons_impl (self_ptr , dvert) }
 }
 
 /// C: mjCMesh::MakePolygonNormals (user/user_objects.h:1294)
@@ -3360,11 +3120,7 @@ pub fn mj_c_mesh_make_polygon_normals(self_ptr: *mut mjCMesh, dvert: *const f64)
     // WARNING: signature changed — verify body
     // Previous params: (self_ptr : * mut mjCMesh, dvert : * const f64)
     // Previous return: ()
-    extern "C" {
-        fn mjCMesh_MakePolygonNormals_impl(self_ptr: *mut mjCMesh, dvert: *const f64);
-    }
-    // SAFETY: Forwarding to linked C++ implementation of mjCMesh::MakePolygonNormals.
-    unsafe { mjCMesh_MakePolygonNormals_impl(self_ptr, dvert) }
+    extern "C" { fn mjCMesh_MakePolygonNormals_impl (self_ptr : * mut mjCMesh , dvert : * const f64) ; } unsafe { mjCMesh_MakePolygonNormals_impl (self_ptr , dvert) }
 }
 
 /// C: mjCMesh::ComputeInertia (user/user_objects.h:1297)
@@ -3376,11 +3132,10 @@ pub fn mj_c_mesh_make_polygon_normals(self_ptr: *mut mjCMesh, dvert: *const f64)
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_mesh_compute_inertia(self_ptr: *mut mjCMesh, inert: [f64; 6], CoM: [f64; 3], dvert: *const f64) -> f64 {
-    extern "C" {
-        fn mjCMesh_ComputeInertia_impl(self_ptr: *mut mjCMesh, inert: [f64; 6], CoM: [f64; 3], dvert: *const f64) -> f64;
-    }
-    // SAFETY: Forwarding to linked C++ implementation.
-    unsafe { mjCMesh_ComputeInertia_impl(self_ptr, inert, CoM, dvert) }
+    // WARNING: signature changed — verify body
+    // Previous params: (self_ptr : * mut mjCMesh, inert : [f64 ; 6], CoM : [f64 ; 3], dvert : * const f64)
+    // Previous return: f64
+    extern "C" { fn mjCMesh_ComputeInertia_impl (self_ptr : * mut mjCMesh , inert : [f64 ; 6] , CoM : [f64 ; 3] , dvert : * const f64) -> f64 ; } unsafe { mjCMesh_ComputeInertia_impl (self_ptr , inert , CoM , dvert) }
 }
 
 /// C: mjCMesh::GraphFaces (user/user_objects.h:1299)
@@ -3389,11 +3144,7 @@ pub fn mj_c_mesh_graph_faces(self_ptr: *mut mjCMesh) -> *mut i32 {
     // WARNING: signature changed — verify body
     // Previous params: (self_ptr : * mut mjCMesh)
     // Previous return: * mut i32
-    extern "C" {
-        fn mjCMesh_GraphFaces_impl(self_ptr: *mut mjCMesh) -> *mut i32;
-    }
-    // SAFETY: Forwarding to linked C++ implementation of mjCMesh::GraphFaces.
-    unsafe { mjCMesh_GraphFaces_impl(self_ptr) }
+    extern "C" { fn mjCMesh_GraphFaces_impl (self_ptr : * mut mjCMesh) -> * mut i32 ; } unsafe { mjCMesh_GraphFaces_impl (self_ptr) }
 }
 
 /// C: mjCMesh::ComputeVolume (user/user_objects.h:1313)
@@ -3667,11 +3418,10 @@ pub fn mj_ch_field_load_png(self_ptr: *mut mjCHField, resource: *mut mjResource)
 /// C: mjCTexture::CopyFromSpec (user/user_objects.h:1465)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_texture_copy_from_spec(self_ptr: *mut mjCTexture) {
-    extern "C" {
-        fn mjCTexture_CopyFromSpec_impl(self_ptr: *mut mjCTexture);
-    }
-    // SAFETY: Forwarding to linked C++ implementation.
-    unsafe { mjCTexture_CopyFromSpec_impl(self_ptr) }
+    // WARNING: signature changed — verify body
+    // Previous params: (self_ptr : * mut mjCTexture)
+    // Previous return: ()
+    extern "C" { fn mjCTexture_CopyFromSpec_impl (self_ptr : * mut mjCTexture) ; } unsafe { mjCTexture_CopyFromSpec_impl (self_ptr) }
 }
 
 /// C: mjCTexture::PointToLocal (user/user_objects.h:1466)
@@ -3696,11 +3446,10 @@ pub fn mj_c_texture_name_space(self_ptr: *mut mjCTexture, m: *const mjCModel) {
 /// Calls: FilePath::Str, mjCTexture::Builtin2D, mjCTexture::BuiltinCube, mjCTexture::CopyFromSpec, mjCTexture::LoadCubeSeparate
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_texture_compile(self_ptr: *mut mjCTexture, vfs: *const mjVFS) {
-    extern "C" {
-        fn mjCTexture_Compile_impl(self_ptr: *mut mjCTexture, vfs: *const mjVFS);
-    }
-    // SAFETY: Forwarding to linked C++ implementation.
-    unsafe { mjCTexture_Compile_impl(self_ptr, vfs) }
+    // WARNING: signature changed — verify body
+    // Previous params: (self_ptr : * mut mjCTexture, vfs : * const mjVFS)
+    // Previous return: ()
+    extern "C" { fn mjCTexture_Compile_impl (self_ptr : * mut mjCTexture , vfs : * const mjVFS) ; } unsafe { mjCTexture_Compile_impl (self_ptr , vfs) }
 }
 
 /// C: mjCTexture::File (user/user_objects.h:1471)
@@ -3742,21 +3491,19 @@ pub fn mj_c_texture_get_cache_id(self_ptr: *mut mjCTexture, resource: *const mjR
 /// C: mjCTexture::Builtin2D (user/user_objects.h:1478)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_texture_builtin2d(self_ptr: *mut mjCTexture) {
-    extern "C" {
-        fn mjCTexture_Builtin2D_impl(self_ptr: *mut mjCTexture);
-    }
-    // SAFETY: Forwarding to linked C++ implementation.
-    unsafe { mjCTexture_Builtin2D_impl(self_ptr) }
+    // WARNING: signature changed — verify body
+    // Previous params: (self_ptr : * mut mjCTexture)
+    // Previous return: ()
+    extern "C" { fn mjCTexture_Builtin2D_impl (self_ptr : * mut mjCTexture) ; } unsafe { mjCTexture_Builtin2D_impl (self_ptr) }
 }
 
 /// C: mjCTexture::BuiltinCube (user/user_objects.h:1479)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_texture_builtin_cube(self_ptr: *mut mjCTexture) {
-    extern "C" {
-        fn mjCTexture_BuiltinCube_impl(self_ptr: *mut mjCTexture);
-    }
-    // SAFETY: Forwarding to linked C++ implementation.
-    unsafe { mjCTexture_BuiltinCube_impl(self_ptr) }
+    // WARNING: signature changed — verify body
+    // Previous params: (self_ptr : * mut mjCTexture)
+    // Previous return: ()
+    extern "C" { fn mjCTexture_BuiltinCube_impl (self_ptr : * mut mjCTexture) ; } unsafe { mjCTexture_BuiltinCube_impl (self_ptr) }
 }
 
 /// C: mjCTexture::Load2D (user/user_objects.h:1480)
@@ -3780,11 +3527,10 @@ pub fn mj_c_texture_load_cube_single(self_ptr: *mut mjCTexture, filename: string
 /// C: mjCTexture::LoadCubeSeparate (user/user_objects.h:1483)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_texture_load_cube_separate(self_ptr: *mut mjCTexture, vfs: *const mjVFS) {
-    extern "C" {
-        fn mjCTexture_LoadCubeSeparate_impl(self_ptr: *mut mjCTexture, vfs: *const mjVFS);
-    }
-    // SAFETY: Forwarding to linked C++ implementation.
-    unsafe { mjCTexture_LoadCubeSeparate_impl(self_ptr, vfs) }
+    // WARNING: signature changed — verify body
+    // Previous params: (self_ptr : * mut mjCTexture, vfs : * const mjVFS)
+    // Previous return: ()
+    extern "C" { fn mjCTexture_LoadCubeSeparate_impl (self_ptr : * mut mjCTexture , vfs : * const mjVFS) ; } unsafe { mjCTexture_LoadCubeSeparate_impl (self_ptr , vfs) }
 }
 
 /// C: mjCMaterial::CopyFromSpec (user/user_objects.h:1526)
@@ -4260,11 +4006,10 @@ pub fn mj_c_wrap_name_space(self_ptr: *mut mjCWrap, m: *const mjCModel) {
 /// C: mjCWrap::Type (user/user_objects.h:1753)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_wrap_type(self_ptr: *mut mjCWrap) -> mjtWrap {
-    extern "C" {
-        fn mjCWrap_Type_impl(self_ptr: *mut mjCWrap) -> mjtWrap;
-    }
-    // SAFETY: Forwarding to linked C++ implementation.
-    unsafe { mjCWrap_Type_impl(self_ptr) }
+    // WARNING: signature changed — verify body
+    // Previous params: (self_ptr : * mut mjCWrap)
+    // Previous return: mjtWrap
+    extern "C" { fn mjCWrap_Type_impl (self_ptr : * mut mjCWrap) -> mjtWrap ; } unsafe { mjCWrap_Type_impl (self_ptr) }
 }
 
 /// C: mjCWrap::Compile (user/user_objects.h:1762)

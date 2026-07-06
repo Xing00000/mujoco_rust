@@ -1,5 +1,5 @@
 //! Port of: engine/engine_util_errmem.c
-//! IR hash: 545f394232195ad9
+//! IR hash: 05737965add36adb
 //! CODEGEN: signatures locked. Only fill todo!() bodies.
 
 use crate::types::*;
@@ -26,12 +26,10 @@ pub fn mju_aligned_malloc(size: usize, align: usize) -> *mut () {
 /// C: mju_alignedFree (engine/engine_util_errmem.c:53)
 #[allow(unused_variables, non_snake_case)]
 pub fn mju_aligned_free(ptr: *mut ()) {
-    extern "C" {
-        fn free(ptr: *mut ());
-    }
-    unsafe {
-        free(ptr);
-    }
+    // WARNING: signature changed — verify body
+    // Previous params: (ptr : * mut ())
+    // Previous return: ()
+    extern "C" { fn free (ptr : * mut ()) ; } unsafe { free (ptr) ; }
 }
 
 /// C: mju_initLogTopicsFromEnv (engine/engine_util_errmem.c:111)
@@ -81,15 +79,7 @@ pub fn mju_legacy_text(msg: *const mjLogMessage, buf: *mut i8, bufsz: i32) -> *c
 /// C: mju_activeHandler (engine/engine_util_errmem.c:292)
 #[allow(unused_variables, non_snake_case)]
 pub fn mju_active_handler() -> mjfLogHandler {
-    // mjfLogHandler is a function pointer type in C but opaque ZST in this port.
-    // This function accesses thread-local and global state from the C library.
-    // Since it's opaque, we just forward to the C implementation.
-    unsafe {
-        extern "C" {
-            fn mju_activeHandler() -> mjfLogHandler;
-        }
-        mju_activeHandler()
-    }
+    unsafe { extern "C" { fn mju_activeHandler () -> mjfLogHandler ; } mju_activeHandler () }
 }
 
 /// C: mju_malloc (engine/engine_util_errmem.h:43)
@@ -106,18 +96,10 @@ pub fn mju_malloc(size: usize) -> *mut () {
 /// Calls: mju_alignedFree
 #[allow(unused_variables, non_snake_case)]
 pub fn mju_free(ptr: *mut ()) {
-    if ptr.is_null() { return; }
-    unsafe {
-        extern "C" {
-            static mju_user_free: Option<unsafe extern "C" fn(*mut ())>;
-            fn free(ptr: *mut ());
-        }
-        if let Some(user_free) = mju_user_free {
-            user_free(ptr);
-        } else {
-            free(ptr);
-        }
-    }
+    // WARNING: signature changed — verify body
+    // Previous params: (ptr : * mut ())
+    // Previous return: ()
+    if ptr . is_null () { return ; } unsafe { extern "C" { static mju_user_free : Option < unsafe extern "C" fn (* mut ()) > ; fn free (ptr : * mut ()) ; } if let Some (user_free) = mju_user_free { user_free (ptr) ; } else { free (ptr) ; } }
 }
 
 /// C: mju_setLogHandler (engine/engine_util_errmem.h:57)
@@ -156,12 +138,10 @@ pub fn mju_clear_handlers() {
 /// Calls: mju_error_v
 #[allow(unused_variables, non_snake_case)]
 pub fn mju_error(msg: *const i8) {
-    // In C, mju_error is variadic: mju_error(msg, ...) { va_start(args, msg); mju_error_v(msg, args); }
-    // The Rust signature has no varargs, so we pass msg with a dummy (zero-sized) va_list.
-    unsafe {
-        let args: va_list = core::mem::transmute::<[u8; 0], va_list>([]);
-        mju_error_v(msg, args);
-    }
+    // WARNING: signature changed — verify body
+    // Previous params: (msg : * const i8)
+    // Previous return: ()
+    unsafe { let args : va_list = core :: mem :: transmute :: < [u8 ; 0] , va_list > ([]) ; mju_error_v (msg , args) ; }
 }
 
 /// C: mju_error_v (engine/engine_util_errmem.h:75)
@@ -178,11 +158,10 @@ pub fn mju_error_v(msg: *const i8, args: va_list) {
 /// Calls: mju_message
 #[allow(unused_variables, non_snake_case)]
 pub fn mju_warning(msg: *const i8) {
-    extern "C" {
-        fn mju_warning_impl(msg: *const i8);
-    }
-    // SAFETY: Forwarding to linked C implementation of mju_warning.
-    unsafe { mju_warning_impl(msg) }
+    // WARNING: signature changed — verify body
+    // Previous params: (msg : * const i8)
+    // Previous return: ()
+    extern "C" { fn mju_warning_impl (msg : * const i8) ; } unsafe { mju_warning_impl (msg) }
 }
 
 /// C: mju_info (engine/engine_util_errmem.h:81)
@@ -199,35 +178,10 @@ pub fn mju_info(topic: i32, msg: *const i8) {
 /// Calls: mju_activeHandler
 #[allow(unused_variables, non_snake_case)]
 pub fn mju_message(msg: *const mjLogMessage) {
-    // in_log is a thread-local bool in C; mjfLogHandler is a function pointer
-    // called as handler(msg). Both require C runtime access since mjfLogHandler
-    // is opaque in this port. We implement the logic via extern "C" helpers.
-    extern "C" {
-        // Thread-local `in_log` access
-        fn mjPRIVATE_get_in_log() -> i32;
-        fn mjPRIVATE_set_in_log(val: i32);
-        // Field access: msg->level
-        fn mjLogMessage_get_level(msg: *const mjLogMessage) -> i32;
-        // Call handler function pointer: handler(msg)
-        fn mjfLogHandler_invoke(handler: mjfLogHandler, msg: *const mjLogMessage);
-    }
-    const MJ_LOG_ERROR: i32 = 0;
-    // SAFETY: msg is a valid pointer from caller. extern "C" functions are
-    // resolved at link time by the test harness.
-    unsafe {
-        if mjPRIVATE_get_in_log() != 0 {
-            return;
-        }
-        let handler = mju_active_handler();
-        let level = mjLogMessage_get_level(msg);
-        if level != MJ_LOG_ERROR {
-            mjPRIVATE_set_in_log(1);
-            mjfLogHandler_invoke(handler, msg);
-            mjPRIVATE_set_in_log(0);
-        } else {
-            mjfLogHandler_invoke(handler, msg);
-        }
-    }
+    // WARNING: signature changed — verify body
+    // Previous params: (msg : * const mjLogMessage)
+    // Previous return: ()
+    extern "C" { fn mjPRIVATE_get_in_log () -> i32 ; fn mjPRIVATE_set_in_log (val : i32) ; fn mjLogMessage_get_level (msg : * const mjLogMessage) -> i32 ; fn mjfLogHandler_invoke (handler : mjfLogHandler , msg : * const mjLogMessage) ; } const MJ_LOG_ERROR : i32 = 0 ; unsafe { if mjPRIVATE_get_in_log () != 0 { return ; } let handler = mju_active_handler () ; let level = mjLogMessage_get_level (msg) ; if level != MJ_LOG_ERROR { mjPRIVATE_set_in_log (1) ; mjfLogHandler_invoke (handler , msg) ; mjPRIVATE_set_in_log (0) ; } else { mjfLogHandler_invoke (handler , msg) ; } }
 }
 
 /// C: mju_writeLog (engine/engine_util_errmem.h:87)
@@ -243,14 +197,10 @@ pub fn mju_write_log(r#type: *const i8, msg: *const i8) {
 /// C: _mjPRIVATE_setTlsLogHandler (engine/engine_util_errmem.h:93)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_private_set_tls_log_handler(handler: mjfLogHandler) -> mjfLogHandler {
-    unsafe {
-        extern "C" {
-            static mut _mjPRIVATE_tls_log_handler: mjfLogHandler;
-        }
-        let prev = _mjPRIVATE_tls_log_handler;
-        _mjPRIVATE_tls_log_handler = handler;
-        prev
-    }
+    // WARNING: signature changed — verify body
+    // Previous params: (handler : mjfLogHandler)
+    // Previous return: mjfLogHandler
+    unsafe { extern "C" { static mut _mjPRIVATE_tls_log_handler : mjfLogHandler ; } let prev = _mjPRIVATE_tls_log_handler ; _mjPRIVATE_tls_log_handler = handler ; prev }
 }
 
 /// C: _mjPRIVATE_getGlobalLogHandler (engine/engine_util_errmem.h:96)
@@ -272,26 +222,9 @@ pub fn mju_is_topic_enabled(topic: i32) -> mjtBool {
 /// C: BaseName (engine/engine_util_errmem.h:102)
 #[allow(unused_variables, non_snake_case)]
 pub fn base_name(path: *const i8) -> *const i8 {
-    extern "C" {
-        fn strrchr(s: *const i8, c: i32) -> *const i8;
-    }
-    unsafe {
-        let slash: *const i8 = strrchr(path, b'/' as i32);
-        let bslash: *const i8 = strrchr(path, b'\\' as i32);
-        if !slash.is_null() && !bslash.is_null() {
-            if slash > bslash {
-                return slash.add(1);
-            } else {
-                return bslash.add(1);
-            }
-        }
-        if !slash.is_null() {
-            return slash.add(1);
-        }
-        if !bslash.is_null() {
-            return bslash.add(1);
-        }
-        return path;
-    }
+    // WARNING: signature changed — verify body
+    // Previous params: (path : * const i8)
+    // Previous return: * const i8
+    extern "C" { fn strrchr (s : * const i8 , c : i32) -> * const i8 ; } unsafe { let slash : * const i8 = strrchr (path , b'/' as i32) ; let bslash : * const i8 = strrchr (path , b'\\' as i32) ; if ! slash . is_null () && ! bslash . is_null () { if slash > bslash { return slash . add (1) ; } else { return bslash . add (1) ; } } if ! slash . is_null () { return slash . add (1) ; } if ! bslash . is_null () { return bslash . add (1) ; } return path ; }
 }
 

@@ -1,5 +1,5 @@
 //! Port of: engine/engine_passive.c
-//! IR hash: 545f394232195ad9
+//! IR hash: 05737965add36adb
 //! CODEGEN: signatures locked. Only fill todo!() bodies.
 
 use crate::types::*;
@@ -12,25 +12,10 @@ use crate::types::*;
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn grad_squared_lengths(gradient: [[[f64; 6]; 2]; 3], xpos: *const f64, vert: [i32; 4], edge: [[i32; 6]; 2], nedge: i32) {
-    unsafe {
-        // gradient is [6][2][3] passed as ZST; treat as pointer
-        let grad_ptr = &gradient as *const _ as *mut f64;
-        let vert_ptr = vert.as_ptr();
-        let edge_ptr = &edge as *const _ as *const i32;
-        for e in 0..nedge as usize {
-            for d in 0..3usize {
-                // gradient[e][0][d] = xpos[3*vert[edge[e][0]]+d] - xpos[3*vert[edge[e][1]]+d]
-                let e0 = *edge_ptr.add(e * 2 + 0) as usize;
-                let e1 = *edge_ptr.add(e * 2 + 1) as usize;
-                let v0 = *vert_ptr.add(e0) as usize;
-                let v1 = *vert_ptr.add(e1) as usize;
-                let val = *xpos.add(3 * v0 + d) - *xpos.add(3 * v1 + d);
-                // gradient[e][0][d] - stored as [6][2][3] → offset = e*6 + 0*3 + d
-                *grad_ptr.add(e * 6 + 0 * 3 + d) = val;
-                *grad_ptr.add(e * 6 + 1 * 3 + d) = -val;
-            }
-        }
-    }
+    // WARNING: signature changed — verify body
+    // Previous params: (gradient : [[[f64 ; 6] ; 2] ; 3], xpos : * const f64, vert : [i32 ; 4], edge : [[i32 ; 6] ; 2], nedge : i32)
+    // Previous return: ()
+    unsafe { let grad_ptr = & gradient as * const _ as * mut f64 ; let vert_ptr = vert . as_ptr () ; let edge_ptr = & edge as * const _ as * const i32 ; for e in 0 .. nedge as usize { for d in 0 .. 3usize { let e0 = * edge_ptr . add (e * 2 + 0) as usize ; let e1 = * edge_ptr . add (e * 2 + 1) as usize ; let v0 = * vert_ptr . add (e0) as usize ; let v1 = * vert_ptr . add (e1) as usize ; let val = * xpos . add (3 * v0 + d) - * xpos . add (3 * v1 + d) ; * grad_ptr . add (e * 6 + 0 * 3 + d) = val ; * grad_ptr . add (e * 6 + 1 * 3 + d) = - val ; } } }
 }
 
 /// C: mj_flexPassiveInterp (engine/engine_passive.c:63)
@@ -52,12 +37,10 @@ pub fn mj_flex_passive_interp(m: *const mjModel, d: *mut mjData, f: i32, enbl_sp
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mju_dphi2d(s0: f64, l0: i32, s1: f64, l1: i32, order: i32, dir: i32) -> f64 {
-    use crate::engine::engine_util_misc::{mju_flex_phi, mju_flex_dphi};
-    if dir == 0 {
-        mju_flex_dphi(s0, l0, order) * mju_flex_phi(s1, l1, order)
-    } else {
-        mju_flex_phi(s0, l0, order) * mju_flex_dphi(s1, l1, order)
-    }
+    // WARNING: signature changed — verify body
+    // Previous params: (s0 : f64, l0 : i32, s1 : f64, l1 : i32, order : i32, dir : i32)
+    // Previous return: f64
+    use crate :: engine :: engine_util_misc :: { mju_flex_phi , mju_flex_dphi } ; if dir == 0 { mju_flex_dphi (s0 , l0 , order) * mju_flex_phi (s1 , l1 , order) } else { mju_flex_phi (s0 , l0 , order) * mju_flex_dphi (s1 , l1 , order) }
 }
 
 /// C: mj_flexPassiveBendInterp (engine/engine_passive.c:236)
@@ -138,6 +121,9 @@ pub fn mj_contact_passive(m: *const mjModel, d: *mut mjData) -> i32 {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mji_pow4(val: f64) -> f64 {
+    // WARNING: signature changed — verify body
+    // Previous params: (val : f64)
+    // Previous return: f64
     (val * val) * (val * val)
 }
 
@@ -149,6 +135,9 @@ pub fn mji_pow4(val: f64) -> f64 {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mji_pow2(val: f64) -> f64 {
+    // WARNING: signature changed — verify body
+    // Previous params: (val : f64)
+    // Previous return: f64
     val * val
 }
 
@@ -161,13 +150,10 @@ pub fn mji_pow2(val: f64) -> f64 {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mji_ellipsoid_max_moment(size: *const f64, dir: i32) -> f64 {
-    unsafe {
-        let d0 = *size.add(dir as usize);
-        let d1 = *size.add(((dir + 1) % 3) as usize);
-        let d2 = *size.add(((dir + 2) % 3) as usize);
-        let max_d = if d1 > d2 { d1 } else { d2 };
-        8.0 / 15.0 * std::f64::consts::PI * d0 * mji_pow4(max_d)
-    }
+    // WARNING: signature changed — verify body
+    // Previous params: (size : * const f64, dir : i32)
+    // Previous return: f64
+    unsafe { let d0 = * size . add (dir as usize) ; let d1 = * size . add (((dir + 1) % 3) as usize) ; let d2 = * size . add (((dir + 2) % 3) as usize) ; let max_d = if d1 > d2 { d1 } else { d2 } ; 8.0 / 15.0 * std :: f64 :: consts :: PI * d0 * mji_pow4 (max_d) }
 }
 
 /// C: mj_passive (engine/engine_passive.h:29)

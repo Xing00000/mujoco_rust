@@ -1,5 +1,5 @@
 //! Port of: engine/engine_collision_convex.c
-//! IR hash: 545f394232195ad9
+//! IR hash: 05737965add36adb
 //! CODEGEN: signatures locked. Only fill todo!() bodies.
 
 use crate::types::*;
@@ -51,11 +51,10 @@ pub fn mjc_penetration(m: *const mjModel, d: *mut mjData, obj1: *mut mjCCDObj, o
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mul_mat_t_vec3(res: *mut f64, mat: *const f64, dir: *const f64) {
-    unsafe {
-        *res.add(0) = *mat.add(0) * *dir.add(0) + *mat.add(3) * *dir.add(1) + *mat.add(6) * *dir.add(2);
-        *res.add(1) = *mat.add(1) * *dir.add(0) + *mat.add(4) * *dir.add(1) + *mat.add(7) * *dir.add(2);
-        *res.add(2) = *mat.add(2) * *dir.add(0) + *mat.add(5) * *dir.add(1) + *mat.add(8) * *dir.add(2);
-    }
+    // WARNING: signature changed — verify body
+    // Previous params: (res : * mut f64, mat : * const f64, dir : * const f64)
+    // Previous return: ()
+    unsafe { * res . add (0) = * mat . add (0) * * dir . add (0) + * mat . add (3) * * dir . add (1) + * mat . add (6) * * dir . add (2) ; * res . add (1) = * mat . add (1) * * dir . add (0) + * mat . add (4) * * dir . add (1) + * mat . add (7) * * dir . add (2) ; * res . add (2) = * mat . add (2) * * dir . add (0) + * mat . add (5) * * dir . add (1) + * mat . add (8) * * dir . add (2) ; }
 }
 
 /// C: localToGlobal (engine/engine_collision_convex.c:183)
@@ -154,7 +153,10 @@ pub fn mjc_box_support(res: *mut f64, obj: *mut mjCCDObj, dir: *const f64) {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn dot3f(a: *const f64, b: [f32; 3]) -> f64 {
-    unsafe { *a.add(0) * b[0] as f64 + *a.add(1) * b[1] as f64 + *a.add(2) * b[2] as f64 }
+    // WARNING: signature changed — verify body
+    // Previous params: (a : * const f64, b : [f32 ; 3])
+    // Previous return: f64
+    unsafe { * a . add (0) * b [0] as f64 + * a . add (1) * b [1] as f64 + * a . add (2) * b [2] as f64 }
 }
 
 /// C: mjc_meshSupport (engine/engine_collision_convex.c:349)

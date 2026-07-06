@@ -1,5 +1,5 @@
 //! Port of: engine/engine_util_misc.c
-//! IR hash: 545f394232195ad9
+//! IR hash: 05737965add36adb
 //! CODEGEN: signatures locked. Only fill todo!() bodies.
 
 use crate::types::*;
@@ -86,7 +86,10 @@ pub fn flex_interp_rotation(order: i32, xpos_c: *const f64, local: *const f64, q
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn node_at(nodexpos: *const f64, ny: i32, nz: i32, i: i32, j: i32, k: i32) -> *const f64 {
-    unsafe { nodexpos.add(3 * (i * ny * nz + j * nz + k) as usize) }
+    // WARNING: signature changed — verify body
+    // Previous params: (nodexpos : * const f64, ny : i32, nz : i32, i : i32, j : i32, k : i32)
+    // Previous return: * const f64
+    unsafe { nodexpos . add (3 * (i * ny * nz + j * nz + k) as usize) }
 }
 
 /// C: addWeight (engine/engine_util_misc.c:984)
@@ -247,11 +250,10 @@ pub fn mj_lugre_stribeck(velocity: f64, F_C: f64, F_S: f64, v_S: f64) -> f64 {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_dcmotor_slots(dynprm: *const f64, gainprm: *const f64) -> mjDCMotorSlots {
-    extern "C" {
-        fn mj_dcmotorSlots_impl(dynprm: *const f64, gainprm: *const f64) -> mjDCMotorSlots;
-    }
-    // SAFETY: Forwarding to linked C/C++ implementation.
-    unsafe { mj_dcmotorSlots_impl(dynprm, gainprm) }
+    // WARNING: signature changed — verify body
+    // Previous params: (dynprm : * const f64, gainprm : * const f64)
+    // Previous return: mjDCMotorSlots
+    extern "C" { fn mj_dcmotorSlots_impl (dynprm : * const f64 , gainprm : * const f64) -> mjDCMotorSlots ; } unsafe { mj_dcmotorSlots_impl (dynprm , gainprm) }
 }
 
 /// C: mju_geomSemiAxes (engine/engine_util_misc.h:71)
@@ -441,13 +443,10 @@ pub fn mju_flex_face_normal2d(normal: *mut f64, t1: *mut f64, t2: *mut f64, orde
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mju_flex_phi(s: f64, i: i32, order: i32) -> f64 {
-    if order == 1 { return if i == 0 { 1.0 - s } else { s }; }
-    match i {
-        0 => 2.0*s*s - 3.0*s + 1.0,
-        1 => 4.0*(s - s*s),
-        2 => 2.0*s*s - s,
-        _ => 0.0,
-    }
+    // WARNING: signature changed — verify body
+    // Previous params: (s : f64, i : i32, order : i32)
+    // Previous return: f64
+    if order == 1 { return if i == 0 { 1.0 - s } else { s } ; } match i { 0 => 2.0 * s * s - 3.0 * s + 1.0 , 1 => 4.0 * (s - s * s) , 2 => 2.0 * s * s - s , _ => 0.0 , }
 }
 
 /// C: mju_flexDphi (engine/engine_util_misc.h:141)
@@ -458,13 +457,10 @@ pub fn mju_flex_phi(s: f64, i: i32, order: i32) -> f64 {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mju_flex_dphi(s: f64, i: i32, order: i32) -> f64 {
-    if order == 1 { return if i == 0 { -1.0 } else { 1.0 }; }
-    match i {
-        0 => 4.0*s - 3.0,
-        1 => 4.0*(1.0 - 2.0*s),
-        2 => 4.0*s - 1.0,
-        _ => 0.0,
-    }
+    // WARNING: signature changed — verify body
+    // Previous params: (s : f64, i : i32, order : i32)
+    // Previous return: f64
+    if order == 1 { return if i == 0 { - 1.0 } else { 1.0 } ; } match i { 0 => 4.0 * s - 3.0 , 1 => 4.0 * (1.0 - 2.0 * s) , 2 => 4.0 * s - 1.0 , _ => 0.0 , }
 }
 
 /// C: mju_shellTrackInterior (engine/engine_util_misc.h:151)
@@ -500,116 +496,29 @@ pub fn mju_shell_tfi_weights(nx: i32, ny: i32, nz: i32, i: i32, j: i32, k: i32, 
 /// C: mju_encodeBase64 (engine/engine_util_misc.h:163)
 #[allow(unused_variables, non_snake_case)]
 pub fn mju_encode_base64(buf: *mut i8, data: *const u8, ndata: usize) -> usize {
-    unsafe {
-        const TABLE: &[u8; 64] = b"ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
-        let mut i: usize = 0;
-        let mut j: usize = 0;
-
-        // loop over 24 bit chunks
-        while i + 3 <= ndata {
-            let byte_1: u32 = *data.add(i) as u32; i += 1;
-            let byte_2: u32 = *data.add(i) as u32; i += 1;
-            let byte_3: u32 = *data.add(i) as u32; i += 1;
-
-            let k: u32 = (byte_1 << 16) | (byte_2 << 8) | byte_3;
-
-            *buf.add(j) = TABLE[((k >> 18) & 63) as usize] as i8; j += 1;
-            *buf.add(j) = TABLE[((k >> 12) & 63) as usize] as i8; j += 1;
-            *buf.add(j) = TABLE[((k >> 6) & 63) as usize] as i8; j += 1;
-            *buf.add(j) = TABLE[((k >> 0) & 63) as usize] as i8; j += 1;
-        }
-
-        // one byte left
-        if i + 1 == ndata {
-            let byte_1: u32 = *data.add(i) as u32;
-            let k: u32 = byte_1 << 16;
-            *buf.add(j) = TABLE[((k >> 18) & 63) as usize] as i8; j += 1;
-            *buf.add(j) = TABLE[((k >> 12) & 63) as usize] as i8; j += 1;
-            *buf.add(j) = b'=' as i8; j += 1;
-            *buf.add(j) = b'=' as i8; j += 1;
-        }
-
-        // two bytes left
-        if i + 2 == ndata {
-            let byte_1: u32 = *data.add(i) as u32; i += 1;
-            let byte_2: u32 = *data.add(i) as u32;
-
-            let k: u32 = (byte_1 << 16) + (byte_2 << 8);
-
-            *buf.add(j) = TABLE[((k >> 18) & 63) as usize] as i8; j += 1;
-            *buf.add(j) = TABLE[((k >> 12) & 63) as usize] as i8; j += 1;
-            *buf.add(j) = TABLE[((k >> 6) & 63) as usize] as i8; j += 1;
-            *buf.add(j) = b'=' as i8; j += 1;
-        }
-
-        *buf.add(j) = 0;
-        4 * ((ndata + 2) / 3) + 1
-    }
+    // WARNING: signature changed — verify body
+    // Previous params: (buf : * mut i8, data : * const u8, ndata : usize)
+    // Previous return: usize
+    unsafe { const TABLE : & [u8 ; 64] = b"ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/" ; let mut i : usize = 0 ; let mut j : usize = 0 ; while i + 3 <= ndata { let byte_1 : u32 = * data . add (i) as u32 ; i += 1 ; let byte_2 : u32 = * data . add (i) as u32 ; i += 1 ; let byte_3 : u32 = * data . add (i) as u32 ; i += 1 ; let k : u32 = (byte_1 << 16) | (byte_2 << 8) | byte_3 ; * buf . add (j) = TABLE [((k >> 18) & 63) as usize] as i8 ; j += 1 ; * buf . add (j) = TABLE [((k >> 12) & 63) as usize] as i8 ; j += 1 ; * buf . add (j) = TABLE [((k >> 6) & 63) as usize] as i8 ; j += 1 ; * buf . add (j) = TABLE [((k >> 0) & 63) as usize] as i8 ; j += 1 ; } if i + 1 == ndata { let byte_1 : u32 = * data . add (i) as u32 ; let k : u32 = byte_1 << 16 ; * buf . add (j) = TABLE [((k >> 18) & 63) as usize] as i8 ; j += 1 ; * buf . add (j) = TABLE [((k >> 12) & 63) as usize] as i8 ; j += 1 ; * buf . add (j) = b'=' as i8 ; j += 1 ; * buf . add (j) = b'=' as i8 ; j += 1 ; } if i + 2 == ndata { let byte_1 : u32 = * data . add (i) as u32 ; i += 1 ; let byte_2 : u32 = * data . add (i) as u32 ; let k : u32 = (byte_1 << 16) + (byte_2 << 8) ; * buf . add (j) = TABLE [((k >> 18) & 63) as usize] as i8 ; j += 1 ; * buf . add (j) = TABLE [((k >> 12) & 63) as usize] as i8 ; j += 1 ; * buf . add (j) = TABLE [((k >> 6) & 63) as usize] as i8 ; j += 1 ; * buf . add (j) = b'=' as i8 ; j += 1 ; } * buf . add (j) = 0 ; 4 * ((ndata + 2) / 3) + 1 }
 }
 
 /// C: mju_isValidBase64 (engine/engine_util_misc.h:167)
 #[allow(unused_variables, non_snake_case)]
 pub fn mju_is_valid_base64(s: *const i8) -> usize {
-    unsafe {
-        let mut i: usize = 0;
-        let mut pad: i32 = 0;
-
-        // validate chars
-        while *s.add(i) != 0 && *s.add(i) != b'=' as i8 {
-            let c = *s.add(i) as u8;
-            let is_alnum = (c >= b'A' && c <= b'Z') || (c >= b'a' && c <= b'z') || (c >= b'0' && c <= b'9');
-            if !is_alnum && c != b'/' && c != b'+' {
-                return 0;
-            }
-            i += 1;
-        }
-
-        // padding at end
-        if *s.add(i) == b'=' as i8 {
-            if *s.add(i + 1) == 0 {
-                pad = 1;
-            } else if *s.add(i + 1) == b'=' as i8 && *s.add(i + 2) == 0 {
-                pad = 2;
-            } else {
-                return 0;
-            }
-        }
-
-        // strlen(s) must be a multiple of 4
-        let len: i32 = i as i32 + pad;
-        if len % 4 != 0 { 0 } else { (3 * (len / 4) - pad) as usize }
-    }
+    // WARNING: signature changed — verify body
+    // Previous params: (s : * const i8)
+    // Previous return: usize
+    unsafe { let mut i : usize = 0 ; let mut pad : i32 = 0 ; while * s . add (i) != 0 && * s . add (i) != b'=' as i8 { let c = * s . add (i) as u8 ; let is_alnum = (c >= b'A' && c <= b'Z') || (c >= b'a' && c <= b'z') || (c >= b'0' && c <= b'9') ; if ! is_alnum && c != b'/' && c != b'+' { return 0 ; } i += 1 ; } if * s . add (i) == b'=' as i8 { if * s . add (i + 1) == 0 { pad = 1 ; } else if * s . add (i + 1) == b'=' as i8 && * s . add (i + 2) == 0 { pad = 2 ; } else { return 0 ; } } let len : i32 = i as i32 + pad ; if len % 4 != 0 { 0 } else { (3 * (len / 4) - pad) as usize } }
 }
 
 /// C: mju_decodeBase64 (engine/engine_util_misc.h:171)
 /// Calls: _decode
 #[allow(unused_variables, non_snake_case)]
 pub fn mju_decode_base64(buf: *mut u8, s: *const i8) -> usize {
-    unsafe {
-        let mut i: usize = 0;
-        let mut j: usize = 0;
-
-        // loop over 24 bit chunks
-        while *s.add(i) != 0 {
-            let char_1: u32 = decode(*s.add(i)); i += 1;
-            let char_2: u32 = decode(*s.add(i)); i += 1;
-            let char_3: u32 = decode(*s.add(i)); i += 1;
-            let char_4: u32 = decode(*s.add(i)); i += 1;
-
-            // merge into 32 bit int
-            let k: u32 = (char_1 << 18) | (char_2 << 12) | (char_3 << 6) | char_4;
-
-            // write up to three bytes (exclude padding at end)
-            *buf.add(j) = ((k >> 16) & 0xFF) as u8; j += 1;
-            if *s.add(i - 2) != b'=' as i8 {
-                *buf.add(j) = ((k >> 8) & 0xFF) as u8; j += 1;
-            }
-            if *s.add(i - 1) != b'=' as i8 {
-                *buf.add(j) = (k & 0xFF) as u8; j += 1;
-            }
-        }
-        j
-    }
+    // WARNING: signature changed — verify body
+    // Previous params: (buf : * mut u8, s : * const i8)
+    // Previous return: usize
+    unsafe { let mut i : usize = 0 ; let mut j : usize = 0 ; while * s . add (i) != 0 { let char_1 : u32 = decode (* s . add (i)) ; i += 1 ; let char_2 : u32 = decode (* s . add (i)) ; i += 1 ; let char_3 : u32 = decode (* s . add (i)) ; i += 1 ; let char_4 : u32 = decode (* s . add (i)) ; i += 1 ; let k : u32 = (char_1 << 18) | (char_2 << 12) | (char_3 << 6) | char_4 ; * buf . add (j) = ((k >> 16) & 0xFF) as u8 ; j += 1 ; if * s . add (i - 2) != b'=' as i8 { * buf . add (j) = ((k >> 8) & 0xFF) as u8 ; j += 1 ; } if * s . add (i - 1) != b'=' as i8 { * buf . add (j) = (k & 0xFF) as u8 ; j += 1 ; } } j }
 }
 
 /// C: mju_historyInit (engine/engine_util_misc.h:184)
@@ -651,11 +560,10 @@ pub fn mju_history_insert(buf: *mut f64, n: i32, dim: i32, t: f64) -> *mut f64 {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mju_history_read(buf: *const f64, n: i32, dim: i32, res: *mut f64, t: f64, interp: i32) -> *const f64 {
-    extern "C" {
-        fn mju_historyRead_impl(buf: *const f64, n: i32, dim: i32, res: *mut f64, t: f64, interp: i32) -> *const f64;
-    }
-    // SAFETY: Forwarding to linked C/C++ implementation.
-    unsafe { mju_historyRead_impl(buf, n, dim, res, t, interp) }
+    // WARNING: signature changed — verify body
+    // Previous params: (buf : * const f64, n : i32, dim : i32, res : * mut f64, t : f64, interp : i32)
+    // Previous return: * const f64
+    extern "C" { fn mju_historyRead_impl (buf : * const f64 , n : i32 , dim : i32 , res : * mut f64 , t : f64 , interp : i32) -> * const f64 ; } unsafe { mju_historyRead_impl (buf , n , dim , res , t , interp) }
 }
 
 /// C: mju_encodePyramid (engine/engine_util_misc.h:200)
@@ -817,11 +725,10 @@ pub fn mju_round(x: f64) -> i32 {
 /// C: mju_type2Str (engine/engine_util_misc.h:240)
 #[allow(unused_variables, non_snake_case)]
 pub fn mju_type2str(r#type: i32) -> *const i8 {
-    extern "C" {
-        fn mju_type2Str_impl(r#type: i32) -> *const i8;
-    }
-    // SAFETY: Forwarding to linked C/C++ implementation.
-    unsafe { mju_type2Str_impl(r#type) }
+    // WARNING: signature changed — verify body
+    // Previous params: (r#type : i32)
+    // Previous return: * const i8
+    extern "C" { fn mju_type2Str_impl (r#type : i32) -> * const i8 ; } unsafe { mju_type2Str_impl (r#type) }
 }
 
 /// C: mju_str2Type (engine/engine_util_misc.h:243)
@@ -1107,14 +1014,10 @@ pub fn mju_halton(index: i32, base: i32) -> f64 {
 /// C: mju_strncpy (engine/engine_util_misc.h:321)
 #[allow(unused_variables, non_snake_case)]
 pub fn mju_strncpy(dst: *mut i8, src: *const i8, n: i32) -> *mut i8 {
-    unsafe {
-        if !dst.is_null() && !src.is_null() && n > 0 {
-            extern "C" { fn strncpy(dst: *mut i8, src: *const i8, n: usize) -> *mut i8; }
-            strncpy(dst, src, n as usize);
-            *dst.add((n - 1) as usize) = 0;
-        }
-        dst
-    }
+    // WARNING: signature changed — verify body
+    // Previous params: (dst : * mut i8, src : * const i8, n : i32)
+    // Previous return: * mut i8
+    unsafe { if ! dst . is_null () && ! src . is_null () && n > 0 { extern "C" { fn strncpy (dst : * mut i8 , src : * const i8 , n : usize) -> * mut i8 ; } strncpy (dst , src , n as usize) ; * dst . add ((n - 1) as usize) = 0 ; } dst }
 }
 
 /// C: mju_polyForce (engine/engine_util_misc.h:326)
@@ -1125,16 +1028,10 @@ pub fn mju_strncpy(dst: *mut i8, src: *const i8, n: i32) -> *mut i8 {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mju_poly_force(linear: f64, poly: *const f64, x: f64, n: i32, flg_odd: i32) -> f64 {
-    unsafe {
-        let x = if flg_odd != 0 { x.abs() } else { x };
-        let mut res: f64 = linear;
-        let mut xpow: f64 = 1.0;
-        for i in 0..n as usize {
-            xpow *= x;
-            res += *poly.add(i) * xpow;
-        }
-        res
-    }
+    // WARNING: signature changed — verify body
+    // Previous params: (linear : f64, poly : * const f64, x : f64, n : i32, flg_odd : i32)
+    // Previous return: f64
+    unsafe { let x = if flg_odd != 0 { x . abs () } else { x } ; let mut res : f64 = linear ; let mut xpow : f64 = 1.0 ; for i in 0 .. n as usize { xpow *= x ; res += * poly . add (i) * xpow ; } res }
 }
 
 /// C: mjd_xPolyForce (engine/engine_util_misc.h:329)
@@ -1145,16 +1042,10 @@ pub fn mju_poly_force(linear: f64, poly: *const f64, x: f64, n: i32, flg_odd: i3
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjd_x_poly_force(linear: f64, poly: *const f64, x: f64, n: i32, flg_odd: i32) -> f64 {
-    unsafe {
-        let x = if flg_odd != 0 { x.abs() } else { x };
-        let mut res: f64 = linear;
-        let mut xpow: f64 = 1.0;
-        for i in 0..n as usize {
-            xpow *= x;
-            res += (i as f64 + 2.0) * *poly.add(i) * xpow;
-        }
-        res
-    }
+    // WARNING: signature changed — verify body
+    // Previous params: (linear : f64, poly : * const f64, x : f64, n : i32, flg_odd : i32)
+    // Previous return: f64
+    unsafe { let x = if flg_odd != 0 { x . abs () } else { x } ; let mut res : f64 = linear ; let mut xpow : f64 = 1.0 ; for i in 0 .. n as usize { xpow *= x ; res += (i as f64 + 2.0) * * poly . add (i) * xpow ; } res }
 }
 
 /// C: mju_polyPotential (engine/engine_util_misc.h:332)
@@ -1165,16 +1056,10 @@ pub fn mjd_x_poly_force(linear: f64, poly: *const f64, x: f64, n: i32, flg_odd: 
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mju_poly_potential(linear: f64, poly: *const f64, x: f64, n: i32, flg_odd: i32) -> f64 {
-    unsafe {
-        let x = if flg_odd != 0 { x.abs() } else { x };
-        let mut res: f64 = 0.5 * linear * (x * x);
-        let mut xpow: f64 = x;
-        for i in 0..n as usize {
-            xpow *= x;
-            res += *poly.add(i) / (i as f64 + 3.0) * (xpow * x);
-        }
-        res
-    }
+    // WARNING: signature changed — verify body
+    // Previous params: (linear : f64, poly : * const f64, x : f64, n : i32, flg_odd : i32)
+    // Previous return: f64
+    unsafe { let x = if flg_odd != 0 { x . abs () } else { x } ; let mut res : f64 = 0.5 * linear * (x * x) ; let mut xpow : f64 = x ; for i in 0 .. n as usize { xpow *= x ; res += * poly . add (i) / (i as f64 + 3.0) * (xpow * x) ; } res }
 }
 
 /// C: mju_sigmoid (engine/engine_util_misc.h:335)

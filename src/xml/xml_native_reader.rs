@@ -1,5 +1,5 @@
 //! Port of: xml/xml_native_reader.cc
-//! IR hash: 545f394232195ad9
+//! IR hash: 05737965add36adb
 //! CODEGEN: signatures locked. Only fill todo!() bodies.
 
 use crate::types::*;
@@ -7,11 +7,10 @@ use crate::types::*;
 /// C: GetAttrPtr (xml/xml_native_reader.cc:59)
 #[allow(unused_variables, non_snake_case)]
 pub fn get_attr_ptr(val: *mut T) -> i32 {
-    extern "C" {
-        fn GetAttrPtr_impl(val: *mut T) -> i32;
-    }
-    // SAFETY: Forwarding to linked C++ implementation.
-    unsafe { GetAttrPtr_impl(val) }
+    // WARNING: signature changed — verify body
+    // Previous params: (val : * mut T)
+    // Previous return: i32
+    extern "C" { fn GetAttrPtr_impl (val : * mut T) -> i32 ; } unsafe { GetAttrPtr_impl (val) }
 }
 
 /// C: Reader::txt (xml/xml_native_reader.cc:111)
@@ -92,11 +91,10 @@ pub fn mj_x_reader_set_model_file_dir(self_ptr: *mut mjXReader, modelfiledir: *c
 /// C: mjXReader::ModelFileDir (xml/xml_native_reader.h:38)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_x_reader_model_file_dir(self_ptr: *mut mjXReader) -> *const mujoco__user__FilePath {
-    extern "C" {
-        fn mjXReader_ModelFileDir_impl(self_ptr: *mut mjXReader) -> *const mujoco__user__FilePath;
-    }
-    // SAFETY: Forwarding to linked C++ implementation.
-    unsafe { mjXReader_ModelFileDir_impl(self_ptr) }
+    // WARNING: signature changed — verify body
+    // Previous params: (self_ptr : * mut mjXReader)
+    // Previous return: * const mujoco__user__FilePath
+    extern "C" { fn mjXReader_ModelFileDir_impl (self_ptr : * mut mjXReader) -> * const mujoco__user__FilePath ; } unsafe { mjXReader_ModelFileDir_impl (self_ptr) }
 }
 
 /// C: mjXReader::SetAssetDir (xml/xml_native_reader.h:41)

@@ -1,5 +1,5 @@
 //! Port of: engine/engine_collision_driver.c
-//! IR hash: 545f394232195ad9
+//! IR hash: 05737965add36adb
 //! CODEGEN: signatures locked. Only fill todo!() bodies.
 
 use crate::types::*;
@@ -27,21 +27,19 @@ pub fn get_margin(m: *const mjModel, g1: i32, g2: i32, ipair: i32) -> f64 {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn get_gap(m: *const mjModel, g1: i32, g2: i32, ipair: i32) -> f64 {
-    extern "C" {
-        fn getGap_impl(m: *const mjModel, g1: i32, g2: i32, ipair: i32) -> f64;
-    }
-    // SAFETY: Forwarding to linked C/C++ implementation.
-    unsafe { getGap_impl(m, g1, g2, ipair) }
+    // WARNING: signature changed — verify body
+    // Previous params: (m : * const mjModel, g1 : i32, g2 : i32, ipair : i32)
+    // Previous return: f64
+    extern "C" { fn getGap_impl (m : * const mjModel , g1 : i32 , g2 : i32 , ipair : i32) -> f64 ; } unsafe { getGap_impl (m , g1 , g2 , ipair) }
 }
 
 /// C: resetArena (engine/engine_collision_driver.c:179)
 #[allow(unused_variables, non_snake_case)]
 pub fn reset_arena(d: *mut mjData) {
-    extern "C" {
-        fn resetArena_impl(d: *mut mjData);
-    }
-    // SAFETY: Forwarding to linked C/C++ implementation.
-    unsafe { resetArena_impl(d) }
+    // WARNING: signature changed — verify body
+    // Previous params: (d : * mut mjData)
+    // Previous return: ()
+    extern "C" { fn resetArena_impl (d : * mut mjData) ; } unsafe { resetArena_impl (d) }
 }
 
 /// C: alignArena (engine/engine_collision_driver.c:189)
@@ -62,26 +60,27 @@ pub fn align_arena(d: *mut mjData, alignment: usize) -> usize {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn plane_geom_dist(m: *const mjModel, d: *mut mjData, g1: i32, g2: i32) -> f64 {
-    extern "C" {
-        fn planeGeomDist_impl(m: *const mjModel, d: *mut mjData, g1: i32, g2: i32) -> f64;
-    }
-    // SAFETY: Forwarding to linked C/C++ implementation.
-    unsafe { planeGeomDist_impl(m, d, g1, g2) }
+    // WARNING: signature changed — verify body
+    // Previous params: (m : * const mjModel, d : * mut mjData, g1 : i32, g2 : i32)
+    // Previous return: f64
+    extern "C" { fn planeGeomDist_impl (m : * const mjModel , d : * mut mjData , g1 : i32 , g2 : i32) -> f64 ; } unsafe { planeGeomDist_impl (m , d , g1 , g2) }
 }
 
 /// C: hasPlane (engine/engine_collision_driver.c:210)
 #[allow(unused_variables, non_snake_case)]
 pub fn has_plane(m: *const mjModel, body: i32) -> i32 {
-    extern "C" {
-        fn hasPlane_impl(m: *const mjModel, body: i32) -> i32;
-    }
-    // SAFETY: Forwarding to linked C/C++ implementation.
-    unsafe { hasPlane_impl(m, body) }
+    // WARNING: signature changed — verify body
+    // Previous params: (m : * const mjModel, body : i32)
+    // Previous return: i32
+    extern "C" { fn hasPlane_impl (m : * const mjModel , body : i32) -> i32 ; } unsafe { hasPlane_impl (m , body) }
 }
 
 /// C: filterBitmask (engine/engine_collision_driver.c:227)
 #[allow(unused_variables, non_snake_case)]
 pub fn filter_bitmask(contype1: i32, conaffinity1: i32, contype2: i32, conaffinity2: i32) -> i32 {
+    // WARNING: signature changed — verify body
+    // Previous params: (contype1 : i32, conaffinity1 : i32, contype2 : i32, conaffinity2 : i32)
+    // Previous return: i32
     (((contype1 & conaffinity2) == 0) && ((contype2 & conaffinity1) == 0)) as i32
 }
 
@@ -93,11 +92,10 @@ pub fn filter_bitmask(contype1: i32, conaffinity1: i32, contype2: i32, conaffini
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn filter_box(aabb1: *const f64, aabb2: *const f64, margin: f64) -> i32 {
-    extern "C" {
-        fn filterBox_impl(aabb1: *const f64, aabb2: *const f64, margin: f64) -> i32;
-    }
-    // SAFETY: Forwarding to linked C/C++ implementation.
-    unsafe { filterBox_impl(aabb1, aabb2, margin) }
+    // WARNING: signature changed — verify body
+    // Previous params: (aabb1 : * const f64, aabb2 : * const f64, margin : f64)
+    // Previous return: i32
+    extern "C" { fn filterBox_impl (aabb1 : * const f64 , aabb2 : * const f64 , margin : f64) -> i32 ; } unsafe { filterBox_impl (aabb1 , aabb2 , margin) }
 }
 
 /// C: filterSphereBox (engine/engine_collision_driver.c:246)
@@ -122,11 +120,10 @@ pub fn filter_sphere_box(s: *const f64, bound: f64, aabb: *const f64) -> i32 {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn filter_sphere(pos1: *const f64, pos2: *const f64, bound: f64) -> i32 {
-    extern "C" {
-        fn filterSphere_impl(pos1: *const f64, pos2: *const f64, bound: f64) -> i32;
-    }
-    // SAFETY: Forwarding to linked C/C++ implementation.
-    unsafe { filterSphere_impl(pos1, pos2, bound) }
+    // WARNING: signature changed — verify body
+    // Previous params: (pos1 : * const f64, pos2 : * const f64, bound : f64)
+    // Previous return: i32
+    extern "C" { fn filterSphere_impl (pos1 : * const f64 , pos2 : * const f64 , bound : f64) -> i32 ; } unsafe { filterSphere_impl (pos1 , pos2 , bound) }
 }
 
 /// C: mj_filterSphere (engine/engine_collision_driver.c:267)
@@ -147,32 +144,29 @@ pub fn mj_filter_sphere(m: *const mjModel, d: *mut mjData, g1: i32, g2: i32, mar
 /// C: filterBodyPair (engine/engine_collision_driver.c:288)
 #[allow(unused_variables, non_snake_case)]
 pub fn filter_body_pair(weldbody1: i32, weldparent1: i32, asleep1: i32, weldbody2: i32, weldparent2: i32, asleep2: i32, dsbl_filterparent: i32) -> i32 {
-    extern "C" {
-        fn filterBodyPair_impl(weldbody1: i32, weldparent1: i32, asleep1: i32, weldbody2: i32, weldparent2: i32, asleep2: i32, dsbl_filterparent: i32) -> i32;
-    }
-    // SAFETY: Forwarding to linked C/C++ implementation.
-    unsafe { filterBodyPair_impl(weldbody1, weldparent1, asleep1, weldbody2, weldparent2, asleep2, dsbl_filterparent) }
+    // WARNING: signature changed — verify body
+    // Previous params: (weldbody1 : i32, weldparent1 : i32, asleep1 : i32, weldbody2 : i32, weldparent2 : i32, asleep2 : i32, dsbl_filterparent : i32)
+    // Previous return: i32
+    extern "C" { fn filterBodyPair_impl (weldbody1 : i32 , weldparent1 : i32 , asleep1 : i32 , weldbody2 : i32 , weldparent2 : i32 , asleep2 : i32 , dsbl_filterparent : i32) -> i32 ; } unsafe { filterBodyPair_impl (weldbody1 , weldparent1 , asleep1 , weldbody2 , weldparent2 , asleep2 , dsbl_filterparent) }
 }
 
 /// C: canCollide (engine/engine_collision_driver.c:318)
 #[allow(unused_variables, non_snake_case)]
 pub fn can_collide(m: *const mjModel, bf: i32) -> i32 {
-    extern "C" {
-        fn canCollide_impl(m: *const mjModel, bf: i32) -> i32;
-    }
-    // SAFETY: Forwarding to linked C/C++ implementation.
-    unsafe { canCollide_impl(m, bf) }
+    // WARNING: signature changed — verify body
+    // Previous params: (m : * const mjModel, bf : i32)
+    // Previous return: i32
+    extern "C" { fn canCollide_impl (m : * const mjModel , bf : i32) -> i32 ; } unsafe { canCollide_impl (m , bf) }
 }
 
 /// C: canCollide2 (engine/engine_collision_driver.c:329)
 /// Calls: filterBitmask
 #[allow(unused_variables, non_snake_case)]
 pub fn can_collide2(m: *const mjModel, bf1: i32, bf2: i32) -> i32 {
-    extern "C" {
-        fn canCollide2_impl(m: *const mjModel, bf1: i32, bf2: i32) -> i32;
-    }
-    // SAFETY: Forwarding to linked C/C++ implementation.
-    unsafe { canCollide2_impl(m, bf1, bf2) }
+    // WARNING: signature changed — verify body
+    // Previous params: (m : * const mjModel, bf1 : i32, bf2 : i32)
+    // Previous return: i32
+    extern "C" { fn canCollide2_impl (m : * const mjModel , bf1 : i32 , bf2 : i32) -> i32 ; } unsafe { canCollide2_impl (m , bf1 , bf2) }
 }
 
 /// C: mj_collideTree (engine/engine_collision_driver.c:361)
@@ -228,22 +222,20 @@ pub fn mj_collide_flex_internal(m: *const mjModel, d: *mut mjData, f: i32) {
 /// C: contactcompare (engine/engine_collision_driver.c:380)
 #[allow(unused_variables, non_snake_case)]
 pub fn contactcompare(c1: *const mjContact, c2: *const mjContact, context: *mut ()) -> i32 {
-    extern "C" {
-        fn contactcompare_impl(c1: *const mjContact, c2: *const mjContact, context: *mut ()) -> i32;
-    }
-    // SAFETY: Forwarding to linked C implementation.
-    unsafe { contactcompare_impl(c1, c2, context) }
+    // WARNING: signature changed — verify body
+    // Previous params: (c1 : * const mjContact, c2 : * const mjContact, context : * mut ())
+    // Previous return: i32
+    extern "C" { fn contactcompare_impl (c1 : * const mjContact , c2 : * const mjContact , context : * mut ()) -> i32 ; } unsafe { contactcompare_impl (c1 , c2 , context) }
 }
 
 /// C: contactSort (engine/engine_collision_driver.c:413)
 /// Calls: contactcompare
 #[allow(unused_variables, non_snake_case)]
 pub fn contact_sort(arr: *mut mjContact, buf: *mut mjContact, n: i32, context: *mut ()) {
-    extern "C" {
-        fn contactSort_impl(arr: *mut mjContact, buf: *mut mjContact, n: i32, context: *mut ());
-    }
-    // SAFETY: Forwarding to linked C implementation.
-    unsafe { contactSort_impl(arr, buf, n, context) }
+    // WARNING: signature changed — verify body
+    // Previous params: (arr : * mut mjContact, buf : * mut mjContact, n : i32, context : * mut ())
+    // Previous return: ()
+    extern "C" { fn contactSort_impl (arr : * mut mjContact , buf : * mut mjContact , n : i32 , context : * mut ()) ; } unsafe { contactSort_impl (arr , buf , n , context) }
 }
 
 /// C: filterFlexContacts (engine/engine_collision_driver.c:417)
@@ -295,11 +287,10 @@ pub fn make_aamm(m: *const mjModel, d: *mut mjData, x_min: *mut f64, y_min: *mut
 /// Calls: mju_message
 #[allow(unused_variables, non_snake_case)]
 pub fn add_pair(m: *const mjModel, bf1: i32, bf2: i32, npair: *mut i32, pair: *mut i32, maxpair: i32) {
-    extern "C" {
-        fn add_pair_impl(m: *const mjModel, bf1: i32, bf2: i32, npair: *mut i32, pair: *mut i32, maxpair: i32);
-    }
-    // SAFETY: Forwarding to linked C/C++ implementation.
-    unsafe { add_pair_impl(m, bf1, bf2, npair, pair, maxpair) }
+    // WARNING: signature changed — verify body
+    // Previous params: (m : * const mjModel, bf1 : i32, bf2 : i32, npair : * mut i32, pair : * mut i32, maxpair : i32)
+    // Previous return: ()
+    extern "C" { fn add_pair_impl (m : * const mjModel , bf1 : i32 , bf2 : i32 , npair : * mut i32 , pair : * mut i32 , maxpair : i32) ; } unsafe { add_pair_impl (m , bf1 , bf2 , npair , pair , maxpair) }
 }
 
 /// C: SAPcmp (engine/engine_collision_driver.c:1383)
@@ -330,11 +321,10 @@ pub fn sa_psort(arr: *mut mjtSAP, buf: *mut mjtSAP, n: i32, context: *mut ()) {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_sap(d: *mut mjData, aamm: *const f64, n: i32, axis_x: i32, pair: *mut i32, maxpair: i32) -> i32 {
-    extern "C" {
-        fn mj_SAP_impl(d: *mut mjData, aamm: *const f64, n: i32, axis_x: i32, pair: *mut i32, maxpair: i32) -> i32;
-    }
-    // SAFETY: Forwarding to linked C/C++ implementation.
-    unsafe { mj_SAP_impl(d, aamm, n, axis_x, pair, maxpair) }
+    // WARNING: signature changed — verify body
+    // Previous params: (d : * mut mjData, aamm : * const f64, n : i32, axis_x : i32, pair : * mut i32, maxpair : i32)
+    // Previous return: i32
+    extern "C" { fn mj_SAP_impl (d : * mut mjData , aamm : * const f64 , n : i32 , axis_x : i32 , pair : * mut i32 , maxpair : i32) -> i32 ; } unsafe { mj_SAP_impl (d , aamm , n , axis_x , pair , maxpair) }
 }
 
 /// C: updateCov (engine/engine_collision_driver.c:1497)
@@ -345,11 +335,10 @@ pub fn mj_sap(d: *mut mjData, aamm: *const f64, n: i32, axis_x: i32, pair: *mut 
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn update_cov(cov: *mut f64, vec: *const f64, cen: *const f64) {
-    extern "C" {
-        fn updateCov_impl(cov: *mut f64, vec: *const f64, cen: *const f64);
-    }
-    // SAFETY: Forwarding to linked C/C++ implementation.
-    unsafe { updateCov_impl(cov, vec, cen) }
+    // WARNING: signature changed — verify body
+    // Previous params: (cov : * mut f64, vec : * const f64, cen : * const f64)
+    // Previous return: ()
+    extern "C" { fn updateCov_impl (cov : * mut f64 , vec : * const f64 , cen : * const f64) ; } unsafe { updateCov_impl (cov , vec , cen) }
 }
 
 /// C: uintcmp (engine/engine_collision_driver.c:1518)
@@ -380,11 +369,10 @@ pub fn bfsort(arr: *mut i32, buf: *mut i32, n: i32, context: *mut ()) {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_contact_param(m: *const mjModel, condim: *mut i32, solref: *mut f64, solimp: *mut f64, friction: *mut f64, g1: i32, g2: i32, f1: i32, f2: i32) {
-    extern "C" {
-        fn mj_contactParam_impl(m: *const mjModel, condim: *mut i32, solref: *mut f64, solimp: *mut f64, friction: *mut f64, g1: i32, g2: i32, f1: i32, f2: i32);
-    }
-    // SAFETY: Forwarding to linked C/C++ implementation.
-    unsafe { mj_contactParam_impl(m, condim, solref, solimp, friction, g1, g2, f1, f2) }
+    // WARNING: signature changed — verify body
+    // Previous params: (m : * const mjModel, condim : * mut i32, solref : * mut f64, solimp : * mut f64, friction : * mut f64, g1 : i32, g2 : i32, f1 : i32, f2 : i32)
+    // Previous return: ()
+    extern "C" { fn mj_contactParam_impl (m : * const mjModel , condim : * mut i32 , solref : * mut f64 , solimp : * mut f64 , friction : * mut f64 , g1 : i32 , g2 : i32 , f1 : i32 , f2 : i32) ; } unsafe { mj_contactParam_impl (m , condim , solref , solimp , friction , g1 , g2 , f1 , f2) }
 }
 
 /// C: mj_setContact (engine/engine_collision_driver.c:1786)
@@ -411,11 +399,10 @@ pub fn mj_set_contact(m: *const mjModel, con: *mut mjContact, condim: i32, inclu
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_make_capsule(m: *const mjModel, d: *mut mjData, f: i32, vid: [i32; 2], pos: *mut f64, mat: *mut f64, size: *mut f64) {
-    extern "C" {
-        fn mj_makeCapsule_impl(m: *const mjModel, d: *mut mjData, f: i32, vid: [i32; 2], pos: *mut f64, mat: *mut f64, size: *mut f64);
-    }
-    // SAFETY: Forwarding to linked C/C++ implementation.
-    unsafe { mj_makeCapsule_impl(m, d, f, vid, pos, mat, size) }
+    // WARNING: signature changed — verify body
+    // Previous params: (m : * const mjModel, d : * mut mjData, f : i32, vid : [i32 ; 2], pos : * mut f64, mat : * mut f64, size : * mut f64)
+    // Previous return: ()
+    extern "C" { fn mj_makeCapsule_impl (m : * const mjModel , d : * mut mjData , f : i32 , vid : [i32 ; 2] , pos : * mut f64 , mat : * mut f64 , size : * mut f64) ; } unsafe { mj_makeCapsule_impl (m , d , f , vid , pos , mat , size) }
 }
 
 /// C: collisionTask (engine/engine_collision_driver.c:1849)
