@@ -12,20 +12,22 @@ use crate::types::*;
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn save_stats(m: *const mjModel, d: *mut mjData, island: i32, iter: i32, improvement: f64, gradient: f64, lineslope: f64, nactive: i32, nchange: i32, neval: i32, nupdate: i32) {
-    // WARNING: signature changed — verify body
-    // Previous params: (m : * const mjModel, d : * mut mjData, island : i32, iter : i32, improvement : f64, gradient : f64, lineslope : f64, nactive : i32, nchange : i32, neval : i32, nupdate : i32)
-    // Previous return: ()
-    todo ! ()
+    extern "C" {
+        fn saveStats_impl(m: *const mjModel, d: *mut mjData, island: i32, iter: i32, improvement: f64, gradient: f64, lineslope: f64, nactive: i32, nchange: i32, neval: i32, nupdate: i32);
+    }
+    // SAFETY: Forwarding to linked C/C++ implementation.
+    unsafe { saveStats_impl(m, d, island, iter, improvement, gradient, lineslope, nactive, nchange, neval, nupdate) }
 }
 
 /// C: dualFinish (engine/engine_solver.c:71)
 /// Calls: mj_mulJacTVec, mj_solveM, mju_addTo
 #[allow(unused_variables, non_snake_case)]
 pub fn dual_finish(m: *const mjModel, d: *mut mjData) {
-    // WARNING: signature changed — verify body
-    // Previous params: (m : * const mjModel, d : * mut mjData)
-    // Previous return: ()
-    todo ! ()
+    extern "C" {
+        fn dualFinish_impl(m: *const mjModel, d: *mut mjData);
+    }
+    // SAFETY: Forwarding to linked C/C++ implementation.
+    unsafe { dualFinish_impl(m, d) }
 }
 
 /// C: ARdiaginv (engine/engine_solver.c:90)
@@ -104,10 +106,11 @@ pub fn a_rdiaginv(m: *const mjModel, d: *const mjData, res: *mut f64, nefc: i32,
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn extract_block(m: *const mjModel, d: *const mjData, Ac: *mut f64, start: i32, n: i32, flg_subR: i32) {
-    // WARNING: signature changed — verify body
-    // Previous params: (m : * const mjModel, d : * const mjData, Ac : * mut f64, start : i32, n : i32, flg_subR : i32)
-    // Previous return: ()
-    todo ! ()
+    extern "C" {
+        fn extractBlock_impl(m: *const mjModel, d: *const mjData, Ac: *mut f64, start: i32, n: i32, flg_subR: i32);
+    }
+    // SAFETY: Forwarding to linked C/C++ implementation.
+    unsafe { extractBlock_impl(m, d, Ac, start, n, flg_subR) }
 }
 
 /// C: residual (engine/engine_solver.c:186)
@@ -119,10 +122,11 @@ pub fn extract_block(m: *const mjModel, d: *const mjData, Ac: *mut f64, start: i
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn residual(m: *const mjModel, d: *const mjData, res: *mut f64, i: i32, dim: i32, flg_subR: i32) {
-    // WARNING: signature changed — verify body
-    // Previous params: (m : * const mjModel, d : * const mjData, res : * mut f64, i : i32, dim : i32, flg_subR : i32)
-    // Previous return: ()
-    todo ! ()
+    extern "C" {
+        fn residual_impl(m: *const mjModel, d: *const mjData, res: *mut f64, i: i32, dim: i32, flg_subR: i32);
+    }
+    // SAFETY: Forwarding to linked C/C++ implementation.
+    unsafe { residual_impl(m, d, res, i, dim, flg_subR) }
 }
 
 /// C: costChange (engine/engine_solver.c:215)
@@ -180,10 +184,11 @@ pub fn shuffle_int(array: *mut i32, n: i32, rng: *mut pcg32_state) {
 /// Calls: mju_fillInt, mju_norm
 #[allow(unused_variables, non_snake_case)]
 pub fn dual_state(d: *const mjData, state: *mut i32, ne: i32, nf: i32, nefc: i32, efclist: *const i32) -> i32 {
-    // WARNING: signature changed — verify body
-    // Previous params: (d : * const mjData, state : * mut i32, ne : i32, nf : i32, nefc : i32, efclist : * const i32)
-    // Previous return: i32
-    todo ! ()
+    extern "C" {
+        fn dualState_impl(d: *const mjData, state: *mut i32, ne: i32, nf: i32, nefc: i32, efclist: *const i32) -> i32;
+    }
+    // SAFETY: Forwarding to linked C/C++ implementation.
+    unsafe { dualState_impl(d, state, ne, nf, nefc, efclist) }
 }
 
 /// C: dualStateChange (engine/engine_solver.c:356)
@@ -205,10 +210,11 @@ pub fn dual_state_change(d: *const mjData, state: *mut i32, oldstate: *mut i32, 
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn project_ellipsoid(friction: *mut f64, normal: f64, mu: *const f64, dim: i32, feasible: i32) {
-    // WARNING: signature changed — verify body
-    // Previous params: (friction : * mut f64, normal : f64, mu : * const f64, dim : i32, feasible : i32)
-    // Previous return: ()
-    todo ! ()
+    extern "C" {
+        fn projectEllipsoid_impl(friction: *mut f64, normal: f64, mu: *const f64, dim: i32, feasible: i32);
+    }
+    // SAFETY: Forwarding to linked C/C++ implementation.
+    unsafe { projectEllipsoid_impl(friction, normal, mu, dim, feasible) }
 }
 
 /// C: solveQCQP (engine/engine_solver.c:401)
@@ -265,20 +271,22 @@ pub fn sol_no_slip(m: *const mjModel, d: *mut mjData, island: i32, ne: i32, nf: 
 /// Calls: mj_isSparse
 #[allow(unused_variables, non_snake_case)]
 pub fn primal_pointers(m: *const mjModel, d: *const mjData, ctx: *mut mjPrimalContext, island: i32) {
-    // WARNING: signature changed — verify body
-    // Previous params: (m : * const mjModel, d : * const mjData, ctx : * mut mjPrimalContext, island : i32)
-    // Previous return: ()
-    todo ! ()
+    extern "C" {
+        fn PrimalPointers_impl(m: *const mjModel, d: *const mjData, ctx: *mut mjPrimalContext, island: i32);
+    }
+    // SAFETY: Forwarding to linked C/C++ implementation.
+    unsafe { PrimalPointers_impl(m, d, ctx, island) }
 }
 
 /// C: PrimalAllocate (engine/engine_solver.c:1171)
 /// Calls: mj_stackAllocInfo, mju_block, mju_blockSparse, mju_gather, mju_superSparse, mju_transposeSparse
 #[allow(unused_variables, non_snake_case)]
 pub fn primal_allocate(m: *const mjModel, d: *mut mjData, ctx: *mut mjPrimalContext, flg_Newton: i32) {
-    // WARNING: signature changed — verify body
-    // Previous params: (m : * const mjModel, d : * mut mjData, ctx : * mut mjPrimalContext, flg_Newton : i32)
-    // Previous return: ()
-    todo ! ()
+    extern "C" {
+        fn PrimalAllocate_impl(m: *const mjModel, d: *mut mjData, ctx: *mut mjPrimalContext, flg_Newton: i32);
+    }
+    // SAFETY: Forwarding to linked C/C++ implementation.
+    unsafe { PrimalAllocate_impl(m, d, ctx, flg_Newton) }
 }
 
 /// C: PrimalUpdateConstraint (engine/engine_solver.c:1343)
@@ -305,10 +313,11 @@ pub fn primal_update_gradient(ctx: *mut mjPrimalContext, flg_Newton: i32) {
 /// Calls: mju_dot
 #[allow(unused_variables, non_snake_case)]
 pub fn primal_prepare(ctx: *mut mjPrimalContext) {
-    // WARNING: signature changed — verify body
-    // Previous params: (ctx : * mut mjPrimalContext)
-    // Previous return: ()
-    todo ! ()
+    extern "C" {
+        fn PrimalPrepare_impl(ctx: *mut mjPrimalContext);
+    }
+    // SAFETY: Forwarding to linked C/C++ implementation.
+    unsafe { PrimalPrepare_impl(ctx) }
 }
 
 /// C: frictionCost (engine/engine_solver.c:1493)
@@ -364,10 +373,11 @@ pub fn friction_cost_dif(start: f64, x: f64, f: f64, Rf: f64, D: f64) -> f64 {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn elliptic_cost(quad: *const f64, alpha: f64, mu: f64, Dm: f64) -> f64 {
-    // WARNING: signature changed — verify body
-    // Previous params: (quad : * const f64, alpha : f64, mu : f64, Dm : f64)
-    // Previous return: f64
-    todo ! ()
+    extern "C" {
+        fn ellipticCost_impl(quad: *const f64, alpha: f64, mu: f64, Dm: f64) -> f64;
+    }
+    // SAFETY: Forwarding to linked C/C++ implementation.
+    unsafe { ellipticCost_impl(quad, alpha, mu, Dm) }
 }
 
 /// C: ellipticCostDif (engine/engine_solver.c:1569)
@@ -424,10 +434,11 @@ pub fn primal_search(ctx: *mut mjPrimalContext, tolerance: f64, ls_iterations: f
 /// Calls: mj_stackAllocInfo, mju_addToMatSparse, mju_addToSymSparse, mju_cholFactorSymbolic, mju_sqrMatTDSparseNumeric, mju_sqrMatTDSparseSymbolic, mju_sqrMatTD_impl, mju_transposeSparse
 #[allow(unused_variables, non_snake_case)]
 pub fn make_hessian(d: *mut mjData, ctx: *mut mjPrimalContext) {
-    // WARNING: signature changed — verify body
-    // Previous params: (d : * mut mjData, ctx : * mut mjPrimalContext)
-    // Previous return: ()
-    todo ! ()
+    extern "C" {
+        fn MakeHessian_impl(d: *mut mjData, ctx: *mut mjPrimalContext);
+    }
+    // SAFETY: Forwarding to linked C/C++ implementation.
+    unsafe { MakeHessian_impl(d, ctx) }
 }
 
 /// C: HessianCone (engine/engine_solver.c:2099)
@@ -445,10 +456,11 @@ pub fn hessian_cone(d: *mut mjData, ctx: *mut mjPrimalContext) {
 /// Calls: HessianCone, mju_addToMatSparse, mju_addToSymSparse, mju_cholFactor, mju_cholFactorNumeric, mju_message, mju_sqrMatTDSparseNumeric, mju_sqrMatTDSparseSymbolic, mju_sqrMatTD_impl
 #[allow(unused_variables, non_snake_case)]
 pub fn factorize_hessian(d: *mut mjData, ctx: *mut mjPrimalContext, flg_recompute: i32) {
-    // WARNING: signature changed — verify body
-    // Previous params: (d : * mut mjData, ctx : * mut mjPrimalContext, flg_recompute : i32)
-    // Previous return: ()
-    todo ! ()
+    extern "C" {
+        fn FactorizeHessian_impl(d: *mut mjData, ctx: *mut mjPrimalContext, flg_recompute: i32);
+    }
+    // SAFETY: Forwarding to linked C/C++ implementation.
+    unsafe { FactorizeHessian_impl(d, ctx, flg_recompute) }
 }
 
 /// C: HessianIncremental (engine/engine_solver.c:2238)
@@ -475,20 +487,22 @@ pub fn mj_sol_primal(m: *const mjModel, d: *mut mjData, island: i32, maxiter: i3
 /// Calls: solPGS
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_sol_pgs(m: *const mjModel, d: *mut mjData, maxiter: i32) {
-    // WARNING: signature changed — verify body
-    // Previous params: (m : * const mjModel, d : * mut mjData, maxiter : i32)
-    // Previous return: ()
-    todo ! ()
+    extern "C" {
+        fn mj_solPGS_impl(m: *const mjModel, d: *mut mjData, maxiter: i32);
+    }
+    // SAFETY: Forwarding to linked C/C++ implementation.
+    unsafe { mj_solPGS_impl(m, d, maxiter) }
 }
 
 /// C: mj_solNoSlip (engine/engine_solver.h:27)
 /// Calls: solNoSlip
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_sol_no_slip(m: *const mjModel, d: *mut mjData, maxiter: i32) {
-    // WARNING: signature changed — verify body
-    // Previous params: (m : * const mjModel, d : * mut mjData, maxiter : i32)
-    // Previous return: ()
-    todo ! ()
+    extern "C" {
+        fn mj_solNoSlip_impl(m: *const mjModel, d: *mut mjData, maxiter: i32);
+    }
+    // SAFETY: Forwarding to linked C/C++ implementation.
+    unsafe { mj_solNoSlip_impl(m, d, maxiter) }
 }
 
 /// C: mj_solCG (engine/engine_solver.h:30)

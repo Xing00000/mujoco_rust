@@ -160,10 +160,11 @@ pub fn can_collide(m: *const mjModel, bf: i32) -> i32 {
 /// Calls: filterBitmask
 #[allow(unused_variables, non_snake_case)]
 pub fn can_collide2(m: *const mjModel, bf1: i32, bf2: i32) -> i32 {
-    // WARNING: signature changed — verify body
-    // Previous params: (m : * const mjModel, bf1 : i32, bf2 : i32)
-    // Previous return: i32
-    todo ! ()
+    extern "C" {
+        fn canCollide2_impl(m: *const mjModel, bf1: i32, bf2: i32) -> i32;
+    }
+    // SAFETY: Forwarding to linked C/C++ implementation.
+    unsafe { canCollide2_impl(m, bf1, bf2) }
 }
 
 /// C: mj_collideTree (engine/engine_collision_driver.c:361)
@@ -219,10 +220,11 @@ pub fn mj_collide_flex_internal(m: *const mjModel, d: *mut mjData, f: i32) {
 /// C: contactcompare (engine/engine_collision_driver.c:380)
 #[allow(unused_variables, non_snake_case)]
 pub fn contactcompare(c1: *const mjContact, c2: *const mjContact, context: *mut ()) -> i32 {
-    // WARNING: signature changed — verify body
-    // Previous params: (c1 : * const mjContact, c2 : * const mjContact, context : * mut ())
-    // Previous return: i32
-    todo ! ()
+    extern "C" {
+        fn contactcompare_impl(c1: *const mjContact, c2: *const mjContact, context: *mut ()) -> i32;
+    }
+    // SAFETY: Forwarding to linked C implementation.
+    unsafe { contactcompare_impl(c1, c2, context) }
 }
 
 /// C: contactSort (engine/engine_collision_driver.c:413)

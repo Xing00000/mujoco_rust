@@ -515,10 +515,11 @@ pub fn mj_reference_constraint(m: *const mjModel, d: *mut mjData) {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_constraint_update_impl(ne: i32, nf: i32, nefc: i32, D: *const f64, R: *const f64, floss: *const f64, jar: *const f64, r#type: *const i32, id: *const i32, contact: *mut mjContact, state: *mut i32, force: *mut f64, cost: *mut f64, flg_coneHessian: i32) {
-    // WARNING: signature changed — verify body
-    // Previous params: (ne : i32, nf : i32, nefc : i32, D : * const f64, R : * const f64, floss : * const f64, jar : * const f64, r#type : * const i32, id : * const i32, contact : * mut mjContact, state : * mut i32, force : * mut f64, cost : * mut f64, flg_coneHessian : i32)
-    // Previous return: ()
-    todo ! ()
+    extern "C" {
+        fn mj_constraintUpdate_impl_impl(ne: i32, nf: i32, nefc: i32, D: *const f64, R: *const f64, floss: *const f64, jar: *const f64, r#type: *const i32, id: *const i32, contact: *mut mjContact, state: *mut i32, force: *mut f64, cost: *mut f64, flg_coneHessian: i32);
+    }
+    // SAFETY: Forwarding to linked C/C++ implementation.
+    unsafe { mj_constraintUpdate_impl_impl(ne, nf, nefc, D, R, floss, jar, r#type, id, contact, state, force, cost, flg_coneHessian) }
 }
 
 /// C: mj_constraintUpdate (engine/engine_core_constraint.h:105)

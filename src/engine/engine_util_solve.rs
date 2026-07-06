@@ -129,10 +129,11 @@ pub fn mju_chol_factor_numeric(L: *mut f64, n: i32, mindiag: f64, L_rownnz: *con
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mju_chol_solve_sparse(res: *mut f64, mat: *const f64, vec: *const f64, n: i32, rownnz: *const i32, rowadr: *const i32, colind: *const i32) {
-    // WARNING: signature changed — verify body
-    // Previous params: (res : * mut f64, mat : * const f64, vec : * const f64, n : i32, rownnz : * const i32, rowadr : * const i32, colind : * const i32)
-    // Previous return: ()
-    todo ! ()
+    extern "C" {
+        fn mju_cholSolveSparse_impl(res: *mut f64, mat: *const f64, vec: *const f64, n: i32, rownnz: *const i32, rowadr: *const i32, colind: *const i32);
+    }
+    // SAFETY: Forwarding to linked C/C++ implementation.
+    unsafe { mju_cholSolveSparse_impl(res, mat, vec, n, rownnz, rowadr, colind) }
 }
 
 /// C: mju_cholUpdateSparse (engine/engine_util_solve.h:66)
@@ -331,10 +332,11 @@ pub fn mju_eig3(eigval: *mut f64, eigvec: *mut f64, quat: *mut f64, mat: *const 
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mju_qcqp2(res: *mut f64, Ain: *const f64, bin: *const f64, d: *const f64, r: f64) -> i32 {
-    // WARNING: signature changed — verify body
-    // Previous params: (res : * mut f64, Ain : * const f64, bin : * const f64, d : * const f64, r : f64)
-    // Previous return: i32
-    todo ! ()
+    extern "C" {
+        fn mju_QCQP2_impl(res: *mut f64, Ain: *const f64, bin: *const f64, d: *const f64, r: f64) -> i32;
+    }
+    // SAFETY: Forwarding to linked C/C++ implementation.
+    unsafe { mju_QCQP2_impl(res, Ain, bin, d, r) }
 }
 
 /// C: mju_QCQP3 (engine/engine_util_solve.h:131)
@@ -345,10 +347,11 @@ pub fn mju_qcqp2(res: *mut f64, Ain: *const f64, bin: *const f64, d: *const f64,
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mju_qcqp3(res: *mut f64, Ain: *const f64, bin: *const f64, d: *const f64, r: f64) -> i32 {
-    // WARNING: signature changed — verify body
-    // Previous params: (res : * mut f64, Ain : * const f64, bin : * const f64, d : * const f64, r : f64)
-    // Previous return: i32
-    todo ! ()
+    extern "C" {
+        fn mju_QCQP3_impl(res: *mut f64, Ain: *const f64, bin: *const f64, d: *const f64, r: f64) -> i32;
+    }
+    // SAFETY: Forwarding to linked C/C++ implementation.
+    unsafe { mju_QCQP3_impl(res, Ain, bin, d, r) }
 }
 
 /// C: mju_QCQP (engine/engine_util_solve.h:136)
@@ -360,10 +363,11 @@ pub fn mju_qcqp3(res: *mut f64, Ain: *const f64, bin: *const f64, d: *const f64,
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mju_qcqp(res: *mut f64, Ain: *const f64, bin: *const f64, d: *const f64, r: f64, n: i32) -> i32 {
-    // WARNING: signature changed — verify body
-    // Previous params: (res : * mut f64, Ain : * const f64, bin : * const f64, d : * const f64, r : f64, n : i32)
-    // Previous return: i32
-    todo ! ()
+    extern "C" {
+        fn mju_QCQP_impl(res: *mut f64, Ain: *const f64, bin: *const f64, d: *const f64, r: f64, n: i32) -> i32;
+    }
+    // SAFETY: Forwarding to linked C/C++ implementation.
+    unsafe { mju_QCQP_impl(res, Ain, bin, d, r, n) }
 }
 
 /// C: mju_boxQP (engine/engine_util_solve.h:141)

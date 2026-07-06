@@ -373,10 +373,11 @@ pub fn compiler_log_handler(msg: *const mjLogMessage) {
 /// Calls: _mjPRIVATE_setTlsLogHandler, mjCMesh::Compile
 #[allow(unused_variables, non_snake_case)]
 pub fn compile_mesh(mesh: *mut mjCMesh, vfs: *const mjVFS, exception: *mut std__exception_ptr, exception_mutex: *mut std__mutex, warningtext: *mut string) {
-    // WARNING: signature changed — verify body
-    // Previous params: (mesh : * mut mjCMesh, vfs : * const mjVFS, exception : * mut std__exception_ptr, exception_mutex : * mut std__mutex, warningtext : * mut string)
-    // Previous return: ()
-    todo ! ()
+    extern "C" {
+        fn CompileMesh_impl(mesh: *mut mjCMesh, vfs: *const mjVFS, exception: *mut std__exception_ptr, exception_mutex: *mut std__mutex, warningtext: *mut string);
+    }
+    // SAFETY: Forwarding to linked C/C++ implementation.
+    unsafe { CompileMesh_impl(mesh, vfs, exception, exception_mutex, warningtext) }
 }
 
 /// C: CompileTexture (user/user_model.cc:4790)

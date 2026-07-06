@@ -359,9 +359,10 @@ pub fn mj_init_plugin(m: *const mjModel, d: *mut mjData) {
 /// Calls: freeDataBuffers, mju_free, mju_threadpool
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_delete_data(d: *mut mjData) {
-    // WARNING: signature changed — verify body
-    // Previous params: (d : * mut mjData)
-    // Previous return: ()
-    todo ! ()
+    extern "C" {
+        fn mj_deleteData_impl(d: *mut mjData);
+    }
+    // SAFETY: Forwarding to linked C/C++ implementation.
+    unsafe { mj_deleteData_impl(d) }
 }
 

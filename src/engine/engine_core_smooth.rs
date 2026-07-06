@@ -73,10 +73,11 @@ pub fn mj_com_pos(m: *const mjModel, d: *mut mjData) {
 /// Calls: mj_local2Global, mji_add3, mji_copy3, mji_copy9, mji_cross, mji_rotVecQuat, mji_sub3, mju_normalize3, mju_transpose
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_camlight(m: *const mjModel, d: *mut mjData) {
-    // WARNING: signature changed — verify body
-    // Previous params: (m : * const mjModel, d : * mut mjData)
-    // Previous return: ()
-    todo ! ()
+    extern "C" {
+        fn mj_camlight_impl(m: *const mjModel, d: *mut mjData);
+    }
+    // SAFETY: Forwarding to linked C/C++ implementation.
+    unsafe { mj_camlight_impl(m, d) }
 }
 
 /// C: mj_flex (engine/engine_core_smooth.h:44)

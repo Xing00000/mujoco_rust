@@ -204,10 +204,11 @@ pub fn mj_add_m(m: *const mjModel, d: *mut mjData, dst: *mut f64, rownnz: *mut i
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_apply_ft(m: *const mjModel, d: *mut mjData, force: *const f64, torque: *const f64, point: *const f64, body: i32, qfrc_target: *mut f64) {
-    // WARNING: signature changed — verify body
-    // Previous params: (m : * const mjModel, d : * mut mjData, force : * const f64, torque : * const f64, point : * const f64, body : i32, qfrc_target : * mut f64)
-    // Previous return: ()
-    todo ! ()
+    extern "C" {
+        fn mj_applyFT_impl(m: *const mjModel, d: *mut mjData, force: *const f64, torque: *const f64, point: *const f64, body: i32, qfrc_target: *mut f64);
+    }
+    // SAFETY: Forwarding to linked C/C++ implementation.
+    unsafe { mj_applyFT_impl(m, d, force, torque, point, body, qfrc_target) }
 }
 
 /// C: mj_xfrcAccumulate (engine/engine_support.h:84)
@@ -319,10 +320,11 @@ pub fn mj_actuator_disabled(m: *const mjModel, i: i32) -> i32 {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_next_activation(m: *const mjModel, d: *const mjData, actuator_id: i32, act_adr: i32, act_dot: f64) -> f64 {
-    // WARNING: signature changed — verify body
-    // Previous params: (m : * const mjModel, d : * const mjData, actuator_id : i32, act_adr : i32, act_dot : f64)
-    // Previous return: f64
-    todo ! ()
+    extern "C" {
+        fn mj_nextActivation_impl(m: *const mjModel, d: *const mjData, actuator_id: i32, act_adr: i32, act_dot: f64) -> f64;
+    }
+    // SAFETY: Forwarding to linked C/C++ implementation.
+    unsafe { mj_nextActivation_impl(m, d, actuator_id, act_adr, act_dot) }
 }
 
 /// C: mj_getTotalmass (engine/engine_support.h:115)
@@ -410,10 +412,11 @@ pub fn mju_cam_intrinsics(m: *const mjModel, camid: i32, fx: *mut f64, fy: *mut 
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_read_ctrl(m: *const mjModel, d: *const mjData, id: i32, time: f64, interp: i32) -> f64 {
-    // WARNING: signature changed — verify body
-    // Previous params: (m : * const mjModel, d : * const mjData, id : i32, time : f64, interp : i32)
-    // Previous return: f64
-    todo ! ()
+    extern "C" {
+        fn mj_readCtrl_impl(m: *const mjModel, d: *const mjData, id: i32, time: f64, interp: i32) -> f64;
+    }
+    // SAFETY: Forwarding to linked C/C++ implementation.
+    unsafe { mj_readCtrl_impl(m, d, id, time, interp) }
 }
 
 /// C: mj_readSensor (engine/engine_support.h:147)

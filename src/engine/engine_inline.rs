@@ -332,10 +332,11 @@ pub fn mji_axis_angle2quat(res: *mut f64, axis: *const f64, angle: f64) {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mji_quat2vel(res: *mut f64, quat: *const f64, dt: f64) {
-    // WARNING: signature changed — verify body
-    // Previous params: (res : * mut f64, quat : * const f64, dt : f64)
-    // Previous return: ()
-    todo ! ()
+    extern "C" {
+        fn mji_quat2Vel_impl(res: *mut f64, quat: *const f64, dt: f64);
+    }
+    // SAFETY: Forwarding to linked C/C++ implementation.
+    unsafe { mji_quat2Vel_impl(res, quat, dt) }
 }
 
 /// C: mji_subQuat (engine/engine_inline.h:348)
