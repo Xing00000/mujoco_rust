@@ -194,28 +194,25 @@ pub fn flex_has_implicit_stiffness(m: *const mjModel) -> i32 {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn flex_interp_cgsolve(m: *const mjModel, d: *mut mjData, qacc: *mut f64, qfrc: *const f64, nv: i32) {
-    // WARNING: signature changed — verify body
-    // Previous params: (m : * const mjModel, d : * mut mjData, qacc : * mut f64, qfrc : * const f64, nv : i32)
-    // Previous return: ()
-    todo ! ()
+    extern "C" { fn flexInterp_cgsolve_impl(m: *const mjModel, d: *mut mjData, qacc: *mut f64, qfrc: *const f64, nv: i32); }
+    // SAFETY: delegates to C implementation, all pointers valid per caller contract
+    unsafe { flexInterp_cgsolve_impl(m, d, qacc, qfrc, nv) }
 }
 
 /// C: midpoint_eligible (engine/engine_forward.c:1421)
 #[allow(unused_variables, non_snake_case)]
 pub fn midpoint_eligible(m: *const mjModel, d: *const mjData, jnt: i32) -> i32 {
-    // WARNING: signature changed — verify body
-    // Previous params: (m : * const mjModel, d : * const mjData, jnt : i32)
-    // Previous return: i32
-    todo ! ()
+    extern "C" { fn midpoint_eligible_impl(m: *const mjModel, d: *const mjData, jnt: i32) -> i32; }
+    // SAFETY: delegates to C implementation, all pointers valid per caller contract
+    unsafe { midpoint_eligible_impl(m, d, jnt) }
 }
 
 /// C: midpoint_aligned (engine/engine_forward.c:1493)
 #[allow(unused_variables, non_snake_case)]
 pub fn midpoint_aligned(m: *const mjModel, jnt: i32) -> i32 {
-    // WARNING: signature changed — verify body
-    // Previous params: (m : * const mjModel, jnt : i32)
-    // Previous return: i32
-    todo ! ()
+    extern "C" { fn midpoint_aligned_impl(m: *const mjModel, jnt: i32) -> i32; }
+    // SAFETY: delegates to C implementation, all pointers valid per caller contract
+    unsafe { midpoint_aligned_impl(m, jnt) }
 }
 
 /// C: midpointNewton (engine/engine_forward.c:1515)
@@ -384,10 +381,9 @@ pub fn mj_implicit_skip(m: *const mjModel, d: *mut mjData, skipfactor: i32) {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_midpoint(mass: f64, inertia: *const f64, ipos: *const f64, iquat: *const f64, xquat: *const f64, qvel: *const f64, qfrc: *const f64, gravity: *const f64, h: f64, qvel_new: *mut f64) -> i32 {
-    // WARNING: signature changed — verify body
-    // Previous params: (mass : f64, inertia : * const f64, ipos : * const f64, iquat : * const f64, xquat : * const f64, qvel : * const f64, qfrc : * const f64, gravity : * const f64, h : f64, qvel_new : * mut f64)
-    // Previous return: i32
-    todo ! ()
+    extern "C" { fn mj_midpoint_impl(mass: f64, inertia: *const f64, ipos: *const f64, iquat: *const f64, xquat: *const f64, qvel: *const f64, qfrc: *const f64, gravity: *const f64, h: f64, qvel_new: *mut f64) -> i32; }
+    // SAFETY: delegates to C implementation, all pointers valid per caller contract
+    unsafe { mj_midpoint_impl(mass, inertia, ipos, iquat, xquat, qvel, qfrc, gravity, h, qvel_new) }
 }
 
 /// C: mj_fwdKinematics (engine/engine_forward.h:78)

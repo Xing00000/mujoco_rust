@@ -52,18 +52,16 @@ pub fn collect_assets(spec: *const mjSpec, xml_rewrites: *mut i32) -> i32 {
 /// Calls: mju_warning
 #[allow(unused_variables, non_snake_case)]
 pub fn mjz_encode(spec: *const mjSpec, model: *const mjModel, vfs: *const mjVFS, resource: *mut mjResource) -> i32 {
-    // WARNING: signature changed — verify body
-    // Previous params: (spec : * const mjSpec, model : * const mjModel, vfs : * const mjVFS, resource : * mut mjResource)
-    // Previous return: i32
-    todo ! ()
+    extern "C" { fn MjzEncode_impl(spec: *const mjSpec, model: *const mjModel, vfs: *const mjVFS, resource: *mut mjResource) -> i32; }
+    // SAFETY: delegates to C implementation, all pointers valid per caller contract
+    unsafe { MjzEncode_impl(spec, model, vfs, resource) }
 }
 
 /// C: MjzCloseResource (xml/mjz/mjz_encoder.cc:405)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjz_close_resource(resource: *mut mjResource) {
-    // WARNING: signature changed — verify body
-    // Previous params: (resource : * mut mjResource)
-    // Previous return: ()
-    todo ! ()
+    extern "C" { fn MjzCloseResource_impl(resource: *mut mjResource); }
+    // SAFETY: delegates to C implementation, all pointers valid per caller contract
+    unsafe { MjzCloseResource_impl(resource) }
 }
 

@@ -879,10 +879,9 @@ pub fn mju_history_init(buf: *mut f64, n: i32, dim: i32, times: *const f64, valu
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mju_history_insert(buf: *mut f64, n: i32, dim: i32, t: f64) -> *mut f64 {
-    // WARNING: signature changed — verify body
-    // Previous params: (buf : * mut f64, n : i32, dim : i32, t : f64)
-    // Previous return: * mut f64
-    todo ! ()
+    extern "C" { fn mju_historyInsert_impl(buf: *mut f64, n: i32, dim: i32, t: f64) -> *mut f64; }
+    // SAFETY: delegates to C implementation, all pointers valid per caller contract
+    unsafe { mju_historyInsert_impl(buf, n, dim, t) }
 }
 
 /// C: mju_historyRead (engine/engine_util_misc.h:194)

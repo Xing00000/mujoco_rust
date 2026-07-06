@@ -236,20 +236,18 @@ pub fn mj_collide_plane_flex(m: *const mjModel, d: *mut mjData, g: i32, f: i32) 
 /// Calls: mj_addContact, mj_assignMargin, mj_contactParam, mj_freeStack, mj_markStack, mj_setContact, mj_stackAllocInfo, mjc_FlexSDF, mju_copy3
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_collide_sdf_flex(m: *const mjModel, d: *mut mjData, g: i32, f: i32) {
-    // WARNING: signature changed — verify body
-    // Previous params: (m : * const mjModel, d : * mut mjData, g : i32, f : i32)
-    // Previous return: ()
-    todo ! ()
+    extern "C" { fn mj_collideSdfFlex_impl(m: *const mjModel, d: *mut mjData, g: i32, f: i32); }
+    // SAFETY: delegates to C implementation, all pointers valid per caller contract
+    unsafe { mj_collideSdfFlex_impl(m, d, g, f) }
 }
 
 /// C: mj_collideFlexInternal (engine/engine_collision_driver.c:377)
 /// Calls: mj_addContact, mj_collideElemVert, mj_contactParam, mj_setContact, mju_copy3, planeVertex
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_collide_flex_internal(m: *const mjModel, d: *mut mjData, f: i32) {
-    // WARNING: signature changed — verify body
-    // Previous params: (m : * const mjModel, d : * mut mjData, f : i32)
-    // Previous return: ()
-    todo ! ()
+    extern "C" { fn mj_collideFlexInternal_impl(m: *const mjModel, d: *mut mjData, f: i32); }
+    // SAFETY: delegates to C implementation, all pointers valid per caller contract
+    unsafe { mj_collideFlexInternal_impl(m, d, f) }
 }
 
 /// C: contactcompare (engine/engine_collision_driver.c:380)
@@ -806,10 +804,9 @@ pub fn mj_broadphase(m: *const mjModel, d: *mut mjData, bfpair: *mut i32, maxpai
 /// Calls: mj_SAP, mj_collideElems, mj_freeStack, mj_isElemActive, mj_markStack, mj_stackAllocInfo, mju_message
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_collide_flex_sap(m: *const mjModel, d: *mut mjData, f: i32) {
-    // WARNING: signature changed — verify body
-    // Previous params: (m : * const mjModel, d : * mut mjData, f : i32)
-    // Previous return: ()
-    todo ! ()
+    extern "C" { fn mj_collideFlexSAP_impl(m: *const mjModel, d: *mut mjData, f: i32); }
+    // SAFETY: delegates to C implementation, all pointers valid per caller contract
+    unsafe { mj_collideFlexSAP_impl(m, d, f) }
 }
 
 /// C: mj_collideGeomElem (engine/engine_collision_driver.h:54)

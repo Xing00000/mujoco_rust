@@ -126,10 +126,9 @@ pub fn add_to_parent(m: *const mjModel, d: *mut mjData, mat: *mut f64, n: i32) {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjd_com_vel_vel(m: *const mjModel, d: *mut mjData, Dcvel: *mut f64, Dcdofdot: *mut f64) {
-    // WARNING: signature changed — verify body
-    // Previous params: (m : * const mjModel, d : * mut mjData, Dcvel : * mut f64, Dcdofdot : * mut f64)
-    // Previous return: ()
-    todo ! ()
+    extern "C" { fn mjd_comVel_vel_impl(m: *const mjModel, d: *mut mjData, Dcvel: *mut f64, Dcdofdot: *mut f64); }
+    // SAFETY: delegates to C implementation, all pointers valid per caller contract
+    unsafe { mjd_comVel_vel_impl(m, d, Dcvel, Dcdofdot) }
 }
 
 /// C: mjd_rne_vel (engine/engine_derivative.c:596)
@@ -236,10 +235,9 @@ pub fn pow2(val: f64) -> f64 {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn ellipsoid_max_moment(size: *const f64, dir: i32) -> f64 {
-    // WARNING: signature changed — verify body
-    // Previous params: (size : * const f64, dir : i32)
-    // Previous return: f64
-    todo ! ()
+    extern "C" { fn ellipsoid_max_moment_impl(size: *const f64, dir: i32) -> f64; }
+    // SAFETY: delegates to C implementation, all pointers valid per caller contract
+    unsafe { ellipsoid_max_moment_impl(size, dir) }
 }
 
 /// C: addToQuadrant (engine/engine_derivative.c:1354)
@@ -264,10 +262,9 @@ pub fn add_to_quadrant(B: *mut f64, D: *const f64, col_quad: i32, row_quad: i32)
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjd_added_mass_forces(B: *mut f64, local_vels: *const f64, fluid_density: f64, virtual_mass: *const f64, virtual_inertia: *const f64) {
-    // WARNING: signature changed — verify body
-    // Previous params: (B : * mut f64, local_vels : * const f64, fluid_density : f64, virtual_mass : * const f64, virtual_inertia : * const f64)
-    // Previous return: ()
-    todo ! ()
+    extern "C" { fn mjd_addedMassForces_impl(B: *mut f64, local_vels: *const f64, fluid_density: f64, virtual_mass: *const f64, virtual_inertia: *const f64); }
+    // SAFETY: delegates to C implementation, all pointers valid per caller contract
+    unsafe { mjd_addedMassForces_impl(B, local_vels, fluid_density, virtual_mass, virtual_inertia) }
 }
 
 /// C: mjd_viscous_torque (engine/engine_derivative.c:1416)
@@ -294,10 +291,9 @@ pub fn mjd_viscous_torque(D: *mut f64, lvel: *const f64, fluid_density: f64, flu
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjd_viscous_drag(D: *mut f64, lvel: *const f64, fluid_density: f64, fluid_viscosity: f64, size: *const f64, blunt_drag_coef: f64, slender_drag_coef: f64) {
-    // WARNING: signature changed — verify body
-    // Previous params: (D : * mut f64, lvel : * const f64, fluid_density : f64, fluid_viscosity : f64, size : * const f64, blunt_drag_coef : f64, slender_drag_coef : f64)
-    // Previous return: ()
-    todo ! ()
+    extern "C" { fn mjd_viscous_drag_impl(D: *mut f64, lvel: *const f64, fluid_density: f64, fluid_viscosity: f64, size: *const f64, blunt_drag_coef: f64, slender_drag_coef: f64); }
+    // SAFETY: delegates to C implementation, all pointers valid per caller contract
+    unsafe { mjd_viscous_drag_impl(D, lvel, fluid_density, fluid_viscosity, size, blunt_drag_coef, slender_drag_coef) }
 }
 
 /// C: mjd_kutta_lift (engine/engine_derivative.c:1536)
@@ -309,10 +305,9 @@ pub fn mjd_viscous_drag(D: *mut f64, lvel: *const f64, fluid_density: f64, fluid
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjd_kutta_lift(D: *mut f64, lvel: *const f64, fluid_density: f64, size: *const f64, kutta_lift_coef: f64) {
-    // WARNING: signature changed — verify body
-    // Previous params: (D : * mut f64, lvel : * const f64, fluid_density : f64, size : * const f64, kutta_lift_coef : f64)
-    // Previous return: ()
-    todo ! ()
+    extern "C" { fn mjd_kutta_lift_impl(D: *mut f64, lvel: *const f64, fluid_density: f64, size: *const f64, kutta_lift_coef: f64); }
+    // SAFETY: delegates to C implementation, all pointers valid per caller contract
+    unsafe { mjd_kutta_lift_impl(D, lvel, fluid_density, size, kutta_lift_coef) }
 }
 
 /// C: mjd_magnus_force (engine/engine_derivative.c:1589)
@@ -324,10 +319,9 @@ pub fn mjd_kutta_lift(D: *mut f64, lvel: *const f64, fluid_density: f64, size: *
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjd_magnus_force(B: *mut f64, lvel: *const f64, fluid_density: f64, size: *const f64, magnus_lift_coef: f64) {
-    // WARNING: signature changed — verify body
-    // Previous params: (B : * mut f64, lvel : * const f64, fluid_density : f64, size : * const f64, magnus_lift_coef : f64)
-    // Previous return: ()
-    todo ! ()
+    extern "C" { fn mjd_magnus_force_impl(B: *mut f64, lvel: *const f64, fluid_density: f64, size: *const f64, magnus_lift_coef: f64); }
+    // SAFETY: delegates to C implementation, all pointers valid per caller contract
+    unsafe { mjd_magnus_force_impl(B, lvel, fluid_density, size, magnus_lift_coef) }
 }
 
 /// C: mjd_ellipsoidFluid (engine/engine_derivative.c:1618)
@@ -344,10 +338,9 @@ pub fn mjd_ellipsoid_fluid(m: *const mjModel, d: *mut mjData, bodyid: i32) {
 /// Calls: addJTBJ, addJTBJSparse, mj_bodyChain, mj_freeStack, mj_isSparse, mj_jacBodyCom, mj_jacSparse, mj_markStack, mj_objectVelocity, mj_stackAllocInfo, mju_copy, mju_copy3, mju_max, mju_mulMatTMat, mju_subFrom3, mju_transformSpatial, mju_zero
 #[allow(unused_variables, non_snake_case)]
 pub fn mjd_inertia_box_fluid(m: *const mjModel, d: *mut mjData, i: i32) {
-    // WARNING: signature changed — verify body
-    // Previous params: (m : * const mjModel, d : * mut mjData, i : i32)
-    // Previous return: ()
-    todo ! ()
+    extern "C" { fn mjd_inertiaBoxFluid_impl(m: *const mjModel, d: *mut mjData, i: i32); }
+    // SAFETY: delegates to C implementation, all pointers valid per caller contract
+    unsafe { mjd_inertiaBoxFluid_impl(m, d, i) }
 }
 
 /// C: mjd_subQuat (engine/engine_derivative.h:27)

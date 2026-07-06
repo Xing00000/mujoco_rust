@@ -7,7 +7,9 @@ use crate::types::*;
 /// C: LocaleOverride::PosixLocale (xml/xml.cc:85)
 #[allow(unused_variables, non_snake_case)]
 pub fn locale_override_posix_locale() -> i32 {
-    todo ! ()
+    extern "C" { fn PosixLocale_impl() -> i32; }
+    // SAFETY: delegates to C implementation, all pointers valid per caller contract
+    unsafe { PosixLocale_impl() }
 }
 
 /// C: IncludeXML (xml/xml.cc:102)

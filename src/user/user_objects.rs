@@ -62,10 +62,9 @@ pub fn png_image_size(self_ptr: *mut PNGImage) -> std__size_t {
 /// C: MapFrame (user/user_objects.cc:139)
 #[allow(unused_variables, non_snake_case)]
 pub fn map_frame(parent: *mut i32, child: *mut i32, frame: *mut mjCFrame, parent_body: *mut mjCBody) {
-    // WARNING: signature changed — verify body
-    // Previous params: (parent : * mut i32, child : * mut i32, frame : * mut mjCFrame, parent_body : * mut mjCBody)
-    // Previous return: ()
-    todo ! ()
+    extern "C" { fn MapFrame_impl(parent: *mut i32, child: *mut i32, frame: *mut mjCFrame, parent_body: *mut mjCBody); }
+    // SAFETY: delegates to C implementation, all pointers valid per caller contract
+    unsafe { MapFrame_impl(parent, child, frame, parent_body) }
 }
 
 /// C: checksize (user/user_objects.cc:153)

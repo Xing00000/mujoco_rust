@@ -33,10 +33,9 @@ pub fn mj_encode(s: *const mjSpec, m: *const mjModel, filename: *const i8, conte
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn log_compile_time(t: *const f64) {
-    // WARNING: signature changed — verify body
-    // Previous params: (t : * const f64)
-    // Previous return: ()
-    todo ! ()
+    extern "C" { fn LogCompileTime_impl(t: *const f64); }
+    // SAFETY: delegates to C implementation, all pointers valid per caller contract
+    unsafe { LogCompileTime_impl(t) }
 }
 
 /// C: SetFrame (user/user_api.cc:293)

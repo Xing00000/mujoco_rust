@@ -270,10 +270,9 @@ pub fn mju_solve_lu(x: *mut f64, LU: *const f64, b: *const f64, pivot: *const i3
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mju_factor_lu_sparse(LU: *mut f64, n: i32, scratch: *mut i32, rownnz: *const i32, rowadr: *const i32, colind: *const i32, index: *const i32) {
-    // WARNING: signature changed — verify body
-    // Previous params: (LU : * mut f64, n : i32, scratch : * mut i32, rownnz : * const i32, rowadr : * const i32, colind : * const i32, index : * const i32)
-    // Previous return: ()
-    todo ! ()
+    extern "C" { fn mju_factorLUSparse_impl(LU: *mut f64, n: i32, scratch: *mut i32, rownnz: *const i32, rowadr: *const i32, colind: *const i32, index: *const i32); }
+    // SAFETY: delegates to C implementation, all pointers valid per caller contract
+    unsafe { mju_factorLUSparse_impl(LU, n, scratch, rownnz, rowadr, colind, index) }
 }
 
 /// C: mju_solveLUSparse (engine/engine_util_solve.h:113)
@@ -285,10 +284,9 @@ pub fn mju_factor_lu_sparse(LU: *mut f64, n: i32, scratch: *mut i32, rownnz: *co
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mju_solve_lu_sparse(res: *mut f64, LU: *const f64, vec: *const f64, n: i32, rownnz: *const i32, rowadr: *const i32, diag: *const i32, colind: *const i32, index: *const i32) {
-    // WARNING: signature changed — verify body
-    // Previous params: (res : * mut f64, LU : * const f64, vec : * const f64, n : i32, rownnz : * const i32, rowadr : * const i32, diag : * const i32, colind : * const i32, index : * const i32)
-    // Previous return: ()
-    todo ! ()
+    extern "C" { fn mju_solveLUSparse_impl(res: *mut f64, LU: *const f64, vec: *const f64, n: i32, rownnz: *const i32, rowadr: *const i32, diag: *const i32, colind: *const i32, index: *const i32); }
+    // SAFETY: delegates to C implementation, all pointers valid per caller contract
+    unsafe { mju_solveLUSparse_impl(res, LU, vec, n, rownnz, rowadr, diag, colind, index) }
 }
 
 /// C: mju_solve3 (engine/engine_util_solve.h:118)

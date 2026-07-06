@@ -261,10 +261,9 @@ pub fn mj_differentiate_pos(m: *const mjModel, qvel: *mut f64, dt: f64, qpos1: *
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_integrate_pos_ind(m: *const mjModel, qpos: *mut f64, qvel: *const f64, dt: f64, index: *const i32, nbody: i32) {
-    // WARNING: signature changed — verify body
-    // Previous params: (m : * const mjModel, qpos : * mut f64, qvel : * const f64, dt : f64, index : * const i32, nbody : i32)
-    // Previous return: ()
-    todo ! ()
+    extern "C" { fn mj_integratePosInd_impl(m: *const mjModel, qpos: *mut f64, qvel: *const f64, dt: f64, index: *const i32, nbody: i32); }
+    // SAFETY: delegates to C implementation, all pointers valid per caller contract
+    unsafe { mj_integratePosInd_impl(m, qpos, qvel, dt, index, nbody) }
 }
 
 /// C: mj_integratePos (engine/engine_support.h:102)

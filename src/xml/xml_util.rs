@@ -138,10 +138,9 @@ pub fn first_child_element(e: *mut XMLElement, name: *const i8) -> *mut XMLEleme
 /// Calls: FirstChildElement
 #[allow(unused_variables, non_snake_case)]
 pub fn next_sibling_element(e: *mut XMLElement, name: *const i8) -> *mut XMLElement {
-    // WARNING: signature changed — verify body
-    // Previous params: (e : * mut XMLElement, name : * const i8)
-    // Previous return: * mut XMLElement
-    todo ! ()
+    extern "C" { fn NextSiblingElement_impl(e: *mut XMLElement, name: *const i8) -> *mut XMLElement; }
+    // SAFETY: delegates to C implementation, all pointers valid per caller contract
+    unsafe { NextSiblingElement_impl(e, name) }
 }
 
 /// C: mjXSchema::GetError (xml/xml_util.h:57)

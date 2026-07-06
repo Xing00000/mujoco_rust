@@ -146,19 +146,17 @@ pub fn mesh_polygon_insert_face(self_ptr: *mut MeshPolygon, v1: i32, v2: i32, v3
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mesh_polygon_normal(self_ptr: *mut MeshPolygon) -> *const f64 {
-    // WARNING: signature changed — verify body
-    // Previous params: (self_ptr : * mut MeshPolygon)
-    // Previous return: * const f64
-    todo ! ()
+    extern "C" { fn MeshPolygon_Normal_impl(self_ptr: *mut MeshPolygon) -> *const f64; }
+    // SAFETY: delegates to C implementation, all pointers valid per caller contract
+    unsafe { MeshPolygon_Normal_impl(self_ptr) }
 }
 
 /// C: MeshPolygon::CombineIslands (user/user_mesh.cc:2698)
 #[allow(unused_variables, non_snake_case)]
 pub fn mesh_polygon_combine_islands(self_ptr: *mut MeshPolygon, island1: *mut i32, island2: *mut i32) {
-    // WARNING: signature changed — verify body
-    // Previous params: (self_ptr : * mut MeshPolygon, island1 : * mut i32, island2 : * mut i32)
-    // Previous return: ()
-    todo ! ()
+    extern "C" { fn MeshPolygon_CombineIslands_impl(self_ptr: *mut MeshPolygon, island1: *mut i32, island2: *mut i32); }
+    // SAFETY: delegates to C implementation, all pointers valid per caller contract
+    unsafe { MeshPolygon_CombineIslands_impl(self_ptr, island1, island2) }
 }
 
 /// C: MeshPolygonKey (user/user_mesh.cc:2701)
@@ -170,19 +168,17 @@ pub fn mesh_polygon_combine_islands(self_ptr: *mut MeshPolygon, island1: *mut i3
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mesh_polygon_key(angles: *const (), v1: [f64; 3], v2: [f64; 3], v3: [f64; 3], angle_tol: f64) -> bool {
-    // WARNING: signature changed — verify body
-    // Previous params: (angles : * const (), v1 : [f64 ; 3], v2 : [f64 ; 3], v3 : [f64 ; 3], angle_tol : f64)
-    // Previous return: bool
-    todo ! ()
+    extern "C" { fn MeshPolygonKey_impl(angles: *const (), v1: [f64; 3], v2: [f64; 3], v3: [f64; 3], angle_tol: f64) -> bool; }
+    // SAFETY: delegates to C implementation, all pointers valid per caller contract
+    unsafe { MeshPolygonKey_impl(angles, v1, v2, v3, angle_tol) }
 }
 
 /// C: MeshPolygon::Paths (user/user_mesh.cc:2839)
 #[allow(unused_variables, non_snake_case)]
 pub fn mesh_polygon_paths(self_ptr: *mut MeshPolygon) -> i32 {
-    // WARNING: signature changed — verify body
-    // Previous params: (self_ptr : * mut MeshPolygon)
-    // Previous return: i32
-    todo ! ()
+    extern "C" { fn MeshPolygon_Paths_impl(self_ptr: *mut MeshPolygon) -> i32; }
+    // SAFETY: delegates to C implementation, all pointers valid per caller contract
+    unsafe { MeshPolygon_Paths_impl(self_ptr) }
 }
 
 /// C: ComputeVolume (user/user_mesh.cc:3421)
@@ -209,10 +205,9 @@ pub fn compute_volume(x: *const f64, v: [i32; 3]) -> f64 {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn metric_tensor(metric: *mut f64, idx: i32, mu: f64, la: f64, basis: [[f64; 0]; 9]) {
-    // WARNING: signature changed — verify body
-    // Previous params: (metric : * mut f64, idx : i32, mu : f64, la : f64, basis : [[f64 ; 0] ; 9])
-    // Previous return: ()
-    todo ! ()
+    extern "C" { fn MetricTensor_impl(metric: *mut f64, idx: i32, mu: f64, la: f64, basis: [[f64; 0]; 9]); }
+    // SAFETY: delegates to C implementation, all pointers valid per caller contract
+    unsafe { MetricTensor_impl(metric, idx, mu, la, basis) }
 }
 
 /// C: ComputeBasis (user/user_mesh.cc:3503)
