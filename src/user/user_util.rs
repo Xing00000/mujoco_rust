@@ -68,10 +68,16 @@ pub fn is_null_or_space(c: *mut i8) -> bool {
 /// Calls: IsNullOrSpace
 #[allow(unused_variables, non_snake_case)]
 pub fn skip_space(c: *mut i8) -> *mut i8 {
-    // WARNING: signature changed — verify body
-    // Previous params: (c : * mut i8)
-    // Previous return: * mut i8
-    todo ! ()
+    unsafe {
+        let mut p = c;
+        while *p != 0 {
+            if !is_null_or_space(p) {
+                break;
+            }
+            p = p.add(1);
+        }
+        p
+    }
 }
 
 /// C: StringToVector (user/user_util.cc:1315)
@@ -463,10 +469,10 @@ pub fn mjuu_localaxis(al: *mut f64, ag: *const f64, quat: *const f64) {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjuu_localpos(pl: *mut f64, pg: *const f64, pos: *const f64, quat: *const f64) {
-    // WARNING: signature changed — verify body
-    // Previous params: (pl : * mut f64, pg : * const f64, pos : * const f64, quat : * const f64)
-    // Previous return: ()
-    todo ! ()
+    unsafe {
+        let a: [f64; 3] = [*pg.add(0) - *pos.add(0), *pg.add(1) - *pos.add(1), *pg.add(2) - *pos.add(2)];
+        mjuu_localaxis(pl, a.as_ptr(), quat);
+    }
 }
 
 /// C: mjuu_localquat (user/user_util.h:112)
@@ -478,10 +484,10 @@ pub fn mjuu_localpos(pl: *mut f64, pg: *const f64, pos: *const f64, quat: *const
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjuu_localquat(local: *mut f64, child: *const f64, parent: *const f64) {
-    // WARNING: signature changed — verify body
-    // Previous params: (local : * mut f64, child : * const f64, parent : * const f64)
-    // Previous return: ()
-    todo ! ()
+    unsafe {
+        let pneg: [f64; 4] = [*parent.add(0), -*parent.add(1), -*parent.add(2), -*parent.add(3)];
+        mjuu_mulquat(local, pneg.as_ptr(), child);
+    }
 }
 
 /// C: mjuu_crossvec (user/user_util.h:115)
