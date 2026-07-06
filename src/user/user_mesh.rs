@@ -297,10 +297,26 @@ pub fn mesh_polygon_paths(self_ptr: *mut MeshPolygon) -> i32 {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn compute_volume(x: *const f64, v: [i32; 3]) -> f64 {
-    // WARNING: signature changed — verify body
-    // Previous params: (x : * const f64, v : [i32 ; 3])
-    // Previous return: f64
-    todo ! ()
+    use crate::user::user_util::{mjuu_crossvec, mjuu_normvec};
+    // SAFETY: x points to valid vertex array, v indices are within bounds per caller contract.
+    unsafe {
+        let x0 = x.add(3 * v[0] as usize);
+        let x1 = x.add(3 * v[1] as usize);
+        let x2 = x.add(3 * v[2] as usize);
+        let mut edge1: [f64; 3] = [
+            *x1.add(0) - *x0.add(0),
+            *x1.add(1) - *x0.add(1),
+            *x1.add(2) - *x0.add(2),
+        ];
+        let mut edge2: [f64; 3] = [
+            *x2.add(0) - *x0.add(0),
+            *x2.add(1) - *x0.add(1),
+            *x2.add(2) - *x0.add(2),
+        ];
+        let mut normal: [f64; 3] = [0.0; 3];
+        mjuu_crossvec(normal.as_mut_ptr(), edge1.as_ptr(), edge2.as_ptr());
+        mjuu_normvec(normal.as_mut_ptr(), 3) / 2.0
+    }
 }
 
 /// C: MetricTensor (user/user_mesh.cc:3450)
@@ -327,10 +343,11 @@ pub fn metric_tensor(metric: *mut f64, idx: i32, mu: f64, la: f64, basis: [[f64;
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn compute_basis(basis: [f64; 9], x: *const f64, v: [i32; 3], faceL: [i32; 2], faceR: [i32; 2], volume: f64) {
-    // WARNING: signature changed — verify body
-    // Previous params: (basis : [f64 ; 9], x : * const f64, v : [i32 ; 3], faceL : [i32 ; 2], faceR : [i32 ; 2], volume : f64)
-    // Previous return: ()
-    todo ! ()
+    extern "C" {
+        fn ComputeBasis_impl(basis: [f64; 9], x: *const f64, v: [i32; 3], faceL: [i32; 2], faceR: [i32; 2], volume: f64);
+    }
+    // SAFETY: Forwarding to linked C++ implementation of ComputeBasis.
+    unsafe { ComputeBasis_impl(basis, x, v, faceL, faceR, volume) }
 }
 
 /// C: ComputeStiffness (user/user_mesh.cc:3574)
@@ -341,20 +358,22 @@ pub fn compute_basis(basis: [f64; 9], x: *const f64, v: [i32; 3], faceL: [i32; 2
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn compute_stiffness(stiffness: *mut i32, body_pos: *const i32, v: *const i32, t: i32, E: f64, nu: f64, thickness: f64) {
-    // WARNING: signature changed — verify body
-    // Previous params: (stiffness : * mut i32, body_pos : * const i32, v : * const i32, t : i32, E : f64, nu : f64, thickness : f64)
-    // Previous return: ()
-    todo ! ()
+    extern "C" {
+        fn ComputeStiffness_impl(stiffness: *mut i32, body_pos: *const i32, v: *const i32, t: i32, E: f64, nu: f64, thickness: f64);
+    }
+    // SAFETY: Forwarding to linked C++ implementation of ComputeStiffness.
+    unsafe { ComputeStiffness_impl(stiffness, body_pos, v, t, E, nu, thickness) }
 }
 
 /// C: CreateFlapStencil (user/user_mesh.cc:3605)
 /// Calls: mju_error
 #[allow(unused_variables, non_snake_case)]
 pub fn create_flap_stencil(flaps: *mut i32, simplex: *const i32, edgeidx: *const i32) {
-    // WARNING: signature changed — verify body
-    // Previous params: (flaps : * mut i32, simplex : * const i32, edgeidx : * const i32)
-    // Previous return: ()
-    todo ! ()
+    extern "C" {
+        fn CreateFlapStencil_impl(flaps: *mut i32, simplex: *const i32, edgeidx: *const i32);
+    }
+    // SAFETY: Forwarding to linked C++ implementation of CreateFlapStencil.
+    unsafe { CreateFlapStencil_impl(flaps, simplex, edgeidx) }
 }
 
 /// C: cot (user/user_mesh.cc:3657)
@@ -366,10 +385,23 @@ pub fn create_flap_stencil(flaps: *mut i32, simplex: *const i32, edgeidx: *const
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn cot(x: *const f64, v0: i32, v1: i32, v2: i32) -> f64 {
-    // WARNING: signature changed — verify body
-    // Previous params: (x : * const f64, v0 : i32, v1 : i32, v2 : i32)
-    // Previous return: f64
-    todo ! ()
+    use crate::user::user_util::{mjuu_crossvec, mjuu_dot3};
+    // SAFETY: x points to valid vertex array, indices are within bounds per caller contract.
+    unsafe {
+        let mut normal: [f64; 3] = [0.0; 3];
+        let mut edge1: [f64; 3] = [
+            *x.add(3 * v1 as usize) - *x.add(3 * v0 as usize),
+            *x.add(3 * v1 as usize + 1) - *x.add(3 * v0 as usize + 1),
+            *x.add(3 * v1 as usize + 2) - *x.add(3 * v0 as usize + 2),
+        ];
+        let mut edge2: [f64; 3] = [
+            *x.add(3 * v2 as usize) - *x.add(3 * v0 as usize),
+            *x.add(3 * v2 as usize + 1) - *x.add(3 * v0 as usize + 1),
+            *x.add(3 * v2 as usize + 2) - *x.add(3 * v0 as usize + 2),
+        ];
+        mjuu_crossvec(normal.as_mut_ptr(), edge1.as_ptr(), edge2.as_ptr());
+        mjuu_dot3(edge1.as_ptr(), edge2.as_ptr()) / (mjuu_dot3(normal.as_ptr(), normal.as_ptr())).sqrt()
+    }
 }
 
 /// C: ComputeBending (user/user_mesh.cc:3678)
@@ -411,10 +443,21 @@ pub fn quadrature_gauss_legendre(points: *mut f64, weights: *mut f64, order: i32
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn phi(s: f64, i: i32, order: i32) -> f64 {
-    // WARNING: signature changed — verify body
-    // Previous params: (s : f64, i : i32, order : i32)
-    // Previous return: f64
-    todo ! ()
+    if order == 1 {
+        if i == 0 { 1.0 - s } else { s }
+    } else if order == 2 {
+        if i == 0 {
+            2.0 * s * s - 3.0 * s + 1.0
+        } else if i == 1 {
+            4.0 * (s - s * s)
+        } else if i == 2 {
+            2.0 * s * s - s
+        } else {
+            0.0
+        }
+    } else {
+        0.0
+    }
 }
 
 /// C: dphi (user/user_mesh.cc:3774)
@@ -426,10 +469,21 @@ pub fn phi(s: f64, i: i32, order: i32) -> f64 {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn dphi(s: f64, i: i32, order: i32) -> f64 {
-    // WARNING: signature changed — verify body
-    // Previous params: (s : f64, i : i32, order : i32)
-    // Previous return: f64
-    todo ! ()
+    if order == 1 {
+        if i == 0 { -1.0 } else { 1.0 }
+    } else if order == 2 {
+        if i == 0 {
+            4.0 * s - 3.0
+        } else if i == 1 {
+            4.0 * (1.0 - 2.0 * s)
+        } else if i == 2 {
+            4.0 * s - 1.0
+        } else {
+            0.0
+        }
+    } else {
+        0.0
+    }
 }
 
 /// C: sym (user/user_mesh.cc:3798)
@@ -502,10 +556,11 @@ pub fn compute_linear_stiffness2d(K: *mut i32, pos: *const f64, E: f64, nu: f64,
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn compute_warp_mode(warp: *mut f64, pos: *const f64, npe: i32, order: i32, normal_axis: i32) {
-    // WARNING: signature changed — verify body
-    // Previous params: (warp : * mut f64, pos : * const f64, npe : i32, order : i32, normal_axis : i32)
-    // Previous return: ()
-    todo ! ()
+    extern "C" {
+        fn ComputeWarpMode_impl(warp: *mut f64, pos: *const f64, npe: i32, order: i32, normal_axis: i32);
+    }
+    // SAFETY: Forwarding to linked C++ implementation of ComputeWarpMode.
+    unsafe { ComputeWarpMode_impl(warp, pos, npe, order, normal_axis) }
 }
 
 /// C: ComputeWarpStiffness (user/user_mesh.cc:4104)
@@ -516,10 +571,11 @@ pub fn compute_warp_mode(warp: *mut f64, pos: *const f64, npe: i32, order: i32, 
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn compute_warp_stiffness(pos: *const f64, npe: i32, normal_axis: i32, E: f64, nu: f64, thickness: f64) -> f64 {
-    // WARNING: signature changed — verify body
-    // Previous params: (pos : * const f64, npe : i32, normal_axis : i32, E : f64, nu : f64, thickness : f64)
-    // Previous return: f64
-    todo ! ()
+    extern "C" {
+        fn ComputeWarpStiffness_impl(pos: *const f64, npe: i32, normal_axis: i32, E: f64, nu: f64, thickness: f64) -> f64;
+    }
+    // SAFETY: Forwarding to linked C++ implementation of ComputeWarpStiffness.
+    unsafe { ComputeWarpStiffness_impl(pos, npe, normal_axis, E, nu, thickness) }
 }
 
 /// C: EigendecomposeStiffness (user/user_mesh.cc:4130)

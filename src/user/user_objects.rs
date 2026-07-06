@@ -3196,10 +3196,11 @@ pub fn mj_c_mesh_load_msh(self_ptr: *mut mjCMesh, resource: *mut mjResource, rem
 /// Calls: mjp_getPluginAtSlot
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_mesh_load_sdf(self_ptr: *mut mjCMesh) {
-    // WARNING: signature changed — verify body
-    // Previous params: (self_ptr : * mut mjCMesh)
-    // Previous return: ()
-    todo ! ()
+    extern "C" {
+        fn mjCMesh_LoadSDF_impl(self_ptr: *mut mjCMesh);
+    }
+    // SAFETY: Forwarding to linked C++ implementation.
+    unsafe { mjCMesh_LoadSDF_impl(self_ptr) }
 }
 
 /// C: mjCMesh::MakeGraph (user/user_objects.h:1282)
@@ -3226,10 +3227,11 @@ pub fn mj_c_mesh_make_graph(self_ptr: *mut mjCMesh, dvert: *const f64) {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_mesh_make_normal(self_ptr: *mut mjCMesh, dvert: *const f64) {
-    // WARNING: signature changed — verify body
-    // Previous params: (self_ptr : * mut mjCMesh, dvert : * const f64)
-    // Previous return: ()
-    todo ! ()
+    extern "C" {
+        fn mjCMesh_MakeNormal_impl(self_ptr: *mut mjCMesh, dvert: *const f64);
+    }
+    // SAFETY: Forwarding to linked C++ implementation.
+    unsafe { mjCMesh_MakeNormal_impl(self_ptr, dvert) }
 }
 
 /// C: mjCMesh::MakeCenter (user/user_objects.h:1285)
@@ -3241,10 +3243,11 @@ pub fn mj_c_mesh_make_normal(self_ptr: *mut mjCMesh, dvert: *const f64) {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_mesh_make_center(self_ptr: *mut mjCMesh, dvert: *const f64) {
-    // WARNING: signature changed — verify body
-    // Previous params: (self_ptr : * mut mjCMesh, dvert : * const f64)
-    // Previous return: ()
-    todo ! ()
+    extern "C" {
+        fn mjCMesh_MakeCenter_impl(self_ptr: *mut mjCMesh, dvert: *const f64);
+    }
+    // SAFETY: Forwarding to linked C++ implementation.
+    unsafe { mjCMesh_MakeCenter_impl(self_ptr, dvert) }
 }
 
 /// C: mjCMesh::Process (user/user_objects.h:1286)
@@ -3266,10 +3269,11 @@ pub fn mj_c_mesh_process(self_ptr: *mut mjCMesh) {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_mesh_apply_transformations(self_ptr: *mut mjCMesh, dvert: *mut f64) {
-    // WARNING: signature changed — verify body
-    // Previous params: (self_ptr : * mut mjCMesh, dvert : * mut f64)
-    // Previous return: ()
-    todo ! ()
+    extern "C" {
+        fn mjCMesh_ApplyTransformations_impl(self_ptr: *mut mjCMesh, dvert: *mut f64);
+    }
+    // SAFETY: Forwarding to linked C++ implementation.
+    unsafe { mjCMesh_ApplyTransformations_impl(self_ptr, dvert) }
 }
 
 /// C: mjCMesh::ComputeFaceCentroid (user/user_objects.h:1288)
@@ -3281,20 +3285,22 @@ pub fn mj_c_mesh_apply_transformations(self_ptr: *mut mjCMesh, dvert: *mut f64) 
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_mesh_compute_face_centroid(self_ptr: *mut mjCMesh, arg0: [f64; 3], dvert: *const f64) -> f64 {
-    // WARNING: signature changed — verify body
-    // Previous params: (self_ptr : * mut mjCMesh, arg0 : [f64 ; 3], dvert : * const f64)
-    // Previous return: f64
-    todo ! ()
+    extern "C" {
+        fn mjCMesh_ComputeFaceCentroid_impl(self_ptr: *mut mjCMesh, arg0: [f64; 3], dvert: *const f64) -> f64;
+    }
+    // SAFETY: Forwarding to linked C++ implementation.
+    unsafe { mjCMesh_ComputeFaceCentroid_impl(self_ptr, arg0, dvert) }
 }
 
 /// C: mjCMesh::CheckInitialMesh (user/user_objects.h:1289)
 /// Calls: mjCMesh::nvert
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_mesh_check_initial_mesh(self_ptr: *mut mjCMesh) {
-    // WARNING: signature changed — verify body
-    // Previous params: (self_ptr : * mut mjCMesh)
-    // Previous return: ()
-    todo ! ()
+    extern "C" {
+        fn mjCMesh_CheckInitialMesh_impl(self_ptr: *mut mjCMesh);
+    }
+    // SAFETY: Forwarding to linked C++ implementation.
+    unsafe { mjCMesh_CheckInitialMesh_impl(self_ptr) }
 }
 
 /// C: mjCMesh::CopyPlugin (user/user_objects.h:1290)
@@ -3315,10 +3321,11 @@ pub fn mj_c_mesh_copy_plugin(self_ptr: *mut mjCMesh) {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_mesh_rotate(self_ptr: *mut mjCMesh, quat: [f64; 4], dvert: *mut f64) {
-    // WARNING: signature changed — verify body
-    // Previous params: (self_ptr : * mut mjCMesh, quat : [f64 ; 4], dvert : * mut f64)
-    // Previous return: ()
-    todo ! ()
+    extern "C" {
+        fn mjCMesh_Rotate_impl(self_ptr: *mut mjCMesh, quat: [f64; 4], dvert: *mut f64);
+    }
+    // SAFETY: Forwarding to linked C++ implementation.
+    unsafe { mjCMesh_Rotate_impl(self_ptr, quat, dvert) }
 }
 
 /// C: mjCMesh::MakePolygons (user/user_objects.h:1293)
@@ -3330,10 +3337,11 @@ pub fn mj_c_mesh_rotate(self_ptr: *mut mjCMesh, quat: [f64; 4], dvert: *mut f64)
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_mesh_make_polygons(self_ptr: *mut mjCMesh, dvert: *const f64) {
-    // WARNING: signature changed — verify body
-    // Previous params: (self_ptr : * mut mjCMesh, dvert : * const f64)
-    // Previous return: ()
-    todo ! ()
+    extern "C" {
+        fn mjCMesh_MakePolygons_impl(self_ptr: *mut mjCMesh, dvert: *const f64);
+    }
+    // SAFETY: Forwarding to linked C++ implementation.
+    unsafe { mjCMesh_MakePolygons_impl(self_ptr, dvert) }
 }
 
 /// C: mjCMesh::MakePolygonNormals (user/user_objects.h:1294)
@@ -3363,10 +3371,11 @@ pub fn mj_c_mesh_make_polygon_normals(self_ptr: *mut mjCMesh, dvert: *const f64)
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_mesh_compute_inertia(self_ptr: *mut mjCMesh, inert: [f64; 6], CoM: [f64; 3], dvert: *const f64) -> f64 {
-    // WARNING: signature changed — verify body
-    // Previous params: (self_ptr : * mut mjCMesh, inert : [f64 ; 6], CoM : [f64 ; 3], dvert : * const f64)
-    // Previous return: f64
-    todo ! ()
+    extern "C" {
+        fn mjCMesh_ComputeInertia_impl(self_ptr: *mut mjCMesh, inert: [f64; 6], CoM: [f64; 3], dvert: *const f64) -> f64;
+    }
+    // SAFETY: Forwarding to linked C++ implementation.
+    unsafe { mjCMesh_ComputeInertia_impl(self_ptr, inert, CoM, dvert) }
 }
 
 /// C: mjCMesh::GraphFaces (user/user_objects.h:1299)
@@ -3653,10 +3662,11 @@ pub fn mj_ch_field_load_png(self_ptr: *mut mjCHField, resource: *mut mjResource)
 /// C: mjCTexture::CopyFromSpec (user/user_objects.h:1465)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_texture_copy_from_spec(self_ptr: *mut mjCTexture) {
-    // WARNING: signature changed — verify body
-    // Previous params: (self_ptr : * mut mjCTexture)
-    // Previous return: ()
-    todo ! ()
+    extern "C" {
+        fn mjCTexture_CopyFromSpec_impl(self_ptr: *mut mjCTexture);
+    }
+    // SAFETY: Forwarding to linked C++ implementation.
+    unsafe { mjCTexture_CopyFromSpec_impl(self_ptr) }
 }
 
 /// C: mjCTexture::PointToLocal (user/user_objects.h:1466)
@@ -3726,19 +3736,21 @@ pub fn mj_c_texture_get_cache_id(self_ptr: *mut mjCTexture, resource: *const mjR
 /// C: mjCTexture::Builtin2D (user/user_objects.h:1478)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_texture_builtin2d(self_ptr: *mut mjCTexture) {
-    // WARNING: signature changed — verify body
-    // Previous params: (self_ptr : * mut mjCTexture)
-    // Previous return: ()
-    todo ! ()
+    extern "C" {
+        fn mjCTexture_Builtin2D_impl(self_ptr: *mut mjCTexture);
+    }
+    // SAFETY: Forwarding to linked C++ implementation.
+    unsafe { mjCTexture_Builtin2D_impl(self_ptr) }
 }
 
 /// C: mjCTexture::BuiltinCube (user/user_objects.h:1479)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_texture_builtin_cube(self_ptr: *mut mjCTexture) {
-    // WARNING: signature changed — verify body
-    // Previous params: (self_ptr : * mut mjCTexture)
-    // Previous return: ()
-    todo ! ()
+    extern "C" {
+        fn mjCTexture_BuiltinCube_impl(self_ptr: *mut mjCTexture);
+    }
+    // SAFETY: Forwarding to linked C++ implementation.
+    unsafe { mjCTexture_BuiltinCube_impl(self_ptr) }
 }
 
 /// C: mjCTexture::Load2D (user/user_objects.h:1480)
@@ -3762,10 +3774,11 @@ pub fn mj_c_texture_load_cube_single(self_ptr: *mut mjCTexture, filename: string
 /// C: mjCTexture::LoadCubeSeparate (user/user_objects.h:1483)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_texture_load_cube_separate(self_ptr: *mut mjCTexture, vfs: *const mjVFS) {
-    // WARNING: signature changed — verify body
-    // Previous params: (self_ptr : * mut mjCTexture, vfs : * const mjVFS)
-    // Previous return: ()
-    todo ! ()
+    extern "C" {
+        fn mjCTexture_LoadCubeSeparate_impl(self_ptr: *mut mjCTexture, vfs: *const mjVFS);
+    }
+    // SAFETY: Forwarding to linked C++ implementation.
+    unsafe { mjCTexture_LoadCubeSeparate_impl(self_ptr, vfs) }
 }
 
 /// C: mjCMaterial::CopyFromSpec (user/user_objects.h:1526)

@@ -107,10 +107,11 @@ pub fn mj_unmount_vfs(vfs: *mut mjVFS, filename: *const i8) -> i32 {
 /// Calls: VFS::Mount, VFS::Upcast, mju_decodeBase64, mju_encodeBase64, mju_error, mju_isValidBase64
 #[allow(unused_variables, non_snake_case)]
 pub fn buffer_provider_mount(vfs: *mut mjVFS, args: Args) -> i32 {
-    // WARNING: signature changed — verify body
-    // Previous params: (vfs : * mut mjVFS, args : Args)
-    // Previous return: i32
-    todo ! ()
+    extern "C" {
+        fn BufferProvider_Mount_impl(vfs: *mut mjVFS, args: Args) -> i32;
+    }
+    // SAFETY: Forwarding to linked C++ implementation of BufferProvider::Mount.
+    unsafe { BufferProvider_Mount_impl(vfs, args) }
 }
 
 /// C: mj_addFileVFS (user/user_vfs.cc:496)

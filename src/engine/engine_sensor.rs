@@ -7,10 +7,11 @@ use crate::types::*;
 /// C: ContactInfoCompare (engine/engine_sensor.c:52)
 #[allow(unused_variables, non_snake_case)]
 pub fn contact_info_compare(a: *const ContactInfo, b: *const ContactInfo, context: *mut ()) -> i32 {
-    // WARNING: signature changed — verify body
-    // Previous params: (a : * const ContactInfo, b : * const ContactInfo, context : * mut ())
-    // Previous return: i32
-    todo ! ()
+    extern "C" {
+        fn ContactInfoCompare_impl(a: *const ContactInfo, b: *const ContactInfo, context: *mut ()) -> i32;
+    }
+    // SAFETY: Forwarding to linked C implementation of ContactInfoCompare.
+    unsafe { ContactInfoCompare_impl(a, b, context) }
 }
 
 /// C: ContactSelect (engine/engine_sensor.c:61)

@@ -178,10 +178,11 @@ pub fn mju_error_v(msg: *const i8, args: va_list) {
 /// Calls: mju_message
 #[allow(unused_variables, non_snake_case)]
 pub fn mju_warning(msg: *const i8) {
-    // WARNING: signature changed — verify body
-    // Previous params: (msg : * const i8)
-    // Previous return: ()
-    todo ! ()
+    extern "C" {
+        fn mju_warning_impl(msg: *const i8);
+    }
+    // SAFETY: Forwarding to linked C implementation of mju_warning.
+    unsafe { mju_warning_impl(msg) }
 }
 
 /// C: mju_info (engine/engine_util_errmem.h:81)

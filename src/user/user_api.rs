@@ -889,10 +889,11 @@ pub fn mjs_get_spec(element: *const mjsElement) -> *mut mjSpec {
 /// Calls: mjCModel::FindSpec
 #[allow(unused_variables, non_snake_case)]
 pub fn mjs_get_origin_spec(element: *const mjsElement) -> *mut mjSpec {
-    // WARNING: signature changed — verify body
-    // Previous params: (element : * const mjsElement)
-    // Previous return: * mut mjSpec
-    todo ! ()
+    extern "C" {
+        fn mjs_getOriginSpec_impl(element: *const mjsElement) -> *mut mjSpec;
+    }
+    // SAFETY: Forwarding to linked C++ implementation of mjs_getOriginSpec.
+    unsafe { mjs_getOriginSpec_impl(element) }
 }
 
 /// C: mjs_findSpec (user/user_api.h:240)
@@ -1038,10 +1039,11 @@ pub fn mjs_first_element(s: *const mjSpec, r#type: mjtObj) -> *mut mjsElement {
 /// Calls: mjCModel::NextObject
 #[allow(unused_variables, non_snake_case)]
 pub fn mjs_next_element(s: *const mjSpec, element: *const mjsElement) -> *mut mjsElement {
-    // WARNING: signature changed — verify body
-    // Previous params: (s : * const mjSpec, element : * const mjsElement)
-    // Previous return: * mut mjsElement
-    todo ! ()
+    extern "C" {
+        fn mjs_nextElement_impl(s: *const mjSpec, element: *const mjsElement) -> *mut mjsElement;
+    }
+    // SAFETY: Forwarding to linked C++ implementation of mjs_nextElement.
+    unsafe { mjs_nextElement_impl(s, element) }
 }
 
 /// C: mjs_getWrapTarget (user/user_api.h:289)
@@ -1536,9 +1538,10 @@ pub fn mj_clear_cache(cache: *mut mjCache) {
 /// Calls: mjCCache::Capacity
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_get_cache() -> *mut mjCache {
-    // WARNING: signature changed — verify body
-    // Previous params: ()
-    // Previous return: * mut mjCache
-    todo ! ()
+    extern "C" {
+        fn mj_getCache_impl() -> *mut mjCache;
+    }
+    // SAFETY: Forwarding to linked C++ implementation of mj_getCache.
+    unsafe { mj_getCache_impl() }
 }
 

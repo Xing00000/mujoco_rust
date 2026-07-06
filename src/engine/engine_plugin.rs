@@ -31,10 +31,11 @@ pub fn getext(filename: string_view) -> std__string {
 /// Calls: strklen
 #[allow(unused_variables, non_snake_case)]
 pub fn copy_name(s: *const i8) -> i32 {
-    // WARNING: signature changed — verify body
-    // Previous params: (s : * const i8)
-    // Previous return: i32
-    todo ! ()
+    extern "C" {
+        fn CopyName_impl(s: *const i8) -> i32;
+    }
+    // SAFETY: Forwarding to linked C++ implementation of CopyName.
+    unsafe { CopyName_impl(s) }
 }
 
 /// C: IsValidURISchemeFormat (engine/engine_plugin.cc:93)
