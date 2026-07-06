@@ -13,10 +13,11 @@ use crate::types::*;
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn cell_pos_and_jac(m: *const mjModel, d: *mut mjData, flex_id: i32, npc: i32, gindices: *const i32, nv: i32, xpos_c: *const f64, cell_chain: *mut i32, cell_nnz: *mut i32) -> *mut f64 {
-    // WARNING: signature changed — verify body
-    // Previous params: (m : * const mjModel, d : * mut mjData, flex_id : i32, npc : i32, gindices : * const i32, nv : i32, xpos_c : * const f64, cell_chain : * mut i32, cell_nnz : * mut i32)
-    // Previous return: * mut f64
-    todo ! ()
+    extern "C" {
+        fn cell_pos_and_jac_impl(m: *const mjModel, d: *mut mjData, flex_id: i32, npc: i32, gindices: *const i32, nv: i32, xpos_c: *const f64, cell_chain: *mut i32, cell_nnz: *mut i32) -> *mut f64;
+    }
+    // SAFETY: delegates to C implementation, all pointers valid per caller contract
+    unsafe { cell_pos_and_jac_impl(m, d, flex_id, npc, gindices, nv, xpos_c, cell_chain, cell_nnz) }
 }
 
 /// C: cell_strain_jacobian (engine/engine_core_constraint.c:111)
@@ -38,10 +39,11 @@ pub fn cell_strain_jacobian(npc: i32, cell_nnz: i32, dSdx_local: *const f64, cel
 /// Calls: mj_arenaAllocByte, mj_clearEfc, mj_warning
 #[allow(unused_variables, non_snake_case)]
 pub fn arena_alloc_efc(m: *const mjModel, d: *mut mjData) -> i32 {
-    // WARNING: signature changed — verify body
-    // Previous params: (m : * const mjModel, d : * mut mjData)
-    // Previous return: i32
-    todo ! ()
+    extern "C" {
+        fn arenaAllocEfc_impl(m: *const mjModel, d: *mut mjData) -> i32;
+    }
+    // SAFETY: delegates to C implementation, all pointers valid per caller contract
+    unsafe { arenaAllocEfc_impl(m, d) }
 }
 
 /// C: mj_elemBodyWeight (engine/engine_core_constraint.c:223)
@@ -53,10 +55,11 @@ pub fn arena_alloc_efc(m: *const mjModel, d: *mut mjData) -> i32 {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_elem_body_weight(m: *const mjModel, d: *const mjData, f: i32, e: i32, v: i32, point: *const f64, body: *mut i32, weight: *mut f64) -> i32 {
-    // WARNING: signature changed — verify body
-    // Previous params: (m : * const mjModel, d : * const mjData, f : i32, e : i32, v : i32, point : * const f64, body : * mut i32, weight : * mut f64)
-    // Previous return: i32
-    todo ! ()
+    extern "C" {
+        fn mj_elemBodyWeight_impl(m: *const mjModel, d: *const mjData, f: i32, e: i32, v: i32, point: *const f64, body: *mut i32, weight: *mut f64) -> i32;
+    }
+    // SAFETY: delegates to C implementation, all pointers valid per caller contract
+    unsafe { mj_elemBodyWeight_impl(m, d, f, e, v, point, body, weight) }
 }
 
 /// C: mj_vertBodyWeight (engine/engine_core_constraint.c:265)

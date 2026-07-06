@@ -44,10 +44,11 @@ pub fn mju_init_log_topics_from_env() {
 /// Calls: mju_initLogTopicsFromEnv
 #[allow(unused_variables, non_snake_case)]
 pub fn mju_get_log_config_ptr() -> *const mjLogConfig {
-    // WARNING: signature changed — verify body
-    // Previous params: ()
-    // Previous return: * const mjLogConfig
-    todo ! ()
+    extern "C" {
+        fn mju_getLogConfigPtr_impl() -> *const mjLogConfig;
+    }
+    // SAFETY: delegates to C implementation, returns pointer to static data
+    unsafe { mju_getLogConfigPtr_impl() }
 }
 
 /// C: mju_localTimeStr (engine/engine_util_errmem.c:195)

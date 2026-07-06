@@ -60,10 +60,11 @@ pub fn oct_distance(m: *const mjModel, p: *const f64, meshid: i32) -> f64 {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn oct_gradient(m: *const mjModel, grad: *mut f64, point: *const f64, meshid: i32) {
-    // WARNING: signature changed — verify body
-    // Previous params: (m : * const mjModel, grad : * mut f64, point : * const f64, meshid : i32)
-    // Previous return: ()
-    todo ! ()
+    extern "C" {
+        fn oct_gradient_impl(m: *const mjModel, grad: *mut f64, point: *const f64, meshid: i32);
+    }
+    // SAFETY: delegates to C implementation, all pointers valid per caller contract
+    unsafe { oct_gradient_impl(m, grad, point, meshid) }
 }
 
 /// C: radialField3d (engine/engine_collision_sdf.c:205)
@@ -98,10 +99,11 @@ pub fn radial_field3d(field: *mut f64, a: *const f64, x: *const f64, size: *cons
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn geom_distance(m: *const mjModel, d: *const mjData, p: *const mjpPlugin, i: i32, x: *const f64, r#type: mjtGeom) -> f64 {
-    // WARNING: signature changed — verify body
-    // Previous params: (m : * const mjModel, d : * const mjData, p : * const mjpPlugin, i : i32, x : * const f64, r#type : mjtGeom)
-    // Previous return: f64
-    todo ! ()
+    extern "C" {
+        fn geomDistance_impl(m: *const mjModel, d: *const mjData, p: *const mjpPlugin, i: i32, x: *const f64, r#type: mjtGeom) -> f64;
+    }
+    // SAFETY: delegates to C implementation, all pointers valid per caller contract
+    unsafe { geomDistance_impl(m, d, p, i, x, r#type) }
 }
 
 /// C: geomGradient (engine/engine_collision_sdf.c:295)

@@ -26,20 +26,22 @@ pub fn arena_alloc_island(m: *const mjModel, d: *mut mjData) -> i32 {
 /// Calls: mj_isSparse
 #[allow(unused_variables, non_snake_case)]
 pub fn tree_next(m: *const mjModel, d: *const mjData, i: i32, iter: *mut mjTreeIter) -> i32 {
-    // WARNING: signature changed — verify body
-    // Previous params: (m : * const mjModel, d : * const mjData, i : i32, iter : * mut mjTreeIter)
-    // Previous return: i32
-    todo ! ()
+    extern "C" {
+        fn treeNext_impl(m: *const mjModel, d: *const mjData, i: i32, iter: *mut mjTreeIter) -> i32;
+    }
+    // SAFETY: delegates to C implementation, all pointers valid per caller contract
+    unsafe { treeNext_impl(m, d, i, iter) }
 }
 
 /// C: treeIterInit (engine/engine_island.c:212)
 /// Calls: mju_message
 #[allow(unused_variables, non_snake_case)]
 pub fn tree_iter_init(m: *const mjModel, d: *const mjData, i: i32, iter: *mut mjTreeIter) {
-    // WARNING: signature changed — verify body
-    // Previous params: (m : * const mjModel, d : * const mjData, i : i32, iter : * mut mjTreeIter)
-    // Previous return: ()
-    todo ! ()
+    extern "C" {
+        fn treeIterInit_impl(m: *const mjModel, d: *const mjData, i: i32, iter: *mut mjTreeIter);
+    }
+    // SAFETY: delegates to C implementation, all pointers valid per caller contract
+    unsafe { treeIterInit_impl(m, d, i, iter) }
 }
 
 /// C: findEdges (engine/engine_island.c:317)
@@ -56,10 +58,11 @@ pub fn find_edges(m: *const mjModel, d: *const mjData, rownnz: *mut i32, colind:
 /// Calls: mju_copyInt, mju_fillInt
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_flood_fill(island: *mut i32, nr: i32, rownnz: *const i32, rowadr: *const i32, colind: *const i32, stack: *mut i32) -> i32 {
-    // WARNING: signature changed — verify body
-    // Previous params: (island : * mut i32, nr : i32, rownnz : * const i32, rowadr : * const i32, colind : * const i32, stack : * mut i32)
-    // Previous return: i32
-    todo ! ()
+    extern "C" {
+        fn mj_floodFill_impl(island: *mut i32, nr: i32, rownnz: *const i32, rowadr: *const i32, colind: *const i32, stack: *mut i32) -> i32;
+    }
+    // SAFETY: delegates to C implementation, all pointers valid per caller contract
+    unsafe { mj_floodFill_impl(island, nr, rownnz, rowadr, colind, stack) }
 }
 
 /// C: mj_island (engine/engine_island.h:35)

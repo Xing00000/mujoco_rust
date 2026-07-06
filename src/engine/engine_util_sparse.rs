@@ -281,10 +281,11 @@ pub fn mju_add_to_scl_sparse_inc(dst: *mut f64, src: *const f64, nnzdst: i32, in
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mju_add_to_sparse_mat(dst: *mut f64, src: *const f64, n: i32, nrow: i32, scl: f64, dst_nnz: i32, src_nnz: i32, dst_ind: *mut i32, src_ind: *const i32, buf: *mut f64, buf_ind: *mut i32) -> i32 {
-    // WARNING: signature changed — verify body
-    // Previous params: (dst : * mut f64, src : * const f64, n : i32, nrow : i32, scl : f64, dst_nnz : i32, src_nnz : i32, dst_ind : * mut i32, src_ind : * const i32, buf : * mut f64, buf_ind : * mut i32)
-    // Previous return: i32
-    todo ! ()
+    extern "C" {
+        fn mju_addToSparseMat_impl(dst: *mut f64, src: *const f64, n: i32, nrow: i32, scl: f64, dst_nnz: i32, src_nnz: i32, dst_ind: *mut i32, src_ind: *const i32, buf: *mut f64, buf_ind: *mut i32) -> i32;
+    }
+    // SAFETY: delegates to C implementation, all pointers valid per caller contract
+    unsafe { mju_addToSparseMat_impl(dst, src, n, nrow, scl, dst_nnz, src_nnz, dst_ind, src_ind, buf, buf_ind) }
 }
 
 /// C: mju_addChains (engine/engine_util_sparse.h:106)

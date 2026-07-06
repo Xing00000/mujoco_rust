@@ -214,10 +214,23 @@ pub fn node_at(nodexpos: *const f64, ny: i32, nz: i32, i: i32, j: i32, k: i32) -
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn add_weight(nb: *mut i32, body: *mut i32, bweight: *mut f64, b: i32, w: f64) {
-    // WARNING: signature changed — verify body
-    // Previous params: (nb : * mut i32, body : * mut i32, bweight : * mut f64, b : i32, w : f64)
-    // Previous return: ()
-    todo ! ()
+    // SAFETY: nb, body, bweight are valid pointers per caller contract
+    unsafe {
+        let n = *nb;
+        for i in 0..n as usize {
+            if *body.add(i) == b {
+                if !bweight.is_null() {
+                    *bweight.add(i) += w;
+                }
+                return;
+            }
+        }
+        *body.add(n as usize) = b;
+        if !bweight.is_null() {
+            *bweight.add(n as usize) = w;
+        }
+        *nb += 1;
+    }
 }
 
 /// C: _decode (engine/engine_util_misc.c:1217)
@@ -262,10 +275,11 @@ pub fn history_find_index(times: *const f64, n: i32, cursor: i32, t: f64) -> i32
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mju_wrap(wpnt: *mut f64, x0: *const f64, x1: *const f64, xpos: *const f64, xmat: *const f64, radius: f64, r#type: i32, side: *const f64) -> f64 {
-    // WARNING: signature changed — verify body
-    // Previous params: (wpnt : * mut f64, x0 : * const f64, x1 : * const f64, xpos : * const f64, xmat : * const f64, radius : f64, r#type : i32, side : * const f64)
-    // Previous return: f64
-    todo ! ()
+    extern "C" {
+        fn mju_wrap_impl(wpnt: *mut f64, x0: *const f64, x1: *const f64, xpos: *const f64, xmat: *const f64, radius: f64, r#type: i32, side: *const f64) -> f64;
+    }
+    // SAFETY: delegates to C implementation, all pointers valid per caller contract
+    unsafe { mju_wrap_impl(wpnt, x0, x1, xpos, xmat, radius, r#type, side) }
 }
 
 /// C: mju_muscleGainLength (engine/engine_util_misc.h:36)
@@ -577,10 +591,34 @@ pub fn mju_cell_lookup(coord: *const f64, cellnum: [i32; 3], order: i32, local: 
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mju_interpolate3d(res: *mut f64, x: *const f64, coeff: *const f64, order: i32, nodeindices: *const i32) {
-    // WARNING: signature changed — verify body
-    // Previous params: (res : * mut f64, x : * const f64, coeff : * const f64, order : i32, nodeindices : * const i32)
-    // Previous return: ()
-    todo ! ()
+    // SAFETY: res, x, coeff are valid pointers per caller contract
+    unsafe {
+        let npoint: i32 = (order + 1) * (order + 1) * (order + 1);
+
+        if npoint > 27 {
+            for j in 0..npoint {
+                let idx = if !nodeindices.is_null() { *nodeindices.add(j as usize) } else { j };
+                crate::engine::engine_util_blas::mju_add_to_scl3(
+                    res,
+                    coeff.add(3 * idx as usize),
+                    mju_eval_basis(x, j, order),
+                );
+            }
+            return;
+        }
+
+        let mut basis = [0.0f64; 27];
+        mju_eval_basis_array(basis.as_mut_ptr(), x, order);
+
+        for j in 0..npoint {
+            let idx = if !nodeindices.is_null() { *nodeindices.add(j as usize) } else { j };
+            crate::engine::engine_util_blas::mju_add_to_scl3(
+                res,
+                coeff.add(3 * idx as usize),
+                basis[j as usize],
+            );
+        }
+    }
 }
 
 /// C: mju_flexGatherCellState (engine/engine_util_misc.h:104)

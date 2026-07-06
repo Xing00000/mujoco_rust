@@ -22,10 +22,11 @@ pub fn align8(size: usize) -> usize {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn subdistance(lambda: *mut f64, n: i32, simplex: *const Vertex) {
-    // WARNING: signature changed — verify body
-    // Previous params: (lambda : * mut f64, n : i32, simplex : * const Vertex)
-    // Previous return: ()
-    todo ! ()
+    extern "C" {
+        fn subdistance_impl(lambda: *mut f64, n: i32, simplex: *const Vertex);
+    }
+    // SAFETY: delegates to C implementation, all pointers valid per caller contract
+    unsafe { subdistance_impl(lambda, n, simplex) }
 }
 
 /// C: S3D (engine/engine_collision_gjk.c:60)
@@ -293,10 +294,11 @@ pub fn gjk_intersect(status: *mut mjCCDStatus, obj1: *mut mjCCDObj, obj2: *mut m
 /// Calls: add3, attachFace, cross3, epaSupport, insertVertex, mju_mulMatVec3, norm3, polytope3, rayTriangle, replaceSimplex3, rotmat, scl3, sub3
 #[allow(unused_variables, non_snake_case)]
 pub fn polytope2(pt: *mut Polytope, status: *mut mjCCDStatus, obj1: *mut mjCCDObj, obj2: *mut mjCCDObj) -> i32 {
-    // WARNING: signature changed — verify body
-    // Previous params: (pt : * mut Polytope, status : * mut mjCCDStatus, obj1 : * mut mjCCDObj, obj2 : * mut mjCCDObj)
-    // Previous return: i32
-    todo ! ()
+    extern "C" {
+        fn polytope2_impl(pt: *mut Polytope, status: *mut mjCCDStatus, obj1: *mut mjCCDObj, obj2: *mut mjCCDObj) -> i32;
+    }
+    // SAFETY: delegates to C implementation, all pointers valid per caller contract
+    unsafe { polytope2_impl(pt, status, obj1, obj2) }
 }
 
 /// C: polytope3 (engine/engine_collision_gjk.c:123)
@@ -314,10 +316,11 @@ pub fn polytope3(pt: *mut Polytope, status: *mut mjCCDStatus, obj1: *mut mjCCDOb
 /// Calls: add3, attachFace, insertVertex, polytope3, replaceSimplex3, scl3, testTetra
 #[allow(unused_variables, non_snake_case)]
 pub fn polytope4(pt: *mut Polytope, status: *mut mjCCDStatus, obj1: *mut mjCCDObj, obj2: *mut mjCCDObj) -> i32 {
-    // WARNING: signature changed — verify body
-    // Previous params: (pt : * mut Polytope, status : * mut mjCCDStatus, obj1 : * mut mjCCDObj, obj2 : * mut mjCCDObj)
-    // Previous return: i32
-    todo ! ()
+    extern "C" {
+        fn polytope4_impl(pt: *mut Polytope, status: *mut mjCCDStatus, obj1: *mut mjCCDObj, obj2: *mut mjCCDObj) -> i32;
+    }
+    // SAFETY: delegates to C implementation, all pointers valid per caller contract
+    unsafe { polytope4_impl(pt, status, obj1, obj2) }
 }
 
 /// C: epa (engine/engine_collision_gjk.c:128)
@@ -1422,10 +1425,11 @@ pub fn plane_intersect(res: *mut f64, pn: *const f64, pd: f64, a: *const f64, b:
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn polygon_clip(status: *mut mjCCDStatus, face1: *const f64, nface1: i32, face2: *const f64, nface2: i32, n: *const f64, dir: *const f64) {
-    // WARNING: signature changed — verify body
-    // Previous params: (status : * mut mjCCDStatus, face1 : * const f64, nface1 : i32, face2 : * const f64, nface2 : i32, n : * const f64, dir : * const f64)
-    // Previous return: ()
-    todo ! ()
+    extern "C" {
+        fn polygonClip_impl(status: *mut mjCCDStatus, face1: *const f64, nface1: i32, face2: *const f64, nface2: i32, n: *const f64, dir: *const f64);
+    }
+    // SAFETY: delegates to C implementation, all pointers valid per caller contract
+    unsafe { polygonClip_impl(status, face1, nface1, face2, nface2, n, dir) }
 }
 
 /// C: globalcoord (engine/engine_collision_gjk.c:1744)

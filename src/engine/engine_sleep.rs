@@ -35,10 +35,11 @@ pub fn is_smaller(vec: *const f64, weight: *const f64, n: i32, tol: f64) -> i32 
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn tree_can_sleep(m: *const mjModel, d: *const mjData, i: i32, tol: f64) -> i32 {
-    // WARNING: signature changed — verify body
-    // Previous params: (m : * const mjModel, d : * const mjData, i : i32, tol : f64)
-    // Previous return: i32
-    todo ! ()
+    extern "C" {
+        fn treeCanSleep_impl(m: *const mjModel, d: *const mjData, i: i32, tol: f64) -> i32;
+    }
+    // SAFETY: delegates to C implementation, all pointers valid per caller contract
+    unsafe { treeCanSleep_impl(m, d, i, tol) }
 }
 
 /// C: plural (engine/engine_sleep.c:189)
@@ -113,10 +114,11 @@ pub fn mj_update_sleep_init(m: *const mjModel, d: *mut mjData, flg_staticawake: 
 /// Calls: mj_updateSleepInit
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_update_sleep(m: *const mjModel, d: *mut mjData) {
-    // WARNING: signature changed — verify body
-    // Previous params: (m : * const mjModel, d : * mut mjData)
-    // Previous return: ()
-    todo ! ()
+    extern "C" {
+        fn mj_updateSleep_impl(m: *const mjModel, d: *mut mjData);
+    }
+    // SAFETY: delegates to C implementation, all pointers valid per caller contract
+    unsafe { mj_updateSleep_impl(m, d) }
 }
 
 /// C: mj_sleepCycle (engine/engine_sleep.h:34)

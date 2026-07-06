@@ -7,10 +7,15 @@ use crate::types::*;
 /// C: mj_isPyramidal (engine/engine_core_util.h:31)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_is_pyramidal(m: *const mjModel) -> i32 {
-    // WARNING: signature changed — verify body
-    // Previous params: (m : * const mjModel)
-    // Previous return: i32
-    todo ! ()
+    // SAFETY: m is a valid pointer to mjModel per caller contract
+    // mjCONE_PYRAMIDAL == 0
+    unsafe {
+        if (*m).opt.cone == 0 {
+            1
+        } else {
+            0
+        }
+    }
 }
 
 /// C: mj_isSparse (engine/engine_core_util.h:34)
@@ -25,19 +30,21 @@ pub fn mj_is_sparse(m: *const mjModel) -> i32 {
 /// C: mj_mergeChain (engine/engine_core_util.h:40)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_merge_chain(m: *const mjModel, chain: *mut i32, b1: i32, b2: i32, flg_skipcommon: i32) -> i32 {
-    // WARNING: signature changed — verify body
-    // Previous params: (m : * const mjModel, chain : * mut i32, b1 : i32, b2 : i32, flg_skipcommon : i32)
-    // Previous return: i32
-    todo ! ()
+    extern "C" {
+        fn mj_mergeChain_impl(m: *const mjModel, chain: *mut i32, b1: i32, b2: i32, flg_skipcommon: i32) -> i32;
+    }
+    // SAFETY: delegates to C implementation, all pointers valid per caller contract
+    unsafe { mj_mergeChain_impl(m, chain, b1, b2, flg_skipcommon) }
 }
 
 /// C: mj_mergeChainSimple (engine/engine_core_util.h:43)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_merge_chain_simple(m: *const mjModel, chain: *mut i32, b1: i32, b2: i32) -> i32 {
-    // WARNING: signature changed — verify body
-    // Previous params: (m : * const mjModel, chain : * mut i32, b1 : i32, b2 : i32)
-    // Previous return: i32
-    todo ! ()
+    extern "C" {
+        fn mj_mergeChainSimple_impl(m: *const mjModel, chain: *mut i32, b1: i32, b2: i32) -> i32;
+    }
+    // SAFETY: delegates to C implementation, all pointers valid per caller contract
+    unsafe { mj_mergeChainSimple_impl(m, chain, b1, b2) }
 }
 
 /// C: mj_bodyChain (engine/engine_core_util.h:46)
@@ -178,10 +185,11 @@ pub fn mj_jac_sparse(m: *const mjModel, d: *const mjData, jacp: *mut f64, jacr: 
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_jac_sparse_simple(m: *const mjModel, d: *const mjData, jacdifp: *mut f64, jacdifr: *mut f64, point: *const f64, body: i32, flg_second: i32, NV: i32, start: i32) {
-    // WARNING: signature changed — verify body
-    // Previous params: (m : * const mjModel, d : * const mjData, jacdifp : * mut f64, jacdifr : * mut f64, point : * const f64, body : i32, flg_second : i32, NV : i32, start : i32)
-    // Previous return: ()
-    todo ! ()
+    extern "C" {
+        fn mj_jacSparseSimple_impl(m: *const mjModel, d: *const mjData, jacdifp: *mut f64, jacdifr: *mut f64, point: *const f64, body: i32, flg_second: i32, NV: i32, start: i32);
+    }
+    // SAFETY: delegates to C implementation, all pointers valid per caller contract
+    unsafe { mj_jacSparseSimple_impl(m, d, jacdifp, jacdifr, point, body, flg_second, NV, start) }
 }
 
 /// C: mj_jacDotSparse (engine/engine_core_util.h:90)

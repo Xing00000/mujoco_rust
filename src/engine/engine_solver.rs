@@ -970,20 +970,16 @@ pub fn mj_sol_no_slip(m: *const mjModel, d: *mut mjData, maxiter: i32) {
 /// Calls: mj_solPrimal
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_sol_cg(m: *const mjModel, d: *mut mjData, maxiter: i32) {
-    // WARNING: signature changed — verify body
-    // Previous params: (m : * const mjModel, d : * mut mjData, maxiter : i32)
-    // Previous return: ()
-    todo ! ()
+    // SAFETY: delegates to mj_sol_primal in same module
+    mj_sol_primal(m, d, -1, maxiter, 0);
 }
 
 /// C: mj_solNewton (engine/engine_solver.h:33)
 /// Calls: mj_solPrimal
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_sol_newton(m: *const mjModel, d: *mut mjData, maxiter: i32) {
-    // WARNING: signature changed — verify body
-    // Previous params: (m : * const mjModel, d : * mut mjData, maxiter : i32)
-    // Previous return: ()
-    todo ! ()
+    // SAFETY: delegates to mj_sol_primal in same module
+    mj_sol_primal(m, d, -1, maxiter, 1);
 }
 
 /// C: mj_solPGS_island (engine/engine_solver.h:39)

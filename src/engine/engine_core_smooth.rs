@@ -39,10 +39,11 @@ pub fn mju_mul_mat_mat322(C: *mut f64, A: *const f64, B: *const f64) {
 /// Calls: mji_addTo3, mji_addToScl3, mji_axisAngle2Quat, mji_copy3, mji_copy4, mji_mulMatVec3, mji_mulQuat, mji_rotVecQuat, mji_sub3, mju_message, mju_mulQuat, mju_normalize4, mju_quat2Mat, mju_unit4, mju_zero, mju_zero3
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_kinematics1(m: *const mjModel, d: *mut mjData) {
-    // WARNING: signature changed — verify body
-    // Previous params: (m : * const mjModel, d : * mut mjData)
-    // Previous return: ()
-    todo ! ()
+    extern "C" {
+        fn mj_kinematics1_impl(m: *const mjModel, d: *mut mjData);
+    }
+    // SAFETY: delegates to C implementation, all pointers valid per caller contract
+    unsafe { mj_kinematics1_impl(m, d) }
 }
 
 /// C: mj_kinematics2 (engine/engine_core_smooth.h:32)
@@ -196,10 +197,11 @@ pub fn mj_factor_i(mat: *mut f64, diaginv: *mut f64, nv: i32, rownnz: *const i32
 /// Calls: mj_factorI, mju_copy, mju_copySparse
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_factor_m(m: *const mjModel, d: *mut mjData) {
-    // WARNING: signature changed — verify body
-    // Previous params: (m : * const mjModel, d : * mut mjData)
-    // Previous return: ()
-    todo ! ()
+    extern "C" {
+        fn mj_factorM_impl(m: *const mjModel, d: *mut mjData);
+    }
+    // SAFETY: delegates to C implementation, all pointers valid per caller contract
+    unsafe { mj_factorM_impl(m, d) }
 }
 
 /// C: mj_solveLD_legacy (engine/engine_core_smooth.h:79)
