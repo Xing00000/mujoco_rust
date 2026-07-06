@@ -183,10 +183,24 @@ pub fn dual_state_change(d: *const mjData, state: *mut i32, oldstate: *mut i32, 
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn project_ellipsoid(friction: *mut f64, normal: f64, mu: *const f64, dim: i32, feasible: i32) {
-    // WARNING: signature changed — verify body
-    // Previous params: (friction : * mut f64, normal : f64, mu : * const f64, dim : i32, feasible : i32)
-    // Previous return: ()
-    extern "C" { fn projectEllipsoid_impl (friction : * mut f64 , normal : f64 , mu : * const f64 , dim : i32 , feasible : i32) ; } unsafe { projectEllipsoid_impl (friction , normal , mu , dim , feasible) }
+    const MJ_MINVAL: f64 = 1e-15;
+
+    // SAFETY: friction[0..dim-1] and mu[0..dim-1] are valid arrays per caller contract.
+    unsafe {
+        let mut s: f64 = 0.0;
+        for j in 0..(dim - 1) as usize {
+            s += *friction.add(j) * *friction.add(j) / (*mu.add(j) * *mu.add(j));
+        }
+
+        let normal2: f64 = normal * normal;
+
+        if feasible == 0 || s > normal2 {
+            let scl: f64 = (normal2 / crate::engine::engine_util_misc::mju_max(MJ_MINVAL, s)).sqrt();
+            for j in 0..(dim - 1) as usize {
+                *friction.add(j) *= scl;
+            }
+        }
+    }
 }
 
 /// C: solveQCQP (engine/engine_solver.c:401)
@@ -326,10 +340,34 @@ pub fn friction_cost_dif(start: f64, x: f64, f: f64, Rf: f64, D: f64) -> f64 {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn elliptic_cost(quad: *const f64, alpha: f64, mu: f64, Dm: f64) -> f64 {
-    // WARNING: signature changed — verify body
-    // Previous params: (quad : * const f64, alpha : f64, mu : f64, Dm : f64)
-    // Previous return: f64
-    extern "C" { fn ellipticCost_impl (quad : * const f64 , alpha : f64 , mu : f64 , Dm : f64) -> f64 ; } unsafe { ellipticCost_impl (quad , alpha , mu , Dm) }
+    // SAFETY: quad[0..7] is a valid array per caller contract.
+    unsafe {
+        let U0: f64 = *quad.add(3);
+        let V0: f64 = *quad.add(4);
+        let UU: f64 = *quad.add(5);
+        let UV: f64 = *quad.add(6);
+        let VV: f64 = *quad.add(7);
+
+        let N: f64 = U0 + alpha * V0;
+        let Tsqr: f64 = UU + alpha * (2.0 * UV + alpha * VV);
+
+        if Tsqr <= 0.0 {
+            if N < 0.0 {
+                return alpha * alpha * *quad.add(2) + alpha * *quad.add(1) + *quad.add(0);
+            }
+        } else {
+            let T: f64 = Tsqr.sqrt();
+            if N >= mu * T {
+                // nothing
+            } else if mu * N + T <= 0.0 {
+                return alpha * alpha * *quad.add(2) + alpha * *quad.add(1) + *quad.add(0);
+            } else {
+                return 0.5 * Dm * (N - mu * T) * (N - mu * T);
+            }
+        }
+
+        0.0
+    }
 }
 
 /// C: ellipticCostDif (engine/engine_solver.c:1569)
@@ -341,10 +379,63 @@ pub fn elliptic_cost(quad: *const f64, alpha: f64, mu: f64, Dm: f64) -> f64 {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn elliptic_cost_dif(quad: *const f64, alpha: f64, mu: f64, Dm: f64) -> f64 {
-    // WARNING: signature changed — verify body
-    // Previous params: (quad : * const f64, alpha : f64, mu : f64, Dm : f64)
-    // Previous return: f64
-    extern "C" { fn ellipticCostDif_impl (quad : * const f64 , alpha : f64 , mu : f64 , Dm : f64) -> f64 ; } unsafe { ellipticCostDif_impl (quad , alpha , mu , Dm) }
+    // SAFETY: quad[0..7] is a valid array per caller contract.
+    unsafe {
+        let U0: f64 = *quad.add(3);
+        let V0: f64 = *quad.add(4);
+        let UU: f64 = *quad.add(5);
+        let UV: f64 = *quad.add(6);
+        let VV: f64 = *quad.add(7);
+
+        // Determine zone0
+        let zone0: i32;
+        let mut T0: f64 = 0.0;
+        if UU <= 0.0 {
+            zone0 = if U0 < 0.0 { 2 } else { 1 };
+        } else {
+            T0 = UU.sqrt();
+            if U0 >= mu * T0 {
+                zone0 = 1;
+            } else if mu * U0 + T0 <= 0.0 {
+                zone0 = 2;
+            } else {
+                zone0 = 3;
+            }
+        }
+
+        // Determine zone_alpha
+        let N: f64 = U0 + alpha * V0;
+        let Tsqr: f64 = UU + alpha * (2.0 * UV + alpha * VV);
+        let zone_alpha: i32;
+        let mut T: f64 = 0.0;
+        if Tsqr <= 0.0 {
+            zone_alpha = if N < 0.0 { 2 } else { 1 };
+        } else {
+            T = Tsqr.sqrt();
+            if N >= mu * T {
+                zone_alpha = 1;
+            } else if mu * N + T <= 0.0 {
+                zone_alpha = 2;
+            } else {
+                zone_alpha = 3;
+            }
+        }
+
+        // Compute result based on zone combinations
+        if zone0 == 1 && zone_alpha == 1 {
+            return 0.0;
+        }
+        if zone0 == 2 && zone_alpha == 2 {
+            return alpha * alpha * *quad.add(2) + alpha * *quad.add(1);
+        }
+        if zone0 == 3 && zone_alpha == 3 {
+            let diff_alpha: f64 = N - mu * T;
+            let diff0: f64 = U0 - mu * T0;
+            return 0.5 * Dm * (diff_alpha - diff0) * (diff_alpha + diff0);
+        }
+
+        elliptic_cost(quad, alpha, mu, Dm) - elliptic_cost(quad, 0.0, mu, Dm)
+    }
 }
 
 /// C: PrimalEval (engine/engine_solver.c:1631)
