@@ -26,10 +26,12 @@ pub fn mju_aligned_malloc(size: usize, align: usize) -> *mut () {
 /// C: mju_alignedFree (engine/engine_util_errmem.c:53)
 #[allow(unused_variables, non_snake_case)]
 pub fn mju_aligned_free(ptr: *mut ()) {
-    // WARNING: signature changed — verify body
-    // Previous params: (ptr : * mut ())
-    // Previous return: ()
-    todo ! ()
+    extern "C" {
+        fn free(ptr: *mut ());
+    }
+    unsafe {
+        free(ptr);
+    }
 }
 
 /// C: mju_initLogTopicsFromEnv (engine/engine_util_errmem.c:111)
@@ -138,10 +140,12 @@ pub fn mju_clear_handlers() {
 /// Calls: mju_error_v
 #[allow(unused_variables, non_snake_case)]
 pub fn mju_error(msg: *const i8) {
-    // WARNING: signature changed — verify body
-    // Previous params: (msg : * const i8)
-    // Previous return: ()
-    todo ! ()
+    // In C, mju_error is variadic: mju_error(msg, ...) { va_start(args, msg); mju_error_v(msg, args); }
+    // The Rust signature has no varargs, so we pass msg with a dummy (zero-sized) va_list.
+    unsafe {
+        let args: va_list = core::mem::transmute::<[u8; 0], va_list>([]);
+        mju_error_v(msg, args);
+    }
 }
 
 /// C: mju_error_v (engine/engine_util_errmem.h:75)
@@ -222,9 +226,26 @@ pub fn mju_is_topic_enabled(topic: i32) -> mjtBool {
 /// C: BaseName (engine/engine_util_errmem.h:102)
 #[allow(unused_variables, non_snake_case)]
 pub fn base_name(path: *const i8) -> *const i8 {
-    // WARNING: signature changed — verify body
-    // Previous params: (path : * const i8)
-    // Previous return: * const i8
-    todo ! ()
+    extern "C" {
+        fn strrchr(s: *const i8, c: i32) -> *const i8;
+    }
+    unsafe {
+        let slash: *const i8 = strrchr(path, b'/' as i32);
+        let bslash: *const i8 = strrchr(path, b'\\' as i32);
+        if !slash.is_null() && !bslash.is_null() {
+            if slash > bslash {
+                return slash.add(1);
+            } else {
+                return bslash.add(1);
+            }
+        }
+        if !slash.is_null() {
+            return slash.add(1);
+        }
+        if !bslash.is_null() {
+            return bslash.add(1);
+        }
+        return path;
+    }
 }
 

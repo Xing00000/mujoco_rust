@@ -496,29 +496,116 @@ pub fn mju_shell_tfi_weights(nx: i32, ny: i32, nz: i32, i: i32, j: i32, k: i32, 
 /// C: mju_encodeBase64 (engine/engine_util_misc.h:163)
 #[allow(unused_variables, non_snake_case)]
 pub fn mju_encode_base64(buf: *mut i8, data: *const u8, ndata: usize) -> usize {
-    // WARNING: signature changed — verify body
-    // Previous params: (buf : * mut i8, data : * const u8, ndata : usize)
-    // Previous return: usize
-    todo ! ()
+    unsafe {
+        const TABLE: &[u8; 64] = b"ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
+        let mut i: usize = 0;
+        let mut j: usize = 0;
+
+        // loop over 24 bit chunks
+        while i + 3 <= ndata {
+            let byte_1: u32 = *data.add(i) as u32; i += 1;
+            let byte_2: u32 = *data.add(i) as u32; i += 1;
+            let byte_3: u32 = *data.add(i) as u32; i += 1;
+
+            let k: u32 = (byte_1 << 16) | (byte_2 << 8) | byte_3;
+
+            *buf.add(j) = TABLE[((k >> 18) & 63) as usize] as i8; j += 1;
+            *buf.add(j) = TABLE[((k >> 12) & 63) as usize] as i8; j += 1;
+            *buf.add(j) = TABLE[((k >> 6) & 63) as usize] as i8; j += 1;
+            *buf.add(j) = TABLE[((k >> 0) & 63) as usize] as i8; j += 1;
+        }
+
+        // one byte left
+        if i + 1 == ndata {
+            let byte_1: u32 = *data.add(i) as u32;
+            let k: u32 = byte_1 << 16;
+            *buf.add(j) = TABLE[((k >> 18) & 63) as usize] as i8; j += 1;
+            *buf.add(j) = TABLE[((k >> 12) & 63) as usize] as i8; j += 1;
+            *buf.add(j) = b'=' as i8; j += 1;
+            *buf.add(j) = b'=' as i8; j += 1;
+        }
+
+        // two bytes left
+        if i + 2 == ndata {
+            let byte_1: u32 = *data.add(i) as u32; i += 1;
+            let byte_2: u32 = *data.add(i) as u32;
+
+            let k: u32 = (byte_1 << 16) + (byte_2 << 8);
+
+            *buf.add(j) = TABLE[((k >> 18) & 63) as usize] as i8; j += 1;
+            *buf.add(j) = TABLE[((k >> 12) & 63) as usize] as i8; j += 1;
+            *buf.add(j) = TABLE[((k >> 6) & 63) as usize] as i8; j += 1;
+            *buf.add(j) = b'=' as i8; j += 1;
+        }
+
+        *buf.add(j) = 0;
+        4 * ((ndata + 2) / 3) + 1
+    }
 }
 
 /// C: mju_isValidBase64 (engine/engine_util_misc.h:167)
 #[allow(unused_variables, non_snake_case)]
 pub fn mju_is_valid_base64(s: *const i8) -> usize {
-    // WARNING: signature changed — verify body
-    // Previous params: (s : * const i8)
-    // Previous return: usize
-    todo ! ()
+    unsafe {
+        let mut i: usize = 0;
+        let mut pad: i32 = 0;
+
+        // validate chars
+        while *s.add(i) != 0 && *s.add(i) != b'=' as i8 {
+            let c = *s.add(i) as u8;
+            let is_alnum = (c >= b'A' && c <= b'Z') || (c >= b'a' && c <= b'z') || (c >= b'0' && c <= b'9');
+            if !is_alnum && c != b'/' && c != b'+' {
+                return 0;
+            }
+            i += 1;
+        }
+
+        // padding at end
+        if *s.add(i) == b'=' as i8 {
+            if *s.add(i + 1) == 0 {
+                pad = 1;
+            } else if *s.add(i + 1) == b'=' as i8 && *s.add(i + 2) == 0 {
+                pad = 2;
+            } else {
+                return 0;
+            }
+        }
+
+        // strlen(s) must be a multiple of 4
+        let len: i32 = i as i32 + pad;
+        if len % 4 != 0 { 0 } else { (3 * (len / 4) - pad) as usize }
+    }
 }
 
 /// C: mju_decodeBase64 (engine/engine_util_misc.h:171)
 /// Calls: _decode
 #[allow(unused_variables, non_snake_case)]
 pub fn mju_decode_base64(buf: *mut u8, s: *const i8) -> usize {
-    // WARNING: signature changed — verify body
-    // Previous params: (buf : * mut u8, s : * const i8)
-    // Previous return: usize
-    todo ! ()
+    unsafe {
+        let mut i: usize = 0;
+        let mut j: usize = 0;
+
+        // loop over 24 bit chunks
+        while *s.add(i) != 0 {
+            let char_1: u32 = decode(*s.add(i)); i += 1;
+            let char_2: u32 = decode(*s.add(i)); i += 1;
+            let char_3: u32 = decode(*s.add(i)); i += 1;
+            let char_4: u32 = decode(*s.add(i)); i += 1;
+
+            // merge into 32 bit int
+            let k: u32 = (char_1 << 18) | (char_2 << 12) | (char_3 << 6) | char_4;
+
+            // write up to three bytes (exclude padding at end)
+            *buf.add(j) = ((k >> 16) & 0xFF) as u8; j += 1;
+            if *s.add(i - 2) != b'=' as i8 {
+                *buf.add(j) = ((k >> 8) & 0xFF) as u8; j += 1;
+            }
+            if *s.add(i - 1) != b'=' as i8 {
+                *buf.add(j) = (k & 0xFF) as u8; j += 1;
+            }
+        }
+        j
+    }
 }
 
 /// C: mju_historyInit (engine/engine_util_misc.h:184)

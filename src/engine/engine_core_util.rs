@@ -16,10 +16,52 @@ pub fn mj_is_pyramidal(m: *const mjModel) -> i32 {
 /// C: mj_isSparse (engine/engine_core_util.h:34)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_is_sparse(m: *const mjModel) -> i32 {
-    // WARNING: signature changed — verify body
-    // Previous params: (m : * const mjModel)
-    // Previous return: i32
-    todo ! ()
+    // mjJAC_SPARSE = 1, mjJAC_AUTO = 2
+    const MJ_JAC_SPARSE: i32 = 1;
+    const MJ_JAC_AUTO: i32 = 2;
+
+    // Local repr(C) structs matching C layout for field access
+    #[repr(C)]
+    struct MjOptionPartial {
+        timestep: f64,
+        impratio: f64,
+        tolerance: f64,
+        ls_tolerance: f64,
+        noslip_tolerance: f64,
+        ccd_tolerance: f64,
+        sleep_tolerance: f64,
+        gravity: [f64; 3],
+        wind: [f64; 3],
+        magnetic: [f64; 3],
+        density: f64,
+        viscosity: f64,
+        o_margin: f64,
+        o_solref: [f64; 2],
+        o_solimp: [f64; 5],
+        o_friction: [f64; 5],
+        integrator: i32,
+        cone: i32,
+        jacobian: i32,
+    }
+
+    #[repr(C)]
+    struct MjModelPartial {
+        nq: i64,
+        nv: i64,
+        _sizes: [i64; 90],  // remaining mjtSize fields (nu through nbuffer)
+        opt: MjOptionPartial,
+    }
+
+    unsafe {
+        let mp = m as *const MjModelPartial;
+        let jacobian = (*mp).opt.jacobian;
+        let nv = (*mp).nv;
+        if jacobian == MJ_JAC_SPARSE || (jacobian == MJ_JAC_AUTO && nv >= 60) {
+            return 1;
+        } else {
+            return 0;
+        }
+    }
 }
 
 /// C: mj_mergeChain (engine/engine_core_util.h:40)
