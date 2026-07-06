@@ -371,10 +371,29 @@ pub fn mjuu_mulvecmat_t(res: *mut f64, vec: *const f64, mat: *const f64) {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjuu_mul_rmrt(res: *mut f64, R: *const f64, M: *const f64) {
-    // WARNING: signature changed — verify body
-    // Previous params: (res : * mut f64, R : * const f64, M : * const f64)
-    // Previous return: ()
-    todo ! ()
+    unsafe {
+        let mut tmp: [f64; 9] = [0.0; 9];
+        // tmp = R*M
+        tmp[0] = *R.add(0) * *M.add(0) + *R.add(1) * *M.add(3) + *R.add(2) * *M.add(6);
+        tmp[1] = *R.add(0) * *M.add(1) + *R.add(1) * *M.add(4) + *R.add(2) * *M.add(7);
+        tmp[2] = *R.add(0) * *M.add(2) + *R.add(1) * *M.add(5) + *R.add(2) * *M.add(8);
+        tmp[3] = *R.add(3) * *M.add(0) + *R.add(4) * *M.add(3) + *R.add(5) * *M.add(6);
+        tmp[4] = *R.add(3) * *M.add(1) + *R.add(4) * *M.add(4) + *R.add(5) * *M.add(7);
+        tmp[5] = *R.add(3) * *M.add(2) + *R.add(4) * *M.add(5) + *R.add(5) * *M.add(8);
+        tmp[6] = *R.add(6) * *M.add(0) + *R.add(7) * *M.add(3) + *R.add(8) * *M.add(6);
+        tmp[7] = *R.add(6) * *M.add(1) + *R.add(7) * *M.add(4) + *R.add(8) * *M.add(7);
+        tmp[8] = *R.add(6) * *M.add(2) + *R.add(7) * *M.add(5) + *R.add(8) * *M.add(8);
+        // res = tmp*R'
+        *res.add(0) = tmp[0] * *R.add(0) + tmp[1] * *R.add(1) + tmp[2] * *R.add(2);
+        *res.add(1) = tmp[0] * *R.add(3) + tmp[1] * *R.add(4) + tmp[2] * *R.add(5);
+        *res.add(2) = tmp[0] * *R.add(6) + tmp[1] * *R.add(7) + tmp[2] * *R.add(8);
+        *res.add(3) = tmp[3] * *R.add(0) + tmp[4] * *R.add(1) + tmp[5] * *R.add(2);
+        *res.add(4) = tmp[3] * *R.add(3) + tmp[4] * *R.add(4) + tmp[5] * *R.add(5);
+        *res.add(5) = tmp[3] * *R.add(6) + tmp[4] * *R.add(7) + tmp[5] * *R.add(8);
+        *res.add(6) = tmp[6] * *R.add(0) + tmp[7] * *R.add(1) + tmp[8] * *R.add(2);
+        *res.add(7) = tmp[6] * *R.add(3) + tmp[7] * *R.add(4) + tmp[8] * *R.add(5);
+        *res.add(8) = tmp[6] * *R.add(6) + tmp[7] * *R.add(7) + tmp[8] * *R.add(8);
+    }
 }
 
 /// C: mjuu_mulmat (user/user_util.h:100)
@@ -385,10 +404,19 @@ pub fn mjuu_mul_rmrt(res: *mut f64, R: *const f64, M: *const f64) {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjuu_mulmat(res: *mut f64, A: *const f64, B: *const f64) {
-    // WARNING: signature changed — verify body
-    // Previous params: (res : * mut f64, A : * const f64, B : * const f64)
-    // Previous return: ()
-    todo ! ()
+    unsafe {
+        let mut tmp: [f64; 9] = [0.0; 9];
+        tmp[0] = *A.add(0) * *B.add(0) + *A.add(1) * *B.add(3) + *A.add(2) * *B.add(6);
+        tmp[1] = *A.add(0) * *B.add(1) + *A.add(1) * *B.add(4) + *A.add(2) * *B.add(7);
+        tmp[2] = *A.add(0) * *B.add(2) + *A.add(1) * *B.add(5) + *A.add(2) * *B.add(8);
+        tmp[3] = *A.add(3) * *B.add(0) + *A.add(4) * *B.add(3) + *A.add(5) * *B.add(6);
+        tmp[4] = *A.add(3) * *B.add(1) + *A.add(4) * *B.add(4) + *A.add(5) * *B.add(7);
+        tmp[5] = *A.add(3) * *B.add(2) + *A.add(4) * *B.add(5) + *A.add(5) * *B.add(8);
+        tmp[6] = *A.add(6) * *B.add(0) + *A.add(7) * *B.add(3) + *A.add(8) * *B.add(6);
+        tmp[7] = *A.add(6) * *B.add(1) + *A.add(7) * *B.add(4) + *A.add(8) * *B.add(7);
+        tmp[8] = *A.add(6) * *B.add(2) + *A.add(7) * *B.add(5) + *A.add(8) * *B.add(8);
+        for i in 0..9usize { *res.add(i) = tmp[i]; }
+    }
 }
 
 /// C: mjuu_transposemat (user/user_util.h:103)
@@ -418,10 +446,12 @@ pub fn mjuu_transposemat(res: *mut f64, mat: *const f64) {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjuu_localaxis(al: *mut f64, ag: *const f64, quat: *const f64) {
-    // WARNING: signature changed — verify body
-    // Previous params: (al : * mut f64, ag : * const f64, quat : * const f64)
-    // Previous return: ()
-    todo ! ()
+    unsafe {
+        let mut mat: [f64; 9] = [0.0; 9];
+        let qneg: [f64; 4] = [*quat.add(0), -*quat.add(1), -*quat.add(2), -*quat.add(3)];
+        mjuu_quat2mat(mat.as_mut_ptr(), qneg.as_ptr());
+        mjuu_mulvecmat(al, ag, mat.as_ptr());
+    }
 }
 
 /// C: mjuu_localpos (user/user_util.h:109)
