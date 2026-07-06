@@ -207,10 +207,11 @@ pub fn step_gradient(x: *mut f64, m: *const mjModel, s: *const mjSDF, d: *const 
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn triangle_intersect(triangle: *const f64, m: *const mjModel, sdf: *const mjSDF, d: *const mjData) -> i32 {
-    // WARNING: signature changed — verify body
-    // Previous params: (triangle : * const f64, m : * const mjModel, sdf : * const mjSDF, d : * const mjData)
-    // Previous return: i32
-    todo ! ()
+    extern "C" {
+        fn triangleIntersect_impl(triangle: *const f64, m: *const mjModel, sdf: *const mjSDF, d: *const mjData) -> i32;
+    }
+    // SAFETY: delegates to C implementation, all pointers valid per caller contract
+    unsafe { triangleIntersect_impl(triangle, m, sdf, d) }
 }
 
 /// C: boxIntersect (engine/engine_collision_sdf.c:737)
@@ -222,10 +223,11 @@ pub fn triangle_intersect(triangle: *const f64, m: *const mjModel, sdf: *const m
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn box_intersect(bvh: *const f64, offset: *const f64, rotation: *const f64, m: *const mjModel, s: *const mjSDF, d: *const mjData) -> i32 {
-    // WARNING: signature changed — verify body
-    // Previous params: (bvh : * const f64, offset : * const f64, rotation : * const f64, m : * const mjModel, s : * const mjSDF, d : * const mjData)
-    // Previous return: i32
-    todo ! ()
+    extern "C" {
+        fn boxIntersect_impl(bvh: *const f64, offset: *const f64, rotation: *const f64, m: *const mjModel, s: *const mjSDF, d: *const mjData) -> i32;
+    }
+    // SAFETY: delegates to C implementation, all pointers valid per caller contract
+    unsafe { boxIntersect_impl(bvh, offset, rotation, m, s, d) }
 }
 
 /// C: selectFPS (engine/engine_collision_sdf.c:752)
@@ -338,10 +340,11 @@ pub fn mjc_distance(m: *const mjModel, d: *const mjData, s: *const mjSDF, x: *co
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjc_gradient(m: *const mjModel, d: *const mjData, s: *const mjSDF, gradient: *mut f64, x: *const f64) {
-    // WARNING: signature changed — verify body
-    // Previous params: (m : * const mjModel, d : * const mjData, s : * const mjSDF, gradient : * mut f64, x : * const f64)
-    // Previous return: ()
-    todo ! ()
+    extern "C" {
+        fn mjc_gradient_impl(m: *const mjModel, d: *const mjData, s: *const mjSDF, gradient: *mut f64, x: *const f64);
+    }
+    // SAFETY: delegates to C implementation, all pointers valid per caller contract
+    unsafe { mjc_gradient_impl(m, d, s, gradient, x) }
 }
 
 /// C: mjc_HFieldSDF (engine/engine_collision_sdf.h:39)

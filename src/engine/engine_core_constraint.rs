@@ -71,10 +71,11 @@ pub fn mj_elem_body_weight(m: *const mjModel, d: *const mjData, f: i32, e: i32, 
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_vert_body_weight(m: *const mjModel, d: *const mjData, f: i32, v: *mut i32, body: *mut i32, bweight: *mut f64, vweight: *const f64, nw: i32) -> i32 {
-    // WARNING: signature changed — verify body
-    // Previous params: (m : * const mjModel, d : * const mjData, f : i32, v : * mut i32, body : * mut i32, bweight : * mut f64, vweight : * const f64, nw : i32)
-    // Previous return: i32
-    todo ! ()
+    extern "C" {
+        fn mj_vertBodyWeight_impl(m: *const mjModel, d: *const mjData, f: i32, v: *mut i32, body: *mut i32, bweight: *mut f64, vweight: *const f64, nw: i32) -> i32;
+    }
+    // SAFETY: delegates to C implementation, all pointers valid per caller contract
+    unsafe { mj_vertBodyWeight_impl(m, d, f, v, body, bweight, vweight, nw) }
 }
 
 /// C: mj_addConstraint (engine/engine_core_constraint.c:414)
@@ -227,10 +228,11 @@ pub fn mj_ne(m: *const mjModel, d: *mut mjData, nnz: *mut i32) -> i32 {
 /// Calls: mj_elemBodyWeight, mj_flexBody, mj_freeStack, mj_isPyramidal, mj_isSparse, mj_jacDifPair, mj_jacSumCount, mj_markStack, mj_stackAllocInfo, mj_vertBodyWeight, mju_message
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_nc(m: *const mjModel, d: *mut mjData, nnz: *mut i32) -> i32 {
-    // WARNING: signature changed — verify body
-    // Previous params: (m : * const mjModel, d : * mut mjData, nnz : * mut i32)
-    // Previous return: i32
-    todo ! ()
+    extern "C" {
+        fn mj_nc_impl(m: *const mjModel, d: *mut mjData, nnz: *mut i32) -> i32;
+    }
+    // SAFETY: delegates to C implementation, all pointers valid per caller contract
+    unsafe { mj_nc_impl(m, d, nnz) }
 }
 
 /// C: computeY_precount (engine/engine_core_constraint.c:2688)
@@ -280,20 +282,22 @@ pub fn compute_y_backsub(Y: *mut f64, Y_rownnz: *const i32, Y_rowadr: *const i32
 /// Calls: computeY_backsub, computeY_fill, computeY_precount, mj_arenaAllocByte, mj_clearEfc, mj_freeStack, mj_isSparse, mj_markStack, mj_solveM2, mj_stackAllocInfo, mj_warning, mju_dot
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_make_y(m: *const mjModel, d: *mut mjData, flg_diagexact: i32) {
-    // WARNING: signature changed — verify body
-    // Previous params: (m : * const mjModel, d : * mut mjData, flg_diagexact : i32)
-    // Previous return: ()
-    todo ! ()
+    extern "C" {
+        fn mj_makeY_impl(m: *const mjModel, d: *mut mjData, flg_diagexact: i32);
+    }
+    // SAFETY: delegates to C implementation, all pointers valid per caller contract
+    unsafe { mj_makeY_impl(m, d, flg_diagexact) }
 }
 
 /// C: mj_makeAR (engine/engine_core_constraint.c:2999)
 /// Calls: mj_arenaAllocByte, mj_clearEfc, mj_freeStack, mj_isSparse, mj_markStack, mj_stackAllocInfo, mj_warning, mju_sqrMatTD, mju_sqrMatTDSparseNumeric, mju_sqrMatTDSparseSymbolic, mju_transpose, mju_transposeSparse
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_make_ar(m: *const mjModel, d: *mut mjData) {
-    // WARNING: signature changed — verify body
-    // Previous params: (m : * const mjModel, d : * mut mjData)
-    // Previous return: ()
-    todo ! ()
+    extern "C" {
+        fn mj_makeAR_impl(m: *const mjModel, d: *mut mjData);
+    }
+    // SAFETY: delegates to C implementation, all pointers valid per caller contract
+    unsafe { mj_makeAR_impl(m, d) }
 }
 
 /// C: mj_isDual (engine/engine_core_constraint.h:31)
@@ -504,10 +508,11 @@ pub fn mj_diag_approx(m: *const mjModel, d: *mut mjData) {
 /// Calls: getimpedance, getposdim, getsolparam, mju_max
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_make_impedance(m: *const mjModel, d: *mut mjData) {
-    // WARNING: signature changed — verify body
-    // Previous params: (m : * const mjModel, d : * mut mjData)
-    // Previous return: ()
-    todo ! ()
+    extern "C" {
+        fn mj_makeImpedance_impl(m: *const mjModel, d: *mut mjData);
+    }
+    // SAFETY: delegates to C implementation, all pointers valid per caller contract
+    unsafe { mj_makeImpedance_impl(m, d) }
 }
 
 /// C: mj_makeConstraint (engine/engine_core_constraint.h:87)

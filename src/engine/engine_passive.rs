@@ -57,20 +57,22 @@ pub fn mj_flex_passive_bend_interp(m: *const mjModel, d: *mut mjData, f: i32, en
 /// Calls: mji_cross, mji_sub3
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_flex_passive_bend(m: *const mjModel, d: *mut mjData, f: i32, enbl_spring: i32, enbl_damper: i32) {
-    // WARNING: signature changed — verify body
-    // Previous params: (m : * const mjModel, d : * mut mjData, f : i32, enbl_spring : i32, enbl_damper : i32)
-    // Previous return: ()
-    todo ! ()
+    extern "C" {
+        fn mj_flexPassiveBend_impl(m: *const mjModel, d: *mut mjData, f: i32, enbl_spring: i32, enbl_damper: i32);
+    }
+    // SAFETY: delegates to C implementation, all pointers valid per caller contract
+    unsafe { mj_flexPassiveBend_impl(m, d, f, enbl_spring, enbl_damper) }
 }
 
 /// C: mj_flexPassiveStretch (engine/engine_passive.c:524)
 /// Calls: GradSquaredLengths, mj_applyFT, mj_freeStack, mj_markStack, mj_stackAllocInfo, mju_zero
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_flex_passive_stretch(m: *const mjModel, d: *mut mjData, f: i32, enbl_spring: i32, enbl_damper: i32) {
-    // WARNING: signature changed — verify body
-    // Previous params: (m : * const mjModel, d : * mut mjData, f : i32, enbl_spring : i32, enbl_damper : i32)
-    // Previous return: ()
-    todo ! ()
+    extern "C" {
+        fn mj_flexPassiveStretch_impl(m: *const mjModel, d: *mut mjData, f: i32, enbl_spring: i32, enbl_damper: i32);
+    }
+    // SAFETY: delegates to C implementation, all pointers valid per caller contract
+    unsafe { mj_flexPassiveStretch_impl(m, d, f, enbl_spring, enbl_damper) }
 }
 
 /// C: mj_springdamper (engine/engine_passive.c:626)
@@ -87,10 +89,11 @@ pub fn mj_springdamper(m: *const mjModel, d: *mut mjData) {
 /// Calls: mj_applyFT, mji_scl3, mju_norm3
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_gravcomp(m: *const mjModel, d: *mut mjData) -> i32 {
-    // WARNING: signature changed — verify body
-    // Previous params: (m : * const mjModel, d : * mut mjData)
-    // Previous return: i32
-    todo ! ()
+    extern "C" {
+        fn mj_gravcomp_impl(m: *const mjModel, d: *mut mjData) -> i32;
+    }
+    // SAFETY: delegates to C implementation, all pointers valid per caller contract
+    unsafe { mj_gravcomp_impl(m, d) }
 }
 
 /// C: mj_fluid (engine/engine_passive.c:842)
@@ -210,10 +213,11 @@ pub fn mj_added_mass_forces(local_vels: *const f64, local_accels: *const f64, fl
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_viscous_forces(local_vels: *const f64, fluid_density: f64, fluid_viscosity: f64, size: *const f64, magnus_lift_coef: f64, kutta_lift_coef: f64, blunt_drag_coef: f64, slender_drag_coef: f64, ang_drag_coef: f64, local_force: *mut f64) {
-    // WARNING: signature changed — verify body
-    // Previous params: (local_vels : * const f64, fluid_density : f64, fluid_viscosity : f64, size : * const f64, magnus_lift_coef : f64, kutta_lift_coef : f64, blunt_drag_coef : f64, slender_drag_coef : f64, ang_drag_coef : f64, local_force : * mut f64)
-    // Previous return: ()
-    todo ! ()
+    extern "C" {
+        fn mj_viscousForces_impl(local_vels: *const f64, fluid_density: f64, fluid_viscosity: f64, size: *const f64, magnus_lift_coef: f64, kutta_lift_coef: f64, blunt_drag_coef: f64, slender_drag_coef: f64, ang_drag_coef: f64, local_force: *mut f64);
+    }
+    // SAFETY: delegates to C implementation, all pointers valid per caller contract
+    unsafe { mj_viscousForces_impl(local_vels, fluid_density, fluid_viscosity, size, magnus_lift_coef, kutta_lift_coef, blunt_drag_coef, slender_drag_coef, ang_drag_coef, local_force) }
 }
 
 /// C: readFluidGeomInteraction (engine/engine_passive.h:56)
@@ -225,10 +229,11 @@ pub fn mj_viscous_forces(local_vels: *const f64, fluid_density: f64, fluid_visco
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn read_fluid_geom_interaction(geom_fluid_coefs: *const f64, geom_fluid_coef: *mut f64, blunt_drag_coef: *mut f64, slender_drag_coef: *mut f64, ang_drag_coef: *mut f64, kutta_lift_coef: *mut f64, magnus_lift_coef: *mut f64, virtual_mass: *mut f64, virtual_inertia: *mut f64) {
-    // WARNING: signature changed — verify body
-    // Previous params: (geom_fluid_coefs : * const f64, geom_fluid_coef : * mut f64, blunt_drag_coef : * mut f64, slender_drag_coef : * mut f64, ang_drag_coef : * mut f64, kutta_lift_coef : * mut f64, magnus_lift_coef : * mut f64, virtual_mass : * mut f64, virtual_inertia : * mut f64)
-    // Previous return: ()
-    todo ! ()
+    extern "C" {
+        fn readFluidGeomInteraction_impl(geom_fluid_coefs: *const f64, geom_fluid_coef: *mut f64, blunt_drag_coef: *mut f64, slender_drag_coef: *mut f64, ang_drag_coef: *mut f64, kutta_lift_coef: *mut f64, magnus_lift_coef: *mut f64, virtual_mass: *mut f64, virtual_inertia: *mut f64);
+    }
+    // SAFETY: delegates to C implementation, all pointers valid per caller contract
+    unsafe { readFluidGeomInteraction_impl(geom_fluid_coefs, geom_fluid_coef, blunt_drag_coef, slender_drag_coef, ang_drag_coef, kutta_lift_coef, magnus_lift_coef, virtual_mass, virtual_inertia) }
 }
 
 /// C: writeFluidGeomInteraction (engine/engine_passive.h:66)

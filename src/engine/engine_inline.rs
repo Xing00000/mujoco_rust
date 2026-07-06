@@ -507,10 +507,17 @@ pub fn mji_quat2vel(res: *mut f64, quat: *const f64, dt: f64) {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mji_sub_quat(res: *mut f64, qa: *const f64, qb: *const f64) {
-    // WARNING: signature changed — verify body
-    // Previous params: (res : * mut f64, qa : * const f64, qb : * const f64)
-    // Previous return: ()
-    todo ! ()
+    // SAFETY: raw pointer arithmetic, caller guarantees valid non-overlapping buffers of sufficient size
+    unsafe {
+        // qdif = neg(qb)*qa
+        let mut qneg: [f64; 4] = [0.0; 4];
+        let mut qdif: [f64; 4] = [0.0; 4];
+        mji_neg_quat(qneg.as_mut_ptr(), qb);
+        mji_mul_quat(qdif.as_mut_ptr(), qneg.as_ptr(), qa);
+
+        // convert to 3D velocity
+        mji_quat2vel(res, qdif.as_ptr(), 1.0);
+    }
 }
 
 /// C: mji_mat2Quat (engine/engine_inline.h:361)
@@ -570,10 +577,19 @@ pub fn mji_cross(res: *mut f64, a: *const f64, b: *const f64) {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mji_cross_motion(res: *mut f64, vel: *const f64, v: *const f64) {
-    // WARNING: signature changed — verify body
-    // Previous params: (res : * mut f64, vel : * const f64, v : * const f64)
-    // Previous return: ()
-    todo ! ()
+    // SAFETY: raw pointer arithmetic, caller guarantees valid non-overlapping buffers of at least 6 elements
+    unsafe {
+        *res.add(0) = -*vel.add(2) * *v.add(1) + *vel.add(1) * *v.add(2);
+        *res.add(1) =  *vel.add(2) * *v.add(0) - *vel.add(0) * *v.add(2);
+        *res.add(2) = -*vel.add(1) * *v.add(0) + *vel.add(0) * *v.add(1);
+        *res.add(3) = -*vel.add(2) * *v.add(4) + *vel.add(1) * *v.add(5);
+        *res.add(4) =  *vel.add(2) * *v.add(3) - *vel.add(0) * *v.add(5);
+        *res.add(5) = -*vel.add(1) * *v.add(3) + *vel.add(0) * *v.add(4);
+
+        *res.add(3) += -*vel.add(5) * *v.add(1) + *vel.add(4) * *v.add(2);
+        *res.add(4) +=  *vel.add(5) * *v.add(0) - *vel.add(3) * *v.add(2);
+        *res.add(5) += -*vel.add(4) * *v.add(0) + *vel.add(3) * *v.add(1);
+    }
 }
 
 /// C: mji_crossForce (engine/engine_inline.h:446)
@@ -584,10 +600,19 @@ pub fn mji_cross_motion(res: *mut f64, vel: *const f64, v: *const f64) {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mji_cross_force(res: *mut f64, vel: *const f64, f: *const f64) {
-    // WARNING: signature changed — verify body
-    // Previous params: (res : * mut f64, vel : * const f64, f : * const f64)
-    // Previous return: ()
-    todo ! ()
+    // SAFETY: raw pointer arithmetic, caller guarantees valid non-overlapping buffers of at least 6 elements
+    unsafe {
+        *res.add(0) = -*vel.add(2) * *f.add(1) + *vel.add(1) * *f.add(2);
+        *res.add(1) =  *vel.add(2) * *f.add(0) - *vel.add(0) * *f.add(2);
+        *res.add(2) = -*vel.add(1) * *f.add(0) + *vel.add(0) * *f.add(1);
+        *res.add(3) = -*vel.add(2) * *f.add(4) + *vel.add(1) * *f.add(5);
+        *res.add(4) =  *vel.add(2) * *f.add(3) - *vel.add(0) * *f.add(5);
+        *res.add(5) = -*vel.add(1) * *f.add(3) + *vel.add(0) * *f.add(4);
+
+        *res.add(0) += -*vel.add(5) * *f.add(4) + *vel.add(4) * *f.add(5);
+        *res.add(1) +=  *vel.add(5) * *f.add(3) - *vel.add(3) * *f.add(5);
+        *res.add(2) += -*vel.add(4) * *f.add(3) + *vel.add(3) * *f.add(4);
+    }
 }
 
 /// C: mji_dot6 (engine/engine_inline.h:463)

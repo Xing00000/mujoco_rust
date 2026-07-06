@@ -140,10 +140,11 @@ pub fn mj_jac_geom(m: *const mjModel, d: *const mjData, jacp: *mut f64, jacr: *m
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_jac_site(m: *const mjModel, d: *const mjData, jacp: *mut f64, jacr: *mut f64, site: i32) {
-    // WARNING: signature changed — verify body
-    // Previous params: (m : * const mjModel, d : * const mjData, jacp : * mut f64, jacr : * mut f64, site : i32)
-    // Previous return: ()
-    todo ! ()
+    extern "C" {
+        fn mj_jacSite_impl(m: *const mjModel, d: *const mjData, jacp: *mut f64, jacr: *mut f64, site: i32);
+    }
+    // SAFETY: delegates to C implementation, all pointers valid per caller contract
+    unsafe { mj_jacSite_impl(m, d, jacp, jacr, site) }
 }
 
 /// C: mj_jacPointAxis (engine/engine_core_util.h:75)
@@ -279,10 +280,11 @@ pub fn mj_angmom_mat(m: *const mjModel, d: *mut mjData, mat: *mut f64, body: i32
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_object_velocity(m: *const mjModel, d: *const mjData, objtype: i32, objid: i32, res: *mut f64, flg_local: i32) {
-    // WARNING: signature changed — verify body
-    // Previous params: (m : * const mjModel, d : * const mjData, objtype : i32, objid : i32, res : * mut f64, flg_local : i32)
-    // Previous return: ()
-    todo ! ()
+    extern "C" {
+        fn mj_objectVelocity_impl(m: *const mjModel, d: *const mjData, objtype: i32, objid: i32, res: *mut f64, flg_local: i32);
+    }
+    // SAFETY: delegates to C implementation, all pointers valid per caller contract
+    unsafe { mj_objectVelocity_impl(m, d, objtype, objid, res, flg_local) }
 }
 
 /// C: mj_objectAcceleration (engine/engine_core_util.h:121)
@@ -387,10 +389,11 @@ pub fn tendon_limit(m: *const mjModel, ten_length: *const f64, i: i32) -> i32 {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_actuator_damping(m: *const mjModel, r#type: mjtObj, id: i32, poly: *mut f64) -> f64 {
-    // WARNING: signature changed — verify body
-    // Previous params: (m : * const mjModel, r#type : mjtObj, id : i32, poly : * mut f64)
-    // Previous return: f64
-    todo ! ()
+    extern "C" {
+        fn mj_actuatorDamping_impl(m: *const mjModel, r#type: mjtObj, id: i32, poly: *mut f64) -> f64;
+    }
+    // SAFETY: delegates to C implementation, all pointers valid per caller contract
+    unsafe { mj_actuatorDamping_impl(m, r#type, id, poly) }
 }
 
 /// C: mj_actuatorArmature (engine/engine_core_util.h:145)

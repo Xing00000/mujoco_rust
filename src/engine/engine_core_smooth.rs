@@ -137,10 +137,11 @@ pub fn mj_transmission(m: *const mjModel, d: *mut mjData) {
 /// Calls: mj_actuatorArmature, mji_dot6, mju_addTo, mju_copy, mju_copyRows, mju_mulInertVec, mju_zero, mju_zeroSparse
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_crb(m: *const mjModel, d: *mut mjData) {
-    // WARNING: signature changed — verify body
-    // Previous params: (m : * const mjModel, d : * mut mjData)
-    // Previous return: ()
-    todo ! ()
+    extern "C" {
+        fn mj_crb_impl(m: *const mjModel, d: *mut mjData);
+    }
+    // SAFETY: delegates to C implementation, all pointers valid per caller contract
+    unsafe { mj_crb_impl(m, d) }
 }
 
 /// C: mj_tendonArmature (engine/engine_core_smooth.h:62)

@@ -62,10 +62,11 @@ pub fn tactile_task(m: *const mjModel, d: *mut mjData, arg: *mut (), thread_id: 
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn apply_cutoff(m: *const mjModel, i: i32, data: *mut f64) {
-    // WARNING: signature changed — verify body
-    // Previous params: (m : * const mjModel, i : i32, data : * mut f64)
-    // Previous return: ()
-    todo ! ()
+    extern "C" {
+        fn apply_cutoff_impl(m: *const mjModel, i: i32, data: *mut f64);
+    }
+    // SAFETY: delegates to C implementation, all pointers valid per caller contract
+    unsafe { apply_cutoff_impl(m, i, data) }
 }
 
 /// C: get_xpos_xmat (engine/engine_sensor.c:227)

@@ -186,10 +186,11 @@ pub fn wrap_inside(pnt: *mut f64, end: *const f64, radius: f64) -> f64 {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn flex_interp_rotation(order: i32, xpos_c: *const f64, local: *const f64, quat: *mut f64) {
-    // WARNING: signature changed — verify body
-    // Previous params: (order : i32, xpos_c : * const f64, local : * const f64, quat : * mut f64)
-    // Previous return: ()
-    todo ! ()
+    extern "C" {
+        fn flexInterpRotation_impl(order: i32, xpos_c: *const f64, local: *const f64, quat: *mut f64);
+    }
+    // SAFETY: delegates to C implementation, all pointers valid per caller contract
+    unsafe { flexInterpRotation_impl(order, xpos_c, local, quat) }
 }
 
 /// C: nodeAt (engine/engine_util_misc.c:902)
@@ -392,10 +393,11 @@ pub fn mj_dcmotor_slots(dynprm: *const f64, gainprm: *const f64) -> mjDCMotorSlo
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mju_geom_semi_axes(semiaxes: *mut f64, size: *const f64, r#type: mjtGeom) {
-    // WARNING: signature changed — verify body
-    // Previous params: (semiaxes : * mut f64, size : * const f64, r#type : mjtGeom)
-    // Previous return: ()
-    todo ! ()
+    extern "C" {
+        fn mju_geomSemiAxes_impl(semiaxes: *mut f64, size: *const f64, r#type: mjtGeom);
+    }
+    // SAFETY: delegates to C implementation, all pointers valid per caller contract
+    unsafe { mju_geomSemiAxes_impl(semiaxes, size, r#type) }
 }
 
 /// C: mju_insideGeom (engine/engine_util_misc.h:74)
@@ -646,10 +648,11 @@ pub fn mju_flex_gather_cell_state(order: i32, cy: i32, cz: i32, ci: i32, cj: i32
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mju_flex_gather_face_state(order: i32, cx: i32, cy: i32, cz: i32, face_elem_idx: i32, xpos_g: *const f64, vel_g: *const f64, xpos0_g: *const f64, xpos_f: *mut f64, vel_f: *mut f64, xpos0_f: *mut f64, nodeindices: *mut i32, quat: *mut f64) {
-    // WARNING: signature changed — verify body
-    // Previous params: (order : i32, cx : i32, cy : i32, cz : i32, face_elem_idx : i32, xpos_g : * const f64, vel_g : * const f64, xpos0_g : * const f64, xpos_f : * mut f64, vel_f : * mut f64, xpos0_f : * mut f64, nodeindices : * mut i32, quat : * mut f64)
-    // Previous return: ()
-    todo ! ()
+    extern "C" {
+        fn mju_flexGatherFaceState_impl(order: i32, cx: i32, cy: i32, cz: i32, face_elem_idx: i32, xpos_g: *const f64, vel_g: *const f64, xpos0_g: *const f64, xpos_f: *mut f64, vel_f: *mut f64, xpos0_f: *mut f64, nodeindices: *mut i32, quat: *mut f64);
+    }
+    // SAFETY: delegates to C implementation, all pointers valid per caller contract
+    unsafe { mju_flexGatherFaceState_impl(order, cx, cy, cz, face_elem_idx, xpos_g, vel_g, xpos0_g, xpos_f, vel_f, xpos0_f, nodeindices, quat) }
 }
 
 /// C: mju_flexInterpRotation2D (engine/engine_util_misc.h:118)
@@ -677,10 +680,11 @@ pub fn mju_flex_interp_rotation2d(order: i32, xpos_f: *const f64, npe: i32, axis
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mju_flex_face_normal2d(normal: *mut f64, t1: *mut f64, t2: *mut f64, order: i32, xpos_f: *const f64, local: *const f64) {
-    // WARNING: signature changed — verify body
-    // Previous params: (normal : * mut f64, t1 : * mut f64, t2 : * mut f64, order : i32, xpos_f : * const f64, local : * const f64)
-    // Previous return: ()
-    todo ! ()
+    extern "C" {
+        fn mju_flexFaceNormal2D_impl(normal: *mut f64, t1: *mut f64, t2: *mut f64, order: i32, xpos_f: *const f64, local: *const f64);
+    }
+    // SAFETY: delegates to C implementation, all pointers valid per caller contract
+    unsafe { mju_flexFaceNormal2D_impl(normal, t1, t2, order, xpos_f, local) }
 }
 
 /// C: mju_flexPhi (engine/engine_util_misc.h:130)
@@ -918,10 +922,11 @@ pub fn mju_encode_pyramid(pyramid: *mut f64, force: *const f64, mu: *const f64, 
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mju_decode_pyramid(force: *mut f64, pyramid: *const f64, mu: *const f64, dim: i32) {
-    // WARNING: signature changed — verify body
-    // Previous params: (force : * mut f64, pyramid : * const f64, mu : * const f64, dim : i32)
-    // Previous return: ()
-    todo ! ()
+    extern "C" {
+        fn mju_decodePyramid_impl(force: *mut f64, pyramid: *const f64, mu: *const f64, dim: i32);
+    }
+    // SAFETY: delegates to C implementation, all pointers valid per caller contract
+    unsafe { mju_decodePyramid_impl(force, pyramid, mu, dim) }
 }
 
 /// C: mju_springDamper (engine/engine_util_misc.h:208)

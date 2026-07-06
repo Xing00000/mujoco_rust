@@ -124,10 +124,11 @@ pub fn mj_update_sleep(m: *const mjModel, d: *mut mjData) {
 /// C: mj_sleepCycle (engine/engine_sleep.h:34)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_sleep_cycle(tree_asleep: *const i32, ntree: i32, i: i32) -> i32 {
-    // WARNING: signature changed — verify body
-    // Previous params: (tree_asleep : * const i32, ntree : i32, i : i32)
-    // Previous return: i32
-    todo ! ()
+    extern "C" {
+        fn mj_sleepCycle_impl(tree_asleep: *const i32, ntree: i32, i: i32) -> i32;
+    }
+    // SAFETY: delegates to C implementation, all pointers valid per caller contract
+    unsafe { mj_sleepCycle_impl(tree_asleep, ntree, i) }
 }
 
 /// C: mj_wakeIsland (engine/engine_sleep.h:37)
@@ -139,10 +140,11 @@ pub fn mj_sleep_cycle(tree_asleep: *const i32, ntree: i32, i: i32) -> i32 {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_wake_island(tree_asleep: *mut i32, ntree: i32, i: i32, wakeval: i32, reason: *const i8, time: f64) -> i32 {
-    // WARNING: signature changed — verify body
-    // Previous params: (tree_asleep : * mut i32, ntree : i32, i : i32, wakeval : i32, reason : * const i8, time : f64)
-    // Previous return: i32
-    todo ! ()
+    extern "C" {
+        fn mj_wakeIsland_impl(tree_asleep: *mut i32, ntree: i32, i: i32, wakeval: i32, reason: *const i8, time: f64) -> i32;
+    }
+    // SAFETY: delegates to C implementation, all pointers valid per caller contract
+    unsafe { mj_wakeIsland_impl(tree_asleep, ntree, i, wakeval, reason, time) }
 }
 
 /// C: mj_wake (engine/engine_sleep.h:41)
