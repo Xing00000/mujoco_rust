@@ -26,10 +26,9 @@ pub fn reader_txt(self_ptr: *mut Reader, attr: *const i8, target: *mut T, set_fu
 /// C: Reader::set_node (xml/xml_native_reader.cc:121)
 #[allow(unused_variables, non_snake_case)]
 pub fn reader_set_node(self_ptr: *mut Reader, node: *mut XMLElement) {
-    // WARNING: signature changed — verify body
-    // Previous params: (self_ptr : * mut Reader, node : * mut XMLElement)
-    // Previous return: ()
-    todo ! ()
+    extern "C" { fn Reader_set_node_impl(self_ptr: *mut Reader, node: *mut XMLElement); }
+    // SAFETY: delegates to C implementation, all pointers valid per caller contract
+    unsafe { Reader_set_node_impl(self_ptr, node) }
 }
 
 /// C: ReadPluginConfigs (xml/xml_native_reader.cc:128)

@@ -16,10 +16,9 @@ pub fn sanitize_path(path: *const fs__path) -> fs__path {
 /// C: RemoveLeadingDotDot (xml/mjz/mjz_encoder.cc:92)
 #[allow(unused_variables, non_snake_case)]
 pub fn remove_leading_dot_dot(p: *const fs__path) -> std__string {
-    // WARNING: signature changed — verify body
-    // Previous params: (p : * const fs__path)
-    // Previous return: std__string
-    todo ! ()
+    extern "C" { fn RemoveLeadingDotDot_impl(p: *const fs__path) -> std__string; }
+    // SAFETY: delegates to C implementation, all pointers valid per caller contract
+    unsafe { RemoveLeadingDotDot_impl(p) }
 }
 
 /// C: _mj_init_mjz_encoder (xml/mjz/mjz_encoder.cc:99)

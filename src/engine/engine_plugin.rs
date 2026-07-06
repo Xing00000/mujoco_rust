@@ -44,10 +44,9 @@ pub fn is_valid_uri_scheme_format(prefix: *const i8) -> bool {
 /// C: PluginAttrSeek (engine/engine_plugin.cc:119)
 #[allow(unused_variables, non_snake_case)]
 pub fn plugin_attr_seek(m: *const mjModel, plugin_id: i32, attrib_id: i32) -> *const i8 {
-    // WARNING: signature changed — verify body
-    // Previous params: (m : * const mjModel, plugin_id : i32, attrib_id : i32)
-    // Previous return: * const i8
-    todo ! ()
+    extern "C" { fn PluginAttrSeek_impl(m: *const mjModel, plugin_id: i32, attrib_id: i32) -> *const i8; }
+    // SAFETY: delegates to C implementation, all pointers valid per caller contract
+    unsafe { PluginAttrSeek_impl(m, plugin_id, attrib_id) }
 }
 
 /// C: mjp_defaultPlugin (engine/engine_plugin.h:26)

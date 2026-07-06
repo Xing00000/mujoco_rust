@@ -135,10 +135,9 @@ pub fn mjd_com_vel_vel(m: *const mjModel, d: *mut mjData, Dcvel: *mut f64, Dcdof
 /// Calls: addToParent, copyFromParent, mj_freeStack, mj_markStack, mj_stackAllocInfo, mjd_comVel_vel, mjd_crossForce_frc, mjd_crossForce_vel, mjd_mulInertVec_vel, mju_addTo, mju_addToScl, mju_mulInertVec, mju_mulMatMat, mju_mulMatVec, mju_subFrom, mju_transpose, mju_zero
 #[allow(unused_variables, non_snake_case)]
 pub fn mjd_rne_vel(m: *const mjModel, d: *mut mjData) {
-    // WARNING: signature changed — verify body
-    // Previous params: (m : * const mjModel, d : * mut mjData)
-    // Previous return: ()
-    todo ! ()
+    extern "C" { fn mjd_rne_vel_impl(m: *const mjModel, d: *mut mjData); }
+    // SAFETY: delegates to C implementation, all pointers valid per caller contract
+    unsafe { mjd_rne_vel_impl(m, d) }
 }
 
 /// C: addJTBJ (engine/engine_derivative.c:711)
@@ -276,10 +275,9 @@ pub fn mjd_added_mass_forces(B: *mut f64, local_vels: *const f64, fluid_density:
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjd_viscous_torque(D: *mut f64, lvel: *const f64, fluid_density: f64, fluid_viscosity: f64, size: *const f64, slender_drag_coef: f64, ang_drag_coef: f64) {
-    // WARNING: signature changed — verify body
-    // Previous params: (D : * mut f64, lvel : * const f64, fluid_density : f64, fluid_viscosity : f64, size : * const f64, slender_drag_coef : f64, ang_drag_coef : f64)
-    // Previous return: ()
-    todo ! ()
+    extern "C" { fn mjd_viscous_torque_impl(D: *mut f64, lvel: *const f64, fluid_density: f64, fluid_viscosity: f64, size: *const f64, slender_drag_coef: f64, ang_drag_coef: f64); }
+    // SAFETY: delegates to C implementation, all pointers valid per caller contract
+    unsafe { mjd_viscous_torque_impl(D, lvel, fluid_density, fluid_viscosity, size, slender_drag_coef, ang_drag_coef) }
 }
 
 /// C: mjd_viscous_drag (engine/engine_derivative.c:1469)

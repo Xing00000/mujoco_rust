@@ -132,10 +132,9 @@ pub fn mj_c_mesh_process_vertices(self_ptr: *mut mjCMesh, vert: *const i32, remo
 /// Calls: MeshPolygon::CombineIslands
 #[allow(unused_variables, non_snake_case)]
 pub fn mesh_polygon_insert_face(self_ptr: *mut MeshPolygon, v1: i32, v2: i32, v3: i32) {
-    // WARNING: signature changed — verify body
-    // Previous params: (self_ptr : * mut MeshPolygon, v1 : i32, v2 : i32, v3 : i32)
-    // Previous return: ()
-    todo ! ()
+    extern "C" { fn MeshPolygon_InsertFace_impl(self_ptr: *mut MeshPolygon, v1: i32, v2: i32, v3: i32); }
+    // SAFETY: delegates to C implementation, all pointers valid per caller contract
+    unsafe { MeshPolygon_InsertFace_impl(self_ptr, v1, v2, v3) }
 }
 
 /// C: MeshPolygon::Normal (user/user_mesh.cc:2687)

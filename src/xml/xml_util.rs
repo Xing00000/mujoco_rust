@@ -7,20 +7,18 @@ use crate::types::*;
 /// C: ParseInfOrNan (xml/xml_util.cc:54)
 #[allow(unused_variables, non_snake_case)]
 pub fn parse_inf_or_nan(s: *const std__string) -> *const () {
-    // WARNING: signature changed — verify body
-    // Previous params: (s : * const std__string)
-    // Previous return: * const ()
-    todo ! ()
+    extern "C" { fn ParseInfOrNan_impl(s: *const std__string) -> *const (); }
+    // SAFETY: delegates to C implementation, all pointers valid per caller contract
+    unsafe { ParseInfOrNan_impl(s) }
 }
 
 /// C: ResolveFilePath (xml/xml_util.cc:79)
 /// Calls: FilePath::IsAbs, FilePath::c_str, mju_closeResource, mju_openResource
 #[allow(unused_variables, non_snake_case)]
 pub fn resolve_file_path(e: *mut XMLElement, filename: *const FilePath, dir: *const FilePath, vfs: *const mjVFS) -> FilePath {
-    // WARNING: signature changed — verify body
-    // Previous params: (e : * mut XMLElement, filename : * const FilePath, dir : * const FilePath, vfs : * const mjVFS)
-    // Previous return: FilePath
-    todo ! ()
+    extern "C" { fn ResolveFilePath_impl(e: *mut XMLElement, filename: *const FilePath, dir: *const FilePath, vfs: *const mjVFS) -> FilePath; }
+    // SAFETY: delegates to C implementation, all pointers valid per caller contract
+    unsafe { ResolveFilePath_impl(e, filename, dir, vfs) }
 }
 
 /// C: AccumulateFiles (xml/xml_util.cc:109)
@@ -281,10 +279,9 @@ pub fn mj_x_util_read_quat(elem: *mut tinyxml2__XMLElement, attr: *const i8, dat
 /// C: mjXUtil::ReadAttrTxt (xml/xml_util.h:163)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_x_util_read_attr_txt(elem: *mut tinyxml2__XMLElement, attr: *const i8, text: *mut std__string, required: bool) -> bool {
-    // WARNING: signature changed — verify body
-    // Previous params: (elem : * mut tinyxml2__XMLElement, attr : * const i8, text : * mut std__string, required : bool)
-    // Previous return: bool
-    todo ! ()
+    extern "C" { fn mjXUtil_ReadAttrTxt_impl(elem: *mut tinyxml2__XMLElement, attr: *const i8, text: *mut std__string, required: bool) -> bool; }
+    // SAFETY: delegates to C implementation, all pointers valid per caller contract
+    unsafe { mjXUtil_ReadAttrTxt_impl(elem, attr, text, required) }
 }
 
 /// C: mjXUtil::ReadAttrInt (xml/xml_util.h:167)

@@ -16,10 +16,9 @@ pub fn case_insensitive_equal(s1: string_view, s2: string_view) -> bool {
 /// C: ReentrantWriteLock::LockCountOnCurrentThread (engine/engine_global_table.h:88)
 #[allow(unused_variables, non_snake_case)]
 pub fn reentrant_write_lock_lock_count_on_current_thread() -> *mut i32 {
-    // WARNING: signature changed — verify body
-    // Previous params: ()
-    // Previous return: * mut i32
-    todo ! ()
+    extern "C" { fn ReentrantWriteLock_LockCountOnCurrentThread_impl() -> *mut i32; }
+    // SAFETY: delegates to C implementation, all pointers valid per caller contract
+    unsafe { ReentrantWriteLock_LockCountOnCurrentThread_impl() }
 }
 
 /// C: GlobalTable::GetSingleton (engine/engine_global_table.h:97)

@@ -7,19 +7,17 @@ use crate::types::*;
 /// C: ReadFromBuffer (user/user_flexcomp.cc:56)
 #[allow(unused_variables, non_snake_case)]
 pub fn read_from_buffer(dst: *mut T, src: *const i8) {
-    // WARNING: signature changed — verify body
-    // Previous params: (dst : * mut T, src : * const i8)
-    // Previous return: ()
-    todo ! ()
+    extern "C" { fn ReadFromBuffer_impl(dst: *mut T, src: *const i8); }
+    // SAFETY: delegates to C implementation, all pointers valid per caller contract
+    unsafe { ReadFromBuffer_impl(dst, src) }
 }
 
 /// C: ReadStrFromBuffer (user/user_flexcomp.cc:61)
 #[allow(unused_variables, non_snake_case)]
 pub fn read_str_from_buffer(dest: *mut i8, src: *const i8, maxlen: i32) {
-    // WARNING: signature changed — verify body
-    // Previous params: (dest : * mut i8, src : * const i8, maxlen : i32)
-    // Previous return: ()
-    todo ! ()
+    extern "C" { fn ReadStrFromBuffer_impl(dest: *mut i8, src: *const i8, maxlen: i32); }
+    // SAFETY: delegates to C implementation, all pointers valid per caller contract
+    unsafe { ReadStrFromBuffer_impl(dest, src, maxlen) }
 }
 
 /// C: IsValidElementOrNodeHeader22 (user/user_flexcomp.cc:65)

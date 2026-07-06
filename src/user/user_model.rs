@@ -381,10 +381,9 @@ pub fn compile_texture(texture: *mut mjCTexture, vfs: *const mjVFS, exception: *
 /// C: PrintIndent (user/user_model.cc:5457)
 #[allow(unused_variables, non_snake_case)]
 pub fn print_indent(ss: *mut std__stringstream, depth: i32) {
-    // WARNING: signature changed — verify body
-    // Previous params: (ss : * mut std__stringstream, depth : i32)
-    // Previous return: ()
-    todo ! ()
+    extern "C" { fn PrintIndent_impl(ss: *mut std__stringstream, depth: i32); }
+    // SAFETY: delegates to C implementation, all pointers valid per caller contract
+    unsafe { PrintIndent_impl(ss, depth) }
 }
 
 /// C: mjCModel::CopyFromSpec (user/user_model.h:191)

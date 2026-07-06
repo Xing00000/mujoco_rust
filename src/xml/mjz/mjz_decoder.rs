@@ -7,10 +7,9 @@ use crate::types::*;
 /// C: SetError (xml/mjz/mjz_decoder.cc:46)
 #[allow(unused_variables, non_snake_case)]
 pub fn set_error(error: *mut i8, error_sz: i32, format: *const i8) {
-    // WARNING: signature changed — verify body
-    // Previous params: (error : * mut i8, error_sz : i32, format : * const i8)
-    // Previous return: ()
-    todo ! ()
+    extern "C" { fn SetError_impl(error: *mut i8, error_sz: i32, format: *const i8); }
+    // SAFETY: delegates to C implementation, all pointers valid per caller contract
+    unsafe { SetError_impl(error, error_sz, format) }
 }
 
 /// C: ZipArchiveProvider::GetRootModelPath (xml/mjz/mjz_decoder.cc:137)

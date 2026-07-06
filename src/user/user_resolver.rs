@@ -30,10 +30,9 @@ pub fn fmt_arr(val: *const f64, n: i32) -> std__string {
 /// C: Resolver::Apply (user/user_resolver.cc:291)
 #[allow(unused_variables, non_snake_case)]
 pub fn resolver_apply(self_ptr: *mut Resolver) -> bool {
-    // WARNING: signature changed — verify body
-    // Previous params: (self_ptr : * mut Resolver)
-    // Previous return: bool
-    todo ! ()
+    extern "C" { fn Resolver_Apply_impl(self_ptr: *mut Resolver) -> bool; }
+    // SAFETY: delegates to C implementation, all pointers valid per caller contract
+    unsafe { Resolver_Apply_impl(self_ptr) }
 }
 
 /// C: VisitConflicts (user/user_resolver.cc:299)

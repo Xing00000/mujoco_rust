@@ -36,19 +36,17 @@ pub fn spec_from_xml(xml: string_view, dir: string_view, filename: string_view, 
 /// Calls: mju_closeResource, mju_getResourceDir, mju_readResource
 #[allow(unused_variables, non_snake_case)]
 pub fn parse_xml(filename: *const i8, vfs: *const mjVFS, error: *mut i8, nerror: i32) -> *mut mjSpec {
-    // WARNING: signature changed — verify body
-    // Previous params: (filename : * const i8, vfs : * const mjVFS, error : * mut i8, nerror : i32)
-    // Previous return: * mut mjSpec
-    todo ! ()
+    extern "C" { fn ParseXML_impl(filename: *const i8, vfs: *const mjVFS, error: *mut i8, nerror: i32) -> *mut mjSpec; }
+    // SAFETY: delegates to C implementation, all pointers valid per caller contract
+    unsafe { ParseXML_impl(filename, vfs, error, nerror) }
 }
 
 /// C: ParseSpecFromString (xml/xml.h:29)
 #[allow(unused_variables, non_snake_case)]
 pub fn parse_spec_from_string(xml: string_view, vfs: *const mjVFS, error: *mut i8, nerror: i32) -> *mut mjSpec {
-    // WARNING: signature changed — verify body
-    // Previous params: (xml : string_view, vfs : * const mjVFS, error : * mut i8, nerror : i32)
-    // Previous return: * mut mjSpec
-    todo ! ()
+    extern "C" { fn ParseSpecFromString_impl(xml: string_view, vfs: *const mjVFS, error: *mut i8, nerror: i32) -> *mut mjSpec; }
+    // SAFETY: delegates to C implementation, all pointers valid per caller contract
+    unsafe { ParseSpecFromString_impl(xml, vfs, error, nerror) }
 }
 
 /// C: WriteXML (xml/xml.h:33)

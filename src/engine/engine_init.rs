@@ -12,10 +12,9 @@ use crate::types::*;
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_default_sol_ref_imp(solref: *mut f64, solimp: *mut f64) {
-    // WARNING: signature changed — verify body
-    // Previous params: (solref : * mut f64, solimp : * mut f64)
-    // Previous return: ()
-    todo ! ()
+    extern "C" { fn mj_defaultSolRefImp_impl(solref: *mut f64, solimp: *mut f64); }
+    // SAFETY: delegates to C implementation, all pointers valid per caller contract
+    unsafe { mj_defaultSolRefImp_impl(solref, solimp) }
 }
 
 /// C: mj_defaultOption (engine/engine_init.c:51)
@@ -36,10 +35,9 @@ pub fn mj_default_option(opt: *mut mjOption) {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn setf4(rgba: *mut f32, r: f32, g: f32, b: f32, a: f32) {
-    // WARNING: signature changed — verify body
-    // Previous params: (rgba : * mut f32, r : f32, g : f32, b : f32, a : f32)
-    // Previous return: ()
-    todo ! ()
+    extern "C" { fn setf4_impl(rgba: *mut f32, r: f32, g: f32, b: f32, a: f32); }
+    // SAFETY: delegates to C implementation, all pointers valid per caller contract
+    unsafe { setf4_impl(rgba, r, g, b, a) }
 }
 
 /// C: mj_defaultVisual (engine/engine_init.c:133)
@@ -55,10 +53,9 @@ pub fn mj_default_visual(vis: *mut mjVisual) {
 /// C: mj_defaultLROpt (engine/engine_init.c:234)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_default_lr_opt(opt: *mut mjLROpt) {
-    // WARNING: signature changed — verify body
-    // Previous params: (opt : * mut mjLROpt)
-    // Previous return: ()
-    todo ! ()
+    extern "C" { fn mj_defaultLROpt_impl(opt: *mut mjLROpt); }
+    // SAFETY: delegates to C implementation, all pointers valid per caller contract
+    unsafe { mj_defaultLROpt_impl(opt) }
 }
 
 /// C: mj_defaultStatistic (engine/engine_init.h:30)

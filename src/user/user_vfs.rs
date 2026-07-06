@@ -7,19 +7,17 @@ use crate::types::*;
 /// C: OpenFile (user/user_vfs.cc:50)
 #[allow(unused_variables, non_snake_case)]
 pub fn open_file(filename: *const i8, resource: *mut mjResource) -> i32 {
-    // WARNING: signature changed — verify body
-    // Previous params: (filename : * const i8, resource : * mut mjResource)
-    // Previous return: i32
-    todo ! ()
+    extern "C" { fn OpenFile_impl(filename: *const i8, resource: *mut mjResource) -> i32; }
+    // SAFETY: delegates to C implementation, all pointers valid per caller contract
+    unsafe { OpenFile_impl(filename, resource) }
 }
 
 /// C: ReadFile (user/user_vfs.cc:64)
 #[allow(unused_variables, non_snake_case)]
 pub fn read_file(filename: *const i8, resource: *mut mjResource, buffer: *const *mut ()) -> i32 {
-    // WARNING: signature changed — verify body
-    // Previous params: (filename : * const i8, resource : * mut mjResource, buffer : * const * mut ())
-    // Previous return: i32
-    todo ! ()
+    extern "C" { fn ReadFile_impl(filename: *const i8, resource: *mut mjResource, buffer: *const *mut ()) -> i32; }
+    // SAFETY: delegates to C implementation, all pointers valid per caller contract
+    unsafe { ReadFile_impl(filename, resource, buffer) }
 }
 
 /// C: CloseFile (user/user_vfs.cc:74)

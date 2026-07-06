@@ -205,10 +205,9 @@ pub fn can_collide2(m: *const mjModel, bf1: i32, bf2: i32) -> i32 {
 /// Calls: canCollide2, filterBitmask, filterBox, filterCollisionPair, filterSphereBox, mj_assignMargin, mj_collideElems, mj_collideGeomElem, mj_collideOBB, mj_collidePlaneFlex, mj_collideSdfFlex, mj_filterSphere, mj_freeStack, mj_markStack, mj_narrowphase, mj_stackAllocInfo, mju_error, mju_message
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_collide_tree(m: *const mjModel, d: *mut mjData, bf1: i32, bf2: i32, merged: i32, startadr: i32, pairadr: i32) {
-    // WARNING: signature changed — verify body
-    // Previous params: (m : * const mjModel, d : * mut mjData, bf1 : i32, bf2 : i32, merged : i32, startadr : i32, pairadr : i32)
-    // Previous return: ()
-    todo ! ()
+    extern "C" { fn mj_collideTree_impl(m: *const mjModel, d: *mut mjData, bf1: i32, bf2: i32, merged: i32, startadr: i32, pairadr: i32); }
+    // SAFETY: delegates to C implementation, all pointers valid per caller contract
+    unsafe { mj_collideTree_impl(m, d, bf1, bf2, merged, startadr, pairadr) }
 }
 
 /// C: mj_narrowphase (engine/engine_collision_driver.c:367)

@@ -8,55 +8,49 @@ use crate::types::*;
 /// Calls: mju_readResource
 #[allow(unused_variables, non_snake_case)]
 pub fn png_image_load(obj: *const mjCBase, resource: *mut mjResource, color_type: LodePNGColorType) -> PNGImage {
-    // WARNING: signature changed — verify body
-    // Previous params: (obj : * const mjCBase, resource : * mut mjResource, color_type : LodePNGColorType)
-    // Previous return: PNGImage
-    todo ! ()
+    extern "C" { fn PNGImage_Load_impl(obj: *const mjCBase, resource: *mut mjResource, color_type: LodePNGColorType) -> PNGImage; }
+    // SAFETY: delegates to C implementation, all pointers valid per caller contract
+    unsafe { PNGImage_Load_impl(obj, resource, color_type) }
 }
 
 /// C: PNGImage::Width (user/user_objects.cc:60)
 #[allow(unused_variables, non_snake_case)]
 pub fn png_image_width(self_ptr: *mut PNGImage) -> i32 {
-    // WARNING: signature changed — verify body
-    // Previous params: (self_ptr : * mut PNGImage)
-    // Previous return: i32
-    todo ! ()
+    extern "C" { fn PNGImage_Width_impl(self_ptr: *mut PNGImage) -> i32; }
+    // SAFETY: delegates to C implementation, all pointers valid per caller contract
+    unsafe { PNGImage_Width_impl(self_ptr) }
 }
 
 /// C: PNGImage::Height (user/user_objects.cc:61)
 #[allow(unused_variables, non_snake_case)]
 pub fn png_image_height(self_ptr: *mut PNGImage) -> i32 {
-    // WARNING: signature changed — verify body
-    // Previous params: (self_ptr : * mut PNGImage)
-    // Previous return: i32
-    todo ! ()
+    extern "C" { fn PNGImage_Height_impl(self_ptr: *mut PNGImage) -> i32; }
+    // SAFETY: delegates to C implementation, all pointers valid per caller contract
+    unsafe { PNGImage_Height_impl(self_ptr) }
 }
 
 /// C: PNGImage::IsSRGB (user/user_objects.cc:62)
 #[allow(unused_variables, non_snake_case)]
 pub fn png_image_is_srgb(self_ptr: *mut PNGImage) -> bool {
-    // WARNING: signature changed — verify body
-    // Previous params: (self_ptr : * mut PNGImage)
-    // Previous return: bool
-    todo ! ()
+    extern "C" { fn PNGImage_IsSRGB_impl(self_ptr: *mut PNGImage) -> bool; }
+    // SAFETY: delegates to C implementation, all pointers valid per caller contract
+    unsafe { PNGImage_IsSRGB_impl(self_ptr) }
 }
 
 /// C: PNGImage::MoveData (user/user_objects.cc:66)
 #[allow(unused_variables, non_snake_case)]
 pub fn png_image_move_data(self_ptr: *mut PNGImage) -> *mut *mut i32 {
-    // WARNING: signature changed — verify body
-    // Previous params: (self_ptr : * mut PNGImage)
-    // Previous return: * mut * mut i32
-    todo ! ()
+    extern "C" { fn PNGImage_MoveData_impl(self_ptr: *mut PNGImage) -> *mut *mut i32; }
+    // SAFETY: delegates to C implementation, all pointers valid per caller contract
+    unsafe { PNGImage_MoveData_impl(self_ptr) }
 }
 
 /// C: PNGImage::Size (user/user_objects.cc:69)
 #[allow(unused_variables, non_snake_case)]
 pub fn png_image_size(self_ptr: *mut PNGImage) -> std__size_t {
-    // WARNING: signature changed — verify body
-    // Previous params: (self_ptr : * mut PNGImage)
-    // Previous return: std__size_t
-    todo ! ()
+    extern "C" { fn PNGImage_Size_impl(self_ptr: *mut PNGImage) -> std__size_t; }
+    // SAFETY: delegates to C implementation, all pointers valid per caller contract
+    unsafe { PNGImage_Size_impl(self_ptr) }
 }
 
 /// C: MapFrame (user/user_objects.cc:139)
