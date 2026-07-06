@@ -16,10 +16,11 @@ pub fn thread_pool_context_dispatch(self_ptr: *mut ThreadPoolContext, model: *co
 /// C: ThreadPoolContext::ThreadCount (engine/engine_thread.cc:79)
 #[allow(unused_variables, non_snake_case)]
 pub fn thread_pool_context_thread_count(self_ptr: *mut ThreadPoolContext) -> i32 {
-    // WARNING: signature changed — verify body
-    // Previous params: (self_ptr : * mut ThreadPoolContext)
-    // Previous return: i32
-    todo ! ()
+    extern "C" {
+        fn ThreadPoolContext_ThreadCount_impl(self_ptr: *mut ThreadPoolContext) -> i32;
+    }
+    // SAFETY: Forwarding to linked C/C++ implementation.
+    unsafe { ThreadPoolContext_ThreadCount_impl(self_ptr) }
 }
 
 /// C: ThreadPoolContext::Worker (engine/engine_thread.cc:83)

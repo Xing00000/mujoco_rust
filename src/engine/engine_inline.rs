@@ -26,10 +26,11 @@ pub fn mji_zero3(res: *mut f64) {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mji_copy3(res: *mut f64, vec: *const f64) {
-    // WARNING: signature changed — verify body
-    // Previous params: (res : * mut f64, vec : * const f64)
-    // Previous return: ()
-    todo ! ()
+    extern "C" {
+        fn mji_copy3_impl(res: *mut f64, vec: *const f64);
+    }
+    // SAFETY: Forwarding to linked C/C++ implementation.
+    unsafe { mji_copy3_impl(res, vec) }
 }
 
 /// C: mji_scl3 (engine/engine_inline.h:64)
@@ -40,10 +41,11 @@ pub fn mji_copy3(res: *mut f64, vec: *const f64) {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mji_scl3(res: *mut f64, vec: *const f64, scl: f64) {
-    // WARNING: signature changed — verify body
-    // Previous params: (res : * mut f64, vec : * const f64, scl : f64)
-    // Previous return: ()
-    todo ! ()
+    extern "C" {
+        fn mji_scl3_impl(res: *mut f64, vec: *const f64, scl: f64);
+    }
+    // SAFETY: Forwarding to linked C/C++ implementation.
+    unsafe { mji_scl3_impl(res, vec, scl) }
 }
 
 /// C: mji_add3 (engine/engine_inline.h:73)
@@ -54,10 +56,11 @@ pub fn mji_scl3(res: *mut f64, vec: *const f64, scl: f64) {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mji_add3(res: *mut f64, vec1: *const f64, vec2: *const f64) {
-    // WARNING: signature changed — verify body
-    // Previous params: (res : * mut f64, vec1 : * const f64, vec2 : * const f64)
-    // Previous return: ()
-    todo ! ()
+    extern "C" {
+        fn mji_add3_impl(res: *mut f64, vec1: *const f64, vec2: *const f64);
+    }
+    // SAFETY: Forwarding to linked C/C++ implementation.
+    unsafe { mji_add3_impl(res, vec1, vec2) }
 }
 
 /// C: mji_sub3 (engine/engine_inline.h:82)
@@ -68,10 +71,11 @@ pub fn mji_add3(res: *mut f64, vec1: *const f64, vec2: *const f64) {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mji_sub3(res: *mut f64, vec1: *const f64, vec2: *const f64) {
-    // WARNING: signature changed — verify body
-    // Previous params: (res : * mut f64, vec1 : * const f64, vec2 : * const f64)
-    // Previous return: ()
-    todo ! ()
+    extern "C" {
+        fn mji_sub3_impl(res: *mut f64, vec1: *const f64, vec2: *const f64);
+    }
+    // SAFETY: Forwarding to linked C/C++ implementation.
+    unsafe { mji_sub3_impl(res, vec1, vec2) }
 }
 
 /// C: mji_addTo3 (engine/engine_inline.h:91)
@@ -82,10 +86,11 @@ pub fn mji_sub3(res: *mut f64, vec1: *const f64, vec2: *const f64) {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mji_add_to3(res: *mut f64, vec: *const f64) {
-    // WARNING: signature changed — verify body
-    // Previous params: (res : * mut f64, vec : * const f64)
-    // Previous return: ()
-    todo ! ()
+    extern "C" {
+        fn mji_addTo3_impl(res: *mut f64, vec: *const f64);
+    }
+    // SAFETY: Forwarding to linked C/C++ implementation.
+    unsafe { mji_addTo3_impl(res, vec) }
 }
 
 /// C: mji_subFrom3 (engine/engine_inline.h:100)
@@ -152,10 +157,11 @@ pub fn mji_normalize3(vec: *mut f64) -> f64 {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mji_mul_mat_vec3(res: *mut f64, mat: *const f64, vec: *const f64) {
-    // WARNING: signature changed — verify body
-    // Previous params: (res : * mut f64, mat : * const f64, vec : * const f64)
-    // Previous return: ()
-    todo ! ()
+    extern "C" {
+        fn mji_mulMatVec3_impl(res: *mut f64, mat: *const f64, vec: *const f64);
+    }
+    // SAFETY: Forwarding to linked C/C++ implementation.
+    unsafe { mji_mulMatVec3_impl(res, mat, vec) }
 }
 
 /// C: mji_mulMatTVec3 (engine/engine_inline.h:158)
@@ -279,10 +285,11 @@ pub fn mji_neg_quat(res: *mut f64, quat: *const f64) {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mji_mul_quat(res: *mut f64, qa: *const f64, qb: *const f64) {
-    // WARNING: signature changed — verify body
-    // Previous params: (res : * mut f64, qa : * const f64, qb : * const f64)
-    // Previous return: ()
-    todo ! ()
+    extern "C" {
+        fn mji_mulQuat_impl(res: *mut f64, qa: *const f64, qb: *const f64);
+    }
+    // SAFETY: Forwarding to linked C/C++ implementation.
+    unsafe { mji_mulQuat_impl(res, qa, qb) }
 }
 
 /// C: mji_mulQuatAxis (engine/engine_inline.h:298)
@@ -381,10 +388,11 @@ pub fn mji_quat_integrate(quat: *mut f64, vel: *const f64, scale: f64) {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mji_cross(res: *mut f64, a: *const f64, b: *const f64) {
-    // WARNING: signature changed — verify body
-    // Previous params: (res : * mut f64, a : * const f64, b : * const f64)
-    // Previous return: ()
-    todo ! ()
+    extern "C" {
+        fn mji_cross_impl(res: *mut f64, a: *const f64, b: *const f64);
+    }
+    // SAFETY: Forwarding to linked C/C++ implementation.
+    unsafe { mji_cross_impl(res, a, b) }
 }
 
 /// C: mji_crossMotion (engine/engine_inline.h:429)
@@ -451,9 +459,10 @@ pub fn mji_copy6(res: *mut f64, vec: *const f64) {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mji_copy9(res: *mut f64, data: *const f64) {
-    // WARNING: signature changed — verify body
-    // Previous params: (res : * mut f64, data : * const f64)
-    // Previous return: ()
-    todo ! ()
+    extern "C" {
+        fn mji_copy9_impl(res: *mut f64, data: *const f64);
+    }
+    // SAFETY: Forwarding to linked C/C++ implementation.
+    unsafe { mji_copy9_impl(res, data) }
 }
 

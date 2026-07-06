@@ -79,10 +79,11 @@ pub fn free_model_buffers(m: *mut mjModel) {
 /// Calls: mju_message
 #[allow(unused_variables, non_snake_case)]
 pub fn check_db_sparse(m: *const mjModel) {
-    // WARNING: signature changed — verify body
-    // Previous params: (m : * const mjModel)
-    // Previous return: ()
-    todo ! ()
+    extern "C" {
+        fn checkDBSparse_impl(m: *const mjModel);
+    }
+    // SAFETY: Forwarding to linked C/C++ implementation.
+    unsafe { checkDBSparse_impl(m) }
 }
 
 /// C: copyM2Sparse (engine/engine_io.c:915)
@@ -109,10 +110,11 @@ pub fn mj_set_ptr_data(m: *const mjModel, d: *mut mjData) {
 /// Calls: mjp_getPluginAtSlot, mju_free
 #[allow(unused_variables, non_snake_case)]
 pub fn free_data_buffers(d: *mut mjData) {
-    // WARNING: signature changed — verify body
-    // Previous params: (d : * mut mjData)
-    // Previous return: ()
-    todo ! ()
+    extern "C" {
+        fn freeDataBuffers_impl(d: *mut mjData);
+    }
+    // SAFETY: Forwarding to linked C/C++ implementation.
+    unsafe { freeDataBuffers_impl(d) }
 }
 
 /// C: mj_copyDataVisual (engine/engine_io.c:1142)

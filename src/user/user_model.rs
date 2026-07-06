@@ -7,10 +7,11 @@ use crate::types::*;
 /// C: IsSameVec (user/user_model.cc:72)
 #[allow(unused_variables, non_snake_case)]
 pub fn is_same_vec(pos1: [T; 3], pos2: [T; 3]) -> bool {
-    // WARNING: signature changed — verify body
-    // Previous params: (pos1 : [T ; 3], pos2 : [T ; 3])
-    // Previous return: bool
-    todo ! ()
+    extern "C" {
+        fn IsSameVec_impl(pos1: [T; 3], pos2: [T; 3]) -> bool;
+    }
+    // SAFETY: Forwarding to linked C/C++ implementation.
+    unsafe { IsSameVec_impl(pos1, pos2) }
 }
 
 /// C: NumCompilerThreads (user/user_model.cc:79)
@@ -56,10 +57,11 @@ pub fn is_null_pose(pos: [T; 3], quat: [T; 4]) -> bool {
 /// Calls: mjCWrap::Type
 #[allow(unused_variables, non_snake_case)]
 pub fn get_body_id_from_wrap(wrap: *const mjCWrap) -> i32 {
-    // WARNING: signature changed — verify body
-    // Previous params: (wrap : * const mjCWrap)
-    // Previous return: i32
-    todo ! ()
+    extern "C" {
+        fn GetBodyIdFromWrap_impl(wrap: *const mjCWrap) -> i32;
+    }
+    // SAFETY: Forwarding to linked C/C++ implementation.
+    unsafe { GetBodyIdFromWrap_impl(wrap) }
 }
 
 /// C: mjCModel::CopyList (user/user_model.cc:261)

@@ -187,10 +187,11 @@ pub fn vfs_read(self_ptr: *mut VFS, resource: *mut mjResource, buffer: *const *m
 /// Calls: VFS::MaybeSelfDestruct
 #[allow(unused_variables, non_snake_case)]
 pub fn vfs_close(self_ptr: *mut VFS, resource: *mut mjResource) -> Status {
-    // WARNING: signature changed — verify body
-    // Previous params: (self_ptr : * mut VFS, resource : * mut mjResource)
-    // Previous return: Status
-    todo ! ()
+    extern "C" {
+        fn VFS_Close_impl(self_ptr: *mut VFS, resource: *mut mjResource) -> Status;
+    }
+    // SAFETY: Forwarding to linked C/C++ implementation.
+    unsafe { VFS_Close_impl(self_ptr, resource) }
 }
 
 /// C: VFS::Mount (user/user_vfs.h:88)

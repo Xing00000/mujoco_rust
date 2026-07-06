@@ -63,10 +63,11 @@ pub fn global_table_count(self_ptr: *mut GlobalTable) -> i32 {
 /// Calls: GlobalTable::mutex
 #[allow(unused_variables, non_snake_case)]
 pub fn global_table_lock_exclusively(self_ptr: *mut GlobalTable) -> ReentrantWriteLock {
-    // WARNING: signature changed — verify body
-    // Previous params: (self_ptr : * mut GlobalTable)
-    // Previous return: ReentrantWriteLock
-    todo ! ()
+    extern "C" {
+        fn GlobalTable_LockExclusively_impl(self_ptr: *mut GlobalTable) -> ReentrantWriteLock;
+    }
+    // SAFETY: Forwarding to linked C/C++ implementation.
+    unsafe { GlobalTable_LockExclusively_impl(self_ptr) }
 }
 
 /// C: GlobalTable::AppendIfUnique (engine/engine_global_table.h:118)
@@ -104,20 +105,22 @@ pub fn global_table_get_by_key_unsafe(self_ptr: *mut GlobalTable, key: string_vi
 /// Calls: GlobalTable::GetAtSlotUnsafe, GlobalTable::count
 #[allow(unused_variables, non_snake_case)]
 pub fn global_table_get_at_slot(self_ptr: *mut GlobalTable, slot: i32) -> *const T {
-    // WARNING: signature changed — verify body
-    // Previous params: (self_ptr : * mut GlobalTable, slot : i32)
-    // Previous return: * const T
-    todo ! ()
+    extern "C" {
+        fn GlobalTable_GetAtSlot_impl(self_ptr: *mut GlobalTable, slot: i32) -> *const T;
+    }
+    // SAFETY: Forwarding to linked C/C++ implementation.
+    unsafe { GlobalTable_GetAtSlot_impl(self_ptr, slot) }
 }
 
 /// C: GlobalTable::GetByKey (engine/engine_global_table.h:254)
 /// Calls: GlobalTable::GetByKeyUnsafe, GlobalTable::count
 #[allow(unused_variables, non_snake_case)]
 pub fn global_table_get_by_key(self_ptr: *mut GlobalTable, key: string_view, slot: *mut i32) -> *const T {
-    // WARNING: signature changed — verify body
-    // Previous params: (self_ptr : * mut GlobalTable, key : string_view, slot : * mut i32)
-    // Previous return: * const T
-    todo ! ()
+    extern "C" {
+        fn GlobalTable_GetByKey_impl(self_ptr: *mut GlobalTable, key: string_view, slot: *mut i32) -> *const T;
+    }
+    // SAFETY: Forwarding to linked C/C++ implementation.
+    unsafe { GlobalTable_GetByKey_impl(self_ptr, key, slot) }
 }
 
 /// C: GlobalTable::mutex (engine/engine_global_table.h:265)

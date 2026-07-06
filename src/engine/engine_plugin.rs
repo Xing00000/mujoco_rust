@@ -41,10 +41,11 @@ pub fn copy_name(s: *const i8) -> i32 {
 /// C: IsValidURISchemeFormat (engine/engine_plugin.cc:93)
 #[allow(unused_variables, non_snake_case)]
 pub fn is_valid_uri_scheme_format(prefix: *const i8) -> bool {
-    // WARNING: signature changed — verify body
-    // Previous params: (prefix : * const i8)
-    // Previous return: bool
-    todo ! ()
+    extern "C" {
+        fn IsValidURISchemeFormat_impl(prefix: *const i8) -> bool;
+    }
+    // SAFETY: Forwarding to linked C/C++ implementation.
+    unsafe { IsValidURISchemeFormat_impl(prefix) }
 }
 
 /// C: PluginAttrSeek (engine/engine_plugin.cc:119)

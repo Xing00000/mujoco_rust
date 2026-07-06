@@ -353,10 +353,11 @@ pub fn mjs_is_warning(s: *mut mjSpec) -> i32 {
 /// Calls: mjCModel::Release
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_delete_spec(s: *mut mjSpec) {
-    // WARNING: signature changed — verify body
-    // Previous params: (s : * mut mjSpec)
-    // Previous return: ()
-    todo ! ()
+    extern "C" {
+        fn mj_deleteSpec_impl(s: *mut mjSpec);
+    }
+    // SAFETY: Forwarding to linked C/C++ implementation.
+    unsafe { mj_deleteSpec_impl(s) }
 }
 
 /// C: mjs_addSpec (user/user_api.h:61)

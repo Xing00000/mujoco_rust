@@ -28,10 +28,11 @@ pub fn mju_close_resource(resource: *mut mjResource) {
 /// Calls: VFS::Read, VFS::Upcast
 #[allow(unused_variables, non_snake_case)]
 pub fn mju_read_resource(resource: *mut mjResource, buffer: *const *mut ()) -> i32 {
-    // WARNING: signature changed — verify body
-    // Previous params: (resource : * mut mjResource, buffer : * const * mut ())
-    // Previous return: i32
-    todo ! ()
+    extern "C" {
+        fn mju_readResource_impl(resource: *mut mjResource, buffer: *const *mut ()) -> i32;
+    }
+    // SAFETY: Forwarding to linked C/C++ implementation.
+    unsafe { mju_readResource_impl(resource, buffer) }
 }
 
 /// C: mju_getResourceDir (user/user_resource.cc:82)

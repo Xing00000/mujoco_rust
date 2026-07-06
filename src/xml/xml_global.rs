@@ -18,10 +18,11 @@ pub fn global_model_set(self_ptr: *mut GlobalModel, spec: *mut mjSpec) {
 /// Calls: mjCopyError
 #[allow(unused_variables, non_snake_case)]
 pub fn global_model_to_xml(self_ptr: *mut GlobalModel, m: *const mjModel, error: *mut i8, error_sz: i32) -> std__string {
-    // WARNING: signature changed — verify body
-    // Previous params: (self_ptr : * mut GlobalModel, m : * const mjModel, error : * mut i8, error_sz : i32)
-    // Previous return: std__string
-    todo ! ()
+    extern "C" {
+        fn GlobalModelToXml_impl(self_ptr: *mut GlobalModel, m: *const mjModel, error: *mut i8, error_sz: i32) -> std__string;
+    }
+    // SAFETY: Forwarding to linked C/C++ implementation.
+    unsafe { GlobalModelToXml_impl(self_ptr, m, error, error_sz) }
 }
 
 /// C: GetGlobalModel (xml/xml_global.cc:53)
@@ -48,9 +49,10 @@ pub fn set_global_xml_spec(spec: *mut mjSpec) {
 /// Calls: GetGlobalModel
 #[allow(unused_variables, non_snake_case)]
 pub fn get_global_xml_spec(m: *const mjModel, error: *mut i8, error_sz: i32) -> std__string {
-    // WARNING: signature changed — verify body
-    // Previous params: (m : * const mjModel, error : * mut i8, error_sz : i32)
-    // Previous return: std__string
-    todo ! ()
+    extern "C" {
+        fn GetGlobalXmlSpec_impl(m: *const mjModel, error: *mut i8, error_sz: i32) -> std__string;
+    }
+    // SAFETY: Forwarding to linked C/C++ implementation.
+    unsafe { GetGlobalXmlSpec_impl(m, error, error_sz) }
 }
 

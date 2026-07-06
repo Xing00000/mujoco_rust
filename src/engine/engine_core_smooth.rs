@@ -231,10 +231,11 @@ pub fn mj_solve_ld(x: *mut f64, qLD: *const f64, qLDiagInv: *const f64, nv: i32,
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_solve_m(m: *const mjModel, d: *mut mjData, x: *mut f64, y: *const f64, n: i32) {
-    // WARNING: signature changed — verify body
-    // Previous params: (m : * const mjModel, d : * mut mjData, x : * mut f64, y : * const f64, n : i32)
-    // Previous return: ()
-    todo ! ()
+    extern "C" {
+        fn mj_solveM_impl(m: *const mjModel, d: *mut mjData, x: *mut f64, y: *const f64, n: i32);
+    }
+    // SAFETY: Forwarding to linked C/C++ implementation.
+    unsafe { mj_solveM_impl(m, d, x, y, n) }
 }
 
 /// C: mj_solveM2 (engine/engine_core_smooth.h:91)

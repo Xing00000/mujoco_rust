@@ -56,10 +56,11 @@ pub fn mj_sleep_trees(m: *const mjModel, d: *mut mjData, tree: *const i32, n: i3
 /// C: mj_tendonSleepState (engine/engine_sleep.c:634)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_tendon_sleep_state(m: *const mjModel, d: *const mjData, i: i32) -> mjtSleepState {
-    // WARNING: signature changed — verify body
-    // Previous params: (m : * const mjModel, d : * const mjData, i : i32)
-    // Previous return: mjtSleepState
-    todo ! ()
+    extern "C" {
+        fn mj_tendonSleepState_impl(m: *const mjModel, d: *const mjData, i: i32) -> mjtSleepState;
+    }
+    // SAFETY: Forwarding to linked C/C++ implementation.
+    unsafe { mj_tendonSleepState_impl(m, d, i) }
 }
 
 /// C: mj_actuatorSleepState (engine/engine_sleep.c:659)

@@ -3147,10 +3147,11 @@ pub fn mj_c_mesh_is_msh(filename: string_view, ct: string_view) -> bool {
 /// Calls: mjCMesh::CheckInitialMesh, mjCMesh::CopyFromSpec, mjCMesh::LoadSDF, mjCMesh::Process, mj_getCache
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_mesh_try_compile(self_ptr: *mut mjCMesh, vfs: *const mjVFS) {
-    // WARNING: signature changed — verify body
-    // Previous params: (self_ptr : * mut mjCMesh, vfs : * const mjVFS)
-    // Previous return: ()
-    todo ! ()
+    extern "C" {
+        fn mjCMesh_TryCompile_impl(self_ptr: *mut mjCMesh, vfs: *const mjVFS);
+    }
+    // SAFETY: Forwarding to linked C/C++ implementation.
+    unsafe { mjCMesh_TryCompile_impl(self_ptr, vfs) }
 }
 
 /// C: mjCMesh::LoadCachedMesh (user/user_objects.h:1268)
