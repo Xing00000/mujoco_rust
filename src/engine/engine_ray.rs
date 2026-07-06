@@ -1,5 +1,5 @@
 //! Port of: engine/engine_ray.c
-//! IR hash: 699b5f0da57e8d78
+//! IR hash: 545f394232195ad9
 //! CODEGEN: signatures locked. Only fill todo!() bodies.
 
 use crate::types::*;
@@ -100,7 +100,7 @@ pub fn ray_sphere(pos: *const f64, mat: *const f64, dist_sqr: f64, pnt: *const f
 }
 
 /// C: ray_capsule (engine/engine_ray.c:272)
-/// Calls: mju_mulMatVec3, mju_normalize3, mju_zero3, ray_map, ray_quad
+/// Calls: mju_mulMatVec3, mju_normalize3, mju_zero3, ray_map, ray_quad, ray_sphere
 /// ⚠️ BITEXACT RULES:
 ///   1. Copy exact C accumulation order (no iter().sum())
 ///   2. No f64::mul_add() (FMA changes precision)
@@ -130,7 +130,7 @@ pub fn ray_ellipsoid(pos: *const f64, mat: *const f64, size: *const f64, pnt: *c
 }
 
 /// C: ray_cylinder (engine/engine_ray.c:401)
-/// Calls: mju_mulMatVec3, mju_normalize3, mju_zero3, ray_map, ray_quad
+/// Calls: mju_mulMatVec3, mju_normalize3, mju_zero3, ray_map, ray_quad, ray_sphere
 /// ⚠️ BITEXACT RULES:
 ///   1. Copy exact C accumulation order (no iter().sum())
 ///   2. No f64::mul_add() (FMA changes precision)
@@ -145,7 +145,7 @@ pub fn ray_cylinder(pos: *const f64, mat: *const f64, size: *const f64, pnt: *co
 }
 
 /// C: ray_box (engine/engine_ray.c:490)
-/// Calls: mju_mulMatVec3, mju_zero3, ray_map
+/// Calls: mju_mulMatVec3, mju_zero3, ray_map, ray_sphere
 /// ⚠️ BITEXACT RULES:
 ///   1. Copy exact C accumulation order (no iter().sum())
 ///   2. No f64::mul_add() (FMA changes precision)
@@ -175,7 +175,7 @@ pub fn mju_ray_slab(aabb: *const f64, xpos: *const f64, xmat: *const f64, pnt: *
 }
 
 /// C: mju_rayTree (engine/engine_ray.c:771)
-/// Calls: mju_addScl3, mju_copy3, mju_cross, mju_dot3, mju_message, mju_mulMatVec3, mju_normalize3, mju_raySlab, mju_zero3, ray_map
+/// Calls: mju_addScl3, mju_copy3, mju_cross, mju_dot3, mju_message, mju_mulMatVec3, mju_normalize3, mju_raySlab, mju_zero3, ray_map, ray_triangle
 /// ⚠️ BITEXACT RULES:
 ///   1. Copy exact C accumulation order (no iter().sum())
 ///   2. No f64::mul_add() (FMA changes precision)
@@ -190,7 +190,7 @@ pub fn mju_ray_tree(m: *const mjModel, d: *const mjData, id: i32, pnt: *const f6
 }
 
 /// C: mj_raySdf (engine/engine_ray.c:885)
-/// Calls: mjc_distance, mjc_gradient, mju_addScl3, mju_mulMatVec3, mju_normalize3, mju_zero3, ray_map
+/// Calls: mjc_distance, mjc_getSDF, mjc_gradient, mju_addScl3, mju_mulMatVec3, mju_normalize3, mju_zero3, ray_box, ray_map
 /// ⚠️ BITEXACT RULES:
 ///   1. Copy exact C accumulation order (no iter().sum())
 ///   2. No f64::mul_add() (FMA changes precision)
@@ -220,16 +220,16 @@ pub fn point_in_box(aabb: *const f64, xpos: *const f64, xmat: *const f64, pnt: *
 }
 
 /// C: mju_singleRay (engine/engine_ray.c:1457)
-/// Calls: latitude, longitude, mj_rayHfield, mj_rayMesh, mj_raySdf, mju_add3, mju_copy3, mju_rayGeom, mju_zero3
+/// Calls: latitude, longitude, mj_rayHfield, mj_rayMesh, mj_raySdf, mju_add3, mju_copy3, mju_rayGeom, mju_zero3, ray_sphere
 /// ⚠️ BITEXACT RULES:
 ///   1. Copy exact C accumulation order (no iter().sum())
 ///   2. No f64::mul_add() (FMA changes precision)
 ///   3. No algebraic simplification
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
-pub fn mju_single_ray(m: *const mjModel, d: *mut mjData, pnt: *const f64, vec: *const f64, ray_eliminate: *mut i32, geom_ba: *mut f64, geomid: *mut i32, normal: *mut f64) -> f64 {
+pub fn mju_single_ray(m: *const mjModel, d: *mut mjData, pnt: *const f64, vec: *const f64, ray_eliminate: *mut i32, geom_ba: *mut f64, geomid: [i32; 1], normal: *mut f64) -> f64 {
     // WARNING: signature changed — verify body
-    // Previous params: (m : * const mjModel, d : * mut mjData, pnt : * const f64, vec : * const f64, ray_eliminate : * mut i32, geom_ba : * mut f64, geomid : * mut i32, normal : * mut f64)
+    // Previous params: (m : * const mjModel, d : * mut mjData, pnt : * const f64, vec : * const f64, ray_eliminate : * mut i32, geom_ba : * mut f64, geomid : [i32 ; 1], normal : * mut f64)
     // Previous return: f64
     todo ! ()
 }
@@ -250,7 +250,7 @@ pub fn mju_multi_ray_prepare(m: *const mjModel, d: *const mjData, pnt: *const f6
 }
 
 /// C: mj_multiRay (engine/engine_ray.h:34)
-/// Calls: mj_freeStack, mj_markStack, mju_dot3
+/// Calls: mj_freeStack, mj_markStack, mj_stackAllocInfo, mju_dot3, mju_multiRayPrepare, mju_singleRay
 /// ⚠️ BITEXACT RULES:
 ///   1. Copy exact C accumulation order (no iter().sum())
 ///   2. No f64::mul_add() (FMA changes precision)
@@ -272,15 +272,15 @@ pub fn mj_multi_ray(m: *const mjModel, d: *mut mjData, pnt: *const f64, vec: *co
 ///   3. No algebraic simplification
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
-pub fn mj_ray(m: *const mjModel, d: *const mjData, pnt: *const f64, vec: *const f64, geomgroup: *const u8, flg_static: mjtBool, bodyexclude: i32, geomid: *mut i32, normal: *mut f64) -> f64 {
+pub fn mj_ray(m: *const mjModel, d: *const mjData, pnt: *const f64, vec: *const f64, geomgroup: *const u8, flg_static: mjtBool, bodyexclude: i32, geomid: [i32; 1], normal: *mut f64) -> f64 {
     // WARNING: signature changed — verify body
-    // Previous params: (m : * const mjModel, d : * const mjData, pnt : * const f64, vec : * const f64, geomgroup : * const u8, flg_static : mjtBool, bodyexclude : i32, geomid : * mut i32, normal : * mut f64)
+    // Previous params: (m : * const mjModel, d : * const mjData, pnt : * const f64, vec : * const f64, geomgroup : * const u8, flg_static : mjtBool, bodyexclude : i32, geomid : [i32 ; 1], normal : * mut f64)
     // Previous return: f64
     todo ! ()
 }
 
 /// C: mj_rayHfield (engine/engine_ray.h:47)
-/// Calls: mju_addScl3, mju_copy3, mju_cross, mju_dot3, mju_message, mju_mulMatTVec3, mju_mulMatVec3, mju_normalize3, mju_round, mju_zero3, ray_map
+/// Calls: mju_addScl3, mju_copy3, mju_cross, mju_dot3, mju_message, mju_mulMatTVec3, mju_mulMatVec3, mju_normalize3, mju_round, mju_zero3, ray_box, ray_map, ray_triangle
 /// ⚠️ BITEXACT RULES:
 ///   1. Copy exact C accumulation order (no iter().sum())
 ///   2. No f64::mul_add() (FMA changes precision)
@@ -302,15 +302,85 @@ pub fn mj_ray_hfield(m: *const mjModel, d: *const mjData, geomid: i32, pnt: *con
 ///   3. No algebraic simplification
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
-pub fn ray_triangle(v: *mut f64, lpnt: *const f64, lvec: *const f64, b0: *const f64, b1: *const f64, normal: *mut f64) -> f64 {
-    // WARNING: signature changed — verify body
-    // Previous params: (v : * mut f64, lpnt : * const f64, lvec : * const f64, b0 : * const f64, b1 : * const f64, normal : * mut f64)
-    // Previous return: f64
-    todo ! ()
+pub fn ray_triangle(v: *const [f64; 3], lpnt: *const f64, lvec: *const f64, b0: *const f64, b1: *const f64, normal: *mut f64) -> f64 {
+    use crate::engine::engine_util_blas::{mju_zero3, mju_dot3, mju_sub3, mju_copy3, mju_normalize3};
+    use crate::engine::engine_util_spatial::mju_cross;
+    const MJMINVAL: f64 = 1e-15;
+
+    unsafe {
+        // clear normal if given
+        if !normal.is_null() {
+            mju_zero3(normal);
+        }
+
+        // dif = v[i] - lpnt
+        let mut dif: [[f64; 3]; 3] = [[0.0; 3]; 3];
+        for i in 0..3 {
+            for j in 0..3 {
+                dif[i][j] = (*v.add(i))[j] - *lpnt.add(j);
+            }
+        }
+
+        // project difference vectors in normal plane
+        let mut planar: [[f64; 2]; 3] = [[0.0; 2]; 3];
+        for i in 0..3 {
+            planar[i][0] = mju_dot3(b0, dif[i].as_ptr());
+            planar[i][1] = mju_dot3(b1, dif[i].as_ptr());
+        }
+
+        // reject if on the same side of any coordinate axis
+        if (planar[0][0] > 0.0 && planar[1][0] > 0.0 && planar[2][0] > 0.0) ||
+           (planar[0][0] < 0.0 && planar[1][0] < 0.0 && planar[2][0] < 0.0) ||
+           (planar[0][1] > 0.0 && planar[1][1] > 0.0 && planar[2][1] > 0.0) ||
+           (planar[0][1] < 0.0 && planar[1][1] < 0.0 && planar[2][1] < 0.0) {
+            return -1.0;
+        }
+
+        // determine if origin is inside planar projection of triangle
+        // A = (p0-p2, p1-p2), b = -p2, solve A*t = b
+        let A: [f64; 4] = [
+            planar[0][0] - planar[2][0], planar[1][0] - planar[2][0],
+            planar[0][1] - planar[2][1], planar[1][1] - planar[2][1],
+        ];
+        let b: [f64; 2] = [-planar[2][0], -planar[2][1]];
+        let det = A[0] * A[3] - A[1] * A[2];
+        if det.abs() < MJMINVAL {
+            return -1.0;
+        }
+        let t0 = (A[3] * b[0] - A[1] * b[1]) / det;
+        let t1 = (-A[2] * b[0] + A[0] * b[1]) / det;
+
+        // check if outside
+        if t0 < 0.0 || t1 < 0.0 || t0 + t1 > 1.0 {
+            return -1.0;
+        }
+
+        // intersect ray with plane of triangle
+        mju_sub3(dif[0].as_mut_ptr(), (*v.add(0)).as_ptr(), (*v.add(2)).as_ptr());  // v0-v2
+        mju_sub3(dif[1].as_mut_ptr(), (*v.add(1)).as_ptr(), (*v.add(2)).as_ptr());  // v1-v2
+        mju_sub3(dif[2].as_mut_ptr(), lpnt, (*v.add(2)).as_ptr());                  // lp-v2
+        let mut nrm: [f64; 3] = [0.0; 3];
+        mju_cross(nrm.as_mut_ptr(), dif[0].as_ptr(), dif[1].as_ptr());  // normal to triangle plane
+        let denom = mju_dot3(lvec, nrm.as_ptr());
+        if denom.abs() < MJMINVAL {
+            return -1.0;
+        }
+
+        // compute distance
+        let x = -mju_dot3(dif[2].as_ptr(), nrm.as_ptr()) / denom;
+
+        // compute normal if given
+        if !normal.is_null() {
+            mju_normalize3(nrm.as_mut_ptr());
+            mju_copy3(normal, nrm.as_ptr());
+        }
+
+        x
+    }
 }
 
 /// C: mj_rayMesh (engine/engine_ray.h:55)
-/// Calls: mju_message, mju_rayTree, mju_zero3
+/// Calls: mju_message, mju_rayTree, mju_zero3, ray_box
 /// ⚠️ BITEXACT RULES:
 ///   1. Copy exact C accumulation order (no iter().sum())
 ///   2. No f64::mul_add() (FMA changes precision)
@@ -325,7 +395,7 @@ pub fn mj_ray_mesh(m: *const mjModel, d: *const mjData, geomid: i32, pnt: *const
 }
 
 /// C: mju_rayGeom (engine/engine_ray.h:59)
-/// Calls: mju_message, ray_capsule, ray_cylinder, ray_ellipsoid, ray_plane, ray_sphere
+/// Calls: mju_message, ray_box, ray_capsule, ray_cylinder, ray_ellipsoid, ray_plane, ray_sphere
 /// ⚠️ BITEXACT RULES:
 ///   1. Copy exact C accumulation order (no iter().sum())
 ///   2. No f64::mul_add() (FMA changes precision)
@@ -340,31 +410,31 @@ pub fn mju_ray_geom(pos: *const f64, mat: *const f64, size: *const f64, pnt: *co
 }
 
 /// C: mj_rayFlex (engine/engine_ray.h:64)
-/// Calls: mju_add3, mju_addScl3, mju_copy3, mju_cross, mju_dist3, mju_dot3, mju_normalize3, mju_quat2Mat, mju_quatZ2Vec, mju_scl3, mju_zero3
+/// Calls: mju_add3, mju_addScl3, mju_copy3, mju_cross, mju_dist3, mju_dot3, mju_normalize3, mju_quat2Mat, mju_quatZ2Vec, mju_rayGeom, mju_scl3, mju_zero3, ray_box, ray_triangle
 /// ⚠️ BITEXACT RULES:
 ///   1. Copy exact C accumulation order (no iter().sum())
 ///   2. No f64::mul_add() (FMA changes precision)
 ///   3. No algebraic simplification
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
-pub fn mj_ray_flex(m: *const mjModel, d: *const mjData, flex_layer: i32, flg_vert: mjtBool, flg_edge: mjtBool, flg_face: mjtBool, flg_skin: mjtBool, flexid: i32, pnt: *const f64, vec: *const f64, vertid: *mut i32, normal: *mut f64) -> f64 {
+pub fn mj_ray_flex(m: *const mjModel, d: *const mjData, flex_layer: i32, flg_vert: mjtBool, flg_edge: mjtBool, flg_face: mjtBool, flg_skin: mjtBool, flexid: i32, pnt: *const f64, vec: *const f64, vertid: [i32; 1], normal: *mut f64) -> f64 {
     // WARNING: signature changed — verify body
-    // Previous params: (m : * const mjModel, d : * const mjData, flex_layer : i32, flg_vert : mjtBool, flg_edge : mjtBool, flg_face : mjtBool, flg_skin : mjtBool, flexid : i32, pnt : * const f64, vec : * const f64, vertid : * mut i32, normal : * mut f64)
+    // Previous params: (m : * const mjModel, d : * const mjData, flex_layer : i32, flg_vert : mjtBool, flg_edge : mjtBool, flg_face : mjtBool, flg_skin : mjtBool, flexid : i32, pnt : * const f64, vec : * const f64, vertid : [i32 ; 1], normal : * mut f64)
     // Previous return: f64
     todo ! ()
 }
 
 /// C: mju_raySkin (engine/engine_ray.h:70)
-/// Calls: mju_addScl3, mju_cross, mju_dist3, mju_dot3, mju_normalize3
+/// Calls: mju_addScl3, mju_cross, mju_dist3, mju_dot3, mju_normalize3, ray_box, ray_triangle
 /// ⚠️ BITEXACT RULES:
 ///   1. Copy exact C accumulation order (no iter().sum())
 ///   2. No f64::mul_add() (FMA changes precision)
 ///   3. No algebraic simplification
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
-pub fn mju_ray_skin(nface: i32, nvert: i32, face: *const i32, vert: *const f32, pnt: *const f64, vec: *const f64, vertid: *mut i32) -> f64 {
+pub fn mju_ray_skin(nface: i32, nvert: i32, face: *const i32, vert: *const f32, pnt: *const f64, vec: *const f64, vertid: [i32; 1]) -> f64 {
     // WARNING: signature changed — verify body
-    // Previous params: (nface : i32, nvert : i32, face : * const i32, vert : * const f32, pnt : * const f64, vec : * const f64, vertid : * mut i32)
+    // Previous params: (nface : i32, nvert : i32, face : * const i32, vert : * const f32, pnt : * const f64, vec : * const f64, vertid : [i32 ; 1])
     // Previous return: f64
     todo ! ()
 }

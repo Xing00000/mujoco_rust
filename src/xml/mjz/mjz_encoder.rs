@@ -1,5 +1,5 @@
 //! Port of: xml/mjz/mjz_encoder.cc
-//! IR hash: 699b5f0da57e8d78
+//! IR hash: 545f394232195ad9
 //! CODEGEN: signatures locked. Only fill todo!() bodies.
 
 use crate::types::*;
@@ -15,24 +15,31 @@ pub fn sanitize_path(path: *const fs__path) -> fs__path {
 
 /// C: RemoveLeadingDotDot (xml/mjz/mjz_encoder.cc:92)
 #[allow(unused_variables, non_snake_case)]
-pub fn remove_leading_dot_dot(p: *const fs__path) -> i32 {
+pub fn remove_leading_dot_dot(p: *const fs__path) -> std__string {
     // WARNING: signature changed — verify body
     // Previous params: (p : * const fs__path)
-    // Previous return: i32
+    // Previous return: std__string
+    todo ! ()
+}
+
+/// C: _mj_init_mjz_encoder (xml/mjz/mjz_encoder.cc:99)
+/// Calls: mjp_defaultEncoder, mjp_registerEncoder
+#[allow(unused_variables, non_snake_case)]
+pub fn mj_init_mjz_encoder() {
     todo ! ()
 }
 
 /// C: ApplyRewrites (xml/mjz/mjz_encoder.cc:109)
 #[allow(unused_variables, non_snake_case)]
-pub fn apply_rewrites(xml: *mut i32, rewrites: *const i32) {
+pub fn apply_rewrites(xml: *mut std__string, rewrites: *const i32) {
     // WARNING: signature changed — verify body
-    // Previous params: (xml : * mut i32, rewrites : * const i32)
+    // Previous params: (xml : * mut std__string, rewrites : * const i32)
     // Previous return: ()
     todo ! ()
 }
 
 /// C: CollectAssets (xml/mjz/mjz_encoder.cc:157)
-/// Calls: SanitizePath, mjs_asHField, mjs_asMesh, mjs_asSkin, mjs_asTexture, mjs_firstElement, mjs_getCompiler, mjs_getOriginSpec, mjs_nextElement
+/// Calls: SanitizePath, mjs_asHField, mjs_asMesh, mjs_asSkin, mjs_asTexture, mjs_firstElement, mjs_getCompiler, mjs_getName, mjs_getOriginSpec, mjs_nextElement
 #[allow(unused_variables, non_snake_case)]
 pub fn collect_assets(spec: *const mjSpec, xml_rewrites: *mut i32) -> i32 {
     // WARNING: signature changed — verify body
@@ -48,13 +55,6 @@ pub fn mjz_encode(spec: *const mjSpec, model: *const mjModel, vfs: *const mjVFS,
     // WARNING: signature changed — verify body
     // Previous params: (spec : * const mjSpec, model : * const mjModel, vfs : * const mjVFS, resource : * mut mjResource)
     // Previous return: i32
-    todo ! ()
-}
-
-/// C: _mj_init_mjz_encoder (xml/mjz/mjz_encoder.cc:329)
-/// Calls: mjp_defaultEncoder, mjp_registerEncoder
-#[allow(unused_variables, non_snake_case)]
-pub fn mj_init_mjz_encoder() {
     todo ! ()
 }
 

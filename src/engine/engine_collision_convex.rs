@@ -1,5 +1,5 @@
 //! Port of: engine/engine_collision_convex.c
-//! IR hash: 699b5f0da57e8d78
+//! IR hash: 545f394232195ad9
 //! CODEGEN: signatures locked. Only fill todo!() bodies.
 
 use crate::types::*;
@@ -29,7 +29,7 @@ pub fn libccd_wrapper(m: *const mjModel, obj1: *mut mjCCDObj, obj2: *mut mjCCDOb
 }
 
 /// C: mjc_penetration (engine/engine_collision_convex.c:87)
-/// Calls: _libccd_wrapper, mj_freeStack, mj_markStack, mjc_ccd, mji_sub3, mji_zero3, mju_normalize3
+/// Calls: _libccd_wrapper, mj_freeStack, mj_markStack, mj_stackAllocByte, mjc_ccd, mjc_ccdSize, mji_sub3, mji_zero3, mju_normalize3
 /// ⚠️ BITEXACT RULES:
 ///   1. Copy exact C accumulation order (no iter().sum())
 ///   2. No f64::mul_add() (FMA changes precision)
@@ -152,9 +152,9 @@ pub fn mjc_box_support(res: *mut f64, obj: *mut mjCCDObj, dir: *const f64) {
 ///   3. No algebraic simplification
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
-pub fn dot3f(a: *const f64, b: *const f32) -> f64 {
+pub fn dot3f(a: *const f64, b: [f32; 3]) -> f64 {
     // WARNING: signature changed — verify body
-    // Previous params: (a : * const f64, b : * const f32)
+    // Previous params: (a : * const f64, b : [f32 ; 3])
     // Previous return: f64
     todo ! ()
 }
@@ -275,9 +275,9 @@ pub fn max_contacts(m: *const mjModel, obj1: *const mjCCDObj, obj2: *const mjCCD
 ///   3. No algebraic simplification
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
-pub fn addplanemesh(con: *mut mjPreContact, vertex: *const f32, pos1: *const f64, normal1: *const f64, pos2: *const f64, mat2: *const f64, first: *const f64, rbound: f64) -> i32 {
+pub fn addplanemesh(con: *mut mjPreContact, vertex: [f32; 3], pos1: *const f64, normal1: *const f64, pos2: *const f64, mat2: *const f64, first: *const f64, rbound: f64) -> i32 {
     // WARNING: signature changed — verify body
-    // Previous params: (con : * mut mjPreContact, vertex : * const f32, pos1 : * const f64, normal1 : * const f64, pos2 : * const f64, mat2 : * const f64, first : * const f64, rbound : f64)
+    // Previous params: (con : * mut mjPreContact, vertex : [f32 ; 3], pos1 : * const f64, normal1 : * const f64, pos2 : * const f64, mat2 : * const f64, first : * const f64, rbound : f64)
     // Previous return: i32
     todo ! ()
 }

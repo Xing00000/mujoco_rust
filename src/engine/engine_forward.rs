@@ -1,5 +1,5 @@
 //! Port of: engine/engine_forward.c
-//! IR hash: 699b5f0da57e8d78
+//! IR hash: 545f394232195ad9
 //! CODEGEN: signatures locked. Only fill todo!() bodies.
 
 use crate::types::*;
@@ -35,7 +35,7 @@ pub fn clamp_vec(vec: *mut f64, range: *const f64, limited: *const mjtBool, n: i
 }
 
 /// C: warmstart (engine/engine_forward.c:786)
-/// Calls: mj_constraintUpdate, mj_freeStack, mj_isSparse, mj_markStack, mj_mulJacVec, mj_mulM, mju_copy, mju_dot, mju_mulMatVec, mju_subFrom, mju_zero
+/// Calls: mj_constraintUpdate, mj_freeStack, mj_isSparse, mj_markStack, mj_mulJacVec, mj_mulM, mj_stackAllocInfo, mju_copy, mju_dot, mju_mulMatVec, mju_mulMatVecSparse, mju_subFrom, mju_zero
 #[allow(unused_variables, non_snake_case)]
 pub fn warmstart(m: *const mjModel, d: *mut mjData) {
     // WARNING: signature changed — verify body
@@ -79,7 +79,7 @@ pub fn flex_has_implicit_stiffness(m: *const mjModel) -> i32 {
 }
 
 /// C: flexInterp_cgsolve (engine/engine_forward.c:1311)
-/// Calls: mj_freeStack, mj_markStack, mjd_flexBend_mul, mjd_flexInterp_cacheKrot, mjd_flexInterp_mul, mju_addScl, mju_addToScl, mju_copy, mju_dot, mju_max, mju_mulSymVecSparse, mju_sub, mju_zero
+/// Calls: mj_freeStack, mj_markStack, mj_solveLD, mj_stackAllocInfo, mjd_flexBend_mul, mjd_flexInterp_cacheKrot, mjd_flexInterp_mul, mju_addScl, mju_addToScl, mju_copy, mju_dot, mju_max, mju_mulMatVecSparse, mju_mulSymVecSparse, mju_solveLUSparse, mju_sub, mju_zero
 /// ⚠️ BITEXACT RULES:
 ///   1. Copy exact C accumulation order (no iter().sum())
 ///   2. No f64::mul_add() (FMA changes precision)
@@ -222,7 +222,7 @@ pub fn mj_forward_skip(m: *const mjModel, d: *mut mjData, skipstage: i32, skipse
 }
 
 /// C: mj_RungeKutta (engine/engine_forward.h:53)
-/// Calls: mj_advance, mj_forwardSkip, mj_freeStack, mj_integratePos, mj_markStack, mju_addToScl, mju_copy, mju_message, mju_zero
+/// Calls: mj_advance, mj_forwardSkip, mj_freeStack, mj_integratePos, mj_markStack, mj_stackAllocInfo, mju_addToScl, mju_copy, mju_message, mju_zero
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_runge_kutta(m: *const mjModel, d: *mut mjData, N: i32) {
     // WARNING: signature changed — verify body
@@ -242,7 +242,7 @@ pub fn mj_euler(m: *const mjModel, d: *mut mjData) {
 }
 
 /// C: mj_EulerSkip (engine/engine_forward.h:59)
-/// Calls: mj_actuatorDamping, mj_factorI, mj_freeStack, mj_markStack, mj_solveLD, mjd_xPolyForce, mju_add, mju_addInd, mju_copy, mju_copyInd, mju_copySparse, mju_isZero
+/// Calls: mj_actuatorDamping, mj_advance, mj_factorI, mj_freeStack, mj_markStack, mj_solveLD, mj_stackAllocInfo, mjd_xPolyForce, mju_add, mju_addInd, mju_copy, mju_copyInd, mju_copySparse, mju_isZero
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_euler_skip(m: *const mjModel, d: *mut mjData, skipfactor: i32) {
     // WARNING: signature changed — verify body
@@ -262,7 +262,7 @@ pub fn mj_implicit(m: *const mjModel, d: *mut mjData) {
 }
 
 /// C: mj_implicitSkip (engine/engine_forward.h:65)
-/// Calls: flexInterp_cgsolve, flex_has_implicit_stiffness, midpoint, midpoint_aligned, midpoint_eligible, mj_advance, mj_factorI, mj_freeStack, mj_markStack, mj_solveLD, mjd_smooth_vel, mju_add, mju_addInd, mju_addScl, mju_addToScl, mju_copy, mju_copyInd, mju_factorLUSparse, mju_gather, mju_gatherMasked, mju_message, mju_solveLUSparse
+/// Calls: flexInterp_cgsolve, flex_has_implicit_stiffness, midpoint, midpoint_aligned, midpoint_eligible, mj_advance, mj_factorI, mj_freeStack, mj_markStack, mj_solveLD, mj_stackAllocInfo, mjd_smooth_vel, mju_add, mju_addInd, mju_addScl, mju_addToScl, mju_copy, mju_copyInd, mju_factorLUSparse, mju_gather, mju_gatherMasked, mju_message, mju_solveLUSparse
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_implicit_skip(m: *const mjModel, d: *mut mjData, skipfactor: i32) {
     // WARNING: signature changed — verify body
@@ -307,7 +307,7 @@ pub fn mj_fwd_position(m: *const mjModel, d: *mut mjData) {
 }
 
 /// C: mj_fwdVelocity (engine/engine_forward.h:84)
-/// Calls: mj_comVel, mj_passive, mj_referenceConstraint, mj_rne, mj_tendonBias, mju_zero
+/// Calls: mj_comVel, mj_passive, mj_referenceConstraint, mj_rne, mj_tendonBias, mju_mulMatVecSparse, mju_zero
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_fwd_velocity(m: *const mjModel, d: *mut mjData) {
     // WARNING: signature changed — verify body
@@ -317,7 +317,7 @@ pub fn mj_fwd_velocity(m: *const mjModel, d: *mut mjData) {
 }
 
 /// C: mj_fwdActuation (engine/engine_forward.h:87)
-/// Calls: clampVec, dcmotorVoltage, mj_actuatorDisabled, mj_dcmotorSlots, mj_freeStack, mj_lugreStribeck, mj_markStack, mj_nextActivation, mj_readCtrl, mj_sleepState, mj_warning, mjp_getPluginAtSlotUnsafe, mjp_pluginCount, mju_addTo, mju_clip, mju_isBad, mju_max, mju_message, mju_min, mju_mulMatTVecSparse, mju_muscleBias, mju_muscleDynamics, mju_muscleGain, mju_norm3, mju_zero
+/// Calls: clampVec, dcmotorVoltage, mj_actuatorDisabled, mj_dcmotorSlots, mj_freeStack, mj_lugreStribeck, mj_markStack, mj_nextActivation, mj_readCtrl, mj_sleepState, mj_stackAllocInfo, mj_warning, mjp_getPluginAtSlotUnsafe, mjp_pluginCount, mju_addTo, mju_clip, mju_isBad, mju_max, mju_message, mju_min, mju_mulMatTVecSparse, mju_muscleBias, mju_muscleDynamics, mju_muscleGain, mju_norm3, mju_zero
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_fwd_actuation(m: *const mjModel, d: *mut mjData) {
     // WARNING: signature changed — verify body
@@ -337,7 +337,7 @@ pub fn mj_fwd_acceleration(m: *const mjModel, d: *mut mjData) {
 }
 
 /// C: mj_fwdConstraint (engine/engine_forward.h:93)
-/// Calls: mj_dualFinish, mj_mulJacVec, mj_solCG, mj_solNewton, mj_solNoSlip, mj_solNoSlip_island, mj_solPGS, mju_copy, mju_gather, mju_message, mju_scatter, mju_subFrom, mju_zero, mju_zeroInt, warmstart
+/// Calls: mj_dualFinish, mj_mulJacVec, mj_solCG, mj_solNewton, mj_solNoSlip, mj_solNoSlip_island, mj_solPGS, mju_copy, mju_dispatch, mju_gather, mju_message, mju_scatter, mju_subFrom, mju_zero, mju_zeroInt, warmstart
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_fwd_constraint(m: *const mjModel, d: *mut mjData) {
     // WARNING: signature changed — verify body

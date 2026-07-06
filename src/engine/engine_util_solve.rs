@@ -1,5 +1,5 @@
 //! Port of: engine/engine_util_solve.c
-//! IR hash: 699b5f0da57e8d78
+//! IR hash: 545f394232195ad9
 //! CODEGEN: signatures locked. Only fill todo!() bodies.
 
 use crate::types::*;
@@ -27,9 +27,9 @@ pub fn mul_vec_mat_vec_sym(vec: *const f64, mat: *const f64, n: i32) -> f64 {
 ///   3. No algebraic simplification
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
-pub fn mul_sym_vec(res: mjtNum__restrict, mat: *const f64, vec: *const f64, n: i32) {
+pub fn mul_sym_vec(res: *mut f64, mat: *const f64, vec: *const f64, n: i32) {
     // WARNING: signature changed — verify body
-    // Previous params: (res : mjtNum__restrict, mat : * const f64, vec : * const f64, n : i32)
+    // Previous params: (res : * mut f64, mat : * const f64, vec : * const f64, n : i32)
     // Previous return: ()
     todo ! ()
 }
@@ -94,7 +94,7 @@ pub fn mju_chol_factor_sparse(mat: *mut f64, n: i32, mindiag: f64, rownnz: *mut 
 }
 
 /// C: mju_cholFactorSymbolic (engine/engine_util_solve.h:45)
-/// Calls: mj_freeStack, mj_markStack
+/// Calls: mj_freeStack, mj_markStack, mj_stackAllocInfo
 #[allow(unused_variables, non_snake_case)]
 pub fn mju_chol_factor_symbolic(L_colind: *mut i32, L_rownnz: *mut i32, L_rowadr: *mut i32, LT_colind: *mut i32, LT_rownnz: *mut i32, LT_rowadr: *mut i32, LT_map: *mut i32, rownnz: *const i32, rowadr: *const i32, colind: *const i32, n: i32, d: *mut mjData) -> i32 {
     // WARNING: signature changed — verify body
@@ -104,7 +104,7 @@ pub fn mju_chol_factor_symbolic(L_colind: *mut i32, L_rownnz: *mut i32, L_rowadr
 }
 
 /// C: mju_cholFactorNumeric (engine/engine_util_solve.h:53)
-/// Calls: mj_freeStack, mj_markStack, mju_scatter, mju_zero
+/// Calls: mj_freeStack, mj_markStack, mj_stackAllocInfo, mju_scatter, mju_zero
 /// ⚠️ BITEXACT RULES:
 ///   1. Copy exact C accumulation order (no iter().sum())
 ///   2. No f64::mul_add() (FMA changes precision)
@@ -134,7 +134,7 @@ pub fn mju_chol_solve_sparse(res: *mut f64, mat: *const f64, vec: *const f64, n:
 }
 
 /// C: mju_cholUpdateSparse (engine/engine_util_solve.h:66)
-/// Calls: mj_freeStack, mj_markStack, mju_scatter, mju_zero
+/// Calls: mj_freeStack, mj_markStack, mj_stackAllocInfo, mju_scatter, mju_zero
 /// ⚠️ BITEXACT RULES:
 ///   1. Copy exact C accumulation order (no iter().sum())
 ///   2. No f64::mul_add() (FMA changes precision)
@@ -379,6 +379,7 @@ pub fn mju_box_qp(res: *mut f64, R: *mut f64, index: *mut i32, H: *const f64, g:
 }
 
 /// C: mju_boxQPmalloc (engine/engine_util_solve.h:146)
+/// Calls: mju_malloc
 /// ⚠️ BITEXACT RULES:
 ///   1. Copy exact C accumulation order (no iter().sum())
 ///   2. No f64::mul_add() (FMA changes precision)

@@ -1,5 +1,5 @@
 //! Port of: user/user_vfs.cc
-//! IR hash: 699b5f0da57e8d78
+//! IR hash: 545f394232195ad9
 //! CODEGEN: signatures locked. Only fill todo!() bodies.
 
 use crate::types::*;
@@ -32,6 +32,7 @@ pub fn close_file(resource: *mut mjResource) {
 }
 
 /// C: FileModified (user/user_vfs.cc:79)
+/// Calls: mju_decodeBase64
 #[allow(unused_variables, non_snake_case)]
 pub fn file_modified(resource: *const mjResource, timestamp: *const i8) -> i32 {
     // WARNING: signature changed — verify body
@@ -51,9 +52,9 @@ pub fn strip_path_and_lower(path: i32) -> i32 {
 
 /// C: VFS::FindMount (user/user_vfs.cc:287)
 #[allow(unused_variables, non_snake_case)]
-pub fn vfs_find_mount(fullpath: *const i32) -> *mut mjResource {
+pub fn vfs_find_mount(self_ptr: *mut VFS, fullpath: *const i32) -> *mut mjResource {
     // WARNING: signature changed — verify body
-    // Previous params: (fullpath : * const i32)
+    // Previous params: (self_ptr : * mut VFS, fullpath : * const i32)
     // Previous return: * mut mjResource
     todo ! ()
 }
@@ -159,18 +160,18 @@ pub fn mj_contains_file_vfs(vfs: *mut mjVFS, directory: *const i8, filename: *co
 /// C: VFS::Open (user/user_vfs.h:75)
 /// Calls: VFS::MaybeSelfDestruct
 #[allow(unused_variables, non_snake_case)]
-pub fn vfs_open(dir: *const i8, name: *const i8) -> *mut mjResource {
+pub fn vfs_open(self_ptr: *mut VFS, dir: *const i8, name: *const i8) -> *mut mjResource {
     // WARNING: signature changed — verify body
-    // Previous params: (dir : * const i8, name : * const i8)
+    // Previous params: (self_ptr : * mut VFS, dir : * const i8, name : * const i8)
     // Previous return: * mut mjResource
     todo ! ()
 }
 
 /// C: VFS::Read (user/user_vfs.h:80)
 #[allow(unused_variables, non_snake_case)]
-pub fn vfs_read(resource: *mut mjResource, buffer: *const *mut ()) -> i32 {
+pub fn vfs_read(self_ptr: *mut VFS, resource: *mut mjResource, buffer: *const *mut ()) -> i32 {
     // WARNING: signature changed — verify body
-    // Previous params: (resource : * mut mjResource, buffer : * const * mut ())
+    // Previous params: (self_ptr : * mut VFS, resource : * mut mjResource, buffer : * const * mut ())
     // Previous return: i32
     todo ! ()
 }
@@ -178,36 +179,36 @@ pub fn vfs_read(resource: *mut mjResource, buffer: *const *mut ()) -> i32 {
 /// C: VFS::Close (user/user_vfs.h:84)
 /// Calls: VFS::MaybeSelfDestruct
 #[allow(unused_variables, non_snake_case)]
-pub fn vfs_close(resource: *mut mjResource) -> Status {
+pub fn vfs_close(self_ptr: *mut VFS, resource: *mut mjResource) -> Status {
     // WARNING: signature changed — verify body
-    // Previous params: (resource : * mut mjResource)
+    // Previous params: (self_ptr : * mut VFS, resource : * mut mjResource)
     // Previous return: Status
     todo ! ()
 }
 
 /// C: VFS::Mount (user/user_vfs.h:88)
 #[allow(unused_variables, non_snake_case)]
-pub fn vfs_mount(path: *const FilePath, provider: *const mjpResourceProvider) -> Status {
+pub fn vfs_mount(self_ptr: *mut VFS, path: *const FilePath, provider: *const mjpResourceProvider) -> Status {
     // WARNING: signature changed — verify body
-    // Previous params: (path : * const FilePath, provider : * const mjpResourceProvider)
+    // Previous params: (self_ptr : * mut VFS, path : * const FilePath, provider : * const mjpResourceProvider)
     // Previous return: Status
     todo ! ()
 }
 
 /// C: VFS::Unmount (user/user_vfs.h:91)
 #[allow(unused_variables, non_snake_case)]
-pub fn vfs_unmount(path: *const FilePath) -> Status {
+pub fn vfs_unmount(self_ptr: *mut VFS, path: *const FilePath) -> Status {
     // WARNING: signature changed — verify body
-    // Previous params: (path : * const FilePath)
+    // Previous params: (self_ptr : * mut VFS, path : * const FilePath)
     // Previous return: Status
     todo ! ()
 }
 
 /// C: VFS::ContainsBuffer (user/user_vfs.h:94)
 #[allow(unused_variables, non_snake_case)]
-pub fn vfs_contains_buffer(name: *const i8) -> bool {
+pub fn vfs_contains_buffer(self_ptr: *mut VFS, name: *const i8) -> bool {
     // WARNING: signature changed — verify body
-    // Previous params: (name : * const i8)
+    // Previous params: (self_ptr : * mut VFS, name : * const i8)
     // Previous return: bool
     todo ! ()
 }
@@ -215,18 +216,18 @@ pub fn vfs_contains_buffer(name: *const i8) -> bool {
 /// C: VFS::ContainsFile (user/user_vfs.h:97)
 /// Calls: FilePath::Lower, FilePath::StripPath
 #[allow(unused_variables, non_snake_case)]
-pub fn vfs_contains_file(directory: *const i8, filename: *const i8) -> bool {
+pub fn vfs_contains_file(self_ptr: *mut VFS, directory: *const i8, filename: *const i8) -> bool {
     // WARNING: signature changed — verify body
-    // Previous params: (directory : * const i8, filename : * const i8)
+    // Previous params: (self_ptr : * mut VFS, directory : * const i8, filename : * const i8)
     // Previous return: bool
     todo ! ()
 }
 
 /// C: VFS::SetToSelfDestruct (user/user_vfs.h:105)
 #[allow(unused_variables, non_snake_case)]
-pub fn vfs_set_to_self_destruct(destructor: *const ()) {
+pub fn vfs_set_to_self_destruct(self_ptr: *mut VFS, destructor: *const ()) {
     // WARNING: signature changed — verify body
-    // Previous params: (destructor : * const ())
+    // Previous params: (self_ptr : * mut VFS, destructor : * const ())
     // Previous return: ()
     todo ! ()
 }
@@ -243,16 +244,19 @@ pub fn vfs_upcast(vfs: *mut mjVFS) -> *mut VFS {
 /// C: VFS::CreateResource (user/user_vfs.h:113)
 /// Calls: mju_warning
 #[allow(unused_variables, non_snake_case)]
-pub fn vfs_create_resource(name: std__string_view, provider: *const mjpResourceProvider) -> ResourcePtr {
+pub fn vfs_create_resource(self_ptr: *mut VFS, name: string_view, provider: *const mjpResourceProvider) -> ResourcePtr {
     // WARNING: signature changed — verify body
-    // Previous params: (name : std__string_view, provider : * const mjpResourceProvider)
+    // Previous params: (self_ptr : * mut VFS, name : string_view, provider : * const mjpResourceProvider)
     // Previous return: ResourcePtr
     todo ! ()
 }
 
 /// C: VFS::MaybeSelfDestruct (user/user_vfs.h:124)
 #[allow(unused_variables, non_snake_case)]
-pub fn vfs_maybe_self_destruct() {
+pub fn vfs_maybe_self_destruct(self_ptr: *mut VFS) {
+    // WARNING: signature changed — verify body
+    // Previous params: (self_ptr : * mut VFS)
+    // Previous return: ()
     todo ! ()
 }
 

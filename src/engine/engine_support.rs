@@ -1,5 +1,5 @@
 //! Port of: engine/engine_support.c
-//! IR hash: 699b5f0da57e8d78
+//! IR hash: 545f394232195ad9
 //! CODEGEN: signatures locked. Only fill todo!() bodies.
 
 use crate::types::*;
@@ -45,7 +45,7 @@ pub fn mj_state_elem_const_ptr(m: *const mjModel, d: *const mjData, sig: mjtStat
 }
 
 /// C: mj_geomDistanceCCD (engine/engine_support.c:519)
-/// Calls: mj_freeStack, mj_markStack, mjc_ccd, mjc_initCCDObj, mju_copy3
+/// Calls: mj_freeStack, mj_markStack, mj_stackAllocByte, mjc_ccd, mjc_ccdSize, mjc_initCCDObj, mju_copy3
 /// ⚠️ BITEXACT RULES:
 ///   1. Copy exact C accumulation order (no iter().sum())
 ///   2. No f64::mul_add() (FMA changes precision)
@@ -195,7 +195,7 @@ pub fn mj_add_m(m: *const mjModel, d: *mut mjData, dst: *mut f64, rownnz: *mut i
 }
 
 /// C: mj_applyFT (engine/engine_support.h:79)
-/// Calls: mj_bodyChain, mj_freeStack, mj_isSparse, mj_jac, mj_jacSparse, mj_markStack, mju_addTo, mju_message, mju_mulMatTVec
+/// Calls: mj_bodyChain, mj_freeStack, mj_isSparse, mj_jac, mj_jacSparse, mj_markStack, mj_stackAllocInfo, mju_addTo, mju_message, mju_mulMatTVec
 /// ⚠️ BITEXACT RULES:
 ///   1. Copy exact C accumulation order (no iter().sum())
 ///   2. No f64::mul_add() (FMA changes precision)
@@ -270,6 +270,7 @@ pub fn mj_integrate_pos_ind(m: *const mjModel, qpos: *mut f64, qvel: *const f64,
 }
 
 /// C: mj_integratePos (engine/engine_support.h:102)
+/// Calls: mj_integratePosInd
 /// ⚠️ BITEXACT RULES:
 ///   1. Copy exact C accumulation order (no iter().sum())
 ///   2. No f64::mul_add() (FMA changes precision)

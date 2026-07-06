@@ -1,20 +1,20 @@
 //! Port of: engine/engine_island.c
-//! IR hash: 699b5f0da57e8d78
+//! IR hash: 545f394232195ad9
 //! CODEGEN: signatures locked. Only fill todo!() bodies.
 
 use crate::types::*;
 
 /// C: clearIsland (engine/engine_island.c:39)
 #[allow(unused_variables, non_snake_case)]
-pub fn clear_island(d: *mut mjData, parena: i32) {
+pub fn clear_island(d: *mut mjData, parena: usize) {
     // WARNING: signature changed — verify body
-    // Previous params: (d : * mut mjData, parena : i32)
+    // Previous params: (d : * mut mjData, parena : usize)
     // Previous return: ()
     todo ! ()
 }
 
 /// C: arenaAllocIsland (engine/engine_island.c:57)
-/// Calls: mj_warning
+/// Calls: clearIsland, mj_arenaAllocByte, mj_warning
 #[allow(unused_variables, non_snake_case)]
 pub fn arena_alloc_island(m: *const mjModel, d: *mut mjData) -> i32 {
     // WARNING: signature changed — verify body
@@ -64,7 +64,7 @@ pub fn mj_flood_fill(island: *mut i32, nr: i32, rownnz: *const i32, rowadr: *con
 }
 
 /// C: mj_island (engine/engine_island.h:35)
-/// Calls: arenaAllocIsland, findEdges, mj_floodFill, mj_freeStack, mj_markStack, mju_compare, mju_copyInt, mju_gather, mju_gatherInt, mju_message, mju_zeroInt
+/// Calls: arenaAllocIsland, findEdges, mj_floodFill, mj_freeStack, mj_markStack, mj_stackAllocInfo, mju_compare, mju_copyInt, mju_gather, mju_gatherInt, mju_message, mju_zeroInt
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_island(m: *const mjModel, d: *mut mjData) {
     // WARNING: signature changed — verify body

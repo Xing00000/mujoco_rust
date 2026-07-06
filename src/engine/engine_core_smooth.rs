@@ -1,11 +1,11 @@
 //! Port of: engine/engine_core_smooth.c
-//! IR hash: 699b5f0da57e8d78
+//! IR hash: 545f394232195ad9
 //! CODEGEN: signatures locked. Only fill todo!() bodies.
 
 use crate::types::*;
 
 /// C: mj_updateDynamicBVH (engine/engine_core_smooth.c:490)
-/// Calls: mj_freeStack, mj_markStack, mju_max, mju_min, mju_zeroInt
+/// Calls: mj_freeStack, mj_markStack, mj_stackAllocInfo, mju_max, mju_min, mju_zeroInt
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_update_dynamic_bvh(m: *const mjModel, d: *mut mjData, bvhadr: i32, bvhnum: i32) {
     // WARNING: signature changed — verify body
@@ -79,7 +79,7 @@ pub fn mj_camlight(m: *const mjModel, d: *mut mjData) {
 }
 
 /// C: mj_flex (engine/engine_core_smooth.h:44)
-/// Calls: mj_bodyChain, mj_freeStack, mj_markStack, mj_updateDynamicBVH, mji_addTo3, mji_copy3, mji_copy6, mji_mulMatVec3, mji_sub3, mju_cellLookup, mju_interpolate3D, mju_max, mju_message, mju_min, mju_mulMatMat322, mju_mulMatTVec, mju_mulMatVec, mju_normalize3, mju_scl3, mju_shellTrackInterior, mju_sub3, mju_zero, mju_zero3
+/// Calls: mj_bodyChain, mj_freeStack, mj_jacDifPair, mj_jacSparse, mj_markStack, mj_stackAllocInfo, mj_updateDynamicBVH, mji_addTo3, mji_copy3, mji_copy6, mji_mulMatVec3, mji_sub3, mju_cellLookup, mju_interpolate3D, mju_max, mju_message, mju_min, mju_mulMatMat322, mju_mulMatTVec, mju_mulMatVec, mju_normalize3, mju_scl3, mju_shellTrackInterior, mju_sub3, mju_zero, mju_zero3
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_flex(m: *const mjModel, d: *mut mjData) {
     // WARNING: signature changed — verify body
@@ -89,7 +89,7 @@ pub fn mj_flex(m: *const mjModel, d: *mut mjData) {
 }
 
 /// C: mj_tendon (engine/engine_core_smooth.h:47)
-/// Calls: mj_freeStack, mj_markStack, mj_sleepState, mji_copy3, mji_copy9, mji_sub3, mju_combineSparseInc, mju_dist3, mju_message, mju_mulMatTVec, mju_normalize3, mju_round, mju_wrap, mju_zero, mju_zero3
+/// Calls: mj_freeStack, mj_jacDifPair, mj_markStack, mj_sleepState, mj_stackAllocInfo, mji_copy3, mji_copy9, mji_sub3, mju_combineSparseInc, mju_dist3, mju_message, mju_mulMatTVec, mju_normalize3, mju_round, mju_wrap, mju_zero, mju_zero3
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_tendon(m: *const mjModel, d: *mut mjData) {
     // WARNING: signature changed — verify body
@@ -99,7 +99,7 @@ pub fn mj_tendon(m: *const mjModel, d: *mut mjData) {
 }
 
 /// C: mj_tendonDot (engine/engine_core_smooth.h:50)
-/// Calls: mj_freeStack, mj_isSparse, mj_jac, mj_jacDot, mj_jacDotSparse, mj_jacSparse, mj_markStack, mj_mergeChain, mj_objectVelocity, mji_copy3, mju_addToScl3, mju_dot, mju_dot3, mju_message, mju_mulMatTVec, mju_normalize3, mju_scl3, mju_sub, mju_sub3
+/// Calls: mj_freeStack, mj_isSparse, mj_jac, mj_jacDot, mj_jacDotSparse, mj_jacSparse, mj_markStack, mj_mergeChain, mj_objectVelocity, mj_stackAllocInfo, mji_copy3, mju_addToScl3, mju_dot, mju_dot3, mju_message, mju_mulMatTVec, mju_normalize3, mju_scl3, mju_sub, mju_sub3
 /// ⚠️ BITEXACT RULES:
 ///   1. Copy exact C accumulation order (no iter().sum())
 ///   2. No f64::mul_add() (FMA changes precision)
@@ -114,7 +114,7 @@ pub fn mj_tendon_dot(m: *const mjModel, d: *mut mjData, id: i32, vec: *const f64
 }
 
 /// C: mj_transmission (engine/engine_core_smooth.h:53)
-/// Calls: mj_freeStack, mj_isSparse, mj_jacPointAxis, mj_jacSite, mj_markStack, mj_mulJacTVec, mj_sleepState, mji_addTo3, mji_copy3, mji_copy4, mji_mulMatVec3, mji_mulQuat, mji_quat2Vel, mji_rotVecQuat, mji_subQuat, mju_addTo, mju_copyInt, mju_dot3, mju_isZero, mju_message, mju_mulMatMat, mju_mulMatTVec, mju_mulMatTVec3, mju_negQuat, mju_normalize4, mju_scl, mju_scl3, mju_sub3, mju_subFrom, mju_zero
+/// Calls: mj_freeStack, mj_isSparse, mj_jacDifPair, mj_jacPointAxis, mj_jacSite, mj_markStack, mj_mulJacTVec, mj_sleepState, mj_stackAllocInfo, mji_addTo3, mji_copy3, mji_copy4, mji_mulMatVec3, mji_mulQuat, mji_quat2Vel, mji_rotVecQuat, mji_subQuat, mju_addTo, mju_copyInt, mju_dot3, mju_isZero, mju_message, mju_mulMatMat, mju_mulMatTVec, mju_mulMatTVec3, mju_negQuat, mju_normalize4, mju_scl, mju_scl3, mju_sub3, mju_subFrom, mju_zero
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_transmission(m: *const mjModel, d: *mut mjData) {
     // WARNING: signature changed — verify body
@@ -223,7 +223,7 @@ pub fn mj_solve_ld(x: *mut f64, qLD: *const f64, qLDiagInv: *const f64, nv: i32,
 }
 
 /// C: mj_solveM (engine/engine_core_smooth.h:88)
-/// Calls: mju_copy
+/// Calls: mj_solveLD, mju_copy
 /// ⚠️ BITEXACT RULES:
 ///   1. Copy exact C accumulation order (no iter().sum())
 ///   2. No f64::mul_add() (FMA changes precision)
@@ -263,7 +263,7 @@ pub fn mj_com_vel(m: *const mjModel, d: *mut mjData) {
 }
 
 /// C: mj_subtreeVel (engine/engine_core_smooth.h:101)
-/// Calls: mj_freeStack, mj_markStack, mj_objectVelocity, mji_addTo3, mji_cross, mji_mulMatVec3, mju_max, mju_mulMatTVec3, mju_scl3, mju_sub3
+/// Calls: mj_freeStack, mj_markStack, mj_objectVelocity, mj_stackAllocInfo, mji_addTo3, mji_cross, mji_mulMatVec3, mju_max, mju_mulMatTVec3, mju_scl3, mju_sub3
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_subtree_vel(m: *const mjModel, d: *mut mjData) {
     // WARNING: signature changed — verify body
@@ -273,7 +273,7 @@ pub fn mj_subtree_vel(m: *const mjModel, d: *mut mjData) {
 }
 
 /// C: mj_rne (engine/engine_core_smooth.h:107)
-/// Calls: mj_freeStack, mj_markStack, mji_crossForce, mji_dot6, mju_add, mju_addTo, mju_mulDofVec, mju_mulInertVec, mju_scl3, mju_zero
+/// Calls: mj_freeStack, mj_markStack, mj_stackAllocInfo, mji_crossForce, mji_dot6, mju_add, mju_addTo, mju_mulDofVec, mju_mulInertVec, mju_scl3, mju_zero
 /// ⚠️ BITEXACT RULES:
 ///   1. Copy exact C accumulation order (no iter().sum())
 ///   2. No f64::mul_add() (FMA changes precision)

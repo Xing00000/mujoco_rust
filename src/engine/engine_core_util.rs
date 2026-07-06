@@ -1,5 +1,5 @@
 //! Port of: engine/engine_core_util.h
-//! IR hash: 699b5f0da57e8d78
+//! IR hash: 545f394232195ad9
 //! CODEGEN: signatures locked. Only fill todo!() bodies.
 
 use crate::types::*;
@@ -95,7 +95,7 @@ pub fn mj_jac_body_com(m: *const mjModel, d: *const mjData, jacp: *mut f64, jacr
 }
 
 /// C: mj_jacSubtreeCom (engine/engine_core_util.h:64)
-/// Calls: mj_freeStack, mj_markStack, mju_addToScl, mju_scl, mju_zero
+/// Calls: mj_freeStack, mj_jac, mj_markStack, mj_stackAllocInfo, mju_addToScl, mju_scl, mju_zero
 /// ⚠️ BITEXACT RULES:
 ///   1. Copy exact C accumulation order (no iter().sum())
 ///   2. No f64::mul_add() (FMA changes precision)
@@ -140,7 +140,7 @@ pub fn mj_jac_site(m: *const mjModel, d: *const mjData, jacp: *mut f64, jacr: *m
 }
 
 /// C: mj_jacPointAxis (engine/engine_core_util.h:75)
-/// Calls: mj_freeStack, mj_jac, mj_markStack
+/// Calls: mj_freeStack, mj_jac, mj_markStack, mj_stackAllocInfo
 /// ⚠️ BITEXACT RULES:
 ///   1. Copy exact C accumulation order (no iter().sum())
 ///   2. No f64::mul_add() (FMA changes precision)
@@ -215,7 +215,7 @@ pub fn mj_jac_dif_pair(m: *const mjModel, d: *const mjData, chain: *mut i32, b1:
 }
 
 /// C: mj_jacSum (engine/engine_core_util.h:102)
-/// Calls: mj_bodyChain, mj_freeStack, mj_isSparse, mj_jac, mj_jacSparse, mj_jacSparseSimple, mj_markStack, mju_addToScl, mju_addToSparseMat, mju_scl
+/// Calls: mj_bodyChain, mj_freeStack, mj_isSparse, mj_jac, mj_jacSparse, mj_jacSparseSimple, mj_markStack, mj_stackAllocInfo, mju_addToScl, mju_addToSparseMat, mju_scl
 /// ⚠️ BITEXACT RULES:
 ///   1. Copy exact C accumulation order (no iter().sum())
 ///   2. No f64::mul_add() (FMA changes precision)
@@ -245,7 +245,7 @@ pub fn mj_jac_dot(m: *const mjModel, d: *const mjData, jacp: *mut f64, jacr: *mu
 }
 
 /// C: mj_angmomMat (engine/engine_core_util.h:111)
-/// Calls: mj_freeStack, mj_jacBodyCom, mj_markStack, mji_copy9, mji_mulMatMat3, mji_sub3, mju_addTo, mju_copy3, mju_mulMatMat, mju_mulMatMatT3, mju_scl, mju_zero
+/// Calls: mj_freeStack, mj_jacBodyCom, mj_markStack, mj_stackAllocInfo, mji_copy9, mji_mulMatMat3, mji_sub3, mju_addTo, mju_copy3, mju_mulMatMat, mju_mulMatMatT3, mju_scl, mju_zero
 /// ⚠️ BITEXACT RULES:
 ///   1. Copy exact C accumulation order (no iter().sum())
 ///   2. No f64::mul_add() (FMA changes precision)
@@ -379,7 +379,7 @@ pub fn mj_actuator_armature(m: *const mjModel, r#type: mjtObj, id: i32) -> f64 {
 }
 
 /// C: mj_warning (engine/engine_core_util.h:148)
-/// Calls: mju_message, mju_warning
+/// Calls: mju_message, mju_warning, mju_warningText
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_warning(d: *mut mjData, warning: i32, info: i32) {
     // WARNING: signature changed — verify body

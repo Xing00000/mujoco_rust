@@ -1,5 +1,5 @@
 //! Port of: engine/engine_print.c
-//! IR hash: 699b5f0da57e8d78
+//! IR hash: 545f394232195ad9
 //! CODEGEN: signatures locked. Only fill todo!() bodies.
 
 use crate::types::*;
@@ -163,52 +163,52 @@ pub fn print_vector(str: *const i8, data: *const f64, n: i32, fp: *mut i32, floa
 
 /// C: memorySize (engine/engine_print.c:395)
 #[allow(unused_variables, non_snake_case)]
-pub fn memory_size(nbytes: i32) -> *const i8 {
+pub fn memory_size(nbytes: usize) -> *const i8 {
     // WARNING: signature changed — verify body
-    // Previous params: (nbytes : i32)
+    // Previous params: (nbytes : usize)
     // Previous return: * const i8
     todo ! ()
 }
 
 /// C: sizeMesh (engine/engine_print.c:410)
 #[allow(unused_variables, non_snake_case)]
-pub fn size_mesh(m: *const mjModel) -> i32 {
+pub fn size_mesh(m: *const mjModel) -> usize {
     // WARNING: signature changed — verify body
     // Previous params: (m : * const mjModel)
-    // Previous return: i32
+    // Previous return: usize
     todo ! ()
 }
 
 /// C: sizeSkin (engine/engine_print.c:431)
 #[allow(unused_variables, non_snake_case)]
-pub fn size_skin(m: *const mjModel) -> i32 {
+pub fn size_skin(m: *const mjModel) -> usize {
     // WARNING: signature changed — verify body
     // Previous params: (m : * const mjModel)
-    // Previous return: i32
+    // Previous return: usize
     todo ! ()
 }
 
 /// C: sizeBVH (engine/engine_print.c:448)
 #[allow(unused_variables, non_snake_case)]
-pub fn size_bvh(m: *const mjModel) -> i32 {
+pub fn size_bvh(m: *const mjModel) -> usize {
     // WARNING: signature changed — verify body
     // Previous params: (m : * const mjModel)
-    // Previous return: i32
+    // Previous return: usize
     todo ! ()
 }
 
 /// C: validateFloatFormat (engine/engine_print.c:463)
 /// Calls: mju_warning
 #[allow(unused_variables, non_snake_case)]
-pub fn validate_float_format(float_format: *const i8) -> i32 {
+pub fn validate_float_format(float_format: *const i8) -> bool {
     // WARNING: signature changed — verify body
     // Previous params: (float_format : * const i8)
-    // Previous return: i32
+    // Previous return: bool
     todo ! ()
 }
 
 /// C: mj_printFormattedModel (engine/engine_print.h:31)
-/// Calls: mj_versionString, mju_type2Str, mju_warning
+/// Calls: memorySize, mj_sizeModel, mj_versionString, mju_type2Str, mju_warning, sizeBVH, sizeMesh, sizeSkin, validateFloatFormat
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_print_formatted_model(m: *const mjModel, filename: *const i8, float_format: *const i8) {
     // WARNING: signature changed — verify body
@@ -228,7 +228,7 @@ pub fn mj_print_model(m: *const mjModel, filename: *const i8) {
 }
 
 /// C: mj_printFormattedData (engine/engine_print.h:40)
-/// Calls: mj_contactForce, mj_id2name, mj_isDual, mj_isSparse, mju_isZero, mju_message, mju_warning
+/// Calls: memorySize, mj_contactForce, mj_id2name, mj_isDual, mj_isSparse, mju_isZero, mju_message, mju_warning, validateFloatFormat
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_print_formatted_data(m: *const mjModel, d: *const mjData, filename: *const i8, float_format: *const i8) {
     // WARNING: signature changed — verify body
@@ -258,7 +258,7 @@ pub fn mj_print_scene(s: *const mjvScene, filename: *const i8) {
 }
 
 /// C: mj_printFormattedScene (engine/engine_print.h:55)
-/// Calls: mju_warning
+/// Calls: mju_warning, validateFloatFormat
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_print_formatted_scene(s: *const mjvScene, filename: *const i8, float_format: *const i8) {
     // WARNING: signature changed — verify body

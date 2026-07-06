@@ -1,5 +1,5 @@
 //! Port of: engine/engine_passive.c
-//! IR hash: 699b5f0da57e8d78
+//! IR hash: 545f394232195ad9
 //! CODEGEN: signatures locked. Only fill todo!() bodies.
 
 use crate::types::*;
@@ -11,15 +11,15 @@ use crate::types::*;
 ///   3. No algebraic simplification
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
-pub fn grad_squared_lengths(gradient: *mut f64, xpos: *const f64, vert: *const i32, edge: *const i32, nedge: i32) {
+pub fn grad_squared_lengths(gradient: [[[f64; 6]; 2]; 3], xpos: *const f64, vert: [i32; 4], edge: [[i32; 6]; 2], nedge: i32) {
     // WARNING: signature changed — verify body
-    // Previous params: (gradient : * mut f64, xpos : * const f64, vert : * const i32, edge : * const i32, nedge : i32)
+    // Previous params: (gradient : [[[f64 ; 6] ; 2] ; 3], xpos : * const f64, vert : [i32 ; 4], edge : [[i32 ; 6] ; 2], nedge : i32)
     // Previous return: ()
     todo ! ()
 }
 
 /// C: mj_flexPassiveInterp (engine/engine_passive.c:63)
-/// Calls: mj_applyFT, mj_freeStack, mj_markStack, mji_addScl3, mji_addTo3, mji_rotVecQuat, mju_flexGatherCellState, mju_flexGatherFaceState, mju_flexGatherState, mju_mulMatVec, mju_negQuat, mju_rotVecQuat, mju_scl3, mju_zero
+/// Calls: mj_applyFT, mj_freeStack, mj_markStack, mj_stackAllocInfo, mji_addScl3, mji_addTo3, mji_rotVecQuat, mju_flexGatherCellState, mju_flexGatherFaceState, mju_flexGatherState, mju_mulMatVec, mju_negQuat, mju_rotVecQuat, mju_scl3, mju_zero
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_flex_passive_interp(m: *const mjModel, d: *mut mjData, f: i32, enbl_spring: i32, enbl_damper: i32) {
     // WARNING: signature changed — verify body
@@ -44,7 +44,7 @@ pub fn mju_dphi2d(s0: f64, l0: i32, s1: f64, l1: i32, order: i32, dir: i32) -> f
 }
 
 /// C: mj_flexPassiveBendInterp (engine/engine_passive.c:236)
-/// Calls: mj_applyFT, mj_freeStack, mj_markStack, mji_addTo3, mji_cross, mji_sub3, mju_add, mju_copy, mju_copyInt, mju_dot, mju_dot3, mju_dphi2D, mju_flexFaceNormal2D, mju_flexGatherState, mju_message, mju_negQuat, mju_norm3, mju_normalize, mju_rotVecQuat, mju_scl, mju_warning, mju_zero
+/// Calls: mj_applyFT, mj_freeStack, mj_markStack, mj_stackAllocInfo, mji_addTo3, mji_cross, mji_sub3, mju_add, mju_copy, mju_copyInt, mju_dot, mju_dot3, mju_dphi2D, mju_flexFaceNormal2D, mju_flexGatherFaceState, mju_flexGatherState, mju_message, mju_negQuat, mju_norm3, mju_normalize, mju_rotVecQuat, mju_scl, mju_warning, mju_zero
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_flex_passive_bend_interp(m: *const mjModel, d: *mut mjData, f: i32, enbl_spring: i32, enbl_damper: i32) {
     // WARNING: signature changed — verify body
@@ -64,7 +64,7 @@ pub fn mj_flex_passive_bend(m: *const mjModel, d: *mut mjData, f: i32, enbl_spri
 }
 
 /// C: mj_flexPassiveStretch (engine/engine_passive.c:524)
-/// Calls: GradSquaredLengths, mj_applyFT, mj_freeStack, mj_markStack, mju_zero
+/// Calls: GradSquaredLengths, mj_applyFT, mj_freeStack, mj_markStack, mj_stackAllocInfo, mju_zero
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_flex_passive_stretch(m: *const mjModel, d: *mut mjData, f: i32, enbl_spring: i32, enbl_damper: i32) {
     // WARNING: signature changed — verify body
@@ -104,7 +104,7 @@ pub fn mj_fluid(m: *const mjModel, d: *mut mjData) -> i32 {
 }
 
 /// C: mj_contactPassive (engine/engine_passive.c:878)
-/// Calls: mj_contactJacobian, mj_freeStack, mj_isSparse, mj_markStack, mju_addToScl, mju_mulMatMat, mju_scl
+/// Calls: mj_contactJacobian, mj_freeStack, mj_isSparse, mj_markStack, mj_stackAllocInfo, mju_addToScl, mju_mulMatMat, mju_scl
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_contact_passive(m: *const mjModel, d: *mut mjData) -> i32 {
     // WARNING: signature changed — verify body
@@ -177,7 +177,7 @@ pub fn mj_inertia_box_fluid_model(m: *const mjModel, d: *mut mjData, i: i32) {
 }
 
 /// C: mj_ellipsoidFluidModel (engine/engine_passive.h:40)
-/// Calls: mj_applyFT, mj_objectVelocity, mj_viscousForces, mji_copy3, mji_mulMatVec3, mji_subFrom3, mju_geomSemiAxes, mju_scl, mju_transformSpatial, mju_zero, readFluidGeomInteraction
+/// Calls: mj_addedMassForces, mj_applyFT, mj_objectVelocity, mj_viscousForces, mji_copy3, mji_mulMatVec3, mji_subFrom3, mju_geomSemiAxes, mju_scl, mju_transformSpatial, mju_zero, readFluidGeomInteraction
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_ellipsoid_fluid_model(m: *const mjModel, d: *mut mjData, bodyid: i32) {
     // WARNING: signature changed — verify body

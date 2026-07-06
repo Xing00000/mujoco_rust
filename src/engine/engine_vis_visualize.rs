@@ -1,5 +1,5 @@
 //! Port of: engine/engine_vis_visualize.c
-//! IR hash: 699b5f0da57e8d78
+//! IR hash: 545f394232195ad9
 //! CODEGEN: signatures locked. Only fill todo!() bodies.
 
 use crate::types::*;
@@ -36,9 +36,9 @@ pub fn make_label(m: *const mjModel, r#type: mjtObj, id: i32, label: *mut i8) {
 ///   3. No algebraic simplification
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
-pub fn island_color(rgba: *mut f32, h: i32, awake: i32) {
+pub fn island_color(rgba: [f32; 4], h: i32, awake: i32) {
     // WARNING: signature changed — verify body
-    // Previous params: (rgba : * mut f32, h : i32, awake : i32)
+    // Previous params: (rgba : [f32 ; 4], h : i32, awake : i32)
     // Previous return: ()
     todo ! ()
 }
@@ -50,9 +50,9 @@ pub fn island_color(rgba: *mut f32, h: i32, awake: i32) {
 ///   3. No algebraic simplification
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
-pub fn mixcolor(rgba: *mut f32, r#ref: *const f32, flg1: i32, flg2: i32) {
+pub fn mixcolor(rgba: [f32; 4], r#ref: [f32; 4], flg1: i32, flg2: i32) {
     // WARNING: signature changed — verify body
-    // Previous params: (rgba : * mut f32, r#ref : * const f32, flg1 : i32, flg2 : i32)
+    // Previous params: (rgba : [f32 ; 4], r#ref : [f32 ; 4], flg1 : i32, flg2 : i32)
     // Previous return: ()
     todo ! ()
 }
@@ -67,7 +67,7 @@ pub fn bodycategory(m: *const mjModel, bodyid: i32) -> i32 {
 }
 
 /// C: acquireGeom (engine/engine_vis_visualize.c:169)
-/// Calls: mju_warning
+/// Calls: mju_warning, mjv_initGeom
 #[allow(unused_variables, non_snake_case)]
 pub fn acquire_geom(scn: *mut mjvScene, objid: i32, category: i32, objtype: i32) -> *mut mjvGeom {
     // WARNING: signature changed — verify body
@@ -94,9 +94,9 @@ pub fn release_geom(geom: *mut *mut mjvGeom, scn: *mut mjvScene) {
 ///   3. No algebraic simplification
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
-pub fn add_triangle(scn: *mut mjvScene, v0: *const f64, v1: *const f64, v2: *const f64, rgba: *const f32, objid: i32, category: i32, objtype: i32) {
+pub fn add_triangle(scn: *mut mjvScene, v0: *const f64, v1: *const f64, v2: *const f64, rgba: [f32; 4], objid: i32, category: i32, objtype: i32) {
     // WARNING: signature changed — verify body
-    // Previous params: (scn : * mut mjvScene, v0 : * const f64, v1 : * const f64, v2 : * const f64, rgba : * const f32, objid : i32, category : i32, objtype : i32)
+    // Previous params: (scn : * mut mjvScene, v0 : * const f64, v1 : * const f64, v2 : * const f64, rgba : [f32 ; 4], objid : i32, category : i32, objtype : i32)
     // Previous return: ()
     todo ! ()
 }
@@ -124,9 +124,9 @@ pub fn set_material(m: *const mjModel, geom: *mut mjvGeom, matid: i32, rgba: *co
 ///   3. No algebraic simplification
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
-pub fn add_connector(scn: *mut mjvScene, r#type: i32, width: f64, from: *const f64, to: *const f64, rgba: *const f32, objid: i32, category: i32, objtype: i32) {
+pub fn add_connector(scn: *mut mjvScene, r#type: i32, width: f64, from: *const f64, to: *const f64, rgba: [f32; 4], objid: i32, category: i32, objtype: i32) {
     // WARNING: signature changed — verify body
-    // Previous params: (scn : * mut mjvScene, r#type : i32, width : f64, from : * const f64, to : * const f64, rgba : * const f32, objid : i32, category : i32, objtype : i32)
+    // Previous params: (scn : * mut mjvScene, r#type : i32, width : f64, from : * const f64, to : * const f64, rgba : [f32 ; 4], objid : i32, category : i32, objtype : i32)
     // Previous return: ()
     todo ! ()
 }
@@ -162,9 +162,9 @@ pub fn add_frame(scn: *mut mjvScene, objid: i32, pos: *const f64, rot: *const f6
 ///   3. No algebraic simplification
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
-pub fn get_frustum(zver: *mut f32, zhor: *mut f32, znear: f32, intrinsic: *const f32, sensorsize: *const f32) {
+pub fn get_frustum(zver: [f32; 2], zhor: [f32; 2], znear: f32, intrinsic: [f32; 4], sensorsize: [f32; 2]) {
     // WARNING: signature changed — verify body
-    // Previous params: (zver : * mut f32, zhor : * mut f32, znear : f32, intrinsic : * const f32, sensorsize : * const f32)
+    // Previous params: (zver : [f32 ; 2], zhor : [f32 ; 2], znear : f32, intrinsic : [f32 ; 4], sensorsize : [f32 ; 2])
     // Previous return: ()
     todo ! ()
 }
@@ -180,7 +180,7 @@ pub fn add_contact_geoms(m: *const mjModel, d: *mut mjData, vopt: *const mjvOpti
 }
 
 /// C: addFlexGeoms (engine/engine_vis_visualize.c:748)
-/// Calls: acquireGeom, islandColor, makeLabel, markselected, mj_sleepCycle, releaseGeom, setMaterial
+/// Calls: acquireGeom, islandColor, makeLabel, markselected, mj_sleepCycle, mjv_initGeom, releaseGeom, setMaterial
 #[allow(unused_variables, non_snake_case)]
 pub fn add_flex_geoms(m: *const mjModel, d: *mut mjData, vopt: *const mjvOption, pert: *const mjvPerturb, catmask: i32, scn: *mut mjvScene) {
     // WARNING: signature changed — verify body
@@ -190,7 +190,7 @@ pub fn add_flex_geoms(m: *const mjModel, d: *mut mjData, vopt: *const mjvOption,
 }
 
 /// C: addSkinGeoms (engine/engine_vis_visualize.c:841)
-/// Calls: acquireGeom, makeLabel, markselected, releaseGeom, setMaterial
+/// Calls: acquireGeom, makeLabel, markselected, mjv_initGeom, releaseGeom, setMaterial
 #[allow(unused_variables, non_snake_case)]
 pub fn add_skin_geoms(m: *const mjModel, d: *mut mjData, vopt: *const mjvOption, pert: *const mjvPerturb, catmask: i32, scn: *mut mjvScene) {
     // WARNING: signature changed — verify body
@@ -200,7 +200,7 @@ pub fn add_skin_geoms(m: *const mjModel, d: *mut mjData, vopt: *const mjvOption,
 }
 
 /// C: addGeomGeoms (engine/engine_vis_visualize.c:892)
-/// Calls: acquireGeom, bodycategory, islandColor, makeLabel, markselected, mj_sleepCycle, mju_addToScl3, mju_copy3, mju_dot3, mju_n2f, mju_round, mju_transpose, releaseGeom, setMaterial
+/// Calls: acquireGeom, bodycategory, islandColor, makeLabel, markselected, mj_sleepCycle, mju_addToScl3, mju_copy3, mju_dot3, mju_n2f, mju_round, mju_transpose, mjv_initGeom, releaseGeom, setMaterial
 #[allow(unused_variables, non_snake_case)]
 pub fn add_geom_geoms(m: *const mjModel, d: *mut mjData, vopt: *const mjvOption, pert: *const mjvPerturb, catmask: i32, scn: *mut mjvScene) {
     // WARNING: signature changed — verify body
@@ -210,7 +210,7 @@ pub fn add_geom_geoms(m: *const mjModel, d: *mut mjData, vopt: *const mjvOption,
 }
 
 /// C: addSiteGeoms (engine/engine_vis_visualize.c:1041)
-/// Calls: acquireGeom, bodycategory, makeLabel, markselected, releaseGeom, setMaterial
+/// Calls: acquireGeom, bodycategory, makeLabel, markselected, mjv_initGeom, releaseGeom, setMaterial
 #[allow(unused_variables, non_snake_case)]
 pub fn add_site_geoms(m: *const mjModel, d: *mut mjData, vopt: *const mjvOption, pert: *const mjvPerturb, catmask: i32, scn: *mut mjvScene) {
     // WARNING: signature changed — verify body
@@ -270,7 +270,7 @@ pub fn add_body_bvh_geoms(m: *const mjModel, d: *mut mjData, vopt: *const mjvOpt
 }
 
 /// C: addFlexBvhGeoms (engine/engine_vis_visualize.c:1449)
-/// Calls: acquireGeom, mju_addTo3, mju_copy3, mju_mulMatVec3, mjv_connector, releaseGeom
+/// Calls: acquireGeom, mj_stackAllocInfo, mju_addTo3, mju_copy3, mju_mulMatVec3, mjv_connector, mjv_initGeom, releaseGeom
 #[allow(unused_variables, non_snake_case)]
 pub fn add_flex_bvh_geoms(m: *const mjModel, d: *mut mjData, vopt: *const mjvOption, scn: *mut mjvScene) {
     // WARNING: signature changed — verify body
@@ -642,7 +642,7 @@ pub fn mjv_add_geoms(m: *const mjModel, d: *mut mjData, opt: *const mjvOption, p
 }
 
 /// C: mjv_makeLights (engine/engine_vis_visualize.h:45)
-/// Calls: f2f, mju_n2f
+/// Calls: f2f, mju_n2f, mjv_cameraInModel
 #[allow(unused_variables, non_snake_case)]
 pub fn mjv_make_lights(m: *const mjModel, d: *const mjData, scn: *mut mjvScene) {
     // WARNING: signature changed — verify body
@@ -662,7 +662,7 @@ pub fn mjv_update_camera(m: *const mjModel, d: *const mjData, cam: *mut mjvCamer
 }
 
 /// C: mjv_updateActiveFlex (engine/engine_vis_visualize.h:51)
-/// Calls: addNormal, copyTex, makeFace, makeSide, makeSmooth, mj_freeStack, mj_markStack, mju_error, mju_normalize3, mju_zero
+/// Calls: addNormal, copyTex, makeFace, makeSide, makeSmooth, mj_freeStack, mj_markStack, mj_stackAllocInfo, mju_error, mju_normalize3, mju_zero
 #[allow(unused_variables, non_snake_case)]
 pub fn mjv_update_active_flex(m: *const mjModel, d: *mut mjData, scn: *mut mjvScene, opt: *const mjvOption) {
     // WARNING: signature changed — verify body
@@ -714,9 +714,9 @@ pub fn mjv_camera_frame(headpos: *mut f64, forward: *mut f64, up: *mut f64, righ
 ///   3. No algebraic simplification
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
-pub fn mjv_camera_frustum(zver: *mut f32, zhor: *mut f32, zclip: *mut f32, m: *const mjModel, cam: *const mjvCamera) {
+pub fn mjv_camera_frustum(zver: [f32; 2], zhor: [f32; 2], zclip: [f32; 2], m: *const mjModel, cam: *const mjvCamera) {
     // WARNING: signature changed — verify body
-    // Previous params: (zver : * mut f32, zhor : * mut f32, zclip : * mut f32, m : * const mjModel, cam : * const mjvCamera)
+    // Previous params: (zver : [f32 ; 2], zhor : [f32 ; 2], zclip : [f32 ; 2], m : * const mjModel, cam : * const mjvCamera)
     // Previous return: ()
     todo ! ()
 }
@@ -737,7 +737,7 @@ pub fn mjv_is_catenary(m: *const mjModel, d: *const mjData, i: i32, length: *mut
 }
 
 /// C: mjv_catenary (engine/engine_vis_visualize.h:72)
-/// Calls: mju_addScl3, mju_addToScl3, mju_copy3, mju_dist3, mju_dot3, mju_normalize3, mju_scl3, mju_sub3, mju_subFrom3, mju_zero3, solve_catenary
+/// Calls: cosh_sinh, mju_addScl3, mju_addToScl3, mju_copy3, mju_dist3, mju_dot3, mju_normalize3, mju_scl3, mju_sub3, mju_subFrom3, mju_zero3, solve_catenary
 /// ⚠️ BITEXACT RULES:
 ///   1. Copy exact C accumulation order (no iter().sum())
 ///   2. No f64::mul_add() (FMA changes precision)

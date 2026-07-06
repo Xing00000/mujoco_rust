@@ -1,5 +1,5 @@
 //! Port of: engine/engine_inline.h
-//! IR hash: 699b5f0da57e8d78
+//! IR hash: 545f394232195ad9
 //! CODEGEN: signatures locked. Only fill todo!() bodies.
 
 use crate::types::*;
@@ -11,9 +11,9 @@ use crate::types::*;
 ///   3. No algebraic simplification
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
-pub fn mji_zero3(res: mjtNum__restrict) {
+pub fn mji_zero3(res: *mut f64) {
     // WARNING: signature changed — verify body
-    // Previous params: (res : mjtNum__restrict)
+    // Previous params: (res : * mut f64)
     // Previous return: ()
     todo ! ()
 }
@@ -25,9 +25,9 @@ pub fn mji_zero3(res: mjtNum__restrict) {
 ///   3. No algebraic simplification
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
-pub fn mji_copy3(res: mjtNum__restrict, vec: *const f64) {
+pub fn mji_copy3(res: *mut f64, vec: *const f64) {
     // WARNING: signature changed — verify body
-    // Previous params: (res : mjtNum__restrict, vec : * const f64)
+    // Previous params: (res : * mut f64, vec : * const f64)
     // Previous return: ()
     todo ! ()
 }
@@ -39,9 +39,9 @@ pub fn mji_copy3(res: mjtNum__restrict, vec: *const f64) {
 ///   3. No algebraic simplification
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
-pub fn mji_scl3(res: mjtNum__restrict, vec: *const f64, scl: f64) {
+pub fn mji_scl3(res: *mut f64, vec: *const f64, scl: f64) {
     // WARNING: signature changed — verify body
-    // Previous params: (res : mjtNum__restrict, vec : * const f64, scl : f64)
+    // Previous params: (res : * mut f64, vec : * const f64, scl : f64)
     // Previous return: ()
     todo ! ()
 }
@@ -53,9 +53,9 @@ pub fn mji_scl3(res: mjtNum__restrict, vec: *const f64, scl: f64) {
 ///   3. No algebraic simplification
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
-pub fn mji_add3(res: mjtNum__restrict, vec1: *const f64, vec2: *const f64) {
+pub fn mji_add3(res: *mut f64, vec1: *const f64, vec2: *const f64) {
     // WARNING: signature changed — verify body
-    // Previous params: (res : mjtNum__restrict, vec1 : * const f64, vec2 : * const f64)
+    // Previous params: (res : * mut f64, vec1 : * const f64, vec2 : * const f64)
     // Previous return: ()
     todo ! ()
 }
@@ -67,9 +67,9 @@ pub fn mji_add3(res: mjtNum__restrict, vec1: *const f64, vec2: *const f64) {
 ///   3. No algebraic simplification
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
-pub fn mji_sub3(res: mjtNum__restrict, vec1: *const f64, vec2: *const f64) {
+pub fn mji_sub3(res: *mut f64, vec1: *const f64, vec2: *const f64) {
     // WARNING: signature changed — verify body
-    // Previous params: (res : mjtNum__restrict, vec1 : * const f64, vec2 : * const f64)
+    // Previous params: (res : * mut f64, vec1 : * const f64, vec2 : * const f64)
     // Previous return: ()
     todo ! ()
 }
@@ -81,9 +81,9 @@ pub fn mji_sub3(res: mjtNum__restrict, vec1: *const f64, vec2: *const f64) {
 ///   3. No algebraic simplification
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
-pub fn mji_add_to3(res: mjtNum__restrict, vec: *const f64) {
+pub fn mji_add_to3(res: *mut f64, vec: *const f64) {
     // WARNING: signature changed — verify body
-    // Previous params: (res : mjtNum__restrict, vec : * const f64)
+    // Previous params: (res : * mut f64, vec : * const f64)
     // Previous return: ()
     todo ! ()
 }
@@ -95,9 +95,9 @@ pub fn mji_add_to3(res: mjtNum__restrict, vec: *const f64) {
 ///   3. No algebraic simplification
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
-pub fn mji_sub_from3(res: mjtNum__restrict, vec: *const f64) {
+pub fn mji_sub_from3(res: *mut f64, vec: *const f64) {
     // WARNING: signature changed — verify body
-    // Previous params: (res : mjtNum__restrict, vec : * const f64)
+    // Previous params: (res : * mut f64, vec : * const f64)
     // Previous return: ()
     todo ! ()
 }
@@ -109,9 +109,9 @@ pub fn mji_sub_from3(res: mjtNum__restrict, vec: *const f64) {
 ///   3. No algebraic simplification
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
-pub fn mji_add_to_scl3(res: mjtNum__restrict, vec: *const f64, scl: f64) {
+pub fn mji_add_to_scl3(res: *mut f64, vec: *const f64, scl: f64) {
     // WARNING: signature changed — verify body
-    // Previous params: (res : mjtNum__restrict, vec : * const f64, scl : f64)
+    // Previous params: (res : * mut f64, vec : * const f64, scl : f64)
     // Previous return: ()
     todo ! ()
 }
@@ -123,9 +123,9 @@ pub fn mji_add_to_scl3(res: mjtNum__restrict, vec: *const f64, scl: f64) {
 ///   3. No algebraic simplification
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
-pub fn mji_add_scl3(res: mjtNum__restrict, vec1: *const f64, vec2: *const f64, scl: f64) {
+pub fn mji_add_scl3(res: *mut f64, vec1: *const f64, vec2: *const f64, scl: f64) {
     // WARNING: signature changed — verify body
-    // Previous params: (res : mjtNum__restrict, vec1 : * const f64, vec2 : * const f64, scl : f64)
+    // Previous params: (res : * mut f64, vec1 : * const f64, vec2 : * const f64, scl : f64)
     // Previous return: ()
     todo ! ()
 }
@@ -151,9 +151,9 @@ pub fn mji_normalize3(vec: *mut f64) -> f64 {
 ///   3. No algebraic simplification
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
-pub fn mji_mul_mat_vec3(res: mjtNum__restrict, mat: *const f64, vec: *const f64) {
+pub fn mji_mul_mat_vec3(res: *mut f64, mat: *const f64, vec: *const f64) {
     // WARNING: signature changed — verify body
-    // Previous params: (res : mjtNum__restrict, mat : * const f64, vec : * const f64)
+    // Previous params: (res : * mut f64, mat : * const f64, vec : * const f64)
     // Previous return: ()
     todo ! ()
 }
@@ -165,9 +165,9 @@ pub fn mji_mul_mat_vec3(res: mjtNum__restrict, mat: *const f64, vec: *const f64)
 ///   3. No algebraic simplification
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
-pub fn mji_mul_mat_t_vec3(res: mjtNum__restrict, mat: *const f64, vec: *const f64) {
+pub fn mji_mul_mat_t_vec3(res: *mut f64, mat: *const f64, vec: *const f64) {
     // WARNING: signature changed — verify body
-    // Previous params: (res : mjtNum__restrict, mat : * const f64, vec : * const f64)
+    // Previous params: (res : * mut f64, mat : * const f64, vec : * const f64)
     // Previous return: ()
     todo ! ()
 }
@@ -179,9 +179,9 @@ pub fn mji_mul_mat_t_vec3(res: mjtNum__restrict, mat: *const f64, vec: *const f6
 ///   3. No algebraic simplification
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
-pub fn mji_mul_mat_mat3(res: mjtNum__restrict, mat1: *const f64, mat2: *const f64) {
+pub fn mji_mul_mat_mat3(res: *mut f64, mat1: *const f64, mat2: *const f64) {
     // WARNING: signature changed — verify body
-    // Previous params: (res : mjtNum__restrict, mat1 : * const f64, mat2 : * const f64)
+    // Previous params: (res : * mut f64, mat1 : * const f64, mat2 : * const f64)
     // Previous return: ()
     todo ! ()
 }
@@ -193,9 +193,9 @@ pub fn mji_mul_mat_mat3(res: mjtNum__restrict, mat1: *const f64, mat2: *const f6
 ///   3. No algebraic simplification
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
-pub fn mji_mul_mat_t_mat3(res: mjtNum__restrict, mat1: *const f64, mat2: *const f64) {
+pub fn mji_mul_mat_t_mat3(res: *mut f64, mat1: *const f64, mat2: *const f64) {
     // WARNING: signature changed — verify body
-    // Previous params: (res : mjtNum__restrict, mat1 : * const f64, mat2 : * const f64)
+    // Previous params: (res : * mut f64, mat1 : * const f64, mat2 : * const f64)
     // Previous return: ()
     todo ! ()
 }
@@ -207,9 +207,9 @@ pub fn mji_mul_mat_t_mat3(res: mjtNum__restrict, mat1: *const f64, mat2: *const 
 ///   3. No algebraic simplification
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
-pub fn mji_transpose3(res: mjtNum__restrict, mat: *const f64) {
+pub fn mji_transpose3(res: *mut f64, mat: *const f64) {
     // WARNING: signature changed — verify body
-    // Previous params: (res : mjtNum__restrict, mat : * const f64)
+    // Previous params: (res : * mut f64, mat : * const f64)
     // Previous return: ()
     todo ! ()
 }
@@ -221,9 +221,9 @@ pub fn mji_transpose3(res: mjtNum__restrict, mat: *const f64) {
 ///   3. No algebraic simplification
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
-pub fn mji_copy4(res: mjtNum__restrict, data: *const f64) {
+pub fn mji_copy4(res: *mut f64, data: *const f64) {
     // WARNING: signature changed — verify body
-    // Previous params: (res : mjtNum__restrict, data : * const f64)
+    // Previous params: (res : * mut f64, data : * const f64)
     // Previous return: ()
     todo ! ()
 }
@@ -250,9 +250,9 @@ pub fn mji_normalize4(vec: *mut f64) -> f64 {
 ///   3. No algebraic simplification
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
-pub fn mji_rot_vec_quat(res: mjtNum__restrict, vec: *const f64, quat: *const f64) {
+pub fn mji_rot_vec_quat(res: *mut f64, vec: *const f64, quat: *const f64) {
     // WARNING: signature changed — verify body
-    // Previous params: (res : mjtNum__restrict, vec : * const f64, quat : * const f64)
+    // Previous params: (res : * mut f64, vec : * const f64, quat : * const f64)
     // Previous return: ()
     todo ! ()
 }
@@ -264,9 +264,9 @@ pub fn mji_rot_vec_quat(res: mjtNum__restrict, vec: *const f64, quat: *const f64
 ///   3. No algebraic simplification
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
-pub fn mji_neg_quat(res: mjtNum__restrict, quat: *const f64) {
+pub fn mji_neg_quat(res: *mut f64, quat: *const f64) {
     // WARNING: signature changed — verify body
-    // Previous params: (res : mjtNum__restrict, quat : * const f64)
+    // Previous params: (res : * mut f64, quat : * const f64)
     // Previous return: ()
     todo ! ()
 }
@@ -278,9 +278,9 @@ pub fn mji_neg_quat(res: mjtNum__restrict, quat: *const f64) {
 ///   3. No algebraic simplification
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
-pub fn mji_mul_quat(res: mjtNum__restrict, qa: *const f64, qb: *const f64) {
+pub fn mji_mul_quat(res: *mut f64, qa: *const f64, qb: *const f64) {
     // WARNING: signature changed — verify body
-    // Previous params: (res : mjtNum__restrict, qa : * const f64, qb : * const f64)
+    // Previous params: (res : * mut f64, qa : * const f64, qb : * const f64)
     // Previous return: ()
     todo ! ()
 }
@@ -292,9 +292,9 @@ pub fn mji_mul_quat(res: mjtNum__restrict, qa: *const f64, qb: *const f64) {
 ///   3. No algebraic simplification
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
-pub fn mji_mul_quat_axis(res: mjtNum__restrict, quat: *const f64, axis: *const f64) {
+pub fn mji_mul_quat_axis(res: *mut f64, quat: *const f64, axis: *const f64) {
     // WARNING: signature changed — verify body
-    // Previous params: (res : mjtNum__restrict, quat : * const f64, axis : * const f64)
+    // Previous params: (res : * mut f64, quat : * const f64, axis : * const f64)
     // Previous return: ()
     todo ! ()
 }
@@ -306,9 +306,9 @@ pub fn mji_mul_quat_axis(res: mjtNum__restrict, quat: *const f64, axis: *const f
 ///   3. No algebraic simplification
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
-pub fn mji_axis_angle2quat(res: mjtNum__restrict, axis: *const f64, angle: f64) {
+pub fn mji_axis_angle2quat(res: *mut f64, axis: *const f64, angle: f64) {
     // WARNING: signature changed — verify body
-    // Previous params: (res : mjtNum__restrict, axis : * const f64, angle : f64)
+    // Previous params: (res : * mut f64, axis : * const f64, angle : f64)
     // Previous return: ()
     todo ! ()
 }
@@ -321,9 +321,9 @@ pub fn mji_axis_angle2quat(res: mjtNum__restrict, axis: *const f64, angle: f64) 
 ///   3. No algebraic simplification
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
-pub fn mji_quat2vel(res: mjtNum__restrict, quat: *const f64, dt: f64) {
+pub fn mji_quat2vel(res: *mut f64, quat: *const f64, dt: f64) {
     // WARNING: signature changed — verify body
-    // Previous params: (res : mjtNum__restrict, quat : * const f64, dt : f64)
+    // Previous params: (res : * mut f64, quat : * const f64, dt : f64)
     // Previous return: ()
     todo ! ()
 }
@@ -336,9 +336,9 @@ pub fn mji_quat2vel(res: mjtNum__restrict, quat: *const f64, dt: f64) {
 ///   3. No algebraic simplification
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
-pub fn mji_sub_quat(res: mjtNum__restrict, qa: *const f64, qb: *const f64) {
+pub fn mji_sub_quat(res: *mut f64, qa: *const f64, qb: *const f64) {
     // WARNING: signature changed — verify body
-    // Previous params: (res : mjtNum__restrict, qa : * const f64, qb : * const f64)
+    // Previous params: (res : * mut f64, qa : * const f64, qb : * const f64)
     // Previous return: ()
     todo ! ()
 }
@@ -351,9 +351,9 @@ pub fn mji_sub_quat(res: mjtNum__restrict, qa: *const f64, qb: *const f64) {
 ///   3. No algebraic simplification
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
-pub fn mji_mat2quat(quat: mjtNum__restrict, mat: *const f64) {
+pub fn mji_mat2quat(quat: *mut f64, mat: *const f64) {
     // WARNING: signature changed — verify body
-    // Previous params: (quat : mjtNum__restrict, mat : * const f64)
+    // Previous params: (quat : * mut f64, mat : * const f64)
     // Previous return: ()
     todo ! ()
 }
@@ -366,9 +366,9 @@ pub fn mji_mat2quat(quat: mjtNum__restrict, mat: *const f64) {
 ///   3. No algebraic simplification
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
-pub fn mji_quat_integrate(quat: mjtNum__restrict, vel: *const f64, scale: f64) {
+pub fn mji_quat_integrate(quat: *mut f64, vel: *const f64, scale: f64) {
     // WARNING: signature changed — verify body
-    // Previous params: (quat : mjtNum__restrict, vel : * const f64, scale : f64)
+    // Previous params: (quat : * mut f64, vel : * const f64, scale : f64)
     // Previous return: ()
     todo ! ()
 }
@@ -380,9 +380,9 @@ pub fn mji_quat_integrate(quat: mjtNum__restrict, vel: *const f64, scale: f64) {
 ///   3. No algebraic simplification
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
-pub fn mji_cross(res: mjtNum__restrict, a: *const f64, b: *const f64) {
+pub fn mji_cross(res: *mut f64, a: *const f64, b: *const f64) {
     // WARNING: signature changed — verify body
-    // Previous params: (res : mjtNum__restrict, a : * const f64, b : * const f64)
+    // Previous params: (res : * mut f64, a : * const f64, b : * const f64)
     // Previous return: ()
     todo ! ()
 }
@@ -394,9 +394,9 @@ pub fn mji_cross(res: mjtNum__restrict, a: *const f64, b: *const f64) {
 ///   3. No algebraic simplification
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
-pub fn mji_cross_motion(res: mjtNum__restrict, vel: *const f64, v: *const f64) {
+pub fn mji_cross_motion(res: *mut f64, vel: *const f64, v: *const f64) {
     // WARNING: signature changed — verify body
-    // Previous params: (res : mjtNum__restrict, vel : * const f64, v : * const f64)
+    // Previous params: (res : * mut f64, vel : * const f64, v : * const f64)
     // Previous return: ()
     todo ! ()
 }
@@ -408,9 +408,9 @@ pub fn mji_cross_motion(res: mjtNum__restrict, vel: *const f64, v: *const f64) {
 ///   3. No algebraic simplification
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
-pub fn mji_cross_force(res: mjtNum__restrict, vel: *const f64, f: *const f64) {
+pub fn mji_cross_force(res: *mut f64, vel: *const f64, f: *const f64) {
     // WARNING: signature changed — verify body
-    // Previous params: (res : mjtNum__restrict, vel : * const f64, f : * const f64)
+    // Previous params: (res : * mut f64, vel : * const f64, f : * const f64)
     // Previous return: ()
     todo ! ()
 }
@@ -436,9 +436,9 @@ pub fn mji_dot6(vec1: *const f64, vec2: *const f64) -> f64 {
 ///   3. No algebraic simplification
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
-pub fn mji_copy6(res: mjtNum__restrict, vec: *const f64) {
+pub fn mji_copy6(res: *mut f64, vec: *const f64) {
     // WARNING: signature changed — verify body
-    // Previous params: (res : mjtNum__restrict, vec : * const f64)
+    // Previous params: (res : * mut f64, vec : * const f64)
     // Previous return: ()
     todo ! ()
 }
@@ -450,9 +450,9 @@ pub fn mji_copy6(res: mjtNum__restrict, vec: *const f64) {
 ///   3. No algebraic simplification
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
-pub fn mji_copy9(res: mjtNum__restrict, data: *const f64) {
+pub fn mji_copy9(res: *mut f64, data: *const f64) {
     // WARNING: signature changed — verify body
-    // Previous params: (res : mjtNum__restrict, data : * const f64)
+    // Previous params: (res : * mut f64, data : * const f64)
     // Previous return: ()
     todo ! ()
 }

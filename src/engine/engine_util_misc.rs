@@ -1,5 +1,5 @@
 //! Port of: engine/engine_util_misc.c
-//! IR hash: 699b5f0da57e8d78
+//! IR hash: 545f394232195ad9
 //! CODEGEN: signatures locked. Only fill todo!() bodies.
 
 use crate::types::*;
@@ -108,38 +108,11 @@ pub fn add_weight(nb: *mut i32, body: *mut i32, bweight: *mut f64, b: i32, w: f6
 
 /// C: _decode (engine/engine_util_misc.c:1217)
 #[allow(unused_variables, non_snake_case)]
-pub fn decode(ch: i8) -> i32 {
+pub fn decode(ch: i8) -> u32 {
     // WARNING: signature changed — verify body
     // Previous params: (ch : i8)
-    // Previous return: i32
-    let c = ch as u8 ; if c >= b'A' && c <= b'Z' { return (c - b'A') as i32 ; } if c >= b'a' && c <= b'z' { return (c - b'a') as i32 + 26 ; } if c >= b'0' && c <= b'9' { return (c - b'0') as i32 + 52 ; } if c == b'+' { return 62 ; } if c == b'/' { return 63 ; } 0
-}
-
-/// C: mju_encodeBase64 (engine/engine_util_misc.c:1244)
-#[allow(unused_variables, non_snake_case)]
-pub fn mju_encode_base64(buf: *mut i8, data: *const i32, ndata: i32) -> i32 {
-    // WARNING: signature changed — verify body
-    // Previous params: (buf : * mut i8, data : * const i32, ndata : i32)
-    // Previous return: i32
-    todo ! ()
-}
-
-/// C: mju_isValidBase64 (engine/engine_util_misc.c:1297)
-#[allow(unused_variables, non_snake_case)]
-pub fn mju_is_valid_base64(s: *const i8) -> i32 {
-    // WARNING: signature changed — verify body
-    // Previous params: (s : * const i8)
-    // Previous return: i32
-    todo ! ()
-}
-
-/// C: mju_decodeBase64 (engine/engine_util_misc.c:1327)
-#[allow(unused_variables, non_snake_case)]
-pub fn mju_decode_base64(buf: *mut i32, s: *const i8) -> i32 {
-    // WARNING: signature changed — verify body
-    // Previous params: (buf : * mut i32, s : * const i8)
-    // Previous return: i32
-    todo ! ()
+    // Previous return: u32
+    let c = ch as u8 ; if c >= b'A' && c <= b'Z' { return (c - b'A') as u32 ; } if c >= b'a' && c <= b'z' { return (c - b'a') as u32 + 26 ; } if c >= b'0' && c <= b'9' { return (c - b'0') as u32 + 52 ; } if c == b'+' { return 62 ; } if c == b'/' { return 63 ; } 0
 }
 
 /// C: historyPhysicalIndex (engine/engine_util_misc.c:1359)
@@ -166,26 +139,8 @@ pub fn history_find_index(times: *const f64, n: i32, cursor: i32, t: f64) -> i32
     unsafe { let oldest_phys = history_physical_index (cursor , n , 0) ; let newest_phys = history_physical_index (cursor , n , n - 1) ; let t_oldest = * times . add (oldest_phys as usize) ; let t_newest = * times . add (newest_phys as usize) ; if t <= t_oldest { return 0 ; } if t > t_newest { return n ; } let mut lo : i32 = 0 ; let mut hi : i32 = n - 1 ; while hi - lo > 1 { let mid = (lo + hi) / 2 ; let mid_phys = history_physical_index (cursor , n , mid) ; if * times . add (mid_phys as usize) < t { lo = mid ; } else { hi = mid ; } } hi }
 }
 
-/// C: mju_writeNumBytes (engine/engine_util_misc.c:1972)
-#[allow(unused_variables, non_snake_case)]
-pub fn mju_write_num_bytes(nbytes: i32) -> *const i8 {
-    // WARNING: signature changed — verify body
-    // Previous params: (nbytes : i32)
-    // Previous return: * const i8
-    todo ! ()
-}
-
-/// C: mju_warningText (engine/engine_util_misc.c:1992)
-#[allow(unused_variables, non_snake_case)]
-pub fn mju_warning_text(warning: i32, info: i32) -> *const i8 {
-    // WARNING: signature changed — verify body
-    // Previous params: (warning : i32, info : i32)
-    // Previous return: * const i8
-    todo ! ()
-}
-
 /// C: mju_wrap (engine/engine_util_misc.h:32)
-/// Calls: mju_addTo3, mju_copy3, mju_cross, mju_dot3, mju_message, mju_mulMatTVec3, mju_mulMatVec3, mju_norm3, mju_normalize, mju_normalize3, mju_scl, mju_scl3, mju_sub3, wrap_inside
+/// Calls: mju_addTo3, mju_copy3, mju_cross, mju_dot3, mju_message, mju_mulMatTVec3, mju_mulMatVec3, mju_norm3, mju_normalize, mju_normalize3, mju_scl, mju_scl3, mju_sub3, wrap_circle, wrap_inside
 /// ⚠️ BITEXACT RULES:
 ///   1. Copy exact C accumulation order (no iter().sum())
 ///   2. No f64::mul_add() (FMA changes precision)
@@ -398,9 +353,9 @@ pub fn mju_eval_basis_array(basis: *mut f64, x: *const f64, order: i32) {
 ///   3. No algebraic simplification
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
-pub fn mju_cell_lookup(coord: *const f64, cellnum: *const i32, order: i32, local: *mut f64, nodeindices: *mut i32) -> i32 {
+pub fn mju_cell_lookup(coord: *const f64, cellnum: [i32; 3], order: i32, local: *mut f64, nodeindices: *mut i32) -> i32 {
     // WARNING: signature changed — verify body
-    // Previous params: (coord : * const f64, cellnum : * const i32, order : i32, local : * mut f64, nodeindices : * mut i32)
+    // Previous params: (coord : * const f64, cellnum : [i32 ; 3], order : i32, local : * mut f64, nodeindices : * mut i32)
     // Previous return: i32
     todo ! ()
 }
@@ -535,6 +490,34 @@ pub fn mju_shell_tfi_weights(nx: i32, ny: i32, nz: i32, i: i32, j: i32, k: i32, 
     // WARNING: signature changed — verify body
     // Previous params: (nx : i32, ny : i32, nz : i32, i : i32, j : i32, k : i32, w : f64, nb : * mut i32, body : * mut i32, bweight : * mut f64, nodebodyid : * const i32, nstart : i32)
     // Previous return: ()
+    todo ! ()
+}
+
+/// C: mju_encodeBase64 (engine/engine_util_misc.h:163)
+#[allow(unused_variables, non_snake_case)]
+pub fn mju_encode_base64(buf: *mut i8, data: *const u8, ndata: usize) -> usize {
+    // WARNING: signature changed — verify body
+    // Previous params: (buf : * mut i8, data : * const u8, ndata : usize)
+    // Previous return: usize
+    todo ! ()
+}
+
+/// C: mju_isValidBase64 (engine/engine_util_misc.h:167)
+#[allow(unused_variables, non_snake_case)]
+pub fn mju_is_valid_base64(s: *const i8) -> usize {
+    // WARNING: signature changed — verify body
+    // Previous params: (s : * const i8)
+    // Previous return: usize
+    todo ! ()
+}
+
+/// C: mju_decodeBase64 (engine/engine_util_misc.h:171)
+/// Calls: _decode
+#[allow(unused_variables, non_snake_case)]
+pub fn mju_decode_base64(buf: *mut u8, s: *const i8) -> usize {
+    // WARNING: signature changed — verify body
+    // Previous params: (buf : * mut u8, s : * const i8)
+    // Previous return: usize
     todo ! ()
 }
 
@@ -754,6 +737,25 @@ pub fn mju_str2type(str: *const i8) -> i32 {
     // WARNING: signature changed — verify body
     // Previous params: (str : * const i8)
     // Previous return: i32
+    todo ! ()
+}
+
+/// C: mju_writeNumBytes (engine/engine_util_misc.h:246)
+#[allow(unused_variables, non_snake_case)]
+pub fn mju_write_num_bytes(nbytes: usize) -> *const i8 {
+    // WARNING: signature changed — verify body
+    // Previous params: (nbytes : usize)
+    // Previous return: * const i8
+    todo ! ()
+}
+
+/// C: mju_warningText (engine/engine_util_misc.h:249)
+/// Calls: mju_writeNumBytes
+#[allow(unused_variables, non_snake_case)]
+pub fn mju_warning_text(warning: i32, info: usize) -> *const i8 {
+    // WARNING: signature changed — verify body
+    // Previous params: (warning : i32, info : usize)
+    // Previous return: * const i8
     todo ! ()
 }
 

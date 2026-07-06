@@ -1,11 +1,11 @@
 //! Port of: engine/engine_core_constraint.c
-//! IR hash: 699b5f0da57e8d78
+//! IR hash: 545f394232195ad9
 //! CODEGEN: signatures locked. Only fill todo!() bodies.
 
 use crate::types::*;
 
 /// C: cell_pos_and_jac (engine/engine_core_constraint.c:55)
-/// Calls: mj_bodyChain, mju_zero, mju_zeroInt
+/// Calls: mj_bodyChain, mj_jacSparse, mj_stackAllocInfo, mju_zero, mju_zeroInt
 /// ⚠️ BITEXACT RULES:
 ///   1. Copy exact C accumulation order (no iter().sum())
 ///   2. No f64::mul_add() (FMA changes precision)
@@ -35,7 +35,7 @@ pub fn cell_strain_jacobian(npc: i32, cell_nnz: i32, dSdx_local: *const f64, cel
 }
 
 /// C: arenaAllocEfc (engine/engine_core_constraint.c:130)
-/// Calls: mj_clearEfc, mj_warning
+/// Calls: mj_arenaAllocByte, mj_clearEfc, mj_warning
 #[allow(unused_variables, non_snake_case)]
 pub fn arena_alloc_efc(m: *const mjModel, d: *mut mjData) -> i32 {
     // WARNING: signature changed — verify body
@@ -115,7 +115,7 @@ pub fn mj_add_constraint_count(m: *const mjModel, size: i32, NV: i32) -> i32 {
 }
 
 /// C: mj_instantiateFriction (engine/engine_core_constraint.c:1270)
-/// Calls: mj_addConstraint, mj_addConstraintCount, mj_freeStack, mj_isSparse, mj_markStack, mj_sleepState, mju_sparse2dense, mju_zero
+/// Calls: mj_addConstraint, mj_addConstraintCount, mj_freeStack, mj_isSparse, mj_markStack, mj_sleepState, mj_stackAllocInfo, mju_sparse2dense, mju_zero
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_instantiate_friction(m: *const mjModel, d: *mut mjData, count_only: i32, nnz: *mut i32) -> i32 {
     // WARNING: signature changed — verify body
@@ -125,7 +125,7 @@ pub fn mj_instantiate_friction(m: *const mjModel, d: *mut mjData, count_only: i3
 }
 
 /// C: mj_instantiateLimit (engine/engine_core_constraint.c:1360)
-/// Calls: mj_addConstraint, mj_addConstraintCount, mj_freeStack, mj_isSparse, mj_markStack, mj_sleepState, mju_max, mju_normalize3, mju_normalize4, mju_quat2Vel, mju_scl, mju_scl3, mju_sparse2dense, mju_zero
+/// Calls: mj_addConstraint, mj_addConstraintCount, mj_freeStack, mj_isSparse, mj_markStack, mj_sleepState, mj_stackAllocInfo, mju_max, mju_normalize3, mju_normalize4, mju_quat2Vel, mju_scl, mju_scl3, mju_sparse2dense, mju_zero
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_instantiate_limit(m: *const mjModel, d: *mut mjData, count_only: i32, nnz: *mut i32) -> i32 {
     // WARNING: signature changed — verify body
@@ -135,7 +135,7 @@ pub fn mj_instantiate_limit(m: *const mjModel, d: *mut mjData, count_only: i32, 
 }
 
 /// C: getsolparam (engine/engine_core_constraint.c:1978)
-/// Calls: mju_copy, mju_max, mju_min, mju_warning, mju_zero
+/// Calls: mj_defaultSolRefImp, mju_copy, mju_max, mju_min, mju_warning, mju_zero
 /// ⚠️ BITEXACT RULES:
 ///   1. Copy exact C accumulation order (no iter().sum())
 ///   2. No f64::mul_add() (FMA changes precision)
@@ -194,7 +194,7 @@ pub fn getimpedance(solimp: *const f64, pos: f64, margin: f64, imp: *mut f64, im
 }
 
 /// C: mj_jacSumCount (engine/engine_core_constraint.c:2272)
-/// Calls: mj_bodyChain, mj_freeStack, mj_markStack, mju_addChains, mju_copyInt
+/// Calls: mj_bodyChain, mj_freeStack, mj_markStack, mj_stackAllocInfo, mju_addChains, mju_copyInt
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_jac_sum_count(m: *const mjModel, d: *mut mjData, chain: *mut i32, n: i32, body: *const i32) -> i32 {
     // WARNING: signature changed — verify body
@@ -204,7 +204,7 @@ pub fn mj_jac_sum_count(m: *const mjModel, d: *mut mjData, chain: *mut i32, n: i
 }
 
 /// C: mj_ne (engine/engine_core_constraint.c:2303)
-/// Calls: mj_addConstraintCount, mj_freeStack, mj_jacSumCount, mj_markStack, mj_sleepState, mju_combineSparseCount, mju_copyInt, mju_message
+/// Calls: mj_addConstraintCount, mj_freeStack, mj_jacDifPair, mj_jacSumCount, mj_markStack, mj_sleepState, mj_stackAllocInfo, mju_combineSparseCount, mju_copyInt, mju_flexGatherCellState, mju_flexGatherFaceState, mju_message
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_ne(m: *const mjModel, d: *mut mjData, nnz: *mut i32) -> i32 {
     // WARNING: signature changed — verify body
@@ -214,7 +214,7 @@ pub fn mj_ne(m: *const mjModel, d: *mut mjData, nnz: *mut i32) -> i32 {
 }
 
 /// C: mj_nc (engine/engine_core_constraint.c:2536)
-/// Calls: mj_elemBodyWeight, mj_flexBody, mj_freeStack, mj_isPyramidal, mj_isSparse, mj_jacSumCount, mj_markStack, mju_message
+/// Calls: mj_elemBodyWeight, mj_flexBody, mj_freeStack, mj_isPyramidal, mj_isSparse, mj_jacDifPair, mj_jacSumCount, mj_markStack, mj_stackAllocInfo, mj_vertBodyWeight, mju_message
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_nc(m: *const mjModel, d: *mut mjData, nnz: *mut i32) -> i32 {
     // WARNING: signature changed — verify body
@@ -264,7 +264,7 @@ pub fn compute_y_backsub(Y: *mut f64, Y_rownnz: *const i32, Y_rowadr: *const i32
 }
 
 /// C: mj_makeY (engine/engine_core_constraint.c:2908)
-/// Calls: computeY_backsub, computeY_fill, computeY_precount, mj_clearEfc, mj_freeStack, mj_isSparse, mj_markStack, mj_solveM2, mj_warning, mju_dot
+/// Calls: computeY_backsub, computeY_fill, computeY_precount, mj_arenaAllocByte, mj_clearEfc, mj_freeStack, mj_isSparse, mj_markStack, mj_solveM2, mj_stackAllocInfo, mj_warning, mju_dot
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_make_y(m: *const mjModel, d: *mut mjData, flg_diagexact: i32) {
     // WARNING: signature changed — verify body
@@ -274,7 +274,7 @@ pub fn mj_make_y(m: *const mjModel, d: *mut mjData, flg_diagexact: i32) {
 }
 
 /// C: mj_makeAR (engine/engine_core_constraint.c:2999)
-/// Calls: mj_clearEfc, mj_freeStack, mj_isSparse, mj_markStack, mj_warning, mju_sqrMatTDSparseSymbolic, mju_transpose
+/// Calls: mj_arenaAllocByte, mj_clearEfc, mj_freeStack, mj_isSparse, mj_markStack, mj_stackAllocInfo, mj_warning, mju_sqrMatTD, mju_sqrMatTDSparseNumeric, mju_sqrMatTDSparseSymbolic, mju_transpose, mju_transposeSparse
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_make_ar(m: *const mjModel, d: *mut mjData) {
     // WARNING: signature changed — verify body
@@ -323,7 +323,7 @@ pub fn mj_mul_jac_t_vec(m: *const mjModel, d: *const mjData, res: *mut f64, vec:
 }
 
 /// C: mj_Jdotv (engine/engine_core_constraint.h:40)
-/// Calls: mj_equalityAnchors, mj_freeStack, mj_isSparse, mj_jacDot, mj_jacDotSparse, mj_markStack, mj_mergeChain, mju_copy4, mju_derivQuat, mju_dotSparseX3, mju_mulMatVec, mju_mulQuat, mju_mulQuatAxis, mju_negQuat, mju_sub3, mju_zero3
+/// Calls: mj_equalityAnchors, mj_freeStack, mj_isSparse, mj_jacDot, mj_jacDotSparse, mj_markStack, mj_mergeChain, mj_stackAllocInfo, mju_copy4, mju_derivQuat, mju_dotSparseX3, mju_mulMatVec, mju_mulQuat, mju_mulQuatAxis, mju_negQuat, mju_sub3, mju_zero3
 /// ⚠️ BITEXACT RULES:
 ///   1. Copy exact C accumulation order (no iter().sum())
 ///   2. No f64::mul_add() (FMA changes precision)
@@ -397,7 +397,7 @@ pub fn mj_assign_margin(m: *const mjModel, source: f64) -> f64 {
 }
 
 /// C: mj_addContact (engine/engine_core_constraint.h:58)
-/// Calls: mj_clearEfc, mj_warning
+/// Calls: mj_arenaAllocByte, mj_clearEfc, mj_warning
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_add_contact(m: *const mjModel, d: *mut mjData, con: *const mjContact) -> i32 {
     // WARNING: signature changed — verify body
@@ -407,7 +407,7 @@ pub fn mj_add_contact(m: *const mjModel, d: *mut mjData, con: *const mjContact) 
 }
 
 /// C: mj_instantiateEquality (engine/engine_core_constraint.h:63)
-/// Calls: cell_pos_and_jac, cell_strain_jacobian, mj_addConstraint, mj_equalityAnchors, mj_freeStack, mj_isSparse, mj_jacDifPair, mj_markStack, mj_sleepState, mju_addTo3, mju_addToScl, mju_combineSparse, mju_copy, mju_copy3, mju_copyInt, mju_defGradient, mju_flexInterpRotation2D, mju_mat2Rot, mju_message, mju_mulMatVec3, mju_mulQuat, mju_mulQuatAxis, mju_negQuat, mju_rotVecQuat, mju_scl, mju_scl3, mju_sparse2dense, mju_sub3, mju_zero
+/// Calls: cell_pos_and_jac, cell_strain_jacobian, mj_addConstraint, mj_equalityAnchors, mj_freeStack, mj_isSparse, mj_jacDifPair, mj_markStack, mj_sleepState, mj_stackAllocInfo, mju_addTo3, mju_addToScl, mju_combineSparse, mju_copy, mju_copy3, mju_copyInt, mju_defGradient, mju_flexGatherCellState, mju_flexGatherFaceState, mju_flexInterpRotation2D, mju_mat2Rot, mju_message, mju_mulMatVec3, mju_mulQuat, mju_mulQuatAxis, mju_negQuat, mju_rotVecQuat, mju_scl, mju_scl3, mju_sparse2dense, mju_sub3, mju_zero
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_instantiate_equality(m: *const mjModel, d: *mut mjData) {
     // WARNING: signature changed — verify body
@@ -417,7 +417,7 @@ pub fn mj_instantiate_equality(m: *const mjModel, d: *mut mjData) {
 }
 
 /// C: mj_instantiateContact (engine/engine_core_constraint.h:66)
-/// Calls: mj_contactJacobian, mj_freeStack, mj_isPyramidal, mj_isSparse, mj_markStack, mju_addScl, mju_mulMatMat, mju_zero
+/// Calls: mj_addConstraint, mj_contactJacobian, mj_freeStack, mj_isPyramidal, mj_isSparse, mj_markStack, mj_stackAllocInfo, mju_addScl, mju_mulMatMat, mju_zero
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_instantiate_contact(m: *const mjModel, d: *mut mjData) {
     // WARNING: signature changed — verify body
@@ -442,7 +442,7 @@ pub fn mj_contact_jacobian(m: *const mjModel, d: *mut mjData, con: *const mjCont
 }
 
 /// C: mj_diagApprox (engine/engine_core_constraint.h:78)
-/// Calls: mj_elemBodyWeight, mj_vertBodyWeight, mju_message
+/// Calls: mj_elemBodyWeight, mj_vertBodyWeight, mju_flexGatherCellState, mju_flexGatherFaceState, mju_message
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_diag_approx(m: *const mjModel, d: *mut mjData) {
     // WARNING: signature changed — verify body

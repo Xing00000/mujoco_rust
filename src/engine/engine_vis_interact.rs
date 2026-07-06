@@ -1,5 +1,5 @@
 //! Port of: engine/engine_vis_interact.c
-//! IR hash: 699b5f0da57e8d78
+//! IR hash: 545f394232195ad9
 //! CODEGEN: signatures locked. Only fill todo!() bodies.
 
 use crate::types::*;
@@ -125,7 +125,7 @@ pub fn mjv_move_camera(m: *const mjModel, action: i32, reldx: f64, reldy: f64, s
 }
 
 /// C: mjv_movePerturb (engine/engine_vis_interact.h:54)
-/// Calls: convert2D, mju_addToScl3, mju_axisAngle2Quat, mju_max, mju_message, mju_min, mju_mulMatVec3, mju_mulQuat, mju_negQuat, mju_normalize3, mju_normalize4, mju_quat2Vel
+/// Calls: convert2D, mju_addToScl3, mju_axisAngle2Quat, mju_max, mju_message, mju_min, mju_mulMatVec3, mju_mulQuat, mju_negQuat, mju_normalize3, mju_normalize4, mju_quat2Vel, mjv_cameraInModel
 /// ⚠️ BITEXACT RULES:
 ///   1. Copy exact C accumulation order (no iter().sum())
 ///   2. No f64::mul_add() (FMA changes precision)
@@ -140,7 +140,7 @@ pub fn mjv_move_perturb(m: *const mjModel, d: *const mjData, action: i32, reldx:
 }
 
 /// C: mjv_moveModel (engine/engine_vis_interact.h:58)
-/// Calls: mju_addScl3, mju_axisAngle2Quat, mju_cross, mju_dot3, mju_f2n, mju_message, mju_mulQuat, mju_n2f, mju_normalize3, mju_normalize4
+/// Calls: mju_addScl3, mju_axisAngle2Quat, mju_cross, mju_dot3, mju_f2n, mju_message, mju_mulQuat, mju_n2f, mju_normalize3, mju_normalize4, mjv_cameraInRoom
 /// ⚠️ BITEXACT RULES:
 ///   1. Copy exact C accumulation order (no iter().sum())
 ///   2. No f64::mul_add() (FMA changes precision)
@@ -155,7 +155,7 @@ pub fn mjv_move_model(m: *const mjModel, action: i32, reldx: f64, reldy: f64, ro
 }
 
 /// C: mjv_initPerturb (engine/engine_vis_interact.h:62)
-/// Calls: mj_freeStack, mj_markStack, mj_solveM2, mju_addTo3, mju_copy3, mju_dot, mju_dot3, mju_max, mju_mulMatVec3, mju_mulQuat, mju_sub3, mjv_frustumHeight
+/// Calls: mj_freeStack, mj_jac, mj_markStack, mj_solveM2, mj_stackAllocInfo, mju_addTo3, mju_copy3, mju_dot, mju_dot3, mju_max, mju_mulMatVec3, mju_mulQuat, mju_sub3, mjv_cameraInModel, mjv_frustumHeight
 #[allow(unused_variables, non_snake_case)]
 pub fn mjv_init_perturb(m: *const mjModel, d: *mut mjData, scn: *const mjvScene, pert: *mut mjvPerturb) {
     // WARNING: signature changed — verify body
@@ -195,16 +195,16 @@ pub fn mjv_average_camera(cam1: *const mjvGLCamera, cam2: *const mjvGLCamera) ->
 }
 
 /// C: mjv_select (engine/engine_vis_interact.h:76)
-/// Calls: mju_addScl3, mju_addToScl3, mju_copy3, mju_cross, mju_f2n, mju_normalize3, mju_raySkin, mju_scl3, mjv_averageCamera, mjv_cameraInModel, mjv_flexBodyId
+/// Calls: mj_ray, mj_rayFlex, mju_addScl3, mju_addToScl3, mju_copy3, mju_cross, mju_f2n, mju_normalize3, mju_raySkin, mju_scl3, mjv_averageCamera, mjv_cameraInModel, mjv_flexBodyId
 /// ⚠️ BITEXACT RULES:
 ///   1. Copy exact C accumulation order (no iter().sum())
 ///   2. No f64::mul_add() (FMA changes precision)
 ///   3. No algebraic simplification
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
-pub fn mjv_select(m: *const mjModel, d: *const mjData, vopt: *const mjvOption, aspectratio: f64, relx: f64, rely: f64, scn: *const mjvScene, selpnt: *mut f64, geomid: *mut i32, flexid: *mut i32, skinid: *mut i32) -> i32 {
+pub fn mjv_select(m: *const mjModel, d: *const mjData, vopt: *const mjvOption, aspectratio: f64, relx: f64, rely: f64, scn: *const mjvScene, selpnt: *mut f64, geomid: [i32; 1], flexid: [i32; 1], skinid: [i32; 1]) -> i32 {
     // WARNING: signature changed — verify body
-    // Previous params: (m : * const mjModel, d : * const mjData, vopt : * const mjvOption, aspectratio : f64, relx : f64, rely : f64, scn : * const mjvScene, selpnt : * mut f64, geomid : * mut i32, flexid : * mut i32, skinid : * mut i32)
+    // Previous params: (m : * const mjModel, d : * const mjData, vopt : * const mjvOption, aspectratio : f64, relx : f64, rely : f64, scn : * const mjvScene, selpnt : * mut f64, geomid : [i32 ; 1], flexid : [i32 ; 1], skinid : [i32 ; 1])
     // Previous return: i32
     todo ! ()
 }

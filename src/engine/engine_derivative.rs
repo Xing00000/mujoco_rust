@@ -1,5 +1,5 @@
 //! Port of: engine/engine_derivative.c
-//! IR hash: 699b5f0da57e8d78
+//! IR hash: 545f394232195ad9
 //! CODEGEN: signatures locked. Only fill todo!() bodies.
 
 use crate::types::*;
@@ -12,9 +12,9 @@ use crate::types::*;
 ///   3. No algebraic simplification
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
-pub fn mjd_cross(a: *const f64, b: *const f64, Da: mjtNum__restrict, Db: mjtNum__restrict) {
+pub fn mjd_cross(a: *const f64, b: *const f64, Da: *mut f64, Db: *mut f64) {
     // WARNING: signature changed — verify body
-    // Previous params: (a : * const f64, b : * const f64, Da : mjtNum__restrict, Db : mjtNum__restrict)
+    // Previous params: (a : * const f64, b : * const f64, Da : * mut f64, Db : * mut f64)
     // Previous return: ()
     todo ! ()
 }
@@ -140,7 +140,7 @@ pub fn mjd_com_vel_vel(m: *const mjModel, d: *mut mjData, Dcvel: *mut f64, Dcdof
 }
 
 /// C: mjd_rne_vel (engine/engine_derivative.c:596)
-/// Calls: addToParent, copyFromParent, mj_freeStack, mj_markStack, mjd_comVel_vel, mjd_crossForce_frc, mjd_crossForce_vel, mjd_mulInertVec_vel, mju_addTo, mju_addToScl, mju_mulInertVec, mju_mulMatMat, mju_mulMatVec, mju_subFrom, mju_transpose, mju_zero
+/// Calls: addToParent, copyFromParent, mj_freeStack, mj_markStack, mj_stackAllocInfo, mjd_comVel_vel, mjd_crossForce_frc, mjd_crossForce_vel, mjd_mulInertVec_vel, mju_addTo, mju_addToScl, mju_mulInertVec, mju_mulMatMat, mju_mulMatVec, mju_subFrom, mju_transpose, mju_zero
 #[allow(unused_variables, non_snake_case)]
 pub fn mjd_rne_vel(m: *const mjModel, d: *mut mjData) {
     // WARNING: signature changed — verify body
@@ -150,7 +150,7 @@ pub fn mjd_rne_vel(m: *const mjModel, d: *mut mjData) {
 }
 
 /// C: addJTBJ (engine/engine_derivative.c:711)
-/// Calls: mj_freeStack, mj_markStack, mju_scl
+/// Calls: mj_freeStack, mj_markStack, mj_stackAllocInfo, mju_scl
 /// ⚠️ BITEXACT RULES:
 ///   1. Copy exact C accumulation order (no iter().sum())
 ///   2. No f64::mul_add() (FMA changes precision)
@@ -195,7 +195,7 @@ pub fn mjd_muscle_gain_vel(len: f64, vel: f64, lengthrange: *const f64, acc0: f6
 }
 
 /// C: addJTBJ_mulSparse (engine/engine_derivative.c:832)
-/// Calls: mj_freeStack, mj_markStack, mju_mulMatVec, mju_zero
+/// Calls: mj_freeStack, mj_markStack, mj_stackAllocInfo, mju_mulMatVec, mju_zero
 /// ⚠️ BITEXACT RULES:
 ///   1. Copy exact C accumulation order (no iter().sum())
 ///   2. No f64::mul_add() (FMA changes precision)
@@ -210,7 +210,7 @@ pub fn add_jtbj_mul_sparse(m: *const mjModel, d: *mut mjData, res: *mut f64, vec
 }
 
 /// C: mjd_flexInterp_kernel (engine/engine_derivative.c:872)
-/// Calls: addJTBJ_mulSparse, mj_bodyChain, mj_freeStack, mj_markStack, mju_mulMatMat3, mju_quat2Mat, mju_transpose, mju_zero
+/// Calls: addJTBJ_mulSparse, mj_bodyChain, mj_freeStack, mj_jacSparse, mj_markStack, mj_stackAllocInfo, mju_flexGatherCellState, mju_flexGatherFaceState, mju_flexGatherState, mju_mulMatMat3, mju_quat2Mat, mju_transpose, mju_zero
 /// ⚠️ BITEXACT RULES:
 ///   1. Copy exact C accumulation order (no iter().sum())
 ///   2. No f64::mul_add() (FMA changes precision)
@@ -260,9 +260,9 @@ pub fn ellipsoid_max_moment(size: *const f64, dir: i32) -> f64 {
 ///   3. No algebraic simplification
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
-pub fn add_to_quadrant(B: mjtNum__restrict, D: *const f64, col_quad: i32, row_quad: i32) {
+pub fn add_to_quadrant(B: *mut f64, D: *const f64, col_quad: i32, row_quad: i32) {
     // WARNING: signature changed — verify body
-    // Previous params: (B : mjtNum__restrict, D : * const f64, col_quad : i32, row_quad : i32)
+    // Previous params: (B : * mut f64, D : * const f64, col_quad : i32, row_quad : i32)
     // Previous return: ()
     todo ! ()
 }
@@ -275,9 +275,9 @@ pub fn add_to_quadrant(B: mjtNum__restrict, D: *const f64, col_quad: i32, row_qu
 ///   3. No algebraic simplification
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
-pub fn mjd_added_mass_forces(B: mjtNum__restrict, local_vels: *const f64, fluid_density: f64, virtual_mass: *const f64, virtual_inertia: *const f64) {
+pub fn mjd_added_mass_forces(B: *mut f64, local_vels: *const f64, fluid_density: f64, virtual_mass: *const f64, virtual_inertia: *const f64) {
     // WARNING: signature changed — verify body
-    // Previous params: (B : mjtNum__restrict, local_vels : * const f64, fluid_density : f64, virtual_mass : * const f64, virtual_inertia : * const f64)
+    // Previous params: (B : * mut f64, local_vels : * const f64, fluid_density : f64, virtual_mass : * const f64, virtual_inertia : * const f64)
     // Previous return: ()
     todo ! ()
 }
@@ -290,9 +290,9 @@ pub fn mjd_added_mass_forces(B: mjtNum__restrict, local_vels: *const f64, fluid_
 ///   3. No algebraic simplification
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
-pub fn mjd_viscous_torque(D: mjtNum__restrict, lvel: *const f64, fluid_density: f64, fluid_viscosity: f64, size: *const f64, slender_drag_coef: f64, ang_drag_coef: f64) {
+pub fn mjd_viscous_torque(D: *mut f64, lvel: *const f64, fluid_density: f64, fluid_viscosity: f64, size: *const f64, slender_drag_coef: f64, ang_drag_coef: f64) {
     // WARNING: signature changed — verify body
-    // Previous params: (D : mjtNum__restrict, lvel : * const f64, fluid_density : f64, fluid_viscosity : f64, size : * const f64, slender_drag_coef : f64, ang_drag_coef : f64)
+    // Previous params: (D : * mut f64, lvel : * const f64, fluid_density : f64, fluid_viscosity : f64, size : * const f64, slender_drag_coef : f64, ang_drag_coef : f64)
     // Previous return: ()
     todo ! ()
 }
@@ -305,9 +305,9 @@ pub fn mjd_viscous_torque(D: mjtNum__restrict, lvel: *const f64, fluid_density: 
 ///   3. No algebraic simplification
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
-pub fn mjd_viscous_drag(D: mjtNum__restrict, lvel: *const f64, fluid_density: f64, fluid_viscosity: f64, size: *const f64, blunt_drag_coef: f64, slender_drag_coef: f64) {
+pub fn mjd_viscous_drag(D: *mut f64, lvel: *const f64, fluid_density: f64, fluid_viscosity: f64, size: *const f64, blunt_drag_coef: f64, slender_drag_coef: f64) {
     // WARNING: signature changed — verify body
-    // Previous params: (D : mjtNum__restrict, lvel : * const f64, fluid_density : f64, fluid_viscosity : f64, size : * const f64, blunt_drag_coef : f64, slender_drag_coef : f64)
+    // Previous params: (D : * mut f64, lvel : * const f64, fluid_density : f64, fluid_viscosity : f64, size : * const f64, blunt_drag_coef : f64, slender_drag_coef : f64)
     // Previous return: ()
     todo ! ()
 }
@@ -320,9 +320,9 @@ pub fn mjd_viscous_drag(D: mjtNum__restrict, lvel: *const f64, fluid_density: f6
 ///   3. No algebraic simplification
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
-pub fn mjd_kutta_lift(D: mjtNum__restrict, lvel: *const f64, fluid_density: f64, size: *const f64, kutta_lift_coef: f64) {
+pub fn mjd_kutta_lift(D: *mut f64, lvel: *const f64, fluid_density: f64, size: *const f64, kutta_lift_coef: f64) {
     // WARNING: signature changed — verify body
-    // Previous params: (D : mjtNum__restrict, lvel : * const f64, fluid_density : f64, size : * const f64, kutta_lift_coef : f64)
+    // Previous params: (D : * mut f64, lvel : * const f64, fluid_density : f64, size : * const f64, kutta_lift_coef : f64)
     // Previous return: ()
     todo ! ()
 }
@@ -335,15 +335,15 @@ pub fn mjd_kutta_lift(D: mjtNum__restrict, lvel: *const f64, fluid_density: f64,
 ///   3. No algebraic simplification
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
-pub fn mjd_magnus_force(B: mjtNum__restrict, lvel: *const f64, fluid_density: f64, size: *const f64, magnus_lift_coef: f64) {
+pub fn mjd_magnus_force(B: *mut f64, lvel: *const f64, fluid_density: f64, size: *const f64, magnus_lift_coef: f64) {
     // WARNING: signature changed — verify body
-    // Previous params: (B : mjtNum__restrict, lvel : * const f64, fluid_density : f64, size : * const f64, magnus_lift_coef : f64)
+    // Previous params: (B : * mut f64, lvel : * const f64, fluid_density : f64, size : * const f64, magnus_lift_coef : f64)
     // Previous return: ()
     todo ! ()
 }
 
 /// C: mjd_ellipsoidFluid (engine/engine_derivative.c:1618)
-/// Calls: addJTBJ, addJTBJSparse, addToQuadrant, mj_bodyChain, mj_freeStack, mj_isSparse, mj_jacGeom, mj_jacSparse, mj_markStack, mj_objectVelocity, mjd_addedMassForces, mjd_kutta_lift, mjd_magnus_force, mjd_viscous_drag, mjd_viscous_torque, mju_copy, mju_copy3, mju_geomSemiAxes, mju_mulMatTMat, mju_subFrom3, mju_symmetrize, mju_transformSpatial, mju_zero, readFluidGeomInteraction
+/// Calls: addJTBJ, addJTBJSparse, addToQuadrant, mj_bodyChain, mj_freeStack, mj_isSparse, mj_jacGeom, mj_jacSparse, mj_markStack, mj_objectVelocity, mj_stackAllocInfo, mjd_addedMassForces, mjd_kutta_lift, mjd_magnus_force, mjd_viscous_drag, mjd_viscous_torque, mju_copy, mju_copy3, mju_geomSemiAxes, mju_mulMatTMat, mju_subFrom3, mju_symmetrize, mju_transformSpatial, mju_zero, readFluidGeomInteraction
 #[allow(unused_variables, non_snake_case)]
 pub fn mjd_ellipsoid_fluid(m: *const mjModel, d: *mut mjData, bodyid: i32) {
     // WARNING: signature changed — verify body
@@ -353,7 +353,7 @@ pub fn mjd_ellipsoid_fluid(m: *const mjModel, d: *mut mjData, bodyid: i32) {
 }
 
 /// C: mjd_inertiaBoxFluid (engine/engine_derivative.c:1724)
-/// Calls: addJTBJ, addJTBJSparse, mj_bodyChain, mj_freeStack, mj_isSparse, mj_jacBodyCom, mj_jacSparse, mj_markStack, mj_objectVelocity, mju_copy, mju_copy3, mju_max, mju_mulMatTMat, mju_subFrom3, mju_transformSpatial, mju_zero
+/// Calls: addJTBJ, addJTBJSparse, mj_bodyChain, mj_freeStack, mj_isSparse, mj_jacBodyCom, mj_jacSparse, mj_markStack, mj_objectVelocity, mj_stackAllocInfo, mju_copy, mju_copy3, mju_max, mju_mulMatTMat, mju_subFrom3, mju_transformSpatial, mju_zero
 #[allow(unused_variables, non_snake_case)]
 pub fn mjd_inertia_box_fluid(m: *const mjModel, d: *mut mjData, i: i32) {
     // WARNING: signature changed — verify body
@@ -423,7 +423,7 @@ pub fn mjd_passive_vel(m: *const mjModel, d: *mut mjData) {
 }
 
 /// C: mjd_rne_vel_dense (engine/engine_derivative.h:44)
-/// Calls: mj_freeStack, mj_markStack, mjd_comVel_vel_dense, mjd_crossForce_frc, mjd_crossForce_vel, mjd_mulInertVec_vel, mju_addTo, mju_addToScl, mju_copy, mju_mulInertVec, mju_mulMatMat, mju_scl, mju_zero
+/// Calls: mj_freeStack, mj_markStack, mj_stackAllocInfo, mjd_comVel_vel_dense, mjd_crossForce_frc, mjd_crossForce_vel, mjd_mulInertVec_vel, mju_addTo, mju_addToScl, mju_copy, mju_mulInertVec, mju_mulMatMat, mju_scl, mju_zero
 #[allow(unused_variables, non_snake_case)]
 pub fn mjd_rne_vel_dense(m: *const mjModel, d: *mut mjData) {
     // WARNING: signature changed — verify body
@@ -433,6 +433,7 @@ pub fn mjd_rne_vel_dense(m: *const mjModel, d: *mut mjData) {
 }
 
 /// C: mjd_flexInterp_mul (engine/engine_derivative.h:48)
+/// Calls: mjd_flexInterp_kernel
 /// ⚠️ BITEXACT RULES:
 ///   1. Copy exact C accumulation order (no iter().sum())
 ///   2. No f64::mul_add() (FMA changes precision)
@@ -447,6 +448,7 @@ pub fn mjd_flex_interp_mul(m: *const mjModel, d: *mut mjData, res: *mut f64, vec
 }
 
 /// C: mjd_flexInterp_cacheKrot (engine/engine_derivative.h:52)
+/// Calls: mjd_flexInterp_kernel
 /// ⚠️ BITEXACT RULES:
 ///   1. Copy exact C accumulation order (no iter().sum())
 ///   2. No f64::mul_add() (FMA changes precision)

@@ -1,5 +1,5 @@
 //! Port of: engine/engine_util_errmem.c
-//! IR hash: 699b5f0da57e8d78
+//! IR hash: 545f394232195ad9
 //! CODEGEN: signatures locked. Only fill todo!() bodies.
 
 use crate::types::*;
@@ -16,9 +16,9 @@ pub fn mju_default_log_handler(msg: *const mjLogMessage) {
 
 /// C: mju_alignedMalloc (engine/engine_util_errmem.c:44)
 #[allow(unused_variables, non_snake_case)]
-pub fn mju_aligned_malloc(size: i32, align: i32) -> *mut () {
+pub fn mju_aligned_malloc(size: usize, align: usize) -> *mut () {
     // WARNING: signature changed — verify body
-    // Previous params: (size : i32, align : i32)
+    // Previous params: (size : usize, align : usize)
     // Previous return: * mut ()
     todo ! ()
 }
@@ -29,16 +29,6 @@ pub fn mju_aligned_free(ptr: *mut ()) {
     // WARNING: signature changed — verify body
     // Previous params: (ptr : * mut ())
     // Previous return: ()
-    todo ! ()
-}
-
-/// C: mju_malloc (engine/engine_util_errmem.c:62)
-/// Calls: mju_error
-#[allow(unused_variables, non_snake_case)]
-pub fn mju_malloc(size: i32) -> *mut () {
-    // WARNING: signature changed — verify body
-    // Previous params: (size : i32)
-    // Previous return: * mut ()
     todo ! ()
 }
 
@@ -92,13 +82,13 @@ pub fn mju_active_handler() -> mjfLogHandler {
     todo ! ()
 }
 
-/// C: mju_error_v (engine/engine_util_errmem.c:312)
-/// Calls: mju_message
+/// C: mju_malloc (engine/engine_util_errmem.h:43)
+/// Calls: mju_alignedMalloc, mju_error
 #[allow(unused_variables, non_snake_case)]
-pub fn mju_error_v(msg: *const i8, args: i32) {
+pub fn mju_malloc(size: usize) -> *mut () {
     // WARNING: signature changed — verify body
-    // Previous params: (msg : * const i8, args : i32)
-    // Previous return: ()
+    // Previous params: (size : usize)
+    // Previous return: * mut ()
     todo ! ()
 }
 
@@ -145,10 +135,21 @@ pub fn mju_clear_handlers() {
 }
 
 /// C: mju_error (engine/engine_util_errmem.h:74)
+/// Calls: mju_error_v
 #[allow(unused_variables, non_snake_case)]
 pub fn mju_error(msg: *const i8) {
     // WARNING: signature changed — verify body
     // Previous params: (msg : * const i8)
+    // Previous return: ()
+    todo ! ()
+}
+
+/// C: mju_error_v (engine/engine_util_errmem.h:75)
+/// Calls: mju_message
+#[allow(unused_variables, non_snake_case)]
+pub fn mju_error_v(msg: *const i8, args: va_list) {
+    // WARNING: signature changed — verify body
+    // Previous params: (msg : * const i8, args : va_list)
     // Previous return: ()
     todo ! ()
 }

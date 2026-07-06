@@ -1,5 +1,5 @@
 //! Port of: engine/engine_util_sparse.h
-//! IR hash: 699b5f0da57e8d78
+//! IR hash: 545f394232195ad9
 //! CODEGEN: signatures locked. Only fill todo!() bodies.
 
 use crate::types::*;
@@ -283,7 +283,7 @@ pub fn mju_super_sparse(nr: i32, rowsuper: *mut i32, rownnz: *const i32, rowadr:
 }
 
 /// C: mju_sqrMatTDSparse (engine/engine_util_sparse.h:119)
-/// Calls: mj_freeStack, mj_markStack, mju_dot, mju_zeroInt
+/// Calls: mj_freeStack, mj_markStack, mj_stackAllocInfo, mju_dot, mju_zeroInt
 /// ⚠️ BITEXACT RULES:
 ///   1. Copy exact C accumulation order (no iter().sum())
 ///   2. No f64::mul_add() (FMA changes precision)
@@ -298,7 +298,7 @@ pub fn mju_sqr_mat_td_sparse(res: *mut f64, mat: *const f64, matT: *const f64, d
 }
 
 /// C: mju_sqrMatTDSparse_row (engine/engine_util_sparse.h:129)
-/// Calls: mj_freeStack, mj_markStack, mju_copyInt
+/// Calls: mj_freeStack, mj_markStack, mj_stackAllocInfo, mju_copyInt
 /// ⚠️ BITEXACT RULES:
 ///   1. Copy exact C accumulation order (no iter().sum())
 ///   2. No f64::mul_add() (FMA changes precision)
@@ -313,7 +313,7 @@ pub fn mju_sqr_mat_td_sparse_row(res: *mut f64, mat: *const f64, matT: *const f6
 }
 
 /// C: mju_sqrMatTDSparseCount (engine/engine_util_sparse.h:139)
-/// Calls: mj_freeStack, mj_markStack
+/// Calls: mj_freeStack, mj_markStack, mj_stackAllocInfo
 #[allow(unused_variables, non_snake_case)]
 pub fn mju_sqr_mat_td_sparse_count(res_rownnz: *mut i32, res_rowadr: *mut i32, nr: i32, rownnz: *const i32, rowadr: *const i32, colind: *const i32, rownnzT: *const i32, rowadrT: *const i32, colindT: *const i32, rowsuperT: *const i32, d: *mut mjData, flg_upper: i32) -> i32 {
     // WARNING: signature changed — verify body
@@ -323,7 +323,7 @@ pub fn mju_sqr_mat_td_sparse_count(res_rownnz: *mut i32, res_rowadr: *mut i32, n
 }
 
 /// C: mju_sqrMatTDSparseSymbolic (engine/engine_util_sparse.h:148)
-/// Calls: mj_freeStack, mj_markStack, mju_copyInt, mju_zeroInt
+/// Calls: mj_freeStack, mj_markStack, mj_stackAllocInfo, mju_copyInt, mju_zeroInt
 #[allow(unused_variables, non_snake_case)]
 pub fn mju_sqr_mat_td_sparse_symbolic(res_rownnz: *mut i32, res_rowadr: *mut i32, res_colind: *mut i32, res_diagind: *mut i32, nr: i32, nc: i32, rownnz: *const i32, rowadr: *const i32, colind: *const i32, rownnzT: *const i32, rowadrT: *const i32, colindT: *const i32, rowsuperT: *const i32, d: *mut mjData) -> i32 {
     // WARNING: signature changed — verify body
@@ -333,7 +333,7 @@ pub fn mju_sqr_mat_td_sparse_symbolic(res_rownnz: *mut i32, res_rowadr: *mut i32
 }
 
 /// C: mju_sqrMatTDSparseNumeric (engine/engine_util_sparse.h:155)
-/// Calls: mj_freeStack, mj_markStack, mju_zero
+/// Calls: mj_freeStack, mj_markStack, mj_stackAllocInfo, mju_zero
 /// ⚠️ BITEXACT RULES:
 ///   1. Copy exact C accumulation order (no iter().sum())
 ///   2. No f64::mul_add() (FMA changes precision)
@@ -402,6 +402,7 @@ pub fn mju_block_sparse(res: *mut f64, res_rownnz: *mut i32, res_rowadr: *mut i3
 }
 
 /// C: mju_blockDiagSparse (engine/engine_util_sparse.h:185)
+/// Calls: mju_blockSparse
 /// ⚠️ BITEXACT RULES:
 ///   1. Copy exact C accumulation order (no iter().sum())
 ///   2. No f64::mul_add() (FMA changes precision)

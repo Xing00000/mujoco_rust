@@ -1,5 +1,5 @@
 //! Port of: engine/engine_collision_driver.c
-//! IR hash: 699b5f0da57e8d78
+//! IR hash: 545f394232195ad9
 //! CODEGEN: signatures locked. Only fill todo!() bodies.
 
 use crate::types::*;
@@ -44,10 +44,10 @@ pub fn reset_arena(d: *mut mjData) {
 
 /// C: alignArena (engine/engine_collision_driver.c:189)
 #[allow(unused_variables, non_snake_case)]
-pub fn align_arena(d: *mut mjData, alignment: i32) -> i32 {
+pub fn align_arena(d: *mut mjData, alignment: usize) -> usize {
     // WARNING: signature changed — verify body
-    // Previous params: (d : * mut mjData, alignment : i32)
-    // Previous return: i32
+    // Previous params: (d : * mut mjData, alignment : usize)
+    // Previous return: usize
     todo ! ()
 }
 
@@ -170,11 +170,21 @@ pub fn can_collide2(m: *const mjModel, bf1: i32, bf2: i32) -> i32 {
 }
 
 /// C: mj_collideTree (engine/engine_collision_driver.c:361)
-/// Calls: canCollide2, filterBitmask, filterBox, filterCollisionPair, filterSphereBox, mj_assignMargin, mj_collideElems, mj_collideGeomElem, mj_collideOBB, mj_collidePlaneFlex, mj_collideSdfFlex, mj_filterSphere, mj_freeStack, mj_markStack, mju_error, mju_message
+/// Calls: canCollide2, filterBitmask, filterBox, filterCollisionPair, filterSphereBox, mj_assignMargin, mj_collideElems, mj_collideGeomElem, mj_collideOBB, mj_collidePlaneFlex, mj_collideSdfFlex, mj_filterSphere, mj_freeStack, mj_markStack, mj_narrowphase, mj_stackAllocInfo, mju_error, mju_message
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_collide_tree(m: *const mjModel, d: *mut mjData, bf1: i32, bf2: i32, merged: i32, startadr: i32, pairadr: i32) {
     // WARNING: signature changed — verify body
     // Previous params: (m : * const mjModel, d : * mut mjData, bf1 : i32, bf2 : i32, merged : i32, startadr : i32, pairadr : i32)
+    // Previous return: ()
+    todo ! ()
+}
+
+/// C: mj_narrowphase (engine/engine_collision_driver.c:367)
+/// Calls: getGap, getMargin, mj_arenaAllocByte, mj_contactParam, mj_freeStack, mj_markStack, mj_maxContact, mj_setContact, mj_stackAllocByte, mj_stackAllocInfo, mj_stackAllocInt, mj_warning, mjc_ccdSize, mji_copy3, mju_copy, mju_dispatch, mju_numThread
+#[allow(unused_variables, non_snake_case)]
+pub fn mj_narrowphase(m: *const mjModel, d: *mut mjData, buffer: *const mjcPair, npair: i32, parena: usize) {
+    // WARNING: signature changed — verify body
+    // Previous params: (m : * const mjModel, d : * mut mjData, buffer : * const mjcPair, npair : i32, parena : usize)
     // Previous return: ()
     todo ! ()
 }
@@ -190,7 +200,7 @@ pub fn mj_collide_plane_flex(m: *const mjModel, d: *mut mjData, g: i32, f: i32) 
 }
 
 /// C: mj_collideSdfFlex (engine/engine_collision_driver.c:374)
-/// Calls: mj_addContact, mj_assignMargin, mj_contactParam, mj_freeStack, mj_markStack, mj_setContact, mjc_FlexSDF, mju_copy3
+/// Calls: mj_addContact, mj_assignMargin, mj_contactParam, mj_freeStack, mj_markStack, mj_setContact, mj_stackAllocInfo, mjc_FlexSDF, mju_copy3
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_collide_sdf_flex(m: *const mjModel, d: *mut mjData, g: i32, f: i32) {
     // WARNING: signature changed — verify body
@@ -229,7 +239,7 @@ pub fn contact_sort(arr: *mut mjContact, buf: *mut mjContact, n: i32, context: *
 }
 
 /// C: filterFlexContacts (engine/engine_collision_driver.c:417)
-/// Calls: mj_freeStack, mj_markStack, resetArena
+/// Calls: mj_freeStack, mj_markStack, mj_stackAllocInfo, resetArena
 #[allow(unused_variables, non_snake_case)]
 pub fn filter_flex_contacts(d: *mut mjData, ncon_before: i32) {
     // WARNING: signature changed — verify body
@@ -239,7 +249,7 @@ pub fn filter_flex_contacts(d: *mut mjData, ncon_before: i32) {
 }
 
 /// C: pushPairArena (engine/engine_collision_driver.c:489)
-/// Calls: mju_message
+/// Calls: mj_arenaAllocByte, mju_message
 #[allow(unused_variables, non_snake_case)]
 pub fn push_pair_arena(m: *const mjModel, d: *mut mjData, g1: i32, g2: i32, ipair: i32) {
     // WARNING: signature changed — verify body
@@ -303,6 +313,7 @@ pub fn sa_psort(arr: *mut mjtSAP, buf: *mut mjtSAP, n: i32, context: *mut ()) {
 }
 
 /// C: mj_SAP (engine/engine_collision_driver.c:1400)
+/// Calls: SAPsort, mj_stackAllocInfo
 /// ⚠️ BITEXACT RULES:
 ///   1. Copy exact C accumulation order (no iter().sum())
 ///   2. No f64::mul_add() (FMA changes precision)
@@ -387,9 +398,9 @@ pub fn mj_set_contact(m: *const mjModel, con: *mut mjContact, condim: i32, inclu
 ///   3. No algebraic simplification
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
-pub fn mj_make_capsule(m: *const mjModel, d: *mut mjData, f: i32, vid: *const i32, pos: *mut f64, mat: *mut f64, size: *mut f64) {
+pub fn mj_make_capsule(m: *const mjModel, d: *mut mjData, f: i32, vid: [i32; 2], pos: *mut f64, mat: *mut f64, size: *mut f64) {
     // WARNING: signature changed — verify body
-    // Previous params: (m : * const mjModel, d : * mut mjData, f : i32, vid : * const i32, pos : * mut f64, mat : * mut f64, size : * mut f64)
+    // Previous params: (m : * const mjModel, d : * mut mjData, f : i32, vid : [i32 ; 2], pos : * mut f64, mat : * mut f64, size : * mut f64)
     // Previous return: ()
     todo ! ()
 }
@@ -400,16 +411,6 @@ pub fn mj_make_capsule(m: *const mjModel, d: *mut mjData, f: i32, vid: *const i3
 pub fn collision_task(m: *const mjModel, d: *mut mjData, arg: *mut (), thread_id: i32, idx: i32) {
     // WARNING: signature changed — verify body
     // Previous params: (m : * const mjModel, d : * mut mjData, arg : * mut (), thread_id : i32, idx : i32)
-    // Previous return: ()
-    todo ! ()
-}
-
-/// C: mj_narrowphase (engine/engine_collision_driver.c:1887)
-/// Calls: getGap, getMargin, mj_contactParam, mj_freeStack, mj_markStack, mj_maxContact, mj_setContact, mj_warning, mji_copy3, mju_copy, mju_dispatch, mju_numThread
-#[allow(unused_variables, non_snake_case)]
-pub fn mj_narrowphase(m: *const mjModel, d: *mut mjData, buffer: *const mjcPair, npair: i32, parena: i32) {
-    // WARNING: signature changed — verify body
-    // Previous params: (m : * const mjModel, d : * mut mjData, buffer : * const mjcPair, npair : i32, parena : i32)
     // Previous return: ()
     todo ! ()
 }
@@ -439,7 +440,7 @@ pub fn mj_max_contact(m: *const mjModel, g1: i32, g2: i32, has_margin: i32) -> i
 }
 
 /// C: mj_collision (engine/engine_collision_driver.h:36)
-/// Calls: canCollide2, contactSort, filterBitmask, filterCollisionPair, filterFlexContacts, mj_broadphase, mj_clearEfc, mj_collideElems, mj_collideFlexInternal, mj_collideFlexSAP, mj_collideGeomElem, mj_collidePlaneFlex, mj_collideSdfFlex, mj_collideTree, mj_freeStack, mj_isElemActive, mj_markStack, mj_sleepState, pushPairArena, resetArena
+/// Calls: alignArena, canCollide2, contactSort, filterBitmask, filterCollisionPair, filterFlexContacts, mj_broadphase, mj_clearEfc, mj_collideElems, mj_collideFlexInternal, mj_collideFlexSAP, mj_collideGeomElem, mj_collidePlaneFlex, mj_collideSdfFlex, mj_collideTree, mj_freeStack, mj_isElemActive, mj_markStack, mj_narrowphase, mj_sleepState, mj_stackAllocInfo, pushPairArena, resetArena
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_collision(m: *const mjModel, d: *mut mjData) {
     // WARNING: signature changed — verify body
@@ -473,7 +474,7 @@ pub fn mj_is_elem_active(m: *const mjModel, f: i32, e: i32) -> i32 {
 }
 
 /// C: mj_broadphase (engine/engine_collision_driver.h:48)
-/// Calls: add_pair, canCollide, filterBodyPair, hasPlane, makeAAMM, mj_SAP, mj_freeStack, mj_markStack, mj_sleepState, mju_addTo3, mju_eig3, mju_message, mju_scl, mju_scl3, mju_zero, mju_zero3, updateCov
+/// Calls: add_pair, bfsort, canCollide, filterBodyPair, hasPlane, makeAAMM, mj_SAP, mj_freeStack, mj_markStack, mj_sleepState, mj_stackAllocInfo, mju_addTo3, mju_eig3, mju_message, mju_scl, mju_scl3, mju_zero, mju_zero3, updateCov
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_broadphase(m: *const mjModel, d: *mut mjData, bfpair: *mut i32, maxpair: i32) -> i32 {
     // WARNING: signature changed — verify body
@@ -483,7 +484,7 @@ pub fn mj_broadphase(m: *const mjModel, d: *mut mjData, bfpair: *mut i32, maxpai
 }
 
 /// C: mj_collideFlexSAP (engine/engine_collision_driver.h:51)
-/// Calls: mj_SAP, mj_collideElems, mj_freeStack, mj_isElemActive, mj_markStack, mju_message
+/// Calls: mj_SAP, mj_collideElems, mj_freeStack, mj_isElemActive, mj_markStack, mj_stackAllocInfo, mju_message
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_collide_flex_sap(m: *const mjModel, d: *mut mjData, f: i32) {
     // WARNING: signature changed — verify body
@@ -493,7 +494,7 @@ pub fn mj_collide_flex_sap(m: *const mjModel, d: *mut mjData, f: i32) {
 }
 
 /// C: mj_collideGeomElem (engine/engine_collision_driver.h:54)
-/// Calls: filterSphereBox, mj_assignMargin, mj_contactParam, mj_freeStack, mj_makeCapsule, mj_markStack, mj_setContact, mj_warning, mjc_ConvexElem, mjc_HFieldElem, mjraw_BoxTriangle, mjraw_CapsuleBox, mjraw_CapsuleCapsule, mjraw_CapsuleTriangle, mjraw_SphereCapsule, mjraw_SphereTriangle, mju_copy3, mju_scl3
+/// Calls: filterSphereBox, mj_arenaAllocByte, mj_assignMargin, mj_contactParam, mj_freeStack, mj_makeCapsule, mj_markStack, mj_setContact, mj_stackAllocInfo, mj_warning, mjc_ConvexElem, mjc_HFieldElem, mjraw_BoxTriangle, mjraw_CapsuleBox, mjraw_CapsuleCapsule, mjraw_CapsuleTriangle, mjraw_SphereCapsule, mjraw_SphereTriangle, mju_copy3, mju_scl3
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_collide_geom_elem(m: *const mjModel, d: *mut mjData, g: i32, f: i32, e: i32) {
     // WARNING: signature changed — verify body
@@ -503,7 +504,7 @@ pub fn mj_collide_geom_elem(m: *const mjModel, d: *mut mjData, g: i32, f: i32, e
 }
 
 /// C: mj_collideElems (engine/engine_collision_driver.h:57)
-/// Calls: filterBox, mj_assignMargin, mj_contactParam, mj_freeStack, mj_makeCapsule, mj_markStack, mj_setContact, mj_warning, mjc_ConvexElem, mjraw_CapsuleCapsule, mju_copy3
+/// Calls: filterBox, mj_arenaAllocByte, mj_assignMargin, mj_contactParam, mj_freeStack, mj_makeCapsule, mj_markStack, mj_setContact, mj_stackAllocInfo, mj_warning, mjc_ConvexElem, mjraw_CapsuleCapsule, mju_copy3
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_collide_elems(m: *const mjModel, d: *mut mjData, f1: i32, e1: i32, f2: i32, e2: i32) {
     // WARNING: signature changed — verify body
@@ -513,7 +514,7 @@ pub fn mj_collide_elems(m: *const mjModel, d: *mut mjData, f1: i32, e1: i32, f2:
 }
 
 /// C: mj_collideElemVert (engine/engine_collision_driver.h:60)
-/// Calls: mj_assignMargin, mj_contactParam, mj_freeStack, mj_makeCapsule, mj_markStack, mj_setContact, mj_warning, mjc_ConvexElem, mjraw_SphereCapsule, mjraw_SphereTriangle, mju_copy3
+/// Calls: mj_arenaAllocByte, mj_assignMargin, mj_contactParam, mj_freeStack, mj_makeCapsule, mj_markStack, mj_setContact, mj_stackAllocInfo, mj_warning, mjc_ConvexElem, mjraw_SphereCapsule, mjraw_SphereTriangle, mju_copy3
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_collide_elem_vert(m: *const mjModel, d: *mut mjData, f: i32, e: i32, v: i32) {
     // WARNING: signature changed — verify body

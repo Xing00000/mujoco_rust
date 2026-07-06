@@ -1,5 +1,5 @@
 //! Port of: user/user_mesh.cc
-//! IR hash: 699b5f0da57e8d78
+//! IR hash: 545f394232195ad9
 //! CODEGEN: signatures locked. Only fill todo!() bodies.
 
 use crate::types::*;
@@ -25,9 +25,9 @@ pub fn fovea(x: f64, gamma: f64) -> f64 {
 ///   3. No algebraic simplification
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
-pub fn lin_space(lower: f64, upper: f64, n: i32, array: *mut f64) {
+pub fn lin_space(lower: f64, upper: f64, n: i32, array: [f64; 0]) {
     // WARNING: signature changed — verify body
-    // Previous params: (lower : f64, upper : f64, n : i32, array : * mut f64)
+    // Previous params: (lower : f64, upper : f64, n : i32, array : [f64 ; 0])
     // Previous return: ()
     todo ! ()
 }
@@ -40,9 +40,9 @@ pub fn lin_space(lower: f64, upper: f64, n: i32, array: *mut f64) {
 ///   3. No algebraic simplification
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
-pub fn bin_edges(x_edges: *mut f64, y_edges: *mut f64, size: *mut i32, fov: *mut f64, gamma: f64) {
+pub fn bin_edges(x_edges: *mut f64, y_edges: *mut f64, size: [i32; 2], fov: [f64; 2], gamma: f64) {
     // WARNING: signature changed — verify body
-    // Previous params: (x_edges : * mut f64, y_edges : * mut f64, size : * mut i32, fov : * mut f64, gamma : f64)
+    // Previous params: (x_edges : * mut f64, y_edges : * mut f64, size : [i32 ; 2], fov : [f64 ; 2], gamma : f64)
     // Previous return: ()
     todo ! ()
 }
@@ -54,9 +54,9 @@ pub fn bin_edges(x_edges: *mut f64, y_edges: *mut f64, size: *mut i32, fov: *mut
 ///   3. No algebraic simplification
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
-pub fn spherical_to_cartesian(aer: *const f64, xyz: *mut f32) {
+pub fn spherical_to_cartesian(aer: [f64; 3], xyz: [f32; 3]) {
     // WARNING: signature changed — verify body
-    // Previous params: (aer : * const f64, xyz : * mut f32)
+    // Previous params: (aer : [f64 ; 3], xyz : [f32 ; 3])
     // Previous return: ()
     todo ! ()
 }
@@ -69,9 +69,9 @@ pub fn spherical_to_cartesian(aer: *const f64, xyz: *mut f32) {
 ///   3. No algebraic simplification
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
-pub fn tangent_frame(aer: *const f64, mat: *mut f32) {
+pub fn tangent_frame(aer: [f64; 3], mat: [f32; 9]) {
     // WARNING: signature changed — verify body
-    // Previous params: (aer : * const f64, mat : * mut f32)
+    // Previous params: (aer : [f64 ; 3], mat : [f32 ; 9])
     // Previous return: ()
     todo ! ()
 }
@@ -121,9 +121,9 @@ pub fn triangle(normal: *mut f64, center: *mut f64, v1: *const f64, v2: *const f
 
 /// C: mjCMesh::ProcessVertices (user/user_mesh.cc:539)
 #[allow(unused_variables, non_snake_case)]
-pub fn mj_c_mesh_process_vertices(vert: *const i32, remove_repeated: bool) {
+pub fn mj_c_mesh_process_vertices(self_ptr: *mut mjCMesh, vert: *const i32, remove_repeated: bool) {
     // WARNING: signature changed — verify body
-    // Previous params: (vert : * const i32, remove_repeated : bool)
+    // Previous params: (self_ptr : * mut mjCMesh, vert : * const i32, remove_repeated : bool)
     // Previous return: ()
     todo ! ()
 }
@@ -131,9 +131,9 @@ pub fn mj_c_mesh_process_vertices(vert: *const i32, remove_repeated: bool) {
 /// C: MeshPolygon::InsertFace (user/user_mesh.cc:2685)
 /// Calls: MeshPolygon::CombineIslands
 #[allow(unused_variables, non_snake_case)]
-pub fn mesh_polygon_insert_face(v1: i32, v2: i32, v3: i32) {
+pub fn mesh_polygon_insert_face(self_ptr: *mut MeshPolygon, v1: i32, v2: i32, v3: i32) {
     // WARNING: signature changed — verify body
-    // Previous params: (v1 : i32, v2 : i32, v3 : i32)
+    // Previous params: (self_ptr : * mut MeshPolygon, v1 : i32, v2 : i32, v3 : i32)
     // Previous return: ()
     todo ! ()
 }
@@ -145,18 +145,18 @@ pub fn mesh_polygon_insert_face(v1: i32, v2: i32, v3: i32) {
 ///   3. No algebraic simplification
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
-pub fn mesh_polygon_normal() -> *const f64 {
+pub fn mesh_polygon_normal(self_ptr: *mut MeshPolygon) -> *const f64 {
     // WARNING: signature changed — verify body
-    // Previous params: ()
+    // Previous params: (self_ptr : * mut MeshPolygon)
     // Previous return: * const f64
     todo ! ()
 }
 
 /// C: MeshPolygon::CombineIslands (user/user_mesh.cc:2698)
 #[allow(unused_variables, non_snake_case)]
-pub fn mesh_polygon_combine_islands(island1: *mut i32, island2: *mut i32) {
+pub fn mesh_polygon_combine_islands(self_ptr: *mut MeshPolygon, island1: *mut i32, island2: *mut i32) {
     // WARNING: signature changed — verify body
-    // Previous params: (island1 : * mut i32, island2 : * mut i32)
+    // Previous params: (self_ptr : * mut MeshPolygon, island1 : * mut i32, island2 : * mut i32)
     // Previous return: ()
     todo ! ()
 }
@@ -169,16 +169,19 @@ pub fn mesh_polygon_combine_islands(island1: *mut i32, island2: *mut i32) {
 ///   3. No algebraic simplification
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
-pub fn mesh_polygon_key(angles: *const (), v1: *const f64, v2: *const f64, v3: *const f64, angle_tol: f64) -> bool {
+pub fn mesh_polygon_key(angles: *const (), v1: [f64; 3], v2: [f64; 3], v3: [f64; 3], angle_tol: f64) -> bool {
     // WARNING: signature changed — verify body
-    // Previous params: (angles : * const (), v1 : * const f64, v2 : * const f64, v3 : * const f64, angle_tol : f64)
+    // Previous params: (angles : * const (), v1 : [f64 ; 3], v2 : [f64 ; 3], v3 : [f64 ; 3], angle_tol : f64)
     // Previous return: bool
     todo ! ()
 }
 
 /// C: MeshPolygon::Paths (user/user_mesh.cc:2839)
 #[allow(unused_variables, non_snake_case)]
-pub fn mesh_polygon_paths() -> i32 {
+pub fn mesh_polygon_paths(self_ptr: *mut MeshPolygon) -> i32 {
+    // WARNING: signature changed — verify body
+    // Previous params: (self_ptr : * mut MeshPolygon)
+    // Previous return: i32
     todo ! ()
 }
 
@@ -190,9 +193,9 @@ pub fn mesh_polygon_paths() -> i32 {
 ///   3. No algebraic simplification
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
-pub fn compute_volume(x: *const f64, v: *const i32) -> f64 {
+pub fn compute_volume(x: *const f64, v: [i32; 3]) -> f64 {
     // WARNING: signature changed — verify body
-    // Previous params: (x : * const f64, v : * const i32)
+    // Previous params: (x : * const f64, v : [i32 ; 3])
     // Previous return: f64
     todo ! ()
 }
@@ -205,9 +208,9 @@ pub fn compute_volume(x: *const f64, v: *const i32) -> f64 {
 ///   3. No algebraic simplification
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
-pub fn metric_tensor(metric: *mut f64, idx: i32, mu: f64, la: f64, basis: *const f64) {
+pub fn metric_tensor(metric: *mut f64, idx: i32, mu: f64, la: f64, basis: [[f64; 0]; 9]) {
     // WARNING: signature changed — verify body
-    // Previous params: (metric : * mut f64, idx : i32, mu : f64, la : f64, basis : * const f64)
+    // Previous params: (metric : * mut f64, idx : i32, mu : f64, la : f64, basis : [[f64 ; 0] ; 9])
     // Previous return: ()
     todo ! ()
 }
@@ -220,9 +223,9 @@ pub fn metric_tensor(metric: *mut f64, idx: i32, mu: f64, la: f64, basis: *const
 ///   3. No algebraic simplification
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
-pub fn compute_basis(basis: *mut f64, x: *const f64, v: *const i32, faceL: *const i32, faceR: *const i32, volume: f64) {
+pub fn compute_basis(basis: [f64; 9], x: *const f64, v: [i32; 3], faceL: [i32; 2], faceR: [i32; 2], volume: f64) {
     // WARNING: signature changed — verify body
-    // Previous params: (basis : * mut f64, x : * const f64, v : * const i32, faceL : * const i32, faceR : * const i32, volume : f64)
+    // Previous params: (basis : [f64 ; 9], x : * const f64, v : [i32 ; 3], faceL : [i32 ; 2], faceR : [i32 ; 2], volume : f64)
     // Previous return: ()
     todo ! ()
 }
@@ -274,9 +277,9 @@ pub fn cot(x: *const f64, v0: i32, v1: i32, v2: i32) -> f64 {
 ///   3. No algebraic simplification
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
-pub fn compute_bending(bending: *mut f64, pos: *mut f64, v: *const i32, mu: f64, thickness: f64) {
+pub fn compute_bending(bending: *mut f64, pos: *mut f64, v: [i32; 4], mu: f64, thickness: f64) {
     // WARNING: signature changed — verify body
-    // Previous params: (bending : * mut f64, pos : * mut f64, v : * const i32, mu : f64, thickness : f64)
+    // Previous params: (bending : * mut f64, pos : * mut f64, v : [i32 ; 4], mu : f64, thickness : f64)
     // Previous return: ()
     todo ! ()
 }
@@ -430,12 +433,6 @@ pub fn eigendecompose_stiffness(K_cell_data: *const f64, out: *mut f64, ndof: i3
     todo ! ()
 }
 
-/// C: mjCFlex::ComputeStiffnessCacheKey (user/user_mesh.cc:4303)
-#[allow(unused_variables, non_snake_case)]
-pub fn mj_c_flex_compute_stiffness_cache_key() -> i32 {
-    todo ! ()
-}
-
 /// C: ComputeInterpBending (user/user_mesh.cc:4391)
 /// Calls: dphi, mjuu_crossvec, mjuu_normvec, mjuu_zerovec, phi
 /// ⚠️ BITEXACT RULES:
@@ -444,9 +441,9 @@ pub fn mj_c_flex_compute_stiffness_cache_key() -> i32 {
 ///   3. No algebraic simplification
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
-pub fn compute_interp_bending(bending: *mut i32, nodexpos_local: *const i32, order: i32, cellcount: *const i32, young: f64, poisson: f64, thickness: f64) {
+pub fn compute_interp_bending(bending: *mut i32, nodexpos_local: *const i32, order: i32, cellcount: [i32; 3], young: f64, poisson: f64, thickness: f64) {
     // WARNING: signature changed — verify body
-    // Previous params: (bending : * mut i32, nodexpos_local : * const i32, order : i32, cellcount : * const i32, young : f64, poisson : f64, thickness : f64)
+    // Previous params: (bending : * mut i32, nodexpos_local : * const i32, order : i32, cellcount : [i32 ; 3], young : f64, poisson : f64, thickness : f64)
     // Previous return: ()
     todo ! ()
 }
@@ -459,9 +456,9 @@ pub fn compute_interp_bending(bending: *mut i32, nodexpos_local: *const i32, ord
 ///   3. No algebraic simplification
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
-pub fn mj_c_flex_compute_unrotated_node_positions(nodexpos: *const i32, R0_out: *mut f64) -> i32 {
+pub fn mj_c_flex_compute_unrotated_node_positions(self_ptr: *mut mjCFlex, nodexpos: *const i32, R0_out: *mut f64) -> i32 {
     // WARNING: signature changed — verify body
-    // Previous params: (nodexpos : * const i32, R0_out : * mut f64)
+    // Previous params: (self_ptr : * mut mjCFlex, nodexpos : * const i32, R0_out : * mut f64)
     // Previous return: i32
     todo ! ()
 }

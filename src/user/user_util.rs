@@ -1,5 +1,5 @@
 //! Port of: user/user_util.cc
-//! IR hash: 699b5f0da57e8d78
+//! IR hash: 545f394232195ad9
 //! CODEGEN: signatures locked. Only fill todo!() bodies.
 
 use crate::types::*;
@@ -11,104 +11,19 @@ use crate::types::*;
 ///   3. No algebraic simplification
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
-pub fn mjuu_axis_angle2quat(res: *mut f64, axis: *const f64, angle: f64) {
+pub fn mjuu_axis_angle2quat(res: [f64; 4], axis: [f64; 3], angle: f64) {
     // WARNING: signature changed — verify body
-    // Previous params: (res : * mut f64, axis : * const f64, angle : f64)
+    // Previous params: (res : [f64 ; 4], axis : [f64 ; 3], angle : f64)
     // Previous return: ()
-    todo ! ()
-}
-
-/// C: mjuu_strippath (user/user_util.cc:844)
-#[allow(unused_variables, non_snake_case)]
-pub fn mjuu_strippath(filename: i32) -> i32 {
-    // WARNING: signature changed — verify body
-    // Previous params: (filename : i32)
-    // Previous return: i32
-    todo ! ()
-}
-
-/// C: mjuu_stripext (user/user_util.cc:894)
-#[allow(unused_variables, non_snake_case)]
-pub fn mjuu_stripext(filename: i32) -> i32 {
-    // WARNING: signature changed — verify body
-    // Previous params: (filename : i32)
-    // Previous return: i32
-    todo ! ()
-}
-
-/// C: mjuu_getext (user/user_util.cc:907)
-#[allow(unused_variables, non_snake_case)]
-pub fn mjuu_getext(filename: std__string_view) -> i32 {
-    // WARNING: signature changed — verify body
-    // Previous params: (filename : std__string_view)
-    // Previous return: i32
-    todo ! ()
-}
-
-/// C: mjuu_isabspath (user/user_util.cc:918)
-#[allow(unused_variables, non_snake_case)]
-pub fn mjuu_isabspath(path: i32) -> bool {
-    // WARNING: signature changed — verify body
-    // Previous params: (path : i32)
-    // Previous return: bool
-    todo ! ()
-}
-
-/// C: mjuu_combinePaths (user/user_util.cc:948)
-#[allow(unused_variables, non_snake_case)]
-pub fn mjuu_combine_paths(path1: *const i32, path2: *const i32) -> i32 {
-    // WARNING: signature changed — verify body
-    // Previous params: (path1 : * const i32, path2 : * const i32)
-    // Previous return: i32
     todo ! ()
 }
 
 /// C: mjuu_isValidContentType (user/user_util.cc:973)
 #[allow(unused_variables, non_snake_case)]
-pub fn mjuu_is_valid_content_type(text: std__string_view) -> bool {
+pub fn mjuu_is_valid_content_type(text: string_view) -> bool {
     // WARNING: signature changed — verify body
-    // Previous params: (text : std__string_view)
+    // Previous params: (text : string_view)
     // Previous return: bool
-    todo ! ()
-}
-
-/// C: mjuu_extToContentType (user/user_util.cc:1033)
-#[allow(unused_variables, non_snake_case)]
-pub fn mjuu_ext_to_content_type(filename: std__string_view) -> i32 {
-    // WARNING: signature changed — verify body
-    // Previous params: (filename : std__string_view)
-    // Previous return: i32
-    todo ! ()
-}
-
-/// C: FilePath::Combine (user/user_util.cc:1071)
-#[allow(unused_variables, non_snake_case)]
-pub fn file_path_combine(s1: *const i32, s2: *const i32) -> i32 {
-    // WARNING: signature changed — verify body
-    // Previous params: (s1 : * const i32, s2 : * const i32)
-    // Previous return: i32
-    todo ! ()
-}
-
-/// C: FilePath::PathReduce (user/user_util.cc:1084)
-/// Calls: FilePath::IsSeparator
-#[allow(unused_variables, non_snake_case)]
-pub fn file_path_path_reduce(str: *const i32) -> i32 {
-    // WARNING: signature changed — verify body
-    // Previous params: (str : * const i32)
-    // Previous return: i32
-    todo ! ()
-}
-
-/// C: FilePath::Ext (user/user_util.cc:1119)
-#[allow(unused_variables, non_snake_case)]
-pub fn file_path_ext() -> i32 {
-    todo ! ()
-}
-
-/// C: FilePath::StrLower (user/user_util.cc:1186)
-#[allow(unused_variables, non_snake_case)]
-pub fn file_path_str_lower() -> i32 {
     todo ! ()
 }
 
@@ -124,10 +39,10 @@ pub fn file_to_memory(filename: *const i8) -> i32 {
 
 /// C: VectorToString (user/user_util.cc:1256)
 #[allow(unused_variables, non_snake_case)]
-pub fn vector_to_string(v: *const i32) -> i32 {
+pub fn vector_to_string(v: *const i32) -> std__string {
     // WARNING: signature changed — verify body
     // Previous params: (v : * const i32)
-    // Previous return: i32
+    // Previous return: std__string
     todo ! ()
 }
 
@@ -479,9 +394,9 @@ pub fn mjuu_crossvec(a: *mut f64, b: *const f64, c: *const f64) {
 ///   3. No algebraic simplification
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
-pub fn mjuu_makenormal(normal: *mut f64, a: *const T, b: *const T, c: *const T) -> f64 {
+pub fn mjuu_makenormal(normal: *mut f64, a: [T; 3], b: [T; 3], c: [T; 3]) -> f64 {
     // WARNING: signature changed — verify body
-    // Previous params: (normal : * mut f64, a : * const T, b : * const T, c : * const T)
+    // Previous params: (normal : * mut f64, a : [T ; 3], b : [T ; 3], c : [T ; 3])
     // Previous return: f64
     todo ! ()
 }
@@ -524,9 +439,9 @@ pub fn mjuu_frame2quat(quat: *mut f64, x: *const f64, y: *const f64, z: *const f
 ///   3. No algebraic simplification
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
-pub fn mjuu_frameinvert(newpos: *mut f64, newquat: *mut f64, oldpos: *const f64, oldquat: *const f64) {
+pub fn mjuu_frameinvert(newpos: [f64; 3], newquat: [f64; 4], oldpos: [f64; 3], oldquat: [f64; 4]) {
     // WARNING: signature changed — verify body
-    // Previous params: (newpos : * mut f64, newquat : * mut f64, oldpos : * const f64, oldquat : * const f64)
+    // Previous params: (newpos : [f64 ; 3], newquat : [f64 ; 4], oldpos : [f64 ; 3], oldquat : [f64 ; 4])
     // Previous return: ()
     todo ! ()
 }
@@ -539,9 +454,9 @@ pub fn mjuu_frameinvert(newpos: *mut f64, newquat: *mut f64, oldpos: *const f64,
 ///   3. No algebraic simplification
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
-pub fn mjuu_frameaccum(pos: *mut f64, quat: *mut f64, childpos: *const f64, childquat: *const f64) {
+pub fn mjuu_frameaccum(pos: [f64; 3], quat: [f64; 4], childpos: [f64; 3], childquat: [f64; 4]) {
     // WARNING: signature changed — verify body
-    // Previous params: (pos : * mut f64, quat : * mut f64, childpos : * const f64, childquat : * const f64)
+    // Previous params: (pos : [f64 ; 3], quat : [f64 ; 4], childpos : [f64 ; 3], childquat : [f64 ; 4])
     // Previous return: ()
     todo ! ()
 }
@@ -554,9 +469,9 @@ pub fn mjuu_frameaccum(pos: *mut f64, quat: *mut f64, childpos: *const f64, chil
 ///   3. No algebraic simplification
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
-pub fn mjuu_frameaccum_child(pos: *const f64, quat: *const f64, childpos: *mut f64, childquat: *mut f64) {
+pub fn mjuu_frameaccum_child(pos: [f64; 3], quat: [f64; 4], childpos: [f64; 3], childquat: [f64; 4]) {
     // WARNING: signature changed — verify body
-    // Previous params: (pos : * const f64, quat : * const f64, childpos : * mut f64, childquat : * mut f64)
+    // Previous params: (pos : [f64 ; 3], quat : [f64 ; 4], childpos : [f64 ; 3], childquat : [f64 ; 4])
     // Previous return: ()
     todo ! ()
 }
@@ -569,9 +484,9 @@ pub fn mjuu_frameaccum_child(pos: *const f64, quat: *const f64, childpos: *mut f
 ///   3. No algebraic simplification
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
-pub fn mjuu_frameaccuminv(pos: *mut f64, quat: *mut f64, childpos: *const f64, childquat: *const f64) {
+pub fn mjuu_frameaccuminv(pos: [f64; 3], quat: [f64; 4], childpos: [f64; 3], childquat: [f64; 4]) {
     // WARNING: signature changed — verify body
-    // Previous params: (pos : * mut f64, quat : * mut f64, childpos : * const f64, childquat : * const f64)
+    // Previous params: (pos : [f64 ; 3], quat : [f64 ; 4], childpos : [f64 ; 3], childquat : [f64 ; 4])
     // Previous return: ()
     todo ! ()
 }
@@ -626,9 +541,9 @@ pub fn mjuu_visccoef(visccoef: *mut f64, mass: f64, inertia: *const f64, scl: f6
 ///   3. No algebraic simplification
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
-pub fn mjuu_rot_vec_quat(res: *mut f64, vec: *const f64, quat: *const f64) {
+pub fn mjuu_rot_vec_quat(res: [f64; 3], vec: [f64; 3], quat: [f64; 4]) {
     // WARNING: signature changed — verify body
-    // Previous params: (res : * mut f64, vec : * const f64, quat : * const f64)
+    // Previous params: (res : [f64 ; 3], vec : [f64 ; 3], quat : [f64 ; 4])
     // Previous return: ()
     todo ! ()
 }
@@ -641,9 +556,9 @@ pub fn mjuu_rot_vec_quat(res: *mut f64, vec: *const f64, quat: *const f64) {
 ///   3. No algebraic simplification
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
-pub fn mjuu_update_frame(quat: *mut f64, normal: *mut f64, edge: *const f64, tprv: *const f64, tnxt: *const f64, first: i32) -> f64 {
+pub fn mjuu_update_frame(quat: [f64; 4], normal: [f64; 3], edge: [f64; 3], tprv: [f64; 3], tnxt: [f64; 3], first: i32) -> f64 {
     // WARNING: signature changed — verify body
-    // Previous params: (quat : * mut f64, normal : * mut f64, edge : * const f64, tprv : * const f64, tnxt : * const f64, first : i32)
+    // Previous params: (quat : [f64 ; 4], normal : [f64 ; 3], edge : [f64 ; 3], tprv : [f64 ; 3], tnxt : [f64 ; 3], first : i32)
     // Previous return: f64
     todo ! ()
 }
@@ -656,9 +571,9 @@ pub fn mjuu_update_frame(quat: *mut f64, normal: *mut f64, edge: *const f64, tpr
 ///   3. No algebraic simplification
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
-pub fn mjuu_eig3(eigval: *mut f64, eigvec: *mut f64, quat: *mut f64, mat: *const f64) -> i32 {
+pub fn mjuu_eig3(eigval: [f64; 3], eigvec: [f64; 9], quat: [f64; 4], mat: [f64; 9]) -> i32 {
     // WARNING: signature changed — verify body
-    // Previous params: (eigval : * mut f64, eigvec : * mut f64, quat : * mut f64, mat : * const f64)
+    // Previous params: (eigval : [f64 ; 3], eigvec : [f64 ; 9], quat : [f64 ; 4], mat : [f64 ; 9])
     // Previous return: i32
     todo ! ()
 }
@@ -685,9 +600,9 @@ pub fn mjuu_eigendecompose(mat: *mut f64, eigval: *mut f64, eigvec: *mut f64, n:
 ///   3. No algebraic simplification
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
-pub fn mjuu_trn_vec_pose(res: *mut f64, pos: *const f64, quat: *const f64, vec: *const f64) {
+pub fn mjuu_trn_vec_pose(res: [f64; 3], pos: [f64; 3], quat: [f64; 4], vec: [f64; 3]) {
     // WARNING: signature changed — verify body
-    // Previous params: (res : * mut f64, pos : * const f64, quat : * const f64, vec : * const f64)
+    // Previous params: (res : [f64 ; 3], pos : [f64 ; 3], quat : [f64 ; 4], vec : [f64 ; 3])
     // Previous return: ()
     todo ! ()
 }
@@ -700,70 +615,118 @@ pub fn mjuu_trn_vec_pose(res: *mut f64, pos: *const f64, quat: *const f64, vec: 
 ///   3. No algebraic simplification
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
-pub fn mjuu_full_inertia(quat: *mut f64, inertia: *mut f64, fullinertia: *const f64) -> *const i8 {
+pub fn mjuu_full_inertia(quat: [f64; 4], inertia: [f64; 3], fullinertia: [f64; 6]) -> *const i8 {
     // WARNING: signature changed — verify body
-    // Previous params: (quat : * mut f64, inertia : * mut f64, fullinertia : * const f64)
+    // Previous params: (quat : [f64 ; 4], inertia : [f64 ; 3], fullinertia : [f64 ; 6])
     // Previous return: * const i8
     todo ! ()
 }
 
 /// C: FilePath::IsAbs (user/user_util.h:191)
 #[allow(unused_variables, non_snake_case)]
-pub fn file_path_is_abs() -> bool {
+pub fn file_path_is_abs(self_ptr: *mut FilePath) -> bool {
+    // WARNING: signature changed — verify body
+    // Previous params: (self_ptr : * mut FilePath)
+    // Previous return: bool
     todo ! ()
 }
 
 /// C: FilePath::AbsPrefix (user/user_util.h:195)
 #[allow(unused_variables, non_snake_case)]
-pub fn file_path_abs_prefix() -> i32 {
+pub fn file_path_abs_prefix(self_ptr: *mut FilePath) -> i32 {
+    // WARNING: signature changed — verify body
+    // Previous params: (self_ptr : * mut FilePath)
+    // Previous return: i32
     todo ! ()
 }
 
 /// C: FilePath::Str (user/user_util.h:198)
 #[allow(unused_variables, non_snake_case)]
-pub fn file_path_str() -> *const i32 {
+pub fn file_path_str(self_ptr: *mut FilePath) -> *const i32 {
     // WARNING: signature changed — verify body
-    // Previous params: ()
+    // Previous params: (self_ptr : * mut FilePath)
     // Previous return: * const i32
+    todo ! ()
+}
+
+/// C: FilePath::StrLower (user/user_util.h:202)
+#[allow(unused_variables, non_snake_case)]
+pub fn file_path_str_lower(self_ptr: *mut FilePath) -> std__string {
+    // WARNING: signature changed — verify body
+    // Previous params: (self_ptr : * mut FilePath)
+    // Previous return: std__string
+    todo ! ()
+}
+
+/// C: FilePath::Ext (user/user_util.h:205)
+#[allow(unused_variables, non_snake_case)]
+pub fn file_path_ext(self_ptr: *mut FilePath) -> std__string {
+    // WARNING: signature changed — verify body
+    // Previous params: (self_ptr : * mut FilePath)
+    // Previous return: std__string
     todo ! ()
 }
 
 /// C: FilePath::StripExt (user/user_util.h:211)
 #[allow(unused_variables, non_snake_case)]
-pub fn file_path_strip_ext() -> FilePath {
+pub fn file_path_strip_ext(self_ptr: *mut FilePath) -> FilePath {
+    // WARNING: signature changed — verify body
+    // Previous params: (self_ptr : * mut FilePath)
+    // Previous return: FilePath
     todo ! ()
 }
 
 /// C: FilePath::StripPath (user/user_util.h:214)
 #[allow(unused_variables, non_snake_case)]
-pub fn file_path_strip_path() -> FilePath {
+pub fn file_path_strip_path(self_ptr: *mut FilePath) -> FilePath {
+    // WARNING: signature changed — verify body
+    // Previous params: (self_ptr : * mut FilePath)
+    // Previous return: FilePath
     todo ! ()
 }
 
 /// C: FilePath::Lower (user/user_util.h:217)
 #[allow(unused_variables, non_snake_case)]
-pub fn file_path_lower() -> FilePath {
+pub fn file_path_lower(self_ptr: *mut FilePath) -> FilePath {
+    // WARNING: signature changed — verify body
+    // Previous params: (self_ptr : * mut FilePath)
+    // Previous return: FilePath
     todo ! ()
 }
 
 /// C: FilePath::size (user/user_util.h:220)
 #[allow(unused_variables, non_snake_case)]
-pub fn file_path_size() -> std__size_t {
+pub fn file_path_size(self_ptr: *mut FilePath) -> std__size_t {
+    // WARNING: signature changed — verify body
+    // Previous params: (self_ptr : * mut FilePath)
+    // Previous return: std__size_t
     todo ! ()
 }
 
 /// C: FilePath::c_str (user/user_util.h:221)
 #[allow(unused_variables, non_snake_case)]
-pub fn file_path_c_str() -> *const i8 {
+pub fn file_path_c_str(self_ptr: *mut FilePath) -> *const i8 {
     // WARNING: signature changed — verify body
-    // Previous params: ()
+    // Previous params: (self_ptr : * mut FilePath)
     // Previous return: * const i8
     todo ! ()
 }
 
 /// C: FilePath::empty (user/user_util.h:222)
 #[allow(unused_variables, non_snake_case)]
-pub fn file_path_empty() -> bool {
+pub fn file_path_empty(self_ptr: *mut FilePath) -> bool {
+    // WARNING: signature changed — verify body
+    // Previous params: (self_ptr : * mut FilePath)
+    // Previous return: bool
+    todo ! ()
+}
+
+/// C: FilePath::PathReduce (user/user_util.h:227)
+#[allow(unused_variables, non_snake_case)]
+pub fn file_path_path_reduce(str: *const std__string) -> std__string {
+    // WARNING: signature changed — verify body
+    // Previous params: (str : * const std__string)
+    // Previous return: std__string
     todo ! ()
 }
 
@@ -776,6 +739,15 @@ pub fn file_path_is_separator(c: i8) -> bool {
     todo ! ()
 }
 
+/// C: FilePath::Combine (user/user_util.h:231)
+#[allow(unused_variables, non_snake_case)]
+pub fn file_path_combine(s1: *const std__string, s2: *const std__string) -> std__string {
+    // WARNING: signature changed — verify body
+    // Previous params: (s1 : * const std__string, s2 : * const std__string)
+    // Previous return: std__string
+    todo ! ()
+}
+
 /// C: FilePath::FilePathFast (user/user_util.h:234)
 #[allow(unused_variables, non_snake_case)]
 pub fn file_path_file_path_fast(str: *const i32) -> FilePath {
@@ -785,12 +757,57 @@ pub fn file_path_file_path_fast(str: *const i32) -> FilePath {
     todo ! ()
 }
 
+/// C: mjuu_strippath (user/user_util.h:273)
+#[allow(unused_variables, non_snake_case)]
+pub fn mjuu_strippath(filename: string) -> std__string {
+    // WARNING: signature changed — verify body
+    // Previous params: (filename : string)
+    // Previous return: std__string
+    todo ! ()
+}
+
+/// C: mjuu_stripext (user/user_util.h:276)
+#[allow(unused_variables, non_snake_case)]
+pub fn mjuu_stripext(filename: string) -> std__string {
+    // WARNING: signature changed — verify body
+    // Previous params: (filename : string)
+    // Previous return: std__string
+    todo ! ()
+}
+
+/// C: mjuu_getext (user/user_util.h:279)
+#[allow(unused_variables, non_snake_case)]
+pub fn mjuu_getext(filename: string_view) -> std__string {
+    // WARNING: signature changed — verify body
+    // Previous params: (filename : string_view)
+    // Previous return: std__string
+    todo ! ()
+}
+
+/// C: mjuu_isabspath (user/user_util.h:282)
+#[allow(unused_variables, non_snake_case)]
+pub fn mjuu_isabspath(path: string) -> bool {
+    // WARNING: signature changed — verify body
+    // Previous params: (path : string)
+    // Previous return: bool
+    todo ! ()
+}
+
+/// C: mjuu_combinePaths (user/user_util.h:285)
+#[allow(unused_variables, non_snake_case)]
+pub fn mjuu_combine_paths(path1: *const std__string, path2: *const std__string) -> std__string {
+    // WARNING: signature changed — verify body
+    // Previous params: (path1 : * const std__string, path2 : * const std__string)
+    // Previous return: std__string
+    todo ! ()
+}
+
 /// C: mjuu_parseContentTypeAttrType (user/user_util.h:290)
 /// Calls: mjuu_isValidContentType
 #[allow(unused_variables, non_snake_case)]
-pub fn mjuu_parse_content_type_attr_type(text: std__string_view) -> *const () {
+pub fn mjuu_parse_content_type_attr_type(text: string_view) -> *const () {
     // WARNING: signature changed — verify body
-    // Previous params: (text : std__string_view)
+    // Previous params: (text : string_view)
     // Previous return: * const ()
     todo ! ()
 }
@@ -798,10 +815,19 @@ pub fn mjuu_parse_content_type_attr_type(text: std__string_view) -> *const () {
 /// C: mjuu_parseContentTypeAttrSubtype (user/user_util.h:293)
 /// Calls: mjuu_isValidContentType
 #[allow(unused_variables, non_snake_case)]
-pub fn mjuu_parse_content_type_attr_subtype(text: std__string_view) -> *const () {
+pub fn mjuu_parse_content_type_attr_subtype(text: string_view) -> *const () {
     // WARNING: signature changed — verify body
-    // Previous params: (text : std__string_view)
+    // Previous params: (text : string_view)
     // Previous return: * const ()
+    todo ! ()
+}
+
+/// C: mjuu_extToContentType (user/user_util.h:296)
+#[allow(unused_variables, non_snake_case)]
+pub fn mjuu_ext_to_content_type(filename: string_view) -> std__string {
+    // WARNING: signature changed — verify body
+    // Previous params: (filename : string_view)
+    // Previous return: std__string
     todo ! ()
 }
 

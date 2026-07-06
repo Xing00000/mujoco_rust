@@ -1,5 +1,5 @@
 //! Port of: xml/xml.cc
-//! IR hash: 699b5f0da57e8d78
+//! IR hash: 545f394232195ad9
 //! CODEGEN: signatures locked. Only fill todo!() bodies.
 
 use crate::types::*;
@@ -11,7 +11,7 @@ pub fn locale_override_posix_locale() -> i32 {
 }
 
 /// C: IncludeXML (xml/xml.cc:102)
-/// Calls: FilePath::IsAbs, FilePath::c_str, mjXReader::ModelFileDir, mju_closeResource, mju_getResourceDir, mju_readResource
+/// Calls: FilePath::IsAbs, FilePath::Str, FilePath::c_str, mjXReader::ModelFileDir, mjXReader::SetAssetDir, mjXReader::SetMeshDir, mjXReader::SetTextureDir, mju_closeResource, mju_getResourceDir, mju_readResource
 #[allow(unused_variables, non_snake_case)]
 pub fn include_xml(reader: *mut mjXReader, elem: *mut XMLElement, dir: *const FilePath, vfs: *const mjVFS, included: *mut i32) {
     // WARNING: signature changed — verify body
@@ -21,22 +21,12 @@ pub fn include_xml(reader: *mut mjXReader, elem: *mut XMLElement, dir: *const Fi
 }
 
 /// C: SpecFromXML (xml/xml.cc:243)
-/// Calls: mjCopyError, mjXReader::Parse, mjXURDF::Parse, mj_deleteSpec, mj_makeSpec
+/// Calls: mjCopyError, mjXReader::Parse, mjXURDF::Parse, mj_deleteSpec, mj_makeSpec, mjs_getString
 #[allow(unused_variables, non_snake_case)]
-pub fn spec_from_xml(xml: std__string_view, dir: std__string_view, filename: std__string_view, vfs: *const mjVFS, error: *mut i8, nerror: i32) -> *mut mjSpec {
+pub fn spec_from_xml(xml: string_view, dir: string_view, filename: string_view, vfs: *const mjVFS, error: *mut i8, nerror: i32) -> *mut mjSpec {
     // WARNING: signature changed — verify body
-    // Previous params: (xml : std__string_view, dir : std__string_view, filename : std__string_view, vfs : * const mjVFS, error : * mut i8, nerror : i32)
+    // Previous params: (xml : string_view, dir : string_view, filename : string_view, vfs : * const mjVFS, error : * mut i8, nerror : i32)
     // Previous return: * mut mjSpec
-    todo ! ()
-}
-
-/// C: WriteXML (xml/xml.cc:376)
-/// Calls: mjCopyError, mjXWriter::SetModel
-#[allow(unused_variables, non_snake_case)]
-pub fn write_xml(m: *const mjModel, spec: *mut mjSpec, error: *mut i8, nerror: i32) -> i32 {
-    // WARNING: signature changed — verify body
-    // Previous params: (m : * const mjModel, spec : * mut mjSpec, error : * mut i8, nerror : i32)
-    // Previous return: i32
     todo ! ()
 }
 
@@ -52,10 +42,20 @@ pub fn parse_xml(filename: *const i8, vfs: *const mjVFS, error: *mut i8, nerror:
 
 /// C: ParseSpecFromString (xml/xml.h:29)
 #[allow(unused_variables, non_snake_case)]
-pub fn parse_spec_from_string(xml: std__string_view, vfs: *const mjVFS, error: *mut i8, nerror: i32) -> *mut mjSpec {
+pub fn parse_spec_from_string(xml: string_view, vfs: *const mjVFS, error: *mut i8, nerror: i32) -> *mut mjSpec {
     // WARNING: signature changed — verify body
-    // Previous params: (xml : std__string_view, vfs : * const mjVFS, error : * mut i8, nerror : i32)
+    // Previous params: (xml : string_view, vfs : * const mjVFS, error : * mut i8, nerror : i32)
     // Previous return: * mut mjSpec
+    todo ! ()
+}
+
+/// C: WriteXML (xml/xml.h:33)
+/// Calls: mjCopyError, mjXWriter::SetModel
+#[allow(unused_variables, non_snake_case)]
+pub fn write_xml(m: *const mjModel, spec: *mut mjSpec, error: *mut i8, nerror: i32) -> std__string {
+    // WARNING: signature changed — verify body
+    // Previous params: (m : * const mjModel, spec : * mut mjSpec, error : * mut i8, nerror : i32)
+    // Previous return: std__string
     todo ! ()
 }
 

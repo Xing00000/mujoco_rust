@@ -1,5 +1,5 @@
 //! Port of: engine/engine_derivative_fd.c
-//! IR hash: 699b5f0da57e8d78
+//! IR hash: 545f394232195ad9
 //! CODEGEN: signatures locked. Only fill todo!() bodies.
 
 use crate::types::*;
@@ -26,9 +26,9 @@ pub fn get_state(m: *const mjModel, d: *const mjData, state: *mut f64, sensordat
 ///   3. No algebraic simplification
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
-pub fn diff(dx: mjtNum__restrict, x1: *const f64, x2: *const f64, h: f64, n: i32) {
+pub fn diff(dx: *mut f64, x1: *const f64, x2: *const f64, h: f64, n: i32) {
     // WARNING: signature changed — verify body
-    // Previous params: (dx : mjtNum__restrict, x1 : * const f64, x2 : * const f64, h : f64, n : i32)
+    // Previous params: (dx : * mut f64, x1 : * const f64, x2 : * const f64, h : f64, n : i32)
     // Previous return: ()
     todo ! ()
 }
@@ -108,7 +108,7 @@ pub fn inverse_skip(m: *const mjModel, d: *mut mjData, stage: mjtStage, skipsens
 }
 
 /// C: mjd_stepFD (engine/engine_derivative_fd.c:295)
-/// Calls: diff, getState, inRange, mj_freeStack, mj_getState, mj_integratePos, mj_markStack, mj_setState, mj_stateSize, mj_stepSkip, mju_copy, mju_message, mju_zero, stateDiff
+/// Calls: clampedDiff, clampedStateDiff, diff, getState, inRange, mj_freeStack, mj_getState, mj_integratePos, mj_markStack, mj_setState, mj_stackAllocInfo, mj_stateSize, mj_stepSkip, mju_copy, mju_message, mju_zero, stateDiff
 /// ⚠️ BITEXACT RULES:
 ///   1. Copy exact C accumulation order (no iter().sum())
 ///   2. No f64::mul_add() (FMA changes precision)
@@ -123,7 +123,7 @@ pub fn mjd_step_fd(m: *const mjModel, d: *mut mjData, eps: f64, flg_centered: mj
 }
 
 /// C: mjd_smooth_velFD (engine/engine_derivative_fd.h:27)
-/// Calls: mj_freeStack, mj_fwdActuation, mj_fwdVelocity, mj_markStack, mju_add, mju_message, mju_scl, mju_sub, mju_subFrom, mju_zeroInt
+/// Calls: mj_freeStack, mj_fwdActuation, mj_fwdVelocity, mj_markStack, mj_stackAllocInfo, mju_add, mju_message, mju_scl, mju_sub, mju_subFrom, mju_zeroInt
 /// ⚠️ BITEXACT RULES:
 ///   1. Copy exact C accumulation order (no iter().sum())
 ///   2. No f64::mul_add() (FMA changes precision)
@@ -138,7 +138,7 @@ pub fn mjd_smooth_vel_fd(m: *const mjModel, d: *mut mjData, eps: f64) {
 }
 
 /// C: mjd_passive_velFD (engine/engine_derivative_fd.h:30)
-/// Calls: mj_freeStack, mj_fwdVelocity, mj_markStack, mju_copy, mju_scl, mju_sub, mju_zeroInt
+/// Calls: mj_freeStack, mj_fwdVelocity, mj_markStack, mj_stackAllocInfo, mju_copy, mju_scl, mju_sub, mju_zeroInt
 /// ⚠️ BITEXACT RULES:
 ///   1. Copy exact C accumulation order (no iter().sum())
 ///   2. No f64::mul_add() (FMA changes precision)
@@ -163,7 +163,7 @@ pub fn mj_step_skip(m: *const mjModel, d: *mut mjData, skipstage: i32, skipsenso
 }
 
 /// C: mjd_transitionFD (engine/engine_derivative_fd.h:36)
-/// Calls: mj_freeStack, mj_markStack, mjd_stepFD, mju_message, mju_transpose
+/// Calls: mj_freeStack, mj_markStack, mj_stackAllocInfo, mjd_stepFD, mju_message, mju_transpose
 /// ⚠️ BITEXACT RULES:
 ///   1. Copy exact C accumulation order (no iter().sum())
 ///   2. No f64::mul_add() (FMA changes precision)
@@ -178,7 +178,7 @@ pub fn mjd_transition_fd(m: *const mjModel, d: *mut mjData, eps: f64, centered: 
 }
 
 /// C: mjd_inverseFD (engine/engine_derivative_fd.h:40)
-/// Calls: diff, inverseSkip, mj_freeStack, mj_integratePos, mj_markStack, mju_copy, mju_message, mju_zero
+/// Calls: diff, inverseSkip, mj_freeStack, mj_integratePos, mj_markStack, mj_stackAllocInfo, mju_copy, mju_message, mju_zero
 /// ⚠️ BITEXACT RULES:
 ///   1. Copy exact C accumulation order (no iter().sum())
 ///   2. No f64::mul_add() (FMA changes precision)

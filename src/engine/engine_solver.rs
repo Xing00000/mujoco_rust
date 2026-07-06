@@ -1,5 +1,5 @@
 //! Port of: engine/engine_solver.c
-//! IR hash: 699b5f0da57e8d78
+//! IR hash: 545f394232195ad9
 //! CODEGEN: signatures locked. Only fill todo!() bodies.
 
 use crate::types::*;
@@ -90,14 +90,15 @@ pub fn cost_change(A: *const f64, force: *mut f64, oldforce: *const f64, res: *c
 
 /// C: pcg32_next (engine/engine_solver.c:247)
 #[allow(unused_variables, non_snake_case)]
-pub fn pcg32_next(rng: *mut pcg32_state) -> i32 {
+pub fn pcg32_next(rng: *mut pcg32_state) -> u32 {
     // WARNING: signature changed — verify body
     // Previous params: (rng : * mut pcg32_state)
-    // Previous return: i32
+    // Previous return: u32
     todo ! ()
 }
 
 /// C: shuffle_int (engine/engine_solver.c:257)
+/// Calls: pcg32_next
 #[allow(unused_variables, non_snake_case)]
 pub fn shuffle_int(array: *mut i32, n: i32, rng: *mut pcg32_state) {
     // WARNING: signature changed — verify body
@@ -172,7 +173,7 @@ pub fn project_cone(force: *mut f64, mu: *const f64, dim: i32, r#type: i32) {
 }
 
 /// C: solPGS (engine/engine_solver.c:456)
-/// Calls: ARdiaginv, costChange, dualState, dualStateChange, extractBlock, mj_freeStack, mj_isSparse, mj_markStack, mju_clip, mju_copy, mju_dot, mju_gather, mju_mulMatVec, mju_zero, projectCone, residual, saveStats, shuffle_int, solveQCQP
+/// Calls: ARdiaginv, costChange, dualState, dualStateChange, extractBlock, mj_freeStack, mj_isSparse, mj_markStack, mj_stackAllocInfo, mju_clip, mju_copy, mju_dot, mju_gather, mju_mulMatVec, mju_zero, pcg32_next, projectCone, residual, saveStats, shuffle_int, solveQCQP
 #[allow(unused_variables, non_snake_case)]
 pub fn sol_pgs(m: *const mjModel, d: *mut mjData, island: i32, ne: i32, nf: i32, nefc: i32, efclist: *const i32, maxiter: i32) {
     // WARNING: signature changed — verify body
@@ -182,7 +183,7 @@ pub fn sol_pgs(m: *const mjModel, d: *mut mjData, island: i32, ne: i32, nf: i32,
 }
 
 /// C: solNoSlip (engine/engine_solver.c:766)
-/// Calls: ARdiaginv, costChange, dualState, dualStateChange, extractBlock, mj_freeStack, mj_markStack, mju_copy, mju_dot, mju_zero, residual, saveStats, solveQCQP
+/// Calls: ARdiaginv, costChange, dualState, dualStateChange, extractBlock, mj_freeStack, mj_markStack, mj_stackAllocInfo, mju_copy, mju_dot, mju_zero, residual, saveStats, solveQCQP
 #[allow(unused_variables, non_snake_case)]
 pub fn sol_no_slip(m: *const mjModel, d: *mut mjData, island: i32, ne: i32, nf: i32, nefc: i32, efclist: *const i32, maxiter: i32) {
     // WARNING: signature changed — verify body
@@ -202,7 +203,7 @@ pub fn primal_pointers(m: *const mjModel, d: *const mjData, ctx: *mut mjPrimalCo
 }
 
 /// C: PrimalAllocate (engine/engine_solver.c:1171)
-/// Calls: mju_block, mju_blockSparse, mju_gather, mju_superSparse, mju_transposeSparse
+/// Calls: mj_stackAllocInfo, mju_block, mju_blockSparse, mju_gather, mju_superSparse, mju_transposeSparse
 #[allow(unused_variables, non_snake_case)]
 pub fn primal_allocate(m: *const mjModel, d: *mut mjData, ctx: *mut mjPrimalContext, flg_Newton: i32) {
     // WARNING: signature changed — verify body
@@ -222,7 +223,7 @@ pub fn primal_update_constraint(ctx: *mut mjPrimalContext, flg_HessianCone: i32)
 }
 
 /// C: PrimalUpdateGradient (engine/engine_solver.c:1380)
-/// Calls: mju_cholSolve, mju_cholSolveSparse, mju_copy
+/// Calls: mj_solveLD, mju_cholSolve, mju_cholSolveSparse, mju_copy
 #[allow(unused_variables, non_snake_case)]
 pub fn primal_update_gradient(ctx: *mut mjPrimalContext, flg_Newton: i32) {
     // WARNING: signature changed — verify body
@@ -335,7 +336,7 @@ pub fn primal_search(ctx: *mut mjPrimalContext, tolerance: f64, ls_iterations: f
 }
 
 /// C: MakeHessian (engine/engine_solver.c:2010)
-/// Calls: mju_addToMatSparse, mju_addToSymSparse, mju_cholFactorSymbolic, mju_sqrMatTD_impl
+/// Calls: mj_stackAllocInfo, mju_addToMatSparse, mju_addToSymSparse, mju_cholFactorSymbolic, mju_sqrMatTDSparseNumeric, mju_sqrMatTDSparseSymbolic, mju_sqrMatTD_impl, mju_transposeSparse
 #[allow(unused_variables, non_snake_case)]
 pub fn make_hessian(d: *mut mjData, ctx: *mut mjPrimalContext) {
     // WARNING: signature changed — verify body
@@ -355,7 +356,7 @@ pub fn hessian_cone(d: *mut mjData, ctx: *mut mjPrimalContext) {
 }
 
 /// C: FactorizeHessian (engine/engine_solver.c:2102)
-/// Calls: HessianCone, mju_addToMatSparse, mju_addToSymSparse, mju_cholFactor, mju_cholFactorNumeric, mju_message, mju_sqrMatTD_impl
+/// Calls: HessianCone, mju_addToMatSparse, mju_addToSymSparse, mju_cholFactor, mju_cholFactorNumeric, mju_message, mju_sqrMatTDSparseNumeric, mju_sqrMatTDSparseSymbolic, mju_sqrMatTD_impl
 #[allow(unused_variables, non_snake_case)]
 pub fn factorize_hessian(d: *mut mjData, ctx: *mut mjPrimalContext, flg_recompute: i32) {
     // WARNING: signature changed — verify body
@@ -385,6 +386,7 @@ pub fn mj_sol_primal(m: *const mjModel, d: *mut mjData, island: i32, maxiter: i3
 }
 
 /// C: mj_solPGS (engine/engine_solver.h:24)
+/// Calls: solPGS
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_sol_pgs(m: *const mjModel, d: *mut mjData, maxiter: i32) {
     // WARNING: signature changed — verify body
@@ -394,6 +396,7 @@ pub fn mj_sol_pgs(m: *const mjModel, d: *mut mjData, maxiter: i32) {
 }
 
 /// C: mj_solNoSlip (engine/engine_solver.h:27)
+/// Calls: solNoSlip
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_sol_no_slip(m: *const mjModel, d: *mut mjData, maxiter: i32) {
     // WARNING: signature changed — verify body

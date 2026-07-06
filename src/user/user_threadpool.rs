@@ -1,12 +1,15 @@
 //! Port of: user/user_threadpool.h
-//! IR hash: 699b5f0da57e8d78
+//! IR hash: 545f394232195ad9
 //! CODEGEN: signatures locked. Only fill todo!() bodies.
 
 use crate::types::*;
 
 /// C: ThreadPool::NumThreads (user/user_threadpool.h:38)
 #[allow(unused_variables, non_snake_case)]
-pub fn thread_pool_num_threads() -> i32 {
+pub fn thread_pool_num_threads(self_ptr: *mut ThreadPool) -> i32 {
+    // WARNING: signature changed — verify body
+    // Previous params: (self_ptr : * mut ThreadPool)
+    // Previous return: i32
     todo ! ()
 }
 
@@ -18,39 +21,45 @@ pub fn thread_pool_worker_id() -> i32 {
 
 /// C: ThreadPool::Schedule (user/user_threadpool.h:46)
 #[allow(unused_variables, non_snake_case)]
-pub fn thread_pool_schedule(task: *const ()) {
+pub fn thread_pool_schedule(self_ptr: *mut ThreadPool, task: *const ()) {
     // WARNING: signature changed — verify body
-    // Previous params: (task : * const ())
+    // Previous params: (self_ptr : * mut ThreadPool, task : * const ())
     // Previous return: ()
     todo ! ()
 }
 
 /// C: ThreadPool::GetCount (user/user_threadpool.h:49)
 #[allow(unused_variables, non_snake_case)]
-pub fn thread_pool_get_count() -> i32 {
+pub fn thread_pool_get_count(self_ptr: *mut ThreadPool) -> std__uint64_t {
+    // WARNING: signature changed — verify body
+    // Previous params: (self_ptr : * mut ThreadPool)
+    // Previous return: std__uint64_t
     todo ! ()
 }
 
 /// C: ThreadPool::ResetCount (user/user_threadpool.h:55)
 #[allow(unused_variables, non_snake_case)]
-pub fn thread_pool_reset_count() {
+pub fn thread_pool_reset_count(self_ptr: *mut ThreadPool) {
+    // WARNING: signature changed — verify body
+    // Previous params: (self_ptr : * mut ThreadPool)
+    // Previous return: ()
     todo ! ()
 }
 
 /// C: ThreadPool::WaitCount (user/user_threadpool.h:61)
 #[allow(unused_variables, non_snake_case)]
-pub fn thread_pool_wait_count(value: i32) {
+pub fn thread_pool_wait_count(self_ptr: *mut ThreadPool, value: i32) {
     // WARNING: signature changed — verify body
-    // Previous params: (value : i32)
+    // Previous params: (self_ptr : * mut ThreadPool, value : i32)
     // Previous return: ()
     todo ! ()
 }
 
 /// C: ThreadPool::WorkerThread (user/user_threadpool.h:70)
 #[allow(unused_variables, non_snake_case)]
-pub fn thread_pool_worker_thread(i: i32) {
+pub fn thread_pool_worker_thread(self_ptr: *mut ThreadPool, i: i32) {
     // WARNING: signature changed — verify body
-    // Previous params: (i : i32)
+    // Previous params: (self_ptr : * mut ThreadPool, i : i32)
     // Previous return: ()
     todo ! ()
 }

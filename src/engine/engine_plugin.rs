@@ -1,5 +1,5 @@
 //! Port of: engine/engine_plugin.cc
-//! IR hash: 699b5f0da57e8d78
+//! IR hash: 545f394232195ad9
 //! CODEGEN: signatures locked. Only fill todo!() bodies.
 
 use crate::types::*;
@@ -15,10 +15,10 @@ pub fn strklen(s: *const i8) -> i32 {
 
 /// C: getext (engine/engine_plugin.cc:68)
 #[allow(unused_variables, non_snake_case)]
-pub fn getext(filename: std__string_view) -> i32 {
+pub fn getext(filename: string_view) -> std__string {
     // WARNING: signature changed — verify body
-    // Previous params: (filename : std__string_view)
-    // Previous return: i32
+    // Previous params: (filename : string_view)
+    // Previous return: std__string
     todo ! ()
 }
 

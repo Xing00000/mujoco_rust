@@ -1,5 +1,5 @@
 //! Port of: render/classic/render_context.c
-//! IR hash: 699b5f0da57e8d78
+//! IR hash: 545f394232195ad9
 //! CODEGEN: signatures locked. Only fill todo!() bodies.
 
 use crate::types::*;
@@ -239,6 +239,7 @@ pub fn make_texture(m: *const mjModel, con: *mut mjrContext) {
 }
 
 /// C: makeSkin (render/classic/render_context.c:1457)
+/// Calls: mju_malloc
 #[allow(unused_variables, non_snake_case)]
 pub fn make_skin(m: *const mjModel, con: *mut mjrContext) {
     // WARNING: signature changed — verify body

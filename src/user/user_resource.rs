@@ -1,15 +1,15 @@
 //! Port of: user/user_resource.cc
-//! IR hash: 699b5f0da57e8d78
+//! IR hash: 545f394232195ad9
 //! CODEGEN: signatures locked. Only fill todo!() bodies.
 
 use crate::types::*;
 
-/// C: mju_openResource (user/user_resource.cc:33)
-/// Calls: VFS::Open, VFS::Upcast, mj_defaultVFS, mj_deleteVFS, mju_free
+/// C: mju_openResource (user/user_resource.cc:34)
+/// Calls: VFS::Open, VFS::Upcast, mj_defaultVFS, mj_deleteVFS, mju_free, mju_malloc
 #[allow(unused_variables, non_snake_case)]
-pub fn mju_open_resource(dir: *const i8, name: *const i8, vfs: *const mjVFS, error: *mut i8, nerror: i32) -> *mut mjResource {
+pub fn mju_open_resource(dir: *const i8, name: *const i8, vfs: *const mjVFS, error: *mut i8, nerror: usize) -> *mut mjResource {
     // WARNING: signature changed — verify body
-    // Previous params: (dir : * const i8, name : * const i8, vfs : * const mjVFS, error : * mut i8, nerror : i32)
+    // Previous params: (dir : * const i8, name : * const i8, vfs : * const mjVFS, error : * mut i8, nerror : usize)
     // Previous return: * mut mjResource
     todo ! ()
 }

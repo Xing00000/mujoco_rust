@@ -1,5 +1,5 @@
 //! Port of: engine/engine_io.c
-//! IR hash: 699b5f0da57e8d78
+//! IR hash: 545f394232195ad9
 //! CODEGEN: signatures locked. Only fill todo!() bodies.
 
 use crate::types::*;
@@ -38,15 +38,15 @@ pub fn bufread(dest: *mut (), num: i32, szbuf: usize, buf: *const (), ptrbuf: *m
 
 /// C: SKIP (engine/engine_io.c:132)
 #[allow(unused_variables, non_snake_case)]
-pub fn skip(offset: i32) -> u32 {
+pub fn skip(offset: isize) -> u32 {
     // WARNING: signature changed — verify body
-    // Previous params: (offset : i32)
+    // Previous params: (offset : isize)
     // Previous return: u32
     todo ! ()
 }
 
 /// C: mj_setPtrModel (engine/engine_io.c:142)
-/// Calls: mju_message
+/// Calls: SKIP, mju_message
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_set_ptr_model(m: *mut mjModel) {
     // WARNING: signature changed — verify body
@@ -56,10 +56,11 @@ pub fn mj_set_ptr_model(m: *mut mjModel) {
 }
 
 /// C: safeAddToBufferSize (engine/engine_io.c:173)
+/// Calls: SKIP
 #[allow(unused_variables, non_snake_case)]
-pub fn safe_add_to_buffer_size(offset: *mut i32, nbuffer: *mut usize, type_size: i32, nr: usize, nc: usize) -> usize {
+pub fn safe_add_to_buffer_size(offset: *mut isize, nbuffer: *mut usize, type_size: usize, nr: usize, nc: usize) -> usize {
     // WARNING: signature changed — verify body
-    // Previous params: (offset : * mut i32, nbuffer : * mut usize, type_size : i32, nr : usize, nc : usize)
+    // Previous params: (offset : * mut isize, nbuffer : * mut usize, type_size : usize, nr : usize, nc : usize)
     // Previous return: usize
     todo ! ()
 }
@@ -95,7 +96,7 @@ pub fn copy_m2sparse(nv: i32, dof_Madr: *const i32, dof_simplenum: *const i32, d
 }
 
 /// C: mj_setPtrData (engine/engine_io.c:989)
-/// Calls: mju_message
+/// Calls: SKIP, mju_message
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_set_ptr_data(m: *const mjModel, d: *mut mjData) {
     // WARNING: signature changed — verify body
@@ -115,7 +116,7 @@ pub fn free_data_buffers(d: *mut mjData) {
 }
 
 /// C: mj_copyDataVisual (engine/engine_io.c:1142)
-/// Calls: mj_initPlugin, mj_makeRawData, mj_setPtrData, mjp_getPluginAtSlot, mju_message
+/// Calls: mj_initPlugin, mj_makeRawData, mj_setPtrData, mjp_getPluginAtSlot, mju_free, mju_malloc, mju_message
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_copy_data_visual(dest: *mut mjData, m: *const mjModel, src: *const mjData, flg_all: i32) -> *mut mjData {
     // WARNING: signature changed — verify body
@@ -125,7 +126,7 @@ pub fn mj_copy_data_visual(dest: *mut mjData, m: *const mjModel, src: *const mjD
 }
 
 /// C: _resetData (engine/engine_io.c:1286)
-/// Calls: checkDBSparse, mj_camlight, mj_clearEfc, mj_comPos, mj_deleteData, mj_forward, mj_id2name, mj_kinematics, mj_sleep, mj_tendon, mj_updateSleep, mj_updateSleepInit, mjp_getPluginAtSlot, mju_copy, mju_copy3, mju_copy4, mju_fillInt, mju_free, mju_message, mju_zero, mju_zeroInt
+/// Calls: checkDBSparse, mj_camlight, mj_clearEfc, mj_comPos, mj_deleteData, mj_forward, mj_id2name, mj_kinematics, mj_sleep, mj_tendon, mj_updateSleep, mj_updateSleepInit, mjp_getPluginAtSlot, mju_copy, mju_copy3, mju_copy4, mju_fillInt, mju_free, mju_malloc, mju_message, mju_zero, mju_zeroInt
 #[allow(unused_variables, non_snake_case)]
 pub fn reset_data(m: *const mjModel, d: *mut mjData, debug_value: u8) {
     // WARNING: signature changed — verify body
@@ -163,7 +164,7 @@ pub fn num_objects(m: *const mjModel, objtype: mjtObj) -> i32 {
 }
 
 /// C: mj_makeModel (engine/engine_io.h:50)
-/// Calls: freeModelBuffers, mj_defaultOption, mj_defaultStatistic, mj_defaultVisual, mj_setPtrModel, mju_free, mju_message, mju_warning
+/// Calls: freeModelBuffers, mj_defaultOption, mj_defaultStatistic, mj_defaultVisual, mj_setPtrModel, mju_free, mju_malloc, mju_message, mju_warning, safeAddToBufferSize
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_make_model(dest: *mut *mut mjModel, nq: usize, nv: usize, nu: usize, na: usize, nbody: usize, nbvh: usize, nbvhstatic: usize, nbvhdynamic: usize, noct: usize, njnt: usize, ntree: usize, nM: usize, nB: usize, nC: usize, nD: usize, ngeom: usize, nsite: usize, ncam: usize, nlight: usize, nflex: usize, nflexnode: usize, nflexvert: usize, nflexedge: usize, nflexelem: usize, nflexelemdata: usize, nflexstiffness: usize, nflexbending: usize, nflexelemedge: usize, nflexshelldata: usize, nflexevpair: usize, nflextexcoord: usize, nJfe: usize, nJfv: usize, nmesh: usize, nmeshvert: usize, nmeshnormal: usize, nmeshtexcoord: usize, nmeshface: usize, nmeshgraph: usize, nmeshpoly: usize, nmeshpolyvert: usize, nmeshpolymap: usize, nskin: usize, nskinvert: usize, nskintexvert: usize, nskinface: usize, nskinbone: usize, nskinbonevert: usize, nhfield: usize, nhfielddata: usize, ntex: usize, ntexdata: usize, nmat: usize, npair: usize, nexclude: usize, neq: usize, ntendon: usize, nJten: usize, nwrap: usize, nsensor: usize, nnumeric: usize, nnumericdata: usize, ntext: usize, ntextdata: usize, ntuple: usize, ntupledata: usize, nkey: usize, nmocap: usize, nplugin: usize, npluginattr: usize, nuser_body: usize, nuser_jnt: usize, nuser_geom: usize, nuser_site: usize, nuser_cam: usize, nuser_tendon: usize, nuser_actuator: usize, nuser_sensor: usize, nnames: usize, npaths: usize) {
     // WARNING: signature changed — verify body
@@ -283,7 +284,7 @@ pub fn mj_make_data(m: *const mjModel) -> *mut mjData {
 }
 
 /// C: mj_makeRawData (engine/engine_io.h:116)
-/// Calls: freeDataBuffers, mj_setPtrData, mju_free, mju_message, mju_warning
+/// Calls: freeDataBuffers, mj_setPtrData, mju_free, mju_malloc, mju_message, mju_warning, safeAddToBufferSize
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_make_raw_data(dest: *mut *mut mjData, m: *const mjModel) {
     // WARNING: signature changed — verify body

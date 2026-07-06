@@ -1,15 +1,15 @@
 //! Port of: user/user_resolver.cc
-//! IR hash: 699b5f0da57e8d78
+//! IR hash: 545f394232195ad9
 //! CODEGEN: signatures locked. Only fill todo!() bodies.
 
 use crate::types::*;
 
 /// C: fmtVal (user/user_resolver.cc:34)
 #[allow(unused_variables, non_snake_case)]
-pub fn fmt_val(val: T) -> i32 {
+pub fn fmt_val(val: T) -> std__string {
     // WARNING: signature changed — verify body
     // Previous params: (val : T)
-    // Previous return: i32
+    // Previous return: std__string
     todo ! ()
 }
 
@@ -20,16 +20,19 @@ pub fn fmt_val(val: T) -> i32 {
 ///   3. No algebraic simplification
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
-pub fn fmt_arr(val: *const f64, n: i32) -> i32 {
+pub fn fmt_arr(val: *const f64, n: i32) -> std__string {
     // WARNING: signature changed — verify body
     // Previous params: (val : * const f64, n : i32)
-    // Previous return: i32
+    // Previous return: std__string
     todo ! ()
 }
 
 /// C: Resolver::Apply (user/user_resolver.cc:291)
 #[allow(unused_variables, non_snake_case)]
-pub fn resolver_apply() -> bool {
+pub fn resolver_apply(self_ptr: *mut Resolver) -> bool {
+    // WARNING: signature changed — verify body
+    // Previous params: (self_ptr : * mut Resolver)
+    // Previous return: bool
     todo ! ()
 }
 
@@ -45,19 +48,19 @@ pub fn visit_conflicts(parent: *mut mjSpec, child: *const mjSpec, r: *mut Resolv
 
 /// C: ConflictSubject (user/user_resolver.cc:395)
 #[allow(unused_variables, non_snake_case)]
-pub fn conflict_subject(parent: *const mjSpec, child: *const mjSpec) -> i32 {
+pub fn conflict_subject(parent: *const mjSpec, child: *const mjSpec) -> std__string {
     // WARNING: signature changed — verify body
     // Previous params: (parent : * const mjSpec, child : * const mjSpec)
-    // Previous return: i32
+    // Previous return: std__string
     todo ! ()
 }
 
-/// C: ResolveConflicts (user/user_resolver.cc:419)
+/// C: ResolveConflicts (user/user_resolver.h:28)
 /// Calls: Resolver::Apply, VisitConflicts
 #[allow(unused_variables, non_snake_case)]
-pub fn resolve_conflicts(parent: *mut mjSpec, child: *const mjSpec, mode: mjtConflict, error_msg: *mut i32, warning_subject: *mut i32, warning_body: *mut i32) -> bool {
+pub fn resolve_conflicts(parent: *mut mjSpec, child: *const mjSpec, mode: mjtConflict, error_msg: *mut string, warning_subject: *mut string, warning_body: *mut string) -> bool {
     // WARNING: signature changed — verify body
-    // Previous params: (parent : * mut mjSpec, child : * const mjSpec, mode : mjtConflict, error_msg : * mut i32, warning_subject : * mut i32, warning_body : * mut i32)
+    // Previous params: (parent : * mut mjSpec, child : * const mjSpec, mode : mjtConflict, error_msg : * mut string, warning_subject : * mut string, warning_body : * mut string)
     // Previous return: bool
     todo ! ()
 }

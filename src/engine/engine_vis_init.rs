@@ -1,5 +1,5 @@
 //! Port of: engine/engine_vis_init.h
-//! IR hash: 699b5f0da57e8d78
+//! IR hash: 545f394232195ad9
 //! CODEGEN: signatures locked. Only fill todo!() bodies.
 
 use crate::types::*;
@@ -14,7 +14,7 @@ pub fn mjv_default_scene(scn: *mut mjvScene) {
 }
 
 /// C: mjv_makeScene (engine/engine_vis_init.h:37)
-/// Calls: mju_copyInt, mju_error, mju_message, mjv_freeScene
+/// Calls: mju_copyInt, mju_error, mju_malloc, mju_message, mjv_freeScene
 #[allow(unused_variables, non_snake_case)]
 pub fn mjv_make_scene(m: *const mjModel, scn: *mut mjvScene, maxgeom: i32) {
     // WARNING: signature changed — verify body

@@ -1,29 +1,32 @@
 //! Port of: engine/engine_thread.cc
-//! IR hash: 699b5f0da57e8d78
+//! IR hash: 545f394232195ad9
 //! CODEGEN: signatures locked. Only fill todo!() bodies.
 
 use crate::types::*;
 
 /// C: ThreadPoolContext::Dispatch (engine/engine_thread.cc:51)
 #[allow(unused_variables, non_snake_case)]
-pub fn thread_pool_context_dispatch(model: *const mjModel, data: *mut mjData, func: mjTaskFunc, arg: *mut (), ntask: i32) {
+pub fn thread_pool_context_dispatch(self_ptr: *mut ThreadPoolContext, model: *const mjModel, data: *mut mjData, func: mjTaskFunc, arg: *mut (), ntask: i32) {
     // WARNING: signature changed — verify body
-    // Previous params: (model : * const mjModel, data : * mut mjData, func : mjTaskFunc, arg : * mut (), ntask : i32)
+    // Previous params: (self_ptr : * mut ThreadPoolContext, model : * const mjModel, data : * mut mjData, func : mjTaskFunc, arg : * mut (), ntask : i32)
     // Previous return: ()
     todo ! ()
 }
 
 /// C: ThreadPoolContext::ThreadCount (engine/engine_thread.cc:79)
 #[allow(unused_variables, non_snake_case)]
-pub fn thread_pool_context_thread_count() -> i32 {
+pub fn thread_pool_context_thread_count(self_ptr: *mut ThreadPoolContext) -> i32 {
+    // WARNING: signature changed — verify body
+    // Previous params: (self_ptr : * mut ThreadPoolContext)
+    // Previous return: i32
     todo ! ()
 }
 
 /// C: ThreadPoolContext::Worker (engine/engine_thread.cc:83)
 #[allow(unused_variables, non_snake_case)]
-pub fn thread_pool_context_worker(threadId: i32) {
+pub fn thread_pool_context_worker(self_ptr: *mut ThreadPoolContext, threadId: i32) {
     // WARNING: signature changed — verify body
-    // Previous params: (threadId : i32)
+    // Previous params: (self_ptr : * mut ThreadPoolContext, threadId : i32)
     // Previous return: ()
     todo ! ()
 }

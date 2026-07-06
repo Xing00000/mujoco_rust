@@ -1,15 +1,15 @@
 //! Port of: engine/engine_collision_gjk.c
-//! IR hash: 699b5f0da57e8d78
+//! IR hash: 545f394232195ad9
 //! CODEGEN: signatures locked. Only fill todo!() bodies.
 
 use crate::types::*;
 
 /// C: align8 (engine/engine_collision_gjk.c:49)
 #[allow(unused_variables, non_snake_case)]
-pub fn align8(size: i32) -> i32 {
+pub fn align8(size: usize) -> usize {
     // WARNING: signature changed — verify body
-    // Previous params: (size : i32)
-    // Previous return: i32
+    // Previous params: (size : usize)
+    // Previous return: usize
     todo ! ()
 }
 
@@ -29,7 +29,7 @@ pub fn subdistance(lambda: *mut f64, n: i32, simplex: *const Vertex) {
 }
 
 /// C: S3D (engine/engine_collision_gjk.c:60)
-/// Calls: S2D, det3, dot3, sameSign2
+/// Calls: S2D, det3, dot3, lincomb, sameSign2
 /// ⚠️ BITEXACT RULES:
 ///   1. Copy exact C accumulation order (no iter().sum())
 ///   2. No f64::mul_add() (FMA changes precision)
@@ -44,7 +44,7 @@ pub fn s3d(lambda: *mut f64, s1: *const f64, s2: *const f64, s3: *const f64, s4:
 }
 
 /// C: S2D (engine/engine_collision_gjk.c:62)
-/// Calls: S1D, dot3, projectOriginPlane, sameSign2
+/// Calls: S1D, dot3, lincomb, projectOriginPlane, sameSign2
 /// ⚠️ BITEXACT RULES:
 ///   1. Copy exact C accumulation order (no iter().sum())
 ///   2. No f64::mul_add() (FMA changes precision)
@@ -581,7 +581,7 @@ pub fn horizon(pt: *mut Polytope, face: *mut Face) {
 }
 
 /// C: epaWitness (engine/engine_collision_gjk.c:1331)
-/// Calls: triAffineCoord
+/// Calls: lincomb, triAffineCoord
 /// ⚠️ BITEXACT RULES:
 ///   1. Copy exact C accumulation order (no iter().sum())
 ///   2. No f64::mul_add() (FMA changes precision)
@@ -632,9 +632,9 @@ pub fn next(polygon: *mut f64, nvert: i32, curr: *mut f64) -> *mut f64 {
 ///   3. No algebraic simplification
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
-pub fn polygon_quad(res: *mut *mut f64, polygon: *mut f64, nvert: i32) {
+pub fn polygon_quad(res: [*mut f64; 4], polygon: *mut f64, nvert: i32) {
     // WARNING: signature changed — verify body
-    // Previous params: (res : * mut * mut f64, polygon : * mut f64, nvert : i32)
+    // Previous params: (res : [* mut f64 ; 4], polygon : * mut f64, nvert : i32)
     // Previous return: ()
     todo ! ()
 }
@@ -715,24 +715,24 @@ pub fn globalcoord(res: *mut f64, mat: *const f64, pos: *const f64, l1: f64, l2:
 
 /// C: intersect (engine/engine_collision_gjk.c:1759)
 #[allow(unused_variables, non_snake_case)]
-pub fn intersect(res: *mut i32, arr1: *const i32, arr2: *const i32, n: i32, m: i32) -> i32 {
+pub fn intersect(res: [i32; 2], arr1: *const i32, arr2: *const i32, n: i32, m: i32) -> i32 {
     // WARNING: signature changed — verify body
-    // Previous params: (res : * mut i32, arr1 : * const i32, arr2 : * const i32, n : i32, m : i32)
+    // Previous params: (res : [i32 ; 2], arr1 : * const i32, arr2 : * const i32, n : i32, m : i32)
     // Previous return: i32
     todo ! ()
 }
 
 /// C: meshNormals (engine/engine_collision_gjk.c:1774)
-/// Calls: intersect
+/// Calls: globalcoord, intersect
 /// ⚠️ BITEXACT RULES:
 ///   1. Copy exact C accumulation order (no iter().sum())
 ///   2. No f64::mul_add() (FMA changes precision)
 ///   3. No algebraic simplification
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
-pub fn mesh_normals(res: *mut f64, resind: *mut i32, dim: i32, obj: *mut mjCCDObj, v1: i32, v2: i32, v3: i32) -> i32 {
+pub fn mesh_normals(res: *mut f64, resind: [i32; 3], dim: i32, obj: *mut mjCCDObj, v1: i32, v2: i32, v3: i32) -> i32 {
     // WARNING: signature changed — verify body
-    // Previous params: (res : * mut f64, resind : * mut i32, dim : i32, obj : * mut mjCCDObj, v1 : i32, v2 : i32, v3 : i32)
+    // Previous params: (res : * mut f64, resind : [i32 ; 3], dim : i32, obj : * mut mjCCDObj, v1 : i32, v2 : i32, v3 : i32)
     // Previous return: i32
     todo ! ()
 }
@@ -753,31 +753,31 @@ pub fn mesh_edge_normals(res: *mut f64, endverts: *mut f64, dim: i32, obj: *mut 
 }
 
 /// C: boxNormals2 (engine/engine_collision_gjk.c:1885)
-/// Calls: dot3, scl3
+/// Calls: dot3, globalcoord, scl3
 /// ⚠️ BITEXACT RULES:
 ///   1. Copy exact C accumulation order (no iter().sum())
 ///   2. No f64::mul_add() (FMA changes precision)
 ///   3. No algebraic simplification
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
-pub fn box_normals2(res: *mut f64, resind: *mut i32, mat: *const f64, n: *const f64) -> i32 {
+pub fn box_normals2(res: *mut f64, resind: [i32; 3], mat: *const f64, n: *const f64) -> i32 {
     // WARNING: signature changed — verify body
-    // Previous params: (res : * mut f64, resind : * mut i32, mat : * const f64, n : * const f64)
+    // Previous params: (res : * mut f64, resind : [i32 ; 3], mat : * const f64, n : * const f64)
     // Previous return: i32
     todo ! ()
 }
 
 /// C: boxNormals (engine/engine_collision_gjk.c:1911)
-/// Calls: boxNormals2
+/// Calls: boxNormals2, globalcoord
 /// ⚠️ BITEXACT RULES:
 ///   1. Copy exact C accumulation order (no iter().sum())
 ///   2. No f64::mul_add() (FMA changes precision)
 ///   3. No algebraic simplification
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
-pub fn box_normals(res: *mut f64, resind: *mut i32, dim: i32, obj: *mut mjCCDObj, v1: i32, v2: i32, v3: i32, dir: *const f64) -> i32 {
+pub fn box_normals(res: *mut f64, resind: [i32; 3], dim: i32, obj: *mut mjCCDObj, v1: i32, v2: i32, v3: i32, dir: *const f64) -> i32 {
     // WARNING: signature changed — verify body
-    // Previous params: (res : * mut f64, resind : * mut i32, dim : i32, obj : * mut mjCCDObj, v1 : i32, v2 : i32, v3 : i32, dir : * const f64)
+    // Previous params: (res : * mut f64, resind : [i32 ; 3], dim : i32, obj : * mut mjCCDObj, v1 : i32, v2 : i32, v3 : i32, dir : * const f64)
     // Previous return: i32
     todo ! ()
 }
@@ -835,9 +835,9 @@ pub fn mesh_face(res: *mut f64, obj: *mut mjCCDObj, idx: i32) -> i32 {
 ///   3. No algebraic simplification
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
-pub fn aligned_faces(res: *mut i32, v: *const f64, nv: i32, w: *const f64, nw: i32) -> i32 {
+pub fn aligned_faces(res: [i32; 2], v: *const f64, nv: i32, w: *const f64, nw: i32) -> i32 {
     // WARNING: signature changed — verify body
-    // Previous params: (res : * mut i32, v : * const f64, nv : i32, w : * const f64, nw : i32)
+    // Previous params: (res : [i32 ; 2], v : * const f64, nv : i32, w : * const f64, nw : i32)
     // Previous return: i32
     todo ! ()
 }
@@ -850,9 +850,9 @@ pub fn aligned_faces(res: *mut i32, v: *const f64, nv: i32, w: *const f64, nw: i
 ///   3. No algebraic simplification
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
-pub fn aligned_face_edge(res: *mut i32, edge: *const f64, nedge: i32, face: *const f64, nface: i32) -> i32 {
+pub fn aligned_face_edge(res: [i32; 2], edge: *const f64, nedge: i32, face: *const f64, nface: i32) -> i32 {
     // WARNING: signature changed — verify body
-    // Previous params: (res : * mut i32, edge : * const f64, nedge : i32, face : * const f64, nface : i32)
+    // Previous params: (res : [i32 ; 2], edge : * const f64, nedge : i32, face : * const f64, nface : i32)
     // Previous return: i32
     todo ! ()
 }
@@ -896,17 +896,18 @@ pub fn inflate(status: *mut mjCCDStatus, margin1: f64, margin2: f64) {
     todo ! ()
 }
 
-/// C: mjc_ccdSize (engine/engine_collision_gjk.c:2283)
+/// C: mjc_ccdSize (engine/engine_collision_gjk.h:105)
+/// Calls: align8
 #[allow(unused_variables, non_snake_case)]
-pub fn mjc_ccd_size(iterations: i32) -> i32 {
+pub fn mjc_ccd_size(iterations: i32) -> usize {
     // WARNING: signature changed — verify body
     // Previous params: (iterations : i32)
-    // Previous return: i32
+    // Previous return: usize
     todo ! ()
 }
 
 /// C: mjc_ccd (engine/engine_collision_gjk.h:108)
-/// Calls: epa, gjk, inflate, multicontact, polytope2, polytope3, polytope4
+/// Calls: align8, epa, gjk, inflate, multicontact, polytope2, polytope3, polytope4
 /// ⚠️ BITEXACT RULES:
 ///   1. Copy exact C accumulation order (no iter().sum())
 ///   2. No f64::mul_add() (FMA changes precision)

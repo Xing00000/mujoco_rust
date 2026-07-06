@@ -1,5 +1,5 @@
 //! Port of: ui/ui_main.c
-//! IR hash: 699b5f0da57e8d78
+//! IR hash: 545f394232195ad9
 //! CODEGEN: signatures locked. Only fill todo!() bodies.
 
 use crate::types::*;
@@ -341,7 +341,7 @@ pub fn evalpredicate(state: i32, predicate: mjfItemEnable, userdata: *mut ()) ->
 }
 
 /// C: shortcuthelp (ui/ui_main.c:1836)
-/// Calls: SCL, drawtext, mju_strncpy, textwidth
+/// Calls: SCL, drawrectangle, drawtext, mju_strncpy, textwidth
 #[allow(unused_variables, non_snake_case)]
 pub fn shortcuthelp(r: mjrRect, modifier: i32, shortcut: i32, ui: *const mjUI, con: *const mjrContext) {
     // WARNING: signature changed — verify body

@@ -1,11 +1,11 @@
 //! Port of: user/user_api.cc
-//! IR hash: 699b5f0da57e8d78
+//! IR hash: 545f394232195ad9
 //! CODEGEN: signatures locked. Only fill todo!() bodies.
 
 use crate::types::*;
 
 /// C: mj_parse (user/user_api.cc:78)
-/// Calls: mj_defaultVFS, mj_deleteVFS, mj_parseXML, mju_closeResource, mju_decodeResource, mju_free
+/// Calls: mj_defaultVFS, mj_deleteVFS, mj_parseXML, mju_closeResource, mju_decodeResource, mju_free, mju_malloc, mju_openResource
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_parse(filename: *const i8, content_type: *const i8, vfs: *const mjVFS, error: *mut i8, error_sz: i32) -> *mut mjSpec {
     // WARNING: signature changed — verify body
@@ -284,36 +284,6 @@ pub fn mjs_get_double(source: *const i32, size: *mut i32) -> *const f64 {
     todo ! ()
 }
 
-/// C: mj_getCacheCapacity (user/user_api.cc:2377)
-/// Calls: mjCCache::Capacity
-#[allow(unused_variables, non_snake_case)]
-pub fn mj_get_cache_capacity(cache: *const mjCache) -> i32 {
-    // WARNING: signature changed — verify body
-    // Previous params: (cache : * const mjCache)
-    // Previous return: i32
-    todo ! ()
-}
-
-/// C: mj_setCacheCapacity (user/user_api.cc:2389)
-/// Calls: mjCCache::Capacity, mjCCache::SetCapacity
-#[allow(unused_variables, non_snake_case)]
-pub fn mj_set_cache_capacity(cache: *mut mjCache, size: i32) -> i32 {
-    // WARNING: signature changed — verify body
-    // Previous params: (cache : * mut mjCache, size : i32)
-    // Previous return: i32
-    todo ! ()
-}
-
-/// C: mj_getCacheSize (user/user_api.cc:2402)
-/// Calls: mjCCache::Size
-#[allow(unused_variables, non_snake_case)]
-pub fn mj_get_cache_size(cache: *const mjCache) -> i32 {
-    // WARNING: signature changed — verify body
-    // Previous params: (cache : * const mjCache)
-    // Previous return: i32
-    todo ! ()
-}
-
 /// C: mj_makeSpec (user/user_api.h:40)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_make_spec() -> *mut mjSpec {
@@ -559,9 +529,9 @@ pub fn mjs_add_flex(s: *mut mjSpec) -> *mut mjsFlex {
 ///   3. No algebraic simplification
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
-pub fn mjs_make_flex(body: *mut mjsBody, name: *const i8, r#type: *const i8, dim: i32, dof: *const i8, count: *const i32, cellcount: *const i32, spacing: *const f64, scale: *const f64, radius: f64, mass: f64, inertiabox: f64, equality: i32, rigid: i32, flatskin: i32, elastic2d: i32, pos: *const f64, quat: *const f64, origin: *const f64, file: *const i8, vfs: *const mjVFS) -> *mut mjsFlex {
+pub fn mjs_make_flex(body: *mut mjsBody, name: *const i8, r#type: *const i8, dim: i32, dof: *const i8, count: [i32; 3], cellcount: [i32; 3], spacing: [f64; 3], scale: [f64; 3], radius: f64, mass: f64, inertiabox: f64, equality: i32, rigid: i32, flatskin: i32, elastic2d: i32, pos: [f64; 3], quat: [f64; 4], origin: [f64; 3], file: *const i8, vfs: *const mjVFS) -> *mut mjsFlex {
     // WARNING: signature changed — verify body
-    // Previous params: (body : * mut mjsBody, name : * const i8, r#type : * const i8, dim : i32, dof : * const i8, count : * const i32, cellcount : * const i32, spacing : * const f64, scale : * const f64, radius : f64, mass : f64, inertiabox : f64, equality : i32, rigid : i32, flatskin : i32, elastic2d : i32, pos : * const f64, quat : * const f64, origin : * const f64, file : * const i8, vfs : * const mjVFS)
+    // Previous params: (body : * mut mjsBody, name : * const i8, r#type : * const i8, dim : i32, dof : * const i8, count : [i32 ; 3], cellcount : [i32 ; 3], spacing : [f64 ; 3], scale : [f64 ; 3], radius : f64, mass : f64, inertiabox : f64, equality : i32, rigid : i32, flatskin : i32, elastic2d : i32, pos : [f64 ; 3], quat : [f64 ; 4], origin : [f64 ; 3], file : * const i8, vfs : * const mjVFS)
     // Previous return: * mut mjsFlex
     todo ! ()
 }
@@ -728,9 +698,9 @@ pub fn mjs_set_to_motor(actuator: *mut mjsActuator) -> *const i8 {
 ///   3. No algebraic simplification
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
-pub fn mjs_set_to_position(actuator: *mut mjsActuator, kp: f64, kv: *mut f64, dampratio: *mut f64, timeconst: *mut f64, inheritrange: f64) -> *const i8 {
+pub fn mjs_set_to_position(actuator: *mut mjsActuator, kp: f64, kv: [f64; 1], dampratio: [f64; 1], timeconst: [f64; 1], inheritrange: f64) -> *const i8 {
     // WARNING: signature changed — verify body
-    // Previous params: (actuator : * mut mjsActuator, kp : f64, kv : * mut f64, dampratio : * mut f64, timeconst : * mut f64, inheritrange : f64)
+    // Previous params: (actuator : * mut mjsActuator, kp : f64, kv : [f64 ; 1], dampratio : [f64 ; 1], timeconst : [f64 ; 1], inheritrange : f64)
     // Previous return: * const i8
     todo ! ()
 }
@@ -743,9 +713,9 @@ pub fn mjs_set_to_position(actuator: *mut mjsActuator, kp: f64, kv: *mut f64, da
 ///   3. No algebraic simplification
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
-pub fn mjs_set_to_int_velocity(actuator: *mut mjsActuator, kp: f64, kv: *mut f64, dampratio: *mut f64, timeconst: *mut f64, inheritrange: f64) -> *const i8 {
+pub fn mjs_set_to_int_velocity(actuator: *mut mjsActuator, kp: f64, kv: [f64; 1], dampratio: [f64; 1], timeconst: [f64; 1], inheritrange: f64) -> *const i8 {
     // WARNING: signature changed — verify body
-    // Previous params: (actuator : * mut mjsActuator, kp : f64, kv : * mut f64, dampratio : * mut f64, timeconst : * mut f64, inheritrange : f64)
+    // Previous params: (actuator : * mut mjsActuator, kp : f64, kv : [f64 ; 1], dampratio : [f64 ; 1], timeconst : [f64 ; 1], inheritrange : f64)
     // Previous return: * const i8
     todo ! ()
 }
@@ -801,9 +771,9 @@ pub fn mjs_set_to_cylinder(actuator: *mut mjsActuator, timeconst: f64, bias: f64
 ///   3. No algebraic simplification
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
-pub fn mjs_set_to_muscle(actuator: *mut mjsActuator, timeconst: *mut f64, tausmooth: f64, range: *mut f64, force: f64, scale: f64, lmin: f64, lmax: f64, vmax: f64, fpmax: f64, fvmax: f64) -> *const i8 {
+pub fn mjs_set_to_muscle(actuator: *mut mjsActuator, timeconst: [f64; 2], tausmooth: f64, range: [f64; 2], force: f64, scale: f64, lmin: f64, lmax: f64, vmax: f64, fpmax: f64, fvmax: f64) -> *const i8 {
     // WARNING: signature changed — verify body
-    // Previous params: (actuator : * mut mjsActuator, timeconst : * mut f64, tausmooth : f64, range : * mut f64, force : f64, scale : f64, lmin : f64, lmax : f64, vmax : f64, fpmax : f64, fvmax : f64)
+    // Previous params: (actuator : * mut mjsActuator, timeconst : [f64 ; 2], tausmooth : f64, range : [f64 ; 2], force : f64, scale : f64, lmin : f64, lmax : f64, vmax : f64, fpmax : f64, fvmax : f64)
     // Previous return: * const i8
     todo ! ()
 }
@@ -829,9 +799,9 @@ pub fn mjs_set_to_adhesion(actuator: *mut mjsActuator, gain: f64) -> *const i8 {
 ///   3. No algebraic simplification
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
-pub fn mjs_set_to_dc_motor(actuator: *mut mjsActuator, motorconst: *mut f64, resistance: f64, nominal: *mut f64, saturation: *mut f64, inductance: *mut f64, cogging: *mut f64, controller: *mut f64, thermal: *mut f64, lugre: *mut f64, input_mode: i32) -> *const i8 {
+pub fn mjs_set_to_dc_motor(actuator: *mut mjsActuator, motorconst: [f64; 2], resistance: f64, nominal: [f64; 3], saturation: [f64; 3], inductance: [f64; 2], cogging: [f64; 3], controller: [f64; 6], thermal: [f64; 6], lugre: [f64; 5], input_mode: i32) -> *const i8 {
     // WARNING: signature changed — verify body
-    // Previous params: (actuator : * mut mjsActuator, motorconst : * mut f64, resistance : f64, nominal : * mut f64, saturation : * mut f64, inductance : * mut f64, cogging : * mut f64, controller : * mut f64, thermal : * mut f64, lugre : * mut f64, input_mode : i32)
+    // Previous params: (actuator : * mut mjsActuator, motorconst : [f64 ; 2], resistance : f64, nominal : [f64 ; 3], saturation : [f64 ; 3], inductance : [f64 ; 2], cogging : [f64 ; 3], controller : [f64 ; 6], thermal : [f64 ; 6], lugre : [f64 ; 5], input_mode : i32)
     // Previous return: * const i8
     todo ! ()
 }
@@ -1024,6 +994,7 @@ pub fn mjs_get_id(element: *const mjsElement) -> i32 {
 }
 
 /// C: mjs_firstChild (user/user_api.h:276)
+/// Calls: mjCBody::NextChild
 #[allow(unused_variables, non_snake_case)]
 pub fn mjs_first_child(body: *const mjsBody, r#type: mjtObj, recurse: i32) -> *mut mjsElement {
     // WARNING: signature changed — verify body
@@ -1043,6 +1014,7 @@ pub fn mjs_next_child(body: *const mjsBody, child: *const mjsElement, recurse: i
 }
 
 /// C: mjs_firstElement (user/user_api.h:283)
+/// Calls: mjCModel::NextObject
 #[allow(unused_variables, non_snake_case)]
 pub fn mjs_first_element(s: *const mjSpec, r#type: mjtObj) -> *mut mjsElement {
     // WARNING: signature changed — verify body
@@ -1420,9 +1392,9 @@ pub fn mjs_set_frame(dest: *mut mjsElement, frame: *mut mjsFrame) -> i32 {
 ///   3. No algebraic simplification
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
-pub fn mjs_resolve_orientation(quat: *mut f64, degree: u8, sequence: *const i8, orientation: *const mjsOrientation) -> *const i8 {
+pub fn mjs_resolve_orientation(quat: [f64; 4], degree: u8, sequence: *const i8, orientation: *const mjsOrientation) -> *const i8 {
     // WARNING: signature changed — verify body
-    // Previous params: (quat : * mut f64, degree : u8, sequence : * const i8, orientation : * const mjsOrientation)
+    // Previous params: (quat : [f64 ; 4], degree : u8, sequence : * const i8, orientation : * const mjsOrientation)
     // Previous return: * const i8
     todo ! ()
 }
@@ -1481,6 +1453,36 @@ pub fn mjs_sensor_dim(sensor: *const mjsSensor) -> i32 {
     // WARNING: signature changed — verify body
     // Previous params: (sensor : * const mjsSensor)
     // Previous return: i32
+    todo ! ()
+}
+
+/// C: mj_getCacheCapacity (user/user_api.h:551)
+/// Calls: mjCCache::Capacity
+#[allow(unused_variables, non_snake_case)]
+pub fn mj_get_cache_capacity(cache: *const mjCache) -> usize {
+    // WARNING: signature changed — verify body
+    // Previous params: (cache : * const mjCache)
+    // Previous return: usize
+    todo ! ()
+}
+
+/// C: mj_setCacheCapacity (user/user_api.h:554)
+/// Calls: mjCCache::Capacity, mjCCache::SetCapacity
+#[allow(unused_variables, non_snake_case)]
+pub fn mj_set_cache_capacity(cache: *mut mjCache, size: usize) -> usize {
+    // WARNING: signature changed — verify body
+    // Previous params: (cache : * mut mjCache, size : usize)
+    // Previous return: usize
+    todo ! ()
+}
+
+/// C: mj_getCacheSize (user/user_api.h:557)
+/// Calls: mjCCache::Size
+#[allow(unused_variables, non_snake_case)]
+pub fn mj_get_cache_size(cache: *const mjCache) -> usize {
+    // WARNING: signature changed — verify body
+    // Previous params: (cache : * const mjCache)
+    // Previous return: usize
     todo ! ()
 }
 

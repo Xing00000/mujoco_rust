@@ -1,5 +1,5 @@
 //! Port of: render/classic/render_gl3.c
-//! IR hash: 699b5f0da57e8d78
+//! IR hash: 545f394232195ad9
 //! CODEGEN: signatures locked. Only fill todo!() bodies.
 
 use crate::types::*;
@@ -60,9 +60,9 @@ pub fn render_geom(geom: *const mjvGeom, mode: i32, headpos: *const f32, scn: *c
 ///   3. No algebraic simplification
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
-pub fn render_geom_reflection(id: i32, reflectance: f32, headpos: *mut f32, scn: *mut mjvScene, con: *const mjrContext) {
+pub fn render_geom_reflection(id: i32, reflectance: f32, headpos: [f32; 3], scn: *mut mjvScene, con: *const mjrContext) {
     // WARNING: signature changed — verify body
-    // Previous params: (id : i32, reflectance : f32, headpos : * mut f32, scn : * mut mjvScene, con : * const mjrContext)
+    // Previous params: (id : i32, reflectance : f32, headpos : [f32 ; 3], scn : * mut mjvScene, con : * const mjrContext)
     // Previous return: ()
     todo ! ()
 }
@@ -93,9 +93,9 @@ pub fn init_lights(scn: *mut mjvScene) {
 ///   3. No algebraic simplification
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
-pub fn set_view(view: i32, viewport: mjrRect, scn: *const mjvScene, con: *const mjrContext, camProject: *mut f32, camView: *mut f32) {
+pub fn set_view(view: i32, viewport: mjrRect, scn: *const mjvScene, con: *const mjrContext, camProject: [f32; 16], camView: [f32; 16]) {
     // WARNING: signature changed — verify body
-    // Previous params: (view : i32, viewport : mjrRect, scn : * const mjvScene, con : * const mjrContext, camProject : * mut f32, camView : * mut f32)
+    // Previous params: (view : i32, viewport : mjrRect, scn : * const mjvScene, con : * const mjrContext, camProject : [f32 ; 16], camView : [f32 ; 16])
     // Previous return: ()
     todo ! ()
 }
@@ -130,7 +130,7 @@ pub fn adjust_light(thislight: *const mjvLight, n: i32) {
 }
 
 /// C: mjr_render (render/classic/render_gl3.h:27)
-/// Calls: adjustLight, geomSort, initGL3, initLights, isBehind, isReflective, mjr_getrow4, mjr_lookAt, mjr_mulMat44, mjr_orthoVec, mjr_perspective, mjr_reflect, mjr_restoreBuffer, mjr_textActual, mju_error, mju_free, mju_min, mju_n2f, mjv_averageCamera, mjv_rbound, renderGeom, renderGeomReflection, setView, settexture
+/// Calls: adjustLight, geomSort, initGL3, initLights, isBehind, isReflective, mjr_getrow4, mjr_lookAt, mjr_mulMat44, mjr_orthoVec, mjr_perspective, mjr_reflect, mjr_restoreBuffer, mjr_textActual, mju_error, mju_free, mju_malloc, mju_min, mju_n2f, mjv_averageCamera, mjv_cameraInModel, mjv_rbound, renderGeom, renderGeomReflection, setView, settexture
 #[allow(unused_variables, non_snake_case)]
 pub fn mjr_render(viewport: mjrRect, scn: *mut mjvScene, con: *const mjrContext) {
     // WARNING: signature changed — verify body

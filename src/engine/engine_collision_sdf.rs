@@ -1,5 +1,5 @@
 //! Port of: engine/engine_collision_sdf.c
-//! IR hash: 699b5f0da57e8d78
+//! IR hash: 545f394232195ad9
 //! CODEGEN: signatures locked. Only fill todo!() bodies.
 
 use crate::types::*;
@@ -27,15 +27,15 @@ pub fn box_projection(point: *mut f64, r#box: *const f64) -> f64 {
 ///   3. No algebraic simplification
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
-pub fn find_oct(w: *mut f64, dw: *mut f64, oct_aabb: *const f64, oct_child: *const i32, p: *const f64) -> i32 {
+pub fn find_oct(w: *mut f64, dw: [[f64; 8]; 3], oct_aabb: *const f64, oct_child: *const i32, p: *const f64) -> i32 {
     // WARNING: signature changed — verify body
-    // Previous params: (w : * mut f64, dw : * mut f64, oct_aabb : * const f64, oct_child : * const i32, p : * const f64)
+    // Previous params: (w : * mut f64, dw : [[f64 ; 8] ; 3], oct_aabb : * const f64, oct_child : * const i32, p : * const f64)
     // Previous return: i32
     todo ! ()
 }
 
 /// C: oct_distance (engine/engine_collision_sdf.c:138)
-/// Calls: boxProjection, mju_message
+/// Calls: boxProjection, findOct, mju_message
 /// ⚠️ BITEXACT RULES:
 ///   1. Copy exact C accumulation order (no iter().sum())
 ///   2. No f64::mul_add() (FMA changes precision)
@@ -50,7 +50,7 @@ pub fn oct_distance(m: *const mjModel, p: *const f64, meshid: i32) -> f64 {
 }
 
 /// C: oct_gradient (engine/engine_collision_sdf.c:162)
-/// Calls: boxProjection, mju_message, mju_zero3, oct_distance
+/// Calls: boxProjection, findOct, mju_message, mju_zero3, oct_distance
 /// ⚠️ BITEXACT RULES:
 ///   1. Copy exact C accumulation order (no iter().sum())
 ///   2. No f64::mul_add() (FMA changes precision)
@@ -269,6 +269,7 @@ pub fn traverse_bvh(bvh: *const f64, nodeid: *const i32, child: *const i32, bvh_
 }
 
 /// C: meshFaceCallback (engine/engine_collision_sdf.c:943)
+/// Calls: processOneFace
 #[allow(unused_variables, non_snake_case)]
 pub fn mesh_face_callback(face_id: i32, node: i32, ctx: *mut ()) -> i32 {
     // WARNING: signature changed — verify body
@@ -343,7 +344,7 @@ pub fn mjc_h_field_sdf(m: *const mjModel, d: *mut mjData, con: *mut mjPreContact
 }
 
 /// C: mjc_MeshSDF (engine/engine_collision_sdf.h:42)
-/// Calls: addPreContact, mapPose, mju_mat2Quat, mju_max, selectFPS, traverseBVH
+/// Calls: addPreContact, mapPose, mjc_getSDF, mju_mat2Quat, mju_max, selectFPS, traverseBVH
 /// ⚠️ BITEXACT RULES:
 ///   1. Copy exact C accumulation order (no iter().sum())
 ///   2. No f64::mul_add() (FMA changes precision)
@@ -358,7 +359,7 @@ pub fn mjc_mesh_sdf(m: *const mjModel, d: *mut mjData, con: *mut mjPreContact, g
 }
 
 /// C: mjc_SDF (engine/engine_collision_sdf.h:45)
-/// Calls: addPreContact, mapPose, mju_Halton, mju_addTo3, mju_mat2Quat, mju_max, mju_message, mju_min, mju_mulMatVec3, stepGradient
+/// Calls: addPreContact, mapPose, mjc_getSDF, mju_Halton, mju_addTo3, mju_mat2Quat, mju_max, mju_message, mju_min, mju_mulMatVec3, stepGradient
 /// ⚠️ BITEXACT RULES:
 ///   1. Copy exact C accumulation order (no iter().sum())
 ///   2. No f64::mul_add() (FMA changes precision)
@@ -373,7 +374,7 @@ pub fn mjc_sdf(m: *const mjModel, d: *mut mjData, con: *mut mjPreContact, g1: i3
 }
 
 /// C: mjc_FlexSDF (engine/engine_collision_sdf.h:48)
-/// Calls: addPreContact, mapPose, mju_addTo3, mju_copy3, mju_mat2Quat, mju_max, mju_mulMatVec3, processSdfCorners, selectFPS, traverseBVH
+/// Calls: addPreContact, mapPose, mjc_getSDF, mju_addTo3, mju_copy3, mju_mat2Quat, mju_max, mju_mulMatVec3, processSdfCorners, selectFPS, traverseBVH
 /// ⚠️ BITEXACT RULES:
 ///   1. Copy exact C accumulation order (no iter().sum())
 ///   2. No f64::mul_add() (FMA changes precision)

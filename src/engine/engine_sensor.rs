@@ -1,5 +1,5 @@
 //! Port of: engine/engine_sensor.c
-//! IR hash: 699b5f0da57e8d78
+//! IR hash: 545f394232195ad9
 //! CODEGEN: signatures locked. Only fill todo!() bodies.
 
 use crate::types::*;
@@ -24,7 +24,7 @@ pub fn contact_select(arr: *mut ContactInfo, buf: *mut ContactInfo, n: i32, k: i
 }
 
 /// C: tactile_taxel_batch (engine/engine_sensor.c:80)
-/// Calls: mjc_distance, mjc_getSDF, mju_addTo3, mju_dot3, mju_max, mju_min, mju_mulMatTVec3, mju_mulMatVec3, mju_quat2Mat, mju_rotVecQuat, mju_sub3
+/// Calls: mjc_distance, mjc_getSDF, mju_addTo3, mju_dot3, mju_max, mju_min, mju_mulMatTVec3, mju_mulMatVec3, mju_quat2Mat, mju_rotVecQuat, mju_sub3, mju_transformSpatial
 #[allow(unused_variables, non_snake_case)]
 pub fn tactile_taxel_batch(m: *const mjModel, d: *mut mjData, args: *mut ()) -> *mut () {
     // WARNING: signature changed — verify body
@@ -96,9 +96,9 @@ pub fn get_xquat(m: *const mjModel, d: *const mjData, r#type: mjtObj, id: i32, s
 ///   3. No algebraic simplification
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
-pub fn cam_project(sensordata: *mut f64, target_xpos: *const f64, cam_xpos: *const f64, cam_xmat: *const f64, cam_res: *const i32, cam_fovy: f64, cam_intrinsic: *const f32, cam_sensorsize: *const f32) {
+pub fn cam_project(sensordata: *mut f64, target_xpos: *const f64, cam_xpos: *const f64, cam_xmat: *const f64, cam_res: [i32; 2], cam_fovy: f64, cam_intrinsic: [f32; 4], cam_sensorsize: [f32; 2]) {
     // WARNING: signature changed — verify body
-    // Previous params: (sensordata : * mut f64, target_xpos : * const f64, cam_xpos : * const f64, cam_xmat : * const f64, cam_res : * const i32, cam_fovy : f64, cam_intrinsic : * const f32, cam_sensorsize : * const f32)
+    // Previous params: (sensordata : * mut f64, target_xpos : * const f64, cam_xpos : * const f64, cam_xmat : * const f64, cam_res : [i32 ; 2], cam_fovy : f64, cam_intrinsic : [f32 ; 4], cam_sensorsize : [f32 ; 2])
     // Previous return: ()
     todo ! ()
 }
@@ -130,9 +130,9 @@ pub fn match_contact(m: *const mjModel, d: *const mjData, conid: i32, type1: mjt
 ///   3. No algebraic simplification
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
-pub fn copy_sensor_data(m: *const mjModel, d: *const mjData, data: *mut *mut f64, id: i32, flg_flip: i32, nfound: i32) {
+pub fn copy_sensor_data(m: *const mjModel, d: *const mjData, data: [*mut f64; 7], id: i32, flg_flip: i32, nfound: i32) {
     // WARNING: signature changed — verify body
-    // Previous params: (m : * const mjModel, d : * const mjData, data : * mut * mut f64, id : i32, flg_flip : i32, nfound : i32)
+    // Previous params: (m : * const mjModel, d : * const mjData, data : [* mut f64 ; 7], id : i32, flg_flip : i32, nfound : i32)
     // Previous return: ()
     todo ! ()
 }
@@ -168,7 +168,7 @@ pub fn fill_raydata(ptr: *mut f64, dataspec: i32, dist: f64, origin: *const f64,
 }
 
 /// C: mj_computeSensorPos (engine/engine_sensor.c:525)
-/// Calls: cam_project, fill_raydata, get_xpos_xmat, get_xquat, mj_energyPos, mj_energyVel, mj_freeStack, mj_geomDistance, mj_markStack, mju_camIntrinsics, mju_camPixelRay, mju_copy, mju_copy3, mju_copy4, mju_insideGeom, mju_message, mju_mulMatTVec, mju_mulMatTVec3, mju_mulQuat, mju_negQuat, mju_normalize3, mju_normalize4, mju_sub3
+/// Calls: cam_project, fill_raydata, get_xpos_xmat, get_xquat, mj_energyPos, mj_energyVel, mj_freeStack, mj_geomDistance, mj_markStack, mj_multiRay, mj_ray, mj_stackAllocInfo, mju_camIntrinsics, mju_camPixelRay, mju_copy, mju_copy3, mju_copy4, mju_insideGeom, mju_message, mju_mulMatTVec, mju_mulMatTVec3, mju_mulQuat, mju_negQuat, mju_normalize3, mju_normalize4, mju_sub3
 /// ⚠️ BITEXACT RULES:
 ///   1. Copy exact C accumulation order (no iter().sum())
 ///   2. No f64::mul_add() (FMA changes precision)
@@ -198,7 +198,7 @@ pub fn mj_compute_sensor_vel(m: *const mjModel, d: *mut mjData, i: i32, sensorda
 }
 
 /// C: mj_computeSensorAcc (engine/engine_sensor.c:958)
-/// Calls: copySensorData, matchContact, mj_contactForce, mj_flexBody, mj_freeStack, mj_markStack, mj_objectAcceleration, mj_rnePostConstraint, mju_addTo, mju_addToScl3, mju_condataSize, mju_copy3, mju_copy9, mju_dispatch, mju_dot3, mju_isZero, mju_message, mju_min, mju_norm3, mju_normalize3, mju_numThread, mju_scl, mju_scl3, mju_transformSpatial, mju_zero, tactile_taxel_batch, total_wrench
+/// Calls: ContactSelect, copySensorData, matchContact, mj_contactForce, mj_flexBody, mj_freeStack, mj_markStack, mj_objectAcceleration, mj_rnePostConstraint, mj_stackAllocInfo, mj_stackAllocInt, mj_stackAllocNum, mju_addTo, mju_addToScl3, mju_condataSize, mju_copy3, mju_copy9, mju_dispatch, mju_dot3, mju_isZero, mju_message, mju_min, mju_norm3, mju_normalize3, mju_numThread, mju_rayGeom, mju_scl, mju_scl3, mju_transformSpatial, mju_zero, tactile_taxel_batch, total_wrench
 /// ⚠️ BITEXACT RULES:
 ///   1. Copy exact C accumulation order (no iter().sum())
 ///   2. No f64::mul_add() (FMA changes precision)
@@ -303,7 +303,7 @@ pub fn mj_energy_pos(m: *const mjModel, d: *mut mjData) {
 }
 
 /// C: mj_energyVel (engine/engine_sensor.h:47)
-/// Calls: mj_freeStack, mj_markStack, mj_mulM, mju_dot
+/// Calls: mj_freeStack, mj_markStack, mj_mulM, mj_stackAllocInfo, mju_dot
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_energy_vel(m: *const mjModel, d: *mut mjData) {
     // WARNING: signature changed — verify body

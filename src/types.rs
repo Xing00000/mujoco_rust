@@ -13,6 +13,11 @@ pub struct Args { _opaque: [u8; 0] }
 #[derive(Clone, Copy)]
 pub struct BVHLeafCallback { _opaque: [u8; 0] }
 
+/// Opaque C struct: BufferProvider (unsized, pointer-only)
+#[repr(C)]
+#[derive(Clone, Copy)]
+pub struct BufferProvider { _opaque: [u8; 0] }
+
 /// Opaque C struct: ContactInfo (unsized, pointer-only)
 #[repr(C)]
 #[derive(Clone, Copy)]
@@ -53,6 +58,16 @@ pub struct GLsizei { _opaque: [u8; 0] }
 #[derive(Clone, Copy)]
 pub struct GLuint { _opaque: [u8; 0] }
 
+/// Opaque C struct: GlobalTable (unsized, pointer-only)
+#[repr(C)]
+#[derive(Clone, Copy)]
+pub struct GlobalTable { _opaque: [u8; 0] }
+
+/// Opaque C struct: LocaleOverride (unsized, pointer-only)
+#[repr(C)]
+#[derive(Clone, Copy)]
+pub struct LocaleOverride { _opaque: [u8; 0] }
+
 /// Opaque C struct: LodePNGColorType (unsized, pointer-only)
 #[repr(C)]
 #[derive(Clone, Copy)]
@@ -62,6 +77,11 @@ pub struct LodePNGColorType { _opaque: [u8; 0] }
 #[repr(C)]
 #[derive(Clone, Copy)]
 pub struct Matrix { _opaque: [u8; 0] }
+
+/// Opaque C struct: MeshPolygon (unsized, pointer-only)
+#[repr(C)]
+#[derive(Clone, Copy)]
+pub struct MeshPolygon { _opaque: [u8; 0] }
 
 /// Opaque C struct: MeshSDFContext (unsized, pointer-only)
 #[repr(C)]
@@ -93,6 +113,11 @@ pub struct PNGImage { _opaque: [u8; 0] }
 #[derive(Clone, Copy)]
 pub struct Polytope { _opaque: [u8; 0] }
 
+/// Opaque C struct: Reader (unsized, pointer-only)
+#[repr(C)]
+#[derive(Clone, Copy)]
+pub struct Reader { _opaque: [u8; 0] }
+
 /// Opaque C struct: Resolver (unsized, pointer-only)
 #[repr(C)]
 #[derive(Clone, Copy)]
@@ -123,6 +148,16 @@ pub struct T1 { _opaque: [u8; 0] }
 #[derive(Clone, Copy)]
 pub struct T2 { _opaque: [u8; 0] }
 
+/// Opaque C struct: ThreadPool (unsized, pointer-only)
+#[repr(C)]
+#[derive(Clone, Copy)]
+pub struct ThreadPool { _opaque: [u8; 0] }
+
+/// Opaque C struct: ThreadPoolContext (unsized, pointer-only)
+#[repr(C)]
+#[derive(Clone, Copy)]
+pub struct ThreadPoolContext { _opaque: [u8; 0] }
+
 /// Opaque C struct: Triangle (unsized, pointer-only)
 #[repr(C)]
 #[derive(Clone, Copy)]
@@ -147,6 +182,11 @@ pub struct XMLDocument { _opaque: [u8; 0] }
 #[repr(C)]
 #[derive(Clone, Copy)]
 pub struct XMLElement { _opaque: [u8; 0] }
+
+/// Opaque C struct: ZipArchiveProvider (unsized, pointer-only)
+#[repr(C)]
+#[derive(Clone, Copy)]
+pub struct ZipArchiveProvider { _opaque: [u8; 0] }
 
 /// Opaque C struct: ccd_vec3_t (unsized, pointer-only)
 #[repr(C)]
@@ -223,6 +263,11 @@ pub struct mjCCache { _opaque: [u8; 0] }
 #[derive(Clone, Copy)]
 pub struct mjCCamera { _opaque: [u8; 0] }
 
+/// Opaque C struct: mjCComposite (unsized, pointer-only)
+#[repr(C)]
+#[derive(Clone, Copy)]
+pub struct mjCComposite { _opaque: [u8; 0] }
+
 /// Opaque C struct: mjCDataFunc (unsized, pointer-only)
 #[repr(C)]
 #[derive(Clone, Copy)]
@@ -242,6 +287,11 @@ pub struct mjCEquality { _opaque: [u8; 0] }
 #[repr(C)]
 #[derive(Clone, Copy)]
 pub struct mjCFlex { _opaque: [u8; 0] }
+
+/// Opaque C struct: mjCFlexcomp (unsized, pointer-only)
+#[repr(C)]
+#[derive(Clone, Copy)]
+pub struct mjCFlexcomp { _opaque: [u8; 0] }
 
 /// Opaque C struct: mjCFrame (unsized, pointer-only)
 #[repr(C)]
@@ -368,6 +418,11 @@ pub struct mjDCMotorSlots { _opaque: [u8; 0] }
 #[derive(Clone, Copy)]
 pub struct mjData { _opaque: [u8; 0] }
 
+/// Opaque C struct: mjKeyMap (unsized, pointer-only)
+#[repr(C)]
+#[derive(Clone, Copy)]
+pub struct mjKeyMap { _opaque: [u8; 0] }
+
 /// Opaque C struct: mjLROpt (unsized, pointer-only)
 #[repr(C)]
 #[derive(Clone, Copy)]
@@ -468,10 +523,40 @@ pub struct mjVFS { _opaque: [u8; 0] }
 #[derive(Clone, Copy)]
 pub struct mjVisual { _opaque: [u8; 0] }
 
+/// Sized opaque C struct: mjXBase (16 bytes, align 8)
+#[repr(C, align(8))]
+#[derive(Clone, Copy)]
+pub struct mjXBase { pub _data: [u8; 16] }
+
 /// Opaque C struct: mjXReader (unsized, pointer-only)
 #[repr(C)]
 #[derive(Clone, Copy)]
 pub struct mjXReader { _opaque: [u8; 0] }
+
+/// Opaque C struct: mjXSchema (unsized, pointer-only)
+#[repr(C)]
+#[derive(Clone, Copy)]
+pub struct mjXSchema { _opaque: [u8; 0] }
+
+/// Opaque C struct: mjXURDF (unsized, pointer-only)
+#[repr(C)]
+#[derive(Clone, Copy)]
+pub struct mjXURDF { _opaque: [u8; 0] }
+
+/// Sized opaque C struct: mjXUtil (8 bytes, align 8)
+#[repr(C, align(8))]
+#[derive(Clone, Copy)]
+pub struct mjXUtil { pub _data: [u8; 8] }
+
+/// Sized opaque C struct: mjXWriter (32 bytes, align 8)
+#[repr(C, align(8))]
+#[derive(Clone, Copy)]
+pub struct mjXWriter { pub _data: [u8; 32] }
+
+/// Opaque C struct: mj_XMLPrinter (unsized, pointer-only)
+#[repr(C)]
+#[derive(Clone, Copy)]
+pub struct mj_XMLPrinter { _opaque: [u8; 0] }
 
 /// Opaque C struct: mjcPair (unsized, pointer-only)
 #[repr(C)]
@@ -708,11 +793,6 @@ pub struct mjtMeshBuiltin { _opaque: [u8; 0] }
 #[derive(Clone, Copy)]
 pub struct mjtMeshInertia { _opaque: [u8; 0] }
 
-/// Opaque C struct: mjtNum__restrict (unsized, pointer-only)
-#[repr(C)]
-#[derive(Clone, Copy)]
-pub struct mjtNum__restrict { _opaque: [u8; 0] }
-
 /// Opaque C struct: mjtObj (unsized, pointer-only)
 #[repr(C)]
 #[derive(Clone, Copy)]
@@ -853,25 +933,35 @@ pub struct std__size_t { _opaque: [u8; 0] }
 #[derive(Clone, Copy)]
 pub struct std__string { _opaque: [u8; 0] }
 
-/// Opaque C struct: std__string_view (unsized, pointer-only)
-#[repr(C)]
-#[derive(Clone, Copy)]
-pub struct std__string_view { _opaque: [u8; 0] }
-
 /// Opaque C struct: std__stringstream (unsized, pointer-only)
 #[repr(C)]
 #[derive(Clone, Copy)]
 pub struct std__stringstream { _opaque: [u8; 0] }
+
+/// Opaque C struct: std__uint64_t (unsized, pointer-only)
+#[repr(C)]
+#[derive(Clone, Copy)]
+pub struct std__uint64_t { _opaque: [u8; 0] }
 
 /// Opaque C struct: string (unsized, pointer-only)
 #[repr(C)]
 #[derive(Clone, Copy)]
 pub struct string { _opaque: [u8; 0] }
 
+/// Opaque C struct: string_view (unsized, pointer-only)
+#[repr(C)]
+#[derive(Clone, Copy)]
+pub struct string_view { _opaque: [u8; 0] }
+
 /// Opaque C struct: tinyxml2__XMLElement (unsized, pointer-only)
 #[repr(C)]
 #[derive(Clone, Copy)]
 pub struct tinyxml2__XMLElement { _opaque: [u8; 0] }
+
+/// Opaque C struct: va_list (unsized, pointer-only)
+#[repr(C)]
+#[derive(Clone, Copy)]
+pub struct va_list { _opaque: [u8; 0] }
 
 /// Opaque C struct: void_____T____const_char (unsized, pointer-only)
 #[repr(C)]

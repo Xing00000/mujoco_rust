@@ -1,5 +1,5 @@
 //! Port of: engine/engine_setconst.c
-//! IR hash: 699b5f0da57e8d78
+//! IR hash: 545f394232195ad9
 //! CODEGEN: signatures locked. Only fill todo!() bodies.
 
 use crate::types::*;
@@ -24,7 +24,7 @@ pub fn get_wrap_body_tree_id(m: *const mjModel, wrap_index: i32) -> i32 {
 }
 
 /// C: setFixed (engine/engine_setconst.c:86)
-/// Calls: GetWrapBodyTreeId, mj_freeStack, mj_markStack, mju_fillInt, mju_isZero, mju_message, mju_zeroInt
+/// Calls: GetWrapBodyTreeId, mj_freeStack, mj_markStack, mj_stackAllocInfo, mju_fillInt, mju_isZero, mju_message, mju_zeroInt
 #[allow(unused_variables, non_snake_case)]
 pub fn set_fixed(m: *mut mjModel, d: *mut mjData) {
     // WARNING: signature changed — verify body
@@ -44,7 +44,7 @@ pub fn make_tendon_sparse(m: *mut mjModel) {
 }
 
 /// C: makeFlexSparse (engine/engine_setconst.c:424)
-/// Calls: mj_bodyChain, mj_freeStack, mj_markStack, mju_copyInt, mju_message, mju_sub3, mju_zero, mju_zeroInt
+/// Calls: mj_bodyChain, mj_freeStack, mj_jacDifPair, mj_markStack, mj_stackAllocInfo, mju_copyInt, mju_message, mju_sub3, mju_zero, mju_zeroInt
 #[allow(unused_variables, non_snake_case)]
 pub fn make_flex_sparse(m: *mut mjModel, d: *mut mjData) {
     // WARNING: signature changed — verify body
@@ -64,7 +64,7 @@ pub fn mj_align_flex(m: *mut mjModel, d: *mut mjData) {
 }
 
 /// C: set0 (engine/engine_setconst.c:695)
-/// Calls: makeFlexSparse, makeTendonSparse, mj_alignFlex, mj_camlight, mj_comPos, mj_factorM, mj_flex, mj_freeStack, mj_jacBodyCom, mj_kinematics, mj_local2Global, mj_makeM, mj_markStack, mj_setM0, mj_solveM, mj_tendon, mj_transmission, mju_copy, mju_copy3, mju_copy9, mju_dot, mju_isZero, mju_max, mju_message, mju_mulMatMatT, mju_mulMatTVec3, mju_mulQuat, mju_negQuat, mju_norm, mju_normalize4, mju_sparse2dense, mju_sub3, mju_subFrom3, mju_zero
+/// Calls: makeFlexSparse, makeTendonSparse, mj_alignFlex, mj_camlight, mj_comPos, mj_factorM, mj_flex, mj_freeStack, mj_jacBodyCom, mj_kinematics, mj_local2Global, mj_makeM, mj_markStack, mj_setM0, mj_solveM, mj_stackAllocInfo, mj_tendon, mj_transmission, mju_copy, mju_copy3, mju_copy9, mju_dot, mju_isZero, mju_max, mju_message, mju_mulMatMatT, mju_mulMatTVec3, mju_mulQuat, mju_negQuat, mju_norm, mju_normalize4, mju_sparse2dense, mju_sub3, mju_subFrom3, mju_zero
 #[allow(unused_variables, non_snake_case)]
 pub fn set0(m: *mut mjModel, d: *mut mjData) {
     // WARNING: signature changed — verify body
@@ -88,7 +88,7 @@ pub fn update_box(xmin: *mut f64, xmax: *mut f64, pos: *mut f64, radius: f64) {
 }
 
 /// C: setStat (engine/engine_setconst.c:1050)
-/// Calls: mj_freeStack, mj_markStack, mju_add3, mju_dist3, mju_max, mju_scl3, mju_zero, updateBox
+/// Calls: mj_freeStack, mj_markStack, mj_stackAllocInfo, mju_add3, mju_dist3, mju_max, mju_scl3, mju_zero, updateBox
 #[allow(unused_variables, non_snake_case)]
 pub fn set_stat(m: *mut mjModel, d: *mut mjData) {
     // WARNING: signature changed — verify body
@@ -108,7 +108,7 @@ pub fn set_spring(m: *mut mjModel, d: *mut mjData) {
 }
 
 /// C: evalAct (engine/engine_setconst.c:1235)
-/// Calls: mj_freeStack, mj_markStack, mj_solveM, mj_step1, mj_step2, mju_norm, mju_scl, mju_sparse2dense
+/// Calls: mj_freeStack, mj_markStack, mj_solveM, mj_stackAllocInfo, mj_step1, mj_step2, mju_norm, mju_scl, mju_sparse2dense
 /// ⚠️ BITEXACT RULES:
 ///   1. Copy exact C accumulation order (no iter().sum())
 ///   2. No f64::mul_add() (FMA changes precision)
