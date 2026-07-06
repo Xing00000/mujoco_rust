@@ -1142,10 +1142,16 @@ pub fn mju_poly_force(linear: f64, poly: *const f64, x: f64, n: i32, flg_odd: i3
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjd_x_poly_force(linear: f64, poly: *const f64, x: f64, n: i32, flg_odd: i32) -> f64 {
-    // WARNING: signature changed — verify body
-    // Previous params: (linear : f64, poly : * const f64, x : f64, n : i32, flg_odd : i32)
-    // Previous return: f64
-    todo ! ()
+    unsafe {
+        let x = if flg_odd != 0 { x.abs() } else { x };
+        let mut res: f64 = linear;
+        let mut xpow: f64 = 1.0;
+        for i in 0..n as usize {
+            xpow *= x;
+            res += (i as f64 + 2.0) * *poly.add(i) * xpow;
+        }
+        res
+    }
 }
 
 /// C: mju_polyPotential (engine/engine_util_misc.h:332)
@@ -1156,10 +1162,16 @@ pub fn mjd_x_poly_force(linear: f64, poly: *const f64, x: f64, n: i32, flg_odd: 
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mju_poly_potential(linear: f64, poly: *const f64, x: f64, n: i32, flg_odd: i32) -> f64 {
-    // WARNING: signature changed — verify body
-    // Previous params: (linear : f64, poly : * const f64, x : f64, n : i32, flg_odd : i32)
-    // Previous return: f64
-    todo ! ()
+    unsafe {
+        let x = if flg_odd != 0 { x.abs() } else { x };
+        let mut res: f64 = 0.5 * linear * (x * x);
+        let mut xpow: f64 = x;
+        for i in 0..n as usize {
+            xpow *= x;
+            res += *poly.add(i) / (i as f64 + 3.0) * (xpow * x);
+        }
+        res
+    }
 }
 
 /// C: mju_sigmoid (engine/engine_util_misc.h:335)
