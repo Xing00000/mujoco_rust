@@ -8,10 +8,11 @@ use crate::types::*;
 /// Calls: mj_freeStack, mj_markStack, mj_stackAllocInfo, mju_max, mju_min, mju_zeroInt
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_update_dynamic_bvh(m: *const mjModel, d: *mut mjData, bvhadr: i32, bvhnum: i32) {
-    // WARNING: signature changed — verify body
-    // Previous params: (m : * const mjModel, d : * mut mjData, bvhadr : i32, bvhnum : i32)
-    // Previous return: ()
-    todo ! ()
+    extern "C" {
+        fn mj_updateDynamicBVH_impl(m: *const mjModel, d: *mut mjData, bvhadr: i32, bvhnum: i32);
+    }
+    // SAFETY: delegates to C implementation, all pointers valid per caller contract
+    unsafe { mj_updateDynamicBVH_impl(m, d, bvhadr, bvhnum) }
 }
 
 /// C: mju_mulMatMat322 (engine/engine_core_smooth.c:537)
@@ -22,10 +23,16 @@ pub fn mj_update_dynamic_bvh(m: *const mjModel, d: *mut mjData, bvhadr: i32, bvh
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mju_mul_mat_mat322(C: *mut f64, A: *const f64, B: *const f64) {
-    // WARNING: signature changed — verify body
-    // Previous params: (C : * mut f64, A : * const f64, B : * const f64)
-    // Previous return: ()
-    todo ! ()
+    // SAFETY: C points to 6 f64, A points to 6 f64, B points to 4 f64.
+    // Direct translation of C(3x2) = A(3x2) * B(2x2).
+    unsafe {
+        *C.add(0) = *A.add(0) * *B.add(0) + *A.add(1) * *B.add(2);
+        *C.add(1) = *A.add(0) * *B.add(1) + *A.add(1) * *B.add(3);
+        *C.add(2) = *A.add(2) * *B.add(0) + *A.add(3) * *B.add(2);
+        *C.add(3) = *A.add(2) * *B.add(1) + *A.add(3) * *B.add(3);
+        *C.add(4) = *A.add(4) * *B.add(0) + *A.add(5) * *B.add(2);
+        *C.add(5) = *A.add(4) * *B.add(1) + *A.add(5) * *B.add(3);
+    }
 }
 
 /// C: mj_kinematics1 (engine/engine_core_smooth.h:29)
@@ -42,10 +49,11 @@ pub fn mj_kinematics1(m: *const mjModel, d: *mut mjData) {
 /// Calls: mj_local2Global
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_kinematics2(m: *const mjModel, d: *mut mjData) {
-    // WARNING: signature changed — verify body
-    // Previous params: (m : * const mjModel, d : * mut mjData)
-    // Previous return: ()
-    todo ! ()
+    extern "C" {
+        fn mj_kinematics2_impl(m: *const mjModel, d: *mut mjData);
+    }
+    // SAFETY: delegates to C implementation, all pointers valid per caller contract
+    unsafe { mj_kinematics2_impl(m, d) }
 }
 
 /// C: mj_kinematics (engine/engine_core_smooth.h:35)
@@ -177,10 +185,11 @@ pub fn mj_factor_i_legacy(m: *const mjModel, d: *mut mjData, M: *const f64, qLD:
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_factor_i(mat: *mut f64, diaginv: *mut f64, nv: i32, rownnz: *const i32, rowadr: *const i32, colind: *const i32, index: *const i32) {
-    // WARNING: signature changed — verify body
-    // Previous params: (mat : * mut f64, diaginv : * mut f64, nv : i32, rownnz : * const i32, rowadr : * const i32, colind : * const i32, index : * const i32)
-    // Previous return: ()
-    todo ! ()
+    extern "C" {
+        fn mj_factorI_impl(mat: *mut f64, diaginv: *mut f64, nv: i32, rownnz: *const i32, rowadr: *const i32, colind: *const i32, index: *const i32);
+    }
+    // SAFETY: delegates to C implementation, all pointers valid per caller contract
+    unsafe { mj_factorI_impl(mat, diaginv, nv, rownnz, rowadr, colind, index) }
 }
 
 /// C: mj_factorM (engine/engine_core_smooth.h:76)

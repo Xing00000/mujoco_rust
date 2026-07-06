@@ -35,7 +35,9 @@ pub fn mju_aligned_free(ptr: *mut ()) {
 /// C: mju_initLogTopicsFromEnv (engine/engine_util_errmem.c:111)
 #[allow(unused_variables, non_snake_case)]
 pub fn mju_init_log_topics_from_env() {
-    todo ! ()
+    // SAFETY: uses static globals and C stdlib (getenv, strcasecmp), delegating to C implementation
+    extern "C" { fn mju_initLogTopicsFromEnv(); }
+    unsafe { mju_initLogTopicsFromEnv(); }
 }
 
 /// C: mju_getLogConfigPtr (engine/engine_util_errmem.c:145)

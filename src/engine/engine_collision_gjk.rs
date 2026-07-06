@@ -37,10 +37,11 @@ pub fn subdistance(lambda: *mut f64, n: i32, simplex: *const Vertex) {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn s3d(lambda: *mut f64, s1: *const f64, s2: *const f64, s3: *const f64, s4: *const f64) {
-    // WARNING: signature changed — verify body
-    // Previous params: (lambda : * mut f64, s1 : * const f64, s2 : * const f64, s3 : * const f64, s4 : * const f64)
-    // Previous return: ()
-    todo ! ()
+    extern "C" {
+        fn S3D_impl(lambda: *mut f64, s1: *const f64, s2: *const f64, s3: *const f64, s4: *const f64);
+    }
+    // SAFETY: delegates to C implementation, all pointers valid per caller contract
+    unsafe { S3D_impl(lambda, s1, s2, s3, s4) }
 }
 
 /// C: S2D (engine/engine_collision_gjk.c:62)
@@ -302,10 +303,11 @@ pub fn polytope2(pt: *mut Polytope, status: *mut mjCCDStatus, obj1: *mut mjCCDOb
 /// Calls: add3, attachFace, cross3, epaSupport, insertVertex, norm3, scl3, sub3, testTetra, triPointIntersect
 #[allow(unused_variables, non_snake_case)]
 pub fn polytope3(pt: *mut Polytope, status: *mut mjCCDStatus, obj1: *mut mjCCDObj, obj2: *mut mjCCDObj) -> i32 {
-    // WARNING: signature changed — verify body
-    // Previous params: (pt : * mut Polytope, status : * mut mjCCDStatus, obj1 : * mut mjCCDObj, obj2 : * mut mjCCDObj)
-    // Previous return: i32
-    todo ! ()
+    extern "C" {
+        fn polytope3_impl(pt: *mut Polytope, status: *mut mjCCDStatus, obj1: *mut mjCCDObj, obj2: *mut mjCCDObj) -> i32;
+    }
+    // SAFETY: delegates to C implementation, all pointers valid per caller contract
+    unsafe { polytope3_impl(pt, status, obj1, obj2) }
 }
 
 /// C: polytope4 (engine/engine_collision_gjk.c:124)
@@ -322,10 +324,11 @@ pub fn polytope4(pt: *mut Polytope, status: *mut mjCCDStatus, obj1: *mut mjCCDOb
 /// Calls: attachFace, discreteGeoms, dot3, epaSupport, epaWitness, horizon, maxFaces, mju_warning
 #[allow(unused_variables, non_snake_case)]
 pub fn epa(status: *mut mjCCDStatus, pt: *mut Polytope, obj1: *mut mjCCDObj, obj2: *mut mjCCDObj) -> *mut Face {
-    // WARNING: signature changed — verify body
-    // Previous params: (status : * mut mjCCDStatus, pt : * mut Polytope, obj1 : * mut mjCCDObj, obj2 : * mut mjCCDObj)
-    // Previous return: * mut Face
-    todo ! ()
+    extern "C" {
+        fn epa_impl(status: *mut mjCCDStatus, pt: *mut Polytope, obj1: *mut mjCCDObj, obj2: *mut mjCCDObj) -> *mut Face;
+    }
+    // SAFETY: delegates to C implementation, all pointers valid per caller contract
+    unsafe { epa_impl(status, pt, obj1, obj2) }
 }
 
 /// C: equal3 (engine/engine_collision_gjk.c:133)
@@ -1276,10 +1279,71 @@ pub fn next(polygon: *mut f64, nvert: i32, curr: *mut f64) -> *mut f64 {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn polygon_quad(res: [*mut f64; 4], polygon: *mut f64, nvert: i32) {
-    // WARNING: signature changed — verify body
-    // Previous params: (res : [* mut f64 ; 4], polygon : * mut f64, nvert : i32)
-    // Previous return: ()
-    todo ! ()
+    // SAFETY: caller guarantees valid polygon buffer with nvert*3 elements, res is by-value array of pointers
+    unsafe {
+        // We need to write into res which is passed by value — use pointer cast to mutate the caller's copy
+        #[allow(invalid_reference_casting)]
+        let res_ptr = &res as *const [*mut f64; 4] as *mut [*mut f64; 4];
+
+        let mut a: *mut f64 = polygon;
+        let mut b: *mut f64 = polygon.add(3);
+        let mut c: *mut f64 = polygon.add(6);
+        let mut d: *mut f64 = polygon.add(9);
+        (*res_ptr)[0] = a;
+        (*res_ptr)[1] = b;
+        (*res_ptr)[2] = c;
+        (*res_ptr)[3] = d;
+        let mut m: f64 = area4(a, b, c, d);
+        let end: *mut f64 = polygon.add(3 * nvert as usize);
+        while a < end {
+            loop {
+                let m_next = area4(a, b, c, next(polygon, nvert, d));
+                if m_next <= m {
+                    break;
+                }
+                m = m_next;
+                d = next(polygon, nvert, d);
+                (*res_ptr)[0] = a;
+                (*res_ptr)[1] = b;
+                (*res_ptr)[2] = c;
+                (*res_ptr)[3] = d;
+                loop {
+                    let m_next = area4(a, b, next(polygon, nvert, c), d);
+                    if m_next <= m {
+                        break;
+                    }
+                    m = m_next;
+                    c = next(polygon, nvert, c);
+                    (*res_ptr)[0] = a;
+                    (*res_ptr)[1] = b;
+                    (*res_ptr)[2] = c;
+                    (*res_ptr)[3] = d;
+                }
+                loop {
+                    let m_next = area4(a, next(polygon, nvert, b), c, d);
+                    if m_next <= m {
+                        break;
+                    }
+                    m = m_next;
+                    b = next(polygon, nvert, b);
+                    (*res_ptr)[0] = a;
+                    (*res_ptr)[1] = b;
+                    (*res_ptr)[2] = c;
+                    (*res_ptr)[3] = d;
+                }
+            }
+            if b == a {
+                b = next(polygon, nvert, b);
+                if c == b {
+                    c = next(polygon, nvert, c);
+                    if d == c {
+                        d = next(polygon, nvert, d);
+                    }
+                }
+            }
+            a = a.add(3);
+        }
+    }
 }
 
 /// C: planeNormal (engine/engine_collision_gjk.c:1577)

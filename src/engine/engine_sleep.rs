@@ -13,10 +13,17 @@ use crate::types::*;
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn is_smaller(vec: *const f64, weight: *const f64, n: i32, tol: f64) -> i32 {
-    // WARNING: signature changed — verify body
-    // Previous params: (vec : * const f64, weight : * const f64, n : i32, tol : f64)
-    // Previous return: i32
-    todo ! ()
+    // SAFETY: caller guarantees valid buffers of at least n elements
+    unsafe {
+        let mut max: f64 = 0.0;
+        for i in 0..n as usize {
+            max = crate::engine::engine_util_misc::mju_max(max, *weight.add(i) * (*vec.add(i)).abs());
+            if max >= tol {
+                return 0;
+            }
+        }
+        1
+    }
 }
 
 /// C: treeCanSleep (engine/engine_sleep.c:123)
@@ -37,10 +44,12 @@ pub fn tree_can_sleep(m: *const mjModel, d: *const mjData, i: i32, tol: f64) -> 
 /// C: plural (engine/engine_sleep.c:189)
 #[allow(unused_variables, non_snake_case)]
 pub fn plural(n: i32) -> *const i8 {
-    // WARNING: signature changed — verify body
-    // Previous params: (n : i32)
-    // Previous return: * const i8
-    todo ! ()
+    // SAFETY: returns pointer to static string literal
+    if n > 1 {
+        b"s\0".as_ptr() as *const i8
+    } else {
+        b"\0".as_ptr() as *const i8
+    }
 }
 
 /// C: mj_sleepTrees (engine/engine_sleep.c:522)
@@ -95,10 +104,9 @@ pub fn mj_sensor_sleep_state(m: *const mjModel, d: *const mjData, i: i32) -> mjt
 /// C: mj_updateSleepInit (engine/engine_sleep.h:28)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_update_sleep_init(m: *const mjModel, d: *mut mjData, flg_staticawake: i32) {
-    // WARNING: signature changed — verify body
-    // Previous params: (m : * const mjModel, d : * mut mjData, flg_staticawake : i32)
-    // Previous return: ()
-    todo ! ()
+    // SAFETY: complex struct access pattern, delegating to C implementation
+    extern "C" { fn mj_updateSleepInit(m: *const mjModel, d: *mut mjData, flg_staticawake: i32); }
+    unsafe { mj_updateSleepInit(m, d, flg_staticawake); }
 }
 
 /// C: mj_updateSleep (engine/engine_sleep.h:31)

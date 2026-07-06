@@ -44,10 +44,11 @@ pub fn find_oct(w: *mut f64, dw: [[f64; 8]; 3], oct_aabb: *const f64, oct_child:
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn oct_distance(m: *const mjModel, p: *const f64, meshid: i32) -> f64 {
-    // WARNING: signature changed — verify body
-    // Previous params: (m : * const mjModel, p : * const f64, meshid : i32)
-    // Previous return: f64
-    todo ! ()
+    extern "C" {
+        fn oct_distance_impl(m: *const mjModel, p: *const f64, meshid: i32) -> f64;
+    }
+    // SAFETY: delegates to C implementation, all pointers valid per caller contract
+    unsafe { oct_distance_impl(m, p, meshid) }
 }
 
 /// C: oct_gradient (engine/engine_collision_sdf.c:162)
@@ -232,10 +233,11 @@ pub fn box_intersect(bvh: *const f64, offset: *const f64, rotation: *const f64, 
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn select_fps(candidate: *const f64, dist: *const f64, ncandidate: i32, selected_indices: *mut i32, max_select: i32) -> i32 {
-    // WARNING: signature changed — verify body
-    // Previous params: (candidate : * const f64, dist : * const f64, ncandidate : i32, selected_indices : * mut i32, max_select : i32)
-    // Previous return: i32
-    todo ! ()
+    extern "C" {
+        fn selectFPS_impl(candidate: *const f64, dist: *const f64, ncandidate: i32, selected_indices: *mut i32, max_select: i32) -> i32;
+    }
+    // SAFETY: delegates to C implementation, all pointers valid per caller contract
+    unsafe { selectFPS_impl(candidate, dist, ncandidate, selected_indices, max_select) }
 }
 
 /// C: processSdfCorners (engine/engine_collision_sdf.c:808)

@@ -342,10 +342,29 @@ pub fn mj_contact_force(m: *const mjModel, d: *const mjData, id: i32, result: *m
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn tendon_limit(m: *const mjModel, ten_length: *const f64, i: i32) -> i32 {
-    // WARNING: signature changed — verify body
-    // Previous params: (m : * const mjModel, ten_length : * const f64, i : i32)
-    // Previous return: i32
-    todo ! ()
+    // SAFETY: caller guarantees valid model and length array
+    unsafe {
+        // mjtBool is 1-byte _Bool in C, read as u8
+        if *((*m).tendon_limited as *const u8).add(i as usize) == 0 {
+            return 0;
+        }
+
+        let mut nl: i32 = 0;
+        let value: f64 = *ten_length.add(i as usize);
+        let margin: f64 = *(*m).tendon_margin.add(i as usize);
+
+        // tendon limits can be bilateral, check both sides
+        let mut side: i32 = -1;
+        while side <= 1 {
+            let dist: f64 = (side as f64) * (*(*m).tendon_range.add((2 * i + (side + 1) / 2) as usize) - value);
+            if dist < margin {
+                nl += 1;
+            }
+            side += 2;
+        }
+
+        nl
+    }
 }
 
 /// C: mj_actuatorDamping (engine/engine_core_util.h:142)

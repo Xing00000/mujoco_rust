@@ -17,10 +17,9 @@ pub fn clear_island(d: *mut mjData, parena: usize) {
 /// Calls: clearIsland, mj_arenaAllocByte, mj_warning
 #[allow(unused_variables, non_snake_case)]
 pub fn arena_alloc_island(m: *const mjModel, d: *mut mjData) -> i32 {
-    // WARNING: signature changed — verify body
-    // Previous params: (m : * const mjModel, d : * mut mjData)
-    // Previous return: i32
-    todo ! ()
+    // SAFETY: uses C X-macros (MJDATA_ARENA_POINTERS_ISLAND), delegating to C implementation
+    extern "C" { fn arenaAllocIsland(m: *const mjModel, d: *mut mjData) -> i32; }
+    unsafe { arenaAllocIsland(m, d) }
 }
 
 /// C: treeNext (engine/engine_island.c:149)

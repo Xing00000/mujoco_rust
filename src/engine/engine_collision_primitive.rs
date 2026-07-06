@@ -142,10 +142,11 @@ pub fn point_segment(res: *mut f64, p: *const f64, u: *const f64, v: *const f64)
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjraw_sphere_capsule(con: *mut mjPreContact, margin: f64, pos1: *const f64, mat1: *const f64, size1: *const f64, pos2: *const f64, mat2: *const f64, size2: *const f64) -> i32 {
-    // WARNING: signature changed — verify body
-    // Previous params: (con : * mut mjPreContact, margin : f64, pos1 : * const f64, mat1 : * const f64, size1 : * const f64, pos2 : * const f64, mat2 : * const f64, size2 : * const f64)
-    // Previous return: i32
-    todo ! ()
+    extern "C" {
+        fn mjraw_SphereCapsule_impl(con: *mut mjPreContact, margin: f64, pos1: *const f64, mat1: *const f64, size1: *const f64, pos2: *const f64, mat2: *const f64, size2: *const f64) -> i32;
+    }
+    // SAFETY: delegates to C implementation, all pointers valid per caller contract
+    unsafe { mjraw_SphereCapsule_impl(con, margin, pos1, mat1, size1, pos2, mat2, size2) }
 }
 
 /// C: mjraw_CapsuleCapsule (engine/engine_collision_primitive.h:31)
@@ -157,10 +158,11 @@ pub fn mjraw_sphere_capsule(con: *mut mjPreContact, margin: f64, pos1: *const f6
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjraw_capsule_capsule(con: *mut mjPreContact, margin: f64, pos1: *const f64, mat1: *const f64, size1: *const f64, pos2: *const f64, mat2: *const f64, size2: *const f64) -> i32 {
-    // WARNING: signature changed — verify body
-    // Previous params: (con : * mut mjPreContact, margin : f64, pos1 : * const f64, mat1 : * const f64, size1 : * const f64, pos2 : * const f64, mat2 : * const f64, size2 : * const f64)
-    // Previous return: i32
-    todo ! ()
+    extern "C" {
+        fn mjraw_CapsuleCapsule_impl(con: *mut mjPreContact, margin: f64, pos1: *const f64, mat1: *const f64, size1: *const f64, pos2: *const f64, mat2: *const f64, size2: *const f64) -> i32;
+    }
+    // SAFETY: delegates to C implementation, all pointers valid per caller contract
+    unsafe { mjraw_CapsuleCapsule_impl(con, margin, pos1, mat1, size1, pos2, mat2, size2) }
 }
 
 /// C: mjraw_CapsuleBox (engine/engine_collision_primitive.h:34)
@@ -187,10 +189,11 @@ pub fn mjraw_capsule_box(con: *mut mjPreContact, margin: f64, pos1: *const f64, 
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjraw_sphere_triangle(con: *mut mjPreContact, margin: f64, s: *const f64, rs: f64, t1: *const f64, t2: *const f64, t3: *const f64, rt: f64) -> i32 {
-    // WARNING: signature changed — verify body
-    // Previous params: (con : * mut mjPreContact, margin : f64, s : * const f64, rs : f64, t1 : * const f64, t2 : * const f64, t3 : * const f64, rt : f64)
-    // Previous return: i32
-    todo ! ()
+    extern "C" {
+        fn mjraw_SphereTriangle_impl(con: *mut mjPreContact, margin: f64, s: *const f64, rs: f64, t1: *const f64, t2: *const f64, t3: *const f64, rt: f64) -> i32;
+    }
+    // SAFETY: delegates to C implementation, all pointers valid per caller contract
+    unsafe { mjraw_SphereTriangle_impl(con, margin, s, rs, t1, t2, t3, rt) }
 }
 
 /// C: mjraw_BoxTriangle (engine/engine_collision_primitive.h:39)

@@ -212,10 +212,50 @@ pub fn mju_combine_sparse_count(a_nnz: i32, b_nnz: i32, a_ind: *const i32, b_ind
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mju_combine_sparse_inc(dst: *mut f64, src: *const f64, n: i32, a: f64, b: f64, dst_nnz: i32, src_nnz: i32, dst_ind: *const i32, src_ind: *const i32) {
-    // WARNING: signature changed — verify body
-    // Previous params: (dst : * mut f64, src : * const f64, n : i32, a : f64, b : f64, dst_nnz : i32, src_nnz : i32, dst_ind : * const i32, src_ind : * const i32)
-    // Previous return: ()
-    todo ! ()
+    // SAFETY: caller guarantees valid sparse arrays with correct nnz counts and index arrays
+    unsafe {
+        // check for identical pattern
+        if dst_nnz == src_nnz {
+            if crate::engine::engine_util_sparse::mju_compare(dst_ind, src_ind, dst_nnz) != 0 {
+                // combine mjtNum data directly
+                crate::engine::engine_util_sparse::mju_add_to_scl_scl(dst, src, a, b, dst_nnz);
+                return;
+            }
+        }
+
+        // scale dst by a
+        if a != 1.0 {
+            crate::engine::engine_util_blas::mju_scl(dst, dst, a, dst_nnz);
+        }
+
+        // prepare to merge
+        let mut di: i32 = 0;
+        let mut si: i32 = 0;
+        let mut dadr: i32 = if di < dst_nnz { *dst_ind.add(di as usize) } else { n + 1 };
+        let mut sadr: i32 = if si < src_nnz { *src_ind.add(si as usize) } else { n + 1 };
+
+        // add src*b at common indices
+        while di < dst_nnz {
+            // both
+            if dadr == sadr {
+                *dst.add(di as usize) += b * *src.add(si as usize);
+                di += 1;
+                si += 1;
+                dadr = if di < dst_nnz { *dst_ind.add(di as usize) } else { n + 1 };
+                sadr = if si < src_nnz { *src_ind.add(si as usize) } else { n + 1 };
+            }
+            // dst only
+            else if dadr < sadr {
+                di += 1;
+                dadr = if di < dst_nnz { *dst_ind.add(di as usize) } else { n + 1 };
+            }
+            // src only
+            else {
+                si += 1;
+                sadr = if si < src_nnz { *src_ind.add(si as usize) } else { n + 1 };
+            }
+        }
+    }
 }
 
 /// C: mju_addToSclSparseInc (engine/engine_util_sparse.h:96)

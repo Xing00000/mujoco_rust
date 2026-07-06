@@ -325,10 +325,13 @@ pub fn mji_transpose3(res: *mut f64, mat: *const f64) {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mji_copy4(res: *mut f64, data: *const f64) {
-    // WARNING: signature changed — verify body
-    // Previous params: (res : * mut f64, data : * const f64)
-    // Previous return: ()
-    todo ! ()
+    // SAFETY: caller guarantees valid non-overlapping buffers of at least 4 elements
+    unsafe {
+        *res.add(0) = *data.add(0);
+        *res.add(1) = *data.add(1);
+        *res.add(2) = *data.add(2);
+        *res.add(3) = *data.add(3);
+    }
 }
 
 /// C: mji__normalize4 (engine/engine_inline.h:229)
@@ -609,10 +612,15 @@ pub fn mji_dot6(vec1: *const f64, vec2: *const f64) -> f64 {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mji_copy6(res: *mut f64, vec: *const f64) {
-    // WARNING: signature changed — verify body
-    // Previous params: (res : * mut f64, vec : * const f64)
-    // Previous return: ()
-    todo ! ()
+    // SAFETY: caller guarantees valid non-overlapping buffers of at least 6 elements
+    unsafe {
+        *res.add(0) = *vec.add(0);
+        *res.add(1) = *vec.add(1);
+        *res.add(2) = *vec.add(2);
+        *res.add(3) = *vec.add(3);
+        *res.add(4) = *vec.add(4);
+        *res.add(5) = *vec.add(5);
+    }
 }
 
 /// C: mji_copy9 (engine/engine_inline.h:485)
