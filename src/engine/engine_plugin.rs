@@ -7,10 +7,15 @@ use crate::types::*;
 /// C: strklen (engine/engine_plugin.cc:58)
 #[allow(unused_variables, non_snake_case)]
 pub fn strklen(s: *const i8) -> i32 {
-    // WARNING: signature changed — verify body
-    // Previous params: (s : * const i8)
-    // Previous return: i32
-    todo ! ()
+    const K_MAX_NAME_LENGTH: i32 = 1024;
+    unsafe {
+        for i in 0..K_MAX_NAME_LENGTH {
+            if *s.add(i as usize) == 0 {
+                return i;
+            }
+        }
+        -1
+    }
 }
 
 /// C: getext (engine/engine_plugin.cc:68)

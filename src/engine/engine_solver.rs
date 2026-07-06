@@ -250,10 +250,13 @@ pub fn primal_prepare(ctx: *mut mjPrimalContext) {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn friction_cost(x: f64, f: f64, Rf: f64, D: f64) -> f64 {
-    // WARNING: signature changed — verify body
-    // Previous params: (x : f64, f : f64, Rf : f64, D : f64)
-    // Previous return: f64
-    todo ! ()
+    if -Rf < x && x < Rf {
+        0.5 * D * x * x
+    } else if x <= -Rf {
+        f * (-0.5 * Rf - x)
+    } else {
+        f * (-0.5 * Rf + x)
+    }
 }
 
 /// C: frictionCostDif (engine/engine_solver.c:1506)
@@ -265,10 +268,23 @@ pub fn friction_cost(x: f64, f: f64, Rf: f64, D: f64) -> f64 {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn friction_cost_dif(start: f64, x: f64, f: f64, Rf: f64, D: f64) -> f64 {
-    // WARNING: signature changed — verify body
-    // Previous params: (start : f64, x : f64, f : f64, Rf : f64, D : f64)
-    // Previous return: f64
-    todo ! ()
+    let state_start: i32 = if -Rf < start && start < Rf { 0 } else if start <= -Rf { -1 } else { 1 };
+    let state_x: i32 = if -Rf < x && x < Rf { 0 } else if x <= -Rf { -1 } else { 1 };
+
+    // both quadratic
+    if state_start == 0 && state_x == 0 {
+        return 0.5 * D * (x - start) * (x + start);
+    }
+    // both linear negative
+    if state_start == -1 && state_x == -1 {
+        return f * (start - x);
+    }
+    // both linear positive
+    if state_start == 1 && state_x == 1 {
+        return f * (x - start);
+    }
+    // different zones
+    friction_cost(x, f, Rf, D) - friction_cost(start, f, Rf, D)
 }
 
 /// C: ellipticCost (engine/engine_solver.c:1531)
