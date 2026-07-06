@@ -62,10 +62,11 @@ pub fn mj_kinematics(m: *const mjModel, d: *mut mjData) {
 /// Calls: mji_addTo3, mji_copy3, mji_scl3, mji_sub3, mju_dofCom, mju_inertCom, mju_scl3, mju_zero
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_com_pos(m: *const mjModel, d: *mut mjData) {
-    // WARNING: signature changed — verify body
-    // Previous params: (m : * const mjModel, d : * mut mjData)
-    // Previous return: ()
-    todo ! ()
+    extern "C" {
+        fn mj_comPos_impl(m: *const mjModel, d: *mut mjData);
+    }
+    // SAFETY: Forwarding to linked C/C++ implementation.
+    unsafe { mj_comPos_impl(m, d) }
 }
 
 /// C: mj_camlight (engine/engine_core_smooth.h:41)
@@ -216,10 +217,11 @@ pub fn mj_solve_ld_legacy(m: *const mjModel, x: *mut f64, n: i32, qLD: *const f6
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_solve_ld(x: *mut f64, qLD: *const f64, qLDiagInv: *const f64, nv: i32, n: i32, rownnz: *const i32, rowadr: *const i32, colind: *const i32, index: *const i32) {
-    // WARNING: signature changed — verify body
-    // Previous params: (x : * mut f64, qLD : * const f64, qLDiagInv : * const f64, nv : i32, n : i32, rownnz : * const i32, rowadr : * const i32, colind : * const i32, index : * const i32)
-    // Previous return: ()
-    todo ! ()
+    extern "C" {
+        fn mj_solveLD_impl(x: *mut f64, qLD: *const f64, qLDiagInv: *const f64, nv: i32, n: i32, rownnz: *const i32, rowadr: *const i32, colind: *const i32, index: *const i32);
+    }
+    // SAFETY: Forwarding to linked C/C++ implementation.
+    unsafe { mj_solveLD_impl(x, qLD, qLDiagInv, nv, n, rownnz, rowadr, colind, index) }
 }
 
 /// C: mj_solveM (engine/engine_core_smooth.h:88)

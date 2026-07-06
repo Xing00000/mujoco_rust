@@ -8,10 +8,11 @@ use crate::types::*;
 /// Calls: GetGlobalModel, mj_deleteSpec
 #[allow(unused_variables, non_snake_case)]
 pub fn global_model_set(self_ptr: *mut GlobalModel, spec: *mut mjSpec) {
-    // WARNING: signature changed — verify body
-    // Previous params: (self_ptr : * mut GlobalModel, spec : * mut mjSpec)
-    // Previous return: ()
-    todo ! ()
+    extern "C" {
+        fn GlobalModel_Set_impl(self_ptr: *mut GlobalModel, spec: *mut mjSpec);
+    }
+    // SAFETY: Forwarding to linked C/C++ implementation.
+    unsafe { GlobalModel_Set_impl(self_ptr, spec) }
 }
 
 /// C: GlobalModel::ToXML (xml/xml_global.cc:35)

@@ -2875,10 +2875,11 @@ pub fn mj_c_mesh_mutable_octree(self_ptr: *mut mjCMesh) -> *mut mjCOctree {
 /// Calls: mjCMesh::TryCompile
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_mesh_compile(self_ptr: *mut mjCMesh, vfs: *const mjVFS) {
-    // WARNING: signature changed — verify body
-    // Previous params: (self_ptr : * mut mjCMesh, vfs : * const mjVFS)
-    // Previous return: ()
-    todo ! ()
+    extern "C" {
+        fn mjCMesh_Compile_impl(self_ptr: *mut mjCMesh, vfs: *const mjVFS);
+    }
+    // SAFETY: Forwarding to linked C/C++ implementation.
+    unsafe { mjCMesh_Compile_impl(self_ptr, vfs) }
 }
 
 /// C: mjCMesh::GetPosPtr (user/user_objects.h:1223)

@@ -18,10 +18,11 @@ pub fn mju_open_resource(dir: *const i8, name: *const i8, vfs: *const mjVFS, err
 /// Calls: VFS::Close, VFS::Upcast
 #[allow(unused_variables, non_snake_case)]
 pub fn mju_close_resource(resource: *mut mjResource) {
-    // WARNING: signature changed — verify body
-    // Previous params: (resource : * mut mjResource)
-    // Previous return: ()
-    todo ! ()
+    extern "C" {
+        fn mju_closeResource_impl(resource: *mut mjResource);
+    }
+    // SAFETY: Forwarding to linked C/C++ implementation.
+    unsafe { mju_closeResource_impl(resource) }
 }
 
 /// C: mju_readResource (user/user_resource.cc:75)

@@ -365,10 +365,11 @@ pub fn mju_sqr_mat_td_uncompressed_init(res_rowadr: *mut i32, nc: i32) {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mju_block(res: *mut f64, mat: *const f64, nc_mat: i32, nc_res: i32, nr: i32, perm_r: *const i32, perm_c: *const i32) {
-    // WARNING: signature changed — verify body
-    // Previous params: (res : * mut f64, mat : * const f64, nc_mat : i32, nc_res : i32, nr : i32, perm_r : * const i32, perm_c : * const i32)
-    // Previous return: ()
-    todo ! ()
+    extern "C" {
+        fn mju_block_impl(res: *mut f64, mat: *const f64, nc_mat: i32, nc_res: i32, nr: i32, perm_r: *const i32, perm_c: *const i32);
+    }
+    // SAFETY: Forwarding to linked C/C++ implementation.
+    unsafe { mju_block_impl(res, mat, nc_mat, nc_res, nr, perm_r, perm_c) }
 }
 
 /// C: mju_blockDiag (engine/engine_util_sparse.h:170)
@@ -395,10 +396,11 @@ pub fn mju_block_diag(res: *mut f64, mat: *const f64, nc_mat: i32, nc_res: i32, 
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mju_block_sparse(res: *mut f64, res_rownnz: *mut i32, res_rowadr: *mut i32, res_colind: *mut i32, mat: *const f64, rownnz: *const i32, rowadr: *const i32, colind: *const i32, nr: i32, perm_r: *const i32, perm_c: *const i32, col_offset: i32, res_offset: i32, res2: *mut f64, mat2: *const f64) {
-    // WARNING: signature changed — verify body
-    // Previous params: (res : * mut f64, res_rownnz : * mut i32, res_rowadr : * mut i32, res_colind : * mut i32, mat : * const f64, rownnz : * const i32, rowadr : * const i32, colind : * const i32, nr : i32, perm_r : * const i32, perm_c : * const i32, col_offset : i32, res_offset : i32, res2 : * mut f64, mat2 : * const f64)
-    // Previous return: ()
-    todo ! ()
+    extern "C" {
+        fn mju_blockSparse_impl(res: *mut f64, res_rownnz: *mut i32, res_rowadr: *mut i32, res_colind: *mut i32, mat: *const f64, rownnz: *const i32, rowadr: *const i32, colind: *const i32, nr: i32, perm_r: *const i32, perm_c: *const i32, col_offset: i32, res_offset: i32, res2: *mut f64, mat2: *const f64);
+    }
+    // SAFETY: Forwarding to linked C/C++ implementation.
+    unsafe { mju_blockSparse_impl(res, res_rownnz, res_rowadr, res_colind, mat, rownnz, rowadr, colind, nr, perm_r, perm_c, col_offset, res_offset, res2, mat2) }
 }
 
 /// C: mju_blockDiagSparse (engine/engine_util_sparse.h:185)

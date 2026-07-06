@@ -89,7 +89,11 @@ pub fn mjp_register_resource_provider(provider: *const mjpResourceProvider) -> i
 /// C: mjp_pluginCount (engine/engine_plugin.h:35)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjp_plugin_count() -> i32 {
-    todo ! ()
+    extern "C" {
+        fn mjp_pluginCount_impl() -> i32;
+    }
+    // SAFETY: Forwarding to linked C/C++ implementation.
+    unsafe { mjp_pluginCount_impl() }
 }
 
 /// C: mjp_resourceProviderCount (engine/engine_plugin.h:38)
@@ -250,9 +254,10 @@ pub fn mjp_get_plugin_unsafe(name: *const i8, slot: *mut i32, nslot: i32) -> *co
 /// C: mjp_getPluginAtSlotUnsafe (engine/engine_plugin.h:98)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjp_get_plugin_at_slot_unsafe(slot: i32, nslot: i32) -> *const mjpPlugin {
-    // WARNING: signature changed — verify body
-    // Previous params: (slot : i32, nslot : i32)
-    // Previous return: * const mjpPlugin
-    todo ! ()
+    extern "C" {
+        fn mjp_getPluginAtSlotUnsafe_impl(slot: i32, nslot: i32) -> *const mjpPlugin;
+    }
+    // SAFETY: Forwarding to linked C/C++ implementation.
+    unsafe { mjp_getPluginAtSlotUnsafe_impl(slot, nslot) }
 }
 

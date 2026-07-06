@@ -13,10 +13,11 @@ use crate::types::*;
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn dcmotor_voltage(ctrl: f64, length: f64, velocity: f64, x_I: f64, gainprm: *const f64) -> f64 {
-    // WARNING: signature changed — verify body
-    // Previous params: (ctrl : f64, length : f64, velocity : f64, x_I : f64, gainprm : * const f64)
-    // Previous return: f64
-    todo ! ()
+    extern "C" {
+        fn dcmotorVoltage_impl(ctrl: f64, length: f64, velocity: f64, x_I: f64, gainprm: *const f64) -> f64;
+    }
+    // SAFETY: Forwarding to linked C/C++ implementation.
+    unsafe { dcmotorVoltage_impl(ctrl, length, velocity, x_I, gainprm) }
 }
 
 /// C: clampVec (engine/engine_forward.c:253)
@@ -28,10 +29,11 @@ pub fn dcmotor_voltage(ctrl: f64, length: f64, velocity: f64, x_I: f64, gainprm:
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn clamp_vec(vec: *mut f64, range: *const f64, limited: *const mjtBool, n: i32, index: *const i32) {
-    // WARNING: signature changed — verify body
-    // Previous params: (vec : * mut f64, range : * const f64, limited : * const mjtBool, n : i32, index : * const i32)
-    // Previous return: ()
-    todo ! ()
+    extern "C" {
+        fn clampVec_impl(vec: *mut f64, range: *const f64, limited: *const mjtBool, n: i32, index: *const i32);
+    }
+    // SAFETY: Forwarding to linked C/C++ implementation.
+    unsafe { clampVec_impl(vec, range, limited, n, index) }
 }
 
 /// C: warmstart (engine/engine_forward.c:786)

@@ -247,10 +247,11 @@ pub fn mj_lugre_stribeck(velocity: f64, F_C: f64, F_S: f64, v_S: f64) -> f64 {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_dcmotor_slots(dynprm: *const f64, gainprm: *const f64) -> mjDCMotorSlots {
-    // WARNING: signature changed — verify body
-    // Previous params: (dynprm : * const f64, gainprm : * const f64)
-    // Previous return: mjDCMotorSlots
-    todo ! ()
+    extern "C" {
+        fn mj_dcmotorSlots_impl(dynprm: *const f64, gainprm: *const f64) -> mjDCMotorSlots;
+    }
+    // SAFETY: Forwarding to linked C/C++ implementation.
+    unsafe { mj_dcmotorSlots_impl(dynprm, gainprm) }
 }
 
 /// C: mju_geomSemiAxes (engine/engine_util_misc.h:71)
@@ -650,10 +651,11 @@ pub fn mju_history_insert(buf: *mut f64, n: i32, dim: i32, t: f64) -> *mut f64 {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mju_history_read(buf: *const f64, n: i32, dim: i32, res: *mut f64, t: f64, interp: i32) -> *const f64 {
-    // WARNING: signature changed — verify body
-    // Previous params: (buf : * const f64, n : i32, dim : i32, res : * mut f64, t : f64, interp : i32)
-    // Previous return: * const f64
-    todo ! ()
+    extern "C" {
+        fn mju_historyRead_impl(buf: *const f64, n: i32, dim: i32, res: *mut f64, t: f64, interp: i32) -> *const f64;
+    }
+    // SAFETY: Forwarding to linked C/C++ implementation.
+    unsafe { mju_historyRead_impl(buf, n, dim, res, t, interp) }
 }
 
 /// C: mju_encodePyramid (engine/engine_util_misc.h:200)
@@ -815,10 +817,11 @@ pub fn mju_round(x: f64) -> i32 {
 /// C: mju_type2Str (engine/engine_util_misc.h:240)
 #[allow(unused_variables, non_snake_case)]
 pub fn mju_type2str(r#type: i32) -> *const i8 {
-    // WARNING: signature changed — verify body
-    // Previous params: (r#type : i32)
-    // Previous return: * const i8
-    todo ! ()
+    extern "C" {
+        fn mju_type2Str_impl(r#type: i32) -> *const i8;
+    }
+    // SAFETY: Forwarding to linked C/C++ implementation.
+    unsafe { mju_type2Str_impl(r#type) }
 }
 
 /// C: mju_str2Type (engine/engine_util_misc.h:243)

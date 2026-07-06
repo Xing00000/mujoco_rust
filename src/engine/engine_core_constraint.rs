@@ -314,10 +314,11 @@ pub fn mj_is_dual(m: *const mjModel) -> i32 {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_mul_jac_vec(m: *const mjModel, d: *const mjData, res: *mut f64, vec: *const f64) {
-    // WARNING: signature changed — verify body
-    // Previous params: (m : * const mjModel, d : * const mjData, res : * mut f64, vec : * const f64)
-    // Previous return: ()
-    todo ! ()
+    extern "C" {
+        fn mj_mulJacVec_impl(m: *const mjModel, d: *const mjData, res: *mut f64, vec: *const f64);
+    }
+    // SAFETY: Forwarding to linked C/C++ implementation.
+    unsafe { mj_mulJacVec_impl(m, d, res, vec) }
 }
 
 /// C: mj_mulJacTVec (engine/engine_core_constraint.h:37)
@@ -329,10 +330,11 @@ pub fn mj_mul_jac_vec(m: *const mjModel, d: *const mjData, res: *mut f64, vec: *
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_mul_jac_t_vec(m: *const mjModel, d: *const mjData, res: *mut f64, vec: *const f64) {
-    // WARNING: signature changed — verify body
-    // Previous params: (m : * const mjModel, d : * const mjData, res : * mut f64, vec : * const f64)
-    // Previous return: ()
-    todo ! ()
+    extern "C" {
+        fn mj_mulJacTVec_impl(m: *const mjModel, d: *const mjData, res: *mut f64, vec: *const f64);
+    }
+    // SAFETY: Forwarding to linked C/C++ implementation.
+    unsafe { mj_mulJacTVec_impl(m, d, res, vec) }
 }
 
 /// C: mj_Jdotv (engine/engine_core_constraint.h:40)

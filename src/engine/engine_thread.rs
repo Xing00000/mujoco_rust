@@ -36,10 +36,11 @@ pub fn thread_pool_context_worker(self_ptr: *mut ThreadPoolContext, threadId: i3
 /// Calls: ThreadPoolContext::ThreadCount
 #[allow(unused_variables, non_snake_case)]
 pub fn mju_threadpool(d: *mut mjData, nthread: i32) {
-    // WARNING: signature changed — verify body
-    // Previous params: (d : * mut mjData, nthread : i32)
-    // Previous return: ()
-    todo ! ()
+    extern "C" {
+        fn mju_threadpool_impl(d: *mut mjData, nthread: i32);
+    }
+    // SAFETY: Forwarding to linked C/C++ implementation.
+    unsafe { mju_threadpool_impl(d, nthread) }
 }
 
 /// C: mju_numThread (engine/engine_thread.h:33)

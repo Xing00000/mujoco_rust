@@ -143,10 +143,11 @@ pub fn mji_add_scl3(res: *mut f64, vec1: *const f64, vec2: *const f64, scl: f64)
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mji_normalize3(vec: *mut f64) -> f64 {
-    // WARNING: signature changed — verify body
-    // Previous params: (vec : * mut f64)
-    // Previous return: f64
-    todo ! ()
+    extern "C" {
+        fn mji_normalize3_impl(vec: *mut f64) -> f64;
+    }
+    // SAFETY: Forwarding to linked C/C++ implementation.
+    unsafe { mji_normalize3_impl(vec) }
 }
 
 /// C: mji_mulMatVec3 (engine/engine_inline.h:148)
@@ -257,10 +258,11 @@ pub fn mji_normalize4(vec: *mut f64) -> f64 {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mji_rot_vec_quat(res: *mut f64, vec: *const f64, quat: *const f64) {
-    // WARNING: signature changed — verify body
-    // Previous params: (res : * mut f64, vec : * const f64, quat : * const f64)
-    // Previous return: ()
-    todo ! ()
+    extern "C" {
+        fn mji_rotVecQuat_impl(res: *mut f64, vec: *const f64, quat: *const f64);
+    }
+    // SAFETY: Forwarding to linked C/C++ implementation.
+    unsafe { mji_rotVecQuat_impl(res, vec, quat) }
 }
 
 /// C: mji_negQuat (engine/engine_inline.h:277)
@@ -271,10 +273,11 @@ pub fn mji_rot_vec_quat(res: *mut f64, vec: *const f64, quat: *const f64) {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mji_neg_quat(res: *mut f64, quat: *const f64) {
-    // WARNING: signature changed — verify body
-    // Previous params: (res : * mut f64, quat : * const f64)
-    // Previous return: ()
-    todo ! ()
+    extern "C" {
+        fn mji_negQuat_impl(res: *mut f64, quat: *const f64);
+    }
+    // SAFETY: Forwarding to linked C/C++ implementation.
+    unsafe { mji_negQuat_impl(res, quat) }
 }
 
 /// C: mji_mulQuat (engine/engine_inline.h:287)

@@ -434,10 +434,11 @@ pub fn make_hessian(d: *mut mjData, ctx: *mut mjPrimalContext) {
 /// Calls: mju_addToScl, mju_cholFactor, mju_cholUpdate, mju_cholUpdateSparse, mju_copy, mju_zero
 #[allow(unused_variables, non_snake_case)]
 pub fn hessian_cone(d: *mut mjData, ctx: *mut mjPrimalContext) {
-    // WARNING: signature changed — verify body
-    // Previous params: (d : * mut mjData, ctx : * mut mjPrimalContext)
-    // Previous return: ()
-    todo ! ()
+    extern "C" {
+        fn HessianCone_impl(d: *mut mjData, ctx: *mut mjPrimalContext);
+    }
+    // SAFETY: Forwarding to linked C/C++ implementation.
+    unsafe { HessianCone_impl(d, ctx) }
 }
 
 /// C: FactorizeHessian (engine/engine_solver.c:2102)

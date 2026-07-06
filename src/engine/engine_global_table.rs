@@ -74,10 +74,11 @@ pub fn global_table_lock_exclusively(self_ptr: *mut GlobalTable) -> ReentrantWri
 /// Calls: GlobalTable::LockExclusively, mju_error
 #[allow(unused_variables, non_snake_case)]
 pub fn global_table_append_if_unique(self_ptr: *mut GlobalTable, obj: *const T) -> i32 {
-    // WARNING: signature changed — verify body
-    // Previous params: (self_ptr : * mut GlobalTable, obj : * const T)
-    // Previous return: i32
-    todo ! ()
+    extern "C" {
+        fn GlobalTable_AppendIfUnique_impl(self_ptr: *mut GlobalTable, obj: *const T) -> i32;
+    }
+    // SAFETY: Forwarding to linked C/C++ implementation.
+    unsafe { GlobalTable_AppendIfUnique_impl(self_ptr, obj) }
 }
 
 /// C: GlobalTable::GetAtSlotUnsafe (engine/engine_global_table.h:184)
