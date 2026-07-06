@@ -847,10 +847,36 @@ pub fn primal_eval(ctx: *mut mjPrimalContext, p: *mut mjPrimalPnt) {
 /// Calls: PrimalEval
 #[allow(unused_variables, non_snake_case)]
 pub fn update_bracket(ctx: *mut mjPrimalContext, p: *mut mjPrimalPnt, candidates: *const mjPrimalPnt, pnext: *mut mjPrimalPnt) -> i32 {
-    // WARNING: signature changed — verify body
-    // Previous params: (ctx : * mut mjPrimalContext, p : * mut mjPrimalPnt, candidates : * const mjPrimalPnt, pnext : * mut mjPrimalPnt)
-    // Previous return: i32
-    todo ! ()
+    // SAFETY: ctx, p, candidates, pnext are valid pointers. candidates points to array of 3.
+    unsafe {
+        let mut flag: i32 = 0;
+        for i in 0..3 {
+            // negative deriv
+            if (*p).deriv[0] < 0.0
+                && (*candidates.add(i)).deriv[0] < 0.0
+                && (*p).deriv[0] < (*candidates.add(i)).deriv[0]
+            {
+                *p = *candidates.add(i);
+                flag = 1;
+            }
+            // positive deriv
+            else if (*p).deriv[0] > 0.0
+                && (*candidates.add(i)).deriv[0] > 0.0
+                && (*p).deriv[0] > (*candidates.add(i)).deriv[0]
+            {
+                *p = *candidates.add(i);
+                flag = 2;
+            }
+        }
+
+        // compute next point if updated
+        if flag != 0 {
+            (*pnext).alpha = (*p).alpha - (*p).deriv[0] / (*p).deriv[1];
+            primal_eval(ctx, pnext);
+        }
+
+        flag
+    }
 }
 
 /// C: PrimalSearch (engine/engine_solver.c:1812)
@@ -972,10 +998,15 @@ pub fn mj_sol_pgs_island(m: *const mjModel, d: *mut mjData, island: i32, maxiter
 /// Calls: solNoSlip
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_sol_no_slip_island(m: *const mjModel, d: *mut mjData, island: i32, maxiter: i32) {
-    // WARNING: signature changed — verify body
-    // Previous params: (m : * const mjModel, d : * mut mjData, island : i32, maxiter : i32)
-    // Previous return: ()
-    todo ! ()
+    // SAFETY: m, d are valid pointers; island is a valid island index.
+    unsafe {
+        let ne = *(*d).island_ne.add(island as usize);
+        let nf = *(*d).island_nf.add(island as usize);
+        let nefc = *(*d).island_nefc.add(island as usize);
+        let iefcadr = *(*d).island_iefcadr.add(island as usize);
+
+        sol_no_slip(m, d, island, ne, nf, nefc, (*d).map_iefc2efc.add(iefcadr as usize), maxiter);
+    }
 }
 
 /// C: mj_solCG_island (engine/engine_solver.h:45)

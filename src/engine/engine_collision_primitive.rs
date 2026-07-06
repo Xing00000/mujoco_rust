@@ -28,10 +28,49 @@ pub fn mjraw_plane_sphere(con: *mut mjPreContact, margin: f64, pos1: *const f64,
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjraw_sphere_sphere(con: *mut mjPreContact, margin: f64, pos1: *const f64, mat1: *const f64, size1: *const f64, pos2: *const f64, mat2: *const f64, size2: *const f64) -> i32 {
-    // WARNING: signature changed — verify body
-    // Previous params: (con : * mut mjPreContact, margin : f64, pos1 : * const f64, mat1 : * const f64, size1 : * const f64, pos2 : * const f64, mat2 : * const f64, size2 : * const f64)
-    // Previous return: i32
-    todo ! ()
+    // SAFETY: all pointers are valid; pos/size are f64[3], mat is f64[9], con is mjPreContact array
+    unsafe {
+        const MJ_MINVAL: f64 = 1e-15;
+
+        // check bounding spheres (this is called from other functions)
+        let dif: [f64; 3] = [
+            *pos1.add(0) - *pos2.add(0),
+            *pos1.add(1) - *pos2.add(1),
+            *pos1.add(2) - *pos2.add(2),
+        ];
+        let cdist_sqr: f64 = crate::engine::engine_util_blas::mju_dot3(dif.as_ptr(), dif.as_ptr());
+        let min_dist: f64 = margin + *size1.add(0) + *size2.add(0);
+        if cdist_sqr > min_dist * min_dist {
+            return 0;
+        }
+
+        // depth and normal
+        (*con.add(0)).dist = cdist_sqr.sqrt() - *size1.add(0) - *size2.add(0);
+        crate::engine::engine_inline::mji_sub3((*con.add(0)).normal.as_mut_ptr(), pos2, pos1);
+        let len: f64 = crate::engine::engine_util_blas::mju_normalize3((*con.add(0)).normal.as_mut_ptr());
+
+        // if centers are the same, norm = cross-product of z axes
+        //  if z axes are parallel, norm = [1;0;0]
+        if len < MJ_MINVAL {
+            let axis1: [f64; 3] = [*mat1.add(2), *mat1.add(5), *mat1.add(8)];
+            let axis2: [f64; 3] = [*mat2.add(2), *mat2.add(5), *mat2.add(8)];
+            crate::engine::engine_inline::mji_cross((*con.add(0)).normal.as_mut_ptr(), axis1.as_ptr(), axis2.as_ptr());
+            crate::engine::engine_util_blas::mju_normalize3((*con.add(0)).normal.as_mut_ptr());
+        }
+
+        // position
+        crate::engine::engine_inline::mji_scl3(
+            (*con.add(0)).pos.as_mut_ptr(),
+            (*con.add(0)).normal.as_ptr(),
+            *size1.add(0) + (*con.add(0)).dist / 2.0,
+        );
+        crate::engine::engine_inline::mji_add_to3((*con.add(0)).pos.as_mut_ptr(), pos1);
+
+        // axis
+        crate::engine::engine_inline::mji_zero3((*con.add(0)).tangent.as_mut_ptr());
+
+        1
+    }
 }
 
 /// C: areaSign (engine/engine_collision_primitive.c:534)

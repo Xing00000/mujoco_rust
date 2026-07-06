@@ -22,10 +22,19 @@ pub fn prism_firstdir(o1: *const (), o2: *const (), vec: *mut ccd_vec3_t) {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn libccd_wrapper(m: *const mjModel, obj1: *mut mjCCDObj, obj2: *mut mjCCDObj, con: *mut mjPreContact, margin: f64) -> i32 {
-    // WARNING: signature changed — verify body
-    // Previous params: (m : * const mjModel, obj1 : * mut mjCCDObj, obj2 : * mut mjCCDObj, con : * mut mjPreContact, margin : f64)
-    // Previous return: i32
-    todo ! ()
+    // SAFETY: This function wraps the C implementation which sets up libccd structs
+    // and calls ccdMPRPenetration. We delegate to the C impl since ccd_t is not
+    // representable in our Rust types.
+    extern "C" {
+        fn _libccd_wrapper_impl(
+            m: *const mjModel,
+            obj1: *mut mjCCDObj,
+            obj2: *mut mjCCDObj,
+            con: *mut mjPreContact,
+            margin: f64,
+        ) -> i32;
+    }
+    unsafe { _libccd_wrapper_impl(m, obj1, obj2, con, margin) }
 }
 
 /// C: mjc_penetration (engine/engine_collision_convex.c:87)
@@ -222,10 +231,12 @@ pub fn mjc_flex_support(res: *mut f64, obj: *mut mjCCDObj, dir: *const f64) {
 /// C: mjc_setCCDObjFlex (engine/engine_collision_convex.c:790)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjc_set_ccd_obj_flex(obj: *mut mjCCDObj, flex: i32, elem: i32, vert: i32) {
-    // WARNING: signature changed — verify body
-    // Previous params: (obj : * mut mjCCDObj, flex : i32, elem : i32, vert : i32)
-    // Previous return: ()
-    todo ! ()
+    // SAFETY: obj is a valid pointer to mjCCDObj.
+    unsafe {
+        (*obj).flex = flex;
+        (*obj).elem = elem;
+        (*obj).vert = vert;
+    }
 }
 
 /// C: mjc_isDistinctContact (engine/engine_collision_convex.c:798)
@@ -321,10 +332,78 @@ pub fn add_prism_vert(obj: *mut mjCCDObj, r: i32, c: i32, i: i32, dx: f64, dy: f
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjc_ellipsoid_inside(nrm: *mut f64, pos: *const f64, size: *const f64) -> i32 {
-    // WARNING: signature changed — verify body
-    // Previous params: (nrm : * mut f64, pos : * const f64, size : * const f64)
-    // Previous return: i32
-    todo ! ()
+    // SAFETY: nrm, pos, size are valid pointers to f64 arrays of length >= 3.
+    unsafe {
+        const MJ_MINVAL: f64 = 1e-15;
+
+        // algorithm constants
+        let maxiter: i32 = 30;
+        let tolerance: f64 = 1e-6;
+
+        // precompute quantities
+        let S2inv: [f64; 3] = [
+            1.0 / (*size.add(0) * *size.add(0)),
+            1.0 / (*size.add(1) * *size.add(1)),
+            1.0 / (*size.add(2) * *size.add(2)),
+        ];
+        let C: f64 = *pos.add(0) * *pos.add(0) * S2inv[0]
+            + *pos.add(1) * *pos.add(1) * S2inv[1]
+            + *pos.add(2) * *pos.add(2) * S2inv[2]
+            - 1.0;
+        if C > 0.0 {
+            return 0;
+        }
+
+        // normalize initial normal (just in case)
+        crate::engine::engine_util_blas::mju_normalize3(nrm);
+
+        // main iteration
+        let mut iter: i32 = 0;
+        while iter < maxiter {
+            // coefficients and determinant of quadratic
+            let A: f64 = *nrm.add(0) * *nrm.add(0) * S2inv[0]
+                + *nrm.add(1) * *nrm.add(1) * S2inv[1]
+                + *nrm.add(2) * *nrm.add(2) * S2inv[2];
+            let B: f64 = *pos.add(0) * *nrm.add(0) * S2inv[0]
+                + *pos.add(1) * *nrm.add(1) * S2inv[1]
+                + *pos.add(2) * *nrm.add(2) * S2inv[2];
+            let det: f64 = B * B - A * C;
+            if det < MJ_MINVAL || A < MJ_MINVAL {
+                return (iter > 0) as i32;
+            }
+
+            // ray intersection with ellipse: pos + x*nrm, x>=0
+            let x: f64 = (-B + det.sqrt()) / A;
+            if x < 0.0 {
+                return (iter > 0) as i32;
+            }
+
+            // new point on ellipsoid
+            let mut pnt: [f64; 3] = [0.0; 3];
+            crate::engine::engine_inline::mji_add_scl3(pnt.as_mut_ptr(), pos, nrm, x);
+
+            // normal at new point
+            let mut newnrm: [f64; 3] = [
+                pnt[0] * S2inv[0],
+                pnt[1] * S2inv[1],
+                pnt[2] * S2inv[2],
+            ];
+            crate::engine::engine_util_blas::mju_normalize3(newnrm.as_mut_ptr());
+
+            // save change and assign
+            let change: f64 = crate::engine::engine_util_blas::mju_dist3(nrm, newnrm.as_ptr());
+            crate::engine::engine_inline::mji_copy3(nrm, newnrm.as_ptr());
+
+            // terminate if converged
+            if change < tolerance {
+                break;
+            }
+
+            iter += 1;
+        }
+
+        1
+    }
 }
 
 /// C: mjc_ellipsoidOutside (engine/engine_collision_convex.c:1337)

@@ -371,10 +371,78 @@ pub fn push_pair_arena(m: *const mjModel, d: *mut mjData, g1: i32, g2: i32, ipai
 /// Calls: filterBitmask, getGap, getMargin, mj_filterSphere
 #[allow(unused_variables, non_snake_case)]
 pub fn filter_collision_pair(m: *const mjModel, d: *mut mjData, g1: i32, g2: i32, ipair: i32, merged: i32, startadr: i32, pairadr: i32) -> i32 {
-    // WARNING: signature changed — verify body
-    // Previous params: (m : * const mjModel, d : * mut mjData, g1 : i32, g2 : i32, ipair : i32, merged : i32, startadr : i32, pairadr : i32)
-    // Previous return: i32
-    todo ! ()
+    // SAFETY: m, d are valid pointers; g1, g2 are valid geom indices.
+    unsafe {
+        // merged, find matching pair
+        if merged != 0 {
+            for k in startadr..pairadr {
+                if (*(*m).pair_geom1.add(k as usize) == g1 && *(*m).pair_geom2.add(k as usize) == g2)
+                    || (*(*m).pair_geom1.add(k as usize) == g2 && *(*m).pair_geom2.add(k as usize) == g1)
+                {
+                    return 0;
+                }
+            }
+        }
+
+        if ipair >= 0 {
+            // mjENABLED(mjENBL_SLEEP) => (m->opt.enableflags & (1<<4)) != 0
+            if ((*m).opt.enableflags & (1 << 4)) != 0 {
+                let b1 = *(*m).geom_bodyid.add(g1 as usize);
+                let b2 = *(*m).geom_bodyid.add(g2 as usize);
+                // mjS_AWAKE = 1
+                if *(*d).body_awake.add(b1 as usize) != 1
+                    && *(*d).body_awake.add(b2 as usize) != 1
+                {
+                    return 0;
+                }
+            }
+        }
+
+        if ipair < 0 {
+            // mjcb_contactfilter is a global callback; access via extern
+            extern "C" {
+                static mjcb_contactfilter: Option<unsafe extern "C" fn(*const mjModel, *mut mjData, i32, i32) -> i32>;
+            }
+            if let Some(filter_fn) = mjcb_contactfilter {
+                if filter_fn(m, d, g1, g2) != 0 {
+                    return 0;
+                }
+            } else if filter_bitmask(
+                *(*m).geom_contype.add(g1 as usize),
+                *(*m).geom_conaffinity.add(g1 as usize),
+                *(*m).geom_contype.add(g2 as usize),
+                *(*m).geom_conaffinity.add(g2 as usize),
+            ) != 0
+            {
+                return 0;
+            }
+        }
+
+        // bounding sphere filter
+        let margin: f64 = get_margin(m, g1, g2, ipair);
+        let gap: f64 = get_gap(m, g1, g2, ipair);
+        if mj_filter_sphere(m, d, g1, g2, margin + gap) != 0 {
+            return 0;
+        }
+
+        // highly unlikely, but check collision function is well-defined
+        let type1: i32 = if *(*m).geom_type.add(g1 as usize) < *(*m).geom_type.add(g2 as usize) {
+            *(*m).geom_type.add(g1 as usize)
+        } else {
+            *(*m).geom_type.add(g2 as usize)
+        };
+        let type2: i32 = if *(*m).geom_type.add(g1 as usize) > *(*m).geom_type.add(g2 as usize) {
+            *(*m).geom_type.add(g1 as usize)
+        } else {
+            *(*m).geom_type.add(g2 as usize)
+        };
+
+        // mjCOLLISIONFUNC is a global extern array
+        extern "C" {
+            static mjCOLLISIONFUNC: [[Option<unsafe extern "C" fn()>; 9]; 9]; // mjNGEOMTYPES = 9
+        }
+        (mjCOLLISIONFUNC[type1 as usize][type2 as usize].is_some()) as i32
+    }
 }
 
 /// C: makeAAMM (engine/engine_collision_driver.c:1211)
@@ -598,10 +666,32 @@ pub fn mj_contact_param(m: *const mjModel, condim: *mut i32, solref: *mut f64, s
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_set_contact(m: *const mjModel, con: *mut mjContact, condim: i32, includemargin: f64, solref: *const f64, solreffriction: *const f64, solimp: *const f64, friction: *const f64) {
-    // WARNING: signature changed — verify body
-    // Previous params: (m : * const mjModel, con : * mut mjContact, condim : i32, includemargin : f64, solref : * const f64, solreffriction : * const f64, solimp : * const f64, friction : * const f64)
-    // Previous return: ()
-    todo ! ()
+    // SAFETY: m, con are valid pointers; solref, solreffriction, solimp, friction are valid
+    // pointer inputs (or the assign functions handle null).
+    unsafe {
+        // set parameters
+        (*con).dim = condim;
+        (*con).includemargin = includemargin;
+        crate::engine::engine_core_constraint::mj_assign_ref(m, (*con).solref.as_mut_ptr(), solref);
+        crate::engine::engine_core_constraint::mj_assign_ref(m, (*con).solreffriction.as_mut_ptr(), solreffriction);
+        crate::engine::engine_core_constraint::mj_assign_imp(m, (*con).solimp.as_mut_ptr(), solimp);
+        crate::engine::engine_core_constraint::mj_assign_friction(m, (*con).friction.as_mut_ptr(), friction);
+
+        // exclude in gap
+        (*con).exclude = ((*con).dist >= includemargin) as i32;
+
+        // complete frame
+        crate::engine::engine_util_spatial::mju_make_frame((*con).frame.as_mut_ptr());
+
+        // clear fields that are computed later
+        (*con).efc_address = -1;
+        (*con).mu = 0.0;
+        crate::engine::engine_util_blas::mju_zero((*con).H.as_mut_ptr(), 36);
+
+        // set deprecated fields
+        (*con).geom1 = (*con).geom[0];
+        (*con).geom2 = (*con).geom[1];
+    }
 }
 
 /// C: mj_makeCapsule (engine/engine_collision_driver.c:1816)
