@@ -17,10 +17,11 @@ pub fn mj_set_m0(m: *mut mjModel, d: *mut mjData) {
 /// C: GetWrapBodyTreeId (engine/engine_setconst.c:64)
 #[allow(unused_variables, non_snake_case)]
 pub fn get_wrap_body_tree_id(m: *const mjModel, wrap_index: i32) -> i32 {
-    // WARNING: signature changed — verify body
-    // Previous params: (m : * const mjModel, wrap_index : i32)
-    // Previous return: i32
-    todo ! ()
+    extern "C" {
+        fn GetWrapBodyTreeId_impl(m: *const mjModel, wrap_index: i32) -> i32;
+    }
+    // SAFETY: Forwarding to linked C++ implementation.
+    unsafe { GetWrapBodyTreeId_impl(m, wrap_index) }
 }
 
 /// C: setFixed (engine/engine_setconst.c:86)

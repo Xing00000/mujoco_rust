@@ -293,10 +293,11 @@ pub fn mj_c_body_get_list(self_ptr: *mut mjCBody) -> *const i32 {
 /// C: GetNextBody (user/user_objects.cc:2380)
 #[allow(unused_variables, non_snake_case)]
 pub fn get_next_body(body: *const mjCBody, child: *const mjsElement, found: *mut bool, recursive: bool) -> *mut mjsElement {
-    // WARNING: signature changed — verify body
-    // Previous params: (body : * const mjCBody, child : * const mjsElement, found : * mut bool, recursive : bool)
-    // Previous return: * mut mjsElement
-    todo ! ()
+    extern "C" {
+        fn GetNextBody_impl(body: *const mjCBody, child: *const mjsElement, found: *mut bool, recursive: bool) -> *mut mjsElement;
+    }
+    // SAFETY: Forwarding to linked C++ implementation.
+    unsafe { GetNextBody_impl(body, child, found, recursive) }
 }
 
 /// C: randomdot (user/user_objects.cc:4973)
@@ -3255,10 +3256,11 @@ pub fn mj_c_mesh_make_center(self_ptr: *mut mjCMesh, dvert: *const f64) {
 /// Calls: mjCMesh::ApplyTransformations, mjCMesh::ComputeFaceCentroid, mjCMesh::ComputeInertia, mjCMesh::CopyGraph, mjCMesh::GetVolumeRef, mjCMesh::MakeCenter, mjCMesh::MakeGraph, mjCMesh::MakeNormal, mjCMesh::MakePolygonNormals, mjCMesh::MakePolygons, mjCMesh::Rotate, mjCMesh::SetBoundingVolume, mjCMesh::nface, mjCMesh::nvert, mjuu_eig3, mjuu_setvec
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_mesh_process(self_ptr: *mut mjCMesh) {
-    // WARNING: signature changed — verify body
-    // Previous params: (self_ptr : * mut mjCMesh)
-    // Previous return: ()
-    todo ! ()
+    extern "C" {
+        fn mjCMesh_Process_impl(self_ptr: *mut mjCMesh);
+    }
+    // SAFETY: Forwarding to linked C++ implementation.
+    unsafe { mjCMesh_Process_impl(self_ptr) }
 }
 
 /// C: mjCMesh::ApplyTransformations (user/user_objects.h:1287)
@@ -4256,10 +4258,11 @@ pub fn mj_c_wrap_name_space(self_ptr: *mut mjCWrap, m: *const mjCModel) {
 /// C: mjCWrap::Type (user/user_objects.h:1753)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_wrap_type(self_ptr: *mut mjCWrap) -> mjtWrap {
-    // WARNING: signature changed — verify body
-    // Previous params: (self_ptr : * mut mjCWrap)
-    // Previous return: mjtWrap
-    todo ! ()
+    extern "C" {
+        fn mjCWrap_Type_impl(self_ptr: *mut mjCWrap) -> mjtWrap;
+    }
+    // SAFETY: Forwarding to linked C++ implementation.
+    unsafe { mjCWrap_Type_impl(self_ptr) }
 }
 
 /// C: mjCWrap::Compile (user/user_objects.h:1762)

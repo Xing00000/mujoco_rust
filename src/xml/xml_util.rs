@@ -123,19 +123,21 @@ pub fn mj_x_util_write_vector(self_ptr: *mut mjXUtil, elem: *mut XMLElement, nam
 /// C: mjCopyError (xml/xml_util.h:32)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_copy_error(dst: *mut i8, src: *const i8, maxlen: i32) {
-    // WARNING: signature changed — verify body
-    // Previous params: (dst : * mut i8, src : * const i8, maxlen : i32)
-    // Previous return: ()
-    todo ! ()
+    extern "C" {
+        fn mjCopyError_impl(dst: *mut i8, src: *const i8, maxlen: i32);
+    }
+    // SAFETY: Forwarding to linked C++ implementation.
+    unsafe { mjCopyError_impl(dst, src, maxlen) }
 }
 
 /// C: FirstChildElement (xml/xml_util.h:36)
 #[allow(unused_variables, non_snake_case)]
 pub fn first_child_element(e: *mut XMLElement, name: *const i8) -> *mut XMLElement {
-    // WARNING: signature changed — verify body
-    // Previous params: (e : * mut XMLElement, name : * const i8)
-    // Previous return: * mut XMLElement
-    todo ! ()
+    extern "C" {
+        fn FirstChildElement_impl(e: *mut XMLElement, name: *const i8) -> *mut XMLElement;
+    }
+    // SAFETY: Forwarding to linked C++ implementation.
+    unsafe { FirstChildElement_impl(e, name) }
 }
 
 /// C: NextSiblingElement (xml/xml_util.h:37)

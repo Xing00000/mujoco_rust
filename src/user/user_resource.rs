@@ -37,10 +37,11 @@ pub fn mju_read_resource(resource: *mut mjResource, buffer: *const *mut ()) -> i
 /// C: mju_getResourceDir (user/user_resource.cc:82)
 #[allow(unused_variables, non_snake_case)]
 pub fn mju_get_resource_dir(resource: *mut mjResource, dir: *const *mut i8, ndir: *mut i32) {
-    // WARNING: signature changed — verify body
-    // Previous params: (resource : * mut mjResource, dir : * const * mut i8, ndir : * mut i32)
-    // Previous return: ()
-    todo ! ()
+    extern "C" {
+        fn mju_getResourceDir_impl(resource: *mut mjResource, dir: *const *mut i8, ndir: *mut i32);
+    }
+    // SAFETY: Forwarding to linked C++ implementation.
+    unsafe { mju_getResourceDir_impl(resource, dir, ndir) }
 }
 
 /// C: mju_isModifiedResource (user/user_resource.cc:105)

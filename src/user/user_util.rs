@@ -31,10 +31,11 @@ pub fn mjuu_is_valid_content_type(text: string_view) -> bool {
 /// Calls: mju_warning
 #[allow(unused_variables, non_snake_case)]
 pub fn file_to_memory(filename: *const i8) -> i32 {
-    // WARNING: signature changed — verify body
-    // Previous params: (filename : * const i8)
-    // Previous return: i32
-    todo ! ()
+    extern "C" {
+        fn FileToMemory_impl(filename: *const i8) -> i32;
+    }
+    // SAFETY: Forwarding to linked C++ implementation.
+    unsafe { FileToMemory_impl(filename) }
 }
 
 /// C: VectorToString (user/user_util.cc:1256)
@@ -972,10 +973,11 @@ pub fn file_path_empty(self_ptr: *mut FilePath) -> bool {
 /// C: FilePath::PathReduce (user/user_util.h:227)
 #[allow(unused_variables, non_snake_case)]
 pub fn file_path_path_reduce(str: *const std__string) -> std__string {
-    // WARNING: signature changed — verify body
-    // Previous params: (str : * const std__string)
-    // Previous return: std__string
-    todo ! ()
+    extern "C" {
+        fn FilePath_PathReduce_impl(str: *const std__string) -> std__string;
+    }
+    // SAFETY: Forwarding to linked C++ implementation.
+    unsafe { FilePath_PathReduce_impl(str) }
 }
 
 /// C: FilePath::IsSeparator (user/user_util.h:228)

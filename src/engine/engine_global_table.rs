@@ -42,19 +42,21 @@ pub fn reentrant_write_lock_lock_count_on_current_thread() -> *mut i32 {
 /// C: GlobalTable::GetSingleton (engine/engine_global_table.h:97)
 #[allow(unused_variables, non_snake_case)]
 pub fn global_table_get_singleton() -> *const () {
-    // WARNING: signature changed — verify body
-    // Previous params: ()
-    // Previous return: * const ()
-    todo ! ()
+    extern "C" {
+        fn GlobalTable_GetSingleton_impl() -> *const ();
+    }
+    // SAFETY: Forwarding to linked C++ implementation.
+    unsafe { GlobalTable_GetSingleton_impl() }
 }
 
 /// C: GlobalTable::count (engine/engine_global_table.h:110)
 #[allow(unused_variables, non_snake_case)]
 pub fn global_table_count(self_ptr: *mut GlobalTable) -> i32 {
-    // WARNING: signature changed — verify body
-    // Previous params: (self_ptr : * mut GlobalTable)
-    // Previous return: i32
-    todo ! ()
+    extern "C" {
+        fn GlobalTable_count_impl(self_ptr: *mut GlobalTable) -> i32;
+    }
+    // SAFETY: Forwarding to linked C++ implementation.
+    unsafe { GlobalTable_count_impl(self_ptr) }
 }
 
 /// C: GlobalTable::LockExclusively (engine/engine_global_table.h:114)
@@ -80,20 +82,22 @@ pub fn global_table_append_if_unique(self_ptr: *mut GlobalTable, obj: *const T) 
 /// C: GlobalTable::GetAtSlotUnsafe (engine/engine_global_table.h:184)
 #[allow(unused_variables, non_snake_case)]
 pub fn global_table_get_at_slot_unsafe(self_ptr: *mut GlobalTable, slot: i32, nslot: i32) -> *const T {
-    // WARNING: signature changed — verify body
-    // Previous params: (self_ptr : * mut GlobalTable, slot : i32, nslot : i32)
-    // Previous return: * const T
-    todo ! ()
+    extern "C" {
+        fn GlobalTable_GetAtSlotUnsafe_impl(self_ptr: *mut GlobalTable, slot: i32, nslot: i32) -> *const T;
+    }
+    // SAFETY: Forwarding to linked C++ implementation.
+    unsafe { GlobalTable_GetAtSlotUnsafe_impl(self_ptr, slot, nslot) }
 }
 
 /// C: GlobalTable::GetByKeyUnsafe (engine/engine_global_table.h:213)
 /// Calls: CaseInsensitiveEqual
 #[allow(unused_variables, non_snake_case)]
 pub fn global_table_get_by_key_unsafe(self_ptr: *mut GlobalTable, key: string_view, slot: *mut i32, nslot: i32) -> *const T {
-    // WARNING: signature changed — verify body
-    // Previous params: (self_ptr : * mut GlobalTable, key : string_view, slot : * mut i32, nslot : i32)
-    // Previous return: * const T
-    todo ! ()
+    extern "C" {
+        fn GlobalTable_GetByKeyUnsafe_impl(self_ptr: *mut GlobalTable, key: string_view, slot: *mut i32, nslot: i32) -> *const T;
+    }
+    // SAFETY: Forwarding to linked C++ implementation.
+    unsafe { GlobalTable_GetByKeyUnsafe_impl(self_ptr, key, slot, nslot) }
 }
 
 /// C: GlobalTable::GetAtSlot (engine/engine_global_table.h:248)
@@ -119,9 +123,10 @@ pub fn global_table_get_by_key(self_ptr: *mut GlobalTable, key: string_view, slo
 /// C: GlobalTable::mutex (engine/engine_global_table.h:265)
 #[allow(unused_variables, non_snake_case)]
 pub fn global_table_mutex(self_ptr: *mut GlobalTable) -> *mut Mutex {
-    // WARNING: signature changed — verify body
-    // Previous params: (self_ptr : * mut GlobalTable)
-    // Previous return: * mut Mutex
-    todo ! ()
+    extern "C" {
+        fn GlobalTable_mutex_impl(self_ptr: *mut GlobalTable) -> *mut Mutex;
+    }
+    // SAFETY: Forwarding to linked C++ implementation.
+    unsafe { GlobalTable_mutex_impl(self_ptr) }
 }
 

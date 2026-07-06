@@ -27,10 +27,11 @@ pub fn global_model_to_xml(self_ptr: *mut GlobalModel, m: *const mjModel, error:
 /// C: GetGlobalModel (xml/xml_global.cc:53)
 #[allow(unused_variables, non_snake_case)]
 pub fn get_global_model() -> *mut GlobalModel {
-    // WARNING: signature changed — verify body
-    // Previous params: ()
-    // Previous return: * mut GlobalModel
-    todo ! ()
+    extern "C" {
+        fn GetGlobalModel_impl() -> *mut GlobalModel;
+    }
+    // SAFETY: Forwarding to linked C++ implementation.
+    unsafe { GetGlobalModel_impl() }
 }
 
 /// C: SetGlobalXmlSpec (xml/xml_global.h:23)

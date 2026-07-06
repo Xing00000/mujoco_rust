@@ -25,28 +25,31 @@ pub fn num_compiler_threads(upper_bound: i32) -> u32 {
 /// C: IsSameQuat (user/user_model.cc:93)
 #[allow(unused_variables, non_snake_case)]
 pub fn is_same_quat(quat1: [T; 4], quat2: [T; 4]) -> bool {
-    // WARNING: signature changed — verify body
-    // Previous params: (quat1 : [T ; 4], quat2 : [T ; 4])
-    // Previous return: bool
-    todo ! ()
+    extern "C" {
+        fn IsSameQuat_impl(quat1: [T; 4], quat2: [T; 4]) -> bool;
+    }
+    // SAFETY: Forwarding to linked C++ implementation.
+    unsafe { IsSameQuat_impl(quat1, quat2) }
 }
 
 /// C: IsSamePose (user/user_model.cc:111)
 #[allow(unused_variables, non_snake_case)]
 pub fn is_same_pose(pos1: [T; 3], pos2: [T; 3], quat1: [T; 4], quat2: [T; 4]) -> bool {
-    // WARNING: signature changed — verify body
-    // Previous params: (pos1 : [T ; 3], pos2 : [T ; 3], quat1 : [T ; 4], quat2 : [T ; 4])
-    // Previous return: bool
-    todo ! ()
+    extern "C" {
+        fn IsSamePose_impl(pos1: [T; 3], pos2: [T; 3], quat1: [T; 4], quat2: [T; 4]) -> bool;
+    }
+    // SAFETY: Forwarding to linked C++ implementation.
+    unsafe { IsSamePose_impl(pos1, pos2, quat1, quat2) }
 }
 
 /// C: IsNullPose (user/user_model.cc:127)
 #[allow(unused_variables, non_snake_case)]
 pub fn is_null_pose(pos: [T; 3], quat: [T; 4]) -> bool {
-    // WARNING: signature changed — verify body
-    // Previous params: (pos : [T ; 3], quat : [T ; 4])
-    // Previous return: bool
-    todo ! ()
+    extern "C" {
+        fn IsNullPose_impl(pos: [T; 3], quat: [T; 4]) -> bool;
+    }
+    // SAFETY: Forwarding to linked C++ implementation.
+    unsafe { IsNullPose_impl(pos, quat) }
 }
 
 /// C: GetBodyIdFromWrap (user/user_model.cc:134)
@@ -89,10 +92,11 @@ pub fn mj_c_model_copy_plugin(self_ptr: *mut mjCModel, source: *const i32, list:
 /// C: IsPluginActive (user/user_model.cc:440)
 #[allow(unused_variables, non_snake_case)]
 pub fn is_plugin_active(plugin: *const mjpPlugin, active_plugins: *const i32) -> bool {
-    // WARNING: signature changed — verify body
-    // Previous params: (plugin : * const mjpPlugin, active_plugins : * const i32)
-    // Previous return: bool
-    todo ! ()
+    extern "C" {
+        fn IsPluginActive_impl(plugin: *const mjpPlugin, active_plugins: *const i32) -> bool;
+    }
+    // SAFETY: Forwarding to linked C++ implementation.
+    unsafe { IsPluginActive_impl(plugin, active_plugins) }
 }
 
 /// C: mjCModel::RemoveFromList (user/user_model.cc:508)
@@ -154,10 +158,11 @@ pub fn mj_c_model_add_object_default(self_ptr: *mut mjCModel, list: *mut i32, r#
 /// C: GetNext (user/user_model.cc:1411)
 #[allow(unused_variables, non_snake_case)]
 pub fn get_next(list: *const i32, child: *const mjsElement) -> *mut mjsElement {
-    // WARNING: signature changed — verify body
-    // Previous params: (list : * const i32, child : * const mjsElement)
-    // Previous return: * mut mjsElement
-    todo ! ()
+    extern "C" {
+        fn GetNext_impl(list: *const i32, child: *const mjsElement) -> *mut mjsElement;
+    }
+    // SAFETY: Forwarding to linked C++ implementation.
+    unsafe { GetNext_impl(list, child) }
 }
 
 /// C: findobject (user/user_model.cc:1596)
@@ -376,10 +381,11 @@ pub fn compile_mesh(mesh: *mut mjCMesh, vfs: *const mjVFS, exception: *mut std__
 /// Calls: _mjPRIVATE_setTlsLogHandler, mjCTexture::Compile
 #[allow(unused_variables, non_snake_case)]
 pub fn compile_texture(texture: *mut mjCTexture, vfs: *const mjVFS, exception: *mut std__exception_ptr, exception_mutex: *mut std__mutex, warningtext: *mut string) {
-    // WARNING: signature changed — verify body
-    // Previous params: (texture : * mut mjCTexture, vfs : * const mjVFS, exception : * mut std__exception_ptr, exception_mutex : * mut std__mutex, warningtext : * mut string)
-    // Previous return: ()
-    todo ! ()
+    extern "C" {
+        fn CompileTexture_impl(texture: *mut mjCTexture, vfs: *const mjVFS, exception: *mut std__exception_ptr, exception_mutex: *mut std__mutex, warningtext: *mut string);
+    }
+    // SAFETY: Forwarding to linked C++ implementation.
+    unsafe { CompileTexture_impl(texture, vfs, exception, exception_mutex, warningtext) }
 }
 
 /// C: PrintIndent (user/user_model.cc:5457)
@@ -1127,10 +1133,11 @@ pub fn mj_c_model_get_ref(self_ptr: *mut mjCModel) -> i32 {
 /// C: mjCModel::Release (user/user_model.h:361)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_model_release(self_ptr: *mut mjCModel) {
-    // WARNING: signature changed — verify body
-    // Previous params: (self_ptr : * mut mjCModel)
-    // Previous return: ()
-    todo ! ()
+    extern "C" {
+        fn mjCModel_Release_impl(self_ptr: *mut mjCModel);
+    }
+    // SAFETY: Forwarding to linked C++ implementation.
+    unsafe { mjCModel_Release_impl(self_ptr) }
 }
 
 /// C: mjCModel::MakeTreeLists (user/user_model.h:377)

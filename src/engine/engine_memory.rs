@@ -78,20 +78,22 @@ pub fn mj_arena_alloc_byte(d: *mut mjData, bytes: usize, alignment: usize) -> *m
 /// Calls: get_stack_info_from_data, markstackinternal
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_mark_stack(d: *mut mjData) {
-    // WARNING: signature changed — verify body
-    // Previous params: (d : * mut mjData)
-    // Previous return: ()
-    todo ! ()
+    extern "C" {
+        fn mj_markStack_impl(d: *mut mjData);
+    }
+    // SAFETY: Forwarding to linked C++ implementation.
+    unsafe { mj_markStack_impl(d) }
 }
 
 /// C: mj_freeStack (engine/engine_memory.h:43)
 /// Calls: freestackinternal, get_stack_info_from_data
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_free_stack(d: *mut mjData) {
-    // WARNING: signature changed — verify body
-    // Previous params: (d : * mut mjData)
-    // Previous return: ()
-    todo ! ()
+    extern "C" {
+        fn mj_freeStack_impl(d: *mut mjData);
+    }
+    // SAFETY: Forwarding to linked C++ implementation.
+    unsafe { mj_freeStack_impl(d) }
 }
 
 /// C: mj_stackAllocByte (engine/engine_memory.h:53)
