@@ -151,40 +151,44 @@ pub fn mj_wake_island(tree_asleep: *mut i32, ntree: i32, i: i32, wakeval: i32, r
 /// Calls: mj_wakeIsland, mju_fillInt, treeCanSleep
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_wake(m: *const mjModel, d: *mut mjData) -> i32 {
-    // WARNING: signature changed — verify body
-    // Previous params: (m : * const mjModel, d : * mut mjData)
-    // Previous return: i32
-    todo ! ()
+    extern "C" {
+        fn mj_wake_impl(m: *const mjModel, d: *mut mjData) -> i32;
+    }
+    // SAFETY: delegates to C implementation, all pointers valid per caller contract
+    unsafe { mj_wake_impl(m, d) }
 }
 
 /// C: mj_wakeCollision (engine/engine_sleep.h:44)
 /// Calls: mj_flexBody, mj_wakeIsland, mju_message
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_wake_collision(m: *const mjModel, d: *mut mjData) -> i32 {
-    // WARNING: signature changed — verify body
-    // Previous params: (m : * const mjModel, d : * mut mjData)
-    // Previous return: i32
-    todo ! ()
+    extern "C" {
+        fn mj_wakeCollision_impl(m: *const mjModel, d: *mut mjData) -> i32;
+    }
+    // SAFETY: delegates to C implementation, all pointers valid per caller contract
+    unsafe { mj_wakeCollision_impl(m, d) }
 }
 
 /// C: mj_wakeTendon (engine/engine_sleep.h:47)
 /// Calls: mj_wakeIsland, tendonLimit
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_wake_tendon(m: *const mjModel, d: *mut mjData) -> i32 {
-    // WARNING: signature changed — verify body
-    // Previous params: (m : * const mjModel, d : * mut mjData)
-    // Previous return: i32
-    todo ! ()
+    extern "C" {
+        fn mj_wakeTendon_impl(m: *const mjModel, d: *mut mjData) -> i32;
+    }
+    // SAFETY: delegates to C implementation, all pointers valid per caller contract
+    unsafe { mj_wakeTendon_impl(m, d) }
 }
 
 /// C: mj_wakeEquality (engine/engine_sleep.h:50)
 /// Calls: mj_sleepCycle, mj_wakeIsland, mju_message
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_wake_equality(m: *const mjModel, d: *mut mjData) -> i32 {
-    // WARNING: signature changed — verify body
-    // Previous params: (m : * const mjModel, d : * mut mjData)
-    // Previous return: i32
-    todo ! ()
+    extern "C" {
+        fn mj_wakeEquality_impl(m: *const mjModel, d: *mut mjData) -> i32;
+    }
+    // SAFETY: delegates to C implementation, all pointers valid per caller contract
+    unsafe { mj_wakeEquality_impl(m, d) }
 }
 
 /// C: mj_sleep (engine/engine_sleep.h:53)

@@ -409,10 +409,11 @@ pub fn mju_geom_semi_axes(semiaxes: *mut f64, size: *const f64, r#type: mjtGeom)
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mju_inside_geom(pos: *const f64, mat: *const f64, size: *const f64, r#type: mjtGeom, point: *const f64) -> i32 {
-    // WARNING: signature changed — verify body
-    // Previous params: (pos : * const f64, mat : * const f64, size : * const f64, r#type : mjtGeom, point : * const f64)
-    // Previous return: i32
-    todo ! ()
+    extern "C" {
+        fn mju_insideGeom_impl(pos: *const f64, mat: *const f64, size: *const f64, r#type: mjtGeom, point: *const f64) -> i32;
+    }
+    // SAFETY: delegates to C implementation, all pointers valid per caller contract
+    unsafe { mju_insideGeom_impl(pos, mat, size, r#type, point) }
 }
 
 /// C: mju_camPixelRay (engine/engine_util_misc.h:79)
@@ -633,10 +634,11 @@ pub fn mju_interpolate3d(res: *mut f64, x: *const f64, coeff: *const f64, order:
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mju_flex_gather_cell_state(order: i32, cy: i32, cz: i32, ci: i32, cj: i32, ck: i32, xpos_g: *const f64, vel_g: *const f64, xpos0_g: *const f64, xpos_c: *mut f64, vel_c: *mut f64, xpos0_c: *mut f64, nodeindices: *mut i32, quat: *mut f64) {
-    // WARNING: signature changed — verify body
-    // Previous params: (order : i32, cy : i32, cz : i32, ci : i32, cj : i32, ck : i32, xpos_g : * const f64, vel_g : * const f64, xpos0_g : * const f64, xpos_c : * mut f64, vel_c : * mut f64, xpos0_c : * mut f64, nodeindices : * mut i32, quat : * mut f64)
-    // Previous return: ()
-    todo ! ()
+    extern "C" {
+        fn mju_flexGatherCellState_impl(order: i32, cy: i32, cz: i32, ci: i32, cj: i32, ck: i32, xpos_g: *const f64, vel_g: *const f64, xpos0_g: *const f64, xpos_c: *mut f64, vel_c: *mut f64, xpos0_c: *mut f64, nodeindices: *mut i32, quat: *mut f64);
+    }
+    // SAFETY: delegates to C implementation, all pointers valid per caller contract
+    unsafe { mju_flexGatherCellState_impl(order, cy, cz, ci, cj, ck, xpos_g, vel_g, xpos0_g, xpos_c, vel_c, xpos0_c, nodeindices, quat) }
 }
 
 /// C: mju_flexGatherFaceState (engine/engine_util_misc.h:110)

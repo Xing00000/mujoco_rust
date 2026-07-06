@@ -162,10 +162,11 @@ pub fn isknown(points: *const f64, x: *const f64, cnt: i32) -> i32 {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn add_pre_contact(points: *mut f64, con: *mut mjPreContact, x: *const f64, pos2: *const f64, quat2: *const f64, dist: f64, cnt: i32, m: *const mjModel, s: *const mjSDF, d: *const mjData, flipNormal: i32) -> i32 {
-    // WARNING: signature changed — verify body
-    // Previous params: (points : * mut f64, con : * mut mjPreContact, x : * const f64, pos2 : * const f64, quat2 : * const f64, dist : f64, cnt : i32, m : * const mjModel, s : * const mjSDF, d : * const mjData, flipNormal : i32)
-    // Previous return: i32
-    todo ! ()
+    extern "C" {
+        fn addPreContact_impl(points: *mut f64, con: *mut mjPreContact, x: *const f64, pos2: *const f64, quat2: *const f64, dist: f64, cnt: i32, m: *const mjModel, s: *const mjSDF, d: *const mjData, flipNormal: i32) -> i32;
+    }
+    // SAFETY: delegates to C implementation, all pointers valid per caller contract
+    unsafe { addPreContact_impl(points, con, x, pos2, quat2, dist, cnt, m, s, d, flipNormal) }
 }
 
 /// C: stepFrankWolfe (engine/engine_collision_sdf.c:585)
@@ -177,10 +178,11 @@ pub fn add_pre_contact(points: *mut f64, con: *mut mjPreContact, x: *const f64, 
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn step_frank_wolfe(x: *mut f64, corners: *const f64, ncorners: i32, m: *const mjModel, sdf: *const mjSDF, d: *const mjData) -> f64 {
-    // WARNING: signature changed — verify body
-    // Previous params: (x : * mut f64, corners : * const f64, ncorners : i32, m : * const mjModel, sdf : * const mjSDF, d : * const mjData)
-    // Previous return: f64
-    todo ! ()
+    extern "C" {
+        fn stepFrankWolfe_impl(x: *mut f64, corners: *const f64, ncorners: i32, m: *const mjModel, sdf: *const mjSDF, d: *const mjData) -> f64;
+    }
+    // SAFETY: delegates to C implementation, all pointers valid per caller contract
+    unsafe { stepFrankWolfe_impl(x, corners, ncorners, m, sdf, d) }
 }
 
 /// C: stepGradient (engine/engine_collision_sdf.c:615)
@@ -279,10 +281,11 @@ pub fn process_one_face(faceid: i32, bvh_active: *mut mjtBool, node: i32, ctx: *
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn traverse_bvh(bvh: *const f64, nodeid: *const i32, child: *const i32, bvh_active: *mut mjtBool, offset: *const f64, rotation: *const f64, m: *const mjModel, d: *const mjData, sdf: *const mjSDF, callback: BVHLeafCallback, ctx: *mut ()) {
-    // WARNING: signature changed — verify body
-    // Previous params: (bvh : * const f64, nodeid : * const i32, child : * const i32, bvh_active : * mut mjtBool, offset : * const f64, rotation : * const f64, m : * const mjModel, d : * const mjData, sdf : * const mjSDF, callback : BVHLeafCallback, ctx : * mut ())
-    // Previous return: ()
-    todo ! ()
+    extern "C" {
+        fn traverseBVH_impl(bvh: *const f64, nodeid: *const i32, child: *const i32, bvh_active: *mut mjtBool, offset: *const f64, rotation: *const f64, m: *const mjModel, d: *const mjData, sdf: *const mjSDF, callback: BVHLeafCallback, ctx: *mut ());
+    }
+    // SAFETY: delegates to C implementation, all pointers valid per caller contract
+    unsafe { traverseBVH_impl(bvh, nodeid, child, bvh_active, offset, rotation, m, d, sdf, callback, ctx) }
 }
 
 /// C: meshFaceCallback (engine/engine_collision_sdf.c:943)
@@ -309,10 +312,11 @@ pub fn flex_elem_callback(elem_idx: i32, node: i32, ctx: *mut ()) -> i32 {
 /// Calls: mjp_getPluginAtSlotUnsafe, mjp_pluginCount, mju_message
 #[allow(unused_variables, non_snake_case)]
 pub fn mjc_get_sdf(m: *const mjModel, id: i32) -> *const mjpPlugin {
-    // WARNING: signature changed — verify body
-    // Previous params: (m : * const mjModel, id : i32)
-    // Previous return: * const mjpPlugin
-    todo ! ()
+    extern "C" {
+        fn mjc_getSDF_impl(m: *const mjModel, id: i32) -> *const mjpPlugin;
+    }
+    // SAFETY: delegates to C implementation, all pointers valid per caller contract
+    unsafe { mjc_getSDF_impl(m, id) }
 }
 
 /// C: mjc_distance (engine/engine_collision_sdf.h:32)

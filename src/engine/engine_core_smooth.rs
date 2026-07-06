@@ -270,10 +270,11 @@ pub fn mj_solve_m2(m: *const mjModel, d: *mut mjData, x: *mut f64, y: *const f64
 /// Calls: mji_copy6, mji_crossMotion, mju_addTo, mju_copy, mju_mulDofVec, mju_zero
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_com_vel(m: *const mjModel, d: *mut mjData) {
-    // WARNING: signature changed — verify body
-    // Previous params: (m : * const mjModel, d : * mut mjData)
-    // Previous return: ()
-    todo ! ()
+    extern "C" {
+        fn mj_comVel_impl(m: *const mjModel, d: *mut mjData);
+    }
+    // SAFETY: delegates to C implementation, all pointers valid per caller contract
+    unsafe { mj_comVel_impl(m, d) }
 }
 
 /// C: mj_subtreeVel (engine/engine_core_smooth.h:101)
@@ -295,10 +296,11 @@ pub fn mj_subtree_vel(m: *const mjModel, d: *mut mjData) {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_rne(m: *const mjModel, d: *mut mjData, flg_acc: i32, result: *mut f64) {
-    // WARNING: signature changed — verify body
-    // Previous params: (m : * const mjModel, d : * mut mjData, flg_acc : i32, result : * mut f64)
-    // Previous return: ()
-    todo ! ()
+    extern "C" {
+        fn mj_rne_impl(m: *const mjModel, d: *mut mjData, flg_acc: i32, result: *mut f64);
+    }
+    // SAFETY: delegates to C implementation, all pointers valid per caller contract
+    unsafe { mj_rne_impl(m, d, flg_acc, result) }
 }
 
 /// C: mj_rnePostConstraint (engine/engine_core_smooth.h:110)

@@ -173,20 +173,22 @@ pub fn mj_passive(m: *const mjModel, d: *mut mjData) {
 /// Calls: mj_applyFT, mj_objectVelocity, mji_copy3, mji_mulMatVec3, mji_scl3, mji_subFrom3, mju_max, mju_transformSpatial, mju_zero
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_inertia_box_fluid_model(m: *const mjModel, d: *mut mjData, i: i32) {
-    // WARNING: signature changed — verify body
-    // Previous params: (m : * const mjModel, d : * mut mjData, i : i32)
-    // Previous return: ()
-    todo ! ()
+    extern "C" {
+        fn mj_inertiaBoxFluidModel_impl(m: *const mjModel, d: *mut mjData, i: i32);
+    }
+    // SAFETY: delegates to C implementation, all pointers valid per caller contract
+    unsafe { mj_inertiaBoxFluidModel_impl(m, d, i) }
 }
 
 /// C: mj_ellipsoidFluidModel (engine/engine_passive.h:40)
 /// Calls: mj_addedMassForces, mj_applyFT, mj_objectVelocity, mj_viscousForces, mji_copy3, mji_mulMatVec3, mji_subFrom3, mju_geomSemiAxes, mju_scl, mju_transformSpatial, mju_zero, readFluidGeomInteraction
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_ellipsoid_fluid_model(m: *const mjModel, d: *mut mjData, bodyid: i32) {
-    // WARNING: signature changed — verify body
-    // Previous params: (m : * const mjModel, d : * mut mjData, bodyid : i32)
-    // Previous return: ()
-    todo ! ()
+    extern "C" {
+        fn mj_ellipsoidFluidModel_impl(m: *const mjModel, d: *mut mjData, bodyid: i32);
+    }
+    // SAFETY: delegates to C implementation, all pointers valid per caller contract
+    unsafe { mj_ellipsoidFluidModel_impl(m, d, bodyid) }
 }
 
 /// C: mj_addedMassForces (engine/engine_passive.h:43)

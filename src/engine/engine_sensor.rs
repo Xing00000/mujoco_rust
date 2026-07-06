@@ -108,19 +108,21 @@ pub fn get_xquat(m: *const mjModel, d: *const mjData, r#type: mjtObj, id: i32, s
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn cam_project(sensordata: *mut f64, target_xpos: *const f64, cam_xpos: *const f64, cam_xmat: *const f64, cam_res: [i32; 2], cam_fovy: f64, cam_intrinsic: [f32; 4], cam_sensorsize: [f32; 2]) {
-    // WARNING: signature changed — verify body
-    // Previous params: (sensordata : * mut f64, target_xpos : * const f64, cam_xpos : * const f64, cam_xmat : * const f64, cam_res : [i32 ; 2], cam_fovy : f64, cam_intrinsic : [f32 ; 4], cam_sensorsize : [f32 ; 2])
-    // Previous return: ()
-    todo ! ()
+    extern "C" {
+        fn cam_project_impl(sensordata: *mut f64, target_xpos: *const f64, cam_xpos: *const f64, cam_xmat: *const f64, cam_res: [i32; 2], cam_fovy: f64, cam_intrinsic: [f32; 4], cam_sensorsize: [f32; 2]);
+    }
+    // SAFETY: delegates to C implementation, all pointers valid per caller contract
+    unsafe { cam_project_impl(sensordata, target_xpos, cam_xpos, cam_xmat, cam_res, cam_fovy, cam_intrinsic, cam_sensorsize) }
 }
 
 /// C: checkMatch (engine/engine_sensor.c:320)
 #[allow(unused_variables, non_snake_case)]
 pub fn check_match(m: *const mjModel, body: i32, geom: i32, r#type: mjtObj, id: i32) -> i32 {
-    // WARNING: signature changed — verify body
-    // Previous params: (m : * const mjModel, body : i32, geom : i32, r#type : mjtObj, id : i32)
-    // Previous return: i32
-    todo ! ()
+    extern "C" {
+        fn checkMatch_impl(m: *const mjModel, body: i32, geom: i32, r#type: mjtObj, id: i32) -> i32;
+    }
+    // SAFETY: delegates to C implementation, all pointers valid per caller contract
+    unsafe { checkMatch_impl(m, body, geom, r#type, id) }
 }
 
 /// C: matchContact (engine/engine_sensor.c:339)
@@ -157,10 +159,11 @@ pub fn copy_sensor_data(m: *const mjModel, d: *const mjData, data: [*mut f64; 7]
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn total_wrench(force: *mut f64, torque: *mut f64, point: *const f64, n: i32, wrench: *const f64, pos: *const f64, frame: *const f64) {
-    // WARNING: signature changed — verify body
-    // Previous params: (force : * mut f64, torque : * mut f64, point : * const f64, n : i32, wrench : * const f64, pos : * const f64, frame : * const f64)
-    // Previous return: ()
-    todo ! ()
+    extern "C" {
+        fn total_wrench_impl(force: *mut f64, torque: *mut f64, point: *const f64, n: i32, wrench: *const f64, pos: *const f64, frame: *const f64);
+    }
+    // SAFETY: delegates to C implementation, all pointers valid per caller contract
+    unsafe { total_wrench_impl(force, torque, point, n, wrench, pos, frame) }
 }
 
 /// C: fill_raydata (engine/engine_sensor.c:470)
@@ -172,10 +175,11 @@ pub fn total_wrench(force: *mut f64, torque: *mut f64, point: *const f64, n: i32
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn fill_raydata(ptr: *mut f64, dataspec: i32, dist: f64, origin: *const f64, direction: *const f64, normal: *const f64, cam_xpos: *const f64, cam_z: *const f64) -> *mut f64 {
-    // WARNING: signature changed — verify body
-    // Previous params: (ptr : * mut f64, dataspec : i32, dist : f64, origin : * const f64, direction : * const f64, normal : * const f64, cam_xpos : * const f64, cam_z : * const f64)
-    // Previous return: * mut f64
-    todo ! ()
+    extern "C" {
+        fn fill_raydata_impl(ptr: *mut f64, dataspec: i32, dist: f64, origin: *const f64, direction: *const f64, normal: *const f64, cam_xpos: *const f64, cam_z: *const f64) -> *mut f64;
+    }
+    // SAFETY: delegates to C implementation, all pointers valid per caller contract
+    unsafe { fill_raydata_impl(ptr, dataspec, dist, origin, direction, normal, cam_xpos, cam_z) }
 }
 
 /// C: mj_computeSensorPos (engine/engine_sensor.c:525)

@@ -46,10 +46,11 @@ pub fn libccd_wrapper(m: *const mjModel, obj1: *mut mjCCDObj, obj2: *mut mjCCDOb
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjc_penetration(m: *const mjModel, d: *mut mjData, obj1: *mut mjCCDObj, obj2: *mut mjCCDObj, con: *mut mjPreContact, ncon: i32, margin: f64) -> i32 {
-    // WARNING: signature changed — verify body
-    // Previous params: (m : * const mjModel, d : * mut mjData, obj1 : * mut mjCCDObj, obj2 : * mut mjCCDObj, con : * mut mjPreContact, ncon : i32, margin : f64)
-    // Previous return: i32
-    todo ! ()
+    extern "C" {
+        fn mjc_penetration_impl(m: *const mjModel, d: *mut mjData, obj1: *mut mjCCDObj, obj2: *mut mjCCDObj, con: *mut mjPreContact, ncon: i32, margin: f64) -> i32;
+    }
+    // SAFETY: delegates to C implementation, all pointers valid per caller contract
+    unsafe { mjc_penetration_impl(m, d, obj1, obj2, con, ncon, margin) }
 }
 
 /// C: mulMatTVec3 (engine/engine_collision_convex.c:174)

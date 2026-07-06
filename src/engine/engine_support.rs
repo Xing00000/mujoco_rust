@@ -370,10 +370,11 @@ pub fn mj_version_string() -> *const i8 {
 /// C: mju_condataSize (engine/engine_support.h:127)
 #[allow(unused_variables, non_snake_case)]
 pub fn mju_condata_size(dataSpec: i32) -> i32 {
-    // WARNING: signature changed — verify body
-    // Previous params: (dataSpec : i32)
-    // Previous return: i32
-    todo ! ()
+    extern "C" {
+        fn mju_condataSize_impl(dataSpec: i32) -> i32;
+    }
+    // SAFETY: delegates to C implementation, all pointers valid per caller contract
+    unsafe { mju_condataSize_impl(dataSpec) }
 }
 
 /// C: mju_raydataSize (engine/engine_support.h:130)

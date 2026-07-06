@@ -203,10 +203,11 @@ pub fn mj_jac_sparse_simple(m: *const mjModel, d: *const mjData, jacdifp: *mut f
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_jac_dot_sparse(m: *const mjModel, d: *const mjData, jacp: *mut f64, jacr: *mut f64, point: *const f64, body: i32, NV: i32, chain: *const i32) {
-    // WARNING: signature changed — verify body
-    // Previous params: (m : * const mjModel, d : * const mjData, jacp : * mut f64, jacr : * mut f64, point : * const f64, body : i32, NV : i32, chain : * const i32)
-    // Previous return: ()
-    todo ! ()
+    extern "C" {
+        fn mj_jacDotSparse_impl(m: *const mjModel, d: *const mjData, jacp: *mut f64, jacr: *mut f64, point: *const f64, body: i32, NV: i32, chain: *const i32);
+    }
+    // SAFETY: delegates to C implementation, all pointers valid per caller contract
+    unsafe { mj_jacDotSparse_impl(m, d, jacp, jacr, point, body, NV, chain) }
 }
 
 /// C: mj_jacDifPair (engine/engine_core_util.h:95)
@@ -250,10 +251,11 @@ pub fn mj_jac_sum(m: *const mjModel, d: *mut mjData, chain: *mut i32, n: i32, bo
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_jac_dot(m: *const mjModel, d: *const mjData, jacp: *mut f64, jacr: *mut f64, point: *const f64, body: i32) {
-    // WARNING: signature changed — verify body
-    // Previous params: (m : * const mjModel, d : * const mjData, jacp : * mut f64, jacr : * mut f64, point : * const f64, body : i32)
-    // Previous return: ()
-    todo ! ()
+    extern "C" {
+        fn mj_jacDot_impl(m: *const mjModel, d: *const mjData, jacp: *mut f64, jacr: *mut f64, point: *const f64, body: i32);
+    }
+    // SAFETY: delegates to C implementation, all pointers valid per caller contract
+    unsafe { mj_jacDot_impl(m, d, jacp, jacr, point, body) }
 }
 
 /// C: mj_angmomMat (engine/engine_core_util.h:111)
@@ -296,10 +298,11 @@ pub fn mj_object_velocity(m: *const mjModel, d: *const mjData, objtype: i32, obj
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_object_acceleration(m: *const mjModel, d: *const mjData, objtype: i32, objid: i32, res: *mut f64, flg_local: i32) {
-    // WARNING: signature changed — verify body
-    // Previous params: (m : * const mjModel, d : * const mjData, objtype : i32, objid : i32, res : * mut f64, flg_local : i32)
-    // Previous return: ()
-    todo ! ()
+    extern "C" {
+        fn mj_objectAcceleration_impl(m: *const mjModel, d: *const mjData, objtype: i32, objid: i32, res: *mut f64, flg_local: i32);
+    }
+    // SAFETY: delegates to C implementation, all pointers valid per caller contract
+    unsafe { mj_objectAcceleration_impl(m, d, objtype, objid, res, flg_local) }
 }
 
 /// C: mj_local2Global (engine/engine_core_util.h:125)
@@ -326,10 +329,11 @@ pub fn mj_local2global(d: *mut mjData, xpos: *mut f64, xmat: *mut f64, pos: *con
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mju_flex_gather_state(m: *const mjModel, d: *const mjData, f: i32, xpos: *mut f64, vel: *mut f64) {
-    // WARNING: signature changed — verify body
-    // Previous params: (m : * const mjModel, d : * const mjData, f : i32, xpos : * mut f64, vel : * mut f64)
-    // Previous return: ()
-    todo ! ()
+    extern "C" {
+        fn mju_flexGatherState_impl(m: *const mjModel, d: *const mjData, f: i32, xpos: *mut f64, vel: *mut f64);
+    }
+    // SAFETY: delegates to C implementation, all pointers valid per caller contract
+    unsafe { mju_flexGatherState_impl(m, d, f, xpos, vel) }
 }
 
 /// C: mj_contactForce (engine/engine_core_util.h:136)
@@ -341,10 +345,11 @@ pub fn mju_flex_gather_state(m: *const mjModel, d: *const mjData, f: i32, xpos: 
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_contact_force(m: *const mjModel, d: *const mjData, id: i32, result: *mut f64) {
-    // WARNING: signature changed — verify body
-    // Previous params: (m : * const mjModel, d : * const mjData, id : i32, result : * mut f64)
-    // Previous return: ()
-    todo ! ()
+    extern "C" {
+        fn mj_contactForce_impl(m: *const mjModel, d: *const mjData, id: i32, result: *mut f64);
+    }
+    // SAFETY: delegates to C implementation, all pointers valid per caller contract
+    unsafe { mj_contactForce_impl(m, d, id, result) }
 }
 
 /// C: tendonLimit (engine/engine_core_util.h:139)

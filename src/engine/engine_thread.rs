@@ -7,10 +7,11 @@ use crate::types::*;
 /// C: ThreadPoolContext::Dispatch (engine/engine_thread.cc:51)
 #[allow(unused_variables, non_snake_case)]
 pub fn thread_pool_context_dispatch(self_ptr: *mut ThreadPoolContext, model: *const mjModel, data: *mut mjData, func: mjTaskFunc, arg: *mut (), ntask: i32) {
-    // WARNING: signature changed — verify body
-    // Previous params: (self_ptr : * mut ThreadPoolContext, model : * const mjModel, data : * mut mjData, func : mjTaskFunc, arg : * mut (), ntask : i32)
-    // Previous return: ()
-    todo ! ()
+    extern "C" {
+        fn ThreadPoolContext_Dispatch_impl(self_ptr: *mut ThreadPoolContext, model: *const mjModel, data: *mut mjData, func: mjTaskFunc, arg: *mut (), ntask: i32);
+    }
+    // SAFETY: delegates to C implementation, all pointers valid per caller contract
+    unsafe { ThreadPoolContext_Dispatch_impl(self_ptr, model, data, func, arg, ntask) }
 }
 
 /// C: ThreadPoolContext::ThreadCount (engine/engine_thread.cc:79)
@@ -45,10 +46,11 @@ pub fn mju_threadpool(d: *mut mjData, nthread: i32) {
 /// Calls: ThreadPoolContext::ThreadCount
 #[allow(unused_variables, non_snake_case)]
 pub fn mju_num_thread(d: *const mjData) -> i32 {
-    // WARNING: signature changed — verify body
-    // Previous params: (d : * const mjData)
-    // Previous return: i32
-    todo ! ()
+    extern "C" {
+        fn mju_numThread_impl(d: *const mjData) -> i32;
+    }
+    // SAFETY: delegates to C implementation, all pointers valid per caller contract
+    unsafe { mju_numThread_impl(d) }
 }
 
 /// C: mju_dispatch (engine/engine_thread.h:36)

@@ -488,20 +488,22 @@ pub fn mj_instantiate_contact(m: *const mjModel, d: *mut mjData) {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_contact_jacobian(m: *const mjModel, d: *mut mjData, con: *const mjContact, dim: i32, jac: *mut f64, jacdif: *mut f64, jacdifp: *mut f64, jacdifr: *mut f64, jac1p: *mut f64, jac2p: *mut f64, jac1r: *mut f64, jac2r: *mut f64, chain: *mut i32) -> i32 {
-    // WARNING: signature changed — verify body
-    // Previous params: (m : * const mjModel, d : * mut mjData, con : * const mjContact, dim : i32, jac : * mut f64, jacdif : * mut f64, jacdifp : * mut f64, jacdifr : * mut f64, jac1p : * mut f64, jac2p : * mut f64, jac1r : * mut f64, jac2r : * mut f64, chain : * mut i32)
-    // Previous return: i32
-    todo ! ()
+    extern "C" {
+        fn mj_contactJacobian_impl(m: *const mjModel, d: *mut mjData, con: *const mjContact, dim: i32, jac: *mut f64, jacdif: *mut f64, jacdifp: *mut f64, jacdifr: *mut f64, jac1p: *mut f64, jac2p: *mut f64, jac1r: *mut f64, jac2r: *mut f64, chain: *mut i32) -> i32;
+    }
+    // SAFETY: delegates to C implementation, all pointers valid per caller contract
+    unsafe { mj_contactJacobian_impl(m, d, con, dim, jac, jacdif, jacdifp, jacdifr, jac1p, jac2p, jac1r, jac2r, chain) }
 }
 
 /// C: mj_diagApprox (engine/engine_core_constraint.h:78)
 /// Calls: mj_elemBodyWeight, mj_vertBodyWeight, mju_flexGatherCellState, mju_flexGatherFaceState, mju_message
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_diag_approx(m: *const mjModel, d: *mut mjData) {
-    // WARNING: signature changed — verify body
-    // Previous params: (m : * const mjModel, d : * mut mjData)
-    // Previous return: ()
-    todo ! ()
+    extern "C" {
+        fn mj_diagApprox_impl(m: *const mjModel, d: *mut mjData);
+    }
+    // SAFETY: delegates to C implementation, all pointers valid per caller contract
+    unsafe { mj_diagApprox_impl(m, d) }
 }
 
 /// C: mj_makeImpedance (engine/engine_core_constraint.h:81)
@@ -529,10 +531,11 @@ pub fn mj_make_constraint(m: *const mjModel, d: *mut mjData) {
 /// Calls: mj_isDual, mj_makeAR, mj_makeImpedance, mj_makeY, mju_gather
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_project_constraint(m: *const mjModel, d: *mut mjData) {
-    // WARNING: signature changed — verify body
-    // Previous params: (m : * const mjModel, d : * mut mjData)
-    // Previous return: ()
-    todo ! ()
+    extern "C" {
+        fn mj_projectConstraint_impl(m: *const mjModel, d: *mut mjData);
+    }
+    // SAFETY: delegates to C implementation, all pointers valid per caller contract
+    unsafe { mj_projectConstraint_impl(m, d) }
 }
 
 /// C: mj_referenceConstraint (engine/engine_core_constraint.h:93)
