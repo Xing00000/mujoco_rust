@@ -92,19 +92,23 @@ pub fn string_to_vector(cs: *mut i8) -> i32 {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjuu_defined(num: f64) -> bool {
-    // WARNING: signature changed — verify body
-    // Previous params: (num : f64)
-    // Previous return: bool
-    todo ! ()
+    !num.is_nan()
 }
 
 /// C: mjuu_matadr (user/user_util.h:39)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjuu_matadr(g1: i32, g2: i32, n: i32) -> i32 {
-    // WARNING: signature changed — verify body
-    // Previous params: (g1 : i32, g2 : i32, n : i32)
-    // Previous return: i32
-    todo ! ()
+    let mut g1 = g1;
+    let mut g2 = g2;
+    if g1 < 0 || g2 < 0 || g1 >= n || g2 >= n {
+        return -1;
+    }
+    if g1 > g2 {
+        let tmp = g1;
+        g1 = g2;
+        g2 = tmp;
+    }
+    g1 * n + g2
 }
 
 /// C: mjuu_setvec (user/user_util.h:42)
@@ -115,10 +119,12 @@ pub fn mjuu_matadr(g1: i32, g2: i32, n: i32) -> i32 {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjuu_setvec(dest: *mut f64, x: f64, y: f64, z: f64, w: f64) {
-    // WARNING: signature changed — verify body
-    // Previous params: (dest : * mut f64, x : f64, y : f64, z : f64, w : f64)
-    // Previous return: ()
-    todo ! ()
+    unsafe {
+        *dest.add(0) = x;
+        *dest.add(1) = y;
+        *dest.add(2) = z;
+        *dest.add(3) = w;
+    }
 }
 
 /// C: mjuu_copyvec (user/user_util.h:54)
@@ -138,10 +144,11 @@ pub fn mjuu_copyvec(dest: *mut T1, src: *const T2, n: i32) {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjuu_addtovec(dest: *mut f64, src: *const f64, n: i32) {
-    // WARNING: signature changed — verify body
-    // Previous params: (dest : * mut f64, src : * const f64, n : i32)
-    // Previous return: ()
-    todo ! ()
+    unsafe {
+        for i in 0..n as usize {
+            *dest.add(i) += *src.add(i);
+        }
+    }
 }
 
 /// C: mjuu_zerovec (user/user_util.h:62)
