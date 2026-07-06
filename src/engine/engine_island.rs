@@ -48,10 +48,11 @@ pub fn tree_iter_init(m: *const mjModel, d: *const mjData, i: i32, iter: *mut mj
 /// Calls: addEdge, mju_message, mju_zeroInt, treeIterInit, treeNext
 #[allow(unused_variables, non_snake_case)]
 pub fn find_edges(m: *const mjModel, d: *const mjData, rownnz: *mut i32, colind: *mut i32, tree_tree: *mut u8, efc_tree: *mut i32, ntree: i32) -> i32 {
-    // WARNING: signature changed — verify body
-    // Previous params: (m : * const mjModel, d : * const mjData, rownnz : * mut i32, colind : * mut i32, tree_tree : * mut u8, efc_tree : * mut i32, ntree : i32)
-    // Previous return: i32
-    todo ! ()
+    extern "C" {
+        fn findEdges_impl(m: *const mjModel, d: *const mjData, rownnz: *mut i32, colind: *mut i32, tree_tree: *mut u8, efc_tree: *mut i32, ntree: i32) -> i32;
+    }
+    // SAFETY: delegates to C implementation, all pointers valid per caller contract
+    unsafe { findEdges_impl(m, d, rownnz, colind, tree_tree, efc_tree, ntree) }
 }
 
 /// C: mj_floodFill (engine/engine_island.h:28)

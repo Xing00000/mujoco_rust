@@ -155,10 +155,11 @@ pub fn mj_jac_site(m: *const mjModel, d: *const mjData, jacp: *mut f64, jacr: *m
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_jac_point_axis(m: *const mjModel, d: *mut mjData, jacPoint: *mut f64, jacAxis: *mut f64, point: *const f64, axis: *const f64, body: i32) {
-    // WARNING: signature changed — verify body
-    // Previous params: (m : * const mjModel, d : * mut mjData, jacPoint : * mut f64, jacAxis : * mut f64, point : * const f64, axis : * const f64, body : i32)
-    // Previous return: ()
-    todo ! ()
+    extern "C" {
+        fn mj_jacPointAxis_impl(m: *const mjModel, d: *mut mjData, jacPoint: *mut f64, jacAxis: *mut f64, point: *const f64, axis: *const f64, body: i32);
+    }
+    // SAFETY: delegates to C implementation, all pointers valid per caller contract
+    unsafe { mj_jacPointAxis_impl(m, d, jacPoint, jacAxis, point, axis, body) }
 }
 
 /// C: mj_jacSparse (engine/engine_core_util.h:80)
@@ -216,10 +217,11 @@ pub fn mj_jac_dot_sparse(m: *const mjModel, d: *const mjData, jacp: *mut f64, ja
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_jac_dif_pair(m: *const mjModel, d: *const mjData, chain: *mut i32, b1: i32, b2: i32, pos1: *const f64, pos2: *const f64, jac1p: *mut f64, jac2p: *mut f64, jacdifp: *mut f64, jac1r: *mut f64, jac2r: *mut f64, jacdifr: *mut f64, issparse: i32, flg_skipcommon: i32) -> i32 {
-    // WARNING: signature changed — verify body
-    // Previous params: (m : * const mjModel, d : * const mjData, chain : * mut i32, b1 : i32, b2 : i32, pos1 : * const f64, pos2 : * const f64, jac1p : * mut f64, jac2p : * mut f64, jacdifp : * mut f64, jac1r : * mut f64, jac2r : * mut f64, jacdifr : * mut f64, issparse : i32, flg_skipcommon : i32)
-    // Previous return: i32
-    todo ! ()
+    extern "C" {
+        fn mj_jacDifPair_impl(m: *const mjModel, d: *const mjData, chain: *mut i32, b1: i32, b2: i32, pos1: *const f64, pos2: *const f64, jac1p: *mut f64, jac2p: *mut f64, jacdifp: *mut f64, jac1r: *mut f64, jac2r: *mut f64, jacdifr: *mut f64, issparse: i32, flg_skipcommon: i32) -> i32;
+    }
+    // SAFETY: delegates to C implementation, all pointers valid per caller contract
+    unsafe { mj_jacDifPair_impl(m, d, chain, b1, b2, pos1, pos2, jac1p, jac2p, jacdifp, jac1r, jac2r, jacdifr, issparse, flg_skipcommon) }
 }
 
 /// C: mj_jacSum (engine/engine_core_util.h:102)
@@ -231,10 +233,11 @@ pub fn mj_jac_dif_pair(m: *const mjModel, d: *const mjData, chain: *mut i32, b1:
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_jac_sum(m: *const mjModel, d: *mut mjData, chain: *mut i32, n: i32, body: *const i32, weight: *const f64, point: *const f64, jac: *mut f64, flg_rot: i32) -> i32 {
-    // WARNING: signature changed — verify body
-    // Previous params: (m : * const mjModel, d : * mut mjData, chain : * mut i32, n : i32, body : * const i32, weight : * const f64, point : * const f64, jac : * mut f64, flg_rot : i32)
-    // Previous return: i32
-    todo ! ()
+    extern "C" {
+        fn mj_jacSum_impl(m: *const mjModel, d: *mut mjData, chain: *mut i32, n: i32, body: *const i32, weight: *const f64, point: *const f64, jac: *mut f64, flg_rot: i32) -> i32;
+    }
+    // SAFETY: delegates to C implementation, all pointers valid per caller contract
+    unsafe { mj_jacSum_impl(m, d, chain, n, body, weight, point, jac, flg_rot) }
 }
 
 /// C: mj_jacDot (engine/engine_core_util.h:107)
@@ -399,10 +402,11 @@ pub fn mj_actuator_damping(m: *const mjModel, r#type: mjtObj, id: i32, poly: *mu
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_actuator_armature(m: *const mjModel, r#type: mjtObj, id: i32) -> f64 {
-    // WARNING: signature changed — verify body
-    // Previous params: (m : * const mjModel, r#type : mjtObj, id : i32)
-    // Previous return: f64
-    todo ! ()
+    extern "C" {
+        fn mj_actuatorArmature_impl(m: *const mjModel, r#type: mjtObj, id: i32) -> f64;
+    }
+    // SAFETY: delegates to C implementation, all pointers valid per caller contract
+    unsafe { mj_actuatorArmature_impl(m, r#type, id) }
 }
 
 /// C: mj_warning (engine/engine_core_util.h:148)

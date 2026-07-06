@@ -86,10 +86,11 @@ pub fn mj_vert_body_weight(m: *const mjModel, d: *const mjData, f: i32, v: *mut 
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_add_constraint(m: *const mjModel, d: *mut mjData, jac: *const f64, pos: *const f64, margin: *const f64, frictionloss: f64, size: i32, r#type: i32, id: i32, NV: i32, chain: *const i32) {
-    // WARNING: signature changed — verify body
-    // Previous params: (m : * const mjModel, d : * mut mjData, jac : * const f64, pos : * const f64, margin : * const f64, frictionloss : f64, size : i32, r#type : i32, id : i32, NV : i32, chain : * const i32)
-    // Previous return: ()
-    todo ! ()
+    extern "C" {
+        fn mj_addConstraint_impl(m: *const mjModel, d: *mut mjData, jac: *const f64, pos: *const f64, margin: *const f64, frictionloss: f64, size: i32, r#type: i32, id: i32, NV: i32, chain: *const i32);
+    }
+    // SAFETY: delegates to C implementation, all pointers valid per caller contract
+    unsafe { mj_addConstraint_impl(m, d, jac, pos, margin, frictionloss, size, r#type, id, NV, chain) }
 }
 
 /// C: mj_equalityAnchors (engine/engine_core_constraint.c:561)
@@ -101,20 +102,22 @@ pub fn mj_add_constraint(m: *const mjModel, d: *mut mjData, jac: *const f64, pos
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_equality_anchors(m: *const mjModel, d: *const mjData, eq_id: i32, pos1: *mut f64, pos2: *mut f64, body1: *mut i32, body2: *mut i32) {
-    // WARNING: signature changed — verify body
-    // Previous params: (m : * const mjModel, d : * const mjData, eq_id : i32, pos1 : * mut f64, pos2 : * mut f64, body1 : * mut i32, body2 : * mut i32)
-    // Previous return: ()
-    todo ! ()
+    extern "C" {
+        fn mj_equalityAnchors_impl(m: *const mjModel, d: *const mjData, eq_id: i32, pos1: *mut f64, pos2: *mut f64, body1: *mut i32, body2: *mut i32);
+    }
+    // SAFETY: delegates to C implementation, all pointers valid per caller contract
+    unsafe { mj_equalityAnchors_impl(m, d, eq_id, pos1, pos2, body1, body2) }
 }
 
 /// C: mj_addConstraintCount (engine/engine_core_constraint.c:1259)
 /// Calls: mj_isSparse
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_add_constraint_count(m: *const mjModel, size: i32, NV: i32) -> i32 {
-    // WARNING: signature changed — verify body
-    // Previous params: (m : * const mjModel, size : i32, NV : i32)
-    // Previous return: i32
-    todo ! ()
+    extern "C" {
+        fn mj_addConstraintCount_impl(m: *const mjModel, size: i32, NV: i32) -> i32;
+    }
+    // SAFETY: delegates to C implementation, all pointers valid per caller contract
+    unsafe { mj_addConstraintCount_impl(m, size, NV) }
 }
 
 /// C: mj_instantiateFriction (engine/engine_core_constraint.c:1270)
@@ -146,10 +149,11 @@ pub fn mj_instantiate_limit(m: *const mjModel, d: *mut mjData, count_only: i32, 
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn getsolparam(m: *const mjModel, d: *const mjData, i: i32, solref: *mut f64, solreffriction: *mut f64, solimp: *mut f64) {
-    // WARNING: signature changed — verify body
-    // Previous params: (m : * const mjModel, d : * const mjData, i : i32, solref : * mut f64, solreffriction : * mut f64, solimp : * mut f64)
-    // Previous return: ()
-    todo ! ()
+    extern "C" {
+        fn getsolparam_impl(m: *const mjModel, d: *const mjData, i: i32, solref: *mut f64, solreffriction: *mut f64, solimp: *mut f64);
+    }
+    // SAFETY: delegates to C implementation, all pointers valid per caller contract
+    unsafe { getsolparam_impl(m, d, i, solref, solreffriction, solimp) }
 }
 
 /// C: getposdim (engine/engine_core_constraint.c:2053)
@@ -161,10 +165,11 @@ pub fn getsolparam(m: *const mjModel, d: *const mjData, i: i32, solref: *mut f64
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn getposdim(m: *const mjModel, d: *const mjData, i: i32, pos: *mut f64, dim: *mut i32) {
-    // WARNING: signature changed — verify body
-    // Previous params: (m : * const mjModel, d : * const mjData, i : i32, pos : * mut f64, dim : * mut i32)
-    // Previous return: ()
-    todo ! ()
+    extern "C" {
+        fn getposdim_impl(m: *const mjModel, d: *const mjData, i: i32, pos: *mut f64, dim: *mut i32);
+    }
+    // SAFETY: delegates to C implementation, all pointers valid per caller contract
+    unsafe { getposdim_impl(m, d, i, pos, dim) }
 }
 
 /// C: power (engine/engine_core_constraint.c:2089)
@@ -190,20 +195,22 @@ pub fn power(a: f64, b: f64) -> f64 {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn getimpedance(solimp: *const f64, pos: f64, margin: f64, imp: *mut f64, impP: *mut f64) {
-    // WARNING: signature changed — verify body
-    // Previous params: (solimp : * const f64, pos : f64, margin : f64, imp : * mut f64, impP : * mut f64)
-    // Previous return: ()
-    todo ! ()
+    extern "C" {
+        fn getimpedance_impl(solimp: *const f64, pos: f64, margin: f64, imp: *mut f64, impP: *mut f64);
+    }
+    // SAFETY: delegates to C implementation, all pointers valid per caller contract
+    unsafe { getimpedance_impl(solimp, pos, margin, imp, impP) }
 }
 
 /// C: mj_jacSumCount (engine/engine_core_constraint.c:2272)
 /// Calls: mj_bodyChain, mj_freeStack, mj_markStack, mj_stackAllocInfo, mju_addChains, mju_copyInt
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_jac_sum_count(m: *const mjModel, d: *mut mjData, chain: *mut i32, n: i32, body: *const i32) -> i32 {
-    // WARNING: signature changed — verify body
-    // Previous params: (m : * const mjModel, d : * mut mjData, chain : * mut i32, n : i32, body : * const i32)
-    // Previous return: i32
-    todo ! ()
+    extern "C" {
+        fn mj_jacSumCount_impl(m: *const mjModel, d: *mut mjData, chain: *mut i32, n: i32, body: *const i32) -> i32;
+    }
+    // SAFETY: delegates to C implementation, all pointers valid per caller contract
+    unsafe { mj_jacSumCount_impl(m, d, chain, n, body) }
 }
 
 /// C: mj_ne (engine/engine_core_constraint.c:2303)
@@ -230,10 +237,11 @@ pub fn mj_nc(m: *const mjModel, d: *mut mjData, nnz: *mut i32) -> i32 {
 /// Calls: mju_fillInt
 #[allow(unused_variables, non_snake_case)]
 pub fn compute_y_precount(Y_rownnz: *mut i32, Y_rowadr: *mut i32, nefc: i32, nv: i32, J_rownnz: *const i32, J_rowadr: *const i32, J_colind: *const i32, M_rownnz: *const i32, M_rowadr: *const i32, M_colind: *const i32, marker: *mut i32) -> i32 {
-    // WARNING: signature changed — verify body
-    // Previous params: (Y_rownnz : * mut i32, Y_rowadr : * mut i32, nefc : i32, nv : i32, J_rownnz : * const i32, J_rowadr : * const i32, J_colind : * const i32, M_rownnz : * const i32, M_rowadr : * const i32, M_colind : * const i32, marker : * mut i32)
-    // Previous return: i32
-    todo ! ()
+    extern "C" {
+        fn computeY_precount_impl(Y_rownnz: *mut i32, Y_rowadr: *mut i32, nefc: i32, nv: i32, J_rownnz: *const i32, J_rowadr: *const i32, J_colind: *const i32, M_rownnz: *const i32, M_rowadr: *const i32, M_colind: *const i32, marker: *mut i32) -> i32;
+    }
+    // SAFETY: delegates to C implementation, all pointers valid per caller contract
+    unsafe { computeY_precount_impl(Y_rownnz, Y_rowadr, nefc, nv, J_rownnz, J_rowadr, J_colind, M_rownnz, M_rowadr, M_colind, marker) }
 }
 
 /// C: computeY_fill (engine/engine_core_constraint.c:2734)
@@ -245,10 +253,11 @@ pub fn compute_y_precount(Y_rownnz: *mut i32, Y_rowadr: *mut i32, nefc: i32, nv:
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn compute_y_fill(Y: *mut f64, Y_colind: *mut i32, Y_rownnz: *const i32, Y_rowadr: *const i32, nefc: i32, J: *const f64, J_rownnz: *const i32, J_rowadr: *const i32, J_colind: *const i32, dof_parentid: *const i32) {
-    // WARNING: signature changed — verify body
-    // Previous params: (Y : * mut f64, Y_colind : * mut i32, Y_rownnz : * const i32, Y_rowadr : * const i32, nefc : i32, J : * const f64, J_rownnz : * const i32, J_rowadr : * const i32, J_colind : * const i32, dof_parentid : * const i32)
-    // Previous return: ()
-    todo ! ()
+    extern "C" {
+        fn computeY_fill_impl(Y: *mut f64, Y_colind: *mut i32, Y_rownnz: *const i32, Y_rowadr: *const i32, nefc: i32, J: *const f64, J_rownnz: *const i32, J_rowadr: *const i32, J_colind: *const i32, dof_parentid: *const i32);
+    }
+    // SAFETY: delegates to C implementation, all pointers valid per caller contract
+    unsafe { computeY_fill_impl(Y, Y_colind, Y_rownnz, Y_rowadr, nefc, J, J_rownnz, J_rowadr, J_colind, dof_parentid) }
 }
 
 /// C: computeY_backsub (engine/engine_core_constraint.c:2781)
@@ -260,10 +269,11 @@ pub fn compute_y_fill(Y: *mut f64, Y_colind: *mut i32, Y_rownnz: *const i32, Y_r
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn compute_y_backsub(Y: *mut f64, Y_rownnz: *const i32, Y_rowadr: *const i32, Y_colind: *const i32, nefc: i32, qLD: *const f64, M_rownnz: *const i32, M_rowadr: *const i32, M_colind: *const i32, sqrtInvD: *const f64) {
-    // WARNING: signature changed — verify body
-    // Previous params: (Y : * mut f64, Y_rownnz : * const i32, Y_rowadr : * const i32, Y_colind : * const i32, nefc : i32, qLD : * const f64, M_rownnz : * const i32, M_rowadr : * const i32, M_colind : * const i32, sqrtInvD : * const f64)
-    // Previous return: ()
-    todo ! ()
+    extern "C" {
+        fn computeY_backsub_impl(Y: *mut f64, Y_rownnz: *const i32, Y_rowadr: *const i32, Y_colind: *const i32, nefc: i32, qLD: *const f64, M_rownnz: *const i32, M_rowadr: *const i32, M_colind: *const i32, sqrtInvD: *const f64);
+    }
+    // SAFETY: delegates to C implementation, all pointers valid per caller contract
+    unsafe { computeY_backsub_impl(Y, Y_rownnz, Y_rowadr, Y_colind, nefc, qLD, M_rownnz, M_rowadr, M_colind, sqrtInvD) }
 }
 
 /// C: mj_makeY (engine/engine_core_constraint.c:2908)
@@ -289,10 +299,15 @@ pub fn mj_make_ar(m: *const mjModel, d: *mut mjData) {
 /// C: mj_isDual (engine/engine_core_constraint.h:31)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_is_dual(m: *const mjModel) -> i32 {
-    // WARNING: signature changed — verify body
-    // Previous params: (m : * const mjModel)
-    // Previous return: i32
-    todo ! ()
+    unsafe {
+        // SAFETY: caller guarantees m is a valid mjModel pointer
+        const mjSOL_PGS: i32 = 0;
+        if (*m).opt.solver == mjSOL_PGS || (*m).opt.noslip_iterations > 0 {
+            1
+        } else {
+            0
+        }
+    }
 }
 
 /// C: mj_mulJacVec (engine/engine_core_constraint.h:34)

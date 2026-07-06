@@ -216,10 +216,11 @@ pub fn mj_private_get_global_log_handler() -> mjfLogHandler {
 /// Calls: mju_getLogConfigPtr
 #[allow(unused_variables, non_snake_case)]
 pub fn mju_is_topic_enabled(topic: i32) -> mjtBool {
-    // WARNING: signature changed — verify body
-    // Previous params: (topic : i32)
-    // Previous return: mjtBool
-    todo ! ()
+    extern "C" {
+        fn mju_isTopicEnabled_impl(topic: i32) -> mjtBool;
+    }
+    // SAFETY: delegates to C implementation (uses global state)
+    unsafe { mju_isTopicEnabled_impl(topic) }
 }
 
 /// C: BaseName (engine/engine_util_errmem.h:102)

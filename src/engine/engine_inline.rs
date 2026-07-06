@@ -598,10 +598,13 @@ pub fn mji_cross_force(res: *mut f64, vel: *const f64, f: *const f64) {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mji_dot6(vec1: *const f64, vec2: *const f64) -> f64 {
-    // WARNING: signature changed — verify body
-    // Previous params: (vec1 : * const f64, vec2 : * const f64)
-    // Previous return: f64
-    todo ! ()
+    unsafe {
+        // SAFETY: caller guarantees vec1 and vec2 point to at least 6 f64 elements
+        // match order of operations to mju_dot
+        ((*vec1.add(0) * *vec2.add(0) + *vec1.add(2) * *vec2.add(2)) +
+         (*vec1.add(1) * *vec2.add(1) + *vec1.add(3) * *vec2.add(3))) +
+         (*vec1.add(4) * *vec2.add(4) + *vec1.add(5) * *vec2.add(5))
+    }
 }
 
 /// C: mji_copy6 (engine/engine_inline.h:473)

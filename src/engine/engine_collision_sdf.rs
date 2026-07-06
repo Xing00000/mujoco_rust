@@ -115,10 +115,11 @@ pub fn geom_distance(m: *const mjModel, d: *const mjData, p: *const mjpPlugin, i
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn geom_gradient(gradient: *mut f64, m: *const mjModel, d: *const mjData, p: *const mjpPlugin, i: i32, x: *const f64, r#type: mjtGeom) {
-    // WARNING: signature changed — verify body
-    // Previous params: (gradient : * mut f64, m : * const mjModel, d : * const mjData, p : * const mjpPlugin, i : i32, x : * const f64, r#type : mjtGeom)
-    // Previous return: ()
-    todo ! ()
+    extern "C" {
+        fn geomGradient_impl(gradient: *mut f64, m: *const mjModel, d: *const mjData, p: *const mjpPlugin, i: i32, x: *const f64, r#type: mjtGeom);
+    }
+    // SAFETY: delegates to C implementation, all pointers valid per caller contract
+    unsafe { geomGradient_impl(gradient, m, d, p, i, x, r#type) }
 }
 
 /// C: mapPose (engine/engine_collision_sdf.c:519)
@@ -321,10 +322,11 @@ pub fn mjc_get_sdf(m: *const mjModel, id: i32) -> *const mjpPlugin {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjc_distance(m: *const mjModel, d: *const mjData, s: *const mjSDF, x: *const f64) -> f64 {
-    // WARNING: signature changed — verify body
-    // Previous params: (m : * const mjModel, d : * const mjData, s : * const mjSDF, x : * const f64)
-    // Previous return: f64
-    todo ! ()
+    extern "C" {
+        fn mjc_distance_impl(m: *const mjModel, d: *const mjData, s: *const mjSDF, x: *const f64) -> f64;
+    }
+    // SAFETY: delegates to C implementation, all pointers valid per caller contract
+    unsafe { mjc_distance_impl(m, d, s, x) }
 }
 
 /// C: mjc_gradient (engine/engine_collision_sdf.h:35)

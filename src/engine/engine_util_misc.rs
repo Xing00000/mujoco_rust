@@ -437,10 +437,11 @@ pub fn mju_cam_pixel_ray(origin: *mut f64, direction: *mut f64, cam_xpos: *const
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mju_def_gradient(res: *mut f64, p: *const f64, dof: *const f64, order: i32) {
-    // WARNING: signature changed — verify body
-    // Previous params: (res : * mut f64, p : * const f64, dof : * const f64, order : i32)
-    // Previous return: ()
-    todo ! ()
+    extern "C" {
+        fn mju_defGradient_impl(res: *mut f64, p: *const f64, dof: *const f64, order: i32);
+    }
+    // SAFETY: delegates to C implementation, all pointers valid per caller contract
+    unsafe { mju_defGradient_impl(res, p, dof, order) }
 }
 
 /// C: mju_evalBasis (engine/engine_util_misc.h:90)
@@ -660,10 +661,11 @@ pub fn mju_flex_gather_face_state(order: i32, cx: i32, cy: i32, cz: i32, face_el
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mju_flex_interp_rotation2d(order: i32, xpos_f: *const f64, npe: i32, axis0: i32, axis1: i32, normal_axis: i32, local: *const f64, quat: *mut f64) {
-    // WARNING: signature changed — verify body
-    // Previous params: (order : i32, xpos_f : * const f64, npe : i32, axis0 : i32, axis1 : i32, normal_axis : i32, local : * const f64, quat : * mut f64)
-    // Previous return: ()
-    todo ! ()
+    extern "C" {
+        fn mju_flexInterpRotation2D_impl(order: i32, xpos_f: *const f64, npe: i32, axis0: i32, axis1: i32, normal_axis: i32, local: *const f64, quat: *mut f64);
+    }
+    // SAFETY: delegates to C implementation, all pointers valid per caller contract
+    unsafe { mju_flexInterpRotation2D_impl(order, xpos_f, npe, axis0, axis1, normal_axis, local, quat) }
 }
 
 /// C: mju_flexFaceNormal2D (engine/engine_util_misc.h:124)
@@ -813,10 +815,11 @@ pub fn mju_shell_track_interior(nodexpos: *mut f64, nx: i32, ny: i32, nz: i32) {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mju_shell_tfi_weights(nx: i32, ny: i32, nz: i32, i: i32, j: i32, k: i32, w: f64, nb: *mut i32, body: *mut i32, bweight: *mut f64, nodebodyid: *const i32, nstart: i32) {
-    // WARNING: signature changed — verify body
-    // Previous params: (nx : i32, ny : i32, nz : i32, i : i32, j : i32, k : i32, w : f64, nb : * mut i32, body : * mut i32, bweight : * mut f64, nodebodyid : * const i32, nstart : i32)
-    // Previous return: ()
-    todo ! ()
+    extern "C" {
+        fn mju_shellTFIWeights_impl(nx: i32, ny: i32, nz: i32, i: i32, j: i32, k: i32, w: f64, nb: *mut i32, body: *mut i32, bweight: *mut f64, nodebodyid: *const i32, nstart: i32);
+    }
+    // SAFETY: delegates to C implementation, all pointers valid per caller contract
+    unsafe { mju_shellTFIWeights_impl(nx, ny, nz, i, j, k, w, nb, body, bweight, nodebodyid, nstart) }
 }
 
 /// C: mju_encodeBase64 (engine/engine_util_misc.h:163)

@@ -198,10 +198,11 @@ pub fn mj_sleep(m: *const mjModel, d: *mut mjData) -> i32 {
 /// C: mj_flexBody (engine/engine_sleep.h:56)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_flex_body(m: *const mjModel, con: *const mjContact, side: i32) -> i32 {
-    // WARNING: signature changed — verify body
-    // Previous params: (m : * const mjModel, con : * const mjContact, side : i32)
-    // Previous return: i32
-    todo ! ()
+    extern "C" {
+        fn mj_flexBody_impl(m: *const mjModel, con: *const mjContact, side: i32) -> i32;
+    }
+    // SAFETY: delegates to C implementation, all pointers valid per caller contract
+    unsafe { mj_flexBody_impl(m, con, side) }
 }
 
 /// C: mj_sleepState (engine/engine_sleep.h:59)

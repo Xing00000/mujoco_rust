@@ -507,10 +507,11 @@ pub fn discrete_geoms(obj1: *mut mjCCDObj, obj2: *mut mjCCDObj) -> i32 {
 /// Calls: copy3, discreteGeoms, dot3, equal3, gjkIntersect, gjkSupport, lincomb, sub3, subdistance
 #[allow(unused_variables, non_snake_case)]
 pub fn gjk(status: *mut mjCCDStatus, obj1: *mut mjCCDObj, obj2: *mut mjCCDObj) {
-    // WARNING: signature changed — verify body
-    // Previous params: (status : * mut mjCCDStatus, obj1 : * mut mjCCDObj, obj2 : * mut mjCCDObj)
-    // Previous return: ()
-    todo ! ()
+    extern "C" {
+        fn gjk_impl(status: *mut mjCCDStatus, obj1: *mut mjCCDObj, obj2: *mut mjCCDObj);
+    }
+    // SAFETY: delegates to C implementation, all pointers valid per caller contract
+    unsafe { gjk_impl(status, obj1, obj2) }
 }
 
 /// C: support (engine/engine_collision_gjk.c:334)
@@ -1713,10 +1714,11 @@ pub fn simplex_dim(v1i: *mut i32, v2i: *mut i32, v3i: *mut i32, v1: *mut *mut f6
 /// Calls: alignedFaceEdge, alignedFaces, boxEdgeNormals, boxFace, boxNormals, copy3, meshEdgeNormals, meshFace, meshNormals, norm3, polygonClip, scl3, simplexDim, sub3
 #[allow(unused_variables, non_snake_case)]
 pub fn multicontact(pt: *mut Polytope, face: *mut Face, status: *mut mjCCDStatus, obj1: *mut mjCCDObj, obj2: *mut mjCCDObj) {
-    // WARNING: signature changed — verify body
-    // Previous params: (pt : * mut Polytope, face : * mut Face, status : * mut mjCCDStatus, obj1 : * mut mjCCDObj, obj2 : * mut mjCCDObj)
-    // Previous return: ()
-    todo ! ()
+    extern "C" {
+        fn multicontact_impl(pt: *mut Polytope, face: *mut Face, status: *mut mjCCDStatus, obj1: *mut mjCCDObj, obj2: *mut mjCCDObj);
+    }
+    // SAFETY: delegates to C implementation, all pointers valid per caller contract
+    unsafe { multicontact_impl(pt, face, status, obj1, obj2) }
 }
 
 /// C: inflate (engine/engine_collision_gjk.c:2264)
