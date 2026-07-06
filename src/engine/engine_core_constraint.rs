@@ -28,10 +28,20 @@ pub fn cell_pos_and_jac(m: *const mjModel, d: *mut mjData, flex_id: i32, npc: i3
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn cell_strain_jacobian(npc: i32, cell_nnz: i32, dSdx_local: *const f64, cell_node_jac: *const f64, strain_jac: *mut f64) {
-    // WARNING: signature changed — verify body
-    // Previous params: (npc : i32, cell_nnz : i32, dSdx_local : * const f64, cell_node_jac : * const f64, strain_jac : * mut f64)
-    // Previous return: ()
-    todo ! ()
+    unsafe {
+        use crate::engine::engine_util_blas::mju_zero;
+        mju_zero(strain_jac, cell_nnz);
+        for n in 0..npc as usize {
+            for c in 0..3usize {
+                let w: f64 = *dSdx_local.add(3 * n + c);
+                if w == 0.0 { continue; }
+                let row = 3 * n + c;
+                for k in 0..cell_nnz as usize {
+                    *strain_jac.add(k) += w * *cell_node_jac.add(row * cell_nnz as usize + k);
+                }
+            }
+        }
+    }
 }
 
 /// C: arenaAllocEfc (engine/engine_core_constraint.c:130)
@@ -172,10 +182,13 @@ pub fn getposdim(m: *const mjModel, d: *const mjData, i: i32, pos: *mut f64, dim
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn power(a: f64, b: f64) -> f64 {
-    // WARNING: signature changed — verify body
-    // Previous params: (a : f64, b : f64)
-    // Previous return: f64
-    todo ! ()
+    if b == 1.0 {
+        a
+    } else if b == 2.0 {
+        a * a
+    } else {
+        a.powf(b)
+    }
 }
 
 /// C: getimpedance (engine/engine_core_constraint.c:2100)

@@ -78,10 +78,7 @@ pub fn has_plane(m: *const mjModel, body: i32) -> i32 {
 /// C: filterBitmask (engine/engine_collision_driver.c:227)
 #[allow(unused_variables, non_snake_case)]
 pub fn filter_bitmask(contype1: i32, conaffinity1: i32, contype2: i32, conaffinity2: i32) -> i32 {
-    // WARNING: signature changed — verify body
-    // Previous params: (contype1 : i32, conaffinity1 : i32, contype2 : i32, conaffinity2 : i32)
-    // Previous return: i32
-    todo ! ()
+    (((contype1 & conaffinity2) == 0) && ((contype2 & conaffinity1) == 0)) as i32
 }
 
 /// C: filterBox (engine/engine_collision_driver.c:234)

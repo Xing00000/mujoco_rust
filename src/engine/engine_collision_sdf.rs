@@ -133,10 +133,16 @@ pub fn map_pose(xpos1: *const f64, xquat1: *const f64, xpos2: *const f64, xquat2
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn isknown(points: *const f64, x: *const f64, cnt: i32) -> i32 {
-    // WARNING: signature changed — verify body
-    // Previous params: (points : * const f64, x : * const f64, cnt : i32)
-    // Previous return: i32
-    todo ! ()
+    unsafe {
+        use crate::engine::engine_util_blas::mju_dist3;
+        const MJMINVAL: f64 = 1e-15;
+        for i in 0..cnt as usize {
+            if mju_dist3(x, points.add(3 * i)) < MJMINVAL {
+                return 1;
+            }
+        }
+        0
+    }
 }
 
 /// C: addPreContact (engine/engine_collision_sdf.c:545)

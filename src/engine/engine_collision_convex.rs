@@ -153,10 +153,7 @@ pub fn mjc_box_support(res: *mut f64, obj: *mut mjCCDObj, dir: *const f64) {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn dot3f(a: *const f64, b: [f32; 3]) -> f64 {
-    // WARNING: signature changed — verify body
-    // Previous params: (a : * const f64, b : [f32 ; 3])
-    // Previous return: f64
-    todo ! ()
+    unsafe { *a.add(0) * b[0] as f64 + *a.add(1) * b[1] as f64 + *a.add(2) * b[2] as f64 }
 }
 
 /// C: mjc_meshSupport (engine/engine_collision_convex.c:349)

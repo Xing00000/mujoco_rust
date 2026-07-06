@@ -227,10 +227,11 @@ pub fn add3(res: *mut f64, v1: *const f64, v2: *const f64) {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn sub3(res: *mut f64, v1: *const f64, v2: *const f64) {
-    // WARNING: signature changed — verify body
-    // Previous params: (res : * mut f64, v1 : * const f64, v2 : * const f64)
-    // Previous return: ()
-    todo ! ()
+    unsafe {
+        *res.add(0) = *v1.add(0) - *v2.add(0);
+        *res.add(1) = *v1.add(1) - *v2.add(1);
+        *res.add(2) = *v1.add(2) - *v2.add(2);
+    }
 }
 
 /// C: dot3 (engine/engine_collision_gjk.c:150)
@@ -241,10 +242,7 @@ pub fn sub3(res: *mut f64, v1: *const f64, v2: *const f64) {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn dot3(v1: *const f64, v2: *const f64) -> f64 {
-    // WARNING: signature changed — verify body
-    // Previous params: (v1 : * const f64, v2 : * const f64)
-    // Previous return: f64
-    todo ! ()
+    unsafe { *v1.add(0) * *v2.add(0) + *v1.add(1) * *v2.add(1) + *v1.add(2) * *v2.add(2) }
 }
 
 /// C: norm3 (engine/engine_collision_gjk.c:155)
@@ -284,10 +282,11 @@ pub fn copy3(res: *mut f64, v: *const f64) {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn scl3(res: *mut f64, v: *const f64, s: f64) {
-    // WARNING: signature changed — verify body
-    // Previous params: (res : * mut f64, v : * const f64, s : f64)
-    // Previous return: ()
-    todo ! ()
+    unsafe {
+        *res.add(0) = s * *v.add(0);
+        *res.add(1) = s * *v.add(1);
+        *res.add(2) = s * *v.add(2);
+    }
 }
 
 /// C: cross3 (engine/engine_collision_gjk.c:170)
@@ -298,10 +297,11 @@ pub fn scl3(res: *mut f64, v: *const f64, s: f64) {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn cross3(res: *mut f64, v1: *const f64, v2: *const f64) {
-    // WARNING: signature changed — verify body
-    // Previous params: (res : * mut f64, v1 : * const f64, v2 : * const f64)
-    // Previous return: ()
-    todo ! ()
+    unsafe {
+        *res.add(0) = *v1.add(1) * *v2.add(2) - *v1.add(2) * *v2.add(1);
+        *res.add(1) = *v1.add(2) * *v2.add(0) - *v1.add(0) * *v2.add(2);
+        *res.add(2) = *v1.add(0) * *v2.add(1) - *v1.add(1) * *v2.add(0);
+    }
 }
 
 /// C: det3 (engine/engine_collision_gjk.c:177)
