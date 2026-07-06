@@ -13,10 +13,14 @@ use crate::types::*;
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn get_margin(m: *const mjModel, g1: i32, g2: i32, ipair: i32) -> f64 {
-    // WARNING: signature changed — verify body
-    // Previous params: (m : * const mjModel, g1 : i32, g2 : i32, ipair : i32)
-    // Previous return: f64
-    todo ! ()
+    // SAFETY: m is a valid pointer to mjModel, g1/g2/ipair are valid indices
+    unsafe {
+        if ipair >= 0 {
+            crate::engine::engine_core_constraint::mj_assign_margin(m, *(*m).pair_margin.add(ipair as usize))
+        } else {
+            crate::engine::engine_core_constraint::mj_assign_margin(m, *(*m).geom_margin.add(g1 as usize) + *(*m).geom_margin.add(g2 as usize))
+        }
+    }
 }
 
 /// C: getGap (engine/engine_collision_driver.c:170)
@@ -135,10 +139,32 @@ pub fn filter_sphere(pos1: *const f64, pos2: *const f64, bound: f64) -> i32 {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_filter_sphere(m: *const mjModel, d: *mut mjData, g1: i32, g2: i32, margin: f64) -> i32 {
-    // WARNING: signature changed — verify body
-    // Previous params: (m : * const mjModel, d : * mut mjData, g1 : i32, g2 : i32, margin : f64)
-    // Previous return: i32
-    todo ! ()
+    // SAFETY: m, d are valid pointers; g1, g2 are valid geom indices
+    unsafe {
+        // neither geom is a plane
+        if *(*m).geom_rbound.add(g1 as usize) > 0.0 && *(*m).geom_rbound.add(g2 as usize) > 0.0 {
+            return filter_sphere(
+                (*d).geom_xpos.add(3 * g1 as usize),
+                (*d).geom_xpos.add(3 * g2 as usize),
+                *(*m).geom_rbound.add(g1 as usize) + *(*m).geom_rbound.add(g2 as usize) + margin,
+            );
+        }
+
+        // one geom is a plane
+        if *(*m).geom_type.add(g1 as usize) == 0  // mjGEOM_PLANE = 0
+            && *(*m).geom_rbound.add(g2 as usize) > 0.0
+            && plane_geom_dist(m, d, g1, g2) > margin + *(*m).geom_rbound.add(g2 as usize)
+        {
+            return 1;
+        }
+        if *(*m).geom_type.add(g2 as usize) == 0  // mjGEOM_PLANE = 0
+            && *(*m).geom_rbound.add(g1 as usize) > 0.0
+            && plane_geom_dist(m, d, g2, g1) > margin + *(*m).geom_rbound.add(g1 as usize)
+        {
+            return 1;
+        }
+        0
+    }
 }
 
 /// C: filterBodyPair (engine/engine_collision_driver.c:288)
@@ -242,10 +268,93 @@ pub fn contact_sort(arr: *mut mjContact, buf: *mut mjContact, n: i32, context: *
 /// Calls: mj_freeStack, mj_markStack, mj_stackAllocInfo, resetArena
 #[allow(unused_variables, non_snake_case)]
 pub fn filter_flex_contacts(d: *mut mjData, ncon_before: i32) {
-    // WARNING: signature changed — verify body
-    // Previous params: (d : * mut mjData, ncon_before : i32)
-    // Previous return: ()
-    todo ! ()
+    const MJ_MAXCONPAIR: i32 = 50;
+    const MJ_MAXVAL: f64 = 1e10;
+
+    // SAFETY: d is a valid pointer to mjData; ncon_before is a valid contact index
+    unsafe {
+        let n = (*d).ncon - ncon_before;
+        if n <= MJ_MAXCONPAIR {
+            return;
+        }
+
+        let contacts: *mut mjContact = (*d).contact.add(ncon_before as usize);
+
+        crate::engine::engine_memory::mj_mark_stack(d);
+        let selected: *mut u8 = crate::engine::engine_memory::mj_stack_alloc_info(
+            d,
+            (n as usize) * std::mem::size_of::<u8>(),
+            std::mem::align_of::<u8>(),
+            b"filterFlexContacts\0".as_ptr() as *const i8,
+            0,
+        ) as *mut u8;
+        let min_dist: *mut f64 = crate::engine::engine_memory::mj_stack_alloc_info(
+            d,
+            (n as usize) * std::mem::size_of::<f64>(),
+            std::mem::align_of::<f64>(),
+            b"filterFlexContacts\0".as_ptr() as *const i8,
+            0,
+        ) as *mut f64;
+        std::ptr::write_bytes(selected, 0, n as usize);
+
+        for i in 0..n {
+            *min_dist.add(i as usize) = MJ_MAXVAL;
+        }
+
+        // start with the deepest penetrating contact
+        let mut nselected: i32 = 0;
+        let mut best: i32 = 0;
+        let mut bestdist: f64 = -(*contacts.add(0)).dist;
+        for i in 1..n {
+            if -(*contacts.add(i as usize)).dist > bestdist {
+                bestdist = -(*contacts.add(i as usize)).dist;
+                best = i;
+            }
+        }
+
+        while nselected < MJ_MAXCONPAIR && best >= 0 {
+            *selected.add(best as usize) = 1;
+            let bestpos: *mut f64 = (*contacts.add(best as usize)).pos.as_mut_ptr();
+
+            let mut nextbest: i32 = -1;
+            let mut nextbestdist: f64 = -1.0;
+            for i in 0..n {
+                if *selected.add(i as usize) != 0 {
+                    continue;
+                }
+
+                let dx: f64 = (*contacts.add(i as usize)).pos[0] - *bestpos.add(0);
+                let dy: f64 = (*contacts.add(i as usize)).pos[1] - *bestpos.add(1);
+                let dz: f64 = (*contacts.add(i as usize)).pos[2] - *bestpos.add(2);
+                let d2: f64 = dx * dx + dy * dy + dz * dz;
+                if d2 < *min_dist.add(i as usize) {
+                    *min_dist.add(i as usize) = d2;
+                }
+                if *min_dist.add(i as usize) > nextbestdist {
+                    nextbestdist = *min_dist.add(i as usize);
+                    nextbest = i;
+                }
+            }
+
+            if nselected < MJ_MAXCONPAIR - 1 {
+                let temp: mjContact = *contacts.add(nselected as usize);
+                *contacts.add(nselected as usize) = *contacts.add(best as usize);
+                *contacts.add(best as usize) = temp;
+
+                if nextbest == nselected {
+                    nextbest = best;
+                }
+            }
+
+            nselected += 1;
+            best = nextbest;
+        }
+
+        crate::engine::engine_memory::mj_free_stack(d);
+
+        (*d).ncon = ncon_before + nselected;
+        reset_arena(d);
+    }
 }
 
 /// C: pushPairArena (engine/engine_collision_driver.c:489)
@@ -277,10 +386,115 @@ pub fn filter_collision_pair(m: *const mjModel, d: *mut mjData, g1: i32, g2: i32
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn make_aamm(m: *const mjModel, d: *mut mjData, x_min: *mut f64, y_min: *mut f64, z_min: *mut f64, x_max: *mut f64, y_max: *mut f64, z_max: *mut f64, bf: i32, frame: *const f64) {
-    // WARNING: signature changed — verify body
-    // Previous params: (m : * const mjModel, d : * mut mjData, x_min : * mut f64, y_min : * mut f64, z_min : * mut f64, x_max : * mut f64, y_max : * mut f64, z_max : * mut f64, bf : i32, frame : * const f64)
-    // Previous return: ()
-    todo ! ()
+    // SAFETY: m, d are valid pointers; bf is a valid bodyflex index; frame is 9-element rotation matrix
+    unsafe {
+        let mut aamm: [f64; 6] = [0.0; 6];
+        let override_margin: f64 = if ((*m).opt.enableflags & (1 << 0)) != 0 {
+            0.5 * (*m).opt.o_margin
+        } else {
+            0.0
+        };
+
+        // body
+        if (bf as usize) < (*m).nbody {
+            let body = bf;
+            let body_geomnum = *(*m).body_geomnum.add(body as usize);
+
+            // process all body geoms
+            for i in 0..body_geomnum {
+                let geom = *(*m).body_geomadr.add(body as usize) + i;
+                let margin: f64 = if override_margin != 0.0 {
+                    override_margin
+                } else {
+                    *(*m).geom_margin.add(geom as usize) + *(*m).geom_gap.add(geom as usize)
+                };
+                let mut _aamm: [f64; 6] = [0.0; 6];
+
+                let aabb: *const f64 = (*m).geom_aabb.add(6 * geom as usize);
+                let size: *const f64 = (*m).geom_aabb.add(6 * geom as usize + 3);
+                let xpos: *const f64 = (*d).geom_xpos.add(3 * geom as usize);
+                let xmat: *const f64 = (*d).geom_xmat.add(9 * geom as usize);
+
+                // compute center in global coordinates
+                let mut pos: [f64; 3] = [0.0; 3];
+                crate::engine::engine_inline::mji_mul_mat_vec3(pos.as_mut_ptr(), xmat, aabb);
+                crate::engine::engine_util_blas::mju_add_to3(pos.as_mut_ptr(), xpos);
+
+                let mut axis: [f64; 9] = [0.0; 9];
+                crate::engine::engine_inline::mji_transpose3(axis.as_mut_ptr(), xmat);
+                let r_half: f64 = *(*m).geom_rbound.add(geom as usize);
+
+                for j in 0..3 {
+                    let frame_j: *const f64 = frame.add(3 * j);
+                    let aabb_cen: f64 = crate::engine::engine_util_blas::mju_dot3(pos.as_ptr(), frame_j);
+                    let aabb_half: f64 =
+                        (*size.add(0) * crate::engine::engine_util_blas::mju_dot3(axis.as_ptr().add(0), frame_j)).abs()
+                        + (*size.add(1) * crate::engine::engine_util_blas::mju_dot3(axis.as_ptr().add(3), frame_j)).abs()
+                        + (*size.add(2) * crate::engine::engine_util_blas::mju_dot3(axis.as_ptr().add(6), frame_j)).abs();
+                    let r_cen: f64 = crate::engine::engine_util_blas::mju_dot3(xpos, frame_j);
+                    _aamm[j + 0] = crate::engine::engine_util_misc::mju_max(r_cen - r_half, aabb_cen - aabb_half) - margin;
+                    _aamm[j + 3] = crate::engine::engine_util_misc::mju_min(r_cen + r_half, aabb_cen + aabb_half) + margin;
+                }
+
+                // update body aamm
+                if i == 0 {
+                    crate::engine::engine_util_blas::mju_copy(aamm.as_mut_ptr(), _aamm.as_ptr(), 6);
+                } else {
+                    for j in 0..3 {
+                        aamm[j] = crate::engine::engine_util_misc::mju_min(aamm[j], _aamm[j]);
+                        aamm[j + 3] = crate::engine::engine_util_misc::mju_max(aamm[j + 3], _aamm[j + 3]);
+                    }
+                }
+            }
+        }
+        // flex
+        else {
+            let f = bf - (*m).nbody as i32;
+            let flex_vertnum = *(*m).flex_vertnum.add(f as usize);
+            let vbase: *const f64 = (*d).flexvert_xpos.add(3 * *(*m).flex_vertadr.add(f as usize) as usize);
+
+            // process flex vertices
+            for i in 0..flex_vertnum {
+                let mut v: [f64; 3] = [0.0; 3];
+
+                // compute vertex coordinates in given frame
+                crate::engine::engine_util_blas::mju_mul_mat_vec(v.as_mut_ptr(), frame, vbase.add(3 * i as usize), 3, 3);
+
+                // update aamm
+                if i == 0 {
+                    crate::engine::engine_util_blas::mju_copy3(aamm.as_mut_ptr(), v.as_ptr());
+                    crate::engine::engine_util_blas::mju_copy3(aamm.as_mut_ptr().add(3), v.as_ptr());
+                } else {
+                    for j in 0..3_usize {
+                        aamm[j] = crate::engine::engine_util_misc::mju_min(aamm[j], v[j]);
+                        aamm[j + 3] = crate::engine::engine_util_misc::mju_max(aamm[j + 3], v[j]);
+                    }
+                }
+            }
+
+            // correct for flex radius and margin
+            let margin: f64 = if override_margin != 0.0 {
+                override_margin
+            } else {
+                *(*m).flex_margin.add(f as usize) + *(*m).flex_gap.add(f as usize)
+            };
+            let bound: f64 = *(*m).flex_radius.add(f as usize) + margin;
+            aamm[0] -= bound;
+            aamm[1] -= bound;
+            aamm[2] -= bound;
+            aamm[3] += bound;
+            aamm[4] += bound;
+            aamm[5] += bound;
+        }
+
+        // assign outputs
+        *x_min = aamm[0];
+        *y_min = aamm[1];
+        *z_min = aamm[2];
+        *x_max = aamm[3];
+        *y_max = aamm[4];
+        *z_max = aamm[5];
+    }
 }
 
 /// C: add_pair (engine/engine_collision_driver.c:1315)

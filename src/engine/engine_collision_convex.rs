@@ -336,10 +336,70 @@ pub fn mjc_ellipsoid_inside(nrm: *mut f64, pos: *const f64, size: *const f64) ->
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjc_ellipsoid_outside(nrm: *mut f64, pos: *const f64, size: *const f64) -> i32 {
-    // WARNING: signature changed — verify body
-    // Previous params: (nrm : * mut f64, pos : * const f64, size : * const f64)
-    // Previous return: i32
-    todo ! ()
+    // SAFETY: nrm, pos, size are valid pointers to f64 arrays of length >= 3.
+    // All arithmetic preserves exact C accumulation order.
+    unsafe {
+        const MJMINVAL: f64 = 1e-15;
+
+        // algorithm constants
+        let maxiter: i32 = 30;
+        let tolerance: f64 = 1e-6;
+
+        // precompute quantities
+        let S2: [f64; 3] = [
+            *size.add(0) * *size.add(0),
+            *size.add(1) * *size.add(1),
+            *size.add(2) * *size.add(2),
+        ];
+        let PS2: [f64; 3] = [
+            *pos.add(0) * *pos.add(0) * S2[0],
+            *pos.add(1) * *pos.add(1) * S2[1],
+            *pos.add(2) * *pos.add(2) * S2[2],
+        ];
+
+        // main iteration
+        let mut la: f64 = 0.0;
+        let mut iter: i32 = 0;
+        while iter < maxiter {
+            // precompute 1/(s^2+la)
+            let R: [f64; 3] = [
+                1.0 / (S2[0] + la),
+                1.0 / (S2[1] + la),
+                1.0 / (S2[2] + la),
+            ];
+
+            // value
+            let val: f64 = PS2[0] * R[0] * R[0] + PS2[1] * R[1] * R[1] + PS2[2] * R[2] * R[2] - 1.0;
+            if val < tolerance {
+                break;
+            }
+
+            // derivative
+            let deriv: f64 = -2.0 * (PS2[0] * R[0] * R[0] * R[0] + PS2[1] * R[1] * R[1] * R[1] + PS2[2] * R[2] * R[2] * R[2]);
+            if deriv > -MJMINVAL {
+                break;
+            }
+
+            // delta
+            let delta: f64 = -val / deriv;
+            if delta < tolerance {
+                break;
+            }
+
+            // update
+            la += delta;
+
+            iter += 1;
+        }
+
+        // compute normal given lambda
+        *nrm.add(0) = *pos.add(0) / (S2[0] + la);
+        *nrm.add(1) = *pos.add(1) / (S2[1] + la);
+        *nrm.add(2) = *pos.add(2) / (S2[2] + la);
+        crate::engine::engine_util_blas::mju_normalize3(nrm);
+
+        1
+    }
 }
 
 /// C: mjc_initCCDObj (engine/engine_collision_convex.h:94)
@@ -351,10 +411,229 @@ pub fn mjc_ellipsoid_outside(nrm: *mut f64, pos: *const f64, size: *const f64) -
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjc_init_ccd_obj(obj: *mut mjCCDObj, m: *const mjModel, d: *const mjData, g: i32, margin: f64) {
-    // WARNING: signature changed — verify body
-    // Previous params: (obj : * mut mjCCDObj, m : * const mjModel, d : * const mjData, g : i32, margin : f64)
-    // Previous return: ()
-    todo ! ()
+    // SAFETY: obj, m, d are valid pointers. g is a valid geom index (or < 0 for flex).
+    // data union accessed via byte-offset arithmetic from obj pointer.
+    // mjCCDObj C layout (376 bytes, align 8):
+    //   geom (i32)       offset 0
+    //   geom_type (i32)  offset 4
+    //   size [f64;4]     offset 8
+    //   pos [f64;3]      offset 40
+    //   mat [f64;9]      offset 64
+    //   vertindex (i32)  offset 136
+    //   meshindex (i32)  offset 140
+    //   flex (i32)       offset 144
+    //   elem (i32)       offset 148
+    //   vert (i32)       offset 152
+    //   margin (f64)     offset 160
+    //   rotate [f64;4]   offset 168
+    //   data (union)     offset 200 (160 bytes)
+    //     mesh.nvert (i32)          +0
+    //     mesh.mesh_polynum (i32)   +4
+    //     mesh.vert (*const f32)    +8
+    //     mesh.mpolymapadr (*i32)   +16
+    //     mesh.mpolymapnum (*i32)   +24
+    //     mesh.polymap (*i32)       +32
+    //     mesh.polyvertadr (*i32)   +40
+    //     mesh.polyvertnum (*i32)   +48
+    //     mesh.polyvert (*i32)      +56
+    //     mesh.polynormal (*f64)    +64
+    //     mesh.graph (*i32)         +72
+    //     ---
+    //     hfield.prism [f64;18]     +0  (144 bytes)
+    //     hfield.hfield_data (*f32) +144
+    //     hfield.hfield_nrow (i32)  +152
+    //     hfield.hfield_ncol (i32)  +156
+    //     ---
+    //     flex.elem (*i32)          +0
+    //     flex.dim (*i32)           +8
+    //     flex.aabb (*f64)          +16
+    //     flex.elemadr (*i32)       +24
+    //     flex.elemdataadr (*i32)   +32
+    //     flex.vert_xpos (*f64)     +40
+    //     flex.vertadr (*i32)       +48
+    //     flex.xradius (*f64)       +56
+    //   center (fn ptr)  offset 360
+    //   support (fn ptr) offset 368
+    unsafe {
+        const MJ_GEOM_HFIELD: i32 = 1;
+        const MJ_GEOM_SPHERE: i32 = 2;
+        const MJ_GEOM_CAPSULE: i32 = 3;
+        const MJ_GEOM_ELLIPSOID: i32 = 4;
+        const MJ_GEOM_CYLINDER: i32 = 5;
+        const MJ_GEOM_BOX: i32 = 6;
+        const MJ_GEOM_MESH: i32 = 7;
+        const MJ_GEOM_SDF: i32 = 8;
+        const MJ_GEOM_FLEX: i32 = 105;
+        const MJ_MESH_HILLCLIMB_MIN: i32 = 10;
+
+        let obj_ptr = obj as *mut u8;
+        let data_base = obj_ptr.add(200); // start of data union
+
+        (*obj).geom = g;
+        (*obj).margin = margin;
+        // center = mjc_center
+        let center_slot = obj_ptr.add(360) as *mut Option<unsafe extern "C" fn()>;
+        *center_slot = Some(std::mem::transmute::<*const (), unsafe extern "C" fn()>(
+            mjc_center as *const (),
+        ));
+        (*obj).vertindex = -1;
+        (*obj).meshindex = -1;
+        (*obj).flex = -1;
+        (*obj).elem = -1;
+        (*obj).vert = -1;
+        crate::engine::engine_util_blas::mju_zero4((*obj).rotate.as_mut_ptr());
+        (*obj).rotate[0] = 1.0;
+
+        if g >= 0 {
+            // SAFETY: m fields are valid model arrays indexed by g
+            crate::engine::engine_util_blas::mju_copy(
+                (*obj).size.as_mut_ptr(),
+                (*m).geom_size.add(3 * g as usize),
+                3,
+            );
+            crate::engine::engine_util_blas::mju_copy(
+                (*obj).pos.as_mut_ptr(),
+                (*d).geom_xpos.add(3 * g as usize),
+                3,
+            );
+            crate::engine::engine_util_blas::mju_copy(
+                (*obj).mat.as_mut_ptr(),
+                (*d).geom_xmat.add(9 * g as usize),
+                9,
+            );
+            (*obj).geom_type = *(*m).geom_type.add(g as usize);
+
+            let support_slot = obj_ptr.add(368) as *mut Option<unsafe extern "C" fn()>;
+
+            match (*obj).geom_type {
+                MJ_GEOM_ELLIPSOID => {
+                    *support_slot = Some(std::mem::transmute::<*const (), unsafe extern "C" fn()>(
+                        mjc_ellipsoid_support as *const (),
+                    ));
+                }
+                MJ_GEOM_MESH | MJ_GEOM_SDF => {
+                    let dataid = *(*m).geom_dataid.add(g as usize);
+                    let graphadr = *(*m).mesh_graphadr.add(dataid as usize);
+                    let vertadr = *(*m).mesh_vertadr.add(dataid as usize);
+                    let polyadr = *(*m).mesh_polyadr.add(dataid as usize);
+
+                    if graphadr < 0
+                        || *(*m).mesh_vertnum.add(dataid as usize) < MJ_MESH_HILLCLIMB_MIN
+                    {
+                        // data.mesh.graph = NULL
+                        *(data_base.add(72) as *mut *const i32) = std::ptr::null();
+                        *support_slot = Some(std::mem::transmute::<*const (), unsafe extern "C" fn()>(
+                            mjc_mesh_support as *const (),
+                        ));
+                    } else {
+                        // data.mesh.graph = m->mesh_graph + graphadr
+                        *(data_base.add(72) as *mut *const i32) =
+                            (*m).mesh_graph.add(graphadr as usize) as *const i32;
+                        *support_slot = Some(std::mem::transmute::<*const (), unsafe extern "C" fn()>(
+                            mjc_hillclimb_support as *const (),
+                        ));
+                    }
+
+                    // data.mesh.vert = m->mesh_vert + 3*vertadr
+                    *(data_base.add(8) as *mut *const f32) =
+                        (*m).mesh_vert.add(3 * vertadr as usize) as *const f32;
+                    // data.mesh.nvert = m->mesh_vertnum[dataid]
+                    *(data_base.add(0) as *mut i32) = *(*m).mesh_vertnum.add(dataid as usize);
+                    // data.mesh.mpolymapadr = m->mesh_polymapadr + vertadr
+                    *(data_base.add(16) as *mut *const i32) =
+                        (*m).mesh_polymapadr.add(vertadr as usize) as *const i32;
+                    // data.mesh.mpolymapnum = m->mesh_polymapnum + vertadr
+                    *(data_base.add(24) as *mut *const i32) =
+                        (*m).mesh_polymapnum.add(vertadr as usize) as *const i32;
+                    // data.mesh.polymap = m->mesh_polymap
+                    *(data_base.add(32) as *mut *const i32) = (*m).mesh_polymap as *const i32;
+                    // data.mesh.polynormal = m->mesh_polynormal + 3*polyadr
+                    *(data_base.add(64) as *mut *const f64) =
+                        (*m).mesh_polynormal.add(3 * polyadr as usize) as *const f64;
+                    // data.mesh.polyvertadr = m->mesh_polyvertadr + polyadr
+                    *(data_base.add(40) as *mut *const i32) =
+                        (*m).mesh_polyvertadr.add(polyadr as usize) as *const i32;
+                    // data.mesh.polyvertnum = m->mesh_polyvertnum + polyadr
+                    *(data_base.add(48) as *mut *const i32) =
+                        (*m).mesh_polyvertnum.add(polyadr as usize) as *const i32;
+                    // data.mesh.polyvert = m->mesh_polyvert
+                    *(data_base.add(56) as *mut *const i32) = (*m).mesh_polyvert as *const i32;
+                    // data.mesh.mesh_polynum = m->mesh_polynum[dataid]
+                    *(data_base.add(4) as *mut i32) = *(*m).mesh_polynum.add(dataid as usize);
+                }
+                MJ_GEOM_SPHERE => {
+                    *support_slot = Some(std::mem::transmute::<*const (), unsafe extern "C" fn()>(
+                        mjc_sphere_support as *const (),
+                    ));
+                }
+                MJ_GEOM_CAPSULE => {
+                    *support_slot = Some(std::mem::transmute::<*const (), unsafe extern "C" fn()>(
+                        mjc_capsule_support as *const (),
+                    ));
+                }
+                MJ_GEOM_CYLINDER => {
+                    *support_slot = Some(std::mem::transmute::<*const (), unsafe extern "C" fn()>(
+                        mjc_cylinder_support as *const (),
+                    ));
+                }
+                MJ_GEOM_BOX => {
+                    *support_slot = Some(std::mem::transmute::<*const (), unsafe extern "C" fn()>(
+                        mjc_box_support as *const (),
+                    ));
+                }
+                MJ_GEOM_HFIELD => {
+                    // center = mjc_center (already set above)
+                    *support_slot = Some(std::mem::transmute::<*const (), unsafe extern "C" fn()>(
+                        mjc_prism_support as *const (),
+                    ));
+
+                    let hid = *(*m).geom_dataid.add(g as usize);
+                    // data.hfield.hfield_nrow = m->hfield_nrow[hid]
+                    *(data_base.add(152) as *mut i32) = *(*m).hfield_nrow.add(hid as usize);
+                    // data.hfield.hfield_ncol = m->hfield_ncol[hid]
+                    *(data_base.add(156) as *mut i32) = *(*m).hfield_ncol.add(hid as usize);
+                    // mju_copy(obj->size, m->hfield_size + 4*hid, 4)
+                    crate::engine::engine_util_blas::mju_copy(
+                        (*obj).size.as_mut_ptr(),
+                        (*m).hfield_size.add(4 * hid as usize),
+                        4,
+                    );
+                    // data.hfield.hfield_data = m->hfield_data + m->hfield_adr[hid]
+                    *(data_base.add(144) as *mut *const f32) =
+                        (*m).hfield_data.add(*(*m).hfield_adr.add(hid as usize) as usize)
+                            as *const f32;
+                }
+                _ => {
+                    let support_slot = obj_ptr.add(368) as *mut Option<unsafe extern "C" fn()>;
+                    *support_slot = None;
+                }
+            }
+        } else {
+            // g < 0: flex object
+            (*obj).geom_type = MJ_GEOM_FLEX;
+            // data.flex.dim = m->flex_dim
+            *(data_base.add(8) as *mut *const i32) = (*m).flex_dim as *const i32;
+            // support = mjc_flexSupport
+            let support_slot = obj_ptr.add(368) as *mut Option<unsafe extern "C" fn()>;
+            *support_slot = Some(std::mem::transmute::<*const (), unsafe extern "C" fn()>(
+                mjc_flex_support as *const (),
+            ));
+            // data.flex.aabb = d->flexelem_aabb
+            *(data_base.add(16) as *mut *const f64) = (*d).flexelem_aabb as *const f64;
+            // data.flex.elemadr = m->flex_elemadr
+            *(data_base.add(24) as *mut *const i32) = (*m).flex_elemadr as *const i32;
+            // data.flex.vert_xpos = d->flexvert_xpos
+            *(data_base.add(40) as *mut *const f64) = (*d).flexvert_xpos as *const f64;
+            // data.flex.vertadr = m->flex_vertadr
+            *(data_base.add(48) as *mut *const i32) = (*m).flex_vertadr as *const i32;
+            // data.flex.xradius = m->flex_radius
+            *(data_base.add(56) as *mut *const f64) = (*m).flex_radius as *const f64;
+            // data.flex.elemdataadr = m->flex_elemdataadr
+            *(data_base.add(32) as *mut *const i32) = (*m).flex_elemdataadr as *const i32;
+            // data.flex.elem = m->flex_elem
+            *(data_base.add(0) as *mut *const i32) = (*m).flex_elem as *const i32;
+        }
+    }
 }
 
 /// C: mjc_center (engine/engine_collision_convex.h:97)

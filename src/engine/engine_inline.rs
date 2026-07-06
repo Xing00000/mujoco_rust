@@ -15,7 +15,12 @@ pub fn mji_zero3(res: *mut f64) {
     // WARNING: signature changed — verify body
     // Previous params: (res : * mut f64)
     // Previous return: ()
-    todo ! ()
+    // SAFETY: raw pointer arithmetic, caller guarantees valid buffer of at least 3 elements
+    unsafe {
+        *res.add(0) = 0.0;
+        *res.add(1) = 0.0;
+        *res.add(2) = 0.0;
+    }
 }
 
 /// C: mji_copy3 (engine/engine_inline.h:55)
@@ -124,7 +129,12 @@ pub fn mji_sub_from3(res: *mut f64, vec: *const f64) {
     // WARNING: signature changed — verify body
     // Previous params: (res : * mut f64, vec : * const f64)
     // Previous return: ()
-    todo ! ()
+    // SAFETY: raw pointer arithmetic, caller guarantees valid non-overlapping buffers of sufficient size
+    unsafe {
+        *res.add(0) -= *vec.add(0);
+        *res.add(1) -= *vec.add(1);
+        *res.add(2) -= *vec.add(2);
+    }
 }
 
 /// C: mji_addToScl3 (engine/engine_inline.h:109)
@@ -138,7 +148,12 @@ pub fn mji_add_to_scl3(res: *mut f64, vec: *const f64, scl: f64) {
     // WARNING: signature changed — verify body
     // Previous params: (res : * mut f64, vec : * const f64, scl : f64)
     // Previous return: ()
-    todo ! ()
+    // SAFETY: raw pointer arithmetic, caller guarantees valid non-overlapping buffers of sufficient size
+    unsafe {
+        *res.add(0) += *vec.add(0) * scl;
+        *res.add(1) += *vec.add(1) * scl;
+        *res.add(2) += *vec.add(2) * scl;
+    }
 }
 
 /// C: mji_addScl3 (engine/engine_inline.h:118)
@@ -152,7 +167,12 @@ pub fn mji_add_scl3(res: *mut f64, vec1: *const f64, vec2: *const f64, scl: f64)
     // WARNING: signature changed — verify body
     // Previous params: (res : * mut f64, vec1 : * const f64, vec2 : * const f64, scl : f64)
     // Previous return: ()
-    todo ! ()
+    // SAFETY: raw pointer arithmetic, caller guarantees valid non-overlapping buffers of sufficient size
+    unsafe {
+        *res.add(0) = *vec1.add(0) + scl * *vec2.add(0);
+        *res.add(1) = *vec1.add(1) + scl * *vec2.add(1);
+        *res.add(2) = *vec1.add(2) + scl * *vec2.add(2);
+    }
 }
 
 /// C: mji__normalize3 (engine/engine_inline.h:128)

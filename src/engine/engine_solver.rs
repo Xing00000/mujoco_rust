@@ -247,10 +247,239 @@ pub fn sol_pgs(m: *const mjModel, d: *mut mjData, island: i32, ne: i32, nf: i32,
 /// Calls: ARdiaginv, costChange, dualState, dualStateChange, extractBlock, mj_freeStack, mj_markStack, mj_stackAllocInfo, mju_copy, mju_dot, mju_zero, residual, saveStats, solveQCQP
 #[allow(unused_variables, non_snake_case)]
 pub fn sol_no_slip(m: *const mjModel, d: *mut mjData, island: i32, ne: i32, nf: i32, nefc: i32, efclist: *const i32, maxiter: i32) {
-    // WARNING: signature changed — verify body
-    // Previous params: (m : * const mjModel, d : * mut mjData, island : i32, ne : i32, nf : i32, nefc : i32, efclist : * const i32, maxiter : i32)
-    // Previous return: ()
-    todo ! ()
+    const MJ_MINVAL: f64 = 1e-15;
+    const MJ_NISLAND: i32 = 20;
+
+    // SAFETY: m, d are valid pointers. All byte offsets verified against compiled mujoco headers.
+    unsafe {
+        let d_ptr = d as *mut u8;
+        let m_ptr = m as *const u8;
+
+        // mjData field offsets (64-bit)
+        let floss: *const f64 = *(d_ptr.add(161480) as *const *const f64);   // efc_frictionloss
+        let force: *mut f64 = *(d_ptr.add(161848) as *const *mut f64);       // efc_force
+        let efc_R: *const f64 = *(d_ptr.add(161512) as *const *const f64);   // efc_R
+        let efc_type: *const i32 = *(d_ptr.add(161408) as *const *const i32); // efc_type
+        let efc_id: *const i32 = *(d_ptr.add(161416) as *const *const i32);   // efc_id
+        let contact: *const mjContact = *(d_ptr.add(161400) as *const *const mjContact); // contact
+        let efc_state: *mut i32 = *(d_ptr.add(161840) as *const *mut i32);   // efc_state
+        let solver_niter: *mut i32 = d_ptr.add(160088) as *mut i32;          // solver_niter[20]
+
+        // mjModel field offsets
+        let noslip_tolerance: f64 = *(m_ptr.add(768) as *const f64);         // opt.noslip_tolerance
+        let meaninertia: f64 = *(m_ptr.add(1672) as *const f64);            // stat.meaninertia
+        let m_nv: i32 = *(m_ptr.add(8) as *const i32);                      // nv
+
+        let mut iter: i32 = 0;
+        let mut improvement: f64;
+        let mut Ac: [f64; 25] = [0.0; 25];
+        let mut bc: [f64; 5] = [0.0; 5];
+        let mut res: [f64; 5] = [0.0; 5];
+        let mut oldforce: [f64; 5] = [0.0; 5];
+        let mut delta: [f64; 5] = [0.0; 5];
+        let mut mid: f64;
+        let mut y: f64;
+        let mut K0: f64;
+        let mut K1: f64;
+
+        crate::engine::engine_memory::mj_mark_stack(d);
+        let ARinv: *mut f64 = crate::engine::engine_memory::mj_stack_alloc_num(d, nefc as usize);
+        let oldstate: *mut i32 = crate::engine::engine_memory::mj_stack_alloc_int(d, nefc as usize);
+
+        let island_stat: i32 = if island > 0 { island } else { 0 };
+        let scale: f64 = 1.0 / (meaninertia * (if 1 > m_nv { 1 } else { m_nv }) as f64);
+
+        // precompute inverse diagonal of A
+        a_rdiaginv(m, d as *const mjData, ARinv, nefc, efclist, 1);
+
+        // initial constraint state
+        dual_state(d as *const mjData, efc_state, ne, nf, nefc, efclist);
+
+        // main iteration
+        while iter < maxiter {
+            // clear improvement
+            improvement = 0.0;
+
+            // correct for cost change at iter 0
+            if iter == 0 {
+                let mut c: i32 = 0;
+                while c < nefc {
+                    let i = if !efclist.is_null() { *efclist.add(c as usize) } else { c };
+                    improvement += 0.5 * *force.add(i as usize) * *force.add(i as usize) * *efc_R.add(i as usize);
+                    c += 1;
+                }
+            }
+
+            // perform one sweep: dry friction
+            {
+                let mut c: i32 = ne;
+                while c < ne + nf {
+                    let i = if !efclist.is_null() { *efclist.add(c as usize) } else { c };
+
+                    // compute residual, save old
+                    residual(m, d as *const mjData, res.as_mut_ptr(), i, 1, 1);
+                    oldforce[0] = *force.add(i as usize);
+
+                    // unconstrained minimum
+                    *force.add(i as usize) -= res[0] * *ARinv.add(c as usize);
+
+                    // impose interval constraints
+                    if *force.add(i as usize) < -*floss.add(i as usize) {
+                        *force.add(i as usize) = -*floss.add(i as usize);
+                    } else if *force.add(i as usize) > *floss.add(i as usize) {
+                        *force.add(i as usize) = *floss.add(i as usize);
+                    }
+
+                    // add to improvement
+                    delta[0] = *force.add(i as usize) - oldforce[0];
+                    improvement -= 0.5 * delta[0] * delta[0] / *ARinv.add(c as usize) + delta[0] * res[0];
+
+                    c += 1;
+                }
+            }
+
+            // perform one sweep: contact friction
+            {
+                let mut c: i32 = ne + nf;
+                while c < nefc {
+                    let i = if !efclist.is_null() { *efclist.add(c as usize) } else { c };
+
+                    // pyramidal contact
+                    if *efc_type.add(i as usize) == 6 { // mjCNSTR_CONTACT_PYRAMIDAL
+                        // get contact info
+                        let con: *const mjContact = contact.add(*efc_id.add(i as usize) as usize);
+                        let dim: i32 = (*con).dim;
+                        let mu: *const f64 = (*con).friction.as_ptr();
+
+                        // loop over pairs of opposing pyramid edges
+                        let mut j: i32 = i;
+                        while j < i + 2 * (dim - 1) {
+                            // compute residual, save old
+                            residual(m, d as *const mjData, res.as_mut_ptr(), j, 2, 1);
+                            crate::engine::engine_util_blas::mju_copy(oldforce.as_mut_ptr(), force.add(j as usize) as *const f64, 2);
+
+                            // Ac = AR-submatrix
+                            extract_block(m, d as *const mjData, Ac.as_mut_ptr(), j, 2, 1);
+
+                            // bc = b-subvector + Ac,rest * f_rest
+                            crate::engine::engine_util_blas::mju_copy(bc.as_mut_ptr(), res.as_ptr(), 2);
+                            let mut k: i32 = 0;
+                            while k < 2 {
+                                bc[k as usize] -= crate::engine::engine_util_blas::mju_dot(Ac.as_ptr().add((k * 2) as usize), oldforce.as_ptr(), 2);
+                                k += 1;
+                            }
+
+                            // f0 = mid+y, f1 = mid-y
+                            mid = 0.5 * (*force.add(j as usize) + *force.add((j + 1) as usize));
+                            y = 0.5 * (*force.add(j as usize) - *force.add((j + 1) as usize));
+
+                            // K1 = A00 + A11 - 2*A01,  K0 = mid*A00 - mid*A11 + b0 - b1
+                            K1 = Ac[0] + Ac[3] - Ac[1] - Ac[2];
+                            K0 = mid * (Ac[0] - Ac[3]) + bc[0] - bc[1];
+
+                            // guard against Ac==0
+                            if K1 < MJ_MINVAL {
+                                *force.add(j as usize) = mid;
+                                *force.add((j + 1) as usize) = mid;
+                            }
+                            // otherwise minimize over y \in [-mid, mid]
+                            else {
+                                // unconstrained minimum
+                                y = -K0 / K1;
+
+                                // clamp and assign
+                                if y < -mid {
+                                    *force.add(j as usize) = 0.0;
+                                    *force.add((j + 1) as usize) = 2.0 * mid;
+                                } else if y > mid {
+                                    *force.add(j as usize) = 2.0 * mid;
+                                    *force.add((j + 1) as usize) = 0.0;
+                                } else {
+                                    *force.add(j as usize) = mid + y;
+                                    *force.add((j + 1) as usize) = mid - y;
+                                }
+                            }
+
+                            // accumulate improvement
+                            improvement -= cost_change(Ac.as_ptr(), force.add(j as usize), oldforce.as_ptr(), res.as_ptr(), 2);
+
+                            j += 2;
+                        }
+
+                        // skip the rest of this contact
+                        c += 2 * (dim - 1) - 1;
+                    }
+                    // elliptic contact
+                    else if *efc_type.add(i as usize) == 7 { // mjCNSTR_CONTACT_ELLIPTIC
+                        // get contact info
+                        let con: *const mjContact = contact.add(*efc_id.add(i as usize) as usize);
+                        let dim: i32 = (*con).dim;
+                        let mu: *const f64 = (*con).friction.as_ptr();
+
+                        // compute residual, save old
+                        residual(m, d as *const mjData, res.as_mut_ptr(), i + 1, dim - 1, 1);
+                        crate::engine::engine_util_blas::mju_copy(oldforce.as_mut_ptr(), force.add((i + 1) as usize) as *const f64, dim - 1);
+
+                        // Ac = AR-submatrix
+                        extract_block(m, d as *const mjData, Ac.as_mut_ptr(), i + 1, dim - 1, 1);
+
+                        // bc = b-subvector + Ac,rest * f_rest
+                        crate::engine::engine_util_blas::mju_copy(bc.as_mut_ptr(), res.as_ptr(), dim - 1);
+                        let mut j: i32 = 0;
+                        while j < dim - 1 {
+                            bc[j as usize] -= crate::engine::engine_util_blas::mju_dot(Ac.as_ptr().add((j * (dim - 1)) as usize), oldforce.as_ptr(), dim - 1);
+                            j += 1;
+                        }
+
+                        // guard for f_normal==0
+                        if *force.add(i as usize) < MJ_MINVAL {
+                            crate::engine::engine_util_blas::mju_zero(force.add((i + 1) as usize), dim - 1);
+                        }
+                        // QCQP
+                        else {
+                            solve_qcqp(force, i, dim, Ac.as_mut_ptr(), bc.as_mut_ptr(), mu);
+                        }
+
+                        // accumulate improvement
+                        improvement -= cost_change(Ac.as_ptr(), force.add((i + 1) as usize), oldforce.as_ptr(), res.as_ptr(), dim - 1);
+
+                        // skip the rest of this contact
+                        c += dim - 1;
+                    }
+
+                    c += 1;
+                }
+            }
+
+            // update constraint state
+            let mut nchange: i32 = 0;
+            let nactive: i32 = dual_state_change(d as *const mjData, efc_state, oldstate, ne, nf, nefc, efclist, &mut nchange as *mut i32);
+
+            // scale improvement
+            improvement *= scale;
+
+            // save noslip stats after all the entries from regular solver
+            if island_stat < MJ_NISLAND {
+                let stats_iter: i32 = iter + *solver_niter.add(island_stat as usize);
+                save_stats(m, d, island_stat, stats_iter, improvement, 0.0, 0.0, nactive, nchange, 0, 0);
+            }
+
+            // increment iteration count
+            iter += 1;
+
+            // terminate
+            if improvement < noslip_tolerance {
+                break;
+            }
+        }
+
+        // update solver iterations
+        if island_stat < MJ_NISLAND {
+            *solver_niter.add(island_stat as usize) += iter;
+        }
+
+        crate::engine::engine_memory::mj_free_stack(d);
+    }
 }
 
 /// C: PrimalPointers (engine/engine_solver.c:1087)
@@ -442,10 +671,176 @@ pub fn elliptic_cost_dif(quad: *const f64, alpha: f64, mu: f64, Dm: f64) -> f64 
 /// Calls: ellipticCostDif, frictionCostDif, mju_warning
 #[allow(unused_variables, non_snake_case)]
 pub fn primal_eval(ctx: *mut mjPrimalContext, p: *mut mjPrimalPnt) {
-    // WARNING: signature changed — verify body
-    // Previous params: (ctx : * mut mjPrimalContext, p : * mut mjPrimalPnt)
-    // Previous return: ()
-    todo ! ()
+    const MJ_MINVAL: f64 = 1e-15;
+
+    // SAFETY: ctx points to valid mjPrimalContext, p points to valid mjPrimalPnt.
+    // Byte offsets for mjPrimalContext fields verified against compiled struct layout.
+    unsafe {
+        let ctx_ptr = ctx as *const u8;
+
+        // mjPrimalContext field offsets (64-bit macOS)
+        let ne: i32 = *(ctx_ptr.add(16) as *const i32);
+        let nf: i32 = *(ctx_ptr.add(20) as *const i32);
+        let nefc: i32 = *(ctx_ptr.add(24) as *const i32);
+        let contact: *const mjContact = *(ctx_ptr.add(32) as *const *const mjContact);
+        let efc_D: *const f64 = *(ctx_ptr.add(120) as *const *const f64);
+        let efc_R: *const f64 = *(ctx_ptr.add(128) as *const *const f64);
+        let efc_frictionloss: *const f64 = *(ctx_ptr.add(136) as *const *const f64);
+        let efc_id: *const i32 = *(ctx_ptr.add(152) as *const *const i32);
+        let efc_type: *const i32 = *(ctx_ptr.add(160) as *const *const i32);
+        let Jaref: *const f64 = *(ctx_ptr.add(264) as *const *const f64);
+        let Jv: *const f64 = *(ctx_ptr.add(272) as *const *const f64);
+        let quad: *const f64 = *(ctx_ptr.add(320) as *const *const f64);
+        let quadGauss: *const f64 = ctx_ptr.add(544) as *const f64; // inline array [3]
+
+        // clear result
+        let mut cost: f64 = 0.0;
+        let alpha: f64 = (*p).alpha;
+        let mut deriv: [f64; 2] = [0.0, 0.0];
+
+        // init quad with Gauss, shifted: drop quadGauss[0]
+        let mut quadTotal: [f64; 3] = [0.0, *quadGauss.add(1), *quadGauss.add(2)];
+
+        // process constraints
+        let mut i: i32 = 0;
+        while i < nefc {
+            // equality: shifted quad (skip quad[0])
+            if i < ne {
+                quadTotal[1] += *quad.add((3 * i + 1) as usize);
+                quadTotal[2] += *quad.add((3 * i + 2) as usize);
+                i += 1;
+                continue;
+            }
+
+            // friction: compute cost(alpha) - cost(0) directly
+            if i < ne + nf {
+                // search point, friction loss, bound (Rf)
+                let start: f64 = *Jaref.add(i as usize);
+                let dir: f64 = *Jv.add(i as usize);
+                let x: f64 = start + alpha * dir;
+                let f: f64 = *efc_frictionloss.add(i as usize);
+                let D: f64 = *efc_D.add(i as usize);
+                let Rf: f64 = *efc_R.add(i as usize) * f;
+
+                // cost delta
+                cost += friction_cost_dif(start, x, f, Rf, D);
+
+                // -bound < x < bound : quadratic
+                if -Rf < x && x < Rf {
+                    deriv[0] += D * x * dir;
+                    deriv[1] += D * dir * dir;
+                }
+                // x < -bound : linear negative
+                else if x <= -Rf {
+                    deriv[0] += -f * dir;
+                }
+                // bound < x : linear positive
+                else {
+                    deriv[0] += f * dir;
+                }
+                i += 1;
+                continue;
+            }
+
+            // limit and contact
+            if *efc_type.add(i as usize) == 7 { // mjCNSTR_CONTACT_ELLIPTIC
+                // extract contact info
+                let con: *const mjContact = contact.add(*efc_id.add(i as usize) as usize);
+                let quad_i: *const f64 = quad.add((3 * i) as usize);
+                let dim: i32 = (*con).dim;
+                let mu: f64 = (*con).mu;
+
+                // unpack quad
+                let U0: f64 = *quad_i.add(3);
+                let V0: f64 = *quad_i.add(4);
+                let UU: f64 = *quad_i.add(5);
+                let UV: f64 = *quad_i.add(6);
+                let VV: f64 = *quad_i.add(7);
+                let Dm: f64 = *quad_i.add(8);
+
+                // shifted cost
+                cost += elliptic_cost_dif(quad_i, alpha, mu, Dm);
+
+                // compute N, Tsqr for derivatives
+                let N: f64 = U0 + alpha * V0;
+                let Tsqr: f64 = UU + alpha * (2.0 * UV + alpha * VV);
+
+                // no tangential force : top or bottom zone
+                if Tsqr <= 0.0 {
+                    // bottom zone: quadratic derivatives
+                    if N < 0.0 {
+                        deriv[0] += 2.0 * alpha * *quad_i.add(2) + *quad_i.add(1);
+                        deriv[1] += 2.0 * *quad_i.add(2);
+                    }
+                    // top zone: nothing to do
+                }
+                // otherwise regular processing
+                else {
+                    // tangential force
+                    let T: f64 = Tsqr.sqrt();
+
+                    // N>=mu*T : top zone
+                    if N >= mu * T {
+                        // nothing to do
+                    }
+                    // mu*N+T<=0 : bottom zone
+                    else if mu * N + T <= 0.0 {
+                        deriv[0] += 2.0 * alpha * *quad_i.add(2) + *quad_i.add(1);
+                        deriv[1] += 2.0 * *quad_i.add(2);
+                    }
+                    // otherwise middle zone
+                    else {
+                        // derivatives
+                        let N1: f64 = V0;
+                        let T1: f64 = (UV + alpha * VV) / T;
+                        let T2: f64 = VV / T - (UV + alpha * VV) * T1 / (T * T);
+                        deriv[0] += Dm * (N - mu * T) * (N1 - mu * T1);
+                        deriv[1] += Dm * ((N1 - mu * T1) * (N1 - mu * T1) + (N - mu * T) * (-mu * T2));
+                    }
+                }
+
+                // advance to next constraint
+                i += dim - 1;
+            } else { // inequality
+                // search point
+                let start: f64 = *Jaref.add(i as usize);
+                let x: f64 = start + alpha * *Jv.add(i as usize);
+                let cost0: f64 = if start < 0.0 { *quad.add((3 * i) as usize) } else { 0.0 };
+
+                // active
+                if x < 0.0 {
+                    // shifted quad: add quad[1], quad[2] and (quad[0] - cost0)
+                    quadTotal[0] += *quad.add((3 * i) as usize) - cost0;
+                    quadTotal[1] += *quad.add((3 * i + 1) as usize);
+                    quadTotal[2] += *quad.add((3 * i + 2) as usize);
+                } else {
+                    cost -= cost0;
+                }
+            }
+
+            i += 1;
+        }
+
+        // add total quadratic (quadTotal[0] contains only shifted residuals)
+        cost += alpha * alpha * quadTotal[2] + alpha * quadTotal[1] + quadTotal[0];
+        deriv[0] += 2.0 * alpha * quadTotal[2] + quadTotal[1];
+        deriv[1] += 2.0 * quadTotal[2];
+
+        // check for convexity; SHOULD NOT OCCUR
+        if deriv[1] <= 0.0 {
+            crate::engine::engine_util_errmem::mju_warning(b"Linesearch objective is not convex\0".as_ptr() as *const i8);
+            deriv[1] = MJ_MINVAL;
+        }
+
+        // assign and count
+        (*p).cost = cost;
+        (*p).deriv[0] = deriv[0];
+        (*p).deriv[1] = deriv[1];
+
+        // ctx->LSiter++
+        let ls_iter_ptr = (ctx as *mut u8).add(588) as *mut i32;
+        *ls_iter_ptr += 1;
+    }
 }
 
 /// C: updateBracket (engine/engine_solver.c:1782)

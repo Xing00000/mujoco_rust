@@ -346,10 +346,23 @@ pub fn mj_jdotv(m: *const mjModel, d: *mut mjData, result: *mut f64) {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_assign_ref(m: *const mjModel, target: *mut f64, source: *const f64) {
-    // WARNING: signature changed — verify body
-    // Previous params: (m : * const mjModel, target : * mut f64, source : * const f64)
-    // Previous return: ()
-    todo ! ()
+    unsafe {
+        // SAFETY: m is a valid pointer to mjModel (caller contract)
+        // mjENABLED(mjENBL_OVERRIDE) => m->opt.enableflags & (1<<0)
+        if ((*m).opt.enableflags & 1) != 0 {
+            // SAFETY: target is writable for mjNREF=2 elements;
+            // o_solref is [f64; 2] within mjOption
+            crate::engine::engine_util_blas::mju_copy(
+                target,
+                (*m).opt.o_solref.as_ptr(),
+                2, // mjNREF
+            );
+        } else {
+            // SAFETY: target is writable for mjNREF=2 elements;
+            // source is readable for mjNREF=2 elements
+            crate::engine::engine_util_blas::mju_copy(target, source, 2 /* mjNREF */);
+        }
+    }
 }
 
 /// C: mj_assignImp (engine/engine_core_constraint.h:49)
