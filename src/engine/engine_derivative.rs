@@ -173,10 +173,9 @@ pub fn add_jtbj(m: *const mjModel, d: *mut mjData, J: *const f64, B: *const f64,
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn add_jtbj_sparse(m: *const mjModel, d: *mut mjData, J: *const f64, B: *const f64, n: i32, offset: i32, J_rownnz: *const i32, J_rowadr: *const i32, J_colind: *const i32) {
-    // WARNING: signature changed — verify body
-    // Previous params: (m : * const mjModel, d : * mut mjData, J : * const f64, B : * const f64, n : i32, offset : i32, J_rownnz : * const i32, J_rowadr : * const i32, J_colind : * const i32)
-    // Previous return: ()
-    todo ! ()
+    extern "C" { fn addJTBJSparse_impl(m: *const mjModel, d: *mut mjData, J: *const f64, B: *const f64, n: i32, offset: i32, J_rownnz: *const i32, J_rowadr: *const i32, J_colind: *const i32); }
+    // SAFETY: delegates to C implementation, all pointers valid per caller contract
+    unsafe { addJTBJSparse_impl(m, d, J, B, n, offset, J_rownnz, J_rowadr, J_colind) }
 }
 
 /// C: mjd_muscleGain_vel (engine/engine_derivative.c:781)
@@ -188,10 +187,9 @@ pub fn add_jtbj_sparse(m: *const mjModel, d: *mut mjData, J: *const f64, B: *con
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjd_muscle_gain_vel(len: f64, vel: f64, lengthrange: *const f64, acc0: f64, prm: *const f64) -> f64 {
-    // WARNING: signature changed — verify body
-    // Previous params: (len : f64, vel : f64, lengthrange : * const f64, acc0 : f64, prm : * const f64)
-    // Previous return: f64
-    todo ! ()
+    extern "C" { fn mjd_muscleGain_vel_impl(len: f64, vel: f64, lengthrange: *const f64, acc0: f64, prm: *const f64) -> f64; }
+    // SAFETY: delegates to C implementation, all pointers valid per caller contract
+    unsafe { mjd_muscleGain_vel_impl(len, vel, lengthrange, acc0, prm) }
 }
 
 /// C: addJTBJ_mulSparse (engine/engine_derivative.c:832)

@@ -425,10 +425,9 @@ pub fn mju_inside_geom(pos: *const f64, mat: *const f64, size: *const f64, r#typ
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mju_cam_pixel_ray(origin: *mut f64, direction: *mut f64, cam_xpos: *const f64, cam_xmat: *const f64, col: i32, row: i32, fx: f64, fy: f64, cx: f64, cy: f64, projection: i32, ortho_extent: f64) {
-    // WARNING: signature changed — verify body
-    // Previous params: (origin : * mut f64, direction : * mut f64, cam_xpos : * const f64, cam_xmat : * const f64, col : i32, row : i32, fx : f64, fy : f64, cx : f64, cy : f64, projection : i32, ortho_extent : f64)
-    // Previous return: ()
-    todo ! ()
+    extern "C" { fn mju_camPixelRay_impl(origin: *mut f64, direction: *mut f64, cam_xpos: *const f64, cam_xmat: *const f64, col: i32, row: i32, fx: f64, fy: f64, cx: f64, cy: f64, projection: i32, ortho_extent: f64); }
+    // SAFETY: delegates to C implementation, all pointers valid per caller contract
+    unsafe { mju_camPixelRay_impl(origin, direction, cam_xpos, cam_xmat, col, row, fx, fy, cx, cy, projection, ortho_extent) }
 }
 
 /// C: mju_defGradient (engine/engine_util_misc.h:87)

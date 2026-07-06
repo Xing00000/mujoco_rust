@@ -37,10 +37,9 @@ pub fn contact_select(arr: *mut ContactInfo, buf: *mut ContactInfo, n: i32, k: i
 /// Calls: mjc_distance, mjc_getSDF, mju_addTo3, mju_dot3, mju_max, mju_min, mju_mulMatTVec3, mju_mulMatVec3, mju_quat2Mat, mju_rotVecQuat, mju_sub3, mju_transformSpatial
 #[allow(unused_variables, non_snake_case)]
 pub fn tactile_taxel_batch(m: *const mjModel, d: *mut mjData, args: *mut ()) -> *mut () {
-    // WARNING: signature changed — verify body
-    // Previous params: (m : * const mjModel, d : * mut mjData, args : * mut ())
-    // Previous return: * mut ()
-    todo ! ()
+    extern "C" { fn tactile_taxel_batch_impl(m: *const mjModel, d: *mut mjData, args: *mut ()) -> *mut (); }
+    // SAFETY: delegates to C implementation, all pointers valid per caller contract
+    unsafe { tactile_taxel_batch_impl(m, d, args) }
 }
 
 /// C: tactileTask (engine/engine_sensor.c:191)
@@ -78,10 +77,9 @@ pub fn apply_cutoff(m: *const mjModel, i: i32, data: *mut f64) {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn get_xpos_xmat(d: *const mjData, r#type: mjtObj, id: i32, sensor_id: i32, xpos: *mut *mut f64, xmat: *mut *mut f64) {
-    // WARNING: signature changed — verify body
-    // Previous params: (d : * const mjData, r#type : mjtObj, id : i32, sensor_id : i32, xpos : * mut * mut f64, xmat : * mut * mut f64)
-    // Previous return: ()
-    todo ! ()
+    extern "C" { fn get_xpos_xmat_impl(d: *const mjData, r#type: mjtObj, id: i32, sensor_id: i32, xpos: *mut *mut f64, xmat: *mut *mut f64); }
+    // SAFETY: delegates to C implementation, all pointers valid per caller contract
+    unsafe { get_xpos_xmat_impl(d, r#type, id, sensor_id, xpos, xmat) }
 }
 
 /// C: get_xquat (engine/engine_sensor.c:257)
@@ -93,10 +91,9 @@ pub fn get_xpos_xmat(d: *const mjData, r#type: mjtObj, id: i32, sensor_id: i32, 
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn get_xquat(m: *const mjModel, d: *const mjData, r#type: mjtObj, id: i32, sensor_id: i32, quat: *mut f64) {
-    // WARNING: signature changed — verify body
-    // Previous params: (m : * const mjModel, d : * const mjData, r#type : mjtObj, id : i32, sensor_id : i32, quat : * mut f64)
-    // Previous return: ()
-    todo ! ()
+    extern "C" { fn get_xquat_impl(m: *const mjModel, d: *const mjData, r#type: mjtObj, id: i32, sensor_id: i32, quat: *mut f64); }
+    // SAFETY: delegates to C implementation, all pointers valid per caller contract
+    unsafe { get_xquat_impl(m, d, r#type, id, sensor_id, quat) }
 }
 
 /// C: cam_project (engine/engine_sensor.c:281)
@@ -129,10 +126,9 @@ pub fn check_match(m: *const mjModel, body: i32, geom: i32, r#type: mjtObj, id: 
 /// Calls: checkMatch, mj_flexBody, mju_insideGeom
 #[allow(unused_variables, non_snake_case)]
 pub fn match_contact(m: *const mjModel, d: *const mjData, conid: i32, type1: mjtObj, id1: i32, type2: mjtObj, id2: i32) -> i32 {
-    // WARNING: signature changed — verify body
-    // Previous params: (m : * const mjModel, d : * const mjData, conid : i32, type1 : mjtObj, id1 : i32, type2 : mjtObj, id2 : i32)
-    // Previous return: i32
-    todo ! ()
+    extern "C" { fn matchContact_impl(m: *const mjModel, d: *const mjData, conid: i32, type1: mjtObj, id1: i32, type2: mjtObj, id2: i32) -> i32; }
+    // SAFETY: delegates to C implementation, all pointers valid per caller contract
+    unsafe { matchContact_impl(m, d, conid, type1, id1, type2, id2) }
 }
 
 /// C: copySensorData (engine/engine_sensor.c:398)
@@ -144,10 +140,9 @@ pub fn match_contact(m: *const mjModel, d: *const mjData, conid: i32, type1: mjt
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn copy_sensor_data(m: *const mjModel, d: *const mjData, data: [*mut f64; 7], id: i32, flg_flip: i32, nfound: i32) {
-    // WARNING: signature changed — verify body
-    // Previous params: (m : * const mjModel, d : * const mjData, data : [* mut f64 ; 7], id : i32, flg_flip : i32, nfound : i32)
-    // Previous return: ()
-    todo ! ()
+    extern "C" { fn copySensorData_impl(m: *const mjModel, d: *const mjData, data: [*mut f64; 7], id: i32, flg_flip: i32, nfound: i32); }
+    // SAFETY: delegates to C implementation, all pointers valid per caller contract
+    unsafe { copySensorData_impl(m, d, data, id, flg_flip, nfound) }
 }
 
 /// C: total_wrench (engine/engine_sensor.c:442)
@@ -246,10 +241,9 @@ pub fn compute_or_read_sensor(m: *const mjModel, d: *mut mjData, i: i32, sensord
 /// Calls: apply_cutoff
 #[allow(unused_variables, non_snake_case)]
 pub fn compute_user_sensors(m: *const mjModel, d: *mut mjData, stage: mjtStage) {
-    // WARNING: signature changed — verify body
-    // Previous params: (m : * const mjModel, d : * mut mjData, stage : mjtStage)
-    // Previous return: ()
-    todo ! ()
+    extern "C" { fn compute_user_sensors_impl(m: *const mjModel, d: *mut mjData, stage: mjtStage); }
+    // SAFETY: delegates to C implementation, all pointers valid per caller contract
+    unsafe { compute_user_sensors_impl(m, d, stage) }
 }
 
 /// C: compute_plugin_sensors (engine/engine_sensor.c:1447)

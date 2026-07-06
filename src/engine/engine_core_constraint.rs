@@ -353,10 +353,9 @@ pub fn mj_mul_jac_t_vec(m: *const mjModel, d: *const mjData, res: *mut f64, vec:
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_jdotv(m: *const mjModel, d: *mut mjData, result: *mut f64) {
-    // WARNING: signature changed — verify body
-    // Previous params: (m : * const mjModel, d : * mut mjData, result : * mut f64)
-    // Previous return: ()
-    todo ! ()
+    extern "C" { fn mj_Jdotv_impl(m: *const mjModel, d: *mut mjData, result: *mut f64); }
+    // SAFETY: delegates to C implementation, all pointers valid per caller contract
+    unsafe { mj_Jdotv_impl(m, d, result) }
 }
 
 /// C: mj_assignRef (engine/engine_core_constraint.h:46)
@@ -473,10 +472,9 @@ pub fn mj_instantiate_equality(m: *const mjModel, d: *mut mjData) {
 /// Calls: mj_addConstraint, mj_contactJacobian, mj_freeStack, mj_isPyramidal, mj_isSparse, mj_markStack, mj_stackAllocInfo, mju_addScl, mju_mulMatMat, mju_zero
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_instantiate_contact(m: *const mjModel, d: *mut mjData) {
-    // WARNING: signature changed — verify body
-    // Previous params: (m : * const mjModel, d : * mut mjData)
-    // Previous return: ()
-    todo ! ()
+    extern "C" { fn mj_instantiateContact_impl(m: *const mjModel, d: *mut mjData); }
+    // SAFETY: delegates to C implementation, all pointers valid per caller contract
+    unsafe { mj_instantiateContact_impl(m, d) }
 }
 
 /// C: mj_contactJacobian (engine/engine_core_constraint.h:69)

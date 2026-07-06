@@ -139,10 +139,9 @@ pub fn reset_data(m: *const mjModel, d: *mut mjData, debug_value: u8) {
 /// Calls: mju_message
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_log_timing_diagnostics(d: *const mjData) {
-    // WARNING: signature changed — verify body
-    // Previous params: (d : * const mjData)
-    // Previous return: ()
-    todo ! ()
+    extern "C" { fn mj_logTimingDiagnostics_impl(d: *const mjData); }
+    // SAFETY: delegates to C implementation, all pointers valid per caller contract
+    unsafe { mj_logTimingDiagnostics_impl(d) }
 }
 
 /// C: sensorSize (engine/engine_io.c:1685)

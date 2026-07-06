@@ -57,10 +57,9 @@ pub fn plural(n: i32) -> *const i8 {
 /// Calls: mju_isTopicEnabled, mju_message, mju_strncpy, mju_zero, plural
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_sleep_trees(m: *const mjModel, d: *mut mjData, tree: *const i32, n: i32) {
-    // WARNING: signature changed — verify body
-    // Previous params: (m : * const mjModel, d : * mut mjData, tree : * const i32, n : i32)
-    // Previous return: ()
-    todo ! ()
+    extern "C" { fn mj_sleepTrees_impl(m: *const mjModel, d: *mut mjData, tree: *const i32, n: i32); }
+    // SAFETY: delegates to C implementation, all pointers valid per caller contract
+    unsafe { mj_sleepTrees_impl(m, d, tree, n) }
 }
 
 /// C: mj_tendonSleepState (engine/engine_sleep.c:634)

@@ -53,10 +53,9 @@ pub fn mj_state_elem_const_ptr(m: *const mjModel, d: *const mjData, sig: mjtStat
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_geom_distance_ccd(m: *const mjModel, d: *mut mjData, g1: i32, g2: i32, distmax: f64, fromto: *mut f64) -> f64 {
-    // WARNING: signature changed — verify body
-    // Previous params: (m : * const mjModel, d : * mut mjData, g1 : i32, g2 : i32, distmax : f64, fromto : * mut f64)
-    // Previous return: f64
-    todo ! ()
+    extern "C" { fn mj_geomDistanceCCD_impl(m: *const mjModel, d: *mut mjData, g1: i32, g2: i32, distmax: f64, fromto: *mut f64) -> f64; }
+    // SAFETY: delegates to C implementation, all pointers valid per caller contract
+    unsafe { mj_geomDistanceCCD_impl(m, d, g1, g2, distmax, fromto) }
 }
 
 /// C: mj_stateSize (engine/engine_support.h:41)
@@ -394,10 +393,9 @@ pub fn mju_raydata_size(dataspec: i32) -> i32 {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mju_cam_intrinsics(m: *const mjModel, camid: i32, fx: *mut f64, fy: *mut f64, cx: *mut f64, cy: *mut f64, ortho_extent: *mut f64) {
-    // WARNING: signature changed — verify body
-    // Previous params: (m : * const mjModel, camid : i32, fx : * mut f64, fy : * mut f64, cx : * mut f64, cy : * mut f64, ortho_extent : * mut f64)
-    // Previous return: ()
-    todo ! ()
+    extern "C" { fn mju_camIntrinsics_impl(m: *const mjModel, camid: i32, fx: *mut f64, fy: *mut f64, cx: *mut f64, cy: *mut f64, ortho_extent: *mut f64); }
+    // SAFETY: delegates to C implementation, all pointers valid per caller contract
+    unsafe { mju_camIntrinsics_impl(m, camid, fx, fy, cx, cy, ortho_extent) }
 }
 
 /// C: mj_readCtrl (engine/engine_support.h:141)
@@ -424,10 +422,9 @@ pub fn mj_read_ctrl(m: *const mjModel, d: *const mjData, id: i32, time: f64, int
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_read_sensor(m: *const mjModel, d: *const mjData, id: i32, time: f64, result: *mut f64, interp: i32) -> *const f64 {
-    // WARNING: signature changed — verify body
-    // Previous params: (m : * const mjModel, d : * const mjData, id : i32, time : f64, result : * mut f64, interp : i32)
-    // Previous return: * const f64
-    todo ! ()
+    extern "C" { fn mj_readSensor_impl(m: *const mjModel, d: *const mjData, id: i32, time: f64, result: *mut f64, interp: i32) -> *const f64; }
+    // SAFETY: delegates to C implementation, all pointers valid per caller contract
+    unsafe { mj_readSensor_impl(m, d, id, time, result, interp) }
 }
 
 /// C: mj_initCtrlHistory (engine/engine_support.h:152)

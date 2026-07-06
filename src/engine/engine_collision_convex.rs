@@ -835,10 +835,9 @@ pub fn mjc_convex(m: *const mjModel, d: *mut mjData, con: *mut mjPreContact, g1:
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjc_convex_elem(m: *const mjModel, d: *mut mjData, con: *mut mjPreContact, g1: i32, f1: i32, e1: i32, v1: i32, f2: i32, e2: i32, margin: f64) -> i32 {
-    // WARNING: signature changed — verify body
-    // Previous params: (m : * const mjModel, d : * mut mjData, con : * mut mjPreContact, g1 : i32, f1 : i32, e1 : i32, v1 : i32, f2 : i32, e2 : i32, margin : f64)
-    // Previous return: i32
-    todo ! ()
+    extern "C" { fn mjc_ConvexElem_impl(m: *const mjModel, d: *mut mjData, con: *mut mjPreContact, g1: i32, f1: i32, e1: i32, v1: i32, f2: i32, e2: i32, margin: f64) -> i32; }
+    // SAFETY: delegates to C implementation, all pointers valid per caller contract
+    unsafe { mjc_ConvexElem_impl(m, d, con, g1, f1, e1, v1, f2, e2, margin) }
 }
 
 /// C: mjc_HFieldElem (engine/engine_collision_convex.h:121)
@@ -850,10 +849,9 @@ pub fn mjc_convex_elem(m: *const mjModel, d: *mut mjData, con: *mut mjPreContact
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjc_h_field_elem(m: *const mjModel, d: *mut mjData, con: *mut mjPreContact, g: i32, f: i32, e: i32, margin: f64) -> i32 {
-    // WARNING: signature changed — verify body
-    // Previous params: (m : * const mjModel, d : * mut mjData, con : * mut mjPreContact, g : i32, f : i32, e : i32, margin : f64)
-    // Previous return: i32
-    todo ! ()
+    extern "C" { fn mjc_HFieldElem_impl(m: *const mjModel, d: *mut mjData, con: *mut mjPreContact, g: i32, f: i32, e: i32, margin: f64) -> i32; }
+    // SAFETY: delegates to C implementation, all pointers valid per caller contract
+    unsafe { mjc_HFieldElem_impl(m, d, con, g, f, e, margin) }
 }
 
 /// C: mjc_fixNormal (engine/engine_collision_convex.h:125)

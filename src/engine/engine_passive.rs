@@ -22,10 +22,9 @@ pub fn grad_squared_lengths(gradient: [[[f64; 6]; 2]; 3], xpos: *const f64, vert
 /// Calls: mj_applyFT, mj_freeStack, mj_markStack, mj_stackAllocInfo, mji_addScl3, mji_addTo3, mji_rotVecQuat, mju_flexGatherCellState, mju_flexGatherFaceState, mju_flexGatherState, mju_mulMatVec, mju_negQuat, mju_rotVecQuat, mju_scl3, mju_zero
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_flex_passive_interp(m: *const mjModel, d: *mut mjData, f: i32, enbl_spring: i32, enbl_damper: i32) {
-    // WARNING: signature changed — verify body
-    // Previous params: (m : * const mjModel, d : * mut mjData, f : i32, enbl_spring : i32, enbl_damper : i32)
-    // Previous return: ()
-    todo ! ()
+    extern "C" { fn mj_flexPassiveInterp_impl(m: *const mjModel, d: *mut mjData, f: i32, enbl_spring: i32, enbl_damper: i32); }
+    // SAFETY: delegates to C implementation, all pointers valid per caller contract
+    unsafe { mj_flexPassiveInterp_impl(m, d, f, enbl_spring, enbl_damper) }
 }
 
 /// C: mju_dphi2D (engine/engine_passive.c:211)
@@ -47,10 +46,9 @@ pub fn mju_dphi2d(s0: f64, l0: i32, s1: f64, l1: i32, order: i32, dir: i32) -> f
 /// Calls: mj_applyFT, mj_freeStack, mj_markStack, mj_stackAllocInfo, mji_addTo3, mji_cross, mji_sub3, mju_add, mju_copy, mju_copyInt, mju_dot, mju_dot3, mju_dphi2D, mju_flexFaceNormal2D, mju_flexGatherFaceState, mju_flexGatherState, mju_message, mju_negQuat, mju_norm3, mju_normalize, mju_rotVecQuat, mju_scl, mju_warning, mju_zero
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_flex_passive_bend_interp(m: *const mjModel, d: *mut mjData, f: i32, enbl_spring: i32, enbl_damper: i32) {
-    // WARNING: signature changed — verify body
-    // Previous params: (m : * const mjModel, d : * mut mjData, f : i32, enbl_spring : i32, enbl_damper : i32)
-    // Previous return: ()
-    todo ! ()
+    extern "C" { fn mj_flexPassiveBendInterp_impl(m: *const mjModel, d: *mut mjData, f: i32, enbl_spring: i32, enbl_damper: i32); }
+    // SAFETY: delegates to C implementation, all pointers valid per caller contract
+    unsafe { mj_flexPassiveBendInterp_impl(m, d, f, enbl_spring, enbl_damper) }
 }
 
 /// C: mj_flexPassiveBend (engine/engine_passive.c:444)
@@ -100,20 +98,18 @@ pub fn mj_gravcomp(m: *const mjModel, d: *mut mjData) -> i32 {
 /// Calls: mj_ellipsoidFluidModel, mj_inertiaBoxFluidModel
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_fluid(m: *const mjModel, d: *mut mjData) -> i32 {
-    // WARNING: signature changed — verify body
-    // Previous params: (m : * const mjModel, d : * mut mjData)
-    // Previous return: i32
-    todo ! ()
+    extern "C" { fn mj_fluid_impl(m: *const mjModel, d: *mut mjData) -> i32; }
+    // SAFETY: delegates to C implementation, all pointers valid per caller contract
+    unsafe { mj_fluid_impl(m, d) }
 }
 
 /// C: mj_contactPassive (engine/engine_passive.c:878)
 /// Calls: mj_contactJacobian, mj_freeStack, mj_isSparse, mj_markStack, mj_stackAllocInfo, mju_addToScl, mju_mulMatMat, mju_scl
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_contact_passive(m: *const mjModel, d: *mut mjData) -> i32 {
-    // WARNING: signature changed — verify body
-    // Previous params: (m : * const mjModel, d : * mut mjData)
-    // Previous return: i32
-    todo ! ()
+    extern "C" { fn mj_contactPassive_impl(m: *const mjModel, d: *mut mjData) -> i32; }
+    // SAFETY: delegates to C implementation, all pointers valid per caller contract
+    unsafe { mj_contactPassive_impl(m, d) }
 }
 
 /// C: mji_pow4 (engine/engine_passive.c:1215)

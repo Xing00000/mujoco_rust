@@ -57,9 +57,8 @@ pub fn mju_num_thread(d: *const mjData) -> i32 {
 /// Calls: ThreadPoolContext::Dispatch, mj_freeStack, mj_markStack
 #[allow(unused_variables, non_snake_case)]
 pub fn mju_dispatch(m: *const mjModel, d: *mut mjData, func: mjTaskFunc, arg: *mut (), ntask: i32) {
-    // WARNING: signature changed — verify body
-    // Previous params: (m : * const mjModel, d : * mut mjData, func : mjTaskFunc, arg : * mut (), ntask : i32)
-    // Previous return: ()
-    todo ! ()
+    extern "C" { fn mju_dispatch_impl(m: *const mjModel, d: *mut mjData, func: mjTaskFunc, arg: *mut (), ntask: i32); }
+    // SAFETY: delegates to C implementation, all pointers valid per caller contract
+    unsafe { mju_dispatch_impl(m, d, func, arg, ntask) }
 }
 

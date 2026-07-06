@@ -7,10 +7,9 @@ use crate::types::*;
 /// C: _getnumadr (engine/engine_name.c:28)
 #[allow(unused_variables, non_snake_case)]
 pub fn getnumadr(m: *const mjModel, r#type: mjtObj, padr: *mut *mut i32, mapadr: *mut i32) -> i32 {
-    // WARNING: signature changed — verify body
-    // Previous params: (m : * const mjModel, r#type : mjtObj, padr : * mut * mut i32, mapadr : * mut i32)
-    // Previous return: i32
-    todo ! ()
+    extern "C" { fn _getnumadr_impl(m: *const mjModel, r#type: mjtObj, padr: *mut *mut i32, mapadr: *mut i32) -> i32; }
+    // SAFETY: delegates to C implementation, all pointers valid per caller contract
+    unsafe { _getnumadr_impl(m, r#type, padr, mapadr) }
 }
 
 /// C: mj_hashString (engine/engine_name.h:30)

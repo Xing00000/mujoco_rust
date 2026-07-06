@@ -353,10 +353,9 @@ pub fn mj_euler(m: *const mjModel, d: *mut mjData) {
 /// Calls: mj_actuatorDamping, mj_advance, mj_factorI, mj_freeStack, mj_markStack, mj_solveLD, mj_stackAllocInfo, mjd_xPolyForce, mju_add, mju_addInd, mju_copy, mju_copyInd, mju_copySparse, mju_isZero
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_euler_skip(m: *const mjModel, d: *mut mjData, skipfactor: i32) {
-    // WARNING: signature changed — verify body
-    // Previous params: (m : * const mjModel, d : * mut mjData, skipfactor : i32)
-    // Previous return: ()
-    todo ! ()
+    extern "C" { fn mj_EulerSkip_impl(m: *const mjModel, d: *mut mjData, skipfactor: i32); }
+    // SAFETY: delegates to C implementation, all pointers valid per caller contract
+    unsafe { mj_EulerSkip_impl(m, d, skipfactor) }
 }
 
 /// C: mj_implicit (engine/engine_forward.h:62)
