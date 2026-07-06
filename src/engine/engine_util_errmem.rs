@@ -198,10 +198,35 @@ pub fn mju_info(topic: i32, msg: *const i8) {
 /// Calls: mju_activeHandler
 #[allow(unused_variables, non_snake_case)]
 pub fn mju_message(msg: *const mjLogMessage) {
-    // WARNING: signature changed — verify body
-    // Previous params: (msg : * const mjLogMessage)
-    // Previous return: ()
-    todo ! ()
+    // in_log is a thread-local bool in C; mjfLogHandler is a function pointer
+    // called as handler(msg). Both require C runtime access since mjfLogHandler
+    // is opaque in this port. We implement the logic via extern "C" helpers.
+    extern "C" {
+        // Thread-local `in_log` access
+        fn mjPRIVATE_get_in_log() -> i32;
+        fn mjPRIVATE_set_in_log(val: i32);
+        // Field access: msg->level
+        fn mjLogMessage_get_level(msg: *const mjLogMessage) -> i32;
+        // Call handler function pointer: handler(msg)
+        fn mjfLogHandler_invoke(handler: mjfLogHandler, msg: *const mjLogMessage);
+    }
+    const MJ_LOG_ERROR: i32 = 0;
+    // SAFETY: msg is a valid pointer from caller. extern "C" functions are
+    // resolved at link time by the test harness.
+    unsafe {
+        if mjPRIVATE_get_in_log() != 0 {
+            return;
+        }
+        let handler = mju_active_handler();
+        let level = mjLogMessage_get_level(msg);
+        if level != MJ_LOG_ERROR {
+            mjPRIVATE_set_in_log(1);
+            mjfLogHandler_invoke(handler, msg);
+            mjPRIVATE_set_in_log(0);
+        } else {
+            mjfLogHandler_invoke(handler, msg);
+        }
+    }
 }
 
 /// C: mju_writeLog (engine/engine_util_errmem.h:87)

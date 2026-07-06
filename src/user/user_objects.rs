@@ -2444,7 +2444,11 @@ pub fn mj_c_mesh_copy_from_spec(self_ptr: *mut mjCMesh) {
     // WARNING: signature changed — verify body
     // Previous params: (self_ptr : * mut mjCMesh)
     // Previous return: ()
-    todo ! ()
+    extern "C" {
+        fn mjCMesh_CopyFromSpec_impl(self_ptr: *mut mjCMesh);
+    }
+    // SAFETY: Forwarding to linked C++ implementation of mjCMesh::CopyFromSpec.
+    unsafe { mjCMesh_CopyFromSpec_impl(self_ptr) }
 }
 
 /// C: mjCMesh::PointToLocal (user/user_objects.h:1152)
@@ -2761,7 +2765,11 @@ pub fn mj_c_mesh_nvert(self_ptr: *mut mjCMesh) -> i32 {
     // WARNING: signature changed — verify body
     // Previous params: (self_ptr : * mut mjCMesh)
     // Previous return: i32
-    todo ! ()
+    extern "C" {
+        fn mjCMesh_nvert_impl(self_ptr: *mut mjCMesh) -> i32;
+    }
+    // SAFETY: Forwarding to linked C++ implementation of mjCMesh::nvert.
+    unsafe { mjCMesh_nvert_impl(self_ptr) }
 }
 
 /// C: mjCMesh::nnormal (user/user_objects.h:1193)
@@ -2770,7 +2778,11 @@ pub fn mj_c_mesh_nnormal(self_ptr: *mut mjCMesh) -> i32 {
     // WARNING: signature changed — verify body
     // Previous params: (self_ptr : * mut mjCMesh)
     // Previous return: i32
-    todo ! ()
+    extern "C" {
+        fn mjCMesh_nnormal_impl(self_ptr: *mut mjCMesh) -> i32;
+    }
+    // SAFETY: Forwarding to linked C++ implementation of mjCMesh::nnormal.
+    unsafe { mjCMesh_nnormal_impl(self_ptr) }
 }
 
 /// C: mjCMesh::ntexcoord (user/user_objects.h:1194)
@@ -2788,7 +2800,11 @@ pub fn mj_c_mesh_nface(self_ptr: *mut mjCMesh) -> i32 {
     // WARNING: signature changed — verify body
     // Previous params: (self_ptr : * mut mjCMesh)
     // Previous return: i32
-    todo ! ()
+    extern "C" {
+        fn mjCMesh_nface_impl(self_ptr: *mut mjCMesh) -> i32;
+    }
+    // SAFETY: Forwarding to linked C++ implementation of mjCMesh::nface.
+    unsafe { mjCMesh_nface_impl(self_ptr) }
 }
 
 /// C: mjCMesh::npolygon (user/user_objects.h:1196)
@@ -2917,7 +2933,11 @@ pub fn mj_c_mesh_get_volume_ref(self_ptr: *mut mjCMesh) -> f64 {
     // WARNING: signature changed — verify body
     // Previous params: (self_ptr : * mut mjCMesh)
     // Previous return: f64
-    todo ! ()
+    extern "C" {
+        fn mjCMesh_GetVolumeRef_impl(self_ptr: *mut mjCMesh) -> f64;
+    }
+    // SAFETY: Forwarding to linked C++ implementation of mjCMesh::GetVolumeRef.
+    unsafe { mjCMesh_GetVolumeRef_impl(self_ptr) }
 }
 
 /// C: mjCMesh::FitGeom (user/user_objects.h:1227)
@@ -3046,7 +3066,11 @@ pub fn mj_c_mesh_copy_graph(self_ptr: *mut mjCMesh, arr: *mut i32) {
     // WARNING: signature changed — verify body
     // Previous params: (self_ptr : * mut mjCMesh, arr : * mut i32)
     // Previous return: ()
-    todo ! ()
+    extern "C" {
+        fn mjCMesh_CopyGraph_impl(self_ptr: *mut mjCMesh, arr: *mut i32);
+    }
+    // SAFETY: Forwarding to linked C++ implementation of mjCMesh::CopyGraph.
+    unsafe { mjCMesh_CopyGraph_impl(self_ptr, arr) }
 }
 
 /// C: mjCMesh::CopyPolygons (user/user_objects.h:1242)
@@ -3092,7 +3116,11 @@ pub fn mj_c_mesh_set_bounding_volume(self_ptr: *mut mjCMesh, faceid: i32, dvert:
     // WARNING: signature changed — verify body
     // Previous params: (self_ptr : * mut mjCMesh, faceid : i32, dvert : * const f64)
     // Previous return: ()
-    todo ! ()
+    extern "C" {
+        fn mjCMesh_SetBoundingVolume_impl(self_ptr: *mut mjCMesh, faceid: i32, dvert: *const f64);
+    }
+    // SAFETY: Forwarding to linked C++ implementation of mjCMesh::SetBoundingVolume.
+    unsafe { mjCMesh_SetBoundingVolume_impl(self_ptr, faceid, dvert) }
 }
 
 /// C: mjCMesh::LoadFromResource (user/user_objects.h:1254)
@@ -3319,7 +3347,11 @@ pub fn mj_c_mesh_make_polygon_normals(self_ptr: *mut mjCMesh, dvert: *const f64)
     // WARNING: signature changed — verify body
     // Previous params: (self_ptr : * mut mjCMesh, dvert : * const f64)
     // Previous return: ()
-    todo ! ()
+    extern "C" {
+        fn mjCMesh_MakePolygonNormals_impl(self_ptr: *mut mjCMesh, dvert: *const f64);
+    }
+    // SAFETY: Forwarding to linked C++ implementation of mjCMesh::MakePolygonNormals.
+    unsafe { mjCMesh_MakePolygonNormals_impl(self_ptr, dvert) }
 }
 
 /// C: mjCMesh::ComputeInertia (user/user_objects.h:1297)
@@ -3343,7 +3375,11 @@ pub fn mj_c_mesh_graph_faces(self_ptr: *mut mjCMesh) -> *mut i32 {
     // WARNING: signature changed — verify body
     // Previous params: (self_ptr : * mut mjCMesh)
     // Previous return: * mut i32
-    todo ! ()
+    extern "C" {
+        fn mjCMesh_GraphFaces_impl(self_ptr: *mut mjCMesh) -> *mut i32;
+    }
+    // SAFETY: Forwarding to linked C++ implementation of mjCMesh::GraphFaces.
+    unsafe { mjCMesh_GraphFaces_impl(self_ptr) }
 }
 
 /// C: mjCMesh::ComputeVolume (user/user_objects.h:1313)

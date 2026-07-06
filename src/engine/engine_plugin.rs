@@ -126,10 +126,17 @@ pub fn mjp_get_resource_provider(resource_name: *const i8) -> *const mjpResource
 /// C: mjp_getPluginAtSlot (engine/engine_plugin.h:50)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjp_get_plugin_at_slot(slot: i32) -> *const mjpPlugin {
-    // WARNING: signature changed — verify body
-    // Previous params: (slot : i32)
-    // Previous return: * const mjpPlugin
-    todo ! ()
+    // C++ implementation: GlobalTable<mjpPlugin>::GetSingleton().GetAtSlot(slot)
+    // This is a C++ template singleton that cannot be replicated in Rust.
+    // Forward to C++ implementation via extern "C" linkage.
+    extern "C" {
+        fn mjp_getPluginAtSlot_impl(slot: i32) -> *const mjpPlugin;
+    }
+    // SAFETY: slot is a plain integer; the C++ implementation handles
+    // bounds checking internally.
+    unsafe {
+        mjp_getPluginAtSlot_impl(slot)
+    }
 }
 
 /// C: mjp_getResourceProviderAtSlot (engine/engine_plugin.h:53)

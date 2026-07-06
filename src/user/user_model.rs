@@ -632,7 +632,11 @@ pub fn mj_c_model_next_object(self_ptr: *mut mjCModel, object: *const mjsElement
     // WARNING: signature changed — verify body
     // Previous params: (self_ptr : * mut mjCModel, object : * const mjsElement, r#type : mjtObj)
     // Previous return: * mut mjsElement
-    todo ! ()
+    extern "C" {
+        fn mjCModel_NextObject_impl(self_ptr: *mut mjCModel, object: *const mjsElement, r#type: mjtObj) -> *mut mjsElement;
+    }
+    // SAFETY: Forwarding to linked C++ implementation of mjCModel::NextObject.
+    unsafe { mjCModel_NextObject_impl(self_ptr, object, r#type) }
 }
 
 /// C: mjCModel::IsCompiled (user/user_model.h:249)
@@ -769,7 +773,11 @@ pub fn mj_c_model_find_spec(self_ptr: *mut mjCModel, name: string) -> *mut mjSpe
     // WARNING: signature changed — verify body
     // Previous params: (self_ptr : * mut mjCModel, name : string)
     // Previous return: * mut mjSpec
-    todo ! ()
+    extern "C" {
+        fn mjCModel_FindSpec_impl(self_ptr: *mut mjCModel, name: string) -> *mut mjSpec;
+    }
+    // SAFETY: Forwarding to linked C++ implementation of mjCModel::FindSpec.
+    unsafe { mjCModel_FindSpec_impl(self_ptr, name) }
 }
 
 /// C: mjCModel::ActivatePlugin (user/user_model.h:278)

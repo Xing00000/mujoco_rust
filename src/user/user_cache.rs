@@ -221,7 +221,11 @@ pub fn mj_c_cache_capacity(self_ptr: *mut mjCCache) -> std__size_t {
     // WARNING: signature changed — verify body
     // Previous params: (self_ptr : * mut mjCCache)
     // Previous return: std__size_t
-    todo ! ()
+    extern "C" {
+        fn mjCCache_Capacity_impl(self_ptr: *mut mjCCache) -> std__size_t;
+    }
+    // SAFETY: Forwarding to linked C++ implementation of mjCCache::Capacity.
+    unsafe { mjCCache_Capacity_impl(self_ptr) }
 }
 
 /// C: mjCCache::Size (user/user_cache.h:160)

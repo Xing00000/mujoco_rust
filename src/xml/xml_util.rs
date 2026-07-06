@@ -29,7 +29,11 @@ pub fn accumulate_files(files: *mut i32, root: *mut tinyxml2__XMLElement, model_
     // WARNING: signature changed — verify body
     // Previous params: (files : * mut i32, root : * mut tinyxml2__XMLElement, model_dir : * const FilePath)
     // Previous return: ()
-    todo ! ()
+    extern "C" {
+        fn AccumulateFiles_impl(files: *mut i32, root: *mut tinyxml2__XMLElement, model_dir: *const FilePath);
+    }
+    // SAFETY: Forwarding to linked C++ implementation of AccumulateFiles.
+    unsafe { AccumulateFiles_impl(files, root, model_dir) }
 }
 
 /// C: mju_getXMLDependencies (xml/xml_util.cc:224)

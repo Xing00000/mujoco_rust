@@ -691,10 +691,128 @@ pub fn mjuu_update_frame(quat: [f64; 4], normal: [f64; 3], edge: [f64; 3], tprv:
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjuu_eig3(eigval: [f64; 3], eigvec: [f64; 9], quat: [f64; 4], mat: [f64; 9]) -> i32 {
-    // WARNING: signature changed — verify body
-    // Previous params: (eigval : [f64 ; 3], eigvec : [f64 ; 9], quat : [f64 ; 4], mat : [f64 ; 9])
-    // Previous return: i32
-    todo ! ()
+    const K_EIG_EPS: f64 = 1e-12;
+
+    let mut eigval = eigval;
+    let mut eigvec = eigvec;
+    let mut quat = quat;
+
+    let mut D: [f64; 9] = [0.0; 9];
+    let mut tmp: [f64; 9] = [0.0; 9];
+    let mut tmp2: [f64; 9] = [0.0; 9];
+    let mut tau: f64;
+    let mut t: f64;
+    let mut c: f64;
+    let mut rk: usize;
+    let mut ck: usize;
+    let mut rotk: usize;
+
+    // initialize with unit quaternion
+    quat[0] = 1.0;
+    quat[1] = 0.0;
+    quat[2] = 0.0;
+    quat[3] = 0.0;
+
+    // Jacobi iteration
+    let mut iter: i32 = 0;
+    while iter < 500 {
+        // make quaternion matrix eigvec, compute D = eigvec'*mat*eigvec
+        // SAFETY: all arrays are local fixed-size [f64; 9] or [f64; 4], pointers valid
+        unsafe {
+            mjuu_quat2mat(eigvec.as_mut_ptr(), quat.as_ptr());
+            mjuu_transposemat(tmp2.as_mut_ptr(), eigvec.as_ptr());
+            mjuu_mulmat(tmp.as_mut_ptr(), tmp2.as_ptr(), mat.as_ptr());
+            mjuu_mulmat(D.as_mut_ptr(), tmp.as_ptr(), eigvec.as_ptr());
+        }
+
+        // assign eigenvalues
+        eigval[0] = D[0];
+        eigval[1] = D[4];
+        eigval[2] = D[8];
+
+        // find max off-diagonal element, set indices
+        if D[1].abs() > D[2].abs() && D[1].abs() > D[5].abs() {
+            rk = 0; ck = 1; rotk = 2;
+        } else if D[2].abs() > D[5].abs() {
+            rk = 0; ck = 2; rotk = 1;
+        } else {
+            rk = 1; ck = 2; rotk = 0;
+        }
+
+        // terminate if max off-diagonal element too small
+        if D[3 * rk + ck].abs() < K_EIG_EPS {
+            break;
+        }
+
+        // 2x2 symmetric Schur decomposition
+        tau = (D[4 * ck] - D[4 * rk]) / (2.0 * D[3 * rk + ck]);
+        if tau >= 0.0 {
+            t = 1.0 / (tau + (1.0 + tau * tau).sqrt());
+        } else {
+            t = -1.0 / (-tau + (1.0 + tau * tau).sqrt());
+        }
+        c = 1.0 / (1.0 + t * t).sqrt();
+
+        // terminate if cosine too close to 1
+        if c > 1.0 - K_EIG_EPS {
+            break;
+        }
+
+        // express rotation as quaternion
+        tmp[1] = 0.0;
+        tmp[2] = 0.0;
+        tmp[3] = 0.0;
+        tmp[rotk + 1] = if tau >= 0.0 {
+            -(0.5 - 0.5 * c).sqrt()
+        } else {
+            (0.5 - 0.5 * c).sqrt()
+        };
+        if rotk == 1 {
+            tmp[rotk + 1] = -tmp[rotk + 1];
+        }
+        tmp[0] = (1.0 - tmp[rotk + 1] * tmp[rotk + 1]).sqrt();
+        // SAFETY: tmp is a local [f64; 9], pointer valid for at least 4 elements
+        unsafe {
+            mjuu_normvec(tmp.as_mut_ptr(), 4);
+        }
+
+        // accumulate quaternion rotation
+        // SAFETY: quat is [f64; 4], tmp is [f64; 9] (first 4 used as quat)
+        unsafe {
+            mjuu_mulquat(quat.as_mut_ptr(), quat.as_ptr(), tmp.as_ptr());
+            mjuu_normvec(quat.as_mut_ptr(), 4);
+        }
+
+        iter += 1;
+    }
+
+    // sort eigenvalues in decreasing order (bubblesort: 0, 1, 0)
+    for j in 0..3i32 {
+        let j1 = (j % 2) as usize;
+        if eigval[j1] + K_EIG_EPS < eigval[j1 + 1] {
+            t = eigval[j1];
+            eigval[j1] = eigval[j1 + 1];
+            eigval[j1 + 1] = t;
+            tmp[0] = 0.707106781186548;
+            tmp[1] = 0.0;
+            tmp[2] = 0.0;
+            tmp[3] = 0.0;
+            tmp[(j1 + 2) % 3 + 1] = tmp[0];
+            // SAFETY: quat [f64; 4], tmp [f64; 9] first 4 used
+            unsafe {
+                mjuu_mulquat(quat.as_mut_ptr(), quat.as_ptr(), tmp.as_ptr());
+                mjuu_normvec(quat.as_mut_ptr(), 4);
+            }
+        }
+    }
+
+    // recompute eigvec
+    // SAFETY: eigvec [f64; 9], quat [f64; 4], both local
+    unsafe {
+        mjuu_quat2mat(eigvec.as_mut_ptr(), quat.as_ptr());
+    }
+
+    iter
 }
 
 /// C: mjuu_eigendecompose (user/user_util.h:166)

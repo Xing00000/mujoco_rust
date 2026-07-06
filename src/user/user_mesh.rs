@@ -47,10 +47,51 @@ pub fn lin_space(mut lower: f64, upper: f64, n: i32, array: [f64; 0]) {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn bin_edges(x_edges: *mut f64, y_edges: *mut f64, size: [i32; 2], fov: [f64; 2], gamma: f64) {
-    // WARNING: signature changed — verify body
-    // Previous params: (x_edges : * mut f64, y_edges : * mut f64, size : [i32 ; 2], fov : [f64 ; 2], gamma : f64)
-    // Previous return: ()
-    todo ! ()
+    use crate::user::user_util::mjuu_scalevec;
+    const MJ_PI: f64 = std::f64::consts::PI;
+
+    unsafe {
+        // SAFETY: x_edges points to at least (size[0]+1) f64 elements,
+        // y_edges points to at least (size[1]+1) f64 elements, as guaranteed by caller.
+
+        // LinSpace(-1, 1, size[0] + 1, x_edges)
+        {
+            let n = size[0] + 1;
+            let mut lower: f64 = -1.0;
+            let increment: f64 = if n > 1 { (1.0 - (-1.0)) / (n - 1) as f64 } else { 0.0 };
+            for i in 0..n as usize {
+                *x_edges.add(i) = lower;
+                lower += increment;
+            }
+        }
+
+        // LinSpace(-1, 1, size[1] + 1, y_edges)
+        {
+            let n = size[1] + 1;
+            let mut lower: f64 = -1.0;
+            let increment: f64 = if n > 1 { (1.0 - (-1.0)) / (n - 1) as f64 } else { 0.0 };
+            for i in 0..n as usize {
+                *y_edges.add(i) = lower;
+                lower += increment;
+            }
+        }
+
+        // for (int i = 0; i < size[0] + 1; i++) { x_edges[i] = Fovea(x_edges[i], gamma); }
+        for i in 0..(size[0] + 1) as usize {
+            *x_edges.add(i) = fovea(*x_edges.add(i), gamma);
+        }
+
+        // for (int i = 0; i < size[1] + 1; i++) { y_edges[i] = Fovea(y_edges[i], gamma); }
+        for i in 0..(size[1] + 1) as usize {
+            *y_edges.add(i) = fovea(*y_edges.add(i), gamma);
+        }
+
+        // mjuu_scalevec(x_edges, x_edges, fov[0] * mjPI / 180, size[0] + 1)
+        mjuu_scalevec(x_edges, x_edges as *const f64, fov[0] * MJ_PI / 180.0, size[0] + 1);
+
+        // mjuu_scalevec(y_edges, y_edges, fov[1] * mjPI / 180, size[1] + 1)
+        mjuu_scalevec(y_edges, y_edges as *const f64, fov[1] * MJ_PI / 180.0, size[1] + 1);
+    }
 }
 
 /// C: SphericalToCartesian (user/user_mesh.cc:123)
@@ -119,10 +160,66 @@ pub fn aux_s(omega: f64, m: f64) -> f64 {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn triangle(normal: *mut f64, center: *mut f64, v1: *const f64, v2: *const f64, v3: *const f64) -> f64 {
-    // WARNING: signature changed — verify body
-    // Previous params: (normal : * mut f64, center : * mut f64, v1 : * const f64, v2 : * const f64, v3 : * const f64)
-    // Previous return: f64
-    todo ! ()
+    use crate::user::user_util::{mjuu_crossvec, mjuu_dot3};
+    const MJ_MINVAL: f64 = 1e-15;
+
+    unsafe {
+        // SAFETY: v1, v2, v3 each point to at least 3 f64 elements.
+        // normal (if non-null) points to at least 3 f64 elements.
+        // center (if non-null) points to at least 3 f64 elements.
+        // Guaranteed by caller contract matching the C API.
+
+        // double normal_local[3];
+        // double* normal_ptr = (normal) ? normal : normal_local;
+        let mut normal_local: [f64; 3] = [0.0; 3];
+        let normal_ptr: *mut f64 = if !normal.is_null() {
+            normal
+        } else {
+            normal_local.as_mut_ptr()
+        };
+
+        // if (center) { center[i] = (v1[i] + v2[i] + v3[i])/3; }
+        if !center.is_null() {
+            *center.add(0) = (*v1.add(0) + *v2.add(0) + *v3.add(0)) / 3.0;
+            *center.add(1) = (*v1.add(1) + *v2.add(1) + *v3.add(1)) / 3.0;
+            *center.add(2) = (*v1.add(2) + *v2.add(2) + *v3.add(2)) / 3.0;
+        }
+
+        // double b[3] = { v2[0]-v1[0], v2[1]-v1[1], v2[2]-v1[2] };
+        let b: [f64; 3] = [
+            *v2.add(0) - *v1.add(0),
+            *v2.add(1) - *v1.add(1),
+            *v2.add(2) - *v1.add(2),
+        ];
+
+        // double c[3] = { v3[0]-v1[0], v3[1]-v1[1], v3[2]-v1[2] };
+        let c: [f64; 3] = [
+            *v3.add(0) - *v1.add(0),
+            *v3.add(1) - *v1.add(1),
+            *v3.add(2) - *v1.add(2),
+        ];
+
+        // mjuu_crossvec(normal_ptr, b, c);
+        mjuu_crossvec(normal_ptr, b.as_ptr(), c.as_ptr());
+
+        // double len = sqrt(mjuu_dot3(normal_ptr, normal_ptr));
+        let len: f64 = mjuu_dot3(normal_ptr as *const f64, normal_ptr as *const f64).sqrt();
+
+        // if (len < mjMINVAL) { return 0; }
+        if len < MJ_MINVAL {
+            return 0.0;
+        }
+
+        // if (normal) { normal_ptr[i] /= len; }
+        if !normal.is_null() {
+            *normal_ptr.add(0) /= len;
+            *normal_ptr.add(1) /= len;
+            *normal_ptr.add(2) /= len;
+        }
+
+        // return 0.5 * len;
+        0.5 * len
+    }
 }
 
 /// C: mjCMesh::ProcessVertices (user/user_mesh.cc:539)

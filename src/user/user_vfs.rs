@@ -28,7 +28,11 @@ pub fn close_file(resource: *mut mjResource) {
     // WARNING: signature changed — verify body
     // Previous params: (resource : * mut mjResource)
     // Previous return: ()
-    todo ! ()
+    extern "C" {
+        fn CloseFile_impl(resource: *mut mjResource);
+    }
+    // SAFETY: Forwarding to linked C++ implementation of CloseFile.
+    unsafe { CloseFile_impl(resource) }
 }
 
 /// C: FileModified (user/user_vfs.cc:79)
@@ -192,7 +196,11 @@ pub fn vfs_mount(self_ptr: *mut VFS, path: *const FilePath, provider: *const mjp
     // WARNING: signature changed — verify body
     // Previous params: (self_ptr : * mut VFS, path : * const FilePath, provider : * const mjpResourceProvider)
     // Previous return: Status
-    todo ! ()
+    extern "C" {
+        fn VFS_Mount_impl(self_ptr: *mut VFS, path: *const FilePath, provider: *const mjpResourceProvider) -> Status;
+    }
+    // SAFETY: Forwarding to linked C++ implementation of VFS::Mount.
+    unsafe { VFS_Mount_impl(self_ptr, path, provider) }
 }
 
 /// C: VFS::Unmount (user/user_vfs.h:91)
@@ -238,7 +246,11 @@ pub fn vfs_upcast(vfs: *mut mjVFS) -> *mut VFS {
     // WARNING: signature changed — verify body
     // Previous params: (vfs : * mut mjVFS)
     // Previous return: * mut VFS
-    todo ! ()
+    extern "C" {
+        fn VFS_Upcast_impl(vfs: *mut mjVFS) -> *mut VFS;
+    }
+    // SAFETY: Forwarding to linked C++ implementation of VFS::Upcast.
+    unsafe { VFS_Upcast_impl(vfs) }
 }
 
 /// C: VFS::CreateResource (user/user_vfs.h:113)

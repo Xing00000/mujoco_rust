@@ -37,10 +37,62 @@ pub fn dual_finish(m: *const mjModel, d: *mut mjData) {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn a_rdiaginv(m: *const mjModel, d: *const mjData, res: *mut f64, nefc: i32, efclist: *const i32, flg_subR: i32) {
-    // WARNING: signature changed — verify body
-    // Previous params: (m : * const mjModel, d : * const mjData, res : * mut f64, nefc : i32, efclist : * const i32, flg_subR : i32)
-    // Previous return: ()
-    todo ! ()
+    const MJMINVAL: f64 = 1e-15;
+    extern "C" {
+        fn mjd_get_efc_AR(d: *const mjData) -> *const f64;
+        fn mjd_get_efc_R(d: *const mjData) -> *const f64;
+        fn mjd_get_efc_AR_rowadr(d: *const mjData) -> *const i32;
+        fn mjd_get_efc_AR_rownnz(d: *const mjData) -> *const i32;
+        fn mjd_get_efc_AR_colind(d: *const mjData) -> *const i32;
+        fn mjd_get_nefc(d: *const mjData) -> i32;
+    }
+    // SAFETY: all pointers come from valid mjModel/mjData passed by caller;
+    // extern "C" accessors return valid pointers into mjData arena.
+    unsafe {
+        let AR = mjd_get_efc_AR(d);
+        let R = mjd_get_efc_R(d);
+        if crate::engine::engine_core_util::mj_is_sparse(m) != 0 {
+            let rowadr = mjd_get_efc_AR_rowadr(d);
+            let rownnz = mjd_get_efc_AR_rownnz(d);
+            let colind = mjd_get_efc_AR_colind(d);
+            let mut c: i32 = 0;
+            while c < nefc {
+                let i = if !efclist.is_null() { *efclist.add(c as usize) } else { c };
+                let nnz = *rownnz.add(i as usize);
+                let mut j: i32 = 0;
+                while j < nnz {
+                    let adr = *rowadr.add(i as usize) + j;
+                    if i == *colind.add(adr as usize) {
+                        let ar_val = *AR.add(adr as usize);
+                        let denom = if flg_subR != 0 {
+                            crate::engine::engine_util_misc::mju_max(MJMINVAL, ar_val - *R.add(i as usize))
+                        } else {
+                            ar_val
+                        };
+                        *res.add(c as usize) = 1.0 / denom;
+                        break;
+                    }
+                    j += 1;
+                }
+                c += 1;
+            }
+        } else {
+            let d_nefc = mjd_get_nefc(d);
+            let mut c: i32 = 0;
+            while c < nefc {
+                let i = if !efclist.is_null() { *efclist.add(c as usize) } else { c };
+                let adr = i * (d_nefc + 1);
+                let ar_val = *AR.add(adr as usize);
+                let denom = if flg_subR != 0 {
+                    crate::engine::engine_util_misc::mju_max(MJMINVAL, ar_val - *R.add(i as usize))
+                } else {
+                    ar_val
+                };
+                *res.add(c as usize) = 1.0 / denom;
+                c += 1;
+            }
+        }
+    }
 }
 
 /// C: extractBlock (engine/engine_solver.c:127)

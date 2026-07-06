@@ -10,7 +10,11 @@ pub fn sanitize_path(path: *const fs__path) -> fs__path {
     // WARNING: signature changed — verify body
     // Previous params: (path : * const fs__path)
     // Previous return: fs__path
-    todo ! ()
+    extern "C" {
+        fn SanitizePath_impl(path: *const fs__path) -> fs__path;
+    }
+    // SAFETY: Forwarding to linked C++ implementation of SanitizePath.
+    unsafe { SanitizePath_impl(path) }
 }
 
 /// C: RemoveLeadingDotDot (xml/mjz/mjz_encoder.cc:92)
@@ -35,7 +39,11 @@ pub fn apply_rewrites(xml: *mut std__string, rewrites: *const i32) {
     // WARNING: signature changed — verify body
     // Previous params: (xml : * mut std__string, rewrites : * const i32)
     // Previous return: ()
-    todo ! ()
+    extern "C" {
+        fn ApplyRewrites_impl(xml: *mut std__string, rewrites: *const i32);
+    }
+    // SAFETY: Forwarding to linked C++ implementation of ApplyRewrites.
+    unsafe { ApplyRewrites_impl(xml, rewrites) }
 }
 
 /// C: CollectAssets (xml/mjz/mjz_encoder.cc:157)
