@@ -39,10 +39,11 @@ pub fn close_file(resource: *mut mjResource) {
 /// Calls: mju_decodeBase64
 #[allow(unused_variables, non_snake_case)]
 pub fn file_modified(resource: *const mjResource, timestamp: *const i8) -> i32 {
-    // WARNING: signature changed — verify body
-    // Previous params: (resource : * const mjResource, timestamp : * const i8)
-    // Previous return: i32
-    todo ! ()
+    extern "C" {
+        fn FileModified_impl(resource: *const mjResource, timestamp: *const i8) -> i32;
+    }
+    // SAFETY: Forwarding to linked C++ implementation.
+    unsafe { FileModified_impl(resource, timestamp) }
 }
 
 /// C: StripPathAndLower (user/user_vfs.cc:94)

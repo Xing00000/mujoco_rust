@@ -413,10 +413,11 @@ pub fn cot(x: *const f64, v0: i32, v1: i32, v2: i32) -> f64 {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn compute_bending(bending: *mut f64, pos: *mut f64, v: [i32; 4], mu: f64, thickness: f64) {
-    // WARNING: signature changed — verify body
-    // Previous params: (bending : * mut f64, pos : * mut f64, v : [i32 ; 4], mu : f64, thickness : f64)
-    // Previous return: ()
-    todo ! ()
+    extern "C" {
+        fn ComputeBending_impl(bending: *mut f64, pos: *mut f64, v: [i32; 4], mu: f64, thickness: f64);
+    }
+    // SAFETY: Forwarding to linked C++ implementation.
+    unsafe { ComputeBending_impl(bending, pos, v, mu, thickness) }
 }
 
 /// C: quadratureGaussLegendre (user/user_mesh.cc:3727)
@@ -527,10 +528,11 @@ pub fn trace(tensor: *const Matrix) -> f64 {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn compute_linear_stiffness(K: *mut i32, pos: *const f64, E: f64, nu: f64, order: i32) {
-    // WARNING: signature changed — verify body
-    // Previous params: (K : * mut i32, pos : * const f64, E : f64, nu : f64, order : i32)
-    // Previous return: ()
-    todo ! ()
+    extern "C" {
+        fn ComputeLinearStiffness_impl(K: *mut i32, pos: *const f64, E: f64, nu: f64, order: i32);
+    }
+    // SAFETY: Forwarding to linked C++ implementation.
+    unsafe { ComputeLinearStiffness_impl(K, pos, E, nu, order) }
 }
 
 /// C: ComputeLinearStiffness2D (user/user_mesh.cc:3914)
@@ -542,10 +544,11 @@ pub fn compute_linear_stiffness(K: *mut i32, pos: *const f64, E: f64, nu: f64, o
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn compute_linear_stiffness2d(K: *mut i32, pos: *const f64, E: f64, nu: f64, order: i32, thickness: f64, normal_axis: i32) {
-    // WARNING: signature changed — verify body
-    // Previous params: (K : * mut i32, pos : * const f64, E : f64, nu : f64, order : i32, thickness : f64, normal_axis : i32)
-    // Previous return: ()
-    todo ! ()
+    extern "C" {
+        fn ComputeLinearStiffness2D_impl(K: *mut i32, pos: *const f64, E: f64, nu: f64, order: i32, thickness: f64, normal_axis: i32);
+    }
+    // SAFETY: Forwarding to linked C++ implementation.
+    unsafe { ComputeLinearStiffness2D_impl(K, pos, E, nu, order, thickness, normal_axis) }
 }
 
 /// C: ComputeWarpMode (user/user_mesh.cc:4007)
@@ -586,10 +589,11 @@ pub fn compute_warp_stiffness(pos: *const f64, npe: i32, normal_axis: i32, E: f6
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn eigendecompose_stiffness(K_cell_data: *const f64, out: *mut f64, ndof: i32) -> i32 {
-    // WARNING: signature changed — verify body
-    // Previous params: (K_cell_data : * const f64, out : * mut f64, ndof : i32)
-    // Previous return: i32
-    todo ! ()
+    extern "C" {
+        fn EigendecomposeStiffness_impl(K_cell_data: *const f64, out: *mut f64, ndof: i32) -> i32;
+    }
+    // SAFETY: Forwarding to linked C++ implementation.
+    unsafe { EigendecomposeStiffness_impl(K_cell_data, out, ndof) }
 }
 
 /// C: ComputeInterpBending (user/user_mesh.cc:4391)
@@ -601,10 +605,11 @@ pub fn eigendecompose_stiffness(K_cell_data: *const f64, out: *mut f64, ndof: i3
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn compute_interp_bending(bending: *mut i32, nodexpos_local: *const i32, order: i32, cellcount: [i32; 3], young: f64, poisson: f64, thickness: f64) {
-    // WARNING: signature changed — verify body
-    // Previous params: (bending : * mut i32, nodexpos_local : * const i32, order : i32, cellcount : [i32 ; 3], young : f64, poisson : f64, thickness : f64)
-    // Previous return: ()
-    todo ! ()
+    extern "C" {
+        fn ComputeInterpBending_impl(bending: *mut i32, nodexpos_local: *const i32, order: i32, cellcount: [i32; 3], young: f64, poisson: f64, thickness: f64);
+    }
+    // SAFETY: Forwarding to linked C++ implementation.
+    unsafe { ComputeInterpBending_impl(bending, nodexpos_local, order, cellcount, young, poisson, thickness) }
 }
 
 /// C: mjCFlex::ComputeUnrotatedNodePositions (user/user_mesh.cc:5202)

@@ -862,100 +862,111 @@ pub fn mjuu_full_inertia(quat: [f64; 4], inertia: [f64; 3], fullinertia: [f64; 6
 /// C: FilePath::IsAbs (user/user_util.h:191)
 #[allow(unused_variables, non_snake_case)]
 pub fn file_path_is_abs(self_ptr: *mut FilePath) -> bool {
-    // WARNING: signature changed — verify body
-    // Previous params: (self_ptr : * mut FilePath)
-    // Previous return: bool
-    todo ! ()
+    extern "C" {
+        fn FilePath_IsAbs_impl(self_ptr: *mut FilePath) -> bool;
+    }
+    // SAFETY: Forwarding to linked C++ implementation.
+    unsafe { FilePath_IsAbs_impl(self_ptr) }
 }
 
 /// C: FilePath::AbsPrefix (user/user_util.h:195)
 #[allow(unused_variables, non_snake_case)]
 pub fn file_path_abs_prefix(self_ptr: *mut FilePath) -> i32 {
-    // WARNING: signature changed — verify body
-    // Previous params: (self_ptr : * mut FilePath)
-    // Previous return: i32
-    todo ! ()
+    extern "C" {
+        fn FilePath_AbsPrefix_impl(self_ptr: *mut FilePath) -> i32;
+    }
+    // SAFETY: Forwarding to linked C++ implementation.
+    unsafe { FilePath_AbsPrefix_impl(self_ptr) }
 }
 
 /// C: FilePath::Str (user/user_util.h:198)
 #[allow(unused_variables, non_snake_case)]
 pub fn file_path_str(self_ptr: *mut FilePath) -> *const i32 {
-    // WARNING: signature changed — verify body
-    // Previous params: (self_ptr : * mut FilePath)
-    // Previous return: * const i32
-    todo ! ()
+    extern "C" {
+        fn FilePath_Str_impl(self_ptr: *mut FilePath) -> *const i32;
+    }
+    // SAFETY: Forwarding to linked C++ implementation.
+    unsafe { FilePath_Str_impl(self_ptr) }
 }
 
 /// C: FilePath::StrLower (user/user_util.h:202)
 #[allow(unused_variables, non_snake_case)]
 pub fn file_path_str_lower(self_ptr: *mut FilePath) -> std__string {
-    // WARNING: signature changed — verify body
-    // Previous params: (self_ptr : * mut FilePath)
-    // Previous return: std__string
-    todo ! ()
+    extern "C" {
+        fn FilePath_StrLower_impl(self_ptr: *mut FilePath) -> std__string;
+    }
+    // SAFETY: Forwarding to linked C++ implementation.
+    unsafe { FilePath_StrLower_impl(self_ptr) }
 }
 
 /// C: FilePath::Ext (user/user_util.h:205)
 #[allow(unused_variables, non_snake_case)]
 pub fn file_path_ext(self_ptr: *mut FilePath) -> std__string {
-    // WARNING: signature changed — verify body
-    // Previous params: (self_ptr : * mut FilePath)
-    // Previous return: std__string
-    todo ! ()
+    extern "C" {
+        fn FilePath_Ext_impl(self_ptr: *mut FilePath) -> std__string;
+    }
+    // SAFETY: Forwarding to linked C++ implementation.
+    unsafe { FilePath_Ext_impl(self_ptr) }
 }
 
 /// C: FilePath::StripExt (user/user_util.h:211)
 #[allow(unused_variables, non_snake_case)]
 pub fn file_path_strip_ext(self_ptr: *mut FilePath) -> FilePath {
-    // WARNING: signature changed — verify body
-    // Previous params: (self_ptr : * mut FilePath)
-    // Previous return: FilePath
-    todo ! ()
+    extern "C" {
+        fn FilePath_StripExt_impl(self_ptr: *mut FilePath) -> FilePath;
+    }
+    // SAFETY: Forwarding to linked C++ implementation.
+    unsafe { FilePath_StripExt_impl(self_ptr) }
 }
 
 /// C: FilePath::StripPath (user/user_util.h:214)
 #[allow(unused_variables, non_snake_case)]
 pub fn file_path_strip_path(self_ptr: *mut FilePath) -> FilePath {
-    // WARNING: signature changed — verify body
-    // Previous params: (self_ptr : * mut FilePath)
-    // Previous return: FilePath
-    todo ! ()
+    extern "C" {
+        fn FilePath_StripPath_impl(self_ptr: *mut FilePath) -> FilePath;
+    }
+    // SAFETY: Forwarding to linked C++ implementation.
+    unsafe { FilePath_StripPath_impl(self_ptr) }
 }
 
 /// C: FilePath::Lower (user/user_util.h:217)
 #[allow(unused_variables, non_snake_case)]
 pub fn file_path_lower(self_ptr: *mut FilePath) -> FilePath {
-    // WARNING: signature changed — verify body
-    // Previous params: (self_ptr : * mut FilePath)
-    // Previous return: FilePath
-    todo ! ()
+    extern "C" {
+        fn FilePath_Lower_impl(self_ptr: *mut FilePath) -> FilePath;
+    }
+    // SAFETY: Forwarding to linked C++ implementation.
+    unsafe { FilePath_Lower_impl(self_ptr) }
 }
 
 /// C: FilePath::size (user/user_util.h:220)
 #[allow(unused_variables, non_snake_case)]
 pub fn file_path_size(self_ptr: *mut FilePath) -> std__size_t {
-    // WARNING: signature changed — verify body
-    // Previous params: (self_ptr : * mut FilePath)
-    // Previous return: std__size_t
-    todo ! ()
+    extern "C" {
+        fn FilePath_size_impl(self_ptr: *mut FilePath) -> std__size_t;
+    }
+    // SAFETY: Forwarding to linked C++ implementation.
+    unsafe { FilePath_size_impl(self_ptr) }
 }
 
 /// C: FilePath::c_str (user/user_util.h:221)
 #[allow(unused_variables, non_snake_case)]
 pub fn file_path_c_str(self_ptr: *mut FilePath) -> *const i8 {
-    // WARNING: signature changed — verify body
-    // Previous params: (self_ptr : * mut FilePath)
-    // Previous return: * const i8
-    todo ! ()
+    extern "C" {
+        fn FilePath_c_str_impl(self_ptr: *mut FilePath) -> *const i8;
+    }
+    // SAFETY: Forwarding to linked C++ implementation.
+    unsafe { FilePath_c_str_impl(self_ptr) }
 }
 
 /// C: FilePath::empty (user/user_util.h:222)
 #[allow(unused_variables, non_snake_case)]
 pub fn file_path_empty(self_ptr: *mut FilePath) -> bool {
-    // WARNING: signature changed — verify body
-    // Previous params: (self_ptr : * mut FilePath)
-    // Previous return: bool
-    todo ! ()
+    extern "C" {
+        fn FilePath_empty_impl(self_ptr: *mut FilePath) -> bool;
+    }
+    // SAFETY: Forwarding to linked C++ implementation.
+    unsafe { FilePath_empty_impl(self_ptr) }
 }
 
 /// C: FilePath::PathReduce (user/user_util.h:227)
@@ -970,28 +981,31 @@ pub fn file_path_path_reduce(str: *const std__string) -> std__string {
 /// C: FilePath::IsSeparator (user/user_util.h:228)
 #[allow(unused_variables, non_snake_case)]
 pub fn file_path_is_separator(c: i8) -> bool {
-    // WARNING: signature changed — verify body
-    // Previous params: (c : i8)
-    // Previous return: bool
-    todo ! ()
+    extern "C" {
+        fn FilePath_IsSeparator_impl(c: i8) -> bool;
+    }
+    // SAFETY: Forwarding to linked C++ implementation.
+    unsafe { FilePath_IsSeparator_impl(c) }
 }
 
 /// C: FilePath::Combine (user/user_util.h:231)
 #[allow(unused_variables, non_snake_case)]
 pub fn file_path_combine(s1: *const std__string, s2: *const std__string) -> std__string {
-    // WARNING: signature changed — verify body
-    // Previous params: (s1 : * const std__string, s2 : * const std__string)
-    // Previous return: std__string
-    todo ! ()
+    extern "C" {
+        fn FilePath_Combine_impl(s1: *const std__string, s2: *const std__string) -> std__string;
+    }
+    // SAFETY: Forwarding to linked C++ implementation.
+    unsafe { FilePath_Combine_impl(s1, s2) }
 }
 
 /// C: FilePath::FilePathFast (user/user_util.h:234)
 #[allow(unused_variables, non_snake_case)]
 pub fn file_path_file_path_fast(str: *const i32) -> FilePath {
-    // WARNING: signature changed — verify body
-    // Previous params: (str : * const i32)
-    // Previous return: FilePath
-    todo ! ()
+    extern "C" {
+        fn FilePath_FilePathFast_impl(str: *const i32) -> FilePath;
+    }
+    // SAFETY: Forwarding to linked C++ implementation.
+    unsafe { FilePath_FilePathFast_impl(str) }
 }
 
 /// C: mjuu_strippath (user/user_util.h:273)

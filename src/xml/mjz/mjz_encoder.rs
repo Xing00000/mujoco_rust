@@ -50,10 +50,11 @@ pub fn apply_rewrites(xml: *mut std__string, rewrites: *const i32) {
 /// Calls: SanitizePath, mjs_asHField, mjs_asMesh, mjs_asSkin, mjs_asTexture, mjs_firstElement, mjs_getCompiler, mjs_getName, mjs_getOriginSpec, mjs_nextElement
 #[allow(unused_variables, non_snake_case)]
 pub fn collect_assets(spec: *const mjSpec, xml_rewrites: *mut i32) -> i32 {
-    // WARNING: signature changed — verify body
-    // Previous params: (spec : * const mjSpec, xml_rewrites : * mut i32)
-    // Previous return: i32
-    todo ! ()
+    extern "C" {
+        fn CollectAssets_impl(spec: *const mjSpec, xml_rewrites: *mut i32) -> i32;
+    }
+    // SAFETY: Forwarding to linked C++ implementation.
+    unsafe { CollectAssets_impl(spec, xml_rewrites) }
 }
 
 /// C: MjzEncode (xml/mjz/mjz_encoder.cc:309)

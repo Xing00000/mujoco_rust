@@ -190,28 +190,31 @@ pub fn mj_c_model_delete_material(self_ptr: *mut mjCModel, list: *mut i32, name:
 /// C: DeleteAllTextures (user/user_model.cc:1790)
 #[allow(unused_variables, non_snake_case)]
 pub fn delete_all_textures(list: *mut i32) {
-    // WARNING: signature changed — verify body
-    // Previous params: (list : * mut i32)
-    // Previous return: ()
-    todo ! ()
+    extern "C" {
+        fn DeleteAllTextures_impl(list: *mut i32);
+    }
+    // SAFETY: Forwarding to linked C++ implementation.
+    unsafe { DeleteAllTextures_impl(list) }
 }
 
 /// C: DeleteTexcoord (user/user_model.cc:1799)
 #[allow(unused_variables, non_snake_case)]
 pub fn delete_texcoord(list: *mut i32) {
-    // WARNING: signature changed — verify body
-    // Previous params: (list : * mut i32)
-    // Previous return: ()
-    todo ! ()
+    extern "C" {
+        fn DeleteTexcoord_impl(list: *mut i32);
+    }
+    // SAFETY: Forwarding to linked C++ implementation.
+    unsafe { DeleteTexcoord_impl(list) }
 }
 
 /// C: DeleteElements (user/user_model.cc:1810)
 #[allow(unused_variables, non_snake_case)]
 pub fn delete_elements(elements: *mut i32, discard: *const i32) {
-    // WARNING: signature changed — verify body
-    // Previous params: (elements : * mut i32, discard : * const i32)
-    // Previous return: ()
-    todo ! ()
+    extern "C" {
+        fn DeleteElements_impl(elements: *mut i32, discard: *const i32);
+    }
+    // SAFETY: Forwarding to linked C++ implementation.
+    unsafe { DeleteElements_impl(elements, discard) }
 }
 
 /// C: mjCModel::Delete (user/user_model.cc:1848)

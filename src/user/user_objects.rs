@@ -3212,10 +3212,11 @@ pub fn mj_c_mesh_load_sdf(self_ptr: *mut mjCMesh) {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_mesh_make_graph(self_ptr: *mut mjCMesh, dvert: *const f64) {
-    // WARNING: signature changed — verify body
-    // Previous params: (self_ptr : * mut mjCMesh, dvert : * const f64)
-    // Previous return: ()
-    todo ! ()
+    extern "C" {
+        fn mjCMesh_MakeGraph_impl(self_ptr: *mut mjCMesh, dvert: *const f64);
+    }
+    // SAFETY: Forwarding to linked C++ implementation.
+    unsafe { mjCMesh_MakeGraph_impl(self_ptr, dvert) }
 }
 
 /// C: mjCMesh::MakeNormal (user/user_objects.h:1284)
@@ -3691,10 +3692,11 @@ pub fn mj_c_texture_name_space(self_ptr: *mut mjCTexture, m: *const mjCModel) {
 /// Calls: FilePath::Str, mjCTexture::Builtin2D, mjCTexture::BuiltinCube, mjCTexture::CopyFromSpec, mjCTexture::LoadCubeSeparate
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_texture_compile(self_ptr: *mut mjCTexture, vfs: *const mjVFS) {
-    // WARNING: signature changed — verify body
-    // Previous params: (self_ptr : * mut mjCTexture, vfs : * const mjVFS)
-    // Previous return: ()
-    todo ! ()
+    extern "C" {
+        fn mjCTexture_Compile_impl(self_ptr: *mut mjCTexture, vfs: *const mjVFS);
+    }
+    // SAFETY: Forwarding to linked C++ implementation.
+    unsafe { mjCTexture_Compile_impl(self_ptr, vfs) }
 }
 
 /// C: mjCTexture::File (user/user_objects.h:1471)

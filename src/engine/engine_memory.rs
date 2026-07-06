@@ -16,10 +16,11 @@ pub fn fastmod(a: usize, b: usize) -> usize {
 /// C: get_stack_info_from_data (engine/engine_memory.c:74)
 #[allow(unused_variables, non_snake_case)]
 pub fn get_stack_info_from_data(d: *const mjData) -> mjStackInfo {
-    // WARNING: signature changed — verify body
-    // Previous params: (d : * const mjData)
-    // Previous return: mjStackInfo
-    todo ! ()
+    extern "C" {
+        fn get_stack_info_from_data_impl(d: *const mjData) -> mjStackInfo;
+    }
+    // SAFETY: Forwarding to linked C++ implementation.
+    unsafe { get_stack_info_from_data_impl(d) }
 }
 
 /// C: stackallocinternal (engine/engine_memory.c:144)
@@ -46,19 +47,21 @@ pub fn stackalloc(d: *mut mjData, size: usize, alignment: usize, caller: *const 
 /// Calls: stackallocinternal
 #[allow(unused_variables, non_snake_case)]
 pub fn markstackinternal(d: *mut mjData, stack_info: *mut mjStackInfo) {
-    // WARNING: signature changed — verify body
-    // Previous params: (d : * mut mjData, stack_info : * mut mjStackInfo)
-    // Previous return: ()
-    todo ! ()
+    extern "C" {
+        fn markstackinternal_impl(d: *mut mjData, stack_info: *mut mjStackInfo);
+    }
+    // SAFETY: Forwarding to linked C++ implementation.
+    unsafe { markstackinternal_impl(d, stack_info) }
 }
 
 /// C: freestackinternal (engine/engine_memory.c:292)
 #[allow(unused_variables, non_snake_case)]
 pub fn freestackinternal(stack_info: *mut mjStackInfo) {
-    // WARNING: signature changed — verify body
-    // Previous params: (stack_info : * mut mjStackInfo)
-    // Previous return: ()
-    todo ! ()
+    extern "C" {
+        fn freestackinternal_impl(stack_info: *mut mjStackInfo);
+    }
+    // SAFETY: Forwarding to linked C++ implementation.
+    unsafe { freestackinternal_impl(stack_info) }
 }
 
 /// C: mj_arenaAllocByte (engine/engine_memory.h:35)

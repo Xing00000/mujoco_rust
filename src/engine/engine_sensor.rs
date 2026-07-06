@@ -18,10 +18,11 @@ pub fn contact_info_compare(a: *const ContactInfo, b: *const ContactInfo, contex
 /// Calls: ContactInfoCompare
 #[allow(unused_variables, non_snake_case)]
 pub fn contact_select(arr: *mut ContactInfo, buf: *mut ContactInfo, n: i32, k: i32, context: *mut ()) {
-    // WARNING: signature changed — verify body
-    // Previous params: (arr : * mut ContactInfo, buf : * mut ContactInfo, n : i32, k : i32, context : * mut ())
-    // Previous return: ()
-    todo ! ()
+    extern "C" {
+        fn ContactSelect_impl(arr: *mut ContactInfo, buf: *mut ContactInfo, n: i32, k: i32, context: *mut ());
+    }
+    // SAFETY: Forwarding to linked C implementation of ContactSelect.
+    unsafe { ContactSelect_impl(arr, buf, n, k, context) }
 }
 
 /// C: tactile_taxel_batch (engine/engine_sensor.c:80)
