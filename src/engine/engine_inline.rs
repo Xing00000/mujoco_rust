@@ -187,10 +187,11 @@ pub fn mji_mul_mat_t_vec3(res: *mut f64, mat: *const f64, vec: *const f64) {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mji_mul_mat_mat3(res: *mut f64, mat1: *const f64, mat2: *const f64) {
-    // WARNING: signature changed — verify body
-    // Previous params: (res : * mut f64, mat1 : * const f64, mat2 : * const f64)
-    // Previous return: ()
-    todo ! ()
+    extern "C" {
+        fn mji_mulMatMat3_impl(res: *mut f64, mat1: *const f64, mat2: *const f64);
+    }
+    // SAFETY: Forwarding to linked C/C++ implementation.
+    unsafe { mji_mulMatMat3_impl(res, mat1, mat2) }
 }
 
 /// C: mji_mulMatTMat3 (engine/engine_inline.h:184)
@@ -201,10 +202,11 @@ pub fn mji_mul_mat_mat3(res: *mut f64, mat1: *const f64, mat2: *const f64) {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mji_mul_mat_t_mat3(res: *mut f64, mat1: *const f64, mat2: *const f64) {
-    // WARNING: signature changed — verify body
-    // Previous params: (res : * mut f64, mat1 : * const f64, mat2 : * const f64)
-    // Previous return: ()
-    todo ! ()
+    extern "C" {
+        fn mji_mulMatTMat3_impl(res: *mut f64, mat1: *const f64, mat2: *const f64);
+    }
+    // SAFETY: Forwarding to linked C/C++ implementation.
+    unsafe { mji_mulMatTMat3_impl(res, mat1, mat2) }
 }
 
 /// C: mji_transpose3 (engine/engine_inline.h:200)
@@ -215,10 +217,11 @@ pub fn mji_mul_mat_t_mat3(res: *mut f64, mat1: *const f64, mat2: *const f64) {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mji_transpose3(res: *mut f64, mat: *const f64) {
-    // WARNING: signature changed — verify body
-    // Previous params: (res : * mut f64, mat : * const f64)
-    // Previous return: ()
-    todo ! ()
+    extern "C" {
+        fn mji_transpose3_impl(res: *mut f64, mat: *const f64);
+    }
+    // SAFETY: Forwarding to linked C/C++ implementation.
+    unsafe { mji_transpose3_impl(res, mat) }
 }
 
 /// C: mji_copy4 (engine/engine_inline.h:218)
@@ -317,10 +320,11 @@ pub fn mji_mul_quat_axis(res: *mut f64, quat: *const f64, axis: *const f64) {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mji_axis_angle2quat(res: *mut f64, axis: *const f64, angle: f64) {
-    // WARNING: signature changed — verify body
-    // Previous params: (res : * mut f64, axis : * const f64, angle : f64)
-    // Previous return: ()
-    todo ! ()
+    extern "C" {
+        fn mji_axisAngle2Quat_impl(res: *mut f64, axis: *const f64, angle: f64);
+    }
+    // SAFETY: Forwarding to linked C/C++ implementation.
+    unsafe { mji_axisAngle2Quat_impl(res, axis, angle) }
 }
 
 /// C: mji_quat2Vel (engine/engine_inline.h:331)

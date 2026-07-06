@@ -376,10 +376,11 @@ pub fn mj_assign_ref(m: *const mjModel, target: *mut f64, source: *const f64) {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_assign_imp(m: *const mjModel, target: *mut f64, source: *const f64) {
-    // WARNING: signature changed — verify body
-    // Previous params: (m : * const mjModel, target : * mut f64, source : * const f64)
-    // Previous return: ()
-    todo ! ()
+    extern "C" {
+        fn mj_assignImp_impl(m: *const mjModel, target: *mut f64, source: *const f64);
+    }
+    // SAFETY: Forwarding to linked C/C++ implementation.
+    unsafe { mj_assignImp_impl(m, target, source) }
 }
 
 /// C: mj_assignFriction (engine/engine_core_constraint.h:52)
@@ -391,10 +392,11 @@ pub fn mj_assign_imp(m: *const mjModel, target: *mut f64, source: *const f64) {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_assign_friction(m: *const mjModel, target: *mut f64, source: *const f64) {
-    // WARNING: signature changed — verify body
-    // Previous params: (m : * const mjModel, target : * mut f64, source : * const f64)
-    // Previous return: ()
-    todo ! ()
+    extern "C" {
+        fn mj_assignFriction_impl(m: *const mjModel, target: *mut f64, source: *const f64);
+    }
+    // SAFETY: Forwarding to linked C/C++ implementation.
+    unsafe { mj_assignFriction_impl(m, target, source) }
 }
 
 /// C: mj_assignMargin (engine/engine_core_constraint.h:55)
@@ -405,10 +407,11 @@ pub fn mj_assign_friction(m: *const mjModel, target: *mut f64, source: *const f6
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_assign_margin(m: *const mjModel, source: f64) -> f64 {
-    // WARNING: signature changed — verify body
-    // Previous params: (m : * const mjModel, source : f64)
-    // Previous return: f64
-    todo ! ()
+    extern "C" {
+        fn mj_assignMargin_impl(m: *const mjModel, source: f64) -> f64;
+    }
+    // SAFETY: Forwarding to linked C/C++ implementation.
+    unsafe { mj_assignMargin_impl(m, source) }
 }
 
 /// C: mj_addContact (engine/engine_core_constraint.h:58)
@@ -531,9 +534,10 @@ pub fn mj_constraint_update_impl(ne: i32, nf: i32, nefc: i32, D: *const f64, R: 
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_constraint_update(m: *const mjModel, d: *mut mjData, jar: *const f64, cost: *mut f64, flg_coneHessian: i32) {
-    // WARNING: signature changed — verify body
-    // Previous params: (m : * const mjModel, d : * mut mjData, jar : * const f64, cost : * mut f64, flg_coneHessian : i32)
-    // Previous return: ()
-    todo ! ()
+    extern "C" {
+        fn mj_constraintUpdate_impl(m: *const mjModel, d: *mut mjData, jar: *const f64, cost: *mut f64, flg_coneHessian: i32);
+    }
+    // SAFETY: Forwarding to linked C/C++ implementation.
+    unsafe { mj_constraintUpdate_impl(m, d, jar, cost, flg_coneHessian) }
 }
 

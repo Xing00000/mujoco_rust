@@ -220,10 +220,11 @@ pub fn mj_apply_ft(m: *const mjModel, d: *mut mjData, force: *const f64, torque:
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_xfrc_accumulate(m: *const mjModel, d: *mut mjData, qfrc: *mut f64) {
-    // WARNING: signature changed — verify body
-    // Previous params: (m : * const mjModel, d : * mut mjData, qfrc : * mut f64)
-    // Previous return: ()
-    todo ! ()
+    extern "C" {
+        fn mj_xfrcAccumulate_impl(m: *const mjModel, d: *mut mjData, qfrc: *mut f64);
+    }
+    // SAFETY: Forwarding to linked C/C++ implementation.
+    unsafe { mj_xfrcAccumulate_impl(m, d, qfrc) }
 }
 
 /// C: mj_geomDistance (engine/engine_support.h:90)
