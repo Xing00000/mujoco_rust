@@ -12,10 +12,9 @@ use crate::types::*;
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn f2f(dest: *mut f32, src: *const f32, n: i32) {
-    // WARNING: signature changed — verify body
-    // Previous params: (dest : * mut f32, src : * const f32, n : i32)
-    // Previous return: ()
-    todo ! ()
+    unsafe {
+        core::ptr::copy_nonoverlapping(src, dest, n as usize);
+    }
 }
 
 /// C: makeLabel (engine/engine_vis_visualize.c:55)

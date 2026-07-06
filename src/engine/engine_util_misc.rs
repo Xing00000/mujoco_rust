@@ -1101,10 +1101,14 @@ pub fn mju_halton(index: i32, base: i32) -> f64 {
 /// C: mju_strncpy (engine/engine_util_misc.h:321)
 #[allow(unused_variables, non_snake_case)]
 pub fn mju_strncpy(dst: *mut i8, src: *const i8, n: i32) -> *mut i8 {
-    // WARNING: signature changed — verify body
-    // Previous params: (dst : * mut i8, src : * const i8, n : i32)
-    // Previous return: * mut i8
-    todo ! ()
+    unsafe {
+        if !dst.is_null() && !src.is_null() && n > 0 {
+            extern "C" { fn strncpy(dst: *mut i8, src: *const i8, n: usize) -> *mut i8; }
+            strncpy(dst, src, n as usize);
+            *dst.add((n - 1) as usize) = 0;
+        }
+        dst
+    }
 }
 
 /// C: mju_polyForce (engine/engine_util_misc.h:326)

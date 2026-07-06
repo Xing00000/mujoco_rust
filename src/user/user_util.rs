@@ -58,10 +58,10 @@ pub fn str_to_num(str: *mut i8, c: *mut *mut i8) -> i32 {
 /// C: IsNullOrSpace (user/user_util.cc:1301)
 #[allow(unused_variables, non_snake_case)]
 pub fn is_null_or_space(c: *mut i8) -> bool {
-    // WARNING: signature changed — verify body
-    // Previous params: (c : * mut i8)
-    // Previous return: bool
-    todo ! ()
+    unsafe {
+        let ch = *c as u8;
+        ch == 0 || ch == b' ' || ch == b'\t' || ch == b'\n' || ch == b'\r' || ch == 0x0B || ch == 0x0C
+    }
 }
 
 /// C: SkipSpace (user/user_util.cc:1305)
@@ -203,10 +203,13 @@ pub fn mjuu_dist3(a: *const f64, b: *const f64) -> f64 {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjuu_l1(a: *const f64, b: *const f64, n: i32) -> f64 {
-    // WARNING: signature changed — verify body
-    // Previous params: (a : * const f64, b : * const f64, n : i32)
-    // Previous return: f64
-    todo ! ()
+    unsafe {
+        let mut res: f64 = 0.0;
+        for i in 0..n as usize {
+            res += (*a.add(i) - *b.add(i)).abs();
+        }
+        res
+    }
 }
 
 /// C: mjuu_normvec (user/user_util.h:78)
@@ -313,10 +316,15 @@ pub fn mjuu_quat2mat(res: *mut f64, quat: *const f64) {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjuu_mulquat(res: *mut f64, qa: *const f64, qb: *const f64) {
-    // WARNING: signature changed — verify body
-    // Previous params: (res : * mut f64, qa : * const f64, qb : * const f64)
-    // Previous return: ()
-    todo ! ()
+    unsafe {
+        let mut tmp: [f64; 4] = [0.0; 4];
+        tmp[0] = *qa.add(0) * *qb.add(0) - *qa.add(1) * *qb.add(1) - *qa.add(2) * *qb.add(2) - *qa.add(3) * *qb.add(3);
+        tmp[1] = *qa.add(0) * *qb.add(1) + *qa.add(1) * *qb.add(0) + *qa.add(2) * *qb.add(3) - *qa.add(3) * *qb.add(2);
+        tmp[2] = *qa.add(0) * *qb.add(2) - *qa.add(1) * *qb.add(3) + *qa.add(2) * *qb.add(0) + *qa.add(3) * *qb.add(1);
+        tmp[3] = *qa.add(0) * *qb.add(3) + *qa.add(1) * *qb.add(2) - *qa.add(2) * *qb.add(1) + *qa.add(3) * *qb.add(0);
+        mjuu_normvec(tmp.as_mut_ptr(), 4);
+        for i in 0..4usize { *res.add(i) = tmp[i]; }
+    }
 }
 
 /// C: mjuu_mulvecmat (user/user_util.h:91)
@@ -327,10 +335,14 @@ pub fn mjuu_mulquat(res: *mut f64, qa: *const f64, qb: *const f64) {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjuu_mulvecmat(res: *mut f64, vec: *const f64, mat: *const f64) {
-    // WARNING: signature changed — verify body
-    // Previous params: (res : * mut f64, vec : * const f64, mat : * const f64)
-    // Previous return: ()
-    todo ! ()
+    unsafe {
+        let tmp0: f64 = *mat.add(0) * *vec.add(0) + *mat.add(1) * *vec.add(1) + *mat.add(2) * *vec.add(2);
+        let tmp1: f64 = *mat.add(3) * *vec.add(0) + *mat.add(4) * *vec.add(1) + *mat.add(5) * *vec.add(2);
+        let tmp2: f64 = *mat.add(6) * *vec.add(0) + *mat.add(7) * *vec.add(1) + *mat.add(8) * *vec.add(2);
+        *res.add(0) = tmp0;
+        *res.add(1) = tmp1;
+        *res.add(2) = tmp2;
+    }
 }
 
 /// C: mjuu_mulvecmatT (user/user_util.h:94)
@@ -387,10 +399,14 @@ pub fn mjuu_mulmat(res: *mut f64, A: *const f64, B: *const f64) {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjuu_transposemat(res: *mut f64, mat: *const f64) {
-    // WARNING: signature changed — verify body
-    // Previous params: (res : * mut f64, mat : * const f64)
-    // Previous return: ()
-    todo ! ()
+    unsafe {
+        let tmp: [f64; 9] = [
+            *mat.add(0), *mat.add(3), *mat.add(6),
+            *mat.add(1), *mat.add(4), *mat.add(7),
+            *mat.add(2), *mat.add(5), *mat.add(8),
+        ];
+        for i in 0..9usize { *res.add(i) = tmp[i]; }
+    }
 }
 
 /// C: mjuu_localaxis (user/user_util.h:106)
