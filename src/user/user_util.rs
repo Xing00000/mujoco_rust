@@ -152,10 +152,11 @@ pub fn mjuu_addtovec(dest: *mut f64, src: *const f64, n: i32) {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjuu_zerovec(dest: *mut f64, n: i32) {
-    // WARNING: signature changed — verify body
-    // Previous params: (dest : * mut f64, n : i32)
-    // Previous return: ()
-    todo ! ()
+    unsafe {
+        for i in 0..n as usize {
+            *dest.add(i) = 0.0;
+        }
+    }
 }
 
 /// C: mjuu_dot3 (user/user_util.h:68)
