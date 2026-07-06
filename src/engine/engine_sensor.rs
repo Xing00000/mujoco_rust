@@ -7,10 +7,20 @@ use crate::types::*;
 /// C: ContactInfoCompare (engine/engine_sensor.c:52)
 #[allow(unused_variables, non_snake_case)]
 pub fn contact_info_compare(a: *const ContactInfo, b: *const ContactInfo, context: *mut ()) -> i32 {
-    // WARNING: signature changed — verify body
-    // Previous params: (a : * const ContactInfo, b : * const ContactInfo, context : * mut ())
-    // Previous return: i32
-    extern "C" { fn ContactInfoCompare_impl (a : * const ContactInfo , b : * const ContactInfo , context : * mut ()) -> i32 ; } unsafe { ContactInfoCompare_impl (a , b , context) }
+    // SAFETY: a, b point to valid ContactInfo structs. Layout: +0 criterion (f64), +8 id (i32).
+    unsafe {
+        let a_ptr = a as *const u8;
+        let b_ptr = b as *const u8;
+        let a_crit = *(a_ptr.add(0) as *const f64);
+        let b_crit = *(b_ptr.add(0) as *const f64);
+        if a_crit < b_crit { return -1; }
+        if a_crit > b_crit { return 1; }
+        let a_id = *(a_ptr.add(8) as *const i32);
+        let b_id = *(b_ptr.add(8) as *const i32);
+        if a_id < b_id { return -1; }
+        if a_id > b_id { return 1; }
+        0
+    }
 }
 
 /// C: ContactSelect (engine/engine_sensor.c:61)
