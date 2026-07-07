@@ -287,10 +287,9 @@ pub fn mj_step(m: *const mjModel, d: *mut mjData) {
 /// Calls: mj_checkPos, mj_checkVel, mj_energyPos, mj_energyVel, mj_fwdPosition, mj_fwdVelocity, mj_sensorPos, mj_sensorVel
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_step1(m: *const mjModel, d: *mut mjData) {
-    // WARNING: signature changed — verify body
-    // Previous params: (m : * const mjModel, d : * mut mjData)
-    // Previous return: ()
-    todo ! ()
+    extern "C" { fn mj_step1_impl(m: *const mjModel, d: *mut mjData); }
+    // SAFETY: delegates to C implementation
+    unsafe { mj_step1_impl(m, d) }
 }
 
 /// C: mj_step2 (engine/engine_forward.h:41)
