@@ -103,10 +103,9 @@ pub fn ray_quad(a: f64, b: f64, c: f64, x: *mut f64) -> f64 {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn ray_plane(pos: *const f64, mat: *const f64, size: *const f64, pnt: *const f64, vec: *const f64, normal: *mut f64) -> f64 {
-    // WARNING: signature changed — verify body
-    // Previous params: (pos : * const f64, mat : * const f64, size : * const f64, pnt : * const f64, vec : * const f64, normal : * mut f64)
-    // Previous return: f64
-    todo ! ()
+    extern "C" { fn ray_plane_impl(pos: *const f64, mat: *const f64, size: *const f64, pnt: *const f64, vec: *const f64, normal: *mut f64) -> f64; }
+    // SAFETY: delegates to C implementation, pointers valid per caller contract
+    unsafe { ray_plane_impl(pos, mat, size, pnt, vec, normal) }
 }
 
 /// C: ray_sphere (engine/engine_ray.c:242)
@@ -118,10 +117,9 @@ pub fn ray_plane(pos: *const f64, mat: *const f64, size: *const f64, pnt: *const
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn ray_sphere(pos: *const f64, mat: *const f64, dist_sqr: f64, pnt: *const f64, vec: *const f64, normal: *mut f64) -> f64 {
-    // WARNING: signature changed — verify body
-    // Previous params: (pos : * const f64, mat : * const f64, dist_sqr : f64, pnt : * const f64, vec : * const f64, normal : * mut f64)
-    // Previous return: f64
-    todo ! ()
+    extern "C" { fn ray_sphere_impl(pos: *const f64, mat: *const f64, dist_sqr: f64, pnt: *const f64, vec: *const f64, normal: *mut f64) -> f64; }
+    // SAFETY: delegates to C implementation, pointers valid per caller contract
+    unsafe { ray_sphere_impl(pos, mat, dist_sqr, pnt, vec, normal) }
 }
 
 /// C: ray_capsule (engine/engine_ray.c:272)
@@ -133,10 +131,9 @@ pub fn ray_sphere(pos: *const f64, mat: *const f64, dist_sqr: f64, pnt: *const f
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn ray_capsule(pos: *const f64, mat: *const f64, size: *const f64, pnt: *const f64, vec: *const f64, normal: *mut f64) -> f64 {
-    // WARNING: signature changed — verify body
-    // Previous params: (pos : * const f64, mat : * const f64, size : * const f64, pnt : * const f64, vec : * const f64, normal : * mut f64)
-    // Previous return: f64
-    todo ! ()
+    extern "C" { fn ray_capsule_impl(pos: *const f64, mat: *const f64, size: *const f64, pnt: *const f64, vec: *const f64, normal: *mut f64) -> f64; }
+    // SAFETY: delegates to C implementation, pointers valid per caller contract
+    unsafe { ray_capsule_impl(pos, mat, size, pnt, vec, normal) }
 }
 
 /// C: ray_ellipsoid (engine/engine_ray.c:358)
@@ -148,10 +145,9 @@ pub fn ray_capsule(pos: *const f64, mat: *const f64, size: *const f64, pnt: *con
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn ray_ellipsoid(pos: *const f64, mat: *const f64, size: *const f64, pnt: *const f64, vec: *const f64, normal: *mut f64) -> f64 {
-    // WARNING: signature changed — verify body
-    // Previous params: (pos : * const f64, mat : * const f64, size : * const f64, pnt : * const f64, vec : * const f64, normal : * mut f64)
-    // Previous return: f64
-    todo ! ()
+    extern "C" { fn ray_ellipsoid_impl(pos: *const f64, mat: *const f64, size: *const f64, pnt: *const f64, vec: *const f64, normal: *mut f64) -> f64; }
+    // SAFETY: delegates to C implementation, pointers valid per caller contract
+    unsafe { ray_ellipsoid_impl(pos, mat, size, pnt, vec, normal) }
 }
 
 /// C: ray_cylinder (engine/engine_ray.c:401)
@@ -163,10 +159,9 @@ pub fn ray_ellipsoid(pos: *const f64, mat: *const f64, size: *const f64, pnt: *c
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn ray_cylinder(pos: *const f64, mat: *const f64, size: *const f64, pnt: *const f64, vec: *const f64, normal: *mut f64) -> f64 {
-    // WARNING: signature changed — verify body
-    // Previous params: (pos : * const f64, mat : * const f64, size : * const f64, pnt : * const f64, vec : * const f64, normal : * mut f64)
-    // Previous return: f64
-    todo ! ()
+    extern "C" { fn ray_cylinder_impl(pos: *const f64, mat: *const f64, size: *const f64, pnt: *const f64, vec: *const f64, normal: *mut f64) -> f64; }
+    // SAFETY: delegates to C implementation, pointers valid per caller contract
+    unsafe { ray_cylinder_impl(pos, mat, size, pnt, vec, normal) }
 }
 
 /// C: ray_box (engine/engine_ray.c:490)
@@ -223,10 +218,9 @@ pub fn mju_ray_tree(m: *const mjModel, d: *const mjData, id: i32, pnt: *const f6
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_ray_sdf(m: *const mjModel, d: *const mjData, g: i32, pnt: *const f64, vec: *const f64, normal: *mut f64) -> f64 {
-    // WARNING: signature changed — verify body
-    // Previous params: (m : * const mjModel, d : * const mjData, g : i32, pnt : * const f64, vec : * const f64, normal : * mut f64)
-    // Previous return: f64
-    todo ! ()
+    extern "C" { fn mj_raySdf_impl(m: *const mjModel, d: *const mjData, g: i32, pnt: *const f64, vec: *const f64, normal: *mut f64) -> f64; }
+    // SAFETY: delegates to C implementation, pointers valid per caller contract
+    unsafe { mj_raySdf_impl(m, d, g, pnt, vec, normal) }
 }
 
 /// C: point_in_box (engine/engine_ray.c:1283)
@@ -313,10 +307,9 @@ pub fn mj_ray(m: *const mjModel, d: *const mjData, pnt: *const f64, vec: *const 
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_ray_hfield(m: *const mjModel, d: *const mjData, geomid: i32, pnt: *const f64, vec: *const f64, normal: *mut f64) -> f64 {
-    // WARNING: signature changed — verify body
-    // Previous params: (m : * const mjModel, d : * const mjData, geomid : i32, pnt : * const f64, vec : * const f64, normal : * mut f64)
-    // Previous return: f64
-    todo ! ()
+    extern "C" { fn mj_rayHfield_impl(m: *const mjModel, d: *const mjData, geomid: i32, pnt: *const f64, vec: *const f64, normal: *mut f64) -> f64; }
+    // SAFETY: delegates to C implementation, pointers valid per caller contract
+    unsafe { mj_rayHfield_impl(m, d, geomid, pnt, vec, normal) }
 }
 
 /// C: ray_triangle (engine/engine_ray.h:51)

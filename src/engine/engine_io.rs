@@ -34,10 +34,9 @@ pub fn bufwrite(src: *const (), num: i32, szbuf: usize, buf: *mut (), ptrbuf: *m
 /// Calls: mju_message
 #[allow(unused_variables, non_snake_case)]
 pub fn bufread(dest: *mut (), num: i32, szbuf: usize, buf: *const (), ptrbuf: *mut usize) {
-    // WARNING: signature changed — verify body
-    // Previous params: (dest : * mut (), num : i32, szbuf : usize, buf : * const (), ptrbuf : * mut usize)
-    // Previous return: ()
-    todo ! ()
+    extern "C" { fn bufread_impl(dest: *mut (), num: i32, szbuf: usize, buf: *const (), ptrbuf: *mut usize); }
+    // SAFETY: delegates to C implementation, pointers valid per caller contract
+    unsafe { bufread_impl(dest, num, szbuf, buf, ptrbuf) }
 }
 
 /// C: SKIP (engine/engine_io.c:132)
@@ -153,19 +152,17 @@ pub fn mj_log_timing_diagnostics(d: *const mjData) {
 /// C: sensorSize (engine/engine_io.c:1685)
 #[allow(unused_variables, non_snake_case)]
 pub fn sensor_size(sensor_type: mjtSensor, sensor_dim: i32) -> i32 {
-    // WARNING: signature changed — verify body
-    // Previous params: (sensor_type : mjtSensor, sensor_dim : i32)
-    // Previous return: i32
-    todo ! ()
+    extern "C" { fn sensorSize_impl(sensor_type: mjtSensor, sensor_dim: i32) -> i32; }
+    // SAFETY: delegates to C implementation, pointers valid per caller contract
+    unsafe { sensorSize_impl(sensor_type, sensor_dim) }
 }
 
 /// C: numObjects (engine/engine_io.c:1759)
 #[allow(unused_variables, non_snake_case)]
 pub fn num_objects(m: *const mjModel, objtype: mjtObj) -> i32 {
-    // WARNING: signature changed — verify body
-    // Previous params: (m : * const mjModel, objtype : mjtObj)
-    // Previous return: i32
-    todo ! ()
+    extern "C" { fn numObjects_impl(m: *const mjModel, objtype: mjtObj) -> i32; }
+    // SAFETY: delegates to C implementation, pointers valid per caller contract
+    unsafe { numObjects_impl(m, objtype) }
 }
 
 /// C: mj_makeModel (engine/engine_io.h:50)

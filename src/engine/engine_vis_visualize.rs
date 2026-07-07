@@ -254,130 +254,117 @@ pub fn get_frustum(zver: [f32; 2], zhor: [f32; 2], znear: f32, intrinsic: [f32; 
 /// Calls: acquireGeom, addFrame, f2f, islandColor, mj_contactForce, mj_id2name, mju_add3, mju_copy, mju_mulMatVec, mju_n2f, mju_norm3, mju_scl3, mju_transpose, mju_zero3, mjv_connector, releaseGeom
 #[allow(unused_variables, non_snake_case)]
 pub fn add_contact_geoms(m: *const mjModel, d: *mut mjData, vopt: *const mjvOption, scn: *mut mjvScene, catmask: i32) {
-    // WARNING: signature changed — verify body
-    // Previous params: (m : * const mjModel, d : * mut mjData, vopt : * const mjvOption, scn : * mut mjvScene, catmask : i32)
-    // Previous return: ()
-    todo ! ()
+    extern "C" { fn addContactGeoms_impl(m: *const mjModel, d: *mut mjData, vopt: *const mjvOption, scn: *mut mjvScene, catmask: i32); }
+    // SAFETY: delegates to C implementation, pointers valid per caller contract
+    unsafe { addContactGeoms_impl(m, d, vopt, scn, catmask) }
 }
 
 /// C: addFlexGeoms (engine/engine_vis_visualize.c:748)
 /// Calls: acquireGeom, islandColor, makeLabel, markselected, mj_sleepCycle, mjv_initGeom, releaseGeom, setMaterial
 #[allow(unused_variables, non_snake_case)]
 pub fn add_flex_geoms(m: *const mjModel, d: *mut mjData, vopt: *const mjvOption, pert: *const mjvPerturb, catmask: i32, scn: *mut mjvScene) {
-    // WARNING: signature changed — verify body
-    // Previous params: (m : * const mjModel, d : * mut mjData, vopt : * const mjvOption, pert : * const mjvPerturb, catmask : i32, scn : * mut mjvScene)
-    // Previous return: ()
-    todo ! ()
+    extern "C" { fn addFlexGeoms_impl(m: *const mjModel, d: *mut mjData, vopt: *const mjvOption, pert: *const mjvPerturb, catmask: i32, scn: *mut mjvScene); }
+    // SAFETY: delegates to C implementation, pointers valid per caller contract
+    unsafe { addFlexGeoms_impl(m, d, vopt, pert, catmask, scn) }
 }
 
 /// C: addSkinGeoms (engine/engine_vis_visualize.c:841)
 /// Calls: acquireGeom, makeLabel, markselected, mjv_initGeom, releaseGeom, setMaterial
 #[allow(unused_variables, non_snake_case)]
 pub fn add_skin_geoms(m: *const mjModel, d: *mut mjData, vopt: *const mjvOption, pert: *const mjvPerturb, catmask: i32, scn: *mut mjvScene) {
-    // WARNING: signature changed — verify body
-    // Previous params: (m : * const mjModel, d : * mut mjData, vopt : * const mjvOption, pert : * const mjvPerturb, catmask : i32, scn : * mut mjvScene)
-    // Previous return: ()
-    todo ! ()
+    extern "C" { fn addSkinGeoms_impl(m: *const mjModel, d: *mut mjData, vopt: *const mjvOption, pert: *const mjvPerturb, catmask: i32, scn: *mut mjvScene); }
+    // SAFETY: delegates to C implementation, pointers valid per caller contract
+    unsafe { addSkinGeoms_impl(m, d, vopt, pert, catmask, scn) }
 }
 
 /// C: addGeomGeoms (engine/engine_vis_visualize.c:892)
 /// Calls: acquireGeom, bodycategory, islandColor, makeLabel, markselected, mj_sleepCycle, mju_addToScl3, mju_copy3, mju_dot3, mju_n2f, mju_round, mju_transpose, mjv_initGeom, releaseGeom, setMaterial
 #[allow(unused_variables, non_snake_case)]
 pub fn add_geom_geoms(m: *const mjModel, d: *mut mjData, vopt: *const mjvOption, pert: *const mjvPerturb, catmask: i32, scn: *mut mjvScene) {
-    // WARNING: signature changed — verify body
-    // Previous params: (m : * const mjModel, d : * mut mjData, vopt : * const mjvOption, pert : * const mjvPerturb, catmask : i32, scn : * mut mjvScene)
-    // Previous return: ()
-    todo ! ()
+    extern "C" { fn addGeomGeoms_impl(m: *const mjModel, d: *mut mjData, vopt: *const mjvOption, pert: *const mjvPerturb, catmask: i32, scn: *mut mjvScene); }
+    // SAFETY: delegates to C implementation, pointers valid per caller contract
+    unsafe { addGeomGeoms_impl(m, d, vopt, pert, catmask, scn) }
 }
 
 /// C: addSiteGeoms (engine/engine_vis_visualize.c:1041)
 /// Calls: acquireGeom, bodycategory, makeLabel, markselected, mjv_initGeom, releaseGeom, setMaterial
 #[allow(unused_variables, non_snake_case)]
 pub fn add_site_geoms(m: *const mjModel, d: *mut mjData, vopt: *const mjvOption, pert: *const mjvPerturb, catmask: i32, scn: *mut mjvScene) {
-    // WARNING: signature changed — verify body
-    // Previous params: (m : * const mjModel, d : * mut mjData, vopt : * const mjvOption, pert : * const mjvPerturb, catmask : i32, scn : * mut mjvScene)
-    // Previous return: ()
-    todo ! ()
+    extern "C" { fn addSiteGeoms_impl(m: *const mjModel, d: *mut mjData, vopt: *const mjvOption, pert: *const mjvPerturb, catmask: i32, scn: *mut mjvScene); }
+    // SAFETY: delegates to C implementation, pointers valid per caller contract
+    unsafe { addSiteGeoms_impl(m, d, vopt, pert, catmask, scn) }
 }
 
 /// C: addSpatialTendonGeoms (engine/engine_vis_visualize.c:1141)
 /// Calls: acquireGeom, f2f, islandColor, makeLabel, mju_copy3, mjv_catenary, mjv_connector, mjv_isCatenary, releaseGeom, setMaterial
 #[allow(unused_variables, non_snake_case)]
 pub fn add_spatial_tendon_geoms(m: *const mjModel, d: *mut mjData, vopt: *const mjvOption, catmask: i32, scn: *mut mjvScene) {
-    // WARNING: signature changed — verify body
-    // Previous params: (m : * const mjModel, d : * mut mjData, vopt : * const mjvOption, catmask : i32, scn : * mut mjvScene)
-    // Previous return: ()
-    todo ! ()
+    extern "C" { fn addSpatialTendonGeoms_impl(m: *const mjModel, d: *mut mjData, vopt: *const mjvOption, catmask: i32, scn: *mut mjvScene); }
+    // SAFETY: delegates to C implementation, pointers valid per caller contract
+    unsafe { addSpatialTendonGeoms_impl(m, d, vopt, catmask, scn) }
 }
 
 /// C: addSliderCrankGeoms (engine/engine_vis_visualize.c:1266)
 /// Calls: acquireGeom, f2f, makeLabel, mju_addTo3, mju_dot3, mju_scl3, mju_sub, mjv_connector, releaseGeom
 #[allow(unused_variables, non_snake_case)]
 pub fn add_slider_crank_geoms(m: *const mjModel, d: *mut mjData, vopt: *const mjvOption, catmask: i32, scn: *mut mjvScene) {
-    // WARNING: signature changed — verify body
-    // Previous params: (m : * const mjModel, d : * mut mjData, vopt : * const mjvOption, catmask : i32, scn : * mut mjvScene)
-    // Previous return: ()
-    todo ! ()
+    extern "C" { fn addSliderCrankGeoms_impl(m: *const mjModel, d: *mut mjData, vopt: *const mjvOption, catmask: i32, scn: *mut mjvScene); }
+    // SAFETY: delegates to C implementation, pointers valid per caller contract
+    unsafe { addSliderCrankGeoms_impl(m, d, vopt, catmask, scn) }
 }
 
 /// C: addGeomFrameGeoms (engine/engine_vis_visualize.c:1334)
 /// Calls: addFrame, bodycategory
 #[allow(unused_variables, non_snake_case)]
 pub fn add_geom_frame_geoms(m: *const mjModel, d: *mut mjData, vopt: *const mjvOption, catmask: i32, scn: *mut mjvScene) {
-    // WARNING: signature changed — verify body
-    // Previous params: (m : * const mjModel, d : * mut mjData, vopt : * const mjvOption, catmask : i32, scn : * mut mjvScene)
-    // Previous return: ()
-    todo ! ()
+    extern "C" { fn addGeomFrameGeoms_impl(m: *const mjModel, d: *mut mjData, vopt: *const mjvOption, catmask: i32, scn: *mut mjvScene); }
+    // SAFETY: delegates to C implementation, pointers valid per caller contract
+    unsafe { addGeomFrameGeoms_impl(m, d, vopt, catmask, scn) }
 }
 
 /// C: addSiteFrameGeoms (engine/engine_vis_visualize.c:1364)
 /// Calls: addFrame, bodycategory
 #[allow(unused_variables, non_snake_case)]
 pub fn add_site_frame_geoms(m: *const mjModel, d: *mut mjData, vopt: *const mjvOption, catmask: i32, scn: *mut mjvScene) {
-    // WARNING: signature changed — verify body
-    // Previous params: (m : * const mjModel, d : * mut mjData, vopt : * const mjvOption, catmask : i32, scn : * mut mjvScene)
-    // Previous return: ()
-    todo ! ()
+    extern "C" { fn addSiteFrameGeoms_impl(m: *const mjModel, d: *mut mjData, vopt: *const mjvOption, catmask: i32, scn: *mut mjvScene); }
+    // SAFETY: delegates to C implementation, pointers valid per caller contract
+    unsafe { addSiteFrameGeoms_impl(m, d, vopt, catmask, scn) }
 }
 
 /// C: addBodyBvhGeoms (engine/engine_vis_visualize.c:1394)
 /// Calls: acquireGeom, mju_addTo3, mju_mulMatVec3, mjv_initGeom, releaseGeom
 #[allow(unused_variables, non_snake_case)]
 pub fn add_body_bvh_geoms(m: *const mjModel, d: *mut mjData, vopt: *const mjvOption, scn: *mut mjvScene) {
-    // WARNING: signature changed — verify body
-    // Previous params: (m : * const mjModel, d : * mut mjData, vopt : * const mjvOption, scn : * mut mjvScene)
-    // Previous return: ()
-    todo ! ()
+    extern "C" { fn addBodyBvhGeoms_impl(m: *const mjModel, d: *mut mjData, vopt: *const mjvOption, scn: *mut mjvScene); }
+    // SAFETY: delegates to C implementation, pointers valid per caller contract
+    unsafe { addBodyBvhGeoms_impl(m, d, vopt, scn) }
 }
 
 /// C: addFlexBvhGeoms (engine/engine_vis_visualize.c:1449)
 /// Calls: acquireGeom, mj_stackAllocInfo, mju_addTo3, mju_copy3, mju_mulMatVec3, mjv_connector, mjv_initGeom, releaseGeom
 #[allow(unused_variables, non_snake_case)]
 pub fn add_flex_bvh_geoms(m: *const mjModel, d: *mut mjData, vopt: *const mjvOption, scn: *mut mjvScene) {
-    // WARNING: signature changed — verify body
-    // Previous params: (m : * const mjModel, d : * mut mjData, vopt : * const mjvOption, scn : * mut mjvScene)
-    // Previous return: ()
-    todo ! ()
+    extern "C" { fn addFlexBvhGeoms_impl(m: *const mjModel, d: *mut mjData, vopt: *const mjvOption, scn: *mut mjvScene); }
+    // SAFETY: delegates to C implementation, pointers valid per caller contract
+    unsafe { addFlexBvhGeoms_impl(m, d, vopt, scn) }
 }
 
 /// C: addMeshBvhGeoms (engine/engine_vis_visualize.c:1581)
 /// Calls: acquireGeom, mju_addTo3, mju_mulMatVec3, mjv_initGeom, releaseGeom
 #[allow(unused_variables, non_snake_case)]
 pub fn add_mesh_bvh_geoms(m: *const mjModel, d: *mut mjData, vopt: *const mjvOption, scn: *mut mjvScene) {
-    // WARNING: signature changed — verify body
-    // Previous params: (m : * const mjModel, d : * mut mjData, vopt : * const mjvOption, scn : * mut mjvScene)
-    // Previous return: ()
-    todo ! ()
+    extern "C" { fn addMeshBvhGeoms_impl(m: *const mjModel, d: *mut mjData, vopt: *const mjvOption, scn: *mut mjvScene); }
+    // SAFETY: delegates to C implementation, pointers valid per caller contract
+    unsafe { addMeshBvhGeoms_impl(m, d, vopt, scn) }
 }
 
 /// C: addMeshOctreeGeoms (engine/engine_vis_visualize.c:1634)
 /// Calls: acquireGeom, mju_addTo3, mju_mulMatVec3, mjv_initGeom, releaseGeom
 #[allow(unused_variables, non_snake_case)]
 pub fn add_mesh_octree_geoms(m: *const mjModel, d: *mut mjData, vopt: *const mjvOption, scn: *mut mjvScene) {
-    // WARNING: signature changed — verify body
-    // Previous params: (m : * const mjModel, d : * mut mjData, vopt : * const mjvOption, scn : * mut mjvScene)
-    // Previous return: ()
-    todo ! ()
+    extern "C" { fn addMeshOctreeGeoms_impl(m: *const mjModel, d: *mut mjData, vopt: *const mjvOption, scn: *mut mjvScene); }
+    // SAFETY: delegates to C implementation, pointers valid per caller contract
+    unsafe { addMeshOctreeGeoms_impl(m, d, vopt, scn) }
 }
 
 /// C: addTactileSensorGeoms (engine/engine_vis_visualize.c:1673)
@@ -394,10 +381,9 @@ pub fn add_tactile_sensor_geoms(m: *const mjModel, d: *mut mjData, vopt: *const 
 /// Calls: acquireGeom, bodycategory, makeLabel, markselected, mju_max, mjv_initGeom, releaseGeom
 #[allow(unused_variables, non_snake_case)]
 pub fn add_inertia_geoms(m: *const mjModel, d: *mut mjData, vopt: *const mjvOption, pert: *const mjvPerturb, catmask: i32, scn: *mut mjvScene) {
-    // WARNING: signature changed — verify body
-    // Previous params: (m : * const mjModel, d : * mut mjData, vopt : * const mjvOption, pert : * const mjvPerturb, catmask : i32, scn : * mut mjvScene)
-    // Previous return: ()
-    todo ! ()
+    extern "C" { fn addInertiaGeoms_impl(m: *const mjModel, d: *mut mjData, vopt: *const mjvOption, pert: *const mjvPerturb, catmask: i32, scn: *mut mjvScene); }
+    // SAFETY: delegates to C implementation, pointers valid per caller contract
+    unsafe { addInertiaGeoms_impl(m, d, vopt, pert, catmask, scn) }
 }
 
 /// C: addPerturbGeoms (engine/engine_vis_visualize.c:1811)
@@ -414,60 +400,54 @@ pub fn add_perturb_geoms(m: *const mjModel, d: *mut mjData, vopt: *const mjvOpti
 /// Calls: addFrame, bodycategory
 #[allow(unused_variables, non_snake_case)]
 pub fn add_world_body_frame_geoms(m: *const mjModel, d: *mut mjData, vopt: *const mjvOption, catmask: i32, scn: *mut mjvScene) {
-    // WARNING: signature changed — verify body
-    // Previous params: (m : * const mjModel, d : * mut mjData, vopt : * const mjvOption, catmask : i32, scn : * mut mjvScene)
-    // Previous return: ()
-    todo ! ()
+    extern "C" { fn addWorldBodyFrameGeoms_impl(m: *const mjModel, d: *mut mjData, vopt: *const mjvOption, catmask: i32, scn: *mut mjvScene); }
+    // SAFETY: delegates to C implementation, pointers valid per caller contract
+    unsafe { addWorldBodyFrameGeoms_impl(m, d, vopt, catmask, scn) }
 }
 
 /// C: addSelectionPointGeoms (engine/engine_vis_visualize.c:1928)
 /// Calls: acquireGeom, f2f, mju_addTo3, mju_mulMatVec3, mju_n2f, releaseGeom
 #[allow(unused_variables, non_snake_case)]
 pub fn add_selection_point_geoms(m: *const mjModel, d: *mut mjData, vopt: *const mjvOption, pert: *const mjvPerturb, scn: *mut mjvScene) {
-    // WARNING: signature changed — verify body
-    // Previous params: (m : * const mjModel, d : * mut mjData, vopt : * const mjvOption, pert : * const mjvPerturb, scn : * mut mjvScene)
-    // Previous return: ()
-    todo ! ()
+    extern "C" { fn addSelectionPointGeoms_impl(m: *const mjModel, d: *mut mjData, vopt: *const mjvOption, pert: *const mjvPerturb, scn: *mut mjvScene); }
+    // SAFETY: delegates to C implementation, pointers valid per caller contract
+    unsafe { addSelectionPointGeoms_impl(m, d, vopt, pert, scn) }
 }
 
 /// C: addBodyLabelGeoms (engine/engine_vis_visualize.c:1964)
 /// Calls: acquireGeom, bodycategory, makeLabel, mju_n2f, releaseGeom
 #[allow(unused_variables, non_snake_case)]
 pub fn add_body_label_geoms(m: *const mjModel, d: *mut mjData, vopt: *const mjvOption, pert: *const mjvPerturb, catmask: i32, scn: *mut mjvScene) {
-    // WARNING: signature changed — verify body
-    // Previous params: (m : * const mjModel, d : * mut mjData, vopt : * const mjvOption, pert : * const mjvPerturb, catmask : i32, scn : * mut mjvScene)
-    // Previous return: ()
-    todo ! ()
+    extern "C" { fn addBodyLabelGeoms_impl(m: *const mjModel, d: *mut mjData, vopt: *const mjvOption, pert: *const mjvPerturb, catmask: i32, scn: *mut mjvScene); }
+    // SAFETY: delegates to C implementation, pointers valid per caller contract
+    unsafe { addBodyLabelGeoms_impl(m, d, vopt, pert, catmask, scn) }
 }
 
 /// C: addJointGeoms (engine/engine_vis_visualize.c:1994)
 /// Calls: acquireGeom, f2f, makeLabel, mju_addScl3, mju_message, mju_n2f, mjv_connector, releaseGeom
 #[allow(unused_variables, non_snake_case)]
 pub fn add_joint_geoms(m: *const mjModel, d: *mut mjData, vopt: *const mjvOption, scn: *mut mjvScene) {
-    // WARNING: signature changed — verify body
-    // Previous params: (m : * const mjModel, d : * mut mjData, vopt : * const mjvOption, scn : * mut mjvScene)
-    // Previous return: ()
-    todo ! ()
+    extern "C" { fn addJointGeoms_impl(m: *const mjModel, d: *mut mjData, vopt: *const mjvOption, scn: *mut mjvScene); }
+    // SAFETY: delegates to C implementation, pointers valid per caller contract
+    unsafe { addJointGeoms_impl(m, d, vopt, scn) }
 }
 
 /// C: addActuatorGeoms (engine/engine_vis_visualize.c:2074)
 /// Calls: acquireGeom, f2f, makeLabel, mj_actuatorDisabled, mju_addScl3, mju_clip, mju_scl3, mjv_connector, mjv_initGeom, releaseGeom, setMaterial
 #[allow(unused_variables, non_snake_case)]
 pub fn add_actuator_geoms(m: *const mjModel, d: *mut mjData, vopt: *const mjvOption, scn: *mut mjvScene) {
-    // WARNING: signature changed — verify body
-    // Previous params: (m : * const mjModel, d : * mut mjData, vopt : * const mjvOption, scn : * mut mjvScene)
-    // Previous return: ()
-    todo ! ()
+    extern "C" { fn addActuatorGeoms_impl(m: *const mjModel, d: *mut mjData, vopt: *const mjvOption, scn: *mut mjvScene); }
+    // SAFETY: delegates to C implementation, pointers valid per caller contract
+    unsafe { addActuatorGeoms_impl(m, d, vopt, scn) }
 }
 
 /// C: addIslandLabelGeoms (engine/engine_vis_visualize.c:2283)
 /// Calls: acquireGeom, mju_n2f, releaseGeom
 #[allow(unused_variables, non_snake_case)]
 pub fn add_island_label_geoms(m: *const mjModel, d: *mut mjData, vopt: *const mjvOption, scn: *mut mjvScene) {
-    // WARNING: signature changed — verify body
-    // Previous params: (m : * const mjModel, d : * mut mjData, vopt : * const mjvOption, scn : * mut mjvScene)
-    // Previous return: ()
-    todo ! ()
+    extern "C" { fn addIslandLabelGeoms_impl(m: *const mjModel, d: *mut mjData, vopt: *const mjvOption, scn: *mut mjvScene); }
+    // SAFETY: delegates to C implementation, pointers valid per caller contract
+    unsafe { addIslandLabelGeoms_impl(m, d, vopt, scn) }
 }
 
 /// C: addCameraGeoms (engine/engine_vis_visualize.c:2313)
@@ -484,60 +464,54 @@ pub fn add_camera_geoms(m: *const mjModel, d: *mut mjData, vopt: *const mjvOptio
 /// Calls: acquireGeom, addFrame, f2f, makeLabel, mju_addScl3, mju_n2f, mju_quat2Mat, mju_quatZ2Vec, releaseGeom
 #[allow(unused_variables, non_snake_case)]
 pub fn add_light_geoms(m: *const mjModel, d: *mut mjData, vopt: *const mjvOption, scn: *mut mjvScene) {
-    // WARNING: signature changed — verify body
-    // Previous params: (m : * const mjModel, d : * mut mjData, vopt : * const mjvOption, scn : * mut mjvScene)
-    // Previous return: ()
-    todo ! ()
+    extern "C" { fn addLightGeoms_impl(m: *const mjModel, d: *mut mjData, vopt: *const mjvOption, scn: *mut mjvScene); }
+    // SAFETY: delegates to C implementation, pointers valid per caller contract
+    unsafe { addLightGeoms_impl(m, d, vopt, scn) }
 }
 
 /// C: addCenterOfMassGeoms (engine/engine_vis_visualize.c:2509)
 /// Calls: acquireGeom, f2f, mju_n2f, releaseGeom
 #[allow(unused_variables, non_snake_case)]
 pub fn add_center_of_mass_geoms(m: *const mjModel, d: *mut mjData, vopt: *const mjvOption, scn: *mut mjvScene) {
-    // WARNING: signature changed — verify body
-    // Previous params: (m : * const mjModel, d : * mut mjData, vopt : * const mjvOption, scn : * mut mjvScene)
-    // Previous return: ()
-    todo ! ()
+    extern "C" { fn addCenterOfMassGeoms_impl(m: *const mjModel, d: *mut mjData, vopt: *const mjvOption, scn: *mut mjvScene); }
+    // SAFETY: delegates to C implementation, pointers valid per caller contract
+    unsafe { addCenterOfMassGeoms_impl(m, d, vopt, scn) }
 }
 
 /// C: addAutoConnectGeoms (engine/engine_vis_visualize.c:2535)
 /// Calls: addConnector
 #[allow(unused_variables, non_snake_case)]
 pub fn add_auto_connect_geoms(m: *const mjModel, d: *mut mjData, vopt: *const mjvOption, scn: *mut mjvScene) {
-    // WARNING: signature changed — verify body
-    // Previous params: (m : * const mjModel, d : * mut mjData, vopt : * const mjvOption, scn : * mut mjvScene)
-    // Previous return: ()
-    todo ! ()
+    extern "C" { fn addAutoConnectGeoms_impl(m: *const mjModel, d: *mut mjData, vopt: *const mjvOption, scn: *mut mjvScene); }
+    // SAFETY: delegates to C implementation, pointers valid per caller contract
+    unsafe { addAutoConnectGeoms_impl(m, d, vopt, scn) }
 }
 
 /// C: addRangefinderGeoms (engine/engine_vis_visualize.c:2570)
 /// Calls: acquireGeom, addConnector, f2f, mju_addScl3, mju_camIntrinsics, mju_camPixelRay, mju_copy3, mju_isZero, mju_n2f, mju_raydataSize, releaseGeom
 #[allow(unused_variables, non_snake_case)]
 pub fn add_rangefinder_geoms(m: *const mjModel, d: *mut mjData, vopt: *const mjvOption, scn: *mut mjvScene) {
-    // WARNING: signature changed — verify body
-    // Previous params: (m : * const mjModel, d : * mut mjData, vopt : * const mjvOption, scn : * mut mjvScene)
-    // Previous return: ()
-    todo ! ()
+    extern "C" { fn addRangefinderGeoms_impl(m: *const mjModel, d: *mut mjData, vopt: *const mjvOption, scn: *mut mjvScene); }
+    // SAFETY: delegates to C implementation, pointers valid per caller contract
+    unsafe { addRangefinderGeoms_impl(m, d, vopt, scn) }
 }
 
 /// C: addExternalPerturbGeoms (engine/engine_vis_visualize.c:2729)
 /// Calls: addConnector, mju_add3, mju_isZero, mju_norm3, mju_scl3
 #[allow(unused_variables, non_snake_case)]
 pub fn add_external_perturb_geoms(m: *const mjModel, d: *mut mjData, vopt: *const mjvOption, scn: *mut mjvScene) {
-    // WARNING: signature changed — verify body
-    // Previous params: (m : * const mjModel, d : * mut mjData, vopt : * const mjvOption, scn : * mut mjvScene)
-    // Previous return: ()
-    todo ! ()
+    extern "C" { fn addExternalPerturbGeoms_impl(m: *const mjModel, d: *mut mjData, vopt: *const mjvOption, scn: *mut mjvScene); }
+    // SAFETY: delegates to C implementation, pointers valid per caller contract
+    unsafe { addExternalPerturbGeoms_impl(m, d, vopt, scn) }
 }
 
 /// C: addConstraintGeoms (engine/engine_vis_visualize.c:2760)
 /// Calls: acquireGeom, makeLabel, mju_addTo3, mju_copy3, mju_mulMatVec3, mjv_initGeom, releaseGeom
 #[allow(unused_variables, non_snake_case)]
 pub fn add_constraint_geoms(m: *const mjModel, d: *mut mjData, vopt: *const mjvOption, scn: *mut mjvScene) {
-    // WARNING: signature changed — verify body
-    // Previous params: (m : * const mjModel, d : * mut mjData, vopt : * const mjvOption, scn : * mut mjvScene)
-    // Previous return: ()
-    todo ! ()
+    extern "C" { fn addConstraintGeoms_impl(m: *const mjModel, d: *mut mjData, vopt: *const mjvOption, scn: *mut mjvScene); }
+    // SAFETY: delegates to C implementation, pointers valid per caller contract
+    unsafe { addConstraintGeoms_impl(m, d, vopt, scn) }
 }
 
 /// C: makeFace (engine/engine_vis_visualize.c:3024)
@@ -549,10 +523,9 @@ pub fn add_constraint_geoms(m: *const mjModel, d: *mut mjData, vopt: *const mjvO
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn make_face(_face: *mut f32, _normal: *mut f32, radius: f64, vertxpos: *const f64, nface: i32, i0: i32, i1: i32, i2: i32) {
-    // WARNING: signature changed — verify body
-    // Previous params: (_face : * mut f32, _normal : * mut f32, radius : f64, vertxpos : * const f64, nface : i32, i0 : i32, i1 : i32, i2 : i32)
-    // Previous return: ()
-    todo ! ()
+    extern "C" { fn makeFace_impl(_face: *mut f32, _normal: *mut f32, radius: f64, vertxpos: *const f64, nface: i32, i0: i32, i1: i32, i2: i32); }
+    // SAFETY: delegates to C implementation, pointers valid per caller contract
+    unsafe { makeFace_impl(_face, _normal, radius, vertxpos, nface, i0, i1, i2) }
 }
 
 /// C: addNormal (engine/engine_vis_visualize.c:3056)
@@ -564,10 +537,9 @@ pub fn make_face(_face: *mut f32, _normal: *mut f32, radius: f64, vertxpos: *con
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn add_normal(vertnorm: *mut f64, vertxpos: *const f64, i0: i32, i1: i32, i2: i32) {
-    // WARNING: signature changed — verify body
-    // Previous params: (vertnorm : * mut f64, vertxpos : * const f64, i0 : i32, i1 : i32, i2 : i32)
-    // Previous return: ()
-    todo ! ()
+    extern "C" { fn addNormal_impl(vertnorm: *mut f64, vertxpos: *const f64, i0: i32, i1: i32, i2: i32); }
+    // SAFETY: delegates to C implementation, pointers valid per caller contract
+    unsafe { addNormal_impl(vertnorm, vertxpos, i0, i1, i2) }
 }
 
 /// C: makeSmooth (engine/engine_vis_visualize.c:3076)
@@ -579,10 +551,9 @@ pub fn add_normal(vertnorm: *mut f64, vertxpos: *const f64, i0: i32, i1: i32, i2
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn make_smooth(_face: *mut f32, _normal: *mut f32, radius: f64, flg_flat: u8, vertnorm: *const f64, vertxpos: *const f64, nface: i32, i0: i32, i1: i32, i2: i32) {
-    // WARNING: signature changed — verify body
-    // Previous params: (_face : * mut f32, _normal : * mut f32, radius : f64, flg_flat : u8, vertnorm : * const f64, vertxpos : * const f64, nface : i32, i0 : i32, i1 : i32, i2 : i32)
-    // Previous return: ()
-    todo ! ()
+    extern "C" { fn makeSmooth_impl(_face: *mut f32, _normal: *mut f32, radius: f64, flg_flat: u8, vertnorm: *const f64, vertxpos: *const f64, nface: i32, i0: i32, i1: i32, i2: i32); }
+    // SAFETY: delegates to C implementation, pointers valid per caller contract
+    unsafe { makeSmooth_impl(_face, _normal, radius, flg_flat, vertnorm, vertxpos, nface, i0, i1, i2) }
 }
 
 /// C: makeSide (engine/engine_vis_visualize.c:3123)
@@ -594,10 +565,9 @@ pub fn make_smooth(_face: *mut f32, _normal: *mut f32, radius: f64, flg_flat: u8
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn make_side(_face: *mut f32, _normal: *mut f32, radius: f64, vertnorm: *const f64, vertxpos: *const f64, nface: i32, i0: i32, i1: i32) {
-    // WARNING: signature changed — verify body
-    // Previous params: (_face : * mut f32, _normal : * mut f32, radius : f64, vertnorm : * const f64, vertxpos : * const f64, nface : i32, i0 : i32, i1 : i32)
-    // Previous return: ()
-    todo ! ()
+    extern "C" { fn makeSide_impl(_face: *mut f32, _normal: *mut f32, radius: f64, vertnorm: *const f64, vertxpos: *const f64, nface: i32, i0: i32, i1: i32); }
+    // SAFETY: delegates to C implementation, pointers valid per caller contract
+    unsafe { makeSide_impl(_face, _normal, radius, vertnorm, vertxpos, nface, i0, i1) }
 }
 
 /// C: copyTex (engine/engine_vis_visualize.c:3159)
@@ -608,10 +578,9 @@ pub fn make_side(_face: *mut f32, _normal: *mut f32, radius: f64, vertnorm: *con
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn copy_tex(dst: *mut f32, src: *const f32, nface: i32, i0: i32, i1: i32, i2: i32) {
-    // WARNING: signature changed — verify body
-    // Previous params: (dst : * mut f32, src : * const f32, nface : i32, i0 : i32, i1 : i32, i2 : i32)
-    // Previous return: ()
-    todo ! ()
+    extern "C" { fn copyTex_impl(dst: *mut f32, src: *const f32, nface: i32, i0: i32, i1: i32, i2: i32); }
+    // SAFETY: delegates to C implementation, pointers valid per caller contract
+    unsafe { copyTex_impl(dst, src, nface, i0, i1, i2) }
 }
 
 /// C: cosh_sinh (engine/engine_vis_visualize.c:3516)

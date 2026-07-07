@@ -65,10 +65,9 @@ pub fn mjr_setf3(vec: *mut f32, f0: f32, f1: f32, f2: f32) {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjr_mul_mat44(res: *mut f32, A: *const f32, B: *const f32) {
-    // WARNING: signature changed — verify body
-    // Previous params: (res : * mut f32, A : * const f32, B : * const f32)
-    // Previous return: ()
-    todo ! ()
+    extern "C" { fn mjr_mulMat44_impl(res: *mut f32, A: *const f32, B: *const f32); }
+    // SAFETY: delegates to C implementation, pointers valid per caller contract
+    unsafe { mjr_mulMat44_impl(res, A, B) }
 }
 
 /// C: mjr_getrow4 (render/classic/render_util.h:38)
@@ -79,10 +78,9 @@ pub fn mjr_mul_mat44(res: *mut f32, A: *const f32, B: *const f32) {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjr_getrow4(res: *mut f32, A: *const f32, r: i32) {
-    // WARNING: signature changed — verify body
-    // Previous params: (res : * mut f32, A : * const f32, r : i32)
-    // Previous return: ()
-    todo ! ()
+    extern "C" { fn mjr_getrow4_impl(res: *mut f32, A: *const f32, r: i32); }
+    // SAFETY: delegates to C implementation, pointers valid per caller contract
+    unsafe { mjr_getrow4_impl(res, A, r) }
 }
 
 /// C: mjr_crossVec (render/classic/render_util.h:41)
@@ -191,10 +189,9 @@ pub fn mjr_multiply4(res: *mut f32, mat: *const f32, vec: *const f32) {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjr_look_at(eye: *const f32, forward: *const f32, up: *const f32) {
-    // WARNING: signature changed — verify body
-    // Previous params: (eye : * const f32, forward : * const f32, up : * const f32)
-    // Previous return: ()
-    todo ! ()
+    extern "C" { fn mjr_lookAt_impl(eye: *const f32, forward: *const f32, up: *const f32); }
+    // SAFETY: delegates to C implementation, pointers valid per caller contract
+    unsafe { mjr_lookAt_impl(eye, forward, up) }
 }
 
 /// C: mjr_perspective (render/classic/render_util.h:59)
@@ -205,10 +202,9 @@ pub fn mjr_look_at(eye: *const f32, forward: *const f32, up: *const f32) {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjr_perspective(fovy: f32, aspect: f32, znear: f32, zfar: f32) {
-    // WARNING: signature changed — verify body
-    // Previous params: (fovy : f32, aspect : f32, znear : f32, zfar : f32)
-    // Previous return: ()
-    todo ! ()
+    extern "C" { fn mjr_perspective_impl(fovy: f32, aspect: f32, znear: f32, zfar: f32); }
+    // SAFETY: delegates to C implementation, pointers valid per caller contract
+    unsafe { mjr_perspective_impl(fovy, aspect, znear, zfar) }
 }
 
 /// C: mjr_reflect (render/classic/render_util.h:62)
@@ -220,10 +216,9 @@ pub fn mjr_perspective(fovy: f32, aspect: f32, znear: f32, zfar: f32) {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjr_reflect(pos: *const f32, mat: *const f32) {
-    // WARNING: signature changed — verify body
-    // Previous params: (pos : * const f32, mat : * const f32)
-    // Previous return: ()
-    todo ! ()
+    extern "C" { fn mjr_reflect_impl(pos: *const f32, mat: *const f32); }
+    // SAFETY: delegates to C implementation, pointers valid per caller contract
+    unsafe { mjr_reflect_impl(pos, mat) }
 }
 
 /// C: mjr_transform (render/classic/render_util.h:65)

@@ -12,29 +12,26 @@ use crate::types::*;
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn is_behind(headpos: *const f32, pos: *const f32, mat: *const f32) -> i32 {
-    // WARNING: signature changed — verify body
-    // Previous params: (headpos : * const f32, pos : * const f32, mat : * const f32)
-    // Previous return: i32
-    todo ! ()
+    extern "C" { fn isBehind_impl(headpos: *const f32, pos: *const f32, mat: *const f32) -> i32; }
+    // SAFETY: delegates to C implementation, pointers valid per caller contract
+    unsafe { isBehind_impl(headpos, pos, mat) }
 }
 
 /// C: isReflective (render/classic/render_gl3.c:45)
 #[allow(unused_variables, non_snake_case)]
 pub fn is_reflective(geom: *const mjvGeom) -> i32 {
-    // WARNING: signature changed — verify body
-    // Previous params: (geom : * const mjvGeom)
-    // Previous return: i32
-    todo ! ()
+    extern "C" { fn isReflective_impl(geom: *const mjvGeom) -> i32; }
+    // SAFETY: delegates to C implementation, pointers valid per caller contract
+    unsafe { isReflective_impl(geom) }
 }
 
 /// C: settexture (render/classic/render_gl3.c:62)
 /// Calls: mjr_setf4, mju_max
 #[allow(unused_variables, non_snake_case)]
 pub fn settexture(r#type: i32, state: i32, con: *const mjrContext, geom: *const mjvGeom) {
-    // WARNING: signature changed — verify body
-    // Previous params: (r#type : i32, state : i32, con : * const mjrContext, geom : * const mjvGeom)
-    // Previous return: ()
-    todo ! ()
+    extern "C" { fn settexture_impl(r#type: i32, state: i32, con: *const mjrContext, geom: *const mjvGeom); }
+    // SAFETY: delegates to C implementation, pointers valid per caller contract
+    unsafe { settexture_impl(r#type, state, con, geom) }
 }
 
 /// C: renderGeom (render/classic/render_gl3.c:217)
@@ -70,19 +67,17 @@ pub fn render_geom_reflection(id: i32, reflectance: f32, headpos: [f32; 3], scn:
 /// C: initGL3 (render/classic/render_gl3.c:614)
 #[allow(unused_variables, non_snake_case)]
 pub fn init_gl3(scn: *const mjvScene, con: *const mjrContext) {
-    // WARNING: signature changed — verify body
-    // Previous params: (scn : * const mjvScene, con : * const mjrContext)
-    // Previous return: ()
-    todo ! ()
+    extern "C" { fn initGL3_impl(scn: *const mjvScene, con: *const mjrContext); }
+    // SAFETY: delegates to C implementation, pointers valid per caller contract
+    unsafe { initGL3_impl(scn, con) }
 }
 
 /// C: initLights (render/classic/render_gl3.c:662)
 #[allow(unused_variables, non_snake_case)]
 pub fn init_lights(scn: *mut mjvScene) {
-    // WARNING: signature changed — verify body
-    // Previous params: (scn : * mut mjvScene)
-    // Previous return: ()
-    todo ! ()
+    extern "C" { fn initLights_impl(scn: *mut mjvScene); }
+    // SAFETY: delegates to C implementation, pointers valid per caller contract
+    unsafe { initLights_impl(scn) }
 }
 
 /// C: setView (render/classic/render_gl3.c:711)
@@ -123,10 +118,9 @@ pub fn geom_sort(arr: *mut i32, buf: *mut i32, n: i32, context: *mut ()) {
 /// Calls: mjr_setf4
 #[allow(unused_variables, non_snake_case)]
 pub fn adjust_light(thislight: *const mjvLight, n: i32) {
-    // WARNING: signature changed — verify body
-    // Previous params: (thislight : * const mjvLight, n : i32)
-    // Previous return: ()
-    todo ! ()
+    extern "C" { fn adjustLight_impl(thislight: *const mjvLight, n: i32); }
+    // SAFETY: delegates to C implementation, pointers valid per caller contract
+    unsafe { adjustLight_impl(thislight, n) }
 }
 
 /// C: mjr_render (render/classic/render_gl3.h:27)

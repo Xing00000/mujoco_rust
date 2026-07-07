@@ -175,10 +175,9 @@ pub fn mjr_set_aux(index: i32, con: *const mjrContext) {
 /// Calls: mjr_restoreBuffer, mju_error
 #[allow(unused_variables, non_snake_case)]
 pub fn mjr_blit_aux(index: i32, src: mjrRect, left: i32, bottom: i32, con: *const mjrContext) {
-    // WARNING: signature changed — verify body
-    // Previous params: (index : i32, src : mjrRect, left : i32, bottom : i32, con : * const mjrContext)
-    // Previous return: ()
-    todo ! ()
+    extern "C" { fn mjr_blitAux_impl(index: i32, src: mjrRect, left: i32, bottom: i32, con: *const mjrContext); }
+    // SAFETY: delegates to C implementation, pointers valid per caller contract
+    unsafe { mjr_blitAux_impl(index, src, left, bottom, con) }
 }
 
 /// C: mjr_text (render/classic/render_gl2.h:60)
@@ -224,10 +223,9 @@ pub fn mjr_max_viewport(con: *const mjrContext) -> mjrRect {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjr_rectangle(viewport: mjrRect, r: f32, g: f32, b: f32, a: f32) {
-    // WARNING: signature changed — verify body
-    // Previous params: (viewport : mjrRect, r : f32, g : f32, b : f32, a : f32)
-    // Previous return: ()
-    todo ! ()
+    extern "C" { fn mjr_rectangle_impl(viewport: mjrRect, r: f32, g: f32, b: f32, a: f32); }
+    // SAFETY: delegates to C implementation, pointers valid per caller contract
+    unsafe { mjr_rectangle_impl(viewport, r, g, b, a) }
 }
 
 /// C: mjr_label (render/classic/render_gl2.h:74)

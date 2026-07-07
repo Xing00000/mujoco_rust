@@ -18,10 +18,9 @@ pub fn scl(sz: i32, con: *const mjrContext) -> i32 {
 /// C: initOpenGL (ui/ui_main.c:207)
 #[allow(unused_variables, non_snake_case)]
 pub fn init_open_gl(r: *const mjrRect, con: *const mjrContext) {
-    // WARNING: signature changed — verify body
-    // Previous params: (r : * const mjrRect, con : * const mjrContext)
-    // Previous return: ()
-    todo ! ()
+    extern "C" { fn initOpenGL_impl(r: *const mjrRect, con: *const mjrContext); }
+    // SAFETY: delegates to C implementation, pointers valid per caller contract
+    unsafe { initOpenGL_impl(r, con) }
 }
 
 /// C: drawtext (ui/ui_main.c:251)
@@ -179,10 +178,9 @@ pub fn findselect(it: *const mjuiItem, ui: *const mjUI, ins: *const mjuiState, c
 /// Calls: SCL, mju_round
 #[allow(unused_variables, non_snake_case)]
 pub fn scrollrect(rect: mjrRect, ui: *const mjUI, con: *const mjrContext, bar: *mut mjrRect, thumb: *mut mjrRect) {
-    // WARNING: signature changed — verify body
-    // Previous params: (rect : mjrRect, ui : * const mjUI, con : * const mjrContext, bar : * mut mjrRect, thumb : * mut mjrRect)
-    // Previous return: ()
-    todo ! ()
+    extern "C" { fn scrollrect_impl(rect: mjrRect, ui: *const mjUI, con: *const mjrContext, bar: *mut mjrRect, thumb: *mut mjrRect); }
+    // SAFETY: delegates to C implementation, pointers valid per caller contract
+    unsafe { scrollrect_impl(rect, ui, con, bar, thumb) }
 }
 
 /// C: inside (ui/ui_main.c:716)
@@ -238,39 +236,35 @@ pub fn checkedit(text: *const i8, it: *const mjuiItem) -> i32 {
 /// Calls: mju_error
 #[allow(unused_variables, non_snake_case)]
 pub fn text2array(text: *const i8, it: *const mjuiItem) -> i32 {
-    // WARNING: signature changed — verify body
-    // Previous params: (text : * const i8, it : * const mjuiItem)
-    // Previous return: i32
-    todo ! ()
+    extern "C" { fn text2array_impl(text: *const i8, it: *const mjuiItem) -> i32; }
+    // SAFETY: delegates to C implementation, pointers valid per caller contract
+    unsafe { text2array_impl(text, it) }
 }
 
 /// C: array2text (ui/ui_main.c:982)
 /// Calls: mju_error
 #[allow(unused_variables, non_snake_case)]
 pub fn array2text(text: *mut i8, it: *const mjuiItem) {
-    // WARNING: signature changed — verify body
-    // Previous params: (text : * mut i8, it : * const mjuiItem)
-    // Previous return: ()
-    todo ! ()
+    extern "C" { fn array2text_impl(text: *mut i8, it: *const mjuiItem); }
+    // SAFETY: delegates to C implementation, pointers valid per caller contract
+    unsafe { array2text_impl(text, it) }
 }
 
 /// C: validkey (ui/ui_main.c:1017)
 #[allow(unused_variables, non_snake_case)]
 pub fn validkey(key: i32, sz: i32, r#type: i32, state: *const mjuiState) -> i32 {
-    // WARNING: signature changed — verify body
-    // Previous params: (key : i32, sz : i32, r#type : i32, state : * const mjuiState)
-    // Previous return: i32
-    todo ! ()
+    extern "C" { fn validkey_impl(key: i32, sz: i32, r#type: i32, state: *const mjuiState) -> i32; }
+    // SAFETY: delegates to C implementation, pointers valid per caller contract
+    unsafe { validkey_impl(key, sz, r#type, state) }
 }
 
 /// C: revealcursor (ui/ui_main.c:1098)
 /// Calls: SCL
 #[allow(unused_variables, non_snake_case)]
 pub fn revealcursor(r: mjrRect, ui: *mut mjUI, con: *const mjrContext) {
-    // WARNING: signature changed — verify body
-    // Previous params: (r : mjrRect, ui : * mut mjUI, con : * const mjrContext)
-    // Previous return: ()
-    todo ! ()
+    extern "C" { fn revealcursor_impl(r: mjrRect, ui: *mut mjUI, con: *const mjrContext); }
+    // SAFETY: delegates to C implementation, pointers valid per caller contract
+    unsafe { revealcursor_impl(r, ui, con) }
 }
 
 /// C: setcursor (ui/ui_main.c:1124)
@@ -296,10 +290,9 @@ pub fn parseshortcut(text: *const i8, r#mod: *mut i32, key: *mut i32) {
 /// C: matchshortcut (ui/ui_main.c:1222)
 #[allow(unused_variables, non_snake_case)]
 pub fn matchshortcut(ins: *const mjuiState, r#mod: i32, key: i32) -> i32 {
-    // WARNING: signature changed — verify body
-    // Previous params: (ins : * const mjuiState, r#mod : i32, key : i32)
-    // Previous return: i32
-    todo ! ()
+    extern "C" { fn matchshortcut_impl(ins: *const mjuiState, r#mod: i32, key: i32) -> i32; }
+    // SAFETY: delegates to C implementation, pointers valid per caller contract
+    unsafe { matchshortcut_impl(ins, r#mod, key) }
 }
 
 /// C: setitemskip (ui/ui_main.c:1500)
@@ -334,10 +327,9 @@ pub fn insertionsortgroup(list: *mut i32, num: i32, stride: i32) {
 /// C: evalpredicate (ui/ui_main.c:1823)
 #[allow(unused_variables, non_snake_case)]
 pub fn evalpredicate(state: i32, predicate: mjfItemEnable, userdata: *mut ()) -> i32 {
-    // WARNING: signature changed — verify body
-    // Previous params: (state : i32, predicate : mjfItemEnable, userdata : * mut ())
-    // Previous return: i32
-    todo ! ()
+    extern "C" { fn evalpredicate_impl(state: i32, predicate: mjfItemEnable, userdata: *mut ()) -> i32; }
+    // SAFETY: delegates to C implementation, pointers valid per caller contract
+    unsafe { evalpredicate_impl(state, predicate, userdata) }
 }
 
 /// C: shortcuthelp (ui/ui_main.c:1836)

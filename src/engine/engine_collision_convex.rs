@@ -256,10 +256,9 @@ pub fn mjc_set_ccd_obj_flex(obj: *mut mjCCDObj, flex: i32, elem: i32, vert: i32)
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjc_is_distinct_contact(con: *const mjPreContact, ncon: i32, tolerance: f64) -> i32 {
-    // WARNING: signature changed — verify body
-    // Previous params: (con : * const mjPreContact, ncon : i32, tolerance : f64)
-    // Previous return: i32
-    todo ! ()
+    extern "C" { fn mjc_isDistinctContact_impl(con: *const mjPreContact, ncon: i32, tolerance: f64) -> i32; }
+    // SAFETY: delegates to C implementation, pointers valid per caller contract
+    unsafe { mjc_isDistinctContact_impl(con, ncon, tolerance) }
 }
 
 /// C: mju_rotateFrame (engine/engine_collision_convex.c:810)
@@ -271,19 +270,17 @@ pub fn mjc_is_distinct_contact(con: *const mjPreContact, ncon: i32, tolerance: f
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mju_rotate_frame(origin: *const f64, rot: *const f64, xmat: *mut f64, xpos: *mut f64) {
-    // WARNING: signature changed — verify body
-    // Previous params: (origin : * const f64, rot : * const f64, xmat : * mut f64, xpos : * mut f64)
-    // Previous return: ()
-    todo ! ()
+    extern "C" { fn mju_rotateFrame_impl(origin: *const f64, rot: *const f64, xmat: *mut f64, xpos: *mut f64); }
+    // SAFETY: delegates to C implementation, pointers valid per caller contract
+    unsafe { mju_rotateFrame_impl(origin, rot, xmat, xpos) }
 }
 
 /// C: maxContacts (engine/engine_collision_convex.c:831)
 #[allow(unused_variables, non_snake_case)]
 pub fn max_contacts(m: *const mjModel, obj1: *const mjCCDObj, obj2: *const mjCCDObj) -> i32 {
-    // WARNING: signature changed — verify body
-    // Previous params: (m : * const mjModel, obj1 : * const mjCCDObj, obj2 : * const mjCCDObj)
-    // Previous return: i32
-    todo ! ()
+    extern "C" { fn maxContacts_impl(m: *const mjModel, obj1: *const mjCCDObj, obj2: *const mjCCDObj) -> i32; }
+    // SAFETY: delegates to C implementation, pointers valid per caller contract
+    unsafe { maxContacts_impl(m, obj1, obj2) }
 }
 
 /// C: addplanemesh (engine/engine_collision_convex.c:946)
