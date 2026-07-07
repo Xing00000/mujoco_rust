@@ -83,10 +83,29 @@ pub fn mj_geom_distance_ccd(m: *const mjModel, d: *mut mjData, g1: i32, g2: i32,
 /// Calls: mj_stateElemSize, mju_message
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_state_size(m: *const mjModel, sig: i32) -> i32 {
-    // WARNING: signature changed — verify body
-    // Previous params: (m : * const mjModel, sig : i32)
-    // Previous return: i32
-    todo ! ()
+    const MJ_NSTATE: i32 = 14;
+    // SAFETY: m valid per caller contract; mjtState is u32 in C ABI
+    unsafe {
+        if sig < 0 {
+            crate::engine::engine_util_errmem::mju_error(
+                b"invalid state signature %d < 0\0".as_ptr() as *const i8);
+            return 0;
+        }
+        if sig >= (1 << MJ_NSTATE) {
+            crate::engine::engine_util_errmem::mju_error(
+                b"invalid state signature %d >= 2^mjNSTATE\0".as_ptr() as *const i8);
+            return 0;
+        }
+        let mut size: i32 = 0;
+        for i in 0..MJ_NSTATE {
+            let element: u32 = 1u32 << i;
+            if (element as i32 & sig) != 0 {
+                let elem_state: mjtState = core::mem::transmute_copy(&element);
+                size += mj_state_elem_size(m, elem_state);
+            }
+        }
+        size
+    }
 }
 
 /// C: mj_getState (engine/engine_support.h:44)
@@ -113,10 +132,40 @@ pub fn mj_get_state(m: *const mjModel, d: *const mjData, state: *mut f64, sig: i
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_extract_state(m: *const mjModel, src: *const f64, srcsig: i32, dst: *mut f64, dstsig: i32) {
-    // WARNING: signature changed — verify body
-    // Previous params: (m : * const mjModel, src : * const f64, srcsig : i32, dst : * mut f64, dstsig : i32)
-    // Previous return: ()
-    todo ! ()
+    const MJ_NSTATE: i32 = 14;
+    // SAFETY: m, src, dst valid per caller contract
+    unsafe {
+        if srcsig < 0 {
+            crate::engine::engine_util_errmem::mju_error(
+                b"invalid srcsig %d < 0\0".as_ptr() as *const i8);
+            return;
+        }
+        if srcsig >= (1 << MJ_NSTATE) {
+            crate::engine::engine_util_errmem::mju_error(
+                b"invalid srcsig %d >= 2^mjNSTATE\0".as_ptr() as *const i8);
+            return;
+        }
+        if (srcsig & dstsig) != dstsig {
+            crate::engine::engine_util_errmem::mju_error(
+                b"dstsig is not a subset of srcsig\0".as_ptr() as *const i8);
+            return;
+        }
+
+        let mut src_ptr = src;
+        let mut dst_ptr = dst;
+        for i in 0..MJ_NSTATE {
+            let element: u32 = 1u32 << i;
+            if (element as i32 & srcsig) != 0 {
+                let elem_state: mjtState = core::mem::transmute_copy(&element);
+                let size = mj_state_elem_size(m, elem_state);
+                if (element as i32 & dstsig) != 0 {
+                    crate::engine::engine_util_blas::mju_copy(dst_ptr, src_ptr, size);
+                    dst_ptr = dst_ptr.add(size as usize);
+                }
+                src_ptr = src_ptr.add(size as usize);
+            }
+        }
+    }
 }
 
 /// C: mj_setState (engine/engine_support.h:51)
