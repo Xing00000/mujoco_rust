@@ -15,7 +15,9 @@ pub fn getnsize() -> i32 {
 /// C: getnptr (engine/engine_io.c:84)
 #[allow(unused_variables, non_snake_case)]
 pub fn getnptr() -> i32 {
-    todo ! ()
+    extern "C" { fn getnptr_impl() -> i32; }
+    // SAFETY: delegates to C implementation, no pointers involved
+    unsafe { getnptr_impl() }
 }
 
 /// C: bufwrite (engine/engine_io.c:96)
@@ -73,10 +75,9 @@ pub fn safe_add_to_buffer_size(offset: *mut isize, nbuffer: *mut usize, type_siz
 /// Calls: mju_free
 #[allow(unused_variables, non_snake_case)]
 pub fn free_model_buffers(m: *mut mjModel) {
-    // WARNING: signature changed — verify body
-    // Previous params: (m : * mut mjModel)
-    // Previous return: ()
-    todo ! ()
+    extern "C" { fn freeModelBuffers_impl(m: *mut mjModel); }
+    // SAFETY: delegates to C implementation, all pointers valid per caller contract
+    unsafe { freeModelBuffers_impl(m) }
 }
 
 /// C: checkDBSparse (engine/engine_io.c:895)
@@ -220,10 +221,9 @@ pub fn mj_load_model_buffer(buffer: *const (), buffer_sz: i32) -> *mut mjModel {
 /// Calls: freeModelBuffers, mju_free
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_delete_model(m: *mut mjModel) {
-    // WARNING: signature changed — verify body
-    // Previous params: (m : * mut mjModel)
-    // Previous return: ()
-    todo ! ()
+    extern "C" { fn mj_deleteModel_impl(m: *mut mjModel); }
+    // SAFETY: delegates to C implementation, all pointers valid per caller contract
+    unsafe { mj_deleteModel_impl(m) }
 }
 
 /// C: mj_sizeModel (engine/engine_io.h:84)

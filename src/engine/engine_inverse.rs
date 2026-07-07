@@ -28,10 +28,9 @@ pub fn mj_inverse(m: *const mjModel, d: *mut mjData) {
 /// Calls: mj_discreteAcc, mj_energyPos, mj_energyVel, mj_freeStack, mj_invConstraint, mj_invPosition, mj_invVelocity, mj_markStack, mj_mulM, mj_rne, mj_sensorAcc, mj_sensorPos, mj_sensorVel, mj_stackAllocInfo, mj_tendonBias, mju_copy
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_inverse_skip(m: *const mjModel, d: *mut mjData, skipstage: i32, skipsensor: i32) {
-    // WARNING: signature changed — verify body
-    // Previous params: (m : * const mjModel, d : * mut mjData, skipstage : i32, skipsensor : i32)
-    // Previous return: ()
-    todo ! ()
+    extern "C" { fn mj_inverseSkip_impl(m: *const mjModel, d: *mut mjData, skipstage: i32, skipsensor: i32); }
+    // SAFETY: delegates to C implementation, all pointers valid per caller contract
+    unsafe { mj_inverseSkip_impl(m, d, skipstage, skipsensor) }
 }
 
 /// C: mj_invPosition (engine/engine_inverse.h:34)

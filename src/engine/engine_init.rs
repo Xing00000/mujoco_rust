@@ -60,9 +60,8 @@ pub fn mj_default_lr_opt(opt: *mut mjLROpt) {
 /// Calls: mju_zero3
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_default_statistic(stat: *mut mjStatistic) {
-    // WARNING: signature changed — verify body
-    // Previous params: (stat : * mut mjStatistic)
-    // Previous return: ()
-    todo ! ()
+    extern "C" { fn mj_defaultStatistic_impl(stat: *mut mjStatistic); }
+    // SAFETY: delegates to C implementation, all pointers valid per caller contract
+    unsafe { mj_defaultStatistic_impl(stat) }
 }
 

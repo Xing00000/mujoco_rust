@@ -315,10 +315,9 @@ pub fn mj_forward(m: *const mjModel, d: *mut mjData) {
 /// Calls: mj_energyPos, mj_energyVel, mj_fwdAcceleration, mj_fwdActuation, mj_fwdConstraint, mj_fwdPosition, mj_fwdVelocity, mj_sensorAcc, mj_sensorPos, mj_sensorVel
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_forward_skip(m: *const mjModel, d: *mut mjData, skipstage: i32, skipsensor: i32) {
-    // WARNING: signature changed — verify body
-    // Previous params: (m : * const mjModel, d : * mut mjData, skipstage : i32, skipsensor : i32)
-    // Previous return: ()
-    todo ! ()
+    extern "C" { fn mj_forwardSkip_impl(m: *const mjModel, d: *mut mjData, skipstage: i32, skipsensor: i32); }
+    // SAFETY: delegates to C implementation, all pointers valid per caller contract
+    unsafe { mj_forwardSkip_impl(m, d, skipstage, skipsensor) }
 }
 
 /// C: mj_RungeKutta (engine/engine_forward.h:53)
@@ -363,10 +362,9 @@ pub fn mj_implicit(m: *const mjModel, d: *mut mjData) {
 /// Calls: flexInterp_cgsolve, flex_has_implicit_stiffness, midpoint, midpoint_aligned, midpoint_eligible, mj_advance, mj_factorI, mj_freeStack, mj_markStack, mj_solveLD, mj_stackAllocInfo, mjd_smooth_vel, mju_add, mju_addInd, mju_addScl, mju_addToScl, mju_copy, mju_copyInd, mju_factorLUSparse, mju_gather, mju_gatherMasked, mju_message, mju_solveLUSparse
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_implicit_skip(m: *const mjModel, d: *mut mjData, skipfactor: i32) {
-    // WARNING: signature changed — verify body
-    // Previous params: (m : * const mjModel, d : * mut mjData, skipfactor : i32)
-    // Previous return: ()
-    todo ! ()
+    extern "C" { fn mj_implicitSkip_impl(m: *const mjModel, d: *mut mjData, skipfactor: i32); }
+    // SAFETY: delegates to C implementation, all pointers valid per caller contract
+    unsafe { mj_implicitSkip_impl(m, d, skipfactor) }
 }
 
 /// C: mj_midpoint (engine/engine_forward.h:69)
@@ -396,20 +394,18 @@ pub fn mj_fwd_kinematics(m: *const mjModel, d: *mut mjData) {
 /// Calls: mj_collision, mj_factorM, mj_fwdKinematics, mj_island, mj_makeConstraint, mj_makeM, mj_projectConstraint, mj_transmission, mj_updateSleep, mj_wakeCollision, mj_wakeEquality
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_fwd_position(m: *const mjModel, d: *mut mjData) {
-    // WARNING: signature changed — verify body
-    // Previous params: (m : * const mjModel, d : * mut mjData)
-    // Previous return: ()
-    todo ! ()
+    extern "C" { fn mj_fwdPosition_impl(m: *const mjModel, d: *mut mjData); }
+    // SAFETY: delegates to C implementation, all pointers valid per caller contract
+    unsafe { mj_fwdPosition_impl(m, d) }
 }
 
 /// C: mj_fwdVelocity (engine/engine_forward.h:84)
 /// Calls: mj_comVel, mj_passive, mj_referenceConstraint, mj_rne, mj_tendonBias, mju_mulMatVecSparse, mju_zero
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_fwd_velocity(m: *const mjModel, d: *mut mjData) {
-    // WARNING: signature changed — verify body
-    // Previous params: (m : * const mjModel, d : * mut mjData)
-    // Previous return: ()
-    todo ! ()
+    extern "C" { fn mj_fwdVelocity_impl(m: *const mjModel, d: *mut mjData); }
+    // SAFETY: delegates to C implementation, all pointers valid per caller contract
+    unsafe { mj_fwdVelocity_impl(m, d) }
 }
 
 /// C: mj_fwdActuation (engine/engine_forward.h:87)

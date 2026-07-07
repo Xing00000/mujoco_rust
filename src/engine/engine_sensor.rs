@@ -186,10 +186,9 @@ pub fn fill_raydata(ptr: *mut f64, dataspec: i32, dist: f64, origin: *const f64,
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_compute_sensor_pos(m: *const mjModel, d: *mut mjData, i: i32, sensordata: *mut f64) {
-    // WARNING: signature changed — verify body
-    // Previous params: (m : * const mjModel, d : * mut mjData, i : i32, sensordata : * mut f64)
-    // Previous return: ()
-    todo ! ()
+    extern "C" { fn mj_computeSensorPos_impl(m: *const mjModel, d: *mut mjData, i: i32, sensordata: *mut f64); }
+    // SAFETY: delegates to C implementation, pointers valid per caller contract
+    unsafe { mj_computeSensorPos_impl(m, d, i, sensordata) }
 }
 
 /// C: mj_computeSensorVel (engine/engine_sensor.c:839)
@@ -262,10 +261,9 @@ pub fn compute_plugin_sensors(m: *const mjModel, d: *mut mjData, stage: mjtStage
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_compute_sensor(m: *const mjModel, d: *mut mjData, i: i32, sensordata: *mut f64) {
-    // WARNING: signature changed — verify body
-    // Previous params: (m : * const mjModel, d : * mut mjData, i : i32, sensordata : * mut f64)
-    // Previous return: ()
-    todo ! ()
+    extern "C" { fn mj_computeSensor_impl(m: *const mjModel, d: *mut mjData, i: i32, sensordata: *mut f64); }
+    // SAFETY: delegates to C implementation, all pointers valid per caller contract
+    unsafe { mj_computeSensor_impl(m, d, i, sensordata) }
 }
 
 /// C: mj_sensorPos (engine/engine_sensor.h:32)

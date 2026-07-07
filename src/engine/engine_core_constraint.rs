@@ -125,20 +125,18 @@ pub fn mj_add_constraint_count(m: *const mjModel, size: i32, NV: i32) -> i32 {
 /// Calls: mj_addConstraint, mj_addConstraintCount, mj_freeStack, mj_isSparse, mj_markStack, mj_sleepState, mj_stackAllocInfo, mju_sparse2dense, mju_zero
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_instantiate_friction(m: *const mjModel, d: *mut mjData, count_only: i32, nnz: *mut i32) -> i32 {
-    // WARNING: signature changed — verify body
-    // Previous params: (m : * const mjModel, d : * mut mjData, count_only : i32, nnz : * mut i32)
-    // Previous return: i32
-    todo ! ()
+    extern "C" { fn mj_instantiateFriction_impl(m: *const mjModel, d: *mut mjData, count_only: i32, nnz: *mut i32) -> i32; }
+    // SAFETY: delegates to C implementation, pointers valid per caller contract
+    unsafe { mj_instantiateFriction_impl(m, d, count_only, nnz) }
 }
 
 /// C: mj_instantiateLimit (engine/engine_core_constraint.c:1360)
 /// Calls: mj_addConstraint, mj_addConstraintCount, mj_freeStack, mj_isSparse, mj_markStack, mj_sleepState, mj_stackAllocInfo, mju_max, mju_normalize3, mju_normalize4, mju_quat2Vel, mju_scl, mju_scl3, mju_sparse2dense, mju_zero
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_instantiate_limit(m: *const mjModel, d: *mut mjData, count_only: i32, nnz: *mut i32) -> i32 {
-    // WARNING: signature changed — verify body
-    // Previous params: (m : * const mjModel, d : * mut mjData, count_only : i32, nnz : * mut i32)
-    // Previous return: i32
-    todo ! ()
+    extern "C" { fn mj_instantiateLimit_impl(m: *const mjModel, d: *mut mjData, count_only: i32, nnz: *mut i32) -> i32; }
+    // SAFETY: delegates to C implementation, pointers valid per caller contract
+    unsafe { mj_instantiateLimit_impl(m, d, count_only, nnz) }
 }
 
 /// C: getsolparam (engine/engine_core_constraint.c:1978)
@@ -218,10 +216,9 @@ pub fn mj_jac_sum_count(m: *const mjModel, d: *mut mjData, chain: *mut i32, n: i
 /// Calls: mj_addConstraintCount, mj_freeStack, mj_jacDifPair, mj_jacSumCount, mj_markStack, mj_sleepState, mj_stackAllocInfo, mju_combineSparseCount, mju_copyInt, mju_flexGatherCellState, mju_flexGatherFaceState, mju_message
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_ne(m: *const mjModel, d: *mut mjData, nnz: *mut i32) -> i32 {
-    // WARNING: signature changed — verify body
-    // Previous params: (m : * const mjModel, d : * mut mjData, nnz : * mut i32)
-    // Previous return: i32
-    todo ! ()
+    extern "C" { fn mj_ne_impl(m: *const mjModel, d: *mut mjData, nnz: *mut i32) -> i32; }
+    // SAFETY: delegates to C implementation, pointers valid per caller contract
+    unsafe { mj_ne_impl(m, d, nnz) }
 }
 
 /// C: mj_nc (engine/engine_core_constraint.c:2536)
@@ -518,10 +515,9 @@ pub fn mj_make_impedance(m: *const mjModel, d: *mut mjData) {
 /// Calls: arenaAllocEfc, mj_diagApprox, mj_instantiateContact, mj_instantiateEquality, mj_instantiateFriction, mj_instantiateLimit, mj_isSparse, mj_makeImpedance, mj_nc, mj_ne, mju_fillInt, mju_message
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_make_constraint(m: *const mjModel, d: *mut mjData) {
-    // WARNING: signature changed — verify body
-    // Previous params: (m : * const mjModel, d : * mut mjData)
-    // Previous return: ()
-    todo ! ()
+    extern "C" { fn mj_makeConstraint_impl(m: *const mjModel, d: *mut mjData); }
+    // SAFETY: delegates to C implementation, all pointers valid per caller contract
+    unsafe { mj_makeConstraint_impl(m, d) }
 }
 
 /// C: mj_projectConstraint (engine/engine_core_constraint.h:90)
