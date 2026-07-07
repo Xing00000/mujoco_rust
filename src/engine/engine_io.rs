@@ -191,10 +191,9 @@ pub fn mj_copy_model(dest: *mut mjModel, src: *const mjModel) -> *mut mjModel {
 /// Calls: mj_setPtrModel, mju_message
 #[allow(unused_variables, non_snake_case)]
 pub fn mjv_copy_model(dest: *mut mjModel, src: *const mjModel) {
-    // WARNING: signature changed — verify body
-    // Previous params: (dest : * mut mjModel, src : * const mjModel)
-    // Previous return: ()
-    todo ! ()
+    extern "C" { fn mjv_copyModel_impl(dest: *mut mjModel, src: *const mjModel); }
+    // SAFETY: delegates to C implementation, pointers valid per caller contract
+    unsafe { mjv_copyModel_impl(dest, src) }
 }
 
 /// C: mj_saveModel (engine/engine_io.h:75)
