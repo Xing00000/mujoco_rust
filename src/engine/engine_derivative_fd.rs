@@ -134,10 +134,9 @@ pub fn mjd_step_fd(m: *const mjModel, d: *mut mjData, eps: f64, flg_centered: mj
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjd_smooth_vel_fd(m: *const mjModel, d: *mut mjData, eps: f64) {
-    // WARNING: signature changed — verify body
-    // Previous params: (m : * const mjModel, d : * mut mjData, eps : f64)
-    // Previous return: ()
-    todo ! ()
+    extern "C" { fn mjd_smooth_velFD_impl(m: *const mjModel, d: *mut mjData, eps: f64); }
+    // SAFETY: delegates to C implementation, pointers valid per caller contract
+    unsafe { mjd_smooth_velFD_impl(m, d, eps) }
 }
 
 /// C: mjd_passive_velFD (engine/engine_derivative_fd.h:30)
@@ -149,10 +148,9 @@ pub fn mjd_smooth_vel_fd(m: *const mjModel, d: *mut mjData, eps: f64) {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjd_passive_vel_fd(m: *const mjModel, d: *mut mjData, eps: f64) {
-    // WARNING: signature changed — verify body
-    // Previous params: (m : * const mjModel, d : * mut mjData, eps : f64)
-    // Previous return: ()
-    todo ! ()
+    extern "C" { fn mjd_passive_velFD_impl(m: *const mjModel, d: *mut mjData, eps: f64); }
+    // SAFETY: delegates to C implementation, pointers valid per caller contract
+    unsafe { mjd_passive_velFD_impl(m, d, eps) }
 }
 
 /// C: mj_stepSkip (engine/engine_derivative_fd.h:33)

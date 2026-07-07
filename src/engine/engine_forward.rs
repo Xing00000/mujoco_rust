@@ -305,10 +305,9 @@ pub fn mj_step2(m: *const mjModel, d: *mut mjData) {
 /// Calls: mj_forwardSkip
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_forward(m: *const mjModel, d: *mut mjData) {
-    // WARNING: signature changed — verify body
-    // Previous params: (m : * const mjModel, d : * mut mjData)
-    // Previous return: ()
-    todo ! ()
+    extern "C" { fn mj_forward_impl(m: *const mjModel, d: *mut mjData); }
+    // SAFETY: delegates to C implementation, pointers valid per caller contract
+    unsafe { mj_forward_impl(m, d) }
 }
 
 /// C: mj_forwardSkip (engine/engine_forward.h:47)
@@ -352,10 +351,9 @@ pub fn mj_euler_skip(m: *const mjModel, d: *mut mjData, skipfactor: i32) {
 /// Calls: mj_implicitSkip
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_implicit(m: *const mjModel, d: *mut mjData) {
-    // WARNING: signature changed — verify body
-    // Previous params: (m : * const mjModel, d : * mut mjData)
-    // Previous return: ()
-    todo ! ()
+    extern "C" { fn mj_implicit_impl(m: *const mjModel, d: *mut mjData); }
+    // SAFETY: delegates to C implementation, pointers valid per caller contract
+    unsafe { mj_implicit_impl(m, d) }
 }
 
 /// C: mj_implicitSkip (engine/engine_forward.h:65)

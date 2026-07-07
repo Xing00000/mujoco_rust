@@ -18,10 +18,9 @@ pub fn mj_discrete_acc(m: *const mjModel, d: *mut mjData) {
 /// Calls: mj_inverseSkip
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_inverse(m: *const mjModel, d: *mut mjData) {
-    // WARNING: signature changed — verify body
-    // Previous params: (m : * const mjModel, d : * mut mjData)
-    // Previous return: ()
-    todo ! ()
+    extern "C" { fn mj_inverse_impl(m: *const mjModel, d: *mut mjData); }
+    // SAFETY: delegates to C implementation, pointers valid per caller contract
+    unsafe { mj_inverse_impl(m, d) }
 }
 
 /// C: mj_inverseSkip (engine/engine_inverse.h:30)
@@ -37,20 +36,18 @@ pub fn mj_inverse_skip(m: *const mjModel, d: *mut mjData, skipstage: i32, skipse
 /// Calls: mj_camlight, mj_collision, mj_comPos, mj_factorM, mj_flex, mj_kinematics, mj_makeConstraint, mj_makeM, mj_projectConstraint, mj_tendon, mj_transmission
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_inv_position(m: *const mjModel, d: *mut mjData) {
-    // WARNING: signature changed — verify body
-    // Previous params: (m : * const mjModel, d : * mut mjData)
-    // Previous return: ()
-    todo ! ()
+    extern "C" { fn mj_invPosition_impl(m: *const mjModel, d: *mut mjData); }
+    // SAFETY: delegates to C implementation, pointers valid per caller contract
+    unsafe { mj_invPosition_impl(m, d) }
 }
 
 /// C: mj_invVelocity (engine/engine_inverse.h:37)
 /// Calls: mj_fwdVelocity
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_inv_velocity(m: *const mjModel, d: *mut mjData) {
-    // WARNING: signature changed — verify body
-    // Previous params: (m : * const mjModel, d : * mut mjData)
-    // Previous return: ()
-    todo ! ()
+    extern "C" { fn mj_invVelocity_impl(m: *const mjModel, d: *mut mjData); }
+    // SAFETY: delegates to C implementation, pointers valid per caller contract
+    unsafe { mj_invVelocity_impl(m, d) }
 }
 
 /// C: mj_invConstraint (engine/engine_inverse.h:40)
@@ -66,9 +63,8 @@ pub fn mj_inv_constraint(m: *const mjModel, d: *mut mjData) {
 /// Calls: mj_freeStack, mj_inverseSkip, mj_markStack, mj_stackAllocInfo, mj_xfrcAccumulate, mju_add, mju_copy, mju_norm, mju_sub
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_compare_fwd_inv(m: *const mjModel, d: *mut mjData) {
-    // WARNING: signature changed — verify body
-    // Previous params: (m : * const mjModel, d : * mut mjData)
-    // Previous return: ()
-    todo ! ()
+    extern "C" { fn mj_compareFwdInv_impl(m: *const mjModel, d: *mut mjData); }
+    // SAFETY: delegates to C implementation, pointers valid per caller contract
+    unsafe { mj_compareFwdInv_impl(m, d) }
 }
 
