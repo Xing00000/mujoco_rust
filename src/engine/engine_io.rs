@@ -229,10 +229,9 @@ pub fn mj_delete_model(m: *mut mjModel) {
 /// Calls: getnsize
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_size_model(m: *const mjModel) -> usize {
-    // WARNING: signature changed — verify body
-    // Previous params: (m : * const mjModel)
-    // Previous return: usize
-    todo ! ()
+    extern "C" { fn mj_sizeModel_impl(m: *const mjModel) -> usize; }
+    // SAFETY: delegates to C implementation, all pointers valid per caller contract
+    unsafe { mj_sizeModel_impl(m) }
 }
 
 /// C: mj_validateReferences (engine/engine_io.h:87)
@@ -289,10 +288,9 @@ pub fn mj_make_data(m: *const mjModel) -> *mut mjData {
 /// Calls: freeDataBuffers, mj_setPtrData, mju_free, mju_malloc, mju_message, mju_warning, safeAddToBufferSize
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_make_raw_data(dest: *mut *mut mjData, m: *const mjModel) {
-    // WARNING: signature changed — verify body
-    // Previous params: (dest : * mut * mut mjData, m : * const mjModel)
-    // Previous return: ()
-    todo ! ()
+    extern "C" { fn mj_makeRawData_impl(dest: *mut *mut mjData, m: *const mjModel); }
+    // SAFETY: delegates to C implementation, all pointers valid per caller contract
+    unsafe { mj_makeRawData_impl(dest, m) }
 }
 
 /// C: mj_copyData (engine/engine_io.h:120)

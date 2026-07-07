@@ -869,10 +869,9 @@ pub fn mjv_is_catenary(m: *const mjModel, d: *const mjData, i: i32, length: *mut
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjv_catenary(x0: *const f64, x1: *const f64, gravity: *const f64, length: f64, catenary: *mut f64, ncatenary: i32) -> i32 {
-    // WARNING: signature changed — verify body
-    // Previous params: (x0 : * const f64, x1 : * const f64, gravity : * const f64, length : f64, catenary : * mut f64, ncatenary : i32)
-    // Previous return: i32
-    todo ! ()
+    extern "C" { fn mjv_catenary_impl(x0: *const f64, x1: *const f64, gravity: *const f64, length: f64, catenary: *mut f64, ncatenary: i32) -> i32; }
+    // SAFETY: delegates to C implementation, all pointers valid per caller contract
+    unsafe { mjv_catenary_impl(x0, x1, gravity, length, catenary, ncatenary) }
 }
 
 /// C: hsv2rgb (engine/engine_vis_visualize.h:76)

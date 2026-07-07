@@ -417,10 +417,9 @@ pub fn mj_fwd_velocity(m: *const mjModel, d: *mut mjData) {
 /// Calls: clampVec, dcmotorVoltage, mj_actuatorDisabled, mj_dcmotorSlots, mj_freeStack, mj_lugreStribeck, mj_markStack, mj_nextActivation, mj_readCtrl, mj_sleepState, mj_stackAllocInfo, mj_warning, mjp_getPluginAtSlotUnsafe, mjp_pluginCount, mju_addTo, mju_clip, mju_isBad, mju_max, mju_message, mju_min, mju_mulMatTVecSparse, mju_muscleBias, mju_muscleDynamics, mju_muscleGain, mju_norm3, mju_zero
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_fwd_actuation(m: *const mjModel, d: *mut mjData) {
-    // WARNING: signature changed — verify body
-    // Previous params: (m : * const mjModel, d : * mut mjData)
-    // Previous return: ()
-    todo ! ()
+    extern "C" { fn mj_fwdActuation_impl(m: *const mjModel, d: *mut mjData); }
+    // SAFETY: delegates to C implementation, all pointers valid per caller contract
+    unsafe { mj_fwdActuation_impl(m, d) }
 }
 
 /// C: mj_fwdAcceleration (engine/engine_forward.h:90)

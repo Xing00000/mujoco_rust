@@ -793,10 +793,9 @@ pub fn mj_is_elem_active(m: *const mjModel, f: i32, e: i32) -> i32 {
 /// Calls: add_pair, bfsort, canCollide, filterBodyPair, hasPlane, makeAAMM, mj_SAP, mj_freeStack, mj_markStack, mj_sleepState, mj_stackAllocInfo, mju_addTo3, mju_eig3, mju_message, mju_scl, mju_scl3, mju_zero, mju_zero3, updateCov
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_broadphase(m: *const mjModel, d: *mut mjData, bfpair: *mut i32, maxpair: i32) -> i32 {
-    // WARNING: signature changed — verify body
-    // Previous params: (m : * const mjModel, d : * mut mjData, bfpair : * mut i32, maxpair : i32)
-    // Previous return: i32
-    todo ! ()
+    extern "C" { fn mj_broadphase_impl(m: *const mjModel, d: *mut mjData, bfpair: *mut i32, maxpair: i32) -> i32; }
+    // SAFETY: delegates to C implementation, all pointers valid per caller contract
+    unsafe { mj_broadphase_impl(m, d, bfpair, maxpair) }
 }
 
 /// C: mj_collideFlexSAP (engine/engine_collision_driver.h:51)

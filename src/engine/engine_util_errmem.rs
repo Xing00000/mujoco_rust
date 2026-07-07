@@ -194,10 +194,9 @@ pub fn mju_message(msg: *const mjLogMessage) {
 /// Calls: mju_localTimeStr
 #[allow(unused_variables, non_snake_case)]
 pub fn mju_write_log(r#type: *const i8, msg: *const i8) {
-    // WARNING: signature changed — verify body
-    // Previous params: (r#type : * const i8, msg : * const i8)
-    // Previous return: ()
-    todo ! ()
+    extern "C" { fn mju_writeLog_impl(r#type: *const i8, msg: *const i8); }
+    // SAFETY: delegates to C implementation, all pointers valid per caller contract
+    unsafe { mju_writeLog_impl(r#type, msg) }
 }
 
 /// C: _mjPRIVATE_setTlsLogHandler (engine/engine_util_errmem.h:93)

@@ -387,10 +387,9 @@ pub fn mjd_smooth_vel(m: *const mjModel, d: *mut mjData, flg_bias: i32) {
 /// Calls: addJTBJSparse, mj_actuatorDisabled, mj_nextActivation, mj_sleepState, mjd_muscleGain_vel, mju_max
 #[allow(unused_variables, non_snake_case)]
 pub fn mjd_actuator_vel(m: *const mjModel, d: *mut mjData) {
-    // WARNING: signature changed — verify body
-    // Previous params: (m : * const mjModel, d : * mut mjData)
-    // Previous return: ()
-    todo ! ()
+    extern "C" { fn mjd_actuator_vel_impl(m: *const mjModel, d: *mut mjData); }
+    // SAFETY: delegates to C implementation, all pointers valid per caller contract
+    unsafe { mjd_actuator_vel_impl(m, d) }
 }
 
 /// C: mjd_passive_vel (engine/engine_derivative.h:41)

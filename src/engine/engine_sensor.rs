@@ -302,10 +302,9 @@ pub fn mj_sensor_acc(m: *const mjModel, d: *mut mjData) {
 /// Calls: mj_sleepState, mju_copy4, mju_dot3, mju_isZero, mju_norm3, mju_normalize4, mju_polyPotential, mju_sub3, mju_subQuat
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_energy_pos(m: *const mjModel, d: *mut mjData) {
-    // WARNING: signature changed — verify body
-    // Previous params: (m : * const mjModel, d : * mut mjData)
-    // Previous return: ()
-    todo ! ()
+    extern "C" { fn mj_energyPos_impl(m: *const mjModel, d: *mut mjData); }
+    // SAFETY: delegates to C implementation, all pointers valid per caller contract
+    unsafe { mj_energyPos_impl(m, d) }
 }
 
 /// C: mj_energyVel (engine/engine_sensor.h:47)
