@@ -576,10 +576,10 @@ pub fn mjuu_eig3(eigval: [f64; 3], eigvec: [f64; 9], quat: [f64; 4], mat: [f64; 
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjuu_eigendecompose(mat: *mut f64, eigval: *mut f64, eigvec: *mut f64, n: i32) -> i32 {
-    // WARNING: signature changed — verify body
-    // Previous params: (mat : * mut f64, eigval : * mut f64, eigvec : * mut f64, n : i32)
-    // Previous return: i32
-    todo ! ()
+
+    extern "C" { fn mjuu_eigendecompose_impl(mat: *mut f64, eigval: *mut f64, eigvec: *mut f64, n: i32) -> i32; }
+    // SAFETY: delegates to C implementation
+    unsafe { mjuu_eigendecompose_impl(mat, eigval, eigvec, n) }
 }
 
 /// C: mjuu_trnVecPose (user/user_util.h:169)

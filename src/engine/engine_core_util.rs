@@ -80,10 +80,10 @@ pub fn mj_jac(m: *const mjModel, d: *const mjData, jacp: *mut f64, jacr: *mut f6
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_jac_body(m: *const mjModel, d: *const mjData, jacp: *mut f64, jacr: *mut f64, body: i32) {
-    // WARNING: signature changed — verify body
-    // Previous params: (m : * const mjModel, d : * const mjData, jacp : * mut f64, jacr : * mut f64, body : i32)
-    // Previous return: ()
-    todo ! ()
+
+    extern "C" { fn mj_jacBody_impl(m: *const mjModel, d: *const mjData, jacp: *mut f64, jacr: *mut f64, body: i32); }
+    // SAFETY: delegates to C implementation
+    unsafe { mj_jacBody_impl(m, d, jacp, jacr, body) }
 }
 
 /// C: mj_jacBodyCom (engine/engine_core_util.h:60)
@@ -109,10 +109,10 @@ pub fn mj_jac_body_com(m: *const mjModel, d: *const mjData, jacp: *mut f64, jacr
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_jac_subtree_com(m: *const mjModel, d: *mut mjData, jacp: *mut f64, body: i32) {
-    // WARNING: signature changed — verify body
-    // Previous params: (m : * const mjModel, d : * mut mjData, jacp : * mut f64, body : i32)
-    // Previous return: ()
-    todo ! ()
+
+    extern "C" { fn mj_jacSubtreeCom_impl(m: *const mjModel, d: *mut mjData, jacp: *mut f64, body: i32); }
+    // SAFETY: delegates to C implementation
+    unsafe { mj_jacSubtreeCom_impl(m, d, jacp, body) }
 }
 
 /// C: mj_jacGeom (engine/engine_core_util.h:67)
@@ -265,10 +265,10 @@ pub fn mj_jac_dot(m: *const mjModel, d: *const mjData, jacp: *mut f64, jacr: *mu
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_angmom_mat(m: *const mjModel, d: *mut mjData, mat: *mut f64, body: i32) {
-    // WARNING: signature changed — verify body
-    // Previous params: (m : * const mjModel, d : * mut mjData, mat : * mut f64, body : i32)
-    // Previous return: ()
-    todo ! ()
+
+    extern "C" { fn mj_angmomMat_impl(m: *const mjModel, d: *mut mjData, mat: *mut f64, body: i32); }
+    // SAFETY: delegates to C implementation
+    unsafe { mj_angmomMat_impl(m, d, mat, body) }
 }
 
 /// C: mj_objectVelocity (engine/engine_core_util.h:117)

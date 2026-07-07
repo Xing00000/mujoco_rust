@@ -211,10 +211,10 @@ pub fn validate_float_format(float_format: *const i8) -> bool {
 /// Calls: memorySize, mj_sizeModel, mj_versionString, mju_type2Str, mju_warning, sizeBVH, sizeMesh, sizeSkin, validateFloatFormat
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_print_formatted_model(m: *const mjModel, filename: *const i8, float_format: *const i8) {
-    // WARNING: signature changed — verify body
-    // Previous params: (m : * const mjModel, filename : * const i8, float_format : * const i8)
-    // Previous return: ()
-    todo ! ()
+
+    extern "C" { fn mj_printFormattedModel_impl(m: *const mjModel, filename: *const i8, float_format: *const i8); }
+    // SAFETY: delegates to C implementation
+    unsafe { mj_printFormattedModel_impl(m, filename, float_format) }
 }
 
 /// C: mj_printModel (engine/engine_print.h:35)

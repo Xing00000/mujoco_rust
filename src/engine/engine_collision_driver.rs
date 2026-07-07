@@ -743,10 +743,10 @@ pub fn plane_vertex(con: *mut mjPreContact, pos: *const f64, rad: f64, t0: i32, 
 /// C: mj_maxContact (engine/engine_collision_driver.h:33)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_max_contact(m: *const mjModel, g1: i32, g2: i32, has_margin: i32) -> i32 {
-    // WARNING: signature changed — verify body
-    // Previous params: (m : * const mjModel, g1 : i32, g2 : i32, has_margin : i32)
-    // Previous return: i32
-    todo ! ()
+
+    extern "C" { fn mj_maxContact_impl(m: *const mjModel, g1: i32, g2: i32, has_margin: i32) -> i32; }
+    // SAFETY: delegates to C implementation
+    unsafe { mj_maxContact_impl(m, g1, g2, has_margin) }
 }
 
 /// C: mj_collision (engine/engine_collision_driver.h:36)

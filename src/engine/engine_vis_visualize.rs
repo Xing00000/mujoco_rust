@@ -600,10 +600,10 @@ pub fn solve_catenary(v: f64, h: f64, length: f64) -> f64 {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjv_connector(geom: *mut mjvGeom, r#type: i32, width: f64, from: *const f64, to: *const f64) {
-    // WARNING: signature changed — verify body
-    // Previous params: (geom : * mut mjvGeom, r#type : i32, width : f64, from : * const f64, to : * const f64)
-    // Previous return: ()
-    todo ! ()
+
+    extern "C" { fn mjv_connector_impl(geom: *mut mjvGeom, r#type: i32, width: f64, from: *const f64, to: *const f64); }
+    // SAFETY: delegates to C implementation
+    unsafe { mjv_connector_impl(geom, r#type, width, from, to) }
 }
 
 /// C: mjv_initGeom (engine/engine_vis_visualize.h:33)
@@ -673,10 +673,10 @@ pub fn mjv_update_active_flex(m: *const mjModel, d: *mut mjData, scn: *mut mjvSc
 /// Calls: mju_warning, mjv_defaultOption, mjv_updateActiveSkin
 #[allow(unused_variables, non_snake_case)]
 pub fn mjv_update_skin(m: *const mjModel, d: *const mjData, scn: *mut mjvScene) {
-    // WARNING: signature changed — verify body
-    // Previous params: (m : * const mjModel, d : * const mjData, scn : * mut mjvScene)
-    // Previous return: ()
-    todo ! ()
+
+    extern "C" { fn mjv_updateSkin_impl(m: *const mjModel, d: *const mjData, scn: *mut mjvScene); }
+    // SAFETY: delegates to C implementation
+    unsafe { mjv_updateSkin_impl(m, d, scn) }
 }
 
 /// C: mjv_updateActiveSkin (engine/engine_vis_visualize.h:57)
@@ -726,10 +726,10 @@ pub fn mjv_camera_frustum(zver: [f32; 2], zhor: [f32; 2], zclip: [f32; 2], m: *c
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjv_is_catenary(m: *const mjModel, d: *const mjData, i: i32, length: *mut f64) -> i32 {
-    // WARNING: signature changed — verify body
-    // Previous params: (m : * const mjModel, d : * const mjData, i : i32, length : * mut f64)
-    // Previous return: i32
-    todo ! ()
+
+    extern "C" { fn mjv_isCatenary_impl(m: *const mjModel, d: *const mjData, i: i32, length: *mut f64) -> i32; }
+    // SAFETY: delegates to C implementation
+    unsafe { mjv_isCatenary_impl(m, d, i, length) }
 }
 
 /// C: mjv_catenary (engine/engine_vis_visualize.h:72)

@@ -283,10 +283,10 @@ pub fn mjc_plane_cylinder(m: *const mjModel, d: *mut mjData, con: *mut mjPreCont
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjc_plane_box(m: *const mjModel, d: *mut mjData, con: *mut mjPreContact, g1: i32, g2: i32, margin: f64) -> i32 {
-    // WARNING: signature changed — verify body
-    // Previous params: (m : * const mjModel, d : * mut mjData, con : * mut mjPreContact, g1 : i32, g2 : i32, margin : f64)
-    // Previous return: i32
-    todo ! ()
+
+    extern "C" { fn mjc_PlaneBox_impl(m: *const mjModel, d: *mut mjData, con: *mut mjPreContact, g1: i32, g2: i32, margin: f64) -> i32; }
+    // SAFETY: delegates to C implementation
+    unsafe { mjc_PlaneBox_impl(m, d, con, g1, g2, margin) }
 }
 
 /// C: mjc_SphereSphere (engine/engine_collision_primitive.h:57)
@@ -298,10 +298,10 @@ pub fn mjc_plane_box(m: *const mjModel, d: *mut mjData, con: *mut mjPreContact, 
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjc_sphere_sphere(m: *const mjModel, d: *mut mjData, con: *mut mjPreContact, g1: i32, g2: i32, margin: f64) -> i32 {
-    // WARNING: signature changed — verify body
-    // Previous params: (m : * const mjModel, d : * mut mjData, con : * mut mjPreContact, g1 : i32, g2 : i32, margin : f64)
-    // Previous return: i32
-    todo ! ()
+
+    extern "C" { fn mjc_SphereSphere_impl(m: *const mjModel, d: *mut mjData, con: *mut mjPreContact, g1: i32, g2: i32, margin: f64) -> i32; }
+    // SAFETY: delegates to C implementation
+    unsafe { mjc_SphereSphere_impl(m, d, con, g1, g2, margin) }
 }
 
 /// C: mjc_SphereCapsule (engine/engine_collision_primitive.h:59)
@@ -313,10 +313,10 @@ pub fn mjc_sphere_sphere(m: *const mjModel, d: *mut mjData, con: *mut mjPreConta
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjc_sphere_capsule(m: *const mjModel, d: *mut mjData, con: *mut mjPreContact, g1: i32, g2: i32, margin: f64) -> i32 {
-    // WARNING: signature changed — verify body
-    // Previous params: (m : * const mjModel, d : * mut mjData, con : * mut mjPreContact, g1 : i32, g2 : i32, margin : f64)
-    // Previous return: i32
-    todo ! ()
+
+    extern "C" { fn mjc_SphereCapsule_impl(m: *const mjModel, d: *mut mjData, con: *mut mjPreContact, g1: i32, g2: i32, margin: f64) -> i32; }
+    // SAFETY: delegates to C implementation
+    unsafe { mjc_SphereCapsule_impl(m, d, con, g1, g2, margin) }
 }
 
 /// C: mjc_SphereCylinder (engine/engine_collision_primitive.h:61)
@@ -343,10 +343,10 @@ pub fn mjc_sphere_cylinder(m: *const mjModel, d: *mut mjData, con: *mut mjPreCon
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjc_capsule_capsule(m: *const mjModel, d: *mut mjData, con: *mut mjPreContact, g1: i32, g2: i32, margin: f64) -> i32 {
-    // WARNING: signature changed — verify body
-    // Previous params: (m : * const mjModel, d : * mut mjData, con : * mut mjPreContact, g1 : i32, g2 : i32, margin : f64)
-    // Previous return: i32
-    todo ! ()
+
+    extern "C" { fn mjc_CapsuleCapsule_impl(m: *const mjModel, d: *mut mjData, con: *mut mjPreContact, g1: i32, g2: i32, margin: f64) -> i32; }
+    // SAFETY: delegates to C implementation
+    unsafe { mjc_CapsuleCapsule_impl(m, d, con, g1, g2, margin) }
 }
 
 /// C: mjc_CapsuleBox (engine/engine_collision_primitive.h:67)
@@ -358,10 +358,10 @@ pub fn mjc_capsule_capsule(m: *const mjModel, d: *mut mjData, con: *mut mjPreCon
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjc_capsule_box(m: *const mjModel, d: *mut mjData, con: *mut mjPreContact, g1: i32, g2: i32, margin: f64) -> i32 {
-    // WARNING: signature changed — verify body
-    // Previous params: (m : * const mjModel, d : * mut mjData, con : * mut mjPreContact, g1 : i32, g2 : i32, margin : f64)
-    // Previous return: i32
-    todo ! ()
+
+    extern "C" { fn mjc_CapsuleBox_impl(m: *const mjModel, d: *mut mjData, con: *mut mjPreContact, g1: i32, g2: i32, margin: f64) -> i32; }
+    // SAFETY: delegates to C implementation
+    unsafe { mjc_CapsuleBox_impl(m, d, con, g1, g2, margin) }
 }
 
 /// C: mjc_SphereBox (engine/engine_collision_primitive.h:69)
@@ -373,10 +373,10 @@ pub fn mjc_capsule_box(m: *const mjModel, d: *mut mjData, con: *mut mjPreContact
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjc_sphere_box(m: *const mjModel, d: *mut mjData, con: *mut mjPreContact, g1: i32, g2: i32, margin: f64) -> i32 {
-    // WARNING: signature changed — verify body
-    // Previous params: (m : * const mjModel, d : * mut mjData, con : * mut mjPreContact, g1 : i32, g2 : i32, margin : f64)
-    // Previous return: i32
-    todo ! ()
+
+    extern "C" { fn mjc_SphereBox_impl(m: *const mjModel, d: *mut mjData, con: *mut mjPreContact, g1: i32, g2: i32, margin: f64) -> i32; }
+    // SAFETY: delegates to C implementation
+    unsafe { mjc_SphereBox_impl(m, d, con, g1, g2, margin) }
 }
 
 /// C: mjc_BoxBox (engine/engine_collision_primitive.h:71)

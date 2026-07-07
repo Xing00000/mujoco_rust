@@ -32,10 +32,10 @@ pub fn mj_free_last_xml() {
 /// C: mj_printSchema (xml/xml_api.h:40)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_print_schema(filename: *const i8, buffer: *mut i8, buffer_sz: i32, flg_html: i32, flg_pad: i32) -> i32 {
-    // WARNING: signature changed — verify body
-    // Previous params: (filename : * const i8, buffer : * mut i8, buffer_sz : i32, flg_html : i32, flg_pad : i32)
-    // Previous return: i32
-    todo ! ()
+
+    extern "C" { fn mj_printSchema_impl(filename: *const i8, buffer: *mut i8, buffer_sz: i32, flg_html: i32, flg_pad: i32) -> i32; }
+    // SAFETY: delegates to C implementation
+    unsafe { mj_printSchema_impl(filename, buffer, buffer_sz, flg_html, flg_pad) }
 }
 
 /// C: mj_loadModel (xml/xml_api.h:45)

@@ -207,9 +207,9 @@ pub fn mjv_select(m: *const mjModel, d: *const mjData, vopt: *const mjvOption, a
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjv_flex_body_id(m: *const mjModel, d: *const mjData, flexid: i32, vertid: i32, flexpnt: *mut f64) -> i32 {
-    // WARNING: signature changed — verify body
-    // Previous params: (m : * const mjModel, d : * const mjData, flexid : i32, vertid : i32, flexpnt : * mut f64)
-    // Previous return: i32
-    todo ! ()
+
+    extern "C" { fn mjv_flexBodyId_impl(m: *const mjModel, d: *const mjData, flexid: i32, vertid: i32, flexpnt: *mut f64) -> i32; }
+    // SAFETY: delegates to C implementation
+    unsafe { mjv_flexBodyId_impl(m, d, flexid, vertid, flexpnt) }
 }
 

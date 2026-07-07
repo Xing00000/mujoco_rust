@@ -422,10 +422,10 @@ pub fn mju_block(res: *mut f64, mat: *const f64, nc_mat: i32, nc_res: i32, nr: i
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mju_block_diag(res: *mut f64, mat: *const f64, nc_mat: i32, nc_res: i32, nb: i32, perm_r: *const i32, perm_c: *const i32, block_nr: *const i32, block_nc: *const i32, block_r: *const i32, block_c: *const i32) {
-    // WARNING: signature changed — verify body
-    // Previous params: (res : * mut f64, mat : * const f64, nc_mat : i32, nc_res : i32, nb : i32, perm_r : * const i32, perm_c : * const i32, block_nr : * const i32, block_nc : * const i32, block_r : * const i32, block_c : * const i32)
-    // Previous return: ()
-    todo ! ()
+
+    extern "C" { fn mju_blockDiag_impl(res: *mut f64, mat: *const f64, nc_mat: i32, nc_res: i32, nb: i32, perm_r: *const i32, perm_c: *const i32, block_nr: *const i32, block_nc: *const i32, block_r: *const i32, block_c: *const i32); }
+    // SAFETY: delegates to C implementation
+    unsafe { mju_blockDiag_impl(res, mat, nc_mat, nc_res, nb, perm_r, perm_c, block_nr, block_nc, block_r, block_c) }
 }
 
 /// C: mju_blockSparse (engine/engine_util_sparse.h:176)
@@ -452,10 +452,10 @@ pub fn mju_block_sparse(res: *mut f64, res_rownnz: *mut i32, res_rowadr: *mut i3
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mju_block_diag_sparse(res: *mut f64, res_rownnz: *mut i32, res_rowadr: *mut i32, res_colind: *mut i32, mat: *const f64, rownnz: *const i32, rowadr: *const i32, colind: *const i32, nr: i32, nb: i32, perm_r: *const i32, perm_c: *const i32, block_r: *const i32, block_c: *const i32, res2: *mut f64, mat2: *const f64) {
-    // WARNING: signature changed — verify body
-    // Previous params: (res : * mut f64, res_rownnz : * mut i32, res_rowadr : * mut i32, res_colind : * mut i32, mat : * const f64, rownnz : * const i32, rowadr : * const i32, colind : * const i32, nr : i32, nb : i32, perm_r : * const i32, perm_c : * const i32, block_r : * const i32, block_c : * const i32, res2 : * mut f64, mat2 : * const f64)
-    // Previous return: ()
-    todo ! ()
+
+    extern "C" { fn mju_blockDiagSparse_impl(res: *mut f64, res_rownnz: *mut i32, res_rowadr: *mut i32, res_colind: *mut i32, mat: *const f64, rownnz: *const i32, rowadr: *const i32, colind: *const i32, nr: i32, nb: i32, perm_r: *const i32, perm_c: *const i32, block_r: *const i32, block_c: *const i32, res2: *mut f64, mat2: *const f64); }
+    // SAFETY: delegates to C implementation
+    unsafe { mju_blockDiagSparse_impl(res, res_rownnz, res_rowadr, res_colind, mat, rownnz, rowadr, colind, nr, nb, perm_r, perm_c, block_r, block_c, res2, mat2) }
 }
 
 /// C: mju_dotSparse (engine/engine_util_sparse.h:197)

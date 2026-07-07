@@ -951,10 +951,10 @@ pub fn mju_spring_damper(pos0: f64, vel0: f64, Kp: f64, Kv: f64, dt: f64) -> f64
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mju_outside_box(point: *const f64, pos: *const f64, mat: *const f64, size: *const f64, inflate: f64) -> i32 {
-    // WARNING: signature changed — verify body
-    // Previous params: (point : * const f64, pos : * const f64, mat : * const f64, size : * const f64, inflate : f64)
-    // Previous return: i32
-    todo ! ()
+
+    extern "C" { fn mju_outsideBox_impl(point: *const f64, pos: *const f64, mat: *const f64, size: *const f64, inflate: f64) -> i32; }
+    // SAFETY: delegates to C implementation
+    unsafe { mju_outsideBox_impl(point, pos, mat, size, inflate) }
 }
 
 /// C: mju_printMat (engine/engine_util_misc.h:217)
@@ -1295,10 +1295,10 @@ pub fn mju_sparse_map(map: *mut i32, nr: i32, res_rowadr: *const i32, res_rownnz
 /// Calls: mju_fillInt
 #[allow(unused_variables, non_snake_case)]
 pub fn mju_lower2sym_map(map: *mut i32, nr: i32, res_rowadr: *const i32, res_rownnz: *const i32, res_colind: *const i32, src_rowadr: *const i32, src_rownnz: *const i32, src_colind: *const i32, cursor: *mut i32) {
-    // WARNING: signature changed — verify body
-    // Previous params: (map : * mut i32, nr : i32, res_rowadr : * const i32, res_rownnz : * const i32, res_colind : * const i32, src_rowadr : * const i32, src_rownnz : * const i32, src_colind : * const i32, cursor : * mut i32)
-    // Previous return: ()
-    todo ! ()
+
+    extern "C" { fn mju_lower2SymMap_impl(map: *mut i32, nr: i32, res_rowadr: *const i32, res_rownnz: *const i32, res_colind: *const i32, src_rowadr: *const i32, src_rownnz: *const i32, src_colind: *const i32, cursor: *mut i32); }
+    // SAFETY: delegates to C implementation
+    unsafe { mju_lower2SymMap_impl(map, nr, res_rowadr, res_rownnz, res_colind, src_rowadr, src_rownnz, src_colind, cursor) }
 }
 
 /// C: mju_insertionSort (engine/engine_util_misc.h:312)

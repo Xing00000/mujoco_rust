@@ -117,20 +117,20 @@ pub fn mj_stack_alloc_info(d: *mut mjData, bytes: usize, alignment: usize, calle
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_stack_alloc_num(d: *mut mjData, size: usize) -> *mut f64 {
-    // WARNING: signature changed — verify body
-    // Previous params: (d : * mut mjData, size : usize)
-    // Previous return: * mut f64
-    todo ! ()
+
+    extern "C" { fn mj_stackAllocNum_impl(d: *mut mjData, size: usize) -> *mut f64; }
+    // SAFETY: delegates to C implementation
+    unsafe { mj_stackAllocNum_impl(d, size) }
 }
 
 /// C: mj_stackAllocInt (engine/engine_memory.h:67)
 /// Calls: mju_message, stackalloc
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_stack_alloc_int(d: *mut mjData, size: usize) -> *mut i32 {
-    // WARNING: signature changed — verify body
-    // Previous params: (d : * mut mjData, size : usize)
-    // Previous return: * mut i32
-    todo ! ()
+
+    extern "C" { fn mj_stackAllocInt_impl(d: *mut mjData, size: usize) -> *mut i32; }
+    // SAFETY: delegates to C implementation
+    unsafe { mj_stackAllocInt_impl(d, size) }
 }
 
 /// C: mj_clearEfc (engine/engine_memory.h:70)

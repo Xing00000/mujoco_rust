@@ -258,10 +258,10 @@ pub fn mju_multi_ray_prepare(m: *const mjModel, d: *const mjData, pnt: *const f6
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_multi_ray(m: *const mjModel, d: *mut mjData, pnt: *const f64, vec: *const f64, geomgroup: *const u8, flg_static: mjtBool, bodyexclude: i32, geomid: *mut i32, dist: *mut f64, normal: *mut f64, nray: i32, cutoff: f64) {
-    // WARNING: signature changed — verify body
-    // Previous params: (m : * const mjModel, d : * mut mjData, pnt : * const f64, vec : * const f64, geomgroup : * const u8, flg_static : mjtBool, bodyexclude : i32, geomid : * mut i32, dist : * mut f64, normal : * mut f64, nray : i32, cutoff : f64)
-    // Previous return: ()
-    todo ! ()
+
+    extern "C" { fn mj_multiRay_impl(m: *const mjModel, d: *mut mjData, pnt: *const f64, vec: *const f64, geomgroup: *const u8, flg_static: mjtBool, bodyexclude: i32, geomid: *mut i32, dist: *mut f64, normal: *mut f64, nray: i32, cutoff: f64); }
+    // SAFETY: delegates to C implementation
+    unsafe { mj_multiRay_impl(m, d, pnt, vec, geomgroup, flg_static, bodyexclude, geomid, dist, normal, nray, cutoff) }
 }
 
 /// C: mj_ray (engine/engine_ray.h:42)
@@ -418,10 +418,10 @@ pub fn mju_ray_geom(pos: *const f64, mat: *const f64, size: *const f64, pnt: *co
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_ray_flex(m: *const mjModel, d: *const mjData, flex_layer: i32, flg_vert: mjtBool, flg_edge: mjtBool, flg_face: mjtBool, flg_skin: mjtBool, flexid: i32, pnt: *const f64, vec: *const f64, vertid: [i32; 1], normal: *mut f64) -> f64 {
-    // WARNING: signature changed — verify body
-    // Previous params: (m : * const mjModel, d : * const mjData, flex_layer : i32, flg_vert : mjtBool, flg_edge : mjtBool, flg_face : mjtBool, flg_skin : mjtBool, flexid : i32, pnt : * const f64, vec : * const f64, vertid : [i32 ; 1], normal : * mut f64)
-    // Previous return: f64
-    todo ! ()
+
+    extern "C" { fn mj_rayFlex_impl(m: *const mjModel, d: *const mjData, flex_layer: i32, flg_vert: mjtBool, flg_edge: mjtBool, flg_face: mjtBool, flg_skin: mjtBool, flexid: i32, pnt: *const f64, vec: *const f64, vertid: [i32; 1], normal: *mut f64) -> f64; }
+    // SAFETY: delegates to C implementation
+    unsafe { mj_rayFlex_impl(m, d, flex_layer, flg_vert, flg_edge, flg_face, flg_skin, flexid, pnt, vec, vertid, normal) }
 }
 
 /// C: mju_raySkin (engine/engine_ray.h:70)
@@ -433,9 +433,9 @@ pub fn mj_ray_flex(m: *const mjModel, d: *const mjData, flex_layer: i32, flg_ver
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mju_ray_skin(nface: i32, nvert: i32, face: *const i32, vert: *const f32, pnt: *const f64, vec: *const f64, vertid: [i32; 1]) -> f64 {
-    // WARNING: signature changed — verify body
-    // Previous params: (nface : i32, nvert : i32, face : * const i32, vert : * const f32, pnt : * const f64, vec : * const f64, vertid : [i32 ; 1])
-    // Previous return: f64
-    todo ! ()
+
+    extern "C" { fn mju_raySkin_impl(nface: i32, nvert: i32, face: *const i32, vert: *const f32, pnt: *const f64, vec: *const f64, vertid: [i32; 1]) -> f64; }
+    // SAFETY: delegates to C implementation
+    unsafe { mju_raySkin_impl(nface, nvert, face, vert, pnt, vec, vertid) }
 }
 

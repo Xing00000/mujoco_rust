@@ -16,10 +16,10 @@ pub fn mjv_default_scene(scn: *mut mjvScene) {
 /// Calls: mju_copyInt, mju_error, mju_malloc, mju_message, mjv_freeScene
 #[allow(unused_variables, non_snake_case)]
 pub fn mjv_make_scene(m: *const mjModel, scn: *mut mjvScene, maxgeom: i32) {
-    // WARNING: signature changed — verify body
-    // Previous params: (m : * const mjModel, scn : * mut mjvScene, maxgeom : i32)
-    // Previous return: ()
-    todo ! ()
+
+    extern "C" { fn mjv_makeScene_impl(m: *const mjModel, scn: *mut mjvScene, maxgeom: i32); }
+    // SAFETY: delegates to C implementation
+    unsafe { mjv_makeScene_impl(m, scn, maxgeom) }
 }
 
 /// C: mjv_freeScene (engine/engine_vis_init.h:40)
