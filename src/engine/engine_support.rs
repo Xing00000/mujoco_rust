@@ -8,10 +8,31 @@ use crate::types::*;
 /// Calls: mju_message
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_state_elem_size(m: *const mjModel, sig: mjtState) -> i32 {
-    // WARNING: signature changed — verify body
-    // Previous params: (m : * const mjModel, sig : mjtState)
-    // Previous return: i32
-    todo ! ()
+    // SAFETY: mjtState is unsigned int in C ABI; read through pointer cast.
+    // Model pointer dereferences follow C source semantics.
+    unsafe {
+        let s: u32 = *(&sig as *const mjtState as *const u32);
+        match s {
+            1      => 1,                              // mjSTATE_TIME
+            2      => (*m).nq as i32,                 // mjSTATE_QPOS
+            4      => (*m).nv as i32,                 // mjSTATE_QVEL
+            8      => (*m).na as i32,                 // mjSTATE_ACT
+            16     => (*m).nhistory as i32,           // mjSTATE_HISTORY
+            32     => (*m).nv as i32,                 // mjSTATE_WARMSTART
+            64     => (*m).nu as i32,                 // mjSTATE_CTRL
+            128    => (*m).nv as i32,                 // mjSTATE_QFRC_APPLIED
+            256    => (6 * (*m).nbody) as i32,        // mjSTATE_XFRC_APPLIED
+            512    => (*m).neq as i32,                // mjSTATE_EQ_ACTIVE
+            1024   => (3 * (*m).nmocap) as i32,      // mjSTATE_MOCAP_POS
+            2048   => (4 * (*m).nmocap) as i32,      // mjSTATE_MOCAP_QUAT
+            4096   => (*m).nuserdata as i32,          // mjSTATE_USERDATA
+            8192   => (*m).npluginstate as i32,       // mjSTATE_PLUGIN
+            _ => {
+                crate::engine::engine_util_errmem::mju_error(b"invalid state element\0".as_ptr() as *const i8);
+                0
+            }
+        }
+    }
 }
 
 /// C: mj_stateElemPtr (engine/engine_support.c:162)

@@ -70,20 +70,38 @@ pub fn bodycategory(m: *const mjModel, bodyid: i32) -> i32 {
 /// Calls: mju_warning, mjv_initGeom
 #[allow(unused_variables, non_snake_case)]
 pub fn acquire_geom(scn: *mut mjvScene, objid: i32, category: i32, objtype: i32) -> *mut mjvGeom {
-    // WARNING: signature changed — verify body
-    // Previous params: (scn : * mut mjvScene, objid : i32, category : i32, objtype : i32)
-    // Previous return: * mut mjvGeom
-    todo ! ()
+    // SAFETY: all pointer dereferences follow C source semantics; caller guarantees scn is valid
+    unsafe {
+        if (*scn).ngeom >= (*scn).maxgeom {
+            if (*scn).status == 0 {
+                crate::engine::engine_util_errmem::mju_warning(b"Pre-allocated visual geom buffer is full. Increase maxgeom above %d.\0".as_ptr() as *const i8);
+                (*scn).status = 1;
+            }
+            return std::ptr::null_mut();
+        }
+        let thisgeom: *mut mjvGeom = (*scn).geoms.add((*scn).ngeom as usize);
+        std::ptr::write_bytes(thisgeom, 0, 1);
+        mjv_init_geom(thisgeom, -1, std::ptr::null(), std::ptr::null(), std::ptr::null(), std::ptr::null());
+        (*thisgeom).objtype = objtype;
+        (*thisgeom).objid = objid;
+        (*thisgeom).category = category;
+        (*thisgeom).segid = (*scn).ngeom;
+        thisgeom
+    }
 }
 
 /// C: releaseGeom (engine/engine_vis_visualize.c:192)
 /// Calls: mju_error
 #[allow(unused_variables, non_snake_case)]
 pub fn release_geom(geom: *mut *mut mjvGeom, scn: *mut mjvScene) {
-    // WARNING: signature changed — verify body
-    // Previous params: (geom : * mut * mut mjvGeom, scn : * mut mjvScene)
-    // Previous return: ()
-    todo ! ()
+    // SAFETY: caller guarantees geom and scn are valid; mirrors C pointer arithmetic
+    unsafe {
+        if *geom != (*scn).geoms.add((*scn).ngeom as usize) {
+            crate::engine::engine_util_errmem::mju_error(b"Unexpected geom pointer; did you call acquireGeom?\0".as_ptr() as *const i8);
+        }
+        (*scn).ngeom += 1;
+        *geom = std::ptr::null_mut();
+    }
 }
 
 /// C: addTriangle (engine/engine_vis_visualize.c:204)

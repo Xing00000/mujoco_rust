@@ -75,10 +75,15 @@ pub fn mul_mat_t_vec3(res: *mut f64, mat: *const f64, dir: *const f64) {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn local_to_global(res: *mut f64, mat: *const f64, dir: *const f64, pos: *const f64) {
-    // WARNING: signature changed — verify body
-    // Previous params: (res : * mut f64, mat : * const f64, dir : * const f64, pos : * const f64)
-    // Previous return: ()
-    todo ! ()
+    // SAFETY: caller guarantees res[3], mat[9], dir[3], pos[3] are valid
+    unsafe {
+        *res.add(0) = *mat.add(0) * *dir.add(0) + *mat.add(1) * *dir.add(1) + *mat.add(2) * *dir.add(2);
+        *res.add(1) = *mat.add(3) * *dir.add(0) + *mat.add(4) * *dir.add(1) + *mat.add(5) * *dir.add(2);
+        *res.add(2) = *mat.add(6) * *dir.add(0) + *mat.add(7) * *dir.add(1) + *mat.add(8) * *dir.add(2);
+        *res.add(0) += *pos.add(0);
+        *res.add(1) += *pos.add(1);
+        *res.add(2) += *pos.add(2);
+    }
 }
 
 /// C: mjc_sphereSupport (engine/engine_collision_convex.c:202)

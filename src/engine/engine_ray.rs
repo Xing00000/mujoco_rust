@@ -12,10 +12,18 @@ use crate::types::*;
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn ray_map(pos: *const f64, mat: *const f64, pnt: *const f64, vec: *const f64, lpnt: *mut f64, lvec: *mut f64) {
-    // WARNING: signature changed — verify body
-    // Previous params: (pos : * const f64, mat : * const f64, pnt : * const f64, vec : * const f64, lpnt : * mut f64, lvec : * mut f64)
-    // Previous return: ()
-    todo ! ()
+    // SAFETY: caller guarantees pos[3], mat[9], pnt[3], vec[3], lpnt[3], lvec[3] are valid
+    unsafe {
+        let dif0: f64 = *pnt.add(0) - *pos.add(0);
+        let dif1: f64 = *pnt.add(1) - *pos.add(1);
+        let dif2: f64 = *pnt.add(2) - *pos.add(2);
+        *lpnt.add(0) = *mat.add(0) * dif0 + *mat.add(3) * dif1 + *mat.add(6) * dif2;
+        *lpnt.add(1) = *mat.add(1) * dif0 + *mat.add(4) * dif1 + *mat.add(7) * dif2;
+        *lpnt.add(2) = *mat.add(2) * dif0 + *mat.add(5) * dif1 + *mat.add(8) * dif2;
+        *lvec.add(0) = *mat.add(0) * *vec.add(0) + *mat.add(3) * *vec.add(1) + *mat.add(6) * *vec.add(2);
+        *lvec.add(1) = *mat.add(1) * *vec.add(0) + *mat.add(4) * *vec.add(1) + *mat.add(7) * *vec.add(2);
+        *lvec.add(2) = *mat.add(2) * *vec.add(0) + *mat.add(5) * *vec.add(1) + *mat.add(8) * *vec.add(2);
+    }
 }
 
 /// C: longitude (engine/engine_ray.c:56)
