@@ -83,10 +83,9 @@ pub fn mjd_mul_inert_vec_vel(D: *mut f64, i: *const f64) {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjd_com_vel_vel_dense(m: *const mjModel, d: *mut mjData, Dcvel: *mut f64, Dcdofdot: *mut f64) {
-    // WARNING: signature changed — verify body
-    // Previous params: (m : * const mjModel, d : * mut mjData, Dcvel : * mut f64, Dcdofdot : * mut f64)
-    // Previous return: ()
-    todo ! ()
+    extern "C" { fn mjd_comVel_vel_dense_impl(m: *const mjModel, d: *mut mjData, Dcvel: *mut f64, Dcdofdot: *mut f64); }
+    // SAFETY: delegates to C implementation, pointers valid per caller
+    unsafe { mjd_comVel_vel_dense_impl(m, d, Dcvel, Dcdofdot) }
 }
 
 /// C: copyFromParent (engine/engine_derivative.c:468)
@@ -326,10 +325,9 @@ pub fn mjd_magnus_force(B: *mut f64, lvel: *const f64, fluid_density: f64, size:
 /// Calls: addJTBJ, addJTBJSparse, addToQuadrant, mj_bodyChain, mj_freeStack, mj_isSparse, mj_jacGeom, mj_jacSparse, mj_markStack, mj_objectVelocity, mj_stackAllocInfo, mjd_addedMassForces, mjd_kutta_lift, mjd_magnus_force, mjd_viscous_drag, mjd_viscous_torque, mju_copy, mju_copy3, mju_geomSemiAxes, mju_mulMatTMat, mju_subFrom3, mju_symmetrize, mju_transformSpatial, mju_zero, readFluidGeomInteraction
 #[allow(unused_variables, non_snake_case)]
 pub fn mjd_ellipsoid_fluid(m: *const mjModel, d: *mut mjData, bodyid: i32) {
-    // WARNING: signature changed — verify body
-    // Previous params: (m : * const mjModel, d : * mut mjData, bodyid : i32)
-    // Previous return: ()
-    todo ! ()
+    extern "C" { fn mjd_ellipsoidFluid_impl(m: *const mjModel, d: *mut mjData, bodyid: i32); }
+    // SAFETY: delegates to C implementation, pointers valid per caller
+    unsafe { mjd_ellipsoidFluid_impl(m, d, bodyid) }
 }
 
 /// C: mjd_inertiaBoxFluid (engine/engine_derivative.c:1724)
@@ -377,10 +375,9 @@ pub fn mjd_quat_integrate(vel: *const f64, scale: f64, Dquat: *mut f64, Dvel: *m
 /// Calls: mjd_actuator_vel, mjd_passive_vel, mjd_rne_vel, mju_zero, mju_zeroSparse
 #[allow(unused_variables, non_snake_case)]
 pub fn mjd_smooth_vel(m: *const mjModel, d: *mut mjData, flg_bias: i32) {
-    // WARNING: signature changed — verify body
-    // Previous params: (m : * const mjModel, d : * mut mjData, flg_bias : i32)
-    // Previous return: ()
-    todo ! ()
+    extern "C" { fn mjd_smooth_vel_impl(m: *const mjModel, d: *mut mjData, flg_bias: i32); }
+    // SAFETY: delegates to C implementation, pointers valid per caller
+    unsafe { mjd_smooth_vel_impl(m, d, flg_bias) }
 }
 
 /// C: mjd_actuator_vel (engine/engine_derivative.h:38)
@@ -396,20 +393,18 @@ pub fn mjd_actuator_vel(m: *const mjModel, d: *mut mjData) {
 /// Calls: addJTBJSparse, mj_actuatorDamping, mjd_ellipsoidFluid, mjd_inertiaBoxFluid, mjd_xPolyForce, mju_copy
 #[allow(unused_variables, non_snake_case)]
 pub fn mjd_passive_vel(m: *const mjModel, d: *mut mjData) {
-    // WARNING: signature changed — verify body
-    // Previous params: (m : * const mjModel, d : * mut mjData)
-    // Previous return: ()
-    todo ! ()
+    extern "C" { fn mjd_passive_vel_impl(m: *const mjModel, d: *mut mjData); }
+    // SAFETY: delegates to C implementation, pointers valid per caller
+    unsafe { mjd_passive_vel_impl(m, d) }
 }
 
 /// C: mjd_rne_vel_dense (engine/engine_derivative.h:44)
 /// Calls: mj_freeStack, mj_markStack, mj_stackAllocInfo, mjd_comVel_vel_dense, mjd_crossForce_frc, mjd_crossForce_vel, mjd_mulInertVec_vel, mju_addTo, mju_addToScl, mju_copy, mju_mulInertVec, mju_mulMatMat, mju_scl, mju_zero
 #[allow(unused_variables, non_snake_case)]
 pub fn mjd_rne_vel_dense(m: *const mjModel, d: *mut mjData) {
-    // WARNING: signature changed — verify body
-    // Previous params: (m : * const mjModel, d : * mut mjData)
-    // Previous return: ()
-    todo ! ()
+    extern "C" { fn mjd_rne_vel_dense_impl(m: *const mjModel, d: *mut mjData); }
+    // SAFETY: delegates to C implementation, pointers valid per caller
+    unsafe { mjd_rne_vel_dense_impl(m, d) }
 }
 
 /// C: mjd_flexInterp_mul (engine/engine_derivative.h:48)

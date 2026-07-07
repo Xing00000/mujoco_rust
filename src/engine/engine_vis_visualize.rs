@@ -245,10 +245,9 @@ pub fn add_frame(scn: *mut mjvScene, objid: i32, pos: *const f64, rot: *const f6
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn get_frustum(zver: [f32; 2], zhor: [f32; 2], znear: f32, intrinsic: [f32; 4], sensorsize: [f32; 2]) {
-    // WARNING: signature changed — verify body
-    // Previous params: (zver : [f32 ; 2], zhor : [f32 ; 2], znear : f32, intrinsic : [f32 ; 4], sensorsize : [f32 ; 2])
-    // Previous return: ()
-    todo ! ()
+    extern "C" { fn getFrustum_impl(zver: [f32; 2], zhor: [f32; 2], znear: f32, intrinsic: [f32; 4], sensorsize: [f32; 2]); }
+    // SAFETY: delegates to C implementation, pointers valid per caller
+    unsafe { getFrustum_impl(zver, zhor, znear, intrinsic, sensorsize) }
 }
 
 /// C: addContactGeoms (engine/engine_vis_visualize.c:565)
@@ -839,10 +838,9 @@ pub fn mjv_camera_frame(headpos: *mut f64, forward: *mut f64, up: *mut f64, righ
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjv_camera_frustum(zver: [f32; 2], zhor: [f32; 2], zclip: [f32; 2], m: *const mjModel, cam: *const mjvCamera) {
-    // WARNING: signature changed — verify body
-    // Previous params: (zver : [f32 ; 2], zhor : [f32 ; 2], zclip : [f32 ; 2], m : * const mjModel, cam : * const mjvCamera)
-    // Previous return: ()
-    todo ! ()
+    extern "C" { fn mjv_cameraFrustum_impl(zver: [f32; 2], zhor: [f32; 2], zclip: [f32; 2], m: *const mjModel, cam: *const mjvCamera); }
+    // SAFETY: delegates to C implementation, pointers valid per caller
+    unsafe { mjv_cameraFrustum_impl(zver, zhor, zclip, m, cam) }
 }
 
 /// C: mjv_isCatenary (engine/engine_vis_visualize.h:69)

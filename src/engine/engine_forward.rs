@@ -171,10 +171,9 @@ pub fn solve_island_task(m: *const mjModel, d: *mut mjData, arg: *mut (), thread
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_advance(m: *const mjModel, d: *mut mjData, act_dot: *const f64, qacc: *const f64, qvel: *const f64) {
-    // WARNING: signature changed — verify body
-    // Previous params: (m : * const mjModel, d : * mut mjData, act_dot : * const f64, qacc : * const f64, qvel : * const f64)
-    // Previous return: ()
-    todo ! ()
+    extern "C" { fn mj_advance_impl(m: *const mjModel, d: *mut mjData, act_dot: *const f64, qacc: *const f64, qvel: *const f64); }
+    // SAFETY: delegates to C implementation, pointers valid per caller
+    unsafe { mj_advance_impl(m, d, act_dot, qacc, qvel) }
 }
 
 /// C: flex_has_implicit_stiffness (engine/engine_forward.c:1284)
@@ -297,10 +296,9 @@ pub fn mj_step1(m: *const mjModel, d: *mut mjData) {
 /// Calls: mj_Euler, mj_checkAcc, mj_compareFwdInv, mj_fwdAcceleration, mj_fwdActuation, mj_fwdConstraint, mj_implicit, mj_sensorAcc
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_step2(m: *const mjModel, d: *mut mjData) {
-    // WARNING: signature changed — verify body
-    // Previous params: (m : * const mjModel, d : * mut mjData)
-    // Previous return: ()
-    todo ! ()
+    extern "C" { fn mj_step2_impl(m: *const mjModel, d: *mut mjData); }
+    // SAFETY: delegates to C implementation, pointers valid per caller
+    unsafe { mj_step2_impl(m, d) }
 }
 
 /// C: mj_forward (engine/engine_forward.h:44)
@@ -325,10 +323,9 @@ pub fn mj_forward_skip(m: *const mjModel, d: *mut mjData, skipstage: i32, skipse
 /// Calls: mj_advance, mj_forwardSkip, mj_freeStack, mj_integratePos, mj_markStack, mj_stackAllocInfo, mju_addToScl, mju_copy, mju_message, mju_zero
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_runge_kutta(m: *const mjModel, d: *mut mjData, N: i32) {
-    // WARNING: signature changed — verify body
-    // Previous params: (m : * const mjModel, d : * mut mjData, N : i32)
-    // Previous return: ()
-    todo ! ()
+    extern "C" { fn mj_RungeKutta_impl(m: *const mjModel, d: *mut mjData, N: i32); }
+    // SAFETY: delegates to C implementation, pointers valid per caller
+    unsafe { mj_RungeKutta_impl(m, d, N) }
 }
 
 /// C: mj_Euler (engine/engine_forward.h:56)

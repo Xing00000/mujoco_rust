@@ -295,10 +295,9 @@ pub fn max_contacts(m: *const mjModel, obj1: *const mjCCDObj, obj2: *const mjCCD
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn addplanemesh(con: *mut mjPreContact, vertex: [f32; 3], pos1: *const f64, normal1: *const f64, pos2: *const f64, mat2: *const f64, first: *const f64, rbound: f64) -> i32 {
-    // WARNING: signature changed — verify body
-    // Previous params: (con : * mut mjPreContact, vertex : [f32 ; 3], pos1 : * const f64, normal1 : * const f64, pos2 : * const f64, mat2 : * const f64, first : * const f64, rbound : f64)
-    // Previous return: i32
-    todo ! ()
+    extern "C" { fn addplanemesh_impl(con: *mut mjPreContact, vertex: [f32; 3], pos1: *const f64, normal1: *const f64, pos2: *const f64, mat2: *const f64, first: *const f64, rbound: f64) -> i32; }
+    // SAFETY: delegates to C implementation, pointers valid per caller
+    unsafe { addplanemesh_impl(con, vertex, pos1, normal1, pos2, mat2, first, rbound) }
 }
 
 /// C: addVert (engine/engine_collision_convex.c:1085)

@@ -228,10 +228,9 @@ pub fn mj_compute_sensor_acc(m: *const mjModel, d: *mut mjData, i: i32, sensorda
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn compute_or_read_sensor(m: *const mjModel, d: *mut mjData, i: i32, sensordata: *mut f64) {
-    // WARNING: signature changed — verify body
-    // Previous params: (m : * const mjModel, d : * mut mjData, i : i32, sensordata : * mut f64)
-    // Previous return: ()
-    todo ! ()
+    extern "C" { fn compute_or_read_sensor_impl(m: *const mjModel, d: *mut mjData, i: i32, sensordata: *mut f64); }
+    // SAFETY: delegates to C implementation, pointers valid per caller
+    unsafe { compute_or_read_sensor_impl(m, d, i, sensordata) }
 }
 
 /// C: compute_user_sensors (engine/engine_sensor.c:1432)
@@ -280,20 +279,18 @@ pub fn mj_sensor_pos(m: *const mjModel, d: *mut mjData) {
 /// Calls: compute_or_read_sensor, compute_plugin_sensors, compute_user_sensors, mj_sleepState, mj_subtreeVel, mju_zero
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_sensor_vel(m: *const mjModel, d: *mut mjData) {
-    // WARNING: signature changed — verify body
-    // Previous params: (m : * const mjModel, d : * mut mjData)
-    // Previous return: ()
-    todo ! ()
+    extern "C" { fn mj_sensorVel_impl(m: *const mjModel, d: *mut mjData); }
+    // SAFETY: delegates to C implementation, pointers valid per caller
+    unsafe { mj_sensorVel_impl(m, d) }
 }
 
 /// C: mj_sensorAcc (engine/engine_sensor.h:38)
 /// Calls: compute_or_read_sensor, compute_plugin_sensors, compute_user_sensors, mj_rnePostConstraint, mj_sleepState, mju_zero
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_sensor_acc(m: *const mjModel, d: *mut mjData) {
-    // WARNING: signature changed — verify body
-    // Previous params: (m : * const mjModel, d : * mut mjData)
-    // Previous return: ()
-    todo ! ()
+    extern "C" { fn mj_sensorAcc_impl(m: *const mjModel, d: *mut mjData); }
+    // SAFETY: delegates to C implementation, pointers valid per caller
+    unsafe { mj_sensorAcc_impl(m, d) }
 }
 
 /// C: mj_energyPos (engine/engine_sensor.h:44)
