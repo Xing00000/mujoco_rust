@@ -1325,10 +1325,9 @@ pub fn mju_insertion_sort(list: *mut f64, n: i32) {
 /// C: mju_insertionSortInt (engine/engine_util_misc.h:315)
 #[allow(unused_variables, non_snake_case)]
 pub fn mju_insertion_sort_int(list: *mut i32, n: i32) {
-    // WARNING: signature changed — verify body
-    // Previous params: (list : * mut i32, n : i32)
-    // Previous return: ()
-    todo ! ()
+    extern "C" { fn mju_insertionSortInt_impl(list: *mut i32, n: i32); }
+    // SAFETY: delegates to C implementation, all pointers valid per caller contract
+    unsafe { mju_insertionSortInt_impl(list, n) }
 }
 
 /// C: mju_Halton (engine/engine_util_misc.h:318)

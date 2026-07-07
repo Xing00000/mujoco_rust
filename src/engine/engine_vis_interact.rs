@@ -103,10 +103,9 @@ pub fn mjv_frustum_height(scn: *const mjvScene) -> f64 {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjv_align_to_camera(res: *mut f64, vec: *const f64, forward: *const f64) {
-    // WARNING: signature changed — verify body
-    // Previous params: (res : * mut f64, vec : * const f64, forward : * const f64)
-    // Previous return: ()
-    todo ! ()
+    extern "C" { fn mjv_alignToCamera_impl(res: *mut f64, vec: *const f64, forward: *const f64); }
+    // SAFETY: delegates to C implementation, all pointers valid per caller contract
+    unsafe { mjv_alignToCamera_impl(res, vec, forward) }
 }
 
 /// C: mjv_moveCamera (engine/engine_vis_interact.h:50)

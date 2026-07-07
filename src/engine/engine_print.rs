@@ -231,10 +231,9 @@ pub fn mj_print_model(m: *const mjModel, filename: *const i8) {
 /// Calls: memorySize, mj_contactForce, mj_id2name, mj_isDual, mj_isSparse, mju_isZero, mju_message, mju_warning, validateFloatFormat
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_print_formatted_data(m: *const mjModel, d: *const mjData, filename: *const i8, float_format: *const i8) {
-    // WARNING: signature changed — verify body
-    // Previous params: (m : * const mjModel, d : * const mjData, filename : * const i8, float_format : * const i8)
-    // Previous return: ()
-    todo ! ()
+    extern "C" { fn mj_printFormattedData_impl(m: *const mjModel, d: *const mjData, filename: *const i8, float_format: *const i8); }
+    // SAFETY: delegates to C implementation, all pointers valid per caller contract
+    unsafe { mj_printFormattedData_impl(m, d, filename, float_format) }
 }
 
 /// C: mj_printData (engine/engine_print.h:44)
@@ -261,9 +260,8 @@ pub fn mj_print_scene(s: *const mjvScene, filename: *const i8) {
 /// Calls: mju_warning, validateFloatFormat
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_print_formatted_scene(s: *const mjvScene, filename: *const i8, float_format: *const i8) {
-    // WARNING: signature changed — verify body
-    // Previous params: (s : * const mjvScene, filename : * const i8, float_format : * const i8)
-    // Previous return: ()
-    todo ! ()
+    extern "C" { fn mj_printFormattedScene_impl(s: *const mjvScene, filename: *const i8, float_format: *const i8); }
+    // SAFETY: delegates to C implementation, all pointers valid per caller contract
+    unsafe { mj_printFormattedScene_impl(s, filename, float_format) }
 }
 

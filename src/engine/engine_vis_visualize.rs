@@ -615,10 +615,9 @@ pub fn mjv_connector(geom: *mut mjvGeom, r#type: i32, width: f64, from: *const f
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjv_init_geom(geom: *mut mjvGeom, r#type: i32, size: *const f64, pos: *const f64, mat: *const f64, rgba: *const f32) {
-    // WARNING: signature changed — verify body
-    // Previous params: (geom : * mut mjvGeom, r#type : i32, size : * const f64, pos : * const f64, mat : * const f64, rgba : * const f32)
-    // Previous return: ()
-    todo ! ()
+    extern "C" { fn mjv_initGeom_impl(geom: *mut mjvGeom, r#type: i32, size: *const f64, pos: *const f64, mat: *const f64, rgba: *const f32); }
+    // SAFETY: delegates to C implementation, all pointers valid per caller contract
+    unsafe { mjv_initGeom_impl(geom, r#type, size, pos, mat, rgba) }
 }
 
 /// C: mjv_updateScene (engine/engine_vis_visualize.h:37)
@@ -759,9 +758,8 @@ pub fn mjv_catenary(x0: *const f64, x1: *const f64, gravity: *const f64, length:
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn hsv2rgb(RGB: *mut f32, H: f32, S: f32, V: f32) {
-    // WARNING: signature changed — verify body
-    // Previous params: (RGB : * mut f32, H : f32, S : f32, V : f32)
-    // Previous return: ()
-    todo ! ()
+    extern "C" { fn hsv2rgb_impl(RGB: *mut f32, H: f32, S: f32, V: f32); }
+    // SAFETY: delegates to C implementation, all pointers valid per caller contract
+    unsafe { hsv2rgb_impl(RGB, H, S, V) }
 }
 

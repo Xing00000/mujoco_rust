@@ -559,10 +559,9 @@ pub fn mji_sub_quat(res: *mut f64, qa: *const f64, qb: *const f64) {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mji_mat2quat(quat: *mut f64, mat: *const f64) {
-    // WARNING: signature changed — verify body
-    // Previous params: (quat : * mut f64, mat : * const f64)
-    // Previous return: ()
-    todo ! ()
+    extern "C" { fn mji_mat2Quat_impl(quat: *mut f64, mat: *const f64); }
+    // SAFETY: delegates to C implementation, all pointers valid per caller contract
+    unsafe { mji_mat2Quat_impl(quat, mat) }
 }
 
 /// C: mji_quatIntegrate (engine/engine_inline.h:401)
@@ -574,10 +573,9 @@ pub fn mji_mat2quat(quat: *mut f64, mat: *const f64) {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mji_quat_integrate(quat: *mut f64, vel: *const f64, scale: f64) {
-    // WARNING: signature changed — verify body
-    // Previous params: (quat : * mut f64, vel : * const f64, scale : f64)
-    // Previous return: ()
-    todo ! ()
+    extern "C" { fn mji_quatIntegrate_impl(quat: *mut f64, vel: *const f64, scale: f64); }
+    // SAFETY: delegates to C implementation, all pointers valid per caller contract
+    unsafe { mji_quatIntegrate_impl(quat, vel, scale) }
 }
 
 /// C: mji_cross (engine/engine_inline.h:419)

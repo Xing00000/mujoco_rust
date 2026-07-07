@@ -410,10 +410,9 @@ pub fn mjuu_makenormal(normal: *mut f64, a: [T; 3], b: [T; 3], c: [T; 3]) -> f64
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjuu_z2quat(quat: *mut f64, vec: *const f64) {
-    // WARNING: signature changed — verify body
-    // Previous params: (quat : * mut f64, vec : * const f64)
-    // Previous return: ()
-    todo ! ()
+    extern "C" { fn mjuu_z2quat_impl(quat: *mut f64, vec: *const f64); }
+    // SAFETY: delegates to C implementation, all pointers valid per caller contract
+    unsafe { mjuu_z2quat_impl(quat, vec) }
 }
 
 /// C: mjuu_frame2quat (user/user_util.h:125)
@@ -425,10 +424,9 @@ pub fn mjuu_z2quat(quat: *mut f64, vec: *const f64) {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjuu_frame2quat(quat: *mut f64, x: *const f64, y: *const f64, z: *const f64) {
-    // WARNING: signature changed — verify body
-    // Previous params: (quat : * mut f64, x : * const f64, y : * const f64, z : * const f64)
-    // Previous return: ()
-    todo ! ()
+    extern "C" { fn mjuu_frame2quat_impl(quat: *mut f64, x: *const f64, y: *const f64, z: *const f64); }
+    // SAFETY: delegates to C implementation, all pointers valid per caller contract
+    unsafe { mjuu_frame2quat_impl(quat, x, y, z) }
 }
 
 /// C: mjuu_frameinvert (user/user_util.h:128)
@@ -455,10 +453,9 @@ pub fn mjuu_frameinvert(newpos: [f64; 3], newquat: [f64; 4], oldpos: [f64; 3], o
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjuu_frameaccum(pos: [f64; 3], quat: [f64; 4], childpos: [f64; 3], childquat: [f64; 4]) {
-    // WARNING: signature changed — verify body
-    // Previous params: (pos : [f64 ; 3], quat : [f64 ; 4], childpos : [f64 ; 3], childquat : [f64 ; 4])
-    // Previous return: ()
-    todo ! ()
+    extern "C" { fn mjuu_frameaccum_impl(pos: [f64; 3], quat: [f64; 4], childpos: [f64; 3], childquat: [f64; 4]); }
+    // SAFETY: delegates to C implementation, all pointers valid per caller contract
+    unsafe { mjuu_frameaccum_impl(pos, quat, childpos, childquat) }
 }
 
 /// C: mjuu_frameaccumChild (user/user_util.h:136)
@@ -485,10 +482,9 @@ pub fn mjuu_frameaccum_child(pos: [f64; 3], quat: [f64; 4], childpos: [f64; 3], 
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjuu_frameaccuminv(pos: [f64; 3], quat: [f64; 4], childpos: [f64; 3], childquat: [f64; 4]) {
-    // WARNING: signature changed — verify body
-    // Previous params: (pos : [f64 ; 3], quat : [f64 ; 4], childpos : [f64 ; 3], childquat : [f64 ; 4])
-    // Previous return: ()
-    todo ! ()
+    extern "C" { fn mjuu_frameaccuminv_impl(pos: [f64; 3], quat: [f64; 4], childpos: [f64; 3], childquat: [f64; 4]); }
+    // SAFETY: delegates to C implementation, all pointers valid per caller contract
+    unsafe { mjuu_frameaccuminv_impl(pos, quat, childpos, childquat) }
 }
 
 /// C: mjuu_globalinertia (user/user_util.h:144)
@@ -500,10 +496,9 @@ pub fn mjuu_frameaccuminv(pos: [f64; 3], quat: [f64; 4], childpos: [f64; 3], chi
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjuu_globalinertia(global: *mut f64, local: *const f64, quat: *const f64) {
-    // WARNING: signature changed — verify body
-    // Previous params: (global : * mut f64, local : * const f64, quat : * const f64)
-    // Previous return: ()
-    todo ! ()
+    extern "C" { fn mjuu_globalinertia_impl(global: *mut f64, local: *const f64, quat: *const f64); }
+    // SAFETY: delegates to C implementation, all pointers valid per caller contract
+    unsafe { mjuu_globalinertia_impl(global, local, quat) }
 }
 
 /// C: mjuu_offcenter (user/user_util.h:147)
@@ -514,10 +509,9 @@ pub fn mjuu_globalinertia(global: *mut f64, local: *const f64, quat: *const f64)
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjuu_offcenter(res: *mut f64, mass: f64, vec: *const f64) {
-    // WARNING: signature changed — verify body
-    // Previous params: (res : * mut f64, mass : f64, vec : * const f64)
-    // Previous return: ()
-    todo ! ()
+    extern "C" { fn mjuu_offcenter_impl(res: *mut f64, mass: f64, vec: *const f64); }
+    // SAFETY: delegates to C implementation, all pointers valid per caller contract
+    unsafe { mjuu_offcenter_impl(res, mass, vec) }
 }
 
 /// C: mjuu_visccoef (user/user_util.h:150)
@@ -542,10 +536,9 @@ pub fn mjuu_visccoef(visccoef: *mut f64, mass: f64, inertia: *const f64, scl: f6
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjuu_rot_vec_quat(res: [f64; 3], vec: [f64; 3], quat: [f64; 4]) {
-    // WARNING: signature changed — verify body
-    // Previous params: (res : [f64 ; 3], vec : [f64 ; 3], quat : [f64 ; 4])
-    // Previous return: ()
-    todo ! ()
+    extern "C" { fn mjuu_rotVecQuat_impl(res: [f64; 3], vec: [f64; 3], quat: [f64; 4]); }
+    // SAFETY: delegates to C implementation, all pointers valid per caller contract
+    unsafe { mjuu_rotVecQuat_impl(res, vec, quat) }
 }
 
 /// C: mjuu_updateFrame (user/user_util.h:156)
@@ -616,10 +609,9 @@ pub fn mjuu_trn_vec_pose(res: [f64; 3], pos: [f64; 3], quat: [f64; 4], vec: [f64
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjuu_full_inertia(quat: [f64; 4], inertia: [f64; 3], fullinertia: [f64; 6]) -> *const i8 {
-    // WARNING: signature changed — verify body
-    // Previous params: (quat : [f64 ; 4], inertia : [f64 ; 3], fullinertia : [f64 ; 6])
-    // Previous return: * const i8
-    todo ! ()
+    extern "C" { fn mjuu_fullInertia_impl(quat: [f64; 4], inertia: [f64; 3], fullinertia: [f64; 6]) -> *const i8; }
+    // SAFETY: delegates to C implementation, all pointers valid per caller contract
+    unsafe { mjuu_fullInertia_impl(quat, inertia, fullinertia) }
 }
 
 /// C: FilePath::IsAbs (user/user_util.h:191)

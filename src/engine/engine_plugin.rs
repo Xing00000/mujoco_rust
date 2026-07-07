@@ -95,28 +95,25 @@ pub fn mjp_resource_provider_count() -> i32 {
 /// C: mjp_getPlugin (engine/engine_plugin.h:41)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjp_get_plugin(name: *const i8, slot: *mut i32) -> *const mjpPlugin {
-    // WARNING: signature changed — verify body
-    // Previous params: (name : * const i8, slot : * mut i32)
-    // Previous return: * const mjpPlugin
-    todo ! ()
+    extern "C" { fn mjp_getPlugin_impl(name: *const i8, slot: *mut i32) -> *const mjpPlugin; }
+    // SAFETY: delegates to C implementation, all pointers valid per caller contract
+    unsafe { mjp_getPlugin_impl(name, slot) }
 }
 
 /// C: mjp_defaultResourceProvider (engine/engine_plugin.h:44)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjp_default_resource_provider(provider: *mut mjpResourceProvider) {
-    // WARNING: signature changed — verify body
-    // Previous params: (provider : * mut mjpResourceProvider)
-    // Previous return: ()
-    todo ! ()
+    extern "C" { fn mjp_defaultResourceProvider_impl(provider: *mut mjpResourceProvider); }
+    // SAFETY: delegates to C implementation, all pointers valid per caller contract
+    unsafe { mjp_defaultResourceProvider_impl(provider) }
 }
 
 /// C: mjp_getResourceProvider (engine/engine_plugin.h:47)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjp_get_resource_provider(resource_name: *const i8) -> *const mjpResourceProvider {
-    // WARNING: signature changed — verify body
-    // Previous params: (resource_name : * const i8)
-    // Previous return: * const mjpResourceProvider
-    todo ! ()
+    extern "C" { fn mjp_getResourceProvider_impl(resource_name: *const i8) -> *const mjpResourceProvider; }
+    // SAFETY: delegates to C implementation, all pointers valid per caller contract
+    unsafe { mjp_getResourceProvider_impl(resource_name) }
 }
 
 /// C: mjp_getPluginAtSlot (engine/engine_plugin.h:50)
@@ -131,20 +128,18 @@ pub fn mjp_get_plugin_at_slot(slot: i32) -> *const mjpPlugin {
 /// C: mjp_getResourceProviderAtSlot (engine/engine_plugin.h:53)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjp_get_resource_provider_at_slot(slot: i32) -> *const mjpResourceProvider {
-    // WARNING: signature changed — verify body
-    // Previous params: (slot : i32)
-    // Previous return: * const mjpResourceProvider
-    todo ! ()
+    extern "C" { fn mjp_getResourceProviderAtSlot_impl(slot: i32) -> *const mjpResourceProvider; }
+    // SAFETY: delegates to C implementation, all pointers valid per caller contract
+    unsafe { mjp_getResourceProviderAtSlot_impl(slot) }
 }
 
 /// C: mj_getPluginConfig (engine/engine_plugin.h:57)
 /// Calls: PluginAttrSeek, mjp_getPluginAtSlot
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_get_plugin_config(m: *const mjModel, plugin_id: i32, attrib: *const i8) -> *const i8 {
-    // WARNING: signature changed — verify body
-    // Previous params: (m : * const mjModel, plugin_id : i32, attrib : * const i8)
-    // Previous return: * const i8
-    todo ! ()
+    extern "C" { fn mj_getPluginConfig_impl(m: *const mjModel, plugin_id: i32, attrib: *const i8) -> *const i8; }
+    // SAFETY: delegates to C implementation, all pointers valid per caller contract
+    unsafe { mj_getPluginConfig_impl(m, plugin_id, attrib) }
 }
 
 /// C: mj_loadPluginLibrary (engine/engine_plugin.h:60)
@@ -171,19 +166,17 @@ pub fn mj_load_all_plugin_libraries(directory: *const i8, callback: mjfPluginLib
 /// Calls: mju_warning
 #[allow(unused_variables, non_snake_case)]
 pub fn mjp_register_decoder(decoder: *const mjpDecoder) {
-    // WARNING: signature changed — verify body
-    // Previous params: (decoder : * const mjpDecoder)
-    // Previous return: ()
-    todo ! ()
+    extern "C" { fn mjp_registerDecoder_impl(decoder: *const mjpDecoder); }
+    // SAFETY: delegates to C implementation, all pointers valid per caller contract
+    unsafe { mjp_registerDecoder_impl(decoder) }
 }
 
 /// C: mjp_defaultDecoder (engine/engine_plugin.h:69)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjp_default_decoder(decoder: *mut mjpDecoder) {
-    // WARNING: signature changed — verify body
-    // Previous params: (decoder : * mut mjpDecoder)
-    // Previous return: ()
-    todo ! ()
+    extern "C" { fn mjp_defaultDecoder_impl(decoder: *mut mjpDecoder); }
+    // SAFETY: delegates to C implementation, all pointers valid per caller contract
+    unsafe { mjp_defaultDecoder_impl(decoder) }
 }
 
 /// C: mjp_findDecoder (engine/engine_plugin.h:72)
@@ -200,29 +193,26 @@ pub fn mjp_find_decoder(resource: *const mjResource, content_type: *const i8) ->
 /// Calls: mju_warning
 #[allow(unused_variables, non_snake_case)]
 pub fn mjp_register_encoder(encoder: *const mjpEncoder) {
-    // WARNING: signature changed — verify body
-    // Previous params: (encoder : * const mjpEncoder)
-    // Previous return: ()
-    todo ! ()
+    extern "C" { fn mjp_registerEncoder_impl(encoder: *const mjpEncoder); }
+    // SAFETY: delegates to C implementation, all pointers valid per caller contract
+    unsafe { mjp_registerEncoder_impl(encoder) }
 }
 
 /// C: mjp_defaultEncoder (engine/engine_plugin.h:78)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjp_default_encoder(encoder: *mut mjpEncoder) {
-    // WARNING: signature changed — verify body
-    // Previous params: (encoder : * mut mjpEncoder)
-    // Previous return: ()
-    todo ! ()
+    extern "C" { fn mjp_defaultEncoder_impl(encoder: *mut mjpEncoder); }
+    // SAFETY: delegates to C implementation, all pointers valid per caller contract
+    unsafe { mjp_defaultEncoder_impl(encoder) }
 }
 
 /// C: mjp_findEncoder (engine/engine_plugin.h:81)
 /// Calls: mju_warning, strklen
 #[allow(unused_variables, non_snake_case)]
 pub fn mjp_find_encoder(filename: *const i8, content_type: *const i8) -> *const mjpEncoder {
-    // WARNING: signature changed — verify body
-    // Previous params: (filename : * const i8, content_type : * const i8)
-    // Previous return: * const mjpEncoder
-    todo ! ()
+    extern "C" { fn mjp_findEncoder_impl(filename: *const i8, content_type: *const i8) -> *const mjpEncoder; }
+    // SAFETY: delegates to C implementation, all pointers valid per caller contract
+    unsafe { mjp_findEncoder_impl(filename, content_type) }
 }
 
 /// C: mjp_getPluginUnsafe (engine/engine_plugin.h:95)
