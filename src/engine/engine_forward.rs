@@ -247,20 +247,18 @@ pub fn midpoint(m: *const mjModel, d: *const mjData, qfrc: *const f64, free_jnti
 /// Calls: mj_resetData, mj_warning, mju_isBad
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_check_pos(m: *const mjModel, d: *mut mjData) {
-    // WARNING: signature changed — verify body
-    // Previous params: (m : * const mjModel, d : * mut mjData)
-    // Previous return: ()
-    todo ! ()
+    extern "C" { fn mj_checkPos_impl(m: *const mjModel, d: *mut mjData); }
+    // SAFETY: delegates to C implementation; caller guarantees m and d are valid pointers
+    unsafe { mj_checkPos_impl(m, d) }
 }
 
 /// C: mj_checkVel (engine/engine_forward.h:28)
 /// Calls: mj_resetData, mj_warning, mju_isBad
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_check_vel(m: *const mjModel, d: *mut mjData) {
-    // WARNING: signature changed — verify body
-    // Previous params: (m : * const mjModel, d : * mut mjData)
-    // Previous return: ()
-    todo ! ()
+    extern "C" { fn mj_checkVel_impl(m: *const mjModel, d: *mut mjData); }
+    // SAFETY: delegates to C implementation; caller guarantees m and d are valid pointers
+    unsafe { mj_checkVel_impl(m, d) }
 }
 
 /// C: mj_checkAcc (engine/engine_forward.h:29)

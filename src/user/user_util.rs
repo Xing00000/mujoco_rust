@@ -569,7 +569,9 @@ pub fn mjuu_update_frame(quat: [f64; 4], normal: [f64; 3], edge: [f64; 3], tprv:
     // WARNING: signature changed — verify body
     // Previous params: (quat : [f64 ; 4], normal : [f64 ; 3], edge : [f64 ; 3], tprv : [f64 ; 3], tnxt : [f64 ; 3], first : i32)
     // Previous return: f64
-    todo ! ()
+    extern "C" { fn mjuu_updateFrame_impl(quat: [f64; 4], normal: [f64; 3], edge: [f64; 3], tprv: [f64; 3], tnxt: [f64; 3], first: i32) -> f64; }
+    // SAFETY: delegates to C implementation; array params are pointers in C ABI
+    unsafe { mjuu_updateFrame_impl(quat, normal, edge, tprv, tnxt, first) }
 }
 
 /// C: mjuu_eig3 (user/user_util.h:160)

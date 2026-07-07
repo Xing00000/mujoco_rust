@@ -324,20 +324,18 @@ pub fn mj_reset_data(m: *const mjModel, d: *mut mjData) {
 /// Calls: _resetData
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_reset_data_debug(m: *const mjModel, d: *mut mjData, debug_value: u8) {
-    // WARNING: signature changed — verify body
-    // Previous params: (m : * const mjModel, d : * mut mjData, debug_value : u8)
-    // Previous return: ()
-    todo ! ()
+    extern "C" { fn _resetData_impl(m: *const mjModel, d: *mut mjData, debug_value: u8); }
+    // SAFETY: delegates to C _resetData; caller guarantees m and d are valid
+    unsafe { _resetData_impl(m, d, debug_value) }
 }
 
 /// C: mj_resetDataKeyframe (engine/engine_io.h:132)
 /// Calls: _resetData, mju_copy
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_reset_data_keyframe(m: *const mjModel, d: *mut mjData, key: i32) {
-    // WARNING: signature changed — verify body
-    // Previous params: (m : * const mjModel, d : * mut mjData, key : i32)
-    // Previous return: ()
-    todo ! ()
+    extern "C" { fn mj_resetDataKeyframe_impl(m: *const mjModel, d: *mut mjData, key: i32); }
+    // SAFETY: delegates to C implementation; caller guarantees m, d valid and key in range
+    unsafe { mj_resetDataKeyframe_impl(m, d, key) }
 }
 
 /// C: mj_initPlugin (engine/engine_io.h:135)
