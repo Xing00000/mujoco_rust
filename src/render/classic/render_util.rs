@@ -40,10 +40,9 @@ pub fn mjr_setf4(vec: *mut f32, f0: f32, f1: f32, f2: f32, f3: f32) {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjr_setf3(vec: *mut f32, f0: f32, f1: f32, f2: f32) {
-    // WARNING: signature changed — verify body
-    // Previous params: (vec : * mut f32, f0 : f32, f1 : f32, f2 : f32)
-    // Previous return: ()
-    todo ! ()
+    extern "C" { fn mjr_setf3_impl(vec: *mut f32, f0: f32, f1: f32, f2: f32); }
+    // SAFETY: delegates to C implementation
+    unsafe { mjr_setf3_impl(vec, f0, f1, f2) }
 }
 
 /// C: mjr_mulMat44 (render/classic/render_util.h:35)

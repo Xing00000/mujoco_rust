@@ -438,10 +438,9 @@ pub fn mjuu_frame2quat(quat: *mut f64, x: *const f64, y: *const f64, z: *const f
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjuu_frameinvert(newpos: [f64; 3], newquat: [f64; 4], oldpos: [f64; 3], oldquat: [f64; 4]) {
-    // WARNING: signature changed — verify body
-    // Previous params: (newpos : [f64 ; 3], newquat : [f64 ; 4], oldpos : [f64 ; 3], oldquat : [f64 ; 4])
-    // Previous return: ()
-    todo ! ()
+    extern "C" { fn mjuu_frameinvert_impl(newpos: [f64; 3], newquat: [f64; 4], oldpos: [f64; 3], oldquat: [f64; 4]); }
+    // SAFETY: delegates to C implementation
+    unsafe { mjuu_frameinvert_impl(newpos, newquat, oldpos, oldquat) }
 }
 
 /// C: mjuu_frameaccum (user/user_util.h:132)
@@ -467,10 +466,9 @@ pub fn mjuu_frameaccum(pos: [f64; 3], quat: [f64; 4], childpos: [f64; 3], childq
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjuu_frameaccum_child(pos: [f64; 3], quat: [f64; 4], childpos: [f64; 3], childquat: [f64; 4]) {
-    // WARNING: signature changed — verify body
-    // Previous params: (pos : [f64 ; 3], quat : [f64 ; 4], childpos : [f64 ; 3], childquat : [f64 ; 4])
-    // Previous return: ()
-    todo ! ()
+    extern "C" { fn mjuu_frameaccumChild_impl(pos: [f64; 3], quat: [f64; 4], childpos: [f64; 3], childquat: [f64; 4]); }
+    // SAFETY: delegates to C implementation
+    unsafe { mjuu_frameaccumChild_impl(pos, quat, childpos, childquat) }
 }
 
 /// C: mjuu_frameaccuminv (user/user_util.h:140)
@@ -522,10 +520,9 @@ pub fn mjuu_offcenter(res: *mut f64, mass: f64, vec: *const f64) {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjuu_visccoef(visccoef: *mut f64, mass: f64, inertia: *const f64, scl: f64) {
-    // WARNING: signature changed — verify body
-    // Previous params: (visccoef : * mut f64, mass : f64, inertia : * const f64, scl : f64)
-    // Previous return: ()
-    todo ! ()
+    extern "C" { fn mjuu_visccoef_impl(visccoef: *mut f64, mass: f64, inertia: *const f64, scl: f64); }
+    // SAFETY: delegates to C implementation
+    unsafe { mjuu_visccoef_impl(visccoef, mass, inertia, scl) }
 }
 
 /// C: mjuu_rotVecQuat (user/user_util.h:153)
@@ -594,10 +591,9 @@ pub fn mjuu_eigendecompose(mat: *mut f64, eigval: *mut f64, eigvec: *mut f64, n:
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjuu_trn_vec_pose(res: [f64; 3], pos: [f64; 3], quat: [f64; 4], vec: [f64; 3]) {
-    // WARNING: signature changed — verify body
-    // Previous params: (res : [f64 ; 3], pos : [f64 ; 3], quat : [f64 ; 4], vec : [f64 ; 3])
-    // Previous return: ()
-    todo ! ()
+    extern "C" { fn mjuu_trnVecPose_impl(res: [f64; 3], pos: [f64; 3], quat: [f64; 4], vec: [f64; 3]); }
+    // SAFETY: delegates to C implementation
+    unsafe { mjuu_trnVecPose_impl(res, pos, quat, vec) }
 }
 
 /// C: mjuu_fullInertia (user/user_util.h:172)
@@ -826,9 +822,8 @@ pub fn mjuu_ext_to_content_type(filename: string_view) -> std__string {
 /// C: mjuu_dirnamelen (user/user_util.h:299)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjuu_dirnamelen(path: *const i8) -> i32 {
-    // WARNING: signature changed — verify body
-    // Previous params: (path : * const i8)
-    // Previous return: i32
-    todo ! ()
+    extern "C" { fn mjuu_dirnamelen_impl(path: *const i8) -> i32; }
+    // SAFETY: delegates to C implementation
+    unsafe { mjuu_dirnamelen_impl(path) }
 }
 

@@ -28,10 +28,9 @@ pub fn convert2d(res: *mut f64, action: i32, dx: f64, dy: f64, forward: *const f
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjv_room2model(modelpos: *mut f64, modelquat: *mut f64, roompos: *const f64, roomquat: *const f64, scn: *const mjvScene) {
-    // WARNING: signature changed — verify body
-    // Previous params: (modelpos : * mut f64, modelquat : * mut f64, roompos : * const f64, roomquat : * const f64, scn : * const mjvScene)
-    // Previous return: ()
-    todo ! ()
+    extern "C" { fn mjv_room2model_impl(modelpos: *mut f64, modelquat: *mut f64, roompos: *const f64, roomquat: *const f64, scn: *const mjvScene); }
+    // SAFETY: delegates to C implementation
+    unsafe { mjv_room2model_impl(modelpos, modelquat, roompos, roomquat, scn) }
 }
 
 /// C: mjv_model2room (engine/engine_vis_interact.h:32)
@@ -73,10 +72,9 @@ pub fn mjv_camera_in_model(headpos: *mut f64, forward: *mut f64, up: *mut f64, s
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjv_camera_in_room(headpos: *mut f64, forward: *mut f64, up: *mut f64, scn: *const mjvScene) {
-    // WARNING: signature changed — verify body
-    // Previous params: (headpos : * mut f64, forward : * mut f64, up : * mut f64, scn : * const mjvScene)
-    // Previous return: ()
-    todo ! ()
+    extern "C" { fn mjv_cameraInRoom_impl(headpos: *mut f64, forward: *mut f64, up: *mut f64, scn: *const mjvScene); }
+    // SAFETY: delegates to C implementation
+    unsafe { mjv_cameraInRoom_impl(headpos, forward, up, scn) }
 }
 
 /// C: mjv_frustumHeight (engine/engine_vis_interact.h:44)
@@ -167,30 +165,27 @@ pub fn mjv_init_perturb(m: *const mjModel, d: *mut mjData, scn: *const mjvScene,
 /// Calls: mju_copy3, mju_copy4, mju_mulPose, mju_negPose
 #[allow(unused_variables, non_snake_case)]
 pub fn mjv_apply_perturb_pose(m: *const mjModel, d: *mut mjData, pert: *const mjvPerturb, flg_paused: i32) {
-    // WARNING: signature changed — verify body
-    // Previous params: (m : * const mjModel, d : * mut mjData, pert : * const mjvPerturb, flg_paused : i32)
-    // Previous return: ()
-    todo ! ()
+    extern "C" { fn mjv_applyPerturbPose_impl(m: *const mjModel, d: *mut mjData, pert: *const mjvPerturb, flg_paused: i32); }
+    // SAFETY: delegates to C implementation
+    unsafe { mjv_applyPerturbPose_impl(m, d, pert, flg_paused) }
 }
 
 /// C: mjv_applyPerturbForce (engine/engine_vis_interact.h:70)
 /// Calls: mj_objectVelocity, mju_addTo3, mju_addToScl3, mju_copy3, mju_cross, mju_dot3, mju_max, mju_mulMatVec3, mju_mulQuat, mju_negQuat, mju_normalize3, mju_quat2Vel, mju_scl3, mju_sub3
 #[allow(unused_variables, non_snake_case)]
 pub fn mjv_apply_perturb_force(m: *const mjModel, d: *mut mjData, pert: *const mjvPerturb) {
-    // WARNING: signature changed — verify body
-    // Previous params: (m : * const mjModel, d : * mut mjData, pert : * const mjvPerturb)
-    // Previous return: ()
-    todo ! ()
+    extern "C" { fn mjv_applyPerturbForce_impl(m: *const mjModel, d: *mut mjData, pert: *const mjvPerturb); }
+    // SAFETY: delegates to C implementation
+    unsafe { mjv_applyPerturbForce_impl(m, d, pert) }
 }
 
 /// C: mjv_averageCamera (engine/engine_vis_interact.h:73)
 /// Calls: mju_add3, mju_addToScl3, mju_dot3, mju_f2n, mju_message, mju_n2f, mju_normalize3, mju_scl3
 #[allow(unused_variables, non_snake_case)]
 pub fn mjv_average_camera(cam1: *const mjvGLCamera, cam2: *const mjvGLCamera) -> mjvGLCamera {
-    // WARNING: signature changed — verify body
-    // Previous params: (cam1 : * const mjvGLCamera, cam2 : * const mjvGLCamera)
-    // Previous return: mjvGLCamera
-    todo ! ()
+    extern "C" { fn mjv_averageCamera_impl(cam1: *const mjvGLCamera, cam2: *const mjvGLCamera) -> mjvGLCamera; }
+    // SAFETY: delegates to C implementation
+    unsafe { mjv_averageCamera_impl(cam1, cam2) }
 }
 
 /// C: mjv_select (engine/engine_vis_interact.h:76)

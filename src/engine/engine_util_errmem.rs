@@ -89,10 +89,9 @@ pub fn mju_active_handler() -> mjfLogHandler {
 /// Calls: mju_alignedMalloc, mju_error
 #[allow(unused_variables, non_snake_case)]
 pub fn mju_malloc(size: usize) -> *mut () {
-    // WARNING: signature changed — verify body
-    // Previous params: (size : usize)
-    // Previous return: * mut ()
-    todo ! ()
+    extern "C" { fn mju_malloc_impl(size: usize) -> *mut (); }
+    // SAFETY: delegates to C implementation
+    unsafe { mju_malloc_impl(size) }
 }
 
 /// C: mju_free (engine/engine_util_errmem.h:46)
@@ -118,23 +117,26 @@ pub fn mju_set_log_handler(handler: mjfLogHandler) -> mjfLogHandler {
 /// Calls: mju_getLogConfigPtr
 #[allow(unused_variables, non_snake_case)]
 pub fn mju_get_log_config() -> mjLogConfig {
-    todo ! ()
+    extern "C" { fn mju_getLogConfig_impl() -> mjLogConfig; }
+    // SAFETY: delegates to C implementation
+    unsafe { mju_getLogConfig_impl() }
 }
 
 /// C: mju_setLogConfig (engine/engine_util_errmem.h:61)
 #[allow(unused_variables, non_snake_case)]
 pub fn mju_set_log_config(config: mjLogConfig) {
-    // WARNING: signature changed — verify body
-    // Previous params: (config : mjLogConfig)
-    // Previous return: ()
-    todo ! ()
+    extern "C" { fn mju_setLogConfig_impl(config: mjLogConfig); }
+    // SAFETY: delegates to C implementation
+    unsafe { mju_setLogConfig_impl(config) }
 }
 
 /// C: mju_clearHandlers (engine/engine_util_errmem.h:64)
 /// Calls: mju_initLogTopicsFromEnv
 #[allow(unused_variables, non_snake_case)]
 pub fn mju_clear_handlers() {
-    todo ! ()
+    extern "C" { fn mju_clearHandlers_impl(); }
+    // SAFETY: delegates to C implementation
+    unsafe { mju_clearHandlers_impl() }
 }
 
 /// C: mju_error (engine/engine_util_errmem.h:74)

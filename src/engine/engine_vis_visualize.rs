@@ -699,10 +699,9 @@ pub fn mjv_update_active_skin(m: *const mjModel, d: *const mjData, scn: *mut mjv
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjv_camera_frame(headpos: *mut f64, forward: *mut f64, up: *mut f64, right: *mut f64, d: *const mjData, cam: *const mjvCamera) {
-    // WARNING: signature changed — verify body
-    // Previous params: (headpos : * mut f64, forward : * mut f64, up : * mut f64, right : * mut f64, d : * const mjData, cam : * const mjvCamera)
-    // Previous return: ()
-    todo ! ()
+    extern "C" { fn mjv_cameraFrame_impl(headpos: *mut f64, forward: *mut f64, up: *mut f64, right: *mut f64, d: *const mjData, cam: *const mjvCamera); }
+    // SAFETY: delegates to C implementation
+    unsafe { mjv_cameraFrame_impl(headpos, forward, up, right, d, cam) }
 }
 
 /// C: mjv_cameraFrustum (engine/engine_vis_visualize.h:65)

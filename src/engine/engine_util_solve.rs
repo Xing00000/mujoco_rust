@@ -87,10 +87,9 @@ pub fn mju_chol_update(mat: *mut f64, x: *mut f64, n: i32, flg_plus: i32) -> i32
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mju_chol_factor_sparse(mat: *mut f64, n: i32, mindiag: f64, rownnz: *mut i32, rowadr: *const i32, colind: *mut i32, d: *mut mjData) -> i32 {
-    // WARNING: signature changed — verify body
-    // Previous params: (mat : * mut f64, n : i32, mindiag : f64, rownnz : * mut i32, rowadr : * const i32, colind : * mut i32, d : * mut mjData)
-    // Previous return: i32
-    todo ! ()
+    extern "C" { fn mju_cholFactorSparse_impl(mat: *mut f64, n: i32, mindiag: f64, rownnz: *mut i32, rowadr: *const i32, colind: *mut i32, d: *mut mjData) -> i32; }
+    // SAFETY: delegates to C implementation
+    unsafe { mju_cholFactorSparse_impl(mat, n, mindiag, rownnz, rowadr, colind, d) }
 }
 
 /// C: mju_cholFactorSymbolic (engine/engine_util_solve.h:45)
@@ -385,10 +384,9 @@ pub fn mju_box_qp(res: *mut f64, R: *mut f64, index: *mut i32, H: *const f64, g:
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mju_box_q_pmalloc(res: *mut *mut f64, R: *mut *mut f64, index: *mut *mut i32, H: *mut *mut f64, g: *mut *mut f64, n: i32, lower: *mut *mut f64, upper: *mut *mut f64) {
-    // WARNING: signature changed — verify body
-    // Previous params: (res : * mut * mut f64, R : * mut * mut f64, index : * mut * mut i32, H : * mut * mut f64, g : * mut * mut f64, n : i32, lower : * mut * mut f64, upper : * mut * mut f64)
-    // Previous return: ()
-    todo ! ()
+    extern "C" { fn mju_boxQPmalloc_impl(res: *mut *mut f64, R: *mut *mut f64, index: *mut *mut i32, H: *mut *mut f64, g: *mut *mut f64, n: i32, lower: *mut *mut f64, upper: *mut *mut f64); }
+    // SAFETY: delegates to C implementation
+    unsafe { mju_boxQPmalloc_impl(res, R, index, H, g, n, lower, upper) }
 }
 
 /// C: mju_boxQPoption (engine/engine_util_solve.h:151)

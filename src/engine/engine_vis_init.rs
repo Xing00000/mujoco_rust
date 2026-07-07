@@ -45,38 +45,34 @@ pub fn mjv_default_option(vopt: *mut mjvOption) {
 /// C: mjv_defaultFreeCamera (engine/engine_vis_init.h:46)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjv_default_free_camera(m: *const mjModel, cam: *mut mjvCamera) {
-    // WARNING: signature changed — verify body
-    // Previous params: (m : * const mjModel, cam : * mut mjvCamera)
-    // Previous return: ()
-    todo ! ()
+    extern "C" { fn mjv_defaultFreeCamera_impl(m: *const mjModel, cam: *mut mjvCamera); }
+    // SAFETY: delegates to C implementation
+    unsafe { mjv_defaultFreeCamera_impl(m, cam) }
 }
 
 /// C: mjv_defaultCamera (engine/engine_vis_init.h:49)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjv_default_camera(cam: *mut mjvCamera) {
-    // WARNING: signature changed — verify body
-    // Previous params: (cam : * mut mjvCamera)
-    // Previous return: ()
-    todo ! ()
+    extern "C" { fn mjv_defaultCamera_impl(cam: *mut mjvCamera); }
+    // SAFETY: delegates to C implementation
+    unsafe { mjv_defaultCamera_impl(cam) }
 }
 
 /// C: mjv_defaultPerturb (engine/engine_vis_init.h:52)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjv_default_perturb(pert: *mut mjvPerturb) {
-    // WARNING: signature changed — verify body
-    // Previous params: (pert : * mut mjvPerturb)
-    // Previous return: ()
-    todo ! ()
+    extern "C" { fn mjv_defaultPerturb_impl(pert: *mut mjvPerturb); }
+    // SAFETY: delegates to C implementation
+    unsafe { mjv_defaultPerturb_impl(pert) }
 }
 
 /// C: mjv_defaultFigure (engine/engine_vis_init.h:55)
 /// Calls: mju_Halton, mju_strncpy
 #[allow(unused_variables, non_snake_case)]
 pub fn mjv_default_figure(fig: *mut mjvFigure) {
-    // WARNING: signature changed — verify body
-    // Previous params: (fig : * mut mjvFigure)
-    // Previous return: ()
-    todo ! ()
+    extern "C" { fn mjv_defaultFigure_impl(fig: *mut mjvFigure); }
+    // SAFETY: delegates to C implementation
+    unsafe { mjv_defaultFigure_impl(fig) }
 }
 
 /// C: mjv_rbound (engine/engine_vis_init.h:58)
@@ -87,9 +83,8 @@ pub fn mjv_default_figure(fig: *mut mjvFigure) {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjv_rbound(geom: *const mjvGeom) -> f32 {
-    // WARNING: signature changed — verify body
-    // Previous params: (geom : * const mjvGeom)
-    // Previous return: f32
-    todo ! ()
+    extern "C" { fn mjv_rbound_impl(geom: *const mjvGeom) -> f32; }
+    // SAFETY: delegates to C implementation
+    unsafe { mjv_rbound_impl(geom) }
 }
 

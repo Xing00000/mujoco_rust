@@ -240,20 +240,18 @@ pub fn mj_print_formatted_data(m: *const mjModel, d: *const mjData, filename: *c
 /// Calls: mj_printFormattedData
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_print_data(m: *const mjModel, d: *const mjData, filename: *const i8) {
-    // WARNING: signature changed — verify body
-    // Previous params: (m : * const mjModel, d : * const mjData, filename : * const i8)
-    // Previous return: ()
-    todo ! ()
+    extern "C" { fn mj_printData_impl(m: *const mjModel, d: *const mjData, filename: *const i8); }
+    // SAFETY: delegates to C implementation
+    unsafe { mj_printData_impl(m, d, filename) }
 }
 
 /// C: mj_printScene (engine/engine_print.h:51)
 /// Calls: mj_printFormattedScene
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_print_scene(s: *const mjvScene, filename: *const i8) {
-    // WARNING: signature changed — verify body
-    // Previous params: (s : * const mjvScene, filename : * const i8)
-    // Previous return: ()
-    todo ! ()
+    extern "C" { fn mj_printScene_impl(s: *const mjvScene, filename: *const i8); }
+    // SAFETY: delegates to C implementation
+    unsafe { mj_printScene_impl(s, filename) }
 }
 
 /// C: mj_printFormattedScene (engine/engine_print.h:55)

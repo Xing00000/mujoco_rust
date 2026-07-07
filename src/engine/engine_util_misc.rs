@@ -1068,29 +1068,26 @@ pub fn mju_type2str(r#type: i32) -> *const i8 {
 /// C: mju_str2Type (engine/engine_util_misc.h:243)
 #[allow(unused_variables, non_snake_case)]
 pub fn mju_str2type(str: *const i8) -> i32 {
-    // WARNING: signature changed — verify body
-    // Previous params: (str : * const i8)
-    // Previous return: i32
-    todo ! ()
+    extern "C" { fn mju_str2Type_impl(str: *const i8) -> i32; }
+    // SAFETY: delegates to C implementation
+    unsafe { mju_str2Type_impl(str) }
 }
 
 /// C: mju_writeNumBytes (engine/engine_util_misc.h:246)
 #[allow(unused_variables, non_snake_case)]
 pub fn mju_write_num_bytes(nbytes: usize) -> *const i8 {
-    // WARNING: signature changed — verify body
-    // Previous params: (nbytes : usize)
-    // Previous return: * const i8
-    todo ! ()
+    extern "C" { fn mju_writeNumBytes_impl(nbytes: usize) -> *const i8; }
+    // SAFETY: delegates to C implementation
+    unsafe { mju_writeNumBytes_impl(nbytes) }
 }
 
 /// C: mju_warningText (engine/engine_util_misc.h:249)
 /// Calls: mju_writeNumBytes
 #[allow(unused_variables, non_snake_case)]
 pub fn mju_warning_text(warning: i32, info: usize) -> *const i8 {
-    // WARNING: signature changed — verify body
-    // Previous params: (warning : i32, info : usize)
-    // Previous return: * const i8
-    todo ! ()
+    extern "C" { fn mju_warningText_impl(warning: i32, info: usize) -> *const i8; }
+    // SAFETY: delegates to C implementation
+    unsafe { mju_warningText_impl(warning, info) }
 }
 
 /// C: mju_isBad (engine/engine_util_misc.h:252)
@@ -1165,10 +1162,9 @@ pub fn mju_fill_int(res: *mut i32, val: i32, n: i32) {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mju_standard_normal(num2: *mut f64) -> f64 {
-    // WARNING: signature changed — verify body
-    // Previous params: (num2 : * mut f64)
-    // Previous return: f64
-    todo ! ()
+    extern "C" { fn mju_standardNormal_impl(num2: *mut f64) -> f64; }
+    // SAFETY: delegates to C implementation
+    unsafe { mju_standardNormal_impl(num2) }
 }
 
 /// C: mju_f2n (engine/engine_util_misc.h:273)
@@ -1316,10 +1312,9 @@ pub fn mju_lower2sym_map(map: *mut i32, nr: i32, res_rowadr: *const i32, res_row
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mju_insertion_sort(list: *mut f64, n: i32) {
-    // WARNING: signature changed — verify body
-    // Previous params: (list : * mut f64, n : i32)
-    // Previous return: ()
-    todo ! ()
+    extern "C" { fn mju_insertionSort_impl(list: *mut f64, n: i32); }
+    // SAFETY: delegates to C implementation
+    unsafe { mju_insertionSort_impl(list, n) }
 }
 
 /// C: mju_insertionSortInt (engine/engine_util_misc.h:315)
