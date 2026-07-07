@@ -285,10 +285,9 @@ pub fn mj_multi_ray(m: *const mjModel, d: *mut mjData, pnt: *const f64, vec: *co
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_ray(m: *const mjModel, d: *const mjData, pnt: *const f64, vec: *const f64, geomgroup: *const u8, flg_static: mjtBool, bodyexclude: i32, geomid: [i32; 1], normal: *mut f64) -> f64 {
-    // WARNING: signature changed — verify body
-    // Previous params: (m : * const mjModel, d : * const mjData, pnt : * const f64, vec : * const f64, geomgroup : * const u8, flg_static : mjtBool, bodyexclude : i32, geomid : [i32 ; 1], normal : * mut f64)
-    // Previous return: f64
-    todo ! ()
+    extern "C" { fn mj_ray_impl(m: *const mjModel, d: *const mjData, pnt: *const f64, vec: *const f64, geomgroup: *const u8, flg_static: mjtBool, bodyexclude: i32, geomid: [i32; 1], normal: *mut f64) -> f64; }
+    // SAFETY: delegates to C implementation
+    unsafe { mj_ray_impl(m, d, pnt, vec, geomgroup, flg_static, bodyexclude, geomid, normal) }
 }
 
 /// C: mj_rayHfield (engine/engine_ray.h:47)

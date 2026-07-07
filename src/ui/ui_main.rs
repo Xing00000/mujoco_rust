@@ -386,9 +386,8 @@ pub fn mjui_event(ui: *mut mjUI, state: *mut mjuiState, con: *const mjrContext) 
 /// Calls: SCL, drawtext, findselect, initOpenGL, mjr_blitAux, mjr_rectangle, scrollrect
 #[allow(unused_variables, non_snake_case)]
 pub fn mjui_render(ui: *mut mjUI, state: *const mjuiState, con: *const mjrContext) {
-    // WARNING: signature changed — verify body
-    // Previous params: (ui : * mut mjUI, state : * const mjuiState, con : * const mjrContext)
-    // Previous return: ()
-    todo ! ()
+    extern "C" { fn mjui_render_impl(ui: *mut mjUI, state: *const mjuiState, con: *const mjrContext); }
+    // SAFETY: delegates to C implementation
+    unsafe { mjui_render_impl(ui, state, con) }
 }
 
