@@ -350,10 +350,11 @@ pub fn mjd_inertia_box_fluid(m: *const mjModel, d: *mut mjData, i: i32) {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjd_sub_quat(qa: *const f64, qb: *const f64, Da: *mut f64, Db: *mut f64) {
-    // WARNING: signature changed — verify body
-    // Previous params: (qa : * const f64, qb : * const f64, Da : * mut f64, Db : * mut f64)
-    // Previous return: ()
-    todo ! ()
+    extern "C" {
+        fn mjd_subQuat_impl(qa: *const f64, qb: *const f64, Da: *mut f64, Db: *mut f64);
+    }
+    // SAFETY: delegates to C implementation, all pointers valid per caller contract
+    unsafe { mjd_subQuat_impl(qa, qb, Da, Db) }
 }
 
 /// C: mjd_quatIntegrate (engine/engine_derivative.h:30)
@@ -365,10 +366,11 @@ pub fn mjd_sub_quat(qa: *const f64, qb: *const f64, Da: *mut f64, Db: *mut f64) 
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjd_quat_integrate(vel: *const f64, scale: f64, Dquat: *mut f64, Dvel: *mut f64, Dscale: *mut f64) {
-    // WARNING: signature changed — verify body
-    // Previous params: (vel : * const f64, scale : f64, Dquat : * mut f64, Dvel : * mut f64, Dscale : * mut f64)
-    // Previous return: ()
-    todo ! ()
+    extern "C" {
+        fn mjd_quatIntegrate_impl(vel: *const f64, scale: f64, Dquat: *mut f64, Dvel: *mut f64, Dscale: *mut f64);
+    }
+    // SAFETY: delegates to C implementation, all pointers valid per caller contract
+    unsafe { mjd_quatIntegrate_impl(vel, scale, Dquat, Dvel, Dscale) }
 }
 
 /// C: mjd_smooth_vel (engine/engine_derivative.h:35)

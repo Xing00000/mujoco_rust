@@ -342,10 +342,30 @@ pub fn mji_copy4(res: *mut f64, data: *const f64) {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mji_normalize4(vec: *mut f64) -> f64 {
-    // WARNING: signature changed — verify body
-    // Previous params: (vec : * mut f64)
-    // Previous return: f64
-    todo ! ()
+    // SAFETY: raw pointer arithmetic, caller guarantees valid buffer of at least 4 elements
+    const MJ_MINVAL: f64 = 1e-15;
+    unsafe {
+        let v0 = *vec.add(0);
+        let v1 = *vec.add(1);
+        let v2 = *vec.add(2);
+        let v3 = *vec.add(3);
+        let norm = (v0 * v0 + v1 * v1 + v2 * v2 + v3 * v3).sqrt();
+
+        if norm < MJ_MINVAL {
+            *vec.add(0) = 1.0;
+            *vec.add(1) = 0.0;
+            *vec.add(2) = 0.0;
+            *vec.add(3) = 0.0;
+        } else if (norm - 1.0).abs() > MJ_MINVAL {
+            let norm_inv = 1.0 / norm;
+            *vec.add(0) *= norm_inv;
+            *vec.add(1) *= norm_inv;
+            *vec.add(2) *= norm_inv;
+            *vec.add(3) *= norm_inv;
+        }
+
+        norm
+    }
 }
 
 /// C: mji_rotVecQuat (engine/engine_inline.h:253)
@@ -438,10 +458,20 @@ pub fn mji_mul_quat(res: *mut f64, qa: *const f64, qb: *const f64) {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mji_mul_quat_axis(res: *mut f64, quat: *const f64, axis: *const f64) {
-    // WARNING: signature changed — verify body
-    // Previous params: (res : * mut f64, quat : * const f64, axis : * const f64)
-    // Previous return: ()
-    todo ! ()
+    // SAFETY: raw pointer arithmetic, caller guarantees valid non-overlapping buffers of sufficient size
+    unsafe {
+        let q0 = *quat.add(0);
+        let q1 = *quat.add(1);
+        let q2 = *quat.add(2);
+        let q3 = *quat.add(3);
+        let a0 = *axis.add(0);
+        let a1 = *axis.add(1);
+        let a2 = *axis.add(2);
+        *res.add(0) = -q1 * a0 - q2 * a1 - q3 * a2;
+        *res.add(1) =  q0 * a0 + q2 * a2 - q3 * a1;
+        *res.add(2) =  q0 * a1 + q3 * a0 - q1 * a2;
+        *res.add(3) =  q0 * a2 + q1 * a1 - q2 * a0;
+    }
 }
 
 /// C: mji_axisAngle2Quat (engine/engine_inline.h:309)

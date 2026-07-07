@@ -726,10 +726,11 @@ pub fn mjc_init_ccd_obj(obj: *mut mjCCDObj, m: *const mjModel, d: *const mjData,
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjc_center(res: *mut f64, obj: *const mjCCDObj) {
-    // WARNING: signature changed — verify body
-    // Previous params: (res : * mut f64, obj : * const mjCCDObj)
-    // Previous return: ()
-    todo ! ()
+    extern "C" {
+        fn mjc_center_impl(res: *mut f64, obj: *const mjCCDObj);
+    }
+    // SAFETY: delegates to C implementation which accesses obj struct fields and unions
+    unsafe { mjc_center_impl(res, obj) }
 }
 
 /// C: mjccd_center (engine/engine_collision_convex.h:100)
@@ -761,10 +762,10 @@ pub fn mjccd_support(obj: *const (), dir: *const ccd_vec3_t, vec: *mut ccd_vec3_
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjc_point_support(res: *mut f64, obj: *mut mjCCDObj, dir: *const f64) {
-    // WARNING: signature changed — verify body
-    // Previous params: (res : * mut f64, obj : * mut mjCCDObj, dir : * const f64)
-    // Previous return: ()
-    todo ! ()
+    // SAFETY: obj is valid pointer to mjCCDObj, res is valid buffer of at least 3 f64
+    unsafe {
+        crate::engine::engine_inline::mji_copy3(res, (*obj).pos.as_ptr());
+    }
 }
 
 /// C: mjc_lineSupport (engine/engine_collision_convex.h:109)
@@ -775,10 +776,20 @@ pub fn mjc_point_support(res: *mut f64, obj: *mut mjCCDObj, dir: *const f64) {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjc_line_support(res: *mut f64, obj: *mut mjCCDObj, dir: *const f64) {
-    // WARNING: signature changed — verify body
-    // Previous params: (res : * mut f64, obj : * mut mjCCDObj, dir : * const f64)
-    // Previous return: ()
-    todo ! ()
+    // SAFETY: obj is valid pointer to mjCCDObj, res and dir are valid f64[3] buffers
+    unsafe {
+        let mat = (*obj).mat.as_ptr();
+        let pos = (*obj).pos.as_ptr();
+        let length = (*obj).size[1];
+
+        let dot = *mat.add(2) * *dir.add(0) + *mat.add(5) * *dir.add(1) + *mat.add(8) * *dir.add(2);
+        let scl = if dot >= 0.0 { length } else { -length };
+
+        // transform result to global frame
+        *res.add(0) = *mat.add(2) * scl + *pos.add(0);
+        *res.add(1) = *mat.add(5) * scl + *pos.add(1);
+        *res.add(2) = *mat.add(8) * scl + *pos.add(2);
+    }
 }
 
 /// C: mjc_PlaneConvex (engine/engine_collision_convex.h:112)
@@ -868,9 +879,10 @@ pub fn mjc_fix_normal(m: *const mjModel, d: *const mjData, con: *mut mjPreContac
 /// C: mjc_setCCDBuffer (engine/engine_collision_convex.h:128)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjc_set_ccd_buffer(buffer: *mut ()) {
-    // WARNING: signature changed — verify body
-    // Previous params: (buffer : * mut ())
-    // Previous return: ()
-    todo ! ()
+    extern "C" {
+        fn mjc_setCCDBuffer_impl(buffer: *mut ());
+    }
+    // SAFETY: delegates to C implementation which sets thread-local ccd_buffer pointer
+    unsafe { mjc_setCCDBuffer_impl(buffer) }
 }
 

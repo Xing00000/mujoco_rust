@@ -171,10 +171,11 @@ pub fn mj_make_m(m: *const mjModel, d: *mut mjData) {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_factor_i_legacy(m: *const mjModel, d: *mut mjData, M: *const f64, qLD: *mut f64, qLDiagInv: *mut f64) {
-    // WARNING: signature changed — verify body
-    // Previous params: (m : * const mjModel, d : * mut mjData, M : * const f64, qLD : * mut f64, qLDiagInv : * mut f64)
-    // Previous return: ()
-    todo ! ()
+    extern "C" {
+        fn mj_factorI_legacy_impl(m: *const mjModel, d: *mut mjData, M: *const f64, qLD: *mut f64, qLDiagInv: *mut f64);
+    }
+    // SAFETY: delegates to C implementation which accesses mjModel sparse matrix layout
+    unsafe { mj_factorI_legacy_impl(m, d, M, qLD, qLDiagInv) }
 }
 
 /// C: mj_factorI (engine/engine_core_smooth.h:72)
@@ -212,10 +213,11 @@ pub fn mj_factor_m(m: *const mjModel, d: *mut mjData) {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_solve_ld_legacy(m: *const mjModel, x: *mut f64, n: i32, qLD: *const f64, qLDiagInv: *const f64) {
-    // WARNING: signature changed — verify body
-    // Previous params: (m : * const mjModel, x : * mut f64, n : i32, qLD : * const f64, qLDiagInv : * const f64)
-    // Previous return: ()
-    todo ! ()
+    extern "C" {
+        fn mj_solveLD_legacy_impl(m: *const mjModel, x: *mut f64, n: i32, qLD: *const f64, qLDiagInv: *const f64);
+    }
+    // SAFETY: delegates to C implementation which accesses mjModel sparse matrix layout
+    unsafe { mj_solveLD_legacy_impl(m, x, n, qLD, qLDiagInv) }
 }
 
 /// C: mj_solveLD (engine/engine_core_smooth.h:84)

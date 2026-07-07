@@ -7,10 +7,7 @@ use crate::types::*;
 /// C: align8 (engine/engine_collision_gjk.c:49)
 #[allow(unused_variables, non_snake_case)]
 pub fn align8(size: usize) -> usize {
-    // WARNING: signature changed — verify body
-    // Previous params: (size : usize)
-    // Previous return: usize
-    todo ! ()
+    ((size + 7) / 8) * 8
 }
 
 /// C: subdistance (engine/engine_collision_gjk.c:56)
@@ -1762,10 +1759,11 @@ pub fn inflate(status: *mut mjCCDStatus, margin1: f64, margin2: f64) {
 /// Calls: align8
 #[allow(unused_variables, non_snake_case)]
 pub fn mjc_ccd_size(iterations: i32) -> usize {
-    // WARNING: signature changed — verify body
-    // Previous params: (iterations : i32)
-    // Previous return: usize
-    todo ! ()
+    extern "C" {
+        fn mjc_ccdSize_impl(iterations: i32) -> usize;
+    }
+    // SAFETY: delegates to C implementation which computes buffer size from struct sizeof
+    unsafe { mjc_ccdSize_impl(iterations) }
 }
 
 /// C: mjc_ccd (engine/engine_collision_gjk.h:108)
