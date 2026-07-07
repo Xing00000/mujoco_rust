@@ -8,10 +8,9 @@ use crate::types::*;
 /// Calls: mju_error
 #[allow(unused_variables, non_snake_case)]
 pub fn list_allocate(base: *mut GLuint, range: *mut GLsizei, newrange: GLsizei) {
-    // WARNING: signature changed — verify body
-    // Previous params: (base : * mut GLuint, range : * mut GLsizei, newrange : GLsizei)
-    // Previous return: ()
-    todo ! ()
+    extern "C" { fn listAllocate_impl(base: *mut GLuint, range: *mut GLsizei, newrange: GLsizei); }
+    // SAFETY: delegates to C implementation; caller guarantees base and range are valid
+    unsafe { listAllocate_impl(base, range, newrange) }
 }
 
 /// C: makePlane (render/classic/render_context.c:75)

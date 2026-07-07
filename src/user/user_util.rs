@@ -12,10 +12,29 @@ use crate::types::*;
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjuu_axis_angle2quat(res: [f64; 4], axis: [f64; 3], angle: f64) {
-    // WARNING: signature changed — verify body
-    // Previous params: (res : [f64 ; 4], axis : [f64 ; 3], angle : f64)
-    // Previous return: ()
-    todo ! ()
+    // NOTE: In C ABI, array params are pointers. res is the output.
+    let res_ptr = res.as_ptr() as *mut f64;
+
+    // zero angle: identity quat
+    if angle == 0.0 {
+        // SAFETY: res_ptr points to caller-owned memory (C ABI array param = pointer)
+        unsafe {
+            *res_ptr = 1.0;
+            *res_ptr.add(1) = 0.0;
+            *res_ptr.add(2) = 0.0;
+            *res_ptr.add(3) = 0.0;
+        }
+    } else {
+        // regular processing
+        let s = (angle * 0.5).sin();
+        // SAFETY: res_ptr points to caller-owned memory (C ABI array param = pointer)
+        unsafe {
+            *res_ptr = (angle * 0.5).cos();
+            *res_ptr.add(1) = axis[0] * s;
+            *res_ptr.add(2) = axis[1] * s;
+            *res_ptr.add(3) = axis[2] * s;
+        }
+    }
 }
 
 /// C: mjuu_isValidContentType (user/user_util.cc:973)

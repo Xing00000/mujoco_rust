@@ -27,10 +27,13 @@ pub fn get_state(m: *const mjModel, d: *const mjData, state: *mut f64, sensordat
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn diff(dx: *mut f64, x1: *const f64, x2: *const f64, h: f64, n: i32) {
-    // WARNING: signature changed — verify body
-    // Previous params: (dx : * mut f64, x1 : * const f64, x2 : * const f64, h : f64, n : i32)
-    // Previous return: ()
-    todo ! ()
+    // SAFETY: caller guarantees dx, x1, x2 point to valid arrays of at least n elements
+    unsafe {
+        let inv_h: f64 = 1.0 / h;
+        for i in 0..n as usize {
+            *dx.add(i) = inv_h * (*x2.add(i) - *x1.add(i));
+        }
+    }
 }
 
 /// C: stateDiff (engine/engine_derivative_fd.c:55)

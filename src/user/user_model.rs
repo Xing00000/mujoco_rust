@@ -617,10 +617,9 @@ pub fn mj_c_model_num_objects(self_ptr: *mut mjCModel, r#type: mjtObj) -> i32 {
 /// Calls: mjCModel::NumObjects
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_model_get_object(self_ptr: *mut mjCModel, r#type: mjtObj, id: i32) -> *mut mjCBase {
-    // WARNING: signature changed — verify body
-    // Previous params: (self_ptr : * mut mjCModel, r#type : mjtObj, id : i32)
-    // Previous return: * mut mjCBase
-    todo ! ()
+    extern "C" { fn mjCModel_GetObject_impl(self_ptr: *mut mjCModel, r#type: mjtObj, id: i32) -> *mut mjCBase; }
+    // SAFETY: delegates to C++ implementation; caller guarantees self_ptr is valid
+    unsafe { mjCModel_GetObject_impl(self_ptr, r#type, id) }
 }
 
 /// C: mjCModel::NextObject (user/user_model.h:246)
@@ -1348,10 +1347,9 @@ pub fn mj_c_model_reset_tree_lists(self_ptr: *mut mjCModel) {
 /// C: mjCModel::SaveDofOffsets (user/user_model.h:471)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_model_save_dof_offsets(self_ptr: *mut mjCModel, computesize: bool) {
-    // WARNING: signature changed — verify body
-    // Previous params: (self_ptr : * mut mjCModel, computesize : bool)
-    // Previous return: ()
-    todo ! ()
+    extern "C" { fn mjCModel_SaveDofOffsets_impl(self_ptr: *mut mjCModel, computesize: bool); }
+    // SAFETY: delegates to C++ implementation; caller guarantees self_ptr is valid
+    unsafe { mjCModel_SaveDofOffsets_impl(self_ptr, computesize) }
 }
 
 /// C: mjCModel::ResolveKeyframes (user/user_model.h:474)

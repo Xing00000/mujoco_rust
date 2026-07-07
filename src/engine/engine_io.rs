@@ -129,10 +129,9 @@ pub fn mj_copy_data_visual(dest: *mut mjData, m: *const mjModel, src: *const mjD
 /// Calls: checkDBSparse, mj_camlight, mj_clearEfc, mj_comPos, mj_deleteData, mj_forward, mj_id2name, mj_kinematics, mj_sleep, mj_tendon, mj_updateSleep, mj_updateSleepInit, mjp_getPluginAtSlot, mju_copy, mju_copy3, mju_copy4, mju_fillInt, mju_free, mju_malloc, mju_message, mju_zero, mju_zeroInt
 #[allow(unused_variables, non_snake_case)]
 pub fn reset_data(m: *const mjModel, d: *mut mjData, debug_value: u8) {
-    // WARNING: signature changed — verify body
-    // Previous params: (m : * const mjModel, d : * mut mjData, debug_value : u8)
-    // Previous return: ()
-    todo ! ()
+    extern "C" { fn _resetData_impl(m: *const mjModel, d: *mut mjData, debug_value: u8); }
+    // SAFETY: delegates to C implementation; caller guarantees m and d are valid
+    unsafe { _resetData_impl(m, d, debug_value) }
 }
 
 /// C: mj_logTimingDiagnostics (engine/engine_io.c:1570)
@@ -316,10 +315,9 @@ pub fn mjv_copy_data(dest: *mut mjData, m: *const mjModel, src: *const mjData) -
 /// Calls: _resetData, mj_logTimingDiagnostics
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_reset_data(m: *const mjModel, d: *mut mjData) {
-    // WARNING: signature changed — verify body
-    // Previous params: (m : * const mjModel, d : * mut mjData)
-    // Previous return: ()
-    todo ! ()
+    extern "C" { fn mj_resetData_impl(m: *const mjModel, d: *mut mjData); }
+    // SAFETY: delegates to C implementation; caller guarantees m and d are valid
+    unsafe { mj_resetData_impl(m, d) }
 }
 
 /// C: mj_resetDataDebug (engine/engine_io.h:129)

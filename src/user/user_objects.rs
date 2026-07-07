@@ -2666,10 +2666,9 @@ pub fn mj_c_mesh_compile(self_ptr: *mut mjCMesh, vfs: *const mjVFS) {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_mesh_get_pos_ptr(self_ptr: *mut mjCMesh) -> *mut f64 {
-    // WARNING: signature changed — verify body
-    // Previous params: (self_ptr : * mut mjCMesh)
-    // Previous return: * mut f64
-    todo ! ()
+    extern "C" { fn mjCMesh_GetPosPtr_impl(self_ptr: *mut mjCMesh) -> *mut f64; }
+    // SAFETY: delegates to C++ implementation; caller guarantees self_ptr is valid
+    unsafe { mjCMesh_GetPosPtr_impl(self_ptr) }
 }
 
 /// C: mjCMesh::GetQuatPtr (user/user_objects.h:1224)
@@ -2680,10 +2679,9 @@ pub fn mj_c_mesh_get_pos_ptr(self_ptr: *mut mjCMesh) -> *mut f64 {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_mesh_get_quat_ptr(self_ptr: *mut mjCMesh) -> *mut f64 {
-    // WARNING: signature changed — verify body
-    // Previous params: (self_ptr : * mut mjCMesh)
-    // Previous return: * mut f64
-    todo ! ()
+    extern "C" { fn mjCMesh_GetQuatPtr_impl(self_ptr: *mut mjCMesh) -> *mut f64; }
+    // SAFETY: delegates to C++ implementation; caller guarantees self_ptr is valid
+    unsafe { mjCMesh_GetQuatPtr_impl(self_ptr) }
 }
 
 /// C: mjCMesh::GetInertiaBoxPtr (user/user_objects.h:1225)

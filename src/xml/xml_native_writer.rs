@@ -355,10 +355,9 @@ pub fn mj_x_writer_one_actuator(self_ptr: *mut mjXWriter, elem: *mut tinyxml2__X
 /// Calls: mjXUtil::WriteAttrTxt, mjXWriter::InsertEnd
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_x_writer_one_plugin(self_ptr: *mut mjXWriter, elem: *mut tinyxml2__XMLElement, plugin: *const mjsPlugin) {
-    // WARNING: signature changed — verify body
-    // Previous params: (self_ptr : * mut mjXWriter, elem : * mut tinyxml2__XMLElement, plugin : * const mjsPlugin)
-    // Previous return: ()
-    todo ! ()
+    extern "C" { fn mjXWriter_OnePlugin_impl(self_ptr: *mut mjXWriter, elem: *mut tinyxml2__XMLElement, plugin: *const mjsPlugin); }
+    // SAFETY: delegates to C++ implementation; caller guarantees all pointers are valid
+    unsafe { mjXWriter_OnePlugin_impl(self_ptr, elem, plugin) }
 }
 
 /// C: mjXWriter::OneFrame (xml/xml_native_writer.h:85)

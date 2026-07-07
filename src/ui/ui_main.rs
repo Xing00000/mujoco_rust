@@ -32,10 +32,9 @@ pub fn init_open_gl(r: *const mjrRect, con: *const mjrContext) {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn drawtext(txt: *const i8, x: i32, y: i32, maxwidth: i32, rgb: *const f32, con: *const mjrContext) {
-    // WARNING: signature changed — verify body
-    // Previous params: (txt : * const i8, x : i32, y : i32, maxwidth : i32, rgb : * const f32, con : * const mjrContext)
-    // Previous return: ()
-    todo ! ()
+    extern "C" { fn drawtext_impl(txt: *const i8, x: i32, y: i32, maxwidth: i32, rgb: *const f32, con: *const mjrContext); }
+    // SAFETY: delegates to C implementation; caller guarantees all pointers are valid
+    unsafe { drawtext_impl(txt, x, y, maxwidth, rgb, con) }
 }
 
 /// C: drawtextrect (ui/ui_main.c:274)

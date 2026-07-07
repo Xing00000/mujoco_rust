@@ -404,10 +404,9 @@ pub fn mjs_attach(parent: *mut mjsElement, child: *const mjsElement, prefix: *co
 /// C: mjs_addBody (user/user_api.h:83)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjs_add_body(body: *mut mjsBody, def: *const mjsDefault) -> *mut mjsBody {
-    // WARNING: signature changed — verify body
-    // Previous params: (body : * mut mjsBody, def : * const mjsDefault)
-    // Previous return: * mut mjsBody
-    todo ! ()
+    extern "C" { fn mjs_addBody_impl(body: *mut mjsBody, def: *const mjsDefault) -> *mut mjsBody; }
+    // SAFETY: delegates to C++ implementation; caller guarantees body is valid, def may be null
+    unsafe { mjs_addBody_impl(body, def) }
 }
 
 /// C: mjs_addSite (user/user_api.h:86)

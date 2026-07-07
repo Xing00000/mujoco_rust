@@ -36,10 +36,36 @@ pub fn make_label(m: *const mjModel, r#type: mjtObj, id: i32, label: *mut i8) {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn island_color(rgba: [f32; 4], h: i32, awake: i32) {
-    // WARNING: signature changed — verify body
-    // Previous params: (rgba : [f32 ; 4], h : i32, awake : i32)
-    // Previous return: ()
-    todo ! ()
+    // NOTE: In C ABI, `float rgba[4]` is passed as a pointer.
+    // The Rust signature uses [f32; 4] but this is actually a pointer in the ABI.
+    let rgba_ptr = rgba.as_ptr() as *mut f32;
+
+    // default to gray R = G = B = 0.7
+    let mut hue: f32 = 1.0;
+    let mut saturation: f32 = 0.0;
+    let mut value: f32 = 0.7;
+
+    // island index given, use Halton sequence to generate pseudo-random color
+    if h >= 0 {
+        // hue in [0, 1]
+        hue = crate::engine::engine_util_misc::mju_halton(h + 1, 7) as f32;
+
+        // saturation in [0.5, 1.0]
+        saturation = 0.5 + 0.5 * crate::engine::engine_util_misc::mju_halton(h + 1, 3) as f32;
+
+        // value in [0.6, 1.0]
+        value = 0.6 + 0.4 * crate::engine::engine_util_misc::mju_halton(h + 1, 5) as f32;
+    }
+
+    // if asleep, decrease saturation and value
+    if awake == 0 {
+        value *= 0.6;
+        saturation *= 0.7;
+    }
+
+    hsv2rgb(rgba_ptr, hue, saturation, value);
+    // SAFETY: rgba_ptr points to caller-owned memory (C ABI array param = pointer)
+    unsafe { *rgba_ptr.add(3) = 1.0; }
 }
 
 /// C: mixcolor (engine/engine_vis_visualize.c:140)
@@ -148,10 +174,17 @@ pub fn set_material(m: *const mjModel, geom: *mut mjvGeom, matid: i32, rgba: *co
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn add_connector(scn: *mut mjvScene, r#type: i32, width: f64, from: *const f64, to: *const f64, rgba: [f32; 4], objid: i32, category: i32, objtype: i32) {
-    // WARNING: signature changed — verify body
-    // Previous params: (scn : * mut mjvScene, r#type : i32, width : f64, from : * const f64, to : * const f64, rgba : [f32 ; 4], objid : i32, category : i32, objtype : i32)
-    // Previous return: ()
-    todo ! ()
+    let thisgeom = acquire_geom(scn, objid, category, objtype);
+    if thisgeom.is_null() {
+        return;
+    }
+    mjv_connector(thisgeom, r#type, width, from, to);
+    // SAFETY: thisgeom is valid from acquire_geom; rgba is a C ABI array (pointer to caller memory)
+    unsafe {
+        f2f((*thisgeom).rgba.as_mut_ptr(), rgba.as_ptr(), 4);
+    }
+    let mut thisgeom_mut = thisgeom;
+    release_geom(&mut thisgeom_mut, scn);
 }
 
 /// C: markselected (engine/engine_vis_visualize.c:393)
