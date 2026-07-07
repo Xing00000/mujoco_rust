@@ -456,10 +456,9 @@ pub fn mj_x_reader_one_plugin(self_ptr: *mut mjXReader, elem: *mut tinyxml2__XML
 /// Calls: mjXUtil::ReadAttrTxt
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_x_reader_get_class(self_ptr: *mut mjXReader, section: *mut tinyxml2__XMLElement) -> *const mjsDefault {
-    // WARNING: signature changed — verify body
-    // Previous params: (self_ptr : * mut mjXReader, section : * mut tinyxml2__XMLElement)
-    // Previous return: * const mjsDefault
-    todo ! ()
+    extern "C" { fn mjXReader_GetClass_impl(self_ptr: *mut mjXReader, section: *mut tinyxml2__XMLElement) -> *const mjsDefault; }
+    // SAFETY: delegates to C++ implementation, all pointers valid per caller contract
+    unsafe { mjXReader_GetClass_impl(self_ptr, section) }
 }
 
 /// C: mjXReader::AssetDir (xml/xml_native_reader.h:94)

@@ -608,10 +608,9 @@ pub fn mj_c_model_append_spec(self_ptr: *mut mjCModel, spec: *mut mjSpec, compil
 /// C: mjCModel::NumObjects (user/user_model.h:244)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_model_num_objects(self_ptr: *mut mjCModel, r#type: mjtObj) -> i32 {
-    // WARNING: signature changed — verify body
-    // Previous params: (self_ptr : * mut mjCModel, r#type : mjtObj)
-    // Previous return: i32
-    todo ! ()
+    extern "C" { fn mjCModel_NumObjects_impl(self_ptr: *mut mjCModel, r#type: mjtObj) -> i32; }
+    // SAFETY: delegates to C++ implementation, all pointers valid per caller contract
+    unsafe { mjCModel_NumObjects_impl(self_ptr, r#type) }
 }
 
 /// C: mjCModel::GetObject (user/user_model.h:245)
@@ -654,10 +653,9 @@ pub fn mj_c_model_get_error(self_ptr: *mut mjCModel) -> *const mjCError {
 /// C: mjCModel::SetError (user/user_model.h:251)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_model_set_error(self_ptr: *mut mjCModel, error: *const mjCError) {
-    // WARNING: signature changed — verify body
-    // Previous params: (self_ptr : * mut mjCModel, error : * const mjCError)
-    // Previous return: ()
-    todo ! ()
+    extern "C" { fn mjCModel_SetError_impl(self_ptr: *mut mjCModel, error: *const mjCError); }
+    // SAFETY: delegates to C++ implementation, all pointers valid per caller contract
+    unsafe { mjCModel_SetError_impl(self_ptr, error) }
 }
 
 /// C: mjCModel::AddWarning (user/user_model.h:252)

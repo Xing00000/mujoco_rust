@@ -287,10 +287,9 @@ pub fn mj_x_util_read_attr_txt(elem: *mut tinyxml2__XMLElement, attr: *const i8,
 /// C: mjXUtil::ReadAttrInt (xml/xml_util.h:167)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_x_util_read_attr_int(elem: *mut tinyxml2__XMLElement, attr: *const i8, data: *mut i32, required: bool) -> bool {
-    // WARNING: signature changed — verify body
-    // Previous params: (elem : * mut tinyxml2__XMLElement, attr : * const i8, data : * mut i32, required : bool)
-    // Previous return: bool
-    todo ! ()
+    extern "C" { fn mjXUtil_ReadAttrInt_impl(elem: *mut tinyxml2__XMLElement, attr: *const i8, data: *mut i32, required: bool) -> bool; }
+    // SAFETY: delegates to C++ implementation, all pointers valid per caller contract
+    unsafe { mjXUtil_ReadAttrInt_impl(elem, attr, data, required) }
 }
 
 /// C: mjXUtil::FindSubElem (xml/xml_util.h:175)
@@ -306,10 +305,9 @@ pub fn mj_x_util_find_sub_elem(elem: *mut tinyxml2__XMLElement, name: string, re
 /// Calls: mjXUtil::FindKey
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_x_util_map_value(elem: *mut tinyxml2__XMLElement, attr: *const i8, data: *mut i32, map: *const mjMap, mapSz: i32, required: bool) -> bool {
-    // WARNING: signature changed — verify body
-    // Previous params: (elem : * mut tinyxml2__XMLElement, attr : * const i8, data : * mut i32, map : * const mjMap, mapSz : i32, required : bool)
-    // Previous return: bool
-    todo ! ()
+    extern "C" { fn mjXUtil_MapValue_impl(elem: *mut tinyxml2__XMLElement, attr: *const i8, data: *mut i32, map: *const mjMap, mapSz: i32, required: bool) -> bool; }
+    // SAFETY: delegates to C++ implementation, all pointers valid per caller contract
+    unsafe { mjXUtil_MapValue_impl(elem, attr, data, map, mapSz, required) }
 }
 
 /// C: mjXUtil::MapValues (xml/xml_util.h:183)

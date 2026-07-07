@@ -21,10 +21,9 @@ pub fn mj_default_sol_ref_imp(solref: *mut f64, solimp: *mut f64) {
 /// Calls: mj_defaultSolRefImp
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_default_option(opt: *mut mjOption) {
-    // WARNING: signature changed — verify body
-    // Previous params: (opt : * mut mjOption)
-    // Previous return: ()
-    todo ! ()
+    extern "C" { fn mj_defaultOption_impl(opt: *mut mjOption); }
+    // SAFETY: delegates to C implementation, all pointers valid per caller contract
+    unsafe { mj_defaultOption_impl(opt) }
 }
 
 /// C: setf4 (engine/engine_init.c:124)
@@ -44,10 +43,9 @@ pub fn setf4(rgba: *mut f32, r: f32, g: f32, b: f32, a: f32) {
 /// Calls: setf4
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_default_visual(vis: *mut mjVisual) {
-    // WARNING: signature changed — verify body
-    // Previous params: (vis : * mut mjVisual)
-    // Previous return: ()
-    todo ! ()
+    extern "C" { fn mj_defaultVisual_impl(vis: *mut mjVisual); }
+    // SAFETY: delegates to C implementation, all pointers valid per caller contract
+    unsafe { mj_defaultVisual_impl(vis) }
 }
 
 /// C: mj_defaultLROpt (engine/engine_init.c:234)

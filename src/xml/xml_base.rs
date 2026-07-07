@@ -34,9 +34,8 @@ pub fn mj_x_base_set_model(self_ptr: *mut mjXBase, arg0: *mut mjSpec, arg1: *con
 /// C: mjXBase::ReadAlternative (xml/xml_base.h:111)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_x_base_read_alternative(elem: *mut tinyxml2__XMLElement, alt: *mut mjsOrientation) -> i32 {
-    // WARNING: signature changed — verify body
-    // Previous params: (elem : * mut tinyxml2__XMLElement, alt : * mut mjsOrientation)
-    // Previous return: i32
-    todo ! ()
+    extern "C" { fn mjXBase_ReadAlternative_impl(elem: *mut tinyxml2__XMLElement, alt: *mut mjsOrientation) -> i32; }
+    // SAFETY: delegates to C++ implementation, all pointers valid per caller contract
+    unsafe { mjXBase_ReadAlternative_impl(elem, alt) }
 }
 

@@ -46,10 +46,9 @@ pub fn mj_x_writer_write(self_ptr: *mut mjXWriter, error: *mut i8, error_sz: usi
 /// C: mjXWriter::InsertEnd (xml/xml_native_writer.h:39)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_x_writer_insert_end(self_ptr: *mut mjXWriter, parent: *mut tinyxml2__XMLElement, name: *const i8) -> *mut tinyxml2__XMLElement {
-    // WARNING: signature changed — verify body
-    // Previous params: (self_ptr : * mut mjXWriter, parent : * mut tinyxml2__XMLElement, name : * const i8)
-    // Previous return: * mut tinyxml2__XMLElement
-    todo ! ()
+    extern "C" { fn mjXWriter_InsertEnd_impl(self_ptr: *mut mjXWriter, parent: *mut tinyxml2__XMLElement, name: *const i8) -> *mut tinyxml2__XMLElement; }
+    // SAFETY: delegates to C++ implementation, all pointers valid per caller contract
+    unsafe { mjXWriter_InsertEnd_impl(self_ptr, parent, name) }
 }
 
 /// C: mjXWriter::Compiler (xml/xml_native_writer.h:45)
