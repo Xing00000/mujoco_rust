@@ -157,10 +157,11 @@ pub fn mjd_passive_vel_fd(m: *const mjModel, d: *mut mjData, eps: f64) {
 /// Calls: mj_EulerSkip, mj_RungeKutta, mj_checkAcc, mj_checkPos, mj_checkVel, mj_compareFwdInv, mj_forwardSkip, mj_implicitSkip, mju_message
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_step_skip(m: *const mjModel, d: *mut mjData, skipstage: i32, skipsensor: i32) {
-    // WARNING: signature changed — verify body
-    // Previous params: (m : * const mjModel, d : * mut mjData, skipstage : i32, skipsensor : i32)
-    // Previous return: ()
-    todo ! ()
+    extern "C" {
+        fn mj_stepSkip_impl(m: *const mjModel, d: *mut mjData, skipstage: i32, skipsensor: i32);
+    }
+    // SAFETY: delegates to C implementation, all pointers valid per caller contract
+    unsafe { mj_stepSkip_impl(m, d, skipstage, skipsensor) }
 }
 
 /// C: mjd_transitionFD (engine/engine_derivative_fd.h:36)

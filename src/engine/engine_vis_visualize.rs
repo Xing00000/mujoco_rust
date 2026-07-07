@@ -780,10 +780,11 @@ pub fn mjv_make_lights(m: *const mjModel, d: *const mjData, scn: *mut mjvScene) 
 /// Calls: mju_copy3, mju_message, mjv_cameraFrame, mjv_cameraFrustum
 #[allow(unused_variables, non_snake_case)]
 pub fn mjv_update_camera(m: *const mjModel, d: *const mjData, cam: *mut mjvCamera, scn: *mut mjvScene) {
-    // WARNING: signature changed — verify body
-    // Previous params: (m : * const mjModel, d : * const mjData, cam : * mut mjvCamera, scn : * mut mjvScene)
-    // Previous return: ()
-    todo ! ()
+    extern "C" {
+        fn mjv_updateCamera_impl(m: *const mjModel, d: *const mjData, cam: *mut mjvCamera, scn: *mut mjvScene);
+    }
+    // SAFETY: delegates to C implementation, all pointers valid per caller contract
+    unsafe { mjv_updateCamera_impl(m, d, cam, scn) }
 }
 
 /// C: mjv_updateActiveFlex (engine/engine_vis_visualize.h:51)

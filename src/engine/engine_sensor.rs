@@ -269,10 +269,11 @@ pub fn mj_compute_sensor(m: *const mjModel, d: *mut mjData, i: i32, sensordata: 
 /// Calls: compute_or_read_sensor, compute_plugin_sensors, compute_user_sensors, mj_sleepState, mju_zero
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_sensor_pos(m: *const mjModel, d: *mut mjData) {
-    // WARNING: signature changed — verify body
-    // Previous params: (m : * const mjModel, d : * mut mjData)
-    // Previous return: ()
-    todo ! ()
+    extern "C" {
+        fn mj_sensorPos_impl(m: *const mjModel, d: *mut mjData);
+    }
+    // SAFETY: delegates to C implementation, all pointers valid per caller contract
+    unsafe { mj_sensorPos_impl(m, d) }
 }
 
 /// C: mj_sensorVel (engine/engine_sensor.h:35)

@@ -276,10 +276,11 @@ pub fn mj_check_acc(m: *const mjModel, d: *mut mjData) {
 /// Calls: mj_Euler, mj_RungeKutta, mj_checkAcc, mj_checkPos, mj_checkVel, mj_compareFwdInv, mj_forward, mj_implicit, mju_message
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_step(m: *const mjModel, d: *mut mjData) {
-    // WARNING: signature changed — verify body
-    // Previous params: (m : * const mjModel, d : * mut mjData)
-    // Previous return: ()
-    todo ! ()
+    extern "C" {
+        fn mj_step_impl(m: *const mjModel, d: *mut mjData);
+    }
+    // SAFETY: delegates to C implementation, all pointers valid per caller contract
+    unsafe { mj_step_impl(m, d) }
 }
 
 /// C: mj_step1 (engine/engine_forward.h:38)
