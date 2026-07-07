@@ -421,10 +421,9 @@ pub fn mj_ray_mesh(m: *const mjModel, d: *const mjData, geomid: i32, pnt: *const
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mju_ray_geom(pos: *const f64, mat: *const f64, size: *const f64, pnt: *const f64, vec: *const f64, geomtype: i32, normal: *mut f64) -> f64 {
-    // WARNING: signature changed — verify body
-    // Previous params: (pos : * const f64, mat : * const f64, size : * const f64, pnt : * const f64, vec : * const f64, geomtype : i32, normal : * mut f64)
-    // Previous return: f64
-    todo ! ()
+    extern "C" { fn mju_rayGeom_impl(pos: *const f64, mat: *const f64, size: *const f64, pnt: *const f64, vec: *const f64, geomtype: i32, normal: *mut f64) -> f64; }
+    // SAFETY: delegates to C implementation
+    unsafe { mju_rayGeom_impl(pos, mat, size, pnt, vec, geomtype, normal) }
 }
 
 /// C: mj_rayFlex (engine/engine_ray.h:64)

@@ -237,10 +237,9 @@ pub fn mj_size_model(m: *const mjModel) -> usize {
 /// Calls: mjp_getPluginAtSlot, mju_message, numObjects, sensorSize
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_validate_references(m: *const mjModel) -> *const i8 {
-    // WARNING: signature changed — verify body
-    // Previous params: (m : * const mjModel)
-    // Previous return: * const i8
-    todo ! ()
+    extern "C" { fn mj_validateReferences_impl(m: *const mjModel) -> *const i8; }
+    // SAFETY: delegates to C implementation
+    unsafe { mj_validateReferences_impl(m) }
 }
 
 /// C: mj_makeDofDofSparse (engine/engine_io.h:90)

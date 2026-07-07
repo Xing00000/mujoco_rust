@@ -760,10 +760,9 @@ pub fn mjv_update_camera(m: *const mjModel, d: *const mjData, cam: *mut mjvCamer
 /// Calls: addNormal, copyTex, makeFace, makeSide, makeSmooth, mj_freeStack, mj_markStack, mj_stackAllocInfo, mju_error, mju_normalize3, mju_zero
 #[allow(unused_variables, non_snake_case)]
 pub fn mjv_update_active_flex(m: *const mjModel, d: *mut mjData, scn: *mut mjvScene, opt: *const mjvOption) {
-    // WARNING: signature changed — verify body
-    // Previous params: (m : * const mjModel, d : * mut mjData, scn : * mut mjvScene, opt : * const mjvOption)
-    // Previous return: ()
-    todo ! ()
+    extern "C" { fn mjv_updateActiveFlex_impl(m: *const mjModel, d: *mut mjData, scn: *mut mjvScene, opt: *const mjvOption); }
+    // SAFETY: delegates to C implementation
+    unsafe { mjv_updateActiveFlex_impl(m, d, scn, opt) }
 }
 
 /// C: mjv_updateSkin (engine/engine_vis_visualize.h:54)
