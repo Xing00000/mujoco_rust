@@ -209,10 +209,9 @@ pub fn mj_save_model(m: *const mjModel, filename: *const i8, buffer: *mut (), bu
 /// Calls: bufread, getnptr, getnsize, mj_deleteModel, mj_makeModel, mj_validateReferences, mj_version, mju_warning
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_load_model_buffer(buffer: *const (), buffer_sz: i32) -> *mut mjModel {
-    // WARNING: signature changed — verify body
-    // Previous params: (buffer : * const (), buffer_sz : i32)
-    // Previous return: * mut mjModel
-    todo ! ()
+    extern "C" { fn mj_loadModelBuffer_impl(buffer: *const (), buffer_sz: i32) -> *mut mjModel; }
+    // SAFETY: delegates to C implementation
+    unsafe { mj_loadModelBuffer_impl(buffer, buffer_sz) }
 }
 
 /// C: mj_deleteModel (engine/engine_io.h:81)
