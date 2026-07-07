@@ -337,10 +337,9 @@ pub fn mj_get_totalmass(m: *const mjModel) -> f64 {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_set_totalmass(m: *mut mjModel, newmass: f64) {
-    // WARNING: signature changed — verify body
-    // Previous params: (m : * mut mjModel, newmass : f64)
-    // Previous return: ()
-    todo ! ()
+    extern "C" { fn mj_setTotalmass_impl(m: *mut mjModel, newmass: f64); }
+    // SAFETY: delegates to C implementation
+    unsafe { mj_setTotalmass_impl(m, newmass) }
 }
 
 /// C: mj_version (engine/engine_support.h:121)

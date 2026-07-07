@@ -26,10 +26,9 @@ pub fn mjv_make_scene(m: *const mjModel, scn: *mut mjvScene, maxgeom: i32) {
 /// Calls: mju_free, mjv_defaultScene
 #[allow(unused_variables, non_snake_case)]
 pub fn mjv_free_scene(scn: *mut mjvScene) {
-    // WARNING: signature changed — verify body
-    // Previous params: (scn : * mut mjvScene)
-    // Previous return: ()
-    todo ! ()
+    extern "C" { fn mjv_freeScene_impl(scn: *mut mjvScene); }
+    // SAFETY: delegates to C implementation
+    unsafe { mjv_freeScene_impl(scn) }
 }
 
 /// C: mjv_defaultOption (engine/engine_vis_init.h:43)

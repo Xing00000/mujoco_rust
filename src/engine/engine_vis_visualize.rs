@@ -683,10 +683,9 @@ pub fn mjv_update_skin(m: *const mjModel, d: *const mjData, scn: *mut mjvScene) 
 /// Calls: mju_addTo3, mju_cross, mju_mulMatVec3, mju_mulQuat, mju_negQuat, mju_quat2Mat, mju_sub3
 #[allow(unused_variables, non_snake_case)]
 pub fn mjv_update_active_skin(m: *const mjModel, d: *const mjData, scn: *mut mjvScene, opt: *const mjvOption) {
-    // WARNING: signature changed — verify body
-    // Previous params: (m : * const mjModel, d : * const mjData, scn : * mut mjvScene, opt : * const mjvOption)
-    // Previous return: ()
-    todo ! ()
+    extern "C" { fn mjv_updateActiveSkin_impl(m: *const mjModel, d: *const mjData, scn: *mut mjvScene, opt: *const mjvOption); }
+    // SAFETY: delegates to C implementation
+    unsafe { mjv_updateActiveSkin_impl(m, d, scn, opt) }
 }
 
 /// C: mjv_cameraFrame (engine/engine_vis_visualize.h:61)
