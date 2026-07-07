@@ -71,10 +71,28 @@ pub fn ray_eliminate(m: *const mjModel, d: *const mjData, geomid: i32, geomgroup
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn ray_quad(a: f64, b: f64, c: f64, x: *mut f64) -> f64 {
-    // WARNING: signature changed — verify body
-    // Previous params: (a : f64, b : f64, c : f64, x : * mut f64)
-    // Previous return: f64
-    todo ! ()
+    const MJMINVAL: f64 = 1e-15;
+    let mut det: f64 = b * b - a * c;
+    if det < 0.0 || a < MJMINVAL {
+        // SAFETY: caller guarantees x points to array of at least 2 f64
+        unsafe {
+            *x.add(0) = -1.0;
+            *x.add(1) = -1.0;
+        }
+        return -1.0;
+    }
+    det = det.sqrt();
+    // SAFETY: caller guarantees x points to array of at least 2 f64
+    unsafe {
+        *x.add(0) = (-b - det) / a;
+        *x.add(1) = (-b + det) / a;
+        if *x.add(0) >= 0.0 {
+            return *x.add(0);
+        } else if *x.add(1) >= 0.0 {
+            return *x.add(1);
+        }
+    }
+    -1.0
 }
 
 /// C: ray_plane (engine/engine_ray.c:204)

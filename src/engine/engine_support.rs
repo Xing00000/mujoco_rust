@@ -44,10 +44,31 @@ pub fn mj_state_elem_size(m: *const mjModel, sig: mjtState) -> i32 {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_state_elem_ptr(m: *const mjModel, d: *mut mjData, sig: mjtState) -> *mut f64 {
-    // WARNING: signature changed — verify body
-    // Previous params: (m : * const mjModel, d : * mut mjData, sig : mjtState)
-    // Previous return: * mut f64
-    todo ! ()
+    // SAFETY: mjtState is unsigned int in C ABI; read through pointer cast.
+    // Data pointer dereferences follow C source semantics.
+    unsafe {
+        let s: u32 = *(&sig as *const mjtState as *const u32);
+        match s {
+            1    => &mut (*d).time as *mut f64,           // mjSTATE_TIME
+            2    => (*d).qpos,                            // mjSTATE_QPOS
+            4    => (*d).qvel,                            // mjSTATE_QVEL
+            8    => (*d).act,                             // mjSTATE_ACT
+            16   => (*d).history,                         // mjSTATE_HISTORY
+            32   => (*d).qacc_warmstart,                  // mjSTATE_WARMSTART
+            64   => (*d).ctrl,                            // mjSTATE_CTRL
+            128  => (*d).qfrc_applied,                    // mjSTATE_QFRC_APPLIED
+            256  => (*d).xfrc_applied as *mut f64,        // mjSTATE_XFRC_APPLIED
+            512  => std::ptr::null_mut(),                  // mjSTATE_EQ_ACTIVE (handled separately)
+            1024 => (*d).mocap_pos,                       // mjSTATE_MOCAP_POS
+            2048 => (*d).mocap_quat,                      // mjSTATE_MOCAP_QUAT
+            4096 => (*d).userdata,                        // mjSTATE_USERDATA
+            8192 => (*d).plugin_state,                    // mjSTATE_PLUGIN
+            _ => {
+                crate::engine::engine_util_errmem::mju_error(b"invalid state element\0".as_ptr() as *const i8);
+                std::ptr::null_mut()
+            }
+        }
+    }
 }
 
 /// C: mj_stateElemConstPtr (engine/engine_support.c:184)
@@ -59,10 +80,11 @@ pub fn mj_state_elem_ptr(m: *const mjModel, d: *mut mjData, sig: mjtState) -> *m
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_state_elem_const_ptr(m: *const mjModel, d: *const mjData, sig: mjtState) -> *const f64 {
-    // WARNING: signature changed — verify body
-    // Previous params: (m : * const mjModel, d : * const mjData, sig : mjtState)
-    // Previous return: * const f64
-    todo ! ()
+    // SAFETY: casts *const mjData to *mut mjData to reuse mj_state_elem_ptr, matching C source
+    // which calls mj_stateElemPtr with a const-cast. Result is returned as *const f64.
+    unsafe {
+        mj_state_elem_ptr(m, d as *mut mjData, sig) as *const f64
+    }
 }
 
 /// C: mj_geomDistanceCCD (engine/engine_support.c:519)

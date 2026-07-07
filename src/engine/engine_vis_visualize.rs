@@ -60,10 +60,17 @@ pub fn mixcolor(rgba: [f32; 4], r#ref: [f32; 4], flg1: i32, flg2: i32) {
 /// C: bodycategory (engine/engine_vis_visualize.c:157)
 #[allow(unused_variables, non_snake_case)]
 pub fn bodycategory(m: *const mjModel, bodyid: i32) -> i32 {
-    // WARNING: signature changed — verify body
-    // Previous params: (m : * const mjModel, bodyid : i32)
-    // Previous return: i32
-    todo ! ()
+    // SAFETY: pointer dereferences follow C source semantics; caller guarantees m is valid
+    // and bodyid is within bounds
+    unsafe {
+        if *(*m).body_weldid.add(bodyid as usize) == 0
+            && *(*m).body_mocapid.add(*(*m).body_rootid.add(bodyid as usize) as usize) == -1
+        {
+            1 // mjCAT_STATIC
+        } else {
+            2 // mjCAT_DYNAMIC
+        }
+    }
 }
 
 /// C: acquireGeom (engine/engine_vis_visualize.c:169)
