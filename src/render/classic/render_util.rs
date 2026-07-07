@@ -13,10 +13,22 @@ use crate::types::*;
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjr_make_normal(normal: *mut f32, p1: *const f32, p2: *const f32, p3: *const f32) {
-    // WARNING: signature changed — verify body
-    // Previous params: (normal : * mut f32, p1 : * const f32, p2 : * const f32, p3 : * const f32)
-    // Previous return: ()
-    todo ! ()
+    // SAFETY: caller guarantees normal, p1, p2, p3 each point to at least 3 contiguous f32 values
+    unsafe {
+        let v1: [f32; 3] = [
+            *p2.add(0) - *p1.add(0),
+            *p2.add(1) - *p1.add(1),
+            *p2.add(2) - *p1.add(2),
+        ];
+        let v2: [f32; 3] = [
+            *p3.add(0) - *p1.add(0),
+            *p3.add(1) - *p1.add(1),
+            *p3.add(2) - *p1.add(2),
+        ];
+
+        mjr_cross_vec(normal, v1.as_ptr(), v2.as_ptr());
+        mjr_normalize_vec(normal);
+    }
 }
 
 /// C: mjr_setf4 (render/classic/render_util.h:29)
@@ -123,10 +135,25 @@ pub fn mjr_normalize_vec(v: *mut f32) {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjr_ortho_vec(res: *mut f32, v: *const f32) {
-    // WARNING: signature changed — verify body
-    // Previous params: (res : * mut f32, v : * const f32)
-    // Previous return: ()
-    todo ! ()
+    // SAFETY: caller guarantees res points to at least 3 f32, v points to at least 3 f32
+    unsafe {
+        let mut other: [f32; 3] = [-1.0, 0.0, 0.0];
+
+        // try cross with negative X-axis
+        mjr_cross_vec(res, v, other.as_ptr());
+
+        // success
+        if *res.add(0) * *res.add(0) + *res.add(1) * *res.add(1) + *res.add(2) * *res.add(2) > 0.01 {
+            mjr_normalize_vec(res);
+            return;
+        }
+
+        // otherwise use positive Y-axis
+        other[0] = 0.0;
+        other[1] = 1.0;
+        mjr_cross_vec(res, v, other.as_ptr());
+        mjr_normalize_vec(res);
+    }
 }
 
 /// C: mjr_dotVec (render/classic/render_util.h:50)

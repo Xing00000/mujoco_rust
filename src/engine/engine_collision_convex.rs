@@ -753,10 +753,10 @@ pub fn mjccd_center(obj: *const (), center: *mut ccd_vec3_t) {
 /// Calls: mjc_prism_support, mji_addScl3, mji_addTo3, mji_addToScl3, mji_copy3, mji_scl3, mju_dot3, mju_message, mju_mulMatTVec3, mju_mulMatVec3, mju_normalize3, mju_sign, mju_warning, mju_zero3
 #[allow(unused_variables, non_snake_case)]
 pub fn mjccd_support(obj: *const (), dir: *const ccd_vec3_t, vec: *mut ccd_vec3_t) {
-    // WARNING: signature changed — verify body
-    // Previous params: (obj : * const (), dir : * const ccd_vec3_t, vec : * mut ccd_vec3_t)
-    // Previous return: ()
-    todo ! ()
+    extern "C" { fn mjccd_support_impl(obj: *const (), dir: *const ccd_vec3_t, vec: *mut ccd_vec3_t); }
+    // SAFETY: delegates to C implementation which accesses obj->geom_type union fields
+    // and dispatches to appropriate support function
+    unsafe { mjccd_support_impl(obj, dir, vec) }
 }
 
 /// C: mjc_pointSupport (engine/engine_collision_convex.h:106)

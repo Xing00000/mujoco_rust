@@ -113,10 +113,9 @@ pub fn mjv_align_to_camera(res: *mut f64, vec: *const f64, forward: *const f64) 
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjv_move_camera(m: *const mjModel, action: i32, reldx: f64, reldy: f64, scn: *const mjvScene, cam: *mut mjvCamera) {
-    // WARNING: signature changed — verify body
-    // Previous params: (m : * const mjModel, action : i32, reldx : f64, reldy : f64, scn : * const mjvScene, cam : * mut mjvCamera)
-    // Previous return: ()
-    todo ! ()
+    extern "C" { fn mjv_moveCamera_impl(m: *const mjModel, action: i32, reldx: f64, reldy: f64, scn: *const mjvScene, cam: *mut mjvCamera); }
+    // SAFETY: delegates to C implementation which accesses mjvCamera fields and calls mju_* functions
+    unsafe { mjv_moveCamera_impl(m, action, reldx, reldy, scn, cam) }
 }
 
 /// C: mjv_movePerturb (engine/engine_vis_interact.h:54)
@@ -128,10 +127,10 @@ pub fn mjv_move_camera(m: *const mjModel, action: i32, reldx: f64, reldy: f64, s
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjv_move_perturb(m: *const mjModel, d: *const mjData, action: i32, reldx: f64, reldy: f64, scn: *const mjvScene, pert: *mut mjvPerturb) {
-    // WARNING: signature changed — verify body
-    // Previous params: (m : * const mjModel, d : * const mjData, action : i32, reldx : f64, reldy : f64, scn : * const mjvScene, pert : * mut mjvPerturb)
-    // Previous return: ()
-    todo ! ()
+    extern "C" { fn mjv_movePerturb_impl(m: *const mjModel, d: *const mjData, action: i32, reldx: f64, reldy: f64, scn: *const mjvScene, pert: *mut mjvPerturb); }
+    // SAFETY: delegates to C implementation which handles perturb movement with complex
+    // quaternion math and mju_* function calls
+    unsafe { mjv_movePerturb_impl(m, d, action, reldx, reldy, scn, pert) }
 }
 
 /// C: mjv_moveModel (engine/engine_vis_interact.h:58)

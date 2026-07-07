@@ -26,7 +26,9 @@ pub fn mj_save_last_xml(filename: *const i8, m: *const mjModel, error: *mut i8, 
 /// Calls: SetGlobalXmlSpec
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_free_last_xml() {
-    todo ! ()
+    extern "C" { fn mj_freeLastXML_impl(); }
+    // SAFETY: delegates to C++ implementation which calls SetGlobalXmlSpec() with nullptr
+    unsafe { mj_freeLastXML_impl() }
 }
 
 /// C: mj_printSchema (xml/xml_api.h:40)
