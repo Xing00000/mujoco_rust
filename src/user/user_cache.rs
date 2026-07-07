@@ -26,10 +26,9 @@ pub fn mj_c_cache_insert(self_ptr: *mut mjCCache, modelname: *const i32, id: *co
 /// Calls: mjCAsset::IncrementAccess, mjCAsset::PopulateData
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_cache_populate_data(self_ptr: *mut mjCCache, id: *const i32, resource: *const mjResource, r#fn: mjCDataFunc) -> bool {
-    // WARNING: signature changed — verify body
-    // Previous params: (self_ptr : * mut mjCCache, id : * const i32, resource : * const mjResource, r#fn : mjCDataFunc)
-    // Previous return: bool
-    todo ! ()
+    extern "C" { fn mjCCache_PopulateData_impl(self_ptr: *mut mjCCache, id: *const i32, resource: *const mjResource, r#fn: mjCDataFunc) -> bool; }
+    // SAFETY: delegates to C implementation
+    unsafe { mjCCache_PopulateData_impl(self_ptr, id, resource, r#fn) }
 }
 
 /// C: mjCCache::RemoveModel (user/user_cache.cc:131)
@@ -182,10 +181,9 @@ pub fn mj_c_asset_references(self_ptr: *mut mjCAsset) -> *const i32 {
 /// Calls: mjCCache::Trim
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_cache_set_capacity(self_ptr: *mut mjCCache, size: usize) {
-    // WARNING: signature changed — verify body
-    // Previous params: (self_ptr : * mut mjCCache, size : usize)
-    // Previous return: ()
-    todo ! ()
+    extern "C" { fn mjCCache_SetCapacity_impl(self_ptr: *mut mjCCache, size: usize); }
+    // SAFETY: delegates to C implementation
+    unsafe { mjCCache_SetCapacity_impl(self_ptr, size) }
 }
 
 /// C: mjCCache::Reset (user/user_cache.h:156)
@@ -217,10 +215,9 @@ pub fn mj_c_cache_size(self_ptr: *mut mjCCache) -> std__size_t {
 /// Calls: mjCAsset::BytesCount
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_cache_delete(self_ptr: *mut mjCCache, asset: *mut mjCAsset) {
-    // WARNING: signature changed — verify body
-    // Previous params: (self_ptr : * mut mjCCache, asset : * mut mjCAsset)
-    // Previous return: ()
-    todo ! ()
+    extern "C" { fn mjCCache_Delete_impl(self_ptr: *mut mjCCache, asset: *mut mjCAsset); }
+    // SAFETY: delegates to C implementation
+    unsafe { mjCCache_Delete_impl(self_ptr, asset) }
 }
 
 /// C: mjCCache::Trim (user/user_cache.h:165)

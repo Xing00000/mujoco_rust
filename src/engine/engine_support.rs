@@ -638,10 +638,9 @@ pub fn mj_read_sensor(m: *const mjModel, d: *const mjData, id: i32, time: f64, r
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_init_ctrl_history(m: *const mjModel, d: *mut mjData, id: i32, times: *const f64, values: *const f64) {
-    // WARNING: signature changed — verify body
-    // Previous params: (m : * const mjModel, d : * mut mjData, id : i32, times : * const f64, values : * const f64)
-    // Previous return: ()
-    todo ! ()
+    extern "C" { fn mj_initCtrlHistory_impl(m: *const mjModel, d: *mut mjData, id: i32, times: *const f64, values: *const f64); }
+    // SAFETY: delegates to C implementation
+    unsafe { mj_initCtrlHistory_impl(m, d, id, times, values) }
 }
 
 /// C: mj_initSensorHistory (engine/engine_support.h:158)
@@ -653,9 +652,8 @@ pub fn mj_init_ctrl_history(m: *const mjModel, d: *mut mjData, id: i32, times: *
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_init_sensor_history(m: *const mjModel, d: *mut mjData, id: i32, times: *const f64, values: *const f64, phase: f64) {
-    // WARNING: signature changed — verify body
-    // Previous params: (m : * const mjModel, d : * mut mjData, id : i32, times : * const f64, values : * const f64, phase : f64)
-    // Previous return: ()
-    todo ! ()
+    extern "C" { fn mj_initSensorHistory_impl(m: *const mjModel, d: *mut mjData, id: i32, times: *const f64, values: *const f64, phase: f64); }
+    // SAFETY: delegates to C implementation
+    unsafe { mj_initSensorHistory_impl(m, d, id, times, values, phase) }
 }
 

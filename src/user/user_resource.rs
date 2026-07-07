@@ -8,10 +8,9 @@ use crate::types::*;
 /// Calls: VFS::Open, VFS::Upcast, mj_defaultVFS, mj_deleteVFS, mju_free, mju_malloc
 #[allow(unused_variables, non_snake_case)]
 pub fn mju_open_resource(dir: *const i8, name: *const i8, vfs: *const mjVFS, error: *mut i8, nerror: usize) -> *mut mjResource {
-    // WARNING: signature changed — verify body
-    // Previous params: (dir : * const i8, name : * const i8, vfs : * const mjVFS, error : * mut i8, nerror : usize)
-    // Previous return: * mut mjResource
-    todo ! ()
+    extern "C" { fn mju_openResource_impl(dir: *const i8, name: *const i8, vfs: *const mjVFS, error: *mut i8, nerror: usize) -> *mut mjResource; }
+    // SAFETY: delegates to C implementation
+    unsafe { mju_openResource_impl(dir, name, vfs, error, nerror) }
 }
 
 /// C: mju_closeResource (user/user_resource.cc:69)
@@ -55,9 +54,8 @@ pub fn mju_is_modified_resource(resource: *const mjResource, timestamp: *const i
 /// Calls: mjp_findDecoder, mju_warning
 #[allow(unused_variables, non_snake_case)]
 pub fn mju_decode_resource(resource: *mut mjResource, content_type: *const i8, vfs: *const mjVFS) -> *mut mjSpec {
-    // WARNING: signature changed — verify body
-    // Previous params: (resource : * mut mjResource, content_type : * const i8, vfs : * const mjVFS)
-    // Previous return: * mut mjSpec
-    todo ! ()
+    extern "C" { fn mju_decodeResource_impl(resource: *mut mjResource, content_type: *const i8, vfs: *const mjVFS) -> *mut mjSpec; }
+    // SAFETY: delegates to C implementation
+    unsafe { mju_decodeResource_impl(resource, content_type, vfs) }
 }
 

@@ -8,10 +8,9 @@ use crate::types::*;
 /// Calls: mju_getLogConfigPtr, mju_isTopicEnabled, mju_legacy_text, mju_localTimeStr
 #[allow(unused_variables, non_snake_case)]
 pub fn mju_default_log_handler(msg: *const mjLogMessage) {
-    // WARNING: signature changed — verify body
-    // Previous params: (msg : * const mjLogMessage)
-    // Previous return: ()
-    todo ! ()
+    extern "C" { fn mju_defaultLogHandler_impl(msg: *const mjLogMessage); }
+    // SAFETY: delegates to C implementation
+    unsafe { mju_defaultLogHandler_impl(msg) }
 }
 
 /// C: mju_alignedMalloc (engine/engine_util_errmem.c:44)

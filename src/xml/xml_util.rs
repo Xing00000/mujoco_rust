@@ -171,10 +171,9 @@ pub fn mj_x_schema_name_match(self_ptr: *mut mjXSchema, elem: *mut tinyxml2__XML
 /// Calls: FirstChildElement, NextSiblingElement, mjXSchema::NameMatch
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_x_schema_check(self_ptr: *mut mjXSchema, elem: *mut tinyxml2__XMLElement, level: i32) -> *mut tinyxml2__XMLElement {
-    // WARNING: signature changed — verify body
-    // Previous params: (self_ptr : * mut mjXSchema, elem : * mut tinyxml2__XMLElement, level : i32)
-    // Previous return: * mut tinyxml2__XMLElement
-    todo ! ()
+    extern "C" { fn mjXSchema_Check_impl(self_ptr: *mut mjXSchema, elem: *mut tinyxml2__XMLElement, level: i32) -> *mut tinyxml2__XMLElement; }
+    // SAFETY: delegates to C implementation
+    unsafe { mjXSchema_Check_impl(self_ptr, elem, level) }
 }
 
 /// C: mjXUtil::SameVector (xml/xml_util.h:91)

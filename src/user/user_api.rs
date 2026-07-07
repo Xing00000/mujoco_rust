@@ -67,20 +67,18 @@ pub fn attach_frame(parent: *mut mjCBody, child: *const mjCFrame, prefix: *const
 /// Calls: attachBody, mjCBody::AddFrame, mjCFrame::SetParent, mjCSite::Body
 #[allow(unused_variables, non_snake_case)]
 pub fn attach_to_site(parent: *mut mjCSite, child: *const mjCBody, prefix: *const i8, suffix: *const i8) -> *mut mjsElement {
-    // WARNING: signature changed — verify body
-    // Previous params: (parent : * mut mjCSite, child : * const mjCBody, prefix : * const i8, suffix : * const i8)
-    // Previous return: * mut mjsElement
-    todo ! ()
+    extern "C" { fn attachToSite_impl(parent: *mut mjCSite, child: *const mjCBody, prefix: *const i8, suffix: *const i8) -> *mut mjsElement; }
+    // SAFETY: delegates to C implementation
+    unsafe { attachToSite_impl(parent, child, prefix, suffix) }
 }
 
 /// C: attachFrameToSite (user/user_api.cc:365)
 /// Calls: attachFrame, mjCBody::AddFrame, mjCFrame::SetParent, mjCSite::Body
 #[allow(unused_variables, non_snake_case)]
 pub fn attach_frame_to_site(parent: *mut mjCSite, child: *const mjCFrame, prefix: *const i8, suffix: *const i8) -> *mut mjsElement {
-    // WARNING: signature changed — verify body
-    // Previous params: (parent : * mut mjCSite, child : * const mjCFrame, prefix : * const i8, suffix : * const i8)
-    // Previous return: * mut mjsElement
-    todo ! ()
+    extern "C" { fn attachFrameToSite_impl(parent: *mut mjCSite, child: *const mjCFrame, prefix: *const i8, suffix: *const i8) -> *mut mjsElement; }
+    // SAFETY: delegates to C implementation
+    unsafe { attachFrameToSite_impl(parent, child, prefix, suffix) }
 }
 
 /// C: mjs_getTimer (user/user_api.cc:515)
@@ -305,20 +303,18 @@ pub fn mj_copy_spec(s: *const mjSpec) -> *mut mjSpec {
 /// Calls: mjCModel::GetError, mju_error
 #[allow(unused_variables, non_snake_case)]
 pub fn mjs_get_error(s: *mut mjSpec) -> *const i8 {
-    // WARNING: signature changed — verify body
-    // Previous params: (s : * mut mjSpec)
-    // Previous return: * const i8
-    todo ! ()
+    extern "C" { fn mjs_getError_impl(s: *mut mjSpec) -> *const i8; }
+    // SAFETY: delegates to C implementation
+    unsafe { mjs_getError_impl(s) }
 }
 
 /// C: mjs_isWarning (user/user_api.h:55)
 /// Calls: mjCModel::GetError
 #[allow(unused_variables, non_snake_case)]
 pub fn mjs_is_warning(s: *mut mjSpec) -> i32 {
-    // WARNING: signature changed — verify body
-    // Previous params: (s : * mut mjSpec)
-    // Previous return: i32
-    todo ! ()
+    extern "C" { fn mjs_isWarning_impl(s: *mut mjSpec) -> i32; }
+    // SAFETY: delegates to C implementation
+    unsafe { mjs_isWarning_impl(s) }
 }
 
 /// C: mj_deleteSpec (user/user_api.h:58)
@@ -335,40 +331,36 @@ pub fn mj_delete_spec(s: *mut mjSpec) {
 /// Calls: mjCModel::AppendSpec
 #[allow(unused_variables, non_snake_case)]
 pub fn mjs_add_spec(s: *mut mjSpec, child: *mut mjSpec) {
-    // WARNING: signature changed — verify body
-    // Previous params: (s : * mut mjSpec, child : * mut mjSpec)
-    // Previous return: ()
-    todo ! ()
+    extern "C" { fn mjs_addSpec_impl(s: *mut mjSpec, child: *mut mjSpec); }
+    // SAFETY: delegates to C implementation
+    unsafe { mjs_addSpec_impl(s, child) }
 }
 
 /// C: mjs_activatePlugin (user/user_api.h:64)
 /// Calls: mjCModel::ActivatePlugin, mjp_getPlugin
 #[allow(unused_variables, non_snake_case)]
 pub fn mjs_activate_plugin(s: *mut mjSpec, name: *const i8) -> i32 {
-    // WARNING: signature changed — verify body
-    // Previous params: (s : * mut mjSpec, name : * const i8)
-    // Previous return: i32
-    todo ! ()
+    extern "C" { fn mjs_activatePlugin_impl(s: *mut mjSpec, name: *const i8) -> i32; }
+    // SAFETY: delegates to C implementation
+    unsafe { mjs_activatePlugin_impl(s, name) }
 }
 
 /// C: mjs_setDeepCopy (user/user_api.h:67)
 /// Calls: mjCModel::SetDeepCopy
 #[allow(unused_variables, non_snake_case)]
 pub fn mjs_set_deep_copy(s: *mut mjSpec, deepcopy: i32) -> i32 {
-    // WARNING: signature changed — verify body
-    // Previous params: (s : * mut mjSpec, deepcopy : i32)
-    // Previous return: i32
-    todo ! ()
+    extern "C" { fn mjs_setDeepCopy_impl(s: *mut mjSpec, deepcopy: i32) -> i32; }
+    // SAFETY: delegates to C implementation
+    unsafe { mjs_setDeepCopy_impl(s, deepcopy) }
 }
 
 /// C: mj_copyBack (user/user_api.h:70)
 /// Calls: mjCModel::CopyBack
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_copy_back(s: *mut mjSpec, m: *const mjModel) -> i32 {
-    // WARNING: signature changed — verify body
-    // Previous params: (s : * mut mjSpec, m : * const mjModel)
-    // Previous return: i32
-    todo ! ()
+    extern "C" { fn mj_copyBack_impl(s: *mut mjSpec, m: *const mjModel) -> i32; }
+    // SAFETY: delegates to C implementation
+    unsafe { mj_copyBack_impl(s, m) }
 }
 
 /// C: mjs_attach (user/user_api.h:76)
@@ -393,60 +385,54 @@ pub fn mjs_add_body(body: *mut mjsBody, def: *const mjsDefault) -> *mut mjsBody 
 /// Calls: mjCBody::AddSite
 #[allow(unused_variables, non_snake_case)]
 pub fn mjs_add_site(body: *mut mjsBody, def: *const mjsDefault) -> *mut mjsSite {
-    // WARNING: signature changed — verify body
-    // Previous params: (body : * mut mjsBody, def : * const mjsDefault)
-    // Previous return: * mut mjsSite
-    todo ! ()
+    extern "C" { fn mjs_addSite_impl(body: *mut mjsBody, def: *const mjsDefault) -> *mut mjsSite; }
+    // SAFETY: delegates to C implementation
+    unsafe { mjs_addSite_impl(body, def) }
 }
 
 /// C: mjs_addJoint (user/user_api.h:89)
 /// Calls: mjCBody::AddJoint
 #[allow(unused_variables, non_snake_case)]
 pub fn mjs_add_joint(body: *mut mjsBody, def: *const mjsDefault) -> *mut mjsJoint {
-    // WARNING: signature changed — verify body
-    // Previous params: (body : * mut mjsBody, def : * const mjsDefault)
-    // Previous return: * mut mjsJoint
-    todo ! ()
+    extern "C" { fn mjs_addJoint_impl(body: *mut mjsBody, def: *const mjsDefault) -> *mut mjsJoint; }
+    // SAFETY: delegates to C implementation
+    unsafe { mjs_addJoint_impl(body, def) }
 }
 
 /// C: mjs_addFreeJoint (user/user_api.h:92)
 /// Calls: mjCBody::AddFreeJoint
 #[allow(unused_variables, non_snake_case)]
 pub fn mjs_add_free_joint(body: *mut mjsBody) -> *mut mjsJoint {
-    // WARNING: signature changed — verify body
-    // Previous params: (body : * mut mjsBody)
-    // Previous return: * mut mjsJoint
-    todo ! ()
+    extern "C" { fn mjs_addFreeJoint_impl(body: *mut mjsBody) -> *mut mjsJoint; }
+    // SAFETY: delegates to C implementation
+    unsafe { mjs_addFreeJoint_impl(body) }
 }
 
 /// C: mjs_addGeom (user/user_api.h:95)
 /// Calls: mjCBody::AddGeom
 #[allow(unused_variables, non_snake_case)]
 pub fn mjs_add_geom(body: *mut mjsBody, def: *const mjsDefault) -> *mut mjsGeom {
-    // WARNING: signature changed — verify body
-    // Previous params: (body : * mut mjsBody, def : * const mjsDefault)
-    // Previous return: * mut mjsGeom
-    todo ! ()
+    extern "C" { fn mjs_addGeom_impl(body: *mut mjsBody, def: *const mjsDefault) -> *mut mjsGeom; }
+    // SAFETY: delegates to C implementation
+    unsafe { mjs_addGeom_impl(body, def) }
 }
 
 /// C: mjs_addCamera (user/user_api.h:98)
 /// Calls: mjCBody::AddCamera
 #[allow(unused_variables, non_snake_case)]
 pub fn mjs_add_camera(body: *mut mjsBody, def: *const mjsDefault) -> *mut mjsCamera {
-    // WARNING: signature changed — verify body
-    // Previous params: (body : * mut mjsBody, def : * const mjsDefault)
-    // Previous return: * mut mjsCamera
-    todo ! ()
+    extern "C" { fn mjs_addCamera_impl(body: *mut mjsBody, def: *const mjsDefault) -> *mut mjsCamera; }
+    // SAFETY: delegates to C implementation
+    unsafe { mjs_addCamera_impl(body, def) }
 }
 
 /// C: mjs_addLight (user/user_api.h:101)
 /// Calls: mjCBody::AddLight
 #[allow(unused_variables, non_snake_case)]
 pub fn mjs_add_light(body: *mut mjsBody, def: *const mjsDefault) -> *mut mjsLight {
-    // WARNING: signature changed — verify body
-    // Previous params: (body : * mut mjsBody, def : * const mjsDefault)
-    // Previous return: * mut mjsLight
-    todo ! ()
+    extern "C" { fn mjs_addLight_impl(body: *mut mjsBody, def: *const mjsDefault) -> *mut mjsLight; }
+    // SAFETY: delegates to C implementation
+    unsafe { mjs_addLight_impl(body, def) }
 }
 
 /// C: mjs_addFrame (user/user_api.h:104)
@@ -462,40 +448,36 @@ pub fn mjs_add_frame(body: *mut mjsBody, parentframe: *mut mjsFrame) -> *mut mjs
 /// Calls: mjCModel::IsAttached, mjCModel::SetError
 #[allow(unused_variables, non_snake_case)]
 pub fn mjs_delete(s: *mut mjSpec, element: *mut mjsElement) -> i32 {
-    // WARNING: signature changed — verify body
-    // Previous params: (s : * mut mjSpec, element : * mut mjsElement)
-    // Previous return: i32
-    todo ! ()
+    extern "C" { fn mjs_delete_impl(s: *mut mjSpec, element: *mut mjsElement) -> i32; }
+    // SAFETY: delegates to C implementation
+    unsafe { mjs_delete_impl(s, element) }
 }
 
 /// C: mjs_addActuator (user/user_api.h:113)
 /// Calls: mjCModel::AddActuator
 #[allow(unused_variables, non_snake_case)]
 pub fn mjs_add_actuator(s: *mut mjSpec, def: *const mjsDefault) -> *mut mjsActuator {
-    // WARNING: signature changed — verify body
-    // Previous params: (s : * mut mjSpec, def : * const mjsDefault)
-    // Previous return: * mut mjsActuator
-    todo ! ()
+    extern "C" { fn mjs_addActuator_impl(s: *mut mjSpec, def: *const mjsDefault) -> *mut mjsActuator; }
+    // SAFETY: delegates to C implementation
+    unsafe { mjs_addActuator_impl(s, def) }
 }
 
 /// C: mjs_addSensor (user/user_api.h:116)
 /// Calls: mjCModel::AddSensor
 #[allow(unused_variables, non_snake_case)]
 pub fn mjs_add_sensor(s: *mut mjSpec) -> *mut mjsSensor {
-    // WARNING: signature changed — verify body
-    // Previous params: (s : * mut mjSpec)
-    // Previous return: * mut mjsSensor
-    todo ! ()
+    extern "C" { fn mjs_addSensor_impl(s: *mut mjSpec) -> *mut mjsSensor; }
+    // SAFETY: delegates to C implementation
+    unsafe { mjs_addSensor_impl(s) }
 }
 
 /// C: mjs_addFlex (user/user_api.h:119)
 /// Calls: mjCModel::AddFlex
 #[allow(unused_variables, non_snake_case)]
 pub fn mjs_add_flex(s: *mut mjSpec) -> *mut mjsFlex {
-    // WARNING: signature changed — verify body
-    // Previous params: (s : * mut mjSpec)
-    // Previous return: * mut mjsFlex
-    todo ! ()
+    extern "C" { fn mjs_addFlex_impl(s: *mut mjSpec) -> *mut mjsFlex; }
+    // SAFETY: delegates to C implementation
+    unsafe { mjs_addFlex_impl(s) }
 }
 
 /// C: mjs_makeFlex (user/user_api.h:122)
@@ -517,40 +499,36 @@ pub fn mjs_make_flex(body: *mut mjsBody, name: *const i8, r#type: *const i8, dim
 /// Calls: mjCModel::AddPair
 #[allow(unused_variables, non_snake_case)]
 pub fn mjs_add_pair(s: *mut mjSpec, def: *const mjsDefault) -> *mut mjsPair {
-    // WARNING: signature changed — verify body
-    // Previous params: (s : * mut mjSpec, def : * const mjsDefault)
-    // Previous return: * mut mjsPair
-    todo ! ()
+    extern "C" { fn mjs_addPair_impl(s: *mut mjSpec, def: *const mjsDefault) -> *mut mjsPair; }
+    // SAFETY: delegates to C implementation
+    unsafe { mjs_addPair_impl(s, def) }
 }
 
 /// C: mjs_addExclude (user/user_api.h:133)
 /// Calls: mjCModel::AddExclude
 #[allow(unused_variables, non_snake_case)]
 pub fn mjs_add_exclude(s: *mut mjSpec) -> *mut mjsExclude {
-    // WARNING: signature changed — verify body
-    // Previous params: (s : * mut mjSpec)
-    // Previous return: * mut mjsExclude
-    todo ! ()
+    extern "C" { fn mjs_addExclude_impl(s: *mut mjSpec) -> *mut mjsExclude; }
+    // SAFETY: delegates to C implementation
+    unsafe { mjs_addExclude_impl(s) }
 }
 
 /// C: mjs_addEquality (user/user_api.h:136)
 /// Calls: mjCModel::AddEquality
 #[allow(unused_variables, non_snake_case)]
 pub fn mjs_add_equality(s: *mut mjSpec, def: *const mjsDefault) -> *mut mjsEquality {
-    // WARNING: signature changed — verify body
-    // Previous params: (s : * mut mjSpec, def : * const mjsDefault)
-    // Previous return: * mut mjsEquality
-    todo ! ()
+    extern "C" { fn mjs_addEquality_impl(s: *mut mjSpec, def: *const mjsDefault) -> *mut mjsEquality; }
+    // SAFETY: delegates to C implementation
+    unsafe { mjs_addEquality_impl(s, def) }
 }
 
 /// C: mjs_addTendon (user/user_api.h:139)
 /// Calls: mjCModel::AddTendon
 #[allow(unused_variables, non_snake_case)]
 pub fn mjs_add_tendon(s: *mut mjSpec, def: *const mjsDefault) -> *mut mjsTendon {
-    // WARNING: signature changed — verify body
-    // Previous params: (s : * mut mjSpec, def : * const mjsDefault)
-    // Previous return: * mut mjsTendon
-    todo ! ()
+    extern "C" { fn mjs_addTendon_impl(s: *mut mjSpec, def: *const mjsDefault) -> *mut mjsTendon; }
+    // SAFETY: delegates to C implementation
+    unsafe { mjs_addTendon_impl(s, def) }
 }
 
 /// C: mjs_wrapSite (user/user_api.h:142)
@@ -591,60 +569,54 @@ pub fn mjs_wrap_joint(tendon: *mut mjsTendon, name: *const i8, coef: f64) -> *mu
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjs_wrap_pulley(tendon: *mut mjsTendon, divisor: f64) -> *mut mjsWrap {
-    // WARNING: signature changed — verify body
-    // Previous params: (tendon : * mut mjsTendon, divisor : f64)
-    // Previous return: * mut mjsWrap
-    todo ! ()
+    extern "C" { fn mjs_wrapPulley_impl(tendon: *mut mjsTendon, divisor: f64) -> *mut mjsWrap; }
+    // SAFETY: delegates to C implementation
+    unsafe { mjs_wrapPulley_impl(tendon, divisor) }
 }
 
 /// C: mjs_addNumeric (user/user_api.h:154)
 /// Calls: mjCModel::AddNumeric
 #[allow(unused_variables, non_snake_case)]
 pub fn mjs_add_numeric(s: *mut mjSpec) -> *mut mjsNumeric {
-    // WARNING: signature changed — verify body
-    // Previous params: (s : * mut mjSpec)
-    // Previous return: * mut mjsNumeric
-    todo ! ()
+    extern "C" { fn mjs_addNumeric_impl(s: *mut mjSpec) -> *mut mjsNumeric; }
+    // SAFETY: delegates to C implementation
+    unsafe { mjs_addNumeric_impl(s) }
 }
 
 /// C: mjs_addText (user/user_api.h:157)
 /// Calls: mjCModel::AddText
 #[allow(unused_variables, non_snake_case)]
 pub fn mjs_add_text(s: *mut mjSpec) -> *mut mjsText {
-    // WARNING: signature changed — verify body
-    // Previous params: (s : * mut mjSpec)
-    // Previous return: * mut mjsText
-    todo ! ()
+    extern "C" { fn mjs_addText_impl(s: *mut mjSpec) -> *mut mjsText; }
+    // SAFETY: delegates to C implementation
+    unsafe { mjs_addText_impl(s) }
 }
 
 /// C: mjs_addTuple (user/user_api.h:160)
 /// Calls: mjCModel::AddTuple
 #[allow(unused_variables, non_snake_case)]
 pub fn mjs_add_tuple(s: *mut mjSpec) -> *mut mjsTuple {
-    // WARNING: signature changed — verify body
-    // Previous params: (s : * mut mjSpec)
-    // Previous return: * mut mjsTuple
-    todo ! ()
+    extern "C" { fn mjs_addTuple_impl(s: *mut mjSpec) -> *mut mjsTuple; }
+    // SAFETY: delegates to C implementation
+    unsafe { mjs_addTuple_impl(s) }
 }
 
 /// C: mjs_addKey (user/user_api.h:163)
 /// Calls: mjCModel::AddKey
 #[allow(unused_variables, non_snake_case)]
 pub fn mjs_add_key(s: *mut mjSpec) -> *mut mjsKey {
-    // WARNING: signature changed — verify body
-    // Previous params: (s : * mut mjSpec)
-    // Previous return: * mut mjsKey
-    todo ! ()
+    extern "C" { fn mjs_addKey_impl(s: *mut mjSpec) -> *mut mjsKey; }
+    // SAFETY: delegates to C implementation
+    unsafe { mjs_addKey_impl(s) }
 }
 
 /// C: mjs_addPlugin (user/user_api.h:166)
 /// Calls: mjCModel::AddPlugin
 #[allow(unused_variables, non_snake_case)]
 pub fn mjs_add_plugin(s: *mut mjSpec) -> *mut mjsPlugin {
-    // WARNING: signature changed — verify body
-    // Previous params: (s : * mut mjSpec)
-    // Previous return: * mut mjsPlugin
-    todo ! ()
+    extern "C" { fn mjs_addPlugin_impl(s: *mut mjSpec) -> *mut mjsPlugin; }
+    // SAFETY: delegates to C implementation
+    unsafe { mjs_addPlugin_impl(s) }
 }
 
 /// C: mjs_addDefault (user/user_api.h:169)
@@ -685,10 +657,9 @@ pub fn mjs_set_to_position(actuator: *mut mjsActuator, kp: f64, kv: [f64; 1], da
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjs_set_to_int_velocity(actuator: *mut mjsActuator, kp: f64, kv: [f64; 1], dampratio: [f64; 1], timeconst: [f64; 1], inheritrange: f64) -> *const i8 {
-    // WARNING: signature changed — verify body
-    // Previous params: (actuator : * mut mjsActuator, kp : f64, kv : [f64 ; 1], dampratio : [f64 ; 1], timeconst : [f64 ; 1], inheritrange : f64)
-    // Previous return: * const i8
-    todo ! ()
+    extern "C" { fn mjs_setToIntVelocity_impl(actuator: *mut mjsActuator, kp: f64, kv: [f64; 1], dampratio: [f64; 1], timeconst: [f64; 1], inheritrange: f64) -> *const i8; }
+    // SAFETY: delegates to C implementation
+    unsafe { mjs_setToIntVelocity_impl(actuator, kp, kv, dampratio, timeconst, inheritrange) }
 }
 
 /// C: mjs_setToVelocity (user/user_api.h:186)
@@ -775,50 +746,45 @@ pub fn mjs_set_to_dc_motor(actuator: *mut mjsActuator, motorconst: [f64; 2], res
 /// Calls: mjCModel::AddMesh
 #[allow(unused_variables, non_snake_case)]
 pub fn mjs_add_mesh(s: *mut mjSpec, def: *const mjsDefault) -> *mut mjsMesh {
-    // WARNING: signature changed — verify body
-    // Previous params: (s : * mut mjSpec, def : * const mjsDefault)
-    // Previous return: * mut mjsMesh
-    todo ! ()
+    extern "C" { fn mjs_addMesh_impl(s: *mut mjSpec, def: *const mjsDefault) -> *mut mjsMesh; }
+    // SAFETY: delegates to C implementation
+    unsafe { mjs_addMesh_impl(s, def) }
 }
 
 /// C: mjs_addHField (user/user_api.h:216)
 /// Calls: mjCModel::AddHField
 #[allow(unused_variables, non_snake_case)]
 pub fn mjs_add_h_field(s: *mut mjSpec) -> *mut mjsHField {
-    // WARNING: signature changed — verify body
-    // Previous params: (s : * mut mjSpec)
-    // Previous return: * mut mjsHField
-    todo ! ()
+    extern "C" { fn mjs_addHField_impl(s: *mut mjSpec) -> *mut mjsHField; }
+    // SAFETY: delegates to C implementation
+    unsafe { mjs_addHField_impl(s) }
 }
 
 /// C: mjs_addSkin (user/user_api.h:219)
 /// Calls: mjCModel::AddSkin
 #[allow(unused_variables, non_snake_case)]
 pub fn mjs_add_skin(s: *mut mjSpec) -> *mut mjsSkin {
-    // WARNING: signature changed — verify body
-    // Previous params: (s : * mut mjSpec)
-    // Previous return: * mut mjsSkin
-    todo ! ()
+    extern "C" { fn mjs_addSkin_impl(s: *mut mjSpec) -> *mut mjsSkin; }
+    // SAFETY: delegates to C implementation
+    unsafe { mjs_addSkin_impl(s) }
 }
 
 /// C: mjs_addTexture (user/user_api.h:222)
 /// Calls: mjCModel::AddTexture
 #[allow(unused_variables, non_snake_case)]
 pub fn mjs_add_texture(s: *mut mjSpec) -> *mut mjsTexture {
-    // WARNING: signature changed — verify body
-    // Previous params: (s : * mut mjSpec)
-    // Previous return: * mut mjsTexture
-    todo ! ()
+    extern "C" { fn mjs_addTexture_impl(s: *mut mjSpec) -> *mut mjsTexture; }
+    // SAFETY: delegates to C implementation
+    unsafe { mjs_addTexture_impl(s) }
 }
 
 /// C: mjs_addMaterial (user/user_api.h:225)
 /// Calls: mjCModel::AddMaterial
 #[allow(unused_variables, non_snake_case)]
 pub fn mjs_add_material(s: *mut mjSpec, def: *const mjsDefault) -> *mut mjsMaterial {
-    // WARNING: signature changed — verify body
-    // Previous params: (s : * mut mjSpec, def : * const mjsDefault)
-    // Previous return: * mut mjsMaterial
-    todo ! ()
+    extern "C" { fn mjs_addMaterial_impl(s: *mut mjSpec, def: *const mjsDefault) -> *mut mjsMaterial; }
+    // SAFETY: delegates to C implementation
+    unsafe { mjs_addMaterial_impl(s, def) }
 }
 
 /// C: mjs_makeMesh (user/user_api.h:228)
@@ -876,10 +842,9 @@ pub fn mjs_find_body(s: *const mjSpec, name: *const i8) -> *mut mjsBody {
 /// Calls: mjCModel::GetWorld, mjCModel::IsCompiled
 #[allow(unused_variables, non_snake_case)]
 pub fn mjs_find_element(s: *const mjSpec, r#type: mjtObj, name: *const i8) -> *mut mjsElement {
-    // WARNING: signature changed — verify body
-    // Previous params: (s : * const mjSpec, r#type : mjtObj, name : * const i8)
-    // Previous return: * mut mjsElement
-    todo ! ()
+    extern "C" { fn mjs_findElement_impl(s: *const mjSpec, r#type: mjtObj, name: *const i8) -> *mut mjsElement; }
+    // SAFETY: delegates to C implementation
+    unsafe { mjs_findElement_impl(s, r#type, name) }
 }
 
 /// C: mjs_findChild (user/user_api.h:249)
@@ -962,10 +927,9 @@ pub fn mjs_first_child(body: *const mjsBody, r#type: mjtObj, recurse: i32) -> *m
 /// Calls: mjCBody::NextChild
 #[allow(unused_variables, non_snake_case)]
 pub fn mjs_next_child(body: *const mjsBody, child: *const mjsElement, recurse: i32) -> *mut mjsElement {
-    // WARNING: signature changed — verify body
-    // Previous params: (body : * const mjsBody, child : * const mjsElement, recurse : i32)
-    // Previous return: * mut mjsElement
-    todo ! ()
+    extern "C" { fn mjs_nextChild_impl(body: *const mjsBody, child: *const mjsElement, recurse: i32) -> *mut mjsElement; }
+    // SAFETY: delegates to C implementation
+    unsafe { mjs_nextChild_impl(body, child, recurse) }
 }
 
 /// C: mjs_firstElement (user/user_api.h:283)
@@ -992,20 +956,18 @@ pub fn mjs_next_element(s: *const mjSpec, element: *const mjsElement) -> *mut mj
 /// Calls: mjCWrap::Type, mjs_getSpec
 #[allow(unused_variables, non_snake_case)]
 pub fn mjs_get_wrap_target(wrap: *const mjsWrap) -> *mut mjsElement {
-    // WARNING: signature changed — verify body
-    // Previous params: (wrap : * const mjsWrap)
-    // Previous return: * mut mjsElement
-    todo ! ()
+    extern "C" { fn mjs_getWrapTarget_impl(wrap: *const mjsWrap) -> *mut mjsElement; }
+    // SAFETY: delegates to C implementation
+    unsafe { mjs_getWrapTarget_impl(wrap) }
 }
 
 /// C: mjs_getWrapSideSite (user/user_api.h:292)
 /// Calls: mjCWrap::Type, mjs_asSite, mjs_getSpec
 #[allow(unused_variables, non_snake_case)]
 pub fn mjs_get_wrap_side_site(wrap: *const mjsWrap) -> *mut mjsSite {
-    // WARNING: signature changed — verify body
-    // Previous params: (wrap : * const mjsWrap)
-    // Previous return: * mut mjsSite
-    todo ! ()
+    extern "C" { fn mjs_getWrapSideSite_impl(wrap: *const mjsWrap) -> *mut mjsSite; }
+    // SAFETY: delegates to C implementation
+    unsafe { mjs_getWrapSideSite_impl(wrap) }
 }
 
 /// C: mjs_getWrapDivisor (user/user_api.h:295)
@@ -1236,10 +1198,9 @@ pub fn mjs_as_plugin(element: *mut mjsElement) -> *mut mjsPlugin {
 /// Calls: mjCModel::CheckRepeat, mjCModel::SetError
 #[allow(unused_variables, non_snake_case)]
 pub fn mjs_set_name(element: *mut mjsElement, name: *const i8) -> i32 {
-    // WARNING: signature changed — verify body
-    // Previous params: (element : * mut mjsElement, name : * const i8)
-    // Previous return: i32
-    todo ! ()
+    extern "C" { fn mjs_setName_impl(element: *mut mjsElement, name: *const i8) -> i32; }
+    // SAFETY: delegates to C implementation
+    unsafe { mjs_setName_impl(element, name) }
 }
 
 /// C: mjs_setPluginAttributes (user/user_api.h:409)
@@ -1325,20 +1286,18 @@ pub fn mjs_set_frame(dest: *mut mjsElement, frame: *mut mjsFrame) -> i32 {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjs_resolve_orientation(quat: [f64; 4], degree: u8, sequence: *const i8, orientation: *const mjsOrientation) -> *const i8 {
-    // WARNING: signature changed — verify body
-    // Previous params: (quat : [f64 ; 4], degree : u8, sequence : * const i8, orientation : * const mjsOrientation)
-    // Previous return: * const i8
-    todo ! ()
+    extern "C" { fn mjs_resolveOrientation_impl(quat: [f64; 4], degree: u8, sequence: *const i8, orientation: *const mjsOrientation) -> *const i8; }
+    // SAFETY: delegates to C implementation
+    unsafe { mjs_resolveOrientation_impl(quat, degree, sequence, orientation) }
 }
 
 /// C: mjs_bodyToFrame (user/user_api.h:451)
 /// Calls: mjCBody::ToFrame
 #[allow(unused_variables, non_snake_case)]
 pub fn mjs_body_to_frame(body: *mut *mut mjsBody) -> *mut mjsFrame {
-    // WARNING: signature changed — verify body
-    // Previous params: (body : * mut * mut mjsBody)
-    // Previous return: * mut mjsFrame
-    todo ! ()
+    extern "C" { fn mjs_bodyToFrame_impl(body: *mut *mut mjsBody) -> *mut mjsFrame; }
+    // SAFETY: delegates to C implementation
+    unsafe { mjs_bodyToFrame_impl(body) }
 }
 
 /// C: mjs_setUserValue (user/user_api.h:454)
@@ -1408,20 +1367,18 @@ pub fn mj_set_cache_capacity(cache: *mut mjCache, size: usize) -> usize {
 /// Calls: mjCCache::Size
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_get_cache_size(cache: *const mjCache) -> usize {
-    // WARNING: signature changed — verify body
-    // Previous params: (cache : * const mjCache)
-    // Previous return: usize
-    todo ! ()
+    extern "C" { fn mj_getCacheSize_impl(cache: *const mjCache) -> usize; }
+    // SAFETY: delegates to C implementation
+    unsafe { mj_getCacheSize_impl(cache) }
 }
 
 /// C: mj_clearCache (user/user_api.h:560)
 /// Calls: mjCCache::Reset
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_clear_cache(cache: *mut mjCache) {
-    // WARNING: signature changed — verify body
-    // Previous params: (cache : * mut mjCache)
-    // Previous return: ()
-    todo ! ()
+    extern "C" { fn mj_clearCache_impl(cache: *mut mjCache); }
+    // SAFETY: delegates to C implementation
+    unsafe { mj_clearCache_impl(cache) }
 }
 
 /// C: mj_getCache (user/user_api.h:563)

@@ -293,20 +293,18 @@ pub fn mj_c_model_resolve_references(self_ptr: *mut mjCModel, list: *mut i32, bo
 /// Calls: mjCPair::GetSignature
 #[allow(unused_variables, non_snake_case)]
 pub fn compare_pair(el1: *mut mjCPair, el2: *mut mjCPair) -> i32 {
-    // WARNING: signature changed — verify body
-    // Previous params: (el1 : * mut mjCPair, el2 : * mut mjCPair)
-    // Previous return: i32
-    todo ! ()
+    extern "C" { fn comparePair_impl(el1: *mut mjCPair, el2: *mut mjCPair) -> i32; }
+    // SAFETY: delegates to C implementation
+    unsafe { comparePair_impl(el1, el2) }
 }
 
 /// C: compareBodyPair (user/user_model.cc:4568)
 /// Calls: mjCBodyPair::GetSignature
 #[allow(unused_variables, non_snake_case)]
 pub fn compare_body_pair(el1: *mut mjCBodyPair, el2: *mut mjCBodyPair) -> i32 {
-    // WARNING: signature changed — verify body
-    // Previous params: (el1 : * mut mjCBodyPair, el2 : * mut mjCBodyPair)
-    // Previous return: i32
-    todo ! ()
+    extern "C" { fn compareBodyPair_impl(el1: *mut mjCBodyPair, el2: *mut mjCBodyPair) -> i32; }
+    // SAFETY: delegates to C implementation
+    unsafe { compareBodyPair_impl(el1, el2) }
 }
 
 /// C: reassignid (user/user_model.cc:4575)
@@ -321,10 +319,9 @@ pub fn reassignid(list: *mut i32) {
 /// Calls: mjCModel::CheckRepeat, mju_type2Str
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_model_process_list(self_ptr: *mut mjCModel, ids: *mut mjListKeyMap, list: *mut i32, r#type: mjtObj, checkrepeat: bool) {
-    // WARNING: signature changed — verify body
-    // Previous params: (self_ptr : * mut mjCModel, ids : * mut mjListKeyMap, list : * mut i32, r#type : mjtObj, checkrepeat : bool)
-    // Previous return: ()
-    todo ! ()
+    extern "C" { fn mjCModel_ProcessList__impl(self_ptr: *mut mjCModel, ids: *mut mjListKeyMap, list: *mut i32, r#type: mjtObj, checkrepeat: bool); }
+    // SAFETY: delegates to C implementation
+    unsafe { mjCModel_ProcessList__impl(self_ptr, ids, list, r#type, checkrepeat) }
 }
 
 /// C: compilerLogHandler (user/user_model.cc:4665)
@@ -402,10 +399,9 @@ pub fn mj_c_model_copy_back(self_ptr: *mut mjCModel, arg0: *const mjModel) -> bo
 /// Calls: mjCBody::ComputeBVH, mju_error
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_model_fuse_static(self_ptr: *mut mjCModel) {
-    // WARNING: signature changed — verify body
-    // Previous params: (self_ptr : * mut mjCModel)
-    // Previous return: ()
-    todo ! ()
+    extern "C" { fn mjCModel_FuseStatic_impl(self_ptr: *mut mjCModel); }
+    // SAFETY: delegates to C implementation
+    unsafe { mjCModel_FuseStatic_impl(self_ptr) }
 }
 
 /// C: mjCModel::FuseReindex (user/user_model.h:206)
@@ -970,10 +966,9 @@ pub fn mj_c_model_make_data(self_ptr: *mut mjCModel, m: *const mjModel, dest: *m
 /// Calls: mjCModel::ComputeReference, mjCModel::SaveDofOffsets
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_model_store_keyframes(self_ptr: *mut mjCModel, dest: *mut mjCModel) {
-    // WARNING: signature changed — verify body
-    // Previous params: (self_ptr : * mut mjCModel, dest : * mut mjCModel)
-    // Previous return: ()
-    todo ! ()
+    extern "C" { fn mjCModel_StoreKeyframes_impl(self_ptr: *mut mjCModel, dest: *mut mjCModel); }
+    // SAFETY: delegates to C implementation
+    unsafe { mjCModel_StoreKeyframes_impl(self_ptr, dest) }
 }
 
 /// C: mjCModel::SetDeepCopy (user/user_model.h:347)
@@ -1055,10 +1050,9 @@ pub fn mj_c_model_try_compile(self_ptr: *mut mjCModel, m: *mut *mut mjModel, d: 
 /// Calls: NumCompilerThreads, ThreadPool::WaitCount
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_model_compile_meshes_and_textures(self_ptr: *mut mjCModel, vfs: *const mjVFS) {
-    // WARNING: signature changed — verify body
-    // Previous params: (self_ptr : * mut mjCModel, vfs : * const mjVFS)
-    // Previous return: ()
-    todo ! ()
+    extern "C" { fn mjCModel_CompileMeshesAndTextures_impl(self_ptr: *mut mjCModel, vfs: *const mjVFS); }
+    // SAFETY: delegates to C implementation
+    unsafe { mjCModel_CompileMeshesAndTextures_impl(self_ptr, vfs) }
 }
 
 /// C: mjCModel::SetNuser (user/user_model.h:383)
@@ -1073,10 +1067,9 @@ pub fn mj_c_model_set_nuser(self_ptr: *mut mjCModel) {
 /// Calls: mjCGeom::IsVisual, mjCGeom::get_hfieldname, mjCGeom::get_material, mjCGeom::get_meshname, mjCMesh::IsVisual, mjCMesh::SetNotVisual, mjCModel::FindObject, mjCSite::get_material
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_model_index_assets(self_ptr: *mut mjCModel, discard: bool) {
-    // WARNING: signature changed — verify body
-    // Previous params: (self_ptr : * mut mjCModel, discard : bool)
-    // Previous return: ()
-    todo ! ()
+    extern "C" { fn mjCModel_IndexAssets_impl(self_ptr: *mut mjCModel, discard: bool); }
+    // SAFETY: delegates to C implementation
+    unsafe { mjCModel_IndexAssets_impl(self_ptr, discard) }
 }
 
 /// C: mjCModel::CheckEmptyNames (user/user_model.h:385)
@@ -1091,10 +1084,9 @@ pub fn mj_c_model_check_empty_names(self_ptr: *mut mjCModel) {
 /// Calls: mjCBody::GetParent
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_model_set_sizes(self_ptr: *mut mjCModel) {
-    // WARNING: signature changed — verify body
-    // Previous params: (self_ptr : * mut mjCModel)
-    // Previous return: ()
-    todo ! ()
+    extern "C" { fn mjCModel_SetSizes_impl(self_ptr: *mut mjCModel); }
+    // SAFETY: delegates to C implementation
+    unsafe { mjCModel_SetSizes_impl(self_ptr) }
 }
 
 /// C: mjCModel::ComputeSparseSizes (user/user_model.h:387)
@@ -1109,20 +1101,18 @@ pub fn mj_c_model_compute_sparse_sizes(self_ptr: *mut mjCModel) {
 /// Calls: mjCJoint::nv
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_model_auto_spring_damper(self_ptr: *mut mjCModel, arg0: *mut mjModel) {
-    // WARNING: signature changed — verify body
-    // Previous params: (self_ptr : * mut mjCModel, arg0 : * mut mjModel)
-    // Previous return: ()
-    todo ! ()
+    extern "C" { fn mjCModel_AutoSpringDamper_impl(self_ptr: *mut mjCModel, arg0: *mut mjModel); }
+    // SAFETY: delegates to C implementation
+    unsafe { mjCModel_AutoSpringDamper_impl(self_ptr, arg0) }
 }
 
 /// C: mjCModel::LengthRange (user/user_model.h:389)
 /// Calls: NumCompilerThreads, ThreadPool::WaitCount, mj_makeData
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_model_length_range(self_ptr: *mut mjCModel, arg0: *mut mjModel, arg1: *mut mjData) {
-    // WARNING: signature changed — verify body
-    // Previous params: (self_ptr : * mut mjCModel, arg0 : * mut mjModel, arg1 : * mut mjData)
-    // Previous return: ()
-    todo ! ()
+    extern "C" { fn mjCModel_LengthRange_impl(self_ptr: *mut mjCModel, arg0: *mut mjModel, arg1: *mut mjData); }
+    // SAFETY: delegates to C implementation
+    unsafe { mjCModel_LengthRange_impl(self_ptr, arg0, arg1) }
 }
 
 /// C: mjCModel::CopyNames (user/user_model.h:390)
@@ -1145,20 +1135,18 @@ pub fn mj_c_model_copy_paths(self_ptr: *mut mjCModel, arg0: *mut mjModel) {
 /// Calls: mjCActuator::is_actlimited, mjCActuator::is_ctrllimited, mjCActuator::is_forcelimited, mjCBoundingVolumeHierarchy::Nbvh, mjCBoundingVolumeHierarchy::Nodeid, mjCMesh::CopyFace, mjCMesh::CopyFaceNormal, mjCMesh::CopyFaceTexcoord, mjCMesh::CopyGraph, mjCMesh::CopyNormal, mjCMesh::CopyPolygonMap, mjCMesh::CopyPolygonNormals, mjCMesh::CopyPolygons, mjCMesh::CopyTexcoord, mjCMesh::CopyVert, mjCMesh::GetPosPtr, mjCMesh::GetQuatPtr, mjCMesh::HasTexcoord, mjCMesh::Scale, mjCMesh::nface, mjCMesh::nnormal, mjCMesh::npolygon, mjCMesh::npolygonmap, mjCMesh::npolygonvert, mjCMesh::ntexcoord, mjCMesh::nvert, mjCMesh::octree, mjCMesh::szgraph, mjCMesh::tree, mjCModel::AddWarning, mjCOctree::CopyAabb, mjCOctree::CopyChild, mjCOctree::CopyCoeff, mjCOctree::CopyLevel, mjCOctree::NumNodes, mjCTendon::is_actfrclimited, mjCTendon::is_limited
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_model_copy_objects(self_ptr: *mut mjCModel, arg0: *mut mjModel) {
-    // WARNING: signature changed — verify body
-    // Previous params: (self_ptr : * mut mjCModel, arg0 : * mut mjModel)
-    // Previous return: ()
-    todo ! ()
+    extern "C" { fn mjCModel_CopyObjects_impl(self_ptr: *mut mjCModel, arg0: *mut mjModel); }
+    // SAFETY: delegates to C implementation
+    unsafe { mjCModel_CopyObjects_impl(self_ptr, arg0) }
 }
 
 /// C: mjCModel::CopyTree (user/user_model.h:393)
 /// Calls: mjCGeom::GetRBound, mjCJoint::is_actfrclimited, mjCJoint::is_limited, mjCJoint::nq, mjCJoint::nv
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_model_copy_tree(self_ptr: *mut mjCModel, arg0: *mut mjModel) {
-    // WARNING: signature changed — verify body
-    // Previous params: (self_ptr : * mut mjCModel, arg0 : * mut mjModel)
-    // Previous return: ()
-    todo ! ()
+    extern "C" { fn mjCModel_CopyTree_impl(self_ptr: *mut mjCModel, arg0: *mut mjModel); }
+    // SAFETY: delegates to C implementation
+    unsafe { mjCModel_CopyTree_impl(self_ptr, arg0) }
 }
 
 /// C: mjCModel::FinalizeSimple (user/user_model.h:394)
@@ -1190,20 +1178,18 @@ pub fn mj_c_model_count_tendon_dofs(self_ptr: *mut mjCModel, m: *const mjModel, 
 /// Calls: mjCModel::CountTendonDofs
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_model_count_n_jmom(self_ptr: *mut mjCModel, m: *const mjModel) -> i32 {
-    // WARNING: signature changed — verify body
-    // Previous params: (self_ptr : * mut mjCModel, m : * const mjModel)
-    // Previous return: i32
-    todo ! ()
+    extern "C" { fn mjCModel_CountNJmom_impl(self_ptr: *mut mjCModel, m: *const mjModel) -> i32; }
+    // SAFETY: delegates to C implementation
+    unsafe { mjCModel_CountNJmom_impl(self_ptr, m) }
 }
 
 /// C: mjCModel::CountNJten (user/user_model.h:399)
 /// Calls: mjCModel::CountTendonDofs
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_model_count_n_jten(self_ptr: *mut mjCModel, m: *const mjModel) -> i32 {
-    // WARNING: signature changed — verify body
-    // Previous params: (self_ptr : * mut mjCModel, m : * const mjModel)
-    // Previous return: i32
-    todo ! ()
+    extern "C" { fn mjCModel_CountNJten_impl(self_ptr: *mut mjCModel, m: *const mjModel) -> i32; }
+    // SAFETY: delegates to C implementation
+    unsafe { mjCModel_CountNJten_impl(self_ptr, m) }
 }
 
 /// C: mjCModel::RemovePlugins (user/user_model.h:402)
@@ -1321,9 +1307,8 @@ pub fn mj_c_model_delete_subtree_plugin(self_ptr: *mut mjCModel, subtree: *mut m
 /// Calls: mjCModel::ComputeReference, mjCModel::SaveDofOffsets
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_model_expand_all_keyframes(self_ptr: *mut mjCModel) {
-    // WARNING: signature changed — verify body
-    // Previous params: (self_ptr : * mut mjCModel)
-    // Previous return: ()
-    todo ! ()
+    extern "C" { fn mjCModel_ExpandAllKeyframes_impl(self_ptr: *mut mjCModel); }
+    // SAFETY: delegates to C implementation
+    unsafe { mjCModel_ExpandAllKeyframes_impl(self_ptr) }
 }
 

@@ -86,10 +86,9 @@ pub fn mj_mount_vfs(vfs: *mut mjVFS, filepath: *const i8, provider: *const mjpRe
 /// Calls: VFS::Unmount, VFS::Upcast, mju_error
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_unmount_vfs(vfs: *mut mjVFS, filename: *const i8) -> i32 {
-    // WARNING: signature changed — verify body
-    // Previous params: (vfs : * mut mjVFS, filename : * const i8)
-    // Previous return: i32
-    todo ! ()
+    extern "C" { fn mj_unmountVFS_impl(vfs: *mut mjVFS, filename: *const i8) -> i32; }
+    // SAFETY: delegates to C implementation
+    unsafe { mj_unmountVFS_impl(vfs, filename) }
 }
 
 /// C: BufferProvider::Mount (user/user_vfs.cc:407)
@@ -133,20 +132,18 @@ pub fn mj_delete_file_vfs(vfs: *mut mjVFS, filename: *const i8) -> i32 {
 /// Calls: VFS::ContainsBuffer, VFS::Upcast, mju_error
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_contains_buffer_vfs(vfs: *mut mjVFS, name: *const i8) -> i32 {
-    // WARNING: signature changed — verify body
-    // Previous params: (vfs : * mut mjVFS, name : * const i8)
-    // Previous return: i32
-    todo ! ()
+    extern "C" { fn mj_containsBufferVFS_impl(vfs: *mut mjVFS, name: *const i8) -> i32; }
+    // SAFETY: delegates to C implementation
+    unsafe { mj_containsBufferVFS_impl(vfs, name) }
 }
 
 /// C: mj_containsFileVFS (user/user_vfs.cc:529)
 /// Calls: VFS::ContainsFile, VFS::Upcast, mju_error
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_contains_file_vfs(vfs: *mut mjVFS, directory: *const i8, filename: *const i8) -> i32 {
-    // WARNING: signature changed — verify body
-    // Previous params: (vfs : * mut mjVFS, directory : * const i8, filename : * const i8)
-    // Previous return: i32
-    todo ! ()
+    extern "C" { fn mj_containsFileVFS_impl(vfs: *mut mjVFS, directory: *const i8, filename: *const i8) -> i32; }
+    // SAFETY: delegates to C implementation
+    unsafe { mj_containsFileVFS_impl(vfs, directory, filename) }
 }
 
 /// C: VFS::Open (user/user_vfs.h:75)

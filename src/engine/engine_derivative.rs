@@ -204,10 +204,9 @@ pub fn add_jtbj_mul_sparse(m: *const mjModel, d: *mut mjData, res: *mut f64, vec
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjd_flex_interp_kernel(m: *const mjModel, d: *mut mjData, res: *mut f64, vec: *const f64, s1: f64, s2: f64, K_rot_cache: *const f64, K_rot_out: *mut f64) {
-    // WARNING: signature changed — verify body
-    // Previous params: (m : * const mjModel, d : * mut mjData, res : * mut f64, vec : * const f64, s1 : f64, s2 : f64, K_rot_cache : * const f64, K_rot_out : * mut f64)
-    // Previous return: ()
-    todo ! ()
+    extern "C" { fn mjd_flexInterp_kernel_impl(m: *const mjModel, d: *mut mjData, res: *mut f64, vec: *const f64, s1: f64, s2: f64, K_rot_cache: *const f64, K_rot_out: *mut f64); }
+    // SAFETY: delegates to C implementation
+    unsafe { mjd_flexInterp_kernel_impl(m, d, res, vec, s1, s2, K_rot_cache, K_rot_out) }
 }
 
 /// C: pow2 (engine/engine_derivative.c:1339)

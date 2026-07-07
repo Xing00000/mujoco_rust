@@ -164,10 +164,9 @@ pub fn point_tri_dist_sq_with_uv(p: *const f64, v0: *const f64, v1: *const f64, 
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn query_closest_bvh_with_face(bvh: *const f64, child: *const i32, nodeid: *const i32, vert: *const f64, face: *const i32, node_idx: i32, p: *const f64, best_dist_sq: *mut f64, best_face: *mut i32, best_u: *mut f64, best_v: *mut f64) {
-    // WARNING: signature changed — verify body
-    // Previous params: (bvh : * const f64, child : * const i32, nodeid : * const i32, vert : * const f64, face : * const i32, node_idx : i32, p : * const f64, best_dist_sq : * mut f64, best_face : * mut i32, best_u : * mut f64, best_v : * mut f64)
-    // Previous return: ()
-    todo ! ()
+    extern "C" { fn queryClosestBVHWithFace_impl(bvh: *const f64, child: *const i32, nodeid: *const i32, vert: *const f64, face: *const i32, node_idx: i32, p: *const f64, best_dist_sq: *mut f64, best_face: *mut i32, best_u: *mut f64, best_v: *mut f64); }
+    // SAFETY: delegates to C implementation
+    unsafe { queryClosestBVHWithFace_impl(bvh, child, nodeid, vert, face, node_idx, p, best_dist_sq, best_face, best_u, best_v) }
 }
 
 /// C: querySignedDistance (user/user_objects.cc:776)
@@ -207,10 +206,9 @@ pub fn dot2(a: *const f64, b: *const f64) -> f64 {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn box_triangle(v: *const Triangle, aamm: [f64; 6]) -> bool {
-    // WARNING: signature changed — verify body
-    // Previous params: (v : * const Triangle, aamm : [f64 ; 6])
-    // Previous return: bool
-    todo ! ()
+    extern "C" { fn boxTriangle_impl(v: *const Triangle, aamm: [f64; 6]) -> bool; }
+    // SAFETY: delegates to C implementation
+    unsafe { boxTriangle_impl(v, aamm) }
 }
 
 /// C: mjCOctree::TaskToNode (user/user_objects.cc:980)
@@ -254,10 +252,9 @@ pub fn mj_c_octree_make_octree(self_ptr: *mut mjCOctree, elements: *const i32, a
 /// Calls: mjCFrame::IsAncestor
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_body_copy_list(self_ptr: *mut mjCBody, dst: *mut i32, src: *const i32, fmap: *mut i32, pframe: *const mjCFrame) {
-    // WARNING: signature changed — verify body
-    // Previous params: (self_ptr : * mut mjCBody, dst : * mut i32, src : * const i32, fmap : * mut i32, pframe : * const mjCFrame)
-    // Previous return: ()
-    todo ! ()
+    extern "C" { fn mjCBody_CopyList_impl(self_ptr: *mut mjCBody, dst: *mut i32, src: *const i32, fmap: *mut i32, pframe: *const mjCFrame); }
+    // SAFETY: delegates to C implementation
+    unsafe { mjCBody_CopyList_impl(self_ptr, dst, src, fmap, pframe) }
 }
 
 /// C: mjCBody::GetList (user/user_objects.cc:2311)
@@ -647,10 +644,9 @@ pub fn mj_c_bounding_volume_hierarchy_query_signed_distance(self_ptr: *mut mjCBo
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_octree_create_octree(self_ptr: *mut mjCOctree, aamm: [f64; 6]) {
-    // WARNING: signature changed — verify body
-    // Previous params: (self_ptr : * mut mjCOctree, aamm : [f64 ; 6])
-    // Previous return: ()
-    todo ! ()
+    extern "C" { fn mjCOctree_CreateOctree_impl(self_ptr: *mut mjCOctree, aamm: [f64; 6]); }
+    // SAFETY: delegates to C implementation
+    unsafe { mjCOctree_CreateOctree_impl(self_ptr, aamm) }
 }
 
 /// C: mjCOctree::NumNodes (user/user_objects.h:287)
@@ -831,20 +827,18 @@ pub fn mj_c_octree_smoothing_iterations(self_ptr: *mut mjCOctree) -> i32 {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_octree_compute_sdf_coeffs(self_ptr: *mut mjCOctree, vert: *const f64, nvert: i32, face: *const i32, nface: i32, tree: *const mjCBoundingVolumeHierarchy) {
-    // WARNING: signature changed — verify body
-    // Previous params: (self_ptr : * mut mjCOctree, vert : * const f64, nvert : i32, face : * const i32, nface : i32, tree : * const mjCBoundingVolumeHierarchy)
-    // Previous return: ()
-    todo ! ()
+    extern "C" { fn mjCOctree_ComputeSdfCoeffs_impl(self_ptr: *mut mjCOctree, vert: *const f64, nvert: i32, face: *const i32, nface: i32, tree: *const mjCBoundingVolumeHierarchy); }
+    // SAFETY: delegates to C implementation
+    unsafe { mjCOctree_ComputeSdfCoeffs_impl(self_ptr, vert, nvert, face, nface, tree) }
 }
 
 /// C: mjCOctree::FindNeighbor (user/user_objects.h:332)
 /// Calls: mjCOctree::FindCoarseNeighbor
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_octree_find_neighbor(self_ptr: *mut mjCOctree, node_idx: i32, dir: i32) -> i32 {
-    // WARNING: signature changed — verify body
-    // Previous params: (self_ptr : * mut mjCOctree, node_idx : i32, dir : i32)
-    // Previous return: i32
-    todo ! ()
+    extern "C" { fn mjCOctree_FindNeighbor_impl(self_ptr: *mut mjCOctree, node_idx: i32, dir: i32) -> i32; }
+    // SAFETY: delegates to C implementation
+    unsafe { mjCOctree_FindNeighbor_impl(self_ptr, node_idx, dir) }
 }
 
 /// C: mjCOctree::FindCoarseNeighbor (user/user_objects.h:333)
@@ -883,10 +877,9 @@ pub fn mj_c_base_get_asset_content_type(resource_name: string_view, raw_text: st
 /// Calls: mjCBase::GetParent
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_base_set_frame(self_ptr: *mut mjCBase, _frame: *mut mjCFrame) {
-    // WARNING: signature changed — verify body
-    // Previous params: (self_ptr : * mut mjCBase, _frame : * mut mjCFrame)
-    // Previous return: ()
-    todo ! ()
+    extern "C" { fn mjCBase_SetFrame_impl(self_ptr: *mut mjCBase, _frame: *mut mjCFrame); }
+    // SAFETY: delegates to C implementation
+    unsafe { mjCBase_SetFrame_impl(self_ptr, _frame) }
 }
 
 /// C: mjCBase::CopyFromSpec (user/user_objects.h:369)
@@ -1074,10 +1067,9 @@ pub fn mj_c_body_num_objects(self_ptr: *mut mjCBody, r#type: mjtObj) -> i32 {
 /// Calls: mjCBody::NumObjects
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_body_get_object(self_ptr: *mut mjCBody, r#type: mjtObj, id: i32) -> *mut mjCBase {
-    // WARNING: signature changed — verify body
-    // Previous params: (self_ptr : * mut mjCBody, r#type : mjtObj, id : i32)
-    // Previous return: * mut mjCBase
-    todo ! ()
+    extern "C" { fn mjCBody_GetObject_impl(self_ptr: *mut mjCBody, r#type: mjtObj, id: i32) -> *mut mjCBase; }
+    // SAFETY: delegates to C implementation
+    unsafe { mjCBody_GetObject_impl(self_ptr, r#type, id) }
 }
 
 /// C: mjCBody::FindObject (user/user_objects.h:539)
@@ -1226,10 +1218,9 @@ pub fn mj_c_body_accumulate_inertia(self_ptr: *mut mjCBody, other: *const mjsBod
 /// Calls: mjCBody::ComputeBVH, mjCBody::CopyFromSpec, mjCBody::InertiaFromGeom, mjp_getPluginAtSlot
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_body_compile(self_ptr: *mut mjCBody) {
-    // WARNING: signature changed — verify body
-    // Previous params: (self_ptr : * mut mjCBody)
-    // Previous return: ()
-    todo ! ()
+    extern "C" { fn mjCBody_Compile_impl(self_ptr: *mut mjCBody); }
+    // SAFETY: delegates to C implementation
+    unsafe { mjCBody_Compile_impl(self_ptr) }
 }
 
 /// C: mjCBody::InertiaFromGeom (user/user_objects.h:604)
@@ -1320,10 +1311,9 @@ pub fn mj_c_frame_is_ancestor(self_ptr: *mut mjCFrame, child: *const mjCFrame) -
 /// Calls: mjCFrame::CopyFromSpec
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_frame_compile(self_ptr: *mut mjCFrame) {
-    // WARNING: signature changed — verify body
-    // Previous params: (self_ptr : * mut mjCFrame)
-    // Previous return: ()
-    todo ! ()
+    extern "C" { fn mjCFrame_Compile_impl(self_ptr: *mut mjCFrame); }
+    // SAFETY: delegates to C implementation
+    unsafe { mjCFrame_Compile_impl(self_ptr) }
 }
 
 /// C: mjCJoint::CopyFromSpec (user/user_objects.h:706)
@@ -1436,10 +1426,9 @@ pub fn mj_c_joint_qvel(self_ptr: *mut mjCJoint, state_name: *const std__string) 
 /// Calls: mjCJoint::CopyFromSpec, mjCJoint::is_actfrclimited, mjCJoint::is_limited
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_joint_compile(self_ptr: *mut mjCJoint) -> i32 {
-    // WARNING: signature changed — verify body
-    // Previous params: (self_ptr : * mut mjCJoint)
-    // Previous return: i32
-    todo ! ()
+    extern "C" { fn mjCJoint_Compile_impl(self_ptr: *mut mjCJoint) -> i32; }
+    // SAFETY: delegates to C implementation
+    unsafe { mjCJoint_Compile_impl(self_ptr) }
 }
 
 /// C: mjCJoint::PointToLocal (user/user_objects.h:727)
@@ -1515,10 +1504,9 @@ pub fn mj_c_geom_type(self_ptr: *mut mjCGeom) -> mjtGeom {
 /// Calls: mjCGeom::GetAddedMassKappa
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_geom_set_fluid_coefs(self_ptr: *mut mjCGeom) {
-    // WARNING: signature changed — verify body
-    // Previous params: (self_ptr : * mut mjCGeom)
-    // Previous return: ()
-    todo ! ()
+    extern "C" { fn mjCGeom_SetFluidCoefs_impl(self_ptr: *mut mjCGeom); }
+    // SAFETY: delegates to C implementation
+    unsafe { mjCGeom_SetFluidCoefs_impl(self_ptr) }
 }
 
 /// C: mjCGeom::GetAddedMassKappa (user/user_objects.h:794)
@@ -1690,10 +1678,9 @@ pub fn mj_c_site_del_material(self_ptr: *mut mjCSite) {
 /// Calls: mjCSite::CopyFromSpec
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_site_compile(self_ptr: *mut mjCSite) {
-    // WARNING: signature changed — verify body
-    // Previous params: (self_ptr : * mut mjCSite)
-    // Previous return: ()
-    todo ! ()
+    extern "C" { fn mjCSite_Compile_impl(self_ptr: *mut mjCSite); }
+    // SAFETY: delegates to C implementation
+    unsafe { mjCSite_Compile_impl(self_ptr) }
 }
 
 /// C: mjCSite::CopyFromSpec (user/user_objects.h:863)
@@ -1756,10 +1743,9 @@ pub fn mj_c_camera_get_parent(self_ptr: *mut mjCCamera) -> *mut mjCBody {
 /// Calls: mjCCamera::CopyFromSpec
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_camera_compile(self_ptr: *mut mjCCamera) {
-    // WARNING: signature changed — verify body
-    // Previous params: (self_ptr : * mut mjCCamera)
-    // Previous return: ()
-    todo ! ()
+    extern "C" { fn mjCCamera_Compile_impl(self_ptr: *mut mjCCamera); }
+    // SAFETY: delegates to C implementation
+    unsafe { mjCCamera_Compile_impl(self_ptr) }
 }
 
 /// C: mjCCamera::CopyFromSpec (user/user_objects.h:907)
@@ -1830,10 +1816,9 @@ pub fn mj_c_light_get_parent(self_ptr: *mut mjCLight) -> *mut mjCBody {
 /// Calls: mjCLight::CopyFromSpec
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_light_compile(self_ptr: *mut mjCLight) {
-    // WARNING: signature changed — verify body
-    // Previous params: (self_ptr : * mut mjCLight)
-    // Previous return: ()
-    todo ! ()
+    extern "C" { fn mjCLight_Compile_impl(self_ptr: *mut mjCLight); }
+    // SAFETY: delegates to C implementation
+    unsafe { mjCLight_Compile_impl(self_ptr) }
 }
 
 /// C: mjCLight::CopyFromSpec (user/user_objects.h:952)
@@ -1984,10 +1969,9 @@ pub fn mj_c_flex_del_texcoord(self_ptr: *mut mjCFlex) {
 /// Calls: mjCFlex::CopyFromSpec, mjCFlex::CreateBVH, mjCFlex::CreateShellPair, mjCFlex::LoadCachedStiffness, mjuu_crossvec, mjuu_dot3
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_flex_compile(self_ptr: *mut mjCFlex, vfs: *const mjVFS) {
-    // WARNING: signature changed — verify body
-    // Previous params: (self_ptr : * mut mjCFlex, vfs : * const mjVFS)
-    // Previous return: ()
-    todo ! ()
+    extern "C" { fn mjCFlex_Compile_impl(self_ptr: *mut mjCFlex, vfs: *const mjVFS); }
+    // SAFETY: delegates to C implementation
+    unsafe { mjCFlex_Compile_impl(self_ptr, vfs) }
 }
 
 /// C: mjCFlex::CreateBVH (user/user_objects.h:1056)
@@ -2109,10 +2093,9 @@ pub fn mj_c_mesh_make_torus(self_ptr: *mut mjCMesh, res: i32, radius: f64) {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_mesh_make_supertorus(self_ptr: *mut mjCMesh, res: i32, radius: f64, s: f64, t: f64) {
-    // WARNING: signature changed — verify body
-    // Previous params: (self_ptr : * mut mjCMesh, res : i32, radius : f64, s : f64, t : f64)
-    // Previous return: ()
-    todo ! ()
+    extern "C" { fn mjCMesh_MakeSupertorus_impl(self_ptr: *mut mjCMesh, res: i32, radius: f64, s: f64, t: f64); }
+    // SAFETY: delegates to C implementation
+    unsafe { mjCMesh_MakeSupertorus_impl(self_ptr, res, radius, s, t) }
 }
 
 /// C: mjCMesh::MakeSupersphere (user/user_objects.h:1160)
@@ -2124,10 +2107,9 @@ pub fn mj_c_mesh_make_supertorus(self_ptr: *mut mjCMesh, res: i32, radius: f64, 
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_mesh_make_supersphere(self_ptr: *mut mjCMesh, res: i32, e: f64, n: f64) {
-    // WARNING: signature changed — verify body
-    // Previous params: (self_ptr : * mut mjCMesh, res : i32, e : f64, n : f64)
-    // Previous return: ()
-    todo ! ()
+    extern "C" { fn mjCMesh_MakeSupersphere_impl(self_ptr: *mut mjCMesh, res: i32, e: f64, n: f64); }
+    // SAFETY: delegates to C implementation
+    unsafe { mjCMesh_MakeSupersphere_impl(self_ptr, res, e, n) }
 }
 
 /// C: mjCMesh::MakeWedge (user/user_objects.h:1161)
@@ -2499,10 +2481,9 @@ pub fn mj_c_mesh_get_volume_ref(self_ptr: *mut mjCMesh) -> f64 {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_mesh_fit_geom(self_ptr: *mut mjCMesh, geom: *mut mjCGeom, center: [f64; 3]) {
-    // WARNING: signature changed — verify body
-    // Previous params: (self_ptr : * mut mjCMesh, geom : * mut mjCGeom, center : [f64 ; 3])
-    // Previous return: ()
-    todo ! ()
+    extern "C" { fn mjCMesh_FitGeom_impl(self_ptr: *mut mjCMesh, geom: *mut mjCGeom, center: [f64; 3]); }
+    // SAFETY: delegates to C implementation
+    unsafe { mjCMesh_FitGeom_impl(self_ptr, geom, center) }
 }
 
 /// C: mjCMesh::HasTexcoord (user/user_objects.h:1228)
@@ -2656,10 +2637,9 @@ pub fn mj_c_mesh_set_bounding_volume(self_ptr: *mut mjCMesh, faceid: i32, dvert:
 /// Calls: mjCMesh::IsMSH, mjCMesh::LoadFromDecoder, mjCMesh::LoadMSH
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_mesh_load_from_resource(self_ptr: *mut mjCMesh, resource: *mut mjResource, remove_repeated: bool) {
-    // WARNING: signature changed — verify body
-    // Previous params: (self_ptr : * mut mjCMesh, resource : * mut mjResource, remove_repeated : bool)
-    // Previous return: ()
-    todo ! ()
+    extern "C" { fn mjCMesh_LoadFromResource_impl(self_ptr: *mut mjCMesh, resource: *mut mjResource, remove_repeated: bool); }
+    // SAFETY: delegates to C implementation
+    unsafe { mjCMesh_LoadFromResource_impl(self_ptr, resource, remove_repeated) }
 }
 
 /// C: mjCMesh::IsMSH (user/user_objects.h:1258)
@@ -3049,10 +3029,9 @@ pub fn mj_c_skin_name_space(self_ptr: *mut mjCSkin, m: *const mjCModel) {
 /// Calls: FilePath::Str, mjCBase::LoadResource, mjCSkin::CopyFromSpec, mjCSkin::LoadSKN, mju_closeResource, mjuu_normvec
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_skin_compile(self_ptr: *mut mjCSkin, vfs: *const mjVFS) {
-    // WARNING: signature changed — verify body
-    // Previous params: (self_ptr : * mut mjCSkin, vfs : * const mjVFS)
-    // Previous return: ()
-    todo ! ()
+    extern "C" { fn mjCSkin_Compile_impl(self_ptr: *mut mjCSkin, vfs: *const mjVFS); }
+    // SAFETY: delegates to C implementation
+    unsafe { mjCSkin_Compile_impl(self_ptr, vfs) }
 }
 
 /// C: mjCSkin::LoadSKN (user/user_objects.h:1383)
@@ -3108,10 +3087,9 @@ pub fn mj_ch_field_get_userdata(self_ptr: *mut mjCHField) -> *mut i32 {
 /// Calls: FilePath::Str, mjCBase::LoadResource, mjCHField::CopyFromSpec, mjCHField::LoadCustom, mjCHField::LoadPNG, mj_getCache, mju_closeResource
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_ch_field_compile(self_ptr: *mut mjCHField, vfs: *const mjVFS) {
-    // WARNING: signature changed — verify body
-    // Previous params: (self_ptr : * mut mjCHField, vfs : * const mjVFS)
-    // Previous return: ()
-    todo ! ()
+    extern "C" { fn mjCHField_Compile_impl(self_ptr: *mut mjCHField, vfs: *const mjVFS); }
+    // SAFETY: delegates to C implementation
+    unsafe { mjCHField_Compile_impl(self_ptr, vfs) }
 }
 
 /// C: mjCHField::GetCacheId (user/user_objects.h:1429)
@@ -3293,10 +3271,9 @@ pub fn mj_c_material_del_textures(self_ptr: *mut mjCMaterial) {
 /// Calls: mjCMaterial::CopyFromSpec
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_material_compile(self_ptr: *mut mjCMaterial) {
-    // WARNING: signature changed — verify body
-    // Previous params: (self_ptr : * mut mjCMaterial)
-    // Previous return: ()
-    todo ! ()
+    extern "C" { fn mjCMaterial_Compile_impl(self_ptr: *mut mjCMaterial); }
+    // SAFETY: delegates to C implementation
+    unsafe { mjCMaterial_Compile_impl(self_ptr) }
 }
 
 /// C: mjCPair::CopyFromSpec (user/user_objects.h:1565)
@@ -3359,10 +3336,9 @@ pub fn mj_c_pair_get_signature(self_ptr: *mut mjCPair) -> i32 {
 /// Calls: mjCGeom::SetNotVisual, mjCPair::CopyFromSpec
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_pair_compile(self_ptr: *mut mjCPair) {
-    // WARNING: signature changed — verify body
-    // Previous params: (self_ptr : * mut mjCPair)
-    // Previous return: ()
-    todo ! ()
+    extern "C" { fn mjCPair_Compile_impl(self_ptr: *mut mjCPair); }
+    // SAFETY: delegates to C implementation
+    unsafe { mjCPair_Compile_impl(self_ptr) }
 }
 
 /// C: mjCBodyPair::CopyFromSpec (user/user_objects.h:1613)
@@ -3425,10 +3401,9 @@ pub fn mj_c_body_pair_get_signature(self_ptr: *mut mjCBodyPair) -> i32 {
 /// Calls: mjCBodyPair::CopyFromSpec
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_body_pair_compile(self_ptr: *mut mjCBodyPair) {
-    // WARNING: signature changed — verify body
-    // Previous params: (self_ptr : * mut mjCBodyPair)
-    // Previous return: ()
-    todo ! ()
+    extern "C" { fn mjCBodyPair_Compile_impl(self_ptr: *mut mjCBodyPair); }
+    // SAFETY: delegates to C implementation
+    unsafe { mjCBodyPair_Compile_impl(self_ptr) }
 }
 
 /// C: mjCEquality::CopyFromSpec (user/user_objects.h:1658)
@@ -3467,10 +3442,9 @@ pub fn mj_c_equality_name_space(self_ptr: *mut mjCEquality, m: *const mjCModel) 
 /// Calls: mjCEquality::CopyFromSpec
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_equality_compile(self_ptr: *mut mjCEquality) {
-    // WARNING: signature changed — verify body
-    // Previous params: (self_ptr : * mut mjCEquality)
-    // Previous return: ()
-    todo ! ()
+    extern "C" { fn mjCEquality_Compile_impl(self_ptr: *mut mjCEquality); }
+    // SAFETY: delegates to C implementation
+    unsafe { mjCEquality_Compile_impl(self_ptr) }
 }
 
 /// C: mjCTendon::set_material (user/user_objects.h:1697)
@@ -3642,10 +3616,9 @@ pub fn mj_c_tendon_is_actfrclimited(self_ptr: *mut mjCTendon) -> bool {
 /// Calls: mjCTendon::CopyFromSpec
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_tendon_compile(self_ptr: *mut mjCTendon) {
-    // WARNING: signature changed — verify body
-    // Previous params: (self_ptr : * mut mjCTendon)
-    // Previous return: ()
-    todo ! ()
+    extern "C" { fn mjCTendon_Compile_impl(self_ptr: *mut mjCTendon); }
+    // SAFETY: delegates to C implementation
+    unsafe { mjCTendon_Compile_impl(self_ptr) }
 }
 
 /// C: mjCWrap::CopyFromSpec (user/user_objects.h:1749)
@@ -3693,10 +3666,9 @@ pub fn mj_c_wrap_type(self_ptr: *mut mjCWrap) -> mjtWrap {
 /// Calls: mjCWrap::CopyFromSpec
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_wrap_compile(self_ptr: *mut mjCWrap) {
-    // WARNING: signature changed — verify body
-    // Previous params: (self_ptr : * mut mjCWrap)
-    // Previous return: ()
-    todo ! ()
+    extern "C" { fn mjCWrap_Compile_impl(self_ptr: *mut mjCWrap); }
+    // SAFETY: delegates to C implementation
+    unsafe { mjCWrap_Compile_impl(self_ptr) }
 }
 
 /// C: mjCPlugin::PointToLocal (user/user_objects.h:1791)
@@ -3789,10 +3761,9 @@ pub fn mj_c_actuator_ctrl(self_ptr: *mut mjCActuator, state_name: *const std__st
 /// Calls: mjCActuator::CopyFromSpec, mjCJoint::get_range, mjCTendon::get_range, mjp_getPluginAtSlot
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_actuator_compile(self_ptr: *mut mjCActuator) {
-    // WARNING: signature changed — verify body
-    // Previous params: (self_ptr : * mut mjCActuator)
-    // Previous return: ()
-    todo ! ()
+    extern "C" { fn mjCActuator_Compile_impl(self_ptr: *mut mjCActuator); }
+    // SAFETY: delegates to C implementation
+    unsafe { mjCActuator_Compile_impl(self_ptr) }
 }
 
 /// C: mjCActuator::CopyFromSpec (user/user_objects.h:1857)
@@ -3887,10 +3858,9 @@ pub fn mj_c_sensor_get_ref(self_ptr: *mut mjCSensor) -> *const mjCBase {
 /// Calls: mjCJoint::is_limited, mjCSensor::CopyFromSpec, mjCTendon::is_limited, mjp_getPluginAtSlot
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_sensor_compile(self_ptr: *mut mjCSensor) {
-    // WARNING: signature changed — verify body
-    // Previous params: (self_ptr : * mut mjCSensor)
-    // Previous return: ()
-    todo ! ()
+    extern "C" { fn mjCSensor_Compile_impl(self_ptr: *mut mjCSensor); }
+    // SAFETY: delegates to C implementation
+    unsafe { mjCSensor_Compile_impl(self_ptr) }
 }
 
 /// C: mjCSensor::CopyFromSpec (user/user_objects.h:1910)
@@ -3953,10 +3923,9 @@ pub fn mj_c_numeric_copy_from_spec(self_ptr: *mut mjCNumeric) {
 /// Calls: mjCNumeric::CopyFromSpec
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_numeric_compile(self_ptr: *mut mjCNumeric) {
-    // WARNING: signature changed — verify body
-    // Previous params: (self_ptr : * mut mjCNumeric)
-    // Previous return: ()
-    todo ! ()
+    extern "C" { fn mjCNumeric_Compile_impl(self_ptr: *mut mjCNumeric); }
+    // SAFETY: delegates to C implementation
+    unsafe { mjCNumeric_Compile_impl(self_ptr) }
 }
 
 /// C: mjCText::PointToLocal (user/user_objects.h:1975)
@@ -3979,10 +3948,9 @@ pub fn mj_c_text_copy_from_spec(self_ptr: *mut mjCText) {
 /// Calls: mjCText::CopyFromSpec
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_text_compile(self_ptr: *mut mjCText) {
-    // WARNING: signature changed — verify body
-    // Previous params: (self_ptr : * mut mjCText)
-    // Previous return: ()
-    todo ! ()
+    extern "C" { fn mjCText_Compile_impl(self_ptr: *mut mjCText); }
+    // SAFETY: delegates to C implementation
+    unsafe { mjCText_Compile_impl(self_ptr) }
 }
 
 /// C: mjCTuple::PointToLocal (user/user_objects.h:2011)
@@ -4005,10 +3973,9 @@ pub fn mj_c_tuple_copy_from_spec(self_ptr: *mut mjCTuple) {
 /// Calls: mjCGeom::SetNotVisual
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_tuple_resolve_references(self_ptr: *mut mjCTuple, m: *const mjCModel) {
-    // WARNING: signature changed — verify body
-    // Previous params: (self_ptr : * mut mjCTuple, m : * const mjCModel)
-    // Previous return: ()
-    todo ! ()
+    extern "C" { fn mjCTuple_ResolveReferences_impl(self_ptr: *mut mjCTuple, m: *const mjCModel); }
+    // SAFETY: delegates to C implementation
+    unsafe { mjCTuple_ResolveReferences_impl(self_ptr, m) }
 }
 
 /// C: mjCTuple::NameSpace (user/user_objects.h:2014)
@@ -4023,10 +3990,9 @@ pub fn mj_c_tuple_name_space(self_ptr: *mut mjCTuple, m: *const mjCModel) {
 /// Calls: mjCTuple::CopyFromSpec
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_tuple_compile(self_ptr: *mut mjCTuple) {
-    // WARNING: signature changed — verify body
-    // Previous params: (self_ptr : * mut mjCTuple)
-    // Previous return: ()
-    todo ! ()
+    extern "C" { fn mjCTuple_Compile_impl(self_ptr: *mut mjCTuple); }
+    // SAFETY: delegates to C implementation
+    unsafe { mjCTuple_Compile_impl(self_ptr) }
 }
 
 /// C: mjCKey::PointToLocal (user/user_objects.h:2054)
@@ -4049,20 +4015,18 @@ pub fn mj_c_key_copy_from_spec(self_ptr: *mut mjCKey) {
 /// Calls: mjCKey::CopyFromSpec
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_key_compile(self_ptr: *mut mjCKey, m: *const mjModel) {
-    // WARNING: signature changed — verify body
-    // Previous params: (self_ptr : * mut mjCKey, m : * const mjModel)
-    // Previous return: ()
-    todo ! ()
+    extern "C" { fn mjCKey_Compile_impl(self_ptr: *mut mjCKey, m: *const mjModel); }
+    // SAFETY: delegates to C implementation
+    unsafe { mjCKey_Compile_impl(self_ptr, m) }
 }
 
 /// C: mjCDef::CopyWithoutChildren (user/user_objects.h:2076)
 /// Calls: mjCDef::PointToLocal
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_def_copy_without_children(self_ptr: *mut mjCDef, other: *const mjCDef) {
-    // WARNING: signature changed — verify body
-    // Previous params: (self_ptr : * mut mjCDef, other : * const mjCDef)
-    // Previous return: ()
-    todo ! ()
+    extern "C" { fn mjCDef_CopyWithoutChildren_impl(self_ptr: *mut mjCDef, other: *const mjCDef); }
+    // SAFETY: delegates to C implementation
+    unsafe { mjCDef_CopyWithoutChildren_impl(self_ptr, other) }
 }
 
 /// C: mjCDef::PointToLocal (user/user_objects.h:2077)
@@ -4093,10 +4057,9 @@ pub fn mj_c_def_name_space(self_ptr: *mut mjCDef, m: *const mjCModel) {
 /// Calls: mjCDef::CopyFromSpec
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_def_compile(self_ptr: *mut mjCDef, model: *const mjCModel) {
-    // WARNING: signature changed — verify body
-    // Previous params: (self_ptr : * mut mjCDef, model : * const mjCModel)
-    // Previous return: ()
-    todo ! ()
+    extern "C" { fn mjCDef_Compile_impl(self_ptr: *mut mjCDef, model: *const mjCModel); }
+    // SAFETY: delegates to C implementation
+    unsafe { mjCDef_Compile_impl(self_ptr, model) }
 }
 
 /// C: mjCDef::Joint (user/user_objects.h:2084)

@@ -26,20 +26,18 @@ pub fn make_plane(m: *const mjModel, con: *mut mjrContext) {
 /// Calls: listAllocate, mjr_uploadMesh
 #[allow(unused_variables, non_snake_case)]
 pub fn make_mesh(m: *const mjModel, con: *mut mjrContext) {
-    // WARNING: signature changed — verify body
-    // Previous params: (m : * const mjModel, con : * mut mjrContext)
-    // Previous return: ()
-    todo ! ()
+    extern "C" { fn makeMesh_impl(m: *const mjModel, con: *mut mjrContext); }
+    // SAFETY: delegates to C implementation
+    unsafe { makeMesh_impl(m, con) }
 }
 
 /// C: makeHField (render/classic/render_context.c:389)
 /// Calls: listAllocate, mjr_uploadHField
 #[allow(unused_variables, non_snake_case)]
 pub fn make_h_field(m: *const mjModel, con: *mut mjrContext) {
-    // WARNING: signature changed — verify body
-    // Previous params: (m : * const mjModel, con : * mut mjrContext)
-    // Previous return: ()
-    todo ! ()
+    extern "C" { fn makeHField_impl(m: *const mjModel, con: *mut mjrContext); }
+    // SAFETY: delegates to C implementation
+    unsafe { makeHField_impl(m, con) }
 }
 
 /// C: setVertexSphere (render/classic/render_context.c:500)
@@ -59,20 +57,18 @@ pub fn set_vertex_sphere(v: *mut f32, n: *mut f32, az: f32, el: f32, sign: i32) 
 /// Calls: setVertexSphere
 #[allow(unused_variables, non_snake_case)]
 pub fn half_sphere(sign: i32, nSlice: i32, nStack: i32) {
-    // WARNING: signature changed — verify body
-    // Previous params: (sign : i32, nSlice : i32, nStack : i32)
-    // Previous return: ()
-    todo ! ()
+    extern "C" { fn halfSphere_impl(sign: i32, nSlice: i32, nStack: i32); }
+    // SAFETY: delegates to C implementation
+    unsafe { halfSphere_impl(sign, nSlice, nStack) }
 }
 
 /// C: sphere (render/classic/render_context.c:595)
 /// Calls: setVertexSphere
 #[allow(unused_variables, non_snake_case)]
 pub fn sphere(nSlice: i32, nStack: i32) {
-    // WARNING: signature changed — verify body
-    // Previous params: (nSlice : i32, nStack : i32)
-    // Previous return: ()
-    todo ! ()
+    extern "C" { fn sphere_impl(nSlice: i32, nStack: i32); }
+    // SAFETY: delegates to C implementation
+    unsafe { sphere_impl(nSlice, nStack) }
 }
 
 /// C: setVertexDisk (render/classic/render_context.c:682)
@@ -92,10 +88,9 @@ pub fn set_vertex_disk(v: *mut f32, az: f32, r: f32, sign: i32) {
 /// Calls: setVertexDisk
 #[allow(unused_variables, non_snake_case)]
 pub fn disk(sign: i32, nSlice: i32, nStack: i32) {
-    // WARNING: signature changed — verify body
-    // Previous params: (sign : i32, nSlice : i32, nStack : i32)
-    // Previous return: ()
-    todo ! ()
+    extern "C" { fn disk_impl(sign: i32, nSlice: i32, nStack: i32); }
+    // SAFETY: delegates to C implementation
+    unsafe { disk_impl(sign, nSlice, nStack) }
 }
 
 /// C: setVertexCone (render/classic/render_context.c:759)
@@ -115,10 +110,9 @@ pub fn set_vertex_cone(v: *mut f32, n: *mut f32, az: f32, r: f32) {
 /// Calls: mjr_normalizeVec, setVertexCone
 #[allow(unused_variables, non_snake_case)]
 pub fn cone(nSlice: i32, nStack: i32) {
-    // WARNING: signature changed — verify body
-    // Previous params: (nSlice : i32, nStack : i32)
-    // Previous return: ()
-    todo ! ()
+    extern "C" { fn cone_impl(nSlice: i32, nStack: i32); }
+    // SAFETY: delegates to C implementation
+    unsafe { cone_impl(nSlice, nStack) }
 }
 
 /// C: setVertexCylinder (render/classic/render_context.c:840)
@@ -138,10 +132,9 @@ pub fn set_vertex_cylinder(v: *mut f32, n: *mut f32, az: f32, h: f32) {
 /// Calls: setVertexCylinder
 #[allow(unused_variables, non_snake_case)]
 pub fn cylinder(nSlice: i32, nStack: i32) {
-    // WARNING: signature changed — verify body
-    // Previous params: (nSlice : i32, nStack : i32)
-    // Previous return: ()
-    todo ! ()
+    extern "C" { fn cylinder_impl(nSlice: i32, nStack: i32); }
+    // SAFETY: delegates to C implementation
+    unsafe { cylinder_impl(nSlice, nStack) }
 }
 
 /// C: setVertexHaze (render/classic/render_context.c:890)
@@ -166,10 +159,9 @@ pub fn set_vertex_haze(v: *mut f32, az: f32, h: f32, r: f32) {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn haze(nSlice: i32, r: f32, rgba: *const f32) {
-    // WARNING: signature changed — verify body
-    // Previous params: (nSlice : i32, r : f32, rgba : * const f32)
-    // Previous return: ()
-    todo ! ()
+    extern "C" { fn haze_impl(nSlice: i32, r: f32, rgba: *const f32); }
+    // SAFETY: delegates to C implementation
+    unsafe { haze_impl(nSlice, r, rgba) }
 }
 
 /// C: makeBuiltin (render/classic/render_context.c:945)
@@ -221,10 +213,9 @@ pub fn make_material(m: *const mjModel, con: *mut mjrContext) {
 /// Calls: mjr_uploadTexture, mju_error
 #[allow(unused_variables, non_snake_case)]
 pub fn make_texture(m: *const mjModel, con: *mut mjrContext) {
-    // WARNING: signature changed — verify body
-    // Previous params: (m : * const mjModel, con : * mut mjrContext)
-    // Previous return: ()
-    todo ! ()
+    extern "C" { fn makeTexture_impl(m: *const mjModel, con: *mut mjrContext); }
+    // SAFETY: delegates to C implementation
+    unsafe { makeTexture_impl(m, con) }
 }
 
 /// C: makeSkin (render/classic/render_context.c:1457)
@@ -285,10 +276,9 @@ pub fn mjr_make_context(m: *const mjModel, con: *mut mjrContext, fontscale: i32)
 /// Calls: makeFont
 #[allow(unused_variables, non_snake_case)]
 pub fn mjr_change_font(fontscale: i32, con: *mut mjrContext) {
-    // WARNING: signature changed — verify body
-    // Previous params: (fontscale : i32, con : * mut mjrContext)
-    // Previous return: ()
-    todo ! ()
+    extern "C" { fn mjr_changeFont_impl(fontscale: i32, con: *mut mjrContext); }
+    // SAFETY: delegates to C implementation
+    unsafe { mjr_changeFont_impl(fontscale, con) }
 }
 
 /// C: mjr_addAux (render/classic/render_context.h:51)
@@ -304,20 +294,18 @@ pub fn mjr_add_aux(index: i32, width: i32, height: i32, samples: i32, con: *mut 
 /// Calls: mjr_defaultContext, mju_free
 #[allow(unused_variables, non_snake_case)]
 pub fn mjr_free_context(con: *mut mjrContext) {
-    // WARNING: signature changed — verify body
-    // Previous params: (con : * mut mjrContext)
-    // Previous return: ()
-    todo ! ()
+    extern "C" { fn mjr_freeContext_impl(con: *mut mjrContext); }
+    // SAFETY: delegates to C implementation
+    unsafe { mjr_freeContext_impl(con) }
 }
 
 /// C: mjr_resizeOffscreen (render/classic/render_context.h:57)
 /// Calls: makeOff
 #[allow(unused_variables, non_snake_case)]
 pub fn mjr_resize_offscreen(offwidth: i32, offheight: i32, con: *mut mjrContext) {
-    // WARNING: signature changed — verify body
-    // Previous params: (offwidth : i32, offheight : i32, con : * mut mjrContext)
-    // Previous return: ()
-    todo ! ()
+    extern "C" { fn mjr_resizeOffscreen_impl(offwidth: i32, offheight: i32, con: *mut mjrContext); }
+    // SAFETY: delegates to C implementation
+    unsafe { mjr_resizeOffscreen_impl(offwidth, offheight, con) }
 }
 
 /// C: mjr_uploadTexture (render/classic/render_context.h:60)

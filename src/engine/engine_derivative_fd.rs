@@ -72,10 +72,9 @@ pub fn clamped_diff(dx: *mut f64, x: *const f64, x_plus: *const f64, x_minus: *c
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn clamped_state_diff(m: *const mjModel, ds: *mut f64, s: *const f64, s_plus: *const f64, s_minus: *const f64, h: f64) {
-    // WARNING: signature changed — verify body
-    // Previous params: (m : * const mjModel, ds : * mut f64, s : * const f64, s_plus : * const f64, s_minus : * const f64, h : f64)
-    // Previous return: ()
-    todo ! ()
+    extern "C" { fn clampedStateDiff_impl(m: *const mjModel, ds: *mut f64, s: *const f64, s_plus: *const f64, s_minus: *const f64, h: f64); }
+    // SAFETY: delegates to C implementation
+    unsafe { clampedStateDiff_impl(m, ds, s, s_plus, s_minus, h) }
 }
 
 /// C: inRange (engine/engine_derivative_fd.c:106)
@@ -114,10 +113,9 @@ pub fn inverse_skip(m: *const mjModel, d: *mut mjData, stage: mjtStage, skipsens
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjd_step_fd(m: *const mjModel, d: *mut mjData, eps: f64, flg_centered: mjtBool, DyDq: *mut f64, DyDv: *mut f64, DyDa: *mut f64, DyDu: *mut f64, DsDq: *mut f64, DsDv: *mut f64, DsDa: *mut f64, DsDu: *mut f64) {
-    // WARNING: signature changed — verify body
-    // Previous params: (m : * const mjModel, d : * mut mjData, eps : f64, flg_centered : mjtBool, DyDq : * mut f64, DyDv : * mut f64, DyDa : * mut f64, DyDu : * mut f64, DsDq : * mut f64, DsDv : * mut f64, DsDa : * mut f64, DsDu : * mut f64)
-    // Previous return: ()
-    todo ! ()
+    extern "C" { fn mjd_stepFD_impl(m: *const mjModel, d: *mut mjData, eps: f64, flg_centered: mjtBool, DyDq: *mut f64, DyDv: *mut f64, DyDa: *mut f64, DyDu: *mut f64, DsDq: *mut f64, DsDv: *mut f64, DsDa: *mut f64, DsDu: *mut f64); }
+    // SAFETY: delegates to C implementation
+    unsafe { mjd_stepFD_impl(m, d, eps, flg_centered, DyDq, DyDv, DyDa, DyDu, DsDq, DsDv, DsDa, DsDu) }
 }
 
 /// C: mjd_smooth_velFD (engine/engine_derivative_fd.h:27)
@@ -183,9 +181,8 @@ pub fn mjd_transition_fd(m: *const mjModel, d: *mut mjData, eps: f64, centered: 
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjd_inverse_fd(m: *const mjModel, d: *mut mjData, eps: f64, flg_actuation: mjtBool, DfDq: *mut f64, DfDv: *mut f64, DfDa: *mut f64, DsDq: *mut f64, DsDv: *mut f64, DsDa: *mut f64, DmDq: *mut f64) {
-    // WARNING: signature changed — verify body
-    // Previous params: (m : * const mjModel, d : * mut mjData, eps : f64, flg_actuation : mjtBool, DfDq : * mut f64, DfDv : * mut f64, DfDa : * mut f64, DsDq : * mut f64, DsDv : * mut f64, DsDa : * mut f64, DmDq : * mut f64)
-    // Previous return: ()
-    todo ! ()
+    extern "C" { fn mjd_inverseFD_impl(m: *const mjModel, d: *mut mjData, eps: f64, flg_actuation: mjtBool, DfDq: *mut f64, DfDv: *mut f64, DfDa: *mut f64, DsDq: *mut f64, DsDv: *mut f64, DsDa: *mut f64, DmDq: *mut f64); }
+    // SAFETY: delegates to C implementation
+    unsafe { mjd_inverseFD_impl(m, d, eps, flg_actuation, DfDq, DfDv, DfDa, DsDq, DsDv, DsDa, DmDq) }
 }
 

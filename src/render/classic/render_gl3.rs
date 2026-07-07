@@ -87,10 +87,9 @@ pub fn init_lights(scn: *mut mjvScene) {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn set_view(view: i32, viewport: mjrRect, scn: *const mjvScene, con: *const mjrContext, camProject: [f32; 16], camView: [f32; 16]) {
-    // WARNING: signature changed — verify body
-    // Previous params: (view : i32, viewport : mjrRect, scn : * const mjvScene, con : * const mjrContext, camProject : [f32 ; 16], camView : [f32 ; 16])
-    // Previous return: ()
-    todo ! ()
+    extern "C" { fn setView_impl(view: i32, viewport: mjrRect, scn: *const mjvScene, con: *const mjrContext, camProject: [f32; 16], camView: [f32; 16]); }
+    // SAFETY: delegates to C implementation
+    unsafe { setView_impl(view, viewport, scn, con, camProject, camView) }
 }
 
 /// C: geomcmp (render/classic/render_gl3.c:778)

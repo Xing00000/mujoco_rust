@@ -40,10 +40,9 @@ pub fn length_circle(p0: *const f64, p1: *const f64, ind: i32, radius: f64) -> f
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn wrap_circle(pnt: *mut f64, end: *const f64, side: *const f64, radius: f64) -> f64 {
-    // WARNING: signature changed — verify body
-    // Previous params: (pnt : * mut f64, end : * const f64, side : * const f64, radius : f64)
-    // Previous return: f64
-    todo ! ()
+    extern "C" { fn wrap_circle_impl(pnt: *mut f64, end: *const f64, side: *const f64, radius: f64) -> f64; }
+    // SAFETY: delegates to C implementation
+    unsafe { wrap_circle_impl(pnt, end, side, radius) }
 }
 
 /// C: wrap_inside (engine/engine_util_misc.c:158)

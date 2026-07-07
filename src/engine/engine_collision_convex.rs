@@ -810,10 +810,9 @@ pub fn mjc_plane_convex(m: *const mjModel, d: *mut mjData, con: *mut mjPreContac
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjc_convex_h_field(m: *const mjModel, d: *mut mjData, con: *mut mjPreContact, g1: i32, g2: i32, margin: f64) -> i32 {
-    // WARNING: signature changed — verify body
-    // Previous params: (m : * const mjModel, d : * mut mjData, con : * mut mjPreContact, g1 : i32, g2 : i32, margin : f64)
-    // Previous return: i32
-    todo ! ()
+    extern "C" { fn mjc_ConvexHField_impl(m: *const mjModel, d: *mut mjData, con: *mut mjPreContact, g1: i32, g2: i32, margin: f64) -> i32; }
+    // SAFETY: delegates to C implementation
+    unsafe { mjc_ConvexHField_impl(m, d, con, g1, g2, margin) }
 }
 
 /// C: mjc_Convex (engine/engine_collision_convex.h:114)

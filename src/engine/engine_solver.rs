@@ -234,10 +234,9 @@ pub fn project_cone(force: *mut f64, mu: *const f64, dim: i32, r#type: i32) {
 /// Calls: ARdiaginv, costChange, dualState, dualStateChange, extractBlock, mj_freeStack, mj_isSparse, mj_markStack, mj_stackAllocInfo, mju_clip, mju_copy, mju_dot, mju_gather, mju_mulMatVec, mju_zero, pcg32_next, projectCone, residual, saveStats, shuffle_int, solveQCQP
 #[allow(unused_variables, non_snake_case)]
 pub fn sol_pgs(m: *const mjModel, d: *mut mjData, island: i32, ne: i32, nf: i32, nefc: i32, efclist: *const i32, maxiter: i32) {
-    // WARNING: signature changed — verify body
-    // Previous params: (m : * const mjModel, d : * mut mjData, island : i32, ne : i32, nf : i32, nefc : i32, efclist : * const i32, maxiter : i32)
-    // Previous return: ()
-    todo ! ()
+    extern "C" { fn solPGS_impl(m: *const mjModel, d: *mut mjData, island: i32, ne: i32, nf: i32, nefc: i32, efclist: *const i32, maxiter: i32); }
+    // SAFETY: delegates to C implementation
+    unsafe { solPGS_impl(m, d, island, ne, nf, nefc, efclist, maxiter) }
 }
 
 /// C: solNoSlip (engine/engine_solver.c:766)

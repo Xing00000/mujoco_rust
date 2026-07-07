@@ -62,10 +62,9 @@ pub fn mj_align_flex(m: *mut mjModel, d: *mut mjData) {
 /// Calls: makeFlexSparse, makeTendonSparse, mj_alignFlex, mj_camlight, mj_comPos, mj_factorM, mj_flex, mj_freeStack, mj_jacBodyCom, mj_kinematics, mj_local2Global, mj_makeM, mj_markStack, mj_setM0, mj_solveM, mj_stackAllocInfo, mj_tendon, mj_transmission, mju_copy, mju_copy3, mju_copy9, mju_dot, mju_isZero, mju_max, mju_message, mju_mulMatMatT, mju_mulMatTVec3, mju_mulQuat, mju_negQuat, mju_norm, mju_normalize4, mju_sparse2dense, mju_sub3, mju_subFrom3, mju_zero
 #[allow(unused_variables, non_snake_case)]
 pub fn set0(m: *mut mjModel, d: *mut mjData) {
-    // WARNING: signature changed — verify body
-    // Previous params: (m : * mut mjModel, d : * mut mjData)
-    // Previous return: ()
-    todo ! ()
+    extern "C" { fn set0_impl(m: *mut mjModel, d: *mut mjData); }
+    // SAFETY: delegates to C implementation
+    unsafe { set0_impl(m, d) }
 }
 
 /// C: updateBox (engine/engine_setconst.c:1041)
@@ -85,10 +84,9 @@ pub fn update_box(xmin: *mut f64, xmax: *mut f64, pos: *mut f64, radius: f64) {
 /// Calls: mj_freeStack, mj_markStack, mj_stackAllocInfo, mju_add3, mju_dist3, mju_max, mju_scl3, mju_zero, updateBox
 #[allow(unused_variables, non_snake_case)]
 pub fn set_stat(m: *mut mjModel, d: *mut mjData) {
-    // WARNING: signature changed — verify body
-    // Previous params: (m : * mut mjModel, d : * mut mjData)
-    // Previous return: ()
-    todo ! ()
+    extern "C" { fn setStat_impl(m: *mut mjModel, d: *mut mjData); }
+    // SAFETY: delegates to C implementation
+    unsafe { setStat_impl(m, d) }
 }
 
 /// C: setSpring (engine/engine_setconst.c:1198)
@@ -128,9 +126,8 @@ pub fn mj_set_const(m: *mut mjModel, d: *mut mjData) {
 /// Calls: evalAct, mj_resetData, mju_message
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_set_length_range(m: *mut mjModel, d: *mut mjData, index: i32, opt: *const mjLROpt, error: *mut i8, error_sz: i32) -> i32 {
-    // WARNING: signature changed — verify body
-    // Previous params: (m : * mut mjModel, d : * mut mjData, index : i32, opt : * const mjLROpt, error : * mut i8, error_sz : i32)
-    // Previous return: i32
-    todo ! ()
+    extern "C" { fn mj_setLengthRange_impl(m: *mut mjModel, d: *mut mjData, index: i32, opt: *const mjLROpt, error: *mut i8, error_sz: i32) -> i32; }
+    // SAFETY: delegates to C implementation
+    unsafe { mj_setLengthRange_impl(m, d, index, opt, error, error_sz) }
 }
 

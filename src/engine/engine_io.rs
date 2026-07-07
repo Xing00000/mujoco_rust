@@ -259,10 +259,9 @@ pub fn mj_make_b_sparse(nv: i32, nbody: i32, nB: i32, body_dofnum: *const i32, b
 /// Calls: copyM2Sparse, mju_fillInt, mju_lower2SymMap, mju_message, mju_sparseMap
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_make_dof_dof_maps(nv: i32, nM: i32, nC: i32, nD: i32, dof_Madr: *const i32, dof_simplenum: *const i32, dof_parentid: *const i32, D_rownnz: *const i32, D_rowadr: *const i32, D_colind: *const i32, M_rownnz: *const i32, M_rowadr: *const i32, M_colind: *const i32, mapM2D: *mut i32, mapD2M: *mut i32, mapM2M: *mut i32, M: *mut i32, scratch: *mut i32) {
-    // WARNING: signature changed — verify body
-    // Previous params: (nv : i32, nM : i32, nC : i32, nD : i32, dof_Madr : * const i32, dof_simplenum : * const i32, dof_parentid : * const i32, D_rownnz : * const i32, D_rowadr : * const i32, D_colind : * const i32, M_rownnz : * const i32, M_rowadr : * const i32, M_colind : * const i32, mapM2D : * mut i32, mapD2M : * mut i32, mapM2M : * mut i32, M : * mut i32, scratch : * mut i32)
-    // Previous return: ()
-    todo ! ()
+    extern "C" { fn mj_makeDofDofMaps_impl(nv: i32, nM: i32, nC: i32, nD: i32, dof_Madr: *const i32, dof_simplenum: *const i32, dof_parentid: *const i32, D_rownnz: *const i32, D_rowadr: *const i32, D_colind: *const i32, M_rownnz: *const i32, M_rowadr: *const i32, M_colind: *const i32, mapM2D: *mut i32, mapD2M: *mut i32, mapM2M: *mut i32, M: *mut i32, scratch: *mut i32); }
+    // SAFETY: delegates to C implementation
+    unsafe { mj_makeDofDofMaps_impl(nv, nM, nC, nD, dof_Madr, dof_simplenum, dof_parentid, D_rownnz, D_rowadr, D_colind, M_rownnz, M_rowadr, M_colind, mapM2D, mapD2M, mapM2M, M, scratch) }
 }
 
 /// C: mj_makeData (engine/engine_io.h:113)
@@ -287,20 +286,18 @@ pub fn mj_make_raw_data(dest: *mut *mut mjData, m: *const mjModel) {
 /// Calls: mj_copyDataVisual
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_copy_data(dest: *mut mjData, m: *const mjModel, src: *const mjData) -> *mut mjData {
-    // WARNING: signature changed — verify body
-    // Previous params: (dest : * mut mjData, m : * const mjModel, src : * const mjData)
-    // Previous return: * mut mjData
-    todo ! ()
+    extern "C" { fn mj_copyData_impl(dest: *mut mjData, m: *const mjModel, src: *const mjData) -> *mut mjData; }
+    // SAFETY: delegates to C implementation
+    unsafe { mj_copyData_impl(dest, m, src) }
 }
 
 /// C: mjv_copyData (engine/engine_io.h:123)
 /// Calls: mj_copyDataVisual
 #[allow(unused_variables, non_snake_case)]
 pub fn mjv_copy_data(dest: *mut mjData, m: *const mjModel, src: *const mjData) -> *mut mjData {
-    // WARNING: signature changed — verify body
-    // Previous params: (dest : * mut mjData, m : * const mjModel, src : * const mjData)
-    // Previous return: * mut mjData
-    todo ! ()
+    extern "C" { fn mjv_copyData_impl(dest: *mut mjData, m: *const mjModel, src: *const mjData) -> *mut mjData; }
+    // SAFETY: delegates to C implementation
+    unsafe { mjv_copyData_impl(dest, m, src) }
 }
 
 /// C: mj_resetData (engine/engine_io.h:126)

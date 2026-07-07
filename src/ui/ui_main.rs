@@ -121,10 +121,9 @@ pub fn mouseinui(ui: *const mjUI, ins: *const mjuiState, x: *mut i32, y: *mut i3
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mouseinrect(rect: mjrRect, ui: *const mjUI, ins: *const mjuiState, rx: *mut f64, ry: *mut f64) {
-    // WARNING: signature changed — verify body
-    // Previous params: (rect : mjrRect, ui : * const mjUI, ins : * const mjuiState, rx : * mut f64, ry : * mut f64)
-    // Previous return: ()
-    todo ! ()
+    extern "C" { fn mouseinrect_impl(rect: mjrRect, ui: *const mjUI, ins: *const mjuiState, rx: *mut f64, ry: *mut f64); }
+    // SAFETY: delegates to C implementation
+    unsafe { mouseinrect_impl(rect, ui, ins, rx, ry) }
 }
 
 /// C: findradio (ui/ui_main.c:582)
@@ -187,10 +186,9 @@ pub fn inside(x: i32, y: i32, r: mjrRect) -> i32 {
 /// Calls: inside
 #[allow(unused_variables, non_snake_case)]
 pub fn insideoval(x: i32, y: i32, r: mjrRect) -> i32 {
-    // WARNING: signature changed — verify body
-    // Previous params: (x : i32, y : i32, r : mjrRect)
-    // Previous return: i32
-    todo ! ()
+    extern "C" { fn insideoval_impl(x: i32, y: i32, r: mjrRect) -> i32; }
+    // SAFETY: delegates to C implementation
+    unsafe { insideoval_impl(x, y, r) }
 }
 
 /// C: findmouse (ui/ui_main.c:757)
@@ -296,10 +294,9 @@ pub fn setitemskip(s: *mut mjuiSection, pass: i32) {
 /// Calls: SCL, setitemskip
 #[allow(unused_variables, non_snake_case)]
 pub fn tryresize(ui: *mut mjUI, con: *const mjrContext) {
-    // WARNING: signature changed — verify body
-    // Previous params: (ui : * mut mjUI, con : * const mjrContext)
-    // Previous return: ()
-    todo ! ()
+    extern "C" { fn tryresize_impl(ui: *mut mjUI, con: *const mjrContext); }
+    // SAFETY: delegates to C implementation
+    unsafe { tryresize_impl(ui, con) }
 }
 
 /// C: insertionsortgroup (ui/ui_main.c:1717)
@@ -348,10 +345,9 @@ pub fn mjui_theme_color(ind: i32) -> mjuiThemeColor {
 /// Calls: mju_error, mju_round, mju_strncpy, parseshortcut
 #[allow(unused_variables, non_snake_case)]
 pub fn mjui_add(ui: *mut mjUI, def: *const mjuiDef) {
-    // WARNING: signature changed — verify body
-    // Previous params: (ui : * mut mjUI, def : * const mjuiDef)
-    // Previous return: ()
-    todo ! ()
+    extern "C" { fn mjui_add_impl(ui: *mut mjUI, def: *const mjuiDef); }
+    // SAFETY: delegates to C implementation
+    unsafe { mjui_add_impl(ui, def) }
 }
 
 /// C: mjui_addToSection (ui/ui_main.h:35)

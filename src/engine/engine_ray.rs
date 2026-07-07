@@ -199,10 +199,9 @@ pub fn mju_ray_slab(aabb: *const f64, xpos: *const f64, xmat: *const f64, pnt: *
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mju_ray_tree(m: *const mjModel, d: *const mjData, id: i32, pnt: *const f64, vec: *const f64, normal: *mut f64) -> f64 {
-    // WARNING: signature changed — verify body
-    // Previous params: (m : * const mjModel, d : * const mjData, id : i32, pnt : * const f64, vec : * const f64, normal : * mut f64)
-    // Previous return: f64
-    todo ! ()
+    extern "C" { fn mju_rayTree_impl(m: *const mjModel, d: *const mjData, id: i32, pnt: *const f64, vec: *const f64, normal: *mut f64) -> f64; }
+    // SAFETY: delegates to C implementation
+    unsafe { mju_rayTree_impl(m, d, id, pnt, vec, normal) }
 }
 
 /// C: mj_raySdf (engine/engine_ray.c:885)
@@ -257,10 +256,9 @@ pub fn mju_single_ray(m: *const mjModel, d: *mut mjData, pnt: *const f64, vec: *
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mju_multi_ray_prepare(m: *const mjModel, d: *const mjData, pnt: *const f64, ray_xmat: *const f64, geomgroup: *const u8, flg_static: mjtBool, bodyexclude: i32, cutoff: f64, geom_ba: *mut f64, geom_eliminate: *mut i32) {
-    // WARNING: signature changed — verify body
-    // Previous params: (m : * const mjModel, d : * const mjData, pnt : * const f64, ray_xmat : * const f64, geomgroup : * const u8, flg_static : mjtBool, bodyexclude : i32, cutoff : f64, geom_ba : * mut f64, geom_eliminate : * mut i32)
-    // Previous return: ()
-    todo ! ()
+    extern "C" { fn mju_multiRayPrepare_impl(m: *const mjModel, d: *const mjData, pnt: *const f64, ray_xmat: *const f64, geomgroup: *const u8, flg_static: mjtBool, bodyexclude: i32, cutoff: f64, geom_ba: *mut f64, geom_eliminate: *mut i32); }
+    // SAFETY: delegates to C implementation
+    unsafe { mju_multiRayPrepare_impl(m, d, pnt, ray_xmat, geomgroup, flg_static, bodyexclude, cutoff, geom_ba, geom_eliminate) }
 }
 
 /// C: mj_multiRay (engine/engine_ray.h:34)

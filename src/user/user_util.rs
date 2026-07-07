@@ -804,20 +804,18 @@ pub fn mjuu_combine_paths(path1: *const std__string, path2: *const std__string) 
 /// Calls: mjuu_isValidContentType
 #[allow(unused_variables, non_snake_case)]
 pub fn mjuu_parse_content_type_attr_type(text: string_view) -> *const () {
-    // WARNING: signature changed — verify body
-    // Previous params: (text : string_view)
-    // Previous return: * const ()
-    todo ! ()
+    extern "C" { fn mjuu_parseContentTypeAttrType_impl(text: string_view) -> *const (); }
+    // SAFETY: delegates to C implementation
+    unsafe { mjuu_parseContentTypeAttrType_impl(text) }
 }
 
 /// C: mjuu_parseContentTypeAttrSubtype (user/user_util.h:293)
 /// Calls: mjuu_isValidContentType
 #[allow(unused_variables, non_snake_case)]
 pub fn mjuu_parse_content_type_attr_subtype(text: string_view) -> *const () {
-    // WARNING: signature changed — verify body
-    // Previous params: (text : string_view)
-    // Previous return: * const ()
-    todo ! ()
+    extern "C" { fn mjuu_parseContentTypeAttrSubtype_impl(text: string_view) -> *const (); }
+    // SAFETY: delegates to C implementation
+    unsafe { mjuu_parseContentTypeAttrSubtype_impl(text) }
 }
 
 /// C: mjuu_extToContentType (user/user_util.h:296)

@@ -37,10 +37,9 @@ pub fn resolver_apply(self_ptr: *mut Resolver) -> bool {
 /// Calls: mj_defaultOption, mj_defaultVisual, mjs_defaultSpec
 #[allow(unused_variables, non_snake_case)]
 pub fn visit_conflicts(parent: *mut mjSpec, child: *const mjSpec, r: *mut Resolver) {
-    // WARNING: signature changed — verify body
-    // Previous params: (parent : * mut mjSpec, child : * const mjSpec, r : * mut Resolver)
-    // Previous return: ()
-    todo ! ()
+    extern "C" { fn VisitConflicts_impl(parent: *mut mjSpec, child: *const mjSpec, r: *mut Resolver); }
+    // SAFETY: delegates to C implementation
+    unsafe { VisitConflicts_impl(parent, child, r) }
 }
 
 /// C: ConflictSubject (user/user_resolver.cc:395)

@@ -53,9 +53,8 @@ pub fn parse_spec_from_string(xml: string_view, vfs: *const mjVFS, error: *mut i
 /// Calls: mjCopyError, mjXWriter::SetModel
 #[allow(unused_variables, non_snake_case)]
 pub fn write_xml(m: *const mjModel, spec: *mut mjSpec, error: *mut i8, nerror: i32) -> std__string {
-    // WARNING: signature changed — verify body
-    // Previous params: (m : * const mjModel, spec : * mut mjSpec, error : * mut i8, nerror : i32)
-    // Previous return: std__string
-    todo ! ()
+    extern "C" { fn WriteXML_impl(m: *const mjModel, spec: *mut mjSpec, error: *mut i8, nerror: i32) -> std__string; }
+    // SAFETY: delegates to C implementation
+    unsafe { WriteXML_impl(m, spec, error, nerror) }
 }
 

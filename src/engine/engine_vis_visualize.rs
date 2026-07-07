@@ -369,10 +369,9 @@ pub fn add_mesh_octree_geoms(m: *const mjModel, d: *mut mjData, vopt: *const mjv
 /// Calls: addTriangle, mju_addTo3, mju_mat2Quat, mju_max, mju_mulMatVec3
 #[allow(unused_variables, non_snake_case)]
 pub fn add_tactile_sensor_geoms(m: *const mjModel, d: *mut mjData, vopt: *const mjvOption, scn: *mut mjvScene) {
-    // WARNING: signature changed — verify body
-    // Previous params: (m : * const mjModel, d : * mut mjData, vopt : * const mjvOption, scn : * mut mjvScene)
-    // Previous return: ()
-    todo ! ()
+    extern "C" { fn addTactileSensorGeoms_impl(m: *const mjModel, d: *mut mjData, vopt: *const mjvOption, scn: *mut mjvScene); }
+    // SAFETY: delegates to C implementation
+    unsafe { addTactileSensorGeoms_impl(m, d, vopt, scn) }
 }
 
 /// C: addInertiaGeoms (engine/engine_vis_visualize.c:1745)
@@ -388,10 +387,9 @@ pub fn add_inertia_geoms(m: *const mjModel, d: *mut mjData, vopt: *const mjvOpti
 /// Calls: acquireGeom, f2f, mixcolor, mju_addTo3, mju_copy3, mju_mulMatVec3, mju_quat2Mat, mjv_connector, mjv_initGeom, releaseGeom
 #[allow(unused_variables, non_snake_case)]
 pub fn add_perturb_geoms(m: *const mjModel, d: *mut mjData, vopt: *const mjvOption, pert: *const mjvPerturb, scn: *mut mjvScene) {
-    // WARNING: signature changed — verify body
-    // Previous params: (m : * const mjModel, d : * mut mjData, vopt : * const mjvOption, pert : * const mjvPerturb, scn : * mut mjvScene)
-    // Previous return: ()
-    todo ! ()
+    extern "C" { fn addPerturbGeoms_impl(m: *const mjModel, d: *mut mjData, vopt: *const mjvOption, pert: *const mjvPerturb, scn: *mut mjvScene); }
+    // SAFETY: delegates to C implementation
+    unsafe { addPerturbGeoms_impl(m, d, vopt, pert, scn) }
 }
 
 /// C: addWorldBodyFrameGeoms (engine/engine_vis_visualize.c:1900)
@@ -452,10 +450,9 @@ pub fn add_island_label_geoms(m: *const mjModel, d: *mut mjData, vopt: *const mj
 /// Calls: acquireGeom, addConnector, addFrame, addTriangle, f2f, getFrustum, makeLabel, mju_addScl3, mju_addToScl3, mju_n2f, releaseGeom
 #[allow(unused_variables, non_snake_case)]
 pub fn add_camera_geoms(m: *const mjModel, d: *mut mjData, vopt: *const mjvOption, scn: *mut mjvScene) {
-    // WARNING: signature changed — verify body
-    // Previous params: (m : * const mjModel, d : * mut mjData, vopt : * const mjvOption, scn : * mut mjvScene)
-    // Previous return: ()
-    todo ! ()
+    extern "C" { fn addCameraGeoms_impl(m: *const mjModel, d: *mut mjData, vopt: *const mjvOption, scn: *mut mjvScene); }
+    // SAFETY: delegates to C implementation
+    unsafe { addCameraGeoms_impl(m, d, vopt, scn) }
 }
 
 /// C: addLightGeoms (engine/engine_vis_visualize.c:2460)

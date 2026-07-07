@@ -20,10 +20,9 @@ pub fn comperr(error: *mut i8, msg: *const i8, error_sz: i32) -> bool {
 /// Calls: mjCComposite::AddDefaultJoint
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_composite_set_default(self_ptr: *mut mjCComposite) {
-    // WARNING: signature changed — verify body
-    // Previous params: (self_ptr : * mut mjCComposite)
-    // Previous return: ()
-    todo ! ()
+    extern "C" { fn mjCComposite_SetDefault_impl(self_ptr: *mut mjCComposite); }
+    // SAFETY: delegates to C implementation
+    unsafe { mjCComposite_SetDefault_impl(self_ptr) }
 }
 
 /// C: mjCComposite::AddDefaultJoint (user/user_composite.h:62)

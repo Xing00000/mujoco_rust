@@ -31,10 +31,9 @@ pub fn warn_about_arb_depth_buffer() {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn flip_depth_if_required(depth: *mut f32, viewport: mjrRect, con: *const mjrContext) {
-    // WARNING: signature changed — verify body
-    // Previous params: (depth : * mut f32, viewport : mjrRect, con : * const mjrContext)
-    // Previous return: ()
-    todo ! ()
+    extern "C" { fn flipDepthIfRequired_impl(depth: *mut f32, viewport: mjrRect, con: *const mjrContext); }
+    // SAFETY: delegates to C implementation
+    unsafe { flipDepthIfRequired_impl(depth, viewport, con) }
 }
 
 /// C: init2D (render/classic/render_gl2.c:407)
@@ -196,10 +195,9 @@ pub fn mjr_text(font: i32, txt: *const i8, con: *const mjrContext, x: f32, y: f3
 /// Calls: draw_overlay, init2D
 #[allow(unused_variables, non_snake_case)]
 pub fn mjr_overlay(font: i32, gridpos: i32, viewport: mjrRect, overlay: *const i8, overlay2: *const i8, con: *const mjrContext) {
-    // WARNING: signature changed — verify body
-    // Previous params: (font : i32, gridpos : i32, viewport : mjrRect, overlay : * const i8, overlay2 : * const i8, con : * const mjrContext)
-    // Previous return: ()
-    todo ! ()
+    extern "C" { fn mjr_overlay_impl(font: i32, gridpos: i32, viewport: mjrRect, overlay: *const i8, overlay2: *const i8, con: *const mjrContext); }
+    // SAFETY: delegates to C implementation
+    unsafe { mjr_overlay_impl(font, gridpos, viewport, overlay, overlay2, con) }
 }
 
 /// C: mjr_maxViewport (render/classic/render_gl2.h:68)
@@ -241,9 +239,8 @@ pub fn mjr_label(viewport: mjrRect, font: i32, txt: *const i8, r: f32, g: f32, b
 /// Calls: init2D, maketext, mjr_textActual, textwidth
 #[allow(unused_variables, non_snake_case)]
 pub fn mjr_figure(viewport: mjrRect, fig: *mut mjvFigure, con: *const mjrContext) {
-    // WARNING: signature changed — verify body
-    // Previous params: (viewport : mjrRect, fig : * mut mjvFigure, con : * const mjrContext)
-    // Previous return: ()
-    todo ! ()
+    extern "C" { fn mjr_figure_impl(viewport: mjrRect, fig: *mut mjvFigure, con: *const mjrContext); }
+    // SAFETY: delegates to C implementation
+    unsafe { mjr_figure_impl(viewport, fig, con) }
 }
 

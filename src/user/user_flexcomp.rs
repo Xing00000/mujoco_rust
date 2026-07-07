@@ -77,20 +77,18 @@ pub fn mj_c_flexcomp_make_grid(self_ptr: *mut mjCFlexcomp, error: *mut i8, error
 /// Calls: mat2lin, mjCFlexcomp::BoxProject
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_flexcomp_make_box(self_ptr: *mut mjCFlexcomp, error: *mut i8, error_sz: i32, dim: i32, open: bool) -> bool {
-    // WARNING: signature changed — verify body
-    // Previous params: (self_ptr : * mut mjCFlexcomp, error : * mut i8, error_sz : i32, dim : i32, open : bool)
-    // Previous return: bool
-    todo ! ()
+    extern "C" { fn mjCFlexcomp_MakeBox_impl(self_ptr: *mut mjCFlexcomp, error: *mut i8, error_sz: i32, dim: i32, open: bool) -> bool; }
+    // SAFETY: delegates to C implementation
+    unsafe { mjCFlexcomp_MakeBox_impl(self_ptr, error, error_sz, dim, open) }
 }
 
 /// C: mjCFlexcomp::MakeSquare (user/user_flexcomp.h:61)
 /// Calls: mjCFlexcomp::MakeGrid, mjuu_normvec
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_flexcomp_make_square(self_ptr: *mut mjCFlexcomp, error: *mut i8, error_sz: i32) -> bool {
-    // WARNING: signature changed — verify body
-    // Previous params: (self_ptr : * mut mjCFlexcomp, error : * mut i8, error_sz : i32)
-    // Previous return: bool
-    todo ! ()
+    extern "C" { fn mjCFlexcomp_MakeSquare_impl(self_ptr: *mut mjCFlexcomp, error: *mut i8, error_sz: i32) -> bool; }
+    // SAFETY: delegates to C implementation
+    unsafe { mjCFlexcomp_MakeSquare_impl(self_ptr, error, error_sz) }
 }
 
 /// C: mjCFlexcomp::MakeMesh (user/user_flexcomp.h:62)
@@ -117,10 +115,9 @@ pub fn mj_c_flexcomp_make_gmsh(self_ptr: *mut mjCFlexcomp, model: *mut mjCModel,
 /// Calls: findstring, mjCFlexcomp::LoadGMSH22, mjCFlexcomp::LoadGMSH41, mju_readResource, mju_round
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_flexcomp_load_gmsh(self_ptr: *mut mjCFlexcomp, model: *mut mjCModel, resource: *mut mjResource) {
-    // WARNING: signature changed — verify body
-    // Previous params: (self_ptr : * mut mjCFlexcomp, model : * mut mjCModel, resource : * mut mjResource)
-    // Previous return: ()
-    todo ! ()
+    extern "C" { fn mjCFlexcomp_LoadGMSH_impl(self_ptr: *mut mjCFlexcomp, model: *mut mjCModel, resource: *mut mjResource); }
+    // SAFETY: delegates to C implementation
+    unsafe { mjCFlexcomp_LoadGMSH_impl(self_ptr, model, resource) }
 }
 
 /// C: mjCFlexcomp::LoadGMSH41 (user/user_flexcomp.h:67)
