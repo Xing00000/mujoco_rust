@@ -278,10 +278,9 @@ pub fn mj_make_dof_dof_maps(nv: i32, nM: i32, nC: i32, nD: i32, dof_Madr: *const
 /// Calls: mj_initPlugin, mj_makeRawData, mj_resetData
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_make_data(m: *const mjModel) -> *mut mjData {
-    // WARNING: signature changed — verify body
-    // Previous params: (m : * const mjModel)
-    // Previous return: * mut mjData
-    todo ! ()
+    extern "C" { fn mj_makeData_impl(m: *const mjModel) -> *mut mjData; }
+    // SAFETY: delegates to C implementation, all pointers valid per caller contract
+    unsafe { mj_makeData_impl(m) }
 }
 
 /// C: mj_makeRawData (engine/engine_io.h:116)

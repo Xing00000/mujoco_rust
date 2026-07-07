@@ -153,10 +153,9 @@ pub fn mj_tendon_armature(m: *const mjModel, d: *mut mjData) {
 /// Calls: mj_crb, mj_tendonArmature, mju_scatter
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_make_m(m: *const mjModel, d: *mut mjData) {
-    // WARNING: signature changed — verify body
-    // Previous params: (m : * const mjModel, d : * mut mjData)
-    // Previous return: ()
-    todo ! ()
+    extern "C" { fn mj_makeM_impl(m: *const mjModel, d: *mut mjData); }
+    // SAFETY: delegates to C implementation, all pointers valid per caller contract
+    unsafe { mj_makeM_impl(m, d) }
 }
 
 /// C: mj_factorI_legacy (engine/engine_core_smooth.h:68)

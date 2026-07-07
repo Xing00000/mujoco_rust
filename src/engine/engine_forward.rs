@@ -387,10 +387,9 @@ pub fn mj_midpoint(mass: f64, inertia: *const f64, ipos: *const f64, iquat: *con
 /// Calls: mj_camlight, mj_comPos, mj_flex, mj_kinematics, mj_tendon, mj_updateSleep, mj_wakeTendon
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_fwd_kinematics(m: *const mjModel, d: *mut mjData) {
-    // WARNING: signature changed — verify body
-    // Previous params: (m : * const mjModel, d : * mut mjData)
-    // Previous return: ()
-    todo ! ()
+    extern "C" { fn mj_fwdKinematics_impl(m: *const mjModel, d: *mut mjData); }
+    // SAFETY: delegates to C implementation, all pointers valid per caller contract
+    unsafe { mj_fwdKinematics_impl(m, d) }
 }
 
 /// C: mj_fwdPosition (engine/engine_forward.h:81)
