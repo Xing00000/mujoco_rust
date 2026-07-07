@@ -13,10 +13,56 @@ use crate::types::*;
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjraw_plane_sphere(con: *mut mjPreContact, margin: f64, pos1: *const f64, mat1: *const f64, size1: *const f64, pos2: *const f64, mat2: *const f64, size2: *const f64) -> i32 {
-    // WARNING: signature changed — verify body
-    // Previous params: (con : * mut mjPreContact, margin : f64, pos1 : * const f64, mat1 : * const f64, size1 : * const f64, pos2 : * const f64, mat2 : * const f64, size2 : * const f64)
-    // Previous return: i32
-    todo ! ()
+    // SAFETY: caller guarantees all pointers are valid; con points to at least 1 mjPreContact,
+    // pos/size are f64[3], mat is f64[9]
+    unsafe {
+        // con[0].normal = third column of mat1 (mat1[2], mat1[5], mat1[8])
+        (*con.add(0)).normal[0] = *mat1.add(2);
+        (*con.add(0)).normal[1] = *mat1.add(5);
+        (*con.add(0)).normal[2] = *mat1.add(8);
+
+        // tmp = pos2 - pos1
+        let tmp: [f64; 3] = [
+            *pos2.add(0) - *pos1.add(0),
+            *pos2.add(1) - *pos1.add(1),
+            *pos2.add(2) - *pos1.add(2),
+        ];
+
+        // cdist = dot(tmp, normal)
+        let cdist: f64 = crate::engine::engine_util_blas::mju_dot3(
+            tmp.as_ptr(),
+            (*con.add(0)).normal.as_ptr(),
+        );
+
+        // early out
+        if cdist > margin + *size2.add(0) {
+            return 0;
+        }
+
+        // con[0].dist = cdist - size2[0]
+        (*con.add(0)).dist = cdist - *size2.add(0);
+
+        // tmp2 = normal * (-dist/2 - size2[0])
+        let scl: f64 = -(*con.add(0)).dist / 2.0 - *size2.add(0);
+        let mut tmp2: [f64; 3] = [0.0; 3];
+        crate::engine::engine_inline::mji_scl3(
+            tmp2.as_mut_ptr(),
+            (*con.add(0)).normal.as_ptr(),
+            scl,
+        );
+
+        // con[0].pos = pos2 + tmp2
+        crate::engine::engine_inline::mji_add3(
+            (*con.add(0)).pos.as_mut_ptr(),
+            pos2,
+            tmp2.as_ptr(),
+        );
+
+        // con[0].tangent = {0, 0, 0}
+        crate::engine::engine_inline::mji_zero3((*con.add(0)).tangent.as_mut_ptr());
+
+        1
+    }
 }
 
 /// C: mjraw_SphereSphere (engine/engine_collision_primitive.c:262)

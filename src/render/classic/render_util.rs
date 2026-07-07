@@ -81,10 +81,12 @@ pub fn mjr_getrow4(res: *mut f32, A: *const f32, r: i32) {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjr_cross_vec(a: *mut f32, b: *const f32, c: *const f32) {
-    // WARNING: signature changed — verify body
-    // Previous params: (a : * mut f32, b : * const f32, c : * const f32)
-    // Previous return: ()
-    todo ! ()
+    // SAFETY: caller guarantees a, b, c each point to at least 3 contiguous f32 values
+    unsafe {
+        *a.add(0) = *b.add(1) * *c.add(2) - *b.add(2) * *c.add(1);
+        *a.add(1) = *b.add(2) * *c.add(0) - *b.add(0) * *c.add(2);
+        *a.add(2) = *b.add(0) * *c.add(1) - *b.add(1) * *c.add(0);
+    }
 }
 
 /// C: mjr_normalizeVec (render/classic/render_util.h:44)

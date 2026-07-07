@@ -37,10 +37,9 @@ pub fn get_global_model() -> *mut GlobalModel {
 /// Calls: GetGlobalModel, GlobalModel::Set
 #[allow(unused_variables, non_snake_case)]
 pub fn set_global_xml_spec(spec: *mut mjSpec) {
-    // WARNING: signature changed — verify body
-    // Previous params: (spec : * mut mjSpec)
-    // Previous return: ()
-    todo ! ()
+    // C++: GetGlobalModel().Set(spec)
+    let model = get_global_model();
+    global_model_set(model, spec);
 }
 
 /// C: GetGlobalXmlSpec (xml/xml_global.h:25)

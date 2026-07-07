@@ -213,10 +213,12 @@ pub fn mjc_hillclimb_support(res: *mut f64, obj: *mut mjCCDObj, dir: *const f64)
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjc_prism_support(res: *mut f64, obj: *mut mjCCDObj, dir: *const f64) {
-    // WARNING: signature changed — verify body
-    // Previous params: (res : * mut f64, obj : * mut mjCCDObj, dir : * const f64)
-    // Previous return: ()
-    todo ! ()
+    extern "C" {
+        fn mjc_prism_support_impl(res: *mut f64, obj: *mut mjCCDObj, dir: *const f64);
+    }
+    // SAFETY: delegates to C implementation because obj->data.hfield.prism is an opaque union
+    // that cannot be accessed from Rust (union layout not exposed)
+    unsafe { mjc_prism_support_impl(res, obj, dir) }
 }
 
 /// C: mjc_flexSupport (engine/engine_collision_convex.c:458)

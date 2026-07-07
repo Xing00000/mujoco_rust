@@ -13,10 +13,11 @@ use crate::types::*;
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn convert2d(res: *mut f64, action: i32, dx: f64, dy: f64, forward: *const f64) {
-    // WARNING: signature changed — verify body
-    // Previous params: (res : * mut f64, action : i32, dx : f64, dy : f64, forward : * const f64)
-    // Previous return: ()
-    todo ! ()
+    extern "C" {
+        fn convert2D_impl(res: *mut f64, action: i32, dx: f64, dy: f64, forward: *const f64);
+    }
+    // SAFETY: delegates to C implementation which handles mjtMouse enum switch and mjv_alignToCamera call
+    unsafe { convert2D_impl(res, action, dx, dy, forward) }
 }
 
 /// C: mjv_room2model (engine/engine_vis_interact.h:28)
