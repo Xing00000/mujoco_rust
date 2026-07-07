@@ -139,10 +139,42 @@ pub fn mj_state_size(m: *const mjModel, sig: i32) -> i32 {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_get_state(m: *const mjModel, d: *const mjData, state: *mut f64, sig: i32) {
-    // WARNING: signature changed — verify body
-    // Previous params: (m : * const mjModel, d : * const mjData, state : * mut f64, sig : i32)
-    // Previous return: ()
-    todo ! ()
+    const MJ_NSTATE: i32 = 14;
+    const MJ_STATE_EQ_ACTIVE: u32 = 512;
+    // SAFETY: m, d, state valid per caller contract
+    unsafe {
+        if sig < 0 {
+            crate::engine::engine_util_errmem::mju_error(
+                b"invalid state signature %d < 0\0".as_ptr() as *const i8);
+            return;
+        }
+        if sig >= (1 << MJ_NSTATE) {
+            crate::engine::engine_util_errmem::mju_error(
+                b"invalid state signature %d >= 2^mjNSTATE\0".as_ptr() as *const i8);
+            return;
+        }
+        let mut adr: i32 = 0;
+        for i in 0..MJ_NSTATE {
+            let element: u32 = 1u32 << i;
+            if (element as i32 & sig) != 0 {
+                let elem_state: mjtState = core::mem::transmute_copy(&element);
+                let size = mj_state_elem_size(m, elem_state);
+                if element == MJ_STATE_EQ_ACTIVE {
+                    let neq = (*m).neq as i32;
+                    for j in 0..neq {
+                        let byte_ptr = (*d).eq_active as *const u8;
+                        *state.add(adr as usize) = *byte_ptr.add(j as usize) as f64;
+                        adr += 1;
+                    }
+                } else {
+                    let elem_state2: mjtState = core::mem::transmute_copy(&element);
+                    let ptr = mj_state_elem_const_ptr(m, d, elem_state2);
+                    crate::engine::engine_util_blas::mju_copy(state.add(adr as usize), ptr, size);
+                    adr += size;
+                }
+            }
+        }
+    }
 }
 
 /// C: mj_extractState (engine/engine_support.h:47)
@@ -199,20 +231,84 @@ pub fn mj_extract_state(m: *const mjModel, src: *const f64, srcsig: i32, dst: *m
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_set_state(m: *const mjModel, d: *mut mjData, state: *const f64, sig: i32) {
-    // WARNING: signature changed — verify body
-    // Previous params: (m : * const mjModel, d : * mut mjData, state : * const f64, sig : i32)
-    // Previous return: ()
-    todo ! ()
+    const MJ_NSTATE: i32 = 14;
+    const MJ_STATE_EQ_ACTIVE: u32 = 512;
+    // SAFETY: m, d, state valid per caller contract
+    unsafe {
+        if sig < 0 {
+            crate::engine::engine_util_errmem::mju_error(
+                b"invalid state signature %d < 0\0".as_ptr() as *const i8);
+            return;
+        }
+        if sig >= (1 << MJ_NSTATE) {
+            crate::engine::engine_util_errmem::mju_error(
+                b"invalid state signature %d >= 2^mjNSTATE\0".as_ptr() as *const i8);
+            return;
+        }
+        let mut adr: i32 = 0;
+        for i in 0..MJ_NSTATE {
+            let element: u32 = 1u32 << i;
+            if (element as i32 & sig) != 0 {
+                let elem_state: mjtState = core::mem::transmute_copy(&element);
+                let size = mj_state_elem_size(m, elem_state);
+                if element == MJ_STATE_EQ_ACTIVE {
+                    let neq = (*m).neq as i32;
+                    for j in 0..neq {
+                        let byte_ptr = (*d).eq_active as *mut u8;
+                        *byte_ptr.add(j as usize) = *state.add(adr as usize) as u8;
+                        adr += 1;
+                    }
+                } else {
+                    let elem_state2: mjtState = core::mem::transmute_copy(&element);
+                    let ptr = mj_state_elem_ptr(m, d, elem_state2);
+                    crate::engine::engine_util_blas::mju_copy(ptr, state.add(adr as usize), size);
+                    adr += size;
+                }
+            }
+        }
+    }
 }
 
 /// C: mj_copyState (engine/engine_support.h:54)
 /// Calls: mj_stateElemConstPtr, mj_stateElemPtr, mj_stateElemSize, mju_copy, mju_message
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_copy_state(m: *const mjModel, src: *const mjData, dst: *mut mjData, sig: i32) {
-    // WARNING: signature changed — verify body
-    // Previous params: (m : * const mjModel, src : * const mjData, dst : * mut mjData, sig : i32)
-    // Previous return: ()
-    todo ! ()
+    const MJ_NSTATE: i32 = 14;
+    const MJ_STATE_EQ_ACTIVE: u32 = 512;
+    // SAFETY: m, src, dst valid per caller contract
+    unsafe {
+        if sig < 0 {
+            crate::engine::engine_util_errmem::mju_error(
+                b"invalid state signature %d < 0\0".as_ptr() as *const i8);
+            return;
+        }
+        if sig >= (1 << MJ_NSTATE) {
+            crate::engine::engine_util_errmem::mju_error(
+                b"invalid state signature %d >= 2^mjNSTATE\0".as_ptr() as *const i8);
+            return;
+        }
+        for i in 0..MJ_NSTATE {
+            let element: u32 = 1u32 << i;
+            if (element as i32 & sig) != 0 {
+                let elem_state: mjtState = core::mem::transmute_copy(&element);
+                let size = mj_state_elem_size(m, elem_state);
+                if element == MJ_STATE_EQ_ACTIVE {
+                    let neq = (*m).neq as i32;
+                    for j in 0..neq {
+                        let dst_byte = (*dst).eq_active as *mut u8;
+                        let src_byte = (*src).eq_active as *const u8;
+                        *dst_byte.add(j as usize) = *src_byte.add(j as usize);
+                    }
+                } else {
+                    let elem_state2: mjtState = core::mem::transmute_copy(&element);
+                    let elem_state3: mjtState = core::mem::transmute_copy(&element);
+                    let dst_ptr = mj_state_elem_ptr(m, dst, elem_state2);
+                    let src_ptr = mj_state_elem_const_ptr(m, src, elem_state3);
+                    crate::engine::engine_util_blas::mju_copy(dst_ptr, src_ptr, size);
+                }
+            }
+        }
+    }
 }
 
 /// C: mj_setKeyframe (engine/engine_support.h:57)
