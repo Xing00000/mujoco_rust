@@ -700,7 +700,9 @@ pub fn mj_c_model_clear_compile_warnings(self_ptr: *mut mjCModel) {
     // WARNING: signature changed — verify body
     // Previous params: (self_ptr : * mut mjCModel)
     // Previous return: ()
-    todo ! ()
+    extern "C" { fn mjCModel_ClearCompileWarnings_impl(self_ptr: *mut mjCModel); }
+    // SAFETY: delegates to C implementation, all pointers valid per caller contract
+    unsafe { mjCModel_ClearCompileWarnings_impl(self_ptr) }
 }
 
 /// C: mjCModel::SetAttachWarningBoundary (user/user_model.h:267)

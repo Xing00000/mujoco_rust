@@ -1096,7 +1096,9 @@ pub fn mj_c_body_add_frame(self_ptr: *mut mjCBody, arg0: *mut mjCFrame) -> *mut 
     // WARNING: signature changed — verify body
     // Previous params: (self_ptr : * mut mjCBody, arg0 : * mut mjCFrame)
     // Previous return: * mut mjCFrame
-    todo ! ()
+    extern "C" { fn mjCBody_AddFrame_impl(self_ptr: *mut mjCBody, arg0: *mut mjCFrame) -> *mut mjCFrame; }
+    // SAFETY: delegates to C implementation, all pointers valid per caller contract
+    unsafe { mjCBody_AddFrame_impl(self_ptr, arg0) }
 }
 
 /// C: mjCBody::AddJoint (user/user_objects.h:524)
@@ -1408,7 +1410,9 @@ pub fn mj_c_frame_set_parent(self_ptr: *mut mjCFrame, _body: *mut mjCBody) {
     // WARNING: signature changed — verify body
     // Previous params: (self_ptr : * mut mjCFrame, _body : * mut mjCBody)
     // Previous return: ()
-    todo ! ()
+    extern "C" { fn mjCFrame_SetParent_impl(self_ptr: *mut mjCFrame, _body: *mut mjCBody); }
+    // SAFETY: delegates to C implementation, all pointers valid per caller contract
+    unsafe { mjCFrame_SetParent_impl(self_ptr, _body) }
 }
 
 /// C: mjCFrame::GetParent (user/user_objects.h:657)
@@ -1495,7 +1499,9 @@ pub fn mj_c_joint_is_limited(self_ptr: *mut mjCJoint) -> bool {
     // WARNING: signature changed — verify body
     // Previous params: (self_ptr : * mut mjCJoint)
     // Previous return: bool
-    todo ! ()
+    extern "C" { fn mjCJoint_is_limited_impl(self_ptr: *mut mjCJoint) -> bool; }
+    // SAFETY: delegates to C implementation, all pointers valid per caller contract
+    unsafe { mjCJoint_is_limited_impl(self_ptr) }
 }
 
 /// C: mjCJoint::is_actfrclimited (user/user_objects.h:715)
@@ -3850,7 +3856,9 @@ pub fn mj_c_tendon_num_wraps(self_ptr: *mut mjCTendon) -> i32 {
     // WARNING: signature changed — verify body
     // Previous params: (self_ptr : * mut mjCTendon)
     // Previous return: i32
-    todo ! ()
+    extern "C" { fn mjCTendon_NumWraps_impl(self_ptr: *mut mjCTendon) -> i32; }
+    // SAFETY: delegates to C implementation, all pointers valid per caller contract
+    unsafe { mjCTendon_NumWraps_impl(self_ptr) }
 }
 
 /// C: mjCTendon::GetWrap (user/user_objects.h:1709)
@@ -3859,7 +3867,9 @@ pub fn mj_c_tendon_get_wrap(self_ptr: *mut mjCTendon, i: i32) -> *const mjCWrap 
     // WARNING: signature changed — verify body
     // Previous params: (self_ptr : * mut mjCTendon, i : i32)
     // Previous return: * const mjCWrap
-    todo ! ()
+    extern "C" { fn mjCTendon_GetWrap_impl(self_ptr: *mut mjCTendon, i: i32) -> *const mjCWrap; }
+    // SAFETY: delegates to C implementation, all pointers valid per caller contract
+    unsafe { mjCTendon_GetWrap_impl(self_ptr, i) }
 }
 
 /// C: mjCTendon::get_userdata (user/user_objects.h:1713)

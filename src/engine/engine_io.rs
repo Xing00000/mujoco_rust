@@ -54,7 +54,9 @@ pub fn mj_set_ptr_model(m: *mut mjModel) {
     // WARNING: signature changed — verify body
     // Previous params: (m : * mut mjModel)
     // Previous return: ()
-    todo ! ()
+    extern "C" { fn mj_setPtrModel_impl(m: *mut mjModel); }
+    // SAFETY: delegates to C implementation, all pointers valid per caller contract
+    unsafe { mj_setPtrModel_impl(m) }
 }
 
 /// C: safeAddToBufferSize (engine/engine_io.c:173)
