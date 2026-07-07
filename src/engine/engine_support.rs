@@ -127,10 +127,34 @@ pub fn mj_copy_state(m: *const mjModel, src: *const mjData, dst: *mut mjData, si
 /// Calls: mju_copy, mju_message
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_set_keyframe(m: *mut mjModel, d: *const mjData, k: i32) {
-    // WARNING: signature changed — verify body
-    // Previous params: (m : * mut mjModel, d : * const mjData, k : i32)
-    // Previous return: ()
-    todo ! ()
+    // SAFETY: caller guarantees m and d are valid pointers with correct field layouts
+    unsafe {
+        // check keyframe index
+        if k >= (*m).nkey as i32 {
+            crate::engine::engine_util_errmem::mju_error(
+                b"index must be smaller than nkey (keyframes allocated in model)\0".as_ptr() as *const i8
+            );
+        }
+        if k < 0 {
+            crate::engine::engine_util_errmem::mju_error(
+                b"keyframe index cannot be negative\0".as_ptr() as *const i8
+            );
+        }
+
+        // copy state to model keyframe
+        *(*m).key_time.add(k as usize) = (*d).time;
+        let nq = (*m).nq as i32;
+        let nv = (*m).nv as i32;
+        let na = (*m).na as i32;
+        let nmocap = (*m).nmocap as i32;
+        let nu = (*m).nu as i32;
+        crate::engine::engine_util_blas::mju_copy((*m).key_qpos.add((k as usize) * (nq as usize)), (*d).qpos, nq);
+        crate::engine::engine_util_blas::mju_copy((*m).key_qvel.add((k as usize) * (nv as usize)), (*d).qvel, nv);
+        crate::engine::engine_util_blas::mju_copy((*m).key_act.add((k as usize) * (na as usize)), (*d).act, na);
+        crate::engine::engine_util_blas::mju_copy((*m).key_mpos.add((k as usize) * 3 * (nmocap as usize)), (*d).mocap_pos, 3 * nmocap);
+        crate::engine::engine_util_blas::mju_copy((*m).key_mquat.add((k as usize) * 4 * (nmocap as usize)), (*d).mocap_quat, 4 * nmocap);
+        crate::engine::engine_util_blas::mju_copy((*m).key_ctrl.add((k as usize) * (nu as usize)), (*d).ctrl, nu);
+    }
 }
 
 /// C: mj_fullM (engine/engine_support.h:62)

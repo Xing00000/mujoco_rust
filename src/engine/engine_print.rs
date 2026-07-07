@@ -221,10 +221,7 @@ pub fn mj_print_formatted_model(m: *const mjModel, filename: *const i8, float_fo
 /// Calls: mj_printFormattedModel
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_print_model(m: *const mjModel, filename: *const i8) {
-    // WARNING: signature changed — verify body
-    // Previous params: (m : * const mjModel, filename : * const i8)
-    // Previous return: ()
-    todo ! ()
+    mj_print_formatted_model(m, filename, b"% -9.2g\0".as_ptr() as *const i8);
 }
 
 /// C: mj_printFormattedData (engine/engine_print.h:40)

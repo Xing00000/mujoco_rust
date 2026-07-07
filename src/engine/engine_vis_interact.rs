@@ -192,10 +192,9 @@ pub fn mjv_average_camera(cam1: *const mjvGLCamera, cam2: *const mjvGLCamera) ->
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjv_select(m: *const mjModel, d: *const mjData, vopt: *const mjvOption, aspectratio: f64, relx: f64, rely: f64, scn: *const mjvScene, selpnt: *mut f64, geomid: [i32; 1], flexid: [i32; 1], skinid: [i32; 1]) -> i32 {
-    // WARNING: signature changed — verify body
-    // Previous params: (m : * const mjModel, d : * const mjData, vopt : * const mjvOption, aspectratio : f64, relx : f64, rely : f64, scn : * const mjvScene, selpnt : * mut f64, geomid : [i32 ; 1], flexid : [i32 ; 1], skinid : [i32 ; 1])
-    // Previous return: i32
-    todo ! ()
+    extern "C" { fn mjv_select_impl(m: *const mjModel, d: *const mjData, vopt: *const mjvOption, aspectratio: f64, relx: f64, rely: f64, scn: *const mjvScene, selpnt: *mut f64, geomid: [i32; 1], flexid: [i32; 1], skinid: [i32; 1]) -> i32; }
+    // SAFETY: delegates to C implementation, all pointers valid per caller contract
+    unsafe { mjv_select_impl(m, d, vopt, aspectratio, relx, rely, scn, selpnt, geomid, flexid, skinid) }
 }
 
 /// C: mjv_flexBodyId (engine/engine_vis_interact.h:82)

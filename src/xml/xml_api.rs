@@ -61,10 +61,9 @@ pub fn mj_parse_xml(filename: *const i8, vfs: *const mjVFS, error: *mut i8, erro
 /// C: mj_parseXMLString (xml/xml_api.h:49)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_parse_xml_string(xml: *const i8, vfs: *const mjVFS, error: *mut i8, error_sz: i32) -> *mut mjSpec {
-    // WARNING: signature changed — verify body
-    // Previous params: (xml : * const i8, vfs : * const mjVFS, error : * mut i8, error_sz : i32)
-    // Previous return: * mut mjSpec
-    todo ! ()
+    extern "C" { fn mj_parseXMLString_impl(xml: *const i8, vfs: *const mjVFS, error: *mut i8, error_sz: i32) -> *mut mjSpec; }
+    // SAFETY: delegates to C implementation, all pointers valid per caller contract
+    unsafe { mj_parseXMLString_impl(xml, vfs, error, error_sz) }
 }
 
 /// C: mj_saveXML (xml/xml_api.h:52)

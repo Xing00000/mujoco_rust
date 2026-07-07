@@ -95,10 +95,21 @@ pub fn mjr_cross_vec(a: *mut f32, b: *const f32, c: *const f32) {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjr_normalize_vec(v: *mut f32) {
-    // WARNING: signature changed — verify body
-    // Previous params: (v : * mut f32)
-    // Previous return: ()
-    todo ! ()
+    // SAFETY: caller guarantees v points to at least 3 contiguous f32 values
+    unsafe {
+        let len: f32 = ((*v.add(0))*(*v.add(0)) + (*v.add(1))*(*v.add(1)) + (*v.add(2))*(*v.add(2))).sqrt();
+
+        if len < 1E-10f32 {
+            *v.add(0) = 0.0f32;
+            *v.add(1) = 0.0f32;
+            *v.add(2) = 1.0f32;
+        } else {
+            let scl: f32 = 1.0f32 / len;
+            *v.add(0) *= scl;
+            *v.add(1) *= scl;
+            *v.add(2) *= scl;
+        }
+    }
 }
 
 /// C: mjr_orthoVec (render/classic/render_util.h:47)
