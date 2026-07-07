@@ -265,10 +265,12 @@ pub fn mj_check_vel(m: *const mjModel, d: *mut mjData) {
 /// Calls: mj_forward, mj_resetData, mj_warning, mju_isBad
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_check_acc(m: *const mjModel, d: *mut mjData) {
-    // WARNING: signature changed — verify body
-    // Previous params: (m : * const mjModel, d : * mut mjData)
-    // Previous return: ()
-    todo ! ()
+
+
+
+    extern "C" { fn mj_checkAcc_impl(m: *const mjModel, d: *mut mjData); }
+    // SAFETY: delegates to C implementation
+    unsafe { mj_checkAcc_impl(m, d) }
 }
 
 /// C: mj_step (engine/engine_forward.h:35)
