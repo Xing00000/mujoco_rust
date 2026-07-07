@@ -8,10 +8,11 @@ use crate::types::*;
 /// Calls: mju_round
 #[allow(unused_variables, non_snake_case)]
 pub fn scl(sz: i32, con: *const mjrContext) -> i32 {
-    // WARNING: signature changed — verify body
-    // Previous params: (sz : i32, con : * const mjrContext)
-    // Previous return: i32
-    todo ! ()
+    // SAFETY: caller guarantees con is a valid pointer to mjrContext
+    unsafe {
+        let val = crate::engine::engine_util_misc::mju_round(sz as f64 * 0.01 * (*con).fontScale as f64);
+        if val > 0 { val } else { 0 }
+    }
 }
 
 /// C: initOpenGL (ui/ui_main.c:207)

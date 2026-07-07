@@ -22,10 +22,9 @@ pub fn f2f(dest: *mut f32, src: *const f32, n: i32) {
 /// Calls: mj_id2name, mju_type2Str
 #[allow(unused_variables, non_snake_case)]
 pub fn make_label(m: *const mjModel, r#type: mjtObj, id: i32, label: *mut i8) {
-    // WARNING: signature changed — verify body
-    // Previous params: (m : * const mjModel, r#type : mjtObj, id : i32, label : * mut i8)
-    // Previous return: ()
-    todo ! ()
+    extern "C" { fn makeLabel_impl(m: *const mjModel, r#type: mjtObj, id: i32, label: *mut i8); }
+    // SAFETY: delegates to C implementation; caller guarantees m and label are valid
+    unsafe { makeLabel_impl(m, r#type, id, label) }
 }
 
 /// C: islandColor (engine/engine_vis_visualize.c:110)
@@ -135,10 +134,9 @@ pub fn add_triangle(scn: *mut mjvScene, v0: *const f64, v1: *const f64, v2: *con
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn set_material(m: *const mjModel, geom: *mut mjvGeom, matid: i32, rgba: *const f32, flags: *const u8) {
-    // WARNING: signature changed — verify body
-    // Previous params: (m : * const mjModel, geom : * mut mjvGeom, matid : i32, rgba : * const f32, flags : * const u8)
-    // Previous return: ()
-    todo ! ()
+    extern "C" { fn setMaterial_impl(m: *const mjModel, geom: *mut mjvGeom, matid: i32, rgba: *const f32, flags: *const u8); }
+    // SAFETY: delegates to C implementation; caller guarantees all pointers are valid
+    unsafe { setMaterial_impl(m, geom, matid, rgba, flags) }
 }
 
 /// C: addConnector (engine/engine_vis_visualize.c:296)
@@ -159,10 +157,9 @@ pub fn add_connector(scn: *mut mjvScene, r#type: i32, width: f64, from: *const f
 /// C: markselected (engine/engine_vis_visualize.c:393)
 #[allow(unused_variables, non_snake_case)]
 pub fn markselected(vis: *const mjVisual, geom: *mut mjvGeom) {
-    // WARNING: signature changed — verify body
-    // Previous params: (vis : * const mjVisual, geom : * mut mjvGeom)
-    // Previous return: ()
-    todo ! ()
+    extern "C" { fn markselected_impl(vis: *const mjVisual, geom: *mut mjvGeom); }
+    // SAFETY: delegates to C implementation; caller guarantees vis and geom are valid
+    unsafe { markselected_impl(vis, geom) }
 }
 
 /// C: addFrame (engine/engine_vis_visualize.c:400)
@@ -174,10 +171,37 @@ pub fn markselected(vis: *const mjVisual, geom: *mut mjvGeom) {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn add_frame(scn: *mut mjvScene, objid: i32, pos: *const f64, rot: *const f64, length: f32, width: f32) {
-    // WARNING: signature changed — verify body
-    // Previous params: (scn : * mut mjvScene, objid : i32, pos : * const f64, rot : * const f64, length : f32, width : f32)
-    // Previous return: ()
-    todo ! ()
+    // SAFETY: caller guarantees scn, pos, rot are valid pointers;
+    // pos[3], rot[9] are valid arrays. We call functions in the same module.
+    unsafe {
+        // draw separate geoms for each axis
+        for j in 0..3i32 {
+            let mut axis: [f64; 3] = [0.0; 3];
+            for k in 0..3i32 {
+                axis[k as usize] = if j == k { length as f64 } else { 0.0 };
+            }
+
+            let mut vec: [f64; 3] = [0.0; 3];
+            crate::engine::engine_util_blas::mju_mul_mat_vec3(vec.as_mut_ptr(), rot, axis.as_ptr());
+
+            // create a cylinder
+            let mut to: [f64; 3] = [0.0; 3];
+            crate::engine::engine_util_blas::mju_add3(to.as_mut_ptr(), pos, vec.as_ptr());
+
+            let thisgeom: *mut mjvGeom = acquire_geom(scn, objid, 4 /* mjCAT_DECOR */, 0 /* mjOBJ_UNKNOWN */);
+            if thisgeom.is_null() {
+                return;
+            }
+
+            mjv_connector(thisgeom, 5 /* mjGEOM_CYLINDER */, width as f64, pos, to.as_ptr());
+            for k in 0..3i32 {
+                (*thisgeom).rgba[k as usize] = if j == k { 0.9 } else { 0.0 };
+            }
+            (*thisgeom).rgba[3] = 1.0;
+            let mut geom_ptr = thisgeom;
+            release_geom(&mut geom_ptr, scn);
+        }
+    }
 }
 
 /// C: getFrustum (engine/engine_vis_visualize.c:434)

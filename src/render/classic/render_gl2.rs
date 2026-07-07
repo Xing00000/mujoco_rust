@@ -71,19 +71,27 @@ pub fn maketext(format: *const i8, txt: *mut i8, num: f32, txt_sz: i32) {
 /// C: textwidth (render/classic/render_gl2.c:787)
 #[allow(unused_variables, non_snake_case)]
 pub fn textwidth(con: *const mjrContext, text: *const i8) -> i32 {
-    // WARNING: signature changed — verify body
-    // Previous params: (con : * const mjrContext, text : * const i8)
-    // Previous return: i32
-    todo ! ()
+    // SAFETY: caller guarantees con and text are valid pointers; text is null-terminated
+    unsafe {
+        let mut i: isize = 0;
+        let mut width: i32 = 0;
+
+        // add character widths
+        while *text.offset(i) != 0 {
+            width += (*con).charWidth[*text.offset(i) as u8 as usize];
+            i += 1;
+        }
+
+        width
+    }
 }
 
 /// C: mjr_restoreBuffer (render/classic/render_gl2.h:27)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjr_restore_buffer(con: *const mjrContext) {
-    // WARNING: signature changed — verify body
-    // Previous params: (con : * const mjrContext)
-    // Previous return: ()
-    todo ! ()
+    extern "C" { fn mjr_restoreBuffer_impl(con: *const mjrContext); }
+    // SAFETY: delegates to C implementation which handles GL state
+    unsafe { mjr_restoreBuffer_impl(con) }
 }
 
 /// C: mjr_textActual (render/classic/render_gl2.h:30)

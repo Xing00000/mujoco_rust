@@ -57,10 +57,9 @@ pub fn latitude(vec: *const f64) -> f64 {
 /// C: ray_eliminate (engine/engine_ray.c:68)
 #[allow(unused_variables, non_snake_case)]
 pub fn ray_eliminate(m: *const mjModel, d: *const mjData, geomid: i32, geomgroup: *const u8, flg_static: mjtBool, bodyexclude: i32) -> i32 {
-    // WARNING: signature changed — verify body
-    // Previous params: (m : * const mjModel, d : * const mjData, geomid : i32, geomgroup : * const u8, flg_static : mjtBool, bodyexclude : i32)
-    // Previous return: i32
-    todo ! ()
+    extern "C" { fn ray_eliminate_impl(m: *const mjModel, d: *const mjData, geomid: i32, geomgroup: *const u8, flg_static: mjtBool, bodyexclude: i32) -> i32; }
+    // SAFETY: delegates to C implementation; caller guarantees all pointers are valid
+    unsafe { ray_eliminate_impl(m, d, geomid, geomgroup, flg_static, bodyexclude) }
 }
 
 /// C: ray_quad (engine/engine_ray.c:103)
