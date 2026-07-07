@@ -124,10 +124,9 @@ pub fn mjr_ortho_vec(res: *mut f32, v: *const f32) {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjr_dot_vec(a: *const f32, b: *const f32) -> f32 {
-    // WARNING: signature changed — verify body
-    // Previous params: (a : * const f32, b : * const f32)
-    // Previous return: f32
-    todo ! ()
+    extern "C" { fn mjr_dotVec_impl(a: *const f32, b: *const f32) -> f32; }
+    // SAFETY: delegates to C implementation
+    unsafe { mjr_dotVec_impl(a, b) }
 }
 
 /// C: mjr_multiply4 (render/classic/render_util.h:53)
@@ -138,10 +137,9 @@ pub fn mjr_dot_vec(a: *const f32, b: *const f32) -> f32 {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjr_multiply4(res: *mut f32, mat: *const f32, vec: *const f32) {
-    // WARNING: signature changed — verify body
-    // Previous params: (res : * mut f32, mat : * const f32, vec : * const f32)
-    // Previous return: ()
-    todo ! ()
+    extern "C" { fn mjr_multiply4_impl(res: *mut f32, mat: *const f32, vec: *const f32); }
+    // SAFETY: delegates to C implementation
+    unsafe { mjr_multiply4_impl(res, mat, vec) }
 }
 
 /// C: mjr_lookAt (render/classic/render_util.h:56)

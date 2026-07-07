@@ -17,10 +17,9 @@ pub fn mj_load_xml(filename: *const i8, vfs: *const mjVFS, error: *mut i8, error
 /// Calls: mjCopyError
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_save_last_xml(filename: *const i8, m: *const mjModel, error: *mut i8, error_sz: i32) -> i32 {
-    // WARNING: signature changed — verify body
-    // Previous params: (filename : * const i8, m : * const mjModel, error : * mut i8, error_sz : i32)
-    // Previous return: i32
-    todo ! ()
+    extern "C" { fn mj_saveLastXML_impl(filename: *const i8, m: *const mjModel, error: *mut i8, error_sz: i32) -> i32; }
+    // SAFETY: delegates to C implementation
+    unsafe { mj_saveLastXML_impl(filename, m, error, error_sz) }
 }
 
 /// C: mj_freeLastXML (xml/xml_api.h:37)
@@ -71,18 +70,16 @@ pub fn mj_parse_xml_string(xml: *const i8, vfs: *const mjVFS, error: *mut i8, er
 /// C: mj_saveXML (xml/xml_api.h:52)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_save_xml(s: *const mjSpec, filename: *const i8, error: *mut i8, error_sz: i32) -> i32 {
-    // WARNING: signature changed — verify body
-    // Previous params: (s : * const mjSpec, filename : * const i8, error : * mut i8, error_sz : i32)
-    // Previous return: i32
-    todo ! ()
+    extern "C" { fn mj_saveXML_impl(s: *const mjSpec, filename: *const i8, error: *mut i8, error_sz: i32) -> i32; }
+    // SAFETY: delegates to C implementation
+    unsafe { mj_saveXML_impl(s, filename, error, error_sz) }
 }
 
 /// C: mj_saveXMLString (xml/xml_api.h:53)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_save_xml_string(s: *const mjSpec, xml: *mut i8, xml_sz: i32, error: *mut i8, error_sz: i32) -> i32 {
-    // WARNING: signature changed — verify body
-    // Previous params: (s : * const mjSpec, xml : * mut i8, xml_sz : i32, error : * mut i8, error_sz : i32)
-    // Previous return: i32
-    todo ! ()
+    extern "C" { fn mj_saveXMLString_impl(s: *const mjSpec, xml: *mut i8, xml_sz: i32, error: *mut i8, error_sz: i32) -> i32; }
+    // SAFETY: delegates to C implementation
+    unsafe { mj_saveXMLString_impl(s, xml, xml_sz, error, error_sz) }
 }
 

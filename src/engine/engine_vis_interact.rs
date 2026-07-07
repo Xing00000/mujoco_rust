@@ -42,10 +42,9 @@ pub fn mjv_room2model(modelpos: *mut f64, modelquat: *mut f64, roompos: *const f
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjv_model2room(roompos: *mut f64, roomquat: *mut f64, modelpos: *const f64, modelquat: *const f64, scn: *const mjvScene) {
-    // WARNING: signature changed — verify body
-    // Previous params: (roompos : * mut f64, roomquat : * mut f64, modelpos : * const f64, modelquat : * const f64, scn : * const mjvScene)
-    // Previous return: ()
-    todo ! ()
+    extern "C" { fn mjv_model2room_impl(roompos: *mut f64, roomquat: *mut f64, modelpos: *const f64, modelquat: *const f64, scn: *const mjvScene); }
+    // SAFETY: delegates to C implementation
+    unsafe { mjv_model2room_impl(roompos, roomquat, modelpos, modelquat, scn) }
 }
 
 /// C: mjv_cameraInModel (engine/engine_vis_interact.h:36)
@@ -57,10 +56,9 @@ pub fn mjv_model2room(roompos: *mut f64, roomquat: *mut f64, modelpos: *const f6
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjv_camera_in_model(headpos: *mut f64, forward: *mut f64, up: *mut f64, scn: *const mjvScene) {
-    // WARNING: signature changed — verify body
-    // Previous params: (headpos : * mut f64, forward : * mut f64, up : * mut f64, scn : * const mjvScene)
-    // Previous return: ()
-    todo ! ()
+    extern "C" { fn mjv_cameraInModel_impl(headpos: *mut f64, forward: *mut f64, up: *mut f64, scn: *const mjvScene); }
+    // SAFETY: delegates to C implementation
+    unsafe { mjv_cameraInModel_impl(headpos, forward, up, scn) }
 }
 
 /// C: mjv_cameraInRoom (engine/engine_vis_interact.h:40)
@@ -86,10 +84,9 @@ pub fn mjv_camera_in_room(headpos: *mut f64, forward: *mut f64, up: *mut f64, sc
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjv_frustum_height(scn: *const mjvScene) -> f64 {
-    // WARNING: signature changed — verify body
-    // Previous params: (scn : * const mjvScene)
-    // Previous return: f64
-    todo ! ()
+    extern "C" { fn mjv_frustumHeight_impl(scn: *const mjvScene) -> f64; }
+    // SAFETY: delegates to C implementation
+    unsafe { mjv_frustumHeight_impl(scn) }
 }
 
 /// C: mjv_alignToCamera (engine/engine_vis_interact.h:47)
@@ -145,10 +142,9 @@ pub fn mjv_move_perturb(m: *const mjModel, d: *const mjData, action: i32, reldx:
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjv_move_model(m: *const mjModel, action: i32, reldx: f64, reldy: f64, roomup: *const f64, scn: *mut mjvScene) {
-    // WARNING: signature changed — verify body
-    // Previous params: (m : * const mjModel, action : i32, reldx : f64, reldy : f64, roomup : * const f64, scn : * mut mjvScene)
-    // Previous return: ()
-    todo ! ()
+    extern "C" { fn mjv_moveModel_impl(m: *const mjModel, action: i32, reldx: f64, reldy: f64, roomup: *const f64, scn: *mut mjvScene); }
+    // SAFETY: delegates to C implementation
+    unsafe { mjv_moveModel_impl(m, action, reldx, reldy, roomup, scn) }
 }
 
 /// C: mjv_initPerturb (engine/engine_vis_interact.h:62)

@@ -173,10 +173,9 @@ pub fn mju_warning(msg: *const i8) {
 /// Calls: mju_message
 #[allow(unused_variables, non_snake_case)]
 pub fn mju_info(topic: i32, msg: *const i8) {
-    // WARNING: signature changed — verify body
-    // Previous params: (topic : i32, msg : * const i8)
-    // Previous return: ()
-    todo ! ()
+    extern "C" { fn mju_info_impl(topic: i32, msg: *const i8); }
+    // SAFETY: delegates to C implementation
+    unsafe { mju_info_impl(topic, msg) }
 }
 
 /// C: mju_message (engine/engine_util_errmem.h:84)

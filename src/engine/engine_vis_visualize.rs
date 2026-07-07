@@ -644,10 +644,9 @@ pub fn mjv_add_geoms(m: *const mjModel, d: *mut mjData, opt: *const mjvOption, p
 /// Calls: f2f, mju_n2f, mjv_cameraInModel
 #[allow(unused_variables, non_snake_case)]
 pub fn mjv_make_lights(m: *const mjModel, d: *const mjData, scn: *mut mjvScene) {
-    // WARNING: signature changed — verify body
-    // Previous params: (m : * const mjModel, d : * const mjData, scn : * mut mjvScene)
-    // Previous return: ()
-    todo ! ()
+    extern "C" { fn mjv_makeLights_impl(m: *const mjModel, d: *const mjData, scn: *mut mjvScene); }
+    // SAFETY: delegates to C implementation
+    unsafe { mjv_makeLights_impl(m, d, scn) }
 }
 
 /// C: mjv_updateCamera (engine/engine_vis_visualize.h:48)

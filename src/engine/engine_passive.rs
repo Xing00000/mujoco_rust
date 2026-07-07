@@ -196,10 +196,9 @@ pub fn mj_ellipsoid_fluid_model(m: *const mjModel, d: *mut mjData, bodyid: i32) 
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_added_mass_forces(local_vels: *const f64, local_accels: *const f64, fluid_density: f64, virtual_mass: *const f64, virtual_inertia: *const f64, local_force: *mut f64) {
-    // WARNING: signature changed — verify body
-    // Previous params: (local_vels : * const f64, local_accels : * const f64, fluid_density : f64, virtual_mass : * const f64, virtual_inertia : * const f64, local_force : * mut f64)
-    // Previous return: ()
-    todo ! ()
+    extern "C" { fn mj_addedMassForces_impl(local_vels: *const f64, local_accels: *const f64, fluid_density: f64, virtual_mass: *const f64, virtual_inertia: *const f64, local_force: *mut f64); }
+    // SAFETY: delegates to C implementation
+    unsafe { mj_addedMassForces_impl(local_vels, local_accels, fluid_density, virtual_mass, virtual_inertia, local_force) }
 }
 
 /// C: mj_viscousForces (engine/engine_passive.h:49)

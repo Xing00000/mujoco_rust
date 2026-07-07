@@ -7,10 +7,9 @@ use crate::types::*;
 /// C: mjv_defaultScene (engine/engine_vis_init.h:34)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjv_default_scene(scn: *mut mjvScene) {
-    // WARNING: signature changed — verify body
-    // Previous params: (scn : * mut mjvScene)
-    // Previous return: ()
-    todo ! ()
+    extern "C" { fn mjv_defaultScene_impl(scn: *mut mjvScene); }
+    // SAFETY: delegates to C implementation
+    unsafe { mjv_defaultScene_impl(scn) }
 }
 
 /// C: mjv_makeScene (engine/engine_vis_init.h:37)
@@ -36,10 +35,9 @@ pub fn mjv_free_scene(scn: *mut mjvScene) {
 /// C: mjv_defaultOption (engine/engine_vis_init.h:43)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjv_default_option(vopt: *mut mjvOption) {
-    // WARNING: signature changed — verify body
-    // Previous params: (vopt : * mut mjvOption)
-    // Previous return: ()
-    todo ! ()
+    extern "C" { fn mjv_defaultOption_impl(vopt: *mut mjvOption); }
+    // SAFETY: delegates to C implementation
+    unsafe { mjv_defaultOption_impl(vopt) }
 }
 
 /// C: mjv_defaultFreeCamera (engine/engine_vis_init.h:46)

@@ -142,10 +142,9 @@ pub fn mj_set_keyframe(m: *mut mjModel, d: *const mjData, k: i32) {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_full_m(m: *const mjModel, d: *const mjData, dst: *mut f64) {
-    // WARNING: signature changed — verify body
-    // Previous params: (m : * const mjModel, d : * const mjData, dst : * mut f64)
-    // Previous return: ()
-    todo ! ()
+    extern "C" { fn mj_fullM_impl(m: *const mjModel, d: *const mjData, dst: *mut f64); }
+    // SAFETY: delegates to C implementation
+    unsafe { mj_fullM_impl(m, d, dst) }
 }
 
 /// C: mj_mulM (engine/engine_support.h:65)
@@ -172,10 +171,9 @@ pub fn mj_mul_m(m: *const mjModel, d: *const mjData, res: *mut f64, vec: *const 
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_mul_m2(m: *const mjModel, d: *const mjData, res: *mut f64, vec: *const f64) {
-    // WARNING: signature changed — verify body
-    // Previous params: (m : * const mjModel, d : * const mjData, res : * mut f64, vec : * const f64)
-    // Previous return: ()
-    todo ! ()
+    extern "C" { fn mj_mulM2_impl(m: *const mjModel, d: *const mjData, res: *mut f64, vec: *const f64); }
+    // SAFETY: delegates to C implementation
+    unsafe { mj_mulM2_impl(m, d, res, vec) }
 }
 
 /// C: mj_addM (engine/engine_support.h:72)
@@ -246,10 +244,9 @@ pub fn mj_geom_distance(m: *const mjModel, d: *mut mjData, geom1: i32, geom2: i3
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_differentiate_pos(m: *const mjModel, qvel: *mut f64, dt: f64, qpos1: *const f64, qpos2: *const f64) {
-    // WARNING: signature changed — verify body
-    // Previous params: (m : * const mjModel, qvel : * mut f64, dt : f64, qpos1 : * const f64, qpos2 : * const f64)
-    // Previous return: ()
-    todo ! ()
+    extern "C" { fn mj_differentiatePos_impl(m: *const mjModel, qvel: *mut f64, dt: f64, qpos1: *const f64, qpos2: *const f64); }
+    // SAFETY: delegates to C implementation
+    unsafe { mj_differentiatePos_impl(m, qvel, dt, qpos1, qpos2) }
 }
 
 /// C: mj_integratePosInd (engine/engine_support.h:98)
@@ -275,10 +272,9 @@ pub fn mj_integrate_pos_ind(m: *const mjModel, qpos: *mut f64, qvel: *const f64,
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_integrate_pos(m: *const mjModel, qpos: *mut f64, qvel: *const f64, dt: f64) {
-    // WARNING: signature changed — verify body
-    // Previous params: (m : * const mjModel, qpos : * mut f64, qvel : * const f64, dt : f64)
-    // Previous return: ()
-    todo ! ()
+    extern "C" { fn mj_integratePos_impl(m: *const mjModel, qpos: *mut f64, qvel: *const f64, dt: f64); }
+    // SAFETY: delegates to C implementation
+    unsafe { mj_integratePos_impl(m, qpos, qvel, dt) }
 }
 
 /// C: mj_normalizeQuat (engine/engine_support.h:105)
@@ -290,10 +286,9 @@ pub fn mj_integrate_pos(m: *const mjModel, qpos: *mut f64, qvel: *const f64, dt:
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_normalize_quat(m: *const mjModel, qpos: *mut f64) {
-    // WARNING: signature changed — verify body
-    // Previous params: (m : * const mjModel, qpos : * mut f64)
-    // Previous return: ()
-    todo ! ()
+    extern "C" { fn mj_normalizeQuat_impl(m: *const mjModel, qpos: *mut f64); }
+    // SAFETY: delegates to C implementation
+    unsafe { mj_normalizeQuat_impl(m, qpos) }
 }
 
 /// C: mj_actuatorDisabled (engine/engine_support.h:108)
@@ -328,10 +323,9 @@ pub fn mj_next_activation(m: *const mjModel, d: *const mjData, actuator_id: i32,
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_get_totalmass(m: *const mjModel) -> f64 {
-    // WARNING: signature changed — verify body
-    // Previous params: (m : * const mjModel)
-    // Previous return: f64
-    todo ! ()
+    extern "C" { fn mj_getTotalmass_impl(m: *const mjModel) -> f64; }
+    // SAFETY: delegates to C implementation
+    unsafe { mj_getTotalmass_impl(m) }
 }
 
 /// C: mj_setTotalmass (engine/engine_support.h:118)
@@ -352,16 +346,17 @@ pub fn mj_set_totalmass(m: *mut mjModel, newmass: f64) {
 /// C: mj_version (engine/engine_support.h:121)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_version() -> i32 {
-    todo ! ()
+    extern "C" { fn mj_version_impl() -> i32; }
+    // SAFETY: delegates to C implementation
+    unsafe { mj_version_impl() }
 }
 
 /// C: mj_versionString (engine/engine_support.h:124)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_version_string() -> *const i8 {
-    // WARNING: signature changed — verify body
-    // Previous params: ()
-    // Previous return: * const i8
-    todo ! ()
+    extern "C" { fn mj_versionString_impl() -> *const i8; }
+    // SAFETY: delegates to C implementation
+    unsafe { mj_versionString_impl() }
 }
 
 /// C: mju_condataSize (engine/engine_support.h:127)
@@ -377,10 +372,9 @@ pub fn mju_condata_size(dataSpec: i32) -> i32 {
 /// C: mju_raydataSize (engine/engine_support.h:130)
 #[allow(unused_variables, non_snake_case)]
 pub fn mju_raydata_size(dataspec: i32) -> i32 {
-    // WARNING: signature changed — verify body
-    // Previous params: (dataspec : i32)
-    // Previous return: i32
-    todo ! ()
+    extern "C" { fn mju_raydataSize_impl(dataspec: i32) -> i32; }
+    // SAFETY: delegates to C implementation
+    unsafe { mju_raydataSize_impl(dataspec) }
 }
 
 /// C: mju_camIntrinsics (engine/engine_support.h:134)

@@ -65,10 +65,9 @@ pub fn freestackinternal(stack_info: *mut mjStackInfo) {
 /// Calls: fastmod
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_arena_alloc_byte(d: *mut mjData, bytes: usize, alignment: usize) -> *mut () {
-    // WARNING: signature changed — verify body
-    // Previous params: (d : * mut mjData, bytes : usize, alignment : usize)
-    // Previous return: * mut ()
-    todo ! ()
+    extern "C" { fn mj_arenaAllocByte_impl(d: *mut mjData, bytes: usize, alignment: usize) -> *mut (); }
+    // SAFETY: delegates to C implementation
+    unsafe { mj_arenaAllocByte_impl(d, bytes, alignment) }
 }
 
 /// C: mj_markStack (engine/engine_memory.h:40)
@@ -95,20 +94,18 @@ pub fn mj_free_stack(d: *mut mjData) {
 /// Calls: stackalloc
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_stack_alloc_byte(d: *mut mjData, bytes: usize, alignment: usize) -> *mut () {
-    // WARNING: signature changed — verify body
-    // Previous params: (d : * mut mjData, bytes : usize, alignment : usize)
-    // Previous return: * mut ()
-    todo ! ()
+    extern "C" { fn mj_stackAllocByte_impl(d: *mut mjData, bytes: usize, alignment: usize) -> *mut (); }
+    // SAFETY: delegates to C implementation
+    unsafe { mj_stackAllocByte_impl(d, bytes, alignment) }
 }
 
 /// C: mj_stackAllocInfo (engine/engine_memory.h:56)
 /// Calls: stackalloc
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_stack_alloc_info(d: *mut mjData, bytes: usize, alignment: usize, caller: *const i8, line: i32) -> *mut () {
-    // WARNING: signature changed — verify body
-    // Previous params: (d : * mut mjData, bytes : usize, alignment : usize, caller : * const i8, line : i32)
-    // Previous return: * mut ()
-    todo ! ()
+    extern "C" { fn mj_stackAllocInfo_impl(d: *mut mjData, bytes: usize, alignment: usize, caller: *const i8, line: i32) -> *mut (); }
+    // SAFETY: delegates to C implementation
+    unsafe { mj_stackAllocInfo_impl(d, bytes, alignment, caller, line) }
 }
 
 /// C: mj_stackAllocNum (engine/engine_memory.h:64)

@@ -346,10 +346,9 @@ pub fn mj_reset_data_keyframe(m: *const mjModel, d: *mut mjData, key: i32) {
 /// Calls: mjp_getPluginAtSlot, mju_free, mju_message
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_init_plugin(m: *const mjModel, d: *mut mjData) {
-    // WARNING: signature changed — verify body
-    // Previous params: (m : * const mjModel, d : * mut mjData)
-    // Previous return: ()
-    todo ! ()
+    extern "C" { fn mj_initPlugin_impl(m: *const mjModel, d: *mut mjData); }
+    // SAFETY: delegates to C implementation
+    unsafe { mj_initPlugin_impl(m, d) }
 }
 
 /// C: mj_deleteData (engine/engine_io.h:138)

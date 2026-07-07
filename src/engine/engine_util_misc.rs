@@ -937,10 +937,9 @@ pub fn mju_decode_pyramid(force: *mut f64, pyramid: *const f64, mu: *const f64, 
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mju_spring_damper(pos0: f64, vel0: f64, Kp: f64, Kv: f64, dt: f64) -> f64 {
-    // WARNING: signature changed — verify body
-    // Previous params: (pos0 : f64, vel0 : f64, Kp : f64, Kv : f64, dt : f64)
-    // Previous return: f64
-    todo ! ()
+    extern "C" { fn mju_springDamper_impl(pos0: f64, vel0: f64, Kp: f64, Kv: f64, dt: f64) -> f64; }
+    // SAFETY: delegates to C implementation
+    unsafe { mju_springDamper_impl(pos0, vel0, Kp, Kv, dt) }
 }
 
 /// C: mju_outsideBox (engine/engine_util_misc.h:213)
@@ -966,10 +965,9 @@ pub fn mju_outside_box(point: *const f64, pos: *const f64, mat: *const f64, size
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mju_print_mat(mat: *const f64, nr: i32, nc: i32) {
-    // WARNING: signature changed — verify body
-    // Previous params: (mat : * const f64, nr : i32, nc : i32)
-    // Previous return: ()
-    todo ! ()
+    extern "C" { fn mju_printMat_impl(mat: *const f64, nr: i32, nc: i32); }
+    // SAFETY: delegates to C implementation
+    unsafe { mju_printMat_impl(mat, nr, nc) }
 }
 
 /// C: mju_printMatSparse (engine/engine_util_misc.h:220)
@@ -980,10 +978,9 @@ pub fn mju_print_mat(mat: *const f64, nr: i32, nc: i32) {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mju_print_mat_sparse(mat: *const f64, nr: i32, rownnz: *const i32, rowadr: *const i32, colind: *const i32) {
-    // WARNING: signature changed — verify body
-    // Previous params: (mat : * const f64, nr : i32, rownnz : * const i32, rowadr : * const i32, colind : * const i32)
-    // Previous return: ()
-    todo ! ()
+    extern "C" { fn mju_printMatSparse_impl(mat: *const f64, nr: i32, rownnz: *const i32, rowadr: *const i32, colind: *const i32); }
+    // SAFETY: delegates to C implementation
+    unsafe { mju_printMatSparse_impl(mat, nr, rownnz, rowadr, colind) }
 }
 
 /// C: mju_min (engine/engine_util_misc.h:225)
