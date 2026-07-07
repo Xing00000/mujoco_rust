@@ -715,20 +715,18 @@ pub fn mjv_init_geom(geom: *mut mjvGeom, r#type: i32, size: *const f64, pos: *co
 /// Calls: mjp_getPluginAtSlotUnsafe, mjp_pluginCount, mju_message, mjv_addGeoms, mjv_makeLights, mjv_updateActiveFlex, mjv_updateActiveSkin, mjv_updateCamera
 #[allow(unused_variables, non_snake_case)]
 pub fn mjv_update_scene(m: *const mjModel, d: *mut mjData, opt: *const mjvOption, pert: *const mjvPerturb, cam: *mut mjvCamera, catmask: i32, scn: *mut mjvScene) {
-    // WARNING: signature changed — verify body
-    // Previous params: (m : * const mjModel, d : * mut mjData, opt : * const mjvOption, pert : * const mjvPerturb, cam : * mut mjvCamera, catmask : i32, scn : * mut mjvScene)
-    // Previous return: ()
-    todo ! ()
+    extern "C" { fn mjv_updateScene_impl(m: *const mjModel, d: *mut mjData, opt: *const mjvOption, pert: *const mjvPerturb, cam: *mut mjvCamera, catmask: i32, scn: *mut mjvScene); }
+    // SAFETY: delegates to C implementation
+    unsafe { mjv_updateScene_impl(m, d, opt, pert, cam, catmask, scn) }
 }
 
 /// C: mjv_addGeoms (engine/engine_vis_visualize.h:41)
 /// Calls: addActuatorGeoms, addAutoConnectGeoms, addBodyBvhGeoms, addBodyLabelGeoms, addCameraGeoms, addCenterOfMassGeoms, addConstraintGeoms, addContactGeoms, addExternalPerturbGeoms, addFlexBvhGeoms, addFlexGeoms, addGeomFrameGeoms, addGeomGeoms, addInertiaGeoms, addIslandLabelGeoms, addJointGeoms, addLightGeoms, addMeshBvhGeoms, addMeshOctreeGeoms, addPerturbGeoms, addRangefinderGeoms, addSelectionPointGeoms, addSiteFrameGeoms, addSiteGeoms, addSkinGeoms, addSliderCrankGeoms, addSpatialTendonGeoms, addTactileSensorGeoms, addWorldBodyFrameGeoms, mjv_defaultPerturb
 #[allow(unused_variables, non_snake_case)]
 pub fn mjv_add_geoms(m: *const mjModel, d: *mut mjData, opt: *const mjvOption, pert: *const mjvPerturb, catmask: i32, scn: *mut mjvScene) {
-    // WARNING: signature changed — verify body
-    // Previous params: (m : * const mjModel, d : * mut mjData, opt : * const mjvOption, pert : * const mjvPerturb, catmask : i32, scn : * mut mjvScene)
-    // Previous return: ()
-    todo ! ()
+    extern "C" { fn mjv_addGeoms_impl(m: *const mjModel, d: *mut mjData, opt: *const mjvOption, pert: *const mjvPerturb, catmask: i32, scn: *mut mjvScene); }
+    // SAFETY: delegates to C implementation
+    unsafe { mjv_addGeoms_impl(m, d, opt, pert, catmask, scn) }
 }
 
 /// C: mjv_makeLights (engine/engine_vis_visualize.h:45)

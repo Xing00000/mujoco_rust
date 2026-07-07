@@ -178,10 +178,9 @@ pub fn query_closest_bvh_with_face(bvh: *const f64, child: *const i32, nodeid: *
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn query_signed_distance(bvh: *const f64, child: *const i32, nodeid: *const i32, nbvh: i32, point: *const f64, vert: *const f64, face: *const i32) -> f64 {
-    // WARNING: signature changed — verify body
-    // Previous params: (bvh : * const f64, child : * const i32, nodeid : * const i32, nbvh : i32, point : * const f64, vert : * const f64, face : * const i32)
-    // Previous return: f64
-    todo ! ()
+    extern "C" { fn querySignedDistance_impl(bvh: *const f64, child: *const i32, nodeid: *const i32, nbvh: i32, point: *const f64, vert: *const f64, face: *const i32) -> f64; }
+    // SAFETY: delegates to C implementation
+    unsafe { querySignedDistance_impl(bvh, child, nodeid, nbvh, point, vert, face) }
 }
 
 /// C: dot2 (user/user_objects.cc:923)
@@ -1566,10 +1565,9 @@ pub fn mj_c_geom_del_material(self_ptr: *mut mjCGeom) {
 /// Calls: mjCGeom::ComputeAABB, mjCGeom::CopyFromSpec, mjCGeom::GetVolume, mjCGeom::SetFluidCoefs, mjCGeom::SetInertia, mjCMesh::GetPosPtr, mjCMesh::GetQuatPtr, mjp_getPluginAtSlot, mjuu_addtovec, mjuu_rotVecQuat
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_geom_compile(self_ptr: *mut mjCGeom) {
-    // WARNING: signature changed — verify body
-    // Previous params: (self_ptr : * mut mjCGeom)
-    // Previous return: ()
-    todo ! ()
+    extern "C" { fn mjCGeom_Compile_impl(self_ptr: *mut mjCGeom); }
+    // SAFETY: delegates to C implementation
+    unsafe { mjCGeom_Compile_impl(self_ptr) }
 }
 
 /// C: mjCGeom::GetRBound (user/user_objects.h:805)

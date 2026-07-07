@@ -681,10 +681,9 @@ pub fn mj_c_model_find_default(self_ptr: *mut mjCModel, name: *const std__string
 /// Calls: mjCDef::CopyFromSpec, mjCDef::CopyWithoutChildren
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_model_add_default(self_ptr: *mut mjCModel, name: string, parent: *mut mjCDef) -> *mut mjCDef {
-    // WARNING: signature changed — verify body
-    // Previous params: (self_ptr : * mut mjCModel, name : string, parent : * mut mjCDef)
-    // Previous return: * mut mjCDef
-    todo ! ()
+    extern "C" { fn mjCModel_AddDefault_impl(self_ptr: *mut mjCModel, name: string, parent: *mut mjCDef) -> *mut mjCDef; }
+    // SAFETY: delegates to C implementation
+    unsafe { mjCModel_AddDefault_impl(self_ptr, name, parent) }
 }
 
 /// C: mjCModel::FindObject (user/user_model.h:274)

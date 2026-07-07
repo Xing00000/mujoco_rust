@@ -55,9 +55,8 @@ pub fn conflict_subject(parent: *const mjSpec, child: *const mjSpec) -> std__str
 /// Calls: Resolver::Apply, VisitConflicts
 #[allow(unused_variables, non_snake_case)]
 pub fn resolve_conflicts(parent: *mut mjSpec, child: *const mjSpec, mode: mjtConflict, error_msg: *mut string, warning_subject: *mut string, warning_body: *mut string) -> bool {
-    // WARNING: signature changed — verify body
-    // Previous params: (parent : * mut mjSpec, child : * const mjSpec, mode : mjtConflict, error_msg : * mut string, warning_subject : * mut string, warning_body : * mut string)
-    // Previous return: bool
-    todo ! ()
+    extern "C" { fn ResolveConflicts_impl(parent: *mut mjSpec, child: *const mjSpec, mode: mjtConflict, error_msg: *mut string, warning_subject: *mut string, warning_body: *mut string) -> bool; }
+    // SAFETY: delegates to C implementation
+    unsafe { ResolveConflicts_impl(parent, child, mode, error_msg, warning_subject, warning_body) }
 }
 

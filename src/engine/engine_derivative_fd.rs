@@ -166,10 +166,9 @@ pub fn mj_step_skip(m: *const mjModel, d: *mut mjData, skipstage: i32, skipsenso
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjd_transition_fd(m: *const mjModel, d: *mut mjData, eps: f64, centered: mjtBool, A: *mut f64, B: *mut f64, C: *mut f64, D: *mut f64) {
-    // WARNING: signature changed — verify body
-    // Previous params: (m : * const mjModel, d : * mut mjData, eps : f64, centered : mjtBool, A : * mut f64, B : * mut f64, C : * mut f64, D : * mut f64)
-    // Previous return: ()
-    todo ! ()
+    extern "C" { fn mjd_transitionFD_impl(m: *const mjModel, d: *mut mjData, eps: f64, centered: mjtBool, A: *mut f64, B: *mut f64, C: *mut f64, D: *mut f64); }
+    // SAFETY: delegates to C implementation
+    unsafe { mjd_transitionFD_impl(m, d, eps, centered, A, B, C, D) }
 }
 
 /// C: mjd_inverseFD (engine/engine_derivative_fd.h:40)

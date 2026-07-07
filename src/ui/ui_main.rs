@@ -130,10 +130,9 @@ pub fn mouseinrect(rect: mjrRect, ui: *const mjUI, ins: *const mjuiState, rx: *m
 /// Calls: mouseinrect
 #[allow(unused_variables, non_snake_case)]
 pub fn findradio(it: *const mjuiItem, ui: *const mjUI, ins: *const mjuiState, con: *const mjrContext) -> i32 {
-    // WARNING: signature changed — verify body
-    // Previous params: (it : * const mjuiItem, ui : * const mjUI, ins : * const mjuiState, con : * const mjrContext)
-    // Previous return: i32
-    todo ! ()
+    extern "C" { fn findradio_impl(it: *const mjuiItem, ui: *const mjUI, ins: *const mjuiState, con: *const mjrContext) -> i32; }
+    // SAFETY: delegates to C implementation
+    unsafe { findradio_impl(it, ui, ins, con) }
 }
 
 /// C: makeradioline (ui/ui_main.c:613)
@@ -149,20 +148,18 @@ pub fn makeradioline(it: *const mjuiItem, con: *const mjrContext, sep: *mut i32)
 /// Calls: makeradioline, mju_round, mouseinrect
 #[allow(unused_variables, non_snake_case)]
 pub fn findradioline(it: *const mjuiItem, ui: *const mjUI, ins: *const mjuiState, con: *const mjrContext) -> i32 {
-    // WARNING: signature changed — verify body
-    // Previous params: (it : * const mjuiItem, ui : * const mjUI, ins : * const mjuiState, con : * const mjrContext)
-    // Previous return: i32
-    todo ! ()
+    extern "C" { fn findradioline_impl(it: *const mjuiItem, ui: *const mjUI, ins: *const mjuiState, con: *const mjrContext) -> i32; }
+    // SAFETY: delegates to C implementation
+    unsafe { findradioline_impl(it, ui, ins, con) }
 }
 
 /// C: findselect (ui/ui_main.c:667)
 /// Calls: SCL, mouseinrect
 #[allow(unused_variables, non_snake_case)]
 pub fn findselect(it: *const mjuiItem, ui: *const mjUI, ins: *const mjuiState, con: *const mjrContext) -> i32 {
-    // WARNING: signature changed — verify body
-    // Previous params: (it : * const mjuiItem, ui : * const mjUI, ins : * const mjuiState, con : * const mjrContext)
-    // Previous return: i32
-    todo ! ()
+    extern "C" { fn findselect_impl(it: *const mjuiItem, ui: *const mjUI, ins: *const mjuiState, con: *const mjrContext) -> i32; }
+    // SAFETY: delegates to C implementation
+    unsafe { findselect_impl(it, ui, ins, con) }
 }
 
 /// C: scrollrect (ui/ui_main.c:696)
@@ -195,20 +192,18 @@ pub fn insideoval(x: i32, y: i32, r: mjrRect) -> i32 {
 /// Calls: inside, insideoval, mouseinui, scrollrect
 #[allow(unused_variables, non_snake_case)]
 pub fn findmouse(ui: *const mjUI, ins: *const mjuiState, con: *const mjrContext, sect: *mut i32, item: *mut i32) {
-    // WARNING: signature changed — verify body
-    // Previous params: (ui : * const mjUI, ins : * const mjuiState, con : * const mjrContext, sect : * mut i32, item : * mut i32)
-    // Previous return: ()
-    todo ! ()
+    extern "C" { fn findmouse_impl(ui: *const mjUI, ins: *const mjuiState, con: *const mjrContext, sect: *mut i32, item: *mut i32); }
+    // SAFETY: delegates to C implementation
+    unsafe { findmouse_impl(ui, ins, con, sect, item) }
 }
 
 /// C: setslider (ui/ui_main.c:841)
 /// Calls: mju_clip, mju_round, mouseinrect
 #[allow(unused_variables, non_snake_case)]
 pub fn setslider(it: *mut mjuiItem, ui: *mut mjUI, ins: *const mjuiState, con: *const mjrContext) {
-    // WARNING: signature changed — verify body
-    // Previous params: (it : * mut mjuiItem, ui : * mut mjUI, ins : * const mjuiState, con : * const mjrContext)
-    // Previous return: ()
-    todo ! ()
+    extern "C" { fn setslider_impl(it: *mut mjuiItem, ui: *mut mjUI, ins: *const mjuiState, con: *const mjrContext); }
+    // SAFETY: delegates to C implementation
+    unsafe { setslider_impl(it, ui, ins, con) }
 }
 
 /// C: checkedit (ui/ui_main.c:868)
@@ -259,10 +254,9 @@ pub fn revealcursor(r: mjrRect, ui: *mut mjUI, con: *const mjrContext) {
 /// Calls: SCL, mju_round, mouseinrect, revealcursor
 #[allow(unused_variables, non_snake_case)]
 pub fn setcursor(r: mjrRect, ui: *mut mjUI, ins: *const mjuiState, con: *const mjrContext) {
-    // WARNING: signature changed — verify body
-    // Previous params: (r : mjrRect, ui : * mut mjUI, ins : * const mjuiState, con : * const mjrContext)
-    // Previous return: ()
-    todo ! ()
+    extern "C" { fn setcursor_impl(r: mjrRect, ui: *mut mjUI, ins: *const mjuiState, con: *const mjrContext); }
+    // SAFETY: delegates to C implementation
+    unsafe { setcursor_impl(r, ui, ins, con) }
 }
 
 /// C: parseshortcut (ui/ui_main.c:1169)
@@ -354,20 +348,18 @@ pub fn mjui_add(ui: *mut mjUI, def: *const mjuiDef) {
 /// Calls: mjui_add
 #[allow(unused_variables, non_snake_case)]
 pub fn mjui_add_to_section(ui: *mut mjUI, sect: i32, def: *const mjuiDef) {
-    // WARNING: signature changed — verify body
-    // Previous params: (ui : * mut mjUI, sect : i32, def : * const mjuiDef)
-    // Previous return: ()
-    todo ! ()
+    extern "C" { fn mjui_addToSection_impl(ui: *mut mjUI, sect: i32, def: *const mjuiDef); }
+    // SAFETY: delegates to C implementation
+    unsafe { mjui_addToSection_impl(ui, sect, def) }
 }
 
 /// C: mjui_resize (ui/ui_main.h:38)
 /// Calls: SCL, insertionsortgroup, mju_error, tryresize
 #[allow(unused_variables, non_snake_case)]
 pub fn mjui_resize(ui: *mut mjUI, con: *const mjrContext) {
-    // WARNING: signature changed — verify body
-    // Previous params: (ui : * mut mjUI, con : * const mjrContext)
-    // Previous return: ()
-    todo ! ()
+    extern "C" { fn mjui_resize_impl(ui: *mut mjUI, con: *const mjrContext); }
+    // SAFETY: delegates to C implementation
+    unsafe { mjui_resize_impl(ui, con) }
 }
 
 /// C: mjui_update (ui/ui_main.h:41)

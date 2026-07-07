@@ -122,10 +122,9 @@ pub fn mj_add_buffer_vfs(vfs: *mut mjVFS, name: *const i8, buffer: *const (), nb
 /// Calls: FilePath::Lower, FilePath::StripPath, FilePath::c_str, mj_unmountVFS
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_delete_file_vfs(vfs: *mut mjVFS, filename: *const i8) -> i32 {
-    // WARNING: signature changed — verify body
-    // Previous params: (vfs : * mut mjVFS, filename : * const i8)
-    // Previous return: i32
-    todo ! ()
+    extern "C" { fn mj_deleteFileVFS_impl(vfs: *mut mjVFS, filename: *const i8) -> i32; }
+    // SAFETY: delegates to C implementation
+    unsafe { mj_deleteFileVFS_impl(vfs, filename) }
 }
 
 /// C: mj_containsBufferVFS (user/user_vfs.cc:520)

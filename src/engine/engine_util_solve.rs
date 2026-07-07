@@ -367,10 +367,9 @@ pub fn mju_qcqp(res: *mut f64, Ain: *const f64, bin: *const f64, d: *const f64, 
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mju_box_qp(res: *mut f64, R: *mut f64, index: *mut i32, H: *const f64, g: *const f64, n: i32, lower: *const f64, upper: *const f64) -> i32 {
-    // WARNING: signature changed — verify body
-    // Previous params: (res : * mut f64, R : * mut f64, index : * mut i32, H : * const f64, g : * const f64, n : i32, lower : * const f64, upper : * const f64)
-    // Previous return: i32
-    todo ! ()
+    extern "C" { fn mju_boxQP_impl(res: *mut f64, R: *mut f64, index: *mut i32, H: *const f64, g: *const f64, n: i32, lower: *const f64, upper: *const f64) -> i32; }
+    // SAFETY: delegates to C implementation
+    unsafe { mju_boxQP_impl(res, R, index, H, g, n, lower, upper) }
 }
 
 /// C: mju_boxQPmalloc (engine/engine_util_solve.h:146)

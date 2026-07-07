@@ -95,20 +95,18 @@ pub fn mj_c_flexcomp_make_square(self_ptr: *mut mjCFlexcomp, error: *mut i8, err
 /// Calls: comperr, mjCBase::LoadResource, mjCMesh::HasTexcoord, mjCMesh::LoadFromResource, mjs_getString, mju_closeResource, mjuu_crossvec, mjuu_dot3
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_flexcomp_make_mesh(self_ptr: *mut mjCFlexcomp, model: *mut mjCModel, compiler: *mut mjsCompiler, error: *mut i8, error_sz: i32, vfs: *const mjVFS) -> bool {
-    // WARNING: signature changed — verify body
-    // Previous params: (self_ptr : * mut mjCFlexcomp, model : * mut mjCModel, compiler : * mut mjsCompiler, error : * mut i8, error_sz : i32, vfs : * const mjVFS)
-    // Previous return: bool
-    todo ! ()
+    extern "C" { fn mjCFlexcomp_MakeMesh_impl(self_ptr: *mut mjCFlexcomp, model: *mut mjCModel, compiler: *mut mjsCompiler, error: *mut i8, error_sz: i32, vfs: *const mjVFS) -> bool; }
+    // SAFETY: delegates to C implementation
+    unsafe { mjCFlexcomp_MakeMesh_impl(self_ptr, model, compiler, error, error_sz, vfs) }
 }
 
 /// C: mjCFlexcomp::MakeGMSH (user/user_flexcomp.h:64)
 /// Calls: comperr, mjCBase::LoadResource, mjCFlexcomp::LoadGMSH, mjs_getString, mju_closeResource
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_flexcomp_make_gmsh(self_ptr: *mut mjCFlexcomp, model: *mut mjCModel, compiler: *mut mjsCompiler, error: *mut i8, error_sz: i32, vfs: *const mjVFS) -> bool {
-    // WARNING: signature changed — verify body
-    // Previous params: (self_ptr : * mut mjCFlexcomp, model : * mut mjCModel, compiler : * mut mjsCompiler, error : * mut i8, error_sz : i32, vfs : * const mjVFS)
-    // Previous return: bool
-    todo ! ()
+    extern "C" { fn mjCFlexcomp_MakeGMSH_impl(self_ptr: *mut mjCFlexcomp, model: *mut mjCModel, compiler: *mut mjsCompiler, error: *mut i8, error_sz: i32, vfs: *const mjVFS) -> bool; }
+    // SAFETY: delegates to C implementation
+    unsafe { mjCFlexcomp_MakeGMSH_impl(self_ptr, model, compiler, error, error_sz, vfs) }
 }
 
 /// C: mjCFlexcomp::LoadGMSH (user/user_flexcomp.h:66)

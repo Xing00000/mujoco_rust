@@ -168,10 +168,9 @@ pub fn haze(nSlice: i32, r: f32, rgba: *const f32) {
 /// Calls: cone, cylinder, disk, halfSphere, haze, listAllocate, sphere
 #[allow(unused_variables, non_snake_case)]
 pub fn make_builtin(m: *const mjModel, con: *mut mjrContext) {
-    // WARNING: signature changed — verify body
-    // Previous params: (m : * const mjModel, con : * mut mjrContext)
-    // Previous return: ()
-    todo ! ()
+    extern "C" { fn makeBuiltin_impl(m: *const mjModel, con: *mut mjrContext); }
+    // SAFETY: delegates to C implementation
+    unsafe { makeBuiltin_impl(m, con) }
 }
 
 /// C: makeShadow (render/classic/render_context.c:1041)

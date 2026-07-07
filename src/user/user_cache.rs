@@ -43,10 +43,9 @@ pub fn mj_c_cache_remove_model(self_ptr: *mut mjCCache, filename: *const i32) {
 /// Calls: mjCCache::Delete
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_cache_delete_asset(self_ptr: *mut mjCCache, id: *const i32) {
-    // WARNING: signature changed — verify body
-    // Previous params: (self_ptr : * mut mjCCache, id : * const i32)
-    // Previous return: ()
-    todo ! ()
+    extern "C" { fn mjCCache_DeleteAsset_impl(self_ptr: *mut mjCCache, id: *const i32); }
+    // SAFETY: delegates to C implementation
+    unsafe { mjCCache_DeleteAsset_impl(self_ptr, id) }
 }
 
 /// C: mjCAsset::Timestamp (user/user_cache.h:55)

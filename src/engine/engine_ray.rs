@@ -399,10 +399,9 @@ pub fn ray_triangle(v: *const [f64; 3], lpnt: *const f64, lvec: *const f64, b0: 
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_ray_mesh(m: *const mjModel, d: *const mjData, geomid: i32, pnt: *const f64, vec: *const f64, normal: *mut f64) -> f64 {
-    // WARNING: signature changed — verify body
-    // Previous params: (m : * const mjModel, d : * const mjData, geomid : i32, pnt : * const f64, vec : * const f64, normal : * mut f64)
-    // Previous return: f64
-    todo ! ()
+    extern "C" { fn mj_rayMesh_impl(m: *const mjModel, d: *const mjData, geomid: i32, pnt: *const f64, vec: *const f64, normal: *mut f64) -> f64; }
+    // SAFETY: delegates to C implementation
+    unsafe { mj_rayMesh_impl(m, d, geomid, pnt, vec, normal) }
 }
 
 /// C: mju_rayGeom (engine/engine_ray.h:59)

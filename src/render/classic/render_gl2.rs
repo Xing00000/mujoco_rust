@@ -131,10 +131,9 @@ pub fn mjr_set_buffer(framebuffer: i32, con: *mut mjrContext) {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjr_read_pixels(rgb: *mut u8, depth: *mut f32, viewport: mjrRect, con: *const mjrContext) {
-    // WARNING: signature changed — verify body
-    // Previous params: (rgb : * mut u8, depth : * mut f32, viewport : mjrRect, con : * const mjrContext)
-    // Previous return: ()
-    todo ! ()
+    extern "C" { fn mjr_readPixels_impl(rgb: *mut u8, depth: *mut f32, viewport: mjrRect, con: *const mjrContext); }
+    // SAFETY: delegates to C implementation
+    unsafe { mjr_readPixels_impl(rgb, depth, viewport, con) }
 }
 
 /// C: mjr_drawPixels (render/classic/render_gl2.h:44)

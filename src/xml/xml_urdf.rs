@@ -98,10 +98,9 @@ pub fn mj_xurdf_geom(self_ptr: *mut mjXURDF, geom_elem: *mut tinyxml2__XMLElemen
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_xurdf_origin(self_ptr: *mut mjXURDF, origin_elem: *mut tinyxml2__XMLElement, pos: *mut f64, quat: *mut f64) {
-    // WARNING: signature changed — verify body
-    // Previous params: (self_ptr : * mut mjXURDF, origin_elem : * mut tinyxml2__XMLElement, pos : * mut f64, quat : * mut f64)
-    // Previous return: ()
-    todo ! ()
+    extern "C" { fn mjXURDF_Origin_impl(self_ptr: *mut mjXURDF, origin_elem: *mut tinyxml2__XMLElement, pos: *mut f64, quat: *mut f64); }
+    // SAFETY: delegates to C implementation
+    unsafe { mjXURDF_Origin_impl(self_ptr, origin_elem, pos, quat) }
 }
 
 /// C: mjXURDF::MakeMaterials (xml/xml_urdf.h:60)

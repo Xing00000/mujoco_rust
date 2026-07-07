@@ -63,10 +63,9 @@ pub fn mj_c_composite_make_cable(self_ptr: *mut mjCComposite, model: *mut mjCMod
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_composite_make_skin2(self_ptr: *mut mjCComposite, model: *mut mjCModel, inflate: f64) {
-    // WARNING: signature changed — verify body
-    // Previous params: (self_ptr : * mut mjCComposite, model : * mut mjCModel, inflate : f64)
-    // Previous return: ()
-    todo ! ()
+    extern "C" { fn mjCComposite_MakeSkin2_impl(self_ptr: *mut mjCComposite, model: *mut mjCModel, inflate: f64); }
+    // SAFETY: delegates to C implementation
+    unsafe { mjCComposite_MakeSkin2_impl(self_ptr, model, inflate) }
 }
 
 /// C: mjCComposite::MakeSkin2Subgrid (user/user_composite.h:68)
@@ -78,10 +77,9 @@ pub fn mj_c_composite_make_skin2(self_ptr: *mut mjCComposite, model: *mut mjCMod
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_composite_make_skin2subgrid(self_ptr: *mut mjCComposite, model: *mut mjCModel, inflate: f64) {
-    // WARNING: signature changed — verify body
-    // Previous params: (self_ptr : * mut mjCComposite, model : * mut mjCModel, inflate : f64)
-    // Previous return: ()
-    todo ! ()
+    extern "C" { fn mjCComposite_MakeSkin2Subgrid_impl(self_ptr: *mut mjCComposite, model: *mut mjCModel, inflate: f64); }
+    // SAFETY: delegates to C implementation
+    unsafe { mjCComposite_MakeSkin2Subgrid_impl(self_ptr, model, inflate) }
 }
 
 /// C: mjCComposite::MakeCableBones (user/user_composite.h:69)

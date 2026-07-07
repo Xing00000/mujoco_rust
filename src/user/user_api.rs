@@ -8,10 +8,9 @@ use crate::types::*;
 /// Calls: mj_defaultVFS, mj_deleteVFS, mj_parseXML, mju_closeResource, mju_decodeResource, mju_free, mju_malloc, mju_openResource
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_parse(filename: *const i8, content_type: *const i8, vfs: *const mjVFS, error: *mut i8, error_sz: i32) -> *mut mjSpec {
-    // WARNING: signature changed — verify body
-    // Previous params: (filename : * const i8, content_type : * const i8, vfs : * const mjVFS, error : * mut i8, error_sz : i32)
-    // Previous return: * mut mjSpec
-    todo ! ()
+    extern "C" { fn mj_parse_impl(filename: *const i8, content_type: *const i8, vfs: *const mjVFS, error: *mut i8, error_sz: i32) -> *mut mjSpec; }
+    // SAFETY: delegates to C implementation
+    unsafe { mj_parse_impl(filename, content_type, vfs, error, error_sz) }
 }
 
 /// C: mj_encode (user/user_api.cc:151)
@@ -796,10 +795,9 @@ pub fn mjs_add_material(s: *mut mjSpec, def: *const mjsDefault) -> *mut mjsMater
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjs_make_mesh(mesh: *mut mjsMesh, builtin: mjtMeshBuiltin, params: *mut f64, nparams: i32) -> i32 {
-    // WARNING: signature changed — verify body
-    // Previous params: (mesh : * mut mjsMesh, builtin : mjtMeshBuiltin, params : * mut f64, nparams : i32)
-    // Previous return: i32
-    todo ! ()
+    extern "C" { fn mjs_makeMesh_impl(mesh: *mut mjsMesh, builtin: mjtMeshBuiltin, params: *mut f64, nparams: i32) -> i32; }
+    // SAFETY: delegates to C implementation
+    unsafe { mjs_makeMesh_impl(mesh, builtin, params, nparams) }
 }
 
 /// C: mjs_getSpec (user/user_api.h:233)
@@ -832,10 +830,9 @@ pub fn mjs_find_spec(spec: *const mjSpec, name: *const i8) -> *mut mjSpec {
 /// Calls: mjs_findElement
 #[allow(unused_variables, non_snake_case)]
 pub fn mjs_find_body(s: *const mjSpec, name: *const i8) -> *mut mjsBody {
-    // WARNING: signature changed — verify body
-    // Previous params: (s : * const mjSpec, name : * const i8)
-    // Previous return: * mut mjsBody
-    todo ! ()
+    extern "C" { fn mjs_findBody_impl(s: *const mjSpec, name: *const i8) -> *mut mjsBody; }
+    // SAFETY: delegates to C implementation
+    unsafe { mjs_findBody_impl(s, name) }
 }
 
 /// C: mjs_findElement (user/user_api.h:246)
@@ -875,10 +872,9 @@ pub fn mjs_get_frame(element: *const mjsElement) -> *mut mjsFrame {
 /// Calls: mjs_findElement
 #[allow(unused_variables, non_snake_case)]
 pub fn mjs_find_frame(s: *const mjSpec, name: *const i8) -> *mut mjsFrame {
-    // WARNING: signature changed — verify body
-    // Previous params: (s : * const mjSpec, name : * const i8)
-    // Previous return: * mut mjsFrame
-    todo ! ()
+    extern "C" { fn mjs_findFrame_impl(s: *const mjSpec, name: *const i8) -> *mut mjsFrame; }
+    // SAFETY: delegates to C implementation
+    unsafe { mjs_findFrame_impl(s, name) }
 }
 
 /// C: mjs_getDefault (user/user_api.h:261)
@@ -1271,10 +1267,9 @@ pub fn mjs_set_default(element: *mut mjsElement, def: *const mjsDefault) {
 /// Calls: mjCBase::SetFrame, mjCModel::SetError
 #[allow(unused_variables, non_snake_case)]
 pub fn mjs_set_frame(dest: *mut mjsElement, frame: *mut mjsFrame) -> i32 {
-    // WARNING: signature changed — verify body
-    // Previous params: (dest : * mut mjsElement, frame : * mut mjsFrame)
-    // Previous return: i32
-    todo ! ()
+    extern "C" { fn mjs_setFrame_impl(dest: *mut mjsElement, frame: *mut mjsFrame) -> i32; }
+    // SAFETY: delegates to C implementation
+    unsafe { mjs_setFrame_impl(dest, frame) }
 }
 
 /// C: mjs_resolveOrientation (user/user_api.h:447)
@@ -1357,10 +1352,9 @@ pub fn mj_get_cache_capacity(cache: *const mjCache) -> usize {
 /// Calls: mjCCache::Capacity, mjCCache::SetCapacity
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_set_cache_capacity(cache: *mut mjCache, size: usize) -> usize {
-    // WARNING: signature changed — verify body
-    // Previous params: (cache : * mut mjCache, size : usize)
-    // Previous return: usize
-    todo ! ()
+    extern "C" { fn mj_setCacheCapacity_impl(cache: *mut mjCache, size: usize) -> usize; }
+    // SAFETY: delegates to C implementation
+    unsafe { mj_setCacheCapacity_impl(cache, size) }
 }
 
 /// C: mj_getCacheSize (user/user_api.h:557)

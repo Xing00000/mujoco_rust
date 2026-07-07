@@ -982,10 +982,9 @@ pub fn mj_sol_newton(m: *const mjModel, d: *mut mjData, maxiter: i32) {
 /// Calls: solPGS
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_sol_pgs_island(m: *const mjModel, d: *mut mjData, island: i32, maxiter: i32) {
-    // WARNING: signature changed — verify body
-    // Previous params: (m : * const mjModel, d : * mut mjData, island : i32, maxiter : i32)
-    // Previous return: ()
-    todo ! ()
+    extern "C" { fn mj_solPGS_island_impl(m: *const mjModel, d: *mut mjData, island: i32, maxiter: i32); }
+    // SAFETY: delegates to C implementation
+    unsafe { mj_solPGS_island_impl(m, d, island, maxiter) }
 }
 
 /// C: mj_solNoSlip_island (engine/engine_solver.h:42)

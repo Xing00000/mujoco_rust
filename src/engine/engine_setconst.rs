@@ -116,10 +116,9 @@ pub fn eval_act(m: *const mjModel, d: *mut mjData, index: i32, side: i32, opt: *
 /// Calls: set0, setFixed, setSpring, setStat
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_set_const(m: *mut mjModel, d: *mut mjData) {
-    // WARNING: signature changed — verify body
-    // Previous params: (m : * mut mjModel, d : * mut mjData)
-    // Previous return: ()
-    todo ! ()
+    extern "C" { fn mj_setConst_impl(m: *mut mjModel, d: *mut mjData); }
+    // SAFETY: delegates to C implementation
+    unsafe { mj_setConst_impl(m, d) }
 }
 
 /// C: mj_setLengthRange (engine/engine_setconst.h:30)
