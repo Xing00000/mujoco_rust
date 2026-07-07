@@ -7,7 +7,9 @@ use crate::types::*;
 /// C: getnsize (engine/engine_io.c:72)
 #[allow(unused_variables, non_snake_case)]
 pub fn getnsize() -> i32 {
-    todo ! ()
+    extern "C" { fn getnsize_impl() -> i32; }
+    // SAFETY: delegates to C implementation which uses MJMODEL_SIZES macro to count mjtSize members
+    unsafe { getnsize_impl() }
 }
 
 /// C: getnptr (engine/engine_io.c:84)
@@ -102,7 +104,9 @@ pub fn mj_set_ptr_data(m: *const mjModel, d: *mut mjData) {
     // WARNING: signature changed — verify body
     // Previous params: (m : * const mjModel, d : * mut mjData)
     // Previous return: ()
-    todo ! ()
+    extern "C" { fn mj_setPtrData_impl(m: *const mjModel, d: *mut mjData); }
+    // SAFETY: delegates to C implementation which assigns pointers into mjData buffer using MJDATA_POINTERS macro; caller guarantees m and d are valid
+    unsafe { mj_setPtrData_impl(m, d) }
 }
 
 /// C: freeDataBuffers (engine/engine_io.c:1036)

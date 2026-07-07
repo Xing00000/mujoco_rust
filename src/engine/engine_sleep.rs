@@ -216,6 +216,8 @@ pub fn mj_sleep_state(m: *const mjModel, d: *const mjData, r#type: mjtObj, i: i3
     // WARNING: signature changed — verify body
     // Previous params: (m : * const mjModel, d : * const mjData, r#type : mjtObj, i : i32)
     // Previous return: mjtSleepState
-    todo ! ()
+    extern "C" { fn mj_sleepState_impl(m: *const mjModel, d: *const mjData, r#type: mjtObj, i: i32) -> mjtSleepState; }
+    // SAFETY: delegates to C implementation; caller guarantees m and d are valid
+    unsafe { mj_sleepState_impl(m, d, r#type, i) }
 }
 

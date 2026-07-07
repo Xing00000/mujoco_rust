@@ -36,7 +36,9 @@ pub fn flip_depth_if_required(depth: *mut f32, viewport: mjrRect, con: *const mj
 /// C: init2D (render/classic/render_gl2.c:407)
 #[allow(unused_variables, non_snake_case)]
 pub fn init2d() {
-    todo ! ()
+    extern "C" { fn init2D_impl(); }
+    // SAFETY: delegates to C implementation which sets up OpenGL 2D projection state
+    unsafe { init2D_impl() }
 }
 
 /// C: draw_overlay (render/classic/render_gl2.c:476)
@@ -105,7 +107,9 @@ pub fn mjr_text_actual(font: i32, txt: *const i8, con: *const mjrContext, x: f32
     // WARNING: signature changed — verify body
     // Previous params: (font : i32, txt : * const i8, con : * const mjrContext, x : f32, y : f32, z : f32, r : f32, g : f32, b : f32)
     // Previous return: ()
-    todo ! ()
+    extern "C" { fn mjr_textActual_impl(font: i32, txt: *const i8, con: *const mjrContext, x: f32, y: f32, z: f32, r: f32, g: f32, b: f32); }
+    // SAFETY: delegates to C implementation which handles GL state; caller guarantees txt and con are valid
+    unsafe { mjr_textActual_impl(font, txt, con, x, y, z, r, g, b) }
 }
 
 /// C: mjr_setBuffer (render/classic/render_gl2.h:35)

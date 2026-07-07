@@ -4466,7 +4466,9 @@ pub fn mj_c_def_geom(self_ptr: *mut mjCDef) -> *mut mjCGeom {
     // WARNING: signature changed — verify body
     // Previous params: (self_ptr : * mut mjCDef)
     // Previous return: * mut mjCGeom
-    todo ! ()
+    extern "C" { fn mjCDef_Geom_impl(self_ptr: *mut mjCDef) -> *mut mjCGeom; }
+    // SAFETY: delegates to C++ implementation; caller guarantees self_ptr is valid
+    unsafe { mjCDef_Geom_impl(self_ptr) }
 }
 
 /// C: mjCDef::Site (user/user_objects.h:2086)

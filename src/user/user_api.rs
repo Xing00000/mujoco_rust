@@ -1369,7 +1369,9 @@ pub fn mjs_set_default(element: *mut mjsElement, def: *const mjsDefault) {
     // WARNING: signature changed — verify body
     // Previous params: (element : * mut mjsElement, def : * const mjsDefault)
     // Previous return: ()
-    todo ! ()
+    extern "C" { fn mjs_setDefault_impl(element: *mut mjsElement, def: *const mjsDefault); }
+    // SAFETY: delegates to C++ implementation; caller guarantees element is valid, def may be null
+    unsafe { mjs_setDefault_impl(element, def) }
 }
 
 /// C: mjs_setFrame (user/user_api.h:444)

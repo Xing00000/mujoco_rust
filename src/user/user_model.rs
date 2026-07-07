@@ -718,7 +718,9 @@ pub fn mj_c_model_get_world(self_ptr: *mut mjCModel) -> *mut mjCBody {
     // WARNING: signature changed — verify body
     // Previous params: (self_ptr : * mut mjCModel)
     // Previous return: * mut mjCBody
-    todo ! ()
+    extern "C" { fn mjCModel_GetWorld_impl(self_ptr: *mut mjCModel) -> *mut mjCBody; }
+    // SAFETY: delegates to C++ implementation; caller guarantees self_ptr is valid
+    unsafe { mjCModel_GetWorld_impl(self_ptr) }
 }
 
 /// C: mjCModel::FindDefault (user/user_model.h:272)
@@ -800,7 +802,9 @@ pub fn mj_c_model_default(self_ptr: *mut mjCModel) -> *mut mjCDef {
     // WARNING: signature changed — verify body
     // Previous params: (self_ptr : * mut mjCModel)
     // Previous return: * mut mjCDef
-    todo ! ()
+    extern "C" { fn mjCModel_Default_impl(self_ptr: *mut mjCModel) -> *mut mjCDef; }
+    // SAFETY: delegates to C++ implementation; caller guarantees self_ptr is valid
+    unsafe { mjCModel_Default_impl(self_ptr) }
 }
 
 /// C: mjCModel::NumDefaults (user/user_model.h:289)

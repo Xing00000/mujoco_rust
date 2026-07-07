@@ -204,7 +204,9 @@ pub fn mj_x_util_find_key(map: *const mjMap, mapsz: i32, key: string) -> i32 {
     // WARNING: signature changed — verify body
     // Previous params: (map : * const mjMap, mapsz : i32, key : string)
     // Previous return: i32
-    todo ! ()
+    extern "C" { fn mjXUtil_FindKey_impl(map: *const mjMap, mapsz: i32, key: string) -> i32; }
+    // SAFETY: delegates to C++ implementation; caller guarantees map is valid
+    unsafe { mjXUtil_FindKey_impl(map, mapsz, key) }
 }
 
 /// C: mjXUtil::FindValue (xml/xml_util.h:97)
@@ -273,7 +275,9 @@ pub fn mj_x_util_read_quat(elem: *mut tinyxml2__XMLElement, attr: *const i8, dat
     // WARNING: signature changed — verify body
     // Previous params: (elem : * mut tinyxml2__XMLElement, attr : * const i8, data : * mut f64, text : * mut std__string, required : bool)
     // Previous return: i32
-    todo ! ()
+    extern "C" { fn mjXUtil_ReadQuat_impl(elem: *mut tinyxml2__XMLElement, attr: *const i8, data: *mut f64, text: *mut std__string, required: bool) -> i32; }
+    // SAFETY: delegates to C++ implementation; caller guarantees elem, attr, data, text are valid
+    unsafe { mjXUtil_ReadQuat_impl(elem, attr, data, text, required) }
 }
 
 /// C: mjXUtil::ReadAttrTxt (xml/xml_util.h:163)

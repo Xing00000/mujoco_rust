@@ -57,7 +57,9 @@ pub fn mju_local_time_str(buf: *mut i8, buf_sz: i32) {
     // WARNING: signature changed — verify body
     // Previous params: (buf : * mut i8, buf_sz : i32)
     // Previous return: ()
-    todo ! ()
+    extern "C" { fn mju_localTimeStr_impl(buf: *mut i8, buf_sz: i32); }
+    // SAFETY: delegates to C implementation which calls localtime_r + strftime; caller guarantees buf is valid with buf_sz capacity
+    unsafe { mju_localTimeStr_impl(buf, buf_sz) }
 }
 
 /// C: mju_fprint_message (engine/engine_util_errmem.c:214)

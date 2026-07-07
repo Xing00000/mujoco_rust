@@ -626,7 +626,12 @@ pub fn cosh_sinh(x: f64, sinh: *mut f64) -> f64 {
     // WARNING: signature changed — verify body
     // Previous params: (x : f64, sinh : * mut f64)
     // Previous return: f64
-    todo ! ()
+    let expx: f64 = x.exp();
+    if !sinh.is_null() {
+        // SAFETY: caller guarantees sinh is valid when non-null
+        unsafe { *sinh = 0.5 * (expx - 1.0 / expx); }
+    }
+    0.5 * (expx + 1.0 / expx)
 }
 
 /// C: catenary_intercept (engine/engine_vis_visualize.c:3526)
@@ -640,7 +645,7 @@ pub fn catenary_intercept(v: f64, h: f64, length: f64) -> f64 {
     // WARNING: signature changed — verify body
     // Previous params: (v : f64, h : f64, length : f64)
     // Previous return: f64
-    todo ! ()
+    1.0 / (((length * length - v * v).sqrt()) / h - 1.0).sqrt()
 }
 
 /// C: catenary_residual (engine/engine_vis_visualize.c:3532)
@@ -655,7 +660,14 @@ pub fn catenary_residual(b: f64, intercept: f64, grad: *mut f64) -> f64 {
     // WARNING: signature changed — verify body
     // Previous params: (b : f64, intercept : f64, grad : * mut f64)
     // Previous return: f64
-    todo ! ()
+    let a: f64 = 0.5 / b;
+    let mut sinh_val: f64 = 0.0;
+    let cosh_val: f64 = cosh_sinh(a, &mut sinh_val as *mut f64);
+    if !grad.is_null() {
+        // SAFETY: caller guarantees grad is valid when non-null
+        unsafe { *grad = (a * cosh_val - sinh_val) * (2.0 * b * sinh_val - 1.0).powf(-1.5); }
+    }
+    1.0 / (2.0 * b * sinh_val - 1.0).sqrt() - intercept
 }
 
 /// C: solve_catenary (engine/engine_vis_visualize.c:3549)
@@ -670,7 +682,41 @@ pub fn solve_catenary(v: f64, h: f64, length: f64) -> f64 {
     // WARNING: signature changed — verify body
     // Previous params: (v : f64, h : f64, length : f64)
     // Previous return: f64
-    todo ! ()
+    const TOLERANCE: f64 = 1e-9;
+
+    let intercept: f64 = catenary_intercept(v, h, length);
+
+    // initial guess using linear approximation to catenary_residual
+    let mut b: f64 = intercept / 24.0_f64.sqrt();
+
+    // Newton steps to convergence (usually ~ 5 steps)
+    for _i in 0..50 {
+        // get value and gradient
+        let mut grad: f64 = 0.0;
+        let res: f64 = catenary_residual(b, intercept, &mut grad as *mut f64);
+
+        if res.abs() < TOLERANCE {
+            break;
+        }
+
+        // Newton step
+        let mut step: f64 = -res / grad;
+
+        // backtracking line-search is not essential but can reduce number of iterations
+        for _j in 0..10 {
+            let new_res: f64 = catenary_residual(b + step, intercept, core::ptr::null_mut());
+            if new_res.abs() < res.abs() {
+                break;
+            } else {
+                step *= 0.5;
+            }
+        }
+
+        // take step
+        b += step;
+    }
+
+    b
 }
 
 /// C: mjv_connector (engine/engine_vis_visualize.h:29)
