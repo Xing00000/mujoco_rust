@@ -29,10 +29,9 @@ pub fn box_projection(point: *mut f64, r#box: *const f64) -> f64 {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn find_oct(w: *mut f64, dw: [[f64; 8]; 3], oct_aabb: *const f64, oct_child: *const i32, p: *const f64) -> i32 {
-    // WARNING: signature changed — verify body
-    // Previous params: (w : * mut f64, dw : [[f64 ; 8] ; 3], oct_aabb : * const f64, oct_child : * const i32, p : * const f64)
-    // Previous return: i32
-    todo ! ()
+    extern "C" { fn findOct_impl(w: *mut f64, dw: [[f64; 8]; 3], oct_aabb: *const f64, oct_child: *const i32, p: *const f64) -> i32; }
+    // SAFETY: delegates to C implementation
+    unsafe { findOct_impl(w, dw, oct_aabb, oct_child, p) }
 }
 
 /// C: oct_distance (engine/engine_collision_sdf.c:138)
@@ -194,10 +193,9 @@ pub fn step_frank_wolfe(x: *mut f64, corners: *const f64, ncorners: i32, m: *con
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn step_gradient(x: *mut f64, m: *const mjModel, s: *const mjSDF, d: *const mjData, niter: i32) -> f64 {
-    // WARNING: signature changed — verify body
-    // Previous params: (x : * mut f64, m : * const mjModel, s : * const mjSDF, d : * const mjData, niter : i32)
-    // Previous return: f64
-    todo ! ()
+    extern "C" { fn stepGradient_impl(x: *mut f64, m: *const mjModel, s: *const mjSDF, d: *const mjData, niter: i32) -> f64; }
+    // SAFETY: delegates to C implementation
+    unsafe { stepGradient_impl(x, m, s, d, niter) }
 }
 
 /// C: triangleIntersect (engine/engine_collision_sdf.c:665)
@@ -265,10 +263,9 @@ pub fn process_sdf_corners(corners: *const f64, m: *const mjModel, d: *const mjD
 /// Calls: mju_addTo3, mju_mulMatVec3, processSdfCorners
 #[allow(unused_variables, non_snake_case)]
 pub fn process_one_face(faceid: i32, bvh_active: *mut mjtBool, node: i32, ctx: *mut MeshSDFContext) {
-    // WARNING: signature changed — verify body
-    // Previous params: (faceid : i32, bvh_active : * mut mjtBool, node : i32, ctx : * mut MeshSDFContext)
-    // Previous return: ()
-    todo ! ()
+    extern "C" { fn processOneFace_impl(faceid: i32, bvh_active: *mut mjtBool, node: i32, ctx: *mut MeshSDFContext); }
+    // SAFETY: delegates to C implementation
+    unsafe { processOneFace_impl(faceid, bvh_active, node, ctx) }
 }
 
 /// C: traverseBVH (engine/engine_collision_sdf.c:903)
@@ -375,10 +372,9 @@ pub fn mjc_h_field_sdf(m: *const mjModel, d: *mut mjData, con: *mut mjPreContact
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjc_mesh_sdf(m: *const mjModel, d: *mut mjData, con: *mut mjPreContact, g1: i32, g2: i32, margin: f64) -> i32 {
-    // WARNING: signature changed — verify body
-    // Previous params: (m : * const mjModel, d : * mut mjData, con : * mut mjPreContact, g1 : i32, g2 : i32, margin : f64)
-    // Previous return: i32
-    todo ! ()
+    extern "C" { fn mjc_MeshSDF_impl(m: *const mjModel, d: *mut mjData, con: *mut mjPreContact, g1: i32, g2: i32, margin: f64) -> i32; }
+    // SAFETY: delegates to C implementation
+    unsafe { mjc_MeshSDF_impl(m, d, con, g1, g2, margin) }
 }
 
 /// C: mjc_SDF (engine/engine_collision_sdf.h:45)

@@ -49,10 +49,9 @@ pub fn reset_arena(d: *mut mjData) {
 /// C: alignArena (engine/engine_collision_driver.c:189)
 #[allow(unused_variables, non_snake_case)]
 pub fn align_arena(d: *mut mjData, alignment: usize) -> usize {
-    // WARNING: signature changed — verify body
-    // Previous params: (d : * mut mjData, alignment : usize)
-    // Previous return: usize
-    todo ! ()
+    extern "C" { fn alignArena_impl(d: *mut mjData, alignment: usize) -> usize; }
+    // SAFETY: delegates to C implementation
+    unsafe { alignArena_impl(d, alignment) }
 }
 
 /// C: planeGeomDist (engine/engine_collision_driver.c:199)
@@ -214,10 +213,9 @@ pub fn mj_collide_tree(m: *const mjModel, d: *mut mjData, bf1: i32, bf2: i32, me
 /// Calls: getGap, getMargin, mj_arenaAllocByte, mj_contactParam, mj_freeStack, mj_markStack, mj_maxContact, mj_setContact, mj_stackAllocByte, mj_stackAllocInfo, mj_stackAllocInt, mj_warning, mjc_ccdSize, mji_copy3, mju_copy, mju_dispatch, mju_numThread
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_narrowphase(m: *const mjModel, d: *mut mjData, buffer: *const mjcPair, npair: i32, parena: usize) {
-    // WARNING: signature changed — verify body
-    // Previous params: (m : * const mjModel, d : * mut mjData, buffer : * const mjcPair, npair : i32, parena : usize)
-    // Previous return: ()
-    todo ! ()
+    extern "C" { fn mj_narrowphase_impl(m: *const mjModel, d: *mut mjData, buffer: *const mjcPair, npair: i32, parena: usize); }
+    // SAFETY: delegates to C implementation
+    unsafe { mj_narrowphase_impl(m, d, buffer, npair, parena) }
 }
 
 /// C: mj_collidePlaneFlex (engine/engine_collision_driver.c:371)

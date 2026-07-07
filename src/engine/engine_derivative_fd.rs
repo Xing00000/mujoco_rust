@@ -13,10 +13,9 @@ use crate::types::*;
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn get_state(m: *const mjModel, d: *const mjData, state: *mut f64, sensordata: *mut f64) {
-    // WARNING: signature changed — verify body
-    // Previous params: (m : * const mjModel, d : * const mjData, state : * mut f64, sensordata : * mut f64)
-    // Previous return: ()
-    todo ! ()
+    extern "C" { fn getState_impl(m: *const mjModel, d: *const mjData, state: *mut f64, sensordata: *mut f64); }
+    // SAFETY: delegates to C implementation
+    unsafe { getState_impl(m, d, state, sensordata) }
 }
 
 /// C: diff (engine/engine_derivative_fd.c:46)
@@ -45,10 +44,9 @@ pub fn diff(dx: *mut f64, x1: *const f64, x2: *const f64, h: f64, n: i32) {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn state_diff(m: *const mjModel, ds: *mut f64, s1: *const f64, s2: *const f64, h: f64) {
-    // WARNING: signature changed — verify body
-    // Previous params: (m : * const mjModel, ds : * mut f64, s1 : * const f64, s2 : * const f64, h : f64)
-    // Previous return: ()
-    todo ! ()
+    extern "C" { fn stateDiff_impl(m: *const mjModel, ds: *mut f64, s1: *const f64, s2: *const f64, h: f64); }
+    // SAFETY: delegates to C implementation
+    unsafe { stateDiff_impl(m, ds, s1, s2, h) }
 }
 
 /// C: clampedDiff (engine/engine_derivative_fd.c:68)
@@ -60,10 +58,9 @@ pub fn state_diff(m: *const mjModel, ds: *mut f64, s1: *const f64, s2: *const f6
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn clamped_diff(dx: *mut f64, x: *const f64, x_plus: *const f64, x_minus: *const f64, h: f64, nx: i32) {
-    // WARNING: signature changed — verify body
-    // Previous params: (dx : * mut f64, x : * const f64, x_plus : * const f64, x_minus : * const f64, h : f64, nx : i32)
-    // Previous return: ()
-    todo ! ()
+    extern "C" { fn clampedDiff_impl(dx: *mut f64, x: *const f64, x_plus: *const f64, x_minus: *const f64, h: f64, nx: i32); }
+    // SAFETY: delegates to C implementation
+    unsafe { clampedDiff_impl(dx, x, x_plus, x_minus, h, nx) }
 }
 
 /// C: clampedStateDiff (engine/engine_derivative_fd.c:87)
@@ -89,10 +86,9 @@ pub fn clamped_state_diff(m: *const mjModel, ds: *mut f64, s: *const f64, s_plus
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn in_range(x1: f64, x2: f64, range: *const f64) -> i32 {
-    // WARNING: signature changed — verify body
-    // Previous params: (x1 : f64, x2 : f64, range : * const f64)
-    // Previous return: i32
-    todo ! ()
+    extern "C" { fn inRange_impl(x1: f64, x2: f64, range: *const f64) -> i32; }
+    // SAFETY: delegates to C implementation
+    unsafe { inRange_impl(x1, x2, range) }
 }
 
 /// C: inverseSkip (engine/engine_derivative_fd.c:152)
@@ -104,10 +100,9 @@ pub fn in_range(x1: f64, x2: f64, range: *const f64) -> i32 {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn inverse_skip(m: *const mjModel, d: *mut mjData, stage: mjtStage, skipsensor: i32, flg_actuation: i32, force: *mut f64) {
-    // WARNING: signature changed — verify body
-    // Previous params: (m : * const mjModel, d : * mut mjData, stage : mjtStage, skipsensor : i32, flg_actuation : i32, force : * mut f64)
-    // Previous return: ()
-    todo ! ()
+    extern "C" { fn inverseSkip_impl(m: *const mjModel, d: *mut mjData, stage: mjtStage, skipsensor: i32, flg_actuation: i32, force: *mut f64); }
+    // SAFETY: delegates to C implementation
+    unsafe { inverseSkip_impl(m, d, stage, skipsensor, flg_actuation, force) }
 }
 
 /// C: mjd_stepFD (engine/engine_derivative_fd.c:295)

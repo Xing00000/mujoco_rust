@@ -17,10 +17,9 @@ pub fn mju_default_log_handler(msg: *const mjLogMessage) {
 /// C: mju_alignedMalloc (engine/engine_util_errmem.c:44)
 #[allow(unused_variables, non_snake_case)]
 pub fn mju_aligned_malloc(size: usize, align: usize) -> *mut () {
-    // WARNING: signature changed — verify body
-    // Previous params: (size : usize, align : usize)
-    // Previous return: * mut ()
-    todo ! ()
+    extern "C" { fn mju_alignedMalloc_impl(size: usize, align: usize) -> *mut (); }
+    // SAFETY: delegates to C implementation
+    unsafe { mju_alignedMalloc_impl(size, align) }
 }
 
 /// C: mju_alignedFree (engine/engine_util_errmem.c:53)
@@ -66,19 +65,17 @@ pub fn mju_local_time_str(buf: *mut i8, buf_sz: i32) {
 /// Calls: BaseName
 #[allow(unused_variables, non_snake_case)]
 pub fn mju_fprint_message(stream: *mut i32, timestr: *const i8, msg: *const mjLogMessage) {
-    // WARNING: signature changed — verify body
-    // Previous params: (stream : * mut i32, timestr : * const i8, msg : * const mjLogMessage)
-    // Previous return: ()
-    todo ! ()
+    extern "C" { fn mju_fprint_message_impl(stream: *mut i32, timestr: *const i8, msg: *const mjLogMessage); }
+    // SAFETY: delegates to C implementation
+    unsafe { mju_fprint_message_impl(stream, timestr, msg) }
 }
 
 /// C: mju_legacy_text (engine/engine_util_errmem.c:231)
 #[allow(unused_variables, non_snake_case)]
 pub fn mju_legacy_text(msg: *const mjLogMessage, buf: *mut i8, bufsz: i32) -> *const i8 {
-    // WARNING: signature changed — verify body
-    // Previous params: (msg : * const mjLogMessage, buf : * mut i8, bufsz : i32)
-    // Previous return: * const i8
-    todo ! ()
+    extern "C" { fn mju_legacy_text_impl(msg: *const mjLogMessage, buf: *mut i8, bufsz: i32) -> *const i8; }
+    // SAFETY: delegates to C implementation
+    unsafe { mju_legacy_text_impl(msg, buf, bufsz) }
 }
 
 /// C: mju_activeHandler (engine/engine_util_errmem.c:292)
@@ -109,10 +106,9 @@ pub fn mju_free(ptr: *mut ()) {
 /// C: mju_setLogHandler (engine/engine_util_errmem.h:57)
 #[allow(unused_variables, non_snake_case)]
 pub fn mju_set_log_handler(handler: mjfLogHandler) -> mjfLogHandler {
-    // WARNING: signature changed — verify body
-    // Previous params: (handler : mjfLogHandler)
-    // Previous return: mjfLogHandler
-    todo ! ()
+    extern "C" { fn mju_setLogHandler_impl(handler: mjfLogHandler) -> mjfLogHandler; }
+    // SAFETY: delegates to C implementation
+    unsafe { mju_setLogHandler_impl(handler) }
 }
 
 /// C: mju_getLogConfig (engine/engine_util_errmem.h:60)
@@ -155,10 +151,9 @@ pub fn mju_error(msg: *const i8) {
 /// Calls: mju_message
 #[allow(unused_variables, non_snake_case)]
 pub fn mju_error_v(msg: *const i8, args: va_list) {
-    // WARNING: signature changed — verify body
-    // Previous params: (msg : * const i8, args : va_list)
-    // Previous return: ()
-    todo ! ()
+    extern "C" { fn mju_error_v_impl(msg: *const i8, args: va_list); }
+    // SAFETY: delegates to C implementation
+    unsafe { mju_error_v_impl(msg, args) }
 }
 
 /// C: mju_warning (engine/engine_util_errmem.h:78)
@@ -211,7 +206,9 @@ pub fn mj_private_set_tls_log_handler(handler: mjfLogHandler) -> mjfLogHandler {
 /// C: _mjPRIVATE_getGlobalLogHandler (engine/engine_util_errmem.h:96)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_private_get_global_log_handler() -> mjfLogHandler {
-    todo ! ()
+    extern "C" { fn _mjPRIVATE_getGlobalLogHandler_impl() -> mjfLogHandler; }
+    // SAFETY: delegates to C implementation
+    unsafe { _mjPRIVATE_getGlobalLogHandler_impl() }
 }
 
 /// C: mju_isTopicEnabled (engine/engine_util_errmem.h:99)

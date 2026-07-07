@@ -15,28 +15,25 @@ pub fn set_error(error: *mut i8, error_sz: i32, format: *const i8) {
 /// C: ZipArchiveProvider::GetRootModelPath (xml/mjz/mjz_decoder.cc:137)
 #[allow(unused_variables, non_snake_case)]
 pub fn zip_archive_provider_get_root_model_path(self_ptr: *mut ZipArchiveProvider) -> std__string {
-    // WARNING: signature changed — verify body
-    // Previous params: (self_ptr : * mut ZipArchiveProvider)
-    // Previous return: std__string
-    todo ! ()
+    extern "C" { fn ZipArchiveProvider_GetRootModelPath_impl(self_ptr: *mut ZipArchiveProvider) -> std__string; }
+    // SAFETY: delegates to C implementation
+    unsafe { ZipArchiveProvider_GetRootModelPath_impl(self_ptr) }
 }
 
 /// C: ZipArchiveProvider::Contains (xml/mjz/mjz_decoder.cc:142)
 #[allow(unused_variables, non_snake_case)]
 pub fn zip_archive_provider_contains(self_ptr: *mut ZipArchiveProvider, name: string_view) -> bool {
-    // WARNING: signature changed — verify body
-    // Previous params: (self_ptr : * mut ZipArchiveProvider, name : string_view)
-    // Previous return: bool
-    todo ! ()
+    extern "C" { fn ZipArchiveProvider_Contains_impl(self_ptr: *mut ZipArchiveProvider, name: string_view) -> bool; }
+    // SAFETY: delegates to C implementation
+    unsafe { ZipArchiveProvider_Contains_impl(self_ptr, name) }
 }
 
 /// C: ZipArchiveProvider::Read (xml/mjz/mjz_decoder.cc:155)
 #[allow(unused_variables, non_snake_case)]
 pub fn zip_archive_provider_read(self_ptr: *mut ZipArchiveProvider, name: *const std__string) -> i32 {
-    // WARNING: signature changed — verify body
-    // Previous params: (self_ptr : * mut ZipArchiveProvider, name : * const std__string)
-    // Previous return: i32
-    todo ! ()
+    extern "C" { fn ZipArchiveProvider_Read_impl(self_ptr: *mut ZipArchiveProvider, name: *const std__string) -> i32; }
+    // SAFETY: delegates to C implementation
+    unsafe { ZipArchiveProvider_Read_impl(self_ptr, name) }
 }
 
 /// C: ParseZipBuffer (xml/mjz/mjz_decoder.cc:198)

@@ -43,10 +43,9 @@ pub fn settexture(r#type: i32, state: i32, con: *const mjrContext, geom: *const 
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn render_geom(geom: *const mjvGeom, mode: i32, headpos: *const f32, scn: *const mjvScene, con: *const mjrContext) {
-    // WARNING: signature changed — verify body
-    // Previous params: (geom : * const mjvGeom, mode : i32, headpos : * const f32, scn : * const mjvScene, con : * const mjrContext)
-    // Previous return: ()
-    todo ! ()
+    extern "C" { fn renderGeom_impl(geom: *const mjvGeom, mode: i32, headpos: *const f32, scn: *const mjvScene, con: *const mjrContext); }
+    // SAFETY: delegates to C implementation
+    unsafe { renderGeom_impl(geom, mode, headpos, scn, con) }
 }
 
 /// C: renderGeomReflection (render/classic/render_gl3.c:590)
@@ -58,10 +57,9 @@ pub fn render_geom(geom: *const mjvGeom, mode: i32, headpos: *const f32, scn: *c
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn render_geom_reflection(id: i32, reflectance: f32, headpos: [f32; 3], scn: *mut mjvScene, con: *const mjrContext) {
-    // WARNING: signature changed — verify body
-    // Previous params: (id : i32, reflectance : f32, headpos : [f32 ; 3], scn : * mut mjvScene, con : * const mjrContext)
-    // Previous return: ()
-    todo ! ()
+    extern "C" { fn renderGeomReflection_impl(id: i32, reflectance: f32, headpos: [f32; 3], scn: *mut mjvScene, con: *const mjrContext); }
+    // SAFETY: delegates to C implementation
+    unsafe { renderGeomReflection_impl(id, reflectance, headpos, scn, con) }
 }
 
 /// C: initGL3 (render/classic/render_gl3.c:614)
@@ -136,12 +134,16 @@ pub fn mjr_render(viewport: mjrRect, scn: *mut mjvScene, con: *const mjrContext)
 /// C: mjr_finish (render/classic/render_gl3.h:30)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjr_finish() {
-    todo ! ()
+    extern "C" { fn mjr_finish_impl(); }
+    // SAFETY: delegates to C implementation
+    unsafe { mjr_finish_impl() }
 }
 
 /// C: mjr_getError (render/classic/render_gl3.h:33)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjr_get_error() -> i32 {
-    todo ! ()
+    extern "C" { fn mjr_getError_impl() -> i32; }
+    // SAFETY: delegates to C implementation
+    unsafe { mjr_getError_impl() }
 }
 

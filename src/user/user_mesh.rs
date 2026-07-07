@@ -55,10 +55,9 @@ pub fn bin_edges(x_edges: *mut f64, y_edges: *mut f64, size: [i32; 2], fov: [f64
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn spherical_to_cartesian(aer: [f64; 3], xyz: [f32; 3]) {
-    // WARNING: signature changed — verify body
-    // Previous params: (aer : [f64 ; 3], xyz : [f32 ; 3])
-    // Previous return: ()
-    todo ! ()
+    extern "C" { fn SphericalToCartesian_impl(aer: [f64; 3], xyz: [f32; 3]); }
+    // SAFETY: delegates to C implementation
+    unsafe { SphericalToCartesian_impl(aer, xyz) }
 }
 
 /// C: TangentFrame (user/user_mesh.cc:131)
@@ -70,10 +69,9 @@ pub fn spherical_to_cartesian(aer: [f64; 3], xyz: [f32; 3]) {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn tangent_frame(aer: [f64; 3], mat: [f32; 9]) {
-    // WARNING: signature changed — verify body
-    // Previous params: (aer : [f64 ; 3], mat : [f32 ; 9])
-    // Previous return: ()
-    todo ! ()
+    extern "C" { fn TangentFrame_impl(aer: [f64; 3], mat: [f32; 9]); }
+    // SAFETY: delegates to C implementation
+    unsafe { TangentFrame_impl(aer, mat) }
 }
 
 /// C: aux_c (user/user_mesh.cc:145)
@@ -84,10 +82,9 @@ pub fn tangent_frame(aer: [f64; 3], mat: [f32; 9]) {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn aux_c(omega: f64, m: f64) -> f64 {
-    // WARNING: signature changed — verify body
-    // Previous params: (omega : f64, m : f64)
-    // Previous return: f64
-    todo ! ()
+    extern "C" { fn aux_c_impl(omega: f64, m: f64) -> f64; }
+    // SAFETY: delegates to C implementation
+    unsafe { aux_c_impl(omega, m) }
 }
 
 /// C: aux_s (user/user_mesh.cc:148)
@@ -98,10 +95,9 @@ pub fn aux_c(omega: f64, m: f64) -> f64 {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn aux_s(omega: f64, m: f64) -> f64 {
-    // WARNING: signature changed — verify body
-    // Previous params: (omega : f64, m : f64)
-    // Previous return: f64
-    todo ! ()
+    extern "C" { fn aux_s_impl(omega: f64, m: f64) -> f64; }
+    // SAFETY: delegates to C implementation
+    unsafe { aux_s_impl(omega, m) }
 }
 
 /// C: triangle (user/user_mesh.cc:154)
@@ -122,10 +118,9 @@ pub fn triangle(normal: *mut f64, center: *mut f64, v1: *const f64, v2: *const f
 /// C: mjCMesh::ProcessVertices (user/user_mesh.cc:539)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_mesh_process_vertices(self_ptr: *mut mjCMesh, vert: *const i32, remove_repeated: bool) {
-    // WARNING: signature changed — verify body
-    // Previous params: (self_ptr : * mut mjCMesh, vert : * const i32, remove_repeated : bool)
-    // Previous return: ()
-    todo ! ()
+    extern "C" { fn mjCMesh_ProcessVertices_impl(self_ptr: *mut mjCMesh, vert: *const i32, remove_repeated: bool); }
+    // SAFETY: delegates to C implementation
+    unsafe { mjCMesh_ProcessVertices_impl(self_ptr, vert, remove_repeated) }
 }
 
 /// C: MeshPolygon::InsertFace (user/user_mesh.cc:2685)
@@ -287,10 +282,9 @@ pub fn compute_bending(bending: *mut f64, pos: *mut f64, v: [i32; 4], mu: f64, t
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn quadrature_gauss_legendre(points: *mut f64, weights: *mut f64, order: i32, a: f64, b: f64) {
-    // WARNING: signature changed — verify body
-    // Previous params: (points : * mut f64, weights : * mut f64, order : i32, a : f64, b : f64)
-    // Previous return: ()
-    todo ! ()
+    extern "C" { fn quadratureGaussLegendre_impl(points: *mut f64, weights: *mut f64, order: i32, a: f64, b: f64); }
+    // SAFETY: delegates to C implementation
+    unsafe { quadratureGaussLegendre_impl(points, weights, order, a, b) }
 }
 
 /// C: phi (user/user_mesh.cc:3752)
@@ -326,19 +320,17 @@ pub fn dphi(s: f64, i: i32, order: i32) -> f64 {
 /// C: sym (user/user_mesh.cc:3798)
 #[allow(unused_variables, non_snake_case)]
 pub fn sym(tensor: *const Matrix) -> Matrix {
-    // WARNING: signature changed — verify body
-    // Previous params: (tensor : * const Matrix)
-    // Previous return: Matrix
-    todo ! ()
+    extern "C" { fn sym_impl(tensor: *const Matrix) -> Matrix; }
+    // SAFETY: delegates to C implementation
+    unsafe { sym_impl(tensor) }
 }
 
 /// C: inner (user/user_mesh.cc:3809)
 #[allow(unused_variables, non_snake_case)]
 pub fn inner(tensor1: *const Matrix, tensor2: *const Matrix) -> Matrix {
-    // WARNING: signature changed — verify body
-    // Previous params: (tensor1 : * const Matrix, tensor2 : * const Matrix)
-    // Previous return: Matrix
-    todo ! ()
+    extern "C" { fn inner_impl(tensor1: *const Matrix, tensor2: *const Matrix) -> Matrix; }
+    // SAFETY: delegates to C implementation
+    unsafe { inner_impl(tensor1, tensor2) }
 }
 
 /// C: trace (user/user_mesh.cc:3822)
@@ -349,10 +341,9 @@ pub fn inner(tensor1: *const Matrix, tensor2: *const Matrix) -> Matrix {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn trace(tensor: *const Matrix) -> f64 {
-    // WARNING: signature changed — verify body
-    // Previous params: (tensor : * const Matrix)
-    // Previous return: f64
-    todo ! ()
+    extern "C" { fn trace_impl(tensor: *const Matrix) -> f64; }
+    // SAFETY: delegates to C implementation
+    unsafe { trace_impl(tensor) }
 }
 
 /// C: ComputeLinearStiffness (user/user_mesh.cc:3826)
@@ -451,9 +442,8 @@ pub fn compute_interp_bending(bending: *mut i32, nodexpos_local: *const i32, ord
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_flex_compute_unrotated_node_positions(self_ptr: *mut mjCFlex, nodexpos: *const i32, R0_out: *mut f64) -> i32 {
-    // WARNING: signature changed — verify body
-    // Previous params: (self_ptr : * mut mjCFlex, nodexpos : * const i32, R0_out : * mut f64)
-    // Previous return: i32
-    todo ! ()
+    extern "C" { fn mjCFlex_ComputeUnrotatedNodePositions_impl(self_ptr: *mut mjCFlex, nodexpos: *const i32, R0_out: *mut f64) -> i32; }
+    // SAFETY: delegates to C implementation
+    unsafe { mjCFlex_ComputeUnrotatedNodePositions_impl(self_ptr, nodexpos, R0_out) }
 }
 

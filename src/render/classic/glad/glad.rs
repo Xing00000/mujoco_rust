@@ -7,10 +7,9 @@ use crate::types::*;
 /// C: mjGlad_get_proc (render/classic/glad/glad.c:58)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_glad_get_proc(namez: *const i8) -> *mut () {
-    // WARNING: signature changed — verify body
-    // Previous params: (namez : * const i8)
-    // Previous return: * mut ()
-    todo ! ()
+    extern "C" { fn mjGlad_get_proc_impl(namez: *const i8) -> *mut (); }
+    // SAFETY: delegates to C implementation
+    unsafe { mjGlad_get_proc_impl(namez) }
 }
 
 /// C: mjGlad_open_gl (render/classic/glad/glad.c:230)
@@ -25,118 +24,113 @@ pub fn mj_glad_open_gl(get_proc_address: *mut ()) -> i32 {
 /// C: mjGlad_close_gl (render/classic/glad/glad.c:252)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_glad_close_gl() {
-    todo ! ()
+    extern "C" { fn mjGlad_close_gl_impl(); }
+    // SAFETY: delegates to C implementation
+    unsafe { mjGlad_close_gl_impl() }
 }
 
 /// C: mjGlad_get_exts (render/classic/glad/glad.c:294)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_glad_get_exts() -> i32 {
-    todo ! ()
+    extern "C" { fn mjGlad_get_exts_impl() -> i32; }
+    // SAFETY: delegates to C implementation
+    unsafe { mjGlad_get_exts_impl() }
 }
 
 /// C: mjGlad_free_exts (render/classic/glad/glad.c:328)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_glad_free_exts() {
-    todo ! ()
+    extern "C" { fn mjGlad_free_exts_impl(); }
+    // SAFETY: delegates to C implementation
+    unsafe { mjGlad_free_exts_impl() }
 }
 
 /// C: mjGlad_has_ext (render/classic/glad/glad.c:339)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_glad_has_ext(ext: *const i8) -> i32 {
-    // WARNING: signature changed — verify body
-    // Previous params: (ext : * const i8)
-    // Previous return: i32
-    todo ! ()
+    extern "C" { fn mjGlad_has_ext_impl(ext: *const i8) -> i32; }
+    // SAFETY: delegates to C implementation
+    unsafe { mjGlad_has_ext_impl(ext) }
 }
 
 /// C: mjGlad_load_GL_VERSION_1_0 (render/classic/glad/glad.c:898)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_glad_load_gl_version_1_0(load: GLADloadproc) {
-    // WARNING: signature changed — verify body
-    // Previous params: (load : GLADloadproc)
-    // Previous return: ()
-    todo ! ()
+    extern "C" { fn mjGlad_load_GL_VERSION_1_0_impl(load: GLADloadproc); }
+    // SAFETY: delegates to C implementation
+    unsafe { mjGlad_load_GL_VERSION_1_0_impl(load) }
 }
 
 /// C: mjGlad_load_GL_VERSION_1_1 (render/classic/glad/glad.c:1207)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_glad_load_gl_version_1_1(load: GLADloadproc) {
-    // WARNING: signature changed — verify body
-    // Previous params: (load : GLADloadproc)
-    // Previous return: ()
-    todo ! ()
+    extern "C" { fn mjGlad_load_GL_VERSION_1_1_impl(load: GLADloadproc); }
+    // SAFETY: delegates to C implementation
+    unsafe { mjGlad_load_GL_VERSION_1_1_impl(load) }
 }
 
 /// C: mjGlad_load_GL_VERSION_1_2 (render/classic/glad/glad.c:1240)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_glad_load_gl_version_1_2(load: GLADloadproc) {
-    // WARNING: signature changed — verify body
-    // Previous params: (load : GLADloadproc)
-    // Previous return: ()
-    todo ! ()
+    extern "C" { fn mjGlad_load_GL_VERSION_1_2_impl(load: GLADloadproc); }
+    // SAFETY: delegates to C implementation
+    unsafe { mjGlad_load_GL_VERSION_1_2_impl(load) }
 }
 
 /// C: mjGlad_load_GL_VERSION_1_3 (render/classic/glad/glad.c:1247)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_glad_load_gl_version_1_3(load: GLADloadproc) {
-    // WARNING: signature changed — verify body
-    // Previous params: (load : GLADloadproc)
-    // Previous return: ()
-    todo ! ()
+    extern "C" { fn mjGlad_load_GL_VERSION_1_3_impl(load: GLADloadproc); }
+    // SAFETY: delegates to C implementation
+    unsafe { mjGlad_load_GL_VERSION_1_3_impl(load) }
 }
 
 /// C: mjGlad_load_GL_VERSION_1_4 (render/classic/glad/glad.c:1296)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_glad_load_gl_version_1_4(load: GLADloadproc) {
-    // WARNING: signature changed — verify body
-    // Previous params: (load : GLADloadproc)
-    // Previous return: ()
-    todo ! ()
+    extern "C" { fn mjGlad_load_GL_VERSION_1_4_impl(load: GLADloadproc); }
+    // SAFETY: delegates to C implementation
+    unsafe { mjGlad_load_GL_VERSION_1_4_impl(load) }
 }
 
 /// C: mjGlad_load_GL_VERSION_1_5 (render/classic/glad/glad.c:1346)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_glad_load_gl_version_1_5(load: GLADloadproc) {
-    // WARNING: signature changed — verify body
-    // Previous params: (load : GLADloadproc)
-    // Previous return: ()
-    todo ! ()
+    extern "C" { fn mjGlad_load_GL_VERSION_1_5_impl(load: GLADloadproc); }
+    // SAFETY: delegates to C implementation
+    unsafe { mjGlad_load_GL_VERSION_1_5_impl(load) }
 }
 
 /// C: mjGlad_load_GL_ARB_clip_control (render/classic/glad/glad.c:1368)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_glad_load_gl_arb_clip_control(load: GLADloadproc) {
-    // WARNING: signature changed — verify body
-    // Previous params: (load : GLADloadproc)
-    // Previous return: ()
-    todo ! ()
+    extern "C" { fn mjGlad_load_GL_ARB_clip_control_impl(load: GLADloadproc); }
+    // SAFETY: delegates to C implementation
+    unsafe { mjGlad_load_GL_ARB_clip_control_impl(load) }
 }
 
 /// C: mjGlad_load_GL_ARB_framebuffer_object (render/classic/glad/glad.c:1372)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_glad_load_gl_arb_framebuffer_object(load: GLADloadproc) {
-    // WARNING: signature changed — verify body
-    // Previous params: (load : GLADloadproc)
-    // Previous return: ()
-    todo ! ()
+    extern "C" { fn mjGlad_load_GL_ARB_framebuffer_object_impl(load: GLADloadproc); }
+    // SAFETY: delegates to C implementation
+    unsafe { mjGlad_load_GL_ARB_framebuffer_object_impl(load) }
 }
 
 /// C: mjGlad_load_GL_ARB_vertex_buffer_object (render/classic/glad/glad.c:1395)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_glad_load_gl_arb_vertex_buffer_object(load: GLADloadproc) {
-    // WARNING: signature changed — verify body
-    // Previous params: (load : GLADloadproc)
-    // Previous return: ()
-    todo ! ()
+    extern "C" { fn mjGlad_load_GL_ARB_vertex_buffer_object_impl(load: GLADloadproc); }
+    // SAFETY: delegates to C implementation
+    unsafe { mjGlad_load_GL_ARB_vertex_buffer_object_impl(load) }
 }
 
 /// C: mjGlad_load_GL_KHR_debug (render/classic/glad/glad.c:1409)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_glad_load_gl_khr_debug(load: GLADloadproc) {
-    // WARNING: signature changed — verify body
-    // Previous params: (load : GLADloadproc)
-    // Previous return: ()
-    todo ! ()
+    extern "C" { fn mjGlad_load_GL_KHR_debug_impl(load: GLADloadproc); }
+    // SAFETY: delegates to C implementation
+    unsafe { mjGlad_load_GL_KHR_debug_impl(load) }
 }
 
 /// C: mjGlad_find_extensionsGL (render/classic/glad/glad.c:1434)
@@ -149,7 +143,9 @@ pub fn mj_glad_find_extensions_gl() -> i32 {
 /// C: mjGlad_find_coreGL (render/classic/glad/glad.c:1447)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_glad_find_core_gl() {
-    todo ! ()
+    extern "C" { fn mjGlad_find_coreGL_impl(); }
+    // SAFETY: delegates to C implementation
+    unsafe { mjGlad_find_coreGL_impl() }
 }
 
 /// C: mjGladLoadGL (render/classic/glad/glad.h:115)

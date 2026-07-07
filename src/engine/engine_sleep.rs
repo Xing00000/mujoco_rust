@@ -75,30 +75,27 @@ pub fn mj_tendon_sleep_state(m: *const mjModel, d: *const mjData, i: i32) -> mjt
 /// Calls: mj_sleepState, mj_tendonSleepState
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_actuator_sleep_state(m: *const mjModel, d: *const mjData, i: i32) -> mjtSleepState {
-    // WARNING: signature changed — verify body
-    // Previous params: (m : * const mjModel, d : * const mjData, i : i32)
-    // Previous return: mjtSleepState
-    todo ! ()
+    extern "C" { fn mj_actuatorSleepState_impl(m: *const mjModel, d: *const mjData, i: i32) -> mjtSleepState; }
+    // SAFETY: delegates to C implementation
+    unsafe { mj_actuatorSleepState_impl(m, d, i) }
 }
 
 /// C: mj_equalitySleepState (engine/engine_sleep.c:691)
 /// Calls: mj_sleepState
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_equality_sleep_state(m: *const mjModel, d: *const mjData, i: i32) -> mjtSleepState {
-    // WARNING: signature changed — verify body
-    // Previous params: (m : * const mjModel, d : * const mjData, i : i32)
-    // Previous return: mjtSleepState
-    todo ! ()
+    extern "C" { fn mj_equalitySleepState_impl(m: *const mjModel, d: *const mjData, i: i32) -> mjtSleepState; }
+    // SAFETY: delegates to C implementation
+    unsafe { mj_equalitySleepState_impl(m, d, i) }
 }
 
 /// C: mj_sensorSleepState (engine/engine_sleep.c:727)
 /// Calls: mj_sleepState
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_sensor_sleep_state(m: *const mjModel, d: *const mjData, i: i32) -> mjtSleepState {
-    // WARNING: signature changed — verify body
-    // Previous params: (m : * const mjModel, d : * const mjData, i : i32)
-    // Previous return: mjtSleepState
-    todo ! ()
+    extern "C" { fn mj_sensorSleepState_impl(m: *const mjModel, d: *const mjData, i: i32) -> mjtSleepState; }
+    // SAFETY: delegates to C implementation
+    unsafe { mj_sensorSleepState_impl(m, d, i) }
 }
 
 /// C: mj_updateSleepInit (engine/engine_sleep.h:28)

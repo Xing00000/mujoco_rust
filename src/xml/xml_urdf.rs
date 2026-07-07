@@ -7,19 +7,17 @@ use crate::types::*;
 /// C: mjXURDF::FindName (xml/xml_urdf.cc:675)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_xurdf_find_name(self_ptr: *mut mjXURDF, name: string, list: *mut i32) -> i32 {
-    // WARNING: signature changed — verify body
-    // Previous params: (self_ptr : * mut mjXURDF, name : string, list : * mut i32)
-    // Previous return: i32
-    todo ! ()
+    extern "C" { fn mjXURDF_FindName_impl(self_ptr: *mut mjXURDF, name: string, list: *mut i32) -> i32; }
+    // SAFETY: delegates to C implementation
+    unsafe { mjXURDF_FindName_impl(self_ptr, name, list) }
 }
 
 /// C: mjXURDF::AddName (xml/xml_urdf.cc:687)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_xurdf_add_name(self_ptr: *mut mjXURDF, name: string, list: *mut i32) {
-    // WARNING: signature changed — verify body
-    // Previous params: (self_ptr : * mut mjXURDF, name : string, list : * mut i32)
-    // Previous return: ()
-    todo ! ()
+    extern "C" { fn mjXURDF_AddName_impl(self_ptr: *mut mjXURDF, name: string, list: *mut i32); }
+    // SAFETY: delegates to C implementation
+    unsafe { mjXURDF_AddName_impl(self_ptr, name, list) }
 }
 
 /// C: mjXURDF::Parse (xml/xml_urdf.h:40)
@@ -31,38 +29,34 @@ pub fn mj_xurdf_add_name(self_ptr: *mut mjXURDF, name: string, list: *mut i32) {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_xurdf_parse(self_ptr: *mut mjXURDF, root: *mut tinyxml2__XMLElement, prefix: *const std__string, pos: *mut f64, quat: *mut f64, static_body: bool) {
-    // WARNING: signature changed — verify body
-    // Previous params: (self_ptr : * mut mjXURDF, root : * mut tinyxml2__XMLElement, prefix : * const std__string, pos : * mut f64, quat : * mut f64, static_body : bool)
-    // Previous return: ()
-    todo ! ()
+    extern "C" { fn mjXURDF_Parse_impl(self_ptr: *mut mjXURDF, root: *mut tinyxml2__XMLElement, prefix: *const std__string, pos: *mut f64, quat: *mut f64, static_body: bool); }
+    // SAFETY: delegates to C implementation
+    unsafe { mjXURDF_Parse_impl(self_ptr, root, prefix, pos, quat, static_body) }
 }
 
 /// C: mjXURDF::GetPrefixedName (xml/xml_urdf.h:49)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_xurdf_get_prefixed_name(self_ptr: *mut mjXURDF, name: *const std__string) -> std__string {
-    // WARNING: signature changed — verify body
-    // Previous params: (self_ptr : * mut mjXURDF, name : * const std__string)
-    // Previous return: std__string
-    todo ! ()
+    extern "C" { fn mjXURDF_GetPrefixedName_impl(self_ptr: *mut mjXURDF, name: *const std__string) -> std__string; }
+    // SAFETY: delegates to C implementation
+    unsafe { mjXURDF_GetPrefixedName_impl(self_ptr, name) }
 }
 
 /// C: mjXURDF::AddBody (xml/xml_urdf.h:52)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_xurdf_add_body(self_ptr: *mut mjXURDF, name: string) {
-    // WARNING: signature changed — verify body
-    // Previous params: (self_ptr : * mut mjXURDF, name : string)
-    // Previous return: ()
-    todo ! ()
+    extern "C" { fn mjXURDF_AddBody_impl(self_ptr: *mut mjXURDF, name: string); }
+    // SAFETY: delegates to C implementation
+    unsafe { mjXURDF_AddBody_impl(self_ptr, name) }
 }
 
 /// C: mjXURDF::AddToTree (xml/xml_urdf.h:53)
 /// Calls: mjs_addBody
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_xurdf_add_to_tree(self_ptr: *mut mjXURDF, n: i32) {
-    // WARNING: signature changed — verify body
-    // Previous params: (self_ptr : * mut mjXURDF, n : i32)
-    // Previous return: ()
-    todo ! ()
+    extern "C" { fn mjXURDF_AddToTree_impl(self_ptr: *mut mjXURDF, n: i32); }
+    // SAFETY: delegates to C implementation
+    unsafe { mjXURDF_AddToTree_impl(self_ptr, n) }
 }
 
 /// C: mjXURDF::Body (xml/xml_urdf.h:54)
@@ -114,18 +108,16 @@ pub fn mj_xurdf_origin(self_ptr: *mut mjXURDF, origin_elem: *mut tinyxml2__XMLEl
 /// Calls: mjXUtil::ReadAttrTxt
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_xurdf_make_materials(self_ptr: *mut mjXURDF, elem: *mut tinyxml2__XMLElement) {
-    // WARNING: signature changed — verify body
-    // Previous params: (self_ptr : * mut mjXURDF, elem : * mut tinyxml2__XMLElement)
-    // Previous return: ()
-    todo ! ()
+    extern "C" { fn mjXURDF_MakeMaterials_impl(self_ptr: *mut mjXURDF, elem: *mut tinyxml2__XMLElement); }
+    // SAFETY: delegates to C implementation
+    unsafe { mjXURDF_MakeMaterials_impl(self_ptr, elem) }
 }
 
 /// C: mjXURDF::Clear (xml/xml_urdf.h:61)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_xurdf_clear(self_ptr: *mut mjXURDF) {
-    // WARNING: signature changed — verify body
-    // Previous params: (self_ptr : * mut mjXURDF)
-    // Previous return: ()
-    todo ! ()
+    extern "C" { fn mjXURDF_Clear_impl(self_ptr: *mut mjXURDF); }
+    // SAFETY: delegates to C implementation
+    unsafe { mjXURDF_Clear_impl(self_ptr) }
 }
 

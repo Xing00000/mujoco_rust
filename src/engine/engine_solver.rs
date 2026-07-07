@@ -138,20 +138,18 @@ pub fn cost_change(A: *const f64, force: *mut f64, oldforce: *const f64, res: *c
 /// C: pcg32_next (engine/engine_solver.c:247)
 #[allow(unused_variables, non_snake_case)]
 pub fn pcg32_next(rng: *mut pcg32_state) -> u32 {
-    // WARNING: signature changed — verify body
-    // Previous params: (rng : * mut pcg32_state)
-    // Previous return: u32
-    todo ! ()
+    extern "C" { fn pcg32_next_impl(rng: *mut pcg32_state) -> u32; }
+    // SAFETY: delegates to C implementation
+    unsafe { pcg32_next_impl(rng) }
 }
 
 /// C: shuffle_int (engine/engine_solver.c:257)
 /// Calls: pcg32_next
 #[allow(unused_variables, non_snake_case)]
 pub fn shuffle_int(array: *mut i32, n: i32, rng: *mut pcg32_state) {
-    // WARNING: signature changed — verify body
-    // Previous params: (array : * mut i32, n : i32, rng : * mut pcg32_state)
-    // Previous return: ()
-    todo ! ()
+    extern "C" { fn shuffle_int_impl(array: *mut i32, n: i32, rng: *mut pcg32_state); }
+    // SAFETY: delegates to C implementation
+    unsafe { shuffle_int_impl(array, n, rng) }
 }
 
 /// C: dualState (engine/engine_solver.c:269)
@@ -227,10 +225,9 @@ pub fn solve_qcqp(force: *mut f64, i: i32, dim: i32, Ac: *mut f64, bc: *mut f64,
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn project_cone(force: *mut f64, mu: *const f64, dim: i32, r#type: i32) {
-    // WARNING: signature changed — verify body
-    // Previous params: (force : * mut f64, mu : * const f64, dim : i32, r#type : i32)
-    // Previous return: ()
-    todo ! ()
+    extern "C" { fn projectCone_impl(force: *mut f64, mu: *const f64, dim: i32, r#type: i32); }
+    // SAFETY: delegates to C implementation
+    unsafe { projectCone_impl(force, mu, dim, r#type) }
 }
 
 /// C: solPGS (engine/engine_solver.c:456)
@@ -1011,20 +1008,18 @@ pub fn mj_sol_no_slip_island(m: *const mjModel, d: *mut mjData, island: i32, max
 /// Calls: mj_solPrimal
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_sol_cg_island(m: *const mjModel, d: *mut mjData, island: i32, maxiter: i32) {
-    // WARNING: signature changed — verify body
-    // Previous params: (m : * const mjModel, d : * mut mjData, island : i32, maxiter : i32)
-    // Previous return: ()
-    todo ! ()
+    extern "C" { fn mj_solCG_island_impl(m: *const mjModel, d: *mut mjData, island: i32, maxiter: i32); }
+    // SAFETY: delegates to C implementation
+    unsafe { mj_solCG_island_impl(m, d, island, maxiter) }
 }
 
 /// C: mj_solNewton_island (engine/engine_solver.h:48)
 /// Calls: mj_solPrimal
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_sol_newton_island(m: *const mjModel, d: *mut mjData, island: i32, maxiter: i32) {
-    // WARNING: signature changed — verify body
-    // Previous params: (m : * const mjModel, d : * mut mjData, island : i32, maxiter : i32)
-    // Previous return: ()
-    todo ! ()
+    extern "C" { fn mj_solNewton_island_impl(m: *const mjModel, d: *mut mjData, island: i32, maxiter: i32); }
+    // SAFETY: delegates to C implementation
+    unsafe { mj_solNewton_island_impl(m, d, island, maxiter) }
 }
 
 /// C: mj_dualFinish (engine/engine_solver.h:51)

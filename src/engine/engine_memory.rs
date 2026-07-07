@@ -7,10 +7,9 @@ use crate::types::*;
 /// C: fastmod (engine/engine_memory.c:52)
 #[allow(unused_variables, non_snake_case)]
 pub fn fastmod(a: usize, b: usize) -> usize {
-    // WARNING: signature changed — verify body
-    // Previous params: (a : usize, b : usize)
-    // Previous return: usize
-    todo ! ()
+    extern "C" { fn fastmod_impl(a: usize, b: usize) -> usize; }
+    // SAFETY: delegates to C implementation
+    unsafe { fastmod_impl(a, b) }
 }
 
 /// C: get_stack_info_from_data (engine/engine_memory.c:74)
@@ -26,20 +25,18 @@ pub fn get_stack_info_from_data(d: *const mjData) -> mjStackInfo {
 /// Calls: fastmod
 #[allow(unused_variables, non_snake_case)]
 pub fn stackallocinternal(d: *mut mjData, stack_info: *mut mjStackInfo, size: usize, alignment: usize, caller: *const i8, line: i32) -> *mut () {
-    // WARNING: signature changed — verify body
-    // Previous params: (d : * mut mjData, stack_info : * mut mjStackInfo, size : usize, alignment : usize, caller : * const i8, line : i32)
-    // Previous return: * mut ()
-    todo ! ()
+    extern "C" { fn stackallocinternal_impl(d: *mut mjData, stack_info: *mut mjStackInfo, size: usize, alignment: usize, caller: *const i8, line: i32) -> *mut (); }
+    // SAFETY: delegates to C implementation
+    unsafe { stackallocinternal_impl(d, stack_info, size, alignment, caller, line) }
 }
 
 /// C: stackalloc (engine/engine_memory.c:208)
 /// Calls: fastmod, get_stack_info_from_data, stackallocinternal
 #[allow(unused_variables, non_snake_case)]
 pub fn stackalloc(d: *mut mjData, size: usize, alignment: usize, caller: *const i8, line: i32) -> *mut () {
-    // WARNING: signature changed — verify body
-    // Previous params: (d : * mut mjData, size : usize, alignment : usize, caller : * const i8, line : i32)
-    // Previous return: * mut ()
-    todo ! ()
+    extern "C" { fn stackalloc_impl(d: *mut mjData, size: usize, alignment: usize, caller: *const i8, line: i32) -> *mut (); }
+    // SAFETY: delegates to C implementation
+    unsafe { stackalloc_impl(d, size, alignment, caller, line) }
 }
 
 /// C: markstackinternal (engine/engine_memory.c:256)

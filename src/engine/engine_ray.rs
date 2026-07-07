@@ -34,10 +34,9 @@ pub fn ray_map(pos: *const f64, mat: *const f64, pnt: *const f64, vec: *const f6
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn longitude(vec: *const f64) -> f64 {
-    // WARNING: signature changed — verify body
-    // Previous params: (vec : * const f64)
-    // Previous return: f64
-    todo ! ()
+    extern "C" { fn longitude_impl(vec: *const f64) -> f64; }
+    // SAFETY: delegates to C implementation
+    unsafe { longitude_impl(vec) }
 }
 
 /// C: latitude (engine/engine_ray.c:62)
@@ -48,10 +47,9 @@ pub fn longitude(vec: *const f64) -> f64 {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn latitude(vec: *const f64) -> f64 {
-    // WARNING: signature changed — verify body
-    // Previous params: (vec : * const f64)
-    // Previous return: f64
-    todo ! ()
+    extern "C" { fn latitude_impl(vec: *const f64) -> f64; }
+    // SAFETY: delegates to C implementation
+    unsafe { latitude_impl(vec) }
 }
 
 /// C: ray_eliminate (engine/engine_ray.c:68)
@@ -173,10 +171,9 @@ pub fn ray_cylinder(pos: *const f64, mat: *const f64, size: *const f64, pnt: *co
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn ray_box(pos: *const f64, mat: *const f64, size: *const f64, pnt: *const f64, vec: *const f64, all: *mut f64, normal: *mut f64) -> f64 {
-    // WARNING: signature changed — verify body
-    // Previous params: (pos : * const f64, mat : * const f64, size : * const f64, pnt : * const f64, vec : * const f64, all : * mut f64, normal : * mut f64)
-    // Previous return: f64
-    todo ! ()
+    extern "C" { fn ray_box_impl(pos: *const f64, mat: *const f64, size: *const f64, pnt: *const f64, vec: *const f64, all: *mut f64, normal: *mut f64) -> f64; }
+    // SAFETY: delegates to C implementation
+    unsafe { ray_box_impl(pos, mat, size, pnt, vec, all, normal) }
 }
 
 /// C: mju_raySlab (engine/engine_ray.c:743)
@@ -188,10 +185,9 @@ pub fn ray_box(pos: *const f64, mat: *const f64, size: *const f64, pnt: *const f
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mju_ray_slab(aabb: *const f64, xpos: *const f64, xmat: *const f64, pnt: *const f64, vec: *const f64) -> i32 {
-    // WARNING: signature changed — verify body
-    // Previous params: (aabb : * const f64, xpos : * const f64, xmat : * const f64, pnt : * const f64, vec : * const f64)
-    // Previous return: i32
-    todo ! ()
+    extern "C" { fn mju_raySlab_impl(aabb: *const f64, xpos: *const f64, xmat: *const f64, pnt: *const f64, vec: *const f64) -> i32; }
+    // SAFETY: delegates to C implementation
+    unsafe { mju_raySlab_impl(aabb, xpos, xmat, pnt, vec) }
 }
 
 /// C: mju_rayTree (engine/engine_ray.c:771)
@@ -232,10 +228,9 @@ pub fn mj_ray_sdf(m: *const mjModel, d: *const mjData, g: i32, pnt: *const f64, 
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn point_in_box(aabb: *const f64, xpos: *const f64, xmat: *const f64, pnt: *const f64) -> i32 {
-    // WARNING: signature changed — verify body
-    // Previous params: (aabb : * const f64, xpos : * const f64, xmat : * const f64, pnt : * const f64)
-    // Previous return: i32
-    todo ! ()
+    extern "C" { fn point_in_box_impl(aabb: *const f64, xpos: *const f64, xmat: *const f64, pnt: *const f64) -> i32; }
+    // SAFETY: delegates to C implementation
+    unsafe { point_in_box_impl(aabb, xpos, xmat, pnt) }
 }
 
 /// C: mju_singleRay (engine/engine_ray.c:1457)

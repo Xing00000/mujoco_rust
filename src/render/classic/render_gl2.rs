@@ -8,14 +8,18 @@ use crate::types::*;
 /// Calls: mju_warning
 #[allow(unused_variables, non_snake_case)]
 pub fn warn_about_arb_clip_control() {
-    todo ! ()
+    extern "C" { fn warnAboutARBClipControl_impl(); }
+    // SAFETY: delegates to C implementation
+    unsafe { warnAboutARBClipControl_impl() }
 }
 
 /// C: warnAboutARBDepthBuffer (render/classic/render_gl2.c:110)
 /// Calls: mju_warning
 #[allow(unused_variables, non_snake_case)]
 pub fn warn_about_arb_depth_buffer() {
-    todo ! ()
+    extern "C" { fn warnAboutARBDepthBuffer_impl(); }
+    // SAFETY: delegates to C implementation
+    unsafe { warnAboutARBDepthBuffer_impl() }
 }
 
 /// C: flipDepthIfRequired (render/classic/render_gl2.c:122)
@@ -50,10 +54,9 @@ pub fn init2d() {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn draw_overlay(font: i32, viewport: mjrRect, skip: i32, gridpos: i32, red: f32, green: f32, blue: f32, overlay: *const i8, con: *const mjrContext) -> i32 {
-    // WARNING: signature changed — verify body
-    // Previous params: (font : i32, viewport : mjrRect, skip : i32, gridpos : i32, red : f32, green : f32, blue : f32, overlay : * const i8, con : * const mjrContext)
-    // Previous return: i32
-    todo ! ()
+    extern "C" { fn draw_overlay_impl(font: i32, viewport: mjrRect, skip: i32, gridpos: i32, red: f32, green: f32, blue: f32, overlay: *const i8, con: *const mjrContext) -> i32; }
+    // SAFETY: delegates to C implementation
+    unsafe { draw_overlay_impl(font, viewport, skip, gridpos, red, green, blue, overlay, con) }
 }
 
 /// C: maketext (render/classic/render_gl2.c:749)
@@ -64,10 +67,9 @@ pub fn draw_overlay(font: i32, viewport: mjrRect, skip: i32, gridpos: i32, red: 
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn maketext(format: *const i8, txt: *mut i8, num: f32, txt_sz: i32) {
-    // WARNING: signature changed — verify body
-    // Previous params: (format : * const i8, txt : * mut i8, num : f32, txt_sz : i32)
-    // Previous return: ()
-    todo ! ()
+    extern "C" { fn maketext_impl(format: *const i8, txt: *mut i8, num: f32, txt_sz: i32); }
+    // SAFETY: delegates to C implementation
+    unsafe { maketext_impl(format, txt, num, txt_sz) }
 }
 
 /// C: textwidth (render/classic/render_gl2.c:787)
@@ -116,10 +118,9 @@ pub fn mjr_text_actual(font: i32, txt: *const i8, con: *const mjrContext, x: f32
 /// Calls: mju_error
 #[allow(unused_variables, non_snake_case)]
 pub fn mjr_set_buffer(framebuffer: i32, con: *mut mjrContext) {
-    // WARNING: signature changed — verify body
-    // Previous params: (framebuffer : i32, con : * mut mjrContext)
-    // Previous return: ()
-    todo ! ()
+    extern "C" { fn mjr_setBuffer_impl(framebuffer: i32, con: *mut mjrContext); }
+    // SAFETY: delegates to C implementation
+    unsafe { mjr_setBuffer_impl(framebuffer, con) }
 }
 
 /// C: mjr_readPixels (render/classic/render_gl2.h:39)
@@ -145,30 +146,27 @@ pub fn mjr_read_pixels(rgb: *mut u8, depth: *mut f32, viewport: mjrRect, con: *c
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjr_draw_pixels(rgb: *const u8, depth: *const f32, viewport: mjrRect, con: *const mjrContext) {
-    // WARNING: signature changed — verify body
-    // Previous params: (rgb : * const u8, depth : * const f32, viewport : mjrRect, con : * const mjrContext)
-    // Previous return: ()
-    todo ! ()
+    extern "C" { fn mjr_drawPixels_impl(rgb: *const u8, depth: *const f32, viewport: mjrRect, con: *const mjrContext); }
+    // SAFETY: delegates to C implementation
+    unsafe { mjr_drawPixels_impl(rgb, depth, viewport, con) }
 }
 
 /// C: mjr_blitBuffer (render/classic/render_gl2.h:49)
 /// Calls: mjr_restoreBuffer
 #[allow(unused_variables, non_snake_case)]
 pub fn mjr_blit_buffer(src: mjrRect, dst: mjrRect, flg_color: i32, flg_depth: i32, con: *const mjrContext) {
-    // WARNING: signature changed — verify body
-    // Previous params: (src : mjrRect, dst : mjrRect, flg_color : i32, flg_depth : i32, con : * const mjrContext)
-    // Previous return: ()
-    todo ! ()
+    extern "C" { fn mjr_blitBuffer_impl(src: mjrRect, dst: mjrRect, flg_color: i32, flg_depth: i32, con: *const mjrContext); }
+    // SAFETY: delegates to C implementation
+    unsafe { mjr_blitBuffer_impl(src, dst, flg_color, flg_depth, con) }
 }
 
 /// C: mjr_setAux (render/classic/render_gl2.h:53)
 /// Calls: mju_error
 #[allow(unused_variables, non_snake_case)]
 pub fn mjr_set_aux(index: i32, con: *const mjrContext) {
-    // WARNING: signature changed — verify body
-    // Previous params: (index : i32, con : * const mjrContext)
-    // Previous return: ()
-    todo ! ()
+    extern "C" { fn mjr_setAux_impl(index: i32, con: *const mjrContext); }
+    // SAFETY: delegates to C implementation
+    unsafe { mjr_setAux_impl(index, con) }
 }
 
 /// C: mjr_blitAux (render/classic/render_gl2.h:56)
@@ -189,10 +187,9 @@ pub fn mjr_blit_aux(index: i32, src: mjrRect, left: i32, bottom: i32, con: *cons
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjr_text(font: i32, txt: *const i8, con: *const mjrContext, x: f32, y: f32, r: f32, g: f32, b: f32) {
-    // WARNING: signature changed — verify body
-    // Previous params: (font : i32, txt : * const i8, con : * const mjrContext, x : f32, y : f32, r : f32, g : f32, b : f32)
-    // Previous return: ()
-    todo ! ()
+    extern "C" { fn mjr_text_impl(font: i32, txt: *const i8, con: *const mjrContext, x: f32, y: f32, r: f32, g: f32, b: f32); }
+    // SAFETY: delegates to C implementation
+    unsafe { mjr_text_impl(font, txt, con, x, y, r, g, b) }
 }
 
 /// C: mjr_overlay (render/classic/render_gl2.h:64)
@@ -208,10 +205,9 @@ pub fn mjr_overlay(font: i32, gridpos: i32, viewport: mjrRect, overlay: *const i
 /// C: mjr_maxViewport (render/classic/render_gl2.h:68)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjr_max_viewport(con: *const mjrContext) -> mjrRect {
-    // WARNING: signature changed — verify body
-    // Previous params: (con : * const mjrContext)
-    // Previous return: mjrRect
-    todo ! ()
+    extern "C" { fn mjr_maxViewport_impl(con: *const mjrContext) -> mjrRect; }
+    // SAFETY: delegates to C implementation
+    unsafe { mjr_maxViewport_impl(con) }
 }
 
 /// C: mjr_rectangle (render/classic/render_gl2.h:71)
@@ -236,10 +232,9 @@ pub fn mjr_rectangle(viewport: mjrRect, r: f32, g: f32, b: f32, a: f32) {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjr_label(viewport: mjrRect, font: i32, txt: *const i8, r: f32, g: f32, b: f32, a: f32, rt: f32, gt: f32, bt: f32, con: *const mjrContext) {
-    // WARNING: signature changed — verify body
-    // Previous params: (viewport : mjrRect, font : i32, txt : * const i8, r : f32, g : f32, b : f32, a : f32, rt : f32, gt : f32, bt : f32, con : * const mjrContext)
-    // Previous return: ()
-    todo ! ()
+    extern "C" { fn mjr_label_impl(viewport: mjrRect, font: i32, txt: *const i8, r: f32, g: f32, b: f32, a: f32, rt: f32, gt: f32, bt: f32, con: *const mjrContext); }
+    // SAFETY: delegates to C implementation
+    unsafe { mjr_label_impl(viewport, font, txt, r, g, b, a, rt, gt, bt, con) }
 }
 
 /// C: mjr_figure (render/classic/render_gl2.h:79)

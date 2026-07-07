@@ -46,10 +46,9 @@ pub fn mju_get_resource_dir(resource: *mut mjResource, dir: *const *mut i8, ndir
 /// C: mju_isModifiedResource (user/user_resource.cc:105)
 #[allow(unused_variables, non_snake_case)]
 pub fn mju_is_modified_resource(resource: *const mjResource, timestamp: *const i8) -> i32 {
-    // WARNING: signature changed — verify body
-    // Previous params: (resource : * const mjResource, timestamp : * const i8)
-    // Previous return: i32
-    todo ! ()
+    extern "C" { fn mju_isModifiedResource_impl(resource: *const mjResource, timestamp: *const i8) -> i32; }
+    // SAFETY: delegates to C implementation
+    unsafe { mju_isModifiedResource_impl(resource, timestamp) }
 }
 
 /// C: mju_decodeResource (user/user_resource.cc:112)

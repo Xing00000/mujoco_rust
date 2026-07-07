@@ -42,49 +42,44 @@ pub fn file_modified(resource: *const mjResource, timestamp: *const i8) -> i32 {
 /// C: StripPathAndLower (user/user_vfs.cc:94)
 #[allow(unused_variables, non_snake_case)]
 pub fn strip_path_and_lower(path: i32) -> i32 {
-    // WARNING: signature changed — verify body
-    // Previous params: (path : i32)
-    // Previous return: i32
-    todo ! ()
+    extern "C" { fn StripPathAndLower_impl(path: i32) -> i32; }
+    // SAFETY: delegates to C implementation
+    unsafe { StripPathAndLower_impl(path) }
 }
 
 /// C: VFS::FindMount (user/user_vfs.cc:287)
 #[allow(unused_variables, non_snake_case)]
 pub fn vfs_find_mount(self_ptr: *mut VFS, fullpath: *const i32) -> *mut mjResource {
-    // WARNING: signature changed — verify body
-    // Previous params: (self_ptr : * mut VFS, fullpath : * const i32)
-    // Previous return: * mut mjResource
-    todo ! ()
+    extern "C" { fn VFS_FindMount_impl(self_ptr: *mut VFS, fullpath: *const i32) -> *mut mjResource; }
+    // SAFETY: delegates to C implementation
+    unsafe { VFS_FindMount_impl(self_ptr, fullpath) }
 }
 
 /// C: mj_defaultVFS (user/user_vfs.cc:355)
 /// Calls: mju_error
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_default_vfs(vfs: *mut mjVFS) {
-    // WARNING: signature changed — verify body
-    // Previous params: (vfs : * mut mjVFS)
-    // Previous return: ()
-    todo ! ()
+    extern "C" { fn mj_defaultVFS_impl(vfs: *mut mjVFS); }
+    // SAFETY: delegates to C implementation
+    unsafe { mj_defaultVFS_impl(vfs) }
 }
 
 /// C: mj_deleteVFS (user/user_vfs.cc:363)
 /// Calls: VFS::Upcast
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_delete_vfs(vfs: *mut mjVFS) {
-    // WARNING: signature changed — verify body
-    // Previous params: (vfs : * mut mjVFS)
-    // Previous return: ()
-    todo ! ()
+    extern "C" { fn mj_deleteVFS_impl(vfs: *mut mjVFS); }
+    // SAFETY: delegates to C implementation
+    unsafe { mj_deleteVFS_impl(vfs) }
 }
 
 /// C: mj_mountVFS (user/user_vfs.cc:371)
 /// Calls: VFS::Mount, VFS::Upcast, mju_error
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_mount_vfs(vfs: *mut mjVFS, filepath: *const i8, provider: *const mjpResourceProvider) -> i32 {
-    // WARNING: signature changed — verify body
-    // Previous params: (vfs : * mut mjVFS, filepath : * const i8, provider : * const mjpResourceProvider)
-    // Previous return: i32
-    todo ! ()
+    extern "C" { fn mj_mountVFS_impl(vfs: *mut mjVFS, filepath: *const i8, provider: *const mjpResourceProvider) -> i32; }
+    // SAFETY: delegates to C implementation
+    unsafe { mj_mountVFS_impl(vfs, filepath, provider) }
 }
 
 /// C: mj_unmountVFS (user/user_vfs.cc:386)
@@ -110,10 +105,9 @@ pub fn buffer_provider_mount(vfs: *mut mjVFS, args: Args) -> i32 {
 /// C: mj_addFileVFS (user/user_vfs.cc:496)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_add_file_vfs(vfs: *mut mjVFS, directory: *const i8, filename: *const i8) -> i32 {
-    // WARNING: signature changed — verify body
-    // Previous params: (vfs : * mut mjVFS, directory : * const i8, filename : * const i8)
-    // Previous return: i32
-    todo ! ()
+    extern "C" { fn mj_addFileVFS_impl(vfs: *mut mjVFS, directory: *const i8, filename: *const i8) -> i32; }
+    // SAFETY: delegates to C implementation
+    unsafe { mj_addFileVFS_impl(vfs, directory, filename) }
 }
 
 /// C: mj_addBufferVFS (user/user_vfs.cc:503)
@@ -159,10 +153,9 @@ pub fn mj_contains_file_vfs(vfs: *mut mjVFS, directory: *const i8, filename: *co
 /// Calls: VFS::MaybeSelfDestruct
 #[allow(unused_variables, non_snake_case)]
 pub fn vfs_open(self_ptr: *mut VFS, dir: *const i8, name: *const i8) -> *mut mjResource {
-    // WARNING: signature changed — verify body
-    // Previous params: (self_ptr : * mut VFS, dir : * const i8, name : * const i8)
-    // Previous return: * mut mjResource
-    todo ! ()
+    extern "C" { fn VFS_Open_impl(self_ptr: *mut VFS, dir: *const i8, name: *const i8) -> *mut mjResource; }
+    // SAFETY: delegates to C implementation
+    unsafe { VFS_Open_impl(self_ptr, dir, name) }
 }
 
 /// C: VFS::Read (user/user_vfs.h:80)
@@ -196,29 +189,26 @@ pub fn vfs_mount(self_ptr: *mut VFS, path: *const FilePath, provider: *const mjp
 /// C: VFS::Unmount (user/user_vfs.h:91)
 #[allow(unused_variables, non_snake_case)]
 pub fn vfs_unmount(self_ptr: *mut VFS, path: *const FilePath) -> Status {
-    // WARNING: signature changed — verify body
-    // Previous params: (self_ptr : * mut VFS, path : * const FilePath)
-    // Previous return: Status
-    todo ! ()
+    extern "C" { fn VFS_Unmount_impl(self_ptr: *mut VFS, path: *const FilePath) -> Status; }
+    // SAFETY: delegates to C implementation
+    unsafe { VFS_Unmount_impl(self_ptr, path) }
 }
 
 /// C: VFS::ContainsBuffer (user/user_vfs.h:94)
 #[allow(unused_variables, non_snake_case)]
 pub fn vfs_contains_buffer(self_ptr: *mut VFS, name: *const i8) -> bool {
-    // WARNING: signature changed — verify body
-    // Previous params: (self_ptr : * mut VFS, name : * const i8)
-    // Previous return: bool
-    todo ! ()
+    extern "C" { fn VFS_ContainsBuffer_impl(self_ptr: *mut VFS, name: *const i8) -> bool; }
+    // SAFETY: delegates to C implementation
+    unsafe { VFS_ContainsBuffer_impl(self_ptr, name) }
 }
 
 /// C: VFS::ContainsFile (user/user_vfs.h:97)
 /// Calls: FilePath::Lower, FilePath::StripPath
 #[allow(unused_variables, non_snake_case)]
 pub fn vfs_contains_file(self_ptr: *mut VFS, directory: *const i8, filename: *const i8) -> bool {
-    // WARNING: signature changed — verify body
-    // Previous params: (self_ptr : * mut VFS, directory : * const i8, filename : * const i8)
-    // Previous return: bool
-    todo ! ()
+    extern "C" { fn VFS_ContainsFile_impl(self_ptr: *mut VFS, directory: *const i8, filename: *const i8) -> bool; }
+    // SAFETY: delegates to C implementation
+    unsafe { VFS_ContainsFile_impl(self_ptr, directory, filename) }
 }
 
 /// C: VFS::SetToSelfDestruct (user/user_vfs.h:105)
@@ -243,10 +233,9 @@ pub fn vfs_upcast(vfs: *mut mjVFS) -> *mut VFS {
 /// Calls: mju_warning
 #[allow(unused_variables, non_snake_case)]
 pub fn vfs_create_resource(self_ptr: *mut VFS, name: string_view, provider: *const mjpResourceProvider) -> ResourcePtr {
-    // WARNING: signature changed — verify body
-    // Previous params: (self_ptr : * mut VFS, name : string_view, provider : * const mjpResourceProvider)
-    // Previous return: ResourcePtr
-    todo ! ()
+    extern "C" { fn VFS_CreateResource_impl(self_ptr: *mut VFS, name: string_view, provider: *const mjpResourceProvider) -> ResourcePtr; }
+    // SAFETY: delegates to C implementation
+    unsafe { VFS_CreateResource_impl(self_ptr, name, provider) }
 }
 
 /// C: VFS::MaybeSelfDestruct (user/user_vfs.h:124)

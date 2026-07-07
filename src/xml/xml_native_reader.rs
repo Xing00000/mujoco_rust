@@ -17,10 +17,9 @@ pub fn get_attr_ptr(val: *mut T) -> i32 {
 /// Calls: mjXUtil::ReadAttrTxt
 #[allow(unused_variables, non_snake_case)]
 pub fn reader_txt(self_ptr: *mut Reader, attr: *const i8, target: *mut T, set_func: void_____T____const_char) -> bool {
-    // WARNING: signature changed — verify body
-    // Previous params: (self_ptr : * mut Reader, attr : * const i8, target : * mut T, set_func : void_____T____const_char)
-    // Previous return: bool
-    todo ! ()
+    extern "C" { fn Reader_txt_impl(self_ptr: *mut Reader, attr: *const i8, target: *mut T, set_func: void_____T____const_char) -> bool; }
+    // SAFETY: delegates to C implementation
+    unsafe { Reader_txt_impl(self_ptr, attr, target, set_func) }
 }
 
 /// C: Reader::set_node (xml/xml_native_reader.cc:121)
@@ -35,28 +34,25 @@ pub fn reader_set_node(self_ptr: *mut Reader, node: *mut XMLElement) {
 /// Calls: FirstChildElement, NextSiblingElement, mjXUtil::ReadAttrTxt
 #[allow(unused_variables, non_snake_case)]
 pub fn read_plugin_configs(elem: *mut tinyxml2__XMLElement, p: *mut mjsPlugin) {
-    // WARNING: signature changed — verify body
-    // Previous params: (elem : * mut tinyxml2__XMLElement, p : * mut mjsPlugin)
-    // Previous return: ()
-    todo ! ()
+    extern "C" { fn ReadPluginConfigs_impl(elem: *mut tinyxml2__XMLElement, p: *mut mjsPlugin); }
+    // SAFETY: delegates to C implementation
+    unsafe { ReadPluginConfigs_impl(elem, p) }
 }
 
 /// C: UpdateString (xml/xml_native_reader.cc:155)
 #[allow(unused_variables, non_snake_case)]
 pub fn update_string(psuffix: *mut string, count: i32, i: i32) {
-    // WARNING: signature changed — verify body
-    // Previous params: (psuffix : * mut string, count : i32, i : i32)
-    // Previous return: ()
-    todo ! ()
+    extern "C" { fn UpdateString_impl(psuffix: *mut string, count: i32, i: i32); }
+    // SAFETY: delegates to C implementation
+    unsafe { UpdateString_impl(psuffix, count, i) }
 }
 
 /// C: stripError (xml/xml_native_reader.cc:3878)
 #[allow(unused_variables, non_snake_case)]
 pub fn strip_error(err: *const i8) -> *const i8 {
-    // WARNING: signature changed — verify body
-    // Previous params: (err : * const i8)
-    // Previous return: * const i8
-    todo ! ()
+    extern "C" { fn stripError_impl(err: *const i8) -> *const i8; }
+    // SAFETY: delegates to C implementation
+    unsafe { stripError_impl(err) }
 }
 
 /// C: mjXReader::Parse (xml/xml_native_reader.h:34)
@@ -72,19 +68,17 @@ pub fn mj_x_reader_parse(self_ptr: *mut mjXReader, root: *mut tinyxml2__XMLEleme
 /// C: mjXReader::PrintSchema (xml/xml_native_reader.h:35)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_x_reader_print_schema(self_ptr: *mut mjXReader, str: *mut std__stringstream, html: bool, pad: bool) {
-    // WARNING: signature changed — verify body
-    // Previous params: (self_ptr : * mut mjXReader, str : * mut std__stringstream, html : bool, pad : bool)
-    // Previous return: ()
-    todo ! ()
+    extern "C" { fn mjXReader_PrintSchema_impl(self_ptr: *mut mjXReader, str: *mut std__stringstream, html: bool, pad: bool); }
+    // SAFETY: delegates to C implementation
+    unsafe { mjXReader_PrintSchema_impl(self_ptr, str, html, pad) }
 }
 
 /// C: mjXReader::SetModelFileDir (xml/xml_native_reader.h:37)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_x_reader_set_model_file_dir(self_ptr: *mut mjXReader, modelfiledir: *const std__string) {
-    // WARNING: signature changed — verify body
-    // Previous params: (self_ptr : * mut mjXReader, modelfiledir : * const std__string)
-    // Previous return: ()
-    todo ! ()
+    extern "C" { fn mjXReader_SetModelFileDir_impl(self_ptr: *mut mjXReader, modelfiledir: *const std__string); }
+    // SAFETY: delegates to C implementation
+    unsafe { mjXReader_SetModelFileDir_impl(self_ptr, modelfiledir) }
 }
 
 /// C: mjXReader::ModelFileDir (xml/xml_native_reader.h:38)
@@ -99,58 +93,52 @@ pub fn mj_x_reader_model_file_dir(self_ptr: *mut mjXReader) -> *const mujoco__us
 /// C: mjXReader::SetAssetDir (xml/xml_native_reader.h:41)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_x_reader_set_asset_dir(self_ptr: *mut mjXReader, assetdir: *const std__string) {
-    // WARNING: signature changed — verify body
-    // Previous params: (self_ptr : * mut mjXReader, assetdir : * const std__string)
-    // Previous return: ()
-    todo ! ()
+    extern "C" { fn mjXReader_SetAssetDir_impl(self_ptr: *mut mjXReader, assetdir: *const std__string); }
+    // SAFETY: delegates to C implementation
+    unsafe { mjXReader_SetAssetDir_impl(self_ptr, assetdir) }
 }
 
 /// C: mjXReader::SetMeshDir (xml/xml_native_reader.h:42)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_x_reader_set_mesh_dir(self_ptr: *mut mjXReader, meshdir: *const std__string) {
-    // WARNING: signature changed — verify body
-    // Previous params: (self_ptr : * mut mjXReader, meshdir : * const std__string)
-    // Previous return: ()
-    todo ! ()
+    extern "C" { fn mjXReader_SetMeshDir_impl(self_ptr: *mut mjXReader, meshdir: *const std__string); }
+    // SAFETY: delegates to C implementation
+    unsafe { mjXReader_SetMeshDir_impl(self_ptr, meshdir) }
 }
 
 /// C: mjXReader::SetTextureDir (xml/xml_native_reader.h:43)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_x_reader_set_texture_dir(self_ptr: *mut mjXReader, texturedir: *const std__string) {
-    // WARNING: signature changed — verify body
-    // Previous params: (self_ptr : * mut mjXReader, texturedir : * const std__string)
-    // Previous return: ()
-    todo ! ()
+    extern "C" { fn mjXReader_SetTextureDir_impl(self_ptr: *mut mjXReader, texturedir: *const std__string); }
+    // SAFETY: delegates to C implementation
+    unsafe { mjXReader_SetTextureDir_impl(self_ptr, texturedir) }
 }
 
 /// C: mjXReader::Compiler (xml/xml_native_reader.h:46)
 /// Calls: mjXUtil::MapValue, mjXUtil::ReadAttrTxt, mjs_setAuthored
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_x_reader_compiler(section: *mut tinyxml2__XMLElement, s: *mut mjSpec) {
-    // WARNING: signature changed — verify body
-    // Previous params: (section : * mut tinyxml2__XMLElement, s : * mut mjSpec)
-    // Previous return: ()
-    todo ! ()
+    extern "C" { fn mjXReader_Compiler_impl(section: *mut tinyxml2__XMLElement, s: *mut mjSpec); }
+    // SAFETY: delegates to C implementation
+    unsafe { mjXReader_Compiler_impl(section, s) }
 }
 
 /// C: mjXReader::Option (xml/xml_native_reader.h:47)
 /// Calls: mjXUtil::MapValue
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_x_reader_option(section: *mut tinyxml2__XMLElement, s: *mut mjSpec, opt: *mut mjOption) {
-    // WARNING: signature changed — verify body
-    // Previous params: (section : * mut tinyxml2__XMLElement, s : * mut mjSpec, opt : * mut mjOption)
-    // Previous return: ()
-    todo ! ()
+    extern "C" { fn mjXReader_Option_impl(section: *mut tinyxml2__XMLElement, s: *mut mjSpec, opt: *mut mjOption); }
+    // SAFETY: delegates to C implementation
+    unsafe { mjXReader_Option_impl(section, s, opt) }
 }
 
 /// C: mjXReader::Size (xml/xml_native_reader.h:48)
 /// Calls: mjXUtil::ReadAttrInt
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_x_reader_size(section: *mut tinyxml2__XMLElement, s: *mut mjSpec) {
-    // WARNING: signature changed — verify body
-    // Previous params: (section : * mut tinyxml2__XMLElement, s : * mut mjSpec)
-    // Previous return: ()
-    todo ! ()
+    extern "C" { fn mjXReader_Size_impl(section: *mut tinyxml2__XMLElement, s: *mut mjSpec); }
+    // SAFETY: delegates to C implementation
+    unsafe { mjXReader_Size_impl(section, s) }
 }
 
 /// C: mjXReader::Default (xml/xml_native_reader.h:52)
@@ -177,29 +165,26 @@ pub fn mj_x_reader_extension(self_ptr: *mut mjXReader, section: *mut tinyxml2__X
 /// Calls: FirstChildElement, NextSiblingElement, mjXUtil::ReadAttrInt, mjXUtil::ReadAttrTxt
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_x_reader_custom(self_ptr: *mut mjXReader, section: *mut tinyxml2__XMLElement) {
-    // WARNING: signature changed — verify body
-    // Previous params: (self_ptr : * mut mjXReader, section : * mut tinyxml2__XMLElement)
-    // Previous return: ()
-    todo ! ()
+    extern "C" { fn mjXReader_Custom_impl(self_ptr: *mut mjXReader, section: *mut tinyxml2__XMLElement); }
+    // SAFETY: delegates to C implementation
+    unsafe { mjXReader_Custom_impl(self_ptr, section) }
 }
 
 /// C: mjXReader::Visual (xml/xml_native_reader.h:56)
 /// Calls: FirstChildElement, NextSiblingElement, Reader::set_node
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_x_reader_visual(self_ptr: *mut mjXReader, section: *mut tinyxml2__XMLElement) {
-    // WARNING: signature changed — verify body
-    // Previous params: (self_ptr : * mut mjXReader, section : * mut tinyxml2__XMLElement)
-    // Previous return: ()
-    todo ! ()
+    extern "C" { fn mjXReader_Visual_impl(self_ptr: *mut mjXReader, section: *mut tinyxml2__XMLElement); }
+    // SAFETY: delegates to C implementation
+    unsafe { mjXReader_Visual_impl(self_ptr, section) }
 }
 
 /// C: mjXReader::Statistic (xml/xml_native_reader.h:57)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_x_reader_statistic(self_ptr: *mut mjXReader, section: *mut tinyxml2__XMLElement) {
-    // WARNING: signature changed — verify body
-    // Previous params: (self_ptr : * mut mjXReader, section : * mut tinyxml2__XMLElement)
-    // Previous return: ()
-    todo ! ()
+    extern "C" { fn mjXReader_Statistic_impl(self_ptr: *mut mjXReader, section: *mut tinyxml2__XMLElement); }
+    // SAFETY: delegates to C implementation
+    unsafe { mjXReader_Statistic_impl(self_ptr, section) }
 }
 
 /// C: mjXReader::Asset (xml/xml_native_reader.h:58)
@@ -286,20 +271,18 @@ pub fn mj_x_reader_sensor(self_ptr: *mut mjXReader, section: *mut tinyxml2__XMLE
 /// Calls: FirstChildElement, NextSiblingElement, mjXUtil::ReadAttrTxt
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_x_reader_keyframe(self_ptr: *mut mjXReader, section: *mut tinyxml2__XMLElement) {
-    // WARNING: signature changed — verify body
-    // Previous params: (self_ptr : * mut mjXReader, section : * mut tinyxml2__XMLElement)
-    // Previous return: ()
-    todo ! ()
+    extern "C" { fn mjXReader_Keyframe_impl(self_ptr: *mut mjXReader, section: *mut tinyxml2__XMLElement); }
+    // SAFETY: delegates to C implementation
+    unsafe { mjXReader_Keyframe_impl(self_ptr, section) }
 }
 
 /// C: mjXReader::OneFlex (xml/xml_native_reader.h:70)
 /// Calls: FirstChildElement, mjXUtil::MapValue, mjXUtil::ReadAttrInt, mjXUtil::ReadAttrTxt
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_x_reader_one_flex(self_ptr: *mut mjXReader, elem: *mut tinyxml2__XMLElement, pflex: *mut mjsFlex) {
-    // WARNING: signature changed — verify body
-    // Previous params: (self_ptr : * mut mjXReader, elem : * mut tinyxml2__XMLElement, pflex : * mut mjsFlex)
-    // Previous return: ()
-    todo ! ()
+    extern "C" { fn mjXReader_OneFlex_impl(self_ptr: *mut mjXReader, elem: *mut tinyxml2__XMLElement, pflex: *mut mjsFlex); }
+    // SAFETY: delegates to C implementation
+    unsafe { mjXReader_OneFlex_impl(self_ptr, elem, pflex) }
 }
 
 /// C: mjXReader::OneMesh (xml/xml_native_reader.h:71)
@@ -316,30 +299,27 @@ pub fn mj_x_reader_one_mesh(self_ptr: *mut mjXReader, elem: *mut tinyxml2__XMLEl
 /// Calls: FirstChildElement, NextSiblingElement, mjXReader::AssetDir, mjXUtil::ReadAttrInt, mjXUtil::ReadAttrTxt
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_x_reader_one_skin(self_ptr: *mut mjXReader, elem: *mut tinyxml2__XMLElement, pskin: *mut mjsSkin, vfs: *const mjVFS) {
-    // WARNING: signature changed — verify body
-    // Previous params: (self_ptr : * mut mjXReader, elem : * mut tinyxml2__XMLElement, pskin : * mut mjsSkin, vfs : * const mjVFS)
-    // Previous return: ()
-    todo ! ()
+    extern "C" { fn mjXReader_OneSkin_impl(self_ptr: *mut mjXReader, elem: *mut tinyxml2__XMLElement, pskin: *mut mjsSkin, vfs: *const mjVFS); }
+    // SAFETY: delegates to C implementation
+    unsafe { mjXReader_OneSkin_impl(self_ptr, elem, pskin, vfs) }
 }
 
 /// C: mjXReader::OneMaterial (xml/xml_native_reader.h:73)
 /// Calls: FirstChildElement, NextSiblingElement, mjXUtil::FindKey, mjXUtil::MapValue, mjXUtil::ReadAttrTxt
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_x_reader_one_material(self_ptr: *mut mjXReader, elem: *mut tinyxml2__XMLElement, pmaterial: *mut mjsMaterial) {
-    // WARNING: signature changed — verify body
-    // Previous params: (self_ptr : * mut mjXReader, elem : * mut tinyxml2__XMLElement, pmaterial : * mut mjsMaterial)
-    // Previous return: ()
-    todo ! ()
+    extern "C" { fn mjXReader_OneMaterial_impl(self_ptr: *mut mjXReader, elem: *mut tinyxml2__XMLElement, pmaterial: *mut mjsMaterial); }
+    // SAFETY: delegates to C implementation
+    unsafe { mjXReader_OneMaterial_impl(self_ptr, elem, pmaterial) }
 }
 
 /// C: mjXReader::OneJoint (xml/xml_native_reader.h:74)
 /// Calls: mjXUtil::MapValue, mjXUtil::ReadAttrInt, mjXUtil::ReadAttrTxt
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_x_reader_one_joint(self_ptr: *mut mjXReader, elem: *mut tinyxml2__XMLElement, pjoint: *mut mjsJoint) {
-    // WARNING: signature changed — verify body
-    // Previous params: (self_ptr : * mut mjXReader, elem : * mut tinyxml2__XMLElement, pjoint : * mut mjsJoint)
-    // Previous return: ()
-    todo ! ()
+    extern "C" { fn mjXReader_OneJoint_impl(self_ptr: *mut mjXReader, elem: *mut tinyxml2__XMLElement, pjoint: *mut mjsJoint); }
+    // SAFETY: delegates to C implementation
+    unsafe { mjXReader_OneJoint_impl(self_ptr, elem, pjoint) }
 }
 
 /// C: mjXReader::OneGeom (xml/xml_native_reader.h:75)
@@ -356,10 +336,9 @@ pub fn mj_x_reader_one_geom(self_ptr: *mut mjXReader, elem: *mut tinyxml2__XMLEl
 /// Calls: mjXBase::ReadAlternative, mjXUtil::MapValue, mjXUtil::ReadAttrInt, mjXUtil::ReadAttrTxt, mjXUtil::ReadQuat
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_x_reader_one_site(self_ptr: *mut mjXReader, elem: *mut tinyxml2__XMLElement, site: *mut mjsSite) {
-    // WARNING: signature changed — verify body
-    // Previous params: (self_ptr : * mut mjXReader, elem : * mut tinyxml2__XMLElement, site : * mut mjsSite)
-    // Previous return: ()
-    todo ! ()
+    extern "C" { fn mjXReader_OneSite_impl(self_ptr: *mut mjXReader, elem: *mut tinyxml2__XMLElement, site: *mut mjsSite); }
+    // SAFETY: delegates to C implementation
+    unsafe { mjXReader_OneSite_impl(self_ptr, elem, site) }
 }
 
 /// C: mjXReader::OneCamera (xml/xml_native_reader.h:77)
@@ -376,40 +355,36 @@ pub fn mj_x_reader_one_camera(self_ptr: *mut mjXReader, elem: *mut tinyxml2__XML
 /// Calls: mjXUtil::MapValue, mjXUtil::ReadAttrTxt
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_x_reader_one_light(self_ptr: *mut mjXReader, elem: *mut tinyxml2__XMLElement, plight: *mut mjsLight) {
-    // WARNING: signature changed — verify body
-    // Previous params: (self_ptr : * mut mjXReader, elem : * mut tinyxml2__XMLElement, plight : * mut mjsLight)
-    // Previous return: ()
-    todo ! ()
+    extern "C" { fn mjXReader_OneLight_impl(self_ptr: *mut mjXReader, elem: *mut tinyxml2__XMLElement, plight: *mut mjsLight); }
+    // SAFETY: delegates to C implementation
+    unsafe { mjXReader_OneLight_impl(self_ptr, elem, plight) }
 }
 
 /// C: mjXReader::OnePair (xml/xml_native_reader.h:79)
 /// Calls: mjXUtil::ReadAttrInt, mjXUtil::ReadAttrTxt
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_x_reader_one_pair(self_ptr: *mut mjXReader, elem: *mut tinyxml2__XMLElement, ppair: *mut mjsPair) {
-    // WARNING: signature changed — verify body
-    // Previous params: (self_ptr : * mut mjXReader, elem : * mut tinyxml2__XMLElement, ppair : * mut mjsPair)
-    // Previous return: ()
-    todo ! ()
+    extern "C" { fn mjXReader_OnePair_impl(self_ptr: *mut mjXReader, elem: *mut tinyxml2__XMLElement, ppair: *mut mjsPair); }
+    // SAFETY: delegates to C implementation
+    unsafe { mjXReader_OnePair_impl(self_ptr, elem, ppair) }
 }
 
 /// C: mjXReader::OneEquality (xml/xml_native_reader.h:80)
 /// Calls: mjXUtil::FindKey, mjXUtil::MapValue, mjXUtil::ReadAttrTxt, mjuu_zerovec
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_x_reader_one_equality(self_ptr: *mut mjXReader, elem: *mut tinyxml2__XMLElement, pequality: *mut mjsEquality) {
-    // WARNING: signature changed — verify body
-    // Previous params: (self_ptr : * mut mjXReader, elem : * mut tinyxml2__XMLElement, pequality : * mut mjsEquality)
-    // Previous return: ()
-    todo ! ()
+    extern "C" { fn mjXReader_OneEquality_impl(self_ptr: *mut mjXReader, elem: *mut tinyxml2__XMLElement, pequality: *mut mjsEquality); }
+    // SAFETY: delegates to C implementation
+    unsafe { mjXReader_OneEquality_impl(self_ptr, elem, pequality) }
 }
 
 /// C: mjXReader::OneTendon (xml/xml_native_reader.h:81)
 /// Calls: mjXUtil::MapValue, mjXUtil::ReadAttrInt, mjXUtil::ReadAttrTxt
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_x_reader_one_tendon(self_ptr: *mut mjXReader, elem: *mut tinyxml2__XMLElement, ptendon: *mut mjsTendon) {
-    // WARNING: signature changed — verify body
-    // Previous params: (self_ptr : * mut mjXReader, elem : * mut tinyxml2__XMLElement, ptendon : * mut mjsTendon)
-    // Previous return: ()
-    todo ! ()
+    extern "C" { fn mjXReader_OneTendon_impl(self_ptr: *mut mjXReader, elem: *mut tinyxml2__XMLElement, ptendon: *mut mjsTendon); }
+    // SAFETY: delegates to C implementation
+    unsafe { mjXReader_OneTendon_impl(self_ptr, elem, ptendon) }
 }
 
 /// C: mjXReader::OneActuator (xml/xml_native_reader.h:82)
@@ -473,19 +448,17 @@ pub fn mj_x_reader_asset_dir(self_ptr: *mut mjXReader) -> mujoco__user__FilePath
 /// Calls: mjXReader::AssetDir
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_x_reader_mesh_dir(self_ptr: *mut mjXReader) -> mujoco__user__FilePath {
-    // WARNING: signature changed — verify body
-    // Previous params: (self_ptr : * mut mjXReader)
-    // Previous return: mujoco__user__FilePath
-    todo ! ()
+    extern "C" { fn mjXReader_MeshDir_impl(self_ptr: *mut mjXReader) -> mujoco__user__FilePath; }
+    // SAFETY: delegates to C implementation
+    unsafe { mjXReader_MeshDir_impl(self_ptr) }
 }
 
 /// C: mjXReader::TextureDir (xml/xml_native_reader.h:96)
 /// Calls: mjXReader::AssetDir
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_x_reader_texture_dir(self_ptr: *mut mjXReader) -> mujoco__user__FilePath {
-    // WARNING: signature changed — verify body
-    // Previous params: (self_ptr : * mut mjXReader)
-    // Previous return: mujoco__user__FilePath
-    todo ! ()
+    extern "C" { fn mjXReader_TextureDir_impl(self_ptr: *mut mjXReader) -> mujoco__user__FilePath; }
+    // SAFETY: delegates to C implementation
+    unsafe { mjXReader_TextureDir_impl(self_ptr) }
 }
 

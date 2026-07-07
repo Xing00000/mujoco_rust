@@ -76,10 +76,9 @@ pub fn island_color(rgba: [f32; 4], h: i32, awake: i32) {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mixcolor(rgba: [f32; 4], r#ref: [f32; 4], flg1: i32, flg2: i32) {
-    // WARNING: signature changed — verify body
-    // Previous params: (rgba : [f32 ; 4], r#ref : [f32 ; 4], flg1 : i32, flg2 : i32)
-    // Previous return: ()
-    todo ! ()
+    extern "C" { fn mixcolor_impl(rgba: [f32; 4], r#ref: [f32; 4], flg1: i32, flg2: i32); }
+    // SAFETY: delegates to C implementation
+    unsafe { mixcolor_impl(rgba, r#ref, flg1, flg2) }
 }
 
 /// C: bodycategory (engine/engine_vis_visualize.c:157)
@@ -145,10 +144,9 @@ pub fn release_geom(geom: *mut *mut mjvGeom, scn: *mut mjvScene) {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn add_triangle(scn: *mut mjvScene, v0: *const f64, v1: *const f64, v2: *const f64, rgba: [f32; 4], objid: i32, category: i32, objtype: i32) {
-    // WARNING: signature changed — verify body
-    // Previous params: (scn : * mut mjvScene, v0 : * const f64, v1 : * const f64, v2 : * const f64, rgba : [f32 ; 4], objid : i32, category : i32, objtype : i32)
-    // Previous return: ()
-    todo ! ()
+    extern "C" { fn addTriangle_impl(scn: *mut mjvScene, v0: *const f64, v1: *const f64, v2: *const f64, rgba: [f32; 4], objid: i32, category: i32, objtype: i32); }
+    // SAFETY: delegates to C implementation
+    unsafe { addTriangle_impl(scn, v0, v1, v2, rgba, objid, category, objtype) }
 }
 
 /// C: setMaterial (engine/engine_vis_visualize.c:225)

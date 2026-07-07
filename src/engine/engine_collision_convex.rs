@@ -94,10 +94,9 @@ pub fn local_to_global(res: *mut f64, mat: *const f64, dir: *const f64, pos: *co
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjc_sphere_support(res: *mut f64, obj: *mut mjCCDObj, dir: *const f64) {
-    // WARNING: signature changed — verify body
-    // Previous params: (res : * mut f64, obj : * mut mjCCDObj, dir : * const f64)
-    // Previous return: ()
-    todo ! ()
+    extern "C" { fn mjc_sphereSupport_impl(res: *mut f64, obj: *mut mjCCDObj, dir: *const f64); }
+    // SAFETY: delegates to C implementation
+    unsafe { mjc_sphereSupport_impl(res, obj, dir) }
 }
 
 /// C: mjc_capsuleSupport (engine/engine_collision_convex.c:231)
@@ -109,10 +108,9 @@ pub fn mjc_sphere_support(res: *mut f64, obj: *mut mjCCDObj, dir: *const f64) {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjc_capsule_support(res: *mut f64, obj: *mut mjCCDObj, dir: *const f64) {
-    // WARNING: signature changed — verify body
-    // Previous params: (res : * mut f64, obj : * mut mjCCDObj, dir : * const f64)
-    // Previous return: ()
-    todo ! ()
+    extern "C" { fn mjc_capsuleSupport_impl(res: *mut f64, obj: *mut mjCCDObj, dir: *const f64); }
+    // SAFETY: delegates to C implementation
+    unsafe { mjc_capsuleSupport_impl(res, obj, dir) }
 }
 
 /// C: mjc_ellipsoidSupport (engine/engine_collision_convex.c:256)
@@ -124,10 +122,9 @@ pub fn mjc_capsule_support(res: *mut f64, obj: *mut mjCCDObj, dir: *const f64) {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjc_ellipsoid_support(res: *mut f64, obj: *mut mjCCDObj, dir: *const f64) {
-    // WARNING: signature changed — verify body
-    // Previous params: (res : * mut f64, obj : * mut mjCCDObj, dir : * const f64)
-    // Previous return: ()
-    todo ! ()
+    extern "C" { fn mjc_ellipsoidSupport_impl(res: *mut f64, obj: *mut mjCCDObj, dir: *const f64); }
+    // SAFETY: delegates to C implementation
+    unsafe { mjc_ellipsoidSupport_impl(res, obj, dir) }
 }
 
 /// C: mjc_cylinderSupport (engine/engine_collision_convex.c:293)
@@ -139,10 +136,9 @@ pub fn mjc_ellipsoid_support(res: *mut f64, obj: *mut mjCCDObj, dir: *const f64)
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjc_cylinder_support(res: *mut f64, obj: *mut mjCCDObj, dir: *const f64) {
-    // WARNING: signature changed — verify body
-    // Previous params: (res : * mut f64, obj : * mut mjCCDObj, dir : * const f64)
-    // Previous return: ()
-    todo ! ()
+    extern "C" { fn mjc_cylinderSupport_impl(res: *mut f64, obj: *mut mjCCDObj, dir: *const f64); }
+    // SAFETY: delegates to C implementation
+    unsafe { mjc_cylinderSupport_impl(res, obj, dir) }
 }
 
 /// C: mjc_boxSupport (engine/engine_collision_convex.c:317)
@@ -154,10 +150,9 @@ pub fn mjc_cylinder_support(res: *mut f64, obj: *mut mjCCDObj, dir: *const f64) 
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjc_box_support(res: *mut f64, obj: *mut mjCCDObj, dir: *const f64) {
-    // WARNING: signature changed — verify body
-    // Previous params: (res : * mut f64, obj : * mut mjCCDObj, dir : * const f64)
-    // Previous return: ()
-    todo ! ()
+    extern "C" { fn mjc_boxSupport_impl(res: *mut f64, obj: *mut mjCCDObj, dir: *const f64); }
+    // SAFETY: delegates to C implementation
+    unsafe { mjc_boxSupport_impl(res, obj, dir) }
 }
 
 /// C: dot3f (engine/engine_collision_convex.c:343)
@@ -183,10 +178,9 @@ pub fn dot3f(a: *const f64, b: [f32; 3]) -> f64 {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjc_mesh_support(res: *mut f64, obj: *mut mjCCDObj, dir: *const f64) {
-    // WARNING: signature changed — verify body
-    // Previous params: (res : * mut f64, obj : * mut mjCCDObj, dir : * const f64)
-    // Previous return: ()
-    todo ! ()
+    extern "C" { fn mjc_meshSupport_impl(res: *mut f64, obj: *mut mjCCDObj, dir: *const f64); }
+    // SAFETY: delegates to C implementation
+    unsafe { mjc_meshSupport_impl(res, obj, dir) }
 }
 
 /// C: mjc_hillclimbSupport (engine/engine_collision_convex.c:391)
@@ -198,10 +192,9 @@ pub fn mjc_mesh_support(res: *mut f64, obj: *mut mjCCDObj, dir: *const f64) {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjc_hillclimb_support(res: *mut f64, obj: *mut mjCCDObj, dir: *const f64) {
-    // WARNING: signature changed — verify body
-    // Previous params: (res : * mut f64, obj : * mut mjCCDObj, dir : * const f64)
-    // Previous return: ()
-    todo ! ()
+    extern "C" { fn mjc_hillclimbSupport_impl(res: *mut f64, obj: *mut mjCCDObj, dir: *const f64); }
+    // SAFETY: delegates to C implementation
+    unsafe { mjc_hillclimbSupport_impl(res, obj, dir) }
 }
 
 /// C: mjc_prism_support (engine/engine_collision_convex.c:436)
@@ -230,10 +223,9 @@ pub fn mjc_prism_support(res: *mut f64, obj: *mut mjCCDObj, dir: *const f64) {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjc_flex_support(res: *mut f64, obj: *mut mjCCDObj, dir: *const f64) {
-    // WARNING: signature changed — verify body
-    // Previous params: (res : * mut f64, obj : * mut mjCCDObj, dir : * const f64)
-    // Previous return: ()
-    todo ! ()
+    extern "C" { fn mjc_flexSupport_impl(res: *mut f64, obj: *mut mjCCDObj, dir: *const f64); }
+    // SAFETY: delegates to C implementation
+    unsafe { mjc_flexSupport_impl(res, obj, dir) }
 }
 
 /// C: mjc_setCCDObjFlex (engine/engine_collision_convex.c:790)
@@ -322,10 +314,9 @@ pub fn add_vert(obj: *mut mjCCDObj, x: f64, y: f64, z: f64) {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn add_prism_vert(obj: *mut mjCCDObj, r: i32, c: i32, i: i32, dx: f64, dy: f64, margin: f64) {
-    // WARNING: signature changed — verify body
-    // Previous params: (obj : * mut mjCCDObj, r : i32, c : i32, i : i32, dx : f64, dy : f64, margin : f64)
-    // Previous return: ()
-    todo ! ()
+    extern "C" { fn addPrismVert_impl(obj: *mut mjCCDObj, r: i32, c: i32, i: i32, dx: f64, dy: f64, margin: f64); }
+    // SAFETY: delegates to C implementation
+    unsafe { addPrismVert_impl(obj, r, c, i, dx, dy, margin) }
 }
 
 /// C: mjc_ellipsoidInside (engine/engine_collision_convex.c:1282)

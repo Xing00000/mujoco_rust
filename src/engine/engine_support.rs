@@ -397,10 +397,9 @@ pub fn mj_mul_m2(m: *const mjModel, d: *const mjData, res: *mut f64, vec: *const
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_add_m(m: *const mjModel, d: *mut mjData, dst: *mut f64, rownnz: *mut i32, rowadr: *mut i32, colind: *mut i32) {
-    // WARNING: signature changed — verify body
-    // Previous params: (m : * const mjModel, d : * mut mjData, dst : * mut f64, rownnz : * mut i32, rowadr : * mut i32, colind : * mut i32)
-    // Previous return: ()
-    todo ! ()
+    extern "C" { fn mj_addM_impl(m: *const mjModel, d: *mut mjData, dst: *mut f64, rownnz: *mut i32, rowadr: *mut i32, colind: *mut i32); }
+    // SAFETY: delegates to C implementation
+    unsafe { mj_addM_impl(m, d, dst, rownnz, rowadr, colind) }
 }
 
 /// C: mj_applyFT (engine/engine_support.h:79)

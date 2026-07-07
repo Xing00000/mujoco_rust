@@ -32,29 +32,26 @@ pub fn is_valid_element_or_node_header22(line: *const std__string) -> bool {
 /// C: mat2lin (user/user_flexcomp.cc:1103)
 #[allow(unused_variables, non_snake_case)]
 pub fn mat2lin(ix: i32, iy: i32, iz: i32, count: [i32; 3]) -> i32 {
-    // WARNING: signature changed — verify body
-    // Previous params: (ix : i32, iy : i32, iz : i32, count : [i32 ; 3])
-    // Previous return: i32
-    todo ! ()
+    extern "C" { fn mat2lin_impl(ix: i32, iy: i32, iz: i32, count: [i32; 3]) -> i32; }
+    // SAFETY: delegates to C implementation
+    unsafe { mat2lin_impl(ix, iy, iz, count) }
 }
 
 /// C: VecToArray (user/user_flexcomp.cc:1308)
 /// Calls: mju_malloc
 #[allow(unused_variables, non_snake_case)]
 pub fn vec_to_array(vector: *mut i32, clear: bool) -> *mut T {
-    // WARNING: signature changed — verify body
-    // Previous params: (vector : * mut i32, clear : bool)
-    // Previous return: * mut T
-    todo ! ()
+    extern "C" { fn VecToArray_impl(vector: *mut i32, clear: bool) -> *mut T; }
+    // SAFETY: delegates to C implementation
+    unsafe { VecToArray_impl(vector, clear) }
 }
 
 /// C: findstring (user/user_flexcomp.cc:1426)
 #[allow(unused_variables, non_snake_case)]
 pub fn findstring(buffer: *const i8, buffer_sz: i32, str: *const i8) -> i32 {
-    // WARNING: signature changed — verify body
-    // Previous params: (buffer : * const i8, buffer_sz : i32, str : * const i8)
-    // Previous return: i32
-    todo ! ()
+    extern "C" { fn findstring_impl(buffer: *const i8, buffer_sz: i32, str: *const i8) -> i32; }
+    // SAFETY: delegates to C implementation
+    unsafe { findstring_impl(buffer, buffer_sz, str) }
 }
 
 /// C: mjCFlexcomp::Make (user/user_flexcomp.h:57)
@@ -71,10 +68,9 @@ pub fn mj_c_flexcomp_make(self_ptr: *mut mjCFlexcomp, body: *mut mjsBody, error:
 /// Calls: comperr
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_flexcomp_make_grid(self_ptr: *mut mjCFlexcomp, error: *mut i8, error_sz: i32) -> bool {
-    // WARNING: signature changed — verify body
-    // Previous params: (self_ptr : * mut mjCFlexcomp, error : * mut i8, error_sz : i32)
-    // Previous return: bool
-    todo ! ()
+    extern "C" { fn mjCFlexcomp_MakeGrid_impl(self_ptr: *mut mjCFlexcomp, error: *mut i8, error_sz: i32) -> bool; }
+    // SAFETY: delegates to C implementation
+    unsafe { mjCFlexcomp_MakeGrid_impl(self_ptr, error, error_sz) }
 }
 
 /// C: mjCFlexcomp::MakeBox (user/user_flexcomp.h:60)
@@ -130,37 +126,33 @@ pub fn mj_c_flexcomp_load_gmsh(self_ptr: *mut mjCFlexcomp, model: *mut mjCModel,
 /// C: mjCFlexcomp::LoadGMSH41 (user/user_flexcomp.h:67)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_flexcomp_load_gmsh41(self_ptr: *mut mjCFlexcomp, buffer: *mut i8, binary: i32, nodeend: i32, nodebegin: i32, elemend: i32, elembegin: i32) {
-    // WARNING: signature changed — verify body
-    // Previous params: (self_ptr : * mut mjCFlexcomp, buffer : * mut i8, binary : i32, nodeend : i32, nodebegin : i32, elemend : i32, elembegin : i32)
-    // Previous return: ()
-    todo ! ()
+    extern "C" { fn mjCFlexcomp_LoadGMSH41_impl(self_ptr: *mut mjCFlexcomp, buffer: *mut i8, binary: i32, nodeend: i32, nodebegin: i32, elemend: i32, elembegin: i32); }
+    // SAFETY: delegates to C implementation
+    unsafe { mjCFlexcomp_LoadGMSH41_impl(self_ptr, buffer, binary, nodeend, nodebegin, elemend, elembegin) }
 }
 
 /// C: mjCFlexcomp::LoadGMSH22 (user/user_flexcomp.h:69)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_flexcomp_load_gmsh22(self_ptr: *mut mjCFlexcomp, buffer: *mut i8, binary: i32, nodeend: i32, nodebegin: i32, elemend: i32, elembegin: i32) {
-    // WARNING: signature changed — verify body
-    // Previous params: (self_ptr : * mut mjCFlexcomp, buffer : * mut i8, binary : i32, nodeend : i32, nodebegin : i32, elemend : i32, elembegin : i32)
-    // Previous return: ()
-    todo ! ()
+    extern "C" { fn mjCFlexcomp_LoadGMSH22_impl(self_ptr: *mut mjCFlexcomp, buffer: *mut i8, binary: i32, nodeend: i32, nodebegin: i32, elemend: i32, elembegin: i32); }
+    // SAFETY: delegates to C implementation
+    unsafe { mjCFlexcomp_LoadGMSH22_impl(self_ptr, buffer, binary, nodeend, nodebegin, elemend, elembegin) }
 }
 
 /// C: mjCFlexcomp::GridID (user/user_flexcomp.h:73)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_flexcomp_grid_id(self_ptr: *mut mjCFlexcomp, ix: i32, iy: i32) -> i32 {
-    // WARNING: signature changed — verify body
-    // Previous params: (self_ptr : * mut mjCFlexcomp, ix : i32, iy : i32)
-    // Previous return: i32
-    todo ! ()
+    extern "C" { fn mjCFlexcomp_GridID_impl(self_ptr: *mut mjCFlexcomp, ix: i32, iy: i32) -> i32; }
+    // SAFETY: delegates to C implementation
+    unsafe { mjCFlexcomp_GridID_impl(self_ptr, ix, iy) }
 }
 
 /// C: mjCFlexcomp::BoxID (user/user_flexcomp.h:75)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_flexcomp_box_id(self_ptr: *mut mjCFlexcomp, ix: i32, iy: i32, iz: i32) -> i32 {
-    // WARNING: signature changed — verify body
-    // Previous params: (self_ptr : * mut mjCFlexcomp, ix : i32, iy : i32, iz : i32)
-    // Previous return: i32
-    todo ! ()
+    extern "C" { fn mjCFlexcomp_BoxID_impl(self_ptr: *mut mjCFlexcomp, ix: i32, iy: i32, iz: i32) -> i32; }
+    // SAFETY: delegates to C implementation
+    unsafe { mjCFlexcomp_BoxID_impl(self_ptr, ix, iy, iz) }
 }
 
 /// C: mjCFlexcomp::BoxProject (user/user_flexcomp.h:76)
@@ -172,10 +164,9 @@ pub fn mj_c_flexcomp_box_id(self_ptr: *mut mjCFlexcomp, ix: i32, iy: i32, iz: i3
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_flexcomp_box_project(self_ptr: *mut mjCFlexcomp, pos: *mut f64, ix: i32, iy: i32, iz: i32) {
-    // WARNING: signature changed — verify body
-    // Previous params: (self_ptr : * mut mjCFlexcomp, pos : * mut f64, ix : i32, iy : i32, iz : i32)
-    // Previous return: ()
-    todo ! ()
+    extern "C" { fn mjCFlexcomp_BoxProject_impl(self_ptr: *mut mjCFlexcomp, pos: *mut f64, ix: i32, iy: i32, iz: i32); }
+    // SAFETY: delegates to C implementation
+    unsafe { mjCFlexcomp_BoxProject_impl(self_ptr, pos, ix, iy, iz) }
 }
 
 /// C: mjCFlexcomp::MarkEmptyCells (user/user_flexcomp.h:123)
@@ -186,9 +177,8 @@ pub fn mj_c_flexcomp_box_project(self_ptr: *mut mjCFlexcomp, pos: *mut f64, ix: 
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_flexcomp_mark_empty_cells(self_ptr: *mut mjCFlexcomp, flex: *mut mjCFlex, points: *const f64, npnt: i32, minmax: [f64; 6], nx: i32, ny: i32, nz: i32) {
-    // WARNING: signature changed — verify body
-    // Previous params: (self_ptr : * mut mjCFlexcomp, flex : * mut mjCFlex, points : * const f64, npnt : i32, minmax : [f64 ; 6], nx : i32, ny : i32, nz : i32)
-    // Previous return: ()
-    todo ! ()
+    extern "C" { fn mjCFlexcomp_MarkEmptyCells_impl(self_ptr: *mut mjCFlexcomp, flex: *mut mjCFlex, points: *const f64, npnt: i32, minmax: [f64; 6], nx: i32, ny: i32, nz: i32); }
+    // SAFETY: delegates to C implementation
+    unsafe { mjCFlexcomp_MarkEmptyCells_impl(self_ptr, flex, points, npnt, minmax, nx, ny, nz) }
 }
 

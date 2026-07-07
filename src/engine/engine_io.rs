@@ -42,10 +42,9 @@ pub fn bufread(dest: *mut (), num: i32, szbuf: usize, buf: *const (), ptrbuf: *m
 /// C: SKIP (engine/engine_io.c:132)
 #[allow(unused_variables, non_snake_case)]
 pub fn skip(offset: isize) -> u32 {
-    // WARNING: signature changed — verify body
-    // Previous params: (offset : isize)
-    // Previous return: u32
-    todo ! ()
+    extern "C" { fn SKIP_impl(offset: isize) -> u32; }
+    // SAFETY: delegates to C implementation
+    unsafe { SKIP_impl(offset) }
 }
 
 /// C: mj_setPtrModel (engine/engine_io.c:142)
@@ -64,10 +63,9 @@ pub fn mj_set_ptr_model(m: *mut mjModel) {
 /// Calls: SKIP
 #[allow(unused_variables, non_snake_case)]
 pub fn safe_add_to_buffer_size(offset: *mut isize, nbuffer: *mut usize, type_size: usize, nr: usize, nc: usize) -> usize {
-    // WARNING: signature changed — verify body
-    // Previous params: (offset : * mut isize, nbuffer : * mut usize, type_size : usize, nr : usize, nc : usize)
-    // Previous return: usize
-    todo ! ()
+    extern "C" { fn safeAddToBufferSize_impl(offset: *mut isize, nbuffer: *mut usize, type_size: usize, nr: usize, nc: usize) -> usize; }
+    // SAFETY: delegates to C implementation
+    unsafe { safeAddToBufferSize_impl(offset, nbuffer, type_size, nr, nc) }
 }
 
 /// C: freeModelBuffers (engine/engine_io.c:221)
@@ -93,10 +91,9 @@ pub fn check_db_sparse(m: *const mjModel) {
 /// Calls: mju_copyInt, mju_message
 #[allow(unused_variables, non_snake_case)]
 pub fn copy_m2sparse(nv: i32, dof_Madr: *const i32, dof_simplenum: *const i32, dof_parentid: *const i32, rownnz: *const i32, rowadr: *const i32, src: *const i32, dst: *mut i32, reduced: i32, upper: i32, remaining: *mut i32) {
-    // WARNING: signature changed — verify body
-    // Previous params: (nv : i32, dof_Madr : * const i32, dof_simplenum : * const i32, dof_parentid : * const i32, rownnz : * const i32, rowadr : * const i32, src : * const i32, dst : * mut i32, reduced : i32, upper : i32, remaining : * mut i32)
-    // Previous return: ()
-    todo ! ()
+    extern "C" { fn copyM2Sparse_impl(nv: i32, dof_Madr: *const i32, dof_simplenum: *const i32, dof_parentid: *const i32, rownnz: *const i32, rowadr: *const i32, src: *const i32, dst: *mut i32, reduced: i32, upper: i32, remaining: *mut i32); }
+    // SAFETY: delegates to C implementation
+    unsafe { copyM2Sparse_impl(nv, dof_Madr, dof_simplenum, dof_parentid, rownnz, rowadr, src, dst, reduced, upper, remaining) }
 }
 
 /// C: mj_setPtrData (engine/engine_io.c:989)
@@ -125,10 +122,9 @@ pub fn free_data_buffers(d: *mut mjData) {
 /// Calls: mj_initPlugin, mj_makeRawData, mj_setPtrData, mjp_getPluginAtSlot, mju_free, mju_malloc, mju_message
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_copy_data_visual(dest: *mut mjData, m: *const mjModel, src: *const mjData, flg_all: i32) -> *mut mjData {
-    // WARNING: signature changed — verify body
-    // Previous params: (dest : * mut mjData, m : * const mjModel, src : * const mjData, flg_all : i32)
-    // Previous return: * mut mjData
-    todo ! ()
+    extern "C" { fn mj_copyDataVisual_impl(dest: *mut mjData, m: *const mjModel, src: *const mjData, flg_all: i32) -> *mut mjData; }
+    // SAFETY: delegates to C implementation
+    unsafe { mj_copyDataVisual_impl(dest, m, src, flg_all) }
 }
 
 /// C: _resetData (engine/engine_io.c:1286)
@@ -245,20 +241,18 @@ pub fn mj_validate_references(m: *const mjModel) -> *const i8 {
 /// Calls: mju_copyInt, mju_message, mju_zeroInt
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_make_dof_dof_sparse(nv: i32, nC: i32, nD: i32, nM: i32, dof_parentid: *const i32, dof_simplenum: *const i32, rownnz: *mut i32, rowadr: *mut i32, diag: *mut i32, colind: *mut i32, reduced: i32, upper: i32, remaining: *mut i32) {
-    // WARNING: signature changed — verify body
-    // Previous params: (nv : i32, nC : i32, nD : i32, nM : i32, dof_parentid : * const i32, dof_simplenum : * const i32, rownnz : * mut i32, rowadr : * mut i32, diag : * mut i32, colind : * mut i32, reduced : i32, upper : i32, remaining : * mut i32)
-    // Previous return: ()
-    todo ! ()
+    extern "C" { fn mj_makeDofDofSparse_impl(nv: i32, nC: i32, nD: i32, nM: i32, dof_parentid: *const i32, dof_simplenum: *const i32, rownnz: *mut i32, rowadr: *mut i32, diag: *mut i32, colind: *mut i32, reduced: i32, upper: i32, remaining: *mut i32); }
+    // SAFETY: delegates to C implementation
+    unsafe { mj_makeDofDofSparse_impl(nv, nC, nD, nM, dof_parentid, dof_simplenum, rownnz, rowadr, diag, colind, reduced, upper, remaining) }
 }
 
 /// C: mj_makeBSparse (engine/engine_io.h:96)
 /// Calls: mju_insertionSortInt, mju_message, mju_zeroInt
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_make_b_sparse(nv: i32, nbody: i32, nB: i32, body_dofnum: *const i32, body_parentid: *const i32, body_dofadr: *const i32, B_rownnz: *mut i32, B_rowadr: *mut i32, B_colind: *mut i32, count: *mut i32) {
-    // WARNING: signature changed — verify body
-    // Previous params: (nv : i32, nbody : i32, nB : i32, body_dofnum : * const i32, body_parentid : * const i32, body_dofadr : * const i32, B_rownnz : * mut i32, B_rowadr : * mut i32, B_colind : * mut i32, count : * mut i32)
-    // Previous return: ()
-    todo ! ()
+    extern "C" { fn mj_makeBSparse_impl(nv: i32, nbody: i32, nB: i32, body_dofnum: *const i32, body_parentid: *const i32, body_dofadr: *const i32, B_rownnz: *mut i32, B_rowadr: *mut i32, B_colind: *mut i32, count: *mut i32); }
+    // SAFETY: delegates to C implementation
+    unsafe { mj_makeBSparse_impl(nv, nbody, nB, body_dofnum, body_parentid, body_dofadr, B_rownnz, B_rowadr, B_colind, count) }
 }
 
 /// C: mj_makeDofDofMaps (engine/engine_io.h:102)

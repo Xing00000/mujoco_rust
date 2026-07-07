@@ -13,10 +13,9 @@ use crate::types::*;
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mul_vec_mat_vec_sym(vec: *const f64, mat: *const f64, n: i32) -> f64 {
-    // WARNING: signature changed — verify body
-    // Previous params: (vec : * const f64, mat : * const f64, n : i32)
-    // Previous return: f64
-    todo ! ()
+    extern "C" { fn mulVecMatVecSym_impl(vec: *const f64, mat: *const f64, n: i32) -> f64; }
+    // SAFETY: delegates to C implementation
+    unsafe { mulVecMatVecSym_impl(vec, mat, n) }
 }
 
 /// C: mulSymVec (engine/engine_util_solve.c:1412)
@@ -28,10 +27,9 @@ pub fn mul_vec_mat_vec_sym(vec: *const f64, mat: *const f64, n: i32) -> f64 {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mul_sym_vec(res: *mut f64, mat: *const f64, vec: *const f64, n: i32) {
-    // WARNING: signature changed — verify body
-    // Previous params: (res : * mut f64, mat : * const f64, vec : * const f64, n : i32)
-    // Previous return: ()
-    todo ! ()
+    extern "C" { fn mulSymVec_impl(res: *mut f64, mat: *const f64, vec: *const f64, n: i32); }
+    // SAFETY: delegates to C implementation
+    unsafe { mulSymVec_impl(res, mat, vec, n) }
 }
 
 /// C: mju_cholFactor (engine/engine_util_solve.h:27)

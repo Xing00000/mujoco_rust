@@ -30,10 +30,9 @@ pub fn mj_c_composite_set_default(self_ptr: *mut mjCComposite) {
 /// Calls: comperr
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_composite_add_default_joint(self_ptr: *mut mjCComposite, error: *mut i8, error_sz: i32) -> bool {
-    // WARNING: signature changed — verify body
-    // Previous params: (self_ptr : * mut mjCComposite, error : * mut i8, error_sz : i32)
-    // Previous return: bool
-    todo ! ()
+    extern "C" { fn mjCComposite_AddDefaultJoint_impl(self_ptr: *mut mjCComposite, error: *mut i8, error_sz: i32) -> bool; }
+    // SAFETY: delegates to C implementation
+    unsafe { mjCComposite_AddDefaultJoint_impl(self_ptr, error, error_sz) }
 }
 
 /// C: mjCComposite::Make (user/user_composite.h:64)
@@ -89,19 +88,17 @@ pub fn mj_c_composite_make_skin2subgrid(self_ptr: *mut mjCComposite, model: *mut
 /// C: mjCComposite::MakeCableBones (user/user_composite.h:69)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_composite_make_cable_bones(self_ptr: *mut mjCComposite, model: *mut mjCModel, skin: *mut mjsSkin) {
-    // WARNING: signature changed — verify body
-    // Previous params: (self_ptr : * mut mjCComposite, model : * mut mjCModel, skin : * mut mjsSkin)
-    // Previous return: ()
-    todo ! ()
+    extern "C" { fn mjCComposite_MakeCableBones_impl(self_ptr: *mut mjCComposite, model: *mut mjCModel, skin: *mut mjsSkin); }
+    // SAFETY: delegates to C implementation
+    unsafe { mjCComposite_MakeCableBones_impl(self_ptr, model, skin) }
 }
 
 /// C: mjCComposite::MakeCableBonesSubgrid (user/user_composite.h:70)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_composite_make_cable_bones_subgrid(self_ptr: *mut mjCComposite, model: *mut mjCModel, skin: *mut mjsSkin) {
-    // WARNING: signature changed — verify body
-    // Previous params: (self_ptr : * mut mjCComposite, model : * mut mjCModel, skin : * mut mjsSkin)
-    // Previous return: ()
-    todo ! ()
+    extern "C" { fn mjCComposite_MakeCableBonesSubgrid_impl(self_ptr: *mut mjCComposite, model: *mut mjCModel, skin: *mut mjsSkin); }
+    // SAFETY: delegates to C implementation
+    unsafe { mjCComposite_MakeCableBonesSubgrid_impl(self_ptr, model, skin) }
 }
 
 /// C: mjCComposite::AddCableBody (user/user_composite.h:112)
@@ -122,9 +119,8 @@ pub fn mj_c_composite_add_cable_body(self_ptr: *mut mjCComposite, model: *mut mj
 /// C: mjCComposite::CopyIntoSkin (user/user_composite.h:115)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_composite_copy_into_skin(self_ptr: *mut mjCComposite, skin: *mut mjsSkin) {
-    // WARNING: signature changed — verify body
-    // Previous params: (self_ptr : * mut mjCComposite, skin : * mut mjsSkin)
-    // Previous return: ()
-    todo ! ()
+    extern "C" { fn mjCComposite_CopyIntoSkin_impl(self_ptr: *mut mjCComposite, skin: *mut mjsSkin); }
+    // SAFETY: delegates to C implementation
+    unsafe { mjCComposite_CopyIntoSkin_impl(self_ptr, skin) }
 }
 

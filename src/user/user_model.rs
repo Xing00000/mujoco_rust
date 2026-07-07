@@ -61,28 +61,25 @@ pub fn get_body_id_from_wrap(wrap: *const mjCWrap) -> i32 {
 /// C: mjCModel::CopyList (user/user_model.cc:261)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_model_copy_list(self_ptr: *mut mjCModel, dest: *mut i32, source: *const i32) {
-    // WARNING: signature changed — verify body
-    // Previous params: (self_ptr : * mut mjCModel, dest : * mut i32, source : * const i32)
-    // Previous return: ()
-    todo ! ()
+    extern "C" { fn mjCModel_CopyList_impl(self_ptr: *mut mjCModel, dest: *mut i32, source: *const i32); }
+    // SAFETY: delegates to C implementation
+    unsafe { mjCModel_CopyList_impl(self_ptr, dest, source) }
 }
 
 /// C: resetlist (user/user_model.cc:304)
 #[allow(unused_variables, non_snake_case)]
 pub fn resetlist(list: *mut i32) {
-    // WARNING: signature changed — verify body
-    // Previous params: (list : * mut i32)
-    // Previous return: ()
-    todo ! ()
+    extern "C" { fn resetlist_impl(list: *mut i32); }
+    // SAFETY: delegates to C implementation
+    unsafe { resetlist_impl(list) }
 }
 
 /// C: mjCModel::CopyPlugin (user/user_model.cc:396)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_model_copy_plugin(self_ptr: *mut mjCModel, source: *const i32, list: *const i32) {
-    // WARNING: signature changed — verify body
-    // Previous params: (self_ptr : * mut mjCModel, source : * const i32, list : * const i32)
-    // Previous return: ()
-    todo ! ()
+    extern "C" { fn mjCModel_CopyPlugin_impl(self_ptr: *mut mjCModel, source: *const i32, list: *const i32); }
+    // SAFETY: delegates to C implementation
+    unsafe { mjCModel_CopyPlugin_impl(self_ptr, source, list) }
 }
 
 /// C: IsPluginActive (user/user_model.cc:440)
@@ -97,57 +94,51 @@ pub fn is_plugin_active(plugin: *const mjpPlugin, active_plugins: *const i32) ->
 /// C: mjCModel::RemoveFromList (user/user_model.cc:508)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_model_remove_from_list(self_ptr: *mut mjCModel, list: *mut i32, other: *const mjCModel) {
-    // WARNING: signature changed — verify body
-    // Previous params: (self_ptr : * mut mjCModel, list : * mut i32, other : * const mjCModel)
-    // Previous return: ()
-    todo ! ()
+    extern "C" { fn mjCModel_RemoveFromList_impl(self_ptr: *mut mjCModel, list: *mut i32, other: *const mjCModel); }
+    // SAFETY: delegates to C implementation
+    unsafe { mjCModel_RemoveFromList_impl(self_ptr, list, other) }
 }
 
 /// C: mjCModel::DeleteAll (user/user_model.cc:545)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_model_delete_all(self_ptr: *mut mjCModel, elements: *mut i32) {
-    // WARNING: signature changed — verify body
-    // Previous params: (self_ptr : * mut mjCModel, elements : * mut i32)
-    // Previous return: ()
-    todo ! ()
+    extern "C" { fn mjCModel_DeleteAll_impl(self_ptr: *mut mjCModel, elements: *mut i32); }
+    // SAFETY: delegates to C implementation
+    unsafe { mjCModel_DeleteAll_impl(self_ptr, elements) }
 }
 
 /// C: mjCModel::MarkPluginInstance (user/user_model.cc:555)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_model_mark_plugin_instance(self_ptr: *mut mjCModel, instances: *mut i32, list: *const i32) {
-    // WARNING: signature changed — verify body
-    // Previous params: (self_ptr : * mut mjCModel, instances : * mut i32, list : * const i32)
-    // Previous return: ()
-    todo ! ()
+    extern "C" { fn mjCModel_MarkPluginInstance_impl(self_ptr: *mut mjCModel, instances: *mut i32, list: *const i32); }
+    // SAFETY: delegates to C implementation
+    unsafe { mjCModel_MarkPluginInstance_impl(self_ptr, instances, list) }
 }
 
 /// C: deletefromlist (user/user_model.cc:715)
 #[allow(unused_variables, non_snake_case)]
 pub fn deletefromlist(list: *mut i32, element: *mut mjsElement) {
-    // WARNING: signature changed — verify body
-    // Previous params: (list : * mut i32, element : * mut mjsElement)
-    // Previous return: ()
-    todo ! ()
+    extern "C" { fn deletefromlist_impl(list: *mut i32, element: *mut mjsElement); }
+    // SAFETY: delegates to C implementation
+    unsafe { deletefromlist_impl(list, element) }
 }
 
 /// C: mjCModel::AddObject (user/user_model.cc:1252)
 /// Calls: mjCModel::Signature
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_model_add_object(self_ptr: *mut mjCModel, list: *mut i32, r#type: string) -> *mut T {
-    // WARNING: signature changed — verify body
-    // Previous params: (self_ptr : * mut mjCModel, list : * mut i32, r#type : string)
-    // Previous return: * mut T
-    todo ! ()
+    extern "C" { fn mjCModel_AddObject_impl(self_ptr: *mut mjCModel, list: *mut i32, r#type: string) -> *mut T; }
+    // SAFETY: delegates to C implementation
+    unsafe { mjCModel_AddObject_impl(self_ptr, list, r#type) }
 }
 
 /// C: mjCModel::AddObjectDefault (user/user_model.cc:1263)
 /// Calls: mjCModel::Signature
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_model_add_object_default(self_ptr: *mut mjCModel, list: *mut i32, r#type: string, def: *mut mjCDef) -> *mut T {
-    // WARNING: signature changed — verify body
-    // Previous params: (self_ptr : * mut mjCModel, list : * mut i32, r#type : string, def : * mut mjCDef)
-    // Previous return: * mut T
-    todo ! ()
+    extern "C" { fn mjCModel_AddObjectDefault_impl(self_ptr: *mut mjCModel, list: *mut i32, r#type: string, def: *mut mjCDef) -> *mut T; }
+    // SAFETY: delegates to C implementation
+    unsafe { mjCModel_AddObjectDefault_impl(self_ptr, list, r#type, def) }
 }
 
 /// C: GetNext (user/user_model.cc:1411)
@@ -162,28 +153,25 @@ pub fn get_next(list: *const i32, child: *const mjsElement) -> *mut mjsElement {
 /// C: findobject (user/user_model.cc:1596)
 #[allow(unused_variables, non_snake_case)]
 pub fn findobject(name: string_view, list: *const i32, ids: *const mjKeyMap) -> *mut T {
-    // WARNING: signature changed — verify body
-    // Previous params: (name : string_view, list : * const i32, ids : * const mjKeyMap)
-    // Previous return: * mut T
-    todo ! ()
+    extern "C" { fn findobject_impl(name: string_view, list: *const i32, ids: *const mjKeyMap) -> *mut T; }
+    // SAFETY: delegates to C implementation
+    unsafe { findobject_impl(name, list, ids) }
 }
 
 /// C: mjCModel::FindAsset (user/user_model.cc:1621)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_model_find_asset(self_ptr: *mut mjCModel, name: string_view, list: *const i32) -> *mut mjCBase {
-    // WARNING: signature changed — verify body
-    // Previous params: (self_ptr : * mut mjCModel, name : string_view, list : * const i32)
-    // Previous return: * mut mjCBase
-    todo ! ()
+    extern "C" { fn mjCModel_FindAsset_impl(self_ptr: *mut mjCModel, name: string_view, list: *const i32) -> *mut mjCBase; }
+    // SAFETY: delegates to C implementation
+    unsafe { mjCModel_FindAsset_impl(self_ptr, name, list) }
 }
 
 /// C: mjCModel::DeleteMaterial (user/user_model.cc:1778)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_model_delete_material(self_ptr: *mut mjCModel, list: *mut i32, name: string_view) {
-    // WARNING: signature changed — verify body
-    // Previous params: (self_ptr : * mut mjCModel, list : * mut i32, name : string_view)
-    // Previous return: ()
-    todo ! ()
+    extern "C" { fn mjCModel_DeleteMaterial_impl(self_ptr: *mut mjCModel, list: *mut i32, name: string_view); }
+    // SAFETY: delegates to C implementation
+    unsafe { mjCModel_DeleteMaterial_impl(self_ptr, list, name) }
 }
 
 /// C: DeleteAllTextures (user/user_model.cc:1790)
@@ -216,19 +204,17 @@ pub fn delete_elements(elements: *mut i32, discard: *const i32) {
 /// C: mjCModel::Delete (user/user_model.cc:1848)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_model_delete(self_ptr: *mut mjCModel, elements: *mut i32, discard: *const i32) {
-    // WARNING: signature changed — verify body
-    // Previous params: (self_ptr : * mut mjCModel, elements : * mut i32, discard : * const i32)
-    // Previous return: ()
-    todo ! ()
+    extern "C" { fn mjCModel_Delete_impl(self_ptr: *mut mjCModel, elements: *mut i32, discard: *const i32); }
+    // SAFETY: delegates to C implementation
+    unsafe { mjCModel_Delete_impl(self_ptr, elements, discard) }
 }
 
 /// C: getpathslength (user/user_model.cc:2128)
 #[allow(unused_variables, non_snake_case)]
 pub fn getpathslength(list: i32) -> usize {
-    // WARNING: signature changed — verify body
-    // Previous params: (list : i32)
-    // Previous return: usize
-    todo ! ()
+    extern "C" { fn getpathslength_impl(list: i32) -> usize; }
+    // SAFETY: delegates to C implementation
+    unsafe { getpathslength_impl(list) }
 }
 
 /// C: LRfunc (user/user_model.cc:2459)
@@ -244,37 +230,33 @@ pub fn l_rfunc(arg: *mut ()) -> *mut () {
 /// C: addtolist (user/user_model.cc:2577)
 #[allow(unused_variables, non_snake_case)]
 pub fn addtolist(input: *const std__string, adr: i32, output_adr_field: *mut i32, output_buffer: *mut i8) -> i32 {
-    // WARNING: signature changed — verify body
-    // Previous params: (input : * const std__string, adr : i32, output_adr_field : * mut i32, output_buffer : * mut i8)
-    // Previous return: i32
-    todo ! ()
+    extern "C" { fn addtolist_impl(input: *const std__string, adr: i32, output_adr_field: *mut i32, output_buffer: *mut i8) -> i32; }
+    // SAFETY: delegates to C implementation
+    unsafe { addtolist_impl(input, adr, output_adr_field, output_buffer) }
 }
 
 /// C: namelist (user/user_model.cc:2593)
 #[allow(unused_variables, non_snake_case)]
 pub fn namelist(list: *mut i32, adr: i32, name_adr: *mut i32, names: *mut i8, map: *mut i32) -> i32 {
-    // WARNING: signature changed — verify body
-    // Previous params: (list : * mut i32, adr : i32, name_adr : * mut i32, names : * mut i8, map : * mut i32)
-    // Previous return: i32
-    todo ! ()
+    extern "C" { fn namelist_impl(list: *mut i32, adr: i32, name_adr: *mut i32, names: *mut i8, map: *mut i32) -> i32; }
+    // SAFETY: delegates to C implementation
+    unsafe { namelist_impl(list, adr, name_adr, names, map) }
 }
 
 /// C: pathlist (user/user_model.cc:2702)
 #[allow(unused_variables, non_snake_case)]
 pub fn pathlist(list: *mut i32, adr: i32, path_adr: *mut i32, paths: *mut i8) -> i32 {
-    // WARNING: signature changed — verify body
-    // Previous params: (list : * mut i32, adr : i32, path_adr : * mut i32, paths : * mut i8)
-    // Previous return: i32
-    todo ! ()
+    extern "C" { fn pathlist_impl(list: *mut i32, adr: i32, path_adr: *mut i32, paths: *mut i8) -> i32; }
+    // SAFETY: delegates to C implementation
+    unsafe { pathlist_impl(list, adr, path_adr, paths) }
 }
 
 /// C: makelistid (user/user_model.cc:4311)
 #[allow(unused_variables, non_snake_case)]
 pub fn makelistid(dest: *mut i32, source: *mut i32) {
-    // WARNING: signature changed — verify body
-    // Previous params: (dest : * mut i32, source : * mut i32)
-    // Previous return: ()
-    todo ! ()
+    extern "C" { fn makelistid_impl(dest: *mut i32, source: *mut i32); }
+    // SAFETY: delegates to C implementation
+    unsafe { makelistid_impl(dest, source) }
 }
 
 /// C: changeframe (user/user_model.cc:4319)
@@ -286,28 +268,25 @@ pub fn makelistid(dest: *mut i32, source: *mut i32) {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn changeframe(childpos: [f64; 3], childquat: [f64; 4], bodypos: [f64; 3], bodyquat: [f64; 4]) {
-    // WARNING: signature changed — verify body
-    // Previous params: (childpos : [f64 ; 3], childquat : [f64 ; 4], bodypos : [f64 ; 3], bodyquat : [f64 ; 4])
-    // Previous return: ()
-    todo ! ()
+    extern "C" { fn changeframe_impl(childpos: [f64; 3], childquat: [f64; 4], bodypos: [f64; 3], bodyquat: [f64; 4]); }
+    // SAFETY: delegates to C implementation
+    unsafe { changeframe_impl(childpos, childquat, bodypos, bodyquat) }
 }
 
 /// C: mjCModel::ReassignChild (user/user_model.cc:4355)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_model_reassign_child(self_ptr: *mut mjCModel, dest: *mut i32, list: *mut i32, parent: *mut mjCBody, body: *mut mjCBody) {
-    // WARNING: signature changed — verify body
-    // Previous params: (self_ptr : * mut mjCModel, dest : * mut i32, list : * mut i32, parent : * mut mjCBody, body : * mut mjCBody)
-    // Previous return: ()
-    todo ! ()
+    extern "C" { fn mjCModel_ReassignChild_impl(self_ptr: *mut mjCModel, dest: *mut i32, list: *mut i32, parent: *mut mjCBody, body: *mut mjCBody); }
+    // SAFETY: delegates to C implementation
+    unsafe { mjCModel_ReassignChild_impl(self_ptr, dest, list, parent, body) }
 }
 
 /// C: mjCModel::ResolveReferences (user/user_model.cc:4371)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_model_resolve_references(self_ptr: *mut mjCModel, list: *mut i32, body: *mut mjCBody) {
-    // WARNING: signature changed — verify body
-    // Previous params: (self_ptr : * mut mjCModel, list : * mut i32, body : * mut mjCBody)
-    // Previous return: ()
-    todo ! ()
+    extern "C" { fn mjCModel_ResolveReferences_impl(self_ptr: *mut mjCModel, list: *mut i32, body: *mut mjCBody); }
+    // SAFETY: delegates to C implementation
+    unsafe { mjCModel_ResolveReferences_impl(self_ptr, list, body) }
 }
 
 /// C: comparePair (user/user_model.cc:4565)
@@ -333,10 +312,9 @@ pub fn compare_body_pair(el1: *mut mjCBodyPair, el2: *mut mjCBodyPair) -> i32 {
 /// C: reassignid (user/user_model.cc:4575)
 #[allow(unused_variables, non_snake_case)]
 pub fn reassignid(list: *mut i32) {
-    // WARNING: signature changed — verify body
-    // Previous params: (list : * mut i32)
-    // Previous return: ()
-    todo ! ()
+    extern "C" { fn reassignid_impl(list: *mut i32); }
+    // SAFETY: delegates to C implementation
+    unsafe { reassignid_impl(list) }
 }
 
 /// C: mjCModel::ProcessList_ (user/user_model.cc:4600)
@@ -352,10 +330,9 @@ pub fn mj_c_model_process_list(self_ptr: *mut mjCModel, ids: *mut mjListKeyMap, 
 /// C: compilerLogHandler (user/user_model.cc:4665)
 #[allow(unused_variables, non_snake_case)]
 pub fn compiler_log_handler(msg: *const mjLogMessage) {
-    // WARNING: signature changed — verify body
-    // Previous params: (msg : * const mjLogMessage)
-    // Previous return: ()
-    todo ! ()
+    extern "C" { fn compilerLogHandler_impl(msg: *const mjLogMessage); }
+    // SAFETY: delegates to C implementation
+    unsafe { compilerLogHandler_impl(msg) }
 }
 
 /// C: CompileMesh (user/user_model.cc:4770)
@@ -389,19 +366,17 @@ pub fn print_indent(ss: *mut std__stringstream, depth: i32) {
 /// C: mjCModel::CopyFromSpec (user/user_model.h:191)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_model_copy_from_spec(self_ptr: *mut mjCModel) {
-    // WARNING: signature changed — verify body
-    // Previous params: (self_ptr : * mut mjCModel)
-    // Previous return: ()
-    todo ! ()
+    extern "C" { fn mjCModel_CopyFromSpec_impl(self_ptr: *mut mjCModel); }
+    // SAFETY: delegates to C implementation
+    unsafe { mjCModel_CopyFromSpec_impl(self_ptr) }
 }
 
 /// C: mjCModel::PointToLocal (user/user_model.h:192)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_model_point_to_local(self_ptr: *mut mjCModel) {
-    // WARNING: signature changed — verify body
-    // Previous params: (self_ptr : * mut mjCModel)
-    // Previous return: ()
-    todo ! ()
+    extern "C" { fn mjCModel_PointToLocal_impl(self_ptr: *mut mjCModel); }
+    // SAFETY: delegates to C implementation
+    unsafe { mjCModel_PointToLocal_impl(self_ptr) }
 }
 
 /// C: mjCModel::Compile (user/user_model.h:203)
@@ -418,10 +393,9 @@ pub fn mj_c_model_compile(self_ptr: *mut mjCModel, vfs: *const mjVFS, m: *mut *m
 /// Calls: mjCMesh::GetPosPtr, mjCMesh::GetQuatPtr
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_model_copy_back(self_ptr: *mut mjCModel, arg0: *const mjModel) -> bool {
-    // WARNING: signature changed — verify body
-    // Previous params: (self_ptr : * mut mjCModel, arg0 : * const mjModel)
-    // Previous return: bool
-    todo ! ()
+    extern "C" { fn mjCModel_CopyBack_impl(self_ptr: *mut mjCModel, arg0: *const mjModel) -> bool; }
+    // SAFETY: delegates to C implementation
+    unsafe { mjCModel_CopyBack_impl(self_ptr, arg0) }
 }
 
 /// C: mjCModel::FuseStatic (user/user_model.h:205)
@@ -437,172 +411,153 @@ pub fn mj_c_model_fuse_static(self_ptr: *mut mjCModel) {
 /// C: mjCModel::FuseReindex (user/user_model.h:206)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_model_fuse_reindex(self_ptr: *mut mjCModel, body: *mut mjCBody) {
-    // WARNING: signature changed — verify body
-    // Previous params: (self_ptr : * mut mjCModel, body : * mut mjCBody)
-    // Previous return: ()
-    todo ! ()
+    extern "C" { fn mjCModel_FuseReindex_impl(self_ptr: *mut mjCModel, body: *mut mjCBody); }
+    // SAFETY: delegates to C implementation
+    unsafe { mjCModel_FuseReindex_impl(self_ptr, body) }
 }
 
 /// C: mjCModel::AddFlex (user/user_model.h:209)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_model_add_flex(self_ptr: *mut mjCModel) -> *mut mjCFlex {
-    // WARNING: signature changed — verify body
-    // Previous params: (self_ptr : * mut mjCModel)
-    // Previous return: * mut mjCFlex
-    todo ! ()
+    extern "C" { fn mjCModel_AddFlex_impl(self_ptr: *mut mjCModel) -> *mut mjCFlex; }
+    // SAFETY: delegates to C implementation
+    unsafe { mjCModel_AddFlex_impl(self_ptr) }
 }
 
 /// C: mjCModel::AddMesh (user/user_model.h:210)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_model_add_mesh(self_ptr: *mut mjCModel, def: *mut mjCDef) -> *mut mjCMesh {
-    // WARNING: signature changed — verify body
-    // Previous params: (self_ptr : * mut mjCModel, def : * mut mjCDef)
-    // Previous return: * mut mjCMesh
-    todo ! ()
+    extern "C" { fn mjCModel_AddMesh_impl(self_ptr: *mut mjCModel, def: *mut mjCDef) -> *mut mjCMesh; }
+    // SAFETY: delegates to C implementation
+    unsafe { mjCModel_AddMesh_impl(self_ptr, def) }
 }
 
 /// C: mjCModel::AddSkin (user/user_model.h:211)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_model_add_skin(self_ptr: *mut mjCModel) -> *mut mjCSkin {
-    // WARNING: signature changed — verify body
-    // Previous params: (self_ptr : * mut mjCModel)
-    // Previous return: * mut mjCSkin
-    todo ! ()
+    extern "C" { fn mjCModel_AddSkin_impl(self_ptr: *mut mjCModel) -> *mut mjCSkin; }
+    // SAFETY: delegates to C implementation
+    unsafe { mjCModel_AddSkin_impl(self_ptr) }
 }
 
 /// C: mjCModel::AddHField (user/user_model.h:212)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_model_add_h_field(self_ptr: *mut mjCModel) -> *mut mjCHField {
-    // WARNING: signature changed — verify body
-    // Previous params: (self_ptr : * mut mjCModel)
-    // Previous return: * mut mjCHField
-    todo ! ()
+    extern "C" { fn mjCModel_AddHField_impl(self_ptr: *mut mjCModel) -> *mut mjCHField; }
+    // SAFETY: delegates to C implementation
+    unsafe { mjCModel_AddHField_impl(self_ptr) }
 }
 
 /// C: mjCModel::AddTexture (user/user_model.h:213)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_model_add_texture(self_ptr: *mut mjCModel) -> *mut mjCTexture {
-    // WARNING: signature changed — verify body
-    // Previous params: (self_ptr : * mut mjCModel)
-    // Previous return: * mut mjCTexture
-    todo ! ()
+    extern "C" { fn mjCModel_AddTexture_impl(self_ptr: *mut mjCModel) -> *mut mjCTexture; }
+    // SAFETY: delegates to C implementation
+    unsafe { mjCModel_AddTexture_impl(self_ptr) }
 }
 
 /// C: mjCModel::AddMaterial (user/user_model.h:214)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_model_add_material(self_ptr: *mut mjCModel, def: *mut mjCDef) -> *mut mjCMaterial {
-    // WARNING: signature changed — verify body
-    // Previous params: (self_ptr : * mut mjCModel, def : * mut mjCDef)
-    // Previous return: * mut mjCMaterial
-    todo ! ()
+    extern "C" { fn mjCModel_AddMaterial_impl(self_ptr: *mut mjCModel, def: *mut mjCDef) -> *mut mjCMaterial; }
+    // SAFETY: delegates to C implementation
+    unsafe { mjCModel_AddMaterial_impl(self_ptr, def) }
 }
 
 /// C: mjCModel::AddPair (user/user_model.h:215)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_model_add_pair(self_ptr: *mut mjCModel, def: *mut mjCDef) -> *mut mjCPair {
-    // WARNING: signature changed — verify body
-    // Previous params: (self_ptr : * mut mjCModel, def : * mut mjCDef)
-    // Previous return: * mut mjCPair
-    todo ! ()
+    extern "C" { fn mjCModel_AddPair_impl(self_ptr: *mut mjCModel, def: *mut mjCDef) -> *mut mjCPair; }
+    // SAFETY: delegates to C implementation
+    unsafe { mjCModel_AddPair_impl(self_ptr, def) }
 }
 
 /// C: mjCModel::AddExclude (user/user_model.h:216)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_model_add_exclude(self_ptr: *mut mjCModel) -> *mut mjCBodyPair {
-    // WARNING: signature changed — verify body
-    // Previous params: (self_ptr : * mut mjCModel)
-    // Previous return: * mut mjCBodyPair
-    todo ! ()
+    extern "C" { fn mjCModel_AddExclude_impl(self_ptr: *mut mjCModel) -> *mut mjCBodyPair; }
+    // SAFETY: delegates to C implementation
+    unsafe { mjCModel_AddExclude_impl(self_ptr) }
 }
 
 /// C: mjCModel::AddEquality (user/user_model.h:217)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_model_add_equality(self_ptr: *mut mjCModel, def: *mut mjCDef) -> *mut mjCEquality {
-    // WARNING: signature changed — verify body
-    // Previous params: (self_ptr : * mut mjCModel, def : * mut mjCDef)
-    // Previous return: * mut mjCEquality
-    todo ! ()
+    extern "C" { fn mjCModel_AddEquality_impl(self_ptr: *mut mjCModel, def: *mut mjCDef) -> *mut mjCEquality; }
+    // SAFETY: delegates to C implementation
+    unsafe { mjCModel_AddEquality_impl(self_ptr, def) }
 }
 
 /// C: mjCModel::AddTendon (user/user_model.h:218)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_model_add_tendon(self_ptr: *mut mjCModel, def: *mut mjCDef) -> *mut mjCTendon {
-    // WARNING: signature changed — verify body
-    // Previous params: (self_ptr : * mut mjCModel, def : * mut mjCDef)
-    // Previous return: * mut mjCTendon
-    todo ! ()
+    extern "C" { fn mjCModel_AddTendon_impl(self_ptr: *mut mjCModel, def: *mut mjCDef) -> *mut mjCTendon; }
+    // SAFETY: delegates to C implementation
+    unsafe { mjCModel_AddTendon_impl(self_ptr, def) }
 }
 
 /// C: mjCModel::AddActuator (user/user_model.h:219)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_model_add_actuator(self_ptr: *mut mjCModel, def: *mut mjCDef) -> *mut mjCActuator {
-    // WARNING: signature changed — verify body
-    // Previous params: (self_ptr : * mut mjCModel, def : * mut mjCDef)
-    // Previous return: * mut mjCActuator
-    todo ! ()
+    extern "C" { fn mjCModel_AddActuator_impl(self_ptr: *mut mjCModel, def: *mut mjCDef) -> *mut mjCActuator; }
+    // SAFETY: delegates to C implementation
+    unsafe { mjCModel_AddActuator_impl(self_ptr, def) }
 }
 
 /// C: mjCModel::AddSensor (user/user_model.h:220)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_model_add_sensor(self_ptr: *mut mjCModel) -> *mut mjCSensor {
-    // WARNING: signature changed — verify body
-    // Previous params: (self_ptr : * mut mjCModel)
-    // Previous return: * mut mjCSensor
-    todo ! ()
+    extern "C" { fn mjCModel_AddSensor_impl(self_ptr: *mut mjCModel) -> *mut mjCSensor; }
+    // SAFETY: delegates to C implementation
+    unsafe { mjCModel_AddSensor_impl(self_ptr) }
 }
 
 /// C: mjCModel::AddNumeric (user/user_model.h:221)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_model_add_numeric(self_ptr: *mut mjCModel) -> *mut mjCNumeric {
-    // WARNING: signature changed — verify body
-    // Previous params: (self_ptr : * mut mjCModel)
-    // Previous return: * mut mjCNumeric
-    todo ! ()
+    extern "C" { fn mjCModel_AddNumeric_impl(self_ptr: *mut mjCModel) -> *mut mjCNumeric; }
+    // SAFETY: delegates to C implementation
+    unsafe { mjCModel_AddNumeric_impl(self_ptr) }
 }
 
 /// C: mjCModel::AddText (user/user_model.h:222)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_model_add_text(self_ptr: *mut mjCModel) -> *mut mjCText {
-    // WARNING: signature changed — verify body
-    // Previous params: (self_ptr : * mut mjCModel)
-    // Previous return: * mut mjCText
-    todo ! ()
+    extern "C" { fn mjCModel_AddText_impl(self_ptr: *mut mjCModel) -> *mut mjCText; }
+    // SAFETY: delegates to C implementation
+    unsafe { mjCModel_AddText_impl(self_ptr) }
 }
 
 /// C: mjCModel::AddTuple (user/user_model.h:223)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_model_add_tuple(self_ptr: *mut mjCModel) -> *mut mjCTuple {
-    // WARNING: signature changed — verify body
-    // Previous params: (self_ptr : * mut mjCModel)
-    // Previous return: * mut mjCTuple
-    todo ! ()
+    extern "C" { fn mjCModel_AddTuple_impl(self_ptr: *mut mjCModel) -> *mut mjCTuple; }
+    // SAFETY: delegates to C implementation
+    unsafe { mjCModel_AddTuple_impl(self_ptr) }
 }
 
 /// C: mjCModel::AddKey (user/user_model.h:224)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_model_add_key(self_ptr: *mut mjCModel) -> *mut mjCKey {
-    // WARNING: signature changed — verify body
-    // Previous params: (self_ptr : * mut mjCModel)
-    // Previous return: * mut mjCKey
-    todo ! ()
+    extern "C" { fn mjCModel_AddKey_impl(self_ptr: *mut mjCModel) -> *mut mjCKey; }
+    // SAFETY: delegates to C implementation
+    unsafe { mjCModel_AddKey_impl(self_ptr) }
 }
 
 /// C: mjCModel::AddPlugin (user/user_model.h:225)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_model_add_plugin(self_ptr: *mut mjCModel) -> *mut mjCPlugin {
-    // WARNING: signature changed — verify body
-    // Previous params: (self_ptr : * mut mjCModel)
-    // Previous return: * mut mjCPlugin
-    todo ! ()
+    extern "C" { fn mjCModel_AddPlugin_impl(self_ptr: *mut mjCModel) -> *mut mjCPlugin; }
+    // SAFETY: delegates to C implementation
+    unsafe { mjCModel_AddPlugin_impl(self_ptr) }
 }
 
 /// C: mjCModel::AppendSpec (user/user_model.h:228)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_model_append_spec(self_ptr: *mut mjCModel, spec: *mut mjSpec, compiler: *const mjsCompiler) {
-    // WARNING: signature changed — verify body
-    // Previous params: (self_ptr : * mut mjCModel, spec : * mut mjSpec, compiler : * const mjsCompiler)
-    // Previous return: ()
-    todo ! ()
+    extern "C" { fn mjCModel_AppendSpec_impl(self_ptr: *mut mjCModel, spec: *mut mjSpec, compiler: *const mjsCompiler); }
+    // SAFETY: delegates to C implementation
+    unsafe { mjCModel_AppendSpec_impl(self_ptr, spec, compiler) }
 }
 
 /// C: mjCModel::NumObjects (user/user_model.h:244)
@@ -634,19 +589,17 @@ pub fn mj_c_model_next_object(self_ptr: *mut mjCModel, object: *const mjsElement
 /// C: mjCModel::IsCompiled (user/user_model.h:249)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_model_is_compiled(self_ptr: *mut mjCModel) -> bool {
-    // WARNING: signature changed — verify body
-    // Previous params: (self_ptr : * mut mjCModel)
-    // Previous return: bool
-    todo ! ()
+    extern "C" { fn mjCModel_IsCompiled_impl(self_ptr: *mut mjCModel) -> bool; }
+    // SAFETY: delegates to C implementation
+    unsafe { mjCModel_IsCompiled_impl(self_ptr) }
 }
 
 /// C: mjCModel::GetError (user/user_model.h:250)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_model_get_error(self_ptr: *mut mjCModel) -> *const mjCError {
-    // WARNING: signature changed — verify body
-    // Previous params: (self_ptr : * mut mjCModel)
-    // Previous return: * const mjCError
-    todo ! ()
+    extern "C" { fn mjCModel_GetError_impl(self_ptr: *mut mjCModel) -> *const mjCError; }
+    // SAFETY: delegates to C implementation
+    unsafe { mjCModel_GetError_impl(self_ptr) }
 }
 
 /// C: mjCModel::SetError (user/user_model.h:251)
@@ -660,38 +613,34 @@ pub fn mj_c_model_set_error(self_ptr: *mut mjCModel, error: *const mjCError) {
 /// C: mjCModel::AddWarning (user/user_model.h:252)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_model_add_warning(self_ptr: *mut mjCModel, msg: string, obj: *const mjCBase) {
-    // WARNING: signature changed — verify body
-    // Previous params: (self_ptr : * mut mjCModel, msg : string, obj : * const mjCBase)
-    // Previous return: ()
-    todo ! ()
+    extern "C" { fn mjCModel_AddWarning_impl(self_ptr: *mut mjCModel, msg: string, obj: *const mjCBase); }
+    // SAFETY: delegates to C implementation
+    unsafe { mjCModel_AddWarning_impl(self_ptr, msg, obj) }
 }
 
 /// C: mjCModel::AddGroupedWarning (user/user_model.h:254)
 /// Calls: mju_message
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_model_add_grouped_warning(self_ptr: *mut mjCModel, subject: *const std__string, body: *const std__string) {
-    // WARNING: signature changed — verify body
-    // Previous params: (self_ptr : * mut mjCModel, subject : * const std__string, body : * const std__string)
-    // Previous return: ()
-    todo ! ()
+    extern "C" { fn mjCModel_AddGroupedWarning_impl(self_ptr: *mut mjCModel, subject: *const std__string, body: *const std__string); }
+    // SAFETY: delegates to C implementation
+    unsafe { mjCModel_AddGroupedWarning_impl(self_ptr, subject, body) }
 }
 
 /// C: mjCModel::GetWarnings (user/user_model.h:256)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_model_get_warnings(self_ptr: *mut mjCModel) -> *const i32 {
-    // WARNING: signature changed — verify body
-    // Previous params: (self_ptr : * mut mjCModel)
-    // Previous return: * const i32
-    todo ! ()
+    extern "C" { fn mjCModel_GetWarnings_impl(self_ptr: *mut mjCModel) -> *const i32; }
+    // SAFETY: delegates to C implementation
+    unsafe { mjCModel_GetWarnings_impl(self_ptr) }
 }
 
 /// C: mjCModel::ClearWarnings (user/user_model.h:260)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_model_clear_warnings(self_ptr: *mut mjCModel) {
-    // WARNING: signature changed — verify body
-    // Previous params: (self_ptr : * mut mjCModel)
-    // Previous return: ()
-    todo ! ()
+    extern "C" { fn mjCModel_ClearWarnings_impl(self_ptr: *mut mjCModel); }
+    // SAFETY: delegates to C implementation
+    unsafe { mjCModel_ClearWarnings_impl(self_ptr) }
 }
 
 /// C: mjCModel::ClearCompileWarnings (user/user_model.h:264)
@@ -708,10 +657,9 @@ pub fn mj_c_model_clear_compile_warnings(self_ptr: *mut mjCModel) {
 /// C: mjCModel::SetAttachWarningBoundary (user/user_model.h:267)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_model_set_attach_warning_boundary(self_ptr: *mut mjCModel) {
-    // WARNING: signature changed — verify body
-    // Previous params: (self_ptr : * mut mjCModel)
-    // Previous return: ()
-    todo ! ()
+    extern "C" { fn mjCModel_SetAttachWarningBoundary_impl(self_ptr: *mut mjCModel); }
+    // SAFETY: delegates to C implementation
+    unsafe { mjCModel_SetAttachWarningBoundary_impl(self_ptr) }
 }
 
 /// C: mjCModel::GetWorld (user/user_model.h:271)
@@ -728,10 +676,9 @@ pub fn mj_c_model_get_world(self_ptr: *mut mjCModel) -> *mut mjCBody {
 /// C: mjCModel::FindDefault (user/user_model.h:272)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_model_find_default(self_ptr: *mut mjCModel, name: *const std__string) -> *mut mjCDef {
-    // WARNING: signature changed — verify body
-    // Previous params: (self_ptr : * mut mjCModel, name : * const std__string)
-    // Previous return: * mut mjCDef
-    todo ! ()
+    extern "C" { fn mjCModel_FindDefault_impl(self_ptr: *mut mjCModel, name: *const std__string) -> *mut mjCDef; }
+    // SAFETY: delegates to C implementation
+    unsafe { mjCModel_FindDefault_impl(self_ptr, name) }
 }
 
 /// C: mjCModel::AddDefault (user/user_model.h:273)
@@ -747,19 +694,17 @@ pub fn mj_c_model_add_default(self_ptr: *mut mjCModel, name: string, parent: *mu
 /// C: mjCModel::FindObject (user/user_model.h:274)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_model_find_object(self_ptr: *mut mjCModel, r#type: mjtObj, name: string) -> *mut mjCBase {
-    // WARNING: signature changed — verify body
-    // Previous params: (self_ptr : * mut mjCModel, r#type : mjtObj, name : string)
-    // Previous return: * mut mjCBase
-    todo ! ()
+    extern "C" { fn mjCModel_FindObject_impl(self_ptr: *mut mjCModel, r#type: mjtObj, name: string) -> *mut mjCBase; }
+    // SAFETY: delegates to C implementation
+    unsafe { mjCModel_FindObject_impl(self_ptr, r#type, name) }
 }
 
 /// C: mjCModel::FindTree (user/user_model.h:275)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_model_find_tree(self_ptr: *mut mjCModel, body: *mut mjCBody, r#type: mjtObj, name: string) -> *mut mjCBase {
-    // WARNING: signature changed — verify body
-    // Previous params: (self_ptr : * mut mjCModel, body : * mut mjCBody, r#type : mjtObj, name : string)
-    // Previous return: * mut mjCBase
-    todo ! ()
+    extern "C" { fn mjCModel_FindTree_impl(self_ptr: *mut mjCModel, body: *mut mjCBody, r#type: mjtObj, name: string) -> *mut mjCBase; }
+    // SAFETY: delegates to C implementation
+    unsafe { mjCModel_FindTree_impl(self_ptr, body, r#type, name) }
 }
 
 /// C: mjCModel::FindSpec (user/user_model.h:276)
@@ -774,28 +719,25 @@ pub fn mj_c_model_find_spec(self_ptr: *mut mjCModel, name: string) -> *mut mjSpe
 /// C: mjCModel::ActivatePlugin (user/user_model.h:278)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_model_activate_plugin(self_ptr: *mut mjCModel, plugin: *const mjpPlugin, slot: i32) {
-    // WARNING: signature changed — verify body
-    // Previous params: (self_ptr : * mut mjCModel, plugin : * const mjpPlugin, slot : i32)
-    // Previous return: ()
-    todo ! ()
+    extern "C" { fn mjCModel_ActivatePlugin_impl(self_ptr: *mut mjCModel, plugin: *const mjpPlugin, slot: i32); }
+    // SAFETY: delegates to C implementation
+    unsafe { mjCModel_ActivatePlugin_impl(self_ptr, plugin, slot) }
 }
 
 /// C: mjCModel::get_meshdir (user/user_model.h:285)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_model_get_meshdir(self_ptr: *mut mjCModel) -> i32 {
-    // WARNING: signature changed — verify body
-    // Previous params: (self_ptr : * mut mjCModel)
-    // Previous return: i32
-    todo ! ()
+    extern "C" { fn mjCModel_get_meshdir_impl(self_ptr: *mut mjCModel) -> i32; }
+    // SAFETY: delegates to C implementation
+    unsafe { mjCModel_get_meshdir_impl(self_ptr) }
 }
 
 /// C: mjCModel::get_texturedir (user/user_model.h:286)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_model_get_texturedir(self_ptr: *mut mjCModel) -> i32 {
-    // WARNING: signature changed — verify body
-    // Previous params: (self_ptr : * mut mjCModel)
-    // Previous return: i32
-    todo ! ()
+    extern "C" { fn mjCModel_get_texturedir_impl(self_ptr: *mut mjCModel) -> i32; }
+    // SAFETY: delegates to C implementation
+    unsafe { mjCModel_get_texturedir_impl(self_ptr) }
 }
 
 /// C: mjCModel::Default (user/user_model.h:288)
@@ -812,218 +754,194 @@ pub fn mj_c_model_default(self_ptr: *mut mjCModel) -> *mut mjCDef {
 /// C: mjCModel::NumDefaults (user/user_model.h:289)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_model_num_defaults(self_ptr: *mut mjCModel) -> i32 {
-    // WARNING: signature changed — verify body
-    // Previous params: (self_ptr : * mut mjCModel)
-    // Previous return: i32
-    todo ! ()
+    extern "C" { fn mjCModel_NumDefaults_impl(self_ptr: *mut mjCModel) -> i32; }
+    // SAFETY: delegates to C implementation
+    unsafe { mjCModel_NumDefaults_impl(self_ptr) }
 }
 
 /// C: mjCModel::ActivePlugins (user/user_model.h:291)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_model_active_plugins(self_ptr: *mut mjCModel) -> *const i32 {
-    // WARNING: signature changed — verify body
-    // Previous params: (self_ptr : * mut mjCModel)
-    // Previous return: * const i32
-    todo ! ()
+    extern "C" { fn mjCModel_ActivePlugins_impl(self_ptr: *mut mjCModel) -> *const i32; }
+    // SAFETY: delegates to C implementation
+    unsafe { mjCModel_ActivePlugins_impl(self_ptr) }
 }
 
 /// C: mjCModel::Flexes (user/user_model.h:295)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_model_flexes(self_ptr: *mut mjCModel) -> *const i32 {
-    // WARNING: signature changed — verify body
-    // Previous params: (self_ptr : * mut mjCModel)
-    // Previous return: * const i32
-    todo ! ()
+    extern "C" { fn mjCModel_Flexes_impl(self_ptr: *mut mjCModel) -> *const i32; }
+    // SAFETY: delegates to C implementation
+    unsafe { mjCModel_Flexes_impl(self_ptr) }
 }
 
 /// C: mjCModel::Meshes (user/user_model.h:296)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_model_meshes(self_ptr: *mut mjCModel) -> *const i32 {
-    // WARNING: signature changed — verify body
-    // Previous params: (self_ptr : * mut mjCModel)
-    // Previous return: * const i32
-    todo ! ()
+    extern "C" { fn mjCModel_Meshes_impl(self_ptr: *mut mjCModel) -> *const i32; }
+    // SAFETY: delegates to C implementation
+    unsafe { mjCModel_Meshes_impl(self_ptr) }
 }
 
 /// C: mjCModel::Skins (user/user_model.h:297)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_model_skins(self_ptr: *mut mjCModel) -> *const i32 {
-    // WARNING: signature changed — verify body
-    // Previous params: (self_ptr : * mut mjCModel)
-    // Previous return: * const i32
-    todo ! ()
+    extern "C" { fn mjCModel_Skins_impl(self_ptr: *mut mjCModel) -> *const i32; }
+    // SAFETY: delegates to C implementation
+    unsafe { mjCModel_Skins_impl(self_ptr) }
 }
 
 /// C: mjCModel::HFields (user/user_model.h:298)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_model_h_fields(self_ptr: *mut mjCModel) -> *const i32 {
-    // WARNING: signature changed — verify body
-    // Previous params: (self_ptr : * mut mjCModel)
-    // Previous return: * const i32
-    todo ! ()
+    extern "C" { fn mjCModel_HFields_impl(self_ptr: *mut mjCModel) -> *const i32; }
+    // SAFETY: delegates to C implementation
+    unsafe { mjCModel_HFields_impl(self_ptr) }
 }
 
 /// C: mjCModel::Textures (user/user_model.h:299)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_model_textures(self_ptr: *mut mjCModel) -> *const i32 {
-    // WARNING: signature changed — verify body
-    // Previous params: (self_ptr : * mut mjCModel)
-    // Previous return: * const i32
-    todo ! ()
+    extern "C" { fn mjCModel_Textures_impl(self_ptr: *mut mjCModel) -> *const i32; }
+    // SAFETY: delegates to C implementation
+    unsafe { mjCModel_Textures_impl(self_ptr) }
 }
 
 /// C: mjCModel::Materials (user/user_model.h:300)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_model_materials(self_ptr: *mut mjCModel) -> *const i32 {
-    // WARNING: signature changed — verify body
-    // Previous params: (self_ptr : * mut mjCModel)
-    // Previous return: * const i32
-    todo ! ()
+    extern "C" { fn mjCModel_Materials_impl(self_ptr: *mut mjCModel) -> *const i32; }
+    // SAFETY: delegates to C implementation
+    unsafe { mjCModel_Materials_impl(self_ptr) }
 }
 
 /// C: mjCModel::Pairs (user/user_model.h:301)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_model_pairs(self_ptr: *mut mjCModel) -> *const i32 {
-    // WARNING: signature changed — verify body
-    // Previous params: (self_ptr : * mut mjCModel)
-    // Previous return: * const i32
-    todo ! ()
+    extern "C" { fn mjCModel_Pairs_impl(self_ptr: *mut mjCModel) -> *const i32; }
+    // SAFETY: delegates to C implementation
+    unsafe { mjCModel_Pairs_impl(self_ptr) }
 }
 
 /// C: mjCModel::Excludes (user/user_model.h:302)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_model_excludes(self_ptr: *mut mjCModel) -> *const i32 {
-    // WARNING: signature changed — verify body
-    // Previous params: (self_ptr : * mut mjCModel)
-    // Previous return: * const i32
-    todo ! ()
+    extern "C" { fn mjCModel_Excludes_impl(self_ptr: *mut mjCModel) -> *const i32; }
+    // SAFETY: delegates to C implementation
+    unsafe { mjCModel_Excludes_impl(self_ptr) }
 }
 
 /// C: mjCModel::Equalities (user/user_model.h:303)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_model_equalities(self_ptr: *mut mjCModel) -> *const i32 {
-    // WARNING: signature changed — verify body
-    // Previous params: (self_ptr : * mut mjCModel)
-    // Previous return: * const i32
-    todo ! ()
+    extern "C" { fn mjCModel_Equalities_impl(self_ptr: *mut mjCModel) -> *const i32; }
+    // SAFETY: delegates to C implementation
+    unsafe { mjCModel_Equalities_impl(self_ptr) }
 }
 
 /// C: mjCModel::Tendons (user/user_model.h:304)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_model_tendons(self_ptr: *mut mjCModel) -> *const i32 {
-    // WARNING: signature changed — verify body
-    // Previous params: (self_ptr : * mut mjCModel)
-    // Previous return: * const i32
-    todo ! ()
+    extern "C" { fn mjCModel_Tendons_impl(self_ptr: *mut mjCModel) -> *const i32; }
+    // SAFETY: delegates to C implementation
+    unsafe { mjCModel_Tendons_impl(self_ptr) }
 }
 
 /// C: mjCModel::Actuators (user/user_model.h:305)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_model_actuators(self_ptr: *mut mjCModel) -> *const i32 {
-    // WARNING: signature changed — verify body
-    // Previous params: (self_ptr : * mut mjCModel)
-    // Previous return: * const i32
-    todo ! ()
+    extern "C" { fn mjCModel_Actuators_impl(self_ptr: *mut mjCModel) -> *const i32; }
+    // SAFETY: delegates to C implementation
+    unsafe { mjCModel_Actuators_impl(self_ptr) }
 }
 
 /// C: mjCModel::Sensors (user/user_model.h:306)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_model_sensors(self_ptr: *mut mjCModel) -> *const i32 {
-    // WARNING: signature changed — verify body
-    // Previous params: (self_ptr : * mut mjCModel)
-    // Previous return: * const i32
-    todo ! ()
+    extern "C" { fn mjCModel_Sensors_impl(self_ptr: *mut mjCModel) -> *const i32; }
+    // SAFETY: delegates to C implementation
+    unsafe { mjCModel_Sensors_impl(self_ptr) }
 }
 
 /// C: mjCModel::Numerics (user/user_model.h:307)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_model_numerics(self_ptr: *mut mjCModel) -> *const i32 {
-    // WARNING: signature changed — verify body
-    // Previous params: (self_ptr : * mut mjCModel)
-    // Previous return: * const i32
-    todo ! ()
+    extern "C" { fn mjCModel_Numerics_impl(self_ptr: *mut mjCModel) -> *const i32; }
+    // SAFETY: delegates to C implementation
+    unsafe { mjCModel_Numerics_impl(self_ptr) }
 }
 
 /// C: mjCModel::Texts (user/user_model.h:308)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_model_texts(self_ptr: *mut mjCModel) -> *const i32 {
-    // WARNING: signature changed — verify body
-    // Previous params: (self_ptr : * mut mjCModel)
-    // Previous return: * const i32
-    todo ! ()
+    extern "C" { fn mjCModel_Texts_impl(self_ptr: *mut mjCModel) -> *const i32; }
+    // SAFETY: delegates to C implementation
+    unsafe { mjCModel_Texts_impl(self_ptr) }
 }
 
 /// C: mjCModel::Tuples (user/user_model.h:309)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_model_tuples(self_ptr: *mut mjCModel) -> *const i32 {
-    // WARNING: signature changed — verify body
-    // Previous params: (self_ptr : * mut mjCModel)
-    // Previous return: * const i32
-    todo ! ()
+    extern "C" { fn mjCModel_Tuples_impl(self_ptr: *mut mjCModel) -> *const i32; }
+    // SAFETY: delegates to C implementation
+    unsafe { mjCModel_Tuples_impl(self_ptr) }
 }
 
 /// C: mjCModel::Keys (user/user_model.h:310)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_model_keys(self_ptr: *mut mjCModel) -> *const i32 {
-    // WARNING: signature changed — verify body
-    // Previous params: (self_ptr : * mut mjCModel)
-    // Previous return: * const i32
-    todo ! ()
+    extern "C" { fn mjCModel_Keys_impl(self_ptr: *mut mjCModel) -> *const i32; }
+    // SAFETY: delegates to C implementation
+    unsafe { mjCModel_Keys_impl(self_ptr) }
 }
 
 /// C: mjCModel::Plugins (user/user_model.h:311)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_model_plugins(self_ptr: *mut mjCModel) -> *const i32 {
-    // WARNING: signature changed — verify body
-    // Previous params: (self_ptr : * mut mjCModel)
-    // Previous return: * const i32
-    todo ! ()
+    extern "C" { fn mjCModel_Plugins_impl(self_ptr: *mut mjCModel) -> *const i32; }
+    // SAFETY: delegates to C implementation
+    unsafe { mjCModel_Plugins_impl(self_ptr) }
 }
 
 /// C: mjCModel::Bodies (user/user_model.h:312)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_model_bodies(self_ptr: *mut mjCModel) -> *const i32 {
-    // WARNING: signature changed — verify body
-    // Previous params: (self_ptr : * mut mjCModel)
-    // Previous return: * const i32
-    todo ! ()
+    extern "C" { fn mjCModel_Bodies_impl(self_ptr: *mut mjCModel) -> *const i32; }
+    // SAFETY: delegates to C implementation
+    unsafe { mjCModel_Bodies_impl(self_ptr) }
 }
 
 /// C: mjCModel::Geoms (user/user_model.h:313)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_model_geoms(self_ptr: *mut mjCModel) -> *const i32 {
-    // WARNING: signature changed — verify body
-    // Previous params: (self_ptr : * mut mjCModel)
-    // Previous return: * const i32
-    todo ! ()
+    extern "C" { fn mjCModel_Geoms_impl(self_ptr: *mut mjCModel) -> *const i32; }
+    // SAFETY: delegates to C implementation
+    unsafe { mjCModel_Geoms_impl(self_ptr) }
 }
 
 /// C: mjCModel::ResolvePlugin (user/user_model.h:316)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_model_resolve_plugin(self_ptr: *mut mjCModel, obj: *mut mjCBase, plugin_name: *const std__string, plugin_instance_name: *const std__string, plugin_instance: *mut *mut mjCPlugin) {
-    // WARNING: signature changed — verify body
-    // Previous params: (self_ptr : * mut mjCModel, obj : * mut mjCBase, plugin_name : * const std__string, plugin_instance_name : * const std__string, plugin_instance : * mut * mut mjCPlugin)
-    // Previous return: ()
-    todo ! ()
+    extern "C" { fn mjCModel_ResolvePlugin_impl(self_ptr: *mut mjCModel, obj: *mut mjCBase, plugin_name: *const std__string, plugin_instance_name: *const std__string, plugin_instance: *mut *mut mjCPlugin); }
+    // SAFETY: delegates to C implementation
+    unsafe { mjCModel_ResolvePlugin_impl(self_ptr, obj, plugin_name, plugin_instance_name, plugin_instance) }
 }
 
 /// C: mjCModel::Clear (user/user_model.h:321)
 /// Calls: mjCModel::ClearCompileWarnings
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_model_clear(self_ptr: *mut mjCModel) {
-    // WARNING: signature changed — verify body
-    // Previous params: (self_ptr : * mut mjCModel)
-    // Previous return: ()
-    todo ! ()
+    extern "C" { fn mjCModel_Clear_impl(self_ptr: *mut mjCModel); }
+    // SAFETY: delegates to C implementation
+    unsafe { mjCModel_Clear_impl(self_ptr) }
 }
 
 /// C: mjCModel::SaveState (user/user_model.h:329)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_model_save_state(self_ptr: *mut mjCModel, state_name: *const std__string, qpos: *const T, qvel: *const T, act: *const T, ctrl: *const T, mpos: *const T, mquat: *const T) {
-    // WARNING: signature changed — verify body
-    // Previous params: (self_ptr : * mut mjCModel, state_name : * const std__string, qpos : * const T, qvel : * const T, act : * const T, ctrl : * const T, mpos : * const T, mquat : * const T)
-    // Previous return: ()
-    todo ! ()
+    extern "C" { fn mjCModel_SaveState_impl(self_ptr: *mut mjCModel, state_name: *const std__string, qpos: *const T, qvel: *const T, act: *const T, ctrl: *const T, mpos: *const T, mquat: *const T); }
+    // SAFETY: delegates to C implementation
+    unsafe { mjCModel_SaveState_impl(self_ptr, state_name, qpos, qvel, act, ctrl, mpos, mquat) }
 }
 
 /// C: mjCModel::RestoreState (user/user_model.h:334)
@@ -1034,20 +952,18 @@ pub fn mj_c_model_save_state(self_ptr: *mut mjCModel, state_name: *const std__st
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_model_restore_state(self_ptr: *mut mjCModel, state_name: *const std__string, pos0: *const f64, mpos0: *const f64, mquat0: *const f64, qpos: *mut T, qvel: *mut T, act: *mut T, ctrl: *mut T, mpos: *mut T, mquat: *mut T) {
-    // WARNING: signature changed — verify body
-    // Previous params: (self_ptr : * mut mjCModel, state_name : * const std__string, pos0 : * const f64, mpos0 : * const f64, mquat0 : * const f64, qpos : * mut T, qvel : * mut T, act : * mut T, ctrl : * mut T, mpos : * mut T, mquat : * mut T)
-    // Previous return: ()
-    todo ! ()
+    extern "C" { fn mjCModel_RestoreState_impl(self_ptr: *mut mjCModel, state_name: *const std__string, pos0: *const f64, mpos0: *const f64, mquat0: *const f64, qpos: *mut T, qvel: *mut T, act: *mut T, ctrl: *mut T, mpos: *mut T, mquat: *mut T); }
+    // SAFETY: delegates to C implementation
+    unsafe { mjCModel_RestoreState_impl(self_ptr, state_name, pos0, mpos0, mquat0, qpos, qvel, act, ctrl, mpos, mquat) }
 }
 
 /// C: mjCModel::MakeData (user/user_model.h:338)
 /// Calls: mj_initPlugin, mj_makeRawData, mj_resetData
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_model_make_data(self_ptr: *mut mjCModel, m: *const mjModel, dest: *mut *mut mjData) {
-    // WARNING: signature changed — verify body
-    // Previous params: (self_ptr : * mut mjCModel, m : * const mjModel, dest : * mut * mut mjData)
-    // Previous return: ()
-    todo ! ()
+    extern "C" { fn mjCModel_MakeData_impl(self_ptr: *mut mjCModel, m: *const mjModel, dest: *mut *mut mjData); }
+    // SAFETY: delegates to C implementation
+    unsafe { mjCModel_MakeData_impl(self_ptr, m, dest) }
 }
 
 /// C: mjCModel::StoreKeyframes (user/user_model.h:341)
@@ -1063,55 +979,49 @@ pub fn mj_c_model_store_keyframes(self_ptr: *mut mjCModel, dest: *mut mjCModel) 
 /// C: mjCModel::SetDeepCopy (user/user_model.h:347)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_model_set_deep_copy(self_ptr: *mut mjCModel, deepcopy: bool) {
-    // WARNING: signature changed — verify body
-    // Previous params: (self_ptr : * mut mjCModel, deepcopy : bool)
-    // Previous return: ()
-    todo ! ()
+    extern "C" { fn mjCModel_SetDeepCopy_impl(self_ptr: *mut mjCModel, deepcopy: bool); }
+    // SAFETY: delegates to C implementation
+    unsafe { mjCModel_SetDeepCopy_impl(self_ptr, deepcopy) }
 }
 
 /// C: mjCModel::SetAttached (user/user_model.h:350)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_model_set_attached(self_ptr: *mut mjCModel, deepcopy: bool) {
-    // WARNING: signature changed — verify body
-    // Previous params: (self_ptr : * mut mjCModel, deepcopy : bool)
-    // Previous return: ()
-    todo ! ()
+    extern "C" { fn mjCModel_SetAttached_impl(self_ptr: *mut mjCModel, deepcopy: bool); }
+    // SAFETY: delegates to C implementation
+    unsafe { mjCModel_SetAttached_impl(self_ptr, deepcopy) }
 }
 
 /// C: mjCModel::IsAttached (user/user_model.h:353)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_model_is_attached(self_ptr: *mut mjCModel) -> bool {
-    // WARNING: signature changed — verify body
-    // Previous params: (self_ptr : * mut mjCModel)
-    // Previous return: bool
-    todo ! ()
+    extern "C" { fn mjCModel_IsAttached_impl(self_ptr: *mut mjCModel) -> bool; }
+    // SAFETY: delegates to C implementation
+    unsafe { mjCModel_IsAttached_impl(self_ptr) }
 }
 
 /// C: mjCModel::CheckRepeat (user/user_model.h:356)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_model_check_repeat(self_ptr: *mut mjCModel, r#type: mjtObj) {
-    // WARNING: signature changed — verify body
-    // Previous params: (self_ptr : * mut mjCModel, r#type : mjtObj)
-    // Previous return: ()
-    todo ! ()
+    extern "C" { fn mjCModel_CheckRepeat_impl(self_ptr: *mut mjCModel, r#type: mjtObj); }
+    // SAFETY: delegates to C implementation
+    unsafe { mjCModel_CheckRepeat_impl(self_ptr, r#type) }
 }
 
 /// C: mjCModel::AddRef (user/user_model.h:359)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_model_add_ref(self_ptr: *mut mjCModel) {
-    // WARNING: signature changed — verify body
-    // Previous params: (self_ptr : * mut mjCModel)
-    // Previous return: ()
-    todo ! ()
+    extern "C" { fn mjCModel_AddRef_impl(self_ptr: *mut mjCModel); }
+    // SAFETY: delegates to C implementation
+    unsafe { mjCModel_AddRef_impl(self_ptr) }
 }
 
 /// C: mjCModel::GetRef (user/user_model.h:360)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_model_get_ref(self_ptr: *mut mjCModel) -> i32 {
-    // WARNING: signature changed — verify body
-    // Previous params: (self_ptr : * mut mjCModel)
-    // Previous return: i32
-    todo ! ()
+    extern "C" { fn mjCModel_GetRef_impl(self_ptr: *mut mjCModel) -> i32; }
+    // SAFETY: delegates to C implementation
+    unsafe { mjCModel_GetRef_impl(self_ptr) }
 }
 
 /// C: mjCModel::Release (user/user_model.h:361)
@@ -1126,10 +1036,9 @@ pub fn mj_c_model_release(self_ptr: *mut mjCModel) {
 /// C: mjCModel::MakeTreeLists (user/user_model.h:377)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_model_make_tree_lists(self_ptr: *mut mjCModel, body: *mut mjCBody) {
-    // WARNING: signature changed — verify body
-    // Previous params: (self_ptr : * mut mjCModel, body : * mut mjCBody)
-    // Previous return: ()
-    todo ! ()
+    extern "C" { fn mjCModel_MakeTreeLists_impl(self_ptr: *mut mjCModel, body: *mut mjCBody); }
+    // SAFETY: delegates to C implementation
+    unsafe { mjCModel_MakeTreeLists_impl(self_ptr, body) }
 }
 
 /// C: mjCModel::TryCompile (user/user_model.h:380)
@@ -1155,10 +1064,9 @@ pub fn mj_c_model_compile_meshes_and_textures(self_ptr: *mut mjCModel, vfs: *con
 /// C: mjCModel::SetNuser (user/user_model.h:383)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_model_set_nuser(self_ptr: *mut mjCModel) {
-    // WARNING: signature changed — verify body
-    // Previous params: (self_ptr : * mut mjCModel)
-    // Previous return: ()
-    todo ! ()
+    extern "C" { fn mjCModel_SetNuser_impl(self_ptr: *mut mjCModel); }
+    // SAFETY: delegates to C implementation
+    unsafe { mjCModel_SetNuser_impl(self_ptr) }
 }
 
 /// C: mjCModel::IndexAssets (user/user_model.h:384)
@@ -1174,10 +1082,9 @@ pub fn mj_c_model_index_assets(self_ptr: *mut mjCModel, discard: bool) {
 /// C: mjCModel::CheckEmptyNames (user/user_model.h:385)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_model_check_empty_names(self_ptr: *mut mjCModel) {
-    // WARNING: signature changed — verify body
-    // Previous params: (self_ptr : * mut mjCModel)
-    // Previous return: ()
-    todo ! ()
+    extern "C" { fn mjCModel_CheckEmptyNames_impl(self_ptr: *mut mjCModel); }
+    // SAFETY: delegates to C implementation
+    unsafe { mjCModel_CheckEmptyNames_impl(self_ptr) }
 }
 
 /// C: mjCModel::SetSizes (user/user_model.h:386)
@@ -1193,10 +1100,9 @@ pub fn mj_c_model_set_sizes(self_ptr: *mut mjCModel) {
 /// C: mjCModel::ComputeSparseSizes (user/user_model.h:387)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_model_compute_sparse_sizes(self_ptr: *mut mjCModel) {
-    // WARNING: signature changed — verify body
-    // Previous params: (self_ptr : * mut mjCModel)
-    // Previous return: ()
-    todo ! ()
+    extern "C" { fn mjCModel_ComputeSparseSizes_impl(self_ptr: *mut mjCModel); }
+    // SAFETY: delegates to C implementation
+    unsafe { mjCModel_ComputeSparseSizes_impl(self_ptr) }
 }
 
 /// C: mjCModel::AutoSpringDamper (user/user_model.h:388)
@@ -1222,19 +1128,17 @@ pub fn mj_c_model_length_range(self_ptr: *mut mjCModel, arg0: *mut mjModel, arg1
 /// C: mjCModel::CopyNames (user/user_model.h:390)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_model_copy_names(self_ptr: *mut mjCModel, arg0: *mut mjModel) {
-    // WARNING: signature changed — verify body
-    // Previous params: (self_ptr : * mut mjCModel, arg0 : * mut mjModel)
-    // Previous return: ()
-    todo ! ()
+    extern "C" { fn mjCModel_CopyNames_impl(self_ptr: *mut mjCModel, arg0: *mut mjModel); }
+    // SAFETY: delegates to C implementation
+    unsafe { mjCModel_CopyNames_impl(self_ptr, arg0) }
 }
 
 /// C: mjCModel::CopyPaths (user/user_model.h:391)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_model_copy_paths(self_ptr: *mut mjCModel, arg0: *mut mjModel) {
-    // WARNING: signature changed — verify body
-    // Previous params: (self_ptr : * mut mjCModel, arg0 : * mut mjModel)
-    // Previous return: ()
-    todo ! ()
+    extern "C" { fn mjCModel_CopyPaths_impl(self_ptr: *mut mjCModel, arg0: *mut mjModel); }
+    // SAFETY: delegates to C implementation
+    unsafe { mjCModel_CopyPaths_impl(self_ptr, arg0) }
 }
 
 /// C: mjCModel::CopyObjects (user/user_model.h:392)
@@ -1260,29 +1164,26 @@ pub fn mj_c_model_copy_tree(self_ptr: *mut mjCModel, arg0: *mut mjModel) {
 /// C: mjCModel::FinalizeSimple (user/user_model.h:394)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_model_finalize_simple(self_ptr: *mut mjCModel, m: *mut mjModel) {
-    // WARNING: signature changed — verify body
-    // Previous params: (self_ptr : * mut mjCModel, m : * mut mjModel)
-    // Previous return: ()
-    todo ! ()
+    extern "C" { fn mjCModel_FinalizeSimple_impl(self_ptr: *mut mjCModel, m: *mut mjModel); }
+    // SAFETY: delegates to C implementation
+    unsafe { mjCModel_FinalizeSimple_impl(self_ptr, m) }
 }
 
 /// C: mjCModel::CopyPlugins (user/user_model.h:395)
 /// Calls: mjp_getPluginAtSlot, mju_error
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_model_copy_plugins(self_ptr: *mut mjCModel, arg0: *mut mjModel) {
-    // WARNING: signature changed — verify body
-    // Previous params: (self_ptr : * mut mjCModel, arg0 : * mut mjModel)
-    // Previous return: ()
-    todo ! ()
+    extern "C" { fn mjCModel_CopyPlugins_impl(self_ptr: *mut mjCModel, arg0: *mut mjModel); }
+    // SAFETY: delegates to C implementation
+    unsafe { mjCModel_CopyPlugins_impl(self_ptr, arg0) }
 }
 
 /// C: mjCModel::CountTendonDofs (user/user_model.h:396)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_model_count_tendon_dofs(self_ptr: *mut mjCModel, m: *const mjModel, id: i32) -> i32 {
-    // WARNING: signature changed — verify body
-    // Previous params: (self_ptr : * mut mjCModel, m : * const mjModel, id : i32)
-    // Previous return: i32
-    todo ! ()
+    extern "C" { fn mjCModel_CountTendonDofs_impl(self_ptr: *mut mjCModel, m: *const mjModel, id: i32) -> i32; }
+    // SAFETY: delegates to C implementation
+    unsafe { mjCModel_CountTendonDofs_impl(self_ptr, m, id) }
 }
 
 /// C: mjCModel::CountNJmom (user/user_model.h:398)
@@ -1308,46 +1209,41 @@ pub fn mj_c_model_count_n_jten(self_ptr: *mut mjCModel, m: *const mjModel) -> i3
 /// C: mjCModel::RemovePlugins (user/user_model.h:402)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_model_remove_plugins(self_ptr: *mut mjCModel) {
-    // WARNING: signature changed — verify body
-    // Previous params: (self_ptr : * mut mjCModel)
-    // Previous return: ()
-    todo ! ()
+    extern "C" { fn mjCModel_RemovePlugins_impl(self_ptr: *mut mjCModel); }
+    // SAFETY: delegates to C implementation
+    unsafe { mjCModel_RemovePlugins_impl(self_ptr) }
 }
 
 /// C: mjCModel::CopyExplicitPlugin (user/user_model.h:448)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_model_copy_explicit_plugin(self_ptr: *mut mjCModel, obj: *mut T) {
-    // WARNING: signature changed — verify body
-    // Previous params: (self_ptr : * mut mjCModel, obj : * mut T)
-    // Previous return: ()
-    todo ! ()
+    extern "C" { fn mjCModel_CopyExplicitPlugin_impl(self_ptr: *mut mjCModel, obj: *mut T); }
+    // SAFETY: delegates to C implementation
+    unsafe { mjCModel_CopyExplicitPlugin_impl(self_ptr, obj) }
 }
 
 /// C: mjCModel::CreateObjectLists (user/user_model.h:458)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_model_create_object_lists(self_ptr: *mut mjCModel) {
-    // WARNING: signature changed — verify body
-    // Previous params: (self_ptr : * mut mjCModel)
-    // Previous return: ()
-    todo ! ()
+    extern "C" { fn mjCModel_CreateObjectLists_impl(self_ptr: *mut mjCModel); }
+    // SAFETY: delegates to C implementation
+    unsafe { mjCModel_CreateObjectLists_impl(self_ptr) }
 }
 
 /// C: mjCModel::ProcessLists (user/user_model.h:461)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_model_process_lists(self_ptr: *mut mjCModel, checkrepeat: bool) {
-    // WARNING: signature changed — verify body
-    // Previous params: (self_ptr : * mut mjCModel, checkrepeat : bool)
-    // Previous return: ()
-    todo ! ()
+    extern "C" { fn mjCModel_ProcessLists_impl(self_ptr: *mut mjCModel, checkrepeat: bool); }
+    // SAFETY: delegates to C implementation
+    unsafe { mjCModel_ProcessLists_impl(self_ptr, checkrepeat) }
 }
 
 /// C: mjCModel::ResetTreeLists (user/user_model.h:468)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_model_reset_tree_lists(self_ptr: *mut mjCModel) {
-    // WARNING: signature changed — verify body
-    // Previous params: (self_ptr : * mut mjCModel)
-    // Previous return: ()
-    todo ! ()
+    extern "C" { fn mjCModel_ResetTreeLists_impl(self_ptr: *mut mjCModel); }
+    // SAFETY: delegates to C implementation
+    unsafe { mjCModel_ResetTreeLists_impl(self_ptr) }
 }
 
 /// C: mjCModel::SaveDofOffsets (user/user_model.h:471)
@@ -1362,10 +1258,9 @@ pub fn mj_c_model_save_dof_offsets(self_ptr: *mut mjCModel, computesize: bool) {
 /// Calls: mjCModel::SaveDofOffsets
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_model_resolve_keyframes(self_ptr: *mut mjCModel, m: *const mjModel) {
-    // WARNING: signature changed — verify body
-    // Previous params: (self_ptr : * mut mjCModel, m : * const mjModel)
-    // Previous return: ()
-    todo ! ()
+    extern "C" { fn mjCModel_ResolveKeyframes_impl(self_ptr: *mut mjCModel, m: *const mjModel); }
+    // SAFETY: delegates to C implementation
+    unsafe { mjCModel_ResolveKeyframes_impl(self_ptr, m) }
 }
 
 /// C: mjCModel::ExpandKeyframe (user/user_model.h:477)
@@ -1376,56 +1271,50 @@ pub fn mj_c_model_resolve_keyframes(self_ptr: *mut mjCModel, m: *const mjModel) 
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_model_expand_keyframe(self_ptr: *mut mjCModel, key: *mut mjCKey, qpos0_: *const f64, bpos: *const f64, bquat: *const f64) {
-    // WARNING: signature changed — verify body
-    // Previous params: (self_ptr : * mut mjCModel, key : * mut mjCKey, qpos0_ : * const f64, bpos : * const f64, bquat : * const f64)
-    // Previous return: ()
-    todo ! ()
+    extern "C" { fn mjCModel_ExpandKeyframe_impl(self_ptr: *mut mjCModel, key: *mut mjCKey, qpos0_: *const f64, bpos: *const f64, bquat: *const f64); }
+    // SAFETY: delegates to C implementation
+    unsafe { mjCModel_ExpandKeyframe_impl(self_ptr, key, qpos0_, bpos, bquat) }
 }
 
 /// C: mjCModel::ComputeReference (user/user_model.h:480)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_model_compute_reference(self_ptr: *mut mjCModel) {
-    // WARNING: signature changed — verify body
-    // Previous params: (self_ptr : * mut mjCModel)
-    // Previous return: ()
-    todo ! ()
+    extern "C" { fn mjCModel_ComputeReference_impl(self_ptr: *mut mjCModel); }
+    // SAFETY: delegates to C implementation
+    unsafe { mjCModel_ComputeReference_impl(self_ptr) }
 }
 
 /// C: mjCModel::CheckBodyMassInertia (user/user_model.h:483)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_model_check_body_mass_inertia(self_ptr: *mut mjCModel, body: *mut mjCBody) -> bool {
-    // WARNING: signature changed — verify body
-    // Previous params: (self_ptr : * mut mjCModel, body : * mut mjCBody)
-    // Previous return: bool
-    todo ! ()
+    extern "C" { fn mjCModel_CheckBodyMassInertia_impl(self_ptr: *mut mjCModel, body: *mut mjCBody) -> bool; }
+    // SAFETY: delegates to C implementation
+    unsafe { mjCModel_CheckBodyMassInertia_impl(self_ptr, body) }
 }
 
 /// C: mjCModel::PrintTree (user/user_model.h:491)
 /// Calls: PrintIndent
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_model_print_tree(self_ptr: *mut mjCModel, tree: *mut std__stringstream, body: *const mjCBody, depth: i32) {
-    // WARNING: signature changed — verify body
-    // Previous params: (self_ptr : * mut mjCModel, tree : * mut std__stringstream, body : * const mjCBody, depth : i32)
-    // Previous return: ()
-    todo ! ()
+    extern "C" { fn mjCModel_PrintTree_impl(self_ptr: *mut mjCModel, tree: *mut std__stringstream, body: *const mjCBody, depth: i32); }
+    // SAFETY: delegates to C implementation
+    unsafe { mjCModel_PrintTree_impl(self_ptr, tree, body, depth) }
 }
 
 /// C: mjCModel::Signature (user/user_model.h:494)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_model_signature(self_ptr: *mut mjCModel) -> u64 {
-    // WARNING: signature changed — verify body
-    // Previous params: (self_ptr : * mut mjCModel)
-    // Previous return: u64
-    todo ! ()
+    extern "C" { fn mjCModel_Signature_impl(self_ptr: *mut mjCModel) -> u64; }
+    // SAFETY: delegates to C implementation
+    unsafe { mjCModel_Signature_impl(self_ptr) }
 }
 
 /// C: mjCModel::DeleteSubtreePlugin (user/user_model.h:505)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_model_delete_subtree_plugin(self_ptr: *mut mjCModel, subtree: *mut mjCBody) {
-    // WARNING: signature changed — verify body
-    // Previous params: (self_ptr : * mut mjCModel, subtree : * mut mjCBody)
-    // Previous return: ()
-    todo ! ()
+    extern "C" { fn mjCModel_DeleteSubtreePlugin_impl(self_ptr: *mut mjCModel, subtree: *mut mjCBody); }
+    // SAFETY: delegates to C implementation
+    unsafe { mjCModel_DeleteSubtreePlugin_impl(self_ptr, subtree) }
 }
 
 /// C: mjCModel::ExpandAllKeyframes (user/user_model.h:508)

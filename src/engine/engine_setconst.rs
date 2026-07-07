@@ -8,10 +8,9 @@ use crate::types::*;
 /// Calls: mj_actuatorArmature, mju_addTo, mju_copy, mju_dot, mju_mulInertVec
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_set_m0(m: *mut mjModel, d: *mut mjData) {
-    // WARNING: signature changed — verify body
-    // Previous params: (m : * mut mjModel, d : * mut mjData)
-    // Previous return: ()
-    todo ! ()
+    extern "C" { fn mj_setM0_impl(m: *mut mjModel, d: *mut mjData); }
+    // SAFETY: delegates to C implementation
+    unsafe { mj_setM0_impl(m, d) }
 }
 
 /// C: GetWrapBodyTreeId (engine/engine_setconst.c:64)
@@ -27,40 +26,36 @@ pub fn get_wrap_body_tree_id(m: *const mjModel, wrap_index: i32) -> i32 {
 /// Calls: GetWrapBodyTreeId, mj_freeStack, mj_markStack, mj_stackAllocInfo, mju_fillInt, mju_isZero, mju_message, mju_zeroInt
 #[allow(unused_variables, non_snake_case)]
 pub fn set_fixed(m: *mut mjModel, d: *mut mjData) {
-    // WARNING: signature changed — verify body
-    // Previous params: (m : * mut mjModel, d : * mut mjData)
-    // Previous return: ()
-    todo ! ()
+    extern "C" { fn setFixed_impl(m: *mut mjModel, d: *mut mjData); }
+    // SAFETY: delegates to C implementation
+    unsafe { setFixed_impl(m, d) }
 }
 
 /// C: makeTendonSparse (engine/engine_setconst.c:337)
 /// Calls: mju_zeroInt
 #[allow(unused_variables, non_snake_case)]
 pub fn make_tendon_sparse(m: *mut mjModel) {
-    // WARNING: signature changed — verify body
-    // Previous params: (m : * mut mjModel)
-    // Previous return: ()
-    todo ! ()
+    extern "C" { fn makeTendonSparse_impl(m: *mut mjModel); }
+    // SAFETY: delegates to C implementation
+    unsafe { makeTendonSparse_impl(m) }
 }
 
 /// C: makeFlexSparse (engine/engine_setconst.c:424)
 /// Calls: mj_bodyChain, mj_freeStack, mj_jacDifPair, mj_markStack, mj_stackAllocInfo, mju_copyInt, mju_message, mju_sub3, mju_zero, mju_zeroInt
 #[allow(unused_variables, non_snake_case)]
 pub fn make_flex_sparse(m: *mut mjModel, d: *mut mjData) {
-    // WARNING: signature changed — verify body
-    // Previous params: (m : * mut mjModel, d : * mut mjData)
-    // Previous return: ()
-    todo ! ()
+    extern "C" { fn makeFlexSparse_impl(m: *mut mjModel, d: *mut mjData); }
+    // SAFETY: delegates to C implementation
+    unsafe { makeFlexSparse_impl(m, d) }
 }
 
 /// C: mj_alignFlex (engine/engine_setconst.c:648)
 /// Calls: mju_copy3, mju_cross, mju_mulMatTVec3, mju_normalize3, mju_quat2Mat, mju_quatZ2Vec, mju_sub3, mju_warning
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_align_flex(m: *mut mjModel, d: *mut mjData) {
-    // WARNING: signature changed — verify body
-    // Previous params: (m : * mut mjModel, d : * mut mjData)
-    // Previous return: ()
-    todo ! ()
+    extern "C" { fn mj_alignFlex_impl(m: *mut mjModel, d: *mut mjData); }
+    // SAFETY: delegates to C implementation
+    unsafe { mj_alignFlex_impl(m, d) }
 }
 
 /// C: set0 (engine/engine_setconst.c:695)
@@ -81,10 +76,9 @@ pub fn set0(m: *mut mjModel, d: *mut mjData) {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn update_box(xmin: *mut f64, xmax: *mut f64, pos: *mut f64, radius: f64) {
-    // WARNING: signature changed — verify body
-    // Previous params: (xmin : * mut f64, xmax : * mut f64, pos : * mut f64, radius : f64)
-    // Previous return: ()
-    todo ! ()
+    extern "C" { fn updateBox_impl(xmin: *mut f64, xmax: *mut f64, pos: *mut f64, radius: f64); }
+    // SAFETY: delegates to C implementation
+    unsafe { updateBox_impl(xmin, xmax, pos, radius) }
 }
 
 /// C: setStat (engine/engine_setconst.c:1050)
@@ -101,10 +95,9 @@ pub fn set_stat(m: *mut mjModel, d: *mut mjData) {
 /// Calls: mj_comPos, mj_kinematics, mj_tendon, mj_transmission, mju_copy
 #[allow(unused_variables, non_snake_case)]
 pub fn set_spring(m: *mut mjModel, d: *mut mjData) {
-    // WARNING: signature changed — verify body
-    // Previous params: (m : * mut mjModel, d : * mut mjData)
-    // Previous return: ()
-    todo ! ()
+    extern "C" { fn setSpring_impl(m: *mut mjModel, d: *mut mjData); }
+    // SAFETY: delegates to C implementation
+    unsafe { setSpring_impl(m, d) }
 }
 
 /// C: evalAct (engine/engine_setconst.c:1235)
@@ -116,10 +109,9 @@ pub fn set_spring(m: *mut mjModel, d: *mut mjData) {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn eval_act(m: *const mjModel, d: *mut mjData, index: i32, side: i32, opt: *const mjLROpt) -> f64 {
-    // WARNING: signature changed — verify body
-    // Previous params: (m : * const mjModel, d : * mut mjData, index : i32, side : i32, opt : * const mjLROpt)
-    // Previous return: f64
-    todo ! ()
+    extern "C" { fn evalAct_impl(m: *const mjModel, d: *mut mjData, index: i32, side: i32, opt: *const mjLROpt) -> f64; }
+    // SAFETY: delegates to C implementation
+    unsafe { evalAct_impl(m, d, index, side, opt) }
 }
 
 /// C: mj_setConst (engine/engine_setconst.h:27)

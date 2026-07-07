@@ -18,10 +18,9 @@ pub fn mj_parse(filename: *const i8, content_type: *const i8, vfs: *const mjVFS,
 /// Calls: mj_saveXML, mjp_findEncoder
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_encode(s: *const mjSpec, m: *const mjModel, filename: *const i8, content_type: *const i8, vfs: *const mjVFS, error: *mut i8, error_sz: i32) -> i32 {
-    // WARNING: signature changed — verify body
-    // Previous params: (s : * const mjSpec, m : * const mjModel, filename : * const i8, content_type : * const i8, vfs : * const mjVFS, error : * mut i8, error_sz : i32)
-    // Previous return: i32
-    todo ! ()
+    extern "C" { fn mj_encode_impl(s: *const mjSpec, m: *const mjModel, filename: *const i8, content_type: *const i8, vfs: *const mjVFS, error: *mut i8, error_sz: i32) -> i32; }
+    // SAFETY: delegates to C implementation
+    unsafe { mj_encode_impl(s, m, filename, content_type, vfs, error, error_sz) }
 }
 
 /// C: LogCompileTime (user/user_api.cc:212)
@@ -51,19 +50,17 @@ pub fn set_frame(body: *mut mjsBody, objtype: mjtObj, frame: *mut mjsFrame) {
 /// C: attachBody (user/user_api.cc:306)
 #[allow(unused_variables, non_snake_case)]
 pub fn attach_body(parent: *mut mjCFrame, child: *const mjCBody, prefix: *const i8, suffix: *const i8) -> *mut mjsElement {
-    // WARNING: signature changed — verify body
-    // Previous params: (parent : * mut mjCFrame, child : * const mjCBody, prefix : * const i8, suffix : * const i8)
-    // Previous return: * mut mjsElement
-    todo ! ()
+    extern "C" { fn attachBody_impl(parent: *mut mjCFrame, child: *const mjCBody, prefix: *const i8, suffix: *const i8) -> *mut mjsElement; }
+    // SAFETY: delegates to C implementation
+    unsafe { attachBody_impl(parent, child, prefix, suffix) }
 }
 
 /// C: attachFrame (user/user_api.cc:325)
 #[allow(unused_variables, non_snake_case)]
 pub fn attach_frame(parent: *mut mjCBody, child: *const mjCFrame, prefix: *const i8, suffix: *const i8) -> *mut mjsElement {
-    // WARNING: signature changed — verify body
-    // Previous params: (parent : * mut mjCBody, child : * const mjCFrame, prefix : * const i8, suffix : * const i8)
-    // Previous return: * mut mjsElement
-    todo ! ()
+    extern "C" { fn attachFrame_impl(parent: *mut mjCBody, child: *const mjCFrame, prefix: *const i8, suffix: *const i8) -> *mut mjsElement; }
+    // SAFETY: delegates to C implementation
+    unsafe { attachFrame_impl(parent, child, prefix, suffix) }
 }
 
 /// C: attachToSite (user/user_api.cc:344)
@@ -94,28 +91,25 @@ pub fn attach_frame_to_site(parent: *mut mjCSite, child: *const mjCFrame, prefix
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjs_get_timer(s: *mut mjSpec) -> *const f64 {
-    // WARNING: signature changed — verify body
-    // Previous params: (s : * mut mjSpec)
-    // Previous return: * const f64
-    todo ! ()
+    extern "C" { fn mjs_getTimer_impl(s: *mut mjSpec) -> *const f64; }
+    // SAFETY: delegates to C implementation
+    unsafe { mjs_getTimer_impl(s) }
 }
 
 /// C: mjs_numWarnings (user/user_api.cc:535)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjs_num_warnings(spec: *const mjSpec) -> i32 {
-    // WARNING: signature changed — verify body
-    // Previous params: (spec : * const mjSpec)
-    // Previous return: i32
-    todo ! ()
+    extern "C" { fn mjs_numWarnings_impl(spec: *const mjSpec) -> i32; }
+    // SAFETY: delegates to C implementation
+    unsafe { mjs_numWarnings_impl(spec) }
 }
 
 /// C: mjs_getWarning (user/user_api.cc:544)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjs_get_warning(spec: *const mjSpec, index: i32) -> *const i8 {
-    // WARNING: signature changed — verify body
-    // Previous params: (spec : * const mjSpec, index : i32)
-    // Previous return: * const i8
-    todo ! ()
+    extern "C" { fn mjs_getWarning_impl(spec: *const mjSpec, index: i32) -> *const i8; }
+    // SAFETY: delegates to C implementation
+    unsafe { mjs_getWarning_impl(spec, index) }
 }
 
 /// C: FlexcompTypeFromStr (user/user_api.cc:709)
@@ -157,56 +151,50 @@ pub fn mjs_set_buffer(dest: *mut i32, array: *const (), size: i32) {
 /// C: mjs_setString (user/user_api.cc:2240)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjs_set_string(dest: *mut i32, text: *const i8) {
-    // WARNING: signature changed — verify body
-    // Previous params: (dest : * mut i32, text : * const i8)
-    // Previous return: ()
-    todo ! ()
+    extern "C" { fn mjs_setString_impl(dest: *mut i32, text: *const i8); }
+    // SAFETY: delegates to C implementation
+    unsafe { mjs_setString_impl(dest, text) }
 }
 
 /// C: mjs_setInStringVec (user/user_api.cc:2248)
 /// Calls: mju_error
 #[allow(unused_variables, non_snake_case)]
 pub fn mjs_set_in_string_vec(dest: *mut i32, i: i32, text: *const i8) -> mjtBool {
-    // WARNING: signature changed — verify body
-    // Previous params: (dest : * mut i32, i : i32, text : * const i8)
-    // Previous return: mjtBool
-    todo ! ()
+    extern "C" { fn mjs_setInStringVec_impl(dest: *mut i32, i: i32, text: *const i8) -> mjtBool; }
+    // SAFETY: delegates to C implementation
+    unsafe { mjs_setInStringVec_impl(dest, i, text) }
 }
 
 /// C: mjs_setStringVec (user/user_api.cc:2260)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjs_set_string_vec(dest: *mut i32, text: *const i8) {
-    // WARNING: signature changed — verify body
-    // Previous params: (dest : * mut i32, text : * const i8)
-    // Previous return: ()
-    todo ! ()
+    extern "C" { fn mjs_setStringVec_impl(dest: *mut i32, text: *const i8); }
+    // SAFETY: delegates to C implementation
+    unsafe { mjs_setStringVec_impl(dest, text) }
 }
 
 /// C: mjs_appendString (user/user_api.cc:2268)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjs_append_string(dest: *mut i32, text: *const i8) {
-    // WARNING: signature changed — verify body
-    // Previous params: (dest : * mut i32, text : * const i8)
-    // Previous return: ()
-    todo ! ()
+    extern "C" { fn mjs_appendString_impl(dest: *mut i32, text: *const i8); }
+    // SAFETY: delegates to C implementation
+    unsafe { mjs_appendString_impl(dest, text) }
 }
 
 /// C: mjs_setInt (user/user_api.cc:2274)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjs_set_int(dest: *mut i32, array: *const i32, size: i32) {
-    // WARNING: signature changed — verify body
-    // Previous params: (dest : * mut i32, array : * const i32, size : i32)
-    // Previous return: ()
-    todo ! ()
+    extern "C" { fn mjs_setInt_impl(dest: *mut i32, array: *const i32, size: i32); }
+    // SAFETY: delegates to C implementation
+    unsafe { mjs_setInt_impl(dest, array, size) }
 }
 
 /// C: mjs_appendIntVec (user/user_api.cc:2284)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjs_append_int_vec(dest: *mut i32, array: *const i32, size: i32) {
-    // WARNING: signature changed — verify body
-    // Previous params: (dest : * mut i32, array : * const i32, size : i32)
-    // Previous return: ()
-    todo ! ()
+    extern "C" { fn mjs_appendIntVec_impl(dest: *mut i32, array: *const i32, size: i32); }
+    // SAFETY: delegates to C implementation
+    unsafe { mjs_appendIntVec_impl(dest, array, size) }
 }
 
 /// C: mjs_setFloat (user/user_api.cc:2291)
@@ -217,10 +205,9 @@ pub fn mjs_append_int_vec(dest: *mut i32, array: *const i32, size: i32) {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjs_set_float(dest: *mut i32, array: *const f32, size: i32) {
-    // WARNING: signature changed — verify body
-    // Previous params: (dest : * mut i32, array : * const f32, size : i32)
-    // Previous return: ()
-    todo ! ()
+    extern "C" { fn mjs_setFloat_impl(dest: *mut i32, array: *const f32, size: i32); }
+    // SAFETY: delegates to C implementation
+    unsafe { mjs_setFloat_impl(dest, array, size) }
 }
 
 /// C: mjs_appendFloatVec (user/user_api.cc:2302)
@@ -231,10 +218,9 @@ pub fn mjs_set_float(dest: *mut i32, array: *const f32, size: i32) {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjs_append_float_vec(dest: *mut i32, array: *const f32, size: i32) {
-    // WARNING: signature changed — verify body
-    // Previous params: (dest : * mut i32, array : * const f32, size : i32)
-    // Previous return: ()
-    todo ! ()
+    extern "C" { fn mjs_appendFloatVec_impl(dest: *mut i32, array: *const f32, size: i32); }
+    // SAFETY: delegates to C implementation
+    unsafe { mjs_appendFloatVec_impl(dest, array, size) }
 }
 
 /// C: mjs_setDouble (user/user_api.cc:2309)
@@ -245,28 +231,25 @@ pub fn mjs_append_float_vec(dest: *mut i32, array: *const f32, size: i32) {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjs_set_double(dest: *mut i32, array: *const f64, size: i32) {
-    // WARNING: signature changed — verify body
-    // Previous params: (dest : * mut i32, array : * const f64, size : i32)
-    // Previous return: ()
-    todo ! ()
+    extern "C" { fn mjs_setDouble_impl(dest: *mut i32, array: *const f64, size: i32); }
+    // SAFETY: delegates to C implementation
+    unsafe { mjs_setDouble_impl(dest, array, size) }
 }
 
 /// C: mjs_getName (user/user_api.cc:2319)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjs_get_name(element: *mut mjsElement) -> *mut i32 {
-    // WARNING: signature changed — verify body
-    // Previous params: (element : * mut mjsElement)
-    // Previous return: * mut i32
-    todo ! ()
+    extern "C" { fn mjs_getName_impl(element: *mut mjsElement) -> *mut i32; }
+    // SAFETY: delegates to C implementation
+    unsafe { mjs_getName_impl(element) }
 }
 
 /// C: mjs_getString (user/user_api.cc:2329)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjs_get_string(source: *const i32) -> *const i8 {
-    // WARNING: signature changed — verify body
-    // Previous params: (source : * const i32)
-    // Previous return: * const i8
-    todo ! ()
+    extern "C" { fn mjs_getString_impl(source: *const i32) -> *const i8; }
+    // SAFETY: delegates to C implementation
+    unsafe { mjs_getString_impl(source) }
 }
 
 /// C: mjs_getDouble (user/user_api.cc:2336)
@@ -277,19 +260,17 @@ pub fn mjs_get_string(source: *const i32) -> *const i8 {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjs_get_double(source: *const i32, size: *mut i32) -> *const f64 {
-    // WARNING: signature changed — verify body
-    // Previous params: (source : * const i32, size : * mut i32)
-    // Previous return: * const f64
-    todo ! ()
+    extern "C" { fn mjs_getDouble_impl(source: *const i32, size: *mut i32) -> *const f64; }
+    // SAFETY: delegates to C implementation
+    unsafe { mjs_getDouble_impl(source, size) }
 }
 
 /// C: mj_makeSpec (user/user_api.h:40)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_make_spec() -> *mut mjSpec {
-    // WARNING: signature changed — verify body
-    // Previous params: ()
-    // Previous return: * mut mjSpec
-    todo ! ()
+    extern "C" { fn mj_makeSpec_impl() -> *mut mjSpec; }
+    // SAFETY: delegates to C implementation
+    unsafe { mj_makeSpec_impl() }
 }
 
 /// C: mj_compile (user/user_api.h:43)
@@ -315,10 +296,9 @@ pub fn mj_recompile(s: *mut mjSpec, vfs: *const mjVFS, m: *mut mjModel, d: *mut 
 /// C: mj_copySpec (user/user_api.h:49)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_copy_spec(s: *const mjSpec) -> *mut mjSpec {
-    // WARNING: signature changed — verify body
-    // Previous params: (s : * const mjSpec)
-    // Previous return: * mut mjSpec
-    todo ! ()
+    extern "C" { fn mj_copySpec_impl(s: *const mjSpec) -> *mut mjSpec; }
+    // SAFETY: delegates to C implementation
+    unsafe { mj_copySpec_impl(s) }
 }
 
 /// C: mjs_getError (user/user_api.h:52)
@@ -473,10 +453,9 @@ pub fn mjs_add_light(body: *mut mjsBody, def: *const mjsDefault) -> *mut mjsLigh
 /// Calls: mjCBody::AddFrame, mjCFrame::SetParent
 #[allow(unused_variables, non_snake_case)]
 pub fn mjs_add_frame(body: *mut mjsBody, parentframe: *mut mjsFrame) -> *mut mjsFrame {
-    // WARNING: signature changed — verify body
-    // Previous params: (body : * mut mjsBody, parentframe : * mut mjsFrame)
-    // Previous return: * mut mjsFrame
-    todo ! ()
+    extern "C" { fn mjs_addFrame_impl(body: *mut mjsBody, parentframe: *mut mjsFrame) -> *mut mjsFrame; }
+    // SAFETY: delegates to C implementation
+    unsafe { mjs_addFrame_impl(body, parentframe) }
 }
 
 /// C: mjs_delete (user/user_api.h:107)
@@ -577,19 +556,17 @@ pub fn mjs_add_tendon(s: *mut mjSpec, def: *const mjsDefault) -> *mut mjsTendon 
 /// C: mjs_wrapSite (user/user_api.h:142)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjs_wrap_site(tendon: *mut mjsTendon, name: *const i8) -> *mut mjsWrap {
-    // WARNING: signature changed — verify body
-    // Previous params: (tendon : * mut mjsTendon, name : * const i8)
-    // Previous return: * mut mjsWrap
-    todo ! ()
+    extern "C" { fn mjs_wrapSite_impl(tendon: *mut mjsTendon, name: *const i8) -> *mut mjsWrap; }
+    // SAFETY: delegates to C implementation
+    unsafe { mjs_wrapSite_impl(tendon, name) }
 }
 
 /// C: mjs_wrapGeom (user/user_api.h:145)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjs_wrap_geom(tendon: *mut mjsTendon, name: *const i8, sidesite: *const i8) -> *mut mjsWrap {
-    // WARNING: signature changed — verify body
-    // Previous params: (tendon : * mut mjsTendon, name : * const i8, sidesite : * const i8)
-    // Previous return: * mut mjsWrap
-    todo ! ()
+    extern "C" { fn mjs_wrapGeom_impl(tendon: *mut mjsTendon, name: *const i8, sidesite: *const i8) -> *mut mjsWrap; }
+    // SAFETY: delegates to C implementation
+    unsafe { mjs_wrapGeom_impl(tendon, name, sidesite) }
 }
 
 /// C: mjs_wrapJoint (user/user_api.h:148)
@@ -600,10 +577,9 @@ pub fn mjs_wrap_geom(tendon: *mut mjsTendon, name: *const i8, sidesite: *const i
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjs_wrap_joint(tendon: *mut mjsTendon, name: *const i8, coef: f64) -> *mut mjsWrap {
-    // WARNING: signature changed — verify body
-    // Previous params: (tendon : * mut mjsTendon, name : * const i8, coef : f64)
-    // Previous return: * mut mjsWrap
-    todo ! ()
+    extern "C" { fn mjs_wrapJoint_impl(tendon: *mut mjsTendon, name: *const i8, coef: f64) -> *mut mjsWrap; }
+    // SAFETY: delegates to C implementation
+    unsafe { mjs_wrapJoint_impl(tendon, name, coef) }
 }
 
 /// C: mjs_wrapPulley (user/user_api.h:151)
@@ -674,19 +650,17 @@ pub fn mjs_add_plugin(s: *mut mjSpec) -> *mut mjsPlugin {
 /// C: mjs_addDefault (user/user_api.h:169)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjs_add_default(s: *mut mjSpec, classname: *const i8, parent: *const mjsDefault) -> *mut mjsDefault {
-    // WARNING: signature changed — verify body
-    // Previous params: (s : * mut mjSpec, classname : * const i8, parent : * const mjsDefault)
-    // Previous return: * mut mjsDefault
-    todo ! ()
+    extern "C" { fn mjs_addDefault_impl(s: *mut mjSpec, classname: *const i8, parent: *const mjsDefault) -> *mut mjsDefault; }
+    // SAFETY: delegates to C implementation
+    unsafe { mjs_addDefault_impl(s, classname, parent) }
 }
 
 /// C: mjs_setToMotor (user/user_api.h:175)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjs_set_to_motor(actuator: *mut mjsActuator) -> *const i8 {
-    // WARNING: signature changed — verify body
-    // Previous params: (actuator : * mut mjsActuator)
-    // Previous return: * const i8
-    todo ! ()
+    extern "C" { fn mjs_setToMotor_impl(actuator: *mut mjsActuator) -> *const i8; }
+    // SAFETY: delegates to C implementation
+    unsafe { mjs_setToMotor_impl(actuator) }
 }
 
 /// C: mjs_setToPosition (user/user_api.h:178)
@@ -697,10 +671,9 @@ pub fn mjs_set_to_motor(actuator: *mut mjsActuator) -> *const i8 {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjs_set_to_position(actuator: *mut mjsActuator, kp: f64, kv: [f64; 1], dampratio: [f64; 1], timeconst: [f64; 1], inheritrange: f64) -> *const i8 {
-    // WARNING: signature changed — verify body
-    // Previous params: (actuator : * mut mjsActuator, kp : f64, kv : [f64 ; 1], dampratio : [f64 ; 1], timeconst : [f64 ; 1], inheritrange : f64)
-    // Previous return: * const i8
-    todo ! ()
+    extern "C" { fn mjs_setToPosition_impl(actuator: *mut mjsActuator, kp: f64, kv: [f64; 1], dampratio: [f64; 1], timeconst: [f64; 1], inheritrange: f64) -> *const i8; }
+    // SAFETY: delegates to C implementation
+    unsafe { mjs_setToPosition_impl(actuator, kp, kv, dampratio, timeconst, inheritrange) }
 }
 
 /// C: mjs_setToIntVelocity (user/user_api.h:182)
@@ -727,10 +700,9 @@ pub fn mjs_set_to_int_velocity(actuator: *mut mjsActuator, kp: f64, kv: [f64; 1]
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjs_set_to_velocity(actuator: *mut mjsActuator, kv: f64) -> *const i8 {
-    // WARNING: signature changed — verify body
-    // Previous params: (actuator : * mut mjsActuator, kv : f64)
-    // Previous return: * const i8
-    todo ! ()
+    extern "C" { fn mjs_setToVelocity_impl(actuator: *mut mjsActuator, kv: f64) -> *const i8; }
+    // SAFETY: delegates to C implementation
+    unsafe { mjs_setToVelocity_impl(actuator, kv) }
 }
 
 /// C: mjs_setToDamper (user/user_api.h:189)
@@ -742,10 +714,9 @@ pub fn mjs_set_to_velocity(actuator: *mut mjsActuator, kv: f64) -> *const i8 {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjs_set_to_damper(actuator: *mut mjsActuator, kv: f64) -> *const i8 {
-    // WARNING: signature changed — verify body
-    // Previous params: (actuator : * mut mjsActuator, kv : f64)
-    // Previous return: * const i8
-    todo ! ()
+    extern "C" { fn mjs_setToDamper_impl(actuator: *mut mjsActuator, kv: f64) -> *const i8; }
+    // SAFETY: delegates to C implementation
+    unsafe { mjs_setToDamper_impl(actuator, kv) }
 }
 
 /// C: mjs_setToCylinder (user/user_api.h:192)
@@ -756,10 +727,9 @@ pub fn mjs_set_to_damper(actuator: *mut mjsActuator, kv: f64) -> *const i8 {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjs_set_to_cylinder(actuator: *mut mjsActuator, timeconst: f64, bias: f64, area: f64, diameter: f64) -> *const i8 {
-    // WARNING: signature changed — verify body
-    // Previous params: (actuator : * mut mjsActuator, timeconst : f64, bias : f64, area : f64, diameter : f64)
-    // Previous return: * const i8
-    todo ! ()
+    extern "C" { fn mjs_setToCylinder_impl(actuator: *mut mjsActuator, timeconst: f64, bias: f64, area: f64, diameter: f64) -> *const i8; }
+    // SAFETY: delegates to C implementation
+    unsafe { mjs_setToCylinder_impl(actuator, timeconst, bias, area, diameter) }
 }
 
 /// C: mjs_setToMuscle (user/user_api.h:196)
@@ -770,10 +740,9 @@ pub fn mjs_set_to_cylinder(actuator: *mut mjsActuator, timeconst: f64, bias: f64
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjs_set_to_muscle(actuator: *mut mjsActuator, timeconst: [f64; 2], tausmooth: f64, range: [f64; 2], force: f64, scale: f64, lmin: f64, lmax: f64, vmax: f64, fpmax: f64, fvmax: f64) -> *const i8 {
-    // WARNING: signature changed — verify body
-    // Previous params: (actuator : * mut mjsActuator, timeconst : [f64 ; 2], tausmooth : f64, range : [f64 ; 2], force : f64, scale : f64, lmin : f64, lmax : f64, vmax : f64, fpmax : f64, fvmax : f64)
-    // Previous return: * const i8
-    todo ! ()
+    extern "C" { fn mjs_setToMuscle_impl(actuator: *mut mjsActuator, timeconst: [f64; 2], tausmooth: f64, range: [f64; 2], force: f64, scale: f64, lmin: f64, lmax: f64, vmax: f64, fpmax: f64, fvmax: f64) -> *const i8; }
+    // SAFETY: delegates to C implementation
+    unsafe { mjs_setToMuscle_impl(actuator, timeconst, tausmooth, range, force, scale, lmin, lmax, vmax, fpmax, fvmax) }
 }
 
 /// C: mjs_setToAdhesion (user/user_api.h:201)
@@ -784,10 +753,9 @@ pub fn mjs_set_to_muscle(actuator: *mut mjsActuator, timeconst: [f64; 2], tausmo
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjs_set_to_adhesion(actuator: *mut mjsActuator, gain: f64) -> *const i8 {
-    // WARNING: signature changed — verify body
-    // Previous params: (actuator : * mut mjsActuator, gain : f64)
-    // Previous return: * const i8
-    todo ! ()
+    extern "C" { fn mjs_setToAdhesion_impl(actuator: *mut mjsActuator, gain: f64) -> *const i8; }
+    // SAFETY: delegates to C implementation
+    unsafe { mjs_setToAdhesion_impl(actuator, gain) }
 }
 
 /// C: mjs_setToDCMotor (user/user_api.h:204)
@@ -798,10 +766,9 @@ pub fn mjs_set_to_adhesion(actuator: *mut mjsActuator, gain: f64) -> *const i8 {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjs_set_to_dc_motor(actuator: *mut mjsActuator, motorconst: [f64; 2], resistance: f64, nominal: [f64; 3], saturation: [f64; 3], inductance: [f64; 2], cogging: [f64; 3], controller: [f64; 6], thermal: [f64; 6], lugre: [f64; 5], input_mode: i32) -> *const i8 {
-    // WARNING: signature changed — verify body
-    // Previous params: (actuator : * mut mjsActuator, motorconst : [f64 ; 2], resistance : f64, nominal : [f64 ; 3], saturation : [f64 ; 3], inductance : [f64 ; 2], cogging : [f64 ; 3], controller : [f64 ; 6], thermal : [f64 ; 6], lugre : [f64 ; 5], input_mode : i32)
-    // Previous return: * const i8
-    todo ! ()
+    extern "C" { fn mjs_setToDCMotor_impl(actuator: *mut mjsActuator, motorconst: [f64; 2], resistance: f64, nominal: [f64; 3], saturation: [f64; 3], inductance: [f64; 2], cogging: [f64; 3], controller: [f64; 6], thermal: [f64; 6], lugre: [f64; 5], input_mode: i32) -> *const i8; }
+    // SAFETY: delegates to C implementation
+    unsafe { mjs_setToDCMotor_impl(actuator, motorconst, resistance, nominal, saturation, inductance, cogging, controller, thermal, lugre, input_mode) }
 }
 
 /// C: mjs_addMesh (user/user_api.h:213)
@@ -872,10 +839,9 @@ pub fn mjs_make_mesh(mesh: *mut mjsMesh, builtin: mjtMeshBuiltin, params: *mut f
 /// C: mjs_getSpec (user/user_api.h:233)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjs_get_spec(element: *const mjsElement) -> *mut mjSpec {
-    // WARNING: signature changed — verify body
-    // Previous params: (element : * const mjsElement)
-    // Previous return: * mut mjSpec
-    todo ! ()
+    extern "C" { fn mjs_getSpec_impl(element: *const mjsElement) -> *mut mjSpec; }
+    // SAFETY: delegates to C implementation
+    unsafe { mjs_getSpec_impl(element) }
 }
 
 /// C: mjs_getOriginSpec (user/user_api.h:237)
@@ -891,10 +857,9 @@ pub fn mjs_get_origin_spec(element: *const mjsElement) -> *mut mjSpec {
 /// C: mjs_findSpec (user/user_api.h:240)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjs_find_spec(spec: *const mjSpec, name: *const i8) -> *mut mjSpec {
-    // WARNING: signature changed — verify body
-    // Previous params: (spec : * const mjSpec, name : * const i8)
-    // Previous return: * mut mjSpec
-    todo ! ()
+    extern "C" { fn mjs_findSpec_impl(spec: *const mjSpec, name: *const i8) -> *mut mjSpec; }
+    // SAFETY: delegates to C implementation
+    unsafe { mjs_findSpec_impl(spec, name) }
 }
 
 /// C: mjs_findBody (user/user_api.h:243)
@@ -920,28 +885,25 @@ pub fn mjs_find_element(s: *const mjSpec, r#type: mjtObj, name: *const i8) -> *m
 /// C: mjs_findChild (user/user_api.h:249)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjs_find_child(body: *const mjsBody, name: *const i8) -> *mut mjsBody {
-    // WARNING: signature changed — verify body
-    // Previous params: (body : * const mjsBody, name : * const i8)
-    // Previous return: * mut mjsBody
-    todo ! ()
+    extern "C" { fn mjs_findChild_impl(body: *const mjsBody, name: *const i8) -> *mut mjsBody; }
+    // SAFETY: delegates to C implementation
+    unsafe { mjs_findChild_impl(body, name) }
 }
 
 /// C: mjs_getParent (user/user_api.h:252)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjs_get_parent(element: *const mjsElement) -> *mut mjsBody {
-    // WARNING: signature changed — verify body
-    // Previous params: (element : * const mjsElement)
-    // Previous return: * mut mjsBody
-    todo ! ()
+    extern "C" { fn mjs_getParent_impl(element: *const mjsElement) -> *mut mjsBody; }
+    // SAFETY: delegates to C implementation
+    unsafe { mjs_getParent_impl(element) }
 }
 
 /// C: mjs_getFrame (user/user_api.h:255)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjs_get_frame(element: *const mjsElement) -> *mut mjsFrame {
-    // WARNING: signature changed — verify body
-    // Previous params: (element : * const mjsElement)
-    // Previous return: * mut mjsFrame
-    todo ! ()
+    extern "C" { fn mjs_getFrame_impl(element: *const mjsElement) -> *mut mjsFrame; }
+    // SAFETY: delegates to C implementation
+    unsafe { mjs_getFrame_impl(element) }
 }
 
 /// C: mjs_findFrame (user/user_api.h:258)
@@ -957,48 +919,43 @@ pub fn mjs_find_frame(s: *const mjSpec, name: *const i8) -> *mut mjsFrame {
 /// C: mjs_getDefault (user/user_api.h:261)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjs_get_default(element: *const mjsElement) -> *mut mjsDefault {
-    // WARNING: signature changed — verify body
-    // Previous params: (element : * const mjsElement)
-    // Previous return: * mut mjsDefault
-    todo ! ()
+    extern "C" { fn mjs_getDefault_impl(element: *const mjsElement) -> *mut mjsDefault; }
+    // SAFETY: delegates to C implementation
+    unsafe { mjs_getDefault_impl(element) }
 }
 
 /// C: mjs_findDefault (user/user_api.h:264)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjs_find_default(s: *const mjSpec, classname: *const i8) -> *mut mjsDefault {
-    // WARNING: signature changed — verify body
-    // Previous params: (s : * const mjSpec, classname : * const i8)
-    // Previous return: * mut mjsDefault
-    todo ! ()
+    extern "C" { fn mjs_findDefault_impl(s: *const mjSpec, classname: *const i8) -> *mut mjsDefault; }
+    // SAFETY: delegates to C implementation
+    unsafe { mjs_findDefault_impl(s, classname) }
 }
 
 /// C: mjs_getSpecDefault (user/user_api.h:267)
 /// Calls: mjCModel::Default
 #[allow(unused_variables, non_snake_case)]
 pub fn mjs_get_spec_default(s: *const mjSpec) -> *mut mjsDefault {
-    // WARNING: signature changed — verify body
-    // Previous params: (s : * const mjSpec)
-    // Previous return: * mut mjsDefault
-    todo ! ()
+    extern "C" { fn mjs_getSpecDefault_impl(s: *const mjSpec) -> *mut mjsDefault; }
+    // SAFETY: delegates to C implementation
+    unsafe { mjs_getSpecDefault_impl(s) }
 }
 
 /// C: mjs_getId (user/user_api.h:270)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjs_get_id(element: *const mjsElement) -> i32 {
-    // WARNING: signature changed — verify body
-    // Previous params: (element : * const mjsElement)
-    // Previous return: i32
-    todo ! ()
+    extern "C" { fn mjs_getId_impl(element: *const mjsElement) -> i32; }
+    // SAFETY: delegates to C implementation
+    unsafe { mjs_getId_impl(element) }
 }
 
 /// C: mjs_firstChild (user/user_api.h:276)
 /// Calls: mjCBody::NextChild
 #[allow(unused_variables, non_snake_case)]
 pub fn mjs_first_child(body: *const mjsBody, r#type: mjtObj, recurse: i32) -> *mut mjsElement {
-    // WARNING: signature changed — verify body
-    // Previous params: (body : * const mjsBody, r#type : mjtObj, recurse : i32)
-    // Previous return: * mut mjsElement
-    todo ! ()
+    extern "C" { fn mjs_firstChild_impl(body: *const mjsBody, r#type: mjtObj, recurse: i32) -> *mut mjsElement; }
+    // SAFETY: delegates to C implementation
+    unsafe { mjs_firstChild_impl(body, r#type, recurse) }
 }
 
 /// C: mjs_nextChild (user/user_api.h:280)
@@ -1060,10 +1017,9 @@ pub fn mjs_get_wrap_side_site(wrap: *const mjsWrap) -> *mut mjsSite {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjs_get_wrap_divisor(wrap: *const mjsWrap) -> f64 {
-    // WARNING: signature changed — verify body
-    // Previous params: (wrap : * const mjsWrap)
-    // Previous return: f64
-    todo ! ()
+    extern "C" { fn mjs_getWrapDivisor_impl(wrap: *const mjsWrap) -> f64; }
+    // SAFETY: delegates to C implementation
+    unsafe { mjs_getWrapDivisor_impl(wrap) }
 }
 
 /// C: mjs_getWrapCoef (user/user_api.h:298)
@@ -1075,172 +1031,153 @@ pub fn mjs_get_wrap_divisor(wrap: *const mjsWrap) -> f64 {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjs_get_wrap_coef(wrap: *const mjsWrap) -> f64 {
-    // WARNING: signature changed — verify body
-    // Previous params: (wrap : * const mjsWrap)
-    // Previous return: f64
-    todo ! ()
+    extern "C" { fn mjs_getWrapCoef_impl(wrap: *const mjsWrap) -> f64; }
+    // SAFETY: delegates to C implementation
+    unsafe { mjs_getWrapCoef_impl(wrap) }
 }
 
 /// C: mjs_asBody (user/user_api.h:301)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjs_as_body(element: *mut mjsElement) -> *mut mjsBody {
-    // WARNING: signature changed — verify body
-    // Previous params: (element : * mut mjsElement)
-    // Previous return: * mut mjsBody
-    todo ! ()
+    extern "C" { fn mjs_asBody_impl(element: *mut mjsElement) -> *mut mjsBody; }
+    // SAFETY: delegates to C implementation
+    unsafe { mjs_asBody_impl(element) }
 }
 
 /// C: mjs_asGeom (user/user_api.h:304)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjs_as_geom(element: *mut mjsElement) -> *mut mjsGeom {
-    // WARNING: signature changed — verify body
-    // Previous params: (element : * mut mjsElement)
-    // Previous return: * mut mjsGeom
-    todo ! ()
+    extern "C" { fn mjs_asGeom_impl(element: *mut mjsElement) -> *mut mjsGeom; }
+    // SAFETY: delegates to C implementation
+    unsafe { mjs_asGeom_impl(element) }
 }
 
 /// C: mjs_asJoint (user/user_api.h:307)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjs_as_joint(element: *mut mjsElement) -> *mut mjsJoint {
-    // WARNING: signature changed — verify body
-    // Previous params: (element : * mut mjsElement)
-    // Previous return: * mut mjsJoint
-    todo ! ()
+    extern "C" { fn mjs_asJoint_impl(element: *mut mjsElement) -> *mut mjsJoint; }
+    // SAFETY: delegates to C implementation
+    unsafe { mjs_asJoint_impl(element) }
 }
 
 /// C: mjs_asSite (user/user_api.h:310)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjs_as_site(element: *mut mjsElement) -> *mut mjsSite {
-    // WARNING: signature changed — verify body
-    // Previous params: (element : * mut mjsElement)
-    // Previous return: * mut mjsSite
-    todo ! ()
+    extern "C" { fn mjs_asSite_impl(element: *mut mjsElement) -> *mut mjsSite; }
+    // SAFETY: delegates to C implementation
+    unsafe { mjs_asSite_impl(element) }
 }
 
 /// C: mjs_asCamera (user/user_api.h:313)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjs_as_camera(element: *mut mjsElement) -> *mut mjsCamera {
-    // WARNING: signature changed — verify body
-    // Previous params: (element : * mut mjsElement)
-    // Previous return: * mut mjsCamera
-    todo ! ()
+    extern "C" { fn mjs_asCamera_impl(element: *mut mjsElement) -> *mut mjsCamera; }
+    // SAFETY: delegates to C implementation
+    unsafe { mjs_asCamera_impl(element) }
 }
 
 /// C: mjs_asLight (user/user_api.h:316)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjs_as_light(element: *mut mjsElement) -> *mut mjsLight {
-    // WARNING: signature changed — verify body
-    // Previous params: (element : * mut mjsElement)
-    // Previous return: * mut mjsLight
-    todo ! ()
+    extern "C" { fn mjs_asLight_impl(element: *mut mjsElement) -> *mut mjsLight; }
+    // SAFETY: delegates to C implementation
+    unsafe { mjs_asLight_impl(element) }
 }
 
 /// C: mjs_asFrame (user/user_api.h:319)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjs_as_frame(element: *mut mjsElement) -> *mut mjsFrame {
-    // WARNING: signature changed — verify body
-    // Previous params: (element : * mut mjsElement)
-    // Previous return: * mut mjsFrame
-    todo ! ()
+    extern "C" { fn mjs_asFrame_impl(element: *mut mjsElement) -> *mut mjsFrame; }
+    // SAFETY: delegates to C implementation
+    unsafe { mjs_asFrame_impl(element) }
 }
 
 /// C: mjs_asActuator (user/user_api.h:322)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjs_as_actuator(element: *mut mjsElement) -> *mut mjsActuator {
-    // WARNING: signature changed — verify body
-    // Previous params: (element : * mut mjsElement)
-    // Previous return: * mut mjsActuator
-    todo ! ()
+    extern "C" { fn mjs_asActuator_impl(element: *mut mjsElement) -> *mut mjsActuator; }
+    // SAFETY: delegates to C implementation
+    unsafe { mjs_asActuator_impl(element) }
 }
 
 /// C: mjs_asSensor (user/user_api.h:325)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjs_as_sensor(element: *mut mjsElement) -> *mut mjsSensor {
-    // WARNING: signature changed — verify body
-    // Previous params: (element : * mut mjsElement)
-    // Previous return: * mut mjsSensor
-    todo ! ()
+    extern "C" { fn mjs_asSensor_impl(element: *mut mjsElement) -> *mut mjsSensor; }
+    // SAFETY: delegates to C implementation
+    unsafe { mjs_asSensor_impl(element) }
 }
 
 /// C: mjs_asFlex (user/user_api.h:328)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjs_as_flex(element: *mut mjsElement) -> *mut mjsFlex {
-    // WARNING: signature changed — verify body
-    // Previous params: (element : * mut mjsElement)
-    // Previous return: * mut mjsFlex
-    todo ! ()
+    extern "C" { fn mjs_asFlex_impl(element: *mut mjsElement) -> *mut mjsFlex; }
+    // SAFETY: delegates to C implementation
+    unsafe { mjs_asFlex_impl(element) }
 }
 
 /// C: mjs_asPair (user/user_api.h:331)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjs_as_pair(element: *mut mjsElement) -> *mut mjsPair {
-    // WARNING: signature changed — verify body
-    // Previous params: (element : * mut mjsElement)
-    // Previous return: * mut mjsPair
-    todo ! ()
+    extern "C" { fn mjs_asPair_impl(element: *mut mjsElement) -> *mut mjsPair; }
+    // SAFETY: delegates to C implementation
+    unsafe { mjs_asPair_impl(element) }
 }
 
 /// C: mjs_asEquality (user/user_api.h:334)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjs_as_equality(element: *mut mjsElement) -> *mut mjsEquality {
-    // WARNING: signature changed — verify body
-    // Previous params: (element : * mut mjsElement)
-    // Previous return: * mut mjsEquality
-    todo ! ()
+    extern "C" { fn mjs_asEquality_impl(element: *mut mjsElement) -> *mut mjsEquality; }
+    // SAFETY: delegates to C implementation
+    unsafe { mjs_asEquality_impl(element) }
 }
 
 /// C: mjs_asExclude (user/user_api.h:337)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjs_as_exclude(element: *mut mjsElement) -> *mut mjsExclude {
-    // WARNING: signature changed — verify body
-    // Previous params: (element : * mut mjsElement)
-    // Previous return: * mut mjsExclude
-    todo ! ()
+    extern "C" { fn mjs_asExclude_impl(element: *mut mjsElement) -> *mut mjsExclude; }
+    // SAFETY: delegates to C implementation
+    unsafe { mjs_asExclude_impl(element) }
 }
 
 /// C: mjs_asTendon (user/user_api.h:340)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjs_as_tendon(element: *mut mjsElement) -> *mut mjsTendon {
-    // WARNING: signature changed — verify body
-    // Previous params: (element : * mut mjsElement)
-    // Previous return: * mut mjsTendon
-    todo ! ()
+    extern "C" { fn mjs_asTendon_impl(element: *mut mjsElement) -> *mut mjsTendon; }
+    // SAFETY: delegates to C implementation
+    unsafe { mjs_asTendon_impl(element) }
 }
 
 /// C: mjs_asNumeric (user/user_api.h:343)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjs_as_numeric(element: *mut mjsElement) -> *mut mjsNumeric {
-    // WARNING: signature changed — verify body
-    // Previous params: (element : * mut mjsElement)
-    // Previous return: * mut mjsNumeric
-    todo ! ()
+    extern "C" { fn mjs_asNumeric_impl(element: *mut mjsElement) -> *mut mjsNumeric; }
+    // SAFETY: delegates to C implementation
+    unsafe { mjs_asNumeric_impl(element) }
 }
 
 /// C: mjs_asText (user/user_api.h:346)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjs_as_text(element: *mut mjsElement) -> *mut mjsText {
-    // WARNING: signature changed — verify body
-    // Previous params: (element : * mut mjsElement)
-    // Previous return: * mut mjsText
-    todo ! ()
+    extern "C" { fn mjs_asText_impl(element: *mut mjsElement) -> *mut mjsText; }
+    // SAFETY: delegates to C implementation
+    unsafe { mjs_asText_impl(element) }
 }
 
 /// C: mjs_asTuple (user/user_api.h:349)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjs_as_tuple(element: *mut mjsElement) -> *mut mjsTuple {
-    // WARNING: signature changed — verify body
-    // Previous params: (element : * mut mjsElement)
-    // Previous return: * mut mjsTuple
-    todo ! ()
+    extern "C" { fn mjs_asTuple_impl(element: *mut mjsElement) -> *mut mjsTuple; }
+    // SAFETY: delegates to C implementation
+    unsafe { mjs_asTuple_impl(element) }
 }
 
 /// C: mjs_asKey (user/user_api.h:352)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjs_as_key(element: *mut mjsElement) -> *mut mjsKey {
-    // WARNING: signature changed — verify body
-    // Previous params: (element : * mut mjsElement)
-    // Previous return: * mut mjsKey
-    todo ! ()
+    extern "C" { fn mjs_asKey_impl(element: *mut mjsElement) -> *mut mjsKey; }
+    // SAFETY: delegates to C implementation
+    unsafe { mjs_asKey_impl(element) }
 }
 
 /// C: mjs_asMesh (user/user_api.h:355)
@@ -1282,19 +1219,17 @@ pub fn mjs_as_texture(element: *mut mjsElement) -> *mut mjsTexture {
 /// C: mjs_asMaterial (user/user_api.h:367)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjs_as_material(element: *mut mjsElement) -> *mut mjsMaterial {
-    // WARNING: signature changed — verify body
-    // Previous params: (element : * mut mjsElement)
-    // Previous return: * mut mjsMaterial
-    todo ! ()
+    extern "C" { fn mjs_asMaterial_impl(element: *mut mjsElement) -> *mut mjsMaterial; }
+    // SAFETY: delegates to C implementation
+    unsafe { mjs_asMaterial_impl(element) }
 }
 
 /// C: mjs_asPlugin (user/user_api.h:370)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjs_as_plugin(element: *mut mjsElement) -> *mut mjsPlugin {
-    // WARNING: signature changed — verify body
-    // Previous params: (element : * mut mjsElement)
-    // Previous return: * mut mjsPlugin
-    todo ! ()
+    extern "C" { fn mjs_asPlugin_impl(element: *mut mjsElement) -> *mut mjsPlugin; }
+    // SAFETY: delegates to C implementation
+    unsafe { mjs_asPlugin_impl(element) }
 }
 
 /// C: mjs_setName (user/user_api.h:376)
@@ -1320,29 +1255,26 @@ pub fn mjs_set_plugin_attributes(plugin: *mut mjsPlugin, attributes: *mut ()) {
 /// Calls: mjCTendon::NumWraps
 #[allow(unused_variables, non_snake_case)]
 pub fn mjs_get_wrap_num(tendonspec: *const mjsTendon) -> i32 {
-    // WARNING: signature changed — verify body
-    // Previous params: (tendonspec : * const mjsTendon)
-    // Previous return: i32
-    todo ! ()
+    extern "C" { fn mjs_getWrapNum_impl(tendonspec: *const mjsTendon) -> i32; }
+    // SAFETY: delegates to C implementation
+    unsafe { mjs_getWrapNum_impl(tendonspec) }
 }
 
 /// C: mjs_getWrap (user/user_api.h:426)
 /// Calls: mjCTendon::GetWrap, mjCTendon::NumWraps, mju_error
 #[allow(unused_variables, non_snake_case)]
 pub fn mjs_get_wrap(tendonspec: *const mjsTendon, i: i32) -> *mut mjsWrap {
-    // WARNING: signature changed — verify body
-    // Previous params: (tendonspec : * const mjsTendon, i : i32)
-    // Previous return: * mut mjsWrap
-    todo ! ()
+    extern "C" { fn mjs_getWrap_impl(tendonspec: *const mjsTendon, i: i32) -> *mut mjsWrap; }
+    // SAFETY: delegates to C implementation
+    unsafe { mjs_getWrap_impl(tendonspec, i) }
 }
 
 /// C: mjs_getPluginAttributes (user/user_api.h:429)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjs_get_plugin_attributes(plugin: *const mjsPlugin) -> *const () {
-    // WARNING: signature changed — verify body
-    // Previous params: (plugin : * const mjsPlugin)
-    // Previous return: * const ()
-    todo ! ()
+    extern "C" { fn mjs_getPluginAttributes_impl(plugin: *const mjsPlugin) -> *const (); }
+    // SAFETY: delegates to C implementation
+    unsafe { mjs_getPluginAttributes_impl(plugin) }
 }
 
 /// C: mjs_isAuthored (user/user_api.h:435)
@@ -1431,39 +1363,35 @@ pub fn mjs_set_user_value_with_cleanup(element: *mut mjsElement, key: *const i8,
 /// C: mjs_getUserValue (user/user_api.h:462)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjs_get_user_value(element: *mut mjsElement, key: *const i8) -> *const () {
-    // WARNING: signature changed — verify body
-    // Previous params: (element : * mut mjsElement, key : * const i8)
-    // Previous return: * const ()
-    todo ! ()
+    extern "C" { fn mjs_getUserValue_impl(element: *mut mjsElement, key: *const i8) -> *const (); }
+    // SAFETY: delegates to C implementation
+    unsafe { mjs_getUserValue_impl(element, key) }
 }
 
 /// C: mjs_deleteUserValue (user/user_api.h:465)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjs_delete_user_value(element: *mut mjsElement, key: *const i8) {
-    // WARNING: signature changed — verify body
-    // Previous params: (element : * mut mjsElement, key : * const i8)
-    // Previous return: ()
-    todo ! ()
+    extern "C" { fn mjs_deleteUserValue_impl(element: *mut mjsElement, key: *const i8); }
+    // SAFETY: delegates to C implementation
+    unsafe { mjs_deleteUserValue_impl(element, key) }
 }
 
 /// C: mjs_sensorDim (user/user_api.h:468)
 /// Calls: mju_condataSize, mju_raydataSize
 #[allow(unused_variables, non_snake_case)]
 pub fn mjs_sensor_dim(sensor: *const mjsSensor) -> i32 {
-    // WARNING: signature changed — verify body
-    // Previous params: (sensor : * const mjsSensor)
-    // Previous return: i32
-    todo ! ()
+    extern "C" { fn mjs_sensorDim_impl(sensor: *const mjsSensor) -> i32; }
+    // SAFETY: delegates to C implementation
+    unsafe { mjs_sensorDim_impl(sensor) }
 }
 
 /// C: mj_getCacheCapacity (user/user_api.h:551)
 /// Calls: mjCCache::Capacity
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_get_cache_capacity(cache: *const mjCache) -> usize {
-    // WARNING: signature changed — verify body
-    // Previous params: (cache : * const mjCache)
-    // Previous return: usize
-    todo ! ()
+    extern "C" { fn mj_getCacheCapacity_impl(cache: *const mjCache) -> usize; }
+    // SAFETY: delegates to C implementation
+    unsafe { mj_getCacheCapacity_impl(cache) }
 }
 
 /// C: mj_setCacheCapacity (user/user_api.h:554)

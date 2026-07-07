@@ -40,10 +40,9 @@ pub fn mjuu_axis_angle2quat(res: [f64; 4], axis: [f64; 3], angle: f64) {
 /// C: mjuu_isValidContentType (user/user_util.cc:973)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjuu_is_valid_content_type(text: string_view) -> bool {
-    // WARNING: signature changed — verify body
-    // Previous params: (text : string_view)
-    // Previous return: bool
-    todo ! ()
+    extern "C" { fn mjuu_isValidContentType_impl(text: string_view) -> bool; }
+    // SAFETY: delegates to C implementation
+    unsafe { mjuu_isValidContentType_impl(text) }
 }
 
 /// C: FileToMemory (user/user_util.cc:1196)
@@ -59,19 +58,17 @@ pub fn file_to_memory(filename: *const i8) -> i32 {
 /// C: VectorToString (user/user_util.cc:1256)
 #[allow(unused_variables, non_snake_case)]
 pub fn vector_to_string(v: *const i32) -> std__string {
-    // WARNING: signature changed — verify body
-    // Previous params: (v : * const i32)
-    // Previous return: std__string
-    todo ! ()
+    extern "C" { fn VectorToString_impl(v: *const i32) -> std__string; }
+    // SAFETY: delegates to C implementation
+    unsafe { VectorToString_impl(v) }
 }
 
 /// C: StrToNum (user/user_util.cc:1277)
 #[allow(unused_variables, non_snake_case)]
 pub fn str_to_num(str: *mut i8, c: *mut *mut i8) -> i32 {
-    // WARNING: signature changed — verify body
-    // Previous params: (str : * mut i8, c : * mut * mut i8)
-    // Previous return: i32
-    todo ! ()
+    extern "C" { fn StrToNum_impl(str: *mut i8, c: *mut *mut i8) -> i32; }
+    // SAFETY: delegates to C implementation
+    unsafe { StrToNum_impl(str, c) }
 }
 
 /// C: IsNullOrSpace (user/user_util.cc:1301)
@@ -97,10 +94,9 @@ pub fn skip_space(c: *mut i8) -> *mut i8 {
 /// Calls: SkipSpace
 #[allow(unused_variables, non_snake_case)]
 pub fn string_to_vector(cs: *mut i8) -> i32 {
-    // WARNING: signature changed — verify body
-    // Previous params: (cs : * mut i8)
-    // Previous return: i32
-    todo ! ()
+    extern "C" { fn StringToVector_impl(cs: *mut i8) -> i32; }
+    // SAFETY: delegates to C implementation
+    unsafe { StringToVector_impl(cs) }
 }
 
 /// C: mjuu_defined (user/user_util.h:35)
@@ -143,10 +139,9 @@ pub fn mjuu_setvec(dest: *mut f64, x: f64, y: f64, z: f64, w: f64) {
 /// C: mjuu_copyvec (user/user_util.h:54)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjuu_copyvec(dest: *mut T1, src: *const T2, n: i32) {
-    // WARNING: signature changed — verify body
-    // Previous params: (dest : * mut T1, src : * const T2, n : i32)
-    // Previous return: ()
-    todo ! ()
+    extern "C" { fn mjuu_copyvec_impl(dest: *mut T1, src: *const T2, n: i32); }
+    // SAFETY: delegates to C implementation
+    unsafe { mjuu_copyvec_impl(dest, src, n) }
 }
 
 /// C: mjuu_addtovec (user/user_util.h:59)
@@ -414,10 +409,9 @@ pub fn mjuu_crossvec(a: *mut f64, b: *const f64, c: *const f64) {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjuu_makenormal(normal: *mut f64, a: [T; 3], b: [T; 3], c: [T; 3]) -> f64 {
-    // WARNING: signature changed — verify body
-    // Previous params: (normal : * mut f64, a : [T ; 3], b : [T ; 3], c : [T ; 3])
-    // Previous return: f64
-    todo ! ()
+    extern "C" { fn mjuu_makenormal_impl(normal: *mut f64, a: [T; 3], b: [T; 3], c: [T; 3]) -> f64; }
+    // SAFETY: delegates to C implementation
+    unsafe { mjuu_makenormal_impl(normal, a, b, c) }
 }
 
 /// C: mjuu_z2quat (user/user_util.h:122)
@@ -769,46 +763,41 @@ pub fn file_path_file_path_fast(str: *const i32) -> FilePath {
 /// C: mjuu_strippath (user/user_util.h:273)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjuu_strippath(filename: string) -> std__string {
-    // WARNING: signature changed — verify body
-    // Previous params: (filename : string)
-    // Previous return: std__string
-    todo ! ()
+    extern "C" { fn mjuu_strippath_impl(filename: string) -> std__string; }
+    // SAFETY: delegates to C implementation
+    unsafe { mjuu_strippath_impl(filename) }
 }
 
 /// C: mjuu_stripext (user/user_util.h:276)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjuu_stripext(filename: string) -> std__string {
-    // WARNING: signature changed — verify body
-    // Previous params: (filename : string)
-    // Previous return: std__string
-    todo ! ()
+    extern "C" { fn mjuu_stripext_impl(filename: string) -> std__string; }
+    // SAFETY: delegates to C implementation
+    unsafe { mjuu_stripext_impl(filename) }
 }
 
 /// C: mjuu_getext (user/user_util.h:279)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjuu_getext(filename: string_view) -> std__string {
-    // WARNING: signature changed — verify body
-    // Previous params: (filename : string_view)
-    // Previous return: std__string
-    todo ! ()
+    extern "C" { fn mjuu_getext_impl(filename: string_view) -> std__string; }
+    // SAFETY: delegates to C implementation
+    unsafe { mjuu_getext_impl(filename) }
 }
 
 /// C: mjuu_isabspath (user/user_util.h:282)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjuu_isabspath(path: string) -> bool {
-    // WARNING: signature changed — verify body
-    // Previous params: (path : string)
-    // Previous return: bool
-    todo ! ()
+    extern "C" { fn mjuu_isabspath_impl(path: string) -> bool; }
+    // SAFETY: delegates to C implementation
+    unsafe { mjuu_isabspath_impl(path) }
 }
 
 /// C: mjuu_combinePaths (user/user_util.h:285)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjuu_combine_paths(path1: *const std__string, path2: *const std__string) -> std__string {
-    // WARNING: signature changed — verify body
-    // Previous params: (path1 : * const std__string, path2 : * const std__string)
-    // Previous return: std__string
-    todo ! ()
+    extern "C" { fn mjuu_combinePaths_impl(path1: *const std__string, path2: *const std__string) -> std__string; }
+    // SAFETY: delegates to C implementation
+    unsafe { mjuu_combinePaths_impl(path1, path2) }
 }
 
 /// C: mjuu_parseContentTypeAttrType (user/user_util.h:290)
@@ -834,10 +823,9 @@ pub fn mjuu_parse_content_type_attr_subtype(text: string_view) -> *const () {
 /// C: mjuu_extToContentType (user/user_util.h:296)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjuu_ext_to_content_type(filename: string_view) -> std__string {
-    // WARNING: signature changed — verify body
-    // Previous params: (filename : string_view)
-    // Previous return: std__string
-    todo ! ()
+    extern "C" { fn mjuu_extToContentType_impl(filename: string_view) -> std__string; }
+    // SAFETY: delegates to C implementation
+    unsafe { mjuu_extToContentType_impl(filename) }
 }
 
 /// C: mjuu_dirnamelen (user/user_util.h:299)

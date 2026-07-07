@@ -7,10 +7,9 @@ use crate::types::*;
 /// C: fmtVal (user/user_resolver.cc:34)
 #[allow(unused_variables, non_snake_case)]
 pub fn fmt_val(val: T) -> std__string {
-    // WARNING: signature changed — verify body
-    // Previous params: (val : T)
-    // Previous return: std__string
-    todo ! ()
+    extern "C" { fn fmtVal_impl(val: T) -> std__string; }
+    // SAFETY: delegates to C implementation
+    unsafe { fmtVal_impl(val) }
 }
 
 /// C: fmtArr (user/user_resolver.cc:45)
@@ -21,10 +20,9 @@ pub fn fmt_val(val: T) -> std__string {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn fmt_arr(val: *const f64, n: i32) -> std__string {
-    // WARNING: signature changed — verify body
-    // Previous params: (val : * const f64, n : i32)
-    // Previous return: std__string
-    todo ! ()
+    extern "C" { fn fmtArr_impl(val: *const f64, n: i32) -> std__string; }
+    // SAFETY: delegates to C implementation
+    unsafe { fmtArr_impl(val, n) }
 }
 
 /// C: Resolver::Apply (user/user_resolver.cc:291)

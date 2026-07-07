@@ -26,10 +26,9 @@ pub fn thread_pool_context_thread_count(self_ptr: *mut ThreadPoolContext) -> i32
 /// C: ThreadPoolContext::Worker (engine/engine_thread.cc:83)
 #[allow(unused_variables, non_snake_case)]
 pub fn thread_pool_context_worker(self_ptr: *mut ThreadPoolContext, threadId: i32) {
-    // WARNING: signature changed — verify body
-    // Previous params: (self_ptr : * mut ThreadPoolContext, threadId : i32)
-    // Previous return: ()
-    todo ! ()
+    extern "C" { fn ThreadPoolContext_Worker_impl(self_ptr: *mut ThreadPoolContext, threadId: i32); }
+    // SAFETY: delegates to C implementation
+    unsafe { ThreadPoolContext_Worker_impl(self_ptr, threadId) }
 }
 
 /// C: mju_threadpool (engine/engine_thread.h:30)

@@ -12,10 +12,9 @@ use crate::types::*;
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn is_intersect(p1: *const f64, p2: *const f64, p3: *const f64, p4: *const f64) -> mjtBool {
-    // WARNING: signature changed — verify body
-    // Previous params: (p1 : * const f64, p2 : * const f64, p3 : * const f64, p4 : * const f64)
-    // Previous return: mjtBool
-    todo ! ()
+    extern "C" { fn is_intersect_impl(p1: *const f64, p2: *const f64, p3: *const f64, p4: *const f64) -> mjtBool; }
+    // SAFETY: delegates to C implementation
+    unsafe { is_intersect_impl(p1, p2, p3, p4) }
 }
 
 /// C: length_circle (engine/engine_util_misc.c:55)
@@ -27,10 +26,9 @@ pub fn is_intersect(p1: *const f64, p2: *const f64, p3: *const f64, p4: *const f
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn length_circle(p0: *const f64, p1: *const f64, ind: i32, radius: f64) -> f64 {
-    // WARNING: signature changed — verify body
-    // Previous params: (p0 : * const f64, p1 : * const f64, ind : i32, radius : f64)
-    // Previous return: f64
-    todo ! ()
+    extern "C" { fn length_circle_impl(p0: *const f64, p1: *const f64, ind: i32, radius: f64) -> f64; }
+    // SAFETY: delegates to C implementation
+    unsafe { length_circle_impl(p0, p1, ind, radius) }
 }
 
 /// C: wrap_circle (engine/engine_util_misc.c:78)
@@ -864,10 +862,9 @@ pub fn mju_decode_base64(buf: *mut u8, s: *const i8) -> usize {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mju_history_init(buf: *mut f64, n: i32, dim: i32, times: *const f64, values: *const f64, user: f64) {
-    // WARNING: signature changed — verify body
-    // Previous params: (buf : * mut f64, n : i32, dim : i32, times : * const f64, values : * const f64, user : f64)
-    // Previous return: ()
-    todo ! ()
+    extern "C" { fn mju_historyInit_impl(buf: *mut f64, n: i32, dim: i32, times: *const f64, values: *const f64, user: f64); }
+    // SAFETY: delegates to C implementation
+    unsafe { mju_historyInit_impl(buf, n, dim, times, values, user) }
 }
 
 /// C: mju_historyInsert (engine/engine_util_misc.h:189)
@@ -908,10 +905,9 @@ pub fn mju_history_read(buf: *const f64, n: i32, dim: i32, res: *mut f64, t: f64
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mju_encode_pyramid(pyramid: *mut f64, force: *const f64, mu: *const f64, dim: i32) {
-    // WARNING: signature changed — verify body
-    // Previous params: (pyramid : * mut f64, force : * const f64, mu : * const f64, dim : i32)
-    // Previous return: ()
-    todo ! ()
+    extern "C" { fn mju_encodePyramid_impl(pyramid: *mut f64, force: *const f64, mu: *const f64, dim: i32); }
+    // SAFETY: delegates to C implementation
+    unsafe { mju_encodePyramid_impl(pyramid, force, mu, dim) }
 }
 
 /// C: mju_decodePyramid (engine/engine_util_misc.h:204)

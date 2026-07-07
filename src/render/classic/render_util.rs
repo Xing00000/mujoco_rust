@@ -230,18 +230,16 @@ pub fn mjr_reflect(pos: *const f32, mat: *const f32) {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjr_transform(translate: *const f32, rotate: *const f32, scale: f32) {
-    // WARNING: signature changed — verify body
-    // Previous params: (translate : * const f32, rotate : * const f32, scale : f32)
-    // Previous return: ()
-    todo ! ()
+    extern "C" { fn mjr_transform_impl(translate: *const f32, rotate: *const f32, scale: f32); }
+    // SAFETY: delegates to C implementation
+    unsafe { mjr_transform_impl(translate, rotate, scale) }
 }
 
 /// C: mjr_findRect (render/classic/render_util.h:68)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjr_find_rect(x: i32, y: i32, nrect: i32, rect: *const mjrRect) -> i32 {
-    // WARNING: signature changed — verify body
-    // Previous params: (x : i32, y : i32, nrect : i32, rect : * const mjrRect)
-    // Previous return: i32
-    todo ! ()
+    extern "C" { fn mjr_findRect_impl(x: i32, y: i32, nrect: i32, rect: *const mjrRect) -> i32; }
+    // SAFETY: delegates to C implementation
+    unsafe { mjr_findRect_impl(x, y, nrect, rect) }
 }
 

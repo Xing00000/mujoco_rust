@@ -7,30 +7,27 @@ use crate::types::*;
 /// C: mj_XMLPrinter::PrintSpace (xml/xml_native_writer.cc:59)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_xml_printer_print_space(self_ptr: *mut mj_XMLPrinter, depth: i32) {
-    // WARNING: signature changed — verify body
-    // Previous params: (self_ptr : * mut mj_XMLPrinter, depth : i32)
-    // Previous return: ()
-    todo ! ()
+    extern "C" { fn mj_XMLPrinter_PrintSpace_impl(self_ptr: *mut mj_XMLPrinter, depth: i32); }
+    // SAFETY: delegates to C implementation
+    unsafe { mj_XMLPrinter_PrintSpace_impl(self_ptr, depth) }
 }
 
 /// C: WriteDoc (xml/xml_native_writer.cc:68)
 /// Calls: mjCopyError
 #[allow(unused_variables, non_snake_case)]
 pub fn write_doc(doc: *mut XMLDocument, error: *mut i8, error_sz: usize) -> string {
-    // WARNING: signature changed — verify body
-    // Previous params: (doc : * mut XMLDocument, error : * mut i8, error_sz : usize)
-    // Previous return: string
-    todo ! ()
+    extern "C" { fn WriteDoc_impl(doc: *mut XMLDocument, error: *mut i8, error_sz: usize) -> string; }
+    // SAFETY: delegates to C implementation
+    unsafe { WriteDoc_impl(doc, error, error_sz) }
 }
 
 /// C: mjXWriter::SetModel (xml/xml_native_writer.h:32)
 /// Calls: mj_copyBack
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_x_writer_set_model(self_ptr: *mut mjXWriter, _spec: *mut mjSpec, m: *const mjModel) {
-    // WARNING: signature changed — verify body
-    // Previous params: (self_ptr : * mut mjXWriter, _spec : * mut mjSpec, m : * const mjModel)
-    // Previous return: ()
-    todo ! ()
+    extern "C" { fn mjXWriter_SetModel_impl(self_ptr: *mut mjXWriter, _spec: *mut mjSpec, m: *const mjModel); }
+    // SAFETY: delegates to C implementation
+    unsafe { mjXWriter_SetModel_impl(self_ptr, _spec, m) }
 }
 
 /// C: mjXWriter::Write (xml/xml_native_writer.h:35)
@@ -55,50 +52,45 @@ pub fn mj_x_writer_insert_end(self_ptr: *mut mjXWriter, parent: *mut tinyxml2__X
 /// Calls: mjXUtil::WriteAttrKey, mjXUtil::WriteAttrTxt, mjXWriter::InsertEnd
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_x_writer_compiler(self_ptr: *mut mjXWriter, root: *mut tinyxml2__XMLElement) {
-    // WARNING: signature changed — verify body
-    // Previous params: (self_ptr : * mut mjXWriter, root : * mut tinyxml2__XMLElement)
-    // Previous return: ()
-    todo ! ()
+    extern "C" { fn mjXWriter_Compiler_impl(self_ptr: *mut mjXWriter, root: *mut tinyxml2__XMLElement); }
+    // SAFETY: delegates to C implementation
+    unsafe { mjXWriter_Compiler_impl(self_ptr, root) }
 }
 
 /// C: mjXWriter::Option (xml/xml_native_writer.h:46)
 /// Calls: mjXUtil::WriteAttrInt, mjXUtil::WriteAttrKey, mjXWriter::InsertEnd, mj_defaultOption
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_x_writer_option(self_ptr: *mut mjXWriter, root: *mut tinyxml2__XMLElement) {
-    // WARNING: signature changed — verify body
-    // Previous params: (self_ptr : * mut mjXWriter, root : * mut tinyxml2__XMLElement)
-    // Previous return: ()
-    todo ! ()
+    extern "C" { fn mjXWriter_Option_impl(self_ptr: *mut mjXWriter, root: *mut tinyxml2__XMLElement); }
+    // SAFETY: delegates to C implementation
+    unsafe { mjXWriter_Option_impl(self_ptr, root) }
 }
 
 /// C: mjXWriter::Size (xml/xml_native_writer.h:47)
 /// Calls: mjXUtil::WriteAttrInt, mjXUtil::WriteAttrTxt, mjXWriter::InsertEnd
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_x_writer_size(self_ptr: *mut mjXWriter, root: *mut tinyxml2__XMLElement) {
-    // WARNING: signature changed — verify body
-    // Previous params: (self_ptr : * mut mjXWriter, root : * mut tinyxml2__XMLElement)
-    // Previous return: ()
-    todo ! ()
+    extern "C" { fn mjXWriter_Size_impl(self_ptr: *mut mjXWriter, root: *mut tinyxml2__XMLElement); }
+    // SAFETY: delegates to C implementation
+    unsafe { mjXWriter_Size_impl(self_ptr, root) }
 }
 
 /// C: mjXWriter::Visual (xml/xml_native_writer.h:48)
 /// Calls: mjXWriter::InsertEnd, mj_defaultVisual
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_x_writer_visual(self_ptr: *mut mjXWriter, root: *mut tinyxml2__XMLElement) {
-    // WARNING: signature changed — verify body
-    // Previous params: (self_ptr : * mut mjXWriter, root : * mut tinyxml2__XMLElement)
-    // Previous return: ()
-    todo ! ()
+    extern "C" { fn mjXWriter_Visual_impl(self_ptr: *mut mjXWriter, root: *mut tinyxml2__XMLElement); }
+    // SAFETY: delegates to C implementation
+    unsafe { mjXWriter_Visual_impl(self_ptr, root) }
 }
 
 /// C: mjXWriter::Statistic (xml/xml_native_writer.h:49)
 /// Calls: mjXWriter::InsertEnd, mjuu_defined
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_x_writer_statistic(self_ptr: *mut mjXWriter, root: *mut tinyxml2__XMLElement) {
-    // WARNING: signature changed — verify body
-    // Previous params: (self_ptr : * mut mjXWriter, root : * mut tinyxml2__XMLElement)
-    // Previous return: ()
-    todo ! ()
+    extern "C" { fn mjXWriter_Statistic_impl(self_ptr: *mut mjXWriter, root: *mut tinyxml2__XMLElement); }
+    // SAFETY: delegates to C implementation
+    unsafe { mjXWriter_Statistic_impl(self_ptr, root) }
 }
 
 /// C: mjXWriter::Default (xml/xml_native_writer.h:50)
@@ -115,20 +107,18 @@ pub fn mj_x_writer_default(self_ptr: *mut mjXWriter, root: *mut tinyxml2__XMLEle
 /// Calls: mjXUtil::WriteAttrTxt, mjXWriter::InsertEnd, mjp_getPluginAtSlot
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_x_writer_extension(self_ptr: *mut mjXWriter, root: *mut tinyxml2__XMLElement) {
-    // WARNING: signature changed — verify body
-    // Previous params: (self_ptr : * mut mjXWriter, root : * mut tinyxml2__XMLElement)
-    // Previous return: ()
-    todo ! ()
+    extern "C" { fn mjXWriter_Extension_impl(self_ptr: *mut mjXWriter, root: *mut tinyxml2__XMLElement); }
+    // SAFETY: delegates to C implementation
+    unsafe { mjXWriter_Extension_impl(self_ptr, root) }
 }
 
 /// C: mjXWriter::Custom (xml/xml_native_writer.h:52)
 /// Calls: mjCModel::GetObject, mjCModel::NumObjects, mjXUtil::WriteAttrInt, mjXUtil::WriteAttrTxt, mjXWriter::InsertEnd, mju_type2Str
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_x_writer_custom(self_ptr: *mut mjXWriter, root: *mut tinyxml2__XMLElement) {
-    // WARNING: signature changed — verify body
-    // Previous params: (self_ptr : * mut mjXWriter, root : * mut tinyxml2__XMLElement)
-    // Previous return: ()
-    todo ! ()
+    extern "C" { fn mjXWriter_Custom_impl(self_ptr: *mut mjXWriter, root: *mut tinyxml2__XMLElement); }
+    // SAFETY: delegates to C implementation
+    unsafe { mjXWriter_Custom_impl(self_ptr, root) }
 }
 
 /// C: mjXWriter::Asset (xml/xml_native_writer.h:53)
@@ -195,20 +185,18 @@ pub fn mj_x_writer_actuator(self_ptr: *mut mjXWriter, root: *mut tinyxml2__XMLEl
 /// Calls: mjCModel::NumObjects, mjCSensor::get_objname, mjCSensor::get_refname, mjXUtil::WriteAttrInt, mjXUtil::WriteAttrKey, mjXUtil::WriteAttrTxt, mjXWriter::InsertEnd, mjXWriter::OnePlugin, mju_condataSize, mju_error
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_x_writer_sensor(self_ptr: *mut mjXWriter, root: *mut tinyxml2__XMLElement) {
-    // WARNING: signature changed — verify body
-    // Previous params: (self_ptr : * mut mjXWriter, root : * mut tinyxml2__XMLElement)
-    // Previous return: ()
-    todo ! ()
+    extern "C" { fn mjXWriter_Sensor_impl(self_ptr: *mut mjXWriter, root: *mut tinyxml2__XMLElement); }
+    // SAFETY: delegates to C implementation
+    unsafe { mjXWriter_Sensor_impl(self_ptr, root) }
 }
 
 /// C: mjXWriter::Keyframe (xml/xml_native_writer.h:60)
 /// Calls: mjXUtil::WriteAttrTxt, mjXWriter::InsertEnd
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_x_writer_keyframe(self_ptr: *mut mjXWriter, root: *mut tinyxml2__XMLElement) {
-    // WARNING: signature changed — verify body
-    // Previous params: (self_ptr : * mut mjXWriter, root : * mut tinyxml2__XMLElement)
-    // Previous return: ()
-    todo ! ()
+    extern "C" { fn mjXWriter_Keyframe_impl(self_ptr: *mut mjXWriter, root: *mut tinyxml2__XMLElement); }
+    // SAFETY: delegates to C implementation
+    unsafe { mjXWriter_Keyframe_impl(self_ptr, root) }
 }
 
 /// C: mjXWriter::Body (xml/xml_native_writer.h:63)
@@ -225,10 +213,9 @@ pub fn mj_x_writer_body(self_ptr: *mut mjXWriter, elem: *mut tinyxml2__XMLElemen
 /// Calls: mjCFlex::get_material, mjXUtil::WriteAttrInt, mjXUtil::WriteAttrKey, mjXUtil::WriteAttrTxt, mjXWriter::InsertEnd
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_x_writer_one_flex(self_ptr: *mut mjXWriter, elem: *mut tinyxml2__XMLElement, pflex: *const mjCFlex) {
-    // WARNING: signature changed — verify body
-    // Previous params: (self_ptr : * mut mjXWriter, elem : * mut tinyxml2__XMLElement, pflex : * const mjCFlex)
-    // Previous return: ()
-    todo ! ()
+    extern "C" { fn mjXWriter_OneFlex_impl(self_ptr: *mut mjXWriter, elem: *mut tinyxml2__XMLElement, pflex: *const mjCFlex); }
+    // SAFETY: delegates to C implementation
+    unsafe { mjXWriter_OneFlex_impl(self_ptr, elem, pflex) }
 }
 
 /// C: mjXWriter::OneMesh (xml/xml_native_writer.h:67)
@@ -245,10 +232,9 @@ pub fn mj_x_writer_one_mesh(self_ptr: *mut mjXWriter, elem: *mut tinyxml2__XMLEl
 /// Calls: mjCDef::Geom, mjCSkin::File, mjCSkin::get_material, mjXUtil::WriteAttrInt, mjXUtil::WriteAttrTxt, mjXWriter::InsertEnd
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_x_writer_one_skin(self_ptr: *mut mjXWriter, elem: *mut tinyxml2__XMLElement, pskin: *const mjCSkin) {
-    // WARNING: signature changed — verify body
-    // Previous params: (self_ptr : * mut mjXWriter, elem : * mut tinyxml2__XMLElement, pskin : * const mjCSkin)
-    // Previous return: ()
-    todo ! ()
+    extern "C" { fn mjXWriter_OneSkin_impl(self_ptr: *mut mjXWriter, elem: *mut tinyxml2__XMLElement, pskin: *const mjCSkin); }
+    // SAFETY: delegates to C implementation
+    unsafe { mjXWriter_OneSkin_impl(self_ptr, elem, pskin) }
 }
 
 /// C: mjXWriter::OneMaterial (xml/xml_native_writer.h:69)
@@ -364,9 +350,8 @@ pub fn mj_x_writer_one_plugin(self_ptr: *mut mjXWriter, elem: *mut tinyxml2__XML
 /// Calls: mjXUtil::WriteAttrTxt, mjXWriter::InsertEnd
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_x_writer_one_frame(self_ptr: *mut mjXWriter, elem: *mut tinyxml2__XMLElement, frame: *mut mjCFrame) -> *mut tinyxml2__XMLElement {
-    // WARNING: signature changed — verify body
-    // Previous params: (self_ptr : * mut mjXWriter, elem : * mut tinyxml2__XMLElement, frame : * mut mjCFrame)
-    // Previous return: * mut tinyxml2__XMLElement
-    todo ! ()
+    extern "C" { fn mjXWriter_OneFrame_impl(self_ptr: *mut mjXWriter, elem: *mut tinyxml2__XMLElement, frame: *mut mjCFrame) -> *mut tinyxml2__XMLElement; }
+    // SAFETY: delegates to C implementation
+    unsafe { mjXWriter_OneFrame_impl(self_ptr, elem, frame) }
 }
 
