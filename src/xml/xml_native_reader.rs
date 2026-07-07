@@ -145,10 +145,9 @@ pub fn mj_x_reader_size(section: *mut tinyxml2__XMLElement, s: *mut mjSpec) {
 /// Calls: FirstChildElement, NextSiblingElement, mjXReader::OneActuator, mjXReader::OneCamera, mjXReader::OneEquality, mjXReader::OneGeom, mjXReader::OneJoint, mjXReader::OneLight, mjXReader::OneMaterial, mjXReader::OneMesh, mjXReader::OnePair, mjXReader::OneSite, mjXReader::OneTendon, mjXUtil::ReadAttrTxt
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_x_reader_default(self_ptr: *mut mjXReader, section: *mut tinyxml2__XMLElement, def: *const mjsDefault, vfs: *const mjVFS) {
-    // WARNING: signature changed — verify body
-    // Previous params: (self_ptr : * mut mjXReader, section : * mut tinyxml2__XMLElement, def : * const mjsDefault, vfs : * const mjVFS)
-    // Previous return: ()
-    todo ! ()
+    extern "C" { fn mjXReader_Default_impl(self_ptr: *mut mjXReader, section: *mut tinyxml2__XMLElement, def: *const mjsDefault, vfs: *const mjVFS); }
+    // SAFETY: delegates to C implementation
+    unsafe { mjXReader_Default_impl(self_ptr, section, def, vfs) }
 }
 
 /// C: mjXReader::Extension (xml/xml_native_reader.h:54)
@@ -190,10 +189,9 @@ pub fn mj_x_reader_statistic(self_ptr: *mut mjXReader, section: *mut tinyxml2__X
 /// Calls: FirstChildElement, NextSiblingElement, mjXReader::AssetDir, mjXReader::GetClass, mjXReader::OneMaterial, mjXReader::OneMesh, mjXReader::OneSkin, mjXReader::TextureDir, mjXUtil::MapValue, mjXUtil::ReadAttrFile, mjXUtil::ReadAttrInt, mjXUtil::ReadAttrTxt
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_x_reader_asset(self_ptr: *mut mjXReader, section: *mut tinyxml2__XMLElement, vfs: *const mjVFS) {
-    // WARNING: signature changed — verify body
-    // Previous params: (self_ptr : * mut mjXReader, section : * mut tinyxml2__XMLElement, vfs : * const mjVFS)
-    // Previous return: ()
-    todo ! ()
+    extern "C" { fn mjXReader_Asset_impl(self_ptr: *mut mjXReader, section: *mut tinyxml2__XMLElement, vfs: *const mjVFS); }
+    // SAFETY: delegates to C implementation
+    unsafe { mjXReader_Asset_impl(self_ptr, section, vfs) }
 }
 
 /// C: mjXReader::Body (xml/xml_native_reader.h:59)
@@ -246,10 +244,9 @@ pub fn mj_x_reader_tendon(self_ptr: *mut mjXReader, section: *mut tinyxml2__XMLE
 /// Calls: FirstChildElement, NextSiblingElement, mjXReader::GetClass, mjXReader::OneActuator
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_x_reader_actuator(self_ptr: *mut mjXReader, section: *mut tinyxml2__XMLElement) {
-    // WARNING: signature changed — verify body
-    // Previous params: (self_ptr : * mut mjXReader, section : * mut tinyxml2__XMLElement)
-    // Previous return: ()
-    todo ! ()
+    extern "C" { fn mjXReader_Actuator_impl(self_ptr: *mut mjXReader, section: *mut tinyxml2__XMLElement); }
+    // SAFETY: delegates to C implementation
+    unsafe { mjXReader_Actuator_impl(self_ptr, section) }
 }
 
 /// C: mjXReader::Sensor (xml/xml_native_reader.h:66)

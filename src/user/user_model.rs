@@ -1039,10 +1039,9 @@ pub fn mj_c_model_make_tree_lists(self_ptr: *mut mjCModel, body: *mut mjCBody) {
 /// Calls: mjCModel::AddKey, mjCModel::AddWarning, mjCModel::AutoSpringDamper, mjCModel::CheckEmptyNames, mjCModel::ClearCompileWarnings, mjCModel::CompileMeshesAndTextures, mjCModel::ComputeSparseSizes, mjCModel::CopyNames, mjCModel::CopyObjects, mjCModel::CopyPaths, mjCModel::CopyPlugins, mjCModel::CopyTree, mjCModel::ExpandAllKeyframes, mjCModel::FinalizeSimple, mjCModel::FuseStatic, mjCModel::IndexAssets, mjCModel::LengthRange, mjCModel::ProcessLists, mjCModel::ResolveKeyframes, mjCModel::SaveDofOffsets, mjCModel::SetNuser, mjCModel::SetSizes, mjCModel::Signature, mj_deleteData, mj_makeData, mj_makeRawData, mj_normalizeQuat, mj_resetData, mj_setConst, mj_step, mj_validateReferences, mjuu_defined
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_model_try_compile(self_ptr: *mut mjCModel, m: *mut *mut mjModel, d: *mut *mut mjData, vfs: *const mjVFS) {
-    // WARNING: signature changed — verify body
-    // Previous params: (self_ptr : * mut mjCModel, m : * mut * mut mjModel, d : * mut * mut mjData, vfs : * const mjVFS)
-    // Previous return: ()
-    todo ! ()
+    extern "C" { fn mjCModel_TryCompile_impl(self_ptr: *mut mjCModel, m: *mut *mut mjModel, d: *mut *mut mjData, vfs: *const mjVFS); }
+    // SAFETY: delegates to C implementation
+    unsafe { mjCModel_TryCompile_impl(self_ptr, m, d, vfs) }
 }
 
 /// C: mjCModel::CompileMeshesAndTextures (user/user_model.h:381)

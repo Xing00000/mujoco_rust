@@ -107,10 +107,9 @@ pub fn mj_c_composite_make_cable_bones_subgrid(self_ptr: *mut mjCComposite, mode
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_composite_add_cable_body(self_ptr: *mut mjCComposite, model: *mut mjCModel, body: *mut mjsBody, ix: i32, normal: [f64; 3], prev_quat: [f64; 4]) -> *mut mjsBody {
-    // WARNING: signature changed — verify body
-    // Previous params: (self_ptr : * mut mjCComposite, model : * mut mjCModel, body : * mut mjsBody, ix : i32, normal : [f64 ; 3], prev_quat : [f64 ; 4])
-    // Previous return: * mut mjsBody
-    todo ! ()
+    extern "C" { fn mjCComposite_AddCableBody_impl(self_ptr: *mut mjCComposite, model: *mut mjCModel, body: *mut mjsBody, ix: i32, normal: [f64; 3], prev_quat: [f64; 4]) -> *mut mjsBody; }
+    // SAFETY: delegates to C implementation
+    unsafe { mjCComposite_AddCableBody_impl(self_ptr, model, body, ix, normal, prev_quat) }
 }
 
 /// C: mjCComposite::CopyIntoSkin (user/user_composite.h:115)

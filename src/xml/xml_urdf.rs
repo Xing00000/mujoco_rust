@@ -73,20 +73,18 @@ pub fn mj_xurdf_body(self_ptr: *mut mjXURDF, body_elem: *mut tinyxml2__XMLElemen
 /// Calls: mjXURDF::Origin, mjXUtil::FindKey, mjXUtil::ReadAttrTxt, mjs_addJoint, mjuu_quat2mat, mjuu_setvec, mjuu_z2quat
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_xurdf_joint(self_ptr: *mut mjXURDF, joint_elem: *mut tinyxml2__XMLElement) {
-    // WARNING: signature changed — verify body
-    // Previous params: (self_ptr : * mut mjXURDF, joint_elem : * mut tinyxml2__XMLElement)
-    // Previous return: ()
-    todo ! ()
+    extern "C" { fn mjXURDF_Joint_impl(self_ptr: *mut mjXURDF, joint_elem: *mut tinyxml2__XMLElement); }
+    // SAFETY: delegates to C implementation
+    unsafe { mjXURDF_Joint_impl(self_ptr, joint_elem) }
 }
 
 /// C: mjXURDF::Geom (xml/xml_urdf.h:56)
 /// Calls: mjXURDF::Origin, mjs_addGeom, mjs_setName
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_xurdf_geom(self_ptr: *mut mjXURDF, geom_elem: *mut tinyxml2__XMLElement, pbody: *mut mjsBody, collision: bool) -> *mut mjsGeom {
-    // WARNING: signature changed — verify body
-    // Previous params: (self_ptr : * mut mjXURDF, geom_elem : * mut tinyxml2__XMLElement, pbody : * mut mjsBody, collision : bool)
-    // Previous return: * mut mjsGeom
-    todo ! ()
+    extern "C" { fn mjXURDF_Geom_impl(self_ptr: *mut mjXURDF, geom_elem: *mut tinyxml2__XMLElement, pbody: *mut mjsBody, collision: bool) -> *mut mjsGeom; }
+    // SAFETY: delegates to C implementation
+    unsafe { mjXURDF_Geom_impl(self_ptr, geom_elem, pbody, collision) }
 }
 
 /// C: mjXURDF::Origin (xml/xml_urdf.h:58)

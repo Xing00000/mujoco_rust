@@ -34,10 +34,9 @@ pub fn mj_x_writer_set_model(self_ptr: *mut mjXWriter, _spec: *mut mjSpec, m: *c
 /// Calls: mjCModel::Default, mjCModel::GetWorld, mjCModel::IsCompiled, mjCopyError, mjXWriter::Actuator, mjXWriter::Asset, mjXWriter::Body, mjXWriter::Compiler, mjXWriter::Contact, mjXWriter::Custom, mjXWriter::Default, mjXWriter::Deformable, mjXWriter::Equality, mjXWriter::Extension, mjXWriter::InsertEnd, mjXWriter::Keyframe, mjXWriter::Option, mjXWriter::Sensor, mjXWriter::Size, mjXWriter::Statistic, mjXWriter::Tendon, mjXWriter::Visual
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_x_writer_write(self_ptr: *mut mjXWriter, error: *mut i8, error_sz: usize) -> std__string {
-    // WARNING: signature changed — verify body
-    // Previous params: (self_ptr : * mut mjXWriter, error : * mut i8, error_sz : usize)
-    // Previous return: std__string
-    todo ! ()
+    extern "C" { fn mjXWriter_Write_impl(self_ptr: *mut mjXWriter, error: *mut i8, error_sz: usize) -> std__string; }
+    // SAFETY: delegates to C implementation
+    unsafe { mjXWriter_Write_impl(self_ptr, error, error_sz) }
 }
 
 /// C: mjXWriter::InsertEnd (xml/xml_native_writer.h:39)

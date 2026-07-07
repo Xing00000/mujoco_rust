@@ -241,10 +241,9 @@ pub fn point_in_box(aabb: *const f64, xpos: *const f64, xmat: *const f64, pnt: *
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mju_single_ray(m: *const mjModel, d: *mut mjData, pnt: *const f64, vec: *const f64, ray_eliminate: *mut i32, geom_ba: *mut f64, geomid: [i32; 1], normal: *mut f64) -> f64 {
-    // WARNING: signature changed — verify body
-    // Previous params: (m : * const mjModel, d : * mut mjData, pnt : * const f64, vec : * const f64, ray_eliminate : * mut i32, geom_ba : * mut f64, geomid : [i32 ; 1], normal : * mut f64)
-    // Previous return: f64
-    todo ! ()
+    extern "C" { fn mju_singleRay_impl(m: *const mjModel, d: *mut mjData, pnt: *const f64, vec: *const f64, ray_eliminate: *mut i32, geom_ba: *mut f64, geomid: [i32; 1], normal: *mut f64) -> f64; }
+    // SAFETY: delegates to C implementation
+    unsafe { mju_singleRay_impl(m, d, pnt, vec, ray_eliminate, geom_ba, geomid, normal) }
 }
 
 /// C: mju_multiRayPrepare (engine/engine_ray.h:26)

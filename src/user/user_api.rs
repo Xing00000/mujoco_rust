@@ -40,10 +40,9 @@ pub fn log_compile_time(t: *const f64) {
 /// Calls: mjs_firstChild, mjs_getFrame, mjs_nextChild, mjs_setFrame
 #[allow(unused_variables, non_snake_case)]
 pub fn set_frame(body: *mut mjsBody, objtype: mjtObj, frame: *mut mjsFrame) {
-    // WARNING: signature changed — verify body
-    // Previous params: (body : * mut mjsBody, objtype : mjtObj, frame : * mut mjsFrame)
-    // Previous return: ()
-    todo ! ()
+    extern "C" { fn SetFrame_impl(body: *mut mjsBody, objtype: mjtObj, frame: *mut mjsFrame); }
+    // SAFETY: delegates to C implementation
+    unsafe { SetFrame_impl(body, objtype, frame) }
 }
 
 /// C: attachBody (user/user_api.cc:306)

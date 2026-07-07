@@ -366,10 +366,9 @@ pub fn mjui_resize(ui: *mut mjUI, con: *const mjrContext) {
 /// Calls: SCL, array2text, checkedit, drawoval, drawrectangle, drawsymbol, drawtext, drawtextrect, evalpredicate, findmouse, initOpenGL, makeradioline, mjr_restoreBuffer, mjr_setAux, mju_error, mju_round, radioelement, roundcorner, shortcuthelp, textwidth
 #[allow(unused_variables, non_snake_case)]
 pub fn mjui_update(section: i32, item: i32, ui: *const mjUI, state: *const mjuiState, con: *const mjrContext) {
-    // WARNING: signature changed — verify body
-    // Previous params: (section : i32, item : i32, ui : * const mjUI, state : * const mjuiState, con : * const mjrContext)
-    // Previous return: ()
-    todo ! ()
+    extern "C" { fn mjui_update_impl(section: i32, item: i32, ui: *const mjUI, state: *const mjuiState, con: *const mjrContext); }
+    // SAFETY: delegates to C implementation
+    unsafe { mjui_update_impl(section, item, ui, state, con) }
 }
 
 /// C: mjui_event (ui/ui_main.h:45)
