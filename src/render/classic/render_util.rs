@@ -39,9 +39,13 @@ pub fn mjr_make_normal(normal: *mut f32, p1: *const f32, p2: *const f32, p3: *co
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjr_setf4(vec: *mut f32, f0: f32, f1: f32, f2: f32, f3: f32) {
-    extern "C" { fn mjr_setf4_impl(vec: *mut f32, f0: f32, f1: f32, f2: f32, f3: f32); }
-    // SAFETY: delegates to C implementation, all pointers valid per caller contract
-    unsafe { mjr_setf4_impl(vec, f0, f1, f2, f3) }
+    // SAFETY: vec has 4 elements.
+    unsafe {
+        *vec.add(0) = f0;
+        *vec.add(1) = f1;
+        *vec.add(2) = f2;
+        *vec.add(3) = f3;
+    }
 }
 
 /// C: mjr_setf3 (render/classic/render_util.h:32)

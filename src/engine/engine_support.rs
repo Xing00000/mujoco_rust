@@ -463,9 +463,40 @@ pub fn mj_geom_distance(m: *const mjModel, d: *mut mjData, geom1: i32, geom2: i3
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_differentiate_pos(m: *const mjModel, qvel: *mut f64, dt: f64, qpos1: *const f64, qpos2: *const f64) {
-    extern "C" { fn mj_differentiatePos_impl(m: *const mjModel, qvel: *mut f64, dt: f64, qpos1: *const f64, qpos2: *const f64); }
-    // SAFETY: delegates to C implementation
-    unsafe { mj_differentiatePos_impl(m, qvel, dt, qpos1, qpos2) }
+    // SAFETY: m valid. qvel/qpos1/qpos2 have adequate capacity for all joints.
+    unsafe {
+        const MJJNT_FREE: i32 = 0;
+        const MJJNT_BALL: i32 = 1;
+        const MJJNT_SLIDE: i32 = 2;
+        const MJJNT_HINGE: i32 = 3;
+
+        let njnt = (*m).njnt as i32;
+        let mut j: i32 = 0;
+        while j < njnt {
+            let mut padr = *(*m).jnt_qposadr.add(j as usize);
+            let mut vadr = *(*m).jnt_dofadr.add(j as usize);
+            let jnt_type = *(*m).jnt_type.add(j as usize);
+
+            if jnt_type == MJJNT_FREE {
+                let mut i: i32 = 0;
+                while i < 3 {
+                    *qvel.add((vadr + i) as usize) = (*qpos2.add((padr + i) as usize) - *qpos1.add((padr + i) as usize)) / dt;
+                    i += 1;
+                }
+                vadr += 3;
+                padr += 3;
+                // fallthrough to ball
+                crate::engine::engine_util_spatial::mju_sub_quat(qvel.add(vadr as usize), qpos2.add(padr as usize), qpos1.add(padr as usize));
+                crate::engine::engine_util_blas::mju_scl3(qvel.add(vadr as usize), qvel.add(vadr as usize), 1.0 / dt);
+            } else if jnt_type == MJJNT_BALL {
+                crate::engine::engine_util_spatial::mju_sub_quat(qvel.add(vadr as usize), qpos2.add(padr as usize), qpos1.add(padr as usize));
+                crate::engine::engine_util_blas::mju_scl3(qvel.add(vadr as usize), qvel.add(vadr as usize), 1.0 / dt);
+            } else if jnt_type == MJJNT_HINGE || jnt_type == MJJNT_SLIDE {
+                *qvel.add(vadr as usize) = (*qpos2.add(padr as usize) - *qpos1.add(padr as usize)) / dt;
+            }
+            j += 1;
+        }
+    }
 }
 
 /// C: mj_integratePosInd (engine/engine_support.h:98)

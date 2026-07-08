@@ -407,11 +407,29 @@ pub fn mj_factor_i(mat: *mut f64, diaginv: *mut f64, nv: i32, rownnz: *const i32
 /// Calls: mj_factorI, mju_copy, mju_copySparse
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_factor_m(m: *const mjModel, d: *mut mjData) {
-    extern "C" {
-        fn mj_factorM_impl(m: *const mjModel, d: *mut mjData);
+    // SAFETY: m, d valid. Copies M into qLD then factorizes in-place.
+    unsafe {
+        const MJENBL_SLEEP: i32 = 1 << 4;
+
+        // sleep filtering
+        let sleep_filter = ((*m).opt.enableflags & MJENBL_SLEEP) != 0 && (*d).nv_awake < (*m).nv as i32;
+        let index: *const i32;
+        let nv: i32;
+
+        if !sleep_filter {
+            index = core::ptr::null();
+            nv = (*m).nv as i32;
+            crate::engine::engine_util_blas::mju_copy((*d).qLD, (*d).M, (*m).nC as i32);
+        } else {
+            index = (*d).dof_awake_ind;
+            nv = (*d).nv_awake;
+            crate::engine::engine_util_sparse::mju_copy_sparse(
+                (*d).qLD, (*d).M, (*m).M_rownnz, (*m).M_rowadr, (*d).dof_awake_ind, (*d).nv_awake);
+        }
+
+        // factorize
+        mj_factor_i((*d).qLD, (*d).qLDiagInv, nv, (*m).M_rownnz, (*m).M_rowadr, (*m).M_colind, index);
     }
-    // SAFETY: delegates to C implementation, all pointers valid per caller contract
-    unsafe { mj_factorM_impl(m, d) }
 }
 
 /// C: mj_solveLD_legacy (engine/engine_core_smooth.h:79)
