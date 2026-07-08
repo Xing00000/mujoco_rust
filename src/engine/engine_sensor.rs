@@ -159,11 +159,34 @@ pub fn copy_sensor_data(m: *const mjModel, d: *const mjData, data: [*mut f64; 7]
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn total_wrench(force: *mut f64, torque: *mut f64, point: *const f64, n: i32, wrench: *const f64, pos: *const f64, frame: *const f64) {
-    extern "C" {
-        fn total_wrench_impl(force: *mut f64, torque: *mut f64, point: *const f64, n: i32, wrench: *const f64, pos: *const f64, frame: *const f64);
+    // SAFETY: force, torque point to 3 f64; point to 3 f64; wrench to 6*n f64;
+    //         pos to 3*n f64; frame to 9*n f64. Caller guarantees validity.
+    unsafe {
+        crate::engine::engine_util_blas::mju_zero3(force);
+        crate::engine::engine_util_blas::mju_zero3(torque);
+
+        for j in 0..n as usize {
+            // rotate force, torque from contact frame to global frame
+            let mut force_j: [f64; 3] = [0.0; 3];
+            let mut torque_j: [f64; 3] = [0.0; 3];
+            crate::engine::engine_util_blas::mju_mul_mat_t_vec3(
+                force_j.as_mut_ptr(), frame.add(9 * j), wrench.add(6 * j));
+            crate::engine::engine_util_blas::mju_mul_mat_t_vec3(
+                torque_j.as_mut_ptr(), frame.add(9 * j), wrench.add(6 * j + 3));
+
+            // add to total force, torque
+            crate::engine::engine_util_blas::mju_add_to3(force, force_j.as_ptr());
+            crate::engine::engine_util_blas::mju_add_to3(torque, torque_j.as_ptr());
+
+            // add induced moment: torque += (pos - point) x force
+            let mut diff: [f64; 3] = [0.0; 3];
+            crate::engine::engine_util_blas::mju_sub3(diff.as_mut_ptr(), pos.add(3 * j), point);
+            let mut induced_torque: [f64; 3] = [0.0; 3];
+            crate::engine::engine_util_spatial::mju_cross(
+                induced_torque.as_mut_ptr(), diff.as_ptr(), force_j.as_ptr());
+            crate::engine::engine_util_blas::mju_add_to3(torque, induced_torque.as_ptr());
+        }
     }
-    // SAFETY: delegates to C implementation, all pointers valid per caller contract
-    unsafe { total_wrench_impl(force, torque, point, n, wrench, pos, frame) }
 }
 
 /// C: fill_raydata (engine/engine_sensor.c:470)

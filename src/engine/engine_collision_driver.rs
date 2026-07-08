@@ -95,10 +95,16 @@ pub fn filter_bitmask(contype1: i32, conaffinity1: i32, contype2: i32, conaffini
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn filter_box(aabb1: *const f64, aabb2: *const f64, margin: f64) -> i32 {
-    // WARNING: signature changed — verify body
-    // Previous params: (aabb1 : * const f64, aabb2 : * const f64, margin : f64)
-    // Previous return: i32
-    extern "C" { fn filterBox_impl (aabb1 : * const f64 , aabb2 : * const f64 , margin : f64) -> i32 ; } unsafe { filterBox_impl (aabb1 , aabb2 , margin) }
+    // SAFETY: aabb1, aabb2 each point to 6 f64 elements. Caller guarantees validity.
+    unsafe {
+        if *aabb1.add(0) + *aabb1.add(3) + margin < *aabb2.add(0) - *aabb2.add(3) { return 1; }
+        if *aabb1.add(1) + *aabb1.add(4) + margin < *aabb2.add(1) - *aabb2.add(4) { return 1; }
+        if *aabb1.add(2) + *aabb1.add(5) + margin < *aabb2.add(2) - *aabb2.add(5) { return 1; }
+        if *aabb2.add(0) + *aabb2.add(3) + margin < *aabb1.add(0) - *aabb1.add(3) { return 1; }
+        if *aabb2.add(1) + *aabb2.add(4) + margin < *aabb1.add(1) - *aabb1.add(4) { return 1; }
+        if *aabb2.add(2) + *aabb2.add(5) + margin < *aabb1.add(2) - *aabb1.add(5) { return 1; }
+        0
+    }
 }
 
 /// C: filterSphereBox (engine/engine_collision_driver.c:246)
@@ -129,10 +135,14 @@ pub fn filter_sphere_box(s: *const f64, bound: f64, aabb: *const f64) -> i32 {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn filter_sphere(pos1: *const f64, pos2: *const f64, bound: f64) -> i32 {
-    // WARNING: signature changed — verify body
-    // Previous params: (pos1 : * const f64, pos2 : * const f64, bound : f64)
-    // Previous return: i32
-    extern "C" { fn filterSphere_impl (pos1 : * const f64 , pos2 : * const f64 , bound : f64) -> i32 ; } unsafe { filterSphere_impl (pos1 , pos2 , bound) }
+    // SAFETY: pos1, pos2 each point to 3 f64 elements. Caller guarantees validity.
+    unsafe {
+        let dif0 = *pos1.add(0) - *pos2.add(0);
+        let dif1 = *pos1.add(1) - *pos2.add(1);
+        let dif2 = *pos1.add(2) - *pos2.add(2);
+        let distsqr = dif0 * dif0 + dif1 * dif1 + dif2 * dif2;
+        (distsqr > bound * bound) as i32
+    }
 }
 
 /// C: mj_filterSphere (engine/engine_collision_driver.c:267)
@@ -175,10 +185,29 @@ pub fn mj_filter_sphere(m: *const mjModel, d: *mut mjData, g1: i32, g2: i32, mar
 /// C: filterBodyPair (engine/engine_collision_driver.c:288)
 #[allow(unused_variables, non_snake_case)]
 pub fn filter_body_pair(weldbody1: i32, weldparent1: i32, asleep1: i32, weldbody2: i32, weldparent2: i32, asleep2: i32, dsbl_filterparent: i32) -> i32 {
-    // WARNING: signature changed — verify body
-    // Previous params: (weldbody1 : i32, weldparent1 : i32, asleep1 : i32, weldbody2 : i32, weldparent2 : i32, asleep2 : i32, dsbl_filterparent : i32)
-    // Previous return: i32
-    extern "C" { fn filterBodyPair_impl (weldbody1 : i32 , weldparent1 : i32 , asleep1 : i32 , weldbody2 : i32 , weldparent2 : i32 , asleep2 : i32 , dsbl_filterparent : i32) -> i32 ; } unsafe { filterBodyPair_impl (weldbody1 , weldparent1 , asleep1 , weldbody2 , weldparent2 , asleep2 , dsbl_filterparent) }
+    // same weldbody check
+    if weldbody1 == weldbody2 {
+        return 1;
+    }
+
+    // both asleep check
+    if asleep1 != 0 && asleep2 != 0 {
+        return 1;
+    }
+
+    // asleep and static check
+    if (asleep1 != 0 && weldbody2 == 0) || (asleep2 != 0 && weldbody1 == 0) {
+        return 1;
+    }
+
+    // weldparent check
+    if (dsbl_filterparent == 0 && weldbody1 != 0 && weldbody2 != 0) &&
+       (weldbody1 == weldparent2 || weldbody2 == weldparent1) {
+        return 1;
+    }
+
+    // all tests passed
+    0
 }
 
 /// C: canCollide (engine/engine_collision_driver.c:318)
@@ -1052,9 +1081,233 @@ pub fn mj_is_elem_active(m: *const mjModel, f: i32, e: i32) -> i32 {
 /// Calls: add_pair, bfsort, canCollide, filterBodyPair, hasPlane, makeAAMM, mj_SAP, mj_freeStack, mj_markStack, mj_sleepState, mj_stackAllocInfo, mju_addTo3, mju_eig3, mju_message, mju_scl, mju_scl3, mju_zero, mju_zero3, updateCov
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_broadphase(m: *const mjModel, d: *mut mjData, bfpair: *mut i32, maxpair: i32) -> i32 {
-    extern "C" { fn mj_broadphase_impl(m: *const mjModel, d: *mut mjData, bfpair: *mut i32, maxpair: i32) -> i32; }
-    // SAFETY: delegates to C implementation, all pointers valid per caller contract
-    unsafe { mj_broadphase_impl(m, d, bfpair, maxpair) }
+    // SAFETY: m, d are valid MuJoCo model/data pointers; bfpair is buffer of maxpair elements.
+    unsafe {
+        let mut npair: i32 = 0;
+        let nbody = (*m).nbody as i32;
+        let ngeom = (*m).ngeom as i32;
+        let nvert = (*m).nflexvert as i32;
+        let nflex = (*m).nflex as i32;
+        let nbodyflex = nbody + nflex;
+        // mjDSBL_FILTERPARENT = 1<<10
+        let dsbl_filterparent = (((*m).opt.disableflags & (1 << 10)) != 0) as i32;
+        // mjENBL_SLEEP = 1<<4
+        let sleep_filter = (((*m).opt.enableflags & (1 << 4)) != 0) as i32
+            != 0 && (*d).nbody_awake < nbody;
+        let mut cov: [f64; 9] = [0.0; 9];
+        let mut cen: [f64; 3] = [0.0; 3];
+        let mut eigval: [f64; 3] = [0.0; 3];
+        let mut frame: [f64; 9] = [0.0; 9];
+        let mut quat: [f64; 4] = [0.0; 4];
+
+        // init with pairs involving always-colliding bodies
+        for b1 in 0..nbody {
+            // cannot collide
+            if can_collide(m, b1) == 0 {
+                continue;
+            }
+
+            // b1 is world body with geoms, or world-welded body with plane
+            if (b1 == 0 && *(*m).body_geomnum.add(b1 as usize) > 0)
+                || (*(*m).body_weldid.add(b1 as usize) == 0 && has_plane(m, b1) != 0)
+            {
+                // add b1:b2 pairs that are not welded together
+                for b2 in 0..nbody {
+                    // cannot collide
+                    if can_collide(m, b2) == 0 {
+                        continue;
+                    }
+
+                    // welded together
+                    let weld2 = *(*m).body_weldid.add(b2 as usize);
+                    let parent_weld2 = *(*m).body_weldid.add(
+                        *(*m).body_parentid.add(weld2 as usize) as usize);
+                    let asleep2 = if sleep_filter {
+                        (*(*d).body_awake.add(b2 as usize) == 0) as i32  // mjS_ASLEEP = 0
+                    } else { 0 };
+                    if filter_body_pair(0, 0, 1, weld2, parent_weld2, asleep2, dsbl_filterparent) != 0 {
+                        continue;
+                    }
+
+                    // add pair
+                    add_pair(m, b1, b2, &mut npair, bfpair, maxpair);
+                }
+
+                // add body:flex pairs, skip if flex asleep
+                for f in 0..nflex {
+                    if sleep_filter {
+                        // mjOBJ_FLEX = 9, mjS_ASLEEP = 0
+                        extern "C" {
+                            fn mj_sleepState_impl(m: *const mjModel, d: *const mjData, objtype: i32, i: i32) -> i32;
+                        }
+                        let state = mj_sleepState_impl(m, d as *const mjData, 9, f);
+                        if state == 0 { continue; }  // mjS_ASLEEP
+                    }
+                    add_pair(m, b1, nbody + f, &mut npair, bfpair, maxpair);
+                }
+            }
+        }
+
+        // find center of non-world geoms and flex vertices; return if none
+        let mut cnt: i32 = 0;
+        crate::engine::engine_util_blas::mju_zero3(cen.as_mut_ptr());
+        for i in 0..ngeom {
+            if *(*m).geom_bodyid.add(i as usize) != 0 {
+                crate::engine::engine_util_blas::mju_add_to3(cen.as_mut_ptr(), (*d).geom_xpos.add(3 * i as usize));
+                cnt += 1;
+            }
+        }
+        for i in 0..nvert {
+            if *(*m).flex_vertbodyid.add(i as usize) != 0 {
+                crate::engine::engine_util_blas::mju_add_to3(cen.as_mut_ptr(), (*d).flexvert_xpos.add(3 * i as usize));
+                cnt += 1;
+            }
+        }
+        if cnt == 0 {
+            return npair;
+        }
+        crate::engine::engine_util_blas::mju_scl3(cen.as_mut_ptr(), cen.as_ptr(), 1.0 / cnt as f64);
+
+        // compute covariance
+        crate::engine::engine_util_blas::mju_zero(cov.as_mut_ptr(), 9);
+        for i in 0..ngeom {
+            if *(*m).geom_bodyid.add(i as usize) != 0 {
+                update_cov(cov.as_mut_ptr(), (*d).geom_xpos.add(3 * i as usize), cen.as_ptr());
+            }
+        }
+        for i in 0..nvert {
+            if *(*m).flex_vertbodyid.add(i as usize) != 0 {
+                update_cov(cov.as_mut_ptr(), (*d).flexvert_xpos.add(3 * i as usize), cen.as_ptr());
+            }
+        }
+        crate::engine::engine_util_blas::mju_scl(cov.as_mut_ptr(), cov.as_ptr(), 1.0 / cnt as f64, 9);
+
+        // construct covariance-aligned 3D frame
+        crate::engine::engine_util_solve::mju_eig3(
+            eigval.as_mut_ptr(), frame.as_mut_ptr(), quat.as_mut_ptr(), cov.as_ptr());
+
+        // allocate collidable bodyflex ids, construct list
+        crate::engine::engine_memory::mj_mark_stack(d);
+        let bfid: *mut i32 = crate::engine::engine_memory::mj_stack_alloc_info(
+            d,
+            (nbodyflex as usize) * std::mem::size_of::<i32>(),
+            std::mem::align_of::<i32>(),
+            b"mj_broadphase\0".as_ptr() as *const i8,
+            0,
+        ) as *mut i32;
+        let mut ncollide: i32 = 0;
+        for i in 1..nbodyflex {
+            if can_collide(m, i) != 0 {
+                *bfid.add(ncollide as usize) = i;
+                ncollide += 1;
+            }
+        }
+
+        if ncollide > 1 {
+            // allocate and construct AAMMs for collidable only
+            let aamm: *mut f64 = crate::engine::engine_memory::mj_stack_alloc_info(
+                d,
+                (6 * ncollide as usize) * std::mem::size_of::<f64>(),
+                std::mem::align_of::<f64>(),
+                b"mj_broadphase\0".as_ptr() as *const i8,
+                0,
+            ) as *mut f64;
+            for i in 0..ncollide {
+                // aamm is column-major (grouped per-axis)
+                make_aamm(m, d,
+                    aamm.add(0 * ncollide as usize + i as usize),
+                    aamm.add(1 * ncollide as usize + i as usize),
+                    aamm.add(2 * ncollide as usize + i as usize),
+                    aamm.add(3 * ncollide as usize + i as usize),
+                    aamm.add(4 * ncollide as usize + i as usize),
+                    aamm.add(5 * ncollide as usize + i as usize),
+                    *bfid.add(i as usize), frame.as_ptr());
+            }
+
+            // call SAP
+            let maxsappair = ncollide * (ncollide - 1) / 2;
+            let sappair: *mut i32 = crate::engine::engine_memory::mj_stack_alloc_info(
+                d,
+                (maxsappair as usize) * std::mem::size_of::<i32>(),
+                std::mem::align_of::<i32>(),
+                b"mj_broadphase\0".as_ptr() as *const i8,
+                0,
+            ) as *mut i32;
+            let nsappair = mj_sap(d, aamm as *const f64, ncollide, 0, sappair, maxsappair);
+            if nsappair < 0 {
+                crate::engine::engine_util_errmem::mju_error(
+                    b"SAP failed\0".as_ptr() as *const i8);
+            }
+
+            // filter SAP pairs, convert to bodyflex pairs
+            for i in 0..nsappair {
+                let bf1 = *bfid.add((*sappair.add(i as usize) >> 16) as usize);
+                let bf2 = *bfid.add((*sappair.add(i as usize) & 0xFFFF) as usize);
+
+                // body pair: prune based on sleep filter and weld filter
+                if bf1 < nbody && bf2 < nbody {
+                    let asleep1 = if sleep_filter {
+                        (*(*d).body_awake.add(bf1 as usize) == 0) as i32
+                    } else { 0 };
+                    let asleep2 = if sleep_filter {
+                        (*(*d).body_awake.add(bf2 as usize) == 0) as i32
+                    } else { 0 };
+                    let weld1 = *(*m).body_weldid.add(bf1 as usize);
+                    let weld2 = *(*m).body_weldid.add(bf2 as usize);
+                    let parent_weld1 = *(*m).body_weldid.add(
+                        *(*m).body_parentid.add(weld1 as usize) as usize);
+                    let parent_weld2 = *(*m).body_weldid.add(
+                        *(*m).body_parentid.add(weld2 as usize) as usize);
+
+                    if filter_body_pair(weld1, parent_weld1, asleep1,
+                                        weld2, parent_weld2, asleep2,
+                                        dsbl_filterparent) != 0 {
+                        continue;
+                    }
+                }
+                // flex pair: skip if neither side is dynamically awake
+                else if sleep_filter {
+                    extern "C" {
+                        fn mj_sleepState_impl(m: *const mjModel, d: *const mjData, objtype: i32, i: i32) -> i32;
+                    }
+                    let awake1: i32 = if bf1 >= nbody {
+                        // mjOBJ_FLEX=9, mjS_AWAKE=1
+                        let state = mj_sleepState_impl(m, d as *const mjData, 9, bf1 - nbody);
+                        (state == 1) as i32
+                    } else {
+                        ((*(*d).body_awake.add(bf1 as usize) == 1)
+                            && *(*m).body_treeid.add(bf1 as usize) >= 0) as i32
+                    };
+                    let awake2: i32 = if bf2 >= nbody {
+                        let state = mj_sleepState_impl(m, d as *const mjData, 9, bf2 - nbody);
+                        (state == 1) as i32
+                    } else {
+                        ((*(*d).body_awake.add(bf2 as usize) == 1)
+                            && *(*m).body_treeid.add(bf2 as usize) >= 0) as i32
+                    };
+                    if awake1 == 0 && awake2 == 0 { continue; }
+                }
+
+                // add bodyflex pair if there is room in buffer
+                add_pair(m, bf1, bf2, &mut npair, bfpair, maxpair);
+            }
+        }
+
+        // sort bodyflex pairs by signature
+        if npair > 1 {
+            let buf: *mut i32 = crate::engine::engine_memory::mj_stack_alloc_info(
+                d,
+                (npair as usize) * std::mem::size_of::<i32>(),
+                std::mem::align_of::<i32>(),
+                b"mj_broadphase\0".as_ptr() as *const i8,
+                0,
+            ) as *mut i32;
+            bfsort(bfpair, buf, npair, std::ptr::null_mut());
+        }
+
+        crate::engine::engine_memory::mj_free_stack(d);
+        npair
+    }
 }
 
 /// C: mj_collideFlexSAP (engine/engine_collision_driver.h:51)

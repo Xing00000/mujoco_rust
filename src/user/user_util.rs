@@ -631,9 +631,29 @@ pub fn mjuu_offcenter(res: *mut f64, mass: f64, vec: *const f64) {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjuu_visccoef(visccoef: *mut f64, mass: f64, inertia: *const f64, scl: f64) {
-    extern "C" { fn mjuu_visccoef_impl(visccoef: *mut f64, mass: f64, inertia: *const f64, scl: f64); }
-    // SAFETY: delegates to C implementation
-    unsafe { mjuu_visccoef_impl(visccoef, mass, inertia, scl) }
+    const MJEPS: f64 = 1e-14;
+    // SAFETY: visccoef points to 6 f64; inertia points to 3 f64. Caller guarantees.
+    unsafe {
+        // compute equivalent box
+        let mut ebox: [f64; 3] = [0.0; 3];
+        let v0 = *inertia.add(1) + *inertia.add(2) - *inertia.add(0);
+        let v1 = *inertia.add(0) + *inertia.add(2) - *inertia.add(1);
+        let v2 = *inertia.add(0) + *inertia.add(1) - *inertia.add(2);
+        ebox[0] = (if v0 > MJEPS { v0 } else { MJEPS } / mass * 6.0).sqrt();
+        ebox[1] = (if v1 > MJEPS { v1 } else { MJEPS } / mass * 6.0).sqrt();
+        ebox[2] = (if v2 > MJEPS { v2 } else { MJEPS } / mass * 6.0).sqrt();
+
+        // apply formula for box (or rather cross) viscosity
+        // torque components
+        *visccoef.add(0) = scl * 4.0 / 3.0 * ebox[0] * (ebox[1] * ebox[1] * ebox[1] + ebox[2] * ebox[2] * ebox[2]);
+        *visccoef.add(1) = scl * 4.0 / 3.0 * ebox[1] * (ebox[0] * ebox[0] * ebox[0] + ebox[2] * ebox[2] * ebox[2]);
+        *visccoef.add(2) = scl * 4.0 / 3.0 * ebox[2] * (ebox[0] * ebox[0] * ebox[0] + ebox[1] * ebox[1] * ebox[1]);
+
+        // force components
+        *visccoef.add(3) = scl * 4.0 * ebox[1] * ebox[2];
+        *visccoef.add(4) = scl * 4.0 * ebox[0] * ebox[2];
+        *visccoef.add(5) = scl * 4.0 * ebox[0] * ebox[1];
+    }
 }
 
 /// C: mjuu_rotVecQuat (user/user_util.h:153)
@@ -714,10 +734,89 @@ pub fn mjuu_eig3(eigval: [f64; 3], eigvec: [f64; 9], quat: [f64; 4], mat: [f64; 
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjuu_eigendecompose(mat: *mut f64, eigval: *mut f64, eigvec: *mut f64, n: i32) -> i32 {
+    // SAFETY: mat is n*n f64; eigval is n f64; eigvec is n*n f64. Caller guarantees.
+    unsafe {
+        let nu = n as usize;
 
-    extern "C" { fn mjuu_eigendecompose_impl(mat: *mut f64, eigval: *mut f64, eigvec: *mut f64, n: i32) -> i32; }
-    // SAFETY: delegates to C implementation
-    unsafe { mjuu_eigendecompose_impl(mat, eigval, eigvec, n) }
+        // initialize eigvec to identity
+        for i in 0..nu * nu {
+            *eigvec.add(i) = 0.0;
+        }
+        for i in 0..nu {
+            *eigvec.add(i * nu + i) = 1.0;
+        }
+
+        let max_sweeps: i32 = 200;
+        let tol: f64 = 1e-12;
+
+        let mut sweep: i32 = 0;
+        while sweep < max_sweeps {
+            // check convergence: sum of squared off-diagonal elements
+            let mut off_diag: f64 = 0.0;
+            for i in 0..nu {
+                for j in (i + 1)..nu {
+                    off_diag += *mat.add(i * nu + j) * *mat.add(i * nu + j);
+                }
+            }
+            if off_diag < tol * tol {
+                break;
+            }
+
+            // sweep over all off-diagonal pairs
+            for p in 0..nu {
+                for q in (p + 1)..nu {
+                    let apq = *mat.add(p * nu + q);
+                    if apq.abs() < tol * 1e-3 {
+                        continue;
+                    }
+
+                    // compute rotation angle
+                    let app = *mat.add(p * nu + p);
+                    let aqq = *mat.add(q * nu + q);
+                    let tau = (aqq - app) / (2.0 * apq);
+                    let t = (if tau >= 0.0 { 1.0 } else { -1.0 }) /
+                            (tau.abs() + (1.0 + tau * tau).sqrt());
+                    let c = 1.0 / (1.0 + t * t).sqrt();
+                    let s = t * c;
+
+                    // update matrix (Jacobi rotation)
+                    *mat.add(p * nu + p) -= t * apq;
+                    *mat.add(q * nu + q) += t * apq;
+                    *mat.add(p * nu + q) = 0.0;
+                    *mat.add(q * nu + p) = 0.0;
+
+                    for r in 0..nu {
+                        if r == p || r == q {
+                            continue;
+                        }
+                        let mrp = *mat.add(r * nu + p);
+                        let mrq = *mat.add(r * nu + q);
+                        *mat.add(r * nu + p) = c * mrp - s * mrq;
+                        *mat.add(p * nu + r) = c * mrp - s * mrq;
+                        *mat.add(r * nu + q) = s * mrp + c * mrq;
+                        *mat.add(q * nu + r) = s * mrp + c * mrq;
+                    }
+
+                    // accumulate eigenvectors
+                    for r in 0..nu {
+                        let vrp = *eigvec.add(r * nu + p);
+                        let vrq = *eigvec.add(r * nu + q);
+                        *eigvec.add(r * nu + p) = c * vrp - s * vrq;
+                        *eigvec.add(r * nu + q) = s * vrp + c * vrq;
+                    }
+                }
+            }
+
+            sweep += 1;
+        }
+
+        // extract eigenvalues from diagonal
+        for i in 0..nu {
+            *eigval.add(i) = *mat.add(i * nu + i);
+        }
+
+        sweep
+    }
 }
 
 /// C: mjuu_trnVecPose (user/user_util.h:169)

@@ -194,11 +194,68 @@ pub fn power(a: f64, b: f64) -> f64 {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn getimpedance(solimp: *const f64, pos: f64, margin: f64, imp: *mut f64, impP: *mut f64) {
-    extern "C" {
-        fn getimpedance_impl(solimp: *const f64, pos: f64, margin: f64, imp: *mut f64, impP: *mut f64);
+    // SAFETY: solimp points to at least 5 f64; imp, impP point to single f64. Caller guarantees.
+    unsafe {
+        const MJMINVAL: f64 = 1e-15;
+
+        // flat function
+        if *solimp.add(0) == *solimp.add(1) || *solimp.add(2) <= MJMINVAL {
+            *imp = 0.5 * (*solimp.add(0) + *solimp.add(1));
+            *impP = 0.0;
+            return;
+        }
+
+        // x = abs((pos-margin) / width)
+        let mut x = (pos - margin) / *solimp.add(2);
+        let mut sgn: f64 = 1.0;
+        if x < 0.0 {
+            x = -x;
+            sgn = -1.0;
+        }
+
+        // fully saturated
+        if x >= 1.0 || x <= 0.0 {
+            *imp = if x >= 1.0 { *solimp.add(1) } else { *solimp.add(0) };
+            *impP = 0.0;
+            return;
+        }
+
+        // helper: power(a, b)
+        #[inline]
+        fn power(a: f64, b: f64) -> f64 {
+            if b == 1.0 {
+                a
+            } else if b == 2.0 {
+                a * a
+            } else {
+                a.powf(b)
+            }
+        }
+
+        // linear
+        let y: f64;
+        let yP: f64;
+        if *solimp.add(4) == 1.0 {
+            y = x;
+            yP = 1.0;
+        }
+        // y(x) = a*x^p if x<=midpoint
+        else if x <= *solimp.add(3) {
+            let a = 1.0 / power(*solimp.add(3), *solimp.add(4) - 1.0);
+            y = a * power(x, *solimp.add(4));
+            yP = *solimp.add(4) * a * power(x, *solimp.add(4) - 1.0);
+        }
+        // y(x) = 1-b*(1-x)^p if x>midpoint
+        else {
+            let b = 1.0 / power(1.0 - *solimp.add(3), *solimp.add(4) - 1.0);
+            y = 1.0 - b * power(1.0 - x, *solimp.add(4));
+            yP = *solimp.add(4) * b * power(1.0 - x, *solimp.add(4) - 1.0);
+        }
+
+        // scale
+        *imp = *solimp.add(0) + y * (*solimp.add(1) - *solimp.add(0));
+        *impP = yP * sgn * (*solimp.add(1) - *solimp.add(0)) / *solimp.add(2);
     }
-    // SAFETY: delegates to C implementation, all pointers valid per caller contract
-    unsafe { getimpedance_impl(solimp, pos, margin, imp, impP) }
 }
 
 /// C: mj_jacSumCount (engine/engine_core_constraint.c:2272)
@@ -236,11 +293,51 @@ pub fn mj_nc(m: *const mjModel, d: *mut mjData, nnz: *mut i32) -> i32 {
 /// Calls: mju_fillInt
 #[allow(unused_variables, non_snake_case)]
 pub fn compute_y_precount(Y_rownnz: *mut i32, Y_rowadr: *mut i32, nefc: i32, nv: i32, J_rownnz: *const i32, J_rowadr: *const i32, J_colind: *const i32, M_rownnz: *const i32, M_rowadr: *const i32, M_colind: *const i32, marker: *mut i32) -> i32 {
-    extern "C" {
-        fn computeY_precount_impl(Y_rownnz: *mut i32, Y_rowadr: *mut i32, nefc: i32, nv: i32, J_rownnz: *const i32, J_rowadr: *const i32, J_colind: *const i32, M_rownnz: *const i32, M_rowadr: *const i32, M_colind: *const i32, marker: *mut i32) -> i32;
+    // SAFETY: all pointers are valid arrays of appropriate size. Caller guarantees.
+    unsafe {
+        crate::engine::engine_util_misc::mju_fill_int(marker, -1, nv);
+
+        *Y_rowadr.add(0) = 0;
+        for r in 0..nefc {
+            let mut nnz: i32 = 0; // nonzeros in row r of Y
+
+            // traverse row r of J in reverse, count unique nonzeros
+            let start = *J_rowadr.add(r as usize);
+            let end = start + *J_rownnz.add(r as usize);
+            let mut i = end - 1;
+            while i >= start {
+                let j = *J_colind.add(i as usize);
+
+                // if dof j is marked, it was already counted by a child dof: skip it
+                if *marker.add(j as usize) == r {
+                    i -= 1;
+                    continue;
+                }
+
+                // traverse row j of M, marking new unique nonzeros
+                let nnzM = *M_rownnz.add(j as usize);
+                let adrM = *M_rowadr.add(j as usize);
+                for k in 0..nnzM {
+                    let c = *M_colind.add((adrM + k) as usize);
+                    if *marker.add(c as usize) != r {
+                        *marker.add(c as usize) = r;
+                        nnz += 1;
+                    }
+                }
+
+                i -= 1;
+            }
+
+            // update rownnz and rowadr
+            *Y_rownnz.add(r as usize) = nnz;
+            if r < nefc - 1 {
+                *Y_rowadr.add((r + 1) as usize) = *Y_rowadr.add(r as usize) + nnz;
+            }
+        }
+
+        // total non-zeros in Y
+        *Y_rowadr.add((nefc - 1) as usize) + *Y_rownnz.add((nefc - 1) as usize)
     }
-    // SAFETY: delegates to C implementation, all pointers valid per caller contract
-    unsafe { computeY_precount_impl(Y_rownnz, Y_rowadr, nefc, nv, J_rownnz, J_rowadr, J_colind, M_rownnz, M_rowadr, M_colind, marker) }
 }
 
 /// C: computeY_fill (engine/engine_core_constraint.c:2734)
@@ -252,11 +349,47 @@ pub fn compute_y_precount(Y_rownnz: *mut i32, Y_rowadr: *mut i32, nefc: i32, nv:
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn compute_y_fill(Y: *mut f64, Y_colind: *mut i32, Y_rownnz: *const i32, Y_rowadr: *const i32, nefc: i32, J: *const f64, J_rownnz: *const i32, J_rowadr: *const i32, J_colind: *const i32, dof_parentid: *const i32) {
-    extern "C" {
-        fn computeY_fill_impl(Y: *mut f64, Y_colind: *mut i32, Y_rownnz: *const i32, Y_rowadr: *const i32, nefc: i32, J: *const f64, J_rownnz: *const i32, J_rowadr: *const i32, J_colind: *const i32, dof_parentid: *const i32);
+    // SAFETY: all pointers are valid arrays of appropriate size. Caller guarantees.
+    unsafe {
+        for r in 0..nefc {
+            // init row
+            let end = *Y_rowadr.add(r as usize) + *Y_rownnz.add(r as usize);
+            let adrJ = *J_rowadr.add(r as usize);
+            let mut remainJ = *J_rownnz.add(r as usize);
+            let mut nnzY: i32 = 0;
+
+            // complete chain in reverse
+            loop {
+                // get previous dof in src and dst
+                let prev_src = if remainJ > 0 { *J_colind.add((adrJ + remainJ - 1) as usize) } else { -1 };
+                let prev_dst = if nnzY > 0 { *dof_parentid.add(*Y_colind.add((end - nnzY) as usize) as usize) } else { -1 };
+
+                // both finished: break
+                if prev_src < 0 && prev_dst < 0 {
+                    break;
+                }
+                // add src
+                else if prev_src >= prev_dst {
+                    nnzY += 1;
+                    remainJ -= 1;
+                    *Y_colind.add((end - nnzY) as usize) = prev_src;
+                    *Y.add((end - nnzY) as usize) = *J.add((adrJ + remainJ) as usize);
+                }
+                // add dst
+                else {
+                    nnzY += 1;
+                    *Y_colind.add((end - nnzY) as usize) = prev_dst;
+                    *Y.add((end - nnzY) as usize) = 0.0;
+                }
+            }
+
+            // compare with Y_rownnz: SHOULD NOT OCCUR
+            if nnzY != *Y_rownnz.add(r as usize) {
+                crate::engine::engine_util_errmem::mju_error(
+                    b"pre and post-count of Y_rownnz are not equal\0".as_ptr() as *const i8);
+            }
+        }
     }
-    // SAFETY: delegates to C implementation, all pointers valid per caller contract
-    unsafe { computeY_fill_impl(Y, Y_colind, Y_rownnz, Y_rowadr, nefc, J, J_rownnz, J_rowadr, J_colind, dof_parentid) }
 }
 
 /// C: computeY_backsub (engine/engine_core_constraint.c:2781)
@@ -268,11 +401,36 @@ pub fn compute_y_fill(Y: *mut f64, Y_colind: *mut i32, Y_rownnz: *const i32, Y_r
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn compute_y_backsub(Y: *mut f64, Y_rownnz: *const i32, Y_rowadr: *const i32, Y_colind: *const i32, nefc: i32, qLD: *const f64, M_rownnz: *const i32, M_rowadr: *const i32, M_colind: *const i32, sqrtInvD: *const f64) {
-    extern "C" {
-        fn computeY_backsub_impl(Y: *mut f64, Y_rownnz: *const i32, Y_rowadr: *const i32, Y_colind: *const i32, nefc: i32, qLD: *const f64, M_rownnz: *const i32, M_rowadr: *const i32, M_colind: *const i32, sqrtInvD: *const f64);
+    // SAFETY: all pointers are valid arrays of appropriate size. Caller guarantees.
+    unsafe {
+        for r in 0..nefc {
+            let nnzY = *Y_rownnz.add(r as usize);
+            let adrY = *Y_rowadr.add(r as usize);
+
+            // Y(r,:) <- inv(L') * Y(r,:), exploit sparsity of input vector
+            let mut i = adrY + nnzY - 1;
+            while i >= adrY {
+                let val = *Y.add(i as usize);
+                if val == 0.0 {
+                    i -= 1;
+                    continue;
+                }
+                let j = *Y_colind.add(i as usize);
+                let adrM = *M_rowadr.add(j as usize);
+                crate::engine::engine_util_sparse::mju_add_to_scl_sparse_inc(
+                    Y.add(adrY as usize), qLD.add(adrM as usize),
+                    nnzY, Y_colind.add(adrY as usize),
+                    *M_rownnz.add(j as usize) - 1, M_colind.add(adrM as usize), -val);
+                i -= 1;
+            }
+
+            // Y(r,:) <- sqrt(inv(D)) * Y(r,:)
+            for i in adrY..(adrY + nnzY) {
+                let j = *Y_colind.add(i as usize);
+                *Y.add(i as usize) *= *sqrtInvD.add(j as usize);
+            }
+        }
     }
-    // SAFETY: delegates to C implementation, all pointers valid per caller contract
-    unsafe { computeY_backsub_impl(Y, Y_rownnz, Y_rowadr, Y_colind, nefc, qLD, M_rownnz, M_rowadr, M_colind, sqrtInvD) }
 }
 
 /// C: mj_makeY (engine/engine_core_constraint.c:2908)

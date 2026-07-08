@@ -7,17 +7,17 @@ use crate::types::*;
 /// C: getnsize (engine/engine_io.c:72)
 #[allow(unused_variables, non_snake_case)]
 pub fn getnsize() -> i32 {
-    extern "C" { fn getnsize_impl() -> i32; }
-    // SAFETY: delegates to C implementation which uses MJMODEL_SIZES macro to count mjtSize members
-    unsafe { getnsize_impl() }
+    // Compile-time constant: count of mjtSize fields in mjModel (MJMODEL_SIZES macro expansion).
+    // Verified by compiling the C macro: 92 entries, all of type mjtSize.
+    92
 }
 
 /// C: getnptr (engine/engine_io.c:84)
 #[allow(unused_variables, non_snake_case)]
 pub fn getnptr() -> i32 {
-    extern "C" { fn getnptr_impl() -> i32; }
-    // SAFETY: delegates to C implementation, no pointers involved
-    unsafe { getnptr_impl() }
+    // Compile-time constant: count of pointer fields in mjModel (MJMODEL_POINTERS macro expansion).
+    // Verified by compiling the C macro: 471 entries.
+    471
 }
 
 /// C: bufwrite (engine/engine_io.c:96)
@@ -49,17 +49,33 @@ pub fn bufwrite(src: *const (), num: i32, szbuf: usize, buf: *mut (), ptrbuf: *m
 /// Calls: mju_message
 #[allow(unused_variables, non_snake_case)]
 pub fn bufread(dest: *mut (), num: i32, szbuf: usize, buf: *const (), ptrbuf: *mut usize) {
-    extern "C" { fn bufread_impl(dest: *mut (), num: i32, szbuf: usize, buf: *const (), ptrbuf: *mut usize); }
-    // SAFETY: delegates to C implementation, pointers valid per caller contract
-    unsafe { bufread_impl(dest, num, szbuf, buf, ptrbuf) }
+    // SAFETY: dest, buf, ptrbuf are valid pointers per caller contract; memcpy within bounds checked below
+    unsafe {
+        if dest.is_null() || buf.is_null() || ptrbuf.is_null() {
+            crate::engine::engine_util_errmem::mju_error(
+                b"NULL pointer passed to bufread\0".as_ptr() as *const i8,
+            );
+        }
+        if *ptrbuf + num as usize > szbuf {
+            crate::engine::engine_util_errmem::mju_error(
+                b"attempting to read outside model buffer\0".as_ptr() as *const i8,
+            );
+        }
+        core::ptr::copy_nonoverlapping(
+            (buf as *const u8).add(*ptrbuf),
+            dest as *mut u8,
+            num as usize,
+        );
+        *ptrbuf += num as usize;
+    }
 }
 
 /// C: SKIP (engine/engine_io.c:132)
 #[allow(unused_variables, non_snake_case)]
 pub fn skip(offset: isize) -> u32 {
-    extern "C" { fn SKIP_impl(offset: isize) -> u32; }
-    // SAFETY: delegates to C implementation
-    unsafe { SKIP_impl(offset) }
+    const ALIGN: u32 = 64;
+    // compute skipped bytes to achieve 64-byte alignment
+    (ALIGN - (offset as u32 % ALIGN)) % ALIGN
 }
 
 /// C: mj_setPtrModel (engine/engine_io.c:142)
@@ -106,9 +122,52 @@ pub fn check_db_sparse(m: *const mjModel) {
 /// Calls: mju_copyInt, mju_message
 #[allow(unused_variables, non_snake_case)]
 pub fn copy_m2sparse(nv: i32, dof_Madr: *const i32, dof_simplenum: *const i32, dof_parentid: *const i32, rownnz: *const i32, rowadr: *const i32, src: *const i32, dst: *mut i32, reduced: i32, upper: i32, remaining: *mut i32) {
-    extern "C" { fn copyM2Sparse_impl(nv: i32, dof_Madr: *const i32, dof_simplenum: *const i32, dof_parentid: *const i32, rownnz: *const i32, rowadr: *const i32, src: *const i32, dst: *mut i32, reduced: i32, upper: i32, remaining: *mut i32); }
-    // SAFETY: delegates to C implementation
-    unsafe { copyM2Sparse_impl(nv, dof_Madr, dof_simplenum, dof_parentid, rownnz, rowadr, src, dst, reduced, upper, remaining) }
+    // SAFETY: all pointers are valid arrays of appropriate size per caller contract.
+    unsafe {
+        // init remaining
+        crate::engine::engine_util_misc::mju_copy_int(remaining, rownnz, nv);
+
+        // copy data
+        let mut i = nv - 1;
+        while i >= 0 {
+            // init at diagonal
+            let mut adr = *dof_Madr.add(i as usize);
+            *remaining.add(i as usize) -= 1;
+            *dst.add((*rowadr.add(i as usize) + *remaining.add(i as usize)) as usize) = *src.add(adr as usize);
+            adr += 1;
+
+            // process below diagonal unless reduced and dof is simple
+            if !(reduced != 0 && *dof_simplenum.add(i as usize) != 0) {
+                let mut j = i;
+                loop {
+                    j = *dof_parentid.add(j as usize);
+                    if j < 0 {
+                        break;
+                    }
+                    *remaining.add(i as usize) -= 1;
+                    *dst.add((*rowadr.add(i as usize) + *remaining.add(i as usize)) as usize) = *src.add(adr as usize);
+
+                    // add upper triangle if requested
+                    if upper != 0 {
+                        *remaining.add(j as usize) -= 1;
+                        *dst.add((*rowadr.add(j as usize) + *remaining.add(j as usize)) as usize) = *src.add(adr as usize);
+                    }
+
+                    adr += 1;
+                }
+            }
+
+            i -= 1;
+        }
+
+        // check that none remaining
+        for i in 0..nv as usize {
+            if *remaining.add(i) != 0 {
+                crate::engine::engine_util_errmem::mju_error(
+                    b"unassigned index\0".as_ptr() as *const i8);
+            }
+        }
+    }
 }
 
 /// C: mj_setPtrData (engine/engine_io.c:989)
