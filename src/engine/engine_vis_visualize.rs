@@ -988,9 +988,97 @@ pub fn mjv_is_catenary(m: *const mjModel, d: *const mjData, i: i32, length: *mut
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjv_catenary(x0: *const f64, x1: *const f64, gravity: *const f64, length: f64, catenary: *mut f64, ncatenary: i32) -> i32 {
-    extern "C" { fn mjv_catenary_impl(x0: *const f64, x1: *const f64, gravity: *const f64, length: f64, catenary: *mut f64, ncatenary: i32) -> i32; }
-    // SAFETY: delegates to C implementation, all pointers valid per caller contract
-    unsafe { mjv_catenary_impl(x0, x1, gravity, length, catenary, ncatenary) }
+    // SAFETY: x0, x1, gravity have 3 elements. catenary has 3*ncatenary elements.
+    unsafe {
+        const MJMINVAL: f64 = 1e-15;
+
+        let dist = crate::engine::engine_util_blas::mju_dist3(x0, x1);
+
+        // tendon is stretched longer than length: draw straight line
+        if dist > length {
+            crate::engine::engine_util_blas::mju_copy3(catenary.add(0), x0);
+            crate::engine::engine_util_blas::mju_copy3(catenary.add(3), x1);
+            return 2;
+        }
+
+        // tendon is shorter than length
+        // normalized up vector
+        let mut up: [f64; 3] = [0.0; 3];
+        crate::engine::engine_util_blas::mju_scl3(up.as_mut_ptr(), gravity, -1.0);
+        crate::engine::engine_util_blas::mju_normalize3(up.as_mut_ptr());
+
+        // x0 to x1
+        let mut x01: [f64; 3] = [0.0; 3];
+        crate::engine::engine_util_blas::mju_sub3(x01.as_mut_ptr(), x1, x0);
+
+        // make across orthonormal to up, points from x0 to x1
+        let mut across: [f64; 3] = [0.0; 3];
+        crate::engine::engine_util_blas::mju_copy3(across.as_mut_ptr(), x01.as_ptr());
+        let mut tmp: [f64; 3] = [0.0; 3];
+        crate::engine::engine_util_blas::mju_scl3(
+            tmp.as_mut_ptr(), up.as_ptr(),
+            crate::engine::engine_util_blas::mju_dot3(up.as_ptr(), across.as_ptr()));
+        crate::engine::engine_util_blas::mju_sub_from3(across.as_mut_ptr(), tmp.as_ptr());
+        let norm = crate::engine::engine_util_blas::mju_normalize3(across.as_mut_ptr());
+
+        // if across is numerically tiny, just set to 0
+        if norm < MJMINVAL {
+            crate::engine::engine_util_blas::mju_zero3(across.as_mut_ptr());
+        }
+
+        // extents in the suspension plane
+        let h = crate::engine::engine_util_blas::mju_dot3(x01.as_ptr(), across.as_ptr());
+        let v = crate::engine::engine_util_blas::mju_dot3(x01.as_ptr(), up.as_ptr());
+
+        // near vertical tendon, use hanging bead approximation: 3 points
+        if length > 100.0 * h {
+            // solve for location of bead hanging on tendon
+            let d_up = -0.5 * ((length * length - h * h).sqrt() - v);
+            let d_across = h * d_up / (2.0 * d_up - v);
+
+            // start point
+            crate::engine::engine_util_blas::mju_copy3(catenary.add(0), x0);
+
+            // midpoint: bead location
+            crate::engine::engine_util_blas::mju_copy3(catenary.add(3), x0);
+            crate::engine::engine_util_blas::mju_add_to_scl3(catenary.add(3), up.as_ptr(), d_up);
+            crate::engine::engine_util_blas::mju_add_to_scl3(catenary.add(3), across.as_ptr(), d_across);
+
+            // end point
+            crate::engine::engine_util_blas::mju_copy3(catenary.add(6), x1);
+
+            return 3;
+        }
+
+        // compute full catenary: ncatenary points
+        // b*h: scaled catenary flatness
+        let bh = solve_catenary(v, h, length) * h;
+
+        // horizontal and vertical offsets
+        let h_offset = -0.5 * (((length + v) / (length - v)).ln() * bh - h);
+        let v_offset = -cosh_sinh(h_offset / bh, core::ptr::null_mut()) * bh;
+
+        // start point
+        crate::engine::engine_util_blas::mju_copy3(catenary.add(0), x0);
+
+        // hanging points
+        let mut i: i32 = 1;
+        while i < ncatenary - 1 {
+            // linearly spaced horizontal offset
+            let horizontal = i as f64 * h / ncatenary as f64;
+            crate::engine::engine_util_blas::mju_add_scl3(catenary.add(3 * i as usize), x0, across.as_ptr(), horizontal);
+
+            // vertical offset, evaluate catenary values
+            let vertical = bh * cosh_sinh((horizontal - h_offset) / bh, core::ptr::null_mut()) + v_offset;
+            crate::engine::engine_util_blas::mju_add_to_scl3(catenary.add(3 * i as usize), up.as_ptr(), vertical);
+            i += 1;
+        }
+
+        // end point
+        crate::engine::engine_util_blas::mju_copy3(catenary.add(3 * (ncatenary - 1) as usize), x1);
+
+        return ncatenary;
+    }
 }
 
 /// C: hsv2rgb (engine/engine_vis_visualize.h:76)
