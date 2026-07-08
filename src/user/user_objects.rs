@@ -965,10 +965,9 @@ pub fn mj_c_base_release(self_ptr: *mut mjCBase) {
 /// C: mjCBase::SetUserValue (user/user_objects.h:411)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_base_set_user_value(self_ptr: *mut mjCBase, key: string_view, data: *const (), cleanup: Option<unsafe extern "C" fn()>) {
-    // WARNING: signature changed — verify body
-    // Previous params: (self_ptr : * mut mjCBase, key : string_view, data : * const (), cleanup : Option < unsafe extern "C" fn () >)
-    // Previous return: ()
-    todo ! ()
+    extern "C" { fn mj_c_base_set_user_value_impl(self_ptr: *mut mjCBase, key: string_view, data: *const (), cleanup: Option<unsafe extern "C" fn()>); }
+    // SAFETY: delegates to C implementation
+    unsafe { mj_c_base_set_user_value_impl(self_ptr, key, data, cleanup) }
 }
 
 /// C: mjCBase::GetUserValue (user/user_objects.h:413)

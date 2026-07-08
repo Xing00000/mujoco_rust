@@ -40,16 +40,17 @@ pub fn zip_archive_provider_read(self_ptr: *mut ZipArchiveProvider, name: *const
 /// Calls: SetError
 #[allow(unused_variables, non_snake_case)]
 pub fn parse_zip_buffer(buffer: *const (), nbuffer: i32, name: *const i8, vfs: *mut mjVFS, error: *mut i8, error_sz: i32) -> *mut mjSpec {
-    // WARNING: signature changed — verify body
-    // Previous params: (buffer : * const (), nbuffer : i32, name : * const i8, vfs : * mut mjVFS, error : * mut i8, error_sz : i32)
-    // Previous return: * mut mjSpec
-    todo ! ()
+    extern "C" { fn ParseZipBuffer_impl(buffer: *const (), nbuffer: i32, name: *const i8, vfs: *mut mjVFS, error: *mut i8, error_sz: i32) -> *mut mjSpec; }
+    // SAFETY: delegates to C++ implementation; caller guarantees pointer validity
+    unsafe { ParseZipBuffer_impl(buffer, nbuffer, name, vfs, error, error_sz) }
 }
 
 /// C: _mj_init_mjz_decoder (xml/mjz/mjz_decoder.cc:429)
 /// Calls: ParseZipBuffer, mjp_registerDecoder, mju_readResource
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_init_mjz_decoder() {
-    todo ! ()
+    extern "C" { fn _mj_init_mjz_decoder_impl(); }
+    // SAFETY: delegates to C++ implementation; caller guarantees pointer validity
+    unsafe { _mj_init_mjz_decoder_impl() }
 }
 

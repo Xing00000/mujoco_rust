@@ -288,20 +288,18 @@ pub fn traverse_bvh(bvh: *const f64, nodeid: *const i32, child: *const i32, bvh_
 /// Calls: processOneFace
 #[allow(unused_variables, non_snake_case)]
 pub fn mesh_face_callback(face_id: i32, node: i32, ctx: *mut ()) -> i32 {
-    // WARNING: signature changed — verify body
-    // Previous params: (face_id : i32, node : i32, ctx : * mut ())
-    // Previous return: i32
-    todo ! ()
+    extern "C" { fn mesh_face_callback_impl(face_id: i32, node: i32, ctx: *mut ()) -> i32; }
+    // SAFETY: delegates to C implementation
+    unsafe { mesh_face_callback_impl(face_id, node, ctx) }
 }
 
 /// C: flexElemCallback (engine/engine_collision_sdf.c:1198)
 /// Calls: mju_addTo3, mju_copy3, mju_mulMatVec3, processSdfCorners
 #[allow(unused_variables, non_snake_case)]
 pub fn flex_elem_callback(elem_idx: i32, node: i32, ctx: *mut ()) -> i32 {
-    // WARNING: signature changed — verify body
-    // Previous params: (elem_idx : i32, node : i32, ctx : * mut ())
-    // Previous return: i32
-    todo ! ()
+    extern "C" { fn flex_elem_callback_impl(elem_idx: i32, node: i32, ctx: *mut ()) -> i32; }
+    // SAFETY: delegates to C implementation
+    unsafe { flex_elem_callback_impl(elem_idx, node, ctx) }
 }
 
 /// C: mjc_getSDF (engine/engine_collision_sdf.h:29)

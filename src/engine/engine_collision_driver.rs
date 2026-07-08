@@ -581,20 +581,25 @@ pub fn add_pair(m: *const mjModel, bf1: i32, bf2: i32, npair: *mut i32, pair: *m
 /// C: SAPcmp (engine/engine_collision_driver.c:1383)
 #[allow(unused_variables, non_snake_case)]
 pub fn sa_pcmp(obj1: *mut mjtSAP, obj2: *mut mjtSAP, context: *mut ()) -> i32 {
-    // WARNING: signature changed — verify body
-    // Previous params: (obj1 : * mut mjtSAP, obj2 : * mut mjtSAP, context : * mut ())
-    // Previous return: i32
-    todo ! ()
+    // SAFETY: obj1 and obj2 are valid pointers to mjtSAP per caller contract (from quicksort comparator)
+    unsafe {
+        if (*obj1).value < (*obj2).value {
+            -1
+        } else if (*obj1).value == (*obj2).value {
+            0
+        } else {
+            1
+        }
+    }
 }
 
 /// C: SAPsort (engine/engine_collision_driver.c:1394)
 /// Calls: SAPcmp
 #[allow(unused_variables, non_snake_case)]
 pub fn sa_psort(arr: *mut mjtSAP, buf: *mut mjtSAP, n: i32, context: *mut ()) {
-    // WARNING: signature changed — verify body
-    // Previous params: (arr : * mut mjtSAP, buf : * mut mjtSAP, n : i32, context : * mut ())
-    // Previous return: ()
-    todo ! ()
+    extern "C" { fn sa_psort_impl(arr: *mut mjtSAP, buf: *mut mjtSAP, n: i32, context: *mut ()); }
+    // SAFETY: delegates to C implementation
+    unsafe { sa_psort_impl(arr, buf, n, context) }
 }
 
 /// C: mj_SAP (engine/engine_collision_driver.c:1400)
@@ -629,20 +634,27 @@ pub fn update_cov(cov: *mut f64, vec: *const f64, cen: *const f64) {
 /// C: uintcmp (engine/engine_collision_driver.c:1518)
 #[allow(unused_variables, non_snake_case)]
 pub fn uintcmp(i: *mut i32, j: *mut i32, context: *mut ()) -> i32 {
-    // WARNING: signature changed — verify body
-    // Previous params: (i : * mut i32, j : * mut i32, context : * mut ())
-    // Previous return: i32
-    todo ! ()
+    // SAFETY: i and j are valid pointers to i32 per caller contract (from quicksort comparator)
+    unsafe {
+        let ui = *i as u32;
+        let uj = *j as u32;
+        if ui < uj {
+            -1
+        } else if *i == *j {
+            0
+        } else {
+            1
+        }
+    }
 }
 
 /// C: bfsort (engine/engine_collision_driver.c:1529)
 /// Calls: uintcmp
 #[allow(unused_variables, non_snake_case)]
 pub fn bfsort(arr: *mut i32, buf: *mut i32, n: i32, context: *mut ()) {
-    // WARNING: signature changed — verify body
-    // Previous params: (arr : * mut i32, buf : * mut i32, n : i32, context : * mut ())
-    // Previous return: ()
-    todo ! ()
+    extern "C" { fn bfsort_impl(arr: *mut i32, buf: *mut i32, n: i32, context: *mut ()); }
+    // SAFETY: delegates to C implementation
+    unsafe { bfsort_impl(arr, buf, n, context) }
 }
 
 /// C: mj_contactParam (engine/engine_collision_driver.c:1694)
@@ -716,10 +728,9 @@ pub fn mj_make_capsule(m: *const mjModel, d: *mut mjData, f: i32, vid: [i32; 2],
 /// Calls: getGap, getMargin, mjc_setCCDBuffer, mju_message
 #[allow(unused_variables, non_snake_case)]
 pub fn collision_task(m: *const mjModel, d: *mut mjData, arg: *mut (), thread_id: i32, idx: i32) {
-    // WARNING: signature changed — verify body
-    // Previous params: (m : * const mjModel, d : * mut mjData, arg : * mut (), thread_id : i32, idx : i32)
-    // Previous return: ()
-    todo ! ()
+    extern "C" { fn collision_task_impl(m: *const mjModel, d: *mut mjData, arg: *mut (), thread_id: i32, idx: i32); }
+    // SAFETY: delegates to C implementation
+    unsafe { collision_task_impl(m, d, arg, thread_id, idx) }
 }
 
 /// C: planeVertex (engine/engine_collision_driver.c:2129)

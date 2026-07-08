@@ -349,9 +349,8 @@ pub fn mj_x_util_write_attr_keys(elem: *mut XMLElement, name: string, map: *cons
 /// Calls: mju_warning
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_x_util_read_attr_values(elem: *mut tinyxml2__XMLElement, attr: *const i8, push: *const (), max: i32) -> bool {
-    // WARNING: signature changed — verify body
-    // Previous params: (elem : * mut tinyxml2__XMLElement, attr : * const i8, push : * const (), max : i32)
-    // Previous return: bool
-    todo ! ()
+    extern "C" { fn mj_x_util_read_attr_values_impl(elem: *mut tinyxml2__XMLElement, attr: *const i8, push: *const (), max: i32) -> bool; }
+    // SAFETY: delegates to C implementation
+    unsafe { mj_x_util_read_attr_values_impl(elem, attr, push, max) }
 }
 

@@ -221,10 +221,9 @@ pub fn getpathslength(list: i32) -> usize {
 /// Calls: mj_setLengthRange
 #[allow(unused_variables, non_snake_case)]
 pub fn l_rfunc(arg: *mut ()) -> *mut () {
-    // WARNING: signature changed — verify body
-    // Previous params: (arg : * mut ())
-    // Previous return: * mut ()
-    todo ! ()
+    extern "C" { fn LRfunc_impl(arg: *mut ()) -> *mut (); }
+    // SAFETY: delegates to C++ implementation; caller guarantees pointer validity
+    unsafe { LRfunc_impl(arg) }
 }
 
 /// C: addtolist (user/user_model.cc:2577)
@@ -380,10 +379,9 @@ pub fn mj_c_model_point_to_local(self_ptr: *mut mjCModel) {
 /// Calls: _mjPRIVATE_setTlsLogHandler, mjCModel::Clear, mjCModel::ClearCompileWarnings, mjCModel::CopyFromSpec, mjCModel::TryCompile, mj_deleteData, mj_deleteModel
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_model_compile(self_ptr: *mut mjCModel, vfs: *const mjVFS, m: *mut *mut mjModel) -> *mut mjModel {
-    // WARNING: signature changed — verify body
-    // Previous params: (self_ptr : * mut mjCModel, vfs : * const mjVFS, m : * mut * mut mjModel)
-    // Previous return: * mut mjModel
-    todo ! ()
+    extern "C" { fn mjCModel_Compile_impl(self_ptr: *mut mjCModel, vfs: *const mjVFS, m: *mut *mut mjModel) -> *mut mjModel; }
+    // SAFETY: delegates to C++ implementation; caller guarantees pointer validity
+    unsafe { mjCModel_Compile_impl(self_ptr, vfs, m) }
 }
 
 /// C: mjCModel::CopyBack (user/user_model.h:204)

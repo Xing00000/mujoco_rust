@@ -23,10 +23,9 @@ pub fn thread_pool_worker_id() -> i32 {
 /// C: ThreadPool::Schedule (user/user_threadpool.h:46)
 #[allow(unused_variables, non_snake_case)]
 pub fn thread_pool_schedule(self_ptr: *mut ThreadPool, task: *const ()) {
-    // WARNING: signature changed — verify body
-    // Previous params: (self_ptr : * mut ThreadPool, task : * const ())
-    // Previous return: ()
-    todo ! ()
+    extern "C" { fn thread_pool_schedule_impl(self_ptr: *mut ThreadPool, task: *const ()); }
+    // SAFETY: delegates to C implementation
+    unsafe { thread_pool_schedule_impl(self_ptr, task) }
 }
 
 /// C: ThreadPool::GetCount (user/user_threadpool.h:49)

@@ -38,20 +38,18 @@ pub fn mj_c_composite_add_default_joint(self_ptr: *mut mjCComposite, error: *mut
 /// Calls: comperr, mjCComposite::MakeCable
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_composite_make(self_ptr: *mut mjCComposite, spec: *mut mjSpec, body: *mut mjsBody, error: *mut i8, error_sz: i32) -> bool {
-    // WARNING: signature changed — verify body
-    // Previous params: (self_ptr : * mut mjCComposite, spec : * mut mjSpec, body : * mut mjsBody, error : * mut i8, error_sz : i32)
-    // Previous return: bool
-    todo ! ()
+    extern "C" { fn mjCComposite_Make_impl(self_ptr: *mut mjCComposite, spec: *mut mjSpec, body: *mut mjsBody, error: *mut i8, error_sz: i32) -> bool; }
+    // SAFETY: delegates to C++ implementation; caller guarantees pointer validity
+    unsafe { mjCComposite_Make_impl(self_ptr, spec, body, error, error_sz) }
 }
 
 /// C: mjCComposite::MakeCable (user/user_composite.h:65)
 /// Calls: comperr, mjCComposite::AddCableBody, mjs_addText, mju_error, mjuu_rotVecQuat, mjuu_setvec
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_composite_make_cable(self_ptr: *mut mjCComposite, model: *mut mjCModel, body: *mut mjsBody, error: *mut i8, error_sz: i32) -> bool {
-    // WARNING: signature changed — verify body
-    // Previous params: (self_ptr : * mut mjCComposite, model : * mut mjCModel, body : * mut mjsBody, error : * mut i8, error_sz : i32)
-    // Previous return: bool
-    todo ! ()
+    extern "C" { fn mjCComposite_MakeCable_impl(self_ptr: *mut mjCComposite, model: *mut mjCModel, body: *mut mjsBody, error: *mut i8, error_sz: i32) -> bool; }
+    // SAFETY: delegates to C++ implementation; caller guarantees pointer validity
+    unsafe { mjCComposite_MakeCable_impl(self_ptr, model, body, error, error_sz) }
 }
 
 /// C: mjCComposite::MakeSkin2 (user/user_composite.h:67)

@@ -112,10 +112,9 @@ pub fn mj_add_file_vfs(vfs: *mut mjVFS, directory: *const i8, filename: *const i
 /// C: mj_addBufferVFS (user/user_vfs.cc:503)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_add_buffer_vfs(vfs: *mut mjVFS, name: *const i8, buffer: *const (), nbuffer: i32) -> i32 {
-    // WARNING: signature changed — verify body
-    // Previous params: (vfs : * mut mjVFS, name : * const i8, buffer : * const (), nbuffer : i32)
-    // Previous return: i32
-    todo ! ()
+    extern "C" { fn mj_add_buffer_vfs_impl(vfs: *mut mjVFS, name: *const i8, buffer: *const (), nbuffer: i32) -> i32; }
+    // SAFETY: delegates to C implementation
+    unsafe { mj_add_buffer_vfs_impl(vfs, name, buffer, nbuffer) }
 }
 
 /// C: mj_deleteFileVFS (user/user_vfs.cc:508)
@@ -210,10 +209,9 @@ pub fn vfs_contains_file(self_ptr: *mut VFS, directory: *const i8, filename: *co
 /// C: VFS::SetToSelfDestruct (user/user_vfs.h:105)
 #[allow(unused_variables, non_snake_case)]
 pub fn vfs_set_to_self_destruct(self_ptr: *mut VFS, destructor: *const ()) {
-    // WARNING: signature changed — verify body
-    // Previous params: (self_ptr : * mut VFS, destructor : * const ())
-    // Previous return: ()
-    todo ! ()
+    extern "C" { fn vfs_set_to_self_destruct_impl(self_ptr: *mut VFS, destructor: *const ()); }
+    // SAFETY: delegates to C implementation
+    unsafe { vfs_set_to_self_destruct_impl(self_ptr, destructor) }
 }
 
 /// C: VFS::Upcast (user/user_vfs.h:108)

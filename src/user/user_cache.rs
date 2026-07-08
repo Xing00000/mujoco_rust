@@ -16,10 +16,9 @@ pub fn mj_c_cache_has_asset(self_ptr: *mut mjCCache, id: *const i32) -> *const i
 /// Calls: mjCAsset::BytesCount, mjCAsset::ReplaceData, mjCAsset::SetInsertNum
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_cache_insert(self_ptr: *mut mjCCache, modelname: *const i32, id: *const i32, resource: *const mjResource, data: *const (), size: usize) -> bool {
-    // WARNING: signature changed — verify body
-    // Previous params: (self_ptr : * mut mjCCache, modelname : * const i32, id : * const i32, resource : * const mjResource, data : * const (), size : usize)
-    // Previous return: bool
-    todo ! ()
+    extern "C" { fn mj_c_cache_insert_impl(self_ptr: *mut mjCCache, modelname: *const i32, id: *const i32, resource: *const mjResource, data: *const (), size: usize) -> bool; }
+    // SAFETY: delegates to C implementation
+    unsafe { mj_c_cache_insert_impl(self_ptr, modelname, id, resource, data, size) }
 }
 
 /// C: mjCCache::PopulateData (user/user_cache.cc:107)

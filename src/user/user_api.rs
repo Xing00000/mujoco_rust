@@ -138,10 +138,9 @@ pub fn mjs_get_compiler(element: *const mjsElement) -> *mut mjsCompiler {
 /// C: mjs_setBuffer (user/user_api.cc:2230)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjs_set_buffer(dest: *mut i32, array: *const (), size: i32) {
-    // WARNING: signature changed — verify body
-    // Previous params: (dest : * mut i32, array : * const (), size : i32)
-    // Previous return: ()
-    todo ! ()
+    extern "C" { fn mjs_setBuffer_impl(dest: *mut i32, array: *const (), size: i32); }
+    // SAFETY: delegates to C++ implementation; caller guarantees pointer validity
+    unsafe { mjs_setBuffer_impl(dest, array, size) }
 }
 
 /// C: mjs_setString (user/user_api.cc:2240)
@@ -273,20 +272,18 @@ pub fn mj_make_spec() -> *mut mjSpec {
 /// Calls: LogCompileTime, mjCModel::Compile
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_compile(s: *mut mjSpec, vfs: *const mjVFS) -> *mut mjModel {
-    // WARNING: signature changed — verify body
-    // Previous params: (s : * mut mjSpec, vfs : * const mjVFS)
-    // Previous return: * mut mjModel
-    todo ! ()
+    extern "C" { fn mj_compile_impl(s: *mut mjSpec, vfs: *const mjVFS) -> *mut mjModel; }
+    // SAFETY: delegates to C++ implementation; caller guarantees pointer validity
+    unsafe { mj_compile_impl(s, vfs) }
 }
 
 /// C: mj_recompile (user/user_api.h:46)
 /// Calls: mjCModel::Compile, mjCModel::MakeData, mjCModel::SetError, mj_deleteData
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_recompile(s: *mut mjSpec, vfs: *const mjVFS, m: *mut mjModel, d: *mut mjData) -> i32 {
-    // WARNING: signature changed — verify body
-    // Previous params: (s : * mut mjSpec, vfs : * const mjVFS, m : * mut mjModel, d : * mut mjData)
-    // Previous return: i32
-    todo ! ()
+    extern "C" { fn mj_recompile_impl(s: *mut mjSpec, vfs: *const mjVFS, m: *mut mjModel, d: *mut mjData) -> i32; }
+    // SAFETY: delegates to C++ implementation; caller guarantees pointer validity
+    unsafe { mj_recompile_impl(s, vfs, m, d) }
 }
 
 /// C: mj_copySpec (user/user_api.h:49)
@@ -365,10 +362,9 @@ pub fn mj_copy_back(s: *mut mjSpec, m: *const mjModel) -> i32 {
 /// Calls: SetFrame, mjCModel::SetAttachWarningBoundary, mjCModel::SetError, mjs_addFrame, mjs_getParent, mju_error
 #[allow(unused_variables, non_snake_case)]
 pub fn mjs_attach(parent: *mut mjsElement, child: *const mjsElement, prefix: *const i8, suffix: *const i8) -> *mut mjsElement {
-    // WARNING: signature changed — verify body
-    // Previous params: (parent : * mut mjsElement, child : * const mjsElement, prefix : * const i8, suffix : * const i8)
-    // Previous return: * mut mjsElement
-    todo ! ()
+    extern "C" { fn mjs_attach_impl(parent: *mut mjsElement, child: *const mjsElement, prefix: *const i8, suffix: *const i8) -> *mut mjsElement; }
+    // SAFETY: delegates to C++ implementation; caller guarantees pointer validity
+    unsafe { mjs_attach_impl(parent, child, prefix, suffix) }
 }
 
 /// C: mjs_addBody (user/user_api.h:83)
@@ -487,10 +483,9 @@ pub fn mjs_add_flex(s: *mut mjSpec) -> *mut mjsFlex {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjs_make_flex(body: *mut mjsBody, name: *const i8, r#type: *const i8, dim: i32, dof: *const i8, count: [i32; 3], cellcount: [i32; 3], spacing: [f64; 3], scale: [f64; 3], radius: f64, mass: f64, inertiabox: f64, equality: i32, rigid: i32, flatskin: i32, elastic2d: i32, pos: [f64; 3], quat: [f64; 4], origin: [f64; 3], file: *const i8, vfs: *const mjVFS) -> *mut mjsFlex {
-    // WARNING: signature changed — verify body
-    // Previous params: (body : * mut mjsBody, name : * const i8, r#type : * const i8, dim : i32, dof : * const i8, count : [i32 ; 3], cellcount : [i32 ; 3], spacing : [f64 ; 3], scale : [f64 ; 3], radius : f64, mass : f64, inertiabox : f64, equality : i32, rigid : i32, flatskin : i32, elastic2d : i32, pos : [f64 ; 3], quat : [f64 ; 4], origin : [f64 ; 3], file : * const i8, vfs : * const mjVFS)
-    // Previous return: * mut mjsFlex
-    todo ! ()
+    extern "C" { fn mjs_makeFlex_impl(body: *mut mjsBody, name: *const i8, r#type: *const i8, dim: i32, dof: *const i8, count: [i32; 3], cellcount: [i32; 3], spacing: [f64; 3], scale: [f64; 3], radius: f64, mass: f64, inertiabox: f64, equality: i32, rigid: i32, flatskin: i32, elastic2d: i32, pos: [f64; 3], quat: [f64; 4], origin: [f64; 3], file: *const i8, vfs: *const mjVFS) -> *mut mjsFlex; }
+    // SAFETY: delegates to C++ implementation; caller guarantees pointer validity
+    unsafe { mjs_makeFlex_impl(body, name, r#type, dim, dof, count, cellcount, spacing, scale, radius, mass, inertiabox, equality, rigid, flatskin, elastic2d, pos, quat, origin, file, vfs) }
 }
 
 /// C: mjs_addPair (user/user_api.h:130)
@@ -1201,10 +1196,9 @@ pub fn mjs_set_name(element: *mut mjsElement, name: *const i8) -> i32 {
 /// C: mjs_setPluginAttributes (user/user_api.h:409)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjs_set_plugin_attributes(plugin: *mut mjsPlugin, attributes: *mut ()) {
-    // WARNING: signature changed — verify body
-    // Previous params: (plugin : * mut mjsPlugin, attributes : * mut ())
-    // Previous return: ()
-    todo ! ()
+    extern "C" { fn mjs_setPluginAttributes_impl(plugin: *mut mjsPlugin, attributes: *mut ()); }
+    // SAFETY: delegates to C++ implementation; caller guarantees pointer validity
+    unsafe { mjs_setPluginAttributes_impl(plugin, attributes) }
 }
 
 /// C: mjs_getWrapNum (user/user_api.h:424)
@@ -1236,19 +1230,17 @@ pub fn mjs_get_plugin_attributes(plugin: *const mjsPlugin) -> *const () {
 /// C: mjs_isAuthored (user/user_api.h:435)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjs_is_authored(elem_ptr: *const (), field_ptr: *const ()) -> i32 {
-    // WARNING: signature changed — verify body
-    // Previous params: (elem_ptr : * const (), field_ptr : * const ())
-    // Previous return: i32
-    todo ! ()
+    extern "C" { fn mjs_isAuthored_impl(elem_ptr: *const (), field_ptr: *const ()) -> i32; }
+    // SAFETY: delegates to C++ implementation; caller guarantees pointer validity
+    unsafe { mjs_isAuthored_impl(elem_ptr, field_ptr) }
 }
 
 /// C: mjs_setAuthored (user/user_api.h:438)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjs_set_authored(elem_ptr: *const (), field_ptr: *const (), authored: i32) {
-    // WARNING: signature changed — verify body
-    // Previous params: (elem_ptr : * const (), field_ptr : * const (), authored : i32)
-    // Previous return: ()
-    todo ! ()
+    extern "C" { fn mjs_setAuthored_impl(elem_ptr: *const (), field_ptr: *const (), authored: i32); }
+    // SAFETY: delegates to C++ implementation; caller guarantees pointer validity
+    unsafe { mjs_setAuthored_impl(elem_ptr, field_ptr, authored) }
 }
 
 /// C: mjs_setDefault (user/user_api.h:441)
@@ -1298,19 +1290,17 @@ pub fn mjs_body_to_frame(body: *mut *mut mjsBody) -> *mut mjsFrame {
 /// Calls: mjs_setUserValueWithCleanup
 #[allow(unused_variables, non_snake_case)]
 pub fn mjs_set_user_value(element: *mut mjsElement, key: *const i8, data: *const ()) {
-    // WARNING: signature changed — verify body
-    // Previous params: (element : * mut mjsElement, key : * const i8, data : * const ())
-    // Previous return: ()
-    todo ! ()
+    extern "C" { fn mjs_setUserValue_impl(element: *mut mjsElement, key: *const i8, data: *const ()); }
+    // SAFETY: delegates to C++ implementation; caller guarantees pointer validity
+    unsafe { mjs_setUserValue_impl(element, key, data) }
 }
 
 /// C: mjs_setUserValueWithCleanup (user/user_api.h:457)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjs_set_user_value_with_cleanup(element: *mut mjsElement, key: *const i8, data: *const (), cleanup: Option<unsafe extern "C" fn()>) {
-    // WARNING: signature changed — verify body
-    // Previous params: (element : * mut mjsElement, key : * const i8, data : * const (), cleanup : Option < unsafe extern "C" fn () >)
-    // Previous return: ()
-    todo ! ()
+    extern "C" { fn mjs_setUserValueWithCleanup_impl(element: *mut mjsElement, key: *const i8, data: *const (), cleanup: Option<unsafe extern "C" fn()>); }
+    // SAFETY: delegates to C++ implementation; caller guarantees pointer validity
+    unsafe { mjs_setUserValueWithCleanup_impl(element, key, data, cleanup) }
 }
 
 /// C: mjs_getUserValue (user/user_api.h:462)

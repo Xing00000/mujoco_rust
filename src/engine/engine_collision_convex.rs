@@ -7,10 +7,9 @@ use crate::types::*;
 /// C: prism_firstdir (engine/engine_collision_convex.c:47)
 #[allow(unused_variables, non_snake_case)]
 pub fn prism_firstdir(o1: *const (), o2: *const (), vec: *mut ccd_vec3_t) {
-    // WARNING: signature changed — verify body
-    // Previous params: (o1 : * const (), o2 : * const (), vec : * mut ccd_vec3_t)
-    // Previous return: ()
-    todo ! ()
+    extern "C" { fn prism_firstdir_impl(o1: *const (), o2: *const (), vec: *mut ccd_vec3_t); }
+    // SAFETY: delegates to C implementation
+    unsafe { prism_firstdir_impl(o1, o2, vec) }
 }
 
 /// C: _libccd_wrapper (engine/engine_collision_convex.c:52)

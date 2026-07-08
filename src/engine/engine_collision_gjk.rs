@@ -864,10 +864,30 @@ pub fn rotmat(R: *mut f64, axis: *const f64) {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn ray_triangle(v1: *const f64, v2: *const f64, v3: *const f64, v4: *const f64, v5: *const f64) -> i32 {
-    // WARNING: signature changed — verify body
-    // Previous params: (v1 : * const f64, v2 : * const f64, v3 : * const f64, v4 : * const f64, v5 : * const f64)
-    // Previous return: i32
-    todo ! ()
+    // SAFETY: caller guarantees v1..v5 are valid pointers to f64[3] arrays
+    unsafe {
+        let mut diff12: [f64; 3] = [0.0; 3];
+        let mut diff13: [f64; 3] = [0.0; 3];
+        let mut diff14: [f64; 3] = [0.0; 3];
+        let mut diff15: [f64; 3] = [0.0; 3];
+
+        sub3(diff12.as_mut_ptr(), v2, v1);
+        sub3(diff13.as_mut_ptr(), v3, v1);
+        sub3(diff14.as_mut_ptr(), v4, v1);
+        sub3(diff15.as_mut_ptr(), v5, v1);
+
+        let vol1: f64 = det3(diff13.as_ptr(), diff14.as_ptr(), diff12.as_ptr());
+        let vol2: f64 = det3(diff14.as_ptr(), diff15.as_ptr(), diff12.as_ptr());
+        let vol3: f64 = det3(diff15.as_ptr(), diff13.as_ptr(), diff12.as_ptr());
+
+        if vol1 >= 0.0 && vol2 >= 0.0 && vol3 >= 0.0 {
+            return 1;
+        }
+        if vol1 <= 0.0 && vol2 <= 0.0 && vol3 <= 0.0 {
+            return -1;
+        }
+        0
+    }
 }
 
 /// C: triAffineCoord (engine/engine_collision_gjk.c:1016)

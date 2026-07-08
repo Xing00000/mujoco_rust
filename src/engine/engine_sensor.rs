@@ -46,10 +46,9 @@ pub fn tactile_taxel_batch(m: *const mjModel, d: *mut mjData, args: *mut ()) -> 
 /// Calls: tactile_taxel_batch
 #[allow(unused_variables, non_snake_case)]
 pub fn tactile_task(m: *const mjModel, d: *mut mjData, arg: *mut (), thread_id: i32, task_id: i32) {
-    // WARNING: signature changed — verify body
-    // Previous params: (m : * const mjModel, d : * mut mjData, arg : * mut (), thread_id : i32, task_id : i32)
-    // Previous return: ()
-    todo ! ()
+    extern "C" { fn tactile_task_impl(m: *const mjModel, d: *mut mjData, arg: *mut (), thread_id: i32, task_id: i32); }
+    // SAFETY: delegates to C implementation
+    unsafe { tactile_task_impl(m, d, arg, thread_id, task_id) }
 }
 
 /// C: apply_cutoff (engine/engine_sensor.c:198)

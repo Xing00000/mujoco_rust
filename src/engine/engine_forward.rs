@@ -156,10 +156,9 @@ pub fn warmstart(m: *const mjModel, d: *mut mjData) {
 /// Calls: mj_solCG_island, mj_solNewton_island, mj_solPGS_island
 #[allow(unused_variables, non_snake_case)]
 pub fn solve_island_task(m: *const mjModel, d: *mut mjData, arg: *mut (), thread_id: i32, island: i32) {
-    // WARNING: signature changed — verify body
-    // Previous params: (m : * const mjModel, d : * mut mjData, arg : * mut (), thread_id : i32, island : i32)
-    // Previous return: ()
-    todo ! ()
+    extern "C" { fn solve_island_task_impl(m: *const mjModel, d: *mut mjData, arg: *mut (), thread_id: i32, island: i32); }
+    // SAFETY: delegates to C implementation
+    unsafe { solve_island_task_impl(m, d, arg, thread_id, island) }
 }
 
 /// C: mj_advance (engine/engine_forward.c:981)

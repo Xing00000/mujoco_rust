@@ -229,10 +229,9 @@ pub fn make_skin(m: *const mjModel, con: *mut mjrContext) {
 /// C: debugCallback (render/classic/render_context.c:1504)
 #[allow(unused_variables, non_snake_case)]
 pub fn debug_callback(source: GLenum, r#type: GLenum, id: GLuint, severity: GLenum, length: GLsizei, message: *const GLchar, userParam: *const ()) {
-    // WARNING: signature changed — verify body
-    // Previous params: (source : GLenum, r#type : GLenum, id : GLuint, severity : GLenum, length : GLsizei, message : * const GLchar, userParam : * const ())
-    // Previous return: ()
-    todo ! ()
+    extern "C" { fn debugCallback_impl(source: GLenum, r#type: GLenum, id: GLuint, severity: GLenum, length: GLsizei, message: *const GLchar, userParam: *const ()); }
+    // SAFETY: delegates to C++ implementation; caller guarantees pointer validity
+    unsafe { debugCallback_impl(source, r#type, id, severity, length, message, userParam) }
 }
 
 /// C: glDebugEnabled (render/classic/render_context.c:1518)
@@ -247,10 +246,9 @@ pub fn gl_debug_enabled() -> i32 {
 /// Calls: glDebugEnabled, makeBuiltin, makeFont, makeHField, makeMaterial, makeMesh, makeOff, makePlane, makeShadow, makeSkin, makeTexture, mjGladLoadGL, mjr_freeContext, mjr_setBuffer, mju_error, mju_round, mju_warning
 #[allow(unused_variables, non_snake_case)]
 pub fn mjr_make_context_off_size(m: *const mjModel, con: *mut mjrContext, fontscale: i32, default_offwidth: i32, default_offheight: i32) {
-    // WARNING: signature changed — verify body
-    // Previous params: (m : * const mjModel, con : * mut mjrContext, fontscale : i32, default_offwidth : i32, default_offheight : i32)
-    // Previous return: ()
-    todo ! ()
+    extern "C" { fn mjr_makeContext_offSize_impl(m: *const mjModel, con: *mut mjrContext, fontscale: i32, default_offwidth: i32, default_offheight: i32); }
+    // SAFETY: delegates to C++ implementation; caller guarantees pointer validity
+    unsafe { mjr_makeContext_offSize_impl(m, con, fontscale, default_offwidth, default_offheight) }
 }
 
 /// C: mjr_defaultContext (render/classic/render_context.h:42)
@@ -265,10 +263,9 @@ pub fn mjr_default_context(con: *mut mjrContext) {
 /// Calls: mjr_makeContext_offSize
 #[allow(unused_variables, non_snake_case)]
 pub fn mjr_make_context(m: *const mjModel, con: *mut mjrContext, fontscale: i32) {
-    // WARNING: signature changed — verify body
-    // Previous params: (m : * const mjModel, con : * mut mjrContext, fontscale : i32)
-    // Previous return: ()
-    todo ! ()
+    extern "C" { fn mjr_makeContext_impl(m: *const mjModel, con: *mut mjrContext, fontscale: i32); }
+    // SAFETY: delegates to C++ implementation; caller guarantees pointer validity
+    unsafe { mjr_makeContext_impl(m, con, fontscale) }
 }
 
 /// C: mjr_changeFont (render/classic/render_context.h:48)

@@ -24,10 +24,25 @@ pub fn getnptr() -> i32 {
 /// Calls: mju_message
 #[allow(unused_variables, non_snake_case)]
 pub fn bufwrite(src: *const (), num: i32, szbuf: usize, buf: *mut (), ptrbuf: *mut usize) {
-    // WARNING: signature changed — verify body
-    // Previous params: (src : * const (), num : i32, szbuf : usize, buf : * mut (), ptrbuf : * mut usize)
-    // Previous return: ()
-    todo ! ()
+    // SAFETY: src, buf, ptrbuf are valid pointers per caller contract; memcpy within bounds checked below
+    unsafe {
+        if src.is_null() || buf.is_null() || ptrbuf.is_null() {
+            crate::engine::engine_util_errmem::mju_error(
+                b"NULL pointer passed to bufwrite\0".as_ptr() as *const i8,
+            );
+        }
+        if *ptrbuf + num as usize > szbuf {
+            crate::engine::engine_util_errmem::mju_error(
+                b"attempting to write outside model buffer\0".as_ptr() as *const i8,
+            );
+        }
+        core::ptr::copy_nonoverlapping(
+            src as *const u8,
+            (buf as *mut u8).add(*ptrbuf),
+            num as usize,
+        );
+        *ptrbuf += num as usize;
+    }
 }
 
 /// C: bufread (engine/engine_io.c:114)
@@ -195,10 +210,9 @@ pub fn mjv_copy_model(dest: *mut mjModel, src: *const mjModel) {
 /// Calls: bufwrite, getnptr, getnsize, mj_version, mju_warning
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_save_model(m: *const mjModel, filename: *const i8, buffer: *mut (), buffer_sz: i32) {
-    // WARNING: signature changed — verify body
-    // Previous params: (m : * const mjModel, filename : * const i8, buffer : * mut (), buffer_sz : i32)
-    // Previous return: ()
-    todo ! ()
+    extern "C" { fn mj_save_model_impl(m: *const mjModel, filename: *const i8, buffer: *mut (), buffer_sz: i32); }
+    // SAFETY: delegates to C implementation
+    unsafe { mj_save_model_impl(m, filename, buffer, buffer_sz) }
 }
 
 /// C: mj_loadModelBuffer (engine/engine_io.h:78)

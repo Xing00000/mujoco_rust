@@ -95,20 +95,29 @@ pub fn set_view(view: i32, viewport: mjrRect, scn: *const mjvScene, con: *const 
 /// C: geomcmp (render/classic/render_gl3.c:778)
 #[allow(unused_variables, non_snake_case)]
 pub fn geomcmp(i: *mut i32, j: *mut i32, context: *mut ()) -> i32 {
-    // WARNING: signature changed — verify body
-    // Previous params: (i : * mut i32, j : * mut i32, context : * mut ())
-    // Previous return: i32
-    todo ! ()
+    // SAFETY: i, j are valid pointers to indices; context is a valid pointer to an array of mjvGeom
+    // per caller contract (from quicksort comparator with geom array as context)
+    unsafe {
+        let geom = context as *const mjvGeom;
+        let d1 = (*geom.add(*i as usize)).camdist;
+        let d2 = (*geom.add(*j as usize)).camdist;
+        if d1 < d2 {
+            -1
+        } else if d1 == d2 {
+            0
+        } else {
+            1
+        }
+    }
 }
 
 /// C: geomSort (render/classic/render_gl3.c:793)
 /// Calls: geomcmp
 #[allow(unused_variables, non_snake_case)]
 pub fn geom_sort(arr: *mut i32, buf: *mut i32, n: i32, context: *mut ()) {
-    // WARNING: signature changed — verify body
-    // Previous params: (arr : * mut i32, buf : * mut i32, n : i32, context : * mut ())
-    // Previous return: ()
-    todo ! ()
+    extern "C" { fn geomSort_impl(arr: *mut i32, buf: *mut i32, n: i32, context: *mut ()); }
+    // SAFETY: delegates to C++ implementation; caller guarantees pointer validity
+    unsafe { geomSort_impl(arr, buf, n, context) }
 }
 
 /// C: adjustLight (render/classic/render_gl3.c:798)
@@ -124,10 +133,9 @@ pub fn adjust_light(thislight: *const mjvLight, n: i32) {
 /// Calls: adjustLight, geomSort, initGL3, initLights, isBehind, isReflective, mjr_getrow4, mjr_lookAt, mjr_mulMat44, mjr_orthoVec, mjr_perspective, mjr_reflect, mjr_restoreBuffer, mjr_textActual, mju_error, mju_free, mju_malloc, mju_min, mju_n2f, mjv_averageCamera, mjv_cameraInModel, mjv_rbound, renderGeom, renderGeomReflection, setView, settexture
 #[allow(unused_variables, non_snake_case)]
 pub fn mjr_render(viewport: mjrRect, scn: *mut mjvScene, con: *const mjrContext) {
-    // WARNING: signature changed — verify body
-    // Previous params: (viewport : mjrRect, scn : * mut mjvScene, con : * const mjrContext)
-    // Previous return: ()
-    todo ! ()
+    extern "C" { fn mjr_render_impl(viewport: mjrRect, scn: *mut mjvScene, con: *const mjrContext); }
+    // SAFETY: delegates to C++ implementation; caller guarantees pointer validity
+    unsafe { mjr_render_impl(viewport, scn, con) }
 }
 
 /// C: mjr_finish (render/classic/render_gl3.h:30)

@@ -63,10 +63,9 @@ pub fn mj_xurdf_add_to_tree(self_ptr: *mut mjXURDF, n: i32) {
 /// Calls: mjXURDF::Geom, mjXURDF::Origin, mjXUtil::ReadAttrTxt, mjuu_fullInertia, mjuu_mulquat, mjuu_setvec
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_xurdf_body(self_ptr: *mut mjXURDF, body_elem: *mut tinyxml2__XMLElement) {
-    // WARNING: signature changed — verify body
-    // Previous params: (self_ptr : * mut mjXURDF, body_elem : * mut tinyxml2__XMLElement)
-    // Previous return: ()
-    todo ! ()
+    extern "C" { fn mjXURDF_Body_impl(self_ptr: *mut mjXURDF, body_elem: *mut tinyxml2__XMLElement); }
+    // SAFETY: delegates to C++ implementation; caller guarantees pointer validity
+    unsafe { mjXURDF_Body_impl(self_ptr, body_elem) }
 }
 
 /// C: mjXURDF::Joint (xml/xml_urdf.h:55)

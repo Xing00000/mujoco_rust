@@ -15,10 +15,9 @@ pub fn mj_glad_get_proc(namez: *const i8) -> *mut () {
 /// C: mjGlad_open_gl (render/classic/glad/glad.c:230)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_glad_open_gl(get_proc_address: *mut ()) -> i32 {
-    // WARNING: signature changed — verify body
-    // Previous params: (get_proc_address : * mut ())
-    // Previous return: i32
-    todo ! ()
+    extern "C" { fn mjGlad_open_gl_impl(get_proc_address: *mut ()) -> i32; }
+    // SAFETY: delegates to C++ implementation; caller guarantees pointer validity
+    unsafe { mjGlad_open_gl_impl(get_proc_address) }
 }
 
 /// C: mjGlad_close_gl (render/classic/glad/glad.c:252)
@@ -154,16 +153,17 @@ pub fn mj_glad_find_core_gl() {
 /// Calls: mjGladLoadGLUnsafe
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_glad_load_gl() -> i32 {
-    todo ! ()
+    extern "C" { fn mjGladLoadGL_impl() -> i32; }
+    // SAFETY: delegates to C++ implementation; caller guarantees pointer validity
+    unsafe { mjGladLoadGL_impl() }
 }
 
 /// C: mjGladLoadGLUnsafe (render/classic/glad/glad.h:117)
 /// Calls: mjGlad_close_gl, mjGlad_find_coreGL, mjGlad_find_extensionsGL, mjGlad_get_proc, mjGlad_load_GL_ARB_clip_control, mjGlad_load_GL_ARB_framebuffer_object, mjGlad_load_GL_ARB_vertex_buffer_object, mjGlad_load_GL_KHR_debug, mjGlad_load_GL_VERSION_1_0, mjGlad_load_GL_VERSION_1_1, mjGlad_load_GL_VERSION_1_2, mjGlad_load_GL_VERSION_1_3, mjGlad_load_GL_VERSION_1_4, mjGlad_load_GL_VERSION_1_5, mjGlad_open_gl
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_glad_load_gl_unsafe(arg0: *mut ()) -> i32 {
-    // WARNING: signature changed — verify body
-    // Previous params: (arg0 : * mut ())
-    // Previous return: i32
-    todo ! ()
+    extern "C" { fn mjGladLoadGLUnsafe_impl(arg0: *mut ()) -> i32; }
+    // SAFETY: delegates to C++ implementation; caller guarantees pointer validity
+    unsafe { mjGladLoadGLUnsafe_impl(arg0) }
 }
 
