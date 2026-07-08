@@ -871,11 +871,44 @@ pub fn mju_shell_track_interior(nodexpos: *mut f64, nx: i32, ny: i32, nz: i32) {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mju_shell_tfi_weights(nx: i32, ny: i32, nz: i32, i: i32, j: i32, k: i32, w: f64, nb: *mut i32, body: *mut i32, bweight: *mut f64, nodebodyid: *const i32, nstart: i32) {
-    extern "C" {
-        fn mju_shellTFIWeights_impl(nx: i32, ny: i32, nz: i32, i: i32, j: i32, k: i32, w: f64, nb: *mut i32, body: *mut i32, bweight: *mut f64, nodebodyid: *const i32, nstart: i32);
+    // SAFETY: all pointers valid. nodebodyid has adequate capacity for the indexing below.
+    unsafe {
+        let s: f64 = i as f64 / (nx - 1) as f64;
+        let t: f64 = j as f64 / (ny - 1) as f64;
+        let u: f64 = k as f64 / (nz - 1) as f64;
+
+        // face contributions
+        add_weight(nb, body, bweight, *nodebodyid.add((nstart + 0*ny*nz + j*nz + k) as usize), w * (1.0-s));
+        add_weight(nb, body, bweight, *nodebodyid.add((nstart + (nx-1)*ny*nz + j*nz + k) as usize), w * s);
+        add_weight(nb, body, bweight, *nodebodyid.add((nstart + i*ny*nz + 0*nz + k) as usize), w * (1.0-t));
+        add_weight(nb, body, bweight, *nodebodyid.add((nstart + i*ny*nz + (ny-1)*nz + k) as usize), w * t);
+        add_weight(nb, body, bweight, *nodebodyid.add((nstart + i*ny*nz + j*nz + 0) as usize), w * (1.0-u));
+        add_weight(nb, body, bweight, *nodebodyid.add((nstart + i*ny*nz + j*nz + (nz-1)) as usize), w * u);
+
+        // edge corrections
+        add_weight(nb, body, bweight, *nodebodyid.add((nstart + i*ny*nz + 0*nz + 0) as usize), -w * (1.0-t)*(1.0-u));
+        add_weight(nb, body, bweight, *nodebodyid.add((nstart + i*ny*nz + 0*nz + (nz-1)) as usize), -w * (1.0-t)*u);
+        add_weight(nb, body, bweight, *nodebodyid.add((nstart + i*ny*nz + (ny-1)*nz + 0) as usize), -w * t*(1.0-u));
+        add_weight(nb, body, bweight, *nodebodyid.add((nstart + i*ny*nz + (ny-1)*nz + (nz-1)) as usize), -w * t*u);
+        add_weight(nb, body, bweight, *nodebodyid.add((nstart + 0*ny*nz + j*nz + 0) as usize), -w * (1.0-s)*(1.0-u));
+        add_weight(nb, body, bweight, *nodebodyid.add((nstart + 0*ny*nz + j*nz + (nz-1)) as usize), -w * (1.0-s)*u);
+        add_weight(nb, body, bweight, *nodebodyid.add((nstart + (nx-1)*ny*nz + j*nz + 0) as usize), -w * s*(1.0-u));
+        add_weight(nb, body, bweight, *nodebodyid.add((nstart + (nx-1)*ny*nz + j*nz + (nz-1)) as usize), -w * s*u);
+        add_weight(nb, body, bweight, *nodebodyid.add((nstart + 0*ny*nz + 0*nz + k) as usize), -w * (1.0-s)*(1.0-t));
+        add_weight(nb, body, bweight, *nodebodyid.add((nstart + 0*ny*nz + (ny-1)*nz + k) as usize), -w * (1.0-s)*t);
+        add_weight(nb, body, bweight, *nodebodyid.add((nstart + (nx-1)*ny*nz + 0*nz + k) as usize), -w * s*(1.0-t));
+        add_weight(nb, body, bweight, *nodebodyid.add((nstart + (nx-1)*ny*nz + (ny-1)*nz + k) as usize), -w * s*t);
+
+        // corner corrections
+        add_weight(nb, body, bweight, *nodebodyid.add((nstart + 0*ny*nz + 0*nz + 0) as usize), w * (1.0-s)*(1.0-t)*(1.0-u));
+        add_weight(nb, body, bweight, *nodebodyid.add((nstart + 0*ny*nz + 0*nz + (nz-1)) as usize), w * (1.0-s)*(1.0-t)*u);
+        add_weight(nb, body, bweight, *nodebodyid.add((nstart + 0*ny*nz + (ny-1)*nz + 0) as usize), w * (1.0-s)*t*(1.0-u));
+        add_weight(nb, body, bweight, *nodebodyid.add((nstart + 0*ny*nz + (ny-1)*nz + (nz-1)) as usize), w * (1.0-s)*t*u);
+        add_weight(nb, body, bweight, *nodebodyid.add((nstart + (nx-1)*ny*nz + 0*nz + 0) as usize), w * s*(1.0-t)*(1.0-u));
+        add_weight(nb, body, bweight, *nodebodyid.add((nstart + (nx-1)*ny*nz + 0*nz + (nz-1)) as usize), w * s*(1.0-t)*u);
+        add_weight(nb, body, bweight, *nodebodyid.add((nstart + (nx-1)*ny*nz + (ny-1)*nz + 0) as usize), w * s*t*(1.0-u));
+        add_weight(nb, body, bweight, *nodebodyid.add((nstart + (nx-1)*ny*nz + (ny-1)*nz + (nz-1)) as usize), w * s*t*u);
     }
-    // SAFETY: delegates to C implementation, all pointers valid per caller contract
-    unsafe { mju_shellTFIWeights_impl(nx, ny, nz, i, j, k, w, nb, body, bweight, nodebodyid, nstart) }
 }
 
 /// C: mju_encodeBase64 (engine/engine_util_misc.h:163)
