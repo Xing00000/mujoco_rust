@@ -691,10 +691,46 @@ pub fn solve_catenary(v: f64, h: f64, length: f64) -> f64 {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjv_connector(geom: *mut mjvGeom, r#type: i32, width: f64, from: *const f64, to: *const f64) {
+    // SAFETY: geom valid. from/to have 3 elements each.
+    unsafe {
+        const MJGEOM_CAPSULE: i32 = 3;
+        const MJGEOM_CYLINDER: i32 = 5;
 
-    extern "C" { fn mjv_connector_impl(geom: *mut mjvGeom, r#type: i32, width: f64, from: *const f64, to: *const f64); }
-    // SAFETY: delegates to C implementation
-    unsafe { mjv_connector_impl(geom, r#type, width, from, to) }
+        let dif: [f64; 3] = [
+            *to.add(0) - *from.add(0),
+            *to.add(1) - *from.add(1),
+            *to.add(2) - *from.add(2),
+        ];
+
+        // assign type
+        (*geom).r#type = r#type;
+
+        // compute size for XYZ scaling
+        (*geom).size[0] = width as f32;
+        (*geom).size[1] = width as f32;
+        (*geom).size[2] = crate::engine::engine_util_blas::mju_norm3(dif.as_ptr()) as f32;
+
+        // cylinder and capsule are centered, and size[2] is half-length
+        if r#type == MJGEOM_CAPSULE || r#type == MJGEOM_CYLINDER {
+            (*geom).pos[0] = (0.5 * (*from.add(0) + *to.add(0))) as f32;
+            (*geom).pos[1] = (0.5 * (*from.add(1) + *to.add(1))) as f32;
+            (*geom).pos[2] = (0.5 * (*from.add(2) + *to.add(2))) as f32;
+            (*geom).size[2] *= 0.5;
+        }
+        // arrow is not centered
+        else {
+            (*geom).pos[0] = *from.add(0) as f32;
+            (*geom).pos[1] = *from.add(1) as f32;
+            (*geom).pos[2] = *from.add(2) as f32;
+        }
+
+        // set mat to minimal rotation aligning dif with z axis
+        let mut quat: [f64; 4] = [0.0; 4];
+        let mut mat: [f64; 9] = [0.0; 9];
+        crate::engine::engine_util_spatial::mju_quat_z2vec(quat.as_mut_ptr(), dif.as_ptr());
+        crate::engine::engine_util_spatial::mju_quat2mat(mat.as_mut_ptr(), quat.as_ptr());
+        crate::engine::engine_util_misc::mju_n2f((*geom).mat.as_mut_ptr(), mat.as_ptr(), 9);
+    }
 }
 
 /// C: mjv_initGeom (engine/engine_vis_visualize.h:33)
@@ -706,9 +742,73 @@ pub fn mjv_connector(geom: *mut mjvGeom, r#type: i32, width: f64, from: *const f
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjv_init_geom(geom: *mut mjvGeom, r#type: i32, size: *const f64, pos: *const f64, mat: *const f64, rgba: *const f32) {
-    extern "C" { fn mjv_initGeom_impl(geom: *mut mjvGeom, r#type: i32, size: *const f64, pos: *const f64, mat: *const f64, rgba: *const f32); }
-    // SAFETY: delegates to C implementation, all pointers valid per caller contract
-    unsafe { mjv_initGeom_impl(geom, r#type, size, pos, mat, rgba) }
+    // SAFETY: geom is valid. size/pos/mat/rgba may be null (use defaults).
+    unsafe {
+        const MJGEOM_SPHERE: i32 = 2;
+        const MJGEOM_CAPSULE: i32 = 3;
+        const MJGEOM_CYLINDER: i32 = 5;
+
+        // assign type
+        (*geom).r#type = r#type;
+
+        // set size
+        if !size.is_null() {
+            if r#type == MJGEOM_SPHERE {
+                (*geom).size[0] = *size.add(0) as f32;
+                (*geom).size[1] = *size.add(0) as f32;
+                (*geom).size[2] = *size.add(0) as f32;
+            } else if r#type == MJGEOM_CAPSULE || r#type == MJGEOM_CYLINDER {
+                (*geom).size[0] = *size.add(0) as f32;
+                (*geom).size[1] = *size.add(0) as f32;
+                (*geom).size[2] = *size.add(1) as f32;
+            } else {
+                crate::engine::engine_util_misc::mju_n2f((*geom).size.as_mut_ptr(), size, 3);
+            }
+        } else {
+            (*geom).size[0] = 0.1;
+            (*geom).size[1] = 0.1;
+            (*geom).size[2] = 0.1;
+        }
+
+        // set pos
+        if !pos.is_null() {
+            crate::engine::engine_util_misc::mju_n2f((*geom).pos.as_mut_ptr(), pos, 3);
+        } else {
+            (*geom).pos[0] = 0.0;
+            (*geom).pos[1] = 0.0;
+            (*geom).pos[2] = 0.0;
+        }
+
+        // set mat
+        if !mat.is_null() {
+            crate::engine::engine_util_misc::mju_n2f((*geom).mat.as_mut_ptr(), mat, 9);
+        } else {
+            (*geom).mat[0] = 1.0; (*geom).mat[1] = 0.0; (*geom).mat[2] = 0.0;
+            (*geom).mat[3] = 0.0; (*geom).mat[4] = 1.0; (*geom).mat[5] = 0.0;
+            (*geom).mat[6] = 0.0; (*geom).mat[7] = 0.0; (*geom).mat[8] = 1.0;
+        }
+
+        // set rgba
+        if !rgba.is_null() {
+            f2f((*geom).rgba.as_mut_ptr(), rgba, 4);
+        } else {
+            (*geom).rgba[0] = 0.5;
+            (*geom).rgba[1] = 0.5;
+            (*geom).rgba[2] = 0.5;
+            (*geom).rgba[3] = 1.0;
+        }
+
+        // set defaults
+        (*geom).dataid = -1;
+        (*geom).matid = -1;
+        (*geom).texcoord = 0;
+        (*geom).emission = 0.0;
+        (*geom).specular = 0.5;
+        (*geom).shininess = 0.5;
+        (*geom).reflectance = 0.0;
+        (*geom).label[0] = 0;
+        (*geom).modelrbound = 0.0;
+    }
 }
 
 /// C: mjv_updateScene (engine/engine_vis_visualize.h:37)
