@@ -62,9 +62,28 @@ pub fn freestackinternal(stack_info: *mut mjStackInfo) {
 /// Calls: fastmod
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_arena_alloc_byte(d: *mut mjData, bytes: usize, alignment: usize) -> *mut () {
-    extern "C" { fn mj_arenaAllocByte_impl(d: *mut mjData, bytes: usize, alignment: usize) -> *mut (); }
-    // SAFETY: delegates to C implementation
-    unsafe { mj_arenaAllocByte_impl(d, bytes, alignment) }
+    // SAFETY: d valid. Allocates from arena, returns null if insufficient space.
+    unsafe {
+        let misalignment = fastmod((*d).parena, alignment);
+        let padding = if misalignment != 0 { alignment - misalignment } else { 0 };
+
+        // check size
+        let bytes_available = (*d).narena - (*d).pstack;
+        if (*d).parena + padding + bytes > bytes_available {
+            return core::ptr::null_mut();
+        }
+
+        let stack_usage = (*d).pstack;
+
+        // allocate, update max, return pointer to buffer
+        let result = ((*d).arena as *mut u8).add((*d).parena + padding) as *mut ();
+        (*d).parena += padding + bytes;
+        if stack_usage + (*d).parena > (*d).maxuse_arena {
+            (*d).maxuse_arena = stack_usage + (*d).parena;
+        }
+
+        result
+    }
 }
 
 /// C: mj_markStack (engine/engine_memory.h:40)

@@ -700,11 +700,78 @@ pub fn mju_flex_gather_cell_state(order: i32, cy: i32, cz: i32, ci: i32, cj: i32
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mju_flex_gather_face_state(order: i32, cx: i32, cy: i32, cz: i32, face_elem_idx: i32, xpos_g: *const f64, vel_g: *const f64, xpos0_g: *const f64, xpos_f: *mut f64, vel_f: *mut f64, xpos0_f: *mut f64, nodeindices: *mut i32, quat: *mut f64) {
-    extern "C" {
-        fn mju_flexGatherFaceState_impl(order: i32, cx: i32, cy: i32, cz: i32, face_elem_idx: i32, xpos_g: *const f64, vel_g: *const f64, xpos0_g: *const f64, xpos_f: *mut f64, vel_f: *mut f64, xpos0_f: *mut f64, nodeindices: *mut i32, quat: *mut f64);
+    // SAFETY: all pointers valid (some may be null — checked before use).
+    // Arrays have adequate capacity for the given order and cell counts.
+    unsafe {
+        let ny_g = cy * order + 1;
+        let nz_g = cz * order + 1;
+        let npe = (order + 1) * (order + 1);
+
+        // face sizes and properties
+        let face_sizes: [i32; 6] = [cy*cz, cy*cz, cx*cz, cx*cz, cx*cy, cx*cy];
+        let face_normal: [i32; 6] = [0, 0, 1, 1, 2, 2];
+        let face_count1: [i32; 6] = [cz, cz, cx, cx, cy, cy];
+        let face_fixed_vals: [i32; 6] = [0, cx*order, 0, cy*order, 0, cz*order];
+
+        // determine which face and quad within face
+        let mut face_id: i32 = 0;
+        let mut within_face: i32 = face_elem_idx;
+        let mut cumul: i32 = 0;
+        let mut f: i32 = 0;
+        while f < 6 {
+            if face_elem_idx < cumul + face_sizes[f as usize] {
+                face_id = f;
+                within_face = face_elem_idx - cumul;
+                break;
+            }
+            cumul += face_sizes[f as usize];
+            f += 1;
+        }
+
+        let normal_axis = face_normal[face_id as usize];
+        let na0 = (normal_axis + 1) % 3;
+        let na1 = (normal_axis + 2) % 3;
+        let c1 = face_count1[face_id as usize];
+        let g_fixed = face_fixed_vals[face_id as usize];
+        let q0 = within_face / c1;
+        let q1 = within_face % c1;
+
+        // gather nodes
+        let mut local: i32 = 0;
+        let mut l0: i32 = 0;
+        while l0 <= order {
+            let mut l1: i32 = 0;
+            while l1 <= order {
+                let mut g: [i32; 3] = [0; 3];
+                g[normal_axis as usize] = g_fixed;
+                g[na0 as usize] = q0 * order + l0;
+                g[na1 as usize] = q1 * order + l1;
+                let gidx = g[0] * ny_g * nz_g + g[1] * nz_g + g[2];
+
+                if !xpos_f.is_null() && !xpos_g.is_null() {
+                    crate::engine::engine_util_blas::mju_copy3(xpos_f.add(3 * local as usize), xpos_g.add(3 * gidx as usize));
+                }
+                if !vel_f.is_null() && !vel_g.is_null() {
+                    crate::engine::engine_util_blas::mju_copy3(vel_f.add(3 * local as usize), vel_g.add(3 * gidx as usize));
+                }
+                if !xpos0_f.is_null() && !xpos0_g.is_null() {
+                    crate::engine::engine_util_blas::mju_copy3(xpos0_f.add(3 * local as usize), xpos0_g.add(3 * gidx as usize));
+                }
+                if !nodeindices.is_null() {
+                    *nodeindices.add(local as usize) = gidx;
+                }
+
+                local += 1;
+                l1 += 1;
+            }
+            l0 += 1;
+        }
+
+        if !quat.is_null() && !xpos_f.is_null() {
+            let p: [f64; 2] = [0.5, 0.5];
+            mju_flex_interp_rotation2d(order, xpos_f, npe, na0, na1, normal_axis, p.as_ptr(), quat);
+        }
     }
-    // SAFETY: delegates to C implementation, all pointers valid per caller contract
-    unsafe { mju_flexGatherFaceState_impl(order, cx, cy, cz, face_elem_idx, xpos_g, vel_g, xpos0_g, xpos_f, vel_f, xpos0_f, nodeindices, quat) }
 }
 
 /// C: mju_flexInterpRotation2D (engine/engine_util_misc.h:118)
