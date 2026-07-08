@@ -414,9 +414,10 @@ pub fn mjd_rne_vel_dense(m: *const mjModel, d: *mut mjData) {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjd_flex_interp_mul(m: *const mjModel, d: *mut mjData, res: *mut f64, vec: *const f64, s1: f64, s2: f64, K_rot_cache: *const f64) {
-    extern "C" { fn mjd_flexInterp_mul_impl(m: *const mjModel, d: *mut mjData, res: *mut f64, vec: *const f64, s1: f64, s2: f64, K_rot_cache: *const f64); }
-    // SAFETY: delegates to C implementation, all pointers valid per caller contract
-    unsafe { mjd_flexInterp_mul_impl(m, d, res, vec, s1, s2, K_rot_cache) }
+    // SAFETY: delegates to mjd_flex_interp_kernel with K_rot_out=NULL.
+    unsafe {
+        mjd_flex_interp_kernel(m, d, res, vec, s1, s2, K_rot_cache, core::ptr::null_mut());
+    }
 }
 
 /// C: mjd_flexInterp_cacheKrot (engine/engine_derivative.h:52)
@@ -428,9 +429,10 @@ pub fn mjd_flex_interp_mul(m: *const mjModel, d: *mut mjData, res: *mut f64, vec
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjd_flex_interp_cache_krot(m: *const mjModel, d: *mut mjData, K_rot_out: *mut f64) {
-    extern "C" { fn mjd_flexInterp_cacheKrot_impl(m: *const mjModel, d: *mut mjData, K_rot_out: *mut f64); }
-    // SAFETY: delegates to C implementation, all pointers valid per caller contract
-    unsafe { mjd_flexInterp_cacheKrot_impl(m, d, K_rot_out) }
+    // SAFETY: uses s1=1, s2=0 so scale=1 and K_rot_out gets unscaled values.
+    unsafe {
+        mjd_flex_interp_kernel(m, d, core::ptr::null_mut(), core::ptr::null(), 1.0, 0.0, core::ptr::null(), K_rot_out);
+    }
 }
 
 /// C: mjd_flexBend_mul (engine/engine_derivative.h:56)
