@@ -488,10 +488,21 @@ pub fn mju_block(res: *mut f64, mat: *const f64, nc_mat: i32, nc_res: i32, nr: i
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mju_block_diag(res: *mut f64, mat: *const f64, nc_mat: i32, nc_res: i32, nb: i32, perm_r: *const i32, perm_c: *const i32, block_nr: *const i32, block_nc: *const i32, block_r: *const i32, block_c: *const i32) {
-
-    extern "C" { fn mju_blockDiag_impl(res: *mut f64, mat: *const f64, nc_mat: i32, nc_res: i32, nb: i32, perm_r: *const i32, perm_c: *const i32, block_nr: *const i32, block_nc: *const i32, block_r: *const i32, block_c: *const i32); }
-    // SAFETY: delegates to C implementation
-    unsafe { mju_blockDiag_impl(res, mat, nc_mat, nc_res, nb, perm_r, perm_c, block_nr, block_nc, block_r, block_c) }
+    // SAFETY: caller guarantees all pointers are valid and arrays are properly sized
+    unsafe {
+        for b in 0..nb {
+            let adr = nc_res * *block_r.add(b as usize);
+            mju_block(
+                res.add(adr as usize),
+                mat,
+                nc_mat,
+                *block_nc.add(b as usize),
+                *block_nr.add(b as usize),
+                perm_r.add(*block_r.add(b as usize) as usize),
+                perm_c.add(*block_c.add(b as usize) as usize),
+            );
+        }
+    }
 }
 
 /// C: mju_blockSparse (engine/engine_util_sparse.h:176)
