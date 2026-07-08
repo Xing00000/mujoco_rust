@@ -443,8 +443,69 @@ pub fn mjd_flex_interp_cache_krot(m: *const mjModel, d: *mut mjData, K_rot_out: 
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjd_flex_bend_mul(m: *const mjModel, d: *mut mjData, res: *mut f64, vec: *const f64, s1: f64, s2: f64) {
-    extern "C" { fn mjd_flexBend_mul_impl(m: *const mjModel, d: *mut mjData, res: *mut f64, vec: *const f64, s1: f64, s2: f64); }
-    // SAFETY: delegates to C implementation, all pointers valid per caller contract
-    unsafe { mjd_flexBend_mul_impl(m, d, res, vec, s1, s2) }
+    // SAFETY: m, d valid. res/vec have nv elements. All flex model arrays valid.
+    unsafe {
+        let mut f: i32 = 0;
+        while f < (*m).nflex as i32 {
+            // skip interp, rigid, or non-2D
+            if *(*m).flex_interp.add(f as usize) != 0
+                || *((*m).flex_rigid as *const u8).add(f as usize) != 0
+                || *(*m).flex_dim.add(f as usize) != 2 {
+                f += 1;
+                continue;
+            }
+
+            let bendingadr = *(*m).flex_bendingadr.add(f as usize);
+            if bendingadr < 0 {
+                f += 1;
+                continue;
+            }
+
+            let scale = s1 + s2 * *(*m).flex_damping.add(f as usize);
+            if scale == 0.0 {
+                f += 1;
+                continue;
+            }
+
+            let b = (*m).flex_bending.add(bendingadr as usize);
+            let bodyid = (*m).flex_vertbodyid.add(*(*m).flex_vertadr.add(f as usize) as usize);
+            let edgenum = *(*m).flex_edgenum.add(f as usize);
+            let edgeadr = *(*m).flex_edgeadr.add(f as usize);
+
+            let mut e: i32 = 0;
+            while e < edgenum {
+                let edge = (*m).flex_edge.add(2 * (e + edgeadr) as usize);
+                let flap = (*m).flex_edgeflap.add(2 * (e + edgeadr) as usize);
+                let v: [i32; 4] = [*edge.add(0), *edge.add(1), *flap.add(0), *flap.add(1)];
+
+                // skip boundary edges (no second flap vertex)
+                if v[3] == -1 {
+                    e += 1;
+                    continue;
+                }
+
+                // apply 4x4 bending stencil, coordinate-wise
+                let mut i: i32 = 0;
+                while i < 4 {
+                    let dof_i = *(*m).body_dofadr.add(*bodyid.add(v[i as usize] as usize) as usize);
+                    let mut x: i32 = 0;
+                    while x < 3 {
+                        let mut val: f64 = 0.0;
+                        let mut j: i32 = 0;
+                        while j < 4 {
+                            let dof_j = *(*m).body_dofadr.add(*bodyid.add(v[j as usize] as usize) as usize);
+                            val += *b.add((17 * e + 4 * i + j) as usize) * *vec.add((dof_j + x) as usize);
+                            j += 1;
+                        }
+                        *res.add((dof_i + x) as usize) += scale * val;
+                        x += 1;
+                    }
+                    i += 1;
+                }
+                e += 1;
+            }
+            f += 1;
+        }
+    }
 }
 
