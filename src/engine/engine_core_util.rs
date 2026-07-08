@@ -496,8 +496,8 @@ pub fn mj_jac_dot_sparse(m: *const mjModel, d: *const mjData, jacp: *mut f64, ja
 
             // dof not in chain: error
             if ci < 0 || *chain.add(ci as usize) != da {
-                extern "C" { fn mju_error_impl(msg: *const i8); }
-                mju_error_impl(b"dof index not found in chain\0".as_ptr() as *const i8);
+                
+                crate::engine::engine_util_errmem::mju_error(b"dof index not found in chain\0".as_ptr() as *const i8);
                 return;
             }
 
@@ -795,8 +795,8 @@ pub fn mj_object_velocity(m: *const mjModel, d: *const mjData, objtype: i32, obj
         }
         // object without spatial frame
         else {
-            extern "C" { fn mju_error_impl(msg: *const i8); }
-            mju_error_impl(b"invalid object type\0".as_ptr() as *const i8);
+            
+            crate::engine::engine_util_errmem::mju_error(b"invalid object type\0".as_ptr() as *const i8);
             return;
         }
 
@@ -871,8 +871,8 @@ pub fn mj_object_acceleration(m: *const mjModel, d: *const mjData, objtype: i32,
         }
         // object without spatial frame
         else {
-            extern "C" { fn mju_error_impl(msg: *const i8); }
-            mju_error_impl(b"invalid object type\0".as_ptr() as *const i8);
+            
+            crate::engine::engine_util_errmem::mju_error(b"invalid object type\0".as_ptr() as *const i8);
             return;
         }
 

@@ -686,10 +686,8 @@ pub fn mju_qcqp(res: *mut f64, Ain: *const f64, bin: *const f64, d: *const f64, 
         let mut tmp: [f64; 5] = [0.0; 5];
 
         if n > 5 {
-            extern "C" {
-                fn mju_error_impl(msg: *const i8);
-            }
-            mju_error_impl(b"n is only supported up to 5\0".as_ptr() as *const i8);
+            crate::engine::engine_util_errmem::mju_error(
+                b"n is only supported up to 5\0".as_ptr() as *const i8);
         }
 
         for i in 0..n {
