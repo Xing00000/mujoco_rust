@@ -194,9 +194,43 @@ pub fn mj_ellipsoid_fluid_model(m: *const mjModel, d: *mut mjData, bodyid: i32) 
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_added_mass_forces(local_vels: *const f64, local_accels: *const f64, fluid_density: f64, virtual_mass: *const f64, virtual_inertia: *const f64, local_force: *mut f64) {
-    extern "C" { fn mj_addedMassForces_impl(local_vels: *const f64, local_accels: *const f64, fluid_density: f64, virtual_mass: *const f64, virtual_inertia: *const f64, local_force: *mut f64); }
-    // SAFETY: delegates to C implementation
-    unsafe { mj_addedMassForces_impl(local_vels, local_accels, fluid_density, virtual_mass, virtual_inertia, local_force) }
+    // SAFETY: local_vels has 6 elements, local_accels has 6 (may be null),
+    // virtual_mass has 3, virtual_inertia has 3, local_force has 6.
+    unsafe {
+        let lin_vel: [f64; 3] = [*local_vels.add(3), *local_vels.add(4), *local_vels.add(5)];
+        let ang_vel: [f64; 3] = [*local_vels.add(0), *local_vels.add(1), *local_vels.add(2)];
+        let virtual_lin_mom: [f64; 3] = [
+            fluid_density * *virtual_mass.add(0) * lin_vel[0],
+            fluid_density * *virtual_mass.add(1) * lin_vel[1],
+            fluid_density * *virtual_mass.add(2) * lin_vel[2],
+        ];
+        let virtual_ang_mom: [f64; 3] = [
+            fluid_density * *virtual_inertia.add(0) * ang_vel[0],
+            fluid_density * *virtual_inertia.add(1) * ang_vel[1],
+            fluid_density * *virtual_inertia.add(2) * ang_vel[2],
+        ];
+
+        // acceleration-dependent terms (disabled in practice but included)
+        if !local_accels.is_null() {
+            *local_force.add(0) -= fluid_density * *virtual_inertia.add(0) * *local_accels.add(0);
+            *local_force.add(1) -= fluid_density * *virtual_inertia.add(1) * *local_accels.add(1);
+            *local_force.add(2) -= fluid_density * *virtual_inertia.add(2) * *local_accels.add(2);
+            *local_force.add(3) -= fluid_density * *virtual_mass.add(0) * *local_accels.add(3);
+            *local_force.add(4) -= fluid_density * *virtual_mass.add(1) * *local_accels.add(4);
+            *local_force.add(5) -= fluid_density * *virtual_mass.add(2) * *local_accels.add(5);
+        }
+
+        let mut added_mass_force: [f64; 3] = [0.0; 3];
+        let mut added_mass_torque1: [f64; 3] = [0.0; 3];
+        let mut added_mass_torque2: [f64; 3] = [0.0; 3];
+        crate::engine::engine_inline::mji_cross(added_mass_force.as_mut_ptr(), virtual_lin_mom.as_ptr(), ang_vel.as_ptr());
+        crate::engine::engine_inline::mji_cross(added_mass_torque1.as_mut_ptr(), virtual_lin_mom.as_ptr(), lin_vel.as_ptr());
+        crate::engine::engine_inline::mji_cross(added_mass_torque2.as_mut_ptr(), virtual_ang_mom.as_ptr(), ang_vel.as_ptr());
+
+        crate::engine::engine_inline::mji_add_to3(local_force, added_mass_torque1.as_ptr());
+        crate::engine::engine_inline::mji_add_to3(local_force, added_mass_torque2.as_ptr());
+        crate::engine::engine_inline::mji_add_to3(local_force.add(3), added_mass_force.as_ptr());
+    }
 }
 
 /// C: mj_viscousForces (engine/engine_passive.h:49)
