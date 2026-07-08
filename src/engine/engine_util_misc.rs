@@ -464,11 +464,37 @@ pub fn mju_cam_pixel_ray(origin: *mut f64, direction: *mut f64, cam_xpos: *const
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mju_def_gradient(res: *mut f64, p: *const f64, dof: *const f64, order: i32) {
-    extern "C" {
-        fn mju_defGradient_impl(res: *mut f64, p: *const f64, dof: *const f64, order: i32);
+    // SAFETY: res has 9 elements, p has 3, dof has 3*(order+1)^3 elements. All valid.
+    unsafe {
+        let mut idx: i32 = 0;
+        let mut gradient: [f64; 3] = [0.0; 3];
+        crate::engine::engine_util_blas::mju_zero(res, 9);
+        let mut i: i32 = 0;
+        while i <= order {
+            let mut j: i32 = 0;
+            while j <= order {
+                let mut k: i32 = 0;
+                while k <= order {
+                    gradient[0] = mju_flex_dphi(*p.add(0), i, order) * mju_flex_phi(*p.add(1), j, order) * mju_flex_phi(*p.add(2), k, order);
+                    gradient[1] = mju_flex_phi(*p.add(0), i, order) * mju_flex_dphi(*p.add(1), j, order) * mju_flex_phi(*p.add(2), k, order);
+                    gradient[2] = mju_flex_phi(*p.add(0), i, order) * mju_flex_phi(*p.add(1), j, order) * mju_flex_dphi(*p.add(2), k, order);
+                    *res.add(0) += *dof.add((3 * idx + 0) as usize) * gradient[0];
+                    *res.add(1) += *dof.add((3 * idx + 0) as usize) * gradient[1];
+                    *res.add(2) += *dof.add((3 * idx + 0) as usize) * gradient[2];
+                    *res.add(3) += *dof.add((3 * idx + 1) as usize) * gradient[0];
+                    *res.add(4) += *dof.add((3 * idx + 1) as usize) * gradient[1];
+                    *res.add(5) += *dof.add((3 * idx + 1) as usize) * gradient[2];
+                    *res.add(6) += *dof.add((3 * idx + 2) as usize) * gradient[0];
+                    *res.add(7) += *dof.add((3 * idx + 2) as usize) * gradient[1];
+                    *res.add(8) += *dof.add((3 * idx + 2) as usize) * gradient[2];
+                    idx += 1;
+                    k += 1;
+                }
+                j += 1;
+            }
+            i += 1;
+        }
     }
-    // SAFETY: delegates to C implementation, all pointers valid per caller contract
-    unsafe { mju_defGradient_impl(res, p, dof, order) }
 }
 
 /// C: mju_evalBasis (engine/engine_util_misc.h:90)
