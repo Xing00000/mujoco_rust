@@ -110,9 +110,10 @@ pub fn mj_free_stack(d: *mut mjData) {
 /// Calls: stackalloc
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_stack_alloc_byte(d: *mut mjData, bytes: usize, alignment: usize) -> *mut () {
-    extern "C" { fn mj_stackAllocByte_impl(d: *mut mjData, bytes: usize, alignment: usize) -> *mut (); }
-    // SAFETY: delegates to C implementation
-    unsafe { mj_stackAllocByte_impl(d, bytes, alignment) }
+    // SAFETY: d is valid mjData pointer. Delegates to stackalloc with NULL caller.
+    unsafe {
+        crate::engine::engine_memory::stackalloc(d, bytes, alignment, core::ptr::null(), 0)
+    }
 }
 
 /// C: mj_stackAllocInfo (engine/engine_memory.h:56)

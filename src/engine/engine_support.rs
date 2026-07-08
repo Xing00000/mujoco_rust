@@ -694,9 +694,23 @@ pub fn mj_get_totalmass(m: *const mjModel) -> f64 {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_set_totalmass(m: *mut mjModel, newmass: f64) {
-    extern "C" { fn mj_setTotalmass_impl(m: *mut mjModel, newmass: f64); }
-    // SAFETY: delegates to C implementation
-    unsafe { mj_setTotalmass_impl(m, newmass) }
+    const MJMINVAL: f64 = 1e-15;
+    // SAFETY: m is valid model pointer. body_mass and body_inertia have nbody elements.
+    unsafe {
+        let scale: f64 = crate::engine::engine_util_misc::mju_max(
+            MJMINVAL,
+            newmass / crate::engine::engine_util_misc::mju_max(MJMINVAL, mj_get_totalmass(m)),
+        );
+
+        let mut i: usize = 1;
+        while i < (*m).nbody {
+            *(*m).body_mass.add(i) *= scale;
+            *(*m).body_inertia.add(3 * i) *= scale;
+            *(*m).body_inertia.add(3 * i + 1) *= scale;
+            *(*m).body_inertia.add(3 * i + 2) *= scale;
+            i += 1;
+        }
+    }
 }
 
 /// C: mj_version (engine/engine_support.h:121)
