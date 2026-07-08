@@ -717,9 +717,27 @@ pub fn mju_box_qp(res: *mut f64, R: *mut f64, index: *mut i32, H: *const f64, g:
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mju_box_q_pmalloc(res: *mut *mut f64, R: *mut *mut f64, index: *mut *mut i32, H: *mut *mut f64, g: *mut *mut f64, n: i32, lower: *mut *mut f64, upper: *mut *mut f64) {
-    extern "C" { fn mju_boxQPmalloc_impl(res: *mut *mut f64, R: *mut *mut f64, index: *mut *mut i32, H: *mut *mut f64, g: *mut *mut f64, n: i32, lower: *mut *mut f64, upper: *mut *mut f64); }
-    // SAFETY: delegates to C implementation
-    unsafe { mju_boxQPmalloc_impl(res, R, index, H, g, n, lower, upper) }
+    // SAFETY: raw pointer writes mirror C mju_boxQPmalloc exactly; caller owns all out-pointers
+    unsafe {
+        let n_usize = n as usize;
+
+        // required arrays
+        *res = crate::engine::engine_util_errmem::mju_malloc(std::mem::size_of::<f64>() * n_usize) as *mut f64;
+        *R = crate::engine::engine_util_errmem::mju_malloc(std::mem::size_of::<f64>() * n_usize * (n_usize + 7)) as *mut f64;
+        *H = crate::engine::engine_util_errmem::mju_malloc(std::mem::size_of::<f64>() * n_usize * n_usize) as *mut f64;
+        *g = crate::engine::engine_util_errmem::mju_malloc(std::mem::size_of::<f64>() * n_usize) as *mut f64;
+
+        // optional arrays
+        if !lower.is_null() {
+            *lower = crate::engine::engine_util_errmem::mju_malloc(std::mem::size_of::<f64>() * n_usize) as *mut f64;
+        }
+        if !upper.is_null() {
+            *upper = crate::engine::engine_util_errmem::mju_malloc(std::mem::size_of::<f64>() * n_usize) as *mut f64;
+        }
+        if !index.is_null() {
+            *index = crate::engine::engine_util_errmem::mju_malloc(std::mem::size_of::<i32>() * n_usize) as *mut i32;
+        }
+    }
 }
 
 /// C: mju_boxQPoption (engine/engine_util_solve.h:151)

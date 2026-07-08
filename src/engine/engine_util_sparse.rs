@@ -563,10 +563,47 @@ pub fn mju_block_sparse(res: *mut f64, res_rownnz: *mut i32, res_rowadr: *mut i3
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mju_block_diag_sparse(res: *mut f64, res_rownnz: *mut i32, res_rowadr: *mut i32, res_colind: *mut i32, mat: *const f64, rownnz: *const i32, rowadr: *const i32, colind: *const i32, nr: i32, nb: i32, perm_r: *const i32, perm_c: *const i32, block_r: *const i32, block_c: *const i32, res2: *mut f64, mat2: *const f64) {
+    // SAFETY: raw pointer arithmetic mirrors C exactly; caller guarantees valid bounds
+    unsafe {
+        for b in 0..nb {
+            let nr_block: i32 = (if b + 1 < nb {
+                *block_r.add((b + 1) as usize)
+            } else {
+                nr
+            }) - *block_r.add(b as usize);
 
-    extern "C" { fn mju_blockDiagSparse_impl(res: *mut f64, res_rownnz: *mut i32, res_rowadr: *mut i32, res_colind: *mut i32, mat: *const f64, rownnz: *const i32, rowadr: *const i32, colind: *const i32, nr: i32, nb: i32, perm_r: *const i32, perm_c: *const i32, block_r: *const i32, block_c: *const i32, res2: *mut f64, mat2: *const f64); }
-    // SAFETY: delegates to C implementation
-    unsafe { mju_blockDiagSparse_impl(res, res_rownnz, res_rowadr, res_colind, mat, rownnz, rowadr, colind, nr, nb, perm_r, perm_c, block_r, block_c, res2, mat2) }
+            let block_r_b = *block_r.add(b as usize);
+            let res_adr: i32 = if block_r_b == 0 {
+                0
+            } else {
+                *res_rowadr.add((block_r_b - 1) as usize) + *res_rownnz.add((block_r_b - 1) as usize)
+            };
+
+            let res2_arg: *mut f64 = if !res2.is_null() {
+                res2.add(res_adr as usize)
+            } else {
+                std::ptr::null_mut()
+            };
+
+            mju_block_sparse(
+                res.add(res_adr as usize),
+                res_rownnz.add(block_r_b as usize),
+                res_rowadr.add(block_r_b as usize),
+                res_colind.add(res_adr as usize),
+                mat,
+                rownnz,
+                rowadr,
+                colind,
+                nr_block,
+                perm_r.add(block_r_b as usize),
+                perm_c,
+                *block_c.add(b as usize),
+                res_adr,
+                res2_arg,
+                mat2,
+            );
+        }
+    }
 }
 
 /// C: mju_dotSparse (engine/engine_util_sparse.h:197)
