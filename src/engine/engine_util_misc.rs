@@ -732,11 +732,30 @@ pub fn mju_flex_interp_rotation2d(order: i32, xpos_f: *const f64, npe: i32, axis
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mju_flex_face_normal2d(normal: *mut f64, t1: *mut f64, t2: *mut f64, order: i32, xpos_f: *const f64, local: *const f64) {
-    extern "C" {
-        fn mju_flexFaceNormal2D_impl(normal: *mut f64, t1: *mut f64, t2: *mut f64, order: i32, xpos_f: *const f64, local: *const f64);
+    // SAFETY: normal/t1/t2 have 3 elements. xpos_f has 3*(order+1)^2 elements. local has 2 elements.
+    unsafe {
+        crate::engine::engine_util_blas::mju_zero3(t1);
+        crate::engine::engine_util_blas::mju_zero3(t2);
+        let mut idx: i32 = 0;
+        let mut l0: i32 = 0;
+        while l0 <= order {
+            let mut l1: i32 = 0;
+            while l1 <= order {
+                let grad0 = mju_flex_dphi(*local.add(0), l0, order) * mju_flex_phi(*local.add(1), l1, order);
+                let grad1 = mju_flex_phi(*local.add(0), l0, order) * mju_flex_dphi(*local.add(1), l1, order);
+                let mut d: i32 = 0;
+                while d < 3 {
+                    *t1.add(d as usize) += *xpos_f.add((3 * idx + d) as usize) * grad0;
+                    *t2.add(d as usize) += *xpos_f.add((3 * idx + d) as usize) * grad1;
+                    d += 1;
+                }
+                idx += 1;
+                l1 += 1;
+            }
+            l0 += 1;
+        }
+        crate::engine::engine_util_spatial::mju_cross(normal, t1, t2);
     }
-    // SAFETY: delegates to C implementation, all pointers valid per caller contract
-    unsafe { mju_flexFaceNormal2D_impl(normal, t1, t2, order, xpos_f, local) }
 }
 
 /// C: mju_flexPhi (engine/engine_util_misc.h:130)
