@@ -359,11 +359,48 @@ pub fn mj_factor_i_legacy(m: *const mjModel, d: *mut mjData, M: *const f64, qLD:
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_factor_i(mat: *mut f64, diaginv: *mut f64, nv: i32, rownnz: *const i32, rowadr: *const i32, colind: *const i32, index: *const i32) {
-    extern "C" {
-        fn mj_factorI_impl(mat: *mut f64, diaginv: *mut f64, nv: i32, rownnz: *const i32, rowadr: *const i32, colind: *const i32, index: *const i32);
+    // SAFETY: all pointers valid. mat is sparse matrix. diaginv may be null.
+    // index may be null (identity permutation).
+    unsafe {
+        // backward loop over rows
+        let mut j: i32 = nv - 1;
+        while j >= 0 {
+            let k = if !index.is_null() { *index.add(j as usize) } else { j };
+
+            // get row k's address, diagonal index, inverse diagonal value
+            let start = *rowadr.add(k as usize);
+            let diag = *rownnz.add(k as usize) - 1;
+            let end = start + diag;
+            let invD = 1.0 / *mat.add(end as usize);
+            if !diaginv.is_null() {
+                *diaginv.add(k as usize) = invD;
+            }
+
+            // update triangle above row k
+            let mut adr = end - 1;
+            while adr >= start {
+                // update row i < k
+                let i = *colind.add(adr as usize);
+                crate::engine::engine_util_blas::mju_add_to_scl(
+                    mat.add(*rowadr.add(i as usize) as usize),
+                    mat.add(start as usize),
+                    -*mat.add(adr as usize) * invD,
+                    *rownnz.add(i as usize),
+                );
+                adr -= 1;
+            }
+
+            // update row k: L(k, :) /= L(k, k)
+            crate::engine::engine_util_blas::mju_scl(
+                mat.add(start as usize),
+                mat.add(start as usize),
+                invD,
+                diag,
+            );
+
+            j -= 1;
+        }
     }
-    // SAFETY: delegates to C implementation, all pointers valid per caller contract
-    unsafe { mj_factorI_impl(mat, diaginv, nv, rownnz, rowadr, colind, index) }
 }
 
 /// C: mj_factorM (engine/engine_core_smooth.h:76)
