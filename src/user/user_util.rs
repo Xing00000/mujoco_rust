@@ -864,12 +864,68 @@ pub fn file_path_is_abs(self_ptr: *mut FilePath) -> bool {
 }
 
 /// C: FilePath::AbsPrefix (user/user_util.h:195)
+/// Returns the byte-length of the absolute prefix of the path stored in this FilePath.
+/// The path is stored as a libc++ std::string (24 bytes with SSO on macOS).
 #[allow(unused_variables, non_snake_case)]
 pub fn file_path_abs_prefix(self_ptr: *mut FilePath) -> i32 {
-    // WARNING: signature changed — verify body
-    // Previous params: (self_ptr : * mut FilePath)
-    // Previous return: i32
-    extern "C" { fn FilePath_AbsPrefix_impl (self_ptr : * mut FilePath) -> i32 ; } unsafe { FilePath_AbsPrefix_impl (self_ptr) }
+    // SAFETY: self_ptr points to a C++ FilePath object whose first (and only) member is
+    // a std::string (libc++ SSO layout, 24 bytes on macOS aarch64/x86_64).
+    // We extract the c_str pointer from the SSO representation and compute the prefix length.
+    unsafe {
+        // libc++ std::string SSO layout (24 bytes):
+        //   If short (bit 0 of byte 23 == 0): data is bytes 0..22, length in byte 23 >> 1
+        //   If long (bit 0 of byte 23 == 1): ptr at offset 0, size at offset 8, cap at offset 16
+        let raw = self_ptr as *const u8;
+        let flag_byte = *raw.add(23);
+        let (data_ptr, len): (*const u8, usize) = if flag_byte & 0x80 != 0 {
+            // long string: pointer at offset 0, size at offset 8
+            let ptr = *(raw as *const *const u8);
+            let size = *(raw.add(8) as *const usize);
+            (ptr, size)
+        } else {
+            // short string: data inline at offset 0, length = flag_byte
+            (raw, flag_byte as usize)
+        };
+
+        if len == 0 || data_ptr.is_null() {
+            return 0;
+        }
+
+        let path = core::slice::from_raw_parts(data_ptr, len);
+
+        // Check resource provider prefix (scheme:filename)
+        // We call mjp_get_resource_provider to check if path starts with a known scheme.
+        // Construct a null-terminated copy for C interop.
+        let mut buf = Vec::with_capacity(len + 1);
+        buf.extend_from_slice(path);
+        buf.push(0);
+        let provider = crate::engine::engine_plugin::mjp_get_resource_provider(buf.as_ptr() as *const i8);
+        if !provider.is_null() {
+            // Find the prefix length: strlen(provider->prefix) + 1 for the ':'
+            let prefix_ptr = (*provider).prefix;
+            let mut n: usize = 0;
+            while *prefix_ptr.add(n) != 0 {
+                n += 1;
+            }
+            return (n + 1) as i32;
+        }
+
+        // Check first char: '/' or '\'
+        if path[0] == b'/' || path[0] == b'\\' {
+            return 1;
+        }
+
+        // Find ":/" or ":\"
+        let mut pos: usize = 0;
+        while pos + 1 < len {
+            if path[pos] == b':' && (path[pos + 1] == b'/' || path[pos + 1] == b'\\') {
+                return (pos + 2) as i32;
+            }
+            pos += 1;
+        }
+
+        0
+    }
 }
 
 /// C: FilePath::Str (user/user_util.h:198)

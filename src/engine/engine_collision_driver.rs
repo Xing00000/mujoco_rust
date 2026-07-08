@@ -728,10 +728,29 @@ pub fn mj_sap(d: *mut mjData, aamm: *const f64, n: i32, axis_x: i32, pair: *mut 
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn update_cov(cov: *mut f64, vec: *const f64, cen: *const f64) {
-    // WARNING: signature changed — verify body
-    // Previous params: (cov : * mut f64, vec : * const f64, cen : * const f64)
-    // Previous return: ()
-    extern "C" { fn updateCov_impl (cov : * mut f64 , vec : * const f64 , cen : * const f64) ; } unsafe { updateCov_impl (cov , vec , cen) }
+    // SAFETY: cov points to [f64; 9], vec and cen point to [f64; 3], valid per caller contract.
+    unsafe {
+        let dif: [f64; 3] = [
+            *vec.add(0) - *cen.add(0),
+            *vec.add(1) - *cen.add(1),
+            *vec.add(2) - *cen.add(2),
+        ];
+        let D00: f64 = dif[0] * dif[0];
+        let D01: f64 = dif[0] * dif[1];
+        let D02: f64 = dif[0] * dif[2];
+        let D11: f64 = dif[1] * dif[1];
+        let D12: f64 = dif[1] * dif[2];
+        let D22: f64 = dif[2] * dif[2];
+        *cov.add(0) += D00;
+        *cov.add(1) += D01;
+        *cov.add(2) += D02;
+        *cov.add(3) += D01;
+        *cov.add(4) += D11;
+        *cov.add(5) += D12;
+        *cov.add(6) += D02;
+        *cov.add(7) += D12;
+        *cov.add(8) += D22;
+    }
 }
 
 /// C: uintcmp (engine/engine_collision_driver.c:1518)
