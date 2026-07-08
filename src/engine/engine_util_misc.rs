@@ -1679,9 +1679,20 @@ pub fn mju_lower2sym_map(map: *mut i32, nr: i32, res_rowadr: *const i32, res_row
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mju_insertion_sort(list: *mut f64, n: i32) {
-    extern "C" { fn mju_insertionSort_impl(list: *mut f64, n: i32); }
-    // SAFETY: delegates to C implementation
-    unsafe { mju_insertionSort_impl(list, n) }
+    // SAFETY: list points to at least n elements, valid per caller contract.
+    unsafe {
+        let mut i: i32 = 1;
+        while i < n {
+            let x: f64 = *list.add(i as usize);
+            let mut j: i32 = i - 1;
+            while j >= 0 && *list.add(j as usize) > x {
+                *list.add((j + 1) as usize) = *list.add(j as usize);
+                j -= 1;
+            }
+            *list.add((j + 1) as usize) = x;
+            i += 1;
+        }
+    }
 }
 
 /// C: mju_insertionSortInt (engine/engine_util_misc.h:315)

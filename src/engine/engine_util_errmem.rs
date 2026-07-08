@@ -193,9 +193,25 @@ pub fn mju_warning(msg: *const i8) {
 /// Calls: mju_message
 #[allow(unused_variables, non_snake_case)]
 pub fn mju_info(topic: i32, msg: *const i8) {
-    extern "C" { fn mju_info_impl(topic: i32, msg: *const i8); }
-    // SAFETY: delegates to C implementation
-    unsafe { mju_info_impl(topic, msg) }
+    // SAFETY: msg is a valid C string pointer per caller contract.
+    // We build a stack-local mjLogMessage, copy msg into subject, and pass to mju_message.
+    unsafe {
+        let mut m: mjLogMessage = std::mem::zeroed();
+        m.level = 1; // mjLOG_INFO
+        m.topic = topic;
+        // Copy msg into m.subject (bounded to 1023 chars + null terminator)
+        let mut i: usize = 0;
+        while i < 1023 {
+            let c = *msg.add(i);
+            if c == 0 {
+                break;
+            }
+            m.subject[i] = c;
+            i += 1;
+        }
+        m.subject[i] = 0;
+        crate::engine::engine_util_errmem::mju_message(&m);
+    }
 }
 
 /// C: mju_message (engine/engine_util_errmem.h:84)
