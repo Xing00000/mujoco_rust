@@ -903,9 +903,110 @@ pub fn plane_vertex(con: *mut mjPreContact, pos: *const f64, rad: f64, t0: i32, 
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_max_contact(m: *const mjModel, g1: i32, g2: i32, has_margin: i32) -> i32 {
 
-    extern "C" { fn mj_maxContact_impl(m: *const mjModel, g1: i32, g2: i32, has_margin: i32) -> i32; }
-    // SAFETY: delegates to C implementation
-    unsafe { mj_maxContact_impl(m, g1, g2, has_margin) }
+    // SAFETY: m valid per caller. geom_type, pair arrays within bounds for g1, g2.
+    unsafe {
+        const MJGEOM_PLANE: i32 = 0;
+        const MJGEOM_HFIELD: i32 = 1;
+        const MJGEOM_SPHERE: i32 = 2;
+        const MJGEOM_CAPSULE: i32 = 3;
+        const MJGEOM_ELLIPSOID: i32 = 4;
+        const MJGEOM_CYLINDER: i32 = 5;
+        const MJGEOM_BOX: i32 = 6;
+        const MJGEOM_MESH: i32 = 7;
+        const MJGEOM_SDF: i32 = 8;
+        const MJMAXCONPAIR: i32 = 50;
+        const MJDSBL_NATIVECCD: i32 = 1 << 17;
+        const MJDSBL_MULTICCD: i32 = 1 << 19;
+        const MJENBL_OVERRIDE: i32 = 1 << 0;
+
+        let type1: i32 = *(*m).geom_type.add(g1 as usize);
+        let type2: i32 = *(*m).geom_type.add(g2 as usize);
+
+        if type1 == MJGEOM_SDF || type2 == MJGEOM_SDF {
+            return (*m).opt.sdf_initpoints;
+        }
+
+        if type1 == MJGEOM_HFIELD || type2 == MJGEOM_HFIELD {
+            let t: i32 = if type1 == MJGEOM_HFIELD { type2 } else { type1 };
+            return if t != MJGEOM_PLANE && t != MJGEOM_HFIELD { MJMAXCONPAIR } else { 0 };
+        }
+
+        // spheres and ellipsoids always generate a single contact
+        if type1 == MJGEOM_SPHERE || type1 == MJGEOM_ELLIPSOID
+            || type2 == MJGEOM_SPHERE || type2 == MJGEOM_ELLIPSOID {
+            return 1;
+        }
+
+        // box-box primitive collider
+        if type1 == MJGEOM_BOX && type2 == MJGEOM_BOX {
+            return 8;
+        }
+
+        // capsule-capsule primitive collider
+        if type1 == MJGEOM_CAPSULE && type2 == MJGEOM_CAPSULE {
+            return 2;
+        }
+
+        // capsule-box primitive collider
+        if (type1 == MJGEOM_CAPSULE && type2 == MJGEOM_BOX)
+            || (type1 == MJGEOM_BOX && type2 == MJGEOM_CAPSULE) {
+            return 4;
+        }
+
+        // the remaining plane cases
+        if type1 == MJGEOM_PLANE || type2 == MJGEOM_PLANE {
+            let t: i32 = if type1 == MJGEOM_PLANE { type2 } else { type1 };
+            if t == MJGEOM_CAPSULE { return 2; }
+            if t == MJGEOM_CYLINDER || t == MJGEOM_BOX { return 4; }
+            if t == MJGEOM_MESH { return 3; }
+            return 0;
+        }
+
+        let is_multiccd: i32 = ((*m).opt.disableflags & MJDSBL_MULTICCD == 0) as i32;
+        if is_multiccd == 0 {
+            return 1;
+        }
+
+        if type1 == MJGEOM_CAPSULE || type2 == MJGEOM_CAPSULE
+            || type1 == MJGEOM_CYLINDER || type2 == MJGEOM_CYLINDER {
+            return 5;
+        }
+
+        if ((*m).opt.disableflags & MJDSBL_NATIVECCD) != 0 {
+            return if is_multiccd != 0 { 5 } else { 1 };
+        }
+
+        // check margin from model
+        let mut has_margin_local: i32 = has_margin;
+        if has_margin_local < 0 {
+            has_margin_local = 0;
+            if ((*m).opt.enableflags & MJENBL_OVERRIDE) != 0 {
+                has_margin_local = ((*m).opt.o_margin > 0.0) as i32;
+            } else {
+                let npair: i32 = (*m).npair as i32;
+                let mut ipair: i32 = -1;
+                let mut k: i32 = 0;
+                while k < npair {
+                    if (*(*m).pair_geom1.add(k as usize) == g1 && *(*m).pair_geom2.add(k as usize) == g2)
+                        || (*(*m).pair_geom1.add(k as usize) == g2 && *(*m).pair_geom2.add(k as usize) == g1) {
+                        ipair = k;
+                        break;
+                    }
+                    k += 1;
+                }
+
+                if ipair > -1 {
+                    has_margin_local = (*(*m).pair_margin.add(ipair as usize) > 0.0) as i32;
+                } else {
+                    has_margin_local = (*(*m).geom_margin.add(g1 as usize) > 0.0
+                        || *(*m).geom_margin.add(g2 as usize) > 0.0) as i32;
+                }
+            }
+        }
+
+        // 4 contacts for mesh-mesh or mesh-box without margins, 5 with margins
+        if has_margin_local != 0 { 5 } else { 4 }
+    }
 }
 
 /// C: mj_collision (engine/engine_collision_driver.h:36)

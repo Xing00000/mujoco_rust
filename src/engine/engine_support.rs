@@ -399,9 +399,40 @@ pub fn mj_mul_m(m: *const mjModel, d: *const mjData, res: *mut f64, vec: *const 
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_mul_m2(m: *const mjModel, d: *const mjData, res: *mut f64, vec: *const f64) {
-    extern "C" { fn mj_mulM2_impl(m: *const mjModel, d: *const mjData, res: *mut f64, vec: *const f64); }
-    // SAFETY: delegates to C implementation
-    unsafe { mj_mulM2_impl(m, d, res, vec) }
+    // SAFETY: m, d valid per caller. res and vec are nv-length arrays. Sparse index arrays valid.
+    unsafe {
+        let nv: i32 = (*m).nv as i32;
+        let qLD: *const f64 = (*d).qLD;
+
+        crate::engine::engine_util_blas::mju_zero(res, nv);
+
+        // res = L * vec
+        let mut i: i32 = 0;
+        while i < nv {
+            // diagonal
+            *res.add(i as usize) = *vec.add(i as usize);
+
+            // non-simple: add off-diagonals
+            if *(*m).dof_simplenum.add(i as usize) == 0 {
+                let adr: i32 = *(*m).M_rowadr.add(i as usize);
+                *res.add(i as usize) += crate::engine::engine_util_sparse::mju_dot_sparse(
+                    qLD.add(adr as usize),
+                    vec,
+                    *(*m).M_rownnz.add(i as usize) - 1,
+                    (*m).M_colind.add(adr as usize),
+                );
+            }
+            i += 1;
+        }
+
+        // res *= sqrt(D)
+        i = 0;
+        while i < nv {
+            let diag: i32 = *(*m).M_rowadr.add(i as usize) + *(*m).M_rownnz.add(i as usize) - 1;
+            *res.add(i as usize) *= (*qLD.add(diag as usize)).sqrt();
+            i += 1;
+        }
+    }
 }
 
 /// C: mj_addM (engine/engine_support.h:72)

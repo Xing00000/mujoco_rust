@@ -1553,9 +1553,72 @@ pub fn mju_sparse_map(map: *mut i32, nr: i32, res_rowadr: *const i32, res_rownnz
 #[allow(unused_variables, non_snake_case)]
 pub fn mju_lower2sym_map(map: *mut i32, nr: i32, res_rowadr: *const i32, res_rownnz: *const i32, res_colind: *const i32, src_rowadr: *const i32, src_rownnz: *const i32, src_colind: *const i32, cursor: *mut i32) {
 
-    extern "C" { fn mju_lower2SymMap_impl(map: *mut i32, nr: i32, res_rowadr: *const i32, res_rownnz: *const i32, res_colind: *const i32, src_rowadr: *const i32, src_rownnz: *const i32, src_colind: *const i32, cursor: *mut i32); }
-    // SAFETY: delegates to C implementation
-    unsafe { mju_lower2SymMap_impl(map, nr, res_rowadr, res_rownnz, res_colind, src_rowadr, src_rownnz, src_colind, cursor) }
+    if nr == 0 {
+        return;
+    }
+
+    // SAFETY: all pointers valid per caller contract, indices within bounds
+    unsafe {
+        // default all map entries to "no source"
+        let nnz: i32 = *res_rowadr.add((nr - 1) as usize) + *res_rownnz.add((nr - 1) as usize);
+        crate::engine::engine_util_misc::mju_fill_int(map, -1, nnz);
+
+        // initialize per-row cursor
+        let mut i: i32 = 0;
+        while i < nr {
+            *cursor.add(i as usize) = *res_rowadr.add(i as usize);
+            i += 1;
+        }
+
+        // sweep src rows; for each lower (i,j) set res(i,j) and res(j,i)
+        i = 0;
+        while i < nr {
+            let src_start: i32 = *src_rowadr.add(i as usize);
+            let src_end: i32 = src_start + *src_rownnz.add(i as usize);
+
+            // sweep src row
+            let mut k: i32 = src_start;
+            while k < src_end {
+                let j: i32 = *src_colind.add(k as usize);
+                if j > i { break; } // use only lower triangle of src
+
+                // --- lower triangle: res(i, j)
+                let res_start_i: i32 = *res_rowadr.add(i as usize);
+                let res_end_i: i32 = res_start_i + *res_rownnz.add(i as usize);
+                let mut c: i32 = *cursor.add(i as usize);
+
+                // increment c until there is a match
+                while c < res_end_i && *res_colind.add(c as usize) < j { c += 1; }
+
+                // found match, set index, advance and save cursor
+                if c < res_end_i && *res_colind.add(c as usize) == j {
+                    *map.add(c as usize) = k;
+                    c += 1;
+                }
+                *cursor.add(i as usize) = c;
+
+                // --- upper mirror: res(j, i)
+                if j != i {
+                    let res_start_j: i32 = *res_rowadr.add(j as usize);
+                    let res_end_j: i32 = res_start_j + *res_rownnz.add(j as usize);
+                    c = *cursor.add(j as usize);
+
+                    // increment c until there is a match
+                    while c < res_end_j && *res_colind.add(c as usize) < i { c += 1; }
+
+                    // found match, set index and advance and save cursor
+                    if c < res_end_j && *res_colind.add(c as usize) == i {
+                        *map.add(c as usize) = k;
+                        c += 1;
+                    }
+                    *cursor.add(j as usize) = c;
+                }
+
+                k += 1;
+            }
+            i += 1;
+        }
+    }
 }
 
 /// C: mju_insertionSort (engine/engine_util_misc.h:312)

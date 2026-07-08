@@ -50,11 +50,85 @@ pub fn mj_kinematics1(m: *const mjModel, d: *mut mjData) {
 /// Calls: mj_local2Global
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_kinematics2(m: *const mjModel, d: *mut mjData) {
-    extern "C" {
-        fn mj_kinematics2_impl(m: *const mjModel, d: *mut mjData);
+    // SAFETY: m, d valid per caller. All pointer arithmetic within allocated arrays.
+    unsafe {
+        const MJENBL_SLEEP: i32 = 1 << 4;
+        const MJS_AWAKE: i32 = 1;
+
+        let sleep_filter: i32 = (((*m).opt.enableflags & MJENBL_SLEEP) != 0
+            && (*d).nbody_awake < (*m).nbody as i32) as i32;
+        let nbody: i32 = if sleep_filter != 0 { (*d).nbody_awake } else { (*m).nbody as i32 };
+
+        // compute/copy Cartesian positions and orientations of body inertial frames
+        let mut b: i32 = 1;
+        while b < nbody {
+            let i: i32 = if sleep_filter != 0 { *(*d).body_awake_ind.add(b as usize) } else { b };
+
+            crate::engine::engine_core_util::mj_local2global(
+                d,
+                (*d).xipos.add(3 * i as usize),
+                (*d).ximat.add(9 * i as usize),
+                (*m).body_ipos.add(3 * i as usize),
+                (*m).body_iquat.add(4 * i as usize),
+                i,
+                *(*m).body_sameframe.add(i as usize),
+            );
+            b += 1;
+        }
+
+        // compute/copy Cartesian positions and orientations of geoms
+        b = 0;
+        while b < nbody {
+            let i: i32 = if sleep_filter != 0 { *(*d).body_awake_ind.add(b as usize) } else { b };
+
+            // skip geom in sleeping or static body
+            if sleep_filter != 0 && *(*d).body_awake.add(i as usize) != MJS_AWAKE {
+                b += 1;
+                continue;
+            }
+
+            let start: i32 = *(*m).body_geomadr.add(i as usize);
+            let end: i32 = start + *(*m).body_geomnum.add(i as usize);
+            let mut g: i32 = start;
+            while g < end {
+                crate::engine::engine_core_util::mj_local2global(
+                    d,
+                    (*d).geom_xpos.add(3 * g as usize),
+                    (*d).geom_xmat.add(9 * g as usize),
+                    (*m).geom_pos.add(3 * g as usize),
+                    (*m).geom_quat.add(4 * g as usize),
+                    *(*m).geom_bodyid.add(g as usize),
+                    *(*m).geom_sameframe.add(g as usize),
+                );
+                g += 1;
+            }
+            b += 1;
+        }
+
+        // compute/copy Cartesian positions and orientations of sites
+        let nsite: i32 = (*m).nsite as i32;
+        let mut i: i32 = 0;
+        while i < nsite {
+            let bodyid: i32 = *(*m).site_bodyid.add(i as usize);
+
+            // skip site in sleeping or static body
+            if sleep_filter != 0 && *(*d).body_awake.add(bodyid as usize) != MJS_AWAKE {
+                i += 1;
+                continue;
+            }
+
+            crate::engine::engine_core_util::mj_local2global(
+                d,
+                (*d).site_xpos.add(3 * i as usize),
+                (*d).site_xmat.add(9 * i as usize),
+                (*m).site_pos.add(3 * i as usize),
+                (*m).site_quat.add(4 * i as usize),
+                bodyid,
+                *(*m).site_sameframe.add(i as usize),
+            );
+            i += 1;
+        }
     }
-    // SAFETY: delegates to C implementation, all pointers valid per caller contract
-    unsafe { mj_kinematics2_impl(m, d) }
 }
 
 /// C: mj_kinematics (engine/engine_core_smooth.h:35)
@@ -634,11 +708,144 @@ pub fn mj_solve_m2(m: *const mjModel, d: *mut mjData, x: *mut f64, y: *const f64
 /// Calls: mji_copy6, mji_crossMotion, mju_addTo, mju_copy, mju_mulDofVec, mju_zero
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_com_vel(m: *const mjModel, d: *mut mjData) {
-    extern "C" {
-        fn mj_comVel_impl(m: *const mjModel, d: *mut mjData);
+    // SAFETY: m, d valid per caller. All pointer arithmetic within allocated arrays.
+    unsafe {
+        const MJENBL_SLEEP: i32 = 1 << 4;
+        const MJJNT_FREE: i32 = 0;
+        const MJJNT_BALL: i32 = 1;
+
+        let sleep_filter: i32 = (((*m).opt.enableflags & MJENBL_SLEEP) != 0
+            && (*d).nbody_awake < (*m).nbody as i32) as i32;
+        let nbody: i32 = if sleep_filter != 0 { (*d).nbody_awake } else { (*m).nbody as i32 };
+
+        // set world vel to 0
+        crate::engine::engine_util_blas::mju_zero((*d).cvel, 6);
+
+        // forward pass over bodies
+        let mut b: i32 = 1;
+        while b < nbody {
+            let i: i32 = if sleep_filter != 0 { *(*d).body_awake_ind.add(b as usize) } else { b };
+
+            // cvel = cvel_parent
+            let mut cvel: [f64; 6] = [0.0; 6];
+            crate::engine::engine_inline::mji_copy6(
+                cvel.as_mut_ptr(),
+                (*d).cvel.add(6 * *(*m).body_parentid.add(i as usize) as usize),
+            );
+
+            // cvel = cvel_parent + cdof * qvel,  cdofdot = cvel x cdof
+            let dofnum: i32 = *(*m).body_dofnum.add(i as usize);
+            let bda: i32 = *(*m).body_dofadr.add(i as usize);
+            let mut cdofdot: [f64; 36] = [0.0; 36];
+            let mut j: i32 = 0;
+            while j < dofnum {
+                let mut tmp: [f64; 6] = [0.0; 6];
+                let jnt_type: i32 = *(*m).jnt_type.add(*(*m).dof_jntid.add((bda + j) as usize) as usize);
+
+                if jnt_type == MJJNT_FREE {
+                    // cdofdot = 0
+                    crate::engine::engine_util_blas::mju_zero(cdofdot.as_mut_ptr(), 18);
+
+                    // update velocity
+                    crate::engine::engine_util_spatial::mju_mul_dof_vec(
+                        tmp.as_mut_ptr(),
+                        (*d).cdof.add(6 * bda as usize),
+                        (*d).qvel.add(bda as usize),
+                        3,
+                    );
+                    crate::engine::engine_util_blas::mju_add_to(cvel.as_mut_ptr(), tmp.as_ptr(), 6);
+
+                    // continue with rotations
+                    j += 3;
+
+                    // fallthrough to BALL
+                    crate::engine::engine_inline::mji_cross_motion(
+                        cdofdot.as_mut_ptr().add(6 * (j + 0) as usize),
+                        cvel.as_ptr(),
+                        (*d).cdof.add(6 * (bda + j + 0) as usize),
+                    );
+                    crate::engine::engine_inline::mji_cross_motion(
+                        cdofdot.as_mut_ptr().add(6 * (j + 1) as usize),
+                        cvel.as_ptr(),
+                        (*d).cdof.add(6 * (bda + j + 1) as usize),
+                    );
+                    crate::engine::engine_inline::mji_cross_motion(
+                        cdofdot.as_mut_ptr().add(6 * (j + 2) as usize),
+                        cvel.as_ptr(),
+                        (*d).cdof.add(6 * (bda + j + 2) as usize),
+                    );
+
+                    // update velocity
+                    crate::engine::engine_util_spatial::mju_mul_dof_vec(
+                        tmp.as_mut_ptr(),
+                        (*d).cdof.add(6 * (bda + j) as usize),
+                        (*d).qvel.add((bda + j) as usize),
+                        3,
+                    );
+                    crate::engine::engine_util_blas::mju_add_to(cvel.as_mut_ptr(), tmp.as_ptr(), 6);
+
+                    // adjust for 3-dof joint
+                    j += 2;
+                } else if jnt_type == MJJNT_BALL {
+                    // compute all 3 cdofdots using parent velocity
+                    crate::engine::engine_inline::mji_cross_motion(
+                        cdofdot.as_mut_ptr().add(6 * (j + 0) as usize),
+                        cvel.as_ptr(),
+                        (*d).cdof.add(6 * (bda + j + 0) as usize),
+                    );
+                    crate::engine::engine_inline::mji_cross_motion(
+                        cdofdot.as_mut_ptr().add(6 * (j + 1) as usize),
+                        cvel.as_ptr(),
+                        (*d).cdof.add(6 * (bda + j + 1) as usize),
+                    );
+                    crate::engine::engine_inline::mji_cross_motion(
+                        cdofdot.as_mut_ptr().add(6 * (j + 2) as usize),
+                        cvel.as_ptr(),
+                        (*d).cdof.add(6 * (bda + j + 2) as usize),
+                    );
+
+                    // update velocity
+                    crate::engine::engine_util_spatial::mju_mul_dof_vec(
+                        tmp.as_mut_ptr(),
+                        (*d).cdof.add(6 * (bda + j) as usize),
+                        (*d).qvel.add((bda + j) as usize),
+                        3,
+                    );
+                    crate::engine::engine_util_blas::mju_add_to(cvel.as_mut_ptr(), tmp.as_ptr(), 6);
+
+                    // adjust for 3-dof joint
+                    j += 2;
+                } else {
+                    // crossMotion(cdof, cdof) = 0, using old velocity may be more accurate
+                    crate::engine::engine_inline::mji_cross_motion(
+                        cdofdot.as_mut_ptr().add(6 * j as usize),
+                        cvel.as_ptr(),
+                        (*d).cdof.add(6 * (bda + j) as usize),
+                    );
+
+                    // update velocity
+                    crate::engine::engine_util_spatial::mju_mul_dof_vec(
+                        tmp.as_mut_ptr(),
+                        (*d).cdof.add(6 * (bda + j) as usize),
+                        (*d).qvel.add((bda + j) as usize),
+                        1,
+                    );
+                    crate::engine::engine_util_blas::mju_add_to(cvel.as_mut_ptr(), tmp.as_ptr(), 6);
+                }
+
+                j += 1;
+            }
+
+            // assign cvel, cdofdot
+            crate::engine::engine_inline::mji_copy6((*d).cvel.add(6 * i as usize), cvel.as_ptr());
+            crate::engine::engine_util_blas::mju_copy(
+                (*d).cdof_dot.add(6 * bda as usize),
+                cdofdot.as_ptr(),
+                6 * dofnum,
+            );
+            b += 1;
+        }
     }
-    // SAFETY: delegates to C implementation, all pointers valid per caller contract
-    unsafe { mj_comVel_impl(m, d) }
 }
 
 /// C: mj_subtreeVel (engine/engine_core_smooth.h:101)
