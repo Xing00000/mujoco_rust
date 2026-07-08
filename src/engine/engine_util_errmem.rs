@@ -86,10 +86,32 @@ pub fn mju_active_handler() -> mjfLogHandler {
 /// C: mju_malloc (engine/engine_util_errmem.h:43)
 /// Calls: mju_alignedMalloc, mju_error
 #[allow(unused_variables, non_snake_case)]
-pub fn mju_malloc(size: usize) -> *mut () {
-    extern "C" { fn mju_malloc_impl(size: usize) -> *mut (); }
-    // SAFETY: delegates to C implementation
-    unsafe { mju_malloc_impl(size) }
+pub fn mju_malloc(mut size: usize) -> *mut () {
+    extern "C" {
+        static mju_user_malloc: Option<unsafe extern "C" fn(usize) -> *mut ()>;
+    }
+
+    let mut ptr: *mut () = core::ptr::null_mut();
+
+    // SAFETY: reading global function pointer and calling user-provided or aligned allocator
+    unsafe {
+        if let Some(user_malloc) = mju_user_malloc {
+            ptr = user_malloc(size);
+        } else {
+            if size > 0 && (size % 64) != 0 {
+                size += 64 - (size % 64);
+            }
+            if size > 0 {
+                ptr = mju_aligned_malloc(size, 64);
+            }
+        }
+    }
+
+    if ptr.is_null() && size > 0 {
+        mju_error(b"Could not allocate memory\0".as_ptr() as *const i8);
+    }
+
+    ptr
 }
 
 /// C: mju_free (engine/engine_util_errmem.h:46)
