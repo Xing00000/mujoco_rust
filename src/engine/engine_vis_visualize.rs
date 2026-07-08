@@ -942,8 +942,39 @@ pub fn mjv_catenary(x0: *const f64, x1: *const f64, gravity: *const f64, length:
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn hsv2rgb(RGB: *mut f32, H: f32, S: f32, V: f32) {
-    extern "C" { fn hsv2rgb_impl(RGB: *mut f32, H: f32, S: f32, V: f32); }
-    // SAFETY: delegates to C implementation, all pointers valid per caller contract
-    unsafe { hsv2rgb_impl(RGB, H, S, V) }
+    // SAFETY: RGB has 3 elements.
+    unsafe {
+        let R: f32;
+        let G: f32;
+        let B: f32;
+
+        if S <= 0.0 {
+            R = V; G = V; B = V;
+        } else {
+            let hh = H * 6.0;
+            let i = hh as i32;
+            let ff = hh - i as f32;
+            let p = V * (1.0 - S);
+            let q = V * (1.0 - (S * ff));
+            let t = V * (1.0 - (S * (1.0 - ff)));
+            if i == 0 {
+                R = V; G = t; B = p;
+            } else if i == 1 {
+                R = q; G = V; B = p;
+            } else if i == 2 {
+                R = p; G = V; B = t;
+            } else if i == 3 {
+                R = p; G = q; B = V;
+            } else if i == 4 {
+                R = t; G = p; B = V;
+            } else {
+                R = V; G = p; B = q;
+            }
+        }
+
+        *RGB.add(0) = R;
+        *RGB.add(1) = G;
+        *RGB.add(2) = B;
+    }
 }
 

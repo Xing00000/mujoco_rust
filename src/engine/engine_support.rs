@@ -643,9 +643,18 @@ pub fn mju_condata_size(dataSpec: i32) -> i32 {
 /// C: mju_raydataSize (engine/engine_support.h:130)
 #[allow(unused_variables, non_snake_case)]
 pub fn mju_raydata_size(dataspec: i32) -> i32 {
-    extern "C" { fn mju_raydataSize_impl(dataspec: i32) -> i32; }
-    // SAFETY: delegates to C implementation
-    unsafe { mju_raydataSize_impl(dataspec) }
+    // SAFETY: pure computation, no pointer access.
+    const MJNRAYDATA: i32 = 6;
+    const MJRAYDATA_SIZE: [i32; 6] = [1, 3, 3, 3, 3, 1];
+    let mut size: i32 = 0;
+    let mut i: i32 = 0;
+    while i < MJNRAYDATA {
+        if (dataspec & (1 << i)) != 0 {
+            size += MJRAYDATA_SIZE[i as usize];
+        }
+        i += 1;
+    }
+    size
 }
 
 /// C: mju_camIntrinsics (engine/engine_support.h:134)
