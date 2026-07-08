@@ -423,9 +423,22 @@ pub fn mjuu_makenormal(normal: *mut f64, a: [T; 3], b: [T; 3], c: [T; 3]) -> f64
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjuu_z2quat(quat: *mut f64, vec: *const f64) {
-    extern "C" { fn mjuu_z2quat_impl(quat: *mut f64, vec: *const f64); }
-    // SAFETY: delegates to C implementation, all pointers valid per caller contract
-    unsafe { mjuu_z2quat_impl(quat, vec) }
+    // SAFETY: quat has 4 elements, vec has 3 elements.
+    unsafe {
+        let z: [f64; 3] = [0.0, 0.0, 1.0];
+        mjuu_crossvec(quat.add(1), z.as_ptr(), vec);
+        let s = mjuu_normvec(quat.add(1), 3);
+        if s < 1e-10 {
+            *quat.add(1) = 1.0;
+            *quat.add(2) = 0.0;
+            *quat.add(3) = 0.0;
+        }
+        let ang = s.atan2(*vec.add(2));
+        *quat.add(0) = (ang / 2.0).cos();
+        *quat.add(1) *= (ang / 2.0).sin();
+        *quat.add(2) *= (ang / 2.0).sin();
+        *quat.add(3) *= (ang / 2.0).sin();
+    }
 }
 
 /// C: mjuu_frame2quat (user/user_util.h:125)
@@ -437,9 +450,42 @@ pub fn mjuu_z2quat(quat: *mut f64, vec: *const f64) {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjuu_frame2quat(quat: *mut f64, x: *const f64, y: *const f64, z: *const f64) {
-    extern "C" { fn mjuu_frame2quat_impl(quat: *mut f64, x: *const f64, y: *const f64, z: *const f64); }
-    // SAFETY: delegates to C implementation, all pointers valid per caller contract
-    unsafe { mjuu_frame2quat_impl(quat, x, y, z) }
+    // SAFETY: quat has 4 elements, x/y/z each have 3 elements.
+    // mat[c][r] indexing: mat[0]=x, mat[1]=y, mat[2]=z
+    unsafe {
+        let mat: [*const f64; 3] = [x, y, z];
+
+        // q0 largest
+        if *mat[0].add(0) + *mat[1].add(1) + *mat[2].add(2) > 0.0 {
+            *quat.add(0) = 0.5 * (1.0 + *mat[0].add(0) + *mat[1].add(1) + *mat[2].add(2)).sqrt();
+            *quat.add(1) = 0.25 * (*mat[1].add(2) - *mat[2].add(1)) / *quat.add(0);
+            *quat.add(2) = 0.25 * (*mat[2].add(0) - *mat[0].add(2)) / *quat.add(0);
+            *quat.add(3) = 0.25 * (*mat[0].add(1) - *mat[1].add(0)) / *quat.add(0);
+        }
+        // q1 largest
+        else if *mat[0].add(0) > *mat[1].add(1) && *mat[0].add(0) > *mat[2].add(2) {
+            *quat.add(1) = 0.5 * (1.0 + *mat[0].add(0) - *mat[1].add(1) - *mat[2].add(2)).sqrt();
+            *quat.add(0) = 0.25 * (*mat[1].add(2) - *mat[2].add(1)) / *quat.add(1);
+            *quat.add(2) = 0.25 * (*mat[1].add(0) + *mat[0].add(1)) / *quat.add(1);
+            *quat.add(3) = 0.25 * (*mat[2].add(0) + *mat[0].add(2)) / *quat.add(1);
+        }
+        // q2 largest
+        else if *mat[1].add(1) > *mat[2].add(2) {
+            *quat.add(2) = 0.5 * (1.0 - *mat[0].add(0) + *mat[1].add(1) - *mat[2].add(2)).sqrt();
+            *quat.add(0) = 0.25 * (*mat[2].add(0) - *mat[0].add(2)) / *quat.add(2);
+            *quat.add(1) = 0.25 * (*mat[1].add(0) + *mat[0].add(1)) / *quat.add(2);
+            *quat.add(3) = 0.25 * (*mat[2].add(1) + *mat[1].add(2)) / *quat.add(2);
+        }
+        // q3 largest
+        else {
+            *quat.add(3) = 0.5 * (1.0 - *mat[0].add(0) - *mat[1].add(1) + *mat[2].add(2)).sqrt();
+            *quat.add(0) = 0.25 * (*mat[0].add(1) - *mat[1].add(0)) / *quat.add(3);
+            *quat.add(1) = 0.25 * (*mat[2].add(0) + *mat[0].add(2)) / *quat.add(3);
+            *quat.add(2) = 0.25 * (*mat[2].add(1) + *mat[1].add(2)) / *quat.add(3);
+        }
+
+        mjuu_normvec(quat, 4);
+    }
 }
 
 /// C: mjuu_frameinvert (user/user_util.h:128)

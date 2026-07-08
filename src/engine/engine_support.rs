@@ -477,9 +477,50 @@ pub fn mj_differentiate_pos(m: *const mjModel, qvel: *mut f64, dt: f64, qpos1: *
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_integrate_pos_ind(m: *const mjModel, qpos: *mut f64, qvel: *const f64, dt: f64, index: *const i32, nbody: i32) {
-    extern "C" { fn mj_integratePosInd_impl(m: *const mjModel, qpos: *mut f64, qvel: *const f64, dt: f64, index: *const i32, nbody: i32); }
-    // SAFETY: delegates to C implementation, all pointers valid per caller contract
-    unsafe { mj_integratePosInd_impl(m, qpos, qvel, dt, index, nbody) }
+    // SAFETY: m valid, qpos/qvel have adequate capacity, index may be null.
+    unsafe {
+        const MJJNT_FREE: i32 = 0;
+        const MJJNT_BALL: i32 = 1;
+        const MJJNT_SLIDE: i32 = 2;
+        const MJJNT_HINGE: i32 = 3;
+
+        let mut b: i32 = 1;
+        while b < nbody {
+            let k = if !index.is_null() { *index.add(b as usize) } else { b };
+            let start = *(*m).body_jntadr.add(k as usize);
+            let end = start + *(*m).body_jntnum.add(k as usize);
+            let mut j = start;
+            while j < end {
+                let mut padr = *(*m).jnt_qposadr.add(j as usize);
+                let mut vadr = *(*m).jnt_dofadr.add(j as usize);
+                let jnt_type = *(*m).jnt_type.add(j as usize);
+
+                if jnt_type == MJJNT_FREE {
+                    // position update
+                    let mut i: i32 = 0;
+                    while i < 3 {
+                        *qpos.add((padr + i) as usize) += dt * *qvel.add((vadr + i) as usize);
+                        i += 1;
+                    }
+                    padr += 3;
+                    vadr += 3;
+                    // fallthrough to ball rotation update
+                    crate::engine::engine_util_spatial::mju_quat_integrate(
+                        qpos.add(padr as usize), qvel.add(vadr as usize), dt);
+                } else if jnt_type == MJJNT_BALL {
+                    // quaternion update
+                    crate::engine::engine_util_spatial::mju_quat_integrate(
+                        qpos.add(padr as usize), qvel.add(vadr as usize), dt);
+                } else if jnt_type == MJJNT_HINGE || jnt_type == MJJNT_SLIDE {
+                    // scalar update
+                    *qpos.add(padr as usize) += dt * *qvel.add(vadr as usize);
+                }
+
+                j += 1;
+            }
+            b += 1;
+        }
+    }
 }
 
 /// C: mj_integratePos (engine/engine_support.h:102)

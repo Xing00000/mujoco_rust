@@ -235,9 +235,10 @@ pub fn mj_jac_body(m: *const mjModel, d: *const mjData, jacp: *mut f64, jacr: *m
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_jac_body_com(m: *const mjModel, d: *const mjData, jacp: *mut f64, jacr: *mut f64, body: i32) {
-    extern "C" { fn mj_jacBodyCom_impl(m: *const mjModel, d: *const mjData, jacp: *mut f64, jacr: *mut f64, body: i32); }
-    // SAFETY: delegates to C implementation, all pointers valid per caller contract
-    unsafe { mj_jacBodyCom_impl(m, d, jacp, jacr, body) }
+    // SAFETY: m, d valid. body is a valid body index.
+    unsafe {
+        mj_jac(m, d, jacp, jacr, (*d).xipos.add(3 * body as usize), body);
+    }
 }
 
 /// C: mj_jacSubtreeCom (engine/engine_core_util.h:64)
@@ -795,11 +796,32 @@ pub fn mju_flex_gather_state(m: *const mjModel, d: *const mjData, f: i32, xpos: 
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_contact_force(m: *const mjModel, d: *const mjData, id: i32, result: *mut f64) {
-    extern "C" {
-        fn mj_contactForce_impl(m: *const mjModel, d: *const mjData, id: i32, result: *mut f64);
+    // SAFETY: m, d valid. result has 6 elements. id is checked before use.
+    unsafe {
+        // clear result
+        crate::engine::engine_util_blas::mju_zero(result, 6);
+
+        // make sure contact is valid
+        if id >= 0 && id < (*d).ncon && (*(*d).contact.add(id as usize)).efc_address >= 0 {
+            // get contact pointer
+            let con = &*(*d).contact.add(id as usize);
+
+            if mj_is_pyramidal(m) != 0 {
+                crate::engine::engine_util_misc::mju_decode_pyramid(
+                    result,
+                    (*d).efc_force.add(con.efc_address as usize),
+                    con.friction.as_ptr(),
+                    con.dim,
+                );
+            } else {
+                crate::engine::engine_util_blas::mju_copy(
+                    result,
+                    (*d).efc_force.add(con.efc_address as usize),
+                    con.dim,
+                );
+            }
+        }
     }
-    // SAFETY: delegates to C implementation, all pointers valid per caller contract
-    unsafe { mj_contactForce_impl(m, d, id, result) }
 }
 
 /// C: tendonLimit (engine/engine_core_util.h:139)
