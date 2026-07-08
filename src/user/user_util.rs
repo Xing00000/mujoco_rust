@@ -511,9 +511,24 @@ pub fn mjuu_frameinvert(newpos: [f64; 3], newquat: [f64; 4], oldpos: [f64; 3], o
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjuu_frameaccum(pos: [f64; 3], quat: [f64; 4], childpos: [f64; 3], childquat: [f64; 4]) {
-    extern "C" { fn mjuu_frameaccum_impl(pos: [f64; 3], quat: [f64; 4], childpos: [f64; 3], childquat: [f64; 4]); }
-    // SAFETY: delegates to C implementation, all pointers valid per caller contract
-    unsafe { mjuu_frameaccum_impl(pos, quat, childpos, childquat) }
+    // NOTE: In C ABI, array params are pointers. pos, quat are output/inout.
+    let pos_ptr = pos.as_ptr() as *mut f64;
+    let quat_ptr = quat.as_ptr() as *mut f64;
+
+    let mut mat: [f64; 9] = [0.0; 9];
+    let mut vec: [f64; 3] = [0.0; 3];
+    let mut qtmp: [f64; 4] = [0.0; 4];
+
+    // SAFETY: all pointers valid per caller contract (C ABI array param = pointer)
+    unsafe {
+        mjuu_quat2mat(mat.as_mut_ptr(), quat_ptr);
+        mjuu_mulvecmat(vec.as_mut_ptr(), childpos.as_ptr(), mat.as_ptr());
+        *pos_ptr += vec[0];
+        *pos_ptr.add(1) += vec[1];
+        *pos_ptr.add(2) += vec[2];
+        mjuu_mulquat(qtmp.as_mut_ptr(), quat_ptr, childquat.as_ptr());
+        mjuu_copyvec(quat_ptr as *mut T1, qtmp.as_ptr() as *const T2, 4);
+    }
 }
 
 /// C: mjuu_frameaccumChild (user/user_util.h:136)
@@ -539,9 +554,25 @@ pub fn mjuu_frameaccum_child(pos: [f64; 3], quat: [f64; 4], childpos: [f64; 3], 
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjuu_frameaccuminv(pos: [f64; 3], quat: [f64; 4], childpos: [f64; 3], childquat: [f64; 4]) {
-    extern "C" { fn mjuu_frameaccuminv_impl(pos: [f64; 3], quat: [f64; 4], childpos: [f64; 3], childquat: [f64; 4]); }
-    // SAFETY: delegates to C implementation, all pointers valid per caller contract
-    unsafe { mjuu_frameaccuminv_impl(pos, quat, childpos, childquat) }
+    // NOTE: In C ABI, array params are pointers. pos, quat are output/inout.
+    let pos_ptr = pos.as_ptr() as *mut f64;
+    let quat_ptr = quat.as_ptr() as *mut f64;
+
+    let mut mat: [f64; 9] = [0.0; 9];
+    let mut vec: [f64; 3] = [0.0; 3];
+    let mut qtmp: [f64; 4] = [0.0; 4];
+    let qneg: [f64; 4] = [childquat[0], -childquat[1], -childquat[2], -childquat[3]];
+
+    // SAFETY: all pointers valid per caller contract (C ABI array param = pointer)
+    unsafe {
+        mjuu_mulquat(qtmp.as_mut_ptr(), quat_ptr, qneg.as_ptr());
+        mjuu_copyvec(quat_ptr as *mut T1, qtmp.as_ptr() as *const T2, 4);
+        mjuu_quat2mat(mat.as_mut_ptr(), quat_ptr);
+        mjuu_mulvecmat(vec.as_mut_ptr(), childpos.as_ptr(), mat.as_ptr());
+        *pos_ptr -= vec[0];
+        *pos_ptr.add(1) -= vec[1];
+        *pos_ptr.add(2) -= vec[2];
+    }
 }
 
 /// C: mjuu_globalinertia (user/user_util.h:144)
@@ -613,9 +644,34 @@ pub fn mjuu_visccoef(visccoef: *mut f64, mass: f64, inertia: *const f64, scl: f6
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjuu_rot_vec_quat(res: [f64; 3], vec: [f64; 3], quat: [f64; 4]) {
-    extern "C" { fn mjuu_rotVecQuat_impl(res: [f64; 3], vec: [f64; 3], quat: [f64; 4]); }
-    // SAFETY: delegates to C implementation, all pointers valid per caller contract
-    unsafe { mjuu_rotVecQuat_impl(res, vec, quat) }
+    // NOTE: In C ABI, array params are pointers. res is the output.
+    let res_ptr = res.as_ptr() as *mut f64;
+
+    if vec[0] == 0.0 && vec[1] == 0.0 && vec[2] == 0.0 {
+        // SAFETY: res_ptr points to caller-owned memory (C ABI array param = pointer)
+        unsafe {
+            *res_ptr = 0.0;
+            *res_ptr.add(1) = 0.0;
+            *res_ptr.add(2) = 0.0;
+        }
+    } else if quat[0] == 1.0 && quat[1] == 0.0 && quat[2] == 0.0 && quat[3] == 0.0 {
+        // SAFETY: res_ptr points to caller-owned memory, vec is valid input array
+        unsafe {
+            mjuu_copyvec(res_ptr as *mut T1, vec.as_ptr() as *const T2, 3);
+        }
+    } else {
+        let tmp: [f64; 3] = [
+            quat[0] * vec[0] + quat[2] * vec[2] - quat[3] * vec[1],
+            quat[0] * vec[1] + quat[3] * vec[0] - quat[1] * vec[2],
+            quat[0] * vec[2] + quat[1] * vec[1] - quat[2] * vec[0],
+        ];
+        // SAFETY: res_ptr points to caller-owned memory (C ABI array param = pointer)
+        unsafe {
+            *res_ptr = vec[0] + 2.0 * (quat[2] * tmp[2] - quat[3] * tmp[1]);
+            *res_ptr.add(1) = vec[1] + 2.0 * (quat[3] * tmp[0] - quat[1] * tmp[2]);
+            *res_ptr.add(2) = vec[2] + 2.0 * (quat[1] * tmp[1] - quat[2] * tmp[0]);
+        }
+    }
 }
 
 /// C: mjuu_updateFrame (user/user_util.h:156)
@@ -688,7 +744,8 @@ pub fn mjuu_trn_vec_pose(res: [f64; 3], pos: [f64; 3], quat: [f64; 4], vec: [f64
 #[allow(unused_variables, non_snake_case)]
 pub fn mjuu_full_inertia(quat: [f64; 4], inertia: [f64; 3], fullinertia: [f64; 6]) -> *const i8 {
     extern "C" { fn mjuu_fullInertia_impl(quat: [f64; 4], inertia: [f64; 3], fullinertia: [f64; 6]) -> *const i8; }
-    // SAFETY: delegates to C implementation, all pointers valid per caller contract
+    // SAFETY: delegates to C implementation — calls mjuu_eig3 which requires C ABI pointer
+    // semantics for [f64; N] output params (cannot be correctly called from Rust ABI)
     unsafe { mjuu_fullInertia_impl(quat, inertia, fullinertia) }
 }
 

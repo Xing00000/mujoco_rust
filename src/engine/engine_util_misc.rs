@@ -1574,9 +1574,20 @@ pub fn mju_insertion_sort(list: *mut f64, n: i32) {
 /// C: mju_insertionSortInt (engine/engine_util_misc.h:315)
 #[allow(unused_variables, non_snake_case)]
 pub fn mju_insertion_sort_int(list: *mut i32, n: i32) {
-    extern "C" { fn mju_insertionSortInt_impl(list: *mut i32, n: i32); }
-    // SAFETY: delegates to C implementation, all pointers valid per caller contract
-    unsafe { mju_insertionSortInt_impl(list, n) }
+    // SAFETY: list has at least n elements, valid per caller contract
+    unsafe {
+    let mut i: i32 = 1;
+    while i < n {
+        let x: i32 = *list.add(i as usize);
+        let mut j: i32 = i - 1;
+        while j >= 0 && *list.add(j as usize) > x {
+            *list.add((j + 1) as usize) = *list.add(j as usize);
+            j -= 1;
+        }
+        *list.add((j + 1) as usize) = x;
+        i += 1;
+    }
+    } // unsafe
 }
 
 /// C: mju_Halton (engine/engine_util_misc.h:318)

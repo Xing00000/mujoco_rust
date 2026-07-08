@@ -298,9 +298,105 @@ pub fn mju_solve_lu(x: *mut f64, LU: *const f64, b: *const f64, pivot: *const i3
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mju_factor_lu_sparse(LU: *mut f64, n: i32, scratch: *mut i32, rownnz: *const i32, rowadr: *const i32, colind: *const i32, index: *const i32) {
-    extern "C" { fn mju_factorLUSparse_impl(LU: *mut f64, n: i32, scratch: *mut i32, rownnz: *const i32, rowadr: *const i32, colind: *const i32, index: *const i32); }
-    // SAFETY: delegates to C implementation, all pointers valid per caller contract
-    unsafe { mju_factorLUSparse_impl(LU, n, scratch, rownnz, rowadr, colind, index) }
+    const MJMINVAL: f64 = 1e-15;
+    let remaining: *mut i32 = scratch;
+
+    // SAFETY: all pointers valid per caller contract, indices within bounds per sparse matrix invariants
+    unsafe {
+    // set remaining = rownnz
+    if !index.is_null() {
+        let mut i: i32 = 0;
+        while i < n {
+            *remaining.add(i as usize) = *rownnz.add(*index.add(i as usize) as usize);
+            i += 1;
+        }
+    } else {
+        crate::engine::engine_util_misc::mju_copy_int(remaining, rownnz, n);
+    }
+
+    // diagonal elements (i,i)
+    let mut r: i32 = n - 1;
+    while r >= 0 {
+        let i: i32 = if !index.is_null() { *index.add(r as usize) } else { r };
+
+        // get address of last remaining element of row i, adjust remaining counter
+        let ii: i32 = *rowadr.add(i as usize) + *remaining.add(r as usize) - 1;
+        *remaining.add(r as usize) -= 1;
+
+        // make sure ii is on diagonal
+        if *colind.add(ii as usize) != i {
+            crate::engine::engine_util_errmem::mju_error(
+                b"missing diagonal element\0".as_ptr() as *const i8);
+        }
+
+        // make sure diagonal is not too small
+        if (*LU.add(ii as usize)).abs() < MJMINVAL {
+            crate::engine::engine_util_errmem::mju_error(
+                b"diagonal element too small\0".as_ptr() as *const i8);
+        }
+
+        // rows j above i
+        let mut c: i32 = r - 1;
+        while c >= 0 {
+            let j: i32 = if !index.is_null() { *index.add(c as usize) } else { c };
+
+            // get address of last remaining element of row j
+            let ji: i32 = *rowadr.add(j as usize) + *remaining.add(c as usize) - 1;
+
+            // process row j if (j,i) is non-zero
+            if *colind.add(ji as usize) == i {
+                // adjust remaining counter
+                *remaining.add(c as usize) -= 1;
+
+                // (j,i) = (j,i) / (i,i)
+                *LU.add(ji as usize) = *LU.add(ji as usize) / *LU.add(ii as usize);
+                let LUji: f64 = *LU.add(ji as usize);
+
+                // (j,k) = (j,k) - (i,k) * (j,i) for k<i; handle incompatible sparsity
+                let mut icnt: i32 = *rowadr.add(i as usize);
+                let mut jcnt: i32 = *rowadr.add(j as usize);
+                while jcnt < *rowadr.add(j as usize) + *remaining.add(c as usize) {
+                    // both non-zero
+                    if *colind.add(icnt as usize) == *colind.add(jcnt as usize) {
+                        *LU.add(jcnt as usize) -= *LU.add(icnt as usize) * LUji;
+                        jcnt += 1;
+                        icnt += 1;
+                    }
+                    // only (j,k) non-zero
+                    else if *colind.add(icnt as usize) > *colind.add(jcnt as usize) {
+                        jcnt += 1;
+                    }
+                    // only (i,k) non-zero
+                    else {
+                        crate::engine::engine_util_errmem::mju_error(
+                            b"requires fill-in\0".as_ptr() as *const i8);
+                    }
+                }
+
+                // make sure both rows fully processed
+                if icnt != *rowadr.add(i as usize) + *remaining.add(r as usize)
+                    || jcnt != *rowadr.add(j as usize) + *remaining.add(c as usize) {
+                    crate::engine::engine_util_errmem::mju_error(
+                        b"row processing incomplete\0".as_ptr() as *const i8);
+                }
+            }
+            c -= 1;
+        }
+        r -= 1;
+    }
+
+    // make sure remaining points to diagonal
+    let mut r: i32 = 0;
+    while r < n {
+        let i: i32 = if !index.is_null() { *index.add(r as usize) } else { r };
+        if *remaining.add(r as usize) < 0
+            || *colind.add((*rowadr.add(i as usize) + *remaining.add(r as usize)) as usize) != i {
+            crate::engine::engine_util_errmem::mju_error(
+                b"unexpected sparse matrix structure\0".as_ptr() as *const i8);
+        }
+        r += 1;
+    }
+    } // unsafe
 }
 
 /// C: mju_solveLUSparse (engine/engine_util_solve.h:113)

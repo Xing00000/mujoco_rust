@@ -671,17 +671,13 @@ pub fn mj_set_totalmass(m: *mut mjModel, newmass: f64) {
 /// C: mj_version (engine/engine_support.h:121)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_version() -> i32 {
-    extern "C" { fn mj_version_impl() -> i32; }
-    // SAFETY: delegates to C implementation
-    unsafe { mj_version_impl() }
+    3010001
 }
 
 /// C: mj_versionString (engine/engine_support.h:124)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_version_string() -> *const i8 {
-    extern "C" { fn mj_versionString_impl() -> *const i8; }
-    // SAFETY: delegates to C implementation
-    unsafe { mj_versionString_impl() }
+    b"3.10.1\0".as_ptr() as *const i8
 }
 
 /// C: mju_condataSize (engine/engine_support.h:127)
