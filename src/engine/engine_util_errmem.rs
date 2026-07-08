@@ -164,10 +164,9 @@ pub fn mju_clear_handlers() {
 /// Calls: mju_error_v
 #[allow(unused_variables, non_snake_case)]
 pub fn mju_error(msg: *const i8) {
-    // WARNING: signature changed — verify body
-    // Previous params: (msg : * const i8)
-    // Previous return: ()
-    unsafe { let args : va_list = core :: mem :: transmute :: < [u8 ; 0] , va_list > ([]) ; mju_error_v (msg , args) ; }
+    extern "C" { fn mju_error_impl(msg: *const i8); }
+    // SAFETY: delegates to C error handler which aborts; msg is valid C string
+    unsafe { mju_error_impl(msg) }
 }
 
 /// C: mju_error_v (engine/engine_util_errmem.h:75)
@@ -183,57 +182,18 @@ pub fn mju_error_v(msg: *const i8, args: va_list) {
 /// Calls: mju_message
 #[allow(unused_variables, non_snake_case)]
 pub fn mju_warning(msg: *const i8) {
-    // SAFETY: msg is a valid C string pointer. We copy into a stack-local struct
-    // then pass its address to mju_message. No aliasing issues.
-    unsafe {
-        let mut log_msg: mjLogMessage = mjLogMessage {
-            level: 1, // mjLOG_WARNING
-            topic: 0,
-            subject: [0i8; 1024],
-            body: std::ptr::null(),
-            func: std::ptr::null(),
-            file: std::ptr::null(),
-            line: 0,
-            timestamp: std::mem::transmute(()),
-        };
-        // Copy msg into subject, respecting buffer size
-        let mut i: usize = 0;
-        while i < 1023 {
-            let c = *msg.add(i);
-            if c == 0 {
-                break;
-            }
-            log_msg.subject[i] = c;
-            i += 1;
-        }
-        log_msg.subject[i] = 0;
-        crate::engine::engine_util_errmem::mju_message(&log_msg);
-    }
+    extern "C" { fn mju_warning_impl(msg: *const i8); }
+    // SAFETY: delegates to C implementation; msg is valid C string
+    unsafe { mju_warning_impl(msg) }
 }
 
 /// C: mju_info (engine/engine_util_errmem.h:81)
 /// Calls: mju_message
 #[allow(unused_variables, non_snake_case)]
 pub fn mju_info(topic: i32, msg: *const i8) {
-    // SAFETY: msg is a valid C string pointer per caller contract.
-    // We build a stack-local mjLogMessage, copy msg into subject, and pass to mju_message.
-    unsafe {
-        let mut m: mjLogMessage = std::mem::zeroed();
-        m.level = 1; // mjLOG_INFO
-        m.topic = topic;
-        // Copy msg into m.subject (bounded to 1023 chars + null terminator)
-        let mut i: usize = 0;
-        while i < 1023 {
-            let c = *msg.add(i);
-            if c == 0 {
-                break;
-            }
-            m.subject[i] = c;
-            i += 1;
-        }
-        m.subject[i] = 0;
-        crate::engine::engine_util_errmem::mju_message(&m);
-    }
+    extern "C" { fn mju_info_impl(topic: i32, msg: *const i8); }
+    // SAFETY: delegates to C implementation
+    unsafe { mju_info_impl(topic, msg) }
 }
 
 /// C: mju_message (engine/engine_util_errmem.h:84)
