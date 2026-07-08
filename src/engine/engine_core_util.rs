@@ -454,11 +454,93 @@ pub fn mj_jac_sparse_simple(m: *const mjModel, d: *const mjData, jacdifp: *mut f
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_jac_dot_sparse(m: *const mjModel, d: *const mjData, jacp: *mut f64, jacr: *mut f64, point: *const f64, body: i32, NV: i32, chain: *const i32) {
-    extern "C" {
-        fn mj_jacDotSparse_impl(m: *const mjModel, d: *const mjData, jacp: *mut f64, jacr: *mut f64, point: *const f64, body: i32, NV: i32, chain: *const i32);
+    // SAFETY: m, d valid. jacp/jacr have 3*NV elements (may be null). point has 3 elements.
+    // chain has NV elements in increasing order.
+    unsafe {
+        const MJJNT_BALL: i32 = 1;
+        const MJJNT_FREE: i32 = 0;
+
+        let mut offset: [f64; 3] = [0.0; 3];
+        let mut pvel: [f64; 6] = [0.0; 6];
+
+        // clear jacobians, compute offset and pvel if required
+        if !jacp.is_null() {
+            crate::engine::engine_util_blas::mju_zero(jacp, 3 * NV);
+            let com = (*d).subtree_com.add(3 * *(*m).body_rootid.add(body as usize) as usize);
+            crate::engine::engine_util_blas::mju_sub3(offset.as_mut_ptr(), point, com);
+            crate::engine::engine_util_spatial::mju_transform_spatial(
+                pvel.as_mut_ptr(), (*d).cvel.add(6 * body as usize), 0, point, com, core::ptr::null());
+        }
+        if !jacr.is_null() {
+            crate::engine::engine_util_blas::mju_zero(jacr, 3 * NV);
+        }
+
+        // skip fixed bodies
+        let body = *(*m).body_weldid.add(body as usize);
+        if body == 0 {
+            return;
+        }
+
+        // get last dof that affects this body
+        let mut da = *(*m).body_dofadr.add(body as usize) + *(*m).body_dofnum.add(body as usize) - 1;
+
+        // start at end of chain
+        let mut ci: i32 = NV - 1;
+
+        // backward pass over dof ancestor chain
+        while da >= 0 {
+            // find chain index for this dof
+            while ci >= 0 && *chain.add(ci as usize) > da {
+                ci -= 1;
+            }
+
+            // dof not in chain: error
+            if ci < 0 || *chain.add(ci as usize) != da {
+                extern "C" { fn mju_error_impl(msg: *const i8); }
+                mju_error_impl(b"dof index not found in chain\0".as_ptr() as *const i8);
+                return;
+            }
+
+            let mut cdof_dot: [f64; 6] = [0.0; 6];
+            crate::engine::engine_inline::mji_copy6(cdof_dot.as_mut_ptr(), (*d).cdof_dot.add(6 * da as usize));
+            let cdof = (*d).cdof.add(6 * da as usize);
+
+            // check for quaternion
+            let jnt_type = *(*m).jnt_type.add(*(*m).dof_jntid.add(da as usize) as usize);
+            let dofadr = *(*m).jnt_dofadr.add(*(*m).dof_jntid.add(da as usize) as usize);
+            let is_quat = jnt_type == MJJNT_BALL || (jnt_type == MJJNT_FREE && da >= dofadr + 3);
+
+            // compute cdof_dot for quaternion
+            if is_quat {
+                crate::engine::engine_inline::mji_cross_motion(
+                    cdof_dot.as_mut_ptr(),
+                    (*d).cvel.add(6 * *(*m).dof_bodyid.add(da as usize) as usize),
+                    cdof);
+            }
+
+            // construct rotation jacobian
+            if !jacr.is_null() {
+                *jacr.add((ci + 0 * NV) as usize) += cdof_dot[0];
+                *jacr.add((ci + 1 * NV) as usize) += cdof_dot[1];
+                *jacr.add((ci + 2 * NV) as usize) += cdof_dot[2];
+            }
+
+            // construct translation jacobian
+            if !jacp.is_null() {
+                let mut tmp1: [f64; 3] = [0.0; 3];
+                crate::engine::engine_inline::mji_cross(tmp1.as_mut_ptr(), cdof_dot.as_ptr(), offset.as_ptr());
+                let mut tmp2: [f64; 3] = [0.0; 3];
+                crate::engine::engine_inline::mji_cross(tmp2.as_mut_ptr(), cdof, pvel.as_ptr().add(3));
+
+                *jacp.add((ci + 0 * NV) as usize) += cdof_dot[3] + tmp1[0] + tmp2[0];
+                *jacp.add((ci + 1 * NV) as usize) += cdof_dot[4] + tmp1[1] + tmp2[1];
+                *jacp.add((ci + 2 * NV) as usize) += cdof_dot[5] + tmp1[2] + tmp2[2];
+            }
+
+            // advance to parent dof
+            da = *(*m).dof_parentid.add(da as usize);
+        }
     }
-    // SAFETY: delegates to C implementation, all pointers valid per caller contract
-    unsafe { mj_jacDotSparse_impl(m, d, jacp, jacr, point, body, NV, chain) }
 }
 
 /// C: mj_jacDifPair (engine/engine_core_util.h:95)
