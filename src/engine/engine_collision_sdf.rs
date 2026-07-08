@@ -354,11 +354,13 @@ pub fn mjc_gradient(m: *const mjModel, d: *const mjData, s: *const mjSDF, gradie
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjc_h_field_sdf(m: *const mjModel, d: *mut mjData, con: *mut mjPreContact, g1: i32, g2: i32, margin: f64) -> i32 {
-    extern "C" {
-        fn mjc_HFieldSDF_impl(m: *const mjModel, d: *mut mjData, con: *mut mjPreContact, g1: i32, g2: i32, margin: f64) -> i32;
+    // SAFETY: calling mju_warning with a static C string literal
+    unsafe {
+        crate::engine::engine_util_errmem::mju_warning(
+            b"HField vs SDF collision not yet supported!\0".as_ptr() as *const i8,
+        );
     }
-    // SAFETY: delegates to C implementation (just prints warning and returns 0)
-    unsafe { mjc_HFieldSDF_impl(m, d, con, g1, g2, margin) }
+    0
 }
 
 /// C: mjc_MeshSDF (engine/engine_collision_sdf.h:42)

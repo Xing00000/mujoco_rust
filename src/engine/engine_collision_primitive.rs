@@ -540,10 +540,64 @@ pub fn mjc_plane_cylinder(m: *const mjModel, d: *mut mjData, con: *mut mjPreCont
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjc_plane_box(m: *const mjModel, d: *mut mjData, con: *mut mjPreContact, g1: i32, g2: i32, margin: f64) -> i32 {
+    // SAFETY: m, d, con are valid pointers; con has room for at least 4 mjPreContact entries.
+    // All pointer arithmetic stays within allocated model/data arrays.
+    unsafe {
+        let pos1: *const f64 = (*d).geom_xpos.add(3 * g1 as usize);
+        let pos2: *const f64 = (*d).geom_xpos.add(3 * g2 as usize);
+        let mat1: *const f64 = (*d).geom_xmat.add(9 * g1 as usize);
+        let mat2: *const f64 = (*d).geom_xmat.add(9 * g2 as usize);
+        let size2: *const f64 = (*m).geom_size.add(3 * g2 as usize);
 
-    extern "C" { fn mjc_PlaneBox_impl(m: *const mjModel, d: *mut mjData, con: *mut mjPreContact, g1: i32, g2: i32, margin: f64) -> i32; }
-    // SAFETY: delegates to C implementation
-    unsafe { mjc_PlaneBox_impl(m, d, con, g1, g2, margin) }
+        // get normal, difference between centers, normal distance
+        let norm: [f64; 3] = [*mat1.add(2), *mat1.add(5), *mat1.add(8)];
+        let dif: [f64; 3] = [
+            *pos2.add(0) - *pos1.add(0),
+            *pos2.add(1) - *pos1.add(1),
+            *pos2.add(2) - *pos1.add(2),
+        ];
+        let dist: f64 = crate::engine::engine_util_blas::mju_dot3(dif.as_ptr(), norm.as_ptr());
+
+        // test all corners, pick bottom 4
+        let mut cnt: i32 = 0;
+        let mut i: i32 = 0;
+        while i < 8 {
+            // get corner in local coordinates
+            let mut vec: [f64; 3] = [0.0; 3];
+            vec[0] = if i & 1 != 0 { *size2.add(0) } else { -*size2.add(0) };
+            vec[1] = if i & 2 != 0 { *size2.add(1) } else { -*size2.add(1) };
+            vec[2] = if i & 4 != 0 { *size2.add(2) } else { -*size2.add(2) };
+
+            // get corner in global coordinates relative to box center
+            let mut corner: [f64; 3] = [0.0; 3];
+            crate::engine::engine_util_blas::mju_mul_mat_vec3(corner.as_mut_ptr(), mat2, vec.as_ptr());
+
+            // compute distance to plane, skip if too far or pointing up
+            let ldist: f64 = crate::engine::engine_util_blas::mju_dot3(norm.as_ptr(), corner.as_ptr());
+            if dist + ldist > margin || ldist > 0.0 {
+                i += 1;
+                continue;
+            }
+
+            // construct contact
+            (*con.add(cnt as usize)).dist = dist + ldist;
+            crate::engine::engine_inline::mji_copy3((*con.add(cnt as usize)).normal.as_mut_ptr(), norm.as_ptr());
+            crate::engine::engine_inline::mji_add_to3(corner.as_mut_ptr(), pos2);
+            crate::engine::engine_inline::mji_scl3(vec.as_mut_ptr(), norm.as_ptr(), -(*con.add(cnt as usize)).dist / 2.0);
+            crate::engine::engine_inline::mji_add3((*con.add(cnt as usize)).pos.as_mut_ptr(), corner.as_ptr(), vec.as_ptr());
+            crate::engine::engine_inline::mji_zero3((*con.add(cnt as usize)).tangent.as_mut_ptr());
+
+            // count; max is 4
+            cnt += 1;
+            if cnt >= 4 {
+                return 4;
+            }
+
+            i += 1;
+        }
+
+        cnt
+    }
 }
 
 /// C: mjc_SphereSphere (engine/engine_collision_primitive.h:57)
@@ -555,10 +609,16 @@ pub fn mjc_plane_box(m: *const mjModel, d: *mut mjData, con: *mut mjPreContact, 
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjc_sphere_sphere(m: *const mjModel, d: *mut mjData, con: *mut mjPreContact, g1: i32, g2: i32, margin: f64) -> i32 {
-
-    extern "C" { fn mjc_SphereSphere_impl(m: *const mjModel, d: *mut mjData, con: *mut mjPreContact, g1: i32, g2: i32, margin: f64) -> i32; }
-    // SAFETY: delegates to C implementation
-    unsafe { mjc_SphereSphere_impl(m, d, con, g1, g2, margin) }
+    // SAFETY: m, d are valid model/data pointers; pointer arithmetic stays within allocated arrays
+    unsafe {
+        let pos1: *const f64 = (*d).geom_xpos.add(3 * g1 as usize);
+        let mat1: *const f64 = (*d).geom_xmat.add(9 * g1 as usize);
+        let size1: *const f64 = (*m).geom_size.add(3 * g1 as usize);
+        let pos2: *const f64 = (*d).geom_xpos.add(3 * g2 as usize);
+        let mat2: *const f64 = (*d).geom_xmat.add(9 * g2 as usize);
+        let size2: *const f64 = (*m).geom_size.add(3 * g2 as usize);
+        mjraw_sphere_sphere(con, margin, pos1, mat1, size1, pos2, mat2, size2)
+    }
 }
 
 /// C: mjc_SphereCapsule (engine/engine_collision_primitive.h:59)
@@ -570,10 +630,16 @@ pub fn mjc_sphere_sphere(m: *const mjModel, d: *mut mjData, con: *mut mjPreConta
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjc_sphere_capsule(m: *const mjModel, d: *mut mjData, con: *mut mjPreContact, g1: i32, g2: i32, margin: f64) -> i32 {
-
-    extern "C" { fn mjc_SphereCapsule_impl(m: *const mjModel, d: *mut mjData, con: *mut mjPreContact, g1: i32, g2: i32, margin: f64) -> i32; }
-    // SAFETY: delegates to C implementation
-    unsafe { mjc_SphereCapsule_impl(m, d, con, g1, g2, margin) }
+    // SAFETY: m, d are valid model/data pointers; pointer arithmetic stays within allocated arrays
+    unsafe {
+        let pos1: *const f64 = (*d).geom_xpos.add(3 * g1 as usize);
+        let pos2: *const f64 = (*d).geom_xpos.add(3 * g2 as usize);
+        let mat1: *const f64 = (*d).geom_xmat.add(9 * g1 as usize);
+        let mat2: *const f64 = (*d).geom_xmat.add(9 * g2 as usize);
+        let size1: *const f64 = (*m).geom_size.add(3 * g1 as usize);
+        let size2: *const f64 = (*m).geom_size.add(3 * g2 as usize);
+        mjraw_sphere_capsule(con, margin, pos1, mat1, size1, pos2, mat2, size2)
+    }
 }
 
 /// C: mjc_SphereCylinder (engine/engine_collision_primitive.h:61)
@@ -585,10 +651,99 @@ pub fn mjc_sphere_capsule(m: *const mjModel, d: *mut mjData, con: *mut mjPreCont
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjc_sphere_cylinder(m: *const mjModel, d: *mut mjData, con: *mut mjPreContact, g1: i32, g2: i32, margin: f64) -> i32 {
-    extern "C" { fn mjc_SphereCylinder_impl(m: *const mjModel, d: *mut mjData, con: *mut mjPreContact, g1: i32, g2: i32, margin: f64) -> i32; }
-    // SAFETY: delegates to C implementation which handles sphere-cylinder collision with
-    // multiple code paths (side, cap, corner)
-    unsafe { mjc_SphereCylinder_impl(m, d, con, g1, g2, margin) }
+    // SAFETY: m, d, con are valid pointers; all pointer arithmetic stays within allocated arrays.
+    // This function implements sphere-cylinder collision with three code paths: side, cap, corner.
+    unsafe {
+        let pos1: *const f64 = (*d).geom_xpos.add(3 * g1 as usize);
+        let pos2: *const f64 = (*d).geom_xpos.add(3 * g2 as usize);
+        let mat1: *const f64 = (*d).geom_xmat.add(9 * g1 as usize);
+        let mat2: *const f64 = (*d).geom_xmat.add(9 * g2 as usize);
+        let size1: *const f64 = (*m).geom_size.add(3 * g1 as usize);
+        let size2: *const f64 = (*m).geom_size.add(3 * g2 as usize);
+
+        // get cylinder sizes and axis
+        let radius: f64 = *size2.add(0);
+        let height: f64 = *size2.add(1);
+        let axis: [f64; 3] = [*mat2.add(2), *mat2.add(5), *mat2.add(8)];
+
+        // find sphere projection onto cylinder axis and plane
+        let vec: [f64; 3] = [
+            *pos1.add(0) - *pos2.add(0),
+            *pos1.add(1) - *pos2.add(1),
+            *pos1.add(2) - *pos2.add(2),
+        ];
+        let x: f64 = crate::engine::engine_util_blas::mju_dot3(axis.as_ptr(), vec.as_ptr());
+        let mut a_proj: [f64; 3] = [0.0; 3];
+        let mut p_proj: [f64; 3] = [0.0; 3];
+        crate::engine::engine_inline::mji_scl3(a_proj.as_mut_ptr(), axis.as_ptr(), x);
+        crate::engine::engine_inline::mji_sub3(p_proj.as_mut_ptr(), vec.as_ptr(), a_proj.as_ptr());
+        let p_proj_sqr: f64 = crate::engine::engine_util_blas::mju_dot3(p_proj.as_ptr(), p_proj.as_ptr());
+
+        // get collision type
+        let mut collide_side: i32 = (x.abs() < height) as i32;
+        let mut collide_cap: i32 = (p_proj_sqr < radius * radius) as i32;
+        if collide_side != 0 && collide_cap != 0 {
+            // deep penetration (sphere origin inside cylinder)
+            let dist_cap: f64 = height - x.abs();
+            let dist_radius: f64 = radius - p_proj_sqr.sqrt();
+            if dist_cap < dist_radius {
+                collide_side = 0;
+            } else {
+                collide_cap = 0;
+            }
+        }
+
+        // side collision: use sphere-sphere
+        if collide_side != 0 {
+            crate::engine::engine_inline::mji_add_to3(a_proj.as_mut_ptr(), pos2);
+            return mjraw_sphere_sphere(con, margin, pos1, mat1, size1, a_proj.as_ptr(), mat2, size2);
+        }
+
+        // cap collision: use plane-sphere
+        if collide_cap != 0 {
+            let flipmat: [f64; 9] = [
+                -*mat2.add(0), *mat2.add(1), -*mat2.add(2),
+                -*mat2.add(3), *mat2.add(4), -*mat2.add(5),
+                -*mat2.add(6), *mat2.add(7), -*mat2.add(8),
+            ];
+            let mat_cap: *const f64;
+            let mut pos_cap: [f64; 3] = [0.0; 3];
+            if x > 0.0 {
+                // top cap
+                crate::engine::engine_util_blas::mju_add_scl3(pos_cap.as_mut_ptr(), pos2, axis.as_ptr(), height);
+                mat_cap = mat2;
+            } else {
+                // bottom cap
+                crate::engine::engine_util_blas::mju_add_scl3(pos_cap.as_mut_ptr(), pos2, axis.as_ptr(), -height);
+                mat_cap = flipmat.as_ptr();
+            }
+            let ncon: i32 = mjraw_plane_sphere(con, margin, pos_cap.as_ptr(), mat_cap, size2, pos1, mat1, size1);
+
+            if ncon != 0 {
+                // flip direction normal (because mjGEOM_PLANE < mjGEOM_SPHERE < mjGEOM_CYLINDER)
+                crate::engine::engine_util_blas::mju_scl3((*con.add(0)).normal.as_mut_ptr(), (*con.add(0)).normal.as_ptr(), -1.0);
+            }
+            return ncon;
+        }
+
+        // otherwise corner collision: use sphere-sphere
+        let mut p_proj_mut: [f64; 3] = p_proj;
+        crate::engine::engine_util_blas::mju_scl3(
+            p_proj_mut.as_mut_ptr(), p_proj_mut.as_ptr(),
+            *size2.add(0) / p_proj_sqr.sqrt(),
+        );
+        let mut corner: [f64; 3] = [0.0; 3];
+        crate::engine::engine_inline::mji_scl3(
+            corner.as_mut_ptr(), axis.as_ptr(),
+            if x > 0.0 { height } else { -height },
+        );
+        crate::engine::engine_inline::mji_add_to3(corner.as_mut_ptr(), p_proj_mut.as_ptr());
+        crate::engine::engine_inline::mji_add_to3(corner.as_mut_ptr(), pos2);
+
+        // sphere-sphere with point sphere at the corner
+        let size_zero: [f64; 1] = [0.0];
+        mjraw_sphere_sphere(con, margin, pos1, mat1, size1, corner.as_ptr(), mat2, size_zero.as_ptr())
+    }
 }
 
 /// C: mjc_CapsuleCapsule (engine/engine_collision_primitive.h:63)
@@ -600,10 +755,16 @@ pub fn mjc_sphere_cylinder(m: *const mjModel, d: *mut mjData, con: *mut mjPreCon
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjc_capsule_capsule(m: *const mjModel, d: *mut mjData, con: *mut mjPreContact, g1: i32, g2: i32, margin: f64) -> i32 {
-
-    extern "C" { fn mjc_CapsuleCapsule_impl(m: *const mjModel, d: *mut mjData, con: *mut mjPreContact, g1: i32, g2: i32, margin: f64) -> i32; }
-    // SAFETY: delegates to C implementation
-    unsafe { mjc_CapsuleCapsule_impl(m, d, con, g1, g2, margin) }
+    // SAFETY: m, d are valid model/data pointers; pointer arithmetic stays within allocated arrays
+    unsafe {
+        let pos1: *const f64 = (*d).geom_xpos.add(3 * g1 as usize);
+        let pos2: *const f64 = (*d).geom_xpos.add(3 * g2 as usize);
+        let mat1: *const f64 = (*d).geom_xmat.add(9 * g1 as usize);
+        let mat2: *const f64 = (*d).geom_xmat.add(9 * g2 as usize);
+        let size1: *const f64 = (*m).geom_size.add(3 * g1 as usize);
+        let size2: *const f64 = (*m).geom_size.add(3 * g2 as usize);
+        mjraw_capsule_capsule(con, margin, pos1, mat1, size1, pos2, mat2, size2)
+    }
 }
 
 /// C: mjc_CapsuleBox (engine/engine_collision_primitive.h:67)
