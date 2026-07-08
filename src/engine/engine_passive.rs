@@ -362,8 +362,25 @@ pub fn read_fluid_geom_interaction(geom_fluid_coefs: *const f64, geom_fluid_coef
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn write_fluid_geom_interaction(geom_fluid_coefs: *mut f64, geom_fluid_coef: *const f64, blunt_drag_coef: *const f64, slender_drag_coef: *const f64, ang_drag_coef: *const f64, kutta_lift_coef: *const f64, magnus_lift_coef: *const f64, virtual_mass: *const f64, virtual_inertia: *const f64) {
-    extern "C" { fn writeFluidGeomInteraction_impl(geom_fluid_coefs: *mut f64, geom_fluid_coef: *const f64, blunt_drag_coef: *const f64, slender_drag_coef: *const f64, ang_drag_coef: *const f64, kutta_lift_coef: *const f64, magnus_lift_coef: *const f64, virtual_mass: *const f64, virtual_inertia: *const f64); }
-    // SAFETY: delegates to C implementation
-    unsafe { writeFluidGeomInteraction_impl(geom_fluid_coefs, geom_fluid_coef, blunt_drag_coef, slender_drag_coef, ang_drag_coef, kutta_lift_coef, magnus_lift_coef, virtual_mass, virtual_inertia) }
+    const MJ_NFLUID: i32 = 12;
+    // SAFETY: all pointers are valid per caller contract; geom_fluid_coefs has mjNFLUID (12) elements
+    unsafe {
+        let mut i: i32 = 0;
+        *geom_fluid_coefs.add(i as usize) = *geom_fluid_coef.add(0); i += 1;
+        *geom_fluid_coefs.add(i as usize) = *blunt_drag_coef.add(0); i += 1;
+        *geom_fluid_coefs.add(i as usize) = *slender_drag_coef.add(0); i += 1;
+        *geom_fluid_coefs.add(i as usize) = *ang_drag_coef.add(0); i += 1;
+        *geom_fluid_coefs.add(i as usize) = *kutta_lift_coef.add(0); i += 1;
+        *geom_fluid_coefs.add(i as usize) = *magnus_lift_coef.add(0); i += 1;
+        *geom_fluid_coefs.add(i as usize) = *virtual_mass.add(0); i += 1;
+        *geom_fluid_coefs.add(i as usize) = *virtual_mass.add(1); i += 1;
+        *geom_fluid_coefs.add(i as usize) = *virtual_mass.add(2); i += 1;
+        *geom_fluid_coefs.add(i as usize) = *virtual_inertia.add(0); i += 1;
+        *geom_fluid_coefs.add(i as usize) = *virtual_inertia.add(1); i += 1;
+        *geom_fluid_coefs.add(i as usize) = *virtual_inertia.add(2); i += 1;
+        if i != MJ_NFLUID {
+            crate::engine::engine_util_errmem::mju_error(b"wrong number of entries.\0".as_ptr() as *const i8);
+        }
+    }
 }
 

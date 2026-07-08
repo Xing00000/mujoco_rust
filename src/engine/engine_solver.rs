@@ -210,10 +210,34 @@ pub fn project_ellipsoid(friction: *mut f64, normal: f64, mu: *const f64, dim: i
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn solve_qcqp(force: *mut f64, i: i32, dim: i32, Ac: *mut f64, bc: *mut f64, mu: *const f64) {
-    // WARNING: signature changed — verify body
-    // Previous params: (force : * mut f64, i : i32, dim : i32, Ac : * mut f64, bc : * mut f64, mu : * const f64)
-    // Previous return: ()
-    extern "C" { fn solveQCQP_impl (force : * mut f64 , i : i32 , dim : i32 , Ac : * mut f64 , bc : * mut f64 , mu : * const f64) ; } unsafe { solveQCQP_impl (force , i , dim , Ac , bc , mu) }
+    // SAFETY: force points to at least i+dim f64; Ac, bc, mu valid per caller contract
+    unsafe {
+        let mut v: [f64; 6] = [0.0; 6];
+        let flg_active: i32;
+
+        // solve
+        if dim == 3 {
+            flg_active = crate::engine::engine_util_solve::mju_qcqp2(
+                v.as_mut_ptr(), Ac, bc, mu, *force.add(i as usize));
+        } else if dim == 4 {
+            flg_active = crate::engine::engine_util_solve::mju_qcqp3(
+                v.as_mut_ptr(), Ac, bc, mu, *force.add(i as usize));
+        } else {
+            // dim == 5
+            flg_active = crate::engine::engine_util_solve::mju_qcqp(
+                v.as_mut_ptr(), Ac, bc, mu, *force.add(i as usize), dim - 1);
+        }
+
+        // on constraint: put v on ellipsoid, in case QCQP is approximate
+        if flg_active != 0 {
+            crate::engine::engine_solver::project_ellipsoid(
+                v.as_mut_ptr(), *force.add(i as usize), mu, dim, 0);
+        }
+
+        // assign
+        crate::engine::engine_util_blas::mju_copy(
+            force.add(i as usize + 1), v.as_ptr(), dim - 1);
+    }
 }
 
 /// C: projectCone (engine/engine_solver.c:426)
@@ -225,9 +249,26 @@ pub fn solve_qcqp(force: *mut f64, i: i32, dim: i32, Ac: *mut f64, bc: *mut f64,
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn project_cone(force: *mut f64, mu: *const f64, dim: i32, r#type: i32) {
-    extern "C" { fn projectCone_impl(force: *mut f64, mu: *const f64, dim: i32, r#type: i32); }
-    // SAFETY: delegates to C implementation
-    unsafe { projectCone_impl(force, mu, dim, r#type) }
+    const MJ_CNSTR_CONTACT_ELLIPTIC: i32 = 7;
+    // SAFETY: force points to at least dim f64; mu valid per caller contract
+    unsafe {
+        // elliptic cone: project onto friction ellipsoid
+        if r#type == MJ_CNSTR_CONTACT_ELLIPTIC {
+            // clamp normal force
+            if *force.add(0) < 0.0 {
+                crate::engine::engine_util_blas::mju_zero(force, dim);
+            } else {
+                crate::engine::engine_solver::project_ellipsoid(
+                    force.add(1), *force.add(0), mu, dim, 1);
+            }
+        }
+        // pyramidal or scalar: clamp to non-negative
+        else {
+            if *force.add(0) < 0.0 {
+                *force.add(0) = 0.0;
+            }
+        }
+    }
 }
 
 /// C: solPGS (engine/engine_solver.c:456)

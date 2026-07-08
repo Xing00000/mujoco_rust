@@ -13,11 +13,43 @@ use crate::types::*;
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn box_projection(point: *mut f64, r#box: *const f64) -> f64 {
-    extern "C" {
-        fn boxProjection_impl(point: *mut f64, r#box: *const f64) -> f64;
+    // SAFETY: point points to 3 f64; box points to 6 f64 per caller contract
+    unsafe {
+        let r: [f64; 3] = [
+            *point.add(0) - *r#box.add(0),
+            *point.add(1) - *r#box.add(1),
+            *point.add(2) - *r#box.add(2),
+        ];
+        let q: [f64; 3] = [
+            r[0].abs() - *r#box.add(3),
+            r[1].abs() - *r#box.add(4),
+            r[2].abs() - *r#box.add(5),
+        ];
+        let mut dist_sqr: f64 = 0.0;
+        let eps: f64 = 1e-6;
+
+        // skip the projection if inside
+        if q[0] <= 0.0 && q[1] <= 0.0 && q[2] <= 0.0 {
+            let m01 = if q[0] > q[1] { q[0] } else { q[1] };
+            return if m01 > q[2] { m01 } else { q[2] };
+        }
+
+        // in-place projection inside the box if outside
+        if q[0] >= 0.0 {
+            dist_sqr += q[0] * q[0];
+            *point.add(0) -= if r[0] > 0.0 { q[0] + eps } else { -(q[0] + eps) };
+        }
+        if q[1] >= 0.0 {
+            dist_sqr += q[1] * q[1];
+            *point.add(1) -= if r[1] > 0.0 { q[1] + eps } else { -(q[1] + eps) };
+        }
+        if q[2] >= 0.0 {
+            dist_sqr += q[2] * q[2];
+            *point.add(2) -= if r[2] > 0.0 { q[2] + eps } else { -(q[2] + eps) };
+        }
+
+        dist_sqr.sqrt()
     }
-    // SAFETY: delegates to C implementation, all pointers valid per caller contract
-    unsafe { boxProjection_impl(point, r#box) }
 }
 
 /// C: findOct (engine/engine_collision_sdf.c:69)
@@ -130,11 +162,17 @@ pub fn geom_gradient(gradient: *mut f64, m: *const mjModel, d: *const mjData, p:
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn map_pose(xpos1: *const f64, xquat1: *const f64, xpos2: *const f64, xquat2: *const f64, pos12: *mut f64, mat12: *mut f64) {
-    extern "C" {
-        fn mapPose_impl(xpos1: *const f64, xquat1: *const f64, xpos2: *const f64, xquat2: *const f64, pos12: *mut f64, mat12: *mut f64);
+    // SAFETY: all pointers valid per caller contract; intermediate arrays are stack-local
+    unsafe {
+        let mut negpos: [f64; 3] = [0.0; 3];
+        let mut negquat: [f64; 4] = [0.0; 4];
+        let mut quat12: [f64; 4] = [0.0; 4];
+        crate::engine::engine_util_spatial::mju_neg_pose(
+            negpos.as_mut_ptr(), negquat.as_mut_ptr(), xpos2, xquat2);
+        crate::engine::engine_util_spatial::mju_mul_pose(
+            pos12, quat12.as_mut_ptr(), negpos.as_ptr(), negquat.as_ptr(), xpos1, xquat1);
+        crate::engine::engine_util_spatial::mju_quat2mat(mat12, quat12.as_ptr());
     }
-    // SAFETY: delegates to C implementation, all pointers valid per caller contract
-    unsafe { mapPose_impl(xpos1, xquat1, xpos2, xquat2, pos12, mat12) }
 }
 
 /// C: isknown (engine/engine_collision_sdf.c:532)
@@ -238,11 +276,59 @@ pub fn box_intersect(bvh: *const f64, offset: *const f64, rotation: *const f64, 
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn select_fps(candidate: *const f64, dist: *const f64, ncandidate: i32, selected_indices: *mut i32, max_select: i32) -> i32 {
-    extern "C" {
-        fn selectFPS_impl(candidate: *const f64, dist: *const f64, ncandidate: i32, selected_indices: *mut i32, max_select: i32) -> i32;
+    const MJ_MAXCONPAIR: usize = 50;
+    const MJ_MAXVAL: f64 = 1e10;
+
+    if ncandidate <= 0 { return 0; }
+
+    // SAFETY: candidate points to 3*ncandidate f64; dist points to ncandidate f64;
+    // selected_indices points to at least max_select i32 elements
+    unsafe {
+        let mut selected: [bool; MJ_MAXCONPAIR] = [false; MJ_MAXCONPAIR];
+        let mut min_dist2: [f64; MJ_MAXCONPAIR] = [MJ_MAXVAL; MJ_MAXCONPAIR];
+
+        // start with deepest penetrating contact
+        let mut best: i32 = 0;
+        let mut bestval: f64 = -*dist.add(0);
+        for i in 1..ncandidate as usize {
+            if -*dist.add(i) > bestval {
+                bestval = -*dist.add(i);
+                best = i as i32;
+            }
+        }
+
+        // iteratively select contacts using FPS
+        let mut nselected: i32 = 0;
+        while nselected < max_select && (nselected as usize) < MJ_MAXCONPAIR && best >= 0 {
+            selected[best as usize] = true;
+            *selected_indices.add(nselected as usize) = best;
+            nselected += 1;
+
+            let bestpos: *const f64 = candidate.add(3 * best as usize);
+
+            // find next farthest point
+            let mut nextbest: i32 = -1;
+            let mut nextbestdist: f64 = -1.0;
+            for i in 0..ncandidate as usize {
+                if selected[i] { continue; }
+
+                let dx: f64 = *candidate.add(3 * i + 0) - *bestpos.add(0);
+                let dy: f64 = *candidate.add(3 * i + 1) - *bestpos.add(1);
+                let dz: f64 = *candidate.add(3 * i + 2) - *bestpos.add(2);
+                let d2: f64 = dx * dx + dy * dy + dz * dz;
+                if d2 < min_dist2[i] {
+                    min_dist2[i] = d2;
+                }
+                if min_dist2[i] > nextbestdist {
+                    nextbestdist = min_dist2[i];
+                    nextbest = i as i32;
+                }
+            }
+            best = nextbest;
+        }
+
+        nselected
     }
-    // SAFETY: delegates to C implementation, all pointers valid per caller contract
-    unsafe { selectFPS_impl(candidate, dist, ncandidate, selected_indices, max_select) }
 }
 
 /// C: processSdfCorners (engine/engine_collision_sdf.c:808)

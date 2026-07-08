@@ -35,11 +35,94 @@ pub fn subdistance(lambda: *mut f64, n: i32, simplex: *const Vertex) {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn s3d(lambda: *mut f64, s1: *const f64, s2: *const f64, s3: *const f64, s4: *const f64) {
-    extern "C" {
-        fn S3D_impl(lambda: *mut f64, s1: *const f64, s2: *const f64, s3: *const f64, s4: *const f64);
+    // SAFETY: lambda points to 4 f64; s1-s4 each point to 3 f64
+    unsafe {
+        // compute cofactors to find det(M)
+        let C41: f64 = -crate::engine::engine_collision_gjk::det3(s2, s3, s4);
+        let C42: f64 =  crate::engine::engine_collision_gjk::det3(s1, s3, s4);
+        let C43: f64 = -crate::engine::engine_collision_gjk::det3(s1, s2, s4);
+        let C44: f64 =  crate::engine::engine_collision_gjk::det3(s1, s2, s3);
+
+        let m_det: f64 = C41 + C42 + C43 + C44;
+
+        let comp1: i32 = crate::engine::engine_collision_gjk::same_sign2(m_det, C41);
+        let comp2: i32 = crate::engine::engine_collision_gjk::same_sign2(m_det, C42);
+        let comp3: i32 = crate::engine::engine_collision_gjk::same_sign2(m_det, C43);
+        let comp4: i32 = crate::engine::engine_collision_gjk::same_sign2(m_det, C44);
+
+        // if all signs are the same then the origin is inside the simplex
+        if comp1 != 0 && comp2 != 0 && comp3 != 0 && comp4 != 0 {
+            *lambda.add(0) = C41 / m_det;
+            *lambda.add(1) = C42 / m_det;
+            *lambda.add(2) = C43 / m_det;
+            *lambda.add(3) = C44 / m_det;
+            return;
+        }
+
+        // find the smallest distance, and use the corresponding barycentric coordinates
+        let mut dmin: f64 = f64::MAX;
+
+        if comp1 == 0 {
+            let mut lambda_2d: [f64; 3] = [0.0; 3];
+            let mut x: [f64; 3] = [0.0; 3];
+            crate::engine::engine_collision_gjk::s2d(lambda_2d.as_mut_ptr(), s2, s3, s4);
+            crate::engine::engine_collision_gjk::lincomb(
+                x.as_mut_ptr(), lambda_2d.as_ptr(), 3, s2, s3, s4, std::ptr::null());
+            let d: f64 = crate::engine::engine_collision_gjk::dot3(x.as_ptr(), x.as_ptr());
+            *lambda.add(0) = 0.0;
+            *lambda.add(1) = lambda_2d[0];
+            *lambda.add(2) = lambda_2d[1];
+            *lambda.add(3) = lambda_2d[2];
+            dmin = d;
+        }
+
+        if comp2 == 0 {
+            let mut lambda_2d: [f64; 3] = [0.0; 3];
+            let mut x: [f64; 3] = [0.0; 3];
+            crate::engine::engine_collision_gjk::s2d(lambda_2d.as_mut_ptr(), s1, s3, s4);
+            crate::engine::engine_collision_gjk::lincomb(
+                x.as_mut_ptr(), lambda_2d.as_ptr(), 3, s1, s3, s4, std::ptr::null());
+            let d: f64 = crate::engine::engine_collision_gjk::dot3(x.as_ptr(), x.as_ptr());
+            if d < dmin {
+                *lambda.add(0) = lambda_2d[0];
+                *lambda.add(1) = 0.0;
+                *lambda.add(2) = lambda_2d[1];
+                *lambda.add(3) = lambda_2d[2];
+                dmin = d;
+            }
+        }
+
+        if comp3 == 0 {
+            let mut lambda_2d: [f64; 3] = [0.0; 3];
+            let mut x: [f64; 3] = [0.0; 3];
+            crate::engine::engine_collision_gjk::s2d(lambda_2d.as_mut_ptr(), s1, s2, s4);
+            crate::engine::engine_collision_gjk::lincomb(
+                x.as_mut_ptr(), lambda_2d.as_ptr(), 3, s1, s2, s4, std::ptr::null());
+            let d: f64 = crate::engine::engine_collision_gjk::dot3(x.as_ptr(), x.as_ptr());
+            if d < dmin {
+                *lambda.add(0) = lambda_2d[0];
+                *lambda.add(1) = lambda_2d[1];
+                *lambda.add(2) = 0.0;
+                *lambda.add(3) = lambda_2d[2];
+                dmin = d;
+            }
+        }
+
+        if comp4 == 0 {
+            let mut lambda_2d: [f64; 3] = [0.0; 3];
+            let mut x: [f64; 3] = [0.0; 3];
+            crate::engine::engine_collision_gjk::s2d(lambda_2d.as_mut_ptr(), s1, s2, s3);
+            crate::engine::engine_collision_gjk::lincomb(
+                x.as_mut_ptr(), lambda_2d.as_ptr(), 3, s1, s2, s3, std::ptr::null());
+            let d: f64 = crate::engine::engine_collision_gjk::dot3(x.as_ptr(), x.as_ptr());
+            if d < dmin {
+                *lambda.add(0) = lambda_2d[0];
+                *lambda.add(1) = lambda_2d[1];
+                *lambda.add(2) = lambda_2d[2];
+                // lambda[3] not assigned in C (stays from last write or init)
+            }
+        }
     }
-    // SAFETY: delegates to C implementation, all pointers valid per caller contract
-    unsafe { S3D_impl(lambda, s1, s2, s3, s4) }
 }
 
 /// C: S2D (engine/engine_collision_gjk.c:62)
@@ -51,11 +134,128 @@ pub fn s3d(lambda: *mut f64, s1: *const f64, s2: *const f64, s3: *const f64, s4:
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn s2d(lambda: *mut f64, s1: *const f64, s2: *const f64, s3: *const f64) {
-    extern "C" {
-        fn S2D_impl(lambda: *mut f64, s1: *const f64, s2: *const f64, s3: *const f64);
+    // SAFETY: lambda points to 3 f64; s1-s3 each point to 3 f64
+    unsafe {
+        // project origin onto affine hull of the simplex
+        let mut p_o: [f64; 3] = [0.0; 3];
+        if crate::engine::engine_collision_gjk::project_origin_plane(
+            p_o.as_mut_ptr(), s1, s2, s3) != 0 {
+            crate::engine::engine_collision_gjk::s1d(lambda, s1, s2);
+            *lambda.add(2) = 0.0;
+            return;
+        }
+
+        // Minors M_i4
+        let M_14: f64 = *s2.add(1) * *s3.add(2) - *s2.add(2) * *s3.add(1)
+                       - *s1.add(1) * *s3.add(2) + *s1.add(2) * *s3.add(1)
+                       + *s1.add(1) * *s2.add(2) - *s1.add(2) * *s2.add(1);
+        let M_24: f64 = *s2.add(0) * *s3.add(2) - *s2.add(2) * *s3.add(0)
+                       - *s1.add(0) * *s3.add(2) + *s1.add(2) * *s3.add(0)
+                       + *s1.add(0) * *s2.add(2) - *s1.add(2) * *s2.add(0);
+        let M_34: f64 = *s2.add(0) * *s3.add(1) - *s2.add(1) * *s3.add(0)
+                       - *s1.add(0) * *s3.add(1) + *s1.add(1) * *s3.add(0)
+                       + *s1.add(0) * *s2.add(1) - *s1.add(1) * *s2.add(0);
+
+        // exclude the axis with the largest projection
+        let M_max: f64;
+        let mut s1_2D: [f64; 2] = [0.0; 2];
+        let mut s2_2D: [f64; 2] = [0.0; 2];
+        let mut s3_2D: [f64; 2] = [0.0; 2];
+        let mut p_o_2D: [f64; 2] = [0.0; 2];
+        let mu1: f64 = M_14.abs();
+        let mu2: f64 = M_24.abs();
+        let mu3: f64 = M_34.abs();
+
+        if mu1 >= mu2 && mu1 >= mu3 {
+            M_max = M_14;
+            s1_2D[0] = *s1.add(1); s1_2D[1] = *s1.add(2);
+            s2_2D[0] = *s2.add(1); s2_2D[1] = *s2.add(2);
+            s3_2D[0] = *s3.add(1); s3_2D[1] = *s3.add(2);
+            p_o_2D[0] = p_o[1]; p_o_2D[1] = p_o[2];
+        } else if mu2 >= mu3 {
+            M_max = M_24;
+            s1_2D[0] = *s1.add(0); s1_2D[1] = *s1.add(2);
+            s2_2D[0] = *s2.add(0); s2_2D[1] = *s2.add(2);
+            s3_2D[0] = *s3.add(0); s3_2D[1] = *s3.add(2);
+            p_o_2D[0] = p_o[0]; p_o_2D[1] = p_o[2];
+        } else {
+            M_max = M_34;
+            s1_2D[0] = *s1.add(0); s1_2D[1] = *s1.add(1);
+            s2_2D[0] = *s2.add(0); s2_2D[1] = *s2.add(1);
+            s3_2D[0] = *s3.add(0); s3_2D[1] = *s3.add(1);
+            p_o_2D[0] = p_o[0]; p_o_2D[1] = p_o[1];
+        }
+
+        // compute the cofactors C3i
+        // C31 corresponds to the signed area of 2-simplex: (p_o_2D, s2_2D, s3_2D)
+        let C31: f64 = p_o_2D[0] * s2_2D[1] + p_o_2D[1] * s3_2D[0] + s2_2D[0] * s3_2D[1]
+                     - p_o_2D[0] * s3_2D[1] - p_o_2D[1] * s2_2D[0] - s3_2D[0] * s2_2D[1];
+
+        // C32 corresponds to the signed area of 2-simplex: (p_o_2D, s1_2D, s3_2D)
+        let C32: f64 = p_o_2D[0] * s3_2D[1] + p_o_2D[1] * s1_2D[0] + s3_2D[0] * s1_2D[1]
+                     - p_o_2D[0] * s1_2D[1] - p_o_2D[1] * s3_2D[0] - s1_2D[0] * s3_2D[1];
+
+        // C33 corresponds to the signed area of 2-simplex: (p_o_2D, s1_2D, s2_2D)
+        let C33: f64 = p_o_2D[0] * s1_2D[1] + p_o_2D[1] * s2_2D[0] + s1_2D[0] * s2_2D[1]
+                     - p_o_2D[0] * s2_2D[1] - p_o_2D[1] * s1_2D[0] - s2_2D[0] * s1_2D[1];
+
+        let comp1: i32 = crate::engine::engine_collision_gjk::same_sign2(M_max, C31);
+        let comp2: i32 = crate::engine::engine_collision_gjk::same_sign2(M_max, C32);
+        let comp3: i32 = crate::engine::engine_collision_gjk::same_sign2(M_max, C33);
+
+        // all the same sign, p_o is inside the 2-simplex
+        if comp1 != 0 && comp2 != 0 && comp3 != 0 {
+            *lambda.add(0) = C31 / M_max;
+            *lambda.add(1) = C32 / M_max;
+            *lambda.add(2) = C33 / M_max;
+            return;
+        }
+
+        // find the smallest distance, and use the corresponding barycentric coordinates
+        let mut dmin: f64 = f64::MAX;
+
+        if comp1 == 0 {
+            let mut lambda_1d: [f64; 2] = [0.0; 2];
+            let mut x: [f64; 3] = [0.0; 3];
+            crate::engine::engine_collision_gjk::s1d(lambda_1d.as_mut_ptr(), s2, s3);
+            crate::engine::engine_collision_gjk::lincomb(
+                x.as_mut_ptr(), lambda_1d.as_ptr(), 2, s2, s3, std::ptr::null(), std::ptr::null());
+            let d: f64 = crate::engine::engine_collision_gjk::dot3(x.as_ptr(), x.as_ptr());
+            *lambda.add(0) = 0.0;
+            *lambda.add(1) = lambda_1d[0];
+            *lambda.add(2) = lambda_1d[1];
+            dmin = d;
+        }
+
+        if comp2 == 0 {
+            let mut lambda_1d: [f64; 2] = [0.0; 2];
+            let mut x: [f64; 3] = [0.0; 3];
+            crate::engine::engine_collision_gjk::s1d(lambda_1d.as_mut_ptr(), s1, s3);
+            crate::engine::engine_collision_gjk::lincomb(
+                x.as_mut_ptr(), lambda_1d.as_ptr(), 2, s1, s3, std::ptr::null(), std::ptr::null());
+            let d: f64 = crate::engine::engine_collision_gjk::dot3(x.as_ptr(), x.as_ptr());
+            if d < dmin {
+                *lambda.add(0) = lambda_1d[0];
+                *lambda.add(1) = 0.0;
+                *lambda.add(2) = lambda_1d[1];
+                dmin = d;
+            }
+        }
+
+        if comp3 == 0 {
+            let mut lambda_1d: [f64; 2] = [0.0; 2];
+            let mut x: [f64; 3] = [0.0; 3];
+            crate::engine::engine_collision_gjk::s1d(lambda_1d.as_mut_ptr(), s1, s2);
+            crate::engine::engine_collision_gjk::lincomb(
+                x.as_mut_ptr(), lambda_1d.as_ptr(), 2, s1, s2, std::ptr::null(), std::ptr::null());
+            let d: f64 = crate::engine::engine_collision_gjk::dot3(x.as_ptr(), x.as_ptr());
+            if d < dmin {
+                *lambda.add(0) = lambda_1d[0];
+                *lambda.add(1) = lambda_1d[1];
+                *lambda.add(2) = 0.0;
+            }
+        }
     }
-    // SAFETY: delegates to C implementation, all pointers valid per caller contract
-    unsafe { S2D_impl(lambda, s1, s2, s3) }
 }
 
 /// C: S1D (engine/engine_collision_gjk.c:63)
