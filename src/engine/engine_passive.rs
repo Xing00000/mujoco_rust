@@ -208,11 +208,87 @@ pub fn mj_added_mass_forces(local_vels: *const f64, local_accels: *const f64, fl
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_viscous_forces(local_vels: *const f64, fluid_density: f64, fluid_viscosity: f64, size: *const f64, magnus_lift_coef: f64, kutta_lift_coef: f64, blunt_drag_coef: f64, slender_drag_coef: f64, ang_drag_coef: f64, local_force: *mut f64) {
-    extern "C" {
-        fn mj_viscousForces_impl(local_vels: *const f64, fluid_density: f64, fluid_viscosity: f64, size: *const f64, magnus_lift_coef: f64, kutta_lift_coef: f64, blunt_drag_coef: f64, slender_drag_coef: f64, ang_drag_coef: f64, local_force: *mut f64);
+    // SAFETY: local_vels has 6 elements, size has 3, local_force has 6. All valid.
+    unsafe {
+        const MJPI: f64 = 3.14159265358979323846;
+        const MJMINVAL: f64 = 1e-15;
+
+        let lin_vel: [f64; 3] = [*local_vels.add(3), *local_vels.add(4), *local_vels.add(5)];
+        let ang_vel: [f64; 3] = [*local_vels.add(0), *local_vels.add(1), *local_vels.add(2)];
+        let volume: f64 = 4.0 / 3.0 * MJPI * *size.add(0) * *size.add(1) * *size.add(2);
+        let d_max: f64 = crate::engine::engine_util_misc::mju_max(
+            crate::engine::engine_util_misc::mju_max(*size.add(0), *size.add(1)), *size.add(2));
+        let d_min: f64 = crate::engine::engine_util_misc::mju_min(
+            crate::engine::engine_util_misc::mju_min(*size.add(0), *size.add(1)), *size.add(2));
+        let d_mid: f64 = *size.add(0) + *size.add(1) + *size.add(2) - d_max - d_min;
+        let A_max: f64 = MJPI * d_max * d_mid;
+
+        let mut magnus_force: [f64; 3] = [0.0; 3];
+        crate::engine::engine_inline::mji_cross(magnus_force.as_mut_ptr(), ang_vel.as_ptr(), lin_vel.as_ptr());
+        magnus_force[0] *= magnus_lift_coef * fluid_density * volume;
+        magnus_force[1] *= magnus_lift_coef * fluid_density * volume;
+        magnus_force[2] *= magnus_lift_coef * fluid_density * volume;
+
+        // projected area computation
+        let proj_denom: f64 = mji_pow4(*size.add(1) * *size.add(2)) * mji_pow2(lin_vel[0])
+            + mji_pow4(*size.add(2) * *size.add(0)) * mji_pow2(lin_vel[1])
+            + mji_pow4(*size.add(0) * *size.add(1)) * mji_pow2(lin_vel[2]);
+        let proj_num: f64 = mji_pow2(*size.add(1) * *size.add(2) * lin_vel[0])
+            + mji_pow2(*size.add(2) * *size.add(0) * lin_vel[1])
+            + mji_pow2(*size.add(0) * *size.add(1) * lin_vel[2]);
+
+        let A_proj: f64 = MJPI * (proj_denom / crate::engine::engine_util_misc::mju_max(MJMINVAL, proj_num)).sqrt();
+
+        // not-unit normal to ellipsoid's projected area
+        let norm: [f64; 3] = [
+            mji_pow2(*size.add(1) * *size.add(2)) * lin_vel[0],
+            mji_pow2(*size.add(2) * *size.add(0)) * lin_vel[1],
+            mji_pow2(*size.add(0) * *size.add(1)) * lin_vel[2],
+        ];
+
+        // cosine between velocity and normal
+        let cos_alpha: f64 = proj_num / crate::engine::engine_util_misc::mju_max(
+            MJMINVAL, crate::engine::engine_util_blas::mju_norm3(lin_vel.as_ptr()) * proj_denom);
+
+        let mut kutta_circ: [f64; 3] = [0.0; 3];
+        crate::engine::engine_inline::mji_cross(kutta_circ.as_mut_ptr(), norm.as_ptr(), lin_vel.as_ptr());
+        kutta_circ[0] *= kutta_lift_coef * fluid_density * cos_alpha * A_proj;
+        kutta_circ[1] *= kutta_lift_coef * fluid_density * cos_alpha * A_proj;
+        kutta_circ[2] *= kutta_lift_coef * fluid_density * cos_alpha * A_proj;
+        let mut kutta_force: [f64; 3] = [0.0; 3];
+        crate::engine::engine_inline::mji_cross(kutta_force.as_mut_ptr(), kutta_circ.as_ptr(), lin_vel.as_ptr());
+
+        // viscous force and torque in Stokes flow
+        let eq_sphere_D: f64 = 2.0 / 3.0 * (*size.add(0) + *size.add(1) + *size.add(2));
+        let lin_visc_force_coef: f64 = 3.0 * MJPI * eq_sphere_D;
+        let lin_visc_torq_coef: f64 = MJPI * eq_sphere_D * eq_sphere_D * eq_sphere_D;
+
+        // moments of inertia for angular quadratic drag
+        let I_max: f64 = 8.0 / 15.0 * MJPI * d_mid * mji_pow4(d_max);
+        let II: [f64; 3] = [
+            mji_ellipsoid_max_moment(size, 0),
+            mji_ellipsoid_max_moment(size, 1),
+            mji_ellipsoid_max_moment(size, 2),
+        ];
+        let mom_visc: [f64; 3] = [
+            ang_vel[0] * (ang_drag_coef * II[0] + slender_drag_coef * (I_max - II[0])),
+            ang_vel[1] * (ang_drag_coef * II[1] + slender_drag_coef * (I_max - II[1])),
+            ang_vel[2] * (ang_drag_coef * II[2] + slender_drag_coef * (I_max - II[2])),
+        ];
+
+        let drag_lin_coef: f64 = fluid_viscosity * lin_visc_force_coef
+            + fluid_density * crate::engine::engine_util_blas::mju_norm3(lin_vel.as_ptr())
+            * (A_proj * blunt_drag_coef + slender_drag_coef * (A_max - A_proj));
+        let drag_ang_coef: f64 = fluid_viscosity * lin_visc_torq_coef
+            + fluid_density * crate::engine::engine_util_blas::mju_norm3(mom_visc.as_ptr());
+
+        *local_force.add(0) -= drag_ang_coef * ang_vel[0];
+        *local_force.add(1) -= drag_ang_coef * ang_vel[1];
+        *local_force.add(2) -= drag_ang_coef * ang_vel[2];
+        *local_force.add(3) += magnus_force[0] + kutta_force[0] - drag_lin_coef * lin_vel[0];
+        *local_force.add(4) += magnus_force[1] + kutta_force[1] - drag_lin_coef * lin_vel[1];
+        *local_force.add(5) += magnus_force[2] + kutta_force[2] - drag_lin_coef * lin_vel[2];
     }
-    // SAFETY: delegates to C implementation, all pointers valid per caller contract
-    unsafe { mj_viscousForces_impl(local_vels, fluid_density, fluid_viscosity, size, magnus_lift_coef, kutta_lift_coef, blunt_drag_coef, slender_drag_coef, ang_drag_coef, local_force) }
 }
 
 /// C: readFluidGeomInteraction (engine/engine_passive.h:56)
@@ -224,11 +300,23 @@ pub fn mj_viscous_forces(local_vels: *const f64, fluid_density: f64, fluid_visco
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn read_fluid_geom_interaction(geom_fluid_coefs: *const f64, geom_fluid_coef: *mut f64, blunt_drag_coef: *mut f64, slender_drag_coef: *mut f64, ang_drag_coef: *mut f64, kutta_lift_coef: *mut f64, magnus_lift_coef: *mut f64, virtual_mass: *mut f64, virtual_inertia: *mut f64) {
-    extern "C" {
-        fn readFluidGeomInteraction_impl(geom_fluid_coefs: *const f64, geom_fluid_coef: *mut f64, blunt_drag_coef: *mut f64, slender_drag_coef: *mut f64, ang_drag_coef: *mut f64, kutta_lift_coef: *mut f64, magnus_lift_coef: *mut f64, virtual_mass: *mut f64, virtual_inertia: *mut f64);
+    // SAFETY: geom_fluid_coefs has mjNFLUID (12) elements. All output pointers valid.
+    unsafe {
+        let mut i: usize = 0;
+        *geom_fluid_coef = *geom_fluid_coefs.add(i); i += 1;
+        *blunt_drag_coef = *geom_fluid_coefs.add(i); i += 1;
+        *slender_drag_coef = *geom_fluid_coefs.add(i); i += 1;
+        *ang_drag_coef = *geom_fluid_coefs.add(i); i += 1;
+        *kutta_lift_coef = *geom_fluid_coefs.add(i); i += 1;
+        *magnus_lift_coef = *geom_fluid_coefs.add(i); i += 1;
+        *virtual_mass.add(0) = *geom_fluid_coefs.add(i); i += 1;
+        *virtual_mass.add(1) = *geom_fluid_coefs.add(i); i += 1;
+        *virtual_mass.add(2) = *geom_fluid_coefs.add(i); i += 1;
+        *virtual_inertia.add(0) = *geom_fluid_coefs.add(i); i += 1;
+        *virtual_inertia.add(1) = *geom_fluid_coefs.add(i); i += 1;
+        *virtual_inertia.add(2) = *geom_fluid_coefs.add(i); i += 1;
+        // mjNFLUID = 12, assert i == 12
     }
-    // SAFETY: delegates to C implementation, all pointers valid per caller contract
-    unsafe { readFluidGeomInteraction_impl(geom_fluid_coefs, geom_fluid_coef, blunt_drag_coef, slender_drag_coef, ang_drag_coef, kutta_lift_coef, magnus_lift_coef, virtual_mass, virtual_inertia) }
 }
 
 /// C: writeFluidGeomInteraction (engine/engine_passive.h:66)
