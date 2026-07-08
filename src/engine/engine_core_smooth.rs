@@ -918,11 +918,128 @@ pub fn mj_factor_m(m: *const mjModel, d: *mut mjData) {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_solve_ld_legacy(m: *const mjModel, x: *mut f64, n: i32, qLD: *const f64, qLDiagInv: *const f64) {
-    extern "C" {
-        fn mj_solveLD_legacy_impl(m: *const mjModel, x: *mut f64, n: i32, qLD: *const f64, qLDiagInv: *const f64);
+    // SAFETY: m is valid mjModel, x is mutable f64 array of size n*nv,
+    // qLD and qLDiagInv are valid arrays per sparse matrix layout
+    unsafe {
+        // local copies of key variables
+        let dof_Madr = (*m).dof_Madr;
+        let dof_parentid = (*m).dof_parentid;
+        let nv = (*m).nv as i32;
+
+        // single vector
+        if n == 1 {
+            // x <- inv(L') * x; skip simple, exploit sparsity of input vector
+            let mut i = nv - 1;
+            while i >= 0 {
+                if *(*m).dof_simplenum.add(i as usize) == 0 && *x.add(i as usize) != 0.0 {
+                    // init
+                    let mut Madr_ij = *dof_Madr.add(i as usize) + 1;
+                    let mut j = *dof_parentid.add(i as usize);
+
+                    // traverse ancestors backwards
+                    while j >= 0 {
+                        *x.add(j as usize) -= *qLD.add(Madr_ij as usize) * *x.add(i as usize);
+                        Madr_ij += 1;
+                        j = *dof_parentid.add(j as usize);
+                    }
+                }
+                i -= 1;
+            }
+
+            // x <- inv(D) * x
+            let mut i = 0;
+            while i < nv {
+                *x.add(i as usize) *= *qLDiagInv.add(i as usize);
+                i += 1;
+            }
+
+            // x <- inv(L) * x; skip simple
+            let mut i = 0;
+            while i < nv {
+                if *(*m).dof_simplenum.add(i as usize) == 0 {
+                    // init
+                    let mut Madr_ij = *dof_Madr.add(i as usize) + 1;
+                    let mut j = *dof_parentid.add(i as usize);
+
+                    // traverse ancestors backwards
+                    while j >= 0 {
+                        *x.add(i as usize) -= *qLD.add(Madr_ij as usize) * *x.add(j as usize);
+                        Madr_ij += 1;
+                        j = *dof_parentid.add(j as usize);
+                    }
+                }
+                i += 1;
+            }
+        }
+        // multiple vectors
+        else {
+            let mut tmp: f64;
+
+            // x <- inv(L') * x; skip simple
+            let mut i = nv - 1;
+            while i >= 0 {
+                if *(*m).dof_simplenum.add(i as usize) == 0 {
+                    // init
+                    let mut Madr_ij = *dof_Madr.add(i as usize) + 1;
+                    let mut j = *dof_parentid.add(i as usize);
+
+                    // traverse ancestors backwards
+                    while j >= 0 {
+                        // process all vectors, exploit sparsity
+                        let mut offset = 0;
+                        while offset < n * nv {
+                            tmp = *x.add((i + offset) as usize);
+                            if tmp != 0.0 {
+                                *x.add((j + offset) as usize) -= *qLD.add(Madr_ij as usize) * tmp;
+                            }
+                            offset += nv;
+                        }
+
+                        // advance to parent
+                        Madr_ij += 1;
+                        j = *dof_parentid.add(j as usize);
+                    }
+                }
+                i -= 1;
+            }
+
+            // x <- inv(D) * x
+            let mut i = 0;
+            while i < nv {
+                let mut offset = 0;
+                while offset < n * nv {
+                    *x.add((i + offset) as usize) *= *qLDiagInv.add(i as usize);
+                    offset += nv;
+                }
+                i += 1;
+            }
+
+            // x <- inv(L) * x; skip simple
+            let mut i = 0;
+            while i < nv {
+                if *(*m).dof_simplenum.add(i as usize) == 0 {
+                    // init
+                    let mut Madr_ij = *dof_Madr.add(i as usize) + 1;
+                    let mut j = *dof_parentid.add(i as usize);
+
+                    // traverse ancestors backwards
+                    while j >= 0 {
+                        // process all vectors
+                        let mut offset = 0;
+                        while offset < n * nv {
+                            *x.add((i + offset) as usize) -= *qLD.add(Madr_ij as usize) * *x.add((j + offset) as usize);
+                            offset += nv;
+                        }
+
+                        // advance to parent
+                        Madr_ij += 1;
+                        j = *dof_parentid.add(j as usize);
+                    }
+                }
+                i += 1;
+            }
+        }
     }
-    // SAFETY: delegates to C implementation which accesses mjModel sparse matrix layout
-    unsafe { mj_solveLD_legacy_impl(m, x, n, qLD, qLDiagInv) }
 }
 
 /// C: mj_solveLD (engine/engine_core_smooth.h:84)
@@ -1281,9 +1398,306 @@ pub fn mj_rne(m: *const mjModel, d: *mut mjData, flg_acc: i32, result: *mut f64)
 /// Calls: mj_contactForce, mj_local2Global, mji_copy3, mji_crossForce, mju_add, mju_addTo, mju_isZero, mju_message, mju_mulDofVec, mju_mulInertVec, mju_mulMatTVec3, mju_scl3, mju_sub, mju_subFrom, mju_transformSpatial, mju_zero, mju_zero3
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_rne_post_constraint(m: *const mjModel, d: *mut mjData) {
-    extern "C" { fn mj_rnePostConstraint_impl(m: *const mjModel, d: *mut mjData); }
-    // SAFETY: delegates to C implementation, all pointers valid per caller contract
-    unsafe { mj_rnePostConstraint_impl(m, d) }
+    // SAFETY: m and d are valid pointers per caller contract. All field accesses
+    // are within bounds guaranteed by MuJoCo's data layout invariants.
+    unsafe {
+        let nbody = (*m).nbody as i32;
+        let mut cfrc_com: [f64; 6] = [0.0; 6];
+        let mut cfrc: [f64; 6] = [0.0; 6];
+        let mut lfrc: [f64; 6] = [0.0; 6];
+
+        // mjDSBL_GRAVITY = 1 << 7
+        const MJ_DSBL_GRAVITY: i32 = 1 << 7;
+        // mjEQ enum values
+        const MJ_EQ_CONNECT: i32 = 0;
+        const MJ_EQ_WELD: i32 = 1;
+        const MJ_EQ_JOINT: i32 = 2;
+        const MJ_EQ_TENDON: i32 = 3;
+        const MJ_EQ_FLEX: i32 = 4;
+        const MJ_EQ_FLEXVERT: i32 = 5;
+        const MJ_EQ_FLEXSTRAIN: i32 = 6;
+        // mjCNSTR_EQUALITY = 0
+        const MJ_CNSTR_EQUALITY: i32 = 0;
+        // mjOBJ_BODY = 1
+        const MJ_OBJ_BODY: i32 = 1;
+        // mjNEQDATA = 11
+        const MJ_NEQDATA: i32 = 11;
+
+        // clear cacc, set world acceleration to -gravity
+        crate::engine::engine_util_blas::mju_zero((*d).cacc, 6);
+        if ((*m).opt.disableflags & MJ_DSBL_GRAVITY) == 0 {
+            crate::engine::engine_util_blas::mju_scl3((*d).cacc.add(3), (*m).opt.gravity.as_ptr(), -1.0);
+        }
+
+        // cfrc_ext = perturb
+        crate::engine::engine_util_blas::mju_zero((*d).cfrc_ext, 6 * nbody);
+        let mut i = 1;
+        while i < nbody {
+            if crate::engine::engine_util_misc::mju_is_zero((*d).xfrc_applied.add(6 * i as usize), 6) == 0 {
+                // rearrange as torque:force
+                crate::engine::engine_inline::mji_copy3(cfrc.as_mut_ptr(), (*d).xfrc_applied.add(6 * i as usize + 3));
+                crate::engine::engine_inline::mji_copy3(cfrc.as_mut_ptr().add(3), (*d).xfrc_applied.add(6 * i as usize));
+
+                // map force from application point to com; both world-oriented
+                crate::engine::engine_util_spatial::mju_transform_spatial(
+                    cfrc_com.as_mut_ptr(),
+                    cfrc.as_ptr(),
+                    1,
+                    (*d).subtree_com.add(3 * *(*m).body_rootid.add(i as usize) as usize),
+                    (*d).xipos.add(3 * i as usize),
+                    core::ptr::null(),
+                );
+
+                // accumulate
+                crate::engine::engine_util_blas::mju_add_to((*d).cfrc_ext.add(6 * i as usize), cfrc_com.as_ptr(), 6);
+            }
+            i += 1;
+        }
+
+        // cfrc_ext += contacts
+        let ncon = (*d).ncon;
+        let mut i = 0;
+        while i < ncon {
+            // get contact pointer
+            let con = &*(*d).contact.add(i as usize);
+
+            // skip excluded contacts
+            if con.efc_address < 0 {
+                i += 1;
+                continue;
+            }
+
+            // skip contact involving flex
+            if con.geom[0] < 0 || con.geom[1] < 0 {
+                i += 1;
+                continue;
+            }
+
+            // tmp = contact-local force:torque vector
+            crate::engine::engine_core_util::mj_contact_force(m, d as *const _, i, lfrc.as_mut_ptr());
+
+            // cfrc = world-oriented torque:force vector (swap in the process)
+            crate::engine::engine_util_blas::mju_mul_mat_t_vec3(cfrc.as_mut_ptr(), con.frame.as_ptr(), lfrc.as_ptr().add(3));
+            crate::engine::engine_util_blas::mju_mul_mat_t_vec3(cfrc.as_mut_ptr().add(3), con.frame.as_ptr(), lfrc.as_ptr());
+
+            // body 1
+            let k = *(*m).geom_bodyid.add(con.geom[0] as usize);
+            if k != 0 {
+                // tmp = subtree CoM-based torque_force vector
+                crate::engine::engine_util_spatial::mju_transform_spatial(
+                    cfrc_com.as_mut_ptr(),
+                    cfrc.as_ptr(),
+                    1,
+                    (*d).subtree_com.add(3 * *(*m).body_rootid.add(k as usize) as usize),
+                    con.pos.as_ptr(),
+                    core::ptr::null(),
+                );
+
+                // apply (opposite for body 1)
+                crate::engine::engine_util_blas::mju_sub_from((*d).cfrc_ext.add(6 * k as usize), cfrc_com.as_ptr(), 6);
+            }
+
+            // body 2
+            let k = *(*m).geom_bodyid.add(con.geom[1] as usize);
+            if k != 0 {
+                // tmp = subtree CoM-based torque_force vector
+                crate::engine::engine_util_spatial::mju_transform_spatial(
+                    cfrc_com.as_mut_ptr(),
+                    cfrc.as_ptr(),
+                    1,
+                    (*d).subtree_com.add(3 * *(*m).body_rootid.add(k as usize) as usize),
+                    con.pos.as_ptr(),
+                    core::ptr::null(),
+                );
+
+                // apply
+                crate::engine::engine_util_blas::mju_add_to((*d).cfrc_ext.add(6 * k as usize), cfrc_com.as_ptr(), 6);
+            }
+
+            i += 1;
+        }
+
+        // cfrc_ext += connect, weld, flex constraints
+        let mut i: i32 = 0;
+        let ne = (*d).ne;
+        while i < ne {
+            if *(*d).efc_type.add(i as usize) != MJ_CNSTR_EQUALITY {
+                extern "C" { fn mju_error(msg: *const i8, ...); }
+                mju_error(b"row %d of efc is not an equality constraint\0".as_ptr() as *const i8, i);
+            }
+
+            let id = *(*d).efc_id.add(i as usize);
+            let eq_data = (*m).eq_data.add((MJ_NEQDATA * id) as usize);
+            let mut pos: [f64; 3] = [0.0; 3];
+            let eq_type_val = *(*m).eq_type.add(id as usize);
+
+            if eq_type_val == MJ_EQ_CONNECT || eq_type_val == MJ_EQ_WELD {
+                // cfrc = world-oriented torque:force vector
+                crate::engine::engine_inline::mji_copy3(cfrc.as_mut_ptr().add(3), (*d).efc_force.add(i as usize));
+                if eq_type_val == MJ_EQ_WELD {
+                    crate::engine::engine_inline::mji_copy3(cfrc.as_mut_ptr(), (*d).efc_force.add((i + 3) as usize));
+                } else {
+                    crate::engine::engine_util_blas::mju_zero3(cfrc.as_mut_ptr()); // no torque from connect
+                }
+
+                let body_semantic = (*(*m).eq_objtype.add(id as usize) == MJ_OBJ_BODY) as i32;
+
+                // body 1
+                let obj1 = *(*m).eq_obj1id.add(id as usize);
+                let k = if body_semantic != 0 { obj1 } else { *(*m).site_bodyid.add(obj1 as usize) };
+                if k != 0 {
+                    let offset = if body_semantic != 0 {
+                        eq_data.add(3 * (eq_type_val == MJ_EQ_WELD) as usize)
+                    } else {
+                        (*m).site_pos.add(3 * obj1 as usize)
+                    };
+
+                    // transform point on body1: local -> global
+                    crate::engine::engine_core_util::mj_local2global(d, pos.as_mut_ptr(), core::ptr::null_mut(), offset, core::ptr::null(), k, 0);
+
+                    // tmp = subtree CoM-based torque_force vector
+                    crate::engine::engine_util_spatial::mju_transform_spatial(
+                        cfrc_com.as_mut_ptr(),
+                        cfrc.as_ptr(),
+                        1,
+                        (*d).subtree_com.add(3 * *(*m).body_rootid.add(k as usize) as usize),
+                        pos.as_ptr(),
+                        core::ptr::null(),
+                    );
+
+                    // apply (opposite for body 1)
+                    crate::engine::engine_util_blas::mju_add_to((*d).cfrc_ext.add(6 * k as usize), cfrc_com.as_ptr(), 6);
+                }
+
+                // body 2
+                let obj2 = *(*m).eq_obj2id.add(id as usize);
+                let k = if body_semantic != 0 { obj2 } else { *(*m).site_bodyid.add(obj2 as usize) };
+                if k != 0 {
+                    let offset = if body_semantic != 0 {
+                        eq_data.add(3 * (eq_type_val == MJ_EQ_CONNECT) as usize)
+                    } else {
+                        (*m).site_pos.add(3 * obj2 as usize)
+                    };
+
+                    // transform point on body2: local -> global
+                    crate::engine::engine_core_util::mj_local2global(d, pos.as_mut_ptr(), core::ptr::null_mut(), offset, core::ptr::null(), k, 0);
+
+                    // tmp = subtree CoM-based torque_force vector
+                    crate::engine::engine_util_spatial::mju_transform_spatial(
+                        cfrc_com.as_mut_ptr(),
+                        cfrc.as_ptr(),
+                        1,
+                        (*d).subtree_com.add(3 * *(*m).body_rootid.add(k as usize) as usize),
+                        pos.as_ptr(),
+                        core::ptr::null(),
+                    );
+
+                    // apply
+                    crate::engine::engine_util_blas::mju_sub_from((*d).cfrc_ext.add(6 * k as usize), cfrc_com.as_ptr(), 6);
+                }
+
+                // increment rows
+                if eq_type_val == MJ_EQ_WELD { i += 6; } else { i += 3; }
+            } else if eq_type_val == MJ_EQ_JOINT || eq_type_val == MJ_EQ_TENDON {
+                // increment 1 row
+                i += 1;
+            } else if eq_type_val == MJ_EQ_FLEX {
+                // increment with number of non-rigid edges
+                let k = *(*m).eq_obj1id.add(id as usize);
+                let flex_edgeadr = *(*m).flex_edgeadr.add(k as usize);
+                let flex_edgenum = *(*m).flex_edgenum.add(k as usize);
+
+                let mut e = flex_edgeadr;
+                while e < flex_edgeadr + flex_edgenum {
+                    if *(((*m).flexedge_rigid as *const u8).add(e as usize)) == 0 {
+                        i += 1;
+                    }
+                    e += 1;
+                }
+            } else if eq_type_val == MJ_EQ_FLEXVERT {
+                let k = *(*m).eq_obj1id.add(id as usize);
+                i += 2 * *(*m).flex_vertnum.add(k as usize);
+            } else if eq_type_val == MJ_EQ_FLEXSTRAIN {
+                // increment: trilinear uses 2 center (I1,J-1) + 3*ngauss shear, quadratic uses 6*ngauss
+                let k = *(*m).eq_obj1id.add(id as usize);
+                let interp_k = *(*m).flex_interp.add(k as usize);
+                let order = if interp_k < 0 { -interp_k } else { interp_k };
+                let nodenum = *(*m).flex_nodenum.add(k as usize);
+                if order != 0 && nodenum != 0 {
+                    let nquad = order + 1;
+                    let ngauss = nquad * nquad * nquad;
+                    let ncells = *(*m).flex_cellnum.add(3 * k as usize)
+                               * *(*m).flex_cellnum.add(3 * k as usize + 1)
+                               * *(*m).flex_cellnum.add(3 * k as usize + 2);
+                    if order == 1 {
+                        i += ncells * (2 + 3 * ngauss);
+                    } else {
+                        i += ncells * (6 * ngauss);
+                    }
+                }
+            } else {
+                extern "C" { fn mju_error(msg: *const i8, ...); }
+                mju_error(b"unknown constraint type type %d\0".as_ptr() as *const i8, eq_type_val);
+            }
+        }
+
+        // forward pass over bodies: compute cacc, cfrc_int
+        let mut cacc: [f64; 6] = [0.0; 6];
+        let mut cfrc_body: [f64; 6] = [0.0; 6];
+        let mut cfrc_corr: [f64; 6] = [0.0; 6];
+        crate::engine::engine_util_blas::mju_zero((*d).cfrc_int, 6);
+        let mut j = 1;
+        while j < nbody {
+            // get body's first dof address
+            let bda = *(*m).body_dofadr.add(j as usize);
+
+            // cacc = cacc_parent + cdofdot * qvel + cdof * qacc
+            crate::engine::engine_util_spatial::mju_mul_dof_vec(
+                cacc.as_mut_ptr(),
+                (*d).cdof_dot.add(6 * bda as usize),
+                (*d).qvel.add(bda as usize),
+                *(*m).body_dofnum.add(j as usize),
+            );
+            crate::engine::engine_util_blas::mju_add(
+                (*d).cacc.add(6 * j as usize),
+                (*d).cacc.add(6 * *(*m).body_parentid.add(j as usize) as usize),
+                cacc.as_ptr(),
+                6,
+            );
+            crate::engine::engine_util_spatial::mju_mul_dof_vec(
+                cacc.as_mut_ptr(),
+                (*d).cdof.add(6 * bda as usize),
+                (*d).qacc.add(bda as usize),
+                *(*m).body_dofnum.add(j as usize),
+            );
+            crate::engine::engine_util_blas::mju_add_to((*d).cacc.add(6 * j as usize), cacc.as_ptr(), 6);
+
+            // cfrc_body = cinert * cacc + cvel x (cinert * cvel)
+            crate::engine::engine_util_spatial::mju_mul_inert_vec(cfrc_body.as_mut_ptr(), (*d).cinert.add(10 * j as usize), (*d).cacc.add(6 * j as usize));
+            crate::engine::engine_util_spatial::mju_mul_inert_vec(cfrc_corr.as_mut_ptr(), (*d).cinert.add(10 * j as usize), (*d).cvel.add(6 * j as usize));
+            crate::engine::engine_inline::mji_cross_force(cfrc.as_mut_ptr(), (*d).cvel.add(6 * j as usize), cfrc_corr.as_ptr());
+            crate::engine::engine_util_blas::mju_add_to(cfrc_body.as_mut_ptr(), cfrc.as_ptr(), 6);
+
+            // set cfrc_int = cfrc_body - cfrc_ext
+            crate::engine::engine_util_blas::mju_sub((*d).cfrc_int.add(6 * j as usize), cfrc_body.as_ptr(), (*d).cfrc_ext.add(6 * j as usize), 6);
+
+            j += 1;
+        }
+
+        // backward pass over bodies: accumulate cfrc_int from children
+        let mut j = nbody - 1;
+        while j > 0 {
+            crate::engine::engine_util_blas::mju_add_to(
+                (*d).cfrc_int.add(6 * *(*m).body_parentid.add(j as usize) as usize),
+                (*d).cfrc_int.add(6 * j as usize) as *const f64,
+                6,
+            );
+            j -= 1;
+        }
+
+        // mark as computed
+        *((&mut (*d).flg_rnepost) as *mut mjtBool as *mut u8) = 1;
+    }
 }
 
 /// C: mj_tendonBias (engine/engine_core_smooth.h:116)

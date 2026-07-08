@@ -120,9 +120,10 @@ pub fn mj_stack_alloc_byte(d: *mut mjData, bytes: usize, alignment: usize) -> *m
 /// Calls: stackalloc
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_stack_alloc_info(d: *mut mjData, bytes: usize, alignment: usize, caller: *const i8, line: i32) -> *mut () {
-    extern "C" { fn mj_stackAllocInfo_impl(d: *mut mjData, bytes: usize, alignment: usize, caller: *const i8, line: i32) -> *mut (); }
-    // SAFETY: delegates to C implementation
-    unsafe { mj_stackAllocInfo_impl(d, bytes, alignment, caller, line) }
+    // SAFETY: d is valid mjData pointer, delegates to stackalloc which manages arena
+    unsafe {
+        crate::engine::engine_memory::stackalloc(d, bytes, alignment, caller, line)
+    }
 }
 
 /// C: mj_stackAllocNum (engine/engine_memory.h:64)
@@ -135,9 +136,24 @@ pub fn mj_stack_alloc_info(d: *mut mjData, bytes: usize, alignment: usize, calle
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_stack_alloc_num(d: *mut mjData, size: usize) -> *mut f64 {
 
-    extern "C" { fn mj_stackAllocNum_impl(d: *mut mjData, size: usize) -> *mut f64; }
-    // SAFETY: delegates to C implementation
-    unsafe { mj_stackAllocNum_impl(d, size) }
+    if size >= usize::MAX / core::mem::size_of::<f64>() {
+        // SAFETY: calls error handler which aborts — matches mjERROR behavior
+        unsafe {
+            crate::engine::engine_util_errmem::mju_error(
+                b"requested size is too large (more than 2^64 bytes).\0".as_ptr() as *const i8,
+            );
+        }
+    }
+    // SAFETY: d is valid mjData pointer; alignment matches _Alignof(mjtNum) == 8
+    unsafe {
+        crate::engine::engine_memory::stackalloc(
+            d,
+            size * core::mem::size_of::<f64>(),
+            core::mem::align_of::<f64>(),
+            core::ptr::null(),
+            0,
+        ) as *mut f64
+    }
 }
 
 /// C: mj_stackAllocInt (engine/engine_memory.h:67)
@@ -145,9 +161,24 @@ pub fn mj_stack_alloc_num(d: *mut mjData, size: usize) -> *mut f64 {
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_stack_alloc_int(d: *mut mjData, size: usize) -> *mut i32 {
 
-    extern "C" { fn mj_stackAllocInt_impl(d: *mut mjData, size: usize) -> *mut i32; }
-    // SAFETY: delegates to C implementation
-    unsafe { mj_stackAllocInt_impl(d, size) }
+    if size >= usize::MAX / core::mem::size_of::<i32>() {
+        // SAFETY: calls error handler which aborts — matches mjERROR behavior
+        unsafe {
+            crate::engine::engine_util_errmem::mju_error(
+                b"requested size is too large (more than 2^64 bytes).\0".as_ptr() as *const i8,
+            );
+        }
+    }
+    // SAFETY: d is valid mjData pointer; alignment matches _Alignof(int) == 4
+    unsafe {
+        crate::engine::engine_memory::stackalloc(
+            d,
+            size * core::mem::size_of::<i32>(),
+            core::mem::align_of::<i32>(),
+            core::ptr::null(),
+            0,
+        ) as *mut i32
+    }
 }
 
 /// C: mj_clearEfc (engine/engine_memory.h:70)
