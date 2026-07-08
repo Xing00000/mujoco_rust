@@ -46,9 +46,15 @@ pub fn tactile_taxel_batch(m: *const mjModel, d: *mut mjData, args: *mut ()) -> 
 /// Calls: tactile_taxel_batch
 #[allow(unused_variables, non_snake_case)]
 pub fn tactile_task(m: *const mjModel, d: *mut mjData, arg: *mut (), thread_id: i32, task_id: i32) {
-    extern "C" { fn tactile_task_impl(m: *const mjModel, d: *mut mjData, arg: *mut (), thread_id: i32, task_id: i32); }
-    // SAFETY: delegates to C implementation
-    unsafe { tactile_task_impl(m, d, arg, thread_id, task_id) }
+    // C: mjTactileTaskArgs* args_array = (mjTactileTaskArgs*)arg;
+    //    tactile_taxel_batch(m, d, &args_array[task_id]);
+    // mjTactileTaskArgs is 48 bytes on 64-bit (6 ints + ptr + 2 ints + ptr)
+    // SAFETY: arg points to an array of mjTactileTaskArgs, task_id is a valid index.
+    unsafe {
+        const SIZEOF_TACTILE_TASK_ARGS: usize = 48;
+        let element = (arg as *mut u8).add(task_id as usize * SIZEOF_TACTILE_TASK_ARGS) as *mut ();
+        tactile_taxel_batch(m, d, element);
+    }
 }
 
 /// C: apply_cutoff (engine/engine_sensor.c:198)

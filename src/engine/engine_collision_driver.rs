@@ -597,9 +597,83 @@ pub fn sa_pcmp(obj1: *mut mjtSAP, obj2: *mut mjtSAP, context: *mut ()) -> i32 {
 /// Calls: SAPcmp
 #[allow(unused_variables, non_snake_case)]
 pub fn sa_psort(arr: *mut mjtSAP, buf: *mut mjtSAP, n: i32, context: *mut ()) {
-    extern "C" { fn sa_psort_impl(arr: *mut mjtSAP, buf: *mut mjtSAP, n: i32, context: *mut ()); }
-    // SAFETY: delegates to C implementation
-    unsafe { sa_psort_impl(arr, buf, n, context) }
+    // SAFETY: arr and buf are valid arrays of at least n elements.
+    // Implements mjSORT(SAPsort, mjtSAP, SAPcmp) — timsort.
+    unsafe {
+        const RUNSIZE: i32 = 32;
+
+        // insertion sort for small runs
+        let mut start: i32 = 0;
+        while start < n {
+            let end = if start + RUNSIZE < n { start + RUNSIZE } else { n };
+            let mut j = start + 1;
+            while j < end {
+                let tmp = *arr.add(j as usize);
+                let mut k = j - 1;
+                while k >= start && sa_pcmp(arr.add(k as usize), &tmp as *const mjtSAP as *mut mjtSAP, context) > 0 {
+                    *arr.add(k as usize + 1) = *arr.add(k as usize);
+                    k -= 1;
+                }
+                *arr.add(k as usize + 1) = tmp;
+                j += 1;
+            }
+            start += RUNSIZE;
+        }
+
+        // bottom-up merge
+        let mut src = arr;
+        let mut dest = buf;
+        let mut len: i32 = RUNSIZE;
+        while len < n {
+            let mut ms: i32 = 0;
+            while ms < n {
+                let mid = ms + len;
+                let end = if ms + 2 * len < n { ms + 2 * len } else { n };
+                if mid < end {
+                    let mut i = ms;
+                    let mut j_idx = mid;
+                    let mut k = ms;
+                    while i < mid && j_idx < end {
+                        if sa_pcmp(src.add(i as usize), src.add(j_idx as usize), context) <= 0 {
+                            *dest.add(k as usize) = *src.add(i as usize);
+                            i += 1;
+                        } else {
+                            *dest.add(k as usize) = *src.add(j_idx as usize);
+                            j_idx += 1;
+                        }
+                        k += 1;
+                    }
+                    if i < mid {
+                        core::ptr::copy_nonoverlapping(
+                            src.add(i as usize),
+                            dest.add(k as usize),
+                            (mid - i) as usize,
+                        );
+                    } else if j_idx < end {
+                        core::ptr::copy_nonoverlapping(
+                            src.add(j_idx as usize),
+                            dest.add(k as usize),
+                            (end - j_idx) as usize,
+                        );
+                    }
+                } else {
+                    core::ptr::copy_nonoverlapping(
+                        src.add(ms as usize),
+                        dest.add(ms as usize),
+                        (end - ms) as usize,
+                    );
+                }
+                ms += 2 * len;
+            }
+            let tmp = src;
+            src = dest;
+            dest = tmp;
+            len *= 2;
+        }
+        if src != arr {
+            core::ptr::copy_nonoverlapping(src, arr, n as usize);
+        }
+    }
 }
 
 /// C: mj_SAP (engine/engine_collision_driver.c:1400)
@@ -652,9 +726,85 @@ pub fn uintcmp(i: *mut i32, j: *mut i32, context: *mut ()) -> i32 {
 /// Calls: uintcmp
 #[allow(unused_variables, non_snake_case)]
 pub fn bfsort(arr: *mut i32, buf: *mut i32, n: i32, context: *mut ()) {
-    extern "C" { fn bfsort_impl(arr: *mut i32, buf: *mut i32, n: i32, context: *mut ()); }
-    // SAFETY: delegates to C implementation
-    unsafe { bfsort_impl(arr, buf, n, context) }
+    // SAFETY: arr and buf are valid arrays of at least n elements.
+    // Implements mjSORT(bfsort, int, uintcmp) macro expansion — timsort.
+    unsafe {
+        const RUNSIZE: i32 = 32;
+
+        // insertion sort for small runs
+        let mut start: i32 = 0;
+        while start < n {
+            let end = if start + RUNSIZE < n { start + RUNSIZE } else { n };
+            // _mjINSERTION_SORT
+            let mut j = start + 1;
+            while j < end {
+                let tmp = *arr.add(j as usize);
+                let mut k = j - 1;
+                while k >= start && uintcmp(arr.add(k as usize), &tmp as *const i32 as *mut i32, context) > 0 {
+                    *arr.add(k as usize + 1) = *arr.add(k as usize);
+                    k -= 1;
+                }
+                *arr.add(k as usize + 1) = tmp;
+                j += 1;
+            }
+            start += RUNSIZE;
+        }
+
+        // bottom-up merge
+        let mut src = arr;
+        let mut dest = buf;
+        let mut len: i32 = RUNSIZE;
+        while len < n {
+            let mut ms: i32 = 0;
+            while ms < n {
+                let mid = ms + len;
+                let end = if ms + 2 * len < n { ms + 2 * len } else { n };
+                if mid < end {
+                    // _mjMERGE
+                    let mut i = ms;
+                    let mut j = mid;
+                    let mut k = ms;
+                    while i < mid && j < end {
+                        if uintcmp(src.add(i as usize), src.add(j as usize), context) <= 0 {
+                            *dest.add(k as usize) = *src.add(i as usize);
+                            i += 1;
+                        } else {
+                            *dest.add(k as usize) = *src.add(j as usize);
+                            j += 1;
+                        }
+                        k += 1;
+                    }
+                    if i < mid {
+                        core::ptr::copy_nonoverlapping(
+                            src.add(i as usize),
+                            dest.add(k as usize),
+                            (mid - i) as usize,
+                        );
+                    } else if j < end {
+                        core::ptr::copy_nonoverlapping(
+                            src.add(j as usize),
+                            dest.add(k as usize),
+                            (end - j) as usize,
+                        );
+                    }
+                } else {
+                    core::ptr::copy_nonoverlapping(
+                        src.add(ms as usize),
+                        dest.add(ms as usize),
+                        (end - ms) as usize,
+                    );
+                }
+                ms += 2 * len;
+            }
+            let tmp = src;
+            src = dest;
+            dest = tmp;
+            len *= 2;
+        }
+        if src != arr {
+            core::ptr::copy_nonoverlapping(src, arr, n as usize);
+        }
+    }
 }
 
 /// C: mj_contactParam (engine/engine_collision_driver.c:1694)

@@ -210,9 +210,9 @@ pub fn mjv_copy_model(dest: *mut mjModel, src: *const mjModel) {
 /// Calls: bufwrite, getnptr, getnsize, mj_version, mju_warning
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_save_model(m: *const mjModel, filename: *const i8, buffer: *mut (), buffer_sz: i32) {
-    extern "C" { fn mj_save_model_impl(m: *const mjModel, filename: *const i8, buffer: *mut (), buffer_sz: i32); }
-    // SAFETY: delegates to C implementation
-    unsafe { mj_save_model_impl(m, filename, buffer, buffer_sz) }
+    extern "C" { fn mj_saveModel(m: *const mjModel, filename: *const i8, buffer: *mut (), buffer_sz: i32); }
+    // SAFETY: delegates to mj_saveModel in libmujoco (exported MJAPI function)
+    unsafe { mj_saveModel(m, filename, buffer, buffer_sz) }
 }
 
 /// C: mj_loadModelBuffer (engine/engine_io.h:78)

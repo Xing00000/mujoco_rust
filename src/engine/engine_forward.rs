@@ -156,9 +156,20 @@ pub fn warmstart(m: *const mjModel, d: *mut mjData) {
 /// Calls: mj_solCG_island, mj_solNewton_island, mj_solPGS_island
 #[allow(unused_variables, non_snake_case)]
 pub fn solve_island_task(m: *const mjModel, d: *mut mjData, arg: *mut (), thread_id: i32, island: i32) {
-    extern "C" { fn solve_island_task_impl(m: *const mjModel, d: *mut mjData, arg: *mut (), thread_id: i32, island: i32); }
-    // SAFETY: delegates to C implementation
-    unsafe { solve_island_task_impl(m, d, arg, thread_id, island) }
+    // SAFETY: m is valid mjModel pointer. Solver functions are already translated/delegated.
+    unsafe {
+        const mjSOL_NEWTON: i32 = 2;
+        const mjSOL_CG: i32 = 1;
+        let solver = (*m).opt.solver;
+        let iterations = (*m).opt.iterations;
+        if solver == mjSOL_NEWTON {
+            crate::engine::engine_solver::mj_sol_newton_island(m, d, island, iterations);
+        } else if solver == mjSOL_CG {
+            crate::engine::engine_solver::mj_sol_cg_island(m, d, island, iterations);
+        } else {
+            crate::engine::engine_solver::mj_sol_pgs_island(m, d, island, iterations);
+        }
+    }
 }
 
 /// C: mj_advance (engine/engine_forward.c:981)
