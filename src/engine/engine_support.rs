@@ -585,11 +585,18 @@ pub fn mj_version_string() -> *const i8 {
 /// C: mju_condataSize (engine/engine_support.h:127)
 #[allow(unused_variables, non_snake_case)]
 pub fn mju_condata_size(dataSpec: i32) -> i32 {
-    extern "C" {
-        fn mju_condataSize_impl(dataSpec: i32) -> i32;
+    // SAFETY: pure computation, no pointer access.
+    const MJNCONDATA: i32 = 7;
+    const MJCONDATA_SIZE: [i32; 7] = [1, 3, 3, 1, 3, 3, 3];
+    let mut size: i32 = 0;
+    let mut i: i32 = 0;
+    while i < MJNCONDATA {
+        if (dataSpec & (1 << i)) != 0 {
+            size += MJCONDATA_SIZE[i as usize];
+        }
+        i += 1;
     }
-    // SAFETY: delegates to C implementation, all pointers valid per caller contract
-    unsafe { mju_condataSize_impl(dataSpec) }
+    size
 }
 
 /// C: mju_raydataSize (engine/engine_support.h:130)

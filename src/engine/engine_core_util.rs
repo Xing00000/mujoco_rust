@@ -264,9 +264,10 @@ pub fn mj_jac_subtree_com(m: *const mjModel, d: *mut mjData, jacp: *mut f64, bod
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_jac_geom(m: *const mjModel, d: *const mjData, jacp: *mut f64, jacr: *mut f64, geom: i32) {
-    extern "C" { fn mj_jacGeom_impl(m: *const mjModel, d: *const mjData, jacp: *mut f64, jacr: *mut f64, geom: i32); }
-    // SAFETY: delegates to C implementation, all pointers valid per caller contract
-    unsafe { mj_jacGeom_impl(m, d, jacp, jacr, geom) }
+    // SAFETY: m, d valid. geom is valid geom index.
+    unsafe {
+        mj_jac(m, d, jacp, jacr, (*d).geom_xpos.add(3 * geom as usize), *(*m).geom_bodyid.add(geom as usize));
+    }
 }
 
 /// C: mj_jacSite (engine/engine_core_util.h:71)

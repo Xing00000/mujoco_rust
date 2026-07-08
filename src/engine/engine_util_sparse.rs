@@ -281,11 +281,77 @@ pub fn mju_add_to_scl_sparse_inc(dst: *mut f64, src: *const f64, nnzdst: i32, in
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mju_add_to_sparse_mat(dst: *mut f64, src: *const f64, n: i32, nrow: i32, scl: f64, dst_nnz: i32, src_nnz: i32, dst_ind: *mut i32, src_ind: *const i32, buf: *mut f64, buf_ind: *mut i32) -> i32 {
-    extern "C" {
-        fn mju_addToSparseMat_impl(dst: *mut f64, src: *const f64, n: i32, nrow: i32, scl: f64, dst_nnz: i32, src_nnz: i32, dst_ind: *mut i32, src_ind: *const i32, buf: *mut f64, buf_ind: *mut i32) -> i32;
+    // SAFETY: all pointers valid. dst/src are column-major sparse matrices.
+    // buf/buf_ind are scratch buffers with adequate capacity.
+    unsafe {
+        // check for identical pattern
+        if dst_nnz == src_nnz {
+            if dst_nnz == 0 {
+                return 0;
+            }
+            if mju_compare(dst_ind, src_ind, dst_nnz) != 0 {
+                // combine mjtNum data directly
+                crate::engine::engine_util_blas::mju_add_to_scl(dst, src, scl, nrow * dst_nnz);
+                return dst_nnz;
+            }
+        }
+
+        // prepare to merge src and dst into buf^T
+        let mut si: i32 = 0;
+        let mut di: i32 = 0;
+        let mut nnz: i32 = 0;
+        let mut sadr: i32 = if src_nnz != 0 { *src_ind.add(0) } else { n + 1 };
+        let mut dadr: i32 = if dst_nnz != 0 { *dst_ind.add(0) } else { n + 1 };
+
+        // merge matrices
+        while si < src_nnz || di < dst_nnz {
+            // both
+            if sadr == dadr {
+                let mut k: i32 = 0;
+                while k < nrow {
+                    *buf.add((nrow * nnz + k) as usize) =
+                        *dst.add((di + k * dst_nnz) as usize) + scl * *src.add((si + k * src_nnz) as usize);
+                    k += 1;
+                }
+                *buf_ind.add(nnz as usize) = sadr;
+                nnz += 1;
+                si += 1;
+                di += 1;
+                sadr = if si < src_nnz { *src_ind.add(si as usize) } else { n + 1 };
+                dadr = if di < dst_nnz { *dst_ind.add(di as usize) } else { n + 1 };
+            }
+            // dst only
+            else if dadr < sadr {
+                let mut k: i32 = 0;
+                while k < nrow {
+                    *buf.add((nrow * nnz + k) as usize) = *dst.add((di + k * dst_nnz) as usize);
+                    k += 1;
+                }
+                *buf_ind.add(nnz as usize) = dadr;
+                nnz += 1;
+                di += 1;
+                dadr = if di < dst_nnz { *dst_ind.add(di as usize) } else { n + 1 };
+            }
+            // src only
+            else {
+                let mut k: i32 = 0;
+                while k < nrow {
+                    *buf.add((nrow * nnz + k) as usize) = scl * *src.add((si + k * src_nnz) as usize);
+                    k += 1;
+                }
+                *buf_ind.add(nnz as usize) = sadr;
+                nnz += 1;
+                si += 1;
+                sadr = if si < src_nnz { *src_ind.add(si as usize) } else { n + 1 };
+            }
+        }
+
+        // copy transposed buf into dst
+        crate::engine::engine_util_blas::mju_transpose(dst, buf, nnz, nrow);
+        crate::engine::engine_util_misc::mju_copy_int(dst_ind, buf_ind, nnz);
+
+        nnz
     }
-    // SAFETY: delegates to C implementation, all pointers valid per caller contract
-    unsafe { mju_addToSparseMat_impl(dst, src, n, nrow, scl, dst_nnz, src_nnz, dst_ind, src_ind, buf, buf_ind) }
 }
 
 /// C: mju_addChains (engine/engine_util_sparse.h:106)

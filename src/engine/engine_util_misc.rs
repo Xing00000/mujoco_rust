@@ -917,11 +917,29 @@ pub fn mju_encode_pyramid(pyramid: *mut f64, force: *const f64, mu: *const f64, 
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mju_decode_pyramid(force: *mut f64, pyramid: *const f64, mu: *const f64, dim: i32) {
-    extern "C" {
-        fn mju_decodePyramid_impl(force: *mut f64, pyramid: *const f64, mu: *const f64, dim: i32);
+    // SAFETY: force has dim elements, pyramid has 2*(dim-1) elements, mu has dim-1 elements.
+    unsafe {
+        // special handling of frictionless contacts
+        if dim == 1 {
+            *force.add(0) = *pyramid.add(0);
+            return;
+        }
+
+        // force_normal = sum(pyramid0_i + pyramid1_i)
+        *force.add(0) = 0.0;
+        let mut i: i32 = 0;
+        while i < 2 * (dim - 1) {
+            *force.add(0) += *pyramid.add(i as usize);
+            i += 1;
+        }
+
+        // force_tangent_i = (pyramid0_i - pyramid1_i) * mu_i
+        i = 0;
+        while i < dim - 1 {
+            *force.add((i + 1) as usize) = (*pyramid.add((2 * i) as usize) - *pyramid.add((2 * i + 1) as usize)) * *mu.add(i as usize);
+            i += 1;
+        }
     }
-    // SAFETY: delegates to C implementation, all pointers valid per caller contract
-    unsafe { mju_decodePyramid_impl(force, pyramid, mu, dim) }
 }
 
 /// C: mju_springDamper (engine/engine_util_misc.h:208)
