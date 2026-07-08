@@ -85,9 +85,64 @@ pub fn mju_chol_update(mat: *mut f64, x: *mut f64, n: i32, flg_plus: i32) -> i32
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mju_chol_factor_sparse(mat: *mut f64, n: i32, mindiag: f64, rownnz: *mut i32, rowadr: *const i32, colind: *mut i32, d: *mut mjData) -> i32 {
-    extern "C" { fn mju_cholFactorSparse_impl(mat: *mut f64, n: i32, mindiag: f64, rownnz: *mut i32, rowadr: *const i32, colind: *mut i32, d: *mut mjData) -> i32; }
-    // SAFETY: delegates to C implementation
-    unsafe { mju_cholFactorSparse_impl(mat, n, mindiag, rownnz, rowadr, colind, d) }
+    let _ = d;
+    let mut rank: i32 = n;
+
+    // SAFETY: raw pointer arithmetic mirrors C exactly; caller guarantees mat/rownnz/rowadr/colind
+    // are valid with sufficient allocation for sparse Cholesky factor operations.
+    unsafe {
+        // backpass over rows
+        let mut r: i32 = n - 1;
+        while r >= 0 {
+            // get rownnz and rowadr for row r
+            let nnz: i32 = *rownnz.add(r as usize);
+            let adr: i32 = *rowadr.add(r as usize);
+
+            // update row r diagonal
+            let mut tmp: f64 = *mat.add((adr + nnz - 1) as usize);
+            if tmp < mindiag {
+                tmp = mindiag;
+                rank -= 1;
+            }
+            *mat.add((adr + nnz - 1) as usize) = tmp.sqrt();
+            tmp = 1.0 / *mat.add((adr + nnz - 1) as usize);
+
+            // update row r before diagonal
+            let mut i: i32 = 0;
+            while i < nnz - 1 {
+                *mat.add((adr + i) as usize) *= tmp;
+                i += 1;
+            }
+
+            // update row c<r where mat(r,c)!=0
+            let mut i: i32 = 0;
+            while i < nnz - 1 {
+                // get column index
+                let c: i32 = *colind.add((adr + i) as usize);
+
+                // mat(c,0:c) = mat(c,0:c) - mat(r,c) * mat(r,0:c)
+                let nnz_c: i32 = crate::engine::engine_util_sparse::mju_combine_sparse(
+                    mat.add(*rowadr.add(c as usize) as usize),
+                    mat.add(adr as usize) as *const f64,
+                    1.0,
+                    -*mat.add((adr + i) as usize),
+                    *rownnz.add(c as usize),
+                    i + 1,
+                    colind.add(*rowadr.add(c as usize) as usize),
+                    colind.add(adr as usize) as *const i32,
+                );
+
+                // assign new nnz to row c
+                *rownnz.add(c as usize) = nnz_c;
+
+                i += 1;
+            }
+
+            r -= 1;
+        }
+    }
+
+    rank
 }
 
 /// C: mju_cholFactorSymbolic (engine/engine_util_solve.h:45)

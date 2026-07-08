@@ -131,9 +131,11 @@ pub fn mju_set_log_config(config: mjLogConfig) {
 /// Calls: mju_initLogTopicsFromEnv
 #[allow(unused_variables, non_snake_case)]
 pub fn mju_clear_handlers() {
-    extern "C" { fn mju_clearHandlers_impl(); }
-    // SAFETY: delegates to C implementation
-    unsafe { mju_clearHandlers_impl() }
+    extern "C" { fn mju_clearHandlers(); }
+    // SAFETY: calls public C API that resets file-scope statics (global_log_handler, log_config,
+    // env_checked) and global callbacks (mju_user_error/warning/malloc/free) to defaults.
+    // These statics live in the C translation unit and cannot be accessed from Rust directly.
+    unsafe { mju_clearHandlers() }
 }
 
 /// C: mju_error (engine/engine_util_errmem.h:74)
