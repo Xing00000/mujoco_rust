@@ -422,9 +422,37 @@ pub fn mju_inside_geom(pos: *const f64, mat: *const f64, size: *const f64, r#typ
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mju_cam_pixel_ray(origin: *mut f64, direction: *mut f64, cam_xpos: *const f64, cam_xmat: *const f64, col: i32, row: i32, fx: f64, fy: f64, cx: f64, cy: f64, projection: i32, ortho_extent: f64) {
-    extern "C" { fn mju_camPixelRay_impl(origin: *mut f64, direction: *mut f64, cam_xpos: *const f64, cam_xmat: *const f64, col: i32, row: i32, fx: f64, fy: f64, cx: f64, cy: f64, projection: i32, ortho_extent: f64); }
-    // SAFETY: delegates to C implementation, all pointers valid per caller contract
-    unsafe { mju_camPixelRay_impl(origin, direction, cam_xpos, cam_xmat, col, row, fx, fy, cx, cy, projection, ortho_extent) }
+    // SAFETY: origin and direction have 3 elements. cam_xpos has 3 elements.
+    // cam_xmat has 9 elements. All valid per caller contract.
+    unsafe {
+        const MJPROJ_PERSPECTIVE: i32 = 0;
+
+        // pixel center (row 0 = top of image)
+        let px: f64 = col as f64 + 0.5 - cx;
+        let py: f64 = row as f64 + 0.5 - cy;
+
+        if projection == MJPROJ_PERSPECTIVE {
+            // origin is camera position
+            crate::engine::engine_util_blas::mju_copy3(origin, cam_xpos);
+
+            // direction in camera frame: (x/fx, -y/fy, -1), then normalized
+            let dir_cam: [f64; 3] = [px / fx, -py / fy, -1.0];
+            crate::engine::engine_util_blas::mju_mul_mat_vec3(direction, cam_xmat, dir_cam.as_ptr());
+            crate::engine::engine_util_blas::mju_normalize3(direction);
+        } else {
+            // orthographic: parallel rays, direction is -Z in camera frame
+            *direction.add(0) = -*cam_xmat.add(2);
+            *direction.add(1) = -*cam_xmat.add(5);
+            *direction.add(2) = -*cam_xmat.add(8);
+
+            // origin offset in camera frame
+            let half_extent: f64 = ortho_extent / 2.0;
+            let offset_cam: [f64; 3] = [px / fx * half_extent, -py / fy * half_extent, 0.0];
+            let mut offset_world: [f64; 3] = [0.0; 3];
+            crate::engine::engine_util_blas::mju_mul_mat_vec3(offset_world.as_mut_ptr(), cam_xmat, offset_cam.as_ptr());
+            crate::engine::engine_util_blas::mju_add3(origin, cam_xpos, offset_world.as_ptr());
+        }
+    }
 }
 
 /// C: mju_defGradient (engine/engine_util_misc.h:87)

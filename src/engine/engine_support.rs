@@ -615,9 +615,44 @@ pub fn mju_raydata_size(dataspec: i32) -> i32 {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mju_cam_intrinsics(m: *const mjModel, camid: i32, fx: *mut f64, fy: *mut f64, cx: *mut f64, cy: *mut f64, ortho_extent: *mut f64) {
-    extern "C" { fn mju_camIntrinsics_impl(m: *const mjModel, camid: i32, fx: *mut f64, fy: *mut f64, cx: *mut f64, cy: *mut f64, ortho_extent: *mut f64); }
-    // SAFETY: delegates to C implementation, all pointers valid per caller contract
-    unsafe { mju_camIntrinsics_impl(m, camid, fx, fy, cx, cy, ortho_extent) }
+    // SAFETY: m valid. camid is a valid camera index. fx/fy/cx/cy/ortho_extent are non-null.
+    unsafe {
+        const MJPROJ_PERSPECTIVE: i32 = 0;
+        const MJPROJ_ORTHOGRAPHIC: i32 = 1;
+        const MJPI: f64 = 3.14159265358979323846;
+
+        let width = *(*m).cam_resolution.add(2 * camid as usize);
+        let height = *(*m).cam_resolution.add(2 * camid as usize + 1);
+        let sensorsize = (*m).cam_sensorsize.add(2 * camid as usize);
+        let intrinsic = (*m).cam_intrinsic.add(4 * camid as usize);
+        let projection = *(*m).cam_projection.add(camid as usize);
+
+        if projection == MJPROJ_PERSPECTIVE {
+            if *sensorsize.add(0) != 0.0 && *sensorsize.add(1) != 0.0 {
+                // intrinsic-based perspective camera
+                *fx = *intrinsic.add(0) as f64 / *sensorsize.add(0) as f64 * width as f64;
+                *fy = *intrinsic.add(1) as f64 / *sensorsize.add(1) as f64 * height as f64;
+                *cx = *intrinsic.add(2) as f64 / *sensorsize.add(0) as f64 * width as f64;
+                *cy = *intrinsic.add(3) as f64 / *sensorsize.add(1) as f64 * height as f64;
+            } else {
+                // fovy-based perspective camera
+                let val = 0.5 / (*(*m).cam_fovy.add(camid as usize) * MJPI / 360.0).tan() * height as f64;
+                *fx = val;
+                *fy = val;
+                *cx = width as f64 / 2.0;
+                *cy = height as f64 / 2.0;
+            }
+        } else if projection == MJPROJ_ORTHOGRAPHIC {
+            // orthographic: normalize pixel offset to [-1, 1]
+            *fx = width as f64 / 2.0;
+            *fy = height as f64 / 2.0;
+            *cx = *fx;
+            *cy = *fy;
+        }
+
+        // extent only used for orthographic cameras
+        *ortho_extent = *(*m).cam_fovy.add(camid as usize);
+    }
 }
 
 /// C: mj_readCtrl (engine/engine_support.h:141)
