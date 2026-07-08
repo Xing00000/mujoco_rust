@@ -80,8 +80,40 @@ pub fn mjv_default_figure(fig: *mut mjvFigure) {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjv_rbound(geom: *const mjvGeom) -> f32 {
-    extern "C" { fn mjv_rbound_impl(geom: *const mjvGeom) -> f32; }
-    // SAFETY: delegates to C implementation
-    unsafe { mjv_rbound_impl(geom) }
+    // SAFETY: geom is a valid pointer per caller contract; read-only access to struct fields.
+    unsafe {
+        const MJOBJ_GEOM: i32 = 5;
+        const MJGEOM_SPHERE: i32 = 2;
+        const MJGEOM_CAPSULE: i32 = 3;
+        const MJGEOM_CYLINDER: i32 = 5;
+        const MJGEOM_BOX: i32 = 6;
+
+        // model geom: return
+        if (*geom).objtype == MJOBJ_GEOM {
+            return (*geom).modelrbound;
+        }
+
+        // compute rbound according to type
+        let s: *const f32 = (*geom).size.as_ptr();
+        match (*geom).r#type {
+            MJGEOM_SPHERE => {
+                *s.add(0)
+            }
+            MJGEOM_CAPSULE => {
+                *s.add(0) + *s.add(2)
+            }
+            MJGEOM_CYLINDER => {
+                (*s.add(0) * *s.add(0) + *s.add(2) * *s.add(2)).sqrt()
+            }
+            MJGEOM_BOX => {
+                (*s.add(0) * *s.add(0) + *s.add(1) * *s.add(1) + *s.add(2) * *s.add(2)).sqrt()
+            }
+            _ => {
+                // not accurate for arrows, but they are not transparent
+                let m01 = if *s.add(0) > *s.add(1) { *s.add(0) } else { *s.add(1) };
+                if m01 > *s.add(2) { m01 } else { *s.add(2) }
+            }
+        }
+    }
 }
 

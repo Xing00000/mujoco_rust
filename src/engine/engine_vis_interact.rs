@@ -189,9 +189,58 @@ pub fn mjv_apply_perturb_force(m: *const mjModel, d: *mut mjData, pert: *const m
 /// Calls: mju_add3, mju_addToScl3, mju_dot3, mju_f2n, mju_message, mju_n2f, mju_normalize3, mju_scl3
 #[allow(unused_variables, non_snake_case)]
 pub fn mjv_average_camera(cam1: *const mjvGLCamera, cam2: *const mjvGLCamera) -> mjvGLCamera {
-    extern "C" { fn mjv_averageCamera_impl(cam1: *const mjvGLCamera, cam2: *const mjvGLCamera) -> mjvGLCamera; }
-    // SAFETY: delegates to C implementation
-    unsafe { mjv_averageCamera_impl(cam1, cam2) }
+    // SAFETY: cam1 and cam2 are valid pointers per caller contract; all mju_* calls
+    // operate on stack-local arrays with correct sizes.
+    unsafe {
+        let mut pos: [f64; 3] = [0.0; 3];
+        let mut forward: [f64; 3] = [0.0; 3];
+        let mut up: [f64; 3] = [0.0; 3];
+        let mut tmp1: [f64; 3] = [0.0; 3];
+        let mut tmp2: [f64; 3] = [0.0; 3];
+        let mut cam: mjvGLCamera = core::mem::zeroed();
+
+        // compute pos
+        crate::engine::engine_util_misc::mju_f2n(tmp1.as_mut_ptr(), (*cam1).pos.as_ptr(), 3);
+        crate::engine::engine_util_misc::mju_f2n(tmp2.as_mut_ptr(), (*cam2).pos.as_ptr(), 3);
+        crate::engine::engine_util_blas::mju_add3(pos.as_mut_ptr(), tmp1.as_ptr(), tmp2.as_ptr());
+        crate::engine::engine_util_blas::mju_scl3(pos.as_mut_ptr(), pos.as_ptr(), 0.5);
+
+        // compute forward
+        crate::engine::engine_util_misc::mju_f2n(tmp1.as_mut_ptr(), (*cam1).forward.as_ptr(), 3);
+        crate::engine::engine_util_misc::mju_f2n(tmp2.as_mut_ptr(), (*cam2).forward.as_ptr(), 3);
+        crate::engine::engine_util_blas::mju_add3(forward.as_mut_ptr(), tmp1.as_ptr(), tmp2.as_ptr());
+        crate::engine::engine_util_blas::mju_normalize3(forward.as_mut_ptr());
+
+        // compute up, make it orthogonal to forward
+        crate::engine::engine_util_misc::mju_f2n(tmp1.as_mut_ptr(), (*cam1).up.as_ptr(), 3);
+        crate::engine::engine_util_misc::mju_f2n(tmp2.as_mut_ptr(), (*cam2).up.as_ptr(), 3);
+        crate::engine::engine_util_blas::mju_add3(up.as_mut_ptr(), tmp1.as_ptr(), tmp2.as_ptr());
+        let projection: f64 = crate::engine::engine_util_blas::mju_dot3(up.as_ptr(), forward.as_ptr());
+        crate::engine::engine_util_blas::mju_add_to_scl3(up.as_mut_ptr(), forward.as_ptr(), -projection);
+        crate::engine::engine_util_blas::mju_normalize3(up.as_mut_ptr());
+
+        // assign 3d quantities
+        crate::engine::engine_util_misc::mju_n2f(cam.pos.as_mut_ptr(), pos.as_ptr(), 3);
+        crate::engine::engine_util_misc::mju_n2f(cam.forward.as_mut_ptr(), forward.as_ptr(), 3);
+        crate::engine::engine_util_misc::mju_n2f(cam.up.as_mut_ptr(), up.as_ptr(), 3);
+
+        // average frustum
+        cam.frustum_bottom = 0.5f32 * ((*cam1).frustum_bottom + (*cam2).frustum_bottom);
+        cam.frustum_top    = 0.5f32 * ((*cam1).frustum_top + (*cam2).frustum_top);
+        cam.frustum_center = 0.5f32 * ((*cam1).frustum_center + (*cam2).frustum_center);
+        cam.frustum_width  = 0.5f32 * ((*cam1).frustum_width + (*cam2).frustum_width);
+        cam.frustum_near   = 0.5f32 * ((*cam1).frustum_near + (*cam2).frustum_near);
+        cam.frustum_far    = 0.5f32 * ((*cam1).frustum_far + (*cam2).frustum_far);
+
+        if (*cam1).orthographic != (*cam2).orthographic {
+            crate::engine::engine_util_errmem::mju_error(
+                b"cannot average perspective and orthographic cameras\0".as_ptr() as *const i8);
+        } else {
+            cam.orthographic = (*cam1).orthographic;
+        }
+
+        cam
+    }
 }
 
 /// C: mjv_select (engine/engine_vis_interact.h:76)
