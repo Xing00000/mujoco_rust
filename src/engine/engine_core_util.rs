@@ -278,11 +278,10 @@ pub fn mj_jac_geom(m: *const mjModel, d: *const mjData, jacp: *mut f64, jacr: *m
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_jac_site(m: *const mjModel, d: *const mjData, jacp: *mut f64, jacr: *mut f64, site: i32) {
-    extern "C" {
-        fn mj_jacSite_impl(m: *const mjModel, d: *const mjData, jacp: *mut f64, jacr: *mut f64, site: i32);
+    // SAFETY: m, d valid per caller. site is a valid site index.
+    unsafe {
+        mj_jac(m, d, jacp, jacr, (*d).site_xpos.add(3 * site as usize), *(*m).site_bodyid.add(site as usize));
     }
-    // SAFETY: delegates to C implementation, all pointers valid per caller contract
-    unsafe { mj_jacSite_impl(m, d, jacp, jacr, site) }
 }
 
 /// C: mj_jacPointAxis (engine/engine_core_util.h:75)
@@ -385,11 +384,63 @@ pub fn mj_jac_sparse(m: *const mjModel, d: *const mjData, jacp: *mut f64, jacr: 
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_jac_sparse_simple(m: *const mjModel, d: *const mjData, jacdifp: *mut f64, jacdifr: *mut f64, point: *const f64, body: i32, flg_second: i32, NV: i32, start: i32) {
-    extern "C" {
-        fn mj_jacSparseSimple_impl(m: *const mjModel, d: *const mjData, jacdifp: *mut f64, jacdifr: *mut f64, point: *const f64, body: i32, flg_second: i32, NV: i32, start: i32);
+    // SAFETY: all pointers valid per caller. body is a valid simple body index.
+    // jacdifp/jacdifr have capacity for 3*NV elements. point has 3 elements.
+    unsafe {
+        // compute point-com offset
+        let mut offset: [f64; 3] = [0.0; 3];
+        crate::engine::engine_util_blas::mju_sub3(
+            offset.as_mut_ptr(),
+            point,
+            (*d).subtree_com.add(3 * *(*m).body_rootid.add(body as usize) as usize),
+        );
+
+        // skip fixed body
+        if *(*m).body_dofnum.add(body as usize) == 0 {
+            return;
+        }
+
+        // process dofs
+        let mut ci = start;
+        let end = *(*m).body_dofadr.add(body as usize) + *(*m).body_dofnum.add(body as usize);
+        let mut da = *(*m).body_dofadr.add(body as usize);
+        while da < end {
+            let cdof = (*d).cdof.add(6 * da as usize);
+
+            // construct rotation jacobian
+            if !jacdifr.is_null() {
+                if flg_second != 0 {
+                    *jacdifr.add((ci + 0 * NV) as usize) = *cdof.add(0);
+                    *jacdifr.add((ci + 1 * NV) as usize) = *cdof.add(1);
+                    *jacdifr.add((ci + 2 * NV) as usize) = *cdof.add(2);
+                } else {
+                    *jacdifr.add((ci + 0 * NV) as usize) = -*cdof.add(0);
+                    *jacdifr.add((ci + 1 * NV) as usize) = -*cdof.add(1);
+                    *jacdifr.add((ci + 2 * NV) as usize) = -*cdof.add(2);
+                }
+            }
+
+            // construct translation jacobian (correct for rotation)
+            if !jacdifp.is_null() {
+                let mut tmp: [f64; 3] = [0.0; 3];
+                crate::engine::engine_inline::mji_cross(tmp.as_mut_ptr(), cdof, offset.as_ptr());
+
+                if flg_second != 0 {
+                    *jacdifp.add((ci + 0 * NV) as usize) = *cdof.add(3) + tmp[0];
+                    *jacdifp.add((ci + 1 * NV) as usize) = *cdof.add(4) + tmp[1];
+                    *jacdifp.add((ci + 2 * NV) as usize) = *cdof.add(5) + tmp[2];
+                } else {
+                    *jacdifp.add((ci + 0 * NV) as usize) = -(*cdof.add(3) + tmp[0]);
+                    *jacdifp.add((ci + 1 * NV) as usize) = -(*cdof.add(4) + tmp[1]);
+                    *jacdifp.add((ci + 2 * NV) as usize) = -(*cdof.add(5) + tmp[2]);
+                }
+            }
+
+            // advance jacdif counter
+            ci += 1;
+            da += 1;
+        }
     }
-    // SAFETY: delegates to C implementation, all pointers valid per caller contract
-    unsafe { mj_jacSparseSimple_impl(m, d, jacdifp, jacdifr, point, body, flg_second, NV, start) }
 }
 
 /// C: mj_jacDotSparse (engine/engine_core_util.h:90)
@@ -480,11 +531,71 @@ pub fn mj_angmom_mat(m: *const mjModel, d: *mut mjData, mat: *mut f64, body: i32
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_object_velocity(m: *const mjModel, d: *const mjData, objtype: i32, objid: i32, res: *mut f64, flg_local: i32) {
-    extern "C" {
-        fn mj_objectVelocity_impl(m: *const mjModel, d: *const mjData, objtype: i32, objid: i32, res: *mut f64, flg_local: i32);
+    // SAFETY: m, d valid. objid is valid index for the given objtype. res has 6 elements.
+    unsafe {
+        const MJOBJ_BODY: i32 = 1;
+        const MJOBJ_XBODY: i32 = 2;
+        const MJOBJ_GEOM: i32 = 5;
+        const MJOBJ_SITE: i32 = 6;
+        const MJOBJ_CAMERA: i32 = 7;
+
+        let mut bodyid: i32 = 0;
+        let mut pos: *const f64 = core::ptr::null();
+        let mut rot: *const f64 = core::ptr::null();
+
+        // body-inertial
+        if objtype == MJOBJ_BODY {
+            bodyid = objid;
+            pos = (*d).xipos.add(3 * objid as usize);
+            rot = if flg_local != 0 { (*d).ximat.add(9 * objid as usize) } else { core::ptr::null() };
+        }
+        // body-regular
+        else if objtype == MJOBJ_XBODY {
+            bodyid = objid;
+            pos = (*d).xpos.add(3 * objid as usize);
+            rot = if flg_local != 0 { (*d).xmat.add(9 * objid as usize) } else { core::ptr::null() };
+        }
+        // geom
+        else if objtype == MJOBJ_GEOM {
+            bodyid = *(*m).geom_bodyid.add(objid as usize);
+            pos = (*d).geom_xpos.add(3 * objid as usize);
+            rot = if flg_local != 0 { (*d).geom_xmat.add(9 * objid as usize) } else { core::ptr::null() };
+        }
+        // site
+        else if objtype == MJOBJ_SITE {
+            bodyid = *(*m).site_bodyid.add(objid as usize);
+            pos = (*d).site_xpos.add(3 * objid as usize);
+            rot = if flg_local != 0 { (*d).site_xmat.add(9 * objid as usize) } else { core::ptr::null() };
+        }
+        // camera
+        else if objtype == MJOBJ_CAMERA {
+            bodyid = *(*m).cam_bodyid.add(objid as usize);
+            pos = (*d).cam_xpos.add(3 * objid as usize);
+            rot = if flg_local != 0 { (*d).cam_xmat.add(9 * objid as usize) } else { core::ptr::null() };
+        }
+        // object without spatial frame
+        else {
+            extern "C" { fn mju_error_impl(msg: *const i8); }
+            mju_error_impl(b"invalid object type\0".as_ptr() as *const i8);
+            return;
+        }
+
+        // static body: quick return
+        if *(*m).body_weldid.add(bodyid as usize) == 0 {
+            crate::engine::engine_util_blas::mju_zero(res, 6);
+            return;
+        }
+
+        // transform velocity
+        crate::engine::engine_util_spatial::mju_transform_spatial(
+            res,
+            (*d).cvel.add(6 * bodyid as usize),
+            0,
+            pos,
+            (*d).subtree_com.add(3 * *(*m).body_rootid.add(bodyid as usize) as usize),
+            rot,
+        );
     }
-    // SAFETY: delegates to C implementation, all pointers valid per caller contract
-    unsafe { mj_objectVelocity_impl(m, d, objtype, objid, res, flg_local) }
 }
 
 /// C: mj_objectAcceleration (engine/engine_core_util.h:121)
@@ -496,11 +607,87 @@ pub fn mj_object_velocity(m: *const mjModel, d: *const mjData, objtype: i32, obj
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_object_acceleration(m: *const mjModel, d: *const mjData, objtype: i32, objid: i32, res: *mut f64, flg_local: i32) {
-    extern "C" {
-        fn mj_objectAcceleration_impl(m: *const mjModel, d: *const mjData, objtype: i32, objid: i32, res: *mut f64, flg_local: i32);
+    // SAFETY: m, d valid. objid is valid index for the given objtype. res has 6 elements.
+    unsafe {
+        const MJOBJ_BODY: i32 = 1;
+        const MJOBJ_XBODY: i32 = 2;
+        const MJOBJ_GEOM: i32 = 5;
+        const MJOBJ_SITE: i32 = 6;
+        const MJOBJ_CAMERA: i32 = 7;
+
+        let mut bodyid: i32 = 0;
+        let mut pos: *const f64 = core::ptr::null();
+        let mut rot: *const f64 = core::ptr::null();
+
+        // body-inertial
+        if objtype == MJOBJ_BODY {
+            bodyid = objid;
+            pos = (*d).xipos.add(3 * objid as usize);
+            rot = if flg_local != 0 { (*d).ximat.add(9 * objid as usize) } else { core::ptr::null() };
+        }
+        // body-regular
+        else if objtype == MJOBJ_XBODY {
+            bodyid = objid;
+            pos = (*d).xpos.add(3 * objid as usize);
+            rot = if flg_local != 0 { (*d).xmat.add(9 * objid as usize) } else { core::ptr::null() };
+        }
+        // geom
+        else if objtype == MJOBJ_GEOM {
+            bodyid = *(*m).geom_bodyid.add(objid as usize);
+            pos = (*d).geom_xpos.add(3 * objid as usize);
+            rot = if flg_local != 0 { (*d).geom_xmat.add(9 * objid as usize) } else { core::ptr::null() };
+        }
+        // site
+        else if objtype == MJOBJ_SITE {
+            bodyid = *(*m).site_bodyid.add(objid as usize);
+            pos = (*d).site_xpos.add(3 * objid as usize);
+            rot = if flg_local != 0 { (*d).site_xmat.add(9 * objid as usize) } else { core::ptr::null() };
+        }
+        // camera
+        else if objtype == MJOBJ_CAMERA {
+            bodyid = *(*m).cam_bodyid.add(objid as usize);
+            pos = (*d).cam_xpos.add(3 * objid as usize);
+            rot = if flg_local != 0 { (*d).cam_xmat.add(9 * objid as usize) } else { core::ptr::null() };
+        }
+        // object without spatial frame
+        else {
+            extern "C" { fn mju_error_impl(msg: *const i8); }
+            mju_error_impl(b"invalid object type\0".as_ptr() as *const i8);
+            return;
+        }
+
+        // static body: quick return
+        if *(*m).body_weldid.add(bodyid as usize) == 0 {
+            crate::engine::engine_util_blas::mju_zero(res, 6);
+            return;
+        }
+
+        // transform com-based acceleration to local frame
+        crate::engine::engine_util_spatial::mju_transform_spatial(
+            res,
+            (*d).cacc.add(6 * bodyid as usize),
+            0,
+            pos,
+            (*d).subtree_com.add(3 * *(*m).body_rootid.add(bodyid as usize) as usize),
+            rot,
+        );
+
+        // transform com-based velocity to local frame
+        let mut vel: [f64; 6] = [0.0; 6];
+        crate::engine::engine_util_spatial::mju_transform_spatial(
+            vel.as_mut_ptr(),
+            (*d).cvel.add(6 * bodyid as usize),
+            0,
+            pos,
+            (*d).subtree_com.add(3 * *(*m).body_rootid.add(bodyid as usize) as usize),
+            rot,
+        );
+
+        // add Coriolis correction due to rotating frame: acc_tran += vel_rot x vel_tran
+        let mut correction: [f64; 3] = [0.0; 3];
+        crate::engine::engine_inline::mji_cross(correction.as_mut_ptr(), vel.as_ptr(), vel.as_ptr().add(3));
+        crate::engine::engine_inline::mji_add_to3(res.add(3), correction.as_ptr());
     }
-    // SAFETY: delegates to C implementation, all pointers valid per caller contract
-    unsafe { mj_objectAcceleration_impl(m, d, objtype, objid, res, flg_local) }
 }
 
 /// C: mj_local2Global (engine/engine_core_util.h:125)
