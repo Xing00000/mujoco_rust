@@ -559,9 +559,40 @@ pub fn mji_sub_quat(res: *mut f64, qa: *const f64, qb: *const f64) {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mji_mat2quat(quat: *mut f64, mat: *const f64) {
-    extern "C" { fn mji_mat2Quat_impl(quat: *mut f64, mat: *const f64); }
-    // SAFETY: delegates to C implementation, all pointers valid per caller contract
-    unsafe { mji_mat2Quat_impl(quat, mat) }
+    // SAFETY: raw pointer arithmetic on caller-guaranteed valid non-overlapping buffers.
+    // quat: 4 f64; mat: 9 f64
+    unsafe {
+        // q0 largest
+        if *mat.add(0) + *mat.add(4) + *mat.add(8) > 0.0 {
+            *quat.add(0) = 0.5 * (1.0 + *mat.add(0) + *mat.add(4) + *mat.add(8)).sqrt();
+            *quat.add(1) = 0.25 * (*mat.add(7) - *mat.add(5)) / *quat.add(0);
+            *quat.add(2) = 0.25 * (*mat.add(2) - *mat.add(6)) / *quat.add(0);
+            *quat.add(3) = 0.25 * (*mat.add(3) - *mat.add(1)) / *quat.add(0);
+        }
+        // q1 largest
+        else if *mat.add(0) > *mat.add(4) && *mat.add(0) > *mat.add(8) {
+            *quat.add(1) = 0.5 * (1.0 + *mat.add(0) - *mat.add(4) - *mat.add(8)).sqrt();
+            *quat.add(0) = 0.25 * (*mat.add(7) - *mat.add(5)) / *quat.add(1);
+            *quat.add(2) = 0.25 * (*mat.add(1) + *mat.add(3)) / *quat.add(1);
+            *quat.add(3) = 0.25 * (*mat.add(2) + *mat.add(6)) / *quat.add(1);
+        }
+        // q2 largest
+        else if *mat.add(4) > *mat.add(8) {
+            *quat.add(2) = 0.5 * (1.0 - *mat.add(0) + *mat.add(4) - *mat.add(8)).sqrt();
+            *quat.add(0) = 0.25 * (*mat.add(2) - *mat.add(6)) / *quat.add(2);
+            *quat.add(1) = 0.25 * (*mat.add(1) + *mat.add(3)) / *quat.add(2);
+            *quat.add(3) = 0.25 * (*mat.add(5) + *mat.add(7)) / *quat.add(2);
+        }
+        // q3 largest
+        else {
+            *quat.add(3) = 0.5 * (1.0 - *mat.add(0) - *mat.add(4) + *mat.add(8)).sqrt();
+            *quat.add(0) = 0.25 * (*mat.add(3) - *mat.add(1)) / *quat.add(3);
+            *quat.add(1) = 0.25 * (*mat.add(2) + *mat.add(6)) / *quat.add(3);
+            *quat.add(2) = 0.25 * (*mat.add(5) + *mat.add(7)) / *quat.add(3);
+        }
+
+        mji_normalize4(quat);
+    }
 }
 
 /// C: mji_quatIntegrate (engine/engine_inline.h:401)
@@ -571,11 +602,22 @@ pub fn mji_mat2quat(quat: *mut f64, mat: *const f64) {
 ///   2. No f64::mul_add() (FMA changes precision)
 ///   3. No algebraic simplification
 ///   4. No iter().sum()/product() (order undefined)
-#[allow(unused_variables, non_snake_case)]
+#[allow(unused_variables, non_snake_case, unused_unsafe)]
 pub fn mji_quat_integrate(quat: *mut f64, vel: *const f64, scale: f64) {
-    extern "C" { fn mji_quatIntegrate_impl(quat: *mut f64, vel: *const f64, scale: f64); }
-    // SAFETY: delegates to C implementation, all pointers valid per caller contract
-    unsafe { mji_quatIntegrate_impl(quat, vel, scale) }
+    // SAFETY: raw pointer arithmetic on caller-guaranteed valid non-overlapping buffers.
+    // quat: 4 f64; vel: 3 f64
+    unsafe {
+        let mut tmp: [f64; 4] = [0.0; 4];
+        let mut qrot: [f64; 4] = [0.0; 4];
+
+        // form local rotation quaternion, apply
+        mji_copy3(tmp.as_mut_ptr(), vel);
+        let angle: f64 = scale * mji_normalize3(tmp.as_mut_ptr());
+        mji_axis_angle2quat(qrot.as_mut_ptr(), tmp.as_ptr(), angle);
+        mji_normalize4(quat);
+        mji_copy4(tmp.as_mut_ptr(), quat as *const f64);
+        mji_mul_quat(quat, tmp.as_ptr(), qrot.as_ptr());
+    }
 }
 
 /// C: mji_cross (engine/engine_inline.h:419)

@@ -1779,11 +1779,18 @@ pub fn inflate(status: *mut mjCCDStatus, margin1: f64, margin2: f64) {
 /// Calls: align8
 #[allow(unused_variables, non_snake_case)]
 pub fn mjc_ccd_size(iterations: i32) -> usize {
-    extern "C" {
-        fn mjc_ccdSize_impl(iterations: i32) -> usize;
-    }
-    // SAFETY: delegates to C implementation which computes buffer size from struct sizeof
-    unsafe { mjc_ccdSize_impl(iterations) }
+    // sizeof(Vertex) = 80, sizeof(Face) = 56 on 64-bit (verified from C struct layout)
+    const SIZEOF_VERTEX: usize = 80;
+    const SIZEOF_FACE: usize = 56;
+    const SIZEOF_FACE_PTR: usize = core::mem::size_of::<*const u8>();
+    const SIZEOF_INT: usize = core::mem::size_of::<i32>();
+
+    let iter = iterations as usize;
+    align8(SIZEOF_VERTEX * (5 + iter))        // vertices in polytope
+        + align8(SIZEOF_FACE * 6 * iter)      // faces in polytope
+        + align8(SIZEOF_FACE_PTR * 6 * iter)  // map in polytope
+        + align8(SIZEOF_INT * 24)             // horizon indices
+        + align8(SIZEOF_INT * 24)             // horizon edges
 }
 
 /// C: mjc_ccd (engine/engine_collision_gjk.h:108)

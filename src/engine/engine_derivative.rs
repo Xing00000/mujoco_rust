@@ -344,13 +344,54 @@ pub fn mjd_inertia_box_fluid(m: *const mjModel, d: *mut mjData, i: i32) {
 ///   2. No f64::mul_add() (FMA changes precision)
 ///   3. No algebraic simplification
 ///   4. No iter().sum()/product() (order undefined)
-#[allow(unused_variables, non_snake_case)]
+#[allow(unused_variables, non_snake_case, unused_unsafe)]
 pub fn mjd_sub_quat(qa: *const f64, qb: *const f64, Da: *mut f64, Db: *mut f64) {
-    extern "C" {
-        fn mjd_subQuat_impl(qa: *const f64, qb: *const f64, Da: *mut f64, Db: *mut f64);
+    // SAFETY: raw pointer arithmetic on caller-guaranteed valid buffers.
+    // qa, qb: 4 f64; Da, Db: 9 f64 (or null)
+    unsafe {
+        // no outputs, quick return
+        if Da.is_null() && Db.is_null() {
+            return;
+        }
+
+        // compute axis-angle quaternion difference
+        let mut axis: [f64; 3] = [0.0; 3];
+        crate::engine::engine_util_spatial::mju_sub_quat(axis.as_mut_ptr(), qa, qb);
+
+        // normalize axis, get half-angle
+        let half_angle: f64 = 0.5 * crate::engine::engine_util_blas::mju_normalize3(axis.as_mut_ptr());
+
+        // identity
+        let mut Da_tmp: [f64; 9] = [
+            1.0, 0.0, 0.0,
+            0.0, 1.0, 0.0,
+            0.0, 0.0, 1.0,
+        ];
+
+        // add term linear in cross product matrix K
+        let K: [f64; 9] = [
+            0.0, -axis[2], axis[1],
+            axis[2], 0.0, -axis[0],
+            -axis[1], axis[0], 0.0,
+        ];
+        crate::engine::engine_util_blas::mju_add_to_scl(Da_tmp.as_mut_ptr(), K.as_ptr(), half_angle, 9);
+
+        // add term linear in K * K
+        let mut KK: [f64; 9] = [0.0; 9];
+        crate::engine::engine_util_blas::mju_mul_mat_mat3(KK.as_mut_ptr(), K.as_ptr(), K.as_ptr());
+        let coef: f64 = 1.0 - (if half_angle < 6e-8 { 1.0 } else { half_angle / half_angle.tan() });
+        crate::engine::engine_util_blas::mju_add_to_scl(Da_tmp.as_mut_ptr(), KK.as_ptr(), coef, 9);
+
+        if !Da.is_null() {
+            crate::engine::engine_util_blas::mju_copy9(Da, Da_tmp.as_ptr());
+        }
+
+        if !Db.is_null() {
+            // Db = -Da^T
+            crate::engine::engine_util_blas::mju_transpose(Db, Da_tmp.as_ptr(), 3, 3);
+            crate::engine::engine_util_blas::mju_scl(Db, Db, -1.0, 9);
+        }
     }
-    // SAFETY: delegates to C implementation, all pointers valid per caller contract
-    unsafe { mjd_subQuat_impl(qa, qb, Da, Db) }
 }
 
 /// C: mjd_quatIntegrate (engine/engine_derivative.h:30)
@@ -362,11 +403,69 @@ pub fn mjd_sub_quat(qa: *const f64, qb: *const f64, Da: *mut f64, Db: *mut f64) 
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjd_quat_integrate(vel: *const f64, scale: f64, Dquat: *mut f64, Dvel: *mut f64, Dscale: *mut f64) {
-    extern "C" {
-        fn mjd_quatIntegrate_impl(vel: *const f64, scale: f64, Dquat: *mut f64, Dvel: *mut f64, Dscale: *mut f64);
+    // SAFETY: raw pointer arithmetic on caller-guaranteed valid buffers.
+    // vel: 3 f64; Dquat, Dvel: 9 f64 (or null); Dscale: 3 f64 (or null)
+    unsafe {
+        // scaled velocity
+        let s: [f64; 3] = [scale * *vel.add(0), scale * *vel.add(1), scale * *vel.add(2)];
+
+        // 3 basis matrices
+        let eye: [f64; 9] = [
+            1.0, 0.0, 0.0,
+            0.0, 1.0, 0.0,
+            0.0, 0.0, 1.0,
+        ];
+        let cross: [f64; 9] = [
+             0.0,    s[2], -s[1],
+            -s[2],   0.0,   s[0],
+             s[1],  -s[0],  0.0,
+        ];
+        let outer: [f64; 9] = [
+            s[0]*s[0], s[0]*s[1], s[0]*s[2],
+            s[1]*s[0], s[1]*s[1], s[1]*s[2],
+            s[2]*s[0], s[2]*s[1], s[2]*s[2],
+        ];
+
+        // squared norm, norm of s
+        let xx: f64 = crate::engine::engine_util_blas::mju_dot3(s.as_ptr(), s.as_ptr());
+        let x: f64 = xx.sqrt();
+
+        // 4 coefficients: a=cos(x), b=sin(x)/x, c=(1-cos(x))/x^2, d=(x-sin(x))/x^3
+        let a: f64 = x.cos();
+        let b: f64;
+        let c: f64;
+        let d: f64;
+
+        // x is not small: use full expressions
+        if x.abs() > 1.0 / 32.0 {
+            b = x.sin() / x;
+            c = (1.0 - a) / xx;
+            d = (1.0 - b) / xx;
+        }
+        // |x| <= 1/32: use 6th order Taylor expansion (Horner form)
+        else {
+            b = 1.0 + xx / 6.0 * (xx / 20.0 * (1.0 - xx / 42.0) - 1.0);
+            c = (1.0 + xx / 12.0 * (xx / 30.0 * (1.0 - xx / 56.0) - 1.0)) / 2.0;
+            d = (1.0 + xx / 20.0 * (xx / 42.0 * (1.0 - xx / 72.0) - 1.0)) / 6.0;
+        }
+
+        // derivatives
+        let mut Dvel_: [f64; 9] = [0.0; 9];
+        for i in 0..9 {
+            if !Dquat.is_null() {
+                *Dquat.add(i) = a * eye[i] + b * cross[i] + c * outer[i];
+            }
+            if !Dvel.is_null() || !Dscale.is_null() {
+                Dvel_[i] = b * eye[i] + c * cross[i] + d * outer[i];
+            }
+        }
+        if !Dvel.is_null() {
+            crate::engine::engine_util_blas::mju_copy9(Dvel, Dvel_.as_ptr());
+        }
+        if !Dscale.is_null() {
+            crate::engine::engine_util_blas::mju_mul_mat_vec3(Dscale, Dvel_.as_ptr(), vel);
+        }
     }
-    // SAFETY: delegates to C implementation, all pointers valid per caller contract
-    unsafe { mjd_quatIntegrate_impl(vel, scale, Dquat, Dvel, Dscale) }
 }
 
 /// C: mjd_smooth_vel (engine/engine_derivative.h:35)

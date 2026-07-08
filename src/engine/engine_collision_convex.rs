@@ -730,11 +730,57 @@ pub fn mjc_init_ccd_obj(obj: *mut mjCCDObj, m: *const mjModel, d: *const mjData,
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjc_center(res: *mut f64, obj: *const mjCCDObj) {
-    extern "C" {
-        fn mjc_center_impl(res: *mut f64, obj: *const mjCCDObj);
+    // SAFETY: raw pointer access to opaque union fields using known offsets from C struct layout.
+    // obj pointer is valid per caller contract. Union field access requires byte-level pointer arithmetic.
+    unsafe {
+        let g = (*obj).geom;
+        let f = (*obj).flex;
+        let e = (*obj).elem;
+        let v = (*obj).vert;
+
+        let obj_ptr = obj as *const u8;
+        const DATA_OFFSET: usize = 200; // offset of data union in mjCCDObj
+
+        if (*obj).geom_type == 10 {
+            // mjGEOM_HFIELD == 10
+            // data.hfield.prism[i] is at DATA_OFFSET + i*24
+            crate::engine::engine_util_blas::mju_zero3(res);
+            for i in 0..6 {
+                let prism_i = obj_ptr.add(DATA_OFFSET + i * 24) as *const f64;
+                crate::engine::engine_inline::mji_add_to3(res, prism_i);
+            }
+            crate::engine::engine_util_blas::mju_scl3(res, res, 1.0 / 6.0);
+            return;
+        }
+
+        // return geom position
+        if g >= 0 {
+            crate::engine::engine_inline::mji_copy3(res, (*obj).pos.as_ptr());
+            return;
+        }
+
+        // return flex element position
+        if e >= 0 {
+            // data.flex.aabb at DATA_OFFSET + 16 (ptr)
+            let aabb = *(obj_ptr.add(DATA_OFFSET + 16) as *const *const f64);
+            // data.flex.elemadr at DATA_OFFSET + 24 (ptr)
+            let elemadr = *(obj_ptr.add(DATA_OFFSET + 24) as *const *const i32);
+            let idx = (*elemadr.add(f as usize) + e) as usize;
+            crate::engine::engine_inline::mji_copy3(res, aabb.add(6 * idx));
+            return;
+        }
+
+        // return flex vertex position
+        if f >= 0 {
+            // data.flex.vert_xpos at DATA_OFFSET + 40 (ptr)
+            let vert_xpos = *(obj_ptr.add(DATA_OFFSET + 40) as *const *const f64);
+            // data.flex.vertadr at DATA_OFFSET + 48 (ptr)
+            let vertadr = *(obj_ptr.add(DATA_OFFSET + 48) as *const *const i32);
+            let idx = (*vertadr.add(f as usize) + v) as usize;
+            crate::engine::engine_inline::mji_copy3(res, vert_xpos.add(3 * idx));
+            return;
+        }
     }
-    // SAFETY: delegates to C implementation which accesses obj struct fields and unions
-    unsafe { mjc_center_impl(res, obj) }
 }
 
 /// C: mjccd_center (engine/engine_collision_convex.h:100)
