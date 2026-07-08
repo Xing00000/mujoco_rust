@@ -2,21 +2,20 @@
 //! IR hash: 05737965add36adb
 //! CODEGEN: signatures locked. Only fill todo!() bodies.
 
-use crate::types::*;
+use std::cell::Cell;
+
+thread_local! {
+    static PRECISION: Cell<i32> = Cell::new(6);
+}
 
 /// C: _mjPRIVATE__get_xml_precision (xml/xml_numeric_format.h:23)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_private_get_xml_precision() -> i32 {
-    extern "C" { fn _mjPRIVATE__get_xml_precision_impl() -> i32; }
-    // SAFETY: delegates to C implementation
-    unsafe { _mjPRIVATE__get_xml_precision_impl() }
+    PRECISION.with(|p| p.get())
 }
 
 /// C: _mjPRIVATE__set_xml_precision (xml/xml_numeric_format.h:24)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_private_set_xml_precision(precision: i32) {
-    extern "C" { fn _mjPRIVATE__set_xml_precision_impl(precision: i32); }
-    // SAFETY: delegates to C implementation
-    unsafe { _mjPRIVATE__set_xml_precision_impl(precision) }
+    PRECISION.with(|p| p.set(precision))
 }
-

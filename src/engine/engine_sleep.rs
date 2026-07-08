@@ -110,21 +110,45 @@ pub fn mj_update_sleep_init(m: *const mjModel, d: *mut mjData, flg_staticawake: 
 /// Calls: mj_updateSleepInit
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_update_sleep(m: *const mjModel, d: *mut mjData) {
-    extern "C" {
-        fn mj_updateSleep_impl(m: *const mjModel, d: *mut mjData);
-    }
-    // SAFETY: delegates to C implementation, all pointers valid per caller contract
-    unsafe { mj_updateSleep_impl(m, d) }
+    mj_update_sleep_init(m, d, 0);
 }
 
 /// C: mj_sleepCycle (engine/engine_sleep.h:34)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_sleep_cycle(tree_asleep: *const i32, ntree: i32, i: i32) -> i32 {
-    extern "C" {
-        fn mj_sleepCycle_impl(tree_asleep: *const i32, ntree: i32, i: i32) -> i32;
+    if i < 0 || i >= ntree {
+        return -1;
     }
-    // SAFETY: delegates to C implementation, all pointers valid per caller contract
-    unsafe { mj_sleepCycle_impl(tree_asleep, ntree, i) }
+
+    let mut smallest: i32 = i;
+    let mut current: i32 = i;
+    let mut count: i32 = 0;
+
+    loop {
+        if count > ntree {
+            return -1;
+        }
+
+        // SAFETY: current is bounds-checked against [0, ntree) above and below
+        let next: i32 = unsafe { *tree_asleep.add(current as usize) };
+
+        if next < 0 || next >= ntree {
+            return -1;
+        }
+
+        if next < smallest {
+            smallest = next;
+        }
+
+        current = next;
+        count += 1;
+
+        if current == i {
+            break;
+        }
+    }
+
+    smallest
 }
 
 /// C: mj_wakeIsland (engine/engine_sleep.h:37)
@@ -199,11 +223,39 @@ pub fn mj_sleep(m: *const mjModel, d: *mut mjData) -> i32 {
 /// C: mj_flexBody (engine/engine_sleep.h:56)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_flex_body(m: *const mjModel, con: *const mjContact, side: i32) -> i32 {
-    extern "C" {
-        fn mj_flexBody_impl(m: *const mjModel, con: *const mjContact, side: i32) -> i32;
+    // SAFETY: m, con are valid pointers per caller contract. side is 0 or 1.
+    // All array accesses use indices derived from model topology.
+    unsafe {
+        let f: i32 = (*con).flex[side as usize];
+
+        // flex vertex contact (non-interpolated)
+        if (*con).vert[side as usize] >= 0 && *(*m).flex_interp.add(f as usize) == 0 {
+            return *(*m).flex_vertbodyid.add(
+                (*(*m).flex_vertadr.add(f as usize) + (*con).vert[side as usize]) as usize,
+            );
+        }
+
+        // flex element contact
+        if (*con).elem[side as usize] >= 0 {
+            if *(*m).flex_interp.add(f as usize) == 0 {
+                let dim: i32 = *(*m).flex_dim.add(f as usize);
+                let edata: *const i32 = (*m).flex_elem.add(
+                    (*(*m).flex_elemdataadr.add(f as usize)
+                        + (*con).elem[side as usize] * (dim + 1)) as usize,
+                );
+                return *(*m).flex_vertbodyid.add(
+                    (*(*m).flex_vertadr.add(f as usize) + *edata) as usize,
+                );
+            } else {
+                return *(*m).flex_nodebodyid.add(
+                    *(*m).flex_nodeadr.add(f as usize) as usize,
+                );
+            }
+        }
+
+        // flex vertex contact (interpolated): use first node
+        *(*m).flex_nodebodyid.add(*(*m).flex_nodeadr.add(f as usize) as usize)
     }
-    // SAFETY: delegates to C implementation, all pointers valid per caller contract
-    unsafe { mj_flexBody_impl(m, con, side) }
 }
 
 /// C: mj_sleepState (engine/engine_sleep.h:59)

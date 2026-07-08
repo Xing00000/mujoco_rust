@@ -354,9 +354,17 @@ pub fn mj_set_keyframe(m: *mut mjModel, d: *const mjData, k: i32) {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_full_m(m: *const mjModel, d: *const mjData, dst: *mut f64) {
-    extern "C" { fn mj_fullM_impl(m: *const mjModel, d: *const mjData, dst: *mut f64); }
-    // SAFETY: delegates to C implementation
-    unsafe { mj_fullM_impl(m, d, dst) }
+    // SAFETY: m, d are valid model/data pointers. dst has capacity for nv*nv elements.
+    unsafe {
+        crate::engine::engine_util_sparse::mju_sym2dense(
+            dst,
+            (*d).M,
+            (*m).nv as i32,
+            (*m).M_rownnz,
+            (*m).M_rowadr,
+            (*m).M_colind,
+        );
+    }
 }
 
 /// C: mj_mulM (engine/engine_support.h:65)
@@ -634,9 +642,16 @@ pub fn mj_next_activation(m: *const mjModel, d: *const mjData, actuator_id: i32,
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_get_totalmass(m: *const mjModel) -> f64 {
-    extern "C" { fn mj_getTotalmass_impl(m: *const mjModel) -> f64; }
-    // SAFETY: delegates to C implementation
-    unsafe { mj_getTotalmass_impl(m) }
+    // SAFETY: m is valid model pointer. body_mass has nbody elements.
+    unsafe {
+        let mut res: f64 = 0.0;
+        let mut i: usize = 1;
+        while i < (*m).nbody {
+            res += *(*m).body_mass.add(i);
+            i += 1;
+        }
+        res
+    }
 }
 
 /// C: mj_setTotalmass (engine/engine_support.h:118)

@@ -4,6 +4,12 @@
 
 use crate::types::*;
 
+use std::cell::Cell;
+
+thread_local! {
+    static CCD_BUFFER: Cell<*mut ()> = Cell::new(std::ptr::null_mut());
+}
+
 /// C: prism_firstdir (engine/engine_collision_convex.c:47)
 #[allow(unused_variables, non_snake_case)]
 pub fn prism_firstdir(o1: *const (), o2: *const (), vec: *mut ccd_vec3_t) {
@@ -1007,10 +1013,6 @@ pub fn mjc_fix_normal(m: *const mjModel, d: *const mjData, con: *mut mjPreContac
 /// C: mjc_setCCDBuffer (engine/engine_collision_convex.h:128)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjc_set_ccd_buffer(buffer: *mut ()) {
-    extern "C" {
-        fn mjc_setCCDBuffer_impl(buffer: *mut ());
-    }
-    // SAFETY: delegates to C implementation which sets thread-local ccd_buffer pointer
-    unsafe { mjc_setCCDBuffer_impl(buffer) }
+    CCD_BUFFER.with(|p| p.set(buffer))
 }
 
