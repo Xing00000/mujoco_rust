@@ -470,11 +470,77 @@ pub fn mj_jac_dot_sparse(m: *const mjModel, d: *const mjData, jacp: *mut f64, ja
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_jac_dif_pair(m: *const mjModel, d: *const mjData, chain: *mut i32, b1: i32, b2: i32, pos1: *const f64, pos2: *const f64, jac1p: *mut f64, jac2p: *mut f64, jacdifp: *mut f64, jac1r: *mut f64, jac2r: *mut f64, jacdifr: *mut f64, issparse: i32, flg_skipcommon: i32) -> i32 {
-    extern "C" {
-        fn mj_jacDifPair_impl(m: *const mjModel, d: *const mjData, chain: *mut i32, b1: i32, b2: i32, pos1: *const f64, pos2: *const f64, jac1p: *mut f64, jac2p: *mut f64, jacdifp: *mut f64, jac1r: *mut f64, jac2r: *mut f64, jacdifr: *mut f64, issparse: i32, flg_skipcommon: i32) -> i32;
+    // SAFETY: m, d valid. chain has adequate capacity. pos1/pos2 have 3 elements.
+    // jac pointers have 3*nv elements (dense) or 3*NV (sparse). May be null.
+    unsafe {
+        let issimple = (*(*m).body_simple.add(b1 as usize) != 0) && (*(*m).body_simple.add(b2 as usize) != 0);
+        let mut NV: i32 = (*m).nv as i32;
+
+        // skip if no DOFs
+        if NV == 0 {
+            return 0;
+        }
+
+        // construct merged chain of body dofs
+        if issparse != 0 {
+            if issimple {
+                NV = mj_merge_chain_simple(m, chain, b1, b2);
+            } else {
+                NV = mj_merge_chain(m, chain, b1, b2, flg_skipcommon);
+            }
+        }
+
+        // skip if empty chain
+        if NV == 0 {
+            return 0;
+        }
+
+        // count-only mode
+        if jacdifp.is_null() && jacdifr.is_null() && jac1p.is_null() && jac1r.is_null() {
+            return NV;
+        }
+
+        // sparse case
+        if issparse != 0 {
+            if issimple {
+                // first body
+                let start1 = if b1 < b2 { 0 } else { *(*m).body_dofnum.add(b2 as usize) };
+                mj_jac_sparse_simple(m, d, jacdifp, jacdifr, pos1, b1, 0, NV, start1);
+
+                // second body
+                let start2 = if b2 < b1 { 0 } else { *(*m).body_dofnum.add(b1 as usize) };
+                mj_jac_sparse_simple(m, d, jacdifp, jacdifr, pos2, b2, 1, NV, start2);
+            } else {
+                // Jacobians
+                mj_jac_sparse(m, d, jac1p, jac1r, pos1, b1, NV, chain, flg_skipcommon);
+                mj_jac_sparse(m, d, jac2p, jac2r, pos2, b2, NV, chain, flg_skipcommon);
+
+                // differences
+                if !jacdifp.is_null() {
+                    crate::engine::engine_util_blas::mju_sub(jacdifp, jac2p, jac1p, 3 * NV);
+                }
+                if !jacdifr.is_null() {
+                    crate::engine::engine_util_blas::mju_sub(jacdifr, jac2r, jac1r, 3 * NV);
+                }
+            }
+        }
+        // dense case
+        else {
+            // Jacobians
+            mj_jac(m, d, jac1p, jac1r, pos1, b1);
+            mj_jac(m, d, jac2p, jac2r, pos2, b2);
+
+            // differences
+            if !jacdifp.is_null() {
+                crate::engine::engine_util_blas::mju_sub(jacdifp, jac2p, jac1p, 3 * NV);
+            }
+            if !jacdifr.is_null() {
+                crate::engine::engine_util_blas::mju_sub(jacdifr, jac2r, jac1r, 3 * NV);
+            }
+        }
+
+        NV
     }
-    // SAFETY: delegates to C implementation, all pointers valid per caller contract
-    unsafe { mj_jacDifPair_impl(m, d, chain, b1, b2, pos1, pos2, jac1p, jac2p, jacdifp, jac1r, jac2r, jacdifr, issparse, flg_skipcommon) }
 }
 
 /// C: mj_jacSum (engine/engine_core_util.h:102)
