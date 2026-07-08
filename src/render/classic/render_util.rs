@@ -166,9 +166,10 @@ pub fn mjr_ortho_vec(res: *mut f32, v: *const f32) {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjr_dot_vec(a: *const f32, b: *const f32) -> f32 {
-    extern "C" { fn mjr_dotVec_impl(a: *const f32, b: *const f32) -> f32; }
-    // SAFETY: delegates to C implementation
-    unsafe { mjr_dotVec_impl(a, b) }
+    // SAFETY: caller guarantees a and b point to at least 3 contiguous f32 elements
+    unsafe {
+        (*a.add(0)) * (*b.add(0)) + (*a.add(1)) * (*b.add(1)) + (*a.add(2)) * (*b.add(2))
+    }
 }
 
 /// C: mjr_multiply4 (render/classic/render_util.h:53)
@@ -179,9 +180,21 @@ pub fn mjr_dot_vec(a: *const f32, b: *const f32) -> f32 {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjr_multiply4(res: *mut f32, mat: *const f32, vec: *const f32) {
-    extern "C" { fn mjr_multiply4_impl(res: *mut f32, mat: *const f32, vec: *const f32); }
-    // SAFETY: delegates to C implementation
-    unsafe { mjr_multiply4_impl(res, mat, vec) }
+    // SAFETY: caller guarantees res points to 4 writable f32,
+    //         mat points to 16 contiguous f32 (4x4 column-major),
+    //         vec points to 4 contiguous f32
+    unsafe {
+        let mut i: i32 = 0;
+        while i < 4 {
+            *res.add(i as usize) = 0.0;
+            let mut j: i32 = 0;
+            while j < 4 {
+                *res.add(i as usize) += (*mat.add((i + 4 * j) as usize)) * (*vec.add(j as usize));
+                j += 1;
+            }
+            i += 1;
+        }
+    }
 }
 
 /// C: mjr_lookAt (render/classic/render_util.h:56)
