@@ -787,9 +787,12 @@ pub fn mjc_center(res: *mut f64, obj: *const mjCCDObj) {
 /// Calls: mjc_center
 #[allow(unused_variables, non_snake_case)]
 pub fn mjccd_center(obj: *const (), center: *mut ccd_vec3_t) {
-    extern "C" { fn mjccd_center_impl(obj: *const (), center: *mut ccd_vec3_t); }
-    // SAFETY: delegates to C implementation, all pointers valid per caller contract
-    unsafe { mjccd_center_impl(obj, center) }
+    // SAFETY: obj is a valid pointer to mjCCDObj passed as void*; center is a valid output pointer.
+    // center->v is ccd_real_t[3] which is actually double[3] in C (ccd_real_t = double).
+    unsafe {
+        let v_ptr = &raw mut (*center).v as *mut f64;
+        mjc_center(v_ptr, obj as *const mjCCDObj);
+    }
 }
 
 /// C: mjccd_support (engine/engine_collision_convex.h:103)

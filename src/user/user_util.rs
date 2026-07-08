@@ -729,9 +729,15 @@ pub fn mjuu_eigendecompose(mat: *mut f64, eigval: *mut f64, eigvec: *mut f64, n:
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjuu_trn_vec_pose(res: [f64; 3], pos: [f64; 3], quat: [f64; 4], vec: [f64; 3]) {
-    extern "C" { fn mjuu_trnVecPose_impl(res: [f64; 3], pos: [f64; 3], quat: [f64; 4], vec: [f64; 3]); }
-    // SAFETY: delegates to C implementation
-    unsafe { mjuu_trnVecPose_impl(res, pos, quat, vec) }
+    // res = quat*vec + pos
+    mjuu_rot_vec_quat(res, vec, quat);
+    // SAFETY: res is a C ABI array param (pointer to caller-owned f64[3])
+    unsafe {
+        let res_ptr = res.as_ptr() as *mut f64;
+        *res_ptr += pos[0];
+        *res_ptr.add(1) += pos[1];
+        *res_ptr.add(2) += pos[2];
+    }
 }
 
 /// C: mjuu_fullInertia (user/user_util.h:172)
