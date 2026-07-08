@@ -124,10 +124,41 @@ pub fn mju_chol_factor_numeric(L: *mut f64, n: i32, mindiag: f64, L_rownnz: *con
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mju_chol_solve_sparse(res: *mut f64, mat: *const f64, vec: *const f64, n: i32, rownnz: *const i32, rowadr: *const i32, colind: *const i32) {
-    // WARNING: signature changed — verify body
-    // Previous params: (res : * mut f64, mat : * const f64, vec : * const f64, n : i32, rownnz : * const i32, rowadr : * const i32, colind : * const i32)
-    // Previous return: ()
-    extern "C" { fn mju_cholSolveSparse_impl (res : * mut f64 , mat : * const f64 , vec : * const f64 , n : i32 , rownnz : * const i32 , rowadr : * const i32 , colind : * const i32) ; } unsafe { mju_cholSolveSparse_impl (res , mat , vec , n , rownnz , rowadr , colind) }
+    // SAFETY: raw pointer arithmetic mirrors C exactly; caller guarantees valid bounds
+    unsafe {
+        crate::engine::engine_util_blas::mju_copy(res, vec, n);
+
+        // L^-T pass
+        let mut i = n - 1;
+        while i >= 0 {
+            if *res.add(i as usize) != 0.0 {
+                let adr = *rowadr.add(i as usize);
+                let nnz = *rownnz.add(i as usize);
+                *res.add(i as usize) /= *mat.add((adr + nnz - 1) as usize);
+                let tmp = *res.add(i as usize);
+                for j in 0..(nnz - 1) {
+                    let col = *colind.add((adr + j) as usize);
+                    *res.add(col as usize) -= *mat.add((adr + j) as usize) * tmp;
+                }
+            }
+            i -= 1;
+        }
+
+        // L^-1 pass
+        for i in 0..n {
+            let adr = *rowadr.add(i as usize);
+            let nnz = *rownnz.add(i as usize);
+            if nnz > 1 {
+                *res.add(i as usize) -= crate::engine::engine_util_sparse::mju_dot_sparse(
+                    mat.add(adr as usize),
+                    res as *const f64,
+                    nnz - 1,
+                    colind.add(adr as usize),
+                );
+            }
+            *res.add(i as usize) /= *mat.add((adr + nnz - 1) as usize);
+        }
+    }
 }
 
 /// C: mju_cholUpdateSparse (engine/engine_util_solve.h:66)
@@ -323,10 +354,47 @@ pub fn mju_eig3(eigval: *mut f64, eigvec: *mut f64, quat: *mut f64, mat: *const 
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mju_qcqp2(res: *mut f64, Ain: *const f64, bin: *const f64, d: *const f64, r: f64) -> i32 {
-    // WARNING: signature changed — verify body
-    // Previous params: (res : * mut f64, Ain : * const f64, bin : * const f64, d : * const f64, r : f64)
-    // Previous return: i32
-    extern "C" { fn mju_QCQP2_impl (res : * mut f64 , Ain : * const f64 , bin : * const f64 , d : * const f64 , r : f64) -> i32 ; } unsafe { mju_QCQP2_impl (res , Ain , bin , d , r) }
+    // SAFETY: raw pointer arithmetic mirrors C exactly; caller guarantees valid bounds
+    unsafe {
+        let b1 = *bin.add(0) * *d.add(0);
+        let b2 = *bin.add(1) * *d.add(1);
+        let A11 = *Ain.add(0) * *d.add(0) * *d.add(0);
+        let A22 = *Ain.add(3) * *d.add(1) * *d.add(1);
+        let A12 = *Ain.add(1) * *d.add(0) * *d.add(1);
+
+        let mut la: f64 = 0.0;
+        let mut v1: f64 = 0.0;
+        let mut v2: f64 = 0.0;
+
+        for _iter in 0..20 {
+            let det = (A11 + la) * (A22 + la) - A12 * A12;
+            if det < 1e-10 {
+                *res.add(0) = 0.0;
+                *res.add(1) = 0.0;
+                return 0;
+            }
+            let detinv = 1.0 / det;
+            let P11 = (A22 + la) * detinv;
+            let P22 = (A11 + la) * detinv;
+            let P12 = -A12 * detinv;
+            v1 = -P11 * b1 - P12 * b2;
+            v2 = -P12 * b1 - P22 * b2;
+            let val = v1 * v1 + v2 * v2 - r * r;
+            if val < 1e-10 {
+                break;
+            }
+            let deriv = -2.0 * (P11 * v1 * v1 + 2.0 * P12 * v1 * v2 + P22 * v2 * v2);
+            let delta = -val / deriv;
+            if delta < 1e-10 {
+                break;
+            }
+            la += delta;
+        }
+
+        *res.add(0) = v1 * *d.add(0);
+        *res.add(1) = v2 * *d.add(1);
+        (la != 0.0) as i32
+    }
 }
 
 /// C: mju_QCQP3 (engine/engine_util_solve.h:131)
@@ -337,10 +405,81 @@ pub fn mju_qcqp2(res: *mut f64, Ain: *const f64, bin: *const f64, d: *const f64,
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mju_qcqp3(res: *mut f64, Ain: *const f64, bin: *const f64, d: *const f64, r: f64) -> i32 {
-    // WARNING: signature changed — verify body
-    // Previous params: (res : * mut f64, Ain : * const f64, bin : * const f64, d : * const f64, r : f64)
-    // Previous return: i32
-    extern "C" { fn mju_QCQP3_impl (res : * mut f64 , Ain : * const f64 , bin : * const f64 , d : * const f64 , r : f64) -> i32 ; } unsafe { mju_QCQP3_impl (res , Ain , bin , d , r) }
+    // SAFETY: raw pointer arithmetic mirrors C exactly; caller guarantees valid bounds
+    unsafe {
+        let b1 = *bin.add(0) * *d.add(0);
+        let b2 = *bin.add(1) * *d.add(1);
+        let b3 = *bin.add(2) * *d.add(2);
+        let A11 = *Ain.add(0) * *d.add(0) * *d.add(0);
+        let A22 = *Ain.add(4) * *d.add(1) * *d.add(1);
+        let A33 = *Ain.add(8) * *d.add(2) * *d.add(2);
+        let A12 = *Ain.add(1) * *d.add(0) * *d.add(1);
+        let A13 = *Ain.add(2) * *d.add(0) * *d.add(2);
+        let A23 = *Ain.add(5) * *d.add(1) * *d.add(2);
+
+        let mut la: f64 = 0.0;
+        let mut v1: f64 = 0.0;
+        let mut v2: f64 = 0.0;
+        let mut v3: f64 = 0.0;
+
+        for _iter in 0..20 {
+            // unscaled P
+            let P11 = (A22 + la) * (A33 + la) - A23 * A23;
+            let P22 = (A11 + la) * (A33 + la) - A13 * A13;
+            let P33 = (A11 + la) * (A22 + la) - A12 * A12;
+            let P12 = A13 * A23 - A12 * (A33 + la);
+            let P13 = A12 * A23 - A13 * (A22 + la);
+            let P23 = A12 * A13 - A23 * (A11 + la);
+
+            // det(A+la)
+            let det = (A11 + la) * P11 + A12 * P12 + A13 * P13;
+
+            if det < 1e-10 {
+                *res.add(0) = 0.0;
+                *res.add(1) = 0.0;
+                *res.add(2) = 0.0;
+                return 0;
+            }
+
+            let detinv = 1.0 / det;
+
+            // final P
+            let P11 = P11 * detinv;
+            let P22 = P22 * detinv;
+            let P33 = P33 * detinv;
+            let P12 = P12 * detinv;
+            let P13 = P13 * detinv;
+            let P23 = P23 * detinv;
+
+            // v = -P*b
+            v1 = -P11 * b1 - P12 * b2 - P13 * b3;
+            v2 = -P12 * b1 - P22 * b2 - P23 * b3;
+            v3 = -P13 * b1 - P23 * b2 - P33 * b3;
+
+            // val = v'*v - r*r
+            let val = v1 * v1 + v2 * v2 + v3 * v3 - r * r;
+
+            if val < 1e-10 {
+                break;
+            }
+
+            // deriv = -2*v'*P*v
+            let deriv = -2.0 * (P11 * v1 * v1 + P22 * v2 * v2 + P33 * v3 * v3)
+                - 4.0 * (P12 * v1 * v2 + P13 * v1 * v3 + P23 * v2 * v3);
+
+            let delta = -val / deriv;
+            if delta < 1e-10 {
+                break;
+            }
+
+            la += delta;
+        }
+
+        *res.add(0) = v1 * *d.add(0);
+        *res.add(1) = v2 * *d.add(1);
+        *res.add(2) = v3 * *d.add(2);
+        (la != 0.0) as i32
+    }
 }
 
 /// C: mju_QCQP (engine/engine_util_solve.h:136)
@@ -352,10 +491,75 @@ pub fn mju_qcqp3(res: *mut f64, Ain: *const f64, bin: *const f64, d: *const f64,
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mju_qcqp(res: *mut f64, Ain: *const f64, bin: *const f64, d: *const f64, r: f64, n: i32) -> i32 {
-    // WARNING: signature changed — verify body
-    // Previous params: (res : * mut f64, Ain : * const f64, bin : * const f64, d : * const f64, r : f64, n : i32)
-    // Previous return: i32
-    extern "C" { fn mju_QCQP_impl (res : * mut f64 , Ain : * const f64 , bin : * const f64 , d : * const f64 , r : f64 , n : i32) -> i32 ; } unsafe { mju_QCQP_impl (res , Ain , bin , d , r , n) }
+    // SAFETY: raw pointer arithmetic mirrors C exactly; caller guarantees valid bounds
+    unsafe {
+        let mut A: [f64; 25] = [0.0; 25];
+        let mut Ala: [f64; 25] = [0.0; 25];
+        let mut b: [f64; 5] = [0.0; 5];
+        let mut tmp: [f64; 5] = [0.0; 5];
+
+        if n > 5 {
+            extern "C" {
+                fn mju_error_impl(msg: *const i8);
+            }
+            mju_error_impl(b"n is only supported up to 5\0".as_ptr() as *const i8);
+        }
+
+        for i in 0..n {
+            b[i as usize] = *bin.add(i as usize) * *d.add(i as usize);
+            for j in 0..n {
+                A[(j + i * n) as usize] =
+                    *Ain.add((j + i * n) as usize) * *d.add(i as usize) * *d.add(j as usize);
+            }
+        }
+
+        let mut la: f64 = 0.0;
+
+        for _iter in 0..20 {
+            crate::engine::engine_util_blas::mju_copy(
+                Ala.as_mut_ptr(),
+                A.as_ptr(),
+                n * n,
+            );
+            for i in 0..n {
+                Ala[(i * (n + 1)) as usize] += la;
+            }
+            if crate::engine::engine_util_solve::mju_chol_factor(Ala.as_mut_ptr(), n, 1e-10) < n {
+                crate::engine::engine_util_blas::mju_zero(res, n);
+                return 0;
+            }
+            crate::engine::engine_util_solve::mju_chol_solve(
+                res,
+                Ala.as_ptr(),
+                b.as_ptr(),
+                n,
+            );
+            crate::engine::engine_util_blas::mju_scl(res, res as *const f64, -1.0, n);
+
+            let val = crate::engine::engine_util_blas::mju_dot(res as *const f64, res as *const f64, n) - r * r;
+            if val < 1e-10 {
+                break;
+            }
+
+            crate::engine::engine_util_solve::mju_chol_solve(
+                tmp.as_mut_ptr(),
+                Ala.as_ptr(),
+                res as *const f64,
+                n,
+            );
+            let deriv = -2.0 * crate::engine::engine_util_blas::mju_dot(res as *const f64, tmp.as_ptr(), n);
+            let delta = -val / deriv;
+            if delta < 1e-10 {
+                break;
+            }
+            la += delta;
+        }
+
+        for i in 0..n {
+            *res.add(i as usize) = *res.add(i as usize) * *d.add(i as usize);
+        }
+        (la != 0.0) as i32
+    }
 }
 
 /// C: mju_boxQP (engine/engine_util_solve.h:141)

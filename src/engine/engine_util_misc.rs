@@ -1051,10 +1051,35 @@ pub fn mju_round(x: f64) -> i32 {
 /// C: mju_type2Str (engine/engine_util_misc.h:240)
 #[allow(unused_variables, non_snake_case)]
 pub fn mju_type2str(r#type: i32) -> *const i8 {
-    // WARNING: signature changed — verify body
-    // Previous params: (r#type : i32)
-    // Previous return: * const i8
-    extern "C" { fn mju_type2Str_impl (r#type : i32) -> * const i8 ; } unsafe { mju_type2Str_impl (r#type) }
+    match r#type {
+        1  => b"body\0".as_ptr() as *const i8,
+        2  => b"xbody\0".as_ptr() as *const i8,
+        3  => b"joint\0".as_ptr() as *const i8,
+        4  => b"dof\0".as_ptr() as *const i8,
+        5  => b"geom\0".as_ptr() as *const i8,
+        6  => b"site\0".as_ptr() as *const i8,
+        7  => b"camera\0".as_ptr() as *const i8,
+        8  => b"light\0".as_ptr() as *const i8,
+        9  => b"flex\0".as_ptr() as *const i8,
+        10 => b"mesh\0".as_ptr() as *const i8,
+        11 => b"skin\0".as_ptr() as *const i8,
+        12 => b"hfield\0".as_ptr() as *const i8,
+        13 => b"texture\0".as_ptr() as *const i8,
+        14 => b"material\0".as_ptr() as *const i8,
+        15 => b"pair\0".as_ptr() as *const i8,
+        16 => b"exclude\0".as_ptr() as *const i8,
+        17 => b"equality\0".as_ptr() as *const i8,
+        18 => b"tendon\0".as_ptr() as *const i8,
+        19 => b"actuator\0".as_ptr() as *const i8,
+        20 => b"sensor\0".as_ptr() as *const i8,
+        21 => b"numeric\0".as_ptr() as *const i8,
+        22 => b"text\0".as_ptr() as *const i8,
+        23 => b"tuple\0".as_ptr() as *const i8,
+        24 => b"key\0".as_ptr() as *const i8,
+        25 => b"plugin\0".as_ptr() as *const i8,
+        26 => b"frame\0".as_ptr() as *const i8,
+        _  => std::ptr::null(),
+    }
 }
 
 /// C: mju_str2Type (engine/engine_util_misc.h:243)

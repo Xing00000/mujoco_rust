@@ -368,10 +368,18 @@ pub fn mj_full_m(m: *const mjModel, d: *const mjData, dst: *mut f64) {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_mul_m(m: *const mjModel, d: *const mjData, res: *mut f64, vec: *const f64) {
-    // WARNING: signature changed — verify body
-    // Previous params: (m : * const mjModel, d : * const mjData, res : * mut f64, vec : * const f64)
-    // Previous return: ()
-    extern "C" { fn mj_mulM_impl (m : * const mjModel , d : * const mjData , res : * mut f64 , vec : * const f64) ; } unsafe { mj_mulM_impl (m , d , res , vec) }
+    // SAFETY: m, d are valid model/data pointers. res and vec are valid f64 arrays of size nv.
+    unsafe {
+        crate::engine::engine_util_sparse::mju_mul_sym_vec_sparse(
+            res,
+            (*d).M,
+            vec,
+            (*m).nv as i32,
+            (*m).M_rownnz,
+            (*m).M_rowadr,
+            (*m).M_colind,
+        );
+    }
 }
 
 /// C: mj_mulM2 (engine/engine_support.h:68)
@@ -505,10 +513,15 @@ pub fn mj_normalize_quat(m: *const mjModel, qpos: *mut f64) {
 /// C: mj_actuatorDisabled (engine/engine_support.h:108)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_actuator_disabled(m: *const mjModel, i: i32) -> i32 {
-    // WARNING: signature changed — verify body
-    // Previous params: (m : * const mjModel, i : i32)
-    // Previous return: i32
-    extern "C" { fn mj_actuatorDisabled_impl (m : * const mjModel , i : i32) -> i32 ; } unsafe { mj_actuatorDisabled_impl (m , i) }
+    // SAFETY: m is a valid mjModel pointer, i is a valid actuator index.
+    unsafe {
+        let group: i32 = *(*m).actuator_group.add(i as usize);
+        if group < 0 || group > 30 {
+            0
+        } else {
+            if (*m).opt.disableactuator & (1 << group) != 0 { 1 } else { 0 }
+        }
+    }
 }
 
 /// C: mj_nextActivation (engine/engine_support.h:111)

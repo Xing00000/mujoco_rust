@@ -188,11 +188,30 @@ pub fn point_segment(res: *mut f64, p: *const f64, u: *const f64, v: *const f64)
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjraw_sphere_capsule(con: *mut mjPreContact, margin: f64, pos1: *const f64, mat1: *const f64, size1: *const f64, pos2: *const f64, mat2: *const f64, size2: *const f64) -> i32 {
-    extern "C" {
-        fn mjraw_SphereCapsule_impl(con: *mut mjPreContact, margin: f64, pos1: *const f64, mat1: *const f64, size1: *const f64, pos2: *const f64, mat2: *const f64, size2: *const f64) -> i32;
+    // SAFETY: all pointers are valid and properly aligned per caller contract.
+    // pos1, pos2, mat2, size2 each point to sufficient f64 elements.
+    unsafe {
+        // get capsule length and axis
+        let len = *size2.add(1);
+        let mut axis: [f64; 3] = [*mat2.add(2), *mat2.add(5), *mat2.add(8)];
+
+        // find projection, clip to segment
+        let mut vec: [f64; 3] = [
+            *pos1.add(0) - *pos2.add(0),
+            *pos1.add(1) - *pos2.add(1),
+            *pos1.add(2) - *pos2.add(2),
+        ];
+        let x = crate::engine::engine_util_misc::mju_clip(
+            crate::engine::engine_util_blas::mju_dot3(axis.as_ptr(), vec.as_ptr()),
+            -len,
+            len,
+        );
+
+        // find nearest point on segment, do sphere-sphere test
+        crate::engine::engine_inline::mji_scl3(vec.as_mut_ptr(), axis.as_ptr(), x);
+        crate::engine::engine_inline::mji_add_to3(vec.as_mut_ptr(), pos2);
+        mjraw_sphere_sphere(con, margin, pos1, mat1, size1, vec.as_ptr(), mat2, size2)
     }
-    // SAFETY: delegates to C implementation, all pointers valid per caller contract
-    unsafe { mjraw_SphereCapsule_impl(con, margin, pos1, mat1, size1, pos2, mat2, size2) }
 }
 
 /// C: mjraw_CapsuleCapsule (engine/engine_collision_primitive.h:31)
@@ -204,11 +223,112 @@ pub fn mjraw_sphere_capsule(con: *mut mjPreContact, margin: f64, pos1: *const f6
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjraw_capsule_capsule(con: *mut mjPreContact, margin: f64, pos1: *const f64, mat1: *const f64, size1: *const f64, pos2: *const f64, mat2: *const f64, size2: *const f64) -> i32 {
-    extern "C" {
-        fn mjraw_CapsuleCapsule_impl(con: *mut mjPreContact, margin: f64, pos1: *const f64, mat1: *const f64, size1: *const f64, pos2: *const f64, mat2: *const f64, size2: *const f64) -> i32;
+    // SAFETY: all pointers valid and properly aligned per caller contract.
+    // con points to buffer with space for at least 4 mjPreContact entries.
+    unsafe {
+        const MJMINVAL: f64 = 1e-15;
+
+        // get capsule axes (scaled) and center difference
+        let mut axis1: [f64; 3] = [
+            *mat1.add(2) * *size1.add(1),
+            *mat1.add(5) * *size1.add(1),
+            *mat1.add(8) * *size1.add(1),
+        ];
+        let mut axis2: [f64; 3] = [
+            *mat2.add(2) * *size2.add(1),
+            *mat2.add(5) * *size2.add(1),
+            *mat2.add(8) * *size2.add(1),
+        ];
+        let dif: [f64; 3] = [
+            *pos1.add(0) - *pos2.add(0),
+            *pos1.add(1) - *pos2.add(1),
+            *pos1.add(2) - *pos2.add(2),
+        ];
+
+        // compute matrix coefficients and determinant
+        let ma = crate::engine::engine_util_blas::mju_dot3(axis1.as_ptr(), axis1.as_ptr());
+        let mb = -crate::engine::engine_util_blas::mju_dot3(axis1.as_ptr(), axis2.as_ptr());
+        let mc = crate::engine::engine_util_blas::mju_dot3(axis2.as_ptr(), axis2.as_ptr());
+        let u = -crate::engine::engine_util_blas::mju_dot3(axis1.as_ptr(), dif.as_ptr());
+        let v = crate::engine::engine_util_blas::mju_dot3(axis2.as_ptr(), dif.as_ptr());
+        let det = ma * mc - mb * mb;
+
+        // general configuration (non-parallel axes)
+        if det.abs() >= MJMINVAL {
+            // find projections, clip to segments
+            let mut x1 = (mc * u - mb * v) / det;
+            let mut x2 = (ma * v - mb * u) / det;
+
+            if x1 > 1.0 {
+                x1 = 1.0;
+                x2 = (v - mb) / mc;
+            } else if x1 < -1.0 {
+                x1 = -1.0;
+                x2 = (v + mb) / mc;
+            }
+            if x2 > 1.0 {
+                x2 = 1.0;
+                x1 = crate::engine::engine_util_misc::mju_clip((u - mb) / ma, -1.0, 1.0);
+            } else if x2 < -1.0 {
+                x2 = -1.0;
+                x1 = crate::engine::engine_util_misc::mju_clip((u + mb) / ma, -1.0, 1.0);
+            }
+
+            // find nearest points, do sphere-sphere test
+            let mut vec1: [f64; 3] = [0.0; 3];
+            let mut vec2: [f64; 3] = [0.0; 3];
+            crate::engine::engine_inline::mji_scl3(vec1.as_mut_ptr(), axis1.as_ptr(), x1);
+            crate::engine::engine_inline::mji_add_to3(vec1.as_mut_ptr(), pos1);
+            crate::engine::engine_inline::mji_scl3(vec2.as_mut_ptr(), axis2.as_ptr(), x2);
+            crate::engine::engine_inline::mji_add_to3(vec2.as_mut_ptr(), pos2);
+
+            return mjraw_sphere_sphere(con, margin, vec1.as_ptr(), mat1, size1, vec2.as_ptr(), mat2, size2);
+        }
+
+        // parallel axes
+        // x1 = 1
+        let mut vec1: [f64; 3] = [0.0; 3];
+        crate::engine::engine_inline::mji_add3(vec1.as_mut_ptr(), pos1, axis1.as_ptr());
+        let mut x2 = crate::engine::engine_util_misc::mju_clip((v - mb) / mc, -1.0, 1.0);
+
+        let mut vec2: [f64; 3] = [0.0; 3];
+        crate::engine::engine_inline::mji_scl3(vec2.as_mut_ptr(), axis2.as_ptr(), x2);
+        crate::engine::engine_inline::mji_add_to3(vec2.as_mut_ptr(), pos2);
+        let n1 = mjraw_sphere_sphere(con, margin, vec1.as_ptr(), mat1, size1, vec2.as_ptr(), mat2, size2);
+
+        // x1 = -1
+        crate::engine::engine_inline::mji_sub3(vec1.as_mut_ptr(), pos1, axis1.as_ptr());
+        x2 = crate::engine::engine_util_misc::mju_clip((v + mb) / mc, -1.0, 1.0);
+        crate::engine::engine_inline::mji_scl3(vec2.as_mut_ptr(), axis2.as_ptr(), x2);
+        crate::engine::engine_inline::mji_add_to3(vec2.as_mut_ptr(), pos2);
+        let n2 = mjraw_sphere_sphere(con.add(n1 as usize), margin, vec1.as_ptr(), mat1, size1, vec2.as_ptr(), mat2, size2);
+
+        // return if two contacts already found
+        if n1 + n2 >= 2 {
+            return n1 + n2;
+        }
+
+        // x2 = 1
+        crate::engine::engine_inline::mji_add3(vec2.as_mut_ptr(), pos2, axis2.as_ptr());
+        let mut x1 = crate::engine::engine_util_misc::mju_clip((u - mb) / ma, -1.0, 1.0);
+        crate::engine::engine_inline::mji_scl3(vec1.as_mut_ptr(), axis1.as_ptr(), x1);
+        crate::engine::engine_inline::mji_add_to3(vec1.as_mut_ptr(), pos1);
+        let n3 = mjraw_sphere_sphere(con.add((n1 + n2) as usize), margin, vec1.as_ptr(), mat1, size1, vec2.as_ptr(), mat2, size2);
+
+        // return if two contacts already found
+        if n1 + n2 + n3 >= 2 {
+            return n1 + n2 + n3;
+        }
+
+        // x2 = -1
+        crate::engine::engine_inline::mji_sub3(vec2.as_mut_ptr(), pos2, axis2.as_ptr());
+        x1 = crate::engine::engine_util_misc::mju_clip((u + mb) / ma, -1.0, 1.0);
+        crate::engine::engine_inline::mji_scl3(vec1.as_mut_ptr(), axis1.as_ptr(), x1);
+        crate::engine::engine_inline::mji_add_to3(vec1.as_mut_ptr(), pos1);
+        let n4 = mjraw_sphere_sphere(con.add((n1 + n2 + n3) as usize), margin, vec1.as_ptr(), mat1, size1, vec2.as_ptr(), mat2, size2);
+
+        n1 + n2 + n3 + n4
     }
-    // SAFETY: delegates to C implementation, all pointers valid per caller contract
-    unsafe { mjraw_CapsuleCapsule_impl(con, margin, pos1, mat1, size1, pos2, mat2, size2) }
 }
 
 /// C: mjraw_CapsuleBox (engine/engine_collision_primitive.h:34)

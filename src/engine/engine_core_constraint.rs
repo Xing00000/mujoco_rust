@@ -320,10 +320,24 @@ pub fn mj_is_dual(m: *const mjModel) -> i32 {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_mul_jac_vec(m: *const mjModel, d: *const mjData, res: *mut f64, vec: *const f64) {
-    // WARNING: signature changed — verify body
-    // Previous params: (m : * const mjModel, d : * const mjData, res : * mut f64, vec : * const f64)
-    // Previous return: ()
-    extern "C" { fn mj_mulJacVec_impl (m : * const mjModel , d : * const mjData , res : * mut f64 , vec : * const f64) ; } unsafe { mj_mulJacVec_impl (m , d , res , vec) }
+    // SAFETY: all pointers valid per caller contract, field access matches C struct layout
+    unsafe {
+        if (*d).nefc == 0 {
+            return;
+        }
+
+        if crate::engine::engine_core_util::mj_is_sparse(m) != 0 {
+            crate::engine::engine_util_sparse::mju_mul_mat_vec_sparse(
+                res, (*d).efc_J, vec, (*d).nefc,
+                (*d).efc_J_rownnz, (*d).efc_J_rowadr,
+                (*d).efc_J_colind, (*d).efc_J_rowsuper,
+            );
+        } else {
+            crate::engine::engine_util_blas::mju_mul_mat_vec(
+                res, (*d).efc_J, vec, (*d).nefc, (*m).nv as i32,
+            );
+        }
+    }
 }
 
 /// C: mj_mulJacTVec (engine/engine_core_constraint.h:37)
@@ -335,10 +349,23 @@ pub fn mj_mul_jac_vec(m: *const mjModel, d: *const mjData, res: *mut f64, vec: *
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_mul_jac_t_vec(m: *const mjModel, d: *const mjData, res: *mut f64, vec: *const f64) {
-    // WARNING: signature changed — verify body
-    // Previous params: (m : * const mjModel, d : * const mjData, res : * mut f64, vec : * const f64)
-    // Previous return: ()
-    extern "C" { fn mj_mulJacTVec_impl (m : * const mjModel , d : * const mjData , res : * mut f64 , vec : * const f64) ; } unsafe { mj_mulJacTVec_impl (m , d , res , vec) }
+    // SAFETY: all pointers valid per caller contract, field access matches C struct layout
+    unsafe {
+        if (*d).nefc == 0 {
+            return;
+        }
+
+        if crate::engine::engine_core_util::mj_is_sparse(m) != 0 {
+            crate::engine::engine_util_sparse::mju_mul_mat_t_vec_sparse(
+                res, (*d).efc_J, vec, (*d).nefc, (*m).nv as i32,
+                (*d).efc_J_rownnz, (*d).efc_J_rowadr, (*d).efc_J_colind,
+            );
+        } else {
+            crate::engine::engine_util_blas::mju_mul_mat_t_vec(
+                res, (*d).efc_J, vec, (*d).nefc, (*m).nv as i32,
+            );
+        }
+    }
 }
 
 /// C: mj_Jdotv (engine/engine_core_constraint.h:40)
@@ -392,10 +419,14 @@ pub fn mj_assign_ref(m: *const mjModel, target: *mut f64, source: *const f64) {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_assign_imp(m: *const mjModel, target: *mut f64, source: *const f64) {
-    // WARNING: signature changed — verify body
-    // Previous params: (m : * const mjModel, target : * mut f64, source : * const f64)
-    // Previous return: ()
-    extern "C" { fn mj_assignImp_impl (m : * const mjModel , target : * mut f64 , source : * const f64) ; } unsafe { mj_assignImp_impl (m , target , source) }
+    // SAFETY: m is a valid mjModel pointer. target and source point to arrays of at least 5 elements.
+    unsafe {
+        if ((*m).opt.enableflags & 1) != 0 {
+            crate::engine::engine_util_blas::mju_copy(target, (*m).opt.o_solimp.as_ptr(), 5);
+        } else {
+            crate::engine::engine_util_blas::mju_copy(target, source, 5);
+        }
+    }
 }
 
 /// C: mj_assignFriction (engine/engine_core_constraint.h:52)
@@ -407,10 +438,22 @@ pub fn mj_assign_imp(m: *const mjModel, target: *mut f64, source: *const f64) {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_assign_friction(m: *const mjModel, target: *mut f64, source: *const f64) {
-    // WARNING: signature changed — verify body
-    // Previous params: (m : * const mjModel, target : * mut f64, source : * const f64)
-    // Previous return: ()
-    extern "C" { fn mj_assignFriction_impl (m : * const mjModel , target : * mut f64 , source : * const f64) ; } unsafe { mj_assignFriction_impl (m , target , source) }
+    // SAFETY: m is a valid mjModel pointer. target and source point to arrays of at least 5 elements.
+    unsafe {
+        if ((*m).opt.enableflags & 1) != 0 {
+            let mut i: usize = 0;
+            while i < 5 {
+                *target.add(i) = crate::engine::engine_util_misc::mju_max(1e-8, (*m).opt.o_friction[i]);
+                i += 1;
+            }
+        } else {
+            let mut i: usize = 0;
+            while i < 5 {
+                *target.add(i) = crate::engine::engine_util_misc::mju_max(1e-8, *source.add(i));
+                i += 1;
+            }
+        }
+    }
 }
 
 /// C: mj_assignMargin (engine/engine_core_constraint.h:55)
@@ -421,10 +464,14 @@ pub fn mj_assign_friction(m: *const mjModel, target: *mut f64, source: *const f6
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_assign_margin(m: *const mjModel, source: f64) -> f64 {
-    // WARNING: signature changed — verify body
-    // Previous params: (m : * const mjModel, source : f64)
-    // Previous return: f64
-    extern "C" { fn mj_assignMargin_impl (m : * const mjModel , source : f64) -> f64 ; } unsafe { mj_assignMargin_impl (m , source) }
+    // SAFETY: m is a valid mjModel pointer.
+    unsafe {
+        if ((*m).opt.enableflags & 1) != 0 {
+            (*m).opt.o_margin
+        } else {
+            source
+        }
+    }
 }
 
 /// C: mj_addContact (engine/engine_core_constraint.h:58)
@@ -549,10 +596,234 @@ pub fn mj_reference_constraint(m: *const mjModel, d: *mut mjData) {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_constraint_update_impl(ne: i32, nf: i32, nefc: i32, D: *const f64, R: *const f64, floss: *const f64, jar: *const f64, r#type: *const i32, id: *const i32, contact: *mut mjContact, state: *mut i32, force: *mut f64, cost: *mut f64, flg_coneHessian: i32) {
-    // WARNING: signature changed — verify body
-    // Previous params: (ne : i32, nf : i32, nefc : i32, D : * const f64, R : * const f64, floss : * const f64, jar : * const f64, r#type : * const i32, id : * const i32, contact : * mut mjContact, state : * mut i32, force : * mut f64, cost : * mut f64, flg_coneHessian : i32)
-    // Previous return: ()
-    extern "C" { fn mj_constraintUpdate_impl_impl (ne : i32 , nf : i32 , nefc : i32 , D : * const f64 , R : * const f64 , floss : * const f64 , jar : * const f64 , r#type : * const i32 , id : * const i32 , contact : * mut mjContact , state : * mut i32 , force : * mut f64 , cost : * mut f64 , flg_coneHessian : i32) ; } unsafe { mj_constraintUpdate_impl_impl (ne , nf , nefc , D , R , floss , jar , r#type , id , contact , state , force , cost , flg_coneHessian) }
+    // SAFETY: all pointers valid per caller contract. D, R, floss, jar, type, id,
+    // state, force all have at least nefc elements. contact has adequate capacity.
+    // cost may be null (skip cost accumulation if null).
+    unsafe {
+        const MJCNSTRSTATE_QUADRATIC: i32 = 0;
+        const MJCNSTRSTATE_LINEARNEG: i32 = 1;
+        const MJCNSTRSTATE_LINEARPOS: i32 = 2;
+        const MJCNSTRSTATE_SATISFIED: i32 = 3;
+        const MJCNSTRSTATE_CONE: i32 = 4;
+        const MJCNSTR_CONTACT_ELLIPTIC: i32 = 3;
+
+        let mut s: f64 = 0.0;
+
+        // no constraints: clear cost, return
+        if nefc == 0 {
+            if !cost.is_null() {
+                *cost = 0.0;
+            }
+            return;
+        }
+
+        // compute unconstrained efc_force
+        let mut i: i32 = 0;
+        while i < nefc {
+            *force.add(i as usize) = -*D.add(i as usize) * *jar.add(i as usize);
+            i += 1;
+        }
+
+        // update constraints
+        i = 0;
+        while i < nefc {
+            // ==== equality
+            if i < ne {
+                if !cost.is_null() {
+                    s += 0.5 * *D.add(i as usize) * *jar.add(i as usize) * *jar.add(i as usize);
+                }
+                *state.add(i as usize) = MJCNSTRSTATE_QUADRATIC;
+                i += 1;
+                continue;
+            }
+
+            // ==== friction
+            if i < ne + nf {
+                let jar_i = *jar.add(i as usize);
+                let R_i = *R.add(i as usize);
+                let floss_i = *floss.add(i as usize);
+                let D_i = *D.add(i as usize);
+
+                // linear negative
+                if jar_i <= -R_i * floss_i {
+                    if !cost.is_null() {
+                        s += -0.5 * R_i * floss_i * floss_i - floss_i * jar_i;
+                    }
+                    *force.add(i as usize) = floss_i;
+                    *state.add(i as usize) = MJCNSTRSTATE_LINEARNEG;
+                }
+                // linear positive
+                else if jar_i >= R_i * floss_i {
+                    if !cost.is_null() {
+                        s += -0.5 * R_i * floss_i * floss_i + floss_i * jar_i;
+                    }
+                    *force.add(i as usize) = -floss_i;
+                    *state.add(i as usize) = MJCNSTRSTATE_LINEARPOS;
+                }
+                // quadratic
+                else {
+                    if !cost.is_null() {
+                        s += 0.5 * D_i * jar_i * jar_i;
+                    }
+                    *state.add(i as usize) = MJCNSTRSTATE_QUADRATIC;
+                }
+                i += 1;
+                continue;
+            }
+
+            // ==== contact
+
+            // non-negative constraint
+            if *r#type.add(i as usize) != MJCNSTR_CONTACT_ELLIPTIC {
+                // constraint is satisfied: no cost
+                if *jar.add(i as usize) >= 0.0 {
+                    *force.add(i as usize) = 0.0;
+                    *state.add(i as usize) = MJCNSTRSTATE_SATISFIED;
+                }
+                // quadratic
+                else {
+                    if !cost.is_null() {
+                        s += 0.5 * *D.add(i as usize) * *jar.add(i as usize) * *jar.add(i as usize);
+                    }
+                    *state.add(i as usize) = MJCNSTRSTATE_QUADRATIC;
+                }
+            }
+            // contact with elliptic cone
+            else {
+                // get contact
+                let con = &mut *contact.add(*id.add(i as usize) as usize);
+                let mu = con.mu;
+                let friction = &con.friction;
+                let dim = con.dim;
+
+                // map to regular dual cone space
+                let mut U: [f64; 6] = [0.0; 6];
+                U[0] = *jar.add(i as usize) * mu;
+                let mut j: i32 = 1;
+                while j < dim {
+                    U[j as usize] = *jar.add((i + j) as usize) * friction[(j - 1) as usize];
+                    j += 1;
+                }
+
+                // decompose into normal and tangent
+                let N = U[0];
+                let T = crate::engine::engine_util_blas::mju_norm(U.as_ptr().add(1), dim - 1);
+
+                // top zone
+                if N >= mu * T || (T <= 0.0 && N >= 0.0) {
+                    crate::engine::engine_util_blas::mju_zero(force.add(i as usize), dim);
+                    *state.add(i as usize) = MJCNSTRSTATE_SATISFIED;
+                }
+                // bottom zone
+                else if mu * N + T <= 0.0 || (T <= 0.0 && N < 0.0) {
+                    if !cost.is_null() {
+                        let mut j: i32 = 0;
+                        while j < dim {
+                            s += 0.5 * *D.add((i + j) as usize) * *jar.add((i + j) as usize) * *jar.add((i + j) as usize);
+                            j += 1;
+                        }
+                    }
+                    *state.add(i as usize) = MJCNSTRSTATE_QUADRATIC;
+                }
+                // middle zone
+                else {
+                    // cost: 0.5*D0/(mu*mu*(1+mu*mu))*(N-mu*T)^2
+                    let Dm = *D.add(i as usize) / (mu * mu * (1.0 + mu * mu));
+                    let NmT = N - mu * T;
+
+                    if !cost.is_null() {
+                        s += 0.5 * Dm * NmT * NmT;
+                    }
+
+                    // force: - ds/djar = dU/djar * ds/dU
+                    *force.add(i as usize) = -Dm * NmT * mu;
+                    let mut j: i32 = 1;
+                    while j < dim {
+                        *force.add((i + j) as usize) = -*force.add(i as usize) / T * U[j as usize] * friction[(j - 1) as usize];
+                        j += 1;
+                    }
+
+                    // set state
+                    *state.add(i as usize) = MJCNSTRSTATE_CONE;
+
+                    // cone Hessian
+                    if flg_coneHessian != 0 {
+                        // get Hessian pointer
+                        let H = (*contact.add(*id.add(i as usize) as usize)).H.as_mut_ptr();
+
+                        // set first row: (1, -mu/T * U)
+                        let mut scl = -mu / T;
+                        *H.add(0) = 1.0;
+                        let mut j: i32 = 1;
+                        while j < dim {
+                            *H.add(j as usize) = scl * U[j as usize];
+                            j += 1;
+                        }
+
+                        // set upper block: mu*N/T^3 * U*U'
+                        scl = mu * N / (T * T * T);
+                        let mut k: i32 = 1;
+                        while k < dim {
+                            let mut j: i32 = k;
+                            while j < dim {
+                                *H.add((k * dim + j) as usize) = scl * U[j as usize] * U[k as usize];
+                                j += 1;
+                            }
+                            k += 1;
+                        }
+
+                        // add to diagonal: (mu^2 - mu*N/T) * I
+                        scl = mu * mu - mu * N / T;
+                        let mut j: i32 = 1;
+                        while j < dim {
+                            *H.add((j * (dim + 1)) as usize) += scl;
+                            j += 1;
+                        }
+
+                        // pre and post multiply by diag(mu, friction), scale by Dm
+                        let mut k: i32 = 0;
+                        while k < dim {
+                            scl = Dm * (if k == 0 { mu } else { friction[(k - 1) as usize] });
+                            let mut j: i32 = k;
+                            while j < dim {
+                                *H.add((k * dim + j) as usize) *= scl * (if j == 0 { mu } else { friction[(j - 1) as usize] });
+                                j += 1;
+                            }
+                            k += 1;
+                        }
+
+                        // make symmetric: copy upper into lower
+                        let mut k: i32 = 0;
+                        while k < dim {
+                            let mut j: i32 = k + 1;
+                            while j < dim {
+                                *H.add((j * dim + k) as usize) = *H.add((k * dim + j) as usize);
+                                j += 1;
+                            }
+                            k += 1;
+                        }
+                    }
+                }
+
+                // replicate state in all cone dimensions
+                let mut j: i32 = 1;
+                while j < dim {
+                    *state.add((i + j) as usize) = *state.add(i as usize);
+                    j += 1;
+                }
+
+                // advance to end of contact
+                i += dim - 1;
+            }
+
+            i += 1;
+        }
+
+        // assign cost
+        if !cost.is_null() {
+            *cost = s;
+        }
+    }
 }
 
 /// C: mj_constraintUpdate (engine/engine_core_constraint.h:105)

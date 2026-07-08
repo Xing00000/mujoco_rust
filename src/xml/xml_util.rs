@@ -109,10 +109,25 @@ pub fn mj_x_util_write_vector(self_ptr: *mut mjXUtil, elem: *mut XMLElement, nam
 /// C: mjCopyError (xml/xml_util.h:32)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_copy_error(dst: *mut i8, src: *const i8, maxlen: i32) {
-    // WARNING: signature changed — verify body
-    // Previous params: (dst : * mut i8, src : * const i8, maxlen : i32)
-    // Previous return: ()
-    extern "C" { fn mjCopyError_impl (dst : * mut i8 , src : * const i8 , maxlen : i32) ; } unsafe { mjCopyError_impl (dst , src , maxlen) }
+    if dst.is_null() || maxlen <= 0 {
+        return;
+    }
+    // SAFETY: dst is non-null and maxlen > 0 (checked above). src is a valid C string.
+    // We replicate strncpy semantics: copy up to maxlen bytes, then null-terminate.
+    unsafe {
+        let n = maxlen as usize;
+        let mut i: usize = 0;
+        while i < n {
+            let c = *src.add(i);
+            *dst.add(i) = c;
+            if c == 0 {
+                break;
+            }
+            i += 1;
+        }
+        // Ensure null termination at last position
+        *dst.add(n - 1) = 0;
+    }
 }
 
 /// C: FirstChildElement (xml/xml_util.h:36)

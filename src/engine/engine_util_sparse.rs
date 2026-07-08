@@ -403,10 +403,14 @@ pub fn mju_sqr_mat_td_uncompressed_init(res_rowadr: *mut i32, nc: i32) {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mju_block(res: *mut f64, mat: *const f64, nc_mat: i32, nc_res: i32, nr: i32, perm_r: *const i32, perm_c: *const i32) {
-    // WARNING: signature changed — verify body
-    // Previous params: (res : * mut f64, mat : * const f64, nc_mat : i32, nc_res : i32, nr : i32, perm_r : * const i32, perm_c : * const i32)
-    // Previous return: ()
-    extern "C" { fn mju_block_impl (res : * mut f64 , mat : * const f64 , nc_mat : i32 , nc_res : i32 , nr : i32 , perm_r : * const i32 , perm_c : * const i32) ; } unsafe { mju_block_impl (res , mat , nc_mat , nc_res , nr , perm_r , perm_c) }
+    // SAFETY: raw pointer arithmetic mirrors C exactly; caller guarantees valid bounds
+    unsafe {
+        for r in 0..nr {
+            let res_r = res.add((r * nc_res) as usize);
+            let mat_r = mat.add((*perm_r.add(r as usize) * nc_mat) as usize);
+            crate::engine::engine_util_misc::mju_gather(res_r, mat_r, perm_c, nc_res);
+        }
+    }
 }
 
 /// C: mju_blockDiag (engine/engine_util_sparse.h:170)
@@ -433,10 +437,44 @@ pub fn mju_block_diag(res: *mut f64, mat: *const f64, nc_mat: i32, nc_res: i32, 
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mju_block_sparse(res: *mut f64, res_rownnz: *mut i32, res_rowadr: *mut i32, res_colind: *mut i32, mat: *const f64, rownnz: *const i32, rowadr: *const i32, colind: *const i32, nr: i32, perm_r: *const i32, perm_c: *const i32, col_offset: i32, res_offset: i32, res2: *mut f64, mat2: *const f64) {
-    // WARNING: signature changed — verify body
-    // Previous params: (res : * mut f64, res_rownnz : * mut i32, res_rowadr : * mut i32, res_colind : * mut i32, mat : * const f64, rownnz : * const i32, rowadr : * const i32, colind : * const i32, nr : i32, perm_r : * const i32, perm_c : * const i32, col_offset : i32, res_offset : i32, res2 : * mut f64, mat2 : * const f64)
-    // Previous return: ()
-    extern "C" { fn mju_blockSparse_impl (res : * mut f64 , res_rownnz : * mut i32 , res_rowadr : * mut i32 , res_colind : * mut i32 , mat : * const f64 , rownnz : * const i32 , rowadr : * const i32 , colind : * const i32 , nr : i32 , perm_r : * const i32 , perm_c : * const i32 , col_offset : i32 , res_offset : i32 , res2 : * mut f64 , mat2 : * const f64) ; } unsafe { mju_blockSparse_impl (res , res_rownnz , res_rowadr , res_colind , mat , rownnz , rowadr , colind , nr , perm_r , perm_c , col_offset , res_offset , res2 , mat2) }
+    // SAFETY: raw pointer arithmetic mirrors C exactly; caller guarantees valid bounds
+    unsafe {
+        for r in 0..nr {
+            let k = *perm_r.add(r as usize);
+            let nnz = *rownnz.add(k as usize);
+            *res_rownnz.add(r as usize) = nnz;
+
+            let res_adr = if r == 0 {
+                res_offset
+            } else {
+                *res_rowadr.add((r - 1) as usize) + *res_rownnz.add((r - 1) as usize)
+            };
+            *res_rowadr.add(r as usize) = res_adr;
+
+            let res_colind_r = res_colind.add((res_adr - res_offset) as usize);
+            let mat_adr = *rowadr.add(k as usize);
+            let colind_k = colind.add(mat_adr as usize);
+
+            for j in 0..nnz {
+                *res_colind_r.add(j as usize) =
+                    *perm_c.add(*colind_k.add(j as usize) as usize) - col_offset;
+            }
+
+            crate::engine::engine_util_blas::mju_copy(
+                res.add((res_adr - res_offset) as usize),
+                mat.add(mat_adr as usize),
+                nnz,
+            );
+
+            if !mat2.is_null() && !res2.is_null() {
+                crate::engine::engine_util_blas::mju_copy(
+                    res2.add((res_adr - res_offset) as usize),
+                    mat2.add(mat_adr as usize),
+                    nnz,
+                );
+            }
+        }
+    }
 }
 
 /// C: mju_blockDiagSparse (engine/engine_util_sparse.h:185)

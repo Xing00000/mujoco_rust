@@ -50,10 +50,40 @@ pub fn mj_merge_chain_simple(m: *const mjModel, chain: *mut i32, b1: i32, b2: i3
 /// C: mj_bodyChain (engine/engine_core_util.h:46)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_body_chain(m: *const mjModel, body: i32, chain: *mut i32) -> i32 {
-    // WARNING: signature changed — verify body
-    // Previous params: (m : * const mjModel, body : i32, chain : * mut i32)
-    // Previous return: i32
-    extern "C" { fn mj_bodyChain_impl (m : * const mjModel , body : i32 , chain : * mut i32) -> i32 ; } unsafe { mj_bodyChain_impl (m , body , chain) }
+    // SAFETY: m is valid mjModel pointer, chain is caller-allocated output buffer,
+    // body is a valid body index. All pointer offsets are within model bounds per MuJoCo invariants.
+    unsafe {
+        if *(*m).body_simple.add(body as usize) != 0 {
+            let dofnum: i32 = *(*m).body_dofnum.add(body as usize);
+            let mut i: i32 = 0;
+            while i < dofnum {
+                *chain.add(i as usize) = *(*m).body_dofadr.add(body as usize) + i;
+                i += 1;
+            }
+            return dofnum;
+        } else {
+            let body: i32 = *(*m).body_weldid.add(body as usize);
+            if body == 0 {
+                return 0;
+            }
+            let mut da: i32 = *(*m).body_dofadr.add(body as usize)
+                + *(*m).body_dofnum.add(body as usize) - 1;
+            let mut NV: i32 = 0;
+            while da >= 0 {
+                *chain.add(NV as usize) = da;
+                NV += 1;
+                da = *(*m).dof_parentid.add(da as usize);
+            }
+            let mut i: i32 = 0;
+            while i < NV / 2 {
+                let tmp: i32 = *chain.add(i as usize);
+                *chain.add(i as usize) = *chain.add((NV - i - 1) as usize);
+                *chain.add((NV - i - 1) as usize) = tmp;
+                i += 1;
+            }
+            return NV;
+        }
+    }
 }
 
 /// C: mj_jac (engine/engine_core_util.h:52)
@@ -65,10 +95,56 @@ pub fn mj_body_chain(m: *const mjModel, body: i32, chain: *mut i32) -> i32 {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_jac(m: *const mjModel, d: *const mjData, jacp: *mut f64, jacr: *mut f64, point: *const f64, body: i32) {
-    // WARNING: signature changed — verify body
-    // Previous params: (m : * const mjModel, d : * const mjData, jacp : * mut f64, jacr : * mut f64, point : * const f64, body : i32)
-    // Previous return: ()
-    extern "C" { fn mj_jac_impl (m : * const mjModel , d : * const mjData , jacp : * mut f64 , jacr : * mut f64 , point : * const f64 , body : i32) ; } unsafe { mj_jac_impl (m , d , jacp , jacr , point , body) }
+    // SAFETY: m, d are valid model/data pointers. jacp/jacr are caller-allocated 3*nv arrays (or null).
+    // point is a valid 3-element array. body is a valid body index.
+    unsafe {
+        let nv: i32 = (*m).nv as i32;
+        let mut offset: [f64; 3] = [0.0; 3];
+
+        if !jacp.is_null() {
+            crate::engine::engine_util_blas::mju_zero(jacp, 3 * nv);
+            crate::engine::engine_util_blas::mju_sub3(
+                offset.as_mut_ptr(),
+                point,
+                (*d).subtree_com.add(3 * (*(*m).body_rootid.add(body as usize)) as usize),
+            );
+        }
+        if !jacr.is_null() {
+            crate::engine::engine_util_blas::mju_zero(jacr, 3 * nv);
+        }
+
+        let body: i32 = *(*m).body_weldid.add(body as usize);
+        if body == 0 {
+            return;
+        }
+
+        let mut i: i32 = *(*m).body_dofadr.add(body as usize)
+            + *(*m).body_dofnum.add(body as usize) - 1;
+
+        while i >= 0 {
+            let cdof: *const f64 = (*d).cdof.add(6 * i as usize);
+
+            if !jacr.is_null() {
+                *jacr.add((i + 0 * nv) as usize) = *cdof.add(0);
+                *jacr.add((i + 1 * nv) as usize) = *cdof.add(1);
+                *jacr.add((i + 2 * nv) as usize) = *cdof.add(2);
+            }
+
+            if !jacp.is_null() {
+                let mut tmp: [f64; 3] = [0.0; 3];
+                crate::engine::engine_inline::mji_cross(
+                    tmp.as_mut_ptr(),
+                    cdof,
+                    offset.as_ptr(),
+                );
+                *jacp.add((i + 0 * nv) as usize) = *cdof.add(3) + tmp[0];
+                *jacp.add((i + 1 * nv) as usize) = *cdof.add(4) + tmp[1];
+                *jacp.add((i + 2 * nv) as usize) = *cdof.add(5) + tmp[2];
+            }
+
+            i = *(*m).dof_parentid.add(i as usize);
+        }
+    }
 }
 
 /// C: mj_jacBody (engine/engine_core_util.h:56)
@@ -170,10 +246,70 @@ pub fn mj_jac_point_axis(m: *const mjModel, d: *mut mjData, jacPoint: *mut f64, 
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_jac_sparse(m: *const mjModel, d: *const mjData, jacp: *mut f64, jacr: *mut f64, point: *const f64, body: i32, NV: i32, chain: *const i32, flg_skipcommon: i32) {
-    // WARNING: signature changed — verify body
-    // Previous params: (m : * const mjModel, d : * const mjData, jacp : * mut f64, jacr : * mut f64, point : * const f64, body : i32, NV : i32, chain : * const i32, flg_skipcommon : i32)
-    // Previous return: ()
-    extern "C" { fn mj_jacSparse_impl (m : * const mjModel , d : * const mjData , jacp : * mut f64 , jacr : * mut f64 , point : * const f64 , body : i32 , NV : i32 , chain : * const i32 , flg_skipcommon : i32) ; } unsafe { mj_jacSparse_impl (m , d , jacp , jacr , point , body , NV , chain , flg_skipcommon) }
+    // SAFETY: m, d are valid model/data pointers. jacp/jacr are caller-allocated 3*NV arrays (or null).
+    // point is a 3-element array. chain is a NV-element array. body is a valid body index.
+    unsafe {
+        if !jacp.is_null() {
+            crate::engine::engine_util_blas::mju_zero(jacp, 3 * NV);
+        }
+        if !jacr.is_null() {
+            crate::engine::engine_util_blas::mju_zero(jacr, 3 * NV);
+        }
+
+        let mut offset: [f64; 3] = [0.0; 3];
+        crate::engine::engine_util_blas::mju_sub3(
+            offset.as_mut_ptr(),
+            point,
+            (*d).subtree_com.add(3 * (*(*m).body_rootid.add(body as usize)) as usize),
+        );
+
+        let body: i32 = *(*m).body_weldid.add(body as usize);
+        if body == 0 {
+            return;
+        }
+
+        let mut da: i32 = *(*m).body_dofadr.add(body as usize)
+            + *(*m).body_dofnum.add(body as usize) - 1;
+        let mut ci: i32 = NV - 1;
+
+        while da >= 0 {
+            while ci >= 0 && *chain.add(ci as usize) > da {
+                ci -= 1;
+            }
+            if ci < 0 || *chain.add(ci as usize) != da {
+                if flg_skipcommon != 0 {
+                    da = *(*m).dof_parentid.add(da as usize);
+                    continue;
+                }
+                extern "C" {
+                    fn mju_error(msg: *const i8, ...);
+                }
+                mju_error(b"dof index not found in chain\0".as_ptr() as *const i8);
+            }
+
+            let cdof: *const f64 = (*d).cdof.add(6 * da as usize);
+
+            if !jacr.is_null() {
+                *jacr.add((ci + 0 * NV) as usize) = *cdof.add(0);
+                *jacr.add((ci + 1 * NV) as usize) = *cdof.add(1);
+                *jacr.add((ci + 2 * NV) as usize) = *cdof.add(2);
+            }
+
+            if !jacp.is_null() {
+                let mut tmp: [f64; 3] = [0.0; 3];
+                crate::engine::engine_inline::mji_cross(
+                    tmp.as_mut_ptr(),
+                    cdof,
+                    offset.as_ptr(),
+                );
+                *jacp.add((ci + 0 * NV) as usize) = *cdof.add(3) + tmp[0];
+                *jacp.add((ci + 1 * NV) as usize) = *cdof.add(4) + tmp[1];
+                *jacp.add((ci + 2 * NV) as usize) = *cdof.add(5) + tmp[2];
+            }
+
+            da = *(*m).dof_parentid.add(da as usize);
+        }
+    }
 }
 
 /// C: mj_jacSparseSimple (engine/engine_core_util.h:85)
@@ -312,10 +448,74 @@ pub fn mj_object_acceleration(m: *const mjModel, d: *const mjData, objtype: i32,
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_local2global(d: *mut mjData, xpos: *mut f64, xmat: *mut f64, pos: *const f64, quat: *const f64, body: i32, sameframe: u8) {
-    // WARNING: signature changed — verify body
-    // Previous params: (d : * mut mjData, xpos : * mut f64, xmat : * mut f64, pos : * const f64, quat : * const f64, body : i32, sameframe : u8)
-    // Previous return: ()
-    extern "C" { fn mj_local2Global_impl (d : * mut mjData , xpos : * mut f64 , xmat : * mut f64 , pos : * const f64 , quat : * const f64 , body : i32 , sameframe : u8) ; } unsafe { mj_local2Global_impl (d , xpos , xmat , pos , quat , body , sameframe) }
+    // SAFETY: d is valid mjData pointer. xpos/xmat are caller-allocated output arrays (or null).
+    // pos is 3-element, quat is 4-element (or null). body is valid body index.
+    // sameframe is an enum value 0..4.
+    unsafe {
+        let sf: u8 = sameframe;
+
+        if !xpos.is_null() && !pos.is_null() {
+            match sf {
+                // mjSAMEFRAME_NONE=0, mjSAMEFRAME_BODYROT=2, mjSAMEFRAME_INERTIAROT=4
+                0 | 2 | 4 => {
+                    crate::engine::engine_inline::mji_mul_mat_vec3(
+                        xpos,
+                        (*d).xmat.add(9 * body as usize),
+                        pos,
+                    );
+                    crate::engine::engine_inline::mji_add_to3(
+                        xpos,
+                        (*d).xpos.add(3 * body as usize),
+                    );
+                }
+                // mjSAMEFRAME_BODY=1
+                1 => {
+                    crate::engine::engine_inline::mji_copy3(
+                        xpos,
+                        (*d).xpos.add(3 * body as usize),
+                    );
+                }
+                // mjSAMEFRAME_INERTIA=3
+                3 => {
+                    crate::engine::engine_inline::mji_copy3(
+                        xpos,
+                        (*d).xipos.add(3 * body as usize),
+                    );
+                }
+                _ => {}
+            }
+        }
+
+        if !xmat.is_null() && !quat.is_null() {
+            let mut tmp: [f64; 4] = [0.0; 4];
+            match sf {
+                // mjSAMEFRAME_NONE=0
+                0 => {
+                    crate::engine::engine_inline::mji_mul_quat(
+                        tmp.as_mut_ptr(),
+                        (*d).xquat.add(4 * body as usize),
+                        quat,
+                    );
+                    crate::engine::engine_util_spatial::mju_quat2mat(xmat, tmp.as_ptr());
+                }
+                // mjSAMEFRAME_BODY=1, mjSAMEFRAME_BODYROT=2
+                1 | 2 => {
+                    crate::engine::engine_inline::mji_copy9(
+                        xmat,
+                        (*d).xmat.add(9 * body as usize),
+                    );
+                }
+                // mjSAMEFRAME_INERTIA=3, mjSAMEFRAME_INERTIAROT=4
+                3 | 4 => {
+                    crate::engine::engine_inline::mji_copy9(
+                        xmat,
+                        (*d).ximat.add(9 * body as usize),
+                    );
+                }
+                _ => {}
+            }
+        }
+    }
 }
 
 /// C: mju_flexGatherState (engine/engine_core_util.h:133)

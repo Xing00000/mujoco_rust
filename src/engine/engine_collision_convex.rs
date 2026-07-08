@@ -865,11 +865,143 @@ pub fn mjc_h_field_elem(m: *const mjModel, d: *mut mjData, con: *mut mjPreContac
 /// Calls: mjc_ellipsoidInside, mjc_ellipsoidOutside, mji_copy3, mji_mulMatVec3, mji_scl3, mji_sub3, mju_mulMatTVec3, mju_norm, mju_normalize3, mju_sub3
 #[allow(unused_variables, non_snake_case)]
 pub fn mjc_fix_normal(m: *const mjModel, d: *const mjData, con: *mut mjPreContact, g1: i32, g2: i32) {
-    extern "C" {
-        fn mjc_fixNormal_impl(m: *const mjModel, d: *const mjData, con: *mut mjPreContact, g1: i32, g2: i32);
+    // SAFETY: m, d, con valid per caller. g1/g2 are valid geom indices or -1.
+    // All geom arrays have adequate capacity for the given indices.
+    unsafe {
+        const MJGEOM_NONE: i32 = -1;
+        const MJGEOM_SPHERE: i32 = 2;
+        const MJGEOM_CAPSULE: i32 = 3;
+        const MJGEOM_ELLIPSOID: i32 = 4;
+        const MJGEOM_CYLINDER: i32 = 5;
+        const MJMINVAL: f64 = 1e-15;
+
+        // get geom ids and types
+        let gid: [i32; 2] = [g1, g2];
+        let mut r#type: [i32; 2] = [0; 2];
+        let mut i: i32 = 0;
+        while i < 2 {
+            if gid[i as usize] < 0 {
+                r#type[i as usize] = MJGEOM_NONE;
+            } else {
+                r#type[i as usize] = *(*m).geom_type.add(gid[i as usize] as usize);
+            }
+            // set to NONE if type cannot be processed
+            if r#type[i as usize] != MJGEOM_SPHERE && r#type[i as usize] != MJGEOM_CAPSULE
+                && r#type[i as usize] != MJGEOM_ELLIPSOID && r#type[i as usize] != MJGEOM_CYLINDER {
+                r#type[i as usize] = MJGEOM_NONE;
+            }
+            i += 1;
+        }
+
+        // neither type can be processed: nothing to do
+        if r#type[0] == MJGEOM_NONE && r#type[1] == MJGEOM_NONE {
+            return;
+        }
+
+        // init normals
+        let mut normal: [[f64; 3]; 2] = [
+            [(*con).normal[0], (*con).normal[1], (*con).normal[2]],
+            [-(*con).normal[0], -(*con).normal[1], -(*con).normal[2]],
+        ];
+
+        // process geoms in type range
+        let mut processed: [i32; 2] = [0, 0];
+        i = 0;
+        while i < 2 {
+            if r#type[i as usize] != MJGEOM_NONE {
+                // get geom mat and size
+                let mat = (*d).geom_xmat.add(9 * gid[i as usize] as usize);
+                let size = (*m).geom_size.add(3 * gid[i as usize] as usize);
+
+                // map contact point and normal to local frame
+                let mut dif: [f64; 3] = [0.0; 3];
+                let mut pos1: [f64; 3] = [0.0; 3];
+                let mut nrm: [f64; 3] = [0.0; 3];
+                crate::engine::engine_util_blas::mju_sub3(
+                    dif.as_mut_ptr(),
+                    (*con).pos.as_ptr(),
+                    (*d).geom_xpos.add(3 * gid[i as usize] as usize),
+                );
+                crate::engine::engine_util_blas::mju_mul_mat_t_vec3(pos1.as_mut_ptr(), mat, dif.as_ptr());
+                crate::engine::engine_util_blas::mju_mul_mat_t_vec3(nrm.as_mut_ptr(), mat, normal[i as usize].as_ptr());
+
+                // process according to type
+                if r#type[i as usize] == MJGEOM_SPHERE {
+                    crate::engine::engine_inline::mji_copy3(nrm.as_mut_ptr(), pos1.as_ptr());
+                    processed[i as usize] = 1;
+                } else if r#type[i as usize] == MJGEOM_CAPSULE {
+                    // Z: bottom cap
+                    if pos1[2] < -*size.add(1) {
+                        nrm[2] = pos1[2] + *size.add(1);
+                    }
+                    // Z: top cap
+                    else if pos1[2] > *size.add(1) {
+                        nrm[2] = pos1[2] - *size.add(1);
+                    }
+                    // Z: cylinder
+                    else {
+                        nrm[2] = 0.0;
+                    }
+                    // copy XY
+                    nrm[0] = pos1[0];
+                    nrm[1] = pos1[1];
+                    processed[i as usize] = 1;
+                } else if r#type[i as usize] == MJGEOM_ELLIPSOID {
+                    // guard against invalid ellipsoid size
+                    if *size.add(0) < MJMINVAL || *size.add(1) < MJMINVAL || *size.add(2) < MJMINVAL {
+                        // do nothing
+                    } else {
+                        // compute elliptic distance^2
+                        let dst1 = pos1[0] * pos1[0] / (*size.add(0) * *size.add(0))
+                            + pos1[1] * pos1[1] / (*size.add(1) * *size.add(1))
+                            + pos1[2] * pos1[2] / (*size.add(2) * *size.add(2));
+                        // dispatch to inside or outside solver
+                        if dst1 <= 1.0 {
+                            processed[i as usize] = mjc_ellipsoid_inside(nrm.as_mut_ptr(), pos1.as_ptr(), size);
+                        } else {
+                            processed[i as usize] = mjc_ellipsoid_outside(nrm.as_mut_ptr(), pos1.as_ptr(), size);
+                        }
+                    }
+                } else if r#type[i as usize] == MJGEOM_CYLINDER {
+                    // skip if within 5% length of flat wall
+                    if pos1[2].abs() <= 0.95 * *size.add(1) {
+                        // compute distances to flat and round wall
+                        let dst1 = (*size.add(1) - pos1[2].abs()).abs();
+                        let dst2 = (*size.add(0) - crate::engine::engine_util_blas::mju_norm(pos1.as_ptr(), 2)).abs();
+                        // require 4x closer to round than flat wall
+                        if dst1 >= 0.25 * dst2 {
+                            // set normal for round wall
+                            nrm[0] = pos1[0];
+                            nrm[1] = pos1[1];
+                            nrm[2] = 0.0;
+                            processed[i as usize] = 1;
+                        }
+                    }
+                }
+
+                // normalize and map normal to global frame
+                if processed[i as usize] != 0 {
+                    crate::engine::engine_util_blas::mju_normalize3(nrm.as_mut_ptr());
+                    crate::engine::engine_inline::mji_mul_mat_vec3(normal[i as usize].as_mut_ptr(), mat, nrm.as_ptr());
+                }
+            }
+            i += 1;
+        }
+
+        // both processed: average
+        if processed[0] != 0 && processed[1] != 0 {
+            crate::engine::engine_inline::mji_sub3((*con).normal.as_mut_ptr(), normal[0].as_ptr(), normal[1].as_ptr());
+            crate::engine::engine_util_blas::mju_normalize3((*con).normal.as_mut_ptr());
+        }
+        // first processed: copy
+        else if processed[0] != 0 {
+            crate::engine::engine_inline::mji_copy3((*con).normal.as_mut_ptr(), normal[0].as_ptr());
+        }
+        // second processed: copy reverse
+        else if processed[1] != 0 {
+            crate::engine::engine_inline::mji_scl3((*con).normal.as_mut_ptr(), normal[1].as_ptr(), -1.0);
+        }
     }
-    // SAFETY: delegates to C implementation, all pointers valid per caller contract
-    unsafe { mjc_fixNormal_impl(m, d, con, g1, g2) }
 }
 
 /// C: mjc_setCCDBuffer (engine/engine_collision_convex.h:128)
