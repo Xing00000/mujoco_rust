@@ -13,9 +13,19 @@ use crate::types::*;
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mul_vec_mat_vec_sym(vec: *const f64, mat: *const f64, n: i32) -> f64 {
-    extern "C" { fn mulVecMatVecSym_impl(vec: *const f64, mat: *const f64, n: i32) -> f64; }
-    // SAFETY: delegates to C implementation
-    unsafe { mulVecMatVecSym_impl(vec, mat, n) }
+    // SAFETY: caller guarantees vec[n], mat[n*n] are valid
+    unsafe {
+        let mut res: f64 = 0.0;
+        let mut i: i32 = 0;
+        while i < n {
+            // diagonal
+            res += *vec.add(i as usize) * *mat.add((n * i + i) as usize) * *vec.add(i as usize);
+            // off-diagonal
+            res += 2.0 * *vec.add(i as usize) * crate::engine::engine_util_blas::mju_dot(mat.add((n * i) as usize), vec, i);
+            i += 1;
+        }
+        res
+    }
 }
 
 /// C: mulSymVec (engine/engine_util_solve.c:1412)
@@ -27,9 +37,19 @@ pub fn mul_vec_mat_vec_sym(vec: *const f64, mat: *const f64, n: i32) -> f64 {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mul_sym_vec(res: *mut f64, mat: *const f64, vec: *const f64, n: i32) {
-    extern "C" { fn mulSymVec_impl(res: *mut f64, mat: *const f64, vec: *const f64, n: i32); }
-    // SAFETY: delegates to C implementation
-    unsafe { mulSymVec_impl(res, mat, vec, n) }
+    // SAFETY: caller guarantees res[n], mat[n*n], vec[n] valid; res must not alias vec
+    unsafe {
+        let mut i: i32 = 0;
+        while i < n {
+            // diagonal + strict lower triangle: res[i] = sum_{j<=i} mat[i,j] * vec[j]
+            *res.add(i as usize) = *mat.add((n * i + i) as usize) * *vec.add(i as usize)
+                + crate::engine::engine_util_blas::mju_dot(mat.add((n * i) as usize), vec, i);
+
+            // strict upper mirror contribution: res[k] += mat[i,k] * vec[i] for k < i
+            crate::engine::engine_util_blas::mju_add_to_scl(res, mat.add((n * i) as usize), *vec.add(i as usize), i);
+            i += 1;
+        }
+    }
 }
 
 /// C: mju_cholFactor (engine/engine_util_solve.h:27)
@@ -756,9 +776,304 @@ pub fn mju_qcqp(res: *mut f64, Ain: *const f64, bin: *const f64, d: *const f64, 
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mju_box_qp(res: *mut f64, R: *mut f64, index: *mut i32, H: *const f64, g: *const f64, n: i32, lower: *const f64, upper: *const f64) -> i32 {
-    extern "C" { fn mju_boxQP_impl(res: *mut f64, R: *mut f64, index: *mut i32, H: *const f64, g: *const f64, n: i32, lower: *const f64, upper: *const f64) -> i32; }
-    // SAFETY: delegates to C implementation
-    unsafe { mju_boxQP_impl(res, R, index, H, g, n, lower, upper) }
+    const MJMINVAL: f64 = 1e-15;
+
+    // algorithm options
+    let maxiter: i32 = 100;
+    let mingrad: f64 = 1E-16;
+    let backtrack: f64 = 0.5;
+    let minstep: f64 = 1E-22;
+    let armijo: f64 = 0.1;
+
+    // local enum encoding solver status
+    const BOXQP_NOT_SPD: i32 = -1;
+    const BOXQP_NO_DESCENT: i32 = 0;
+    const BOXQP_MAX_ITER: i32 = 1;
+    const BOXQP_MAX_LS_ITER: i32 = 2;
+    const BOXQP_TOL_GRAD: i32 = 3;
+    const BOXQP_UNBOUNDED: i32 = 4;
+    const BOXQP_ALL_CLAMPED: i32 = 5;
+
+    // SAFETY: caller guarantees res[n], R[n*(n+7)], H[n*n], g[n] valid; index, lower, upper may be null
+    unsafe {
+        let mut status: i32 = BOXQP_NO_DESCENT;
+        let mut factorize: i32 = 1;
+        let mut nfree: i32 = n;
+        let mut nfactor: i32 = 0;
+        let mut sdotg: f64;
+        let mut improvement: f64 = 0.0;
+        let mut value: f64 = 0.0;
+        let mut norm2: f64 = 0.0;
+
+        // basic checks
+        if n <= 0 {
+            crate::engine::engine_util_errmem::mju_error(
+                b"problem size n must be positive\0".as_ptr() as *const i8,
+            );
+        }
+        if !upper.is_null() && !lower.is_null() {
+            let mut i: i32 = 0;
+            while i < n {
+                if *lower.add(i as usize) >= *upper.add(i as usize) {
+                    crate::engine::engine_util_errmem::mju_error(
+                        b"upper bounds must be stricly larger than lower bounds\0".as_ptr() as *const i8,
+                    );
+                }
+                i += 1;
+            }
+        }
+
+        // local scratch vectors, allocate in R
+        let scratch: *mut f64 = R.add((n * n) as usize);
+        let grad: *mut f64 = scratch.add(0);
+        let search: *mut f64 = scratch.add(n as usize);
+        let candidate: *mut f64 = scratch.add((2 * n) as usize);
+        let temp: *mut f64 = scratch.add((3 * n) as usize);
+        let clamped: *mut i32 = scratch.add((4 * n) as usize) as *mut i32;
+        let oldclamped: *mut i32 = scratch.add((5 * n) as usize) as *mut i32;
+
+        // if index vector not given, use scratch space
+        let index_ptr: *mut i32 = if index.is_null() {
+            scratch.add((6 * n) as usize) as *mut i32
+        } else {
+            index
+        };
+
+        // no bounds: return Newton point
+        if lower.is_null() && upper.is_null() {
+            // try to factorize
+            crate::engine::engine_util_blas::mju_copy(R, H, n * n);
+            let rank: i32 = crate::engine::engine_util_solve::mju_chol_factor(R, n, MJMINVAL);
+            if rank == n {
+                crate::engine::engine_util_solve::mju_chol_solve(res, R as *const f64, g, n);
+                crate::engine::engine_util_blas::mju_scl(res, res as *const f64, -1.0, n);
+                nfactor = 1;
+                status = BOXQP_UNBOUNDED;
+            } else {
+                status = BOXQP_NOT_SPD;
+            }
+
+            // full index set (no clamping)
+            let mut i: i32 = 0;
+            while i < n {
+                *index_ptr.add(i as usize) = i;
+                i += 1;
+            }
+        }
+        // have bounds: clamp res
+        else {
+            let mut i: i32 = 0;
+            while i < n {
+                if !lower.is_null() {
+                    *res.add(i as usize) = crate::engine::engine_util_misc::mju_max(*res.add(i as usize), *lower.add(i as usize));
+                }
+                if !upper.is_null() {
+                    *res.add(i as usize) = crate::engine::engine_util_misc::mju_min(*res.add(i as usize), *upper.add(i as usize));
+                }
+                i += 1;
+            }
+        }
+
+        // ------ main loop
+        let mut iter: i32 = 0;
+        let mut oldvalue: f64;
+        while iter < maxiter {
+            if status != BOXQP_NO_DESCENT {
+                break;
+            }
+
+            // compute objective: value = 0.5*res'*H*res + res'*g
+            value = 0.5 * mul_vec_mat_vec_sym(res as *const f64, H, n) + crate::engine::engine_util_blas::mju_dot(res as *const f64, g, n);
+
+            // save last value
+            oldvalue = value;
+
+            // compute gradient
+            mul_sym_vec(grad, H, res as *const f64, n);
+            crate::engine::engine_util_blas::mju_add_to(grad, g, n);
+
+            // find clamped dimensions
+            {
+                let mut i: i32 = 0;
+                while i < n {
+                    *clamped.add(i as usize) =
+                        ((!lower.is_null() && *res.add(i as usize) == *lower.add(i as usize) && *grad.add(i as usize) > 0.0) ||
+                         (!upper.is_null() && *res.add(i as usize) == *upper.add(i as usize) && *grad.add(i as usize) < 0.0)) as i32;
+                    i += 1;
+                }
+            }
+
+            // build index of free dimensions, count them
+            nfree = 0;
+            {
+                let mut i: i32 = 0;
+                while i < n {
+                    if *clamped.add(i as usize) == 0 {
+                        *index_ptr.add(nfree as usize) = i;
+                        nfree += 1;
+                    }
+                    i += 1;
+                }
+            }
+
+            // all dimensions are clamped: minimum found
+            if nfree == 0 {
+                status = BOXQP_ALL_CLAMPED;
+                break;
+            }
+
+            // re-factorize if clamped dimensions have changed
+            if iter != 0 {
+                factorize = 0;
+                let mut i: i32 = 0;
+                while i < n {
+                    if *clamped.add(i as usize) != *oldclamped.add(i as usize) {
+                        factorize = 1;
+                        break;
+                    }
+                    i += 1;
+                }
+            }
+
+            // save last clamped
+            {
+                let mut i: i32 = 0;
+                while i < n {
+                    *oldclamped.add(i as usize) = *clamped.add(i as usize);
+                    i += 1;
+                }
+            }
+
+            // get search direction: search = g + H_all,clamped * res_clamped
+            {
+                let mut i: i32 = 0;
+                while i < n {
+                    *temp.add(i as usize) = if *clamped.add(i as usize) != 0 { *res.add(i as usize) } else { 0.0 };
+                    i += 1;
+                }
+            }
+            mul_sym_vec(search, H, temp as *const f64, n);
+            crate::engine::engine_util_blas::mju_add_to(search, g, n);
+
+            // search = compress_free(search)
+            {
+                let mut i: i32 = 0;
+                while i < nfree {
+                    *search.add(i as usize) = *search.add(*index_ptr.add(i as usize) as usize);
+                    i += 1;
+                }
+            }
+
+            // R = compress_free(H)
+            if factorize != 0 {
+                let mut i: i32 = 0;
+                while i < nfree {
+                    let mut j: i32 = 0;
+                    while j < i + 1 {
+                        *R.add((i * nfree + j) as usize) = *H.add((*index_ptr.add(i as usize) * n + *index_ptr.add(j as usize)) as usize);
+                        j += 1;
+                    }
+                    i += 1;
+                }
+            }
+
+            // re-factorize and increment counter, if required
+            let rank: i32 = if factorize != 0 { crate::engine::engine_util_solve::mju_chol_factor(R, nfree, MJMINVAL) } else { nfree };
+            nfactor += factorize;
+
+            // abort if factorization failed
+            if rank != nfree {
+                status = BOXQP_NOT_SPD;
+                break;
+            }
+
+            // temp = H_free,free \ search_free
+            crate::engine::engine_util_solve::mju_chol_solve(temp, R as *const f64, search as *const f64, nfree);
+
+            // search_free = expand_free(-temp) - x_free
+            crate::engine::engine_util_blas::mju_zero(search, n);
+            {
+                let mut i: i32 = 0;
+                while i < nfree {
+                    *search.add(*index_ptr.add(i as usize) as usize) = -*temp.add(i as usize) - *res.add(*index_ptr.add(i as usize) as usize);
+                    i += 1;
+                }
+            }
+
+            // ------ check gradient
+
+            // squared norm of free gradient
+            norm2 = 0.0;
+            {
+                let mut i: i32 = 0;
+                while i < nfree {
+                    let grad_i: f64 = *grad.add(*index_ptr.add(i as usize) as usize);
+                    norm2 += grad_i * grad_i;
+                    i += 1;
+                }
+            }
+
+            // small gradient: minimum found
+            if norm2 < mingrad {
+                status = if nfree == n { BOXQP_UNBOUNDED } else { BOXQP_TOL_GRAD };
+                break;
+            }
+
+            // sanity check: make sure we have a descent direction
+            sdotg = crate::engine::engine_util_blas::mju_dot(search as *const f64, grad as *const f64, n);
+            if sdotg >= 0.0 {
+                break; // SHOULD NOT OCCUR
+            }
+
+            // ------ projected Armijo line search
+            let mut step: f64 = 1.0;
+            loop {
+                // candidate = clamp(x + step*search)
+                crate::engine::engine_util_blas::mju_scl(candidate, search as *const f64, step, n);
+                crate::engine::engine_util_blas::mju_add_to(candidate, res as *const f64, n);
+                {
+                    let mut i: i32 = 0;
+                    while i < n {
+                        if !lower.is_null() && *candidate.add(i as usize) < *lower.add(i as usize) {
+                            *candidate.add(i as usize) = *lower.add(i as usize);
+                        } else if !upper.is_null() && *candidate.add(i as usize) > *upper.add(i as usize) {
+                            *candidate.add(i as usize) = *upper.add(i as usize);
+                        }
+                        i += 1;
+                    }
+                }
+
+                // new objective value
+                value = 0.5 * mul_vec_mat_vec_sym(candidate as *const f64, H, n) + crate::engine::engine_util_blas::mju_dot(candidate as *const f64, g, n);
+
+                // increment and break if step is too small
+                step = step * backtrack;
+                if step < minstep {
+                    status = BOXQP_MAX_LS_ITER;
+                    break;
+                }
+
+                // repeat until relative improvement >= Armijo
+                improvement = (value - oldvalue) / (step * sdotg);
+                if improvement >= armijo {
+                    break;
+                }
+            }
+
+            // accept candidate
+            crate::engine::engine_util_blas::mju_copy(res, candidate as *const f64, n);
+
+            iter += 1;
+        }
+
+        // max iterations exceeded
+        if iter == maxiter {
+            status = BOXQP_MAX_ITER;
+        }
+
+        // return nf or -1 if failure
+        if status == BOXQP_NO_DESCENT || status == BOXQP_NOT_SPD { -1 } else { nfree }
+    }
 }
 
 /// C: mju_boxQPmalloc (engine/engine_util_solve.h:146)
