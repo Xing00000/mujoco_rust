@@ -518,11 +518,61 @@ pub fn mj_solve_m(m: *const mjModel, d: *mut mjData, x: *mut f64, y: *const f64,
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_solve_m2(m: *const mjModel, d: *mut mjData, x: *mut f64, y: *const f64, sqrtInvD: *const f64, n: i32) {
-    extern "C" {
-        fn mj_solveM2_impl(m: *const mjModel, d: *mut mjData, x: *mut f64, y: *const f64, sqrtInvD: *const f64, n: i32);
+    // SAFETY: all pointers valid per caller contract. Arrays have adequate capacity.
+    unsafe {
+        let nv = (*m).nv as i32;
+
+        // local copies of key variables
+        let rownnz = (*m).M_rownnz;
+        let rowadr = (*m).M_rowadr;
+        let colind = (*m).M_colind;
+        let diagnum = (*m).dof_simplenum;
+        let qLD = (*d).qLD;
+
+        // x = y
+        crate::engine::engine_util_blas::mju_copy(x, y, n * nv);
+
+        // x <- L^-T x
+        let mut i: i32 = nv - 1;
+        while i > 0 {
+            // skip diagonal rows
+            if *diagnum.add(i as usize) != 0 {
+                i -= 1;
+                continue;
+            }
+
+            // prepare row i column address range
+            let start = *rowadr.add(i as usize);
+            let end = start + *rownnz.add(i as usize) - 1;
+
+            // process all vectors
+            let mut offset: i32 = 0;
+            while offset < n * nv {
+                let x_i = *x.add((i + offset) as usize);
+                if x_i != 0.0 {
+                    let mut adr = start;
+                    while adr < end {
+                        *x.add((offset + *colind.add(adr as usize)) as usize) -= *qLD.add(adr as usize) * x_i;
+                        adr += 1;
+                    }
+                }
+                offset += nv;
+            }
+            i -= 1;
+        }
+
+        // x <- D^-1/2 x
+        i = 0;
+        while i < nv {
+            let invD_i = *sqrtInvD.add(i as usize);
+            let mut offset: i32 = 0;
+            while offset < n * nv {
+                *x.add((i + offset) as usize) *= invD_i;
+                offset += nv;
+            }
+            i += 1;
+        }
     }
-    // SAFETY: delegates to C implementation, all pointers valid per caller contract
-    unsafe { mj_solveM2_impl(m, d, x, y, sqrtInvD, n) }
 }
 
 /// C: mj_comVel (engine/engine_core_smooth.h:98)

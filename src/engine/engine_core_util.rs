@@ -30,21 +30,85 @@ pub fn mj_is_sparse(m: *const mjModel) -> i32 {
 /// C: mj_mergeChain (engine/engine_core_util.h:40)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_merge_chain(m: *const mjModel, chain: *mut i32, b1: i32, b2: i32, flg_skipcommon: i32) -> i32 {
-    extern "C" {
-        fn mj_mergeChain_impl(m: *const mjModel, chain: *mut i32, b1: i32, b2: i32, flg_skipcommon: i32) -> i32;
+    // SAFETY: m valid, chain points to buffer with adequate capacity.
+    // b1, b2 are valid body indices.
+    unsafe {
+        // skip fixed bodies
+        let b1 = *(*m).body_weldid.add(b1 as usize);
+        let b2 = *(*m).body_weldid.add(b2 as usize);
+
+        // neither body is movable: empty chain
+        if b1 == 0 && b2 == 0 {
+            return 0;
+        }
+
+        // initialize last dof address for each body
+        let mut da1 = *(*m).body_dofadr.add(b1 as usize) + *(*m).body_dofnum.add(b1 as usize) - 1;
+        let mut da2 = *(*m).body_dofadr.add(b2 as usize) + *(*m).body_dofnum.add(b2 as usize) - 1;
+        let mut NV: i32 = 0;
+
+        // merge chains
+        while da1 >= 0 || da2 >= 0 {
+            let da = if da1 > da2 { da1 } else { da2 };
+            if flg_skipcommon != 0 && da1 == da && da2 == da {
+                break;
+            }
+            *chain.add(NV as usize) = da;
+            if da1 == da {
+                da1 = *(*m).dof_parentid.add(da1 as usize);
+            }
+            if da2 == da {
+                da2 = *(*m).dof_parentid.add(da2 as usize);
+            }
+            NV += 1;
+        }
+
+        // reverse order of chain: make it increasing
+        let mut i: i32 = 0;
+        while i < NV / 2 {
+            let tmp = *chain.add(i as usize);
+            *chain.add(i as usize) = *chain.add((NV - i - 1) as usize);
+            *chain.add((NV - i - 1) as usize) = tmp;
+            i += 1;
+        }
+
+        NV
     }
-    // SAFETY: delegates to C implementation, all pointers valid per caller contract
-    unsafe { mj_mergeChain_impl(m, chain, b1, b2, flg_skipcommon) }
 }
 
 /// C: mj_mergeChainSimple (engine/engine_core_util.h:43)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_merge_chain_simple(m: *const mjModel, chain: *mut i32, b1: i32, b2: i32) -> i32 {
-    extern "C" {
-        fn mj_mergeChainSimple_impl(m: *const mjModel, chain: *mut i32, b1: i32, b2: i32) -> i32;
+    // SAFETY: m valid, chain points to buffer with adequate capacity.
+    unsafe {
+        // swap bodies if wrong order
+        let (b1, b2) = if b1 > b2 { (b2, b1) } else { (b1, b2) };
+
+        // init
+        let n1 = *(*m).body_dofnum.add(b1 as usize);
+        let n2 = *(*m).body_dofnum.add(b2 as usize);
+
+        // both fixed: nothing to do
+        if n1 == 0 && n2 == 0 {
+            return 0;
+        }
+
+        // copy b1 dofs
+        let mut i: i32 = 0;
+        while i < n1 {
+            *chain.add(i as usize) = *(*m).body_dofadr.add(b1 as usize) + i;
+            i += 1;
+        }
+
+        // copy b2 dofs
+        i = 0;
+        while i < n2 {
+            *chain.add((n1 + i) as usize) = *(*m).body_dofadr.add(b2 as usize) + i;
+            i += 1;
+        }
+
+        n1 + n2
     }
-    // SAFETY: delegates to C implementation, all pointers valid per caller contract
-    unsafe { mj_mergeChainSimple_impl(m, chain, b1, b2) }
 }
 
 /// C: mj_bodyChain (engine/engine_core_util.h:46)

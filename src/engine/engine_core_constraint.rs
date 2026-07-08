@@ -835,9 +835,16 @@ pub fn mj_constraint_update_impl(ne: i32, nf: i32, nefc: i32, D: *const f64, R: 
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_constraint_update(m: *const mjModel, d: *mut mjData, jar: *const f64, cost: *mut f64, flg_coneHessian: i32) {
-    // WARNING: signature changed — verify body
-    // Previous params: (m : * const mjModel, d : * mut mjData, jar : * const f64, cost : * mut f64, flg_coneHessian : i32)
-    // Previous return: ()
-    extern "C" { fn mj_constraintUpdate_impl (m : * const mjModel , d : * mut mjData , jar : * const f64 , cost : * mut f64 , flg_coneHessian : i32) ; } unsafe { mj_constraintUpdate_impl (m , d , jar , cost , flg_coneHessian) }
+    // SAFETY: m, d valid per caller. jar points to d->nefc elements.
+    // Delegates to mj_constraint_update_impl then mj_mul_jac_t_vec.
+    unsafe {
+        mj_constraint_update_impl(
+            (*d).ne, (*d).nf, (*d).nefc,
+            (*d).efc_D, (*d).efc_R, (*d).efc_frictionloss,
+            jar, (*d).efc_type, (*d).efc_id, (*d).contact, (*d).efc_state, (*d).efc_force,
+            cost, flg_coneHessian,
+        );
+        mj_mul_jac_t_vec(m, d as *const mjData, (*d).qfrc_constraint, (*d).efc_force);
+    }
 }
 
