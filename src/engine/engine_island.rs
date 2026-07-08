@@ -58,11 +58,57 @@ pub fn find_edges(m: *const mjModel, d: *const mjData, rownnz: *mut i32, colind:
 /// Calls: mju_copyInt, mju_fillInt
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_flood_fill(island: *mut i32, nr: i32, rownnz: *const i32, rowadr: *const i32, colind: *const i32, stack: *mut i32) -> i32 {
-    extern "C" {
-        fn mj_floodFill_impl(island: *mut i32, nr: i32, rownnz: *const i32, rowadr: *const i32, colind: *const i32, stack: *mut i32) -> i32;
+    // SAFETY: all pointers valid. island and stack have nr elements each.
+    // rownnz, rowadr, colind describe a sparse adjacency matrix.
+    unsafe {
+        // initialize island count, set ids to -1
+        let mut nisland: i32 = 0;
+        crate::engine::engine_util_misc::mju_fill_int(island, -1, nr);
+
+        // iterate over vertices, discover islands
+        let mut i: i32 = 0;
+        while i < nr {
+            // vertex already in island or singleton with no edges: skip
+            if *island.add(i as usize) != -1 || *rownnz.add(i as usize) == 0 {
+                i += 1;
+                continue;
+            }
+
+            // push i onto stack
+            let mut nstack: i32 = 0;
+            *stack.add(nstack as usize) = i;
+            nstack += 1;
+
+            // DFS traversal of island
+            while nstack != 0 {
+                // pop v from stack
+                nstack -= 1;
+                let v = *stack.add(nstack as usize);
+
+                // if v is already assigned, continue
+                if *island.add(v as usize) != -1 {
+                    continue;
+                }
+
+                // assign v to current island
+                *island.add(v as usize) = nisland;
+
+                // push adjacent vertices onto stack
+                crate::engine::engine_util_misc::mju_copy_int(
+                    stack.add(nstack as usize),
+                    colind.add(*rowadr.add(v as usize) as usize),
+                    *rownnz.add(v as usize),
+                );
+                nstack += *rownnz.add(v as usize);
+            }
+
+            // island is filled: increment nisland
+            nisland += 1;
+            i += 1;
+        }
+
+        nisland
     }
-    // SAFETY: delegates to C implementation, all pointers valid per caller contract
-    unsafe { mj_floodFill_impl(island, nr, rownnz, rowadr, colind, stack) }
 }
 
 /// C: mj_island (engine/engine_island.h:35)

@@ -356,11 +356,105 @@ pub fn mjraw_capsule_box(con: *mut mjPreContact, margin: f64, pos1: *const f64, 
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjraw_sphere_triangle(con: *mut mjPreContact, margin: f64, s: *const f64, rs: f64, t1: *const f64, t2: *const f64, t3: *const f64, rt: f64) -> i32 {
-    extern "C" {
-        fn mjraw_SphereTriangle_impl(con: *mut mjPreContact, margin: f64, s: *const f64, rs: f64, t1: *const f64, t2: *const f64, t3: *const f64, rt: f64) -> i32;
+    // SAFETY: all pointers valid. s has 3 elements, t1/t2/t3 have 3 elements each.
+    // con points to at least 1 mjPreContact.
+    unsafe {
+        let rbound = margin + rs + rt;
+
+        // make t1 the origin: triangle is (O,A,B); sphere center is S
+        let S: [f64; 3] = [*s.add(0) - *t1.add(0), *s.add(1) - *t1.add(1), *s.add(2) - *t1.add(2)];
+        let A: [f64; 3] = [*t2.add(0) - *t1.add(0), *t2.add(1) - *t1.add(1), *t2.add(2) - *t1.add(2)];
+        let B: [f64; 3] = [*t3.add(0) - *t1.add(0), *t3.add(1) - *t1.add(1), *t3.add(2) - *t1.add(2)];
+
+        // N is normal to triangle plane
+        let mut N: [f64; 3] = [0.0; 3];
+        crate::engine::engine_inline::mji_cross(N.as_mut_ptr(), A.as_ptr(), B.as_ptr());
+        crate::engine::engine_util_blas::mju_normalize3(N.as_mut_ptr());
+
+        // dstS is signed distance from S to plane; exit if too large
+        let dstS = crate::engine::engine_util_blas::mju_dot3(N.as_ptr(), S.as_ptr());
+        if dstS.abs() > rbound {
+            return 0;
+        }
+
+        // P is projection of S in triangle plane
+        let mut P: [f64; 3] = [0.0; 3];
+        crate::engine::engine_inline::mji_add_scl3(P.as_mut_ptr(), S.as_ptr(), N.as_ptr(), -dstS);
+
+        // construct orthogonal axes (V1~A, V2) of triangle plane
+        let mut V1: [f64; 3] = [0.0; 3];
+        let mut V2: [f64; 3] = [0.0; 3];
+        crate::engine::engine_inline::mji_copy3(V1.as_mut_ptr(), A.as_ptr());
+        let lenA = crate::engine::engine_util_blas::mju_normalize3(V1.as_mut_ptr());
+        crate::engine::engine_inline::mji_cross(V2.as_mut_ptr(), N.as_ptr(), A.as_ptr());
+        crate::engine::engine_util_blas::mju_normalize3(V2.as_mut_ptr());
+
+        // triangle is (o,a,b), sphere center is p (2D coordinates)
+        let o: [f64; 2] = [0.0, 0.0];
+        let a: [f64; 2] = [lenA, 0.0];
+        let b: [f64; 2] = [
+            crate::engine::engine_util_blas::mju_dot3(V1.as_ptr(), B.as_ptr()),
+            crate::engine::engine_util_blas::mju_dot3(V2.as_ptr(), B.as_ptr()),
+        ];
+        let p: [f64; 2] = [
+            crate::engine::engine_util_blas::mju_dot3(V1.as_ptr(), P.as_ptr()),
+            crate::engine::engine_util_blas::mju_dot3(V2.as_ptr(), P.as_ptr()),
+        ];
+
+        // compute signs of areas of (p,o,a), (p,a,b), (p,b,o)
+        let sign1 = area_sign(p.as_ptr(), o.as_ptr(), a.as_ptr());
+        let sign2 = area_sign(p.as_ptr(), a.as_ptr(), b.as_ptr());
+        let sign3 = area_sign(p.as_ptr(), b.as_ptr(), o.as_ptr());
+
+        let mut X: [f64; 3] = [0.0; 3];
+
+        // p is inside triangle
+        if sign1 == sign2 && sign2 == sign3 {
+            crate::engine::engine_inline::mji_copy3(X.as_mut_ptr(), P.as_ptr());
+        }
+        // p is not inside triangle
+        else {
+            // find nearest point to p on triangle edges (o,a), (a,b), (b,o)
+            let mut x: [[f64; 2]; 3] = [[0.0; 2]; 3];
+            let mut dstx: [f64; 3] = [0.0; 3];
+            dstx[0] = point_segment(x[0].as_mut_ptr(), p.as_ptr(), o.as_ptr(), a.as_ptr());
+            dstx[1] = point_segment(x[1].as_mut_ptr(), p.as_ptr(), a.as_ptr(), b.as_ptr());
+            dstx[2] = point_segment(x[2].as_mut_ptr(), p.as_ptr(), b.as_ptr(), o.as_ptr());
+
+            // select minimum
+            let best = if dstx[0] < dstx[1] && dstx[0] < dstx[2] {
+                0
+            } else if dstx[1] < dstx[2] {
+                1
+            } else {
+                2
+            };
+
+            // convert x[best] to 3D
+            crate::engine::engine_inline::mji_scl3(X.as_mut_ptr(), V1.as_ptr(), x[best][0]);
+            crate::engine::engine_inline::mji_add_to_scl3(X.as_mut_ptr(), V2.as_ptr(), x[best][1]);
+        }
+
+        // X is now the nearest point to S within the 3D triangle (O,A,B)
+        // compute contact normal and distance
+        let mut nrm: [f64; 3] = [X[0] - S[0], X[1] - S[1], X[2] - S[2]];
+        let dst = crate::engine::engine_util_blas::mju_normalize3(nrm.as_mut_ptr());
+
+        // exit if too far
+        if dst > rbound {
+            return 0;
+        }
+
+        // construct contact
+        (*con).dist = dst - rs - rt;
+        crate::engine::engine_inline::mji_add_scl3(
+            (*con).pos.as_mut_ptr(), s, nrm.as_ptr(), rs + (*con).dist / 2.0,
+        );
+        crate::engine::engine_inline::mji_copy3((*con).normal.as_mut_ptr(), nrm.as_ptr());
+        crate::engine::engine_util_blas::mju_zero3((*con).tangent.as_mut_ptr());
+
+        1
     }
-    // SAFETY: delegates to C implementation, all pointers valid per caller contract
-    unsafe { mjraw_SphereTriangle_impl(con, margin, s, rs, t1, t2, t3, rt) }
 }
 
 /// C: mjraw_BoxTriangle (engine/engine_collision_primitive.h:39)
