@@ -563,9 +563,10 @@ pub fn mj_integrate_pos_ind(m: *const mjModel, qpos: *mut f64, qvel: *const f64,
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_integrate_pos(m: *const mjModel, qpos: *mut f64, qvel: *const f64, dt: f64) {
-    extern "C" { fn mj_integratePos_impl(m: *const mjModel, qpos: *mut f64, qvel: *const f64, dt: f64); }
-    // SAFETY: delegates to C implementation
-    unsafe { mj_integratePos_impl(m, qpos, qvel, dt) }
+    // SAFETY: m valid. Delegates to mj_integratePosInd with NULL index and full nbody.
+    unsafe {
+        mj_integrate_pos_ind(m, qpos, qvel, dt, core::ptr::null(), (*m).nbody as i32);
+    }
 }
 
 /// C: mj_normalizeQuat (engine/engine_support.h:105)
@@ -577,9 +578,23 @@ pub fn mj_integrate_pos(m: *const mjModel, qpos: *mut f64, qvel: *const f64, dt:
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_normalize_quat(m: *const mjModel, qpos: *mut f64) {
-    extern "C" { fn mj_normalizeQuat_impl(m: *const mjModel, qpos: *mut f64); }
-    // SAFETY: delegates to C implementation
-    unsafe { mj_normalizeQuat_impl(m, qpos) }
+    // SAFETY: m valid. qpos has adequate capacity for all joint positions.
+    unsafe {
+        const MJJNT_BALL: i32 = 1;
+        const MJJNT_FREE: i32 = 0;
+
+        let njnt = (*m).njnt as i32;
+        let mut i: i32 = 0;
+        while i < njnt {
+            let jnt_type = *(*m).jnt_type.add(i as usize);
+            if jnt_type == MJJNT_BALL || jnt_type == MJJNT_FREE {
+                let offset = if jnt_type == MJJNT_FREE { 3 } else { 0 };
+                crate::engine::engine_util_blas::mju_normalize4(
+                    qpos.add((*(*m).jnt_qposadr.add(i as usize) + offset) as usize));
+            }
+            i += 1;
+        }
+    }
 }
 
 /// C: mj_actuatorDisabled (engine/engine_support.h:108)
