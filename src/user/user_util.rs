@@ -553,9 +553,24 @@ pub fn mjuu_frameaccuminv(pos: [f64; 3], quat: [f64; 4], childpos: [f64; 3], chi
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjuu_globalinertia(global: *mut f64, local: *const f64, quat: *const f64) {
-    extern "C" { fn mjuu_globalinertia_impl(global: *mut f64, local: *const f64, quat: *const f64); }
-    // SAFETY: delegates to C implementation, all pointers valid per caller contract
-    unsafe { mjuu_globalinertia_impl(global, local, quat) }
+    // SAFETY: global has 6 elements, local has 3, quat has 4. All valid.
+    unsafe {
+        let mut mat: [f64; 9] = [0.0; 9];
+        mjuu_quat2mat(mat.as_mut_ptr(), quat);
+
+        let tmp: [f64; 9] = [
+            mat[0] * *local.add(0), mat[3] * *local.add(0), mat[6] * *local.add(0),
+            mat[1] * *local.add(1), mat[4] * *local.add(1), mat[7] * *local.add(1),
+            mat[2] * *local.add(2), mat[5] * *local.add(2), mat[8] * *local.add(2),
+        ];
+
+        *global.add(0) = mat[0] * tmp[0] + mat[1] * tmp[3] + mat[2] * tmp[6];
+        *global.add(1) = mat[3] * tmp[1] + mat[4] * tmp[4] + mat[5] * tmp[7];
+        *global.add(2) = mat[6] * tmp[2] + mat[7] * tmp[5] + mat[8] * tmp[8];
+        *global.add(3) = mat[0] * tmp[1] + mat[1] * tmp[4] + mat[2] * tmp[7];
+        *global.add(4) = mat[0] * tmp[2] + mat[1] * tmp[5] + mat[2] * tmp[8];
+        *global.add(5) = mat[3] * tmp[2] + mat[4] * tmp[5] + mat[5] * tmp[8];
+    }
 }
 
 /// C: mjuu_offcenter (user/user_util.h:147)
@@ -566,9 +581,15 @@ pub fn mjuu_globalinertia(global: *mut f64, local: *const f64, quat: *const f64)
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjuu_offcenter(res: *mut f64, mass: f64, vec: *const f64) {
-    extern "C" { fn mjuu_offcenter_impl(res: *mut f64, mass: f64, vec: *const f64); }
-    // SAFETY: delegates to C implementation, all pointers valid per caller contract
-    unsafe { mjuu_offcenter_impl(res, mass, vec) }
+    // SAFETY: res has 6 elements, vec has 3 elements.
+    unsafe {
+        *res.add(0) = mass * (*vec.add(1) * *vec.add(1) + *vec.add(2) * *vec.add(2));
+        *res.add(1) = mass * (*vec.add(0) * *vec.add(0) + *vec.add(2) * *vec.add(2));
+        *res.add(2) = mass * (*vec.add(0) * *vec.add(0) + *vec.add(1) * *vec.add(1));
+        *res.add(3) = -mass * *vec.add(0) * *vec.add(1);
+        *res.add(4) = -mass * *vec.add(0) * *vec.add(2);
+        *res.add(5) = -mass * *vec.add(1) * *vec.add(2);
+    }
 }
 
 /// C: mjuu_visccoef (user/user_util.h:150)
