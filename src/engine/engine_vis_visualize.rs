@@ -914,10 +914,69 @@ pub fn mjv_camera_frustum(zver: [f32; 2], zhor: [f32; 2], zclip: [f32; 2], m: *c
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjv_is_catenary(m: *const mjModel, d: *const mjData, i: i32, length: *mut f64) -> i32 {
+    // SAFETY: m, d valid. i is a valid tendon index. length is non-null.
+    unsafe {
+        const MJNPOLY: i32 = 2;
+        const MJDSBL_GRAVITY: i32 = 1 << 7;
+        const MJTRN_TENDON: i32 = 2;
+        const MJMINVAL: f64 = 1e-15;
 
-    extern "C" { fn mjv_isCatenary_impl(m: *const mjModel, d: *const mjData, i: i32, length: *mut f64) -> i32; }
-    // SAFETY: delegates to C implementation
-    unsafe { mjv_isCatenary_impl(m, d, i, length) }
+        let has_stiffness: i32 = (*(*m).tendon_stiffness.add(i as usize) != 0.0
+            || crate::engine::engine_util_misc::mju_is_zero(
+                (*m).tendon_stiffnesspoly.add((MJNPOLY * i) as usize), MJNPOLY) == 0) as i32;
+
+        // tendon has a deadband spring
+        let limitedspring: i32 = (has_stiffness != 0
+            && *(*m).tendon_lengthspring.add((2 * i) as usize) == 0.0
+            && *(*m).tendon_lengthspring.add((2 * i + 1) as usize) > 0.0) as i32;
+
+        // tendon has a simple length constraint, but is currently not limited
+        let ten_length = *(*d).ten_length.add(i as usize);
+        let lower = *(*m).tendon_range.add((2 * i) as usize);
+        let upper = *(*m).tendon_range.add((2 * i + 1) as usize);
+        let limitedconstraint: i32 = (has_stiffness == 0
+            && *((*m).tendon_limited as *const u8).add(i as usize) == 1
+            && lower == 0.0
+            && ten_length < upper) as i32;
+
+        let has_damping: i32 = (*(*m).tendon_damping.add(i as usize) != 0.0
+            || crate::engine::engine_util_misc::mju_is_zero(
+                (*m).tendon_dampingpoly.add((MJNPOLY * i) as usize), MJNPOLY) == 0) as i32;
+
+        // conditions for drawing a catenary
+        let mut draw_catenary: i32 = (
+            ((*m).opt.disableflags & MJDSBL_GRAVITY) == 0
+            && crate::engine::engine_util_blas::mju_norm3((*m).opt.gravity.as_ptr()) > MJMINVAL
+            && *(*m).tendon_num.add(i as usize) == 2
+            && (limitedspring != limitedconstraint)
+            && has_damping == 0
+            && *(*m).tendon_frictionloss.add(i as usize) == 0.0
+        ) as i32;
+
+        // no actuator
+        if draw_catenary != 0 {
+            let mut j: i32 = 0;
+            while j < (*m).nu as i32 {
+                if *(*m).actuator_trntype.add(j as usize) == MJTRN_TENDON
+                    && *(*m).actuator_trnid.add((2 * j) as usize) == i {
+                    draw_catenary = 0;
+                    break;
+                }
+                j += 1;
+            }
+        }
+
+        if draw_catenary != 0 {
+            // length of the tendon
+            if limitedconstraint != 0 {
+                *length = *(*m).tendon_range.add((2 * i + 1) as usize);
+            } else {
+                *length = *(*m).tendon_lengthspring.add((2 * i + 1) as usize);
+            }
+        }
+
+        draw_catenary
+    }
 }
 
 /// C: mjv_catenary (engine/engine_vis_visualize.h:72)

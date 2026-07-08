@@ -716,11 +716,57 @@ pub fn mju_flex_gather_face_state(order: i32, cx: i32, cy: i32, cz: i32, face_el
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mju_flex_interp_rotation2d(order: i32, xpos_f: *const f64, npe: i32, axis0: i32, axis1: i32, normal_axis: i32, local: *const f64, quat: *mut f64) {
-    extern "C" {
-        fn mju_flexInterpRotation2D_impl(order: i32, xpos_f: *const f64, npe: i32, axis0: i32, axis1: i32, normal_axis: i32, local: *const f64, quat: *mut f64);
+    // SAFETY: xpos_f has 3*npe elements, local has 2, quat has 4. All valid.
+    unsafe {
+        // compute 3x2 deformation gradient F at parametric point
+        let mut t1: [f64; 3] = [0.0, 0.0, 0.0];
+        let mut t2: [f64; 3] = [0.0, 0.0, 0.0];
+        let mut idx: i32 = 0;
+        let mut l0: i32 = 0;
+        while l0 <= order {
+            let mut l1: i32 = 0;
+            while l1 <= order {
+                let grad0 = mju_flex_dphi(*local.add(0), l0, order) * mju_flex_phi(*local.add(1), l1, order);
+                let grad1 = mju_flex_phi(*local.add(0), l0, order) * mju_flex_dphi(*local.add(1), l1, order);
+                let mut d: i32 = 0;
+                while d < 3 {
+                    t1[d as usize] += *xpos_f.add((3 * idx + d) as usize) * grad0;
+                    t2[d as usize] += *xpos_f.add((3 * idx + d) as usize) * grad1;
+                    d += 1;
+                }
+                idx += 1;
+                l1 += 1;
+            }
+            l0 += 1;
+        }
+
+        // normal = t1 x t2
+        let mut normal: [f64; 3] = [0.0; 3];
+        crate::engine::engine_util_spatial::mju_cross(normal.as_mut_ptr(), t1.as_ptr(), t2.as_ptr());
+
+        // build 3x3 matrix with columns assigned to canonical axes (row-major)
+        let mut mat: [f64; 9] = [0.0; 9];
+        let mut vecs: [*const f64; 3] = [core::ptr::null(); 3];
+        vecs[axis0 as usize] = t1.as_ptr();
+        vecs[axis1 as usize] = t2.as_ptr();
+        vecs[normal_axis as usize] = normal.as_ptr();
+
+        let mut col: i32 = 0;
+        while col < 3 {
+            mat[(0 * 3 + col) as usize] = *vecs[col as usize].add(0);
+            mat[(1 * 3 + col) as usize] = *vecs[col as usize].add(1);
+            mat[(2 * 3 + col) as usize] = *vecs[col as usize].add(2);
+            col += 1;
+        }
+
+        // extract rotation via polar decomposition
+        *quat.add(0) = 1.0;
+        *quat.add(1) = 0.0;
+        *quat.add(2) = 0.0;
+        *quat.add(3) = 0.0;
+        crate::engine::engine_util_spatial::mju_mat2rot(quat, mat.as_ptr());
+        crate::engine::engine_util_spatial::mju_neg_quat(quat, quat);
     }
-    // SAFETY: delegates to C implementation, all pointers valid per caller contract
-    unsafe { mju_flexInterpRotation2D_impl(order, xpos_f, npe, axis0, axis1, normal_axis, local, quat) }
 }
 
 /// C: mju_flexFaceNormal2D (engine/engine_util_misc.h:124)
