@@ -7,9 +7,10 @@ use crate::types::*;
 /// C: mjv_defaultScene (engine/engine_vis_init.h:34)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjv_default_scene(scn: *mut mjvScene) {
-    extern "C" { fn mjv_defaultScene_impl(scn: *mut mjvScene); }
-    // SAFETY: delegates to C implementation
-    unsafe { mjv_defaultScene_impl(scn) }
+    // SAFETY: scn is a valid pointer to mjvScene. Zeroing all bytes is correct for this C struct.
+    unsafe {
+        core::ptr::write_bytes(scn, 0, 1);
+    }
 }
 
 /// C: mjv_makeScene (engine/engine_vis_init.h:37)
@@ -50,17 +51,29 @@ pub fn mjv_default_free_camera(m: *const mjModel, cam: *mut mjvCamera) {
 /// C: mjv_defaultCamera (engine/engine_vis_init.h:49)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjv_default_camera(cam: *mut mjvCamera) {
-    extern "C" { fn mjv_defaultCamera_impl(cam: *mut mjvCamera); }
-    // SAFETY: delegates to C implementation
-    unsafe { mjv_defaultCamera_impl(cam) }
+    // SAFETY: cam is a valid pointer. Zero first, then set specific fields per C source.
+    unsafe {
+        core::ptr::write_bytes(cam, 0, 1);
+        (*cam).r#type = 0; // mjCAMERA_FREE = 0
+        (*cam).fixedcamid = -1;
+        (*cam).trackbodyid = -1;
+        (*cam).distance = 2.0;
+        (*cam).azimuth = 90.0;
+        (*cam).elevation = -45.0;
+    }
 }
 
 /// C: mjv_defaultPerturb (engine/engine_vis_init.h:52)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjv_default_perturb(pert: *mut mjvPerturb) {
-    extern "C" { fn mjv_defaultPerturb_impl(pert: *mut mjvPerturb); }
-    // SAFETY: delegates to C implementation
-    unsafe { mjv_defaultPerturb_impl(pert) }
+    // SAFETY: pert is a valid pointer. Zero first, then set specific fields per C source.
+    unsafe {
+        core::ptr::write_bytes(pert, 0, 1);
+        (*pert).flexselect = -1;
+        (*pert).skinselect = -1;
+        (*pert).refquat[0] = 1.0;
+        (*pert).scale = 1.0;
+    }
 }
 
 /// C: mjv_defaultFigure (engine/engine_vis_init.h:55)

@@ -1681,9 +1681,29 @@ pub fn mju_print_mat(mat: *const f64, nr: i32, nc: i32) {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mju_print_mat_sparse(mat: *const f64, nr: i32, rownnz: *const i32, rowadr: *const i32, colind: *const i32) {
-    extern "C" { fn mju_printMatSparse_impl(mat: *const f64, nr: i32, rownnz: *const i32, rowadr: *const i32, colind: *const i32); }
-    // SAFETY: delegates to C implementation
-    unsafe { mju_printMatSparse_impl(mat, nr, rownnz, rowadr, colind) }
+    extern "C" {
+        fn printf(format: *const i8, ...) -> i32;
+    }
+    // SAFETY: mat, rownnz, rowadr, colind are valid sparse matrix arrays.
+    // printf is standard C library.
+    unsafe {
+        for r in 0..nr {
+            let adr_start = *rowadr.add(r as usize);
+            let adr_end = adr_start + *rownnz.add(r as usize);
+            let mut adr = adr_start;
+            while adr < adr_end {
+                printf(
+                    b"(%d %d): %9.6f  \0".as_ptr() as *const i8,
+                    r,
+                    *colind.add(adr as usize),
+                    *mat.add(adr as usize),
+                );
+                adr += 1;
+            }
+            printf(b"\n\0".as_ptr() as *const i8);
+        }
+        printf(b"\n\0".as_ptr() as *const i8);
+    }
 }
 
 /// C: mju_min (engine/engine_util_misc.h:225)
