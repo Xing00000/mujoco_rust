@@ -295,11 +295,57 @@ pub fn mj_sleep_cycle(tree_asleep: *const i32, ntree: i32, i: i32) -> i32 {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_wake_island(tree_asleep: *mut i32, ntree: i32, i: i32, wakeval: i32, reason: *const i8, time: f64) -> i32 {
-    extern "C" {
-        fn mj_wakeIsland(tree_asleep: *mut i32, ntree: i32, i: i32, wakeval: i32, reason: *const i8, time: f64) -> i32;
+    // SAFETY: tree_asleep has ntree elements. i is validated before indexing.
+    unsafe {
+        let mut nwoke: i32 = 0;
+
+        // i is invalid
+        if i < 0 || i >= ntree {
+            crate::engine::engine_util_errmem::mju_error(
+                b"invalid tree %d\0".as_ptr() as *const i8);
+            return nwoke;
+        }
+
+        // tree i already awake: set to wakeval if larger than current value
+        let asleep_val = *tree_asleep.add(i as usize);
+        if asleep_val < 0 {
+            let min_val = if wakeval < asleep_val { wakeval } else { asleep_val };
+            *tree_asleep.add(i as usize) = min_val;
+            return nwoke;
+        }
+
+        // tree i asleep: wake up tree and its island cycle
+        let mut current = i;
+        loop {
+            // get next tree in cycle
+            let next = *tree_asleep.add(current as usize);
+
+            // next is invalid
+            if next < 0 || next >= ntree {
+                crate::engine::engine_util_errmem::mju_error(
+                    b"invalid sleep state index %d when waking tree %d\0".as_ptr() as *const i8);
+                return 0;
+            }
+
+            // wake the current tree
+            *tree_asleep.add(current as usize) = wakeval;
+            nwoke += 1;
+            current = next;
+
+            if current == i || nwoke >= ntree {
+                break;
+            }
+        }
+
+        // did not come back to tree i
+        if current != i {
+            crate::engine::engine_util_errmem::mju_error(
+                b"tree %d is not in a cycle\0".as_ptr() as *const i8);
+            return 0;
+        }
+
+        nwoke
     }
-    // SAFETY: delegates to C implementation, all pointers valid per caller contract
-    unsafe { mj_wakeIsland(tree_asleep, ntree, i, wakeval, reason, time) }
 }
 
 /// C: mj_wake (engine/engine_sleep.h:41)
