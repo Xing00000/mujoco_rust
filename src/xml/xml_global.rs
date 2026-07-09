@@ -11,7 +11,7 @@ pub fn global_model_set(self_ptr: *mut GlobalModel, spec: *mut mjSpec) {
     // WARNING: signature changed — verify body
     // Previous params: (self_ptr : * mut GlobalModel, spec : * mut mjSpec)
     // Previous return: ()
-    extern "C" { fn GlobalModel_Set_impl (self_ptr : * mut GlobalModel , spec : * mut mjSpec) ; } unsafe { GlobalModel_Set_impl (self_ptr , spec) }
+    extern "C" { fn GlobalModel_Set(self_ptr : * mut GlobalModel , spec : * mut mjSpec) ; } unsafe { GlobalModel_Set(self_ptr , spec) }
 }
 
 /// C: GlobalModel::ToXML (xml/xml_global.cc:35)
@@ -21,7 +21,7 @@ pub fn global_model_to_xml(self_ptr: *mut GlobalModel, m: *const mjModel, error:
     // WARNING: signature changed — verify body
     // Previous params: (self_ptr : * mut GlobalModel, m : * const mjModel, error : * mut i8, error_sz : i32)
     // Previous return: std__string
-    extern "C" { fn GlobalModelToXml_impl (self_ptr : * mut GlobalModel , m : * const mjModel , error : * mut i8 , error_sz : i32) -> std__string ; } unsafe { GlobalModelToXml_impl (self_ptr , m , error , error_sz) }
+    extern "C" { fn GlobalModelToXml(self_ptr : * mut GlobalModel , m : * const mjModel , error : * mut i8 , error_sz : i32) -> std__string ; } unsafe { GlobalModelToXml(self_ptr , m , error , error_sz) }
 }
 
 /// C: GetGlobalModel (xml/xml_global.cc:53)
@@ -30,7 +30,7 @@ pub fn get_global_model() -> *mut GlobalModel {
     // WARNING: signature changed — verify body
     // Previous params: ()
     // Previous return: * mut GlobalModel
-    extern "C" { fn GetGlobalModel_impl () -> * mut GlobalModel ; } unsafe { GetGlobalModel_impl () }
+    extern "C" { fn GetGlobalModel() -> * mut GlobalModel ; } unsafe { GetGlobalModel() }
 }
 
 /// C: SetGlobalXmlSpec (xml/xml_global.h:23)
@@ -49,6 +49,6 @@ pub fn get_global_xml_spec(m: *const mjModel, error: *mut i8, error_sz: i32) -> 
     // WARNING: signature changed — verify body
     // Previous params: (m : * const mjModel, error : * mut i8, error_sz : i32)
     // Previous return: std__string
-    extern "C" { fn GetGlobalXmlSpec_impl (m : * const mjModel , error : * mut i8 , error_sz : i32) -> std__string ; } unsafe { GetGlobalXmlSpec_impl (m , error , error_sz) }
+    extern "C" { fn GetGlobalXmlSpec(m : * const mjModel , error : * mut i8 , error_sz : i32) -> std__string ; } unsafe { GetGlobalXmlSpec(m , error , error_sz) }
 }
 

@@ -57,7 +57,7 @@ pub fn clamp_vec(vec: *mut f64, range: *const f64, limited: *const mjtBool, n: i
     // WARNING: signature changed — verify body
     // Previous params: (vec : * mut f64, range : * const f64, limited : * const mjtBool, n : i32, index : * const i32)
     // Previous return: ()
-    extern "C" { fn clampVec_impl (vec : * mut f64 , range : * const f64 , limited : * const mjtBool , n : i32 , index : * const i32) ; } unsafe { clampVec_impl (vec , range , limited , n , index) }
+    extern "C" { fn clampVec(vec : * mut f64 , range : * const f64 , limited : * const mjtBool , n : i32 , index : * const i32) ; } unsafe { clampVec(vec , range , limited , n , index) }
 }
 
 /// C: warmstart (engine/engine_forward.c:786)
@@ -80,9 +80,9 @@ pub fn warmstart(m: *const mjModel, d: *mut mjData) {
 
             // SAFETY: mj_stackAllocInfo returns aligned memory from MuJoCo arena
             extern "C" {
-                fn mj_stackAllocInfo_impl(d: *mut mjData, bytes: usize, alignment: usize, caller: *const i8, line: i32) -> *mut ();
+                fn mj_stackAllocInfo(d: *mut mjData, bytes: usize, alignment: usize, caller: *const i8, line: i32) -> *mut ();
             }
-            let jar: *mut f64 = mj_stackAllocInfo_impl(
+            let jar: *mut f64 = mj_stackAllocInfo(
                 d,
                 (nefc as usize) * std::mem::size_of::<f64>(),
                 std::mem::align_of::<f64>(),
@@ -106,7 +106,7 @@ pub fn warmstart(m: *const mjModel, d: *mut mjData) {
                 // cost(force_warmstart)
                 let mut PGS_warmstart: f64 = crate::engine::engine_util_blas::mju_dot((*d).efc_force, (*d).efc_b, nefc);
 
-                let ARf: *mut f64 = mj_stackAllocInfo_impl(
+                let ARf: *mut f64 = mj_stackAllocInfo(
                     d,
                     (nefc as usize) * std::mem::size_of::<f64>(),
                     std::mem::align_of::<f64>(),
@@ -134,7 +134,7 @@ pub fn warmstart(m: *const mjModel, d: *mut mjData) {
             // non-PGS
             else {
                 // add Gauss to cost(qacc_warmstart)
-                let Ma: *mut f64 = mj_stackAllocInfo_impl(
+                let Ma: *mut f64 = mj_stackAllocInfo(
                     d,
                     (nv as usize) * std::mem::size_of::<f64>(),
                     std::mem::align_of::<f64>(),
@@ -207,17 +207,17 @@ pub fn solve_island_task(m: *const mjModel, d: *mut mjData, arg: *mut (), thread
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_advance(m: *const mjModel, d: *mut mjData, act_dot: *const f64, qacc: *const f64, qvel: *const f64) {
-    extern "C" { fn mj_advance_impl(m: *const mjModel, d: *mut mjData, act_dot: *const f64, qacc: *const f64, qvel: *const f64); }
+    extern "C" { fn mj_advance(m: *const mjModel, d: *mut mjData, act_dot: *const f64, qacc: *const f64, qvel: *const f64); }
     // SAFETY: delegates to C implementation, pointers valid per caller
-    unsafe { mj_advance_impl(m, d, act_dot, qacc, qvel) }
+    unsafe { mj_advance(m, d, act_dot, qacc, qvel) }
 }
 
 /// C: flex_has_implicit_stiffness (engine/engine_forward.c:1284)
 #[allow(unused_variables, non_snake_case)]
 pub fn flex_has_implicit_stiffness(m: *const mjModel) -> i32 {
-    extern "C" { fn flex_has_implicit_stiffness_impl(m: *const mjModel) -> i32; }
+    extern "C" { fn flex_has_implicit_stiffness(m: *const mjModel) -> i32; }
     // SAFETY: delegates to C implementation, all pointers valid per caller contract
-    unsafe { flex_has_implicit_stiffness_impl(m) }
+    unsafe { flex_has_implicit_stiffness(m) }
 }
 
 /// C: flexInterp_cgsolve (engine/engine_forward.c:1311)
@@ -229,25 +229,25 @@ pub fn flex_has_implicit_stiffness(m: *const mjModel) -> i32 {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn flex_interp_cgsolve(m: *const mjModel, d: *mut mjData, qacc: *mut f64, qfrc: *const f64, nv: i32) {
-    extern "C" { fn flexInterp_cgsolve_impl(m: *const mjModel, d: *mut mjData, qacc: *mut f64, qfrc: *const f64, nv: i32); }
+    extern "C" { fn flexInterp_cgsolve(m: *const mjModel, d: *mut mjData, qacc: *mut f64, qfrc: *const f64, nv: i32); }
     // SAFETY: delegates to C implementation, all pointers valid per caller contract
-    unsafe { flexInterp_cgsolve_impl(m, d, qacc, qfrc, nv) }
+    unsafe { flexInterp_cgsolve(m, d, qacc, qfrc, nv) }
 }
 
 /// C: midpoint_eligible (engine/engine_forward.c:1421)
 #[allow(unused_variables, non_snake_case)]
 pub fn midpoint_eligible(m: *const mjModel, d: *const mjData, jnt: i32) -> i32 {
-    extern "C" { fn midpoint_eligible_impl(m: *const mjModel, d: *const mjData, jnt: i32) -> i32; }
+    extern "C" { fn midpoint_eligible(m: *const mjModel, d: *const mjData, jnt: i32) -> i32; }
     // SAFETY: delegates to C implementation, all pointers valid per caller contract
-    unsafe { midpoint_eligible_impl(m, d, jnt) }
+    unsafe { midpoint_eligible(m, d, jnt) }
 }
 
 /// C: midpoint_aligned (engine/engine_forward.c:1493)
 #[allow(unused_variables, non_snake_case)]
 pub fn midpoint_aligned(m: *const mjModel, jnt: i32) -> i32 {
-    extern "C" { fn midpoint_aligned_impl(m: *const mjModel, jnt: i32) -> i32; }
+    extern "C" { fn midpoint_aligned(m: *const mjModel, jnt: i32) -> i32; }
     // SAFETY: delegates to C implementation, all pointers valid per caller contract
-    unsafe { midpoint_aligned_impl(m, jnt) }
+    unsafe { midpoint_aligned(m, jnt) }
 }
 
 /// C: midpointNewton (engine/engine_forward.c:1515)
@@ -359,27 +359,27 @@ pub fn midpoint_newton(inertia: *const f64, w: *const f64, tau: *const f64, h: f
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn midpoint(m: *const mjModel, d: *const mjData, qfrc: *const f64, free_jntid: *const i32, nfree: i32, qvel_old: *mut f64, qvel_new: *mut f64, dofadr: *mut i32) {
-    extern "C" { fn midpoint_impl(m: *const mjModel, d: *const mjData, qfrc: *const f64, free_jntid: *const i32, nfree: i32, qvel_old: *mut f64, qvel_new: *mut f64, dofadr: *mut i32); }
+    extern "C" { fn midpoint(m: *const mjModel, d: *const mjData, qfrc: *const f64, free_jntid: *const i32, nfree: i32, qvel_old: *mut f64, qvel_new: *mut f64, dofadr: *mut i32); }
     // SAFETY: delegates to C implementation, all pointers valid per caller contract
-    unsafe { midpoint_impl(m, d, qfrc, free_jntid, nfree, qvel_old, qvel_new, dofadr) }
+    unsafe { midpoint(m, d, qfrc, free_jntid, nfree, qvel_old, qvel_new, dofadr) }
 }
 
 /// C: mj_checkPos (engine/engine_forward.h:27)
 /// Calls: mj_resetData, mj_warning, mju_isBad
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_check_pos(m: *const mjModel, d: *mut mjData) {
-    extern "C" { fn mj_checkPos_impl(m: *const mjModel, d: *mut mjData); }
+    extern "C" { fn mj_checkPos(m: *const mjModel, d: *mut mjData); }
     // SAFETY: delegates to C implementation; caller guarantees m and d are valid pointers
-    unsafe { mj_checkPos_impl(m, d) }
+    unsafe { mj_checkPos(m, d) }
 }
 
 /// C: mj_checkVel (engine/engine_forward.h:28)
 /// Calls: mj_resetData, mj_warning, mju_isBad
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_check_vel(m: *const mjModel, d: *mut mjData) {
-    extern "C" { fn mj_checkVel_impl(m: *const mjModel, d: *mut mjData); }
+    extern "C" { fn mj_checkVel(m: *const mjModel, d: *mut mjData); }
     // SAFETY: delegates to C implementation; caller guarantees m and d are valid pointers
-    unsafe { mj_checkVel_impl(m, d) }
+    unsafe { mj_checkVel(m, d) }
 }
 
 /// C: mj_checkAcc (engine/engine_forward.h:29)
@@ -389,9 +389,9 @@ pub fn mj_check_acc(m: *const mjModel, d: *mut mjData) {
 
 
 
-    extern "C" { fn mj_checkAcc_impl(m: *const mjModel, d: *mut mjData); }
+    extern "C" { fn mj_checkAcc(m: *const mjModel, d: *mut mjData); }
     // SAFETY: delegates to C implementation
-    unsafe { mj_checkAcc_impl(m, d) }
+    unsafe { mj_checkAcc(m, d) }
 }
 
 /// C: mj_step (engine/engine_forward.h:35)
@@ -399,91 +399,91 @@ pub fn mj_check_acc(m: *const mjModel, d: *mut mjData) {
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_step(m: *const mjModel, d: *mut mjData) {
     extern "C" {
-        fn mj_step_impl(m: *const mjModel, d: *mut mjData);
+        fn mj_step(m: *const mjModel, d: *mut mjData);
     }
     // SAFETY: delegates to C implementation, all pointers valid per caller contract
-    unsafe { mj_step_impl(m, d) }
+    unsafe { mj_step(m, d) }
 }
 
 /// C: mj_step1 (engine/engine_forward.h:38)
 /// Calls: mj_checkPos, mj_checkVel, mj_energyPos, mj_energyVel, mj_fwdPosition, mj_fwdVelocity, mj_sensorPos, mj_sensorVel
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_step1(m: *const mjModel, d: *mut mjData) {
-    extern "C" { fn mj_step1_impl(m: *const mjModel, d: *mut mjData); }
+    extern "C" { fn mj_step1(m: *const mjModel, d: *mut mjData); }
     // SAFETY: delegates to C implementation
-    unsafe { mj_step1_impl(m, d) }
+    unsafe { mj_step1(m, d) }
 }
 
 /// C: mj_step2 (engine/engine_forward.h:41)
 /// Calls: mj_Euler, mj_checkAcc, mj_compareFwdInv, mj_fwdAcceleration, mj_fwdActuation, mj_fwdConstraint, mj_implicit, mj_sensorAcc
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_step2(m: *const mjModel, d: *mut mjData) {
-    extern "C" { fn mj_step2_impl(m: *const mjModel, d: *mut mjData); }
+    extern "C" { fn mj_step2(m: *const mjModel, d: *mut mjData); }
     // SAFETY: delegates to C implementation, pointers valid per caller
-    unsafe { mj_step2_impl(m, d) }
+    unsafe { mj_step2(m, d) }
 }
 
 /// C: mj_forward (engine/engine_forward.h:44)
 /// Calls: mj_forwardSkip
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_forward(m: *const mjModel, d: *mut mjData) {
-    extern "C" { fn mj_forward_impl(m: *const mjModel, d: *mut mjData); }
+    extern "C" { fn mj_forward(m: *const mjModel, d: *mut mjData); }
     // SAFETY: delegates to C implementation, pointers valid per caller contract
-    unsafe { mj_forward_impl(m, d) }
+    unsafe { mj_forward(m, d) }
 }
 
 /// C: mj_forwardSkip (engine/engine_forward.h:47)
 /// Calls: mj_energyPos, mj_energyVel, mj_fwdAcceleration, mj_fwdActuation, mj_fwdConstraint, mj_fwdPosition, mj_fwdVelocity, mj_sensorAcc, mj_sensorPos, mj_sensorVel
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_forward_skip(m: *const mjModel, d: *mut mjData, skipstage: i32, skipsensor: i32) {
-    extern "C" { fn mj_forwardSkip_impl(m: *const mjModel, d: *mut mjData, skipstage: i32, skipsensor: i32); }
+    extern "C" { fn mj_forwardSkip(m: *const mjModel, d: *mut mjData, skipstage: i32, skipsensor: i32); }
     // SAFETY: delegates to C implementation, all pointers valid per caller contract
-    unsafe { mj_forwardSkip_impl(m, d, skipstage, skipsensor) }
+    unsafe { mj_forwardSkip(m, d, skipstage, skipsensor) }
 }
 
 /// C: mj_RungeKutta (engine/engine_forward.h:53)
 /// Calls: mj_advance, mj_forwardSkip, mj_freeStack, mj_integratePos, mj_markStack, mj_stackAllocInfo, mju_addToScl, mju_copy, mju_message, mju_zero
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_runge_kutta(m: *const mjModel, d: *mut mjData, N: i32) {
-    extern "C" { fn mj_RungeKutta_impl(m: *const mjModel, d: *mut mjData, N: i32); }
+    extern "C" { fn mj_RungeKutta(m: *const mjModel, d: *mut mjData, N: i32); }
     // SAFETY: delegates to C implementation, pointers valid per caller
-    unsafe { mj_RungeKutta_impl(m, d, N) }
+    unsafe { mj_RungeKutta(m, d, N) }
 }
 
 /// C: mj_Euler (engine/engine_forward.h:56)
 /// Calls: mj_EulerSkip
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_euler(m: *const mjModel, d: *mut mjData) {
-    extern "C" { fn mj_Euler_impl(m: *const mjModel, d: *mut mjData); }
+    extern "C" { fn mj_Euler(m: *const mjModel, d: *mut mjData); }
     // SAFETY: delegates to C implementation, all pointers valid per caller contract
-    unsafe { mj_Euler_impl(m, d) }
+    unsafe { mj_Euler(m, d) }
 }
 
 /// C: mj_EulerSkip (engine/engine_forward.h:59)
 /// Calls: mj_actuatorDamping, mj_advance, mj_factorI, mj_freeStack, mj_markStack, mj_solveLD, mj_stackAllocInfo, mjd_xPolyForce, mju_add, mju_addInd, mju_copy, mju_copyInd, mju_copySparse, mju_isZero
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_euler_skip(m: *const mjModel, d: *mut mjData, skipfactor: i32) {
-    extern "C" { fn mj_EulerSkip_impl(m: *const mjModel, d: *mut mjData, skipfactor: i32); }
+    extern "C" { fn mj_EulerSkip(m: *const mjModel, d: *mut mjData, skipfactor: i32); }
     // SAFETY: delegates to C implementation, all pointers valid per caller contract
-    unsafe { mj_EulerSkip_impl(m, d, skipfactor) }
+    unsafe { mj_EulerSkip(m, d, skipfactor) }
 }
 
 /// C: mj_implicit (engine/engine_forward.h:62)
 /// Calls: mj_implicitSkip
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_implicit(m: *const mjModel, d: *mut mjData) {
-    extern "C" { fn mj_implicit_impl(m: *const mjModel, d: *mut mjData); }
+    extern "C" { fn mj_implicit(m: *const mjModel, d: *mut mjData); }
     // SAFETY: delegates to C implementation, pointers valid per caller contract
-    unsafe { mj_implicit_impl(m, d) }
+    unsafe { mj_implicit(m, d) }
 }
 
 /// C: mj_implicitSkip (engine/engine_forward.h:65)
 /// Calls: flexInterp_cgsolve, flex_has_implicit_stiffness, midpoint, midpoint_aligned, midpoint_eligible, mj_advance, mj_factorI, mj_freeStack, mj_markStack, mj_solveLD, mj_stackAllocInfo, mjd_smooth_vel, mju_add, mju_addInd, mju_addScl, mju_addToScl, mju_copy, mju_copyInd, mju_factorLUSparse, mju_gather, mju_gatherMasked, mju_message, mju_solveLUSparse
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_implicit_skip(m: *const mjModel, d: *mut mjData, skipfactor: i32) {
-    extern "C" { fn mj_implicitSkip_impl(m: *const mjModel, d: *mut mjData, skipfactor: i32); }
+    extern "C" { fn mj_implicitSkip(m: *const mjModel, d: *mut mjData, skipfactor: i32); }
     // SAFETY: delegates to C implementation, all pointers valid per caller contract
-    unsafe { mj_implicitSkip_impl(m, d, skipfactor) }
+    unsafe { mj_implicitSkip(m, d, skipfactor) }
 }
 
 /// C: mj_midpoint (engine/engine_forward.h:69)
@@ -635,36 +635,36 @@ pub fn mj_midpoint(mass: f64, inertia: *const f64, ipos: *const f64, iquat: *con
 /// Calls: mj_camlight, mj_comPos, mj_flex, mj_kinematics, mj_tendon, mj_updateSleep, mj_wakeTendon
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_fwd_kinematics(m: *const mjModel, d: *mut mjData) {
-    extern "C" { fn mj_fwdKinematics_impl(m: *const mjModel, d: *mut mjData); }
+    extern "C" { fn mj_fwdKinematics(m: *const mjModel, d: *mut mjData); }
     // SAFETY: delegates to C implementation, all pointers valid per caller contract
-    unsafe { mj_fwdKinematics_impl(m, d) }
+    unsafe { mj_fwdKinematics(m, d) }
 }
 
 /// C: mj_fwdPosition (engine/engine_forward.h:81)
 /// Calls: mj_collision, mj_factorM, mj_fwdKinematics, mj_island, mj_makeConstraint, mj_makeM, mj_projectConstraint, mj_transmission, mj_updateSleep, mj_wakeCollision, mj_wakeEquality
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_fwd_position(m: *const mjModel, d: *mut mjData) {
-    extern "C" { fn mj_fwdPosition_impl(m: *const mjModel, d: *mut mjData); }
+    extern "C" { fn mj_fwdPosition(m: *const mjModel, d: *mut mjData); }
     // SAFETY: delegates to C implementation, all pointers valid per caller contract
-    unsafe { mj_fwdPosition_impl(m, d) }
+    unsafe { mj_fwdPosition(m, d) }
 }
 
 /// C: mj_fwdVelocity (engine/engine_forward.h:84)
 /// Calls: mj_comVel, mj_passive, mj_referenceConstraint, mj_rne, mj_tendonBias, mju_mulMatVecSparse, mju_zero
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_fwd_velocity(m: *const mjModel, d: *mut mjData) {
-    extern "C" { fn mj_fwdVelocity_impl(m: *const mjModel, d: *mut mjData); }
+    extern "C" { fn mj_fwdVelocity(m: *const mjModel, d: *mut mjData); }
     // SAFETY: delegates to C implementation, all pointers valid per caller contract
-    unsafe { mj_fwdVelocity_impl(m, d) }
+    unsafe { mj_fwdVelocity(m, d) }
 }
 
 /// C: mj_fwdActuation (engine/engine_forward.h:87)
 /// Calls: clampVec, dcmotorVoltage, mj_actuatorDisabled, mj_dcmotorSlots, mj_freeStack, mj_lugreStribeck, mj_markStack, mj_nextActivation, mj_readCtrl, mj_sleepState, mj_stackAllocInfo, mj_warning, mjp_getPluginAtSlotUnsafe, mjp_pluginCount, mju_addTo, mju_clip, mju_isBad, mju_max, mju_message, mju_min, mju_mulMatTVecSparse, mju_muscleBias, mju_muscleDynamics, mju_muscleGain, mju_norm3, mju_zero
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_fwd_actuation(m: *const mjModel, d: *mut mjData) {
-    extern "C" { fn mj_fwdActuation_impl(m: *const mjModel, d: *mut mjData); }
+    extern "C" { fn mj_fwdActuation(m: *const mjModel, d: *mut mjData); }
     // SAFETY: delegates to C implementation, all pointers valid per caller contract
-    unsafe { mj_fwdActuation_impl(m, d) }
+    unsafe { mj_fwdActuation(m, d) }
 }
 
 /// C: mj_fwdAcceleration (engine/engine_forward.h:90)
@@ -718,9 +718,9 @@ pub fn mj_fwd_acceleration(m: *const mjModel, d: *mut mjData) {
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_fwd_constraint(m: *const mjModel, d: *mut mjData) {
     extern "C" {
-        fn mj_fwdConstraint_impl(m: *const mjModel, d: *mut mjData);
+        fn mj_fwdConstraint(m: *const mjModel, d: *mut mjData);
     }
     // SAFETY: delegates to C implementation, all pointers valid per caller contract
-    unsafe { mj_fwdConstraint_impl(m, d) }
+    unsafe { mj_fwdConstraint(m, d) }
 }
 

@@ -30,16 +30,16 @@ pub fn contact_select(arr: *mut ContactInfo, buf: *mut ContactInfo, n: i32, k: i
     // WARNING: signature changed — verify body
     // Previous params: (arr : * mut ContactInfo, buf : * mut ContactInfo, n : i32, k : i32, context : * mut ())
     // Previous return: ()
-    extern "C" { fn ContactSelect_impl (arr : * mut ContactInfo , buf : * mut ContactInfo , n : i32 , k : i32 , context : * mut ()) ; } unsafe { ContactSelect_impl (arr , buf , n , k , context) }
+    extern "C" { fn ContactSelect(arr : * mut ContactInfo , buf : * mut ContactInfo , n : i32 , k : i32 , context : * mut ()) ; } unsafe { ContactSelect(arr , buf , n , k , context) }
 }
 
 /// C: tactile_taxel_batch (engine/engine_sensor.c:80)
 /// Calls: mjc_distance, mjc_getSDF, mju_addTo3, mju_dot3, mju_max, mju_min, mju_mulMatTVec3, mju_mulMatVec3, mju_quat2Mat, mju_rotVecQuat, mju_sub3, mju_transformSpatial
 #[allow(unused_variables, non_snake_case)]
 pub fn tactile_taxel_batch(m: *const mjModel, d: *mut mjData, args: *mut ()) -> *mut () {
-    extern "C" { fn tactile_taxel_batch_impl(m: *const mjModel, d: *mut mjData, args: *mut ()) -> *mut (); }
+    extern "C" { fn tactile_taxel_batch(m: *const mjModel, d: *mut mjData, args: *mut ()) -> *mut (); }
     // SAFETY: delegates to C implementation, all pointers valid per caller contract
-    unsafe { tactile_taxel_batch_impl(m, d, args) }
+    unsafe { tactile_taxel_batch(m, d, args) }
 }
 
 /// C: tactileTask (engine/engine_sensor.c:191)
@@ -67,10 +67,10 @@ pub fn tactile_task(m: *const mjModel, d: *mut mjData, arg: *mut (), thread_id: 
 #[allow(unused_variables, non_snake_case)]
 pub fn apply_cutoff(m: *const mjModel, i: i32, data: *mut f64) {
     extern "C" {
-        fn apply_cutoff_impl(m: *const mjModel, i: i32, data: *mut f64);
+        fn apply_cutoff(m: *const mjModel, i: i32, data: *mut f64);
     }
     // SAFETY: delegates to C implementation, all pointers valid per caller contract
-    unsafe { apply_cutoff_impl(m, i, data) }
+    unsafe { apply_cutoff(m, i, data) }
 }
 
 /// C: get_xpos_xmat (engine/engine_sensor.c:227)
@@ -82,9 +82,9 @@ pub fn apply_cutoff(m: *const mjModel, i: i32, data: *mut f64) {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn get_xpos_xmat(d: *const mjData, r#type: mjtObj, id: i32, sensor_id: i32, xpos: *mut *mut f64, xmat: *mut *mut f64) {
-    extern "C" { fn get_xpos_xmat_impl(d: *const mjData, r#type: mjtObj, id: i32, sensor_id: i32, xpos: *mut *mut f64, xmat: *mut *mut f64); }
+    extern "C" { fn get_xpos_xmat(d: *const mjData, r#type: mjtObj, id: i32, sensor_id: i32, xpos: *mut *mut f64, xmat: *mut *mut f64); }
     // SAFETY: delegates to C implementation, all pointers valid per caller contract
-    unsafe { get_xpos_xmat_impl(d, r#type, id, sensor_id, xpos, xmat) }
+    unsafe { get_xpos_xmat(d, r#type, id, sensor_id, xpos, xmat) }
 }
 
 /// C: get_xquat (engine/engine_sensor.c:257)
@@ -96,9 +96,9 @@ pub fn get_xpos_xmat(d: *const mjData, r#type: mjtObj, id: i32, sensor_id: i32, 
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn get_xquat(m: *const mjModel, d: *const mjData, r#type: mjtObj, id: i32, sensor_id: i32, quat: *mut f64) {
-    extern "C" { fn get_xquat_impl(m: *const mjModel, d: *const mjData, r#type: mjtObj, id: i32, sensor_id: i32, quat: *mut f64); }
+    extern "C" { fn get_xquat(m: *const mjModel, d: *const mjData, r#type: mjtObj, id: i32, sensor_id: i32, quat: *mut f64); }
     // SAFETY: delegates to C implementation, all pointers valid per caller contract
-    unsafe { get_xquat_impl(m, d, r#type, id, sensor_id, quat) }
+    unsafe { get_xquat(m, d, r#type, id, sensor_id, quat) }
 }
 
 /// C: cam_project (engine/engine_sensor.c:281)
@@ -111,29 +111,29 @@ pub fn get_xquat(m: *const mjModel, d: *const mjData, r#type: mjtObj, id: i32, s
 #[allow(unused_variables, non_snake_case)]
 pub fn cam_project(sensordata: *mut f64, target_xpos: *const f64, cam_xpos: *const f64, cam_xmat: *const f64, cam_res: [i32; 2], cam_fovy: f64, cam_intrinsic: [f32; 4], cam_sensorsize: [f32; 2]) {
     extern "C" {
-        fn cam_project_impl(sensordata: *mut f64, target_xpos: *const f64, cam_xpos: *const f64, cam_xmat: *const f64, cam_res: [i32; 2], cam_fovy: f64, cam_intrinsic: [f32; 4], cam_sensorsize: [f32; 2]);
+        fn cam_project(sensordata: *mut f64, target_xpos: *const f64, cam_xpos: *const f64, cam_xmat: *const f64, cam_res: [i32; 2], cam_fovy: f64, cam_intrinsic: [f32; 4], cam_sensorsize: [f32; 2]);
     }
     // SAFETY: delegates to C implementation, all pointers valid per caller contract
-    unsafe { cam_project_impl(sensordata, target_xpos, cam_xpos, cam_xmat, cam_res, cam_fovy, cam_intrinsic, cam_sensorsize) }
+    unsafe { cam_project(sensordata, target_xpos, cam_xpos, cam_xmat, cam_res, cam_fovy, cam_intrinsic, cam_sensorsize) }
 }
 
 /// C: checkMatch (engine/engine_sensor.c:320)
 #[allow(unused_variables, non_snake_case)]
 pub fn check_match(m: *const mjModel, body: i32, geom: i32, r#type: mjtObj, id: i32) -> i32 {
     extern "C" {
-        fn checkMatch_impl(m: *const mjModel, body: i32, geom: i32, r#type: mjtObj, id: i32) -> i32;
+        fn checkMatch(m: *const mjModel, body: i32, geom: i32, r#type: mjtObj, id: i32) -> i32;
     }
     // SAFETY: delegates to C implementation, all pointers valid per caller contract
-    unsafe { checkMatch_impl(m, body, geom, r#type, id) }
+    unsafe { checkMatch(m, body, geom, r#type, id) }
 }
 
 /// C: matchContact (engine/engine_sensor.c:339)
 /// Calls: checkMatch, mj_flexBody, mju_insideGeom
 #[allow(unused_variables, non_snake_case)]
 pub fn match_contact(m: *const mjModel, d: *const mjData, conid: i32, type1: mjtObj, id1: i32, type2: mjtObj, id2: i32) -> i32 {
-    extern "C" { fn matchContact_impl(m: *const mjModel, d: *const mjData, conid: i32, type1: mjtObj, id1: i32, type2: mjtObj, id2: i32) -> i32; }
+    extern "C" { fn matchContact(m: *const mjModel, d: *const mjData, conid: i32, type1: mjtObj, id1: i32, type2: mjtObj, id2: i32) -> i32; }
     // SAFETY: delegates to C implementation, all pointers valid per caller contract
-    unsafe { matchContact_impl(m, d, conid, type1, id1, type2, id2) }
+    unsafe { matchContact(m, d, conid, type1, id1, type2, id2) }
 }
 
 /// C: copySensorData (engine/engine_sensor.c:398)
@@ -145,9 +145,9 @@ pub fn match_contact(m: *const mjModel, d: *const mjData, conid: i32, type1: mjt
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn copy_sensor_data(m: *const mjModel, d: *const mjData, data: [*mut f64; 7], id: i32, flg_flip: i32, nfound: i32) {
-    extern "C" { fn copySensorData_impl(m: *const mjModel, d: *const mjData, data: [*mut f64; 7], id: i32, flg_flip: i32, nfound: i32); }
+    extern "C" { fn copySensorData(m: *const mjModel, d: *const mjData, data: [*mut f64; 7], id: i32, flg_flip: i32, nfound: i32); }
     // SAFETY: delegates to C implementation, all pointers valid per caller contract
-    unsafe { copySensorData_impl(m, d, data, id, flg_flip, nfound) }
+    unsafe { copySensorData(m, d, data, id, flg_flip, nfound) }
 }
 
 /// C: total_wrench (engine/engine_sensor.c:442)
@@ -199,10 +199,10 @@ pub fn total_wrench(force: *mut f64, torque: *mut f64, point: *const f64, n: i32
 #[allow(unused_variables, non_snake_case)]
 pub fn fill_raydata(ptr: *mut f64, dataspec: i32, dist: f64, origin: *const f64, direction: *const f64, normal: *const f64, cam_xpos: *const f64, cam_z: *const f64) -> *mut f64 {
     extern "C" {
-        fn fill_raydata_impl(ptr: *mut f64, dataspec: i32, dist: f64, origin: *const f64, direction: *const f64, normal: *const f64, cam_xpos: *const f64, cam_z: *const f64) -> *mut f64;
+        fn fill_raydata(ptr: *mut f64, dataspec: i32, dist: f64, origin: *const f64, direction: *const f64, normal: *const f64, cam_xpos: *const f64, cam_z: *const f64) -> *mut f64;
     }
     // SAFETY: delegates to C implementation, all pointers valid per caller contract
-    unsafe { fill_raydata_impl(ptr, dataspec, dist, origin, direction, normal, cam_xpos, cam_z) }
+    unsafe { fill_raydata(ptr, dataspec, dist, origin, direction, normal, cam_xpos, cam_z) }
 }
 
 /// C: mj_computeSensorPos (engine/engine_sensor.c:525)
@@ -214,9 +214,9 @@ pub fn fill_raydata(ptr: *mut f64, dataspec: i32, dist: f64, origin: *const f64,
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_compute_sensor_pos(m: *const mjModel, d: *mut mjData, i: i32, sensordata: *mut f64) {
-    extern "C" { fn mj_computeSensorPos_impl(m: *const mjModel, d: *mut mjData, i: i32, sensordata: *mut f64); }
+    extern "C" { fn mj_computeSensorPos(m: *const mjModel, d: *mut mjData, i: i32, sensordata: *mut f64); }
     // SAFETY: delegates to C implementation, pointers valid per caller contract
-    unsafe { mj_computeSensorPos_impl(m, d, i, sensordata) }
+    unsafe { mj_computeSensorPos(m, d, i, sensordata) }
 }
 
 /// C: mj_computeSensorVel (engine/engine_sensor.c:839)
@@ -228,9 +228,9 @@ pub fn mj_compute_sensor_pos(m: *const mjModel, d: *mut mjData, i: i32, sensorda
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_compute_sensor_vel(m: *const mjModel, d: *mut mjData, i: i32, sensordata: *mut f64) {
-    extern "C" { fn mj_computeSensorVel_impl(m: *const mjModel, d: *mut mjData, i: i32, sensordata: *mut f64); }
+    extern "C" { fn mj_computeSensorVel(m: *const mjModel, d: *mut mjData, i: i32, sensordata: *mut f64); }
     // SAFETY: delegates to C implementation, all pointers valid per caller contract
-    unsafe { mj_computeSensorVel_impl(m, d, i, sensordata) }
+    unsafe { mj_computeSensorVel(m, d, i, sensordata) }
 }
 
 /// C: mj_computeSensorAcc (engine/engine_sensor.c:958)
@@ -242,9 +242,9 @@ pub fn mj_compute_sensor_vel(m: *const mjModel, d: *mut mjData, i: i32, sensorda
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_compute_sensor_acc(m: *const mjModel, d: *mut mjData, i: i32, sensordata: *mut f64) {
-    extern "C" { fn mj_computeSensorAcc_impl(m: *const mjModel, d: *mut mjData, i: i32, sensordata: *mut f64); }
+    extern "C" { fn mj_computeSensorAcc(m: *const mjModel, d: *mut mjData, i: i32, sensordata: *mut f64); }
     // SAFETY: delegates to C implementation, all pointers valid per caller contract
-    unsafe { mj_computeSensorAcc_impl(m, d, i, sensordata) }
+    unsafe { mj_computeSensorAcc(m, d, i, sensordata) }
 }
 
 /// C: compute_or_read_sensor (engine/engine_sensor.c:1387)
@@ -256,27 +256,27 @@ pub fn mj_compute_sensor_acc(m: *const mjModel, d: *mut mjData, i: i32, sensorda
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn compute_or_read_sensor(m: *const mjModel, d: *mut mjData, i: i32, sensordata: *mut f64) {
-    extern "C" { fn compute_or_read_sensor_impl(m: *const mjModel, d: *mut mjData, i: i32, sensordata: *mut f64); }
+    extern "C" { fn compute_or_read_sensor(m: *const mjModel, d: *mut mjData, i: i32, sensordata: *mut f64); }
     // SAFETY: delegates to C implementation, pointers valid per caller
-    unsafe { compute_or_read_sensor_impl(m, d, i, sensordata) }
+    unsafe { compute_or_read_sensor(m, d, i, sensordata) }
 }
 
 /// C: compute_user_sensors (engine/engine_sensor.c:1432)
 /// Calls: apply_cutoff
 #[allow(unused_variables, non_snake_case)]
 pub fn compute_user_sensors(m: *const mjModel, d: *mut mjData, stage: mjtStage) {
-    extern "C" { fn compute_user_sensors_impl(m: *const mjModel, d: *mut mjData, stage: mjtStage); }
+    extern "C" { fn compute_user_sensors(m: *const mjModel, d: *mut mjData, stage: mjtStage); }
     // SAFETY: delegates to C implementation, all pointers valid per caller contract
-    unsafe { compute_user_sensors_impl(m, d, stage) }
+    unsafe { compute_user_sensors(m, d, stage) }
 }
 
 /// C: compute_plugin_sensors (engine/engine_sensor.c:1447)
 /// Calls: apply_cutoff, mj_rnePostConstraint, mj_subtreeVel, mjp_getPluginAtSlotUnsafe, mjp_pluginCount, mju_message
 #[allow(unused_variables, non_snake_case)]
 pub fn compute_plugin_sensors(m: *const mjModel, d: *mut mjData, stage: mjtStage) {
-    extern "C" { fn compute_plugin_sensors_impl(m: *const mjModel, d: *mut mjData, stage: mjtStage); }
+    extern "C" { fn compute_plugin_sensors(m: *const mjModel, d: *mut mjData, stage: mjtStage); }
     // SAFETY: delegates to C implementation, all pointers valid per caller contract
-    unsafe { compute_plugin_sensors_impl(m, d, stage) }
+    unsafe { compute_plugin_sensors(m, d, stage) }
 }
 
 /// C: mj_computeSensor (engine/engine_sensor.h:29)
@@ -288,9 +288,9 @@ pub fn compute_plugin_sensors(m: *const mjModel, d: *mut mjData, stage: mjtStage
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_compute_sensor(m: *const mjModel, d: *mut mjData, i: i32, sensordata: *mut f64) {
-    extern "C" { fn mj_computeSensor_impl(m: *const mjModel, d: *mut mjData, i: i32, sensordata: *mut f64); }
+    extern "C" { fn mj_computeSensor(m: *const mjModel, d: *mut mjData, i: i32, sensordata: *mut f64); }
     // SAFETY: delegates to C implementation, all pointers valid per caller contract
-    unsafe { mj_computeSensor_impl(m, d, i, sensordata) }
+    unsafe { mj_computeSensor(m, d, i, sensordata) }
 }
 
 /// C: mj_sensorPos (engine/engine_sensor.h:32)
@@ -298,37 +298,37 @@ pub fn mj_compute_sensor(m: *const mjModel, d: *mut mjData, i: i32, sensordata: 
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_sensor_pos(m: *const mjModel, d: *mut mjData) {
     extern "C" {
-        fn mj_sensorPos_impl(m: *const mjModel, d: *mut mjData);
+        fn mj_sensorPos(m: *const mjModel, d: *mut mjData);
     }
     // SAFETY: delegates to C implementation, all pointers valid per caller contract
-    unsafe { mj_sensorPos_impl(m, d) }
+    unsafe { mj_sensorPos(m, d) }
 }
 
 /// C: mj_sensorVel (engine/engine_sensor.h:35)
 /// Calls: compute_or_read_sensor, compute_plugin_sensors, compute_user_sensors, mj_sleepState, mj_subtreeVel, mju_zero
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_sensor_vel(m: *const mjModel, d: *mut mjData) {
-    extern "C" { fn mj_sensorVel_impl(m: *const mjModel, d: *mut mjData); }
+    extern "C" { fn mj_sensorVel(m: *const mjModel, d: *mut mjData); }
     // SAFETY: delegates to C implementation, pointers valid per caller
-    unsafe { mj_sensorVel_impl(m, d) }
+    unsafe { mj_sensorVel(m, d) }
 }
 
 /// C: mj_sensorAcc (engine/engine_sensor.h:38)
 /// Calls: compute_or_read_sensor, compute_plugin_sensors, compute_user_sensors, mj_rnePostConstraint, mj_sleepState, mju_zero
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_sensor_acc(m: *const mjModel, d: *mut mjData) {
-    extern "C" { fn mj_sensorAcc_impl(m: *const mjModel, d: *mut mjData); }
+    extern "C" { fn mj_sensorAcc(m: *const mjModel, d: *mut mjData); }
     // SAFETY: delegates to C implementation, pointers valid per caller
-    unsafe { mj_sensorAcc_impl(m, d) }
+    unsafe { mj_sensorAcc(m, d) }
 }
 
 /// C: mj_energyPos (engine/engine_sensor.h:44)
 /// Calls: mj_sleepState, mju_copy4, mju_dot3, mju_isZero, mju_norm3, mju_normalize4, mju_polyPotential, mju_sub3, mju_subQuat
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_energy_pos(m: *const mjModel, d: *mut mjData) {
-    extern "C" { fn mj_energyPos_impl(m: *const mjModel, d: *mut mjData); }
+    extern "C" { fn mj_energyPos(m: *const mjModel, d: *mut mjData); }
     // SAFETY: delegates to C implementation, all pointers valid per caller contract
-    unsafe { mj_energyPos_impl(m, d) }
+    unsafe { mj_energyPos(m, d) }
 }
 
 /// C: mj_energyVel (engine/engine_sensor.h:47)
@@ -338,6 +338,6 @@ pub fn mj_energy_vel(m: *const mjModel, d: *mut mjData) {
     // WARNING: signature changed — verify body
     // Previous params: (m : * const mjModel, d : * mut mjData)
     // Previous return: ()
-    extern "C" { fn mj_energyVel_impl (m : * const mjModel , d : * mut mjData) ; } unsafe { mj_energyVel_impl (m , d) }
+    extern "C" { fn mj_energyVel(m : * const mjModel , d : * mut mjData) ; } unsafe { mj_energyVel(m , d) }
 }
 

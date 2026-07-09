@@ -16,9 +16,9 @@ pub fn case_insensitive_equal(s1: string_view, s2: string_view) -> bool {
 /// C: ReentrantWriteLock::LockCountOnCurrentThread (engine/engine_global_table.h:88)
 #[allow(unused_variables, non_snake_case)]
 pub fn reentrant_write_lock_lock_count_on_current_thread() -> *mut i32 {
-    extern "C" { fn ReentrantWriteLock_LockCountOnCurrentThread_impl() -> *mut i32; }
+    extern "C" { fn ReentrantWriteLock_LockCountOnCurrentThread() -> *mut i32; }
     // SAFETY: delegates to C implementation, all pointers valid per caller contract
-    unsafe { ReentrantWriteLock_LockCountOnCurrentThread_impl() }
+    unsafe { ReentrantWriteLock_LockCountOnCurrentThread() }
 }
 
 /// C: GlobalTable::GetSingleton (engine/engine_global_table.h:97)
@@ -27,7 +27,7 @@ pub fn global_table_get_singleton() -> *const () {
     // WARNING: signature changed — verify body
     // Previous params: ()
     // Previous return: * const ()
-    extern "C" { fn GlobalTable_GetSingleton_impl () -> * const () ; } unsafe { GlobalTable_GetSingleton_impl () }
+    extern "C" { fn GlobalTable_GetSingleton() -> * const () ; } unsafe { GlobalTable_GetSingleton() }
 }
 
 /// C: GlobalTable::count (engine/engine_global_table.h:110)
@@ -36,7 +36,7 @@ pub fn global_table_count(self_ptr: *mut GlobalTable) -> i32 {
     // WARNING: signature changed — verify body
     // Previous params: (self_ptr : * mut GlobalTable)
     // Previous return: i32
-    extern "C" { fn GlobalTable_count_impl (self_ptr : * mut GlobalTable) -> i32 ; } unsafe { GlobalTable_count_impl (self_ptr) }
+    extern "C" { fn GlobalTable_count(self_ptr : * mut GlobalTable) -> i32 ; } unsafe { GlobalTable_count(self_ptr) }
 }
 
 /// C: GlobalTable::LockExclusively (engine/engine_global_table.h:114)
@@ -46,7 +46,7 @@ pub fn global_table_lock_exclusively(self_ptr: *mut GlobalTable) -> ReentrantWri
     // WARNING: signature changed — verify body
     // Previous params: (self_ptr : * mut GlobalTable)
     // Previous return: ReentrantWriteLock
-    extern "C" { fn GlobalTable_LockExclusively_impl (self_ptr : * mut GlobalTable) -> ReentrantWriteLock ; } unsafe { GlobalTable_LockExclusively_impl (self_ptr) }
+    extern "C" { fn GlobalTable_LockExclusively(self_ptr : * mut GlobalTable) -> ReentrantWriteLock ; } unsafe { GlobalTable_LockExclusively(self_ptr) }
 }
 
 /// C: GlobalTable::AppendIfUnique (engine/engine_global_table.h:118)
@@ -56,7 +56,7 @@ pub fn global_table_append_if_unique(self_ptr: *mut GlobalTable, obj: *const T) 
     // WARNING: signature changed — verify body
     // Previous params: (self_ptr : * mut GlobalTable, obj : * const T)
     // Previous return: i32
-    extern "C" { fn GlobalTable_AppendIfUnique_impl (self_ptr : * mut GlobalTable , obj : * const T) -> i32 ; } unsafe { GlobalTable_AppendIfUnique_impl (self_ptr , obj) }
+    extern "C" { fn GlobalTable_AppendIfUnique(self_ptr : * mut GlobalTable , obj : * const T) -> i32 ; } unsafe { GlobalTable_AppendIfUnique(self_ptr , obj) }
 }
 
 /// C: GlobalTable::GetAtSlotUnsafe (engine/engine_global_table.h:184)
@@ -65,7 +65,7 @@ pub fn global_table_get_at_slot_unsafe(self_ptr: *mut GlobalTable, slot: i32, ns
     // WARNING: signature changed — verify body
     // Previous params: (self_ptr : * mut GlobalTable, slot : i32, nslot : i32)
     // Previous return: * const T
-    extern "C" { fn GlobalTable_GetAtSlotUnsafe_impl (self_ptr : * mut GlobalTable , slot : i32 , nslot : i32) -> * const T ; } unsafe { GlobalTable_GetAtSlotUnsafe_impl (self_ptr , slot , nslot) }
+    extern "C" { fn GlobalTable_GetAtSlotUnsafe(self_ptr : * mut GlobalTable , slot : i32 , nslot : i32) -> * const T ; } unsafe { GlobalTable_GetAtSlotUnsafe(self_ptr , slot , nslot) }
 }
 
 /// C: GlobalTable::GetByKeyUnsafe (engine/engine_global_table.h:213)
@@ -75,7 +75,7 @@ pub fn global_table_get_by_key_unsafe(self_ptr: *mut GlobalTable, key: string_vi
     // WARNING: signature changed — verify body
     // Previous params: (self_ptr : * mut GlobalTable, key : string_view, slot : * mut i32, nslot : i32)
     // Previous return: * const T
-    extern "C" { fn GlobalTable_GetByKeyUnsafe_impl (self_ptr : * mut GlobalTable , key : string_view , slot : * mut i32 , nslot : i32) -> * const T ; } unsafe { GlobalTable_GetByKeyUnsafe_impl (self_ptr , key , slot , nslot) }
+    extern "C" { fn GlobalTable_GetByKeyUnsafe(self_ptr : * mut GlobalTable , key : string_view , slot : * mut i32 , nslot : i32) -> * const T ; } unsafe { GlobalTable_GetByKeyUnsafe(self_ptr , key , slot , nslot) }
 }
 
 /// C: GlobalTable::GetAtSlot (engine/engine_global_table.h:248)
@@ -85,7 +85,7 @@ pub fn global_table_get_at_slot(self_ptr: *mut GlobalTable, slot: i32) -> *const
     // WARNING: signature changed — verify body
     // Previous params: (self_ptr : * mut GlobalTable, slot : i32)
     // Previous return: * const T
-    extern "C" { fn GlobalTable_GetAtSlot_impl (self_ptr : * mut GlobalTable , slot : i32) -> * const T ; } unsafe { GlobalTable_GetAtSlot_impl (self_ptr , slot) }
+    extern "C" { fn GlobalTable_GetAtSlot(self_ptr : * mut GlobalTable , slot : i32) -> * const T ; } unsafe { GlobalTable_GetAtSlot(self_ptr , slot) }
 }
 
 /// C: GlobalTable::GetByKey (engine/engine_global_table.h:254)
@@ -95,7 +95,7 @@ pub fn global_table_get_by_key(self_ptr: *mut GlobalTable, key: string_view, slo
     // WARNING: signature changed — verify body
     // Previous params: (self_ptr : * mut GlobalTable, key : string_view, slot : * mut i32)
     // Previous return: * const T
-    extern "C" { fn GlobalTable_GetByKey_impl (self_ptr : * mut GlobalTable , key : string_view , slot : * mut i32) -> * const T ; } unsafe { GlobalTable_GetByKey_impl (self_ptr , key , slot) }
+    extern "C" { fn GlobalTable_GetByKey(self_ptr : * mut GlobalTable , key : string_view , slot : * mut i32) -> * const T ; } unsafe { GlobalTable_GetByKey(self_ptr , key , slot) }
 }
 
 /// C: GlobalTable::mutex (engine/engine_global_table.h:265)
@@ -104,6 +104,6 @@ pub fn global_table_mutex(self_ptr: *mut GlobalTable) -> *mut Mutex {
     // WARNING: signature changed — verify body
     // Previous params: (self_ptr : * mut GlobalTable)
     // Previous return: * mut Mutex
-    extern "C" { fn GlobalTable_mutex_impl (self_ptr : * mut GlobalTable) -> * mut Mutex ; } unsafe { GlobalTable_mutex_impl (self_ptr) }
+    extern "C" { fn GlobalTable_mutex(self_ptr : * mut GlobalTable) -> * mut Mutex ; } unsafe { GlobalTable_mutex(self_ptr) }
 }
 

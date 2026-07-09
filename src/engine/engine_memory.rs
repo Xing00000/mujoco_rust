@@ -7,9 +7,9 @@ use crate::types::*;
 /// C: fastmod (engine/engine_memory.c:52)
 #[allow(unused_variables, non_snake_case)]
 pub fn fastmod(a: usize, b: usize) -> usize {
-    extern "C" { fn fastmod_impl(a: usize, b: usize) -> usize; }
+    extern "C" { fn fastmod(a: usize, b: usize) -> usize; }
     // SAFETY: delegates to C implementation
-    unsafe { fastmod_impl(a, b) }
+    unsafe { fastmod(a, b) }
 }
 
 /// C: get_stack_info_from_data (engine/engine_memory.c:74)
@@ -18,25 +18,25 @@ pub fn get_stack_info_from_data(d: *const mjData) -> mjStackInfo {
     // WARNING: signature changed — verify body
     // Previous params: (d : * const mjData)
     // Previous return: mjStackInfo
-    extern "C" { fn get_stack_info_from_data_impl (d : * const mjData) -> mjStackInfo ; } unsafe { get_stack_info_from_data_impl (d) }
+    extern "C" { fn get_stack_info_from_data(d : * const mjData) -> mjStackInfo ; } unsafe { get_stack_info_from_data(d) }
 }
 
 /// C: stackallocinternal (engine/engine_memory.c:144)
 /// Calls: fastmod
 #[allow(unused_variables, non_snake_case)]
 pub fn stackallocinternal(d: *mut mjData, stack_info: *mut mjStackInfo, size: usize, alignment: usize, caller: *const i8, line: i32) -> *mut () {
-    extern "C" { fn stackallocinternal_impl(d: *mut mjData, stack_info: *mut mjStackInfo, size: usize, alignment: usize, caller: *const i8, line: i32) -> *mut (); }
+    extern "C" { fn stackallocinternal(d: *mut mjData, stack_info: *mut mjStackInfo, size: usize, alignment: usize, caller: *const i8, line: i32) -> *mut (); }
     // SAFETY: delegates to C implementation
-    unsafe { stackallocinternal_impl(d, stack_info, size, alignment, caller, line) }
+    unsafe { stackallocinternal(d, stack_info, size, alignment, caller, line) }
 }
 
 /// C: stackalloc (engine/engine_memory.c:208)
 /// Calls: fastmod, get_stack_info_from_data, stackallocinternal
 #[allow(unused_variables, non_snake_case)]
 pub fn stackalloc(d: *mut mjData, size: usize, alignment: usize, caller: *const i8, line: i32) -> *mut () {
-    extern "C" { fn stackalloc_impl(d: *mut mjData, size: usize, alignment: usize, caller: *const i8, line: i32) -> *mut (); }
+    extern "C" { fn stackalloc(d: *mut mjData, size: usize, alignment: usize, caller: *const i8, line: i32) -> *mut (); }
     // SAFETY: delegates to C implementation
-    unsafe { stackalloc_impl(d, size, alignment, caller, line) }
+    unsafe { stackalloc(d, size, alignment, caller, line) }
 }
 
 /// C: markstackinternal (engine/engine_memory.c:256)
@@ -46,7 +46,7 @@ pub fn markstackinternal(d: *mut mjData, stack_info: *mut mjStackInfo) {
     // WARNING: signature changed — verify body
     // Previous params: (d : * mut mjData, stack_info : * mut mjStackInfo)
     // Previous return: ()
-    extern "C" { fn markstackinternal_impl (d : * mut mjData , stack_info : * mut mjStackInfo) ; } unsafe { markstackinternal_impl (d , stack_info) }
+    extern "C" { fn markstackinternal(d : * mut mjData , stack_info : * mut mjStackInfo) ; } unsafe { markstackinternal(d , stack_info) }
 }
 
 /// C: freestackinternal (engine/engine_memory.c:292)
@@ -55,7 +55,7 @@ pub fn freestackinternal(stack_info: *mut mjStackInfo) {
     // WARNING: signature changed — verify body
     // Previous params: (stack_info : * mut mjStackInfo)
     // Previous return: ()
-    extern "C" { fn freestackinternal_impl (stack_info : * mut mjStackInfo) ; } unsafe { freestackinternal_impl (stack_info) }
+    extern "C" { fn freestackinternal(stack_info : * mut mjStackInfo) ; } unsafe { freestackinternal(stack_info) }
 }
 
 /// C: mj_arenaAllocByte (engine/engine_memory.h:35)
@@ -93,7 +93,7 @@ pub fn mj_mark_stack(d: *mut mjData) {
     // WARNING: signature changed — verify body
     // Previous params: (d : * mut mjData)
     // Previous return: ()
-    extern "C" { fn mj_markStack_impl (d : * mut mjData) ; } unsafe { mj_markStack_impl (d) }
+    extern "C" { fn mj_markStack(d : * mut mjData) ; } unsafe { mj_markStack(d) }
 }
 
 /// C: mj_freeStack (engine/engine_memory.h:43)
@@ -103,7 +103,7 @@ pub fn mj_free_stack(d: *mut mjData) {
     // WARNING: signature changed — verify body
     // Previous params: (d : * mut mjData)
     // Previous return: ()
-    extern "C" { fn mj_freeStack_impl (d : * mut mjData) ; } unsafe { mj_freeStack_impl (d) }
+    extern "C" { fn mj_freeStack(d : * mut mjData) ; } unsafe { mj_freeStack(d) }
 }
 
 /// C: mj_stackAllocByte (engine/engine_memory.h:53)
@@ -187,6 +187,6 @@ pub fn mj_clear_efc(d: *mut mjData) {
     // WARNING: signature changed — verify body
     // Previous params: (d : * mut mjData)
     // Previous return: ()
-    extern "C" { fn mj_clearEfc_impl (d : * mut mjData) ; } unsafe { mj_clearEfc_impl (d) }
+    extern "C" { fn mj_clearEfc(d : * mut mjData) ; } unsafe { mj_clearEfc(d) }
 }
 

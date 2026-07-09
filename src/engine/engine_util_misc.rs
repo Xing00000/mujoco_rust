@@ -12,9 +12,9 @@ use crate::types::*;
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn is_intersect(p1: *const f64, p2: *const f64, p3: *const f64, p4: *const f64) -> mjtBool {
-    extern "C" { fn is_intersect_impl(p1: *const f64, p2: *const f64, p3: *const f64, p4: *const f64) -> mjtBool; }
+    extern "C" { fn is_intersect(p1: *const f64, p2: *const f64, p3: *const f64, p4: *const f64) -> mjtBool; }
     // SAFETY: delegates to C implementation
-    unsafe { is_intersect_impl(p1, p2, p3, p4) }
+    unsafe { is_intersect(p1, p2, p3, p4) }
 }
 
 /// C: length_circle (engine/engine_util_misc.c:55)
@@ -660,7 +660,7 @@ pub fn mj_dcmotor_slots(dynprm: *const f64, gainprm: *const f64) -> mjDCMotorSlo
     // WARNING: signature changed — verify body
     // Previous params: (dynprm : * const f64, gainprm : * const f64)
     // Previous return: mjDCMotorSlots
-    extern "C" { fn mj_dcmotorSlots_impl (dynprm : * const f64 , gainprm : * const f64) -> mjDCMotorSlots ; } unsafe { mj_dcmotorSlots_impl (dynprm , gainprm) }
+    extern "C" { fn mj_dcmotorSlots(dynprm : * const f64 , gainprm : * const f64) -> mjDCMotorSlots ; } unsafe { mj_dcmotorSlots(dynprm , gainprm) }
 }
 
 /// C: mju_geomSemiAxes (engine/engine_util_misc.h:71)
@@ -672,10 +672,10 @@ pub fn mj_dcmotor_slots(dynprm: *const f64, gainprm: *const f64) -> mjDCMotorSlo
 #[allow(unused_variables, non_snake_case)]
 pub fn mju_geom_semi_axes(semiaxes: *mut f64, size: *const f64, r#type: mjtGeom) {
     extern "C" {
-        fn mju_geomSemiAxes_impl(semiaxes: *mut f64, size: *const f64, r#type: mjtGeom);
+        fn mju_geomSemiAxes(semiaxes: *mut f64, size: *const f64, r#type: mjtGeom);
     }
     // SAFETY: delegates to C implementation, all pointers valid per caller contract
-    unsafe { mju_geomSemiAxes_impl(semiaxes, size, r#type) }
+    unsafe { mju_geomSemiAxes(semiaxes, size, r#type) }
 }
 
 /// C: mju_insideGeom (engine/engine_util_misc.h:74)
@@ -688,10 +688,10 @@ pub fn mju_geom_semi_axes(semiaxes: *mut f64, size: *const f64, r#type: mjtGeom)
 #[allow(unused_variables, non_snake_case)]
 pub fn mju_inside_geom(pos: *const f64, mat: *const f64, size: *const f64, r#type: mjtGeom, point: *const f64) -> i32 {
     extern "C" {
-        fn mju_insideGeom_impl(pos: *const f64, mat: *const f64, size: *const f64, r#type: mjtGeom, point: *const f64) -> i32;
+        fn mju_insideGeom(pos: *const f64, mat: *const f64, size: *const f64, r#type: mjtGeom, point: *const f64) -> i32;
     }
     // SAFETY: delegates to C implementation, all pointers valid per caller contract
-    unsafe { mju_insideGeom_impl(pos, mat, size, r#type, point) }
+    unsafe { mju_insideGeom(pos, mat, size, r#type, point) }
 }
 
 /// C: mju_camPixelRay (engine/engine_util_misc.h:79)
@@ -1440,9 +1440,9 @@ pub fn mju_history_init(buf: *mut f64, n: i32, dim: i32, times: *const f64, valu
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mju_history_insert(buf: *mut f64, n: i32, dim: i32, t: f64) -> *mut f64 {
-    extern "C" { fn mju_historyInsert_impl(buf: *mut f64, n: i32, dim: i32, t: f64) -> *mut f64; }
+    extern "C" { fn mju_historyInsert(buf: *mut f64, n: i32, dim: i32, t: f64) -> *mut f64; }
     // SAFETY: delegates to C implementation, all pointers valid per caller contract
-    unsafe { mju_historyInsert_impl(buf, n, dim, t) }
+    unsafe { mju_historyInsert(buf, n, dim, t) }
 }
 
 /// C: mju_historyRead (engine/engine_util_misc.h:194)
@@ -1457,7 +1457,7 @@ pub fn mju_history_read(buf: *const f64, n: i32, dim: i32, res: *mut f64, t: f64
     // WARNING: signature changed — verify body
     // Previous params: (buf : * const f64, n : i32, dim : i32, res : * mut f64, t : f64, interp : i32)
     // Previous return: * const f64
-    extern "C" { fn mju_historyRead_impl (buf : * const f64 , n : i32 , dim : i32 , res : * mut f64 , t : f64 , interp : i32) -> * const f64 ; } unsafe { mju_historyRead_impl (buf , n , dim , res , t , interp) }
+    extern "C" { fn mju_historyRead(buf : * const f64 , n : i32 , dim : i32 , res : * mut f64 , t : f64 , interp : i32) -> * const f64 ; } unsafe { mju_historyRead(buf , n , dim , res , t , interp) }
 }
 
 /// C: mju_encodePyramid (engine/engine_util_misc.h:200)

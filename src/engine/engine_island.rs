@@ -7,9 +7,9 @@ use crate::types::*;
 /// C: clearIsland (engine/engine_island.c:39)
 #[allow(unused_variables, non_snake_case)]
 pub fn clear_island(d: *mut mjData, parena: usize) {
-    extern "C" { fn clearIsland_impl(d: *mut mjData, parena: usize); }
+    extern "C" { fn clearIsland(d: *mut mjData, parena: usize); }
     // SAFETY: delegates to C implementation
-    unsafe { clearIsland_impl(d, parena) }
+    unsafe { clearIsland(d, parena) }
 }
 
 /// C: arenaAllocIsland (engine/engine_island.c:57)
@@ -26,10 +26,10 @@ pub fn arena_alloc_island(m: *const mjModel, d: *mut mjData) -> i32 {
 #[allow(unused_variables, non_snake_case)]
 pub fn tree_next(m: *const mjModel, d: *const mjData, i: i32, iter: *mut mjTreeIter) -> i32 {
     extern "C" {
-        fn treeNext_impl(m: *const mjModel, d: *const mjData, i: i32, iter: *mut mjTreeIter) -> i32;
+        fn treeNext(m: *const mjModel, d: *const mjData, i: i32, iter: *mut mjTreeIter) -> i32;
     }
     // SAFETY: delegates to C implementation, all pointers valid per caller contract
-    unsafe { treeNext_impl(m, d, i, iter) }
+    unsafe { treeNext(m, d, i, iter) }
 }
 
 /// C: treeIterInit (engine/engine_island.c:212)
@@ -37,10 +37,10 @@ pub fn tree_next(m: *const mjModel, d: *const mjData, i: i32, iter: *mut mjTreeI
 #[allow(unused_variables, non_snake_case)]
 pub fn tree_iter_init(m: *const mjModel, d: *const mjData, i: i32, iter: *mut mjTreeIter) {
     extern "C" {
-        fn treeIterInit_impl(m: *const mjModel, d: *const mjData, i: i32, iter: *mut mjTreeIter);
+        fn treeIterInit(m: *const mjModel, d: *const mjData, i: i32, iter: *mut mjTreeIter);
     }
     // SAFETY: delegates to C implementation, all pointers valid per caller contract
-    unsafe { treeIterInit_impl(m, d, i, iter) }
+    unsafe { treeIterInit(m, d, i, iter) }
 }
 
 /// C: findEdges (engine/engine_island.c:317)
@@ -48,10 +48,10 @@ pub fn tree_iter_init(m: *const mjModel, d: *const mjData, i: i32, iter: *mut mj
 #[allow(unused_variables, non_snake_case)]
 pub fn find_edges(m: *const mjModel, d: *const mjData, rownnz: *mut i32, colind: *mut i32, tree_tree: *mut u8, efc_tree: *mut i32, ntree: i32) -> i32 {
     extern "C" {
-        fn findEdges_impl(m: *const mjModel, d: *const mjData, rownnz: *mut i32, colind: *mut i32, tree_tree: *mut u8, efc_tree: *mut i32, ntree: i32) -> i32;
+        fn findEdges(m: *const mjModel, d: *const mjData, rownnz: *mut i32, colind: *mut i32, tree_tree: *mut u8, efc_tree: *mut i32, ntree: i32) -> i32;
     }
     // SAFETY: delegates to C implementation, all pointers valid per caller contract
-    unsafe { findEdges_impl(m, d, rownnz, colind, tree_tree, efc_tree, ntree) }
+    unsafe { findEdges(m, d, rownnz, colind, tree_tree, efc_tree, ntree) }
 }
 
 /// C: mj_floodFill (engine/engine_island.h:28)
@@ -116,9 +116,9 @@ pub fn mj_flood_fill(island: *mut i32, nr: i32, rownnz: *const i32, rowadr: *con
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_island(m: *const mjModel, d: *mut mjData) {
     extern "C" {
-        fn mj_island_impl(m: *const mjModel, d: *mut mjData);
+        fn mj_island(m: *const mjModel, d: *mut mjData);
     }
     // SAFETY: delegates to C implementation, all pointers valid per caller contract
-    unsafe { mj_island_impl(m, d) }
+    unsafe { mj_island(m, d) }
 }
 

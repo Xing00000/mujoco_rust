@@ -798,7 +798,7 @@ pub fn mju_mul_mat_t_mat(res: *mut f64, mat1: *const f64, mat2: *const f64, r1: 
     unsafe { let mut tmp : f64 ; mju_zero (res , c1 * c2) ; for i in 0 .. r1 { for j in 0 .. c1 { tmp = * mat1 . add ((i * c1 + j) as usize) ; if tmp != 0.0 { mju_add_to_scl (res . add ((j * c2) as usize) , mat2 . add ((i * c2) as usize) , tmp , c2) ; } } } }
 }
 
-/// C: mju_sqrMatTD_impl (engine/engine_util_blas.h:251)
+/// C: mju_sqrMatTD(engine/engine_util_blas.h:251)
 /// Calls: mju_addToScl, mju_zero
 /// ⚠️ BITEXACT RULES:
 ///   1. Copy exact C accumulation order (no iter().sum())
@@ -825,6 +825,6 @@ pub fn mju_sqr_mat_td(res: *mut f64, mat: *const f64, diag: *const f64, nr: i32,
     // WARNING: signature changed — verify body
     // Previous params: (res : * mut f64, mat : * const f64, diag : * const f64, nr : i32, nc : i32)
     // Previous return: ()
-    mju_sqr_mat_td_impl (res , mat , diag , nr , nc , 1) ;
+    mju_sqr_mat_td_impl(res , mat , diag , nr , nc , 1) ;
 }
 

@@ -7,9 +7,9 @@ use crate::types::*;
 /// C: LocaleOverride::PosixLocale (xml/xml.cc:85)
 #[allow(unused_variables, non_snake_case)]
 pub fn locale_override_posix_locale() -> i32 {
-    extern "C" { fn PosixLocale_impl() -> i32; }
+    extern "C" { fn PosixLocale() -> i32; }
     // SAFETY: delegates to C implementation, all pointers valid per caller contract
-    unsafe { PosixLocale_impl() }
+    unsafe { PosixLocale() }
 }
 
 /// C: IncludeXML (xml/xml.cc:102)
@@ -19,41 +19,41 @@ pub fn include_xml(reader: *mut mjXReader, elem: *mut XMLElement, dir: *const Fi
     // WARNING: signature changed — verify body
     // Previous params: (reader : * mut mjXReader, elem : * mut XMLElement, dir : * const FilePath, vfs : * const mjVFS, included : * mut i32)
     // Previous return: ()
-    extern "C" { fn IncludeXML_impl (reader : * mut mjXReader , elem : * mut XMLElement , dir : * const FilePath , vfs : * const mjVFS , included : * mut i32) ; } unsafe { IncludeXML_impl (reader , elem , dir , vfs , included) }
+    extern "C" { fn IncludeXML(reader : * mut mjXReader , elem : * mut XMLElement , dir : * const FilePath , vfs : * const mjVFS , included : * mut i32) ; } unsafe { IncludeXML(reader , elem , dir , vfs , included) }
 }
 
 /// C: SpecFromXML (xml/xml.cc:243)
 /// Calls: mjCopyError, mjXReader::Parse, mjXURDF::Parse, mj_deleteSpec, mj_makeSpec, mjs_getString
 #[allow(unused_variables, non_snake_case)]
 pub fn spec_from_xml(xml: string_view, dir: string_view, filename: string_view, vfs: *const mjVFS, error: *mut i8, nerror: i32) -> *mut mjSpec {
-    extern "C" { fn SpecFromXML_impl(xml: string_view, dir: string_view, filename: string_view, vfs: *const mjVFS, error: *mut i8, nerror: i32) -> *mut mjSpec; }
+    extern "C" { fn SpecFromXML(xml: string_view, dir: string_view, filename: string_view, vfs: *const mjVFS, error: *mut i8, nerror: i32) -> *mut mjSpec; }
     // SAFETY: delegates to C++ implementation; caller guarantees pointer validity
-    unsafe { SpecFromXML_impl(xml, dir, filename, vfs, error, nerror) }
+    unsafe { SpecFromXML(xml, dir, filename, vfs, error, nerror) }
 }
 
 /// C: ParseXML (xml/xml.h:25)
 /// Calls: mju_closeResource, mju_getResourceDir, mju_readResource
 #[allow(unused_variables, non_snake_case)]
 pub fn parse_xml(filename: *const i8, vfs: *const mjVFS, error: *mut i8, nerror: i32) -> *mut mjSpec {
-    extern "C" { fn ParseXML_impl(filename: *const i8, vfs: *const mjVFS, error: *mut i8, nerror: i32) -> *mut mjSpec; }
+    extern "C" { fn ParseXML(filename: *const i8, vfs: *const mjVFS, error: *mut i8, nerror: i32) -> *mut mjSpec; }
     // SAFETY: delegates to C implementation, all pointers valid per caller contract
-    unsafe { ParseXML_impl(filename, vfs, error, nerror) }
+    unsafe { ParseXML(filename, vfs, error, nerror) }
 }
 
 /// C: ParseSpecFromString (xml/xml.h:29)
 #[allow(unused_variables, non_snake_case)]
 pub fn parse_spec_from_string(xml: string_view, vfs: *const mjVFS, error: *mut i8, nerror: i32) -> *mut mjSpec {
-    extern "C" { fn ParseSpecFromString_impl(xml: string_view, vfs: *const mjVFS, error: *mut i8, nerror: i32) -> *mut mjSpec; }
+    extern "C" { fn ParseSpecFromString(xml: string_view, vfs: *const mjVFS, error: *mut i8, nerror: i32) -> *mut mjSpec; }
     // SAFETY: delegates to C implementation, all pointers valid per caller contract
-    unsafe { ParseSpecFromString_impl(xml, vfs, error, nerror) }
+    unsafe { ParseSpecFromString(xml, vfs, error, nerror) }
 }
 
 /// C: WriteXML (xml/xml.h:33)
 /// Calls: mjCopyError, mjXWriter::SetModel
 #[allow(unused_variables, non_snake_case)]
 pub fn write_xml(m: *const mjModel, spec: *mut mjSpec, error: *mut i8, nerror: i32) -> std__string {
-    extern "C" { fn WriteXML_impl(m: *const mjModel, spec: *mut mjSpec, error: *mut i8, nerror: i32) -> std__string; }
+    extern "C" { fn WriteXML(m: *const mjModel, spec: *mut mjSpec, error: *mut i8, nerror: i32) -> std__string; }
     // SAFETY: delegates to C implementation
-    unsafe { WriteXML_impl(m, spec, error, nerror) }
+    unsafe { WriteXML(m, spec, error, nerror) }
 }
 

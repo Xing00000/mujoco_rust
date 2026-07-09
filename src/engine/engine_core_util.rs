@@ -252,9 +252,9 @@ pub fn mj_jac_body_com(m: *const mjModel, d: *const mjData, jacp: *mut f64, jacr
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_jac_subtree_com(m: *const mjModel, d: *mut mjData, jacp: *mut f64, body: i32) {
 
-    extern "C" { fn mj_jacSubtreeCom_impl(m: *const mjModel, d: *mut mjData, jacp: *mut f64, body: i32); }
+    extern "C" { fn mj_jacSubtreeCom(m: *const mjModel, d: *mut mjData, jacp: *mut f64, body: i32); }
     // SAFETY: delegates to C implementation
-    unsafe { mj_jacSubtreeCom_impl(m, d, jacp, body) }
+    unsafe { mj_jacSubtreeCom(m, d, jacp, body) }
 }
 
 /// C: mj_jacGeom (engine/engine_core_util.h:67)
@@ -297,10 +297,10 @@ pub fn mj_jac_site(m: *const mjModel, d: *const mjData, jacp: *mut f64, jacr: *m
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_jac_point_axis(m: *const mjModel, d: *mut mjData, jacPoint: *mut f64, jacAxis: *mut f64, point: *const f64, axis: *const f64, body: i32) {
     extern "C" {
-        fn mj_jacPointAxis_impl(m: *const mjModel, d: *mut mjData, jacPoint: *mut f64, jacAxis: *mut f64, point: *const f64, axis: *const f64, body: i32);
+        fn mj_jacPointAxis(m: *const mjModel, d: *mut mjData, jacPoint: *mut f64, jacAxis: *mut f64, point: *const f64, axis: *const f64, body: i32);
     }
     // SAFETY: delegates to C implementation, all pointers valid per caller contract
-    unsafe { mj_jacPointAxis_impl(m, d, jacPoint, jacAxis, point, axis, body) }
+    unsafe { mj_jacPointAxis(m, d, jacPoint, jacAxis, point, axis, body) }
 }
 
 /// C: mj_jacSparse (engine/engine_core_util.h:80)
@@ -636,10 +636,10 @@ pub fn mj_jac_dif_pair(m: *const mjModel, d: *const mjData, chain: *mut i32, b1:
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_jac_sum(m: *const mjModel, d: *mut mjData, chain: *mut i32, n: i32, body: *const i32, weight: *const f64, point: *const f64, jac: *mut f64, flg_rot: i32) -> i32 {
     extern "C" {
-        fn mj_jacSum_impl(m: *const mjModel, d: *mut mjData, chain: *mut i32, n: i32, body: *const i32, weight: *const f64, point: *const f64, jac: *mut f64, flg_rot: i32) -> i32;
+        fn mj_jacSum(m: *const mjModel, d: *mut mjData, chain: *mut i32, n: i32, body: *const i32, weight: *const f64, point: *const f64, jac: *mut f64, flg_rot: i32) -> i32;
     }
     // SAFETY: delegates to C implementation, all pointers valid per caller contract
-    unsafe { mj_jacSum_impl(m, d, chain, n, body, weight, point, jac, flg_rot) }
+    unsafe { mj_jacSum(m, d, chain, n, body, weight, point, jac, flg_rot) }
 }
 
 /// C: mj_jacDot (engine/engine_core_util.h:107)
@@ -738,9 +738,9 @@ pub fn mj_jac_dot(m: *const mjModel, d: *const mjData, jacp: *mut f64, jacr: *mu
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_angmom_mat(m: *const mjModel, d: *mut mjData, mat: *mut f64, body: i32) {
 
-    extern "C" { fn mj_angmomMat_impl(m: *const mjModel, d: *mut mjData, mat: *mut f64, body: i32); }
+    extern "C" { fn mj_angmomMat(m: *const mjModel, d: *mut mjData, mat: *mut f64, body: i32); }
     // SAFETY: delegates to C implementation
-    unsafe { mj_angmomMat_impl(m, d, mat, body) }
+    unsafe { mj_angmomMat(m, d, mat, body) }
 }
 
 /// C: mj_objectVelocity (engine/engine_core_util.h:117)

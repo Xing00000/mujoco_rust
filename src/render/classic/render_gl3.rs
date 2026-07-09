@@ -12,26 +12,26 @@ use crate::types::*;
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn is_behind(headpos: *const f32, pos: *const f32, mat: *const f32) -> i32 {
-    extern "C" { fn isBehind_impl(headpos: *const f32, pos: *const f32, mat: *const f32) -> i32; }
+    extern "C" { fn isBehind(headpos: *const f32, pos: *const f32, mat: *const f32) -> i32; }
     // SAFETY: delegates to C implementation, pointers valid per caller contract
-    unsafe { isBehind_impl(headpos, pos, mat) }
+    unsafe { isBehind(headpos, pos, mat) }
 }
 
 /// C: isReflective (render/classic/render_gl3.c:45)
 #[allow(unused_variables, non_snake_case)]
 pub fn is_reflective(geom: *const mjvGeom) -> i32 {
-    extern "C" { fn isReflective_impl(geom: *const mjvGeom) -> i32; }
+    extern "C" { fn isReflective(geom: *const mjvGeom) -> i32; }
     // SAFETY: delegates to C implementation, pointers valid per caller contract
-    unsafe { isReflective_impl(geom) }
+    unsafe { isReflective(geom) }
 }
 
 /// C: settexture (render/classic/render_gl3.c:62)
 /// Calls: mjr_setf4, mju_max
 #[allow(unused_variables, non_snake_case)]
 pub fn settexture(r#type: i32, state: i32, con: *const mjrContext, geom: *const mjvGeom) {
-    extern "C" { fn settexture_impl(r#type: i32, state: i32, con: *const mjrContext, geom: *const mjvGeom); }
+    extern "C" { fn settexture(r#type: i32, state: i32, con: *const mjrContext, geom: *const mjvGeom); }
     // SAFETY: delegates to C implementation, pointers valid per caller contract
-    unsafe { settexture_impl(r#type, state, con, geom) }
+    unsafe { settexture(r#type, state, con, geom) }
 }
 
 /// C: renderGeom (render/classic/render_gl3.c:217)
@@ -43,9 +43,9 @@ pub fn settexture(r#type: i32, state: i32, con: *const mjrContext, geom: *const 
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn render_geom(geom: *const mjvGeom, mode: i32, headpos: *const f32, scn: *const mjvScene, con: *const mjrContext) {
-    extern "C" { fn renderGeom_impl(geom: *const mjvGeom, mode: i32, headpos: *const f32, scn: *const mjvScene, con: *const mjrContext); }
+    extern "C" { fn renderGeom(geom: *const mjvGeom, mode: i32, headpos: *const f32, scn: *const mjvScene, con: *const mjrContext); }
     // SAFETY: delegates to C implementation
-    unsafe { renderGeom_impl(geom, mode, headpos, scn, con) }
+    unsafe { renderGeom(geom, mode, headpos, scn, con) }
 }
 
 /// C: renderGeomReflection (render/classic/render_gl3.c:590)
@@ -57,25 +57,25 @@ pub fn render_geom(geom: *const mjvGeom, mode: i32, headpos: *const f32, scn: *c
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn render_geom_reflection(id: i32, reflectance: f32, headpos: [f32; 3], scn: *mut mjvScene, con: *const mjrContext) {
-    extern "C" { fn renderGeomReflection_impl(id: i32, reflectance: f32, headpos: [f32; 3], scn: *mut mjvScene, con: *const mjrContext); }
+    extern "C" { fn renderGeomReflection(id: i32, reflectance: f32, headpos: [f32; 3], scn: *mut mjvScene, con: *const mjrContext); }
     // SAFETY: delegates to C implementation
-    unsafe { renderGeomReflection_impl(id, reflectance, headpos, scn, con) }
+    unsafe { renderGeomReflection(id, reflectance, headpos, scn, con) }
 }
 
 /// C: initGL3 (render/classic/render_gl3.c:614)
 #[allow(unused_variables, non_snake_case)]
 pub fn init_gl3(scn: *const mjvScene, con: *const mjrContext) {
-    extern "C" { fn initGL3_impl(scn: *const mjvScene, con: *const mjrContext); }
+    extern "C" { fn initGL3(scn: *const mjvScene, con: *const mjrContext); }
     // SAFETY: delegates to C implementation, pointers valid per caller contract
-    unsafe { initGL3_impl(scn, con) }
+    unsafe { initGL3(scn, con) }
 }
 
 /// C: initLights (render/classic/render_gl3.c:662)
 #[allow(unused_variables, non_snake_case)]
 pub fn init_lights(scn: *mut mjvScene) {
-    extern "C" { fn initLights_impl(scn: *mut mjvScene); }
+    extern "C" { fn initLights(scn: *mut mjvScene); }
     // SAFETY: delegates to C implementation, pointers valid per caller contract
-    unsafe { initLights_impl(scn) }
+    unsafe { initLights(scn) }
 }
 
 /// C: setView (render/classic/render_gl3.c:711)
@@ -87,9 +87,9 @@ pub fn init_lights(scn: *mut mjvScene) {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn set_view(view: i32, viewport: mjrRect, scn: *const mjvScene, con: *const mjrContext, camProject: [f32; 16], camView: [f32; 16]) {
-    extern "C" { fn setView_impl(view: i32, viewport: mjrRect, scn: *const mjvScene, con: *const mjrContext, camProject: [f32; 16], camView: [f32; 16]); }
+    extern "C" { fn setView(view: i32, viewport: mjrRect, scn: *const mjvScene, con: *const mjrContext, camProject: [f32; 16], camView: [f32; 16]); }
     // SAFETY: delegates to C implementation
-    unsafe { setView_impl(view, viewport, scn, con, camProject, camView) }
+    unsafe { setView(view, viewport, scn, con, camProject, camView) }
 }
 
 /// C: geomcmp (render/classic/render_gl3.c:778)
@@ -198,33 +198,33 @@ pub fn geom_sort(arr: *mut i32, buf: *mut i32, n: i32, context: *mut ()) {
 /// Calls: mjr_setf4
 #[allow(unused_variables, non_snake_case)]
 pub fn adjust_light(thislight: *const mjvLight, n: i32) {
-    extern "C" { fn adjustLight_impl(thislight: *const mjvLight, n: i32); }
+    extern "C" { fn adjustLight(thislight: *const mjvLight, n: i32); }
     // SAFETY: delegates to C implementation, pointers valid per caller contract
-    unsafe { adjustLight_impl(thislight, n) }
+    unsafe { adjustLight(thislight, n) }
 }
 
 /// C: mjr_render (render/classic/render_gl3.h:27)
 /// Calls: adjustLight, geomSort, initGL3, initLights, isBehind, isReflective, mjr_getrow4, mjr_lookAt, mjr_mulMat44, mjr_orthoVec, mjr_perspective, mjr_reflect, mjr_restoreBuffer, mjr_textActual, mju_error, mju_free, mju_malloc, mju_min, mju_n2f, mjv_averageCamera, mjv_cameraInModel, mjv_rbound, renderGeom, renderGeomReflection, setView, settexture
 #[allow(unused_variables, non_snake_case)]
 pub fn mjr_render(viewport: mjrRect, scn: *mut mjvScene, con: *const mjrContext) {
-    extern "C" { fn mjr_render_impl(viewport: mjrRect, scn: *mut mjvScene, con: *const mjrContext); }
+    extern "C" { fn mjr_render(viewport: mjrRect, scn: *mut mjvScene, con: *const mjrContext); }
     // SAFETY: delegates to C++ implementation; caller guarantees pointer validity
-    unsafe { mjr_render_impl(viewport, scn, con) }
+    unsafe { mjr_render(viewport, scn, con) }
 }
 
 /// C: mjr_finish (render/classic/render_gl3.h:30)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjr_finish() {
-    extern "C" { fn mjr_finish_impl(); }
+    extern "C" { fn mjr_finish(); }
     // SAFETY: delegates to C implementation
-    unsafe { mjr_finish_impl() }
+    unsafe { mjr_finish() }
 }
 
 /// C: mjr_getError (render/classic/render_gl3.h:33)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjr_get_error() -> i32 {
-    extern "C" { fn mjr_getError_impl() -> i32; }
+    extern "C" { fn mjr_getError() -> i32; }
     // SAFETY: delegates to C implementation
-    unsafe { mjr_getError_impl() }
+    unsafe { mjr_getError() }
 }
 

@@ -860,10 +860,10 @@ pub fn mjraw_sphere_triangle(con: *mut mjPreContact, margin: f64, s: *const f64,
 #[allow(unused_variables, non_snake_case)]
 pub fn mjraw_box_triangle(con: *mut mjPreContact, margin: f64, pos: *const f64, mat: *const f64, size: *const f64, t1: *const f64, t2: *const f64, t3: *const f64, rt: f64) -> i32 {
     extern "C" {
-        fn mjraw_BoxTriangle_impl(con: *mut mjPreContact, margin: f64, pos: *const f64, mat: *const f64, size: *const f64, t1: *const f64, t2: *const f64, t3: *const f64, rt: f64) -> i32;
+        fn mjraw_BoxTriangle(con: *mut mjPreContact, margin: f64, pos: *const f64, mat: *const f64, size: *const f64, t1: *const f64, t2: *const f64, t3: *const f64, rt: f64) -> i32;
     }
     // SAFETY: delegates to C implementation, all pointers valid per caller contract
-    unsafe { mjraw_BoxTriangle_impl(con, margin, pos, mat, size, t1, t2, t3, rt) }
+    unsafe { mjraw_BoxTriangle(con, margin, pos, mat, size, t1, t2, t3, rt) }
 }
 
 /// C: mjraw_CapsuleTriangle (engine/engine_collision_primitive.h:42)
@@ -876,10 +876,10 @@ pub fn mjraw_box_triangle(con: *mut mjPreContact, margin: f64, pos: *const f64, 
 #[allow(unused_variables, non_snake_case)]
 pub fn mjraw_capsule_triangle(con: *mut mjPreContact, margin: f64, pos: *const f64, mat: *const f64, size: *const f64, t1: *const f64, t2: *const f64, t3: *const f64, rt: f64) -> i32 {
     extern "C" {
-        fn mjraw_CapsuleTriangle_impl(con: *mut mjPreContact, margin: f64, pos: *const f64, mat: *const f64, size: *const f64, t1: *const f64, t2: *const f64, t3: *const f64, rt: f64) -> i32;
+        fn mjraw_CapsuleTriangle(con: *mut mjPreContact, margin: f64, pos: *const f64, mat: *const f64, size: *const f64, t1: *const f64, t2: *const f64, t3: *const f64, rt: f64) -> i32;
     }
     // SAFETY: delegates to C implementation, all pointers valid per caller contract
-    unsafe { mjraw_CapsuleTriangle_impl(con, margin, pos, mat, size, t1, t2, t3, rt) }
+    unsafe { mjraw_CapsuleTriangle(con, margin, pos, mat, size, t1, t2, t3, rt) }
 }
 
 /// C: mjc_PlaneSphere (engine/engine_collision_primitive.h:47)
@@ -891,9 +891,9 @@ pub fn mjraw_capsule_triangle(con: *mut mjPreContact, margin: f64, pos: *const f
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjc_plane_sphere(m: *const mjModel, d: *mut mjData, con: *mut mjPreContact, g1: i32, g2: i32, margin: f64) -> i32 {
-    extern "C" { fn mjc_PlaneSphere_impl(m: *const mjModel, d: *mut mjData, con: *mut mjPreContact, g1: i32, g2: i32, margin: f64) -> i32; }
+    extern "C" { fn mjc_PlaneSphere(m: *const mjModel, d: *mut mjData, con: *mut mjPreContact, g1: i32, g2: i32, margin: f64) -> i32; }
     // SAFETY: delegates to C implementation
-    unsafe { mjc_PlaneSphere_impl(m, d, con, g1, g2, margin) }
+    unsafe { mjc_PlaneSphere(m, d, con, g1, g2, margin) }
 }
 
 /// C: mjc_PlaneCapsule (engine/engine_collision_primitive.h:49)
@@ -905,9 +905,9 @@ pub fn mjc_plane_sphere(m: *const mjModel, d: *mut mjData, con: *mut mjPreContac
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjc_plane_capsule(m: *const mjModel, d: *mut mjData, con: *mut mjPreContact, g1: i32, g2: i32, margin: f64) -> i32 {
-    extern "C" { fn mjc_PlaneCapsule_impl(m: *const mjModel, d: *mut mjData, con: *mut mjPreContact, g1: i32, g2: i32, margin: f64) -> i32; }
+    extern "C" { fn mjc_PlaneCapsule(m: *const mjModel, d: *mut mjData, con: *mut mjPreContact, g1: i32, g2: i32, margin: f64) -> i32; }
     // SAFETY: delegates to C implementation
-    unsafe { mjc_PlaneCapsule_impl(m, d, con, g1, g2, margin) }
+    unsafe { mjc_PlaneCapsule(m, d, con, g1, g2, margin) }
 }
 
 /// C: mjc_PlaneCylinder (engine/engine_collision_primitive.h:51)
@@ -919,9 +919,9 @@ pub fn mjc_plane_capsule(m: *const mjModel, d: *mut mjData, con: *mut mjPreConta
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjc_plane_cylinder(m: *const mjModel, d: *mut mjData, con: *mut mjPreContact, g1: i32, g2: i32, margin: f64) -> i32 {
-    extern "C" { fn mjc_PlaneCylinder_impl(m: *const mjModel, d: *mut mjData, con: *mut mjPreContact, g1: i32, g2: i32, margin: f64) -> i32; }
+    extern "C" { fn mjc_PlaneCylinder(m: *const mjModel, d: *mut mjData, con: *mut mjPreContact, g1: i32, g2: i32, margin: f64) -> i32; }
     // SAFETY: delegates to C implementation
-    unsafe { mjc_PlaneCylinder_impl(m, d, con, g1, g2, margin) }
+    unsafe { mjc_PlaneCylinder(m, d, con, g1, g2, margin) }
 }
 
 /// C: mjc_PlaneBox (engine/engine_collision_primitive.h:53)
@@ -1211,8 +1211,8 @@ pub fn mjc_sphere_box(m: *const mjModel, d: *mut mjData, con: *mut mjPreContact,
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjc_box_box(m: *const mjModel, d: *mut mjData, con: *mut mjPreContact, g1: i32, g2: i32, margin: f64) -> i32 {
-    extern "C" { fn mjc_BoxBox_impl(m: *const mjModel, d: *mut mjData, con: *mut mjPreContact, g1: i32, g2: i32, margin: f64) -> i32; }
+    extern "C" { fn mjc_BoxBox(m: *const mjModel, d: *mut mjData, con: *mut mjPreContact, g1: i32, g2: i32, margin: f64) -> i32; }
     // SAFETY: delegates to C implementation which handles complex box-box collision detection
-    unsafe { mjc_BoxBox_impl(m, d, con, g1, g2, margin) }
+    unsafe { mjc_BoxBox(m, d, con, g1, g2, margin) }
 }
 

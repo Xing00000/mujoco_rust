@@ -34,9 +34,9 @@ pub fn mj_default_sol_ref_imp(solref: *mut f64, solimp: *mut f64) {
 /// Calls: mj_defaultSolRefImp
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_default_option(opt: *mut mjOption) {
-    extern "C" { fn mj_defaultOption_impl(opt: *mut mjOption); }
+    extern "C" { fn mj_defaultOption(opt: *mut mjOption); }
     // SAFETY: delegates to C implementation, all pointers valid per caller contract
-    unsafe { mj_defaultOption_impl(opt) }
+    unsafe { mj_defaultOption(opt) }
 }
 
 /// C: setf4 (engine/engine_init.c:124)
@@ -60,25 +60,25 @@ pub fn setf4(rgba: *mut f32, r: f32, g: f32, b: f32, a: f32) {
 /// Calls: setf4
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_default_visual(vis: *mut mjVisual) {
-    extern "C" { fn mj_defaultVisual_impl(vis: *mut mjVisual); }
+    extern "C" { fn mj_defaultVisual(vis: *mut mjVisual); }
     // SAFETY: delegates to C implementation, all pointers valid per caller contract
-    unsafe { mj_defaultVisual_impl(vis) }
+    unsafe { mj_defaultVisual(vis) }
 }
 
 /// C: mj_defaultLROpt (engine/engine_init.c:234)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_default_lr_opt(opt: *mut mjLROpt) {
-    extern "C" { fn mj_defaultLROpt_impl(opt: *mut mjLROpt); }
+    extern "C" { fn mj_defaultLROpt(opt: *mut mjLROpt); }
     // SAFETY: delegates to C implementation, all pointers valid per caller contract
-    unsafe { mj_defaultLROpt_impl(opt) }
+    unsafe { mj_defaultLROpt(opt) }
 }
 
 /// C: mj_defaultStatistic (engine/engine_init.h:30)
 /// Calls: mju_zero3
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_default_statistic(stat: *mut mjStatistic) {
-    extern "C" { fn mj_defaultStatistic_impl(stat: *mut mjStatistic); }
+    extern "C" { fn mj_defaultStatistic(stat: *mut mjStatistic); }
     // SAFETY: delegates to C implementation, all pointers valid per caller contract
-    unsafe { mj_defaultStatistic_impl(stat) }
+    unsafe { mj_defaultStatistic(stat) }
 }
 

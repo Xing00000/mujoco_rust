@@ -9,10 +9,10 @@ use crate::types::*;
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_update_dynamic_bvh(m: *const mjModel, d: *mut mjData, bvhadr: i32, bvhnum: i32) {
     extern "C" {
-        fn mj_updateDynamicBVH_impl(m: *const mjModel, d: *mut mjData, bvhadr: i32, bvhnum: i32);
+        fn mj_updateDynamicBVH(m: *const mjModel, d: *mut mjData, bvhadr: i32, bvhnum: i32);
     }
     // SAFETY: delegates to C implementation, all pointers valid per caller contract
-    unsafe { mj_updateDynamicBVH_impl(m, d, bvhadr, bvhnum) }
+    unsafe { mj_updateDynamicBVH(m, d, bvhadr, bvhnum) }
 }
 
 /// C: mju_mulMatMat322 (engine/engine_core_smooth.c:537)
@@ -335,9 +335,9 @@ pub fn mj_kinematics2(m: *const mjModel, d: *mut mjData) {
 /// Calls: mj_kinematics1, mj_kinematics2, mj_updateSleep, mj_wake
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_kinematics(m: *const mjModel, d: *mut mjData) {
-    extern "C" { fn mj_kinematics_impl(m: *const mjModel, d: *mut mjData); }
+    extern "C" { fn mj_kinematics(m: *const mjModel, d: *mut mjData); }
     // SAFETY: delegates to C implementation, all pointers valid per caller contract
-    unsafe { mj_kinematics_impl(m, d) }
+    unsafe { mj_kinematics(m, d) }
 }
 
 /// C: mj_comPos (engine/engine_core_smooth.h:38)
@@ -745,19 +745,19 @@ pub fn mj_camlight(m: *const mjModel, d: *mut mjData) {
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_flex(m: *const mjModel, d: *mut mjData) {
     extern "C" {
-        fn mj_flex_impl(m: *const mjModel, d: *mut mjData);
+        fn mj_flex(m: *const mjModel, d: *mut mjData);
     }
     // SAFETY: delegates to C implementation, all pointers valid per caller contract
-    unsafe { mj_flex_impl(m, d) }
+    unsafe { mj_flex(m, d) }
 }
 
 /// C: mj_tendon (engine/engine_core_smooth.h:47)
 /// Calls: mj_freeStack, mj_jacDifPair, mj_markStack, mj_sleepState, mj_stackAllocInfo, mji_copy3, mji_copy9, mji_sub3, mju_combineSparseInc, mju_dist3, mju_message, mju_mulMatTVec, mju_normalize3, mju_round, mju_wrap, mju_zero, mju_zero3
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_tendon(m: *const mjModel, d: *mut mjData) {
-    extern "C" { fn mj_tendon_impl(m: *const mjModel, d: *mut mjData); }
+    extern "C" { fn mj_tendon(m: *const mjModel, d: *mut mjData); }
     // SAFETY: delegates to C implementation, all pointers valid per caller contract
-    unsafe { mj_tendon_impl(m, d) }
+    unsafe { mj_tendon(m, d) }
 }
 
 /// C: mj_tendonDot (engine/engine_core_smooth.h:50)
@@ -769,18 +769,18 @@ pub fn mj_tendon(m: *const mjModel, d: *mut mjData) {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_tendon_dot(m: *const mjModel, d: *mut mjData, id: i32, vec: *const f64) -> f64 {
-    extern "C" { fn mj_tendonDot_impl(m: *const mjModel, d: *mut mjData, id: i32, vec: *const f64) -> f64; }
+    extern "C" { fn mj_tendonDot(m: *const mjModel, d: *mut mjData, id: i32, vec: *const f64) -> f64; }
     // SAFETY: delegates to C implementation, all pointers valid per caller contract
-    unsafe { mj_tendonDot_impl(m, d, id, vec) }
+    unsafe { mj_tendonDot(m, d, id, vec) }
 }
 
 /// C: mj_transmission (engine/engine_core_smooth.h:53)
 /// Calls: mj_freeStack, mj_isSparse, mj_jacDifPair, mj_jacPointAxis, mj_jacSite, mj_markStack, mj_mulJacTVec, mj_sleepState, mj_stackAllocInfo, mji_addTo3, mji_copy3, mji_copy4, mji_mulMatVec3, mji_mulQuat, mji_quat2Vel, mji_rotVecQuat, mji_subQuat, mju_addTo, mju_copyInt, mju_dot3, mju_isZero, mju_message, mju_mulMatMat, mju_mulMatTVec, mju_mulMatTVec3, mju_negQuat, mju_normalize4, mju_scl, mju_scl3, mju_sub3, mju_subFrom, mju_zero
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_transmission(m: *const mjModel, d: *mut mjData) {
-    extern "C" { fn mj_transmission_impl(m: *const mjModel, d: *mut mjData); }
+    extern "C" { fn mj_transmission(m: *const mjModel, d: *mut mjData); }
     // SAFETY: delegates to C implementation, all pointers valid per caller contract
-    unsafe { mj_transmission_impl(m, d) }
+    unsafe { mj_transmission(m, d) }
 }
 
 /// C: mj_crb (engine/engine_core_smooth.h:59)
@@ -896,18 +896,18 @@ pub fn mj_crb(m: *const mjModel, d: *mut mjData) {
 /// Calls: mj_actuatorArmature, mj_sleepState, mju_addToSclSparseInc
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_tendon_armature(m: *const mjModel, d: *mut mjData) {
-    extern "C" { fn mj_tendonArmature_impl(m: *const mjModel, d: *mut mjData); }
+    extern "C" { fn mj_tendonArmature(m: *const mjModel, d: *mut mjData); }
     // SAFETY: delegates to C implementation, all pointers valid per caller contract
-    unsafe { mj_tendonArmature_impl(m, d) }
+    unsafe { mj_tendonArmature(m, d) }
 }
 
 /// C: mj_makeM (engine/engine_core_smooth.h:65)
 /// Calls: mj_crb, mj_tendonArmature, mju_scatter
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_make_m(m: *const mjModel, d: *mut mjData) {
-    extern "C" { fn mj_makeM_impl(m: *const mjModel, d: *mut mjData); }
+    extern "C" { fn mj_makeM(m: *const mjModel, d: *mut mjData); }
     // SAFETY: delegates to C implementation, all pointers valid per caller contract
-    unsafe { mj_makeM_impl(m, d) }
+    unsafe { mj_makeM(m, d) }
 }
 
 /// C: mj_factorI_legacy (engine/engine_core_smooth.h:68)
@@ -1536,9 +1536,9 @@ pub fn mj_com_vel(m: *const mjModel, d: *mut mjData) {
 /// Calls: mj_freeStack, mj_markStack, mj_objectVelocity, mj_stackAllocInfo, mji_addTo3, mji_cross, mji_mulMatVec3, mju_max, mju_mulMatTVec3, mju_scl3, mju_sub3
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_subtree_vel(m: *const mjModel, d: *mut mjData) {
-    extern "C" { fn mj_subtreeVel_impl(m: *const mjModel, d: *mut mjData); }
+    extern "C" { fn mj_subtreeVel(m: *const mjModel, d: *mut mjData); }
     // SAFETY: delegates to C implementation, all pointers valid per caller contract
-    unsafe { mj_subtreeVel_impl(m, d) }
+    unsafe { mj_subtreeVel(m, d) }
 }
 
 /// C: mj_rne (engine/engine_core_smooth.h:107)
@@ -1551,10 +1551,10 @@ pub fn mj_subtree_vel(m: *const mjModel, d: *mut mjData) {
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_rne(m: *const mjModel, d: *mut mjData, flg_acc: i32, result: *mut f64) {
     extern "C" {
-        fn mj_rne_impl(m: *const mjModel, d: *mut mjData, flg_acc: i32, result: *mut f64);
+        fn mj_rne(m: *const mjModel, d: *mut mjData, flg_acc: i32, result: *mut f64);
     }
     // SAFETY: delegates to C implementation, all pointers valid per caller contract
-    unsafe { mj_rne_impl(m, d, flg_acc, result) }
+    unsafe { mj_rne(m, d, flg_acc, result) }
 }
 
 /// C: mj_rnePostConstraint (engine/engine_core_smooth.h:110)
@@ -1872,8 +1872,8 @@ pub fn mj_rne_post_constraint(m: *const mjModel, d: *mut mjData) {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_tendon_bias(m: *const mjModel, d: *mut mjData, qfrc: *mut f64) {
-    extern "C" { fn mj_tendonBias_impl(m: *const mjModel, d: *mut mjData, qfrc: *mut f64); }
+    extern "C" { fn mj_tendonBias(m: *const mjModel, d: *mut mjData, qfrc: *mut f64); }
     // SAFETY: delegates to C implementation, all pointers valid per caller contract
-    unsafe { mj_tendonBias_impl(m, d, qfrc) }
+    unsafe { mj_tendonBias(m, d, qfrc) }
 }
 

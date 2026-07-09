@@ -36,10 +36,10 @@ pub fn is_smaller(vec: *const f64, weight: *const f64, n: i32, tol: f64) -> i32 
 #[allow(unused_variables, non_snake_case)]
 pub fn tree_can_sleep(m: *const mjModel, d: *const mjData, i: i32, tol: f64) -> i32 {
     extern "C" {
-        fn treeCanSleep_impl(m: *const mjModel, d: *const mjData, i: i32, tol: f64) -> i32;
+        fn treeCanSleep(m: *const mjModel, d: *const mjData, i: i32, tol: f64) -> i32;
     }
     // SAFETY: delegates to C implementation, all pointers valid per caller contract
-    unsafe { treeCanSleep_impl(m, d, i, tol) }
+    unsafe { treeCanSleep(m, d, i, tol) }
 }
 
 /// C: plural (engine/engine_sleep.c:189)
@@ -57,9 +57,9 @@ pub fn plural(n: i32) -> *const i8 {
 /// Calls: mju_isTopicEnabled, mju_message, mju_strncpy, mju_zero, plural
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_sleep_trees(m: *const mjModel, d: *mut mjData, tree: *const i32, n: i32) {
-    extern "C" { fn mj_sleepTrees_impl(m: *const mjModel, d: *mut mjData, tree: *const i32, n: i32); }
+    extern "C" { fn mj_sleepTrees(m: *const mjModel, d: *mut mjData, tree: *const i32, n: i32); }
     // SAFETY: delegates to C implementation, all pointers valid per caller contract
-    unsafe { mj_sleepTrees_impl(m, d, tree, n) }
+    unsafe { mj_sleepTrees(m, d, tree, n) }
 }
 
 /// C: mj_tendonSleepState (engine/engine_sleep.c:634)
@@ -68,34 +68,34 @@ pub fn mj_tendon_sleep_state(m: *const mjModel, d: *const mjData, i: i32) -> mjt
     // WARNING: signature changed — verify body
     // Previous params: (m : * const mjModel, d : * const mjData, i : i32)
     // Previous return: mjtSleepState
-    extern "C" { fn mj_tendonSleepState_impl (m : * const mjModel , d : * const mjData , i : i32) -> mjtSleepState ; } unsafe { mj_tendonSleepState_impl (m , d , i) }
+    extern "C" { fn mj_tendonSleepState(m : * const mjModel , d : * const mjData , i : i32) -> mjtSleepState ; } unsafe { mj_tendonSleepState(m , d , i) }
 }
 
 /// C: mj_actuatorSleepState (engine/engine_sleep.c:659)
 /// Calls: mj_sleepState, mj_tendonSleepState
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_actuator_sleep_state(m: *const mjModel, d: *const mjData, i: i32) -> mjtSleepState {
-    extern "C" { fn mj_actuatorSleepState_impl(m: *const mjModel, d: *const mjData, i: i32) -> mjtSleepState; }
+    extern "C" { fn mj_actuatorSleepState(m: *const mjModel, d: *const mjData, i: i32) -> mjtSleepState; }
     // SAFETY: delegates to C implementation
-    unsafe { mj_actuatorSleepState_impl(m, d, i) }
+    unsafe { mj_actuatorSleepState(m, d, i) }
 }
 
 /// C: mj_equalitySleepState (engine/engine_sleep.c:691)
 /// Calls: mj_sleepState
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_equality_sleep_state(m: *const mjModel, d: *const mjData, i: i32) -> mjtSleepState {
-    extern "C" { fn mj_equalitySleepState_impl(m: *const mjModel, d: *const mjData, i: i32) -> mjtSleepState; }
+    extern "C" { fn mj_equalitySleepState(m: *const mjModel, d: *const mjData, i: i32) -> mjtSleepState; }
     // SAFETY: delegates to C implementation
-    unsafe { mj_equalitySleepState_impl(m, d, i) }
+    unsafe { mj_equalitySleepState(m, d, i) }
 }
 
 /// C: mj_sensorSleepState (engine/engine_sleep.c:727)
 /// Calls: mj_sleepState
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_sensor_sleep_state(m: *const mjModel, d: *const mjData, i: i32) -> mjtSleepState {
-    extern "C" { fn mj_sensorSleepState_impl(m: *const mjModel, d: *const mjData, i: i32) -> mjtSleepState; }
+    extern "C" { fn mj_sensorSleepState(m: *const mjModel, d: *const mjData, i: i32) -> mjtSleepState; }
     // SAFETY: delegates to C implementation
-    unsafe { mj_sensorSleepState_impl(m, d, i) }
+    unsafe { mj_sensorSleepState(m, d, i) }
 }
 
 /// C: mj_updateSleepInit (engine/engine_sleep.h:28)
@@ -161,10 +161,10 @@ pub fn mj_sleep_cycle(tree_asleep: *const i32, ntree: i32, i: i32) -> i32 {
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_wake_island(tree_asleep: *mut i32, ntree: i32, i: i32, wakeval: i32, reason: *const i8, time: f64) -> i32 {
     extern "C" {
-        fn mj_wakeIsland_impl(tree_asleep: *mut i32, ntree: i32, i: i32, wakeval: i32, reason: *const i8, time: f64) -> i32;
+        fn mj_wakeIsland(tree_asleep: *mut i32, ntree: i32, i: i32, wakeval: i32, reason: *const i8, time: f64) -> i32;
     }
     // SAFETY: delegates to C implementation, all pointers valid per caller contract
-    unsafe { mj_wakeIsland_impl(tree_asleep, ntree, i, wakeval, reason, time) }
+    unsafe { mj_wakeIsland(tree_asleep, ntree, i, wakeval, reason, time) }
 }
 
 /// C: mj_wake (engine/engine_sleep.h:41)
@@ -172,10 +172,10 @@ pub fn mj_wake_island(tree_asleep: *mut i32, ntree: i32, i: i32, wakeval: i32, r
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_wake(m: *const mjModel, d: *mut mjData) -> i32 {
     extern "C" {
-        fn mj_wake_impl(m: *const mjModel, d: *mut mjData) -> i32;
+        fn mj_wake(m: *const mjModel, d: *mut mjData) -> i32;
     }
     // SAFETY: delegates to C implementation, all pointers valid per caller contract
-    unsafe { mj_wake_impl(m, d) }
+    unsafe { mj_wake(m, d) }
 }
 
 /// C: mj_wakeCollision (engine/engine_sleep.h:44)
@@ -183,10 +183,10 @@ pub fn mj_wake(m: *const mjModel, d: *mut mjData) -> i32 {
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_wake_collision(m: *const mjModel, d: *mut mjData) -> i32 {
     extern "C" {
-        fn mj_wakeCollision_impl(m: *const mjModel, d: *mut mjData) -> i32;
+        fn mj_wakeCollision(m: *const mjModel, d: *mut mjData) -> i32;
     }
     // SAFETY: delegates to C implementation, all pointers valid per caller contract
-    unsafe { mj_wakeCollision_impl(m, d) }
+    unsafe { mj_wakeCollision(m, d) }
 }
 
 /// C: mj_wakeTendon (engine/engine_sleep.h:47)
@@ -194,10 +194,10 @@ pub fn mj_wake_collision(m: *const mjModel, d: *mut mjData) -> i32 {
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_wake_tendon(m: *const mjModel, d: *mut mjData) -> i32 {
     extern "C" {
-        fn mj_wakeTendon_impl(m: *const mjModel, d: *mut mjData) -> i32;
+        fn mj_wakeTendon(m: *const mjModel, d: *mut mjData) -> i32;
     }
     // SAFETY: delegates to C implementation, all pointers valid per caller contract
-    unsafe { mj_wakeTendon_impl(m, d) }
+    unsafe { mj_wakeTendon(m, d) }
 }
 
 /// C: mj_wakeEquality (engine/engine_sleep.h:50)
@@ -205,19 +205,19 @@ pub fn mj_wake_tendon(m: *const mjModel, d: *mut mjData) -> i32 {
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_wake_equality(m: *const mjModel, d: *mut mjData) -> i32 {
     extern "C" {
-        fn mj_wakeEquality_impl(m: *const mjModel, d: *mut mjData) -> i32;
+        fn mj_wakeEquality(m: *const mjModel, d: *mut mjData) -> i32;
     }
     // SAFETY: delegates to C implementation, all pointers valid per caller contract
-    unsafe { mj_wakeEquality_impl(m, d) }
+    unsafe { mj_wakeEquality(m, d) }
 }
 
 /// C: mj_sleep (engine/engine_sleep.h:53)
 /// Calls: mj_sleepTrees, mju_message, treeCanSleep
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_sleep(m: *const mjModel, d: *mut mjData) -> i32 {
-    extern "C" { fn mj_sleep_impl(m: *const mjModel, d: *mut mjData) -> i32; }
+    extern "C" { fn mj_sleep(m: *const mjModel, d: *mut mjData) -> i32; }
     // SAFETY: delegates to C implementation, all pointers valid per caller contract
-    unsafe { mj_sleep_impl(m, d) }
+    unsafe { mj_sleep(m, d) }
 }
 
 /// C: mj_flexBody (engine/engine_sleep.h:56)
@@ -265,8 +265,8 @@ pub fn mj_sleep_state(m: *const mjModel, d: *const mjData, r#type: mjtObj, i: i3
     // WARNING: signature changed — verify body
     // Previous params: (m : * const mjModel, d : * const mjData, r#type : mjtObj, i : i32)
     // Previous return: mjtSleepState
-    extern "C" { fn mj_sleepState_impl(m: *const mjModel, d: *const mjData, r#type: mjtObj, i: i32) -> mjtSleepState; }
+    extern "C" { fn mj_sleepState(m: *const mjModel, d: *const mjData, r#type: mjtObj, i: i32) -> mjtSleepState; }
     // SAFETY: delegates to C implementation; caller guarantees m and d are valid
-    unsafe { mj_sleepState_impl(m, d, r#type, i) }
+    unsafe { mj_sleepState(m, d, r#type, i) }
 }
 

@@ -14,10 +14,10 @@ use crate::types::*;
 #[allow(unused_variables, non_snake_case)]
 pub fn cell_pos_and_jac(m: *const mjModel, d: *mut mjData, flex_id: i32, npc: i32, gindices: *const i32, nv: i32, xpos_c: *const f64, cell_chain: *mut i32, cell_nnz: *mut i32) -> *mut f64 {
     extern "C" {
-        fn cell_pos_and_jac_impl(m: *const mjModel, d: *mut mjData, flex_id: i32, npc: i32, gindices: *const i32, nv: i32, xpos_c: *const f64, cell_chain: *mut i32, cell_nnz: *mut i32) -> *mut f64;
+        fn cell_pos_and_jac(m: *const mjModel, d: *mut mjData, flex_id: i32, npc: i32, gindices: *const i32, nv: i32, xpos_c: *const f64, cell_chain: *mut i32, cell_nnz: *mut i32) -> *mut f64;
     }
     // SAFETY: delegates to C implementation, all pointers valid per caller contract
-    unsafe { cell_pos_and_jac_impl(m, d, flex_id, npc, gindices, nv, xpos_c, cell_chain, cell_nnz) }
+    unsafe { cell_pos_and_jac(m, d, flex_id, npc, gindices, nv, xpos_c, cell_chain, cell_nnz) }
 }
 
 /// C: cell_strain_jacobian (engine/engine_core_constraint.c:111)
@@ -40,10 +40,10 @@ pub fn cell_strain_jacobian(npc: i32, cell_nnz: i32, dSdx_local: *const f64, cel
 #[allow(unused_variables, non_snake_case)]
 pub fn arena_alloc_efc(m: *const mjModel, d: *mut mjData) -> i32 {
     extern "C" {
-        fn arenaAllocEfc_impl(m: *const mjModel, d: *mut mjData) -> i32;
+        fn arenaAllocEfc(m: *const mjModel, d: *mut mjData) -> i32;
     }
     // SAFETY: delegates to C implementation, all pointers valid per caller contract
-    unsafe { arenaAllocEfc_impl(m, d) }
+    unsafe { arenaAllocEfc(m, d) }
 }
 
 /// C: mj_elemBodyWeight (engine/engine_core_constraint.c:223)
@@ -56,10 +56,10 @@ pub fn arena_alloc_efc(m: *const mjModel, d: *mut mjData) -> i32 {
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_elem_body_weight(m: *const mjModel, d: *const mjData, f: i32, e: i32, v: i32, point: *const f64, body: *mut i32, weight: *mut f64) -> i32 {
     extern "C" {
-        fn mj_elemBodyWeight_impl(m: *const mjModel, d: *const mjData, f: i32, e: i32, v: i32, point: *const f64, body: *mut i32, weight: *mut f64) -> i32;
+        fn mj_elemBodyWeight(m: *const mjModel, d: *const mjData, f: i32, e: i32, v: i32, point: *const f64, body: *mut i32, weight: *mut f64) -> i32;
     }
     // SAFETY: delegates to C implementation, all pointers valid per caller contract
-    unsafe { mj_elemBodyWeight_impl(m, d, f, e, v, point, body, weight) }
+    unsafe { mj_elemBodyWeight(m, d, f, e, v, point, body, weight) }
 }
 
 /// C: mj_vertBodyWeight (engine/engine_core_constraint.c:265)
@@ -72,10 +72,10 @@ pub fn mj_elem_body_weight(m: *const mjModel, d: *const mjData, f: i32, e: i32, 
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_vert_body_weight(m: *const mjModel, d: *const mjData, f: i32, v: *mut i32, body: *mut i32, bweight: *mut f64, vweight: *const f64, nw: i32) -> i32 {
     extern "C" {
-        fn mj_vertBodyWeight_impl(m: *const mjModel, d: *const mjData, f: i32, v: *mut i32, body: *mut i32, bweight: *mut f64, vweight: *const f64, nw: i32) -> i32;
+        fn mj_vertBodyWeight(m: *const mjModel, d: *const mjData, f: i32, v: *mut i32, body: *mut i32, bweight: *mut f64, vweight: *const f64, nw: i32) -> i32;
     }
     // SAFETY: delegates to C implementation, all pointers valid per caller contract
-    unsafe { mj_vertBodyWeight_impl(m, d, f, v, body, bweight, vweight, nw) }
+    unsafe { mj_vertBodyWeight(m, d, f, v, body, bweight, vweight, nw) }
 }
 
 /// C: mj_addConstraint (engine/engine_core_constraint.c:414)
@@ -88,10 +88,10 @@ pub fn mj_vert_body_weight(m: *const mjModel, d: *const mjData, f: i32, v: *mut 
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_add_constraint(m: *const mjModel, d: *mut mjData, jac: *const f64, pos: *const f64, margin: *const f64, frictionloss: f64, size: i32, r#type: i32, id: i32, NV: i32, chain: *const i32) {
     extern "C" {
-        fn mj_addConstraint_impl(m: *const mjModel, d: *mut mjData, jac: *const f64, pos: *const f64, margin: *const f64, frictionloss: f64, size: i32, r#type: i32, id: i32, NV: i32, chain: *const i32);
+        fn mj_addConstraint(m: *const mjModel, d: *mut mjData, jac: *const f64, pos: *const f64, margin: *const f64, frictionloss: f64, size: i32, r#type: i32, id: i32, NV: i32, chain: *const i32);
     }
     // SAFETY: delegates to C implementation, all pointers valid per caller contract
-    unsafe { mj_addConstraint_impl(m, d, jac, pos, margin, frictionloss, size, r#type, id, NV, chain) }
+    unsafe { mj_addConstraint(m, d, jac, pos, margin, frictionloss, size, r#type, id, NV, chain) }
 }
 
 /// C: mj_equalityAnchors (engine/engine_core_constraint.c:561)
@@ -104,10 +104,10 @@ pub fn mj_add_constraint(m: *const mjModel, d: *mut mjData, jac: *const f64, pos
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_equality_anchors(m: *const mjModel, d: *const mjData, eq_id: i32, pos1: *mut f64, pos2: *mut f64, body1: *mut i32, body2: *mut i32) {
     extern "C" {
-        fn mj_equalityAnchors_impl(m: *const mjModel, d: *const mjData, eq_id: i32, pos1: *mut f64, pos2: *mut f64, body1: *mut i32, body2: *mut i32);
+        fn mj_equalityAnchors(m: *const mjModel, d: *const mjData, eq_id: i32, pos1: *mut f64, pos2: *mut f64, body1: *mut i32, body2: *mut i32);
     }
     // SAFETY: delegates to C implementation, all pointers valid per caller contract
-    unsafe { mj_equalityAnchors_impl(m, d, eq_id, pos1, pos2, body1, body2) }
+    unsafe { mj_equalityAnchors(m, d, eq_id, pos1, pos2, body1, body2) }
 }
 
 /// C: mj_addConstraintCount (engine/engine_core_constraint.c:1259)
@@ -115,28 +115,28 @@ pub fn mj_equality_anchors(m: *const mjModel, d: *const mjData, eq_id: i32, pos1
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_add_constraint_count(m: *const mjModel, size: i32, NV: i32) -> i32 {
     extern "C" {
-        fn mj_addConstraintCount_impl(m: *const mjModel, size: i32, NV: i32) -> i32;
+        fn mj_addConstraintCount(m: *const mjModel, size: i32, NV: i32) -> i32;
     }
     // SAFETY: delegates to C implementation, all pointers valid per caller contract
-    unsafe { mj_addConstraintCount_impl(m, size, NV) }
+    unsafe { mj_addConstraintCount(m, size, NV) }
 }
 
 /// C: mj_instantiateFriction (engine/engine_core_constraint.c:1270)
 /// Calls: mj_addConstraint, mj_addConstraintCount, mj_freeStack, mj_isSparse, mj_markStack, mj_sleepState, mj_stackAllocInfo, mju_sparse2dense, mju_zero
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_instantiate_friction(m: *const mjModel, d: *mut mjData, count_only: i32, nnz: *mut i32) -> i32 {
-    extern "C" { fn mj_instantiateFriction_impl(m: *const mjModel, d: *mut mjData, count_only: i32, nnz: *mut i32) -> i32; }
+    extern "C" { fn mj_instantiateFriction(m: *const mjModel, d: *mut mjData, count_only: i32, nnz: *mut i32) -> i32; }
     // SAFETY: delegates to C implementation, pointers valid per caller contract
-    unsafe { mj_instantiateFriction_impl(m, d, count_only, nnz) }
+    unsafe { mj_instantiateFriction(m, d, count_only, nnz) }
 }
 
 /// C: mj_instantiateLimit (engine/engine_core_constraint.c:1360)
 /// Calls: mj_addConstraint, mj_addConstraintCount, mj_freeStack, mj_isSparse, mj_markStack, mj_sleepState, mj_stackAllocInfo, mju_max, mju_normalize3, mju_normalize4, mju_quat2Vel, mju_scl, mju_scl3, mju_sparse2dense, mju_zero
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_instantiate_limit(m: *const mjModel, d: *mut mjData, count_only: i32, nnz: *mut i32) -> i32 {
-    extern "C" { fn mj_instantiateLimit_impl(m: *const mjModel, d: *mut mjData, count_only: i32, nnz: *mut i32) -> i32; }
+    extern "C" { fn mj_instantiateLimit(m: *const mjModel, d: *mut mjData, count_only: i32, nnz: *mut i32) -> i32; }
     // SAFETY: delegates to C implementation, pointers valid per caller contract
-    unsafe { mj_instantiateLimit_impl(m, d, count_only, nnz) }
+    unsafe { mj_instantiateLimit(m, d, count_only, nnz) }
 }
 
 /// C: getsolparam (engine/engine_core_constraint.c:1978)
@@ -149,10 +149,10 @@ pub fn mj_instantiate_limit(m: *const mjModel, d: *mut mjData, count_only: i32, 
 #[allow(unused_variables, non_snake_case)]
 pub fn getsolparam(m: *const mjModel, d: *const mjData, i: i32, solref: *mut f64, solreffriction: *mut f64, solimp: *mut f64) {
     extern "C" {
-        fn getsolparam_impl(m: *const mjModel, d: *const mjData, i: i32, solref: *mut f64, solreffriction: *mut f64, solimp: *mut f64);
+        fn getsolparam(m: *const mjModel, d: *const mjData, i: i32, solref: *mut f64, solreffriction: *mut f64, solimp: *mut f64);
     }
     // SAFETY: delegates to C implementation, all pointers valid per caller contract
-    unsafe { getsolparam_impl(m, d, i, solref, solreffriction, solimp) }
+    unsafe { getsolparam(m, d, i, solref, solreffriction, solimp) }
 }
 
 /// C: getposdim (engine/engine_core_constraint.c:2053)
@@ -165,10 +165,10 @@ pub fn getsolparam(m: *const mjModel, d: *const mjData, i: i32, solref: *mut f64
 #[allow(unused_variables, non_snake_case)]
 pub fn getposdim(m: *const mjModel, d: *const mjData, i: i32, pos: *mut f64, dim: *mut i32) {
     extern "C" {
-        fn getposdim_impl(m: *const mjModel, d: *const mjData, i: i32, pos: *mut f64, dim: *mut i32);
+        fn getposdim(m: *const mjModel, d: *const mjData, i: i32, pos: *mut f64, dim: *mut i32);
     }
     // SAFETY: delegates to C implementation, all pointers valid per caller contract
-    unsafe { getposdim_impl(m, d, i, pos, dim) }
+    unsafe { getposdim(m, d, i, pos, dim) }
 }
 
 /// C: power (engine/engine_core_constraint.c:2089)
@@ -263,19 +263,19 @@ pub fn getimpedance(solimp: *const f64, pos: f64, margin: f64, imp: *mut f64, im
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_jac_sum_count(m: *const mjModel, d: *mut mjData, chain: *mut i32, n: i32, body: *const i32) -> i32 {
     extern "C" {
-        fn mj_jacSumCount_impl(m: *const mjModel, d: *mut mjData, chain: *mut i32, n: i32, body: *const i32) -> i32;
+        fn mj_jacSumCount(m: *const mjModel, d: *mut mjData, chain: *mut i32, n: i32, body: *const i32) -> i32;
     }
     // SAFETY: delegates to C implementation, all pointers valid per caller contract
-    unsafe { mj_jacSumCount_impl(m, d, chain, n, body) }
+    unsafe { mj_jacSumCount(m, d, chain, n, body) }
 }
 
 /// C: mj_ne (engine/engine_core_constraint.c:2303)
 /// Calls: mj_addConstraintCount, mj_freeStack, mj_jacDifPair, mj_jacSumCount, mj_markStack, mj_sleepState, mj_stackAllocInfo, mju_combineSparseCount, mju_copyInt, mju_flexGatherCellState, mju_flexGatherFaceState, mju_message
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_ne(m: *const mjModel, d: *mut mjData, nnz: *mut i32) -> i32 {
-    extern "C" { fn mj_ne_impl(m: *const mjModel, d: *mut mjData, nnz: *mut i32) -> i32; }
+    extern "C" { fn mj_ne(m: *const mjModel, d: *mut mjData, nnz: *mut i32) -> i32; }
     // SAFETY: delegates to C implementation, pointers valid per caller contract
-    unsafe { mj_ne_impl(m, d, nnz) }
+    unsafe { mj_ne(m, d, nnz) }
 }
 
 /// C: mj_nc (engine/engine_core_constraint.c:2536)
@@ -283,10 +283,10 @@ pub fn mj_ne(m: *const mjModel, d: *mut mjData, nnz: *mut i32) -> i32 {
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_nc(m: *const mjModel, d: *mut mjData, nnz: *mut i32) -> i32 {
     extern "C" {
-        fn mj_nc_impl(m: *const mjModel, d: *mut mjData, nnz: *mut i32) -> i32;
+        fn mj_nc(m: *const mjModel, d: *mut mjData, nnz: *mut i32) -> i32;
     }
     // SAFETY: delegates to C implementation, all pointers valid per caller contract
-    unsafe { mj_nc_impl(m, d, nnz) }
+    unsafe { mj_nc(m, d, nnz) }
 }
 
 /// C: computeY_precount (engine/engine_core_constraint.c:2688)
@@ -438,10 +438,10 @@ pub fn compute_y_backsub(Y: *mut f64, Y_rownnz: *const i32, Y_rowadr: *const i32
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_make_y(m: *const mjModel, d: *mut mjData, flg_diagexact: i32) {
     extern "C" {
-        fn mj_makeY_impl(m: *const mjModel, d: *mut mjData, flg_diagexact: i32);
+        fn mj_makeY(m: *const mjModel, d: *mut mjData, flg_diagexact: i32);
     }
     // SAFETY: delegates to C implementation, all pointers valid per caller contract
-    unsafe { mj_makeY_impl(m, d, flg_diagexact) }
+    unsafe { mj_makeY(m, d, flg_diagexact) }
 }
 
 /// C: mj_makeAR (engine/engine_core_constraint.c:2999)
@@ -449,10 +449,10 @@ pub fn mj_make_y(m: *const mjModel, d: *mut mjData, flg_diagexact: i32) {
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_make_ar(m: *const mjModel, d: *mut mjData) {
     extern "C" {
-        fn mj_makeAR_impl(m: *const mjModel, d: *mut mjData);
+        fn mj_makeAR(m: *const mjModel, d: *mut mjData);
     }
     // SAFETY: delegates to C implementation, all pointers valid per caller contract
-    unsafe { mj_makeAR_impl(m, d) }
+    unsafe { mj_makeAR(m, d) }
 }
 
 /// C: mj_isDual (engine/engine_core_constraint.h:31)
@@ -535,9 +535,9 @@ pub fn mj_mul_jac_t_vec(m: *const mjModel, d: *const mjData, res: *mut f64, vec:
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_jdotv(m: *const mjModel, d: *mut mjData, result: *mut f64) {
-    extern "C" { fn mj_Jdotv_impl(m: *const mjModel, d: *mut mjData, result: *mut f64); }
+    extern "C" { fn mj_Jdotv(m: *const mjModel, d: *mut mjData, result: *mut f64); }
     // SAFETY: delegates to C implementation, all pointers valid per caller contract
-    unsafe { mj_Jdotv_impl(m, d, result) }
+    unsafe { mj_Jdotv(m, d, result) }
 }
 
 /// C: mj_assignRef (engine/engine_core_constraint.h:46)
@@ -664,18 +664,18 @@ pub fn mj_add_contact(m: *const mjModel, d: *mut mjData, con: *const mjContact) 
 /// Calls: cell_pos_and_jac, cell_strain_jacobian, mj_addConstraint, mj_equalityAnchors, mj_freeStack, mj_isSparse, mj_jacDifPair, mj_markStack, mj_sleepState, mj_stackAllocInfo, mju_addTo3, mju_addToScl, mju_combineSparse, mju_copy, mju_copy3, mju_copyInt, mju_defGradient, mju_flexGatherCellState, mju_flexGatherFaceState, mju_flexInterpRotation2D, mju_mat2Rot, mju_message, mju_mulMatVec3, mju_mulQuat, mju_mulQuatAxis, mju_negQuat, mju_rotVecQuat, mju_scl, mju_scl3, mju_sparse2dense, mju_sub3, mju_zero
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_instantiate_equality(m: *const mjModel, d: *mut mjData) {
-    extern "C" { fn mj_instantiateEquality_impl(m: *const mjModel, d: *mut mjData); }
+    extern "C" { fn mj_instantiateEquality(m: *const mjModel, d: *mut mjData); }
     // SAFETY: delegates to C implementation, all pointers valid per caller contract
-    unsafe { mj_instantiateEquality_impl(m, d) }
+    unsafe { mj_instantiateEquality(m, d) }
 }
 
 /// C: mj_instantiateContact (engine/engine_core_constraint.h:66)
 /// Calls: mj_addConstraint, mj_contactJacobian, mj_freeStack, mj_isPyramidal, mj_isSparse, mj_markStack, mj_stackAllocInfo, mju_addScl, mju_mulMatMat, mju_zero
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_instantiate_contact(m: *const mjModel, d: *mut mjData) {
-    extern "C" { fn mj_instantiateContact_impl(m: *const mjModel, d: *mut mjData); }
+    extern "C" { fn mj_instantiateContact(m: *const mjModel, d: *mut mjData); }
     // SAFETY: delegates to C implementation, all pointers valid per caller contract
-    unsafe { mj_instantiateContact_impl(m, d) }
+    unsafe { mj_instantiateContact(m, d) }
 }
 
 /// C: mj_contactJacobian (engine/engine_core_constraint.h:69)
@@ -688,10 +688,10 @@ pub fn mj_instantiate_contact(m: *const mjModel, d: *mut mjData) {
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_contact_jacobian(m: *const mjModel, d: *mut mjData, con: *const mjContact, dim: i32, jac: *mut f64, jacdif: *mut f64, jacdifp: *mut f64, jacdifr: *mut f64, jac1p: *mut f64, jac2p: *mut f64, jac1r: *mut f64, jac2r: *mut f64, chain: *mut i32) -> i32 {
     extern "C" {
-        fn mj_contactJacobian_impl(m: *const mjModel, d: *mut mjData, con: *const mjContact, dim: i32, jac: *mut f64, jacdif: *mut f64, jacdifp: *mut f64, jacdifr: *mut f64, jac1p: *mut f64, jac2p: *mut f64, jac1r: *mut f64, jac2r: *mut f64, chain: *mut i32) -> i32;
+        fn mj_contactJacobian(m: *const mjModel, d: *mut mjData, con: *const mjContact, dim: i32, jac: *mut f64, jacdif: *mut f64, jacdifp: *mut f64, jacdifr: *mut f64, jac1p: *mut f64, jac2p: *mut f64, jac1r: *mut f64, jac2r: *mut f64, chain: *mut i32) -> i32;
     }
     // SAFETY: delegates to C implementation, all pointers valid per caller contract
-    unsafe { mj_contactJacobian_impl(m, d, con, dim, jac, jacdif, jacdifp, jacdifr, jac1p, jac2p, jac1r, jac2r, chain) }
+    unsafe { mj_contactJacobian(m, d, con, dim, jac, jacdif, jacdifp, jacdifr, jac1p, jac2p, jac1r, jac2r, chain) }
 }
 
 /// C: mj_diagApprox (engine/engine_core_constraint.h:78)
@@ -699,10 +699,10 @@ pub fn mj_contact_jacobian(m: *const mjModel, d: *mut mjData, con: *const mjCont
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_diag_approx(m: *const mjModel, d: *mut mjData) {
     extern "C" {
-        fn mj_diagApprox_impl(m: *const mjModel, d: *mut mjData);
+        fn mj_diagApprox(m: *const mjModel, d: *mut mjData);
     }
     // SAFETY: delegates to C implementation, all pointers valid per caller contract
-    unsafe { mj_diagApprox_impl(m, d) }
+    unsafe { mj_diagApprox(m, d) }
 }
 
 /// C: mj_makeImpedance (engine/engine_core_constraint.h:81)
@@ -710,19 +710,19 @@ pub fn mj_diag_approx(m: *const mjModel, d: *mut mjData) {
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_make_impedance(m: *const mjModel, d: *mut mjData) {
     extern "C" {
-        fn mj_makeImpedance_impl(m: *const mjModel, d: *mut mjData);
+        fn mj_makeImpedance(m: *const mjModel, d: *mut mjData);
     }
     // SAFETY: delegates to C implementation, all pointers valid per caller contract
-    unsafe { mj_makeImpedance_impl(m, d) }
+    unsafe { mj_makeImpedance(m, d) }
 }
 
 /// C: mj_makeConstraint (engine/engine_core_constraint.h:87)
 /// Calls: arenaAllocEfc, mj_diagApprox, mj_instantiateContact, mj_instantiateEquality, mj_instantiateFriction, mj_instantiateLimit, mj_isSparse, mj_makeImpedance, mj_nc, mj_ne, mju_fillInt, mju_message
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_make_constraint(m: *const mjModel, d: *mut mjData) {
-    extern "C" { fn mj_makeConstraint_impl(m: *const mjModel, d: *mut mjData); }
+    extern "C" { fn mj_makeConstraint(m: *const mjModel, d: *mut mjData); }
     // SAFETY: delegates to C implementation, all pointers valid per caller contract
-    unsafe { mj_makeConstraint_impl(m, d) }
+    unsafe { mj_makeConstraint(m, d) }
 }
 
 /// C: mj_projectConstraint (engine/engine_core_constraint.h:90)
@@ -730,22 +730,22 @@ pub fn mj_make_constraint(m: *const mjModel, d: *mut mjData) {
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_project_constraint(m: *const mjModel, d: *mut mjData) {
     extern "C" {
-        fn mj_projectConstraint_impl(m: *const mjModel, d: *mut mjData);
+        fn mj_projectConstraint(m: *const mjModel, d: *mut mjData);
     }
     // SAFETY: delegates to C implementation, all pointers valid per caller contract
-    unsafe { mj_projectConstraint_impl(m, d) }
+    unsafe { mj_projectConstraint(m, d) }
 }
 
 /// C: mj_referenceConstraint (engine/engine_core_constraint.h:93)
 /// Calls: mj_Jdotv, mj_mulJacVec
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_reference_constraint(m: *const mjModel, d: *mut mjData) {
-    extern "C" { fn mj_referenceConstraint_impl(m: *const mjModel, d: *mut mjData); }
+    extern "C" { fn mj_referenceConstraint(m: *const mjModel, d: *mut mjData); }
     // SAFETY: delegates to C implementation, all pointers valid per caller contract
-    unsafe { mj_referenceConstraint_impl(m, d) }
+    unsafe { mj_referenceConstraint(m, d) }
 }
 
-/// C: mj_constraintUpdate_impl (engine/engine_core_constraint.h:97)
+/// C: mj_constraintUpdate(engine/engine_core_constraint.h:97)
 /// Calls: mju_norm, mju_zero
 /// ⚠️ BITEXACT RULES:
 ///   1. Copy exact C accumulation order (no iter().sum())

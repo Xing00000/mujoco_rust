@@ -104,11 +104,11 @@ pub fn mjraw_sphere_box(con: *mut mjPreContact, margin: f64, pos1: *const f64, m
 #[allow(unused_variables, non_snake_case)]
 pub fn boxbox(M: *const mjModel, D: *const mjData, con: *mut mjPreContact, g1: i32, g2: i32, margin: f64) -> i32 {
     extern "C" {
-        fn _boxbox_impl(M: *const mjModel, D: *const mjData, con: *mut mjPreContact, g1: i32, g2: i32, margin: f64) -> i32;
+        fn _boxbox(M: *const mjModel, D: *const mjData, con: *mut mjPreContact, g1: i32, g2: i32, margin: f64) -> i32;
     }
     // SAFETY: delegates to C implementation because _boxbox is ~700 lines with goto,
     // macro-generated code (rotaxis/rotmatx), and extensive access to mjModel/mjData
     // fields through opaque struct pointers
-    unsafe { _boxbox_impl(M, D, con, g1, g2, margin) }
+    unsafe { _boxbox(M, D, con, g1, g2, margin) }
 }
 

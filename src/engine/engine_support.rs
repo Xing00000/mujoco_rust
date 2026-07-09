@@ -96,9 +96,9 @@ pub fn mj_state_elem_const_ptr(m: *const mjModel, d: *const mjData, sig: mjtStat
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_geom_distance_ccd(m: *const mjModel, d: *mut mjData, g1: i32, g2: i32, distmax: f64, fromto: *mut f64) -> f64 {
-    extern "C" { fn mj_geomDistanceCCD_impl(m: *const mjModel, d: *mut mjData, g1: i32, g2: i32, distmax: f64, fromto: *mut f64) -> f64; }
+    extern "C" { fn mj_geomDistanceCCD(m: *const mjModel, d: *mut mjData, g1: i32, g2: i32, distmax: f64, fromto: *mut f64) -> f64; }
     // SAFETY: delegates to C implementation, all pointers valid per caller contract
-    unsafe { mj_geomDistanceCCD_impl(m, d, g1, g2, distmax, fromto) }
+    unsafe { mj_geomDistanceCCD(m, d, g1, g2, distmax, fromto) }
 }
 
 /// C: mj_stateSize (engine/engine_support.h:41)
@@ -444,9 +444,9 @@ pub fn mj_mul_m2(m: *const mjModel, d: *const mjData, res: *mut f64, vec: *const
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_add_m(m: *const mjModel, d: *mut mjData, dst: *mut f64, rownnz: *mut i32, rowadr: *mut i32, colind: *mut i32) {
-    extern "C" { fn mj_addM_impl(m: *const mjModel, d: *mut mjData, dst: *mut f64, rownnz: *mut i32, rowadr: *mut i32, colind: *mut i32); }
+    extern "C" { fn mj_addM(m: *const mjModel, d: *mut mjData, dst: *mut f64, rownnz: *mut i32, rowadr: *mut i32, colind: *mut i32); }
     // SAFETY: delegates to C implementation
-    unsafe { mj_addM_impl(m, d, dst, rownnz, rowadr, colind) }
+    unsafe { mj_addM(m, d, dst, rownnz, rowadr, colind) }
 }
 
 /// C: mj_applyFT (engine/engine_support.h:79)
@@ -461,7 +461,7 @@ pub fn mj_apply_ft(m: *const mjModel, d: *mut mjData, force: *const f64, torque:
     // WARNING: signature changed — verify body
     // Previous params: (m : * const mjModel, d : * mut mjData, force : * const f64, torque : * const f64, point : * const f64, body : i32, qfrc_target : * mut f64)
     // Previous return: ()
-    extern "C" { fn mj_applyFT_impl (m : * const mjModel , d : * mut mjData , force : * const f64 , torque : * const f64 , point : * const f64 , body : i32 , qfrc_target : * mut f64) ; } unsafe { mj_applyFT_impl (m , d , force , torque , point , body , qfrc_target) }
+    extern "C" { fn mj_applyFT(m : * const mjModel , d : * mut mjData , force : * const f64 , torque : * const f64 , point : * const f64 , body : i32 , qfrc_target : * mut f64) ; } unsafe { mj_applyFT(m , d , force , torque , point , body , qfrc_target) }
 }
 
 /// C: mj_xfrcAccumulate (engine/engine_support.h:84)
@@ -476,7 +476,7 @@ pub fn mj_xfrc_accumulate(m: *const mjModel, d: *mut mjData, qfrc: *mut f64) {
     // WARNING: signature changed — verify body
     // Previous params: (m : * const mjModel, d : * mut mjData, qfrc : * mut f64)
     // Previous return: ()
-    extern "C" { fn mj_xfrcAccumulate_impl (m : * const mjModel , d : * mut mjData , qfrc : * mut f64) ; } unsafe { mj_xfrcAccumulate_impl (m , d , qfrc) }
+    extern "C" { fn mj_xfrcAccumulate(m : * const mjModel , d : * mut mjData , qfrc : * mut f64) ; } unsafe { mj_xfrcAccumulate(m , d , qfrc) }
 }
 
 /// C: mj_geomDistance (engine/engine_support.h:90)
@@ -488,9 +488,9 @@ pub fn mj_xfrc_accumulate(m: *const mjModel, d: *mut mjData, qfrc: *mut f64) {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_geom_distance(m: *const mjModel, d: *mut mjData, geom1: i32, geom2: i32, distmax: f64, fromto: *mut f64) -> f64 {
-    extern "C" { fn mj_geomDistance_impl(m: *const mjModel, d: *mut mjData, geom1: i32, geom2: i32, distmax: f64, fromto: *mut f64) -> f64; }
+    extern "C" { fn mj_geomDistance(m: *const mjModel, d: *mut mjData, geom1: i32, geom2: i32, distmax: f64, fromto: *mut f64) -> f64; }
     // SAFETY: delegates to C implementation, all pointers valid per caller contract
-    unsafe { mj_geomDistance_impl(m, d, geom1, geom2, distmax, fromto) }
+    unsafe { mj_geomDistance(m, d, geom1, geom2, distmax, fromto) }
 }
 
 /// C: mj_differentiatePos (engine/engine_support.h:94)
@@ -662,7 +662,7 @@ pub fn mj_next_activation(m: *const mjModel, d: *const mjData, actuator_id: i32,
     // WARNING: signature changed — verify body
     // Previous params: (m : * const mjModel, d : * const mjData, actuator_id : i32, act_adr : i32, act_dot : f64)
     // Previous return: f64
-    extern "C" { fn mj_nextActivation_impl (m : * const mjModel , d : * const mjData , actuator_id : i32 , act_adr : i32 , act_dot : f64) -> f64 ; } unsafe { mj_nextActivation_impl (m , d , actuator_id , act_adr , act_dot) }
+    extern "C" { fn mj_nextActivation(m : * const mjModel , d : * const mjData , actuator_id : i32 , act_adr : i32 , act_dot : f64) -> f64 ; } unsafe { mj_nextActivation(m , d , actuator_id , act_adr , act_dot) }
 }
 
 /// C: mj_getTotalmass (engine/engine_support.h:115)
@@ -819,7 +819,7 @@ pub fn mj_read_ctrl(m: *const mjModel, d: *const mjData, id: i32, time: f64, int
     // WARNING: signature changed — verify body
     // Previous params: (m : * const mjModel, d : * const mjData, id : i32, time : f64, interp : i32)
     // Previous return: f64
-    extern "C" { fn mj_readCtrl_impl (m : * const mjModel , d : * const mjData , id : i32 , time : f64 , interp : i32) -> f64 ; } unsafe { mj_readCtrl_impl (m , d , id , time , interp) }
+    extern "C" { fn mj_readCtrl(m : * const mjModel , d : * const mjData , id : i32 , time : f64 , interp : i32) -> f64 ; } unsafe { mj_readCtrl(m , d , id , time , interp) }
 }
 
 /// C: mj_readSensor (engine/engine_support.h:147)
@@ -831,9 +831,9 @@ pub fn mj_read_ctrl(m: *const mjModel, d: *const mjData, id: i32, time: f64, int
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_read_sensor(m: *const mjModel, d: *const mjData, id: i32, time: f64, result: *mut f64, interp: i32) -> *const f64 {
-    extern "C" { fn mj_readSensor_impl(m: *const mjModel, d: *const mjData, id: i32, time: f64, result: *mut f64, interp: i32) -> *const f64; }
+    extern "C" { fn mj_readSensor(m: *const mjModel, d: *const mjData, id: i32, time: f64, result: *mut f64, interp: i32) -> *const f64; }
     // SAFETY: delegates to C implementation, all pointers valid per caller contract
-    unsafe { mj_readSensor_impl(m, d, id, time, result, interp) }
+    unsafe { mj_readSensor(m, d, id, time, result, interp) }
 }
 
 /// C: mj_initCtrlHistory (engine/engine_support.h:152)
@@ -845,9 +845,9 @@ pub fn mj_read_sensor(m: *const mjModel, d: *const mjData, id: i32, time: f64, r
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_init_ctrl_history(m: *const mjModel, d: *mut mjData, id: i32, times: *const f64, values: *const f64) {
-    extern "C" { fn mj_initCtrlHistory_impl(m: *const mjModel, d: *mut mjData, id: i32, times: *const f64, values: *const f64); }
+    extern "C" { fn mj_initCtrlHistory(m: *const mjModel, d: *mut mjData, id: i32, times: *const f64, values: *const f64); }
     // SAFETY: delegates to C implementation
-    unsafe { mj_initCtrlHistory_impl(m, d, id, times, values) }
+    unsafe { mj_initCtrlHistory(m, d, id, times, values) }
 }
 
 /// C: mj_initSensorHistory (engine/engine_support.h:158)
@@ -859,8 +859,8 @@ pub fn mj_init_ctrl_history(m: *const mjModel, d: *mut mjData, id: i32, times: *
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_init_sensor_history(m: *const mjModel, d: *mut mjData, id: i32, times: *const f64, values: *const f64, phase: f64) {
-    extern "C" { fn mj_initSensorHistory_impl(m: *const mjModel, d: *mut mjData, id: i32, times: *const f64, values: *const f64, phase: f64); }
+    extern "C" { fn mj_initSensorHistory(m: *const mjModel, d: *mut mjData, id: i32, times: *const f64, values: *const f64, phase: f64); }
     // SAFETY: delegates to C implementation
-    unsafe { mj_initSensorHistory_impl(m, d, id, times, values, phase) }
+    unsafe { mj_initSensorHistory(m, d, id, times, values, phase) }
 }
 

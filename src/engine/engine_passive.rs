@@ -22,9 +22,9 @@ pub fn grad_squared_lengths(gradient: [[[f64; 6]; 2]; 3], xpos: *const f64, vert
 /// Calls: mj_applyFT, mj_freeStack, mj_markStack, mj_stackAllocInfo, mji_addScl3, mji_addTo3, mji_rotVecQuat, mju_flexGatherCellState, mju_flexGatherFaceState, mju_flexGatherState, mju_mulMatVec, mju_negQuat, mju_rotVecQuat, mju_scl3, mju_zero
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_flex_passive_interp(m: *const mjModel, d: *mut mjData, f: i32, enbl_spring: i32, enbl_damper: i32) {
-    extern "C" { fn mj_flexPassiveInterp_impl(m: *const mjModel, d: *mut mjData, f: i32, enbl_spring: i32, enbl_damper: i32); }
+    extern "C" { fn mj_flexPassiveInterp(m: *const mjModel, d: *mut mjData, f: i32, enbl_spring: i32, enbl_damper: i32); }
     // SAFETY: delegates to C implementation, all pointers valid per caller contract
-    unsafe { mj_flexPassiveInterp_impl(m, d, f, enbl_spring, enbl_damper) }
+    unsafe { mj_flexPassiveInterp(m, d, f, enbl_spring, enbl_damper) }
 }
 
 /// C: mju_dphi2D (engine/engine_passive.c:211)
@@ -46,9 +46,9 @@ pub fn mju_dphi2d(s0: f64, l0: i32, s1: f64, l1: i32, order: i32, dir: i32) -> f
 /// Calls: mj_applyFT, mj_freeStack, mj_markStack, mj_stackAllocInfo, mji_addTo3, mji_cross, mji_sub3, mju_add, mju_copy, mju_copyInt, mju_dot, mju_dot3, mju_dphi2D, mju_flexFaceNormal2D, mju_flexGatherFaceState, mju_flexGatherState, mju_message, mju_negQuat, mju_norm3, mju_normalize, mju_rotVecQuat, mju_scl, mju_warning, mju_zero
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_flex_passive_bend_interp(m: *const mjModel, d: *mut mjData, f: i32, enbl_spring: i32, enbl_damper: i32) {
-    extern "C" { fn mj_flexPassiveBendInterp_impl(m: *const mjModel, d: *mut mjData, f: i32, enbl_spring: i32, enbl_damper: i32); }
+    extern "C" { fn mj_flexPassiveBendInterp(m: *const mjModel, d: *mut mjData, f: i32, enbl_spring: i32, enbl_damper: i32); }
     // SAFETY: delegates to C implementation, all pointers valid per caller contract
-    unsafe { mj_flexPassiveBendInterp_impl(m, d, f, enbl_spring, enbl_damper) }
+    unsafe { mj_flexPassiveBendInterp(m, d, f, enbl_spring, enbl_damper) }
 }
 
 /// C: mj_flexPassiveBend (engine/engine_passive.c:444)
@@ -56,10 +56,10 @@ pub fn mj_flex_passive_bend_interp(m: *const mjModel, d: *mut mjData, f: i32, en
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_flex_passive_bend(m: *const mjModel, d: *mut mjData, f: i32, enbl_spring: i32, enbl_damper: i32) {
     extern "C" {
-        fn mj_flexPassiveBend_impl(m: *const mjModel, d: *mut mjData, f: i32, enbl_spring: i32, enbl_damper: i32);
+        fn mj_flexPassiveBend(m: *const mjModel, d: *mut mjData, f: i32, enbl_spring: i32, enbl_damper: i32);
     }
     // SAFETY: delegates to C implementation, all pointers valid per caller contract
-    unsafe { mj_flexPassiveBend_impl(m, d, f, enbl_spring, enbl_damper) }
+    unsafe { mj_flexPassiveBend(m, d, f, enbl_spring, enbl_damper) }
 }
 
 /// C: mj_flexPassiveStretch (engine/engine_passive.c:524)
@@ -67,19 +67,19 @@ pub fn mj_flex_passive_bend(m: *const mjModel, d: *mut mjData, f: i32, enbl_spri
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_flex_passive_stretch(m: *const mjModel, d: *mut mjData, f: i32, enbl_spring: i32, enbl_damper: i32) {
     extern "C" {
-        fn mj_flexPassiveStretch_impl(m: *const mjModel, d: *mut mjData, f: i32, enbl_spring: i32, enbl_damper: i32);
+        fn mj_flexPassiveStretch(m: *const mjModel, d: *mut mjData, f: i32, enbl_spring: i32, enbl_damper: i32);
     }
     // SAFETY: delegates to C implementation, all pointers valid per caller contract
-    unsafe { mj_flexPassiveStretch_impl(m, d, f, enbl_spring, enbl_damper) }
+    unsafe { mj_flexPassiveStretch(m, d, f, enbl_spring, enbl_damper) }
 }
 
 /// C: mj_springdamper (engine/engine_passive.c:626)
 /// Calls: mj_actuatorDamping, mj_flexPassiveBend, mj_flexPassiveBendInterp, mj_flexPassiveInterp, mj_flexPassiveStretch, mj_sleepState, mji_addToScl3, mji_copy4, mji_sub3, mji_subQuat, mju_copy, mju_isZero, mju_norm3, mju_normalize4, mju_polyForce
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_springdamper(m: *const mjModel, d: *mut mjData) {
-    extern "C" { fn mj_springdamper_impl(m: *const mjModel, d: *mut mjData); }
+    extern "C" { fn mj_springdamper(m: *const mjModel, d: *mut mjData); }
     // SAFETY: delegates to C implementation, pointers valid per caller contract
-    unsafe { mj_springdamper_impl(m, d) }
+    unsafe { mj_springdamper(m, d) }
 }
 
 /// C: mj_gravcomp (engine/engine_passive.c:817)
@@ -87,28 +87,28 @@ pub fn mj_springdamper(m: *const mjModel, d: *mut mjData) {
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_gravcomp(m: *const mjModel, d: *mut mjData) -> i32 {
     extern "C" {
-        fn mj_gravcomp_impl(m: *const mjModel, d: *mut mjData) -> i32;
+        fn mj_gravcomp(m: *const mjModel, d: *mut mjData) -> i32;
     }
     // SAFETY: delegates to C implementation, all pointers valid per caller contract
-    unsafe { mj_gravcomp_impl(m, d) }
+    unsafe { mj_gravcomp(m, d) }
 }
 
 /// C: mj_fluid (engine/engine_passive.c:842)
 /// Calls: mj_ellipsoidFluidModel, mj_inertiaBoxFluidModel
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_fluid(m: *const mjModel, d: *mut mjData) -> i32 {
-    extern "C" { fn mj_fluid_impl(m: *const mjModel, d: *mut mjData) -> i32; }
+    extern "C" { fn mj_fluid(m: *const mjModel, d: *mut mjData) -> i32; }
     // SAFETY: delegates to C implementation, all pointers valid per caller contract
-    unsafe { mj_fluid_impl(m, d) }
+    unsafe { mj_fluid(m, d) }
 }
 
 /// C: mj_contactPassive (engine/engine_passive.c:878)
 /// Calls: mj_contactJacobian, mj_freeStack, mj_isSparse, mj_markStack, mj_stackAllocInfo, mju_addToScl, mju_mulMatMat, mju_scl
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_contact_passive(m: *const mjModel, d: *mut mjData) -> i32 {
-    extern "C" { fn mj_contactPassive_impl(m: *const mjModel, d: *mut mjData) -> i32; }
+    extern "C" { fn mj_contactPassive(m: *const mjModel, d: *mut mjData) -> i32; }
     // SAFETY: delegates to C implementation, all pointers valid per caller contract
-    unsafe { mj_contactPassive_impl(m, d) }
+    unsafe { mj_contactPassive(m, d) }
 }
 
 /// C: mji_pow4 (engine/engine_passive.c:1215)
@@ -158,9 +158,9 @@ pub fn mji_ellipsoid_max_moment(size: *const f64, dir: i32) -> f64 {
 /// Calls: mj_contactPassive, mj_fluid, mj_gravcomp, mj_springdamper, mjp_getPluginAtSlotUnsafe, mjp_pluginCount, mju_add, mju_addInd, mju_addTo, mju_addToInd, mju_message, mju_zero, mju_zeroInd
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_passive(m: *const mjModel, d: *mut mjData) {
-    extern "C" { fn mj_passive_impl(m: *const mjModel, d: *mut mjData); }
+    extern "C" { fn mj_passive(m: *const mjModel, d: *mut mjData); }
     // SAFETY: delegates to C implementation, all pointers valid per caller contract
-    unsafe { mj_passive_impl(m, d) }
+    unsafe { mj_passive(m, d) }
 }
 
 /// C: mj_inertiaBoxFluidModel (engine/engine_passive.h:37)
@@ -168,10 +168,10 @@ pub fn mj_passive(m: *const mjModel, d: *mut mjData) {
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_inertia_box_fluid_model(m: *const mjModel, d: *mut mjData, i: i32) {
     extern "C" {
-        fn mj_inertiaBoxFluidModel_impl(m: *const mjModel, d: *mut mjData, i: i32);
+        fn mj_inertiaBoxFluidModel(m: *const mjModel, d: *mut mjData, i: i32);
     }
     // SAFETY: delegates to C implementation, all pointers valid per caller contract
-    unsafe { mj_inertiaBoxFluidModel_impl(m, d, i) }
+    unsafe { mj_inertiaBoxFluidModel(m, d, i) }
 }
 
 /// C: mj_ellipsoidFluidModel (engine/engine_passive.h:40)
@@ -179,10 +179,10 @@ pub fn mj_inertia_box_fluid_model(m: *const mjModel, d: *mut mjData, i: i32) {
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_ellipsoid_fluid_model(m: *const mjModel, d: *mut mjData, bodyid: i32) {
     extern "C" {
-        fn mj_ellipsoidFluidModel_impl(m: *const mjModel, d: *mut mjData, bodyid: i32);
+        fn mj_ellipsoidFluidModel(m: *const mjModel, d: *mut mjData, bodyid: i32);
     }
     // SAFETY: delegates to C implementation, all pointers valid per caller contract
-    unsafe { mj_ellipsoidFluidModel_impl(m, d, bodyid) }
+    unsafe { mj_ellipsoidFluidModel(m, d, bodyid) }
 }
 
 /// C: mj_addedMassForces (engine/engine_passive.h:43)

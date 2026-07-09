@@ -16,9 +16,9 @@ pub fn strklen(s: *const i8) -> i32 {
 /// C: getext (engine/engine_plugin.cc:68)
 #[allow(unused_variables, non_snake_case)]
 pub fn getext(filename: string_view) -> std__string {
-    extern "C" { fn getext_impl(filename: string_view) -> std__string; }
+    extern "C" { fn getext(filename: string_view) -> std__string; }
     // SAFETY: delegates to C implementation
-    unsafe { getext_impl(filename) }
+    unsafe { getext(filename) }
 }
 
 /// C: CopyName (engine/engine_plugin.cc:78)
@@ -28,7 +28,7 @@ pub fn copy_name(s: *const i8) -> i32 {
     // WARNING: signature changed — verify body
     // Previous params: (s : * const i8)
     // Previous return: i32
-    extern "C" { fn CopyName_impl (s : * const i8) -> i32 ; } unsafe { CopyName_impl (s) }
+    extern "C" { fn CopyName(s : * const i8) -> i32 ; } unsafe { CopyName(s) }
 }
 
 /// C: IsValidURISchemeFormat (engine/engine_plugin.cc:93)
@@ -37,15 +37,15 @@ pub fn is_valid_uri_scheme_format(prefix: *const i8) -> bool {
     // WARNING: signature changed — verify body
     // Previous params: (prefix : * const i8)
     // Previous return: bool
-    extern "C" { fn IsValidURISchemeFormat_impl (prefix : * const i8) -> bool ; } unsafe { IsValidURISchemeFormat_impl (prefix) }
+    extern "C" { fn IsValidURISchemeFormat(prefix : * const i8) -> bool ; } unsafe { IsValidURISchemeFormat(prefix) }
 }
 
 /// C: PluginAttrSeek (engine/engine_plugin.cc:119)
 #[allow(unused_variables, non_snake_case)]
 pub fn plugin_attr_seek(m: *const mjModel, plugin_id: i32, attrib_id: i32) -> *const i8 {
-    extern "C" { fn PluginAttrSeek_impl(m: *const mjModel, plugin_id: i32, attrib_id: i32) -> *const i8; }
+    extern "C" { fn PluginAttrSeek(m: *const mjModel, plugin_id: i32, attrib_id: i32) -> *const i8; }
     // SAFETY: delegates to C implementation, all pointers valid per caller contract
-    unsafe { PluginAttrSeek_impl(m, plugin_id, attrib_id) }
+    unsafe { PluginAttrSeek(m, plugin_id, attrib_id) }
 }
 
 /// C: mjp_defaultPlugin (engine/engine_plugin.h:26)
@@ -61,18 +61,18 @@ pub fn mjp_default_plugin(plugin: *mut mjpPlugin) {
 /// Calls: mju_error
 #[allow(unused_variables, non_snake_case)]
 pub fn mjp_register_plugin(plugin: *const mjpPlugin) -> i32 {
-    extern "C" { fn mjp_registerPlugin_impl(plugin: *const mjpPlugin) -> i32; }
+    extern "C" { fn mjp_registerPlugin(plugin: *const mjpPlugin) -> i32; }
     // SAFETY: delegates to C implementation
-    unsafe { mjp_registerPlugin_impl(plugin) }
+    unsafe { mjp_registerPlugin(plugin) }
 }
 
 /// C: mjp_registerResourceProvider (engine/engine_plugin.h:32)
 /// Calls: IsValidURISchemeFormat, mju_warning
 #[allow(unused_variables, non_snake_case)]
 pub fn mjp_register_resource_provider(provider: *const mjpResourceProvider) -> i32 {
-    extern "C" { fn mjp_registerResourceProvider_impl(provider: *const mjpResourceProvider) -> i32; }
+    extern "C" { fn mjp_registerResourceProvider(provider: *const mjpResourceProvider) -> i32; }
     // SAFETY: delegates to C implementation
-    unsafe { mjp_registerResourceProvider_impl(provider) }
+    unsafe { mjp_registerResourceProvider(provider) }
 }
 
 /// C: mjp_pluginCount (engine/engine_plugin.h:35)
@@ -180,27 +180,27 @@ pub fn mjp_get_resource_provider_at_slot(slot: i32) -> *const mjpResourceProvide
 /// Calls: PluginAttrSeek, mjp_getPluginAtSlot
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_get_plugin_config(m: *const mjModel, plugin_id: i32, attrib: *const i8) -> *const i8 {
-    extern "C" { fn mj_getPluginConfig_impl(m: *const mjModel, plugin_id: i32, attrib: *const i8) -> *const i8; }
+    extern "C" { fn mj_getPluginConfig(m: *const mjModel, plugin_id: i32, attrib: *const i8) -> *const i8; }
     // SAFETY: delegates to C implementation, all pointers valid per caller contract
-    unsafe { mj_getPluginConfig_impl(m, plugin_id, attrib) }
+    unsafe { mj_getPluginConfig(m, plugin_id, attrib) }
 }
 
 /// C: mj_loadPluginLibrary (engine/engine_plugin.h:60)
 /// Calls: mju_error
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_load_plugin_library(path: *const i8) {
-    extern "C" { fn mj_loadPluginLibrary_impl(path: *const i8); }
+    extern "C" { fn mj_loadPluginLibrary(path: *const i8); }
     // SAFETY: delegates to C implementation
-    unsafe { mj_loadPluginLibrary_impl(path) }
+    unsafe { mj_loadPluginLibrary(path) }
 }
 
 /// C: mj_loadAllPluginLibraries (engine/engine_plugin.h:63)
 /// Calls: mjp_pluginCount
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_load_all_plugin_libraries(directory: *const i8, callback: mjfPluginLibraryLoadCallback) {
-    extern "C" { fn mj_loadAllPluginLibraries_impl(directory: *const i8, callback: mjfPluginLibraryLoadCallback); }
+    extern "C" { fn mj_loadAllPluginLibraries(directory: *const i8, callback: mjfPluginLibraryLoadCallback); }
     // SAFETY: delegates to C implementation
-    unsafe { mj_loadAllPluginLibraries_impl(directory, callback) }
+    unsafe { mj_loadAllPluginLibraries(directory, callback) }
 }
 
 /// C: mjp_registerDecoder (engine/engine_plugin.h:66)
@@ -274,9 +274,9 @@ pub fn mjp_default_decoder(decoder: *mut mjpDecoder) {
 /// Calls: mju_warning, strklen
 #[allow(unused_variables, non_snake_case)]
 pub fn mjp_find_decoder(resource: *const mjResource, content_type: *const i8) -> *const mjpDecoder {
-    extern "C" { fn mjp_findDecoder_impl(resource: *const mjResource, content_type: *const i8) -> *const mjpDecoder; }
+    extern "C" { fn mjp_findDecoder(resource: *const mjResource, content_type: *const i8) -> *const mjpDecoder; }
     // SAFETY: delegates to C implementation
-    unsafe { mjp_findDecoder_impl(resource, content_type) }
+    unsafe { mjp_findDecoder(resource, content_type) }
 }
 
 /// C: mjp_registerEncoder (engine/engine_plugin.h:75)
@@ -409,9 +409,9 @@ pub fn mjp_find_encoder(filename: *const i8, content_type: *const i8) -> *const 
 /// C: mjp_getPluginUnsafe (engine/engine_plugin.h:95)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjp_get_plugin_unsafe(name: *const i8, slot: *mut i32, nslot: i32) -> *const mjpPlugin {
-    extern "C" { fn mjp_getPluginUnsafe_impl(name: *const i8, slot: *mut i32, nslot: i32) -> *const mjpPlugin; }
+    extern "C" { fn mjp_getPluginUnsafe(name: *const i8, slot: *mut i32, nslot: i32) -> *const mjpPlugin; }
     // SAFETY: delegates to C implementation
-    unsafe { mjp_getPluginUnsafe_impl(name, slot, nslot) }
+    unsafe { mjp_getPluginUnsafe(name, slot, nslot) }
 }
 
 /// C: mjp_getPluginAtSlotUnsafe (engine/engine_plugin.h:98)

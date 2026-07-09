@@ -13,9 +13,9 @@ use crate::types::*;
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn get_state(m: *const mjModel, d: *const mjData, state: *mut f64, sensordata: *mut f64) {
-    extern "C" { fn getState_impl(m: *const mjModel, d: *const mjData, state: *mut f64, sensordata: *mut f64); }
+    extern "C" { fn getState(m: *const mjModel, d: *const mjData, state: *mut f64, sensordata: *mut f64); }
     // SAFETY: delegates to C implementation
-    unsafe { getState_impl(m, d, state, sensordata) }
+    unsafe { getState(m, d, state, sensordata) }
 }
 
 /// C: diff (engine/engine_derivative_fd.c:46)
@@ -44,9 +44,9 @@ pub fn diff(dx: *mut f64, x1: *const f64, x2: *const f64, h: f64, n: i32) {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn state_diff(m: *const mjModel, ds: *mut f64, s1: *const f64, s2: *const f64, h: f64) {
-    extern "C" { fn stateDiff_impl(m: *const mjModel, ds: *mut f64, s1: *const f64, s2: *const f64, h: f64); }
+    extern "C" { fn stateDiff(m: *const mjModel, ds: *mut f64, s1: *const f64, s2: *const f64, h: f64); }
     // SAFETY: delegates to C implementation
-    unsafe { stateDiff_impl(m, ds, s1, s2, h) }
+    unsafe { stateDiff(m, ds, s1, s2, h) }
 }
 
 /// C: clampedDiff (engine/engine_derivative_fd.c:68)
@@ -84,9 +84,9 @@ pub fn clamped_diff(dx: *mut f64, x: *const f64, x_plus: *const f64, x_minus: *c
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn clamped_state_diff(m: *const mjModel, ds: *mut f64, s: *const f64, s_plus: *const f64, s_minus: *const f64, h: f64) {
-    extern "C" { fn clampedStateDiff_impl(m: *const mjModel, ds: *mut f64, s: *const f64, s_plus: *const f64, s_minus: *const f64, h: f64); }
+    extern "C" { fn clampedStateDiff(m: *const mjModel, ds: *mut f64, s: *const f64, s_plus: *const f64, s_minus: *const f64, h: f64); }
     // SAFETY: delegates to C implementation
-    unsafe { clampedStateDiff_impl(m, ds, s, s_plus, s_minus, h) }
+    unsafe { clampedStateDiff(m, ds, s, s_plus, s_minus, h) }
 }
 
 /// C: inRange (engine/engine_derivative_fd.c:106)
@@ -117,9 +117,9 @@ pub fn in_range(x1: f64, x2: f64, range: *const f64) -> i32 {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn inverse_skip(m: *const mjModel, d: *mut mjData, stage: mjtStage, skipsensor: i32, flg_actuation: i32, force: *mut f64) {
-    extern "C" { fn inverseSkip_impl(m: *const mjModel, d: *mut mjData, stage: mjtStage, skipsensor: i32, flg_actuation: i32, force: *mut f64); }
+    extern "C" { fn inverseSkip(m: *const mjModel, d: *mut mjData, stage: mjtStage, skipsensor: i32, flg_actuation: i32, force: *mut f64); }
     // SAFETY: delegates to C implementation
-    unsafe { inverseSkip_impl(m, d, stage, skipsensor, flg_actuation, force) }
+    unsafe { inverseSkip(m, d, stage, skipsensor, flg_actuation, force) }
 }
 
 /// C: mjd_stepFD (engine/engine_derivative_fd.c:295)
@@ -131,9 +131,9 @@ pub fn inverse_skip(m: *const mjModel, d: *mut mjData, stage: mjtStage, skipsens
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjd_step_fd(m: *const mjModel, d: *mut mjData, eps: f64, flg_centered: mjtBool, DyDq: *mut f64, DyDv: *mut f64, DyDa: *mut f64, DyDu: *mut f64, DsDq: *mut f64, DsDv: *mut f64, DsDa: *mut f64, DsDu: *mut f64) {
-    extern "C" { fn mjd_stepFD_impl(m: *const mjModel, d: *mut mjData, eps: f64, flg_centered: mjtBool, DyDq: *mut f64, DyDv: *mut f64, DyDa: *mut f64, DyDu: *mut f64, DsDq: *mut f64, DsDv: *mut f64, DsDa: *mut f64, DsDu: *mut f64); }
+    extern "C" { fn mjd_stepFD(m: *const mjModel, d: *mut mjData, eps: f64, flg_centered: mjtBool, DyDq: *mut f64, DyDv: *mut f64, DyDa: *mut f64, DyDu: *mut f64, DsDq: *mut f64, DsDv: *mut f64, DsDa: *mut f64, DsDu: *mut f64); }
     // SAFETY: delegates to C implementation
-    unsafe { mjd_stepFD_impl(m, d, eps, flg_centered, DyDq, DyDv, DyDa, DyDu, DsDq, DsDv, DsDa, DsDu) }
+    unsafe { mjd_stepFD(m, d, eps, flg_centered, DyDq, DyDv, DyDa, DyDu, DsDq, DsDv, DsDa, DsDu) }
 }
 
 /// C: mjd_smooth_velFD (engine/engine_derivative_fd.h:27)
@@ -145,9 +145,9 @@ pub fn mjd_step_fd(m: *const mjModel, d: *mut mjData, eps: f64, flg_centered: mj
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjd_smooth_vel_fd(m: *const mjModel, d: *mut mjData, eps: f64) {
-    extern "C" { fn mjd_smooth_velFD_impl(m: *const mjModel, d: *mut mjData, eps: f64); }
+    extern "C" { fn mjd_smooth_velFD(m: *const mjModel, d: *mut mjData, eps: f64); }
     // SAFETY: delegates to C implementation, pointers valid per caller contract
-    unsafe { mjd_smooth_velFD_impl(m, d, eps) }
+    unsafe { mjd_smooth_velFD(m, d, eps) }
 }
 
 /// C: mjd_passive_velFD (engine/engine_derivative_fd.h:30)
@@ -159,9 +159,9 @@ pub fn mjd_smooth_vel_fd(m: *const mjModel, d: *mut mjData, eps: f64) {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjd_passive_vel_fd(m: *const mjModel, d: *mut mjData, eps: f64) {
-    extern "C" { fn mjd_passive_velFD_impl(m: *const mjModel, d: *mut mjData, eps: f64); }
+    extern "C" { fn mjd_passive_velFD(m: *const mjModel, d: *mut mjData, eps: f64); }
     // SAFETY: delegates to C implementation, pointers valid per caller contract
-    unsafe { mjd_passive_velFD_impl(m, d, eps) }
+    unsafe { mjd_passive_velFD(m, d, eps) }
 }
 
 /// C: mj_stepSkip (engine/engine_derivative_fd.h:33)
@@ -169,10 +169,10 @@ pub fn mjd_passive_vel_fd(m: *const mjModel, d: *mut mjData, eps: f64) {
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_step_skip(m: *const mjModel, d: *mut mjData, skipstage: i32, skipsensor: i32) {
     extern "C" {
-        fn mj_stepSkip_impl(m: *const mjModel, d: *mut mjData, skipstage: i32, skipsensor: i32);
+        fn mj_stepSkip(m: *const mjModel, d: *mut mjData, skipstage: i32, skipsensor: i32);
     }
     // SAFETY: delegates to C implementation, all pointers valid per caller contract
-    unsafe { mj_stepSkip_impl(m, d, skipstage, skipsensor) }
+    unsafe { mj_stepSkip(m, d, skipstage, skipsensor) }
 }
 
 /// C: mjd_transitionFD (engine/engine_derivative_fd.h:36)
@@ -184,9 +184,9 @@ pub fn mj_step_skip(m: *const mjModel, d: *mut mjData, skipstage: i32, skipsenso
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjd_transition_fd(m: *const mjModel, d: *mut mjData, eps: f64, centered: mjtBool, A: *mut f64, B: *mut f64, C: *mut f64, D: *mut f64) {
-    extern "C" { fn mjd_transitionFD_impl(m: *const mjModel, d: *mut mjData, eps: f64, centered: mjtBool, A: *mut f64, B: *mut f64, C: *mut f64, D: *mut f64); }
+    extern "C" { fn mjd_transitionFD(m: *const mjModel, d: *mut mjData, eps: f64, centered: mjtBool, A: *mut f64, B: *mut f64, C: *mut f64, D: *mut f64); }
     // SAFETY: delegates to C implementation
-    unsafe { mjd_transitionFD_impl(m, d, eps, centered, A, B, C, D) }
+    unsafe { mjd_transitionFD(m, d, eps, centered, A, B, C, D) }
 }
 
 /// C: mjd_inverseFD (engine/engine_derivative_fd.h:40)
@@ -198,8 +198,8 @@ pub fn mjd_transition_fd(m: *const mjModel, d: *mut mjData, eps: f64, centered: 
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjd_inverse_fd(m: *const mjModel, d: *mut mjData, eps: f64, flg_actuation: mjtBool, DfDq: *mut f64, DfDv: *mut f64, DfDa: *mut f64, DsDq: *mut f64, DsDv: *mut f64, DsDa: *mut f64, DmDq: *mut f64) {
-    extern "C" { fn mjd_inverseFD_impl(m: *const mjModel, d: *mut mjData, eps: f64, flg_actuation: mjtBool, DfDq: *mut f64, DfDv: *mut f64, DfDa: *mut f64, DsDq: *mut f64, DsDv: *mut f64, DsDa: *mut f64, DmDq: *mut f64); }
+    extern "C" { fn mjd_inverseFD(m: *const mjModel, d: *mut mjData, eps: f64, flg_actuation: mjtBool, DfDq: *mut f64, DfDv: *mut f64, DfDa: *mut f64, DsDq: *mut f64, DsDv: *mut f64, DsDa: *mut f64, DmDq: *mut f64); }
     // SAFETY: delegates to C implementation
-    unsafe { mjd_inverseFD_impl(m, d, eps, flg_actuation, DfDq, DfDv, DfDa, DsDq, DsDv, DsDa, DmDq) }
+    unsafe { mjd_inverseFD(m, d, eps, flg_actuation, DfDq, DfDv, DfDa, DsDq, DsDv, DsDa, DmDq) }
 }
 

@@ -20,10 +20,10 @@ pub fn align8(size: usize) -> usize {
 #[allow(unused_variables, non_snake_case)]
 pub fn subdistance(lambda: *mut f64, n: i32, simplex: *const Vertex) {
     extern "C" {
-        fn subdistance_impl(lambda: *mut f64, n: i32, simplex: *const Vertex);
+        fn subdistance(lambda: *mut f64, n: i32, simplex: *const Vertex);
     }
     // SAFETY: delegates to C implementation, all pointers valid per caller contract
-    unsafe { subdistance_impl(lambda, n, simplex) }
+    unsafe { subdistance(lambda, n, simplex) }
 }
 
 /// C: S3D (engine/engine_collision_gjk.c:60)
@@ -481,10 +481,10 @@ pub fn attach_face(pt: *mut Polytope, v1: i32, v2: i32, v3: i32, adj1: i32, adj2
 #[allow(unused_variables, non_snake_case)]
 pub fn gjk_intersect(status: *mut mjCCDStatus, obj1: *mut mjCCDObj, obj2: *mut mjCCDObj) -> i32 {
     extern "C" {
-        fn gjkIntersect_impl(status: *mut mjCCDStatus, obj1: *mut mjCCDObj, obj2: *mut mjCCDObj) -> i32;
+        fn gjkIntersect(status: *mut mjCCDStatus, obj1: *mut mjCCDObj, obj2: *mut mjCCDObj) -> i32;
     }
     // SAFETY: delegates to C implementation, all pointers valid per caller contract
-    unsafe { gjkIntersect_impl(status, obj1, obj2) }
+    unsafe { gjkIntersect(status, obj1, obj2) }
 }
 
 /// C: polytope2 (engine/engine_collision_gjk.c:122)
@@ -492,10 +492,10 @@ pub fn gjk_intersect(status: *mut mjCCDStatus, obj1: *mut mjCCDObj, obj2: *mut m
 #[allow(unused_variables, non_snake_case)]
 pub fn polytope2(pt: *mut Polytope, status: *mut mjCCDStatus, obj1: *mut mjCCDObj, obj2: *mut mjCCDObj) -> i32 {
     extern "C" {
-        fn polytope2_impl(pt: *mut Polytope, status: *mut mjCCDStatus, obj1: *mut mjCCDObj, obj2: *mut mjCCDObj) -> i32;
+        fn polytope2(pt: *mut Polytope, status: *mut mjCCDStatus, obj1: *mut mjCCDObj, obj2: *mut mjCCDObj) -> i32;
     }
     // SAFETY: delegates to C implementation, all pointers valid per caller contract
-    unsafe { polytope2_impl(pt, status, obj1, obj2) }
+    unsafe { polytope2(pt, status, obj1, obj2) }
 }
 
 /// C: polytope3 (engine/engine_collision_gjk.c:123)
@@ -503,10 +503,10 @@ pub fn polytope2(pt: *mut Polytope, status: *mut mjCCDStatus, obj1: *mut mjCCDOb
 #[allow(unused_variables, non_snake_case)]
 pub fn polytope3(pt: *mut Polytope, status: *mut mjCCDStatus, obj1: *mut mjCCDObj, obj2: *mut mjCCDObj) -> i32 {
     extern "C" {
-        fn polytope3_impl(pt: *mut Polytope, status: *mut mjCCDStatus, obj1: *mut mjCCDObj, obj2: *mut mjCCDObj) -> i32;
+        fn polytope3(pt: *mut Polytope, status: *mut mjCCDStatus, obj1: *mut mjCCDObj, obj2: *mut mjCCDObj) -> i32;
     }
     // SAFETY: delegates to C implementation, all pointers valid per caller contract
-    unsafe { polytope3_impl(pt, status, obj1, obj2) }
+    unsafe { polytope3(pt, status, obj1, obj2) }
 }
 
 /// C: polytope4 (engine/engine_collision_gjk.c:124)
@@ -514,10 +514,10 @@ pub fn polytope3(pt: *mut Polytope, status: *mut mjCCDStatus, obj1: *mut mjCCDOb
 #[allow(unused_variables, non_snake_case)]
 pub fn polytope4(pt: *mut Polytope, status: *mut mjCCDStatus, obj1: *mut mjCCDObj, obj2: *mut mjCCDObj) -> i32 {
     extern "C" {
-        fn polytope4_impl(pt: *mut Polytope, status: *mut mjCCDStatus, obj1: *mut mjCCDObj, obj2: *mut mjCCDObj) -> i32;
+        fn polytope4(pt: *mut Polytope, status: *mut mjCCDStatus, obj1: *mut mjCCDObj, obj2: *mut mjCCDObj) -> i32;
     }
     // SAFETY: delegates to C implementation, all pointers valid per caller contract
-    unsafe { polytope4_impl(pt, status, obj1, obj2) }
+    unsafe { polytope4(pt, status, obj1, obj2) }
 }
 
 /// C: epa (engine/engine_collision_gjk.c:128)
@@ -525,10 +525,10 @@ pub fn polytope4(pt: *mut Polytope, status: *mut mjCCDStatus, obj1: *mut mjCCDOb
 #[allow(unused_variables, non_snake_case)]
 pub fn epa(status: *mut mjCCDStatus, pt: *mut Polytope, obj1: *mut mjCCDObj, obj2: *mut mjCCDObj) -> *mut Face {
     extern "C" {
-        fn epa_impl(status: *mut mjCCDStatus, pt: *mut Polytope, obj1: *mut mjCCDObj, obj2: *mut mjCCDObj) -> *mut Face;
+        fn epa(status: *mut mjCCDStatus, pt: *mut Polytope, obj1: *mut mjCCDObj, obj2: *mut mjCCDObj) -> *mut Face;
     }
     // SAFETY: delegates to C implementation, all pointers valid per caller contract
-    unsafe { epa_impl(status, pt, obj1, obj2) }
+    unsafe { epa(status, pt, obj1, obj2) }
 }
 
 /// C: equal3 (engine/engine_collision_gjk.c:133)
@@ -705,10 +705,10 @@ pub fn discrete_geoms(obj1: *mut mjCCDObj, obj2: *mut mjCCDObj) -> i32 {
 #[allow(unused_variables, non_snake_case)]
 pub fn gjk(status: *mut mjCCDStatus, obj1: *mut mjCCDObj, obj2: *mut mjCCDObj) {
     extern "C" {
-        fn gjk_impl(status: *mut mjCCDStatus, obj1: *mut mjCCDObj, obj2: *mut mjCCDObj);
+        fn gjk(status: *mut mjCCDStatus, obj1: *mut mjCCDObj, obj2: *mut mjCCDObj);
     }
     // SAFETY: delegates to C implementation, all pointers valid per caller contract
-    unsafe { gjk_impl(status, obj1, obj2) }
+    unsafe { gjk(status, obj1, obj2) }
 }
 
 /// C: support (engine/engine_collision_gjk.c:334)
@@ -1644,10 +1644,10 @@ pub fn plane_intersect(res: *mut f64, pn: *const f64, pd: f64, a: *const f64, b:
 #[allow(unused_variables, non_snake_case)]
 pub fn polygon_clip(status: *mut mjCCDStatus, face1: *const f64, nface1: i32, face2: *const f64, nface2: i32, n: *const f64, dir: *const f64) {
     extern "C" {
-        fn polygonClip_impl(status: *mut mjCCDStatus, face1: *const f64, nface1: i32, face2: *const f64, nface2: i32, n: *const f64, dir: *const f64);
+        fn polygonClip(status: *mut mjCCDStatus, face1: *const f64, nface1: i32, face2: *const f64, nface2: i32, n: *const f64, dir: *const f64);
     }
     // SAFETY: delegates to C implementation, all pointers valid per caller contract
-    unsafe { polygonClip_impl(status, face1, nface1, face2, nface2, n, dir) }
+    unsafe { polygonClip(status, face1, nface1, face2, nface2, n, dir) }
 }
 
 /// C: globalcoord (engine/engine_collision_gjk.c:1744)
@@ -1704,10 +1704,10 @@ pub fn intersect(res: [i32; 2], arr1: *const i32, arr2: *const i32, n: i32, m: i
 #[allow(unused_variables, non_snake_case)]
 pub fn mesh_normals(res: *mut f64, resind: [i32; 3], dim: i32, obj: *mut mjCCDObj, v1: i32, v2: i32, v3: i32) -> i32 {
     extern "C" {
-        fn meshNormals_impl(res: *mut f64, resind: [i32; 3], dim: i32, obj: *mut mjCCDObj, v1: i32, v2: i32, v3: i32) -> i32;
+        fn meshNormals(res: *mut f64, resind: [i32; 3], dim: i32, obj: *mut mjCCDObj, v1: i32, v2: i32, v3: i32) -> i32;
     }
     // SAFETY: delegates to C implementation, all pointers valid per caller contract
-    unsafe { meshNormals_impl(res, resind, dim, obj, v1, v2, v3) }
+    unsafe { meshNormals(res, resind, dim, obj, v1, v2, v3) }
 }
 
 /// C: meshEdgeNormals (engine/engine_collision_gjk.c:1840)
@@ -1720,10 +1720,10 @@ pub fn mesh_normals(res: *mut f64, resind: [i32; 3], dim: i32, obj: *mut mjCCDOb
 #[allow(unused_variables, non_snake_case)]
 pub fn mesh_edge_normals(res: *mut f64, endverts: *mut f64, dim: i32, obj: *mut mjCCDObj, v1: *const f64, v2: *const f64, v1i: i32, v2i: i32) -> i32 {
     extern "C" {
-        fn meshEdgeNormals_impl(res: *mut f64, endverts: *mut f64, dim: i32, obj: *mut mjCCDObj, v1: *const f64, v2: *const f64, v1i: i32, v2i: i32) -> i32;
+        fn meshEdgeNormals(res: *mut f64, endverts: *mut f64, dim: i32, obj: *mut mjCCDObj, v1: *const f64, v2: *const f64, v1i: i32, v2i: i32) -> i32;
     }
     // SAFETY: delegates to C implementation, all pointers valid per caller contract
-    unsafe { meshEdgeNormals_impl(res, endverts, dim, obj, v1, v2, v1i, v2i) }
+    unsafe { meshEdgeNormals(res, endverts, dim, obj, v1, v2, v1i, v2i) }
 }
 
 /// C: boxNormals2 (engine/engine_collision_gjk.c:1885)
@@ -1791,10 +1791,10 @@ pub fn box_normals2(res: *mut f64, resind: [i32; 3], mat: *const f64, n: *const 
 #[allow(unused_variables, non_snake_case)]
 pub fn box_normals(res: *mut f64, resind: [i32; 3], dim: i32, obj: *mut mjCCDObj, v1: i32, v2: i32, v3: i32, dir: *const f64) -> i32 {
     extern "C" {
-        fn boxNormals_impl(res: *mut f64, resind: [i32; 3], dim: i32, obj: *mut mjCCDObj, v1: i32, v2: i32, v3: i32, dir: *const f64) -> i32;
+        fn boxNormals(res: *mut f64, resind: [i32; 3], dim: i32, obj: *mut mjCCDObj, v1: i32, v2: i32, v3: i32, dir: *const f64) -> i32;
     }
     // SAFETY: delegates to C implementation, all pointers valid per caller contract
-    unsafe { boxNormals_impl(res, resind, dim, obj, v1, v2, v3, dir) }
+    unsafe { boxNormals(res, resind, dim, obj, v1, v2, v3, dir) }
 }
 
 /// C: boxEdgeNormals (engine/engine_collision_gjk.c:1965)
@@ -1807,10 +1807,10 @@ pub fn box_normals(res: *mut f64, resind: [i32; 3], dim: i32, obj: *mut mjCCDObj
 #[allow(unused_variables, non_snake_case)]
 pub fn box_edge_normals(res: *mut f64, endverts: *mut f64, dim: i32, obj: *mut mjCCDObj, v1: *const f64, v2: *const f64, v1i: i32, v2i: i32) -> i32 {
     extern "C" {
-        fn boxEdgeNormals_impl(res: *mut f64, endverts: *mut f64, dim: i32, obj: *mut mjCCDObj, v1: *const f64, v2: *const f64, v1i: i32, v2i: i32) -> i32;
+        fn boxEdgeNormals(res: *mut f64, endverts: *mut f64, dim: i32, obj: *mut mjCCDObj, v1: *const f64, v2: *const f64, v1i: i32, v2i: i32) -> i32;
     }
     // SAFETY: delegates to C implementation, all pointers valid per caller contract
-    unsafe { boxEdgeNormals_impl(res, endverts, dim, obj, v1, v2, v1i, v2i) }
+    unsafe { boxEdgeNormals(res, endverts, dim, obj, v1, v2, v1i, v2i) }
 }
 
 /// C: boxFace (engine/engine_collision_gjk.c:2002)
@@ -1823,10 +1823,10 @@ pub fn box_edge_normals(res: *mut f64, endverts: *mut f64, dim: i32, obj: *mut m
 #[allow(unused_variables, non_snake_case)]
 pub fn box_face(res: *mut f64, obj: *mut mjCCDObj, idx: i32) -> i32 {
     extern "C" {
-        fn boxFace_impl(res: *mut f64, obj: *mut mjCCDObj, idx: i32) -> i32;
+        fn boxFace(res: *mut f64, obj: *mut mjCCDObj, idx: i32) -> i32;
     }
     // SAFETY: delegates to C implementation, all pointers valid per caller contract
-    unsafe { boxFace_impl(res, obj, idx) }
+    unsafe { boxFace(res, obj, idx) }
 }
 
 /// C: meshFace (engine/engine_collision_gjk.c:2052)
@@ -1839,10 +1839,10 @@ pub fn box_face(res: *mut f64, obj: *mut mjCCDObj, idx: i32) -> i32 {
 #[allow(unused_variables, non_snake_case)]
 pub fn mesh_face(res: *mut f64, obj: *mut mjCCDObj, idx: i32) -> i32 {
     extern "C" {
-        fn meshFace_impl(res: *mut f64, obj: *mut mjCCDObj, idx: i32) -> i32;
+        fn meshFace(res: *mut f64, obj: *mut mjCCDObj, idx: i32) -> i32;
     }
     // SAFETY: delegates to C implementation, all pointers valid per caller contract
-    unsafe { meshFace_impl(res, obj, idx) }
+    unsafe { meshFace(res, obj, idx) }
 }
 
 /// C: alignedFaces (engine/engine_collision_gjk.c:2072)
@@ -1932,10 +1932,10 @@ pub fn simplex_dim(v1i: *mut i32, v2i: *mut i32, v3i: *mut i32, v1: *mut *mut f6
 #[allow(unused_variables, non_snake_case)]
 pub fn multicontact(pt: *mut Polytope, face: *mut Face, status: *mut mjCCDStatus, obj1: *mut mjCCDObj, obj2: *mut mjCCDObj) {
     extern "C" {
-        fn multicontact_impl(pt: *mut Polytope, face: *mut Face, status: *mut mjCCDStatus, obj1: *mut mjCCDObj, obj2: *mut mjCCDObj);
+        fn multicontact(pt: *mut Polytope, face: *mut Face, status: *mut mjCCDStatus, obj1: *mut mjCCDObj, obj2: *mut mjCCDObj);
     }
     // SAFETY: delegates to C implementation, all pointers valid per caller contract
-    unsafe { multicontact_impl(pt, face, status, obj1, obj2) }
+    unsafe { multicontact(pt, face, status, obj1, obj2) }
 }
 
 /// C: inflate (engine/engine_collision_gjk.c:2264)
@@ -2003,9 +2003,9 @@ pub fn mjc_ccd_size(iterations: i32) -> usize {
 #[allow(unused_variables, non_snake_case)]
 pub fn mjc_ccd(config: *const mjCCDConfig, status: *mut mjCCDStatus, obj1: *mut mjCCDObj, obj2: *mut mjCCDObj) -> f64 {
     extern "C" {
-        fn mjc_ccd_impl(config: *const mjCCDConfig, status: *mut mjCCDStatus, obj1: *mut mjCCDObj, obj2: *mut mjCCDObj) -> f64;
+        fn mjc_ccd(config: *const mjCCDConfig, status: *mut mjCCDStatus, obj1: *mut mjCCDObj, obj2: *mut mjCCDObj) -> f64;
     }
     // SAFETY: delegates to C implementation, all pointers valid per caller contract
-    unsafe { mjc_ccd_impl(config, status, obj1, obj2) }
+    unsafe { mjc_ccd(config, status, obj1, obj2) }
 }
 

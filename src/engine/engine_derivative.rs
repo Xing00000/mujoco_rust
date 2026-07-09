@@ -235,9 +235,9 @@ pub fn mjd_mul_inert_vec_vel(D: *mut f64, i: *const f64) {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjd_com_vel_vel_dense(m: *const mjModel, d: *mut mjData, Dcvel: *mut f64, Dcdofdot: *mut f64) {
-    extern "C" { fn mjd_comVel_vel_dense_impl(m: *const mjModel, d: *mut mjData, Dcvel: *mut f64, Dcdofdot: *mut f64); }
+    extern "C" { fn mjd_comVel_vel_dense(m: *const mjModel, d: *mut mjData, Dcvel: *mut f64, Dcdofdot: *mut f64); }
     // SAFETY: delegates to C implementation, pointers valid per caller
-    unsafe { mjd_comVel_vel_dense_impl(m, d, Dcvel, Dcdofdot) }
+    unsafe { mjd_comVel_vel_dense(m, d, Dcvel, Dcdofdot) }
 }
 
 /// C: copyFromParent (engine/engine_derivative.c:468)
@@ -249,9 +249,9 @@ pub fn mjd_com_vel_vel_dense(m: *const mjModel, d: *mut mjData, Dcvel: *mut f64,
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn copy_from_parent(m: *const mjModel, d: *mut mjData, mat: *mut f64, n: i32) {
-    extern "C" { fn copyFromParent_impl(m: *const mjModel, d: *mut mjData, mat: *mut f64, n: i32); }
+    extern "C" { fn copyFromParent(m: *const mjModel, d: *mut mjData, mat: *mut f64, n: i32); }
     // SAFETY: delegates to C implementation, all pointers valid per caller contract
-    unsafe { copyFromParent_impl(m, d, mat, n) }
+    unsafe { copyFromParent(m, d, mat, n) }
 }
 
 /// C: addToParent (engine/engine_derivative.c:491)
@@ -263,9 +263,9 @@ pub fn copy_from_parent(m: *const mjModel, d: *mut mjData, mat: *mut f64, n: i32
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn add_to_parent(m: *const mjModel, d: *mut mjData, mat: *mut f64, n: i32) {
-    extern "C" { fn addToParent_impl(m: *const mjModel, d: *mut mjData, mat: *mut f64, n: i32); }
+    extern "C" { fn addToParent(m: *const mjModel, d: *mut mjData, mat: *mut f64, n: i32); }
     // SAFETY: delegates to C implementation, all pointers valid per caller contract
-    unsafe { addToParent_impl(m, d, mat, n) }
+    unsafe { addToParent(m, d, mat, n) }
 }
 
 /// C: mjd_comVel_vel (engine/engine_derivative.c:524)
@@ -277,18 +277,18 @@ pub fn add_to_parent(m: *const mjModel, d: *mut mjData, mat: *mut f64, n: i32) {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjd_com_vel_vel(m: *const mjModel, d: *mut mjData, Dcvel: *mut f64, Dcdofdot: *mut f64) {
-    extern "C" { fn mjd_comVel_vel_impl(m: *const mjModel, d: *mut mjData, Dcvel: *mut f64, Dcdofdot: *mut f64); }
+    extern "C" { fn mjd_comVel_vel(m: *const mjModel, d: *mut mjData, Dcvel: *mut f64, Dcdofdot: *mut f64); }
     // SAFETY: delegates to C implementation, all pointers valid per caller contract
-    unsafe { mjd_comVel_vel_impl(m, d, Dcvel, Dcdofdot) }
+    unsafe { mjd_comVel_vel(m, d, Dcvel, Dcdofdot) }
 }
 
 /// C: mjd_rne_vel (engine/engine_derivative.c:596)
 /// Calls: addToParent, copyFromParent, mj_freeStack, mj_markStack, mj_stackAllocInfo, mjd_comVel_vel, mjd_crossForce_frc, mjd_crossForce_vel, mjd_mulInertVec_vel, mju_addTo, mju_addToScl, mju_mulInertVec, mju_mulMatMat, mju_mulMatVec, mju_subFrom, mju_transpose, mju_zero
 #[allow(unused_variables, non_snake_case)]
 pub fn mjd_rne_vel(m: *const mjModel, d: *mut mjData) {
-    extern "C" { fn mjd_rne_vel_impl(m: *const mjModel, d: *mut mjData); }
+    extern "C" { fn mjd_rne_vel(m: *const mjModel, d: *mut mjData); }
     // SAFETY: delegates to C implementation, all pointers valid per caller contract
-    unsafe { mjd_rne_vel_impl(m, d) }
+    unsafe { mjd_rne_vel(m, d) }
 }
 
 /// C: addJTBJ (engine/engine_derivative.c:711)
@@ -300,9 +300,9 @@ pub fn mjd_rne_vel(m: *const mjModel, d: *mut mjData) {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn add_jtbj(m: *const mjModel, d: *mut mjData, J: *const f64, B: *const f64, n: i32) {
-    extern "C" { fn addJTBJ_impl(m: *const mjModel, d: *mut mjData, J: *const f64, B: *const f64, n: i32); }
+    extern "C" { fn addJTBJ(m: *const mjModel, d: *mut mjData, J: *const f64, B: *const f64, n: i32); }
     // SAFETY: delegates to C implementation, all pointers valid per caller contract
-    unsafe { addJTBJ_impl(m, d, J, B, n) }
+    unsafe { addJTBJ(m, d, J, B, n) }
 }
 
 /// C: addJTBJSparse (engine/engine_derivative.c:746)
@@ -314,9 +314,9 @@ pub fn add_jtbj(m: *const mjModel, d: *mut mjData, J: *const f64, B: *const f64,
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn add_jtbj_sparse(m: *const mjModel, d: *mut mjData, J: *const f64, B: *const f64, n: i32, offset: i32, J_rownnz: *const i32, J_rowadr: *const i32, J_colind: *const i32) {
-    extern "C" { fn addJTBJSparse_impl(m: *const mjModel, d: *mut mjData, J: *const f64, B: *const f64, n: i32, offset: i32, J_rownnz: *const i32, J_rowadr: *const i32, J_colind: *const i32); }
+    extern "C" { fn addJTBJSparse(m: *const mjModel, d: *mut mjData, J: *const f64, B: *const f64, n: i32, offset: i32, J_rownnz: *const i32, J_rowadr: *const i32, J_colind: *const i32); }
     // SAFETY: delegates to C implementation, all pointers valid per caller contract
-    unsafe { addJTBJSparse_impl(m, d, J, B, n, offset, J_rownnz, J_rowadr, J_colind) }
+    unsafe { addJTBJSparse(m, d, J, B, n, offset, J_rownnz, J_rowadr, J_colind) }
 }
 
 /// C: mjd_muscleGain_vel (engine/engine_derivative.c:781)
@@ -389,9 +389,9 @@ pub fn mjd_muscle_gain_vel(len: f64, vel: f64, lengthrange: *const f64, acc0: f6
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn add_jtbj_mul_sparse(m: *const mjModel, d: *mut mjData, res: *mut f64, vec: *const f64, J_rownnz: *const i32, J_rowadr: *const i32, J_colind: *const i32, J: *const f64, B: *const f64, n: i32) {
-    extern "C" { fn addJTBJ_mulSparse_impl(m: *const mjModel, d: *mut mjData, res: *mut f64, vec: *const f64, J_rownnz: *const i32, J_rowadr: *const i32, J_colind: *const i32, J: *const f64, B: *const f64, n: i32); }
+    extern "C" { fn addJTBJ_mulSparse(m: *const mjModel, d: *mut mjData, res: *mut f64, vec: *const f64, J_rownnz: *const i32, J_rowadr: *const i32, J_colind: *const i32, J: *const f64, B: *const f64, n: i32); }
     // SAFETY: delegates to C implementation
-    unsafe { addJTBJ_mulSparse_impl(m, d, res, vec, J_rownnz, J_rowadr, J_colind, J, B, n) }
+    unsafe { addJTBJ_mulSparse(m, d, res, vec, J_rownnz, J_rowadr, J_colind, J, B, n) }
 }
 
 /// C: mjd_flexInterp_kernel (engine/engine_derivative.c:872)
@@ -403,9 +403,9 @@ pub fn add_jtbj_mul_sparse(m: *const mjModel, d: *mut mjData, res: *mut f64, vec
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjd_flex_interp_kernel(m: *const mjModel, d: *mut mjData, res: *mut f64, vec: *const f64, s1: f64, s2: f64, K_rot_cache: *const f64, K_rot_out: *mut f64) {
-    extern "C" { fn mjd_flexInterp_kernel_impl(m: *const mjModel, d: *mut mjData, res: *mut f64, vec: *const f64, s1: f64, s2: f64, K_rot_cache: *const f64, K_rot_out: *mut f64); }
+    extern "C" { fn mjd_flexInterp_kernel(m: *const mjModel, d: *mut mjData, res: *mut f64, vec: *const f64, s1: f64, s2: f64, K_rot_cache: *const f64, K_rot_out: *mut f64); }
     // SAFETY: delegates to C implementation
-    unsafe { mjd_flexInterp_kernel_impl(m, d, res, vec, s1, s2, K_rot_cache, K_rot_out) }
+    unsafe { mjd_flexInterp_kernel(m, d, res, vec, s1, s2, K_rot_cache, K_rot_out) }
 }
 
 /// C: pow2 (engine/engine_derivative.c:1339)
@@ -824,18 +824,18 @@ pub fn mjd_magnus_force(B: *mut f64, lvel: *const f64, fluid_density: f64, size:
 /// Calls: addJTBJ, addJTBJSparse, addToQuadrant, mj_bodyChain, mj_freeStack, mj_isSparse, mj_jacGeom, mj_jacSparse, mj_markStack, mj_objectVelocity, mj_stackAllocInfo, mjd_addedMassForces, mjd_kutta_lift, mjd_magnus_force, mjd_viscous_drag, mjd_viscous_torque, mju_copy, mju_copy3, mju_geomSemiAxes, mju_mulMatTMat, mju_subFrom3, mju_symmetrize, mju_transformSpatial, mju_zero, readFluidGeomInteraction
 #[allow(unused_variables, non_snake_case)]
 pub fn mjd_ellipsoid_fluid(m: *const mjModel, d: *mut mjData, bodyid: i32) {
-    extern "C" { fn mjd_ellipsoidFluid_impl(m: *const mjModel, d: *mut mjData, bodyid: i32); }
+    extern "C" { fn mjd_ellipsoidFluid(m: *const mjModel, d: *mut mjData, bodyid: i32); }
     // SAFETY: delegates to C implementation, pointers valid per caller
-    unsafe { mjd_ellipsoidFluid_impl(m, d, bodyid) }
+    unsafe { mjd_ellipsoidFluid(m, d, bodyid) }
 }
 
 /// C: mjd_inertiaBoxFluid (engine/engine_derivative.c:1724)
 /// Calls: addJTBJ, addJTBJSparse, mj_bodyChain, mj_freeStack, mj_isSparse, mj_jacBodyCom, mj_jacSparse, mj_markStack, mj_objectVelocity, mj_stackAllocInfo, mju_copy, mju_copy3, mju_max, mju_mulMatTMat, mju_subFrom3, mju_transformSpatial, mju_zero
 #[allow(unused_variables, non_snake_case)]
 pub fn mjd_inertia_box_fluid(m: *const mjModel, d: *mut mjData, i: i32) {
-    extern "C" { fn mjd_inertiaBoxFluid_impl(m: *const mjModel, d: *mut mjData, i: i32); }
+    extern "C" { fn mjd_inertiaBoxFluid(m: *const mjModel, d: *mut mjData, i: i32); }
     // SAFETY: delegates to C implementation, all pointers valid per caller contract
-    unsafe { mjd_inertiaBoxFluid_impl(m, d, i) }
+    unsafe { mjd_inertiaBoxFluid(m, d, i) }
 }
 
 /// C: mjd_subQuat (engine/engine_derivative.h:27)
@@ -973,36 +973,36 @@ pub fn mjd_quat_integrate(vel: *const f64, scale: f64, Dquat: *mut f64, Dvel: *m
 /// Calls: mjd_actuator_vel, mjd_passive_vel, mjd_rne_vel, mju_zero, mju_zeroSparse
 #[allow(unused_variables, non_snake_case)]
 pub fn mjd_smooth_vel(m: *const mjModel, d: *mut mjData, flg_bias: i32) {
-    extern "C" { fn mjd_smooth_vel_impl(m: *const mjModel, d: *mut mjData, flg_bias: i32); }
+    extern "C" { fn mjd_smooth_vel(m: *const mjModel, d: *mut mjData, flg_bias: i32); }
     // SAFETY: delegates to C implementation, pointers valid per caller
-    unsafe { mjd_smooth_vel_impl(m, d, flg_bias) }
+    unsafe { mjd_smooth_vel(m, d, flg_bias) }
 }
 
 /// C: mjd_actuator_vel (engine/engine_derivative.h:38)
 /// Calls: addJTBJSparse, mj_actuatorDisabled, mj_nextActivation, mj_sleepState, mjd_muscleGain_vel, mju_max
 #[allow(unused_variables, non_snake_case)]
 pub fn mjd_actuator_vel(m: *const mjModel, d: *mut mjData) {
-    extern "C" { fn mjd_actuator_vel_impl(m: *const mjModel, d: *mut mjData); }
+    extern "C" { fn mjd_actuator_vel(m: *const mjModel, d: *mut mjData); }
     // SAFETY: delegates to C implementation, all pointers valid per caller contract
-    unsafe { mjd_actuator_vel_impl(m, d) }
+    unsafe { mjd_actuator_vel(m, d) }
 }
 
 /// C: mjd_passive_vel (engine/engine_derivative.h:41)
 /// Calls: addJTBJSparse, mj_actuatorDamping, mjd_ellipsoidFluid, mjd_inertiaBoxFluid, mjd_xPolyForce, mju_copy
 #[allow(unused_variables, non_snake_case)]
 pub fn mjd_passive_vel(m: *const mjModel, d: *mut mjData) {
-    extern "C" { fn mjd_passive_vel_impl(m: *const mjModel, d: *mut mjData); }
+    extern "C" { fn mjd_passive_vel(m: *const mjModel, d: *mut mjData); }
     // SAFETY: delegates to C implementation, pointers valid per caller
-    unsafe { mjd_passive_vel_impl(m, d) }
+    unsafe { mjd_passive_vel(m, d) }
 }
 
 /// C: mjd_rne_vel_dense (engine/engine_derivative.h:44)
 /// Calls: mj_freeStack, mj_markStack, mj_stackAllocInfo, mjd_comVel_vel_dense, mjd_crossForce_frc, mjd_crossForce_vel, mjd_mulInertVec_vel, mju_addTo, mju_addToScl, mju_copy, mju_mulInertVec, mju_mulMatMat, mju_scl, mju_zero
 #[allow(unused_variables, non_snake_case)]
 pub fn mjd_rne_vel_dense(m: *const mjModel, d: *mut mjData) {
-    extern "C" { fn mjd_rne_vel_dense_impl(m: *const mjModel, d: *mut mjData); }
+    extern "C" { fn mjd_rne_vel_dense(m: *const mjModel, d: *mut mjData); }
     // SAFETY: delegates to C implementation, pointers valid per caller
-    unsafe { mjd_rne_vel_dense_impl(m, d) }
+    unsafe { mjd_rne_vel_dense(m, d) }
 }
 
 /// C: mjd_flexInterp_mul (engine/engine_derivative.h:48)

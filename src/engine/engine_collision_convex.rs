@@ -36,7 +36,7 @@ pub fn libccd_wrapper(m: *const mjModel, obj1: *mut mjCCDObj, obj2: *mut mjCCDOb
     // and calls ccdMPRPenetration. We delegate to the C impl since ccd_t is not
     // representable in our Rust types.
     extern "C" {
-        fn _libccd_wrapper_impl(
+        fn _libccd_wrapper(
             m: *const mjModel,
             obj1: *mut mjCCDObj,
             obj2: *mut mjCCDObj,
@@ -44,7 +44,7 @@ pub fn libccd_wrapper(m: *const mjModel, obj1: *mut mjCCDObj, obj2: *mut mjCCDOb
             margin: f64,
         ) -> i32;
     }
-    unsafe { _libccd_wrapper_impl(m, obj1, obj2, con, margin) }
+    unsafe { _libccd_wrapper(m, obj1, obj2, con, margin) }
 }
 
 /// C: mjc_penetration (engine/engine_collision_convex.c:87)
@@ -57,10 +57,10 @@ pub fn libccd_wrapper(m: *const mjModel, obj1: *mut mjCCDObj, obj2: *mut mjCCDOb
 #[allow(unused_variables, non_snake_case)]
 pub fn mjc_penetration(m: *const mjModel, d: *mut mjData, obj1: *mut mjCCDObj, obj2: *mut mjCCDObj, con: *mut mjPreContact, ncon: i32, margin: f64) -> i32 {
     extern "C" {
-        fn mjc_penetration_impl(m: *const mjModel, d: *mut mjData, obj1: *mut mjCCDObj, obj2: *mut mjCCDObj, con: *mut mjPreContact, ncon: i32, margin: f64) -> i32;
+        fn mjc_penetration(m: *const mjModel, d: *mut mjData, obj1: *mut mjCCDObj, obj2: *mut mjCCDObj, con: *mut mjPreContact, ncon: i32, margin: f64) -> i32;
     }
     // SAFETY: delegates to C implementation, all pointers valid per caller contract
-    unsafe { mjc_penetration_impl(m, d, obj1, obj2, con, ncon, margin) }
+    unsafe { mjc_penetration(m, d, obj1, obj2, con, ncon, margin) }
 }
 
 /// C: mulMatTVec3 (engine/engine_collision_convex.c:174)
@@ -294,9 +294,9 @@ pub fn dot3f(a: *const f64, b: [f32; 3]) -> f64 {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjc_mesh_support(res: *mut f64, obj: *mut mjCCDObj, dir: *const f64) {
-    extern "C" { fn mjc_meshSupport_impl(res: *mut f64, obj: *mut mjCCDObj, dir: *const f64); }
+    extern "C" { fn mjc_meshSupport(res: *mut f64, obj: *mut mjCCDObj, dir: *const f64); }
     // SAFETY: delegates to C implementation
-    unsafe { mjc_meshSupport_impl(res, obj, dir) }
+    unsafe { mjc_meshSupport(res, obj, dir) }
 }
 
 /// C: mjc_hillclimbSupport (engine/engine_collision_convex.c:391)
@@ -308,9 +308,9 @@ pub fn mjc_mesh_support(res: *mut f64, obj: *mut mjCCDObj, dir: *const f64) {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjc_hillclimb_support(res: *mut f64, obj: *mut mjCCDObj, dir: *const f64) {
-    extern "C" { fn mjc_hillclimbSupport_impl(res: *mut f64, obj: *mut mjCCDObj, dir: *const f64); }
+    extern "C" { fn mjc_hillclimbSupport(res: *mut f64, obj: *mut mjCCDObj, dir: *const f64); }
     // SAFETY: delegates to C implementation
-    unsafe { mjc_hillclimbSupport_impl(res, obj, dir) }
+    unsafe { mjc_hillclimbSupport(res, obj, dir) }
 }
 
 /// C: mjc_prism_support (engine/engine_collision_convex.c:436)
@@ -354,9 +354,9 @@ pub fn mjc_prism_support(res: *mut f64, obj: *mut mjCCDObj, dir: *const f64) {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjc_flex_support(res: *mut f64, obj: *mut mjCCDObj, dir: *const f64) {
-    extern "C" { fn mjc_flexSupport_impl(res: *mut f64, obj: *mut mjCCDObj, dir: *const f64); }
+    extern "C" { fn mjc_flexSupport(res: *mut f64, obj: *mut mjCCDObj, dir: *const f64); }
     // SAFETY: delegates to C implementation
-    unsafe { mjc_flexSupport_impl(res, obj, dir) }
+    unsafe { mjc_flexSupport(res, obj, dir) }
 }
 
 /// C: mjc_setCCDObjFlex (engine/engine_collision_convex.c:790)
@@ -379,9 +379,9 @@ pub fn mjc_set_ccd_obj_flex(obj: *mut mjCCDObj, flex: i32, elem: i32, vert: i32)
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjc_is_distinct_contact(con: *const mjPreContact, ncon: i32, tolerance: f64) -> i32 {
-    extern "C" { fn mjc_isDistinctContact_impl(con: *const mjPreContact, ncon: i32, tolerance: f64) -> i32; }
+    extern "C" { fn mjc_isDistinctContact(con: *const mjPreContact, ncon: i32, tolerance: f64) -> i32; }
     // SAFETY: delegates to C implementation, pointers valid per caller contract
-    unsafe { mjc_isDistinctContact_impl(con, ncon, tolerance) }
+    unsafe { mjc_isDistinctContact(con, ncon, tolerance) }
 }
 
 /// C: mju_rotateFrame (engine/engine_collision_convex.c:810)
@@ -1089,9 +1089,9 @@ pub fn mjc_plane_convex(m: *const mjModel, d: *mut mjData, con: *mut mjPreContac
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjc_convex_h_field(m: *const mjModel, d: *mut mjData, con: *mut mjPreContact, g1: i32, g2: i32, margin: f64) -> i32 {
-    extern "C" { fn mjc_ConvexHField_impl(m: *const mjModel, d: *mut mjData, con: *mut mjPreContact, g1: i32, g2: i32, margin: f64) -> i32; }
+    extern "C" { fn mjc_ConvexHField(m: *const mjModel, d: *mut mjData, con: *mut mjPreContact, g1: i32, g2: i32, margin: f64) -> i32; }
     // SAFETY: delegates to C implementation
-    unsafe { mjc_ConvexHField_impl(m, d, con, g1, g2, margin) }
+    unsafe { mjc_ConvexHField(m, d, con, g1, g2, margin) }
 }
 
 /// C: mjc_Convex (engine/engine_collision_convex.h:114)
@@ -1103,9 +1103,9 @@ pub fn mjc_convex_h_field(m: *const mjModel, d: *mut mjData, con: *mut mjPreCont
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjc_convex(m: *const mjModel, d: *mut mjData, con: *mut mjPreContact, g1: i32, g2: i32, margin: f64) -> i32 {
-    extern "C" { fn mjc_Convex_impl(m: *const mjModel, d: *mut mjData, con: *mut mjPreContact, g1: i32, g2: i32, margin: f64) -> i32; }
+    extern "C" { fn mjc_Convex(m: *const mjModel, d: *mut mjData, con: *mut mjPreContact, g1: i32, g2: i32, margin: f64) -> i32; }
     // SAFETY: delegates to C implementation
-    unsafe { mjc_Convex_impl(m, d, con, g1, g2, margin) }
+    unsafe { mjc_Convex(m, d, con, g1, g2, margin) }
 }
 
 /// C: mjc_ConvexElem (engine/engine_collision_convex.h:117)
@@ -1117,9 +1117,9 @@ pub fn mjc_convex(m: *const mjModel, d: *mut mjData, con: *mut mjPreContact, g1:
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjc_convex_elem(m: *const mjModel, d: *mut mjData, con: *mut mjPreContact, g1: i32, f1: i32, e1: i32, v1: i32, f2: i32, e2: i32, margin: f64) -> i32 {
-    extern "C" { fn mjc_ConvexElem_impl(m: *const mjModel, d: *mut mjData, con: *mut mjPreContact, g1: i32, f1: i32, e1: i32, v1: i32, f2: i32, e2: i32, margin: f64) -> i32; }
+    extern "C" { fn mjc_ConvexElem(m: *const mjModel, d: *mut mjData, con: *mut mjPreContact, g1: i32, f1: i32, e1: i32, v1: i32, f2: i32, e2: i32, margin: f64) -> i32; }
     // SAFETY: delegates to C implementation, all pointers valid per caller contract
-    unsafe { mjc_ConvexElem_impl(m, d, con, g1, f1, e1, v1, f2, e2, margin) }
+    unsafe { mjc_ConvexElem(m, d, con, g1, f1, e1, v1, f2, e2, margin) }
 }
 
 /// C: mjc_HFieldElem (engine/engine_collision_convex.h:121)
@@ -1131,9 +1131,9 @@ pub fn mjc_convex_elem(m: *const mjModel, d: *mut mjData, con: *mut mjPreContact
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjc_h_field_elem(m: *const mjModel, d: *mut mjData, con: *mut mjPreContact, g: i32, f: i32, e: i32, margin: f64) -> i32 {
-    extern "C" { fn mjc_HFieldElem_impl(m: *const mjModel, d: *mut mjData, con: *mut mjPreContact, g: i32, f: i32, e: i32, margin: f64) -> i32; }
+    extern "C" { fn mjc_HFieldElem(m: *const mjModel, d: *mut mjData, con: *mut mjPreContact, g: i32, f: i32, e: i32, margin: f64) -> i32; }
     // SAFETY: delegates to C implementation, all pointers valid per caller contract
-    unsafe { mjc_HFieldElem_impl(m, d, con, g, f, e, margin) }
+    unsafe { mjc_HFieldElem(m, d, con, g, f, e, margin) }
 }
 
 /// C: mjc_fixNormal (engine/engine_collision_convex.h:125)

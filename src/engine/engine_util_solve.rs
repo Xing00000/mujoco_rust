@@ -172,7 +172,7 @@ pub fn mju_chol_factor_symbolic(L_colind: *mut i32, L_rownnz: *mut i32, L_rowadr
     // WARNING: signature changed — verify body
     // Previous params: (L_colind : * mut i32, L_rownnz : * mut i32, L_rowadr : * mut i32, LT_colind : * mut i32, LT_rownnz : * mut i32, LT_rowadr : * mut i32, LT_map : * mut i32, rownnz : * const i32, rowadr : * const i32, colind : * const i32, n : i32, d : * mut mjData)
     // Previous return: i32
-    extern "C" { fn mju_cholFactorSymbolic_impl (L_colind : * mut i32 , L_rownnz : * mut i32 , L_rowadr : * mut i32 , LT_colind : * mut i32 , LT_rownnz : * mut i32 , LT_rowadr : * mut i32 , LT_map : * mut i32 , rownnz : * const i32 , rowadr : * const i32 , colind : * const i32 , n : i32 , d : * mut mjData) -> i32 ; } unsafe { mju_cholFactorSymbolic_impl (L_colind , L_rownnz , L_rowadr , LT_colind , LT_rownnz , LT_rowadr , LT_map , rownnz , rowadr , colind , n , d) }
+    extern "C" { fn mju_cholFactorSymbolic(L_colind : * mut i32 , L_rownnz : * mut i32 , L_rowadr : * mut i32 , LT_colind : * mut i32 , LT_rownnz : * mut i32 , LT_rowadr : * mut i32 , LT_map : * mut i32 , rownnz : * const i32 , rowadr : * const i32 , colind : * const i32 , n : i32 , d : * mut mjData) -> i32 ; } unsafe { mju_cholFactorSymbolic(L_colind , L_rownnz , L_rowadr , LT_colind , LT_rownnz , LT_rowadr , LT_map , rownnz , rowadr , colind , n , d) }
 }
 
 /// C: mju_cholFactorNumeric (engine/engine_util_solve.h:53)
@@ -187,7 +187,7 @@ pub fn mju_chol_factor_numeric(L: *mut f64, n: i32, mindiag: f64, L_rownnz: *con
     // WARNING: signature changed — verify body
     // Previous params: (L : * mut f64, n : i32, mindiag : f64, L_rownnz : * const i32, L_rowadr : * const i32, L_colind : * const i32, LT_rownnz : * const i32, LT_rowadr : * const i32, LT_colind : * const i32, LT_map : * const i32, H : * const f64, H_rownnz : * const i32, H_rowadr : * const i32, H_colind : * const i32, d : * mut mjData)
     // Previous return: i32
-    extern "C" { fn mju_cholFactorNumeric_impl (L : * mut f64 , n : i32 , mindiag : f64 , L_rownnz : * const i32 , L_rowadr : * const i32 , L_colind : * const i32 , LT_rownnz : * const i32 , LT_rowadr : * const i32 , LT_colind : * const i32 , LT_map : * const i32 , H : * const f64 , H_rownnz : * const i32 , H_rowadr : * const i32 , H_colind : * const i32 , d : * mut mjData) -> i32 ; } unsafe { mju_cholFactorNumeric_impl (L , n , mindiag , L_rownnz , L_rowadr , L_colind , LT_rownnz , LT_rowadr , LT_colind , LT_map , H , H_rownnz , H_rowadr , H_colind , d) }
+    extern "C" { fn mju_cholFactorNumeric(L : * mut f64 , n : i32 , mindiag : f64 , L_rownnz : * const i32 , L_rowadr : * const i32 , L_colind : * const i32 , LT_rownnz : * const i32 , LT_rowadr : * const i32 , LT_colind : * const i32 , LT_map : * const i32 , H : * const f64 , H_rownnz : * const i32 , H_rowadr : * const i32 , H_colind : * const i32 , d : * mut mjData) -> i32 ; } unsafe { mju_cholFactorNumeric(L , n , mindiag , L_rownnz , L_rowadr , L_colind , LT_rownnz , LT_rowadr , LT_colind , LT_map , H , H_rownnz , H_rowadr , H_colind , d) }
 }
 
 /// C: mju_cholSolveSparse (engine/engine_util_solve.h:61)
@@ -248,7 +248,7 @@ pub fn mju_chol_update_sparse(mat: *mut f64, x: *const f64, n: i32, flg_plus: i3
     // WARNING: signature changed — verify body
     // Previous params: (mat : * mut f64, x : * const f64, n : i32, flg_plus : i32, rownnz : * const i32, rowadr : * const i32, colind : * const i32, x_nnz : i32, x_ind : * const i32, d : * mut mjData)
     // Previous return: i32
-    extern "C" { fn mju_cholUpdateSparse_impl (mat : * mut f64 , x : * const f64 , n : i32 , flg_plus : i32 , rownnz : * const i32 , rowadr : * const i32 , colind : * const i32 , x_nnz : i32 , x_ind : * const i32 , d : * mut mjData) -> i32 ; } unsafe { mju_cholUpdateSparse_impl (mat , x , n , flg_plus , rownnz , rowadr , colind , x_nnz , x_ind , d) }
+    extern "C" { fn mju_cholUpdateSparse(mat : * mut f64 , x : * const f64 , n : i32 , flg_plus : i32 , rownnz : * const i32 , rowadr : * const i32 , colind : * const i32 , x_nnz : i32 , x_ind : * const i32 , d : * mut mjData) -> i32 ; } unsafe { mju_cholUpdateSparse(mat , x , n , flg_plus , rownnz , rowadr , colind , x_nnz , x_ind , d) }
 }
 
 /// C: mju_cholFactorBand (engine/engine_util_solve.h:76)
@@ -1117,8 +1117,8 @@ pub fn mju_box_q_pmalloc(res: *mut *mut f64, R: *mut *mut f64, index: *mut *mut 
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mju_box_q_poption(res: *mut f64, R: *mut f64, index: *mut i32, H: *const f64, g: *const f64, n: i32, lower: *const f64, upper: *const f64, maxiter: i32, mingrad: f64, backtrack: f64, minstep: f64, armijo: f64, log: *mut i8, logsz: i32) -> i32 {
-    extern "C" { fn mju_boxQPoption_impl(res: *mut f64, R: *mut f64, index: *mut i32, H: *const f64, g: *const f64, n: i32, lower: *const f64, upper: *const f64, maxiter: i32, mingrad: f64, backtrack: f64, minstep: f64, armijo: f64, log: *mut i8, logsz: i32) -> i32; }
+    extern "C" { fn mju_boxQPoption(res: *mut f64, R: *mut f64, index: *mut i32, H: *const f64, g: *const f64, n: i32, lower: *const f64, upper: *const f64, maxiter: i32, mingrad: f64, backtrack: f64, minstep: f64, armijo: f64, log: *mut i8, logsz: i32) -> i32; }
     // SAFETY: delegates to C implementation
-    unsafe { mju_boxQPoption_impl(res, R, index, H, g, n, lower, upper, maxiter, mingrad, backtrack, minstep, armijo, log, logsz) }
+    unsafe { mju_boxQPoption(res, R, index, H, g, n, lower, upper, maxiter, mingrad, backtrack, minstep, armijo, log, logsz) }
 }
 

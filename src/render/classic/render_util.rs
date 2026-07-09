@@ -72,9 +72,9 @@ pub fn mjr_setf3(vec: *mut f32, f0: f32, f1: f32, f2: f32) {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjr_mul_mat44(res: *mut f32, A: *const f32, B: *const f32) {
-    extern "C" { fn mjr_mulMat44_impl(res: *mut f32, A: *const f32, B: *const f32); }
+    extern "C" { fn mjr_mulMat44(res: *mut f32, A: *const f32, B: *const f32); }
     // SAFETY: delegates to C implementation, pointers valid per caller contract
-    unsafe { mjr_mulMat44_impl(res, A, B) }
+    unsafe { mjr_mulMat44(res, A, B) }
 }
 
 /// C: mjr_getrow4 (render/classic/render_util.h:38)
@@ -85,9 +85,9 @@ pub fn mjr_mul_mat44(res: *mut f32, A: *const f32, B: *const f32) {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjr_getrow4(res: *mut f32, A: *const f32, r: i32) {
-    extern "C" { fn mjr_getrow4_impl(res: *mut f32, A: *const f32, r: i32); }
+    extern "C" { fn mjr_getrow4(res: *mut f32, A: *const f32, r: i32); }
     // SAFETY: delegates to C implementation, pointers valid per caller contract
-    unsafe { mjr_getrow4_impl(res, A, r) }
+    unsafe { mjr_getrow4(res, A, r) }
 }
 
 /// C: mjr_crossVec (render/classic/render_util.h:41)
@@ -209,9 +209,9 @@ pub fn mjr_multiply4(res: *mut f32, mat: *const f32, vec: *const f32) {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjr_look_at(eye: *const f32, forward: *const f32, up: *const f32) {
-    extern "C" { fn mjr_lookAt_impl(eye: *const f32, forward: *const f32, up: *const f32); }
+    extern "C" { fn mjr_lookAt(eye: *const f32, forward: *const f32, up: *const f32); }
     // SAFETY: delegates to C implementation, pointers valid per caller contract
-    unsafe { mjr_lookAt_impl(eye, forward, up) }
+    unsafe { mjr_lookAt(eye, forward, up) }
 }
 
 /// C: mjr_perspective (render/classic/render_util.h:59)
@@ -222,9 +222,9 @@ pub fn mjr_look_at(eye: *const f32, forward: *const f32, up: *const f32) {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjr_perspective(fovy: f32, aspect: f32, znear: f32, zfar: f32) {
-    extern "C" { fn mjr_perspective_impl(fovy: f32, aspect: f32, znear: f32, zfar: f32); }
+    extern "C" { fn mjr_perspective(fovy: f32, aspect: f32, znear: f32, zfar: f32); }
     // SAFETY: delegates to C implementation, pointers valid per caller contract
-    unsafe { mjr_perspective_impl(fovy, aspect, znear, zfar) }
+    unsafe { mjr_perspective(fovy, aspect, znear, zfar) }
 }
 
 /// C: mjr_reflect (render/classic/render_util.h:62)
@@ -236,9 +236,9 @@ pub fn mjr_perspective(fovy: f32, aspect: f32, znear: f32, zfar: f32) {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjr_reflect(pos: *const f32, mat: *const f32) {
-    extern "C" { fn mjr_reflect_impl(pos: *const f32, mat: *const f32); }
+    extern "C" { fn mjr_reflect(pos: *const f32, mat: *const f32); }
     // SAFETY: delegates to C implementation, pointers valid per caller contract
-    unsafe { mjr_reflect_impl(pos, mat) }
+    unsafe { mjr_reflect(pos, mat) }
 }
 
 /// C: mjr_transform (render/classic/render_util.h:65)
@@ -250,16 +250,16 @@ pub fn mjr_reflect(pos: *const f32, mat: *const f32) {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjr_transform(translate: *const f32, rotate: *const f32, scale: f32) {
-    extern "C" { fn mjr_transform_impl(translate: *const f32, rotate: *const f32, scale: f32); }
+    extern "C" { fn mjr_transform(translate: *const f32, rotate: *const f32, scale: f32); }
     // SAFETY: delegates to C implementation
-    unsafe { mjr_transform_impl(translate, rotate, scale) }
+    unsafe { mjr_transform(translate, rotate, scale) }
 }
 
 /// C: mjr_findRect (render/classic/render_util.h:68)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjr_find_rect(x: i32, y: i32, nrect: i32, rect: *const mjrRect) -> i32 {
-    extern "C" { fn mjr_findRect_impl(x: i32, y: i32, nrect: i32, rect: *const mjrRect) -> i32; }
+    extern "C" { fn mjr_findRect(x: i32, y: i32, nrect: i32, rect: *const mjrRect) -> i32; }
     // SAFETY: delegates to C implementation
-    unsafe { mjr_findRect_impl(x, y, nrect, rect) }
+    unsafe { mjr_findRect(x, y, nrect, rect) }
 }
 
