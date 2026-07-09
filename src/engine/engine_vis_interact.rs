@@ -905,7 +905,18 @@ pub fn mjv_average_camera(cam1: *const mjvGLCamera, cam2: *const mjvGLCamera) ->
         let mut up: [f64; 3] = [0.0; 3];
         let mut tmp1: [f64; 3] = [0.0; 3];
         let mut tmp2: [f64; 3] = [0.0; 3];
-        let mut cam: mjvGLCamera = core::mem::zeroed();
+        let mut cam = mjvGLCamera {
+            pos: [0.0; 3],
+            forward: [0.0; 3],
+            up: [0.0; 3],
+            frustum_center: 0.0,
+            frustum_width: 0.0,
+            frustum_bottom: 0.0,
+            frustum_top: 0.0,
+            frustum_near: 0.0,
+            frustum_far: 0.0,
+            orthographic: 0,
+        };
 
         // compute pos
         crate::engine::engine_util_misc::mju_f2n(tmp1.as_mut_ptr(), (*cam1).pos.as_ptr(), 3);
