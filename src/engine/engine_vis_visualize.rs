@@ -1065,10 +1065,16 @@ pub fn mjv_update_active_flex(m: *const mjModel, d: *mut mjData, scn: *mut mjvSc
 /// Calls: mju_warning, mjv_defaultOption, mjv_updateActiveSkin
 #[allow(unused_variables, non_snake_case)]
 pub fn mjv_update_skin(m: *const mjModel, d: *const mjData, scn: *mut mjvScene) {
-
-    extern "C" { fn mjv_updateSkin_impl(m: *const mjModel, d: *const mjData, scn: *mut mjvScene); }
-    // SAFETY: delegates to C implementation
-    unsafe { mjv_updateSkin_impl(m, d, scn) }
+    // SAFETY: m, d, scn valid per caller contract. Calls defaultOption on stack local,
+    // then delegates to mjv_updateActiveSkin which handles the actual skin update.
+    unsafe {
+        let mut opt = core::mem::MaybeUninit::<mjvOption>::uninit();
+        crate::engine::engine_vis_init::mjv_default_option(opt.as_mut_ptr());
+        crate::engine::engine_vis_visualize::mjv_update_active_skin(m, d, scn, opt.as_ptr());
+        crate::engine::engine_util_errmem::mju_warning(
+            b"mjv_updateSkin is deprecated, please use mjv_updateActiveSkin.\0".as_ptr() as *const i8,
+        );
+    }
 }
 
 /// C: mjv_updateActiveSkin (engine/engine_vis_visualize.h:57)

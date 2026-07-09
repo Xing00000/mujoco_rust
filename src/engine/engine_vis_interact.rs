@@ -399,9 +399,131 @@ pub fn mjv_align_to_camera(res: *mut f64, vec: *const f64, forward: *const f64) 
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjv_move_camera(m: *const mjModel, action: i32, reldx: f64, reldy: f64, scn: *const mjvScene, cam: *mut mjvCamera) {
-    extern "C" { fn mjv_moveCamera_impl(m: *const mjModel, action: i32, reldx: f64, reldy: f64, scn: *const mjvScene, cam: *mut mjvCamera); }
-    // SAFETY: delegates to C implementation which accesses mjvCamera fields and calls mju_* functions
-    unsafe { mjv_moveCamera_impl(m, action, reldx, reldy, scn, cam) }
+    const MJCAMERA_FIXED: i32 = 2;
+    const MJCAMERA_TRACKING: i32 = 1;
+    const MJMOUSE_ROTATE_V: i32 = 1;
+    const MJMOUSE_ROTATE_H: i32 = 2;
+    const MJMOUSE_MOVE_V: i32 = 3;
+    const MJMOUSE_MOVE_H: i32 = 4;
+    const MJMOUSE_ZOOM: i32 = 5;
+    const MJMOUSE_MOVE_V_REL: i32 = 6;
+    const MJMOUSE_MOVE_H_REL: i32 = 7;
+
+    // SAFETY: m, scn, cam valid per caller contract. All pointer arithmetic on
+    // mjvCamera fields (lookat[3], distance, azimuth, elevation) and mjModel stat.extent.
+    unsafe {
+        // fixed camera: nothing to do
+        if (*cam).r#type == MJCAMERA_FIXED {
+            return;
+        }
+
+        // process action
+        match action {
+            MJMOUSE_ROTATE_V | MJMOUSE_ROTATE_H => {
+                (*cam).azimuth -= reldx * 180.0;
+                (*cam).elevation -= reldy * 180.0;
+            }
+            MJMOUSE_MOVE_V | MJMOUSE_MOVE_H => {
+                // do not move lookat point of tracking camera
+                if (*cam).r#type == MJCAMERA_TRACKING {
+                    return;
+                }
+
+                let mut headpos: [f64; 3] = [0.0; 3];
+                let mut forward: [f64; 3] = [0.0; 3];
+                let mut vec: [f64; 3] = [0.0; 3];
+                let mut dif: [f64; 3] = [0.0; 3];
+
+                // get camera info and align
+                crate::engine::engine_vis_interact::mjv_camera_in_model(
+                    headpos.as_mut_ptr(), forward.as_mut_ptr(), core::ptr::null_mut(), scn,
+                );
+                crate::engine::engine_vis_interact::convert2d(
+                    vec.as_mut_ptr(), action, reldx, reldy, forward.as_ptr(),
+                );
+
+                // compute scaling: rendered lookat displacement = mouse displacement
+                crate::engine::engine_util_blas::mju_sub3(
+                    dif.as_mut_ptr(), (*cam).lookat.as_ptr(), headpos.as_ptr(),
+                );
+                let mut scl: f64 = crate::engine::engine_vis_interact::mjv_frustum_height(scn)
+                    * crate::engine::engine_util_blas::mju_dot3(dif.as_ptr(), forward.as_ptr());
+
+                // multiply by mystery coefficient
+                if (*cam).orthographic != 0 {
+                    scl *= 0.15;
+                }
+
+                // move lookat point in opposite direction
+                crate::engine::engine_util_blas::mju_add_to_scl3(
+                    (*cam).lookat.as_mut_ptr(), vec.as_ptr(), -scl,
+                );
+            }
+            MJMOUSE_ZOOM => {
+                (*cam).distance -= (1.0 + (*cam).distance / (*m).stat.extent / 3.0).ln()
+                    * reldy * 9.0 * (*m).stat.extent;
+            }
+            MJMOUSE_MOVE_V_REL | MJMOUSE_MOVE_H_REL => {
+                // do not move lookat point of tracking camera
+                if (*cam).r#type == MJCAMERA_TRACKING {
+                    return;
+                }
+
+                let mut headpos: [f64; 3] = [0.0; 3];
+                let mut forward: [f64; 3] = [0.0; 3];
+                let mut up: [f64; 3] = [0.0; 3];
+                let mut right: [f64; 3] = [0.0; 3];
+
+                crate::engine::engine_vis_interact::mjv_camera_in_model(
+                    headpos.as_mut_ptr(), forward.as_mut_ptr(), up.as_mut_ptr(), scn,
+                );
+                crate::engine::engine_util_spatial::mju_cross(
+                    right.as_mut_ptr(), forward.as_ptr(), up.as_ptr(),
+                );
+
+                // y-axis movement
+                if action == MJMOUSE_MOVE_V_REL {
+                    crate::engine::engine_util_blas::mju_add_to_scl3(
+                        (*cam).lookat.as_mut_ptr(), up.as_ptr(), reldy,
+                    );
+                } else {
+                    crate::engine::engine_util_blas::mju_add_to_scl3(
+                        (*cam).lookat.as_mut_ptr(), forward.as_ptr(), reldy,
+                    );
+                }
+
+                // x-axis movement strafes left/right
+                crate::engine::engine_util_blas::mju_add_to_scl3(
+                    (*cam).lookat.as_mut_ptr(), right.as_ptr(), reldx,
+                );
+            }
+            _ => {
+                crate::engine::engine_util_errmem::mju_error(
+                    b"unexpected action in mjv_moveCamera\0".as_ptr() as *const i8,
+                );
+            }
+        }
+
+        // clamp camera parameters
+        if (*cam).azimuth > 180.0 {
+            (*cam).azimuth -= 360.0;
+        }
+        if (*cam).azimuth < -180.0 {
+            (*cam).azimuth += 360.0;
+        }
+        if (*cam).elevation > 89.0 {
+            (*cam).elevation = 89.0;
+        }
+        if (*cam).elevation < -89.0 {
+            (*cam).elevation = -89.0;
+        }
+        if (*cam).distance < 0.01 * (*m).stat.extent {
+            (*cam).distance = 0.01 * (*m).stat.extent;
+        }
+        if (*cam).distance > 100.0 * (*m).stat.extent {
+            (*cam).distance = 100.0 * (*m).stat.extent;
+        }
+    }
 }
 
 /// C: mjv_movePerturb (engine/engine_vis_interact.h:54)
@@ -838,9 +960,198 @@ pub fn mjv_average_camera(cam1: *const mjvGLCamera, cam2: *const mjvGLCamera) ->
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjv_select(m: *const mjModel, d: *const mjData, vopt: *const mjvOption, aspectratio: f64, relx: f64, rely: f64, scn: *const mjvScene, selpnt: *mut f64, geomid: [i32; 1], flexid: [i32; 1], skinid: [i32; 1]) -> i32 {
-    extern "C" { fn mjv_select_impl(m: *const mjModel, d: *const mjData, vopt: *const mjvOption, aspectratio: f64, relx: f64, rely: f64, scn: *const mjvScene, selpnt: *mut f64, geomid: [i32; 1], flexid: [i32; 1], skinid: [i32; 1]) -> i32; }
-    // SAFETY: delegates to C implementation, all pointers valid per caller contract
-    unsafe { mjv_select_impl(m, d, vopt, aspectratio, relx, rely, scn, selpnt, geomid, flexid, skinid) }
+    const MJVIS_STATIC: usize = 22;
+    const MJVIS_FLEXVERT: usize = 24;
+    const MJVIS_FLEXEDGE: usize = 25;
+    const MJVIS_FLEXFACE: usize = 26;
+    const MJVIS_FLEXSKIN: usize = 27;
+    const MJVIS_SKIN: usize = 23;
+
+    // SAFETY: all pointers valid per caller. geomid/flexid/skinid are [i32;1] which in C ABI
+    // decay to int* — writes through pointer modify caller's data.
+    // m, d, vopt, scn fields accessed within bounds. selpnt points to f64[3].
+    unsafe {
+        // get average camera
+        let cam: mjvGLCamera = crate::engine::engine_vis_interact::mjv_average_camera(
+            &(*scn).camera[0], &(*scn).camera[1],
+        );
+
+        // get camera pose in model space
+        let mut pos: [f64; 3] = [0.0; 3];
+        let mut forward: [f64; 3] = [0.0; 3];
+        let mut up: [f64; 3] = [0.0; 3];
+        let mut left: [f64; 3] = [0.0; 3];
+        crate::engine::engine_vis_interact::mjv_camera_in_model(
+            pos.as_mut_ptr(), forward.as_mut_ptr(), up.as_mut_ptr(), scn,
+        );
+        crate::engine::engine_util_spatial::mju_cross(left.as_mut_ptr(), up.as_ptr(), forward.as_ptr());
+        crate::engine::engine_util_blas::mju_normalize3(left.as_mut_ptr());
+
+        // compute frustum halfwidth so as to match viewport aspect ratio
+        let halfwidth: f64 = 0.5 * aspectratio * (cam.frustum_top - cam.frustum_bottom) as f64;
+
+        // compute up and left offsets from normalized cursor
+        let d_up: f64 = cam.frustum_bottom as f64 + rely * (cam.frustum_top - cam.frustum_bottom) as f64;
+        let d_left: f64 = -(cam.frustum_center as f64 + (2.0 * relx - 1.0) * halfwidth);
+
+        // define ray
+        let mut ray: [f64; 3] = [0.0; 3];
+
+        // construct ray for orthographic camera: fixed direction, modify pos
+        if cam.orthographic != 0 {
+            crate::engine::engine_util_blas::mju_copy3(ray.as_mut_ptr(), forward.as_ptr());
+            crate::engine::engine_util_blas::mju_add_to_scl3(pos.as_mut_ptr(), up.as_ptr(), d_up);
+            crate::engine::engine_util_blas::mju_add_to_scl3(pos.as_mut_ptr(), left.as_ptr(), d_left);
+        } else {
+            // construct ray for perspective camera: fixed pos, modify direction
+            crate::engine::engine_util_blas::mju_scl3(ray.as_mut_ptr(), forward.as_ptr(), cam.frustum_near as f64);
+            crate::engine::engine_util_blas::mju_add_to_scl3(ray.as_mut_ptr(), up.as_ptr(), d_up);
+            crate::engine::engine_util_blas::mju_add_to_scl3(ray.as_mut_ptr(), left.as_ptr(), d_left);
+            crate::engine::engine_util_blas::mju_normalize3(ray.as_mut_ptr());
+        }
+
+        // find intersection with geoms
+        let geomid_ptr = geomid.as_ptr() as *mut i32;
+        let flexid_ptr = flexid.as_ptr() as *mut i32;
+        let skinid_ptr = skinid.as_ptr() as *mut i32;
+
+        *geomid_ptr = -1;
+        let flg_static_val: u8 = (*vopt).flags[MJVIS_STATIC];
+        let flg_static: mjtBool = core::ptr::read(&flg_static_val as *const u8 as *const mjtBool);
+        let geomdist: f64 = crate::engine::engine_ray::mj_ray(
+            m, d, pos.as_ptr(), ray.as_ptr(),
+            (*vopt).geomgroup.as_ptr(), flg_static, -1, geomid, core::ptr::null_mut(),
+        );
+
+        // find intersection with flexes
+        let mut flexbodyid: i32 = -1;
+        let mut flexdist: f64 = -1.0;
+        let mut flexpnt: [f64; 3] = [0.0, 0.0, 0.0];
+        *flexid_ptr = -1;
+        if (*vopt).flags[MJVIS_FLEXVERT] != 0 || (*vopt).flags[MJVIS_FLEXEDGE] != 0
+            || (*vopt).flags[MJVIS_FLEXFACE] != 0 || (*vopt).flags[MJVIS_FLEXSKIN] != 0
+        {
+            let mut i: i32 = 0;
+            while i < (*m).nflex as i32 {
+                // process one flex
+                let mut vertid_local: [i32; 1] = [0];
+                let flg_fv: u8 = (*vopt).flags[MJVIS_FLEXVERT];
+                let flg_fe: u8 = (*vopt).flags[MJVIS_FLEXEDGE];
+                let flg_ff: u8 = (*vopt).flags[MJVIS_FLEXFACE];
+                let flg_fs: u8 = (*vopt).flags[MJVIS_FLEXSKIN];
+                let newdist: f64 = crate::engine::engine_ray::mj_ray_flex(
+                    m, d, (*vopt).flex_layer,
+                    core::ptr::read(&flg_fv as *const u8 as *const mjtBool),
+                    core::ptr::read(&flg_fe as *const u8 as *const mjtBool),
+                    core::ptr::read(&flg_ff as *const u8 as *const mjtBool),
+                    core::ptr::read(&flg_fs as *const u8 as *const mjtBool),
+                    i, pos.as_ptr(), ray.as_ptr(), vertid_local, core::ptr::null_mut(),
+                );
+
+                // update if closer intersection found
+                if newdist >= 0.0 && (newdist < flexdist || flexdist < 0.0) {
+                    flexdist = newdist;
+                    *flexid_ptr = i;
+                    flexbodyid = crate::engine::engine_vis_interact::mjv_flex_body_id(
+                        m, d, *flexid_ptr, vertid_local[0], flexpnt.as_mut_ptr(),
+                    );
+                }
+                i += 1;
+            }
+        }
+
+        // find intersection with skins
+        let mut skinbodyid: i32 = -1;
+        let mut skindist: f64 = -1.0;
+        let mut skinpnt: [f64; 3] = [0.0, 0.0, 0.0];
+        *skinid_ptr = -1;
+        if (*vopt).flags[MJVIS_SKIN] != 0 {
+            let mut i: i32 = 0;
+            while i < (*m).nskin as i32 {
+                // process one skin
+                let mut vertid_local: [i32; 1] = [0];
+                let newdist: f64 = crate::engine::engine_ray::mju_ray_skin(
+                    *(*m).skin_facenum.add(i as usize),
+                    *(*m).skin_vertnum.add(i as usize),
+                    (*m).skin_face.add(3 * *(*m).skin_faceadr.add(i as usize) as usize),
+                    (*scn).skinvert.add(3 * *(*m).skin_vertadr.add(i as usize) as usize),
+                    pos.as_ptr(), ray.as_ptr(), vertid_local,
+                );
+
+                // update if closer intersection found
+                if newdist >= 0.0 && (newdist < skindist || skindist < 0.0) {
+                    skindist = newdist;
+
+                    // find body with largest weight for this vertex
+                    let mut bestweight: f32 = -1.0;
+                    let mut j: i32 = *(*m).skin_boneadr.add(i as usize);
+                    while j < *(*m).skin_boneadr.add(i as usize) + *(*m).skin_bonenum.add(i as usize) {
+                        let mut k: i32 = *(*m).skin_bonevertadr.add(j as usize);
+                        while k < *(*m).skin_bonevertadr.add(j as usize) + *(*m).skin_bonevertnum.add(j as usize) {
+                            // get vertex id and weight
+                            let vid: i32 = *(*m).skin_bonevertid.add(k as usize);
+                            let vweight: f32 = *(*m).skin_bonevertweight.add(k as usize);
+
+                            // update if matching id and bigger weight
+                            if vid == vertid_local[0] && vweight > bestweight {
+                                bestweight = vweight;
+                                skinbodyid = *(*m).skin_bonebodyid.add(j as usize);
+                                *skinid_ptr = i;
+                                crate::engine::engine_util_misc::mju_f2n(
+                                    skinpnt.as_mut_ptr(),
+                                    (*scn).skinvert.add(3 * (*(*m).skin_vertadr.add(i as usize) + vertid_local[0]) as usize),
+                                    3,
+                                );
+                            }
+                            k += 1;
+                        }
+                        j += 1;
+                    }
+                }
+                i += 1;
+            }
+        }
+
+        // no intersection
+        if geomdist < 0.0 && flexdist < 0.0 && skindist < 0.0 {
+            return -1;
+        }
+
+        // find smallest non-negative distance
+        let raydist: [f64; 3] = [geomdist, flexdist, skindist];
+        let mut best: i32 = -1;
+        let mut idx: i32 = 0;
+        while idx < 3 {
+            if raydist[idx as usize] >= 0.0 {
+                if best < 0 || raydist[best as usize] > raydist[idx as usize] {
+                    best = idx;
+                }
+            }
+            idx += 1;
+        }
+
+        // geom
+        if best == 0 {
+            *flexid_ptr = -1;
+            *skinid_ptr = -1;
+            crate::engine::engine_util_blas::mju_add_scl3(
+                selpnt, pos.as_ptr(), ray.as_ptr(), raydist[best as usize],
+            );
+            return *(*m).geom_bodyid.add(*geomid_ptr as usize);
+        } else if best == 1 {
+            // flex
+            *geomid_ptr = -1;
+            *skinid_ptr = -1;
+            crate::engine::engine_util_blas::mju_copy3(selpnt, flexpnt.as_ptr());
+            return flexbodyid;
+        } else {
+            // skin
+            *geomid_ptr = -1;
+            *flexid_ptr = -1;
+            crate::engine::engine_util_blas::mju_copy3(selpnt, skinpnt.as_ptr());
+            return skinbodyid;
+        }
+    }
 }
 
 /// C: mjv_flexBodyId (engine/engine_vis_interact.h:82)

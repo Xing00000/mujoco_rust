@@ -1073,10 +1073,11 @@ pub fn mjc_line_support(res: *mut f64, obj: *mut mjCCDObj, dir: *const f64) {
 #[allow(unused_variables, non_snake_case)]
 pub fn mjc_plane_convex(m: *const mjModel, d: *mut mjData, con: *mut mjPreContact, g1: i32, g2: i32, margin: f64) -> i32 {
     extern "C" {
-        fn mjc_PlaneConvex_impl(m: *const mjModel, d: *mut mjData, con: *mut mjPreContact, g1: i32, g2: i32, margin: f64) -> i32;
+        fn mjc_PlaneConvex(m: *const mjModel, d: *mut mjData, con: *mut mjPreContact, g1: i32, g2: i32, margin: f64) -> i32;
     }
-    // SAFETY: delegates to C implementation, all pointers valid per caller contract
-    unsafe { mjc_PlaneConvex_impl(m, d, con, g1, g2, margin) }
+    // SAFETY: delegates to original C function; uses CCD types (ccd_vec3_t with opaque ccd_real_t)
+    // that cannot be manipulated in Rust. All pointers valid per caller contract.
+    unsafe { mjc_PlaneConvex(m, d, con, g1, g2, margin) }
 }
 
 /// C: mjc_ConvexHField (engine/engine_collision_convex.h:113)
