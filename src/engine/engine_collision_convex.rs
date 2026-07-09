@@ -104,9 +104,15 @@ pub fn local_to_global(res: *mut f64, mat: *const f64, dir: *const f64, pos: *co
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjc_sphere_support(res: *mut f64, obj: *mut mjCCDObj, dir: *const f64) {
-    extern "C" { fn mjc_sphereSupport_impl(res: *mut f64, obj: *mut mjCCDObj, dir: *const f64); }
-    // SAFETY: delegates to C implementation
-    unsafe { mjc_sphereSupport_impl(res, obj, dir) }
+    // SAFETY: res[3], obj valid, dir[3] valid.
+    unsafe {
+        let pos = (*obj).pos.as_ptr();
+        let radius: f64 = (*obj).size[0];
+
+        *res.add(0) = radius * *dir.add(0) + *pos.add(0);
+        *res.add(1) = radius * *dir.add(1) + *pos.add(1);
+        *res.add(2) = radius * *dir.add(2) + *pos.add(2);
+    }
 }
 
 /// C: mjc_capsuleSupport (engine/engine_collision_convex.c:231)
@@ -156,9 +162,43 @@ pub fn mjc_capsule_support(res: *mut f64, obj: *mut mjCCDObj, dir: *const f64) {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjc_ellipsoid_support(res: *mut f64, obj: *mut mjCCDObj, dir: *const f64) {
-    extern "C" { fn mjc_ellipsoidSupport_impl(res: *mut f64, obj: *mut mjCCDObj, dir: *const f64); }
-    // SAFETY: delegates to C implementation
-    unsafe { mjc_ellipsoidSupport_impl(res, obj, dir) }
+    const mjMINVAL: f64 = 1e-15;
+    const mjMINVAL2: f64 = mjMINVAL * mjMINVAL;
+    // SAFETY: res[3], obj valid, dir[3] valid. Calls local helper functions.
+    unsafe {
+        let mat = (*obj).mat.as_ptr();
+        let pos = (*obj).pos.as_ptr();
+        let size = (*obj).size.as_ptr();
+
+        // rotate dir to geom local frame
+        let mut local_dir: [f64; 3] = [0.0; 3];
+        let mut local_supp: [f64; 3] = [0.0; 3];
+        mul_mat_t_vec3(local_dir.as_mut_ptr(), mat, dir);
+
+        // find support point on unit sphere: scale dir by ellipsoid sizes
+        local_supp[0] = local_dir[0] * *size.add(0);
+        local_supp[1] = local_dir[1] * *size.add(1);
+        local_supp[2] = local_dir[2] * *size.add(2);
+
+        let norm2: f64 = local_supp[0] * local_supp[0] + local_supp[1] * local_supp[1] + local_supp[2] * local_supp[2];
+
+        // too small to normalize
+        if norm2 < mjMINVAL2 {
+            *res.add(0) = *mat.add(0) * *size.add(0) + *pos.add(0);
+            *res.add(1) = *mat.add(3) * *size.add(0) + *pos.add(1);
+            *res.add(2) = *mat.add(6) * *size.add(0) + *pos.add(2);
+            return;
+        }
+
+        // normalize and transform to ellipsoid
+        let norm_inv: f64 = 1.0 / norm2.sqrt();
+        local_supp[0] *= norm_inv * *size.add(0);
+        local_supp[1] *= norm_inv * *size.add(1);
+        local_supp[2] *= norm_inv * *size.add(2);
+
+        // transform result to global frame
+        local_to_global(res, mat, local_supp.as_ptr(), pos);
+    }
 }
 
 /// C: mjc_cylinderSupport (engine/engine_collision_convex.c:293)
@@ -170,9 +210,30 @@ pub fn mjc_ellipsoid_support(res: *mut f64, obj: *mut mjCCDObj, dir: *const f64)
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjc_cylinder_support(res: *mut f64, obj: *mut mjCCDObj, dir: *const f64) {
-    extern "C" { fn mjc_cylinderSupport_impl(res: *mut f64, obj: *mut mjCCDObj, dir: *const f64); }
-    // SAFETY: delegates to C implementation
-    unsafe { mjc_cylinderSupport_impl(res, obj, dir) }
+    const mjMINVAL: f64 = 1e-15;
+    const mjMINVAL2: f64 = mjMINVAL * mjMINVAL;
+    // SAFETY: res[3], obj valid, dir[3] valid. Calls local helper functions.
+    unsafe {
+        let mat = (*obj).mat.as_ptr();
+        let pos = (*obj).pos.as_ptr();
+        let size = (*obj).size.as_ptr();
+
+        // rotate dir to geom local frame
+        let mut local_dir: [f64; 3] = [0.0; 3];
+        let mut local_supp: [f64; 3] = [0.0; 3];
+        mul_mat_t_vec3(local_dir.as_mut_ptr(), mat, dir);
+
+        let n2: f64 = local_dir[0] * local_dir[0] + local_dir[1] * local_dir[1];
+        let scl: f64 = if n2 >= mjMINVAL2 { *size.add(0) / n2.sqrt() } else { 0.0 };
+        local_supp[0] = scl * local_dir[0];
+        local_supp[1] = scl * local_dir[1];
+
+        // set result in Z direction
+        local_supp[2] = if local_dir[2] >= 0.0 { *size.add(1) } else { -*size.add(1) };
+
+        // transform result to global frame
+        local_to_global(res, mat, local_supp.as_ptr(), pos);
+    }
 }
 
 /// C: mjc_boxSupport (engine/engine_collision_convex.c:317)
