@@ -444,9 +444,25 @@ pub fn mj_mul_m2(m: *const mjModel, d: *const mjData, res: *mut f64, vec: *const
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_add_m(m: *const mjModel, d: *mut mjData, dst: *mut f64, rownnz: *mut i32, rowadr: *mut i32, colind: *mut i32) {
-    extern "C" { fn mj_addM(m: *const mjModel, d: *mut mjData, dst: *mut f64, rownnz: *mut i32, rowadr: *mut i32, colind: *mut i32); }
-    // SAFETY: delegates to C implementation
-    unsafe { mj_addM(m, d, dst, rownnz, rowadr, colind) }
+    // SAFETY: m, d valid per caller. dst/rownnz/rowadr/colind have nv elements.
+    unsafe {
+        let nv = (*m).nv as i32;
+
+        // sparse
+        if !rownnz.is_null() && !rowadr.is_null() && !colind.is_null() {
+            crate::engine::engine_util_sparse::mju_add_to_mat_sparse(
+                dst, rownnz, rowadr, colind, nv,
+                (*d).M, (*m).M_rownnz, (*m).M_rowadr, (*m).M_colind,
+            );
+        }
+        // dense
+        else {
+            crate::engine::engine_util_sparse::mju_add_to_sym_sparse(
+                dst, (*d).M, nv,
+                (*m).M_rownnz, (*m).M_rowadr, (*m).M_colind, 0,
+            );
+        }
+    }
 }
 
 /// C: mj_applyFT (engine/engine_support.h:79)

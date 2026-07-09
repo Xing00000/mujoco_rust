@@ -379,9 +379,18 @@ pub fn mjc_set_ccd_obj_flex(obj: *mut mjCCDObj, flex: i32, elem: i32, vert: i32)
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjc_is_distinct_contact(con: *const mjPreContact, ncon: i32, tolerance: f64) -> i32 {
-    extern "C" { fn mjc_isDistinctContact(con: *const mjPreContact, ncon: i32, tolerance: f64) -> i32; }
-    // SAFETY: delegates to C implementation, pointers valid per caller contract
-    unsafe { mjc_isDistinctContact(con, ncon, tolerance) }
+    // SAFETY: con points to array of at least ncon elements.
+    unsafe {
+        let last_pos = (*con.add((ncon - 1) as usize)).pos.as_ptr();
+        for i in 0..(ncon - 1) {
+            if crate::engine::engine_util_blas::mju_dist3(
+                (*con.add(i as usize)).pos.as_ptr(), last_pos
+            ) <= tolerance {
+                return 0;
+            }
+        }
+        1
+    }
 }
 
 /// C: mju_rotateFrame (engine/engine_collision_convex.c:810)
