@@ -1440,9 +1440,53 @@ pub fn mju_history_init(buf: *mut f64, n: i32, dim: i32, times: *const f64, valu
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mju_history_insert(buf: *mut f64, n: i32, dim: i32, t: f64) -> *mut f64 {
-    extern "C" { fn mju_historyInsert(buf: *mut f64, n: i32, dim: i32, t: f64) -> *mut f64; }
-    // SAFETY: delegates to C implementation, all pointers valid per caller contract
-    unsafe { mju_historyInsert(buf, n, dim, t) }
+    // SAFETY: buf points to a ring buffer of size 2+n+n*dim. All indices within bounds.
+    unsafe {
+        let mut cursor = *buf.add(1) as i32;
+        let times = buf.add(2);
+        let values = buf.add((2 + n) as usize);
+
+        // find logical insertion index: times[i-1] < t <= times[i]
+        let i = history_find_index(times, n, cursor, t);
+
+        // exact match at logical i: return pointer to existing slot
+        if i < n {
+            let phys_i = history_physical_index(cursor, n, i);
+            if (*times.add(phys_i as usize) - t).abs() < 1e-15 {
+                return values.add((phys_i * dim) as usize);
+            }
+        }
+
+        // logical i == 0: new sample is older than oldest, replace oldest slot
+        if i == 0 {
+            let oldest_phys = history_physical_index(cursor, n, 0);
+            *times.add(oldest_phys as usize) = t;
+            return values.add((oldest_phys * dim) as usize);
+        }
+
+        // logical i == n: new sample is newer than newest, advance cursor and write
+        if i == n {
+            cursor = (cursor + 1) % n;
+            *buf.add(1) = cursor as f64;
+            *times.add(cursor as usize) = t;
+            return values.add((cursor * dim) as usize);
+        }
+
+        // 0 < i < n: out-of-order insertion, shift [1, i-1] left (dropping 0), insert at i-1
+        for j in 0..(i - 1) {
+            let src_phys = history_physical_index(cursor, n, j + 1);
+            let dst_phys = history_physical_index(cursor, n, j);
+            *times.add(dst_phys as usize) = *times.add(src_phys as usize);
+            crate::engine::engine_util_blas::mju_copy(
+                values.add((dst_phys * dim) as usize),
+                values.add((src_phys * dim) as usize),
+                dim,
+            );
+        }
+        let insert_phys = history_physical_index(cursor, n, i - 1);
+        *times.add(insert_phys as usize) = t;
+        values.add((insert_phys * dim) as usize)
+    }
 }
 
 /// C: mju_historyRead (engine/engine_util_misc.h:194)
@@ -1454,10 +1498,92 @@ pub fn mju_history_insert(buf: *mut f64, n: i32, dim: i32, t: f64) -> *mut f64 {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mju_history_read(buf: *const f64, n: i32, dim: i32, res: *mut f64, t: f64, interp: i32) -> *const f64 {
-    // WARNING: signature changed — verify body
-    // Previous params: (buf : * const f64, n : i32, dim : i32, res : * mut f64, t : f64, interp : i32)
-    // Previous return: * const f64
-    extern "C" { fn mju_historyRead(buf : * const f64 , n : i32 , dim : i32 , res : * mut f64 , t : f64 , interp : i32) -> * const f64 ; } unsafe { mju_historyRead(buf , n , dim , res , t , interp) }
+    // SAFETY: buf points to ring buffer of size 2+n+n*dim. res has at least dim elements.
+    unsafe {
+        let cursor = *buf.add(1) as i32;
+        let times = buf.add(2);
+        let values = buf.add((2 + n) as usize);
+
+        let oldest_phys = history_physical_index(cursor, n, 0);
+        let newest_phys = history_physical_index(cursor, n, n - 1);
+        let t_oldest = *times.add(oldest_phys as usize);
+        let t_newest = *times.add(newest_phys as usize);
+
+        // extrapolate before oldest: return pointer to oldest value
+        if t <= t_oldest + 1e-15 {
+            return values.add((oldest_phys * dim) as usize);
+        }
+
+        // extrapolate after newest: return pointer to newest value
+        if t >= t_newest - 1e-15 {
+            return values.add((newest_phys * dim) as usize);
+        }
+
+        // find bracketing logical index: times[i-1] < t <= times[i]
+        let i = history_find_index(times, n, cursor, t);
+        let phys_i = history_physical_index(cursor, n, i);
+
+        // check for exact match at i
+        if (t - *times.add(phys_i as usize)).abs() < 1e-15 {
+            return values.add((phys_i * dim) as usize);
+        }
+
+        // lo = i-1, hi = i
+        let phys_lo = history_physical_index(cursor, n, i - 1);
+        let phys_hi = phys_i;
+
+        // zero-order hold: return pointer to lo
+        if interp == 0 {
+            return values.add((phys_lo * dim) as usize);
+        }
+
+        let dt = *times.add(phys_hi as usize) - *times.add(phys_lo as usize);
+        let alpha = (t - *times.add(phys_lo as usize)) / dt;
+
+        // piecewise linear interpolation
+        if interp == 1 {
+            for d in 0..dim {
+                *res.add(d as usize) = *values.add((phys_lo * dim + d) as usize)
+                    + alpha * (*values.add((phys_hi * dim + d) as usize)
+                              - *values.add((phys_lo * dim + d) as usize));
+            }
+        }
+        // cubic spline interpolation
+        else {
+            let alpha2 = alpha * alpha;
+            let alpha3 = alpha2 * alpha;
+            let h00 = 2.0 * alpha3 - 3.0 * alpha2 + 1.0;
+            let h10 = alpha3 - 2.0 * alpha2 + alpha;
+            let h01 = -2.0 * alpha3 + 3.0 * alpha2;
+            let h11 = alpha3 - alpha2;
+
+            for d in 0..dim {
+                // finite differenced catmull-rom slopes
+                let mut m_lo: f64 = 0.0;
+                if i > 1 {
+                    let phys_lo_prev = history_physical_index(cursor, n, i - 2);
+                    let dt_lo = *times.add(phys_hi as usize) - *times.add(phys_lo_prev as usize);
+                    m_lo = (*values.add((phys_hi * dim + d) as usize)
+                           - *values.add((phys_lo_prev * dim + d) as usize)) / dt_lo;
+                }
+
+                let mut m_hi: f64 = 0.0;
+                if i < n - 1 {
+                    let phys_hi_next = history_physical_index(cursor, n, i + 1);
+                    let dt_hi = *times.add(phys_hi_next as usize) - *times.add(phys_lo as usize);
+                    m_hi = (*values.add((phys_hi_next * dim + d) as usize)
+                           - *values.add((phys_lo * dim + d) as usize)) / dt_hi;
+                }
+
+                *res.add(d as usize) = h00 * *values.add((phys_lo * dim + d) as usize)
+                    + h10 * dt * m_lo
+                    + h01 * *values.add((phys_hi * dim + d) as usize)
+                    + h11 * dt * m_hi;
+            }
+        }
+
+        core::ptr::null()
+    }
 }
 
 /// C: mju_encodePyramid (engine/engine_util_misc.h:200)
