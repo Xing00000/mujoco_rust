@@ -34,9 +34,62 @@ pub fn mj_default_sol_ref_imp(solref: *mut f64, solimp: *mut f64) {
 /// Calls: mj_defaultSolRefImp
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_default_option(opt: *mut mjOption) {
-    extern "C" { fn mj_defaultOption(opt: *mut mjOption); }
-    // SAFETY: delegates to C implementation, all pointers valid per caller contract
-    unsafe { mj_defaultOption(opt) }
+    // SAFETY: opt is a valid pointer per caller contract. write_bytes zeros padding.
+    unsafe {
+        core::ptr::write_bytes(opt, 0, 1);
+
+        // timing parameters
+        (*opt).timestep           = 0.002;
+
+        // solver parameters
+        (*opt).impratio           = 1.0;
+        (*opt).tolerance          = 1e-8;
+        (*opt).ls_tolerance       = 0.01;
+        (*opt).noslip_tolerance   = 1e-6;
+        (*opt).ccd_tolerance      = 1e-6;
+
+        // sleep settings
+        (*opt).sleep_tolerance    = 1e-4;
+
+        // physical constants
+        (*opt).gravity[0]         = 0.0;
+        (*opt).gravity[1]         = 0.0;
+        (*opt).gravity[2]         = -9.81;
+        (*opt).wind[0]            = 0.0;
+        (*opt).wind[1]            = 0.0;
+        (*opt).wind[2]            = 0.0;
+        (*opt).magnetic[0]        = 0.0;
+        (*opt).magnetic[1]        = -0.5;
+        (*opt).magnetic[2]        = 0.0;
+        (*opt).density            = 0.0;
+        (*opt).viscosity          = 0.0;
+
+        // solver overrides
+        (*opt).o_margin           = 0.0;
+        mj_default_sol_ref_imp((*opt).o_solref.as_mut_ptr(), (*opt).o_solimp.as_mut_ptr());
+        (*opt).o_friction[0] = 1.0;
+        (*opt).o_friction[1] = 1.0;
+        (*opt).o_friction[2] = 0.005;
+        (*opt).o_friction[3] = 0.0001;
+        (*opt).o_friction[4] = 0.0001;
+
+        // discrete options
+        (*opt).integrator         = 0;   // mjINT_EULER
+        (*opt).cone               = 0;   // mjCONE_PYRAMIDAL
+        (*opt).jacobian           = 2;   // mjJAC_AUTO
+        (*opt).solver             = 2;   // mjSOL_NEWTON
+        (*opt).iterations         = 100;
+        (*opt).ls_iterations      = 50;
+        (*opt).noslip_iterations  = 0;
+        (*opt).ccd_iterations     = 35;
+        (*opt).disableflags       = 0;
+        (*opt).enableflags        = 0;
+        (*opt).disableactuator    = 0;
+
+        // sdf collisions
+        (*opt).sdf_initpoints     = 40;
+        (*opt).sdf_iterations     = 10;
+    }
 }
 
 /// C: setf4 (engine/engine_init.c:124)
@@ -68,17 +121,33 @@ pub fn mj_default_visual(vis: *mut mjVisual) {
 /// C: mj_defaultLROpt (engine/engine_init.c:234)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_default_lr_opt(opt: *mut mjLROpt) {
-    extern "C" { fn mj_defaultLROpt(opt: *mut mjLROpt); }
-    // SAFETY: delegates to C implementation, all pointers valid per caller contract
-    unsafe { mj_defaultLROpt(opt) }
+    // SAFETY: opt is a valid pointer per caller contract.
+    unsafe {
+        (*opt).mode           = 1;     // mjLRMODE_MUSCLE
+        (*opt).useexisting    = 1;
+        (*opt).uselimit       = 0;
+
+        (*opt).accel          = 20.0;
+        (*opt).maxforce       = 0.0;
+        (*opt).timeconst      = 1.0;
+        (*opt).timestep       = 0.01;
+        (*opt).inttotal       = 10.0;
+        (*opt).interval       = 2.0;
+        (*opt).tolrange       = 0.05;
+    }
 }
 
 /// C: mj_defaultStatistic (engine/engine_init.h:30)
 /// Calls: mju_zero3
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_default_statistic(stat: *mut mjStatistic) {
-    extern "C" { fn mj_defaultStatistic(stat: *mut mjStatistic); }
-    // SAFETY: delegates to C implementation, all pointers valid per caller contract
-    unsafe { mj_defaultStatistic(stat) }
+    // SAFETY: stat is a valid pointer per caller contract.
+    unsafe {
+        crate::engine::engine_util_blas::mju_zero3((*stat).center.as_mut_ptr());
+        (*stat).extent = 2.0;
+        (*stat).meaninertia = 1.0;
+        (*stat).meanmass = 1.0;
+        (*stat).meansize = 0.2;
+    }
 }
 

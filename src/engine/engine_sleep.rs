@@ -35,11 +35,52 @@ pub fn is_smaller(vec: *const f64, weight: *const f64, n: i32, tol: f64) -> i32 
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn tree_can_sleep(m: *const mjModel, d: *const mjData, i: i32, tol: f64) -> i32 {
-    extern "C" {
-        fn treeCanSleep(m: *const mjModel, d: *const mjData, i: i32, tol: f64) -> i32;
+    // SAFETY: m and d are valid pointers. Array accesses bounded by model dimensions.
+    unsafe {
+        const MJ_SLEEP_NEVER: i32 = 3;
+        const MJ_SLEEP_AUTO_NEVER: i32 = 1;
+
+        // check sleep policy
+        if *(*m).tree_sleep_policy.add(i as usize) == MJ_SLEEP_NEVER ||
+           *(*m).tree_sleep_policy.add(i as usize) == MJ_SLEEP_AUTO_NEVER {
+            return 0;
+        }
+
+        // check xfrc_applied
+        let adr = *(*m).tree_bodyadr.add(i as usize);
+        let num = *(*m).tree_bodynum.add(i as usize);
+        if crate::engine::engine_util_misc::mju_is_zero_byte(
+            ((*d).xfrc_applied.add(6 * adr as usize)) as *const u8,
+            (6 * num as usize * core::mem::size_of::<f64>()) as i32
+        ) == 0 {
+            return 0;
+        }
+
+        // check qfrc_applied
+        let adr = *(*m).tree_dofadr.add(i as usize);
+        let num = *(*m).tree_dofnum.add(i as usize);
+        if crate::engine::engine_util_misc::mju_is_zero_byte(
+            ((*d).qfrc_applied.add(adr as usize)) as *const u8,
+            (num as usize * core::mem::size_of::<f64>()) as i32
+        ) == 0 {
+            return 0;
+        }
+
+        // check qvel
+        if tol != 0.0 {
+            return is_smaller(
+                (*d).qvel.add(adr as usize),
+                (*m).dof_length.add(adr as usize),
+                num,
+                tol
+            );
+        } else {
+            return crate::engine::engine_util_misc::mju_is_zero_byte(
+                ((*d).qvel.add(adr as usize)) as *const u8,
+                (num as usize * core::mem::size_of::<f64>()) as i32
+            );
+        }
     }
-    // SAFETY: delegates to C implementation, all pointers valid per caller contract
-    unsafe { treeCanSleep(m, d, i, tol) }
 }
 
 /// C: plural (engine/engine_sleep.c:189)
@@ -57,9 +98,30 @@ pub fn plural(n: i32) -> *const i8 {
 /// Calls: mju_isTopicEnabled, mju_message, mju_strncpy, mju_zero, plural
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_sleep_trees(m: *const mjModel, d: *mut mjData, tree: *const i32, n: i32) {
-    extern "C" { fn mj_sleepTrees(m: *const mjModel, d: *mut mjData, tree: *const i32, n: i32); }
-    // SAFETY: delegates to C implementation, all pointers valid per caller contract
-    unsafe { mj_sleepTrees(m, d, tree, n) }
+    // SAFETY: m, d, tree valid per caller. tree has at least n elements.
+    // Accesses tree_dofadr, tree_dofnum, tree_asleep, qvel, qacc within bounds.
+    unsafe {
+        for i in 0..n {
+            // create cycle
+            let current = *tree.add(i as usize);
+            let next = if i == n - 1 { *tree.add(0) } else { *tree.add((i + 1) as usize) };
+            if *(*d).tree_asleep.add(current as usize) == -1 {
+                *(*d).tree_asleep.add(current as usize) = next;
+            } else if *(*d).tree_asleep.add(current as usize) >= 0 {
+                crate::engine::engine_util_errmem::mju_error(
+                    b"trying to sleep tree %d which is already asleep\0".as_ptr() as *const i8);
+            } else {
+                crate::engine::engine_util_errmem::mju_error(
+                    b"trying to sleep tree %d which is not ready to sleep\0".as_ptr() as *const i8);
+            }
+
+            // set tree velocity and acceleration to zero
+            let adr = *(*m).tree_dofadr.add(current as usize);
+            let num = *(*m).tree_dofnum.add(current as usize);
+            crate::engine::engine_util_blas::mju_zero((*d).qvel.add(adr as usize), num);
+            crate::engine::engine_util_blas::mju_zero((*d).qacc.add(adr as usize), num);
+        }
+    }
 }
 
 /// C: mj_tendonSleepState (engine/engine_sleep.c:634)
