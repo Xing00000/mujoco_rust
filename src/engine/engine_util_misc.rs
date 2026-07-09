@@ -1879,18 +1879,104 @@ pub fn mju_str2type(str: *const i8) -> i32 {
 /// C: mju_writeNumBytes (engine/engine_util_misc.h:246)
 #[allow(unused_variables, non_snake_case)]
 pub fn mju_write_num_bytes(nbytes: usize) -> *const i8 {
-    extern "C" { fn mju_writeNumBytes_impl(nbytes: usize) -> *const i8; }
-    // SAFETY: delegates to C implementation
-    unsafe { mju_writeNumBytes_impl(nbytes) }
+    extern "C" {
+        fn snprintf(s: *mut i8, n: usize, format: *const i8, ...) -> i32;
+    }
+    // SAFETY: Uses a static buffer (mirrors C thread-local static). 
+    // snprintf is standard C library. The returned pointer is valid until next call.
+    static mut MESSAGE: [i8; 20] = [0; 20];
+    static SUFFIX: &[u8] = b" KMGTPE";
+    unsafe {
+        let mut i: i32 = 0;
+        while i < 6 {
+            let bits: usize = 1usize << (10 * (6 - i));
+            if nbytes >= bits && (nbytes & (bits - 1)) == 0 {
+                break;
+            }
+            i += 1;
+        }
+        if i < 6 {
+            snprintf(
+                MESSAGE.as_mut_ptr(), 20,
+                b"%zu%c\0".as_ptr() as *const i8,
+                nbytes >> (10 * (6 - i) as u32),
+                SUFFIX[(6 - i) as usize] as i32,
+            );
+        } else {
+            snprintf(
+                MESSAGE.as_mut_ptr(), 20,
+                b"%zu\0".as_ptr() as *const i8,
+                nbytes >> (10 * (6 - i) as u32),
+            );
+        }
+        MESSAGE.as_ptr()
+    }
 }
 
 /// C: mju_warningText (engine/engine_util_misc.h:249)
 /// Calls: mju_writeNumBytes
 #[allow(unused_variables, non_snake_case)]
 pub fn mju_warning_text(warning: i32, info: usize) -> *const i8 {
-    extern "C" { fn mju_warningText_impl(warning: i32, info: usize) -> *const i8; }
-    // SAFETY: delegates to C implementation
-    unsafe { mju_warningText_impl(warning, info) }
+    extern "C" {
+        fn snprintf(s: *mut i8, n: usize, format: *const i8, ...) -> i32;
+    }
+    // SAFETY: Uses a static buffer (mirrors C thread-local static).
+    // snprintf is standard C library. The returned pointer is valid until next call.
+    static mut STR: [i8; 1000] = [0; 1000];
+
+    const mjWARN_INERTIA: i32 = 0;
+    const mjWARN_CONTACTFULL: i32 = 1;
+    const mjWARN_CNSTRFULL: i32 = 2;
+    const mjWARN_BADQPOS: i32 = 3;
+    const mjWARN_BADQVEL: i32 = 4;
+    const mjWARN_BADQACC: i32 = 5;
+    const mjWARN_BADCTRL: i32 = 6;
+
+    unsafe {
+        match warning {
+            mjWARN_INERTIA => {
+                snprintf(STR.as_mut_ptr(), 1000,
+                    b"Inertia matrix is too close to singular at DOF %zu. Check model.\0".as_ptr() as *const i8,
+                    info);
+            }
+            mjWARN_CONTACTFULL => {
+                snprintf(STR.as_mut_ptr(), 1000,
+                    b"Too many contacts. The arena memory is full, increase arena memory allocation.(ncon = %zu)\0".as_ptr() as *const i8,
+                    info);
+            }
+            mjWARN_CNSTRFULL => {
+                snprintf(STR.as_mut_ptr(), 1000,
+                    b"Insufficient arena memory for the number of constraints generated. Increase arena memory allocation above %s bytes.\0".as_ptr() as *const i8,
+                    mju_write_num_bytes(info));
+            }
+            mjWARN_BADQPOS => {
+                snprintf(STR.as_mut_ptr(), 1000,
+                    b"Nan, Inf or huge value in QPOS at DOF %zu. The simulation is unstable.\0".as_ptr() as *const i8,
+                    info);
+            }
+            mjWARN_BADQVEL => {
+                snprintf(STR.as_mut_ptr(), 1000,
+                    b"Nan, Inf or huge value in QVEL at DOF %zu. The simulation is unstable.\0".as_ptr() as *const i8,
+                    info);
+            }
+            mjWARN_BADQACC => {
+                snprintf(STR.as_mut_ptr(), 1000,
+                    b"Nan, Inf or huge value in QACC at DOF %zu. The simulation is unstable.\0".as_ptr() as *const i8,
+                    info);
+            }
+            mjWARN_BADCTRL => {
+                snprintf(STR.as_mut_ptr(), 1000,
+                    b"Nan, Inf or huge value in CTRL at ACTUATOR %zu. The simulation is unstable.\0".as_ptr() as *const i8,
+                    info);
+            }
+            _ => {
+                snprintf(STR.as_mut_ptr(), 1000,
+                    b"Unknown warning type %d.\0".as_ptr() as *const i8,
+                    warning);
+            }
+        }
+        STR.as_ptr()
+    }
 }
 
 /// C: mju_isBad (engine/engine_util_misc.h:252)
