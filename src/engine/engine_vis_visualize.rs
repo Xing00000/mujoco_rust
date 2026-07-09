@@ -518,9 +518,35 @@ pub fn add_constraint_geoms(m: *const mjModel, d: *mut mjData, vopt: *const mjvO
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn make_face(_face: *mut f32, _normal: *mut f32, radius: f64, vertxpos: *const f64, nface: i32, i0: i32, i1: i32, i2: i32) {
-    extern "C" { fn makeFace_impl(_face: *mut f32, _normal: *mut f32, radius: f64, vertxpos: *const f64, nface: i32, i0: i32, i1: i32, i2: i32); }
-    // SAFETY: delegates to C implementation, pointers valid per caller contract
-    unsafe { makeFace_impl(_face, _normal, radius, vertxpos, nface, i0, i1, i2) }
+    // SAFETY: pointer arithmetic mirrors C exactly; caller guarantees valid ranges
+    unsafe {
+        let face = _face.add(9 * nface as usize);
+        let normal = _normal.add(9 * nface as usize);
+        let v0 = vertxpos.add(3 * i0 as usize);
+        let v1 = vertxpos.add(3 * i1 as usize);
+        let v2 = vertxpos.add(3 * i2 as usize);
+
+        // compute normal
+        let v01: [f64; 3] = [*v1.add(0) - *v0.add(0), *v1.add(1) - *v0.add(1), *v1.add(2) - *v0.add(2)];
+        let v02: [f64; 3] = [*v2.add(0) - *v0.add(0), *v2.add(1) - *v0.add(1), *v2.add(2) - *v0.add(2)];
+        let mut nrm: [f64; 3] = [0.0; 3];
+        crate::engine::engine_util_spatial::mju_cross(nrm.as_mut_ptr(), v01.as_ptr(), v02.as_ptr());
+        crate::engine::engine_util_blas::mju_normalize3(nrm.as_mut_ptr());
+
+        // set vertices: offset by radius*normal
+        let mut temp: [f64; 3] = [0.0; 3];
+        crate::engine::engine_util_blas::mju_add_scl3(temp.as_mut_ptr(), v0, nrm.as_ptr(), radius);
+        crate::engine::engine_util_misc::mju_n2f(face, temp.as_ptr(), 3);
+        crate::engine::engine_util_blas::mju_add_scl3(temp.as_mut_ptr(), v1, nrm.as_ptr(), radius);
+        crate::engine::engine_util_misc::mju_n2f(face.add(3), temp.as_ptr(), 3);
+        crate::engine::engine_util_blas::mju_add_scl3(temp.as_mut_ptr(), v2, nrm.as_ptr(), radius);
+        crate::engine::engine_util_misc::mju_n2f(face.add(6), temp.as_ptr(), 3);
+
+        // set normals
+        crate::engine::engine_util_misc::mju_n2f(normal, nrm.as_ptr(), 3);
+        crate::engine::engine_util_misc::mju_n2f(normal.add(3), nrm.as_ptr(), 3);
+        crate::engine::engine_util_misc::mju_n2f(normal.add(6), nrm.as_ptr(), 3);
+    }
 }
 
 /// C: addNormal (engine/engine_vis_visualize.c:3056)
@@ -532,9 +558,23 @@ pub fn make_face(_face: *mut f32, _normal: *mut f32, radius: f64, vertxpos: *con
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn add_normal(vertnorm: *mut f64, vertxpos: *const f64, i0: i32, i1: i32, i2: i32) {
-    extern "C" { fn addNormal_impl(vertnorm: *mut f64, vertxpos: *const f64, i0: i32, i1: i32, i2: i32); }
-    // SAFETY: delegates to C implementation, pointers valid per caller contract
-    unsafe { addNormal_impl(vertnorm, vertxpos, i0, i1, i2) }
+    // SAFETY: pointer arithmetic mirrors C exactly; caller guarantees valid ranges
+    unsafe {
+        // compute normal*area
+        let v0 = vertxpos.add(3 * i0 as usize);
+        let v1 = vertxpos.add(3 * i1 as usize);
+        let v2 = vertxpos.add(3 * i2 as usize);
+        let v01: [f64; 3] = [*v1.add(0) - *v0.add(0), *v1.add(1) - *v0.add(1), *v1.add(2) - *v0.add(2)];
+        let v02: [f64; 3] = [*v2.add(0) - *v0.add(0), *v2.add(1) - *v0.add(1), *v2.add(2) - *v0.add(2)];
+        let mut nrm: [f64; 3] = [0.0; 3];
+        crate::engine::engine_util_spatial::mju_cross(nrm.as_mut_ptr(), v01.as_ptr(), v02.as_ptr());
+        crate::engine::engine_util_blas::mju_normalize3(nrm.as_mut_ptr());
+
+        // accumulate at each vertex
+        crate::engine::engine_util_blas::mju_add_to3(vertnorm.add(3 * i0 as usize), nrm.as_ptr());
+        crate::engine::engine_util_blas::mju_add_to3(vertnorm.add(3 * i1 as usize), nrm.as_ptr());
+        crate::engine::engine_util_blas::mju_add_to3(vertnorm.add(3 * i2 as usize), nrm.as_ptr());
+    }
 }
 
 /// C: makeSmooth (engine/engine_vis_visualize.c:3076)
@@ -546,9 +586,47 @@ pub fn add_normal(vertnorm: *mut f64, vertxpos: *const f64, i0: i32, i1: i32, i2
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn make_smooth(_face: *mut f32, _normal: *mut f32, radius: f64, flg_flat: u8, vertnorm: *const f64, vertxpos: *const f64, nface: i32, i0: i32, i1: i32, i2: i32) {
-    extern "C" { fn makeSmooth_impl(_face: *mut f32, _normal: *mut f32, radius: f64, flg_flat: u8, vertnorm: *const f64, vertxpos: *const f64, nface: i32, i0: i32, i1: i32, i2: i32); }
-    // SAFETY: delegates to C implementation, pointers valid per caller contract
-    unsafe { makeSmooth_impl(_face, _normal, radius, flg_flat, vertnorm, vertxpos, nface, i0, i1, i2) }
+    // SAFETY: pointer arithmetic mirrors C exactly; caller guarantees valid ranges
+    unsafe {
+        let face = _face.add(9 * nface as usize);
+        let normal = _normal.add(9 * nface as usize);
+        let ind: [i32; 3] = [i0, i1, i2];
+        let sign: i32 = if radius > 0.0 { 1 } else { -1 };
+
+        // flat shading
+        if flg_flat != 0 {
+            // compute face normal
+            let v0 = vertxpos.add(3 * i0 as usize);
+            let v1 = vertxpos.add(3 * i1 as usize);
+            let v2 = vertxpos.add(3 * i2 as usize);
+            let v01: [f64; 3] = [*v1.add(0) - *v0.add(0), *v1.add(1) - *v0.add(1), *v1.add(2) - *v0.add(2)];
+            let v02: [f64; 3] = [*v2.add(0) - *v0.add(0), *v2.add(1) - *v0.add(1), *v2.add(2) - *v0.add(2)];
+            let mut nrm: [f64; 3] = [0.0; 3];
+            crate::engine::engine_util_spatial::mju_cross(nrm.as_mut_ptr(), v01.as_ptr(), v02.as_ptr());
+            crate::engine::engine_util_blas::mju_normalize3(nrm.as_mut_ptr());
+
+            // set all vertex normals equal to face normal
+            for k in 0..3_i32 {
+                *normal.add((3 * k + 0) as usize) = (sign as f64 * nrm[0]) as f32;
+                *normal.add((3 * k + 1) as usize) = (sign as f64 * nrm[1]) as f32;
+                *normal.add((3 * k + 2) as usize) = (sign as f64 * nrm[2]) as f32;
+            }
+        } else {
+            // smooth shading
+            for k in 0..3_i32 {
+                *normal.add((3 * k + 0) as usize) = (sign as f64 * *vertnorm.add(3 * ind[k as usize] as usize + 0)) as f32;
+                *normal.add((3 * k + 1) as usize) = (sign as f64 * *vertnorm.add(3 * ind[k as usize] as usize + 1)) as f32;
+                *normal.add((3 * k + 2) as usize) = (sign as f64 * *vertnorm.add(3 * ind[k as usize] as usize + 2)) as f32;
+            }
+        }
+
+        // set positions: vertices offset by radius*normal
+        for k in 0..3_i32 {
+            *face.add((3 * k + 0) as usize) = (*vertxpos.add(3 * ind[k as usize] as usize + 0) + radius * *vertnorm.add(3 * ind[k as usize] as usize + 0)) as f32;
+            *face.add((3 * k + 1) as usize) = (*vertxpos.add(3 * ind[k as usize] as usize + 1) + radius * *vertnorm.add(3 * ind[k as usize] as usize + 1)) as f32;
+            *face.add((3 * k + 2) as usize) = (*vertxpos.add(3 * ind[k as usize] as usize + 2) + radius * *vertnorm.add(3 * ind[k as usize] as usize + 2)) as f32;
+        }
+    }
 }
 
 /// C: makeSide (engine/engine_vis_visualize.c:3123)
@@ -560,9 +638,38 @@ pub fn make_smooth(_face: *mut f32, _normal: *mut f32, radius: f64, flg_flat: u8
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn make_side(_face: *mut f32, _normal: *mut f32, radius: f64, vertnorm: *const f64, vertxpos: *const f64, nface: i32, i0: i32, i1: i32) {
-    extern "C" { fn makeSide_impl(_face: *mut f32, _normal: *mut f32, radius: f64, vertnorm: *const f64, vertxpos: *const f64, nface: i32, i0: i32, i1: i32); }
-    // SAFETY: delegates to C implementation, pointers valid per caller contract
-    unsafe { makeSide_impl(_face, _normal, radius, vertnorm, vertxpos, nface, i0, i1) }
+    // SAFETY: pointer arithmetic mirrors C exactly; caller guarantees valid ranges
+    unsafe {
+        let face = _face.add(9 * nface as usize);
+        let normal = _normal.add(9 * nface as usize);
+
+        // compute normal
+        let v0 = vertxpos.add(3 * i0 as usize);
+        let v1 = vertxpos.add(3 * i1 as usize);
+        let v01: [f64; 3] = [*v1.add(0) - *v0.add(0), *v1.add(1) - *v0.add(1), *v1.add(2) - *v0.add(2)];
+        let mut nrm: [f64; 3] = [0.0; 3];
+        crate::engine::engine_util_spatial::mju_cross(nrm.as_mut_ptr(), v01.as_ptr(), vertnorm.add(3 * i1 as usize));
+        if radius < 0.0 {
+            crate::engine::engine_util_blas::mju_scl3(nrm.as_mut_ptr(), nrm.as_ptr(), -1.0);
+        }
+        crate::engine::engine_util_blas::mju_normalize3(nrm.as_mut_ptr());
+
+        // set normals
+        for k in 0..3_i32 {
+            *normal.add((3 * k + 0) as usize) = nrm[0] as f32;
+            *normal.add((3 * k + 1) as usize) = nrm[1] as f32;
+            *normal.add((3 * k + 2) as usize) = nrm[2] as f32;
+        }
+
+        // set positions
+        let ind: [i32; 3] = [i0, i1, i1];
+        for k in 0..3_i32 {
+            let sign: f64 = if k == 1 { -1.0 } else { 1.0 };
+            *face.add((3 * k + 0) as usize) = (*vertxpos.add(3 * ind[k as usize] as usize + 0) + sign * radius * *vertnorm.add(3 * ind[k as usize] as usize + 0)) as f32;
+            *face.add((3 * k + 1) as usize) = (*vertxpos.add(3 * ind[k as usize] as usize + 1) + sign * radius * *vertnorm.add(3 * ind[k as usize] as usize + 1)) as f32;
+            *face.add((3 * k + 2) as usize) = (*vertxpos.add(3 * ind[k as usize] as usize + 2) + sign * radius * *vertnorm.add(3 * ind[k as usize] as usize + 2)) as f32;
+        }
+    }
 }
 
 /// C: copyTex (engine/engine_vis_visualize.c:3159)
@@ -573,9 +680,19 @@ pub fn make_side(_face: *mut f32, _normal: *mut f32, radius: f64, vertnorm: *con
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn copy_tex(dst: *mut f32, src: *const f32, nface: i32, i0: i32, i1: i32, i2: i32) {
-    extern "C" { fn copyTex_impl(dst: *mut f32, src: *const f32, nface: i32, i0: i32, i1: i32, i2: i32); }
-    // SAFETY: delegates to C implementation, pointers valid per caller contract
-    unsafe { copyTex_impl(dst, src, nface, i0, i1, i2) }
+    // SAFETY: pointer arithmetic mirrors C exactly; caller guarantees valid ranges
+    unsafe {
+        if dst.is_null() || src.is_null() {
+            return;
+        }
+
+        *dst.add(6 * nface as usize + 0) = *src.add(2 * i0 as usize);
+        *dst.add(6 * nface as usize + 1) = *src.add(2 * i0 as usize + 1);
+        *dst.add(6 * nface as usize + 2) = *src.add(2 * i1 as usize);
+        *dst.add(6 * nface as usize + 3) = *src.add(2 * i1 as usize + 1);
+        *dst.add(6 * nface as usize + 4) = *src.add(2 * i2 as usize);
+        *dst.add(6 * nface as usize + 5) = *src.add(2 * i2 as usize + 1);
+    }
 }
 
 /// C: cosh_sinh (engine/engine_vis_visualize.c:3516)
