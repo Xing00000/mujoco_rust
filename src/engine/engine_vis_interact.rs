@@ -128,9 +128,39 @@ pub fn mjv_camera_in_room(headpos: *mut f64, forward: *mut f64, up: *mut f64, sc
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjv_frustum_height(scn: *const mjvScene) -> f64 {
-    extern "C" { fn mjv_frustumHeight_impl(scn: *const mjvScene) -> f64; }
-    // SAFETY: delegates to C implementation
-    unsafe { mjv_frustumHeight_impl(scn) }
+    // SAFETY: scn is valid pointer. Accessing camera[0] and camera[1] which are fixed-size array.
+    unsafe {
+        let cam1 = &(*scn).camera[0];
+        let cam2 = &(*scn).camera[1];
+
+        if cam1.orthographic != cam2.orthographic {
+            crate::engine::engine_util_errmem::mju_error(
+                b"cannot average frustums of perspective and orthographic cameras\0".as_ptr() as *const i8
+            );
+        }
+
+        let height: f64;
+        if cam1.orthographic == 0 {
+            // perspective: check znear
+            const mjMINVAL: f32 = 1e-15;
+            if cam1.frustum_near < mjMINVAL || cam2.frustum_near < mjMINVAL {
+                crate::engine::engine_util_errmem::mju_error(
+                    b"mjvScene frustum_near too small\0".as_ptr() as *const i8
+                );
+            }
+
+            // add normalized height for left and right cameras
+            height = (cam1.frustum_top - cam1.frustum_bottom) as f64 / cam1.frustum_near as f64
+                   + (cam2.frustum_top - cam2.frustum_bottom) as f64 / cam2.frustum_near as f64;
+        } else {
+            // orthographic: add height for left and right cameras
+            height = (cam1.frustum_top - cam1.frustum_bottom) as f64
+                   + (cam2.frustum_top - cam2.frustum_bottom) as f64;
+        }
+
+        // average
+        0.5 * height
+    }
 }
 
 /// C: mjv_alignToCamera (engine/engine_vis_interact.h:47)

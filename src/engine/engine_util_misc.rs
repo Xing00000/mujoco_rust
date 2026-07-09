@@ -1813,9 +1813,67 @@ pub fn mju_type2str(r#type: i32) -> *const i8 {
 /// C: mju_str2Type (engine/engine_util_misc.h:243)
 #[allow(unused_variables, non_snake_case)]
 pub fn mju_str2type(str: *const i8) -> i32 {
-    extern "C" { fn mju_str2Type_impl(str: *const i8) -> i32; }
-    // SAFETY: delegates to C implementation
-    unsafe { mju_str2Type_impl(str) }
+    extern "C" {
+        fn strcmp(s1: *const i8, s2: *const i8) -> i32;
+    }
+    // SAFETY: str is a valid null-terminated C string per caller contract.
+    // strcmp is standard C library.
+    unsafe {
+        // mjOBJ enum values (0-based sequential, then mjOBJ_FRAME=100)
+        const mjOBJ_UNKNOWN: i32 = 0;
+        const mjOBJ_BODY: i32 = 1;
+        const mjOBJ_XBODY: i32 = 2;
+        const mjOBJ_JOINT: i32 = 3;
+        const mjOBJ_DOF: i32 = 4;
+        const mjOBJ_GEOM: i32 = 5;
+        const mjOBJ_SITE: i32 = 6;
+        const mjOBJ_CAMERA: i32 = 7;
+        const mjOBJ_LIGHT: i32 = 8;
+        const mjOBJ_FLEX: i32 = 9;
+        const mjOBJ_MESH: i32 = 10;
+        const mjOBJ_SKIN: i32 = 11;
+        const mjOBJ_HFIELD: i32 = 12;
+        const mjOBJ_TEXTURE: i32 = 13;
+        const mjOBJ_MATERIAL: i32 = 14;
+        const mjOBJ_PAIR: i32 = 15;
+        const mjOBJ_EXCLUDE: i32 = 16;
+        const mjOBJ_EQUALITY: i32 = 17;
+        const mjOBJ_TENDON: i32 = 18;
+        const mjOBJ_ACTUATOR: i32 = 19;
+        const mjOBJ_SENSOR: i32 = 20;
+        const mjOBJ_NUMERIC: i32 = 21;
+        const mjOBJ_TEXT: i32 = 22;
+        const mjOBJ_TUPLE: i32 = 23;
+        const mjOBJ_KEY: i32 = 24;
+        const mjOBJ_PLUGIN: i32 = 25;
+
+        if strcmp(str, b"body\0".as_ptr() as *const i8) == 0 { return mjOBJ_BODY; }
+        if strcmp(str, b"xbody\0".as_ptr() as *const i8) == 0 { return mjOBJ_XBODY; }
+        if strcmp(str, b"joint\0".as_ptr() as *const i8) == 0 { return mjOBJ_JOINT; }
+        if strcmp(str, b"dof\0".as_ptr() as *const i8) == 0 { return mjOBJ_DOF; }
+        if strcmp(str, b"geom\0".as_ptr() as *const i8) == 0 { return mjOBJ_GEOM; }
+        if strcmp(str, b"site\0".as_ptr() as *const i8) == 0 { return mjOBJ_SITE; }
+        if strcmp(str, b"camera\0".as_ptr() as *const i8) == 0 { return mjOBJ_CAMERA; }
+        if strcmp(str, b"light\0".as_ptr() as *const i8) == 0 { return mjOBJ_LIGHT; }
+        if strcmp(str, b"flex\0".as_ptr() as *const i8) == 0 { return mjOBJ_FLEX; }
+        if strcmp(str, b"mesh\0".as_ptr() as *const i8) == 0 { return mjOBJ_MESH; }
+        if strcmp(str, b"skin\0".as_ptr() as *const i8) == 0 { return mjOBJ_SKIN; }
+        if strcmp(str, b"hfield\0".as_ptr() as *const i8) == 0 { return mjOBJ_HFIELD; }
+        if strcmp(str, b"texture\0".as_ptr() as *const i8) == 0 { return mjOBJ_TEXTURE; }
+        if strcmp(str, b"material\0".as_ptr() as *const i8) == 0 { return mjOBJ_MATERIAL; }
+        if strcmp(str, b"pair\0".as_ptr() as *const i8) == 0 { return mjOBJ_PAIR; }
+        if strcmp(str, b"exclude\0".as_ptr() as *const i8) == 0 { return mjOBJ_EXCLUDE; }
+        if strcmp(str, b"equality\0".as_ptr() as *const i8) == 0 { return mjOBJ_EQUALITY; }
+        if strcmp(str, b"tendon\0".as_ptr() as *const i8) == 0 { return mjOBJ_TENDON; }
+        if strcmp(str, b"actuator\0".as_ptr() as *const i8) == 0 { return mjOBJ_ACTUATOR; }
+        if strcmp(str, b"sensor\0".as_ptr() as *const i8) == 0 { return mjOBJ_SENSOR; }
+        if strcmp(str, b"numeric\0".as_ptr() as *const i8) == 0 { return mjOBJ_NUMERIC; }
+        if strcmp(str, b"text\0".as_ptr() as *const i8) == 0 { return mjOBJ_TEXT; }
+        if strcmp(str, b"tuple\0".as_ptr() as *const i8) == 0 { return mjOBJ_TUPLE; }
+        if strcmp(str, b"key\0".as_ptr() as *const i8) == 0 { return mjOBJ_KEY; }
+        if strcmp(str, b"plugin\0".as_ptr() as *const i8) == 0 { return mjOBJ_PLUGIN; }
+        mjOBJ_UNKNOWN
+    }
 }
 
 /// C: mju_writeNumBytes (engine/engine_util_misc.h:246)
