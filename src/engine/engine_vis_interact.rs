@@ -72,9 +72,48 @@ pub fn convert2d(res: *mut f64, action: i32, dx: f64, dy: f64, forward: *const f
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjv_room2model(modelpos: *mut f64, modelquat: *mut f64, roompos: *const f64, roomquat: *const f64, scn: *const mjvScene) {
-    extern "C" { fn mjv_room2model_impl(modelpos: *mut f64, modelquat: *mut f64, roompos: *const f64, roomquat: *const f64, scn: *const mjvScene); }
-    // SAFETY: delegates to C implementation
-    unsafe { mjv_room2model_impl(modelpos, modelquat, roompos, roomquat, scn) }
+    // SAFETY: all pointers are valid per caller contract. scn->scale, translate, rotate accessed.
+    unsafe {
+        const mjMINVAL: f32 = 1e-15;
+        let mut translate: [f64; 3] = [0.0; 3];
+        let mut rotate: [f64; 4] = [0.0; 4];
+        let mut invpos: [f64; 3] = [0.0; 3];
+        let mut invquat: [f64; 4] = [0.0; 4];
+
+        // check scale
+        if (*scn).scale < mjMINVAL {
+            crate::engine::engine_util_errmem::mju_error(
+                b"mjvScene scale too small\0".as_ptr() as *const i8
+            );
+        }
+
+        // enabled: transform
+        if (*scn).enabletransform != 0 {
+            // convert translate, rotate to mjtNum
+            crate::engine::engine_util_misc::mju_f2n(translate.as_mut_ptr(), (*scn).translate.as_ptr(), 3);
+            crate::engine::engine_util_misc::mju_f2n(rotate.as_mut_ptr(), (*scn).rotate.as_ptr(), 4);
+
+            // invert model pose (without scale)
+            crate::engine::engine_util_spatial::mju_neg_pose(
+                invpos.as_mut_ptr(), invquat.as_mut_ptr(),
+                translate.as_ptr(), rotate.as_ptr()
+            );
+
+            // map from room to model space
+            crate::engine::engine_util_spatial::mju_mul_pose(
+                modelpos, modelquat,
+                invpos.as_ptr(), invquat.as_ptr(),
+                roompos, roomquat
+            );
+
+            // divide position by scale
+            crate::engine::engine_util_blas::mju_scl3(modelpos, modelpos, 1.0 / (*scn).scale as f64);
+        } else {
+            // disabled: copy
+            crate::engine::engine_util_blas::mju_copy3(modelpos, roompos);
+            crate::engine::engine_util_blas::mju_copy4(modelquat, roomquat);
+        }
+    }
 }
 
 /// C: mjv_model2room (engine/engine_vis_interact.h:32)
@@ -86,9 +125,40 @@ pub fn mjv_room2model(modelpos: *mut f64, modelquat: *mut f64, roompos: *const f
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjv_model2room(roompos: *mut f64, roomquat: *mut f64, modelpos: *const f64, modelquat: *const f64, scn: *const mjvScene) {
-    extern "C" { fn mjv_model2room_impl(roompos: *mut f64, roomquat: *mut f64, modelpos: *const f64, modelquat: *const f64, scn: *const mjvScene); }
-    // SAFETY: delegates to C implementation
-    unsafe { mjv_model2room_impl(roompos, roomquat, modelpos, modelquat, scn) }
+    // SAFETY: all pointers are valid per caller contract. scn->scale, translate, rotate accessed.
+    unsafe {
+        const mjMINVAL: f32 = 1e-15;
+        let mut translate: [f64; 3] = [0.0; 3];
+        let mut rotate: [f64; 4] = [0.0; 4];
+
+        // check scale
+        if (*scn).scale < mjMINVAL {
+            crate::engine::engine_util_errmem::mju_error(
+                b"mjvScene scale too small\0".as_ptr() as *const i8
+            );
+        }
+
+        // enabled: transform
+        if (*scn).enabletransform != 0 {
+            // convert translate, rotate to mjtNum
+            crate::engine::engine_util_misc::mju_f2n(translate.as_mut_ptr(), (*scn).translate.as_ptr(), 3);
+            crate::engine::engine_util_misc::mju_f2n(rotate.as_mut_ptr(), (*scn).rotate.as_ptr(), 4);
+
+            // map from model to room space
+            crate::engine::engine_util_spatial::mju_mul_pose(
+                roompos, roomquat,
+                translate.as_ptr(), rotate.as_ptr(),
+                modelpos, modelquat
+            );
+
+            // scale position
+            crate::engine::engine_util_blas::mju_scl3(roompos, roompos, (*scn).scale as f64);
+        } else {
+            // disabled: copy
+            crate::engine::engine_util_blas::mju_copy3(roompos, modelpos);
+            crate::engine::engine_util_blas::mju_copy4(roomquat, modelquat);
+        }
+    }
 }
 
 /// C: mjv_cameraInModel (engine/engine_vis_interact.h:36)
@@ -114,9 +184,60 @@ pub fn mjv_camera_in_model(headpos: *mut f64, forward: *mut f64, up: *mut f64, s
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjv_camera_in_room(headpos: *mut f64, forward: *mut f64, up: *mut f64, scn: *const mjvScene) {
-    extern "C" { fn mjv_cameraInRoom_impl(headpos: *mut f64, forward: *mut f64, up: *mut f64, scn: *const mjvScene); }
-    // SAFETY: delegates to C implementation
-    unsafe { mjv_cameraInRoom_impl(headpos, forward, up, scn) }
+    // SAFETY: scn is valid. headpos/forward/up may be null (checked before use).
+    // Each non-null pointer points to valid f64[3] array.
+    unsafe {
+        const mjMINVAL: f32 = 1e-15;
+
+        // check znear
+        if (*scn).camera[0].frustum_near < mjMINVAL || (*scn).camera[1].frustum_near < mjMINVAL {
+            crate::engine::engine_util_errmem::mju_error(
+                b"mjvScene frustum_near too small\0".as_ptr() as *const i8
+            );
+        }
+
+        // clear results
+        if !headpos.is_null() {
+            crate::engine::engine_util_blas::mju_zero3(headpos);
+        }
+        if !forward.is_null() {
+            crate::engine::engine_util_blas::mju_zero3(forward);
+        }
+        if !up.is_null() {
+            crate::engine::engine_util_blas::mju_zero3(up);
+        }
+
+        // average over cameras
+        for n in 0..2i32 {
+            let mut pos: [f64; 3] = [0.0; 3];
+            let mut fwd: [f64; 3] = [0.0; 3];
+            let mut u: [f64; 3] = [0.0; 3];
+
+            // convert pos, fwd, u from f32 to f64
+            crate::engine::engine_util_misc::mju_f2n(pos.as_mut_ptr(), (*scn).camera[n as usize].pos.as_ptr(), 3);
+            crate::engine::engine_util_misc::mju_f2n(fwd.as_mut_ptr(), (*scn).camera[n as usize].forward.as_ptr(), 3);
+            crate::engine::engine_util_misc::mju_f2n(u.as_mut_ptr(), (*scn).camera[n as usize].up.as_ptr(), 3);
+
+            // finalize results
+            if !headpos.is_null() {
+                crate::engine::engine_util_blas::mju_add_to_scl3(headpos, pos.as_ptr(), 0.5);
+            }
+            if !forward.is_null() {
+                crate::engine::engine_util_blas::mju_add_to_scl3(forward, fwd.as_ptr(), 0.5);
+            }
+            if !up.is_null() {
+                crate::engine::engine_util_blas::mju_add_to_scl3(up, u.as_ptr(), 0.5);
+            }
+        }
+
+        // normalize
+        if !forward.is_null() {
+            crate::engine::engine_util_blas::mju_normalize3(forward);
+        }
+        if !up.is_null() {
+            crate::engine::engine_util_blas::mju_normalize3(up);
+        }
+    }
 }
 
 /// C: mjv_frustumHeight (engine/engine_vis_interact.h:44)

@@ -51,9 +51,10 @@ pub fn plugin_attr_seek(m: *const mjModel, plugin_id: i32, attrib_id: i32) -> *c
 /// C: mjp_defaultPlugin (engine/engine_plugin.h:26)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjp_default_plugin(plugin: *mut mjpPlugin) {
-    extern "C" { fn mjp_defaultPlugin_impl(plugin: *mut mjpPlugin); }
-    // SAFETY: delegates to C implementation
-    unsafe { mjp_defaultPlugin_impl(plugin) }
+    // SAFETY: plugin is a valid pointer to mjpPlugin. Zeroing all bytes is correct (C memset).
+    unsafe {
+        core::ptr::write_bytes(plugin, 0, 1);
+    }
 }
 
 /// C: mjp_registerPlugin (engine/engine_plugin.h:29)
@@ -99,9 +100,10 @@ pub fn mjp_get_plugin(name: *const i8, slot: *mut i32) -> *const mjpPlugin {
 /// C: mjp_defaultResourceProvider (engine/engine_plugin.h:44)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjp_default_resource_provider(provider: *mut mjpResourceProvider) {
-    extern "C" { fn mjp_defaultResourceProvider_impl(provider: *mut mjpResourceProvider); }
-    // SAFETY: delegates to C implementation, all pointers valid per caller contract
-    unsafe { mjp_defaultResourceProvider_impl(provider) }
+    // SAFETY: provider is a valid pointer. Zeroing all bytes is correct (C memset).
+    unsafe {
+        core::ptr::write_bytes(provider, 0, 1);
+    }
 }
 
 /// C: mjp_getResourceProvider (engine/engine_plugin.h:47)
@@ -168,9 +170,10 @@ pub fn mjp_register_decoder(decoder: *const mjpDecoder) {
 /// C: mjp_defaultDecoder (engine/engine_plugin.h:69)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjp_default_decoder(decoder: *mut mjpDecoder) {
-    extern "C" { fn mjp_defaultDecoder_impl(decoder: *mut mjpDecoder); }
-    // SAFETY: delegates to C implementation, all pointers valid per caller contract
-    unsafe { mjp_defaultDecoder_impl(decoder) }
+    // SAFETY: decoder is a valid pointer. Zeroing all bytes is correct (C memset).
+    unsafe {
+        core::ptr::write_bytes(decoder, 0, 1);
+    }
 }
 
 /// C: mjp_findDecoder (engine/engine_plugin.h:72)
@@ -194,9 +197,10 @@ pub fn mjp_register_encoder(encoder: *const mjpEncoder) {
 /// C: mjp_defaultEncoder (engine/engine_plugin.h:78)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjp_default_encoder(encoder: *mut mjpEncoder) {
-    extern "C" { fn mjp_defaultEncoder_impl(encoder: *mut mjpEncoder); }
-    // SAFETY: delegates to C implementation, all pointers valid per caller contract
-    unsafe { mjp_defaultEncoder_impl(encoder) }
+    // SAFETY: encoder is a valid pointer. Zeroing all bytes is correct (C memset).
+    unsafe {
+        core::ptr::write_bytes(encoder, 0, 1);
+    }
 }
 
 /// C: mjp_findEncoder (engine/engine_plugin.h:81)
