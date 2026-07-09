@@ -352,53 +352,375 @@ pub fn mj_wake_island(tree_asleep: *mut i32, ntree: i32, i: i32, wakeval: i32, r
 /// Calls: mj_wakeIsland, mju_fillInt, treeCanSleep
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_wake(m: *const mjModel, d: *mut mjData) -> i32 {
-    extern "C" {
-        fn mj_wake(m: *const mjModel, d: *mut mjData) -> i32;
+    const MJ_ENBL_SLEEP: i32 = 1 << 4;
+    const K_AWAKE: i32 = -(1 + 10); // -(1+mjMINAWAKE)
+    // SAFETY: m, d valid per caller contract. Array accesses within model dimensions.
+    unsafe {
+        let ntree = (*m).ntree as i32;
+        let mut nwoke: i32 = 0;
+
+        // sleep disabled
+        if (*m).opt.enableflags & MJ_ENBL_SLEEP == 0 {
+            // sleep disabled but some trees still asleep: wake all
+            if (*d).ntree_awake < ntree {
+                crate::engine::engine_util_misc::mju_fill_int((*d).tree_asleep, K_AWAKE, ntree);
+            }
+            return ntree - (*d).ntree_awake;
+        }
+
+        // sweep over trees, wake if required
+        for i in 0..ntree {
+            let asleep = *(*d).tree_asleep.add(i as usize) >= 0;
+
+            // awake: nothing to do
+            if !asleep {
+                continue;
+            }
+
+            // if qpos mismatch or cannot sleep: wake up
+            if *(*d).tree_awake.add(i as usize) != 0 || tree_can_sleep(m, d as *const mjData, i, 0.0) == 0 {
+                nwoke += mj_wake_island((*d).tree_asleep, ntree, i, K_AWAKE,
+                    b"perturbation\0".as_ptr() as *const i8, (*d).time);
+            }
+        }
+
+        nwoke
     }
-    // SAFETY: delegates to C implementation, all pointers valid per caller contract
-    unsafe { mj_wake(m, d) }
 }
 
 /// C: mj_wakeCollision (engine/engine_sleep.h:44)
 /// Calls: mj_flexBody, mj_wakeIsland, mju_message
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_wake_collision(m: *const mjModel, d: *mut mjData) -> i32 {
-    extern "C" {
-        fn mj_wakeCollision(m: *const mjModel, d: *mut mjData) -> i32;
+    const MJ_ENBL_SLEEP: i32 = 1 << 4;
+    // SAFETY: m, d valid. contact array has ncon elements. Array accesses bounded.
+    unsafe {
+        let ntree = (*m).ntree as i32;
+        let ncon = (*d).ncon;
+        let mut nwoke: i32 = 0;
+
+        if (*m).opt.enableflags & MJ_ENBL_SLEEP == 0 {
+            return nwoke;
+        }
+
+        // sweep over contacts, wake trees if required
+        for i in 0..ncon {
+            let con = (*d).contact.add(i as usize);
+
+            // resolve body on each side
+            let b1 = if (*con).geom[0] >= 0 {
+                *(*m).geom_bodyid.add((*con).geom[0] as usize)
+            } else {
+                mj_flex_body(m, con, 0)
+            };
+            let b2 = if (*con).geom[1] >= 0 {
+                *(*m).geom_bodyid.add((*con).geom[1] as usize)
+            } else {
+                mj_flex_body(m, con, 1)
+            };
+
+            let tree1 = *(*m).body_treeid.add(b1 as usize);
+            let tree2 = *(*m).body_treeid.add(b2 as usize);
+
+            // contact with static body, nothing to do
+            if tree1 < 0 || tree2 < 0 {
+                continue;
+            }
+
+            let awake1 = *(*d).tree_awake.add(tree1 as usize);
+            let awake2 = *(*d).tree_awake.add(tree2 as usize);
+
+            // both trees awake, nothing to do
+            if awake1 != 0 && awake2 != 0 {
+                continue;
+            }
+
+            // both trees asleep; SHOULD NOT OCCUR
+            if awake1 == 0 && awake2 == 0 {
+                crate::engine::engine_util_errmem::mju_error(
+                    b"contact between sleeping bodies %d and %d\0".as_ptr() as *const i8);
+            }
+
+            // wake sleeping tree
+            let sleeping_tree = if awake1 != 0 { tree2 } else { tree1 };
+            let wakeval = if awake1 != 0 {
+                *(*d).tree_asleep.add(tree1 as usize)
+            } else {
+                *(*d).tree_asleep.add(tree2 as usize)
+            };
+            nwoke += mj_wake_island((*d).tree_asleep, ntree, sleeping_tree, wakeval,
+                b"contact\0".as_ptr() as *const i8, (*d).time);
+        }
+
+        nwoke
     }
-    // SAFETY: delegates to C implementation, all pointers valid per caller contract
-    unsafe { mj_wakeCollision(m, d) }
 }
 
 /// C: mj_wakeTendon (engine/engine_sleep.h:47)
 /// Calls: mj_wakeIsland, tendonLimit
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_wake_tendon(m: *const mjModel, d: *mut mjData) -> i32 {
-    extern "C" {
-        fn mj_wakeTendon(m: *const mjModel, d: *mut mjData) -> i32;
+    const MJ_ENBL_SLEEP: i32 = 1 << 4;
+    // SAFETY: m, d valid. Array accesses bounded by model dimensions.
+    unsafe {
+        let ntendon = (*m).ntendon as i32;
+        let mut nwoke: i32 = 0;
+
+        if (*m).opt.enableflags & MJ_ENBL_SLEEP == 0 {
+            return nwoke;
+        }
+
+        // sweep over tendons, wake trees if required
+        for i in 0..ntendon {
+            if *(*m).tendon_treenum.add(i as usize) != 2
+                || crate::engine::engine_core_util::tendon_limit(m, (*d).ten_length, i) == 0 {
+                continue;
+            }
+
+            let tree1 = *(*m).tendon_treeid.add((2 * i) as usize);
+            let tree2 = *(*m).tendon_treeid.add((2 * i + 1) as usize);
+            let awake1 = *(*d).tree_awake.add(tree1 as usize);
+            let awake2 = *(*d).tree_awake.add(tree2 as usize);
+            if awake1 != awake2 {
+                let sleeping_tree = if awake1 != 0 { tree2 } else { tree1 };
+                let wakeval = if awake1 != 0 {
+                    *(*d).tree_asleep.add(tree1 as usize)
+                } else {
+                    *(*d).tree_asleep.add(tree2 as usize)
+                };
+                nwoke += mj_wake_island((*d).tree_asleep, (*m).ntree as i32, sleeping_tree,
+                    wakeval, b"tendon constraint\0".as_ptr() as *const i8, (*d).time);
+            }
+        }
+
+        nwoke
     }
-    // SAFETY: delegates to C implementation, all pointers valid per caller contract
-    unsafe { mj_wakeTendon(m, d) }
 }
 
 /// C: mj_wakeEquality (engine/engine_sleep.h:50)
 /// Calls: mj_sleepCycle, mj_wakeIsland, mju_message
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_wake_equality(m: *const mjModel, d: *mut mjData) -> i32 {
-    extern "C" {
-        fn mj_wakeEquality(m: *const mjModel, d: *mut mjData) -> i32;
+    const MJ_ENBL_SLEEP: i32 = 1 << 4;
+    const MJ_OBJ_BODY: i32 = 1;
+    const MJ_EQ_CONNECT: i32 = 0;
+    const MJ_EQ_WELD: i32 = 1;
+    const MJ_EQ_JOINT: i32 = 2;
+    const MJ_EQ_TENDON: i32 = 3;
+    const MJ_EQ_FLEX: i32 = 4;
+    const MJ_EQ_FLEXVERT: i32 = 5;
+    const MJ_EQ_FLEXSTRAIN: i32 = 6;
+    const MJS_STATIC: i32 = -1;
+    const MJS_ASLEEP: i32 = 0;
+    const K_AWAKE: i32 = -(1 + 10);
+
+    // SAFETY: m, d valid per caller. Array accesses bounded by neq, ntree, model topology.
+    unsafe {
+        let neq = (*m).neq as i32;
+        let ntree = (*m).ntree as i32;
+        let mut nwoke: i32 = 0;
+
+        if (*m).opt.enableflags & MJ_ENBL_SLEEP == 0 {
+            return nwoke;
+        }
+
+        // sweep over equalities, wake trees if required
+        for i in 0..neq {
+            // skip inactive
+            let active = *((*d).eq_active as *const u8).add(i as usize);
+            if active == 0 {
+                continue;
+            }
+
+            let eqtype = *(*m).eq_type.add(i as usize);
+            let id1 = *(*m).eq_obj1id.add(i as usize);
+            let id2 = *(*m).eq_obj2id.add(i as usize);
+            let tree1: i32;
+            let tree2: i32;
+
+            if eqtype == MJ_EQ_CONNECT || eqtype == MJ_EQ_WELD {
+                if *(*m).eq_objtype.add(i as usize) == MJ_OBJ_BODY {
+                    tree1 = *(*m).body_treeid.add(id1 as usize);
+                    tree2 = *(*m).body_treeid.add(id2 as usize);
+                } else {
+                    tree1 = *(*m).body_treeid.add(*(*m).site_bodyid.add(id1 as usize) as usize);
+                    tree2 = *(*m).body_treeid.add(*(*m).site_bodyid.add(id2 as usize) as usize);
+                }
+            } else if eqtype == MJ_EQ_JOINT {
+                tree1 = if id1 >= 0 { *(*m).body_treeid.add(*(*m).jnt_bodyid.add(id1 as usize) as usize) } else { -1 };
+                tree2 = if id2 >= 0 { *(*m).body_treeid.add(*(*m).jnt_bodyid.add(id2 as usize) as usize) } else { -1 };
+            } else if eqtype == MJ_EQ_TENDON {
+                crate::engine::engine_util_errmem::mju_error(
+                    b"tendon equality does not yet support sleeping\0".as_ptr() as *const i8);
+                continue;
+            } else if eqtype == MJ_EQ_FLEX || eqtype == MJ_EQ_FLEXVERT || eqtype == MJ_EQ_FLEXSTRAIN {
+                let f = id1;
+                let num: i32;
+                let adr: i32;
+                let bodyid: *const i32;
+                if *(*m).flex_interp.add(f as usize) != 0 {
+                    num = *(*m).flex_nodenum.add(f as usize);
+                    adr = *(*m).flex_nodeadr.add(f as usize);
+                    bodyid = (*m).flex_nodebodyid as *const i32;
+                } else {
+                    num = *(*m).flex_vertnum.add(f as usize);
+                    adr = *(*m).flex_vertadr.add(f as usize);
+                    bodyid = (*m).flex_vertbodyid as *const i32;
+                }
+
+                // find the first awake tree, if any
+                let mut awake_tree: i32 = -1;
+                for j in 0..num {
+                    let treeid = *(*m).body_treeid.add(*bodyid.add((adr + j) as usize) as usize);
+                    if treeid >= 0 && *(*d).tree_awake.add(treeid as usize) != 0 {
+                        awake_tree = treeid;
+                        break;
+                    }
+                }
+
+                // wake sleeping island: find first sleeping tree, wakeIsland wakes them all
+                if awake_tree >= 0 {
+                    let wakeval = *(*d).tree_asleep.add(awake_tree as usize);
+                    for j in 0..num {
+                        let treeid = *(*m).body_treeid.add(*bodyid.add((adr + j) as usize) as usize);
+                        if treeid >= 0 && *(*d).tree_awake.add(treeid as usize) == 0 {
+                            nwoke += mj_wake_island((*d).tree_asleep, ntree, treeid, wakeval,
+                                b"flex equality\0".as_ptr() as *const i8, (*d).time);
+                            break;
+                        }
+                    }
+                }
+                continue;
+            } else {
+                // default: unknown eq_type
+                continue;
+            }
+
+            // get sleep state
+            let s1: i32 = if tree1 >= 0 { *(*d).tree_awake.add(tree1 as usize) } else { MJS_STATIC };
+            let s2: i32 = if tree2 >= 0 { *(*d).tree_awake.add(tree2 as usize) } else { MJS_STATIC };
+
+            // neither is asleep, nothing to do
+            if s1 != MJS_ASLEEP && s2 != MJS_ASLEEP {
+                continue;
+            }
+
+            // one is static, nothing to do
+            if s1 == MJS_STATIC || s2 == MJS_STATIC {
+                continue;
+            }
+
+            // equality within the same tree, nothing to do
+            if tree1 == tree2 {
+                continue;
+            }
+
+            // both are asleep, wake if in different islands
+            if s1 == MJS_ASLEEP && s2 == MJS_ASLEEP {
+                let cycle1 = mj_sleep_cycle((*d).tree_asleep, ntree, tree1);
+                let cycle2 = mj_sleep_cycle((*d).tree_asleep, ntree, tree2);
+                if cycle1 != cycle2 {
+                    let nwoke1 = mj_wake_island((*d).tree_asleep, ntree, tree1, K_AWAKE,
+                        b"equality\0".as_ptr() as *const i8, (*d).time);
+                    let nwoke2 = mj_wake_island((*d).tree_asleep, ntree, tree2, K_AWAKE,
+                        b"equality\0".as_ptr() as *const i8, (*d).time);
+                    nwoke += nwoke1 + nwoke2;
+                }
+                continue;
+            }
+
+            // one is asleep and one is awake, wake the sleeping tree
+            let sleeping_tree = if s1 == MJS_ASLEEP { tree1 } else { tree2 };
+            nwoke += mj_wake_island((*d).tree_asleep, ntree, sleeping_tree, K_AWAKE,
+                b"equality\0".as_ptr() as *const i8, (*d).time);
+        }
+
+        nwoke
     }
-    // SAFETY: delegates to C implementation, all pointers valid per caller contract
-    unsafe { mj_wakeEquality(m, d) }
 }
 
 /// C: mj_sleep (engine/engine_sleep.h:53)
 /// Calls: mj_sleepTrees, mju_message, treeCanSleep
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_sleep(m: *const mjModel, d: *mut mjData) -> i32 {
-    extern "C" { fn mj_sleep(m: *const mjModel, d: *mut mjData) -> i32; }
-    // SAFETY: delegates to C implementation, all pointers valid per caller contract
-    unsafe { mj_sleep(m, d) }
+    const MJ_ENBL_SLEEP: i32 = 1 << 4;
+    const MJ_MINAWAKE: i32 = 10;
+
+    // SAFETY: m, d valid per caller. Array accesses bounded by ntree, nisland, model topology.
+    unsafe {
+        let ntree = (*m).ntree as i32;
+        let nisland = (*d).nisland;
+        let mut nslept: i32 = 0;
+
+        // sleep disabled: nothing to do
+        if (*m).opt.enableflags & MJ_ENBL_SLEEP == 0 {
+            return nslept;
+        }
+
+        // have constraints but no island structure: can't sleep
+        if (*d).nefc != 0 && nisland == 0 {
+            return nslept;
+        }
+
+        // sweep over awake trees, increment tree_asleep if under tolerance
+        for i in 0..ntree {
+            // skip sleeping tree
+            if *(*d).tree_asleep.add(i as usize) >= 0 {
+                continue;
+            }
+
+            // increment tree_asleep if tree can sleep, otherwise wake up
+            if tree_can_sleep(m, d as *const mjData, i, (*m).opt.sleep_tolerance) != 0 {
+                *(*d).tree_asleep.add(i as usize) += (*(*d).tree_asleep.add(i as usize) < -1) as i32;
+            } else {
+                *(*d).tree_asleep.add(i as usize) = -(1 + MJ_MINAWAKE);
+            }
+        }
+
+        // sweep over islands, put to sleep if all trees are under tolerance
+        for i in 0..nisland {
+            // check if all trees in the island can sleep
+            let mut can_sleep: i32 = 1;
+            let start = *(*d).island_itreeadr.add(i as usize);
+            let end = start + *(*d).island_ntree.add(i as usize);
+            for j in start..end {
+                let tree_asleep_val = *(*d).tree_asleep.add(*(*d).map_itree2tree.add(j as usize) as usize);
+                if tree_asleep_val < -1 {
+                    can_sleep = 0;
+                    break;
+                }
+                // sleeping tree in an island; SHOULD NOT OCCUR
+                else if tree_asleep_val >= 0 {
+                    crate::engine::engine_util_errmem::mju_error(
+                        b"found sleeping tree %d in island %d\0".as_ptr() as *const i8);
+                }
+            }
+
+            // put island to sleep
+            if can_sleep != 0 {
+                let tree = (*d).map_itree2tree.add(start as usize) as *const i32;
+                let n = *(*d).island_ntree.add(i as usize);
+                mj_sleep_trees(m, d, tree, n);
+                nslept += n;
+            }
+        }
+
+        // sleep unconstrained trees (with or without island structure)
+        let start = if nisland != 0 {
+            *(*d).island_itreeadr.add((nisland - 1) as usize) + *(*d).island_ntree.add((nisland - 1) as usize)
+        } else {
+            0
+        };
+        for j in start..ntree {
+            let i = if nisland != 0 { *(*d).map_itree2tree.add(j as usize) } else { j };
+            if *(*d).tree_asleep.add(i as usize) == -1 {
+                mj_sleep_trees(m, d, &i as *const i32, 1);
+                nslept += 1;
+            }
+        }
+
+        nslept
+    }
 }
 
 /// C: mj_flexBody (engine/engine_sleep.h:56)
