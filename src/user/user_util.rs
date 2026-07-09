@@ -1114,8 +1114,22 @@ pub fn mjuu_ext_to_content_type(filename: string_view) -> std__string {
 /// C: mjuu_dirnamelen (user/user_util.h:299)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjuu_dirnamelen(path: *const i8) -> i32 {
-    extern "C" { fn mjuu_dirnamelen_impl(path: *const i8) -> i32; }
-    // SAFETY: delegates to C implementation
-    unsafe { mjuu_dirnamelen_impl(path) }
+    // SAFETY: path is a valid null-terminated C string, or null.
+    unsafe {
+        if path.is_null() {
+            return 0;
+        }
+
+        let mut pos: i32 = -1;
+        let mut i: i32 = 0;
+        while *path.add(i as usize) != 0 {
+            if *path.add(i as usize) == b'/' as i8 || *path.add(i as usize) == b'\\' as i8 {
+                pos = i;
+            }
+            i += 1;
+        }
+
+        pos + 1
+    }
 }
 
