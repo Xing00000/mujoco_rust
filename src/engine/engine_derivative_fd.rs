@@ -58,9 +58,21 @@ pub fn state_diff(m: *const mjModel, ds: *mut f64, s1: *const f64, s2: *const f6
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn clamped_diff(dx: *mut f64, x: *const f64, x_plus: *const f64, x_minus: *const f64, h: f64, nx: i32) {
-    extern "C" { fn clampedDiff_impl(dx: *mut f64, x: *const f64, x_plus: *const f64, x_minus: *const f64, h: f64, nx: i32); }
-    // SAFETY: delegates to C implementation
-    unsafe { clampedDiff_impl(dx, x, x_plus, x_minus, h, nx) }
+    // SAFETY: caller guarantees dx points to valid array of at least nx elements.
+    //         x, x_plus, x_minus are either null or point to valid arrays of at least nx elements.
+    if !x_plus.is_null() && x_minus.is_null() {
+        // forward differencing
+        diff(dx, x, x_plus, h, nx);
+    } else if x_plus.is_null() && !x_minus.is_null() {
+        // backward differencing
+        diff(dx, x_minus, x, h, nx);
+    } else if !x_plus.is_null() && !x_minus.is_null() {
+        // centered differencing
+        diff(dx, x_plus, x_minus, 2.0 * h, nx);
+    } else {
+        // differencing failed, write zeros
+        crate::engine::engine_util_blas::mju_zero(dx, nx);
+    }
 }
 
 /// C: clampedStateDiff (engine/engine_derivative_fd.c:87)
@@ -85,9 +97,15 @@ pub fn clamped_state_diff(m: *const mjModel, ds: *mut f64, s: *const f64, s_plus
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn in_range(x1: f64, x2: f64, range: *const f64) -> i32 {
-    extern "C" { fn inRange_impl(x1: f64, x2: f64, range: *const f64) -> i32; }
-    // SAFETY: delegates to C implementation
-    unsafe { inRange_impl(x1, x2, range) }
+    // SAFETY: caller guarantees range points to a valid array of at least 2 elements.
+    unsafe {
+        if x1 >= *range.add(0) && x1 <= *range.add(1) &&
+           x2 >= *range.add(0) && x2 <= *range.add(1) {
+            1
+        } else {
+            0
+        }
+    }
 }
 
 /// C: inverseSkip (engine/engine_derivative_fd.c:152)

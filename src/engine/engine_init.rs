@@ -12,9 +12,22 @@ use crate::types::*;
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_default_sol_ref_imp(solref: *mut f64, solimp: *mut f64) {
-    extern "C" { fn mj_defaultSolRefImp_impl(solref: *mut f64, solimp: *mut f64); }
-    // SAFETY: delegates to C implementation, all pointers valid per caller contract
-    unsafe { mj_defaultSolRefImp_impl(solref, solimp) }
+    // SAFETY: caller guarantees solref (if non-null) points to array of at least 2 elements,
+    //         solimp (if non-null) points to array of at least 5 elements.
+    unsafe {
+        if !solref.is_null() {
+            *solref.add(0) = 0.02;   // timeconst
+            *solref.add(1) = 1.0;    // dampratio
+        }
+
+        if !solimp.is_null() {
+            *solimp.add(0) = 0.9;    // dmin
+            *solimp.add(1) = 0.95;   // dmax
+            *solimp.add(2) = 0.001;  // width
+            *solimp.add(3) = 0.5;    // midpoint
+            *solimp.add(4) = 2.0;    // power
+        }
+    }
 }
 
 /// C: mj_defaultOption (engine/engine_init.c:51)
@@ -34,9 +47,13 @@ pub fn mj_default_option(opt: *mut mjOption) {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn setf4(rgba: *mut f32, r: f32, g: f32, b: f32, a: f32) {
-    extern "C" { fn setf4_impl(rgba: *mut f32, r: f32, g: f32, b: f32, a: f32); }
-    // SAFETY: delegates to C implementation, all pointers valid per caller contract
-    unsafe { setf4_impl(rgba, r, g, b, a) }
+    // SAFETY: caller guarantees rgba points to a valid array of at least 4 f32 elements.
+    unsafe {
+        *rgba.add(0) = r;
+        *rgba.add(1) = g;
+        *rgba.add(2) = b;
+        *rgba.add(3) = a;
+    }
 }
 
 /// C: mj_defaultVisual (engine/engine_init.c:133)
