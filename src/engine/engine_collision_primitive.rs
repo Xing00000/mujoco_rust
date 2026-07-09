@@ -791,10 +791,16 @@ pub fn mjc_capsule_box(m: *const mjModel, d: *mut mjData, con: *mut mjPreContact
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjc_sphere_box(m: *const mjModel, d: *mut mjData, con: *mut mjPreContact, g1: i32, g2: i32, margin: f64) -> i32 {
-
-    extern "C" { fn mjc_SphereBox_impl(m: *const mjModel, d: *mut mjData, con: *mut mjPreContact, g1: i32, g2: i32, margin: f64) -> i32; }
-    // SAFETY: delegates to C implementation
-    unsafe { mjc_SphereBox_impl(m, d, con, g1, g2, margin) }
+    // SAFETY: m, d, con valid. g1, g2 are valid geom indices.
+    unsafe {
+        let pos1: *const f64 = (*d).geom_xpos.add(3 * g1 as usize);
+        let mat1: *const f64 = (*d).geom_xmat.add(9 * g1 as usize);
+        let size1: *const f64 = (*m).geom_size.add(3 * g1 as usize);
+        let pos2: *const f64 = (*d).geom_xpos.add(3 * g2 as usize);
+        let mat2: *const f64 = (*d).geom_xmat.add(9 * g2 as usize);
+        let size2: *const f64 = (*m).geom_size.add(3 * g2 as usize);
+        crate::engine::engine_collision_box::mjraw_sphere_box(con, margin, pos1, mat1, size1, pos2, mat2, size2)
+    }
 }
 
 /// C: mjc_BoxBox (engine/engine_collision_primitive.h:71)
