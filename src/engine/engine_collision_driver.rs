@@ -31,27 +31,36 @@ pub fn get_margin(m: *const mjModel, g1: i32, g2: i32, ipair: i32) -> f64 {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn get_gap(m: *const mjModel, g1: i32, g2: i32, ipair: i32) -> f64 {
-    // WARNING: signature changed — verify body
-    // Previous params: (m : * const mjModel, g1 : i32, g2 : i32, ipair : i32)
-    // Previous return: f64
-    extern "C" { fn getGap_impl (m : * const mjModel , g1 : i32 , g2 : i32 , ipair : i32) -> f64 ; } unsafe { getGap_impl (m , g1 , g2 , ipair) }
+    // SAFETY: m is a valid pointer to mjModel, g1/g2/ipair are valid indices
+    unsafe {
+        if ipair >= 0 {
+            *(*m).pair_gap.add(ipair as usize)
+        } else {
+            *(*m).geom_gap.add(g1 as usize) + *(*m).geom_gap.add(g2 as usize)
+        }
+    }
 }
 
 /// C: resetArena (engine/engine_collision_driver.c:179)
 #[allow(unused_variables, non_snake_case)]
 pub fn reset_arena(d: *mut mjData) {
-    // WARNING: signature changed — verify body
-    // Previous params: (d : * mut mjData)
-    // Previous return: ()
-    extern "C" { fn resetArena_impl (d : * mut mjData) ; } unsafe { resetArena_impl (d) }
+    // SAFETY: d is a valid pointer to mjData
+    unsafe {
+        (*d).parena = (*d).ncon as usize * core::mem::size_of::<mjContact>();
+    }
 }
 
 /// C: alignArena (engine/engine_collision_driver.c:189)
 #[allow(unused_variables, non_snake_case)]
 pub fn align_arena(d: *mut mjData, alignment: usize) -> usize {
-    extern "C" { fn alignArena_impl(d: *mut mjData, alignment: usize) -> usize; }
-    // SAFETY: delegates to C implementation
-    unsafe { alignArena_impl(d, alignment) }
+    // SAFETY: d is a valid pointer to mjData
+    unsafe {
+        let misalignment = (*d).parena % alignment;
+        if misalignment != 0 {
+            (*d).parena += alignment - misalignment;
+        }
+        (*d).parena
+    }
 }
 
 /// C: planeGeomDist (engine/engine_collision_driver.c:199)
@@ -63,19 +72,36 @@ pub fn align_arena(d: *mut mjData, alignment: usize) -> usize {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn plane_geom_dist(m: *const mjModel, d: *mut mjData, g1: i32, g2: i32) -> f64 {
-    // WARNING: signature changed — verify body
-    // Previous params: (m : * const mjModel, d : * mut mjData, g1 : i32, g2 : i32)
-    // Previous return: f64
-    extern "C" { fn planeGeomDist_impl (m : * const mjModel , d : * mut mjData , g1 : i32 , g2 : i32) -> f64 ; } unsafe { planeGeomDist_impl (m , d , g1 , g2) }
+    // SAFETY: m, d are valid pointers; g1 is a plane geom, g2 is any geom
+    unsafe {
+        let mat1: *const f64 = (*d).geom_xmat.add(9 * g1 as usize);
+        let norm: [f64; 3] = [*mat1.add(2), *mat1.add(5), *mat1.add(8)];
+        let mut dif: [f64; 3] = [0.0; 3];
+        crate::engine::engine_util_blas::mju_sub3(
+            dif.as_mut_ptr(),
+            (*d).geom_xpos.add(3 * g2 as usize),
+            (*d).geom_xpos.add(3 * g1 as usize),
+        );
+        crate::engine::engine_util_blas::mju_dot3(dif.as_ptr(), norm.as_ptr())
+    }
 }
 
 /// C: hasPlane (engine/engine_collision_driver.c:210)
 #[allow(unused_variables, non_snake_case)]
 pub fn has_plane(m: *const mjModel, body: i32) -> i32 {
-    // WARNING: signature changed — verify body
-    // Previous params: (m : * const mjModel, body : i32)
-    // Previous return: i32
-    extern "C" { fn hasPlane_impl (m : * const mjModel , body : i32) -> i32 ; } unsafe { hasPlane_impl (m , body) }
+    // SAFETY: m is valid mjModel pointer; body is a valid body index
+    unsafe {
+        let start = *(*m).body_geomadr.add(body as usize);
+        let end = start + *(*m).body_geomnum.add(body as usize);
+        let mut g = start;
+        while g < end {
+            if *(*m).geom_type.add(g as usize) == 0 {  // mjGEOM_PLANE = 0
+                return 1;
+            }
+            g += 1;
+        }
+        0
+    }
 }
 
 /// C: filterBitmask (engine/engine_collision_driver.c:227)
@@ -229,28 +255,50 @@ pub fn can_collide(m: *const mjModel, bf: i32) -> i32 {
 /// Calls: filterBitmask
 #[allow(unused_variables, non_snake_case)]
 pub fn can_collide2(m: *const mjModel, bf1: i32, bf2: i32) -> i32 {
-    // WARNING: signature changed — verify body
-    // Previous params: (m : * const mjModel, bf1 : i32, bf2 : i32)
-    // Previous return: i32
-    extern "C" { fn canCollide2_impl (m : * const mjModel , bf1 : i32 , bf2 : i32) -> i32 ; } unsafe { canCollide2_impl (m , bf1 , bf2) }
+    // SAFETY: m is valid mjModel pointer; bf1, bf2 are valid bodyflex indices
+    unsafe {
+        let nbody = (*m).nbody as i32;
+        let contype1: i32 = if bf1 < nbody {
+            *(*m).body_contype.add(bf1 as usize)
+        } else {
+            *(*m).flex_contype.add((bf1 - nbody) as usize)
+        };
+        let conaffinity1: i32 = if bf1 < nbody {
+            *(*m).body_conaffinity.add(bf1 as usize)
+        } else {
+            *(*m).flex_conaffinity.add((bf1 - nbody) as usize)
+        };
+        let contype2: i32 = if bf2 < nbody {
+            *(*m).body_contype.add(bf2 as usize)
+        } else {
+            *(*m).flex_contype.add((bf2 - nbody) as usize)
+        };
+        let conaffinity2: i32 = if bf2 < nbody {
+            *(*m).body_conaffinity.add(bf2 as usize)
+        } else {
+            *(*m).flex_conaffinity.add((bf2 - nbody) as usize)
+        };
+        // opposite of bitmask filter
+        (filter_bitmask(contype1, conaffinity1, contype2, conaffinity2) == 0) as i32
+    }
 }
 
 /// C: mj_collideTree (engine/engine_collision_driver.c:361)
 /// Calls: canCollide2, filterBitmask, filterBox, filterCollisionPair, filterSphereBox, mj_assignMargin, mj_collideElems, mj_collideGeomElem, mj_collideOBB, mj_collidePlaneFlex, mj_collideSdfFlex, mj_filterSphere, mj_freeStack, mj_markStack, mj_narrowphase, mj_stackAllocInfo, mju_error, mju_message
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_collide_tree(m: *const mjModel, d: *mut mjData, bf1: i32, bf2: i32, merged: i32, startadr: i32, pairadr: i32) {
-    extern "C" { fn mj_collideTree_impl(m: *const mjModel, d: *mut mjData, bf1: i32, bf2: i32, merged: i32, startadr: i32, pairadr: i32); }
+    extern "C" { fn mj_collideTree(m: *const mjModel, d: *mut mjData, bf1: i32, bf2: i32, merged: i32, startadr: i32, pairadr: i32); }
     // SAFETY: delegates to C implementation, all pointers valid per caller contract
-    unsafe { mj_collideTree_impl(m, d, bf1, bf2, merged, startadr, pairadr) }
+    unsafe { mj_collideTree(m, d, bf1, bf2, merged, startadr, pairadr) }
 }
 
 /// C: mj_narrowphase (engine/engine_collision_driver.c:367)
 /// Calls: getGap, getMargin, mj_arenaAllocByte, mj_contactParam, mj_freeStack, mj_markStack, mj_maxContact, mj_setContact, mj_stackAllocByte, mj_stackAllocInfo, mj_stackAllocInt, mj_warning, mjc_ccdSize, mji_copy3, mju_copy, mju_dispatch, mju_numThread
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_narrowphase(m: *const mjModel, d: *mut mjData, buffer: *const mjcPair, npair: i32, parena: usize) {
-    extern "C" { fn mj_narrowphase_impl(m: *const mjModel, d: *mut mjData, buffer: *const mjcPair, npair: i32, parena: usize); }
+    extern "C" { fn mj_narrowphase(m: *const mjModel, d: *mut mjData, buffer: *const mjcPair, npair: i32, parena: usize); }
     // SAFETY: delegates to C implementation
-    unsafe { mj_narrowphase_impl(m, d, buffer, npair, parena) }
+    unsafe { mj_narrowphase(m, d, buffer, npair, parena) }
 }
 
 /// C: mj_collidePlaneFlex (engine/engine_collision_driver.c:371)
@@ -258,47 +306,156 @@ pub fn mj_narrowphase(m: *const mjModel, d: *mut mjData, buffer: *const mjcPair,
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_collide_plane_flex(m: *const mjModel, d: *mut mjData, g: i32, f: i32) {
     extern "C" {
-        fn mj_collidePlaneFlex_impl(m: *const mjModel, d: *mut mjData, g: i32, f: i32);
+        fn mj_collidePlaneFlex(m: *const mjModel, d: *mut mjData, g: i32, f: i32);
     }
     // SAFETY: delegates to C implementation, all pointers valid per caller contract
-    unsafe { mj_collidePlaneFlex_impl(m, d, g, f) }
+    unsafe { mj_collidePlaneFlex(m, d, g, f) }
 }
 
 /// C: mj_collideSdfFlex (engine/engine_collision_driver.c:374)
 /// Calls: mj_addContact, mj_assignMargin, mj_contactParam, mj_freeStack, mj_markStack, mj_setContact, mj_stackAllocInfo, mjc_FlexSDF, mju_copy3
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_collide_sdf_flex(m: *const mjModel, d: *mut mjData, g: i32, f: i32) {
-    extern "C" { fn mj_collideSdfFlex_impl(m: *const mjModel, d: *mut mjData, g: i32, f: i32); }
+    extern "C" { fn mj_collideSdfFlex(m: *const mjModel, d: *mut mjData, g: i32, f: i32); }
     // SAFETY: delegates to C implementation, all pointers valid per caller contract
-    unsafe { mj_collideSdfFlex_impl(m, d, g, f) }
+    unsafe { mj_collideSdfFlex(m, d, g, f) }
 }
 
 /// C: mj_collideFlexInternal (engine/engine_collision_driver.c:377)
 /// Calls: mj_addContact, mj_collideElemVert, mj_contactParam, mj_setContact, mju_copy3, planeVertex
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_collide_flex_internal(m: *const mjModel, d: *mut mjData, f: i32) {
-    extern "C" { fn mj_collideFlexInternal_impl(m: *const mjModel, d: *mut mjData, f: i32); }
+    extern "C" { fn mj_collideFlexInternal(m: *const mjModel, d: *mut mjData, f: i32); }
     // SAFETY: delegates to C implementation, all pointers valid per caller contract
-    unsafe { mj_collideFlexInternal_impl(m, d, f) }
+    unsafe { mj_collideFlexInternal(m, d, f) }
 }
 
 /// C: contactcompare (engine/engine_collision_driver.c:380)
 #[allow(unused_variables, non_snake_case)]
 pub fn contactcompare(c1: *const mjContact, c2: *const mjContact, context: *mut ()) -> i32 {
-    // WARNING: signature changed — verify body
-    // Previous params: (c1 : * const mjContact, c2 : * const mjContact, context : * mut ())
-    // Previous return: i32
-    extern "C" { fn contactcompare_impl (c1 : * const mjContact , c2 : * const mjContact , context : * mut ()) -> i32 ; } unsafe { contactcompare_impl (c1 , c2 , context) }
+    // SAFETY: c1, c2 are valid mjContact pointers; context is a valid mjModel pointer
+    unsafe {
+        let m: *const mjModel = context as *const mjModel;
+
+        // get colliding object ids
+        let mut con1_obj1: i32 = if (*c1).geom[0] >= 0 { (*c1).geom[0] }
+            else if (*c1).elem[0] >= 0 { (*c1).elem[0] }
+            else { (*c1).vert[0] };
+        let mut con1_obj2: i32 = if (*c1).geom[1] >= 0 { (*c1).geom[1] }
+            else if (*c1).elem[1] >= 0 { (*c1).elem[1] }
+            else { (*c1).vert[1] };
+        let mut con2_obj1: i32 = if (*c2).geom[0] >= 0 { (*c2).geom[0] }
+            else if (*c2).elem[0] >= 0 { (*c2).elem[0] }
+            else { (*c2).vert[0] };
+        let mut con2_obj2: i32 = if (*c2).geom[1] >= 0 { (*c2).geom[1] }
+            else if (*c2).elem[1] >= 0 { (*c2).elem[1] }
+            else { (*c2).vert[1] };
+
+        // for geom:geom, undo type-based swapping for sorting purposes
+        if (*c1).geom[0] >= 0 && (*c1).geom[1] >= 0
+            && (*c2).geom[0] >= 0 && (*c2).geom[1] >= 0
+        {
+            if *(*m).geom_type.add(con1_obj1 as usize) > *(*m).geom_type.add(con1_obj2 as usize) {
+                let tmp = con1_obj1;
+                con1_obj1 = con1_obj2;
+                con1_obj2 = tmp;
+            }
+            if *(*m).geom_type.add(con2_obj1 as usize) > *(*m).geom_type.add(con2_obj2 as usize) {
+                let tmp = con2_obj1;
+                con2_obj1 = con2_obj2;
+                con2_obj2 = tmp;
+            }
+        }
+
+        if con1_obj1 < con2_obj1 { return -1; }
+        if con1_obj1 > con2_obj1 { return 1; }
+        if con1_obj2 < con2_obj2 { return -1; }
+        if con1_obj2 > con2_obj2 { return 1; }
+        0
+    }
 }
 
 /// C: contactSort (engine/engine_collision_driver.c:413)
 /// Calls: contactcompare
 #[allow(unused_variables, non_snake_case)]
 pub fn contact_sort(arr: *mut mjContact, buf: *mut mjContact, n: i32, context: *mut ()) {
-    // WARNING: signature changed — verify body
-    // Previous params: (arr : * mut mjContact, buf : * mut mjContact, n : i32, context : * mut ())
-    // Previous return: ()
-    extern "C" { fn contactSort_impl (arr : * mut mjContact , buf : * mut mjContact , n : i32 , context : * mut ()) ; } unsafe { contactSort_impl (arr , buf , n , context) }
+    // SAFETY: arr and buf are valid arrays of at least n elements.
+    // Implements mjSORT(contactSort, mjContact, contactcompare) — timsort.
+    unsafe {
+        const RUNSIZE: i32 = 32;
+
+        // insertion sort for small runs
+        let mut start: i32 = 0;
+        while start < n {
+            let end = if start + RUNSIZE < n { start + RUNSIZE } else { n };
+            let mut j = start + 1;
+            while j < end {
+                let tmp = *arr.add(j as usize);
+                let mut k = j - 1;
+                while k >= start && contactcompare(arr.add(k as usize), &tmp as *const mjContact, context) > 0 {
+                    *arr.add(k as usize + 1) = *arr.add(k as usize);
+                    k -= 1;
+                }
+                *arr.add(k as usize + 1) = tmp;
+                j += 1;
+            }
+            start += RUNSIZE;
+        }
+
+        // bottom-up merge
+        let mut src = arr;
+        let mut dest = buf;
+        let mut len: i32 = RUNSIZE;
+        while len < n {
+            let mut ms: i32 = 0;
+            while ms < n {
+                let mid = ms + len;
+                let end = if ms + 2 * len < n { ms + 2 * len } else { n };
+                if mid < end {
+                    let mut i = ms;
+                    let mut j_idx = mid;
+                    let mut k = ms;
+                    while i < mid && j_idx < end {
+                        if contactcompare(src.add(i as usize), src.add(j_idx as usize), context) <= 0 {
+                            *dest.add(k as usize) = *src.add(i as usize);
+                            i += 1;
+                        } else {
+                            *dest.add(k as usize) = *src.add(j_idx as usize);
+                            j_idx += 1;
+                        }
+                        k += 1;
+                    }
+                    if i < mid {
+                        core::ptr::copy_nonoverlapping(
+                            src.add(i as usize),
+                            dest.add(k as usize),
+                            (mid - i) as usize,
+                        );
+                    } else if j_idx < end {
+                        core::ptr::copy_nonoverlapping(
+                            src.add(j_idx as usize),
+                            dest.add(k as usize),
+                            (end - j_idx) as usize,
+                        );
+                    }
+                } else {
+                    core::ptr::copy_nonoverlapping(
+                        src.add(ms as usize),
+                        dest.add(ms as usize),
+                        (end - ms) as usize,
+                    );
+                }
+                ms += 2 * len;
+            }
+            let tmp = src;
+            src = dest;
+            dest = tmp;
+            len *= 2;
+        }
+        if src != arr {
+            core::ptr::copy_nonoverlapping(src, arr, n as usize);
+        }
+    }
 }
 
 /// C: filterFlexContacts (engine/engine_collision_driver.c:417)
@@ -399,10 +556,10 @@ pub fn filter_flex_contacts(d: *mut mjData, ncon_before: i32) {
 #[allow(unused_variables, non_snake_case)]
 pub fn push_pair_arena(m: *const mjModel, d: *mut mjData, g1: i32, g2: i32, ipair: i32) {
     extern "C" {
-        fn pushPairArena_impl(m: *const mjModel, d: *mut mjData, g1: i32, g2: i32, ipair: i32);
+        fn pushPairArena(m: *const mjModel, d: *mut mjData, g1: i32, g2: i32, ipair: i32);
     }
     // SAFETY: delegates to C implementation, all pointers valid per caller contract
-    unsafe { pushPairArena_impl(m, d, g1, g2, ipair) }
+    unsafe { pushPairArena(m, d, g1, g2, ipair) }
 }
 
 /// C: filterCollisionPair (engine/engine_collision_driver.c:508)
@@ -785,10 +942,123 @@ pub fn sa_psort(arr: *mut mjtSAP, buf: *mut mjtSAP, n: i32, context: *mut ()) {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_sap(d: *mut mjData, aamm: *const f64, n: i32, axis_x: i32, pair: *mut i32, maxpair: i32) -> i32 {
-    // WARNING: signature changed — verify body
-    // Previous params: (d : * mut mjData, aamm : * const f64, n : i32, axis_x : i32, pair : * mut i32, maxpair : i32)
-    // Previous return: i32
-    extern "C" { fn mj_SAP_impl (d : * mut mjData , aamm : * const f64 , n : i32 , axis_x : i32 , pair : * mut i32 , maxpair : i32) -> i32 ; } unsafe { mj_SAP_impl (d , aamm , n , axis_x , pair , maxpair) }
+    // SAFETY: d valid mjData; aamm has 6*n elements (column-major); pair has maxpair capacity
+    unsafe {
+        // check inputs
+        if n >= 0x10000 || axis_x < 0 || axis_x > 2 || maxpair < 1 {
+            return -1;
+        }
+
+        // allocate sort buffer
+        let sortbuf: *mut mjtSAP = crate::engine::engine_memory::mj_stack_alloc_info(
+            d,
+            (2 * n as usize) * core::mem::size_of::<mjtSAP>(),
+            core::mem::align_of::<mjtSAP>(),
+            b"mj_SAP\0".as_ptr() as *const i8,
+            0,
+        ) as *mut mjtSAP;
+        let activebuf: *mut mjtSAP = crate::engine::engine_memory::mj_stack_alloc_info(
+            d,
+            (2 * n as usize) * core::mem::size_of::<mjtSAP>(),
+            core::mem::align_of::<mjtSAP>(),
+            b"mj_SAP\0".as_ptr() as *const i8,
+            0,
+        ) as *mut mjtSAP;
+
+        // get AAMM pointers for primary "x" axis
+        let x_min: *const f64 = aamm.add(n as usize * (axis_x as usize + 0));
+        let x_max: *const f64 = aamm.add(n as usize * (axis_x as usize + 3));
+
+        // init sortbuf with specified axis
+        for i in 0..n {
+            (*sortbuf.add(2 * i as usize)).id_ismax = i;
+            (*sortbuf.add(2 * i as usize)).value = *x_min.add(i as usize) as f32;
+            (*sortbuf.add(2 * i as usize + 1)).id_ismax = i + 0x10000;
+            (*sortbuf.add(2 * i as usize + 1)).value = *x_max.add(i as usize) as f32;
+        }
+
+        // sort along specified axis
+        let buf: *mut mjtSAP = crate::engine::engine_memory::mj_stack_alloc_info(
+            d,
+            (2 * n as usize) * core::mem::size_of::<mjtSAP>(),
+            core::mem::align_of::<mjtSAP>(),
+            b"mj_SAP\0".as_ptr() as *const i8,
+            0,
+        ) as *mut mjtSAP;
+        sa_psort(sortbuf, buf, 2 * n, core::ptr::null_mut());
+
+        // define the other two axes
+        let axis_y: i32;
+        let axis_z: i32;
+        if axis_x == 0 {
+            axis_y = 1;
+            axis_z = 2;
+        } else if axis_x == 1 {
+            axis_y = 0;
+            axis_z = 2;
+        } else {
+            axis_y = 0;
+            axis_z = 1;
+        }
+
+        // get AAMM pointers to secondary "y, z" axes
+        let y_min: *const f64 = aamm.add(n as usize * (axis_y as usize + 0));
+        let y_max: *const f64 = aamm.add(n as usize * (axis_y as usize + 3));
+        let z_min: *const f64 = aamm.add(n as usize * (axis_z as usize + 0));
+        let z_max: *const f64 = aamm.add(n as usize * (axis_z as usize + 3));
+
+        // sweep and prune
+        let mut cnt: i32 = 0;    // size of active list
+        let mut npair: i32 = 0;  // number of pairs added
+        for i in 0..(2 * n) {
+            // min value: collide with all in list, add
+            if ((*sortbuf.add(i as usize)).id_ismax & 0x10000) == 0 {
+                for j in 0..cnt {
+                    let id1: i32 = (*activebuf.add(j as usize)).id_ismax;
+                    let id2: i32 = (*sortbuf.add(i as usize)).id_ismax;
+
+                    // use the other two axes to prune if possible
+                    if *y_min.add(id1 as usize) > *y_max.add(id2 as usize)
+                        || *y_min.add(id2 as usize) > *y_max.add(id1 as usize)
+                        || *z_min.add(id1 as usize) > *z_max.add(id2 as usize)
+                        || *z_min.add(id2 as usize) > *z_max.add(id1 as usize)
+                    {
+                        continue;
+                    }
+
+                    // add pair, check buffer size
+                    *pair.add(npair as usize) = (id1 << 16) + id2;
+                    npair += 1;
+                    if npair >= maxpair {
+                        return maxpair;
+                    }
+                }
+
+                // add to list
+                *activebuf.add(cnt as usize) = *sortbuf.add(i as usize);
+                cnt += 1;
+            }
+            // max value: remove corresponding min value from list
+            else {
+                let toremove: i32 = (*sortbuf.add(i as usize)).id_ismax & 0xFFFF;
+                for j in 0..cnt {
+                    if (*activebuf.add(j as usize)).id_ismax == toremove {
+                        if j < cnt - 1 {
+                            core::ptr::copy(
+                                activebuf.add(j as usize + 1),
+                                activebuf.add(j as usize),
+                                (cnt - 1 - j) as usize,
+                            );
+                        }
+                        cnt -= 1;
+                        break;
+                    }
+                }
+            }
+        }
+
+        npair
+    }
 }
 
 /// C: updateCov (engine/engine_collision_driver.c:1497)
@@ -935,10 +1205,97 @@ pub fn bfsort(arr: *mut i32, buf: *mut i32, n: i32, context: *mut ()) {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_contact_param(m: *const mjModel, condim: *mut i32, solref: *mut f64, solimp: *mut f64, friction: *mut f64, g1: i32, g2: i32, f1: i32, f2: i32) {
-    // WARNING: signature changed — verify body
-    // Previous params: (m : * const mjModel, condim : * mut i32, solref : * mut f64, solimp : * mut f64, friction : * mut f64, g1 : i32, g2 : i32, f1 : i32, f2 : i32)
-    // Previous return: ()
-    extern "C" { fn mj_contactParam_impl (m : * const mjModel , condim : * mut i32 , solref : * mut f64 , solimp : * mut f64 , friction : * mut f64 , g1 : i32 , g2 : i32 , f1 : i32 , f2 : i32) ; } unsafe { mj_contactParam_impl (m , condim , solref , solimp , friction , g1 , g2 , f1 , f2) }
+    // SAFETY: m valid; condim, solref, solimp, friction are valid output buffers
+    unsafe {
+        const MJ_NREF: usize = 2;
+        const MJ_NIMP: usize = 5;
+        const MJ_MINVAL: f64 = 1e-15;
+
+        let mut fri: [f64; 3] = [0.0; 3];
+
+        // get parameters from geom1 or flex1
+        let priority1: i32 = if f1 < 0 { *(*m).geom_priority.add(g1 as usize) } else { *(*m).flex_priority.add(f1 as usize) };
+        let condim1: i32 = if f1 < 0 { *(*m).geom_condim.add(g1 as usize) } else { *(*m).flex_condim.add(f1 as usize) };
+        let solmix1: f64 = if f1 < 0 { *(*m).geom_solmix.add(g1 as usize) } else { *(*m).flex_solmix.add(f1 as usize) };
+        let solref1: *const f64 = if f1 < 0 { (*m).geom_solref.add(g1 as usize * MJ_NREF) } else { (*m).flex_solref.add(f1 as usize * MJ_NREF) };
+        let solimp1: *const f64 = if f1 < 0 { (*m).geom_solimp.add(g1 as usize * MJ_NIMP) } else { (*m).flex_solimp.add(f1 as usize * MJ_NIMP) };
+        let friction1: *const f64 = if f1 < 0 { (*m).geom_friction.add(g1 as usize * 3) } else { (*m).flex_friction.add(f1 as usize * 3) };
+
+        // get parameters from geom2 or flex2
+        let priority2: i32 = if f2 < 0 { *(*m).geom_priority.add(g2 as usize) } else { *(*m).flex_priority.add(f2 as usize) };
+        let condim2: i32 = if f2 < 0 { *(*m).geom_condim.add(g2 as usize) } else { *(*m).flex_condim.add(f2 as usize) };
+        let solmix2: f64 = if f2 < 0 { *(*m).geom_solmix.add(g2 as usize) } else { *(*m).flex_solmix.add(f2 as usize) };
+        let solref2: *const f64 = if f2 < 0 { (*m).geom_solref.add(g2 as usize * MJ_NREF) } else { (*m).flex_solref.add(f2 as usize * MJ_NREF) };
+        let solimp2: *const f64 = if f2 < 0 { (*m).geom_solimp.add(g2 as usize * MJ_NIMP) } else { (*m).flex_solimp.add(f2 as usize * MJ_NIMP) };
+        let friction2: *const f64 = if f2 < 0 { (*m).geom_friction.add(g2 as usize * 3) } else { (*m).flex_friction.add(f2 as usize * 3) };
+
+        // different priority: copy from item with higher priority
+        if priority1 > priority2 {
+            *condim = condim1;
+            crate::engine::engine_util_blas::mju_copy(solref, solref1, MJ_NREF as i32);
+            crate::engine::engine_util_blas::mju_copy(solimp, solimp1, MJ_NIMP as i32);
+            crate::engine::engine_util_blas::mju_copy(fri.as_mut_ptr(), friction1, 3);
+        } else if priority1 < priority2 {
+            *condim = condim2;
+            crate::engine::engine_util_blas::mju_copy(solref, solref2, MJ_NREF as i32);
+            crate::engine::engine_util_blas::mju_copy(solimp, solimp2, MJ_NIMP as i32);
+            crate::engine::engine_util_blas::mju_copy(fri.as_mut_ptr(), friction2, 3);
+        }
+        // same priority
+        else {
+            // condim: max
+            *condim = if condim1 > condim2 { condim1 } else { condim2 };
+
+            // compute solver mix factor
+            let mix: f64;
+            if solmix1 >= MJ_MINVAL && solmix2 >= MJ_MINVAL {
+                mix = solmix1 / (solmix1 + solmix2);
+            } else if solmix1 < MJ_MINVAL && solmix2 < MJ_MINVAL {
+                mix = 0.5;
+            } else if solmix1 < MJ_MINVAL {
+                mix = 0.0;
+            } else {
+                mix = 1.0;
+            }
+
+            // reference standard: mix
+            if *solref1.add(0) > 0.0 && *solref2.add(0) > 0.0 {
+                for i in 0..MJ_NREF {
+                    *solref.add(i) = mix * *solref1.add(i) + (1.0 - mix) * *solref2.add(i);
+                }
+            }
+            // reference direct: min
+            else {
+                for i in 0..MJ_NREF {
+                    *solref.add(i) = crate::engine::engine_util_misc::mju_min(*solref1.add(i), *solref2.add(i));
+                }
+            }
+
+            // impedance: mix
+            for i in 0..MJ_NIMP {
+                *solimp.add(i) = mix * *solimp1.add(i) + (1.0 - mix) * *solimp2.add(i);
+            }
+
+            // friction: max
+            for i in 0..3_usize {
+                fri[i] = crate::engine::engine_util_misc::mju_max(*friction1.add(i), *friction2.add(i));
+            }
+        }
+
+        // unpack 5D friction
+        *friction.add(0) = fri[0];
+        *friction.add(1) = fri[0];
+        *friction.add(2) = fri[1];
+        *friction.add(3) = fri[2];
+        *friction.add(4) = fri[2];
+
+        // SHOULD NOT OCCUR
+        if *condim > 6 || *condim < 1 {
+            crate::engine::engine_util_errmem::mju_error(
+                b"Invalid condim value\0".as_ptr() as *const i8,
+            );
+        }
+    }
 }
 
 /// C: mj_setContact (engine/engine_collision_driver.c:1786)
@@ -987,19 +1344,18 @@ pub fn mj_set_contact(m: *const mjModel, con: *mut mjContact, condim: i32, inclu
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_make_capsule(m: *const mjModel, d: *mut mjData, f: i32, vid: [i32; 2], pos: *mut f64, mat: *mut f64, size: *mut f64) {
-    // WARNING: signature changed — verify body
-    // Previous params: (m : * const mjModel, d : * mut mjData, f : i32, vid : [i32 ; 2], pos : * mut f64, mat : * mut f64, size : * mut f64)
-    // Previous return: ()
-    extern "C" { fn mj_makeCapsule_impl (m : * const mjModel , d : * mut mjData , f : i32 , vid : [i32 ; 2] , pos : * mut f64 , mat : * mut f64 , size : * mut f64) ; } unsafe { mj_makeCapsule_impl (m , d , f , vid , pos , mat , size) }
+    extern "C" { fn mj_makeCapsule(m: *const mjModel, d: *mut mjData, f: i32, vid: *const i32, pos: *mut f64, mat: *mut f64, size: *mut f64); }
+    // SAFETY: delegates to C implementation
+    unsafe { mj_makeCapsule(m, d, f, vid.as_ptr(), pos, mat, size) }
 }
 
 /// C: collisionTask (engine/engine_collision_driver.c:1849)
 /// Calls: getGap, getMargin, mjc_setCCDBuffer, mju_message
 #[allow(unused_variables, non_snake_case)]
 pub fn collision_task(m: *const mjModel, d: *mut mjData, arg: *mut (), thread_id: i32, idx: i32) {
-    extern "C" { fn collision_task_impl(m: *const mjModel, d: *mut mjData, arg: *mut (), thread_id: i32, idx: i32); }
+    extern "C" { fn collisionTask(m: *const mjModel, d: *mut mjData, arg: *mut (), thread_id: i32, idx: i32); }
     // SAFETY: delegates to C implementation
-    unsafe { collision_task_impl(m, d, arg, thread_id, idx) }
+    unsafe { collisionTask(m, d, arg, thread_id, idx) }
 }
 
 /// C: planeVertex (engine/engine_collision_driver.c:2129)
@@ -1012,10 +1368,10 @@ pub fn collision_task(m: *const mjModel, d: *mut mjData, arg: *mut (), thread_id
 #[allow(unused_variables, non_snake_case)]
 pub fn plane_vertex(con: *mut mjPreContact, pos: *const f64, rad: f64, t0: i32, t1: i32, t2: i32, v: i32) -> i32 {
     extern "C" {
-        fn planeVertex_impl(con: *mut mjPreContact, pos: *const f64, rad: f64, t0: i32, t1: i32, t2: i32, v: i32) -> i32;
+        fn planeVertex(con: *mut mjPreContact, pos: *const f64, rad: f64, t0: i32, t1: i32, t2: i32, v: i32) -> i32;
     }
     // SAFETY: delegates to C implementation, all pointers valid per caller contract
-    unsafe { planeVertex_impl(con, pos, rad, t0, t1, t2, v) }
+    unsafe { planeVertex(con, pos, rad, t0, t1, t2, v) }
 }
 
 /// C: mj_maxContact (engine/engine_collision_driver.h:33)
@@ -1132,9 +1488,9 @@ pub fn mj_max_contact(m: *const mjModel, g1: i32, g2: i32, has_margin: i32) -> i
 /// Calls: alignArena, canCollide2, contactSort, filterBitmask, filterCollisionPair, filterFlexContacts, mj_broadphase, mj_clearEfc, mj_collideElems, mj_collideFlexInternal, mj_collideFlexSAP, mj_collideGeomElem, mj_collidePlaneFlex, mj_collideSdfFlex, mj_collideTree, mj_freeStack, mj_isElemActive, mj_markStack, mj_narrowphase, mj_sleepState, mj_stackAllocInfo, pushPairArena, resetArena
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_collision(m: *const mjModel, d: *mut mjData) {
-    extern "C" { fn mj_collision_impl(m: *const mjModel, d: *mut mjData); }
+    extern "C" { fn mj_collision(m: *const mjModel, d: *mut mjData); }
     // SAFETY: delegates to C implementation, all pointers valid per caller contract
-    unsafe { mj_collision_impl(m, d) }
+    unsafe { mj_collision(m, d) }
 }
 
 /// C: mj_collideOBB (engine/engine_collision_driver.h:39)
@@ -1147,10 +1503,10 @@ pub fn mj_collision(m: *const mjModel, d: *mut mjData) {
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_collide_obb(aabb1: *const f64, aabb2: *const f64, xpos1: *const f64, xmat1: *const f64, xpos2: *const f64, xmat2: *const f64, margin: f64, product: *mut f64, offset: *mut f64, initialize: *mut mjtBool) -> i32 {
     extern "C" {
-        fn mj_collideOBB_impl(aabb1: *const f64, aabb2: *const f64, xpos1: *const f64, xmat1: *const f64, xpos2: *const f64, xmat2: *const f64, margin: f64, product: *mut f64, offset: *mut f64, initialize: *mut mjtBool) -> i32;
+        fn mj_collideOBB(aabb1: *const f64, aabb2: *const f64, xpos1: *const f64, xmat1: *const f64, xpos2: *const f64, xmat2: *const f64, margin: f64, product: *mut f64, offset: *mut f64, initialize: *mut mjtBool) -> i32;
     }
     // SAFETY: delegates to C implementation, all pointers valid per caller contract
-    unsafe { mj_collideOBB_impl(aabb1, aabb2, xpos1, xmat1, xpos2, xmat2, margin, product, offset, initialize) }
+    unsafe { mj_collideOBB(aabb1, aabb2, xpos1, xmat1, xpos2, xmat2, margin, product, offset, initialize) }
 }
 
 /// C: mj_isElemActive (engine/engine_collision_driver.h:45)
@@ -1228,9 +1584,9 @@ pub fn mj_broadphase(m: *const mjModel, d: *mut mjData, bfpair: *mut i32, maxpai
                     if sleep_filter {
                         // mjOBJ_FLEX = 9, mjS_ASLEEP = 0
                         extern "C" {
-                            fn mj_sleepState_impl(m: *const mjModel, d: *const mjData, objtype: i32, i: i32) -> i32;
+                            fn mj_sleepState(m: *const mjModel, d: *const mjData, objtype: i32, i: i32) -> i32;
                         }
-                        let state = mj_sleepState_impl(m, d as *const mjData, 9, f);
+                        let state = mj_sleepState(m, d as *const mjData, 9, f);
                         if state == 0 { continue; }  // mjS_ASLEEP
                     }
                     add_pair(m, b1, nbody + f, &mut npair, bfpair, maxpair);
@@ -1358,18 +1714,18 @@ pub fn mj_broadphase(m: *const mjModel, d: *mut mjData, bfpair: *mut i32, maxpai
                 // flex pair: skip if neither side is dynamically awake
                 else if sleep_filter {
                     extern "C" {
-                        fn mj_sleepState_impl(m: *const mjModel, d: *const mjData, objtype: i32, i: i32) -> i32;
+                        fn mj_sleepState(m: *const mjModel, d: *const mjData, objtype: i32, i: i32) -> i32;
                     }
                     let awake1: i32 = if bf1 >= nbody {
                         // mjOBJ_FLEX=9, mjS_AWAKE=1
-                        let state = mj_sleepState_impl(m, d as *const mjData, 9, bf1 - nbody);
+                        let state = mj_sleepState(m, d as *const mjData, 9, bf1 - nbody);
                         (state == 1) as i32
                     } else {
                         ((*(*d).body_awake.add(bf1 as usize) == 1)
                             && *(*m).body_treeid.add(bf1 as usize) >= 0) as i32
                     };
                     let awake2: i32 = if bf2 >= nbody {
-                        let state = mj_sleepState_impl(m, d as *const mjData, 9, bf2 - nbody);
+                        let state = mj_sleepState(m, d as *const mjData, 9, bf2 - nbody);
                         (state == 1) as i32
                     } else {
                         ((*(*d).body_awake.add(bf2 as usize) == 1)
@@ -1404,35 +1760,35 @@ pub fn mj_broadphase(m: *const mjModel, d: *mut mjData, bfpair: *mut i32, maxpai
 /// Calls: mj_SAP, mj_collideElems, mj_freeStack, mj_isElemActive, mj_markStack, mj_stackAllocInfo, mju_message
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_collide_flex_sap(m: *const mjModel, d: *mut mjData, f: i32) {
-    extern "C" { fn mj_collideFlexSAP_impl(m: *const mjModel, d: *mut mjData, f: i32); }
+    extern "C" { fn mj_collideFlexSAP(m: *const mjModel, d: *mut mjData, f: i32); }
     // SAFETY: delegates to C implementation, all pointers valid per caller contract
-    unsafe { mj_collideFlexSAP_impl(m, d, f) }
+    unsafe { mj_collideFlexSAP(m, d, f) }
 }
 
 /// C: mj_collideGeomElem (engine/engine_collision_driver.h:54)
 /// Calls: filterSphereBox, mj_arenaAllocByte, mj_assignMargin, mj_contactParam, mj_freeStack, mj_makeCapsule, mj_markStack, mj_setContact, mj_stackAllocInfo, mj_warning, mjc_ConvexElem, mjc_HFieldElem, mjraw_BoxTriangle, mjraw_CapsuleBox, mjraw_CapsuleCapsule, mjraw_CapsuleTriangle, mjraw_SphereCapsule, mjraw_SphereTriangle, mju_copy3, mju_scl3
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_collide_geom_elem(m: *const mjModel, d: *mut mjData, g: i32, f: i32, e: i32) {
-    extern "C" { fn mj_collideGeomElem_impl(m: *const mjModel, d: *mut mjData, g: i32, f: i32, e: i32); }
+    extern "C" { fn mj_collideGeomElem(m: *const mjModel, d: *mut mjData, g: i32, f: i32, e: i32); }
     // SAFETY: delegates to C implementation, all pointers valid per caller contract
-    unsafe { mj_collideGeomElem_impl(m, d, g, f, e) }
+    unsafe { mj_collideGeomElem(m, d, g, f, e) }
 }
 
 /// C: mj_collideElems (engine/engine_collision_driver.h:57)
 /// Calls: filterBox, mj_arenaAllocByte, mj_assignMargin, mj_contactParam, mj_freeStack, mj_makeCapsule, mj_markStack, mj_setContact, mj_stackAllocInfo, mj_warning, mjc_ConvexElem, mjraw_CapsuleCapsule, mju_copy3
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_collide_elems(m: *const mjModel, d: *mut mjData, f1: i32, e1: i32, f2: i32, e2: i32) {
-    extern "C" { fn mj_collideElems_impl(m: *const mjModel, d: *mut mjData, f1: i32, e1: i32, f2: i32, e2: i32); }
+    extern "C" { fn mj_collideElems(m: *const mjModel, d: *mut mjData, f1: i32, e1: i32, f2: i32, e2: i32); }
     // SAFETY: delegates to C implementation, all pointers valid per caller contract
-    unsafe { mj_collideElems_impl(m, d, f1, e1, f2, e2) }
+    unsafe { mj_collideElems(m, d, f1, e1, f2, e2) }
 }
 
 /// C: mj_collideElemVert (engine/engine_collision_driver.h:60)
 /// Calls: mj_arenaAllocByte, mj_assignMargin, mj_contactParam, mj_freeStack, mj_makeCapsule, mj_markStack, mj_setContact, mj_stackAllocInfo, mj_warning, mjc_ConvexElem, mjraw_SphereCapsule, mjraw_SphereTriangle, mju_copy3
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_collide_elem_vert(m: *const mjModel, d: *mut mjData, f: i32, e: i32, v: i32) {
-    extern "C" { fn mj_collideElemVert_impl(m: *const mjModel, d: *mut mjData, f: i32, e: i32, v: i32); }
+    extern "C" { fn mj_collideElemVert(m: *const mjModel, d: *mut mjData, f: i32, e: i32, v: i32); }
     // SAFETY: delegates to C implementation, all pointers valid per caller contract
-    unsafe { mj_collideElemVert_impl(m, d, f, e, v) }
+    unsafe { mj_collideElemVert(m, d, f, e, v) }
 }
 

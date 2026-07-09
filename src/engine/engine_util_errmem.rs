@@ -8,17 +8,17 @@ use crate::types::*;
 /// Calls: mju_getLogConfigPtr, mju_isTopicEnabled, mju_legacy_text, mju_localTimeStr
 #[allow(unused_variables, non_snake_case)]
 pub fn mju_default_log_handler(msg: *const mjLogMessage) {
-    extern "C" { fn mju_defaultLogHandler_impl(msg: *const mjLogMessage); }
+    extern "C" { fn mju_defaultLogHandler(msg: *const mjLogMessage); }
     // SAFETY: delegates to C implementation
-    unsafe { mju_defaultLogHandler_impl(msg) }
+    unsafe { mju_defaultLogHandler(msg) }
 }
 
 /// C: mju_alignedMalloc (engine/engine_util_errmem.c:44)
 #[allow(unused_variables, non_snake_case)]
 pub fn mju_aligned_malloc(size: usize, align: usize) -> *mut () {
-    extern "C" { fn mju_alignedMalloc_impl(size: usize, align: usize) -> *mut (); }
-    // SAFETY: delegates to C implementation
-    unsafe { mju_alignedMalloc_impl(size, align) }
+    extern "C" { fn mju_alignedMalloc(size: usize, align: usize) -> *mut (); }
+    // SAFETY: delegates to C implementation (cross-platform aligned_alloc)
+    unsafe { mju_alignedMalloc(size, align) }
 }
 
 /// C: mju_alignedFree (engine/engine_util_errmem.c:53)
@@ -43,38 +43,35 @@ pub fn mju_init_log_topics_from_env() {
 #[allow(unused_variables, non_snake_case)]
 pub fn mju_get_log_config_ptr() -> *const mjLogConfig {
     extern "C" {
-        fn mju_getLogConfigPtr_impl() -> *const mjLogConfig;
+        fn mju_getLogConfigPtr() -> *const mjLogConfig;
     }
     // SAFETY: delegates to C implementation, returns pointer to static data
-    unsafe { mju_getLogConfigPtr_impl() }
+    unsafe { mju_getLogConfigPtr() }
 }
 
 /// C: mju_localTimeStr (engine/engine_util_errmem.c:195)
 #[allow(unused_variables, non_snake_case)]
 pub fn mju_local_time_str(buf: *mut i8, buf_sz: i32) {
-    // WARNING: signature changed — verify body
-    // Previous params: (buf : * mut i8, buf_sz : i32)
-    // Previous return: ()
-    extern "C" { fn mju_localTimeStr_impl(buf: *mut i8, buf_sz: i32); }
+    extern "C" { fn mju_localTimeStr(buf: *mut i8, buf_sz: i32); }
     // SAFETY: delegates to C implementation which calls localtime_r + strftime; caller guarantees buf is valid with buf_sz capacity
-    unsafe { mju_localTimeStr_impl(buf, buf_sz) }
+    unsafe { mju_localTimeStr(buf, buf_sz) }
 }
 
 /// C: mju_fprint_message (engine/engine_util_errmem.c:214)
 /// Calls: BaseName
 #[allow(unused_variables, non_snake_case)]
 pub fn mju_fprint_message(stream: *mut i32, timestr: *const i8, msg: *const mjLogMessage) {
-    extern "C" { fn mju_fprint_message_impl(stream: *mut i32, timestr: *const i8, msg: *const mjLogMessage); }
+    extern "C" { fn mju_fprint_message(stream: *mut i32, timestr: *const i8, msg: *const mjLogMessage); }
     // SAFETY: delegates to C implementation
-    unsafe { mju_fprint_message_impl(stream, timestr, msg) }
+    unsafe { mju_fprint_message(stream, timestr, msg) }
 }
 
 /// C: mju_legacy_text (engine/engine_util_errmem.c:231)
 #[allow(unused_variables, non_snake_case)]
 pub fn mju_legacy_text(msg: *const mjLogMessage, buf: *mut i8, bufsz: i32) -> *const i8 {
-    extern "C" { fn mju_legacy_text_impl(msg: *const mjLogMessage, buf: *mut i8, bufsz: i32) -> *const i8; }
+    extern "C" { fn mju_legacy_text(msg: *const mjLogMessage, buf: *mut i8, bufsz: i32) -> *const i8; }
     // SAFETY: delegates to C implementation
-    unsafe { mju_legacy_text_impl(msg, buf, bufsz) }
+    unsafe { mju_legacy_text(msg, buf, bufsz) }
 }
 
 /// C: mju_activeHandler (engine/engine_util_errmem.c:292)
@@ -127,18 +124,18 @@ pub fn mju_free(ptr: *mut ()) {
 /// C: mju_setLogHandler (engine/engine_util_errmem.h:57)
 #[allow(unused_variables, non_snake_case)]
 pub fn mju_set_log_handler(handler: mjfLogHandler) -> mjfLogHandler {
-    extern "C" { fn mju_setLogHandler_impl(handler: mjfLogHandler) -> mjfLogHandler; }
+    extern "C" { fn mju_setLogHandler(handler: mjfLogHandler) -> mjfLogHandler; }
     // SAFETY: delegates to C implementation
-    unsafe { mju_setLogHandler_impl(handler) }
+    unsafe { mju_setLogHandler(handler) }
 }
 
 /// C: mju_getLogConfig (engine/engine_util_errmem.h:60)
 /// Calls: mju_getLogConfigPtr
 #[allow(unused_variables, non_snake_case)]
 pub fn mju_get_log_config() -> mjLogConfig {
-    extern "C" { fn mju_getLogConfig_impl() -> mjLogConfig; }
+    extern "C" { fn mju_getLogConfig() -> mjLogConfig; }
     // SAFETY: delegates to C implementation
-    unsafe { mju_getLogConfig_impl() }
+    unsafe { mju_getLogConfig() }
 }
 
 /// C: mju_setLogConfig (engine/engine_util_errmem.h:61)
@@ -247,9 +244,9 @@ pub fn mju_message(msg: *const mjLogMessage) {
 /// Calls: mju_localTimeStr
 #[allow(unused_variables, non_snake_case)]
 pub fn mju_write_log(r#type: *const i8, msg: *const i8) {
-    extern "C" { fn mju_writeLog_impl(r#type: *const i8, msg: *const i8); }
+    extern "C" { fn mju_writeLog(r#type: *const i8, msg: *const i8); }
     // SAFETY: delegates to C implementation, all pointers valid per caller contract
-    unsafe { mju_writeLog_impl(r#type, msg) }
+    unsafe { mju_writeLog(r#type, msg) }
 }
 
 /// C: _mjPRIVATE_setTlsLogHandler (engine/engine_util_errmem.h:93)
@@ -264,9 +261,9 @@ pub fn mj_private_set_tls_log_handler(handler: mjfLogHandler) -> mjfLogHandler {
 /// C: _mjPRIVATE_getGlobalLogHandler (engine/engine_util_errmem.h:96)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_private_get_global_log_handler() -> mjfLogHandler {
-    extern "C" { fn _mjPRIVATE_getGlobalLogHandler_impl() -> mjfLogHandler; }
+    extern "C" { fn _mjPRIVATE_getGlobalLogHandler() -> mjfLogHandler; }
     // SAFETY: delegates to C implementation
-    unsafe { _mjPRIVATE_getGlobalLogHandler_impl() }
+    unsafe { _mjPRIVATE_getGlobalLogHandler() }
 }
 
 /// C: mju_isTopicEnabled (engine/engine_util_errmem.h:99)
@@ -274,10 +271,10 @@ pub fn mj_private_get_global_log_handler() -> mjfLogHandler {
 #[allow(unused_variables, non_snake_case)]
 pub fn mju_is_topic_enabled(topic: i32) -> mjtBool {
     extern "C" {
-        fn mju_isTopicEnabled_impl(topic: i32) -> mjtBool;
+        fn mju_isTopicEnabled(topic: i32) -> mjtBool;
     }
     // SAFETY: delegates to C implementation (uses global state)
-    unsafe { mju_isTopicEnabled_impl(topic) }
+    unsafe { mju_isTopicEnabled(topic) }
 }
 
 /// C: BaseName (engine/engine_util_errmem.h:102)
