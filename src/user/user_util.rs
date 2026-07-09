@@ -40,9 +40,9 @@ pub fn mjuu_axis_angle2quat(res: [f64; 4], axis: [f64; 3], angle: f64) {
 /// C: mjuu_isValidContentType (user/user_util.cc:973)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjuu_is_valid_content_type(text: string_view) -> bool {
-    extern "C" { fn mjuu_isValidContentType_impl(text: string_view) -> bool; }
+    extern "C" { fn mjuu_isValidContentType(text: string_view) -> bool; }
     // SAFETY: delegates to C implementation
-    unsafe { mjuu_isValidContentType_impl(text) }
+    unsafe { mjuu_isValidContentType(text) }
 }
 
 /// C: FileToMemory (user/user_util.cc:1196)
@@ -52,23 +52,23 @@ pub fn file_to_memory(filename: *const i8) -> i32 {
     // WARNING: signature changed — verify body
     // Previous params: (filename : * const i8)
     // Previous return: i32
-    extern "C" { fn FileToMemory_impl (filename : * const i8) -> i32 ; } unsafe { FileToMemory_impl (filename) }
+    extern "C" { fn FileToMemory (filename : * const i8) -> i32 ; } unsafe { FileToMemory (filename) }
 }
 
 /// C: VectorToString (user/user_util.cc:1256)
 #[allow(unused_variables, non_snake_case)]
 pub fn vector_to_string(v: *const i32) -> std__string {
-    extern "C" { fn VectorToString_impl(v: *const i32) -> std__string; }
+    extern "C" { fn VectorToString(v: *const i32) -> std__string; }
     // SAFETY: delegates to C implementation
-    unsafe { VectorToString_impl(v) }
+    unsafe { VectorToString(v) }
 }
 
 /// C: StrToNum (user/user_util.cc:1277)
 #[allow(unused_variables, non_snake_case)]
 pub fn str_to_num(str: *mut i8, c: *mut *mut i8) -> i32 {
-    extern "C" { fn StrToNum_impl(str: *mut i8, c: *mut *mut i8) -> i32; }
+    extern "C" { fn StrToNum(str: *mut i8, c: *mut *mut i8) -> i32; }
     // SAFETY: delegates to C implementation
-    unsafe { StrToNum_impl(str, c) }
+    unsafe { StrToNum(str, c) }
 }
 
 /// C: IsNullOrSpace (user/user_util.cc:1301)
@@ -94,9 +94,9 @@ pub fn skip_space(c: *mut i8) -> *mut i8 {
 /// Calls: SkipSpace
 #[allow(unused_variables, non_snake_case)]
 pub fn string_to_vector(cs: *mut i8) -> i32 {
-    extern "C" { fn StringToVector_impl(cs: *mut i8) -> i32; }
+    extern "C" { fn StringToVector(cs: *mut i8) -> i32; }
     // SAFETY: delegates to C implementation
-    unsafe { StringToVector_impl(cs) }
+    unsafe { StringToVector(cs) }
 }
 
 /// C: mjuu_defined (user/user_util.h:35)
@@ -139,9 +139,9 @@ pub fn mjuu_setvec(dest: *mut f64, x: f64, y: f64, z: f64, w: f64) {
 /// C: mjuu_copyvec (user/user_util.h:54)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjuu_copyvec(dest: *mut T1, src: *const T2, n: i32) {
-    extern "C" { fn mjuu_copyvec_impl(dest: *mut T1, src: *const T2, n: i32); }
+    extern "C" { fn mjuu_copyvec(dest: *mut T1, src: *const T2, n: i32); }
     // SAFETY: delegates to C implementation
-    unsafe { mjuu_copyvec_impl(dest, src, n) }
+    unsafe { mjuu_copyvec(dest, src, n) }
 }
 
 /// C: mjuu_addtovec (user/user_util.h:59)
@@ -409,9 +409,9 @@ pub fn mjuu_crossvec(a: *mut f64, b: *const f64, c: *const f64) {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjuu_makenormal(normal: *mut f64, a: [T; 3], b: [T; 3], c: [T; 3]) -> f64 {
-    extern "C" { fn mjuu_makenormal_impl(normal: *mut f64, a: [T; 3], b: [T; 3], c: [T; 3]) -> f64; }
+    extern "C" { fn mjuu_makenormal(normal: *mut f64, a: [T; 3], b: [T; 3], c: [T; 3]) -> f64; }
     // SAFETY: delegates to C implementation
-    unsafe { mjuu_makenormal_impl(normal, a, b, c) }
+    unsafe { mjuu_makenormal(normal, a, b, c) }
 }
 
 /// C: mjuu_z2quat (user/user_util.h:122)
@@ -980,7 +980,7 @@ pub fn file_path_is_abs(self_ptr: *mut FilePath) -> bool {
     // WARNING: signature changed — verify body
     // Previous params: (self_ptr : * mut FilePath)
     // Previous return: bool
-    extern "C" { fn FilePath_IsAbs_impl (self_ptr : * mut FilePath) -> bool ; } unsafe { FilePath_IsAbs_impl (self_ptr) }
+    extern "C" { fn FilePath_IsAbs (self_ptr : * mut FilePath) -> bool ; } unsafe { FilePath_IsAbs (self_ptr) }
 }
 
 /// C: FilePath::AbsPrefix (user/user_util.h:195)
@@ -1054,7 +1054,7 @@ pub fn file_path_str(self_ptr: *mut FilePath) -> *const i32 {
     // WARNING: signature changed — verify body
     // Previous params: (self_ptr : * mut FilePath)
     // Previous return: * const i32
-    extern "C" { fn FilePath_Str_impl (self_ptr : * mut FilePath) -> * const i32 ; } unsafe { FilePath_Str_impl (self_ptr) }
+    extern "C" { fn FilePath_Str (self_ptr : * mut FilePath) -> * const i32 ; } unsafe { FilePath_Str (self_ptr) }
 }
 
 /// C: FilePath::StrLower (user/user_util.h:202)
@@ -1063,7 +1063,7 @@ pub fn file_path_str_lower(self_ptr: *mut FilePath) -> std__string {
     // WARNING: signature changed — verify body
     // Previous params: (self_ptr : * mut FilePath)
     // Previous return: std__string
-    extern "C" { fn FilePath_StrLower_impl (self_ptr : * mut FilePath) -> std__string ; } unsafe { FilePath_StrLower_impl (self_ptr) }
+    extern "C" { fn FilePath_StrLower (self_ptr : * mut FilePath) -> std__string ; } unsafe { FilePath_StrLower (self_ptr) }
 }
 
 /// C: FilePath::Ext (user/user_util.h:205)
@@ -1072,7 +1072,7 @@ pub fn file_path_ext(self_ptr: *mut FilePath) -> std__string {
     // WARNING: signature changed — verify body
     // Previous params: (self_ptr : * mut FilePath)
     // Previous return: std__string
-    extern "C" { fn FilePath_Ext_impl (self_ptr : * mut FilePath) -> std__string ; } unsafe { FilePath_Ext_impl (self_ptr) }
+    extern "C" { fn FilePath_Ext (self_ptr : * mut FilePath) -> std__string ; } unsafe { FilePath_Ext (self_ptr) }
 }
 
 /// C: FilePath::StripExt (user/user_util.h:211)
@@ -1081,7 +1081,7 @@ pub fn file_path_strip_ext(self_ptr: *mut FilePath) -> FilePath {
     // WARNING: signature changed — verify body
     // Previous params: (self_ptr : * mut FilePath)
     // Previous return: FilePath
-    extern "C" { fn FilePath_StripExt_impl (self_ptr : * mut FilePath) -> FilePath ; } unsafe { FilePath_StripExt_impl (self_ptr) }
+    extern "C" { fn FilePath_StripExt (self_ptr : * mut FilePath) -> FilePath ; } unsafe { FilePath_StripExt (self_ptr) }
 }
 
 /// C: FilePath::StripPath (user/user_util.h:214)
@@ -1090,7 +1090,7 @@ pub fn file_path_strip_path(self_ptr: *mut FilePath) -> FilePath {
     // WARNING: signature changed — verify body
     // Previous params: (self_ptr : * mut FilePath)
     // Previous return: FilePath
-    extern "C" { fn FilePath_StripPath_impl (self_ptr : * mut FilePath) -> FilePath ; } unsafe { FilePath_StripPath_impl (self_ptr) }
+    extern "C" { fn FilePath_StripPath (self_ptr : * mut FilePath) -> FilePath ; } unsafe { FilePath_StripPath (self_ptr) }
 }
 
 /// C: FilePath::Lower (user/user_util.h:217)
@@ -1099,7 +1099,7 @@ pub fn file_path_lower(self_ptr: *mut FilePath) -> FilePath {
     // WARNING: signature changed — verify body
     // Previous params: (self_ptr : * mut FilePath)
     // Previous return: FilePath
-    extern "C" { fn FilePath_Lower_impl (self_ptr : * mut FilePath) -> FilePath ; } unsafe { FilePath_Lower_impl (self_ptr) }
+    extern "C" { fn FilePath_Lower (self_ptr : * mut FilePath) -> FilePath ; } unsafe { FilePath_Lower (self_ptr) }
 }
 
 /// C: FilePath::size (user/user_util.h:220)
@@ -1108,7 +1108,7 @@ pub fn file_path_size(self_ptr: *mut FilePath) -> std__size_t {
     // WARNING: signature changed — verify body
     // Previous params: (self_ptr : * mut FilePath)
     // Previous return: std__size_t
-    extern "C" { fn FilePath_size_impl (self_ptr : * mut FilePath) -> std__size_t ; } unsafe { FilePath_size_impl (self_ptr) }
+    extern "C" { fn FilePath_size (self_ptr : * mut FilePath) -> std__size_t ; } unsafe { FilePath_size (self_ptr) }
 }
 
 /// C: FilePath::c_str (user/user_util.h:221)
@@ -1117,7 +1117,7 @@ pub fn file_path_c_str(self_ptr: *mut FilePath) -> *const i8 {
     // WARNING: signature changed — verify body
     // Previous params: (self_ptr : * mut FilePath)
     // Previous return: * const i8
-    extern "C" { fn FilePath_c_str_impl (self_ptr : * mut FilePath) -> * const i8 ; } unsafe { FilePath_c_str_impl (self_ptr) }
+    extern "C" { fn FilePath_c_str (self_ptr : * mut FilePath) -> * const i8 ; } unsafe { FilePath_c_str (self_ptr) }
 }
 
 /// C: FilePath::empty (user/user_util.h:222)
@@ -1126,7 +1126,7 @@ pub fn file_path_empty(self_ptr: *mut FilePath) -> bool {
     // WARNING: signature changed — verify body
     // Previous params: (self_ptr : * mut FilePath)
     // Previous return: bool
-    extern "C" { fn FilePath_empty_impl (self_ptr : * mut FilePath) -> bool ; } unsafe { FilePath_empty_impl (self_ptr) }
+    extern "C" { fn FilePath_empty (self_ptr : * mut FilePath) -> bool ; } unsafe { FilePath_empty (self_ptr) }
 }
 
 /// C: FilePath::PathReduce (user/user_util.h:227)
@@ -1135,7 +1135,7 @@ pub fn file_path_path_reduce(str: *const std__string) -> std__string {
     // WARNING: signature changed — verify body
     // Previous params: (str : * const std__string)
     // Previous return: std__string
-    extern "C" { fn FilePath_PathReduce_impl (str : * const std__string) -> std__string ; } unsafe { FilePath_PathReduce_impl (str) }
+    extern "C" { fn FilePath_PathReduce (str : * const std__string) -> std__string ; } unsafe { FilePath_PathReduce (str) }
 }
 
 /// C: FilePath::IsSeparator (user/user_util.h:228)
@@ -1144,7 +1144,7 @@ pub fn file_path_is_separator(c: i8) -> bool {
     // WARNING: signature changed — verify body
     // Previous params: (c : i8)
     // Previous return: bool
-    extern "C" { fn FilePath_IsSeparator_impl (c : i8) -> bool ; } unsafe { FilePath_IsSeparator_impl (c) }
+    extern "C" { fn FilePath_IsSeparator (c : i8) -> bool ; } unsafe { FilePath_IsSeparator (c) }
 }
 
 /// C: FilePath::Combine (user/user_util.h:231)
@@ -1153,7 +1153,7 @@ pub fn file_path_combine(s1: *const std__string, s2: *const std__string) -> std_
     // WARNING: signature changed — verify body
     // Previous params: (s1 : * const std__string, s2 : * const std__string)
     // Previous return: std__string
-    extern "C" { fn FilePath_Combine_impl (s1 : * const std__string , s2 : * const std__string) -> std__string ; } unsafe { FilePath_Combine_impl (s1 , s2) }
+    extern "C" { fn FilePath_Combine (s1 : * const std__string , s2 : * const std__string) -> std__string ; } unsafe { FilePath_Combine (s1 , s2) }
 }
 
 /// C: FilePath::FilePathFast (user/user_util.h:234)
@@ -1162,73 +1162,73 @@ pub fn file_path_file_path_fast(str: *const i32) -> FilePath {
     // WARNING: signature changed — verify body
     // Previous params: (str : * const i32)
     // Previous return: FilePath
-    extern "C" { fn FilePath_FilePathFast_impl (str : * const i32) -> FilePath ; } unsafe { FilePath_FilePathFast_impl (str) }
+    extern "C" { fn FilePath_FilePathFast (str : * const i32) -> FilePath ; } unsafe { FilePath_FilePathFast (str) }
 }
 
 /// C: mjuu_strippath (user/user_util.h:273)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjuu_strippath(filename: string) -> std__string {
-    extern "C" { fn mjuu_strippath_impl(filename: string) -> std__string; }
+    extern "C" { fn mjuu_strippath(filename: string) -> std__string; }
     // SAFETY: delegates to C implementation
-    unsafe { mjuu_strippath_impl(filename) }
+    unsafe { mjuu_strippath(filename) }
 }
 
 /// C: mjuu_stripext (user/user_util.h:276)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjuu_stripext(filename: string) -> std__string {
-    extern "C" { fn mjuu_stripext_impl(filename: string) -> std__string; }
+    extern "C" { fn mjuu_stripext(filename: string) -> std__string; }
     // SAFETY: delegates to C implementation
-    unsafe { mjuu_stripext_impl(filename) }
+    unsafe { mjuu_stripext(filename) }
 }
 
 /// C: mjuu_getext (user/user_util.h:279)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjuu_getext(filename: string_view) -> std__string {
-    extern "C" { fn mjuu_getext_impl(filename: string_view) -> std__string; }
+    extern "C" { fn mjuu_getext(filename: string_view) -> std__string; }
     // SAFETY: delegates to C implementation
-    unsafe { mjuu_getext_impl(filename) }
+    unsafe { mjuu_getext(filename) }
 }
 
 /// C: mjuu_isabspath (user/user_util.h:282)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjuu_isabspath(path: string) -> bool {
-    extern "C" { fn mjuu_isabspath_impl(path: string) -> bool; }
+    extern "C" { fn mjuu_isabspath(path: string) -> bool; }
     // SAFETY: delegates to C implementation
-    unsafe { mjuu_isabspath_impl(path) }
+    unsafe { mjuu_isabspath(path) }
 }
 
 /// C: mjuu_combinePaths (user/user_util.h:285)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjuu_combine_paths(path1: *const std__string, path2: *const std__string) -> std__string {
-    extern "C" { fn mjuu_combinePaths_impl(path1: *const std__string, path2: *const std__string) -> std__string; }
+    extern "C" { fn mjuu_combinePaths(path1: *const std__string, path2: *const std__string) -> std__string; }
     // SAFETY: delegates to C implementation
-    unsafe { mjuu_combinePaths_impl(path1, path2) }
+    unsafe { mjuu_combinePaths(path1, path2) }
 }
 
 /// C: mjuu_parseContentTypeAttrType (user/user_util.h:290)
 /// Calls: mjuu_isValidContentType
 #[allow(unused_variables, non_snake_case)]
 pub fn mjuu_parse_content_type_attr_type(text: string_view) -> *const () {
-    extern "C" { fn mjuu_parseContentTypeAttrType_impl(text: string_view) -> *const (); }
+    extern "C" { fn mjuu_parseContentTypeAttrType(text: string_view) -> *const (); }
     // SAFETY: delegates to C implementation
-    unsafe { mjuu_parseContentTypeAttrType_impl(text) }
+    unsafe { mjuu_parseContentTypeAttrType(text) }
 }
 
 /// C: mjuu_parseContentTypeAttrSubtype (user/user_util.h:293)
 /// Calls: mjuu_isValidContentType
 #[allow(unused_variables, non_snake_case)]
 pub fn mjuu_parse_content_type_attr_subtype(text: string_view) -> *const () {
-    extern "C" { fn mjuu_parseContentTypeAttrSubtype_impl(text: string_view) -> *const (); }
+    extern "C" { fn mjuu_parseContentTypeAttrSubtype(text: string_view) -> *const (); }
     // SAFETY: delegates to C implementation
-    unsafe { mjuu_parseContentTypeAttrSubtype_impl(text) }
+    unsafe { mjuu_parseContentTypeAttrSubtype(text) }
 }
 
 /// C: mjuu_extToContentType (user/user_util.h:296)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjuu_ext_to_content_type(filename: string_view) -> std__string {
-    extern "C" { fn mjuu_extToContentType_impl(filename: string_view) -> std__string; }
+    extern "C" { fn mjuu_extToContentType(filename: string_view) -> std__string; }
     // SAFETY: delegates to C implementation
-    unsafe { mjuu_extToContentType_impl(filename) }
+    unsafe { mjuu_extToContentType(filename) }
 }
 
 /// C: mjuu_dirnamelen (user/user_util.h:299)
