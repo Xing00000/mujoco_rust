@@ -1658,9 +1658,19 @@ pub fn mju_outside_box(point: *const f64, pos: *const f64, mat: *const f64, size
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mju_print_mat(mat: *const f64, nr: i32, nc: i32) {
-    extern "C" { fn mju_printMat_impl(mat: *const f64, nr: i32, nc: i32); }
-    // SAFETY: delegates to C implementation
-    unsafe { mju_printMat_impl(mat, nr, nc) }
+    extern "C" {
+        fn printf(format: *const i8, ...) -> i32;
+    }
+    // SAFETY: mat points to valid array of nr*nc doubles. printf is standard C library.
+    unsafe {
+        for r in 0..nr {
+            for c in 0..nc {
+                printf(b"%.8f \0".as_ptr() as *const i8, *mat.add((r * nc + c) as usize));
+            }
+            printf(b"\n\0".as_ptr() as *const i8);
+        }
+        printf(b"\n\0".as_ptr() as *const i8);
+    }
 }
 
 /// C: mju_printMatSparse (engine/engine_util_misc.h:220)

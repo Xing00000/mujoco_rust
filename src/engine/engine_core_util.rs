@@ -220,10 +220,11 @@ pub fn mj_jac(m: *const mjModel, d: *const mjData, jacp: *mut f64, jacr: *mut f6
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_jac_body(m: *const mjModel, d: *const mjData, jacp: *mut f64, jacr: *mut f64, body: i32) {
-
-    extern "C" { fn mj_jacBody_impl(m: *const mjModel, d: *const mjData, jacp: *mut f64, jacr: *mut f64, body: i32); }
-    // SAFETY: delegates to C implementation
-    unsafe { mj_jacBody_impl(m, d, jacp, jacr, body) }
+    // SAFETY: m, d are valid model/data pointers. body is a valid body index.
+    // d->xpos is a valid array with at least 3*(body+1) elements.
+    unsafe {
+        mj_jac(m, d, jacp, jacr, (*d).xpos.add(3 * body as usize), body);
+    }
 }
 
 /// C: mj_jacBodyCom (engine/engine_core_util.h:60)
