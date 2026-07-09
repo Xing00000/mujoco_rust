@@ -101,9 +101,82 @@ pub fn mj_sensor_sleep_state(m: *const mjModel, d: *const mjData, i: i32) -> mjt
 /// C: mj_updateSleepInit (engine/engine_sleep.h:28)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_update_sleep_init(m: *const mjModel, d: *mut mjData, flg_staticawake: i32) {
-    // SAFETY: complex struct access pattern, delegating to C implementation
-    extern "C" { fn mj_updateSleepInit(m: *const mjModel, d: *mut mjData, flg_staticawake: i32); }
-    unsafe { mj_updateSleepInit(m, d, flg_staticawake); }
+    // SAFETY: m and d are valid pointers per caller contract.
+    // All array accesses are within bounds defined by model dimensions.
+    unsafe {
+        let ntree = (*m).ntree as i32;
+        let nbody = (*m).nbody as i32;
+        let nv = (*m).nv as i32;
+
+        // input arrays
+        let tree_asleep = (*d).tree_asleep;
+        let body_treeid = (*m).body_treeid;
+        let body_parentid = (*m).body_parentid;
+        let body_rootid = (*m).body_rootid;
+        let body_mocapid = (*m).body_mocapid;
+        let dof_bodyid = (*m).dof_bodyid;
+
+        // output arrays
+        let tree_awake = (*d).tree_awake;
+        let body_awake = (*d).body_awake;
+        let dof_awake_ind = (*d).dof_awake_ind;
+        let body_awake_ind = (*d).body_awake_ind;
+        let parent_awake_ind = (*d).parent_awake_ind;
+
+        // tree_awake
+        let mut ntree_awake: i32 = 0;
+        for i in 0..ntree {
+            let val = if *tree_asleep.add(i as usize) < 0 { 1 } else { 0 };
+            *tree_awake.add(i as usize) = val;
+            ntree_awake += val;
+        }
+        (*d).ntree_awake = ntree_awake;
+
+        // {body,parent}_awake_ind
+        let mut nbody_awake: i32 = 0;
+        let mut nparent_awake: i32 = 0;
+        for i in 0..nbody {
+            // static body
+            if *body_treeid.add(i as usize) < 0 {
+                if *body_mocapid.add(*body_rootid.add(i as usize) as usize) >= 0 {
+                    // mocap body are always awake
+                    *body_awake.add(i as usize) = 1; // mjS_AWAKE
+                } else {
+                    // mark static body unless flg_staticawake is set
+                    *body_awake.add(i as usize) = if flg_staticawake != 0 { 1 } else { -1 }; // mjS_AWAKE : mjS_STATIC
+                }
+            }
+            // dynamic body
+            else {
+                *body_awake.add(i as usize) = if *tree_awake.add(*body_treeid.add(i as usize) as usize) != 0 { 1 } else { 0 }; // mjS_AWAKE : mjS_ASLEEP
+            }
+
+            // body_awake_ind: list of awake and static bodies
+            if *body_awake.add(i as usize) != 0 { // != mjS_ASLEEP
+                *body_awake_ind.add(nbody_awake as usize) = i;
+                nbody_awake += 1;
+            }
+
+            // parent_awake_ind: list of bodies with awake or static parents
+            if i != 0 && *body_awake.add(*body_parentid.add(i as usize) as usize) != 0 { // != mjS_ASLEEP
+                *parent_awake_ind.add(nparent_awake as usize) = i;
+                nparent_awake += 1;
+            }
+        }
+        (*d).nbody_awake = nbody_awake;
+        (*d).nparent_awake = nparent_awake;
+
+        // dof_awake_ind: list of awake degrees of freedom
+        let mut nv_awake: i32 = 0;
+        for i in 0..nv {
+            let bodyid = *dof_bodyid.add(i as usize);
+            if *body_treeid.add(bodyid as usize) >= 0 && *body_awake.add(bodyid as usize) == 1 { // mjS_AWAKE
+                *dof_awake_ind.add(nv_awake as usize) = i;
+                nv_awake += 1;
+            }
+        }
+        (*d).nv_awake = nv_awake;
+    }
 }
 
 /// C: mj_updateSleep (engine/engine_sleep.h:31)
