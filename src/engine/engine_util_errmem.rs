@@ -144,9 +144,9 @@ pub fn mju_get_log_config() -> mjLogConfig {
 /// C: mju_setLogConfig (engine/engine_util_errmem.h:61)
 #[allow(unused_variables, non_snake_case)]
 pub fn mju_set_log_config(config: mjLogConfig) {
-    extern "C" { fn mju_setLogConfig_impl(config: mjLogConfig); }
-    // SAFETY: delegates to C implementation
-    unsafe { mju_setLogConfig_impl(config) }
+    extern "C" { fn mju_setLogConfig(config: mjLogConfig); }
+    // SAFETY: sets file-scope statics (env_checked, log_config) in C translation unit
+    unsafe { mju_setLogConfig(config) }
 }
 
 /// C: mju_clearHandlers (engine/engine_util_errmem.h:64)

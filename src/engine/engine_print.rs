@@ -228,9 +228,8 @@ pub fn mj_print_data(m: *const mjModel, d: *const mjData, filename: *const i8) {
 /// Calls: mj_printFormattedScene
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_print_scene(s: *const mjvScene, filename: *const i8) {
-    extern "C" { fn mj_printScene_impl(s: *const mjvScene, filename: *const i8); }
-    // SAFETY: delegates to C implementation
-    unsafe { mj_printScene_impl(s, filename) }
+    // C: mj_printScene calls mj_printFormattedScene with FLOAT_FORMAT = "% -9.2g"
+    mj_print_formatted_scene(s, filename, b"% -9.2g\0".as_ptr() as *const i8);
 }
 
 /// C: mj_printFormattedScene (engine/engine_print.h:55)

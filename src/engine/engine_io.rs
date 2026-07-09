@@ -625,9 +625,10 @@ pub fn mj_reset_data_keyframe(m: *const mjModel, d: *mut mjData, key: i32) {
 /// Calls: mjp_getPluginAtSlot, mju_free, mju_message
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_init_plugin(m: *const mjModel, d: *mut mjData) {
-    extern "C" { fn mj_initPlugin_impl(m: *const mjModel, d: *mut mjData); }
-    // SAFETY: delegates to C implementation
-    unsafe { mj_initPlugin_impl(m, d) }
+    extern "C" { fn mj_initPlugin(m: *const mjModel, d: *mut mjData); }
+    // SAFETY: m, d valid per caller. The C function accesses plugin function pointers
+    // (plugin->init) whose true signature differs from the erased fn() type in Rust.
+    unsafe { mj_initPlugin(m, d) }
 }
 
 /// C: mj_deleteData (engine/engine_io.h:138)

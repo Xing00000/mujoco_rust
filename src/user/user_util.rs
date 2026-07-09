@@ -497,9 +497,24 @@ pub fn mjuu_frame2quat(quat: *mut f64, x: *const f64, y: *const f64, z: *const f
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjuu_frameinvert(newpos: [f64; 3], newquat: [f64; 4], oldpos: [f64; 3], oldquat: [f64; 4]) {
-    extern "C" { fn mjuu_frameinvert_impl(newpos: [f64; 3], newquat: [f64; 4], oldpos: [f64; 3], oldquat: [f64; 4]); }
-    // SAFETY: delegates to C implementation
-    unsafe { mjuu_frameinvert_impl(newpos, newquat, oldpos, oldquat) }
+    // NOTE: In C ABI, array params are pointers. newpos, newquat are output.
+    let newpos_ptr = newpos.as_ptr() as *mut f64;
+    let newquat_ptr = newquat.as_ptr() as *mut f64;
+
+    // SAFETY: all pointers valid per C ABI (array param = pointer to caller's memory)
+    unsafe {
+        // position: newpos = localaxis(oldpos, oldquat), then negate
+        mjuu_localaxis(newpos_ptr, oldpos.as_ptr(), oldquat.as_ptr());
+        *newpos_ptr = -*newpos_ptr;
+        *newpos_ptr.add(1) = -*newpos_ptr.add(1);
+        *newpos_ptr.add(2) = -*newpos_ptr.add(2);
+
+        // orientation: conjugate of oldquat
+        *newquat_ptr = *oldquat.as_ptr();
+        *newquat_ptr.add(1) = -*oldquat.as_ptr().add(1);
+        *newquat_ptr.add(2) = -*oldquat.as_ptr().add(2);
+        *newquat_ptr.add(3) = -*oldquat.as_ptr().add(3);
+    }
 }
 
 /// C: mjuu_frameaccum (user/user_util.h:132)
@@ -540,9 +555,26 @@ pub fn mjuu_frameaccum(pos: [f64; 3], quat: [f64; 4], childpos: [f64; 3], childq
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjuu_frameaccum_child(pos: [f64; 3], quat: [f64; 4], childpos: [f64; 3], childquat: [f64; 4]) {
-    extern "C" { fn mjuu_frameaccumChild_impl(pos: [f64; 3], quat: [f64; 4], childpos: [f64; 3], childquat: [f64; 4]); }
-    // SAFETY: delegates to C implementation
-    unsafe { mjuu_frameaccumChild_impl(pos, quat, childpos, childquat) }
+    // NOTE: In C ABI, array params are pointers. childpos, childquat are output/inout.
+    let childpos_ptr = childpos.as_ptr() as *mut f64;
+    let childquat_ptr = childquat.as_ptr() as *mut f64;
+
+    // SAFETY: all pointers valid per C ABI (array param = pointer to caller's memory)
+    unsafe {
+        // copy pos, quat into local arrays
+        let mut p: [f64; 3] = [*pos.as_ptr(), *pos.as_ptr().add(1), *pos.as_ptr().add(2)];
+        let mut q: [f64; 4] = [
+            *quat.as_ptr(), *quat.as_ptr().add(1),
+            *quat.as_ptr().add(2), *quat.as_ptr().add(3),
+        ];
+
+        // accumulate: p, q = frameaccum(p, q, childpos, childquat)
+        mjuu_frameaccum(p, q, childpos, childquat);
+
+        // copy results back to childpos, childquat
+        mjuu_copyvec(childpos_ptr as *mut T1, p.as_ptr() as *const T2, 3);
+        mjuu_copyvec(childquat_ptr as *mut T1, q.as_ptr() as *const T2, 4);
+    }
 }
 
 /// C: mjuu_frameaccuminv (user/user_util.h:140)

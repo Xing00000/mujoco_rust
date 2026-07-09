@@ -787,11 +787,109 @@ pub fn mj_transmission(m: *const mjModel, d: *mut mjData) {
 /// Calls: mj_actuatorArmature, mji_dot6, mju_addTo, mju_copy, mju_copyRows, mju_mulInertVec, mju_zero, mju_zeroSparse
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_crb(m: *const mjModel, d: *mut mjData) {
-    extern "C" {
-        fn mj_crb_impl(m: *const mjModel, d: *mut mjData);
+    // SAFETY: m, d valid per caller. All pointer arithmetic within allocated model/data arrays.
+    unsafe {
+        const MJENBL_SLEEP: i32 = 1 << 4;
+        const MJOBJ_JOINT: i32 = 3;
+
+        // outputs
+        let crb: *mut f64 = (*d).crb;
+        let M: *mut f64 = (*d).M;
+
+        // inputs
+        let cinert: *const f64 = (*d).cinert;
+        let cdof: *const f64 = (*d).cdof;
+        let dof_M0: *const f64 = (*m).dof_M0;
+        let dof_armature: *const f64 = (*m).dof_armature;
+        let body_awake_ind: *const i32 = (*d).body_awake_ind;
+        let parent_awake_ind: *const i32 = (*d).parent_awake_ind;
+        let dof_awake_ind: *const i32 = (*d).dof_awake_ind;
+        let rownnz: *const i32 = (*m).M_rownnz;
+        let rowadr: *const i32 = (*m).M_rowadr;
+        let body_parentid: *const i32 = (*m).body_parentid;
+        let dof_parentid: *const i32 = (*m).dof_parentid;
+        let dof_simplenum: *const i32 = (*m).dof_simplenum;
+        let dof_bodyid: *const i32 = (*m).dof_bodyid;
+
+        // sleep filtering
+        let sleep_filter = ((*m).opt.enableflags & MJENBL_SLEEP) != 0
+            && (*d).nv_awake < (*m).nv as i32;
+        let nbody: i32 = if sleep_filter { (*d).nbody_awake } else { (*m).nbody as i32 };
+        let nparent: i32 = if sleep_filter { (*d).nparent_awake } else { (*m).nbody as i32 };
+        let nv: i32 = if sleep_filter { (*d).nv_awake } else { (*m).nv as i32 };
+
+        // crb = cinert
+        if !sleep_filter {
+            crate::engine::engine_util_blas::mju_copy(crb, cinert, 10 * nbody);
+        } else {
+            crate::engine::engine_util_blas::mju_copy_rows(crb, cinert, body_awake_ind, nbody, 10);
+        }
+
+        // backward pass over bodies, accumulate composite inertias
+        let mut b: i32 = nparent - 1;
+        while b >= 0 {
+            let i = if sleep_filter { *parent_awake_ind.add(b as usize) } else { b };
+            if *body_parentid.add(i as usize) > 0 {
+                crate::engine::engine_util_blas::mju_add_to(
+                    crb.add(10 * (*body_parentid.add(i as usize)) as usize),
+                    crb.add(10 * i as usize),
+                    10,
+                );
+            }
+            b -= 1;
+        }
+
+        // clear M
+        if !sleep_filter {
+            crate::engine::engine_util_blas::mju_zero(M, (*m).nC as i32);
+        } else {
+            crate::engine::engine_util_sparse::mju_zero_sparse(M, rownnz, rowadr, dof_awake_ind, nv);
+        }
+
+        // dense forward pass over dofs
+        let mut v: i32 = 0;
+        while v < nv {
+            let i = if sleep_filter { *dof_awake_ind.add(v as usize) } else { v };
+
+            // simple dof: fixed diagonal inertia
+            let adr = *rowadr.add(i as usize);
+            if *dof_simplenum.add(i as usize) != 0 {
+                *M.add(adr as usize) = *dof_M0.add(i as usize);
+                v += 1;
+                continue;
+            }
+
+            // init M(i,i) with armature inertia
+            let mut Madr_ij: i32 = adr + *rownnz.add(i as usize) - 1;
+
+            // call mj_actuatorArmature via extern C (mjtObj is int in C ABI)
+            extern "C" {
+                fn mj_actuatorArmature(m: *const mjModel, r#type: i32, id: i32) -> f64;
+            }
+            *M.add(Madr_ij as usize) = *dof_armature.add(i as usize)
+                + mj_actuatorArmature(m, MJOBJ_JOINT, *(*m).dof_jntid.add(i as usize));
+
+            // precompute buf = crb_body_i * cdof_i
+            let mut buf: [f64; 6] = [0.0; 6];
+            crate::engine::engine_util_spatial::mju_mul_inert_vec(
+                buf.as_mut_ptr(),
+                crb.add(10 * (*dof_bodyid.add(i as usize)) as usize),
+                cdof.add(6 * i as usize),
+            );
+
+            // sparse backward pass over ancestors
+            let mut j: i32 = i;
+            while j >= 0 {
+                // M(i,j) += cdof_j * (crb_body_i * cdof_i)
+                *M.add(Madr_ij as usize) +=
+                    crate::engine::engine_inline::mji_dot6(cdof.add(6 * j as usize), buf.as_ptr());
+                Madr_ij -= 1;
+                j = *dof_parentid.add(j as usize);
+            }
+
+            v += 1;
+        }
     }
-    // SAFETY: delegates to C implementation, all pointers valid per caller contract
-    unsafe { mj_crb_impl(m, d) }
 }
 
 /// C: mj_tendonArmature (engine/engine_core_smooth.h:62)
@@ -821,11 +919,76 @@ pub fn mj_make_m(m: *const mjModel, d: *mut mjData) {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_factor_i_legacy(m: *const mjModel, d: *mut mjData, M: *const f64, qLD: *mut f64, qLDiagInv: *mut f64) {
-    extern "C" {
-        fn mj_factorI_legacy_impl(m: *const mjModel, d: *mut mjData, M: *const f64, qLD: *mut f64, qLDiagInv: *mut f64);
+    // SAFETY: m, d valid per caller. M, qLD, qLDiagInv point to model-sized arrays.
+    // All index arithmetic stays within sparse matrix bounds per mujoco conventions.
+    unsafe {
+        const MJMINVAL: f64 = 1e-15;
+        const MJWARN_INERTIA: i32 = 0;
+
+        // local copies of key variables
+        let dof_Madr: *const i32 = (*m).dof_Madr;
+        let dof_parentid: *const i32 = (*m).dof_parentid;
+        let nv: i32 = (*m).nv as i32;
+
+        // copy M into LD
+        crate::engine::engine_util_blas::mju_copy(qLD, M, (*m).nM as i32);
+
+        // dense backward loop over dofs
+        let mut k: i32 = nv - 1;
+        while k >= 0 {
+            // get address of M(k,k)
+            let Madr_kk: i32 = *dof_Madr.add(k as usize);
+
+            // check for small/negative numbers on diagonal
+            if *qLD.add(Madr_kk as usize) < MJMINVAL {
+                crate::engine::engine_core_util::mj_warning(d, MJWARN_INERTIA, k);
+                *qLD.add(Madr_kk as usize) = MJMINVAL;
+            }
+
+            // skip the rest if simple
+            if *(*m).dof_simplenum.add(k as usize) != 0 {
+                k -= 1;
+                continue;
+            }
+
+            // sparse backward loop over ancestors of k (excluding k)
+            let mut Madr_ki: i32 = Madr_kk + 1;
+            let mut i: i32 = *dof_parentid.add(k as usize);
+            while i >= 0 {
+                let tmp: f64 = *qLD.add(Madr_ki as usize) / *qLD.add(Madr_kk as usize);
+
+                // get number of ancestors of i (including i)
+                let cnt: i32 = if i < nv - 1 {
+                    *dof_Madr.add((i + 1) as usize) - *dof_Madr.add(i as usize)
+                } else {
+                    (*m).nM as i32 - *dof_Madr.add((i + 1) as usize)
+                };
+
+                // M(i,j) -= M(k,j) * tmp
+                crate::engine::engine_util_blas::mju_add_to_scl(
+                    qLD.add(*dof_Madr.add(i as usize) as usize),
+                    qLD.add(Madr_ki as usize),
+                    -tmp,
+                    cnt,
+                );
+
+                *qLD.add(Madr_ki as usize) = tmp;
+
+                // advance to i's parent
+                i = *dof_parentid.add(i as usize);
+                Madr_ki += 1;
+            }
+
+            k -= 1;
+        }
+
+        // compute 1/diag(D)
+        let mut i: i32 = 0;
+        while i < nv {
+            *qLDiagInv.add(i as usize) = 1.0 / *qLD.add(*dof_Madr.add(i as usize) as usize);
+            i += 1;
+        }
     }
-    // SAFETY: delegates to C implementation which accesses mjModel sparse matrix layout
-    unsafe { mj_factorI_legacy_impl(m, d, M, qLD, qLDiagInv) }
 }
 
 /// C: mj_factorI (engine/engine_core_smooth.h:72)

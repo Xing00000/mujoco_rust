@@ -950,9 +950,95 @@ pub fn mjv_add_geoms(m: *const mjModel, d: *mut mjData, opt: *const mjvOption, p
 /// Calls: f2f, mju_n2f, mjv_cameraInModel
 #[allow(unused_variables, non_snake_case)]
 pub fn mjv_make_lights(m: *const mjModel, d: *const mjData, scn: *mut mjvScene) {
-    extern "C" { fn mjv_makeLights_impl(m: *const mjModel, d: *const mjData, scn: *mut mjvScene); }
-    // SAFETY: delegates to C implementation
-    unsafe { mjv_makeLights_impl(m, d, scn) }
+    // SAFETY: m, d, scn are valid pointers. vis.headlight is opaque, accessed via raw offsets.
+    // Headlight struct within mjVisual starts at offset 72 (global=52 + quality=20).
+    // headlight layout: ambient[3](f32)=0, diffuse[3](f32)=12, specular[3](f32)=24, active(i32)=36
+    unsafe {
+        const MJLIGHT_SPOT: i32 = 0;
+        const MJLIGHT_DIRECTIONAL: i32 = 1;
+        const MJMAXLIGHT: i32 = 100;
+
+        let vis_ptr = core::ptr::addr_of!((*m).vis) as *const u8;
+        // headlight offsets (within vis): global=52, quality=20, headlight starts at 72
+        let hl_base = vis_ptr.add(72);
+        let hl_ambient = hl_base as *const f32;           // offset 0
+        let hl_diffuse = hl_base.add(12) as *const f32;  // offset 12
+        let hl_specular = hl_base.add(24) as *const f32; // offset 24
+        let hl_active = *(hl_base.add(36) as *const i32); // offset 36
+
+        // clear counter
+        (*scn).nlight = 0;
+
+        // headlight
+        if hl_active != 0 {
+            let thislight: *mut mjvLight = (*scn).lights.as_mut_ptr();
+
+            // set default properties
+            core::ptr::write_bytes(thislight, 0, 1);
+            (*thislight).id = -1;
+            (*thislight).headlight = 1;
+            (*thislight).texid = -1;
+            (*thislight).r#type = MJLIGHT_DIRECTIONAL;
+            (*thislight).castshadow = 0;
+            (*thislight).bulbradius = 0.02;
+            (*thislight).intensity = 0.0;
+            (*thislight).range = 10.0;
+
+            // compute head position and gaze direction in model space
+            let mut hpos: [f64; 3] = [0.0; 3];
+            let mut hfwd: [f64; 3] = [0.0; 3];
+            crate::engine::engine_vis_interact::mjv_camera_in_model(
+                hpos.as_mut_ptr(), hfwd.as_mut_ptr(), core::ptr::null_mut(), scn);
+            crate::engine::engine_util_misc::mju_n2f((*thislight).pos.as_mut_ptr(), hpos.as_ptr(), 3);
+            crate::engine::engine_util_misc::mju_n2f((*thislight).dir.as_mut_ptr(), hfwd.as_ptr(), 3);
+
+            // copy colors
+            f2f((*thislight).ambient.as_mut_ptr(), hl_ambient, 3);
+            f2f((*thislight).diffuse.as_mut_ptr(), hl_diffuse, 3);
+            f2f((*thislight).specular.as_mut_ptr(), hl_specular, 3);
+
+            // advance counter
+            (*scn).nlight += 1;
+        }
+
+        // remaining lights
+        let mut i: i32 = 0;
+        while i < (*m).nlight as i32 && (*scn).nlight < MJMAXLIGHT {
+            if *(((*m).light_active as *const u8).add(i as usize)) != 0 {
+                let thislight: *mut mjvLight = (*scn).lights.as_mut_ptr().add((*scn).nlight as usize);
+
+                // copy properties
+                core::ptr::write_bytes(thislight, 0, 1);
+                (*thislight).id = i;
+                (*thislight).r#type = *(*m).light_type.add(i as usize);
+                (*thislight).texid = *(*m).light_texid.add(i as usize);
+                (*thislight).castshadow = *(((*m).light_castshadow as *const u8).add(i as usize));
+                (*thislight).bulbradius = *(*m).light_bulbradius.add(i as usize);
+                (*thislight).intensity = *(*m).light_intensity.add(i as usize);
+                (*thislight).range = *(*m).light_range.add(i as usize);
+                if (*thislight).r#type == MJLIGHT_SPOT {
+                    f2f((*thislight).attenuation.as_mut_ptr(), (*m).light_attenuation.add(3 * i as usize), 3);
+                    (*thislight).exponent = *(*m).light_exponent.add(i as usize);
+                    (*thislight).cutoff = *(*m).light_cutoff.add(i as usize);
+                }
+
+                // copy colors
+                f2f((*thislight).ambient.as_mut_ptr(), (*m).light_ambient.add(3 * i as usize), 3);
+                f2f((*thislight).diffuse.as_mut_ptr(), (*m).light_diffuse.add(3 * i as usize), 3);
+                f2f((*thislight).specular.as_mut_ptr(), (*m).light_specular.add(3 * i as usize), 3);
+
+                // copy position and direction
+                crate::engine::engine_util_misc::mju_n2f(
+                    (*thislight).pos.as_mut_ptr(), (*d).light_xpos.add(3 * i as usize), 3);
+                crate::engine::engine_util_misc::mju_n2f(
+                    (*thislight).dir.as_mut_ptr(), (*d).light_xdir.add(3 * i as usize), 3);
+
+                // advance counter
+                (*scn).nlight += 1;
+            }
+            i += 1;
+        }
+    }
 }
 
 /// C: mjv_updateCamera (engine/engine_vis_visualize.h:48)
@@ -989,9 +1075,159 @@ pub fn mjv_update_skin(m: *const mjModel, d: *const mjData, scn: *mut mjvScene) 
 /// Calls: mju_addTo3, mju_cross, mju_mulMatVec3, mju_mulQuat, mju_negQuat, mju_quat2Mat, mju_sub3
 #[allow(unused_variables, non_snake_case)]
 pub fn mjv_update_active_skin(m: *const mjModel, d: *const mjData, scn: *mut mjvScene, opt: *const mjvOption) {
-    extern "C" { fn mjv_updateActiveSkin_impl(m: *const mjModel, d: *const mjData, scn: *mut mjvScene, opt: *const mjvOption); }
-    // SAFETY: delegates to C implementation
-    unsafe { mjv_updateActiveSkin_impl(m, d, scn, opt) }
+    const MJNGROUP: i32 = 6;
+    const MJMINVAL: f32 = 1e-15;
+
+    // SAFETY: all pointers valid per caller contract; arithmetic mirrors C line-by-line.
+    unsafe {
+        // process skins
+        let mut i: i32 = 0;
+        while i < (*m).nskin as i32 {
+            // get info
+            let vertadr: i32 = *(*m).skin_vertadr.add(i as usize);
+            let vertnum: i32 = *(*m).skin_vertnum.add(i as usize);
+            let faceadr: i32 = *(*m).skin_faceadr.add(i as usize);
+            let facenum: i32 = *(*m).skin_facenum.add(i as usize);
+
+            // clear positions and normals
+            core::ptr::write_bytes((*scn).skinvert.add(3 * vertadr as usize), 0, 3 * vertnum as usize);
+            core::ptr::write_bytes((*scn).skinnormal.add(3 * vertadr as usize), 0, 3 * vertnum as usize);
+
+            // update only if visible
+            let grp = *(*m).skin_group.add(i as usize);
+            let grp_idx = if grp < 0 { 0 } else if grp > MJNGROUP - 1 { (MJNGROUP - 1) as usize } else { grp as usize };
+            if (*opt).skingroup[grp_idx] != 0 {
+                // accumulate positions from all bones
+                let mut j: i32 = *(*m).skin_boneadr.add(i as usize);
+                let j_end: i32 = j + *(*m).skin_bonenum.add(i as usize);
+                while j < j_end {
+                    // get bind pose
+                    let bindpos: [f64; 3] = [
+                        *(*m).skin_bonebindpos.add(3 * j as usize) as f64,
+                        *(*m).skin_bonebindpos.add(3 * j as usize + 1) as f64,
+                        *(*m).skin_bonebindpos.add(3 * j as usize + 2) as f64,
+                    ];
+                    let bindquat: [f64; 4] = [
+                        *(*m).skin_bonebindquat.add(4 * j as usize) as f64,
+                        *(*m).skin_bonebindquat.add(4 * j as usize + 1) as f64,
+                        *(*m).skin_bonebindquat.add(4 * j as usize + 2) as f64,
+                        *(*m).skin_bonebindquat.add(4 * j as usize + 3) as f64,
+                    ];
+
+                    // compute rotation
+                    let bodyid: i32 = *(*m).skin_bonebodyid.add(j as usize);
+                    let mut quat: [f64; 4] = [0.0; 4];
+                    let mut quatneg: [f64; 4] = [0.0; 4];
+                    let mut rotate: [f64; 9] = [0.0; 9];
+                    crate::engine::engine_util_spatial::mju_neg_quat(quatneg.as_mut_ptr(), bindquat.as_ptr());
+                    crate::engine::engine_util_spatial::mju_mul_quat(quat.as_mut_ptr(), (*d).xquat.add(4 * bodyid as usize), quatneg.as_ptr());
+                    crate::engine::engine_util_spatial::mju_quat2mat(rotate.as_mut_ptr(), quat.as_ptr());
+
+                    // compute translation
+                    let mut translate: [f64; 3] = [0.0; 3];
+                    crate::engine::engine_util_blas::mju_mul_mat_vec3(translate.as_mut_ptr(), rotate.as_ptr(), bindpos.as_ptr());
+                    crate::engine::engine_util_blas::mju_sub3(translate.as_mut_ptr(), (*d).xpos.add(3 * bodyid as usize), translate.as_ptr());
+
+                    // process all bone vertices
+                    let mut k: i32 = *(*m).skin_bonevertadr.add(j as usize);
+                    let k_end: i32 = k + *(*m).skin_bonevertnum.add(j as usize);
+                    while k < k_end {
+                        // vertex id and weight
+                        let vid: i32 = *(*m).skin_bonevertid.add(k as usize);
+                        let vweight: f32 = *(*m).skin_bonevertweight.add(k as usize);
+
+                        // get original position
+                        let pos: [f64; 3] = [
+                            *(*m).skin_vert.add(3 * (vertadr + vid) as usize) as f64,
+                            *(*m).skin_vert.add(3 * (vertadr + vid) as usize + 1) as f64,
+                            *(*m).skin_vert.add(3 * (vertadr + vid) as usize + 2) as f64,
+                        ];
+
+                        // transform
+                        let mut pos1: [f64; 3] = [0.0; 3];
+                        crate::engine::engine_util_blas::mju_mul_mat_vec3(pos1.as_mut_ptr(), rotate.as_ptr(), pos.as_ptr());
+                        crate::engine::engine_util_blas::mju_add_to3(pos1.as_mut_ptr(), translate.as_ptr());
+
+                        // accumulate position
+                        *(*scn).skinvert.add(3 * (vertadr + vid) as usize) += vweight * pos1[0] as f32;
+                        *(*scn).skinvert.add(3 * (vertadr + vid) as usize + 1) += vweight * pos1[1] as f32;
+                        *(*scn).skinvert.add(3 * (vertadr + vid) as usize + 2) += vweight * pos1[2] as f32;
+
+                        k += 1;
+                    }
+                    j += 1;
+                }
+
+                // compute vertex normals from face normals
+                let mut k: i32 = faceadr;
+                while k < faceadr + facenum {
+                    // get face vertex indices
+                    let vid: [i32; 3] = [
+                        *(*m).skin_face.add(3 * k as usize),
+                        *(*m).skin_face.add(3 * k as usize + 1),
+                        *(*m).skin_face.add(3 * k as usize + 2),
+                    ];
+
+                    // get triangle edges
+                    let mut vec01: [f64; 3] = [0.0; 3];
+                    let mut vec02: [f64; 3] = [0.0; 3];
+                    let mut r: i32 = 0;
+                    while r < 3 {
+                        vec01[r as usize] = *(*scn).skinvert.add(3 * (vertadr + vid[1]) as usize + r as usize) as f64
+                            - *(*scn).skinvert.add(3 * (vertadr + vid[0]) as usize + r as usize) as f64;
+                        vec02[r as usize] = *(*scn).skinvert.add(3 * (vertadr + vid[2]) as usize + r as usize) as f64
+                            - *(*scn).skinvert.add(3 * (vertadr + vid[0]) as usize + r as usize) as f64;
+                        r += 1;
+                    }
+
+                    // compute face normal
+                    let mut nrm: [f64; 3] = [0.0; 3];
+                    crate::engine::engine_util_spatial::mju_cross(nrm.as_mut_ptr(), vec01.as_ptr(), vec02.as_ptr());
+
+                    // add normal to each vertex with weight = area
+                    let mut r: i32 = 0;
+                    while r < 3 {
+                        let mut t: i32 = 0;
+                        while t < 3 {
+                            *(*scn).skinnormal.add(3 * (vertadr + vid[r as usize]) as usize + t as usize) += nrm[t as usize] as f32;
+                            t += 1;
+                        }
+                        r += 1;
+                    }
+                    k += 1;
+                }
+
+                // normalize normals
+                let mut k: i32 = vertadr;
+                while k < vertadr + vertnum {
+                    let s: f32 = (
+                        *(*scn).skinnormal.add(3 * k as usize) * *(*scn).skinnormal.add(3 * k as usize)
+                        + *(*scn).skinnormal.add(3 * k as usize + 1) * *(*scn).skinnormal.add(3 * k as usize + 1)
+                        + *(*scn).skinnormal.add(3 * k as usize + 2) * *(*scn).skinnormal.add(3 * k as usize + 2)
+                    ).sqrt();
+                    let scl: f32 = 1.0 / (if MJMINVAL > s { MJMINVAL } else { s });
+
+                    *(*scn).skinnormal.add(3 * k as usize) *= scl;
+                    *(*scn).skinnormal.add(3 * k as usize + 1) *= scl;
+                    *(*scn).skinnormal.add(3 * k as usize + 2) *= scl;
+                    k += 1;
+                }
+
+                // inflate
+                if *(*m).skin_inflate.add(i as usize) != 0.0 {
+                    let inflate: f32 = *(*m).skin_inflate.add(i as usize);
+                    let mut k: i32 = vertadr;
+                    while k < vertadr + vertnum {
+                        *(*scn).skinvert.add(3 * k as usize) += inflate * *(*scn).skinnormal.add(3 * k as usize);
+                        *(*scn).skinvert.add(3 * k as usize + 1) += inflate * *(*scn).skinnormal.add(3 * k as usize + 1);
+                        *(*scn).skinvert.add(3 * k as usize + 2) += inflate * *(*scn).skinnormal.add(3 * k as usize + 2);
+                        k += 1;
+                    }
+                }
+            }
+            i += 1;
+        }
+    }
 }
 
 /// C: mjv_cameraFrame (engine/engine_vis_visualize.h:61)
@@ -1003,9 +1239,68 @@ pub fn mjv_update_active_skin(m: *const mjModel, d: *const mjData, scn: *mut mjv
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjv_camera_frame(headpos: *mut f64, forward: *mut f64, up: *mut f64, right: *mut f64, d: *const mjData, cam: *const mjvCamera) {
-    extern "C" { fn mjv_cameraFrame_impl(headpos: *mut f64, forward: *mut f64, up: *mut f64, right: *mut f64, d: *const mjData, cam: *const mjvCamera); }
-    // SAFETY: delegates to C implementation
-    unsafe { mjv_cameraFrame_impl(headpos, forward, up, right, d, cam) }
+    const MJPI: f64 = 3.14159265358979323846;
+    const MJCAMERA_FREE: i32 = 0;
+    const MJCAMERA_TRACKING: i32 = 1;
+    const MJCAMERA_FIXED: i32 = 2;
+
+    // SAFETY: d and cam are valid pointers. headpos/forward/up/right may be null (checked).
+    unsafe {
+        match (*cam).r#type {
+            MJCAMERA_FREE | MJCAMERA_TRACKING => {
+                let ca: f64 = ((*cam).azimuth / 180.0 * MJPI).cos();
+                let sa: f64 = ((*cam).azimuth / 180.0 * MJPI).sin();
+                let ce: f64 = ((*cam).elevation / 180.0 * MJPI).cos();
+                let se: f64 = ((*cam).elevation / 180.0 * MJPI).sin();
+                if !forward.is_null() {
+                    *forward.add(0) = ce * ca;
+                    *forward.add(1) = ce * sa;
+                    *forward.add(2) = se;
+                }
+                if !up.is_null() {
+                    *up.add(0) = -se * ca;
+                    *up.add(1) = -se * sa;
+                    *up.add(2) = ce;
+                }
+                if !right.is_null() {
+                    *right.add(0) = sa;
+                    *right.add(1) = -ca;
+                    *right.add(2) = 0.0;
+                }
+                if !headpos.is_null() {
+                    crate::engine::engine_util_blas::mju_add_scl3(
+                        headpos, (*cam).lookat.as_ptr(), forward, -(*cam).distance);
+                }
+            }
+            MJCAMERA_FIXED => {
+                let cid: i32 = (*cam).fixedcamid;
+                let mat: *const f64 = (*d).cam_xmat.add(9 * cid as usize);
+                if !forward.is_null() {
+                    *forward.add(0) = -*mat.add(2);
+                    *forward.add(1) = -*mat.add(5);
+                    *forward.add(2) = -*mat.add(8);
+                }
+                if !up.is_null() {
+                    *up.add(0) = *mat.add(1);
+                    *up.add(1) = *mat.add(4);
+                    *up.add(2) = *mat.add(7);
+                }
+                if !right.is_null() {
+                    *right.add(0) = *mat.add(0);
+                    *right.add(1) = *mat.add(3);
+                    *right.add(2) = *mat.add(6);
+                }
+                if !headpos.is_null() {
+                    crate::engine::engine_util_blas::mju_copy3(
+                        headpos, (*d).cam_xpos.add(3 * cid as usize));
+                }
+            }
+            _ => {
+                crate::engine::engine_util_errmem::mju_error(
+                    b"unknown camera type\0".as_ptr() as *const i8);
+            }
+        }
+    }
 }
 
 /// C: mjv_cameraFrustum (engine/engine_vis_visualize.h:65)
