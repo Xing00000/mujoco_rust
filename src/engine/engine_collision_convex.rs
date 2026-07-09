@@ -118,9 +118,33 @@ pub fn mjc_sphere_support(res: *mut f64, obj: *mut mjCCDObj, dir: *const f64) {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjc_capsule_support(res: *mut f64, obj: *mut mjCCDObj, dir: *const f64) {
-    extern "C" { fn mjc_capsuleSupport_impl(res: *mut f64, obj: *mut mjCCDObj, dir: *const f64); }
-    // SAFETY: delegates to C implementation
-    unsafe { mjc_capsuleSupport_impl(res, obj, dir) }
+    // SAFETY: res[3], obj valid, dir[3] valid. Calls local helper functions.
+    unsafe {
+        let mat = (*obj).mat.as_ptr();
+        let pos = (*obj).pos.as_ptr();
+        let radius: f64 = (*obj).size[0];
+        let length: f64 = (*obj).size[1];
+
+        // rotate dir to geom local frame
+        let mut local_dir: [f64; 3] = [0.0; 3];
+        let mut local_supp: [f64; 3] = [0.0; 3];
+        mul_mat_t_vec3(local_dir.as_mut_ptr(), mat, dir);
+
+        // start with sphere
+        local_supp[0] = local_dir[0] * radius;
+        local_supp[1] = local_dir[1] * radius;
+        local_supp[2] = local_dir[2] * radius;
+
+        // add cylinder contribution
+        if local_dir[2] >= 0.0 {
+            local_supp[2] += length;
+        } else {
+            local_supp[2] -= length;
+        }
+
+        // transform result to global frame
+        local_to_global(res, mat, local_supp.as_ptr(), pos);
+    }
 }
 
 /// C: mjc_ellipsoidSupport (engine/engine_collision_convex.c:256)
@@ -160,9 +184,30 @@ pub fn mjc_cylinder_support(res: *mut f64, obj: *mut mjCCDObj, dir: *const f64) 
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjc_box_support(res: *mut f64, obj: *mut mjCCDObj, dir: *const f64) {
-    extern "C" { fn mjc_boxSupport_impl(res: *mut f64, obj: *mut mjCCDObj, dir: *const f64); }
-    // SAFETY: delegates to C implementation
-    unsafe { mjc_boxSupport_impl(res, obj, dir) }
+    // SAFETY: res[3], obj valid, dir[3] valid. Calls local helper functions.
+    unsafe {
+        let mat = (*obj).mat.as_ptr();
+        let pos = (*obj).pos.as_ptr();
+        let size = (*obj).size.as_ptr();
+
+        // rotate dir to geom local frame
+        let mut local_dir: [f64; 3] = [0.0; 3];
+        let mut local_supp: [f64; 3] = [0.0; 3];
+        mul_mat_t_vec3(local_dir.as_mut_ptr(), mat, dir);
+
+        // find support point in local frame
+        local_supp[0] = if local_dir[0] >= 0.0 { *size.add(0) } else { -*size.add(0) };
+        local_supp[1] = if local_dir[1] >= 0.0 { *size.add(1) } else { -*size.add(1) };
+        local_supp[2] = if local_dir[2] >= 0.0 { *size.add(2) } else { -*size.add(2) };
+
+        // mark the index of the corner of the box for fast lookup
+        (*obj).vertindex = if local_supp[0] > 0.0 { 1 } else { 0 };
+        (*obj).vertindex |= if local_supp[1] > 0.0 { 2 } else { 0 };
+        (*obj).vertindex |= if local_supp[2] > 0.0 { 4 } else { 0 };
+
+        // transform support point to global frame
+        local_to_global(res, mat, local_supp.as_ptr(), pos);
+    }
 }
 
 /// C: dot3f (engine/engine_collision_convex.c:343)
@@ -297,9 +342,34 @@ pub fn mju_rotate_frame(origin: *const f64, rot: *const f64, xmat: *mut f64, xpo
 /// C: maxContacts (engine/engine_collision_convex.c:831)
 #[allow(unused_variables, non_snake_case)]
 pub fn max_contacts(m: *const mjModel, obj1: *const mjCCDObj, obj2: *const mjCCDObj) -> i32 {
-    extern "C" { fn maxContacts_impl(m: *const mjModel, obj1: *const mjCCDObj, obj2: *const mjCCDObj) -> i32; }
-    // SAFETY: delegates to C implementation, pointers valid per caller contract
-    unsafe { maxContacts_impl(m, obj1, obj2) }
+    const mjGEOM_BOX: i32 = 6;
+    const mjGEOM_MESH: i32 = 7;
+    const mjDSBL_MULTICCD: i32 = 1 << 19;
+
+    // SAFETY: m, obj1, obj2 are valid pointers per caller contract.
+    unsafe {
+        // single pass not supported for margins
+        if (*obj1).margin > 0.0 || (*obj2).margin > 0.0 {
+            return 1;
+        }
+
+        // can return 8 contacts for box-box collision in one pass
+        let type1 = (*obj1).geom_type;
+        let type2 = (*obj2).geom_type;
+        if type1 == mjGEOM_BOX && type2 == mjGEOM_BOX {
+            return 8;
+        }
+
+        // reduce mesh collisions to 4 contacts max
+        if type1 == mjGEOM_BOX || type1 == mjGEOM_MESH {
+            if type2 == mjGEOM_BOX || type2 == mjGEOM_MESH {
+                return if ((*m).opt.disableflags & mjDSBL_MULTICCD) != 0 { 1 } else { 4 };
+            }
+        }
+
+        // not supported for other geom types
+        1
+    }
 }
 
 /// C: addplanemesh (engine/engine_collision_convex.c:946)

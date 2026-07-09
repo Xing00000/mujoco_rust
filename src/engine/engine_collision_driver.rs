@@ -213,10 +213,16 @@ pub fn filter_body_pair(weldbody1: i32, weldparent1: i32, asleep1: i32, weldbody
 /// C: canCollide (engine/engine_collision_driver.c:318)
 #[allow(unused_variables, non_snake_case)]
 pub fn can_collide(m: *const mjModel, bf: i32) -> i32 {
-    // WARNING: signature changed — verify body
-    // Previous params: (m : * const mjModel, bf : i32)
-    // Previous return: i32
-    extern "C" { fn canCollide_impl (m : * const mjModel , bf : i32) -> i32 ; } unsafe { canCollide_impl (m , bf) }
+    // SAFETY: m is valid mjModel pointer. bf is valid bodyflex index.
+    // body_contype, body_conaffinity, flex_contype, flex_conaffinity are valid arrays.
+    unsafe {
+        if bf < (*m).nbody as i32 {
+            ((*(*m).body_contype.add(bf as usize) != 0) || (*(*m).body_conaffinity.add(bf as usize) != 0)) as i32
+        } else {
+            let f = bf - (*m).nbody as i32;
+            ((*(*m).flex_contype.add(f as usize) != 0) || (*(*m).flex_conaffinity.add(f as usize) != 0)) as i32
+        }
+    }
 }
 
 /// C: canCollide2 (engine/engine_collision_driver.c:329)
@@ -601,10 +607,75 @@ pub fn make_aamm(m: *const mjModel, d: *mut mjData, x_min: *mut f64, y_min: *mut
 /// Calls: mju_message
 #[allow(unused_variables, non_snake_case)]
 pub fn add_pair(m: *const mjModel, bf1: i32, bf2: i32, npair: *mut i32, pair: *mut i32, maxpair: i32) {
-    // WARNING: signature changed — verify body
-    // Previous params: (m : * const mjModel, bf1 : i32, bf2 : i32, npair : * mut i32, pair : * mut i32, maxpair : i32)
-    // Previous return: ()
-    extern "C" { fn add_pair_impl (m : * const mjModel , bf1 : i32 , bf2 : i32 , npair : * mut i32 , pair : * mut i32 , maxpair : i32) ; } unsafe { add_pair_impl (m , bf1 , bf2 , npair , pair , maxpair) }
+    // SAFETY: m may be null (checked). npair, pair valid. All mjModel arrays valid per contract.
+    unsafe {
+        // add pair if there is room in buffer
+        if *npair < maxpair {
+            // contact filtering if m is not NULL
+            if !m.is_null() {
+                let nbody = (*m).nbody as i32;
+                let contype1: i32;
+                let conaffinity1: i32;
+                let contype2: i32;
+                let conaffinity2: i32;
+
+                // get contype and conaffinity for bodyflex 1
+                if bf1 < nbody {
+                    let body_geomadr1 = *(*m).body_geomadr.add(bf1 as usize);
+                    let body_geomnum1 = *(*m).body_geomnum.add(bf1 as usize);
+                    let mut ct1: i32 = 0;
+                    let mut ca1: i32 = 0;
+                    let mut i = body_geomadr1;
+                    while i < body_geomadr1 + body_geomnum1 {
+                        ct1 |= *(*m).geom_contype.add(i as usize);
+                        ca1 |= *(*m).geom_conaffinity.add(i as usize);
+                        i += 1;
+                    }
+                    contype1 = ct1;
+                    conaffinity1 = ca1;
+                } else {
+                    contype1 = *(*m).flex_contype.add((bf1 - nbody) as usize);
+                    conaffinity1 = *(*m).flex_conaffinity.add((bf1 - nbody) as usize);
+                }
+
+                // get contype and conaffinity for bodyflex 2
+                if bf2 < nbody {
+                    let body_geomadr2 = *(*m).body_geomadr.add(bf2 as usize);
+                    let body_geomnum2 = *(*m).body_geomnum.add(bf2 as usize);
+                    let mut ct2: i32 = 0;
+                    let mut ca2: i32 = 0;
+                    let mut i = body_geomadr2;
+                    while i < body_geomadr2 + body_geomnum2 {
+                        ct2 |= *(*m).geom_contype.add(i as usize);
+                        ca2 |= *(*m).geom_conaffinity.add(i as usize);
+                        i += 1;
+                    }
+                    contype2 = ct2;
+                    conaffinity2 = ca2;
+                } else {
+                    contype2 = *(*m).flex_contype.add((bf2 - nbody) as usize);
+                    conaffinity2 = *(*m).flex_conaffinity.add((bf2 - nbody) as usize);
+                }
+
+                // compatibility check
+                if (contype1 & conaffinity2) == 0 && (contype2 & conaffinity1) == 0 {
+                    return;
+                }
+            }
+
+            // add pair
+            if bf1 < bf2 {
+                *pair.add(*npair as usize) = (bf1 << 16) + bf2;
+            } else {
+                *pair.add(*npair as usize) = (bf2 << 16) + bf1;
+            }
+            *npair += 1;
+        } else {
+            crate::engine::engine_util_errmem::mju_error(
+                b"broadphase buffer full\0".as_ptr() as *const i8
+            );
+        }
+    }
 }
 
 /// C: SAPcmp (engine/engine_collision_driver.c:1383)
