@@ -296,9 +296,9 @@ pub fn mj_delete_model(m: *mut mjModel) {
 /// Calls: getnsize
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_size_model(m: *const mjModel) -> usize {
-    extern "C" { fn mj_sizeModel_impl(m: *const mjModel) -> usize; }
-    // SAFETY: delegates to C implementation, all pointers valid per caller contract
-    unsafe { mj_sizeModel_impl(m) }
+    extern "C" { fn mj_sizeModel(m: *const mjModel) -> usize; }
+    // SAFETY: delegates to C implementation which uses MJMODEL_POINTERS macro expansion
+    unsafe { mj_sizeModel(m) }
 }
 
 /// C: mj_validateReferences (engine/engine_io.h:87)

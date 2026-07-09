@@ -209,9 +209,28 @@ pub fn mju_warning(msg: *const i8) {
 /// Calls: mju_message
 #[allow(unused_variables, non_snake_case)]
 pub fn mju_info(topic: i32, msg: *const i8) {
-    extern "C" { fn mju_info_impl(topic: i32, msg: *const i8); }
-    // SAFETY: delegates to C implementation
-    unsafe { mju_info_impl(topic, msg) }
+    // SAFETY: m lives on stack. write_bytes zeros all fields (C designated init zeros others).
+    // Then we set level/topic and copy msg into subject, matching C's vsnprintf behavior.
+    unsafe {
+        let mut m_storage = [0u8; core::mem::size_of::<mjLogMessage>()];
+        let m = m_storage.as_mut_ptr() as *mut mjLogMessage;
+        (*m).level = 1;  // mjLOG_INFO
+        (*m).topic = topic;
+        // copy msg into m.subject (max 1023 chars + null)
+        if !msg.is_null() {
+            let mut i = 0usize;
+            while i < 1023 {
+                let c = *msg.add(i);
+                if c == 0 {
+                    break;
+                }
+                (*m).subject[i] = c;
+                i += 1;
+            }
+            (*m).subject[i] = 0;
+        }
+        mju_message(m as *const mjLogMessage);
+    }
 }
 
 /// C: mju_message (engine/engine_util_errmem.h:84)

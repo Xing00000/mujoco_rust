@@ -1108,9 +1108,108 @@ pub fn mj_ray_flex(m: *const mjModel, d: *const mjData, flex_layer: i32, flg_ver
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mju_ray_skin(nface: i32, nvert: i32, face: *const i32, vert: *const f32, pnt: *const f64, vec: *const f64, vertid: [i32; 1]) -> f64 {
+    use crate::engine::engine_util_blas::{mju_add_scl3, mju_normalize3, mju_dot3, mju_dist3};
+    use crate::engine::engine_util_spatial::mju_cross;
 
-    extern "C" { fn mju_raySkin_impl(nface: i32, nvert: i32, face: *const i32, vert: *const f32, pnt: *const f64, vec: *const f64, vertid: [i32; 1]) -> f64; }
-    // SAFETY: delegates to C implementation
-    unsafe { mju_raySkin_impl(nface, nvert, face, vert, pnt, vec, vertid) }
+    // NOTE: In C ABI, vertid: [i32; 1] is a pointer. vertid.as_ptr() gives that pointer.
+    let vertid_ptr = vertid.as_ptr() as *mut i32;
+
+    // SAFETY: all pointers valid per caller contract; face[3*nface], vert[3*nvert], pnt[3], vec[3]
+    unsafe {
+        // compute bounding box
+        let mut bbox: [[f64; 2]; 3] = [[0.0, 0.0], [0.0, 0.0], [0.0, 0.0]];
+        for i in 0..nvert as usize {
+            for j in 0..3usize {
+                // update minimum along side j
+                if bbox[j][0] > *vert.add(3*i+j) as f64 || i == 0 {
+                    bbox[j][0] = *vert.add(3*i+j) as f64;
+                }
+                // update maximum along side j
+                if bbox[j][1] < *vert.add(3*i+j) as f64 || i == 0 {
+                    bbox[j][1] = *vert.add(3*i+j) as f64;
+                }
+            }
+        }
+
+        // construct box geom
+        let mut pos: [f64; 3] = [0.0; 3];
+        let mut size: [f64; 3] = [0.0; 3];
+        let mat: [f64; 9] = [1.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 1.0];
+        for j in 0..3usize {
+            pos[j] = 0.5 * (bbox[j][0] + bbox[j][1]);
+            size[j] = 0.5 * (bbox[j][1] - bbox[j][0]);
+        }
+
+        // apply bounding-box filter
+        if ray_box(pos.as_ptr(), mat.as_ptr(), size.as_ptr(), pnt, vec, core::ptr::null_mut(), core::ptr::null_mut()) < 0.0 {
+            return -1.0;
+        }
+
+        // construct basis vectors of normal plane
+        let mut b0: [f64; 3] = [1.0, 1.0, 1.0];
+        let mut b1: [f64; 3] = [0.0; 3];
+        let vec0_abs = (*vec.add(0)).abs();
+        let vec1_abs = (*vec.add(1)).abs();
+        let vec2_abs = (*vec.add(2)).abs();
+        if vec0_abs >= vec1_abs && vec0_abs >= vec2_abs {
+            b0[0] = 0.0;
+        } else if vec1_abs >= vec2_abs {
+            b0[1] = 0.0;
+        } else {
+            b0[2] = 0.0;
+        }
+        mju_add_scl3(b1.as_mut_ptr(), b0.as_ptr(), vec, -mju_dot3(vec, b0.as_ptr()) / mju_dot3(vec, vec));
+        mju_normalize3(b1.as_mut_ptr());
+        mju_cross(b0.as_mut_ptr(), b1.as_ptr(), vec);
+        mju_normalize3(b0.as_mut_ptr());
+
+        // init solution
+        let mut x: f64 = -1.0;
+
+        // process all faces
+        for i in 0..nface as usize {
+            // get float vertex pointers
+            let vf0 = vert.add(3 * (*face.add(3*i) as usize));
+            let vf1 = vert.add(3 * (*face.add(3*i+1) as usize));
+            let vf2 = vert.add(3 * (*face.add(3*i+2) as usize));
+
+            // convert to f64
+            let mut v: [[f64; 3]; 3] = [[0.0; 3]; 3];
+            for k in 0..3usize {
+                v[0][k] = *vf0.add(k) as f64;
+                v[1][k] = *vf1.add(k) as f64;
+                v[2][k] = *vf2.add(k) as f64;
+            }
+
+            // solve
+            let sol = ray_triangle(v.as_ptr() as *const [f64; 3], pnt, vec, b0.as_ptr(), b1.as_ptr(), core::ptr::null_mut());
+
+            // update
+            if sol >= 0.0 && (x < 0.0 || sol < x) {
+                x = sol;
+
+                // construct intersection point
+                let mut intersect: [f64; 3] = [0.0; 3];
+                mju_add_scl3(intersect.as_mut_ptr(), pnt, vec, sol);
+
+                // find nearest vertex
+                let mut dist = mju_dist3(intersect.as_ptr(), v[0].as_ptr());
+                if !vertid_ptr.is_null() {
+                    *vertid_ptr = *face.add(3*i);
+                }
+                for j in 1..3usize {
+                    let newdist = mju_dist3(intersect.as_ptr(), v[j].as_ptr());
+                    if newdist < dist {
+                        dist = newdist;
+                        if !vertid_ptr.is_null() {
+                            *vertid_ptr = *face.add(3*i+j);
+                        }
+                    }
+                }
+            }
+        }
+
+        x
+    }
 }
 

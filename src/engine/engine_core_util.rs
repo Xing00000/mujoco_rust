@@ -1137,11 +1137,90 @@ pub fn tendon_limit(m: *const mjModel, ten_length: *const f64, i: i32) -> i32 {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_actuator_damping(m: *const mjModel, r#type: mjtObj, id: i32, poly: *mut f64) -> f64 {
-    extern "C" {
-        fn mj_actuatorDamping_impl(m: *const mjModel, r#type: mjtObj, id: i32, poly: *mut f64) -> f64;
+    const MJNPOLY: i32 = 2;
+    const MJOBJ_JOINT: i32 = 3;
+    const MJOBJ_TENDON: i32 = 18;
+    const MJTRN_JOINT: i32 = 0;
+    const MJTRN_JOINTINPARENT: i32 = 1;
+    const MJTRN_TENDON: i32 = 3;
+
+    // SAFETY: mjtObj is a C enum (int) passed via C ABI. The Rust type is ZST due to codegen
+    // limitation, but the ABI slot contains the int value. We read it via pointer cast.
+    let type_i32: i32 = unsafe { *((&r#type as *const mjtObj).cast::<i32>()) };
+
+    if type_i32 != MJOBJ_TENDON && type_i32 != MJOBJ_JOINT {
+        crate::engine::engine_util_errmem::mju_error(
+            b"only joint and tendon objects can inherit damping from actuators\0".as_ptr() as *const i8,
+        );
+        return 0.0;
     }
-    // SAFETY: delegates to C implementation, all pointers valid per caller contract
-    unsafe { mj_actuatorDamping_impl(m, r#type, id, poly) }
+
+    // SAFETY: m is valid, id is a valid index for the corresponding array
+    let actuatorid: i32 = unsafe {
+        if type_i32 == MJOBJ_JOINT {
+            *(*m).jnt_actuatorid.add(id as usize)
+        } else {
+            *(*m).tendon_actuatorid.add(id as usize)
+        }
+    };
+
+    if actuatorid == -1 {
+        return 0.0;
+    }
+
+    let mut damping: f64 = 0.0;
+
+    if actuatorid >= 0 {
+        // SAFETY: actuatorid is a valid index, m fields are valid arrays
+        unsafe {
+            let gear2: f64 = *(*m).actuator_gear.add(6 * actuatorid as usize)
+                * *(*m).actuator_gear.add(6 * actuatorid as usize);
+            damping = *(*m).actuator_damping.add(actuatorid as usize) * gear2;
+            let mut k: i32 = 0;
+            while k < MJNPOLY {
+                *poly.add(k as usize) +=
+                    *(*m).actuator_dampingpoly.add((MJNPOLY * actuatorid + k) as usize) * gear2;
+                k += 1;
+            }
+        }
+    } else {
+        // SAFETY: iterating over valid actuator indices [0, nu), m fields are valid arrays
+        unsafe {
+            let nu = (*m).nu as i32;
+            let mut k: i32 = 0;
+            while k < nu {
+                if *(*m).actuator_trnid.add(2 * k as usize) != id {
+                    k += 1;
+                    continue;
+                }
+                if type_i32 == MJOBJ_JOINT
+                    && *(*m).actuator_trntype.add(k as usize) != MJTRN_JOINT
+                    && *(*m).actuator_trntype.add(k as usize) != MJTRN_JOINTINPARENT
+                {
+                    k += 1;
+                    continue;
+                }
+                if type_i32 == MJOBJ_TENDON
+                    && *(*m).actuator_trntype.add(k as usize) != MJTRN_TENDON
+                {
+                    k += 1;
+                    continue;
+                }
+                let gear2: f64 =
+                    *(*m).actuator_gear.add(6 * k as usize) * *(*m).actuator_gear.add(6 * k as usize);
+                damping += *(*m).actuator_damping.add(k as usize) * gear2;
+                let mut j: i32 = 0;
+                while j < MJNPOLY {
+                    *poly.add(j as usize) +=
+                        *(*m).actuator_dampingpoly.add((MJNPOLY * k + j) as usize) * gear2;
+                    j += 1;
+                }
+                k += 1;
+            }
+        }
+    }
+
+    damping
 }
 
 /// C: mj_actuatorArmature (engine/engine_core_util.h:145)
@@ -1153,20 +1232,129 @@ pub fn mj_actuator_damping(m: *const mjModel, r#type: mjtObj, id: i32, poly: *mu
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_actuator_armature(m: *const mjModel, r#type: mjtObj, id: i32) -> f64 {
-    extern "C" {
-        fn mj_actuatorArmature_impl(m: *const mjModel, r#type: mjtObj, id: i32) -> f64;
+    const MJOBJ_JOINT: i32 = 3;
+    const MJOBJ_TENDON: i32 = 18;
+    const MJTRN_JOINT: i32 = 0;
+    const MJTRN_JOINTINPARENT: i32 = 1;
+    const MJTRN_TENDON: i32 = 3;
+
+    // SAFETY: mjtObj is a C enum (int) passed via C ABI. The Rust type is ZST due to codegen
+    // limitation, but the ABI slot contains the int value. We read it via pointer cast.
+    let type_i32: i32 = unsafe { *((&r#type as *const mjtObj).cast::<i32>()) };
+
+    if type_i32 != MJOBJ_TENDON && type_i32 != MJOBJ_JOINT {
+        crate::engine::engine_util_errmem::mju_error(
+            b"only joint and tendon objects can inherit armature from actuators\0".as_ptr() as *const i8,
+        );
+        return 0.0;
     }
-    // SAFETY: delegates to C implementation, all pointers valid per caller contract
-    unsafe { mj_actuatorArmature_impl(m, r#type, id) }
+
+    // SAFETY: m is valid, id is a valid index for the corresponding array
+    let actuatorid: i32 = unsafe {
+        if type_i32 == MJOBJ_JOINT {
+            *(*m).jnt_actuatorid.add(id as usize)
+        } else {
+            *(*m).tendon_actuatorid.add(id as usize)
+        }
+    };
+
+    if actuatorid == -1 {
+        return 0.0;
+    }
+
+    let mut armature: f64 = 0.0;
+
+    if actuatorid >= 0 {
+        // SAFETY: actuatorid is a valid index, m fields are valid arrays
+        unsafe {
+            let gear2: f64 = *(*m).actuator_gear.add(6 * actuatorid as usize)
+                * *(*m).actuator_gear.add(6 * actuatorid as usize);
+            armature = *(*m).actuator_armature.add(actuatorid as usize) * gear2;
+        }
+    } else {
+        // SAFETY: iterating over valid actuator indices [0, nu), m fields are valid arrays
+        unsafe {
+            let nu = (*m).nu as i32;
+            let mut k: i32 = 0;
+            while k < nu {
+                if *(*m).actuator_trnid.add(2 * k as usize) != id {
+                    k += 1;
+                    continue;
+                }
+                if type_i32 == MJOBJ_JOINT
+                    && *(*m).actuator_trntype.add(k as usize) != MJTRN_JOINT
+                    && *(*m).actuator_trntype.add(k as usize) != MJTRN_JOINTINPARENT
+                {
+                    k += 1;
+                    continue;
+                }
+                if type_i32 == MJOBJ_TENDON
+                    && *(*m).actuator_trntype.add(k as usize) != MJTRN_TENDON
+                {
+                    k += 1;
+                    continue;
+                }
+                let gear2: f64 =
+                    *(*m).actuator_gear.add(6 * k as usize) * *(*m).actuator_gear.add(6 * k as usize);
+                armature += *(*m).actuator_armature.add(k as usize) * gear2;
+                k += 1;
+            }
+        }
+    }
+
+    armature
 }
 
 /// C: mj_warning (engine/engine_core_util.h:148)
 /// Calls: mju_message, mju_warning, mju_warningText
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_warning(d: *mut mjData, warning: i32, info: i32) {
-    // WARNING: signature changed — verify body
-    // Previous params: (d : * mut mjData, warning : i32, info : i32)
-    // Previous return: ()
-    extern "C" { fn mj_warning_impl (d : * mut mjData , warning : i32 , info : i32) ; } unsafe { mj_warning_impl (d , warning , info) }
+    const MJNWARNING: i32 = 7;
+
+    if warning < 0 || warning >= MJNWARNING {
+        crate::engine::engine_util_errmem::mju_error(
+            b"invalid warning type\0".as_ptr() as *const i8,
+        );
+    }
+
+    // mjWarningStat layout: { lastinfo: i32, number: i32 } = 8 bytes each
+    // The warning field in mjData is declared as [mjWarningStat; 7] but mjWarningStat is ZST
+    // in types.rs. We access the real C layout via raw pointer arithmetic.
+    #[repr(C)]
+    struct WarningStat {
+        lastinfo: i32,
+        number: i32,
+    }
+
+    // SAFETY: d is valid. warning is in [0, MJNWARNING). The warning field in the C struct
+    // is at the same offset as in mjData. We cast to our local layout struct to access fields.
+    unsafe {
+        let warning_base: *mut WarningStat =
+            (*d).warning.as_mut_ptr() as *mut WarningStat;
+        let stat: *mut WarningStat = warning_base.add(warning as usize);
+
+        (*stat).lastinfo = info;
+
+        if (*stat).number == 0 {
+            let text: *const i8 =
+                crate::engine::engine_util_misc::mju_warning_text(warning, info as usize);
+
+            // Format: "%s Time = %.4f."
+            extern "C" {
+                fn snprintf(s: *mut i8, n: usize, format: *const i8, ...) -> i32;
+            }
+            let mut buf: [i8; 1024] = [0; 1024];
+            snprintf(
+                buf.as_mut_ptr(),
+                1024,
+                b"%s Time = %.4f.\0".as_ptr() as *const i8,
+                text,
+                (*d).time,
+            );
+            crate::engine::engine_util_errmem::mju_warning(buf.as_ptr());
+        }
+
+        (*stat).number += 1;
+    }
 }
 

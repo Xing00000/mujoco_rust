@@ -322,12 +322,27 @@ pub fn mjc_hillclimb_support(res: *mut f64, obj: *mut mjCCDObj, dir: *const f64)
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjc_prism_support(res: *mut f64, obj: *mut mjCCDObj, dir: *const f64) {
-    extern "C" {
-        fn mjc_prism_support_impl(res: *mut f64, obj: *mut mjCCDObj, dir: *const f64);
+    // SAFETY: obj is a valid pointer to mjCCDObj; data.hfield.prism is at offset +0 from
+    // data union (offset 200 from obj). prism is [[f64;3];6]. dir and res are valid f64[3].
+    unsafe {
+        let prism = (obj as *mut u8).add(200) as *const f64; // data.hfield.prism[0][0]
+
+        let istart: i32 = if *dir.add(2) < 0.0 { 0 } else { 3 };
+        let mut ibest: i32 = istart;
+        let mut best: f64 = crate::engine::engine_util_blas::mju_dot3(prism.add((istart * 3) as usize), dir);
+
+        let mut i: i32 = 1;
+        while i < 3 {
+            let tmp: f64 = crate::engine::engine_util_blas::mju_dot3(prism.add(((istart + i) * 3) as usize), dir);
+            if tmp > best {
+                ibest = istart + i;
+                best = tmp;
+            }
+            i += 1;
+        }
+
+        crate::engine::engine_inline::mji_copy3(res, prism.add((ibest * 3) as usize));
     }
-    // SAFETY: delegates to C implementation because obj->data.hfield.prism is an opaque union
-    // that cannot be accessed from Rust (union layout not exposed)
-    unsafe { mjc_prism_support_impl(res, obj, dir) }
 }
 
 /// C: mjc_flexSupport (engine/engine_collision_convex.c:458)
@@ -442,9 +457,32 @@ pub fn max_contacts(m: *const mjModel, obj1: *const mjCCDObj, obj2: *const mjCCD
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn addplanemesh(con: *mut mjPreContact, vertex: [f32; 3], pos1: *const f64, normal1: *const f64, pos2: *const f64, mat2: *const f64, first: *const f64, rbound: f64) -> i32 {
-    extern "C" { fn addplanemesh_impl(con: *mut mjPreContact, vertex: [f32; 3], pos1: *const f64, normal1: *const f64, pos2: *const f64, mat2: *const f64, first: *const f64, rbound: f64) -> i32; }
-    // SAFETY: delegates to C implementation, pointers valid per caller
-    unsafe { addplanemesh_impl(con, vertex, pos1, normal1, pos2, mat2, first, rbound) }
+    const TOLPLANEMESH: f64 = 0.3;
+
+    // SAFETY: all pointers are valid per caller contract; con points to at least 1 mjPreContact,
+    // pos1/normal1/pos2/mat2/first point to f64 arrays of appropriate size.
+    unsafe {
+        let mut pnt: [f64; 3] = [0.0; 3];
+        let v: [f64; 3] = [vertex[0] as f64, vertex[1] as f64, vertex[2] as f64];
+
+        crate::engine::engine_util_blas::mju_mul_mat_vec3(pnt.as_mut_ptr(), mat2, v.as_ptr());
+        crate::engine::engine_util_blas::mju_add_to3(pnt.as_mut_ptr(), pos2);
+
+        if crate::engine::engine_util_blas::mju_dist3(pnt.as_ptr(), first) < TOLPLANEMESH * rbound {
+            return 0;
+        }
+
+        let mut dif: [f64; 3] = [0.0; 3];
+        crate::engine::engine_inline::mji_sub3(dif.as_mut_ptr(), pnt.as_ptr(), pos1);
+
+        (*con).dist = crate::engine::engine_util_blas::mju_dot3(normal1, dif.as_ptr());
+        crate::engine::engine_inline::mji_copy3((*con).pos.as_mut_ptr(), pnt.as_ptr());
+        crate::engine::engine_inline::mji_add_to_scl3((*con).pos.as_mut_ptr(), normal1, -0.5 * (*con).dist);
+        crate::engine::engine_inline::mji_copy3((*con).normal.as_mut_ptr(), normal1);
+        crate::engine::engine_inline::mji_zero3((*con).tangent.as_mut_ptr());
+
+        1
+    }
 }
 
 /// C: addVert (engine/engine_collision_convex.c:1085)
@@ -456,11 +494,22 @@ pub fn addplanemesh(con: *mut mjPreContact, vertex: [f32; 3], pos1: *const f64, 
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn add_vert(obj: *mut mjCCDObj, x: f64, y: f64, z: f64) {
-    extern "C" {
-        fn addVert_impl(obj: *mut mjCCDObj, x: f64, y: f64, z: f64);
+    // SAFETY: obj is a valid pointer to mjCCDObj; data.hfield.prism is at offset +0
+    // from data union (offset 200 from obj). prism is [[f64;3];6] = 6 rows of 3 f64s.
+    unsafe {
+        let prism = (obj as *mut u8).add(200) as *mut f64; // data.hfield.prism[0][0]
+
+        crate::engine::engine_inline::mji_copy3(prism.add(0), prism.add(3));   // prism[0] = prism[1]
+        crate::engine::engine_inline::mji_copy3(prism.add(3), prism.add(6));   // prism[1] = prism[2]
+        crate::engine::engine_inline::mji_copy3(prism.add(9), prism.add(12));  // prism[3] = prism[4]
+        crate::engine::engine_inline::mji_copy3(prism.add(12), prism.add(15)); // prism[4] = prism[5]
+
+        *prism.add(6) = x;   // prism[2][0] = x
+        *prism.add(15) = x;  // prism[5][0] = x
+        *prism.add(7) = y;   // prism[2][1] = y
+        *prism.add(16) = y;  // prism[5][1] = y
+        *prism.add(17) = z;  // prism[5][2] = z
     }
-    // SAFETY: delegates to C implementation, all pointers valid per caller contract
-    unsafe { addVert_impl(obj, x, y, z) }
 }
 
 /// C: addPrismVert (engine/engine_collision_convex.c:1100)
@@ -472,9 +521,31 @@ pub fn add_vert(obj: *mut mjCCDObj, x: f64, y: f64, z: f64) {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn add_prism_vert(obj: *mut mjCCDObj, r: i32, c: i32, i: i32, dx: f64, dy: f64, margin: f64) {
-    extern "C" { fn addPrismVert_impl(obj: *mut mjCCDObj, r: i32, c: i32, i: i32, dx: f64, dy: f64, margin: f64); }
-    // SAFETY: delegates to C implementation
-    unsafe { addPrismVert_impl(obj, r, c, i, dx, dy, margin) }
+    // SAFETY: obj is a valid pointer to mjCCDObj; accessing data.hfield union fields via
+    // raw pointer arithmetic. prism at +0, hfield_data at +144, hfield_ncol at +156.
+    unsafe {
+        let data_base = (obj as *mut u8).add(200);
+        let prism = data_base as *mut f64; // data.hfield.prism[0][0]
+
+        crate::engine::engine_inline::mji_copy3(prism.add(0), prism.add(3));   // prism[0] = prism[1]
+        crate::engine::engine_inline::mji_copy3(prism.add(3), prism.add(6));   // prism[1] = prism[2]
+        crate::engine::engine_inline::mji_copy3(prism.add(9), prism.add(12));  // prism[3] = prism[4]
+        crate::engine::engine_inline::mji_copy3(prism.add(12), prism.add(15)); // prism[4] = prism[5]
+
+        let dr: i32 = 1 - i;
+
+        *prism.add(6) = dx * (c as f64) - (*obj).size[0];   // prism[2][0] = prism[5][0]
+        *prism.add(15) = *prism.add(6);
+        *prism.add(7) = dy * ((r + dr) as f64) - (*obj).size[1];  // prism[2][1] = prism[5][1]
+        *prism.add(16) = *prism.add(7);
+
+        let hfield_data = *(data_base.add(144) as *const *const f32);
+        let hfield_ncol = *(data_base.add(156) as *const i32);
+
+        let idx = (r + dr) * hfield_ncol + c;
+        *prism.add(17) = (*hfield_data.add(idx as usize) as f64) * (*obj).size[2]; // prism[5][2]
+        *prism.add(17) += margin;
+    }
 }
 
 /// C: mjc_ellipsoidInside (engine/engine_collision_convex.c:1282)

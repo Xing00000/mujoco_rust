@@ -703,12 +703,54 @@ pub fn mjuu_rot_vec_quat(res: [f64; 3], vec: [f64; 3], quat: [f64; 4]) {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjuu_update_frame(quat: [f64; 4], normal: [f64; 3], edge: [f64; 3], tprv: [f64; 3], tnxt: [f64; 3], first: i32) -> f64 {
-    // WARNING: signature changed — verify body
-    // Previous params: (quat : [f64 ; 4], normal : [f64 ; 3], edge : [f64 ; 3], tprv : [f64 ; 3], tnxt : [f64 ; 3], first : i32)
-    // Previous return: f64
-    extern "C" { fn mjuu_updateFrame_impl(quat: [f64; 4], normal: [f64; 3], edge: [f64; 3], tprv: [f64; 3], tnxt: [f64; 3], first: i32) -> f64; }
-    // SAFETY: delegates to C implementation; array params are pointers in C ABI
-    unsafe { mjuu_updateFrame_impl(quat, normal, edge, tprv, tnxt, first) }
+    // NOTE: In C ABI, array params are pointers. quat and normal are outputs.
+    let normal_ptr = normal.as_ptr() as *mut f64;
+    let edge_ptr = edge.as_ptr();
+    let tprv_ptr = tprv.as_ptr();
+    let tnxt_ptr = tnxt.as_ptr();
+
+    let mut tangent: [f64; 3] = [0.0; 3];
+    let mut binormal: [f64; 3] = [0.0; 3];
+
+    // SAFETY: all array pointers valid for their respective sizes per caller contract
+    unsafe {
+        // normalize tangent
+        mjuu_copyvec(tangent.as_mut_ptr() as *mut T1, edge_ptr as *const T2, 3);
+        mjuu_normvec(tangent.as_mut_ptr(), 3);
+
+        // compute moving frame
+        if first != 0 {
+            // use the first vertex binormal for the first edge
+            mjuu_crossvec(binormal.as_mut_ptr(), tangent.as_ptr(), tnxt_ptr);
+            mjuu_normvec(binormal.as_mut_ptr(), 3);
+
+            // compute edge normal given tangent and binormal
+            mjuu_crossvec(normal_ptr, binormal.as_ptr(), tangent.as_ptr());
+            mjuu_normvec(normal_ptr, 3);
+        } else {
+            let darboux: [f64; 4] = [0.0; 4];
+
+            // rotate edge normal about the vertex binormal
+            mjuu_crossvec(binormal.as_mut_ptr(), tprv_ptr, tangent.as_ptr());
+            let angle = f64::atan2(
+                mjuu_normvec(binormal.as_mut_ptr(), 3),
+                mjuu_dot3(tprv_ptr, tangent.as_ptr()),
+            );
+            mjuu_axis_angle2quat(darboux, [binormal[0], binormal[1], binormal[2]], angle);
+            mjuu_rot_vec_quat(normal, normal, darboux);
+            mjuu_normvec(normal_ptr, 3);
+
+            // compute edge binormal given tangent and normal
+            mjuu_crossvec(binormal.as_mut_ptr(), tangent.as_ptr(), normal_ptr);
+            mjuu_normvec(binormal.as_mut_ptr(), 3);
+        }
+
+        // global orientation of the frame
+        mjuu_frame2quat(quat.as_ptr() as *mut f64, tangent.as_ptr(), normal_ptr, binormal.as_ptr());
+
+        // return edge length
+        (mjuu_dot3(edge_ptr, edge_ptr)).sqrt()
+    }
 }
 
 /// C: mjuu_eig3 (user/user_util.h:160)
@@ -848,10 +890,56 @@ pub fn mjuu_trn_vec_pose(res: [f64; 3], pos: [f64; 3], quat: [f64; 4], vec: [f64
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjuu_full_inertia(quat: [f64; 4], inertia: [f64; 3], fullinertia: [f64; 6]) -> *const i8 {
-    extern "C" { fn mjuu_fullInertia_impl(quat: [f64; 4], inertia: [f64; 3], fullinertia: [f64; 6]) -> *const i8; }
-    // SAFETY: delegates to C implementation — calls mjuu_eig3 which requires C ABI pointer
-    // semantics for [f64; N] output params (cannot be correctly called from Rust ABI)
-    unsafe { mjuu_fullInertia_impl(quat, inertia, fullinertia) }
+    // NOTE: In C ABI, array params are pointers. quat and inertia are outputs.
+    let quat_ptr = quat.as_ptr() as *mut f64;
+    let inertia_ptr = inertia.as_ptr() as *mut f64;
+    let fullinertia_ptr = fullinertia.as_ptr();
+
+    // SAFETY: fullinertia_ptr points to caller-owned memory (C ABI array param = pointer)
+    if !mjuu_defined(unsafe { *fullinertia_ptr }) {
+        return core::ptr::null();
+    }
+
+    let eigval: [f64; 3] = [0.0; 3];
+    let eigvec: [f64; 9] = [0.0; 9];
+    let quattmp: [f64; 4] = [0.0; 4];
+    // SAFETY: fullinertia_ptr valid for 6 elements per caller contract
+    let full: [f64; 9] = unsafe {
+        [
+            *fullinertia_ptr.add(0), *fullinertia_ptr.add(3), *fullinertia_ptr.add(4),
+            *fullinertia_ptr.add(3), *fullinertia_ptr.add(1), *fullinertia_ptr.add(5),
+            *fullinertia_ptr.add(4), *fullinertia_ptr.add(5), *fullinertia_ptr.add(2),
+        ]
+    };
+
+    mjuu_eig3(eigval, eigvec, quattmp, full);
+
+    const MJEPS: f64 = 1e-14;
+    // SAFETY: eigval is a local array, indexing is in bounds
+    if eigval[2] < MJEPS {
+        return b"inertia must have positive eigenvalues\0".as_ptr() as *const i8;
+    }
+
+    // SAFETY: quat_ptr points to caller-owned memory (C ABI array param = pointer)
+    if !quat_ptr.is_null() {
+        unsafe {
+            *quat_ptr.add(0) = quattmp[0];
+            *quat_ptr.add(1) = quattmp[1];
+            *quat_ptr.add(2) = quattmp[2];
+            *quat_ptr.add(3) = quattmp[3];
+        }
+    }
+
+    // SAFETY: inertia_ptr points to caller-owned memory (C ABI array param = pointer)
+    if !inertia_ptr.is_null() {
+        unsafe {
+            *inertia_ptr.add(0) = eigval[0];
+            *inertia_ptr.add(1) = eigval[1];
+            *inertia_ptr.add(2) = eigval[2];
+        }
+    }
+
+    core::ptr::null()
 }
 
 /// C: FilePath::IsAbs (user/user_util.h:191)

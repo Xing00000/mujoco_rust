@@ -194,9 +194,9 @@ pub fn validate_float_format(float_format: *const i8) -> bool {
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_print_formatted_model(m: *const mjModel, filename: *const i8, float_format: *const i8) {
 
-    extern "C" { fn mj_printFormattedModel_impl(m: *const mjModel, filename: *const i8, float_format: *const i8); }
-    // SAFETY: delegates to C implementation
-    unsafe { mj_printFormattedModel_impl(m, filename, float_format) }
+    extern "C" { fn mj_printFormattedModel(m: *const mjModel, filename: *const i8, float_format: *const i8); }
+    // SAFETY: delegates to C implementation which uses fprintf/MJMODEL_POINTERS macros
+    unsafe { mj_printFormattedModel(m, filename, float_format) }
 }
 
 /// C: mj_printModel (engine/engine_print.h:35)
@@ -237,8 +237,8 @@ pub fn mj_print_scene(s: *const mjvScene, filename: *const i8) {
 /// Calls: mju_warning, validateFloatFormat
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_print_formatted_scene(s: *const mjvScene, filename: *const i8, float_format: *const i8) {
-    extern "C" { fn mj_printFormattedScene_impl(s: *const mjvScene, filename: *const i8, float_format: *const i8); }
-    // SAFETY: delegates to C implementation, all pointers valid per caller contract
-    unsafe { mj_printFormattedScene_impl(s, filename, float_format) }
+    extern "C" { fn mj_printFormattedScene(s: *const mjvScene, filename: *const i8, float_format: *const i8); }
+    // SAFETY: delegates to C implementation which uses fprintf/FILE*
+    unsafe { mj_printFormattedScene(s, filename, float_format) }
 }
 

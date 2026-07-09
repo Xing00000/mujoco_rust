@@ -16,27 +16,27 @@ pub fn mj_load_xml(filename: *const i8, vfs: *const mjVFS, error: *mut i8, error
 /// Calls: mjCopyError
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_save_last_xml(filename: *const i8, m: *const mjModel, error: *mut i8, error_sz: i32) -> i32 {
-    extern "C" { fn mj_saveLastXML_impl(filename: *const i8, m: *const mjModel, error: *mut i8, error_sz: i32) -> i32; }
-    // SAFETY: delegates to C implementation
-    unsafe { mj_saveLastXML_impl(filename, m, error, error_sz) }
+    extern "C" { fn mj_saveLastXML(filename: *const i8, m: *const mjModel, error: *mut i8, error_sz: i32) -> i32; }
+    // SAFETY: delegates to C++ implementation which uses std::string/FILE*; all pointers valid per caller contract
+    unsafe { mj_saveLastXML(filename, m, error, error_sz) }
 }
 
 /// C: mj_freeLastXML (xml/xml_api.h:37)
 /// Calls: SetGlobalXmlSpec
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_free_last_xml() {
-    extern "C" { fn mj_freeLastXML_impl(); }
-    // SAFETY: delegates to C++ implementation which calls SetGlobalXmlSpec() with nullptr
-    unsafe { mj_freeLastXML_impl() }
+    extern "C" { fn mj_freeLastXML(); }
+    // SAFETY: delegates to C++ implementation which calls SetGlobalXmlSpec()
+    unsafe { mj_freeLastXML() }
 }
 
 /// C: mj_printSchema (xml/xml_api.h:40)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_print_schema(filename: *const i8, buffer: *mut i8, buffer_sz: i32, flg_html: i32, flg_pad: i32) -> i32 {
 
-    extern "C" { fn mj_printSchema_impl(filename: *const i8, buffer: *mut i8, buffer_sz: i32, flg_html: i32, flg_pad: i32) -> i32; }
-    // SAFETY: delegates to C implementation
-    unsafe { mj_printSchema_impl(filename, buffer, buffer_sz, flg_html, flg_pad) }
+    extern "C" { fn mj_printSchema(filename: *const i8, buffer: *mut i8, buffer_sz: i32, flg_html: i32, flg_pad: i32) -> i32; }
+    // SAFETY: delegates to C++ implementation which uses std::stringstream/std::ofstream
+    unsafe { mj_printSchema(filename, buffer, buffer_sz, flg_html, flg_pad) }
 }
 
 /// C: mj_loadModel (xml/xml_api.h:45)
@@ -60,24 +60,24 @@ pub fn mj_parse_xml(filename: *const i8, vfs: *const mjVFS, error: *mut i8, erro
 /// C: mj_parseXMLString (xml/xml_api.h:49)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_parse_xml_string(xml: *const i8, vfs: *const mjVFS, error: *mut i8, error_sz: i32) -> *mut mjSpec {
-    extern "C" { fn mj_parseXMLString_impl(xml: *const i8, vfs: *const mjVFS, error: *mut i8, error_sz: i32) -> *mut mjSpec; }
-    // SAFETY: delegates to C implementation, all pointers valid per caller contract
-    unsafe { mj_parseXMLString_impl(xml, vfs, error, error_sz) }
+    extern "C" { fn mj_parseXMLString(xml: *const i8, vfs: *const mjVFS, error: *mut i8, error_sz: i32) -> *mut mjSpec; }
+    // SAFETY: delegates to C++ implementation; all pointers valid per caller contract
+    unsafe { mj_parseXMLString(xml, vfs, error, error_sz) }
 }
 
 /// C: mj_saveXML (xml/xml_api.h:52)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_save_xml(s: *const mjSpec, filename: *const i8, error: *mut i8, error_sz: i32) -> i32 {
-    extern "C" { fn mj_saveXML_impl(s: *const mjSpec, filename: *const i8, error: *mut i8, error_sz: i32) -> i32; }
-    // SAFETY: delegates to C implementation
-    unsafe { mj_saveXML_impl(s, filename, error, error_sz) }
+    extern "C" { fn mj_saveXML(s: *const mjSpec, filename: *const i8, error: *mut i8, error_sz: i32) -> i32; }
+    // SAFETY: delegates to C++ implementation which uses std::string/std::ofstream
+    unsafe { mj_saveXML(s, filename, error, error_sz) }
 }
 
 /// C: mj_saveXMLString (xml/xml_api.h:53)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_save_xml_string(s: *const mjSpec, xml: *mut i8, xml_sz: i32, error: *mut i8, error_sz: i32) -> i32 {
-    extern "C" { fn mj_saveXMLString_impl(s: *const mjSpec, xml: *mut i8, xml_sz: i32, error: *mut i8, error_sz: i32) -> i32; }
-    // SAFETY: delegates to C implementation
-    unsafe { mj_saveXMLString_impl(s, xml, xml_sz, error, error_sz) }
+    extern "C" { fn mj_saveXMLString(s: *const mjSpec, xml: *mut i8, xml_sz: i32, error: *mut i8, error_sz: i32) -> i32; }
+    // SAFETY: delegates to C++ implementation which uses std::string
+    unsafe { mj_saveXMLString(s, xml, xml_sz, error, error_sz) }
 }
 
