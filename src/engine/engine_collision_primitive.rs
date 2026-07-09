@@ -338,13 +338,406 @@ pub fn mjraw_capsule_capsule(con: *mut mjPreContact, margin: f64, pos1: *const f
 ///   2. No f64::mul_add() (FMA changes precision)
 ///   3. No algebraic simplification
 ///   4. No iter().sum()/product() (order undefined)
-#[allow(unused_variables, non_snake_case)]
+#[allow(unused_variables, unused_assignments, non_snake_case)]
 pub fn mjraw_capsule_box(con: *mut mjPreContact, margin: f64, pos1: *const f64, mat1: *const f64, size1: *const f64, pos2: *const f64, mat2: *const f64, size2: *const f64) -> i32 {
-    extern "C" {
-        fn mjraw_CapsuleBox_impl(con: *mut mjPreContact, margin: f64, pos1: *const f64, mat1: *const f64, size1: *const f64, pos2: *const f64, mat2: *const f64, size2: *const f64) -> i32;
+    use crate::engine::engine_inline::{mji_sub3, mji_mul_mat_t_vec3, mji_copy3, mji_add_to_scl3, mji_scl3, mji_sub_from3};
+    use crate::engine::engine_util_blas::{mju_zero3, mju_dot3, mju_copy3, mju_add_to3, mju_mul_mat_vec3};
+    use crate::engine::engine_collision_box::mjraw_sphere_box;
+
+    const mjMINVAL: f64 = 1e-15;
+
+    // SAFETY: caller guarantees all pointers are valid; con points to sufficient mjPreContact slots,
+    // pos/size are f64[3], mat is f64[9]. All pointer arithmetic within bounds per C contract.
+    unsafe {
+        let mut tmp1: [f64; 3] = [0.0; 3];
+        let mut tmp2: [f64; 3] = [0.0; 3];
+        let mut tmp3: [f64; 3] = [0.0; 3];
+        let mut halfaxis: [f64; 3] = [0.0; 3];
+        let mut axis: [f64; 3] = [0.0; 3];
+        let mut dif: [f64; 3] = [0.0; 3];
+        let mut pos: [f64; 3] = [0.0; 3];
+
+        let halflength: f64;
+        let mut bestdist: f64;
+        let bestdistmax: f64;
+        let mut bestsegmentpos: f64;
+        let mut secondpos: f64;
+        let mut dist: f64;
+        let mut bestboxpos: f64 = 0.0;
+        let mut mul: f64 = 0.0;
+        let mut e1: f64;
+        let mut e2: f64;
+        let mut dp: f64 = 0.0;
+        let mut de: f64 = 0.0;
+
+        let mut ma: f64;
+        let mut mb: f64;
+        let mut mc: f64;
+        let mut u: f64;
+        let mut v: f64;
+        let mut det: f64;
+        let mut x1: f64;
+        let mut x2: f64;
+        let mut idet: f64;
+
+        let mut s1: i32;
+        let mut s2: i32;
+        let mut i: i32;
+        let mut j: i32;
+        let mut c1: i32;
+        let mut c2: i32;
+        let mut cltype: i32 = -4;
+        let mut clface: i32 = 0;
+        let mut clcorner: i32 = 0;
+        let mut cledge: i32 = 0;
+        let mut axisdir: i32;
+        let n: i32;
+        let mut ax1: i32 = 0;
+        let mut ax2: i32 = 0;
+        let mut ax: i32 = 0;
+
+        halflength = *size1.add(1);
+        secondpos = -4.0;
+
+        mji_sub3(tmp1.as_mut_ptr(), pos1, pos2);
+        mji_mul_mat_t_vec3(pos.as_mut_ptr(), mat2, tmp1.as_ptr());
+
+        tmp1[0] = *mat1.add(2);
+        tmp1[1] = *mat1.add(5);
+        tmp1[2] = *mat1.add(8);
+
+        mji_mul_mat_t_vec3(axis.as_mut_ptr(), mat2, tmp1.as_ptr());
+        mji_scl3(halfaxis.as_mut_ptr(), axis.as_ptr(), halflength);
+
+        axisdir = 0;
+        if halfaxis[0] > 0.0 {
+            axisdir += 1;
+        }
+        if halfaxis[1] > 0.0 {
+            axisdir += 2;
+        }
+        if halfaxis[2] > 0.0 {
+            axisdir += 4;
+        }
+
+        bestdistmax = margin + 2.0 * (*size1.add(0) + halflength + *size2.add(0) + *size2.add(1) +
+                                      *size2.add(2));
+        bestdist = bestdistmax;
+        bestsegmentpos = 0.0;
+
+        mju_zero3(tmp2.as_mut_ptr());
+
+        // test to see if maybe a face of the box is closest to the capsule
+        i = -1;
+        while i <= 1 {
+            mji_copy3(tmp1.as_mut_ptr(), pos.as_ptr());
+            mji_add_to_scl3(tmp1.as_mut_ptr(), halfaxis.as_ptr(), i as f64);
+            mji_copy3(tmp2.as_mut_ptr(), tmp1.as_ptr());
+
+            c1 = 0;
+            j = 0;
+            c2 = -1;
+            while j < 3 {
+                if tmp1[j as usize] < -*size2.add(j as usize) {
+                    c1 += 1;
+                    c2 = j;
+                    tmp1[j as usize] = -*size2.add(j as usize);
+                } else if tmp1[j as usize] > *size2.add(j as usize) {
+                    c1 += 1;
+                    c2 = j;
+                    tmp1[j as usize] = *size2.add(j as usize);
+                }
+                j += 1;
+            }
+
+            if c1 > 1 {
+                i += 2;
+                continue;
+            }
+
+            mji_sub_from3(tmp1.as_mut_ptr(), tmp2.as_ptr());
+            dist = mju_dot3(tmp1.as_ptr(), tmp1.as_ptr());
+
+            if dist < bestdist {
+                bestdist = dist;
+                bestsegmentpos = i as f64;
+                cltype = -2 + i;
+                clface = c2;
+            }
+
+            i += 2;
+        }
+
+        mju_zero3(tmp2.as_mut_ptr());
+
+        j = 0;
+        while j < 3 {
+            i = 0;
+            while i < 8 {
+                if (i & (1 << j)) == 0 {
+                    // trick to get a corner
+                    tmp3[0] = (if (i & 1) != 0 { 1.0 } else { -1.0 }) * *size2.add(0);
+                    tmp3[1] = (if (i & 2) != 0 { 1.0 } else { -1.0 }) * *size2.add(1);
+                    tmp3[2] = (if (i & 4) != 0 { 1.0 } else { -1.0 }) * *size2.add(2);
+                    tmp3[j as usize] = 0.0;
+
+                    mji_sub3(dif.as_mut_ptr(), tmp3.as_ptr(), pos.as_ptr());
+
+                    ma = *size2.add(j as usize) * *size2.add(j as usize);
+                    mb = -*size2.add(j as usize) * halfaxis[j as usize];
+                    mc = *size1.add(1) * *size1.add(1);
+
+                    u = -*size2.add(j as usize) * dif[j as usize];
+                    v = mju_dot3(halfaxis.as_ptr(), dif.as_ptr());
+
+                    det = ma * mc - mb * mb;
+                    if det.abs() < mjMINVAL {
+                        i += 1;
+                        continue;
+                    }
+                    idet = 1.0 / det;
+
+                    x1 = (mc * u - mb * v) * idet;
+                    x2 = (ma * v - mb * u) * idet;
+
+                    s1 = 1;
+                    s2 = 1;
+
+                    if x1 > 1.0 {
+                        x1 = 1.0;
+                        s1 = 2;
+                        x2 = (v - mb) * (1.0 / mc);
+                    } else if x1 < -1.0 {
+                        x1 = -1.0;
+                        s1 = 0;
+                        x2 = (v + mb) * (1.0 / mc);
+                    }
+
+                    if x2 > 1.0 {
+                        x2 = 1.0;
+                        s2 = 2;
+                        x1 = (u - mb) * (1.0 / ma);
+                        if x1 > 1.0 {
+                            x1 = 1.0;
+                            s1 = 2;
+                        } else if x1 < -1.0 {
+                            x1 = -1.0;
+                            s1 = 0;
+                        }
+                    } else if x2 < -1.0 {
+                        x2 = -1.0;
+                        s2 = 0;
+                        x1 = (u + mb) * (1.0 / ma);
+                        if x1 > 1.0 {
+                            x1 = 1.0;
+                            s1 = 2;
+                        } else if x1 < -1.0 {
+                            x1 = -1.0;
+                            s1 = 0;
+                        }
+                    }
+
+                    mji_sub3(dif.as_mut_ptr(), tmp3.as_ptr(), pos.as_ptr());
+
+                    mji_add_to_scl3(dif.as_mut_ptr(), halfaxis.as_ptr(), -x2);
+                    dif[j as usize] += *size2.add(j as usize) * x1;
+
+                    tmp1[2] = mju_dot3(dif.as_ptr(), dif.as_ptr());
+
+                    c1 = s1 * 3 + s2;
+
+                    if tmp1[2] < bestdist - mjMINVAL {
+                        bestdist = tmp1[2];
+                        bestsegmentpos = x2;
+                        bestboxpos = x1;
+
+                        c2 = c1 / 6;
+
+                        clcorner = i + (1 << j) * c2;
+                        cledge = j;
+                        cltype = c1;
+                    }
+                }
+                i += 1;
+            }
+            j += 1;
+        }
+
+        // dead code in C: loop with j=0..3 that only executes body at j==2,
+        // computing unused locals. We replicate the structure for bit-exactness
+        // but the results are never used, so we skip it entirely (no side effects).
+
+        // invalid type
+        if cltype == -4 {
+            return 0;
+        }
+
+        if cltype >= 0 && cltype / 3 != 1 {
+            // closest to a corner of the box
+            c1 = axisdir ^ clcorner;
+
+            if c1 == 0 || c1 == 7 {
+                // case 1: no chance of additional contact — goto skip
+            } else {
+                if c1 == 1 || c1 == 2 || c1 == 4 {
+                    mul = 1.0;
+                    de = 1.0 - bestsegmentpos;
+                    dp = 1.0 + bestsegmentpos;
+                }
+
+                if c1 == 3 || c1 == 5 || c1 == 6 {
+                    mul = -1.0;
+                    c1 = 7 - c1;
+                    dp = 1.0 - bestsegmentpos;
+                    de = 1.0 + bestsegmentpos;
+                }
+
+                if c1 == 1 {
+                    ax = 0; ax1 = 1; ax2 = 2;
+                }
+                if c1 == 2 {
+                    ax = 1; ax1 = 2; ax2 = 0;
+                }
+                if c1 == 4 {
+                    ax = 2; ax1 = 0; ax2 = 1;
+                }
+
+                if axis[ax as usize] * axis[ax as usize] > 0.5 {
+                    // second point along the edge of the box
+                    secondpos = de;
+                    e1 = 2.0 * *size2.add(ax as usize) / halfaxis[ax as usize].abs();
+
+                    if e1 < secondpos {
+                        secondpos = e1;
+                    }
+                    secondpos *= mul;
+                } else {
+                    // second point along a face of the box
+                    secondpos = dp;
+
+                    e1 = 2.0 * *size2.add(ax1 as usize) / halfaxis[ax1 as usize].abs();
+                    if e1 < secondpos {
+                        secondpos = e1;
+                    }
+
+                    e1 = 2.0 * *size2.add(ax2 as usize) / halfaxis[ax2 as usize].abs();
+                    if e1 < secondpos {
+                        secondpos = e1;
+                    }
+
+                    secondpos *= -mul;
+                }
+            }
+        } else if cltype >= 0 && cltype / 3 == 1 {
+            // we are on box's edge
+            c1 = axisdir ^ clcorner;
+            c1 &= 7 - (1 << cledge);
+
+            if c1 != 1 && c1 != 2 && c1 != 4 {
+                // goto skip — no additional contact
+            } else {
+                if cledge == 0 {
+                    ax1 = 1; ax2 = 2;
+                }
+                if cledge == 1 {
+                    ax1 = 2; ax2 = 0;
+                }
+                if cledge == 2 {
+                    ax1 = 0; ax2 = 1;
+                }
+                ax = cledge;
+
+                if axis[ax1 as usize].abs() > axis[ax2 as usize].abs() {
+                    ax1 = ax2;
+                }
+                ax2 = 3 - ax - ax1;
+
+                if (c1 & (1 << ax2)) != 0 {
+                    mul = 1.0;
+                    secondpos = 1.0 - bestsegmentpos;
+                } else {
+                    mul = -1.0;
+                    secondpos = 1.0 + bestsegmentpos;
+                }
+
+                e1 = 2.0 * *size2.add(ax2 as usize) / halfaxis[ax2 as usize].abs();
+                if e1 < secondpos {
+                    secondpos = e1;
+                }
+
+                if ((axisdir & (1 << ax)) != 0) == ((c1 & (1 << ax2)) != 0) {
+                    e2 = 1.0 - bestboxpos;
+                } else {
+                    e2 = 1.0 + bestboxpos;
+                }
+
+                e1 = *size2.add(ax as usize) * e2 / halfaxis[ax as usize].abs();
+
+                if e1 < secondpos {
+                    secondpos = e1;
+                }
+
+                secondpos *= mul;
+            }
+        } else if cltype < 0 {
+            // one capsule's end is closest to a face of the box
+            if clface == -1 {
+                // goto skip — closest point is inside the box
+            } else {
+                if cltype == -3 {
+                    mul = 1.0;
+                } else {
+                    mul = -1.0;
+                }
+
+                secondpos = 2.0;
+
+                mji_copy3(tmp1.as_mut_ptr(), pos.as_ptr());
+                mji_add_to_scl3(tmp1.as_mut_ptr(), halfaxis.as_ptr(), -mul);
+
+                i = 0;
+                while i < 3 {
+                    if i != clface {
+                        e1 = (*size2.add(i as usize) - tmp1[i as usize]) / halfaxis[i as usize] * mul;
+                        if e1 > 0.0 {
+                            if e1 < secondpos {
+                                secondpos = e1;
+                            }
+                        }
+
+                        e1 = (-*size2.add(i as usize) - tmp1[i as usize]) / halfaxis[i as usize] * mul;
+                        if e1 > 0.0 {
+                            if e1 < secondpos {
+                                secondpos = e1;
+                            }
+                        }
+                    }
+                    i += 1;
+                }
+                secondpos *= mul;
+            }
+        }
+
+        // skip: create sphere in original orientation at first contact point
+        mju_copy3(tmp1.as_mut_ptr(), pos.as_ptr());
+        mji_add_to_scl3(tmp1.as_mut_ptr(), halfaxis.as_ptr(), bestsegmentpos);
+        mju_mul_mat_vec3(tmp2.as_mut_ptr(), mat2, tmp1.as_ptr());
+        mju_add_to3(tmp2.as_mut_ptr(), pos2);
+
+        // collide with box
+        n = mjraw_sphere_box(con, margin, tmp2.as_ptr(), mat1, size1, pos2, mat2, size2);
+
+        if secondpos > -3.0 {
+            // secondpos was modified
+            mju_copy3(tmp1.as_mut_ptr(), pos.as_ptr());
+            mji_add_to_scl3(tmp1.as_mut_ptr(), halfaxis.as_ptr(), secondpos + bestsegmentpos);
+            mju_mul_mat_vec3(tmp2.as_mut_ptr(), mat2, tmp1.as_ptr());
+            mju_add_to3(tmp2.as_mut_ptr(), pos2);
+            n + mjraw_sphere_box(con.add(n as usize), margin, tmp2.as_ptr(), mat1, size1, pos2, mat2, size2)
+        } else {
+            n
+        }
     }
-    // SAFETY: delegates to C implementation, all pointers valid per caller contract
-    unsafe { mjraw_CapsuleBox_impl(con, margin, pos1, mat1, size1, pos2, mat2, size2) }
 }
 
 /// C: mjraw_SphereTriangle (engine/engine_collision_primitive.h:37)
