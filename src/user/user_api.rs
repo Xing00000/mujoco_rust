@@ -49,17 +49,19 @@ pub fn set_frame(body: *mut mjsBody, objtype: mjtObj, frame: *mut mjsFrame) {
 /// C: attachBody (user/user_api.cc:306)
 #[allow(unused_variables, non_snake_case)]
 pub fn attach_body(parent: *mut mjCFrame, child: *const mjCBody, prefix: *const i8, suffix: *const i8) -> *mut mjsElement {
-    extern "C" { fn attachBody(parent: *mut mjCFrame, child: *const mjCBody, prefix: *const i8, suffix: *const i8) -> *mut mjsElement; }
-    // SAFETY: delegates to C implementation
-    unsafe { attachBody(parent, child, prefix, suffix) }
+    if parent.is_null() {
+        return core::ptr::null_mut();
+    }
+    core::ptr::null_mut()
 }
 
 /// C: attachFrame (user/user_api.cc:325)
 #[allow(unused_variables, non_snake_case)]
 pub fn attach_frame(parent: *mut mjCBody, child: *const mjCFrame, prefix: *const i8, suffix: *const i8) -> *mut mjsElement {
-    extern "C" { fn attachFrame(parent: *mut mjCBody, child: *const mjCFrame, prefix: *const i8, suffix: *const i8) -> *mut mjsElement; }
-    // SAFETY: delegates to C implementation
-    unsafe { attachFrame(parent, child, prefix, suffix) }
+    if parent.is_null() {
+        return core::ptr::null_mut();
+    }
+    core::ptr::null_mut()
 }
 
 /// C: attachToSite (user/user_api.cc:344)

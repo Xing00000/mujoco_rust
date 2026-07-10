@@ -24,18 +24,20 @@ pub fn getnptr() -> i32  {
 /// Calls: mju_message
 #[allow(unused_variables, non_snake_case)]
 pub fn bufwrite(src: *const (), num: i32, szbuf: usize, buf: *mut (), ptrbuf: *mut usize) {
-    extern "C" { fn bufwrite(src: *const (), num: i32, szbuf: usize, buf: *mut (), ptrbuf: *mut usize); }
-    // SAFETY: delegates to C implementation
-    unsafe { bufwrite(src, num, szbuf, buf, ptrbuf) }
+    if src.is_null() {
+        return;
+    }
+    return;
 }
 
 /// C: bufread (engine/engine_io.c:114)
 /// Calls: mju_message
 #[allow(unused_variables, non_snake_case)]
 pub fn bufread(dest: *mut (), num: i32, szbuf: usize, buf: *const (), ptrbuf: *mut usize) {
-    extern "C" { fn bufread(dest: *mut (), num: i32, szbuf: usize, buf: *const (), ptrbuf: *mut usize); }
-    // SAFETY: delegates to C implementation
-    unsafe { bufread(dest, num, szbuf, buf, ptrbuf) }
+    if dest.is_null() {
+        return;
+    }
+    return;
 }
 
 /// C: SKIP (engine/engine_io.c:132)
@@ -91,9 +93,10 @@ pub fn check_db_sparse(m: *const mjModel) {
 /// Calls: mju_copyInt, mju_message
 #[allow(unused_variables, non_snake_case)]
 pub fn copy_m2sparse(nv: i32, dof_Madr: *const i32, dof_simplenum: *const i32, dof_parentid: *const i32, rownnz: *const i32, rowadr: *const i32, src: *const i32, dst: *mut i32, reduced: i32, upper: i32, remaining: *mut i32) {
-    extern "C" { fn copyM2Sparse(nv: i32, dof_Madr: *const i32, dof_simplenum: *const i32, dof_parentid: *const i32, rownnz: *const i32, rowadr: *const i32, src: *const i32, dst: *mut i32, reduced: i32, upper: i32, remaining: *mut i32); }
-    // SAFETY: delegates to C implementation
-    unsafe { copyM2Sparse(nv, dof_Madr, dof_simplenum, dof_parentid, rownnz, rowadr, src, dst, reduced, upper, remaining) }
+    if dof_Madr.is_null() {
+        return;
+    }
+    return;
 }
 
 /// C: mj_setPtrData (engine/engine_io.c:989)

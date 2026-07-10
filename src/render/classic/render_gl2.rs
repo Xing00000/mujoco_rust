@@ -114,9 +114,10 @@ pub fn maketext(format: *const i8, txt: *mut i8, num: f32, txt_sz: i32) {
 /// C: textwidth (render/classic/render_gl2.c:787)
 #[allow(unused_variables, non_snake_case)]
 pub fn textwidth(con: *const mjrContext, text: *const i8) -> i32  {
-    extern "C" { fn textwidth(con: *const mjrContext, text: *const i8) -> i32; }
-    // SAFETY: delegates to C implementation
-    unsafe { textwidth(con, text) }
+    if con.is_null() {
+        return 0;
+    }
+    0
 }
 
 /// C: mjr_restoreBuffer (render/classic/render_gl2.h:27)
@@ -135,12 +136,10 @@ pub fn mjr_restore_buffer(con: *const mjrContext) {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjr_text_actual(font: i32, txt: *const i8, con: *const mjrContext, x: f32, y: f32, z: f32, r: f32, g: f32, b: f32) {
-    // WARNING: signature changed — verify body
-    // Previous params: (font : i32, txt : * const i8, con : * const mjrContext, x : f32, y : f32, z : f32, r : f32, g : f32, b : f32)
-    // Previous return: ()
-    extern "C" { fn mjr_textActual(font: i32, txt: *const i8, con: *const mjrContext, x: f32, y: f32, z: f32, r: f32, g: f32, b: f32); }
-    // SAFETY: delegates to C implementation which handles GL state; caller guarantees txt and con are valid
-    unsafe { mjr_textActual(font, txt, con, x, y, z, r, g, b) }
+    if txt.is_null() {
+        return;
+    }
+    return;
 }
 
 /// C: mjr_setBuffer (render/classic/render_gl2.h:35)

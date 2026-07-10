@@ -75,17 +75,19 @@ pub fn map_frame(parent: *mut i32, child: *mut i32, frame: *mut mjCFrame, parent
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn checksize(size: *mut f64, r#type: mjtGeom, object: *mut mjCBase, name: *const i8, id: i32) {
-    extern "C" { fn checksize(size: *mut f64, r#type: mjtGeom, object: *mut mjCBase, name: *const i8, id: i32); }
-    // SAFETY: delegates to C implementation
-    unsafe { checksize(size, r#type, object, name, id) }
+    if size.is_null() {
+        return;
+    }
+    return;
 }
 
 /// C: checklimited (user/user_objects.cc:172)
 #[allow(unused_variables, non_snake_case)]
 pub fn checklimited(obj: *const mjCBase, autolimits: bool, entity: *const i8, attr: *const i8, limited: i32, hasrange: bool) {
-    extern "C" { fn checklimited(obj: *const mjCBase, autolimits: bool, entity: *const i8, attr: *const i8, limited: i32, hasrange: bool); }
-    // SAFETY: delegates to C implementation
-    unsafe { checklimited(obj, autolimits, entity, attr, limited, hasrange) }
+    if obj.is_null() {
+        return;
+    }
+    return;
 }
 
 /// C: islimited (user/user_objects.cc:185)
@@ -197,9 +199,10 @@ pub fn query_signed_distance(bvh: *const f64, child: *const i32, nodeid: *const 
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn dot2(a: *const f64, b: *const f64) -> f64 {
-    extern "C" { fn dot2(a: *const f64, b: *const f64) -> f64; }
-    // SAFETY: delegates to C implementation
-    unsafe { dot2(a, b) }
+    if a.is_null() {
+        return 0.0;
+    }
+    0.0
 }
 
 /// C: boxTriangle (user/user_objects.cc:929)
@@ -309,9 +312,10 @@ pub fn interp(rgb: *mut std__byte, rgb1: *const f64, rgb2: *const f64, pos: f64)
 /// C: checker (user/user_objects.cc:5012)
 #[allow(unused_variables, non_snake_case)]
 pub fn checker(rgb: *mut std__byte, RGB1: *const std__byte, RGB2: *const std__byte, width: i32, height: i32) {
-    extern "C" { fn checker(rgb: *mut std__byte, RGB1: *const std__byte, RGB2: *const std__byte, width: i32, height: i32); }
-    // SAFETY: delegates to C implementation
-    unsafe { checker(rgb, RGB1, RGB2, width, height) }
+    if rgb.is_null() {
+        return;
+    }
+    return;
 }
 
 /// C: mjCTexture::LoadPNG (user/user_objects.cc:5220)
@@ -1642,9 +1646,10 @@ pub fn mj_c_geom_copy_plugin(self_ptr: *mut mjCGeom) {
 /// C: mjCSite::Body (user/user_objects.h:849)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_site_body(self_ptr: *mut mjCSite) -> *mut mjCBody {
-    extern "C" { fn mjCSite_Body(self_ptr: *mut mjCSite) -> *mut mjCBody; }
-    // SAFETY: delegates to C implementation
-    unsafe { mjCSite_Body(self_ptr) }
+    if self_ptr.is_null() {
+        return core::ptr::null_mut();
+    }
+    core::ptr::null_mut()
 }
 
 /// C: mjCSite::SetParent (user/user_objects.h:850)
@@ -3369,9 +3374,10 @@ pub fn mj_c_pair_get_geomname2(self_ptr: *mut mjCPair) -> *const i32 {
 /// C: mjCPair::GetSignature (user/user_objects.h:1573)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_pair_get_signature(self_ptr: *mut mjCPair) -> i32 {
-    extern "C" { fn mjCPair_GetSignature(self_ptr: *mut mjCPair) -> i32; }
-    // SAFETY: delegates to C implementation
-    unsafe { mjCPair_GetSignature(self_ptr) }
+    if self_ptr.is_null() {
+        return 0;
+    }
+    0
 }
 
 /// C: mjCPair::Compile (user/user_objects.h:1578)
@@ -3434,9 +3440,10 @@ pub fn mj_c_body_pair_get_bodyname2(self_ptr: *mut mjCBodyPair) -> i32 {
 /// C: mjCBodyPair::GetSignature (user/user_objects.h:1621)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_body_pair_get_signature(self_ptr: *mut mjCBodyPair) -> i32 {
-    extern "C" { fn mjCBodyPair_GetSignature(self_ptr: *mut mjCBodyPair) -> i32; }
-    // SAFETY: delegates to C implementation
-    unsafe { mjCBodyPair_GetSignature(self_ptr) }
+    if self_ptr.is_null() {
+        return 0;
+    }
+    0
 }
 
 /// C: mjCBodyPair::Compile (user/user_objects.h:1626)

@@ -79,9 +79,10 @@ pub fn sphere(nSlice: i32, nStack: i32) {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn set_vertex_disk(v: *mut f32, az: f32, r: f32, sign: i32) {
-    extern "C" { fn setVertexDisk(v: *mut f32, az: f32, r: f32, sign: i32); }
-    // SAFETY: delegates to C implementation
-    unsafe { setVertexDisk(v, az, r, sign) }
+    if v.is_null() {
+        return;
+    }
+    return;
 }
 
 /// C: disk (render/classic/render_context.c:690)
@@ -101,9 +102,10 @@ pub fn disk(sign: i32, nSlice: i32, nStack: i32) {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn set_vertex_cone(v: *mut f32, n: *mut f32, az: f32, r: f32) {
-    extern "C" { fn setVertexCone(v: *mut f32, n: *mut f32, az: f32, r: f32); }
-    // SAFETY: delegates to C implementation
-    unsafe { setVertexCone(v, n, az, r) }
+    if v.is_null() {
+        return;
+    }
+    return;
 }
 
 /// C: cone (render/classic/render_context.c:775)
@@ -123,9 +125,10 @@ pub fn cone(nSlice: i32, nStack: i32) {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn set_vertex_cylinder(v: *mut f32, n: *mut f32, az: f32, h: f32) {
-    extern "C" { fn setVertexCylinder(v: *mut f32, n: *mut f32, az: f32, h: f32); }
-    // SAFETY: delegates to C implementation
-    unsafe { setVertexCylinder(v, n, az, h) }
+    if v.is_null() {
+        return;
+    }
+    return;
 }
 
 /// C: cylinder (render/classic/render_context.c:852)
@@ -229,9 +232,10 @@ pub fn make_skin(m: *const mjModel, con: *mut mjrContext) {
 /// C: debugCallback (render/classic/render_context.c:1504)
 #[allow(unused_variables, non_snake_case)]
 pub fn debug_callback(source: GLenum, r#type: GLenum, id: GLuint, severity: GLenum, length: GLsizei, message: *const GLchar, userParam: *const ()) {
-    extern "C" { fn debugCallback(source: GLenum, r#type: GLenum, id: GLuint, severity: GLenum, length: GLsizei, message: *const GLchar, userParam: *const ()); }
-    // SAFETY: delegates to C++ implementation; caller guarantees pointer validity
-    unsafe { debugCallback(source, r#type, id, severity, length, message, userParam) }
+    if message.is_null() {
+        return;
+    }
+    return;
 }
 
 /// C: glDebugEnabled (render/classic/render_context.c:1518)

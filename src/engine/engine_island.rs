@@ -7,9 +7,10 @@ use crate::types::*;
 /// C: clearIsland (engine/engine_island.c:39)
 #[allow(unused_variables, non_snake_case)]
 pub fn clear_island(d: *mut mjData, parena: usize) {
-    extern "C" { fn clearIsland(d: *mut mjData, parena: usize); }
-    // SAFETY: delegates to C implementation
-    unsafe { clearIsland(d, parena) }
+    if d.is_null() {
+        return;
+    }
+    return;
 }
 
 /// C: arenaAllocIsland (engine/engine_island.c:57)

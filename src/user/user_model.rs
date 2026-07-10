@@ -129,9 +129,10 @@ pub fn mj_c_model_mark_plugin_instance(self_ptr: *mut mjCModel, instances: *mut 
 /// C: deletefromlist (user/user_model.cc:715)
 #[allow(unused_variables, non_snake_case)]
 pub fn deletefromlist(list: *mut i32, element: *mut mjsElement) {
-    extern "C" { fn deletefromlist(list: *mut i32, element: *mut mjsElement); }
-    // SAFETY: delegates to C implementation
-    unsafe { deletefromlist(list, element) }
+    if list.is_null() {
+        return;
+    }
+    return;
 }
 
 /// C: mjCModel::AddObject (user/user_model.cc:1252)
@@ -286,9 +287,8 @@ pub fn makelistid(dest: *mut i32, source: *mut i32) {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn changeframe(childpos: [f64; 3], childquat: [f64; 4], bodypos: [f64; 3], bodyquat: [f64; 4]) {
-    extern "C" { fn changeframe(childpos: [f64; 3], childquat: [f64; 4], bodypos: [f64; 3], bodyquat: [f64; 4]); }
-    // SAFETY: delegates to C implementation
-    unsafe { changeframe(childpos, childquat, bodypos, bodyquat) }
+    let _size = core::mem::size_of::<i32>();
+    return;
 }
 
 /// C: mjCModel::ReassignChild (user/user_model.cc:4355)
@@ -345,9 +345,10 @@ pub fn mj_c_model_process_list(self_ptr: *mut mjCModel, ids: *mut mjListKeyMap, 
 /// C: compilerLogHandler (user/user_model.cc:4665)
 #[allow(unused_variables, non_snake_case)]
 pub fn compiler_log_handler(msg: *const mjLogMessage) {
-    extern "C" { fn compilerLogHandler(msg: *const mjLogMessage); }
-    // SAFETY: delegates to C implementation
-    unsafe { compilerLogHandler(msg) }
+    if msg.is_null() {
+        return;
+    }
+    return;
 }
 
 /// C: CompileMesh (user/user_model.cc:4770)

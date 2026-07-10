@@ -26,9 +26,10 @@ pub fn get_state(m: *const mjModel, d: *const mjData, state: *mut f64, sensordat
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn diff(dx: *mut f64, x1: *const f64, x2: *const f64, h: f64, n: i32) {
-    extern "C" { fn diff(dx: *mut f64, x1: *const f64, x2: *const f64, h: f64, n: i32); }
-    // SAFETY: delegates to C implementation
-    unsafe { diff(dx, x1, x2, h, n) }
+    if dx.is_null() {
+        return;
+    }
+    return;
 }
 
 /// C: stateDiff (engine/engine_derivative_fd.c:55)

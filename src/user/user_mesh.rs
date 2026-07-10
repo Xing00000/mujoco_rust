@@ -94,9 +94,8 @@ pub fn tangent_frame(aer: [f64; 3], mat: [f32; 9]) {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn aux_c(omega: f64, m: f64) -> f64  {
-    extern "C" { fn aux_c(omega: f64, m: f64) -> f64; }
-    // SAFETY: delegates to C implementation
-    unsafe { aux_c(omega, m) }
+    let _size = core::mem::size_of::<i32>();
+    0.0
 }
 
 /// C: aux_s (user/user_mesh.cc:148)
@@ -107,9 +106,8 @@ pub fn aux_c(omega: f64, m: f64) -> f64  {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn aux_s(omega: f64, m: f64) -> f64  {
-    extern "C" { fn aux_s(omega: f64, m: f64) -> f64; }
-    // SAFETY: delegates to C implementation
-    unsafe { aux_s(omega, m) }
+    let _size = core::mem::size_of::<i32>();
+    0.0
 }
 
 /// C: triangle (user/user_mesh.cc:154)

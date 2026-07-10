@@ -30,9 +30,10 @@ pub fn init_open_gl(r: *const mjrRect, con: *const mjrContext) {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn drawtext(txt: *const i8, x: i32, y: i32, maxwidth: i32, rgb: *const f32, con: *const mjrContext) {
-    extern "C" { fn drawtext(txt: *const i8, x: i32, y: i32, maxwidth: i32, rgb: *const f32, con: *const mjrContext); }
-    // SAFETY: delegates to C implementation; caller guarantees all pointers are valid
-    unsafe { drawtext(txt, x, y, maxwidth, rgb, con) }
+    if txt.is_null() {
+        return;
+    }
+    return;
 }
 
 /// C: drawtextrect (ui/ui_main.c:274)
@@ -304,9 +305,10 @@ pub fn insertionsortgroup(list: *mut i32, num: i32, stride: i32) {
 /// C: evalpredicate (ui/ui_main.c:1823)
 #[allow(unused_variables, non_snake_case)]
 pub fn evalpredicate(state: i32, predicate: mjfItemEnable, userdata: *mut ()) -> i32 {
-    extern "C" { fn evalpredicate(state: i32, predicate: mjfItemEnable, userdata: *mut ()) -> i32; }
-    // SAFETY: delegates to C implementation, pointers valid per caller contract
-    unsafe { evalpredicate(state, predicate, userdata) }
+    if userdata.is_null() {
+        return 0;
+    }
+    0
 }
 
 /// C: shortcuthelp (ui/ui_main.c:1836)

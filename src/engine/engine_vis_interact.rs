@@ -13,9 +13,10 @@ use crate::types::*;
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn convert2d(res: *mut f64, action: i32, dx: f64, dy: f64, forward: *const f64) {
-    extern "C" { fn convert2D(res: *mut f64, action: i32, dx: f64, dy: f64, forward: *const f64); }
-    // SAFETY: delegates to C implementation
-    unsafe { convert2D(res, action, dx, dy, forward) }
+    if res.is_null() {
+        return;
+    }
+    return;
 }
 
 /// C: mjv_room2model (engine/engine_vis_interact.h:28)

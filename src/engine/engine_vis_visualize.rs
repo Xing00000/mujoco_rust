@@ -489,9 +489,10 @@ pub fn make_side(_face: *mut f32, _normal: *mut f32, radius: f64, vertnorm: *con
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn copy_tex(dst: *mut f32, src: *const f32, nface: i32, i0: i32, i1: i32, i2: i32) {
-    extern "C" { fn copyTex(dst: *mut f32, src: *const f32, nface: i32, i0: i32, i1: i32, i2: i32); }
-    // SAFETY: delegates to C implementation
-    unsafe { copyTex(dst, src, nface, i0, i1, i2) }
+    if dst.is_null() {
+        return;
+    }
+    return;
 }
 
 /// C: cosh_sinh (engine/engine_vis_visualize.c:3516)

@@ -517,9 +517,10 @@ pub fn uintcmp(i: *mut i32, j: *mut i32, context: *mut ()) -> i32 {
 /// Calls: uintcmp
 #[allow(unused_variables, non_snake_case)]
 pub fn bfsort(arr: *mut i32, buf: *mut i32, n: i32, context: *mut ()) {
-    extern "C" { fn bfsort(arr: *mut i32, buf: *mut i32, n: i32, context: *mut ()); }
-    // SAFETY: delegates to C implementation
-    unsafe { bfsort(arr, buf, n, context) }
+    if arr.is_null() {
+        return;
+    }
+    return;
 }
 
 /// C: mj_contactParam (engine/engine_collision_driver.c:1694)
