@@ -86,20 +86,106 @@ pub fn mj_springdamper(m: *const mjModel, d: *mut mjData) {
 /// Calls: mj_applyFT, mji_scl3, mju_norm3
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_gravcomp(m: *const mjModel, d: *mut mjData) -> i32 {
-    extern "C" {
-        fn mj_gravcomp(m: *const mjModel, d: *mut mjData) -> i32;
+    const mjDSBL_GRAVITY: i32 = 1 << 7;
+    const mjENBL_SLEEP: i32 = 1 << 4;
+
+    // SAFETY: m, d valid per caller contract. All field accesses use valid model/data arrays.
+    unsafe {
+        if (*m).ngravcomp == 0
+            || ((*m).opt.disableflags & mjDSBL_GRAVITY) != 0
+            || crate::engine::engine_util_blas::mju_norm3((*m).opt.gravity.as_ptr()) == 0.0
+        {
+            return 0;
+        }
+
+        let mut has_gravcomp: i32 = 0;
+        let mut force: [f64; 3] = [0.0; 3];
+        let torque: [f64; 3] = [0.0; 3];
+        let sleep_filter: i32 = (((*m).opt.enableflags & mjENBL_SLEEP) != 0
+            && (*d).nbody_awake < (*m).nbody as i32) as i32;
+        let nbody: i32 = if sleep_filter != 0 { (*d).nbody_awake } else { (*m).nbody as i32 };
+
+        let mut b: i32 = 1;
+        while b < nbody {
+            let i: i32 = if sleep_filter != 0 {
+                *(*d).body_awake_ind.add(b as usize)
+            } else {
+                b
+            };
+            if *(*m).body_gravcomp.add(i as usize) != 0.0 {
+                has_gravcomp = 1;
+                crate::engine::engine_inline::mji_scl3(
+                    force.as_mut_ptr(),
+                    (*m).opt.gravity.as_ptr(),
+                    -(*(*m).body_mass.add(i as usize) * *(*m).body_gravcomp.add(i as usize)),
+                );
+                crate::engine::engine_support::mj_apply_ft(
+                    m, d,
+                    force.as_ptr(), torque.as_ptr(),
+                    (*d).xipos.add(3 * i as usize),
+                    i, (*d).qfrc_gravcomp,
+                );
+            }
+            b += 1;
+        }
+
+        has_gravcomp
     }
-    // SAFETY: delegates to C implementation, all pointers valid per caller contract
-    unsafe { mj_gravcomp(m, d) }
 }
 
 /// C: mj_fluid (engine/engine_passive.c:842)
 /// Calls: mj_ellipsoidFluidModel, mj_inertiaBoxFluidModel
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_fluid(m: *const mjModel, d: *mut mjData) -> i32 {
-    extern "C" { fn mj_fluid(m: *const mjModel, d: *mut mjData) -> i32; }
-    // SAFETY: delegates to C implementation, all pointers valid per caller contract
-    unsafe { mj_fluid(m, d) }
+    const mjENBL_SLEEP: i32 = 1 << 4;
+    const mjNFLUID: usize = 12;
+    const MJMINVAL: f64 = 1e-15;
+
+    // SAFETY: m, d valid per caller contract. All field accesses use valid model/data arrays.
+    unsafe {
+        // no fluid forces: early return
+        if (*m).opt.viscosity == 0.0 && (*m).opt.density == 0.0 {
+            return 0;
+        }
+
+        let sleep_filter: i32 = (((*m).opt.enableflags & mjENBL_SLEEP) != 0
+            && (*d).nbody_awake < (*m).nbody as i32) as i32;
+        let nbody: i32 = if sleep_filter != 0 { (*d).nbody_awake } else { (*m).nbody as i32 };
+
+        let mut b: i32 = 0;
+        while b < nbody {
+            let i: i32 = if sleep_filter != 0 {
+                *(*d).body_awake_ind.add(b as usize)
+            } else {
+                b
+            };
+
+            if *(*m).body_mass.add(i as usize) < MJMINVAL {
+                b += 1;
+                continue;
+            }
+
+            // if any child geom uses the ellipsoid model, inertia-box model is disabled
+            let mut use_ellipsoid_model: i32 = 0;
+            let geomnum: i32 = *(*m).body_geomnum.add(i as usize);
+            let mut j: i32 = 0;
+            while j < geomnum && use_ellipsoid_model == 0 {
+                let geomid: i32 = *(*m).body_geomadr.add(i as usize) + j;
+                use_ellipsoid_model += (*(*m).geom_fluid.add(mjNFLUID * geomid as usize) > 0.0) as i32;
+                j += 1;
+            }
+
+            if use_ellipsoid_model != 0 {
+                mj_ellipsoid_fluid_model(m, d, i);
+            } else {
+                mj_inertia_box_fluid_model(m, d, i);
+            }
+
+            b += 1;
+        }
+
+        1
+    }
 }
 
 /// C: mj_contactPassive (engine/engine_passive.c:878)

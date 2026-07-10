@@ -22,10 +22,18 @@ pub fn save_stats(m: *const mjModel, d: *mut mjData, island: i32, iter: i32, imp
 /// Calls: mj_mulJacTVec, mj_solveM, mju_addTo
 #[allow(unused_variables, non_snake_case)]
 pub fn dual_finish(m: *const mjModel, d: *mut mjData) {
-    // WARNING: signature changed — verify body
-    // Previous params: (m : * const mjModel, d : * mut mjData)
-    // Previous return: ()
-    extern "C" { fn dualFinish(m : * const mjModel , d : * mut mjData) ; } unsafe { dualFinish(m , d) }
+    // SAFETY: m, d valid per caller. qacc, qfrc_constraint, efc_force, qacc_smooth valid arrays.
+    unsafe {
+        // map constraint force to joint space
+        crate::engine::engine_core_constraint::mj_mul_jac_t_vec(
+            m, d as *const mjData, (*d).qfrc_constraint, (*d).efc_force);
+
+        // compute constrained acceleration in joint space
+        crate::engine::engine_core_smooth::mj_solve_m(
+            m, d, (*d).qacc, (*d).qfrc_constraint as *const f64, 1);
+        crate::engine::engine_util_blas::mju_add_to(
+            (*d).qacc, (*d).qacc_smooth, (*m).nv as i32);
+    }
 }
 
 /// C: ARdiaginv (engine/engine_solver.c:90)
@@ -987,20 +995,20 @@ pub fn mj_sol_primal(m: *const mjModel, d: *mut mjData, island: i32, maxiter: i3
 /// Calls: solPGS
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_sol_pgs(m: *const mjModel, d: *mut mjData, maxiter: i32) {
-    // WARNING: signature changed — verify body
-    // Previous params: (m : * const mjModel, d : * mut mjData, maxiter : i32)
-    // Previous return: ()
-    extern "C" { fn mj_solPGS(m : * const mjModel , d : * mut mjData , maxiter : i32) ; } unsafe { mj_solPGS(m , d , maxiter) }
+    // SAFETY: d is valid; ne, nf, nefc are valid counts
+    unsafe {
+        sol_pgs(m, d, -1, (*d).ne, (*d).nf, (*d).nefc, std::ptr::null(), maxiter);
+    }
 }
 
 /// C: mj_solNoSlip (engine/engine_solver.h:27)
 /// Calls: solNoSlip
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_sol_no_slip(m: *const mjModel, d: *mut mjData, maxiter: i32) {
-    // WARNING: signature changed — verify body
-    // Previous params: (m : * const mjModel, d : * mut mjData, maxiter : i32)
-    // Previous return: ()
-    extern "C" { fn mj_solNoSlip(m : * const mjModel , d : * mut mjData , maxiter : i32) ; } unsafe { mj_solNoSlip(m , d , maxiter) }
+    // SAFETY: d is valid; ne, nf, nefc are valid counts
+    unsafe {
+        sol_no_slip(m, d, -1, (*d).ne, (*d).nf, (*d).nefc, std::ptr::null(), maxiter);
+    }
 }
 
 /// C: mj_solCG (engine/engine_solver.h:30)
@@ -1023,9 +1031,14 @@ pub fn mj_sol_newton(m: *const mjModel, d: *mut mjData, maxiter: i32) {
 /// Calls: solPGS
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_sol_pgs_island(m: *const mjModel, d: *mut mjData, island: i32, maxiter: i32) {
-    extern "C" { fn mj_solPGS_island(m: *const mjModel, d: *mut mjData, island: i32, maxiter: i32); }
-    // SAFETY: delegates to C implementation
-    unsafe { mj_solPGS_island(m, d, island, maxiter) }
+    // SAFETY: d is valid; island_ne/nf/nefc/iefcadr and map_iefc2efc are valid arrays
+    unsafe {
+        let ne = *(*d).island_ne.add(island as usize);
+        let nf = *(*d).island_nf.add(island as usize);
+        let nefc = *(*d).island_nefc.add(island as usize);
+        let iefcadr = *(*d).island_iefcadr.add(island as usize);
+        sol_pgs(m, d, island, ne, nf, nefc, (*d).map_iefc2efc.add(iefcadr as usize), maxiter);
+    }
 }
 
 /// C: mj_solNoSlip_island (engine/engine_solver.h:42)
@@ -1047,27 +1060,20 @@ pub fn mj_sol_no_slip_island(m: *const mjModel, d: *mut mjData, island: i32, max
 /// Calls: mj_solPrimal
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_sol_cg_island(m: *const mjModel, d: *mut mjData, island: i32, maxiter: i32) {
-    extern "C" { fn mj_solCG_island(m: *const mjModel, d: *mut mjData, island: i32, maxiter: i32); }
-    // SAFETY: delegates to C implementation
-    unsafe { mj_solCG_island(m, d, island, maxiter) }
+    mj_sol_primal(m, d, island, maxiter, 0);
 }
 
 /// C: mj_solNewton_island (engine/engine_solver.h:48)
 /// Calls: mj_solPrimal
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_sol_newton_island(m: *const mjModel, d: *mut mjData, island: i32, maxiter: i32) {
-    extern "C" { fn mj_solNewton_island(m: *const mjModel, d: *mut mjData, island: i32, maxiter: i32); }
-    // SAFETY: delegates to C implementation
-    unsafe { mj_solNewton_island(m, d, island, maxiter) }
+    mj_sol_primal(m, d, island, maxiter, 1);
 }
 
 /// C: mj_dualFinish (engine/engine_solver.h:51)
 /// Calls: dualFinish
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_dual_finish(m: *const mjModel, d: *mut mjData) {
-    // WARNING: signature changed — verify body
-    // Previous params: (m : * const mjModel, d : * mut mjData)
-    // Previous return: ()
-    extern "C" { fn mj_dualFinish(m : * const mjModel , d : * mut mjData) ; } unsafe { mj_dualFinish(m , d) }
+    dual_finish(m, d);
 }
 

@@ -17,9 +17,7 @@ pub fn mj_discrete_acc(m: *const mjModel, d: *mut mjData) {
 /// Calls: mj_inverseSkip
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_inverse(m: *const mjModel, d: *mut mjData) {
-    extern "C" { fn mj_inverse(m: *const mjModel, d: *mut mjData); }
-    // SAFETY: delegates to C implementation, pointers valid per caller contract
-    unsafe { mj_inverse(m, d) }
+    mj_inverse_skip(m, d, 0, 0);
 }
 
 /// C: mj_inverseSkip (engine/engine_inverse.h:30)
@@ -44,9 +42,7 @@ pub fn mj_inv_position(m: *const mjModel, d: *mut mjData) {
 /// Calls: mj_fwdVelocity
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_inv_velocity(m: *const mjModel, d: *mut mjData) {
-    extern "C" { fn mj_invVelocity(m: *const mjModel, d: *mut mjData); }
-    // SAFETY: delegates to C implementation, pointers valid per caller contract
-    unsafe { mj_invVelocity(m, d) }
+    crate::engine::engine_forward::mj_fwd_velocity(m, d);
 }
 
 /// C: mj_invConstraint (engine/engine_inverse.h:40)

@@ -403,11 +403,35 @@ pub fn mj_check_acc(m: *const mjModel, d: *mut mjData) {
 /// Calls: mj_Euler, mj_RungeKutta, mj_checkAcc, mj_checkPos, mj_checkVel, mj_compareFwdInv, mj_forward, mj_implicit, mju_message
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_step(m: *const mjModel, d: *mut mjData) {
-    extern "C" {
-        fn mj_step(m: *const mjModel, d: *mut mjData);
+    const mjENBL_FWDINV: i32 = 1 << 2;
+    const mjINT_EULER: i32 = 0;
+    const mjINT_RK4: i32 = 1;
+    const mjINT_IMPLICIT: i32 = 2;
+    const mjINT_IMPLICITFAST: i32 = 3;
+
+    // SAFETY: m, d valid per caller. opt.integrator and opt.enableflags are safe to read.
+    unsafe {
+        // common to all integrators
+        mj_check_pos(m, d);
+        mj_check_vel(m, d);
+        mj_forward(m, d);
+        mj_check_acc(m, d);
+
+        // compare forward and inverse solutions if enabled
+        if ((*m).opt.enableflags & mjENBL_FWDINV) != 0 {
+            crate::engine::engine_inverse::mj_compare_fwd_inv(m, d);
+        }
+
+        // use selected integrator
+        match (*m).opt.integrator {
+            mjINT_EULER => mj_euler(m, d),
+            mjINT_RK4 => mj_runge_kutta(m, d, 4),
+            mjINT_IMPLICIT | mjINT_IMPLICITFAST => mj_implicit(m, d),
+            _ => crate::engine::engine_util_errmem::mju_error(
+                b"invalid integrator\0".as_ptr() as *const i8,
+            ),
+        }
     }
-    // SAFETY: delegates to C implementation, all pointers valid per caller contract
-    unsafe { mj_step(m, d) }
 }
 
 /// C: mj_step1 (engine/engine_forward.h:38)
@@ -432,9 +456,7 @@ pub fn mj_step2(m: *const mjModel, d: *mut mjData) {
 /// Calls: mj_forwardSkip
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_forward(m: *const mjModel, d: *mut mjData) {
-    extern "C" { fn mj_forward(m: *const mjModel, d: *mut mjData); }
-    // SAFETY: delegates to C implementation, pointers valid per caller contract
-    unsafe { mj_forward(m, d) }
+    mj_forward_skip(m, d, 0, 0);
 }
 
 /// C: mj_forwardSkip (engine/engine_forward.h:47)
@@ -459,9 +481,7 @@ pub fn mj_runge_kutta(m: *const mjModel, d: *mut mjData, N: i32) {
 /// Calls: mj_EulerSkip
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_euler(m: *const mjModel, d: *mut mjData) {
-    extern "C" { fn mj_Euler(m: *const mjModel, d: *mut mjData); }
-    // SAFETY: delegates to C implementation, all pointers valid per caller contract
-    unsafe { mj_Euler(m, d) }
+    mj_euler_skip(m, d, 0);
 }
 
 /// C: mj_EulerSkip (engine/engine_forward.h:59)
@@ -477,9 +497,7 @@ pub fn mj_euler_skip(m: *const mjModel, d: *mut mjData, skipfactor: i32) {
 /// Calls: mj_implicitSkip
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_implicit(m: *const mjModel, d: *mut mjData) {
-    extern "C" { fn mj_implicit(m: *const mjModel, d: *mut mjData); }
-    // SAFETY: delegates to C implementation, pointers valid per caller contract
-    unsafe { mj_implicit(m, d) }
+    mj_implicit_skip(m, d, 0);
 }
 
 /// C: mj_implicitSkip (engine/engine_forward.h:65)
@@ -640,9 +658,14 @@ pub fn mj_midpoint(mass: f64, inertia: *const f64, ipos: *const f64, iquat: *con
 /// Calls: mj_camlight, mj_comPos, mj_flex, mj_kinematics, mj_tendon, mj_updateSleep, mj_wakeTendon
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_fwd_kinematics(m: *const mjModel, d: *mut mjData) {
-    extern "C" { fn mj_fwdKinematics(m: *const mjModel, d: *mut mjData); }
-    // SAFETY: delegates to C implementation, all pointers valid per caller contract
-    unsafe { mj_fwdKinematics(m, d) }
+    crate::engine::engine_core_smooth::mj_kinematics(m, d);
+    crate::engine::engine_core_smooth::mj_com_pos(m, d);
+    crate::engine::engine_core_smooth::mj_camlight(m, d);
+    crate::engine::engine_core_smooth::mj_flex(m, d);
+    crate::engine::engine_core_smooth::mj_tendon(m, d);
+    if crate::engine::engine_sleep::mj_wake_tendon(m, d) != 0 {
+        crate::engine::engine_sleep::mj_update_sleep(m, d);
+    }
 }
 
 /// C: mj_fwdPosition (engine/engine_forward.h:81)
