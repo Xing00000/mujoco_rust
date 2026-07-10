@@ -45,10 +45,12 @@ pub fn visit_conflicts(parent: *mut mjSpec, child: *const mjSpec, r: *mut Resolv
 /// C: ConflictSubject (user/user_resolver.cc:395)
 #[allow(unused_variables, non_snake_case)]
 pub fn conflict_subject(parent: *const mjSpec, child: *const mjSpec) -> std__string {
-    // WARNING: signature changed — verify body
-    // Previous params: (parent : * const mjSpec, child : * const mjSpec)
-    // Previous return: std__string
-    extern "C" { fn ConflictSubject(parent : * const mjSpec , child : * const mjSpec) -> std__string ; } unsafe { ConflictSubject(parent , child) }
+    if parent.is_null() || child.is_null() {
+        return unsafe { core::mem::zeroed() };
+    }
+    extern "C" { fn ConflictSubject(parent: *const mjSpec, child: *const mjSpec) -> std__string; }
+    // SAFETY: parent and child verified non-null; delegates to C++ implementation
+    unsafe { ConflictSubject(parent, child) }
 }
 
 /// C: ResolveConflicts (user/user_resolver.h:28)

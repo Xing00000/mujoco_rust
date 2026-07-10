@@ -195,10 +195,12 @@ pub fn mj_c_cache_reset(self_ptr: *mut mjCCache) {
 /// C: mjCCache::Capacity (user/user_cache.h:159)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_cache_capacity(self_ptr: *mut mjCCache) -> std__size_t {
-    // WARNING: signature changed — verify body
-    // Previous params: (self_ptr : * mut mjCCache)
-    // Previous return: std__size_t
-    extern "C" { fn mjCCache_Capacity (self_ptr : * mut mjCCache) -> std__size_t ; } unsafe { mjCCache_Capacity (self_ptr) }
+    if self_ptr.is_null() {
+        return unsafe { core::mem::zeroed() };
+    }
+    extern "C" { fn mjCCache_Capacity(self_ptr: *mut mjCCache) -> std__size_t; }
+    // SAFETY: self_ptr verified non-null; delegates to C++ getter
+    unsafe { mjCCache_Capacity(self_ptr) }
 }
 
 /// C: mjCCache::Size (user/user_cache.h:160)

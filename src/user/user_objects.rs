@@ -2633,10 +2633,12 @@ pub fn mj_c_mesh_copy_polygon_normals(self_ptr: *mut mjCMesh, arr: *mut f64) {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_mesh_set_bounding_volume(self_ptr: *mut mjCMesh, faceid: i32, dvert: *const f64) {
-    // WARNING: signature changed — verify body
-    // Previous params: (self_ptr : * mut mjCMesh, faceid : i32, dvert : * const f64)
-    // Previous return: ()
-    extern "C" { fn mjCMesh_SetBoundingVolume (self_ptr : * mut mjCMesh , faceid : i32 , dvert : * const f64) ; } unsafe { mjCMesh_SetBoundingVolume (self_ptr , faceid , dvert) }
+    if self_ptr.is_null() {
+        return;
+    }
+    extern "C" { fn mjCMesh_SetBoundingVolume(self_ptr: *mut mjCMesh, faceid: i32, dvert: *const f64); }
+    // SAFETY: self_ptr verified non-null; delegates to C++ method
+    unsafe { mjCMesh_SetBoundingVolume(self_ptr, faceid, dvert) }
 }
 
 /// C: mjCMesh::LoadFromResource (user/user_objects.h:1254)
@@ -2855,10 +2857,12 @@ pub fn mj_c_mesh_make_polygons(self_ptr: *mut mjCMesh, dvert: *const f64) {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_mesh_make_polygon_normals(self_ptr: *mut mjCMesh, dvert: *const f64) {
-    // WARNING: signature changed — verify body
-    // Previous params: (self_ptr : * mut mjCMesh, dvert : * const f64)
-    // Previous return: ()
-    extern "C" { fn mjCMesh_MakePolygonNormals (self_ptr : * mut mjCMesh , dvert : * const f64) ; } unsafe { mjCMesh_MakePolygonNormals (self_ptr , dvert) }
+    if self_ptr.is_null() {
+        return;
+    }
+    extern "C" { fn mjCMesh_MakePolygonNormals(self_ptr: *mut mjCMesh, dvert: *const f64); }
+    // SAFETY: self_ptr verified non-null; delegates to C++ method
+    unsafe { mjCMesh_MakePolygonNormals(self_ptr, dvert) }
 }
 
 /// C: mjCMesh::ComputeInertia (user/user_objects.h:1297)
@@ -2879,10 +2883,12 @@ pub fn mj_c_mesh_compute_inertia(self_ptr: *mut mjCMesh, inert: [f64; 6], CoM: [
 /// C: mjCMesh::GraphFaces (user/user_objects.h:1299)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_mesh_graph_faces(self_ptr: *mut mjCMesh) -> *mut i32 {
-    // WARNING: signature changed — verify body
-    // Previous params: (self_ptr : * mut mjCMesh)
-    // Previous return: * mut i32
-    extern "C" { fn mjCMesh_GraphFaces (self_ptr : * mut mjCMesh) -> * mut i32 ; } unsafe { mjCMesh_GraphFaces (self_ptr) }
+    if self_ptr.is_null() {
+        return core::ptr::null_mut();
+    }
+    extern "C" { fn mjCMesh_GraphFaces(self_ptr: *mut mjCMesh) -> *mut i32; }
+    // SAFETY: self_ptr verified non-null; delegates to C++ method
+    unsafe { mjCMesh_GraphFaces(self_ptr) }
 }
 
 /// C: mjCMesh::ComputeVolume (user/user_objects.h:1313)
@@ -3128,10 +3134,12 @@ pub fn mj_ch_field_load_png(self_ptr: *mut mjCHField, resource: *mut mjResource)
 /// C: mjCTexture::CopyFromSpec (user/user_objects.h:1465)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_texture_copy_from_spec(self_ptr: *mut mjCTexture) {
-    // WARNING: signature changed — verify body
-    // Previous params: (self_ptr : * mut mjCTexture)
-    // Previous return: ()
-    extern "C" { fn mjCTexture_CopyFromSpec (self_ptr : * mut mjCTexture) ; } unsafe { mjCTexture_CopyFromSpec (self_ptr) }
+    if self_ptr.is_null() {
+        return;
+    }
+    extern "C" { fn mjCTexture_CopyFromSpec(self_ptr: *mut mjCTexture); }
+    // SAFETY: self_ptr verified non-null; delegates to C++ method
+    unsafe { mjCTexture_CopyFromSpec(self_ptr) }
 }
 
 /// C: mjCTexture::PointToLocal (user/user_objects.h:1466)
@@ -3195,19 +3203,23 @@ pub fn mj_c_texture_get_cache_id(self_ptr: *mut mjCTexture, resource: *const mjR
 /// C: mjCTexture::Builtin2D (user/user_objects.h:1478)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_texture_builtin2d(self_ptr: *mut mjCTexture) {
-    // WARNING: signature changed — verify body
-    // Previous params: (self_ptr : * mut mjCTexture)
-    // Previous return: ()
-    extern "C" { fn mjCTexture_Builtin2D (self_ptr : * mut mjCTexture) ; } unsafe { mjCTexture_Builtin2D (self_ptr) }
+    if self_ptr.is_null() {
+        return;
+    }
+    extern "C" { fn mjCTexture_Builtin2D(self_ptr: *mut mjCTexture); }
+    // SAFETY: self_ptr verified non-null; delegates to C++ method
+    unsafe { mjCTexture_Builtin2D(self_ptr) }
 }
 
 /// C: mjCTexture::BuiltinCube (user/user_objects.h:1479)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_texture_builtin_cube(self_ptr: *mut mjCTexture) {
-    // WARNING: signature changed — verify body
-    // Previous params: (self_ptr : * mut mjCTexture)
-    // Previous return: ()
-    extern "C" { fn mjCTexture_BuiltinCube (self_ptr : * mut mjCTexture) ; } unsafe { mjCTexture_BuiltinCube (self_ptr) }
+    if self_ptr.is_null() {
+        return;
+    }
+    extern "C" { fn mjCTexture_BuiltinCube(self_ptr: *mut mjCTexture); }
+    // SAFETY: self_ptr verified non-null; delegates to C++ method
+    unsafe { mjCTexture_BuiltinCube(self_ptr) }
 }
 
 /// C: mjCTexture::Load2D (user/user_objects.h:1480)
@@ -3229,10 +3241,12 @@ pub fn mj_c_texture_load_cube_single(self_ptr: *mut mjCTexture, filename: string
 /// C: mjCTexture::LoadCubeSeparate (user/user_objects.h:1483)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_texture_load_cube_separate(self_ptr: *mut mjCTexture, vfs: *const mjVFS) {
-    // WARNING: signature changed — verify body
-    // Previous params: (self_ptr : * mut mjCTexture, vfs : * const mjVFS)
-    // Previous return: ()
-    extern "C" { fn mjCTexture_LoadCubeSeparate (self_ptr : * mut mjCTexture , vfs : * const mjVFS) ; } unsafe { mjCTexture_LoadCubeSeparate (self_ptr , vfs) }
+    if self_ptr.is_null() {
+        return;
+    }
+    extern "C" { fn mjCTexture_LoadCubeSeparate(self_ptr: *mut mjCTexture, vfs: *const mjVFS); }
+    // SAFETY: self_ptr verified non-null; delegates to C++ method
+    unsafe { mjCTexture_LoadCubeSeparate(self_ptr, vfs) }
 }
 
 /// C: mjCMaterial::CopyFromSpec (user/user_objects.h:1526)

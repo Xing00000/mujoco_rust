@@ -35,10 +35,12 @@ pub fn close_file(resource: *mut mjResource) {
 /// Calls: mju_decodeBase64
 #[allow(unused_variables, non_snake_case)]
 pub fn file_modified(resource: *const mjResource, timestamp: *const i8) -> i32 {
-    // WARNING: signature changed — verify body
-    // Previous params: (resource : * const mjResource, timestamp : * const i8)
-    // Previous return: i32
-    extern "C" { fn FileModified (resource : * const mjResource , timestamp : * const i8) -> i32 ; } unsafe { FileModified (resource , timestamp) }
+    if resource.is_null() {
+        return 0;
+    }
+    extern "C" { fn FileModified(resource: *const mjResource, timestamp: *const i8) -> i32; }
+    // SAFETY: resource verified non-null; delegates to C implementation
+    unsafe { FileModified(resource, timestamp) }
 }
 
 /// C: StripPathAndLower (user/user_vfs.cc:94)

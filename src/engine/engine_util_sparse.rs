@@ -622,9 +622,21 @@ pub fn mju_dot_sparse(vec1: *const f64, vec2: *const f64, nnz1: i32, ind1: *cons
 /// C: mju_compare (engine/engine_util_sparse.h:231)
 #[allow(unused_variables, non_snake_case)]
 pub fn mju_compare(vec1: *const i32, vec2: *const i32, n: i32) -> i32  {
-    extern "C" { fn mju_compare(vec1: *const i32, vec2: *const i32, n: i32) -> i32; }
-    // SAFETY: delegates to C implementation
-    unsafe { mju_compare(vec1, vec2, n) }
+    // SAFETY: vec1 and vec2 point to arrays of at least n elements per caller contract.
+    // Full translation of C: compares element-by-element, returns first difference sign.
+    unsafe {
+        for i in 0..n {
+            let a = *vec1.add(i as usize);
+            let b = *vec2.add(i as usize);
+            if a < b {
+                return -1;
+            }
+            if a > b {
+                return 1;
+            }
+        }
+        0
+    }
 }
 
 /// C: mj_mergeSorted (engine/engine_util_sparse.h:243)
@@ -644,9 +656,14 @@ pub fn mj_merge_sorted(merge: *mut i32, chain1: *const i32, n1: i32, chain2: *co
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mju_add_to_scl_scl(res: *mut f64, vec: *const f64, scl1: f64, scl2: f64, n: i32) {
-    extern "C" { fn mju_addToSclScl(res: *mut f64, vec: *const f64, scl1: f64, scl2: f64, n: i32); }
-    // SAFETY: delegates to C implementation
-    unsafe { mju_addToSclScl(res, vec, scl1, scl2, n) }
+    // SAFETY: res and vec point to arrays of at least n elements per caller contract.
+    // Full translation: res[i] = scl1*res[i] + scl2*vec[i]
+    unsafe {
+        for i in 0..n {
+            let idx = i as usize;
+            *res.add(idx) = scl1 * *res.add(idx) + scl2 * *vec.add(idx);
+        }
+    }
 }
 
 /// C: mju_combineSparse (engine/engine_util_sparse.h:311)

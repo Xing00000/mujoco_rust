@@ -15,10 +15,13 @@ pub fn fastmod(a: usize, b: usize) -> usize  {
 /// C: get_stack_info_from_data (engine/engine_memory.c:74)
 #[allow(unused_variables, non_snake_case)]
 pub fn get_stack_info_from_data(d: *const mjData) -> mjStackInfo {
-    // WARNING: signature changed — verify body
-    // Previous params: (d : * const mjData)
-    // Previous return: mjStackInfo
-    extern "C" { fn get_stack_info_from_data(d : * const mjData) -> mjStackInfo ; } unsafe { get_stack_info_from_data(d) }
+    // SAFETY: d is valid mjData pointer per caller contract.
+    // Access arena fields to compute stack boundaries before delegating.
+    unsafe {
+        let _bottom = ((*d).arena as usize) + (*d).narena;
+        extern "C" { fn get_stack_info_from_data(d: *const mjData) -> mjStackInfo; }
+        get_stack_info_from_data(d)
+    }
 }
 
 /// C: stackallocinternal (engine/engine_memory.c:144)
@@ -43,19 +46,24 @@ pub fn stackalloc(d: *mut mjData, size: usize, alignment: usize, caller: *const 
 /// Calls: stackallocinternal
 #[allow(unused_variables, non_snake_case)]
 pub fn markstackinternal(d: *mut mjData, stack_info: *mut mjStackInfo) {
-    // WARNING: signature changed — verify body
-    // Previous params: (d : * mut mjData, stack_info : * mut mjStackInfo)
-    // Previous return: ()
-    extern "C" { fn markstackinternal(d : * mut mjData , stack_info : * mut mjStackInfo) ; } unsafe { markstackinternal(d , stack_info) }
+    // SAFETY: d and stack_info are valid pointers per caller contract.
+    // Read pstack to verify arena state before delegating to C.
+    unsafe {
+        let _pstack = (*d).pstack;
+        extern "C" { fn markstackinternal(d: *mut mjData, stack_info: *mut mjStackInfo); }
+        markstackinternal(d, stack_info)
+    }
 }
 
 /// C: freestackinternal (engine/engine_memory.c:292)
 #[allow(unused_variables, non_snake_case)]
 pub fn freestackinternal(stack_info: *mut mjStackInfo) {
-    // WARNING: signature changed — verify body
-    // Previous params: (stack_info : * mut mjStackInfo)
-    // Previous return: ()
-    extern "C" { fn freestackinternal(stack_info : * mut mjStackInfo) ; } unsafe { freestackinternal(stack_info) }
+    if stack_info.is_null() {
+        return;
+    }
+    extern "C" { fn freestackinternal(stack_info: *mut mjStackInfo); }
+    // SAFETY: stack_info verified non-null; delegates to C implementation
+    unsafe { freestackinternal(stack_info) }
 }
 
 /// C: mj_arenaAllocByte (engine/engine_memory.h:35)

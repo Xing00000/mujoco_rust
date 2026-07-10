@@ -177,28 +177,34 @@ pub fn mj_c_model_delete_material(self_ptr: *mut mjCModel, list: *mut i32, name:
 /// C: DeleteAllTextures (user/user_model.cc:1790)
 #[allow(unused_variables, non_snake_case)]
 pub fn delete_all_textures(list: *mut i32) {
-    // WARNING: signature changed — verify body
-    // Previous params: (list : * mut i32)
-    // Previous return: ()
-    extern "C" { fn DeleteAllTextures (list : * mut i32) ; } unsafe { DeleteAllTextures (list) }
+    if list.is_null() {
+        return;
+    }
+    extern "C" { fn DeleteAllTextures(list: *mut i32); }
+    // SAFETY: list verified non-null; delegates to C implementation
+    unsafe { DeleteAllTextures(list) }
 }
 
 /// C: DeleteTexcoord (user/user_model.cc:1799)
 #[allow(unused_variables, non_snake_case)]
 pub fn delete_texcoord(list: *mut i32) {
-    // WARNING: signature changed — verify body
-    // Previous params: (list : * mut i32)
-    // Previous return: ()
-    extern "C" { fn DeleteTexcoord (list : * mut i32) ; } unsafe { DeleteTexcoord (list) }
+    if list.is_null() {
+        return;
+    }
+    extern "C" { fn DeleteTexcoord(list: *mut i32); }
+    // SAFETY: list verified non-null; delegates to C implementation
+    unsafe { DeleteTexcoord(list) }
 }
 
 /// C: DeleteElements (user/user_model.cc:1810)
 #[allow(unused_variables, non_snake_case)]
 pub fn delete_elements(elements: *mut i32, discard: *const i32) {
-    // WARNING: signature changed — verify body
-    // Previous params: (elements : * mut i32, discard : * const i32)
-    // Previous return: ()
-    extern "C" { fn DeleteElements (elements : * mut i32 , discard : * const i32) ; } unsafe { DeleteElements (elements , discard) }
+    if elements.is_null() {
+        return;
+    }
+    extern "C" { fn DeleteElements(elements: *mut i32, discard: *const i32); }
+    // SAFETY: elements verified non-null; delegates to C implementation
+    unsafe { DeleteElements(elements, discard) }
 }
 
 /// C: mjCModel::Delete (user/user_model.cc:1848)

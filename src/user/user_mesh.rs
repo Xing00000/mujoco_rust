@@ -235,8 +235,11 @@ pub fn mesh_polygon_paths(self_ptr: *mut MeshPolygon) -> i32 {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn compute_volume(x: *const f64, v: [i32; 3]) -> f64  {
+    if x.is_null() {
+        return 0.0;
+    }
     extern "C" { fn ComputeVolume(x: *const f64, v: [i32; 3]) -> f64; }
-    // SAFETY: delegates to C implementation
+    // SAFETY: x verified non-null; delegates to C implementation
     unsafe { ComputeVolume(x, v) }
 }
 
@@ -263,10 +266,12 @@ pub fn metric_tensor(metric: *mut f64, idx: i32, mu: f64, la: f64, basis: [[f64;
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn compute_basis(basis: [f64; 9], x: *const f64, v: [i32; 3], faceL: [i32; 2], faceR: [i32; 2], volume: f64) {
-    // WARNING: signature changed — verify body
-    // Previous params: (basis : [f64 ; 9], x : * const f64, v : [i32 ; 3], faceL : [i32 ; 2], faceR : [i32 ; 2], volume : f64)
-    // Previous return: ()
-    extern "C" { fn ComputeBasis (basis : [f64 ; 9] , x : * const f64 , v : [i32 ; 3] , faceL : [i32 ; 2] , faceR : [i32 ; 2] , volume : f64) ; } unsafe { ComputeBasis (basis , x , v , faceL , faceR , volume) }
+    if x.is_null() {
+        return;
+    }
+    extern "C" { fn ComputeBasis(basis: [f64; 9], x: *const f64, v: [i32; 3], faceL: [i32; 2], faceR: [i32; 2], volume: f64); }
+    // SAFETY: x verified non-null; delegates to C implementation
+    unsafe { ComputeBasis(basis, x, v, faceL, faceR, volume) }
 }
 
 /// C: ComputeStiffness (user/user_mesh.cc:3574)
@@ -277,10 +282,12 @@ pub fn compute_basis(basis: [f64; 9], x: *const f64, v: [i32; 3], faceL: [i32; 2
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn compute_stiffness(stiffness: *mut i32, body_pos: *const i32, v: *const i32, t: i32, E: f64, nu: f64, thickness: f64) {
-    // WARNING: signature changed — verify body
-    // Previous params: (stiffness : * mut i32, body_pos : * const i32, v : * const i32, t : i32, E : f64, nu : f64, thickness : f64)
-    // Previous return: ()
-    extern "C" { fn ComputeStiffness (stiffness : * mut i32 , body_pos : * const i32 , v : * const i32 , t : i32 , E : f64 , nu : f64 , thickness : f64) ; } unsafe { ComputeStiffness (stiffness , body_pos , v , t , E , nu , thickness) }
+    if stiffness.is_null() {
+        return;
+    }
+    extern "C" { fn ComputeStiffness(stiffness: *mut i32, body_pos: *const i32, v: *const i32, t: i32, E: f64, nu: f64, thickness: f64); }
+    // SAFETY: stiffness verified non-null; delegates to C implementation
+    unsafe { ComputeStiffness(stiffness, body_pos, v, t, E, nu, thickness) }
 }
 
 /// C: CreateFlapStencil (user/user_mesh.cc:3605)
@@ -302,8 +309,11 @@ pub fn create_flap_stencil(flaps: *mut i32, simplex: *const i32, edgeidx: *const
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn cot(x: *const f64, v0: i32, v1: i32, v2: i32) -> f64  {
+    if x.is_null() {
+        return 0.0;
+    }
     extern "C" { fn cot(x: *const f64, v0: i32, v1: i32, v2: i32) -> f64; }
-    // SAFETY: delegates to C implementation
+    // SAFETY: x verified non-null; delegates to C implementation
     unsafe { cot(x, v0, v1, v2) }
 }
 
@@ -431,10 +441,12 @@ pub fn compute_linear_stiffness2d(K: *mut i32, pos: *const f64, E: f64, nu: f64,
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn compute_warp_mode(warp: *mut f64, pos: *const f64, npe: i32, order: i32, normal_axis: i32) {
-    // WARNING: signature changed — verify body
-    // Previous params: (warp : * mut f64, pos : * const f64, npe : i32, order : i32, normal_axis : i32)
-    // Previous return: ()
-    extern "C" { fn ComputeWarpMode (warp : * mut f64 , pos : * const f64 , npe : i32 , order : i32 , normal_axis : i32) ; } unsafe { ComputeWarpMode (warp , pos , npe , order , normal_axis) }
+    if warp.is_null() || pos.is_null() {
+        return;
+    }
+    extern "C" { fn ComputeWarpMode(warp: *mut f64, pos: *const f64, npe: i32, order: i32, normal_axis: i32); }
+    // SAFETY: warp and pos verified non-null; delegates to C implementation
+    unsafe { ComputeWarpMode(warp, pos, npe, order, normal_axis) }
 }
 
 /// C: ComputeWarpStiffness (user/user_mesh.cc:4104)
@@ -445,10 +457,12 @@ pub fn compute_warp_mode(warp: *mut f64, pos: *const f64, npe: i32, order: i32, 
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn compute_warp_stiffness(pos: *const f64, npe: i32, normal_axis: i32, E: f64, nu: f64, thickness: f64) -> f64 {
-    // WARNING: signature changed — verify body
-    // Previous params: (pos : * const f64, npe : i32, normal_axis : i32, E : f64, nu : f64, thickness : f64)
-    // Previous return: f64
-    extern "C" { fn ComputeWarpStiffness (pos : * const f64 , npe : i32 , normal_axis : i32 , E : f64 , nu : f64 , thickness : f64) -> f64 ; } unsafe { ComputeWarpStiffness (pos , npe , normal_axis , E , nu , thickness) }
+    if pos.is_null() {
+        return 0.0;
+    }
+    extern "C" { fn ComputeWarpStiffness(pos: *const f64, npe: i32, normal_axis: i32, E: f64, nu: f64, thickness: f64) -> f64; }
+    // SAFETY: pos verified non-null; delegates to C implementation
+    unsafe { ComputeWarpStiffness(pos, npe, normal_axis, E, nu, thickness) }
 }
 
 /// C: EigendecomposeStiffness (user/user_mesh.cc:4130)
@@ -459,10 +473,12 @@ pub fn compute_warp_stiffness(pos: *const f64, npe: i32, normal_axis: i32, E: f6
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn eigendecompose_stiffness(K_cell_data: *const f64, out: *mut f64, ndof: i32) -> i32 {
-    // WARNING: signature changed — verify body
-    // Previous params: (K_cell_data : * const f64, out : * mut f64, ndof : i32)
-    // Previous return: i32
-    extern "C" { fn EigendecomposeStiffness (K_cell_data : * const f64 , out : * mut f64 , ndof : i32) -> i32 ; } unsafe { EigendecomposeStiffness (K_cell_data , out , ndof) }
+    if K_cell_data.is_null() || out.is_null() {
+        return -1;
+    }
+    extern "C" { fn EigendecomposeStiffness(K_cell_data: *const f64, out: *mut f64, ndof: i32) -> i32; }
+    // SAFETY: K_cell_data and out verified non-null; delegates to C implementation
+    unsafe { EigendecomposeStiffness(K_cell_data, out, ndof) }
 }
 
 /// C: ComputeInterpBending (user/user_mesh.cc:4391)

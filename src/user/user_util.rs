@@ -966,8 +966,11 @@ pub fn file_path_is_abs(self_ptr: *mut FilePath) -> bool {
 /// The path is stored as a libc++ std::string (24 bytes with SSO on macOS).
 #[allow(unused_variables, non_snake_case)]
 pub fn file_path_abs_prefix(self_ptr: *mut FilePath) -> i32 {
+    if self_ptr.is_null() {
+        return 0;
+    }
     extern "C" { #[link_name = "_ZN6mujoco4user8FilePath9AbsPrefixEv"] fn FilePath_AbsPrefix(self_ptr: *mut FilePath) -> i32; }
-    // SAFETY: delegates to C++ FilePath::AbsPrefix via mangled name
+    // SAFETY: self_ptr verified non-null; delegates to C++ FilePath::AbsPrefix
     unsafe { FilePath_AbsPrefix(self_ptr) }
 }
 
@@ -992,10 +995,12 @@ pub fn file_path_str_lower(self_ptr: *mut FilePath) -> std__string {
 /// C: FilePath::Ext (user/user_util.h:205)
 #[allow(unused_variables, non_snake_case)]
 pub fn file_path_ext(self_ptr: *mut FilePath) -> std__string {
-    // WARNING: signature changed — verify body
-    // Previous params: (self_ptr : * mut FilePath)
-    // Previous return: std__string
-    extern "C" { fn FilePath_Ext (self_ptr : * mut FilePath) -> std__string ; } unsafe { FilePath_Ext (self_ptr) }
+    if self_ptr.is_null() {
+        return unsafe { core::mem::zeroed() };
+    }
+    extern "C" { fn FilePath_Ext(self_ptr: *mut FilePath) -> std__string; }
+    // SAFETY: self_ptr verified non-null; delegates to C++ FilePath::Ext
+    unsafe { FilePath_Ext(self_ptr) }
 }
 
 /// C: FilePath::StripExt (user/user_util.h:211)
@@ -1073,10 +1078,12 @@ pub fn file_path_is_separator(c: i8) -> bool {
 /// C: FilePath::Combine (user/user_util.h:231)
 #[allow(unused_variables, non_snake_case)]
 pub fn file_path_combine(s1: *const std__string, s2: *const std__string) -> std__string {
-    // WARNING: signature changed — verify body
-    // Previous params: (s1 : * const std__string, s2 : * const std__string)
-    // Previous return: std__string
-    extern "C" { fn FilePath_Combine (s1 : * const std__string , s2 : * const std__string) -> std__string ; } unsafe { FilePath_Combine (s1 , s2) }
+    if s1.is_null() || s2.is_null() {
+        return unsafe { core::mem::zeroed() };
+    }
+    extern "C" { fn FilePath_Combine(s1: *const std__string, s2: *const std__string) -> std__string; }
+    // SAFETY: s1 and s2 verified non-null; delegates to C++ implementation
+    unsafe { FilePath_Combine(s1, s2) }
 }
 
 /// C: FilePath::FilePathFast (user/user_util.h:234)

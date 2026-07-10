@@ -7,8 +7,11 @@ use crate::types::*;
 /// C: strklen (engine/engine_plugin.cc:58)
 #[allow(unused_variables, non_snake_case)]
 pub fn strklen(s: *const i8) -> i32  {
+    if s.is_null() {
+        return 0;
+    }
     extern "C" { fn strklen(s: *const i8) -> i32; }
-    // SAFETY: delegates to C implementation
+    // SAFETY: s verified non-null; delegates to C implementation
     unsafe { strklen(s) }
 }
 
