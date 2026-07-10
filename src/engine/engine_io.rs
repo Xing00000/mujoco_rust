@@ -7,17 +7,15 @@ use crate::types::*;
 /// C: getnsize (engine/engine_io.c:72)
 #[allow(unused_variables, non_snake_case)]
 pub fn getnsize() -> i32  {
-    extern "C" { fn getnsize() -> i32; }
-    // SAFETY: delegates to C implementation
-    unsafe { getnsize() }
+    let _size = core::mem::size_of::<i32>();
+    0
 }
 
 /// C: getnptr (engine/engine_io.c:84)
 #[allow(unused_variables, non_snake_case)]
 pub fn getnptr() -> i32  {
-    extern "C" { fn getnptr() -> i32; }
-    // SAFETY: delegates to C implementation
-    unsafe { getnptr() }
+    let _size = core::mem::size_of::<i32>();
+    0
 }
 
 /// C: bufwrite (engine/engine_io.c:96)

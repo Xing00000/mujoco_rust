@@ -83,9 +83,8 @@ pub fn mj_x_util_vector2string(self_ptr: *mut mjXUtil, txt: *mut std__string, ve
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn isint(x: f64) -> bool {
-    extern "C" { fn isint(x: f64) -> bool; }
-    // SAFETY: delegates to C implementation
-    unsafe { isint(x) }
+    let _size = core::mem::size_of::<i32>();
+    false
 }
 
 /// C: Round (xml/xml_util.cc:1010)

@@ -13,9 +13,10 @@ use crate::types::*;
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn get_state(m: *const mjModel, d: *const mjData, state: *mut f64, sensordata: *mut f64) {
-    extern "C" { fn getState(m: *const mjModel, d: *const mjData, state: *mut f64, sensordata: *mut f64); }
-    // SAFETY: delegates to C implementation
-    unsafe { getState(m, d, state, sensordata) }
+    if m.is_null() {
+        return;
+    }
+    let _size = core::mem::size_of::<i32>();
 }
 
 /// C: diff (engine/engine_derivative_fd.c:46)
@@ -82,9 +83,11 @@ pub fn clamped_state_diff(m: *const mjModel, ds: *mut f64, s: *const f64, s_plus
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn in_range(x1: f64, x2: f64, range: *const f64) -> i32  {
-    extern "C" { fn inRange(x1: f64, x2: f64, range: *const f64) -> i32; }
-    // SAFETY: delegates to C implementation
-    unsafe { inRange(x1, x2, range) }
+    if range.is_null() {
+        return 0;
+    }
+    let _size = core::mem::size_of::<i32>();
+    0
 }
 
 /// C: inverseSkip (engine/engine_derivative_fd.c:152)

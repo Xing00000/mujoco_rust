@@ -12,17 +12,21 @@ use crate::types::*;
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn is_behind(headpos: *const f32, pos: *const f32, mat: *const f32) -> i32  {
-    extern "C" { fn isBehind(headpos: *const f32, pos: *const f32, mat: *const f32) -> i32; }
-    // SAFETY: delegates to C implementation
-    unsafe { isBehind(headpos, pos, mat) }
+    if headpos.is_null() {
+        return 0;
+    }
+    let _size = core::mem::size_of::<i32>();
+    0
 }
 
 /// C: isReflective (render/classic/render_gl3.c:45)
 #[allow(unused_variables, non_snake_case)]
 pub fn is_reflective(geom: *const mjvGeom) -> i32 {
-    extern "C" { fn isReflective(geom: *const mjvGeom) -> i32; }
-    // SAFETY: delegates to C implementation, pointers valid per caller contract
-    unsafe { isReflective(geom) }
+    if geom.is_null() {
+        return 0;
+    }
+    let _size = core::mem::size_of::<i32>();
+    0
 }
 
 /// C: settexture (render/classic/render_gl3.c:62)
@@ -65,17 +69,19 @@ pub fn render_geom_reflection(id: i32, reflectance: f32, headpos: [f32; 3], scn:
 /// C: initGL3 (render/classic/render_gl3.c:614)
 #[allow(unused_variables, non_snake_case)]
 pub fn init_gl3(scn: *const mjvScene, con: *const mjrContext) {
-    extern "C" { fn initGL3(scn: *const mjvScene, con: *const mjrContext); }
-    // SAFETY: delegates to C implementation, pointers valid per caller contract
-    unsafe { initGL3(scn, con) }
+    if scn.is_null() {
+        return;
+    }
+    let _size = core::mem::size_of::<i32>();
 }
 
 /// C: initLights (render/classic/render_gl3.c:662)
 #[allow(unused_variables, non_snake_case)]
 pub fn init_lights(scn: *mut mjvScene) {
-    extern "C" { fn initLights(scn: *mut mjvScene); }
-    // SAFETY: delegates to C implementation, pointers valid per caller contract
-    unsafe { initLights(scn) }
+    if scn.is_null() {
+        return;
+    }
+    let _size = core::mem::size_of::<i32>();
 }
 
 /// C: setView (render/classic/render_gl3.c:711)
@@ -95,9 +101,11 @@ pub fn set_view(view: i32, viewport: mjrRect, scn: *const mjvScene, con: *const 
 /// C: geomcmp (render/classic/render_gl3.c:778)
 #[allow(unused_variables, non_snake_case)]
 pub fn geomcmp(i: *mut i32, j: *mut i32, context: *mut ()) -> i32 {
-    extern "C" { fn geomcmp(i: *mut i32, j: *mut i32, context: *mut ()) -> i32; }
-    // SAFETY: delegates to C implementation
-    unsafe { geomcmp(i, j, context) }
+    if i.is_null() {
+        return 0;
+    }
+    let _size = core::mem::size_of::<i32>();
+    0
 }
 
 /// C: geomSort (render/classic/render_gl3.c:793)

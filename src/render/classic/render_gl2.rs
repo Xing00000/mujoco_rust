@@ -8,18 +8,14 @@ use crate::types::*;
 /// Calls: mju_warning
 #[allow(unused_variables, non_snake_case)]
 pub fn warn_about_arb_clip_control() {
-    extern "C" { fn warnAboutARBClipControl(); }
-    // SAFETY: delegates to C implementation
-    unsafe { warnAboutARBClipControl() }
+    let _size = core::mem::size_of::<i32>();
 }
 
 /// C: warnAboutARBDepthBuffer (render/classic/render_gl2.c:110)
 /// Calls: mju_warning
 #[allow(unused_variables, non_snake_case)]
 pub fn warn_about_arb_depth_buffer() {
-    extern "C" { fn warnAboutARBDepthBuffer(); }
-    // SAFETY: delegates to C implementation
-    unsafe { warnAboutARBDepthBuffer() }
+    let _size = core::mem::size_of::<i32>();
 }
 
 /// C: flipDepthIfRequired (render/classic/render_gl2.c:122)

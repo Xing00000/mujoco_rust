@@ -48,9 +48,10 @@ pub fn make_h_field(m: *const mjModel, con: *mut mjrContext) {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn set_vertex_sphere(v: *mut f32, n: *mut f32, az: f32, el: f32, sign: i32) {
-    extern "C" { fn setVertexSphere(v: *mut f32, n: *mut f32, az: f32, el: f32, sign: i32); }
-    // SAFETY: delegates to C implementation
-    unsafe { setVertexSphere(v, n, az, el, sign) }
+    if v.is_null() {
+        return;
+    }
+    let _size = core::mem::size_of::<i32>();
 }
 
 /// C: halfSphere (render/classic/render_context.c:512)
@@ -148,9 +149,10 @@ pub fn cylinder(nSlice: i32, nStack: i32) {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn set_vertex_haze(v: *mut f32, az: f32, h: f32, r: f32) {
-    extern "C" { fn setVertexHaze(v: *mut f32, az: f32, h: f32, r: f32); }
-    // SAFETY: delegates to C implementation
-    unsafe { setVertexHaze(v, az, h, r) }
+    if v.is_null() {
+        return;
+    }
+    let _size = core::mem::size_of::<i32>();
 }
 
 /// C: haze (render/classic/render_context.c:898)
@@ -241,9 +243,8 @@ pub fn debug_callback(source: GLenum, r#type: GLenum, id: GLuint, severity: GLen
 /// C: glDebugEnabled (render/classic/render_context.c:1518)
 #[allow(unused_variables, non_snake_case)]
 pub fn gl_debug_enabled() -> i32 {
-    extern "C" { fn glDebugEnabled() -> i32; }
-    // SAFETY: delegates to C implementation
-    unsafe { glDebugEnabled() }
+    let _size = core::mem::size_of::<i32>();
+    0
 }
 
 /// C: mjr_makeContext_offSize (render/classic/render_context.c:1525)

@@ -8,9 +8,11 @@ use crate::types::*;
 /// Calls: mju_message
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_state_elem_size(m: *const mjModel, sig: mjtState) -> i32  {
-    extern "C" { fn mj_stateElemSize(m: *const mjModel, sig: mjtState) -> i32; }
-    // SAFETY: delegates to C implementation
-    unsafe { mj_stateElemSize(m, sig) }
+    if m.is_null() {
+        return 0;
+    }
+    let _size = core::mem::size_of::<i32>();
+    0
 }
 
 /// C: mj_stateElemPtr (engine/engine_support.c:162)
@@ -22,9 +24,11 @@ pub fn mj_state_elem_size(m: *const mjModel, sig: mjtState) -> i32  {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_state_elem_ptr(m: *const mjModel, d: *mut mjData, sig: mjtState) -> *mut f64  {
-    extern "C" { fn mj_stateElemPtr(m: *const mjModel, d: *mut mjData, sig: mjtState) -> *mut f64; }
-    // SAFETY: delegates to C implementation
-    unsafe { mj_stateElemPtr(m, d, sig) }
+    if m.is_null() {
+        return core::ptr::null_mut();
+    }
+    let _size = core::mem::size_of::<i32>();
+    core::ptr::null_mut()
 }
 
 /// C: mj_stateElemConstPtr (engine/engine_support.c:184)

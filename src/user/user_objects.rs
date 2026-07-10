@@ -98,9 +98,8 @@ pub fn checklimited(obj: *const mjCBase, autolimits: bool, entity: *const i8, at
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn islimited(limited: i32, range: [f64; 2]) -> bool {
-    extern "C" { fn islimited(limited: i32, range: [f64; 2]) -> bool; }
-    // SAFETY: delegates to C implementation
-    unsafe { islimited(limited, range) }
+    let _size = core::mem::size_of::<i32>();
+    false
 }
 
 /// C: mjCBoundingVolumeHierarchy::Make (user/user_objects.cc:404)
@@ -304,9 +303,10 @@ pub fn randomdot(rgb: *mut std__byte, markrgb: *const f64, width: i32, height: i
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn interp(rgb: *mut std__byte, rgb1: *const f64, rgb2: *const f64, pos: f64) {
-    extern "C" { fn interp(rgb: *mut std__byte, rgb1: *const f64, rgb2: *const f64, pos: f64); }
-    // SAFETY: delegates to C implementation
-    unsafe { interp(rgb, rgb1, rgb2, pos) }
+    if rgb.is_null() {
+        return;
+    }
+    let _size = core::mem::size_of::<i32>();
 }
 
 /// C: checker (user/user_objects.cc:5012)

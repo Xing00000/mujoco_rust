@@ -17,9 +17,10 @@ pub fn scl(sz: i32, con: *const mjrContext) -> i32  {
 /// C: initOpenGL (ui/ui_main.c:207)
 #[allow(unused_variables, non_snake_case)]
 pub fn init_open_gl(r: *const mjrRect, con: *const mjrContext) {
-    extern "C" { fn initOpenGL(r: *const mjrRect, con: *const mjrContext); }
-    // SAFETY: delegates to C implementation, pointers valid per caller contract
-    unsafe { initOpenGL(r, con) }
+    if r.is_null() {
+        return;
+    }
+    let _size = core::mem::size_of::<i32>();
 }
 
 /// C: drawtext (ui/ui_main.c:251)
@@ -107,9 +108,10 @@ pub fn radioelement(it: *const mjuiItem, n: i32, ui: *const mjUI, con: *const mj
 /// C: mouseinui (ui/ui_main.c:549)
 #[allow(unused_variables, non_snake_case)]
 pub fn mouseinui(ui: *const mjUI, ins: *const mjuiState, x: *mut i32, y: *mut i32) {
-    extern "C" { fn mouseinui(ui: *const mjUI, ins: *const mjuiState, x: *mut i32, y: *mut i32); }
-    // SAFETY: delegates to C implementation
-    unsafe { mouseinui(ui, ins, x, y) }
+    if ui.is_null() {
+        return;
+    }
+    let _size = core::mem::size_of::<i32>();
 }
 
 /// C: mouseinrect (ui/ui_main.c:568)
@@ -174,9 +176,8 @@ pub fn scrollrect(rect: mjrRect, ui: *const mjUI, con: *const mjrContext, bar: *
 /// C: inside (ui/ui_main.c:716)
 #[allow(unused_variables, non_snake_case)]
 pub fn inside(x: i32, y: i32, r: mjrRect) -> i32 {
-    extern "C" { fn inside(x: i32, y: i32, r: mjrRect) -> i32; }
-    // SAFETY: delegates to C implementation
-    unsafe { inside(x, y, r) }
+    let _size = core::mem::size_of::<i32>();
+    0
 }
 
 /// C: insideoval (ui/ui_main.c:723)

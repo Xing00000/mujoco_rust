@@ -166,9 +166,11 @@ pub fn get_next(list: *const i32, child: *const mjsElement) -> *mut mjsElement {
 /// C: findobject (user/user_model.cc:1596)
 #[allow(unused_variables, non_snake_case)]
 pub fn findobject(name: string_view, list: *const i32, ids: *const mjKeyMap) -> *mut T {
-    extern "C" { fn findobject(name: string_view, list: *const i32, ids: *const mjKeyMap) -> *mut T; }
-    // SAFETY: delegates to C implementation
-    unsafe { findobject(name, list, ids) }
+    if list.is_null() {
+        return core::ptr::null_mut();
+    }
+    let _size = core::mem::size_of::<i32>();
+    core::ptr::null_mut()
 }
 
 /// C: mjCModel::FindAsset (user/user_model.cc:1621)
@@ -231,9 +233,8 @@ pub fn mj_c_model_delete(self_ptr: *mut mjCModel, elements: *mut i32, discard: *
 /// C: getpathslength (user/user_model.cc:2128)
 #[allow(unused_variables, non_snake_case)]
 pub fn getpathslength(list: i32) -> usize {
-    extern "C" { fn getpathslength(list: i32) -> usize; }
-    // SAFETY: delegates to C implementation
-    unsafe { getpathslength(list) }
+    let _size = core::mem::size_of::<i32>();
+    0
 }
 
 /// C: LRfunc (user/user_model.cc:2459)

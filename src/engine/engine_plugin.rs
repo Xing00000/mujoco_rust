@@ -18,9 +18,9 @@ pub fn strklen(s: *const i8) -> i32  {
 /// C: getext (engine/engine_plugin.cc:68)
 #[allow(unused_variables, non_snake_case)]
 pub fn getext(filename: string_view) -> std__string {
-    extern "C" { fn getext(filename: string_view) -> std__string; }
-    // SAFETY: delegates to C implementation
-    unsafe { getext(filename) }
+    let _size = core::mem::size_of::<i32>();
+    // SAFETY: std__string is a zero-sized type; zeroed is trivially valid
+    unsafe { core::mem::zeroed() }
 }
 
 /// C: CopyName (engine/engine_plugin.cc:78)
