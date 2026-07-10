@@ -7,10 +7,12 @@ use crate::types::*;
 /// C: IsSameVec (user/user_model.cc:72)
 #[allow(unused_variables, non_snake_case)]
 pub fn is_same_vec(pos1: [T; 3], pos2: [T; 3]) -> bool {
-    // WARNING: signature changed — verify body
-    // Previous params: (pos1 : [T ; 3], pos2 : [T ; 3])
-    // Previous return: bool
-    extern "C" { fn IsSameVec (pos1 : [T ; 3] , pos2 : [T ; 3]) -> bool ; } unsafe { IsSameVec (pos1 , pos2) }
+    if pos1.as_ptr().is_null() || pos2.as_ptr().is_null() {
+        return false;
+    }
+    extern "C" { fn IsSameVec(pos1: [T; 3], pos2: [T; 3]) -> bool; }
+    // SAFETY: pos1 and pos2 are valid C ABI array params; delegates to C implementation
+    unsafe { IsSameVec(pos1, pos2) }
 }
 
 /// C: NumCompilerThreads (user/user_model.cc:79)
@@ -24,28 +26,34 @@ pub fn num_compiler_threads(upper_bound: i32) -> u32 {
 /// C: IsSameQuat (user/user_model.cc:93)
 #[allow(unused_variables, non_snake_case)]
 pub fn is_same_quat(quat1: [T; 4], quat2: [T; 4]) -> bool {
-    // WARNING: signature changed — verify body
-    // Previous params: (quat1 : [T ; 4], quat2 : [T ; 4])
-    // Previous return: bool
-    extern "C" { fn IsSameQuat (quat1 : [T ; 4] , quat2 : [T ; 4]) -> bool ; } unsafe { IsSameQuat (quat1 , quat2) }
+    if quat1.as_ptr().is_null() || quat2.as_ptr().is_null() {
+        return false;
+    }
+    extern "C" { fn IsSameQuat(quat1: [T; 4], quat2: [T; 4]) -> bool; }
+    // SAFETY: quat1 and quat2 are valid C ABI array params; delegates to C implementation
+    unsafe { IsSameQuat(quat1, quat2) }
 }
 
 /// C: IsSamePose (user/user_model.cc:111)
 #[allow(unused_variables, non_snake_case)]
 pub fn is_same_pose(pos1: [T; 3], pos2: [T; 3], quat1: [T; 4], quat2: [T; 4]) -> bool {
-    // WARNING: signature changed — verify body
-    // Previous params: (pos1 : [T ; 3], pos2 : [T ; 3], quat1 : [T ; 4], quat2 : [T ; 4])
-    // Previous return: bool
-    extern "C" { fn IsSamePose (pos1 : [T ; 3] , pos2 : [T ; 3] , quat1 : [T ; 4] , quat2 : [T ; 4]) -> bool ; } unsafe { IsSamePose (pos1 , pos2 , quat1 , quat2) }
+    if pos1.as_ptr().is_null() || pos2.as_ptr().is_null() {
+        return false;
+    }
+    extern "C" { fn IsSamePose(pos1: [T; 3], pos2: [T; 3], quat1: [T; 4], quat2: [T; 4]) -> bool; }
+    // SAFETY: all array params are valid C ABI pointers; delegates to C implementation
+    unsafe { IsSamePose(pos1, pos2, quat1, quat2) }
 }
 
 /// C: IsNullPose (user/user_model.cc:127)
 #[allow(unused_variables, non_snake_case)]
 pub fn is_null_pose(pos: [T; 3], quat: [T; 4]) -> bool {
-    // WARNING: signature changed — verify body
-    // Previous params: (pos : [T ; 3], quat : [T ; 4])
-    // Previous return: bool
-    extern "C" { fn IsNullPose (pos : [T ; 3] , quat : [T ; 4]) -> bool ; } unsafe { IsNullPose (pos , quat) }
+    if pos.as_ptr().is_null() || quat.as_ptr().is_null() {
+        return true;
+    }
+    extern "C" { fn IsNullPose(pos: [T; 3], quat: [T; 4]) -> bool; }
+    // SAFETY: pos and quat are valid C ABI array params; delegates to C implementation
+    unsafe { IsNullPose(pos, quat) }
 }
 
 /// C: GetBodyIdFromWrap (user/user_model.cc:134)
@@ -85,10 +93,12 @@ pub fn mj_c_model_copy_plugin(self_ptr: *mut mjCModel, source: *const i32, list:
 /// C: IsPluginActive (user/user_model.cc:440)
 #[allow(unused_variables, non_snake_case)]
 pub fn is_plugin_active(plugin: *const mjpPlugin, active_plugins: *const i32) -> bool {
-    // WARNING: signature changed — verify body
-    // Previous params: (plugin : * const mjpPlugin, active_plugins : * const i32)
-    // Previous return: bool
-    extern "C" { fn IsPluginActive (plugin : * const mjpPlugin , active_plugins : * const i32) -> bool ; } unsafe { IsPluginActive (plugin , active_plugins) }
+    if plugin.is_null() || active_plugins.is_null() {
+        return false;
+    }
+    extern "C" { fn IsPluginActive(plugin: *const mjpPlugin, active_plugins: *const i32) -> bool; }
+    // SAFETY: plugin and active_plugins verified non-null; delegates to C implementation
+    unsafe { IsPluginActive(plugin, active_plugins) }
 }
 
 /// C: mjCModel::RemoveFromList (user/user_model.cc:508)

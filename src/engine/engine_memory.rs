@@ -204,9 +204,11 @@ pub fn mj_stack_alloc_int(d: *mut mjData, size: usize) -> *mut i32 {
 /// C: mj_clearEfc (engine/engine_memory.h:70)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_clear_efc(d: *mut mjData) {
-    // WARNING: signature changed — verify body
-    // Previous params: (d : * mut mjData)
-    // Previous return: ()
-    extern "C" { fn mj_clearEfc(d : * mut mjData) ; } unsafe { mj_clearEfc(d) }
+    if d.is_null() {
+        return;
+    }
+    extern "C" { fn mj_clearEfc(d: *mut mjData); }
+    // SAFETY: d verified non-null; delegates to C implementation
+    unsafe { mj_clearEfc(d) }
 }
 

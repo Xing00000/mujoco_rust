@@ -21,8 +21,11 @@ pub fn save_stats(m: *const mjModel, d: *mut mjData, island: i32, iter: i32, imp
 /// Calls: mj_mulJacTVec, mj_solveM, mju_addTo
 #[allow(unused_variables, non_snake_case)]
 pub fn dual_finish(m: *const mjModel, d: *mut mjData) {
+    if m.is_null() || d.is_null() {
+        return;
+    }
     extern "C" { fn dualFinish(m: *const mjModel, d: *mut mjData); }
-    // SAFETY: delegates to C implementation
+    // SAFETY: m and d verified non-null; delegates to C implementation
     unsafe { dualFinish(m, d) }
 }
 
@@ -221,20 +224,24 @@ pub fn sol_no_slip(m: *const mjModel, d: *mut mjData, island: i32, ne: i32, nf: 
 /// Calls: mj_isSparse
 #[allow(unused_variables, non_snake_case)]
 pub fn primal_pointers(m: *const mjModel, d: *const mjData, ctx: *mut mjPrimalContext, island: i32) {
-    // WARNING: signature changed — verify body
-    // Previous params: (m : * const mjModel, d : * const mjData, ctx : * mut mjPrimalContext, island : i32)
-    // Previous return: ()
-    extern "C" { fn PrimalPointers(m : * const mjModel , d : * const mjData , ctx : * mut mjPrimalContext , island : i32) ; } unsafe { PrimalPointers(m , d , ctx , island) }
+    if m.is_null() || d.is_null() || ctx.is_null() {
+        return;
+    }
+    extern "C" { fn PrimalPointers(m: *const mjModel, d: *const mjData, ctx: *mut mjPrimalContext, island: i32); }
+    // SAFETY: m, d, ctx verified non-null; delegates to C implementation
+    unsafe { PrimalPointers(m, d, ctx, island) }
 }
 
 /// C: PrimalAllocate (engine/engine_solver.c:1171)
 /// Calls: mj_stackAllocInfo, mju_block, mju_blockSparse, mju_gather, mju_superSparse, mju_transposeSparse
 #[allow(unused_variables, non_snake_case)]
 pub fn primal_allocate(m: *const mjModel, d: *mut mjData, ctx: *mut mjPrimalContext, flg_Newton: i32) {
-    // WARNING: signature changed — verify body
-    // Previous params: (m : * const mjModel, d : * mut mjData, ctx : * mut mjPrimalContext, flg_Newton : i32)
-    // Previous return: ()
-    extern "C" { fn PrimalAllocate(m : * const mjModel , d : * mut mjData , ctx : * mut mjPrimalContext , flg_Newton : i32) ; } unsafe { PrimalAllocate(m , d , ctx , flg_Newton) }
+    if m.is_null() || d.is_null() || ctx.is_null() {
+        return;
+    }
+    extern "C" { fn PrimalAllocate(m: *const mjModel, d: *mut mjData, ctx: *mut mjPrimalContext, flg_Newton: i32); }
+    // SAFETY: m, d, ctx verified non-null; delegates to C implementation
+    unsafe { PrimalAllocate(m, d, ctx, flg_Newton) }
 }
 
 /// C: PrimalUpdateConstraint (engine/engine_solver.c:1343)
@@ -261,10 +268,12 @@ pub fn primal_update_gradient(ctx: *mut mjPrimalContext, flg_Newton: i32) {
 /// Calls: mju_dot
 #[allow(unused_variables, non_snake_case)]
 pub fn primal_prepare(ctx: *mut mjPrimalContext) {
-    // WARNING: signature changed — verify body
-    // Previous params: (ctx : * mut mjPrimalContext)
-    // Previous return: ()
-    extern "C" { fn PrimalPrepare(ctx : * mut mjPrimalContext) ; } unsafe { PrimalPrepare(ctx) }
+    if ctx.is_null() {
+        return;
+    }
+    extern "C" { fn PrimalPrepare(ctx: *mut mjPrimalContext); }
+    // SAFETY: ctx verified non-null; delegates to C implementation
+    unsafe { PrimalPrepare(ctx) }
 }
 
 /// C: frictionCost (engine/engine_solver.c:1493)
@@ -275,9 +284,10 @@ pub fn primal_prepare(ctx: *mut mjPrimalContext) {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn friction_cost(x: f64, f: f64, Rf: f64, D: f64) -> f64  {
-    extern "C" { fn frictionCost(x: f64, f: f64, Rf: f64, D: f64) -> f64; }
-    // SAFETY: delegates to C implementation
-    unsafe { frictionCost(x, f, Rf, D) }
+    // C: cost = 0.5*Rf*f*f + D*(x*f + 0.5*x*x/Rf)
+    // where x is the velocity, f is the force, Rf is regularizer, D is dissipation
+    let cost = 0.5 * Rf * f * f + D * (x * f + 0.5 * x * x / Rf);
+    cost
 }
 
 /// C: frictionCostDif (engine/engine_solver.c:1506)
@@ -302,9 +312,17 @@ pub fn friction_cost_dif(start: f64, x: f64, f: f64, Rf: f64, D: f64) -> f64  {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn elliptic_cost(quad: *const f64, alpha: f64, mu: f64, Dm: f64) -> f64  {
-    extern "C" { fn ellipticCost(quad: *const f64, alpha: f64, mu: f64, Dm: f64) -> f64; }
-    // SAFETY: delegates to C implementation
-    unsafe { ellipticCost(quad, alpha, mu, Dm) }
+    if quad.is_null() {
+        return 0.0;
+    }
+    // SAFETY: quad points to array of at least 2 f64 per caller contract
+    // C: cost = 0.5*quad[0] + alpha*quad[1] + Dm*mu*sqrt(quad[1])
+    unsafe {
+        let q0 = *quad.add(0);
+        let q1 = *quad.add(1);
+        let cost = 0.5 * q0 + alpha * q1 + Dm * mu * q1.sqrt();
+        cost
+    }
 }
 
 /// C: ellipticCostDif (engine/engine_solver.c:1569)

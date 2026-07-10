@@ -80,8 +80,11 @@ pub fn free_model_buffers(m: *mut mjModel) {
 /// Calls: mju_message
 #[allow(unused_variables, non_snake_case)]
 pub fn check_db_sparse(m: *const mjModel) {
+    if m.is_null() {
+        return;
+    }
     extern "C" { fn checkDBSparse(m: *const mjModel); }
-    // SAFETY: delegates to C implementation
+    // SAFETY: m verified non-null; delegates to C implementation
     unsafe { checkDBSparse(m) }
 }
 

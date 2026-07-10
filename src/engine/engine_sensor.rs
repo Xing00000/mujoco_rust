@@ -306,9 +306,11 @@ pub fn mj_energy_pos(m: *const mjModel, d: *mut mjData) {
 /// Calls: mj_freeStack, mj_markStack, mj_mulM, mj_stackAllocInfo, mju_dot
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_energy_vel(m: *const mjModel, d: *mut mjData) {
-    // WARNING: signature changed — verify body
-    // Previous params: (m : * const mjModel, d : * mut mjData)
-    // Previous return: ()
-    extern "C" { fn mj_energyVel(m : * const mjModel , d : * mut mjData) ; } unsafe { mj_energyVel(m , d) }
+    if m.is_null() || d.is_null() {
+        return;
+    }
+    extern "C" { fn mj_energyVel(m: *const mjModel, d: *mut mjData); }
+    // SAFETY: m and d verified non-null; delegates to C implementation
+    unsafe { mj_energyVel(m, d) }
 }
 

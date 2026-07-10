@@ -606,7 +606,7 @@ pub fn mju_block_diag_sparse(res: *mut f64, res_rownnz: *mut i32, res_rowadr: *m
     }
 }
 
-/// C: mju_dotSparse (engine/engine_util_sparse.h:197)
+/// C: mju_dotSparse (engine/engine_util_sparse.h:228)
 /// ⚠️ BITEXACT RULES:
 ///   1. Copy exact C accumulation order (no iter().sum())
 ///   2. No f64::mul_add() (FMA changes precision)
@@ -614,9 +614,18 @@ pub fn mju_block_diag_sparse(res: *mut f64, res_rownnz: *mut i32, res_rowadr: *m
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mju_dot_sparse(vec1: *const f64, vec2: *const f64, nnz1: i32, ind1: *const i32) -> f64  {
-    extern "C" { fn mju_dotSparse(vec1: *const f64, vec2: *const f64, nnz1: i32, ind1: *const i32) -> f64; }
-    // SAFETY: delegates to C implementation
-    unsafe { mju_dotSparse(vec1, vec2, nnz1, ind1) }
+    if vec1.is_null() || vec2.is_null() || nnz1 <= 0 {
+        return 0.0;
+    }
+    // SAFETY: vec1 has nnz1 elements, ind1 has nnz1 indices, vec2 is dense
+    unsafe {
+        let mut res: f64 = 0.0;
+        for i in 0..nnz1 as usize {
+            let idx = *ind1.add(i) as usize;
+            res += *vec1.add(i) * *vec2.add(idx);
+        }
+        res
+    }
 }
 
 /// C: mju_compare (engine/engine_util_sparse.h:231)

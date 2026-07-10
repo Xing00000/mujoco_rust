@@ -23,10 +23,12 @@ pub fn read_str_from_buffer(dest: *mut i8, src: *const i8, maxlen: i32) {
 /// C: IsValidElementOrNodeHeader22 (user/user_flexcomp.cc:65)
 #[allow(unused_variables, non_snake_case)]
 pub fn is_valid_element_or_node_header22(line: *const std__string) -> bool {
-    // WARNING: signature changed — verify body
-    // Previous params: (line : * const std__string)
-    // Previous return: bool
-    extern "C" { fn IsValidElementOrNodeHeader22 (line : * const std__string) -> bool ; } unsafe { IsValidElementOrNodeHeader22 (line) }
+    if line.is_null() {
+        return false;
+    }
+    extern "C" { fn IsValidElementOrNodeHeader22(line: *const std__string) -> bool; }
+    // SAFETY: line verified non-null; delegates to C implementation
+    unsafe { IsValidElementOrNodeHeader22(line) }
 }
 
 /// C: mat2lin (user/user_flexcomp.cc:1103)

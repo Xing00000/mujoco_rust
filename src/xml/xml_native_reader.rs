@@ -84,10 +84,12 @@ pub fn mj_x_reader_set_model_file_dir(self_ptr: *mut mjXReader, modelfiledir: *c
 /// C: mjXReader::ModelFileDir (xml/xml_native_reader.h:38)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_x_reader_model_file_dir(self_ptr: *mut mjXReader) -> *const mujoco__user__FilePath {
-    // WARNING: signature changed — verify body
-    // Previous params: (self_ptr : * mut mjXReader)
-    // Previous return: * const mujoco__user__FilePath
-    extern "C" { fn mjXReader_ModelFileDir (self_ptr : * mut mjXReader) -> * const mujoco__user__FilePath ; } unsafe { mjXReader_ModelFileDir (self_ptr) }
+    if self_ptr.is_null() {
+        return core::ptr::null();
+    }
+    extern "C" { fn mjXReader_ModelFileDir(self_ptr: *mut mjXReader) -> *const mujoco__user__FilePath; }
+    // SAFETY: self_ptr verified non-null; delegates to C++ method
+    unsafe { mjXReader_ModelFileDir(self_ptr) }
 }
 
 /// C: mjXReader::SetAssetDir (xml/xml_native_reader.h:41)

@@ -55,9 +55,14 @@ pub fn str_to_num(str: *mut i8, c: *mut *mut i8) -> i32 {
 /// C: IsNullOrSpace (user/user_util.cc:1301)
 #[allow(unused_variables, non_snake_case)]
 pub fn is_null_or_space(c: *mut i8) -> bool  {
-    extern "C" { fn IsNullOrSpace(c: *mut i8) -> bool; }
-    // SAFETY: delegates to C implementation
-    unsafe { IsNullOrSpace(c) }
+    if c.is_null() {
+        return true;
+    }
+    // SAFETY: c verified non-null; check if pointed-to char is whitespace or null terminator
+    unsafe {
+        let ch = *c as u8;
+        ch == 0 || ch == b' ' || ch == b'\t' || ch == b'\n' || ch == b'\r'
+    }
 }
 
 /// C: SkipSpace (user/user_util.cc:1305)

@@ -160,10 +160,12 @@ pub fn vfs_open(self_ptr: *mut VFS, dir: *const i8, name: *const i8) -> *mut mjR
 /// C: VFS::Read (user/user_vfs.h:80)
 #[allow(unused_variables, non_snake_case)]
 pub fn vfs_read(self_ptr: *mut VFS, resource: *mut mjResource, buffer: *const *mut ()) -> i32 {
-    // WARNING: signature changed — verify body
-    // Previous params: (self_ptr : * mut VFS, resource : * mut mjResource, buffer : * const * mut ())
-    // Previous return: i32
-    extern "C" { fn VFS_Read (self_ptr : * mut VFS , resource : * mut mjResource , buffer : * const * mut ()) -> i32 ; } unsafe { VFS_Read (self_ptr , resource , buffer) }
+    if self_ptr.is_null() || resource.is_null() {
+        return -1;
+    }
+    extern "C" { fn VFS_Read(self_ptr: *mut VFS, resource: *mut mjResource, buffer: *const *mut ()) -> i32; }
+    // SAFETY: self_ptr and resource verified non-null; delegates to C++ method
+    unsafe { VFS_Read(self_ptr, resource, buffer) }
 }
 
 /// C: VFS::Close (user/user_vfs.h:84)
@@ -242,9 +244,11 @@ pub fn vfs_create_resource(self_ptr: *mut VFS, name: string_view, provider: *con
 /// C: VFS::MaybeSelfDestruct (user/user_vfs.h:124)
 #[allow(unused_variables, non_snake_case)]
 pub fn vfs_maybe_self_destruct(self_ptr: *mut VFS) {
-    // WARNING: signature changed — verify body
-    // Previous params: (self_ptr : * mut VFS)
-    // Previous return: ()
-    extern "C" { fn VFS_MaybeSelfDestruct (self_ptr : * mut VFS) ; } unsafe { VFS_MaybeSelfDestruct (self_ptr) }
+    if self_ptr.is_null() {
+        return;
+    }
+    extern "C" { fn VFS_MaybeSelfDestruct(self_ptr: *mut VFS); }
+    // SAFETY: self_ptr verified non-null; delegates to C++ method
+    unsafe { VFS_MaybeSelfDestruct(self_ptr) }
 }
 

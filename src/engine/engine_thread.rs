@@ -17,10 +17,12 @@ pub fn thread_pool_context_dispatch(self_ptr: *mut ThreadPoolContext, model: *co
 /// C: ThreadPoolContext::ThreadCount (engine/engine_thread.cc:79)
 #[allow(unused_variables, non_snake_case)]
 pub fn thread_pool_context_thread_count(self_ptr: *mut ThreadPoolContext) -> i32 {
-    // WARNING: signature changed — verify body
-    // Previous params: (self_ptr : * mut ThreadPoolContext)
-    // Previous return: i32
-    extern "C" { fn ThreadPoolContext_ThreadCount(self_ptr : * mut ThreadPoolContext) -> i32 ; } unsafe { ThreadPoolContext_ThreadCount(self_ptr) }
+    if self_ptr.is_null() {
+        return 0;
+    }
+    extern "C" { fn ThreadPoolContext_ThreadCount(self_ptr: *mut ThreadPoolContext) -> i32; }
+    // SAFETY: self_ptr verified non-null; delegates to C++ method
+    unsafe { ThreadPoolContext_ThreadCount(self_ptr) }
 }
 
 /// C: ThreadPoolContext::Worker (engine/engine_thread.cc:83)

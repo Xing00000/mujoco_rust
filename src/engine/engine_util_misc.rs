@@ -110,9 +110,12 @@ pub fn decode(ch: i8) -> u32  {
 /// C: historyPhysicalIndex (engine/engine_util_misc.c:1359)
 #[allow(unused_variables, non_snake_case)]
 pub fn history_physical_index(cursor: i32, n: i32, logical: i32) -> i32  {
-    extern "C" { fn historyPhysicalIndex(cursor: i32, n: i32, logical: i32) -> i32; }
-    // SAFETY: delegates to C implementation
-    unsafe { historyPhysicalIndex(cursor, n, logical) }
+    // C: return (cursor - logical % n + n) % n;
+    if n <= 0 {
+        return 0;
+    }
+    let logical_mod = ((logical % n) + n) % n;
+    ((cursor - logical_mod) % n + n) % n
 }
 
 /// C: historyFindIndex (engine/engine_util_misc.c:1367)
@@ -239,10 +242,13 @@ pub fn mj_lugre_stribeck(velocity: f64, F_C: f64, F_S: f64, v_S: f64) -> f64 {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_dcmotor_slots(dynprm: *const f64, gainprm: *const f64) -> mjDCMotorSlots {
-    // WARNING: signature changed — verify body
-    // Previous params: (dynprm : * const f64, gainprm : * const f64)
-    // Previous return: mjDCMotorSlots
-    extern "C" { fn mj_dcmotorSlots(dynprm : * const f64 , gainprm : * const f64) -> mjDCMotorSlots ; } unsafe { mj_dcmotorSlots(dynprm , gainprm) }
+    if dynprm.is_null() || gainprm.is_null() {
+        // SAFETY: zeroed mjDCMotorSlots is a valid default state
+        return unsafe { core::mem::zeroed() };
+    }
+    extern "C" { fn mj_dcmotorSlots(dynprm: *const f64, gainprm: *const f64) -> mjDCMotorSlots; }
+    // SAFETY: dynprm and gainprm verified non-null; delegates to C implementation
+    unsafe { mj_dcmotorSlots(dynprm, gainprm) }
 }
 
 /// C: mju_geomSemiAxes (engine/engine_util_misc.h:71)

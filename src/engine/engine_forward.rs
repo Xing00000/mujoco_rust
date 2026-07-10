@@ -13,8 +13,11 @@ use crate::types::*;
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn dcmotor_voltage(ctrl: f64, length: f64, velocity: f64, x_I: f64, gainprm: *const f64) -> f64  {
+    if gainprm.is_null() {
+        return 0.0;
+    }
     extern "C" { fn dcmotorVoltage(ctrl: f64, length: f64, velocity: f64, x_I: f64, gainprm: *const f64) -> f64; }
-    // SAFETY: delegates to C implementation
+    // SAFETY: gainprm verified non-null; delegates to C implementation
     unsafe { dcmotorVoltage(ctrl, length, velocity, x_I, gainprm) }
 }
 
@@ -27,10 +30,27 @@ pub fn dcmotor_voltage(ctrl: f64, length: f64, velocity: f64, x_I: f64, gainprm:
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn clamp_vec(vec: *mut f64, range: *const f64, limited: *const mjtBool, n: i32, index: *const i32) {
-    // WARNING: signature changed — verify body
-    // Previous params: (vec : * mut f64, range : * const f64, limited : * const mjtBool, n : i32, index : * const i32)
-    // Previous return: ()
-    extern "C" { fn clampVec(vec : * mut f64 , range : * const f64 , limited : * const mjtBool , n : i32 , index : * const i32) ; } unsafe { clampVec(vec , range , limited , n , index) }
+    if vec.is_null() || range.is_null() || limited.is_null() || n <= 0 {
+        return;
+    }
+    // SAFETY: vec has n elements, range has 2*n elements, limited has n elements (as u8).
+    // index may be null (use sequential indexing) or non-null (indirect indexing).
+    unsafe {
+        let limited_u8 = limited as *const u8;
+        for i in 0..n as usize {
+            let idx = if index.is_null() { i as i32 } else { *index.add(i) };
+            if *limited_u8.add(idx as usize) != 0 {
+                let lo = *range.add(2 * idx as usize);
+                let hi = *range.add(2 * idx as usize + 1);
+                let val = *vec.add(i);
+                if val < lo {
+                    *vec.add(i) = lo;
+                } else if val > hi {
+                    *vec.add(i) = hi;
+                }
+            }
+        }
+    }
 }
 
 /// C: warmstart (engine/engine_forward.c:786)
