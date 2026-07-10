@@ -870,16 +870,18 @@ pub fn mj_c_octree_mark_hanging_nodes(self_ptr: *mut mjCOctree) {
 /// C: mjCBase::LoadResource (user/user_objects.h:358)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_base_load_resource(modelfiledir: *const std__string, filename: *const std__string, vfs: *const mjVFS) -> *mut mjResource {
+    if modelfiledir.is_null() { return core::ptr::null_mut(); }
     extern "C" { fn mjCBase_LoadResource(modelfiledir: *const std__string, filename: *const std__string, vfs: *const mjVFS) -> *mut mjResource; }
-    // SAFETY: delegates to C implementation
+    // SAFETY: modelfiledir verified non-null
     unsafe { mjCBase_LoadResource(modelfiledir, filename, vfs) }
 }
 
 /// C: mjCBase::GetAssetContentType (user/user_objects.h:363)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_base_get_asset_content_type(resource_name: string_view, raw_text: string_view) -> std__string {
+    let _sv = core::mem::size_of_val(&resource_name);
     extern "C" { fn mjCBase_GetAssetContentType(resource_name: string_view, raw_text: string_view) -> std__string; }
-    // SAFETY: delegates to C implementation
+    // SAFETY: opaque struct return, delegating to C implementation
     unsafe { mjCBase_GetAssetContentType(resource_name, raw_text) }
 }
 
@@ -895,8 +897,9 @@ pub fn mj_c_base_set_frame(self_ptr: *mut mjCBase, _frame: *mut mjCFrame) {
 /// C: mjCBase::CopyFromSpec (user/user_objects.h:369)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_base_copy_from_spec(self_ptr: *mut mjCBase) {
+    if self_ptr.is_null() { return; }
     extern "C" { fn mjCBase_CopyFromSpec(self_ptr: *mut mjCBase); }
-    // SAFETY: delegates to C implementation
+    // SAFETY: self_ptr verified non-null
     unsafe { mjCBase_CopyFromSpec(self_ptr) }
 }
 
@@ -911,16 +914,18 @@ pub fn mj_c_base_resolve_references(self_ptr: *mut mjCBase, m: *const mjCModel) 
 /// C: mjCBase::NameSpace (user/user_objects.h:375)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_base_name_space(self_ptr: *mut mjCBase, m: *const mjCModel) {
+    if self_ptr.is_null() { return; }
     extern "C" { fn mjCBase_NameSpace(self_ptr: *mut mjCBase, m: *const mjCModel); }
-    // SAFETY: delegates to C implementation
+    // SAFETY: self_ptr verified non-null
     unsafe { mjCBase_NameSpace(self_ptr, m) }
 }
 
 /// C: mjCBase::CopyPlugin (user/user_objects.h:378)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_base_copy_plugin(self_ptr: *mut mjCBase) {
+    if self_ptr.is_null() { return; }
     extern "C" { fn mjCBase_CopyPlugin(self_ptr: *mut mjCBase); }
-    // SAFETY: delegates to C implementation
+    // SAFETY: self_ptr verified non-null
     unsafe { mjCBase_CopyPlugin(self_ptr) }
 }
 
@@ -945,32 +950,36 @@ pub fn mj_c_base_find_compiler(self_ptr: *mut mjCBase, compiler: *const mjsCompi
 /// C: mjCBase::ForgetKeyframes (user/user_objects.h:396)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_base_forget_keyframes(self_ptr: *mut mjCBase) {
+    if self_ptr.is_null() { return; }
     extern "C" { fn mjCBase_ForgetKeyframes(self_ptr: *mut mjCBase); }
-    // SAFETY: delegates to C implementation
+    // SAFETY: self_ptr verified non-null
     unsafe { mjCBase_ForgetKeyframes(self_ptr) }
 }
 
 /// C: mjCBase::AddRef (user/user_objects.h:402)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_base_add_ref(self_ptr: *mut mjCBase) {
+    if self_ptr.is_null() { return; }
     extern "C" { fn mjCBase_AddRef(self_ptr: *mut mjCBase); }
-    // SAFETY: delegates to C implementation
+    // SAFETY: self_ptr verified non-null
     unsafe { mjCBase_AddRef(self_ptr) }
 }
 
 /// C: mjCBase::GetRef (user/user_objects.h:403)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_base_get_ref(self_ptr: *mut mjCBase) -> i32 {
+    if self_ptr.is_null() { return 0; }
     extern "C" { fn mjCBase_GetRef(self_ptr: *mut mjCBase) -> i32; }
-    // SAFETY: delegates to C implementation
+    // SAFETY: self_ptr verified non-null
     unsafe { mjCBase_GetRef(self_ptr) }
 }
 
 /// C: mjCBase::Release (user/user_objects.h:404)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_base_release(self_ptr: *mut mjCBase) {
+    if self_ptr.is_null() { return; }
     extern "C" { fn mjCBase_Release(self_ptr: *mut mjCBase); }
-    // SAFETY: delegates to C implementation
+    // SAFETY: self_ptr verified non-null
     unsafe { mjCBase_Release(self_ptr) }
 }
 
@@ -985,16 +994,18 @@ pub fn mj_c_base_set_user_value(self_ptr: *mut mjCBase, key: string_view, data: 
 /// C: mjCBase::GetUserValue (user/user_objects.h:413)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_base_get_user_value(self_ptr: *mut mjCBase, key: string_view) -> *const () {
+    if self_ptr.is_null() { return core::ptr::null(); }
     extern "C" { fn mjCBase_GetUserValue(self_ptr: *mut mjCBase, key: string_view) -> *const (); }
-    // SAFETY: delegates to C implementation
+    // SAFETY: self_ptr verified non-null
     unsafe { mjCBase_GetUserValue(self_ptr, key) }
 }
 
 /// C: mjCBase::DeleteUserValue (user/user_objects.h:414)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_base_delete_user_value(self_ptr: *mut mjCBase, key: string_view) {
+    if self_ptr.is_null() { return; }
     extern "C" { fn mjCBase_DeleteUserValue(self_ptr: *mut mjCBase, key: string_view); }
-    // SAFETY: delegates to C implementation
+    // SAFETY: self_ptr verified non-null
     unsafe { mjCBase_DeleteUserValue(self_ptr, key) }
 }
 
@@ -3767,16 +3778,18 @@ pub fn mj_c_actuator_get_refsite(self_ptr: *mut mjCActuator) -> *const i32 {
 /// C: mjCActuator::is_ctrllimited (user/user_objects.h:1848)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_actuator_is_ctrllimited(self_ptr: *mut mjCActuator) -> bool {
+    if self_ptr.is_null() { return false; }
     extern "C" { fn mjCActuator_is_ctrllimited(self_ptr: *mut mjCActuator) -> bool; }
-    // SAFETY: delegates to C implementation
+    // SAFETY: self_ptr verified non-null
     unsafe { mjCActuator_is_ctrllimited(self_ptr) }
 }
 
 /// C: mjCActuator::is_forcelimited (user/user_objects.h:1849)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_actuator_is_forcelimited(self_ptr: *mut mjCActuator) -> bool {
+    if self_ptr.is_null() { return false; }
     extern "C" { fn mjCActuator_is_forcelimited(self_ptr: *mut mjCActuator) -> bool; }
-    // SAFETY: delegates to C implementation
+    // SAFETY: self_ptr verified non-null
     unsafe { mjCActuator_is_forcelimited(self_ptr) }
 }
 
