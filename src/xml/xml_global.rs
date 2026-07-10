@@ -29,10 +29,13 @@ pub fn global_model_to_xml(self_ptr: *mut GlobalModel, m: *const mjModel, error:
 /// C: GetGlobalModel (xml/xml_global.cc:53)
 #[allow(unused_variables, non_snake_case)]
 pub fn get_global_model() -> *mut GlobalModel {
+    // SAFETY: singleton accessor, no input pointers; delegates to C++ implementation
     extern "C" { fn GetGlobalModel() -> *mut GlobalModel; }
-    let result = unsafe { GetGlobalModel() };
-    // singleton should never be null; return as-is
-    result
+    let ptr = unsafe { GetGlobalModel() };
+    if ptr.is_null() {
+        return core::ptr::null_mut();
+    }
+    ptr
 }
 
 /// C: SetGlobalXmlSpec (xml/xml_global.h:23)

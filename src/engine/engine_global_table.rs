@@ -26,9 +26,12 @@ pub fn reentrant_write_lock_lock_count_on_current_thread() -> *mut i32 {
 /// C: GlobalTable::GetSingleton (engine/engine_global_table.h:97)
 #[allow(unused_variables, non_snake_case)]
 pub fn global_table_get_singleton() -> *const () {
+    // SAFETY: singleton accessor, no input pointers; delegates to C++ implementation
     extern "C" { fn GlobalTable_GetSingleton() -> *const (); }
     let ptr = unsafe { GlobalTable_GetSingleton() };
-    // singleton: return directly
+    if ptr.is_null() {
+        return core::ptr::null();
+    }
     ptr
 }
 

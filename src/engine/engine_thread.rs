@@ -7,10 +7,13 @@ use crate::types::*;
 /// C: ThreadPoolContext::Dispatch (engine/engine_thread.cc:51)
 #[allow(unused_variables, non_snake_case)]
 pub fn thread_pool_context_dispatch(self_ptr: *mut ThreadPoolContext, model: *const mjModel, data: *mut mjData, func: mjTaskFunc, arg: *mut (), ntask: i32) {
+    if self_ptr.is_null() || model.is_null() || data.is_null() {
+        return;
+    }
     extern "C" {
         fn ThreadPoolContext_Dispatch(self_ptr: *mut ThreadPoolContext, model: *const mjModel, data: *mut mjData, func: mjTaskFunc, arg: *mut (), ntask: i32);
     }
-    // SAFETY: delegates to C implementation, all pointers valid per caller contract
+    // SAFETY: self_ptr, model, data verified non-null; delegates to C++ implementation
     unsafe { ThreadPoolContext_Dispatch(self_ptr, model, data, func, arg, ntask) }
 }
 
@@ -48,10 +51,13 @@ pub fn mju_threadpool(d: *mut mjData, nthread: i32) {
 /// Calls: ThreadPoolContext::ThreadCount
 #[allow(unused_variables, non_snake_case)]
 pub fn mju_num_thread(d: *const mjData) -> i32 {
+    if d.is_null() {
+        return 0;
+    }
     extern "C" {
         fn mju_numThread(d: *const mjData) -> i32;
     }
-    // SAFETY: delegates to C implementation, all pointers valid per caller contract
+    // SAFETY: d verified non-null; delegates to C implementation
     unsafe { mju_numThread(d) }
 }
 

@@ -767,8 +767,11 @@ pub fn mj_tendon(m: *const mjModel, d: *mut mjData) {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_tendon_dot(m: *const mjModel, d: *mut mjData, id: i32, vec: *const f64) -> f64 {
+    if m.is_null() || d.is_null() || vec.is_null() {
+        return 0.0;
+    }
     extern "C" { fn mj_tendonDot(m: *const mjModel, d: *mut mjData, id: i32, vec: *const f64) -> f64; }
-    // SAFETY: delegates to C implementation, all pointers valid per caller contract
+    // SAFETY: m, d, vec verified non-null; delegates to C implementation
     unsafe { mj_tendonDot(m, d, id, vec) }
 }
 
@@ -1537,8 +1540,11 @@ pub fn mj_com_vel(m: *const mjModel, d: *mut mjData) {
 /// Calls: mj_freeStack, mj_markStack, mj_objectVelocity, mj_stackAllocInfo, mji_addTo3, mji_cross, mji_mulMatVec3, mju_max, mju_mulMatTVec3, mju_scl3, mju_sub3
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_subtree_vel(m: *const mjModel, d: *mut mjData) {
+    if m.is_null() || d.is_null() {
+        return;
+    }
     extern "C" { fn mj_subtreeVel(m: *const mjModel, d: *mut mjData); }
-    // SAFETY: delegates to C implementation, all pointers valid per caller contract
+    // SAFETY: m, d verified non-null; delegates to C implementation
     unsafe { mj_subtreeVel(m, d) }
 }
 

@@ -71,8 +71,11 @@ pub fn wrap_inside(pnt: *mut f64, end: *const f64, radius: f64) -> f64  {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn flex_interp_rotation(order: i32, xpos_c: *const f64, local: *const f64, quat: *mut f64) {
+    if xpos_c.is_null() || local.is_null() || quat.is_null() {
+        return;
+    }
     extern "C" { fn flexInterpRotation(order: i32, xpos_c: *const f64, local: *const f64, quat: *mut f64); }
-    // SAFETY: delegates to C implementation
+    // SAFETY: xpos_c, local, quat verified non-null; delegates to C implementation
     unsafe { flexInterpRotation(order, xpos_c, local, quat) }
 }
 
@@ -268,10 +271,13 @@ pub fn mj_dcmotor_slots(dynprm: *const f64, gainprm: *const f64) -> mjDCMotorSlo
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mju_geom_semi_axes(semiaxes: *mut f64, size: *const f64, r#type: mjtGeom) {
+    if semiaxes.is_null() || size.is_null() {
+        return;
+    }
     extern "C" {
         fn mju_geomSemiAxes(semiaxes: *mut f64, size: *const f64, r#type: mjtGeom);
     }
-    // SAFETY: delegates to C implementation, all pointers valid per caller contract
+    // SAFETY: semiaxes, size verified non-null; delegates to C implementation
     unsafe { mju_geomSemiAxes(semiaxes, size, r#type) }
 }
 
@@ -284,10 +290,13 @@ pub fn mju_geom_semi_axes(semiaxes: *mut f64, size: *const f64, r#type: mjtGeom)
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mju_inside_geom(pos: *const f64, mat: *const f64, size: *const f64, r#type: mjtGeom, point: *const f64) -> i32 {
+    if pos.is_null() || mat.is_null() || size.is_null() || point.is_null() {
+        return 0;
+    }
     extern "C" {
         fn mju_insideGeom(pos: *const f64, mat: *const f64, size: *const f64, r#type: mjtGeom, point: *const f64) -> i32;
     }
-    // SAFETY: delegates to C implementation, all pointers valid per caller contract
+    // SAFETY: pos, mat, size, point verified non-null; delegates to C implementation
     unsafe { mju_insideGeom(pos, mat, size, r#type, point) }
 }
 

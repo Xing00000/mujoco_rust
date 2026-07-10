@@ -52,8 +52,11 @@ pub fn tactile_task(m: *const mjModel, d: *mut mjData, arg: *mut (), thread_id: 
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn apply_cutoff(m: *const mjModel, i: i32, data: *mut f64) {
+    if m.is_null() || data.is_null() {
+        return;
+    }
     extern "C" { fn apply_cutoff(m: *const mjModel, i: i32, data: *mut f64); }
-    // SAFETY: delegates to C implementation
+    // SAFETY: m, data verified non-null; delegates to C implementation
     unsafe { apply_cutoff(m, i, data) }
 }
 
@@ -66,8 +69,11 @@ pub fn apply_cutoff(m: *const mjModel, i: i32, data: *mut f64) {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn get_xpos_xmat(d: *const mjData, r#type: mjtObj, id: i32, sensor_id: i32, xpos: *mut *mut f64, xmat: *mut *mut f64) {
+    if d.is_null() || xpos.is_null() || xmat.is_null() {
+        return;
+    }
     extern "C" { fn get_xpos_xmat(d: *const mjData, r#type: mjtObj, id: i32, sensor_id: i32, xpos: *mut *mut f64, xmat: *mut *mut f64); }
-    // SAFETY: delegates to C implementation, all pointers valid per caller contract
+    // SAFETY: d, xpos, xmat verified non-null; delegates to C implementation
     unsafe { get_xpos_xmat(d, r#type, id, sensor_id, xpos, xmat) }
 }
 
@@ -80,8 +86,11 @@ pub fn get_xpos_xmat(d: *const mjData, r#type: mjtObj, id: i32, sensor_id: i32, 
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn get_xquat(m: *const mjModel, d: *const mjData, r#type: mjtObj, id: i32, sensor_id: i32, quat: *mut f64) {
+    if m.is_null() || d.is_null() || quat.is_null() {
+        return;
+    }
     extern "C" { fn get_xquat(m: *const mjModel, d: *const mjData, r#type: mjtObj, id: i32, sensor_id: i32, quat: *mut f64); }
-    // SAFETY: delegates to C implementation, all pointers valid per caller contract
+    // SAFETY: m, d, quat verified non-null; delegates to C implementation
     unsafe { get_xquat(m, d, r#type, id, sensor_id, quat) }
 }
 
@@ -94,18 +103,24 @@ pub fn get_xquat(m: *const mjModel, d: *const mjData, r#type: mjtObj, id: i32, s
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn cam_project(sensordata: *mut f64, target_xpos: *const f64, cam_xpos: *const f64, cam_xmat: *const f64, cam_res: [i32; 2], cam_fovy: f64, cam_intrinsic: [f32; 4], cam_sensorsize: [f32; 2]) {
+    if sensordata.is_null() || target_xpos.is_null() || cam_xpos.is_null() || cam_xmat.is_null() {
+        return;
+    }
     extern "C" { fn cam_project(sensordata: *mut f64, target_xpos: *const f64, cam_xpos: *const f64, cam_xmat: *const f64, cam_res: [i32; 2], cam_fovy: f64, cam_intrinsic: [f32; 4], cam_sensorsize: [f32; 2]); }
-    // SAFETY: delegates to C implementation
+    // SAFETY: sensordata, target_xpos, cam_xpos, cam_xmat verified non-null; delegates to C implementation
     unsafe { cam_project(sensordata, target_xpos, cam_xpos, cam_xmat, cam_res, cam_fovy, cam_intrinsic, cam_sensorsize) }
 }
 
 /// C: checkMatch (engine/engine_sensor.c:320)
 #[allow(unused_variables, non_snake_case)]
 pub fn check_match(m: *const mjModel, body: i32, geom: i32, r#type: mjtObj, id: i32) -> i32 {
+    if m.is_null() {
+        return 0;
+    }
     extern "C" {
         fn checkMatch(m: *const mjModel, body: i32, geom: i32, r#type: mjtObj, id: i32) -> i32;
     }
-    // SAFETY: delegates to C implementation, all pointers valid per caller contract
+    // SAFETY: m verified non-null; delegates to C implementation
     unsafe { checkMatch(m, body, geom, r#type, id) }
 }
 
@@ -127,8 +142,11 @@ pub fn match_contact(m: *const mjModel, d: *const mjData, conid: i32, type1: mjt
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn copy_sensor_data(m: *const mjModel, d: *const mjData, data: [*mut f64; 7], id: i32, flg_flip: i32, nfound: i32) {
+    if m.is_null() || d.is_null() {
+        return;
+    }
     extern "C" { fn copySensorData(m: *const mjModel, d: *const mjData, data: [*mut f64; 7], id: i32, flg_flip: i32, nfound: i32); }
-    // SAFETY: delegates to C implementation
+    // SAFETY: m, d verified non-null; delegates to C implementation
     unsafe { copySensorData(m, d, data, id, flg_flip, nfound) }
 }
 
@@ -141,8 +159,11 @@ pub fn copy_sensor_data(m: *const mjModel, d: *const mjData, data: [*mut f64; 7]
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn total_wrench(force: *mut f64, torque: *mut f64, point: *const f64, n: i32, wrench: *const f64, pos: *const f64, frame: *const f64) {
+    if force.is_null() || torque.is_null() || point.is_null() {
+        return;
+    }
     extern "C" { fn total_wrench(force: *mut f64, torque: *mut f64, point: *const f64, n: i32, wrench: *const f64, pos: *const f64, frame: *const f64); }
-    // SAFETY: delegates to C implementation
+    // SAFETY: force, torque, point verified non-null; delegates to C implementation
     unsafe { total_wrench(force, torque, point, n, wrench, pos, frame) }
 }
 
@@ -155,8 +176,11 @@ pub fn total_wrench(force: *mut f64, torque: *mut f64, point: *const f64, n: i32
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn fill_raydata(ptr: *mut f64, dataspec: i32, dist: f64, origin: *const f64, direction: *const f64, normal: *const f64, cam_xpos: *const f64, cam_z: *const f64) -> *mut f64  {
+    if ptr.is_null() {
+        return core::ptr::null_mut();
+    }
     extern "C" { fn fill_raydata(ptr: *mut f64, dataspec: i32, dist: f64, origin: *const f64, direction: *const f64, normal: *const f64, cam_xpos: *const f64, cam_z: *const f64) -> *mut f64; }
-    // SAFETY: delegates to C implementation
+    // SAFETY: ptr verified non-null; delegates to C implementation
     unsafe { fill_raydata(ptr, dataspec, dist, origin, direction, normal, cam_xpos, cam_z) }
 }
 
@@ -211,8 +235,11 @@ pub fn mj_compute_sensor_acc(m: *const mjModel, d: *mut mjData, i: i32, sensorda
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn compute_or_read_sensor(m: *const mjModel, d: *mut mjData, i: i32, sensordata: *mut f64) {
+    if m.is_null() || d.is_null() || sensordata.is_null() {
+        return;
+    }
     extern "C" { fn compute_or_read_sensor(m: *const mjModel, d: *mut mjData, i: i32, sensordata: *mut f64); }
-    // SAFETY: delegates to C implementation
+    // SAFETY: m, d, sensordata verified non-null; delegates to C implementation
     unsafe { compute_or_read_sensor(m, d, i, sensordata) }
 }
 

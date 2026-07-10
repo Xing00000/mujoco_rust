@@ -319,10 +319,13 @@ pub fn flex_elem_callback(elem_idx: i32, node: i32, ctx: *mut ()) -> i32 {
 /// Calls: mjp_getPluginAtSlotUnsafe, mjp_pluginCount, mju_message
 #[allow(unused_variables, non_snake_case)]
 pub fn mjc_get_sdf(m: *const mjModel, id: i32) -> *const mjpPlugin {
+    if m.is_null() {
+        return core::ptr::null();
+    }
     extern "C" {
         fn mjc_getSDF(m: *const mjModel, id: i32) -> *const mjpPlugin;
     }
-    // SAFETY: delegates to C implementation, all pointers valid per caller contract
+    // SAFETY: m verified non-null; delegates to C implementation
     unsafe { mjc_getSDF(m, id) }
 }
 

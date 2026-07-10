@@ -7,8 +7,11 @@ use crate::types::*;
 /// C: _getnumadr (engine/engine_name.c:28)
 #[allow(unused_variables, non_snake_case)]
 pub fn getnumadr(m: *const mjModel, r#type: mjtObj, padr: *mut *mut i32, mapadr: *mut i32) -> i32 {
+    if m.is_null() {
+        return 0;
+    }
     extern "C" { fn _getnumadr(m: *const mjModel, r#type: mjtObj, padr: *mut *mut i32, mapadr: *mut i32) -> i32; }
-    // SAFETY: delegates to C implementation, all pointers valid per caller contract
+    // SAFETY: m verified non-null; delegates to C implementation
     unsafe { _getnumadr(m, r#type, padr, mapadr) }
 }
 

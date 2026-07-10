@@ -55,8 +55,11 @@ pub fn mj_flex_passive_bend_interp(m: *const mjModel, d: *mut mjData, f: i32, en
 /// Calls: mji_cross, mji_sub3
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_flex_passive_bend(m: *const mjModel, d: *mut mjData, f: i32, enbl_spring: i32, enbl_damper: i32) {
+    if m.is_null() || d.is_null() {
+        return;
+    }
     extern "C" { fn mj_flexPassiveBend(m: *const mjModel, d: *mut mjData, f: i32, enbl_spring: i32, enbl_damper: i32); }
-    // SAFETY: delegates to C implementation
+    // SAFETY: m, d verified non-null; delegates to C implementation
     unsafe { mj_flexPassiveBend(m, d, f, enbl_spring, enbl_damper) }
 }
 
@@ -82,8 +85,11 @@ pub fn mj_springdamper(m: *const mjModel, d: *mut mjData) {
 /// Calls: mj_applyFT, mji_scl3, mju_norm3
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_gravcomp(m: *const mjModel, d: *mut mjData) -> i32  {
+    if m.is_null() || d.is_null() {
+        return 0;
+    }
     extern "C" { fn mj_gravcomp(m: *const mjModel, d: *mut mjData) -> i32; }
-    // SAFETY: delegates to C implementation
+    // SAFETY: m, d verified non-null; delegates to C implementation
     unsafe { mj_gravcomp(m, d) }
 }
 
@@ -113,9 +119,8 @@ pub fn mj_contact_passive(m: *const mjModel, d: *mut mjData) -> i32 {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mji_pow4(val: f64) -> f64  {
-    extern "C" { fn mji_pow4(val: f64) -> f64; }
-    // SAFETY: delegates to C implementation
-    unsafe { mji_pow4(val) }
+    let val2 = val * val;
+    val2 * val2
 }
 
 /// C: mji_pow2 (engine/engine_passive.c:1219)
@@ -126,9 +131,7 @@ pub fn mji_pow4(val: f64) -> f64  {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mji_pow2(val: f64) -> f64  {
-    extern "C" { fn mji_pow2(val: f64) -> f64; }
-    // SAFETY: delegates to C implementation
-    unsafe { mji_pow2(val) }
+    val * val
 }
 
 /// C: mji_ellipsoid_max_moment (engine/engine_passive.c:1223)

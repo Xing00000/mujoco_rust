@@ -141,8 +141,11 @@ pub fn reset_data(m: *const mjModel, d: *mut mjData, debug_value: u8) {
 /// Calls: mju_message
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_log_timing_diagnostics(d: *const mjData) {
+    if d.is_null() {
+        return;
+    }
     extern "C" { fn mj_logTimingDiagnostics(d: *const mjData); }
-    // SAFETY: delegates to C implementation, all pointers valid per caller contract
+    // SAFETY: d verified non-null; delegates to C implementation
     unsafe { mj_logTimingDiagnostics(d) }
 }
 

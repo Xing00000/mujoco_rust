@@ -249,8 +249,11 @@ pub fn mj_nc(m: *const mjModel, d: *mut mjData, nnz: *mut i32) -> i32 {
 /// Calls: mju_fillInt
 #[allow(unused_variables, non_snake_case)]
 pub fn compute_y_precount(Y_rownnz: *mut i32, Y_rowadr: *mut i32, nefc: i32, nv: i32, J_rownnz: *const i32, J_rowadr: *const i32, J_colind: *const i32, M_rownnz: *const i32, M_rowadr: *const i32, M_colind: *const i32, marker: *mut i32) -> i32  {
+    if Y_rownnz.is_null() || Y_rowadr.is_null() || J_rownnz.is_null() || marker.is_null() {
+        return 0;
+    }
     extern "C" { fn computeY_precount(Y_rownnz: *mut i32, Y_rowadr: *mut i32, nefc: i32, nv: i32, J_rownnz: *const i32, J_rowadr: *const i32, J_colind: *const i32, M_rownnz: *const i32, M_rowadr: *const i32, M_colind: *const i32, marker: *mut i32) -> i32; }
-    // SAFETY: delegates to C implementation
+    // SAFETY: key pointers verified non-null; delegates to C implementation
     unsafe { computeY_precount(Y_rownnz, Y_rowadr, nefc, nv, J_rownnz, J_rowadr, J_colind, M_rownnz, M_rowadr, M_colind, marker) }
 }
 
@@ -390,8 +393,11 @@ pub fn mj_mul_jac_t_vec(m: *const mjModel, d: *const mjData, res: *mut f64, vec:
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_jdotv(m: *const mjModel, d: *mut mjData, result: *mut f64) {
+    if m.is_null() || d.is_null() || result.is_null() {
+        return;
+    }
     extern "C" { fn mj_Jdotv(m: *const mjModel, d: *mut mjData, result: *mut f64); }
-    // SAFETY: delegates to C implementation, all pointers valid per caller contract
+    // SAFETY: m, d, result verified non-null; delegates to C implementation
     unsafe { mj_Jdotv(m, d, result) }
 }
 
@@ -542,10 +548,13 @@ pub fn mj_instantiate_contact(m: *const mjModel, d: *mut mjData) {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_contact_jacobian(m: *const mjModel, d: *mut mjData, con: *const mjContact, dim: i32, jac: *mut f64, jacdif: *mut f64, jacdifp: *mut f64, jacdifr: *mut f64, jac1p: *mut f64, jac2p: *mut f64, jac1r: *mut f64, jac2r: *mut f64, chain: *mut i32) -> i32 {
+    if m.is_null() || d.is_null() || con.is_null() {
+        return 0;
+    }
     extern "C" {
         fn mj_contactJacobian(m: *const mjModel, d: *mut mjData, con: *const mjContact, dim: i32, jac: *mut f64, jacdif: *mut f64, jacdifp: *mut f64, jacdifr: *mut f64, jac1p: *mut f64, jac2p: *mut f64, jac1r: *mut f64, jac2r: *mut f64, chain: *mut i32) -> i32;
     }
-    // SAFETY: delegates to C implementation, all pointers valid per caller contract
+    // SAFETY: m, d, con verified non-null; delegates to C implementation
     unsafe { mj_contactJacobian(m, d, con, dim, jac, jacdif, jacdifp, jacdifr, jac1p, jac2p, jac1r, jac2r, chain) }
 }
 
@@ -553,10 +562,13 @@ pub fn mj_contact_jacobian(m: *const mjModel, d: *mut mjData, con: *const mjCont
 /// Calls: mj_elemBodyWeight, mj_vertBodyWeight, mju_flexGatherCellState, mju_flexGatherFaceState, mju_message
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_diag_approx(m: *const mjModel, d: *mut mjData) {
+    if m.is_null() || d.is_null() {
+        return;
+    }
     extern "C" {
         fn mj_diagApprox(m: *const mjModel, d: *mut mjData);
     }
-    // SAFETY: delegates to C implementation, all pointers valid per caller contract
+    // SAFETY: m and d verified non-null; delegates to C implementation
     unsafe { mj_diagApprox(m, d) }
 }
 
