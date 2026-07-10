@@ -16,8 +16,9 @@ pub fn open_file(filename: *const i8, resource: *mut mjResource) -> i32 {
 /// C: ReadFile (user/user_vfs.cc:64)
 #[allow(unused_variables, non_snake_case)]
 pub fn read_file(filename: *const i8, resource: *mut mjResource, buffer: *const *mut ()) -> i32 {
+    if filename.is_null() { return 0; }
     extern "C" { fn ReadFile(filename: *const i8, resource: *mut mjResource, buffer: *const *mut ()) -> i32; }
-    // SAFETY: delegates to C implementation, all pointers valid per caller contract
+    // SAFETY: filename verified non-null
     unsafe { ReadFile(filename, resource, buffer) }
 }
 

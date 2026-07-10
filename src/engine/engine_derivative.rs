@@ -226,9 +226,7 @@ pub fn mjd_flex_interp_kernel(m: *const mjModel, d: *mut mjData, res: *mut f64, 
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn pow2(val: f64) -> f64  {
-    extern "C" { fn pow2(val: f64) -> f64; }
-    // SAFETY: no pointers, pure arithmetic delegation
-    unsafe { pow2(val) }
+    val * val
 }
 
 /// C: ellipsoid_max_moment (engine/engine_derivative.c:1344)

@@ -7,16 +7,18 @@ use crate::types::*;
 /// C: ReadFromBuffer (user/user_flexcomp.cc:56)
 #[allow(unused_variables, non_snake_case)]
 pub fn read_from_buffer(dst: *mut T, src: *const i8) {
+    if dst.is_null() { return; }
     extern "C" { fn ReadFromBuffer(dst: *mut T, src: *const i8); }
-    // SAFETY: delegates to C implementation, all pointers valid per caller contract
+    // SAFETY: dst verified non-null
     unsafe { ReadFromBuffer(dst, src) }
 }
 
 /// C: ReadStrFromBuffer (user/user_flexcomp.cc:61)
 #[allow(unused_variables, non_snake_case)]
 pub fn read_str_from_buffer(dest: *mut i8, src: *const i8, maxlen: i32) {
+    if dest.is_null() { return; }
     extern "C" { fn ReadStrFromBuffer(dest: *mut i8, src: *const i8, maxlen: i32); }
-    // SAFETY: delegates to C implementation, all pointers valid per caller contract
+    // SAFETY: dest verified non-null
     unsafe { ReadStrFromBuffer(dest, src, maxlen) }
 }
 

@@ -862,8 +862,9 @@ pub fn mjs_get_parent(element: *const mjsElement) -> *mut mjsBody {
 /// C: mjs_getFrame (user/user_api.h:255)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjs_get_frame(element: *const mjsElement) -> *mut mjsFrame {
+    if element.is_null() { return core::ptr::null_mut(); }
     extern "C" { fn mjs_getFrame(element: *const mjsElement) -> *mut mjsFrame; }
-    // SAFETY: delegates to C implementation
+    // SAFETY: element verified non-null
     unsafe { mjs_getFrame(element) }
 }
 
@@ -913,8 +914,9 @@ pub fn mjs_get_id(element: *const mjsElement) -> i32 {
 /// Calls: mjCBody::NextChild
 #[allow(unused_variables, non_snake_case)]
 pub fn mjs_first_child(body: *const mjsBody, r#type: mjtObj, recurse: i32) -> *mut mjsElement {
+    if body.is_null() { return core::ptr::null_mut(); }
     extern "C" { fn mjs_firstChild(body: *const mjsBody, r#type: mjtObj, recurse: i32) -> *mut mjsElement; }
-    // SAFETY: delegates to C implementation
+    // SAFETY: body verified non-null
     unsafe { mjs_firstChild(body, r#type, recurse) }
 }
 

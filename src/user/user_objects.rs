@@ -16,8 +16,9 @@ pub fn png_image_load(obj: *const mjCBase, resource: *mut mjResource, color_type
 /// C: PNGImage::Width (user/user_objects.cc:60)
 #[allow(unused_variables, non_snake_case)]
 pub fn png_image_width(self_ptr: *mut PNGImage) -> i32 {
+    if self_ptr.is_null() { return 0; }
     extern "C" { fn PNGImage_Width(self_ptr: *mut PNGImage) -> i32; }
-    // SAFETY: delegates to C implementation, all pointers valid per caller contract
+    // SAFETY: self_ptr verified non-null
     unsafe { PNGImage_Width(self_ptr) }
 }
 
@@ -33,24 +34,27 @@ pub fn png_image_height(self_ptr: *mut PNGImage) -> i32 {
 /// C: PNGImage::IsSRGB (user/user_objects.cc:62)
 #[allow(unused_variables, non_snake_case)]
 pub fn png_image_is_srgb(self_ptr: *mut PNGImage) -> bool {
+    if self_ptr.is_null() { return false; }
     extern "C" { fn PNGImage_IsSRGB(self_ptr: *mut PNGImage) -> bool; }
-    // SAFETY: delegates to C implementation, all pointers valid per caller contract
+    // SAFETY: self_ptr verified non-null
     unsafe { PNGImage_IsSRGB(self_ptr) }
 }
 
 /// C: PNGImage::MoveData (user/user_objects.cc:66)
 #[allow(unused_variables, non_snake_case)]
 pub fn png_image_move_data(self_ptr: *mut PNGImage) -> *mut *mut i32 {
+    if self_ptr.is_null() { return core::ptr::null_mut(); }
     extern "C" { fn PNGImage_MoveData(self_ptr: *mut PNGImage) -> *mut *mut i32; }
-    // SAFETY: delegates to C implementation, all pointers valid per caller contract
+    // SAFETY: self_ptr verified non-null
     unsafe { PNGImage_MoveData(self_ptr) }
 }
 
 /// C: PNGImage::Size (user/user_objects.cc:69)
 #[allow(unused_variables, non_snake_case)]
 pub fn png_image_size(self_ptr: *mut PNGImage) -> std__size_t {
+    if self_ptr.is_null() { return unsafe { core::mem::zeroed() }; }
     extern "C" { fn PNGImage_Size(self_ptr: *mut PNGImage) -> std__size_t; }
-    // SAFETY: delegates to C implementation, all pointers valid per caller contract
+    // SAFETY: self_ptr verified non-null
     unsafe { PNGImage_Size(self_ptr) }
 }
 
@@ -387,8 +391,9 @@ pub fn sensor_needstage(r#type: mjtSensor) -> mjtStage {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn resolve_orientation(quat: *mut f64, degree: bool, sequence: *const i8, orient: *const mjsOrientation) -> *const i8 {
+    if quat.is_null() { return core::ptr::null(); }
     extern "C" { fn ResolveOrientation(quat: *mut f64, degree: bool, sequence: *const i8, orient: *const mjsOrientation) -> *const i8; }
-    // SAFETY: delegates to C implementation
+    // SAFETY: quat verified non-null
     unsafe { ResolveOrientation(quat, degree, sequence, orient) }
 }
 

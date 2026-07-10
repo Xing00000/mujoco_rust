@@ -7,8 +7,9 @@ use crate::types::*;
 /// C: SetError (xml/mjz/mjz_decoder.cc:46)
 #[allow(unused_variables, non_snake_case)]
 pub fn set_error(error: *mut i8, error_sz: i32, format: *const i8) {
+    if error.is_null() { return; }
     extern "C" { fn SetError(error: *mut i8, error_sz: i32, format: *const i8); }
-    // SAFETY: delegates to C implementation, all pointers valid per caller contract
+    // SAFETY: error verified non-null
     unsafe { SetError(error, error_sz, format) }
 }
 

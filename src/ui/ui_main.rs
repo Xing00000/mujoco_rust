@@ -8,8 +8,9 @@ use crate::types::*;
 /// Calls: mju_round
 #[allow(unused_variables, non_snake_case)]
 pub fn scl(sz: i32, con: *const mjrContext) -> i32  {
+    if con.is_null() { return 0; }
     extern "C" { fn SCL(sz: i32, con: *const mjrContext) -> i32; }
-    // SAFETY: delegates to C implementation
+    // SAFETY: con verified non-null
     unsafe { SCL(sz, con) }
 }
 

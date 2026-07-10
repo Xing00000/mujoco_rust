@@ -7,8 +7,9 @@ use crate::types::*;
 /// C: ParseInfOrNan (xml/xml_util.cc:54)
 #[allow(unused_variables, non_snake_case)]
 pub fn parse_inf_or_nan(s: *const std__string) -> *const () {
+    if s.is_null() { return core::ptr::null(); }
     extern "C" { fn ParseInfOrNan(s: *const std__string) -> *const (); }
-    // SAFETY: delegates to C implementation, all pointers valid per caller contract
+    // SAFETY: s verified non-null
     unsafe { ParseInfOrNan(s) }
 }
 
@@ -95,9 +96,11 @@ pub fn isint(x: f64) -> bool {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn round(x: f64) -> i32 {
-    extern "C" { fn Round(x: f64) -> i32; }
-    // SAFETY: delegates to C implementation
-    unsafe { Round(x) }
+    if (x - x.floor()).abs() < (x - x.ceil()).abs() {
+        x.floor() as i32
+    } else {
+        x.ceil() as i32
+    }
 }
 
 /// C: mjXUtil::WriteVector (xml/xml_util.cc:1084)
@@ -281,8 +284,9 @@ pub fn mj_x_util_read_quat(elem: *mut tinyxml2__XMLElement, attr: *const i8, dat
 /// C: mjXUtil::ReadAttrTxt (xml/xml_util.h:163)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_x_util_read_attr_txt(elem: *mut tinyxml2__XMLElement, attr: *const i8, text: *mut std__string, required: bool) -> bool {
+    if elem.is_null() { return false; }
     extern "C" { fn mjXUtil_ReadAttrTxt(elem: *mut tinyxml2__XMLElement, attr: *const i8, text: *mut std__string, required: bool) -> bool; }
-    // SAFETY: delegates to C implementation, all pointers valid per caller contract
+    // SAFETY: elem verified non-null
     unsafe { mjXUtil_ReadAttrTxt(elem, attr, text, required) }
 }
 

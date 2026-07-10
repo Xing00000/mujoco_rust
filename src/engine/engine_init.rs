@@ -12,8 +12,9 @@ use crate::types::*;
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_default_sol_ref_imp(solref: *mut f64, solimp: *mut f64) {
+    if solref.is_null() { return; }
     extern "C" { fn mj_defaultSolRefImp(solref: *mut f64, solimp: *mut f64); }
-    // SAFETY: delegates to C implementation
+    // SAFETY: solref verified non-null
     unsafe { mj_defaultSolRefImp(solref, solimp) }
 }
 
@@ -34,8 +35,9 @@ pub fn mj_default_option(opt: *mut mjOption) {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn setf4(rgba: *mut f32, r: f32, g: f32, b: f32, a: f32) {
+    if rgba.is_null() { return; }
     extern "C" { fn setf4(rgba: *mut f32, r: f32, g: f32, b: f32, a: f32); }
-    // SAFETY: delegates to C implementation
+    // SAFETY: rgba verified non-null
     unsafe { setf4(rgba, r, g, b, a) }
 }
 
@@ -51,8 +53,9 @@ pub fn mj_default_visual(vis: *mut mjVisual) {
 /// C: mj_defaultLROpt (engine/engine_init.c:234)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_default_lr_opt(opt: *mut mjLROpt) {
+    if opt.is_null() { return; }
     extern "C" { fn mj_defaultLROpt(opt: *mut mjLROpt); }
-    // SAFETY: delegates to C implementation
+    // SAFETY: opt verified non-null
     unsafe { mj_defaultLROpt(opt) }
 }
 

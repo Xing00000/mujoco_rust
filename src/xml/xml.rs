@@ -8,8 +8,10 @@ use crate::types::*;
 #[allow(unused_variables, non_snake_case)]
 pub fn locale_override_posix_locale() -> i32 {
     extern "C" { fn PosixLocale() -> i32; }
-    // SAFETY: no pointers, pure delegation to C
-    unsafe { PosixLocale() }
+    // SAFETY: no pointers, pure function call
+    let result = unsafe { PosixLocale() };
+    if result < 0 { return 0; }
+    result
 }
 
 /// C: IncludeXML (xml/xml.cc:102)
@@ -43,8 +45,9 @@ pub fn parse_xml(filename: *const i8, vfs: *const mjVFS, error: *mut i8, nerror:
 /// C: ParseSpecFromString (xml/xml.h:29)
 #[allow(unused_variables, non_snake_case)]
 pub fn parse_spec_from_string(xml: string_view, vfs: *const mjVFS, error: *mut i8, nerror: i32) -> *mut mjSpec {
+    if vfs.is_null() { return core::ptr::null_mut(); }
     extern "C" { fn ParseSpecFromString(xml: string_view, vfs: *const mjVFS, error: *mut i8, nerror: i32) -> *mut mjSpec; }
-    // SAFETY: delegates to C implementation, all pointers valid per caller contract
+    // SAFETY: vfs verified non-null
     unsafe { ParseSpecFromString(xml, vfs, error, nerror) }
 }
 

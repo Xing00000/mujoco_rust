@@ -19,8 +19,9 @@ pub fn is_same_vec(pos1: [T; 3], pos2: [T; 3]) -> bool {
 #[allow(unused_variables, non_snake_case)]
 pub fn num_compiler_threads(upper_bound: i32) -> u32 {
     extern "C" { fn NumCompilerThreads(upper_bound: i32) -> u32; }
-    // SAFETY: no pointers, pure delegation to C
-    unsafe { NumCompilerThreads(upper_bound) }
+    // SAFETY: no pointers, pure numeric delegation
+    let nthreads = unsafe { NumCompilerThreads(upper_bound) };
+    if nthreads == 0 { 1 } else { nthreads }
 }
 
 /// C: IsSameQuat (user/user_model.cc:93)
@@ -371,8 +372,9 @@ pub fn compile_texture(texture: *mut mjCTexture, vfs: *const mjVFS, exception: *
 /// C: PrintIndent (user/user_model.cc:5457)
 #[allow(unused_variables, non_snake_case)]
 pub fn print_indent(ss: *mut std__stringstream, depth: i32) {
+    if ss.is_null() { return; }
     extern "C" { fn PrintIndent(ss: *mut std__stringstream, depth: i32); }
-    // SAFETY: delegates to C implementation, all pointers valid per caller contract
+    // SAFETY: ss verified non-null
     unsafe { PrintIndent(ss, depth) }
 }
 

@@ -41,9 +41,8 @@ pub fn bufread(dest: *mut (), num: i32, szbuf: usize, buf: *const (), ptrbuf: *m
 /// C: SKIP (engine/engine_io.c:132)
 #[allow(unused_variables, non_snake_case)]
 pub fn skip(offset: isize) -> u32  {
-    extern "C" { fn SKIP(offset: isize) -> u32; }
-    // SAFETY: delegates to C implementation
-    unsafe { SKIP(offset) }
+    let align: u32 = 64;
+    ((align as isize - (offset % align as isize)) % align as isize) as u32
 }
 
 /// C: mj_setPtrModel (engine/engine_io.c:142)

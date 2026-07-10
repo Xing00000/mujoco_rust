@@ -28,8 +28,9 @@ pub fn fmt_arr(val: *const f64, n: i32) -> std__string {
 /// C: Resolver::Apply (user/user_resolver.cc:291)
 #[allow(unused_variables, non_snake_case)]
 pub fn resolver_apply(self_ptr: *mut Resolver) -> bool {
+    if self_ptr.is_null() { return false; }
     extern "C" { fn Resolver_Apply(self_ptr: *mut Resolver) -> bool; }
-    // SAFETY: delegates to C implementation, all pointers valid per caller contract
+    // SAFETY: self_ptr verified non-null
     unsafe { Resolver_Apply(self_ptr) }
 }
 

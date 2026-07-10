@@ -439,8 +439,9 @@ pub fn sa_pcmp(obj1: *mut mjtSAP, obj2: *mut mjtSAP, context: *mut ()) -> i32 {
 /// Calls: SAPcmp
 #[allow(unused_variables, non_snake_case)]
 pub fn sa_psort(arr: *mut mjtSAP, buf: *mut mjtSAP, n: i32, context: *mut ()) {
+    if arr.is_null() { return; }
     extern "C" { fn SAPsort(arr: *mut mjtSAP, buf: *mut mjtSAP, n: i32, context: *mut ()); }
-    // SAFETY: delegates to C implementation
+    // SAFETY: arr verified non-null
     unsafe { SAPsort(arr, buf, n, context) }
 }
 
