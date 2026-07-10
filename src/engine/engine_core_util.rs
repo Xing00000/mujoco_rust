@@ -251,10 +251,41 @@ pub fn mj_jac_body_com(m: *const mjModel, d: *const mjData, jacp: *mut f64, jacr
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_jac_subtree_com(m: *const mjModel, d: *mut mjData, jacp: *mut f64, body: i32) {
+    // SAFETY: m, d valid. jacp points to 3*nv f64 elements. body is valid body index.
+    unsafe {
+        let nv: i32 = (*m).nv as i32;
+        crate::engine::engine_memory::mj_mark_stack(d);
+        extern "C" {
+            fn mj_stackAllocInfo(d: *mut mjData, bytes: usize, alignment: usize, caller: *const i8, line: i32) -> *mut ();
+        }
+        let jacp_b: *mut f64 = mj_stackAllocInfo(
+            d, (3 * nv as usize) * std::mem::size_of::<f64>(), std::mem::align_of::<f64>(),
+            b"mj_jacSubtreeCom\0".as_ptr() as *const i8, 0,
+        ) as *mut f64;
 
-    extern "C" { fn mj_jacSubtreeCom(m: *const mjModel, d: *mut mjData, jacp: *mut f64, body: i32); }
-    // SAFETY: delegates to C implementation
-    unsafe { mj_jacSubtreeCom(m, d, jacp, body) }
+        // clear output
+        crate::engine::engine_util_blas::mju_zero(jacp, 3 * nv);
+
+        // forward pass starting from body
+        let mut b: i32 = body;
+        while b < (*m).nbody as i32 {
+            // end of body subtree, break from the loop
+            if b > body && *(*m).body_parentid.add(b as usize) < body {
+                break;
+            }
+
+            // b is in the body subtree, add mass-weighted Jacobian into jacp
+            mj_jac(m, d as *const mjData, jacp_b, std::ptr::null_mut(), (*d).xipos.add(3 * b as usize), b);
+            crate::engine::engine_util_blas::mju_add_to_scl(jacp, jacp_b, *(*m).body_mass.add(b as usize), 3 * nv);
+
+            b += 1;
+        }
+
+        // normalize by subtree mass
+        crate::engine::engine_util_blas::mju_scl(jacp, jacp, 1.0 / *(*m).body_subtreemass.add(body as usize), 3 * nv);
+
+        crate::engine::engine_memory::mj_free_stack(d);
+    }
 }
 
 /// C: mj_jacGeom (engine/engine_core_util.h:67)

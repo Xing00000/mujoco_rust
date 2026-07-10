@@ -249,20 +249,128 @@ pub fn shuffle_int(array: *mut i32, n: i32, rng: *mut pcg32_state) {
 /// Calls: mju_fillInt, mju_norm
 #[allow(unused_variables, non_snake_case)]
 pub fn dual_state(d: *const mjData, state: *mut i32, ne: i32, nf: i32, nefc: i32, efclist: *const i32) -> i32 {
-    // WARNING: signature changed — verify body
-    // Previous params: (d : * const mjData, state : * mut i32, ne : i32, nf : i32, nefc : i32, efclist : * const i32)
-    // Previous return: i32
-    extern "C" { fn dualState(d : * const mjData , state : * mut i32 , ne : i32 , nf : i32 , nefc : i32 , efclist : * const i32) -> i32 ; } unsafe { dualState(d , state , ne , nf , nefc , efclist) }
+    const mjCNSTR_CONTACT_ELLIPTIC: i32 = 7;
+    const mjCNSTRSTATE_SATISFIED: i32 = 0;
+    const mjCNSTRSTATE_QUADRATIC: i32 = 1;
+    const mjCNSTRSTATE_LINEARNEG: i32 = 2;
+    const mjCNSTRSTATE_LINEARPOS: i32 = 3;
+    const mjCNSTRSTATE_CONE: i32 = 4;
+    // SAFETY: d valid, state/efclist arrays valid per caller contract
+    unsafe {
+        let force: *const f64 = (*d).efc_force;
+        let floss: *const f64 = (*d).efc_frictionloss;
+
+        // equality and friction always active
+        let mut nactive: i32 = ne + nf;
+
+        // equality
+        let mut c: i32 = 0;
+        while c < ne {
+            let i: i32 = if !efclist.is_null() { *efclist.add(c as usize) } else { c };
+            *state.add(i as usize) = mjCNSTRSTATE_QUADRATIC;
+            c += 1;
+        }
+
+        // friction
+        c = ne;
+        while c < ne + nf {
+            let i: i32 = if !efclist.is_null() { *efclist.add(c as usize) } else { c };
+            if *force.add(i as usize) <= -*floss.add(i as usize) {
+                *state.add(i as usize) = mjCNSTRSTATE_LINEARPOS;
+            } else if *force.add(i as usize) >= *floss.add(i as usize) {
+                *state.add(i as usize) = mjCNSTRSTATE_LINEARNEG;
+            } else {
+                *state.add(i as usize) = mjCNSTRSTATE_QUADRATIC;
+            }
+            c += 1;
+        }
+
+        // limit and contact
+        c = ne + nf;
+        while c < nefc {
+            let i: i32 = if !efclist.is_null() { *efclist.add(c as usize) } else { c };
+
+            // non-negative
+            if *(*d).efc_type.add(i as usize) != mjCNSTR_CONTACT_ELLIPTIC {
+                if *force.add(i as usize) <= 0.0 {
+                    *state.add(i as usize) = mjCNSTRSTATE_SATISFIED;
+                } else {
+                    *state.add(i as usize) = mjCNSTRSTATE_QUADRATIC;
+                    nactive += 1;
+                }
+            }
+            // elliptic
+            else {
+                let con: *const mjContact = (*d).contact.add(*(*d).efc_id.add(i as usize) as usize);
+                let dim: i32 = (*con).dim;
+                let mu: f64 = (*con).mu;
+                let mut f: [f64; 6] = [0.0; 6];
+
+                // f = map force to regular-cone space
+                f[0] = *force.add(i as usize) / mu;
+                let mut j: i32 = 1;
+                while j < dim {
+                    f[j as usize] = *force.add((i + j) as usize) / (*con).friction[(j - 1) as usize];
+                    j += 1;
+                }
+
+                // N = normal, T = norm of tangent vector
+                let N: f64 = f[0];
+                let T: f64 = crate::engine::engine_util_blas::mju_norm(f.as_ptr().add(1), dim - 1);
+
+                // determine zone
+                let result: i32;
+                if mu * N >= T {
+                    result = mjCNSTRSTATE_SATISFIED;
+                } else if N + mu * T <= 0.0 {
+                    result = mjCNSTRSTATE_QUADRATIC;
+                    nactive += dim;
+                } else {
+                    result = mjCNSTRSTATE_CONE;
+                    nactive += dim;
+                }
+
+                // replicate state in all cone dimensions
+                crate::engine::engine_util_misc::mju_fill_int(state.add(i as usize), result, dim);
+
+                // advance
+                c += dim - 1;
+            }
+            c += 1;
+        }
+
+        nactive
+    }
 }
 
 /// C: dualStateChange (engine/engine_solver.c:356)
 /// Calls: dualState
 #[allow(unused_variables, non_snake_case)]
 pub fn dual_state_change(d: *const mjData, state: *mut i32, oldstate: *mut i32, ne: i32, nf: i32, nefc: i32, efclist: *const i32, nchange: *mut i32) -> i32 {
-    // WARNING: signature changed — verify body
-    // Previous params: (d : * const mjData, state : * mut i32, oldstate : * mut i32, ne : i32, nf : i32, nefc : i32, efclist : * const i32, nchange : * mut i32)
-    // Previous return: i32
-    extern "C" { fn dualStateChange(d : * const mjData , state : * mut i32 , oldstate : * mut i32 , ne : i32 , nf : i32 , nefc : i32 , efclist : * const i32 , nchange : * mut i32) -> i32 ; } unsafe { dualStateChange(d , state , oldstate , ne , nf , nefc , efclist , nchange) }
+    // SAFETY: d valid, state/oldstate/efclist/nchange valid per caller contract
+    unsafe {
+        // save old state
+        let mut c: i32 = 0;
+        while c < nefc {
+            let i: i32 = if !efclist.is_null() { *efclist.add(c as usize) } else { c };
+            *oldstate.add(c as usize) = *state.add(i as usize);
+            c += 1;
+        }
+
+        // update state
+        let nactive: i32 = dual_state(d, state, ne, nf, nefc, efclist);
+
+        // count state changes
+        *nchange = 0;
+        c = 0;
+        while c < nefc {
+            let i: i32 = if !efclist.is_null() { *efclist.add(c as usize) } else { c };
+            *nchange += (*oldstate.add(c as usize) != *state.add(i as usize)) as i32;
+            c += 1;
+        }
+
+        nactive
+    }
 }
 
 /// C: projectEllipsoid (engine/engine_solver.c:383)

@@ -13,9 +13,15 @@ use crate::types::*;
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn get_state(m: *const mjModel, d: *const mjData, state: *mut f64, sensordata: *mut f64) {
-    extern "C" { fn getState(m: *const mjModel, d: *const mjData, state: *mut f64, sensordata: *mut f64); }
-    // SAFETY: delegates to C implementation
-    unsafe { getState(m, d, state, sensordata) }
+    // mjSTATE_PHYSICS = mjSTATE_QPOS | mjSTATE_QVEL | mjSTATE_ACT | mjSTATE_HISTORY
+    const mjSTATE_PHYSICS: i32 = (1 << 1) | (1 << 2) | (1 << 3) | (1 << 4);
+    // SAFETY: m, d, state valid per caller contract. sensordata may be null.
+    unsafe {
+        crate::engine::engine_support::mj_get_state(m, d, state, mjSTATE_PHYSICS);
+        if !sensordata.is_null() {
+            crate::engine::engine_util_blas::mju_copy(sensordata, (*d).sensordata, (*m).nsensordata as i32);
+        }
+    }
 }
 
 /// C: diff (engine/engine_derivative_fd.c:46)
@@ -168,9 +174,93 @@ pub fn mjd_step_fd(m: *const mjModel, d: *mut mjData, eps: f64, flg_centered: mj
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjd_smooth_vel_fd(m: *const mjModel, d: *mut mjData, eps: f64) {
-    extern "C" { fn mjd_smooth_velFD(m: *const mjModel, d: *mut mjData, eps: f64); }
-    // SAFETY: delegates to C implementation, pointers valid per caller contract
-    unsafe { mjd_smooth_velFD(m, d, eps) }
+    // SAFETY: m, d valid. Stack alloc from mjData arena. All blas/forward functions valid.
+    unsafe {
+        let nv: i32 = (*m).nv as i32;
+
+        crate::engine::engine_memory::mj_mark_stack(d);
+        extern "C" {
+            fn mj_stackAllocInfo(d: *mut mjData, bytes: usize, alignment: usize, caller: *const i8, line: i32) -> *mut ();
+        }
+        let plus: *mut f64 = mj_stackAllocInfo(
+            d, (nv as usize) * std::mem::size_of::<f64>(), std::mem::align_of::<f64>(),
+            b"mjd_smooth_velFD\0".as_ptr() as *const i8, 0,
+        ) as *mut f64;
+        let minus: *mut f64 = mj_stackAllocInfo(
+            d, (nv as usize) * std::mem::size_of::<f64>(), std::mem::align_of::<f64>(),
+            b"mjd_smooth_velFD\0".as_ptr() as *const i8, 0,
+        ) as *mut f64;
+        let fd: *mut f64 = mj_stackAllocInfo(
+            d, (nv as usize) * std::mem::size_of::<f64>(), std::mem::align_of::<f64>(),
+            b"mjd_smooth_velFD\0".as_ptr() as *const i8, 0,
+        ) as *mut f64;
+        let cnt: *mut i32 = mj_stackAllocInfo(
+            d, (nv as usize) * std::mem::size_of::<i32>(), std::mem::align_of::<i32>(),
+            b"mjd_smooth_velFD\0".as_ptr() as *const i8, 0,
+        ) as *mut i32;
+
+        // clear row counters
+        crate::engine::engine_util_misc::mju_zero_int(cnt, nv);
+
+        // loop over dofs
+        let mut i: i32 = 0;
+        while i < nv {
+            // save qvel[i]
+            let saveqvel: f64 = *(*d).qvel.add(i as usize);
+
+            // eval at qvel[i]+eps
+            *(*d).qvel.add(i as usize) = saveqvel + eps;
+            crate::engine::engine_forward::mj_fwd_velocity(m, d);
+            crate::engine::engine_forward::mj_fwd_actuation(m, d);
+            crate::engine::engine_util_blas::mju_add(plus, (*d).qfrc_actuator, (*d).qfrc_passive, nv);
+            crate::engine::engine_util_blas::mju_sub_from(plus, (*d).qfrc_bias, nv);
+
+            // eval at qvel[i]-eps
+            *(*d).qvel.add(i as usize) = saveqvel - eps;
+            crate::engine::engine_forward::mj_fwd_velocity(m, d);
+            crate::engine::engine_forward::mj_fwd_actuation(m, d);
+            crate::engine::engine_util_blas::mju_add(minus, (*d).qfrc_actuator, (*d).qfrc_passive, nv);
+            crate::engine::engine_util_blas::mju_sub_from(minus, (*d).qfrc_bias, nv);
+
+            // restore qvel[i]
+            *(*d).qvel.add(i as usize) = saveqvel;
+
+            // finite difference result in fd
+            crate::engine::engine_util_blas::mju_sub(fd, plus, minus, nv);
+            crate::engine::engine_util_blas::mju_scl(fd, fd, 0.5 / eps, nv);
+
+            // copy to sparse qDeriv
+            let mut j: i32 = 0;
+            while j < nv {
+                if *cnt.add(j as usize) < *(*m).D_rownnz.add(j as usize)
+                    && *(*m).D_colind.add((*(*m).D_rowadr.add(j as usize) + *cnt.add(j as usize)) as usize) == i
+                {
+                    *(*d).qDeriv.add((*(*m).D_rowadr.add(j as usize) + *cnt.add(j as usize)) as usize) = *fd.add(j as usize);
+                    *cnt.add(j as usize) += 1;
+                }
+                j += 1;
+            }
+
+            i += 1;
+        }
+
+        // make sure final row counters equal rownnz
+        i = 0;
+        while i < nv {
+            if *cnt.add(i as usize) != *(*m).D_rownnz.add(i as usize) {
+                crate::engine::engine_util_errmem::mju_error(
+                    b"error in constructing FD sparse derivative\0".as_ptr() as *const i8,
+                );
+            }
+            i += 1;
+        }
+
+        // restore
+        crate::engine::engine_forward::mj_fwd_velocity(m, d);
+        crate::engine::engine_forward::mj_fwd_actuation(m, d);
+
+        crate::engine::engine_memory::mj_free_stack(d);
+    }
 }
 
 /// C: mjd_passive_velFD (engine/engine_derivative_fd.h:30)
@@ -182,9 +272,71 @@ pub fn mjd_smooth_vel_fd(m: *const mjModel, d: *mut mjData, eps: f64) {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjd_passive_vel_fd(m: *const mjModel, d: *mut mjData, eps: f64) {
-    extern "C" { fn mjd_passive_velFD(m: *const mjModel, d: *mut mjData, eps: f64); }
-    // SAFETY: delegates to C implementation, pointers valid per caller contract
-    unsafe { mjd_passive_velFD(m, d, eps) }
+    // SAFETY: m, d valid. Stack alloc from mjData arena. All blas/forward functions valid.
+    unsafe {
+        let nv: i32 = (*m).nv as i32;
+
+        crate::engine::engine_memory::mj_mark_stack(d);
+        extern "C" {
+            fn mj_stackAllocInfo(d: *mut mjData, bytes: usize, alignment: usize, caller: *const i8, line: i32) -> *mut ();
+        }
+        let qfrc_passive: *mut f64 = mj_stackAllocInfo(
+            d, (nv as usize) * std::mem::size_of::<f64>(), std::mem::align_of::<f64>(),
+            b"mjd_passive_velFD\0".as_ptr() as *const i8, 0,
+        ) as *mut f64;
+        let fd: *mut f64 = mj_stackAllocInfo(
+            d, (nv as usize) * std::mem::size_of::<f64>(), std::mem::align_of::<f64>(),
+            b"mjd_passive_velFD\0".as_ptr() as *const i8, 0,
+        ) as *mut f64;
+        let cnt: *mut i32 = mj_stackAllocInfo(
+            d, (nv as usize) * std::mem::size_of::<i32>(), std::mem::align_of::<i32>(),
+            b"mjd_passive_velFD\0".as_ptr() as *const i8, 0,
+        ) as *mut i32;
+
+        // clear row counters
+        crate::engine::engine_util_misc::mju_zero_int(cnt, nv);
+
+        // save qfrc_passive, assume mj_fwdVelocity was called
+        crate::engine::engine_util_blas::mju_copy(qfrc_passive, (*d).qfrc_passive, nv);
+
+        // loop over dofs
+        let mut i: i32 = 0;
+        while i < nv {
+            // save qvel[i]
+            let saveqvel: f64 = *(*d).qvel.add(i as usize);
+
+            // eval at qvel[i]+eps
+            *(*d).qvel.add(i as usize) = saveqvel + eps;
+            crate::engine::engine_forward::mj_fwd_velocity(m, d);
+
+            // restore qvel[i]
+            *(*d).qvel.add(i as usize) = saveqvel;
+
+            // finite difference result in fd
+            crate::engine::engine_util_blas::mju_sub(fd, (*d).qfrc_passive, qfrc_passive, nv);
+            crate::engine::engine_util_blas::mju_scl(fd, fd, 1.0 / eps, nv);
+
+            // copy to i-th column of qDeriv
+            let mut j: i32 = 0;
+            while j < nv {
+                let adr: i32 = *(*m).D_rowadr.add(j as usize) + *cnt.add(j as usize);
+                if *cnt.add(j as usize) < *(*m).D_rownnz.add(j as usize)
+                    && *(*m).D_colind.add(adr as usize) == i
+                {
+                    *(*d).qDeriv.add(adr as usize) = *fd.add(j as usize);
+                    *cnt.add(j as usize) += 1;
+                }
+                j += 1;
+            }
+
+            i += 1;
+        }
+
+        // restore
+        crate::engine::engine_forward::mj_fwd_velocity(m, d);
+
+        crate::engine::engine_memory::mj_free_stack(d);
+    }
 }
 
 /// C: mj_stepSkip (engine/engine_derivative_fd.h:33)

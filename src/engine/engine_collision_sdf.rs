@@ -341,11 +341,46 @@ pub fn isknown(points: *const f64, x: *const f64, cnt: i32) -> i32 {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn add_pre_contact(points: *mut f64, con: *mut mjPreContact, x: *const f64, pos2: *const f64, quat2: *const f64, dist: f64, cnt: i32, m: *const mjModel, s: *const mjSDF, d: *const mjData, flipNormal: i32) -> i32 {
-    extern "C" {
-        fn addPreContact(points: *mut f64, con: *mut mjPreContact, x: *const f64, pos2: *const f64, quat2: *const f64, dist: f64, cnt: i32, m: *const mjModel, s: *const mjSDF, d: *const mjData, flipNormal: i32) -> i32;
+    const MJMINVAL: f64 = 1e-15;
+    // SAFETY: points has 3*cnt f64, con valid mjPreContact, x/pos2/quat2/m/s/d valid per caller
+    unsafe {
+        // check if there is a collision
+        if dist > 0.0 || isknown(points, x, cnt) != 0 {
+            return cnt;
+        } else {
+            crate::engine::engine_util_blas::mju_copy3(points.add(3 * cnt as usize), x);
+        }
+
+        // compute normal in local coordinates
+        let mut norm: [f64; 3] = [0.0; 3];
+        let mut vec: [f64; 3] = [0.0; 3];
+        mjc_gradient(m, d, s, norm.as_mut_ptr(), x);
+
+        // validate normal - skip if gradient is degenerate
+        let norm_len: f64 = crate::engine::engine_util_blas::mju_normalize3(norm.as_mut_ptr());
+        if norm_len < MJMINVAL {
+            return cnt;
+        }
+
+        // normal direction: flipNormal=0 -> INTO SDF, flipNormal=1 -> OUT of SDF
+        if flipNormal == 0 {
+            crate::engine::engine_util_blas::mju_scl3(norm.as_mut_ptr(), norm.as_ptr(), -1.0);
+        }
+
+        // construct contact
+        (*con.add(cnt as usize)).dist = dist;
+        crate::engine::engine_util_spatial::mju_rot_vec_quat(
+            (*con.add(cnt as usize)).normal.as_mut_ptr(), norm.as_ptr(), quat2);
+        crate::engine::engine_util_blas::mju_scl3(
+            vec.as_mut_ptr(), (*con.add(cnt as usize)).normal.as_ptr(), -0.5 * dist);
+        crate::engine::engine_util_spatial::mju_rot_vec_quat(
+            (*con.add(cnt as usize)).pos.as_mut_ptr(), x, quat2);
+        crate::engine::engine_util_blas::mju_zero3((*con.add(cnt as usize)).tangent.as_mut_ptr());
+        crate::engine::engine_util_blas::mju_add_to3((*con.add(cnt as usize)).pos.as_mut_ptr(), pos2);
+        crate::engine::engine_util_blas::mju_add_to3((*con.add(cnt as usize)).pos.as_mut_ptr(), vec.as_ptr());
+
+        cnt + 1
     }
-    // SAFETY: delegates to C implementation, all pointers valid per caller contract
-    unsafe { addPreContact(points, con, x, pos2, quat2, dist, cnt, m, s, d, flipNormal) }
 }
 
 /// C: stepFrankWolfe (engine/engine_collision_sdf.c:585)
@@ -357,11 +392,41 @@ pub fn add_pre_contact(points: *mut f64, con: *mut mjPreContact, x: *const f64, 
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn step_frank_wolfe(x: *mut f64, corners: *const f64, ncorners: i32, m: *const mjModel, sdf: *const mjSDF, d: *const mjData) -> f64 {
-    extern "C" {
-        fn stepFrankWolfe(x: *mut f64, corners: *const f64, ncorners: i32, m: *const mjModel, sdf: *const mjSDF, d: *const mjData) -> f64;
+    const MJMAXVAL: f64 = 1e10;
+    // SAFETY: x points to 3 f64, corners points to 3*ncorners f64, m/sdf/d valid per caller
+    unsafe {
+        let mut step: i32 = 0;
+        while step < (*m).opt.sdf_iterations {
+            let mut best: f64 = MJMAXVAL;
+            let mut s: [f64; 3] = [0.0; 3];
+            let mut grad: [f64; 3] = [0.0; 3];
+
+            // evaluate gradient
+            mjc_gradient(m, d, sdf, grad.as_mut_ptr(), x);
+
+            // evaluate all corners
+            let mut i: i32 = 0;
+            while i < ncorners {
+                // compute sdf
+                let fun: f64 = crate::engine::engine_util_blas::mju_dot3(corners.add(3 * i as usize), grad.as_ptr());
+
+                // save argmin
+                if fun < best {
+                    best = fun;
+                    crate::engine::engine_util_blas::mju_copy3(s.as_mut_ptr(), corners.add(3 * i as usize));
+                }
+                i += 1;
+            }
+
+            // update collision point
+            crate::engine::engine_util_blas::mju_sub_from3(s.as_mut_ptr(), x as *const f64);
+            crate::engine::engine_util_blas::mju_add_to_scl3(x, s.as_ptr(), 2.0 / (step + 2) as f64);
+            step += 1;
+        }
+
+        // compute distance
+        mjc_distance(m, d, sdf, x)
     }
-    // SAFETY: delegates to C implementation, all pointers valid per caller contract
-    unsafe { stepFrankWolfe(x, corners, ncorners, m, sdf, d) }
 }
 
 /// C: stepGradient (engine/engine_collision_sdf.c:615)
@@ -373,9 +438,58 @@ pub fn step_frank_wolfe(x: *mut f64, corners: *const f64, ncorners: i32, m: *con
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn step_gradient(x: *mut f64, m: *const mjModel, s: *const mjSDF, d: *const mjData, niter: i32) -> f64 {
-    extern "C" { fn stepGradient(x: *mut f64, m: *const mjModel, s: *const mjSDF, d: *const mjData, niter: i32) -> f64; }
-    // SAFETY: delegates to C implementation
-    unsafe { stepGradient(x, m, s, d, niter) }
+    const MJMAXVAL: f64 = 1e10;
+    // SAFETY: x points to 3 f64, m/s/d valid per caller contract
+    unsafe {
+        let c: f64 = 0.1;       // reduction factor for the target decrease
+        let rho: f64 = 0.5;    // reduction factor for alpha
+        let amin: f64 = 1e-4;  // minimum alpha
+        let mut dist: f64 = MJMAXVAL;
+
+        let mut step: i32 = 0;
+        while step < niter {
+            let mut grad: [f64; 3] = [0.0; 3];
+            let mut alpha: f64 = 2.0;
+
+            // evaluate gradient
+            mjc_gradient(m, d, s, grad.as_mut_ptr(), x);
+
+            // sanity check
+            if grad[0].is_nan() || grad[0] > MJMAXVAL || grad[0] < -MJMAXVAL
+                || grad[1].is_nan() || grad[1] > MJMAXVAL || grad[1] < -MJMAXVAL
+                || grad[2].is_nan() || grad[2] > MJMAXVAL || grad[2] < -MJMAXVAL
+            {
+                return MJMAXVAL;
+            }
+
+            // save current solution
+            let x0: [f64; 3] = [*x.add(0), *x.add(1), *x.add(2)];
+
+            // evaluate distance
+            let dist0: f64 = mjc_distance(m, d, s, x0.as_ptr());
+            let mut wolfe: f64 = -c * alpha * crate::engine::engine_util_blas::mju_dot3(grad.as_ptr(), grad.as_ptr());
+
+            // backtracking line search
+            loop {
+                alpha *= rho;
+                wolfe *= rho;
+                crate::engine::engine_util_blas::mju_add_scl3(x, x0.as_ptr(), grad.as_ptr(), -alpha);
+                dist = mjc_distance(m, d, s, x);
+                if !(alpha > amin && dist - dist0 > wolfe) {
+                    break;
+                }
+            }
+
+            // if no improvement, early stop
+            if dist0 < dist {
+                return dist;
+            }
+
+            step += 1;
+        }
+
+        dist
+    }
 }
 
 /// C: triangleIntersect (engine/engine_collision_sdf.c:665)
@@ -387,11 +501,74 @@ pub fn step_gradient(x: *mut f64, m: *const mjModel, s: *const mjSDF, d: *const 
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn triangle_intersect(triangle: *const f64, m: *const mjModel, sdf: *const mjSDF, d: *const mjData) -> i32 {
-    extern "C" {
-        fn triangleIntersect(triangle: *const f64, m: *const mjModel, sdf: *const mjSDF, d: *const mjData) -> i32;
+    const MJMINVAL: f64 = 1e-15;
+    // SAFETY: triangle[9], m/sdf/d valid per caller
+    unsafe {
+        let mut edges: [f64; 6] = [0.0; 6];
+        let mut normal: [f64; 3] = [0.0; 3];
+        let mut center: [f64; 3] = [0.0; 3];
+        let mut v: [f64; 9] = [0.0; 9];
+        let mut cross: [f64; 9] = [0.0; 9];
+        let mut p: [f64; 3] = [0.0; 3];
+        let kDistanceScl: f64 = 10.0;
+        let kMinHeight: f64 = 0.1;
+
+        // triangle normal
+        crate::engine::engine_util_blas::mju_sub3(edges.as_mut_ptr(), triangle.add(3), triangle);
+        crate::engine::engine_util_blas::mju_sub3(edges.as_mut_ptr().add(3), triangle.add(6), triangle);
+        crate::engine::engine_util_spatial::mju_cross(normal.as_mut_ptr(), edges.as_ptr(), edges.as_ptr().add(3));
+        crate::engine::engine_util_blas::mju_normalize3(normal.as_mut_ptr());
+
+        // triangle centroid
+        crate::engine::engine_util_blas::mju_scl3(p.as_mut_ptr(), triangle, 1.0 / 3.0);
+        crate::engine::engine_util_blas::mju_add_to_scl3(p.as_mut_ptr(), triangle.add(3), 1.0 / 3.0);
+        crate::engine::engine_util_blas::mju_add_to_scl3(p.as_mut_ptr(), triangle.add(6), 1.0 / 3.0);
+
+        // SDF distance at centroid
+        let dist_at_centroid: f64 = mjc_distance(m, d, sdf, p.as_ptr());
+
+        // compute h = offset for fourth point
+        let h: f64 = -dist_at_centroid / kDistanceScl;
+
+        // degenerate check
+        if h.abs() < kMinHeight {
+            let a: f64 = crate::engine::engine_util_blas::mju_dist3(triangle, triangle.add(3));
+            let b: f64 = crate::engine::engine_util_blas::mju_dist3(triangle.add(3), triangle.add(6));
+            let c: f64 = crate::engine::engine_util_blas::mju_dist3(triangle.add(6), triangle);
+            let s: f64 = (a + b + c) / 2.0;
+            let area: f64 = (s * (s - a) * (s - b) * (s - c)).sqrt();
+            let circumradius: f64 = (a * b * c) / (4.0 * crate::engine::engine_util_misc::mju_max(area, MJMINVAL));
+            return (dist_at_centroid < circumradius) as i32;
+        }
+
+        // fourth point: triangle centroid pushed along normal
+        crate::engine::engine_util_blas::mju_add_to_scl3(p.as_mut_ptr(), normal.as_ptr(), -h);
+
+        // circumsphere center
+        crate::engine::engine_util_blas::mju_sub3(v.as_mut_ptr(), triangle, p.as_ptr());
+        crate::engine::engine_util_blas::mju_sub3(v.as_mut_ptr().add(3), triangle.add(3), p.as_ptr());
+        crate::engine::engine_util_blas::mju_sub3(v.as_mut_ptr().add(6), triangle.add(6), p.as_ptr());
+        crate::engine::engine_util_spatial::mju_cross(cross.as_mut_ptr(), v.as_ptr().add(3), v.as_ptr().add(6));
+        crate::engine::engine_util_spatial::mju_cross(cross.as_mut_ptr().add(3), v.as_ptr().add(6), v.as_ptr());
+        crate::engine::engine_util_spatial::mju_cross(cross.as_mut_ptr().add(6), v.as_ptr(), v.as_ptr().add(3));
+        crate::engine::engine_util_blas::mju_scl3(center.as_mut_ptr(), cross.as_ptr(), crate::engine::engine_util_blas::mju_dot3(v.as_ptr(), v.as_ptr()));
+        crate::engine::engine_util_blas::mju_add_to_scl3(center.as_mut_ptr(), cross.as_ptr().add(3), crate::engine::engine_util_blas::mju_dot3(v.as_ptr().add(3), v.as_ptr().add(3)));
+        crate::engine::engine_util_blas::mju_add_to_scl3(center.as_mut_ptr(), cross.as_ptr().add(6), crate::engine::engine_util_blas::mju_dot3(v.as_ptr().add(6), v.as_ptr().add(6)));
+
+        let denom: f64 = 2.0 * crate::engine::engine_util_blas::mju_dot3(v.as_ptr(), cross.as_ptr());
+        if denom.abs() < MJMINVAL {
+            return (dist_at_centroid < crate::engine::engine_util_blas::mju_norm3(edges.as_ptr())) as i32;
+        }
+        crate::engine::engine_util_blas::mju_scl3(center.as_mut_ptr(), center.as_ptr(), 1.0 / denom);
+
+        // circumsphere radius
+        let r: f64 = crate::engine::engine_util_blas::mju_dot3(center.as_ptr(), center.as_ptr()).sqrt();
+
+        // coordinate change
+        crate::engine::engine_util_blas::mju_add_to3(center.as_mut_ptr(), p.as_ptr());
+
+        (mjc_distance(m, d, sdf, center.as_ptr()) < r) as i32
     }
-    // SAFETY: delegates to C implementation, all pointers valid per caller contract
-    unsafe { triangleIntersect(triangle, m, sdf, d) }
 }
 
 /// C: boxIntersect (engine/engine_collision_sdf.c:737)
@@ -403,11 +580,17 @@ pub fn triangle_intersect(triangle: *const f64, m: *const mjModel, sdf: *const m
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn box_intersect(bvh: *const f64, offset: *const f64, rotation: *const f64, m: *const mjModel, s: *const mjSDF, d: *const mjData) -> i32 {
-    extern "C" {
-        fn boxIntersect(bvh: *const f64, offset: *const f64, rotation: *const f64, m: *const mjModel, s: *const mjSDF, d: *const mjData) -> i32;
+    // SAFETY: bvh[6], offset[3], rotation[9] valid per caller. m/s/d valid.
+    unsafe {
+        let mut candidate: [f64; 3] = [0.0; 3];
+        let r: f64 = crate::engine::engine_util_blas::mju_norm3(bvh.add(3));
+
+        crate::engine::engine_util_blas::mju_mul_mat_vec3(candidate.as_mut_ptr(), rotation, bvh);
+        crate::engine::engine_util_blas::mju_add_to3(candidate.as_mut_ptr(), offset);
+
+        // check if inside the bounding box
+        (mjc_distance(m, d, s, candidate.as_ptr()) < r) as i32
     }
-    // SAFETY: delegates to C implementation, all pointers valid per caller contract
-    unsafe { boxIntersect(bvh, offset, rotation, m, s, d) }
 }
 
 /// C: selectFPS (engine/engine_collision_sdf.c:752)
@@ -482,9 +665,52 @@ pub fn select_fps(candidate: *const f64, dist: *const f64, ncandidate: i32, sele
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn process_sdf_corners(corners: *const f64, m: *const mjModel, d: *const mjData, sdf: *const mjSDF, nstartpts: i32, candidate: *mut f64, dist: *mut f64, ncandidate: *mut i32) {
-    extern "C" { fn processSdfCorners(corners: *const f64, m: *const mjModel, d: *const mjData, sdf: *const mjSDF, nstartpts: i32, candidate: *mut f64, dist: *mut f64, ncandidate: *mut i32); }
-    // SAFETY: delegates to C implementation, all pointers valid per caller contract
-    unsafe { processSdfCorners(corners, m, d, sdf, nstartpts, candidate, dist, ncandidate) }
+    const MJMAXCONPAIR: i32 = 50;
+    // SAFETY: corners[9], candidate/dist arrays, ncandidate valid per caller
+    unsafe {
+        // stricter culling using triangle circumsphere
+        if triangle_intersect(corners, m, sdf, d) == 0 {
+            return;
+        }
+
+        // sample multiple starting points using Halton sequence
+        let mut sp: i32 = 0;
+        while sp < nstartpts {
+            if *ncandidate >= MJMAXCONPAIR {
+                break;
+            }
+
+            // barycentric coordinates from Halton sequence
+            let mut u: f64 = crate::engine::engine_util_misc::mju_halton(sp + 1, 2);
+            let mut v: f64 = crate::engine::engine_util_misc::mju_halton(sp + 1, 3);
+            if u + v > 1.0 {
+                u = 1.0 - u;
+                v = 1.0 - v;
+            }
+            let b0: f64 = 1.0 - u - v;
+            let b1: f64 = u;
+            let b2: f64 = v;
+
+            // starting point
+            let mut x: [f64; 3] = [
+                b0 * *corners.add(0) + b1 * *corners.add(3) + b2 * *corners.add(6),
+                b0 * *corners.add(1) + b1 * *corners.add(4) + b2 * *corners.add(7),
+                b0 * *corners.add(2) + b1 * *corners.add(5) + b2 * *corners.add(8),
+            ];
+
+            let depth: f64 = step_frank_wolfe(x.as_mut_ptr(), corners, 3, m, sdf, d);
+
+            // store candidate if penetration
+            if depth < 0.0 {
+                let nc: i32 = *ncandidate;
+                crate::engine::engine_util_blas::mju_copy3(candidate.add(3 * nc as usize), x.as_ptr());
+                *dist.add(nc as usize) = depth;
+                *ncandidate += 1;
+            }
+
+            sp += 1;
+        }
+    }
 }
 
 /// C: processOneFace (engine/engine_collision_sdf.c:866)
