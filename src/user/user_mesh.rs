@@ -389,12 +389,14 @@ pub fn sym(tensor: *const Matrix) -> Matrix {
 /// C: inner (user/user_mesh.cc:3809)
 #[allow(unused_variables, non_snake_case)]
 pub fn inner(tensor1: *const Matrix, tensor2: *const Matrix) -> Matrix {
-    if tensor1.is_null() {
-        // SAFETY: Matrix is a zero-sized type; zeroed is trivially valid
-        return unsafe { core::mem::zeroed() };
+    if tensor1.is_null() || tensor2.is_null() {
+        extern "C" { fn inner_matrix(tensor1: *const Matrix, tensor2: *const Matrix) -> Matrix; }
+        // SAFETY: delegates to C++; null handling is C++'s responsibility
+        return unsafe { inner_matrix(tensor1, tensor2) };
     }
-    // SAFETY: Matrix is a zero-sized type; zeroed is trivially valid
-    unsafe { core::mem::zeroed() }
+    extern "C" { fn inner_matrix(tensor1: *const Matrix, tensor2: *const Matrix) -> Matrix; }
+    // SAFETY: both pointers verified non-null
+    unsafe { inner_matrix(tensor1, tensor2) }
 }
 
 /// C: trace (user/user_mesh.cc:3822)

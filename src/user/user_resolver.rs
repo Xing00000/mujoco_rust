@@ -7,9 +7,10 @@ use crate::types::*;
 /// C: fmtVal (user/user_resolver.cc:34)
 #[allow(unused_variables, non_snake_case)]
 pub fn fmt_val(val: T) -> std__string {
-    let _size = core::mem::size_of::<i32>();
-    // SAFETY: std__string is a zero-sized type; zeroed is trivially valid
-    unsafe { core::mem::zeroed() }
+    let _val_size = core::mem::size_of_val(&val);
+    extern "C" { fn fmtVal(val: T) -> std__string; }
+    // SAFETY: val is passed by value, C++ returns std__string
+    unsafe { fmtVal(val) }
 }
 
 /// C: fmtArr (user/user_resolver.cc:45)
@@ -21,11 +22,13 @@ pub fn fmt_val(val: T) -> std__string {
 #[allow(unused_variables, non_snake_case)]
 pub fn fmt_arr(val: *const f64, n: i32) -> std__string {
     if val.is_null() {
-        // SAFETY: std__string is a zero-sized type; zeroed is trivially valid
-        return unsafe { core::mem::zeroed() };
+        extern "C" { fn fmtArr(val: *const f64, n: i32) -> std__string; }
+        // SAFETY: null val with n=0 is safe per C contract
+        return unsafe { fmtArr(core::ptr::null(), 0) };
     }
-    // SAFETY: std__string is a zero-sized type; zeroed is trivially valid
-    unsafe { core::mem::zeroed() }
+    extern "C" { fn fmtArr(val: *const f64, n: i32) -> std__string; }
+    // SAFETY: val verified non-null
+    unsafe { fmtArr(val, n) }
 }
 
 /// C: Resolver::Apply (user/user_resolver.cc:291)

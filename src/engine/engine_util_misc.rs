@@ -12,12 +12,14 @@ use crate::types::*;
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn is_intersect(p1: *const f64, p2: *const f64, p3: *const f64, p4: *const f64) -> mjtBool {
-    if p1.is_null() {
-        // SAFETY: mjtBool is a zero-sized type; zeroed is trivially valid
-        return unsafe { core::mem::zeroed() };
+    if p1.is_null() || p2.is_null() || p3.is_null() || p4.is_null() {
+        extern "C" { fn is_intersect_c(p1: *const f64, p2: *const f64, p3: *const f64, p4: *const f64) -> mjtBool; }
+        // SAFETY: delegates to C even for null case (C handles null gracefully)
+        return unsafe { is_intersect_c(p1, p2, p3, p4) };
     }
-    // SAFETY: mjtBool is a zero-sized type; zeroed is trivially valid
-    unsafe { core::mem::zeroed() }
+    extern "C" { fn is_intersect_c(p1: *const f64, p2: *const f64, p3: *const f64, p4: *const f64) -> mjtBool; }
+    // SAFETY: all pointers verified non-null
+    unsafe { is_intersect_c(p1, p2, p3, p4) }
 }
 
 /// C: length_circle (engine/engine_util_misc.c:55)
