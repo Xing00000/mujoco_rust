@@ -215,9 +215,33 @@ pub fn mj_advance(m: *const mjModel, d: *mut mjData, act_dot: *const f64, qacc: 
 /// C: flex_has_implicit_stiffness (engine/engine_forward.c:1284)
 #[allow(unused_variables, non_snake_case)]
 pub fn flex_has_implicit_stiffness(m: *const mjModel) -> i32 {
-    extern "C" { fn flex_has_implicit_stiffness(m: *const mjModel) -> i32; }
-    // SAFETY: delegates to C implementation, all pointers valid per caller contract
-    unsafe { flex_has_implicit_stiffness(m) }
+    // SAFETY: m is valid mjModel pointer. flex_* arrays are valid for nflex elements.
+    unsafe {
+        let nflex = (*m).nflex as i32;
+        let flex_rigid = (*m).flex_rigid as *const u8;
+        for f in 0..nflex {
+            if *flex_rigid.add(f as usize) != 0 {
+                continue;
+            }
+
+            // interpolated flex with stiffness
+            if *(*m).flex_interp.add(f as usize) != 0
+                && *(*m).flex_edgeequality.add(f as usize) != 3
+                && *(*m).flex_stiffness.add(*(*m).flex_stiffnessadr.add(f as usize) as usize) != 0.0
+            {
+                return 1;
+            }
+
+            // standard flex with bending
+            if *(*m).flex_interp.add(f as usize) == 0
+                && *(*m).flex_dim.add(f as usize) == 2
+                && *(*m).flex_bendingadr.add(f as usize) >= 0
+            {
+                return 1;
+            }
+        }
+        0
+    }
 }
 
 /// C: flexInterp_cgsolve (engine/engine_forward.c:1311)

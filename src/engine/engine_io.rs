@@ -112,10 +112,34 @@ pub fn free_model_buffers(m: *mut mjModel) {
 /// Calls: mju_message
 #[allow(unused_variables, non_snake_case)]
 pub fn check_db_sparse(m: *const mjModel) {
-    // WARNING: signature changed — verify body
-    // Previous params: (m : * const mjModel)
-    // Previous return: ()
-    extern "C" { fn checkDBSparse(m : * const mjModel) ; } unsafe { checkDBSparse(m) }
+    // SAFETY: m is valid mjModel pointer. Accesses D_rownnz, D_rowadr, D_colind,
+    // B_rownnz, B_rowadr, B_colind, dof_bodyid arrays.
+    unsafe {
+        let nv = (*m).nv as i32;
+
+        // process all dofs
+        for j in 0..nv {
+            // get body for this dof
+            let i = *(*m).dof_bodyid.add(j as usize);
+
+            // D[row j] and B[row i] should be identical
+            if *(*m).D_rownnz.add(j as usize) != *(*m).B_rownnz.add(i as usize) {
+                extern "C" { fn mju_error(msg: *const i8, ...); }
+                mju_error(b"rows have different nnz\0".as_ptr() as *const i8);
+                return;
+            }
+            let nnz = *(*m).D_rownnz.add(j as usize);
+            for k in 0..nnz {
+                let d_idx = *(*m).D_rowadr.add(j as usize) + k;
+                let b_idx = *(*m).B_rowadr.add(i as usize) + k;
+                if *(*m).D_colind.add(d_idx as usize) != *(*m).B_colind.add(b_idx as usize) {
+                    extern "C" { fn mju_error(msg: *const i8, ...); }
+                    mju_error(b"rows have different colind\0".as_ptr() as *const i8);
+                    return;
+                }
+            }
+        }
+    }
 }
 
 /// C: copyM2Sparse (engine/engine_io.c:915)

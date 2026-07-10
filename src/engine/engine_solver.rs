@@ -12,10 +12,51 @@ use crate::types::*;
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn save_stats(m: *const mjModel, d: *mut mjData, island: i32, iter: i32, improvement: f64, gradient: f64, lineslope: f64, nactive: i32, nchange: i32, neval: i32, nupdate: i32) {
-    // WARNING: signature changed — verify body
-    // Previous params: (m : * const mjModel, d : * mut mjData, island : i32, iter : i32, improvement : f64, gradient : f64, lineslope : f64, nactive : i32, nchange : i32, neval : i32, nupdate : i32)
-    // Previous return: ()
-    extern "C" { fn saveStats(m : * const mjModel , d : * mut mjData , island : i32 , iter : i32 , improvement : f64 , gradient : f64 , lineslope : f64 , nactive : i32 , nchange : i32 , neval : i32 , nupdate : i32) ; } unsafe { saveStats(m , d , island , iter , improvement , gradient , lineslope , nactive , nchange , neval , nupdate) }
+    // SAFETY: d is valid mjData pointer. island and iter are range-checked before access.
+    // mjSolverStat layout (40 bytes):
+    //   improvement (f64) offset 0
+    //   gradient    (f64) offset 8
+    //   lineslope   (f64) offset 16
+    //   nactive     (i32) offset 24
+    //   nchange     (i32) offset 28
+    //   neval       (i32) offset 32
+    //   nupdate     (i32) offset 36
+    unsafe {
+        const MJ_NISLAND: i32 = 20;
+        const MJ_NSOLVER: i32 = 200;
+        const SOLVER_STAT_SIZE: usize = 40; // sizeof(mjSolverStat)
+
+        // if island out of range, return
+        if island >= MJ_NISLAND {
+            return;
+        }
+
+        // if no islands, use first island
+        let island = if island < 0 { 0 } else { island };
+
+        // if iter out of range, return
+        if iter >= MJ_NSOLVER {
+            return;
+        }
+
+        // get pointer to solver stats array (offset 88 in mjData)
+        let d_ptr = d as *mut u8;
+        let solver_base: *mut u8 = d_ptr.add(88);
+
+        // compute stat pointer: solver[island * mjNSOLVER + iter]
+        let stat_ptr: *mut u8 = solver_base.add(
+            ((island * MJ_NSOLVER + iter) as usize) * SOLVER_STAT_SIZE
+        );
+
+        // save stats
+        *(stat_ptr.add(0) as *mut f64) = improvement;
+        *(stat_ptr.add(8) as *mut f64) = gradient;
+        *(stat_ptr.add(16) as *mut f64) = lineslope;
+        *(stat_ptr.add(24) as *mut i32) = nactive;
+        *(stat_ptr.add(28) as *mut i32) = nchange;
+        *(stat_ptr.add(32) as *mut i32) = neval;
+        *(stat_ptr.add(36) as *mut i32) = nupdate;
+    }
 }
 
 /// C: dualFinish (engine/engine_solver.c:71)
