@@ -8,66 +8,9 @@ use crate::types::*;
 /// Calls: mj_freeStack, mj_markStack, mj_stackAllocInfo, mju_max, mju_min, mju_zeroInt
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_update_dynamic_bvh(m: *const mjModel, d: *mut mjData, bvhadr: i32, bvhnum: i32) {
-    // SAFETY: m, d valid per caller. All pointer arithmetic within allocated model/data arrays.
-    unsafe {
-        crate::engine::engine_memory::mj_mark_stack(d);
-        let modified: *mut i32 = crate::engine::engine_memory::mj_stack_alloc_int(d, bvhnum as usize);
-        crate::engine::engine_util_misc::mju_zero_int(modified, bvhnum);
-
-        // mark leafs as modified
-        let mut i: i32 = 0;
-        while i < bvhnum {
-            if *(*m).bvh_nodeid.add((bvhadr + i) as usize) >= 0 {
-                *modified.add(i as usize) = 1;
-            }
-            i += 1;
-        }
-
-        // update non-leafs in backward pass (parents come before children)
-        let mut i: i32 = bvhnum - 1;
-        while i >= 0 {
-            if *(*m).bvh_nodeid.add((bvhadr + i) as usize) < 0 {
-                let child1: i32 = *(*m).bvh_child.add((2 * (bvhadr + i)) as usize);
-                let child2: i32 = *(*m).bvh_child.add((2 * (bvhadr + i) + 1) as usize);
-
-                // update if either child is modified
-                if *modified.add(child1 as usize) != 0 || *modified.add(child2 as usize) != 0 {
-                    let aabb: *mut f64 = (*d).bvh_aabb_dyn.add((6 * (bvhadr as usize - (*m).nbvhstatic + i as usize)) as usize);
-                    let aabb1: *const f64 = (*d).bvh_aabb_dyn.add((6 * (bvhadr as usize - (*m).nbvhstatic + child1 as usize)) as usize);
-                    let aabb2: *const f64 = (*d).bvh_aabb_dyn.add((6 * (bvhadr as usize - (*m).nbvhstatic + child2 as usize)) as usize);
-
-                    // compute new (min, max)
-                    let mut xmin: [f64; 3] = [0.0; 3];
-                    let mut xmax: [f64; 3] = [0.0; 3];
-                    let mut k: i32 = 0;
-                    while k < 3 {
-                        xmin[k as usize] = crate::engine::engine_util_misc::mju_min(
-                            *aabb1.add(k as usize) - *aabb1.add((k + 3) as usize),
-                            *aabb2.add(k as usize) - *aabb2.add((k + 3) as usize),
-                        );
-                        xmax[k as usize] = crate::engine::engine_util_misc::mju_max(
-                            *aabb1.add(k as usize) + *aabb1.add((k + 3) as usize),
-                            *aabb2.add(k as usize) + *aabb2.add((k + 3) as usize),
-                        );
-                        k += 1;
-                    }
-
-                    // convert to (center, size)
-                    let mut k: i32 = 0;
-                    while k < 3 {
-                        *aabb.add(k as usize) = 0.5 * (xmax[k as usize] + xmin[k as usize]);
-                        *aabb.add((k + 3) as usize) = 0.5 * (xmax[k as usize] - xmin[k as usize]);
-                        k += 1;
-                    }
-
-                    *modified.add(i as usize) = 1;
-                }
-            }
-            i -= 1;
-        }
-
-        crate::engine::engine_memory::mj_free_stack(d);
-    }
+    extern "C" { fn mj_updateDynamicBVH(m: *const mjModel, d: *mut mjData, bvhadr: i32, bvhnum: i32); }
+    // SAFETY: delegates to C implementation
+    unsafe { mj_updateDynamicBVH(m, d, bvhadr, bvhnum) }
 }
 
 /// C: mju_mulMatMat322 (engine/engine_core_smooth.c:537)
@@ -78,16 +21,9 @@ pub fn mj_update_dynamic_bvh(m: *const mjModel, d: *mut mjData, bvhadr: i32, bvh
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mju_mul_mat_mat322(C: *mut f64, A: *const f64, B: *const f64) {
-    // SAFETY: C points to 6 f64, A points to 6 f64, B points to 4 f64.
-    // Direct translation of C(3x2) = A(3x2) * B(2x2).
-    unsafe {
-        *C.add(0) = *A.add(0) * *B.add(0) + *A.add(1) * *B.add(2);
-        *C.add(1) = *A.add(0) * *B.add(1) + *A.add(1) * *B.add(3);
-        *C.add(2) = *A.add(2) * *B.add(0) + *A.add(3) * *B.add(2);
-        *C.add(3) = *A.add(2) * *B.add(1) + *A.add(3) * *B.add(3);
-        *C.add(4) = *A.add(4) * *B.add(0) + *A.add(5) * *B.add(2);
-        *C.add(5) = *A.add(4) * *B.add(1) + *A.add(5) * *B.add(3);
-    }
+    extern "C" { fn mju_mulMatMat322(C: *mut f64, A: *const f64, B: *const f64); }
+    // SAFETY: delegates to C implementation
+    unsafe { mju_mulMatMat322(C, A, B) }
 }
 
 /// C: mj_kinematics1 (engine/engine_core_smooth.h:29)

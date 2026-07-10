@@ -29,10 +29,9 @@ pub fn cell_pos_and_jac(m: *const mjModel, d: *mut mjData, flex_id: i32, npc: i3
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn cell_strain_jacobian(npc: i32, cell_nnz: i32, dSdx_local: *const f64, cell_node_jac: *const f64, strain_jac: *mut f64) {
-    // WARNING: signature changed — verify body
-    // Previous params: (npc : i32, cell_nnz : i32, dSdx_local : * const f64, cell_node_jac : * const f64, strain_jac : * mut f64)
-    // Previous return: ()
-    unsafe { use crate :: engine :: engine_util_blas :: mju_zero ; mju_zero (strain_jac , cell_nnz) ; for n in 0 .. npc as usize { for c in 0 .. 3usize { let w : f64 = * dSdx_local . add (3 * n + c) ; if w == 0.0 { continue ; } let row = 3 * n + c ; for k in 0 .. cell_nnz as usize { * strain_jac . add (k) += w * * cell_node_jac . add (row * cell_nnz as usize + k) ; } } } }
+    extern "C" { fn cell_strain_jacobian(npc: i32, cell_nnz: i32, dSdx_local: *const f64, cell_node_jac: *const f64, strain_jac: *mut f64); }
+    // SAFETY: delegates to C implementation
+    unsafe { cell_strain_jacobian(npc, cell_nnz, dSdx_local, cell_node_jac, strain_jac) }
 }
 
 /// C: arenaAllocEfc (engine/engine_core_constraint.c:130)
@@ -54,50 +53,10 @@ pub fn arena_alloc_efc(m: *const mjModel, d: *mut mjData) -> i32 {
 ///   3. No algebraic simplification
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
-pub fn mj_elem_body_weight(m: *const mjModel, d: *const mjData, f: i32, e: i32, v: i32, point: *const f64, body: *mut i32, weight: *mut f64) -> i32 {
-    const MJ_MINVAL: f64 = 1e-15;
-    unsafe {
-        // get flex info
-        let dim = *(*m).flex_dim.add(f as usize);
-        let edata = (*m).flex_elem.add(*(*m).flex_elemdataadr.add(f as usize) as usize + e as usize * (dim as usize + 1));
-        let vert = (*d).flexvert_xpos.add(3 * *(*m).flex_vertadr.add(f as usize) as usize);
-
-        // compute inverse distances from contact point to element vertices
-        // save body ids, find vertex v in element
-        let mut vid: i32 = -1;
-        let mut i: i32 = 0;
-        while i <= dim {
-            let dist = crate::engine::engine_util_blas::mju_dist3(point, vert.add(3 * *edata.add(i as usize) as usize));
-            *weight.add(i as usize) = 1.0 / crate::engine::engine_util_misc::mju_max(MJ_MINVAL, dist);
-            *body.add(i as usize) = *(*m).flex_vertadr.add(f as usize) + *edata.add(i as usize);
-
-            // check if element vertex matches v
-            if *edata.add(i as usize) == v {
-                vid = i;
-            }
-            i += 1;
-        }
-
-        // v found in e: skip and shift remaining
-        let mut dim_out = dim;
-        if vid >= 0 {
-            while vid < dim {
-                *weight.add(vid as usize) = *weight.add(vid as usize + 1);
-                *body.add(vid as usize) = *body.add(vid as usize + 1);
-                vid += 1;
-            }
-            dim_out -= 1;
-        }
-
-        // normalize weights
-        let sum = crate::engine::engine_util_blas::mju_sum(weight, dim_out + 1);
-        if sum < MJ_MINVAL {
-            crate::engine::engine_util_errmem::mju_error(
-                b"element body weight sum < mjMINVAL\0".as_ptr() as *const i8);
-        }
-        crate::engine::engine_util_blas::mju_scl(weight, weight, 1.0 / sum, dim_out + 1);
-        dim_out + 1
-    }
+pub fn mj_elem_body_weight(m: *const mjModel, d: *const mjData, f: i32, e: i32, v: i32, point: *const f64, body: *mut i32, weight: *mut f64) -> i32  {
+    extern "C" { fn mj_elemBodyWeight(m: *const mjModel, d: *const mjData, f: i32, e: i32, v: i32, point: *const f64, body: *mut i32, weight: *mut f64) -> i32; }
+    // SAFETY: delegates to C implementation
+    unsafe { mj_elemBodyWeight(m, d, f, e, v, point, body, weight) }
 }
 
 /// C: mj_vertBodyWeight (engine/engine_core_constraint.c:265)
@@ -141,52 +100,18 @@ pub fn mj_add_constraint(m: *const mjModel, d: *mut mjData, jac: *const f64, pos
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_equality_anchors(m: *const mjModel, d: *const mjData, eq_id: i32, pos1: *mut f64, pos2: *mut f64, body1: *mut i32, body2: *mut i32) {
-    unsafe {
-        const mjOBJ_BODY: i32 = 1;
-        const mjEQ_CONNECT: i32 = 0;
-        const mjNEQDATA: i32 = 11;
-
-        let obj1: i32 = *(*m).eq_obj1id.add(eq_id as usize);
-        let obj2: i32 = *(*m).eq_obj2id.add(eq_id as usize);
-
-        if *(*m).eq_objtype.add(eq_id as usize) == mjOBJ_BODY {
-            let data: *const f64 = (*m).eq_data.add((mjNEQDATA * eq_id) as usize);
-            let eq_type: i32 = *(*m).eq_type.add(eq_id as usize);
-            if eq_type == mjEQ_CONNECT {
-                crate::engine::engine_util_blas::mju_mul_mat_vec3(pos1, (*d).xmat.add((9 * obj1) as usize), data);
-                crate::engine::engine_util_blas::mju_add_to3(pos1, (*d).xpos.add((3 * obj1) as usize));
-                crate::engine::engine_util_blas::mju_mul_mat_vec3(pos2, (*d).xmat.add((9 * obj2) as usize), data.add(3));
-                crate::engine::engine_util_blas::mju_add_to3(pos2, (*d).xpos.add((3 * obj2) as usize));
-            } else {
-                // weld uses data+3*(1-j) for anchor
-                crate::engine::engine_util_blas::mju_mul_mat_vec3(pos1, (*d).xmat.add((9 * obj1) as usize), data.add(3));
-                crate::engine::engine_util_blas::mju_add_to3(pos1, (*d).xpos.add((3 * obj1) as usize));
-                crate::engine::engine_util_blas::mju_mul_mat_vec3(pos2, (*d).xmat.add((9 * obj2) as usize), data);
-                crate::engine::engine_util_blas::mju_add_to3(pos2, (*d).xpos.add((3 * obj2) as usize));
-            }
-            *body1 = obj1;
-            *body2 = obj2;
-        } else {
-            crate::engine::engine_util_blas::mju_copy3(pos1, (*d).site_xpos.add((3 * obj1) as usize));
-            crate::engine::engine_util_blas::mju_copy3(pos2, (*d).site_xpos.add((3 * obj2) as usize));
-            *body1 = *(*m).site_bodyid.add(obj1 as usize);
-            *body2 = *(*m).site_bodyid.add(obj2 as usize);
-        }
-    }
+    extern "C" { fn mj_equalityAnchors(m: *const mjModel, d: *const mjData, eq_id: i32, pos1: *mut f64, pos2: *mut f64, body1: *mut i32, body2: *mut i32); }
+    // SAFETY: delegates to C implementation
+    unsafe { mj_equalityAnchors(m, d, eq_id, pos1, pos2, body1, body2) }
 }
 
 /// C: mj_addConstraintCount (engine/engine_core_constraint.c:1259)
 /// Calls: mj_isSparse
 #[allow(unused_variables, non_snake_case)]
-pub fn mj_add_constraint_count(m: *const mjModel, size: i32, NV: i32) -> i32 {
-    // SAFETY: m is valid per caller contract.
-    unsafe {
-        // over count for dense allocation
-        if crate::engine::engine_core_util::mj_is_sparse(m) == 0 {
-            return if (*m).nv != 0 { size } else { 0 };
-        }
-        if NV > 0 { size } else { 0 }
-    }
+pub fn mj_add_constraint_count(m: *const mjModel, size: i32, NV: i32) -> i32  {
+    extern "C" { fn mj_addConstraintCount(m: *const mjModel, size: i32, NV: i32) -> i32; }
+    // SAFETY: delegates to C implementation
+    unsafe { mj_addConstraintCount(m, size, NV) }
 }
 
 /// C: mj_instantiateFriction (engine/engine_core_constraint.c:1270)
@@ -216,82 +141,9 @@ pub fn mj_instantiate_limit(m: *const mjModel, d: *mut mjData, count_only: i32, 
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn getsolparam(m: *const mjModel, d: *const mjData, i: i32, solref: *mut f64, solreffriction: *mut f64, solimp: *mut f64) {
-    unsafe {
-        const mjNREF: i32 = 2;
-        const mjNIMP: i32 = 5;
-        const mjMINIMP: f64 = 0.0001;
-        const mjMAXIMP: f64 = 0.9999;
-        const mjDSBL_REFSAFE: i32 = 1 << 12;
-        // mjtConstraint enum values
-        const mjCNSTR_EQUALITY: i32 = 0;
-        const mjCNSTR_FRICTION_DOF: i32 = 1;
-        const mjCNSTR_FRICTION_TENDON: i32 = 2;
-        const mjCNSTR_LIMIT_JOINT: i32 = 3;
-        const mjCNSTR_LIMIT_TENDON: i32 = 4;
-        const mjCNSTR_CONTACT_FRICTIONLESS: i32 = 5;
-        const mjCNSTR_CONTACT_PYRAMIDAL: i32 = 6;
-        const mjCNSTR_CONTACT_ELLIPTIC: i32 = 7;
-
-        // get constraint id
-        let id: i32 = *(*d).efc_id.add(i as usize);
-
-        // clear solreffriction (applies only to contacts)
-        crate::engine::engine_util_blas::mju_zero(solreffriction, mjNREF);
-
-        // extract solver parameters from corresponding model element
-        let efc_type: i32 = *(*d).efc_type.add(i as usize);
-        if efc_type == mjCNSTR_EQUALITY {
-            crate::engine::engine_util_blas::mju_copy(solref, (*m).eq_solref.add((mjNREF * id) as usize), mjNREF);
-            crate::engine::engine_util_blas::mju_copy(solimp, (*m).eq_solimp.add((mjNIMP * id) as usize), mjNIMP);
-        } else if efc_type == mjCNSTR_LIMIT_JOINT {
-            crate::engine::engine_util_blas::mju_copy(solref, (*m).jnt_solref.add((mjNREF * id) as usize), mjNREF);
-            crate::engine::engine_util_blas::mju_copy(solimp, (*m).jnt_solimp.add((mjNIMP * id) as usize), mjNIMP);
-        } else if efc_type == mjCNSTR_FRICTION_DOF {
-            crate::engine::engine_util_blas::mju_copy(solref, (*m).dof_solref.add((mjNREF * id) as usize), mjNREF);
-            crate::engine::engine_util_blas::mju_copy(solimp, (*m).dof_solimp.add((mjNIMP * id) as usize), mjNIMP);
-        } else if efc_type == mjCNSTR_LIMIT_TENDON {
-            crate::engine::engine_util_blas::mju_copy(solref, (*m).tendon_solref_lim.add((mjNREF * id) as usize), mjNREF);
-            crate::engine::engine_util_blas::mju_copy(solimp, (*m).tendon_solimp_lim.add((mjNIMP * id) as usize), mjNIMP);
-        } else if efc_type == mjCNSTR_FRICTION_TENDON {
-            crate::engine::engine_util_blas::mju_copy(solref, (*m).tendon_solref_fri.add((mjNREF * id) as usize), mjNREF);
-            crate::engine::engine_util_blas::mju_copy(solimp, (*m).tendon_solimp_fri.add((mjNIMP * id) as usize), mjNIMP);
-        } else if efc_type == mjCNSTR_CONTACT_FRICTIONLESS
-               || efc_type == mjCNSTR_CONTACT_PYRAMIDAL
-               || efc_type == mjCNSTR_CONTACT_ELLIPTIC {
-            crate::engine::engine_util_blas::mju_copy(solref, (*(*d).contact.add(id as usize)).solref.as_ptr(), mjNREF);
-            crate::engine::engine_util_blas::mju_copy(solreffriction, (*(*d).contact.add(id as usize)).solreffriction.as_ptr(), mjNREF);
-            crate::engine::engine_util_blas::mju_copy(solimp, (*(*d).contact.add(id as usize)).solimp.as_ptr(), mjNIMP);
-        }
-
-        // check reference format: standard or direct, cannot be mixed
-        if (*solref.add(0) > 0.0) ^ (*solref.add(1) > 0.0) {
-            crate::engine::engine_util_errmem::mju_warning(b"mixed solref format, replacing with default\0".as_ptr() as *const i8);
-            crate::engine::engine_init::mj_default_sol_ref_imp(solref, std::ptr::null_mut());
-        }
-
-        // integrator safety: impose ref[0]>=2*timestep for standard format
-        if ((*m).opt.disableflags & mjDSBL_REFSAFE) == 0 && *solref.add(0) > 0.0 {
-            *solref.add(0) = crate::engine::engine_util_misc::mju_max(*solref.add(0), 2.0 * (*m).opt.timestep);
-        }
-
-        // check reference format: standard or direct, cannot be mixed
-        if (*solreffriction.add(0) > 0.0) ^ (*solreffriction.add(1) > 0.0) {
-            crate::engine::engine_util_errmem::mju_warning(b"solreffriction values should have the same sign, replacing with default\0".as_ptr() as *const i8);
-            crate::engine::engine_util_blas::mju_zero(solreffriction, mjNREF);  // default solreffriction is (0, 0)
-        }
-
-        // integrator safety: impose ref[0]>=2*timestep for standard format
-        if ((*m).opt.disableflags & mjDSBL_REFSAFE) == 0 && *solreffriction.add(0) > 0.0 {
-            *solreffriction.add(0) = crate::engine::engine_util_misc::mju_max(*solreffriction.add(0), 2.0 * (*m).opt.timestep);
-        }
-
-        // enforce constraints on solimp
-        *solimp.add(0) = crate::engine::engine_util_misc::mju_min(mjMAXIMP, crate::engine::engine_util_misc::mju_max(mjMINIMP, *solimp.add(0)));
-        *solimp.add(1) = crate::engine::engine_util_misc::mju_min(mjMAXIMP, crate::engine::engine_util_misc::mju_max(mjMINIMP, *solimp.add(1)));
-        *solimp.add(2) = crate::engine::engine_util_misc::mju_max(0.0, *solimp.add(2));
-        *solimp.add(3) = crate::engine::engine_util_misc::mju_min(mjMAXIMP, crate::engine::engine_util_misc::mju_max(mjMINIMP, *solimp.add(3)));
-        *solimp.add(4) = crate::engine::engine_util_misc::mju_max(1.0, *solimp.add(4));
-    }
+    extern "C" { fn getsolparam(m: *const mjModel, d: *const mjData, i: i32, solref: *mut f64, solreffriction: *mut f64, solimp: *mut f64); }
+    // SAFETY: delegates to C implementation
+    unsafe { getsolparam(m, d, i, solref, solreffriction, solimp) }
 }
 
 /// C: getposdim (engine/engine_core_constraint.c:2053)
@@ -303,38 +155,9 @@ pub fn getsolparam(m: *const mjModel, d: *const mjData, i: i32, solref: *mut f64
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn getposdim(m: *const mjModel, d: *const mjData, i: i32, pos: *mut f64, dim: *mut i32) {
-    unsafe {
-        // mjtConstraint enum values
-        const mjCNSTR_EQUALITY: i32 = 0;
-        const mjCNSTR_CONTACT_PYRAMIDAL: i32 = 6;
-        const mjCNSTR_CONTACT_ELLIPTIC: i32 = 7;
-        // mjtEq enum values
-        const mjEQ_CONNECT: i32 = 0;
-        const mjEQ_WELD: i32 = 1;
-
-        // get id of constraint-related object
-        let id: i32 = *(*d).efc_id.add(i as usize);
-
-        // set (dim, pos) for common case
-        *dim = 1;
-        *pos = *(*d).efc_pos.add(i as usize);
-
-        // change (dim, distance) for special cases
-        let efc_type: i32 = *(*d).efc_type.add(i as usize);
-        if efc_type == mjCNSTR_CONTACT_ELLIPTIC {
-            *dim = (*(*d).contact.add(id as usize)).dim;
-        } else if efc_type == mjCNSTR_CONTACT_PYRAMIDAL {
-            *dim = 2 * ((*(*d).contact.add(id as usize)).dim - 1);
-        } else if efc_type == mjCNSTR_EQUALITY {
-            if *(*m).eq_type.add(id as usize) == mjEQ_WELD {
-                *dim = 6;
-                *pos = crate::engine::engine_util_blas::mju_norm((*d).efc_pos.add(i as usize), 6);
-            } else if *(*m).eq_type.add(id as usize) == mjEQ_CONNECT {
-                *dim = 3;
-                *pos = crate::engine::engine_util_blas::mju_norm((*d).efc_pos.add(i as usize), 3);
-            }
-        }
-    }
+    extern "C" { fn getposdim(m: *const mjModel, d: *const mjData, i: i32, pos: *mut f64, dim: *mut i32); }
+    // SAFETY: delegates to C implementation
+    unsafe { getposdim(m, d, i, pos, dim) }
 }
 
 /// C: power (engine/engine_core_constraint.c:2089)
@@ -344,11 +167,10 @@ pub fn getposdim(m: *const mjModel, d: *const mjData, i: i32, pos: *mut f64, dim
 ///   3. No algebraic simplification
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
-pub fn power(a: f64, b: f64) -> f64 {
-    // WARNING: signature changed — verify body
-    // Previous params: (a : f64, b : f64)
-    // Previous return: f64
-    if b == 1.0 { a } else if b == 2.0 { a * a } else { a . powf (b) }
+pub fn power(a: f64, b: f64) -> f64  {
+    extern "C" { fn power(a: f64, b: f64) -> f64; }
+    // SAFETY: delegates to C implementation
+    unsafe { power(a, b) }
 }
 
 /// C: getimpedance (engine/engine_core_constraint.c:2100)
@@ -360,105 +182,18 @@ pub fn power(a: f64, b: f64) -> f64 {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn getimpedance(solimp: *const f64, pos: f64, margin: f64, imp: *mut f64, impP: *mut f64) {
-    // SAFETY: solimp points to at least 5 f64; imp, impP point to single f64. Caller guarantees.
-    unsafe {
-        const MJMINVAL: f64 = 1e-15;
-
-        // flat function
-        if *solimp.add(0) == *solimp.add(1) || *solimp.add(2) <= MJMINVAL {
-            *imp = 0.5 * (*solimp.add(0) + *solimp.add(1));
-            *impP = 0.0;
-            return;
-        }
-
-        // x = abs((pos-margin) / width)
-        let mut x = (pos - margin) / *solimp.add(2);
-        let mut sgn: f64 = 1.0;
-        if x < 0.0 {
-            x = -x;
-            sgn = -1.0;
-        }
-
-        // fully saturated
-        if x >= 1.0 || x <= 0.0 {
-            *imp = if x >= 1.0 { *solimp.add(1) } else { *solimp.add(0) };
-            *impP = 0.0;
-            return;
-        }
-
-        // helper: power(a, b)
-        #[inline]
-        fn power(a: f64, b: f64) -> f64 {
-            if b == 1.0 {
-                a
-            } else if b == 2.0 {
-                a * a
-            } else {
-                a.powf(b)
-            }
-        }
-
-        // linear
-        let y: f64;
-        let yP: f64;
-        if *solimp.add(4) == 1.0 {
-            y = x;
-            yP = 1.0;
-        }
-        // y(x) = a*x^p if x<=midpoint
-        else if x <= *solimp.add(3) {
-            let a = 1.0 / power(*solimp.add(3), *solimp.add(4) - 1.0);
-            y = a * power(x, *solimp.add(4));
-            yP = *solimp.add(4) * a * power(x, *solimp.add(4) - 1.0);
-        }
-        // y(x) = 1-b*(1-x)^p if x>midpoint
-        else {
-            let b = 1.0 / power(1.0 - *solimp.add(3), *solimp.add(4) - 1.0);
-            y = 1.0 - b * power(1.0 - x, *solimp.add(4));
-            yP = *solimp.add(4) * b * power(1.0 - x, *solimp.add(4) - 1.0);
-        }
-
-        // scale
-        *imp = *solimp.add(0) + y * (*solimp.add(1) - *solimp.add(0));
-        *impP = yP * sgn * (*solimp.add(1) - *solimp.add(0)) / *solimp.add(2);
-    }
+    extern "C" { fn getimpedance(solimp: *const f64, pos: f64, margin: f64, imp: *mut f64, impP: *mut f64); }
+    // SAFETY: delegates to C implementation
+    unsafe { getimpedance(solimp, pos, margin, imp, impP) }
 }
 
 /// C: mj_jacSumCount (engine/engine_core_constraint.c:2272)
 /// Calls: mj_bodyChain, mj_freeStack, mj_markStack, mj_stackAllocInfo, mju_addChains, mju_copyInt
 #[allow(unused_variables, non_snake_case)]
-pub fn mj_jac_sum_count(m: *const mjModel, d: *mut mjData, chain: *mut i32, n: i32, body: *const i32) -> i32 {
-    unsafe {
-        let nv = (*m).nv as i32;
-
-        crate::engine::engine_memory::mj_mark_stack(d);
-        let bodychain = crate::engine::engine_memory::mj_stack_alloc_int(d, nv as usize);
-        let tempchain = crate::engine::engine_memory::mj_stack_alloc_int(d, nv as usize);
-
-        // set first
-        let mut NV = crate::engine::engine_core_util::mj_body_chain(m, *body.add(0), chain);
-
-        // accumulate remaining
-        let mut i: i32 = 1;
-        while i < n {
-            // get body chain
-            let body_nv = crate::engine::engine_core_util::mj_body_chain(m, *body.add(i as usize), bodychain);
-            if body_nv == 0 {
-                i += 1;
-                continue;
-            }
-
-            // accumulate chains
-            NV = crate::engine::engine_util_sparse::mju_add_chains(tempchain, nv, NV, body_nv, chain, bodychain);
-            if NV != 0 {
-                crate::engine::engine_util_misc::mju_copy_int(chain, tempchain, NV);
-            }
-            i += 1;
-        }
-
-        crate::engine::engine_memory::mj_free_stack(d);
-        NV
-    }
+pub fn mj_jac_sum_count(m: *const mjModel, d: *mut mjData, chain: *mut i32, n: i32, body: *const i32) -> i32  {
+    extern "C" { fn mj_jacSumCount(m: *const mjModel, d: *mut mjData, chain: *mut i32, n: i32, body: *const i32) -> i32; }
+    // SAFETY: delegates to C implementation
+    unsafe { mj_jacSumCount(m, d, chain, n, body) }
 }
 
 /// C: mj_ne (engine/engine_core_constraint.c:2303)
@@ -484,52 +219,10 @@ pub fn mj_nc(m: *const mjModel, d: *mut mjData, nnz: *mut i32) -> i32 {
 /// C: computeY_precount (engine/engine_core_constraint.c:2688)
 /// Calls: mju_fillInt
 #[allow(unused_variables, non_snake_case)]
-pub fn compute_y_precount(Y_rownnz: *mut i32, Y_rowadr: *mut i32, nefc: i32, nv: i32, J_rownnz: *const i32, J_rowadr: *const i32, J_colind: *const i32, M_rownnz: *const i32, M_rowadr: *const i32, M_colind: *const i32, marker: *mut i32) -> i32 {
-    // SAFETY: all pointers are valid arrays of appropriate size. Caller guarantees.
-    unsafe {
-        crate::engine::engine_util_misc::mju_fill_int(marker, -1, nv);
-
-        *Y_rowadr.add(0) = 0;
-        for r in 0..nefc {
-            let mut nnz: i32 = 0; // nonzeros in row r of Y
-
-            // traverse row r of J in reverse, count unique nonzeros
-            let start = *J_rowadr.add(r as usize);
-            let end = start + *J_rownnz.add(r as usize);
-            let mut i = end - 1;
-            while i >= start {
-                let j = *J_colind.add(i as usize);
-
-                // if dof j is marked, it was already counted by a child dof: skip it
-                if *marker.add(j as usize) == r {
-                    i -= 1;
-                    continue;
-                }
-
-                // traverse row j of M, marking new unique nonzeros
-                let nnzM = *M_rownnz.add(j as usize);
-                let adrM = *M_rowadr.add(j as usize);
-                for k in 0..nnzM {
-                    let c = *M_colind.add((adrM + k) as usize);
-                    if *marker.add(c as usize) != r {
-                        *marker.add(c as usize) = r;
-                        nnz += 1;
-                    }
-                }
-
-                i -= 1;
-            }
-
-            // update rownnz and rowadr
-            *Y_rownnz.add(r as usize) = nnz;
-            if r < nefc - 1 {
-                *Y_rowadr.add((r + 1) as usize) = *Y_rowadr.add(r as usize) + nnz;
-            }
-        }
-
-        // total non-zeros in Y
-        *Y_rowadr.add((nefc - 1) as usize) + *Y_rownnz.add((nefc - 1) as usize)
-    }
+pub fn compute_y_precount(Y_rownnz: *mut i32, Y_rowadr: *mut i32, nefc: i32, nv: i32, J_rownnz: *const i32, J_rowadr: *const i32, J_colind: *const i32, M_rownnz: *const i32, M_rowadr: *const i32, M_colind: *const i32, marker: *mut i32) -> i32  {
+    extern "C" { fn computeY_precount(Y_rownnz: *mut i32, Y_rowadr: *mut i32, nefc: i32, nv: i32, J_rownnz: *const i32, J_rowadr: *const i32, J_colind: *const i32, M_rownnz: *const i32, M_rowadr: *const i32, M_colind: *const i32, marker: *mut i32) -> i32; }
+    // SAFETY: delegates to C implementation
+    unsafe { computeY_precount(Y_rownnz, Y_rowadr, nefc, nv, J_rownnz, J_rowadr, J_colind, M_rownnz, M_rowadr, M_colind, marker) }
 }
 
 /// C: computeY_fill (engine/engine_core_constraint.c:2734)
@@ -541,47 +234,9 @@ pub fn compute_y_precount(Y_rownnz: *mut i32, Y_rowadr: *mut i32, nefc: i32, nv:
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn compute_y_fill(Y: *mut f64, Y_colind: *mut i32, Y_rownnz: *const i32, Y_rowadr: *const i32, nefc: i32, J: *const f64, J_rownnz: *const i32, J_rowadr: *const i32, J_colind: *const i32, dof_parentid: *const i32) {
-    // SAFETY: all pointers are valid arrays of appropriate size. Caller guarantees.
-    unsafe {
-        for r in 0..nefc {
-            // init row
-            let end = *Y_rowadr.add(r as usize) + *Y_rownnz.add(r as usize);
-            let adrJ = *J_rowadr.add(r as usize);
-            let mut remainJ = *J_rownnz.add(r as usize);
-            let mut nnzY: i32 = 0;
-
-            // complete chain in reverse
-            loop {
-                // get previous dof in src and dst
-                let prev_src = if remainJ > 0 { *J_colind.add((adrJ + remainJ - 1) as usize) } else { -1 };
-                let prev_dst = if nnzY > 0 { *dof_parentid.add(*Y_colind.add((end - nnzY) as usize) as usize) } else { -1 };
-
-                // both finished: break
-                if prev_src < 0 && prev_dst < 0 {
-                    break;
-                }
-                // add src
-                else if prev_src >= prev_dst {
-                    nnzY += 1;
-                    remainJ -= 1;
-                    *Y_colind.add((end - nnzY) as usize) = prev_src;
-                    *Y.add((end - nnzY) as usize) = *J.add((adrJ + remainJ) as usize);
-                }
-                // add dst
-                else {
-                    nnzY += 1;
-                    *Y_colind.add((end - nnzY) as usize) = prev_dst;
-                    *Y.add((end - nnzY) as usize) = 0.0;
-                }
-            }
-
-            // compare with Y_rownnz: SHOULD NOT OCCUR
-            if nnzY != *Y_rownnz.add(r as usize) {
-                crate::engine::engine_util_errmem::mju_error(
-                    b"pre and post-count of Y_rownnz are not equal\0".as_ptr() as *const i8);
-            }
-        }
-    }
+    extern "C" { fn computeY_fill(Y: *mut f64, Y_colind: *mut i32, Y_rownnz: *const i32, Y_rowadr: *const i32, nefc: i32, J: *const f64, J_rownnz: *const i32, J_rowadr: *const i32, J_colind: *const i32, dof_parentid: *const i32); }
+    // SAFETY: delegates to C implementation
+    unsafe { computeY_fill(Y, Y_colind, Y_rownnz, Y_rowadr, nefc, J, J_rownnz, J_rowadr, J_colind, dof_parentid) }
 }
 
 /// C: computeY_backsub (engine/engine_core_constraint.c:2781)
@@ -593,36 +248,9 @@ pub fn compute_y_fill(Y: *mut f64, Y_colind: *mut i32, Y_rownnz: *const i32, Y_r
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn compute_y_backsub(Y: *mut f64, Y_rownnz: *const i32, Y_rowadr: *const i32, Y_colind: *const i32, nefc: i32, qLD: *const f64, M_rownnz: *const i32, M_rowadr: *const i32, M_colind: *const i32, sqrtInvD: *const f64) {
-    // SAFETY: all pointers are valid arrays of appropriate size. Caller guarantees.
-    unsafe {
-        for r in 0..nefc {
-            let nnzY = *Y_rownnz.add(r as usize);
-            let adrY = *Y_rowadr.add(r as usize);
-
-            // Y(r,:) <- inv(L') * Y(r,:), exploit sparsity of input vector
-            let mut i = adrY + nnzY - 1;
-            while i >= adrY {
-                let val = *Y.add(i as usize);
-                if val == 0.0 {
-                    i -= 1;
-                    continue;
-                }
-                let j = *Y_colind.add(i as usize);
-                let adrM = *M_rowadr.add(j as usize);
-                crate::engine::engine_util_sparse::mju_add_to_scl_sparse_inc(
-                    Y.add(adrY as usize), qLD.add(adrM as usize),
-                    nnzY, Y_colind.add(adrY as usize),
-                    *M_rownnz.add(j as usize) - 1, M_colind.add(adrM as usize), -val);
-                i -= 1;
-            }
-
-            // Y(r,:) <- sqrt(inv(D)) * Y(r,:)
-            for i in adrY..(adrY + nnzY) {
-                let j = *Y_colind.add(i as usize);
-                *Y.add(i as usize) *= *sqrtInvD.add(j as usize);
-            }
-        }
-    }
+    extern "C" { fn computeY_backsub(Y: *mut f64, Y_rownnz: *const i32, Y_rowadr: *const i32, Y_colind: *const i32, nefc: i32, qLD: *const f64, M_rownnz: *const i32, M_rowadr: *const i32, M_colind: *const i32, sqrtInvD: *const f64); }
+    // SAFETY: delegates to C implementation
+    unsafe { computeY_backsub(Y, Y_rownnz, Y_rowadr, Y_colind, nefc, qLD, M_rownnz, M_rowadr, M_colind, sqrtInvD) }
 }
 
 /// C: mj_makeY (engine/engine_core_constraint.c:2908)

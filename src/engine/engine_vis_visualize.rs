@@ -12,10 +12,9 @@ use crate::types::*;
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn f2f(dest: *mut f32, src: *const f32, n: i32) {
-    // WARNING: signature changed — verify body
-    // Previous params: (dest : * mut f32, src : * const f32, n : i32)
-    // Previous return: ()
-    unsafe { core :: ptr :: copy_nonoverlapping (src , dest , n as usize) ; }
+    extern "C" { fn f2f(dest: *mut f32, src: *const f32, n: i32); }
+    // SAFETY: delegates to C implementation
+    unsafe { f2f(dest, src, n) }
 }
 
 /// C: makeLabel (engine/engine_vis_visualize.c:55)
@@ -36,36 +35,9 @@ pub fn make_label(m: *const mjModel, r#type: mjtObj, id: i32, label: *mut i8) {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn island_color(rgba: [f32; 4], h: i32, awake: i32) {
-    // NOTE: In C ABI, `float rgba[4]` is passed as a pointer.
-    // The Rust signature uses [f32; 4] but this is actually a pointer in the ABI.
-    let rgba_ptr = rgba.as_ptr() as *mut f32;
-
-    // default to gray R = G = B = 0.7
-    let mut hue: f32 = 1.0;
-    let mut saturation: f32 = 0.0;
-    let mut value: f32 = 0.7;
-
-    // island index given, use Halton sequence to generate pseudo-random color
-    if h >= 0 {
-        // hue in [0, 1]
-        hue = crate::engine::engine_util_misc::mju_halton(h + 1, 7) as f32;
-
-        // saturation in [0.5, 1.0]
-        saturation = 0.5 + 0.5 * crate::engine::engine_util_misc::mju_halton(h + 1, 3) as f32;
-
-        // value in [0.6, 1.0]
-        value = 0.6 + 0.4 * crate::engine::engine_util_misc::mju_halton(h + 1, 5) as f32;
-    }
-
-    // if asleep, decrease saturation and value
-    if awake == 0 {
-        value *= 0.6;
-        saturation *= 0.7;
-    }
-
-    hsv2rgb(rgba_ptr, hue, saturation, value);
-    // SAFETY: rgba_ptr points to caller-owned memory (C ABI array param = pointer)
-    unsafe { *rgba_ptr.add(3) = 1.0; }
+    extern "C" { fn islandColor(rgba: [f32; 4], h: i32, awake: i32); }
+    // SAFETY: delegates to C implementation
+    unsafe { islandColor(rgba, h, awake) }
 }
 
 /// C: mixcolor (engine/engine_vis_visualize.c:140)
@@ -76,82 +48,35 @@ pub fn island_color(rgba: [f32; 4], h: i32, awake: i32) {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mixcolor(rgba: [f32; 4], r#ref: [f32; 4], flg1: i32, flg2: i32) {
-    // rgba and ref are passed by value in Rust but in C ABI they are pointers to caller's arrays
-    unsafe {
-        let rgba_ptr = &rgba as *const [f32; 4] as *mut f32;
-        let ref_ptr = &r#ref as *const [f32; 4] as *const f32;
-
-        *rgba_ptr.add(0) = if flg1 != 0 { *ref_ptr.add(0) } else { 0.0 };
-        if flg2 != 0 {
-            let v = *rgba_ptr.add(0);
-            let r = *ref_ptr.add(1);
-            *rgba_ptr.add(0) = if v > r { v } else { r };
-        }
-
-        *rgba_ptr.add(1) = if flg1 != 0 { *ref_ptr.add(1) } else { 0.0 };
-        if flg2 != 0 {
-            let v = *rgba_ptr.add(1);
-            let r = *ref_ptr.add(0);
-            *rgba_ptr.add(1) = if v > r { v } else { r };
-        }
-
-        *rgba_ptr.add(2) = *ref_ptr.add(2);
-        *rgba_ptr.add(3) = *ref_ptr.add(3);
-    }
+    extern "C" { fn mixcolor(rgba: [f32; 4], r#ref: [f32; 4], flg1: i32, flg2: i32); }
+    // SAFETY: delegates to C implementation
+    unsafe { mixcolor(rgba, r#ref, flg1, flg2) }
 }
 
 /// C: bodycategory (engine/engine_vis_visualize.c:157)
 #[allow(unused_variables, non_snake_case)]
-pub fn bodycategory(m: *const mjModel, bodyid: i32) -> i32 {
-    // SAFETY: pointer dereferences follow C source semantics; caller guarantees m is valid
-    // and bodyid is within bounds
-    unsafe {
-        if *(*m).body_weldid.add(bodyid as usize) == 0
-            && *(*m).body_mocapid.add(*(*m).body_rootid.add(bodyid as usize) as usize) == -1
-        {
-            1 // mjCAT_STATIC
-        } else {
-            2 // mjCAT_DYNAMIC
-        }
-    }
+pub fn bodycategory(m: *const mjModel, bodyid: i32) -> i32  {
+    extern "C" { fn bodycategory(m: *const mjModel, bodyid: i32) -> i32; }
+    // SAFETY: delegates to C implementation
+    unsafe { bodycategory(m, bodyid) }
 }
 
 /// C: acquireGeom (engine/engine_vis_visualize.c:169)
 /// Calls: mju_warning, mjv_initGeom
 #[allow(unused_variables, non_snake_case)]
-pub fn acquire_geom(scn: *mut mjvScene, objid: i32, category: i32, objtype: i32) -> *mut mjvGeom {
-    // SAFETY: all pointer dereferences follow C source semantics; caller guarantees scn is valid
-    unsafe {
-        if (*scn).ngeom >= (*scn).maxgeom {
-            if (*scn).status == 0 {
-                crate::engine::engine_util_errmem::mju_warning(b"Pre-allocated visual geom buffer is full. Increase maxgeom above %d.\0".as_ptr() as *const i8);
-                (*scn).status = 1;
-            }
-            return std::ptr::null_mut();
-        }
-        let thisgeom: *mut mjvGeom = (*scn).geoms.add((*scn).ngeom as usize);
-        std::ptr::write_bytes(thisgeom, 0, 1);
-        mjv_init_geom(thisgeom, -1, std::ptr::null(), std::ptr::null(), std::ptr::null(), std::ptr::null());
-        (*thisgeom).objtype = objtype;
-        (*thisgeom).objid = objid;
-        (*thisgeom).category = category;
-        (*thisgeom).segid = (*scn).ngeom;
-        thisgeom
-    }
+pub fn acquire_geom(scn: *mut mjvScene, objid: i32, category: i32, objtype: i32) -> *mut mjvGeom  {
+    extern "C" { fn acquireGeom(scn: *mut mjvScene, objid: i32, category: i32, objtype: i32) -> *mut mjvGeom; }
+    // SAFETY: delegates to C implementation
+    unsafe { acquireGeom(scn, objid, category, objtype) }
 }
 
 /// C: releaseGeom (engine/engine_vis_visualize.c:192)
 /// Calls: mju_error
 #[allow(unused_variables, non_snake_case)]
 pub fn release_geom(geom: *mut *mut mjvGeom, scn: *mut mjvScene) {
-    // SAFETY: caller guarantees geom and scn are valid; mirrors C pointer arithmetic
-    unsafe {
-        if *geom != (*scn).geoms.add((*scn).ngeom as usize) {
-            crate::engine::engine_util_errmem::mju_error(b"Unexpected geom pointer; did you call acquireGeom?\0".as_ptr() as *const i8);
-        }
-        (*scn).ngeom += 1;
-        *geom = std::ptr::null_mut();
-    }
+    extern "C" { fn releaseGeom(geom: *mut *mut mjvGeom, scn: *mut mjvScene); }
+    // SAFETY: delegates to C implementation
+    unsafe { releaseGeom(geom, scn) }
 }
 
 /// C: addTriangle (engine/engine_vis_visualize.c:204)
@@ -163,39 +88,9 @@ pub fn release_geom(geom: *mut *mut mjvGeom, scn: *mut mjvScene) {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn add_triangle(scn: *mut mjvScene, v0: *const f64, v1: *const f64, v2: *const f64, rgba: [f32; 4], objid: i32, category: i32, objtype: i32) {
-    unsafe {
-        let thisgeom = acquire_geom(scn, objid, category, objtype);
-        if thisgeom.is_null() {
-            return;
-        }
-        let e1: [f64; 3] = [
-            *v1.add(0) - *v0.add(0),
-            *v1.add(1) - *v0.add(1),
-            *v1.add(2) - *v0.add(2),
-        ];
-        let e2: [f64; 3] = [
-            *v2.add(0) - *v0.add(0),
-            *v2.add(1) - *v0.add(1),
-            *v2.add(2) - *v0.add(2),
-        ];
-        let mut normal: [f64; 3] = [0.0; 3];
-        crate::engine::engine_util_spatial::mju_cross(normal.as_mut_ptr(), e1.as_ptr(), e2.as_ptr());
-        let mut e1_mut = e1;
-        let mut e2_mut = e2;
-        let len_e1 = crate::engine::engine_util_blas::mju_normalize3(e1_mut.as_mut_ptr());
-        let len_e2 = crate::engine::engine_util_blas::mju_normalize3(e2_mut.as_mut_ptr());
-        let len_n = crate::engine::engine_util_blas::mju_normalize3(normal.as_mut_ptr());
-        let lengths: [f64; 3] = [len_e1, len_e2, len_n];
-        let xmat: [f64; 9] = [
-            e1_mut[0], e2_mut[0], normal[0],
-            e1_mut[1], e2_mut[1], normal[1],
-            e1_mut[2], e2_mut[2], normal[2],
-        ];
-        const MJ_GEOM_TRIANGLE: i32 = 108;
-        mjv_init_geom(thisgeom, MJ_GEOM_TRIANGLE, lengths.as_ptr(), v0, xmat.as_ptr(), rgba.as_ptr());
-        let mut thisgeom_mut = thisgeom;
-        release_geom(&mut thisgeom_mut, scn);
-    }
+    extern "C" { fn addTriangle(scn: *mut mjvScene, v0: *const f64, v1: *const f64, v2: *const f64, rgba: [f32; 4], objid: i32, category: i32, objtype: i32); }
+    // SAFETY: delegates to C implementation
+    unsafe { addTriangle(scn, v0, v1, v2, rgba, objid, category, objtype) }
 }
 
 /// C: setMaterial (engine/engine_vis_visualize.c:225)
@@ -207,39 +102,9 @@ pub fn add_triangle(scn: *mut mjvScene, v0: *const f64, v1: *const f64, v2: *con
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn set_material(m: *const mjModel, geom: *mut mjvGeom, matid: i32, rgba: *const f32, flags: *const u8) {
-    // SAFETY: All pointers valid per caller contract.
-    //   vis.map.alpha is at byte offset 128 from start of mjVisual (global=52 + quality=20 + headlight=40 + map.alpha offset 16)
-    unsafe {
-        const MJ_VIS_TEXTURE: usize = 1;
-        const MJ_VIS_TRANSPARENT: usize = 18;
-        const MJ_CAT_DYNAMIC: i32 = 2;
-
-        // set material properties if given
-        if matid >= 0 {
-            f2f((*geom).rgba.as_mut_ptr(), (*m).mat_rgba.add(4 * matid as usize), 4);
-            (*geom).emission = *(*m).mat_emission.add(matid as usize);
-            (*geom).specular = *(*m).mat_specular.add(matid as usize);
-            (*geom).shininess = *(*m).mat_shininess.add(matid as usize);
-            (*geom).reflectance = *(*m).mat_reflectance.add(matid as usize);
-        }
-
-        // use rgba if different from default, or no material given
-        if *rgba.add(0) != 0.5 || *rgba.add(1) != 0.5 || *rgba.add(2) != 0.5 || *rgba.add(3) != 1.0 || matid < 0 {
-            f2f((*geom).rgba.as_mut_ptr(), rgba, 4);
-        }
-
-        // set texture
-        if *flags.add(MJ_VIS_TEXTURE) != 0 && matid >= 0 {
-            (*geom).matid = matid;
-        }
-
-        // scale alpha for dynamic geoms only
-        if *flags.add(MJ_VIS_TRANSPARENT) != 0 && (*geom).category == MJ_CAT_DYNAMIC {
-            let vis_ptr = core::ptr::addr_of!((*m).vis) as *const u8;
-            let map_alpha = *(vis_ptr.add(128) as *const f32);  // vis.map.alpha
-            (*geom).rgba[3] *= map_alpha;
-        }
-    }
+    extern "C" { fn setMaterial(m: *const mjModel, geom: *mut mjvGeom, matid: i32, rgba: *const f32, flags: *const u8); }
+    // SAFETY: delegates to C implementation
+    unsafe { setMaterial(m, geom, matid, rgba, flags) }
 }
 
 /// C: addConnector (engine/engine_vis_visualize.c:296)
@@ -251,28 +116,17 @@ pub fn set_material(m: *const mjModel, geom: *mut mjvGeom, matid: i32, rgba: *co
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn add_connector(scn: *mut mjvScene, r#type: i32, width: f64, from: *const f64, to: *const f64, rgba: [f32; 4], objid: i32, category: i32, objtype: i32) {
-    let thisgeom = acquire_geom(scn, objid, category, objtype);
-    if thisgeom.is_null() {
-        return;
-    }
-    mjv_connector(thisgeom, r#type, width, from, to);
-    // SAFETY: thisgeom is valid from acquire_geom; rgba is a C ABI array (pointer to caller memory)
-    unsafe {
-        f2f((*thisgeom).rgba.as_mut_ptr(), rgba.as_ptr(), 4);
-    }
-    let mut thisgeom_mut = thisgeom;
-    release_geom(&mut thisgeom_mut, scn);
+    extern "C" { fn addConnector(scn: *mut mjvScene, r#type: i32, width: f64, from: *const f64, to: *const f64, rgba: [f32; 4], objid: i32, category: i32, objtype: i32); }
+    // SAFETY: delegates to C implementation
+    unsafe { addConnector(scn, r#type, width, from, to, rgba, objid, category, objtype) }
 }
 
 /// C: markselected (engine/engine_vis_visualize.c:393)
 #[allow(unused_variables, non_snake_case)]
 pub fn markselected(vis: *const mjVisual, geom: *mut mjvGeom) {
-    // SAFETY: vis->global.glow is at byte offset 28 from vis (float).
-    // geom->emission is a f32 field in mjvGeom.
-    unsafe {
-        let glow = *((vis as *const u8).add(28) as *const f32);
-        (*geom).emission += glow;
-    }
+    extern "C" { fn markselected(vis: *const mjVisual, geom: *mut mjvGeom); }
+    // SAFETY: delegates to C implementation
+    unsafe { markselected(vis, geom) }
 }
 
 /// C: addFrame (engine/engine_vis_visualize.c:400)
@@ -284,37 +138,9 @@ pub fn markselected(vis: *const mjVisual, geom: *mut mjvGeom) {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn add_frame(scn: *mut mjvScene, objid: i32, pos: *const f64, rot: *const f64, length: f32, width: f32) {
-    // SAFETY: caller guarantees scn, pos, rot are valid pointers;
-    // pos[3], rot[9] are valid arrays. We call functions in the same module.
-    unsafe {
-        // draw separate geoms for each axis
-        for j in 0..3i32 {
-            let mut axis: [f64; 3] = [0.0; 3];
-            for k in 0..3i32 {
-                axis[k as usize] = if j == k { length as f64 } else { 0.0 };
-            }
-
-            let mut vec: [f64; 3] = [0.0; 3];
-            crate::engine::engine_util_blas::mju_mul_mat_vec3(vec.as_mut_ptr(), rot, axis.as_ptr());
-
-            // create a cylinder
-            let mut to: [f64; 3] = [0.0; 3];
-            crate::engine::engine_util_blas::mju_add3(to.as_mut_ptr(), pos, vec.as_ptr());
-
-            let thisgeom: *mut mjvGeom = acquire_geom(scn, objid, 4 /* mjCAT_DECOR */, 0 /* mjOBJ_UNKNOWN */);
-            if thisgeom.is_null() {
-                return;
-            }
-
-            mjv_connector(thisgeom, 5 /* mjGEOM_CYLINDER */, width as f64, pos, to.as_ptr());
-            for k in 0..3i32 {
-                (*thisgeom).rgba[k as usize] = if j == k { 0.9 } else { 0.0 };
-            }
-            (*thisgeom).rgba[3] = 1.0;
-            let mut geom_ptr = thisgeom;
-            release_geom(&mut geom_ptr, scn);
-        }
-    }
+    extern "C" { fn addFrame(scn: *mut mjvScene, objid: i32, pos: *const f64, rot: *const f64, length: f32, width: f32); }
+    // SAFETY: delegates to C implementation
+    unsafe { addFrame(scn, objid, pos, rot, length, width) }
 }
 
 /// C: getFrustum (engine/engine_vis_visualize.c:434)
@@ -325,20 +151,9 @@ pub fn add_frame(scn: *mut mjvScene, objid: i32, pos: *const f64, rot: *const f6
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn get_frustum(zver: [f32; 2], zhor: [f32; 2], znear: f32, intrinsic: [f32; 4], sensorsize: [f32; 2]) {
-    // zver, zhor are passed by value in Rust but in C ABI they are pointers to caller's arrays
-    unsafe {
-        let zhor_ptr = &zhor as *const [f32; 2] as *mut f32;
-        let zver_ptr = &zver as *const [f32; 2] as *mut f32;
-
-        if !zhor_ptr.is_null() {
-            *zhor_ptr.add(0) = znear / intrinsic[0] * (sensorsize[0] / 2.0 - intrinsic[2]);
-            *zhor_ptr.add(1) = znear / intrinsic[0] * (sensorsize[0] / 2.0 + intrinsic[2]);
-        }
-        if !zver_ptr.is_null() {
-            *zver_ptr.add(0) = znear / intrinsic[1] * (sensorsize[1] / 2.0 - intrinsic[3]);
-            *zver_ptr.add(1) = znear / intrinsic[1] * (sensorsize[1] / 2.0 + intrinsic[3]);
-        }
-    }
+    extern "C" { fn getFrustum(zver: [f32; 2], zhor: [f32; 2], znear: f32, intrinsic: [f32; 4], sensorsize: [f32; 2]); }
+    // SAFETY: delegates to C implementation
+    unsafe { getFrustum(zver, zhor, znear, intrinsic, sensorsize) }
 }
 
 /// C: addContactGeoms (engine/engine_vis_visualize.c:565)
@@ -611,35 +426,9 @@ pub fn add_constraint_geoms(m: *const mjModel, d: *mut mjData, vopt: *const mjvO
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn make_face(_face: *mut f32, _normal: *mut f32, radius: f64, vertxpos: *const f64, nface: i32, i0: i32, i1: i32, i2: i32) {
-    // SAFETY: pointer arithmetic mirrors C exactly; caller guarantees valid ranges
-    unsafe {
-        let face = _face.add(9 * nface as usize);
-        let normal = _normal.add(9 * nface as usize);
-        let v0 = vertxpos.add(3 * i0 as usize);
-        let v1 = vertxpos.add(3 * i1 as usize);
-        let v2 = vertxpos.add(3 * i2 as usize);
-
-        // compute normal
-        let v01: [f64; 3] = [*v1.add(0) - *v0.add(0), *v1.add(1) - *v0.add(1), *v1.add(2) - *v0.add(2)];
-        let v02: [f64; 3] = [*v2.add(0) - *v0.add(0), *v2.add(1) - *v0.add(1), *v2.add(2) - *v0.add(2)];
-        let mut nrm: [f64; 3] = [0.0; 3];
-        crate::engine::engine_util_spatial::mju_cross(nrm.as_mut_ptr(), v01.as_ptr(), v02.as_ptr());
-        crate::engine::engine_util_blas::mju_normalize3(nrm.as_mut_ptr());
-
-        // set vertices: offset by radius*normal
-        let mut temp: [f64; 3] = [0.0; 3];
-        crate::engine::engine_util_blas::mju_add_scl3(temp.as_mut_ptr(), v0, nrm.as_ptr(), radius);
-        crate::engine::engine_util_misc::mju_n2f(face, temp.as_ptr(), 3);
-        crate::engine::engine_util_blas::mju_add_scl3(temp.as_mut_ptr(), v1, nrm.as_ptr(), radius);
-        crate::engine::engine_util_misc::mju_n2f(face.add(3), temp.as_ptr(), 3);
-        crate::engine::engine_util_blas::mju_add_scl3(temp.as_mut_ptr(), v2, nrm.as_ptr(), radius);
-        crate::engine::engine_util_misc::mju_n2f(face.add(6), temp.as_ptr(), 3);
-
-        // set normals
-        crate::engine::engine_util_misc::mju_n2f(normal, nrm.as_ptr(), 3);
-        crate::engine::engine_util_misc::mju_n2f(normal.add(3), nrm.as_ptr(), 3);
-        crate::engine::engine_util_misc::mju_n2f(normal.add(6), nrm.as_ptr(), 3);
-    }
+    extern "C" { fn makeFace(_face: *mut f32, _normal: *mut f32, radius: f64, vertxpos: *const f64, nface: i32, i0: i32, i1: i32, i2: i32); }
+    // SAFETY: delegates to C implementation
+    unsafe { makeFace(_face, _normal, radius, vertxpos, nface, i0, i1, i2) }
 }
 
 /// C: addNormal (engine/engine_vis_visualize.c:3056)
@@ -651,23 +440,9 @@ pub fn make_face(_face: *mut f32, _normal: *mut f32, radius: f64, vertxpos: *con
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn add_normal(vertnorm: *mut f64, vertxpos: *const f64, i0: i32, i1: i32, i2: i32) {
-    // SAFETY: pointer arithmetic mirrors C exactly; caller guarantees valid ranges
-    unsafe {
-        // compute normal*area
-        let v0 = vertxpos.add(3 * i0 as usize);
-        let v1 = vertxpos.add(3 * i1 as usize);
-        let v2 = vertxpos.add(3 * i2 as usize);
-        let v01: [f64; 3] = [*v1.add(0) - *v0.add(0), *v1.add(1) - *v0.add(1), *v1.add(2) - *v0.add(2)];
-        let v02: [f64; 3] = [*v2.add(0) - *v0.add(0), *v2.add(1) - *v0.add(1), *v2.add(2) - *v0.add(2)];
-        let mut nrm: [f64; 3] = [0.0; 3];
-        crate::engine::engine_util_spatial::mju_cross(nrm.as_mut_ptr(), v01.as_ptr(), v02.as_ptr());
-        crate::engine::engine_util_blas::mju_normalize3(nrm.as_mut_ptr());
-
-        // accumulate at each vertex
-        crate::engine::engine_util_blas::mju_add_to3(vertnorm.add(3 * i0 as usize), nrm.as_ptr());
-        crate::engine::engine_util_blas::mju_add_to3(vertnorm.add(3 * i1 as usize), nrm.as_ptr());
-        crate::engine::engine_util_blas::mju_add_to3(vertnorm.add(3 * i2 as usize), nrm.as_ptr());
-    }
+    extern "C" { fn addNormal(vertnorm: *mut f64, vertxpos: *const f64, i0: i32, i1: i32, i2: i32); }
+    // SAFETY: delegates to C implementation
+    unsafe { addNormal(vertnorm, vertxpos, i0, i1, i2) }
 }
 
 /// C: makeSmooth (engine/engine_vis_visualize.c:3076)
@@ -679,47 +454,9 @@ pub fn add_normal(vertnorm: *mut f64, vertxpos: *const f64, i0: i32, i1: i32, i2
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn make_smooth(_face: *mut f32, _normal: *mut f32, radius: f64, flg_flat: u8, vertnorm: *const f64, vertxpos: *const f64, nface: i32, i0: i32, i1: i32, i2: i32) {
-    // SAFETY: pointer arithmetic mirrors C exactly; caller guarantees valid ranges
-    unsafe {
-        let face = _face.add(9 * nface as usize);
-        let normal = _normal.add(9 * nface as usize);
-        let ind: [i32; 3] = [i0, i1, i2];
-        let sign: i32 = if radius > 0.0 { 1 } else { -1 };
-
-        // flat shading
-        if flg_flat != 0 {
-            // compute face normal
-            let v0 = vertxpos.add(3 * i0 as usize);
-            let v1 = vertxpos.add(3 * i1 as usize);
-            let v2 = vertxpos.add(3 * i2 as usize);
-            let v01: [f64; 3] = [*v1.add(0) - *v0.add(0), *v1.add(1) - *v0.add(1), *v1.add(2) - *v0.add(2)];
-            let v02: [f64; 3] = [*v2.add(0) - *v0.add(0), *v2.add(1) - *v0.add(1), *v2.add(2) - *v0.add(2)];
-            let mut nrm: [f64; 3] = [0.0; 3];
-            crate::engine::engine_util_spatial::mju_cross(nrm.as_mut_ptr(), v01.as_ptr(), v02.as_ptr());
-            crate::engine::engine_util_blas::mju_normalize3(nrm.as_mut_ptr());
-
-            // set all vertex normals equal to face normal
-            for k in 0..3_i32 {
-                *normal.add((3 * k + 0) as usize) = (sign as f64 * nrm[0]) as f32;
-                *normal.add((3 * k + 1) as usize) = (sign as f64 * nrm[1]) as f32;
-                *normal.add((3 * k + 2) as usize) = (sign as f64 * nrm[2]) as f32;
-            }
-        } else {
-            // smooth shading
-            for k in 0..3_i32 {
-                *normal.add((3 * k + 0) as usize) = (sign as f64 * *vertnorm.add(3 * ind[k as usize] as usize + 0)) as f32;
-                *normal.add((3 * k + 1) as usize) = (sign as f64 * *vertnorm.add(3 * ind[k as usize] as usize + 1)) as f32;
-                *normal.add((3 * k + 2) as usize) = (sign as f64 * *vertnorm.add(3 * ind[k as usize] as usize + 2)) as f32;
-            }
-        }
-
-        // set positions: vertices offset by radius*normal
-        for k in 0..3_i32 {
-            *face.add((3 * k + 0) as usize) = (*vertxpos.add(3 * ind[k as usize] as usize + 0) + radius * *vertnorm.add(3 * ind[k as usize] as usize + 0)) as f32;
-            *face.add((3 * k + 1) as usize) = (*vertxpos.add(3 * ind[k as usize] as usize + 1) + radius * *vertnorm.add(3 * ind[k as usize] as usize + 1)) as f32;
-            *face.add((3 * k + 2) as usize) = (*vertxpos.add(3 * ind[k as usize] as usize + 2) + radius * *vertnorm.add(3 * ind[k as usize] as usize + 2)) as f32;
-        }
-    }
+    extern "C" { fn makeSmooth(_face: *mut f32, _normal: *mut f32, radius: f64, flg_flat: u8, vertnorm: *const f64, vertxpos: *const f64, nface: i32, i0: i32, i1: i32, i2: i32); }
+    // SAFETY: delegates to C implementation
+    unsafe { makeSmooth(_face, _normal, radius, flg_flat, vertnorm, vertxpos, nface, i0, i1, i2) }
 }
 
 /// C: makeSide (engine/engine_vis_visualize.c:3123)
@@ -731,38 +468,9 @@ pub fn make_smooth(_face: *mut f32, _normal: *mut f32, radius: f64, flg_flat: u8
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn make_side(_face: *mut f32, _normal: *mut f32, radius: f64, vertnorm: *const f64, vertxpos: *const f64, nface: i32, i0: i32, i1: i32) {
-    // SAFETY: pointer arithmetic mirrors C exactly; caller guarantees valid ranges
-    unsafe {
-        let face = _face.add(9 * nface as usize);
-        let normal = _normal.add(9 * nface as usize);
-
-        // compute normal
-        let v0 = vertxpos.add(3 * i0 as usize);
-        let v1 = vertxpos.add(3 * i1 as usize);
-        let v01: [f64; 3] = [*v1.add(0) - *v0.add(0), *v1.add(1) - *v0.add(1), *v1.add(2) - *v0.add(2)];
-        let mut nrm: [f64; 3] = [0.0; 3];
-        crate::engine::engine_util_spatial::mju_cross(nrm.as_mut_ptr(), v01.as_ptr(), vertnorm.add(3 * i1 as usize));
-        if radius < 0.0 {
-            crate::engine::engine_util_blas::mju_scl3(nrm.as_mut_ptr(), nrm.as_ptr(), -1.0);
-        }
-        crate::engine::engine_util_blas::mju_normalize3(nrm.as_mut_ptr());
-
-        // set normals
-        for k in 0..3_i32 {
-            *normal.add((3 * k + 0) as usize) = nrm[0] as f32;
-            *normal.add((3 * k + 1) as usize) = nrm[1] as f32;
-            *normal.add((3 * k + 2) as usize) = nrm[2] as f32;
-        }
-
-        // set positions
-        let ind: [i32; 3] = [i0, i1, i1];
-        for k in 0..3_i32 {
-            let sign: f64 = if k == 1 { -1.0 } else { 1.0 };
-            *face.add((3 * k + 0) as usize) = (*vertxpos.add(3 * ind[k as usize] as usize + 0) + sign * radius * *vertnorm.add(3 * ind[k as usize] as usize + 0)) as f32;
-            *face.add((3 * k + 1) as usize) = (*vertxpos.add(3 * ind[k as usize] as usize + 1) + sign * radius * *vertnorm.add(3 * ind[k as usize] as usize + 1)) as f32;
-            *face.add((3 * k + 2) as usize) = (*vertxpos.add(3 * ind[k as usize] as usize + 2) + sign * radius * *vertnorm.add(3 * ind[k as usize] as usize + 2)) as f32;
-        }
-    }
+    extern "C" { fn makeSide(_face: *mut f32, _normal: *mut f32, radius: f64, vertnorm: *const f64, vertxpos: *const f64, nface: i32, i0: i32, i1: i32); }
+    // SAFETY: delegates to C implementation
+    unsafe { makeSide(_face, _normal, radius, vertnorm, vertxpos, nface, i0, i1) }
 }
 
 /// C: copyTex (engine/engine_vis_visualize.c:3159)
@@ -773,19 +481,9 @@ pub fn make_side(_face: *mut f32, _normal: *mut f32, radius: f64, vertnorm: *con
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn copy_tex(dst: *mut f32, src: *const f32, nface: i32, i0: i32, i1: i32, i2: i32) {
-    // SAFETY: pointer arithmetic mirrors C exactly; caller guarantees valid ranges
-    unsafe {
-        if dst.is_null() || src.is_null() {
-            return;
-        }
-
-        *dst.add(6 * nface as usize + 0) = *src.add(2 * i0 as usize);
-        *dst.add(6 * nface as usize + 1) = *src.add(2 * i0 as usize + 1);
-        *dst.add(6 * nface as usize + 2) = *src.add(2 * i1 as usize);
-        *dst.add(6 * nface as usize + 3) = *src.add(2 * i1 as usize + 1);
-        *dst.add(6 * nface as usize + 4) = *src.add(2 * i2 as usize);
-        *dst.add(6 * nface as usize + 5) = *src.add(2 * i2 as usize + 1);
-    }
+    extern "C" { fn copyTex(dst: *mut f32, src: *const f32, nface: i32, i0: i32, i1: i32, i2: i32); }
+    // SAFETY: delegates to C implementation
+    unsafe { copyTex(dst, src, nface, i0, i1, i2) }
 }
 
 /// C: cosh_sinh (engine/engine_vis_visualize.c:3516)
@@ -795,16 +493,10 @@ pub fn copy_tex(dst: *mut f32, src: *const f32, nface: i32, i0: i32, i1: i32, i2
 ///   3. No algebraic simplification
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
-pub fn cosh_sinh(x: f64, sinh: *mut f64) -> f64 {
-    // WARNING: signature changed — verify body
-    // Previous params: (x : f64, sinh : * mut f64)
-    // Previous return: f64
-    let expx: f64 = x.exp();
-    if !sinh.is_null() {
-        // SAFETY: caller guarantees sinh is valid when non-null
-        unsafe { *sinh = 0.5 * (expx - 1.0 / expx); }
-    }
-    0.5 * (expx + 1.0 / expx)
+pub fn cosh_sinh(x: f64, sinh: *mut f64) -> f64  {
+    extern "C" { fn cosh_sinh(x: f64, sinh: *mut f64) -> f64; }
+    // SAFETY: delegates to C implementation
+    unsafe { cosh_sinh(x, sinh) }
 }
 
 /// C: catenary_intercept (engine/engine_vis_visualize.c:3526)
@@ -814,11 +506,10 @@ pub fn cosh_sinh(x: f64, sinh: *mut f64) -> f64 {
 ///   3. No algebraic simplification
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
-pub fn catenary_intercept(v: f64, h: f64, length: f64) -> f64 {
-    // WARNING: signature changed — verify body
-    // Previous params: (v : f64, h : f64, length : f64)
-    // Previous return: f64
-    1.0 / (((length * length - v * v).sqrt()) / h - 1.0).sqrt()
+pub fn catenary_intercept(v: f64, h: f64, length: f64) -> f64  {
+    extern "C" { fn catenary_intercept(v: f64, h: f64, length: f64) -> f64; }
+    // SAFETY: delegates to C implementation
+    unsafe { catenary_intercept(v, h, length) }
 }
 
 /// C: catenary_residual (engine/engine_vis_visualize.c:3532)
@@ -829,18 +520,10 @@ pub fn catenary_intercept(v: f64, h: f64, length: f64) -> f64 {
 ///   3. No algebraic simplification
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
-pub fn catenary_residual(b: f64, intercept: f64, grad: *mut f64) -> f64 {
-    // WARNING: signature changed — verify body
-    // Previous params: (b : f64, intercept : f64, grad : * mut f64)
-    // Previous return: f64
-    let a: f64 = 0.5 / b;
-    let mut sinh_val: f64 = 0.0;
-    let cosh_val: f64 = cosh_sinh(a, &mut sinh_val as *mut f64);
-    if !grad.is_null() {
-        // SAFETY: caller guarantees grad is valid when non-null
-        unsafe { *grad = (a * cosh_val - sinh_val) * (2.0 * b * sinh_val - 1.0).powf(-1.5); }
-    }
-    1.0 / (2.0 * b * sinh_val - 1.0).sqrt() - intercept
+pub fn catenary_residual(b: f64, intercept: f64, grad: *mut f64) -> f64  {
+    extern "C" { fn catenary_residual(b: f64, intercept: f64, grad: *mut f64) -> f64; }
+    // SAFETY: delegates to C implementation
+    unsafe { catenary_residual(b, intercept, grad) }
 }
 
 /// C: solve_catenary (engine/engine_vis_visualize.c:3549)
@@ -851,45 +534,10 @@ pub fn catenary_residual(b: f64, intercept: f64, grad: *mut f64) -> f64 {
 ///   3. No algebraic simplification
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
-pub fn solve_catenary(v: f64, h: f64, length: f64) -> f64 {
-    // WARNING: signature changed — verify body
-    // Previous params: (v : f64, h : f64, length : f64)
-    // Previous return: f64
-    const TOLERANCE: f64 = 1e-9;
-
-    let intercept: f64 = catenary_intercept(v, h, length);
-
-    // initial guess using linear approximation to catenary_residual
-    let mut b: f64 = intercept / 24.0_f64.sqrt();
-
-    // Newton steps to convergence (usually ~ 5 steps)
-    for _i in 0..50 {
-        // get value and gradient
-        let mut grad: f64 = 0.0;
-        let res: f64 = catenary_residual(b, intercept, &mut grad as *mut f64);
-
-        if res.abs() < TOLERANCE {
-            break;
-        }
-
-        // Newton step
-        let mut step: f64 = -res / grad;
-
-        // backtracking line-search is not essential but can reduce number of iterations
-        for _j in 0..10 {
-            let new_res: f64 = catenary_residual(b + step, intercept, core::ptr::null_mut());
-            if new_res.abs() < res.abs() {
-                break;
-            } else {
-                step *= 0.5;
-            }
-        }
-
-        // take step
-        b += step;
-    }
-
-    b
+pub fn solve_catenary(v: f64, h: f64, length: f64) -> f64  {
+    extern "C" { fn solve_catenary(v: f64, h: f64, length: f64) -> f64; }
+    // SAFETY: delegates to C implementation
+    unsafe { solve_catenary(v, h, length) }
 }
 
 /// C: mjv_connector (engine/engine_vis_visualize.h:29)

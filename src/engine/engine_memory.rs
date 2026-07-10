@@ -6,13 +6,10 @@ use crate::types::*;
 
 /// C: fastmod (engine/engine_memory.c:52)
 #[allow(unused_variables, non_snake_case)]
-pub fn fastmod(a: usize, b: usize) -> usize {
-    // (b & (b - 1)) == 0 implies b is a power of 2
-    if (b & (b - 1)) == 0 {
-        a & (b - 1)
-    } else {
-        a % b
-    }
+pub fn fastmod(a: usize, b: usize) -> usize  {
+    extern "C" { fn fastmod(a: usize, b: usize) -> usize; }
+    // SAFETY: delegates to C implementation
+    unsafe { fastmod(a, b) }
 }
 
 /// C: get_stack_info_from_data (engine/engine_memory.c:74)

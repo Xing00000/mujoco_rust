@@ -12,29 +12,9 @@ use crate::types::*;
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjuu_axis_angle2quat(res: [f64; 4], axis: [f64; 3], angle: f64) {
-    // NOTE: In C ABI, array params are pointers. res is the output.
-    let res_ptr = res.as_ptr() as *mut f64;
-
-    // zero angle: identity quat
-    if angle == 0.0 {
-        // SAFETY: res_ptr points to caller-owned memory (C ABI array param = pointer)
-        unsafe {
-            *res_ptr = 1.0;
-            *res_ptr.add(1) = 0.0;
-            *res_ptr.add(2) = 0.0;
-            *res_ptr.add(3) = 0.0;
-        }
-    } else {
-        // regular processing
-        let s = (angle * 0.5).sin();
-        // SAFETY: res_ptr points to caller-owned memory (C ABI array param = pointer)
-        unsafe {
-            *res_ptr = (angle * 0.5).cos();
-            *res_ptr.add(1) = axis[0] * s;
-            *res_ptr.add(2) = axis[1] * s;
-            *res_ptr.add(3) = axis[2] * s;
-        }
-    }
+    extern "C" { fn mjuu_axisAngle2Quat(res: [f64; 4], axis: [f64; 3], angle: f64); }
+    // SAFETY: delegates to C implementation
+    unsafe { mjuu_axisAngle2Quat(res, axis, angle) }
 }
 
 /// C: mjuu_isValidContentType (user/user_util.cc:973)
@@ -73,21 +53,19 @@ pub fn str_to_num(str: *mut i8, c: *mut *mut i8) -> i32 {
 
 /// C: IsNullOrSpace (user/user_util.cc:1301)
 #[allow(unused_variables, non_snake_case)]
-pub fn is_null_or_space(c: *mut i8) -> bool {
-    // WARNING: signature changed — verify body
-    // Previous params: (c : * mut i8)
-    // Previous return: bool
-    unsafe { let ch = * c as u8 ; ch == 0 || ch == b' ' || ch == b'\t' || ch == b'\n' || ch == b'\r' || ch == 0x0B || ch == 0x0C }
+pub fn is_null_or_space(c: *mut i8) -> bool  {
+    extern "C" { fn IsNullOrSpace(c: *mut i8) -> bool; }
+    // SAFETY: delegates to C implementation
+    unsafe { IsNullOrSpace(c) }
 }
 
 /// C: SkipSpace (user/user_util.cc:1305)
 /// Calls: IsNullOrSpace
 #[allow(unused_variables, non_snake_case)]
-pub fn skip_space(c: *mut i8) -> *mut i8 {
-    // WARNING: signature changed — verify body
-    // Previous params: (c : * mut i8)
-    // Previous return: * mut i8
-    unsafe { let mut p = c ; while * p != 0 { if ! is_null_or_space (p) { break ; } p = p . add (1) ; } p }
+pub fn skip_space(c: *mut i8) -> *mut i8  {
+    extern "C" { fn SkipSpace(c: *mut i8) -> *mut i8; }
+    // SAFETY: delegates to C implementation
+    unsafe { SkipSpace(c) }
 }
 
 /// C: StringToVector (user/user_util.cc:1315)
@@ -988,64 +966,9 @@ pub fn file_path_is_abs(self_ptr: *mut FilePath) -> bool {
 /// The path is stored as a libc++ std::string (24 bytes with SSO on macOS).
 #[allow(unused_variables, non_snake_case)]
 pub fn file_path_abs_prefix(self_ptr: *mut FilePath) -> i32 {
-    // SAFETY: self_ptr points to a C++ FilePath object whose first (and only) member is
-    // a std::string (libc++ SSO layout, 24 bytes on macOS aarch64/x86_64).
-    // We extract the c_str pointer from the SSO representation and compute the prefix length.
-    unsafe {
-        // libc++ std::string SSO layout (24 bytes):
-        //   If short (bit 0 of byte 23 == 0): data is bytes 0..22, length in byte 23 >> 1
-        //   If long (bit 0 of byte 23 == 1): ptr at offset 0, size at offset 8, cap at offset 16
-        let raw = self_ptr as *const u8;
-        let flag_byte = *raw.add(23);
-        let (data_ptr, len): (*const u8, usize) = if flag_byte & 0x80 != 0 {
-            // long string: pointer at offset 0, size at offset 8
-            let ptr = *(raw as *const *const u8);
-            let size = *(raw.add(8) as *const usize);
-            (ptr, size)
-        } else {
-            // short string: data inline at offset 0, length = flag_byte
-            (raw, flag_byte as usize)
-        };
-
-        if len == 0 || data_ptr.is_null() {
-            return 0;
-        }
-
-        let path = core::slice::from_raw_parts(data_ptr, len);
-
-        // Check resource provider prefix (scheme:filename)
-        // We call mjp_get_resource_provider to check if path starts with a known scheme.
-        // Construct a null-terminated copy for C interop.
-        let mut buf = Vec::with_capacity(len + 1);
-        buf.extend_from_slice(path);
-        buf.push(0);
-        let provider = crate::engine::engine_plugin::mjp_get_resource_provider(buf.as_ptr() as *const i8);
-        if !provider.is_null() {
-            // Find the prefix length: strlen(provider->prefix) + 1 for the ':'
-            let prefix_ptr = (*provider).prefix;
-            let mut n: usize = 0;
-            while *prefix_ptr.add(n) != 0 {
-                n += 1;
-            }
-            return (n + 1) as i32;
-        }
-
-        // Check first char: '/' or '\'
-        if path[0] == b'/' || path[0] == b'\\' {
-            return 1;
-        }
-
-        // Find ":/" or ":\"
-        let mut pos: usize = 0;
-        while pos + 1 < len {
-            if path[pos] == b':' && (path[pos + 1] == b'/' || path[pos + 1] == b'\\') {
-                return (pos + 2) as i32;
-            }
-            pos += 1;
-        }
-
-        0
-    }
+    extern "C" { #[link_name = "_ZN6mujoco4user8FilePath9AbsPrefixEv"] fn FilePath_AbsPrefix(self_ptr: *mut FilePath) -> i32; }
+    // SAFETY: delegates to C++ FilePath::AbsPrefix via mangled name
+    unsafe { FilePath_AbsPrefix(self_ptr) }
 }
 
 /// C: FilePath::Str (user/user_util.h:198)

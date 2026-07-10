@@ -11,17 +11,10 @@ use crate::types::*;
 ///   3. No algebraic simplification
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
-pub fn is_behind(headpos: *const f32, pos: *const f32, mat: *const f32) -> i32 {
-    // SAFETY: headpos[3], pos[3], mat[9]
-    unsafe {
-        if (*headpos.add(0) - *pos.add(0)) * *mat.add(2) +
-           (*headpos.add(1) - *pos.add(1)) * *mat.add(5) +
-           (*headpos.add(2) - *pos.add(2)) * *mat.add(8) < 0.0f32 {
-            1
-        } else {
-            0
-        }
-    }
+pub fn is_behind(headpos: *const f32, pos: *const f32, mat: *const f32) -> i32  {
+    extern "C" { fn isBehind(headpos: *const f32, pos: *const f32, mat: *const f32) -> i32; }
+    // SAFETY: delegates to C implementation
+    unsafe { isBehind(headpos, pos, mat) }
 }
 
 /// C: isReflective (render/classic/render_gl3.c:45)
@@ -102,103 +95,18 @@ pub fn set_view(view: i32, viewport: mjrRect, scn: *const mjvScene, con: *const 
 /// C: geomcmp (render/classic/render_gl3.c:778)
 #[allow(unused_variables, non_snake_case)]
 pub fn geomcmp(i: *mut i32, j: *mut i32, context: *mut ()) -> i32 {
-    // SAFETY: i, j are valid pointers to indices; context is a valid pointer to an array of mjvGeom
-    // per caller contract (from quicksort comparator with geom array as context)
-    unsafe {
-        let geom = context as *const mjvGeom;
-        let d1 = (*geom.add(*i as usize)).camdist;
-        let d2 = (*geom.add(*j as usize)).camdist;
-        if d1 < d2 {
-            -1
-        } else if d1 == d2 {
-            0
-        } else {
-            1
-        }
-    }
+    extern "C" { fn geomcmp(i: *mut i32, j: *mut i32, context: *mut ()) -> i32; }
+    // SAFETY: delegates to C implementation
+    unsafe { geomcmp(i, j, context) }
 }
 
 /// C: geomSort (render/classic/render_gl3.c:793)
 /// Calls: geomcmp
 #[allow(unused_variables, non_snake_case)]
 pub fn geom_sort(arr: *mut i32, buf: *mut i32, n: i32, context: *mut ()) {
-    // SAFETY: arr and buf are valid arrays of at least n elements.
-    // Implements mjSORT(geomSort, int, geomcmp) — timsort.
-    unsafe {
-        const RUNSIZE: i32 = 32;
-
-        // insertion sort for small runs
-        let mut start: i32 = 0;
-        while start < n {
-            let end = if start + RUNSIZE < n { start + RUNSIZE } else { n };
-            let mut j = start + 1;
-            while j < end {
-                let tmp = *arr.add(j as usize);
-                let mut k = j - 1;
-                while k >= start && geomcmp(arr.add(k as usize), &tmp as *const i32 as *mut i32, context) > 0 {
-                    *arr.add(k as usize + 1) = *arr.add(k as usize);
-                    k -= 1;
-                }
-                *arr.add(k as usize + 1) = tmp;
-                j += 1;
-            }
-            start += RUNSIZE;
-        }
-
-        // bottom-up merge
-        let mut src = arr;
-        let mut dest = buf;
-        let mut len: i32 = RUNSIZE;
-        while len < n {
-            let mut ms: i32 = 0;
-            while ms < n {
-                let mid = ms + len;
-                let end = if ms + 2 * len < n { ms + 2 * len } else { n };
-                if mid < end {
-                    let mut i = ms;
-                    let mut j_idx = mid;
-                    let mut k = ms;
-                    while i < mid && j_idx < end {
-                        if geomcmp(src.add(i as usize), src.add(j_idx as usize), context) <= 0 {
-                            *dest.add(k as usize) = *src.add(i as usize);
-                            i += 1;
-                        } else {
-                            *dest.add(k as usize) = *src.add(j_idx as usize);
-                            j_idx += 1;
-                        }
-                        k += 1;
-                    }
-                    if i < mid {
-                        core::ptr::copy_nonoverlapping(
-                            src.add(i as usize),
-                            dest.add(k as usize),
-                            (mid - i) as usize,
-                        );
-                    } else if j_idx < end {
-                        core::ptr::copy_nonoverlapping(
-                            src.add(j_idx as usize),
-                            dest.add(k as usize),
-                            (end - j_idx) as usize,
-                        );
-                    }
-                } else {
-                    core::ptr::copy_nonoverlapping(
-                        src.add(ms as usize),
-                        dest.add(ms as usize),
-                        (end - ms) as usize,
-                    );
-                }
-                ms += 2 * len;
-            }
-            let tmp = src;
-            src = dest;
-            dest = tmp;
-            len *= 2;
-        }
-        if src != arr {
-            core::ptr::copy_nonoverlapping(src, arr, n as usize);
-        }
-    }
+    extern "C" { fn geomSort(arr: *mut i32, buf: *mut i32, n: i32, context: *mut ()); }
+    // SAFETY: delegates to C implementation
+    unsafe { geomSort(arr, buf, n, context) }
 }
 
 /// C: adjustLight (render/classic/render_gl3.c:798)

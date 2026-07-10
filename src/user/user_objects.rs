@@ -1082,10 +1082,9 @@ pub fn mj_c_body_find_object(self_ptr: *mut mjCBody, r#type: mjtObj, name: *cons
 /// Calls: mjCBody::NameSpace_
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_body_name_space(self_ptr: *mut mjCBody, m: *const mjCModel) {
-    // WARNING: signature changed — verify body
-    // Previous params: (self_ptr : * mut mjCBody, m : * const mjCModel)
-    // Previous return: ()
-    mj_c_body_name_space_1 (self_ptr , m , true) ;
+    extern "C" { #[link_name = "_ZN7mjCBody10NameSpace_EPK8mjCModelb"] fn mjCBody_NameSpace_(self_ptr: *mut mjCBody, m: *const mjCModel, propagate: bool); }
+    // SAFETY: delegates to C++ implementation via mangled name
+    unsafe { mjCBody_NameSpace_(self_ptr, m, true) }
 }
 
 /// C: mjCBody::MakeInertialExplicit (user/user_objects.h:545)

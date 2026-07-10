@@ -7,12 +7,10 @@ use crate::types::*;
 /// C: SCL (ui/ui_main.c:200)
 /// Calls: mju_round
 #[allow(unused_variables, non_snake_case)]
-pub fn scl(sz: i32, con: *const mjrContext) -> i32 {
-    // SAFETY: caller guarantees con is a valid pointer to mjrContext
-    unsafe {
-        let val = crate::engine::engine_util_misc::mju_round(sz as f64 * 0.01 * (*con).fontScale as f64);
-        if val > 0 { val } else { 0 }
-    }
+pub fn scl(sz: i32, con: *const mjrContext) -> i32  {
+    extern "C" { fn SCL(sz: i32, con: *const mjrContext) -> i32; }
+    // SAFETY: delegates to C implementation
+    unsafe { SCL(sz, con) }
 }
 
 /// C: initOpenGL (ui/ui_main.c:207)

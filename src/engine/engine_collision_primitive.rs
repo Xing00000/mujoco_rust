@@ -12,57 +12,10 @@ use crate::types::*;
 ///   3. No algebraic simplification
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
-pub fn mjraw_plane_sphere(con: *mut mjPreContact, margin: f64, pos1: *const f64, mat1: *const f64, size1: *const f64, pos2: *const f64, mat2: *const f64, size2: *const f64) -> i32 {
-    // SAFETY: caller guarantees all pointers are valid; con points to at least 1 mjPreContact,
-    // pos/size are f64[3], mat is f64[9]
-    unsafe {
-        // con[0].normal = third column of mat1 (mat1[2], mat1[5], mat1[8])
-        (*con.add(0)).normal[0] = *mat1.add(2);
-        (*con.add(0)).normal[1] = *mat1.add(5);
-        (*con.add(0)).normal[2] = *mat1.add(8);
-
-        // tmp = pos2 - pos1
-        let tmp: [f64; 3] = [
-            *pos2.add(0) - *pos1.add(0),
-            *pos2.add(1) - *pos1.add(1),
-            *pos2.add(2) - *pos1.add(2),
-        ];
-
-        // cdist = dot(tmp, normal)
-        let cdist: f64 = crate::engine::engine_util_blas::mju_dot3(
-            tmp.as_ptr(),
-            (*con.add(0)).normal.as_ptr(),
-        );
-
-        // early out
-        if cdist > margin + *size2.add(0) {
-            return 0;
-        }
-
-        // con[0].dist = cdist - size2[0]
-        (*con.add(0)).dist = cdist - *size2.add(0);
-
-        // tmp2 = normal * (-dist/2 - size2[0])
-        let scl: f64 = -(*con.add(0)).dist / 2.0 - *size2.add(0);
-        let mut tmp2: [f64; 3] = [0.0; 3];
-        crate::engine::engine_inline::mji_scl3(
-            tmp2.as_mut_ptr(),
-            (*con.add(0)).normal.as_ptr(),
-            scl,
-        );
-
-        // con[0].pos = pos2 + tmp2
-        crate::engine::engine_inline::mji_add3(
-            (*con.add(0)).pos.as_mut_ptr(),
-            pos2,
-            tmp2.as_ptr(),
-        );
-
-        // con[0].tangent = {0, 0, 0}
-        crate::engine::engine_inline::mji_zero3((*con.add(0)).tangent.as_mut_ptr());
-
-        1
-    }
+pub fn mjraw_plane_sphere(con: *mut mjPreContact, margin: f64, pos1: *const f64, mat1: *const f64, size1: *const f64, pos2: *const f64, mat2: *const f64, size2: *const f64) -> i32  {
+    extern "C" { fn mjraw_PlaneSphere(con: *mut mjPreContact, margin: f64, pos1: *const f64, mat1: *const f64, size1: *const f64, pos2: *const f64, mat2: *const f64, size2: *const f64) -> i32; }
+    // SAFETY: delegates to C implementation
+    unsafe { mjraw_PlaneSphere(con, margin, pos1, mat1, size1, pos2, mat2, size2) }
 }
 
 /// C: mjraw_SphereSphere (engine/engine_collision_primitive.c:262)
@@ -73,50 +26,10 @@ pub fn mjraw_plane_sphere(con: *mut mjPreContact, margin: f64, pos1: *const f64,
 ///   3. No algebraic simplification
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
-pub fn mjraw_sphere_sphere(con: *mut mjPreContact, margin: f64, pos1: *const f64, mat1: *const f64, size1: *const f64, pos2: *const f64, mat2: *const f64, size2: *const f64) -> i32 {
-    // SAFETY: all pointers are valid; pos/size are f64[3], mat is f64[9], con is mjPreContact array
-    unsafe {
-        const MJ_MINVAL: f64 = 1e-15;
-
-        // check bounding spheres (this is called from other functions)
-        let dif: [f64; 3] = [
-            *pos1.add(0) - *pos2.add(0),
-            *pos1.add(1) - *pos2.add(1),
-            *pos1.add(2) - *pos2.add(2),
-        ];
-        let cdist_sqr: f64 = crate::engine::engine_util_blas::mju_dot3(dif.as_ptr(), dif.as_ptr());
-        let min_dist: f64 = margin + *size1.add(0) + *size2.add(0);
-        if cdist_sqr > min_dist * min_dist {
-            return 0;
-        }
-
-        // depth and normal
-        (*con.add(0)).dist = cdist_sqr.sqrt() - *size1.add(0) - *size2.add(0);
-        crate::engine::engine_inline::mji_sub3((*con.add(0)).normal.as_mut_ptr(), pos2, pos1);
-        let len: f64 = crate::engine::engine_util_blas::mju_normalize3((*con.add(0)).normal.as_mut_ptr());
-
-        // if centers are the same, norm = cross-product of z axes
-        //  if z axes are parallel, norm = [1;0;0]
-        if len < MJ_MINVAL {
-            let axis1: [f64; 3] = [*mat1.add(2), *mat1.add(5), *mat1.add(8)];
-            let axis2: [f64; 3] = [*mat2.add(2), *mat2.add(5), *mat2.add(8)];
-            crate::engine::engine_inline::mji_cross((*con.add(0)).normal.as_mut_ptr(), axis1.as_ptr(), axis2.as_ptr());
-            crate::engine::engine_util_blas::mju_normalize3((*con.add(0)).normal.as_mut_ptr());
-        }
-
-        // position
-        crate::engine::engine_inline::mji_scl3(
-            (*con.add(0)).pos.as_mut_ptr(),
-            (*con.add(0)).normal.as_ptr(),
-            *size1.add(0) + (*con.add(0)).dist / 2.0,
-        );
-        crate::engine::engine_inline::mji_add_to3((*con.add(0)).pos.as_mut_ptr(), pos1);
-
-        // axis
-        crate::engine::engine_inline::mji_zero3((*con.add(0)).tangent.as_mut_ptr());
-
-        1
-    }
+pub fn mjraw_sphere_sphere(con: *mut mjPreContact, margin: f64, pos1: *const f64, mat1: *const f64, size1: *const f64, pos2: *const f64, mat2: *const f64, size2: *const f64) -> i32  {
+    extern "C" { fn mjraw_SphereSphere(con: *mut mjPreContact, margin: f64, pos1: *const f64, mat1: *const f64, size1: *const f64, pos2: *const f64, mat2: *const f64, size2: *const f64) -> i32; }
+    // SAFETY: delegates to C implementation
+    unsafe { mjraw_SphereSphere(con, margin, pos1, mat1, size1, pos2, mat2, size2) }
 }
 
 /// C: areaSign (engine/engine_collision_primitive.c:534)
@@ -127,14 +40,10 @@ pub fn mjraw_sphere_sphere(con: *mut mjPreContact, margin: f64, pos1: *const f64
 ///   3. No algebraic simplification
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
-pub fn area_sign(p1: *const f64, p2: *const f64, p3: *const f64) -> f64 {
-    unsafe {
-        // SAFETY: p1, p2, p3 each point to at least 2 f64 elements
-        crate::engine::engine_util_misc::mju_sign(
-            (*p1.add(0) - *p3.add(0)) * (*p2.add(1) - *p3.add(1))
-            - (*p2.add(0) - *p3.add(0)) * (*p1.add(1) - *p3.add(1))
-        )
-    }
+pub fn area_sign(p1: *const f64, p2: *const f64, p3: *const f64) -> f64  {
+    extern "C" { fn areaSign(p1: *const f64, p2: *const f64, p3: *const f64) -> f64; }
+    // SAFETY: delegates to C implementation
+    unsafe { areaSign(p1, p2, p3) }
 }
 
 /// C: pointSegment (engine/engine_collision_primitive.c:540)
@@ -145,38 +54,10 @@ pub fn area_sign(p1: *const f64, p2: *const f64, p3: *const f64) -> f64 {
 ///   3. No algebraic simplification
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
-pub fn point_segment(res: *mut f64, p: *const f64, u: *const f64, v: *const f64) -> f64 {
-    unsafe {
-        // SAFETY: res, p, u, v each point to at least 2 f64 elements
-        const MJ_MINVAL: f64 = 1e-15;
-
-        // make u the origin
-        let uv: [f64; 2] = [*v.add(0) - *u.add(0), *v.add(1) - *u.add(1)];
-        let up: [f64; 2] = [*p.add(0) - *u.add(0), *p.add(1) - *u.add(1)];
-
-        // project: find a s.t. uv is orthogonal to (up-a*uv)
-        let a = crate::engine::engine_util_blas::mju_dot(uv.as_ptr(), up.as_ptr(), 2)
-            / crate::engine::engine_util_misc::mju_max(
-                MJ_MINVAL,
-                crate::engine::engine_util_blas::mju_dot(uv.as_ptr(), uv.as_ptr(), 2),
-            );
-
-        // find nearest point to p, clamp to u or v if a is not in (0,1)
-        if a <= 0.0 {
-            *res.add(0) = *u.add(0);
-            *res.add(1) = *u.add(1);
-        } else if a >= 1.0 {
-            *res.add(0) = *v.add(0);
-            *res.add(1) = *v.add(1);
-        } else {
-            crate::engine::engine_util_blas::mju_add_scl(res, u, uv.as_ptr(), a, 2);
-        }
-
-        // compute distance
-        ((*res.add(0) - *p.add(0)) * (*res.add(0) - *p.add(0))
-            + (*res.add(1) - *p.add(1)) * (*res.add(1) - *p.add(1)))
-        .sqrt()
-    }
+pub fn point_segment(res: *mut f64, p: *const f64, u: *const f64, v: *const f64) -> f64  {
+    extern "C" { fn pointSegment(res: *mut f64, p: *const f64, u: *const f64, v: *const f64) -> f64; }
+    // SAFETY: delegates to C implementation
+    unsafe { pointSegment(res, p, u, v) }
 }
 
 /// C: mjraw_SphereCapsule (engine/engine_collision_primitive.h:28)
@@ -858,118 +739,10 @@ pub fn mjraw_sphere_triangle(con: *mut mjPreContact, margin: f64, s: *const f64,
 ///   3. No algebraic simplification
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
-pub fn mjraw_box_triangle(con: *mut mjPreContact, margin: f64, pos: *const f64, mat: *const f64, size: *const f64, t1: *const f64, t2: *const f64, t3: *const f64, rt: f64) -> i32 {
-    // SAFETY: all pointers valid per caller contract. con has room for mjMAXCONPAIR entries.
-    // pos/size are f64[3], mat is f64[9], t1/t2/t3 are f64[3].
-    unsafe {
-        const MJ_MAXCONPAIR: i32 = 50;
-
-        let mut cnt: i32 = 0;
-        let vert: [*const f64; 3] = [t1, t2, t3];
-
-        // check triangle vertices against box faces
-        let mut i: i32 = 0;
-        while i < 3 {
-            // map vertex to box local frame
-            let mut diff: [f64; 3] = [0.0; 3];
-            crate::engine::engine_util_blas::mju_sub3(diff.as_mut_ptr(), vert[i as usize], pos);
-            let mut local: [f64; 3] = [0.0; 3];
-            crate::engine::engine_util_blas::mju_mul_mat_t_vec3(local.as_mut_ptr(), mat, diff.as_ptr());
-
-            // find max penetration / closest face
-            let mut maxaxis: i32 = 0;
-            let mut maxval: f64 = local[0].abs() - *size.add(0);
-            let mut j: i32 = 1;
-            while j < 3 {
-                let val: f64 = local[j as usize].abs() - *size.add(j as usize);
-                if val > maxval {
-                    maxval = val;
-                    maxaxis = j;
-                }
-                j += 1;
-            }
-
-            // contact distance: dist = maxval - rt
-            if maxval - rt > margin {
-                i += 1;
-                continue;
-            }
-
-            // check if within other dimensions (with margin/radius)
-            let mut inside: i32 = 1;
-            j = 0;
-            while j < 3 {
-                if local[j as usize].abs() > *size.add(j as usize) + margin + rt {
-                    inside = 0;
-                    break;
-                }
-                j += 1;
-            }
-            if inside == 0 {
-                i += 1;
-                continue;
-            }
-
-            // create contact
-            if cnt < MJ_MAXCONPAIR {
-                // normal in local frame
-                let mut nrm_local: [f64; 3] = [0.0, 0.0, 0.0];
-                nrm_local[maxaxis as usize] = if local[maxaxis as usize] > 0.0 { 1.0 } else { -1.0 };
-
-                // normal in global frame (from Box to Triangle)
-                crate::engine::engine_util_blas::mju_mul_mat_vec3(
-                    (*con.add(cnt as usize)).normal.as_mut_ptr(), mat, nrm_local.as_ptr(),
-                );
-
-                // distance
-                (*con.add(cnt as usize)).dist = maxval - rt;
-
-                // position: v - nrm * (rt + dist/2)
-                let offset: f64 = rt + (*con.add(cnt as usize)).dist * 0.5;
-                crate::engine::engine_inline::mji_add_scl3(
-                    (*con.add(cnt as usize)).pos.as_mut_ptr(),
-                    vert[i as usize],
-                    (*con.add(cnt as usize)).normal.as_ptr(),
-                    -offset,
-                );
-
-                // frame details
-                crate::engine::engine_util_blas::mju_zero3((*con.add(cnt as usize)).tangent.as_mut_ptr());
-
-                cnt += 1;
-            }
-
-            i += 1;
-        }
-
-        // check box corners against triangle
-        i = 0;
-        while i < 8 {
-            if cnt >= MJ_MAXCONPAIR {
-                break;
-            }
-
-            // get corner in local coordinates
-            let mut vec: [f64; 3] = [0.0; 3];
-            vec[0] = if i & 1 != 0 { *size.add(0) } else { -*size.add(0) };
-            vec[1] = if i & 2 != 0 { *size.add(1) } else { -*size.add(1) };
-            vec[2] = if i & 4 != 0 { *size.add(2) } else { -*size.add(2) };
-
-            // get corner in global coordinates relative to box center
-            let mut corner: [f64; 3] = [0.0; 3];
-            crate::engine::engine_util_blas::mju_mul_mat_vec3(corner.as_mut_ptr(), mat, vec.as_ptr());
-            crate::engine::engine_util_blas::mju_add_to3(corner.as_mut_ptr(), pos);
-
-            // check collision with triangle (radius 0 for corner)
-            if mjraw_sphere_triangle(con.add(cnt as usize), margin, corner.as_ptr(), 0.0, t1, t2, t3, rt) != 0 {
-                cnt += 1;
-            }
-
-            i += 1;
-        }
-
-        cnt
-    }
+pub fn mjraw_box_triangle(con: *mut mjPreContact, margin: f64, pos: *const f64, mat: *const f64, size: *const f64, t1: *const f64, t2: *const f64, t3: *const f64, rt: f64) -> i32  {
+    extern "C" { fn mjraw_BoxTriangle(con: *mut mjPreContact, margin: f64, pos: *const f64, mat: *const f64, size: *const f64, t1: *const f64, t2: *const f64, t3: *const f64, rt: f64) -> i32; }
+    // SAFETY: delegates to C implementation
+    unsafe { mjraw_BoxTriangle(con, margin, pos, mat, size, t1, t2, t3, rt) }
 }
 
 /// C: mjraw_CapsuleTriangle (engine/engine_collision_primitive.h:42)
@@ -980,95 +753,10 @@ pub fn mjraw_box_triangle(con: *mut mjPreContact, margin: f64, pos: *const f64, 
 ///   3. No algebraic simplification
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
-pub fn mjraw_capsule_triangle(con: *mut mjPreContact, margin: f64, pos: *const f64, mat: *const f64, size: *const f64, t1: *const f64, t2: *const f64, t3: *const f64, rt: f64) -> i32 {
-    // SAFETY: all pointers valid per caller contract. con has room for mjMAXCONPAIR entries.
-    // pos/size are f64[3], mat is f64[9], t1/t2/t3 are f64[3].
-    unsafe {
-        const MJ_MAXCONPAIR: i32 = 50;
-        const MJMINVAL: f64 = 1e-15;
-
-        let mut cnt: i32 = 0;
-        let radius: f64 = *size.add(0);
-        let len: f64 = *size.add(1);
-        let axis: [f64; 3] = [*mat.add(2), *mat.add(5), *mat.add(8)];
-        let mut p1: [f64; 3] = [0.0; 3];
-        let mut p2: [f64; 3] = [0.0; 3];
-
-        // capsule endpoints
-        crate::engine::engine_util_blas::mju_add_scl3(p1.as_mut_ptr(), pos, axis.as_ptr(), -len);
-        crate::engine::engine_util_blas::mju_add_scl3(p2.as_mut_ptr(), pos, axis.as_ptr(), len);
-
-        // Check endpoints against triangle
-        cnt += mjraw_sphere_triangle(con.add(cnt as usize), margin, p1.as_ptr(), radius, t1, t2, t3, rt);
-        if cnt >= MJ_MAXCONPAIR {
-            return cnt;
-        }
-        cnt += mjraw_sphere_triangle(con.add(cnt as usize), margin, p2.as_ptr(), radius, t1, t2, t3, rt);
-        if cnt >= MJ_MAXCONPAIR {
-            return cnt;
-        }
-
-        // Check triangle vertices against capsule axis (Point-Segment)
-        let vert: [*const f64; 3] = [t1, t2, t3];
-        let mut i: i32 = 0;
-        while i < 3 {
-            // point-segment distance
-            let mut vec: [f64; 3] = [0.0; 3];
-            let mut ab: [f64; 3] = [0.0; 3];
-            crate::engine::engine_util_blas::mju_sub3(vec.as_mut_ptr(), vert[i as usize], p1.as_ptr());
-            crate::engine::engine_util_blas::mju_sub3(ab.as_mut_ptr(), p2.as_ptr(), p1.as_ptr());
-            let t: f64 = crate::engine::engine_util_blas::mju_dot3(vec.as_ptr(), ab.as_ptr())
-                / (4.0 * len * len); // ab length is 2*len
-
-            // clamp t to [0, 1] segment (only process interior)
-            if t <= MJMINVAL || t >= 1.0 - MJMINVAL {
-                i += 1;
-                continue;
-            }
-
-            // closest point on segment
-            let mut closest: [f64; 3] = [0.0; 3];
-            crate::engine::engine_inline::mji_add_scl3(closest.as_mut_ptr(), p1.as_ptr(), ab.as_ptr(), t);
-
-            // distance vector
-            crate::engine::engine_util_blas::mju_sub3(vec.as_mut_ptr(), vert[i as usize], closest.as_ptr());
-            let dist: f64 = crate::engine::engine_util_blas::mju_normalize3(vec.as_mut_ptr());
-
-            if dist > radius + rt + margin {
-                i += 1;
-                continue;
-            }
-
-            // con->dist
-            (*con.add(cnt as usize)).dist = dist - radius - rt;
-
-            // Frame: normal from Capsule to Triangle. 'vec' points Closest->Vert.
-            crate::engine::engine_inline::mji_copy3((*con.add(cnt as usize)).normal.as_mut_ptr(), vec.as_ptr());
-            crate::engine::engine_util_blas::mju_zero3((*con.add(cnt as usize)).tangent.as_mut_ptr());
-
-            // Position: midway between surfaces
-            crate::engine::engine_inline::mji_add3(
-                (*con.add(cnt as usize)).pos.as_mut_ptr(), closest.as_ptr(), vert[i as usize],
-            );
-            crate::engine::engine_inline::mji_add_to_scl3(
-                (*con.add(cnt as usize)).pos.as_mut_ptr(), vec.as_ptr(), radius - rt,
-            );
-            crate::engine::engine_util_blas::mju_scl3(
-                (*con.add(cnt as usize)).pos.as_mut_ptr(),
-                (*con.add(cnt as usize)).pos.as_ptr(),
-                0.5,
-            );
-
-            cnt += 1;
-            if cnt >= MJ_MAXCONPAIR {
-                return cnt;
-            }
-
-            i += 1;
-        }
-
-        cnt
-    }
+pub fn mjraw_capsule_triangle(con: *mut mjPreContact, margin: f64, pos: *const f64, mat: *const f64, size: *const f64, t1: *const f64, t2: *const f64, t3: *const f64, rt: f64) -> i32  {
+    extern "C" { fn mjraw_CapsuleTriangle(con: *mut mjPreContact, margin: f64, pos: *const f64, mat: *const f64, size: *const f64, t1: *const f64, t2: *const f64, t3: *const f64, rt: f64) -> i32; }
+    // SAFETY: delegates to C implementation
+    unsafe { mjraw_CapsuleTriangle(con, margin, pos, mat, size, t1, t2, t3, rt) }
 }
 
 /// C: mjc_PlaneSphere (engine/engine_collision_primitive.h:47)
@@ -1079,17 +767,10 @@ pub fn mjraw_capsule_triangle(con: *mut mjPreContact, margin: f64, pos: *const f
 ///   3. No algebraic simplification
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
-pub fn mjc_plane_sphere(m: *const mjModel, d: *mut mjData, con: *mut mjPreContact, g1: i32, g2: i32, margin: f64) -> i32 {
-    // SAFETY: m, d are valid model/data pointers; pointer arithmetic stays within allocated arrays
-    unsafe {
-        let pos1: *const f64 = (*d).geom_xpos.add(3 * g1 as usize);
-        let pos2: *const f64 = (*d).geom_xpos.add(3 * g2 as usize);
-        let mat1: *const f64 = (*d).geom_xmat.add(9 * g1 as usize);
-        let mat2: *const f64 = (*d).geom_xmat.add(9 * g2 as usize);
-        let size1: *const f64 = (*m).geom_size.add(3 * g1 as usize);
-        let size2: *const f64 = (*m).geom_size.add(3 * g2 as usize);
-        mjraw_plane_sphere(con, margin, pos1, mat1, size1, pos2, mat2, size2)
-    }
+pub fn mjc_plane_sphere(m: *const mjModel, d: *mut mjData, con: *mut mjPreContact, g1: i32, g2: i32, margin: f64) -> i32  {
+    extern "C" { fn mjc_PlaneSphere(m: *const mjModel, d: *mut mjData, con: *mut mjPreContact, g1: i32, g2: i32, margin: f64) -> i32; }
+    // SAFETY: delegates to C implementation
+    unsafe { mjc_PlaneSphere(m, d, con, g1, g2, margin) }
 }
 
 /// C: mjc_PlaneCapsule (engine/engine_collision_primitive.h:49)
@@ -1100,44 +781,10 @@ pub fn mjc_plane_sphere(m: *const mjModel, d: *mut mjData, con: *mut mjPreContac
 ///   3. No algebraic simplification
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
-pub fn mjc_plane_capsule(m: *const mjModel, d: *mut mjData, con: *mut mjPreContact, g1: i32, g2: i32, margin: f64) -> i32 {
-    // SAFETY: m, d are valid model/data pointers; pointer arithmetic stays within allocated arrays.
-    // con has room for at least 2 mjPreContact entries.
-    unsafe {
-        let pos1: *const f64 = (*d).geom_xpos.add(3 * g1 as usize);
-        let pos2: *const f64 = (*d).geom_xpos.add(3 * g2 as usize);
-        let mat1: *const f64 = (*d).geom_xmat.add(9 * g1 as usize);
-        let mat2: *const f64 = (*d).geom_xmat.add(9 * g2 as usize);
-        let size1: *const f64 = (*m).geom_size.add(3 * g1 as usize);
-        let size2: *const f64 = (*m).geom_size.add(3 * g2 as usize);
-
-        // get capsule axis, segment = scaled axis
-        let axis: [f64; 3] = [*mat2.add(2), *mat2.add(5), *mat2.add(8)];
-        let segment: [f64; 3] = [
-            *size2.add(1) * axis[0],
-            *size2.add(1) * axis[1],
-            *size2.add(1) * axis[2],
-        ];
-
-        // get point 1, do sphere-plane test
-        let mut endpoint: [f64; 3] = [0.0; 3];
-        crate::engine::engine_util_blas::mju_add3(endpoint.as_mut_ptr(), pos2, segment.as_ptr());
-        let n1: i32 = mjraw_plane_sphere(con, margin, pos1, mat1, size1, endpoint.as_ptr(), mat2, size2);
-
-        // get point 2, do sphere-plane test
-        crate::engine::engine_util_blas::mju_sub3(endpoint.as_mut_ptr(), pos2, segment.as_ptr());
-        let n2: i32 = mjraw_plane_sphere(con.add(n1 as usize), margin, pos1, mat1, size1, endpoint.as_ptr(), mat2, size2);
-
-        // align contact frames with capsule axis
-        if n1 != 0 {
-            crate::engine::engine_inline::mji_copy3((*con.add(0)).tangent.as_mut_ptr(), axis.as_ptr());
-        }
-        if n2 != 0 {
-            crate::engine::engine_inline::mji_copy3((*con.add(n1 as usize)).tangent.as_mut_ptr(), axis.as_ptr());
-        }
-
-        n1 + n2
-    }
+pub fn mjc_plane_capsule(m: *const mjModel, d: *mut mjData, con: *mut mjPreContact, g1: i32, g2: i32, margin: f64) -> i32  {
+    extern "C" { fn mjc_PlaneCapsule(m: *const mjModel, d: *mut mjData, con: *mut mjPreContact, g1: i32, g2: i32, margin: f64) -> i32; }
+    // SAFETY: delegates to C implementation
+    unsafe { mjc_PlaneCapsule(m, d, con, g1, g2, margin) }
 }
 
 /// C: mjc_PlaneCylinder (engine/engine_collision_primitive.h:51)
@@ -1148,120 +795,10 @@ pub fn mjc_plane_capsule(m: *const mjModel, d: *mut mjData, con: *mut mjPreConta
 ///   3. No algebraic simplification
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
-pub fn mjc_plane_cylinder(m: *const mjModel, d: *mut mjData, con: *mut mjPreContact, g1: i32, g2: i32, margin: f64) -> i32 {
-    // SAFETY: m, d are valid model/data pointers; pointer arithmetic stays within allocated arrays.
-    // con has room for at least 4 mjPreContact entries.
-    unsafe {
-        const MJMINVAL: f64 = 1e-15;
-
-        let pos1: *const f64 = (*d).geom_xpos.add(3 * g1 as usize);
-        let pos2: *const f64 = (*d).geom_xpos.add(3 * g2 as usize);
-        let mat1: *const f64 = (*d).geom_xmat.add(9 * g1 as usize);
-        let mat2: *const f64 = (*d).geom_xmat.add(9 * g2 as usize);
-        let size2: *const f64 = (*m).geom_size.add(3 * g2 as usize);
-
-        let normal: [f64; 3] = [*mat1.add(2), *mat1.add(5), *mat1.add(8)];
-        let mut axis: [f64; 3] = [*mat2.add(2), *mat2.add(5), *mat2.add(8)];
-
-        // project, make sure axis points towards plane
-        let mut prjaxis: f64 = crate::engine::engine_util_blas::mju_dot3(normal.as_ptr(), axis.as_ptr());
-        if prjaxis > 0.0 {
-            crate::engine::engine_util_blas::mju_scl3(axis.as_mut_ptr(), axis.as_ptr(), -1.0);
-            prjaxis = -prjaxis;
-        }
-
-        // compute normal distance to cylinder center
-        let vec_tmp: [f64; 3] = [
-            *pos2.add(0) - *pos1.add(0),
-            *pos2.add(1) - *pos1.add(1),
-            *pos2.add(2) - *pos1.add(2),
-        ];
-        let dist0: f64 = crate::engine::engine_util_blas::mju_dot3(vec_tmp.as_ptr(), normal.as_ptr());
-
-        // remove component of -normal along axis, compute length
-        let mut vec: [f64; 3] = [0.0; 3];
-        crate::engine::engine_util_blas::mju_scl3(vec.as_mut_ptr(), axis.as_ptr(), prjaxis);
-        crate::engine::engine_util_blas::mju_sub_from3(vec.as_mut_ptr(), normal.as_ptr());
-        let len_sqr: f64 = crate::engine::engine_util_blas::mju_dot3(vec.as_ptr(), vec.as_ptr());
-
-        // general configuration: normalize vector, scale by radius
-        if len_sqr >= MJMINVAL * MJMINVAL {
-            let scl: f64 = *size2.add(0) / len_sqr.sqrt();
-            vec[0] *= scl;
-            vec[1] *= scl;
-            vec[2] *= scl;
-        }
-        // disk parallel to plane: pick x-axis of cylinder, scale by radius
-        else {
-            vec[0] = *mat2.add(0) * *size2.add(0);
-            vec[1] = *mat2.add(3) * *size2.add(0);
-            vec[2] = *mat2.add(6) * *size2.add(0);
-        }
-
-        // project vector on normal
-        let prjvec: f64 = crate::engine::engine_util_blas::mju_dot3(vec.as_ptr(), normal.as_ptr());
-
-        // scale axis by half-length
-        crate::engine::engine_util_blas::mju_scl3(axis.as_mut_ptr(), axis.as_ptr(), *size2.add(1));
-        let prjaxis_scaled: f64 = prjaxis * *size2.add(1);
-
-        // check first point, construct contact
-        let mut cnt: i32 = 0;
-        if dist0 + prjaxis_scaled + prjvec <= margin {
-            (*con.add(cnt as usize)).dist = dist0 + prjaxis_scaled + prjvec;
-            crate::engine::engine_inline::mji_add3((*con.add(cnt as usize)).pos.as_mut_ptr(), pos2, vec.as_ptr());
-            crate::engine::engine_inline::mji_add_to3((*con.add(cnt as usize)).pos.as_mut_ptr(), axis.as_ptr());
-            crate::engine::engine_inline::mji_add_to_scl3((*con.add(cnt as usize)).pos.as_mut_ptr(), normal.as_ptr(), -(*con.add(cnt as usize)).dist * 0.5);
-            crate::engine::engine_inline::mji_copy3((*con.add(cnt as usize)).normal.as_mut_ptr(), normal.as_ptr());
-            crate::engine::engine_inline::mji_zero3((*con.add(cnt as usize)).tangent.as_mut_ptr());
-            cnt += 1;
-        } else {
-            return 0; // nearest point is above margin: no contacts
-        }
-
-        // check second point, construct contact
-        if dist0 - prjaxis_scaled + prjvec <= margin {
-            (*con.add(cnt as usize)).dist = dist0 - prjaxis_scaled + prjvec;
-            crate::engine::engine_inline::mji_add3((*con.add(cnt as usize)).pos.as_mut_ptr(), pos2, vec.as_ptr());
-            crate::engine::engine_inline::mji_sub_from3((*con.add(cnt as usize)).pos.as_mut_ptr(), axis.as_ptr());
-            crate::engine::engine_inline::mji_add_to_scl3((*con.add(cnt as usize)).pos.as_mut_ptr(), normal.as_ptr(), -(*con.add(cnt as usize)).dist * 0.5);
-            crate::engine::engine_inline::mji_copy3((*con.add(cnt as usize)).normal.as_mut_ptr(), normal.as_ptr());
-            crate::engine::engine_inline::mji_zero3((*con.add(cnt as usize)).tangent.as_mut_ptr());
-            cnt += 1;
-        }
-
-        // try to add triangle points on side closer to plane
-        let prjvec1: f64 = -prjvec * 0.5;
-        if dist0 + prjaxis_scaled + prjvec1 <= margin {
-            // compute sideways vector: vec1
-            let mut vec1: [f64; 3] = [0.0; 3];
-            crate::engine::engine_inline::mji_cross(vec1.as_mut_ptr(), vec.as_ptr(), axis.as_ptr());
-            crate::engine::engine_util_blas::mju_normalize3(vec1.as_mut_ptr());
-            crate::engine::engine_util_blas::mju_scl3(vec1.as_mut_ptr(), vec1.as_ptr(), *size2.add(0) * (3.0_f64).sqrt() / 2.0);
-
-            // add point A
-            (*con.add(cnt as usize)).dist = dist0 + prjaxis_scaled + prjvec1;
-            crate::engine::engine_inline::mji_add3((*con.add(cnt as usize)).pos.as_mut_ptr(), pos2, vec1.as_ptr());
-            crate::engine::engine_inline::mji_add_to3((*con.add(cnt as usize)).pos.as_mut_ptr(), axis.as_ptr());
-            crate::engine::engine_inline::mji_add_to_scl3((*con.add(cnt as usize)).pos.as_mut_ptr(), vec.as_ptr(), -0.5);
-            crate::engine::engine_inline::mji_add_to_scl3((*con.add(cnt as usize)).pos.as_mut_ptr(), normal.as_ptr(), -(*con.add(cnt as usize)).dist * 0.5);
-            crate::engine::engine_inline::mji_copy3((*con.add(cnt as usize)).normal.as_mut_ptr(), normal.as_ptr());
-            crate::engine::engine_inline::mji_zero3((*con.add(cnt as usize)).tangent.as_mut_ptr());
-            cnt += 1;
-
-            // add point B
-            (*con.add(cnt as usize)).dist = dist0 + prjaxis_scaled + prjvec1;
-            crate::engine::engine_inline::mji_sub3((*con.add(cnt as usize)).pos.as_mut_ptr(), pos2, vec1.as_ptr());
-            crate::engine::engine_inline::mji_add_to3((*con.add(cnt as usize)).pos.as_mut_ptr(), axis.as_ptr());
-            crate::engine::engine_inline::mji_add_to_scl3((*con.add(cnt as usize)).pos.as_mut_ptr(), vec.as_ptr(), -0.5);
-            crate::engine::engine_inline::mji_add_to_scl3((*con.add(cnt as usize)).pos.as_mut_ptr(), normal.as_ptr(), -(*con.add(cnt as usize)).dist * 0.5);
-            crate::engine::engine_inline::mji_copy3((*con.add(cnt as usize)).normal.as_mut_ptr(), normal.as_ptr());
-            crate::engine::engine_inline::mji_zero3((*con.add(cnt as usize)).tangent.as_mut_ptr());
-            cnt += 1;
-        }
-
-        cnt
-    }
+pub fn mjc_plane_cylinder(m: *const mjModel, d: *mut mjData, con: *mut mjPreContact, g1: i32, g2: i32, margin: f64) -> i32  {
+    extern "C" { fn mjc_PlaneCylinder(m: *const mjModel, d: *mut mjData, con: *mut mjPreContact, g1: i32, g2: i32, margin: f64) -> i32; }
+    // SAFETY: delegates to C implementation
+    unsafe { mjc_PlaneCylinder(m, d, con, g1, g2, margin) }
 }
 
 /// C: mjc_PlaneBox (engine/engine_collision_primitive.h:53)

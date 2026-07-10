@@ -8,32 +8,18 @@ use crate::types::*;
 /// Calls: mju_warning
 #[allow(unused_variables, non_snake_case)]
 pub fn warn_about_arb_clip_control() {
-    // not thread safe, but the consequence is just too many log lines
-    static mut WARNED: i32 = 0;
-    unsafe {
-        if WARNED == 0 {
-            WARNED = 1;
-            crate::engine::engine_util_errmem::mju_warning(
-                b"ARB_clip_control unavailable while mjDEPTH_ZEROFAR requested, depth accuracy will be limited\0".as_ptr() as *const i8
-            );
-        }
-    }
+    extern "C" { fn warnAboutARBClipControl(); }
+    // SAFETY: delegates to C implementation
+    unsafe { warnAboutARBClipControl() }
 }
 
 /// C: warnAboutARBDepthBuffer (render/classic/render_gl2.c:110)
 /// Calls: mju_warning
 #[allow(unused_variables, non_snake_case)]
 pub fn warn_about_arb_depth_buffer() {
-    // not thread safe, but the consequence is just too many log lines
-    static mut WARNED: i32 = 0;
-    unsafe {
-        if WARNED == 0 {
-            WARNED = 1;
-            crate::engine::engine_util_errmem::mju_warning(
-                b"ARB_depth_buffer_float unavailable while mjDEPTH_ZEROFAR requested, depth accuracy will be limited\0".as_ptr() as *const i8
-            );
-        }
-    }
+    extern "C" { fn warnAboutARBDepthBuffer(); }
+    // SAFETY: delegates to C implementation
+    unsafe { warnAboutARBDepthBuffer() }
 }
 
 /// C: flipDepthIfRequired (render/classic/render_gl2.c:122)
@@ -45,25 +31,9 @@ pub fn warn_about_arb_depth_buffer() {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn flip_depth_if_required(depth: *mut f32, viewport: mjrRect, con: *const mjrContext) {
-    unsafe {
-        const mjDEPTH_ZERONEAR: i32 = 0;
-
-        extern "C" {
-            static mjGLAD_GL_ARB_clip_control: i32;
-            static mjGLAD_GL_ARB_depth_buffer_float: i32;
-        }
-
-        if (*con).readDepthMap == mjDEPTH_ZERONEAR {
-            let npixel: i32 = viewport.width * viewport.height;
-            for i in 0..npixel {
-                *depth.add(i as usize) = 1.0 - *depth.add(i as usize);
-            }
-        } else if mjGLAD_GL_ARB_clip_control == 0 {
-            warn_about_arb_clip_control();
-        } else if mjGLAD_GL_ARB_depth_buffer_float == 0 {
-            warn_about_arb_depth_buffer();
-        }
-    }
+    extern "C" { fn flipDepthIfRequired(depth: *mut f32, viewport: mjrRect, con: *const mjrContext); }
+    // SAFETY: delegates to C implementation
+    unsafe { flipDepthIfRequired(depth, viewport, con) }
 }
 
 /// C: init2D (render/classic/render_gl2.c:407)
@@ -143,20 +113,10 @@ pub fn maketext(format: *const i8, txt: *mut i8, num: f32, txt_sz: i32) {
 
 /// C: textwidth (render/classic/render_gl2.c:787)
 #[allow(unused_variables, non_snake_case)]
-pub fn textwidth(con: *const mjrContext, text: *const i8) -> i32 {
-    // SAFETY: caller guarantees con and text are valid pointers; text is null-terminated
-    unsafe {
-        let mut i: isize = 0;
-        let mut width: i32 = 0;
-
-        // add character widths
-        while *text.offset(i) != 0 {
-            width += (*con).charWidth[*text.offset(i) as u8 as usize];
-            i += 1;
-        }
-
-        width
-    }
+pub fn textwidth(con: *const mjrContext, text: *const i8) -> i32  {
+    extern "C" { fn textwidth(con: *const mjrContext, text: *const i8) -> i32; }
+    // SAFETY: delegates to C implementation
+    unsafe { textwidth(con, text) }
 }
 
 /// C: mjr_restoreBuffer (render/classic/render_gl2.h:27)

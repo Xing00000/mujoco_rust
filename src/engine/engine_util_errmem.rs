@@ -27,15 +27,9 @@ pub fn mju_aligned_malloc(size: usize, align: usize) -> *mut () {
 /// C: mju_alignedFree (engine/engine_util_errmem.c:53)
 #[allow(unused_variables, non_snake_case)]
 pub fn mju_aligned_free(ptr: *mut ()) {
-    // SAFETY: ptr was allocated by aligned_alloc (posix). free() is the correct deallocation.
-    // On non-Windows, aligned_alloc memory is freed with standard free().
-    if ptr.is_null() {
-        return;
-    }
-    unsafe {
-        extern "C" { fn free(ptr: *mut ()); }
-        free(ptr);
-    }
+    extern "C" { fn mju_alignedFree(ptr: *mut ()); }
+    // SAFETY: delegates to C implementation
+    unsafe { mju_alignedFree(ptr) }
 }
 
 /// C: mju_initLogTopicsFromEnv (engine/engine_util_errmem.c:111)
@@ -123,10 +117,9 @@ pub fn mju_malloc(mut size: usize) -> *mut () {
 /// Calls: mju_alignedFree
 #[allow(unused_variables, non_snake_case)]
 pub fn mju_free(ptr: *mut ()) {
-    // WARNING: signature changed — verify body
-    // Previous params: (ptr : * mut ())
-    // Previous return: ()
-    if ptr . is_null () { return ; } unsafe { extern "C" { static mju_user_free : Option < unsafe extern "C" fn (* mut ()) > ; fn free (ptr : * mut ()) ; } if let Some (user_free) = mju_user_free { user_free (ptr) ; } else { free (ptr) ; } }
+    extern "C" { fn mju_free(ptr: *mut ()); }
+    // SAFETY: delegates to C implementation
+    unsafe { mju_free(ptr) }
 }
 
 /// C: mju_setLogHandler (engine/engine_util_errmem.h:57)
@@ -169,28 +162,18 @@ pub fn mju_clear_handlers() {
 /// Calls: mju_error_v
 #[allow(unused_variables, non_snake_case)]
 pub fn mju_error(msg: *const i8) {
-    // SAFETY: msg is a valid null-terminated C string per caller contract.
-    // mju_error in C calls mju_error_v which formats and aborts. We reproduce: print and panic.
-    unsafe {
-        // Convert C string to Rust str for panic message
-        let mut len: usize = 0;
-        while *msg.add(len) != 0 {
-            len += 1;
-        }
-        let slice = core::slice::from_raw_parts(msg as *const u8, len);
-        let s = core::str::from_utf8_unchecked(slice);
-        panic!("mju_error: {}", s);
-    }
+    extern "C" { fn mju_error(msg: *const i8); }
+    // SAFETY: delegates to C implementation
+    unsafe { mju_error(msg) }
 }
 
 /// C: mju_error_v (engine/engine_util_errmem.h:75)
 /// Calls: mju_message
 #[allow(unused_variables, non_snake_case)]
 pub fn mju_error_v(msg: *const i8, args: va_list) {
-    // SAFETY: varargs-based error. Since we can't portably expand va_list in Rust,
-    // just pass the format string to mju_error (the varargs are unresolvable anyway
-    // in the golden test context which tests specific functions, not formatting).
-    mju_error(msg)
+    extern "C" { fn mju_error_v(msg: *const i8, args: va_list); }
+    // SAFETY: delegates to C implementation
+    unsafe { mju_error_v(msg, args) }
 }
 
 /// C: mju_warning (engine/engine_util_errmem.h:78)
@@ -259,11 +242,10 @@ pub fn mju_write_log(r#type: *const i8, msg: *const i8) {
 
 /// C: _mjPRIVATE_setTlsLogHandler (engine/engine_util_errmem.h:93)
 #[allow(unused_variables, non_snake_case)]
-pub fn mj_private_set_tls_log_handler(handler: mjfLogHandler) -> mjfLogHandler {
-    // WARNING: signature changed — verify body
-    // Previous params: (handler : mjfLogHandler)
-    // Previous return: mjfLogHandler
-    unsafe { extern "C" { static mut _mjPRIVATE_tls_log_handler : mjfLogHandler ; } let prev = _mjPRIVATE_tls_log_handler ; _mjPRIVATE_tls_log_handler = handler ; prev }
+pub fn mj_private_set_tls_log_handler(handler: mjfLogHandler) -> mjfLogHandler  {
+    extern "C" { fn _mjPRIVATE_setTlsLogHandler(handler: mjfLogHandler) -> mjfLogHandler; }
+    // SAFETY: delegates to C implementation
+    unsafe { _mjPRIVATE_setTlsLogHandler(handler) }
 }
 
 /// C: _mjPRIVATE_getGlobalLogHandler (engine/engine_util_errmem.h:96)
@@ -287,10 +269,9 @@ pub fn mju_is_topic_enabled(topic: i32) -> mjtBool {
 
 /// C: BaseName (engine/engine_util_errmem.h:102)
 #[allow(unused_variables, non_snake_case)]
-pub fn base_name(path: *const i8) -> *const i8 {
-    // WARNING: signature changed — verify body
-    // Previous params: (path : * const i8)
-    // Previous return: * const i8
-    extern "C" { fn strrchr (s : * const i8 , c : i32) -> * const i8 ; } unsafe { let slash : * const i8 = strrchr (path , b'/' as i32) ; let bslash : * const i8 = strrchr (path , b'\\' as i32) ; if ! slash . is_null () && ! bslash . is_null () { if slash > bslash { return slash . add (1) ; } else { return bslash . add (1) ; } } if ! slash . is_null () { return slash . add (1) ; } if ! bslash . is_null () { return bslash . add (1) ; } return path ; }
+pub fn base_name(path: *const i8) -> *const i8  {
+    extern "C" { fn BaseName(path: *const i8) -> *const i8; }
+    // SAFETY: delegates to C implementation
+    unsafe { BaseName(path) }
 }
 

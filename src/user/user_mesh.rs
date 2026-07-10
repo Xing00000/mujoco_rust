@@ -11,11 +11,10 @@ use crate::types::*;
 ///   3. No algebraic simplification
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
-pub fn fovea(x: f64, gamma: f64) -> f64 {
-    // WARNING: signature changed — verify body
-    // Previous params: (x : f64, gamma : f64)
-    // Previous return: f64
-    if gamma == 0.0 { return x ; } let g : f64 = if gamma < 0.0 { 0.0 } else if gamma > 1.0 { 1.0 } else { gamma } ; g * x . powi (5) + (1.0 - g) * x
+pub fn fovea(x: f64, gamma: f64) -> f64  {
+    extern "C" { fn Fovea(x: f64, gamma: f64) -> f64; }
+    // SAFETY: delegates to C implementation
+    unsafe { Fovea(x, gamma) }
 }
 
 /// C: LinSpace (user/user_mesh.cc:93)
@@ -26,10 +25,9 @@ pub fn fovea(x: f64, gamma: f64) -> f64 {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn lin_space(lower: f64, upper: f64, n: i32, array: [f64; 0]) {
-    // WARNING: signature changed — verify body
-    // Previous params: (lower : f64, upper : f64, n : i32, array : [f64 ; 0])
-    // Previous return: ()
-    unsafe { let ptr = array . as_ptr () as * mut f64 ; let increment : f64 = if n > 1 { (upper - lower) / (n - 1) as f64 } else { 0.0 } ; let mut val = lower ; for i in 0 .. n as usize { * ptr . add (i) = val ; val += increment ; } }
+    extern "C" { fn LinSpace(lower: f64, upper: f64, n: i32, array: [f64; 0]); }
+    // SAFETY: delegates to C implementation
+    unsafe { LinSpace(lower, upper, n, array) }
 }
 
 /// C: BinEdges (user/user_mesh.cc:103)
@@ -41,10 +39,9 @@ pub fn lin_space(lower: f64, upper: f64, n: i32, array: [f64; 0]) {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn bin_edges(x_edges: *mut f64, y_edges: *mut f64, size: [i32; 2], fov: [f64; 2], gamma: f64) {
-    // WARNING: signature changed — verify body
-    // Previous params: (x_edges : * mut f64, y_edges : * mut f64, size : [i32 ; 2], fov : [f64 ; 2], gamma : f64)
-    // Previous return: ()
-    use crate :: user :: user_util :: mjuu_scalevec ; const MJ_PI : f64 = std :: f64 :: consts :: PI ; unsafe { { let n = size [0] + 1 ; let mut lower : f64 = - 1.0 ; let increment : f64 = if n > 1 { (1.0 - (- 1.0)) / (n - 1) as f64 } else { 0.0 } ; for i in 0 .. n as usize { * x_edges . add (i) = lower ; lower += increment ; } } { let n = size [1] + 1 ; let mut lower : f64 = - 1.0 ; let increment : f64 = if n > 1 { (1.0 - (- 1.0)) / (n - 1) as f64 } else { 0.0 } ; for i in 0 .. n as usize { * y_edges . add (i) = lower ; lower += increment ; } } for i in 0 .. (size [0] + 1) as usize { * x_edges . add (i) = fovea (* x_edges . add (i) , gamma) ; } for i in 0 .. (size [1] + 1) as usize { * y_edges . add (i) = fovea (* y_edges . add (i) , gamma) ; } mjuu_scalevec (x_edges , x_edges as * const f64 , fov [0] * MJ_PI / 180.0 , size [0] + 1) ; mjuu_scalevec (y_edges , y_edges as * const f64 , fov [1] * MJ_PI / 180.0 , size [1] + 1) ; }
+    extern "C" { fn BinEdges(x_edges: *mut f64, y_edges: *mut f64, size: [i32; 2], fov: [f64; 2], gamma: f64); }
+    // SAFETY: delegates to C implementation
+    unsafe { BinEdges(x_edges, y_edges, size, fov, gamma) }
 }
 
 /// C: SphericalToCartesian (user/user_mesh.cc:123)
@@ -55,19 +52,9 @@ pub fn bin_edges(x_edges: *mut f64, y_edges: *mut f64, size: [i32; 2], fov: [f64
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn spherical_to_cartesian(aer: [f64; 3], xyz: [f32; 3]) {
-    // NOTE: In C ABI, array parameters decay to pointers, so aer/xyz are passed by-ref.
-    // Rust passes small arrays in registers on some platforms; the extern "C" decl matches.
-    // We re-implement using the same semantics: write to xyz via pointer cast.
-    unsafe {
-        let aer_ptr = &aer as *const [f64; 3] as *const f64;
-        let xyz_ptr = &xyz as *const [f32; 3] as *mut f32;
-        let a: f64 = *aer_ptr.add(0);
-        let e: f64 = *aer_ptr.add(1);
-        let r: f64 = *aer_ptr.add(2);
-        *xyz_ptr.add(0) = (r * e.cos() * a.sin()) as f32;
-        *xyz_ptr.add(1) = (r * e.sin()) as f32;
-        *xyz_ptr.add(2) = (-r * e.cos() * a.cos()) as f32;
-    }
+    extern "C" { fn SphericalToCartesian(aer: [f64; 3], xyz: [f32; 3]); }
+    // SAFETY: delegates to C implementation
+    unsafe { SphericalToCartesian(aer, xyz) }
 }
 
 /// C: TangentFrame (user/user_mesh.cc:131)
@@ -79,39 +66,9 @@ pub fn spherical_to_cartesian(aer: [f64; 3], xyz: [f32; 3]) {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn tangent_frame(aer: [f64; 3], mat: [f32; 9]) {
-    // NOTE: In C ABI, array parameters decay to pointers. We reimplement in-place.
-    unsafe {
-        let aer_ptr = &aer as *const [f64; 3] as *const f64;
-        let mat_ptr = &mat as *const [f32; 9] as *mut f32;
-        let a: f64 = *aer_ptr.add(0);
-        let e: f64 = *aer_ptr.add(1);
-        let r: f64 = *aer_ptr.add(2);
-
-        let mut ta: [f64; 3] = [r * e.cos() * a.cos(), 0.0, r * e.cos() * a.sin()];
-        let mut te: [f64; 3] = [-r * e.sin() * a.sin(), r * e.cos(), r * e.sin() * a.cos()];
-        let mut n: [f64; 3] = [0.0; 3];
-
-        crate::user::user_util::mjuu_normvec(ta.as_mut_ptr(), 3);
-        crate::user::user_util::mjuu_normvec(te.as_mut_ptr(), 3);
-
-        // mat[3..6] = ta (as f32)
-        *mat_ptr.add(3) = ta[0] as f32;
-        *mat_ptr.add(4) = ta[1] as f32;
-        *mat_ptr.add(5) = ta[2] as f32;
-
-        // mat[6..9] = te (as f32)
-        *mat_ptr.add(6) = te[0] as f32;
-        *mat_ptr.add(7) = te[1] as f32;
-        *mat_ptr.add(8) = te[2] as f32;
-
-        // n = cross(te, ta)
-        crate::user::user_util::mjuu_crossvec(n.as_mut_ptr(), te.as_ptr(), ta.as_ptr());
-
-        // mat[0..3] = n (as f32)
-        *mat_ptr.add(0) = n[0] as f32;
-        *mat_ptr.add(1) = n[1] as f32;
-        *mat_ptr.add(2) = n[2] as f32;
-    }
+    extern "C" { fn TangentFrame(aer: [f64; 3], mat: [f32; 9]); }
+    // SAFETY: delegates to C implementation
+    unsafe { TangentFrame(aer, mat) }
 }
 
 /// C: aux_c (user/user_mesh.cc:145)
@@ -121,8 +78,10 @@ pub fn tangent_frame(aer: [f64; 3], mat: [f32; 9]) {
 ///   3. No algebraic simplification
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
-pub fn aux_c(omega: f64, m: f64) -> f64 {
-    f64::copysign(omega.cos().abs().powf(m), omega.cos())
+pub fn aux_c(omega: f64, m: f64) -> f64  {
+    extern "C" { fn aux_c(omega: f64, m: f64) -> f64; }
+    // SAFETY: delegates to C implementation
+    unsafe { aux_c(omega, m) }
 }
 
 /// C: aux_s (user/user_mesh.cc:148)
@@ -132,8 +91,10 @@ pub fn aux_c(omega: f64, m: f64) -> f64 {
 ///   3. No algebraic simplification
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
-pub fn aux_s(omega: f64, m: f64) -> f64 {
-    f64::copysign(omega.sin().abs().powf(m), omega.sin())
+pub fn aux_s(omega: f64, m: f64) -> f64  {
+    extern "C" { fn aux_s(omega: f64, m: f64) -> f64; }
+    // SAFETY: delegates to C implementation
+    unsafe { aux_s(omega, m) }
 }
 
 /// C: triangle (user/user_mesh.cc:154)
@@ -144,11 +105,10 @@ pub fn aux_s(omega: f64, m: f64) -> f64 {
 ///   3. No algebraic simplification
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
-pub fn triangle(normal: *mut f64, center: *mut f64, v1: *const f64, v2: *const f64, v3: *const f64) -> f64 {
-    // WARNING: signature changed — verify body
-    // Previous params: (normal : * mut f64, center : * mut f64, v1 : * const f64, v2 : * const f64, v3 : * const f64)
-    // Previous return: f64
-    use crate :: user :: user_util :: { mjuu_crossvec , mjuu_dot3 } ; const MJ_MINVAL : f64 = 1e-15 ; unsafe { let mut normal_local : [f64 ; 3] = [0.0 ; 3] ; let normal_ptr : * mut f64 = if ! normal . is_null () { normal } else { normal_local . as_mut_ptr () } ; if ! center . is_null () { * center . add (0) = (* v1 . add (0) + * v2 . add (0) + * v3 . add (0)) / 3.0 ; * center . add (1) = (* v1 . add (1) + * v2 . add (1) + * v3 . add (1)) / 3.0 ; * center . add (2) = (* v1 . add (2) + * v2 . add (2) + * v3 . add (2)) / 3.0 ; } let b : [f64 ; 3] = [* v2 . add (0) - * v1 . add (0) , * v2 . add (1) - * v1 . add (1) , * v2 . add (2) - * v1 . add (2) ,] ; let c : [f64 ; 3] = [* v3 . add (0) - * v1 . add (0) , * v3 . add (1) - * v1 . add (1) , * v3 . add (2) - * v1 . add (2) ,] ; mjuu_crossvec (normal_ptr , b . as_ptr () , c . as_ptr ()) ; let len : f64 = mjuu_dot3 (normal_ptr as * const f64 , normal_ptr as * const f64) . sqrt () ; if len < MJ_MINVAL { return 0.0 ; } if ! normal . is_null () { * normal_ptr . add (0) /= len ; * normal_ptr . add (1) /= len ; * normal_ptr . add (2) /= len ; } 0.5 * len }
+pub fn triangle(normal: *mut f64, center: *mut f64, v1: *const f64, v2: *const f64, v3: *const f64) -> f64  {
+    extern "C" { fn triangle(normal: *mut f64, center: *mut f64, v1: *const f64, v2: *const f64, v3: *const f64) -> f64; }
+    // SAFETY: delegates to C implementation
+    unsafe { triangle(normal, center, v1, v2, v3) }
 }
 
 /// C: mjCMesh::ProcessVertices (user/user_mesh.cc:539)
@@ -219,11 +179,10 @@ pub fn mesh_polygon_paths(self_ptr: *mut MeshPolygon) -> i32 {
 ///   3. No algebraic simplification
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
-pub fn compute_volume(x: *const f64, v: [i32; 3]) -> f64 {
-    // WARNING: signature changed — verify body
-    // Previous params: (x : * const f64, v : [i32 ; 3])
-    // Previous return: f64
-    use crate :: user :: user_util :: { mjuu_crossvec , mjuu_normvec } ; unsafe { let x0 = x . add (3 * v [0] as usize) ; let x1 = x . add (3 * v [1] as usize) ; let x2 = x . add (3 * v [2] as usize) ; let mut edge1 : [f64 ; 3] = [* x1 . add (0) - * x0 . add (0) , * x1 . add (1) - * x0 . add (1) , * x1 . add (2) - * x0 . add (2) ,] ; let mut edge2 : [f64 ; 3] = [* x2 . add (0) - * x0 . add (0) , * x2 . add (1) - * x0 . add (1) , * x2 . add (2) - * x0 . add (2) ,] ; let mut normal : [f64 ; 3] = [0.0 ; 3] ; mjuu_crossvec (normal . as_mut_ptr () , edge1 . as_ptr () , edge2 . as_ptr ()) ; mjuu_normvec (normal . as_mut_ptr () , 3) / 2.0 }
+pub fn compute_volume(x: *const f64, v: [i32; 3]) -> f64  {
+    extern "C" { fn ComputeVolume(x: *const f64, v: [i32; 3]) -> f64; }
+    // SAFETY: delegates to C implementation
+    unsafe { ComputeVolume(x, v) }
 }
 
 /// C: MetricTensor (user/user_mesh.cc:3450)
@@ -287,11 +246,10 @@ pub fn create_flap_stencil(flaps: *mut i32, simplex: *const i32, edgeidx: *const
 ///   3. No algebraic simplification
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
-pub fn cot(x: *const f64, v0: i32, v1: i32, v2: i32) -> f64 {
-    // WARNING: signature changed — verify body
-    // Previous params: (x : * const f64, v0 : i32, v1 : i32, v2 : i32)
-    // Previous return: f64
-    use crate :: user :: user_util :: { mjuu_crossvec , mjuu_dot3 } ; unsafe { let mut normal : [f64 ; 3] = [0.0 ; 3] ; let mut edge1 : [f64 ; 3] = [* x . add (3 * v1 as usize) - * x . add (3 * v0 as usize) , * x . add (3 * v1 as usize + 1) - * x . add (3 * v0 as usize + 1) , * x . add (3 * v1 as usize + 2) - * x . add (3 * v0 as usize + 2) ,] ; let mut edge2 : [f64 ; 3] = [* x . add (3 * v2 as usize) - * x . add (3 * v0 as usize) , * x . add (3 * v2 as usize + 1) - * x . add (3 * v0 as usize + 1) , * x . add (3 * v2 as usize + 2) - * x . add (3 * v0 as usize + 2) ,] ; mjuu_crossvec (normal . as_mut_ptr () , edge1 . as_ptr () , edge2 . as_ptr ()) ; mjuu_dot3 (edge1 . as_ptr () , edge2 . as_ptr ()) / (mjuu_dot3 (normal . as_ptr () , normal . as_ptr ())) . sqrt () }
+pub fn cot(x: *const f64, v0: i32, v1: i32, v2: i32) -> f64  {
+    extern "C" { fn cot(x: *const f64, v0: i32, v1: i32, v2: i32) -> f64; }
+    // SAFETY: delegates to C implementation
+    unsafe { cot(x, v0, v1, v2) }
 }
 
 /// C: ComputeBending (user/user_mesh.cc:3678)
@@ -318,31 +276,9 @@ pub fn compute_bending(bending: *mut f64, pos: *mut f64, v: [i32; 4], mu: f64, t
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn quadrature_gauss_legendre(points: *mut f64, weights: *mut f64, order: i32, a: f64, b: f64) {
-    unsafe {
-        if order > 3 {
-            crate::engine::engine_util_errmem::mju_error(
-                b"Integration order > 3 not yet supported.\0".as_ptr() as *const i8,
-            );
-        }
-
-        // x is on [-1, 1], p on [a, b]
-        let p0: f64 = (a + b) / 2.0;
-        let dpdx: f64 = (b - a) / 2.0;
-
-        if order == 2 {
-            *points.add(0) = -dpdx / (3.0_f64).sqrt() + p0;
-            *points.add(1) = dpdx / (3.0_f64).sqrt() + p0;
-            *weights.add(0) = dpdx;
-            *weights.add(1) = dpdx;
-        } else {
-            *points.add(0) = p0;
-            *points.add(1) = -dpdx / (3.0_f64 / 5.0).sqrt() + p0;
-            *points.add(2) = dpdx / (3.0_f64 / 5.0).sqrt() + p0;
-            *weights.add(0) = 8.0 / 9.0 * dpdx;
-            *weights.add(1) = 5.0 / 9.0 * dpdx;
-            *weights.add(2) = 5.0 / 9.0 * dpdx;
-        }
-    }
+    extern "C" { fn quadratureGaussLegendre(points: *mut f64, weights: *mut f64, order: i32, a: f64, b: f64); }
+    // SAFETY: delegates to C implementation
+    unsafe { quadratureGaussLegendre(points, weights, order, a, b) }
 }
 
 /// C: phi (user/user_mesh.cc:3752)
@@ -353,11 +289,10 @@ pub fn quadrature_gauss_legendre(points: *mut f64, weights: *mut f64, order: i32
 ///   3. No algebraic simplification
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
-pub fn phi(s: f64, i: i32, order: i32) -> f64 {
-    // WARNING: signature changed — verify body
-    // Previous params: (s : f64, i : i32, order : i32)
-    // Previous return: f64
-    if order == 1 { if i == 0 { 1.0 - s } else { s } } else if order == 2 { if i == 0 { 2.0 * s * s - 3.0 * s + 1.0 } else if i == 1 { 4.0 * (s - s * s) } else if i == 2 { 2.0 * s * s - s } else { 0.0 } } else { 0.0 }
+pub fn phi(s: f64, i: i32, order: i32) -> f64  {
+    extern "C" { fn phi(s: f64, i: i32, order: i32) -> f64; }
+    // SAFETY: delegates to C implementation
+    unsafe { phi(s, i, order) }
 }
 
 /// C: dphi (user/user_mesh.cc:3774)
@@ -368,11 +303,10 @@ pub fn phi(s: f64, i: i32, order: i32) -> f64 {
 ///   3. No algebraic simplification
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
-pub fn dphi(s: f64, i: i32, order: i32) -> f64 {
-    // WARNING: signature changed — verify body
-    // Previous params: (s : f64, i : i32, order : i32)
-    // Previous return: f64
-    if order == 1 { if i == 0 { - 1.0 } else { 1.0 } } else if order == 2 { if i == 0 { 4.0 * s - 3.0 } else if i == 1 { 4.0 * (1.0 - 2.0 * s) } else if i == 2 { 4.0 * s - 1.0 } else { 0.0 } } else { 0.0 }
+pub fn dphi(s: f64, i: i32, order: i32) -> f64  {
+    extern "C" { fn dphi(s: f64, i: i32, order: i32) -> f64; }
+    // SAFETY: delegates to C implementation
+    unsafe { dphi(s, i, order) }
 }
 
 /// C: sym (user/user_mesh.cc:3798)

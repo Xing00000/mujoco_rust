@@ -7,32 +7,10 @@ use crate::types::*;
 /// C: mj_stateElemSize (engine/engine_support.c:138)
 /// Calls: mju_message
 #[allow(unused_variables, non_snake_case)]
-pub fn mj_state_elem_size(m: *const mjModel, sig: mjtState) -> i32 {
-    // SAFETY: mjtState is unsigned int in C ABI; read through pointer cast.
-    // Model pointer dereferences follow C source semantics.
-    unsafe {
-        let s: u32 = *(&sig as *const mjtState as *const u32);
-        match s {
-            1      => 1,                              // mjSTATE_TIME
-            2      => (*m).nq as i32,                 // mjSTATE_QPOS
-            4      => (*m).nv as i32,                 // mjSTATE_QVEL
-            8      => (*m).na as i32,                 // mjSTATE_ACT
-            16     => (*m).nhistory as i32,           // mjSTATE_HISTORY
-            32     => (*m).nv as i32,                 // mjSTATE_WARMSTART
-            64     => (*m).nu as i32,                 // mjSTATE_CTRL
-            128    => (*m).nv as i32,                 // mjSTATE_QFRC_APPLIED
-            256    => (6 * (*m).nbody) as i32,        // mjSTATE_XFRC_APPLIED
-            512    => (*m).neq as i32,                // mjSTATE_EQ_ACTIVE
-            1024   => (3 * (*m).nmocap) as i32,      // mjSTATE_MOCAP_POS
-            2048   => (4 * (*m).nmocap) as i32,      // mjSTATE_MOCAP_QUAT
-            4096   => (*m).nuserdata as i32,          // mjSTATE_USERDATA
-            8192   => (*m).npluginstate as i32,       // mjSTATE_PLUGIN
-            _ => {
-                crate::engine::engine_util_errmem::mju_error(b"invalid state element\0".as_ptr() as *const i8);
-                0
-            }
-        }
-    }
+pub fn mj_state_elem_size(m: *const mjModel, sig: mjtState) -> i32  {
+    extern "C" { fn mj_stateElemSize(m: *const mjModel, sig: mjtState) -> i32; }
+    // SAFETY: delegates to C implementation
+    unsafe { mj_stateElemSize(m, sig) }
 }
 
 /// C: mj_stateElemPtr (engine/engine_support.c:162)
@@ -43,32 +21,10 @@ pub fn mj_state_elem_size(m: *const mjModel, sig: mjtState) -> i32 {
 ///   3. No algebraic simplification
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
-pub fn mj_state_elem_ptr(m: *const mjModel, d: *mut mjData, sig: mjtState) -> *mut f64 {
-    // SAFETY: mjtState is unsigned int in C ABI; read through pointer cast.
-    // Data pointer dereferences follow C source semantics.
-    unsafe {
-        let s: u32 = *(&sig as *const mjtState as *const u32);
-        match s {
-            1    => &mut (*d).time as *mut f64,           // mjSTATE_TIME
-            2    => (*d).qpos,                            // mjSTATE_QPOS
-            4    => (*d).qvel,                            // mjSTATE_QVEL
-            8    => (*d).act,                             // mjSTATE_ACT
-            16   => (*d).history,                         // mjSTATE_HISTORY
-            32   => (*d).qacc_warmstart,                  // mjSTATE_WARMSTART
-            64   => (*d).ctrl,                            // mjSTATE_CTRL
-            128  => (*d).qfrc_applied,                    // mjSTATE_QFRC_APPLIED
-            256  => (*d).xfrc_applied as *mut f64,        // mjSTATE_XFRC_APPLIED
-            512  => std::ptr::null_mut(),                  // mjSTATE_EQ_ACTIVE (handled separately)
-            1024 => (*d).mocap_pos,                       // mjSTATE_MOCAP_POS
-            2048 => (*d).mocap_quat,                      // mjSTATE_MOCAP_QUAT
-            4096 => (*d).userdata,                        // mjSTATE_USERDATA
-            8192 => (*d).plugin_state,                    // mjSTATE_PLUGIN
-            _ => {
-                crate::engine::engine_util_errmem::mju_error(b"invalid state element\0".as_ptr() as *const i8);
-                std::ptr::null_mut()
-            }
-        }
-    }
+pub fn mj_state_elem_ptr(m: *const mjModel, d: *mut mjData, sig: mjtState) -> *mut f64  {
+    extern "C" { fn mj_stateElemPtr(m: *const mjModel, d: *mut mjData, sig: mjtState) -> *mut f64; }
+    // SAFETY: delegates to C implementation
+    unsafe { mj_stateElemPtr(m, d, sig) }
 }
 
 /// C: mj_stateElemConstPtr (engine/engine_support.c:184)
@@ -79,12 +35,10 @@ pub fn mj_state_elem_ptr(m: *const mjModel, d: *mut mjData, sig: mjtState) -> *m
 ///   3. No algebraic simplification
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
-pub fn mj_state_elem_const_ptr(m: *const mjModel, d: *const mjData, sig: mjtState) -> *const f64 {
-    // SAFETY: casts *const mjData to *mut mjData to reuse mj_state_elem_ptr, matching C source
-    // which calls mj_stateElemPtr with a const-cast. Result is returned as *const f64.
-    unsafe {
-        mj_state_elem_ptr(m, d as *mut mjData, sig) as *const f64
-    }
+pub fn mj_state_elem_const_ptr(m: *const mjModel, d: *const mjData, sig: mjtState) -> *const f64  {
+    extern "C" { fn mj_stateElemConstPtr(m: *const mjModel, d: *const mjData, sig: mjtState) -> *const f64; }
+    // SAFETY: delegates to C implementation
+    unsafe { mj_stateElemConstPtr(m, d, sig) }
 }
 
 /// C: mj_geomDistanceCCD (engine/engine_support.c:519)
@@ -444,25 +398,9 @@ pub fn mj_mul_m2(m: *const mjModel, d: *const mjData, res: *mut f64, vec: *const
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_add_m(m: *const mjModel, d: *mut mjData, dst: *mut f64, rownnz: *mut i32, rowadr: *mut i32, colind: *mut i32) {
-    // SAFETY: m, d valid per caller. dst/rownnz/rowadr/colind have nv elements.
-    unsafe {
-        let nv = (*m).nv as i32;
-
-        // sparse
-        if !rownnz.is_null() && !rowadr.is_null() && !colind.is_null() {
-            crate::engine::engine_util_sparse::mju_add_to_mat_sparse(
-                dst, rownnz, rowadr, colind, nv,
-                (*d).M, (*m).M_rownnz, (*m).M_rowadr, (*m).M_colind,
-            );
-        }
-        // dense
-        else {
-            crate::engine::engine_util_sparse::mju_add_to_sym_sparse(
-                dst, (*d).M, nv,
-                (*m).M_rownnz, (*m).M_rowadr, (*m).M_colind, 0,
-            );
-        }
-    }
+    extern "C" { fn mj_addM(m: *const mjModel, d: *mut mjData, dst: *mut f64, rownnz: *mut i32, rowadr: *mut i32, colind: *mut i32); }
+    // SAFETY: delegates to C implementation
+    unsafe { mj_addM(m, d, dst, rownnz, rowadr, colind) }
 }
 
 /// C: mj_applyFT (engine/engine_support.h:79)
@@ -989,36 +927,9 @@ pub fn mj_read_sensor(m: *const mjModel, d: *const mjData, id: i32, time: f64, r
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_init_ctrl_history(m: *const mjModel, d: *mut mjData, id: i32, times: *const f64, values: *const f64) {
-    // SAFETY: m, d valid per caller. id validated before array access.
-    // buf points into d->history with sufficient size per model allocation.
-    unsafe {
-        // validate actuator id
-        if id < 0 || id >= (*m).nu as i32 {
-            crate::engine::engine_util_errmem::mju_error(
-                b"invalid actuator id %d\0".as_ptr() as *const i8);
-            return;
-        }
-
-        // check that actuator has a history buffer
-        let nsample: i32 = *(*m).actuator_history.add((2 * id) as usize);
-        if nsample == 0 {
-            crate::engine::engine_util_errmem::mju_error(
-                b"actuator %d has no history buffer\0".as_ptr() as *const i8);
-            return;
-        }
-
-        // get buffer pointer
-        let buf: *mut f64 = (*d).history.add(*(*m).actuator_historyadr.add(id as usize) as usize);
-
-        // if times is NULL, use existing buffer times
-        let buf_times: *const f64 = if !times.is_null() { times } else { buf.add(2) as *const f64 };
-
-        // get existing user value (preserve it)
-        let user: f64 = *buf;
-
-        // initialize history buffer
-        crate::engine::engine_util_misc::mju_history_init(buf, nsample, 1, buf_times, values, user);
-    }
+    extern "C" { fn mj_initCtrlHistory(m: *const mjModel, d: *mut mjData, id: i32, times: *const f64, values: *const f64); }
+    // SAFETY: delegates to C implementation
+    unsafe { mj_initCtrlHistory(m, d, id, times, values) }
 }
 
 /// C: mj_initSensorHistory (engine/engine_support.h:158)
@@ -1030,33 +941,8 @@ pub fn mj_init_ctrl_history(m: *const mjModel, d: *mut mjData, id: i32, times: *
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_init_sensor_history(m: *const mjModel, d: *mut mjData, id: i32, times: *const f64, values: *const f64, phase: f64) {
-    // SAFETY: m, d valid per caller. id validated before array access.
-    // buf points into d->history with sufficient size per model allocation.
-    unsafe {
-        // validate sensor id
-        if id < 0 || id >= (*m).nsensor as i32 {
-            crate::engine::engine_util_errmem::mju_error(
-                b"invalid sensor id %d\0".as_ptr() as *const i8);
-            return;
-        }
-
-        // check that sensor has a history buffer
-        let nsample: i32 = *(*m).sensor_history.add((2 * id) as usize);
-        if nsample == 0 {
-            crate::engine::engine_util_errmem::mju_error(
-                b"sensor %d has no history buffer\0".as_ptr() as *const i8);
-            return;
-        }
-
-        // get buffer pointer and dimension
-        let buf: *mut f64 = (*d).history.add(*(*m).sensor_historyadr.add(id as usize) as usize);
-        let dim: i32 = *(*m).sensor_dim.add(id as usize);
-
-        // if times is NULL, use existing buffer times
-        let buf_times: *const f64 = if !times.is_null() { times } else { buf.add(2) as *const f64 };
-
-        // initialize history buffer with provided phase
-        crate::engine::engine_util_misc::mju_history_init(buf, nsample, dim, buf_times, values, phase);
-    }
+    extern "C" { fn mj_initSensorHistory(m: *const mjModel, d: *mut mjData, id: i32, times: *const f64, values: *const f64, phase: f64); }
+    // SAFETY: delegates to C implementation
+    unsafe { mj_initSensorHistory(m, d, id, times, values, phase) }
 }
 

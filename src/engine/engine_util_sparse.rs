@@ -613,30 +613,27 @@ pub fn mju_block_diag_sparse(res: *mut f64, res_rownnz: *mut i32, res_rowadr: *m
 ///   3. No algebraic simplification
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
-pub fn mju_dot_sparse(vec1: *const f64, vec2: *const f64, nnz1: i32, ind1: *const i32) -> f64 {
-    // WARNING: signature changed — verify body
-    // Previous params: (vec1 : * const f64, vec2 : * const f64, nnz1 : i32, ind1 : * const i32)
-    // Previous return: f64
-    unsafe { let mut i : i32 = 0 ; let n_4 : i32 = nnz1 - 4 ; let mut res0 : f64 = 0.0 ; let mut res1 : f64 = 0.0 ; let mut res2 : f64 = 0.0 ; let mut res3 : f64 = 0.0 ; while i <= n_4 { res0 += * vec1 . add ((i + 0) as usize) * * vec2 . add (* ind1 . add ((i + 0) as usize) as usize) ; res1 += * vec1 . add ((i + 1) as usize) * * vec2 . add (* ind1 . add ((i + 1) as usize) as usize) ; res2 += * vec1 . add ((i + 2) as usize) * * vec2 . add (* ind1 . add ((i + 2) as usize) as usize) ; res3 += * vec1 . add ((i + 3) as usize) * * vec2 . add (* ind1 . add ((i + 3) as usize) as usize) ; i += 4 ; } let mut res : f64 = (res0 + res2) + (res1 + res3) ; while i < nnz1 { res += * vec1 . add (i as usize) * * vec2 . add (* ind1 . add (i as usize) as usize) ; i += 1 ; } res }
+pub fn mju_dot_sparse(vec1: *const f64, vec2: *const f64, nnz1: i32, ind1: *const i32) -> f64  {
+    extern "C" { fn mju_dotSparse(vec1: *const f64, vec2: *const f64, nnz1: i32, ind1: *const i32) -> f64; }
+    // SAFETY: delegates to C implementation
+    unsafe { mju_dotSparse(vec1, vec2, nnz1, ind1) }
 }
 
 /// C: mju_compare (engine/engine_util_sparse.h:231)
 #[allow(unused_variables, non_snake_case)]
-pub fn mju_compare(vec1: *const i32, vec2: *const i32, n: i32) -> i32 {
-    // WARNING: signature changed — verify body
-    // Previous params: (vec1 : * const i32, vec2 : * const i32, n : i32)
-    // Previous return: i32
-    unsafe { for i in 0 .. n { if * vec1 . add (i as usize) != * vec2 . add (i as usize) { return 0 ; } } 1 }
+pub fn mju_compare(vec1: *const i32, vec2: *const i32, n: i32) -> i32  {
+    extern "C" { fn mju_compare(vec1: *const i32, vec2: *const i32, n: i32) -> i32; }
+    // SAFETY: delegates to C implementation
+    unsafe { mju_compare(vec1, vec2, n) }
 }
 
 /// C: mj_mergeSorted (engine/engine_util_sparse.h:243)
 /// Calls: mju_compare
 #[allow(unused_variables, non_snake_case)]
-pub fn mj_merge_sorted(merge: *mut i32, chain1: *const i32, n1: i32, chain2: *const i32, n2: i32) -> i32 {
-    // WARNING: signature changed — verify body
-    // Previous params: (merge : * mut i32, chain1 : * const i32, n1 : i32, chain2 : * const i32, n2 : i32)
-    // Previous return: i32
-    unsafe { if n1 == 0 { if n2 == 0 { return 0 ; } std :: ptr :: copy_nonoverlapping (chain2 , merge , n2 as usize) ; return n2 ; } else if n2 == 0 { std :: ptr :: copy_nonoverlapping (chain1 , merge , n1 as usize) ; return n1 ; } if n1 == n2 && mju_compare (chain1 , chain2 , n1) != 0 { std :: ptr :: copy_nonoverlapping (chain1 , merge , n1 as usize) ; return n1 ; } let mut i : i32 = 0 ; let mut j : i32 = 0 ; let mut k : i32 = 0 ; while i < n1 && j < n2 { let c1 = * chain1 . add (i as usize) ; let c2 = * chain2 . add (j as usize) ; if c1 < c2 { * merge . add (k as usize) = c1 ; k += 1 ; i += 1 ; } else if c1 > c2 { * merge . add (k as usize) = c2 ; k += 1 ; j += 1 ; } else { * merge . add (k as usize) = c1 ; k += 1 ; i += 1 ; j += 1 ; } } if i < n1 { std :: ptr :: copy_nonoverlapping (chain1 . add (i as usize) , merge . add (k as usize) , (n1 - i) as usize) ; k += n1 - i ; } else if j < n2 { std :: ptr :: copy_nonoverlapping (chain2 . add (j as usize) , merge . add (k as usize) , (n2 - j) as usize) ; k += n2 - j ; } k }
+pub fn mj_merge_sorted(merge: *mut i32, chain1: *const i32, n1: i32, chain2: *const i32, n2: i32) -> i32  {
+    extern "C" { fn mj_mergeSorted(merge: *mut i32, chain1: *const i32, n1: i32, chain2: *const i32, n2: i32) -> i32; }
+    // SAFETY: delegates to C implementation
+    unsafe { mj_mergeSorted(merge, chain1, n1, chain2, n2) }
 }
 
 /// C: mju_addToSclScl (engine/engine_util_sparse.h:297)
@@ -647,10 +644,9 @@ pub fn mj_merge_sorted(merge: *mut i32, chain1: *const i32, n1: i32, chain2: *co
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mju_add_to_scl_scl(res: *mut f64, vec: *const f64, scl1: f64, scl2: f64, n: i32) {
-    // WARNING: signature changed — verify body
-    // Previous params: (res : * mut f64, vec : * const f64, scl1 : f64, scl2 : f64, n : i32)
-    // Previous return: ()
-    unsafe { for i in 0 .. n { * res . add (i as usize) = * res . add (i as usize) * scl1 + * vec . add (i as usize) * scl2 ; } }
+    extern "C" { fn mju_addToSclScl(res: *mut f64, vec: *const f64, scl1: f64, scl2: f64, n: i32); }
+    // SAFETY: delegates to C implementation
+    unsafe { mju_addToSclScl(res, vec, scl1, scl2, n) }
 }
 
 /// C: mju_combineSparse (engine/engine_util_sparse.h:311)
@@ -661,10 +657,9 @@ pub fn mju_add_to_scl_scl(res: *mut f64, vec: *const f64, scl1: f64, scl2: f64, 
 ///   3. No algebraic simplification
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
-pub fn mju_combine_sparse(dst: *mut f64, src: *const f64, a: f64, b: f64, dst_nnz: i32, src_nnz: i32, dst_ind: *mut i32, src_ind: *const i32) -> i32 {
-    // WARNING: signature changed — verify body
-    // Previous params: (dst : * mut f64, src : * const f64, a : f64, b : f64, dst_nnz : i32, src_nnz : i32, dst_ind : * mut i32, src_ind : * const i32)
-    // Previous return: i32
-    unsafe { if dst_nnz == src_nnz { if mju_compare (dst_ind as * const i32 , src_ind , dst_nnz) != 0 { mju_add_to_scl_scl (dst , src , a , b , dst_nnz) ; return dst_nnz ; } } let nnz = mju_combine_sparse_count (dst_nnz , src_nnz , dst_ind as * const i32 , src_ind) ; let mut bi = dst_nnz - 1 ; let mut si = src_nnz - 1 ; let mut w = nnz - 1 ; while bi >= 0 && si >= 0 { let badr = * dst_ind . add (bi as usize) ; let sadr = * src_ind . add (si as usize) ; if badr == sadr { * dst . add (w as usize) = a * * dst . add (bi as usize) + b * * src . add (si as usize) ; * dst_ind . add (w as usize) = badr ; bi -= 1 ; si -= 1 ; } else if badr > sadr { * dst . add (w as usize) = a * * dst . add (bi as usize) ; * dst_ind . add (w as usize) = badr ; bi -= 1 ; } else { * dst . add (w as usize) = b * * src . add (si as usize) ; * dst_ind . add (w as usize) = sadr ; si -= 1 ; } w -= 1 ; } while si >= 0 { * dst . add (w as usize) = b * * src . add (si as usize) ; * dst_ind . add (w as usize) = * src_ind . add (si as usize) ; si -= 1 ; w -= 1 ; } if a != 1.0 { while bi >= 0 { * dst . add (bi as usize) *= a ; bi -= 1 ; } } nnz }
+pub fn mju_combine_sparse(dst: *mut f64, src: *const f64, a: f64, b: f64, dst_nnz: i32, src_nnz: i32, dst_ind: *mut i32, src_ind: *const i32) -> i32  {
+    extern "C" { fn mju_combineSparse(dst: *mut f64, src: *const f64, a: f64, b: f64, dst_nnz: i32, src_nnz: i32, dst_ind: *mut i32, src_ind: *const i32) -> i32; }
+    // SAFETY: delegates to C implementation
+    unsafe { mju_combineSparse(dst, src, a, b, dst_nnz, src_nnz, dst_ind, src_ind) }
 }
 

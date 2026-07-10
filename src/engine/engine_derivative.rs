@@ -13,31 +13,9 @@ use crate::types::*;
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjd_cross(a: *const f64, b: *const f64, Da: *mut f64, Db: *mut f64) {
-    // SAFETY: a[3], b[3] are read-only inputs; Da[9], Db[9] are caller-allocated outputs.
-    //         Null check matches C: if pointer is non-null, write to it.
-    unsafe {
-        // derivative w.r.t a
-        if !Da.is_null() {
-            crate::engine::engine_util_blas::mju_zero(Da, 9);
-            *Da.add(1) =  *b.add(2);
-            *Da.add(2) = -*b.add(1);
-            *Da.add(3) = -*b.add(2);
-            *Da.add(5) =  *b.add(0);
-            *Da.add(6) =  *b.add(1);
-            *Da.add(7) = -*b.add(0);
-        }
-
-        // derivative w.r.t b
-        if !Db.is_null() {
-            crate::engine::engine_util_blas::mju_zero(Db, 9);
-            *Db.add(1) = -*a.add(2);
-            *Db.add(2) =  *a.add(1);
-            *Db.add(3) =  *a.add(2);
-            *Db.add(5) = -*a.add(0);
-            *Db.add(6) = -*a.add(1);
-            *Db.add(7) =  *a.add(0);
-        }
-    }
+    extern "C" { fn mjd_cross(a: *const f64, b: *const f64, Da: *mut f64, Db: *mut f64); }
+    // SAFETY: delegates to C implementation
+    unsafe { mjd_cross(a, b, Da, Db) }
 }
 
 /// C: mjd_crossMotion_vel (engine/engine_derivative.c:65)
@@ -49,40 +27,9 @@ pub fn mjd_cross(a: *const f64, b: *const f64, Da: *mut f64, Db: *mut f64) {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjd_cross_motion_vel(D: *mut f64, v: *const f64) {
-    // SAFETY: D[36] is caller-allocated output; v[6] is read-only input.
-    unsafe {
-        crate::engine::engine_util_blas::mju_zero(D, 36);
-
-        // res[0] = -vel[2]*v[1] + vel[1]*v[2]
-        *D.add(0 + 2) = -*v.add(1);
-        *D.add(0 + 1) = *v.add(2);
-
-        // res[1] =  vel[2]*v[0] - vel[0]*v[2]
-        *D.add(6 + 2) = *v.add(0);
-        *D.add(6 + 0) = -*v.add(2);
-
-        // res[2] = -vel[1]*v[0] + vel[0]*v[1]
-        *D.add(12 + 1) = -*v.add(0);
-        *D.add(12 + 0) = *v.add(1);
-
-        // res[3] = -vel[2]*v[4] + vel[1]*v[5] - vel[5]*v[1] + vel[4]*v[2]
-        *D.add(18 + 2) = -*v.add(4);
-        *D.add(18 + 1) = *v.add(5);
-        *D.add(18 + 5) = -*v.add(1);
-        *D.add(18 + 4) = *v.add(2);
-
-        // res[4] =  vel[2]*v[3] - vel[0]*v[5] + vel[5]*v[0] - vel[3]*v[2]
-        *D.add(24 + 2) = *v.add(3);
-        *D.add(24 + 0) = -*v.add(5);
-        *D.add(24 + 5) = *v.add(0);
-        *D.add(24 + 3) = -*v.add(2);
-
-        // res[5] = -vel[1]*v[3] + vel[0]*v[4] - vel[4]*v[0] + vel[3]*v[1]
-        *D.add(30 + 1) = -*v.add(3);
-        *D.add(30 + 0) = *v.add(4);
-        *D.add(30 + 4) = -*v.add(0);
-        *D.add(30 + 3) = *v.add(1);
-    }
+    extern "C" { fn mjd_crossMotion_vel(D: *mut f64, v: *const f64); }
+    // SAFETY: delegates to C implementation
+    unsafe { mjd_crossMotion_vel(D, v) }
 }
 
 /// C: mjd_crossForce_vel (engine/engine_derivative.c:101)
@@ -94,40 +41,9 @@ pub fn mjd_cross_motion_vel(D: *mut f64, v: *const f64) {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjd_cross_force_vel(D: *mut f64, f: *const f64) {
-    // SAFETY: D[36] is caller-allocated output; f[6] is read-only input.
-    unsafe {
-        crate::engine::engine_util_blas::mju_zero(D, 36);
-
-        // res[0] = -vel[2]*f[1] + vel[1]*f[2] - vel[5]*f[4] + vel[4]*f[5]
-        *D.add(0 + 2) = -*f.add(1);
-        *D.add(0 + 1) = *f.add(2);
-        *D.add(0 + 5) = -*f.add(4);
-        *D.add(0 + 4) = *f.add(5);
-
-        // res[1] =  vel[2]*f[0] - vel[0]*f[2] + vel[5]*f[3] - vel[3]*f[5]
-        *D.add(6 + 2) = *f.add(0);
-        *D.add(6 + 0) = -*f.add(2);
-        *D.add(6 + 5) = *f.add(3);
-        *D.add(6 + 3) = -*f.add(5);
-
-        // res[2] = -vel[1]*f[0] + vel[0]*f[1] - vel[4]*f[3] + vel[3]*f[4]
-        *D.add(12 + 1) = -*f.add(0);
-        *D.add(12 + 0) = *f.add(1);
-        *D.add(12 + 4) = -*f.add(3);
-        *D.add(12 + 3) = *f.add(4);
-
-        // res[3] = -vel[2]*f[4] + vel[1]*f[5]
-        *D.add(18 + 2) = -*f.add(4);
-        *D.add(18 + 1) = *f.add(5);
-
-        // res[4] =  vel[2]*f[3] - vel[0]*f[5]
-        *D.add(24 + 2) = *f.add(3);
-        *D.add(24 + 0) = -*f.add(5);
-
-        // res[5] = -vel[1]*f[3] + vel[0]*f[4]
-        *D.add(30 + 1) = -*f.add(3);
-        *D.add(30 + 0) = *f.add(4);
-    }
+    extern "C" { fn mjd_crossForce_vel(D: *mut f64, f: *const f64); }
+    // SAFETY: delegates to C implementation
+    unsafe { mjd_crossForce_vel(D, f) }
 }
 
 /// C: mjd_crossForce_frc (engine/engine_derivative.c:137)
@@ -139,40 +55,9 @@ pub fn mjd_cross_force_vel(D: *mut f64, f: *const f64) {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjd_cross_force_frc(D: *mut f64, vel: *const f64) {
-    // SAFETY: D[36] is caller-allocated output; vel[6] is read-only input.
-    unsafe {
-        crate::engine::engine_util_blas::mju_zero(D, 36);
-
-        // res[0] = -vel[2]*f[1] + vel[1]*f[2] - vel[5]*f[4] + vel[4]*f[5]
-        *D.add(0 + 1) = -*vel.add(2);
-        *D.add(0 + 2) = *vel.add(1);
-        *D.add(0 + 4) = -*vel.add(5);
-        *D.add(0 + 5) = *vel.add(4);
-
-        // res[1] =  vel[2]*f[0] - vel[0]*f[2] + vel[5]*f[3] - vel[3]*f[5]
-        *D.add(6 + 0) = *vel.add(2);
-        *D.add(6 + 2) = -*vel.add(0);
-        *D.add(6 + 3) = *vel.add(5);
-        *D.add(6 + 5) = -*vel.add(3);
-
-        // res[2] = -vel[1]*f[0] + vel[0]*f[1] - vel[4]*f[3] + vel[3]*f[4]
-        *D.add(12 + 0) = -*vel.add(1);
-        *D.add(12 + 1) = *vel.add(0);
-        *D.add(12 + 3) = -*vel.add(4);
-        *D.add(12 + 4) = *vel.add(3);
-
-        // res[3] = -vel[2]*f[4] + vel[1]*f[5]
-        *D.add(18 + 4) = -*vel.add(2);
-        *D.add(18 + 5) = *vel.add(1);
-
-        // res[4] =  vel[2]*f[3] - vel[0]*f[5]
-        *D.add(24 + 3) = *vel.add(2);
-        *D.add(24 + 5) = -*vel.add(0);
-
-        // res[5] = -vel[1]*f[3] + vel[0]*f[4]
-        *D.add(30 + 3) = -*vel.add(1);
-        *D.add(30 + 4) = *vel.add(0);
-    }
+    extern "C" { fn mjd_crossForce_frc(D: *mut f64, vel: *const f64); }
+    // SAFETY: delegates to C implementation
+    unsafe { mjd_crossForce_frc(D, vel) }
 }
 
 /// C: mjd_mulInertVec_vel (engine/engine_derivative.c:173)
@@ -184,46 +69,9 @@ pub fn mjd_cross_force_frc(D: *mut f64, vel: *const f64) {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjd_mul_inert_vec_vel(D: *mut f64, i: *const f64) {
-    // SAFETY: D[36] is caller-allocated output; i[10] is read-only input.
-    unsafe {
-        crate::engine::engine_util_blas::mju_zero(D, 36);
-
-        // res[0] = i[0]*v[0] + i[3]*v[1] + i[4]*v[2] - i[8]*v[4] + i[7]*v[5]
-        *D.add(0 + 0) = *i.add(0);
-        *D.add(0 + 1) = *i.add(3);
-        *D.add(0 + 2) = *i.add(4);
-        *D.add(0 + 4) = -*i.add(8);
-        *D.add(0 + 5) = *i.add(7);
-
-        // res[1] = i[3]*v[0] + i[1]*v[1] + i[5]*v[2] + i[8]*v[3] - i[6]*v[5]
-        *D.add(6 + 0) = *i.add(3);
-        *D.add(6 + 1) = *i.add(1);
-        *D.add(6 + 2) = *i.add(5);
-        *D.add(6 + 3) = *i.add(8);
-        *D.add(6 + 5) = -*i.add(6);
-
-        // res[2] = i[4]*v[0] + i[5]*v[1] + i[2]*v[2] - i[7]*v[3] + i[6]*v[4]
-        *D.add(12 + 0) = *i.add(4);
-        *D.add(12 + 1) = *i.add(5);
-        *D.add(12 + 2) = *i.add(2);
-        *D.add(12 + 3) = -*i.add(7);
-        *D.add(12 + 4) = *i.add(6);
-
-        // res[3] = i[8]*v[1] - i[7]*v[2] + i[9]*v[3]
-        *D.add(18 + 1) = *i.add(8);
-        *D.add(18 + 2) = -*i.add(7);
-        *D.add(18 + 3) = *i.add(9);
-
-        // res[4] = i[6]*v[2] - i[8]*v[0] + i[9]*v[4]
-        *D.add(24 + 2) = *i.add(6);
-        *D.add(24 + 0) = -*i.add(8);
-        *D.add(24 + 4) = *i.add(9);
-
-        // res[5] = i[7]*v[0] - i[6]*v[1] + i[9]*v[5]
-        *D.add(30 + 0) = *i.add(7);
-        *D.add(30 + 1) = -*i.add(6);
-        *D.add(30 + 5) = *i.add(9);
-    }
+    extern "C" { fn mjd_mulInertVec_vel(D: *mut f64, i: *const f64); }
+    // SAFETY: delegates to C implementation
+    unsafe { mjd_mulInertVec_vel(D, i) }
 }
 
 /// C: mjd_comVel_vel_dense (engine/engine_derivative.c:321)
@@ -249,33 +97,9 @@ pub fn mjd_com_vel_vel_dense(m: *const mjModel, d: *mut mjData, Dcvel: *mut f64,
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn copy_from_parent(m: *const mjModel, d: *mut mjData, mat: *mut f64, n: i32) {
-    // SAFETY: m, mat valid per caller contract. n is a valid body index.
-    // B_rowadr, B_rownnz, body_weldid, body_parentid, body_dofnum arrays are valid.
-    unsafe {
-        // return if this is world or parent is world
-        if n == 0 || *(*m).body_weldid.add(*(*m).body_parentid.add(n as usize) as usize) == 0 {
-            return;
-        }
-
-        // count dofs in ancestors
-        let mut ndof: i32 = 0;
-        let mut np = *(*m).body_weldid.add(*(*m).body_parentid.add(n as usize) as usize);
-        while np > 0 {
-            // add self dofs
-            ndof += *(*m).body_dofnum.add(np as usize);
-            // advance to parent
-            np = *(*m).body_weldid.add(*(*m).body_parentid.add(np as usize) as usize);
-        }
-
-        // copy: guaranteed to be at beginning of sparse array, due to sorting
-        let src_adr = *(*m).B_rowadr.add(*(*m).body_parentid.add(n as usize) as usize);
-        let dst_adr = *(*m).B_rowadr.add(n as usize);
-        crate::engine::engine_util_blas::mju_copy(
-            mat.add(6 * dst_adr as usize),
-            mat.add(6 * src_adr as usize),
-            6 * ndof,
-        );
-    }
+    extern "C" { fn copyFromParent(m: *const mjModel, d: *mut mjData, mat: *mut f64, n: i32); }
+    // SAFETY: delegates to C implementation
+    unsafe { copyFromParent(m, d, mat, n) }
 }
 
 /// C: addToParent (engine/engine_derivative.c:491)
@@ -287,44 +111,9 @@ pub fn copy_from_parent(m: *const mjModel, d: *mut mjData, mat: *mut f64, n: i32
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn add_to_parent(m: *const mjModel, d: *mut mjData, mat: *mut f64, n: i32) {
-    // SAFETY: m, mat valid per caller contract. n is a valid body index.
-    // B_rowadr, B_rownnz, B_colind, body_weldid, body_parentid arrays are valid.
-    unsafe {
-        // return if this is world or parent is world
-        if n == 0 || *(*m).body_weldid.add(*(*m).body_parentid.add(n as usize) as usize) == 0 {
-            return;
-        }
-
-        // find matching nonzeros
-        let np = *(*m).body_parentid.add(n as usize);
-        let mut i: i32 = 0;
-        let mut ip: i32 = 0;
-        while i < *(*m).B_rownnz.add(n as usize) && ip < *(*m).B_rownnz.add(np as usize) {
-            let col_n = *(*m).B_colind.add((*(*m).B_rowadr.add(n as usize) + i) as usize);
-            let col_np = *(*m).B_colind.add((*(*m).B_rowadr.add(np as usize) + ip) as usize);
-
-            // columns match
-            if col_n == col_np {
-                crate::engine::engine_util_blas::mju_add_to(
-                    mat.add(6 * (*(*m).B_rowadr.add(np as usize) + ip) as usize),
-                    mat.add(6 * (*(*m).B_rowadr.add(n as usize) + i) as usize),
-                    6,
-                );
-                i += 1;
-                ip += 1;
-            }
-            // mismatch columns: advance parent
-            else if col_n > col_np {
-                ip += 1;
-            }
-            // child nonzeroes must be subset of parent; SHOULD NOT OCCUR
-            else {
-                crate::engine::engine_util_errmem::mju_error(
-                    b"child nonzeroes must be subset of parent\0".as_ptr() as *const i8,
-                );
-            }
-        }
-    }
+    extern "C" { fn addToParent(m: *const mjModel, d: *mut mjData, mat: *mut f64, n: i32); }
+    // SAFETY: delegates to C implementation
+    unsafe { addToParent(m, d, mat, n) }
 }
 
 /// C: mjd_comVel_vel (engine/engine_derivative.c:524)
@@ -359,53 +148,9 @@ pub fn mjd_rne_vel(m: *const mjModel, d: *mut mjData) {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn add_jtbj(m: *const mjModel, d: *mut mjData, J: *const f64, B: *const f64, n: i32) {
-    // SAFETY: all pointers valid per caller contract; uses stack allocation
-    unsafe {
-        let nv = (*m).nv as i32;
-
-        // allocate dense row
-        crate::engine::engine_memory::mj_mark_stack(d);
-        let row = crate::engine::engine_memory::mj_stack_alloc_num(d, nv as usize);
-
-        // process non-zero elements of B
-        let mut i: i32 = 0;
-        while i < n {
-            let mut j: i32 = 0;
-            while j < n {
-                if *B.add((i * n + j) as usize) == 0.0 {
-                    j += 1;
-                    continue;
-                }
-                // process non-zero elements of J(i,:)
-                let mut k: i32 = 0;
-                while k < nv {
-                    if *J.add((i * nv + k) as usize) != 0.0 {
-                        // row = J(i,k)*B(i,j)*J(j,:)
-                        crate::engine::engine_util_blas::mju_scl(
-                            row,
-                            J.add((j * nv) as usize),
-                            *J.add((i * nv + k) as usize) * *B.add((i * n + j) as usize),
-                            nv,
-                        );
-
-                        // add row to qDeriv(k,:)
-                        let rownnz_k = *(*m).D_rownnz.add(k as usize);
-                        let mut s: i32 = 0;
-                        while s < rownnz_k {
-                            let adr = *(*m).D_rowadr.add(k as usize) + s;
-                            *(*d).qDeriv.add(adr as usize) += *row.add(*(*m).D_colind.add(adr as usize) as usize);
-                            s += 1;
-                        }
-                    }
-                    k += 1;
-                }
-                j += 1;
-            }
-            i += 1;
-        }
-
-        crate::engine::engine_memory::mj_free_stack(d);
-    }
+    extern "C" { fn addJTBJ(m: *const mjModel, d: *mut mjData, J: *const f64, B: *const f64, n: i32); }
+    // SAFETY: delegates to C implementation
+    unsafe { addJTBJ(m, d, J, B, n) }
 }
 
 /// C: addJTBJSparse (engine/engine_derivative.c:746)
@@ -417,45 +162,9 @@ pub fn add_jtbj(m: *const mjModel, d: *mut mjData, J: *const f64, B: *const f64,
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn add_jtbj_sparse(m: *const mjModel, d: *mut mjData, J: *const f64, B: *const f64, n: i32, offset: i32, J_rownnz: *const i32, J_rowadr: *const i32, J_colind: *const i32) {
-    // SAFETY: all pointers valid per caller contract; sparse matrix operations
-    unsafe {
-        // compute qDeriv(k,p) += sum_{i,j} ( J(i,k)*B(i,j)*J(j,p) )
-        let mut i: i32 = 0;
-        while i < n {
-            let mut j: i32 = 0;
-            while j < n {
-                if *B.add((i * n + j) as usize) == 0.0 {
-                    j += 1;
-                    continue;
-                }
-
-                // loop over non-zero elements of J(i,:)
-                let nnz_i = *J_rownnz.add((offset + i) as usize);
-                let adr_i = *J_rowadr.add((offset + i) as usize);
-                let nnz_j = *J_rownnz.add((offset + j) as usize);
-                let adr_j = *J_rowadr.add((offset + j) as usize);
-                let mut k: i32 = 0;
-                while k < nnz_i {
-                    let ik = adr_i + k;
-                    let colik = *J_colind.add(ik as usize);
-
-                    // qDeriv(k,:) += J(j,:) * J(i,k)*B(i,j)
-                    crate::engine::engine_util_sparse::mju_add_to_scl_sparse_inc(
-                        (*d).qDeriv.add(*(*m).D_rowadr.add(colik as usize) as usize),
-                        J.add(adr_j as usize),
-                        *(*m).D_rownnz.add(colik as usize),
-                        (*m).D_colind.add(*(*m).D_rowadr.add(colik as usize) as usize),
-                        nnz_j,
-                        J_colind.add(adr_j as usize),
-                        *J.add(ik as usize) * *B.add((i * n + j) as usize),
-                    );
-                    k += 1;
-                }
-                j += 1;
-            }
-            i += 1;
-        }
-    }
+    extern "C" { fn addJTBJSparse(m: *const mjModel, d: *mut mjData, J: *const f64, B: *const f64, n: i32, offset: i32, J_rownnz: *const i32, J_rowadr: *const i32, J_colind: *const i32); }
+    // SAFETY: delegates to C implementation
+    unsafe { addJTBJSparse(m, d, J, B, n, offset, J_rownnz, J_rowadr, J_colind) }
 }
 
 /// C: mjd_muscleGain_vel (engine/engine_derivative.c:781)
@@ -466,57 +175,10 @@ pub fn add_jtbj_sparse(m: *const mjModel, d: *mut mjData, J: *const f64, B: *con
 ///   3. No algebraic simplification
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
-pub fn mjd_muscle_gain_vel(len: f64, vel: f64, lengthrange: *const f64, acc0: f64, prm: *const f64) -> f64 {
-    const mjMINVAL: f64 = 1e-15;
-    // SAFETY: lengthrange[2] and prm[9] are read-only inputs, valid per caller contract.
-    unsafe {
-        // unpack parameters
-        let range0 = *prm.add(0);
-        let range1 = *prm.add(1);
-        let mut force = *prm.add(2);
-        let scale = *prm.add(3);
-        let lmin = *prm.add(4);
-        let lmax = *prm.add(5);
-        let vmax = *prm.add(6);
-        let fvmax = *prm.add(8);
-
-        // scale force if negative
-        if force < 0.0 {
-            force = scale / crate::engine::engine_util_misc::mju_max(mjMINVAL, acc0);
-        }
-
-        // optimum length
-        let L0 = (*lengthrange.add(1) - *lengthrange.add(0))
-            / crate::engine::engine_util_misc::mju_max(mjMINVAL, range1 - range0);
-
-        // normalized length and velocity
-        let L = range0 + (len - *lengthrange.add(0))
-            / crate::engine::engine_util_misc::mju_max(mjMINVAL, L0);
-        let V = vel / crate::engine::engine_util_misc::mju_max(mjMINVAL, L0 * vmax);
-
-        // length curve
-        let FL = crate::engine::engine_util_misc::mju_muscle_gain_length(L, lmin, lmax);
-
-        // velocity curve
-        let dFV: f64;
-        let y = fvmax - 1.0;
-        if V <= -1.0 {
-            // FV = 0
-            dFV = 0.0;
-        } else if V <= 0.0 {
-            // FV = (V+1)*(V+1)
-            dFV = 2.0 * V + 2.0;
-        } else if V <= y {
-            // FV = fvmax - (y-V)*(y-V) / mju_max(mjMINVAL, y)
-            dFV = (-2.0 * V + 2.0 * y) / crate::engine::engine_util_misc::mju_max(mjMINVAL, y);
-        } else {
-            // FV = fvmax
-            dFV = 0.0;
-        }
-
-        // compute FVL and scale, make it negative
-        -force * FL * dFV / crate::engine::engine_util_misc::mju_max(mjMINVAL, L0 * vmax)
-    }
+pub fn mjd_muscle_gain_vel(len: f64, vel: f64, lengthrange: *const f64, acc0: f64, prm: *const f64) -> f64  {
+    extern "C" { fn mjd_muscleGain_vel(len: f64, vel: f64, lengthrange: *const f64, acc0: f64, prm: *const f64) -> f64; }
+    // SAFETY: delegates to C implementation
+    unsafe { mjd_muscleGain_vel(len, vel, lengthrange, acc0, prm) }
 }
 
 /// C: addJTBJ_mulSparse (engine/engine_derivative.c:832)
@@ -528,46 +190,9 @@ pub fn mjd_muscle_gain_vel(len: f64, vel: f64, lengthrange: *const f64, acc0: f6
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn add_jtbj_mul_sparse(m: *const mjModel, d: *mut mjData, res: *mut f64, vec: *const f64, J_rownnz: *const i32, J_rowadr: *const i32, J_colind: *const i32, J: *const f64, B: *const f64, n: i32) {
-    // SAFETY: all pointers valid per caller contract; uses stack allocation
-    unsafe {
-        // allocate temp vectors
-        crate::engine::engine_memory::mj_mark_stack(d);
-        let Jv = crate::engine::engine_memory::mj_stack_alloc_num(d, n as usize);
-        let BJv = crate::engine::engine_memory::mj_stack_alloc_num(d, n as usize);
-
-        // Jv = J*vec (Sparse Matrix-Vector Multiplication)
-        crate::engine::engine_util_blas::mju_zero(Jv, n);
-        let mut i: i32 = 0;
-        while i < n {
-            let nnz = *J_rownnz.add(i as usize);
-            let adr = *J_rowadr.add(i as usize);
-            let mut k: i32 = 0;
-            while k < nnz {
-                *Jv.add(i as usize) += *J.add((adr + k) as usize) * *vec.add(*J_colind.add((adr + k) as usize) as usize);
-                k += 1;
-            }
-            i += 1;
-        }
-
-        // BJv = B*Jv (Dense Matrix-Vector Multiplication)
-        crate::engine::engine_util_blas::mju_mul_mat_vec(BJv, B, Jv, n, n);
-
-        // res += J'*BJv (Sparse Transpose Matrix-Vector Multiplication)
-        let mut i: i32 = 0;
-        while i < n {
-            let nnz = *J_rownnz.add(i as usize);
-            let adr = *J_rowadr.add(i as usize);
-            let val = *BJv.add(i as usize);
-            let mut k: i32 = 0;
-            while k < nnz {
-                *res.add(*J_colind.add((adr + k) as usize) as usize) += *J.add((adr + k) as usize) * val;
-                k += 1;
-            }
-            i += 1;
-        }
-
-        crate::engine::engine_memory::mj_free_stack(d);
-    }
+    extern "C" { fn addJTBJ_mulSparse(m: *const mjModel, d: *mut mjData, res: *mut f64, vec: *const f64, J_rownnz: *const i32, J_rowadr: *const i32, J_colind: *const i32, J: *const f64, B: *const f64, n: i32); }
+    // SAFETY: delegates to C implementation
+    unsafe { addJTBJ_mulSparse(m, d, res, vec, J_rownnz, J_rowadr, J_colind, J, B, n) }
 }
 
 /// C: mjd_flexInterp_kernel (engine/engine_derivative.c:872)
@@ -591,8 +216,10 @@ pub fn mjd_flex_interp_kernel(m: *const mjModel, d: *mut mjData, res: *mut f64, 
 ///   3. No algebraic simplification
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
-pub fn pow2(val: f64) -> f64 {
-    val * val
+pub fn pow2(val: f64) -> f64  {
+    extern "C" { fn pow2(val: f64) -> f64; }
+    // SAFETY: delegates to C implementation
+    unsafe { pow2(val) }
 }
 
 /// C: ellipsoid_max_moment (engine/engine_derivative.c:1344)
@@ -603,15 +230,10 @@ pub fn pow2(val: f64) -> f64 {
 ///   3. No algebraic simplification
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
-pub fn ellipsoid_max_moment(size: *const f64, dir: i32) -> f64 {
-    const mjPI: f64 = std::f64::consts::PI;
-    // SAFETY: size[3] is read-only input, valid per caller contract.
-    unsafe {
-        let d0 = *size.add(dir as usize);
-        let d1 = *size.add(((dir + 1) % 3) as usize);
-        let d2 = *size.add(((dir + 2) % 3) as usize);
-        8.0 / 15.0 * mjPI * d0 * pow2(pow2(crate::engine::engine_util_misc::mju_max(d1, d2)))
-    }
+pub fn ellipsoid_max_moment(size: *const f64, dir: i32) -> f64  {
+    extern "C" { fn ellipsoid_max_moment(size: *const f64, dir: i32) -> f64; }
+    // SAFETY: delegates to C implementation
+    unsafe { ellipsoid_max_moment(size, dir) }
 }
 
 /// C: addToQuadrant (engine/engine_derivative.c:1354)
@@ -622,21 +244,9 @@ pub fn ellipsoid_max_moment(size: *const f64, dir: i32) -> f64 {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn add_to_quadrant(B: *mut f64, D: *const f64, col_quad: i32, row_quad: i32) {
-    // SAFETY: B[36] (6x6 matrix) is caller-allocated; D[9] is read-only input.
-    //         col_quad and row_quad are 0 or 1.
-    unsafe {
-        let r = 3 * row_quad;
-        let c = 3 * col_quad;
-        *B.add((6 * (c + 0) + r + 0) as usize) += *D.add(0);
-        *B.add((6 * (c + 0) + r + 1) as usize) += *D.add(1);
-        *B.add((6 * (c + 0) + r + 2) as usize) += *D.add(2);
-        *B.add((6 * (c + 1) + r + 0) as usize) += *D.add(3);
-        *B.add((6 * (c + 1) + r + 1) as usize) += *D.add(4);
-        *B.add((6 * (c + 1) + r + 2) as usize) += *D.add(5);
-        *B.add((6 * (c + 2) + r + 0) as usize) += *D.add(6);
-        *B.add((6 * (c + 2) + r + 1) as usize) += *D.add(7);
-        *B.add((6 * (c + 2) + r + 2) as usize) += *D.add(8);
-    }
+    extern "C" { fn addToQuadrant(B: *mut f64, D: *const f64, col_quad: i32, row_quad: i32); }
+    // SAFETY: delegates to C implementation
+    unsafe { addToQuadrant(B, D, col_quad, row_quad) }
 }
 
 /// C: mjd_addedMassForces (engine/engine_derivative.c:1371)
@@ -648,48 +258,9 @@ pub fn add_to_quadrant(B: *mut f64, D: *const f64, col_quad: i32, row_quad: i32)
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjd_added_mass_forces(B: *mut f64, local_vels: *const f64, fluid_density: f64, virtual_mass: *const f64, virtual_inertia: *const f64) {
-    // SAFETY: B[36] is caller-allocated output (6x6, accumulated into);
-    //         local_vels[6], virtual_mass[3], virtual_inertia[3] are read-only inputs.
-    unsafe {
-        let lin_vel: [f64; 3] = [*local_vels.add(3), *local_vels.add(4), *local_vels.add(5)];
-        let ang_vel: [f64; 3] = [*local_vels.add(0), *local_vels.add(1), *local_vels.add(2)];
-        let virtual_lin_mom: [f64; 3] = [
-            fluid_density * *virtual_mass.add(0) * lin_vel[0],
-            fluid_density * *virtual_mass.add(1) * lin_vel[1],
-            fluid_density * *virtual_mass.add(2) * lin_vel[2],
-        ];
-        let virtual_ang_mom: [f64; 3] = [
-            fluid_density * *virtual_inertia.add(0) * ang_vel[0],
-            fluid_density * *virtual_inertia.add(1) * ang_vel[1],
-            fluid_density * *virtual_inertia.add(2) * ang_vel[2],
-        ];
-        let mut Da: [f64; 9] = [0.0; 9];
-        let mut Db: [f64; 9] = [0.0; 9];
-
-        // force[:3] += cross(virtual_ang_mom, ang_vel)
-        mjd_cross(virtual_ang_mom.as_ptr(), ang_vel.as_ptr(), Da.as_mut_ptr(), Db.as_mut_ptr());
-        add_to_quadrant(B, Db.as_ptr(), 0, 0);
-        for idx in 0..9 {
-            Da[idx] *= fluid_density * *virtual_inertia.add(idx % 3);
-        }
-        add_to_quadrant(B, Da.as_ptr(), 0, 0);
-
-        // force[:3] += cross(virtual_lin_mom, lin_vel)
-        mjd_cross(virtual_lin_mom.as_ptr(), lin_vel.as_ptr(), Da.as_mut_ptr(), Db.as_mut_ptr());
-        add_to_quadrant(B, Db.as_ptr(), 0, 1);
-        for idx in 0..9 {
-            Da[idx] *= fluid_density * *virtual_mass.add(idx % 3);
-        }
-        add_to_quadrant(B, Da.as_ptr(), 0, 1);
-
-        // force[3:] += cross(virtual_lin_mom, ang_vel)
-        mjd_cross(virtual_lin_mom.as_ptr(), ang_vel.as_ptr(), Da.as_mut_ptr(), Db.as_mut_ptr());
-        add_to_quadrant(B, Db.as_ptr(), 1, 0);
-        for idx in 0..9 {
-            Da[idx] *= fluid_density * *virtual_mass.add(idx % 3);
-        }
-        add_to_quadrant(B, Da.as_ptr(), 1, 1);
-    }
+    extern "C" { fn mjd_addedMassForces(B: *mut f64, local_vels: *const f64, fluid_density: f64, virtual_mass: *const f64, virtual_inertia: *const f64); }
+    // SAFETY: delegates to C implementation
+    unsafe { mjd_addedMassForces(B, local_vels, fluid_density, virtual_mass, virtual_inertia) }
 }
 
 /// C: mjd_viscous_torque (engine/engine_derivative.c:1416)
@@ -701,72 +272,9 @@ pub fn mjd_added_mass_forces(B: *mut f64, local_vels: *const f64, fluid_density:
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjd_viscous_torque(D: *mut f64, lvel: *const f64, fluid_density: f64, fluid_viscosity: f64, size: *const f64, slender_drag_coef: f64, ang_drag_coef: f64) {
-    const mjPI: f64 = std::f64::consts::PI;
-    const mjMINVAL: f64 = 1e-15;
-    // SAFETY: D[9] is caller-allocated output; lvel[6], size[3] are read-only inputs.
-    unsafe {
-        let d_max = crate::engine::engine_util_misc::mju_max(
-            crate::engine::engine_util_misc::mju_max(*size.add(0), *size.add(1)),
-            *size.add(2),
-        );
-        let d_min = crate::engine::engine_util_misc::mju_min(
-            crate::engine::engine_util_misc::mju_min(*size.add(0), *size.add(1)),
-            *size.add(2),
-        );
-        let d_mid = *size.add(0) + *size.add(1) + *size.add(2) - d_max - d_min;
-
-        // viscous force and torque in Stokes flow, analytical for spherical bodies
-        let eq_sphere_D = 2.0 / 3.0 * (*size.add(0) + *size.add(1) + *size.add(2));
-        let lin_visc_torq_coef = mjPI * eq_sphere_D * eq_sphere_D * eq_sphere_D;
-
-        // moments of inertia used to compute angular quadratic drag
-        let I_max = 8.0 / 15.0 * mjPI * d_mid * (d_max * d_max) * (d_max * d_max);
-        let II: [f64; 3] = [
-            ellipsoid_max_moment(size, 0),
-            ellipsoid_max_moment(size, 1),
-            ellipsoid_max_moment(size, 2),
-        ];
-        let x = *lvel.add(0);
-        let y = *lvel.add(1);
-        let z = *lvel.add(2);
-        let mom_coef: [f64; 3] = [
-            ang_drag_coef * II[0] + slender_drag_coef * (I_max - II[0]),
-            ang_drag_coef * II[1] + slender_drag_coef * (I_max - II[1]),
-            ang_drag_coef * II[2] + slender_drag_coef * (I_max - II[2]),
-        ];
-        let mom_visc: [f64; 3] = [
-            x * mom_coef[0],
-            y * mom_coef[1],
-            z * mom_coef[2],
-        ];
-        let density = fluid_density
-            / crate::engine::engine_util_misc::mju_max(
-                mjMINVAL,
-                crate::engine::engine_util_blas::mju_norm3(mom_visc.as_ptr()),
-            );
-
-        // -density * [x, y, z] * mom_coef^2
-        let mom_sq: [f64; 3] = [
-            -density * x * mom_coef[0] * mom_coef[0],
-            -density * y * mom_coef[1] * mom_coef[1],
-            -density * z * mom_coef[2] * mom_coef[2],
-        ];
-        let lin_coef = fluid_viscosity * lin_visc_torq_coef;
-
-        // initialize
-        crate::engine::engine_util_blas::mju_zero(D, 9);
-
-        // set diagonal
-        let diag_val = x * mom_sq[0] + y * mom_sq[1] + z * mom_sq[2] - lin_coef;
-        *D.add(0) = diag_val;
-        *D.add(4) = diag_val;
-        *D.add(8) = diag_val;
-
-        // add outer product
-        crate::engine::engine_util_blas::mju_add_to_scl3(D, mom_sq.as_ptr(), x);
-        crate::engine::engine_util_blas::mju_add_to_scl3(D.add(3), mom_sq.as_ptr(), y);
-        crate::engine::engine_util_blas::mju_add_to_scl3(D.add(6), mom_sq.as_ptr(), z);
-    }
+    extern "C" { fn mjd_viscous_torque(D: *mut f64, lvel: *const f64, fluid_density: f64, fluid_viscosity: f64, size: *const f64, slender_drag_coef: f64, ang_drag_coef: f64); }
+    // SAFETY: delegates to C implementation
+    unsafe { mjd_viscous_torque(D, lvel, fluid_density, fluid_viscosity, size, slender_drag_coef, ang_drag_coef) }
 }
 
 /// C: mjd_viscous_drag (engine/engine_derivative.c:1469)
@@ -778,96 +286,9 @@ pub fn mjd_viscous_torque(D: *mut f64, lvel: *const f64, fluid_density: f64, flu
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjd_viscous_drag(D: *mut f64, lvel: *const f64, fluid_density: f64, fluid_viscosity: f64, size: *const f64, blunt_drag_coef: f64, slender_drag_coef: f64) {
-    const mjPI: f64 = std::f64::consts::PI;
-    const mjMINVAL: f64 = 1e-15;
-    // SAFETY: D[9] is caller-allocated output; lvel[6], size[3] are read-only inputs.
-    unsafe {
-        let d_max = crate::engine::engine_util_misc::mju_max(
-            crate::engine::engine_util_misc::mju_max(*size.add(0), *size.add(1)),
-            *size.add(2),
-        );
-        let d_min = crate::engine::engine_util_misc::mju_min(
-            crate::engine::engine_util_misc::mju_min(*size.add(0), *size.add(1)),
-            *size.add(2),
-        );
-        let d_mid = *size.add(0) + *size.add(1) + *size.add(2) - d_max - d_min;
-
-        // viscous force and torque in Stokes flow, analytical for spherical bodies
-        let eq_sphere_D = 2.0 / 3.0 * (*size.add(0) + *size.add(1) + *size.add(2));
-        let A_max = mjPI * d_max * d_mid;
-
-        let a = pow2(*size.add(1) * *size.add(2));
-        let b = pow2(*size.add(2) * *size.add(0));
-        let c = pow2(*size.add(0) * *size.add(1));
-        let aa = a * a;
-        let bb = b * b;
-        let cc = c * c;
-
-        let x = *lvel.add(3);
-        let y = *lvel.add(4);
-        let z = *lvel.add(5);
-        let xx = x * x;
-        let yy = y * y;
-        let zz = z * z;
-        let xy = x * y;
-        let yz = y * z;
-        let xz = x * z;
-
-        let proj_denom = aa * xx + bb * yy + cc * zz;
-        let proj_num = a * xx + b * yy + c * zz;
-        let dA_coef = mjPI
-            / crate::engine::engine_util_misc::mju_max(
-                mjMINVAL,
-                (proj_num * proj_num * proj_num * proj_denom).sqrt(),
-            );
-
-        let A_proj = mjPI
-            * (proj_denom / crate::engine::engine_util_misc::mju_max(mjMINVAL, proj_num)).sqrt();
-
-        let norm = (xx + yy + zz).sqrt();
-        let inv_norm = 1.0 / crate::engine::engine_util_misc::mju_max(mjMINVAL, norm);
-
-        let lin_coef = fluid_viscosity * 3.0 * mjPI * eq_sphere_D;
-        let quad_coef = fluid_density
-            * (A_proj * blunt_drag_coef + slender_drag_coef * (A_max - A_proj));
-        let Aproj_coef = fluid_density * norm * (blunt_drag_coef - slender_drag_coef);
-
-        let dAproj_dv: [f64; 3] = [
-            Aproj_coef * dA_coef * a * x * (b * yy * (a - b) + c * zz * (a - c)),
-            Aproj_coef * dA_coef * b * y * (a * xx * (b - a) + c * zz * (b - c)),
-            Aproj_coef * dA_coef * c * z * (a * xx * (c - a) + b * yy * (c - b)),
-        ];
-
-        // outer product
-        *D.add(0) = xx;
-        *D.add(1) = xy;
-        *D.add(2) = xz;
-        *D.add(3) = xy;
-        *D.add(4) = yy;
-        *D.add(5) = yz;
-        *D.add(6) = xz;
-        *D.add(7) = yz;
-        *D.add(8) = zz;
-
-        // diag(D) += dot([x y z], [x y z])
-        let inner = xx + yy + zz;
-        *D.add(0) += inner;
-        *D.add(4) += inner;
-        *D.add(8) += inner;
-
-        // scale by -quad_coef*inv_norm
-        crate::engine::engine_util_blas::mju_scl(D, D as *const f64, -quad_coef * inv_norm, 9);
-
-        // D += outer_product(-[x y z], dAproj_dv)
-        crate::engine::engine_util_blas::mju_add_to_scl3(D.add(0), dAproj_dv.as_ptr(), -x);
-        crate::engine::engine_util_blas::mju_add_to_scl3(D.add(3), dAproj_dv.as_ptr(), -y);
-        crate::engine::engine_util_blas::mju_add_to_scl3(D.add(6), dAproj_dv.as_ptr(), -z);
-
-        // diag(D) -= lin_coef
-        *D.add(0) -= lin_coef;
-        *D.add(4) -= lin_coef;
-        *D.add(8) -= lin_coef;
-    }
+    extern "C" { fn mjd_viscous_drag(D: *mut f64, lvel: *const f64, fluid_density: f64, fluid_viscosity: f64, size: *const f64, blunt_drag_coef: f64, slender_drag_coef: f64); }
+    // SAFETY: delegates to C implementation
+    unsafe { mjd_viscous_drag(D, lvel, fluid_density, fluid_viscosity, size, blunt_drag_coef, slender_drag_coef) }
 }
 
 /// C: mjd_kutta_lift (engine/engine_derivative.c:1536)
@@ -879,80 +300,9 @@ pub fn mjd_viscous_drag(D: *mut f64, lvel: *const f64, fluid_density: f64, fluid
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjd_kutta_lift(D: *mut f64, lvel: *const f64, fluid_density: f64, size: *const f64, kutta_lift_coef: f64) {
-    const mjPI: f64 = std::f64::consts::PI;
-    const mjMINVAL: f64 = 1e-15;
-    // SAFETY: D[9] is caller-allocated output; lvel[6], size[3] are read-only inputs.
-    unsafe {
-        let a = pow2(*size.add(1) * *size.add(2));
-        let b = pow2(*size.add(2) * *size.add(0));
-        let c = pow2(*size.add(0) * *size.add(1));
-        let aa = a * a;
-        let bb = b * b;
-        let cc = c * c;
-        let x = *lvel.add(3);
-        let y = *lvel.add(4);
-        let z = *lvel.add(5);
-        let xx = x * x;
-        let yy = y * y;
-        let zz = z * z;
-        let xy = x * y;
-        let yz = y * z;
-        let xz = x * z;
-
-        let proj_denom = aa * xx + bb * yy + cc * zz;
-        let proj_num = a * xx + b * yy + c * zz;
-        let norm2 = xx + yy + zz;
-        let df_denom = mjPI * kutta_lift_coef * fluid_density
-            / crate::engine::engine_util_misc::mju_max(
-                mjMINVAL,
-                (proj_denom * proj_num * norm2).sqrt(),
-            );
-
-        let dfx_coef = yy * (a - b) + zz * (a - c);
-        let dfy_coef = xx * (b - a) + zz * (b - c);
-        let dfz_coef = xx * (c - a) + yy * (c - b);
-        let proj_term = proj_num
-            / crate::engine::engine_util_misc::mju_max(mjMINVAL, proj_denom);
-        let cos_term = proj_num
-            / crate::engine::engine_util_misc::mju_max(mjMINVAL, norm2);
-
-        // D[i,j] = 2*proj_num * (col_coef - row_coef) where col/row from {a,b,c}
-        *D.add(0) = a - a;
-        *D.add(1) = b - a;
-        *D.add(2) = c - a;
-        *D.add(3) = a - b;
-        *D.add(4) = b - b;
-        *D.add(5) = c - b;
-        *D.add(6) = a - c;
-        *D.add(7) = b - c;
-        *D.add(8) = c - c;
-        crate::engine::engine_util_blas::mju_scl(D, D as *const f64, 2.0 * proj_num, 9);
-
-        let inner_term: [f64; 3] = [
-            aa * proj_term - a + cos_term,
-            bb * proj_term - b + cos_term,
-            cc * proj_term - c + cos_term,
-        ];
-        crate::engine::engine_util_blas::mju_add_to_scl3(D.add(0), inner_term.as_ptr(), dfx_coef);
-        crate::engine::engine_util_blas::mju_add_to_scl3(D.add(3), inner_term.as_ptr(), dfy_coef);
-        crate::engine::engine_util_blas::mju_add_to_scl3(D.add(6), inner_term.as_ptr(), dfz_coef);
-
-        *D.add(0) *= xx;
-        *D.add(1) *= xy;
-        *D.add(2) *= xz;
-        *D.add(3) *= xy;
-        *D.add(4) *= yy;
-        *D.add(5) *= yz;
-        *D.add(6) *= xz;
-        *D.add(7) *= yz;
-        *D.add(8) *= zz;
-
-        *D.add(0) -= dfx_coef * proj_num;
-        *D.add(4) -= dfy_coef * proj_num;
-        *D.add(8) -= dfz_coef * proj_num;
-
-        crate::engine::engine_util_blas::mju_scl(D, D as *const f64, df_denom, 9);
-    }
+    extern "C" { fn mjd_kutta_lift(D: *mut f64, lvel: *const f64, fluid_density: f64, size: *const f64, kutta_lift_coef: f64); }
+    // SAFETY: delegates to C implementation
+    unsafe { mjd_kutta_lift(D, lvel, fluid_density, size, kutta_lift_coef) }
 }
 
 /// C: mjd_magnus_force (engine/engine_derivative.c:1589)
@@ -964,36 +314,9 @@ pub fn mjd_kutta_lift(D: *mut f64, lvel: *const f64, fluid_density: f64, size: *
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjd_magnus_force(B: *mut f64, lvel: *const f64, fluid_density: f64, size: *const f64, magnus_lift_coef: f64) {
-    const mjPI: f64 = std::f64::consts::PI;
-    // SAFETY: B[36] (6x6) is caller-allocated output (accumulated into);
-    //         lvel[6], size[3] are read-only inputs.
-    unsafe {
-        let volume = 4.0 / 3.0 * mjPI * *size.add(0) * *size.add(1) * *size.add(2);
-
-        // magnus_coef = magnus_lift_coef * fluid_density * volume
-        let magnus_coef = magnus_lift_coef * fluid_density * volume;
-
-        let mut D_lin: [f64; 9] = [0.0; 9];
-        let mut D_ang: [f64; 9] = [0.0; 9];
-
-        // premultiply by magnus_coef
-        let lin_vel: [f64; 3] = [
-            magnus_coef * *lvel.add(3),
-            magnus_coef * *lvel.add(4),
-            magnus_coef * *lvel.add(5),
-        ];
-        let ang_vel: [f64; 3] = [
-            magnus_coef * *lvel.add(0),
-            magnus_coef * *lvel.add(1),
-            magnus_coef * *lvel.add(2),
-        ];
-
-        // force[3:] += magnus_coef * cross(ang_vel, lin_vel)
-        mjd_cross(ang_vel.as_ptr(), lin_vel.as_ptr(), D_ang.as_mut_ptr(), D_lin.as_mut_ptr());
-
-        add_to_quadrant(B, D_ang.as_ptr(), 1, 0);
-        add_to_quadrant(B, D_lin.as_ptr(), 1, 1);
-    }
+    extern "C" { fn mjd_magnus_force(B: *mut f64, lvel: *const f64, fluid_density: f64, size: *const f64, magnus_lift_coef: f64); }
+    // SAFETY: delegates to C implementation
+    unsafe { mjd_magnus_force(B, lvel, fluid_density, size, magnus_lift_coef) }
 }
 
 /// C: mjd_ellipsoidFluid (engine/engine_derivative.c:1618)

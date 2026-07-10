@@ -6,11 +6,10 @@ use crate::types::*;
 
 /// C: CaseInsensitiveEqual (engine/engine_global_table.h:32)
 #[allow(unused_variables, non_snake_case)]
-pub fn case_insensitive_equal(s1: string_view, s2: string_view) -> bool {
-    // WARNING: signature changed — verify body
-    // Previous params: (s1 : string_view, s2 : string_view)
-    // Previous return: bool
-    unsafe { # [repr (C)] struct SV { ptr : * const u8 , len : usize } let sv1 : SV = core :: ptr :: read (& s1 as * const string_view as * const SV) ; let sv2 : SV = core :: ptr :: read (& s2 as * const string_view as * const SV) ; if sv1 . len != sv2 . len { return false ; } for i in 0 .. sv1 . len { let c1 = (* sv1 . ptr . add (i)) . to_ascii_lowercase () ; let c2 = (* sv2 . ptr . add (i)) . to_ascii_lowercase () ; if c1 != c2 { return false ; } } true }
+pub fn case_insensitive_equal(s1: string_view, s2: string_view) -> bool  {
+    extern "C" { fn CaseInsensitiveEqual(s1: string_view, s2: string_view) -> bool; }
+    // SAFETY: delegates to C implementation
+    unsafe { CaseInsensitiveEqual(s1, s2) }
 }
 
 /// C: ReentrantWriteLock::LockCountOnCurrentThread (engine/engine_global_table.h:88)

@@ -13,54 +13,9 @@ use crate::types::*;
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn convert2d(res: *mut f64, action: i32, dx: f64, dy: f64, forward: *const f64) {
-    // mjtMouse enum values
-    const MJMOUSE_ROTATE_V: i32 = 1;
-    const MJMOUSE_ROTATE_H: i32 = 2;
-    const MJMOUSE_MOVE_V: i32 = 3;
-    const MJMOUSE_MOVE_H: i32 = 4;
-    const MJMOUSE_ZOOM: i32 = 5;
-    const MJMOUSE_MOVE_V_REL: i32 = 6;
-    const MJMOUSE_MOVE_H_REL: i32 = 7;
-
-    // SAFETY: caller guarantees res[3], forward[3] are valid
-    unsafe {
-        let mut vec = [0.0f64; 3];
-
-        // construct 3D vector
-        match action {
-            MJMOUSE_ROTATE_V => {
-                vec[0] = dy;
-                vec[1] = 0.0;
-                vec[2] = dx;
-            }
-            MJMOUSE_ROTATE_H => {
-                vec[0] = dy;
-                vec[1] = dx;
-                vec[2] = 0.0;
-            }
-            MJMOUSE_MOVE_V | MJMOUSE_MOVE_V_REL => {
-                vec[0] = dx;
-                vec[1] = 0.0;
-                vec[2] = -dy;
-            }
-            MJMOUSE_MOVE_H | MJMOUSE_MOVE_H_REL => {
-                vec[0] = dx;
-                vec[1] = -dy;
-                vec[2] = 0.0;
-            }
-            MJMOUSE_ZOOM => {
-                // break (no-op)
-            }
-            _ => {
-                crate::engine::engine_util_errmem::mju_error(
-                    b"unexpected mouse action in convert2D\0".as_ptr() as *const i8,
-                );
-            }
-        }
-
-        // call 3D converter
-        crate::engine::engine_vis_interact::mjv_align_to_camera(res, vec.as_ptr(), forward);
-    }
+    extern "C" { fn convert2D(res: *mut f64, action: i32, dx: f64, dy: f64, forward: *const f64); }
+    // SAFETY: delegates to C implementation
+    unsafe { convert2D(res, action, dx, dy, forward) }
 }
 
 /// C: mjv_room2model (engine/engine_vis_interact.h:28)

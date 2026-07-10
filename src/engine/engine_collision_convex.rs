@@ -55,82 +55,10 @@ pub fn libccd_wrapper(m: *const mjModel, obj1: *mut mjCCDObj, obj2: *mut mjCCDOb
 ///   3. No algebraic simplification
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
-pub fn mjc_penetration(m: *const mjModel, d: *mut mjData, obj1: *mut mjCCDObj, obj2: *mut mjCCDObj, con: *mut mjPreContact, ncon: i32, margin: f64) -> i32 {
-    // SAFETY: mjCCDConfig layout (40 bytes):
-    //   max_iterations(i32)@+0, pad@+4, tolerance(f64)@+8, max_contacts(i32)@+16,
-    //   pad@+20, dist_cutoff(f64)@+24, buffer(*void)@+32
-    // mjCCDStatus layout (2780 bytes):
-    //   dist(f64)@+0, x1[150](f64)@+8, x2[150](f64)@+1208, nx(i32)@+2408
-    unsafe {
-        const MJ_DSBL_NATIVECCD: i32 = 1 << 17;
-        const STATUS_SIZE: usize = 2784; // rounded up for alignment
-
-        // if native CCD is disabled, fallback to libccd wrapper
-        if ((*m).opt.disableflags & MJ_DSBL_NATIVECCD) != 0 {
-            return libccd_wrapper(m, obj1, obj2, con, margin);
-        }
-
-        // nativeccd — allocate config and status on stack
-        let mut config_buf: [u8; 40] = [0u8; 40];
-        let config = config_buf.as_mut_ptr();
-        let mut status_buf: [u8; STATUS_SIZE] = [0u8; STATUS_SIZE];
-        let status = status_buf.as_mut_ptr();
-        let mut nwitness: i32 = 0;
-
-        let buffer: *mut () = CCD_BUFFER.with(|p| p.get());
-
-        // set config
-        *(config.add(0) as *mut i32) = (*m).opt.ccd_iterations;     // max_iterations
-        *(config.add(8) as *mut f64) = (*m).opt.ccd_tolerance;      // tolerance
-        *(config.add(16) as *mut i32) = ncon;                       // max_contacts
-        *(config.add(24) as *mut f64) = 0.0;                        // dist_cutoff = 0
-        if !buffer.is_null() {
-            *(config.add(32) as *mut *mut ()) = buffer;
-        } else {
-            crate::engine::engine_memory::mj_mark_stack(d);
-            let alloc = crate::engine::engine_memory::mj_stack_alloc_byte(
-                d,
-                crate::engine::engine_collision_gjk::mjc_ccd_size((*m).opt.ccd_iterations),
-                core::mem::size_of::<f64>(),
-            );
-            *(config.add(32) as *mut *mut ()) = alloc;
-        }
-
-        let dist = crate::engine::engine_collision_gjk::mjc_ccd(
-            config as *const crate::types::mjCCDConfig,
-            status as *mut crate::types::mjCCDStatus,
-            obj1, obj2,
-        );
-
-        if dist < 0.0 {
-            nwitness = *(status.add(2408) as *const i32);  // status.nx
-            let x1 = status.add(8) as *const f64;         // status.x1
-            let x2 = status.add(1208) as *const f64;      // status.x2
-            for i in 0..nwitness as usize {
-                // con[i].dist = margin + dist
-                let con_i = con.add(i);
-                (*con_i).dist = margin + dist;
-                // con[i].pos = 0.5*(x1 + x2)
-                (*con_i).pos[0] = 0.5 * (*x1.add(3 * i + 0) + *x2.add(3 * i + 0));
-                (*con_i).pos[1] = 0.5 * (*x1.add(3 * i + 1) + *x2.add(3 * i + 1));
-                (*con_i).pos[2] = 0.5 * (*x1.add(3 * i + 2) + *x2.add(3 * i + 2));
-                // con[i].normal = normalize(x1 - x2)
-                crate::engine::engine_inline::mji_sub3(
-                    (*con_i).normal.as_mut_ptr(),
-                    x1.add(3 * i),
-                    x2.add(3 * i),
-                );
-                crate::engine::engine_util_blas::mju_normalize3((*con_i).normal.as_mut_ptr());
-                // con[i].tangent = 0
-                crate::engine::engine_inline::mji_zero3((*con_i).tangent.as_mut_ptr());
-            }
-        }
-
-        if buffer.is_null() {
-            crate::engine::engine_memory::mj_free_stack(d);
-        }
-        nwitness
-    }
+pub fn mjc_penetration(m: *const mjModel, d: *mut mjData, obj1: *mut mjCCDObj, obj2: *mut mjCCDObj, con: *mut mjPreContact, ncon: i32, margin: f64) -> i32  {
+    extern "C" { fn mjc_penetration(m: *const mjModel, d: *mut mjData, obj1: *mut mjCCDObj, obj2: *mut mjCCDObj, con: *mut mjPreContact, ncon: i32, margin: f64) -> i32; }
+    // SAFETY: delegates to C implementation
+    unsafe { mjc_penetration(m, d, obj1, obj2, con, ncon, margin) }
 }
 
 /// C: mulMatTVec3 (engine/engine_collision_convex.c:174)
@@ -364,57 +292,9 @@ pub fn dot3f(a: *const f64, b: [f32; 3]) -> f64 {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjc_mesh_support(res: *mut f64, obj: *mut mjCCDObj, dir: *const f64) {
-    // SAFETY: mjCCDObj layout: pos[3]@+16, mat[9]@+48, vertindex@+128, data.mesh at +200:
-    //   mesh.nvert (i32) at +0, mesh.vert (*const f32) at +8
-    unsafe {
-        const DATA_OFFSET: usize = 200;
-
-        let obj_ptr = obj as *mut u8;
-        let mat = obj_ptr.add(48) as *const f64;
-        let pos = obj_ptr.add(16) as *const f64;
-        let vertindex_ptr = obj_ptr.add(128) as *mut i32;
-        let nverts = *(obj_ptr.add(DATA_OFFSET) as *const i32);
-        let verts = *(obj_ptr.add(DATA_OFFSET + 8) as *const *const f32);
-
-        let mut local_dir: [f64; 3] = [0.0; 3];
-        mul_mat_t_vec3(local_dir.as_mut_ptr(), mat, dir);
-
-        let mut max: f64 = -f64::MAX;
-        let mut imax: i32 = 0;
-
-        // use cached results from previous search
-        if *vertindex_ptr >= 0 {
-            imax = *vertindex_ptr;
-            max = dot3f(local_dir.as_ptr(), [
-                *verts.add(3 * imax as usize),
-                *verts.add(3 * imax as usize + 1),
-                *verts.add(3 * imax as usize + 2),
-            ]);
-        }
-
-        // search all vertices
-        for i in 0..nverts {
-            let vdot = dot3f(local_dir.as_ptr(), [
-                *verts.add(3 * i as usize),
-                *verts.add(3 * i as usize + 1),
-                *verts.add(3 * i as usize + 2),
-            ]);
-            if vdot > max {
-                max = vdot;
-                imax = i;
-            }
-        }
-
-        // record vertex index
-        *vertindex_ptr = imax;
-
-        local_dir[0] = *verts.add(3 * imax as usize) as f64;
-        local_dir[1] = *verts.add(3 * imax as usize + 1) as f64;
-        local_dir[2] = *verts.add(3 * imax as usize + 2) as f64;
-
-        // transform result to global frame
-        local_to_global(res, mat, local_dir.as_ptr(), pos);
-    }
+    extern "C" { fn mjc_meshSupport(res: *mut f64, obj: *mut mjCCDObj, dir: *const f64); }
+    // SAFETY: delegates to C implementation
+    unsafe { mjc_meshSupport(res, obj, dir) }
 }
 
 /// C: mjc_hillclimbSupport (engine/engine_collision_convex.c:391)
@@ -426,65 +306,9 @@ pub fn mjc_mesh_support(res: *mut f64, obj: *mut mjCCDObj, dir: *const f64) {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjc_hillclimb_support(res: *mut f64, obj: *mut mjCCDObj, dir: *const f64) {
-    // SAFETY: mjCCDObj layout: pos[3]@+16, mat[9]@+48, vertindex@+128, meshindex@+132
-    //   data.mesh at +200: mesh.vert(*f32)@+8, mesh.graph(*i32)@+72
-    unsafe {
-        const DATA_OFFSET: usize = 200;
-
-        let obj_ptr = obj as *mut u8;
-        let mat = obj_ptr.add(48) as *const f64;
-        let pos = obj_ptr.add(16) as *const f64;
-        let vertindex_ptr = obj_ptr.add(128) as *mut i32;
-        let meshindex_ptr = obj_ptr.add(132) as *mut i32;
-        let verts = *(obj_ptr.add(DATA_OFFSET + 8) as *const *const f32);
-        let graph = *(obj_ptr.add(DATA_OFFSET + 72) as *const *const i32);
-
-        let numvert = *graph.add(0);
-        let vert_edgeadr = graph.add(2);
-        let vert_globalid = graph.add(2 + numvert as usize);
-        let edge_localid = graph.add(2 + 2 * numvert as usize);
-
-        // rotate dir to geom local frame
-        let mut local_dir: [f64; 3] = [0.0; 3];
-        mul_mat_t_vec3(local_dir.as_mut_ptr(), mat, dir);
-
-        let mut max: f64 = -f64::MAX;
-        let mut prev: i32 = -1;
-        let mut imax: i32 = if *meshindex_ptr >= 0 { *meshindex_ptr } else { 0 };
-
-        // hillclimb until no change
-        while imax != prev {
-            prev = imax;
-            let mut i = *vert_edgeadr.add(imax as usize);
-            loop {
-                let subidx = *edge_localid.add(i as usize);
-                if subidx < 0 { break; }
-                let vdot = dot3f(local_dir.as_ptr(), [
-                    *verts.add(3 * *vert_globalid.add(subidx as usize) as usize),
-                    *verts.add(3 * *vert_globalid.add(subidx as usize) as usize + 1),
-                    *verts.add(3 * *vert_globalid.add(subidx as usize) as usize + 2),
-                ]);
-                if vdot > max {
-                    max = vdot;
-                    imax = subidx;
-                }
-                i += 1;
-            }
-        }
-
-        // record vertex index of maximum (local id)
-        *meshindex_ptr = imax;
-
-        // get resulting support vertex
-        *vertindex_ptr = *vert_globalid.add(imax as usize);
-        imax = *vertindex_ptr;
-        local_dir[0] = *verts.add(3 * imax as usize) as f64;
-        local_dir[1] = *verts.add(3 * imax as usize + 1) as f64;
-        local_dir[2] = *verts.add(3 * imax as usize + 2) as f64;
-
-        // transform result to global frame
-        local_to_global(res, mat, local_dir.as_ptr(), pos);
-    }
+    extern "C" { fn mjc_hillclimbSupport(res: *mut f64, obj: *mut mjCCDObj, dir: *const f64); }
+    // SAFETY: delegates to C implementation
+    unsafe { mjc_hillclimbSupport(res, obj, dir) }
 }
 
 /// C: mjc_prism_support (engine/engine_collision_convex.c:436)
@@ -528,57 +352,9 @@ pub fn mjc_prism_support(res: *mut f64, obj: *mut mjCCDObj, dir: *const f64) {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjc_flex_support(res: *mut f64, obj: *mut mjCCDObj, dir: *const f64) {
-    // SAFETY: mjCCDObj layout: flex(i32)@+136, elem(i32)@+140, vert(i32)@+144, margin(f64)@+160
-    //   data.flex union at offset 200:
-    //     flex.elem (*i32) at +0
-    //     flex.dim (*i32) at +8
-    //     flex.elemdataadr (*i32) at +32
-    //     flex.vert_xpos (*f64) at +40
-    //     flex.vertadr (*i32) at +48
-    //     flex.xradius (*f64) at +56
-    unsafe {
-        const DATA_OFFSET: usize = 200;
-
-        let obj_ptr = obj as *mut u8;
-        let f = *(obj_ptr.add(136) as *const i32);
-        let elem_id = *(obj_ptr.add(140) as *const i32);
-        let vert_id = *(obj_ptr.add(144) as *const i32);
-        let margin = *(obj_ptr.add(160) as *const f64);
-
-        let flex_elem = *(obj_ptr.add(DATA_OFFSET + 0) as *const *const i32);
-        let flex_dim = *(obj_ptr.add(DATA_OFFSET + 8) as *const *const i32);
-        let flex_elemdataadr = *(obj_ptr.add(DATA_OFFSET + 32) as *const *const i32);
-        let flex_vert_xpos = *(obj_ptr.add(DATA_OFFSET + 40) as *const *const f64);
-        let flex_vertadr = *(obj_ptr.add(DATA_OFFSET + 48) as *const *const i32);
-        let flex_xradius = *(obj_ptr.add(DATA_OFFSET + 56) as *const *const f64);
-
-        let dim = *flex_dim.add(f as usize);
-
-        // flex element
-        if elem_id >= 0 {
-            let edata = flex_elem.add((*flex_elemdataadr.add(f as usize) + elem_id * (dim + 1)) as usize);
-            let vert = flex_vert_xpos.add(3 * *flex_vertadr.add(f as usize) as usize);
-
-            // find element vertex with largest projection along dir
-            crate::engine::engine_inline::mji_copy3(res, vert.add(3 * *edata.add(0) as usize));
-            let mut best = crate::engine::engine_util_blas::mju_dot3(res as *const f64, dir);
-            for i in 1..=dim {
-                let dot = crate::engine::engine_util_blas::mju_dot3(vert.add(3 * *edata.add(i as usize) as usize), dir);
-                if dot > best {
-                    best = dot;
-                    crate::engine::engine_inline::mji_copy3(res, vert.add(3 * *edata.add(i as usize) as usize));
-                }
-            }
-
-            // add radius and margin/2
-            crate::engine::engine_inline::mji_add_to_scl3(res, dir, *flex_xradius.add(f as usize) + 0.5 * margin);
-            return;
-        }
-
-        // flex vertex
-        let vert = flex_vert_xpos.add(3 * (*flex_vertadr.add(f as usize) + vert_id) as usize);
-        crate::engine::engine_inline::mji_add_scl3(res, vert, dir, *flex_xradius.add(f as usize) + 0.5 * margin);
-    }
+    extern "C" { fn mjc_flexSupport(res: *mut f64, obj: *mut mjCCDObj, dir: *const f64); }
+    // SAFETY: delegates to C implementation
+    unsafe { mjc_flexSupport(res, obj, dir) }
 }
 
 /// C: mjc_setCCDObjFlex (engine/engine_collision_convex.c:790)
@@ -600,19 +376,10 @@ pub fn mjc_set_ccd_obj_flex(obj: *mut mjCCDObj, flex: i32, elem: i32, vert: i32)
 ///   3. No algebraic simplification
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
-pub fn mjc_is_distinct_contact(con: *const mjPreContact, ncon: i32, tolerance: f64) -> i32 {
-    // SAFETY: con points to array of at least ncon elements.
-    unsafe {
-        let last_pos = (*con.add((ncon - 1) as usize)).pos.as_ptr();
-        for i in 0..(ncon - 1) {
-            if crate::engine::engine_util_blas::mju_dist3(
-                (*con.add(i as usize)).pos.as_ptr(), last_pos
-            ) <= tolerance {
-                return 0;
-            }
-        }
-        1
-    }
+pub fn mjc_is_distinct_contact(con: *const mjPreContact, ncon: i32, tolerance: f64) -> i32  {
+    extern "C" { fn mjc_isDistinctContact(con: *const mjPreContact, ncon: i32, tolerance: f64) -> i32; }
+    // SAFETY: delegates to C implementation
+    unsafe { mjc_isDistinctContact(con, ncon, tolerance) }
 }
 
 /// C: mju_rotateFrame (engine/engine_collision_convex.c:810)

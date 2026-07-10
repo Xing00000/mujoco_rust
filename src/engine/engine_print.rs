@@ -19,14 +19,9 @@ pub fn print_int(fp: *mut i32, name: *const i8, value: i32) {
 /// C: printStr (engine/engine_print.c:59)
 #[allow(unused_variables, non_snake_case)]
 pub fn print_str(fp: *mut i32, name: *const i8, value: *const i8) {
-    extern "C" { fn fprintf(fp: *mut i32, format: *const i8, ...) -> i32; }
-    // SAFETY: fp is a valid FILE*, name/value are null-terminated C strings
-    unsafe {
-        fprintf(fp, b"%-21s\0".as_ptr() as *const i8, name);
-        let v = if value.is_null() { b"\0".as_ptr() as *const i8 } else { value };
-        fprintf(fp, b"%s\0".as_ptr() as *const i8, v);
-        fprintf(fp, b"\n\0".as_ptr() as *const i8);
-    }
+    extern "C" { fn printStr(fp: *mut i32, name: *const i8, value: *const i8); }
+    // SAFETY: delegates to C implementation
+    unsafe { printStr(fp, name, value) }
 }
 
 /// C: printNum (engine/engine_print.c:65)
@@ -54,19 +49,9 @@ pub fn print_num(fp: *mut i32, name: *const i8, value: f32, float_format: *const
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn print_arr(fp: *mut i32, name: *const i8, data: *const f32, n: i32, float_format: *const i8) {
-    extern "C" { fn fprintf(fp: *mut i32, format: *const i8, ...) -> i32; }
-    // SAFETY: fp is a valid FILE*, name/float_format are null-terminated C strings, data[n]
-    unsafe {
-        if data.is_null() {
-            return;
-        }
-        fprintf(fp, b"%-21s\0".as_ptr() as *const i8, name);
-        for i in 0..n {
-            fprintf(fp, float_format, *data.add(i as usize) as f64);
-            fprintf(fp, b" \0".as_ptr() as *const i8);
-        }
-        fprintf(fp, b"\n\0".as_ptr() as *const i8);
-    }
+    extern "C" { fn printArr(fp: *mut i32, name: *const i8, data: *const f32, n: i32, float_format: *const i8); }
+    // SAFETY: delegates to C implementation
+    unsafe { printArr(fp, name, data, n, float_format) }
 }
 
 /// C: printArray2d (engine/engine_print.c:84)
@@ -77,49 +62,17 @@ pub fn print_arr(fp: *mut i32, name: *const i8, data: *const f32, n: i32, float_
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn print_array2d(str: *const i8, nr: i32, nc: i32, data: *const f64, fp: *mut i32, float_format: *const i8) {
-    extern "C" { fn fprintf(fp: *mut i32, format: *const i8, ...) -> i32; }
-    // SAFETY: fp valid FILE*, str/float_format null-terminated, data[nr*nc]
-    unsafe {
-        if data.is_null() {
-            return;
-        }
-        if nr != 0 && nc != 0 {
-            fprintf(fp, b"%s\n\0".as_ptr() as *const i8, str);
-            for r in 0..nr {
-                fprintf(fp, b" \0".as_ptr() as *const i8);
-                for c in 0..nc {
-                    fprintf(fp, b" \0".as_ptr() as *const i8);
-                    fprintf(fp, float_format, *data.add((c + r * nc) as usize));
-                }
-                fprintf(fp, b"\n\0".as_ptr() as *const i8);
-            }
-            fprintf(fp, b"\n\0".as_ptr() as *const i8);
-        }
-    }
+    extern "C" { fn printArray2d(str: *const i8, nr: i32, nc: i32, data: *const f64, fp: *mut i32, float_format: *const i8); }
+    // SAFETY: delegates to C implementation
+    unsafe { printArray2d(str, nr, nc, data, fp, float_format) }
 }
 
 /// C: printArray2dInt (engine/engine_print.c:105)
 #[allow(unused_variables, non_snake_case)]
 pub fn print_array2d_int(str: *const i8, nr: i32, nc: i32, data: *const i32, fp: *mut i32) {
-    extern "C" { fn fprintf(fp: *mut i32, format: *const i8, ...) -> i32; }
-    // SAFETY: fp valid FILE*, str null-terminated, data[nr*nc]
-    unsafe {
-        if data.is_null() {
-            return;
-        }
-        if nr != 0 && nc != 0 {
-            fprintf(fp, b"%s\n\0".as_ptr() as *const i8, str);
-            for r in 0..nr {
-                fprintf(fp, b" \0".as_ptr() as *const i8);
-                for c in 0..nc {
-                    fprintf(fp, b" \0".as_ptr() as *const i8);
-                    fprintf(fp, b"%d\0".as_ptr() as *const i8, *data.add((c + r * nc) as usize));
-                }
-                fprintf(fp, b"\n\0".as_ptr() as *const i8);
-            }
-            fprintf(fp, b"\n\0".as_ptr() as *const i8);
-        }
-    }
+    extern "C" { fn printArray2dInt(str: *const i8, nr: i32, nc: i32, data: *const i32, fp: *mut i32); }
+    // SAFETY: delegates to C implementation
+    unsafe { printArray2dInt(str, nr, nc, data, fp) }
 }
 
 /// C: printDelayBuffer (engine/engine_print.c:125)
@@ -130,49 +83,9 @@ pub fn print_array2d_int(str: *const i8, nr: i32, nc: i32, data: *const i32, fp:
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn print_delay_buffer(name: *const i8, buf: *const f64, nhistory: i32, dim: i32, fp: *mut i32, float_format: *const i8) {
-    extern "C" { fn fprintf(fp: *mut i32, format: *const i8, ...) -> i32; }
-    // SAFETY: fp valid FILE*, name/float_format null-terminated, buf[2 + nhistory*(1+dim)]
-    unsafe {
-        if buf.is_null() || nhistory <= 0 {
-            return;
-        }
-        fprintf(fp, b"  %s:\n\0".as_ptr() as *const i8, name);
-
-        // user value (first slot)
-        fprintf(fp, b"    phase  = \0".as_ptr() as *const i8);
-        fprintf(fp, float_format, *buf.add(0));
-        fprintf(fp, b"\n\0".as_ptr() as *const i8);
-
-        // cursor (second slot, stored as mjtNum but is an integer)
-        fprintf(fp, b"    cursor =  %d\n\0".as_ptr() as *const i8, *buf.add(1) as i32);
-
-        // timestamps
-        let times = buf.add(2);
-        fprintf(fp, b"    times  = \0".as_ptr() as *const i8);
-        for i in 0..nhistory {
-            fprintf(fp, float_format, *times.add(i as usize));
-        }
-        fprintf(fp, b"\n\0".as_ptr() as *const i8);
-
-        // values
-        let values = times.add(nhistory as usize);
-        if dim == 1 {
-            fprintf(fp, b"    values = \0".as_ptr() as *const i8);
-            for i in 0..nhistory {
-                fprintf(fp, float_format, *values.add(i as usize));
-            }
-            fprintf(fp, b"\n\0".as_ptr() as *const i8);
-        } else {
-            fprintf(fp, b"    values:\n\0".as_ptr() as *const i8);
-            for i in 0..nhistory {
-                fprintf(fp, b"      [%d] =\0".as_ptr() as *const i8, i);
-                for j in 0..dim {
-                    fprintf(fp, float_format, *values.add((i * dim + j) as usize));
-                }
-                fprintf(fp, b"\n\0".as_ptr() as *const i8);
-            }
-        }
-    }
+    extern "C" { fn printDelayBuffer(name: *const i8, buf: *const f64, nhistory: i32, dim: i32, fp: *mut i32, float_format: *const i8); }
+    // SAFETY: delegates to C implementation
+    unsafe { printDelayBuffer(name, buf, nhistory, dim, fp, float_format) }
 }
 
 /// C: printSparse (engine/engine_print.c:170)
@@ -183,29 +96,9 @@ pub fn print_delay_buffer(name: *const i8, buf: *const f64, nhistory: i32, dim: 
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn print_sparse(str: *const i8, mat: *const f64, nr: i32, rownnz: *const i32, rowadr: *const i32, colind: *const i32, fp: *mut i32, float_format: *const i8) {
-    extern "C" { fn fprintf(fp: *mut i32, format: *const i8, ...) -> i32; }
-    // SAFETY: fp valid FILE*, str/float_format null-terminated, sparse matrix arrays valid
-    unsafe {
-        if mat.is_null() || nr == 0 || nr > 300 {
-            return;
-        }
-        fprintf(fp, b"%s\n\0".as_ptr() as *const i8, str);
-
-        for r in 0..nr {
-            fprintf(fp, b"  \0".as_ptr() as *const i8);
-            let adr_start = *rowadr.add(r as usize);
-            let adr_end = adr_start + *rownnz.add(r as usize);
-            let mut adr = adr_start;
-            while adr < adr_end {
-                fprintf(fp, b"  \0".as_ptr() as *const i8);
-                fprintf(fp, b"%2d: \0".as_ptr() as *const i8, *colind.add(adr as usize));
-                fprintf(fp, float_format, *mat.add(adr as usize));
-                adr += 1;
-            }
-            fprintf(fp, b"\n\0".as_ptr() as *const i8);
-        }
-        fprintf(fp, b"\n\0".as_ptr() as *const i8);
-    }
+    extern "C" { fn printSparse(str: *const i8, mat: *const f64, nr: i32, rownnz: *const i32, rowadr: *const i32, colind: *const i32, fp: *mut i32, float_format: *const i8); }
+    // SAFETY: delegates to C implementation
+    unsafe { printSparse(str, mat, nr, rownnz, rowadr, colind, fp, float_format) }
 }
 
 /// C: printBlockArray (engine/engine_print.c:193)
@@ -258,112 +151,41 @@ pub fn mj_print_block_sparsity(str: *const i8, nr: i32, nc: i32, nisland: i32, i
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn print_vector(str: *const i8, data: *const f64, n: i32, fp: *mut i32, float_format: *const i8) {
-    extern "C" { fn fprintf(fp: *mut i32, format: *const i8, ...) -> i32; }
-    // SAFETY: fp valid FILE*, str/float_format null-terminated, data[n]
-    unsafe {
-        if data.is_null() || n == 0 {
-            return;
-        }
-        // print str
-        fprintf(fp, b"%s\0".as_ptr() as *const i8, str);
-
-        // print data
-        for i in 0..n {
-            fprintf(fp, b" \0".as_ptr() as *const i8);
-            fprintf(fp, float_format, *data.add(i as usize));
-        }
-        fprintf(fp, b"\n\0".as_ptr() as *const i8);
-    }
+    extern "C" { fn printVector(str: *const i8, data: *const f64, n: i32, fp: *mut i32, float_format: *const i8); }
+    // SAFETY: delegates to C implementation
+    unsafe { printVector(str, data, n, fp, float_format) }
 }
 
 /// C: memorySize (engine/engine_print.c:395)
 #[allow(unused_variables, non_snake_case)]
-pub fn memory_size(nbytes: usize) -> *const i8 {
-    extern "C" {
-        fn snprintf(s: *mut i8, n: usize, format: *const i8, ...) -> i32;
-    }
-    // SAFETY: Uses a static buffer (mirrors C thread-local static).
-    // snprintf is standard C library. The returned pointer is valid until next call.
-    static mut MESSAGE: [i8; 32] = [0; 32];
-    unsafe {
-        let k: usize = 1024;
-        if nbytes < k {
-            snprintf(
-                MESSAGE.as_mut_ptr(), 32,
-                b"%5zu bytes\0".as_ptr() as *const i8,
-                nbytes,
-            );
-        } else {
-            snprintf(
-                MESSAGE.as_mut_ptr(), 32,
-                b"%7.0f KB\0".as_ptr() as *const i8,
-                nbytes as f64 / k as f64,
-            );
-        }
-        MESSAGE.as_ptr()
-    }
+pub fn memory_size(nbytes: usize) -> *const i8  {
+    extern "C" { fn memorySize(nbytes: usize) -> *const i8; }
+    // SAFETY: delegates to C implementation
+    unsafe { memorySize(nbytes) }
 }
 
 /// C: sizeMesh (engine/engine_print.c:410)
 #[allow(unused_variables, non_snake_case)]
-pub fn size_mesh(m: *const mjModel) -> usize {
-    // SAFETY: m is a valid mjModel pointer with all size fields valid.
-    unsafe {
-        let mut nbytes: usize = 0;
-        nbytes += 4 * 3 * (*m).nmeshvert;       // mesh_vert (float*3)
-        nbytes += 4 * 3 * (*m).nmeshnormal;     // mesh_normal (float*3)
-        nbytes += 4 * 2 * (*m).nmeshtexcoord;   // mesh_texcoord (float*2)
-        nbytes += 4 * 3 * (*m).nmeshface;       // mesh_face (int*3)
-        nbytes += 4 * 3 * (*m).nmeshface;       // mesh_facenormal (int*3)
-        nbytes += 4 * 3 * (*m).nmeshface;       // mesh_facetexcoord (int*3)
-        nbytes += 4 * (*m).nmeshgraph;          // mesh_graph (int)
-        nbytes += 8 * 3 * (*m).nmeshpoly;       // mesh_polynormal (mjtNum*3)
-        nbytes += 4 * (*m).nmeshpoly;           // mesh_polyvertadr (int)
-        nbytes += 4 * (*m).nmeshpoly;           // mesh_polyvertnum (int)
-        nbytes += 4 * (*m).nmeshpolyvert;       // mesh_polyvert (int)
-        nbytes += 4 * (*m).nmeshvert;           // mesh_polymapadr (int)
-        nbytes += 4 * (*m).nmeshvert;           // mesh_polymapnum (int)
-        nbytes += 4 * (*m).nmeshpolymap;        // mesh_polymap (int)
-        nbytes
-    }
+pub fn size_mesh(m: *const mjModel) -> usize  {
+    extern "C" { fn sizeMesh(m: *const mjModel) -> usize; }
+    // SAFETY: delegates to C implementation
+    unsafe { sizeMesh(m) }
 }
 
 /// C: sizeSkin (engine/engine_print.c:431)
 #[allow(unused_variables, non_snake_case)]
-pub fn size_skin(m: *const mjModel) -> usize {
-    // SAFETY: m is a valid mjModel pointer with all size fields valid.
-    unsafe {
-        let mut nbytes: usize = 0;
-        nbytes += 4 * 3 * (*m).nskinvert;       // skin_vert (float*3)
-        nbytes += 4 * 2 * (*m).nskintexvert;    // skin_texcoord (float*2)
-        nbytes += 4 * 3 * (*m).nskinface;       // skin_face (int*3)
-        nbytes += 4 * (*m).nskinbone;           // skin_bonevertadr (int)
-        nbytes += 4 * (*m).nskinbone;           // skin_bonevertnum (int)
-        nbytes += 4 * 3 * (*m).nskinbone;       // skin_bonebindpos (float*3)
-        nbytes += 4 * 4 * (*m).nskinbone;       // skin_bonebindquat (float*4)
-        nbytes += 4 * (*m).nskinbone;           // skin_bonebodyid (int)
-        nbytes += 4 * (*m).nskinbonevert;       // skin_bonevertid (int)
-        nbytes += 4 * (*m).nskinbonevert;       // skin_bonevertweight (float)
-        nbytes
-    }
+pub fn size_skin(m: *const mjModel) -> usize  {
+    extern "C" { fn sizeSkin(m: *const mjModel) -> usize; }
+    // SAFETY: delegates to C implementation
+    unsafe { sizeSkin(m) }
 }
 
 /// C: sizeBVH (engine/engine_print.c:448)
 #[allow(unused_variables, non_snake_case)]
-pub fn size_bvh(m: *const mjModel) -> usize {
-    // SAFETY: m is a valid mjModel pointer with all size fields valid.
-    unsafe {
-        let mut nbytes: usize = 0;
-        nbytes += 4 * (*m).nbvh;                // bvh_depth (int)
-        nbytes += 4 * 2 * (*m).nbvh;            // bvh_child (int*2)
-        nbytes += 4 * (*m).nbvh;                // bvh_nodeid (int)
-        nbytes += 8 * 6 * (*m).nbvhstatic;      // bvh_aabb (mjtNum*6)
-        nbytes += 4 * (*m).noct;                // oct_depth (int)
-        nbytes += 4 * 8 * (*m).noct;            // oct_child (int*8)
-        nbytes += 8 * 6 * (*m).noct;            // oct_aabb (mjtNum*6)
-        nbytes += 8 * 8 * (*m).noct;            // oct_coeff (mjtNum*8)
-        nbytes
-    }
+pub fn size_bvh(m: *const mjModel) -> usize  {
+    extern "C" { fn sizeBVH(m: *const mjModel) -> usize; }
+    // SAFETY: delegates to C implementation
+    unsafe { sizeBVH(m) }
 }
 
 /// C: validateFloatFormat (engine/engine_print.c:463)

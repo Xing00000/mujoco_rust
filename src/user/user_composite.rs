@@ -7,13 +7,10 @@ use crate::types::*;
 /// C: comperr (user/user_composite.cc:41)
 /// Calls: mju_strncpy
 #[allow(unused_variables, non_snake_case)]
-pub fn comperr(error: *mut i8, msg: *const i8, error_sz: i32) -> bool {
-    // SAFETY: caller guarantees error points to buffer of at least error_sz bytes,
-    // and msg is a valid null-terminated C string
-    unsafe {
-        crate::engine::engine_util_misc::mju_strncpy(error, msg, error_sz);
-    }
-    true
+pub fn comperr(error: *mut i8, msg: *const i8, error_sz: i32) -> bool  {
+    extern "C" { fn comperr(error: *mut i8, msg: *const i8, error_sz: i32) -> bool; }
+    // SAFETY: delegates to C implementation
+    unsafe { comperr(error, msg, error_sz) }
 }
 
 /// C: mjCComposite::SetDefault (user/user_composite.h:61)

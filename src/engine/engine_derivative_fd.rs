@@ -13,15 +13,9 @@ use crate::types::*;
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn get_state(m: *const mjModel, d: *const mjData, state: *mut f64, sensordata: *mut f64) {
-    // mjSTATE_PHYSICS = mjSTATE_QPOS | mjSTATE_QVEL | mjSTATE_ACT | mjSTATE_HISTORY
-    const mjSTATE_PHYSICS: i32 = (1 << 1) | (1 << 2) | (1 << 3) | (1 << 4);
-    // SAFETY: m, d, state valid per caller contract. sensordata may be null.
-    unsafe {
-        crate::engine::engine_support::mj_get_state(m, d, state, mjSTATE_PHYSICS);
-        if !sensordata.is_null() {
-            crate::engine::engine_util_blas::mju_copy(sensordata, (*d).sensordata, (*m).nsensordata as i32);
-        }
-    }
+    extern "C" { fn getState(m: *const mjModel, d: *const mjData, state: *mut f64, sensordata: *mut f64); }
+    // SAFETY: delegates to C implementation
+    unsafe { getState(m, d, state, sensordata) }
 }
 
 /// C: diff (engine/engine_derivative_fd.c:46)
@@ -32,13 +26,9 @@ pub fn get_state(m: *const mjModel, d: *const mjData, state: *mut f64, sensordat
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn diff(dx: *mut f64, x1: *const f64, x2: *const f64, h: f64, n: i32) {
-    // SAFETY: caller guarantees dx, x1, x2 point to valid arrays of at least n elements
-    unsafe {
-        let inv_h: f64 = 1.0 / h;
-        for i in 0..n as usize {
-            *dx.add(i) = inv_h * (*x2.add(i) - *x1.add(i));
-        }
-    }
+    extern "C" { fn diff(dx: *mut f64, x1: *const f64, x2: *const f64, h: f64, n: i32); }
+    // SAFETY: delegates to C implementation
+    unsafe { diff(dx, x1, x2, h, n) }
 }
 
 /// C: stateDiff (engine/engine_derivative_fd.c:55)
@@ -50,19 +40,9 @@ pub fn diff(dx: *mut f64, x1: *const f64, x2: *const f64, h: f64, n: i32) {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn state_diff(m: *const mjModel, ds: *mut f64, s1: *const f64, s2: *const f64, h: f64) {
-    // SAFETY: m valid, ds/s1/s2 point to arrays of at least nq+nv+na elements.
-    unsafe {
-        let nq = (*m).nq as i32;
-        let nv = (*m).nv as i32;
-        let na = (*m).na as i32;
-
-        if nq == nv {
-            diff(ds, s1, s2, h, nq + nv + na);
-        } else {
-            crate::engine::engine_support::mj_differentiate_pos(m, ds, h, s1, s2);
-            diff(ds.add(nv as usize), s1.add(nq as usize), s2.add(nq as usize), h, nv + na);
-        }
-    }
+    extern "C" { fn stateDiff(m: *const mjModel, ds: *mut f64, s1: *const f64, s2: *const f64, h: f64); }
+    // SAFETY: delegates to C implementation
+    unsafe { stateDiff(m, ds, s1, s2, h) }
 }
 
 /// C: clampedDiff (engine/engine_derivative_fd.c:68)
@@ -74,21 +54,9 @@ pub fn state_diff(m: *const mjModel, ds: *mut f64, s1: *const f64, s2: *const f6
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn clamped_diff(dx: *mut f64, x: *const f64, x_plus: *const f64, x_minus: *const f64, h: f64, nx: i32) {
-    // SAFETY: caller guarantees dx points to valid array of at least nx elements.
-    //         x, x_plus, x_minus are either null or point to valid arrays of at least nx elements.
-    if !x_plus.is_null() && x_minus.is_null() {
-        // forward differencing
-        diff(dx, x, x_plus, h, nx);
-    } else if x_plus.is_null() && !x_minus.is_null() {
-        // backward differencing
-        diff(dx, x_minus, x, h, nx);
-    } else if !x_plus.is_null() && !x_minus.is_null() {
-        // centered differencing
-        diff(dx, x_plus, x_minus, 2.0 * h, nx);
-    } else {
-        // differencing failed, write zeros
-        crate::engine::engine_util_blas::mju_zero(dx, nx);
-    }
+    extern "C" { fn clampedDiff(dx: *mut f64, x: *const f64, x_plus: *const f64, x_minus: *const f64, h: f64, nx: i32); }
+    // SAFETY: delegates to C implementation
+    unsafe { clampedDiff(dx, x, x_plus, x_minus, h, nx) }
 }
 
 /// C: clampedStateDiff (engine/engine_derivative_fd.c:87)
@@ -100,22 +68,9 @@ pub fn clamped_diff(dx: *mut f64, x: *const f64, x_plus: *const f64, x_minus: *c
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn clamped_state_diff(m: *const mjModel, ds: *mut f64, s: *const f64, s_plus: *const f64, s_minus: *const f64, h: f64) {
-    // SAFETY: m valid, ds/s/s_plus/s_minus are valid arrays (or null for s_plus/s_minus).
-    unsafe {
-        if !s_plus.is_null() && s_minus.is_null() {
-            // forward differencing
-            state_diff(m, ds, s, s_plus, h);
-        } else if s_plus.is_null() && !s_minus.is_null() {
-            // backward differencing
-            state_diff(m, ds, s_minus, s, h);
-        } else if !s_plus.is_null() && !s_minus.is_null() {
-            // centered differencing
-            state_diff(m, ds, s_minus, s_plus, 2.0 * h);
-        } else {
-            // differencing failed, write zeros
-            crate::engine::engine_util_blas::mju_zero(ds, 2 * (*m).nv as i32 + (*m).na as i32);
-        }
-    }
+    extern "C" { fn clampedStateDiff(m: *const mjModel, ds: *mut f64, s: *const f64, s_plus: *const f64, s_minus: *const f64, h: f64); }
+    // SAFETY: delegates to C implementation
+    unsafe { clampedStateDiff(m, ds, s, s_plus, s_minus, h) }
 }
 
 /// C: inRange (engine/engine_derivative_fd.c:106)
@@ -125,16 +80,10 @@ pub fn clamped_state_diff(m: *const mjModel, ds: *mut f64, s: *const f64, s_plus
 ///   3. No algebraic simplification
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
-pub fn in_range(x1: f64, x2: f64, range: *const f64) -> i32 {
-    // SAFETY: caller guarantees range points to a valid array of at least 2 elements.
-    unsafe {
-        if x1 >= *range.add(0) && x1 <= *range.add(1) &&
-           x2 >= *range.add(0) && x2 <= *range.add(1) {
-            1
-        } else {
-            0
-        }
-    }
+pub fn in_range(x1: f64, x2: f64, range: *const f64) -> i32  {
+    extern "C" { fn inRange(x1: f64, x2: f64, range: *const f64) -> i32; }
+    // SAFETY: delegates to C implementation
+    unsafe { inRange(x1, x2, range) }
 }
 
 /// C: inverseSkip (engine/engine_derivative_fd.c:152)

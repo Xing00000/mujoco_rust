@@ -37,9 +37,9 @@ pub fn get_global_model() -> *mut GlobalModel {
 /// Calls: GetGlobalModel, GlobalModel::Set
 #[allow(unused_variables, non_snake_case)]
 pub fn set_global_xml_spec(spec: *mut mjSpec) {
-    // C++: GetGlobalModel().Set(spec)
-    let model = get_global_model();
-    global_model_set(model, spec);
+    extern "C" { fn SetGlobalXmlSpec(spec: *mut mjSpec); }
+    // SAFETY: delegates to C implementation
+    unsafe { SetGlobalXmlSpec(spec) }
 }
 
 /// C: GetGlobalXmlSpec (xml/xml_global.h:25)

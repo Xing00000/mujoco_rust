@@ -12,37 +12,10 @@ use crate::types::*;
 ///   3. No algebraic simplification
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
-pub fn dcmotor_voltage(ctrl: f64, length: f64, velocity: f64, x_I: f64, gainprm: *const f64) -> f64 {
-    // SAFETY: gainprm points to at least 9 f64 elements per caller contract
-    unsafe {
-        let input_mode: i32 = *gainprm.add(8) as i32;
-        let Vmax: f64 = *gainprm.add(7);
-        let mut voltage: f64;
-
-        // get voltage
-        if input_mode > 0 {
-            let kp: f64 = *gainprm.add(4);  // proportional gain
-            let ki: f64 = *gainprm.add(5);  // integral gain
-            let kd: f64 = *gainprm.add(6);  // derivative gain
-
-            if input_mode == 1 {
-                // position mode
-                voltage = kp * (ctrl - length) + ki * x_I - kd * velocity;
-            } else {
-                // velocity mode
-                voltage = kp * (ctrl - velocity) + ki * (x_I - length);
-            }
-        } else {
-            voltage = ctrl;
-        }
-
-        // clip voltage
-        if Vmax > 0.0 {
-            voltage = crate::engine::engine_util_misc::mju_clip(voltage, -Vmax, Vmax);
-        }
-
-        voltage
-    }
+pub fn dcmotor_voltage(ctrl: f64, length: f64, velocity: f64, x_I: f64, gainprm: *const f64) -> f64  {
+    extern "C" { fn dcmotorVoltage(ctrl: f64, length: f64, velocity: f64, x_I: f64, gainprm: *const f64) -> f64; }
+    // SAFETY: delegates to C implementation
+    unsafe { dcmotorVoltage(ctrl, length, velocity, x_I, gainprm) }
 }
 
 /// C: clampVec (engine/engine_forward.c:253)
@@ -64,138 +37,18 @@ pub fn clamp_vec(vec: *mut f64, range: *const f64, limited: *const mjtBool, n: i
 /// Calls: mj_constraintUpdate, mj_freeStack, mj_isSparse, mj_markStack, mj_mulJacVec, mj_mulM, mj_stackAllocInfo, mju_copy, mju_dot, mju_mulMatVec, mju_mulMatVecSparse, mju_subFrom, mju_zero
 #[allow(unused_variables, non_snake_case)]
 pub fn warmstart(m: *const mjModel, d: *mut mjData) {
-    // SAFETY: m and d are valid pointers provided by the MuJoCo engine.
-    // All field accesses and pointer arithmetic follow the C layout.
-    // Stack allocation uses the MuJoCo arena allocator via C FFI.
-    unsafe {
-        const mjDSBL_WARMSTART: i32 = 1 << 9;
-        const mjSOL_PGS: i32 = 0;
-
-        let nv: i32 = (*m).nv as i32;
-        let nefc: i32 = (*d).nefc;
-
-        // warmstart with best of (qacc_warmstart, qacc_smooth)
-        if ((*m).opt.disableflags & mjDSBL_WARMSTART) == 0 {
-            crate::engine::engine_memory::mj_mark_stack(d);
-
-            // SAFETY: mj_stackAllocInfo returns aligned memory from MuJoCo arena
-            extern "C" {
-                fn mj_stackAllocInfo(d: *mut mjData, bytes: usize, alignment: usize, caller: *const i8, line: i32) -> *mut ();
-            }
-            let jar: *mut f64 = mj_stackAllocInfo(
-                d,
-                (nefc as usize) * std::mem::size_of::<f64>(),
-                std::mem::align_of::<f64>(),
-                b"warmstart\0".as_ptr() as *const i8,
-                0,
-            ) as *mut f64;
-
-            // start with qacc = qacc_warmstart
-            crate::engine::engine_util_blas::mju_copy((*d).qacc, (*d).qacc_warmstart, nv);
-
-            // compute jar(qacc_warmstart)
-            crate::engine::engine_core_constraint::mj_mul_jac_vec(m, d as *const mjData, jar, (*d).qacc_warmstart);
-            crate::engine::engine_util_blas::mju_sub_from(jar, (*d).efc_aref, nefc);
-
-            // update constraints, save cost(qacc_warmstart)
-            let mut cost_warmstart: f64 = 0.0;
-            crate::engine::engine_core_constraint::mj_constraint_update(m, d, jar, &mut cost_warmstart, 0);
-
-            // PGS
-            if (*m).opt.solver == mjSOL_PGS {
-                // cost(force_warmstart)
-                let mut PGS_warmstart: f64 = crate::engine::engine_util_blas::mju_dot((*d).efc_force, (*d).efc_b, nefc);
-
-                let ARf: *mut f64 = mj_stackAllocInfo(
-                    d,
-                    (nefc as usize) * std::mem::size_of::<f64>(),
-                    std::mem::align_of::<f64>(),
-                    b"warmstart\0".as_ptr() as *const i8,
-                    0,
-                ) as *mut f64;
-
-                if crate::engine::engine_core_util::mj_is_sparse(m) != 0 {
-                    crate::engine::engine_util_sparse::mju_mul_mat_vec_sparse(
-                        ARf, (*d).efc_AR, (*d).efc_force, nefc,
-                        (*d).efc_AR_rownnz, (*d).efc_AR_rowadr,
-                        (*d).efc_AR_colind, std::ptr::null(),
-                    );
-                } else {
-                    crate::engine::engine_util_blas::mju_mul_mat_vec(ARf, (*d).efc_AR, (*d).efc_force, nefc, nefc);
-                }
-                PGS_warmstart += 0.5 * crate::engine::engine_util_blas::mju_dot((*d).efc_force, ARf, nefc);
-
-                // use zero if better
-                if PGS_warmstart > 0.0 {
-                    crate::engine::engine_util_blas::mju_zero((*d).efc_force, nefc);
-                    crate::engine::engine_util_blas::mju_zero((*d).qfrc_constraint, nv);
-                }
-            }
-            // non-PGS
-            else {
-                // add Gauss to cost(qacc_warmstart)
-                let Ma: *mut f64 = mj_stackAllocInfo(
-                    d,
-                    (nv as usize) * std::mem::size_of::<f64>(),
-                    std::mem::align_of::<f64>(),
-                    b"warmstart\0".as_ptr() as *const i8,
-                    0,
-                ) as *mut f64;
-
-                crate::engine::engine_support::mj_mul_m(m, d as *const mjData, Ma, (*d).qacc_warmstart);
-                for i in 0..nv as usize {
-                    cost_warmstart += 0.5
-                        * (*Ma.add(i) - *(*d).qfrc_smooth.add(i))
-                        * (*(*d).qacc_warmstart.add(i) - *(*d).qacc_smooth.add(i));
-                }
-
-                // cost(qacc_smooth)
-                let mut cost_smooth: f64 = 0.0;
-                crate::engine::engine_core_constraint::mj_constraint_update(m, d, (*d).efc_b, &mut cost_smooth, 0);
-
-                // use qacc_smooth if better
-                if cost_warmstart > cost_smooth {
-                    crate::engine::engine_util_blas::mju_copy((*d).qacc, (*d).qacc_smooth, nv);
-                }
-            }
-
-            // have island structure: unconstrained qacc = qacc_smooth
-            if (*d).nisland > 0 {
-                // loop over unconstrained dofs in map_idof2dof[nidof, nv)
-                for i in (*d).nidof..nv {
-                    let dof: i32 = *(*d).map_idof2dof.add(i as usize);
-                    *(*d).qacc.add(dof as usize) = *(*d).qacc_smooth.add(dof as usize);
-                }
-            }
-
-            crate::engine::engine_memory::mj_free_stack(d);
-        }
-        // coldstart with qacc = qacc_smooth, efc_force = 0
-        else {
-            crate::engine::engine_util_blas::mju_copy((*d).qacc, (*d).qacc_smooth, nv);
-            crate::engine::engine_util_blas::mju_zero((*d).efc_force, nefc);
-        }
-    }
+    extern "C" { fn warmstart(m: *const mjModel, d: *mut mjData); }
+    // SAFETY: delegates to C implementation
+    unsafe { warmstart(m, d) }
 }
 
 /// C: solveIslandTask (engine/engine_forward.c:866)
 /// Calls: mj_solCG_island, mj_solNewton_island, mj_solPGS_island
 #[allow(unused_variables, non_snake_case)]
 pub fn solve_island_task(m: *const mjModel, d: *mut mjData, arg: *mut (), thread_id: i32, island: i32) {
-    // SAFETY: m is valid mjModel pointer. Solver functions are already translated/delegated.
-    unsafe {
-        const mjSOL_NEWTON: i32 = 2;
-        const mjSOL_CG: i32 = 1;
-        let solver = (*m).opt.solver;
-        let iterations = (*m).opt.iterations;
-        if solver == mjSOL_NEWTON {
-            crate::engine::engine_solver::mj_sol_newton_island(m, d, island, iterations);
-        } else if solver == mjSOL_CG {
-            crate::engine::engine_solver::mj_sol_cg_island(m, d, island, iterations);
-        } else {
-            crate::engine::engine_solver::mj_sol_pgs_island(m, d, island, iterations);
-        }
-    }
+    extern "C" { fn solveIslandTask(m: *const mjModel, d: *mut mjData, arg: *mut (), thread_id: i32, island: i32); }
+    // SAFETY: delegates to C implementation
+    unsafe { solveIslandTask(m, d, arg, thread_id, island) }
 }
 
 /// C: mj_advance (engine/engine_forward.c:981)
@@ -214,34 +67,10 @@ pub fn mj_advance(m: *const mjModel, d: *mut mjData, act_dot: *const f64, qacc: 
 
 /// C: flex_has_implicit_stiffness (engine/engine_forward.c:1284)
 #[allow(unused_variables, non_snake_case)]
-pub fn flex_has_implicit_stiffness(m: *const mjModel) -> i32 {
-    // SAFETY: m is valid mjModel pointer. flex_* arrays are valid for nflex elements.
-    unsafe {
-        let nflex = (*m).nflex as i32;
-        let flex_rigid = (*m).flex_rigid as *const u8;
-        for f in 0..nflex {
-            if *flex_rigid.add(f as usize) != 0 {
-                continue;
-            }
-
-            // interpolated flex with stiffness
-            if *(*m).flex_interp.add(f as usize) != 0
-                && *(*m).flex_edgeequality.add(f as usize) != 3
-                && *(*m).flex_stiffness.add(*(*m).flex_stiffnessadr.add(f as usize) as usize) != 0.0
-            {
-                return 1;
-            }
-
-            // standard flex with bending
-            if *(*m).flex_interp.add(f as usize) == 0
-                && *(*m).flex_dim.add(f as usize) == 2
-                && *(*m).flex_bendingadr.add(f as usize) >= 0
-            {
-                return 1;
-            }
-        }
-        0
-    }
+pub fn flex_has_implicit_stiffness(m: *const mjModel) -> i32  {
+    extern "C" { fn flex_has_implicit_stiffness(m: *const mjModel) -> i32; }
+    // SAFETY: delegates to C implementation
+    unsafe { flex_has_implicit_stiffness(m) }
 }
 
 /// C: flexInterp_cgsolve (engine/engine_forward.c:1311)
@@ -260,115 +89,18 @@ pub fn flex_interp_cgsolve(m: *const mjModel, d: *mut mjData, qacc: *mut f64, qf
 
 /// C: midpoint_eligible (engine/engine_forward.c:1421)
 #[allow(unused_variables, non_snake_case)]
-pub fn midpoint_eligible(m: *const mjModel, d: *const mjData, jnt: i32) -> i32 {
-    // SAFETY: m, d valid per caller. All field accesses within valid array bounds.
-    unsafe {
-        const mjJNT_FREE: i32 = 3;
-        const mjDSBL_ISLAND: i32 = 1 << 11;
-        const mjCNSTR_CONTACT_FRICTIONLESS: i32 = 5;
-        const mjCNSTR_CONTACT_PYRAMIDAL: i32 = 6;
-        const mjCNSTR_CONTACT_ELLIPTIC: i32 = 7;
-        const mjCNSTR_EQUALITY: i32 = 0;
-        const mjEQ_CONNECT: i32 = 0;
-        const mjEQ_WELD: i32 = 1;
-        const mjOBJ_SITE: i32 = 3;
-        const mjCNSTR_LIMIT_TENDON: i32 = 3;
-        const mjCNSTR_FRICTION_TENDON: i32 = 4;
-
-        if *(*m).jnt_type.add(jnt as usize) != mjJNT_FREE {
-            return 0;
-        }
-
-        let body: i32 = *(*m).jnt_bodyid.add(jnt as usize);
-        let adr: i32 = *(*m).jnt_dofadr.add(jnt as usize);
-        let tree: i32 = *(*m).dof_treeid.add(adr as usize);
-
-        // must be standalone 6-DOF tree with no children
-        if *(*m).tree_dofnum.add(tree as usize) != 6
-            || *(*m).body_subtreemass.add(body as usize) != *(*m).body_mass.add(body as usize)
-        {
-            return 0;
-        }
-
-        // must be awake
-        if *(*d).tree_awake.add(tree as usize) == 0 {
-            return 0;
-        }
-
-        // must be unconstrained
-        if (*d).nefc != 0 {
-            // islands enabled: O(1) lookup
-            if ((*m).opt.disableflags & mjDSBL_ISLAND) == 0 {
-                if *(*d).dof_island.add(adr as usize) >= 0 {
-                    return 0;
-                }
-            }
-            // islands disabled: check if any constraint involves this tree
-            else {
-                let mut c: i32 = 0;
-                while c < (*d).nefc {
-                    let ctype: i32 = *(*d).efc_type.add(c as usize);
-                    let id: i32 = *(*d).efc_id.add(c as usize);
-
-                    // contact: check if either geom belongs to this body
-                    if ctype == mjCNSTR_CONTACT_FRICTIONLESS
-                        || ctype == mjCNSTR_CONTACT_PYRAMIDAL
-                        || ctype == mjCNSTR_CONTACT_ELLIPTIC
-                    {
-                        let g1: i32 = (*(*d).contact.add(id as usize)).geom[0];
-                        let g2: i32 = (*(*d).contact.add(id as usize)).geom[1];
-                        if g1 >= 0 && *(*m).geom_bodyid.add(g1 as usize) == body {
-                            return 0;
-                        }
-                        if g2 >= 0 && *(*m).geom_bodyid.add(g2 as usize) == body {
-                            return 0;
-                        }
-                    }
-                    // connect or weld: check if either body is this body
-                    else if ctype == mjCNSTR_EQUALITY
-                        && (*(*m).eq_type.add(id as usize) == mjEQ_CONNECT
-                            || *(*m).eq_type.add(id as usize) == mjEQ_WELD)
-                    {
-                        let mut b1: i32 = *(*m).eq_obj1id.add(id as usize);
-                        let mut b2: i32 = *(*m).eq_obj2id.add(id as usize);
-                        if *(*m).eq_objtype.add(id as usize) == mjOBJ_SITE {
-                            b1 = *(*m).site_bodyid.add(b1 as usize);
-                            b2 = *(*m).site_bodyid.add(b2 as usize);
-                        }
-                        if b1 == body || b2 == body {
-                            return 0;
-                        }
-                    }
-                    // tendon limit or friction: check first two trees
-                    else if ctype == mjCNSTR_LIMIT_TENDON || ctype == mjCNSTR_FRICTION_TENDON {
-                        if *(*m).tendon_treeid.add(2 * id as usize) == tree
-                            || *(*m).tendon_treeid.add(2 * id as usize + 1) == tree
-                        {
-                            return 0;
-                        }
-                    }
-
-                    c += 1;
-                }
-            }
-        }
-
-        // otherwise eligible
-        1
-    }
+pub fn midpoint_eligible(m: *const mjModel, d: *const mjData, jnt: i32) -> i32  {
+    extern "C" { fn midpoint_eligible(m: *const mjModel, d: *const mjData, jnt: i32) -> i32; }
+    // SAFETY: delegates to C implementation
+    unsafe { midpoint_eligible(m, d, jnt) }
 }
 
 /// C: midpoint_aligned (engine/engine_forward.c:1493)
 #[allow(unused_variables, non_snake_case)]
-pub fn midpoint_aligned(m: *const mjModel, jnt: i32) -> i32 {
-    // SAFETY: m is a valid mjModel pointer, jnt is a valid joint index.
-    // jnt_bodyid and body_ipos are valid arrays per caller contract.
-    unsafe {
-        let body = *(*m).jnt_bodyid.add(jnt as usize);
-        ((*(*m).body_ipos.add(3 * body as usize) == 0.0) &&
-         (*(*m).body_ipos.add(3 * body as usize + 1) == 0.0) &&
-         (*(*m).body_ipos.add(3 * body as usize + 2) == 0.0)) as i32
-    }
+pub fn midpoint_aligned(m: *const mjModel, jnt: i32) -> i32  {
+    extern "C" { fn midpoint_aligned(m: *const mjModel, jnt: i32) -> i32; }
+    // SAFETY: delegates to C implementation
+    unsafe { midpoint_aligned(m, jnt) }
 }
 
 /// C: midpointNewton (engine/engine_forward.c:1515)
@@ -379,96 +111,10 @@ pub fn midpoint_aligned(m: *const mjModel, jnt: i32) -> i32 {
 ///   3. No algebraic simplification
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
-pub fn midpoint_newton(inertia: *const f64, w: *const f64, tau: *const f64, h: f64, w_mid: *mut f64) -> i32 {
-    // SAFETY: inertia, w, tau point to 3 f64; w_mid points to 3 writable f64
-    unsafe {
-        // precompute constants
-        let i2h: f64 = 2.0 / h;
-        let dI: [f64; 3] = [
-            *inertia.add(2) - *inertia.add(1),
-            *inertia.add(0) - *inertia.add(2),
-            *inertia.add(1) - *inertia.add(0),
-        ];
-        let i2h_I: [f64; 3] = [
-            i2h * *inertia.add(0),
-            i2h * *inertia.add(1),
-            i2h * *inertia.add(2),
-        ];
-
-        // initialize solution to previous angular velocity
-        crate::engine::engine_inline::mji_copy3(w_mid, w);
-
-        // Newton iteration
-        let mut niter: i32 = 0;
-        while niter < 100 {
-            // compute Coriolis term
-            let Iw: [f64; 3] = [
-                *inertia.add(0) * *w_mid.add(0),
-                *inertia.add(1) * *w_mid.add(1),
-                *inertia.add(2) * *w_mid.add(2),
-            ];
-            let mut coriolis: [f64; 3] = [0.0; 3];
-            crate::engine::engine_inline::mji_cross(
-                coriolis.as_mut_ptr(), w_mid as *const f64, Iw.as_ptr());
-
-            // residual: f = i2h*I*(w_mid - w) + w_mid x (I*w_mid) - tau
-            let mut f: [f64; 3] = [0.0; 3];
-            for k in 0..3usize {
-                f[k] = i2h_I[k] * (*w_mid.add(k) - *w.add(k)) + coriolis[k] - *tau.add(k);
-            }
-
-            // check convergence
-            let fnorm: f64 = crate::engine::engine_util_blas::mju_norm3(f.as_ptr());
-            let tol: f64 = 1e-13;
-            if fnorm < tol * (1.0 + i2h * crate::engine::engine_util_blas::mju_norm3(Iw.as_ptr())) {
-                break;
-            }
-
-            // Jacobian: J = i2h*diag(I) + d(w x Iw)/dw
-            let mut J: [f64; 9] = [0.0; 9];
-            J[0] = i2h_I[0];                  J[1] = *w_mid.add(2) * dI[0]; J[2] = *w_mid.add(1) * dI[0];
-            J[3] = *w_mid.add(2) * dI[1];    J[4] = i2h_I[1];               J[5] = *w_mid.add(0) * dI[1];
-            J[6] = *w_mid.add(1) * dI[2];    J[7] = *w_mid.add(0) * dI[2]; J[8] = i2h_I[2];
-
-            // solve J*delta = -f for search direction delta
-            let neg_f: [f64; 3] = [-f[0], -f[1], -f[2]];
-            let mut delta: [f64; 3] = [0.0; 3];
-            crate::engine::engine_util_solve::mju_solve3(
-                delta.as_mut_ptr(), J.as_ptr(), neg_f.as_ptr());
-
-            // backtracking line search
-            let mut step: f64 = 1.0;
-            for _ls in 0..20 {
-                // candidate step
-                let mut w_try: [f64; 3] = [0.0; 3];
-                let mut Iw_try: [f64; 3] = [0.0; 3];
-                for k in 0..3usize {
-                    w_try[k] = *w_mid.add(k) + step * delta[k];
-                    Iw_try[k] = *inertia.add(k) * w_try[k];
-                }
-                let mut coriolis_try: [f64; 3] = [0.0; 3];
-                crate::engine::engine_inline::mji_cross(
-                    coriolis_try.as_mut_ptr(), w_try.as_ptr(), Iw_try.as_ptr());
-
-                // residual at candidate step
-                let mut f_try: [f64; 3] = [0.0; 3];
-                for k in 0..3usize {
-                    f_try[k] = i2h_I[k] * (w_try[k] - *w.add(k)) + coriolis_try[k] - *tau.add(k);
-                }
-
-                // accept step if residual decreased, otherwise backtrack
-                if crate::engine::engine_util_blas::mju_norm3(f_try.as_ptr()) < fnorm {
-                    crate::engine::engine_inline::mji_copy3(w_mid, w_try.as_ptr());
-                    break;
-                }
-                step *= 0.5;
-            }
-
-            niter += 1;
-        }
-
-        niter
-    }
+pub fn midpoint_newton(inertia: *const f64, w: *const f64, tau: *const f64, h: f64, w_mid: *mut f64) -> i32  {
+    extern "C" { fn midpointNewton(inertia: *const f64, w: *const f64, tau: *const f64, h: f64, w_mid: *mut f64) -> i32; }
+    // SAFETY: delegates to C implementation
+    unsafe { midpointNewton(inertia, w, tau, h, w_mid) }
 }
 
 /// C: midpoint (engine/engine_forward.c:1736)
