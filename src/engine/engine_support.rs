@@ -474,10 +474,72 @@ pub fn mj_add_m(m: *const mjModel, d: *mut mjData, dst: *mut f64, rownnz: *mut i
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_apply_ft(m: *const mjModel, d: *mut mjData, force: *const f64, torque: *const f64, point: *const f64, body: i32, qfrc_target: *mut f64) {
-    // WARNING: signature changed — verify body
-    // Previous params: (m : * const mjModel, d : * mut mjData, force : * const f64, torque : * const f64, point : * const f64, body : i32, qfrc_target : * mut f64)
-    // Previous return: ()
-    extern "C" { fn mj_applyFT(m : * const mjModel , d : * mut mjData , force : * const f64 , torque : * const f64 , point : * const f64 , body : i32 , qfrc_target : * mut f64) ; } unsafe { mj_applyFT(m , d , force , torque , point , body , qfrc_target) }
+    unsafe {
+        let nv = (*m).nv as i32;
+
+        // allocate local variables
+        crate::engine::engine_memory::mj_mark_stack(d);
+        let jacp = if !force.is_null() {
+            crate::engine::engine_memory::mj_stack_alloc_num(d, (3 * nv) as usize)
+        } else {
+            std::ptr::null_mut()
+        };
+        let jacr = if !torque.is_null() {
+            crate::engine::engine_memory::mj_stack_alloc_num(d, (3 * nv) as usize)
+        } else {
+            std::ptr::null_mut()
+        };
+        let qforce = crate::engine::engine_memory::mj_stack_alloc_num(d, nv as usize);
+
+        // make sure body is in range
+        if body < 0 || body >= (*m).nbody as i32 {
+            crate::engine::engine_util_errmem::mju_error(
+                b"invalid body %d\0".as_ptr() as *const i8);
+        }
+
+        // sparse case
+        if crate::engine::engine_core_util::mj_is_sparse(m) != 0 {
+            // construct chain and sparse Jacobians
+            let chain = crate::engine::engine_memory::mj_stack_alloc_int(d, nv as usize);
+            let NV = crate::engine::engine_core_util::mj_body_chain(m, body, chain);
+            crate::engine::engine_core_util::mj_jac_sparse(m, d, jacp, jacr, point, body, NV, chain, 0);
+
+            // compute J'*f and accumulate
+            if !force.is_null() {
+                crate::engine::engine_util_blas::mju_mul_mat_t_vec(qforce, jacp, force, 3, NV);
+                let mut i: i32 = 0;
+                while i < NV {
+                    *qfrc_target.add(*chain.add(i as usize) as usize) += *qforce.add(i as usize);
+                    i += 1;
+                }
+            }
+            if !torque.is_null() {
+                crate::engine::engine_util_blas::mju_mul_mat_t_vec(qforce, jacr, torque, 3, NV);
+                let mut i: i32 = 0;
+                while i < NV {
+                    *qfrc_target.add(*chain.add(i as usize) as usize) += *qforce.add(i as usize);
+                    i += 1;
+                }
+            }
+        }
+        // dense case
+        else {
+            // compute Jacobians
+            crate::engine::engine_core_util::mj_jac(m, d, jacp, jacr, point, body);
+
+            // compute J'*f and accumulate
+            if !force.is_null() {
+                crate::engine::engine_util_blas::mju_mul_mat_t_vec(qforce, jacp, force, 3, nv);
+                crate::engine::engine_util_blas::mju_add_to(qfrc_target, qforce, nv);
+            }
+            if !torque.is_null() {
+                crate::engine::engine_util_blas::mju_mul_mat_t_vec(qforce, jacr, torque, 3, nv);
+                crate::engine::engine_util_blas::mju_add_to(qfrc_target, qforce, nv);
+            }
+        }
+
+        crate::engine::engine_memory::mj_free_stack(d);
+    }
 }
 
 /// C: mj_xfrcAccumulate (engine/engine_support.h:84)
@@ -489,10 +551,27 @@ pub fn mj_apply_ft(m: *const mjModel, d: *mut mjData, force: *const f64, torque:
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_xfrc_accumulate(m: *const mjModel, d: *mut mjData, qfrc: *mut f64) {
-    // WARNING: signature changed — verify body
-    // Previous params: (m : * const mjModel, d : * mut mjData, qfrc : * mut f64)
-    // Previous return: ()
-    extern "C" { fn mj_xfrcAccumulate(m : * const mjModel , d : * mut mjData , qfrc : * mut f64) ; } unsafe { mj_xfrcAccumulate(m , d , qfrc) }
+    unsafe {
+        let nbody = (*m).nbody as i32;
+        let xfrc = (*d).xfrc_applied;
+
+        // quick return if identically zero (efficient memcmp implementation)
+        if crate::engine::engine_util_misc::mju_is_zero_byte(
+            (xfrc.add(6) as *const u8),
+            (6 * (nbody - 1) as usize * core::mem::size_of::<f64>()) as i32,
+        ) != 0 {
+            return;
+        }
+
+        // some non-zero wrenches, apply them
+        let mut i: i32 = 1;
+        while i < nbody {
+            if crate::engine::engine_util_misc::mju_is_zero(xfrc.add(6 * i as usize), 6) == 0 {
+                mj_apply_ft(m, d, xfrc.add(6 * i as usize), xfrc.add(6 * i as usize + 3), (*d).xipos.add(3 * i as usize), i, qfrc);
+            }
+            i += 1;
+        }
+    }
 }
 
 /// C: mj_geomDistance (engine/engine_support.h:90)

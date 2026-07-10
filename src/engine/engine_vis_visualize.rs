@@ -76,9 +76,28 @@ pub fn island_color(rgba: [f32; 4], h: i32, awake: i32) {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mixcolor(rgba: [f32; 4], r#ref: [f32; 4], flg1: i32, flg2: i32) {
-    extern "C" { fn mixcolor(rgba: [f32; 4], r#ref: [f32; 4], flg1: i32, flg2: i32); }
-    // SAFETY: delegates to C implementation
-    unsafe { mixcolor(rgba, r#ref, flg1, flg2) }
+    // rgba and ref are passed by value in Rust but in C ABI they are pointers to caller's arrays
+    unsafe {
+        let rgba_ptr = &rgba as *const [f32; 4] as *mut f32;
+        let ref_ptr = &r#ref as *const [f32; 4] as *const f32;
+
+        *rgba_ptr.add(0) = if flg1 != 0 { *ref_ptr.add(0) } else { 0.0 };
+        if flg2 != 0 {
+            let v = *rgba_ptr.add(0);
+            let r = *ref_ptr.add(1);
+            *rgba_ptr.add(0) = if v > r { v } else { r };
+        }
+
+        *rgba_ptr.add(1) = if flg1 != 0 { *ref_ptr.add(1) } else { 0.0 };
+        if flg2 != 0 {
+            let v = *rgba_ptr.add(1);
+            let r = *ref_ptr.add(0);
+            *rgba_ptr.add(1) = if v > r { v } else { r };
+        }
+
+        *rgba_ptr.add(2) = *ref_ptr.add(2);
+        *rgba_ptr.add(3) = *ref_ptr.add(3);
+    }
 }
 
 /// C: bodycategory (engine/engine_vis_visualize.c:157)
@@ -144,9 +163,39 @@ pub fn release_geom(geom: *mut *mut mjvGeom, scn: *mut mjvScene) {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn add_triangle(scn: *mut mjvScene, v0: *const f64, v1: *const f64, v2: *const f64, rgba: [f32; 4], objid: i32, category: i32, objtype: i32) {
-    extern "C" { fn addTriangle(scn: *mut mjvScene, v0: *const f64, v1: *const f64, v2: *const f64, rgba: [f32; 4], objid: i32, category: i32, objtype: i32); }
-    // SAFETY: delegates to C implementation
-    unsafe { addTriangle(scn, v0, v1, v2, rgba, objid, category, objtype) }
+    unsafe {
+        let thisgeom = acquire_geom(scn, objid, category, objtype);
+        if thisgeom.is_null() {
+            return;
+        }
+        let e1: [f64; 3] = [
+            *v1.add(0) - *v0.add(0),
+            *v1.add(1) - *v0.add(1),
+            *v1.add(2) - *v0.add(2),
+        ];
+        let e2: [f64; 3] = [
+            *v2.add(0) - *v0.add(0),
+            *v2.add(1) - *v0.add(1),
+            *v2.add(2) - *v0.add(2),
+        ];
+        let mut normal: [f64; 3] = [0.0; 3];
+        crate::engine::engine_util_spatial::mju_cross(normal.as_mut_ptr(), e1.as_ptr(), e2.as_ptr());
+        let mut e1_mut = e1;
+        let mut e2_mut = e2;
+        let len_e1 = crate::engine::engine_util_blas::mju_normalize3(e1_mut.as_mut_ptr());
+        let len_e2 = crate::engine::engine_util_blas::mju_normalize3(e2_mut.as_mut_ptr());
+        let len_n = crate::engine::engine_util_blas::mju_normalize3(normal.as_mut_ptr());
+        let lengths: [f64; 3] = [len_e1, len_e2, len_n];
+        let xmat: [f64; 9] = [
+            e1_mut[0], e2_mut[0], normal[0],
+            e1_mut[1], e2_mut[1], normal[1],
+            e1_mut[2], e2_mut[2], normal[2],
+        ];
+        const MJ_GEOM_TRIANGLE: i32 = 108;
+        mjv_init_geom(thisgeom, MJ_GEOM_TRIANGLE, lengths.as_ptr(), v0, xmat.as_ptr(), rgba.as_ptr());
+        let mut thisgeom_mut = thisgeom;
+        release_geom(&mut thisgeom_mut, scn);
+    }
 }
 
 /// C: setMaterial (engine/engine_vis_visualize.c:225)
@@ -243,9 +292,20 @@ pub fn add_frame(scn: *mut mjvScene, objid: i32, pos: *const f64, rot: *const f6
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn get_frustum(zver: [f32; 2], zhor: [f32; 2], znear: f32, intrinsic: [f32; 4], sensorsize: [f32; 2]) {
-    extern "C" { fn getFrustum(zver: [f32; 2], zhor: [f32; 2], znear: f32, intrinsic: [f32; 4], sensorsize: [f32; 2]); }
-    // SAFETY: delegates to C implementation, pointers valid per caller
-    unsafe { getFrustum(zver, zhor, znear, intrinsic, sensorsize) }
+    // zver, zhor are passed by value in Rust but in C ABI they are pointers to caller's arrays
+    unsafe {
+        let zhor_ptr = &zhor as *const [f32; 2] as *mut f32;
+        let zver_ptr = &zver as *const [f32; 2] as *mut f32;
+
+        if !zhor_ptr.is_null() {
+            *zhor_ptr.add(0) = znear / intrinsic[0] * (sensorsize[0] / 2.0 - intrinsic[2]);
+            *zhor_ptr.add(1) = znear / intrinsic[0] * (sensorsize[0] / 2.0 + intrinsic[2]);
+        }
+        if !zver_ptr.is_null() {
+            *zver_ptr.add(0) = znear / intrinsic[1] * (sensorsize[1] / 2.0 - intrinsic[3]);
+            *zver_ptr.add(1) = znear / intrinsic[1] * (sensorsize[1] / 2.0 + intrinsic[3]);
+        }
+    }
 }
 
 /// C: addContactGeoms (engine/engine_vis_visualize.c:565)

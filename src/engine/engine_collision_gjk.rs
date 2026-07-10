@@ -1790,11 +1790,67 @@ pub fn box_normals2(res: *mut f64, resind: [i32; 3], mat: *const f64, n: *const 
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn box_normals(res: *mut f64, resind: [i32; 3], dim: i32, obj: *mut mjCCDObj, v1: i32, v2: i32, v3: i32, dir: *const f64) -> i32 {
-    extern "C" {
-        fn boxNormals(res: *mut f64, resind: [i32; 3], dim: i32, obj: *mut mjCCDObj, v1: i32, v2: i32, v3: i32, dir: *const f64) -> i32;
+    unsafe {
+        let mat = (*obj).mat.as_ptr();
+        let resind_ptr = &resind as *const [i32; 3] as *mut i32;
+
+        if dim == 3 {
+            let mut c: i32 = 0;
+            let x = ((v1 & 1 != 0) && (v2 & 1 != 0) && (v3 & 1 != 0)) as i32
+                  - ((v1 & 1 == 0) && (v2 & 1 == 0) && (v3 & 1 == 0)) as i32;
+            let y = ((v1 & 2 != 0) && (v2 & 2 != 0) && (v3 & 2 != 0)) as i32
+                  - ((v1 & 2 == 0) && (v2 & 2 == 0) && (v3 & 2 == 0)) as i32;
+            let z = ((v1 & 4 != 0) && (v2 & 4 != 0) && (v3 & 4 != 0)) as i32
+                  - ((v1 & 4 == 0) && (v2 & 4 == 0) && (v3 & 4 == 0)) as i32;
+            globalcoord(res, mat, std::ptr::null(), x as f64, y as f64, z as f64);
+            let sgn = x + y + z;
+            if x != 0 { *resind_ptr.add(c as usize) = 0; c += 1; }
+            if y != 0 { *resind_ptr.add(c as usize) = 2; c += 1; }
+            if z != 0 { *resind_ptr.add(c as usize) = 4; c += 1; }
+            if sgn == -1 { *resind_ptr.add(0) += 1; }
+            return if c == 1 { 1 } else { box_normals2(res, resind, mat, dir) };
+        }
+
+        if dim == 2 {
+            let mut c: i32 = 0;
+            let x = ((v1 & 1 != 0) && (v2 & 1 != 0)) as i32
+                  - ((v1 & 1 == 0) && (v2 & 1 == 0)) as i32;
+            let y = ((v1 & 2 != 0) && (v2 & 2 != 0)) as i32
+                  - ((v1 & 2 == 0) && (v2 & 2 == 0)) as i32;
+            let z = ((v1 & 4 != 0) && (v2 & 4 != 0)) as i32
+                  - ((v1 & 4 == 0) && (v2 & 4 == 0)) as i32;
+            if x != 0 {
+                globalcoord(res, mat, std::ptr::null(), x as f64, 0.0, 0.0);
+                *resind_ptr.add(c as usize) = if x > 0 { 0 } else { 1 };
+                c += 1;
+            }
+            if y != 0 {
+                globalcoord(res.add(3 * c as usize), mat, std::ptr::null(), 0.0, y as f64, 0.0);
+                *resind_ptr.add(c as usize) = if y > 0 { 2 } else { 3 };
+                c += 1;
+            }
+            if z != 0 {
+                globalcoord(res.add(3), mat, std::ptr::null(), 0.0, 0.0, z as f64);
+                *resind_ptr.add(c as usize) = if z > 0 { 4 } else { 5 };
+                c += 1;
+            }
+            return if c == 2 { 2 } else { box_normals2(res, resind, mat, dir) };
+        }
+
+        if dim == 1 {
+            let x: f64 = if v1 & 1 != 0 { 1.0 } else { -1.0 };
+            let y: f64 = if v1 & 2 != 0 { 1.0 } else { -1.0 };
+            let z: f64 = if v1 & 4 != 0 { 1.0 } else { -1.0 };
+            globalcoord(res.add(0), mat, std::ptr::null(), x, 0.0, 0.0);
+            globalcoord(res.add(3), mat, std::ptr::null(), 0.0, y, 0.0);
+            globalcoord(res.add(6), mat, std::ptr::null(), 0.0, 0.0, z);
+            *resind_ptr.add(0) = if x > 0.0 { 0 } else { 1 };
+            *resind_ptr.add(1) = if y > 0.0 { 2 } else { 3 };
+            *resind_ptr.add(2) = if z > 0.0 { 4 } else { 5 };
+            return 3;
+        }
+        0
     }
-    // SAFETY: delegates to C implementation, all pointers valid per caller contract
-    unsafe { boxNormals(res, resind, dim, obj, v1, v2, v3, dir) }
 }
 
 /// C: boxEdgeNormals (engine/engine_collision_gjk.c:1965)
@@ -1806,11 +1862,38 @@ pub fn box_normals(res: *mut f64, resind: [i32; 3], dim: i32, obj: *mut mjCCDObj
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn box_edge_normals(res: *mut f64, endverts: *mut f64, dim: i32, obj: *mut mjCCDObj, v1: *const f64, v2: *const f64, v1i: i32, v2i: i32) -> i32 {
-    extern "C" {
-        fn boxEdgeNormals(res: *mut f64, endverts: *mut f64, dim: i32, obj: *mut mjCCDObj, v1: *const f64, v2: *const f64, v1i: i32, v2i: i32) -> i32;
+    unsafe {
+        let mat = (*obj).mat.as_ptr();
+        let pos = (*obj).pos.as_ptr();
+        let size = (*obj).size.as_ptr();
+
+        if dim == 2 {
+            copy3(endverts, v2);
+            sub3(res, v2, v1);
+            crate::engine::engine_util_blas::mju_normalize3(res);
+            return 1;
+        }
+
+        if dim == 1 {
+            let x: f64 = if v1i & 1 != 0 { *size.add(0) } else { -*size.add(0) };
+            let y: f64 = if v1i & 2 != 0 { *size.add(1) } else { -*size.add(1) };
+            let z: f64 = if v1i & 4 != 0 { *size.add(2) } else { -*size.add(2) };
+
+            globalcoord(endverts, mat, pos, -x, y, z);
+            sub3(res, endverts, v1);
+            crate::engine::engine_util_blas::mju_normalize3(res);
+
+            globalcoord(endverts.add(3), mat, pos, x, -y, z);
+            sub3(res.add(3), endverts.add(3), v1);
+            crate::engine::engine_util_blas::mju_normalize3(res.add(3));
+
+            globalcoord(endverts.add(6), mat, pos, x, y, -z);
+            sub3(res.add(6), endverts.add(6), v1);
+            crate::engine::engine_util_blas::mju_normalize3(res.add(6));
+            return 3;
+        }
+        0
     }
-    // SAFETY: delegates to C implementation, all pointers valid per caller contract
-    unsafe { boxEdgeNormals(res, endverts, dim, obj, v1, v2, v1i, v2i) }
 }
 
 /// C: boxFace (engine/engine_collision_gjk.c:2002)
@@ -1822,11 +1905,57 @@ pub fn box_edge_normals(res: *mut f64, endverts: *mut f64, dim: i32, obj: *mut m
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn box_face(res: *mut f64, obj: *mut mjCCDObj, idx: i32) -> i32 {
-    extern "C" {
-        fn boxFace(res: *mut f64, obj: *mut mjCCDObj, idx: i32) -> i32;
+    unsafe {
+        let mat = (*obj).mat.as_ptr();
+        let pos = (*obj).pos.as_ptr();
+        let size = (*obj).size.as_ptr();
+
+        match idx {
+            0 => {  // right
+                globalcoord(res.add(0), mat, pos, *size.add(0), *size.add(1), *size.add(2));
+                globalcoord(res.add(3), mat, pos, *size.add(0), *size.add(1), -*size.add(2));
+                globalcoord(res.add(6), mat, pos, *size.add(0), -*size.add(1), -*size.add(2));
+                globalcoord(res.add(9), mat, pos, *size.add(0), -*size.add(1), *size.add(2));
+                4
+            }
+            1 => {  // left
+                globalcoord(res.add(0), mat, pos, -*size.add(0), *size.add(1), -*size.add(2));
+                globalcoord(res.add(3), mat, pos, -*size.add(0), *size.add(1), *size.add(2));
+                globalcoord(res.add(6), mat, pos, -*size.add(0), -*size.add(1), *size.add(2));
+                globalcoord(res.add(9), mat, pos, -*size.add(0), -*size.add(1), -*size.add(2));
+                4
+            }
+            2 => {  // top
+                globalcoord(res.add(0), mat, pos, -*size.add(0), *size.add(1), -*size.add(2));
+                globalcoord(res.add(3), mat, pos, *size.add(0), *size.add(1), -*size.add(2));
+                globalcoord(res.add(6), mat, pos, *size.add(0), *size.add(1), *size.add(2));
+                globalcoord(res.add(9), mat, pos, -*size.add(0), *size.add(1), *size.add(2));
+                4
+            }
+            3 => {  // bottom
+                globalcoord(res.add(0), mat, pos, -*size.add(0), -*size.add(1), *size.add(2));
+                globalcoord(res.add(3), mat, pos, *size.add(0), -*size.add(1), *size.add(2));
+                globalcoord(res.add(6), mat, pos, *size.add(0), -*size.add(1), -*size.add(2));
+                globalcoord(res.add(9), mat, pos, -*size.add(0), -*size.add(1), -*size.add(2));
+                4
+            }
+            4 => {  // front
+                globalcoord(res.add(0), mat, pos, -*size.add(0), *size.add(1), *size.add(2));
+                globalcoord(res.add(3), mat, pos, *size.add(0), *size.add(1), *size.add(2));
+                globalcoord(res.add(6), mat, pos, *size.add(0), -*size.add(1), *size.add(2));
+                globalcoord(res.add(9), mat, pos, -*size.add(0), -*size.add(1), *size.add(2));
+                4
+            }
+            5 => {  // back
+                globalcoord(res.add(0), mat, pos, *size.add(0), *size.add(1), -*size.add(2));
+                globalcoord(res.add(3), mat, pos, -*size.add(0), *size.add(1), -*size.add(2));
+                globalcoord(res.add(6), mat, pos, -*size.add(0), -*size.add(1), -*size.add(2));
+                globalcoord(res.add(9), mat, pos, *size.add(0), -*size.add(1), -*size.add(2));
+                4
+            }
+            _ => 0
+        }
     }
-    // SAFETY: delegates to C implementation, all pointers valid per caller contract
-    unsafe { boxFace(res, obj, idx) }
 }
 
 /// C: meshFace (engine/engine_collision_gjk.c:2052)

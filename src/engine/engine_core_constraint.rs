@@ -55,11 +55,49 @@ pub fn arena_alloc_efc(m: *const mjModel, d: *mut mjData) -> i32 {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_elem_body_weight(m: *const mjModel, d: *const mjData, f: i32, e: i32, v: i32, point: *const f64, body: *mut i32, weight: *mut f64) -> i32 {
-    extern "C" {
-        fn mj_elemBodyWeight(m: *const mjModel, d: *const mjData, f: i32, e: i32, v: i32, point: *const f64, body: *mut i32, weight: *mut f64) -> i32;
+    const MJ_MINVAL: f64 = 1e-15;
+    unsafe {
+        // get flex info
+        let dim = *(*m).flex_dim.add(f as usize);
+        let edata = (*m).flex_elem.add(*(*m).flex_elemdataadr.add(f as usize) as usize + e as usize * (dim as usize + 1));
+        let vert = (*d).flexvert_xpos.add(3 * *(*m).flex_vertadr.add(f as usize) as usize);
+
+        // compute inverse distances from contact point to element vertices
+        // save body ids, find vertex v in element
+        let mut vid: i32 = -1;
+        let mut i: i32 = 0;
+        while i <= dim {
+            let dist = crate::engine::engine_util_blas::mju_dist3(point, vert.add(3 * *edata.add(i as usize) as usize));
+            *weight.add(i as usize) = 1.0 / crate::engine::engine_util_misc::mju_max(MJ_MINVAL, dist);
+            *body.add(i as usize) = *(*m).flex_vertadr.add(f as usize) + *edata.add(i as usize);
+
+            // check if element vertex matches v
+            if *edata.add(i as usize) == v {
+                vid = i;
+            }
+            i += 1;
+        }
+
+        // v found in e: skip and shift remaining
+        let mut dim_out = dim;
+        if vid >= 0 {
+            while vid < dim {
+                *weight.add(vid as usize) = *weight.add(vid as usize + 1);
+                *body.add(vid as usize) = *body.add(vid as usize + 1);
+                vid += 1;
+            }
+            dim_out -= 1;
+        }
+
+        // normalize weights
+        let sum = crate::engine::engine_util_blas::mju_sum(weight, dim_out + 1);
+        if sum < MJ_MINVAL {
+            crate::engine::engine_util_errmem::mju_error(
+                b"element body weight sum < mjMINVAL\0".as_ptr() as *const i8);
+        }
+        crate::engine::engine_util_blas::mju_scl(weight, weight, 1.0 / sum, dim_out + 1);
+        dim_out + 1
     }
-    // SAFETY: delegates to C implementation, all pointers valid per caller contract
-    unsafe { mj_elemBodyWeight(m, d, f, e, v, point, body, weight) }
 }
 
 /// C: mj_vertBodyWeight (engine/engine_core_constraint.c:265)
@@ -265,11 +303,37 @@ pub fn getimpedance(solimp: *const f64, pos: f64, margin: f64, imp: *mut f64, im
 /// Calls: mj_bodyChain, mj_freeStack, mj_markStack, mj_stackAllocInfo, mju_addChains, mju_copyInt
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_jac_sum_count(m: *const mjModel, d: *mut mjData, chain: *mut i32, n: i32, body: *const i32) -> i32 {
-    extern "C" {
-        fn mj_jacSumCount(m: *const mjModel, d: *mut mjData, chain: *mut i32, n: i32, body: *const i32) -> i32;
+    unsafe {
+        let nv = (*m).nv as i32;
+
+        crate::engine::engine_memory::mj_mark_stack(d);
+        let bodychain = crate::engine::engine_memory::mj_stack_alloc_int(d, nv as usize);
+        let tempchain = crate::engine::engine_memory::mj_stack_alloc_int(d, nv as usize);
+
+        // set first
+        let mut NV = crate::engine::engine_core_util::mj_body_chain(m, *body.add(0), chain);
+
+        // accumulate remaining
+        let mut i: i32 = 1;
+        while i < n {
+            // get body chain
+            let body_nv = crate::engine::engine_core_util::mj_body_chain(m, *body.add(i as usize), bodychain);
+            if body_nv == 0 {
+                i += 1;
+                continue;
+            }
+
+            // accumulate chains
+            NV = crate::engine::engine_util_sparse::mju_add_chains(tempchain, nv, NV, body_nv, chain, bodychain);
+            if NV != 0 {
+                crate::engine::engine_util_misc::mju_copy_int(chain, tempchain, NV);
+            }
+            i += 1;
+        }
+
+        crate::engine::engine_memory::mj_free_stack(d);
+        NV
     }
-    // SAFETY: delegates to C implementation, all pointers valid per caller contract
-    unsafe { mj_jacSumCount(m, d, chain, n, body) }
 }
 
 /// C: mj_ne (engine/engine_core_constraint.c:2303)
@@ -743,9 +807,28 @@ pub fn mj_project_constraint(m: *const mjModel, d: *mut mjData) {
 /// Calls: mj_Jdotv, mj_mulJacVec
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_reference_constraint(m: *const mjModel, d: *mut mjData) {
-    extern "C" { fn mj_referenceConstraint(m: *const mjModel, d: *mut mjData); }
-    // SAFETY: delegates to C implementation, all pointers valid per caller contract
-    unsafe { mj_referenceConstraint(m, d) }
+    unsafe {
+        let nefc = (*d).nefc;
+        let KBIP = (*d).efc_KBIP;
+
+        // compute efc_vel
+        mj_mul_jac_vec(m, d, (*d).efc_vel, (*d).qvel);
+
+        // compute aref = -B*vel - K*I*(pos-margin)
+        let mut i: i32 = 0;
+        while i < nefc {
+            *(*d).efc_aref.add(i as usize) =
+                -*KBIP.add(4 * i as usize + 1) * *(*d).efc_vel.add(i as usize)
+                - *KBIP.add(4 * i as usize) * *KBIP.add(4 * i as usize + 2)
+                  * (*(*d).efc_pos.add(i as usize) - *(*d).efc_margin.add(i as usize));
+            i += 1;
+        }
+
+        // subtract Jdot*v correction for connect/weld equality constraints
+        if (*d).ne > 0 {
+            mj_jdotv(m, d, (*d).efc_aref);
+        }
+    }
 }
 
 /// C: mj_constraintUpdate(engine/engine_core_constraint.h:97)

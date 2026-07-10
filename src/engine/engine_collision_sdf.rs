@@ -61,9 +61,91 @@ pub fn box_projection(point: *mut f64, r#box: *const f64) -> f64 {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn find_oct(w: *mut f64, dw: [[f64; 8]; 3], oct_aabb: *const f64, oct_child: *const i32, p: *const f64) -> i32 {
-    extern "C" { fn findOct(w: *mut f64, dw: [[f64; 8]; 3], oct_aabb: *const f64, oct_child: *const i32, p: *const f64) -> i32; }
-    // SAFETY: delegates to C implementation
-    unsafe { findOct(w, dw, oct_aabb, oct_child, p) }
+    unsafe {
+        let eps: f64 = 1e-8;
+        let mut niter: i32 = 100;
+        let mut stack: i32 = 0;
+
+        while niter > 0 {
+            niter -= 1;
+            let node = stack;
+
+            if node == -1 {
+                crate::engine::engine_util_errmem::mju_error(
+                    b"Invalid node number\0".as_ptr() as *const i8);
+                return -1;
+            }
+
+            let mut vmin: [f64; 3] = [0.0; 3];
+            let mut vmax: [f64; 3] = [0.0; 3];
+            let mut j: i32 = 0;
+            while j < 3 {
+                vmin[j as usize] = *oct_aabb.add(6 * node as usize + j as usize) - *oct_aabb.add(6 * node as usize + 3 + j as usize);
+                vmax[j as usize] = *oct_aabb.add(6 * node as usize + j as usize) + *oct_aabb.add(6 * node as usize + 3 + j as usize);
+                j += 1;
+            }
+
+            // check if the point is inside the aabb of the octree node
+            if *p.add(0) + eps < vmin[0] || *p.add(0) - eps > vmax[0] ||
+               *p.add(1) + eps < vmin[1] || *p.add(1) - eps > vmax[1] ||
+               *p.add(2) + eps < vmin[2] || *p.add(2) - eps > vmax[2] {
+                continue;
+            }
+
+            let coord: [f64; 3] = [
+                (*p.add(0) - vmin[0]) / (vmax[0] - vmin[0]),
+                (*p.add(1) - vmin[1]) / (vmax[1] - vmin[1]),
+                (*p.add(2) - vmin[2]) / (vmax[2] - vmin[2]),
+            ];
+
+            // check if the node is a leaf
+            if *oct_child.add(8 * node as usize + 0) == -1 && *oct_child.add(8 * node as usize + 1) == -1 &&
+               *oct_child.add(8 * node as usize + 2) == -1 && *oct_child.add(8 * node as usize + 3) == -1 &&
+               *oct_child.add(8 * node as usize + 4) == -1 && *oct_child.add(8 * node as usize + 5) == -1 &&
+               *oct_child.add(8 * node as usize + 6) == -1 && *oct_child.add(8 * node as usize + 7) == -1 {
+                let mut j: i32 = 0;
+                while j < 8 {
+                    if !w.is_null() {
+                        *w.add(j as usize) =
+                            (if j & 1 != 0 { coord[0] } else { 1.0 - coord[0] }) *
+                            (if j & 2 != 0 { coord[1] } else { 1.0 - coord[1] }) *
+                            (if j & 4 != 0 { coord[2] } else { 1.0 - coord[2] });
+                    }
+                    // dw is [[f64; 8]; 3] passed by value — in C ABI it's a pointer
+                    let dw_ptr = &dw as *const [[f64; 8]; 3] as *mut f64;
+                    if !dw_ptr.is_null() {
+                        // dw[j][0]
+                        *dw_ptr.add(j as usize * 3 + 0) =
+                            (if j & 1 != 0 { 1.0 } else { -1.0 }) *
+                            (if j & 2 != 0 { coord[1] } else { 1.0 - coord[1] }) *
+                            (if j & 4 != 0 { coord[2] } else { 1.0 - coord[2] });
+                        // dw[j][1]
+                        *dw_ptr.add(j as usize * 3 + 1) =
+                            (if j & 1 != 0 { coord[0] } else { 1.0 - coord[0] }) *
+                            (if j & 2 != 0 { 1.0 } else { -1.0 }) *
+                            (if j & 4 != 0 { coord[2] } else { 1.0 - coord[2] });
+                        // dw[j][2]
+                        *dw_ptr.add(j as usize * 3 + 2) =
+                            (if j & 1 != 0 { coord[0] } else { 1.0 - coord[0] }) *
+                            (if j & 2 != 0 { coord[1] } else { 1.0 - coord[1] }) *
+                            (if j & 4 != 0 { 1.0 } else { -1.0 });
+                    }
+                    j += 1;
+                }
+                return node;
+            }
+
+            // compute which of 8 children to visit next
+            let x = if coord[0] < 0.5 { 0 } else { 1 };
+            let y = if coord[1] < 0.5 { 0 } else { 1 };
+            let z = if coord[2] < 0.5 { 0 } else { 1 };
+            stack = *oct_child.add(8 * node as usize + 4 * z + 2 * y + x);
+        }
+
+        crate::engine::engine_util_errmem::mju_error(
+            b"Node not found\0".as_ptr() as *const i8);
+        -1
+    }
 }
 
 /// C: oct_distance (engine/engine_collision_sdf.c:138)
@@ -75,11 +157,31 @@ pub fn find_oct(w: *mut f64, dw: [[f64; 8]; 3], oct_aabb: *const f64, oct_child:
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn oct_distance(m: *const mjModel, p: *const f64, meshid: i32) -> f64 {
-    extern "C" {
-        fn oct_distance(m: *const mjModel, p: *const f64, meshid: i32) -> f64;
+    unsafe {
+        let octadr = *(*m).mesh_octadr.add(meshid as usize);
+        let oct_child = (*m).oct_child.add(8 * octadr as usize);
+        let oct_aabb = (*m).oct_aabb.add(6 * octadr as usize);
+        let oct_coeff = (*m).oct_coeff.add(8 * octadr as usize);
+
+        if octadr == -1 {
+            crate::engine::engine_util_errmem::mju_error(
+                b"Octree not found in mesh %d\0".as_ptr() as *const i8);
+            return 0.0;
+        }
+
+        let mut w: [f64; 8] = [0.0; 8];
+        let mut sdf: f64 = 0.0;
+        let mut point: [f64; 3] = [*p.add(0), *p.add(1), *p.add(2)];
+        let box_dist = box_projection(point.as_mut_ptr(), oct_aabb);
+        let dw_zero: [[f64; 8]; 3] = [[0.0; 8]; 3];
+        let node = find_oct(w.as_mut_ptr(), dw_zero, oct_aabb, oct_child, point.as_ptr());
+        let mut i: i32 = 0;
+        while i < 8 {
+            sdf += w[i as usize] * *oct_coeff.add(8 * node as usize + i as usize);
+            i += 1;
+        }
+        if box_dist > 0.0 { sdf + box_dist } else { sdf }
     }
-    // SAFETY: delegates to C implementation, all pointers valid per caller contract
-    unsafe { oct_distance(m, p, meshid) }
 }
 
 /// C: oct_gradient (engine/engine_collision_sdf.c:162)
@@ -91,11 +193,51 @@ pub fn oct_distance(m: *const mjModel, p: *const f64, meshid: i32) -> f64 {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn oct_gradient(m: *const mjModel, grad: *mut f64, point: *const f64, meshid: i32) {
-    extern "C" {
-        fn oct_gradient(m: *const mjModel, grad: *mut f64, point: *const f64, meshid: i32);
+    unsafe {
+        crate::engine::engine_util_blas::mju_zero3(grad);
+        let mut p: [f64; 3] = [*point.add(0), *point.add(1), *point.add(2)];
+
+        let octadr = *(*m).mesh_octadr.add(meshid as usize);
+        let oct_child = (*m).oct_child.add(8 * octadr as usize);
+        let oct_aabb = (*m).oct_aabb.add(6 * octadr as usize);
+        let oct_coeff = (*m).oct_coeff.add(8 * octadr as usize);
+
+        if octadr == -1 {
+            crate::engine::engine_util_errmem::mju_error(
+                b"Octree not found in mesh %d\0".as_ptr() as *const i8);
+        }
+
+        // analytic in the interior
+        if box_projection(p.as_mut_ptr(), oct_aabb) <= 0.0 {
+            let mut dw: [[f64; 8]; 3] = [[0.0; 8]; 3];
+            let node = find_oct(std::ptr::null_mut(), dw, oct_aabb, oct_child, p.as_ptr());
+            // dw layout: dw[j][c] stored as dw_ptr[j*3 + c] after find_oct writes
+            let dw_ptr = &dw as *const [[f64; 8]; 3] as *const f64;
+            let mut i: i32 = 0;
+            while i < 8 {
+                let coeff_i = *oct_coeff.add(8 * node as usize + i as usize);
+                *grad.add(0) += *dw_ptr.add(i as usize * 3 + 0) * coeff_i;
+                *grad.add(1) += *dw_ptr.add(i as usize * 3 + 1) * coeff_i;
+                *grad.add(2) += *dw_ptr.add(i as usize * 3 + 2) * coeff_i;
+                i += 1;
+            }
+            return;
+        }
+
+        // finite difference in the exterior
+        let eps: f64 = 1e-8;
+        let dist0 = oct_distance(m, point, meshid);
+        let point_x: [f64; 3] = [*point.add(0) + eps, *point.add(1), *point.add(2)];
+        let dist_x = oct_distance(m, point_x.as_ptr(), meshid);
+        let point_y: [f64; 3] = [*point.add(0), *point.add(1) + eps, *point.add(2)];
+        let dist_y = oct_distance(m, point_y.as_ptr(), meshid);
+        let point_z: [f64; 3] = [*point.add(0), *point.add(1), *point.add(2) + eps];
+        let dist_z = oct_distance(m, point_z.as_ptr(), meshid);
+
+        *grad.add(0) = (dist_x - dist0) / eps;
+        *grad.add(1) = (dist_y - dist0) / eps;
+        *grad.add(2) = (dist_z - dist0) / eps;
     }
-    // SAFETY: delegates to C implementation, all pointers valid per caller contract
-    unsafe { oct_gradient(m, grad, point, meshid) }
 }
 
 /// C: radialField3d (engine/engine_collision_sdf.c:205)

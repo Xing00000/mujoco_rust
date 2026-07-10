@@ -359,9 +359,53 @@ pub fn mjd_rne_vel(m: *const mjModel, d: *mut mjData) {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn add_jtbj(m: *const mjModel, d: *mut mjData, J: *const f64, B: *const f64, n: i32) {
-    extern "C" { fn addJTBJ(m: *const mjModel, d: *mut mjData, J: *const f64, B: *const f64, n: i32); }
-    // SAFETY: delegates to C implementation, all pointers valid per caller contract
-    unsafe { addJTBJ(m, d, J, B, n) }
+    // SAFETY: all pointers valid per caller contract; uses stack allocation
+    unsafe {
+        let nv = (*m).nv as i32;
+
+        // allocate dense row
+        crate::engine::engine_memory::mj_mark_stack(d);
+        let row = crate::engine::engine_memory::mj_stack_alloc_num(d, nv as usize);
+
+        // process non-zero elements of B
+        let mut i: i32 = 0;
+        while i < n {
+            let mut j: i32 = 0;
+            while j < n {
+                if *B.add((i * n + j) as usize) == 0.0 {
+                    j += 1;
+                    continue;
+                }
+                // process non-zero elements of J(i,:)
+                let mut k: i32 = 0;
+                while k < nv {
+                    if *J.add((i * nv + k) as usize) != 0.0 {
+                        // row = J(i,k)*B(i,j)*J(j,:)
+                        crate::engine::engine_util_blas::mju_scl(
+                            row,
+                            J.add((j * nv) as usize),
+                            *J.add((i * nv + k) as usize) * *B.add((i * n + j) as usize),
+                            nv,
+                        );
+
+                        // add row to qDeriv(k,:)
+                        let rownnz_k = *(*m).D_rownnz.add(k as usize);
+                        let mut s: i32 = 0;
+                        while s < rownnz_k {
+                            let adr = *(*m).D_rowadr.add(k as usize) + s;
+                            *(*d).qDeriv.add(adr as usize) += *row.add(*(*m).D_colind.add(adr as usize) as usize);
+                            s += 1;
+                        }
+                    }
+                    k += 1;
+                }
+                j += 1;
+            }
+            i += 1;
+        }
+
+        crate::engine::engine_memory::mj_free_stack(d);
+    }
 }
 
 /// C: addJTBJSparse (engine/engine_derivative.c:746)
@@ -373,9 +417,45 @@ pub fn add_jtbj(m: *const mjModel, d: *mut mjData, J: *const f64, B: *const f64,
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn add_jtbj_sparse(m: *const mjModel, d: *mut mjData, J: *const f64, B: *const f64, n: i32, offset: i32, J_rownnz: *const i32, J_rowadr: *const i32, J_colind: *const i32) {
-    extern "C" { fn addJTBJSparse(m: *const mjModel, d: *mut mjData, J: *const f64, B: *const f64, n: i32, offset: i32, J_rownnz: *const i32, J_rowadr: *const i32, J_colind: *const i32); }
-    // SAFETY: delegates to C implementation, all pointers valid per caller contract
-    unsafe { addJTBJSparse(m, d, J, B, n, offset, J_rownnz, J_rowadr, J_colind) }
+    // SAFETY: all pointers valid per caller contract; sparse matrix operations
+    unsafe {
+        // compute qDeriv(k,p) += sum_{i,j} ( J(i,k)*B(i,j)*J(j,p) )
+        let mut i: i32 = 0;
+        while i < n {
+            let mut j: i32 = 0;
+            while j < n {
+                if *B.add((i * n + j) as usize) == 0.0 {
+                    j += 1;
+                    continue;
+                }
+
+                // loop over non-zero elements of J(i,:)
+                let nnz_i = *J_rownnz.add((offset + i) as usize);
+                let adr_i = *J_rowadr.add((offset + i) as usize);
+                let nnz_j = *J_rownnz.add((offset + j) as usize);
+                let adr_j = *J_rowadr.add((offset + j) as usize);
+                let mut k: i32 = 0;
+                while k < nnz_i {
+                    let ik = adr_i + k;
+                    let colik = *J_colind.add(ik as usize);
+
+                    // qDeriv(k,:) += J(j,:) * J(i,k)*B(i,j)
+                    crate::engine::engine_util_sparse::mju_add_to_scl_sparse_inc(
+                        (*d).qDeriv.add(*(*m).D_rowadr.add(colik as usize) as usize),
+                        J.add(adr_j as usize),
+                        *(*m).D_rownnz.add(colik as usize),
+                        (*m).D_colind.add(*(*m).D_rowadr.add(colik as usize) as usize),
+                        nnz_j,
+                        J_colind.add(adr_j as usize),
+                        *J.add(ik as usize) * *B.add((i * n + j) as usize),
+                    );
+                    k += 1;
+                }
+                j += 1;
+            }
+            i += 1;
+        }
+    }
 }
 
 /// C: mjd_muscleGain_vel (engine/engine_derivative.c:781)
@@ -448,9 +528,46 @@ pub fn mjd_muscle_gain_vel(len: f64, vel: f64, lengthrange: *const f64, acc0: f6
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn add_jtbj_mul_sparse(m: *const mjModel, d: *mut mjData, res: *mut f64, vec: *const f64, J_rownnz: *const i32, J_rowadr: *const i32, J_colind: *const i32, J: *const f64, B: *const f64, n: i32) {
-    extern "C" { fn addJTBJ_mulSparse(m: *const mjModel, d: *mut mjData, res: *mut f64, vec: *const f64, J_rownnz: *const i32, J_rowadr: *const i32, J_colind: *const i32, J: *const f64, B: *const f64, n: i32); }
-    // SAFETY: delegates to C implementation
-    unsafe { addJTBJ_mulSparse(m, d, res, vec, J_rownnz, J_rowadr, J_colind, J, B, n) }
+    // SAFETY: all pointers valid per caller contract; uses stack allocation
+    unsafe {
+        // allocate temp vectors
+        crate::engine::engine_memory::mj_mark_stack(d);
+        let Jv = crate::engine::engine_memory::mj_stack_alloc_num(d, n as usize);
+        let BJv = crate::engine::engine_memory::mj_stack_alloc_num(d, n as usize);
+
+        // Jv = J*vec (Sparse Matrix-Vector Multiplication)
+        crate::engine::engine_util_blas::mju_zero(Jv, n);
+        let mut i: i32 = 0;
+        while i < n {
+            let nnz = *J_rownnz.add(i as usize);
+            let adr = *J_rowadr.add(i as usize);
+            let mut k: i32 = 0;
+            while k < nnz {
+                *Jv.add(i as usize) += *J.add((adr + k) as usize) * *vec.add(*J_colind.add((adr + k) as usize) as usize);
+                k += 1;
+            }
+            i += 1;
+        }
+
+        // BJv = B*Jv (Dense Matrix-Vector Multiplication)
+        crate::engine::engine_util_blas::mju_mul_mat_vec(BJv, B, Jv, n, n);
+
+        // res += J'*BJv (Sparse Transpose Matrix-Vector Multiplication)
+        let mut i: i32 = 0;
+        while i < n {
+            let nnz = *J_rownnz.add(i as usize);
+            let adr = *J_rowadr.add(i as usize);
+            let val = *BJv.add(i as usize);
+            let mut k: i32 = 0;
+            while k < nnz {
+                *res.add(*J_colind.add((adr + k) as usize) as usize) += *J.add((adr + k) as usize) * val;
+                k += 1;
+            }
+            i += 1;
+        }
+
+        crate::engine::engine_memory::mj_free_stack(d);
+    }
 }
 
 /// C: mjd_flexInterp_kernel (engine/engine_derivative.c:872)
@@ -1032,9 +1149,32 @@ pub fn mjd_quat_integrate(vel: *const f64, scale: f64, Dquat: *mut f64, Dvel: *m
 /// Calls: mjd_actuator_vel, mjd_passive_vel, mjd_rne_vel, mju_zero, mju_zeroSparse
 #[allow(unused_variables, non_snake_case)]
 pub fn mjd_smooth_vel(m: *const mjModel, d: *mut mjData, flg_bias: i32) {
-    extern "C" { fn mjd_smooth_vel(m: *const mjModel, d: *mut mjData, flg_bias: i32); }
-    // SAFETY: delegates to C implementation, pointers valid per caller
-    unsafe { mjd_smooth_vel(m, d, flg_bias) }
+    unsafe {
+        // mjENABLED(mjENBL_SLEEP) => (m->opt.enableflags & (1<<2))
+        let sleep_filter = ((*m).opt.enableflags & (1 << 2)) != 0
+            && ((*d).nv_awake as usize) < (*m).nv;
+
+        // clear qDeriv
+        if !sleep_filter {
+            crate::engine::engine_util_blas::mju_zero((*d).qDeriv, (*m).nD as i32);
+        } else {
+            crate::engine::engine_util_sparse::mju_zero_sparse(
+                (*d).qDeriv, (*m).D_rownnz, (*m).D_rowadr,
+                (*d).dof_awake_ind, (*d).nv_awake,
+            );
+        }
+
+        // qDeriv += d qfrc_actuator / d qvel
+        mjd_actuator_vel(m, d);
+
+        // qDeriv += d qfrc_passive / d qvel
+        mjd_passive_vel(m, d);
+
+        // qDeriv -= d qfrc_bias / d qvel; optional
+        if flg_bias != 0 {
+            mjd_rne_vel(m, d);
+        }
+    }
 }
 
 /// C: mjd_actuator_vel (engine/engine_derivative.h:38)
