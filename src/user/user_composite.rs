@@ -8,8 +8,9 @@ use crate::types::*;
 /// Calls: mju_strncpy
 #[allow(unused_variables, non_snake_case)]
 pub fn comperr(error: *mut i8, msg: *const i8, error_sz: i32) -> bool  {
+    if error.is_null() { return false; }
     extern "C" { fn comperr(error: *mut i8, msg: *const i8, error_sz: i32) -> bool; }
-    // SAFETY: delegates to C implementation
+    // SAFETY: error verified non-null
     unsafe { comperr(error, msg, error_sz) }
 }
 

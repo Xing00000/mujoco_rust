@@ -208,11 +208,12 @@ pub fn mj_x_util_same_vector(vec1: *const T, vec2: *const T, n: i32) -> bool {
 /// C: mjXUtil::FindKey (xml/xml_util.h:94)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_x_util_find_key(map: *const mjMap, mapsz: i32, key: string) -> i32 {
+    if map.is_null() { return 0; }
     // WARNING: signature changed — verify body
     // Previous params: (map : * const mjMap, mapsz : i32, key : string)
     // Previous return: i32
     extern "C" { fn mjXUtil_FindKey(map: *const mjMap, mapsz: i32, key: string) -> i32; }
-    // SAFETY: delegates to C++ implementation; caller guarantees map is valid
+    // SAFETY: map verified non-null
     unsafe { mjXUtil_FindKey(map, mapsz, key) }
 }
 
@@ -273,11 +274,12 @@ pub fn mj_x_util_read_attr(elem: *mut tinyxml2__XMLElement, attr: *const i8, len
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_x_util_read_quat(elem: *mut tinyxml2__XMLElement, attr: *const i8, data: *mut f64, text: *mut std__string, required: bool) -> i32 {
+    if elem.is_null() { return 0; }
     // WARNING: signature changed — verify body
     // Previous params: (elem : * mut tinyxml2__XMLElement, attr : * const i8, data : * mut f64, text : * mut std__string, required : bool)
     // Previous return: i32
     extern "C" { fn mjXUtil_ReadQuat(elem: *mut tinyxml2__XMLElement, attr: *const i8, data: *mut f64, text: *mut std__string, required: bool) -> i32; }
-    // SAFETY: delegates to C++ implementation; caller guarantees elem, attr, data, text are valid
+    // SAFETY: elem verified non-null
     unsafe { mjXUtil_ReadQuat(elem, attr, data, text, required) }
 }
 
@@ -293,8 +295,9 @@ pub fn mj_x_util_read_attr_txt(elem: *mut tinyxml2__XMLElement, attr: *const i8,
 /// C: mjXUtil::ReadAttrInt (xml/xml_util.h:167)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_x_util_read_attr_int(elem: *mut tinyxml2__XMLElement, attr: *const i8, data: *mut i32, required: bool) -> bool {
+    if elem.is_null() { return false; }
     extern "C" { fn mjXUtil_ReadAttrInt(elem: *mut tinyxml2__XMLElement, attr: *const i8, data: *mut i32, required: bool) -> bool; }
-    // SAFETY: delegates to C++ implementation, all pointers valid per caller contract
+    // SAFETY: elem verified non-null
     unsafe { mjXUtil_ReadAttrInt(elem, attr, data, required) }
 }
 
@@ -310,8 +313,9 @@ pub fn mj_x_util_find_sub_elem(elem: *mut tinyxml2__XMLElement, name: string, re
 /// Calls: mjXUtil::FindKey
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_x_util_map_value(elem: *mut tinyxml2__XMLElement, attr: *const i8, data: *mut i32, map: *const mjMap, mapSz: i32, required: bool) -> bool {
+    if elem.is_null() { return false; }
     extern "C" { fn mjXUtil_MapValue(elem: *mut tinyxml2__XMLElement, attr: *const i8, data: *mut i32, map: *const mjMap, mapSz: i32, required: bool) -> bool; }
-    // SAFETY: delegates to C++ implementation, all pointers valid per caller contract
+    // SAFETY: elem verified non-null
     unsafe { mjXUtil_MapValue(elem, attr, data, map, mapSz, required) }
 }
 
@@ -319,8 +323,9 @@ pub fn mj_x_util_map_value(elem: *mut tinyxml2__XMLElement, attr: *const i8, dat
 /// Calls: mjXUtil::FindKey
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_x_util_map_values(elem: *mut tinyxml2__XMLElement, attr: *const i8, data: *mut i32, map: *const mjMap, mapSz: i32, required: bool) -> i32 {
+    if elem.is_null() { return 0; }
     extern "C" { fn mjXUtil_MapValues(elem: *mut tinyxml2__XMLElement, attr: *const i8, data: *mut i32, map: *const mjMap, mapSz: i32, required: bool) -> i32; }
-    // SAFETY: delegates to C implementation
+    // SAFETY: elem verified non-null
     unsafe { mjXUtil_MapValues(elem, attr, data, map, mapSz, required) }
 }
 

@@ -432,8 +432,9 @@ pub fn mj_c_model_fuse_reindex(self_ptr: *mut mjCModel, body: *mut mjCBody) {
 /// C: mjCModel::AddFlex (user/user_model.h:209)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_model_add_flex(self_ptr: *mut mjCModel) -> *mut mjCFlex {
+    if self_ptr.is_null() { return core::ptr::null_mut(); }
     extern "C" { fn mjCModel_AddFlex(self_ptr: *mut mjCModel) -> *mut mjCFlex; }
-    // SAFETY: delegates to C implementation
+    // SAFETY: self_ptr verified non-null
     unsafe { mjCModel_AddFlex(self_ptr) }
 }
 
@@ -620,8 +621,9 @@ pub fn mj_c_model_get_error(self_ptr: *mut mjCModel) -> *const mjCError {
 /// C: mjCModel::SetError (user/user_model.h:251)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_model_set_error(self_ptr: *mut mjCModel, error: *const mjCError) {
+    if self_ptr.is_null() { return; }
     extern "C" { fn mjCModel_SetError(self_ptr: *mut mjCModel, error: *const mjCError); }
-    // SAFETY: delegates to C++ implementation, all pointers valid per caller contract
+    // SAFETY: self_ptr verified non-null
     unsafe { mjCModel_SetError(self_ptr, error) }
 }
 
@@ -759,11 +761,12 @@ pub fn mj_c_model_get_texturedir(self_ptr: *mut mjCModel) -> i32 {
 /// C: mjCModel::Default (user/user_model.h:288)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_model_default(self_ptr: *mut mjCModel) -> *mut mjCDef {
+    if self_ptr.is_null() { return core::ptr::null_mut(); }
     // WARNING: signature changed — verify body
     // Previous params: (self_ptr : * mut mjCModel)
     // Previous return: * mut mjCDef
     extern "C" { fn mjCModel_Default(self_ptr: *mut mjCModel) -> *mut mjCDef; }
-    // SAFETY: delegates to C++ implementation; caller guarantees self_ptr is valid
+    // SAFETY: self_ptr verified non-null
     unsafe { mjCModel_Default(self_ptr) }
 }
 

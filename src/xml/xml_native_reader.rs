@@ -425,8 +425,9 @@ pub fn mj_x_reader_get_class(self_ptr: *mut mjXReader, section: *mut tinyxml2__X
 /// C: mjXReader::AssetDir (xml/xml_native_reader.h:94)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_x_reader_asset_dir(self_ptr: *mut mjXReader) -> mujoco__user__FilePath {
+    if self_ptr.is_null() { return unsafe { core::mem::zeroed() }; }
     extern "C" { fn mjXReader_AssetDir(self_ptr: *mut mjXReader) -> mujoco__user__FilePath; }
-    // SAFETY: delegates to C++ implementation; caller guarantees self_ptr is valid
+    // SAFETY: self_ptr verified non-null
     unsafe { mjXReader_AssetDir(self_ptr) }
 }
 

@@ -924,8 +924,9 @@ pub fn mj_c_base_copy_plugin(self_ptr: *mut mjCBase) {
 /// C: mjCBase::GetParent (user/user_objects.h:381)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_base_get_parent(self_ptr: *mut mjCBase) -> *mut mjCBase {
+    if self_ptr.is_null() { return core::ptr::null_mut(); }
     extern "C" { fn mjCBase_GetParent(self_ptr: *mut mjCBase) -> *mut mjCBase; }
-    // SAFETY: delegates to C implementation
+    // SAFETY: self_ptr verified non-null
     unsafe { mjCBase_GetParent(self_ptr) }
 }
 
@@ -1016,8 +1017,9 @@ pub fn mj_c_body_add_frame(self_ptr: *mut mjCBody, arg0: *mut mjCFrame) -> *mut 
 /// C: mjCBody::AddJoint (user/user_objects.h:524)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_body_add_joint(self_ptr: *mut mjCBody, arg0: *mut mjCDef) -> *mut mjCJoint {
+    if self_ptr.is_null() { return core::ptr::null_mut(); }
     extern "C" { fn mjCBody_AddJoint(self_ptr: *mut mjCBody, arg0: *mut mjCDef) -> *mut mjCJoint; }
-    // SAFETY: delegates to C implementation
+    // SAFETY: self_ptr verified non-null
     unsafe { mjCBody_AddJoint(self_ptr, arg0) }
 }
 
@@ -1868,8 +1870,9 @@ pub fn mj_c_flex_copy_from_spec(self_ptr: *mut mjCFlex) {
 /// C: mjCFlex::PointToLocal (user/user_objects.h:1033)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_flex_point_to_local(self_ptr: *mut mjCFlex) {
+    if self_ptr.is_null() { return; }
     extern "C" { fn mjCFlex_PointToLocal(self_ptr: *mut mjCFlex); }
-    // SAFETY: delegates to C implementation
+    // SAFETY: self_ptr verified non-null
     unsafe { mjCFlex_PointToLocal(self_ptr) }
 }
 
@@ -2501,8 +2504,9 @@ pub fn mj_c_mesh_fit_geom(self_ptr: *mut mjCMesh, geom: *mut mjCGeom, center: [f
 /// C: mjCMesh::HasTexcoord (user/user_objects.h:1228)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_mesh_has_texcoord(self_ptr: *mut mjCMesh) -> bool {
+    if self_ptr.is_null() { return false; }
     extern "C" { fn mjCMesh_HasTexcoord(self_ptr: *mut mjCMesh) -> bool; }
-    // SAFETY: delegates to C implementation
+    // SAFETY: self_ptr verified non-null
     unsafe { mjCMesh_HasTexcoord(self_ptr) }
 }
 

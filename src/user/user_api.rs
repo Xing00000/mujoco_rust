@@ -375,8 +375,9 @@ pub fn mjs_attach(parent: *mut mjsElement, child: *const mjsElement, prefix: *co
 /// C: mjs_addBody (user/user_api.h:83)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjs_add_body(body: *mut mjsBody, def: *const mjsDefault) -> *mut mjsBody {
+    if body.is_null() { return core::ptr::null_mut(); }
     extern "C" { fn mjs_addBody(body: *mut mjsBody, def: *const mjsDefault) -> *mut mjsBody; }
-    // SAFETY: delegates to C++ implementation; caller guarantees body is valid, def may be null
+    // SAFETY: body verified non-null
     unsafe { mjs_addBody(body, def) }
 }
 
@@ -628,8 +629,9 @@ pub fn mjs_add_default(s: *mut mjSpec, classname: *const i8, parent: *const mjsD
 /// C: mjs_setToMotor (user/user_api.h:175)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjs_set_to_motor(actuator: *mut mjsActuator) -> *const i8 {
+    if actuator.is_null() { return core::ptr::null(); }
     extern "C" { fn mjs_setToMotor(actuator: *mut mjsActuator) -> *const i8; }
-    // SAFETY: delegates to C implementation
+    // SAFETY: actuator verified non-null
     unsafe { mjs_setToMotor(actuator) }
 }
 
@@ -641,8 +643,9 @@ pub fn mjs_set_to_motor(actuator: *mut mjsActuator) -> *const i8 {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjs_set_to_position(actuator: *mut mjsActuator, kp: f64, kv: [f64; 1], dampratio: [f64; 1], timeconst: [f64; 1], inheritrange: f64) -> *const i8 {
+    if actuator.is_null() { return core::ptr::null(); }
     extern "C" { fn mjs_setToPosition(actuator: *mut mjsActuator, kp: f64, kv: [f64; 1], dampratio: [f64; 1], timeconst: [f64; 1], inheritrange: f64) -> *const i8; }
-    // SAFETY: delegates to C implementation
+    // SAFETY: actuator verified non-null
     unsafe { mjs_setToPosition(actuator, kp, kv, dampratio, timeconst, inheritrange) }
 }
 
@@ -669,8 +672,9 @@ pub fn mjs_set_to_int_velocity(actuator: *mut mjsActuator, kp: f64, kv: [f64; 1]
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjs_set_to_velocity(actuator: *mut mjsActuator, kv: f64) -> *const i8 {
+    if actuator.is_null() { return core::ptr::null(); }
     extern "C" { fn mjs_setToVelocity(actuator: *mut mjsActuator, kv: f64) -> *const i8; }
-    // SAFETY: delegates to C implementation
+    // SAFETY: actuator verified non-null
     unsafe { mjs_setToVelocity(actuator, kv) }
 }
 
@@ -683,8 +687,9 @@ pub fn mjs_set_to_velocity(actuator: *mut mjsActuator, kv: f64) -> *const i8 {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjs_set_to_damper(actuator: *mut mjsActuator, kv: f64) -> *const i8 {
+    if actuator.is_null() { return core::ptr::null(); }
     extern "C" { fn mjs_setToDamper(actuator: *mut mjsActuator, kv: f64) -> *const i8; }
-    // SAFETY: delegates to C implementation
+    // SAFETY: actuator verified non-null
     unsafe { mjs_setToDamper(actuator, kv) }
 }
 
@@ -696,8 +701,9 @@ pub fn mjs_set_to_damper(actuator: *mut mjsActuator, kv: f64) -> *const i8 {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjs_set_to_cylinder(actuator: *mut mjsActuator, timeconst: f64, bias: f64, area: f64, diameter: f64) -> *const i8 {
+    if actuator.is_null() { return core::ptr::null(); }
     extern "C" { fn mjs_setToCylinder(actuator: *mut mjsActuator, timeconst: f64, bias: f64, area: f64, diameter: f64) -> *const i8; }
-    // SAFETY: delegates to C implementation
+    // SAFETY: actuator verified non-null
     unsafe { mjs_setToCylinder(actuator, timeconst, bias, area, diameter) }
 }
 
@@ -709,8 +715,9 @@ pub fn mjs_set_to_cylinder(actuator: *mut mjsActuator, timeconst: f64, bias: f64
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjs_set_to_muscle(actuator: *mut mjsActuator, timeconst: [f64; 2], tausmooth: f64, range: [f64; 2], force: f64, scale: f64, lmin: f64, lmax: f64, vmax: f64, fpmax: f64, fvmax: f64) -> *const i8 {
+    if actuator.is_null() { return core::ptr::null(); }
     extern "C" { fn mjs_setToMuscle(actuator: *mut mjsActuator, timeconst: [f64; 2], tausmooth: f64, range: [f64; 2], force: f64, scale: f64, lmin: f64, lmax: f64, vmax: f64, fpmax: f64, fvmax: f64) -> *const i8; }
-    // SAFETY: delegates to C implementation
+    // SAFETY: actuator verified non-null
     unsafe { mjs_setToMuscle(actuator, timeconst, tausmooth, range, force, scale, lmin, lmax, vmax, fpmax, fvmax) }
 }
 
@@ -722,8 +729,9 @@ pub fn mjs_set_to_muscle(actuator: *mut mjsActuator, timeconst: [f64; 2], tausmo
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjs_set_to_adhesion(actuator: *mut mjsActuator, gain: f64) -> *const i8 {
+    if actuator.is_null() { return core::ptr::null(); }
     extern "C" { fn mjs_setToAdhesion(actuator: *mut mjsActuator, gain: f64) -> *const i8; }
-    // SAFETY: delegates to C implementation
+    // SAFETY: actuator verified non-null
     unsafe { mjs_setToAdhesion(actuator, gain) }
 }
 
@@ -735,8 +743,9 @@ pub fn mjs_set_to_adhesion(actuator: *mut mjsActuator, gain: f64) -> *const i8 {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjs_set_to_dc_motor(actuator: *mut mjsActuator, motorconst: [f64; 2], resistance: f64, nominal: [f64; 3], saturation: [f64; 3], inductance: [f64; 2], cogging: [f64; 3], controller: [f64; 6], thermal: [f64; 6], lugre: [f64; 5], input_mode: i32) -> *const i8 {
+    if actuator.is_null() { return core::ptr::null(); }
     extern "C" { fn mjs_setToDCMotor(actuator: *mut mjsActuator, motorconst: [f64; 2], resistance: f64, nominal: [f64; 3], saturation: [f64; 3], inductance: [f64; 2], cogging: [f64; 3], controller: [f64; 6], thermal: [f64; 6], lugre: [f64; 5], input_mode: i32) -> *const i8; }
-    // SAFETY: delegates to C implementation
+    // SAFETY: actuator verified non-null
     unsafe { mjs_setToDCMotor(actuator, motorconst, resistance, nominal, saturation, inductance, cogging, controller, thermal, lugre, input_mode) }
 }
 

@@ -53,8 +53,9 @@ pub fn vec_to_array(vector: *mut i32, clear: bool) -> *mut T {
 /// C: findstring (user/user_flexcomp.cc:1426)
 #[allow(unused_variables, non_snake_case)]
 pub fn findstring(buffer: *const i8, buffer_sz: i32, str: *const i8) -> i32 {
+    if buffer.is_null() { return 0; }
     extern "C" { fn findstring(buffer: *const i8, buffer_sz: i32, str: *const i8) -> i32; }
-    // SAFETY: delegates to C implementation
+    // SAFETY: buffer verified non-null
     unsafe { findstring(buffer, buffer_sz, str) }
 }
 
@@ -124,16 +125,18 @@ pub fn mj_c_flexcomp_load_gmsh(self_ptr: *mut mjCFlexcomp, model: *mut mjCModel,
 /// C: mjCFlexcomp::LoadGMSH41 (user/user_flexcomp.h:67)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_flexcomp_load_gmsh41(self_ptr: *mut mjCFlexcomp, buffer: *mut i8, binary: i32, nodeend: i32, nodebegin: i32, elemend: i32, elembegin: i32) {
+    if self_ptr.is_null() { return; }
     extern "C" { fn mjCFlexcomp_LoadGMSH41(self_ptr: *mut mjCFlexcomp, buffer: *mut i8, binary: i32, nodeend: i32, nodebegin: i32, elemend: i32, elembegin: i32); }
-    // SAFETY: delegates to C implementation
+    // SAFETY: self_ptr verified non-null
     unsafe { mjCFlexcomp_LoadGMSH41(self_ptr, buffer, binary, nodeend, nodebegin, elemend, elembegin) }
 }
 
 /// C: mjCFlexcomp::LoadGMSH22 (user/user_flexcomp.h:69)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_flexcomp_load_gmsh22(self_ptr: *mut mjCFlexcomp, buffer: *mut i8, binary: i32, nodeend: i32, nodebegin: i32, elemend: i32, elembegin: i32) {
+    if self_ptr.is_null() { return; }
     extern "C" { fn mjCFlexcomp_LoadGMSH22(self_ptr: *mut mjCFlexcomp, buffer: *mut i8, binary: i32, nodeend: i32, nodebegin: i32, elemend: i32, elembegin: i32); }
-    // SAFETY: delegates to C implementation
+    // SAFETY: self_ptr verified non-null
     unsafe { mjCFlexcomp_LoadGMSH22(self_ptr, buffer, binary, nodeend, nodebegin, elemend, elembegin) }
 }
 
@@ -162,8 +165,9 @@ pub fn mj_c_flexcomp_box_id(self_ptr: *mut mjCFlexcomp, ix: i32, iy: i32, iz: i3
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_flexcomp_box_project(self_ptr: *mut mjCFlexcomp, pos: *mut f64, ix: i32, iy: i32, iz: i32) {
+    if self_ptr.is_null() { return; }
     extern "C" { fn mjCFlexcomp_BoxProject(self_ptr: *mut mjCFlexcomp, pos: *mut f64, ix: i32, iy: i32, iz: i32); }
-    // SAFETY: delegates to C implementation
+    // SAFETY: self_ptr verified non-null
     unsafe { mjCFlexcomp_BoxProject(self_ptr, pos, ix, iy, iz) }
 }
 
