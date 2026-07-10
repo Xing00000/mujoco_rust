@@ -55,9 +55,19 @@ pub fn bin_edges(x_edges: *mut f64, y_edges: *mut f64, size: [i32; 2], fov: [f64
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn spherical_to_cartesian(aer: [f64; 3], xyz: [f32; 3]) {
-    extern "C" { fn SphericalToCartesian(aer: [f64; 3], xyz: [f32; 3]); }
-    // SAFETY: delegates to C implementation
-    unsafe { SphericalToCartesian(aer, xyz) }
+    // NOTE: In C ABI, array parameters decay to pointers, so aer/xyz are passed by-ref.
+    // Rust passes small arrays in registers on some platforms; the extern "C" decl matches.
+    // We re-implement using the same semantics: write to xyz via pointer cast.
+    unsafe {
+        let aer_ptr = &aer as *const [f64; 3] as *const f64;
+        let xyz_ptr = &xyz as *const [f32; 3] as *mut f32;
+        let a: f64 = *aer_ptr.add(0);
+        let e: f64 = *aer_ptr.add(1);
+        let r: f64 = *aer_ptr.add(2);
+        *xyz_ptr.add(0) = (r * e.cos() * a.sin()) as f32;
+        *xyz_ptr.add(1) = (r * e.sin()) as f32;
+        *xyz_ptr.add(2) = (-r * e.cos() * a.cos()) as f32;
+    }
 }
 
 /// C: TangentFrame (user/user_mesh.cc:131)
@@ -69,9 +79,39 @@ pub fn spherical_to_cartesian(aer: [f64; 3], xyz: [f32; 3]) {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn tangent_frame(aer: [f64; 3], mat: [f32; 9]) {
-    extern "C" { fn TangentFrame(aer: [f64; 3], mat: [f32; 9]); }
-    // SAFETY: delegates to C implementation
-    unsafe { TangentFrame(aer, mat) }
+    // NOTE: In C ABI, array parameters decay to pointers. We reimplement in-place.
+    unsafe {
+        let aer_ptr = &aer as *const [f64; 3] as *const f64;
+        let mat_ptr = &mat as *const [f32; 9] as *mut f32;
+        let a: f64 = *aer_ptr.add(0);
+        let e: f64 = *aer_ptr.add(1);
+        let r: f64 = *aer_ptr.add(2);
+
+        let mut ta: [f64; 3] = [r * e.cos() * a.cos(), 0.0, r * e.cos() * a.sin()];
+        let mut te: [f64; 3] = [-r * e.sin() * a.sin(), r * e.cos(), r * e.sin() * a.cos()];
+        let mut n: [f64; 3] = [0.0; 3];
+
+        crate::user::user_util::mjuu_normvec(ta.as_mut_ptr(), 3);
+        crate::user::user_util::mjuu_normvec(te.as_mut_ptr(), 3);
+
+        // mat[3..6] = ta (as f32)
+        *mat_ptr.add(3) = ta[0] as f32;
+        *mat_ptr.add(4) = ta[1] as f32;
+        *mat_ptr.add(5) = ta[2] as f32;
+
+        // mat[6..9] = te (as f32)
+        *mat_ptr.add(6) = te[0] as f32;
+        *mat_ptr.add(7) = te[1] as f32;
+        *mat_ptr.add(8) = te[2] as f32;
+
+        // n = cross(te, ta)
+        crate::user::user_util::mjuu_crossvec(n.as_mut_ptr(), te.as_ptr(), ta.as_ptr());
+
+        // mat[0..3] = n (as f32)
+        *mat_ptr.add(0) = n[0] as f32;
+        *mat_ptr.add(1) = n[1] as f32;
+        *mat_ptr.add(2) = n[2] as f32;
+    }
 }
 
 /// C: aux_c (user/user_mesh.cc:145)
@@ -278,9 +318,31 @@ pub fn compute_bending(bending: *mut f64, pos: *mut f64, v: [i32; 4], mu: f64, t
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn quadrature_gauss_legendre(points: *mut f64, weights: *mut f64, order: i32, a: f64, b: f64) {
-    extern "C" { fn quadratureGaussLegendre(points: *mut f64, weights: *mut f64, order: i32, a: f64, b: f64); }
-    // SAFETY: delegates to C implementation
-    unsafe { quadratureGaussLegendre(points, weights, order, a, b) }
+    unsafe {
+        if order > 3 {
+            crate::engine::engine_util_errmem::mju_error(
+                b"Integration order > 3 not yet supported.\0".as_ptr() as *const i8,
+            );
+        }
+
+        // x is on [-1, 1], p on [a, b]
+        let p0: f64 = (a + b) / 2.0;
+        let dpdx: f64 = (b - a) / 2.0;
+
+        if order == 2 {
+            *points.add(0) = -dpdx / (3.0_f64).sqrt() + p0;
+            *points.add(1) = dpdx / (3.0_f64).sqrt() + p0;
+            *weights.add(0) = dpdx;
+            *weights.add(1) = dpdx;
+        } else {
+            *points.add(0) = p0;
+            *points.add(1) = -dpdx / (3.0_f64 / 5.0).sqrt() + p0;
+            *points.add(2) = dpdx / (3.0_f64 / 5.0).sqrt() + p0;
+            *weights.add(0) = 8.0 / 9.0 * dpdx;
+            *weights.add(1) = 5.0 / 9.0 * dpdx;
+            *weights.add(2) = 5.0 / 9.0 * dpdx;
+        }
+    }
 }
 
 /// C: phi (user/user_mesh.cc:3752)
