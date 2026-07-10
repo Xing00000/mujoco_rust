@@ -480,11 +480,85 @@ pub fn mj_passive(m: *const mjModel, d: *mut mjData) {
 /// Calls: mj_applyFT, mj_objectVelocity, mji_copy3, mji_mulMatVec3, mji_scl3, mji_subFrom3, mju_max, mju_transformSpatial, mju_zero
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_inertia_box_fluid_model(m: *const mjModel, d: *mut mjData, i: i32) {
-    extern "C" {
-        fn mj_inertiaBoxFluidModel(m: *const mjModel, d: *mut mjData, i: i32);
+    // SAFETY: m, d valid. i is valid body index.
+    unsafe {
+        const MJ_MINVAL: f64 = 1e-15;
+        const MJ_PI: f64 = std::f64::consts::PI;
+        const mjOBJ_BODY: i32 = 1;
+
+        let inertia: *const f64 = (*m).body_inertia.add(3 * i as usize);
+        let mass: f64 = *(*m).body_mass.add(i as usize);
+        let mut box_: [f64; 3] = [0.0; 3];
+        box_[0] = (crate::engine::engine_util_misc::mju_max(MJ_MINVAL,
+            (*inertia.add(1) + *inertia.add(2) - *inertia.add(0))) / mass * 6.0).sqrt();
+        box_[1] = (crate::engine::engine_util_misc::mju_max(MJ_MINVAL,
+            (*inertia.add(0) + *inertia.add(2) - *inertia.add(1))) / mass * 6.0).sqrt();
+        box_[2] = (crate::engine::engine_util_misc::mju_max(MJ_MINVAL,
+            (*inertia.add(0) + *inertia.add(1) - *inertia.add(2))) / mass * 6.0).sqrt();
+
+        // map from CoM-centered to local body-centered 6D velocity
+        let mut lvel: [f64; 6] = [0.0; 6];
+        crate::engine::engine_core_util::mj_object_velocity(
+            m, d as *const mjData, mjOBJ_BODY, i, lvel.as_mut_ptr(), 1);
+
+        // compute wind in local coordinates
+        let mut wind: [f64; 6] = [0.0; 6];
+        crate::engine::engine_inline::mji_copy3(wind.as_mut_ptr().add(3), (*m).opt.wind.as_ptr());
+        let mut lwind: [f64; 6] = [0.0; 6];
+        crate::engine::engine_util_spatial::mju_transform_spatial(
+            lwind.as_mut_ptr(), wind.as_ptr(), 0,
+            (*d).xipos.add(3 * i as usize),
+            (*d).subtree_com.add(3 * *(*m).body_rootid.add(i as usize) as usize),
+            (*d).ximat.add(9 * i as usize));
+
+        // subtract translational component from body velocity
+        crate::engine::engine_inline::mji_sub_from3(lvel.as_mut_ptr().add(3), lwind.as_ptr().add(3));
+        let mut lfrc: [f64; 6] = [0.0; 6];
+
+        // set viscous force and torque
+        if (*m).opt.viscosity > 0.0 {
+            // diameter of sphere approximation
+            let diam: f64 = (box_[0] + box_[1] + box_[2]) / 3.0;
+
+            // angular viscosity
+            crate::engine::engine_inline::mji_scl3(
+                lfrc.as_mut_ptr(), lvel.as_ptr(), -MJ_PI * diam * diam * diam * (*m).opt.viscosity);
+
+            // linear viscosity
+            crate::engine::engine_inline::mji_scl3(
+                lfrc.as_mut_ptr().add(3), lvel.as_ptr().add(3), -3.0 * MJ_PI * diam * (*m).opt.viscosity);
+        }
+
+        // add lift and drag force and torque
+        if (*m).opt.density > 0.0 {
+            // force
+            lfrc[3] -= 0.5 * (*m).opt.density * box_[1] * box_[2] * lvel[3].abs() * lvel[3];
+            lfrc[4] -= 0.5 * (*m).opt.density * box_[0] * box_[2] * lvel[4].abs() * lvel[4];
+            lfrc[5] -= 0.5 * (*m).opt.density * box_[0] * box_[1] * lvel[5].abs() * lvel[5];
+
+            // torque
+            lfrc[0] -= (*m).opt.density * box_[0]
+                * (box_[1] * box_[1] * box_[1] * box_[1] + box_[2] * box_[2] * box_[2] * box_[2])
+                * lvel[0].abs() * lvel[0] / 64.0;
+            lfrc[1] -= (*m).opt.density * box_[1]
+                * (box_[0] * box_[0] * box_[0] * box_[0] + box_[2] * box_[2] * box_[2] * box_[2])
+                * lvel[1].abs() * lvel[1] / 64.0;
+            lfrc[2] -= (*m).opt.density * box_[2]
+                * (box_[0] * box_[0] * box_[0] * box_[0] + box_[1] * box_[1] * box_[1] * box_[1])
+                * lvel[2].abs() * lvel[2] / 64.0;
+        }
+
+        // rotate to global orientation: lfrc -> bfrc
+        let mut bfrc: [f64; 6] = [0.0; 6];
+        crate::engine::engine_inline::mji_mul_mat_vec3(
+            bfrc.as_mut_ptr(), (*d).ximat.add(9 * i as usize), lfrc.as_ptr());
+        crate::engine::engine_inline::mji_mul_mat_vec3(
+            bfrc.as_mut_ptr().add(3), (*d).ximat.add(9 * i as usize), lfrc.as_ptr().add(3));
+
+        // apply force and torque to body com
+        crate::engine::engine_support::mj_apply_ft(
+            m, d, bfrc.as_ptr().add(3), bfrc.as_ptr(), (*d).xipos.add(3 * i as usize), i, (*d).qfrc_fluid);
     }
-    // SAFETY: delegates to C implementation, all pointers valid per caller contract
-    unsafe { mj_inertiaBoxFluidModel(m, d, i) }
 }
 
 /// C: mj_ellipsoidFluidModel (engine/engine_passive.h:40)

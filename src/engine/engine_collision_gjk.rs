@@ -19,11 +19,30 @@ pub fn align8(size: usize) -> usize {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn subdistance(lambda: *mut f64, n: i32, simplex: *const Vertex) {
-    extern "C" {
-        fn subdistance(lambda: *mut f64, n: i32, simplex: *const Vertex);
+    // SAFETY: lambda points to 4 f64; simplex points to 4 Vertex (80 bytes each).
+    // Vertex layout: vert[3]@+0, vert1[3]@+24, vert2[3]@+48, index1@+72, index2@+76
+    unsafe {
+        // zero lambda
+        *lambda.add(0) = 0.0;
+        *lambda.add(1) = 0.0;
+        *lambda.add(2) = 0.0;
+        *lambda.add(3) = 0.0;
+
+        let base = simplex as *const u8;
+        let s1 = base.add(0) as *const f64;        // simplex[0].vert
+        let s2 = base.add(80) as *const f64;       // simplex[1].vert
+        let s3 = base.add(160) as *const f64;      // simplex[2].vert
+        let s4 = base.add(240) as *const f64;      // simplex[3].vert
+
+        match n {
+            4 => s3d(lambda, s1, s2, s3, s4),
+            3 => s2d(lambda, s1, s2, s3),
+            2 => s1d(lambda, s1, s2),
+            _ => {
+                *lambda.add(0) = 1.0;
+            }
+        }
     }
-    // SAFETY: delegates to C implementation, all pointers valid per caller contract
-    unsafe { subdistance(lambda, n, simplex) }
 }
 
 /// C: S3D (engine/engine_collision_gjk.c:60)
@@ -480,11 +499,121 @@ pub fn attach_face(pt: *mut Polytope, v1: i32, v2: i32, v3: i32, adj1: i32, adj2
 /// Calls: dot3, gjkIntersectSupport, signedDistance
 #[allow(unused_variables, non_snake_case)]
 pub fn gjk_intersect(status: *mut mjCCDStatus, obj1: *mut mjCCDObj, obj2: *mut mjCCDObj) -> i32 {
-    extern "C" {
-        fn gjkIntersect(status: *mut mjCCDStatus, obj1: *mut mjCCDObj, obj2: *mut mjCCDObj) -> i32;
+    // SAFETY: mjCCDStatus layout:
+    //   dist(f64)@+0, x1[150](f64)@+8, x2[150](f64)@+1208, nx(i32)@+2408,
+    //   max_iterations(i32)@+2412, tolerance(f64)@+2416, max_contacts(i32)@+2424,
+    //   dist_cutoff(f64)@+2432, gjk_iterations(i32)@+2440, epa_iterations(i32)@+2444,
+    //   epa_status(i32)@+2448, simplex[4](Vertex 80B each)@+2456, nsimplex(i32)@+2776
+    // Vertex layout: vert[3]@+0 (24B), vert1[3]@+24, vert2[3]@+48, index1@+72, index2@+76
+    unsafe {
+        const VERTEX_SIZE: usize = 80;
+        let status_ptr = status as *mut u8;
+        let gjk_iterations_ptr = status_ptr.add(2440) as *mut i32;
+        let nsimplex_ptr = status_ptr.add(2776) as *mut i32;
+        let simplex_base = status_ptr.add(2456);
+        let kmax = *(status_ptr.add(2412) as *const i32);
+
+        // local copy of simplex[4]
+        let mut simplex: [u8; 320] = [0u8; 320];
+        std::ptr::copy_nonoverlapping(simplex_base, simplex.as_mut_ptr(), 320);
+
+        let mut s: [i32; 4] = [0, 1, 2, 3];
+
+        let mut k = *gjk_iterations_ptr;
+        while k < kmax {
+            // compute signed distance to each face along with normals
+            let mut dist: [f64; 4] = [0.0; 4];
+            let mut normals: [f64; 12] = [0.0; 12];
+
+            dist[0] = signed_distance(
+                normals.as_mut_ptr().add(0),
+                simplex.as_ptr().add(s[2] as usize * VERTEX_SIZE) as *const Vertex,
+                simplex.as_ptr().add(s[1] as usize * VERTEX_SIZE) as *const Vertex,
+                simplex.as_ptr().add(s[3] as usize * VERTEX_SIZE) as *const Vertex,
+            );
+            dist[1] = signed_distance(
+                normals.as_mut_ptr().add(3),
+                simplex.as_ptr().add(s[0] as usize * VERTEX_SIZE) as *const Vertex,
+                simplex.as_ptr().add(s[2] as usize * VERTEX_SIZE) as *const Vertex,
+                simplex.as_ptr().add(s[3] as usize * VERTEX_SIZE) as *const Vertex,
+            );
+            dist[2] = signed_distance(
+                normals.as_mut_ptr().add(6),
+                simplex.as_ptr().add(s[1] as usize * VERTEX_SIZE) as *const Vertex,
+                simplex.as_ptr().add(s[0] as usize * VERTEX_SIZE) as *const Vertex,
+                simplex.as_ptr().add(s[3] as usize * VERTEX_SIZE) as *const Vertex,
+            );
+            dist[3] = signed_distance(
+                normals.as_mut_ptr().add(9),
+                simplex.as_ptr().add(s[0] as usize * VERTEX_SIZE) as *const Vertex,
+                simplex.as_ptr().add(s[1] as usize * VERTEX_SIZE) as *const Vertex,
+                simplex.as_ptr().add(s[2] as usize * VERTEX_SIZE) as *const Vertex,
+            );
+
+            // if origin is on any affine hull, convergence will fail
+            if dist[3] == 0.0 || dist[2] == 0.0 || dist[1] == 0.0 || dist[0] == 0.0 {
+                *gjk_iterations_ptr = k;
+                return -1;
+            }
+
+            // find the face with the smallest distance to the origin
+            let i = if dist[0] < dist[1] { 0 } else { 1 };
+            let j = if dist[2] < dist[3] { 2 } else { 3 };
+            let index = if dist[i] < dist[j] { i } else { j };
+
+            // origin inside of simplex (run EPA for contact information)
+            if dist[index] > 0.0 {
+                *nsimplex_ptr = 4;
+                std::ptr::copy_nonoverlapping(
+                    simplex.as_ptr().add(s[0] as usize * VERTEX_SIZE),
+                    simplex_base.add(0 * VERTEX_SIZE),
+                    VERTEX_SIZE,
+                );
+                std::ptr::copy_nonoverlapping(
+                    simplex.as_ptr().add(s[1] as usize * VERTEX_SIZE),
+                    simplex_base.add(1 * VERTEX_SIZE),
+                    VERTEX_SIZE,
+                );
+                std::ptr::copy_nonoverlapping(
+                    simplex.as_ptr().add(s[2] as usize * VERTEX_SIZE),
+                    simplex_base.add(2 * VERTEX_SIZE),
+                    VERTEX_SIZE,
+                );
+                std::ptr::copy_nonoverlapping(
+                    simplex.as_ptr().add(s[3] as usize * VERTEX_SIZE),
+                    simplex_base.add(3 * VERTEX_SIZE),
+                    VERTEX_SIZE,
+                );
+                *gjk_iterations_ptr = k;
+                return 1;
+            }
+
+            // replace worst vertex with new candidate
+            gjk_intersect_support(
+                simplex.as_mut_ptr().add(s[index] as usize * VERTEX_SIZE) as *mut Vertex,
+                obj1, obj2, normals.as_ptr().add(3 * index),
+            );
+
+            // found origin outside the Minkowski difference
+            let vert_ptr = simplex.as_ptr().add(s[index] as usize * VERTEX_SIZE) as *const f64;
+            if dot3(normals.as_ptr().add(3 * index), vert_ptr) < 0.0 {
+                *nsimplex_ptr = 0;
+                *gjk_iterations_ptr = k;
+                return 0;
+            }
+
+            // swap vertices in the simplex to retain orientation
+            let ii = (index + 1) & 3;
+            let jj = (index + 2) & 3;
+            let swap = s[ii];
+            s[ii] = s[jj];
+            s[jj] = swap;
+
+            k += 1;
+        }
+        *gjk_iterations_ptr = k;
+        -1  // never found origin
     }
-    // SAFETY: delegates to C implementation, all pointers valid per caller contract
-    unsafe { gjkIntersect(status, obj1, obj2) }
 }
 
 /// C: polytope2 (engine/engine_collision_gjk.c:122)
@@ -704,11 +833,179 @@ pub fn discrete_geoms(obj1: *mut mjCCDObj, obj2: *mut mjCCDObj) -> i32 {
 /// Calls: copy3, discreteGeoms, dot3, equal3, gjkIntersect, gjkSupport, lincomb, sub3, subdistance
 #[allow(unused_variables, non_snake_case)]
 pub fn gjk(status: *mut mjCCDStatus, obj1: *mut mjCCDObj, obj2: *mut mjCCDObj) {
-    extern "C" {
-        fn gjk(status: *mut mjCCDStatus, obj1: *mut mjCCDObj, obj2: *mut mjCCDObj);
+    // SAFETY: mjCCDStatus layout:
+    //   dist(f64)@+0, x1[150](f64)@+8, x2[150](f64)@+1208, nx(i32)@+2408,
+    //   max_iterations(i32)@+2412, tolerance(f64)@+2416, max_contacts(i32)@+2424,
+    //   dist_cutoff(f64)@+2432, gjk_iterations(i32)@+2440, epa_iterations(i32)@+2444,
+    //   epa_status(i32)@+2448, simplex[4](Vertex 80B each)@+2456, nsimplex(i32)@+2776
+    unsafe {
+        const VERTEX_SIZE: usize = 80;
+        const MJ_MINVAL2: f64 = 1e-30;
+        const MJ_MAX_LIMIT: f64 = f64::MAX;
+
+        let status_ptr = status as *mut u8;
+        let dist_ptr = status_ptr.add(0) as *mut f64;
+        let x1_ptr = status_ptr.add(8) as *mut f64;
+        let x2_ptr = status_ptr.add(1208) as *mut f64;
+        let nx_ptr = status_ptr.add(2408) as *mut i32;
+        let kmax = *(status_ptr.add(2412) as *const i32);
+        let tolerance = *(status_ptr.add(2416) as *const f64);
+        let dist_cutoff = *(status_ptr.add(2432) as *const f64);
+        let gjk_iterations_ptr = status_ptr.add(2440) as *mut i32;
+        let simplex_base = status_ptr.add(2456) as *mut u8;
+        let nsimplex_ptr = status_ptr.add(2776) as *mut i32;
+
+        let get_dist: i32 = (dist_cutoff > 0.0) as i32;
+        let mut backup_gjk: i32 = (get_dist == 0) as i32;
+        let mut n: i32 = 0;  // number of vertices in the simplex
+        let mut k: i32 = 0;  // current iteration
+        let mut lambda: [f64; 4] = [1.0, 0.0, 0.0, 0.0];
+        let cutoff2: f64 = dist_cutoff * dist_cutoff;
+        let tol2: f64 = tolerance * tolerance;
+
+        // if both geoms are discrete, finite convergence is guaranteed
+        let epsilon: f64 = if discrete_geoms(obj1, obj2) != 0 { 0.0 } else { 0.5 * tol2 };
+        let min_norm2: f64 = if discrete_geoms(obj1, obj2) != 0 { MJ_MINVAL2 } else { tol2 };
+
+        // set initial guess: x_k = x1 - x2
+        let mut x_k: [f64; 3] = [0.0; 3];
+        sub3(x_k.as_mut_ptr(), x1_ptr as *const f64, x2_ptr as *const f64);
+
+        let mut x_norm: f64 = 0.0;
+
+        while k < kmax {
+            // in tolerance for geoms to be in contact
+            x_norm = dot3(x_k.as_ptr(), x_k.as_ptr());
+            if x_norm < min_norm2 {
+                break;
+            }
+            x_norm = x_norm.sqrt();
+
+            // compute the kth support point
+            gjk_support(
+                simplex_base.add(n as usize * VERTEX_SIZE) as *mut Vertex,
+                obj1, obj2, x_k.as_ptr(), x_norm,
+            );
+            let s_k = simplex_base.add(n as usize * VERTEX_SIZE) as *const f64;
+
+            // stopping criteria using Frank-Wolfe duality gap
+            let mut diff: [f64; 3] = [0.0; 3];
+            sub3(diff.as_mut_ptr(), x_k.as_ptr(), s_k);
+            if dot3(x_k.as_ptr(), diff.as_ptr()) < epsilon {
+                if k == 0 { n = 1; }
+                break;
+            }
+
+            // if the hyperplane separates the Minkowski difference and origin
+            if get_dist == 0 {
+                if dot3(x_k.as_ptr(), s_k) > 0.0 {
+                    *gjk_iterations_ptr = k;
+                    *nsimplex_ptr = 0;
+                    *nx_ptr = 0;
+                    *dist_ptr = MJ_MAX_LIMIT;
+                    return;
+                }
+            } else if dist_cutoff < MJ_MAX_LIMIT {
+                let vs = dot3(x_k.as_ptr(), s_k);
+                let vv = dot3(x_k.as_ptr(), x_k.as_ptr());
+                if dot3(x_k.as_ptr(), s_k) > 0.0 && (vs * vs / vv) >= cutoff2 {
+                    *gjk_iterations_ptr = k;
+                    *nsimplex_ptr = 0;
+                    *nx_ptr = 0;
+                    *dist_ptr = MJ_MAX_LIMIT;
+                    return;
+                }
+            }
+
+            // tetrahedron generated; fallback to gjkIntersect
+            if n == 3 && backup_gjk != 0 {
+                *gjk_iterations_ptr = k;
+                let ret = gjk_intersect(status, obj1, obj2);
+                if ret != -1 {
+                    *nx_ptr = 0;
+                    *dist_ptr = if ret > 0 { 0.0 } else { MJ_MAX_LIMIT };
+                    return;
+                }
+                k = *gjk_iterations_ptr;
+                backup_gjk = 0;
+            }
+
+            // run subdistance to compute barycentric coordinates
+            subdistance(lambda.as_mut_ptr(), n + 1, simplex_base as *const Vertex);
+
+            // remove vertices from the simplex no longer needed
+            n = 0;
+            for i in 0..4i32 {
+                if lambda[i as usize] == 0.0 { continue; }
+                if n != i {
+                    // simplex[n] = simplex[i]
+                    std::ptr::copy_nonoverlapping(
+                        simplex_base.add(i as usize * VERTEX_SIZE),
+                        simplex_base.add(n as usize * VERTEX_SIZE),
+                        VERTEX_SIZE,
+                    );
+                }
+                lambda[n as usize] = lambda[i as usize];
+                n += 1;
+            }
+
+            // SHOULD NOT OCCUR
+            if n < 1 {
+                *gjk_iterations_ptr = k;
+                *nsimplex_ptr = 0;
+                *nx_ptr = 0;
+                *dist_ptr = MJ_MAX_LIMIT;
+                return;
+            }
+
+            // get the next iteration of x_k
+            let mut x_next: [f64; 3] = [0.0; 3];
+            lincomb(
+                x_next.as_mut_ptr(), lambda.as_ptr(), n,
+                simplex_base.add(0 * VERTEX_SIZE) as *const f64,
+                simplex_base.add(1 * VERTEX_SIZE) as *const f64,
+                simplex_base.add(2 * VERTEX_SIZE) as *const f64,
+                simplex_base.add(3 * VERTEX_SIZE) as *const f64,
+            );
+
+            // x_k has converged to minimum
+            if equal3(x_next.as_ptr(), x_k.as_ptr()) != 0 {
+                break;
+            }
+
+            // copy next iteration into x_k
+            copy3(x_k.as_mut_ptr(), x_next.as_ptr());
+
+            // we have a tetrahedron containing the origin
+            if n == 4 {
+                x_norm = 0.0;
+                break;
+            }
+
+            k += 1;
+        }
+
+        // compute the approximate witness points
+        lincomb(
+            x1_ptr, lambda.as_ptr(), n,
+            (simplex_base.add(0 * VERTEX_SIZE) as *const f64).add(3),  // vert1 at +24 = 3 f64s
+            (simplex_base.add(1 * VERTEX_SIZE) as *const f64).add(3),
+            (simplex_base.add(2 * VERTEX_SIZE) as *const f64).add(3),
+            (simplex_base.add(3 * VERTEX_SIZE) as *const f64).add(3),
+        );
+        lincomb(
+            x2_ptr, lambda.as_ptr(), n,
+            (simplex_base.add(0 * VERTEX_SIZE) as *const f64).add(6),  // vert2 at +48 = 6 f64s
+            (simplex_base.add(1 * VERTEX_SIZE) as *const f64).add(6),
+            (simplex_base.add(2 * VERTEX_SIZE) as *const f64).add(6),
+            (simplex_base.add(3 * VERTEX_SIZE) as *const f64).add(6),
+        );
+
+        *nx_ptr = 1;
+        *gjk_iterations_ptr = k;
+        *nsimplex_ptr = n;
+        *dist_ptr = x_norm;
     }
-    // SAFETY: delegates to C implementation, all pointers valid per caller contract
-    unsafe { gjk(status, obj1, obj2) }
 }
 
 /// C: support (engine/engine_collision_gjk.c:334)
@@ -1643,11 +1940,166 @@ pub fn plane_intersect(res: *mut f64, pn: *const f64, pd: f64, a: *const f64, b:
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn polygon_clip(status: *mut mjCCDStatus, face1: *const f64, nface1: i32, face2: *const f64, nface2: i32, n: *const f64, dir: *const f64) {
-    extern "C" {
-        fn polygonClip(status: *mut mjCCDStatus, face1: *const f64, nface1: i32, face2: *const f64, nface2: i32, n: *const f64, dir: *const f64);
+    // SAFETY: mjCCDStatus layout: x1@+8, x2@+1208, nx(i32)@+2408, max_contacts(i32)@+2424
+    unsafe {
+        const MJ_MAX_POLYVERT: usize = 150;
+        const MJ_MAXCONPAIR: i32 = 50;
+
+        let status_ptr = status as *mut u8;
+        let x1_ptr = status_ptr.add(8) as *mut f64;
+        let x2_ptr = status_ptr.add(1208) as *mut f64;
+        let nx_ptr = status_ptr.add(2408) as *mut i32;
+        let max_contacts = *(status_ptr.add(2424) as *const i32);
+
+        // clipping face needs to be at least a triangle
+        if nface1 < 3 {
+            return;
+        }
+
+        // compute plane normal and distance to plane for each vertex
+        let mut pn: [f64; 3 * MJ_MAX_POLYVERT] = [0.0; 3 * MJ_MAX_POLYVERT];
+        let mut pd: [f64; MJ_MAX_POLYVERT] = [0.0; MJ_MAX_POLYVERT];
+        for i in 0..(nface1 - 1) as usize {
+            pd[i] = plane_normal(
+                pn.as_mut_ptr().add(3 * i),
+                face1.add(3 * i),
+                face1.add(3 * i + 3),
+                n,
+            );
+        }
+        pd[(nface1 - 1) as usize] = plane_normal(
+            pn.as_mut_ptr().add(3 * (nface1 - 1) as usize),
+            face1.add(3 * (nface1 - 1) as usize),
+            face1,
+            n,
+        );
+
+        // reserve 2 * max_sides for clipped polygon
+        let mut polygon1: [f64; 6 * MJ_MAX_POLYVERT] = [0.0; 6 * MJ_MAX_POLYVERT];
+        let mut polygon2: [f64; 6 * MJ_MAX_POLYVERT] = [0.0; 6 * MJ_MAX_POLYVERT];
+        let mut npolygon: i32 = nface2;
+        let mut nclipped: i32;
+        let mut use_poly1: bool = true;  // track which buffer is current
+
+        for i in 0..nface2 as usize {
+            copy3(polygon1.as_mut_ptr().add(3 * i), face2.add(3 * i));
+        }
+
+        // clip the polygon by one edge at a time
+        let mut e: i32 = 0;
+        while e < 3 * nface1 {
+            nclipped = 0;
+            let polygon = if use_poly1 { polygon1.as_ptr() } else { polygon2.as_ptr() };
+            let clipped = if use_poly1 { polygon2.as_mut_ptr() } else { polygon1.as_mut_ptr() };
+
+            for i in 0..npolygon {
+                let p = polygon.add(3 * i as usize);
+                let q = if i < npolygon - 1 { polygon.add(3 * (i + 1) as usize) } else { polygon };
+
+                let inside1 = halfspace(face1.add(e as usize), pn.as_ptr().add(e as usize), p);
+                let inside2 = halfspace(face1.add(e as usize), pn.as_ptr().add(e as usize), q);
+
+                // PQ entirely outside
+                if inside1 == 0 && inside2 == 0 {
+                    continue;
+                }
+
+                // PQ entirely inside, add Q
+                if inside1 != 0 && inside2 != 0 {
+                    copy3(clipped.add(3 * nclipped as usize), q);
+                    nclipped += 1;
+                    continue;
+                }
+
+                // add intersection point
+                let t = plane_intersect(
+                    clipped.add(3 * nclipped as usize),
+                    pn.as_ptr().add(e as usize),
+                    pd[(e / 3) as usize],
+                    p,
+                    q,
+                );
+                if t >= 0.0 && t <= 1.0 {
+                    nclipped += 1;
+                }
+
+                // add Q if PQ is back inside
+                if inside2 != 0 {
+                    copy3(clipped.add(3 * nclipped as usize), q);
+                    nclipped += 1;
+                }
+            }
+
+            // swap buffers
+            use_poly1 = !use_poly1;
+            npolygon = nclipped;
+
+            e += 3;
+        }
+
+        if npolygon < 1 {
+            return;
+        }
+
+        let polygon = if use_poly1 { polygon1.as_mut_ptr() } else { polygon2.as_mut_ptr() };
+
+        // copy final clipped polygon to status
+        if max_contacts < 5 && npolygon > 4 {
+            *nx_ptr = 4;
+            let mut rect: [*mut f64; 4] = [std::ptr::null_mut(); 4];
+            polygon_quad(rect, polygon, npolygon);
+            for i in 0..4 {
+                copy3(x2_ptr.add(3 * i), rect[i] as *const f64);
+                sub3(x1_ptr.add(3 * i), x2_ptr.add(3 * i) as *const f64, dir);
+            }
+            return;
+        }
+
+        if npolygon > MJ_MAXCONPAIR {
+            *nx_ptr = MJ_MAXCONPAIR;
+            let mut i: i32 = 0;
+            while i < 3 * MJ_MAXCONPAIR {
+                copy3(x2_ptr.add(i as usize), polygon.add(i as usize) as *const f64);
+                sub3(x1_ptr.add(i as usize), x2_ptr.add(i as usize) as *const f64, dir);
+                i += 3;
+            }
+            return;
+        }
+
+        // if the face is an edge, remove potential duplicates
+        if nface2 == 2 && npolygon > 2 {
+            let mut best1: i32 = 0;
+            let mut best2: i32 = 1;
+            let mut d: f64 = 0.0;
+            for i in 0..npolygon {
+                for j in (i + 1)..npolygon {
+                    let mut diff_v: [f64; 3] = [0.0; 3];
+                    sub3(diff_v.as_mut_ptr(), polygon.add(3 * j as usize) as *const f64, polygon.add(3 * i as usize) as *const f64);
+                    let d2 = dot3(diff_v.as_ptr(), diff_v.as_ptr());
+                    if d2 > d {
+                        d = d2;
+                        best1 = i;
+                        best2 = j;
+                    }
+                }
+            }
+            copy3(x2_ptr, polygon.add(3 * best1 as usize) as *const f64);
+            sub3(x1_ptr, x2_ptr as *const f64, dir);
+            copy3(x2_ptr.add(3), polygon.add(3 * best2 as usize) as *const f64);
+            sub3(x1_ptr.add(3), x2_ptr.add(3) as *const f64, dir);
+            *nx_ptr = 2;
+            return;
+        }
+
+        // no pruning needed
+        let mut i: i32 = 0;
+        while i < 3 * npolygon {
+            copy3(x2_ptr.add(i as usize), polygon.add(i as usize) as *const f64);
+            sub3(x1_ptr.add(i as usize), x2_ptr.add(i as usize) as *const f64, dir);
+            i += 3;
+        }
+        *nx_ptr = npolygon;
     }
-    // SAFETY: delegates to C implementation, all pointers valid per caller contract
-    unsafe { polygonClip(status, face1, nface1, face2, nface2, n, dir) }
 }
 
 /// C: globalcoord (engine/engine_collision_gjk.c:1744)
@@ -1703,11 +2155,79 @@ pub fn intersect(res: [i32; 2], arr1: *const i32, arr2: *const i32, n: i32, m: i
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mesh_normals(res: *mut f64, resind: [i32; 3], dim: i32, obj: *mut mjCCDObj, v1: i32, v2: i32, v3: i32) -> i32 {
-    extern "C" {
-        fn meshNormals(res: *mut f64, resind: [i32; 3], dim: i32, obj: *mut mjCCDObj, v1: i32, v2: i32, v3: i32) -> i32;
+    // SAFETY: mjCCDObj data union at offset 200:
+    //   mesh.vert (*const f32) at +8
+    //   mesh.mpolymapadr (*i32) at +16
+    //   mesh.mpolymapnum (*i32) at +24
+    //   mesh.polymap (*i32) at +32
+    //   mesh.polynormal (*f64) at +64
+    //   mat[9] at offset 48 in mjCCDObj
+    unsafe {
+        const MJ_MAX_POLYVERT: i32 = 150;
+        const DATA_OFFSET: usize = 200;
+
+        let obj_ptr = obj as *const u8;
+        let mat = obj_ptr.add(48) as *const f64;
+        let polymap = *(obj_ptr.add(DATA_OFFSET + 32) as *const *const i32);
+        let polynormal = *(obj_ptr.add(DATA_OFFSET + 64) as *const *const f64);
+        let mpolymapadr = *(obj_ptr.add(DATA_OFFSET + 16) as *const *const i32);
+        let mpolymapnum = *(obj_ptr.add(DATA_OFFSET + 24) as *const *const i32);
+
+        // resind is passed by value in Rust but by pointer in C ABI
+        let resind_ptr = &resind as *const [i32; 3] as *mut i32;
+
+        if dim == 3 {
+            let v1_adr = *mpolymapadr.add(v1 as usize);
+            let v1_num = *mpolymapnum.add(v1 as usize);
+            let v2_adr = *mpolymapadr.add(v2 as usize);
+            let v2_num = *mpolymapnum.add(v2 as usize);
+            let v3_adr = *mpolymapadr.add(v3 as usize);
+            let v3_num = *mpolymapnum.add(v3 as usize);
+
+            let mut edgeset: [i32; 2] = [0; 2];
+            let n_edges = intersect(edgeset, polymap.add(v1_adr as usize), polymap.add(v2_adr as usize), v1_num, v2_num);
+            if n_edges == 0 { return 0; }
+            let mut faceset: [i32; 2] = [0; 2];
+            let n_faces = intersect(faceset, edgeset.as_ptr(), polymap.add(v3_adr as usize), n_edges, v3_num);
+            if n_faces == 0 { return 0; }
+
+            let normal = polynormal.add(3 * faceset[0] as usize);
+            globalcoord(res, mat, std::ptr::null(), *normal.add(0), *normal.add(1), *normal.add(2));
+            *resind_ptr.add(0) = faceset[0];
+            return 1;
+        }
+
+        if dim == 2 {
+            let v1_adr = *mpolymapadr.add(v1 as usize);
+            let v1_num = *mpolymapnum.add(v1 as usize);
+            let v2_adr = *mpolymapadr.add(v2 as usize);
+            let v2_num = *mpolymapnum.add(v2 as usize);
+
+            let mut edgeset: [i32; 2] = [0; 2];
+            let n_edges = intersect(edgeset, polymap.add(v1_adr as usize), polymap.add(v2_adr as usize), v1_num, v2_num);
+            if n_edges == 0 { return 0; }
+            for i in 0..n_edges {
+                let normal = polynormal.add(3 * edgeset[i as usize] as usize);
+                globalcoord(res.add(3 * i as usize), mat, std::ptr::null(), *normal.add(0), *normal.add(1), *normal.add(2));
+                *resind_ptr.add(i as usize) = edgeset[i as usize];
+            }
+            return n_edges;
+        }
+
+        if dim == 1 {
+            let v1_adr = *mpolymapadr.add(v1 as usize);
+            let mut v1_num = *mpolymapnum.add(v1 as usize);
+            if v1_num > MJ_MAX_POLYVERT { v1_num = MJ_MAX_POLYVERT; }
+            for i in 0..v1_num {
+                let index = *polymap.add((v1_adr + i) as usize);
+                let normal = polynormal.add(3 * index as usize);
+                globalcoord(res.add(3 * i as usize), mat, std::ptr::null(), *normal.add(0), *normal.add(1), *normal.add(2));
+                *resind_ptr.add(i as usize) = index;
+            }
+            return v1_num;
+        }
+        0
     }
-    // SAFETY: delegates to C implementation, all pointers valid per caller contract
-    unsafe { meshNormals(res, resind, dim, obj, v1, v2, v3) }
 }
 
 /// C: meshEdgeNormals (engine/engine_collision_gjk.c:1840)
@@ -1719,11 +2239,67 @@ pub fn mesh_normals(res: *mut f64, resind: [i32; 3], dim: i32, obj: *mut mjCCDOb
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mesh_edge_normals(res: *mut f64, endverts: *mut f64, dim: i32, obj: *mut mjCCDObj, v1: *const f64, v2: *const f64, v1i: i32, v2i: i32) -> i32 {
-    extern "C" {
-        fn meshEdgeNormals(res: *mut f64, endverts: *mut f64, dim: i32, obj: *mut mjCCDObj, v1: *const f64, v2: *const f64, v1i: i32, v2i: i32) -> i32;
+    // SAFETY: mjCCDObj data union at offset 200:
+    //   mesh.vert (*const f32) at +8
+    //   mesh.mpolymapadr (*i32) at +16
+    //   mesh.mpolymapnum (*i32) at +24
+    //   mesh.polymap (*i32) at +32
+    //   mesh.polyvertadr (*i32) at +40
+    //   mesh.polyvertnum (*i32) at +48
+    //   mesh.polyvert (*i32) at +56
+    //   mat[9] at offset 48 in mjCCDObj, pos[3] at offset 16
+    unsafe {
+        const MJ_MAX_POLYVERT: i32 = 150;
+        const DATA_OFFSET: usize = 200;
+
+        let obj_ptr = obj as *const u8;
+        let mat = obj_ptr.add(48) as *const f64;
+        let pos = obj_ptr.add(16) as *const f64;
+        let vert = *(obj_ptr.add(DATA_OFFSET + 8) as *const *const f32);
+        let polyvert = *(obj_ptr.add(DATA_OFFSET + 56) as *const *const i32);
+        let mpolymapadr = *(obj_ptr.add(DATA_OFFSET + 16) as *const *const i32);
+        let mpolymapnum = *(obj_ptr.add(DATA_OFFSET + 24) as *const *const i32);
+        let polymap = *(obj_ptr.add(DATA_OFFSET + 32) as *const *const i32);
+        let polyvertadr = *(obj_ptr.add(DATA_OFFSET + 40) as *const *const i32);
+        let polyvertnum = *(obj_ptr.add(DATA_OFFSET + 48) as *const *const i32);
+
+        // only one edge
+        if dim == 2 {
+            copy3(endverts, v2);
+            sub3(res, v2, v1);
+            crate::engine::engine_util_blas::mju_normalize3(res);
+            return 1;
+        }
+
+        if dim == 1 {
+            let v1_adr = *mpolymapadr.add(v1i as usize);
+            let mut v1_num = *mpolymapnum.add(v1i as usize);
+            if v1_num > MJ_MAX_POLYVERT { v1_num = MJ_MAX_POLYVERT; }
+
+            // loop through all faces with vertex v1
+            for i in 0..v1_num {
+                let idx = *polymap.add((v1_adr + i) as usize);
+                let adr = *polyvertadr.add(idx as usize);
+                let nvert = *polyvertnum.add(idx as usize);
+                // find previous vertex in polygon to form edge
+                for j in 0..nvert {
+                    if *polyvert.add((adr + j) as usize) == v1i {
+                        let k = if j == 0 { nvert - 1 } else { j - 1 };
+                        let v = vert.add(3 * *polyvert.add((adr + k) as usize) as usize);
+                        globalcoord(
+                            endverts.add(3 * i as usize), mat, pos,
+                            *v.add(0) as f64, *v.add(1) as f64, *v.add(2) as f64,
+                        );
+                        sub3(res.add(3 * i as usize), endverts.add(3 * i as usize) as *const f64, v1);
+                        crate::engine::engine_util_blas::mju_normalize3(res.add(3 * i as usize));
+                        break;
+                    }
+                }
+            }
+            return v1_num;
+        }
+        0
     }
-    // SAFETY: delegates to C implementation, all pointers valid per caller contract
-    unsafe { meshEdgeNormals(res, endverts, dim, obj, v1, v2, v1i, v2i) }
 }
 
 /// C: boxNormals2 (engine/engine_collision_gjk.c:1885)
@@ -1967,11 +2543,45 @@ pub fn box_face(res: *mut f64, obj: *mut mjCCDObj, idx: i32) -> i32 {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mesh_face(res: *mut f64, obj: *mut mjCCDObj, idx: i32) -> i32 {
-    extern "C" {
-        fn meshFace(res: *mut f64, obj: *mut mjCCDObj, idx: i32) -> i32;
+    // SAFETY: mjCCDObj layout: mat[9]@offset 48, pos[3]@offset 16
+    //   data union at offset 200:
+    //     mesh.vert (*const f32) at +8
+    //     mesh.polyvertadr (*i32) at +40
+    //     mesh.polyvertnum (*i32) at +48
+    //     mesh.polyvert (*i32) at +56
+    unsafe {
+        const MJ_MAX_POLYVERT: i32 = 150;
+        const DATA_OFFSET: usize = 200;
+
+        let obj_ptr = obj as *const u8;
+        let mat = obj_ptr.add(48) as *const f64;
+        let pos = obj_ptr.add(16) as *const f64;
+
+        let vert = *(obj_ptr.add(DATA_OFFSET + 8) as *const *const f32);
+        let polyvertadr = *(obj_ptr.add(DATA_OFFSET + 40) as *const *const i32);
+        let polyvertnum = *(obj_ptr.add(DATA_OFFSET + 48) as *const *const i32);
+        let polyvert_base = *(obj_ptr.add(DATA_OFFSET + 56) as *const *const i32);
+
+        let adr = *polyvertadr.add(idx as usize);
+        let mut nvert = *polyvertnum.add(idx as usize);
+        if nvert > MJ_MAX_POLYVERT {
+            nvert = MJ_MAX_POLYVERT;
+        }
+        let polyvert = polyvert_base.add(adr as usize);
+
+        let mut j: i32 = 0;
+        let mut i: i32 = nvert - 1;
+        while i >= 0 {
+            let v = vert.add(3 * *polyvert.add(i as usize) as usize);
+            globalcoord(
+                res.add(3 * j as usize), mat, pos,
+                *v.add(0) as f64, *v.add(1) as f64, *v.add(2) as f64,
+            );
+            j += 1;
+            i -= 1;
+        }
+        nvert
     }
-    // SAFETY: delegates to C implementation, all pointers valid per caller contract
-    unsafe { meshFace(res, obj, idx) }
 }
 
 /// C: alignedFaces (engine/engine_collision_gjk.c:2072)

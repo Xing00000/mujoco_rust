@@ -214,9 +214,71 @@ pub fn match_contact(m: *const mjModel, d: *const mjData, conid: i32, type1: mjt
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn copy_sensor_data(m: *const mjModel, d: *const mjData, data: [*mut f64; 7], id: i32, flg_flip: i32, nfound: i32) {
-    extern "C" { fn copySensorData(m: *const mjModel, d: *const mjData, data: [*mut f64; 7], id: i32, flg_flip: i32, nfound: i32); }
-    // SAFETY: delegates to C implementation, all pointers valid per caller contract
-    unsafe { copySensorData(m, d, data, id, flg_flip, nfound) }
+    // SAFETY: m, d valid. data[i] pointers either null or valid writable buffers per caller.
+    unsafe {
+        const MJCONDATA_FOUND: usize = 0;
+        const MJCONDATA_FORCE: usize = 1;
+        const MJCONDATA_TORQUE: usize = 2;
+        const MJCONDATA_DIST: usize = 3;
+        const MJCONDATA_POS: usize = 4;
+        const MJCONDATA_NORMAL: usize = 5;
+        const MJCONDATA_TANGENT: usize = 6;
+
+        // found flag
+        if !data[MJCONDATA_FOUND].is_null() {
+            *data[MJCONDATA_FOUND] = nfound as f64;
+        }
+
+        // contact force and torque
+        if !data[MJCONDATA_FORCE].is_null() || !data[MJCONDATA_TORQUE].is_null() {
+            let mut forcetorque: [f64; 6] = [0.0; 6];
+            crate::engine::engine_core_util::mj_contact_force(
+                m, d, id, forcetorque.as_mut_ptr());
+            if !data[MJCONDATA_FORCE].is_null() {
+                crate::engine::engine_util_blas::mju_copy3(data[MJCONDATA_FORCE], forcetorque.as_ptr());
+                if flg_flip != 0 {
+                    *data[MJCONDATA_FORCE].add(2) *= -1.0;
+                }
+            }
+            if !data[MJCONDATA_TORQUE].is_null() {
+                crate::engine::engine_util_blas::mju_copy3(data[MJCONDATA_TORQUE], forcetorque.as_ptr().add(3));
+                if flg_flip != 0 {
+                    *data[MJCONDATA_TORQUE].add(2) *= -1.0;
+                }
+            }
+        }
+
+        // contact penetration distance
+        if !data[MJCONDATA_DIST].is_null() {
+            *data[MJCONDATA_DIST] = (*(*d).contact.add(id as usize)).dist;
+        }
+
+        // contact position
+        if !data[MJCONDATA_POS].is_null() {
+            crate::engine::engine_util_blas::mju_copy3(
+                data[MJCONDATA_POS], (*(*d).contact.add(id as usize)).pos.as_ptr());
+        }
+
+        // contact normal
+        if !data[MJCONDATA_NORMAL].is_null() {
+            crate::engine::engine_util_blas::mju_copy3(
+                data[MJCONDATA_NORMAL], (*(*d).contact.add(id as usize)).frame.as_ptr());
+            if flg_flip != 0 {
+                crate::engine::engine_util_blas::mju_scl3(
+                    data[MJCONDATA_NORMAL], data[MJCONDATA_NORMAL] as *const f64, -1.0);
+            }
+        }
+
+        // contact first tangent
+        if !data[MJCONDATA_TANGENT].is_null() {
+            crate::engine::engine_util_blas::mju_copy3(
+                data[MJCONDATA_TANGENT], (*(*d).contact.add(id as usize)).frame.as_ptr().add(3));
+            if flg_flip != 0 {
+                crate::engine::engine_util_blas::mju_scl3(
+                    data[MJCONDATA_TANGENT], data[MJCONDATA_TANGENT] as *const f64, -1.0);
+            }
+        }
+    }
 }
 
 /// C: total_wrench (engine/engine_sensor.c:442)
@@ -394,9 +456,55 @@ pub fn mj_compute_sensor_acc(m: *const mjModel, d: *mut mjData, i: i32, sensorda
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn compute_or_read_sensor(m: *const mjModel, d: *mut mjData, i: i32, sensordata: *mut f64) {
-    extern "C" { fn compute_or_read_sensor(m: *const mjModel, d: *mut mjData, i: i32, sensordata: *mut f64); }
-    // SAFETY: delegates to C implementation, pointers valid per caller
-    unsafe { compute_or_read_sensor(m, d, i, sensordata) }
+    // SAFETY: m, d valid per caller. All model arrays indexed by i within bounds.
+    unsafe {
+        let nsample: i32 = *(*m).sensor_history.add(2 * i as usize);
+
+        // no history: compute directly
+        if nsample <= 0 {
+            mj_compute_sensor(m, d, i, sensordata);
+            return;
+        }
+
+        let delay: f64 = *(*m).sensor_delay.add(i as usize);
+        let dim: i32 = *(*m).sensor_dim.add(i as usize);
+
+        // delay > 0: read delayed value from buffer
+        if delay > 0.0 {
+            let interp: i32 = *(*m).sensor_history.add(2 * i as usize + 1);
+            let ptr: *const f64 = crate::engine::engine_support::mj_read_sensor(
+                m, d as *const mjData, i, (*d).time, sensordata, interp);
+            if !ptr.is_null() {
+                crate::engine::engine_util_blas::mju_copy(sensordata, ptr, dim);
+            }
+            return;
+        }
+
+        // interval > 0: compute if interval condition satisfied, else read from buffer
+        let interval: f64 = *(*m).sensor_interval.add(2 * i as usize);
+        if interval > 0.0 {
+            let historyadr: i32 = *(*m).sensor_historyadr.add(i as usize);
+            let buf: *mut f64 = (*d).history.add(historyadr as usize);
+            let time_prev: f64 = *buf;  // first slot stores time_prev
+
+            if time_prev + interval <= (*d).time {
+                // interval condition satisfied: compute new sensor value
+                mj_compute_sensor(m, d, i, sensordata);
+            } else {
+                // interval condition not satisfied: read from buffer
+                let interp: i32 = *(*m).sensor_history.add(2 * i as usize + 1);
+                let ptr: *const f64 = crate::engine::engine_support::mj_read_sensor(
+                    m, d as *const mjData, i, (*d).time, sensordata, interp);
+                if !ptr.is_null() {
+                    crate::engine::engine_util_blas::mju_copy(sensordata, ptr, dim);
+                }
+            }
+            return;
+        }
+
+        // history only, no delay or interval: compute directly
+        mj_compute_sensor(m, d, i, sensordata);
+    }
 }
 
 /// C: compute_user_sensors (engine/engine_sensor.c:1432)
@@ -426,9 +534,25 @@ pub fn compute_plugin_sensors(m: *const mjModel, d: *mut mjData, stage: mjtStage
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_compute_sensor(m: *const mjModel, d: *mut mjData, i: i32, sensordata: *mut f64) {
-    extern "C" { fn mj_computeSensor(m: *const mjModel, d: *mut mjData, i: i32, sensordata: *mut f64); }
-    // SAFETY: delegates to C implementation, all pointers valid per caller contract
-    unsafe { mj_computeSensor(m, d, i, sensordata) }
+    // SAFETY: m, d valid per caller. sensor_needstage is valid i32 array indexed by i.
+    unsafe {
+        const MJSTAGE_POS: i32 = 0;
+        const MJSTAGE_VEL: i32 = 1;
+        const MJSTAGE_ACC: i32 = 2;
+
+        let stage: i32 = *(*m).sensor_needstage.add(i as usize);
+        match stage {
+            MJSTAGE_POS => mj_compute_sensor_pos(m, d, i, sensordata),
+            MJSTAGE_VEL => mj_compute_sensor_vel(m, d, i, sensordata),
+            MJSTAGE_ACC => mj_compute_sensor_acc(m, d, i, sensordata),
+            _ => crate::engine::engine_util_errmem::mju_error(
+                b"invalid sensor stage\0".as_ptr() as *const i8,
+            ),
+        }
+
+        // apply cutoff
+        apply_cutoff(m, i, sensordata);
+    }
 }
 
 /// C: mj_sensorPos (engine/engine_sensor.h:32)

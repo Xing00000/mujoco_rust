@@ -49,17 +49,78 @@ pub fn mj_inv_velocity(m: *const mjModel, d: *mut mjData) {
 /// Calls: mj_constraintUpdate, mj_freeStack, mj_markStack, mj_mulJacVec, mj_stackAllocInfo, mju_subFrom, mju_zero
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_inv_constraint(m: *const mjModel, d: *mut mjData) {
-    extern "C" { fn mj_invConstraint(m: *const mjModel, d: *mut mjData); }
-    // SAFETY: delegates to C implementation, all pointers valid per caller contract
-    unsafe { mj_invConstraint(m, d) }
+    // SAFETY: m, d valid per caller. Stack alloc, Jac*vec, constraint update all safe.
+    unsafe {
+        let nefc: i32 = (*d).nefc;
+
+        // no constraints: clear, return
+        if nefc == 0 {
+            crate::engine::engine_util_blas::mju_zero((*d).qfrc_constraint, (*m).nv as i32);
+            return;
+        }
+
+        crate::engine::engine_memory::mj_mark_stack(d);
+        let jar: *mut f64 = crate::engine::engine_memory::mj_stack_alloc_num(d, nefc as usize);
+
+        // compute jar = Jac*qacc - aref
+        crate::engine::engine_core_constraint::mj_mul_jac_vec(m, d as *const mjData, jar, (*d).qacc);
+        crate::engine::engine_util_blas::mju_sub_from(jar, (*d).efc_aref, nefc);
+
+        // call update function
+        crate::engine::engine_core_constraint::mj_constraint_update(
+            m, d, jar, std::ptr::null_mut(), 0);
+
+        crate::engine::engine_memory::mj_free_stack(d);
+    }
 }
 
 /// C: mj_compareFwdInv (engine/engine_inverse.h:43)
 /// Calls: mj_freeStack, mj_inverseSkip, mj_markStack, mj_stackAllocInfo, mj_xfrcAccumulate, mju_add, mju_copy, mju_norm, mju_sub
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_compare_fwd_inv(m: *const mjModel, d: *mut mjData) {
-    extern "C" { fn mj_compareFwdInv(m: *const mjModel, d: *mut mjData); }
-    // SAFETY: delegates to C implementation, pointers valid per caller contract
-    unsafe { mj_compareFwdInv(m, d) }
+    // SAFETY: m, d valid per caller. All pointer arithmetic within valid model/data arrays.
+    unsafe {
+        let nv: i32 = (*m).nv as i32;
+        let nefc: i32 = (*d).nefc;
+
+        // clear result, return if no constraints
+        (*d).solver_fwdinv[0] = 0.0;
+        (*d).solver_fwdinv[1] = 0.0;
+        if nefc == 0 {
+            return;
+        }
+
+        // allocate
+        crate::engine::engine_memory::mj_mark_stack(d);
+        let qforce: *mut f64 = crate::engine::engine_memory::mj_stack_alloc_num(d, nv as usize);
+        let dif: *mut f64 = crate::engine::engine_memory::mj_stack_alloc_num(d, nv as usize);
+        let save_qfrc_constraint: *mut f64 = crate::engine::engine_memory::mj_stack_alloc_num(d, nv as usize);
+        let save_efc_force: *mut f64 = crate::engine::engine_memory::mj_stack_alloc_num(d, nefc as usize);
+
+        // qforce = qfrc_applied + qfrc_actuator
+        crate::engine::engine_util_blas::mju_add(qforce, (*d).qfrc_applied, (*d).qfrc_actuator, nv);
+        // qforce += J'*xfrc_applied
+        crate::engine::engine_support::mj_xfrc_accumulate(m, d, qforce);
+
+        // save forward dynamics results
+        crate::engine::engine_util_blas::mju_copy(save_qfrc_constraint, (*d).qfrc_constraint, nv);
+        crate::engine::engine_util_blas::mju_copy(save_efc_force, (*d).efc_force, nefc);
+
+        // run inverse dynamics, skip position and velocity stages
+        // mjSTAGE_VEL = 2
+        mj_inverse_skip(m, d, 2, 1);
+
+        // compute statistics
+        crate::engine::engine_util_blas::mju_sub(dif, save_qfrc_constraint, (*d).qfrc_constraint, nv);
+        (*d).solver_fwdinv[0] = crate::engine::engine_util_blas::mju_norm(dif, nv);
+        crate::engine::engine_util_blas::mju_sub(dif, qforce, (*d).qfrc_inverse, nv);
+        (*d).solver_fwdinv[1] = crate::engine::engine_util_blas::mju_norm(dif, nv);
+
+        // restore forward dynamics results
+        crate::engine::engine_util_blas::mju_copy((*d).qfrc_constraint, save_qfrc_constraint, nv);
+        crate::engine::engine_util_blas::mju_copy((*d).efc_force, save_efc_force, nefc);
+
+        crate::engine::engine_memory::mj_free_stack(d);
+    }
 }
 

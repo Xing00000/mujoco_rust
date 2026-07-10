@@ -237,9 +237,101 @@ pub fn flex_interp_cgsolve(m: *const mjModel, d: *mut mjData, qacc: *mut f64, qf
 /// C: midpoint_eligible (engine/engine_forward.c:1421)
 #[allow(unused_variables, non_snake_case)]
 pub fn midpoint_eligible(m: *const mjModel, d: *const mjData, jnt: i32) -> i32 {
-    extern "C" { fn midpoint_eligible(m: *const mjModel, d: *const mjData, jnt: i32) -> i32; }
-    // SAFETY: delegates to C implementation, all pointers valid per caller contract
-    unsafe { midpoint_eligible(m, d, jnt) }
+    // SAFETY: m, d valid per caller. All field accesses within valid array bounds.
+    unsafe {
+        const mjJNT_FREE: i32 = 3;
+        const mjDSBL_ISLAND: i32 = 1 << 11;
+        const mjCNSTR_CONTACT_FRICTIONLESS: i32 = 5;
+        const mjCNSTR_CONTACT_PYRAMIDAL: i32 = 6;
+        const mjCNSTR_CONTACT_ELLIPTIC: i32 = 7;
+        const mjCNSTR_EQUALITY: i32 = 0;
+        const mjEQ_CONNECT: i32 = 0;
+        const mjEQ_WELD: i32 = 1;
+        const mjOBJ_SITE: i32 = 3;
+        const mjCNSTR_LIMIT_TENDON: i32 = 3;
+        const mjCNSTR_FRICTION_TENDON: i32 = 4;
+
+        if *(*m).jnt_type.add(jnt as usize) != mjJNT_FREE {
+            return 0;
+        }
+
+        let body: i32 = *(*m).jnt_bodyid.add(jnt as usize);
+        let adr: i32 = *(*m).jnt_dofadr.add(jnt as usize);
+        let tree: i32 = *(*m).dof_treeid.add(adr as usize);
+
+        // must be standalone 6-DOF tree with no children
+        if *(*m).tree_dofnum.add(tree as usize) != 6
+            || *(*m).body_subtreemass.add(body as usize) != *(*m).body_mass.add(body as usize)
+        {
+            return 0;
+        }
+
+        // must be awake
+        if *(*d).tree_awake.add(tree as usize) == 0 {
+            return 0;
+        }
+
+        // must be unconstrained
+        if (*d).nefc != 0 {
+            // islands enabled: O(1) lookup
+            if ((*m).opt.disableflags & mjDSBL_ISLAND) == 0 {
+                if *(*d).dof_island.add(adr as usize) >= 0 {
+                    return 0;
+                }
+            }
+            // islands disabled: check if any constraint involves this tree
+            else {
+                let mut c: i32 = 0;
+                while c < (*d).nefc {
+                    let ctype: i32 = *(*d).efc_type.add(c as usize);
+                    let id: i32 = *(*d).efc_id.add(c as usize);
+
+                    // contact: check if either geom belongs to this body
+                    if ctype == mjCNSTR_CONTACT_FRICTIONLESS
+                        || ctype == mjCNSTR_CONTACT_PYRAMIDAL
+                        || ctype == mjCNSTR_CONTACT_ELLIPTIC
+                    {
+                        let g1: i32 = (*(*d).contact.add(id as usize)).geom[0];
+                        let g2: i32 = (*(*d).contact.add(id as usize)).geom[1];
+                        if g1 >= 0 && *(*m).geom_bodyid.add(g1 as usize) == body {
+                            return 0;
+                        }
+                        if g2 >= 0 && *(*m).geom_bodyid.add(g2 as usize) == body {
+                            return 0;
+                        }
+                    }
+                    // connect or weld: check if either body is this body
+                    else if ctype == mjCNSTR_EQUALITY
+                        && (*(*m).eq_type.add(id as usize) == mjEQ_CONNECT
+                            || *(*m).eq_type.add(id as usize) == mjEQ_WELD)
+                    {
+                        let mut b1: i32 = *(*m).eq_obj1id.add(id as usize);
+                        let mut b2: i32 = *(*m).eq_obj2id.add(id as usize);
+                        if *(*m).eq_objtype.add(id as usize) == mjOBJ_SITE {
+                            b1 = *(*m).site_bodyid.add(b1 as usize);
+                            b2 = *(*m).site_bodyid.add(b2 as usize);
+                        }
+                        if b1 == body || b2 == body {
+                            return 0;
+                        }
+                    }
+                    // tendon limit or friction: check first two trees
+                    else if ctype == mjCNSTR_LIMIT_TENDON || ctype == mjCNSTR_FRICTION_TENDON {
+                        if *(*m).tendon_treeid.add(2 * id as usize) == tree
+                            || *(*m).tendon_treeid.add(2 * id as usize + 1) == tree
+                        {
+                            return 0;
+                        }
+                    }
+
+                    c += 1;
+                }
+            }
+        }
+
+        // otherwise eligible
+        1
+    }
 }
 
 /// C: midpoint_aligned (engine/engine_forward.c:1493)

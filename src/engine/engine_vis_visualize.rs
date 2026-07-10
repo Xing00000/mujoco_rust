@@ -207,9 +207,39 @@ pub fn add_triangle(scn: *mut mjvScene, v0: *const f64, v1: *const f64, v2: *con
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn set_material(m: *const mjModel, geom: *mut mjvGeom, matid: i32, rgba: *const f32, flags: *const u8) {
-    extern "C" { fn setMaterial(m: *const mjModel, geom: *mut mjvGeom, matid: i32, rgba: *const f32, flags: *const u8); }
-    // SAFETY: delegates to C implementation; caller guarantees all pointers are valid
-    unsafe { setMaterial(m, geom, matid, rgba, flags) }
+    // SAFETY: All pointers valid per caller contract.
+    //   vis.map.alpha is at byte offset 128 from start of mjVisual (global=52 + quality=20 + headlight=40 + map.alpha offset 16)
+    unsafe {
+        const MJ_VIS_TEXTURE: usize = 1;
+        const MJ_VIS_TRANSPARENT: usize = 18;
+        const MJ_CAT_DYNAMIC: i32 = 2;
+
+        // set material properties if given
+        if matid >= 0 {
+            f2f((*geom).rgba.as_mut_ptr(), (*m).mat_rgba.add(4 * matid as usize), 4);
+            (*geom).emission = *(*m).mat_emission.add(matid as usize);
+            (*geom).specular = *(*m).mat_specular.add(matid as usize);
+            (*geom).shininess = *(*m).mat_shininess.add(matid as usize);
+            (*geom).reflectance = *(*m).mat_reflectance.add(matid as usize);
+        }
+
+        // use rgba if different from default, or no material given
+        if *rgba.add(0) != 0.5 || *rgba.add(1) != 0.5 || *rgba.add(2) != 0.5 || *rgba.add(3) != 1.0 || matid < 0 {
+            f2f((*geom).rgba.as_mut_ptr(), rgba, 4);
+        }
+
+        // set texture
+        if *flags.add(MJ_VIS_TEXTURE) != 0 && matid >= 0 {
+            (*geom).matid = matid;
+        }
+
+        // scale alpha for dynamic geoms only
+        if *flags.add(MJ_VIS_TRANSPARENT) != 0 && (*geom).category == MJ_CAT_DYNAMIC {
+            let vis_ptr = core::ptr::addr_of!((*m).vis) as *const u8;
+            let map_alpha = *(vis_ptr.add(128) as *const f32);  // vis.map.alpha
+            (*geom).rgba[3] *= map_alpha;
+        }
+    }
 }
 
 /// C: addConnector (engine/engine_vis_visualize.c:296)
@@ -237,9 +267,12 @@ pub fn add_connector(scn: *mut mjvScene, r#type: i32, width: f64, from: *const f
 /// C: markselected (engine/engine_vis_visualize.c:393)
 #[allow(unused_variables, non_snake_case)]
 pub fn markselected(vis: *const mjVisual, geom: *mut mjvGeom) {
-    extern "C" { fn markselected(vis: *const mjVisual, geom: *mut mjvGeom); }
-    // SAFETY: delegates to C implementation; caller guarantees vis and geom are valid
-    unsafe { markselected(vis, geom) }
+    // SAFETY: vis->global.glow is at byte offset 28 from vis (float).
+    // geom->emission is a f32 field in mjvGeom.
+    unsafe {
+        let glow = *((vis as *const u8).add(28) as *const f32);
+        (*geom).emission += glow;
+    }
 }
 
 /// C: addFrame (engine/engine_vis_visualize.c:400)
@@ -1001,9 +1034,63 @@ pub fn mjv_update_scene(m: *const mjModel, d: *mut mjData, opt: *const mjvOption
 /// Calls: addActuatorGeoms, addAutoConnectGeoms, addBodyBvhGeoms, addBodyLabelGeoms, addCameraGeoms, addCenterOfMassGeoms, addConstraintGeoms, addContactGeoms, addExternalPerturbGeoms, addFlexBvhGeoms, addFlexGeoms, addGeomFrameGeoms, addGeomGeoms, addInertiaGeoms, addIslandLabelGeoms, addJointGeoms, addLightGeoms, addMeshBvhGeoms, addMeshOctreeGeoms, addPerturbGeoms, addRangefinderGeoms, addSelectionPointGeoms, addSiteFrameGeoms, addSiteGeoms, addSkinGeoms, addSliderCrankGeoms, addSpatialTendonGeoms, addTactileSensorGeoms, addWorldBodyFrameGeoms, mjv_defaultPerturb
 #[allow(unused_variables, non_snake_case)]
 pub fn mjv_add_geoms(m: *const mjModel, d: *mut mjData, opt: *const mjvOption, pert: *const mjvPerturb, catmask: i32, scn: *mut mjvScene) {
-    extern "C" { fn mjv_addGeoms(m: *const mjModel, d: *mut mjData, opt: *const mjvOption, pert: *const mjvPerturb, catmask: i32, scn: *mut mjvScene); }
-    // SAFETY: delegates to C implementation
-    unsafe { mjv_addGeoms(m, d, opt, pert, catmask, scn) }
+    // SAFETY: all pointers valid per caller contract. This is a dispatcher that calls sub-functions.
+    unsafe {
+        const MJ_VIS_STATIC: usize = 22;
+        const MJ_CAT_STATIC: i32 = 1;
+        const MJ_CAT_DECOR: i32 = 4;
+
+        // make default pert if missing
+        let mut localpert: std::mem::MaybeUninit<mjvPerturb> = std::mem::MaybeUninit::uninit();
+        let pert_used: *const mjvPerturb = if pert.is_null() {
+            crate::engine::engine_vis_init::mjv_default_perturb(localpert.as_mut_ptr());
+            localpert.as_ptr()
+        } else {
+            pert
+        };
+
+        // clear mjCAT_STATIC bit if mjVIS_STATIC is not set
+        let mut catmask = catmask;
+        if (*opt).flags[MJ_VIS_STATIC] == 0 {
+            catmask &= !MJ_CAT_STATIC;
+        }
+
+        add_flex_geoms(m, d, opt, pert_used, catmask, scn);
+        add_skin_geoms(m, d, opt, pert_used, catmask, scn);
+        add_geom_geoms(m, d, opt, pert_used, catmask, scn);
+        add_site_geoms(m, d, opt, pert_used, catmask, scn);
+        add_spatial_tendon_geoms(m, d, opt, catmask, scn);
+        add_slider_crank_geoms(m, d, opt, catmask, scn);
+
+        // remaining functions only add decor elements
+        if (catmask & MJ_CAT_DECOR) == 0 {
+            return;
+        }
+
+        add_geom_frame_geoms(m, d, opt, catmask, scn);
+        add_site_frame_geoms(m, d, opt, catmask, scn);
+        add_body_bvh_geoms(m, d, opt, scn);
+        add_flex_bvh_geoms(m, d, opt, scn);
+        add_mesh_bvh_geoms(m, d, opt, scn);
+        add_mesh_octree_geoms(m, d, opt, scn);
+        add_tactile_sensor_geoms(m, d, opt, scn);
+        add_inertia_geoms(m, d, opt, pert_used, catmask, scn);
+        add_perturb_geoms(m, d, opt, pert_used, scn);
+        add_world_body_frame_geoms(m, d, opt, catmask, scn);
+        add_selection_point_geoms(m, d, opt, pert_used, scn);
+        add_body_label_geoms(m, d, opt, pert_used, catmask, scn);
+        add_joint_geoms(m, d, opt, scn);
+        add_actuator_geoms(m, d, opt, scn);
+        add_island_label_geoms(m, d, opt, scn);
+        add_camera_geoms(m, d, opt, scn);
+        add_light_geoms(m, d, opt, scn);
+        add_center_of_mass_geoms(m, d, opt, scn);
+        add_auto_connect_geoms(m, d, opt, scn);
+        add_rangefinder_geoms(m, d, opt, scn);
+        add_external_perturb_geoms(m, d, opt, scn);
+        add_constraint_geoms(m, d, opt, scn);
+        add_contact_geoms(m, d, opt, scn, catmask);
+    }
 }
 
 /// C: mjv_makeLights (engine/engine_vis_visualize.h:45)
