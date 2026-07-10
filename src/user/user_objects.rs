@@ -267,8 +267,9 @@ pub fn mj_c_body_copy_list(self_ptr: *mut mjCBody, dst: *mut i32, src: *const i3
 /// C: mjCBody::GetList (user/user_objects.cc:2311)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_body_get_list(self_ptr: *mut mjCBody) -> *const i32 {
+    if self_ptr.is_null() { return core::ptr::null(); }
     extern "C" { fn mjCBody_GetList(self_ptr: *mut mjCBody) -> *const i32; }
-    // SAFETY: delegates to C implementation
+    // SAFETY: self_ptr verified non-null
     unsafe { mjCBody_GetList(self_ptr) }
 }
 
@@ -906,8 +907,9 @@ pub fn mj_c_base_copy_from_spec(self_ptr: *mut mjCBase) {
 /// C: mjCBase::ResolveReferences (user/user_objects.h:372)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_base_resolve_references(self_ptr: *mut mjCBase, m: *const mjCModel) {
+    if self_ptr.is_null() { return; }
     extern "C" { fn mjCBase_ResolveReferences(self_ptr: *mut mjCBase, m: *const mjCModel); }
-    // SAFETY: delegates to C implementation
+    // SAFETY: self_ptr verified non-null
     unsafe { mjCBase_ResolveReferences(self_ptr, m) }
 }
 
@@ -986,8 +988,9 @@ pub fn mj_c_base_release(self_ptr: *mut mjCBase) {
 /// C: mjCBase::SetUserValue (user/user_objects.h:411)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_base_set_user_value(self_ptr: *mut mjCBase, key: string_view, data: *const (), cleanup: Option<unsafe extern "C" fn()>) {
+    if self_ptr.is_null() { return; }
     extern "C" { fn mj_c_base_set_user_value(self_ptr: *mut mjCBase, key: string_view, data: *const (), cleanup: Option<unsafe extern "C" fn()>); }
-    // SAFETY: delegates to C implementation
+    // SAFETY: self_ptr verified non-null
     unsafe { mj_c_base_set_user_value(self_ptr, key, data, cleanup) }
 }
 
@@ -1012,8 +1015,9 @@ pub fn mj_c_base_delete_user_value(self_ptr: *mut mjCBase, key: string_view) {
 /// C: mjCBody::AddBody (user/user_objects.h:522)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_body_add_body(self_ptr: *mut mjCBody, arg0: *mut mjCDef) -> *mut mjCBody {
+    if self_ptr.is_null() { return core::ptr::null_mut(); }
     extern "C" { fn mjCBody_AddBody(self_ptr: *mut mjCBody, arg0: *mut mjCDef) -> *mut mjCBody; }
-    // SAFETY: delegates to C implementation
+    // SAFETY: self_ptr verified non-null
     unsafe { mjCBody_AddBody(self_ptr, arg0) }
 }
 
@@ -1086,8 +1090,9 @@ pub fn mj_c_body_add_light(self_ptr: *mut mjCBody, arg0: *mut mjCDef) -> *mut mj
 /// C: mjCBody::NumObjects (user/user_objects.h:537)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_body_num_objects(self_ptr: *mut mjCBody, r#type: mjtObj) -> i32 {
+    if self_ptr.is_null() { return 0; }
     extern "C" { fn mjCBody_NumObjects(self_ptr: *mut mjCBody, r#type: mjtObj) -> i32; }
-    // SAFETY: delegates to C implementation
+    // SAFETY: self_ptr verified non-null
     unsafe { mjCBody_NumObjects(self_ptr, r#type) }
 }
 
@@ -1103,8 +1108,9 @@ pub fn mj_c_body_get_object(self_ptr: *mut mjCBody, r#type: mjtObj, id: i32) -> 
 /// C: mjCBody::FindObject (user/user_objects.h:539)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_body_find_object(self_ptr: *mut mjCBody, r#type: mjtObj, name: *const std__string, recursive: bool) -> *mut mjCBase {
+    if self_ptr.is_null() { return core::ptr::null_mut(); }
     extern "C" { fn mjCBody_FindObject(self_ptr: *mut mjCBody, r#type: mjtObj, name: *const std__string, recursive: bool) -> *mut mjCBase; }
-    // SAFETY: delegates to C implementation
+    // SAFETY: self_ptr verified non-null
     unsafe { mjCBody_FindObject(self_ptr, r#type, name, recursive) }
 }
 
@@ -1112,32 +1118,36 @@ pub fn mj_c_body_find_object(self_ptr: *mut mjCBody, r#type: mjtObj, name: *cons
 /// Calls: mjCBody::NameSpace_
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_body_name_space(self_ptr: *mut mjCBody, m: *const mjCModel) {
+    if self_ptr.is_null() { return; }
     extern "C" { #[link_name = "_ZN7mjCBody10NameSpace_EPK8mjCModelb"] fn mjCBody_NameSpace_(self_ptr: *mut mjCBody, m: *const mjCModel, propagate: bool); }
-    // SAFETY: delegates to C++ implementation via mangled name
+    // SAFETY: self_ptr verified non-null
     unsafe { mjCBody_NameSpace_(self_ptr, m, true) }
 }
 
 /// C: mjCBody::MakeInertialExplicit (user/user_objects.h:545)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_body_make_inertial_explicit(self_ptr: *mut mjCBody) {
+    if self_ptr.is_null() { return; }
     extern "C" { fn mjCBody_MakeInertialExplicit(self_ptr: *mut mjCBody); }
-    // SAFETY: delegates to C implementation
+    // SAFETY: self_ptr verified non-null
     unsafe { mjCBody_MakeInertialExplicit(self_ptr) }
 }
 
 /// C: mjCBody::ComputeBVH (user/user_objects.h:548)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_body_compute_bvh(self_ptr: *mut mjCBody) {
+    if self_ptr.is_null() { return; }
     extern "C" { fn mjCBody_ComputeBVH(self_ptr: *mut mjCBody); }
-    // SAFETY: delegates to C implementation
+    // SAFETY: self_ptr verified non-null
     unsafe { mjCBody_ComputeBVH(self_ptr) }
 }
 
 /// C: mjCBody::get_userdata (user/user_objects.h:557)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_body_get_userdata(self_ptr: *mut mjCBody) -> *const i32 {
+    if self_ptr.is_null() { return core::ptr::null(); }
     extern "C" { fn mjCBody_get_userdata(self_ptr: *mut mjCBody) -> *const i32; }
-    // SAFETY: delegates to C implementation
+    // SAFETY: self_ptr verified non-null
     unsafe { mjCBody_get_userdata(self_ptr) }
 }
 
@@ -1153,16 +1163,18 @@ pub fn mj_c_body_next_child(self_ptr: *mut mjCBody, child: *const mjsElement, r#
 /// C: mjCBody::ForgetKeyframes (user/user_objects.h:567)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_body_forget_keyframes(self_ptr: *mut mjCBody) {
+    if self_ptr.is_null() { return; }
     extern "C" { fn mjCBody_ForgetKeyframes(self_ptr: *mut mjCBody); }
-    // SAFETY: delegates to C implementation
+    // SAFETY: self_ptr verified non-null
     unsafe { mjCBody_ForgetKeyframes(self_ptr) }
 }
 
 /// C: mjCBody::ToFrame (user/user_objects.h:570)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_body_to_frame(self_ptr: *mut mjCBody) -> *mut mjCFrame {
+    if self_ptr.is_null() { return core::ptr::null_mut(); }
     extern "C" { fn mjCBody_ToFrame(self_ptr: *mut mjCBody) -> *mut mjCFrame; }
-    // SAFETY: delegates to C implementation
+    // SAFETY: self_ptr verified non-null
     unsafe { mjCBody_ToFrame(self_ptr) }
 }
 
@@ -1174,8 +1186,9 @@ pub fn mj_c_body_to_frame(self_ptr: *mut mjCBody) -> *mut mjCFrame {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_body_mpos(self_ptr: *mut mjCBody, state_name: *const std__string) -> *mut f64 {
+    if self_ptr.is_null() { return core::ptr::null_mut(); }
     extern "C" { fn mjCBody_mpos(self_ptr: *mut mjCBody, state_name: *const std__string) -> *mut f64; }
-    // SAFETY: delegates to C implementation
+    // SAFETY: self_ptr verified non-null
     unsafe { mjCBody_mpos(self_ptr, state_name) }
 }
 
@@ -1187,48 +1200,54 @@ pub fn mj_c_body_mpos(self_ptr: *mut mjCBody, state_name: *const std__string) ->
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_body_mquat(self_ptr: *mut mjCBody, state_name: *const std__string) -> *mut f64 {
+    if self_ptr.is_null() { return core::ptr::null_mut(); }
     extern "C" { fn mjCBody_mquat(self_ptr: *mut mjCBody, state_name: *const std__string) -> *mut f64; }
-    // SAFETY: delegates to C implementation
+    // SAFETY: self_ptr verified non-null
     unsafe { mjCBody_mquat(self_ptr, state_name) }
 }
 
 /// C: mjCBody::SetParent (user/user_objects.h:579)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_body_set_parent(self_ptr: *mut mjCBody, _body: *mut mjCBody) {
+    if self_ptr.is_null() { return; }
     extern "C" { fn mjCBody_SetParent(self_ptr: *mut mjCBody, _body: *mut mjCBody); }
-    // SAFETY: delegates to C implementation
+    // SAFETY: self_ptr verified non-null
     unsafe { mjCBody_SetParent(self_ptr, _body) }
 }
 
 /// C: mjCBody::GetParent (user/user_objects.h:580)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_body_get_parent(self_ptr: *mut mjCBody) -> *mut mjCBody {
+    if self_ptr.is_null() { return core::ptr::null_mut(); }
     extern "C" { fn mjCBody_GetParent(self_ptr: *mut mjCBody) -> *mut mjCBody; }
-    // SAFETY: delegates to C implementation
+    // SAFETY: self_ptr verified non-null
     unsafe { mjCBody_GetParent(self_ptr) }
 }
 
 /// C: mjCBody::SetModel (user/user_objects.h:583)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_body_set_model(self_ptr: *mut mjCBody, _model: *mut mjCModel) {
+    if self_ptr.is_null() { return; }
     extern "C" { fn mjCBody_SetModel(self_ptr: *mut mjCBody, _model: *mut mjCModel); }
-    // SAFETY: delegates to C implementation
+    // SAFETY: self_ptr verified non-null
     unsafe { mjCBody_SetModel(self_ptr, _model) }
 }
 
 /// C: mjCBody::ResetId (user/user_objects.h:586)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_body_reset_id(self_ptr: *mut mjCBody) {
+    if self_ptr.is_null() { return; }
     extern "C" { fn mjCBody_ResetId(self_ptr: *mut mjCBody); }
-    // SAFETY: delegates to C implementation
+    // SAFETY: self_ptr verified non-null
     unsafe { mjCBody_ResetId(self_ptr) }
 }
 
 /// C: mjCBody::Bodies (user/user_objects.h:589)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_body_bodies(self_ptr: *mut mjCBody) -> i32 {
+    if self_ptr.is_null() { return 0; }
     extern "C" { fn mjCBody_Bodies(self_ptr: *mut mjCBody) -> i32; }
-    // SAFETY: delegates to C implementation
+    // SAFETY: self_ptr verified non-null
     unsafe { mjCBody_Bodies(self_ptr) }
 }
 
@@ -1236,8 +1255,9 @@ pub fn mj_c_body_bodies(self_ptr: *mut mjCBody) -> i32 {
 /// Calls: mjuu_frameaccum, mjuu_fullInertia, mjuu_globalinertia, mjuu_offcenter, mjuu_setvec
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_body_accumulate_inertia(self_ptr: *mut mjCBody, other: *const mjsBody, result: *mut mjsBody) {
+    if self_ptr.is_null() { return; }
     extern "C" { fn mjCBody_AccumulateInertia(self_ptr: *mut mjCBody, other: *const mjsBody, result: *mut mjsBody); }
-    // SAFETY: delegates to C implementation
+    // SAFETY: self_ptr verified non-null
     unsafe { mjCBody_AccumulateInertia(self_ptr, other, result) }
 }
 
@@ -1253,24 +1273,27 @@ pub fn mj_c_body_compile(self_ptr: *mut mjCBody) {
 /// C: mjCBody::InertiaFromGeom (user/user_objects.h:604)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_body_inertia_from_geom(self_ptr: *mut mjCBody) {
+    if self_ptr.is_null() { return; }
     extern "C" { fn mjCBody_InertiaFromGeom(self_ptr: *mut mjCBody); }
-    // SAFETY: delegates to C implementation
+    // SAFETY: self_ptr verified non-null
     unsafe { mjCBody_InertiaFromGeom(self_ptr) }
 }
 
 /// C: mjCBody::CopyFromSpec (user/user_objects.h:615)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_body_copy_from_spec(self_ptr: *mut mjCBody) {
+    if self_ptr.is_null() { return; }
     extern "C" { fn mjCBody_CopyFromSpec(self_ptr: *mut mjCBody); }
-    // SAFETY: delegates to C implementation
+    // SAFETY: self_ptr verified non-null
     unsafe { mjCBody_CopyFromSpec(self_ptr) }
 }
 
 /// C: mjCBody::PointToLocal (user/user_objects.h:616)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_body_point_to_local(self_ptr: *mut mjCBody) {
+    if self_ptr.is_null() { return; }
     extern "C" { fn mjCBody_PointToLocal(self_ptr: *mut mjCBody); }
-    // SAFETY: delegates to C implementation
+    // SAFETY: self_ptr verified non-null
     unsafe { mjCBody_PointToLocal(self_ptr) }
 }
 
@@ -1286,8 +1309,9 @@ pub fn mj_c_body_name_space_1(self_ptr: *mut mjCBody, m: *const mjCModel, propag
 /// C: mjCBody::CopyPlugin (user/user_objects.h:618)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_body_copy_plugin(self_ptr: *mut mjCBody) {
+    if self_ptr.is_null() { return; }
     extern "C" { fn mjCBody_CopyPlugin(self_ptr: *mut mjCBody); }
-    // SAFETY: delegates to C implementation
+    // SAFETY: self_ptr verified non-null
     unsafe { mjCBody_CopyPlugin(self_ptr) }
 }
 
@@ -1330,8 +1354,9 @@ pub fn mj_c_frame_get_parent(self_ptr: *mut mjCFrame) -> *mut mjCBody {
 /// C: mjCFrame::IsAncestor (user/user_objects.h:661)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_frame_is_ancestor(self_ptr: *mut mjCFrame, child: *const mjCFrame) -> bool {
+    if self_ptr.is_null() { return false; }
     extern "C" { fn mjCFrame_IsAncestor(self_ptr: *mut mjCFrame, child: *const mjCFrame) -> bool; }
-    // SAFETY: delegates to C implementation
+    // SAFETY: self_ptr verified non-null
     unsafe { mjCFrame_IsAncestor(self_ptr, child) }
 }
 
@@ -3401,32 +3426,36 @@ pub fn mj_c_pair_compile(self_ptr: *mut mjCPair) {
 /// C: mjCBodyPair::CopyFromSpec (user/user_objects.h:1613)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_body_pair_copy_from_spec(self_ptr: *mut mjCBodyPair) {
+    if self_ptr.is_null() { return; }
     extern "C" { fn mjCBodyPair_CopyFromSpec(self_ptr: *mut mjCBodyPair); }
-    // SAFETY: delegates to C implementation
+    // SAFETY: self_ptr verified non-null
     unsafe { mjCBodyPair_CopyFromSpec(self_ptr) }
 }
 
 /// C: mjCBodyPair::PointToLocal (user/user_objects.h:1614)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_body_pair_point_to_local(self_ptr: *mut mjCBodyPair) {
+    if self_ptr.is_null() { return; }
     extern "C" { fn mjCBodyPair_PointToLocal(self_ptr: *mut mjCBodyPair); }
-    // SAFETY: delegates to C implementation
+    // SAFETY: self_ptr verified non-null
     unsafe { mjCBodyPair_PointToLocal(self_ptr) }
 }
 
 /// C: mjCBodyPair::ResolveReferences (user/user_objects.h:1615)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_body_pair_resolve_references(self_ptr: *mut mjCBodyPair, m: *const mjCModel) {
+    if self_ptr.is_null() { return; }
     extern "C" { fn mjCBodyPair_ResolveReferences(self_ptr: *mut mjCBodyPair, m: *const mjCModel); }
-    // SAFETY: delegates to C implementation
+    // SAFETY: self_ptr verified non-null
     unsafe { mjCBodyPair_ResolveReferences(self_ptr, m) }
 }
 
 /// C: mjCBodyPair::NameSpace (user/user_objects.h:1616)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_body_pair_name_space(self_ptr: *mut mjCBodyPair, m: *const mjCModel) {
+    if self_ptr.is_null() { return; }
     extern "C" { fn mjCBodyPair_NameSpace(self_ptr: *mut mjCBodyPair, m: *const mjCModel); }
-    // SAFETY: delegates to C implementation
+    // SAFETY: self_ptr verified non-null
     unsafe { mjCBodyPair_NameSpace(self_ptr, m) }
 }
 
