@@ -7,17 +7,26 @@ use crate::types::*;
 /// C: printInt (engine/engine_print.c:53)
 #[allow(unused_variables, non_snake_case)]
 pub fn print_int(fp: *mut i32, name: *const i8, value: i32) {
-    extern "C" { fn printInt(fp: *mut i32, name: *const i8, value: i32); }
-    // SAFETY: delegates to C implementation
-    unsafe { printInt(fp, name, value) }
+    extern "C" { fn fprintf(fp: *mut i32, format: *const i8, ...) -> i32; }
+    // SAFETY: fp is a valid FILE*, name is a null-terminated C string
+    unsafe {
+        fprintf(fp, b"%-21s\0".as_ptr() as *const i8, name);
+        fprintf(fp, b" %d\0".as_ptr() as *const i8, value);
+        fprintf(fp, b"\n\0".as_ptr() as *const i8);
+    }
 }
 
 /// C: printStr (engine/engine_print.c:59)
 #[allow(unused_variables, non_snake_case)]
 pub fn print_str(fp: *mut i32, name: *const i8, value: *const i8) {
-    extern "C" { fn printStr(fp: *mut i32, name: *const i8, value: *const i8); }
-    // SAFETY: delegates to C implementation
-    unsafe { printStr(fp, name, value) }
+    extern "C" { fn fprintf(fp: *mut i32, format: *const i8, ...) -> i32; }
+    // SAFETY: fp is a valid FILE*, name/value are null-terminated C strings
+    unsafe {
+        fprintf(fp, b"%-21s\0".as_ptr() as *const i8, name);
+        let v = if value.is_null() { b"\0".as_ptr() as *const i8 } else { value };
+        fprintf(fp, b"%s\0".as_ptr() as *const i8, v);
+        fprintf(fp, b"\n\0".as_ptr() as *const i8);
+    }
 }
 
 /// C: printNum (engine/engine_print.c:65)
@@ -28,9 +37,13 @@ pub fn print_str(fp: *mut i32, name: *const i8, value: *const i8) {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn print_num(fp: *mut i32, name: *const i8, value: f32, float_format: *const i8) {
-    extern "C" { fn printNum(fp: *mut i32, name: *const i8, value: f32, float_format: *const i8); }
-    // SAFETY: delegates to C implementation
-    unsafe { printNum(fp, name, value, float_format) }
+    extern "C" { fn fprintf(fp: *mut i32, format: *const i8, ...) -> i32; }
+    // SAFETY: fp is a valid FILE*, name/float_format are null-terminated C strings
+    unsafe {
+        fprintf(fp, b"%-21s\0".as_ptr() as *const i8, name);
+        fprintf(fp, float_format, value as f64);
+        fprintf(fp, b"\n\0".as_ptr() as *const i8);
+    }
 }
 
 /// C: printArr (engine/engine_print.c:71)
@@ -41,9 +54,19 @@ pub fn print_num(fp: *mut i32, name: *const i8, value: f32, float_format: *const
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn print_arr(fp: *mut i32, name: *const i8, data: *const f32, n: i32, float_format: *const i8) {
-    extern "C" { fn printArr(fp: *mut i32, name: *const i8, data: *const f32, n: i32, float_format: *const i8); }
-    // SAFETY: delegates to C implementation
-    unsafe { printArr(fp, name, data, n, float_format) }
+    extern "C" { fn fprintf(fp: *mut i32, format: *const i8, ...) -> i32; }
+    // SAFETY: fp is a valid FILE*, name/float_format are null-terminated C strings, data[n]
+    unsafe {
+        if data.is_null() {
+            return;
+        }
+        fprintf(fp, b"%-21s\0".as_ptr() as *const i8, name);
+        for i in 0..n {
+            fprintf(fp, float_format, *data.add(i as usize) as f64);
+            fprintf(fp, b" \0".as_ptr() as *const i8);
+        }
+        fprintf(fp, b"\n\0".as_ptr() as *const i8);
+    }
 }
 
 /// C: printArray2d (engine/engine_print.c:84)
@@ -54,17 +77,49 @@ pub fn print_arr(fp: *mut i32, name: *const i8, data: *const f32, n: i32, float_
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn print_array2d(str: *const i8, nr: i32, nc: i32, data: *const f64, fp: *mut i32, float_format: *const i8) {
-    extern "C" { fn printArray2d(str: *const i8, nr: i32, nc: i32, data: *const f64, fp: *mut i32, float_format: *const i8); }
-    // SAFETY: delegates to C implementation
-    unsafe { printArray2d(str, nr, nc, data, fp, float_format) }
+    extern "C" { fn fprintf(fp: *mut i32, format: *const i8, ...) -> i32; }
+    // SAFETY: fp valid FILE*, str/float_format null-terminated, data[nr*nc]
+    unsafe {
+        if data.is_null() {
+            return;
+        }
+        if nr != 0 && nc != 0 {
+            fprintf(fp, b"%s\n\0".as_ptr() as *const i8, str);
+            for r in 0..nr {
+                fprintf(fp, b" \0".as_ptr() as *const i8);
+                for c in 0..nc {
+                    fprintf(fp, b" \0".as_ptr() as *const i8);
+                    fprintf(fp, float_format, *data.add((c + r * nc) as usize));
+                }
+                fprintf(fp, b"\n\0".as_ptr() as *const i8);
+            }
+            fprintf(fp, b"\n\0".as_ptr() as *const i8);
+        }
+    }
 }
 
 /// C: printArray2dInt (engine/engine_print.c:105)
 #[allow(unused_variables, non_snake_case)]
 pub fn print_array2d_int(str: *const i8, nr: i32, nc: i32, data: *const i32, fp: *mut i32) {
-    extern "C" { fn printArray2dInt(str: *const i8, nr: i32, nc: i32, data: *const i32, fp: *mut i32); }
-    // SAFETY: delegates to C implementation
-    unsafe { printArray2dInt(str, nr, nc, data, fp) }
+    extern "C" { fn fprintf(fp: *mut i32, format: *const i8, ...) -> i32; }
+    // SAFETY: fp valid FILE*, str null-terminated, data[nr*nc]
+    unsafe {
+        if data.is_null() {
+            return;
+        }
+        if nr != 0 && nc != 0 {
+            fprintf(fp, b"%s\n\0".as_ptr() as *const i8, str);
+            for r in 0..nr {
+                fprintf(fp, b" \0".as_ptr() as *const i8);
+                for c in 0..nc {
+                    fprintf(fp, b" \0".as_ptr() as *const i8);
+                    fprintf(fp, b"%d\0".as_ptr() as *const i8, *data.add((c + r * nc) as usize));
+                }
+                fprintf(fp, b"\n\0".as_ptr() as *const i8);
+            }
+            fprintf(fp, b"\n\0".as_ptr() as *const i8);
+        }
+    }
 }
 
 /// C: printDelayBuffer (engine/engine_print.c:125)
@@ -75,9 +130,49 @@ pub fn print_array2d_int(str: *const i8, nr: i32, nc: i32, data: *const i32, fp:
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn print_delay_buffer(name: *const i8, buf: *const f64, nhistory: i32, dim: i32, fp: *mut i32, float_format: *const i8) {
-    extern "C" { fn printDelayBuffer(name: *const i8, buf: *const f64, nhistory: i32, dim: i32, fp: *mut i32, float_format: *const i8); }
-    // SAFETY: delegates to C implementation
-    unsafe { printDelayBuffer(name, buf, nhistory, dim, fp, float_format) }
+    extern "C" { fn fprintf(fp: *mut i32, format: *const i8, ...) -> i32; }
+    // SAFETY: fp valid FILE*, name/float_format null-terminated, buf[2 + nhistory*(1+dim)]
+    unsafe {
+        if buf.is_null() || nhistory <= 0 {
+            return;
+        }
+        fprintf(fp, b"  %s:\n\0".as_ptr() as *const i8, name);
+
+        // user value (first slot)
+        fprintf(fp, b"    phase  = \0".as_ptr() as *const i8);
+        fprintf(fp, float_format, *buf.add(0));
+        fprintf(fp, b"\n\0".as_ptr() as *const i8);
+
+        // cursor (second slot, stored as mjtNum but is an integer)
+        fprintf(fp, b"    cursor =  %d\n\0".as_ptr() as *const i8, *buf.add(1) as i32);
+
+        // timestamps
+        let times = buf.add(2);
+        fprintf(fp, b"    times  = \0".as_ptr() as *const i8);
+        for i in 0..nhistory {
+            fprintf(fp, float_format, *times.add(i as usize));
+        }
+        fprintf(fp, b"\n\0".as_ptr() as *const i8);
+
+        // values
+        let values = times.add(nhistory as usize);
+        if dim == 1 {
+            fprintf(fp, b"    values = \0".as_ptr() as *const i8);
+            for i in 0..nhistory {
+                fprintf(fp, float_format, *values.add(i as usize));
+            }
+            fprintf(fp, b"\n\0".as_ptr() as *const i8);
+        } else {
+            fprintf(fp, b"    values:\n\0".as_ptr() as *const i8);
+            for i in 0..nhistory {
+                fprintf(fp, b"      [%d] =\0".as_ptr() as *const i8, i);
+                for j in 0..dim {
+                    fprintf(fp, float_format, *values.add((i * dim + j) as usize));
+                }
+                fprintf(fp, b"\n\0".as_ptr() as *const i8);
+            }
+        }
+    }
 }
 
 /// C: printSparse (engine/engine_print.c:170)
@@ -88,9 +183,29 @@ pub fn print_delay_buffer(name: *const i8, buf: *const f64, nhistory: i32, dim: 
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn print_sparse(str: *const i8, mat: *const f64, nr: i32, rownnz: *const i32, rowadr: *const i32, colind: *const i32, fp: *mut i32, float_format: *const i8) {
-    extern "C" { fn printSparse(str: *const i8, mat: *const f64, nr: i32, rownnz: *const i32, rowadr: *const i32, colind: *const i32, fp: *mut i32, float_format: *const i8); }
-    // SAFETY: delegates to C implementation
-    unsafe { printSparse(str, mat, nr, rownnz, rowadr, colind, fp, float_format) }
+    extern "C" { fn fprintf(fp: *mut i32, format: *const i8, ...) -> i32; }
+    // SAFETY: fp valid FILE*, str/float_format null-terminated, sparse matrix arrays valid
+    unsafe {
+        if mat.is_null() || nr == 0 || nr > 300 {
+            return;
+        }
+        fprintf(fp, b"%s\n\0".as_ptr() as *const i8, str);
+
+        for r in 0..nr {
+            fprintf(fp, b"  \0".as_ptr() as *const i8);
+            let adr_start = *rowadr.add(r as usize);
+            let adr_end = adr_start + *rownnz.add(r as usize);
+            let mut adr = adr_start;
+            while adr < adr_end {
+                fprintf(fp, b"  \0".as_ptr() as *const i8);
+                fprintf(fp, b"%2d: \0".as_ptr() as *const i8, *colind.add(adr as usize));
+                fprintf(fp, float_format, *mat.add(adr as usize));
+                adr += 1;
+            }
+            fprintf(fp, b"\n\0".as_ptr() as *const i8);
+        }
+        fprintf(fp, b"\n\0".as_ptr() as *const i8);
+    }
 }
 
 /// C: printBlockArray (engine/engine_print.c:193)
@@ -143,9 +258,22 @@ pub fn mj_print_block_sparsity(str: *const i8, nr: i32, nc: i32, nisland: i32, i
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn print_vector(str: *const i8, data: *const f64, n: i32, fp: *mut i32, float_format: *const i8) {
-    extern "C" { fn printVector(str: *const i8, data: *const f64, n: i32, fp: *mut i32, float_format: *const i8); }
-    // SAFETY: delegates to C implementation
-    unsafe { printVector(str, data, n, fp, float_format) }
+    extern "C" { fn fprintf(fp: *mut i32, format: *const i8, ...) -> i32; }
+    // SAFETY: fp valid FILE*, str/float_format null-terminated, data[n]
+    unsafe {
+        if data.is_null() || n == 0 {
+            return;
+        }
+        // print str
+        fprintf(fp, b"%s\0".as_ptr() as *const i8, str);
+
+        // print data
+        for i in 0..n {
+            fprintf(fp, b" \0".as_ptr() as *const i8);
+            fprintf(fp, float_format, *data.add(i as usize));
+        }
+        fprintf(fp, b"\n\0".as_ptr() as *const i8);
+    }
 }
 
 /// C: memorySize (engine/engine_print.c:395)

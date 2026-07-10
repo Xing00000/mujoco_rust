@@ -143,11 +143,47 @@ pub fn get_xquat(m: *const mjModel, d: *const mjData, r#type: mjtObj, id: i32, s
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn cam_project(sensordata: *mut f64, target_xpos: *const f64, cam_xpos: *const f64, cam_xmat: *const f64, cam_res: [i32; 2], cam_fovy: f64, cam_intrinsic: [f32; 4], cam_sensorsize: [f32; 2]) {
-    extern "C" {
-        fn cam_project(sensordata: *mut f64, target_xpos: *const f64, cam_xpos: *const f64, cam_xmat: *const f64, cam_res: [i32; 2], cam_fovy: f64, cam_intrinsic: [f32; 4], cam_sensorsize: [f32; 2]);
+    use crate::engine::engine_util_blas::{mju_sub3, mju_mul_mat_t_vec};
+    use crate::engine::engine_util_misc::{mju_min, mju_max};
+    const MJ_PI: f64 = std::f64::consts::PI;
+    const MJ_MINVAL: f64 = 1e-15;
+    // SAFETY: sensordata[2], target_xpos[3], cam_xpos[3], cam_xmat[9]
+    unsafe {
+        let fx: f64;
+        let fy: f64;
+
+        // focal transformation
+        if cam_sensorsize[0] != 0.0 && cam_sensorsize[1] != 0.0 {
+            fx = cam_intrinsic[0] as f64 / cam_sensorsize[0] as f64 * cam_res[0] as f64;
+            fy = cam_intrinsic[1] as f64 / cam_sensorsize[1] as f64 * cam_res[1] as f64;
+        } else {
+            let f = 0.5 / (cam_fovy * MJ_PI / 360.0).tan() * cam_res[1] as f64;
+            fx = f;
+            fy = f;
+        }
+
+        // relative position in world frame
+        let mut relative_pos: [f64; 3] = [0.0; 3];
+        mju_sub3(relative_pos.as_mut_ptr(), target_xpos, cam_xpos);
+
+        // project to camera frame: cam_pos = cam_xmat^T * relative_pos
+        let mut cam_pos: [f64; 3] = [0.0; 3];
+        mju_mul_mat_t_vec(cam_pos.as_mut_ptr(), cam_xmat, relative_pos.as_ptr(), 3, 3);
+
+        // avoid dividing by tiny numbers
+        let mut denom: f64 = cam_pos[2];
+        if denom.abs() < MJ_MINVAL {
+            if denom < 0.0 {
+                denom = mju_min(denom, -MJ_MINVAL);
+            } else {
+                denom = mju_max(denom, MJ_MINVAL);
+            }
+        }
+
+        // compute projection
+        *sensordata.add(0) = -fx * (cam_pos[0] / denom) + 0.5 * cam_res[0] as f64;
+        *sensordata.add(1) =  fy * (cam_pos[1] / denom) + 0.5 * cam_res[1] as f64;
     }
-    // SAFETY: delegates to C implementation, all pointers valid per caller contract
-    unsafe { cam_project(sensordata, target_xpos, cam_xpos, cam_xmat, cam_res, cam_fovy, cam_intrinsic, cam_sensorsize) }
 }
 
 /// C: checkMatch (engine/engine_sensor.c:320)

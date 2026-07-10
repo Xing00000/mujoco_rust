@@ -72,9 +72,18 @@ pub fn mjr_setf3(vec: *mut f32, f0: f32, f1: f32, f2: f32) {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjr_mul_mat44(res: *mut f32, A: *const f32, B: *const f32) {
-    extern "C" { fn mjr_mulMat44(res: *mut f32, A: *const f32, B: *const f32); }
-    // SAFETY: delegates to C implementation, pointers valid per caller contract
-    unsafe { mjr_mulMat44(res, A, B) }
+    // SAFETY: res, A, B each point to 16 contiguous f32 values (4x4 column-major)
+    unsafe {
+        for r in 0..4i32 {
+            for c in 0..4i32 {
+                *res.add((r + 4*c) as usize) = 0.0;
+                for i in 0..4i32 {
+                    *res.add((r + 4*c) as usize) +=
+                        *A.add((r + 4*i) as usize) * *B.add((i + 4*c) as usize);
+                }
+            }
+        }
+    }
 }
 
 /// C: mjr_getrow4 (render/classic/render_util.h:38)
@@ -85,9 +94,13 @@ pub fn mjr_mul_mat44(res: *mut f32, A: *const f32, B: *const f32) {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjr_getrow4(res: *mut f32, A: *const f32, r: i32) {
-    extern "C" { fn mjr_getrow4(res: *mut f32, A: *const f32, r: i32); }
-    // SAFETY: delegates to C implementation, pointers valid per caller contract
-    unsafe { mjr_getrow4(res, A, r) }
+    // SAFETY: res points to 4 f32, A points to 16 f32 (4x4 column-major)
+    unsafe {
+        *res.add(0) = *A.add(r as usize);
+        *res.add(1) = *A.add((r + 4) as usize);
+        *res.add(2) = *A.add((r + 8) as usize);
+        *res.add(3) = *A.add((r + 12) as usize);
+    }
 }
 
 /// C: mjr_crossVec (render/classic/render_util.h:41)
@@ -258,8 +271,18 @@ pub fn mjr_transform(translate: *const f32, rotate: *const f32, scale: f32) {
 /// C: mjr_findRect (render/classic/render_util.h:68)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjr_find_rect(x: i32, y: i32, nrect: i32, rect: *const mjrRect) -> i32 {
-    extern "C" { fn mjr_findRect(x: i32, y: i32, nrect: i32, rect: *const mjrRect) -> i32; }
-    // SAFETY: delegates to C implementation
-    unsafe { mjr_findRect(x, y, nrect, rect) }
+    // SAFETY: rect points to nrect contiguous mjrRect elements
+    unsafe {
+        for i in 0..nrect {
+            let r = &*rect.add(i as usize);
+            if x >= r.left &&
+               x < r.left + r.width &&
+               y >= r.bottom &&
+               y < r.bottom + r.height {
+                return i;
+            }
+        }
+    }
+    -1
 }
 

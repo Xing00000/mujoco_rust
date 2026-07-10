@@ -12,9 +12,16 @@ use crate::types::*;
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn is_behind(headpos: *const f32, pos: *const f32, mat: *const f32) -> i32 {
-    extern "C" { fn isBehind(headpos: *const f32, pos: *const f32, mat: *const f32) -> i32; }
-    // SAFETY: delegates to C implementation, pointers valid per caller contract
-    unsafe { isBehind(headpos, pos, mat) }
+    // SAFETY: headpos[3], pos[3], mat[9]
+    unsafe {
+        if (*headpos.add(0) - *pos.add(0)) * *mat.add(2) +
+           (*headpos.add(1) - *pos.add(1)) * *mat.add(5) +
+           (*headpos.add(2) - *pos.add(2)) * *mat.add(8) < 0.0f32 {
+            1
+        } else {
+            0
+        }
+    }
 }
 
 /// C: isReflective (render/classic/render_gl3.c:45)

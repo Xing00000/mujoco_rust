@@ -1344,9 +1344,31 @@ pub fn mj_set_contact(m: *const mjModel, con: *mut mjContact, condim: i32, inclu
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_make_capsule(m: *const mjModel, d: *mut mjData, f: i32, vid: [i32; 2], pos: *mut f64, mat: *mut f64, size: *mut f64) {
-    extern "C" { fn mj_makeCapsule(m: *const mjModel, d: *mut mjData, f: i32, vid: *const i32, pos: *mut f64, mat: *mut f64, size: *mut f64); }
-    // SAFETY: delegates to C implementation
-    unsafe { mj_makeCapsule(m, d, f, vid.as_ptr(), pos, mat, size) }
+    use crate::engine::engine_util_blas::{mju_add3, mju_scl3, mju_normalize3};
+    use crate::engine::engine_util_spatial::{mju_quat_z2vec, mju_quat2mat};
+    // SAFETY: m, d valid; pos[3], mat[9], size[2] writable
+    unsafe {
+        // get vertex positions
+        let vertadr = *(*m).flex_vertadr.add(f as usize);
+        let v1 = (*d).flexvert_xpos.add(3 * (vertadr + vid[0]) as usize);
+        let v2 = (*d).flexvert_xpos.add(3 * (vertadr + vid[1]) as usize);
+
+        // construct capsule from vertices
+        let mut dif: [f64; 3] = [
+            *v1.add(0) - *v2.add(0),
+            *v1.add(1) - *v2.add(1),
+            *v1.add(2) - *v2.add(2),
+        ];
+        *size.add(0) = *(*m).flex_radius.add(f as usize);
+        *size.add(1) = 0.5 * mju_normalize3(dif.as_mut_ptr());
+
+        mju_add3(pos, v1, v2);
+        mju_scl3(pos, pos as *const f64, 0.5);
+
+        let mut quat: [f64; 4] = [0.0; 4];
+        mju_quat_z2vec(quat.as_mut_ptr(), dif.as_ptr());
+        mju_quat2mat(mat, quat.as_ptr());
+    }
 }
 
 /// C: collisionTask (engine/engine_collision_driver.c:1849)
@@ -1367,11 +1389,36 @@ pub fn collision_task(m: *const mjModel, d: *mut mjData, arg: *mut (), thread_id
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn plane_vertex(con: *mut mjPreContact, pos: *const f64, rad: f64, t0: i32, t1: i32, t2: i32, v: i32) -> i32 {
-    extern "C" {
-        fn planeVertex(con: *mut mjPreContact, pos: *const f64, rad: f64, t0: i32, t1: i32, t2: i32, v: i32) -> i32;
+    use crate::engine::engine_util_blas::{mju_sub3, mju_normalize3, mju_dot3, mju_scl3, mju_zero3, mju_add_scl3};
+    use crate::engine::engine_util_spatial::mju_cross;
+    // SAFETY: pos points to vertex array, con is valid mjPreContact
+    unsafe {
+        // make t0 the origin
+        let mut e1: [f64; 3] = [0.0; 3];
+        let mut e2: [f64; 3] = [0.0; 3];
+        let mut ev: [f64; 3] = [0.0; 3];
+        mju_sub3(e1.as_mut_ptr(), pos.add(3 * t1 as usize), pos.add(3 * t0 as usize));
+        mju_sub3(e2.as_mut_ptr(), pos.add(3 * t2 as usize), pos.add(3 * t0 as usize));
+        mju_sub3(ev.as_mut_ptr(), pos.add(3 * v as usize), pos.add(3 * t0 as usize));
+
+        // compute normal
+        let mut nrm: [f64; 3] = [0.0; 3];
+        mju_cross(nrm.as_mut_ptr(), e1.as_ptr(), e2.as_ptr());
+        mju_normalize3(nrm.as_mut_ptr());
+
+        // project, check distance
+        let dst: f64 = mju_dot3(ev.as_ptr(), nrm.as_ptr());
+        if dst <= -2.0 * rad {
+            return 0;
+        }
+
+        // construct contact
+        (*con).dist = -dst - 2.0 * rad;
+        mju_scl3((*con).normal.as_mut_ptr(), nrm.as_ptr(), -1.0);
+        mju_zero3((*con).tangent.as_mut_ptr());
+        mju_add_scl3((*con).pos.as_mut_ptr(), pos.add(3 * v as usize), nrm.as_ptr(), -0.5 * dst);
+        1
     }
-    // SAFETY: delegates to C implementation, all pointers valid per caller contract
-    unsafe { planeVertex(con, pos, rad, t0, t1, t2, v) }
 }
 
 /// C: mj_maxContact (engine/engine_collision_driver.h:33)

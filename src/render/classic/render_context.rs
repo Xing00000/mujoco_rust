@@ -48,9 +48,16 @@ pub fn make_h_field(m: *const mjModel, con: *mut mjrContext) {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn set_vertex_sphere(v: *mut f32, n: *mut f32, az: f32, el: f32, sign: i32) {
-    extern "C" { fn setVertexSphere(v: *mut f32, n: *mut f32, az: f32, el: f32, sign: i32); }
-    // SAFETY: delegates to C implementation
-    unsafe { setVertexSphere(v, n, az, el, sign) }
+    // SAFETY: v, n point to at least 3 f32 values
+    unsafe {
+        *v.add(0) = az.cos() * el.cos();
+        *v.add(1) = az.sin() * el.cos();
+        *v.add(2) = sign as f32 + el.sin();
+
+        *n.add(0) = *v.add(0);
+        *n.add(1) = *v.add(1);
+        *n.add(2) = *v.add(2) - sign as f32;
+    }
 }
 
 /// C: halfSphere (render/classic/render_context.c:512)
@@ -79,9 +86,12 @@ pub fn sphere(nSlice: i32, nStack: i32) {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn set_vertex_disk(v: *mut f32, az: f32, r: f32, sign: i32) {
-    extern "C" { fn setVertexDisk(v: *mut f32, az: f32, r: f32, sign: i32); }
-    // SAFETY: delegates to C implementation
-    unsafe { setVertexDisk(v, az, r, sign) }
+    // SAFETY: v points to at least 3 f32 values
+    unsafe {
+        *v.add(0) = az.cos() * r;
+        *v.add(1) = az.sin() * r;
+        *v.add(2) = sign as f32;
+    }
 }
 
 /// C: disk (render/classic/render_context.c:690)
@@ -101,9 +111,20 @@ pub fn disk(sign: i32, nSlice: i32, nStack: i32) {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn set_vertex_cone(v: *mut f32, n: *mut f32, az: f32, r: f32) {
-    extern "C" { fn setVertexCone(v: *mut f32, n: *mut f32, az: f32, r: f32); }
-    // SAFETY: delegates to C implementation
-    unsafe { setVertexCone(v, n, az, r) }
+    // SAFETY: v, n point to at least 3 f32 values
+    unsafe {
+        let scale: f32 = 1.0f32 / 2.0f32.sqrt();
+
+        // vertex
+        *v.add(0) = az.cos() * r;
+        *v.add(1) = az.sin() * r;
+        *v.add(2) = 1.0 - r;
+
+        // normal
+        *n.add(0) = az.cos() * scale;
+        *n.add(1) = az.sin() * scale;
+        *n.add(2) = scale;
+    }
 }
 
 /// C: cone (render/classic/render_context.c:775)
@@ -123,9 +144,17 @@ pub fn cone(nSlice: i32, nStack: i32) {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn set_vertex_cylinder(v: *mut f32, n: *mut f32, az: f32, h: f32) {
-    extern "C" { fn setVertexCylinder(v: *mut f32, n: *mut f32, az: f32, h: f32); }
-    // SAFETY: delegates to C implementation
-    unsafe { setVertexCylinder(v, n, az, h) }
+    // SAFETY: v, n point to at least 3 f32 values
+    unsafe {
+        *v.add(0) = az.cos();
+        *v.add(1) = az.sin();
+        *v.add(2) = h;
+
+        let len: f32 = (*v.add(0) * *v.add(0) + *v.add(1) * *v.add(1)).sqrt();
+        *n.add(0) = *v.add(0) / len;
+        *n.add(1) = *v.add(1) / len;
+        *n.add(2) = 0.0;
+    }
 }
 
 /// C: cylinder (render/classic/render_context.c:852)
@@ -145,9 +174,12 @@ pub fn cylinder(nSlice: i32, nStack: i32) {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn set_vertex_haze(v: *mut f32, az: f32, h: f32, r: f32) {
-    extern "C" { fn setVertexHaze(v: *mut f32, az: f32, h: f32, r: f32); }
-    // SAFETY: delegates to C implementation
-    unsafe { setVertexHaze(v, az, h, r) }
+    // SAFETY: v points to at least 3 f32 values
+    unsafe {
+        *v.add(0) = az.cos() * (1.0 - r * (1.0 - h));
+        *v.add(1) = az.sin() * (1.0 - r * (1.0 - h));
+        *v.add(2) = h;
+    }
 }
 
 /// C: haze (render/classic/render_context.c:898)

@@ -107,10 +107,64 @@ pub fn a_rdiaginv(m: *const mjModel, d: *const mjData, res: *mut f64, nefc: i32,
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn extract_block(m: *const mjModel, d: *const mjData, Ac: *mut f64, start: i32, n: i32, flg_subR: i32) {
-    // WARNING: signature changed — verify body
-    // Previous params: (m : * const mjModel, d : * const mjData, Ac : * mut f64, start : i32, n : i32, flg_subR : i32)
-    // Previous return: ()
-    extern "C" { fn extractBlock(m : * const mjModel , d : * const mjData , Ac : * mut f64 , start : i32 , n : i32 , flg_subR : i32) ; } unsafe { extractBlock(m , d , Ac , start , n , flg_subR) }
+    use crate::engine::engine_util_blas::{mju_zero, mju_copy};
+    use crate::engine::engine_util_misc::mju_max;
+    use crate::engine::engine_core_util::mj_is_sparse;
+    use crate::engine::engine_util_errmem::mju_error;
+    // SAFETY: m, d valid; Ac points to n*n writable f64
+    unsafe {
+        let nefc = (*d).nefc;
+        let AR = (*d).efc_AR;
+
+        // sparse
+        if mj_is_sparse(m) != 0 {
+            let rownnz = (*d).efc_AR_rownnz;
+            let rowadr = (*d).efc_AR_rowadr;
+            let colind = (*d).efc_AR_colind;
+
+            // assume full sub-matrix, find starting k: same for all rows
+            let mut k: i32 = 0;
+            while k < *rownnz.add(start as usize) {
+                if *colind.add((*rowadr.add(start as usize) + k) as usize) == start {
+                    break;
+                }
+                k += 1;
+            }
+
+            // SHOULD NOT OCCUR
+            if k >= *rownnz.add(start as usize) {
+                mju_error(b"internal error\0".as_ptr() as *const i8);
+            }
+
+            // copy rows
+            for j in 0..n {
+                mju_copy(
+                    Ac.add((j * n) as usize),
+                    AR.add((*rowadr.add((start + j) as usize) + k) as usize),
+                    n,
+                );
+            }
+        }
+        // dense
+        else {
+            for j in 0..n {
+                mju_copy(
+                    Ac.add((j * n) as usize),
+                    AR.add((start + (start + j) * nefc) as usize),
+                    n,
+                );
+            }
+        }
+
+        // subtract R from diagonal, clamp to 1e-10 from below
+        if flg_subR != 0 {
+            let R = (*d).efc_R;
+            for j in 0..n {
+                *Ac.add((j * (n + 1)) as usize) -= *R.add((start + j) as usize);
+                *Ac.add((j * (n + 1)) as usize) = mju_max(1e-10, *Ac.add((j * (n + 1)) as usize));
+            }
+        }
+    }
 }
 
 /// C: residual (engine/engine_solver.c:186)
@@ -122,10 +176,41 @@ pub fn extract_block(m: *const mjModel, d: *const mjData, Ac: *mut f64, start: i
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn residual(m: *const mjModel, d: *const mjData, res: *mut f64, i: i32, dim: i32, flg_subR: i32) {
-    // WARNING: signature changed — verify body
-    // Previous params: (m : * const mjModel, d : * const mjData, res : * mut f64, i : i32, dim : i32, flg_subR : i32)
-    // Previous return: ()
-    extern "C" { fn residual(m : * const mjModel , d : * const mjData , res : * mut f64 , i : i32 , dim : i32 , flg_subR : i32) ; } unsafe { residual(m , d , res , i , dim , flg_subR) }
+    use crate::engine::engine_util_blas::mju_dot;
+    use crate::engine::engine_util_sparse::mju_dot_sparse;
+    use crate::engine::engine_core_util::mj_is_sparse;
+    // SAFETY: m, d valid; res points to dim writable f64
+    unsafe {
+        let nefc = (*d).nefc;
+
+        // sparse
+        if mj_is_sparse(m) != 0 {
+            for j in 0..dim {
+                let row = i + j;
+                *res.add(j as usize) = *(*d).efc_b.add(row as usize) +
+                    mju_dot_sparse(
+                        (*d).efc_AR.add(*(*d).efc_AR_rowadr.add(row as usize) as usize),
+                        (*d).efc_force,
+                        *(*d).efc_AR_rownnz.add(row as usize),
+                        (*d).efc_AR_colind.add(*(*d).efc_AR_rowadr.add(row as usize) as usize),
+                    );
+            }
+        }
+        // dense
+        else {
+            for j in 0..dim {
+                let row = i + j;
+                *res.add(j as usize) = *(*d).efc_b.add(row as usize) +
+                    mju_dot((*d).efc_AR.add((row * nefc) as usize), (*d).efc_force, nefc);
+            }
+        }
+
+        if flg_subR != 0 {
+            for j in 0..dim {
+                *res.add(j as usize) -= *(*d).efc_R.add((i + j) as usize) * *(*d).efc_force.add((i + j) as usize);
+            }
+        }
+    }
 }
 
 /// C: costChange (engine/engine_solver.c:215)
