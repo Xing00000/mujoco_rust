@@ -13,9 +13,23 @@ use crate::types::*;
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mju_clamp_vec(vec: *mut f64, limit: *const f64, n: i32) {
-    extern "C" { fn mju_clampVec(vec: *mut f64, limit: *const f64, n: i32); }
-    // SAFETY: delegates to C implementation
-    unsafe { mju_clampVec(vec, limit, n) }
+    if vec.is_null() || limit.is_null() {
+        return;
+    }
+    // SAFETY: vec has n elements, limit has n elements (or 3 for box sizes)
+    unsafe {
+        let mut i: i32 = 0;
+        while i < n {
+            let range = *limit.add(i as usize);
+            let val = *vec.add(i as usize);
+            if val > range {
+                *vec.add(i as usize) = range;
+            } else if val < -range {
+                *vec.add(i as usize) = -range;
+            }
+            i += 1;
+        }
+    }
 }
 
 /// C: mjraw_SphereBox (engine/engine_collision_box.c:34)

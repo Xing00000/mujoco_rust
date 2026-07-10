@@ -27,8 +27,11 @@ pub fn mjraw_plane_sphere(con: *mut mjPreContact, margin: f64, pos1: *const f64,
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjraw_sphere_sphere(con: *mut mjPreContact, margin: f64, pos1: *const f64, mat1: *const f64, size1: *const f64, pos2: *const f64, mat2: *const f64, size2: *const f64) -> i32  {
+    if pos1.is_null() || pos2.is_null() {
+        return 0;
+    }
     extern "C" { fn mjraw_SphereSphere(con: *mut mjPreContact, margin: f64, pos1: *const f64, mat1: *const f64, size1: *const f64, pos2: *const f64, mat2: *const f64, size2: *const f64) -> i32; }
-    // SAFETY: delegates to C implementation
+    // SAFETY: pos1, pos2 verified non-null; delegates to C implementation
     unsafe { mjraw_SphereSphere(con, margin, pos1, mat1, size1, pos2, mat2, size2) }
 }
 
@@ -41,8 +44,11 @@ pub fn mjraw_sphere_sphere(con: *mut mjPreContact, margin: f64, pos1: *const f64
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn area_sign(p1: *const f64, p2: *const f64, p3: *const f64) -> f64  {
+    if p1.is_null() || p2.is_null() || p3.is_null() {
+        return 0.0;
+    }
     extern "C" { fn areaSign(p1: *const f64, p2: *const f64, p3: *const f64) -> f64; }
-    // SAFETY: delegates to C implementation
+    // SAFETY: p1, p2, p3 verified non-null; delegates to C implementation
     unsafe { areaSign(p1, p2, p3) }
 }
 
@@ -55,8 +61,11 @@ pub fn area_sign(p1: *const f64, p2: *const f64, p3: *const f64) -> f64  {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn point_segment(res: *mut f64, p: *const f64, u: *const f64, v: *const f64) -> f64  {
+    if res.is_null() || p.is_null() || u.is_null() || v.is_null() {
+        return 0.0;
+    }
     extern "C" { fn pointSegment(res: *mut f64, p: *const f64, u: *const f64, v: *const f64) -> f64; }
-    // SAFETY: delegates to C implementation
+    // SAFETY: res, p, u, v verified non-null; delegates to C implementation
     unsafe { pointSegment(res, p, u, v) }
 }
 
@@ -740,8 +749,11 @@ pub fn mjraw_sphere_triangle(con: *mut mjPreContact, margin: f64, s: *const f64,
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjraw_box_triangle(con: *mut mjPreContact, margin: f64, pos: *const f64, mat: *const f64, size: *const f64, t1: *const f64, t2: *const f64, t3: *const f64, rt: f64) -> i32  {
+    if pos.is_null() || size.is_null() {
+        return 0;
+    }
     extern "C" { fn mjraw_BoxTriangle(con: *mut mjPreContact, margin: f64, pos: *const f64, mat: *const f64, size: *const f64, t1: *const f64, t2: *const f64, t3: *const f64, rt: f64) -> i32; }
-    // SAFETY: delegates to C implementation
+    // SAFETY: pos, size verified non-null; delegates to C implementation
     unsafe { mjraw_BoxTriangle(con, margin, pos, mat, size, t1, t2, t3, rt) }
 }
 
@@ -754,8 +766,11 @@ pub fn mjraw_box_triangle(con: *mut mjPreContact, margin: f64, pos: *const f64, 
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjraw_capsule_triangle(con: *mut mjPreContact, margin: f64, pos: *const f64, mat: *const f64, size: *const f64, t1: *const f64, t2: *const f64, t3: *const f64, rt: f64) -> i32  {
+    if pos.is_null() || size.is_null() {
+        return 0;
+    }
     extern "C" { fn mjraw_CapsuleTriangle(con: *mut mjPreContact, margin: f64, pos: *const f64, mat: *const f64, size: *const f64, t1: *const f64, t2: *const f64, t3: *const f64, rt: f64) -> i32; }
-    // SAFETY: delegates to C implementation
+    // SAFETY: pos, size verified non-null; delegates to C implementation
     unsafe { mjraw_CapsuleTriangle(con, margin, pos, mat, size, t1, t2, t3, rt) }
 }
 

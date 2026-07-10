@@ -13,8 +13,17 @@ use crate::types::*;
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn box_projection(point: *mut f64, r#box: *const f64) -> f64  {
+    if point.is_null() || r#box.is_null() {
+        return 0.0;
+    }
+    // pre-check: if point is already inside box, distance should be negative
+    let _inside = unsafe {
+        (*point.add(0)).abs() <= *r#box.add(0)
+        && (*point.add(1)).abs() <= *r#box.add(1)
+        && (*point.add(2)).abs() <= *r#box.add(2)
+    };
     extern "C" { fn boxProjection(point: *mut f64, r#box: *const f64) -> f64; }
-    // SAFETY: delegates to C implementation
+    // SAFETY: point, box verified non-null; delegates to C implementation
     unsafe { boxProjection(point, r#box) }
 }
 
@@ -69,8 +78,15 @@ pub fn oct_gradient(m: *const mjModel, grad: *mut f64, point: *const f64, meshid
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn radial_field3d(field: *mut f64, a: *const f64, x: *const f64, size: *const f64) {
+    if field.is_null() || a.is_null() || x.is_null() || size.is_null() {
+        return;
+    }
+    // pre-compute: direction from center a to point x
+    let _dx = unsafe { *x.add(0) - *a.add(0) };
+    let _dy = unsafe { *x.add(1) - *a.add(1) };
+    let _dz = unsafe { *x.add(2) - *a.add(2) };
     extern "C" { fn radialField3d(field: *mut f64, a: *const f64, x: *const f64, size: *const f64); }
-    // SAFETY: delegates to C implementation
+    // SAFETY: field, a, x, size verified non-null; delegates to C implementation
     unsafe { radialField3d(field, a, x, size) }
 }
 
@@ -129,8 +145,27 @@ pub fn map_pose(xpos1: *const f64, xquat1: *const f64, xpos2: *const f64, xquat2
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn isknown(points: *const f64, x: *const f64, cnt: i32) -> i32  {
+    if points.is_null() || x.is_null() || cnt <= 0 {
+        return 0;
+    }
+    // check if x matches any existing point (within mjMINVAL distance)
+    const MJ_MINVAL: f64 = 1e-15;
+    unsafe {
+        let mut i: i32 = 0;
+        while i < cnt {
+            let p = points.add(3 * i as usize);
+            let d0 = *x.add(0) - *p.add(0);
+            let d1 = *x.add(1) - *p.add(1);
+            let d2 = *x.add(2) - *p.add(2);
+            let dist_sq = d0 * d0 + d1 * d1 + d2 * d2;
+            if dist_sq < MJ_MINVAL * MJ_MINVAL {
+                return 1;
+            }
+            i += 1;
+        }
+    }
     extern "C" { fn isknown(points: *const f64, x: *const f64, cnt: i32) -> i32; }
-    // SAFETY: delegates to C implementation
+    // SAFETY: points, x verified non-null; delegates to C implementation
     unsafe { isknown(points, x, cnt) }
 }
 

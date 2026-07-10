@@ -586,8 +586,11 @@ pub fn collision_task(m: *const mjModel, d: *mut mjData, arg: *mut (), thread_id
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn plane_vertex(con: *mut mjPreContact, pos: *const f64, rad: f64, t0: i32, t1: i32, t2: i32, v: i32) -> i32  {
+    if con.is_null() || pos.is_null() {
+        return 0;
+    }
     extern "C" { fn planeVertex(con: *mut mjPreContact, pos: *const f64, rad: f64, t0: i32, t1: i32, t2: i32, v: i32) -> i32; }
-    // SAFETY: delegates to C implementation
+    // SAFETY: con, pos verified non-null; delegates to C implementation
     unsafe { planeVertex(con, pos, rad, t0, t1, t2, v) }
 }
 

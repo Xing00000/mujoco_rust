@@ -19,8 +19,11 @@ pub fn align8(size: usize) -> usize {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn subdistance(lambda: *mut f64, n: i32, simplex: *const Vertex) {
+    if lambda.is_null() || simplex.is_null() {
+        return;
+    }
     extern "C" { fn subdistance(lambda: *mut f64, n: i32, simplex: *const Vertex); }
-    // SAFETY: delegates to C implementation
+    // SAFETY: lambda, simplex verified non-null; delegates to C implementation
     unsafe { subdistance(lambda, n, simplex) }
 }
 
@@ -370,8 +373,11 @@ pub fn epa_support(pt: *mut Polytope, obj1: *mut mjCCDObj, obj2: *mut mjCCDObj, 
 /// C: insertVertex (engine/engine_collision_gjk.c:112)
 #[allow(unused_variables, non_snake_case)]
 pub fn insert_vertex(pt: *mut Polytope, v: *const Vertex) -> i32  {
+    if pt.is_null() || v.is_null() {
+        return -1;
+    }
     extern "C" { fn insertVertex(pt: *mut Polytope, v: *const Vertex) -> i32; }
-    // SAFETY: delegates to C implementation
+    // SAFETY: pt, v verified non-null; delegates to C implementation
     unsafe { insertVertex(pt, v) }
 }
 
@@ -663,8 +669,11 @@ pub fn gjk_intersect_support(v: *mut Vertex, obj1: *mut mjCCDObj, obj2: *mut mjC
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn signed_distance(normal: *mut f64, v1: *const Vertex, v2: *const Vertex, v3: *const Vertex) -> f64  {
+    if v1.is_null() || v2.is_null() || v3.is_null() {
+        return 0.0;
+    }
     extern "C" { fn signedDistance(normal: *mut f64, v1: *const Vertex, v2: *const Vertex, v3: *const Vertex) -> f64; }
-    // SAFETY: delegates to C implementation
+    // SAFETY: v1, v2, v3 verified non-null; delegates to C implementation
     unsafe { signedDistance(normal, v1, v2, v3) }
 }
 
@@ -769,8 +778,11 @@ pub fn same_sign2(a: f64, b: f64) -> i32 {
 /// C: replaceSimplex3 (engine/engine_collision_gjk.c:849)
 #[allow(unused_variables, non_snake_case)]
 pub fn replace_simplex3(pt: *mut Polytope, status: *mut mjCCDStatus, v1: i32, v2: i32, v3: i32) {
+    if pt.is_null() || status.is_null() {
+        return;
+    }
     extern "C" { fn replaceSimplex3(pt: *mut Polytope, status: *mut mjCCDStatus, v1: i32, v2: i32, v3: i32); }
-    // SAFETY: delegates to C implementation
+    // SAFETY: pt, status verified non-null; delegates to C implementation
     unsafe { replaceSimplex3(pt, status, v1, v2, v3) }
 }
 
@@ -998,16 +1010,22 @@ pub fn tri_point_intersect(v1: *const f64, v2: *const f64, v3: *const f64, p: *c
 /// C: deleteFace (engine/engine_collision_gjk.c:1216)
 #[allow(unused_variables, non_snake_case)]
 pub fn delete_face(pt: *mut Polytope, face: *mut Face) {
+    if pt.is_null() || face.is_null() {
+        return;
+    }
     extern "C" { fn deleteFace(pt: *mut Polytope, face: *mut Face); }
-    // SAFETY: delegates to C implementation
+    // SAFETY: pt, face verified non-null; delegates to C implementation
     unsafe { deleteFace(pt, face) }
 }
 
 /// C: maxFaces (engine/engine_collision_gjk.c:1226)
 #[allow(unused_variables, non_snake_case)]
 pub fn max_faces(pt: *mut Polytope) -> i32  {
+    if pt.is_null() {
+        return 0;
+    }
     extern "C" { fn maxFaces(pt: *mut Polytope) -> i32; }
-    // SAFETY: delegates to C implementation
+    // SAFETY: pt verified non-null; delegates to C implementation
     unsafe { maxFaces(pt) }
 }
 
@@ -1025,8 +1043,11 @@ pub fn add_edge(pt: *mut Polytope, index: i32, edge: i32) {
 /// C: getEdge (engine/engine_collision_gjk.c:1270)
 #[allow(unused_variables, non_snake_case)]
 pub fn get_edge(face: *mut Face, vertex: i32) -> i32  {
+    if face.is_null() {
+        return -1;
+    }
     extern "C" { fn getEdge(face: *mut Face, vertex: i32) -> i32; }
-    // SAFETY: delegates to C implementation
+    // SAFETY: face verified non-null; delegates to C implementation
     unsafe { getEdge(face, vertex) }
 }
 
@@ -1112,8 +1133,11 @@ pub fn next(polygon: *mut f64, nvert: i32, curr: *mut f64) -> *mut f64 {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn polygon_quad(res: [*mut f64; 4], polygon: *mut f64, nvert: i32) {
+    if polygon.is_null() {
+        return;
+    }
     extern "C" { fn polygonQuad(res: [*mut f64; 4], polygon: *mut f64, nvert: i32); }
-    // SAFETY: delegates to C implementation
+    // SAFETY: polygon verified non-null; delegates to C implementation
     unsafe { polygonQuad(res, polygon, nvert) }
 }
 
@@ -1222,8 +1246,11 @@ pub fn globalcoord(res: *mut f64, mat: *const f64, pos: *const f64, l1: f64, l2:
 /// C: intersect (engine/engine_collision_gjk.c:1759)
 #[allow(unused_variables, non_snake_case)]
 pub fn intersect(res: [i32; 2], arr1: *const i32, arr2: *const i32, n: i32, m: i32) -> i32  {
+    if arr1.is_null() || arr2.is_null() {
+        return 0;
+    }
     extern "C" { fn intersect(res: [i32; 2], arr1: *const i32, arr2: *const i32, n: i32, m: i32) -> i32; }
-    // SAFETY: delegates to C implementation
+    // SAFETY: arr1, arr2 verified non-null; delegates to C implementation
     unsafe { intersect(res, arr1, arr2, n, m) }
 }
 
@@ -1250,8 +1277,11 @@ pub fn mesh_normals(res: *mut f64, resind: [i32; 3], dim: i32, obj: *mut mjCCDOb
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mesh_edge_normals(res: *mut f64, endverts: *mut f64, dim: i32, obj: *mut mjCCDObj, v1: *const f64, v2: *const f64, v1i: i32, v2i: i32) -> i32  {
+    if obj.is_null() || v1.is_null() || v2.is_null() {
+        return 0;
+    }
     extern "C" { fn meshEdgeNormals(res: *mut f64, endverts: *mut f64, dim: i32, obj: *mut mjCCDObj, v1: *const f64, v2: *const f64, v1i: i32, v2i: i32) -> i32; }
-    // SAFETY: delegates to C implementation
+    // SAFETY: obj, v1, v2 verified non-null; delegates to C implementation
     unsafe { meshEdgeNormals(res, endverts, dim, obj, v1, v2, v1i, v2i) }
 }
 
@@ -1264,8 +1294,11 @@ pub fn mesh_edge_normals(res: *mut f64, endverts: *mut f64, dim: i32, obj: *mut 
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case, invalid_reference_casting)]
 pub fn box_normals2(res: *mut f64, resind: [i32; 3], mat: *const f64, n: *const f64) -> i32  {
+    if mat.is_null() || n.is_null() {
+        return 0;
+    }
     extern "C" { fn boxNormals2(res: *mut f64, resind: [i32; 3], mat: *const f64, n: *const f64) -> i32; }
-    // SAFETY: delegates to C implementation
+    // SAFETY: mat, n verified non-null; delegates to C implementation
     unsafe { boxNormals2(res, resind, mat, n) }
 }
 
@@ -1292,8 +1325,11 @@ pub fn box_normals(res: *mut f64, resind: [i32; 3], dim: i32, obj: *mut mjCCDObj
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn box_edge_normals(res: *mut f64, endverts: *mut f64, dim: i32, obj: *mut mjCCDObj, v1: *const f64, v2: *const f64, v1i: i32, v2i: i32) -> i32  {
+    if obj.is_null() || v1.is_null() || v2.is_null() {
+        return 0;
+    }
     extern "C" { fn boxEdgeNormals(res: *mut f64, endverts: *mut f64, dim: i32, obj: *mut mjCCDObj, v1: *const f64, v2: *const f64, v1i: i32, v2i: i32) -> i32; }
-    // SAFETY: delegates to C implementation
+    // SAFETY: obj, v1, v2 verified non-null; delegates to C implementation
     unsafe { boxEdgeNormals(res, endverts, dim, obj, v1, v2, v1i, v2i) }
 }
 
@@ -1306,8 +1342,11 @@ pub fn box_edge_normals(res: *mut f64, endverts: *mut f64, dim: i32, obj: *mut m
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn box_face(res: *mut f64, obj: *mut mjCCDObj, idx: i32) -> i32  {
+    if obj.is_null() {
+        return 0;
+    }
     extern "C" { fn boxFace(res: *mut f64, obj: *mut mjCCDObj, idx: i32) -> i32; }
-    // SAFETY: delegates to C implementation
+    // SAFETY: obj verified non-null; delegates to C implementation
     unsafe { boxFace(res, obj, idx) }
 }
 
@@ -1320,8 +1359,11 @@ pub fn box_face(res: *mut f64, obj: *mut mjCCDObj, idx: i32) -> i32  {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mesh_face(res: *mut f64, obj: *mut mjCCDObj, idx: i32) -> i32  {
+    if obj.is_null() {
+        return 0;
+    }
     extern "C" { fn meshFace(res: *mut f64, obj: *mut mjCCDObj, idx: i32) -> i32; }
-    // SAFETY: delegates to C implementation
+    // SAFETY: obj verified non-null; delegates to C implementation
     unsafe { meshFace(res, obj, idx) }
 }
 
@@ -1334,8 +1376,11 @@ pub fn mesh_face(res: *mut f64, obj: *mut mjCCDObj, idx: i32) -> i32  {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn aligned_faces(mut res: [i32; 2], v: *const f64, nv: i32, w: *const f64, nw: i32) -> i32  {
+    if v.is_null() || w.is_null() {
+        return 0;
+    }
     extern "C" { fn alignedFaces(res: [i32; 2], v: *const f64, nv: i32, w: *const f64, nw: i32) -> i32; }
-    // SAFETY: delegates to C implementation
+    // SAFETY: v, w verified non-null; delegates to C implementation
     unsafe { alignedFaces(res, v, nv, w, nw) }
 }
 
@@ -1348,8 +1393,11 @@ pub fn aligned_faces(mut res: [i32; 2], v: *const f64, nv: i32, w: *const f64, n
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case, invalid_reference_casting)]
 pub fn aligned_face_edge(res: [i32; 2], edge: *const f64, nedge: i32, face: *const f64, nface: i32) -> i32  {
+    if edge.is_null() || face.is_null() {
+        return 0;
+    }
     extern "C" { fn alignedFaceEdge(res: [i32; 2], edge: *const f64, nedge: i32, face: *const f64, nface: i32) -> i32; }
-    // SAFETY: delegates to C implementation
+    // SAFETY: edge, face verified non-null; delegates to C implementation
     unsafe { alignedFaceEdge(res, edge, nedge, face, nface) }
 }
 
@@ -1361,8 +1409,11 @@ pub fn aligned_face_edge(res: [i32; 2], edge: *const f64, nedge: i32, face: *con
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn simplex_dim(v1i: *mut i32, v2i: *mut i32, v3i: *mut i32, v1: *mut *mut f64, v2: *mut *mut f64, v3: *mut *mut f64) -> i32  {
+    if v1i.is_null() || v2i.is_null() || v3i.is_null() {
+        return 0;
+    }
     extern "C" { fn simplexDim(v1i: *mut i32, v2i: *mut i32, v3i: *mut i32, v1: *mut *mut f64, v2: *mut *mut f64, v3: *mut *mut f64) -> i32; }
-    // SAFETY: delegates to C implementation
+    // SAFETY: v1i, v2i, v3i verified non-null; delegates to C implementation
     unsafe { simplexDim(v1i, v2i, v3i, v1, v2, v3) }
 }
 
@@ -1386,8 +1437,11 @@ pub fn multicontact(pt: *mut Polytope, face: *mut Face, status: *mut mjCCDStatus
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn inflate(status: *mut mjCCDStatus, margin1: f64, margin2: f64) {
+    if status.is_null() {
+        return;
+    }
     extern "C" { fn inflate(status: *mut mjCCDStatus, margin1: f64, margin2: f64); }
-    // SAFETY: delegates to C implementation
+    // SAFETY: status verified non-null; delegates to C implementation
     unsafe { inflate(status, margin1, margin2) }
 }
 
