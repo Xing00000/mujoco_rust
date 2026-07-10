@@ -20,8 +20,9 @@ pub fn mjs_default_spec(spec: *mut mjSpec) {
 /// C: mjs_defaultOrientation (user/user_init.c:69)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjs_default_orientation(orient: *mut mjsOrientation) {
+    if orient.is_null() { return; }
     extern "C" { fn mjs_defaultOrientation(orient: *mut mjsOrientation); }
-    // SAFETY: delegates to C implementation
+    // SAFETY: orient verified non-null
     unsafe { mjs_defaultOrientation(orient) }
 }
 

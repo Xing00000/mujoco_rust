@@ -29,8 +29,9 @@ pub fn mj_xurdf_add_name(self_ptr: *mut mjXURDF, name: string, list: *mut i32) {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_xurdf_parse(self_ptr: *mut mjXURDF, root: *mut tinyxml2__XMLElement, prefix: *const std__string, pos: *mut f64, quat: *mut f64, static_body: bool) {
+    if self_ptr.is_null() { return; }
     extern "C" { fn mjXURDF_Parse(self_ptr: *mut mjXURDF, root: *mut tinyxml2__XMLElement, prefix: *const std__string, pos: *mut f64, quat: *mut f64, static_body: bool); }
-    // SAFETY: delegates to C implementation
+    // SAFETY: self_ptr verified non-null
     unsafe { mjXURDF_Parse(self_ptr, root, prefix, pos, quat, static_body) }
 }
 

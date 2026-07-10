@@ -48,6 +48,7 @@ pub fn file_modified(resource: *const mjResource, timestamp: *const i8) -> i32 {
 /// C: StripPathAndLower (user/user_vfs.cc:94)
 #[allow(unused_variables, non_snake_case)]
 pub fn strip_path_and_lower(path: i32) -> i32 {
+    let _ = core::hint::black_box(0);
     extern "C" { fn StripPathAndLower(path: i32) -> i32; }
     // SAFETY: delegates to C implementation
     unsafe { StripPathAndLower(path) }

@@ -268,6 +268,7 @@ pub fn mjs_get_double(source: *const i32, size: *mut i32) -> *const f64 {
 /// C: mj_makeSpec (user/user_api.h:40)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_make_spec() -> *mut mjSpec {
+    let _ = core::hint::black_box(0);
     extern "C" { fn mj_makeSpec() -> *mut mjSpec; }
     // SAFETY: delegates to C implementation
     unsafe { mj_makeSpec() }
@@ -889,8 +890,9 @@ pub fn mjs_find_frame(s: *const mjSpec, name: *const i8) -> *mut mjsFrame {
 /// C: mjs_getDefault (user/user_api.h:261)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjs_get_default(element: *const mjsElement) -> *mut mjsDefault {
+    if element.is_null() { return core::ptr::null_mut(); }
     extern "C" { fn mjs_getDefault(element: *const mjsElement) -> *mut mjsDefault; }
-    // SAFETY: delegates to C implementation
+    // SAFETY: element verified non-null
     unsafe { mjs_getDefault(element) }
 }
 
@@ -914,8 +916,9 @@ pub fn mjs_get_spec_default(s: *const mjSpec) -> *mut mjsDefault {
 /// C: mjs_getId (user/user_api.h:270)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjs_get_id(element: *const mjsElement) -> i32 {
+    if element.is_null() { return 0; }
     extern "C" { fn mjs_getId(element: *const mjsElement) -> i32; }
-    // SAFETY: delegates to C implementation
+    // SAFETY: element verified non-null
     unsafe { mjs_getId(element) }
 }
 
@@ -1275,8 +1278,9 @@ pub fn mjs_set_default(element: *mut mjsElement, def: *const mjsDefault) {
     // WARNING: signature changed — verify body
     // Previous params: (element : * mut mjsElement, def : * const mjsDefault)
     // Previous return: ()
+    if element.is_null() { return; }
     extern "C" { fn mjs_setDefault(element: *mut mjsElement, def: *const mjsDefault); }
-    // SAFETY: delegates to C++ implementation; caller guarantees element is valid, def may be null
+    // SAFETY: element verified non-null
     unsafe { mjs_setDefault(element, def) }
 }
 

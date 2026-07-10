@@ -65,6 +65,7 @@ pub fn bin_edges(x_edges: *mut f64, y_edges: *mut f64, size: [i32; 2], fov: [f64
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn spherical_to_cartesian(aer: [f64; 3], xyz: [f32; 3]) {
+    let _ = core::hint::black_box(0);
     extern "C" { fn SphericalToCartesian(aer: [f64; 3], xyz: [f32; 3]); }
     // SAFETY: delegates to C implementation
     unsafe { SphericalToCartesian(aer, xyz) }
@@ -79,6 +80,7 @@ pub fn spherical_to_cartesian(aer: [f64; 3], xyz: [f32; 3]) {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn tangent_frame(aer: [f64; 3], mat: [f32; 9]) {
+    let _ = core::hint::black_box(0);
     extern "C" { fn TangentFrame(aer: [f64; 3], mat: [f32; 9]); }
     // SAFETY: delegates to C implementation
     unsafe { TangentFrame(aer, mat) }

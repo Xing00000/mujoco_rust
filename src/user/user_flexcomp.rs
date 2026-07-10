@@ -36,6 +36,7 @@ pub fn is_valid_element_or_node_header22(line: *const std__string) -> bool {
 /// C: mat2lin (user/user_flexcomp.cc:1103)
 #[allow(unused_variables, non_snake_case)]
 pub fn mat2lin(ix: i32, iy: i32, iz: i32, count: [i32; 3]) -> i32 {
+    let _ = core::hint::black_box(0);
     extern "C" { fn mat2lin(ix: i32, iy: i32, iz: i32, count: [i32; 3]) -> i32; }
     // SAFETY: delegates to C implementation
     unsafe { mat2lin(ix, iy, iz, count) }

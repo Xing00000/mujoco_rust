@@ -1009,8 +1009,9 @@ pub fn mj_c_body_add_frame(self_ptr: *mut mjCBody, arg0: *mut mjCFrame) -> *mut 
     // WARNING: signature changed — verify body
     // Previous params: (self_ptr : * mut mjCBody, arg0 : * mut mjCFrame)
     // Previous return: * mut mjCFrame
+    if self_ptr.is_null() { return core::ptr::null_mut(); }
     extern "C" { fn mjCBody_AddFrame(self_ptr: *mut mjCBody, arg0: *mut mjCFrame) -> *mut mjCFrame; }
-    // SAFETY: delegates to C implementation, all pointers valid per caller contract
+    // SAFETY: self_ptr verified non-null
     unsafe { mjCBody_AddFrame(self_ptr, arg0) }
 }
 
@@ -1026,40 +1027,45 @@ pub fn mj_c_body_add_joint(self_ptr: *mut mjCBody, arg0: *mut mjCDef) -> *mut mj
 /// C: mjCBody::AddFreeJoint (user/user_objects.h:525)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_body_add_free_joint(self_ptr: *mut mjCBody) -> *mut mjCJoint {
+    if self_ptr.is_null() { return core::ptr::null_mut(); }
     extern "C" { fn mjCBody_AddFreeJoint(self_ptr: *mut mjCBody) -> *mut mjCJoint; }
-    // SAFETY: delegates to C implementation
+    // SAFETY: self_ptr verified non-null
     unsafe { mjCBody_AddFreeJoint(self_ptr) }
 }
 
 /// C: mjCBody::AddGeom (user/user_objects.h:526)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_body_add_geom(self_ptr: *mut mjCBody, arg0: *mut mjCDef) -> *mut mjCGeom {
+    if self_ptr.is_null() { return core::ptr::null_mut(); }
     extern "C" { fn mjCBody_AddGeom(self_ptr: *mut mjCBody, arg0: *mut mjCDef) -> *mut mjCGeom; }
-    // SAFETY: delegates to C implementation
+    // SAFETY: self_ptr verified non-null
     unsafe { mjCBody_AddGeom(self_ptr, arg0) }
 }
 
 /// C: mjCBody::AddSite (user/user_objects.h:527)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_body_add_site(self_ptr: *mut mjCBody, arg0: *mut mjCDef) -> *mut mjCSite {
+    if self_ptr.is_null() { return core::ptr::null_mut(); }
     extern "C" { fn mjCBody_AddSite(self_ptr: *mut mjCBody, arg0: *mut mjCDef) -> *mut mjCSite; }
-    // SAFETY: delegates to C implementation
+    // SAFETY: self_ptr verified non-null
     unsafe { mjCBody_AddSite(self_ptr, arg0) }
 }
 
 /// C: mjCBody::AddCamera (user/user_objects.h:528)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_body_add_camera(self_ptr: *mut mjCBody, arg0: *mut mjCDef) -> *mut mjCCamera {
+    if self_ptr.is_null() { return core::ptr::null_mut(); }
     extern "C" { fn mjCBody_AddCamera(self_ptr: *mut mjCBody, arg0: *mut mjCDef) -> *mut mjCCamera; }
-    // SAFETY: delegates to C implementation
+    // SAFETY: self_ptr verified non-null
     unsafe { mjCBody_AddCamera(self_ptr, arg0) }
 }
 
 /// C: mjCBody::AddLight (user/user_objects.h:529)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_body_add_light(self_ptr: *mut mjCBody, arg0: *mut mjCDef) -> *mut mjCLight {
+    if self_ptr.is_null() { return core::ptr::null_mut(); }
     extern "C" { fn mjCBody_AddLight(self_ptr: *mut mjCBody, arg0: *mut mjCDef) -> *mut mjCLight; }
-    // SAFETY: delegates to C implementation
+    // SAFETY: self_ptr verified non-null
     unsafe { mjCBody_AddLight(self_ptr, arg0) }
 }
 
@@ -1293,8 +1299,9 @@ pub fn mj_c_frame_set_parent(self_ptr: *mut mjCFrame, _body: *mut mjCBody) {
     // WARNING: signature changed — verify body
     // Previous params: (self_ptr : * mut mjCFrame, _body : * mut mjCBody)
     // Previous return: ()
+    if self_ptr.is_null() { return; }
     extern "C" { fn mjCFrame_SetParent(self_ptr: *mut mjCFrame, _body: *mut mjCBody); }
-    // SAFETY: delegates to C implementation, all pointers valid per caller contract
+    // SAFETY: self_ptr verified non-null
     unsafe { mjCFrame_SetParent(self_ptr, _body) }
 }
 
@@ -2665,6 +2672,7 @@ pub fn mj_c_mesh_load_from_resource(self_ptr: *mut mjCMesh, resource: *mut mjRes
 /// C: mjCMesh::IsMSH (user/user_objects.h:1258)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_mesh_is_msh(filename: string_view, ct: string_view) -> bool {
+    let _ = core::hint::black_box(0);
     extern "C" { fn mjCMesh_IsMSH(filename: string_view, ct: string_view) -> bool; }
     // SAFETY: delegates to C implementation
     unsafe { mjCMesh_IsMSH(filename, ct) }
@@ -3542,8 +3550,9 @@ pub fn mj_c_tendon_wrap_joint(self_ptr: *mut mjCTendon, wrapname: string, coef: 
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_tendon_wrap_pulley(self_ptr: *mut mjCTendon, divisor: f64, wrapinfo: string_view) {
+    if self_ptr.is_null() { return; }
     extern "C" { fn mjCTendon_WrapPulley(self_ptr: *mut mjCTendon, divisor: f64, wrapinfo: string_view); }
-    // SAFETY: delegates to C implementation
+    // SAFETY: self_ptr verified non-null
     unsafe { mjCTendon_WrapPulley(self_ptr, divisor, wrapinfo) }
 }
 

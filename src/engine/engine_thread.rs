@@ -31,8 +31,9 @@ pub fn thread_pool_context_thread_count(self_ptr: *mut ThreadPoolContext) -> i32
 /// C: ThreadPoolContext::Worker (engine/engine_thread.cc:83)
 #[allow(unused_variables, non_snake_case)]
 pub fn thread_pool_context_worker(self_ptr: *mut ThreadPoolContext, threadId: i32) {
+    if self_ptr.is_null() { return; }
     extern "C" { fn ThreadPoolContext_Worker(self_ptr: *mut ThreadPoolContext, threadId: i32); }
-    // SAFETY: delegates to C implementation
+    // SAFETY: self_ptr verified non-null
     unsafe { ThreadPoolContext_Worker(self_ptr, threadId) }
 }
 

@@ -47,8 +47,9 @@ pub fn vector_to_string(v: *const i32) -> std__string {
 /// C: StrToNum (user/user_util.cc:1277)
 #[allow(unused_variables, non_snake_case)]
 pub fn str_to_num(str: *mut i8, c: *mut *mut i8) -> i32 {
+    if str.is_null() { return 0; }
     extern "C" { fn StrToNum(str: *mut i8, c: *mut *mut i8) -> i32; }
-    // SAFETY: delegates to C implementation
+    // SAFETY: str verified non-null
     unsafe { StrToNum(str, c) }
 }
 

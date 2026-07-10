@@ -1021,8 +1021,9 @@ pub fn mj_c_model_is_attached(self_ptr: *mut mjCModel) -> bool {
 /// C: mjCModel::CheckRepeat (user/user_model.h:356)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_model_check_repeat(self_ptr: *mut mjCModel, r#type: mjtObj) {
+    if self_ptr.is_null() { return; }
     extern "C" { fn mjCModel_CheckRepeat(self_ptr: *mut mjCModel, r#type: mjtObj); }
-    // SAFETY: delegates to C implementation
+    // SAFETY: self_ptr verified non-null
     unsafe { mjCModel_CheckRepeat(self_ptr, r#type) }
 }
 

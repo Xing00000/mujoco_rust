@@ -183,8 +183,9 @@ pub fn mj_x_reader_visual(self_ptr: *mut mjXReader, section: *mut tinyxml2__XMLE
 /// C: mjXReader::Statistic (xml/xml_native_reader.h:57)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_x_reader_statistic(self_ptr: *mut mjXReader, section: *mut tinyxml2__XMLElement) {
+    if self_ptr.is_null() { return; }
     extern "C" { fn mjXReader_Statistic(self_ptr: *mut mjXReader, section: *mut tinyxml2__XMLElement); }
-    // SAFETY: delegates to C implementation
+    // SAFETY: self_ptr verified non-null
     unsafe { mjXReader_Statistic(self_ptr, section) }
 }
 
