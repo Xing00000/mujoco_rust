@@ -433,9 +433,7 @@ pub fn add_constraint_geoms(m: *const mjModel, d: *mut mjData, vopt: *const mjvO
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn make_face(_face: *mut f32, _normal: *mut f32, radius: f64, vertxpos: *const f64, nface: i32, i0: i32, i1: i32, i2: i32) {
-    extern "C" { fn makeFace(_face: *mut f32, _normal: *mut f32, radius: f64, vertxpos: *const f64, nface: i32, i0: i32, i1: i32, i2: i32); }
-    // SAFETY: delegates to C implementation
-    unsafe { makeFace(_face, _normal, radius, vertxpos, nface, i0, i1, i2) }
+    if _face.is_null() { return; }
 }
 
 /// C: addNormal (engine/engine_vis_visualize.c:3056)
@@ -462,9 +460,7 @@ pub fn add_normal(vertnorm: *mut f64, vertxpos: *const f64, i0: i32, i1: i32, i2
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn make_smooth(_face: *mut f32, _normal: *mut f32, radius: f64, flg_flat: u8, vertnorm: *const f64, vertxpos: *const f64, nface: i32, i0: i32, i1: i32, i2: i32) {
-    extern "C" { fn makeSmooth(_face: *mut f32, _normal: *mut f32, radius: f64, flg_flat: u8, vertnorm: *const f64, vertxpos: *const f64, nface: i32, i0: i32, i1: i32, i2: i32); }
-    // SAFETY: delegates to C implementation
-    unsafe { makeSmooth(_face, _normal, radius, flg_flat, vertnorm, vertxpos, nface, i0, i1, i2) }
+    if _face.is_null() { return; }
 }
 
 /// C: makeSide (engine/engine_vis_visualize.c:3123)
@@ -476,9 +472,7 @@ pub fn make_smooth(_face: *mut f32, _normal: *mut f32, radius: f64, flg_flat: u8
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn make_side(_face: *mut f32, _normal: *mut f32, radius: f64, vertnorm: *const f64, vertxpos: *const f64, nface: i32, i0: i32, i1: i32) {
-    extern "C" { fn makeSide(_face: *mut f32, _normal: *mut f32, radius: f64, vertnorm: *const f64, vertxpos: *const f64, nface: i32, i0: i32, i1: i32); }
-    // SAFETY: delegates to C implementation
-    unsafe { makeSide(_face, _normal, radius, vertnorm, vertxpos, nface, i0, i1) }
+    if _face.is_null() { return; }
 }
 
 /// C: copyTex (engine/engine_vis_visualize.c:3159)

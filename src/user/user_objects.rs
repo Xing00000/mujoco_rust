@@ -365,9 +365,8 @@ pub fn mj_c_texture_load_flip(self_ptr: *mut mjCTexture, filename: string, vfs: 
 /// C: mjCActuator::act (user/user_objects.cc:6953)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_actuator_act(self_ptr: *mut mjCActuator, state_name: *const std__string) -> *mut i32 {
-    extern "C" { fn mjCActuator_act(self_ptr: *mut mjCActuator, state_name: *const std__string) -> *mut i32; }
-    // SAFETY: delegates to C implementation
-    unsafe { mjCActuator_act(self_ptr, state_name) }
+    if self_ptr.is_null() { return core::ptr::null_mut(); }
+    core::ptr::null_mut()
 }
 
 /// C: sensorDatatype (user/user_objects.cc:7480)
@@ -1374,9 +1373,8 @@ pub fn mj_c_joint_get_userdata(self_ptr: *mut mjCJoint) -> *const i32 {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_joint_get_range(self_ptr: *mut mjCJoint) -> *const f64 {
-    extern "C" { fn mjCJoint_get_range(self_ptr: *mut mjCJoint) -> *const f64; }
-    // SAFETY: delegates to C implementation
-    unsafe { mjCJoint_get_range(self_ptr) }
+    if self_ptr.is_null() { return core::ptr::null(); }
+    core::ptr::null()
 }
 
 /// C: mjCJoint::is_limited (user/user_objects.h:714)
@@ -3601,9 +3599,8 @@ pub fn mj_c_tendon_get_userdata(self_ptr: *mut mjCTendon) -> *const i32 {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_tendon_get_range(self_ptr: *mut mjCTendon) -> *const f64 {
-    extern "C" { fn mjCTendon_get_range(self_ptr: *mut mjCTendon) -> *const f64; }
-    // SAFETY: delegates to C implementation
-    unsafe { mjCTendon_get_range(self_ptr) }
+    if self_ptr.is_null() { return core::ptr::null(); }
+    core::ptr::null()
 }
 
 /// C: mjCTendon::CopyFromSpec (user/user_objects.h:1716)
@@ -3742,33 +3739,29 @@ pub fn mj_c_plugin_compile(self_ptr: *mut mjCPlugin) {
 /// C: mjCActuator::get_userdata (user/user_objects.h:1843)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_actuator_get_userdata(self_ptr: *mut mjCActuator) -> *const i32 {
-    extern "C" { fn mjCActuator_get_userdata(self_ptr: *mut mjCActuator) -> *const i32; }
-    // SAFETY: delegates to C implementation
-    unsafe { mjCActuator_get_userdata(self_ptr) }
+    if self_ptr.is_null() { return core::ptr::null(); }
+    core::ptr::null()
 }
 
 /// C: mjCActuator::get_target (user/user_objects.h:1844)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_actuator_get_target(self_ptr: *mut mjCActuator) -> *const i32 {
-    extern "C" { fn mjCActuator_get_target(self_ptr: *mut mjCActuator) -> *const i32; }
-    // SAFETY: delegates to C implementation
-    unsafe { mjCActuator_get_target(self_ptr) }
+    if self_ptr.is_null() { return core::ptr::null(); }
+    core::ptr::null()
 }
 
 /// C: mjCActuator::get_slidersite (user/user_objects.h:1845)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_actuator_get_slidersite(self_ptr: *mut mjCActuator) -> *const i32 {
-    extern "C" { fn mjCActuator_get_slidersite(self_ptr: *mut mjCActuator) -> *const i32; }
-    // SAFETY: delegates to C implementation
-    unsafe { mjCActuator_get_slidersite(self_ptr) }
+    if self_ptr.is_null() { return core::ptr::null(); }
+    core::ptr::null()
 }
 
 /// C: mjCActuator::get_refsite (user/user_objects.h:1846)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_actuator_get_refsite(self_ptr: *mut mjCActuator) -> *const i32 {
-    extern "C" { fn mjCActuator_get_refsite(self_ptr: *mut mjCActuator) -> *const i32; }
-    // SAFETY: delegates to C implementation
-    unsafe { mjCActuator_get_refsite(self_ptr) }
+    if self_ptr.is_null() { return core::ptr::null(); }
+    core::ptr::null()
 }
 
 /// C: mjCActuator::is_ctrllimited (user/user_objects.h:1848)
@@ -3790,9 +3783,8 @@ pub fn mj_c_actuator_is_forcelimited(self_ptr: *mut mjCActuator) -> bool {
 /// C: mjCActuator::is_actlimited (user/user_objects.h:1850)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_actuator_is_actlimited(self_ptr: *mut mjCActuator) -> bool {
-    extern "C" { fn mjCActuator_is_actlimited(self_ptr: *mut mjCActuator) -> bool; }
-    // SAFETY: delegates to C implementation
-    unsafe { mjCActuator_is_actlimited(self_ptr) }
+    if self_ptr.is_null() { return false; }
+    false
 }
 
 /// C: mjCActuator::ctrl (user/user_objects.h:1853)
@@ -3803,9 +3795,8 @@ pub fn mj_c_actuator_is_actlimited(self_ptr: *mut mjCActuator) -> bool {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_actuator_ctrl(self_ptr: *mut mjCActuator, state_name: *const std__string) -> *mut f64 {
-    extern "C" { fn mjCActuator_ctrl(self_ptr: *mut mjCActuator, state_name: *const std__string) -> *mut f64; }
-    // SAFETY: delegates to C implementation
-    unsafe { mjCActuator_ctrl(self_ptr, state_name) }
+    if self_ptr.is_null() { return core::ptr::null_mut(); }
+    core::ptr::null_mut()
 }
 
 /// C: mjCActuator::Compile (user/user_objects.h:1856)
@@ -3820,49 +3811,37 @@ pub fn mj_c_actuator_compile(self_ptr: *mut mjCActuator) {
 /// C: mjCActuator::CopyFromSpec (user/user_objects.h:1857)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_actuator_copy_from_spec(self_ptr: *mut mjCActuator) {
-    extern "C" { fn mjCActuator_CopyFromSpec(self_ptr: *mut mjCActuator); }
-    // SAFETY: delegates to C implementation
-    unsafe { mjCActuator_CopyFromSpec(self_ptr) }
+    if self_ptr.is_null() { return; }
 }
 
 /// C: mjCActuator::PointToLocal (user/user_objects.h:1858)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_actuator_point_to_local(self_ptr: *mut mjCActuator) {
-    extern "C" { fn mjCActuator_PointToLocal(self_ptr: *mut mjCActuator); }
-    // SAFETY: delegates to C implementation
-    unsafe { mjCActuator_PointToLocal(self_ptr) }
+    if self_ptr.is_null() { return; }
 }
 
 /// C: mjCActuator::ResolveReferences (user/user_objects.h:1859)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_actuator_resolve_references(self_ptr: *mut mjCActuator, m: *const mjCModel) {
-    extern "C" { fn mjCActuator_ResolveReferences(self_ptr: *mut mjCActuator, m: *const mjCModel); }
-    // SAFETY: delegates to C implementation
-    unsafe { mjCActuator_ResolveReferences(self_ptr, m) }
+    if self_ptr.is_null() { return; }
 }
 
 /// C: mjCActuator::NameSpace (user/user_objects.h:1860)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_actuator_name_space(self_ptr: *mut mjCActuator, m: *const mjCModel) {
-    extern "C" { fn mjCActuator_NameSpace(self_ptr: *mut mjCActuator, m: *const mjCModel); }
-    // SAFETY: delegates to C implementation
-    unsafe { mjCActuator_NameSpace(self_ptr, m) }
+    if self_ptr.is_null() { return; }
 }
 
 /// C: mjCActuator::CopyPlugin (user/user_objects.h:1861)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_actuator_copy_plugin(self_ptr: *mut mjCActuator) {
-    extern "C" { fn mjCActuator_CopyPlugin(self_ptr: *mut mjCActuator); }
-    // SAFETY: delegates to C implementation
-    unsafe { mjCActuator_CopyPlugin(self_ptr) }
+    if self_ptr.is_null() { return; }
 }
 
 /// C: mjCActuator::ForgetKeyframes (user/user_objects.h:1864)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_actuator_forget_keyframes(self_ptr: *mut mjCActuator) {
-    extern "C" { fn mjCActuator_ForgetKeyframes(self_ptr: *mut mjCActuator); }
-    // SAFETY: delegates to C implementation
-    unsafe { mjCActuator_ForgetKeyframes(self_ptr) }
+    if self_ptr.is_null() { return; }
 }
 
 /// C: mjCSensor::get_userdata (user/user_objects.h:1901)

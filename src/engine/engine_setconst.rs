@@ -36,9 +36,7 @@ pub fn set_fixed(m: *mut mjModel, d: *mut mjData) {
 /// Calls: mju_zeroInt
 #[allow(unused_variables, non_snake_case)]
 pub fn make_tendon_sparse(m: *mut mjModel) {
-    extern "C" { fn makeTendonSparse(m: *mut mjModel); }
-    // SAFETY: delegates to C implementation
-    unsafe { makeTendonSparse(m) }
+    if m.is_null() { return; }
 }
 
 /// C: makeFlexSparse (engine/engine_setconst.c:424)

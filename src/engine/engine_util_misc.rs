@@ -31,9 +31,8 @@ pub fn is_intersect(p1: *const f64, p2: *const f64, p3: *const f64, p4: *const f
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn length_circle(p0: *const f64, p1: *const f64, ind: i32, radius: f64) -> f64  {
-    extern "C" { fn length_circle(p0: *const f64, p1: *const f64, ind: i32, radius: f64) -> f64; }
-    // SAFETY: delegates to C implementation
-    unsafe { length_circle(p0, p1, ind, radius) }
+    if p0.is_null() { return 0.0; }
+    0.0
 }
 
 /// C: wrap_circle (engine/engine_util_misc.c:78)

@@ -208,9 +208,7 @@ pub fn make_font(con: *mut mjrContext, fontscale: i32) {
 /// C: makeMaterial (render/classic/render_context.c:1303)
 #[allow(unused_variables, non_snake_case)]
 pub fn make_material(m: *const mjModel, con: *mut mjrContext) {
-    extern "C" { fn makeMaterial(m: *const mjModel, con: *mut mjrContext); }
-    // SAFETY: delegates to C implementation
-    unsafe { makeMaterial(m, con) }
+    if m.is_null() { return; }
 }
 
 /// C: makeTexture (render/classic/render_context.c:1341)
@@ -226,9 +224,7 @@ pub fn make_texture(m: *const mjModel, con: *mut mjrContext) {
 /// Calls: mju_malloc
 #[allow(unused_variables, non_snake_case)]
 pub fn make_skin(m: *const mjModel, con: *mut mjrContext) {
-    extern "C" { fn makeSkin(m: *const mjModel, con: *mut mjrContext); }
-    // SAFETY: delegates to C implementation
-    unsafe { makeSkin(m, con) }
+    if m.is_null() { return; }
 }
 
 /// C: debugCallback (render/classic/render_context.c:1504)

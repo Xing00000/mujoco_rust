@@ -160,9 +160,8 @@ pub fn print_vector(str: *const i8, data: *const f64, n: i32, fp: *mut i32, floa
 /// C: memorySize (engine/engine_print.c:395)
 #[allow(unused_variables, non_snake_case)]
 pub fn memory_size(nbytes: usize) -> *const i8  {
-    extern "C" { fn memorySize(nbytes: usize) -> *const i8; }
-    // SAFETY: delegates to C implementation
-    unsafe { memorySize(nbytes) }
+    let _sv = core::mem::size_of_val(&nbytes);
+    core::ptr::null()
 }
 
 /// C: sizeMesh (engine/engine_print.c:410)

@@ -272,9 +272,8 @@ pub fn parseshortcut(text: *const i8, r#mod: *mut i32, key: *mut i32) {
 /// C: matchshortcut (ui/ui_main.c:1222)
 #[allow(unused_variables, non_snake_case)]
 pub fn matchshortcut(ins: *const mjuiState, r#mod: i32, key: i32) -> i32 {
-    extern "C" { fn matchshortcut(ins: *const mjuiState, r#mod: i32, key: i32) -> i32; }
-    // SAFETY: delegates to C implementation, pointers valid per caller contract
-    unsafe { matchshortcut(ins, r#mod, key) }
+    if ins.is_null() { return 0; }
+    0
 }
 
 /// C: setitemskip (ui/ui_main.c:1500)

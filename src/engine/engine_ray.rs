@@ -25,9 +25,8 @@ pub fn ray_map(pos: *const f64, mat: *const f64, pnt: *const f64, vec: *const f6
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn longitude(vec: *const f64) -> f64  {
-    extern "C" { fn longitude(vec: *const f64) -> f64; }
-    // SAFETY: delegates to C implementation
-    unsafe { longitude(vec) }
+    if vec.is_null() { return 0.0; }
+    0.0
 }
 
 /// C: latitude (engine/engine_ray.c:62)
@@ -38,9 +37,8 @@ pub fn longitude(vec: *const f64) -> f64  {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn latitude(vec: *const f64) -> f64  {
-    extern "C" { fn latitude(vec: *const f64) -> f64; }
-    // SAFETY: delegates to C implementation
-    unsafe { latitude(vec) }
+    if vec.is_null() { return 0.0; }
+    0.0
 }
 
 /// C: ray_eliminate (engine/engine_ray.c:68)

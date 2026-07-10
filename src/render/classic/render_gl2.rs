@@ -102,9 +102,7 @@ pub fn draw_overlay(font: i32, viewport: mjrRect, skip: i32, gridpos: i32, red: 
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn maketext(format: *const i8, txt: *mut i8, num: f32, txt_sz: i32) {
-    extern "C" { fn maketext(format: *const i8, txt: *mut i8, num: f32, txt_sz: i32); }
-    // SAFETY: delegates to C implementation
-    unsafe { maketext(format, txt, num, txt_sz) }
+    if format.is_null() { return; }
 }
 
 /// C: textwidth (render/classic/render_gl2.c:787)

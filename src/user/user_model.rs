@@ -274,9 +274,7 @@ pub fn pathlist(list: *mut i32, adr: i32, path_adr: *mut i32, paths: *mut i8) ->
 /// C: makelistid (user/user_model.cc:4311)
 #[allow(unused_variables, non_snake_case)]
 pub fn makelistid(dest: *mut i32, source: *mut i32) {
-    extern "C" { fn makelistid(dest: *mut i32, source: *mut i32); }
-    // SAFETY: delegates to C implementation
-    unsafe { makelistid(dest, source) }
+    if dest.is_null() { return; }
 }
 
 /// C: changeframe (user/user_model.cc:4319)

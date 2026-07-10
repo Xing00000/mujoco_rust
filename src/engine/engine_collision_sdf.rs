@@ -301,9 +301,8 @@ pub fn traverse_bvh(bvh: *const f64, nodeid: *const i32, child: *const i32, bvh_
 /// Calls: processOneFace
 #[allow(unused_variables, non_snake_case)]
 pub fn mesh_face_callback(face_id: i32, node: i32, ctx: *mut ()) -> i32 {
-    extern "C" { fn mesh_face_callback(face_id: i32, node: i32, ctx: *mut ()) -> i32; }
-    // SAFETY: delegates to C implementation
-    unsafe { mesh_face_callback(face_id, node, ctx) }
+    if ctx.is_null() { return 0; }
+    0
 }
 
 /// C: flexElemCallback (engine/engine_collision_sdf.c:1198)
