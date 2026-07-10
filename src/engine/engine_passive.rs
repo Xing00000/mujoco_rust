@@ -12,8 +12,10 @@ use crate::types::*;
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn grad_squared_lengths(gradient: [[[f64; 6]; 2]; 3], xpos: *const f64, vert: [i32; 4], edge: [[i32; 6]; 2], nedge: i32) {
+    if xpos.is_null() || nedge <= 0 {
+        return;
+    }
     extern "C" { fn GradSquaredLengths(gradient: [[[f64; 6]; 2]; 3], xpos: *const f64, vert: [i32; 4], edge: [[i32; 6]; 2], nedge: i32); }
-    // SAFETY: delegates to C implementation
     unsafe { GradSquaredLengths(gradient, xpos, vert, edge, nedge) }
 }
 

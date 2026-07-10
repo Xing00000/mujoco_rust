@@ -29,10 +29,11 @@ pub fn mjuu_is_valid_content_type(text: string_view) -> bool {
 /// Calls: mju_warning
 #[allow(unused_variables, non_snake_case)]
 pub fn file_to_memory(filename: *const i8) -> i32 {
-    // WARNING: signature changed — verify body
-    // Previous params: (filename : * const i8)
-    // Previous return: i32
-    extern "C" { fn FileToMemory (filename : * const i8) -> i32 ; } unsafe { FileToMemory (filename) }
+    if filename.is_null() {
+        return -1;
+    }
+    extern "C" { fn FileToMemory(filename: *const i8) -> i32; }
+    unsafe { FileToMemory(filename) }
 }
 
 /// C: VectorToString (user/user_util.cc:1256)
@@ -955,10 +956,11 @@ pub fn mjuu_full_inertia(quat: [f64; 4], inertia: [f64; 3], fullinertia: [f64; 6
 /// C: FilePath::IsAbs (user/user_util.h:191)
 #[allow(unused_variables, non_snake_case)]
 pub fn file_path_is_abs(self_ptr: *mut FilePath) -> bool {
-    // WARNING: signature changed — verify body
-    // Previous params: (self_ptr : * mut FilePath)
-    // Previous return: bool
-    extern "C" { fn FilePath_IsAbs (self_ptr : * mut FilePath) -> bool ; } unsafe { FilePath_IsAbs (self_ptr) }
+    if self_ptr.is_null() {
+        return false;
+    }
+    extern "C" { fn FilePath_IsAbs(self_ptr: *mut FilePath) -> bool; }
+    unsafe { FilePath_IsAbs(self_ptr) }
 }
 
 /// C: FilePath::AbsPrefix (user/user_util.h:195)
@@ -977,19 +979,21 @@ pub fn file_path_abs_prefix(self_ptr: *mut FilePath) -> i32 {
 /// C: FilePath::Str (user/user_util.h:198)
 #[allow(unused_variables, non_snake_case)]
 pub fn file_path_str(self_ptr: *mut FilePath) -> *const i32 {
-    // WARNING: signature changed — verify body
-    // Previous params: (self_ptr : * mut FilePath)
-    // Previous return: * const i32
-    extern "C" { fn FilePath_Str (self_ptr : * mut FilePath) -> * const i32 ; } unsafe { FilePath_Str (self_ptr) }
+    if self_ptr.is_null() {
+        return core::ptr::null();
+    }
+    extern "C" { fn FilePath_Str(self_ptr: *mut FilePath) -> *const i32; }
+    unsafe { FilePath_Str(self_ptr) }
 }
 
 /// C: FilePath::StrLower (user/user_util.h:202)
 #[allow(unused_variables, non_snake_case)]
 pub fn file_path_str_lower(self_ptr: *mut FilePath) -> std__string {
-    // WARNING: signature changed — verify body
-    // Previous params: (self_ptr : * mut FilePath)
-    // Previous return: std__string
-    extern "C" { fn FilePath_StrLower (self_ptr : * mut FilePath) -> std__string ; } unsafe { FilePath_StrLower (self_ptr) }
+    if self_ptr.is_null() {
+        return unsafe { core::mem::zeroed() };
+    }
+    extern "C" { fn FilePath_StrLower(self_ptr: *mut FilePath) -> std__string; }
+    unsafe { FilePath_StrLower(self_ptr) }
 }
 
 /// C: FilePath::Ext (user/user_util.h:205)
@@ -1006,73 +1010,78 @@ pub fn file_path_ext(self_ptr: *mut FilePath) -> std__string {
 /// C: FilePath::StripExt (user/user_util.h:211)
 #[allow(unused_variables, non_snake_case)]
 pub fn file_path_strip_ext(self_ptr: *mut FilePath) -> FilePath {
-    // WARNING: signature changed — verify body
-    // Previous params: (self_ptr : * mut FilePath)
-    // Previous return: FilePath
-    extern "C" { fn FilePath_StripExt (self_ptr : * mut FilePath) -> FilePath ; } unsafe { FilePath_StripExt (self_ptr) }
+    if self_ptr.is_null() {
+        return unsafe { core::mem::zeroed() };
+    }
+    extern "C" { fn FilePath_StripExt(self_ptr: *mut FilePath) -> FilePath; }
+    unsafe { FilePath_StripExt(self_ptr) }
 }
 
 /// C: FilePath::StripPath (user/user_util.h:214)
 #[allow(unused_variables, non_snake_case)]
 pub fn file_path_strip_path(self_ptr: *mut FilePath) -> FilePath {
-    // WARNING: signature changed — verify body
-    // Previous params: (self_ptr : * mut FilePath)
-    // Previous return: FilePath
-    extern "C" { fn FilePath_StripPath (self_ptr : * mut FilePath) -> FilePath ; } unsafe { FilePath_StripPath (self_ptr) }
+    if self_ptr.is_null() {
+        return unsafe { core::mem::zeroed() };
+    }
+    extern "C" { fn FilePath_StripPath(self_ptr: *mut FilePath) -> FilePath; }
+    unsafe { FilePath_StripPath(self_ptr) }
 }
 
 /// C: FilePath::Lower (user/user_util.h:217)
 #[allow(unused_variables, non_snake_case)]
 pub fn file_path_lower(self_ptr: *mut FilePath) -> FilePath {
-    // WARNING: signature changed — verify body
-    // Previous params: (self_ptr : * mut FilePath)
-    // Previous return: FilePath
-    extern "C" { fn FilePath_Lower (self_ptr : * mut FilePath) -> FilePath ; } unsafe { FilePath_Lower (self_ptr) }
+    if self_ptr.is_null() {
+        return unsafe { core::mem::zeroed() };
+    }
+    extern "C" { fn FilePath_Lower(self_ptr: *mut FilePath) -> FilePath; }
+    unsafe { FilePath_Lower(self_ptr) }
 }
 
 /// C: FilePath::size (user/user_util.h:220)
 #[allow(unused_variables, non_snake_case)]
 pub fn file_path_size(self_ptr: *mut FilePath) -> std__size_t {
-    // WARNING: signature changed — verify body
-    // Previous params: (self_ptr : * mut FilePath)
-    // Previous return: std__size_t
-    extern "C" { fn FilePath_size (self_ptr : * mut FilePath) -> std__size_t ; } unsafe { FilePath_size (self_ptr) }
+    if self_ptr.is_null() {
+        return unsafe { core::mem::zeroed() };
+    }
+    extern "C" { fn FilePath_size(self_ptr: *mut FilePath) -> std__size_t; }
+    unsafe { FilePath_size(self_ptr) }
 }
 
 /// C: FilePath::c_str (user/user_util.h:221)
 #[allow(unused_variables, non_snake_case)]
 pub fn file_path_c_str(self_ptr: *mut FilePath) -> *const i8 {
-    // WARNING: signature changed — verify body
-    // Previous params: (self_ptr : * mut FilePath)
-    // Previous return: * const i8
-    extern "C" { fn FilePath_c_str (self_ptr : * mut FilePath) -> * const i8 ; } unsafe { FilePath_c_str (self_ptr) }
+    if self_ptr.is_null() {
+        return core::ptr::null();
+    }
+    extern "C" { fn FilePath_c_str(self_ptr: *mut FilePath) -> *const i8; }
+    unsafe { FilePath_c_str(self_ptr) }
 }
 
 /// C: FilePath::empty (user/user_util.h:222)
 #[allow(unused_variables, non_snake_case)]
 pub fn file_path_empty(self_ptr: *mut FilePath) -> bool {
-    // WARNING: signature changed — verify body
-    // Previous params: (self_ptr : * mut FilePath)
-    // Previous return: bool
-    extern "C" { fn FilePath_empty (self_ptr : * mut FilePath) -> bool ; } unsafe { FilePath_empty (self_ptr) }
+    if self_ptr.is_null() {
+        return true;
+    }
+    extern "C" { fn FilePath_empty(self_ptr: *mut FilePath) -> bool; }
+    unsafe { FilePath_empty(self_ptr) }
 }
 
 /// C: FilePath::PathReduce (user/user_util.h:227)
 #[allow(unused_variables, non_snake_case)]
 pub fn file_path_path_reduce(str: *const std__string) -> std__string {
-    // WARNING: signature changed — verify body
-    // Previous params: (str : * const std__string)
-    // Previous return: std__string
-    extern "C" { fn FilePath_PathReduce (str : * const std__string) -> std__string ; } unsafe { FilePath_PathReduce (str) }
+    if str.is_null() {
+        return unsafe { core::mem::zeroed() };
+    }
+    extern "C" { fn FilePath_PathReduce(str: *const std__string) -> std__string; }
+    unsafe { FilePath_PathReduce(str) }
 }
 
 /// C: FilePath::IsSeparator (user/user_util.h:228)
 #[allow(unused_variables, non_snake_case)]
 pub fn file_path_is_separator(c: i8) -> bool {
-    // WARNING: signature changed — verify body
-    // Previous params: (c : i8)
-    // Previous return: bool
-    extern "C" { fn FilePath_IsSeparator (c : i8) -> bool ; } unsafe { FilePath_IsSeparator (c) }
+    // C++ IsSeparator: return c == '/' || c == '\\';
+    c == b'/' as i8 || c == b'\\' as i8
 }
 
 /// C: FilePath::Combine (user/user_util.h:231)
@@ -1089,10 +1098,11 @@ pub fn file_path_combine(s1: *const std__string, s2: *const std__string) -> std_
 /// C: FilePath::FilePathFast (user/user_util.h:234)
 #[allow(unused_variables, non_snake_case)]
 pub fn file_path_file_path_fast(str: *const i32) -> FilePath {
-    // WARNING: signature changed — verify body
-    // Previous params: (str : * const i32)
-    // Previous return: FilePath
-    extern "C" { fn FilePath_FilePathFast (str : * const i32) -> FilePath ; } unsafe { FilePath_FilePathFast (str) }
+    if str.is_null() {
+        return unsafe { core::mem::zeroed() };
+    }
+    extern "C" { fn FilePath_FilePathFast(str: *const i32) -> FilePath; }
+    unsafe { FilePath_FilePathFast(str) }
 }
 
 /// C: mjuu_strippath (user/user_util.h:273)

@@ -7,9 +7,9 @@ use crate::types::*;
 /// C: fastmod (engine/engine_memory.c:52)
 #[allow(unused_variables, non_snake_case)]
 pub fn fastmod(a: usize, b: usize) -> usize  {
-    extern "C" { fn fastmod(a: usize, b: usize) -> usize; }
-    // SAFETY: delegates to C implementation
-    unsafe { fastmod(a, b) }
+    // C: return a - (a / b) * b;
+    // fast modulo without hardware div on power-of-2, but we match C exactly
+    a - (a / b) * b
 }
 
 /// C: get_stack_info_from_data (engine/engine_memory.c:74)
@@ -98,20 +98,32 @@ pub fn mj_arena_alloc_byte(d: *mut mjData, bytes: usize, alignment: usize) -> *m
 /// Calls: get_stack_info_from_data, markstackinternal
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_mark_stack(d: *mut mjData) {
-    // WARNING: signature changed — verify body
-    // Previous params: (d : * mut mjData)
-    // Previous return: ()
-    extern "C" { fn mj_markStack(d : * mut mjData) ; } unsafe { mj_markStack(d) }
+    unsafe {
+        // early exit if thread-locked (matches C: if (d->threadlock) return;)
+        // mjtBool is opaque; check first byte for nonzero
+        let threadlock_ptr = &(*d).threadlock as *const _ as *const u8;
+        if *threadlock_ptr != 0 {
+            return;
+        }
+        extern "C" { fn mj_markStack(d: *mut mjData); }
+        mj_markStack(d)
+    }
 }
 
 /// C: mj_freeStack (engine/engine_memory.h:43)
 /// Calls: freestackinternal, get_stack_info_from_data
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_free_stack(d: *mut mjData) {
-    // WARNING: signature changed — verify body
-    // Previous params: (d : * mut mjData)
-    // Previous return: ()
-    extern "C" { fn mj_freeStack(d : * mut mjData) ; } unsafe { mj_freeStack(d) }
+    unsafe {
+        // early exit if thread-locked (matches C: if (d->threadlock) return;)
+        // mjtBool is opaque; check first byte for nonzero
+        let threadlock_ptr = &(*d).threadlock as *const _ as *const u8;
+        if *threadlock_ptr != 0 {
+            return;
+        }
+        extern "C" { fn mj_freeStack(d: *mut mjData); }
+        mj_freeStack(d)
+    }
 }
 
 /// C: mj_stackAllocByte (engine/engine_memory.h:53)

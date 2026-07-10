@@ -135,10 +135,11 @@ pub fn mj_copy_error(dst: *mut i8, src: *const i8, maxlen: i32) {
 /// C: FirstChildElement (xml/xml_util.h:36)
 #[allow(unused_variables, non_snake_case)]
 pub fn first_child_element(e: *mut XMLElement, name: *const i8) -> *mut XMLElement {
-    // WARNING: signature changed — verify body
-    // Previous params: (e : * mut XMLElement, name : * const i8)
-    // Previous return: * mut XMLElement
-    extern "C" { fn FirstChildElement (e : * mut XMLElement , name : * const i8) -> * mut XMLElement ; } unsafe { FirstChildElement (e , name) }
+    if e.is_null() {
+        return core::ptr::null_mut();
+    }
+    extern "C" { fn FirstChildElement(e: *mut XMLElement, name: *const i8) -> *mut XMLElement; }
+    unsafe { FirstChildElement(e, name) }
 }
 
 /// C: NextSiblingElement (xml/xml_util.h:37)

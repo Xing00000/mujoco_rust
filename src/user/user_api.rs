@@ -111,19 +111,21 @@ pub fn mjs_get_warning(spec: *const mjSpec, index: i32) -> *const i8 {
 /// C: FlexcompTypeFromStr (user/user_api.cc:709)
 #[allow(unused_variables, non_snake_case)]
 pub fn flexcomp_type_from_str(r#type: *const i8) -> mjtFcompType {
-    // WARNING: signature changed — verify body
-    // Previous params: (r#type : * const i8)
-    // Previous return: mjtFcompType
-    extern "C" { fn FlexcompTypeFromStr (r#type : * const i8) -> mjtFcompType ; } unsafe { FlexcompTypeFromStr (r#type) }
+    if r#type.is_null() {
+        return unsafe { core::mem::zeroed() };
+    }
+    extern "C" { fn FlexcompTypeFromStr(r#type: *const i8) -> mjtFcompType; }
+    unsafe { FlexcompTypeFromStr(r#type) }
 }
 
 /// C: FlexcompDofFromStr (user/user_api.cc:724)
 #[allow(unused_variables, non_snake_case)]
 pub fn flexcomp_dof_from_str(dof: *const i8) -> mjtDof {
-    // WARNING: signature changed — verify body
-    // Previous params: (dof : * const i8)
-    // Previous return: mjtDof
-    extern "C" { fn FlexcompDofFromStr (dof : * const i8) -> mjtDof ; } unsafe { FlexcompDofFromStr (dof) }
+    if dof.is_null() {
+        return unsafe { core::mem::zeroed() };
+    }
+    extern "C" { fn FlexcompDofFromStr(dof: *const i8) -> mjtDof; }
+    unsafe { FlexcompDofFromStr(dof) }
 }
 
 /// C: mjs_getCompiler (user/user_api.cc:1553)

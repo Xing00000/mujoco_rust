@@ -144,10 +144,11 @@ pub fn mj_c_model_add_object_default(self_ptr: *mut mjCModel, list: *mut i32, r#
 /// C: GetNext (user/user_model.cc:1411)
 #[allow(unused_variables, non_snake_case)]
 pub fn get_next(list: *const i32, child: *const mjsElement) -> *mut mjsElement {
-    // WARNING: signature changed — verify body
-    // Previous params: (list : * const i32, child : * const mjsElement)
-    // Previous return: * mut mjsElement
-    extern "C" { fn GetNext (list : * const i32 , child : * const mjsElement) -> * mut mjsElement ; } unsafe { GetNext (list , child) }
+    if list.is_null() {
+        return core::ptr::null_mut();
+    }
+    extern "C" { fn GetNext(list: *const i32, child: *const mjsElement) -> *mut mjsElement; }
+    unsafe { GetNext(list, child) }
 }
 
 /// C: findobject (user/user_model.cc:1596)
@@ -1029,10 +1030,11 @@ pub fn mj_c_model_get_ref(self_ptr: *mut mjCModel) -> i32 {
 /// C: mjCModel::Release (user/user_model.h:361)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_model_release(self_ptr: *mut mjCModel) {
-    // WARNING: signature changed — verify body
-    // Previous params: (self_ptr : * mut mjCModel)
-    // Previous return: ()
-    extern "C" { fn mjCModel_Release (self_ptr : * mut mjCModel) ; } unsafe { mjCModel_Release (self_ptr) }
+    if self_ptr.is_null() {
+        return;
+    }
+    extern "C" { fn mjCModel_Release(self_ptr: *mut mjCModel); }
+    unsafe { mjCModel_Release(self_ptr) }
 }
 
 /// C: mjCModel::MakeTreeLists (user/user_model.h:377)

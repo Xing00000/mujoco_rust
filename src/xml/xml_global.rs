@@ -8,29 +8,31 @@ use crate::types::*;
 /// Calls: GetGlobalModel, mj_deleteSpec
 #[allow(unused_variables, non_snake_case)]
 pub fn global_model_set(self_ptr: *mut GlobalModel, spec: *mut mjSpec) {
-    // WARNING: signature changed — verify body
-    // Previous params: (self_ptr : * mut GlobalModel, spec : * mut mjSpec)
-    // Previous return: ()
-    extern "C" { fn GlobalModel_Set(self_ptr : * mut GlobalModel , spec : * mut mjSpec) ; } unsafe { GlobalModel_Set(self_ptr , spec) }
+    if self_ptr.is_null() {
+        return;
+    }
+    extern "C" { fn GlobalModel_Set(self_ptr: *mut GlobalModel, spec: *mut mjSpec); }
+    unsafe { GlobalModel_Set(self_ptr, spec) }
 }
 
 /// C: GlobalModel::ToXML (xml/xml_global.cc:35)
 /// Calls: mjCopyError
 #[allow(unused_variables, non_snake_case)]
 pub fn global_model_to_xml(self_ptr: *mut GlobalModel, m: *const mjModel, error: *mut i8, error_sz: i32) -> std__string {
-    // WARNING: signature changed — verify body
-    // Previous params: (self_ptr : * mut GlobalModel, m : * const mjModel, error : * mut i8, error_sz : i32)
-    // Previous return: std__string
-    extern "C" { fn GlobalModelToXml(self_ptr : * mut GlobalModel , m : * const mjModel , error : * mut i8 , error_sz : i32) -> std__string ; } unsafe { GlobalModelToXml(self_ptr , m , error , error_sz) }
+    if self_ptr.is_null() {
+        return unsafe { core::mem::zeroed() };
+    }
+    extern "C" { fn GlobalModelToXml(self_ptr: *mut GlobalModel, m: *const mjModel, error: *mut i8, error_sz: i32) -> std__string; }
+    unsafe { GlobalModelToXml(self_ptr, m, error, error_sz) }
 }
 
 /// C: GetGlobalModel (xml/xml_global.cc:53)
 #[allow(unused_variables, non_snake_case)]
 pub fn get_global_model() -> *mut GlobalModel {
-    // WARNING: signature changed — verify body
-    // Previous params: ()
-    // Previous return: * mut GlobalModel
-    extern "C" { fn GetGlobalModel() -> * mut GlobalModel ; } unsafe { GetGlobalModel() }
+    extern "C" { fn GetGlobalModel() -> *mut GlobalModel; }
+    let result = unsafe { GetGlobalModel() };
+    // singleton should never be null; return as-is
+    result
 }
 
 /// C: SetGlobalXmlSpec (xml/xml_global.h:23)

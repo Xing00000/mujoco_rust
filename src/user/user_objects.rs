@@ -267,10 +267,11 @@ pub fn mj_c_body_get_list(self_ptr: *mut mjCBody) -> *const i32 {
 /// C: GetNextBody (user/user_objects.cc:2380)
 #[allow(unused_variables, non_snake_case)]
 pub fn get_next_body(body: *const mjCBody, child: *const mjsElement, found: *mut bool, recursive: bool) -> *mut mjsElement {
-    // WARNING: signature changed — verify body
-    // Previous params: (body : * const mjCBody, child : * const mjsElement, found : * mut bool, recursive : bool)
-    // Previous return: * mut mjsElement
-    extern "C" { fn GetNextBody (body : * const mjCBody , child : * const mjsElement , found : * mut bool , recursive : bool) -> * mut mjsElement ; } unsafe { GetNextBody (body , child , found , recursive) }
+    if body.is_null() {
+        return core::ptr::null_mut();
+    }
+    extern "C" { fn GetNextBody(body: *const mjCBody, child: *const mjsElement, found: *mut bool, recursive: bool) -> *mut mjsElement; }
+    unsafe { GetNextBody(body, child, found, recursive) }
 }
 
 /// C: randomdot (user/user_objects.cc:4973)
@@ -3678,10 +3679,11 @@ pub fn mj_c_wrap_name_space(self_ptr: *mut mjCWrap, m: *const mjCModel) {
 /// C: mjCWrap::Type (user/user_objects.h:1753)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_wrap_type(self_ptr: *mut mjCWrap) -> mjtWrap {
-    // WARNING: signature changed — verify body
-    // Previous params: (self_ptr : * mut mjCWrap)
-    // Previous return: mjtWrap
-    extern "C" { fn mjCWrap_Type (self_ptr : * mut mjCWrap) -> mjtWrap ; } unsafe { mjCWrap_Type (self_ptr) }
+    if self_ptr.is_null() {
+        return unsafe { core::mem::zeroed() };
+    }
+    extern "C" { fn mjCWrap_Type(self_ptr: *mut mjCWrap) -> mjtWrap; }
+    unsafe { mjCWrap_Type(self_ptr) }
 }
 
 /// C: mjCWrap::Compile (user/user_objects.h:1762)

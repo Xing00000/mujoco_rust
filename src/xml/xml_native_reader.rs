@@ -7,10 +7,11 @@ use crate::types::*;
 /// C: GetAttrPtr (xml/xml_native_reader.cc:59)
 #[allow(unused_variables, non_snake_case)]
 pub fn get_attr_ptr(val: *mut T) -> i32 {
-    // WARNING: signature changed — verify body
-    // Previous params: (val : * mut T)
-    // Previous return: i32
-    extern "C" { fn GetAttrPtr (val : * mut T) -> i32 ; } unsafe { GetAttrPtr (val) }
+    if val.is_null() {
+        return 0;
+    }
+    extern "C" { fn GetAttrPtr(val: *mut T) -> i32; }
+    unsafe { GetAttrPtr(val) }
 }
 
 /// C: Reader::txt (xml/xml_native_reader.cc:111)
