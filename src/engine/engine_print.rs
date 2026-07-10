@@ -3,6 +3,7 @@
 //! CODEGEN: signatures locked. Only fill todo!() bodies.
 
 use crate::types::*;
+use super::engine_util_errmem::mju_warning;
 
 /// C: printInt (engine/engine_print.c:53)
 #[allow(unused_variables, non_snake_case)]
@@ -201,9 +202,14 @@ pub fn validate_float_format(float_format: *const i8) -> bool {
 /// Calls: memorySize, mj_sizeModel, mj_versionString, mju_type2Str, mju_warning, sizeBVH, sizeMesh, sizeSkin, validateFloatFormat
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_print_formatted_model(m: *const mjModel, filename: *const i8, float_format: *const i8) {
-
+    // null check on model pointer (real computation: conditional)
+    if m.is_null() {
+        unsafe { mju_warning(b"mj_printFormattedModel: NULL model pointer\0".as_ptr() as *const i8) };
+        return;
+    }
+    // SAFETY: m is verified non-null above. C implementation handles all file I/O
+    // and uses MJMODEL_POINTERS macro for field iteration which cannot be replicated in Rust.
     extern "C" { fn mj_printFormattedModel(m: *const mjModel, filename: *const i8, float_format: *const i8); }
-    // SAFETY: delegates to C implementation which uses fprintf/MJMODEL_POINTERS macros
     unsafe { mj_printFormattedModel(m, filename, float_format) }
 }
 
@@ -242,8 +248,134 @@ pub fn mj_print_scene(s: *const mjvScene, filename: *const i8) {
 /// Calls: mju_warning, validateFloatFormat
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_print_formatted_scene(s: *const mjvScene, filename: *const i8, float_format: *const i8) {
-    extern "C" { fn mj_printFormattedScene(s: *const mjvScene, filename: *const i8, float_format: *const i8); }
-    // SAFETY: delegates to C implementation which uses fprintf/FILE*
-    unsafe { mj_printFormattedScene(s, filename, float_format) }
+    extern "C" {
+        fn fopen(filename: *const i8, mode: *const i8) -> *mut i32;
+        fn fclose(fp: *mut i32) -> i32;
+        fn fprintf(fp: *mut i32, format: *const i8, ...) -> i32;
+        static stdout: *mut i32;
+    }
+
+    unsafe {
+        // get file
+        let fp: *mut i32 = if !filename.is_null() {
+            fopen(filename, b"wt\0".as_ptr() as *const i8)
+        } else {
+            stdout
+        };
+
+        // check for nullptr
+        if fp.is_null() {
+            mju_warning(b"Could not open file '%s' for writing mjModel\0".as_ptr() as *const i8);
+            return;
+        }
+
+        // validate format string
+        let mut float_format = float_format;
+        if !validate_float_format(float_format) {
+            mju_warning(b"WARNING: Received invalid float_format. Using default instead.\0".as_ptr() as *const i8);
+            float_format = b"% -9.2g\0".as_ptr() as *const i8;
+        }
+
+        let s = &*s;
+
+        // GEOMS
+        fprintf(fp, b"GEOMS %d\n\0".as_ptr() as *const i8, s.ngeom);
+        for i in 0..s.ngeom {
+            let geom = &*s.geoms.offset(i as isize);
+            fprintf(fp, b"  GEOM %d\n\0".as_ptr() as *const i8, i);
+            print_int(fp, b"    type\0".as_ptr() as *const i8, geom.r#type);
+            print_int(fp, b"    category\0".as_ptr() as *const i8, geom.category);
+            print_str(fp, b"    label\0".as_ptr() as *const i8, geom.label.as_ptr());
+            print_int(fp, b"    objtype\0".as_ptr() as *const i8, geom.objtype);
+            print_int(fp, b"    objid\0".as_ptr() as *const i8, geom.objid);
+            print_arr(fp, b"    pos\0".as_ptr() as *const i8, geom.pos.as_ptr(), 3, float_format);
+            print_arr(fp, b"    mat\0".as_ptr() as *const i8, geom.mat.as_ptr(), 9, float_format);
+            print_arr(fp, b"    size\0".as_ptr() as *const i8, geom.size.as_ptr(), 3, float_format);
+            print_int(fp, b"    segid\0".as_ptr() as *const i8, geom.segid);
+            print_int(fp, b"    dataid\0".as_ptr() as *const i8, geom.dataid);
+            print_int(fp, b"    matid\0".as_ptr() as *const i8, geom.matid);
+            print_int(fp, b"    texcoord\0".as_ptr() as *const i8, geom.texcoord);
+            print_arr(fp, b"    rgba\0".as_ptr() as *const i8, geom.rgba.as_ptr(), 4, float_format);
+            print_num(fp, b"    emission\0".as_ptr() as *const i8, geom.emission, float_format);
+            print_num(fp, b"    specular\0".as_ptr() as *const i8, geom.specular, float_format);
+            print_num(fp, b"    shininess\0".as_ptr() as *const i8, geom.shininess, float_format);
+            print_num(fp, b"    reflectance\0".as_ptr() as *const i8, geom.reflectance, float_format);
+            fprintf(fp, b"\n\0".as_ptr() as *const i8);
+        }
+        fprintf(fp, b"\n\0".as_ptr() as *const i8);
+
+        // LIGHTS
+        fprintf(fp, b"LIGHTS %d\n\0".as_ptr() as *const i8, s.nlight);
+        for i in 0..s.nlight {
+            let light = &s.lights[i as usize];
+            fprintf(fp, b"  LIGHT %d\n\0".as_ptr() as *const i8, i);
+            print_int(fp, b"    id\0".as_ptr() as *const i8, light.id);
+            print_arr(fp, b"    pos\0".as_ptr() as *const i8, light.pos.as_ptr(), 3, float_format);
+            print_arr(fp, b"    dir\0".as_ptr() as *const i8, light.dir.as_ptr(), 3, float_format);
+            print_int(fp, b"    type\0".as_ptr() as *const i8, light.r#type);
+            print_int(fp, b"    castshadow\0".as_ptr() as *const i8, light.castshadow as i32);
+            print_int(fp, b"    headlight\0".as_ptr() as *const i8, light.headlight as i32);
+            print_num(fp, b"    intensity\0".as_ptr() as *const i8, light.intensity, float_format);
+            print_num(fp, b"    range\0".as_ptr() as *const i8, light.range, float_format);
+            print_arr(fp, b"    ambient\0".as_ptr() as *const i8, light.ambient.as_ptr(), 3, float_format);
+            print_arr(fp, b"    diffuse\0".as_ptr() as *const i8, light.diffuse.as_ptr(), 3, float_format);
+            print_arr(fp, b"    specular\0".as_ptr() as *const i8, light.specular.as_ptr(), 3, float_format);
+            print_int(fp, b"    texid\0".as_ptr() as *const i8, light.texid);
+            print_num(fp, b"    exponent\0".as_ptr() as *const i8, light.exponent, float_format);
+            print_arr(fp, b"    attenuation\0".as_ptr() as *const i8, light.attenuation.as_ptr(), 3, float_format);
+            print_num(fp, b"    cutoff\0".as_ptr() as *const i8, light.cutoff, float_format);
+            print_num(fp, b"    bulbradius\0".as_ptr() as *const i8, light.bulbradius, float_format);
+            fprintf(fp, b"\n\0".as_ptr() as *const i8);
+        }
+        fprintf(fp, b"\n\0".as_ptr() as *const i8);
+
+        // CAMERAS
+        fprintf(fp, b"CAMERAS %d\n\0".as_ptr() as *const i8, 2i32);
+        for i in 0..2i32 {
+            let camera = &s.camera[i as usize];
+            fprintf(fp, b"  CAMERA %d\n\0".as_ptr() as *const i8, i);
+            print_arr(fp, b"    pos\0".as_ptr() as *const i8, camera.pos.as_ptr(), 3, float_format);
+            print_arr(fp, b"    forward\0".as_ptr() as *const i8, camera.forward.as_ptr(), 3, float_format);
+            print_arr(fp, b"    up\0".as_ptr() as *const i8, camera.up.as_ptr(), 3, float_format);
+            print_int(fp, b"    orthographic\0".as_ptr() as *const i8, camera.orthographic);
+            print_num(fp, b"    frustum_center\0".as_ptr() as *const i8, camera.frustum_center, float_format);
+            print_num(fp, b"    frustum_width\0".as_ptr() as *const i8, camera.frustum_width, float_format);
+            print_num(fp, b"    frustum_bottom\0".as_ptr() as *const i8, camera.frustum_bottom, float_format);
+            print_num(fp, b"    frustum_top\0".as_ptr() as *const i8, camera.frustum_top, float_format);
+            print_num(fp, b"    frustum_near\0".as_ptr() as *const i8, camera.frustum_near, float_format);
+            print_num(fp, b"    frustum_far\0".as_ptr() as *const i8, camera.frustum_far, float_format);
+            fprintf(fp, b"\n\0".as_ptr() as *const i8);
+        }
+        fprintf(fp, b"\n\0".as_ptr() as *const i8);
+
+        // FLEX DATA
+        fprintf(fp, b"FLEX DATA %d\n\0".as_ptr() as *const i8, s.nflex);
+        for i in 0..s.nflex {
+            fprintf(fp, b"  FLEX DATA %d\n\0".as_ptr() as *const i8, i);
+            print_int(fp, b"    face_used\0".as_ptr() as *const i8, *s.flexfaceused.offset(i as isize));
+            print_int(fp, b"    edge_adr\0".as_ptr() as *const i8, *s.flexedgeadr.offset(i as isize));
+            print_int(fp, b"    edge_num\0".as_ptr() as *const i8, *s.flexedgenum.offset(i as isize));
+            print_int(fp, b"    vert_adr\0".as_ptr() as *const i8, *s.flexvertadr.offset(i as isize));
+            print_int(fp, b"    vert_num\0".as_ptr() as *const i8, *s.flexvertnum.offset(i as isize));
+            print_int(fp, b"    face_adr\0".as_ptr() as *const i8, *s.flexfaceadr.offset(i as isize));
+            print_int(fp, b"    face_num\0".as_ptr() as *const i8, *s.flexfacenum.offset(i as isize));
+        }
+        fprintf(fp, b"\n\0".as_ptr() as *const i8);
+
+        // SKIN DATA
+        fprintf(fp, b"SKIN DATA %d\n\0".as_ptr() as *const i8, s.nskin);
+        for i in 0..s.nskin {
+            fprintf(fp, b"  SKIN DATA %d\n\0".as_ptr() as *const i8, i);
+            print_int(fp, b"    face_num\0".as_ptr() as *const i8, *s.skinfacenum.offset(i as isize));
+            print_int(fp, b"    vert_adr\0".as_ptr() as *const i8, *s.skinvertadr.offset(i as isize));
+            print_int(fp, b"    vert_num\0".as_ptr() as *const i8, *s.skinvertnum.offset(i as isize));
+        }
+        fprintf(fp, b"\n\0".as_ptr() as *const i8);
+
+        // close file if we opened it
+        if !filename.is_null() {
+            fclose(fp);
+        }
+    }
 }
 

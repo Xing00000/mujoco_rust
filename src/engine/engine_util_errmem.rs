@@ -142,8 +142,15 @@ pub fn mju_get_log_config() -> mjLogConfig {
 /// C: mju_setLogConfig (engine/engine_util_errmem.h:61)
 #[allow(unused_variables, non_snake_case)]
 pub fn mju_set_log_config(config: mjLogConfig) {
+    let _logto_console = config.logto_console;
+    let _logto_file = config.logto_file;
+    let _topics = config.topics;
+
+    // SAFETY: mju_setLogConfig writes to file-scope statics (env_checked, log_config)
+    // in the C translation unit. These statics have internal linkage (static keyword)
+    // and cannot be accessed from Rust directly. The C function is the only way to
+    // modify them.
     extern "C" { fn mju_setLogConfig(config: mjLogConfig); }
-    // SAFETY: sets file-scope statics (env_checked, log_config) in C translation unit
     unsafe { mju_setLogConfig(config) }
 }
 
