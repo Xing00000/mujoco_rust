@@ -35,9 +35,49 @@ pub fn dual_finish(m: *const mjModel, d: *mut mjData) {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn a_rdiaginv(m: *const mjModel, d: *const mjData, res: *mut f64, nefc: i32, efclist: *const i32, flg_subR: i32) {
-    extern "C" { fn ARdiaginv(m: *const mjModel, d: *const mjData, res: *mut f64, nefc: i32, efclist: *const i32, flg_subR: i32); }
-    // SAFETY: delegates to C implementation
-    unsafe { ARdiaginv(m, d, res, nefc, efclist, flg_subR) }
+    const mjMINVAL: f64 = 1e-15;
+
+    // SAFETY: all pointers valid per caller contract; mirrors C implementation exactly
+    unsafe {
+        let AR = (*d).efc_AR;
+        let R = (*d).efc_R;
+
+        // sparse
+        if crate::engine::engine_core_util::mj_is_sparse(m) != 0 {
+            let rowadr = (*d).efc_AR_rowadr;
+            let rownnz = (*d).efc_AR_rownnz;
+            let colind = (*d).efc_AR_colind;
+
+            for c in 0..nefc {
+                let i = if !efclist.is_null() { *efclist.add(c as usize) } else { c };
+                let nnz = *rownnz.add(i as usize);
+                for j in 0..nnz {
+                    let adr = *rowadr.add(i as usize) + j;
+                    if i == *colind.add(adr as usize) {
+                        *res.add(c as usize) = 1.0 / (if flg_subR != 0 {
+                            crate::engine::engine_util_misc::mju_max(mjMINVAL, *AR.add(adr as usize) - *R.add(i as usize))
+                        } else {
+                            *AR.add(adr as usize)
+                        });
+                        break;
+                    }
+                }
+            }
+        }
+        // dense
+        else {
+            let d_nefc = (*d).nefc;
+            for c in 0..nefc {
+                let i = if !efclist.is_null() { *efclist.add(c as usize) } else { c };
+                let adr = (i as i64 * (d_nefc as i64 + 1)) as usize;
+                *res.add(c as usize) = 1.0 / (if flg_subR != 0 {
+                    crate::engine::engine_util_misc::mju_max(mjMINVAL, *AR.add(adr) - *R.add(i as usize))
+                } else {
+                    *AR.add(adr)
+                });
+            }
+        }
+    }
 }
 
 /// C: extractBlock (engine/engine_solver.c:127)

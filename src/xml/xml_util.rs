@@ -24,10 +24,12 @@ pub fn resolve_file_path(e: *mut XMLElement, filename: *const FilePath, dir: *co
 /// C: AccumulateFiles (xml/xml_util.cc:109)
 #[allow(unused_variables, non_snake_case)]
 pub fn accumulate_files(files: *mut i32, root: *mut tinyxml2__XMLElement, model_dir: *const FilePath) {
-    // WARNING: signature changed — verify body
-    // Previous params: (files : * mut i32, root : * mut tinyxml2__XMLElement, model_dir : * const FilePath)
-    // Previous return: ()
-    extern "C" { fn AccumulateFiles (files : * mut i32 , root : * mut tinyxml2__XMLElement , model_dir : * const FilePath) ; } unsafe { AccumulateFiles (files , root , model_dir) }
+    if root.is_null() {
+        return;
+    }
+    extern "C" { fn AccumulateFiles(files: *mut i32, root: *mut tinyxml2__XMLElement, model_dir: *const FilePath); }
+    // SAFETY: root verified non-null; delegates to C++ implementation
+    unsafe { AccumulateFiles(files, root, model_dir) }
 }
 
 /// C: mju_getXMLDependencies (xml/xml_util.cc:224)

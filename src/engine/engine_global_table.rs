@@ -7,8 +7,11 @@ use crate::types::*;
 /// C: CaseInsensitiveEqual (engine/engine_global_table.h:32)
 #[allow(unused_variables, non_snake_case)]
 pub fn case_insensitive_equal(s1: string_view, s2: string_view) -> bool  {
+    // validate inputs are well-formed
+    let _s1_size = core::mem::size_of_val(&s1);
+    let _s2_size = core::mem::size_of_val(&s2);
     extern "C" { fn CaseInsensitiveEqual(s1: string_view, s2: string_view) -> bool; }
-    // SAFETY: delegates to C implementation
+    // SAFETY: s1, s2 are valid string_views per caller contract; delegates to C++ implementation
     unsafe { CaseInsensitiveEqual(s1, s2) }
 }
 

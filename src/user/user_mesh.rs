@@ -12,9 +12,13 @@ use crate::types::*;
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn fovea(x: f64, gamma: f64) -> f64  {
-    extern "C" { fn Fovea(x: f64, gamma: f64) -> f64; }
-    // SAFETY: delegates to C implementation
-    unsafe { Fovea(x, gamma) }
+    // Quick return
+    if gamma == 0.0 {
+        return x;
+    }
+    // Foveal deformation: clamp gamma to [0,1]
+    let g = if gamma > 1.0 { 1.0 } else if gamma < 0.0 { 0.0 } else { gamma };
+    g * x.powf(5.0) + (1.0 - g) * x
 }
 
 /// C: LinSpace (user/user_mesh.cc:93)
@@ -25,9 +29,18 @@ pub fn fovea(x: f64, gamma: f64) -> f64  {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn lin_space(lower: f64, upper: f64, n: i32, array: [f64; 0]) {
-    extern "C" { fn LinSpace(lower: f64, upper: f64, n: i32, array: [f64; 0]); }
-    // SAFETY: delegates to C implementation
-    unsafe { LinSpace(lower, upper, n, array) }
+    let increment: f64 = if n > 1 { (upper - lower) / ((n - 1) as f64) } else { 0.0 };
+    // SAFETY: array is a C flexible array member; pointer arithmetic mirrors C LinSpace exactly.
+    // Caller guarantees array has at least n elements allocated behind this pointer.
+    unsafe {
+        let mut ptr = array.as_ptr() as *mut f64;
+        let mut val = lower;
+        for _i in 0..n {
+            *ptr = val;
+            ptr = ptr.add(1);
+            val = val + increment;
+        }
+    }
 }
 
 /// C: BinEdges (user/user_mesh.cc:103)
@@ -106,9 +119,51 @@ pub fn aux_s(omega: f64, m: f64) -> f64  {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn triangle(normal: *mut f64, center: *mut f64, v1: *const f64, v2: *const f64, v3: *const f64) -> f64  {
-    extern "C" { fn triangle(normal: *mut f64, center: *mut f64, v1: *const f64, v2: *const f64, v3: *const f64) -> f64; }
-    // SAFETY: delegates to C implementation
-    unsafe { triangle(normal, center, v1, v2, v3) }
+    const mjMINVAL: f64 = 1e-15;
+
+    // SAFETY: all pointers valid per caller contract; mirrors C triangle() exactly
+    unsafe {
+        let mut normal_local: [f64; 3] = [0.0; 3];
+        let normal_ptr: *mut f64 = if !normal.is_null() { normal } else { normal_local.as_mut_ptr() };
+
+        // center
+        if !center.is_null() {
+            *center.add(0) = (*v1.add(0) + *v2.add(0) + *v3.add(0)) / 3.0;
+            *center.add(1) = (*v1.add(1) + *v2.add(1) + *v3.add(1)) / 3.0;
+            *center.add(2) = (*v1.add(2) + *v2.add(2) + *v3.add(2)) / 3.0;
+        }
+
+        // normal = (v2-v1) cross (v3-v1)
+        let b: [f64; 3] = [
+            *v2.add(0) - *v1.add(0),
+            *v2.add(1) - *v1.add(1),
+            *v2.add(2) - *v1.add(2),
+        ];
+        let c: [f64; 3] = [
+            *v3.add(0) - *v1.add(0),
+            *v3.add(1) - *v1.add(1),
+            *v3.add(2) - *v1.add(2),
+        ];
+        crate::user::user_util::mjuu_crossvec(normal_ptr, b.as_ptr(), c.as_ptr());
+
+        // get length
+        let len = crate::user::user_util::mjuu_dot3(normal_ptr, normal_ptr).sqrt();
+
+        // ignore small faces
+        if len < mjMINVAL {
+            return 0.0;
+        }
+
+        // normalize
+        if !normal.is_null() {
+            *normal_ptr.add(0) = *normal_ptr.add(0) / len;
+            *normal_ptr.add(1) = *normal_ptr.add(1) / len;
+            *normal_ptr.add(2) = *normal_ptr.add(2) / len;
+        }
+
+        // return area
+        0.5 * len
+    }
 }
 
 /// C: mjCMesh::ProcessVertices (user/user_mesh.cc:539)

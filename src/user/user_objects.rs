@@ -2317,19 +2317,23 @@ pub fn mj_c_mesh_aamm(self_ptr: *mut mjCMesh) -> *const f64 {
 /// C: mjCMesh::nvert (user/user_objects.h:1192)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_mesh_nvert(self_ptr: *mut mjCMesh) -> i32 {
-    // WARNING: signature changed — verify body
-    // Previous params: (self_ptr : * mut mjCMesh)
-    // Previous return: i32
-    extern "C" { fn mjCMesh_nvert (self_ptr : * mut mjCMesh) -> i32 ; } unsafe { mjCMesh_nvert (self_ptr) }
+    if self_ptr.is_null() {
+        return 0;
+    }
+    extern "C" { fn mjCMesh_nvert(self_ptr: *mut mjCMesh) -> i32; }
+    // SAFETY: self_ptr verified non-null; delegates to C++ getter
+    unsafe { mjCMesh_nvert(self_ptr) }
 }
 
 /// C: mjCMesh::nnormal (user/user_objects.h:1193)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_mesh_nnormal(self_ptr: *mut mjCMesh) -> i32 {
-    // WARNING: signature changed — verify body
-    // Previous params: (self_ptr : * mut mjCMesh)
-    // Previous return: i32
-    extern "C" { fn mjCMesh_nnormal (self_ptr : * mut mjCMesh) -> i32 ; } unsafe { mjCMesh_nnormal (self_ptr) }
+    if self_ptr.is_null() {
+        return 0;
+    }
+    extern "C" { fn mjCMesh_nnormal(self_ptr: *mut mjCMesh) -> i32; }
+    // SAFETY: self_ptr verified non-null; delegates to C++ getter
+    unsafe { mjCMesh_nnormal(self_ptr) }
 }
 
 /// C: mjCMesh::ntexcoord (user/user_objects.h:1194)
@@ -2343,10 +2347,12 @@ pub fn mj_c_mesh_ntexcoord(self_ptr: *mut mjCMesh) -> i32 {
 /// C: mjCMesh::nface (user/user_objects.h:1195)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_mesh_nface(self_ptr: *mut mjCMesh) -> i32 {
-    // WARNING: signature changed — verify body
-    // Previous params: (self_ptr : * mut mjCMesh)
-    // Previous return: i32
-    extern "C" { fn mjCMesh_nface (self_ptr : * mut mjCMesh) -> i32 ; } unsafe { mjCMesh_nface (self_ptr) }
+    if self_ptr.is_null() {
+        return 0;
+    }
+    extern "C" { fn mjCMesh_nface(self_ptr: *mut mjCMesh) -> i32; }
+    // SAFETY: self_ptr verified non-null; delegates to C++ getter
+    unsafe { mjCMesh_nface(self_ptr) }
 }
 
 /// C: mjCMesh::npolygon (user/user_objects.h:1196)
@@ -2462,10 +2468,12 @@ pub fn mj_c_mesh_get_inertia_box_ptr(self_ptr: *mut mjCMesh) -> *mut f64 {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_mesh_get_volume_ref(self_ptr: *mut mjCMesh) -> f64 {
-    // WARNING: signature changed — verify body
-    // Previous params: (self_ptr : * mut mjCMesh)
-    // Previous return: f64
-    extern "C" { fn mjCMesh_GetVolumeRef (self_ptr : * mut mjCMesh) -> f64 ; } unsafe { mjCMesh_GetVolumeRef (self_ptr) }
+    if self_ptr.is_null() {
+        return 0.0;
+    }
+    extern "C" { fn mjCMesh_GetVolumeRef(self_ptr: *mut mjCMesh) -> f64; }
+    // SAFETY: self_ptr verified non-null; delegates to C++ method
+    unsafe { mjCMesh_GetVolumeRef(self_ptr) }
 }
 
 /// C: mjCMesh::FitGeom (user/user_objects.h:1227)
@@ -2580,10 +2588,12 @@ pub fn mj_c_mesh_copy_texcoord(self_ptr: *mut mjCMesh, arr: *mut f32) {
 /// C: mjCMesh::CopyGraph (user/user_objects.h:1239)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_mesh_copy_graph(self_ptr: *mut mjCMesh, arr: *mut i32) {
-    // WARNING: signature changed — verify body
-    // Previous params: (self_ptr : * mut mjCMesh, arr : * mut i32)
-    // Previous return: ()
-    extern "C" { fn mjCMesh_CopyGraph (self_ptr : * mut mjCMesh , arr : * mut i32) ; } unsafe { mjCMesh_CopyGraph (self_ptr , arr) }
+    if self_ptr.is_null() {
+        return;
+    }
+    extern "C" { fn mjCMesh_CopyGraph(self_ptr: *mut mjCMesh, arr: *mut i32); }
+    // SAFETY: self_ptr verified non-null; delegates to C++ method
+    unsafe { mjCMesh_CopyGraph(self_ptr, arr) }
 }
 
 /// C: mjCMesh::CopyPolygons (user/user_objects.h:1242)
@@ -2696,10 +2706,12 @@ pub fn mj_c_mesh_load_msh(self_ptr: *mut mjCMesh, resource: *mut mjResource, rem
 /// Calls: mjp_getPluginAtSlot
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_mesh_load_sdf(self_ptr: *mut mjCMesh) {
-    // WARNING: signature changed — verify body
-    // Previous params: (self_ptr : * mut mjCMesh)
-    // Previous return: ()
-    extern "C" { fn mjCMesh_LoadSDF (self_ptr : * mut mjCMesh) ; } unsafe { mjCMesh_LoadSDF (self_ptr) }
+    if self_ptr.is_null() {
+        return;
+    }
+    extern "C" { fn mjCMesh_LoadSDF(self_ptr: *mut mjCMesh); }
+    // SAFETY: self_ptr verified non-null; delegates to C++ method
+    unsafe { mjCMesh_LoadSDF(self_ptr) }
 }
 
 /// C: mjCMesh::MakeGraph (user/user_objects.h:1282)

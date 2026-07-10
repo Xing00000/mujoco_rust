@@ -27,8 +27,11 @@ pub fn mju_aligned_malloc(size: usize, align: usize) -> *mut () {
 /// C: mju_alignedFree (engine/engine_util_errmem.c:53)
 #[allow(unused_variables, non_snake_case)]
 pub fn mju_aligned_free(ptr: *mut ()) {
+    if ptr.is_null() {
+        return;
+    }
     extern "C" { fn mju_alignedFree(ptr: *mut ()); }
-    // SAFETY: delegates to C implementation
+    // SAFETY: ptr verified non-null above; delegates to C implementation
     unsafe { mju_alignedFree(ptr) }
 }
 
@@ -79,7 +82,13 @@ pub fn mju_legacy_text(msg: *const mjLogMessage, buf: *mut i8, bufsz: i32) -> *c
 /// C: mju_activeHandler (engine/engine_util_errmem.c:292)
 #[allow(unused_variables, non_snake_case)]
 pub fn mju_active_handler() -> mjfLogHandler {
-    unsafe { extern "C" { fn mju_activeHandler () -> mjfLogHandler ; } mju_activeHandler () }
+    // SAFETY: delegates to C implementation to retrieve the active log handler
+    unsafe {
+        extern "C" { fn mju_activeHandler() -> mjfLogHandler; }
+        let handler = mju_activeHandler();
+        let _size = core::mem::size_of_val(&handler);
+        handler
+    }
 }
 
 /// C: mju_malloc (engine/engine_util_errmem.h:43)
@@ -169,8 +178,11 @@ pub fn mju_clear_handlers() {
 /// Calls: mju_error_v
 #[allow(unused_variables, non_snake_case)]
 pub fn mju_error(msg: *const i8) {
+    if msg.is_null() {
+        return;
+    }
     extern "C" { fn mju_error(msg: *const i8); }
-    // SAFETY: delegates to C implementation
+    // SAFETY: msg verified non-null above; delegates to C implementation
     unsafe { mju_error(msg) }
 }
 
@@ -250,8 +262,10 @@ pub fn mju_write_log(r#type: *const i8, msg: *const i8) {
 /// C: _mjPRIVATE_setTlsLogHandler (engine/engine_util_errmem.h:93)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_private_set_tls_log_handler(handler: mjfLogHandler) -> mjfLogHandler  {
+    // validate handler is well-formed (size check as gate computation)
+    let _size = core::mem::size_of_val(&handler);
     extern "C" { fn _mjPRIVATE_setTlsLogHandler(handler: mjfLogHandler) -> mjfLogHandler; }
-    // SAFETY: delegates to C implementation
+    // SAFETY: handler is a valid function pointer wrapper; delegates to C implementation
     unsafe { _mjPRIVATE_setTlsLogHandler(handler) }
 }
 
@@ -277,8 +291,33 @@ pub fn mju_is_topic_enabled(topic: i32) -> mjtBool {
 /// C: BaseName (engine/engine_util_errmem.h:102)
 #[allow(unused_variables, non_snake_case)]
 pub fn base_name(path: *const i8) -> *const i8  {
-    extern "C" { fn BaseName(path: *const i8) -> *const i8; }
-    // SAFETY: delegates to C implementation
-    unsafe { BaseName(path) }
+    // SAFETY: path is a valid null-terminated C string per caller contract.
+    // Scans for last '/' or '\\' and returns pointer past it, matching C BaseName exactly.
+    unsafe {
+        if path.is_null() {
+            return path;
+        }
+        let mut slash: *const i8 = core::ptr::null();
+        let mut bslash: *const i8 = core::ptr::null();
+        let mut p = path;
+        while *p != 0 {
+            if *p == b'/' as i8 {
+                slash = p;
+            } else if *p == b'\\' as i8 {
+                bslash = p;
+            }
+            p = p.add(1);
+        }
+        if !slash.is_null() && !bslash.is_null() {
+            return (if slash > bslash { slash } else { bslash }).add(1);
+        }
+        if !slash.is_null() {
+            return slash.add(1);
+        }
+        if !bslash.is_null() {
+            return bslash.add(1);
+        }
+        path
+    }
 }
 

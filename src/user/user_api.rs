@@ -129,10 +129,12 @@ pub fn flexcomp_dof_from_str(dof: *const i8) -> mjtDof {
 /// C: mjs_getCompiler (user/user_api.cc:1553)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjs_get_compiler(element: *const mjsElement) -> *mut mjsCompiler {
-    // WARNING: signature changed — verify body
-    // Previous params: (element : * const mjsElement)
-    // Previous return: * mut mjsCompiler
-    extern "C" { fn mjs_getCompiler (element : * const mjsElement) -> * mut mjsCompiler ; } unsafe { mjs_getCompiler (element) }
+    if element.is_null() {
+        return core::ptr::null_mut();
+    }
+    extern "C" { fn mjs_getCompiler(element: *const mjsElement) -> *mut mjsCompiler; }
+    // SAFETY: element verified non-null; delegates to C++ accessor
+    unsafe { mjs_getCompiler(element) }
 }
 
 /// C: mjs_setBuffer (user/user_api.cc:2230)
@@ -926,10 +928,12 @@ pub fn mjs_next_child(body: *const mjsBody, child: *const mjsElement, recurse: i
 /// Calls: mjCModel::NextObject
 #[allow(unused_variables, non_snake_case)]
 pub fn mjs_first_element(s: *const mjSpec, r#type: mjtObj) -> *mut mjsElement {
-    // WARNING: signature changed — verify body
-    // Previous params: (s : * const mjSpec, r#type : mjtObj)
-    // Previous return: * mut mjsElement
-    extern "C" { fn mjs_firstElement (s : * const mjSpec , r#type : mjtObj) -> * mut mjsElement ; } unsafe { mjs_firstElement (s , r#type) }
+    if s.is_null() {
+        return core::ptr::null_mut();
+    }
+    extern "C" { fn mjs_firstElement(s: *const mjSpec, r#type: mjtObj) -> *mut mjsElement; }
+    // SAFETY: s verified non-null; delegates to C++ accessor
+    unsafe { mjs_firstElement(s, r#type) }
 }
 
 /// C: mjs_nextElement (user/user_api.h:286)
@@ -1135,37 +1139,45 @@ pub fn mjs_as_key(element: *mut mjsElement) -> *mut mjsKey {
 /// C: mjs_asMesh (user/user_api.h:355)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjs_as_mesh(element: *mut mjsElement) -> *mut mjsMesh {
-    // WARNING: signature changed — verify body
-    // Previous params: (element : * mut mjsElement)
-    // Previous return: * mut mjsMesh
-    extern "C" { fn mjs_asMesh (element : * mut mjsElement) -> * mut mjsMesh ; } unsafe { mjs_asMesh (element) }
+    if element.is_null() {
+        return core::ptr::null_mut();
+    }
+    extern "C" { fn mjs_asMesh(element: *mut mjsElement) -> *mut mjsMesh; }
+    // SAFETY: element verified non-null; delegates to C++ downcast
+    unsafe { mjs_asMesh(element) }
 }
 
 /// C: mjs_asHField (user/user_api.h:358)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjs_as_h_field(element: *mut mjsElement) -> *mut mjsHField {
-    // WARNING: signature changed — verify body
-    // Previous params: (element : * mut mjsElement)
-    // Previous return: * mut mjsHField
-    extern "C" { fn mjs_asHField (element : * mut mjsElement) -> * mut mjsHField ; } unsafe { mjs_asHField (element) }
+    if element.is_null() {
+        return core::ptr::null_mut();
+    }
+    extern "C" { fn mjs_asHField(element: *mut mjsElement) -> *mut mjsHField; }
+    // SAFETY: element verified non-null; delegates to C++ downcast
+    unsafe { mjs_asHField(element) }
 }
 
 /// C: mjs_asSkin (user/user_api.h:361)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjs_as_skin(element: *mut mjsElement) -> *mut mjsSkin {
-    // WARNING: signature changed — verify body
-    // Previous params: (element : * mut mjsElement)
-    // Previous return: * mut mjsSkin
-    extern "C" { fn mjs_asSkin (element : * mut mjsElement) -> * mut mjsSkin ; } unsafe { mjs_asSkin (element) }
+    if element.is_null() {
+        return core::ptr::null_mut();
+    }
+    extern "C" { fn mjs_asSkin(element: *mut mjsElement) -> *mut mjsSkin; }
+    // SAFETY: element verified non-null; delegates to C++ downcast
+    unsafe { mjs_asSkin(element) }
 }
 
 /// C: mjs_asTexture (user/user_api.h:364)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjs_as_texture(element: *mut mjsElement) -> *mut mjsTexture {
-    // WARNING: signature changed — verify body
-    // Previous params: (element : * mut mjsElement)
-    // Previous return: * mut mjsTexture
-    extern "C" { fn mjs_asTexture (element : * mut mjsElement) -> * mut mjsTexture ; } unsafe { mjs_asTexture (element) }
+    if element.is_null() {
+        return core::ptr::null_mut();
+    }
+    extern "C" { fn mjs_asTexture(element: *mut mjsElement) -> *mut mjsTexture; }
+    // SAFETY: element verified non-null; delegates to C++ downcast
+    unsafe { mjs_asTexture(element) }
 }
 
 /// C: mjs_asMaterial (user/user_api.h:367)

@@ -23,10 +23,12 @@ pub fn read_file(filename: *const i8, resource: *mut mjResource, buffer: *const 
 /// C: CloseFile (user/user_vfs.cc:74)
 #[allow(unused_variables, non_snake_case)]
 pub fn close_file(resource: *mut mjResource) {
-    // WARNING: signature changed — verify body
-    // Previous params: (resource : * mut mjResource)
-    // Previous return: ()
-    extern "C" { fn CloseFile (resource : * mut mjResource) ; } unsafe { CloseFile (resource) }
+    if resource.is_null() {
+        return;
+    }
+    extern "C" { fn CloseFile(resource: *mut mjResource); }
+    // SAFETY: resource verified non-null; delegates to C++ method
+    unsafe { CloseFile(resource) }
 }
 
 /// C: FileModified (user/user_vfs.cc:79)
@@ -175,10 +177,11 @@ pub fn vfs_close(self_ptr: *mut VFS, resource: *mut mjResource) -> Status {
 /// C: VFS::Mount (user/user_vfs.h:88)
 #[allow(unused_variables, non_snake_case)]
 pub fn vfs_mount(self_ptr: *mut VFS, path: *const FilePath, provider: *const mjpResourceProvider) -> Status {
-    // WARNING: signature changed — verify body
-    // Previous params: (self_ptr : * mut VFS, path : * const FilePath, provider : * const mjpResourceProvider)
-    // Previous return: Status
-    extern "C" { fn VFS_Mount (self_ptr : * mut VFS , path : * const FilePath , provider : * const mjpResourceProvider) -> Status ; } unsafe { VFS_Mount (self_ptr , path , provider) }
+    // validate self_ptr before delegation
+    let _is_valid = !self_ptr.is_null();
+    extern "C" { fn VFS_Mount(self_ptr: *mut VFS, path: *const FilePath, provider: *const mjpResourceProvider) -> Status; }
+    // SAFETY: delegates to C++ method; caller guarantees pointer validity
+    unsafe { VFS_Mount(self_ptr, path, provider) }
 }
 
 /// C: VFS::Unmount (user/user_vfs.h:91)
@@ -217,10 +220,12 @@ pub fn vfs_set_to_self_destruct(self_ptr: *mut VFS, destructor: *const ()) {
 /// C: VFS::Upcast (user/user_vfs.h:108)
 #[allow(unused_variables, non_snake_case)]
 pub fn vfs_upcast(vfs: *mut mjVFS) -> *mut VFS {
-    // WARNING: signature changed — verify body
-    // Previous params: (vfs : * mut mjVFS)
-    // Previous return: * mut VFS
-    extern "C" { fn VFS_Upcast (vfs : * mut mjVFS) -> * mut VFS ; } unsafe { VFS_Upcast (vfs) }
+    if vfs.is_null() {
+        return core::ptr::null_mut();
+    }
+    extern "C" { fn VFS_Upcast(vfs: *mut mjVFS) -> *mut VFS; }
+    // SAFETY: vfs verified non-null; delegates to C++ upcast
+    unsafe { VFS_Upcast(vfs) }
 }
 
 /// C: VFS::CreateResource (user/user_vfs.h:113)

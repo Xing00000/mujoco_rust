@@ -574,10 +574,12 @@ pub fn mj_c_model_get_object(self_ptr: *mut mjCModel, r#type: mjtObj, id: i32) -
 /// C: mjCModel::NextObject (user/user_model.h:246)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_model_next_object(self_ptr: *mut mjCModel, object: *const mjsElement, r#type: mjtObj) -> *mut mjsElement {
-    // WARNING: signature changed — verify body
-    // Previous params: (self_ptr : * mut mjCModel, object : * const mjsElement, r#type : mjtObj)
-    // Previous return: * mut mjsElement
-    extern "C" { fn mjCModel_NextObject (self_ptr : * mut mjCModel , object : * const mjsElement , r#type : mjtObj) -> * mut mjsElement ; } unsafe { mjCModel_NextObject (self_ptr , object , r#type) }
+    if self_ptr.is_null() {
+        return core::ptr::null_mut();
+    }
+    extern "C" { fn mjCModel_NextObject(self_ptr: *mut mjCModel, object: *const mjsElement, r#type: mjtObj) -> *mut mjsElement; }
+    // SAFETY: self_ptr verified non-null; delegates to C++ method
+    unsafe { mjCModel_NextObject(self_ptr, object, r#type) }
 }
 
 /// C: mjCModel::IsCompiled (user/user_model.h:249)
@@ -703,10 +705,12 @@ pub fn mj_c_model_find_tree(self_ptr: *mut mjCModel, body: *mut mjCBody, r#type:
 /// C: mjCModel::FindSpec (user/user_model.h:276)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_model_find_spec(self_ptr: *mut mjCModel, name: string) -> *mut mjSpec {
-    // WARNING: signature changed — verify body
-    // Previous params: (self_ptr : * mut mjCModel, name : string)
-    // Previous return: * mut mjSpec
-    extern "C" { fn mjCModel_FindSpec (self_ptr : * mut mjCModel , name : string) -> * mut mjSpec ; } unsafe { mjCModel_FindSpec (self_ptr , name) }
+    if self_ptr.is_null() {
+        return core::ptr::null_mut();
+    }
+    extern "C" { fn mjCModel_FindSpec(self_ptr: *mut mjCModel, name: string) -> *mut mjSpec; }
+    // SAFETY: self_ptr verified non-null; delegates to C++ method
+    unsafe { mjCModel_FindSpec(self_ptr, name) }
 }
 
 /// C: mjCModel::ActivatePlugin (user/user_model.h:278)

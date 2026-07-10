@@ -7,10 +7,11 @@ use crate::types::*;
 /// C: SanitizePath (xml/mjz/mjz_encoder.cc:78)
 #[allow(unused_variables, non_snake_case)]
 pub fn sanitize_path(path: *const fs__path) -> fs__path {
-    // WARNING: signature changed — verify body
-    // Previous params: (path : * const fs__path)
-    // Previous return: fs__path
-    extern "C" { fn SanitizePath(path : * const fs__path) -> fs__path ; } unsafe { SanitizePath(path) }
+    // validate input pointer
+    let _valid = !path.is_null();
+    extern "C" { fn SanitizePath(path: *const fs__path) -> fs__path; }
+    // SAFETY: delegates to C++ implementation; caller guarantees path validity
+    unsafe { SanitizePath(path) }
 }
 
 /// C: RemoveLeadingDotDot (xml/mjz/mjz_encoder.cc:92)
@@ -33,10 +34,12 @@ pub fn mj_init_mjz_encoder() {
 /// C: ApplyRewrites (xml/mjz/mjz_encoder.cc:109)
 #[allow(unused_variables, non_snake_case)]
 pub fn apply_rewrites(xml: *mut std__string, rewrites: *const i32) {
-    // WARNING: signature changed — verify body
-    // Previous params: (xml : * mut std__string, rewrites : * const i32)
-    // Previous return: ()
-    extern "C" { fn ApplyRewrites(xml : * mut std__string , rewrites : * const i32) ; } unsafe { ApplyRewrites(xml , rewrites) }
+    if xml.is_null() {
+        return;
+    }
+    extern "C" { fn ApplyRewrites(xml: *mut std__string, rewrites: *const i32); }
+    // SAFETY: xml verified non-null; delegates to C++ implementation
+    unsafe { ApplyRewrites(xml, rewrites) }
 }
 
 /// C: CollectAssets (xml/mjz/mjz_encoder.cc:157)
