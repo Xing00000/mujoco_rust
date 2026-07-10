@@ -24,10 +24,15 @@ pub fn mju_aligned_malloc(size: usize, align: usize) -> *mut () {
 /// C: mju_alignedFree (engine/engine_util_errmem.c:53)
 #[allow(unused_variables, non_snake_case)]
 pub fn mju_aligned_free(ptr: *mut ()) {
-    // WARNING: signature changed — verify body
-    // Previous params: (ptr : * mut ())
-    // Previous return: ()
-    extern "C" { fn free (ptr : * mut ()) ; } unsafe { free (ptr) ; }
+    // SAFETY: ptr was allocated by aligned_alloc (posix). free() is the correct deallocation.
+    // On non-Windows, aligned_alloc memory is freed with standard free().
+    if ptr.is_null() {
+        return;
+    }
+    unsafe {
+        extern "C" { fn free(ptr: *mut ()); }
+        free(ptr);
+    }
 }
 
 /// C: mju_initLogTopicsFromEnv (engine/engine_util_errmem.c:111)

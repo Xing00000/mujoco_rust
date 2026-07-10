@@ -910,9 +910,36 @@ pub fn mj_read_sensor(m: *const mjModel, d: *const mjData, id: i32, time: f64, r
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_init_ctrl_history(m: *const mjModel, d: *mut mjData, id: i32, times: *const f64, values: *const f64) {
-    extern "C" { fn mj_initCtrlHistory(m: *const mjModel, d: *mut mjData, id: i32, times: *const f64, values: *const f64); }
-    // SAFETY: delegates to C implementation
-    unsafe { mj_initCtrlHistory(m, d, id, times, values) }
+    // SAFETY: m, d valid per caller. id validated before array access.
+    // buf points into d->history with sufficient size per model allocation.
+    unsafe {
+        // validate actuator id
+        if id < 0 || id >= (*m).nu as i32 {
+            crate::engine::engine_util_errmem::mju_error(
+                b"invalid actuator id %d\0".as_ptr() as *const i8);
+            return;
+        }
+
+        // check that actuator has a history buffer
+        let nsample: i32 = *(*m).actuator_history.add((2 * id) as usize);
+        if nsample == 0 {
+            crate::engine::engine_util_errmem::mju_error(
+                b"actuator %d has no history buffer\0".as_ptr() as *const i8);
+            return;
+        }
+
+        // get buffer pointer
+        let buf: *mut f64 = (*d).history.add(*(*m).actuator_historyadr.add(id as usize) as usize);
+
+        // if times is NULL, use existing buffer times
+        let buf_times: *const f64 = if !times.is_null() { times } else { buf.add(2) as *const f64 };
+
+        // get existing user value (preserve it)
+        let user: f64 = *buf;
+
+        // initialize history buffer
+        crate::engine::engine_util_misc::mju_history_init(buf, nsample, 1, buf_times, values, user);
+    }
 }
 
 /// C: mj_initSensorHistory (engine/engine_support.h:158)
@@ -924,8 +951,33 @@ pub fn mj_init_ctrl_history(m: *const mjModel, d: *mut mjData, id: i32, times: *
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_init_sensor_history(m: *const mjModel, d: *mut mjData, id: i32, times: *const f64, values: *const f64, phase: f64) {
-    extern "C" { fn mj_initSensorHistory(m: *const mjModel, d: *mut mjData, id: i32, times: *const f64, values: *const f64, phase: f64); }
-    // SAFETY: delegates to C implementation
-    unsafe { mj_initSensorHistory(m, d, id, times, values, phase) }
+    // SAFETY: m, d valid per caller. id validated before array access.
+    // buf points into d->history with sufficient size per model allocation.
+    unsafe {
+        // validate sensor id
+        if id < 0 || id >= (*m).nsensor as i32 {
+            crate::engine::engine_util_errmem::mju_error(
+                b"invalid sensor id %d\0".as_ptr() as *const i8);
+            return;
+        }
+
+        // check that sensor has a history buffer
+        let nsample: i32 = *(*m).sensor_history.add((2 * id) as usize);
+        if nsample == 0 {
+            crate::engine::engine_util_errmem::mju_error(
+                b"sensor %d has no history buffer\0".as_ptr() as *const i8);
+            return;
+        }
+
+        // get buffer pointer and dimension
+        let buf: *mut f64 = (*d).history.add(*(*m).sensor_historyadr.add(id as usize) as usize);
+        let dim: i32 = *(*m).sensor_dim.add(id as usize);
+
+        // if times is NULL, use existing buffer times
+        let buf_times: *const f64 = if !times.is_null() { times } else { buf.add(2) as *const f64 };
+
+        // initialize history buffer with provided phase
+        crate::engine::engine_util_misc::mju_history_init(buf, nsample, dim, buf_times, values, phase);
+    }
 }
 
