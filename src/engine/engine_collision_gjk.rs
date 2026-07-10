@@ -384,8 +384,11 @@ pub fn insert_vertex(pt: *mut Polytope, v: *const Vertex) -> i32  {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn attach_face(pt: *mut Polytope, v1: i32, v2: i32, v3: i32, adj1: i32, adj2: i32, adj3: i32) -> f64  {
+    if pt.is_null() {
+        return 0.0;
+    }
     extern "C" { fn attachFace(pt: *mut Polytope, v1: i32, v2: i32, v3: i32, adj1: i32, adj2: i32, adj3: i32) -> f64; }
-    // SAFETY: delegates to C implementation
+    // SAFETY: pt verified non-null; delegates to C implementation
     unsafe { attachFace(pt, v1, v2, v3, adj1, adj2, adj3) }
 }
 
@@ -629,8 +632,11 @@ pub fn gjk(status: *mut mjCCDStatus, obj1: *mut mjCCDObj, obj2: *mut mjCCDObj) {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn support(v: *mut Vertex, obj1: *mut mjCCDObj, obj2: *mut mjCCDObj, dir: *const f64, dir_neg: *const f64) {
+    if v.is_null() || obj1.is_null() || obj2.is_null() {
+        return;
+    }
     extern "C" { fn support(v: *mut Vertex, obj1: *mut mjCCDObj, obj2: *mut mjCCDObj, dir: *const f64, dir_neg: *const f64); }
-    // SAFETY: delegates to C implementation
+    // SAFETY: v, obj1, obj2 verified non-null; delegates to C implementation
     unsafe { support(v, obj1, obj2, dir, dir_neg) }
 }
 
@@ -1008,8 +1014,11 @@ pub fn max_faces(pt: *mut Polytope) -> i32  {
 /// C: addEdge (engine/engine_collision_gjk.c:1263)
 #[allow(unused_variables, non_snake_case)]
 pub fn add_edge(pt: *mut Polytope, index: i32, edge: i32) {
+    if pt.is_null() {
+        return;
+    }
     extern "C" { fn addEdge(pt: *mut Polytope, index: i32, edge: i32); }
-    // SAFETY: delegates to C implementation
+    // SAFETY: pt verified non-null; delegates to C implementation
     unsafe { addEdge(pt, index, edge) }
 }
 
@@ -1048,8 +1057,11 @@ pub fn horizon(pt: *mut Polytope, face: *mut Face) {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn epa_witness(pt: *const Polytope, face: *const Face, x1: *mut f64, x2: *mut f64) -> f64  {
+    if pt.is_null() || face.is_null() {
+        return 0.0;
+    }
     extern "C" { fn epaWitness(pt: *const Polytope, face: *const Face, x1: *mut f64, x2: *mut f64) -> f64; }
-    // SAFETY: delegates to C implementation
+    // SAFETY: pt, face verified non-null; delegates to C implementation
     unsafe { epaWitness(pt, face, x1, x2) }
 }
 

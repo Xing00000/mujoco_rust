@@ -12,8 +12,11 @@ use crate::types::*;
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn save_stats(m: *const mjModel, d: *mut mjData, island: i32, iter: i32, improvement: f64, gradient: f64, lineslope: f64, nactive: i32, nchange: i32, neval: i32, nupdate: i32) {
+    if m.is_null() || d.is_null() {
+        return;
+    }
     extern "C" { fn saveStats(m: *const mjModel, d: *mut mjData, island: i32, iter: i32, improvement: f64, gradient: f64, lineslope: f64, nactive: i32, nchange: i32, neval: i32, nupdate: i32); }
-    // SAFETY: delegates to C implementation
+    // SAFETY: m, d verified non-null; delegates to C implementation
     unsafe { saveStats(m, d, island, iter, improvement, gradient, lineslope, nactive, nchange, neval, nupdate) }
 }
 
@@ -92,8 +95,11 @@ pub fn a_rdiaginv(m: *const mjModel, d: *const mjData, res: *mut f64, nefc: i32,
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn extract_block(m: *const mjModel, d: *const mjData, Ac: *mut f64, start: i32, n: i32, flg_subR: i32) {
+    if m.is_null() || d.is_null() || Ac.is_null() {
+        return;
+    }
     extern "C" { fn extractBlock(m: *const mjModel, d: *const mjData, Ac: *mut f64, start: i32, n: i32, flg_subR: i32); }
-    // SAFETY: delegates to C implementation
+    // SAFETY: m, d, Ac verified non-null; delegates to C implementation
     unsafe { extractBlock(m, d, Ac, start, n, flg_subR) }
 }
 
@@ -120,8 +126,11 @@ pub fn residual(m: *const mjModel, d: *const mjData, res: *mut f64, i: i32, dim:
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn cost_change(A: *const f64, force: *mut f64, oldforce: *const f64, res: *const f64, dim: i32) -> f64  {
+    if A.is_null() || force.is_null() || oldforce.is_null() || res.is_null() || dim <= 0 {
+        return 0.0;
+    }
     extern "C" { fn costChange(A: *const f64, force: *mut f64, oldforce: *const f64, res: *const f64, dim: i32) -> f64; }
-    // SAFETY: delegates to C implementation
+    // SAFETY: all pointers verified non-null, dim > 0; delegates to C implementation
     unsafe { costChange(A, force, oldforce, res, dim) }
 }
 
@@ -146,8 +155,11 @@ pub fn shuffle_int(array: *mut i32, n: i32, rng: *mut pcg32_state) {
 /// Calls: mju_fillInt, mju_norm
 #[allow(unused_variables, non_snake_case)]
 pub fn dual_state(d: *const mjData, state: *mut i32, ne: i32, nf: i32, nefc: i32, efclist: *const i32) -> i32  {
+    if d.is_null() || state.is_null() {
+        return 0;
+    }
     extern "C" { fn dualState(d: *const mjData, state: *mut i32, ne: i32, nf: i32, nefc: i32, efclist: *const i32) -> i32; }
-    // SAFETY: delegates to C implementation
+    // SAFETY: d, state verified non-null; delegates to C implementation
     unsafe { dualState(d, state, ne, nf, nefc, efclist) }
 }
 
@@ -169,8 +181,11 @@ pub fn dual_state_change(d: *const mjData, state: *mut i32, oldstate: *mut i32, 
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn project_ellipsoid(friction: *mut f64, normal: f64, mu: *const f64, dim: i32, feasible: i32) {
+    if friction.is_null() || mu.is_null() {
+        return;
+    }
     extern "C" { fn projectEllipsoid(friction: *mut f64, normal: f64, mu: *const f64, dim: i32, feasible: i32); }
-    // SAFETY: delegates to C implementation
+    // SAFETY: friction, mu verified non-null; delegates to C implementation
     unsafe { projectEllipsoid(friction, normal, mu, dim, feasible) }
 }
 
@@ -248,20 +263,22 @@ pub fn primal_allocate(m: *const mjModel, d: *mut mjData, ctx: *mut mjPrimalCont
 /// Calls: mj_constraintUpdate_impl, mju_mulMatTVec, mju_mulMatVecSparse
 #[allow(unused_variables, non_snake_case)]
 pub fn primal_update_constraint(ctx: *mut mjPrimalContext, flg_HessianCone: i32) {
-    // WARNING: signature changed — verify body
-    // Previous params: (ctx : * mut mjPrimalContext, flg_HessianCone : i32)
-    // Previous return: ()
-    extern "C" { fn PrimalUpdateConstraint(ctx : * mut mjPrimalContext , flg_HessianCone : i32) ; } unsafe { PrimalUpdateConstraint(ctx , flg_HessianCone) }
+    if ctx.is_null() {
+        return;
+    }
+    extern "C" { fn PrimalUpdateConstraint(ctx: *mut mjPrimalContext, flg_HessianCone: i32); }
+    unsafe { PrimalUpdateConstraint(ctx, flg_HessianCone) }
 }
 
 /// C: PrimalUpdateGradient (engine/engine_solver.c:1380)
 /// Calls: mj_solveLD, mju_cholSolve, mju_cholSolveSparse, mju_copy
 #[allow(unused_variables, non_snake_case)]
 pub fn primal_update_gradient(ctx: *mut mjPrimalContext, flg_Newton: i32) {
-    // WARNING: signature changed — verify body
-    // Previous params: (ctx : * mut mjPrimalContext, flg_Newton : i32)
-    // Previous return: ()
-    extern "C" { fn PrimalUpdateGradient(ctx : * mut mjPrimalContext , flg_Newton : i32) ; } unsafe { PrimalUpdateGradient(ctx , flg_Newton) }
+    if ctx.is_null() {
+        return;
+    }
+    extern "C" { fn PrimalUpdateGradient(ctx: *mut mjPrimalContext, flg_Newton: i32); }
+    unsafe { PrimalUpdateGradient(ctx, flg_Newton) }
 }
 
 /// C: PrimalPrepare (engine/engine_solver.c:1408)
@@ -428,8 +445,11 @@ pub fn mj_sol_primal(m: *const mjModel, d: *mut mjData, island: i32, maxiter: i3
 /// Calls: solPGS
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_sol_pgs(m: *const mjModel, d: *mut mjData, maxiter: i32) {
+    if m.is_null() || d.is_null() {
+        return;
+    }
     extern "C" { fn mj_solPGS(m: *const mjModel, d: *mut mjData, maxiter: i32); }
-    // SAFETY: delegates to C implementation
+    // SAFETY: m, d verified non-null; delegates to C implementation
     unsafe { mj_solPGS(m, d, maxiter) }
 }
 
@@ -437,8 +457,11 @@ pub fn mj_sol_pgs(m: *const mjModel, d: *mut mjData, maxiter: i32) {
 /// Calls: solNoSlip
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_sol_no_slip(m: *const mjModel, d: *mut mjData, maxiter: i32) {
+    if m.is_null() || d.is_null() {
+        return;
+    }
     extern "C" { fn mj_solNoSlip(m: *const mjModel, d: *mut mjData, maxiter: i32); }
-    // SAFETY: delegates to C implementation
+    // SAFETY: m, d verified non-null; delegates to C implementation
     unsafe { mj_solNoSlip(m, d, maxiter) }
 }
 

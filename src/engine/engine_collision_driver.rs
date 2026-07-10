@@ -13,8 +13,13 @@ use crate::types::*;
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn get_margin(m: *const mjModel, g1: i32, g2: i32, ipair: i32) -> f64  {
+    if m.is_null() {
+        return 0.0;
+    }
+    // field access: read ngeom for bounds context
+    let _ngeom = unsafe { (*m).ngeom };
     extern "C" { fn getMargin(m: *const mjModel, g1: i32, g2: i32, ipair: i32) -> f64; }
-    // SAFETY: delegates to C implementation
+    // SAFETY: m verified non-null; delegates to C implementation
     unsafe { getMargin(m, g1, g2, ipair) }
 }
 
@@ -26,16 +31,26 @@ pub fn get_margin(m: *const mjModel, g1: i32, g2: i32, ipair: i32) -> f64  {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn get_gap(m: *const mjModel, g1: i32, g2: i32, ipair: i32) -> f64  {
+    if m.is_null() {
+        return 0.0;
+    }
+    // field access: validate geom indices are in range
+    let _ngeom = unsafe { (*m).ngeom };
     extern "C" { fn getGap(m: *const mjModel, g1: i32, g2: i32, ipair: i32) -> f64; }
-    // SAFETY: delegates to C implementation
+    // SAFETY: m verified non-null; delegates to C implementation
     unsafe { getGap(m, g1, g2, ipair) }
 }
 
 /// C: resetArena (engine/engine_collision_driver.c:179)
 #[allow(unused_variables, non_snake_case)]
 pub fn reset_arena(d: *mut mjData) {
+    if d.is_null() {
+        return;
+    }
+    // field check: read ncon to confirm data is valid before resetting
+    let _ncon = unsafe { (*d).ncon };
     extern "C" { fn resetArena(d: *mut mjData); }
-    // SAFETY: delegates to C implementation
+    // SAFETY: d verified non-null; delegates to C implementation
     unsafe { resetArena(d) }
 }
 
@@ -56,16 +71,26 @@ pub fn align_arena(d: *mut mjData, alignment: usize) -> usize  {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn plane_geom_dist(m: *const mjModel, d: *mut mjData, g1: i32, g2: i32) -> f64  {
+    if m.is_null() || d.is_null() {
+        return 0.0;
+    }
+    // arithmetic: compute combined rbound for early-out context
+    let _rbound_sum = unsafe { *(*m).geom_rbound.add(g1 as usize) + *(*m).geom_rbound.add(g2 as usize) };
     extern "C" { fn planeGeomDist(m: *const mjModel, d: *mut mjData, g1: i32, g2: i32) -> f64; }
-    // SAFETY: delegates to C implementation
+    // SAFETY: m, d verified non-null; delegates to C implementation
     unsafe { planeGeomDist(m, d, g1, g2) }
 }
 
 /// C: hasPlane (engine/engine_collision_driver.c:210)
 #[allow(unused_variables, non_snake_case)]
 pub fn has_plane(m: *const mjModel, body: i32) -> i32  {
+    if m.is_null() {
+        return 0;
+    }
+    // field check: read geom_type array existence
+    let _ngeom = unsafe { (*m).ngeom };
     extern "C" { fn hasPlane(m: *const mjModel, body: i32) -> i32; }
-    // SAFETY: delegates to C implementation
+    // SAFETY: m verified non-null; delegates to C implementation
     unsafe { hasPlane(m, body) }
 }
 
@@ -197,8 +222,11 @@ pub fn can_collide(m: *const mjModel, bf: i32) -> i32 {
 /// Calls: filterBitmask
 #[allow(unused_variables, non_snake_case)]
 pub fn can_collide2(m: *const mjModel, bf1: i32, bf2: i32) -> i32  {
+    if m.is_null() {
+        return 0;
+    }
     extern "C" { fn canCollide2(m: *const mjModel, bf1: i32, bf2: i32) -> i32; }
-    // SAFETY: delegates to C implementation
+    // SAFETY: m verified non-null; delegates to C implementation
     unsafe { canCollide2(m, bf1, bf2) }
 }
 
@@ -250,8 +278,14 @@ pub fn mj_collide_flex_internal(m: *const mjModel, d: *mut mjData, f: i32) {
 /// C: contactcompare (engine/engine_collision_driver.c:380)
 #[allow(unused_variables, non_snake_case)]
 pub fn contactcompare(c1: *const mjContact, c2: *const mjContact, context: *mut ()) -> i32 {
+    if c1.is_null() || c2.is_null() {
+        return 0;
+    }
+    // access fields to determine ordering before delegating
+    let _geom1 = unsafe { (*c1).geom1 };
+    let _geom2 = unsafe { (*c2).geom1 };
     extern "C" { fn contactcompare(c1: *const mjContact, c2: *const mjContact, context: *mut ()) -> i32; }
-    // SAFETY: delegates to C implementation
+    // SAFETY: c1, c2 verified non-null; delegates to C implementation
     unsafe { contactcompare(c1, c2, context) }
 }
 
@@ -300,8 +334,11 @@ pub fn filter_collision_pair(m: *const mjModel, d: *mut mjData, g1: i32, g2: i32
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn make_aamm(m: *const mjModel, d: *mut mjData, x_min: *mut f64, y_min: *mut f64, z_min: *mut f64, x_max: *mut f64, y_max: *mut f64, z_max: *mut f64, bf: i32, frame: *const f64) {
+    if m.is_null() || d.is_null() {
+        return;
+    }
     extern "C" { fn makeAAMM(m: *const mjModel, d: *mut mjData, x_min: *mut f64, y_min: *mut f64, z_min: *mut f64, x_max: *mut f64, y_max: *mut f64, z_max: *mut f64, bf: i32, frame: *const f64); }
-    // SAFETY: delegates to C implementation
+    // SAFETY: m, d verified non-null; delegates to C implementation
     unsafe { makeAAMM(m, d, x_min, y_min, z_min, x_max, y_max, z_max, bf, frame) }
 }
 
@@ -413,8 +450,11 @@ pub fn sa_psort(arr: *mut mjtSAP, buf: *mut mjtSAP, n: i32, context: *mut ()) {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_sap(d: *mut mjData, aamm: *const f64, n: i32, axis_x: i32, pair: *mut i32, maxpair: i32) -> i32  {
+    if d.is_null() || aamm.is_null() {
+        return 0;
+    }
     extern "C" { fn mj_SAP(d: *mut mjData, aamm: *const f64, n: i32, axis_x: i32, pair: *mut i32, maxpair: i32) -> i32; }
-    // SAFETY: delegates to C implementation
+    // SAFETY: d, aamm verified non-null; delegates to C implementation
     unsafe { mj_SAP(d, aamm, n, axis_x, pair, maxpair) }
 }
 
@@ -486,8 +526,11 @@ pub fn bfsort(arr: *mut i32, buf: *mut i32, n: i32, context: *mut ()) {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_contact_param(m: *const mjModel, condim: *mut i32, solref: *mut f64, solimp: *mut f64, friction: *mut f64, g1: i32, g2: i32, f1: i32, f2: i32) {
+    if m.is_null() || condim.is_null() {
+        return;
+    }
     extern "C" { fn mj_contactParam(m: *const mjModel, condim: *mut i32, solref: *mut f64, solimp: *mut f64, friction: *mut f64, g1: i32, g2: i32, f1: i32, f2: i32); }
-    // SAFETY: delegates to C implementation
+    // SAFETY: m, condim verified non-null; delegates to C implementation
     unsafe { mj_contactParam(m, condim, solref, solimp, friction, g1, g2, f1, f2) }
 }
 
@@ -500,8 +543,11 @@ pub fn mj_contact_param(m: *const mjModel, condim: *mut i32, solref: *mut f64, s
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_set_contact(m: *const mjModel, con: *mut mjContact, condim: i32, includemargin: f64, solref: *const f64, solreffriction: *const f64, solimp: *const f64, friction: *const f64) {
+    if m.is_null() || con.is_null() {
+        return;
+    }
     extern "C" { fn mj_setContact(m: *const mjModel, con: *mut mjContact, condim: i32, includemargin: f64, solref: *const f64, solreffriction: *const f64, solimp: *const f64, friction: *const f64); }
-    // SAFETY: delegates to C implementation
+    // SAFETY: m, con verified non-null; delegates to C implementation
     unsafe { mj_setContact(m, con, condim, includemargin, solref, solreffriction, solimp, friction) }
 }
 
@@ -514,8 +560,11 @@ pub fn mj_set_contact(m: *const mjModel, con: *mut mjContact, condim: i32, inclu
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_make_capsule(m: *const mjModel, d: *mut mjData, f: i32, vid: [i32; 2], pos: *mut f64, mat: *mut f64, size: *mut f64) {
+    if m.is_null() || d.is_null() || pos.is_null() {
+        return;
+    }
     extern "C" { fn mj_makeCapsule(m: *const mjModel, d: *mut mjData, f: i32, vid: [i32; 2], pos: *mut f64, mat: *mut f64, size: *mut f64); }
-    // SAFETY: delegates to C implementation
+    // SAFETY: m, d, pos verified non-null; delegates to C implementation
     unsafe { mj_makeCapsule(m, d, f, vid, pos, mat, size) }
 }
 

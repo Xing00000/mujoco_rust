@@ -692,10 +692,11 @@ pub fn mj_actuator_disabled(m: *const mjModel, i: i32) -> i32 {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_next_activation(m: *const mjModel, d: *const mjData, actuator_id: i32, act_adr: i32, act_dot: f64) -> f64 {
-    // WARNING: signature changed — verify body
-    // Previous params: (m : * const mjModel, d : * const mjData, actuator_id : i32, act_adr : i32, act_dot : f64)
-    // Previous return: f64
-    extern "C" { fn mj_nextActivation(m : * const mjModel , d : * const mjData , actuator_id : i32 , act_adr : i32 , act_dot : f64) -> f64 ; } unsafe { mj_nextActivation(m , d , actuator_id , act_adr , act_dot) }
+    if m.is_null() || d.is_null() {
+        return 0.0;
+    }
+    extern "C" { fn mj_nextActivation(m: *const mjModel, d: *const mjData, actuator_id: i32, act_adr: i32, act_dot: f64) -> f64; }
+    unsafe { mj_nextActivation(m, d, actuator_id, act_adr, act_dot) }
 }
 
 /// C: mj_getTotalmass (engine/engine_support.h:115)

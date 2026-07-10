@@ -32,6 +32,9 @@ pub fn prism_firstdir(o1: *const (), o2: *const (), vec: *mut ccd_vec3_t) {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn libccd_wrapper(m: *const mjModel, obj1: *mut mjCCDObj, obj2: *mut mjCCDObj, con: *mut mjPreContact, margin: f64) -> i32 {
+    if m.is_null() || obj1.is_null() || obj2.is_null() || con.is_null() {
+        return 0;
+    }
     // SAFETY: This function wraps the C implementation which sets up libccd structs
     // and calls ccdMPRPenetration. We delegate to the C impl since ccd_t is not
     // representable in our Rust types.
