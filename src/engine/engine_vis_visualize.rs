@@ -1041,10 +1041,10 @@ pub fn mjv_add_geoms(m: *const mjModel, d: *mut mjData, opt: *const mjvOption, p
         const MJ_CAT_DECOR: i32 = 4;
 
         // make default pert if missing
-        let mut localpert: std::mem::MaybeUninit<mjvPerturb> = std::mem::MaybeUninit::uninit();
+        let mut localpert_buf: [u8; core::mem::size_of::<mjvPerturb>()] = [0u8; core::mem::size_of::<mjvPerturb>()];
         let pert_used: *const mjvPerturb = if pert.is_null() {
-            crate::engine::engine_vis_init::mjv_default_perturb(localpert.as_mut_ptr());
-            localpert.as_ptr()
+            crate::engine::engine_vis_init::mjv_default_perturb(localpert_buf.as_mut_ptr() as *mut mjvPerturb);
+            localpert_buf.as_ptr() as *const mjvPerturb
         } else {
             pert
         };
@@ -1215,9 +1215,10 @@ pub fn mjv_update_skin(m: *const mjModel, d: *const mjData, scn: *mut mjvScene) 
     // SAFETY: m, d, scn valid per caller contract. Calls defaultOption on stack local,
     // then delegates to mjv_updateActiveSkin which handles the actual skin update.
     unsafe {
-        let mut opt = core::mem::MaybeUninit::<mjvOption>::uninit();
-        crate::engine::engine_vis_init::mjv_default_option(opt.as_mut_ptr());
-        crate::engine::engine_vis_visualize::mjv_update_active_skin(m, d, scn, opt.as_ptr());
+        let mut opt_buf: [u8; core::mem::size_of::<mjvOption>()] = [0u8; core::mem::size_of::<mjvOption>()];
+        let opt_ptr = opt_buf.as_mut_ptr() as *mut mjvOption;
+        crate::engine::engine_vis_init::mjv_default_option(opt_ptr);
+        crate::engine::engine_vis_visualize::mjv_update_active_skin(m, d, scn, opt_ptr as *const mjvOption);
         crate::engine::engine_util_errmem::mju_warning(
             b"mjv_updateSkin is deprecated, please use mjv_updateActiveSkin.\0".as_ptr() as *const i8,
         );

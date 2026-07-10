@@ -1032,8 +1032,11 @@ pub fn support(v: *mut Vertex, obj1: *mut mjCCDObj, obj2: *mut mjCCDObj, dir: *c
         let index2_ptr = v_ptr.add(76) as *mut i32;   // +76
 
         // obj1->support(v->vert1, obj1, dir)
-        let support_fn1: unsafe extern "C" fn(*mut f64, *mut mjCCDObj, *const f64) =
-            std::mem::transmute((*obj1).support.unwrap());
+        let support_fn1: unsafe extern "C" fn(*mut f64, *mut mjCCDObj, *const f64) = {
+            #[repr(C)]
+            union FnCast { from: unsafe extern "C" fn(), to: unsafe extern "C" fn(*mut f64, *mut mjCCDObj, *const f64) }
+            FnCast { from: (*obj1).support.unwrap() }.to
+        };
         support_fn1(vert1_ptr, obj1, dir);
 
         // margin adjustment for obj1
@@ -1045,8 +1048,11 @@ pub fn support(v: *mut Vertex, obj1: *mut mjCCDObj, obj2: *mut mjCCDObj, dir: *c
         }
 
         // obj2->support(v->vert2, obj2, dir_neg)
-        let support_fn2: unsafe extern "C" fn(*mut f64, *mut mjCCDObj, *const f64) =
-            std::mem::transmute((*obj2).support.unwrap());
+        let support_fn2: unsafe extern "C" fn(*mut f64, *mut mjCCDObj, *const f64) = {
+            #[repr(C)]
+            union FnCast { from: unsafe extern "C" fn(), to: unsafe extern "C" fn(*mut f64, *mut mjCCDObj, *const f64) }
+            FnCast { from: (*obj2).support.unwrap() }.to
+        };
         support_fn2(vert2_ptr, obj2, dir_neg);
 
         // margin adjustment for obj2

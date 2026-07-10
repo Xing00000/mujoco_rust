@@ -1554,14 +1554,15 @@ pub fn mjc_plane_convex(m: *const mjModel, d: *mut mjData, con: *mut mjPreContac
         let normal: [f64; 3] = [*mat1.add(2), *mat1.add(5), *mat1.add(8)];
 
         // init CCD object for g2
-        let mut obj: mjCCDObj = core::mem::MaybeUninit::<mjCCDObj>::zeroed().assume_init();
-        mjc_init_ccd_obj(&mut obj as *mut mjCCDObj, m, d as *const mjData, g2, 0.0);
+        let mut obj_buf: [u8; 376] = [0u8; 376]; // mjCCDObj layout is 376 bytes
+        let obj_ptr: *mut mjCCDObj = obj_buf.as_mut_ptr() as *mut mjCCDObj;
+        mjc_init_ccd_obj(obj_ptr, m, d as *const mjData, g2, 0.0);
 
         // get support point in -normal direction
         let mut ccd_dir: [f64; 3] = [-*mat1.add(2), -*mat1.add(5), -*mat1.add(8)];
         let mut ccd_vec: [f64; 3] = [0.0; 3];
         mjccd_support(
-            &obj as *const mjCCDObj as *const (),
+            obj_ptr as *const mjCCDObj as *const (),
             ccd_dir.as_ptr() as *const ccd_vec3_t,
             ccd_vec.as_mut_ptr() as *mut ccd_vec3_t,
         );
@@ -1615,7 +1616,7 @@ pub fn mjc_plane_convex(m: *const mjModel, d: *mut mjData, con: *mut mjPreContac
                     + locdir[2] * *vertdata.add(3 * i as usize + 2) as f64;
 
                 // detect contact, skip best
-                if vdot > threshold && i != obj.meshindex {
+                if vdot > threshold && i != (*obj_ptr).meshindex {
                     let vertex: [f32; 3] = [
                         *vertdata.add(3 * i as usize),
                         *vertdata.add(3 * i as usize + 1),
@@ -1636,7 +1637,7 @@ pub fn mjc_plane_convex(m: *const mjModel, d: *mut mjData, con: *mut mjPreContac
             }
         }
         // use graph data
-        else if obj.meshindex >= 0 {
+        else if (*obj_ptr).meshindex >= 0 {
             // get info
             let graphadr = *(*m).mesh_graphadr.add(dataid) as usize;
             let numvert: i32 = *(*m).mesh_graph.add(graphadr);
@@ -1645,7 +1646,7 @@ pub fn mjc_plane_convex(m: *const mjModel, d: *mut mjData, con: *mut mjPreContac
             let edge_localid: *const i32 = (*m).mesh_graph.add(graphadr + 2 + 2 * numvert as usize);
 
             // look for contacts in ibest neighborhood
-            let mut i: i32 = *vert_edgeadr.add(obj.meshindex as usize);
+            let mut i: i32 = *vert_edgeadr.add((*obj_ptr).meshindex as usize);
             let mut locid: i32 = *edge_localid.add(i as usize);
             while locid >= 0 && count < MAXPLANEMESH {
                 // vdot = dot(vertex, dir)
