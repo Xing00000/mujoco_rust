@@ -135,30 +135,107 @@ pub fn midpoint(m: *const mjModel, d: *const mjData, qfrc: *const f64, free_jnti
 /// Calls: mj_resetData, mj_warning, mju_isBad
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_check_pos(m: *const mjModel, d: *mut mjData) {
-    extern "C" { fn mj_checkPos(m: *const mjModel, d: *mut mjData); }
-    // SAFETY: delegates to C implementation; caller guarantees m and d are valid pointers
-    unsafe { mj_checkPos(m, d) }
+    // SAFETY: m, d valid per caller. Warning field accessed via byte offset (160264 + 8*idx).
+    // mjWarningStat layout: lastinfo(i32) at +0, number(i32) at +4. sizeof=8.
+    unsafe {
+        const MJWARN_BADQPOS: i32 = 3;
+        const MJDSBL_AUTORESET: i32 = 1 << 16;
+        const WARNING_OFFSET: usize = 160264; // offsetof(mjData, warning)
+
+        let nq: i32 = (*m).nq as i32;
+        let qpos: *const f64 = (*d).qpos;
+        let mut i: i32 = 0;
+        while i < nq {
+            if crate::engine::engine_util_misc::mju_is_bad(*qpos.add(i as usize)) != 0 {
+                crate::engine::engine_core_util::mj_warning(d, MJWARN_BADQPOS, i);
+                if ((*m).opt.disableflags & MJDSBL_AUTORESET) == 0 {
+                    crate::engine::engine_io::mj_reset_data(m, d);
+                }
+                // d->warning[mjWARN_BADQPOS].number++
+                let warn_ptr = (d as *mut u8).add(WARNING_OFFSET + 8 * MJWARN_BADQPOS as usize);
+                let number_ptr = warn_ptr.add(4) as *mut i32;
+                *number_ptr += 1;
+                // d->warning[mjWARN_BADQPOS].lastinfo = i
+                let lastinfo_ptr = warn_ptr as *mut i32;
+                *lastinfo_ptr = i;
+                return;
+            }
+            i += 1;
+        }
+    }
 }
 
 /// C: mj_checkVel (engine/engine_forward.h:28)
 /// Calls: mj_resetData, mj_warning, mju_isBad
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_check_vel(m: *const mjModel, d: *mut mjData) {
-    extern "C" { fn mj_checkVel(m: *const mjModel, d: *mut mjData); }
-    // SAFETY: delegates to C implementation; caller guarantees m and d are valid pointers
-    unsafe { mj_checkVel(m, d) }
+    // SAFETY: m, d valid per caller. Warning field accessed via byte offset.
+    unsafe {
+        const MJWARN_BADQVEL: i32 = 4;
+        const MJDSBL_AUTORESET: i32 = 1 << 16;
+        const MJENBL_SLEEP: i32 = 1 << 4;
+        const WARNING_OFFSET: usize = 160264;
+
+        let sleep_filter: i32 = (((*m).opt.enableflags & MJENBL_SLEEP) != 0 && (*d).nv_awake < (*m).nv as i32) as i32;
+        let nv: i32 = if sleep_filter != 0 { (*d).nv_awake } else { (*m).nv as i32 };
+
+        let mut j: i32 = 0;
+        while j < nv {
+            let i: i32 = if sleep_filter != 0 { *(*d).dof_awake_ind.add(j as usize) } else { j };
+
+            if crate::engine::engine_util_misc::mju_is_bad(*(*d).qvel.add(i as usize)) != 0 {
+                crate::engine::engine_core_util::mj_warning(d, MJWARN_BADQVEL, i);
+                if ((*m).opt.disableflags & MJDSBL_AUTORESET) == 0 {
+                    crate::engine::engine_io::mj_reset_data(m, d);
+                }
+                let warn_ptr = (d as *mut u8).add(WARNING_OFFSET + 8 * MJWARN_BADQVEL as usize);
+                let number_ptr = warn_ptr.add(4) as *mut i32;
+                *number_ptr += 1;
+                let lastinfo_ptr = warn_ptr as *mut i32;
+                *lastinfo_ptr = i;
+                return;
+            }
+            j += 1;
+        }
+    }
 }
 
 /// C: mj_checkAcc (engine/engine_forward.h:29)
 /// Calls: mj_forward, mj_resetData, mj_warning, mju_isBad
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_check_acc(m: *const mjModel, d: *mut mjData) {
+    // SAFETY: m, d valid per caller. Warning field accessed via byte offset.
+    unsafe {
+        const MJWARN_BADQACC: i32 = 5;
+        const MJDSBL_AUTORESET: i32 = 1 << 16;
+        const MJENBL_SLEEP: i32 = 1 << 4;
+        const WARNING_OFFSET: usize = 160264;
 
+        let sleep_filter: i32 = (((*m).opt.enableflags & MJENBL_SLEEP) != 0 && (*d).nv_awake < (*m).nv as i32) as i32;
+        let nv: i32 = if sleep_filter != 0 { (*d).nv_awake } else { (*m).nv as i32 };
 
+        let mut j: i32 = 0;
+        while j < nv {
+            let i: i32 = if sleep_filter != 0 { *(*d).dof_awake_ind.add(j as usize) } else { j };
 
-    extern "C" { fn mj_checkAcc(m: *const mjModel, d: *mut mjData); }
-    // SAFETY: delegates to C implementation
-    unsafe { mj_checkAcc(m, d) }
+            if crate::engine::engine_util_misc::mju_is_bad(*(*d).qacc.add(i as usize)) != 0 {
+                crate::engine::engine_core_util::mj_warning(d, MJWARN_BADQACC, i);
+                if ((*m).opt.disableflags & MJDSBL_AUTORESET) == 0 {
+                    crate::engine::engine_io::mj_reset_data(m, d);
+                }
+                let warn_ptr = (d as *mut u8).add(WARNING_OFFSET + 8 * MJWARN_BADQACC as usize);
+                let number_ptr = warn_ptr.add(4) as *mut i32;
+                *number_ptr += 1;
+                let lastinfo_ptr = warn_ptr as *mut i32;
+                *lastinfo_ptr = i;
+                if ((*m).opt.disableflags & MJDSBL_AUTORESET) == 0 {
+                    mj_forward(m, d);
+                }
+                return;
+            }
+            j += 1;
+        }
+    }
 }
 
 /// C: mj_step (engine/engine_forward.h:35)
