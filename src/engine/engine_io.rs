@@ -625,10 +625,32 @@ pub fn mj_reset_data_keyframe(m: *const mjModel, d: *mut mjData, key: i32) {
 /// Calls: mjp_getPluginAtSlot, mju_free, mju_message
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_init_plugin(m: *const mjModel, d: *mut mjData) {
-    extern "C" { fn mj_initPlugin(m: *const mjModel, d: *mut mjData); }
-    // SAFETY: m, d valid per caller. The C function accesses plugin function pointers
-    // (plugin->init) whose true signature differs from the erased fn() type in Rust.
-    unsafe { mj_initPlugin(m, d) }
+    // SAFETY: m, d valid per caller contract. Plugin function pointer is type-erased
+    // in the Rust struct (Option<fn()>) but actually has signature
+    // (const mjModel*, mjData*, int) -> int. We transmute to call correctly.
+    unsafe {
+        (*d).nplugin = (*m).nplugin as i32;
+        let mut i: i32 = 0;
+        while i < (*m).nplugin as i32 {
+            *(*d).plugin.offset(i as isize) = *(*m).plugin.offset(i as isize);
+            let plugin: *const mjpPlugin =
+                crate::engine::engine_plugin::mjp_get_plugin_at_slot(*(*m).plugin.offset(i as isize));
+            if let Some(init_fn) = (*plugin).init {
+                // SAFETY: transmute erased fn() to true signature (m, d, i) -> i32
+                let init_typed: unsafe extern "C" fn(*const mjModel, *mut mjData, i32) -> i32 =
+                    core::mem::transmute(init_fn);
+                if init_typed(m, d, i) < 0 {
+                    crate::engine::engine_util_errmem::mju_free((*d).buffer);
+                    crate::engine::engine_util_errmem::mju_free((*d).arena);
+                    crate::engine::engine_util_errmem::mju_free(d as *mut ());
+                    crate::engine::engine_util_errmem::mju_error(
+                        b"plugin->init failed for plugin id\0".as_ptr() as *const i8,
+                    );
+                }
+            }
+            i += 1;
+        }
+    }
 }
 
 /// C: mj_deleteData (engine/engine_io.h:138)

@@ -886,10 +886,9 @@ pub fn mjv_apply_perturb_pose(m: *const mjModel, d: *mut mjData, pert: *const mj
 /// Calls: mj_objectVelocity, mju_addTo3, mju_addToScl3, mju_copy3, mju_cross, mju_dot3, mju_max, mju_mulMatVec3, mju_mulQuat, mju_negQuat, mju_normalize3, mju_quat2Vel, mju_scl3, mju_sub3
 #[allow(unused_variables, non_snake_case)]
 pub fn mjv_apply_perturb_force(m: *const mjModel, d: *mut mjData, pert: *const mjvPerturb) {
-    // Cannot translate: m->vis.map.stiffness and m->vis.map.stiffnessrot require
-    // accessing opaque sub-struct fields not exposed in the Rust type system.
     extern "C" { fn mjv_applyPerturbForce(m: *const mjModel, d: *mut mjData, pert: *const mjvPerturb); }
-    // SAFETY: delegates to original C function; all pointers valid per caller contract
+    // SAFETY: delegates to C implementation; requires non-opaque mjVisual_.map fields (stiffness, stiffnessrot)
+    // which are not yet exposed in types.rs
     unsafe { mjv_applyPerturbForce(m, d, pert) }
 }
 

@@ -1551,8 +1551,103 @@ pub fn mjc_sphere_box(m: *const mjModel, d: *mut mjData, con: *mut mjPreContact,
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjc_box_box(m: *const mjModel, d: *mut mjData, con: *mut mjPreContact, g1: i32, g2: i32, margin: f64) -> i32 {
-    extern "C" { fn mjc_BoxBox(m: *const mjModel, d: *mut mjData, con: *mut mjPreContact, g1: i32, g2: i32, margin: f64) -> i32; }
-    // SAFETY: delegates to C implementation which handles complex box-box collision detection
-    unsafe { mjc_BoxBox(m, d, con, g1, g2, margin) }
+    const mjMAXCONPAIR: usize = 50;
+
+    // SAFETY: all pointer arithmetic on mjModel/mjData fields is valid per caller contract.
+    // con points to a buffer large enough for results. tmp is stack-local.
+    unsafe {
+        let mut tmp: [mjPreContact; mjMAXCONPAIR] = [mjPreContact {
+            dist: 0.0, pos: [0.0; 3], normal: [0.0; 3], tangent: [0.0; 3],
+        }; mjMAXCONPAIR];
+        let num = crate::engine::engine_collision_box::boxbox(
+            m, d as *const mjData, tmp.as_mut_ptr(), g1, g2, margin,
+        );
+
+        // -1: bad, 0: good
+        let mut dupe: [i32; mjMAXCONPAIR] = [0; mjMAXCONPAIR];
+
+        // get box info
+        let pos1 = (*d).geom_xpos.add(3 * g1 as usize);
+        let mat1 = (*d).geom_xmat.add(9 * g1 as usize);
+        let size1 = (*m).geom_size.add(3 * g1 as usize);
+        let pos2 = (*d).geom_xpos.add(3 * g2 as usize);
+        let mat2 = (*d).geom_xmat.add(9 * g2 as usize);
+        let size2 = (*m).geom_size.add(3 * g2 as usize);
+
+        // find bad: contacts outside one of the boxes
+        let mut i: i32 = 0;
+        while i < num {
+            // box sizes with margin
+            let sz1: [f64; 3] = [
+                *size1.add(0) + margin,
+                *size1.add(1) + margin,
+                *size1.add(2) + margin,
+            ];
+            let sz2: [f64; 3] = [
+                *size2.add(0) + margin,
+                *size2.add(1) + margin,
+                *size2.add(2) + margin,
+            ];
+
+            // relative distance from surface (1%) outside of which box-box contacts are removed
+            let k_remove_ratio: f64 = 1.01;
+
+            // is the contact outside: 1, inside: -1, within the removal width: 0
+            let out1 = crate::engine::engine_util_misc::mju_outside_box(
+                tmp[i as usize].pos.as_ptr(), pos1, mat1, sz1.as_ptr(), k_remove_ratio,
+            );
+            let out2 = crate::engine::engine_util_misc::mju_outside_box(
+                tmp[i as usize].pos.as_ptr(), pos2, mat2, sz2.as_ptr(), k_remove_ratio,
+            );
+
+            // mark as bad if outside one box and not inside the other box
+            if (out1 == 1 && out2 != -1) || (out2 == 1 && out1 != -1) {
+                dupe[i as usize] = -1;
+            }
+
+            i += 1;
+        }
+
+        // find duplicates
+        let mut i: i32 = 0;
+        while i < num - 1 {
+            if dupe[i as usize] == -1 {
+                i += 1;
+                continue; // already marked bad: skip
+            }
+            let mut j: i32 = i + 1;
+            while j < num {
+                if dupe[j as usize] == -1 {
+                    j += 1;
+                    continue; // already marked bad: skip
+                }
+                if tmp[i as usize].pos[0] == tmp[j as usize].pos[0]
+                    && tmp[i as usize].pos[1] == tmp[j as usize].pos[1]
+                    && tmp[i as usize].pos[2] == tmp[j as usize].pos[2]
+                {
+                    dupe[i as usize] = -1;
+                    break;
+                }
+                j += 1;
+            }
+            i += 1;
+        }
+
+        // consolidate good
+        let mut ncon: i32 = 0;
+        let mut j: i32 = 0;
+        while j < num {
+            if dupe[j as usize] == 0 {
+                *con.add(ncon as usize) = tmp[j as usize];
+                ncon += 1;
+                if ncon >= 8 {
+                    break;
+                }
+            }
+            j += 1;
+        }
+
+        ncon
+    }
 }
 
