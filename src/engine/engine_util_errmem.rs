@@ -16,9 +16,12 @@ pub fn mju_default_log_handler(msg: *const mjLogMessage) {
 /// C: mju_alignedMalloc (engine/engine_util_errmem.c:44)
 #[allow(unused_variables, non_snake_case)]
 pub fn mju_aligned_malloc(size: usize, align: usize) -> *mut () {
-    extern "C" { fn mju_alignedMalloc(size: usize, align: usize) -> *mut (); }
-    // SAFETY: delegates to C implementation (cross-platform aligned_alloc)
-    unsafe { mju_alignedMalloc(size, align) }
+    unsafe {
+        extern "C" {
+            fn aligned_alloc(alignment: usize, size: usize) -> *mut ();
+        }
+        aligned_alloc(align, size)
+    }
 }
 
 /// C: mju_alignedFree (engine/engine_util_errmem.c:53)

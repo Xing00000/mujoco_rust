@@ -222,9 +222,45 @@ pub fn mjr_multiply4(res: *mut f32, mat: *const f32, vec: *const f32) {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjr_look_at(eye: *const f32, forward: *const f32, up: *const f32) {
-    extern "C" { fn mjr_lookAt(eye: *const f32, forward: *const f32, up: *const f32); }
-    // SAFETY: delegates to C implementation, pointers valid per caller contract
-    unsafe { mjr_lookAt(eye, forward, up) }
+    unsafe {
+        extern "C" { fn glMultMatrixf(m: *const f32); }
+
+        let mut f: [f32; 3] = [*forward.add(0), *forward.add(1), *forward.add(2)];
+        let mut s: [f32; 3] = [0.0; 3];
+        let mut u: [f32; 3] = [0.0; 3];
+        let mut mat: [f32; 16] = [0.0; 16];
+
+        // prepare vectors
+        crate::render::classic::render_util::mjr_normalize_vec(f.as_mut_ptr());
+        crate::render::classic::render_util::mjr_cross_vec(s.as_mut_ptr(), f.as_ptr(), up);
+        crate::render::classic::render_util::mjr_normalize_vec(s.as_mut_ptr());
+        crate::render::classic::render_util::mjr_cross_vec(u.as_mut_ptr(), s.as_ptr(), f.as_ptr());
+        crate::render::classic::render_util::mjr_normalize_vec(u.as_mut_ptr());
+
+        // fill in 4x4 matrix (column-major OpenGL format)
+        mat[0] = s[0];
+        mat[1] = u[0];
+        mat[2] = -f[0];
+        mat[3] = 0.0;
+
+        mat[4] = s[1];
+        mat[5] = u[1];
+        mat[6] = -f[1];
+        mat[7] = 0.0;
+
+        mat[8] = s[2];
+        mat[9] = u[2];
+        mat[10] = -f[2];
+        mat[11] = 0.0;
+
+        mat[12] = -crate::render::classic::render_util::mjr_dot_vec(s.as_ptr(), eye);
+        mat[13] = -crate::render::classic::render_util::mjr_dot_vec(u.as_ptr(), eye);
+        mat[14] = crate::render::classic::render_util::mjr_dot_vec(f.as_ptr(), eye);
+        mat[15] = 1.0;
+
+        // set matrix in OpenGL
+        glMultMatrixf(mat.as_ptr());
+    }
 }
 
 /// C: mjr_perspective (render/classic/render_util.h:59)
@@ -235,9 +271,17 @@ pub fn mjr_look_at(eye: *const f32, forward: *const f32, up: *const f32) {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjr_perspective(fovy: f32, aspect: f32, znear: f32, zfar: f32) {
-    extern "C" { fn mjr_perspective(fovy: f32, aspect: f32, znear: f32, zfar: f32); }
-    // SAFETY: delegates to C implementation, pointers valid per caller contract
-    unsafe { mjr_perspective(fovy, aspect, znear, zfar) }
+    unsafe {
+        extern "C" { fn glFrustum(left: f64, right: f64, bottom: f64, top: f64, near_val: f64, far_val: f64); }
+        const MJPI: f64 = std::f64::consts::PI;
+
+        // compute width and height
+        let h: f64 = ((fovy as f64) / 360.0 * MJPI).tan() * (znear as f64);
+        let w: f64 = h * (aspect as f64);
+
+        // make symmetric frustrum
+        glFrustum(-w, w, -h, h, znear as f64, zfar as f64);
+    }
 }
 
 /// C: mjr_reflect (render/classic/render_util.h:62)
@@ -249,9 +293,46 @@ pub fn mjr_perspective(fovy: f32, aspect: f32, znear: f32, zfar: f32) {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjr_reflect(pos: *const f32, mat: *const f32) {
-    extern "C" { fn mjr_reflect(pos: *const f32, mat: *const f32); }
-    // SAFETY: delegates to C implementation, pointers valid per caller contract
-    unsafe { mjr_reflect(pos, mat) }
+    unsafe {
+        extern "C" { fn glMultMatrixf(m: *const f32); }
+
+        let mut reflect: [f32; 16] = [0.0; 16];
+        let mut v: [f32; 3] = [0.0; 3];
+        let mut vvt: [f32; 9] = [0.0; 9];
+
+        // copy axis
+        v[0] = *mat.add(2);
+        v[1] = *mat.add(5);
+        v[2] = *mat.add(8);
+
+        // compute outer product v*vT
+        for i in 0..3i32 {
+            for j in 0..3i32 {
+                vvt[(3 * i + j) as usize] = v[i as usize] * v[j as usize];
+            }
+        }
+
+        // construct reflection matrix
+        reflect[0]  = 1.0 - 2.0 * vvt[0];
+        reflect[1]  =      -2.0 * vvt[1];
+        reflect[2]  =      -2.0 * vvt[2];
+        reflect[3]  = 0.0;
+        reflect[4]  =      -2.0 * vvt[3];
+        reflect[5]  = 1.0 - 2.0 * vvt[4];
+        reflect[6]  =      -2.0 * vvt[5];
+        reflect[7]  = 0.0;
+        reflect[8]  =      -2.0 * vvt[6];
+        reflect[9]  =      -2.0 * vvt[7];
+        reflect[10] = 1.0 - 2.0 * vvt[8];
+        reflect[11] = 0.0;
+        reflect[12] = 2.0 * crate::render::classic::render_util::mjr_dot_vec(vvt.as_ptr(), pos);
+        reflect[13] = 2.0 * crate::render::classic::render_util::mjr_dot_vec(vvt.as_ptr().add(3), pos);
+        reflect[14] = 2.0 * crate::render::classic::render_util::mjr_dot_vec(vvt.as_ptr().add(6), pos);
+        reflect[15] = 1.0;
+
+        // set matrix in OpenGL
+        glMultMatrixf(reflect.as_ptr());
+    }
 }
 
 /// C: mjr_transform (render/classic/render_util.h:65)
@@ -263,9 +344,38 @@ pub fn mjr_reflect(pos: *const f32, mat: *const f32) {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjr_transform(translate: *const f32, rotate: *const f32, scale: f32) {
-    extern "C" { fn mjr_transform(translate: *const f32, rotate: *const f32, scale: f32); }
-    // SAFETY: delegates to C implementation
-    unsafe { mjr_transform(translate, rotate, scale) }
+    unsafe {
+        extern "C" { fn glMultMatrixf(m: *const f32); }
+
+        let mut quat: [f64; 4] = [0.0; 4];
+        let mut mat: [f64; 9] = [0.0; 9];
+        let mut glmat: [f32; 16] = [0.0; 16];
+
+        // construct matrix rotation
+        crate::engine::engine_util_misc::mju_f2n(quat.as_mut_ptr(), rotate, 4);
+        crate::engine::engine_util_spatial::mju_quat2mat(mat.as_mut_ptr(), quat.as_ptr());
+
+        // prepare transformation matrix
+        glmat[0]  = scale * mat[0] as f32;
+        glmat[1]  = scale * mat[3] as f32;
+        glmat[2]  = scale * mat[6] as f32;
+        glmat[3]  = 0.0;
+        glmat[4]  = scale * mat[1] as f32;
+        glmat[5]  = scale * mat[4] as f32;
+        glmat[6]  = scale * mat[7] as f32;
+        glmat[7]  = 0.0;
+        glmat[8]  = scale * mat[2] as f32;
+        glmat[9]  = scale * mat[5] as f32;
+        glmat[10] = scale * mat[8] as f32;
+        glmat[11] = 0.0;
+        glmat[12] = *translate.add(0);
+        glmat[13] = *translate.add(1);
+        glmat[14] = *translate.add(2);
+        glmat[15] = 1.0;
+
+        // multiply current OpenGL matrix
+        glMultMatrixf(glmat.as_ptr());
+    }
 }
 
 /// C: mjr_findRect (render/classic/render_util.h:68)

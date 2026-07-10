@@ -8,18 +8,32 @@ use crate::types::*;
 /// Calls: mju_warning
 #[allow(unused_variables, non_snake_case)]
 pub fn warn_about_arb_clip_control() {
-    extern "C" { fn warnAboutARBClipControl(); }
-    // SAFETY: delegates to C implementation
-    unsafe { warnAboutARBClipControl() }
+    // not thread safe, but the consequence is just too many log lines
+    static mut WARNED: i32 = 0;
+    unsafe {
+        if WARNED == 0 {
+            WARNED = 1;
+            crate::engine::engine_util_errmem::mju_warning(
+                b"ARB_clip_control unavailable while mjDEPTH_ZEROFAR requested, depth accuracy will be limited\0".as_ptr() as *const i8
+            );
+        }
+    }
 }
 
 /// C: warnAboutARBDepthBuffer (render/classic/render_gl2.c:110)
 /// Calls: mju_warning
 #[allow(unused_variables, non_snake_case)]
 pub fn warn_about_arb_depth_buffer() {
-    extern "C" { fn warnAboutARBDepthBuffer(); }
-    // SAFETY: delegates to C implementation
-    unsafe { warnAboutARBDepthBuffer() }
+    // not thread safe, but the consequence is just too many log lines
+    static mut WARNED: i32 = 0;
+    unsafe {
+        if WARNED == 0 {
+            WARNED = 1;
+            crate::engine::engine_util_errmem::mju_warning(
+                b"ARB_depth_buffer_float unavailable while mjDEPTH_ZEROFAR requested, depth accuracy will be limited\0".as_ptr() as *const i8
+            );
+        }
+    }
 }
 
 /// C: flipDepthIfRequired (render/classic/render_gl2.c:122)
@@ -31,17 +45,73 @@ pub fn warn_about_arb_depth_buffer() {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn flip_depth_if_required(depth: *mut f32, viewport: mjrRect, con: *const mjrContext) {
-    extern "C" { fn flipDepthIfRequired(depth: *mut f32, viewport: mjrRect, con: *const mjrContext); }
-    // SAFETY: delegates to C implementation
-    unsafe { flipDepthIfRequired(depth, viewport, con) }
+    unsafe {
+        const mjDEPTH_ZERONEAR: i32 = 0;
+
+        extern "C" {
+            static mjGLAD_GL_ARB_clip_control: i32;
+            static mjGLAD_GL_ARB_depth_buffer_float: i32;
+        }
+
+        if (*con).readDepthMap == mjDEPTH_ZERONEAR {
+            let npixel: i32 = viewport.width * viewport.height;
+            for i in 0..npixel {
+                *depth.add(i as usize) = 1.0 - *depth.add(i as usize);
+            }
+        } else if mjGLAD_GL_ARB_clip_control == 0 {
+            warn_about_arb_clip_control();
+        } else if mjGLAD_GL_ARB_depth_buffer_float == 0 {
+            warn_about_arb_depth_buffer();
+        }
+    }
 }
 
 /// C: init2D (render/classic/render_gl2.c:407)
 #[allow(unused_variables, non_snake_case)]
 pub fn init2d() {
-    extern "C" { fn init2D(); }
-    // SAFETY: delegates to C implementation which sets up OpenGL 2D projection state
-    unsafe { init2D() }
+    unsafe {
+        extern "C" {
+            fn glDisable(cap: u32);
+            fn glEnable(cap: u32);
+            fn glShadeModel(mode: u32);
+            fn glBlendFunc(sfactor: u32, dfactor: u32);
+            fn glPolygonMode(face: u32, mode: u32);
+            fn glMatrixMode(mode: u32);
+            fn glLoadIdentity();
+            fn glOrtho(left: f64, right: f64, bottom: f64, top: f64, near_val: f64, far_val: f64);
+        }
+        const GL_NORMALIZE: u32 = 0x0BA1;
+        const GL_DEPTH_TEST: u32 = 0x0B71;
+        const GL_FLAT: u32 = 0x1D00;
+        const GL_CULL_FACE: u32 = 0x0B44;
+        const GL_LIGHTING: u32 = 0x0B50;
+        const GL_COLOR_MATERIAL: u32 = 0x0B57;
+        const GL_BLEND: u32 = 0x0BE2;
+        const GL_SRC_ALPHA: u32 = 0x0302;
+        const GL_ONE_MINUS_SRC_ALPHA: u32 = 0x0303;
+        const GL_FRONT_AND_BACK: u32 = 0x0408;
+        const GL_FILL: u32 = 0x1B02;
+        const GL_PROJECTION: u32 = 0x1701;
+        const GL_MODELVIEW: u32 = 0x1700;
+
+        // set OpenGL options
+        glDisable(GL_NORMALIZE);
+        glDisable(GL_DEPTH_TEST);
+        glShadeModel(GL_FLAT);
+        glDisable(GL_CULL_FACE);
+        glDisable(GL_LIGHTING);
+        glDisable(GL_COLOR_MATERIAL);
+        glDisable(GL_BLEND);
+        glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+        glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+
+        // standard 2D projection
+        glMatrixMode(GL_PROJECTION);
+        glLoadIdentity();
+        glOrtho(0.0, 1.0, 0.0, 1.0, -1.0, 1.0);
+        glMatrixMode(GL_MODELVIEW);
+        glLoadIdentity();
+    }
 }
 
 /// C: draw_overlay (render/classic/render_gl2.c:476)

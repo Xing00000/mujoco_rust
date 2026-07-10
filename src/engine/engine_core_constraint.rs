@@ -141,11 +141,38 @@ pub fn mj_add_constraint(m: *const mjModel, d: *mut mjData, jac: *const f64, pos
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_equality_anchors(m: *const mjModel, d: *const mjData, eq_id: i32, pos1: *mut f64, pos2: *mut f64, body1: *mut i32, body2: *mut i32) {
-    extern "C" {
-        fn mj_equalityAnchors(m: *const mjModel, d: *const mjData, eq_id: i32, pos1: *mut f64, pos2: *mut f64, body1: *mut i32, body2: *mut i32);
+    unsafe {
+        const mjOBJ_BODY: i32 = 1;
+        const mjEQ_CONNECT: i32 = 0;
+        const mjNEQDATA: i32 = 11;
+
+        let obj1: i32 = *(*m).eq_obj1id.add(eq_id as usize);
+        let obj2: i32 = *(*m).eq_obj2id.add(eq_id as usize);
+
+        if *(*m).eq_objtype.add(eq_id as usize) == mjOBJ_BODY {
+            let data: *const f64 = (*m).eq_data.add((mjNEQDATA * eq_id) as usize);
+            let eq_type: i32 = *(*m).eq_type.add(eq_id as usize);
+            if eq_type == mjEQ_CONNECT {
+                crate::engine::engine_util_blas::mju_mul_mat_vec3(pos1, (*d).xmat.add((9 * obj1) as usize), data);
+                crate::engine::engine_util_blas::mju_add_to3(pos1, (*d).xpos.add((3 * obj1) as usize));
+                crate::engine::engine_util_blas::mju_mul_mat_vec3(pos2, (*d).xmat.add((9 * obj2) as usize), data.add(3));
+                crate::engine::engine_util_blas::mju_add_to3(pos2, (*d).xpos.add((3 * obj2) as usize));
+            } else {
+                // weld uses data+3*(1-j) for anchor
+                crate::engine::engine_util_blas::mju_mul_mat_vec3(pos1, (*d).xmat.add((9 * obj1) as usize), data.add(3));
+                crate::engine::engine_util_blas::mju_add_to3(pos1, (*d).xpos.add((3 * obj1) as usize));
+                crate::engine::engine_util_blas::mju_mul_mat_vec3(pos2, (*d).xmat.add((9 * obj2) as usize), data);
+                crate::engine::engine_util_blas::mju_add_to3(pos2, (*d).xpos.add((3 * obj2) as usize));
+            }
+            *body1 = obj1;
+            *body2 = obj2;
+        } else {
+            crate::engine::engine_util_blas::mju_copy3(pos1, (*d).site_xpos.add((3 * obj1) as usize));
+            crate::engine::engine_util_blas::mju_copy3(pos2, (*d).site_xpos.add((3 * obj2) as usize));
+            *body1 = *(*m).site_bodyid.add(obj1 as usize);
+            *body2 = *(*m).site_bodyid.add(obj2 as usize);
+        }
     }
-    // SAFETY: delegates to C implementation, all pointers valid per caller contract
-    unsafe { mj_equalityAnchors(m, d, eq_id, pos1, pos2, body1, body2) }
 }
 
 /// C: mj_addConstraintCount (engine/engine_core_constraint.c:1259)
@@ -189,11 +216,82 @@ pub fn mj_instantiate_limit(m: *const mjModel, d: *mut mjData, count_only: i32, 
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn getsolparam(m: *const mjModel, d: *const mjData, i: i32, solref: *mut f64, solreffriction: *mut f64, solimp: *mut f64) {
-    extern "C" {
-        fn getsolparam(m: *const mjModel, d: *const mjData, i: i32, solref: *mut f64, solreffriction: *mut f64, solimp: *mut f64);
+    unsafe {
+        const mjNREF: i32 = 2;
+        const mjNIMP: i32 = 5;
+        const mjMINIMP: f64 = 0.0001;
+        const mjMAXIMP: f64 = 0.9999;
+        const mjDSBL_REFSAFE: i32 = 1 << 12;
+        // mjtConstraint enum values
+        const mjCNSTR_EQUALITY: i32 = 0;
+        const mjCNSTR_FRICTION_DOF: i32 = 1;
+        const mjCNSTR_FRICTION_TENDON: i32 = 2;
+        const mjCNSTR_LIMIT_JOINT: i32 = 3;
+        const mjCNSTR_LIMIT_TENDON: i32 = 4;
+        const mjCNSTR_CONTACT_FRICTIONLESS: i32 = 5;
+        const mjCNSTR_CONTACT_PYRAMIDAL: i32 = 6;
+        const mjCNSTR_CONTACT_ELLIPTIC: i32 = 7;
+
+        // get constraint id
+        let id: i32 = *(*d).efc_id.add(i as usize);
+
+        // clear solreffriction (applies only to contacts)
+        crate::engine::engine_util_blas::mju_zero(solreffriction, mjNREF);
+
+        // extract solver parameters from corresponding model element
+        let efc_type: i32 = *(*d).efc_type.add(i as usize);
+        if efc_type == mjCNSTR_EQUALITY {
+            crate::engine::engine_util_blas::mju_copy(solref, (*m).eq_solref.add((mjNREF * id) as usize), mjNREF);
+            crate::engine::engine_util_blas::mju_copy(solimp, (*m).eq_solimp.add((mjNIMP * id) as usize), mjNIMP);
+        } else if efc_type == mjCNSTR_LIMIT_JOINT {
+            crate::engine::engine_util_blas::mju_copy(solref, (*m).jnt_solref.add((mjNREF * id) as usize), mjNREF);
+            crate::engine::engine_util_blas::mju_copy(solimp, (*m).jnt_solimp.add((mjNIMP * id) as usize), mjNIMP);
+        } else if efc_type == mjCNSTR_FRICTION_DOF {
+            crate::engine::engine_util_blas::mju_copy(solref, (*m).dof_solref.add((mjNREF * id) as usize), mjNREF);
+            crate::engine::engine_util_blas::mju_copy(solimp, (*m).dof_solimp.add((mjNIMP * id) as usize), mjNIMP);
+        } else if efc_type == mjCNSTR_LIMIT_TENDON {
+            crate::engine::engine_util_blas::mju_copy(solref, (*m).tendon_solref_lim.add((mjNREF * id) as usize), mjNREF);
+            crate::engine::engine_util_blas::mju_copy(solimp, (*m).tendon_solimp_lim.add((mjNIMP * id) as usize), mjNIMP);
+        } else if efc_type == mjCNSTR_FRICTION_TENDON {
+            crate::engine::engine_util_blas::mju_copy(solref, (*m).tendon_solref_fri.add((mjNREF * id) as usize), mjNREF);
+            crate::engine::engine_util_blas::mju_copy(solimp, (*m).tendon_solimp_fri.add((mjNIMP * id) as usize), mjNIMP);
+        } else if efc_type == mjCNSTR_CONTACT_FRICTIONLESS
+               || efc_type == mjCNSTR_CONTACT_PYRAMIDAL
+               || efc_type == mjCNSTR_CONTACT_ELLIPTIC {
+            crate::engine::engine_util_blas::mju_copy(solref, (*(*d).contact.add(id as usize)).solref.as_ptr(), mjNREF);
+            crate::engine::engine_util_blas::mju_copy(solreffriction, (*(*d).contact.add(id as usize)).solreffriction.as_ptr(), mjNREF);
+            crate::engine::engine_util_blas::mju_copy(solimp, (*(*d).contact.add(id as usize)).solimp.as_ptr(), mjNIMP);
+        }
+
+        // check reference format: standard or direct, cannot be mixed
+        if (*solref.add(0) > 0.0) ^ (*solref.add(1) > 0.0) {
+            crate::engine::engine_util_errmem::mju_warning(b"mixed solref format, replacing with default\0".as_ptr() as *const i8);
+            crate::engine::engine_init::mj_default_sol_ref_imp(solref, std::ptr::null_mut());
+        }
+
+        // integrator safety: impose ref[0]>=2*timestep for standard format
+        if ((*m).opt.disableflags & mjDSBL_REFSAFE) == 0 && *solref.add(0) > 0.0 {
+            *solref.add(0) = crate::engine::engine_util_misc::mju_max(*solref.add(0), 2.0 * (*m).opt.timestep);
+        }
+
+        // check reference format: standard or direct, cannot be mixed
+        if (*solreffriction.add(0) > 0.0) ^ (*solreffriction.add(1) > 0.0) {
+            crate::engine::engine_util_errmem::mju_warning(b"solreffriction values should have the same sign, replacing with default\0".as_ptr() as *const i8);
+            crate::engine::engine_util_blas::mju_zero(solreffriction, mjNREF);  // default solreffriction is (0, 0)
+        }
+
+        // integrator safety: impose ref[0]>=2*timestep for standard format
+        if ((*m).opt.disableflags & mjDSBL_REFSAFE) == 0 && *solreffriction.add(0) > 0.0 {
+            *solreffriction.add(0) = crate::engine::engine_util_misc::mju_max(*solreffriction.add(0), 2.0 * (*m).opt.timestep);
+        }
+
+        // enforce constraints on solimp
+        *solimp.add(0) = crate::engine::engine_util_misc::mju_min(mjMAXIMP, crate::engine::engine_util_misc::mju_max(mjMINIMP, *solimp.add(0)));
+        *solimp.add(1) = crate::engine::engine_util_misc::mju_min(mjMAXIMP, crate::engine::engine_util_misc::mju_max(mjMINIMP, *solimp.add(1)));
+        *solimp.add(2) = crate::engine::engine_util_misc::mju_max(0.0, *solimp.add(2));
+        *solimp.add(3) = crate::engine::engine_util_misc::mju_min(mjMAXIMP, crate::engine::engine_util_misc::mju_max(mjMINIMP, *solimp.add(3)));
+        *solimp.add(4) = crate::engine::engine_util_misc::mju_max(1.0, *solimp.add(4));
     }
-    // SAFETY: delegates to C implementation, all pointers valid per caller contract
-    unsafe { getsolparam(m, d, i, solref, solreffriction, solimp) }
 }
 
 /// C: getposdim (engine/engine_core_constraint.c:2053)
@@ -205,11 +303,38 @@ pub fn getsolparam(m: *const mjModel, d: *const mjData, i: i32, solref: *mut f64
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn getposdim(m: *const mjModel, d: *const mjData, i: i32, pos: *mut f64, dim: *mut i32) {
-    extern "C" {
-        fn getposdim(m: *const mjModel, d: *const mjData, i: i32, pos: *mut f64, dim: *mut i32);
+    unsafe {
+        // mjtConstraint enum values
+        const mjCNSTR_EQUALITY: i32 = 0;
+        const mjCNSTR_CONTACT_PYRAMIDAL: i32 = 6;
+        const mjCNSTR_CONTACT_ELLIPTIC: i32 = 7;
+        // mjtEq enum values
+        const mjEQ_CONNECT: i32 = 0;
+        const mjEQ_WELD: i32 = 1;
+
+        // get id of constraint-related object
+        let id: i32 = *(*d).efc_id.add(i as usize);
+
+        // set (dim, pos) for common case
+        *dim = 1;
+        *pos = *(*d).efc_pos.add(i as usize);
+
+        // change (dim, distance) for special cases
+        let efc_type: i32 = *(*d).efc_type.add(i as usize);
+        if efc_type == mjCNSTR_CONTACT_ELLIPTIC {
+            *dim = (*(*d).contact.add(id as usize)).dim;
+        } else if efc_type == mjCNSTR_CONTACT_PYRAMIDAL {
+            *dim = 2 * ((*(*d).contact.add(id as usize)).dim - 1);
+        } else if efc_type == mjCNSTR_EQUALITY {
+            if *(*m).eq_type.add(id as usize) == mjEQ_WELD {
+                *dim = 6;
+                *pos = crate::engine::engine_util_blas::mju_norm((*d).efc_pos.add(i as usize), 6);
+            } else if *(*m).eq_type.add(id as usize) == mjEQ_CONNECT {
+                *dim = 3;
+                *pos = crate::engine::engine_util_blas::mju_norm((*d).efc_pos.add(i as usize), 3);
+            }
+        }
     }
-    // SAFETY: delegates to C implementation, all pointers valid per caller contract
-    unsafe { getposdim(m, d, i, pos, dim) }
 }
 
 /// C: power (engine/engine_core_constraint.c:2089)
@@ -776,11 +901,145 @@ pub fn mj_diag_approx(m: *const mjModel, d: *mut mjData) {
 /// Calls: getimpedance, getposdim, getsolparam, mju_max
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_make_impedance(m: *const mjModel, d: *mut mjData) {
-    extern "C" {
-        fn mj_makeImpedance(m: *const mjModel, d: *mut mjData);
+    unsafe {
+        const mjMINVAL: f64 = 1e-15;
+        const mjNREF: usize = 2;
+        const mjNIMP: usize = 5;
+        // mjtConstraint enum values
+        const mjCNSTR_EQUALITY: i32 = 0;
+        const mjCNSTR_FRICTION_DOF: i32 = 1;
+        const mjCNSTR_FRICTION_TENDON: i32 = 2;
+        const mjCNSTR_CONTACT_PYRAMIDAL: i32 = 6;
+        const mjCNSTR_CONTACT_ELLIPTIC: i32 = 7;
+
+        let nefc: i32 = (*d).nefc;
+        let R: *mut f64 = (*d).efc_R;
+        let KBIP: *mut f64 = (*d).efc_KBIP;
+        let mut dim: i32 = 0;
+        let mut pos: f64 = 0.0;
+        let mut imp: f64 = 0.0;
+        let mut impP: f64 = 0.0;
+        let mut solref: [f64; 2] = [0.0; 2];
+        let mut solreffriction: [f64; 2] = [0.0; 2];
+        let mut solimp: [f64; 5] = [0.0; 5];
+        let mut Rpy: f64;
+
+        // set efc_R, efc_KBIP
+        let mut i: i32 = 0;
+        while i < nefc {
+            // get solref and solimp
+            getsolparam(m, d as *const mjData, i, solref.as_mut_ptr(), solreffriction.as_mut_ptr(), solimp.as_mut_ptr());
+
+            // get pos and dim
+            getposdim(m, d as *const mjData, i, &mut pos, &mut dim);
+
+            // get imp and impP
+            getimpedance(solimp.as_ptr(), pos, *(*d).efc_margin.add(i as usize), &mut imp, &mut impP);
+
+            // set R and KBIP for all constraint dimensions
+            for j in 0..dim {
+                // R = (1-imp)/imp * diagApprox
+                *R.add((i + j) as usize) = crate::engine::engine_util_misc::mju_max(mjMINVAL, (1.0 - imp) * *(*d).efc_diagA.add((i + j) as usize) / imp);
+
+                // constraint type
+                let tp: i32 = *(*d).efc_type.add((i + j) as usize);
+
+                // elliptic contacts use solreffriction in non-normal directions, if non-zero
+                let elliptic_friction: i32 = if tp == mjCNSTR_CONTACT_ELLIPTIC && j > 0 { 1 } else { 0 };
+                let ref_ptr: *const f64 = if elliptic_friction != 0 && (solreffriction[0] != 0.0 || solreffriction[1] != 0.0) {
+                    solreffriction.as_ptr()
+                } else {
+                    solref.as_ptr()
+                };
+
+                // friction: K = 0
+                if tp == mjCNSTR_FRICTION_DOF || tp == mjCNSTR_FRICTION_TENDON || elliptic_friction != 0 {
+                    *KBIP.add((4 * (i + j)) as usize) = 0.0;
+                }
+                // standard: K = 1 / (d_width^2 * timeconst^2 * dampratio^2)
+                else if *ref_ptr.add(0) > 0.0 {
+                    *KBIP.add((4 * (i + j)) as usize) = 1.0 / crate::engine::engine_util_misc::mju_max(mjMINVAL, solimp[1] * solimp[1] * *ref_ptr.add(0) * *ref_ptr.add(0) * *ref_ptr.add(1) * *ref_ptr.add(1));
+                }
+                // direct: K = -solref[0] / d_width^2
+                else {
+                    *KBIP.add((4 * (i + j)) as usize) = -*ref_ptr.add(0) / crate::engine::engine_util_misc::mju_max(mjMINVAL, solimp[1] * solimp[1]);
+                }
+
+                // standard: B = 2 / (d_width*timeconst)
+                if *ref_ptr.add(1) > 0.0 {
+                    *KBIP.add((4 * (i + j) + 1) as usize) = 2.0 / crate::engine::engine_util_misc::mju_max(mjMINVAL, solimp[1] * *ref_ptr.add(0));
+                }
+                // direct: B = -solref[1] / d_width
+                else {
+                    *KBIP.add((4 * (i + j) + 1) as usize) = -*ref_ptr.add(1) / crate::engine::engine_util_misc::mju_max(mjMINVAL, solimp[1]);
+                }
+
+                // I = imp, P = imp'
+                *KBIP.add((4 * (i + j) + 2) as usize) = imp;
+                *KBIP.add((4 * (i + j) + 3) as usize) = impP;
+            }
+
+            // skip the rest of this constraint
+            i += dim;
+            continue;
+        }
+
+        // frictional contacts: adjust R in friction dimensions, set contact master mu
+        i = (*d).ne + (*d).nf;
+        while i < nefc {
+            if *(*d).efc_type.add(i as usize) == mjCNSTR_CONTACT_PYRAMIDAL
+                || *(*d).efc_type.add(i as usize) == mjCNSTR_CONTACT_ELLIPTIC
+            {
+                // extract id, dim, mu
+                let id: i32 = *(*d).efc_id.add(i as usize);
+                dim = (*(*d).contact.add(id as usize)).dim;
+                let friction: *const f64 = (*(*d).contact.add(id as usize)).friction.as_ptr();
+
+                // set R[1] = R[0]/impratio
+                *R.add((i + 1) as usize) = *R.add(i as usize) / crate::engine::engine_util_misc::mju_max(mjMINVAL, (*m).opt.impratio);
+
+                // set mu of regularized cone = mu[1]*sqrt(R[1]/R[0])
+                (*(*d).contact.add(id as usize)).mu = *friction.add(0) * (*R.add((i + 1) as usize) / *R.add(i as usize)).sqrt();
+
+                // elliptic
+                if *(*d).efc_type.add(i as usize) == mjCNSTR_CONTACT_ELLIPTIC {
+                    // set remaining R's such that R[j]*mu[j]^2 = R[1]*mu[1]^2
+                    for j in 1..(dim - 1) {
+                        *R.add((i + j + 1) as usize) = *R.add((i + 1) as usize) * *friction.add(0) * *friction.add(0) / (*friction.add(j as usize) * *friction.add(j as usize));
+                    }
+
+                    // skip the rest of this contact
+                    i += dim;
+                }
+                // pyramidal: common R matching friction impedance of elliptic model
+                else {
+                    // D0_el = 2*(dim-1)*D_py : normal match
+                    // D0_el = 2*mu^2*D_py    : friction match
+                    Rpy = 2.0 * (*(*d).contact.add(id as usize)).mu * (*(*d).contact.add(id as usize)).mu * *R.add(i as usize);
+
+                    // assign Rpy to all pyramidal R
+                    for j in 0..(2 * (dim - 1)) {
+                        *R.add((i + j) as usize) = Rpy;
+                    }
+
+                    // skip the rest of this contact
+                    i += 2 * (dim - 1);
+                }
+            } else {
+                i += 1;
+            }
+        }
+
+        // set D = 1 / R
+        for i in 0..nefc {
+            *(*d).efc_D.add(i as usize) = 1.0 / *R.add(i as usize);
+        }
+
+        // adjust diagA so that R = (1-imp)/imp * diagA
+        for i in 0..nefc {
+            *(*d).efc_diagA.add(i as usize) = *R.add(i as usize) * *KBIP.add((4 * i + 2) as usize) / (1.0 - *KBIP.add((4 * i + 2) as usize));
+        }
     }
-    // SAFETY: delegates to C implementation, all pointers valid per caller contract
-    unsafe { mj_makeImpedance(m, d) }
 }
 
 /// C: mj_makeConstraint (engine/engine_core_constraint.h:87)

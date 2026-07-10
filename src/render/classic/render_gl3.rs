@@ -222,16 +222,18 @@ pub fn mjr_render(viewport: mjrRect, scn: *mut mjvScene, con: *const mjrContext)
 /// C: mjr_finish (render/classic/render_gl3.h:30)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjr_finish() {
-    extern "C" { fn mjr_finish(); }
-    // SAFETY: delegates to C implementation
-    unsafe { mjr_finish() }
+    unsafe {
+        extern "C" { fn glFinish(); }
+        glFinish();
+    }
 }
 
 /// C: mjr_getError (render/classic/render_gl3.h:33)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjr_get_error() -> i32 {
-    extern "C" { fn mjr_getError() -> i32; }
-    // SAFETY: delegates to C implementation
-    unsafe { mjr_getError() }
+    unsafe {
+        extern "C" { fn glGetError() -> u32; }
+        glGetError() as i32
+    }
 }
 
