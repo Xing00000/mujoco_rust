@@ -13,8 +13,9 @@ use crate::types::*;
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjd_cross(a: *const f64, b: *const f64, Da: *mut f64, Db: *mut f64) {
+    if a.is_null() || b.is_null() { return; }
     extern "C" { fn mjd_cross(a: *const f64, b: *const f64, Da: *mut f64, Db: *mut f64); }
-    // SAFETY: delegates to C implementation
+    // SAFETY: a, b verified non-null
     unsafe { mjd_cross(a, b, Da, Db) }
 }
 
@@ -27,8 +28,9 @@ pub fn mjd_cross(a: *const f64, b: *const f64, Da: *mut f64, Db: *mut f64) {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjd_cross_motion_vel(D: *mut f64, v: *const f64) {
+    if D.is_null() || v.is_null() { return; }
     extern "C" { fn mjd_crossMotion_vel(D: *mut f64, v: *const f64); }
-    // SAFETY: delegates to C implementation
+    // SAFETY: D, v verified non-null
     unsafe { mjd_crossMotion_vel(D, v) }
 }
 
@@ -41,8 +43,9 @@ pub fn mjd_cross_motion_vel(D: *mut f64, v: *const f64) {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjd_cross_force_vel(D: *mut f64, f: *const f64) {
+    if D.is_null() || f.is_null() { return; }
     extern "C" { fn mjd_crossForce_vel(D: *mut f64, f: *const f64); }
-    // SAFETY: delegates to C implementation
+    // SAFETY: D, f verified non-null
     unsafe { mjd_crossForce_vel(D, f) }
 }
 
@@ -55,8 +58,9 @@ pub fn mjd_cross_force_vel(D: *mut f64, f: *const f64) {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjd_cross_force_frc(D: *mut f64, vel: *const f64) {
+    if D.is_null() || vel.is_null() { return; }
     extern "C" { fn mjd_crossForce_frc(D: *mut f64, vel: *const f64); }
-    // SAFETY: delegates to C implementation
+    // SAFETY: D, vel verified non-null
     unsafe { mjd_crossForce_frc(D, vel) }
 }
 
@@ -69,8 +73,9 @@ pub fn mjd_cross_force_frc(D: *mut f64, vel: *const f64) {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjd_mul_inert_vec_vel(D: *mut f64, i: *const f64) {
+    if D.is_null() || i.is_null() { return; }
     extern "C" { fn mjd_mulInertVec_vel(D: *mut f64, i: *const f64); }
-    // SAFETY: delegates to C implementation
+    // SAFETY: D, i verified non-null
     unsafe { mjd_mulInertVec_vel(D, i) }
 }
 
@@ -97,8 +102,9 @@ pub fn mjd_com_vel_vel_dense(m: *const mjModel, d: *mut mjData, Dcvel: *mut f64,
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn copy_from_parent(m: *const mjModel, d: *mut mjData, mat: *mut f64, n: i32) {
+    if m.is_null() || d.is_null() { return; }
     extern "C" { fn copyFromParent(m: *const mjModel, d: *mut mjData, mat: *mut f64, n: i32); }
-    // SAFETY: delegates to C implementation
+    // SAFETY: m, d verified non-null
     unsafe { copyFromParent(m, d, mat, n) }
 }
 
@@ -111,8 +117,9 @@ pub fn copy_from_parent(m: *const mjModel, d: *mut mjData, mat: *mut f64, n: i32
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn add_to_parent(m: *const mjModel, d: *mut mjData, mat: *mut f64, n: i32) {
+    if m.is_null() || d.is_null() { return; }
     extern "C" { fn addToParent(m: *const mjModel, d: *mut mjData, mat: *mut f64, n: i32); }
-    // SAFETY: delegates to C implementation
+    // SAFETY: m, d verified non-null
     unsafe { addToParent(m, d, mat, n) }
 }
 
@@ -162,8 +169,9 @@ pub fn add_jtbj(m: *const mjModel, d: *mut mjData, J: *const f64, B: *const f64,
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn add_jtbj_sparse(m: *const mjModel, d: *mut mjData, J: *const f64, B: *const f64, n: i32, offset: i32, J_rownnz: *const i32, J_rowadr: *const i32, J_colind: *const i32) {
+    if m.is_null() || d.is_null() { return; }
     extern "C" { fn addJTBJSparse(m: *const mjModel, d: *mut mjData, J: *const f64, B: *const f64, n: i32, offset: i32, J_rownnz: *const i32, J_rowadr: *const i32, J_colind: *const i32); }
-    // SAFETY: delegates to C implementation
+    // SAFETY: m, d verified non-null
     unsafe { addJTBJSparse(m, d, J, B, n, offset, J_rownnz, J_rowadr, J_colind) }
 }
 
@@ -176,8 +184,9 @@ pub fn add_jtbj_sparse(m: *const mjModel, d: *mut mjData, J: *const f64, B: *con
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjd_muscle_gain_vel(len: f64, vel: f64, lengthrange: *const f64, acc0: f64, prm: *const f64) -> f64  {
+    if lengthrange.is_null() || prm.is_null() { return 0.0; }
     extern "C" { fn mjd_muscleGain_vel(len: f64, vel: f64, lengthrange: *const f64, acc0: f64, prm: *const f64) -> f64; }
-    // SAFETY: delegates to C implementation
+    // SAFETY: lengthrange, prm verified non-null
     unsafe { mjd_muscleGain_vel(len, vel, lengthrange, acc0, prm) }
 }
 
@@ -218,7 +227,7 @@ pub fn mjd_flex_interp_kernel(m: *const mjModel, d: *mut mjData, res: *mut f64, 
 #[allow(unused_variables, non_snake_case)]
 pub fn pow2(val: f64) -> f64  {
     extern "C" { fn pow2(val: f64) -> f64; }
-    // SAFETY: delegates to C implementation
+    // SAFETY: no pointers, pure arithmetic delegation
     unsafe { pow2(val) }
 }
 
@@ -244,8 +253,9 @@ pub fn ellipsoid_max_moment(size: *const f64, dir: i32) -> f64  {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn add_to_quadrant(B: *mut f64, D: *const f64, col_quad: i32, row_quad: i32) {
+    if B.is_null() || D.is_null() { return; }
     extern "C" { fn addToQuadrant(B: *mut f64, D: *const f64, col_quad: i32, row_quad: i32); }
-    // SAFETY: delegates to C implementation
+    // SAFETY: B, D verified non-null
     unsafe { addToQuadrant(B, D, col_quad, row_quad) }
 }
 

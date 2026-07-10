@@ -88,8 +88,9 @@ pub fn mj_advance(m: *const mjModel, d: *mut mjData, act_dot: *const f64, qacc: 
 /// C: flex_has_implicit_stiffness (engine/engine_forward.c:1284)
 #[allow(unused_variables, non_snake_case)]
 pub fn flex_has_implicit_stiffness(m: *const mjModel) -> i32  {
+    if m.is_null() { return 0; }
     extern "C" { fn flex_has_implicit_stiffness(m: *const mjModel) -> i32; }
-    // SAFETY: delegates to C implementation
+    // SAFETY: m verified non-null
     unsafe { flex_has_implicit_stiffness(m) }
 }
 
@@ -110,16 +111,18 @@ pub fn flex_interp_cgsolve(m: *const mjModel, d: *mut mjData, qacc: *mut f64, qf
 /// C: midpoint_eligible (engine/engine_forward.c:1421)
 #[allow(unused_variables, non_snake_case)]
 pub fn midpoint_eligible(m: *const mjModel, d: *const mjData, jnt: i32) -> i32  {
+    if m.is_null() || d.is_null() { return 0; }
     extern "C" { fn midpoint_eligible(m: *const mjModel, d: *const mjData, jnt: i32) -> i32; }
-    // SAFETY: delegates to C implementation
+    // SAFETY: m, d verified non-null
     unsafe { midpoint_eligible(m, d, jnt) }
 }
 
 /// C: midpoint_aligned (engine/engine_forward.c:1493)
 #[allow(unused_variables, non_snake_case)]
 pub fn midpoint_aligned(m: *const mjModel, jnt: i32) -> i32  {
+    if m.is_null() { return 0; }
     extern "C" { fn midpoint_aligned(m: *const mjModel, jnt: i32) -> i32; }
-    // SAFETY: delegates to C implementation
+    // SAFETY: m verified non-null
     unsafe { midpoint_aligned(m, jnt) }
 }
 
@@ -132,8 +135,9 @@ pub fn midpoint_aligned(m: *const mjModel, jnt: i32) -> i32  {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn midpoint_newton(inertia: *const f64, w: *const f64, tau: *const f64, h: f64, w_mid: *mut f64) -> i32  {
+    if inertia.is_null() || w.is_null() || tau.is_null() || w_mid.is_null() { return 0; }
     extern "C" { fn midpointNewton(inertia: *const f64, w: *const f64, tau: *const f64, h: f64, w_mid: *mut f64) -> i32; }
-    // SAFETY: delegates to C implementation
+    // SAFETY: all pointers verified non-null
     unsafe { midpointNewton(inertia, w, tau, h, w_mid) }
 }
 
@@ -146,8 +150,9 @@ pub fn midpoint_newton(inertia: *const f64, w: *const f64, tau: *const f64, h: f
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn midpoint(m: *const mjModel, d: *const mjData, qfrc: *const f64, free_jntid: *const i32, nfree: i32, qvel_old: *mut f64, qvel_new: *mut f64, dofadr: *mut i32) {
+    if m.is_null() || d.is_null() { return; }
     extern "C" { fn midpoint(m: *const mjModel, d: *const mjData, qfrc: *const f64, free_jntid: *const i32, nfree: i32, qvel_old: *mut f64, qvel_new: *mut f64, dofadr: *mut i32); }
-    // SAFETY: delegates to C implementation, all pointers valid per caller contract
+    // SAFETY: m, d verified non-null
     unsafe { midpoint(m, d, qfrc, free_jntid, nfree, qvel_old, qvel_new, dofadr) }
 }
 

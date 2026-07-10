@@ -246,10 +246,11 @@ pub fn mj_inertia_box_fluid_model(m: *const mjModel, d: *mut mjData, i: i32) {
 /// Calls: mj_addedMassForces, mj_applyFT, mj_objectVelocity, mj_viscousForces, mji_copy3, mji_mulMatVec3, mji_subFrom3, mju_geomSemiAxes, mju_scl, mju_transformSpatial, mju_zero, readFluidGeomInteraction
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_ellipsoid_fluid_model(m: *const mjModel, d: *mut mjData, bodyid: i32) {
+    if m.is_null() || d.is_null() { return; }
     extern "C" {
         fn mj_ellipsoidFluidModel(m: *const mjModel, d: *mut mjData, bodyid: i32);
     }
-    // SAFETY: delegates to C implementation, all pointers valid per caller contract
+    // SAFETY: m, d verified non-null
     unsafe { mj_ellipsoidFluidModel(m, d, bodyid) }
 }
 

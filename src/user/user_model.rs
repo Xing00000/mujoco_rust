@@ -19,7 +19,7 @@ pub fn is_same_vec(pos1: [T; 3], pos2: [T; 3]) -> bool {
 #[allow(unused_variables, non_snake_case)]
 pub fn num_compiler_threads(upper_bound: i32) -> u32 {
     extern "C" { fn NumCompilerThreads(upper_bound: i32) -> u32; }
-    // SAFETY: delegates to C implementation, all pointers valid per caller contract
+    // SAFETY: no pointers, pure delegation to C
     unsafe { NumCompilerThreads(upper_bound) }
 }
 

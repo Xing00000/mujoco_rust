@@ -31,8 +31,9 @@ pub fn mj_encode(s: *const mjSpec, m: *const mjModel, filename: *const i8, conte
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn log_compile_time(t: *const f64) {
+    if t.is_null() { return; }
     extern "C" { fn LogCompileTime(t: *const f64); }
-    // SAFETY: delegates to C implementation, all pointers valid per caller contract
+    // SAFETY: t verified non-null
     unsafe { LogCompileTime(t) }
 }
 

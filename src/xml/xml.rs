@@ -8,7 +8,7 @@ use crate::types::*;
 #[allow(unused_variables, non_snake_case)]
 pub fn locale_override_posix_locale() -> i32 {
     extern "C" { fn PosixLocale() -> i32; }
-    // SAFETY: delegates to C implementation, all pointers valid per caller contract
+    // SAFETY: no pointers, pure delegation to C
     unsafe { PosixLocale() }
 }
 

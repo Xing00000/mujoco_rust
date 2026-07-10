@@ -7,8 +7,9 @@ use crate::types::*;
 /// C: OpenFile (user/user_vfs.cc:50)
 #[allow(unused_variables, non_snake_case)]
 pub fn open_file(filename: *const i8, resource: *mut mjResource) -> i32 {
+    if filename.is_null() || resource.is_null() { return 0; }
     extern "C" { fn OpenFile(filename: *const i8, resource: *mut mjResource) -> i32; }
-    // SAFETY: delegates to C implementation, all pointers valid per caller contract
+    // SAFETY: filename, resource verified non-null
     unsafe { OpenFile(filename, resource) }
 }
 

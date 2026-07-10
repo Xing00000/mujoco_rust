@@ -534,8 +534,9 @@ pub fn mj_instantiate_equality(m: *const mjModel, d: *mut mjData) {
 /// Calls: mj_addConstraint, mj_contactJacobian, mj_freeStack, mj_isPyramidal, mj_isSparse, mj_markStack, mj_stackAllocInfo, mju_addScl, mju_mulMatMat, mju_zero
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_instantiate_contact(m: *const mjModel, d: *mut mjData) {
+    if m.is_null() || d.is_null() { return; }
     extern "C" { fn mj_instantiateContact(m: *const mjModel, d: *mut mjData); }
-    // SAFETY: delegates to C implementation, all pointers valid per caller contract
+    // SAFETY: m, d verified non-null
     unsafe { mj_instantiateContact(m, d) }
 }
 

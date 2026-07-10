@@ -24,8 +24,9 @@ pub fn png_image_width(self_ptr: *mut PNGImage) -> i32 {
 /// C: PNGImage::Height (user/user_objects.cc:61)
 #[allow(unused_variables, non_snake_case)]
 pub fn png_image_height(self_ptr: *mut PNGImage) -> i32 {
+    if self_ptr.is_null() { return 0; }
     extern "C" { fn PNGImage_Height(self_ptr: *mut PNGImage) -> i32; }
-    // SAFETY: delegates to C implementation, all pointers valid per caller contract
+    // SAFETY: self_ptr verified non-null
     unsafe { PNGImage_Height(self_ptr) }
 }
 
@@ -56,8 +57,9 @@ pub fn png_image_size(self_ptr: *mut PNGImage) -> std__size_t {
 /// C: MapFrame (user/user_objects.cc:139)
 #[allow(unused_variables, non_snake_case)]
 pub fn map_frame(parent: *mut i32, child: *mut i32, frame: *mut mjCFrame, parent_body: *mut mjCBody) {
+    if frame.is_null() || parent_body.is_null() { return; }
     extern "C" { fn MapFrame(parent: *mut i32, child: *mut i32, frame: *mut mjCFrame, parent_body: *mut mjCBody); }
-    // SAFETY: delegates to C implementation, all pointers valid per caller contract
+    // SAFETY: frame, parent_body verified non-null
     unsafe { MapFrame(parent, child, frame, parent_body) }
 }
 
