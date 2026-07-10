@@ -113,8 +113,9 @@ pub fn geom_sort(arr: *mut i32, buf: *mut i32, n: i32, context: *mut ()) {
 /// Calls: mjr_setf4
 #[allow(unused_variables, non_snake_case)]
 pub fn adjust_light(thislight: *const mjvLight, n: i32) {
+    if thislight.is_null() { return; }
     extern "C" { fn adjustLight(thislight: *const mjvLight, n: i32); }
-    // SAFETY: delegates to C implementation, pointers valid per caller contract
+    // SAFETY: thislight verified non-null; delegates to C implementation
     unsafe { adjustLight(thislight, n) }
 }
 

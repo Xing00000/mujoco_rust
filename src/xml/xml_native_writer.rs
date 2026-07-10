@@ -16,8 +16,12 @@ pub fn mj_xml_printer_print_space(self_ptr: *mut mj_XMLPrinter, depth: i32) {
 /// Calls: mjCopyError
 #[allow(unused_variables, non_snake_case)]
 pub fn write_doc(doc: *mut XMLDocument, error: *mut i8, error_sz: usize) -> string {
+    if doc.is_null() {
+        // SAFETY: string is a zero-sized type; zeroed is trivially valid
+        return unsafe { core::mem::zeroed() };
+    }
     extern "C" { fn WriteDoc(doc: *mut XMLDocument, error: *mut i8, error_sz: usize) -> string; }
-    // SAFETY: delegates to C implementation
+    // SAFETY: doc verified non-null; delegates to C implementation
     unsafe { WriteDoc(doc, error, error_sz) }
 }
 
@@ -25,8 +29,9 @@ pub fn write_doc(doc: *mut XMLDocument, error: *mut i8, error_sz: usize) -> stri
 /// Calls: mj_copyBack
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_x_writer_set_model(self_ptr: *mut mjXWriter, _spec: *mut mjSpec, m: *const mjModel) {
+    if self_ptr.is_null() { return; }
     extern "C" { fn mjXWriter_SetModel(self_ptr: *mut mjXWriter, _spec: *mut mjSpec, m: *const mjModel); }
-    // SAFETY: delegates to C implementation
+    // SAFETY: self_ptr verified non-null; delegates to C implementation
     unsafe { mjXWriter_SetModel(self_ptr, _spec, m) }
 }
 

@@ -57,8 +57,9 @@ pub fn reset_arena(d: *mut mjData) {
 /// C: alignArena (engine/engine_collision_driver.c:189)
 #[allow(unused_variables, non_snake_case)]
 pub fn align_arena(d: *mut mjData, alignment: usize) -> usize  {
+    if d.is_null() { return 0; }
     extern "C" { fn alignArena(d: *mut mjData, alignment: usize) -> usize; }
-    // SAFETY: delegates to C implementation
+    // SAFETY: d verified non-null; delegates to C implementation
     unsafe { alignArena(d, alignment) }
 }
 

@@ -46,8 +46,9 @@ pub fn mat2lin(ix: i32, iy: i32, iz: i32, count: [i32; 3]) -> i32 {
 /// Calls: mju_malloc
 #[allow(unused_variables, non_snake_case)]
 pub fn vec_to_array(vector: *mut i32, clear: bool) -> *mut T {
+    if vector.is_null() { return core::ptr::null_mut(); }
     extern "C" { fn VecToArray(vector: *mut i32, clear: bool) -> *mut T; }
-    // SAFETY: delegates to C implementation
+    // SAFETY: vector verified non-null; delegates to C implementation
     unsafe { VecToArray(vector, clear) }
 }
 

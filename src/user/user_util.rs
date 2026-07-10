@@ -39,8 +39,12 @@ pub fn file_to_memory(filename: *const i8) -> i32 {
 /// C: VectorToString (user/user_util.cc:1256)
 #[allow(unused_variables, non_snake_case)]
 pub fn vector_to_string(v: *const i32) -> std__string {
+    if v.is_null() {
+        // SAFETY: std__string is a zero-sized type; zeroed is trivially valid
+        return unsafe { core::mem::zeroed() };
+    }
     extern "C" { fn VectorToString(v: *const i32) -> std__string; }
-    // SAFETY: delegates to C implementation
+    // SAFETY: v verified non-null; delegates to C implementation
     unsafe { VectorToString(v) }
 }
 

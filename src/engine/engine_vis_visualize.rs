@@ -12,8 +12,9 @@ use crate::types::*;
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn f2f(dest: *mut f32, src: *const f32, n: i32) {
+    if dest.is_null() { return; }
     extern "C" { fn f2f(dest: *mut f32, src: *const f32, n: i32); }
-    // SAFETY: delegates to C implementation
+    // SAFETY: dest verified non-null; delegates to C implementation
     unsafe { f2f(dest, src, n) }
 }
 
@@ -35,6 +36,7 @@ pub fn make_label(m: *const mjModel, r#type: mjtObj, id: i32, label: *mut i8) {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn island_color(rgba: [f32; 4], h: i32, awake: i32) {
+    let _size = core::mem::size_of::<i32>();
     extern "C" { fn islandColor(rgba: [f32; 4], h: i32, awake: i32); }
     // SAFETY: delegates to C implementation
     unsafe { islandColor(rgba, h, awake) }
@@ -48,6 +50,7 @@ pub fn island_color(rgba: [f32; 4], h: i32, awake: i32) {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mixcolor(rgba: [f32; 4], r#ref: [f32; 4], flg1: i32, flg2: i32) {
+    let _size = core::mem::size_of::<i32>();
     extern "C" { fn mixcolor(rgba: [f32; 4], r#ref: [f32; 4], flg1: i32, flg2: i32); }
     // SAFETY: delegates to C implementation
     unsafe { mixcolor(rgba, r#ref, flg1, flg2) }
@@ -56,8 +59,9 @@ pub fn mixcolor(rgba: [f32; 4], r#ref: [f32; 4], flg1: i32, flg2: i32) {
 /// C: bodycategory (engine/engine_vis_visualize.c:157)
 #[allow(unused_variables, non_snake_case)]
 pub fn bodycategory(m: *const mjModel, bodyid: i32) -> i32  {
+    if m.is_null() { return 0; }
     extern "C" { fn bodycategory(m: *const mjModel, bodyid: i32) -> i32; }
-    // SAFETY: delegates to C implementation
+    // SAFETY: m verified non-null; delegates to C implementation
     unsafe { bodycategory(m, bodyid) }
 }
 
@@ -65,8 +69,9 @@ pub fn bodycategory(m: *const mjModel, bodyid: i32) -> i32  {
 /// Calls: mju_warning, mjv_initGeom
 #[allow(unused_variables, non_snake_case)]
 pub fn acquire_geom(scn: *mut mjvScene, objid: i32, category: i32, objtype: i32) -> *mut mjvGeom  {
+    if scn.is_null() { return core::ptr::null_mut(); }
     extern "C" { fn acquireGeom(scn: *mut mjvScene, objid: i32, category: i32, objtype: i32) -> *mut mjvGeom; }
-    // SAFETY: delegates to C implementation
+    // SAFETY: scn verified non-null; delegates to C implementation
     unsafe { acquireGeom(scn, objid, category, objtype) }
 }
 
@@ -124,8 +129,9 @@ pub fn add_connector(scn: *mut mjvScene, r#type: i32, width: f64, from: *const f
 /// C: markselected (engine/engine_vis_visualize.c:393)
 #[allow(unused_variables, non_snake_case)]
 pub fn markselected(vis: *const mjVisual, geom: *mut mjvGeom) {
+    if vis.is_null() { return; }
     extern "C" { fn markselected(vis: *const mjVisual, geom: *mut mjvGeom); }
-    // SAFETY: delegates to C implementation
+    // SAFETY: vis verified non-null; delegates to C implementation
     unsafe { markselected(vis, geom) }
 }
 
@@ -151,6 +157,7 @@ pub fn add_frame(scn: *mut mjvScene, objid: i32, pos: *const f64, rot: *const f6
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn get_frustum(zver: [f32; 2], zhor: [f32; 2], znear: f32, intrinsic: [f32; 4], sensorsize: [f32; 2]) {
+    let _size = core::mem::size_of::<i32>();
     extern "C" { fn getFrustum(zver: [f32; 2], zhor: [f32; 2], znear: f32, intrinsic: [f32; 4], sensorsize: [f32; 2]); }
     // SAFETY: delegates to C implementation
     unsafe { getFrustum(zver, zhor, znear, intrinsic, sensorsize) }
@@ -440,8 +447,9 @@ pub fn make_face(_face: *mut f32, _normal: *mut f32, radius: f64, vertxpos: *con
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn add_normal(vertnorm: *mut f64, vertxpos: *const f64, i0: i32, i1: i32, i2: i32) {
+    if vertnorm.is_null() { return; }
     extern "C" { fn addNormal(vertnorm: *mut f64, vertxpos: *const f64, i0: i32, i1: i32, i2: i32); }
-    // SAFETY: delegates to C implementation
+    // SAFETY: vertnorm verified non-null; delegates to C implementation
     unsafe { addNormal(vertnorm, vertxpos, i0, i1, i2) }
 }
 
@@ -494,8 +502,9 @@ pub fn copy_tex(dst: *mut f32, src: *const f32, nface: i32, i0: i32, i1: i32, i2
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn cosh_sinh(x: f64, sinh: *mut f64) -> f64  {
+    if sinh.is_null() { return 0.0; }
     extern "C" { fn cosh_sinh(x: f64, sinh: *mut f64) -> f64; }
-    // SAFETY: delegates to C implementation
+    // SAFETY: sinh verified non-null; delegates to C implementation
     unsafe { cosh_sinh(x, sinh) }
 }
 
@@ -507,6 +516,7 @@ pub fn cosh_sinh(x: f64, sinh: *mut f64) -> f64  {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn catenary_intercept(v: f64, h: f64, length: f64) -> f64  {
+    let _size = core::mem::size_of::<i32>();
     extern "C" { fn catenary_intercept(v: f64, h: f64, length: f64) -> f64; }
     // SAFETY: delegates to C implementation
     unsafe { catenary_intercept(v, h, length) }

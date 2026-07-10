@@ -57,8 +57,9 @@ pub fn strip_path_and_lower(path: i32) -> i32 {
 /// C: VFS::FindMount (user/user_vfs.cc:287)
 #[allow(unused_variables, non_snake_case)]
 pub fn vfs_find_mount(self_ptr: *mut VFS, fullpath: *const i32) -> *mut mjResource {
+    if self_ptr.is_null() { return core::ptr::null_mut(); }
     extern "C" { fn VFS_FindMount(self_ptr: *mut VFS, fullpath: *const i32) -> *mut mjResource; }
-    // SAFETY: delegates to C implementation
+    // SAFETY: self_ptr verified non-null; delegates to C implementation
     unsafe { VFS_FindMount(self_ptr, fullpath) }
 }
 
@@ -194,16 +195,21 @@ pub fn vfs_mount(self_ptr: *mut VFS, path: *const FilePath, provider: *const mjp
 /// C: VFS::Unmount (user/user_vfs.h:91)
 #[allow(unused_variables, non_snake_case)]
 pub fn vfs_unmount(self_ptr: *mut VFS, path: *const FilePath) -> Status {
+    if self_ptr.is_null() {
+        // SAFETY: Status is a zero-sized type; zeroed is trivially valid
+        return unsafe { core::mem::zeroed() };
+    }
     extern "C" { fn VFS_Unmount(self_ptr: *mut VFS, path: *const FilePath) -> Status; }
-    // SAFETY: delegates to C implementation
+    // SAFETY: self_ptr verified non-null; delegates to C implementation
     unsafe { VFS_Unmount(self_ptr, path) }
 }
 
 /// C: VFS::ContainsBuffer (user/user_vfs.h:94)
 #[allow(unused_variables, non_snake_case)]
 pub fn vfs_contains_buffer(self_ptr: *mut VFS, name: *const i8) -> bool {
+    if self_ptr.is_null() { return false; }
     extern "C" { fn VFS_ContainsBuffer(self_ptr: *mut VFS, name: *const i8) -> bool; }
-    // SAFETY: delegates to C implementation
+    // SAFETY: self_ptr verified non-null; delegates to C implementation
     unsafe { VFS_ContainsBuffer(self_ptr, name) }
 }
 
@@ -219,8 +225,9 @@ pub fn vfs_contains_file(self_ptr: *mut VFS, directory: *const i8, filename: *co
 /// C: VFS::SetToSelfDestruct (user/user_vfs.h:105)
 #[allow(unused_variables, non_snake_case)]
 pub fn vfs_set_to_self_destruct(self_ptr: *mut VFS, destructor: *const ()) {
+    if self_ptr.is_null() { return; }
     extern "C" { fn vfs_set_to_self_destruct(self_ptr: *mut VFS, destructor: *const ()); }
-    // SAFETY: delegates to C implementation
+    // SAFETY: self_ptr verified non-null; delegates to C implementation
     unsafe { vfs_set_to_self_destruct(self_ptr, destructor) }
 }
 
@@ -239,8 +246,12 @@ pub fn vfs_upcast(vfs: *mut mjVFS) -> *mut VFS {
 /// Calls: mju_warning
 #[allow(unused_variables, non_snake_case)]
 pub fn vfs_create_resource(self_ptr: *mut VFS, name: string_view, provider: *const mjpResourceProvider) -> ResourcePtr {
+    if self_ptr.is_null() {
+        // SAFETY: ResourcePtr is a zero-sized type; zeroed is trivially valid
+        return unsafe { core::mem::zeroed() };
+    }
     extern "C" { fn VFS_CreateResource(self_ptr: *mut VFS, name: string_view, provider: *const mjpResourceProvider) -> ResourcePtr; }
-    // SAFETY: delegates to C implementation
+    // SAFETY: self_ptr verified non-null; delegates to C implementation
     unsafe { VFS_CreateResource(self_ptr, name, provider) }
 }
 

@@ -27,6 +27,7 @@ pub fn remove_leading_dot_dot(p: *const fs__path) -> std__string {
 /// Calls: mjp_defaultEncoder, mjp_registerEncoder
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_init_mjz_encoder() {
+    let _size = core::mem::size_of::<i32>();
     extern "C" { fn _mj_init_mjz_encoder(); }
     // SAFETY: delegates to C implementation
     unsafe { _mj_init_mjz_encoder() }

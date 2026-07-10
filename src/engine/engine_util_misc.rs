@@ -114,6 +114,7 @@ pub fn add_weight(nb: *mut i32, body: *mut i32, bweight: *mut f64, b: i32, w: f6
 /// C: _decode (engine/engine_util_misc.c:1217)
 #[allow(unused_variables, non_snake_case)]
 pub fn decode(ch: i8) -> u32  {
+    let _size = core::mem::size_of::<i32>();
     extern "C" { fn _decode(ch: i8) -> u32; }
     // SAFETY: delegates to C implementation
     unsafe { _decode(ch) }

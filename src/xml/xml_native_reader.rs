@@ -44,8 +44,9 @@ pub fn read_plugin_configs(elem: *mut tinyxml2__XMLElement, p: *mut mjsPlugin) {
 /// C: UpdateString (xml/xml_native_reader.cc:155)
 #[allow(unused_variables, non_snake_case)]
 pub fn update_string(psuffix: *mut string, count: i32, i: i32) {
+    if psuffix.is_null() { return; }
     extern "C" { fn UpdateString(psuffix: *mut string, count: i32, i: i32); }
-    // SAFETY: delegates to C implementation
+    // SAFETY: psuffix verified non-null; delegates to C implementation
     unsafe { UpdateString(psuffix, count, i) }
 }
 

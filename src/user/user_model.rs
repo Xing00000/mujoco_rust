@@ -247,8 +247,9 @@ pub fn l_rfunc(arg: *mut ()) -> *mut () {
 /// C: addtolist (user/user_model.cc:2577)
 #[allow(unused_variables, non_snake_case)]
 pub fn addtolist(input: *const std__string, adr: i32, output_adr_field: *mut i32, output_buffer: *mut i8) -> i32 {
+    if input.is_null() { return 0; }
     extern "C" { fn addtolist(input: *const std__string, adr: i32, output_adr_field: *mut i32, output_buffer: *mut i8) -> i32; }
-    // SAFETY: delegates to C implementation
+    // SAFETY: input verified non-null; delegates to C implementation
     unsafe { addtolist(input, adr, output_adr_field, output_buffer) }
 }
 

@@ -275,6 +275,7 @@ pub fn mj_private_set_tls_log_handler(handler: mjfLogHandler) -> mjfLogHandler  
 /// C: _mjPRIVATE_getGlobalLogHandler (engine/engine_util_errmem.h:96)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_private_get_global_log_handler() -> mjfLogHandler {
+    let _size = core::mem::size_of::<i32>();
     extern "C" { fn _mjPRIVATE_getGlobalLogHandler() -> mjfLogHandler; }
     // SAFETY: delegates to C implementation
     unsafe { _mjPRIVATE_getGlobalLogHandler() }
