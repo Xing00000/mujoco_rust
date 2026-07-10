@@ -554,18 +554,70 @@ pub fn mj_step(m: *const mjModel, d: *mut mjData) {
 /// Calls: mj_checkPos, mj_checkVel, mj_energyPos, mj_energyVel, mj_fwdPosition, mj_fwdVelocity, mj_sensorPos, mj_sensorVel
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_step1(m: *const mjModel, d: *mut mjData) {
-    extern "C" { fn mj_step1(m: *const mjModel, d: *mut mjData); }
-    // SAFETY: delegates to C implementation
-    unsafe { mj_step1(m, d) }
+    const mjENBL_ENERGY: i32 = 1 << 1;
+
+    // SAFETY: m, d valid per caller. All called functions handle their own safety.
+    unsafe {
+        mj_check_pos(m, d);
+        mj_check_vel(m, d);
+        mj_fwd_position(m, d);
+        crate::engine::engine_sensor::mj_sensor_pos(m, d);
+
+        if *((&(*d).flg_energypos) as *const mjtBool as *const u8) == 0 {
+            if ((*m).opt.enableflags & mjENBL_ENERGY) != 0 {
+                crate::engine::engine_sensor::mj_energy_pos(m, d);
+            } else {
+                (*d).energy[0] = 0.0;
+                (*d).energy[1] = 0.0;
+            }
+        }
+
+        mj_fwd_velocity(m, d);
+        crate::engine::engine_sensor::mj_sensor_vel(m, d);
+        if ((*m).opt.enableflags & mjENBL_ENERGY) != 0
+            && *((&(*d).flg_energyvel) as *const mjtBool as *const u8) == 0
+        {
+            crate::engine::engine_sensor::mj_energy_vel(m, d);
+        }
+
+        extern "C" {
+            static mjcb_control: Option<unsafe extern "C" fn(*const mjModel, *mut mjData)>;
+        }
+        if let Some(cb) = mjcb_control {
+            cb(m, d);
+        }
+    }
 }
 
 /// C: mj_step2 (engine/engine_forward.h:41)
 /// Calls: mj_Euler, mj_checkAcc, mj_compareFwdInv, mj_fwdAcceleration, mj_fwdActuation, mj_fwdConstraint, mj_implicit, mj_sensorAcc
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_step2(m: *const mjModel, d: *mut mjData) {
-    extern "C" { fn mj_step2(m: *const mjModel, d: *mut mjData); }
-    // SAFETY: delegates to C implementation, pointers valid per caller
-    unsafe { mj_step2(m, d) }
+    const mjENBL_FWDINV: i32 = 1 << 2;
+    const mjINT_IMPLICIT: i32 = 2;
+    const mjINT_IMPLICITFAST: i32 = 3;
+
+    // SAFETY: m, d valid per caller. All called functions handle their own safety.
+    unsafe {
+        mj_fwd_actuation(m, d);
+        mj_fwd_acceleration(m, d);
+        mj_fwd_constraint(m, d);
+        *((&mut (*d).flg_rnepost) as *mut mjtBool as *mut u8) = 0;  // clear flag for lazy evaluation
+        crate::engine::engine_sensor::mj_sensor_acc(m, d);
+        mj_check_acc(m, d);
+
+        // compare forward and inverse solutions if enabled
+        if ((*m).opt.enableflags & mjENBL_FWDINV) != 0 {
+            crate::engine::engine_inverse::mj_compare_fwd_inv(m, d);
+        }
+
+        // integrate with Euler or implicit; RK4 defaults to Euler
+        if (*m).opt.integrator == mjINT_IMPLICIT || (*m).opt.integrator == mjINT_IMPLICITFAST {
+            mj_implicit(m, d);
+        } else {
+            mj_euler(m, d);
+        }
+    }
 }
 
 /// C: mj_forward (engine/engine_forward.h:44)
@@ -579,9 +631,64 @@ pub fn mj_forward(m: *const mjModel, d: *mut mjData) {
 /// Calls: mj_energyPos, mj_energyVel, mj_fwdAcceleration, mj_fwdActuation, mj_fwdConstraint, mj_fwdPosition, mj_fwdVelocity, mj_sensorAcc, mj_sensorPos, mj_sensorVel
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_forward_skip(m: *const mjModel, d: *mut mjData, skipstage: i32, skipsensor: i32) {
-    extern "C" { fn mj_forwardSkip(m: *const mjModel, d: *mut mjData, skipstage: i32, skipsensor: i32); }
-    // SAFETY: delegates to C implementation, all pointers valid per caller contract
-    unsafe { mj_forwardSkip(m, d, skipstage, skipsensor) }
+    const mjSTAGE_POS: i32 = 1;
+    const mjSTAGE_VEL: i32 = 2;
+    const mjENBL_ENERGY: i32 = 1 << 1;
+    const mjDSBL_ACTUATION: i32 = 1 << 11;
+
+    // SAFETY: m, d valid per caller. All called functions handle their own safety.
+    unsafe {
+        // position-dependent
+        if skipstage < mjSTAGE_POS {
+            mj_fwd_position(m, d);
+
+            if skipsensor == 0 {
+                crate::engine::engine_sensor::mj_sensor_pos(m, d);
+            }
+
+            if *((&(*d).flg_energypos) as *const mjtBool as *const u8) == 0 {
+                if ((*m).opt.enableflags & mjENBL_ENERGY) != 0 {
+                    crate::engine::engine_sensor::mj_energy_pos(m, d);
+                } else {
+                    (*d).energy[0] = 0.0;
+                    (*d).energy[1] = 0.0;
+                }
+            }
+        }
+
+        // velocity-dependent
+        if skipstage < mjSTAGE_VEL {
+            mj_fwd_velocity(m, d);
+
+            if skipsensor == 0 {
+                crate::engine::engine_sensor::mj_sensor_vel(m, d);
+            }
+
+            if ((*m).opt.enableflags & mjENBL_ENERGY) != 0
+                && *((&(*d).flg_energyvel) as *const mjtBool as *const u8) == 0
+            {
+                crate::engine::engine_sensor::mj_energy_vel(m, d);
+            }
+        }
+
+        // acceleration-dependent
+        if ((*m).opt.disableflags & mjDSBL_ACTUATION) == 0 {
+            extern "C" {
+                static mjcb_control: Option<unsafe extern "C" fn(*const mjModel, *mut mjData)>;
+            }
+            if let Some(cb) = mjcb_control {
+                cb(m, d);
+            }
+        }
+
+        mj_fwd_actuation(m, d);
+        mj_fwd_acceleration(m, d);
+        mj_fwd_constraint(m, d);
+        if skipsensor == 0 {
+            *((&mut (*d).flg_rnepost) as *mut mjtBool as *mut u8) = 0;  // clear flag for lazy evaluation
+            crate::engine::engine_sensor::mj_sensor_acc(m, d);
+        }
+    }
 }
 
 /// C: mj_RungeKutta (engine/engine_forward.h:53)
@@ -788,18 +895,116 @@ pub fn mj_fwd_kinematics(m: *const mjModel, d: *mut mjData) {
 /// Calls: mj_collision, mj_factorM, mj_fwdKinematics, mj_island, mj_makeConstraint, mj_makeM, mj_projectConstraint, mj_transmission, mj_updateSleep, mj_wakeCollision, mj_wakeEquality
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_fwd_position(m: *const mjModel, d: *mut mjData) {
-    extern "C" { fn mj_fwdPosition(m: *const mjModel, d: *mut mjData); }
-    // SAFETY: delegates to C implementation, all pointers valid per caller contract
-    unsafe { mj_fwdPosition(m, d) }
+    // SAFETY: m, d valid per caller. All called functions handle their own safety.
+    unsafe {
+        // clear position-dependent flags for lazy evaluation
+        *((&mut (*d).flg_energypos) as *mut mjtBool as *mut u8) = 0;
+
+        mj_fwd_kinematics(m, d);
+
+        // inertia
+        crate::engine::engine_core_smooth::mj_make_m(m, d);
+        crate::engine::engine_core_smooth::mj_factor_m(m, d);
+
+        // collision
+        crate::engine::engine_collision_driver::mj_collision(m, d);
+
+        if crate::engine::engine_sleep::mj_wake_collision(m, d) != 0 {
+            crate::engine::engine_sleep::mj_update_sleep(m, d);
+            crate::engine::engine_collision_driver::mj_collision(m, d);
+        }
+
+        if crate::engine::engine_sleep::mj_wake_equality(m, d) != 0 {
+            crate::engine::engine_sleep::mj_update_sleep(m, d);
+        }
+
+        crate::engine::engine_core_constraint::mj_make_constraint(m, d);
+        crate::engine::engine_island::mj_island(m, d);
+
+        crate::engine::engine_core_constraint::mj_project_constraint(m, d);
+
+        crate::engine::engine_core_smooth::mj_transmission(m, d);
+    }
 }
 
 /// C: mj_fwdVelocity (engine/engine_forward.h:84)
 /// Calls: mj_comVel, mj_passive, mj_referenceConstraint, mj_rne, mj_tendonBias, mju_mulMatVecSparse, mju_zero
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_fwd_velocity(m: *const mjModel, d: *mut mjData) {
-    extern "C" { fn mj_fwdVelocity(m: *const mjModel, d: *mut mjData); }
-    // SAFETY: delegates to C implementation, all pointers valid per caller contract
-    unsafe { mj_fwdVelocity(m, d) }
+    const mjDSBL_ACTUATION: i32 = 1 << 11;
+
+    // SAFETY: m, d valid per caller. All pointer arithmetic within valid model/data arrays.
+    unsafe {
+        // clear velocity-dependent flags for lazy evaluation
+        *((&mut (*d).flg_subtreevel) as *mut mjtBool as *mut u8) = 0;
+        *((&mut (*d).flg_energyvel) as *mut mjtBool as *mut u8) = 0;
+
+        let nflex = (*m).nflex as i32;
+        let nflexedge = (*m).nflexedge as i32;
+        let ntendon = (*m).ntendon as i32;
+        let nu = (*m).nu as i32;
+
+        // flexedge velocity: skip interp and rigid flexes (edge Jacobians are zero)
+        crate::engine::engine_util_blas::mju_zero((*d).flexedge_velocity, nflexedge);
+        for f in 0..nflex {
+            let rigid = *((*m).flex_rigid as *const u8).add(f as usize);
+            let interp = *(*m).flex_interp.add(f as usize);
+            if rigid != 0 || interp != 0 {
+                continue;
+            }
+            let adr = *(*m).flex_edgeadr.add(f as usize);
+            let num = *(*m).flex_edgenum.add(f as usize);
+            crate::engine::engine_util_sparse::mju_mul_mat_vec_sparse(
+                (*d).flexedge_velocity.add(adr as usize),
+                (*d).flexedge_J,
+                (*d).qvel,
+                num,
+                (*m).flexedge_J_rownnz.add(adr as usize),
+                (*m).flexedge_J_rowadr.add(adr as usize),
+                (*m).flexedge_J_colind,
+                std::ptr::null(),
+            );
+        }
+
+        // tendon velocity: always sparse
+        crate::engine::engine_util_sparse::mju_mul_mat_vec_sparse(
+            (*d).ten_velocity,
+            (*d).ten_J,
+            (*d).qvel,
+            ntendon,
+            (*m).ten_J_rownnz,
+            (*m).ten_J_rowadr,
+            (*m).ten_J_colind,
+            std::ptr::null(),
+        );
+
+        // actuator velocity: always sparse
+        if ((*m).opt.disableflags & mjDSBL_ACTUATION) == 0 {
+            crate::engine::engine_util_sparse::mju_mul_mat_vec_sparse(
+                (*d).actuator_velocity,
+                (*d).actuator_moment,
+                (*d).qvel,
+                nu,
+                (*d).moment_rownnz,
+                (*d).moment_rowadr,
+                (*d).moment_colind,
+                std::ptr::null(),
+            );
+        } else {
+            crate::engine::engine_util_blas::mju_zero((*d).actuator_velocity, nu);
+        }
+
+        // com-based velocities, passive forces, constraint references
+        crate::engine::engine_core_smooth::mj_com_vel(m, d);
+        crate::engine::engine_passive::mj_passive(m, d);
+        crate::engine::engine_core_constraint::mj_reference_constraint(m, d);
+
+        // compute qfrc_bias with abbreviated RNE (without acceleration)
+        crate::engine::engine_core_smooth::mj_rne(m, d, 0, (*d).qfrc_bias);
+
+        // add bias force due to tendon armature
+        crate::engine::engine_core_smooth::mj_tendon_bias(m, d, (*d).qfrc_bias);
+    }
 }
 
 /// C: mj_fwdActuation (engine/engine_forward.h:87)
