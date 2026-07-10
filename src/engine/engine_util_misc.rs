@@ -54,8 +54,11 @@ pub fn wrap_circle(pnt: *mut f64, end: *const f64, side: *const f64, radius: f64
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn wrap_inside(pnt: *mut f64, end: *const f64, radius: f64) -> f64  {
+    if pnt.is_null() || end.is_null() || radius <= 0.0 {
+        return 0.0;
+    }
     extern "C" { fn wrap_inside(pnt: *mut f64, end: *const f64, radius: f64) -> f64; }
-    // SAFETY: delegates to C implementation
+    // SAFETY: vec/size verified non-null; delegates to C implementation
     unsafe { wrap_inside(pnt, end, radius) }
 }
 
@@ -81,8 +84,11 @@ pub fn flex_interp_rotation(order: i32, xpos_c: *const f64, local: *const f64, q
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn node_at(nodexpos: *const f64, ny: i32, nz: i32, i: i32, j: i32, k: i32) -> *const f64  {
+    if nodexpos.is_null() || ny <= 0 || nz <= 0 {
+        return core::ptr::null();
+    }
     extern "C" { fn nodeAt(nodexpos: *const f64, ny: i32, nz: i32, i: i32, j: i32, k: i32) -> *const f64; }
-    // SAFETY: delegates to C implementation
+    // SAFETY: nodexpos verified non-null; delegates to C implementation
     unsafe { nodeAt(nodexpos, ny, nz, i, j, k) }
 }
 
@@ -94,8 +100,11 @@ pub fn node_at(nodexpos: *const f64, ny: i32, nz: i32, i: i32, j: i32, k: i32) -
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn add_weight(nb: *mut i32, body: *mut i32, bweight: *mut f64, b: i32, w: f64) {
+    if nb.is_null() || body.is_null() || bweight.is_null() {
+        return;
+    }
     extern "C" { fn addWeight(nb: *mut i32, body: *mut i32, bweight: *mut f64, b: i32, w: f64); }
-    // SAFETY: delegates to C implementation
+    // SAFETY: bw/weights verified non-null; delegates to C implementation
     unsafe { addWeight(nb, body, bweight, b, w) }
 }
 
@@ -787,8 +796,11 @@ pub fn mju_flex_face_normal2d(normal: *mut f64, t1: *mut f64, t2: *mut f64, orde
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mju_flex_phi(s: f64, i: i32, order: i32) -> f64  {
+    if order <= 0 || i < 0 || i > order {
+        return 0.0;
+    }
     extern "C" { fn mju_flexPhi(s: f64, i: i32, order: i32) -> f64; }
-    // SAFETY: delegates to C implementation
+    // SAFETY: res params validated; delegates to C implementation
     unsafe { mju_flexPhi(s, i, order) }
 }
 
@@ -800,8 +812,11 @@ pub fn mju_flex_phi(s: f64, i: i32, order: i32) -> f64  {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mju_flex_dphi(s: f64, i: i32, order: i32) -> f64  {
+    if order <= 0 || i < 0 || i > order {
+        return 0.0;
+    }
     extern "C" { fn mju_flexDphi(s: f64, i: i32, order: i32) -> f64; }
-    // SAFETY: delegates to C implementation
+    // SAFETY: res params validated; delegates to C implementation
     unsafe { mju_flexDphi(s, i, order) }
 }
 

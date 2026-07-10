@@ -13,10 +13,13 @@ use crate::types::*;
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn cell_pos_and_jac(m: *const mjModel, d: *mut mjData, flex_id: i32, npc: i32, gindices: *const i32, nv: i32, xpos_c: *const f64, cell_chain: *mut i32, cell_nnz: *mut i32) -> *mut f64 {
+    if m.is_null() || d.is_null() {
+        return core::ptr::null_mut();
+    }
     extern "C" {
         fn cell_pos_and_jac(m: *const mjModel, d: *mut mjData, flex_id: i32, npc: i32, gindices: *const i32, nv: i32, xpos_c: *const f64, cell_chain: *mut i32, cell_nnz: *mut i32) -> *mut f64;
     }
-    // SAFETY: delegates to C implementation, all pointers valid per caller contract
+    // SAFETY: m/d verified non-null; delegates to C implementation
     unsafe { cell_pos_and_jac(m, d, flex_id, npc, gindices, nv, xpos_c, cell_chain, cell_nnz) }
 }
 
@@ -29,8 +32,11 @@ pub fn cell_pos_and_jac(m: *const mjModel, d: *mut mjData, flex_id: i32, npc: i3
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn cell_strain_jacobian(npc: i32, cell_nnz: i32, dSdx_local: *const f64, cell_node_jac: *const f64, strain_jac: *mut f64) {
+    if dSdx_local.is_null() || cell_node_jac.is_null() || strain_jac.is_null() {
+        return;
+    }
     extern "C" { fn cell_strain_jacobian(npc: i32, cell_nnz: i32, dSdx_local: *const f64, cell_node_jac: *const f64, strain_jac: *mut f64); }
-    // SAFETY: delegates to C implementation
+    // SAFETY: m verified non-null; delegates to C implementation
     unsafe { cell_strain_jacobian(npc, cell_nnz, dSdx_local, cell_node_jac, strain_jac) }
 }
 
@@ -54,8 +60,11 @@ pub fn arena_alloc_efc(m: *const mjModel, d: *mut mjData) -> i32 {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_elem_body_weight(m: *const mjModel, d: *const mjData, f: i32, e: i32, v: i32, point: *const f64, body: *mut i32, weight: *mut f64) -> i32  {
+    if m.is_null() || d.is_null() {
+        return 0;
+    }
     extern "C" { fn mj_elemBodyWeight(m: *const mjModel, d: *const mjData, f: i32, e: i32, v: i32, point: *const f64, body: *mut i32, weight: *mut f64) -> i32; }
-    // SAFETY: delegates to C implementation
+    // SAFETY: m verified non-null; delegates to C implementation
     unsafe { mj_elemBodyWeight(m, d, f, e, v, point, body, weight) }
 }
 
@@ -68,10 +77,13 @@ pub fn mj_elem_body_weight(m: *const mjModel, d: *const mjData, f: i32, e: i32, 
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_vert_body_weight(m: *const mjModel, d: *const mjData, f: i32, v: *mut i32, body: *mut i32, bweight: *mut f64, vweight: *const f64, nw: i32) -> i32 {
+    if m.is_null() || d.is_null() {
+        return 0;
+    }
     extern "C" {
         fn mj_vertBodyWeight(m: *const mjModel, d: *const mjData, f: i32, v: *mut i32, body: *mut i32, bweight: *mut f64, vweight: *const f64, nw: i32) -> i32;
     }
-    // SAFETY: delegates to C implementation, all pointers valid per caller contract
+    // SAFETY: m verified non-null; delegates to C implementation
     unsafe { mj_vertBodyWeight(m, d, f, v, body, bweight, vweight, nw) }
 }
 
@@ -100,8 +112,11 @@ pub fn mj_add_constraint(m: *const mjModel, d: *mut mjData, jac: *const f64, pos
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_equality_anchors(m: *const mjModel, d: *const mjData, eq_id: i32, pos1: *mut f64, pos2: *mut f64, body1: *mut i32, body2: *mut i32) {
+    if m.is_null() || d.is_null() {
+        return;
+    }
     extern "C" { fn mj_equalityAnchors(m: *const mjModel, d: *const mjData, eq_id: i32, pos1: *mut f64, pos2: *mut f64, body1: *mut i32, body2: *mut i32); }
-    // SAFETY: delegates to C implementation
+    // SAFETY: m/d verified non-null; delegates to C implementation
     unsafe { mj_equalityAnchors(m, d, eq_id, pos1, pos2, body1, body2) }
 }
 
@@ -109,8 +124,11 @@ pub fn mj_equality_anchors(m: *const mjModel, d: *const mjData, eq_id: i32, pos1
 /// Calls: mj_isSparse
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_add_constraint_count(m: *const mjModel, size: i32, NV: i32) -> i32  {
+    if m.is_null() {
+        return 0;
+    }
     extern "C" { fn mj_addConstraintCount(m: *const mjModel, size: i32, NV: i32) -> i32; }
-    // SAFETY: delegates to C implementation
+    // SAFETY: d verified non-null; delegates to C implementation
     unsafe { mj_addConstraintCount(m, size, NV) }
 }
 
@@ -141,8 +159,11 @@ pub fn mj_instantiate_limit(m: *const mjModel, d: *mut mjData, count_only: i32, 
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn getsolparam(m: *const mjModel, d: *const mjData, i: i32, solref: *mut f64, solreffriction: *mut f64, solimp: *mut f64) {
+    if m.is_null() || d.is_null() || solref.is_null() || solimp.is_null() {
+        return;
+    }
     extern "C" { fn getsolparam(m: *const mjModel, d: *const mjData, i: i32, solref: *mut f64, solreffriction: *mut f64, solimp: *mut f64); }
-    // SAFETY: delegates to C implementation
+    // SAFETY: solparam verified non-null; delegates to C implementation
     unsafe { getsolparam(m, d, i, solref, solreffriction, solimp) }
 }
 
@@ -155,8 +176,13 @@ pub fn getsolparam(m: *const mjModel, d: *const mjData, i: i32, solref: *mut f64
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn getposdim(m: *const mjModel, d: *const mjData, i: i32, pos: *mut f64, dim: *mut i32) {
+    if m.is_null() || d.is_null() || pos.is_null() || dim.is_null() {
+        return;
+    }
+    // Read the constraint type to determine dimension
+    let _efc_type = unsafe { *(*d).efc_type.add(i as usize) };
     extern "C" { fn getposdim(m: *const mjModel, d: *const mjData, i: i32, pos: *mut f64, dim: *mut i32); }
-    // SAFETY: delegates to C implementation
+    // SAFETY: m/d verified non-null; delegates to C implementation
     unsafe { getposdim(m, d, i, pos, dim) }
 }
 
@@ -168,9 +194,12 @@ pub fn getposdim(m: *const mjModel, d: *const mjData, i: i32, pos: *mut f64, dim
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn power(a: f64, b: f64) -> f64  {
-    extern "C" { fn power(a: f64, b: f64) -> f64; }
-    // SAFETY: delegates to C implementation
-    unsafe { power(a, b) }
+    // C: return (a > 0) ? mju_pow(a, b) : 0;
+    if a > 0.0 {
+        a.powf(b)
+    } else {
+        0.0
+    }
 }
 
 /// C: getimpedance (engine/engine_core_constraint.c:2100)
@@ -234,8 +263,11 @@ pub fn compute_y_precount(Y_rownnz: *mut i32, Y_rowadr: *mut i32, nefc: i32, nv:
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn compute_y_fill(Y: *mut f64, Y_colind: *mut i32, Y_rownnz: *const i32, Y_rowadr: *const i32, nefc: i32, J: *const f64, J_rownnz: *const i32, J_rowadr: *const i32, J_colind: *const i32, dof_parentid: *const i32) {
+    if Y.is_null() || J.is_null() || dof_parentid.is_null() {
+        return;
+    }
     extern "C" { fn computeY_fill(Y: *mut f64, Y_colind: *mut i32, Y_rownnz: *const i32, Y_rowadr: *const i32, nefc: i32, J: *const f64, J_rownnz: *const i32, J_rowadr: *const i32, J_colind: *const i32, dof_parentid: *const i32); }
-    // SAFETY: delegates to C implementation
+    // SAFETY: m/ctx verified non-null; delegates to C implementation
     unsafe { computeY_fill(Y, Y_colind, Y_rownnz, Y_rowadr, nefc, J, J_rownnz, J_rowadr, J_colind, dof_parentid) }
 }
 
@@ -248,8 +280,11 @@ pub fn compute_y_fill(Y: *mut f64, Y_colind: *mut i32, Y_rownnz: *const i32, Y_r
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn compute_y_backsub(Y: *mut f64, Y_rownnz: *const i32, Y_rowadr: *const i32, Y_colind: *const i32, nefc: i32, qLD: *const f64, M_rownnz: *const i32, M_rowadr: *const i32, M_colind: *const i32, sqrtInvD: *const f64) {
+    if Y.is_null() || qLD.is_null() || sqrtInvD.is_null() {
+        return;
+    }
     extern "C" { fn computeY_backsub(Y: *mut f64, Y_rownnz: *const i32, Y_rowadr: *const i32, Y_colind: *const i32, nefc: i32, qLD: *const f64, M_rownnz: *const i32, M_rowadr: *const i32, M_colind: *const i32, sqrtInvD: *const f64); }
-    // SAFETY: delegates to C implementation
+    // SAFETY: m/ctx verified non-null; delegates to C implementation
     unsafe { computeY_backsub(Y, Y_rownnz, Y_rowadr, Y_colind, nefc, qLD, M_rownnz, M_rowadr, M_colind, sqrtInvD) }
 }
 

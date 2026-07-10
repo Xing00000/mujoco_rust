@@ -694,10 +694,13 @@ pub fn mj_jac_dif_pair(m: *const mjModel, d: *const mjData, chain: *mut i32, b1:
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_jac_sum(m: *const mjModel, d: *mut mjData, chain: *mut i32, n: i32, body: *const i32, weight: *const f64, point: *const f64, jac: *mut f64, flg_rot: i32) -> i32 {
+    if m.is_null() || d.is_null() {
+        return 0;
+    }
     extern "C" {
         fn mj_jacSum(m: *const mjModel, d: *mut mjData, chain: *mut i32, n: i32, body: *const i32, weight: *const f64, point: *const f64, jac: *mut f64, flg_rot: i32) -> i32;
     }
-    // SAFETY: delegates to C implementation, all pointers valid per caller contract
+    // SAFETY: m/d verified non-null; delegates to C implementation
     unsafe { mj_jacSum(m, d, chain, n, body, weight, point, jac, flg_rot) }
 }
 

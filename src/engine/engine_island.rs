@@ -16,6 +16,9 @@ pub fn clear_island(d: *mut mjData, parena: usize) {
 /// Calls: clearIsland, mj_arenaAllocByte, mj_warning
 #[allow(unused_variables, non_snake_case)]
 pub fn arena_alloc_island(m: *const mjModel, d: *mut mjData) -> i32 {
+    if m.is_null() || d.is_null() {
+        return 0;
+    }
     // SAFETY: uses C X-macros (MJDATA_ARENA_POINTERS_ISLAND), delegating to C implementation
     extern "C" { fn arenaAllocIsland(m: *const mjModel, d: *mut mjData) -> i32; }
     unsafe { arenaAllocIsland(m, d) }
@@ -25,10 +28,13 @@ pub fn arena_alloc_island(m: *const mjModel, d: *mut mjData) -> i32 {
 /// Calls: mj_isSparse
 #[allow(unused_variables, non_snake_case)]
 pub fn tree_next(m: *const mjModel, d: *const mjData, i: i32, iter: *mut mjTreeIter) -> i32 {
+    if m.is_null() || d.is_null() || iter.is_null() {
+        return -1;
+    }
     extern "C" {
         fn treeNext(m: *const mjModel, d: *const mjData, i: i32, iter: *mut mjTreeIter) -> i32;
     }
-    // SAFETY: delegates to C implementation, all pointers valid per caller contract
+    // SAFETY: iter verified non-null; delegates to C implementation
     unsafe { treeNext(m, d, i, iter) }
 }
 
@@ -36,10 +42,13 @@ pub fn tree_next(m: *const mjModel, d: *const mjData, i: i32, iter: *mut mjTreeI
 /// Calls: mju_message
 #[allow(unused_variables, non_snake_case)]
 pub fn tree_iter_init(m: *const mjModel, d: *const mjData, i: i32, iter: *mut mjTreeIter) {
+    if m.is_null() || d.is_null() || iter.is_null() {
+        return;
+    }
     extern "C" {
         fn treeIterInit(m: *const mjModel, d: *const mjData, i: i32, iter: *mut mjTreeIter);
     }
-    // SAFETY: delegates to C implementation, all pointers valid per caller contract
+    // SAFETY: tree/iter params verified non-null; delegates to C implementation
     unsafe { treeIterInit(m, d, i, iter) }
 }
 

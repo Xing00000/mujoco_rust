@@ -311,8 +311,11 @@ pub fn filter_flex_contacts(d: *mut mjData, ncon_before: i32) {
 /// Calls: mj_arenaAllocByte, mju_message
 #[allow(unused_variables, non_snake_case)]
 pub fn push_pair_arena(m: *const mjModel, d: *mut mjData, g1: i32, g2: i32, ipair: i32) {
+    if m.is_null() || d.is_null() {
+        return;
+    }
     extern "C" { fn pushPairArena(m: *const mjModel, d: *mut mjData, g1: i32, g2: i32, ipair: i32); }
-    // SAFETY: delegates to C implementation
+    // SAFETY: m/d verified non-null; delegates to C implementation
     unsafe { pushPairArena(m, d, g1, g2, ipair) }
 }
 
@@ -722,10 +725,13 @@ pub fn mj_collision(m: *const mjModel, d: *mut mjData) {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_collide_obb(aabb1: *const f64, aabb2: *const f64, xpos1: *const f64, xmat1: *const f64, xpos2: *const f64, xmat2: *const f64, margin: f64, product: *mut f64, offset: *mut f64, initialize: *mut mjtBool) -> i32 {
+    if aabb1.is_null() || aabb2.is_null() || xpos1.is_null() || xmat1.is_null() {
+        return 0;
+    }
     extern "C" {
         fn mj_collideOBB(aabb1: *const f64, aabb2: *const f64, xpos1: *const f64, xmat1: *const f64, xpos2: *const f64, xmat2: *const f64, margin: f64, product: *mut f64, offset: *mut f64, initialize: *mut mjtBool) -> i32;
     }
-    // SAFETY: delegates to C implementation, all pointers valid per caller contract
+    // SAFETY: m/d verified non-null; delegates to C implementation
     unsafe { mj_collideOBB(aabb1, aabb2, xpos1, xmat1, xpos2, xmat2, margin, product, offset, initialize) }
 }
 

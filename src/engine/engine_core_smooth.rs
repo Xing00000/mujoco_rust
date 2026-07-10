@@ -21,8 +21,11 @@ pub fn mj_update_dynamic_bvh(m: *const mjModel, d: *mut mjData, bvhadr: i32, bvh
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mju_mul_mat_mat322(C: *mut f64, A: *const f64, B: *const f64) {
+    if C.is_null() || A.is_null() || B.is_null() {
+        return;
+    }
     extern "C" { fn mju_mulMatMat322(C: *mut f64, A: *const f64, B: *const f64); }
-    // SAFETY: delegates to C implementation
+    // SAFETY: res/mat1/mat2 verified non-null; delegates to C implementation
     unsafe { mju_mulMatMat322(C, A, B) }
 }
 

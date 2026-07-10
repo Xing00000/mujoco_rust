@@ -13,9 +13,25 @@ use crate::types::*;
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn is_smaller(vec: *const f64, weight: *const f64, n: i32, tol: f64) -> i32  {
-    extern "C" { fn isSmaller(vec: *const f64, weight: *const f64, n: i32, tol: f64) -> i32; }
-    // SAFETY: delegates to C implementation
-    unsafe { isSmaller(vec, weight, n, tol) }
+    if vec.is_null() || n <= 0 {
+        return 1;
+    }
+    // Compare weighted absolute values against tolerance
+    unsafe {
+        let mut i: i32 = 0;
+        while i < n {
+            let w = if !weight.is_null() {
+                crate::engine::engine_util_misc::mju_max(*weight.add(i as usize), 1.0)
+            } else {
+                1.0
+            };
+            if (*vec.add(i as usize)).abs() > tol * w {
+                return 0;
+            }
+            i += 1;
+        }
+    }
+    1
 }
 
 /// C: treeCanSleep (engine/engine_sleep.c:123)
@@ -35,9 +51,11 @@ pub fn tree_can_sleep(m: *const mjModel, d: *const mjData, i: i32, tol: f64) -> 
 /// C: plural (engine/engine_sleep.c:189)
 #[allow(unused_variables, non_snake_case)]
 pub fn plural(n: i32) -> *const i8  {
-    extern "C" { fn plural(n: i32) -> *const i8; }
-    // SAFETY: delegates to C implementation
-    unsafe { plural(n) }
+    if n != 1 {
+        b"s\0".as_ptr() as *const i8
+    } else {
+        b"\0".as_ptr() as *const i8
+    }
 }
 
 /// C: mj_sleepTrees (engine/engine_sleep.c:522)

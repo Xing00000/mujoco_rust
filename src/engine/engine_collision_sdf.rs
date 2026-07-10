@@ -131,8 +131,11 @@ pub fn geom_gradient(gradient: *mut f64, m: *const mjModel, d: *const mjData, p:
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn map_pose(xpos1: *const f64, xquat1: *const f64, xpos2: *const f64, xquat2: *const f64, pos12: *mut f64, mat12: *mut f64) {
+    if xpos1.is_null() || xquat1.is_null() || xpos2.is_null() || xquat2.is_null() {
+        return;
+    }
     extern "C" { fn mapPose(xpos1: *const f64, xquat1: *const f64, xpos2: *const f64, xquat2: *const f64, pos12: *mut f64, mat12: *mut f64); }
-    // SAFETY: delegates to C implementation
+    // SAFETY: pos/quat verified non-null; delegates to C implementation
     unsafe { mapPose(xpos1, xquat1, xpos2, xquat2, pos12, mat12) }
 }
 
@@ -247,8 +250,11 @@ pub fn box_intersect(bvh: *const f64, offset: *const f64, rotation: *const f64, 
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn select_fps(candidate: *const f64, dist: *const f64, ncandidate: i32, selected_indices: *mut i32, max_select: i32) -> i32  {
+    if candidate.is_null() || dist.is_null() || selected_indices.is_null() {
+        return 0;
+    }
     extern "C" { fn selectFPS(candidate: *const f64, dist: *const f64, ncandidate: i32, selected_indices: *mut i32, max_select: i32) -> i32; }
-    // SAFETY: delegates to C implementation
+    // SAFETY: sdf params verified non-null; delegates to C implementation
     unsafe { selectFPS(candidate, dist, ncandidate, selected_indices, max_select) }
 }
 
