@@ -1318,12 +1318,147 @@ pub fn mjc_line_support(res: *mut f64, obj: *mut mjCCDObj, dir: *const f64) {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjc_plane_convex(m: *const mjModel, d: *mut mjData, con: *mut mjPreContact, g1: i32, g2: i32, margin: f64) -> i32 {
-    extern "C" {
-        fn mjc_PlaneConvex(m: *const mjModel, d: *mut mjData, con: *mut mjPreContact, g1: i32, g2: i32, margin: f64) -> i32;
+    // SAFETY: m, d, con valid per caller. g1/g2 are valid geom indices.
+    // ccd_vec3_t is 24 bytes (3 × f64), allocated as [f64; 3] and cast.
+    unsafe {
+        const MAXPLANEMESH: i32 = 3;
+
+        let pos1: *const f64 = (*d).geom_xpos.add(3 * g1 as usize);
+        let mat1: *const f64 = (*d).geom_xmat.add(9 * g1 as usize);
+        let pos2: *const f64 = (*d).geom_xpos.add(3 * g2 as usize);
+        let mat2: *const f64 = (*d).geom_xmat.add(9 * g2 as usize);
+
+        let mut dif: [f64; 3] = [0.0; 3];
+        let normal: [f64; 3] = [*mat1.add(2), *mat1.add(5), *mat1.add(8)];
+
+        // init CCD object for g2
+        let mut obj: mjCCDObj = core::mem::MaybeUninit::<mjCCDObj>::zeroed().assume_init();
+        mjc_init_ccd_obj(&mut obj as *mut mjCCDObj, m, d as *const mjData, g2, 0.0);
+
+        // get support point in -normal direction
+        let mut ccd_dir: [f64; 3] = [-*mat1.add(2), -*mat1.add(5), -*mat1.add(8)];
+        let mut ccd_vec: [f64; 3] = [0.0; 3];
+        mjccd_support(
+            &obj as *const mjCCDObj as *const (),
+            ccd_dir.as_ptr() as *const ccd_vec3_t,
+            ccd_vec.as_mut_ptr() as *mut ccd_vec3_t,
+        );
+
+        // compute normal distance, return if too far
+        crate::engine::engine_inline::mji_sub3(dif.as_mut_ptr(), ccd_vec.as_ptr(), pos1);
+        (*con.add(0)).dist = crate::engine::engine_util_blas::mju_dot3(normal.as_ptr(), dif.as_ptr());
+        if (*con.add(0)).dist > margin {
+            return 0;
+        }
+
+        // fill in contact data
+        crate::engine::engine_inline::mji_copy3((*con.add(0)).pos.as_mut_ptr(), ccd_vec.as_ptr());
+        crate::engine::engine_inline::mji_add_to_scl3(
+            (*con.add(0)).pos.as_mut_ptr(), normal.as_ptr(), -0.5 * (*con.add(0)).dist,
+        );
+        crate::engine::engine_inline::mji_copy3((*con.add(0)).normal.as_mut_ptr(), normal.as_ptr());
+        crate::engine::engine_inline::mji_zero3((*con.add(0)).tangent.as_mut_ptr());
+
+        // add all/connected vertices below margin
+        let mut count: i32 = 1;
+        let g = g2;
+
+        // g is an ellipsoid: no need for further mesh-specific processing
+        if *(*m).geom_dataid.add(g as usize) == -1 {
+            return count;
+        }
+
+        // init
+        let dataid = *(*m).geom_dataid.add(g as usize) as usize;
+        let vertdata: *const f32 = (*m).mesh_vert.add(3 * *(*m).mesh_vertadr.add(dataid) as usize);
+
+        // express dir in geom local frame
+        let mut locdir: [f64; 3] = [0.0; 3];
+        crate::engine::engine_util_blas::mju_mul_mat_t_vec3(
+            locdir.as_mut_ptr(), (*d).geom_xmat.add(9 * g as usize), ccd_dir.as_ptr(),
+        );
+
+        // inclusion threshold along locdir, relative to geom2 center
+        crate::engine::engine_inline::mji_sub3(dif.as_mut_ptr(), pos2, pos1);
+        let threshold: f64 = crate::engine::engine_util_blas::mju_dot3(normal.as_ptr(), dif.as_ptr()) - margin;
+
+        // no graph data: exhaustive search
+        if *(*m).mesh_graphadr.add(dataid) < 0 {
+            let nvert = *(*m).mesh_vertnum.add(dataid);
+            let mut i: i32 = 0;
+            while i < nvert && count < MAXPLANEMESH {
+                // vdot = dot(vertex, dir)
+                let vdot: f64 = locdir[0] * *vertdata.add(3 * i as usize) as f64
+                    + locdir[1] * *vertdata.add(3 * i as usize + 1) as f64
+                    + locdir[2] * *vertdata.add(3 * i as usize + 2) as f64;
+
+                // detect contact, skip best
+                if vdot > threshold && i != obj.meshindex {
+                    let vertex: [f32; 3] = [
+                        *vertdata.add(3 * i as usize),
+                        *vertdata.add(3 * i as usize + 1),
+                        *vertdata.add(3 * i as usize + 2),
+                    ];
+                    count += addplanemesh(
+                        con.add(count as usize),
+                        vertex,
+                        pos1,
+                        normal.as_ptr(),
+                        pos2,
+                        mat2,
+                        (*con.add(0)).pos.as_ptr(),
+                        *(*m).geom_rbound.add(g2 as usize),
+                    );
+                }
+                i += 1;
+            }
+        }
+        // use graph data
+        else if obj.meshindex >= 0 {
+            // get info
+            let graphadr = *(*m).mesh_graphadr.add(dataid) as usize;
+            let numvert: i32 = *(*m).mesh_graph.add(graphadr);
+            let vert_edgeadr: *const i32 = (*m).mesh_graph.add(graphadr + 2);
+            let vert_globalid: *const i32 = (*m).mesh_graph.add(graphadr + 2 + numvert as usize);
+            let edge_localid: *const i32 = (*m).mesh_graph.add(graphadr + 2 + 2 * numvert as usize);
+
+            // look for contacts in ibest neighborhood
+            let mut i: i32 = *vert_edgeadr.add(obj.meshindex as usize);
+            let mut locid: i32 = *edge_localid.add(i as usize);
+            while locid >= 0 && count < MAXPLANEMESH {
+                // vdot = dot(vertex, dir)
+                let gid = *vert_globalid.add(locid as usize) as usize;
+                let vdot: f64 = locdir[0] * *vertdata.add(3 * gid) as f64
+                    + locdir[1] * *vertdata.add(3 * gid + 1) as f64
+                    + locdir[2] * *vertdata.add(3 * gid + 2) as f64;
+
+                // detect contact
+                if vdot > threshold {
+                    let vertex: [f32; 3] = [
+                        *vertdata.add(3 * gid),
+                        *vertdata.add(3 * gid + 1),
+                        *vertdata.add(3 * gid + 2),
+                    ];
+                    count += addplanemesh(
+                        con.add(count as usize),
+                        vertex,
+                        pos1,
+                        normal.as_ptr(),
+                        pos2,
+                        mat2,
+                        (*con.add(0)).pos.as_ptr(),
+                        *(*m).geom_rbound.add(g2 as usize),
+                    );
+                }
+
+                // advance to next edge
+                i += 1;
+                locid = *edge_localid.add(i as usize);
+            }
+        }
+
+        count
     }
-    // SAFETY: delegates to original C function; uses CCD types (ccd_vec3_t with opaque ccd_real_t)
-    // that cannot be manipulated in Rust. All pointers valid per caller contract.
-    unsafe { mjc_PlaneConvex(m, d, con, g1, g2, margin) }
 }
 
 /// C: mjc_ConvexHField (engine/engine_collision_convex.h:113)
