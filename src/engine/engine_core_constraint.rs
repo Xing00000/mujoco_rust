@@ -114,11 +114,14 @@ pub fn mj_equality_anchors(m: *const mjModel, d: *const mjData, eq_id: i32, pos1
 /// Calls: mj_isSparse
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_add_constraint_count(m: *const mjModel, size: i32, NV: i32) -> i32 {
-    extern "C" {
-        fn mj_addConstraintCount(m: *const mjModel, size: i32, NV: i32) -> i32;
+    // SAFETY: m is valid per caller contract.
+    unsafe {
+        // over count for dense allocation
+        if crate::engine::engine_core_util::mj_is_sparse(m) == 0 {
+            return if (*m).nv != 0 { size } else { 0 };
+        }
+        if NV > 0 { size } else { 0 }
     }
-    // SAFETY: delegates to C implementation, all pointers valid per caller contract
-    unsafe { mj_addConstraintCount(m, size, NV) }
 }
 
 /// C: mj_instantiateFriction (engine/engine_core_constraint.c:1270)

@@ -249,9 +249,33 @@ pub fn mjd_com_vel_vel_dense(m: *const mjModel, d: *mut mjData, Dcvel: *mut f64,
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn copy_from_parent(m: *const mjModel, d: *mut mjData, mat: *mut f64, n: i32) {
-    extern "C" { fn copyFromParent(m: *const mjModel, d: *mut mjData, mat: *mut f64, n: i32); }
-    // SAFETY: delegates to C implementation, all pointers valid per caller contract
-    unsafe { copyFromParent(m, d, mat, n) }
+    // SAFETY: m, mat valid per caller contract. n is a valid body index.
+    // B_rowadr, B_rownnz, body_weldid, body_parentid, body_dofnum arrays are valid.
+    unsafe {
+        // return if this is world or parent is world
+        if n == 0 || *(*m).body_weldid.add(*(*m).body_parentid.add(n as usize) as usize) == 0 {
+            return;
+        }
+
+        // count dofs in ancestors
+        let mut ndof: i32 = 0;
+        let mut np = *(*m).body_weldid.add(*(*m).body_parentid.add(n as usize) as usize);
+        while np > 0 {
+            // add self dofs
+            ndof += *(*m).body_dofnum.add(np as usize);
+            // advance to parent
+            np = *(*m).body_weldid.add(*(*m).body_parentid.add(np as usize) as usize);
+        }
+
+        // copy: guaranteed to be at beginning of sparse array, due to sorting
+        let src_adr = *(*m).B_rowadr.add(*(*m).body_parentid.add(n as usize) as usize);
+        let dst_adr = *(*m).B_rowadr.add(n as usize);
+        crate::engine::engine_util_blas::mju_copy(
+            mat.add(6 * dst_adr as usize),
+            mat.add(6 * src_adr as usize),
+            6 * ndof,
+        );
+    }
 }
 
 /// C: addToParent (engine/engine_derivative.c:491)
@@ -263,9 +287,44 @@ pub fn copy_from_parent(m: *const mjModel, d: *mut mjData, mat: *mut f64, n: i32
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn add_to_parent(m: *const mjModel, d: *mut mjData, mat: *mut f64, n: i32) {
-    extern "C" { fn addToParent(m: *const mjModel, d: *mut mjData, mat: *mut f64, n: i32); }
-    // SAFETY: delegates to C implementation, all pointers valid per caller contract
-    unsafe { addToParent(m, d, mat, n) }
+    // SAFETY: m, mat valid per caller contract. n is a valid body index.
+    // B_rowadr, B_rownnz, B_colind, body_weldid, body_parentid arrays are valid.
+    unsafe {
+        // return if this is world or parent is world
+        if n == 0 || *(*m).body_weldid.add(*(*m).body_parentid.add(n as usize) as usize) == 0 {
+            return;
+        }
+
+        // find matching nonzeros
+        let np = *(*m).body_parentid.add(n as usize);
+        let mut i: i32 = 0;
+        let mut ip: i32 = 0;
+        while i < *(*m).B_rownnz.add(n as usize) && ip < *(*m).B_rownnz.add(np as usize) {
+            let col_n = *(*m).B_colind.add((*(*m).B_rowadr.add(n as usize) + i) as usize);
+            let col_np = *(*m).B_colind.add((*(*m).B_rowadr.add(np as usize) + ip) as usize);
+
+            // columns match
+            if col_n == col_np {
+                crate::engine::engine_util_blas::mju_add_to(
+                    mat.add(6 * (*(*m).B_rowadr.add(np as usize) + ip) as usize),
+                    mat.add(6 * (*(*m).B_rowadr.add(n as usize) + i) as usize),
+                    6,
+                );
+                i += 1;
+                ip += 1;
+            }
+            // mismatch columns: advance parent
+            else if col_n > col_np {
+                ip += 1;
+            }
+            // child nonzeroes must be subset of parent; SHOULD NOT OCCUR
+            else {
+                crate::engine::engine_util_errmem::mju_error(
+                    b"child nonzeroes must be subset of parent\0".as_ptr() as *const i8,
+                );
+            }
+        }
+    }
 }
 
 /// C: mjd_comVel_vel (engine/engine_derivative.c:524)

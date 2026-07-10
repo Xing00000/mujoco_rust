@@ -151,33 +151,91 @@ pub fn print_vector(str: *const i8, data: *const f64, n: i32, fp: *mut i32, floa
 /// C: memorySize (engine/engine_print.c:395)
 #[allow(unused_variables, non_snake_case)]
 pub fn memory_size(nbytes: usize) -> *const i8 {
-    extern "C" { fn memorySize(nbytes: usize) -> *const i8; }
-    // SAFETY: delegates to C implementation (returns pointer to thread-local static)
-    unsafe { memorySize(nbytes) }
+    extern "C" {
+        fn snprintf(s: *mut i8, n: usize, format: *const i8, ...) -> i32;
+    }
+    // SAFETY: Uses a static buffer (mirrors C thread-local static).
+    // snprintf is standard C library. The returned pointer is valid until next call.
+    static mut MESSAGE: [i8; 32] = [0; 32];
+    unsafe {
+        let k: usize = 1024;
+        if nbytes < k {
+            snprintf(
+                MESSAGE.as_mut_ptr(), 32,
+                b"%5zu bytes\0".as_ptr() as *const i8,
+                nbytes,
+            );
+        } else {
+            snprintf(
+                MESSAGE.as_mut_ptr(), 32,
+                b"%7.0f KB\0".as_ptr() as *const i8,
+                nbytes as f64 / k as f64,
+            );
+        }
+        MESSAGE.as_ptr()
+    }
 }
 
 /// C: sizeMesh (engine/engine_print.c:410)
 #[allow(unused_variables, non_snake_case)]
 pub fn size_mesh(m: *const mjModel) -> usize {
-    extern "C" { fn sizeMesh(m: *const mjModel) -> usize; }
-    // SAFETY: delegates to C implementation
-    unsafe { sizeMesh(m) }
+    // SAFETY: m is a valid mjModel pointer with all size fields valid.
+    unsafe {
+        let mut nbytes: usize = 0;
+        nbytes += 4 * 3 * (*m).nmeshvert;       // mesh_vert (float*3)
+        nbytes += 4 * 3 * (*m).nmeshnormal;     // mesh_normal (float*3)
+        nbytes += 4 * 2 * (*m).nmeshtexcoord;   // mesh_texcoord (float*2)
+        nbytes += 4 * 3 * (*m).nmeshface;       // mesh_face (int*3)
+        nbytes += 4 * 3 * (*m).nmeshface;       // mesh_facenormal (int*3)
+        nbytes += 4 * 3 * (*m).nmeshface;       // mesh_facetexcoord (int*3)
+        nbytes += 4 * (*m).nmeshgraph;          // mesh_graph (int)
+        nbytes += 8 * 3 * (*m).nmeshpoly;       // mesh_polynormal (mjtNum*3)
+        nbytes += 4 * (*m).nmeshpoly;           // mesh_polyvertadr (int)
+        nbytes += 4 * (*m).nmeshpoly;           // mesh_polyvertnum (int)
+        nbytes += 4 * (*m).nmeshpolyvert;       // mesh_polyvert (int)
+        nbytes += 4 * (*m).nmeshvert;           // mesh_polymapadr (int)
+        nbytes += 4 * (*m).nmeshvert;           // mesh_polymapnum (int)
+        nbytes += 4 * (*m).nmeshpolymap;        // mesh_polymap (int)
+        nbytes
+    }
 }
 
 /// C: sizeSkin (engine/engine_print.c:431)
 #[allow(unused_variables, non_snake_case)]
 pub fn size_skin(m: *const mjModel) -> usize {
-    extern "C" { fn sizeSkin(m: *const mjModel) -> usize; }
-    // SAFETY: delegates to C implementation
-    unsafe { sizeSkin(m) }
+    // SAFETY: m is a valid mjModel pointer with all size fields valid.
+    unsafe {
+        let mut nbytes: usize = 0;
+        nbytes += 4 * 3 * (*m).nskinvert;       // skin_vert (float*3)
+        nbytes += 4 * 2 * (*m).nskintexvert;    // skin_texcoord (float*2)
+        nbytes += 4 * 3 * (*m).nskinface;       // skin_face (int*3)
+        nbytes += 4 * (*m).nskinbone;           // skin_bonevertadr (int)
+        nbytes += 4 * (*m).nskinbone;           // skin_bonevertnum (int)
+        nbytes += 4 * 3 * (*m).nskinbone;       // skin_bonebindpos (float*3)
+        nbytes += 4 * 4 * (*m).nskinbone;       // skin_bonebindquat (float*4)
+        nbytes += 4 * (*m).nskinbone;           // skin_bonebodyid (int)
+        nbytes += 4 * (*m).nskinbonevert;       // skin_bonevertid (int)
+        nbytes += 4 * (*m).nskinbonevert;       // skin_bonevertweight (float)
+        nbytes
+    }
 }
 
 /// C: sizeBVH (engine/engine_print.c:448)
 #[allow(unused_variables, non_snake_case)]
 pub fn size_bvh(m: *const mjModel) -> usize {
-    extern "C" { fn sizeBVH(m: *const mjModel) -> usize; }
-    // SAFETY: delegates to C implementation
-    unsafe { sizeBVH(m) }
+    // SAFETY: m is a valid mjModel pointer with all size fields valid.
+    unsafe {
+        let mut nbytes: usize = 0;
+        nbytes += 4 * (*m).nbvh;                // bvh_depth (int)
+        nbytes += 4 * 2 * (*m).nbvh;            // bvh_child (int*2)
+        nbytes += 4 * (*m).nbvh;                // bvh_nodeid (int)
+        nbytes += 8 * 6 * (*m).nbvhstatic;      // bvh_aabb (mjtNum*6)
+        nbytes += 4 * (*m).noct;                // oct_depth (int)
+        nbytes += 4 * 8 * (*m).noct;            // oct_child (int*8)
+        nbytes += 8 * 6 * (*m).noct;            // oct_aabb (mjtNum*6)
+        nbytes += 8 * 8 * (*m).noct;            // oct_coeff (mjtNum*8)
+        nbytes
+    }
 }
 
 /// C: validateFloatFormat (engine/engine_print.c:463)

@@ -245,9 +245,14 @@ pub fn midpoint_eligible(m: *const mjModel, d: *const mjData, jnt: i32) -> i32 {
 /// C: midpoint_aligned (engine/engine_forward.c:1493)
 #[allow(unused_variables, non_snake_case)]
 pub fn midpoint_aligned(m: *const mjModel, jnt: i32) -> i32 {
-    extern "C" { fn midpoint_aligned(m: *const mjModel, jnt: i32) -> i32; }
-    // SAFETY: delegates to C implementation, all pointers valid per caller contract
-    unsafe { midpoint_aligned(m, jnt) }
+    // SAFETY: m is a valid mjModel pointer, jnt is a valid joint index.
+    // jnt_bodyid and body_ipos are valid arrays per caller contract.
+    unsafe {
+        let body = *(*m).jnt_bodyid.add(jnt as usize);
+        ((*(*m).body_ipos.add(3 * body as usize) == 0.0) &&
+         (*(*m).body_ipos.add(3 * body as usize + 1) == 0.0) &&
+         (*(*m).body_ipos.add(3 * body as usize + 2) == 0.0)) as i32
+    }
 }
 
 /// C: midpointNewton (engine/engine_forward.c:1515)

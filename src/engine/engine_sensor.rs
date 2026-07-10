@@ -66,11 +66,44 @@ pub fn tactile_task(m: *const mjModel, d: *mut mjData, arg: *mut (), thread_id: 
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn apply_cutoff(m: *const mjModel, i: i32, data: *mut f64) {
-    extern "C" {
-        fn apply_cutoff(m: *const mjModel, i: i32, data: *mut f64);
+    // SAFETY: m valid per caller contract. sensor_cutoff, sensor_type,
+    // sensor_dim, sensor_datatype are valid arrays indexed by i.
+    // data points to valid array of at least sensor_dim[i] elements.
+    unsafe {
+        const MJSENS_CONTACT: i32 = 42;
+        const MJSENS_GEOMFROMTO: i32 = 41;
+        const MJDATATYPE_REAL: i32 = 0;
+        const MJDATATYPE_POSITIVE: i32 = 1;
+
+        let cutoff = *(*m).sensor_cutoff.add(i as usize);
+        if cutoff <= 0.0 {
+            return;
+        }
+
+        // cutoff ignored for contact and fromto sensors
+        let sensor_type = *(*m).sensor_type.add(i as usize);
+        if sensor_type == MJSENS_CONTACT || sensor_type == MJSENS_GEOMFROMTO {
+            return;
+        }
+
+        let dim = *(*m).sensor_dim.add(i as usize);
+        let datatype = *(*m).sensor_datatype.add(i as usize);
+
+        let mut j: i32 = 0;
+        while j < dim {
+            // real: apply on both sides
+            if datatype == MJDATATYPE_REAL {
+                *data.add(j as usize) = crate::engine::engine_util_misc::mju_clip(
+                    *data.add(j as usize), -cutoff, cutoff);
+            }
+            // positive: apply on positive side only
+            else if datatype == MJDATATYPE_POSITIVE {
+                *data.add(j as usize) = crate::engine::engine_util_misc::mju_min(
+                    cutoff, *data.add(j as usize));
+            }
+            j += 1;
+        }
     }
-    // SAFETY: delegates to C implementation, all pointers valid per caller contract
-    unsafe { apply_cutoff(m, i, data) }
 }
 
 /// C: get_xpos_xmat (engine/engine_sensor.c:227)
@@ -198,11 +231,80 @@ pub fn total_wrench(force: *mut f64, torque: *mut f64, point: *const f64, n: i32
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn fill_raydata(ptr: *mut f64, dataspec: i32, dist: f64, origin: *const f64, direction: *const f64, normal: *const f64, cam_xpos: *const f64, cam_z: *const f64) -> *mut f64 {
-    extern "C" {
-        fn fill_raydata(ptr: *mut f64, dataspec: i32, dist: f64, origin: *const f64, direction: *const f64, normal: *const f64, cam_xpos: *const f64, cam_z: *const f64) -> *mut f64;
+    // SAFETY: ptr points to adequate buffer. origin/direction/normal are 3-element arrays.
+    // cam_xpos/cam_z are 3-element arrays (or null).
+    unsafe {
+        const MJRAYDATA_DIST: i32 = 0;
+        const MJRAYDATA_DIR: i32 = 1;
+        const MJRAYDATA_ORIGIN: i32 = 2;
+        const MJRAYDATA_POINT: i32 = 3;
+        const MJRAYDATA_NORMAL: i32 = 4;
+        const MJRAYDATA_DEPTH: i32 = 5;
+
+        let mut p = ptr;
+        let hit = dist >= 0.0;
+
+        if dataspec & (1 << MJRAYDATA_DIST) != 0 {
+            *p = dist;
+            p = p.add(1);
+        }
+        if dataspec & (1 << MJRAYDATA_DIR) != 0 {
+            if hit {
+                crate::engine::engine_util_blas::mju_copy3(p, direction);
+            } else {
+                crate::engine::engine_util_blas::mju_zero3(p);
+            }
+            p = p.add(3);
+        }
+        if dataspec & (1 << MJRAYDATA_ORIGIN) != 0 {
+            crate::engine::engine_util_blas::mju_copy3(p, origin);
+            p = p.add(3);
+        }
+
+        // compute point if needed for POINT or DEPTH fields
+        let mut point: [f64; 3] = [0.0, 0.0, 0.0];
+        if (dataspec & (1 << MJRAYDATA_POINT) != 0) || (dataspec & (1 << MJRAYDATA_DEPTH) != 0) {
+            if hit {
+                crate::engine::engine_util_blas::mju_add_scl3(
+                    point.as_mut_ptr(), origin, direction, dist);
+            }
+        }
+
+        if dataspec & (1 << MJRAYDATA_POINT) != 0 {
+            crate::engine::engine_util_blas::mju_copy3(p, point.as_ptr());
+            p = p.add(3);
+        }
+        if dataspec & (1 << MJRAYDATA_NORMAL) != 0 {
+            if hit {
+                crate::engine::engine_util_blas::mju_copy3(p, normal);
+            } else {
+                crate::engine::engine_util_blas::mju_zero3(p);
+            }
+            p = p.add(3);
+        }
+        if dataspec & (1 << MJRAYDATA_DEPTH) != 0 {
+            if hit {
+                if !cam_z.is_null() {
+                    // camera depth: project onto camera z-axis
+                    let mut delta: [f64; 3] = [0.0; 3];
+                    crate::engine::engine_util_blas::mju_sub3(
+                        delta.as_mut_ptr(), point.as_ptr(), cam_xpos);
+                    *p = -crate::engine::engine_util_blas::mju_dot3(
+                        delta.as_ptr(), cam_z);
+                    p = p.add(1);
+                } else {
+                    // site sensor: depth = dist
+                    *p = dist;
+                    p = p.add(1);
+                }
+            } else {
+                *p = -1.0;
+                p = p.add(1);
+            }
+        }
+
+        p
     }
-    // SAFETY: delegates to C implementation, all pointers valid per caller contract
-    unsafe { fill_raydata(ptr, dataspec, dist, origin, direction, normal, cam_xpos, cam_z) }
 }
 
 /// C: mj_computeSensorPos (engine/engine_sensor.c:525)

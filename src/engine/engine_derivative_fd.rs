@@ -44,9 +44,19 @@ pub fn diff(dx: *mut f64, x1: *const f64, x2: *const f64, h: f64, n: i32) {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn state_diff(m: *const mjModel, ds: *mut f64, s1: *const f64, s2: *const f64, h: f64) {
-    extern "C" { fn stateDiff(m: *const mjModel, ds: *mut f64, s1: *const f64, s2: *const f64, h: f64); }
-    // SAFETY: delegates to C implementation
-    unsafe { stateDiff(m, ds, s1, s2, h) }
+    // SAFETY: m valid, ds/s1/s2 point to arrays of at least nq+nv+na elements.
+    unsafe {
+        let nq = (*m).nq as i32;
+        let nv = (*m).nv as i32;
+        let na = (*m).na as i32;
+
+        if nq == nv {
+            diff(ds, s1, s2, h, nq + nv + na);
+        } else {
+            crate::engine::engine_support::mj_differentiate_pos(m, ds, h, s1, s2);
+            diff(ds.add(nv as usize), s1.add(nq as usize), s2.add(nq as usize), h, nv + na);
+        }
+    }
 }
 
 /// C: clampedDiff (engine/engine_derivative_fd.c:68)
@@ -84,9 +94,22 @@ pub fn clamped_diff(dx: *mut f64, x: *const f64, x_plus: *const f64, x_minus: *c
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn clamped_state_diff(m: *const mjModel, ds: *mut f64, s: *const f64, s_plus: *const f64, s_minus: *const f64, h: f64) {
-    extern "C" { fn clampedStateDiff(m: *const mjModel, ds: *mut f64, s: *const f64, s_plus: *const f64, s_minus: *const f64, h: f64); }
-    // SAFETY: delegates to C implementation
-    unsafe { clampedStateDiff(m, ds, s, s_plus, s_minus, h) }
+    // SAFETY: m valid, ds/s/s_plus/s_minus are valid arrays (or null for s_plus/s_minus).
+    unsafe {
+        if !s_plus.is_null() && s_minus.is_null() {
+            // forward differencing
+            state_diff(m, ds, s, s_plus, h);
+        } else if s_plus.is_null() && !s_minus.is_null() {
+            // backward differencing
+            state_diff(m, ds, s_minus, s, h);
+        } else if !s_plus.is_null() && !s_minus.is_null() {
+            // centered differencing
+            state_diff(m, ds, s_minus, s_plus, 2.0 * h);
+        } else {
+            // differencing failed, write zeros
+            crate::engine::engine_util_blas::mju_zero(ds, 2 * (*m).nv as i32 + (*m).na as i32);
+        }
+    }
 }
 
 /// C: inRange (engine/engine_derivative_fd.c:106)
