@@ -55,22 +55,249 @@ pub fn mj_flex_passive_bend_interp(m: *const mjModel, d: *mut mjData, f: i32, en
 /// Calls: mji_cross, mji_sub3
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_flex_passive_bend(m: *const mjModel, d: *mut mjData, f: i32, enbl_spring: i32, enbl_damper: i32) {
-    extern "C" {
-        fn mj_flexPassiveBend(m: *const mjModel, d: *mut mjData, f: i32, enbl_spring: i32, enbl_damper: i32);
+    // SAFETY: m, d valid per caller. All pointer arithmetic within allocated model/data arrays.
+    unsafe {
+        if *(*m).flex_dim.add(f as usize) != 2 {
+            return;
+        }
+
+        let bendingadr: i32 = *(*m).flex_bendingadr.add(f as usize);
+        if bendingadr < 0 {
+            return;
+        }
+
+        let edgenum: i32 = *(*m).flex_edgenum.add(f as usize);
+        let xpos: *mut f64 = (*d).flexvert_xpos.add(3 * *(*m).flex_vertadr.add(f as usize) as usize);
+        let bodyid: *const i32 = (*m).flex_vertbodyid.add(*(*m).flex_vertadr.add(f as usize) as usize);
+        let b: *const f64 = (*m).flex_bending.add(bendingadr as usize);
+
+        let mut e: i32 = 0;
+        while e < edgenum {
+            let edge: *const i32 = (*m).flex_edge.add(2 * (e + *(*m).flex_edgeadr.add(f as usize)) as usize);
+            let flap: *const i32 = (*m).flex_edgeflap.add(2 * (e + *(*m).flex_edgeadr.add(f as usize)) as usize);
+            let v: [i32; 4] = [*edge.add(0), *edge.add(1), *flap.add(0), *flap.add(1)];
+            if v[3] == -1 {
+                // skip boundary edges
+                e += 1;
+                continue;
+            }
+
+            // flap edges
+            let mut ed: [[f64; 3]; 3] = [[0.0; 3]; 3];
+            crate::engine::engine_inline::mji_sub3(ed[0].as_mut_ptr(), xpos.add(3 * v[1] as usize), xpos.add(3 * v[0] as usize));
+            crate::engine::engine_inline::mji_sub3(ed[1].as_mut_ptr(), xpos.add(3 * v[2] as usize), xpos.add(3 * v[0] as usize));
+            crate::engine::engine_inline::mji_sub3(ed[2].as_mut_ptr(), xpos.add(3 * v[3] as usize), xpos.add(3 * v[0] as usize));
+
+            // forces at the vertices due to curved reference
+            let mut frc: [[f64; 3]; 4] = [[0.0; 3]; 4];
+            crate::engine::engine_inline::mji_cross(frc[1].as_mut_ptr(), ed[1].as_ptr(), ed[2].as_ptr());
+            crate::engine::engine_inline::mji_cross(frc[2].as_mut_ptr(), ed[2].as_ptr(), ed[0].as_ptr());
+            crate::engine::engine_inline::mji_cross(frc[3].as_mut_ptr(), ed[0].as_ptr(), ed[1].as_ptr());
+            frc[0][0] = -(frc[1][0] + frc[2][0] + frc[3][0]);
+            frc[0][1] = -(frc[1][1] + frc[2][1] + frc[3][1]);
+            frc[0][2] = -(frc[1][2] + frc[2][2] + frc[3][2]);
+
+            // velocities
+            let mut vel: [*mut f64; 4] = [core::ptr::null_mut(); 4];
+            let mut i: i32 = 0;
+            while i < 4 {
+                vel[i as usize] = (*d).qvel.add(*(*m).body_dofadr.add(*bodyid.add(v[i as usize] as usize) as usize) as usize);
+                i += 1;
+            }
+
+            // force
+            let mut spring: [f64; 12] = [0.0; 12];
+            let mut damper: [f64; 12] = [0.0; 12];
+            let mut i: i32 = 0;
+            while i < 4 {
+                let mut x: i32 = 0;
+                while x < 3 {
+                    let mut j: i32 = 0;
+                    while j < 4 {
+                        // thin plate bending force
+                        if enbl_spring != 0 {
+                            spring[(3 * i + x) as usize] += *b.add((17 * e + 4 * i + j) as usize) * *xpos.add((3 * v[j as usize] + x) as usize);
+                        }
+
+                        // thin plate damping force
+                        if enbl_damper != 0 {
+                            damper[(3 * i + x) as usize] += *b.add((17 * e + 4 * i + j) as usize) * *vel[j as usize].add(x as usize);
+                        }
+                        j += 1;
+                    }
+
+                    // curved reference contribution
+                    if enbl_spring != 0 {
+                        spring[(3 * i + x) as usize] += *b.add((17 * e + 16) as usize) * frc[i as usize][x as usize];
+                    }
+                    x += 1;
+                }
+                i += 1;
+            }
+
+            // insert into global force
+            let mut i: i32 = 0;
+            while i < 4 {
+                let bid: i32 = *bodyid.add(v[i as usize] as usize);
+                let body_dofnum: i32 = *(*m).body_dofnum.add(bid as usize);
+                let body_dofadr: i32 = *(*m).body_dofadr.add(bid as usize);
+                let mut x: i32 = 0;
+                while x < body_dofnum {
+                    if enbl_spring != 0 {
+                        *(*d).qfrc_spring.add((body_dofadr + x) as usize) -= spring[(3 * i + x) as usize];
+                    }
+                    if enbl_damper != 0 {
+                        *(*d).qfrc_damper.add((body_dofadr + x) as usize) -= damper[(3 * i + x) as usize] * *(*m).flex_damping.add(f as usize);
+                    }
+                    x += 1;
+                }
+                i += 1;
+            }
+
+            e += 1;
+        }
     }
-    // SAFETY: delegates to C implementation, all pointers valid per caller contract
-    unsafe { mj_flexPassiveBend(m, d, f, enbl_spring, enbl_damper) }
 }
 
 /// C: mj_flexPassiveStretch (engine/engine_passive.c:524)
 /// Calls: GradSquaredLengths, mj_applyFT, mj_freeStack, mj_markStack, mj_stackAllocInfo, mju_zero
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_flex_passive_stretch(m: *const mjModel, d: *mut mjData, f: i32, enbl_spring: i32, enbl_damper: i32) {
-    extern "C" {
-        fn mj_flexPassiveStretch(m: *const mjModel, d: *mut mjData, f: i32, enbl_spring: i32, enbl_damper: i32);
+    // edges[dim-2]: for dim=2 (tri) → edges[0], for dim=3 (tet) → edges[1]
+    // C layout: int edges[2][6][2], accessed via pointer as edge_ptr[e*2+{0,1}]
+    // Rust signature expects [[i32; 6]; 2], but data is accessed as raw pointer
+    // Flat memory for dim=2: [1,2, 2,0, 0,1, 0,0, 0,0, 0,0]
+    // Flat memory for dim=3: [0,1, 1,2, 2,0, 2,3, 0,3, 1,3]
+    const EDGES: [[[i32; 6]; 2]; 2] = [
+        [[1, 2, 2, 0, 0, 1], [0, 0, 0, 0, 0, 0]],
+        [[0, 1, 1, 2, 2, 0], [2, 3, 0, 3, 1, 3]],
+    ];
+
+    // SAFETY: m, d valid per caller. All pointer arithmetic within allocated model/data arrays.
+    unsafe {
+        let stiffnessadr: i32 = *(*m).flex_stiffnessadr.add(f as usize);
+        if stiffnessadr < 0 {
+            return;
+        }
+        let k: *const f64 = (*m).flex_stiffness.add(stiffnessadr as usize);
+        if *k.add(0) == 0.0 {
+            return;
+        }
+
+        let dim: i32 = *(*m).flex_dim.add(f as usize);
+        let nedge: i32 = if dim == 2 { 3 } else { 6 };
+        let nvert: i32 = if dim == 2 { 3 } else { 4 };
+        let elem: *const i32 = (*m).flex_elem.add(*(*m).flex_elemdataadr.add(f as usize) as usize);
+        let edgeelem: *const i32 = (*m).flex_elemedge.add(*(*m).flex_elemedgeadr.add(f as usize) as usize);
+        let xpos: *const f64 = (*d).flexvert_xpos.add(3 * *(*m).flex_vertadr.add(f as usize) as usize);
+        let vel: *const f64 = (*d).flexedge_velocity.add(*(*m).flex_edgeadr.add(f as usize) as usize);
+        let deformed: *const f64 = (*d).flexedge_length.add(*(*m).flex_edgeadr.add(f as usize) as usize);
+        let reference: *const f64 = (*m).flexedge_length0.add(*(*m).flex_edgeadr.add(f as usize) as usize);
+        let bodyid: *const i32 = (*m).flex_vertbodyid.add(*(*m).flex_vertadr.add(f as usize) as usize);
+        let kD: f64 = if (*m).opt.timestep > 0.0 { *(*m).flex_damping.add(f as usize) / (*m).opt.timestep } else { 0.0 };
+
+        crate::engine::engine_memory::mj_mark_stack(d);
+        let qfrc: *mut f64 = crate::engine::engine_memory::mj_stack_alloc_num(d, 3 * *(*m).flex_vertnum.add(f as usize) as usize);
+        crate::engine::engine_util_blas::mju_zero(qfrc, 3 * *(*m).flex_vertnum.add(f as usize));
+
+        // compute force element-by-element
+        let elemnum: i32 = *(*m).flex_elemnum.add(f as usize);
+        let mut t: i32 = 0;
+        while t < elemnum {
+            let vert: *const i32 = elem.add(((dim + 1) * t) as usize);
+
+            // compute length gradient with respect to dofs
+            let mut gradient: [[[f64; 6]; 2]; 3] = [[[0.0; 6]; 2]; 3];
+            let vert_arr: [i32; 4] = [*vert.add(0), *vert.add(1), *vert.add(2), if nvert > 3 { *vert.add(3) } else { 0 }];
+            crate::engine::engine_passive::grad_squared_lengths(gradient, xpos, vert_arr, EDGES[(dim - 2) as usize], nedge);
+            let grad_ptr: *const f64 = &gradient as *const _ as *const f64;
+
+            // extract elongation of edges belonging to this element
+            let mut elongation: [f64; 6] = [0.0; 6];
+            let mut e: i32 = 0;
+            while e < nedge {
+                let idx: i32 = *edgeelem.add((t * nedge + e) as usize);
+                let previous: f64 = *deformed.add(idx as usize) - *vel.add(idx as usize) * (*m).opt.timestep;
+                elongation[e as usize] = *deformed.add(idx as usize) * *deformed.add(idx as usize)
+                    - *reference.add(idx as usize) * *reference.add(idx as usize)
+                    + (*deformed.add(idx as usize) * *deformed.add(idx as usize) - previous * previous) * kD;
+                e += 1;
+            }
+
+            // unpack triangular representation
+            let mut metric: [f64; 36] = [0.0; 36];
+            let mut id: i32 = 0;
+            let mut ed1: i32 = 0;
+            while ed1 < nedge {
+                let mut ed2: i32 = ed1;
+                while ed2 < nedge {
+                    metric[(nedge * ed1 + ed2) as usize] = *k.add((21 * t + id) as usize);
+                    metric[(nedge * ed2 + ed1) as usize] = *k.add((21 * t + id) as usize);
+                    id += 1;
+                    ed2 += 1;
+                }
+                ed1 += 1;
+            }
+
+            // compute local force
+            let mut force: [f64; 12] = [0.0; 12];
+            let mut ed1: i32 = 0;
+            while ed1 < nedge {
+                let mut ed2: i32 = 0;
+                while ed2 < nedge {
+                    let mut i: i32 = 0;
+                    while i < 2 {
+                        let mut x: i32 = 0;
+                        while x < 3 {
+                            // C access: gradient[ed2][i][x] at offset ed2*6 + i*3 + x
+                            let edge_vert: i32 = *(&EDGES[(dim - 2) as usize] as *const _ as *const i32).add((ed2 * 2 + i) as usize);
+                            force[(3 * edge_vert + x) as usize] -=
+                                elongation[ed1 as usize] * *grad_ptr.add((ed2 * 6 + i * 3 + x) as usize)
+                                * metric[(nedge * ed1 + ed2) as usize];
+                            x += 1;
+                        }
+                        i += 1;
+                    }
+                    ed2 += 1;
+                }
+                ed1 += 1;
+            }
+
+            // insert into global force
+            let mut i: i32 = 0;
+            while i < nvert {
+                let mut x: i32 = 0;
+                while x < 3 {
+                    *qfrc.add((3 * *vert.add(i as usize) + x) as usize) += force[(3 * i + x) as usize];
+                    x += 1;
+                }
+                i += 1;
+            }
+
+            t += 1;
+        }
+
+        // insert force into qfrc_passive
+        let mut v: i32 = 0;
+        while v < *(*m).flex_vertnum.add(f as usize) {
+            let bid: i32 = *bodyid.add(v as usize);
+            if *(*m).body_simple.add(bid as usize) != 2 {
+                // this should only occur for pinned flex vertices
+                crate::engine::engine_support::mj_apply_ft(m, d, qfrc.add(3 * v as usize), core::ptr::null(), xpos.add(3 * v as usize), bid, (*d).qfrc_spring);
+            } else {
+                let body_dofnum: i32 = *(*m).body_dofnum.add(bid as usize);
+                let body_dofadr: i32 = *(*m).body_dofadr.add(bid as usize);
+                let mut x: i32 = 0;
+                while x < body_dofnum {
+                    *(*d).qfrc_spring.add((body_dofadr + x) as usize) += *qfrc.add((3 * v + x) as usize);
+                    x += 1;
+                }
+            }
+            v += 1;
+        }
+
+        crate::engine::engine_memory::mj_free_stack(d);
     }
-    // SAFETY: delegates to C implementation, all pointers valid per caller contract
-    unsafe { mj_flexPassiveStretch(m, d, f, enbl_spring, enbl_damper) }
 }
 
 /// C: mj_springdamper (engine/engine_passive.c:626)

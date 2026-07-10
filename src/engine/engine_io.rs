@@ -287,9 +287,12 @@ pub fn mj_load_model_buffer(buffer: *const (), buffer_sz: i32) -> *mut mjModel {
 /// Calls: freeModelBuffers, mju_free
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_delete_model(m: *mut mjModel) {
-    extern "C" { fn mj_deleteModel(m: *mut mjModel); }
-    // SAFETY: delegates to C implementation, all pointers valid per caller contract
-    unsafe { mj_deleteModel(m) }
+    // SAFETY: m may be null (early return). Otherwise valid per caller.
+    if m.is_null() {
+        return;
+    }
+    crate::engine::engine_io::free_model_buffers(m);
+    crate::engine::engine_util_errmem::mju_free(m as *mut ());
 }
 
 /// C: mj_sizeModel (engine/engine_io.h:84)
@@ -580,45 +583,54 @@ pub fn mj_make_raw_data(dest: *mut *mut mjData, m: *const mjModel) {
 /// Calls: mj_copyDataVisual
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_copy_data(dest: *mut mjData, m: *const mjModel, src: *const mjData) -> *mut mjData {
-    extern "C" { fn mj_copyData(dest: *mut mjData, m: *const mjModel, src: *const mjData) -> *mut mjData; }
-    // SAFETY: delegates to C implementation
-    unsafe { mj_copyData(dest, m, src) }
+    // SAFETY: delegates to mj_copy_data_visual Rust wrapper
+    crate::engine::engine_io::mj_copy_data_visual(dest, m, src, 1)
 }
 
 /// C: mjv_copyData (engine/engine_io.h:123)
 /// Calls: mj_copyDataVisual
 #[allow(unused_variables, non_snake_case)]
 pub fn mjv_copy_data(dest: *mut mjData, m: *const mjModel, src: *const mjData) -> *mut mjData {
-    extern "C" { fn mjv_copyData(dest: *mut mjData, m: *const mjModel, src: *const mjData) -> *mut mjData; }
-    // SAFETY: delegates to C implementation
-    unsafe { mjv_copyData(dest, m, src) }
+    // SAFETY: delegates to mj_copy_data_visual Rust wrapper
+    crate::engine::engine_io::mj_copy_data_visual(dest, m, src, 0)
 }
 
 /// C: mj_resetData (engine/engine_io.h:126)
 /// Calls: _resetData, mj_logTimingDiagnostics
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_reset_data(m: *const mjModel, d: *mut mjData) {
-    extern "C" { fn mj_resetData(m: *const mjModel, d: *mut mjData); }
-    // SAFETY: delegates to C implementation; caller guarantees m and d are valid
-    unsafe { mj_resetData(m, d) }
+    // SAFETY: m, d valid per caller.
+    crate::engine::engine_io::mj_log_timing_diagnostics(d as *const mjData);
+    crate::engine::engine_io::reset_data(m, d, 0);
 }
 
 /// C: mj_resetDataDebug (engine/engine_io.h:129)
 /// Calls: _resetData
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_reset_data_debug(m: *const mjModel, d: *mut mjData, debug_value: u8) {
-    extern "C" { fn _resetData(m: *const mjModel, d: *mut mjData, debug_value: u8); }
-    // SAFETY: delegates to C _resetData; caller guarantees m and d are valid
-    unsafe { _resetData(m, d, debug_value) }
+    // SAFETY: delegates to reset_data Rust wrapper
+    crate::engine::engine_io::reset_data(m, d, debug_value);
 }
 
 /// C: mj_resetDataKeyframe (engine/engine_io.h:132)
 /// Calls: _resetData, mju_copy
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_reset_data_keyframe(m: *const mjModel, d: *mut mjData, key: i32) {
-    extern "C" { fn mj_resetDataKeyframe(m: *const mjModel, d: *mut mjData, key: i32); }
-    // SAFETY: delegates to C implementation; caller guarantees m, d valid and key in range
-    unsafe { mj_resetDataKeyframe(m, d, key) }
+    // SAFETY: m, d valid per caller. Key index checked before use.
+    unsafe {
+        crate::engine::engine_io::reset_data(m, d, 0);
+
+        // copy keyframe data if key is valid
+        if key >= 0 && key < (*m).nkey as i32 {
+            (*d).time = *(*m).key_time.add(key as usize);
+            crate::engine::engine_util_blas::mju_copy((*d).qpos, (*m).key_qpos.add(key as usize * (*m).nq), (*m).nq as i32);
+            crate::engine::engine_util_blas::mju_copy((*d).qvel, (*m).key_qvel.add(key as usize * (*m).nv), (*m).nv as i32);
+            crate::engine::engine_util_blas::mju_copy((*d).act, (*m).key_act.add(key as usize * (*m).na), (*m).na as i32);
+            crate::engine::engine_util_blas::mju_copy((*d).mocap_pos, (*m).key_mpos.add(key as usize * 3 * (*m).nmocap), 3 * (*m).nmocap as i32);
+            crate::engine::engine_util_blas::mju_copy((*d).mocap_quat, (*m).key_mquat.add(key as usize * 4 * (*m).nmocap), 4 * (*m).nmocap as i32);
+            crate::engine::engine_util_blas::mju_copy((*d).ctrl, (*m).key_ctrl.add(key as usize * (*m).nu), (*m).nu as i32);
+        }
+    }
 }
 
 /// C: mj_initPlugin (engine/engine_io.h:135)
@@ -657,9 +669,12 @@ pub fn mj_init_plugin(m: *const mjModel, d: *mut mjData) {
 /// Calls: freeDataBuffers, mju_free, mju_threadpool
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_delete_data(d: *mut mjData) {
-    // WARNING: signature changed — verify body
-    // Previous params: (d : * mut mjData)
-    // Previous return: ()
-    extern "C" { fn mj_deleteData(d : * mut mjData) ; } unsafe { mj_deleteData(d) }
+    // SAFETY: d may be null (early return). Otherwise valid per caller.
+    if d.is_null() {
+        return;
+    }
+    crate::engine::engine_thread::mju_threadpool(d, 0);
+    crate::engine::engine_io::free_data_buffers(d);
+    crate::engine::engine_util_errmem::mju_free(d as *mut ());
 }
 

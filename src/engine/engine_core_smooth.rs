@@ -8,11 +8,66 @@ use crate::types::*;
 /// Calls: mj_freeStack, mj_markStack, mj_stackAllocInfo, mju_max, mju_min, mju_zeroInt
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_update_dynamic_bvh(m: *const mjModel, d: *mut mjData, bvhadr: i32, bvhnum: i32) {
-    extern "C" {
-        fn mj_updateDynamicBVH(m: *const mjModel, d: *mut mjData, bvhadr: i32, bvhnum: i32);
+    // SAFETY: m, d valid per caller. All pointer arithmetic within allocated model/data arrays.
+    unsafe {
+        crate::engine::engine_memory::mj_mark_stack(d);
+        let modified: *mut i32 = crate::engine::engine_memory::mj_stack_alloc_int(d, bvhnum as usize);
+        crate::engine::engine_util_misc::mju_zero_int(modified, bvhnum);
+
+        // mark leafs as modified
+        let mut i: i32 = 0;
+        while i < bvhnum {
+            if *(*m).bvh_nodeid.add((bvhadr + i) as usize) >= 0 {
+                *modified.add(i as usize) = 1;
+            }
+            i += 1;
+        }
+
+        // update non-leafs in backward pass (parents come before children)
+        let mut i: i32 = bvhnum - 1;
+        while i >= 0 {
+            if *(*m).bvh_nodeid.add((bvhadr + i) as usize) < 0 {
+                let child1: i32 = *(*m).bvh_child.add((2 * (bvhadr + i)) as usize);
+                let child2: i32 = *(*m).bvh_child.add((2 * (bvhadr + i) + 1) as usize);
+
+                // update if either child is modified
+                if *modified.add(child1 as usize) != 0 || *modified.add(child2 as usize) != 0 {
+                    let aabb: *mut f64 = (*d).bvh_aabb_dyn.add((6 * (bvhadr as usize - (*m).nbvhstatic + i as usize)) as usize);
+                    let aabb1: *const f64 = (*d).bvh_aabb_dyn.add((6 * (bvhadr as usize - (*m).nbvhstatic + child1 as usize)) as usize);
+                    let aabb2: *const f64 = (*d).bvh_aabb_dyn.add((6 * (bvhadr as usize - (*m).nbvhstatic + child2 as usize)) as usize);
+
+                    // compute new (min, max)
+                    let mut xmin: [f64; 3] = [0.0; 3];
+                    let mut xmax: [f64; 3] = [0.0; 3];
+                    let mut k: i32 = 0;
+                    while k < 3 {
+                        xmin[k as usize] = crate::engine::engine_util_misc::mju_min(
+                            *aabb1.add(k as usize) - *aabb1.add((k + 3) as usize),
+                            *aabb2.add(k as usize) - *aabb2.add((k + 3) as usize),
+                        );
+                        xmax[k as usize] = crate::engine::engine_util_misc::mju_max(
+                            *aabb1.add(k as usize) + *aabb1.add((k + 3) as usize),
+                            *aabb2.add(k as usize) + *aabb2.add((k + 3) as usize),
+                        );
+                        k += 1;
+                    }
+
+                    // convert to (center, size)
+                    let mut k: i32 = 0;
+                    while k < 3 {
+                        *aabb.add(k as usize) = 0.5 * (xmax[k as usize] + xmin[k as usize]);
+                        *aabb.add((k + 3) as usize) = 0.5 * (xmax[k as usize] - xmin[k as usize]);
+                        k += 1;
+                    }
+
+                    *modified.add(i as usize) = 1;
+                }
+            }
+            i -= 1;
+        }
+
+        crate::engine::engine_memory::mj_free_stack(d);
     }
-    // SAFETY: delegates to C implementation, all pointers valid per caller contract
-    unsafe { mj_updateDynamicBVH(m, d, bvhadr, bvhnum) }
 }
 
 /// C: mju_mulMatMat322 (engine/engine_core_smooth.c:537)
@@ -909,9 +964,12 @@ pub fn mj_tendon_armature(m: *const mjModel, d: *mut mjData) {
 /// Calls: mj_crb, mj_tendonArmature, mju_scatter
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_make_m(m: *const mjModel, d: *mut mjData) {
-    extern "C" { fn mj_makeM(m: *const mjModel, d: *mut mjData); }
-    // SAFETY: delegates to C implementation, all pointers valid per caller contract
-    unsafe { mj_makeM(m, d) }
+    // SAFETY: m, d valid per caller. Calls already-translated Rust functions.
+    unsafe {
+        crate::engine::engine_core_smooth::mj_crb(m, d);
+        crate::engine::engine_core_smooth::mj_tendon_armature(m, d);
+        crate::engine::engine_util_misc::mju_scatter((*d).qM, (*d).M, (*m).mapM2M, (*m).nC as i32);
+    }
 }
 
 /// C: mj_factorI_legacy (engine/engine_core_smooth.h:68)
@@ -1554,11 +1612,111 @@ pub fn mj_subtree_vel(m: *const mjModel, d: *mut mjData) {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_rne(m: *const mjModel, d: *mut mjData, flg_acc: i32, result: *mut f64) {
-    extern "C" {
-        fn mj_rne(m: *const mjModel, d: *mut mjData, flg_acc: i32, result: *mut f64);
+    // SAFETY: m, d valid per caller. All pointer arithmetic within allocated model/data arrays.
+    unsafe {
+        const MJENBL_SLEEP: i32 = 1 << 4;
+        const MJDSBL_GRAVITY: i32 = 1 << 7;
+
+        let sleep_filter: i32 = (((*m).opt.enableflags & MJENBL_SLEEP) != 0
+            && (*d).nbody_awake < (*m).nbody as i32) as i32;
+        let nbody: i32 = if sleep_filter != 0 { (*d).nbody_awake } else { (*m).nbody as i32 };
+        let nparent: i32 = if sleep_filter != 0 { (*d).nparent_awake } else { (*m).nbody as i32 };
+        let nv: i32 = if sleep_filter != 0 { (*d).nv_awake } else { (*m).nv as i32 };
+
+        crate::engine::engine_memory::mj_mark_stack(d);
+        let loc_cacc: *mut f64 = crate::engine::engine_memory::mj_stack_alloc_num(d, ((*m).nbody as usize) * 6);
+        let loc_cfrc_body: *mut f64 = crate::engine::engine_memory::mj_stack_alloc_num(d, ((*m).nbody as usize) * 6);
+
+        // set world acceleration to -gravity
+        crate::engine::engine_util_blas::mju_zero(loc_cacc, 6);
+        if ((*m).opt.disableflags & MJDSBL_GRAVITY) == 0 {
+            crate::engine::engine_util_blas::mju_scl3(loc_cacc.add(3), (*m).opt.gravity.as_ptr(), -1.0);
+        }
+
+        // forward pass over bodies: accumulate cacc, set cfrc_body
+        let mut b: i32 = 1;
+        while b < nbody {
+            let i: i32 = if sleep_filter != 0 { *(*d).body_awake_ind.add(b as usize) } else { b };
+
+            // get body's first dof address
+            let bda: i32 = *(*m).body_dofadr.add(i as usize);
+
+            // cacc = cacc_parent + cdofdot * qvel
+            let mut tmp: [f64; 6] = [0.0; 6];
+            crate::engine::engine_util_spatial::mju_mul_dof_vec(
+                tmp.as_mut_ptr(),
+                (*d).cdof_dot.add(6 * bda as usize),
+                (*d).qvel.add(bda as usize),
+                *(*m).body_dofnum.add(i as usize),
+            );
+            crate::engine::engine_util_blas::mju_add(
+                loc_cacc.add(6 * i as usize),
+                loc_cacc.add(6 * *(*m).body_parentid.add(i as usize) as usize),
+                tmp.as_ptr(),
+                6,
+            );
+
+            // cacc += cdof * qacc
+            if flg_acc != 0 {
+                crate::engine::engine_util_spatial::mju_mul_dof_vec(
+                    tmp.as_mut_ptr(),
+                    (*d).cdof.add(6 * bda as usize),
+                    (*d).qacc.add(bda as usize),
+                    *(*m).body_dofnum.add(i as usize),
+                );
+                crate::engine::engine_util_blas::mju_add_to(loc_cacc.add(6 * i as usize), tmp.as_ptr(), 6);
+            }
+
+            // cfrc_body = cinert * cacc + cvel x (cinert * cvel)
+            crate::engine::engine_util_spatial::mju_mul_inert_vec(
+                loc_cfrc_body.add(6 * i as usize),
+                (*d).cinert.add(10 * i as usize),
+                loc_cacc.add(6 * i as usize),
+            );
+            crate::engine::engine_util_spatial::mju_mul_inert_vec(
+                tmp.as_mut_ptr(),
+                (*d).cinert.add(10 * i as usize),
+                (*d).cvel.add(6 * i as usize),
+            );
+            let mut tmp1: [f64; 6] = [0.0; 6];
+            crate::engine::engine_inline::mji_cross_force(tmp1.as_mut_ptr(), (*d).cvel.add(6 * i as usize), tmp.as_ptr());
+            crate::engine::engine_util_blas::mju_add_to(loc_cfrc_body.add(6 * i as usize), tmp1.as_ptr(), 6);
+
+            b += 1;
+        }
+
+        // clear world cfrc_body
+        crate::engine::engine_util_blas::mju_zero(loc_cfrc_body, 6);
+
+        // backward pass over bodies: accumulate cfrc_body from children
+        let mut b: i32 = nparent - 1;
+        while b > 0 {
+            let i: i32 = if sleep_filter != 0 { *(*d).parent_awake_ind.add(b as usize) } else { b };
+            let j: i32 = *(*m).body_parentid.add(i as usize);
+
+            if j != 0 {
+                crate::engine::engine_util_blas::mju_add_to(
+                    loc_cfrc_body.add(6 * j as usize),
+                    loc_cfrc_body.add(6 * i as usize) as *const f64,
+                    6,
+                );
+            }
+            b -= 1;
+        }
+
+        // result = cdof * cfrc_body
+        let mut v: i32 = 0;
+        while v < nv {
+            let i: i32 = if sleep_filter != 0 { *(*d).dof_awake_ind.add(v as usize) } else { v };
+            *result.add(i as usize) = crate::engine::engine_inline::mji_dot6(
+                (*d).cdof.add(6 * i as usize),
+                loc_cfrc_body.add(6 * *(*m).dof_bodyid.add(i as usize) as usize),
+            );
+            v += 1;
+        }
+
+        crate::engine::engine_memory::mj_free_stack(d);
     }
-    // SAFETY: delegates to C implementation, all pointers valid per caller contract
-    unsafe { mj_rne(m, d, flg_acc, result) }
 }
 
 /// C: mj_rnePostConstraint (engine/engine_core_smooth.h:110)

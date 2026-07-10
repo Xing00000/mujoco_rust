@@ -305,11 +305,80 @@ pub fn mj_narrowphase(m: *const mjModel, d: *mut mjData, buffer: *const mjcPair,
 /// Calls: mj_addContact, mj_assignMargin, mj_contactParam, mj_setContact, mju_addScl3, mju_copy3, mju_dot3, mju_zero3
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_collide_plane_flex(m: *const mjModel, d: *mut mjData, g: i32, f: i32) {
-    extern "C" {
-        fn mj_collidePlaneFlex(m: *const mjModel, d: *mut mjData, g: i32, f: i32);
+    // SAFETY: m, d valid per caller. All pointer arithmetic within allocated model/data arrays.
+    unsafe {
+        const MJ_NREF: usize = 2;
+        const MJ_NIMP: usize = 5;
+
+        let radius: f64 = *(*m).flex_radius.add(f as usize);
+        let pos: *const f64 = (*d).geom_xpos.add(3 * g as usize);
+        let mat: *const f64 = (*d).geom_xmat.add(9 * g as usize);
+        let nrm: [f64; 3] = [*mat.add(2), *mat.add(5), *mat.add(8)];
+
+        // prepare contact parameters (same for all vertices)
+        let margin: f64 = crate::engine::engine_core_constraint::mj_assign_margin(
+            m, *(*m).geom_margin.add(g as usize) + *(*m).flex_margin.add(f as usize));
+        let mut condim: i32 = 0;
+        let flex_vertnum: i32 = *(*m).flex_vertnum.add(f as usize);
+        let gap: f64 = *(*m).geom_gap.add(g as usize) + *(*m).flex_gap.add(f as usize);
+        let mut solref: [f64; 2] = [0.0; 2];
+        let mut solimp: [f64; 5] = [0.0; 5];
+        let mut friction: [f64; 5] = [0.0; 5];
+        let solreffriction: [f64; 2] = [0.0; 2];
+        crate::engine::engine_collision_driver::mj_contact_param(
+            m, &mut condim, solref.as_mut_ptr(), solimp.as_mut_ptr(),
+            friction.as_mut_ptr(), g, -1, -1, f);
+
+        // collide all flex vertices with plane
+        let mut i: i32 = 0;
+        while i < flex_vertnum {
+            let v: *const f64 = (*d).flexvert_xpos.add(3 * (*(*m).flex_vertadr.add(f as usize) + i) as usize);
+
+            // distance from plane to vertex
+            let dif: [f64; 3] = [
+                *v.add(0) - *pos.add(0),
+                *v.add(1) - *pos.add(1),
+                *v.add(2) - *pos.add(2),
+            ];
+            let dist: f64 = crate::engine::engine_util_blas::mju_dot3(dif.as_ptr(), nrm.as_ptr());
+
+            // no contact
+            if dist > margin + gap + radius {
+                i += 1;
+                continue;
+            }
+
+            // create contact
+            let mut con: mjContact = core::mem::zeroed();
+            con.dist = dist - radius;
+            crate::engine::engine_util_blas::mju_add_scl3(
+                con.pos.as_mut_ptr(), v, nrm.as_ptr(), -con.dist * 0.5 - radius);
+            crate::engine::engine_util_blas::mju_copy3(con.frame.as_mut_ptr(), nrm.as_ptr());
+            crate::engine::engine_util_blas::mju_zero3(con.frame.as_mut_ptr().add(3));
+
+            // set contact ids
+            con.geom[0] = g;
+            con.geom[1] = -1;
+            con.flex[0] = -1;
+            con.flex[1] = f;
+            con.elem[0] = -1;
+            con.elem[1] = -1;
+            con.vert[0] = -1;
+            con.vert[1] = i;
+
+            // set remaining contact parameters
+            crate::engine::engine_collision_driver::mj_set_contact(
+                m, &mut con, condim, margin,
+                solref.as_ptr(), solreffriction.as_ptr(), solimp.as_ptr(), friction.as_ptr());
+
+            // add to mjData, abort if too many contacts
+            if crate::engine::engine_core_constraint::mj_add_contact(m, d, &con) != 0 {
+                return;
+            }
+
+            i += 1;
+        }
     }
-    // SAFETY: delegates to C implementation, all pointers valid per caller contract
-    unsafe { mj_collidePlaneFlex(m, d, g, f) }
 }
 
 /// C: mj_collideSdfFlex (engine/engine_collision_driver.c:374)
