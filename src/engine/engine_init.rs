@@ -46,8 +46,9 @@ pub fn setf4(rgba: *mut f32, r: f32, g: f32, b: f32, a: f32) {
 /// Calls: setf4
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_default_visual(vis: *mut mjVisual) {
+    if vis.is_null() { return; }
     extern "C" { fn mj_defaultVisual(vis: *mut mjVisual); }
-    // SAFETY: delegates to C implementation, all pointers valid per caller contract
+    // SAFETY: vis verified non-null; delegates to C implementation
     unsafe { mj_defaultVisual(vis) }
 }
 

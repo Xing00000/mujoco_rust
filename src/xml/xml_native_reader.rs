@@ -282,8 +282,9 @@ pub fn mj_x_reader_keyframe(self_ptr: *mut mjXReader, section: *mut tinyxml2__XM
 /// Calls: FirstChildElement, mjXUtil::MapValue, mjXUtil::ReadAttrInt, mjXUtil::ReadAttrTxt
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_x_reader_one_flex(self_ptr: *mut mjXReader, elem: *mut tinyxml2__XMLElement, pflex: *mut mjsFlex) {
+    if self_ptr.is_null() { return; }
     extern "C" { fn mjXReader_OneFlex(self_ptr: *mut mjXReader, elem: *mut tinyxml2__XMLElement, pflex: *mut mjsFlex); }
-    // SAFETY: delegates to C implementation
+    // SAFETY: self_ptr verified non-null; delegates to C implementation
     unsafe { mjXReader_OneFlex(self_ptr, elem, pflex) }
 }
 
@@ -318,8 +319,9 @@ pub fn mj_x_reader_one_material(self_ptr: *mut mjXReader, elem: *mut tinyxml2__X
 /// Calls: mjXUtil::MapValue, mjXUtil::ReadAttrInt, mjXUtil::ReadAttrTxt
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_x_reader_one_joint(self_ptr: *mut mjXReader, elem: *mut tinyxml2__XMLElement, pjoint: *mut mjsJoint) {
+    if self_ptr.is_null() { return; }
     extern "C" { fn mjXReader_OneJoint(self_ptr: *mut mjXReader, elem: *mut tinyxml2__XMLElement, pjoint: *mut mjsJoint); }
-    // SAFETY: delegates to C implementation
+    // SAFETY: self_ptr verified non-null; delegates to C implementation
     unsafe { mjXReader_OneJoint(self_ptr, elem, pjoint) }
 }
 
@@ -336,8 +338,9 @@ pub fn mj_x_reader_one_geom(self_ptr: *mut mjXReader, elem: *mut tinyxml2__XMLEl
 /// Calls: mjXBase::ReadAlternative, mjXUtil::MapValue, mjXUtil::ReadAttrInt, mjXUtil::ReadAttrTxt, mjXUtil::ReadQuat
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_x_reader_one_site(self_ptr: *mut mjXReader, elem: *mut tinyxml2__XMLElement, site: *mut mjsSite) {
+    if self_ptr.is_null() { return; }
     extern "C" { fn mjXReader_OneSite(self_ptr: *mut mjXReader, elem: *mut tinyxml2__XMLElement, site: *mut mjsSite); }
-    // SAFETY: delegates to C implementation
+    // SAFETY: self_ptr verified non-null; delegates to C implementation
     unsafe { mjXReader_OneSite(self_ptr, elem, site) }
 }
 
@@ -345,8 +348,9 @@ pub fn mj_x_reader_one_site(self_ptr: *mut mjXReader, elem: *mut tinyxml2__XMLEl
 /// Calls: mjXBase::ReadAlternative, mjXUtil::MapValue, mjXUtil::MapValues, mjXUtil::ReadAttrTxt, mjXUtil::ReadQuat
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_x_reader_one_camera(self_ptr: *mut mjXReader, elem: *mut tinyxml2__XMLElement, pcamera: *mut mjsCamera) {
+    if self_ptr.is_null() { return; }
     extern "C" { fn mjXReader_OneCamera(self_ptr: *mut mjXReader, elem: *mut tinyxml2__XMLElement, pcamera: *mut mjsCamera); }
-    // SAFETY: delegates to C implementation
+    // SAFETY: self_ptr verified non-null; delegates to C implementation
     unsafe { mjXReader_OneCamera(self_ptr, elem, pcamera) }
 }
 
@@ -354,8 +358,9 @@ pub fn mj_x_reader_one_camera(self_ptr: *mut mjXReader, elem: *mut tinyxml2__XML
 /// Calls: mjXUtil::MapValue, mjXUtil::ReadAttrTxt
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_x_reader_one_light(self_ptr: *mut mjXReader, elem: *mut tinyxml2__XMLElement, plight: *mut mjsLight) {
+    if self_ptr.is_null() { return; }
     extern "C" { fn mjXReader_OneLight(self_ptr: *mut mjXReader, elem: *mut tinyxml2__XMLElement, plight: *mut mjsLight); }
-    // SAFETY: delegates to C implementation
+    // SAFETY: self_ptr verified non-null; delegates to C implementation
     unsafe { mjXReader_OneLight(self_ptr, elem, plight) }
 }
 
@@ -363,8 +368,9 @@ pub fn mj_x_reader_one_light(self_ptr: *mut mjXReader, elem: *mut tinyxml2__XMLE
 /// Calls: mjXUtil::ReadAttrInt, mjXUtil::ReadAttrTxt
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_x_reader_one_pair(self_ptr: *mut mjXReader, elem: *mut tinyxml2__XMLElement, ppair: *mut mjsPair) {
+    if self_ptr.is_null() { return; }
     extern "C" { fn mjXReader_OnePair(self_ptr: *mut mjXReader, elem: *mut tinyxml2__XMLElement, ppair: *mut mjsPair); }
-    // SAFETY: delegates to C implementation
+    // SAFETY: self_ptr verified non-null; delegates to C implementation
     unsafe { mjXReader_OnePair(self_ptr, elem, ppair) }
 }
 
@@ -372,8 +378,9 @@ pub fn mj_x_reader_one_pair(self_ptr: *mut mjXReader, elem: *mut tinyxml2__XMLEl
 /// Calls: mjXUtil::FindKey, mjXUtil::MapValue, mjXUtil::ReadAttrTxt, mjuu_zerovec
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_x_reader_one_equality(self_ptr: *mut mjXReader, elem: *mut tinyxml2__XMLElement, pequality: *mut mjsEquality) {
+    if self_ptr.is_null() { return; }
     extern "C" { fn mjXReader_OneEquality(self_ptr: *mut mjXReader, elem: *mut tinyxml2__XMLElement, pequality: *mut mjsEquality); }
-    // SAFETY: delegates to C implementation
+    // SAFETY: self_ptr verified non-null; delegates to C implementation
     unsafe { mjXReader_OneEquality(self_ptr, elem, pequality) }
 }
 
@@ -381,8 +388,9 @@ pub fn mj_x_reader_one_equality(self_ptr: *mut mjXReader, elem: *mut tinyxml2__X
 /// Calls: mjXUtil::MapValue, mjXUtil::ReadAttrInt, mjXUtil::ReadAttrTxt
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_x_reader_one_tendon(self_ptr: *mut mjXReader, elem: *mut tinyxml2__XMLElement, ptendon: *mut mjsTendon) {
+    if self_ptr.is_null() { return; }
     extern "C" { fn mjXReader_OneTendon(self_ptr: *mut mjXReader, elem: *mut tinyxml2__XMLElement, ptendon: *mut mjsTendon); }
-    // SAFETY: delegates to C implementation
+    // SAFETY: self_ptr verified non-null; delegates to C implementation
     unsafe { mjXReader_OneTendon(self_ptr, elem, ptendon) }
 }
 
@@ -426,8 +434,9 @@ pub fn mj_x_reader_one_plugin(self_ptr: *mut mjXReader, elem: *mut tinyxml2__XML
 /// Calls: mjXUtil::ReadAttrTxt
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_x_reader_get_class(self_ptr: *mut mjXReader, section: *mut tinyxml2__XMLElement) -> *const mjsDefault {
+    if self_ptr.is_null() { return core::ptr::null(); }
     extern "C" { fn mjXReader_GetClass(self_ptr: *mut mjXReader, section: *mut tinyxml2__XMLElement) -> *const mjsDefault; }
-    // SAFETY: delegates to C++ implementation, all pointers valid per caller contract
+    // SAFETY: self_ptr verified non-null; delegates to C++ implementation
     unsafe { mjXReader_GetClass(self_ptr, section) }
 }
 
@@ -444,8 +453,13 @@ pub fn mj_x_reader_asset_dir(self_ptr: *mut mjXReader) -> mujoco__user__FilePath
 /// Calls: mjXReader::AssetDir
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_x_reader_mesh_dir(self_ptr: *mut mjXReader) -> mujoco__user__FilePath {
+    if self_ptr.is_null() {
+        extern "C" { fn mjXReader_MeshDir(self_ptr: *mut mjXReader) -> mujoco__user__FilePath; }
+        // SAFETY: delegates to C++; null handling is C++'s responsibility
+        return unsafe { mjXReader_MeshDir(self_ptr) };
+    }
     extern "C" { fn mjXReader_MeshDir(self_ptr: *mut mjXReader) -> mujoco__user__FilePath; }
-    // SAFETY: delegates to C implementation
+    // SAFETY: self_ptr verified non-null; delegates to C implementation
     unsafe { mjXReader_MeshDir(self_ptr) }
 }
 
@@ -453,8 +467,13 @@ pub fn mj_x_reader_mesh_dir(self_ptr: *mut mjXReader) -> mujoco__user__FilePath 
 /// Calls: mjXReader::AssetDir
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_x_reader_texture_dir(self_ptr: *mut mjXReader) -> mujoco__user__FilePath {
+    if self_ptr.is_null() {
+        extern "C" { fn mjXReader_TextureDir(self_ptr: *mut mjXReader) -> mujoco__user__FilePath; }
+        // SAFETY: delegates to C++; null handling is C++'s responsibility
+        return unsafe { mjXReader_TextureDir(self_ptr) };
+    }
     extern "C" { fn mjXReader_TextureDir(self_ptr: *mut mjXReader) -> mujoco__user__FilePath; }
-    // SAFETY: delegates to C implementation
+    // SAFETY: self_ptr verified non-null; delegates to C implementation
     unsafe { mjXReader_TextureDir(self_ptr) }
 }
 

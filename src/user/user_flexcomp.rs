@@ -74,8 +74,9 @@ pub fn mj_c_flexcomp_make(self_ptr: *mut mjCFlexcomp, body: *mut mjsBody, error:
 /// Calls: comperr
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_flexcomp_make_grid(self_ptr: *mut mjCFlexcomp, error: *mut i8, error_sz: i32) -> bool {
+    if self_ptr.is_null() { return false; }
     extern "C" { fn mjCFlexcomp_MakeGrid(self_ptr: *mut mjCFlexcomp, error: *mut i8, error_sz: i32) -> bool; }
-    // SAFETY: delegates to C implementation
+    // SAFETY: self_ptr verified non-null; delegates to C implementation
     unsafe { mjCFlexcomp_MakeGrid(self_ptr, error, error_sz) }
 }
 
@@ -83,8 +84,9 @@ pub fn mj_c_flexcomp_make_grid(self_ptr: *mut mjCFlexcomp, error: *mut i8, error
 /// Calls: mat2lin, mjCFlexcomp::BoxProject
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_flexcomp_make_box(self_ptr: *mut mjCFlexcomp, error: *mut i8, error_sz: i32, dim: i32, open: bool) -> bool {
+    if self_ptr.is_null() { return false; }
     extern "C" { fn mjCFlexcomp_MakeBox(self_ptr: *mut mjCFlexcomp, error: *mut i8, error_sz: i32, dim: i32, open: bool) -> bool; }
-    // SAFETY: delegates to C implementation
+    // SAFETY: self_ptr verified non-null; delegates to C implementation
     unsafe { mjCFlexcomp_MakeBox(self_ptr, error, error_sz, dim, open) }
 }
 

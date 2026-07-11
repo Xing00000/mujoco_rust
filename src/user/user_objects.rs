@@ -949,8 +949,9 @@ pub fn mj_c_base_get_asset_content_type(resource_name: string_view, raw_text: st
 /// Calls: mjCBase::GetParent
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_base_set_frame(self_ptr: *mut mjCBase, _frame: *mut mjCFrame) {
+    if self_ptr.is_null() { return; }
     extern "C" { fn mjCBase_SetFrame(self_ptr: *mut mjCBase, _frame: *mut mjCFrame); }
-    // SAFETY: delegates to C implementation
+    // SAFETY: self_ptr verified non-null; delegates to C implementation
     unsafe { mjCBase_SetFrame(self_ptr, _frame) }
 }
 
@@ -1214,8 +1215,9 @@ pub fn mj_c_body_get_userdata(self_ptr: *mut mjCBody) -> *const i32 {
 /// Calls: GetNextBody
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_body_next_child(self_ptr: *mut mjCBody, child: *const mjsElement, r#type: mjtObj, recursive: bool) -> *mut mjsElement {
+    if self_ptr.is_null() { return core::ptr::null_mut(); }
     extern "C" { fn mjCBody_NextChild(self_ptr: *mut mjCBody, child: *const mjsElement, r#type: mjtObj, recursive: bool) -> *mut mjsElement; }
-    // SAFETY: delegates to C implementation
+    // SAFETY: self_ptr verified non-null; delegates to C implementation
     unsafe { mjCBody_NextChild(self_ptr, child, r#type, recursive) }
 }
 

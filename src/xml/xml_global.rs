@@ -42,8 +42,9 @@ pub fn get_global_model() -> *mut GlobalModel {
 /// Calls: GetGlobalModel, GlobalModel::Set
 #[allow(unused_variables, non_snake_case)]
 pub fn set_global_xml_spec(spec: *mut mjSpec) {
+    if spec.is_null() { return; }
     extern "C" { fn SetGlobalXmlSpec(spec: *mut mjSpec); }
-    // SAFETY: delegates to C implementation
+    // SAFETY: spec verified non-null; delegates to C implementation
     unsafe { SetGlobalXmlSpec(spec) }
 }
 

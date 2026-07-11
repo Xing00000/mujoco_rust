@@ -76,8 +76,9 @@ pub fn is_null_or_space(c: *mut i8) -> bool  {
 /// Calls: IsNullOrSpace
 #[allow(unused_variables, non_snake_case)]
 pub fn skip_space(c: *mut i8) -> *mut i8  {
+    if c.is_null() { return core::ptr::null_mut(); }
     extern "C" { fn SkipSpace(c: *mut i8) -> *mut i8; }
-    // SAFETY: delegates to C implementation
+    // SAFETY: c verified non-null; delegates to C implementation
     unsafe { SkipSpace(c) }
 }
 

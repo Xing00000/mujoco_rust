@@ -27,8 +27,9 @@ pub fn mj_c_composite_set_default(self_ptr: *mut mjCComposite) {
 /// Calls: comperr
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_composite_add_default_joint(self_ptr: *mut mjCComposite, error: *mut i8, error_sz: i32) -> bool {
+    if self_ptr.is_null() { return false; }
     extern "C" { fn mjCComposite_AddDefaultJoint(self_ptr: *mut mjCComposite, error: *mut i8, error_sz: i32) -> bool; }
-    // SAFETY: delegates to C implementation
+    // SAFETY: self_ptr verified non-null; delegates to C implementation
     unsafe { mjCComposite_AddDefaultJoint(self_ptr, error, error_sz) }
 }
 

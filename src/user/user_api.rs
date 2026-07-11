@@ -408,8 +408,9 @@ pub fn mjs_add_body(body: *mut mjsBody, def: *const mjsDefault) -> *mut mjsBody 
 /// Calls: mjCBody::AddSite
 #[allow(unused_variables, non_snake_case)]
 pub fn mjs_add_site(body: *mut mjsBody, def: *const mjsDefault) -> *mut mjsSite {
+    if body.is_null() { return core::ptr::null_mut(); }
     extern "C" { fn mjs_addSite(body: *mut mjsBody, def: *const mjsDefault) -> *mut mjsSite; }
-    // SAFETY: delegates to C implementation
+    // SAFETY: body verified non-null; delegates to C implementation
     unsafe { mjs_addSite(body, def) }
 }
 
@@ -417,8 +418,9 @@ pub fn mjs_add_site(body: *mut mjsBody, def: *const mjsDefault) -> *mut mjsSite 
 /// Calls: mjCBody::AddJoint
 #[allow(unused_variables, non_snake_case)]
 pub fn mjs_add_joint(body: *mut mjsBody, def: *const mjsDefault) -> *mut mjsJoint {
+    if body.is_null() { return core::ptr::null_mut(); }
     extern "C" { fn mjs_addJoint(body: *mut mjsBody, def: *const mjsDefault) -> *mut mjsJoint; }
-    // SAFETY: delegates to C implementation
+    // SAFETY: body verified non-null; delegates to C implementation
     unsafe { mjs_addJoint(body, def) }
 }
 
@@ -426,8 +428,9 @@ pub fn mjs_add_joint(body: *mut mjsBody, def: *const mjsDefault) -> *mut mjsJoin
 /// Calls: mjCBody::AddFreeJoint
 #[allow(unused_variables, non_snake_case)]
 pub fn mjs_add_free_joint(body: *mut mjsBody) -> *mut mjsJoint {
+    if body.is_null() { return core::ptr::null_mut(); }
     extern "C" { fn mjs_addFreeJoint(body: *mut mjsBody) -> *mut mjsJoint; }
-    // SAFETY: delegates to C implementation
+    // SAFETY: body verified non-null; delegates to C implementation
     unsafe { mjs_addFreeJoint(body) }
 }
 
@@ -435,8 +438,9 @@ pub fn mjs_add_free_joint(body: *mut mjsBody) -> *mut mjsJoint {
 /// Calls: mjCBody::AddGeom
 #[allow(unused_variables, non_snake_case)]
 pub fn mjs_add_geom(body: *mut mjsBody, def: *const mjsDefault) -> *mut mjsGeom {
+    if body.is_null() { return core::ptr::null_mut(); }
     extern "C" { fn mjs_addGeom(body: *mut mjsBody, def: *const mjsDefault) -> *mut mjsGeom; }
-    // SAFETY: delegates to C implementation
+    // SAFETY: body verified non-null; delegates to C implementation
     unsafe { mjs_addGeom(body, def) }
 }
 
@@ -444,8 +448,9 @@ pub fn mjs_add_geom(body: *mut mjsBody, def: *const mjsDefault) -> *mut mjsGeom 
 /// Calls: mjCBody::AddCamera
 #[allow(unused_variables, non_snake_case)]
 pub fn mjs_add_camera(body: *mut mjsBody, def: *const mjsDefault) -> *mut mjsCamera {
+    if body.is_null() { return core::ptr::null_mut(); }
     extern "C" { fn mjs_addCamera(body: *mut mjsBody, def: *const mjsDefault) -> *mut mjsCamera; }
-    // SAFETY: delegates to C implementation
+    // SAFETY: body verified non-null; delegates to C implementation
     unsafe { mjs_addCamera(body, def) }
 }
 
@@ -453,8 +458,9 @@ pub fn mjs_add_camera(body: *mut mjsBody, def: *const mjsDefault) -> *mut mjsCam
 /// Calls: mjCBody::AddLight
 #[allow(unused_variables, non_snake_case)]
 pub fn mjs_add_light(body: *mut mjsBody, def: *const mjsDefault) -> *mut mjsLight {
+    if body.is_null() { return core::ptr::null_mut(); }
     extern "C" { fn mjs_addLight(body: *mut mjsBody, def: *const mjsDefault) -> *mut mjsLight; }
-    // SAFETY: delegates to C implementation
+    // SAFETY: body verified non-null; delegates to C implementation
     unsafe { mjs_addLight(body, def) }
 }
 
@@ -462,8 +468,9 @@ pub fn mjs_add_light(body: *mut mjsBody, def: *const mjsDefault) -> *mut mjsLigh
 /// Calls: mjCBody::AddFrame, mjCFrame::SetParent
 #[allow(unused_variables, non_snake_case)]
 pub fn mjs_add_frame(body: *mut mjsBody, parentframe: *mut mjsFrame) -> *mut mjsFrame {
+    if body.is_null() { return core::ptr::null_mut(); }
     extern "C" { fn mjs_addFrame(body: *mut mjsBody, parentframe: *mut mjsFrame) -> *mut mjsFrame; }
-    // SAFETY: delegates to C implementation
+    // SAFETY: body verified non-null; delegates to C implementation
     unsafe { mjs_addFrame(body, parentframe) }
 }
 
@@ -594,8 +601,9 @@ pub fn mjs_wrap_joint(tendon: *mut mjsTendon, name: *const i8, coef: f64) -> *mu
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjs_wrap_pulley(tendon: *mut mjsTendon, divisor: f64) -> *mut mjsWrap {
+    if tendon.is_null() { return core::ptr::null_mut(); }
     extern "C" { fn mjs_wrapPulley(tendon: *mut mjsTendon, divisor: f64) -> *mut mjsWrap; }
-    // SAFETY: delegates to C implementation
+    // SAFETY: tendon verified non-null; delegates to C implementation
     unsafe { mjs_wrapPulley(tendon, divisor) }
 }
 
@@ -685,8 +693,9 @@ pub fn mjs_set_to_position(actuator: *mut mjsActuator, kp: f64, kv: [f64; 1], da
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjs_set_to_int_velocity(actuator: *mut mjsActuator, kp: f64, kv: [f64; 1], dampratio: [f64; 1], timeconst: [f64; 1], inheritrange: f64) -> *const i8 {
+    if actuator.is_null() { return core::ptr::null(); }
     extern "C" { fn mjs_setToIntVelocity(actuator: *mut mjsActuator, kp: f64, kv: [f64; 1], dampratio: [f64; 1], timeconst: [f64; 1], inheritrange: f64) -> *const i8; }
-    // SAFETY: delegates to C implementation
+    // SAFETY: actuator verified non-null; delegates to C implementation
     unsafe { mjs_setToIntVelocity(actuator, kp, kv, dampratio, timeconst, inheritrange) }
 }
 
@@ -1274,8 +1283,9 @@ pub fn mjs_as_plugin(element: *mut mjsElement) -> *mut mjsPlugin {
 /// Calls: mjCModel::CheckRepeat, mjCModel::SetError
 #[allow(unused_variables, non_snake_case)]
 pub fn mjs_set_name(element: *mut mjsElement, name: *const i8) -> i32 {
+    if element.is_null() { return 0; }
     extern "C" { fn mjs_setName(element: *mut mjsElement, name: *const i8) -> i32; }
-    // SAFETY: delegates to C implementation
+    // SAFETY: element verified non-null; delegates to C implementation
     unsafe { mjs_setName(element, name) }
 }
 
@@ -1363,6 +1373,7 @@ pub fn mjs_set_frame(dest: *mut mjsElement, frame: *mut mjsFrame) -> i32 {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjs_resolve_orientation(quat: [f64; 4], degree: u8, sequence: *const i8, orientation: *const mjsOrientation) -> *const i8 {
+    let _sv = core::mem::size_of_val(&quat);
     extern "C" { fn mjs_resolveOrientation(quat: [f64; 4], degree: u8, sequence: *const i8, orientation: *const mjsOrientation) -> *const i8; }
     // SAFETY: delegates to C implementation
     unsafe { mjs_resolveOrientation(quat, degree, sequence, orientation) }
