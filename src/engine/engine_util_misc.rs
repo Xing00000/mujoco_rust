@@ -545,10 +545,34 @@ pub fn mju_def_gradient(res: *mut f64, p: *const f64, dof: *const f64, order: i3
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mju_eval_basis(x: *const f64, i: i32, order: i32) -> f64 {
-    // WARNING: signature changed — verify body
-    // Previous params: (x : * const f64, i : i32, order : i32)
-    // Previous return: f64
-    todo ! ()
+    // inline phi (mju_flexPhi)
+    #[inline(always)]
+    fn phi(s: f64, i: i32, order: i32) -> f64 {
+        if order == 1 {
+            return if i == 0 { 1.0 - s } else { s };
+        }
+        match i {
+            0 => 2.0 * s * s - 3.0 * s + 1.0,
+            1 => 4.0 * (s - s * s),
+            2 => 2.0 * s * s - s,
+            _ => 0.0,
+        }
+    }
+
+    // SAFETY: caller guarantees x points to at least 3 f64.
+    unsafe {
+        let x0 = *x.add(0);
+        let x1 = *x.add(1);
+        let x2 = *x.add(2);
+
+        if order == 1 {
+            phi(x2, i & 1, order) * phi(x1, i & 2, order) * phi(x0, i & 4, order)
+        } else if order == 2 {
+            phi(x2, i % 3, order) * phi(x1, (i / 3) % 3, order) * phi(x0, i / 9, order)
+        } else {
+            -1.0
+        }
+    }
 }
 
 /// C: mju_evalBasisArray (engine/engine_util_misc.h:93)
@@ -560,10 +584,69 @@ pub fn mju_eval_basis(x: *const f64, i: i32, order: i32) -> f64 {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mju_eval_basis_array(basis: *mut f64, x: *const f64, order: i32) {
-    // WARNING: signature changed — verify body
-    // Previous params: (basis : * mut f64, x : * const f64, order : i32)
-    // Previous return: ()
-    todo ! ()
+    // inline phi (mju_flexPhi)
+    #[inline(always)]
+    fn phi(s: f64, i: i32, order: i32) -> f64 {
+        if order == 1 {
+            return if i == 0 { 1.0 - s } else { s };
+        }
+        match i {
+            0 => 2.0 * s * s - 3.0 * s + 1.0,
+            1 => 4.0 * (s - s * s),
+            2 => 2.0 * s * s - s,
+            _ => 0.0,
+        }
+    }
+
+    // SAFETY: caller guarantees basis has enough space, x points to 3 f64.
+    unsafe {
+        let x0 = *x.add(0);
+        let x1 = *x.add(1);
+        let x2 = *x.add(2);
+
+        if order == 1 {
+            let p: [[f64; 2]; 3] = [
+                [1.0 - x0, x0],
+                [1.0 - x1, x1],
+                [1.0 - x2, x2],
+            ];
+            let mut j: usize = 0;
+            for i0 in 0..2 {
+                let w0 = p[0][i0];
+                for i1 in 0..2 {
+                    let w01 = w0 * p[1][i1];
+                    for i2 in 0..2 {
+                        *basis.add(j) = w01 * p[2][i2];
+                        j += 1;
+                    }
+                }
+            }
+        } else if order == 2 {
+            let mut p = [[0.0f64; 3]; 3];
+            for d in 0..3 {
+                let xd = *x.add(d);
+                for i in 0..3 {
+                    p[d][i] = phi(xd, i as i32, 2);
+                }
+            }
+            let mut j: usize = 0;
+            for i0 in 0..3 {
+                let w0 = p[0][i0];
+                for i1 in 0..3 {
+                    let w01 = w0 * p[1][i1];
+                    for i2 in 0..3 {
+                        *basis.add(j) = w01 * p[2][i2];
+                        j += 1;
+                    }
+                }
+            }
+        } else {
+            let npoint = (order + 1) * (order + 1) * (order + 1);
+            for j in 0..npoint {
+                *basis.add(j as usize) = mju_eval_basis(x, j, order);
+            }
+        }
+    }
 }
 
 /// C: mju_cellLookup (engine/engine_util_misc.h:96)
@@ -848,10 +931,63 @@ pub fn mju_is_valid_base64(s: *const i8) -> usize {
 /// Calls: _decode
 #[allow(unused_variables, non_snake_case)]
 pub fn mju_decode_base64(buf: *mut u8, s: *const i8) -> usize {
-    // WARNING: signature changed — verify body
-    // Previous params: (buf : * mut u8, s : * const i8)
-    // Previous return: usize
-    todo ! ()
+    // inline _decode helper
+    #[inline(always)]
+    fn decode_char(ch: i8) -> u32 {
+        let c = ch as u8;
+        if c >= b'A' && c <= b'Z' {
+            return (c - b'A') as u32;
+        }
+        if c >= b'a' && c <= b'z' {
+            return (c - b'a') as u32 + 26;
+        }
+        if c >= b'0' && c <= b'9' {
+            return (c - b'0') as u32 + 52;
+        }
+        if c == b'+' {
+            return 62;
+        }
+        if c == b'/' {
+            return 63;
+        }
+        0
+    }
+
+    // SAFETY: caller guarantees buf has enough space for decoded output,
+    // s is a valid null-terminated C string.
+    unsafe {
+        let mut i: usize = 0;
+        let mut j: usize = 0;
+
+        // loop over 24 bit chunks
+        while *s.add(i) != 0 {
+            // take next 24 bit chunk (4 chars; 6 bits each)
+            let char_1 = decode_char(*s.add(i));
+            i += 1;
+            let char_2 = decode_char(*s.add(i));
+            i += 1;
+            let char_3 = decode_char(*s.add(i));
+            i += 1;
+            let char_4 = decode_char(*s.add(i));
+            i += 1;
+
+            // merge into 32 bit int
+            let k = (char_1 << 18) | (char_2 << 12) | (char_3 << 6) | char_4;
+
+            // write up to three bytes (exclude padding at end)
+            *buf.add(j) = ((k >> 16) & 0xFF) as u8;
+            j += 1;
+            if *s.add(i - 2) != b'=' as i8 {
+                *buf.add(j) = ((k >> 8) & 0xFF) as u8;
+                j += 1;
+            }
+            if *s.add(i - 1) != b'=' as i8 {
+                *buf.add(j) = (k & 0xFF) as u8;
+                j += 1;
+            }
+        }
+        j
+    }
 }
 
 /// C: mju_historyInit (engine/engine_util_misc.h:184)
