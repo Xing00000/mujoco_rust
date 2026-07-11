@@ -65,8 +65,9 @@ pub fn conflict_subject(parent: *const mjSpec, child: *const mjSpec) -> std__str
 /// Calls: Resolver::Apply, VisitConflicts
 #[allow(unused_variables, non_snake_case)]
 pub fn resolve_conflicts(parent: *mut mjSpec, child: *const mjSpec, mode: mjtConflict, error_msg: *mut string, warning_subject: *mut string, warning_body: *mut string) -> bool {
+    if parent.is_null() { return false; }
     extern "C" { fn ResolveConflicts(parent: *mut mjSpec, child: *const mjSpec, mode: mjtConflict, error_msg: *mut string, warning_subject: *mut string, warning_body: *mut string) -> bool; }
-    // SAFETY: delegates to C implementation
+    // SAFETY: parent verified non-null; delegates to C implementation
     unsafe { ResolveConflicts(parent, child, mode, error_msg, warning_subject, warning_body) }
 }
 

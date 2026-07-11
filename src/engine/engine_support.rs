@@ -55,8 +55,9 @@ pub fn mj_state_elem_const_ptr(m: *const mjModel, d: *const mjData, sig: mjtStat
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_geom_distance_ccd(m: *const mjModel, d: *mut mjData, g1: i32, g2: i32, distmax: f64, fromto: *mut f64) -> f64 {
+    if m.is_null() { return 0.0; }
     extern "C" { fn mj_geomDistanceCCD(m: *const mjModel, d: *mut mjData, g1: i32, g2: i32, distmax: f64, fromto: *mut f64) -> f64; }
-    // SAFETY: delegates to C implementation, all pointers valid per caller contract
+    // SAFETY: m verified non-null; delegates to C implementation, all pointers valid per caller contract
     unsafe { mj_geomDistanceCCD(m, d, g1, g2, distmax, fromto) }
 }
 

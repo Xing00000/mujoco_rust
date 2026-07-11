@@ -446,10 +446,11 @@ pub fn hessian_incremental(d: *mut mjData, ctx: *mut mjPrimalContext, oldstate: 
 /// Calls: FactorizeHessian, HessianIncremental, MakeHessian, PrimalAllocate, PrimalPointers, PrimalSearch, PrimalUpdateConstraint, PrimalUpdateGradient, mj_freeStack, mj_isSparse, mj_markStack, mju_addToScl, mju_copy, mju_copyInt, mju_dot, mju_max, mju_min, mju_mulMatVec, mju_mulMatVecSparse, mju_mulSymVecSparse, mju_norm, mju_scl, mju_sub, mju_subFrom, saveStats
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_sol_primal(m: *const mjModel, d: *mut mjData, island: i32, maxiter: i32, flg_Newton: i32) {
+    if m.is_null() { return; }
     extern "C" {
         fn mj_solPrimal(m: *const mjModel, d: *mut mjData, island: i32, maxiter: i32, flg_Newton: i32);
     }
-    // SAFETY: delegates to C implementation, all pointers valid per caller contract
+    // SAFETY: m verified non-null; delegates to C implementation, all pointers valid per caller contract
     unsafe { mj_solPrimal(m, d, island, maxiter, flg_Newton) }
 }
 

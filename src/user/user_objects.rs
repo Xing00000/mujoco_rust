@@ -1375,9 +1375,6 @@ pub fn mj_c_body_point_to_local(self_ptr: *mut mjCBody) {
 /// C: mjCBody::NameSpace_ (user/user_objects.h:617)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_body_name_space_1(self_ptr: *mut mjCBody, m: *const mjCModel, propagate: bool) {
-    // WARNING: signature changed — verify body
-    // Previous params: (self_ptr : * mut mjCBody, m : * const mjCModel, propagate : bool)
-    // Previous return: ()
     unsafe { const BASE_PREFIX : usize = 104 ; const BASE_SUFFIX : usize = 128 ; const MODEL_PREFIX : usize = 16 ; const MODEL_SUFFIX : usize = 40 ; const BODY_PLUGIN_INSTANCE_NAME : usize = 0 ; const BODY_BODIES_VEC : usize = 0 ; const BODY_JOINTS_VEC : usize = 0 ; const BODY_GEOMS_VEC : usize = 0 ; const BODY_SITES_VEC : usize = 0 ; const BODY_CAMERAS_VEC : usize = 0 ; const BODY_LIGHTS_VEC : usize = 0 ; const BODY_FRAMES_VEC : usize = 0 ; # [doc = " Returns true if the libc++ string at `s` is empty."] # [inline (always)] unsafe fn str_is_empty (s : * const u8) -> bool { let b0 = * s ; if b0 & 1 == 0 { (b0 >> 1) == 0 } else { * (s . add (8) as * const usize) == 0 } } # [doc = " Returns (data_ptr, len) for the libc++ string at `s`."] # [inline (always)] unsafe fn str_parts (s : * const u8) -> (* const u8 , usize) { let b0 = * s ; if b0 & 1 == 0 { (s . add (1) , (b0 >> 1) as usize) } else { (* (s . add (16) as * const * const u8) , * (s . add (8) as * const usize)) } } # [doc = " Write `data[0..len]` into the libc++ string at `dst`, handling SSO/heap."] # [doc = " Frees old heap buffer if needed, allocates new one if len > 22."] # [inline (always)] unsafe fn str_set (dst : * mut u8 , data : * const u8 , len : usize) { if * dst & 1 != 0 { let old_cap = (* (dst as * const usize)) >> 1 ; let old_ptr = * (dst . add (16) as * const * mut u8) ; if ! old_ptr . is_null () && old_cap > 0 { let layout = std :: alloc :: Layout :: from_size_align_unchecked (old_cap + 1 , 1) ; std :: alloc :: dealloc (old_ptr , layout) ; } } if len <= 22 { core :: ptr :: write_bytes (dst , 0 , 24) ; * dst = (len as u8) << 1 ; core :: ptr :: copy_nonoverlapping (data , dst . add (1) , len) ; } else { let cap = len ; let layout = std :: alloc :: Layout :: from_size_align_unchecked (cap + 1 , 1) ; let buf = std :: alloc :: alloc (layout) ; core :: ptr :: copy_nonoverlapping (data , buf , len) ; * buf . add (len) = 0 ; * (dst as * mut usize) = (cap << 1) | 1 ; * (dst . add (8) as * mut usize) = len ; * (dst . add (16) as * mut * mut u8) = buf ; } } # [doc = " Assign src string to dst string (deep copy)."] # [inline (always)] unsafe fn str_assign (dst : * mut u8 , src : * const u8) { let (data , len) = str_parts (src) ; str_set (dst , data , len) ; } # [doc = " Set dst = a + b + c (concatenation of three strings)."] # [inline (always)] unsafe fn str_concat3 (dst : * mut u8 , a : * const u8 , b : * const u8 , c : * const u8) { let (a_d , a_l) = str_parts (a) ; let (b_d , b_l) = str_parts (b) ; let (c_d , c_l) = str_parts (c) ; let total = a_l + b_l + c_l ; let layout = std :: alloc :: Layout :: from_size_align_unchecked (total + 1 , 1) ; let tmp = std :: alloc :: alloc (layout) ; core :: ptr :: copy_nonoverlapping (a_d , tmp , a_l) ; core :: ptr :: copy_nonoverlapping (b_d , tmp . add (a_l) , b_l) ; core :: ptr :: copy_nonoverlapping (c_d , tmp . add (a_l + b_l) , c_l) ; * tmp . add (total) = 0 ; str_set (dst , tmp , total) ; std :: alloc :: dealloc (tmp , layout) ; } # [doc = " Returns the number of pointer-sized elements in a std::vector<T*> at `v`."] # [inline (always)] unsafe fn vec_len (v : * const u8) -> usize { let begin = * (v as * const usize) ; let end = * (v . add (8) as * const usize) ; if begin == 0 { 0 } else { (end - begin) / core :: mem :: size_of :: < usize > () } } # [doc = " Returns the i-th pointer from a std::vector<T*> at `v`."] # [inline (always)] unsafe fn vec_get (v : * const u8 , i : usize) -> * mut u8 { let begin = * (v as * const * const * mut u8) ; * begin . add (i) as * mut u8 } mj_c_base_name_space (self_ptr as * mut mjCBase , m) ; let s = self_ptr as * mut u8 ; let mp = m as * const u8 ; if BODY_PLUGIN_INSTANCE_NAME != 0 { let pin = s . add (BODY_PLUGIN_INSTANCE_NAME) ; if ! str_is_empty (pin) { str_concat3 (pin , mp . add (MODEL_PREFIX) , pin as * const u8 , mp . add (MODEL_SUFFIX)) ; } } if BODY_BODIES_VEC != 0 { let bv = s . add (BODY_BODIES_VEC) ; let n = vec_len (bv) ; for i in 0 .. n { let body = vec_get (bv , i) ; str_assign (body . add (BASE_PREFIX) , mp . add (MODEL_PREFIX)) ; str_assign (body . add (BASE_SUFFIX) , mp . add (MODEL_SUFFIX)) ; mj_c_body_name_space_1 (body as * mut mjCBody , m , propagate) ; } } if ! propagate { return ; } if BODY_JOINTS_VEC != 0 { let jv = s . add (BODY_JOINTS_VEC) ; let n = vec_len (jv) ; for i in 0 .. n { mj_c_base_name_space (vec_get (jv , i) as * mut mjCBase , m) ; } } if BODY_GEOMS_VEC != 0 { let gv = s . add (BODY_GEOMS_VEC) ; let n = vec_len (gv) ; for i in 0 .. n { mj_c_geom_name_space (vec_get (gv , i) as * mut mjCGeom , m) ; } } if BODY_SITES_VEC != 0 { let sv = s . add (BODY_SITES_VEC) ; let n = vec_len (sv) ; for i in 0 .. n { mj_c_site_name_space (vec_get (sv , i) as * mut mjCSite , m) ; } } if BODY_CAMERAS_VEC != 0 { let cv = s . add (BODY_CAMERAS_VEC) ; let n = vec_len (cv) ; for i in 0 .. n { mj_c_camera_name_space (vec_get (cv , i) as * mut mjCCamera , m) ; } } if BODY_LIGHTS_VEC != 0 { let lv = s . add (BODY_LIGHTS_VEC) ; let n = vec_len (lv) ; for i in 0 .. n { mj_c_light_name_space (vec_get (lv , i) as * mut mjCLight , m) ; } } if BODY_FRAMES_VEC != 0 { let fv = s . add (BODY_FRAMES_VEC) ; let n = vec_len (fv) ; for i in 0 .. n { mj_c_base_name_space (vec_get (fv , i) as * mut mjCBase , m) ; } } }
 }
 
@@ -1411,9 +1408,6 @@ pub fn mj_c_frame_point_to_local(self_ptr: *mut mjCFrame) {
 /// C: mjCFrame::SetParent (user/user_objects.h:656)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_frame_set_parent(self_ptr: *mut mjCFrame, _body: *mut mjCBody) {
-    // WARNING: signature changed — verify body
-    // Previous params: (self_ptr : * mut mjCFrame, _body : * mut mjCBody)
-    // Previous return: ()
     if self_ptr.is_null() { return; }
     extern "C" { fn mjCFrame_SetParent(self_ptr: *mut mjCFrame, _body: *mut mjCBody); }
     // SAFETY: self_ptr verified non-null
@@ -2664,9 +2658,7 @@ pub fn mj_c_mesh_mutable_octree(self_ptr: *mut mjCMesh) -> *mut mjCOctree {
 /// Calls: mjCMesh::TryCompile
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_mesh_compile(self_ptr: *mut mjCMesh, vfs: *const mjVFS) {
-    // WARNING: signature changed — verify body
-    // Previous params: (self_ptr : * mut mjCMesh, vfs : * const mjVFS)
-    // Previous return: ()
+    if self_ptr.is_null() { return; }
     extern "C" { fn mjCMesh_Compile (self_ptr : * mut mjCMesh , vfs : * const mjVFS) ; } unsafe { mjCMesh_Compile (self_ptr , vfs) }
 }
 
@@ -3027,9 +3019,6 @@ pub fn mj_c_mesh_make_normal(self_ptr: *mut mjCMesh, dvert: *const f64) {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_mesh_make_center(self_ptr: *mut mjCMesh, dvert: *const f64) {
-    // WARNING: signature changed — verify body
-    // Previous params: (self_ptr : * mut mjCMesh, dvert : * const f64)
-    // Previous return: ()
     if self_ptr.is_null() { return; }
     extern "C" { fn mjCMesh_MakeCenter(self_ptr: *mut mjCMesh, dvert: *const f64); }
     // SAFETY: self_ptr verified non-null; delegates to C implementation
@@ -3055,9 +3044,6 @@ pub fn mj_c_mesh_process(self_ptr: *mut mjCMesh) {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_mesh_apply_transformations(self_ptr: *mut mjCMesh, dvert: *mut f64) {
-    // WARNING: signature changed — verify body
-    // Previous params: (self_ptr : * mut mjCMesh, dvert : * mut f64)
-    // Previous return: ()
     if self_ptr.is_null() { return; }
     extern "C" { fn mjCMesh_ApplyTransformations(self_ptr: *mut mjCMesh, dvert: *mut f64); }
     // SAFETY: self_ptr verified non-null; delegates to C implementation
@@ -3086,9 +3072,6 @@ pub fn mj_c_mesh_compute_face_centroid(self_ptr: *mut mjCMesh, arg0: [f64; 3], d
 /// Calls: mjCMesh::nvert
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_mesh_check_initial_mesh(self_ptr: *mut mjCMesh) {
-    // WARNING: signature changed — verify body
-    // Previous params: (self_ptr : * mut mjCMesh)
-    // Previous return: ()
     if self_ptr.is_null() { return; }
     extern "C" { fn mjCMesh_CheckInitialMesh(self_ptr: *mut mjCMesh); }
     // SAFETY: self_ptr verified non-null; delegates to C implementation
@@ -3113,9 +3096,6 @@ pub fn mj_c_mesh_copy_plugin(self_ptr: *mut mjCMesh) {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_mesh_rotate(self_ptr: *mut mjCMesh, quat: [f64; 4], dvert: *mut f64) {
-    // WARNING: signature changed — verify body
-    // Previous params: (self_ptr : * mut mjCMesh, quat : [f64 ; 4], dvert : * mut f64)
-    // Previous return: ()
     if self_ptr.is_null() { return; }
     extern "C" { fn mjCMesh_Rotate(self_ptr: *mut mjCMesh, quat: [f64; 4], dvert: *mut f64); }
     // SAFETY: self_ptr verified non-null; delegates to C implementation
@@ -3131,9 +3111,6 @@ pub fn mj_c_mesh_rotate(self_ptr: *mut mjCMesh, quat: [f64; 4], dvert: *mut f64)
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_mesh_make_polygons(self_ptr: *mut mjCMesh, dvert: *const f64) {
-    // WARNING: signature changed — verify body
-    // Previous params: (self_ptr : * mut mjCMesh, dvert : * const f64)
-    // Previous return: ()
     if self_ptr.is_null() { return; }
     extern "C" { fn mjCMesh_MakePolygons(self_ptr: *mut mjCMesh, dvert: *const f64); }
     // SAFETY: self_ptr verified non-null; delegates to C implementation
@@ -3482,9 +3459,6 @@ pub fn mj_c_texture_name_space(self_ptr: *mut mjCTexture, m: *const mjCModel) {
 /// Calls: FilePath::Str, mjCTexture::Builtin2D, mjCTexture::BuiltinCube, mjCTexture::CopyFromSpec, mjCTexture::LoadCubeSeparate
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_texture_compile(self_ptr: *mut mjCTexture, vfs: *const mjVFS) {
-    // WARNING: signature changed — verify body
-    // Previous params: (self_ptr : * mut mjCTexture, vfs : * const mjVFS)
-    // Previous return: ()
     if self_ptr.is_null() { return; }
     extern "C" { fn mjCTexture_Compile(self_ptr: *mut mjCTexture, vfs: *const mjVFS); }
     // SAFETY: self_ptr verified non-null; delegates to C implementation

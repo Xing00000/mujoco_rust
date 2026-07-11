@@ -227,8 +227,9 @@ pub fn mj_compute_sensor_vel(m: *const mjModel, d: *mut mjData, i: i32, sensorda
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_compute_sensor_acc(m: *const mjModel, d: *mut mjData, i: i32, sensordata: *mut f64) {
+    if m.is_null() { return; }
     extern "C" { fn mj_computeSensorAcc(m: *const mjModel, d: *mut mjData, i: i32, sensordata: *mut f64); }
-    // SAFETY: delegates to C implementation, all pointers valid per caller contract
+    // SAFETY: m verified non-null; delegates to C implementation, all pointers valid per caller contract
     unsafe { mj_computeSensorAcc(m, d, i, sensordata) }
 }
 

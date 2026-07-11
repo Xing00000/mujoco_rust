@@ -95,8 +95,9 @@ pub fn release_geom(geom: *mut *mut mjvGeom, scn: *mut mjvScene) {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn add_triangle(scn: *mut mjvScene, v0: *const f64, v1: *const f64, v2: *const f64, rgba: [f32; 4], objid: i32, category: i32, objtype: i32) {
+    if scn.is_null() { return; }
     extern "C" { fn addTriangle(scn: *mut mjvScene, v0: *const f64, v1: *const f64, v2: *const f64, rgba: [f32; 4], objid: i32, category: i32, objtype: i32); }
-    // SAFETY: delegates to C implementation
+    // SAFETY: scn verified non-null; delegates to C implementation
     unsafe { addTriangle(scn, v0, v1, v2, rgba, objid, category, objtype) }
 }
 
@@ -148,8 +149,9 @@ pub fn markselected(vis: *const mjVisual, geom: *mut mjvGeom) {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn add_frame(scn: *mut mjvScene, objid: i32, pos: *const f64, rot: *const f64, length: f32, width: f32) {
+    if scn.is_null() { return; }
     extern "C" { fn addFrame(scn: *mut mjvScene, objid: i32, pos: *const f64, rot: *const f64, length: f32, width: f32); }
-    // SAFETY: delegates to C implementation
+    // SAFETY: scn verified non-null; delegates to C implementation
     unsafe { addFrame(scn, objid, pos, rot, length, width) }
 }
 
@@ -180,8 +182,9 @@ pub fn add_contact_geoms(m: *const mjModel, d: *mut mjData, vopt: *const mjvOpti
 /// Calls: acquireGeom, islandColor, makeLabel, markselected, mj_sleepCycle, mjv_initGeom, releaseGeom, setMaterial
 #[allow(unused_variables, non_snake_case)]
 pub fn add_flex_geoms(m: *const mjModel, d: *mut mjData, vopt: *const mjvOption, pert: *const mjvPerturb, catmask: i32, scn: *mut mjvScene) {
+    if m.is_null() { return; }
     extern "C" { fn addFlexGeoms(m: *const mjModel, d: *mut mjData, vopt: *const mjvOption, pert: *const mjvPerturb, catmask: i32, scn: *mut mjvScene); }
-    // SAFETY: delegates to C implementation, pointers valid per caller contract
+    // SAFETY: m verified non-null; delegates to C implementation, pointers valid per caller contract
     unsafe { addFlexGeoms(m, d, vopt, pert, catmask, scn) }
 }
 
@@ -198,8 +201,9 @@ pub fn add_skin_geoms(m: *const mjModel, d: *mut mjData, vopt: *const mjvOption,
 /// Calls: acquireGeom, bodycategory, islandColor, makeLabel, markselected, mj_sleepCycle, mju_addToScl3, mju_copy3, mju_dot3, mju_n2f, mju_round, mju_transpose, mjv_initGeom, releaseGeom, setMaterial
 #[allow(unused_variables, non_snake_case)]
 pub fn add_geom_geoms(m: *const mjModel, d: *mut mjData, vopt: *const mjvOption, pert: *const mjvPerturb, catmask: i32, scn: *mut mjvScene) {
+    if m.is_null() { return; }
     extern "C" { fn addGeomGeoms(m: *const mjModel, d: *mut mjData, vopt: *const mjvOption, pert: *const mjvPerturb, catmask: i32, scn: *mut mjvScene); }
-    // SAFETY: delegates to C implementation, pointers valid per caller contract
+    // SAFETY: m verified non-null; delegates to C implementation, pointers valid per caller contract
     unsafe { addGeomGeoms(m, d, vopt, pert, catmask, scn) }
 }
 
@@ -262,8 +266,9 @@ pub fn add_body_bvh_geoms(m: *const mjModel, d: *mut mjData, vopt: *const mjvOpt
 /// Calls: acquireGeom, mj_stackAllocInfo, mju_addTo3, mju_copy3, mju_mulMatVec3, mjv_connector, mjv_initGeom, releaseGeom
 #[allow(unused_variables, non_snake_case)]
 pub fn add_flex_bvh_geoms(m: *const mjModel, d: *mut mjData, vopt: *const mjvOption, scn: *mut mjvScene) {
+    if m.is_null() { return; }
     extern "C" { fn addFlexBvhGeoms(m: *const mjModel, d: *mut mjData, vopt: *const mjvOption, scn: *mut mjvScene); }
-    // SAFETY: delegates to C implementation, pointers valid per caller contract
+    // SAFETY: m verified non-null; delegates to C implementation, pointers valid per caller contract
     unsafe { addFlexBvhGeoms(m, d, vopt, scn) }
 }
 
@@ -298,8 +303,9 @@ pub fn add_tactile_sensor_geoms(m: *const mjModel, d: *mut mjData, vopt: *const 
 /// Calls: acquireGeom, bodycategory, makeLabel, markselected, mju_max, mjv_initGeom, releaseGeom
 #[allow(unused_variables, non_snake_case)]
 pub fn add_inertia_geoms(m: *const mjModel, d: *mut mjData, vopt: *const mjvOption, pert: *const mjvPerturb, catmask: i32, scn: *mut mjvScene) {
+    if m.is_null() { return; }
     extern "C" { fn addInertiaGeoms(m: *const mjModel, d: *mut mjData, vopt: *const mjvOption, pert: *const mjvPerturb, catmask: i32, scn: *mut mjvScene); }
-    // SAFETY: delegates to C implementation, pointers valid per caller contract
+    // SAFETY: m verified non-null; delegates to C implementation, pointers valid per caller contract
     unsafe { addInertiaGeoms(m, d, vopt, pert, catmask, scn) }
 }
 
@@ -334,8 +340,9 @@ pub fn add_selection_point_geoms(m: *const mjModel, d: *mut mjData, vopt: *const
 /// Calls: acquireGeom, bodycategory, makeLabel, mju_n2f, releaseGeom
 #[allow(unused_variables, non_snake_case)]
 pub fn add_body_label_geoms(m: *const mjModel, d: *mut mjData, vopt: *const mjvOption, pert: *const mjvPerturb, catmask: i32, scn: *mut mjvScene) {
+    if m.is_null() { return; }
     extern "C" { fn addBodyLabelGeoms(m: *const mjModel, d: *mut mjData, vopt: *const mjvOption, pert: *const mjvPerturb, catmask: i32, scn: *mut mjvScene); }
-    // SAFETY: delegates to C implementation, pointers valid per caller contract
+    // SAFETY: m verified non-null; delegates to C implementation, pointers valid per caller contract
     unsafe { addBodyLabelGeoms(m, d, vopt, pert, catmask, scn) }
 }
 
@@ -343,8 +350,9 @@ pub fn add_body_label_geoms(m: *const mjModel, d: *mut mjData, vopt: *const mjvO
 /// Calls: acquireGeom, f2f, makeLabel, mju_addScl3, mju_message, mju_n2f, mjv_connector, releaseGeom
 #[allow(unused_variables, non_snake_case)]
 pub fn add_joint_geoms(m: *const mjModel, d: *mut mjData, vopt: *const mjvOption, scn: *mut mjvScene) {
+    if m.is_null() { return; }
     extern "C" { fn addJointGeoms(m: *const mjModel, d: *mut mjData, vopt: *const mjvOption, scn: *mut mjvScene); }
-    // SAFETY: delegates to C implementation, pointers valid per caller contract
+    // SAFETY: m verified non-null; delegates to C implementation, pointers valid per caller contract
     unsafe { addJointGeoms(m, d, vopt, scn) }
 }
 
@@ -352,8 +360,9 @@ pub fn add_joint_geoms(m: *const mjModel, d: *mut mjData, vopt: *const mjvOption
 /// Calls: acquireGeom, f2f, makeLabel, mj_actuatorDisabled, mju_addScl3, mju_clip, mju_scl3, mjv_connector, mjv_initGeom, releaseGeom, setMaterial
 #[allow(unused_variables, non_snake_case)]
 pub fn add_actuator_geoms(m: *const mjModel, d: *mut mjData, vopt: *const mjvOption, scn: *mut mjvScene) {
+    if m.is_null() { return; }
     extern "C" { fn addActuatorGeoms(m: *const mjModel, d: *mut mjData, vopt: *const mjvOption, scn: *mut mjvScene); }
-    // SAFETY: delegates to C implementation, pointers valid per caller contract
+    // SAFETY: m verified non-null; delegates to C implementation, pointers valid per caller contract
     unsafe { addActuatorGeoms(m, d, vopt, scn) }
 }
 
@@ -361,8 +370,9 @@ pub fn add_actuator_geoms(m: *const mjModel, d: *mut mjData, vopt: *const mjvOpt
 /// Calls: acquireGeom, mju_n2f, releaseGeom
 #[allow(unused_variables, non_snake_case)]
 pub fn add_island_label_geoms(m: *const mjModel, d: *mut mjData, vopt: *const mjvOption, scn: *mut mjvScene) {
+    if m.is_null() { return; }
     extern "C" { fn addIslandLabelGeoms(m: *const mjModel, d: *mut mjData, vopt: *const mjvOption, scn: *mut mjvScene); }
-    // SAFETY: delegates to C implementation, pointers valid per caller contract
+    // SAFETY: m verified non-null; delegates to C implementation, pointers valid per caller contract
     unsafe { addIslandLabelGeoms(m, d, vopt, scn) }
 }
 
@@ -388,8 +398,9 @@ pub fn add_light_geoms(m: *const mjModel, d: *mut mjData, vopt: *const mjvOption
 /// Calls: acquireGeom, f2f, mju_n2f, releaseGeom
 #[allow(unused_variables, non_snake_case)]
 pub fn add_center_of_mass_geoms(m: *const mjModel, d: *mut mjData, vopt: *const mjvOption, scn: *mut mjvScene) {
+    if m.is_null() { return; }
     extern "C" { fn addCenterOfMassGeoms(m: *const mjModel, d: *mut mjData, vopt: *const mjvOption, scn: *mut mjvScene); }
-    // SAFETY: delegates to C implementation, pointers valid per caller contract
+    // SAFETY: m verified non-null; delegates to C implementation, pointers valid per caller contract
     unsafe { addCenterOfMassGeoms(m, d, vopt, scn) }
 }
 
@@ -397,8 +408,9 @@ pub fn add_center_of_mass_geoms(m: *const mjModel, d: *mut mjData, vopt: *const 
 /// Calls: addConnector
 #[allow(unused_variables, non_snake_case)]
 pub fn add_auto_connect_geoms(m: *const mjModel, d: *mut mjData, vopt: *const mjvOption, scn: *mut mjvScene) {
+    if m.is_null() { return; }
     extern "C" { fn addAutoConnectGeoms(m: *const mjModel, d: *mut mjData, vopt: *const mjvOption, scn: *mut mjvScene); }
-    // SAFETY: delegates to C implementation, pointers valid per caller contract
+    // SAFETY: m verified non-null; delegates to C implementation, pointers valid per caller contract
     unsafe { addAutoConnectGeoms(m, d, vopt, scn) }
 }
 
@@ -415,8 +427,9 @@ pub fn add_rangefinder_geoms(m: *const mjModel, d: *mut mjData, vopt: *const mjv
 /// Calls: addConnector, mju_add3, mju_isZero, mju_norm3, mju_scl3
 #[allow(unused_variables, non_snake_case)]
 pub fn add_external_perturb_geoms(m: *const mjModel, d: *mut mjData, vopt: *const mjvOption, scn: *mut mjvScene) {
+    if m.is_null() { return; }
     extern "C" { fn addExternalPerturbGeoms(m: *const mjModel, d: *mut mjData, vopt: *const mjvOption, scn: *mut mjvScene); }
-    // SAFETY: delegates to C implementation, pointers valid per caller contract
+    // SAFETY: m verified non-null; delegates to C implementation, pointers valid per caller contract
     unsafe { addExternalPerturbGeoms(m, d, vopt, scn) }
 }
 
@@ -424,8 +437,9 @@ pub fn add_external_perturb_geoms(m: *const mjModel, d: *mut mjData, vopt: *cons
 /// Calls: acquireGeom, makeLabel, mju_addTo3, mju_copy3, mju_mulMatVec3, mjv_initGeom, releaseGeom
 #[allow(unused_variables, non_snake_case)]
 pub fn add_constraint_geoms(m: *const mjModel, d: *mut mjData, vopt: *const mjvOption, scn: *mut mjvScene) {
+    if m.is_null() { return; }
     extern "C" { fn addConstraintGeoms(m: *const mjModel, d: *mut mjData, vopt: *const mjvOption, scn: *mut mjvScene); }
-    // SAFETY: delegates to C implementation, pointers valid per caller contract
+    // SAFETY: m verified non-null; delegates to C implementation, pointers valid per caller contract
     unsafe { addConstraintGeoms(m, d, vopt, scn) }
 }
 

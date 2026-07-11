@@ -186,8 +186,9 @@ pub fn isknown(points: *const f64, x: *const f64, cnt: i32) -> i32  {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn add_pre_contact(points: *mut f64, con: *mut mjPreContact, x: *const f64, pos2: *const f64, quat2: *const f64, dist: f64, cnt: i32, m: *const mjModel, s: *const mjSDF, d: *const mjData, flipNormal: i32) -> i32  {
+    if points.is_null() { return 0; }
     extern "C" { fn addPreContact(points: *mut f64, con: *mut mjPreContact, x: *const f64, pos2: *const f64, quat2: *const f64, dist: f64, cnt: i32, m: *const mjModel, s: *const mjSDF, d: *const mjData, flipNormal: i32) -> i32; }
-    // SAFETY: delegates to C implementation
+    // SAFETY: points verified non-null; delegates to C implementation
     unsafe { addPreContact(points, con, x, pos2, quat2, dist, cnt, m, s, d, flipNormal) }
 }
 
@@ -200,8 +201,9 @@ pub fn add_pre_contact(points: *mut f64, con: *mut mjPreContact, x: *const f64, 
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn step_frank_wolfe(x: *mut f64, corners: *const f64, ncorners: i32, m: *const mjModel, sdf: *const mjSDF, d: *const mjData) -> f64  {
+    if x.is_null() { return 0.0; }
     extern "C" { fn stepFrankWolfe(x: *mut f64, corners: *const f64, ncorners: i32, m: *const mjModel, sdf: *const mjSDF, d: *const mjData) -> f64; }
-    // SAFETY: delegates to C implementation
+    // SAFETY: x verified non-null; delegates to C implementation
     unsafe { stepFrankWolfe(x, corners, ncorners, m, sdf, d) }
 }
 
@@ -297,10 +299,11 @@ pub fn process_one_face(faceid: i32, bvh_active: *mut mjtBool, node: i32, ctx: *
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn traverse_bvh(bvh: *const f64, nodeid: *const i32, child: *const i32, bvh_active: *mut mjtBool, offset: *const f64, rotation: *const f64, m: *const mjModel, d: *const mjData, sdf: *const mjSDF, callback: BVHLeafCallback, ctx: *mut ()) {
+    if bvh.is_null() { return; }
     extern "C" {
         fn traverseBVH(bvh: *const f64, nodeid: *const i32, child: *const i32, bvh_active: *mut mjtBool, offset: *const f64, rotation: *const f64, m: *const mjModel, d: *const mjData, sdf: *const mjSDF, callback: BVHLeafCallback, ctx: *mut ());
     }
-    // SAFETY: delegates to C implementation, all pointers valid per caller contract
+    // SAFETY: bvh verified non-null; delegates to C implementation, all pointers valid per caller contract
     unsafe { traverseBVH(bvh, nodeid, child, bvh_active, offset, rotation, m, d, sdf, callback, ctx) }
 }
 
