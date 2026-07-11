@@ -520,10 +520,52 @@ pub fn mju_trn_vec_pose(res: *mut f64, pos: *const f64, quat: *const f64, vec: *
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mju_euler2quat(quat: *mut f64, euler: *const f64, seq: *const i8) {
-    // WARNING: signature changed — verify body
-    // Previous params: (quat : * mut f64, euler : * const f64, seq : * const i8)
-    // Previous return: ()
-    todo ! ()
+    // SAFETY: caller guarantees quat points to 4 f64, euler to 3 f64,
+    // seq is a valid C string with at least 3 characters.
+    unsafe {
+        // init
+        let mut tmp = [1.0f64, 0.0, 0.0, 0.0];
+
+        // loop over euler angles, accumulate rotations
+        for i in 0..3 {
+            let angle = *euler.add(i);
+            let ca = (angle / 2.0).cos();
+            let sa = (angle / 2.0).sin();
+            let mut rot = [ca, 0.0f64, 0.0, 0.0];
+            let ch = *seq.add(i) as u8;
+
+            if ch == b'x' || ch == b'X' {
+                rot[1] = sa;
+            } else if ch == b'y' || ch == b'Y' {
+                rot[2] = sa;
+            } else if ch == b'z' || ch == b'Z' {
+                rot[3] = sa;
+            }
+
+            // accumulate rotation: mulQuat inlined
+            let mut res = [0.0f64; 4];
+            if ch == b'x' || ch == b'y' || ch == b'z' {
+                // moving axes: post-multiply: tmp = tmp * rot
+                res[0] = tmp[0]*rot[0] - tmp[1]*rot[1] - tmp[2]*rot[2] - tmp[3]*rot[3];
+                res[1] = tmp[0]*rot[1] + tmp[1]*rot[0] + tmp[2]*rot[3] - tmp[3]*rot[2];
+                res[2] = tmp[0]*rot[2] - tmp[1]*rot[3] + tmp[2]*rot[0] + tmp[3]*rot[1];
+                res[3] = tmp[0]*rot[3] + tmp[1]*rot[2] - tmp[2]*rot[1] + tmp[3]*rot[0];
+            } else {
+                // fixed axes: pre-multiply: tmp = rot * tmp
+                res[0] = rot[0]*tmp[0] - rot[1]*tmp[1] - rot[2]*tmp[2] - rot[3]*tmp[3];
+                res[1] = rot[0]*tmp[1] + rot[1]*tmp[0] + rot[2]*tmp[3] - rot[3]*tmp[2];
+                res[2] = rot[0]*tmp[2] - rot[1]*tmp[3] + rot[2]*tmp[0] + rot[3]*tmp[1];
+                res[3] = rot[0]*tmp[3] + rot[1]*tmp[2] - rot[2]*tmp[1] + rot[3]*tmp[0];
+            }
+            tmp = res;
+        }
+
+        // mji_copy4(quat, tmp)
+        *quat.add(0) = tmp[0];
+        *quat.add(1) = tmp[1];
+        *quat.add(2) = tmp[2];
+        *quat.add(3) = tmp[3];
+    }
 }
 
 /// C: mju_cross (engine/engine_util_spatial.h:89)
