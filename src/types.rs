@@ -23,11 +23,6 @@ pub struct BufferProvider { _opaque: [u8; 0] }
 #[derive(Clone, Copy)]
 pub struct ContactInfo { _opaque: [u8; 0] }
 
-/// Opaque C struct: ElementClosingType (unsized, pointer-only)
-#[repr(C)]
-#[derive(Clone, Copy)]
-pub struct ElementClosingType { _opaque: [u8; 0] }
-
 /// Opaque C struct: Face (unsized, pointer-only)
 #[repr(C)]
 #[derive(Clone, Copy)]
@@ -73,15 +68,15 @@ pub struct GlobalTable { _opaque: [u8; 0] }
 #[derive(Clone, Copy)]
 pub struct LocaleOverride { _opaque: [u8; 0] }
 
-/// Opaque C struct: LodePNGColorType (unsized, pointer-only)
-#[repr(C)]
-#[derive(Clone, Copy)]
-pub struct LodePNGColorType { _opaque: [u8; 0] }
-
 /// Opaque C struct: Matrix (unsized, pointer-only)
 #[repr(C)]
 #[derive(Clone, Copy)]
 pub struct Matrix { _opaque: [u8; 0] }
+
+/// Sized opaque C struct: MemPool (8 bytes, align 8)
+#[repr(C, align(8))]
+#[derive(Clone, Copy)]
+pub struct MemPool { pub _data: [u8; 8] }
 
 /// Opaque C struct: MeshPolygon (unsized, pointer-only)
 #[repr(C)]
@@ -133,11 +128,6 @@ pub struct Resolver { _opaque: [u8; 0] }
 #[derive(Clone, Copy)]
 pub struct ResourcePtr { _opaque: [u8; 0] }
 
-/// Opaque C struct: Status (unsized, pointer-only)
-#[repr(C)]
-#[derive(Clone, Copy)]
-pub struct Status { _opaque: [u8; 0] }
-
 /// Opaque C struct: T (unsized, pointer-only)
 #[repr(C)]
 #[derive(Clone, Copy)]
@@ -178,11 +168,6 @@ pub struct VFS { _opaque: [u8; 0] }
 #[derive(Clone, Copy)]
 pub struct Vertex { _opaque: [u8; 0] }
 
-/// Opaque C struct: XMLAttribute (unsized, pointer-only)
-#[repr(C)]
-#[derive(Clone, Copy)]
-pub struct XMLAttribute { _opaque: [u8; 0] }
-
 /// Opaque C struct: XMLDocument (unsized, pointer-only)
 #[repr(C)]
 #[derive(Clone, Copy)]
@@ -197,11 +182,6 @@ pub struct ZipArchiveProvider { _opaque: [u8; 0] }
 #[repr(C)]
 #[derive(Clone, Copy)]
 pub struct ccd_real_t { _opaque: [u8; 0] }
-
-/// Opaque C struct: char (unsized, pointer-only)
-#[repr(C)]
-#[derive(Clone, Copy)]
-pub struct char { _opaque: [u8; 0] }
 
 /// Opaque C struct: char__const (unsized, pointer-only)
 #[repr(C)]
@@ -593,150 +573,20 @@ pub struct mjsExclude { _opaque: [u8; 0] }
 #[derive(Clone, Copy)]
 pub struct mjsWrap { _opaque: [u8; 0] }
 
-/// Opaque C struct: mjtBias (unsized, pointer-only)
-#[repr(C)]
-#[derive(Clone, Copy)]
-pub struct mjtBias { _opaque: [u8; 0] }
-
 /// Opaque C struct: mjtBool (unsized, pointer-only)
 #[repr(C)]
 #[derive(Clone, Copy)]
 pub struct mjtBool { _opaque: [u8; 0] }
-
-/// Opaque C struct: mjtCamLight (unsized, pointer-only)
-#[repr(C)]
-#[derive(Clone, Copy)]
-pub struct mjtCamLight { _opaque: [u8; 0] }
-
-/// Opaque C struct: mjtColorSpace (unsized, pointer-only)
-#[repr(C)]
-#[derive(Clone, Copy)]
-pub struct mjtColorSpace { _opaque: [u8; 0] }
-
-/// Opaque C struct: mjtConflict (unsized, pointer-only)
-#[repr(C)]
-#[derive(Clone, Copy)]
-pub struct mjtConflict { _opaque: [u8; 0] }
-
-/// Opaque C struct: mjtDataType (unsized, pointer-only)
-#[repr(C)]
-#[derive(Clone, Copy)]
-pub struct mjtDataType { _opaque: [u8; 0] }
 
 /// Opaque C struct: mjtDof (unsized, pointer-only)
 #[repr(C)]
 #[derive(Clone, Copy)]
 pub struct mjtDof { _opaque: [u8; 0] }
 
-/// Opaque C struct: mjtDyn (unsized, pointer-only)
-#[repr(C)]
-#[derive(Clone, Copy)]
-pub struct mjtDyn { _opaque: [u8; 0] }
-
-/// Opaque C struct: mjtEq (unsized, pointer-only)
-#[repr(C)]
-#[derive(Clone, Copy)]
-pub struct mjtEq { _opaque: [u8; 0] }
-
 /// Opaque C struct: mjtFcompType (unsized, pointer-only)
 #[repr(C)]
 #[derive(Clone, Copy)]
 pub struct mjtFcompType { _opaque: [u8; 0] }
-
-/// Opaque C struct: mjtGain (unsized, pointer-only)
-#[repr(C)]
-#[derive(Clone, Copy)]
-pub struct mjtGain { _opaque: [u8; 0] }
-
-/// Opaque C struct: mjtGeom (unsized, pointer-only)
-#[repr(C)]
-#[derive(Clone, Copy)]
-pub struct mjtGeom { _opaque: [u8; 0] }
-
-/// Opaque C struct: mjtGeomInertia (unsized, pointer-only)
-#[repr(C)]
-#[derive(Clone, Copy)]
-pub struct mjtGeomInertia { _opaque: [u8; 0] }
-
-/// Opaque C struct: mjtJoint (unsized, pointer-only)
-#[repr(C)]
-#[derive(Clone, Copy)]
-pub struct mjtJoint { _opaque: [u8; 0] }
-
-/// Opaque C struct: mjtLightType (unsized, pointer-only)
-#[repr(C)]
-#[derive(Clone, Copy)]
-pub struct mjtLightType { _opaque: [u8; 0] }
-
-/// Opaque C struct: mjtMeshBuiltin (unsized, pointer-only)
-#[repr(C)]
-#[derive(Clone, Copy)]
-pub struct mjtMeshBuiltin { _opaque: [u8; 0] }
-
-/// Opaque C struct: mjtMeshInertia (unsized, pointer-only)
-#[repr(C)]
-#[derive(Clone, Copy)]
-pub struct mjtMeshInertia { _opaque: [u8; 0] }
-
-/// Opaque C struct: mjtObj (unsized, pointer-only)
-#[repr(C)]
-#[derive(Clone, Copy)]
-pub struct mjtObj { _opaque: [u8; 0] }
-
-/// Opaque C struct: mjtOrientation (unsized, pointer-only)
-#[repr(C)]
-#[derive(Clone, Copy)]
-pub struct mjtOrientation { _opaque: [u8; 0] }
-
-/// Opaque C struct: mjtProjection (unsized, pointer-only)
-#[repr(C)]
-#[derive(Clone, Copy)]
-pub struct mjtProjection { _opaque: [u8; 0] }
-
-/// Opaque C struct: mjtSDFType (unsized, pointer-only)
-#[repr(C)]
-#[derive(Clone, Copy)]
-pub struct mjtSDFType { _opaque: [u8; 0] }
-
-/// Opaque C struct: mjtSensor (unsized, pointer-only)
-#[repr(C)]
-#[derive(Clone, Copy)]
-pub struct mjtSensor { _opaque: [u8; 0] }
-
-/// Opaque C struct: mjtSleepPolicy (unsized, pointer-only)
-#[repr(C)]
-#[derive(Clone, Copy)]
-pub struct mjtSleepPolicy { _opaque: [u8; 0] }
-
-/// Opaque C struct: mjtSleepState (unsized, pointer-only)
-#[repr(C)]
-#[derive(Clone, Copy)]
-pub struct mjtSleepState { _opaque: [u8; 0] }
-
-/// Opaque C struct: mjtStage (unsized, pointer-only)
-#[repr(C)]
-#[derive(Clone, Copy)]
-pub struct mjtStage { _opaque: [u8; 0] }
-
-/// Opaque C struct: mjtState (unsized, pointer-only)
-#[repr(C)]
-#[derive(Clone, Copy)]
-pub struct mjtState { _opaque: [u8; 0] }
-
-/// Opaque C struct: mjtTexture (unsized, pointer-only)
-#[repr(C)]
-#[derive(Clone, Copy)]
-pub struct mjtTexture { _opaque: [u8; 0] }
-
-/// Opaque C struct: mjtTrn (unsized, pointer-only)
-#[repr(C)]
-#[derive(Clone, Copy)]
-pub struct mjtTrn { _opaque: [u8; 0] }
-
-/// Opaque C struct: mjtWrap (unsized, pointer-only)
-#[repr(C)]
-#[derive(Clone, Copy)]
-pub struct mjtWrap { _opaque: [u8; 0] }
 
 /// Opaque C struct: mjuiItem____anonymous_union_at__Users_xing_Desktop_projects_c2rust_bitexact_projects_mujoco_include_mujoco_mjui_h_256_3 (unsized, pointer-only)
 #[repr(C)]
@@ -853,6 +703,11 @@ pub struct struct_mjpResourceProvider { _opaque: [u8; 0] }
 #[derive(Clone, Copy)]
 pub struct tinyxml2__XMLElement { _opaque: [u8; 0] }
 
+/// Opaque C struct: type_parameter_0_0 (unsized, pointer-only)
+#[repr(C)]
+#[derive(Clone, Copy)]
+pub struct type_parameter_0_0 { _opaque: [u8; 0] }
+
 /// Opaque C struct: union__unnamed_at__Users_xing_Desktop_projects_c2rust_bitexact_projects_mujoco_src_engine_engine_collision_convex_h_52_3 (unsized, pointer-only)
 #[repr(C)]
 #[derive(Clone, Copy)]
@@ -867,6 +722,93 @@ pub struct va_list { _opaque: [u8; 0] }
 #[repr(C)]
 #[derive(Clone, Copy)]
 pub struct void_____T____const_char { _opaque: [u8; 0] }
+
+/// C enum: ElementClosingType
+pub type ElementClosingType = u32;
+
+/// C enum: LodePNGColorType
+pub type LodePNGColorType = u32;
+
+/// C enum: Status
+pub type Status = i32;
+
+/// C enum: mjtBias
+pub type mjtBias = u32;
+
+/// C enum: mjtCamLight
+pub type mjtCamLight = u32;
+
+/// C enum: mjtColorSpace
+pub type mjtColorSpace = u32;
+
+/// C enum: mjtConflict
+pub type mjtConflict = u32;
+
+/// C enum: mjtDataType
+pub type mjtDataType = u32;
+
+/// C enum: mjtDyn
+pub type mjtDyn = u32;
+
+/// C enum: mjtEq
+pub type mjtEq = u32;
+
+/// C enum: mjtGain
+pub type mjtGain = u32;
+
+/// C enum: mjtGeom
+pub type mjtGeom = u32;
+
+/// C enum: mjtGeomInertia
+pub type mjtGeomInertia = u32;
+
+/// C enum: mjtJoint
+pub type mjtJoint = u32;
+
+/// C enum: mjtLightType
+pub type mjtLightType = u32;
+
+/// C enum: mjtMeshBuiltin
+pub type mjtMeshBuiltin = u32;
+
+/// C enum: mjtMeshInertia
+pub type mjtMeshInertia = u32;
+
+/// C enum: mjtObj
+pub type mjtObj = u32;
+
+/// C enum: mjtOrientation
+pub type mjtOrientation = u32;
+
+/// C enum: mjtProjection
+pub type mjtProjection = u32;
+
+/// C enum: mjtSDFType
+pub type mjtSDFType = u32;
+
+/// C enum: mjtSensor
+pub type mjtSensor = u32;
+
+/// C enum: mjtSleepPolicy
+pub type mjtSleepPolicy = u32;
+
+/// C enum: mjtSleepState
+pub type mjtSleepState = i32;
+
+/// C enum: mjtStage
+pub type mjtStage = u32;
+
+/// C enum: mjtState
+pub type mjtState = u32;
+
+/// C enum: mjtTexture
+pub type mjtTexture = u32;
+
+/// C enum: mjtTrn
+pub type mjtTrn = u32;
+
+/// C enum: mjtWrap
+pub type mjtWrap = u32;
 
 /// C struct: GlobalModel (16 bytes, align 8)
 #[repr(C)]
@@ -883,11 +825,31 @@ pub struct ReentrantWriteLock {
     pub mutex_: *mut Mutex,
 }
 
+/// C struct: StrPair (24 bytes, align 8)
+#[repr(C)]
+#[derive(Clone, Copy)]
+pub struct StrPair {
+    pub _flags: i32,
+    pub _start: *mut i8,
+    pub _end: *mut i8,
+}
+
+/// C struct: XMLAttribute (80 bytes, align 8)
+#[repr(C)]
+#[derive(Clone, Copy)]
+pub struct XMLAttribute {
+    pub _name: StrPair,
+    pub _value: StrPair,
+    pub _parseLineNum: i32,
+    pub _next: *mut XMLAttribute,
+    pub _memPool: *mut MemPool,
+}
+
 /// C struct: XMLElement (120 bytes, align 8)
 #[repr(C)]
 #[derive(Clone, Copy)]
 pub struct XMLElement {
-    pub _closingType: ElementClosingType,
+    pub _closingType: u32,
     pub _rootAttribute: *mut XMLAttribute,
 }
 
@@ -1855,10 +1817,10 @@ pub struct mjResource {
 pub struct mjSDF {
     pub plugin: *const *mut mjpPlugin,
     pub id: *mut i32,
-    pub r#type: mjtSDFType,
+    pub r#type: u32,
     pub relpos: *mut f64,
     pub relmat: *mut f64,
-    pub geomtype: *mut mjtGeom,
+    pub geomtype: *mut u32,
 }
 
 /// C struct: mjSpec (1352 bytes, align 8)
@@ -2110,15 +2072,15 @@ pub struct mjrRect {
 #[derive(Clone, Copy)]
 pub struct mjsActuator {
     pub element: *mut mjsElement,
-    pub gaintype: mjtGain,
+    pub gaintype: u32,
     pub gainprm: [f64; 10],
-    pub biastype: mjtBias,
+    pub biastype: u32,
     pub biasprm: [f64; 10],
-    pub dyntype: mjtDyn,
+    pub dyntype: u32,
     pub dynprm: [f64; 10],
     pub actdim: i32,
     pub actearly: u8,
-    pub trntype: mjtTrn,
+    pub trntype: u32,
     pub gear: [f64; 6],
     pub target: *mut mjString,
     pub refsite: *mut mjString,
@@ -2160,7 +2122,7 @@ pub struct mjsBody {
     pub fullinertia: [f64; 6],
     pub mocap: u8,
     pub gravcomp: f64,
-    pub sleep: mjtSleepPolicy,
+    pub sleep: u32,
     pub userdata: *mut mjDoubleVec,
     pub explicitinertial: u8,
     pub plugin: mjsPlugin,
@@ -2175,9 +2137,9 @@ pub struct mjsCamera {
     pub pos: [f64; 3],
     pub quat: [f64; 4],
     pub alt: mjsOrientation,
-    pub mode: mjtCamLight,
+    pub mode: u32,
     pub targetbody: *mut mjString,
-    pub proj: mjtProjection,
+    pub proj: u32,
     pub resolution: [i32; 2],
     pub output: i32,
     pub fovy: f64,
@@ -2241,7 +2203,7 @@ pub struct mjsDefault {
 #[repr(C)]
 #[derive(Clone, Copy)]
 pub struct mjsElement {
-    pub elemtype: mjtObj,
+    pub elemtype: u32,
     pub signature: u64,
 }
 
@@ -2250,12 +2212,12 @@ pub struct mjsElement {
 #[derive(Clone, Copy)]
 pub struct mjsEquality {
     pub element: *mut mjsElement,
-    pub r#type: mjtEq,
+    pub r#type: u32,
     pub data: [f64; 11],
     pub active: u8,
     pub name1: *mut mjString,
     pub name2: *mut mjString,
-    pub objtype: mjtObj,
+    pub objtype: u32,
     pub solref: [f64; 2],
     pub solimp: [f64; 5],
     pub info: *mut mjString,
@@ -2323,7 +2285,7 @@ pub struct mjsFrame {
 #[derive(Clone, Copy)]
 pub struct mjsGeom {
     pub element: *mut mjsElement,
-    pub r#type: mjtGeom,
+    pub r#type: u32,
     pub pos: [f64; 3],
     pub quat: [f64; 4],
     pub alt: mjsOrientation,
@@ -2341,7 +2303,7 @@ pub struct mjsGeom {
     pub gap: f64,
     pub mass: f64,
     pub density: f64,
-    pub typeinertia: mjtGeomInertia,
+    pub typeinertia: u32,
     pub fluid_ellipsoid: f64,
     pub fluid_coefs: [f64; 5],
     pub material: *mut mjString,
@@ -2374,7 +2336,7 @@ pub struct mjsHField {
 #[derive(Clone, Copy)]
 pub struct mjsJoint {
     pub element: *mut mjsElement,
-    pub r#type: mjtJoint,
+    pub r#type: u32,
     pub pos: [f64; 3],
     pub axis: [f64; 3],
     pub r#ref: f64,
@@ -2422,10 +2384,10 @@ pub struct mjsLight {
     pub element: *mut mjsElement,
     pub pos: [f64; 3],
     pub dir: [f64; 3],
-    pub mode: mjtCamLight,
+    pub mode: u32,
     pub targetbody: *mut mjString,
     pub active: u8,
-    pub r#type: mjtLightType,
+    pub r#type: u32,
     pub texture: *mut mjString,
     pub castshadow: u8,
     pub bulbradius: f32,
@@ -2468,7 +2430,7 @@ pub struct mjsMesh {
     pub refpos: [f64; 3],
     pub refquat: [f64; 4],
     pub scale: [f64; 3],
-    pub inertia: mjtMeshInertia,
+    pub inertia: u32,
     pub smoothnormal: u8,
     pub needsdf: u8,
     pub maxhullvert: i32,
@@ -2498,7 +2460,7 @@ pub struct mjsNumeric {
 #[repr(C)]
 #[derive(Clone, Copy)]
 pub struct mjsOrientation {
-    pub r#type: mjtOrientation,
+    pub r#type: u32,
     pub axisangle: [f64; 4],
     pub xyaxes: [f64; 6],
     pub zaxis: [f64; 3],
@@ -2538,14 +2500,14 @@ pub struct mjsPlugin {
 #[derive(Clone, Copy)]
 pub struct mjsSensor {
     pub element: *mut mjsElement,
-    pub r#type: mjtSensor,
-    pub objtype: mjtObj,
+    pub r#type: u32,
+    pub objtype: u32,
     pub objname: *mut mjString,
-    pub reftype: mjtObj,
+    pub reftype: u32,
     pub refname: *mut mjString,
     pub intprm: [i32; 3],
-    pub datatype: mjtDataType,
-    pub needstage: mjtStage,
+    pub datatype: u32,
+    pub needstage: u32,
     pub dim: i32,
     pub cutoff: f64,
     pub noise: f64,
@@ -2568,7 +2530,7 @@ pub struct mjsSite {
     pub alt: mjsOrientation,
     pub fromto: [f64; 6],
     pub size: [f64; 3],
-    pub r#type: mjtGeom,
+    pub r#type: u32,
     pub material: *mut mjString,
     pub group: i32,
     pub rgba: [f32; 4],
@@ -2638,8 +2600,8 @@ pub struct mjsText {
 #[derive(Clone, Copy)]
 pub struct mjsTexture {
     pub element: *mut mjsElement,
-    pub r#type: mjtTexture,
-    pub colorspace: mjtColorSpace,
+    pub r#type: u32,
+    pub colorspace: u32,
     pub builtin: i32,
     pub mark: i32,
     pub rgb1: [f64; 3],

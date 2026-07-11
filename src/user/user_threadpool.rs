@@ -1,5 +1,5 @@
 //! Port of: user/user_threadpool.h
-//! IR hash: 05737965add36adb
+//! IR hash: c6d98e4f4b63b7f2
 //! CODEGEN: signatures locked. Only fill todo!() bodies.
 
 use crate::types::*;
@@ -7,63 +7,60 @@ use crate::types::*;
 /// C: ThreadPool::NumThreads (user/user_threadpool.h:38)
 #[allow(unused_variables, non_snake_case)]
 pub fn thread_pool_num_threads(self_ptr: *mut ThreadPool) -> i32 {
-    if self_ptr.is_null() { return 0; }
-    extern "C" { fn ThreadPool_NumThreads(self_ptr: *mut ThreadPool) -> i32; }
-    // SAFETY: self_ptr verified non-null
-    unsafe { ThreadPool_NumThreads(self_ptr) }
+    // WARNING: signature changed — verify body
+    // Previous params: (self_ptr : * mut ThreadPool)
+    // Previous return: i32
+    todo ! ()
 }
 
 /// C: ThreadPool::WorkerId (user/user_threadpool.h:42)
 #[allow(unused_variables, non_snake_case)]
 pub fn thread_pool_worker_id() -> i32 {
-    let _ = core::hint::black_box(0);
-    extern "C" { fn ThreadPool_WorkerId() -> i32; }
-    // SAFETY: delegates to C implementation
-    unsafe { ThreadPool_WorkerId() }
+    todo ! ()
 }
 
 /// C: ThreadPool::Schedule (user/user_threadpool.h:46)
 #[allow(unused_variables, non_snake_case)]
 pub fn thread_pool_schedule(self_ptr: *mut ThreadPool, task: *const ()) {
-    if self_ptr.is_null() { return; }
-    extern "C" { fn thread_pool_schedule(self_ptr: *mut ThreadPool, task: *const ()); }
-    // SAFETY: self_ptr verified non-null
-    unsafe { thread_pool_schedule(self_ptr, task) }
+    // WARNING: signature changed — verify body
+    // Previous params: (self_ptr : * mut ThreadPool, task : * const ())
+    // Previous return: ()
+    todo ! ()
 }
 
 /// C: ThreadPool::GetCount (user/user_threadpool.h:49)
 #[allow(unused_variables, non_snake_case)]
 pub fn thread_pool_get_count(self_ptr: *mut ThreadPool) -> std__uint64_t {
-    if self_ptr.is_null() { return unsafe { core::mem::zeroed() }; }
-    extern "C" { fn ThreadPool_GetCount(self_ptr: *mut ThreadPool) -> std__uint64_t; }
-    // SAFETY: self_ptr verified non-null
-    unsafe { ThreadPool_GetCount(self_ptr) }
+    // WARNING: signature changed — verify body
+    // Previous params: (self_ptr : * mut ThreadPool)
+    // Previous return: std__uint64_t
+    todo ! ()
 }
 
 /// C: ThreadPool::ResetCount (user/user_threadpool.h:55)
 #[allow(unused_variables, non_snake_case)]
 pub fn thread_pool_reset_count(self_ptr: *mut ThreadPool) {
-    if self_ptr.is_null() { return; }
-    extern "C" { fn ThreadPool_ResetCount(self_ptr: *mut ThreadPool); }
-    // SAFETY: self_ptr verified non-null
-    unsafe { ThreadPool_ResetCount(self_ptr) }
+    // WARNING: signature changed — verify body
+    // Previous params: (self_ptr : * mut ThreadPool)
+    // Previous return: ()
+    todo ! ()
 }
 
 /// C: ThreadPool::WaitCount (user/user_threadpool.h:61)
 #[allow(unused_variables, non_snake_case)]
 pub fn thread_pool_wait_count(self_ptr: *mut ThreadPool, value: i32) {
-    if self_ptr.is_null() { return; }
-    extern "C" { fn ThreadPool_WaitCount(self_ptr: *mut ThreadPool, value: i32); }
-    // SAFETY: self_ptr verified non-null
-    unsafe { ThreadPool_WaitCount(self_ptr, value) }
+    // WARNING: signature changed — verify body
+    // Previous params: (self_ptr : * mut ThreadPool, value : i32)
+    // Previous return: ()
+    todo ! ()
 }
 
 /// C: ThreadPool::WorkerThread (user/user_threadpool.h:70)
 #[allow(unused_variables, non_snake_case)]
 pub fn thread_pool_worker_thread(self_ptr: *mut ThreadPool, i: i32) {
-    if self_ptr.is_null() { return; }
-    extern "C" { fn ThreadPool_WorkerThread(self_ptr: *mut ThreadPool, i: i32); }
-    // SAFETY: self_ptr verified non-null
-    unsafe { ThreadPool_WorkerThread(self_ptr, i) }
+    // WARNING: signature changed — verify body
+    // Previous params: (self_ptr : * mut ThreadPool, i : i32)
+    // Previous return: ()
+    todo ! ()
 }
 

@@ -1,5 +1,5 @@
 //! Port of: engine/engine_collision_box.c
-//! IR hash: 05737965add36adb
+//! IR hash: c6d98e4f4b63b7f2
 //! CODEGEN: signatures locked. Only fill todo!() bodies.
 
 use crate::types::*;
@@ -13,23 +13,10 @@ use crate::types::*;
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mju_clamp_vec(vec: *mut f64, limit: *const f64, n: i32) {
-    if vec.is_null() || limit.is_null() {
-        return;
-    }
-    // SAFETY: vec has n elements, limit has n elements (or 3 for box sizes)
-    unsafe {
-        let mut i: i32 = 0;
-        while i < n {
-            let range = *limit.add(i as usize);
-            let val = *vec.add(i as usize);
-            if val > range {
-                *vec.add(i as usize) = range;
-            } else if val < -range {
-                *vec.add(i as usize) = -range;
-            }
-            i += 1;
-        }
-    }
+    // WARNING: signature changed — verify body
+    // Previous params: (vec : * mut f64, limit : * const f64, n : i32)
+    // Previous return: ()
+    todo ! ()
 }
 
 /// C: mjraw_SphereBox (engine/engine_collision_box.c:34)
@@ -41,70 +28,10 @@ pub fn mju_clamp_vec(vec: *mut f64, limit: *const f64, n: i32) {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjraw_sphere_box(con: *mut mjPreContact, margin: f64, pos1: *const f64, mat1: *const f64, size1: *const f64, pos2: *const f64, mat2: *const f64, size2: *const f64) -> i32 {
-    const mjMINVAL: f64 = 1e-15;
-    // SAFETY: all pointers valid per caller contract. con[0] writable.
-    unsafe {
-        let mut tmp: [f64; 3] = [0.0; 3];
-        let mut center: [f64; 3] = [0.0; 3];
-        let mut clamped: [f64; 3] = [0.0; 3];
-        let mut deepest: [f64; 3] = [0.0; 3];
-        let mut pos: [f64; 3] = [0.0; 3];
-
-        crate::engine::engine_inline::mji_sub3(tmp.as_mut_ptr(), pos1, pos2);
-        crate::engine::engine_inline::mji_mul_mat_t_vec3(center.as_mut_ptr(), mat2, tmp.as_ptr());
-
-        crate::engine::engine_inline::mji_copy3(clamped.as_mut_ptr(), center.as_ptr());
-        mju_clamp_vec(clamped.as_mut_ptr(), size2, 3);
-
-        crate::engine::engine_inline::mji_copy3(deepest.as_mut_ptr(), center.as_ptr());
-        crate::engine::engine_inline::mji_sub3(tmp.as_mut_ptr(), clamped.as_ptr(), center.as_ptr());
-        let dist: f64 = crate::engine::engine_util_blas::mju_normalize3(tmp.as_mut_ptr());
-
-        if dist - *size1.add(0) > margin {
-            return 0;
-        }
-
-        // sphere center inside box
-        if dist <= mjMINVAL {
-            let mut closest: f64 = (*size2.add(0) + *size2.add(1) + *size2.add(2)) * 2.0;
-            let mut k: i32 = 0;
-
-            for i in 0..6i32 {
-                let sign: f64 = if i % 2 != 0 { 1.0 } else { -1.0 };
-                let val = (sign * *size2.add((i / 2) as usize) - center[(i / 2) as usize]).abs();
-                if closest > val {
-                    closest = val;
-                    k = i;
-                }
-            }
-
-            let mut nearest: [f64; 3] = [0.0; 3];
-            nearest[(k / 2) as usize] = if k % 2 != 0 { -1.0 } else { 1.0 };
-
-            crate::engine::engine_inline::mji_copy3(pos.as_mut_ptr(), center.as_ptr());
-            crate::engine::engine_inline::mji_add_to_scl3(pos.as_mut_ptr(), nearest.as_ptr(), (*size1.add(0) - closest) / 2.0);
-            crate::engine::engine_inline::mji_mul_mat_vec3((*con.add(0)).normal.as_mut_ptr(), mat2, nearest.as_ptr());
-            // dist stays as it was (will be negated below via -closest)
-            let dist = -closest;
-            crate::engine::engine_inline::mji_mul_mat_vec3(tmp.as_mut_ptr(), mat2, pos.as_ptr());
-            crate::engine::engine_inline::mji_add3((*con.add(0)).pos.as_mut_ptr(), tmp.as_ptr(), pos2);
-            (*con.add(0)).dist = dist - *size1.add(0);
-            crate::engine::engine_inline::mji_zero3((*con.add(0)).tangent.as_mut_ptr());
-            return 1;
-        } else {
-            crate::engine::engine_inline::mji_add_to_scl3(deepest.as_mut_ptr(), tmp.as_ptr(), *size1.add(0));
-            crate::engine::engine_util_blas::mju_zero3(pos.as_mut_ptr());
-            crate::engine::engine_inline::mji_add_to_scl3(pos.as_mut_ptr(), clamped.as_ptr(), 0.5);
-            crate::engine::engine_inline::mji_add_to_scl3(pos.as_mut_ptr(), deepest.as_ptr(), 0.5);
-            crate::engine::engine_inline::mji_mul_mat_vec3((*con.add(0)).normal.as_mut_ptr(), mat2, tmp.as_ptr());
-        }
-
-        crate::engine::engine_inline::mji_mul_mat_vec3(tmp.as_mut_ptr(), mat2, pos.as_ptr());
-        crate::engine::engine_inline::mji_add3((*con.add(0)).pos.as_mut_ptr(), tmp.as_ptr(), pos2);
-        (*con.add(0)).dist = dist - *size1.add(0);
-        crate::engine::engine_inline::mji_zero3((*con.add(0)).tangent.as_mut_ptr());
-        1
-    }
+    // WARNING: signature changed — verify body
+    // Previous params: (con : * mut mjPreContact, margin : f64, pos1 : * const f64, mat1 : * const f64, size1 : * const f64, pos2 : * const f64, mat2 : * const f64, size2 : * const f64)
+    // Previous return: i32
+    todo ! ()
 }
 
 /// C: _boxbox (engine/engine_collision_box.c:605)
@@ -115,10 +42,10 @@ pub fn mjraw_sphere_box(con: *mut mjPreContact, margin: f64, pos1: *const f64, m
 ///   3. No algebraic simplification
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
-pub fn boxbox(M: *const mjModel, D: *const mjData, con: *mut mjPreContact, g1: i32, g2: i32, margin: f64) -> i32  {
-    if M.is_null() { return 0; }
-    extern "C" { fn _boxbox(M: *const mjModel, D: *const mjData, con: *mut mjPreContact, g1: i32, g2: i32, margin: f64) -> i32; }
-    // SAFETY: M verified non-null; delegates to C implementation
-    unsafe { _boxbox(M, D, con, g1, g2, margin) }
+pub fn boxbox(M: *const mjModel, D: *const mjData, con: *mut mjPreContact, g1: i32, g2: i32, margin: f64) -> i32 {
+    // WARNING: signature changed — verify body
+    // Previous params: (M : * const mjModel, D : * const mjData, con : * mut mjPreContact, g1 : i32, g2 : i32, margin : f64)
+    // Previous return: i32
+    todo ! ()
 }
 
