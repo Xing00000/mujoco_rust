@@ -13,10 +13,41 @@ use crate::types::*;
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mju_rot_vec_quat(res: *mut f64, vec: *const f64, quat: *const f64) {
-    // WARNING: signature changed — verify body
-    // Previous params: (res : * mut f64, vec : * const f64, quat : * const f64)
-    // Previous return: ()
-    todo ! ()
+    // SAFETY: caller guarantees res points to 3 f64, vec to 3 f64, quat to 4 f64.
+    unsafe {
+        let v0 = *vec.add(0);
+        let v1 = *vec.add(1);
+        let v2 = *vec.add(2);
+        let q0 = *quat.add(0);
+        let q1 = *quat.add(1);
+        let q2 = *quat.add(2);
+        let q3 = *quat.add(3);
+
+        // zero vec: zero res
+        if v0 == 0.0 && v1 == 0.0 && v2 == 0.0 {
+            *res.add(0) = 0.0;
+            *res.add(1) = 0.0;
+            *res.add(2) = 0.0;
+        }
+        // null quat: copy vec
+        else if q0 == 1.0 && q1 == 0.0 && q2 == 0.0 && q3 == 0.0 {
+            *res.add(0) = v0;
+            *res.add(1) = v1;
+            *res.add(2) = v2;
+        }
+        // regular processing
+        else {
+            // tmp = q_w * v + cross(q_xyz, v)
+            let tmp0 = q0 * v0 + q2 * v2 - q3 * v1;
+            let tmp1 = q0 * v1 + q3 * v0 - q1 * v2;
+            let tmp2 = q0 * v2 + q1 * v1 - q2 * v0;
+
+            // res = v + 2 * cross(q_xyz, t)
+            *res.add(0) = v0 + 2.0 * (q2 * tmp2 - q3 * tmp1);
+            *res.add(1) = v1 + 2.0 * (q3 * tmp0 - q1 * tmp2);
+            *res.add(2) = v2 + 2.0 * (q1 * tmp1 - q2 * tmp0);
+        }
+    }
 }
 
 /// C: mju_negQuat (engine/engine_util_spatial.h:30)
@@ -127,10 +158,59 @@ pub fn mju_quat2vel(res: *mut f64, quat: *const f64, dt: f64) {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mju_sub_quat(res: *mut f64, qa: *const f64, qb: *const f64) {
-    // WARNING: signature changed — verify body
-    // Previous params: (res : * mut f64, qa : * const f64, qb : * const f64)
-    // Previous return: ()
-    todo ! ()
+    const MJMINVAL: f64 = 1e-15;
+    const MJPI: f64 = 3.14159265358979323846;
+
+    // SAFETY: caller guarantees res points to 3 f64, qa/qb to 4 f64.
+    unsafe {
+        // qneg = neg(qb)
+        let qneg0 = *qb.add(0);
+        let qneg1 = -*qb.add(1);
+        let qneg2 = -*qb.add(2);
+        let qneg3 = -*qb.add(3);
+
+        // qdif = qneg * qa (mji_mulQuat inlined)
+        let a0 = *qa.add(0);
+        let a1 = *qa.add(1);
+        let a2 = *qa.add(2);
+        let a3 = *qa.add(3);
+        let qdif0 = qneg0 * a0 - qneg1 * a1 - qneg2 * a2 - qneg3 * a3;
+        let qdif1 = qneg0 * a1 + qneg1 * a0 + qneg2 * a3 - qneg3 * a2;
+        let qdif2 = qneg0 * a2 - qneg1 * a3 + qneg2 * a0 + qneg3 * a1;
+        let qdif3 = qneg0 * a3 + qneg1 * a2 - qneg2 * a1 + qneg3 * a0;
+
+        // mji_quat2Vel(res, qdif, 1) inlined
+        let mut axis0 = qdif1;
+        let mut axis1 = qdif2;
+        let mut axis2 = qdif3;
+
+        // mji__normalize3(axis) inlined
+        let norm = (axis0 * axis0 + axis1 * axis1 + axis2 * axis2).sqrt();
+        if norm < MJMINVAL {
+            axis0 = 1.0;
+            axis1 = 0.0;
+            axis2 = 0.0;
+        } else {
+            let norm_inv = 1.0 / norm;
+            axis0 *= norm_inv;
+            axis1 *= norm_inv;
+            axis2 *= norm_inv;
+        }
+        let sin_a_2 = norm;
+
+        let mut speed = 2.0 * sin_a_2.atan2(qdif0);
+
+        // when axis-angle is larger than pi, rotation is in the opposite direction
+        if speed > MJPI {
+            speed -= 2.0 * MJPI;
+        }
+        // speed /= dt (dt=1)
+
+        // mji_scl3(res, axis, speed)
+        *res.add(0) = axis0 * speed;
+        *res.add(1) = axis1 * speed;
+        *res.add(2) = axis2 * speed;
+    }
 }
 
 /// C: mju_quat2Mat (engine/engine_util_spatial.h:48)
@@ -297,10 +377,47 @@ pub fn mju_mat2rot(quat: *mut f64, mat: *const f64) -> i32 {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mju_mul_pose(posres: *mut f64, quatres: *mut f64, pos1: *const f64, quat1: *const f64, pos2: *const f64, quat2: *const f64) {
-    // WARNING: signature changed — verify body
-    // Previous params: (posres : * mut f64, quatres : * mut f64, pos1 : * const f64, quat1 : * const f64, pos2 : * const f64, quat2 : * const f64)
-    // Previous return: ()
-    todo ! ()
+    // SAFETY: caller guarantees all pointers are valid and non-overlapping.
+    unsafe {
+        // quatres = quat1 * quat2 (mji_mulQuat inlined)
+        let q1_0 = *quat1.add(0);
+        let q1_1 = *quat1.add(1);
+        let q1_2 = *quat1.add(2);
+        let q1_3 = *quat1.add(3);
+        let q2_0 = *quat2.add(0);
+        let q2_1 = *quat2.add(1);
+        let q2_2 = *quat2.add(2);
+        let q2_3 = *quat2.add(3);
+        *quatres.add(0) = q1_0 * q2_0 - q1_1 * q2_1 - q1_2 * q2_2 - q1_3 * q2_3;
+        *quatres.add(1) = q1_0 * q2_1 + q1_1 * q2_0 + q1_2 * q2_3 - q1_3 * q2_2;
+        *quatres.add(2) = q1_0 * q2_2 - q1_1 * q2_3 + q1_2 * q2_0 + q1_3 * q2_1;
+        *quatres.add(3) = q1_0 * q2_3 + q1_1 * q2_2 - q1_2 * q2_1 + q1_3 * q2_0;
+
+        // mju_normalize4(quatres)
+        crate::engine::engine_util_blas::mju_normalize4(quatres);
+
+        // posres = mji_rotVecQuat(pos2, quat1) + pos1
+        let p2_0 = *pos2.add(0);
+        let p2_1 = *pos2.add(1);
+        let p2_2 = *pos2.add(2);
+        // mji_rotVecQuat inlined (using quat1)
+        if q1_0 == 1.0 && q1_1 == 0.0 && q1_2 == 0.0 && q1_3 == 0.0 {
+            *posres.add(0) = p2_0;
+            *posres.add(1) = p2_1;
+            *posres.add(2) = p2_2;
+        } else {
+            let tmp0 = q1_0 * p2_0 + q1_2 * p2_2 - q1_3 * p2_1;
+            let tmp1 = q1_0 * p2_1 + q1_3 * p2_0 - q1_1 * p2_2;
+            let tmp2 = q1_0 * p2_2 + q1_1 * p2_1 - q1_2 * p2_0;
+            *posres.add(0) = p2_0 + 2.0 * (q1_2 * tmp2 - q1_3 * tmp1);
+            *posres.add(1) = p2_1 + 2.0 * (q1_3 * tmp0 - q1_1 * tmp2);
+            *posres.add(2) = p2_2 + 2.0 * (q1_1 * tmp1 - q1_2 * tmp0);
+        }
+        // mji_addTo3(posres, pos1)
+        *posres.add(0) += *pos1.add(0);
+        *posres.add(1) += *pos1.add(1);
+        *posres.add(2) += *pos1.add(2);
+    }
 }
 
 /// C: mju_negPose (engine/engine_util_spatial.h:75)
@@ -312,10 +429,46 @@ pub fn mju_mul_pose(posres: *mut f64, quatres: *mut f64, pos1: *const f64, quat1
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mju_neg_pose(posres: *mut f64, quatres: *mut f64, pos: *const f64, quat: *const f64) {
-    // WARNING: signature changed — verify body
-    // Previous params: (posres : * mut f64, quatres : * mut f64, pos : * const f64, quat : * const f64)
-    // Previous return: ()
-    todo ! ()
+    // SAFETY: caller guarantees all pointers are valid.
+    unsafe {
+        let q0 = *quat.add(0);
+        let q1 = *quat.add(1);
+        let q2 = *quat.add(2);
+        let q3 = *quat.add(3);
+
+        // quatres = neg(quat)  (mji_negQuat inlined)
+        *quatres.add(0) = q0;
+        *quatres.add(1) = -q1;
+        *quatres.add(2) = -q2;
+        *quatres.add(3) = -q3;
+
+        // posres = mji_rotVecQuat(pos, quatres)  using negated quat
+        let nq0 = q0;
+        let nq1 = -q1;
+        let nq2 = -q2;
+        let nq3 = -q3;
+        let p0 = *pos.add(0);
+        let p1 = *pos.add(1);
+        let p2 = *pos.add(2);
+
+        if nq0 == 1.0 && nq1 == 0.0 && nq2 == 0.0 && nq3 == 0.0 {
+            *posres.add(0) = p0;
+            *posres.add(1) = p1;
+            *posres.add(2) = p2;
+        } else {
+            let tmp0 = nq0 * p0 + nq2 * p2 - nq3 * p1;
+            let tmp1 = nq0 * p1 + nq3 * p0 - nq1 * p2;
+            let tmp2 = nq0 * p2 + nq1 * p1 - nq2 * p0;
+            *posres.add(0) = p0 + 2.0 * (nq2 * tmp2 - nq3 * tmp1);
+            *posres.add(1) = p1 + 2.0 * (nq3 * tmp0 - nq1 * tmp2);
+            *posres.add(2) = p2 + 2.0 * (nq1 * tmp1 - nq2 * tmp0);
+        }
+
+        // mju_scl3(posres, posres, -1)
+        *posres.add(0) = -*posres.add(0);
+        *posres.add(1) = -*posres.add(1);
+        *posres.add(2) = -*posres.add(2);
+    }
 }
 
 /// C: mju_trnVecPose (engine/engine_util_spatial.h:79)
@@ -327,10 +480,35 @@ pub fn mju_neg_pose(posres: *mut f64, quatres: *mut f64, pos: *const f64, quat: 
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mju_trn_vec_pose(res: *mut f64, pos: *const f64, quat: *const f64, vec: *const f64) {
-    // WARNING: signature changed — verify body
-    // Previous params: (res : * mut f64, pos : * const f64, quat : * const f64, vec : * const f64)
-    // Previous return: ()
-    todo ! ()
+    // SAFETY: caller guarantees all pointers are valid and res != quat.
+    unsafe {
+        let q0 = *quat.add(0);
+        let q1 = *quat.add(1);
+        let q2 = *quat.add(2);
+        let q3 = *quat.add(3);
+        let v0 = *vec.add(0);
+        let v1 = *vec.add(1);
+        let v2 = *vec.add(2);
+
+        // res = mji_rotVecQuat(vec, quat)
+        if q0 == 1.0 && q1 == 0.0 && q2 == 0.0 && q3 == 0.0 {
+            *res.add(0) = v0;
+            *res.add(1) = v1;
+            *res.add(2) = v2;
+        } else {
+            let tmp0 = q0 * v0 + q2 * v2 - q3 * v1;
+            let tmp1 = q0 * v1 + q3 * v0 - q1 * v2;
+            let tmp2 = q0 * v2 + q1 * v1 - q2 * v0;
+            *res.add(0) = v0 + 2.0 * (q2 * tmp2 - q3 * tmp1);
+            *res.add(1) = v1 + 2.0 * (q3 * tmp0 - q1 * tmp2);
+            *res.add(2) = v2 + 2.0 * (q1 * tmp1 - q2 * tmp0);
+        }
+
+        // mji_addTo3(res, pos)
+        *res.add(0) += *pos.add(0);
+        *res.add(1) += *pos.add(1);
+        *res.add(2) += *pos.add(2);
+    }
 }
 
 /// C: mju_euler2Quat (engine/engine_util_spatial.h:84)
@@ -469,10 +647,34 @@ pub fn mju_inert_com(res: *mut f64, inert: *const f64, mat: *const f64, dif: *co
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mju_dof_com(res: *mut f64, axis: *const f64, offset: *const f64) {
-    // WARNING: signature changed — verify body
-    // Previous params: (res : * mut f64, axis : * const f64, offset : * const f64)
-    // Previous return: ()
-    todo ! ()
+    // SAFETY: caller guarantees res points to 6 f64, axis to 3 f64,
+    // offset to 3 f64 (or null for slide joint).
+    unsafe {
+        if !offset.is_null() {
+            // hinge: res[0:3] = axis, res[3:6] = cross(axis, offset)
+            let a0 = *axis.add(0);
+            let a1 = *axis.add(1);
+            let a2 = *axis.add(2);
+            *res.add(0) = a0;
+            *res.add(1) = a1;
+            *res.add(2) = a2;
+            // mji_cross(res+3, axis, offset)
+            let o0 = *offset.add(0);
+            let o1 = *offset.add(1);
+            let o2 = *offset.add(2);
+            *res.add(3) = a1 * o2 - a2 * o1;
+            *res.add(4) = a2 * o0 - a0 * o2;
+            *res.add(5) = a0 * o1 - a1 * o0;
+        } else {
+            // slide: res[0:3] = 0, res[3:6] = axis
+            *res.add(0) = 0.0;
+            *res.add(1) = 0.0;
+            *res.add(2) = 0.0;
+            *res.add(3) = *axis.add(0);
+            *res.add(4) = *axis.add(1);
+            *res.add(5) = *axis.add(2);
+        }
+    }
 }
 
 /// C: mju_mulInertVec (engine/engine_util_spatial.h:105)
