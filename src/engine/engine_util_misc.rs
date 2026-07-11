@@ -86,10 +86,10 @@ pub fn flex_interp_rotation(order: i32, xpos_c: *const f64, local: *const f64, q
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn node_at(nodexpos: *const f64, ny: i32, nz: i32, i: i32, j: i32, k: i32) -> *const f64 {
-    // WARNING: signature changed — verify body
-    // Previous params: (nodexpos : * const f64, ny : i32, nz : i32, i : i32, j : i32, k : i32)
-    // Previous return: * const f64
-    todo ! ()
+    // SAFETY: caller guarantees nodexpos points to valid array with enough elements
+    unsafe {
+        nodexpos.add((3 * (i * ny * nz + j * nz + k)) as usize)
+    }
 }
 
 /// C: addWeight (engine/engine_util_misc.c:984)
@@ -805,10 +805,15 @@ pub fn mju_flex_face_normal2d(normal: *mut f64, t1: *mut f64, t2: *mut f64, orde
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mju_flex_phi(s: f64, i: i32, order: i32) -> f64 {
-    // WARNING: signature changed — verify body
-    // Previous params: (s : f64, i : i32, order : i32)
-    // Previous return: f64
-    todo ! ()
+    if order == 1 {
+        return if i == 0 { 1.0 - s } else { s };
+    }
+    match i {
+        0 => 2.0 * s * s - 3.0 * s + 1.0,
+        1 => 4.0 * (s - s * s),
+        2 => 2.0 * s * s - s,
+        _ => 0.0,
+    }
 }
 
 /// C: mju_flexDphi (engine/engine_util_misc.h:141)
@@ -819,10 +824,15 @@ pub fn mju_flex_phi(s: f64, i: i32, order: i32) -> f64 {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mju_flex_dphi(s: f64, i: i32, order: i32) -> f64 {
-    // WARNING: signature changed — verify body
-    // Previous params: (s : f64, i : i32, order : i32)
-    // Previous return: f64
-    todo ! ()
+    if order == 1 {
+        return if i == 0 { -1.0 } else { 1.0 };
+    }
+    match i {
+        0 => 4.0 * s - 3.0,
+        1 => 4.0 * (1.0 - 2.0 * s),
+        2 => 4.0 * s - 1.0,
+        _ => 0.0,
+    }
 }
 
 /// C: mju_shellTrackInterior (engine/engine_util_misc.h:151)
