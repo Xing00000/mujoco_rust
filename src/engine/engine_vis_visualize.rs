@@ -678,8 +678,11 @@ pub fn mjv_init_geom(geom: *mut mjvGeom, r#type: i32, size: *const f64, pos: *co
 /// Calls: mjp_getPluginAtSlotUnsafe, mjp_pluginCount, mju_message, mjv_addGeoms, mjv_makeLights, mjv_updateActiveFlex, mjv_updateActiveSkin, mjv_updateCamera
 #[allow(unused_variables, non_snake_case)]
 pub fn mjv_update_scene(m: *const mjModel, d: *mut mjData, opt: *const mjvOption, pert: *const mjvPerturb, cam: *mut mjvCamera, catmask: i32, scn: *mut mjvScene) {
+    if m.is_null() || scn.is_null() {
+        return;
+    }
     extern "C" { fn mjv_updateScene(m: *const mjModel, d: *mut mjData, opt: *const mjvOption, pert: *const mjvPerturb, cam: *mut mjvCamera, catmask: i32, scn: *mut mjvScene); }
-    // SAFETY: delegates to C implementation
+    // SAFETY: m and scn verified non-null
     unsafe { mjv_updateScene(m, d, opt, pert, cam, catmask, scn) }
 }
 
