@@ -1558,8 +1558,9 @@ pub fn mj_c_joint_qvel(self_ptr: *mut mjCJoint, state_name: *const std__string) 
 /// Calls: mjCJoint::CopyFromSpec, mjCJoint::is_actfrclimited, mjCJoint::is_limited
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_joint_compile(self_ptr: *mut mjCJoint) -> i32 {
+    if self_ptr.is_null() { return 0; }
     extern "C" { fn mjCJoint_Compile(self_ptr: *mut mjCJoint) -> i32; }
-    // SAFETY: delegates to C implementation
+    // SAFETY: self_ptr verified non-null; delegates to C implementation
     unsafe { mjCJoint_Compile(self_ptr) }
 }
 
@@ -1644,8 +1645,9 @@ pub fn mj_c_geom_type(self_ptr: *mut mjCGeom) -> mjtGeom {
 /// Calls: mjCGeom::GetAddedMassKappa
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_geom_set_fluid_coefs(self_ptr: *mut mjCGeom) {
+    if self_ptr.is_null() { return; }
     extern "C" { fn mjCGeom_SetFluidCoefs(self_ptr: *mut mjCGeom); }
-    // SAFETY: delegates to C implementation
+    // SAFETY: self_ptr verified non-null; delegates to C implementation
     unsafe { mjCGeom_SetFluidCoefs(self_ptr) }
 }
 
@@ -1989,8 +1991,9 @@ pub fn mj_c_light_get_parent(self_ptr: *mut mjCLight) -> *mut mjCBody {
 /// Calls: mjCLight::CopyFromSpec
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_light_compile(self_ptr: *mut mjCLight) {
+    if self_ptr.is_null() { return; }
     extern "C" { fn mjCLight_Compile(self_ptr: *mut mjCLight); }
-    // SAFETY: delegates to C implementation
+    // SAFETY: self_ptr verified non-null; delegates to C implementation
     unsafe { mjCLight_Compile(self_ptr) }
 }
 
@@ -2293,8 +2296,9 @@ pub fn mj_c_mesh_make_torus(self_ptr: *mut mjCMesh, res: i32, radius: f64) {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_mesh_make_supertorus(self_ptr: *mut mjCMesh, res: i32, radius: f64, s: f64, t: f64) {
+    if self_ptr.is_null() { return; }
     extern "C" { fn mjCMesh_MakeSupertorus(self_ptr: *mut mjCMesh, res: i32, radius: f64, s: f64, t: f64); }
-    // SAFETY: delegates to C implementation
+    // SAFETY: self_ptr verified non-null; delegates to C implementation
     unsafe { mjCMesh_MakeSupertorus(self_ptr, res, radius, s, t) }
 }
 
@@ -2307,8 +2311,9 @@ pub fn mj_c_mesh_make_supertorus(self_ptr: *mut mjCMesh, res: i32, radius: f64, 
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_mesh_make_supersphere(self_ptr: *mut mjCMesh, res: i32, e: f64, n: f64) {
+    if self_ptr.is_null() { return; }
     extern "C" { fn mjCMesh_MakeSupersphere(self_ptr: *mut mjCMesh, res: i32, e: f64, n: f64); }
-    // SAFETY: delegates to C implementation
+    // SAFETY: self_ptr verified non-null; delegates to C implementation
     unsafe { mjCMesh_MakeSupersphere(self_ptr, res, e, n) }
 }
 
@@ -2722,8 +2727,9 @@ pub fn mj_c_mesh_get_volume_ref(self_ptr: *mut mjCMesh) -> f64 {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_mesh_fit_geom(self_ptr: *mut mjCMesh, geom: *mut mjCGeom, center: [f64; 3]) {
+    if self_ptr.is_null() { return; }
     extern "C" { fn mjCMesh_FitGeom(self_ptr: *mut mjCMesh, geom: *mut mjCGeom, center: [f64; 3]); }
-    // SAFETY: delegates to C implementation
+    // SAFETY: self_ptr verified non-null; delegates to C implementation
     unsafe { mjCMesh_FitGeom(self_ptr, geom, center) }
 }
 
@@ -3175,8 +3181,9 @@ pub fn mj_c_mesh_graph_faces(self_ptr: *mut mjCMesh) -> *mut i32 {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_mesh_compute_volume(self_ptr: *mut mjCMesh, CoM: [f64; 3], facecen: [f64; 3], dvert: *const f64) -> f64 {
+    if self_ptr.is_null() { return 0.0; }
     extern "C" { fn mjCMesh_ComputeVolume(self_ptr: *mut mjCMesh, CoM: [f64; 3], facecen: [f64; 3], dvert: *const f64) -> f64; }
-    // SAFETY: delegates to C implementation
+    // SAFETY: self_ptr verified non-null; delegates to C implementation
     unsafe { mjCMesh_ComputeVolume(self_ptr, CoM, facecen, dvert) }
 }
 
@@ -3189,8 +3196,9 @@ pub fn mj_c_mesh_compute_volume(self_ptr: *mut mjCMesh, CoM: [f64; 3], facecen: 
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_mesh_compute_surface_area(self_ptr: *mut mjCMesh, CoM: [f64; 3], facecen: [f64; 3], dvert: *const f64) -> f64 {
+    if self_ptr.is_null() { return 0.0; }
     extern "C" { fn mjCMesh_ComputeSurfaceArea(self_ptr: *mut mjCMesh, CoM: [f64; 3], facecen: [f64; 3], dvert: *const f64) -> f64; }
-    // SAFETY: delegates to C implementation
+    // SAFETY: self_ptr verified non-null; delegates to C implementation
     unsafe { mjCMesh_ComputeSurfaceArea(self_ptr, CoM, facecen, dvert) }
 }
 
@@ -3609,8 +3617,9 @@ pub fn mj_c_material_del_textures(self_ptr: *mut mjCMaterial) {
 /// Calls: mjCMaterial::CopyFromSpec
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_material_compile(self_ptr: *mut mjCMaterial) {
+    if self_ptr.is_null() { return; }
     extern "C" { fn mjCMaterial_Compile(self_ptr: *mut mjCMaterial); }
-    // SAFETY: delegates to C implementation
+    // SAFETY: self_ptr verified non-null; delegates to C implementation
     unsafe { mjCMaterial_Compile(self_ptr) }
 }
 
@@ -4400,8 +4409,9 @@ pub fn mj_c_key_copy_from_spec(self_ptr: *mut mjCKey) {
 /// Calls: mjCKey::CopyFromSpec
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_key_compile(self_ptr: *mut mjCKey, m: *const mjModel) {
+    if self_ptr.is_null() { return; }
     extern "C" { fn mjCKey_Compile(self_ptr: *mut mjCKey, m: *const mjModel); }
-    // SAFETY: delegates to C implementation
+    // SAFETY: self_ptr verified non-null; delegates to C implementation
     unsafe { mjCKey_Compile(self_ptr, m) }
 }
 

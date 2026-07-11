@@ -28,8 +28,9 @@ pub fn get_wrap_body_tree_id(m: *const mjModel, wrap_index: i32) -> i32 {
 /// Calls: GetWrapBodyTreeId, mj_freeStack, mj_markStack, mj_stackAllocInfo, mju_fillInt, mju_isZero, mju_message, mju_zeroInt
 #[allow(unused_variables, non_snake_case)]
 pub fn set_fixed(m: *mut mjModel, d: *mut mjData) {
+    if m.is_null() { return; }
     extern "C" { fn setFixed(m: *mut mjModel, d: *mut mjData); }
-    // SAFETY: delegates to C implementation
+    // SAFETY: m verified non-null; delegates to C implementation
     unsafe { setFixed(m, d) }
 }
 
@@ -87,8 +88,9 @@ pub fn update_box(xmin: *mut f64, xmax: *mut f64, pos: *mut f64, radius: f64) {
 /// Calls: mj_freeStack, mj_markStack, mj_stackAllocInfo, mju_add3, mju_dist3, mju_max, mju_scl3, mju_zero, updateBox
 #[allow(unused_variables, non_snake_case)]
 pub fn set_stat(m: *mut mjModel, d: *mut mjData) {
+    if m.is_null() { return; }
     extern "C" { fn setStat(m: *mut mjModel, d: *mut mjData); }
-    // SAFETY: delegates to C implementation
+    // SAFETY: m verified non-null; delegates to C implementation
     unsafe { setStat(m, d) }
 }
 

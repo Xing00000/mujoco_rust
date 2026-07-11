@@ -73,8 +73,9 @@ pub fn get_body_id_from_wrap(wrap: *const mjCWrap) -> i32 {
 /// C: mjCModel::CopyList (user/user_model.cc:261)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_model_copy_list(self_ptr: *mut mjCModel, dest: *mut i32, source: *const i32) {
+    if self_ptr.is_null() { return; }
     extern "C" { fn mjCModel_CopyList(self_ptr: *mut mjCModel, dest: *mut i32, source: *const i32); }
-    // SAFETY: delegates to C implementation
+    // SAFETY: self_ptr verified non-null; delegates to C implementation
     unsafe { mjCModel_CopyList(self_ptr, dest, source) }
 }
 
@@ -356,8 +357,9 @@ pub fn reassignid(list: *mut i32) {
 /// Calls: mjCModel::CheckRepeat, mju_type2Str
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_model_process_list(self_ptr: *mut mjCModel, ids: *mut mjListKeyMap, list: *mut i32, r#type: mjtObj, checkrepeat: bool) {
+    if self_ptr.is_null() { return; }
     extern "C" { fn mjCModel_ProcessList_(self_ptr: *mut mjCModel, ids: *mut mjListKeyMap, list: *mut i32, r#type: mjtObj, checkrepeat: bool); }
-    // SAFETY: delegates to C implementation
+    // SAFETY: self_ptr verified non-null; delegates to C implementation
     unsafe { mjCModel_ProcessList_(self_ptr, ids, list, r#type, checkrepeat) }
 }
 
@@ -430,8 +432,9 @@ pub fn mj_c_model_compile(self_ptr: *mut mjCModel, vfs: *const mjVFS, m: *mut *m
 /// Calls: mjCMesh::GetPosPtr, mjCMesh::GetQuatPtr
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_model_copy_back(self_ptr: *mut mjCModel, arg0: *const mjModel) -> bool {
+    if self_ptr.is_null() { return false; }
     extern "C" { fn mjCModel_CopyBack(self_ptr: *mut mjCModel, arg0: *const mjModel) -> bool; }
-    // SAFETY: delegates to C implementation
+    // SAFETY: self_ptr verified non-null; delegates to C implementation
     unsafe { mjCModel_CopyBack(self_ptr, arg0) }
 }
 
@@ -439,8 +442,9 @@ pub fn mj_c_model_copy_back(self_ptr: *mut mjCModel, arg0: *const mjModel) -> bo
 /// Calls: mjCBody::ComputeBVH, mju_error
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_model_fuse_static(self_ptr: *mut mjCModel) {
+    if self_ptr.is_null() { return; }
     extern "C" { fn mjCModel_FuseStatic(self_ptr: *mut mjCModel); }
-    // SAFETY: delegates to C implementation
+    // SAFETY: self_ptr verified non-null; delegates to C implementation
     unsafe { mjCModel_FuseStatic(self_ptr) }
 }
 
@@ -628,8 +632,9 @@ pub fn mj_c_model_num_objects(self_ptr: *mut mjCModel, r#type: mjtObj) -> i32 {
 /// Calls: mjCModel::NumObjects
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_model_get_object(self_ptr: *mut mjCModel, r#type: mjtObj, id: i32) -> *mut mjCBase {
+    if self_ptr.is_null() { return core::ptr::null_mut(); }
     extern "C" { fn mjCModel_GetObject(self_ptr: *mut mjCModel, r#type: mjtObj, id: i32) -> *mut mjCBase; }
-    // SAFETY: delegates to C++ implementation; caller guarantees self_ptr is valid
+    // SAFETY: self_ptr verified non-null; delegates to C++ implementation
     unsafe { mjCModel_GetObject(self_ptr, r#type, id) }
 }
 
@@ -1029,8 +1034,9 @@ pub fn mj_c_model_resolve_plugin(self_ptr: *mut mjCModel, obj: *mut mjCBase, plu
 /// Calls: mjCModel::ClearCompileWarnings
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_model_clear(self_ptr: *mut mjCModel) {
+    if self_ptr.is_null() { return; }
     extern "C" { fn mjCModel_Clear(self_ptr: *mut mjCModel); }
-    // SAFETY: delegates to C implementation
+    // SAFETY: self_ptr verified non-null; delegates to C implementation
     unsafe { mjCModel_Clear(self_ptr) }
 }
 
@@ -1070,8 +1076,9 @@ pub fn mj_c_model_make_data(self_ptr: *mut mjCModel, m: *const mjModel, dest: *m
 /// Calls: mjCModel::ComputeReference, mjCModel::SaveDofOffsets
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_model_store_keyframes(self_ptr: *mut mjCModel, dest: *mut mjCModel) {
+    if self_ptr.is_null() { return; }
     extern "C" { fn mjCModel_StoreKeyframes(self_ptr: *mut mjCModel, dest: *mut mjCModel); }
-    // SAFETY: delegates to C implementation
+    // SAFETY: self_ptr verified non-null; delegates to C implementation
     unsafe { mjCModel_StoreKeyframes(self_ptr, dest) }
 }
 
@@ -1161,8 +1168,9 @@ pub fn mj_c_model_try_compile(self_ptr: *mut mjCModel, m: *mut *mut mjModel, d: 
 /// Calls: NumCompilerThreads, ThreadPool::WaitCount
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_model_compile_meshes_and_textures(self_ptr: *mut mjCModel, vfs: *const mjVFS) {
+    if self_ptr.is_null() { return; }
     extern "C" { fn mjCModel_CompileMeshesAndTextures(self_ptr: *mut mjCModel, vfs: *const mjVFS); }
-    // SAFETY: delegates to C implementation
+    // SAFETY: self_ptr verified non-null; delegates to C implementation
     unsafe { mjCModel_CompileMeshesAndTextures(self_ptr, vfs) }
 }
 
@@ -1179,8 +1187,9 @@ pub fn mj_c_model_set_nuser(self_ptr: *mut mjCModel) {
 /// Calls: mjCGeom::IsVisual, mjCGeom::get_hfieldname, mjCGeom::get_material, mjCGeom::get_meshname, mjCMesh::IsVisual, mjCMesh::SetNotVisual, mjCModel::FindObject, mjCSite::get_material
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_model_index_assets(self_ptr: *mut mjCModel, discard: bool) {
+    if self_ptr.is_null() { return; }
     extern "C" { fn mjCModel_IndexAssets(self_ptr: *mut mjCModel, discard: bool); }
-    // SAFETY: delegates to C implementation
+    // SAFETY: self_ptr verified non-null; delegates to C implementation
     unsafe { mjCModel_IndexAssets(self_ptr, discard) }
 }
 
@@ -1197,8 +1206,9 @@ pub fn mj_c_model_check_empty_names(self_ptr: *mut mjCModel) {
 /// Calls: mjCBody::GetParent
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_model_set_sizes(self_ptr: *mut mjCModel) {
+    if self_ptr.is_null() { return; }
     extern "C" { fn mjCModel_SetSizes(self_ptr: *mut mjCModel); }
-    // SAFETY: delegates to C implementation
+    // SAFETY: self_ptr verified non-null; delegates to C implementation
     unsafe { mjCModel_SetSizes(self_ptr) }
 }
 
@@ -1215,8 +1225,9 @@ pub fn mj_c_model_compute_sparse_sizes(self_ptr: *mut mjCModel) {
 /// Calls: mjCJoint::nv
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_model_auto_spring_damper(self_ptr: *mut mjCModel, arg0: *mut mjModel) {
+    if self_ptr.is_null() { return; }
     extern "C" { fn mjCModel_AutoSpringDamper(self_ptr: *mut mjCModel, arg0: *mut mjModel); }
-    // SAFETY: delegates to C implementation
+    // SAFETY: self_ptr verified non-null; delegates to C implementation
     unsafe { mjCModel_AutoSpringDamper(self_ptr, arg0) }
 }
 
@@ -1251,8 +1262,9 @@ pub fn mj_c_model_copy_paths(self_ptr: *mut mjCModel, arg0: *mut mjModel) {
 /// Calls: mjCActuator::is_actlimited, mjCActuator::is_ctrllimited, mjCActuator::is_forcelimited, mjCBoundingVolumeHierarchy::Nbvh, mjCBoundingVolumeHierarchy::Nodeid, mjCMesh::CopyFace, mjCMesh::CopyFaceNormal, mjCMesh::CopyFaceTexcoord, mjCMesh::CopyGraph, mjCMesh::CopyNormal, mjCMesh::CopyPolygonMap, mjCMesh::CopyPolygonNormals, mjCMesh::CopyPolygons, mjCMesh::CopyTexcoord, mjCMesh::CopyVert, mjCMesh::GetPosPtr, mjCMesh::GetQuatPtr, mjCMesh::HasTexcoord, mjCMesh::Scale, mjCMesh::nface, mjCMesh::nnormal, mjCMesh::npolygon, mjCMesh::npolygonmap, mjCMesh::npolygonvert, mjCMesh::ntexcoord, mjCMesh::nvert, mjCMesh::octree, mjCMesh::szgraph, mjCMesh::tree, mjCModel::AddWarning, mjCOctree::CopyAabb, mjCOctree::CopyChild, mjCOctree::CopyCoeff, mjCOctree::CopyLevel, mjCOctree::NumNodes, mjCTendon::is_actfrclimited, mjCTendon::is_limited
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_model_copy_objects(self_ptr: *mut mjCModel, arg0: *mut mjModel) {
+    if self_ptr.is_null() { return; }
     extern "C" { fn mjCModel_CopyObjects(self_ptr: *mut mjCModel, arg0: *mut mjModel); }
-    // SAFETY: delegates to C implementation
+    // SAFETY: self_ptr verified non-null; delegates to C implementation
     unsafe { mjCModel_CopyObjects(self_ptr, arg0) }
 }
 
@@ -1260,8 +1272,9 @@ pub fn mj_c_model_copy_objects(self_ptr: *mut mjCModel, arg0: *mut mjModel) {
 /// Calls: mjCGeom::GetRBound, mjCJoint::is_actfrclimited, mjCJoint::is_limited, mjCJoint::nq, mjCJoint::nv
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_model_copy_tree(self_ptr: *mut mjCModel, arg0: *mut mjModel) {
+    if self_ptr.is_null() { return; }
     extern "C" { fn mjCModel_CopyTree(self_ptr: *mut mjCModel, arg0: *mut mjModel); }
-    // SAFETY: delegates to C implementation
+    // SAFETY: self_ptr verified non-null; delegates to C implementation
     unsafe { mjCModel_CopyTree(self_ptr, arg0) }
 }
 
@@ -1278,8 +1291,9 @@ pub fn mj_c_model_finalize_simple(self_ptr: *mut mjCModel, m: *mut mjModel) {
 /// Calls: mjp_getPluginAtSlot, mju_error
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_model_copy_plugins(self_ptr: *mut mjCModel, arg0: *mut mjModel) {
+    if self_ptr.is_null() { return; }
     extern "C" { fn mjCModel_CopyPlugins(self_ptr: *mut mjCModel, arg0: *mut mjModel); }
-    // SAFETY: delegates to C implementation
+    // SAFETY: self_ptr verified non-null; delegates to C implementation
     unsafe { mjCModel_CopyPlugins(self_ptr, arg0) }
 }
 
@@ -1296,8 +1310,9 @@ pub fn mj_c_model_count_tendon_dofs(self_ptr: *mut mjCModel, m: *const mjModel, 
 /// Calls: mjCModel::CountTendonDofs
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_model_count_n_jmom(self_ptr: *mut mjCModel, m: *const mjModel) -> i32 {
+    if self_ptr.is_null() { return 0; }
     extern "C" { fn mjCModel_CountNJmom(self_ptr: *mut mjCModel, m: *const mjModel) -> i32; }
-    // SAFETY: delegates to C implementation
+    // SAFETY: self_ptr verified non-null; delegates to C implementation
     unsafe { mjCModel_CountNJmom(self_ptr, m) }
 }
 
@@ -1305,8 +1320,9 @@ pub fn mj_c_model_count_n_jmom(self_ptr: *mut mjCModel, m: *const mjModel) -> i3
 /// Calls: mjCModel::CountTendonDofs
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_model_count_n_jten(self_ptr: *mut mjCModel, m: *const mjModel) -> i32 {
+    if self_ptr.is_null() { return 0; }
     extern "C" { fn mjCModel_CountNJten(self_ptr: *mut mjCModel, m: *const mjModel) -> i32; }
-    // SAFETY: delegates to C implementation
+    // SAFETY: self_ptr verified non-null; delegates to C implementation
     unsafe { mjCModel_CountNJten(self_ptr, m) }
 }
 
@@ -1368,8 +1384,9 @@ pub fn mj_c_model_save_dof_offsets(self_ptr: *mut mjCModel, computesize: bool) {
 /// Calls: mjCModel::SaveDofOffsets
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_model_resolve_keyframes(self_ptr: *mut mjCModel, m: *const mjModel) {
+    if self_ptr.is_null() { return; }
     extern "C" { fn mjCModel_ResolveKeyframes(self_ptr: *mut mjCModel, m: *const mjModel); }
-    // SAFETY: delegates to C implementation
+    // SAFETY: self_ptr verified non-null; delegates to C implementation
     unsafe { mjCModel_ResolveKeyframes(self_ptr, m) }
 }
 
@@ -1437,8 +1454,9 @@ pub fn mj_c_model_delete_subtree_plugin(self_ptr: *mut mjCModel, subtree: *mut m
 /// Calls: mjCModel::ComputeReference, mjCModel::SaveDofOffsets
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_model_expand_all_keyframes(self_ptr: *mut mjCModel) {
+    if self_ptr.is_null() { return; }
     extern "C" { fn mjCModel_ExpandAllKeyframes(self_ptr: *mut mjCModel); }
-    // SAFETY: delegates to C implementation
+    // SAFETY: self_ptr verified non-null; delegates to C implementation
     unsafe { mjCModel_ExpandAllKeyframes(self_ptr) }
 }
 
