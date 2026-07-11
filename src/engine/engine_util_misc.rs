@@ -44,8 +44,9 @@ pub fn length_circle(p0: *const f64, p1: *const f64, ind: i32, radius: f64) -> f
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn wrap_circle(pnt: *mut f64, end: *const f64, side: *const f64, radius: f64) -> f64  {
+    if pnt.is_null() { return 0.0; }
     extern "C" { fn wrap_circle(pnt: *mut f64, end: *const f64, side: *const f64, radius: f64) -> f64; }
-    // SAFETY: delegates to C implementation
+    // SAFETY: pnt verified non-null; delegates to C implementation
     unsafe { wrap_circle(pnt, end, side, radius) }
 }
 

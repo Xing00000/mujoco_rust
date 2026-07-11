@@ -149,8 +149,9 @@ pub fn ray_cylinder(pos: *const f64, mat: *const f64, size: *const f64, pnt: *co
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn ray_box(pos: *const f64, mat: *const f64, size: *const f64, pnt: *const f64, vec: *const f64, all: *mut f64, normal: *mut f64) -> f64  {
+    if pos.is_null() { return 0.0; }
     extern "C" { fn ray_box(pos: *const f64, mat: *const f64, size: *const f64, pnt: *const f64, vec: *const f64, all: *mut f64, normal: *mut f64) -> f64; }
-    // SAFETY: delegates to C implementation
+    // SAFETY: pos verified non-null; delegates to C implementation
     unsafe { ray_box(pos, mat, size, pnt, vec, all, normal) }
 }
 
@@ -235,8 +236,9 @@ pub fn mju_single_ray(m: *const mjModel, d: *mut mjData, pnt: *const f64, vec: *
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mju_multi_ray_prepare(m: *const mjModel, d: *const mjData, pnt: *const f64, ray_xmat: *const f64, geomgroup: *const u8, flg_static: mjtBool, bodyexclude: i32, cutoff: f64, geom_ba: *mut f64, geom_eliminate: *mut i32) {
+    if m.is_null() { return ; }
     extern "C" { fn mju_multiRayPrepare(m: *const mjModel, d: *const mjData, pnt: *const f64, ray_xmat: *const f64, geomgroup: *const u8, flg_static: mjtBool, bodyexclude: i32, cutoff: f64, geom_ba: *mut f64, geom_eliminate: *mut i32); }
-    // SAFETY: delegates to C implementation
+    // SAFETY: m verified non-null; delegates to C implementation
     unsafe { mju_multiRayPrepare(m, d, pnt, ray_xmat, geomgroup, flg_static, bodyexclude, cutoff, geom_ba, geom_eliminate) }
 }
 

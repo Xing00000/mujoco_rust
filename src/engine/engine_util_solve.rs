@@ -813,8 +813,9 @@ pub fn mju_box_q_pmalloc(res: *mut *mut f64, R: *mut *mut f64, index: *mut *mut 
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mju_box_q_poption(res: *mut f64, R: *mut f64, index: *mut i32, H: *const f64, g: *const f64, n: i32, lower: *const f64, upper: *const f64, maxiter: i32, mingrad: f64, backtrack: f64, minstep: f64, armijo: f64, log: *mut i8, logsz: i32) -> i32  {
+    if res.is_null() { return 0; }
     extern "C" { fn mju_boxQPoption(res: *mut f64, R: *mut f64, index: *mut i32, H: *const f64, g: *const f64, n: i32, lower: *const f64, upper: *const f64, maxiter: i32, mingrad: f64, backtrack: f64, minstep: f64, armijo: f64, log: *mut i8, logsz: i32) -> i32; }
-    // SAFETY: delegates to C implementation
+    // SAFETY: res verified non-null; delegates to C implementation
     unsafe { mju_boxQPoption(res, R, index, H, g, n, lower, upper, maxiter, mingrad, backtrack, minstep, armijo, log, logsz) }
 }
 

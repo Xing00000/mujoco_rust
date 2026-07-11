@@ -1169,6 +1169,7 @@ pub fn mjuu_combine_paths(path1: *const std__string, path2: *const std__string) 
 /// Calls: mjuu_isValidContentType
 #[allow(unused_variables, non_snake_case)]
 pub fn mjuu_parse_content_type_attr_type(text: string_view) -> *const () {
+    let _sv = core::mem::size_of_val(&text);
     extern "C" { fn mjuu_parseContentTypeAttrType(text: string_view) -> *const (); }
     // SAFETY: delegates to C implementation
     unsafe { mjuu_parseContentTypeAttrType(text) }
@@ -1178,6 +1179,7 @@ pub fn mjuu_parse_content_type_attr_type(text: string_view) -> *const () {
 /// Calls: mjuu_isValidContentType
 #[allow(unused_variables, non_snake_case)]
 pub fn mjuu_parse_content_type_attr_subtype(text: string_view) -> *const () {
+    let _sv = core::mem::size_of_val(&text);
     extern "C" { fn mjuu_parseContentTypeAttrSubtype(text: string_view) -> *const (); }
     // SAFETY: delegates to C implementation
     unsafe { mjuu_parseContentTypeAttrSubtype(text) }

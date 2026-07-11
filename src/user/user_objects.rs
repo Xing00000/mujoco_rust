@@ -177,8 +177,9 @@ pub fn point_tri_dist_sq_with_uv(p: *const f64, v0: *const f64, v1: *const f64, 
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn query_closest_bvh_with_face(bvh: *const f64, child: *const i32, nodeid: *const i32, vert: *const f64, face: *const i32, node_idx: i32, p: *const f64, best_dist_sq: *mut f64, best_face: *mut i32, best_u: *mut f64, best_v: *mut f64) {
+    if bvh.is_null() { return ; }
     extern "C" { fn queryClosestBVHWithFace(bvh: *const f64, child: *const i32, nodeid: *const i32, vert: *const f64, face: *const i32, node_idx: i32, p: *const f64, best_dist_sq: *mut f64, best_face: *mut i32, best_u: *mut f64, best_v: *mut f64); }
-    // SAFETY: delegates to C implementation
+    // SAFETY: bvh verified non-null; delegates to C implementation
     unsafe { queryClosestBVHWithFace(bvh, child, nodeid, vert, face, node_idx, p, best_dist_sq, best_face, best_u, best_v) }
 }
 

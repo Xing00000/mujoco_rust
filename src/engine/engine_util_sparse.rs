@@ -398,8 +398,9 @@ pub fn mju_super_sparse(nr: i32, rowsuper: *mut i32, rownnz: *const i32, rowadr:
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mju_sqr_mat_td_sparse(res: *mut f64, mat: *const f64, matT: *const f64, diag: *const f64, nr: i32, nc: i32, res_rownnz: *mut i32, res_rowadr: *const i32, res_colind: *mut i32, rownnz: *const i32, rowadr: *const i32, colind: *const i32, rowsuper: *const i32, rownnzT: *const i32, rowadrT: *const i32, colindT: *const i32, rowsuperT: *const i32, d: *mut mjData, diagind: *mut i32) {
+    if res.is_null() { return ; }
     extern "C" { fn mju_sqrMatTDSparse(res: *mut f64, mat: *const f64, matT: *const f64, diag: *const f64, nr: i32, nc: i32, res_rownnz: *mut i32, res_rowadr: *const i32, res_colind: *mut i32, rownnz: *const i32, rowadr: *const i32, colind: *const i32, rowsuper: *const i32, rownnzT: *const i32, rowadrT: *const i32, colindT: *const i32, rowsuperT: *const i32, d: *mut mjData, diagind: *mut i32); }
-    // SAFETY: delegates to C implementation
+    // SAFETY: res verified non-null; delegates to C implementation
     unsafe { mju_sqrMatTDSparse(res, mat, matT, diag, nr, nc, res_rownnz, res_rowadr, res_colind, rownnz, rowadr, colind, rowsuper, rownnzT, rowadrT, colindT, rowsuperT, d, diagind) }
 }
 
@@ -412,8 +413,9 @@ pub fn mju_sqr_mat_td_sparse(res: *mut f64, mat: *const f64, matT: *const f64, d
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mju_sqr_mat_td_sparse_row(res: *mut f64, mat: *const f64, matT: *const f64, diag: *const f64, nr: i32, nc: i32, res_rownnz: *mut i32, res_rowadr: *const i32, res_colind: *mut i32, rownnz: *const i32, rowadr: *const i32, colind: *const i32, rowsuper: *const i32, rownnzT: *const i32, rowadrT: *const i32, colindT: *const i32, rowsuperT: *const i32, d: *mut mjData, diagind: *mut i32) {
+    if res.is_null() { return ; }
     extern "C" { fn mju_sqrMatTDSparse_row(res: *mut f64, mat: *const f64, matT: *const f64, diag: *const f64, nr: i32, nc: i32, res_rownnz: *mut i32, res_rowadr: *const i32, res_colind: *mut i32, rownnz: *const i32, rowadr: *const i32, colind: *const i32, rowsuper: *const i32, rownnzT: *const i32, rowadrT: *const i32, colindT: *const i32, rowsuperT: *const i32, d: *mut mjData, diagind: *mut i32); }
-    // SAFETY: delegates to C implementation
+    // SAFETY: res verified non-null; delegates to C implementation
     unsafe { mju_sqrMatTDSparse_row(res, mat, matT, diag, nr, nc, res_rownnz, res_rowadr, res_colind, rownnz, rowadr, colind, rowsuper, rownnzT, rowadrT, colindT, rowsuperT, d, diagind) }
 }
 
@@ -421,8 +423,9 @@ pub fn mju_sqr_mat_td_sparse_row(res: *mut f64, mat: *const f64, matT: *const f6
 /// Calls: mj_freeStack, mj_markStack, mj_stackAllocInfo
 #[allow(unused_variables, non_snake_case)]
 pub fn mju_sqr_mat_td_sparse_count(res_rownnz: *mut i32, res_rowadr: *mut i32, nr: i32, rownnz: *const i32, rowadr: *const i32, colind: *const i32, rownnzT: *const i32, rowadrT: *const i32, colindT: *const i32, rowsuperT: *const i32, d: *mut mjData, flg_upper: i32) -> i32 {
+    if res_rownnz.is_null() { return 0; }
     extern "C" { fn mju_sqrMatTDSparseCount(res_rownnz: *mut i32, res_rowadr: *mut i32, nr: i32, rownnz: *const i32, rowadr: *const i32, colind: *const i32, rownnzT: *const i32, rowadrT: *const i32, colindT: *const i32, rowsuperT: *const i32, d: *mut mjData, flg_upper: i32) -> i32; }
-    // SAFETY: delegates to C implementation
+    // SAFETY: res_rownnz verified non-null; delegates to C implementation
     unsafe { mju_sqrMatTDSparseCount(res_rownnz, res_rowadr, nr, rownnz, rowadr, colind, rownnzT, rowadrT, colindT, rowsuperT, d, flg_upper) }
 }
 
@@ -447,8 +450,9 @@ pub fn mju_sqr_mat_td_sparse_symbolic(res_rownnz: *mut i32, res_rowadr: *mut i32
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mju_sqr_mat_td_sparse_numeric(res: *mut f64, nc: i32, res_rownnz: *const i32, res_rowadr: *const i32, res_colind: *const i32, res_diagind: *const i32, mat: *const f64, rownnz: *const i32, rowadr: *const i32, colind: *const i32, matT: *const f64, rownnzT: *const i32, rowadrT: *const i32, colindT: *const i32, rowsuperT: *const i32, diag: *const f64, d: *mut mjData) {
+    if res.is_null() { return ; }
     extern "C" { fn mju_sqrMatTDSparseNumeric(res: *mut f64, nc: i32, res_rownnz: *const i32, res_rowadr: *const i32, res_colind: *const i32, res_diagind: *const i32, mat: *const f64, rownnz: *const i32, rowadr: *const i32, colind: *const i32, matT: *const f64, rownnzT: *const i32, rowadrT: *const i32, colindT: *const i32, rowsuperT: *const i32, diag: *const f64, d: *mut mjData); }
-    // SAFETY: delegates to C implementation
+    // SAFETY: res verified non-null; delegates to C implementation
     unsafe { mju_sqrMatTDSparseNumeric(res, nc, res_rownnz, res_rowadr, res_colind, res_diagind, mat, rownnz, rowadr, colind, matT, rownnzT, rowadrT, colindT, rowsuperT, diag, d) }
 }
 

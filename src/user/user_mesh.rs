@@ -355,8 +355,9 @@ pub fn compute_bending(bending: *mut f64, pos: *mut f64, v: [i32; 4], mu: f64, t
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn quadrature_gauss_legendre(points: *mut f64, weights: *mut f64, order: i32, a: f64, b: f64) {
+    if points.is_null() { return ; }
     extern "C" { fn quadratureGaussLegendre(points: *mut f64, weights: *mut f64, order: i32, a: f64, b: f64); }
-    // SAFETY: delegates to C implementation
+    // SAFETY: points verified non-null; delegates to C implementation
     unsafe { quadratureGaussLegendre(points, weights, order, a, b) }
 }
 

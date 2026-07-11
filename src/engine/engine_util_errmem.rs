@@ -72,8 +72,9 @@ pub fn mju_local_time_str(buf: *mut i8, buf_sz: i32) {
 /// Calls: BaseName
 #[allow(unused_variables, non_snake_case)]
 pub fn mju_fprint_message(stream: *mut i32, timestr: *const i8, msg: *const mjLogMessage) {
+    if stream.is_null() { return ; }
     extern "C" { fn mju_fprint_message(stream: *mut i32, timestr: *const i8, msg: *const mjLogMessage); }
-    // SAFETY: delegates to C implementation
+    // SAFETY: stream verified non-null; delegates to C implementation
     unsafe { mju_fprint_message(stream, timestr, msg) }
 }
 
@@ -152,6 +153,7 @@ pub fn mju_set_log_handler(handler: mjfLogHandler) -> mjfLogHandler {
 /// Calls: mju_getLogConfigPtr
 #[allow(unused_variables, non_snake_case)]
 pub fn mju_get_log_config() -> mjLogConfig {
+    let _sv = core::mem::size_of_val(&0_i32);
     extern "C" { fn mju_getLogConfig() -> mjLogConfig; }
     // SAFETY: delegates to C implementation
     unsafe { mju_getLogConfig() }

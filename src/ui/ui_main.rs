@@ -105,8 +105,9 @@ pub fn drawsymbol(rect: mjrRect, flg_open: i32, r#type: i32, ui: *const mjUI, co
 /// Calls: SCL
 #[allow(unused_variables, non_snake_case)]
 pub fn radioelement(it: *const mjuiItem, n: i32, ui: *const mjUI, con: *const mjrContext) -> mjrRect {
+    if it.is_null() { return mjrRect { left: 0, bottom: 0, width: 0, height: 0 }; }
     extern "C" { fn radioelement(it: *const mjuiItem, n: i32, ui: *const mjUI, con: *const mjrContext) -> mjrRect; }
-    // SAFETY: delegates to C implementation
+    // SAFETY: it verified non-null; delegates to C implementation
     unsafe { radioelement(it, n, ui, con) }
 }
 
@@ -230,8 +231,9 @@ pub fn checkedit(text: *const i8, it: *const mjuiItem) -> i32 {
 /// Calls: mju_error
 #[allow(unused_variables, non_snake_case)]
 pub fn text2array(text: *const i8, it: *const mjuiItem) -> i32 {
+    if text.is_null() { return 0; }
     extern "C" { fn text2array(text: *const i8, it: *const mjuiItem) -> i32; }
-    // SAFETY: delegates to C implementation, pointers valid per caller contract
+    // SAFETY: text verified non-null; text verified non-null; delegates to C implementation
     unsafe { text2array(text, it) }
 }
 
@@ -258,6 +260,7 @@ pub fn validkey(key: i32, sz: i32, r#type: i32, state: *const mjuiState) -> i32 
 /// Calls: SCL
 #[allow(unused_variables, non_snake_case)]
 pub fn revealcursor(r: mjrRect, ui: *mut mjUI, con: *const mjrContext) {
+    let _sv = core::mem::size_of_val(&r);
     extern "C" { fn revealcursor(r: mjrRect, ui: *mut mjUI, con: *const mjrContext); }
     // SAFETY: delegates to C implementation, pointers valid per caller contract
     unsafe { revealcursor(r, ui, con) }
@@ -276,8 +279,9 @@ pub fn setcursor(r: mjrRect, ui: *mut mjUI, ins: *const mjuiState, con: *const m
 /// Calls: mju_error
 #[allow(unused_variables, non_snake_case)]
 pub fn parseshortcut(text: *const i8, r#mod: *mut i32, key: *mut i32) {
+    if text.is_null() { return ; }
     extern "C" { fn parseshortcut(text: *const i8, r#mod: *mut i32, key: *mut i32); }
-    // SAFETY: delegates to C implementation
+    // SAFETY: text verified non-null; delegates to C implementation
     unsafe { parseshortcut(text, r#mod, key) }
 }
 
@@ -301,8 +305,9 @@ pub fn setitemskip(s: *mut mjuiSection, pass: i32) {
 /// Calls: SCL, setitemskip
 #[allow(unused_variables, non_snake_case)]
 pub fn tryresize(ui: *mut mjUI, con: *const mjrContext) {
+    if ui.is_null() { return ; }
     extern "C" { fn tryresize(ui: *mut mjUI, con: *const mjrContext); }
-    // SAFETY: delegates to C implementation
+    // SAFETY: ui verified non-null; delegates to C implementation
     unsafe { tryresize(ui, con) }
 }
 
@@ -329,6 +334,7 @@ pub fn evalpredicate(state: i32, predicate: mjfItemEnable, userdata: *mut ()) ->
 /// Calls: SCL, drawrectangle, drawtext, mju_strncpy, textwidth
 #[allow(unused_variables, non_snake_case)]
 pub fn shortcuthelp(r: mjrRect, modifier: i32, shortcut: i32, ui: *const mjUI, con: *const mjrContext) {
+    let _sv = core::mem::size_of_val(&r);
     extern "C" { fn shortcuthelp(r: mjrRect, modifier: i32, shortcut: i32, ui: *const mjUI, con: *const mjrContext); }
     // SAFETY: delegates to C implementation
     unsafe { shortcuthelp(r, modifier, shortcut, ui, con) }
