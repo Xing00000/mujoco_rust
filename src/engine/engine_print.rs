@@ -131,16 +131,18 @@ pub fn print_inertia(str: *const i8, mat: *const f64, m: *const mjModel, fp: *mu
 /// C: mj_printSparsity (engine/engine_print.c:282)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_print_sparsity(str: *const i8, nr: i32, nc: i32, rowadr: *const i32, diag: *const i32, rownnz: *const i32, rowsuper: *const i32, colind: *const i32, fp: *mut i32) {
+    if str.is_null() { return; }
     extern "C" { fn mj_printSparsity(str: *const i8, nr: i32, nc: i32, rowadr: *const i32, diag: *const i32, rownnz: *const i32, rowsuper: *const i32, colind: *const i32, fp: *mut i32); }
-    // SAFETY: delegates to C implementation
+    // SAFETY: str verified non-null
     unsafe { mj_printSparsity(str, nr, nc, rowadr, diag, rownnz, rowsuper, colind, fp) }
 }
 
 /// C: mj_printBlockSparsity (engine/engine_print.c:319)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_print_block_sparsity(str: *const i8, nr: i32, nc: i32, nisland: i32, island_block_ncols: *const i32, island_col_offset: *const i32, entity_island: *const i32, map_row_to_entity: *const i32, map_col_to_entity: *const i32, rownnz: *const i32, rowadr: *const i32, colind: *const i32, rowsuper: *const i32, fp: *mut i32) {
+    if str.is_null() { return; }
     extern "C" { fn mj_printBlockSparsity(str: *const i8, nr: i32, nc: i32, nisland: i32, island_block_ncols: *const i32, island_col_offset: *const i32, entity_island: *const i32, map_row_to_entity: *const i32, map_col_to_entity: *const i32, rownnz: *const i32, rowadr: *const i32, colind: *const i32, rowsuper: *const i32, fp: *mut i32); }
-    // SAFETY: delegates to C implementation
+    // SAFETY: str verified non-null
     unsafe { mj_printBlockSparsity(str, nr, nc, nisland, island_block_ncols, island_col_offset, entity_island, map_row_to_entity, map_col_to_entity, rownnz, rowadr, colind, rowsuper, fp) }
 }
 

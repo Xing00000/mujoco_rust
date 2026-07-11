@@ -63,8 +63,9 @@ pub fn mj_default_lr_opt(opt: *mut mjLROpt) {
 /// Calls: mju_zero3
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_default_statistic(stat: *mut mjStatistic) {
+    if stat.is_null() { return; }
     extern "C" { fn mj_defaultStatistic(stat: *mut mjStatistic); }
-    // SAFETY: delegates to C implementation
+    // SAFETY: stat verified non-null
     unsafe { mj_defaultStatistic(stat) }
 }
 

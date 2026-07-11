@@ -7,8 +7,9 @@ use crate::types::*;
 /// C: mj_loadXML (xml/xml_api.h:31)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_load_xml(filename: *const i8, vfs: *const mjVFS, error: *mut i8, error_sz: i32) -> *mut mjModel {
+    if filename.is_null() { return core::ptr::null_mut(); }
     extern "C" { fn mj_loadXML(filename: *const i8, vfs: *const mjVFS, error: *mut i8, error_sz: i32) -> *mut mjModel; }
-    // SAFETY: delegates to C implementation
+    // SAFETY: filename verified non-null
     unsafe { mj_loadXML(filename, vfs, error, error_sz) }
 }
 

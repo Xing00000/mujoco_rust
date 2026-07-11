@@ -146,8 +146,9 @@ pub fn pcg32_next(rng: *mut pcg32_state) -> u32 {
 /// Calls: pcg32_next
 #[allow(unused_variables, non_snake_case)]
 pub fn shuffle_int(array: *mut i32, n: i32, rng: *mut pcg32_state) {
+    if array.is_null() { return; }
     extern "C" { fn shuffle_int(array: *mut i32, n: i32, rng: *mut pcg32_state); }
-    // SAFETY: delegates to C implementation
+    // SAFETY: array verified non-null
     unsafe { shuffle_int(array, n, rng) }
 }
 

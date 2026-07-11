@@ -1015,8 +1015,9 @@ pub fn mju_decode_base64(buf: *mut u8, s: *const i8) -> usize {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mju_history_init(buf: *mut f64, n: i32, dim: i32, times: *const f64, values: *const f64, user: f64) {
+    if buf.is_null() { return; }
     extern "C" { fn mju_historyInit(buf: *mut f64, n: i32, dim: i32, times: *const f64, values: *const f64, user: f64); }
-    // SAFETY: delegates to C implementation
+    // SAFETY: buf verified non-null
     unsafe { mju_historyInit(buf, n, dim, times, values, user) }
 }
 

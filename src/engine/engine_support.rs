@@ -402,8 +402,9 @@ pub fn mj_mul_m2(m: *const mjModel, d: *const mjData, res: *mut f64, vec: *const
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_add_m(m: *const mjModel, d: *mut mjData, dst: *mut f64, rownnz: *mut i32, rowadr: *mut i32, colind: *mut i32) {
+    if m.is_null() { return; }
     extern "C" { fn mj_addM(m: *const mjModel, d: *mut mjData, dst: *mut f64, rownnz: *mut i32, rowadr: *mut i32, colind: *mut i32); }
-    // SAFETY: delegates to C implementation
+    // SAFETY: m verified non-null
     unsafe { mj_addM(m, d, dst, rownnz, rowadr, colind) }
 }
 

@@ -186,8 +186,9 @@ pub fn mjp_get_resource_provider_at_slot(slot: i32) -> *const mjpResourceProvide
 /// Calls: PluginAttrSeek, mjp_getPluginAtSlot
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_get_plugin_config(m: *const mjModel, plugin_id: i32, attrib: *const i8) -> *const i8 {
+    if m.is_null() { return core::ptr::null(); }
     extern "C" { fn mj_getPluginConfig(m: *const mjModel, plugin_id: i32, attrib: *const i8) -> *const i8; }
-    // SAFETY: delegates to C implementation, all pointers valid per caller contract
+    // SAFETY: m verified non-null
     unsafe { mj_getPluginConfig(m, plugin_id, attrib) }
 }
 
@@ -204,8 +205,9 @@ pub fn mj_load_plugin_library(path: *const i8) {
 /// Calls: mjp_pluginCount
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_load_all_plugin_libraries(directory: *const i8, callback: mjfPluginLibraryLoadCallback) {
+    if directory.is_null() { return; }
     extern "C" { fn mj_loadAllPluginLibraries(directory: *const i8, callback: mjfPluginLibraryLoadCallback); }
-    // SAFETY: delegates to C implementation
+    // SAFETY: directory verified non-null
     unsafe { mj_loadAllPluginLibraries(directory, callback) }
 }
 

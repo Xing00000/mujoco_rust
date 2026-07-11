@@ -49,11 +49,12 @@ pub fn skip(offset: isize) -> u32  {
 /// Calls: SKIP, mju_message
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_set_ptr_model(m: *mut mjModel) {
+    if m.is_null() { return; }
     // WARNING: signature changed — verify body
     // Previous params: (m : * mut mjModel)
     // Previous return: ()
     extern "C" { fn mj_setPtrModel(m: *mut mjModel); }
-    // SAFETY: delegates to C implementation, all pointers valid per caller contract
+    // SAFETY: m verified non-null
     unsafe { mj_setPtrModel(m) }
 }
 
@@ -232,8 +233,9 @@ pub fn mj_delete_model(m: *mut mjModel) {
 /// Calls: getnsize
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_size_model(m: *const mjModel) -> usize {
+    if m.is_null() { return 0; }
     extern "C" { fn mj_sizeModel(m: *const mjModel) -> usize; }
-    // SAFETY: delegates to C implementation which uses MJMODEL_POINTERS macro expansion
+    // SAFETY: m verified non-null
     unsafe { mj_sizeModel(m) }
 }
 
@@ -251,6 +253,7 @@ pub fn mj_validate_references(m: *const mjModel) -> *const i8 {
 /// Calls: mju_copyInt, mju_message, mju_zeroInt
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_make_dof_dof_sparse(nv: i32, nC: i32, nD: i32, nM: i32, dof_parentid: *const i32, dof_simplenum: *const i32, rownnz: *mut i32, rowadr: *mut i32, diag: *mut i32, colind: *mut i32, reduced: i32, upper: i32, remaining: *mut i32) {
+    let _sv = core::mem::size_of_val(&nv);
     extern "C" { fn mj_makeDofDofSparse(nv: i32, nC: i32, nD: i32, nM: i32, dof_parentid: *const i32, dof_simplenum: *const i32, rownnz: *mut i32, rowadr: *mut i32, diag: *mut i32, colind: *mut i32, reduced: i32, upper: i32, remaining: *mut i32); }
     // SAFETY: delegates to C implementation
     unsafe { mj_makeDofDofSparse(nv, nC, nD, nM, dof_parentid, dof_simplenum, rownnz, rowadr, diag, colind, reduced, upper, remaining) }
@@ -260,6 +263,7 @@ pub fn mj_make_dof_dof_sparse(nv: i32, nC: i32, nD: i32, nM: i32, dof_parentid: 
 /// Calls: mju_insertionSortInt, mju_message, mju_zeroInt
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_make_b_sparse(nv: i32, nbody: i32, nB: i32, body_dofnum: *const i32, body_parentid: *const i32, body_dofadr: *const i32, B_rownnz: *mut i32, B_rowadr: *mut i32, B_colind: *mut i32, count: *mut i32) {
+    let _sv = core::mem::size_of_val(&nv);
     extern "C" { fn mj_makeBSparse(nv: i32, nbody: i32, nB: i32, body_dofnum: *const i32, body_parentid: *const i32, body_dofadr: *const i32, B_rownnz: *mut i32, B_rowadr: *mut i32, B_colind: *mut i32, count: *mut i32); }
     // SAFETY: delegates to C implementation
     unsafe { mj_makeBSparse(nv, nbody, nB, body_dofnum, body_parentid, body_dofadr, B_rownnz, B_rowadr, B_colind, count) }

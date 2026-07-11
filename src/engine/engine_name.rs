@@ -18,8 +18,9 @@ pub fn getnumadr(m: *const mjModel, r#type: mjtObj, padr: *mut *mut i32, mapadr:
 /// C: mj_hashString (engine/engine_name.h:30)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_hash_string(s: *const i8, n: u64) -> u64  {
+    if s.is_null() { return 0; }
     extern "C" { fn mj_hashString(s: *const i8, n: u64) -> u64; }
-    // SAFETY: delegates to C implementation
+    // SAFETY: s verified non-null
     unsafe { mj_hashString(s, n) }
 }
 

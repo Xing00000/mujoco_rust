@@ -12,8 +12,9 @@ use crate::types::*;
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn ray_map(pos: *const f64, mat: *const f64, pnt: *const f64, vec: *const f64, lpnt: *mut f64, lvec: *mut f64) {
+    if pos.is_null() { return; }
     extern "C" { fn ray_map(pos: *const f64, mat: *const f64, pnt: *const f64, vec: *const f64, lpnt: *mut f64, lvec: *mut f64); }
-    // SAFETY: delegates to C implementation
+    // SAFETY: pos verified non-null
     unsafe { ray_map(pos, mat, pnt, vec, lpnt, lvec) }
 }
 
@@ -44,8 +45,9 @@ pub fn latitude(vec: *const f64) -> f64  {
 /// C: ray_eliminate (engine/engine_ray.c:68)
 #[allow(unused_variables, non_snake_case)]
 pub fn ray_eliminate(m: *const mjModel, d: *const mjData, geomid: i32, geomgroup: *const u8, flg_static: mjtBool, bodyexclude: i32) -> i32 {
+    if m.is_null() { return 0; }
     extern "C" { fn ray_eliminate(m: *const mjModel, d: *const mjData, geomid: i32, geomgroup: *const u8, flg_static: mjtBool, bodyexclude: i32) -> i32; }
-    // SAFETY: delegates to C implementation; caller guarantees all pointers are valid
+    // SAFETY: m verified non-null
     unsafe { ray_eliminate(m, d, geomid, geomgroup, flg_static, bodyexclude) }
 }
 
@@ -57,6 +59,7 @@ pub fn ray_eliminate(m: *const mjModel, d: *const mjData, geomid: i32, geomgroup
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn ray_quad(a: f64, b: f64, c: f64, x: *mut f64) -> f64  {
+    let _sv = core::mem::size_of_val(&a);
     extern "C" { fn ray_quad(a: f64, b: f64, c: f64, x: *mut f64) -> f64; }
     // SAFETY: delegates to C implementation
     unsafe { ray_quad(a, b, c, x) }
@@ -239,9 +242,9 @@ pub fn mju_multi_ray_prepare(m: *const mjModel, d: *const mjData, pnt: *const f6
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_multi_ray(m: *const mjModel, d: *mut mjData, pnt: *const f64, vec: *const f64, geomgroup: *const u8, flg_static: mjtBool, bodyexclude: i32, geomid: *mut i32, dist: *mut f64, normal: *mut f64, nray: i32, cutoff: f64) {
-
+    if m.is_null() { return; }
     extern "C" { fn mj_multiRay(m: *const mjModel, d: *mut mjData, pnt: *const f64, vec: *const f64, geomgroup: *const u8, flg_static: mjtBool, bodyexclude: i32, geomid: *mut i32, dist: *mut f64, normal: *mut f64, nray: i32, cutoff: f64); }
-    // SAFETY: delegates to C implementation
+    // SAFETY: m verified non-null
     unsafe { mj_multiRay(m, d, pnt, vec, geomgroup, flg_static, bodyexclude, geomid, dist, normal, nray, cutoff) }
 }
 

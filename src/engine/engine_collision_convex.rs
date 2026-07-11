@@ -295,8 +295,9 @@ pub fn dot3f(a: *const f64, b: [f32; 3]) -> f64 {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjc_mesh_support(res: *mut f64, obj: *mut mjCCDObj, dir: *const f64) {
+    if res.is_null() { return; }
     extern "C" { fn mjc_meshSupport(res: *mut f64, obj: *mut mjCCDObj, dir: *const f64); }
-    // SAFETY: delegates to C implementation
+    // SAFETY: res verified non-null
     unsafe { mjc_meshSupport(res, obj, dir) }
 }
 
@@ -309,8 +310,9 @@ pub fn mjc_mesh_support(res: *mut f64, obj: *mut mjCCDObj, dir: *const f64) {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjc_hillclimb_support(res: *mut f64, obj: *mut mjCCDObj, dir: *const f64) {
+    if res.is_null() { return; }
     extern "C" { fn mjc_hillclimbSupport(res: *mut f64, obj: *mut mjCCDObj, dir: *const f64); }
-    // SAFETY: delegates to C implementation
+    // SAFETY: res verified non-null
     unsafe { mjc_hillclimbSupport(res, obj, dir) }
 }
 
@@ -355,8 +357,9 @@ pub fn mjc_prism_support(res: *mut f64, obj: *mut mjCCDObj, dir: *const f64) {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjc_flex_support(res: *mut f64, obj: *mut mjCCDObj, dir: *const f64) {
+    if res.is_null() { return; }
     extern "C" { fn mjc_flexSupport(res: *mut f64, obj: *mut mjCCDObj, dir: *const f64); }
-    // SAFETY: delegates to C implementation
+    // SAFETY: res verified non-null
     unsafe { mjc_flexSupport(res, obj, dir) }
 }
 
@@ -380,8 +383,9 @@ pub fn mjc_set_ccd_obj_flex(obj: *mut mjCCDObj, flex: i32, elem: i32, vert: i32)
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjc_is_distinct_contact(con: *const mjPreContact, ncon: i32, tolerance: f64) -> i32  {
+    if con.is_null() { return 0; }
     extern "C" { fn mjc_isDistinctContact(con: *const mjPreContact, ncon: i32, tolerance: f64) -> i32; }
-    // SAFETY: delegates to C implementation
+    // SAFETY: con verified non-null
     unsafe { mjc_isDistinctContact(con, ncon, tolerance) }
 }
 

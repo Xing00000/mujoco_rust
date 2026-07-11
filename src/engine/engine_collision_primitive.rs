@@ -13,8 +13,9 @@ use crate::types::*;
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjraw_plane_sphere(con: *mut mjPreContact, margin: f64, pos1: *const f64, mat1: *const f64, size1: *const f64, pos2: *const f64, mat2: *const f64, size2: *const f64) -> i32  {
+    if con.is_null() { return 0; }
     extern "C" { fn mjraw_PlaneSphere(con: *mut mjPreContact, margin: f64, pos1: *const f64, mat1: *const f64, size1: *const f64, pos2: *const f64, mat2: *const f64, size2: *const f64) -> i32; }
-    // SAFETY: delegates to C implementation
+    // SAFETY: con verified non-null
     unsafe { mjraw_PlaneSphere(con, margin, pos1, mat1, size1, pos2, mat2, size2) }
 }
 
@@ -811,8 +812,9 @@ pub fn mjc_plane_capsule(m: *const mjModel, d: *mut mjData, con: *mut mjPreConta
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjc_plane_cylinder(m: *const mjModel, d: *mut mjData, con: *mut mjPreContact, g1: i32, g2: i32, margin: f64) -> i32  {
+    if m.is_null() { return 0; }
     extern "C" { fn mjc_PlaneCylinder(m: *const mjModel, d: *mut mjData, con: *mut mjPreContact, g1: i32, g2: i32, margin: f64) -> i32; }
-    // SAFETY: delegates to C implementation
+    // SAFETY: m verified non-null
     unsafe { mjc_PlaneCylinder(m, d, con, g1, g2, margin) }
 }
 

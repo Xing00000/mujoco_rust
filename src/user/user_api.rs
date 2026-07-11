@@ -17,8 +17,9 @@ pub fn mj_parse(filename: *const i8, content_type: *const i8, vfs: *const mjVFS,
 /// Calls: mj_saveXML, mjp_findEncoder
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_encode(s: *const mjSpec, m: *const mjModel, filename: *const i8, content_type: *const i8, vfs: *const mjVFS, error: *mut i8, error_sz: i32) -> i32 {
+    if s.is_null() { return 0; }
     extern "C" { fn mj_encode(s: *const mjSpec, m: *const mjModel, filename: *const i8, content_type: *const i8, vfs: *const mjVFS, error: *mut i8, error_sz: i32) -> i32; }
-    // SAFETY: delegates to C implementation
+    // SAFETY: s verified non-null
     unsafe { mj_encode(s, m, filename, content_type, vfs, error, error_sz) }
 }
 
@@ -297,8 +298,9 @@ pub fn mj_recompile(s: *mut mjSpec, vfs: *const mjVFS, m: *mut mjModel, d: *mut 
 /// C: mj_copySpec (user/user_api.h:49)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_copy_spec(s: *const mjSpec) -> *mut mjSpec {
+    if s.is_null() { return core::ptr::null_mut(); }
     extern "C" { fn mj_copySpec(s: *const mjSpec) -> *mut mjSpec; }
-    // SAFETY: delegates to C implementation
+    // SAFETY: s verified non-null
     unsafe { mj_copySpec(s) }
 }
 
