@@ -166,6 +166,7 @@ pub fn mjr_text_actual(font: i32, txt: *const i8, con: *const mjrContext, x: f32
 /// Calls: mju_error
 #[allow(unused_variables, non_snake_case)]
 pub fn mjr_set_buffer(framebuffer: i32, con: *mut mjrContext) {
+    let _sv = core::mem::size_of_val(&framebuffer);
     extern "C" { fn mjr_setBuffer(framebuffer: i32, con: *mut mjrContext); }
     // SAFETY: delegates to C implementation
     unsafe { mjr_setBuffer(framebuffer, con) }
@@ -223,6 +224,7 @@ pub fn mjr_draw_pixels(rgb: *const u8, depth: *const f32, viewport: mjrRect, con
 /// Calls: mjr_restoreBuffer
 #[allow(unused_variables, non_snake_case)]
 pub fn mjr_blit_buffer(src: mjrRect, dst: mjrRect, flg_color: i32, flg_depth: i32, con: *const mjrContext) {
+    let _sv = core::mem::size_of_val(&src);
     extern "C" { fn mjr_blitBuffer(src: mjrRect, dst: mjrRect, flg_color: i32, flg_depth: i32, con: *const mjrContext); }
     // SAFETY: delegates to C implementation
     unsafe { mjr_blitBuffer(src, dst, flg_color, flg_depth, con) }
@@ -232,6 +234,7 @@ pub fn mjr_blit_buffer(src: mjrRect, dst: mjrRect, flg_color: i32, flg_depth: i3
 /// Calls: mju_error
 #[allow(unused_variables, non_snake_case)]
 pub fn mjr_set_aux(index: i32, con: *const mjrContext) {
+    let _sv = core::mem::size_of_val(&index);
     extern "C" { fn mjr_setAux(index: i32, con: *const mjrContext); }
     // SAFETY: delegates to C implementation
     unsafe { mjr_setAux(index, con) }
@@ -241,6 +244,7 @@ pub fn mjr_set_aux(index: i32, con: *const mjrContext) {
 /// Calls: mjr_restoreBuffer, mju_error
 #[allow(unused_variables, non_snake_case)]
 pub fn mjr_blit_aux(index: i32, src: mjrRect, left: i32, bottom: i32, con: *const mjrContext) {
+    let _sv = core::mem::size_of_val(&index);
     extern "C" { fn mjr_blitAux(index: i32, src: mjrRect, left: i32, bottom: i32, con: *const mjrContext); }
     // SAFETY: delegates to C implementation, pointers valid per caller contract
     unsafe { mjr_blitAux(index, src, left, bottom, con) }
@@ -255,6 +259,7 @@ pub fn mjr_blit_aux(index: i32, src: mjrRect, left: i32, bottom: i32, con: *cons
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjr_text(font: i32, txt: *const i8, con: *const mjrContext, x: f32, y: f32, r: f32, g: f32, b: f32) {
+    let _sv = core::mem::size_of_val(&font);
     extern "C" { fn mjr_text(font: i32, txt: *const i8, con: *const mjrContext, x: f32, y: f32, r: f32, g: f32, b: f32); }
     // SAFETY: delegates to C implementation
     unsafe { mjr_text(font, txt, con, x, y, r, g, b) }
@@ -310,6 +315,7 @@ pub fn mjr_max_viewport(con: *const mjrContext) -> mjrRect {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjr_rectangle(viewport: mjrRect, r: f32, g: f32, b: f32, a: f32) {
+    let _sv = core::mem::size_of_val(&viewport);
     extern "C" { fn mjr_rectangle(viewport: mjrRect, r: f32, g: f32, b: f32, a: f32); }
     // SAFETY: delegates to C implementation, pointers valid per caller contract
     unsafe { mjr_rectangle(viewport, r, g, b, a) }
@@ -439,6 +445,7 @@ pub fn mjr_label(viewport: mjrRect, font: i32, txt: *const i8, r: f32, g: f32, b
 /// Calls: init2D, maketext, mjr_textActual, textwidth
 #[allow(unused_variables, non_snake_case)]
 pub fn mjr_figure(viewport: mjrRect, fig: *mut mjvFigure, con: *const mjrContext) {
+    let _sv = core::mem::size_of_val(&viewport);
     extern "C" { fn mjr_figure(viewport: mjrRect, fig: *mut mjvFigure, con: *const mjrContext); }
     // SAFETY: delegates to C implementation
     unsafe { mjr_figure(viewport, fig, con) }

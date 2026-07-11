@@ -70,8 +70,9 @@ pub fn mjp_default_plugin(plugin: *mut mjpPlugin) {
 /// Calls: mju_error
 #[allow(unused_variables, non_snake_case)]
 pub fn mjp_register_plugin(plugin: *const mjpPlugin) -> i32 {
+    if plugin.is_null() { return 0; }
     extern "C" { fn mjp_registerPlugin(plugin: *const mjpPlugin) -> i32; }
-    // SAFETY: delegates to C implementation
+    // SAFETY: plugin verified non-null; delegates to C implementation
     unsafe { mjp_registerPlugin(plugin) }
 }
 

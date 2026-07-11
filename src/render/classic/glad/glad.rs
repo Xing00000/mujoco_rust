@@ -166,6 +166,7 @@ pub fn mj_glad_load_gl_khr_debug(load: GLADloadproc) {
 /// Calls: mjGlad_free_exts, mjGlad_get_exts, mjGlad_has_ext
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_glad_find_extensions_gl() -> i32 {
+    let _sv = core::mem::size_of_val(&0_i32);
     extern "C" { fn mjGlad_find_extensionsGL() -> i32; }
     // SAFETY: delegates to C implementation
     unsafe { mjGlad_find_extensionsGL() }

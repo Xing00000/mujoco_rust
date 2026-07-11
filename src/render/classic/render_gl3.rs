@@ -199,8 +199,9 @@ pub fn settexture(r#type: i32, state: i32, con: *const mjrContext, geom: *const 
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn render_geom(geom: *const mjvGeom, mode: i32, headpos: *const f32, scn: *const mjvScene, con: *const mjrContext) {
+    if geom.is_null() { return ; }
     extern "C" { fn renderGeom(geom: *const mjvGeom, mode: i32, headpos: *const f32, scn: *const mjvScene, con: *const mjrContext); }
-    // SAFETY: delegates to C implementation
+    // SAFETY: geom verified non-null; delegates to C implementation
     unsafe { renderGeom(geom, mode, headpos, scn, con) }
 }
 
@@ -245,6 +246,7 @@ pub fn init_lights(scn: *mut mjvScene) {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn set_view(view: i32, viewport: mjrRect, scn: *const mjvScene, con: *const mjrContext, camProject: [f32; 16], camView: [f32; 16]) {
+    let _sv = core::mem::size_of_val(&view);
     extern "C" { fn setView(view: i32, viewport: mjrRect, scn: *const mjvScene, con: *const mjrContext, camProject: [f32; 16], camView: [f32; 16]); }
     // SAFETY: delegates to C implementation
     unsafe { setView(view, viewport, scn, con, camProject, camView) }

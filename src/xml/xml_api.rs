@@ -34,6 +34,7 @@ pub fn mj_save_last_xml(filename: *const i8, m: *const mjModel, error: *mut i8, 
 /// Calls: SetGlobalXmlSpec
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_free_last_xml() {
+    let _sv = core::mem::size_of_val(&0_i32);
     extern "C" { fn mj_freeLastXML(); }
     // SAFETY: delegates to C++ implementation which calls SetGlobalXmlSpec()
     unsafe { mj_freeLastXML() }

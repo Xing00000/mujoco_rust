@@ -89,8 +89,9 @@ pub fn ray_plane(pos: *const f64, mat: *const f64, size: *const f64, pnt: *const
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn ray_sphere(pos: *const f64, mat: *const f64, dist_sqr: f64, pnt: *const f64, vec: *const f64, normal: *mut f64) -> f64  {
+    if pos.is_null() { return 0.0; }
     extern "C" { fn ray_sphere(pos: *const f64, mat: *const f64, dist_sqr: f64, pnt: *const f64, vec: *const f64, normal: *mut f64) -> f64; }
-    // SAFETY: delegates to C implementation
+    // SAFETY: pos verified non-null; delegates to C implementation
     unsafe { ray_sphere(pos, mat, dist_sqr, pnt, vec, normal) }
 }
 

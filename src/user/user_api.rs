@@ -365,8 +365,9 @@ pub fn mjs_add_spec(s: *mut mjSpec, child: *mut mjSpec) {
 /// Calls: mjCModel::ActivatePlugin, mjp_getPlugin
 #[allow(unused_variables, non_snake_case)]
 pub fn mjs_activate_plugin(s: *mut mjSpec, name: *const i8) -> i32 {
+    if s.is_null() { return 0; }
     extern "C" { fn mjs_activatePlugin(s: *mut mjSpec, name: *const i8) -> i32; }
-    // SAFETY: delegates to C implementation
+    // SAFETY: s verified non-null; delegates to C implementation
     unsafe { mjs_activatePlugin(s, name) }
 }
 
@@ -489,8 +490,9 @@ pub fn mjs_delete(s: *mut mjSpec, element: *mut mjsElement) -> i32 {
 /// Calls: mjCModel::AddActuator
 #[allow(unused_variables, non_snake_case)]
 pub fn mjs_add_actuator(s: *mut mjSpec, def: *const mjsDefault) -> *mut mjsActuator {
+    if s.is_null() { return core::ptr::null_mut(); }
     extern "C" { fn mjs_addActuator(s: *mut mjSpec, def: *const mjsDefault) -> *mut mjsActuator; }
-    // SAFETY: delegates to C implementation
+    // SAFETY: s verified non-null; delegates to C implementation
     unsafe { mjs_addActuator(s, def) }
 }
 
@@ -507,8 +509,9 @@ pub fn mjs_add_sensor(s: *mut mjSpec) -> *mut mjsSensor {
 /// Calls: mjCModel::AddFlex
 #[allow(unused_variables, non_snake_case)]
 pub fn mjs_add_flex(s: *mut mjSpec) -> *mut mjsFlex {
+    if s.is_null() { return core::ptr::null_mut(); }
     extern "C" { fn mjs_addFlex(s: *mut mjSpec) -> *mut mjsFlex; }
-    // SAFETY: delegates to C implementation
+    // SAFETY: s verified non-null; delegates to C implementation
     unsafe { mjs_addFlex(s) }
 }
 
@@ -530,8 +533,9 @@ pub fn mjs_make_flex(body: *mut mjsBody, name: *const i8, r#type: *const i8, dim
 /// Calls: mjCModel::AddPair
 #[allow(unused_variables, non_snake_case)]
 pub fn mjs_add_pair(s: *mut mjSpec, def: *const mjsDefault) -> *mut mjsPair {
+    if s.is_null() { return core::ptr::null_mut(); }
     extern "C" { fn mjs_addPair(s: *mut mjSpec, def: *const mjsDefault) -> *mut mjsPair; }
-    // SAFETY: delegates to C implementation
+    // SAFETY: s verified non-null; delegates to C implementation
     unsafe { mjs_addPair(s, def) }
 }
 
@@ -539,8 +543,9 @@ pub fn mjs_add_pair(s: *mut mjSpec, def: *const mjsDefault) -> *mut mjsPair {
 /// Calls: mjCModel::AddExclude
 #[allow(unused_variables, non_snake_case)]
 pub fn mjs_add_exclude(s: *mut mjSpec) -> *mut mjsExclude {
+    if s.is_null() { return core::ptr::null_mut(); }
     extern "C" { fn mjs_addExclude(s: *mut mjSpec) -> *mut mjsExclude; }
-    // SAFETY: delegates to C implementation
+    // SAFETY: s verified non-null; delegates to C implementation
     unsafe { mjs_addExclude(s) }
 }
 
@@ -548,8 +553,9 @@ pub fn mjs_add_exclude(s: *mut mjSpec) -> *mut mjsExclude {
 /// Calls: mjCModel::AddEquality
 #[allow(unused_variables, non_snake_case)]
 pub fn mjs_add_equality(s: *mut mjSpec, def: *const mjsDefault) -> *mut mjsEquality {
+    if s.is_null() { return core::ptr::null_mut(); }
     extern "C" { fn mjs_addEquality(s: *mut mjSpec, def: *const mjsDefault) -> *mut mjsEquality; }
-    // SAFETY: delegates to C implementation
+    // SAFETY: s verified non-null; delegates to C implementation
     unsafe { mjs_addEquality(s, def) }
 }
 
@@ -613,8 +619,9 @@ pub fn mjs_wrap_pulley(tendon: *mut mjsTendon, divisor: f64) -> *mut mjsWrap {
 /// Calls: mjCModel::AddNumeric
 #[allow(unused_variables, non_snake_case)]
 pub fn mjs_add_numeric(s: *mut mjSpec) -> *mut mjsNumeric {
+    if s.is_null() { return core::ptr::null_mut(); }
     extern "C" { fn mjs_addNumeric(s: *mut mjSpec) -> *mut mjsNumeric; }
-    // SAFETY: delegates to C implementation
+    // SAFETY: s verified non-null; delegates to C implementation
     unsafe { mjs_addNumeric(s) }
 }
 
@@ -640,8 +647,9 @@ pub fn mjs_add_tuple(s: *mut mjSpec) -> *mut mjsTuple {
 /// Calls: mjCModel::AddKey
 #[allow(unused_variables, non_snake_case)]
 pub fn mjs_add_key(s: *mut mjSpec) -> *mut mjsKey {
+    if s.is_null() { return core::ptr::null_mut(); }
     extern "C" { fn mjs_addKey(s: *mut mjSpec) -> *mut mjsKey; }
-    // SAFETY: delegates to C implementation
+    // SAFETY: s verified non-null; delegates to C implementation
     unsafe { mjs_addKey(s) }
 }
 
@@ -791,8 +799,9 @@ pub fn mjs_set_to_dc_motor(actuator: *mut mjsActuator, motorconst: [f64; 2], res
 /// Calls: mjCModel::AddMesh
 #[allow(unused_variables, non_snake_case)]
 pub fn mjs_add_mesh(s: *mut mjSpec, def: *const mjsDefault) -> *mut mjsMesh {
+    if s.is_null() { return core::ptr::null_mut(); }
     extern "C" { fn mjs_addMesh(s: *mut mjSpec, def: *const mjsDefault) -> *mut mjsMesh; }
-    // SAFETY: delegates to C implementation
+    // SAFETY: s verified non-null; delegates to C implementation
     unsafe { mjs_addMesh(s, def) }
 }
 
@@ -800,8 +809,9 @@ pub fn mjs_add_mesh(s: *mut mjSpec, def: *const mjsDefault) -> *mut mjsMesh {
 /// Calls: mjCModel::AddHField
 #[allow(unused_variables, non_snake_case)]
 pub fn mjs_add_h_field(s: *mut mjSpec) -> *mut mjsHField {
+    if s.is_null() { return core::ptr::null_mut(); }
     extern "C" { fn mjs_addHField(s: *mut mjSpec) -> *mut mjsHField; }
-    // SAFETY: delegates to C implementation
+    // SAFETY: s verified non-null; delegates to C implementation
     unsafe { mjs_addHField(s) }
 }
 
@@ -827,8 +837,9 @@ pub fn mjs_add_texture(s: *mut mjSpec) -> *mut mjsTexture {
 /// Calls: mjCModel::AddMaterial
 #[allow(unused_variables, non_snake_case)]
 pub fn mjs_add_material(s: *mut mjSpec, def: *const mjsDefault) -> *mut mjsMaterial {
+    if s.is_null() { return core::ptr::null_mut(); }
     extern "C" { fn mjs_addMaterial(s: *mut mjSpec, def: *const mjsDefault) -> *mut mjsMaterial; }
-    // SAFETY: delegates to C implementation
+    // SAFETY: s verified non-null; delegates to C implementation
     unsafe { mjs_addMaterial(s, def) }
 }
 

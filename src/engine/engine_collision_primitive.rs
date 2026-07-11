@@ -784,8 +784,9 @@ pub fn mjraw_capsule_triangle(con: *mut mjPreContact, margin: f64, pos: *const f
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjc_plane_sphere(m: *const mjModel, d: *mut mjData, con: *mut mjPreContact, g1: i32, g2: i32, margin: f64) -> i32  {
+    if m.is_null() { return 0; }
     extern "C" { fn mjc_PlaneSphere(m: *const mjModel, d: *mut mjData, con: *mut mjPreContact, g1: i32, g2: i32, margin: f64) -> i32; }
-    // SAFETY: delegates to C implementation
+    // SAFETY: m verified non-null; delegates to C implementation
     unsafe { mjc_PlaneSphere(m, d, con, g1, g2, margin) }
 }
 
@@ -798,8 +799,9 @@ pub fn mjc_plane_sphere(m: *const mjModel, d: *mut mjData, con: *mut mjPreContac
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjc_plane_capsule(m: *const mjModel, d: *mut mjData, con: *mut mjPreContact, g1: i32, g2: i32, margin: f64) -> i32  {
+    if m.is_null() { return 0; }
     extern "C" { fn mjc_PlaneCapsule(m: *const mjModel, d: *mut mjData, con: *mut mjPreContact, g1: i32, g2: i32, margin: f64) -> i32; }
-    // SAFETY: delegates to C implementation
+    // SAFETY: m verified non-null; delegates to C implementation
     unsafe { mjc_PlaneCapsule(m, d, con, g1, g2, margin) }
 }
 

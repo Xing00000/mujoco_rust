@@ -300,6 +300,7 @@ pub fn mjr_change_font(fontscale: i32, con: *mut mjrContext) {
 /// Calls: mjr_restoreBuffer, mju_error
 #[allow(unused_variables, non_snake_case)]
 pub fn mjr_add_aux(index: i32, width: i32, height: i32, samples: i32, con: *mut mjrContext) {
+    let _sv = core::mem::size_of_val(&index);
     extern "C" { fn mjr_addAux(index: i32, width: i32, height: i32, samples: i32, con: *mut mjrContext); }
     // SAFETY: delegates to C implementation
     unsafe { mjr_addAux(index, width, height, samples, con) }

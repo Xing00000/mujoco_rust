@@ -88,8 +88,9 @@ pub fn mjd_mul_inert_vec_vel(D: *mut f64, i: *const f64) {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjd_com_vel_vel_dense(m: *const mjModel, d: *mut mjData, Dcvel: *mut f64, Dcdofdot: *mut f64) {
+    if m.is_null() { return ; }
     extern "C" { fn mjd_comVel_vel_dense(m: *const mjModel, d: *mut mjData, Dcvel: *mut f64, Dcdofdot: *mut f64); }
-    // SAFETY: delegates to C implementation, pointers valid per caller
+    // SAFETY: m verified non-null; m verified non-null; delegates to C implementation
     unsafe { mjd_comVel_vel_dense(m, d, Dcvel, Dcdofdot) }
 }
 

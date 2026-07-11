@@ -217,8 +217,9 @@ pub fn solve_qcqp(force: *mut f64, i: i32, dim: i32, Ac: *mut f64, bc: *mut f64,
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn project_cone(force: *mut f64, mu: *const f64, dim: i32, r#type: i32) {
+    if force.is_null() { return ; }
     extern "C" { fn projectCone(force: *mut f64, mu: *const f64, dim: i32, r#type: i32); }
-    // SAFETY: delegates to C implementation
+    // SAFETY: force verified non-null; delegates to C implementation
     unsafe { projectCone(force, mu, dim, r#type) }
 }
 
