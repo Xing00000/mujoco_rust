@@ -12,10 +12,12 @@ use crate::types::*;
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mju_zero3(res: *mut f64) {
-    // WARNING: signature changed — verify body
-    // Previous params: (res : * mut f64)
-    // Previous return: ()
-    todo ! ()
+    // SAFETY: caller guarantees res points to at least 3 contiguous f64
+    unsafe {
+        *res.add(0) = 0.0;
+        *res.add(1) = 0.0;
+        *res.add(2) = 0.0;
+    }
 }
 
 /// C: mju_equal3 (engine/engine_util_blas.h:71)
@@ -68,10 +70,12 @@ pub fn mju_copy9(res: *mut f64, mat: *const f64) {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mju_scl3(res: *mut f64, vec: *const f64, scl: f64) {
-    // WARNING: signature changed — verify body
-    // Previous params: (res : * mut f64, vec : * const f64, scl : f64)
-    // Previous return: ()
-    todo ! ()
+    // SAFETY: caller guarantees res, vec point to at least 3 contiguous f64
+    unsafe {
+        *res.add(0) = *vec.add(0) * scl;
+        *res.add(1) = *vec.add(1) * scl;
+        *res.add(2) = *vec.add(2) * scl;
+    }
 }
 
 /// C: mju_add3 (engine/engine_util_blas.h:83)
@@ -96,10 +100,12 @@ pub fn mju_add3(res: *mut f64, vec1: *const f64, vec2: *const f64) {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mju_sub3(res: *mut f64, vec1: *const f64, vec2: *const f64) {
-    // WARNING: signature changed — verify body
-    // Previous params: (res : * mut f64, vec1 : * const f64, vec2 : * const f64)
-    // Previous return: ()
-    todo ! ()
+    // SAFETY: caller guarantees res, vec1, vec2 point to at least 3 contiguous f64
+    unsafe {
+        *res.add(0) = *vec1.add(0) - *vec2.add(0);
+        *res.add(1) = *vec1.add(1) - *vec2.add(1);
+        *res.add(2) = *vec1.add(2) - *vec2.add(2);
+    }
 }
 
 /// C: mju_addTo3 (engine/engine_util_blas.h:89)
@@ -166,10 +172,24 @@ pub fn mju_add_scl3(res: *mut f64, vec1: *const f64, vec2: *const f64, scl: f64)
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mju_normalize3(vec: *mut f64) -> f64 {
-    // WARNING: signature changed — verify body
-    // Previous params: (vec : * mut f64)
-    // Previous return: f64
-    todo ! ()
+    const MJMINVAL: f64 = 1e-15;
+    // SAFETY: caller guarantees vec points to at least 3 contiguous f64
+    unsafe {
+        let norm = (*vec.add(0) * *vec.add(0) + *vec.add(1) * *vec.add(1) + *vec.add(2) * *vec.add(2)).sqrt();
+
+        if norm < MJMINVAL {
+            *vec.add(0) = 1.0;
+            *vec.add(1) = 0.0;
+            *vec.add(2) = 0.0;
+        } else {
+            let norm_inv = 1.0 / norm;
+            *vec.add(0) *= norm_inv;
+            *vec.add(1) *= norm_inv;
+            *vec.add(2) *= norm_inv;
+        }
+
+        norm
+    }
 }
 
 /// C: mju_norm3 (engine/engine_util_blas.h:104)
@@ -180,10 +200,10 @@ pub fn mju_normalize3(vec: *mut f64) -> f64 {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mju_norm3(vec: *const f64) -> f64 {
-    // WARNING: signature changed — verify body
-    // Previous params: (vec : * const f64)
-    // Previous return: f64
-    todo ! ()
+    // SAFETY: caller guarantees vec points to at least 3 contiguous f64
+    unsafe {
+        (*vec.add(0) * *vec.add(0) + *vec.add(1) * *vec.add(1) + *vec.add(2) * *vec.add(2)).sqrt()
+    }
 }
 
 /// C: mju_dot3 (engine/engine_util_blas.h:107)
@@ -194,10 +214,10 @@ pub fn mju_norm3(vec: *const f64) -> f64 {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mju_dot3(vec1: *const f64, vec2: *const f64) -> f64 {
-    // WARNING: signature changed — verify body
-    // Previous params: (vec1 : * const f64, vec2 : * const f64)
-    // Previous return: f64
-    todo ! ()
+    // SAFETY: caller guarantees vec1, vec2 point to at least 3 contiguous f64
+    unsafe {
+        *vec1.add(0) * *vec2.add(0) + *vec1.add(1) * *vec2.add(1) + *vec1.add(2) * *vec2.add(2)
+    }
 }
 
 /// C: mju_dist3 (engine/engine_util_blas.h:110)
@@ -320,10 +340,13 @@ pub fn mju_unit4(res: *mut f64) {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mju_copy4(res: *mut f64, data: *const f64) {
-    // WARNING: signature changed — verify body
-    // Previous params: (res : * mut f64, data : * const f64)
-    // Previous return: ()
-    todo ! ()
+    // SAFETY: caller guarantees res, data point to at least 4 contiguous f64
+    unsafe {
+        *res.add(0) = *data.add(0);
+        *res.add(1) = *data.add(1);
+        *res.add(2) = *data.add(2);
+        *res.add(3) = *data.add(3);
+    }
 }
 
 /// C: mju_normalize4 (engine/engine_util_blas.h:139)
@@ -334,10 +357,27 @@ pub fn mju_copy4(res: *mut f64, data: *const f64) {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mju_normalize4(vec: *mut f64) -> f64 {
-    // WARNING: signature changed — verify body
-    // Previous params: (vec : * mut f64)
-    // Previous return: f64
-    todo ! ()
+    const MJMINVAL: f64 = 1e-15;
+    // SAFETY: caller guarantees vec points to at least 4 contiguous f64
+    unsafe {
+        let norm = (*vec.add(0) * *vec.add(0) + *vec.add(1) * *vec.add(1)
+                  + *vec.add(2) * *vec.add(2) + *vec.add(3) * *vec.add(3)).sqrt();
+
+        if norm < MJMINVAL {
+            *vec.add(0) = 1.0;
+            *vec.add(1) = 0.0;
+            *vec.add(2) = 0.0;
+            *vec.add(3) = 0.0;
+        } else if (norm - 1.0).abs() > MJMINVAL {
+            let norm_inv = 1.0 / norm;
+            *vec.add(0) *= norm_inv;
+            *vec.add(1) *= norm_inv;
+            *vec.add(2) *= norm_inv;
+            *vec.add(3) *= norm_inv;
+        }
+
+        norm
+    }
 }
 
 /// C: mju_zero (engine/engine_util_blas.h:145)
@@ -348,10 +388,12 @@ pub fn mju_normalize4(vec: *mut f64) -> f64 {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mju_zero(res: *mut f64, n: i32) {
-    // WARNING: signature changed — verify body
-    // Previous params: (res : * mut f64, n : i32)
-    // Previous return: ()
-    todo ! ()
+    // SAFETY: caller guarantees res points to at least n contiguous f64
+    unsafe {
+        for i in 0..n as usize {
+            *res.add(i) = 0.0;
+        }
+    }
 }
 
 /// C: mju_zeroInd (engine/engine_util_blas.h:148)
@@ -390,10 +432,10 @@ pub fn mju_fill(res: *mut f64, val: f64, n: i32) {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mju_copy(res: *mut f64, vec: *const f64, n: i32) {
-    // WARNING: signature changed — verify body
-    // Previous params: (res : * mut f64, vec : * const f64, n : i32)
-    // Previous return: ()
-    todo ! ()
+    // SAFETY: caller guarantees res, vec point to at least n contiguous f64
+    unsafe {
+        std::ptr::copy_nonoverlapping(vec, res, n as usize);
+    }
 }
 
 /// C: mju_copyInd (engine/engine_util_blas.h:157)
@@ -446,10 +488,12 @@ pub fn mju_l1(vec: *const f64, n: i32) -> f64 {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mju_scl(res: *mut f64, vec: *const f64, scl: f64, n: i32) {
-    // WARNING: signature changed — verify body
-    // Previous params: (res : * mut f64, vec : * const f64, scl : f64, n : i32)
-    // Previous return: ()
-    todo ! ()
+    // SAFETY: caller guarantees res, vec point to at least n contiguous f64
+    unsafe {
+        for i in 0..n as usize {
+            *res.add(i) = *vec.add(i) * scl;
+        }
+    }
 }
 
 /// C: mju_add (engine/engine_util_blas.h:169)
@@ -516,10 +560,12 @@ pub fn mju_sub_ind(res: *mut f64, vec1: *const f64, vec2: *const f64, ind: *cons
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mju_add_to(res: *mut f64, vec: *const f64, n: i32) {
-    // WARNING: signature changed — verify body
-    // Previous params: (res : * mut f64, vec : * const f64, n : i32)
-    // Previous return: ()
-    todo ! ()
+    // SAFETY: caller guarantees res, vec point to at least n contiguous f64
+    unsafe {
+        for i in 0..n as usize {
+            *res.add(i) += *vec.add(i);
+        }
+    }
 }
 
 /// C: mju_addToInd (engine/engine_util_blas.h:184)
@@ -558,10 +604,12 @@ pub fn mju_sub_from(res: *mut f64, vec: *const f64, n: i32) {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mju_add_to_scl(res: *mut f64, vec: *const f64, scl: f64, n: i32) {
-    // WARNING: signature changed — verify body
-    // Previous params: (res : * mut f64, vec : * const f64, scl : f64, n : i32)
-    // Previous return: ()
-    todo ! ()
+    // SAFETY: caller guarantees res, vec point to at least n contiguous f64
+    unsafe {
+        for i in 0..n as usize {
+            *res.add(i) += *vec.add(i) * scl;
+        }
+    }
 }
 
 /// C: mju_addToSclInd (engine/engine_util_blas.h:193)
@@ -630,10 +678,39 @@ pub fn mju_norm(res: *const f64, n: i32) -> f64 {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mju_dot(vec1: *const f64, vec2: *const f64, n: i32) -> f64 {
-    // WARNING: signature changed — verify body
-    // Previous params: (vec1 : * const f64, vec2 : * const f64, n : i32)
-    // Previous return: f64
-    todo ! ()
+    // SAFETY: caller guarantees vec1, vec2 point to at least n contiguous f64
+    // Matches C accumulation order: 4-wide partial sums, combined as (res0+res2)+(res1+res3)
+    unsafe {
+        let n = n as usize;
+        let mut i: usize = 0;
+        let mut res0: f64 = 0.0;
+        let mut res1: f64 = 0.0;
+        let mut res2: f64 = 0.0;
+        let mut res3: f64 = 0.0;
+
+        let n_4 = if n >= 4 { n - 4 } else { 0 };
+        if n >= 4 {
+            while i <= n_4 {
+                res0 += *vec1.add(i) * *vec2.add(i);
+                res1 += *vec1.add(i + 1) * *vec2.add(i + 1);
+                res2 += *vec1.add(i + 2) * *vec2.add(i + 2);
+                res3 += *vec1.add(i + 3) * *vec2.add(i + 3);
+                i += 4;
+            }
+        }
+        let mut res = (res0 + res2) + (res1 + res3);
+
+        // process remaining
+        let n_i = n - i;
+        if n_i == 3 {
+            res += *vec1.add(i) * *vec2.add(i) + *vec1.add(i + 1) * *vec2.add(i + 1) + *vec1.add(i + 2) * *vec2.add(i + 2);
+        } else if n_i == 2 {
+            res += *vec1.add(i) * *vec2.add(i) + *vec1.add(i + 1) * *vec2.add(i + 1);
+        } else if n_i == 1 {
+            res += *vec1.add(i) * *vec2.add(i);
+        }
+        res
+    }
 }
 
 /// C: mju_dotInd (engine/engine_util_blas.h:208)
@@ -703,10 +780,14 @@ pub fn mju_mul_vec_mat_vec(vec1: *const f64, mat: *const f64, vec2: *const f64, 
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mju_transpose(res: *mut f64, mat: *const f64, nr: i32, nc: i32) {
-    // WARNING: signature changed — verify body
-    // Previous params: (res : * mut f64, mat : * const f64, nr : i32, nc : i32)
-    // Previous return: ()
-    todo ! ()
+    // SAFETY: caller guarantees res points to nc*nr, mat points to nr*nc contiguous f64
+    unsafe {
+        for i in 0..nr as usize {
+            for j in 0..nc as usize {
+                *res.add(j * nr as usize + i) = *mat.add(i * nc as usize + j);
+            }
+        }
+    }
 }
 
 /// C: mju_symmetrize (engine/engine_util_blas.h:228)

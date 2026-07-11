@@ -113,10 +113,43 @@ pub fn mju_sub_quat(res: *mut f64, qa: *const f64, qb: *const f64) {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mju_quat2mat(res: *mut f64, quat: *const f64) {
-    // WARNING: signature changed — verify body
-    // Previous params: (res : * mut f64, quat : * const f64)
-    // Previous return: ()
-    todo ! ()
+    // SAFETY: caller guarantees res points to 9 f64, quat points to 4 f64
+    unsafe {
+        // null quat: identity
+        if *quat.add(0) == 1.0 && *quat.add(1) == 0.0 && *quat.add(2) == 0.0 && *quat.add(3) == 0.0 {
+            *res.add(0) = 1.0;
+            *res.add(1) = 0.0;
+            *res.add(2) = 0.0;
+            *res.add(3) = 0.0;
+            *res.add(4) = 1.0;
+            *res.add(5) = 0.0;
+            *res.add(6) = 0.0;
+            *res.add(7) = 0.0;
+            *res.add(8) = 1.0;
+        } else {
+            let q00 = *quat.add(0) * *quat.add(0);
+            let q01 = *quat.add(0) * *quat.add(1);
+            let q02 = *quat.add(0) * *quat.add(2);
+            let q03 = *quat.add(0) * *quat.add(3);
+            let q11 = *quat.add(1) * *quat.add(1);
+            let q12 = *quat.add(1) * *quat.add(2);
+            let q13 = *quat.add(1) * *quat.add(3);
+            let q22 = *quat.add(2) * *quat.add(2);
+            let q23 = *quat.add(2) * *quat.add(3);
+            let q33 = *quat.add(3) * *quat.add(3);
+
+            *res.add(0) = q00 + q11 - q22 - q33;
+            *res.add(4) = q00 - q11 + q22 - q33;
+            *res.add(8) = q00 - q11 - q22 + q33;
+
+            *res.add(1) = 2.0 * (q12 - q03);
+            *res.add(2) = 2.0 * (q13 + q02);
+            *res.add(3) = 2.0 * (q12 + q03);
+            *res.add(5) = 2.0 * (q23 - q01);
+            *res.add(6) = 2.0 * (q13 - q02);
+            *res.add(7) = 2.0 * (q23 + q01);
+        }
+    }
 }
 
 /// C: mju_mat2Quat (engine/engine_util_spatial.h:51)
@@ -303,10 +336,43 @@ pub fn mju_cross_force(res: *mut f64, vel: *const f64, f: *const f64) {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mju_inert_com(res: *mut f64, inert: *const f64, mat: *const f64, dif: *const f64, mass: f64) {
-    // WARNING: signature changed — verify body
-    // Previous params: (res : * mut f64, inert : * const f64, mat : * const f64, dif : * const f64, mass : f64)
-    // Previous return: ()
-    todo ! ()
+    // SAFETY: caller guarantees res[10], inert[3], mat[9], dif[3] are valid
+    unsafe {
+        // tmp = diag(inert) * mat'
+        let tmp0 = *mat.add(0) * *inert.add(0);
+        let tmp1 = *mat.add(3) * *inert.add(0);
+        let tmp2 = *mat.add(6) * *inert.add(0);
+        let tmp3 = *mat.add(1) * *inert.add(1);
+        let tmp4 = *mat.add(4) * *inert.add(1);
+        let tmp5 = *mat.add(7) * *inert.add(1);
+        let tmp6 = *mat.add(2) * *inert.add(2);
+        let tmp7 = *mat.add(5) * *inert.add(2);
+        let tmp8 = *mat.add(8) * *inert.add(2);
+
+        // res_rot = mat * diag(inert) * mat'
+        *res.add(0) = *mat.add(0) * tmp0 + *mat.add(1) * tmp3 + *mat.add(2) * tmp6;
+        *res.add(1) = *mat.add(3) * tmp1 + *mat.add(4) * tmp4 + *mat.add(5) * tmp7;
+        *res.add(2) = *mat.add(6) * tmp2 + *mat.add(7) * tmp5 + *mat.add(8) * tmp8;
+        *res.add(3) = *mat.add(0) * tmp1 + *mat.add(1) * tmp4 + *mat.add(2) * tmp7;
+        *res.add(4) = *mat.add(0) * tmp2 + *mat.add(1) * tmp5 + *mat.add(2) * tmp8;
+        *res.add(5) = *mat.add(3) * tmp2 + *mat.add(4) * tmp5 + *mat.add(5) * tmp8;
+
+        // res_rot -= mass * dif_cross * dif_cross
+        *res.add(0) += mass * (*dif.add(1) * *dif.add(1) + *dif.add(2) * *dif.add(2));
+        *res.add(1) += mass * (*dif.add(0) * *dif.add(0) + *dif.add(2) * *dif.add(2));
+        *res.add(2) += mass * (*dif.add(0) * *dif.add(0) + *dif.add(1) * *dif.add(1));
+        *res.add(3) -= mass * *dif.add(0) * *dif.add(1);
+        *res.add(4) -= mass * *dif.add(0) * *dif.add(2);
+        *res.add(5) -= mass * *dif.add(1) * *dif.add(2);
+
+        // res_tran = mass * dif
+        *res.add(6) = mass * *dif.add(0);
+        *res.add(7) = mass * *dif.add(1);
+        *res.add(8) = mass * *dif.add(2);
+
+        // res_mass = mass
+        *res.add(9) = mass;
+    }
 }
 
 /// C: mju_dofCom (engine/engine_util_spatial.h:102)

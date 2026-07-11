@@ -72,10 +72,53 @@ pub fn mju_chol_solve(res: *mut f64, mat: *const f64, vec: *const f64, n: i32) {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mju_chol_update(mat: *mut f64, x: *mut f64, n: i32, flg_plus: i32) -> i32 {
-    // WARNING: signature changed — verify body
-    // Previous params: (mat : * mut f64, x : * mut f64, n : i32, flg_plus : i32)
-    // Previous return: i32
-    todo ! ()
+    const MJMINVAL: f64 = 1e-15;
+    // SAFETY: caller guarantees mat points to n*n f64, x points to n f64
+    unsafe {
+        let n = n as usize;
+        let mut rank = n as i32;
+
+        for k in 0..n {
+            if *x.add(k) != 0.0 {
+                // prepare constants
+                let lkk = *mat.add(k * (n + 1));
+                let mut tmp = lkk * lkk + if flg_plus != 0 {
+                    *x.add(k) * *x.add(k)
+                } else {
+                    -(*x.add(k) * *x.add(k))
+                };
+                if tmp < MJMINVAL {
+                    tmp = MJMINVAL;
+                    rank -= 1;
+                }
+                let r = tmp.sqrt();
+                let c = r / lkk;
+                let cinv = 1.0 / c;
+                let s = *x.add(k) / lkk;
+
+                // update diagonal
+                *mat.add(k * (n + 1)) = r;
+
+                // update mat
+                if flg_plus != 0 {
+                    for i in (k + 1)..n {
+                        *mat.add(i * n + k) = (*mat.add(i * n + k) + s * *x.add(i)) * cinv;
+                    }
+                } else {
+                    for i in (k + 1)..n {
+                        *mat.add(i * n + k) = (*mat.add(i * n + k) - s * *x.add(i)) * cinv;
+                    }
+                }
+
+                // update x
+                for i in (k + 1)..n {
+                    *x.add(i) = c * *x.add(i) - s * *mat.add(i * n + k);
+                }
+            }
+        }
+
+        rank
+    }
 }
 
 /// C: mju_cholFactorSparse (engine/engine_util_solve.h:37)

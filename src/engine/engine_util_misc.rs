@@ -496,19 +496,90 @@ pub fn mju_shell_tfi_weights(nx: i32, ny: i32, nz: i32, i: i32, j: i32, k: i32, 
 /// C: mju_encodeBase64 (engine/engine_util_misc.h:163)
 #[allow(unused_variables, non_snake_case)]
 pub fn mju_encode_base64(buf: *mut i8, data: *const u8, ndata: usize) -> usize {
-    // WARNING: signature changed — verify body
-    // Previous params: (buf : * mut i8, data : * const u8, ndata : usize)
-    // Previous return: usize
-    todo ! ()
+    const TABLE: &[u8; 64] = b"ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
+    // SAFETY: caller guarantees buf has enough space, data points to ndata bytes
+    unsafe {
+        let mut i: usize = 0;
+        let mut j: usize = 0;
+
+        // loop over 24-bit chunks
+        while i + 3 <= ndata {
+            let byte_1 = *data.add(i) as u32; i += 1;
+            let byte_2 = *data.add(i) as u32; i += 1;
+            let byte_3 = *data.add(i) as u32; i += 1;
+
+            let k = (byte_1 << 16) | (byte_2 << 8) | byte_3;
+
+            *buf.add(j) = TABLE[((k >> 18) & 63) as usize] as i8; j += 1;
+            *buf.add(j) = TABLE[((k >> 12) & 63) as usize] as i8; j += 1;
+            *buf.add(j) = TABLE[((k >> 6) & 63) as usize] as i8; j += 1;
+            *buf.add(j) = TABLE[((k >> 0) & 63) as usize] as i8; j += 1;
+        }
+
+        // one byte left
+        if i + 1 == ndata {
+            let byte_1 = *data.add(i) as u32;
+            let k = byte_1 << 16;
+            *buf.add(j) = TABLE[((k >> 18) & 63) as usize] as i8; j += 1;
+            *buf.add(j) = TABLE[((k >> 12) & 63) as usize] as i8; j += 1;
+            *buf.add(j) = b'=' as i8; j += 1;
+            *buf.add(j) = b'=' as i8; j += 1;
+        }
+
+        // two bytes left
+        if i + 2 == ndata {
+            let byte_1 = *data.add(i) as u32; i += 1;
+            let byte_2 = *data.add(i) as u32;
+
+            let k = (byte_1 << 16) + (byte_2 << 8);
+
+            *buf.add(j) = TABLE[((k >> 18) & 63) as usize] as i8; j += 1;
+            *buf.add(j) = TABLE[((k >> 12) & 63) as usize] as i8; j += 1;
+            *buf.add(j) = TABLE[((k >> 6) & 63) as usize] as i8; j += 1;
+            *buf.add(j) = b'=' as i8; j += 1;
+        }
+
+        *buf.add(j) = 0; // null terminator
+        4 * ((ndata + 2) / 3) + 1
+    }
 }
 
 /// C: mju_isValidBase64 (engine/engine_util_misc.h:167)
 #[allow(unused_variables, non_snake_case)]
 pub fn mju_is_valid_base64(s: *const i8) -> usize {
-    // WARNING: signature changed — verify body
-    // Previous params: (s : * const i8)
-    // Previous return: usize
-    todo ! ()
+    // SAFETY: caller guarantees s is a valid null-terminated string
+    unsafe {
+        let mut i: usize = 0;
+        let mut pad: usize = 0;
+
+        // validate chars
+        while *s.add(i) != 0 && *s.add(i) != b'=' as i8 {
+            let c = *s.add(i) as u8;
+            if !c.is_ascii_alphanumeric() && c != b'/' && c != b'+' {
+                return 0;
+            }
+            i += 1;
+        }
+
+        // padding at end
+        if *s.add(i) == b'=' as i8 {
+            if *s.add(i + 1) == 0 {
+                pad = 1;
+            } else if *s.add(i + 1) == b'=' as i8 && *s.add(i + 2) == 0 {
+                pad = 2;
+            } else {
+                return 0;
+            }
+        }
+
+        // strlen(s) must be a multiple of 4
+        let len = i + pad;
+        if len % 4 != 0 {
+            0
+        } else {
+            3 * (len / 4) - pad
+        }
+    }
 }
 
 /// C: mju_decodeBase64 (engine/engine_util_misc.h:171)
@@ -674,10 +745,7 @@ pub fn mju_min(a: f64, b: f64) -> f64 {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mju_max(a: f64, b: f64) -> f64 {
-    // WARNING: signature changed — verify body
-    // Previous params: (a : f64, b : f64)
-    // Previous return: f64
-    todo ! ()
+    if a >= b { a } else { b }
 }
 
 /// C: mju_clip (engine/engine_util_misc.h:231)
@@ -725,10 +793,64 @@ pub fn mju_round(x: f64) -> i32 {
 /// C: mju_type2Str (engine/engine_util_misc.h:240)
 #[allow(unused_variables, non_snake_case)]
 pub fn mju_type2str(r#type: i32) -> *const i8 {
-    // WARNING: signature changed — verify body
-    // Previous params: (r#type : i32)
-    // Previous return: * const i8
-    todo ! ()
+    // mjtObj enum values from mjtype.h
+    const MJOBJ_UNKNOWN: i32 = 0;
+    const MJOBJ_BODY: i32 = 1;
+    const MJOBJ_XBODY: i32 = 2;
+    const MJOBJ_JOINT: i32 = 3;
+    const MJOBJ_DOF: i32 = 4;
+    const MJOBJ_GEOM: i32 = 5;
+    const MJOBJ_SITE: i32 = 6;
+    const MJOBJ_CAMERA: i32 = 7;
+    const MJOBJ_LIGHT: i32 = 8;
+    const MJOBJ_FLEX: i32 = 9;
+    const MJOBJ_MESH: i32 = 10;
+    const MJOBJ_SKIN: i32 = 11;
+    const MJOBJ_HFIELD: i32 = 12;
+    const MJOBJ_TEXTURE: i32 = 13;
+    const MJOBJ_MATERIAL: i32 = 14;
+    const MJOBJ_PAIR: i32 = 15;
+    const MJOBJ_EXCLUDE: i32 = 16;
+    const MJOBJ_EQUALITY: i32 = 17;
+    const MJOBJ_TENDON: i32 = 18;
+    const MJOBJ_ACTUATOR: i32 = 19;
+    const MJOBJ_SENSOR: i32 = 20;
+    const MJOBJ_NUMERIC: i32 = 21;
+    const MJOBJ_TEXT: i32 = 22;
+    const MJOBJ_TUPLE: i32 = 23;
+    const MJOBJ_KEY: i32 = 24;
+    const MJOBJ_PLUGIN: i32 = 25;
+    const MJOBJ_FRAME: i32 = 100;
+
+    match r#type {
+        MJOBJ_BODY => b"body\0".as_ptr() as *const i8,
+        MJOBJ_XBODY => b"xbody\0".as_ptr() as *const i8,
+        MJOBJ_JOINT => b"joint\0".as_ptr() as *const i8,
+        MJOBJ_DOF => b"dof\0".as_ptr() as *const i8,
+        MJOBJ_GEOM => b"geom\0".as_ptr() as *const i8,
+        MJOBJ_SITE => b"site\0".as_ptr() as *const i8,
+        MJOBJ_CAMERA => b"camera\0".as_ptr() as *const i8,
+        MJOBJ_LIGHT => b"light\0".as_ptr() as *const i8,
+        MJOBJ_FLEX => b"flex\0".as_ptr() as *const i8,
+        MJOBJ_MESH => b"mesh\0".as_ptr() as *const i8,
+        MJOBJ_SKIN => b"skin\0".as_ptr() as *const i8,
+        MJOBJ_HFIELD => b"hfield\0".as_ptr() as *const i8,
+        MJOBJ_TEXTURE => b"texture\0".as_ptr() as *const i8,
+        MJOBJ_MATERIAL => b"material\0".as_ptr() as *const i8,
+        MJOBJ_PAIR => b"pair\0".as_ptr() as *const i8,
+        MJOBJ_EXCLUDE => b"exclude\0".as_ptr() as *const i8,
+        MJOBJ_EQUALITY => b"equality\0".as_ptr() as *const i8,
+        MJOBJ_TENDON => b"tendon\0".as_ptr() as *const i8,
+        MJOBJ_ACTUATOR => b"actuator\0".as_ptr() as *const i8,
+        MJOBJ_SENSOR => b"sensor\0".as_ptr() as *const i8,
+        MJOBJ_NUMERIC => b"numeric\0".as_ptr() as *const i8,
+        MJOBJ_TEXT => b"text\0".as_ptr() as *const i8,
+        MJOBJ_TUPLE => b"tuple\0".as_ptr() as *const i8,
+        MJOBJ_KEY => b"key\0".as_ptr() as *const i8,
+        MJOBJ_PLUGIN => b"plugin\0".as_ptr() as *const i8,
+        MJOBJ_FRAME => b"frame\0".as_ptr() as *const i8,
+        _ => std::ptr::null(),
+    }
 }
 
 /// C: mju_str2Type (engine/engine_util_misc.h:243)
@@ -781,37 +903,56 @@ pub fn mju_is_bad(x: f64) -> i32 {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mju_is_zero(vec: *const f64, n: i32) -> i32 {
-    // WARNING: signature changed — verify body
-    // Previous params: (vec : * const f64, n : i32)
-    // Previous return: i32
-    todo ! ()
+    // SAFETY: caller guarantees vec points to at least n contiguous f64
+    unsafe {
+        for i in 0..n as usize {
+            if *vec.add(i) != 0.0 {
+                return 0;
+            }
+        }
+    }
+    1
 }
 
 /// C: mju_isZeroByte (engine/engine_util_misc.h:258)
 #[allow(unused_variables, non_snake_case)]
 pub fn mju_is_zero_byte(vec: *const u8, n: i32) -> i32 {
-    // WARNING: signature changed — verify body
-    // Previous params: (vec : * const u8, n : i32)
-    // Previous return: i32
-    todo ! ()
+    // SAFETY: caller guarantees vec points to at least n contiguous bytes
+    // C logic: if (!n || *vec) return !n; return memcmp(vec, vec+1, n-1) == 0;
+    unsafe {
+        let n = n as usize;
+        if n == 0 {
+            return 1;
+        }
+        if *vec != 0 {
+            return 0;
+        }
+        // all bytes equal to first byte (which is 0)?
+        for i in 1..n {
+            if *vec.add(i) != 0 {
+                return 0;
+            }
+        }
+        1
+    }
 }
 
 /// C: mju_zeroInt (engine/engine_util_misc.h:261)
 #[allow(unused_variables, non_snake_case)]
 pub fn mju_zero_int(res: *mut i32, n: i32) {
-    // WARNING: signature changed — verify body
-    // Previous params: (res : * mut i32, n : i32)
-    // Previous return: ()
-    todo ! ()
+    // SAFETY: caller guarantees res points to at least n contiguous i32
+    unsafe {
+        std::ptr::write_bytes(res, 0, n as usize);
+    }
 }
 
 /// C: mju_copyInt (engine/engine_util_misc.h:264)
 #[allow(unused_variables, non_snake_case)]
 pub fn mju_copy_int(res: *mut i32, vec: *const i32, n: i32) {
-    // WARNING: signature changed — verify body
-    // Previous params: (res : * mut i32, vec : * const i32, n : i32)
-    // Previous return: ()
-    todo ! ()
+    // SAFETY: caller guarantees res, vec point to at least n contiguous i32
+    unsafe {
+        std::ptr::copy_nonoverlapping(vec, res, n as usize);
+    }
 }
 
 /// C: mju_fillInt (engine/engine_util_misc.h:267)
@@ -1056,10 +1197,19 @@ pub fn mjd_x_poly_force(linear: f64, poly: *const f64, x: f64, n: i32, flg_odd: 
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mju_poly_potential(linear: f64, poly: *const f64, x: f64, n: i32, flg_odd: i32) -> f64 {
-    // WARNING: signature changed — verify body
-    // Previous params: (linear : f64, poly : * const f64, x : f64, n : i32, flg_odd : i32)
-    // Previous return: f64
-    todo ! ()
+    // SAFETY: caller guarantees poly points to at least n contiguous f64
+    unsafe {
+        let x = if flg_odd != 0 { x.abs() } else { x };
+        let mut res = 0.5 * linear * (x * x);
+
+        let mut xpow = x;
+        for i in 0..n as usize {
+            xpow *= x;
+            res += *poly.add(i) / (i as f64 + 3.0) * (xpow * x);
+        }
+
+        res
+    }
 }
 
 /// C: mju_sigmoid (engine/engine_util_misc.h:335)

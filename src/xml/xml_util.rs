@@ -119,10 +119,19 @@ pub fn mj_x_util_write_vector(self_ptr: *mut mjXUtil, elem: *mut XMLElement, nam
 /// C: mjCopyError (xml/xml_util.h:32)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_copy_error(dst: *mut i8, src: *const i8, maxlen: i32) {
-    // WARNING: signature changed — verify body
-    // Previous params: (dst : * mut i8, src : * const i8, maxlen : i32)
-    // Previous return: ()
-    todo ! ()
+    // SAFETY: caller guarantees dst has maxlen bytes, src is null-terminated
+    unsafe {
+        if dst.is_null() || maxlen <= 0 {
+            return;
+        }
+        let maxlen = maxlen as usize;
+        let mut i = 0;
+        while i < maxlen - 1 && *src.add(i) != 0 {
+            *dst.add(i) = *src.add(i);
+            i += 1;
+        }
+        *dst.add(i) = 0;
+    }
 }
 
 /// C: FirstChildElement (xml/xml_util.h:36)

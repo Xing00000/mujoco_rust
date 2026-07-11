@@ -222,10 +222,12 @@ pub fn mjuu_normvec(vec: *mut f64, n: i32) -> f64 {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjuu_scalevec(res: *mut f64, vec: *const f64, s: f64, n: i32) {
-    // WARNING: signature changed — verify body
-    // Previous params: (res : * mut f64, vec : * const f64, s : f64, n : i32)
-    // Previous return: ()
-    todo ! ()
+    // SAFETY: caller guarantees res, vec point to at least n contiguous f64
+    unsafe {
+        for i in 0..n as usize {
+            *res.add(i) = s * *vec.add(i);
+        }
+    }
 }
 
 /// C: mjuu_quat2mat (user/user_util.h:85)
