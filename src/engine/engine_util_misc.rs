@@ -1163,10 +1163,60 @@ pub fn mju_spring_damper(pos0: f64, vel0: f64, k: f64, b: f64, t: f64) -> f64 {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mju_outside_box(point: *const f64, pos: *const f64, mat: *const f64, size: *const f64, inflate: f64) -> i32 {
-    // WARNING: signature changed — verify body
-    // Previous params: (point : * const f64, pos : * const f64, mat : * const f64, size : * const f64, inflate : f64)
-    // Previous return: i32
-    todo ! ()
+    // SAFETY: caller guarantees point, pos are [3], mat is [9], size is [3]
+    unsafe {
+        // check inflation coefficient
+        if inflate < 1.0 {
+            crate::engine::engine_util_errmem::mju_error(
+                b"inflation coefficient must be >= 1\0".as_ptr() as *const i8
+            );
+        }
+
+        // vector from pos to point, projected to box frame
+        let mut vec: [f64; 3] = [
+            *point.add(0) - *pos.add(0),
+            *point.add(1) - *pos.add(1),
+            *point.add(2) - *pos.add(2),
+        ];
+        crate::engine::engine_util_blas::mju_mul_mat_t_vec3(
+            vec.as_mut_ptr(), mat, vec.as_ptr()
+        );
+
+        // big: inflated box
+        let mut big: [f64; 3] = [*size.add(0), *size.add(1), *size.add(2)];
+        if inflate > 1.0 {
+            crate::engine::engine_util_blas::mju_scl3(
+                big.as_mut_ptr(), big.as_ptr(), inflate
+            );
+        }
+
+        // check if outside big box
+        if vec[0] > big[0] || vec[0] < -big[0] ||
+           vec[1] > big[1] || vec[1] < -big[1] ||
+           vec[2] > big[2] || vec[2] < -big[2] {
+            return 1;
+        }
+
+        // quick return if no inflation
+        if inflate == 1.0 {
+            return -1;
+        }
+
+        // check if inside small (deflated) box
+        let small: [f64; 3] = [
+            *size.add(0) / inflate,
+            *size.add(1) / inflate,
+            *size.add(2) / inflate,
+        ];
+        if vec[0] < small[0] && vec[0] > -small[0] &&
+           vec[1] < small[1] && vec[1] > -small[1] &&
+           vec[2] < small[2] && vec[2] > -small[2] {
+            return -1;
+        }
+
+        // within margin between small and big box
+        0
+    }
 }
 
 /// C: mju_printMat (engine/engine_util_misc.h:217)
