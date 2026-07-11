@@ -28,8 +28,9 @@ pub fn mj_hash_string(s: *const i8, n: u64) -> u64  {
 /// Calls: _getnumadr, mj_hashString
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_name2id(m: *const mjModel, r#type: i32, name: *const i8) -> i32 {
+    if m.is_null() { return 0; }
     extern "C" { fn mj_name2id(m: *const mjModel, r#type: i32, name: *const i8) -> i32; }
-    // SAFETY: delegates to C implementation
+    // SAFETY: m verified non-null; delegates to C implementation
     unsafe { mj_name2id(m, r#type, name) }
 }
 

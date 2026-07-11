@@ -653,8 +653,9 @@ pub fn mju_compare(vec1: *const i32, vec2: *const i32, n: i32) -> i32  {
 /// Calls: mju_compare
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_merge_sorted(merge: *mut i32, chain1: *const i32, n1: i32, chain2: *const i32, n2: i32) -> i32  {
+    if merge.is_null() { return 0; }
     extern "C" { fn mj_mergeSorted(merge: *mut i32, chain1: *const i32, n1: i32, chain2: *const i32, n2: i32) -> i32; }
-    // SAFETY: delegates to C implementation
+    // SAFETY: merge verified non-null; delegates to C implementation
     unsafe { mj_mergeSorted(merge, chain1, n1, chain2, n2) }
 }
 

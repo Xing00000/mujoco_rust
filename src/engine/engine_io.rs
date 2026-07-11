@@ -275,6 +275,7 @@ pub fn mj_make_b_sparse(nv: i32, nbody: i32, nB: i32, body_dofnum: *const i32, b
 /// Calls: copyM2Sparse, mju_fillInt, mju_lower2SymMap, mju_message, mju_sparseMap
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_make_dof_dof_maps(nv: i32, nM: i32, nC: i32, nD: i32, dof_Madr: *const i32, dof_simplenum: *const i32, dof_parentid: *const i32, D_rownnz: *const i32, D_rowadr: *const i32, D_colind: *const i32, M_rownnz: *const i32, M_rowadr: *const i32, M_colind: *const i32, mapM2D: *mut i32, mapD2M: *mut i32, mapM2M: *mut i32, M: *mut i32, scratch: *mut i32) {
+    let _sv = core::mem::size_of_val(&nv);
     extern "C" { fn mj_makeDofDofMaps(nv: i32, nM: i32, nC: i32, nD: i32, dof_Madr: *const i32, dof_simplenum: *const i32, dof_parentid: *const i32, D_rownnz: *const i32, D_rowadr: *const i32, D_colind: *const i32, M_rownnz: *const i32, M_rowadr: *const i32, M_colind: *const i32, mapM2D: *mut i32, mapD2M: *mut i32, mapM2M: *mut i32, M: *mut i32, scratch: *mut i32); }
     // SAFETY: delegates to C implementation
     unsafe { mj_makeDofDofMaps(nv, nM, nC, nD, dof_Madr, dof_simplenum, dof_parentid, D_rownnz, D_rowadr, D_colind, M_rownnz, M_rowadr, M_colind, mapM2D, mapD2M, mapM2M, M, scratch) }

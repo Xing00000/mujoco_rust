@@ -74,8 +74,9 @@ pub fn mj_x_writer_option(self_ptr: *mut mjXWriter, root: *mut tinyxml2__XMLElem
 /// Calls: mjXUtil::WriteAttrInt, mjXUtil::WriteAttrTxt, mjXWriter::InsertEnd
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_x_writer_size(self_ptr: *mut mjXWriter, root: *mut tinyxml2__XMLElement) {
+    if self_ptr.is_null() { return; }
     extern "C" { fn mjXWriter_Size(self_ptr: *mut mjXWriter, root: *mut tinyxml2__XMLElement); }
-    // SAFETY: delegates to C implementation
+    // SAFETY: self_ptr verified non-null; delegates to C implementation
     unsafe { mjXWriter_Size(self_ptr, root) }
 }
 
@@ -92,8 +93,9 @@ pub fn mj_x_writer_visual(self_ptr: *mut mjXWriter, root: *mut tinyxml2__XMLElem
 /// Calls: mjXWriter::InsertEnd, mjuu_defined
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_x_writer_statistic(self_ptr: *mut mjXWriter, root: *mut tinyxml2__XMLElement) {
+    if self_ptr.is_null() { return; }
     extern "C" { fn mjXWriter_Statistic(self_ptr: *mut mjXWriter, root: *mut tinyxml2__XMLElement); }
-    // SAFETY: delegates to C implementation
+    // SAFETY: self_ptr verified non-null; delegates to C implementation
     unsafe { mjXWriter_Statistic(self_ptr, root) }
 }
 
@@ -110,8 +112,9 @@ pub fn mj_x_writer_default(self_ptr: *mut mjXWriter, root: *mut tinyxml2__XMLEle
 /// Calls: mjXUtil::WriteAttrTxt, mjXWriter::InsertEnd, mjp_getPluginAtSlot
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_x_writer_extension(self_ptr: *mut mjXWriter, root: *mut tinyxml2__XMLElement) {
+    if self_ptr.is_null() { return; }
     extern "C" { fn mjXWriter_Extension(self_ptr: *mut mjXWriter, root: *mut tinyxml2__XMLElement); }
-    // SAFETY: delegates to C implementation
+    // SAFETY: self_ptr verified non-null; delegates to C implementation
     unsafe { mjXWriter_Extension(self_ptr, root) }
 }
 
@@ -191,8 +194,9 @@ pub fn mj_x_writer_sensor(self_ptr: *mut mjXWriter, root: *mut tinyxml2__XMLElem
 /// Calls: mjXUtil::WriteAttrTxt, mjXWriter::InsertEnd
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_x_writer_keyframe(self_ptr: *mut mjXWriter, root: *mut tinyxml2__XMLElement) {
+    if self_ptr.is_null() { return; }
     extern "C" { fn mjXWriter_Keyframe(self_ptr: *mut mjXWriter, root: *mut tinyxml2__XMLElement); }
-    // SAFETY: delegates to C implementation
+    // SAFETY: self_ptr verified non-null; delegates to C implementation
     unsafe { mjXWriter_Keyframe(self_ptr, root) }
 }
 
@@ -209,8 +213,9 @@ pub fn mj_x_writer_body(self_ptr: *mut mjXWriter, elem: *mut tinyxml2__XMLElemen
 /// Calls: mjCFlex::get_material, mjXUtil::WriteAttrInt, mjXUtil::WriteAttrKey, mjXUtil::WriteAttrTxt, mjXWriter::InsertEnd
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_x_writer_one_flex(self_ptr: *mut mjXWriter, elem: *mut tinyxml2__XMLElement, pflex: *const mjCFlex) {
+    if self_ptr.is_null() { return; }
     extern "C" { fn mjXWriter_OneFlex(self_ptr: *mut mjXWriter, elem: *mut tinyxml2__XMLElement, pflex: *const mjCFlex); }
-    // SAFETY: delegates to C implementation
+    // SAFETY: self_ptr verified non-null; delegates to C implementation
     unsafe { mjXWriter_OneFlex(self_ptr, elem, pflex) }
 }
 
@@ -228,8 +233,9 @@ pub fn mj_x_writer_one_mesh(self_ptr: *mut mjXWriter, elem: *mut tinyxml2__XMLEl
 /// Calls: mjCDef::Geom, mjCSkin::File, mjCSkin::get_material, mjXUtil::WriteAttrInt, mjXUtil::WriteAttrTxt, mjXWriter::InsertEnd
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_x_writer_one_skin(self_ptr: *mut mjXWriter, elem: *mut tinyxml2__XMLElement, pskin: *const mjCSkin) {
+    if self_ptr.is_null() { return; }
     extern "C" { fn mjXWriter_OneSkin(self_ptr: *mut mjXWriter, elem: *mut tinyxml2__XMLElement, pskin: *const mjCSkin); }
-    // SAFETY: delegates to C implementation
+    // SAFETY: self_ptr verified non-null; delegates to C implementation
     unsafe { mjXWriter_OneSkin(self_ptr, elem, pskin) }
 }
 

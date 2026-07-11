@@ -1440,8 +1440,9 @@ pub fn mjs_sensor_dim(sensor: *const mjsSensor) -> i32 {
 /// Calls: mjCCache::Capacity
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_get_cache_capacity(cache: *const mjCache) -> usize {
+    if cache.is_null() { return 0; }
     extern "C" { fn mj_getCacheCapacity(cache: *const mjCache) -> usize; }
-    // SAFETY: delegates to C implementation
+    // SAFETY: cache verified non-null; delegates to C implementation
     unsafe { mj_getCacheCapacity(cache) }
 }
 
@@ -1458,8 +1459,9 @@ pub fn mj_set_cache_capacity(cache: *mut mjCache, size: usize) -> usize {
 /// Calls: mjCCache::Size
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_get_cache_size(cache: *const mjCache) -> usize {
+    if cache.is_null() { return 0; }
     extern "C" { fn mj_getCacheSize(cache: *const mjCache) -> usize; }
-    // SAFETY: delegates to C implementation
+    // SAFETY: cache verified non-null; delegates to C implementation
     unsafe { mj_getCacheSize(cache) }
 }
 
@@ -1467,8 +1469,9 @@ pub fn mj_get_cache_size(cache: *const mjCache) -> usize {
 /// Calls: mjCCache::Reset
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_clear_cache(cache: *mut mjCache) {
+    if cache.is_null() { return; }
     extern "C" { fn mj_clearCache(cache: *mut mjCache); }
-    // SAFETY: delegates to C implementation
+    // SAFETY: cache verified non-null; delegates to C implementation
     unsafe { mj_clearCache(cache) }
 }
 

@@ -200,8 +200,9 @@ pub fn mj_get_plugin_config(m: *const mjModel, plugin_id: i32, attrib: *const i8
 /// Calls: mju_error
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_load_plugin_library(path: *const i8) {
+    if path.is_null() { return; }
     extern "C" { fn mj_loadPluginLibrary(path: *const i8); }
-    // SAFETY: delegates to C implementation
+    // SAFETY: path verified non-null; delegates to C implementation
     unsafe { mj_loadPluginLibrary(path) }
 }
 
@@ -286,8 +287,9 @@ pub fn mjp_default_decoder(decoder: *mut mjpDecoder) {
 /// Calls: mju_warning, strklen
 #[allow(unused_variables, non_snake_case)]
 pub fn mjp_find_decoder(resource: *const mjResource, content_type: *const i8) -> *const mjpDecoder {
+    if resource.is_null() { return core::ptr::null(); }
     extern "C" { fn mjp_findDecoder(resource: *const mjResource, content_type: *const i8) -> *const mjpDecoder; }
-    // SAFETY: delegates to C implementation
+    // SAFETY: resource verified non-null; delegates to C implementation
     unsafe { mjp_findDecoder(resource, content_type) }
 }
 

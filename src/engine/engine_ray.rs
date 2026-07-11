@@ -74,8 +74,9 @@ pub fn ray_quad(a: f64, b: f64, c: f64, x: *mut f64) -> f64  {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn ray_plane(pos: *const f64, mat: *const f64, size: *const f64, pnt: *const f64, vec: *const f64, normal: *mut f64) -> f64  {
+    if pos.is_null() { return 0.0; }
     extern "C" { fn ray_plane(pos: *const f64, mat: *const f64, size: *const f64, pnt: *const f64, vec: *const f64, normal: *mut f64) -> f64; }
-    // SAFETY: delegates to C implementation
+    // SAFETY: pos verified non-null; delegates to C implementation
     unsafe { ray_plane(pos, mat, size, pnt, vec, normal) }
 }
 
@@ -102,8 +103,9 @@ pub fn ray_sphere(pos: *const f64, mat: *const f64, dist_sqr: f64, pnt: *const f
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn ray_capsule(pos: *const f64, mat: *const f64, size: *const f64, pnt: *const f64, vec: *const f64, normal: *mut f64) -> f64  {
+    if pos.is_null() { return 0.0; }
     extern "C" { fn ray_capsule(pos: *const f64, mat: *const f64, size: *const f64, pnt: *const f64, vec: *const f64, normal: *mut f64) -> f64; }
-    // SAFETY: delegates to C implementation
+    // SAFETY: pos verified non-null; delegates to C implementation
     unsafe { ray_capsule(pos, mat, size, pnt, vec, normal) }
 }
 
@@ -116,8 +118,9 @@ pub fn ray_capsule(pos: *const f64, mat: *const f64, size: *const f64, pnt: *con
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn ray_ellipsoid(pos: *const f64, mat: *const f64, size: *const f64, pnt: *const f64, vec: *const f64, normal: *mut f64) -> f64  {
+    if pos.is_null() { return 0.0; }
     extern "C" { fn ray_ellipsoid(pos: *const f64, mat: *const f64, size: *const f64, pnt: *const f64, vec: *const f64, normal: *mut f64) -> f64; }
-    // SAFETY: delegates to C implementation
+    // SAFETY: pos verified non-null; delegates to C implementation
     unsafe { ray_ellipsoid(pos, mat, size, pnt, vec, normal) }
 }
 
@@ -130,8 +133,9 @@ pub fn ray_ellipsoid(pos: *const f64, mat: *const f64, size: *const f64, pnt: *c
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn ray_cylinder(pos: *const f64, mat: *const f64, size: *const f64, pnt: *const f64, vec: *const f64, normal: *mut f64) -> f64  {
+    if pos.is_null() { return 0.0; }
     extern "C" { fn ray_cylinder(pos: *const f64, mat: *const f64, size: *const f64, pnt: *const f64, vec: *const f64, normal: *mut f64) -> f64; }
-    // SAFETY: delegates to C implementation
+    // SAFETY: pos verified non-null; delegates to C implementation
     unsafe { ray_cylinder(pos, mat, size, pnt, vec, normal) }
 }
 
@@ -158,8 +162,9 @@ pub fn ray_box(pos: *const f64, mat: *const f64, size: *const f64, pnt: *const f
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mju_ray_slab(aabb: *const f64, xpos: *const f64, xmat: *const f64, pnt: *const f64, vec: *const f64) -> i32  {
+    if aabb.is_null() { return 0; }
     extern "C" { fn mju_raySlab(aabb: *const f64, xpos: *const f64, xmat: *const f64, pnt: *const f64, vec: *const f64) -> i32; }
-    // SAFETY: delegates to C implementation
+    // SAFETY: aabb verified non-null; delegates to C implementation
     unsafe { mju_raySlab(aabb, xpos, xmat, pnt, vec) }
 }
 
@@ -272,8 +277,9 @@ pub fn mj_ray(m: *const mjModel, d: *const mjData, pnt: *const f64, vec: *const 
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_ray_hfield(m: *const mjModel, d: *const mjData, geomid: i32, pnt: *const f64, vec: *const f64, normal: *mut f64) -> f64 {
+    if m.is_null() { return 0.0; }
     extern "C" { fn mj_rayHfield(m: *const mjModel, d: *const mjData, geomid: i32, pnt: *const f64, vec: *const f64, normal: *mut f64) -> f64; }
-    // SAFETY: delegates to C implementation, pointers valid per caller contract
+    // SAFETY: m verified non-null; delegates to C implementation
     unsafe { mj_rayHfield(m, d, geomid, pnt, vec, normal) }
 }
 

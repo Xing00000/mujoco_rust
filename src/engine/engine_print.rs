@@ -240,8 +240,9 @@ pub fn mj_print_model(m: *const mjModel, filename: *const i8) {
 /// Calls: memorySize, mj_contactForce, mj_id2name, mj_isDual, mj_isSparse, mju_isZero, mju_message, mju_warning, validateFloatFormat
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_print_formatted_data(m: *const mjModel, d: *const mjData, filename: *const i8, float_format: *const i8) {
+    if m.is_null() { return; }
     extern "C" { fn mj_printFormattedData(m: *const mjModel, d: *const mjData, filename: *const i8, float_format: *const i8); }
-    // SAFETY: delegates to C implementation, all pointers valid per caller contract
+    // SAFETY: m verified non-null; delegates to C implementation
     unsafe { mj_printFormattedData(m, d, filename, float_format) }
 }
 

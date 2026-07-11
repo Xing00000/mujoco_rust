@@ -934,8 +934,9 @@ pub fn mj_read_sensor(m: *const mjModel, d: *const mjData, id: i32, time: f64, r
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_init_ctrl_history(m: *const mjModel, d: *mut mjData, id: i32, times: *const f64, values: *const f64) {
+    if m.is_null() { return; }
     extern "C" { fn mj_initCtrlHistory(m: *const mjModel, d: *mut mjData, id: i32, times: *const f64, values: *const f64); }
-    // SAFETY: delegates to C implementation
+    // SAFETY: m verified non-null; delegates to C implementation
     unsafe { mj_initCtrlHistory(m, d, id, times, values) }
 }
 
@@ -948,8 +949,9 @@ pub fn mj_init_ctrl_history(m: *const mjModel, d: *mut mjData, id: i32, times: *
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_init_sensor_history(m: *const mjModel, d: *mut mjData, id: i32, times: *const f64, values: *const f64, phase: f64) {
+    if m.is_null() { return; }
     extern "C" { fn mj_initSensorHistory(m: *const mjModel, d: *mut mjData, id: i32, times: *const f64, values: *const f64, phase: f64); }
-    // SAFETY: delegates to C implementation
+    // SAFETY: m verified non-null; delegates to C implementation
     unsafe { mj_initSensorHistory(m, d, id, times, values, phase) }
 }
 

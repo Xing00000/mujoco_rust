@@ -67,8 +67,9 @@ pub fn vfs_find_mount(self_ptr: *mut VFS, fullpath: *const i32) -> *mut mjResour
 /// Calls: mju_error
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_default_vfs(vfs: *mut mjVFS) {
+    if vfs.is_null() { return; }
     extern "C" { fn mj_defaultVFS(vfs: *mut mjVFS); }
-    // SAFETY: delegates to C implementation
+    // SAFETY: vfs verified non-null; delegates to C implementation
     unsafe { mj_defaultVFS(vfs) }
 }
 
@@ -76,8 +77,9 @@ pub fn mj_default_vfs(vfs: *mut mjVFS) {
 /// Calls: VFS::Upcast
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_delete_vfs(vfs: *mut mjVFS) {
+    if vfs.is_null() { return; }
     extern "C" { fn mj_deleteVFS(vfs: *mut mjVFS); }
-    // SAFETY: delegates to C implementation
+    // SAFETY: vfs verified non-null; delegates to C implementation
     unsafe { mj_deleteVFS(vfs) }
 }
 
@@ -85,8 +87,9 @@ pub fn mj_delete_vfs(vfs: *mut mjVFS) {
 /// Calls: VFS::Mount, VFS::Upcast, mju_error
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_mount_vfs(vfs: *mut mjVFS, filepath: *const i8, provider: *const mjpResourceProvider) -> i32 {
+    if vfs.is_null() { return 0; }
     extern "C" { fn mj_mountVFS(vfs: *mut mjVFS, filepath: *const i8, provider: *const mjpResourceProvider) -> i32; }
-    // SAFETY: delegates to C implementation
+    // SAFETY: vfs verified non-null; delegates to C implementation
     unsafe { mj_mountVFS(vfs, filepath, provider) }
 }
 
@@ -94,8 +97,9 @@ pub fn mj_mount_vfs(vfs: *mut mjVFS, filepath: *const i8, provider: *const mjpRe
 /// Calls: VFS::Unmount, VFS::Upcast, mju_error
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_unmount_vfs(vfs: *mut mjVFS, filename: *const i8) -> i32 {
+    if vfs.is_null() { return 0; }
     extern "C" { fn mj_unmountVFS(vfs: *mut mjVFS, filename: *const i8) -> i32; }
-    // SAFETY: delegates to C implementation
+    // SAFETY: vfs verified non-null; delegates to C implementation
     unsafe { mj_unmountVFS(vfs, filename) }
 }
 
@@ -143,8 +147,9 @@ pub fn mj_delete_file_vfs(vfs: *mut mjVFS, filename: *const i8) -> i32 {
 /// Calls: VFS::ContainsBuffer, VFS::Upcast, mju_error
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_contains_buffer_vfs(vfs: *mut mjVFS, name: *const i8) -> i32 {
+    if vfs.is_null() { return 0; }
     extern "C" { fn mj_containsBufferVFS(vfs: *mut mjVFS, name: *const i8) -> i32; }
-    // SAFETY: delegates to C implementation
+    // SAFETY: vfs verified non-null; delegates to C implementation
     unsafe { mj_containsBufferVFS(vfs, name) }
 }
 
