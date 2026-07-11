@@ -684,8 +684,9 @@ pub fn mju_add_to_scl_scl(res: *mut f64, vec: *const f64, scl1: f64, scl2: f64, 
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mju_combine_sparse(dst: *mut f64, src: *const f64, a: f64, b: f64, dst_nnz: i32, src_nnz: i32, dst_ind: *mut i32, src_ind: *const i32) -> i32  {
+    if dst.is_null() { return 0; }
     extern "C" { fn mju_combineSparse(dst: *mut f64, src: *const f64, a: f64, b: f64, dst_nnz: i32, src_nnz: i32, dst_ind: *mut i32, src_ind: *const i32) -> i32; }
-    // SAFETY: delegates to C implementation
+    // SAFETY: dst verified non-null; delegates to C implementation
     unsafe { mju_combineSparse(dst, src, a, b, dst_nnz, src_nnz, dst_ind, src_ind) }
 }
 

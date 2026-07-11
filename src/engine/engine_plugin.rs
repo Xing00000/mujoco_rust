@@ -31,7 +31,10 @@ pub fn copy_name(s: *const i8) -> i32 {
     // WARNING: signature changed — verify body
     // Previous params: (s : * const i8)
     // Previous return: i32
-    extern "C" { fn CopyName(s : * const i8) -> i32 ; } unsafe { CopyName(s) }
+    if s.is_null() { return 0; }
+    extern "C" { fn CopyName(s: *const i8) -> i32; }
+    // SAFETY: s verified non-null; delegates to C implementation
+    unsafe { CopyName(s) }
 }
 
 /// C: IsValidURISchemeFormat (engine/engine_plugin.cc:93)

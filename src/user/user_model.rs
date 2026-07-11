@@ -64,7 +64,10 @@ pub fn get_body_id_from_wrap(wrap: *const mjCWrap) -> i32 {
     // WARNING: signature changed — verify body
     // Previous params: (wrap : * const mjCWrap)
     // Previous return: i32
-    extern "C" { fn GetBodyIdFromWrap (wrap : * const mjCWrap) -> i32 ; } unsafe { GetBodyIdFromWrap (wrap) }
+    if wrap.is_null() { return 0; }
+    extern "C" { fn GetBodyIdFromWrap(wrap: *const mjCWrap) -> i32; }
+    // SAFETY: wrap verified non-null; delegates to C implementation
+    unsafe { GetBodyIdFromWrap(wrap) }
 }
 
 /// C: mjCModel::CopyList (user/user_model.cc:261)

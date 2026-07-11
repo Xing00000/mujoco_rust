@@ -22,7 +22,10 @@ pub fn contact_select(arr: *mut ContactInfo, buf: *mut ContactInfo, n: i32, k: i
     // WARNING: signature changed — verify body
     // Previous params: (arr : * mut ContactInfo, buf : * mut ContactInfo, n : i32, k : i32, context : * mut ())
     // Previous return: ()
-    extern "C" { fn ContactSelect(arr : * mut ContactInfo , buf : * mut ContactInfo , n : i32 , k : i32 , context : * mut ()) ; } unsafe { ContactSelect(arr , buf , n , k , context) }
+    if arr.is_null() { return; }
+    extern "C" { fn ContactSelect(arr: *mut ContactInfo, buf: *mut ContactInfo, n: i32, k: i32, context: *mut ()); }
+    // SAFETY: arr verified non-null; delegates to C implementation
+    unsafe { ContactSelect(arr, buf, n, k, context) }
 }
 
 /// C: tactile_taxel_batch (engine/engine_sensor.c:80)

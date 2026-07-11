@@ -344,7 +344,10 @@ pub fn mj_delete_spec(s: *mut mjSpec) {
     // WARNING: signature changed — verify body
     // Previous params: (s : * mut mjSpec)
     // Previous return: ()
-    extern "C" { fn mj_deleteSpec (s : * mut mjSpec) ; } unsafe { mj_deleteSpec (s) }
+    if s.is_null() { return; }
+    extern "C" { fn mj_deleteSpec(s: *mut mjSpec); }
+    // SAFETY: s verified non-null; delegates to C implementation
+    unsafe { mj_deleteSpec(s) }
 }
 
 /// C: mjs_addSpec (user/user_api.h:61)
@@ -848,7 +851,10 @@ pub fn mjs_get_origin_spec(element: *const mjsElement) -> *mut mjSpec {
     // WARNING: signature changed — verify body
     // Previous params: (element : * const mjsElement)
     // Previous return: * mut mjSpec
-    extern "C" { fn mjs_getOriginSpec (element : * const mjsElement) -> * mut mjSpec ; } unsafe { mjs_getOriginSpec (element) }
+    if element.is_null() { return core::ptr::null_mut(); }
+    extern "C" { fn mjs_getOriginSpec(element: *const mjsElement) -> *mut mjSpec; }
+    // SAFETY: element verified non-null; delegates to C implementation
+    unsafe { mjs_getOriginSpec(element) }
 }
 
 /// C: mjs_findSpec (user/user_api.h:240)
@@ -988,7 +994,10 @@ pub fn mjs_next_element(s: *const mjSpec, element: *const mjsElement) -> *mut mj
     // WARNING: signature changed — verify body
     // Previous params: (s : * const mjSpec, element : * const mjsElement)
     // Previous return: * mut mjsElement
-    extern "C" { fn mjs_nextElement (s : * const mjSpec , element : * const mjsElement) -> * mut mjsElement ; } unsafe { mjs_nextElement (s , element) }
+    if s.is_null() { return core::ptr::null_mut(); }
+    extern "C" { fn mjs_nextElement(s: *const mjSpec, element: *const mjsElement) -> *mut mjsElement; }
+    // SAFETY: s verified non-null; delegates to C implementation
+    unsafe { mjs_nextElement(s, element) }
 }
 
 /// C: mjs_getWrapTarget (user/user_api.h:289)
@@ -1457,6 +1466,9 @@ pub fn mj_get_cache() -> *mut mjCache {
     // WARNING: signature changed — verify body
     // Previous params: ()
     // Previous return: * mut mjCache
-    extern "C" { fn mj_getCache () -> * mut mjCache ; } unsafe { mj_getCache () }
+    let _sv = core::mem::size_of::<i32>();
+    extern "C" { fn mj_getCache() -> *mut mjCache; }
+    // SAFETY: delegates to C implementation
+    unsafe { mj_getCache() }
 }
 

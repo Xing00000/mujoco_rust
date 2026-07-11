@@ -30,7 +30,10 @@ pub fn mju_read_resource(resource: *mut mjResource, buffer: *const *mut ()) -> i
     // WARNING: signature changed — verify body
     // Previous params: (resource : * mut mjResource, buffer : * const * mut ())
     // Previous return: i32
-    extern "C" { fn mju_readResource(resource : * mut mjResource , buffer : * const * mut ()) -> i32 ; } unsafe { mju_readResource(resource , buffer) }
+    if resource.is_null() { return 0; }
+    extern "C" { fn mju_readResource(resource: *mut mjResource, buffer: *const *mut ()) -> i32; }
+    // SAFETY: resource verified non-null; delegates to C implementation
+    unsafe { mju_readResource(resource, buffer) }
 }
 
 /// C: mju_getResourceDir (user/user_resource.cc:82)

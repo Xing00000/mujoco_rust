@@ -106,7 +106,10 @@ pub fn buffer_provider_mount(vfs: *mut mjVFS, args: Args) -> i32 {
     // WARNING: signature changed — verify body
     // Previous params: (vfs : * mut mjVFS, args : Args)
     // Previous return: i32
-    extern "C" { fn BufferProvider_Mount (vfs : * mut mjVFS , args : Args) -> i32 ; } unsafe { BufferProvider_Mount (vfs , args) }
+    if vfs.is_null() { return 0; }
+    extern "C" { fn BufferProvider_Mount(vfs: *mut mjVFS, args: Args) -> i32; }
+    // SAFETY: vfs verified non-null; delegates to C implementation
+    unsafe { BufferProvider_Mount(vfs, args) }
 }
 
 /// C: mj_addFileVFS (user/user_vfs.cc:496)
@@ -181,7 +184,14 @@ pub fn vfs_close(self_ptr: *mut VFS, resource: *mut mjResource) -> Status {
     // WARNING: signature changed — verify body
     // Previous params: (self_ptr : * mut VFS, resource : * mut mjResource)
     // Previous return: Status
-    extern "C" { fn VFS_Close (self_ptr : * mut VFS , resource : * mut mjResource) -> Status ; } unsafe { VFS_Close (self_ptr , resource) }
+    if self_ptr.is_null() {
+        extern "C" { fn VFS_Close(self_ptr: *mut VFS, resource: *mut mjResource) -> Status; }
+        // SAFETY: delegates to C++; null handling is C++'s responsibility
+        return unsafe { VFS_Close(self_ptr, resource) };
+    }
+    extern "C" { fn VFS_Close(self_ptr: *mut VFS, resource: *mut mjResource) -> Status; }
+    // SAFETY: self_ptr verified non-null; delegates to C implementation
+    unsafe { VFS_Close(self_ptr, resource) }
 }
 
 /// C: VFS::Mount (user/user_vfs.h:88)

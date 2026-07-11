@@ -169,7 +169,10 @@ pub fn mju_chol_factor_numeric(L: *mut f64, n: i32, mindiag: f64, L_rownnz: *con
     // WARNING: signature changed — verify body
     // Previous params: (L : * mut f64, n : i32, mindiag : f64, L_rownnz : * const i32, L_rowadr : * const i32, L_colind : * const i32, LT_rownnz : * const i32, LT_rowadr : * const i32, LT_colind : * const i32, LT_map : * const i32, H : * const f64, H_rownnz : * const i32, H_rowadr : * const i32, H_colind : * const i32, d : * mut mjData)
     // Previous return: i32
-    extern "C" { fn mju_cholFactorNumeric(L : * mut f64 , n : i32 , mindiag : f64 , L_rownnz : * const i32 , L_rowadr : * const i32 , L_colind : * const i32 , LT_rownnz : * const i32 , LT_rowadr : * const i32 , LT_colind : * const i32 , LT_map : * const i32 , H : * const f64 , H_rownnz : * const i32 , H_rowadr : * const i32 , H_colind : * const i32 , d : * mut mjData) -> i32 ; } unsafe { mju_cholFactorNumeric(L , n , mindiag , L_rownnz , L_rowadr , L_colind , LT_rownnz , LT_rowadr , LT_colind , LT_map , H , H_rownnz , H_rowadr , H_colind , d) }
+    if L.is_null() { return 0; }
+    extern "C" { fn mju_cholFactorNumeric(L: *mut f64, n: i32, mindiag: f64, L_rownnz: *const i32, L_rowadr: *const i32, L_colind: *const i32, LT_rownnz: *const i32, LT_rowadr: *const i32, LT_colind: *const i32, LT_map: *const i32, H: *const f64, H_rownnz: *const i32, H_rowadr: *const i32, H_colind: *const i32, d: *mut mjData) -> i32; }
+    // SAFETY: L verified non-null; delegates to C implementation
+    unsafe { mju_cholFactorNumeric(L, n, mindiag, L_rownnz, L_rowadr, L_colind, LT_rownnz, LT_rowadr, LT_colind, LT_map, H, H_rownnz, H_rowadr, H_colind, d) }
 }
 
 /// C: mju_cholSolveSparse (engine/engine_util_solve.h:61)
@@ -230,7 +233,10 @@ pub fn mju_chol_update_sparse(mat: *mut f64, x: *const f64, n: i32, flg_plus: i3
     // WARNING: signature changed — verify body
     // Previous params: (mat : * mut f64, x : * const f64, n : i32, flg_plus : i32, rownnz : * const i32, rowadr : * const i32, colind : * const i32, x_nnz : i32, x_ind : * const i32, d : * mut mjData)
     // Previous return: i32
-    extern "C" { fn mju_cholUpdateSparse(mat : * mut f64 , x : * const f64 , n : i32 , flg_plus : i32 , rownnz : * const i32 , rowadr : * const i32 , colind : * const i32 , x_nnz : i32 , x_ind : * const i32 , d : * mut mjData) -> i32 ; } unsafe { mju_cholUpdateSparse(mat , x , n , flg_plus , rownnz , rowadr , colind , x_nnz , x_ind , d) }
+    if mat.is_null() { return 0; }
+    extern "C" { fn mju_cholUpdateSparse(mat: *mut f64, x: *const f64, n: i32, flg_plus: i32, rownnz: *const i32, rowadr: *const i32, colind: *const i32, x_nnz: i32, x_ind: *const i32, d: *mut mjData) -> i32; }
+    // SAFETY: mat verified non-null; delegates to C implementation
+    unsafe { mju_cholUpdateSparse(mat, x, n, flg_plus, rownnz, rowadr, colind, x_nnz, x_ind, d) }
 }
 
 /// C: mju_cholFactorBand (engine/engine_util_solve.h:76)

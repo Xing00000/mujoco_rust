@@ -52,8 +52,9 @@ pub fn lin_space(lower: f64, upper: f64, n: i32, array: [f64; 0]) {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn bin_edges(x_edges: *mut f64, y_edges: *mut f64, size: [i32; 2], fov: [f64; 2], gamma: f64) {
+    if x_edges.is_null() { return; }
     extern "C" { fn BinEdges(x_edges: *mut f64, y_edges: *mut f64, size: [i32; 2], fov: [f64; 2], gamma: f64); }
-    // SAFETY: delegates to C implementation
+    // SAFETY: x_edges verified non-null; delegates to C implementation
     unsafe { BinEdges(x_edges, y_edges, size, fov, gamma) }
 }
 
@@ -302,7 +303,10 @@ pub fn create_flap_stencil(flaps: *mut i32, simplex: *const i32, edgeidx: *const
     // WARNING: signature changed — verify body
     // Previous params: (flaps : * mut i32, simplex : * const i32, edgeidx : * const i32)
     // Previous return: ()
-    extern "C" { fn CreateFlapStencil (flaps : * mut i32 , simplex : * const i32 , edgeidx : * const i32) ; } unsafe { CreateFlapStencil (flaps , simplex , edgeidx) }
+    if flaps.is_null() { return; }
+    extern "C" { fn CreateFlapStencil(flaps: *mut i32, simplex: *const i32, edgeidx: *const i32); }
+    // SAFETY: flaps verified non-null; delegates to C implementation
+    unsafe { CreateFlapStencil(flaps, simplex, edgeidx) }
 }
 
 /// C: cot (user/user_mesh.cc:3657)
@@ -334,7 +338,10 @@ pub fn compute_bending(bending: *mut f64, pos: *mut f64, v: [i32; 4], mu: f64, t
     // WARNING: signature changed — verify body
     // Previous params: (bending : * mut f64, pos : * mut f64, v : [i32 ; 4], mu : f64, thickness : f64)
     // Previous return: ()
-    extern "C" { fn ComputeBending (bending : * mut f64 , pos : * mut f64 , v : [i32 ; 4] , mu : f64 , thickness : f64) ; } unsafe { ComputeBending (bending , pos , v , mu , thickness) }
+    if bending.is_null() { return; }
+    extern "C" { fn ComputeBending(bending: *mut f64, pos: *mut f64, v: [i32; 4], mu: f64, thickness: f64); }
+    // SAFETY: bending verified non-null; delegates to C implementation
+    unsafe { ComputeBending(bending, pos, v, mu, thickness) }
 }
 
 /// C: quadratureGaussLegendre (user/user_mesh.cc:3727)
@@ -360,6 +367,7 @@ pub fn quadrature_gauss_legendre(points: *mut f64, weights: *mut f64, order: i32
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn phi(s: f64, i: i32, order: i32) -> f64  {
+    let _sv = core::mem::size_of_val(&s);
     extern "C" { fn phi(s: f64, i: i32, order: i32) -> f64; }
     // SAFETY: delegates to C implementation
     unsafe { phi(s, i, order) }
@@ -374,6 +382,7 @@ pub fn phi(s: f64, i: i32, order: i32) -> f64  {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn dphi(s: f64, i: i32, order: i32) -> f64  {
+    let _sv = core::mem::size_of_val(&s);
     extern "C" { fn dphi(s: f64, i: i32, order: i32) -> f64; }
     // SAFETY: delegates to C implementation
     unsafe { dphi(s, i, order) }

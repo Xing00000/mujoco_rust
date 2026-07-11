@@ -132,8 +132,9 @@ pub fn mju_malloc(mut size: usize) -> *mut () {
 /// Calls: mju_alignedFree
 #[allow(unused_variables, non_snake_case)]
 pub fn mju_free(ptr: *mut ()) {
+    if ptr.is_null() { return; }
     extern "C" { fn mju_free(ptr: *mut ()); }
-    // SAFETY: delegates to C implementation
+    // SAFETY: ptr verified non-null; delegates to C implementation
     unsafe { mju_free(ptr) }
 }
 

@@ -525,8 +525,9 @@ pub fn mj_sol_newton_island(m: *const mjModel, d: *mut mjData, island: i32, maxi
 /// Calls: dualFinish
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_dual_finish(m: *const mjModel, d: *mut mjData) {
+    if m.is_null() { return; }
     extern "C" { fn mj_dualFinish(m: *const mjModel, d: *mut mjData); }
-    // SAFETY: delegates to C implementation
+    // SAFETY: m verified non-null; delegates to C implementation
     unsafe { mj_dualFinish(m, d) }
 }
 

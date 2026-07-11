@@ -3002,7 +3002,10 @@ pub fn mj_c_mesh_make_center(self_ptr: *mut mjCMesh, dvert: *const f64) {
     // WARNING: signature changed — verify body
     // Previous params: (self_ptr : * mut mjCMesh, dvert : * const f64)
     // Previous return: ()
-    extern "C" { fn mjCMesh_MakeCenter (self_ptr : * mut mjCMesh , dvert : * const f64) ; } unsafe { mjCMesh_MakeCenter (self_ptr , dvert) }
+    if self_ptr.is_null() { return; }
+    extern "C" { fn mjCMesh_MakeCenter(self_ptr: *mut mjCMesh, dvert: *const f64); }
+    // SAFETY: self_ptr verified non-null; delegates to C implementation
+    unsafe { mjCMesh_MakeCenter(self_ptr, dvert) }
 }
 
 /// C: mjCMesh::Process (user/user_objects.h:1286)
@@ -3027,7 +3030,10 @@ pub fn mj_c_mesh_apply_transformations(self_ptr: *mut mjCMesh, dvert: *mut f64) 
     // WARNING: signature changed — verify body
     // Previous params: (self_ptr : * mut mjCMesh, dvert : * mut f64)
     // Previous return: ()
-    extern "C" { fn mjCMesh_ApplyTransformations (self_ptr : * mut mjCMesh , dvert : * mut f64) ; } unsafe { mjCMesh_ApplyTransformations (self_ptr , dvert) }
+    if self_ptr.is_null() { return; }
+    extern "C" { fn mjCMesh_ApplyTransformations(self_ptr: *mut mjCMesh, dvert: *mut f64); }
+    // SAFETY: self_ptr verified non-null; delegates to C implementation
+    unsafe { mjCMesh_ApplyTransformations(self_ptr, dvert) }
 }
 
 /// C: mjCMesh::ComputeFaceCentroid (user/user_objects.h:1288)
@@ -3042,7 +3048,10 @@ pub fn mj_c_mesh_compute_face_centroid(self_ptr: *mut mjCMesh, arg0: [f64; 3], d
     // WARNING: signature changed — verify body
     // Previous params: (self_ptr : * mut mjCMesh, arg0 : [f64 ; 3], dvert : * const f64)
     // Previous return: f64
-    extern "C" { fn mjCMesh_ComputeFaceCentroid (self_ptr : * mut mjCMesh , arg0 : [f64 ; 3] , dvert : * const f64) -> f64 ; } unsafe { mjCMesh_ComputeFaceCentroid (self_ptr , arg0 , dvert) }
+    if self_ptr.is_null() { return 0.0; }
+    extern "C" { fn mjCMesh_ComputeFaceCentroid(self_ptr: *mut mjCMesh, arg0: [f64; 3], dvert: *const f64) -> f64; }
+    // SAFETY: self_ptr verified non-null; delegates to C implementation
+    unsafe { mjCMesh_ComputeFaceCentroid(self_ptr, arg0, dvert) }
 }
 
 /// C: mjCMesh::CheckInitialMesh (user/user_objects.h:1289)
@@ -3052,7 +3061,10 @@ pub fn mj_c_mesh_check_initial_mesh(self_ptr: *mut mjCMesh) {
     // WARNING: signature changed — verify body
     // Previous params: (self_ptr : * mut mjCMesh)
     // Previous return: ()
-    extern "C" { fn mjCMesh_CheckInitialMesh (self_ptr : * mut mjCMesh) ; } unsafe { mjCMesh_CheckInitialMesh (self_ptr) }
+    if self_ptr.is_null() { return; }
+    extern "C" { fn mjCMesh_CheckInitialMesh(self_ptr: *mut mjCMesh); }
+    // SAFETY: self_ptr verified non-null; delegates to C implementation
+    unsafe { mjCMesh_CheckInitialMesh(self_ptr) }
 }
 
 /// C: mjCMesh::CopyPlugin (user/user_objects.h:1290)
@@ -3076,7 +3088,10 @@ pub fn mj_c_mesh_rotate(self_ptr: *mut mjCMesh, quat: [f64; 4], dvert: *mut f64)
     // WARNING: signature changed — verify body
     // Previous params: (self_ptr : * mut mjCMesh, quat : [f64 ; 4], dvert : * mut f64)
     // Previous return: ()
-    extern "C" { fn mjCMesh_Rotate (self_ptr : * mut mjCMesh , quat : [f64 ; 4] , dvert : * mut f64) ; } unsafe { mjCMesh_Rotate (self_ptr , quat , dvert) }
+    if self_ptr.is_null() { return; }
+    extern "C" { fn mjCMesh_Rotate(self_ptr: *mut mjCMesh, quat: [f64; 4], dvert: *mut f64); }
+    // SAFETY: self_ptr verified non-null; delegates to C implementation
+    unsafe { mjCMesh_Rotate(self_ptr, quat, dvert) }
 }
 
 /// C: mjCMesh::MakePolygons (user/user_objects.h:1293)
@@ -3091,7 +3106,10 @@ pub fn mj_c_mesh_make_polygons(self_ptr: *mut mjCMesh, dvert: *const f64) {
     // WARNING: signature changed — verify body
     // Previous params: (self_ptr : * mut mjCMesh, dvert : * const f64)
     // Previous return: ()
-    extern "C" { fn mjCMesh_MakePolygons (self_ptr : * mut mjCMesh , dvert : * const f64) ; } unsafe { mjCMesh_MakePolygons (self_ptr , dvert) }
+    if self_ptr.is_null() { return; }
+    extern "C" { fn mjCMesh_MakePolygons(self_ptr: *mut mjCMesh, dvert: *const f64); }
+    // SAFETY: self_ptr verified non-null; delegates to C implementation
+    unsafe { mjCMesh_MakePolygons(self_ptr, dvert) }
 }
 
 /// C: mjCMesh::MakePolygonNormals (user/user_objects.h:1294)
@@ -3122,7 +3140,10 @@ pub fn mj_c_mesh_compute_inertia(self_ptr: *mut mjCMesh, inert: [f64; 6], CoM: [
     // WARNING: signature changed — verify body
     // Previous params: (self_ptr : * mut mjCMesh, inert : [f64 ; 6], CoM : [f64 ; 3], dvert : * const f64)
     // Previous return: f64
-    extern "C" { fn mjCMesh_ComputeInertia (self_ptr : * mut mjCMesh , inert : [f64 ; 6] , CoM : [f64 ; 3] , dvert : * const f64) -> f64 ; } unsafe { mjCMesh_ComputeInertia (self_ptr , inert , CoM , dvert) }
+    if self_ptr.is_null() { return 0.0; }
+    extern "C" { fn mjCMesh_ComputeInertia(self_ptr: *mut mjCMesh, inert: [f64; 6], CoM: [f64; 3], dvert: *const f64) -> f64; }
+    // SAFETY: self_ptr verified non-null; delegates to C implementation
+    unsafe { mjCMesh_ComputeInertia(self_ptr, inert, CoM, dvert) }
 }
 
 /// C: mjCMesh::GraphFaces (user/user_objects.h:1299)
@@ -3434,7 +3455,10 @@ pub fn mj_c_texture_compile(self_ptr: *mut mjCTexture, vfs: *const mjVFS) {
     // WARNING: signature changed — verify body
     // Previous params: (self_ptr : * mut mjCTexture, vfs : * const mjVFS)
     // Previous return: ()
-    extern "C" { fn mjCTexture_Compile (self_ptr : * mut mjCTexture , vfs : * const mjVFS) ; } unsafe { mjCTexture_Compile (self_ptr , vfs) }
+    if self_ptr.is_null() { return; }
+    extern "C" { fn mjCTexture_Compile(self_ptr: *mut mjCTexture, vfs: *const mjVFS); }
+    // SAFETY: self_ptr verified non-null; delegates to C implementation
+    unsafe { mjCTexture_Compile(self_ptr, vfs) }
 }
 
 /// C: mjCTexture::File (user/user_objects.h:1471)

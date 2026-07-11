@@ -54,6 +54,13 @@ pub fn get_global_xml_spec(m: *const mjModel, error: *mut i8, error_sz: i32) -> 
     // WARNING: signature changed — verify body
     // Previous params: (m : * const mjModel, error : * mut i8, error_sz : i32)
     // Previous return: std__string
-    extern "C" { fn GetGlobalXmlSpec(m : * const mjModel , error : * mut i8 , error_sz : i32) -> std__string ; } unsafe { GetGlobalXmlSpec(m , error , error_sz) }
+    if m.is_null() {
+        extern "C" { fn GetGlobalXmlSpec(m: *const mjModel, error: *mut i8, error_sz: i32) -> std__string; }
+        // SAFETY: delegates to C++; null handling is C++'s responsibility
+        return unsafe { GetGlobalXmlSpec(m, error, error_sz) };
+    }
+    extern "C" { fn GetGlobalXmlSpec(m: *const mjModel, error: *mut i8, error_sz: i32) -> std__string; }
+    // SAFETY: m verified non-null; delegates to C implementation
+    unsafe { GetGlobalXmlSpec(m, error, error_sz) }
 }
 

@@ -144,8 +144,9 @@ pub fn history_physical_index(cursor: i32, n: i32, logical: i32) -> i32  {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn history_find_index(times: *const f64, n: i32, cursor: i32, t: f64) -> i32  {
+    if times.is_null() { return 0; }
     extern "C" { fn historyFindIndex(times: *const f64, n: i32, cursor: i32, t: f64) -> i32; }
-    // SAFETY: delegates to C implementation
+    // SAFETY: times verified non-null; delegates to C implementation
     unsafe { historyFindIndex(times, n, cursor, t) }
 }
 
