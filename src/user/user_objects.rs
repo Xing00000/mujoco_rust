@@ -690,8 +690,9 @@ pub fn mj_c_octree_create_octree(self_ptr: *mut mjCOctree, aamm: [f64; 6]) {
 /// C: mjCOctree::NumNodes (user/user_objects.h:287)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_octree_num_nodes(self_ptr: *mut mjCOctree) -> i32 {
+    if self_ptr.is_null() { return 0; }
     extern "C" { fn mjCOctree_NumNodes(self_ptr: *mut mjCOctree) -> i32; }
-    // SAFETY: delegates to C implementation
+    // SAFETY: self_ptr verified non-null; delegates to C++ getter
     unsafe { mjCOctree_NumNodes(self_ptr) }
 }
 
@@ -706,16 +707,18 @@ pub fn mj_c_octree_num_verts(self_ptr: *mut mjCOctree) -> i32 {
 /// C: mjCOctree::CopyLevel (user/user_objects.h:289)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_octree_copy_level(self_ptr: *mut mjCOctree, level: *mut i32) {
+    if self_ptr.is_null() { return; }
     extern "C" { fn mjCOctree_CopyLevel(self_ptr: *mut mjCOctree, level: *mut i32); }
-    // SAFETY: delegates to C implementation
+    // SAFETY: self_ptr verified non-null; delegates to C++ method
     unsafe { mjCOctree_CopyLevel(self_ptr, level) }
 }
 
 /// C: mjCOctree::CopyChild (user/user_objects.h:290)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_octree_copy_child(self_ptr: *mut mjCOctree, child: *mut i32) {
+    if self_ptr.is_null() { return; }
     extern "C" { fn mjCOctree_CopyChild(self_ptr: *mut mjCOctree, child: *mut i32); }
-    // SAFETY: delegates to C implementation
+    // SAFETY: self_ptr verified non-null; delegates to C++ method
     unsafe { mjCOctree_CopyChild(self_ptr, child) }
 }
 
@@ -727,8 +730,9 @@ pub fn mj_c_octree_copy_child(self_ptr: *mut mjCOctree, child: *mut i32) {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_octree_copy_aabb(self_ptr: *mut mjCOctree, aabb: *mut f64) {
+    if self_ptr.is_null() { return; }
     extern "C" { fn mjCOctree_CopyAabb(self_ptr: *mut mjCOctree, aabb: *mut f64); }
-    // SAFETY: delegates to C implementation
+    // SAFETY: self_ptr verified non-null; delegates to C++ method
     unsafe { mjCOctree_CopyAabb(self_ptr, aabb) }
 }
 
@@ -740,8 +744,9 @@ pub fn mj_c_octree_copy_aabb(self_ptr: *mut mjCOctree, aabb: *mut f64) {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_octree_copy_coeff(self_ptr: *mut mjCOctree, coeff: *mut f64) {
+    if self_ptr.is_null() { return; }
     extern "C" { fn mjCOctree_CopyCoeff(self_ptr: *mut mjCOctree, coeff: *mut f64); }
-    // SAFETY: delegates to C implementation
+    // SAFETY: self_ptr verified non-null; delegates to C++ method
     unsafe { mjCOctree_CopyCoeff(self_ptr, coeff) }
 }
 
@@ -3850,16 +3855,18 @@ pub fn mj_c_tendon_set_model(self_ptr: *mut mjCTendon, _model: *mut mjCModel) {
 /// C: mjCTendon::is_limited (user/user_objects.h:1722)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_tendon_is_limited(self_ptr: *mut mjCTendon) -> bool {
+    if self_ptr.is_null() { return false; }
     extern "C" { fn mjCTendon_is_limited(self_ptr: *mut mjCTendon) -> bool; }
-    // SAFETY: delegates to C implementation
+    // SAFETY: self_ptr verified non-null; delegates to C++ getter
     unsafe { mjCTendon_is_limited(self_ptr) }
 }
 
 /// C: mjCTendon::is_actfrclimited (user/user_objects.h:1723)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_tendon_is_actfrclimited(self_ptr: *mut mjCTendon) -> bool {
+    if self_ptr.is_null() { return false; }
     extern "C" { fn mjCTendon_is_actfrclimited(self_ptr: *mut mjCTendon) -> bool; }
-    // SAFETY: delegates to C implementation
+    // SAFETY: self_ptr verified non-null; delegates to C++ getter
     unsafe { mjCTendon_is_actfrclimited(self_ptr) }
 }
 

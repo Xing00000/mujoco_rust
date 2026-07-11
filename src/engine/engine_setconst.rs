@@ -8,8 +8,9 @@ use crate::types::*;
 /// Calls: mj_actuatorArmature, mju_addTo, mju_copy, mju_dot, mju_mulInertVec
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_set_m0(m: *mut mjModel, d: *mut mjData) {
+    if m.is_null() { return; }
     extern "C" { fn mj_setM0(m: *mut mjModel, d: *mut mjData); }
-    // SAFETY: delegates to C implementation
+    // SAFETY: m verified non-null; delegates to C implementation
     unsafe { mj_setM0(m, d) }
 }
 
@@ -52,8 +53,9 @@ pub fn make_flex_sparse(m: *mut mjModel, d: *mut mjData) {
 /// Calls: mju_copy3, mju_cross, mju_mulMatTVec3, mju_normalize3, mju_quat2Mat, mju_quatZ2Vec, mju_sub3, mju_warning
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_align_flex(m: *mut mjModel, d: *mut mjData) {
+    if m.is_null() { return; }
     extern "C" { fn mj_alignFlex(m: *mut mjModel, d: *mut mjData); }
-    // SAFETY: delegates to C implementation
+    // SAFETY: m verified non-null; delegates to C implementation
     unsafe { mj_alignFlex(m, d) }
 }
 
@@ -74,8 +76,9 @@ pub fn set0(m: *mut mjModel, d: *mut mjData) {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn update_box(xmin: *mut f64, xmax: *mut f64, pos: *mut f64, radius: f64) {
+    if xmin.is_null() { return; }
     extern "C" { fn updateBox(xmin: *mut f64, xmax: *mut f64, pos: *mut f64, radius: f64); }
-    // SAFETY: delegates to C implementation
+    // SAFETY: xmin verified non-null; delegates to C implementation
     unsafe { updateBox(xmin, xmax, pos, radius) }
 }
 

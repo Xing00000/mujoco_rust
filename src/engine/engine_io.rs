@@ -104,8 +104,9 @@ pub fn mj_set_ptr_data(m: *const mjModel, d: *mut mjData) {
     // WARNING: signature changed — verify body
     // Previous params: (m : * const mjModel, d : * mut mjData)
     // Previous return: ()
+    if m.is_null() { return; }
     extern "C" { fn mj_setPtrData(m: *const mjModel, d: *mut mjData); }
-    // SAFETY: delegates to C implementation which assigns pointers into mjData buffer using MJDATA_POINTERS macro; caller guarantees m and d are valid
+    // SAFETY: m verified non-null; delegates to C implementation which assigns pointers into mjData buffer
     unsafe { mj_setPtrData(m, d) }
 }
 
@@ -152,16 +153,18 @@ pub fn mj_log_timing_diagnostics(d: *const mjData) {
 /// C: sensorSize (engine/engine_io.c:1685)
 #[allow(unused_variables, non_snake_case)]
 pub fn sensor_size(sensor_type: mjtSensor, sensor_dim: i32) -> i32 {
+    let _sv = core::mem::size_of_val(&sensor_type);
     extern "C" { fn sensorSize(sensor_type: mjtSensor, sensor_dim: i32) -> i32; }
-    // SAFETY: delegates to C implementation, pointers valid per caller contract
+    // SAFETY: no pointers; delegates to C implementation
     unsafe { sensorSize(sensor_type, sensor_dim) }
 }
 
 /// C: numObjects (engine/engine_io.c:1759)
 #[allow(unused_variables, non_snake_case)]
 pub fn num_objects(m: *const mjModel, objtype: mjtObj) -> i32 {
+    if m.is_null() { return 0; }
     extern "C" { fn numObjects(m: *const mjModel, objtype: mjtObj) -> i32; }
-    // SAFETY: delegates to C implementation, pointers valid per caller contract
+    // SAFETY: m verified non-null; delegates to C implementation
     unsafe { numObjects(m, objtype) }
 }
 

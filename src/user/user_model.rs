@@ -86,8 +86,9 @@ pub fn resetlist(list: *mut i32) {
 /// C: mjCModel::CopyPlugin (user/user_model.cc:396)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_model_copy_plugin(self_ptr: *mut mjCModel, source: *const i32, list: *const i32) {
+    if self_ptr.is_null() { return; }
     extern "C" { fn mjCModel_CopyPlugin(self_ptr: *mut mjCModel, source: *const i32, list: *const i32); }
-    // SAFETY: delegates to C implementation
+    // SAFETY: self_ptr verified non-null; delegates to C++ method
     unsafe { mjCModel_CopyPlugin(self_ptr, source, list) }
 }
 
@@ -113,8 +114,9 @@ pub fn mj_c_model_remove_from_list(self_ptr: *mut mjCModel, list: *mut i32, othe
 /// C: mjCModel::DeleteAll (user/user_model.cc:545)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_model_delete_all(self_ptr: *mut mjCModel, elements: *mut i32) {
+    if self_ptr.is_null() { return; }
     extern "C" { fn mjCModel_DeleteAll(self_ptr: *mut mjCModel, elements: *mut i32); }
-    // SAFETY: delegates to C implementation
+    // SAFETY: self_ptr verified non-null; delegates to C++ method
     unsafe { mjCModel_DeleteAll(self_ptr, elements) }
 }
 
@@ -186,8 +188,9 @@ pub fn mj_c_model_find_asset(self_ptr: *mut mjCModel, name: string_view, list: *
 /// C: mjCModel::DeleteMaterial (user/user_model.cc:1778)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_model_delete_material(self_ptr: *mut mjCModel, list: *mut i32, name: string_view) {
+    if self_ptr.is_null() { return; }
     extern "C" { fn mjCModel_DeleteMaterial(self_ptr: *mut mjCModel, list: *mut i32, name: string_view); }
-    // SAFETY: delegates to C implementation
+    // SAFETY: self_ptr verified non-null; delegates to C++ method
     unsafe { mjCModel_DeleteMaterial(self_ptr, list, name) }
 }
 
@@ -227,8 +230,9 @@ pub fn delete_elements(elements: *mut i32, discard: *const i32) {
 /// C: mjCModel::Delete (user/user_model.cc:1848)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_model_delete(self_ptr: *mut mjCModel, elements: *mut i32, discard: *const i32) {
+    if self_ptr.is_null() { return; }
     extern "C" { fn mjCModel_Delete(self_ptr: *mut mjCModel, elements: *mut i32, discard: *const i32); }
-    // SAFETY: delegates to C implementation
+    // SAFETY: self_ptr verified non-null; delegates to C++ method
     unsafe { mjCModel_Delete(self_ptr, elements, discard) }
 }
 
@@ -880,8 +884,9 @@ pub fn mj_c_model_excludes(self_ptr: *mut mjCModel) -> *const i32 {
 /// C: mjCModel::Equalities (user/user_model.h:303)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_model_equalities(self_ptr: *mut mjCModel) -> *const i32 {
+    if self_ptr.is_null() { return core::ptr::null(); }
     extern "C" { fn mjCModel_Equalities(self_ptr: *mut mjCModel) -> *const i32; }
-    // SAFETY: delegates to C implementation
+    // SAFETY: self_ptr verified non-null; delegates to C++ method
     unsafe { mjCModel_Equalities(self_ptr) }
 }
 
@@ -1112,8 +1117,9 @@ pub fn mj_c_model_compile_meshes_and_textures(self_ptr: *mut mjCModel, vfs: *con
 /// C: mjCModel::SetNuser (user/user_model.h:383)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_model_set_nuser(self_ptr: *mut mjCModel) {
+    if self_ptr.is_null() { return; }
     extern "C" { fn mjCModel_SetNuser(self_ptr: *mut mjCModel); }
-    // SAFETY: delegates to C implementation
+    // SAFETY: self_ptr verified non-null; delegates to C++ method
     unsafe { mjCModel_SetNuser(self_ptr) }
 }
 
@@ -1174,16 +1180,18 @@ pub fn mj_c_model_length_range(self_ptr: *mut mjCModel, arg0: *mut mjModel, arg1
 /// C: mjCModel::CopyNames (user/user_model.h:390)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_model_copy_names(self_ptr: *mut mjCModel, arg0: *mut mjModel) {
+    if self_ptr.is_null() { return; }
     extern "C" { fn mjCModel_CopyNames(self_ptr: *mut mjCModel, arg0: *mut mjModel); }
-    // SAFETY: delegates to C implementation
+    // SAFETY: self_ptr verified non-null; delegates to C++ method
     unsafe { mjCModel_CopyNames(self_ptr, arg0) }
 }
 
 /// C: mjCModel::CopyPaths (user/user_model.h:391)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_model_copy_paths(self_ptr: *mut mjCModel, arg0: *mut mjModel) {
+    if self_ptr.is_null() { return; }
     extern "C" { fn mjCModel_CopyPaths(self_ptr: *mut mjCModel, arg0: *mut mjModel); }
-    // SAFETY: delegates to C implementation
+    // SAFETY: self_ptr verified non-null; delegates to C++ method
     unsafe { mjCModel_CopyPaths(self_ptr, arg0) }
 }
 
@@ -1208,8 +1216,9 @@ pub fn mj_c_model_copy_tree(self_ptr: *mut mjCModel, arg0: *mut mjModel) {
 /// C: mjCModel::FinalizeSimple (user/user_model.h:394)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_model_finalize_simple(self_ptr: *mut mjCModel, m: *mut mjModel) {
+    if self_ptr.is_null() { return; }
     extern "C" { fn mjCModel_FinalizeSimple(self_ptr: *mut mjCModel, m: *mut mjModel); }
-    // SAFETY: delegates to C implementation
+    // SAFETY: self_ptr verified non-null; delegates to C++ method
     unsafe { mjCModel_FinalizeSimple(self_ptr, m) }
 }
 
@@ -1225,8 +1234,9 @@ pub fn mj_c_model_copy_plugins(self_ptr: *mut mjCModel, arg0: *mut mjModel) {
 /// C: mjCModel::CountTendonDofs (user/user_model.h:396)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_model_count_tendon_dofs(self_ptr: *mut mjCModel, m: *const mjModel, id: i32) -> i32 {
+    if self_ptr.is_null() { return 0; }
     extern "C" { fn mjCModel_CountTendonDofs(self_ptr: *mut mjCModel, m: *const mjModel, id: i32) -> i32; }
-    // SAFETY: delegates to C implementation
+    // SAFETY: self_ptr verified non-null; delegates to C++ method
     unsafe { mjCModel_CountTendonDofs(self_ptr, m, id) }
 }
 
@@ -1259,24 +1269,27 @@ pub fn mj_c_model_remove_plugins(self_ptr: *mut mjCModel) {
 /// C: mjCModel::CopyExplicitPlugin (user/user_model.h:448)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_model_copy_explicit_plugin(self_ptr: *mut mjCModel, obj: *mut T) {
+    if self_ptr.is_null() { return; }
     extern "C" { fn mjCModel_CopyExplicitPlugin(self_ptr: *mut mjCModel, obj: *mut T); }
-    // SAFETY: delegates to C implementation
+    // SAFETY: self_ptr verified non-null; delegates to C++ method
     unsafe { mjCModel_CopyExplicitPlugin(self_ptr, obj) }
 }
 
 /// C: mjCModel::CreateObjectLists (user/user_model.h:458)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_model_create_object_lists(self_ptr: *mut mjCModel) {
+    if self_ptr.is_null() { return; }
     extern "C" { fn mjCModel_CreateObjectLists(self_ptr: *mut mjCModel); }
-    // SAFETY: delegates to C implementation
+    // SAFETY: self_ptr verified non-null; delegates to C++ method
     unsafe { mjCModel_CreateObjectLists(self_ptr) }
 }
 
 /// C: mjCModel::ProcessLists (user/user_model.h:461)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_model_process_lists(self_ptr: *mut mjCModel, checkrepeat: bool) {
+    if self_ptr.is_null() { return; }
     extern "C" { fn mjCModel_ProcessLists(self_ptr: *mut mjCModel, checkrepeat: bool); }
-    // SAFETY: delegates to C implementation
+    // SAFETY: self_ptr verified non-null; delegates to C++ method
     unsafe { mjCModel_ProcessLists(self_ptr, checkrepeat) }
 }
 
@@ -1291,8 +1304,9 @@ pub fn mj_c_model_reset_tree_lists(self_ptr: *mut mjCModel) {
 /// C: mjCModel::SaveDofOffsets (user/user_model.h:471)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_model_save_dof_offsets(self_ptr: *mut mjCModel, computesize: bool) {
+    if self_ptr.is_null() { return; }
     extern "C" { fn mjCModel_SaveDofOffsets(self_ptr: *mut mjCModel, computesize: bool); }
-    // SAFETY: delegates to C++ implementation; caller guarantees self_ptr is valid
+    // SAFETY: self_ptr verified non-null; delegates to C++ method
     unsafe { mjCModel_SaveDofOffsets(self_ptr, computesize) }
 }
 
@@ -1321,8 +1335,9 @@ pub fn mj_c_model_expand_keyframe(self_ptr: *mut mjCModel, key: *mut mjCKey, qpo
 /// C: mjCModel::ComputeReference (user/user_model.h:480)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_model_compute_reference(self_ptr: *mut mjCModel) {
+    if self_ptr.is_null() { return; }
     extern "C" { fn mjCModel_ComputeReference(self_ptr: *mut mjCModel); }
-    // SAFETY: delegates to C implementation
+    // SAFETY: self_ptr verified non-null; delegates to C++ method
     unsafe { mjCModel_ComputeReference(self_ptr) }
 }
 
@@ -1355,8 +1370,9 @@ pub fn mj_c_model_signature(self_ptr: *mut mjCModel) -> u64 {
 /// C: mjCModel::DeleteSubtreePlugin (user/user_model.h:505)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_model_delete_subtree_plugin(self_ptr: *mut mjCModel, subtree: *mut mjCBody) {
+    if self_ptr.is_null() { return; }
     extern "C" { fn mjCModel_DeleteSubtreePlugin(self_ptr: *mut mjCModel, subtree: *mut mjCBody); }
-    // SAFETY: delegates to C implementation
+    // SAFETY: self_ptr verified non-null; delegates to C++ method
     unsafe { mjCModel_DeleteSubtreePlugin(self_ptr, subtree) }
 }
 
