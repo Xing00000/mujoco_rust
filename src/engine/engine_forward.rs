@@ -481,8 +481,9 @@ pub fn mj_implicit(m: *const mjModel, d: *mut mjData) {
 /// Calls: flexInterp_cgsolve, flex_has_implicit_stiffness, midpoint, midpoint_aligned, midpoint_eligible, mj_advance, mj_factorI, mj_freeStack, mj_markStack, mj_solveLD, mj_stackAllocInfo, mjd_smooth_vel, mju_add, mju_addInd, mju_addScl, mju_addToScl, mju_copy, mju_copyInd, mju_factorLUSparse, mju_gather, mju_gatherMasked, mju_message, mju_solveLUSparse
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_implicit_skip(m: *const mjModel, d: *mut mjData, skipfactor: i32) {
+    if m.is_null() { return; }
     extern "C" { fn mj_implicitSkip(m: *const mjModel, d: *mut mjData, skipfactor: i32); }
-    // SAFETY: delegates to C implementation, all pointers valid per caller contract
+    // SAFETY: m verified non-null; delegates to C implementation
     unsafe { mj_implicitSkip(m, d, skipfactor) }
 }
 

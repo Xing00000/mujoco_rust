@@ -1487,10 +1487,11 @@ pub fn mjc_ccd_size(iterations: i32) -> usize {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjc_ccd(config: *const mjCCDConfig, status: *mut mjCCDStatus, obj1: *mut mjCCDObj, obj2: *mut mjCCDObj) -> f64 {
+    if config.is_null() { return 0.0; }
     extern "C" {
         fn mjc_ccd(config: *const mjCCDConfig, status: *mut mjCCDStatus, obj1: *mut mjCCDObj, obj2: *mut mjCCDObj) -> f64;
     }
-    // SAFETY: delegates to C implementation, all pointers valid per caller contract
+    // SAFETY: config verified non-null; delegates to C implementation
     unsafe { mjc_ccd(config, status, obj1, obj2) }
 }
 

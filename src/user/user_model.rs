@@ -255,8 +255,9 @@ pub fn getpathslength(list: i32) -> usize {
 /// Calls: mj_setLengthRange
 #[allow(unused_variables, non_snake_case)]
 pub fn l_rfunc(arg: *mut ()) -> *mut () {
+    if arg.is_null() { return core::ptr::null_mut(); }
     extern "C" { fn LRfunc(arg: *mut ()) -> *mut (); }
-    // SAFETY: delegates to C++ implementation; caller guarantees pointer validity
+    // SAFETY: arg verified non-null; delegates to C++ implementation
     unsafe { LRfunc(arg) }
 }
 

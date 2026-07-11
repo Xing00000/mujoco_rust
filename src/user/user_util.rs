@@ -86,8 +86,9 @@ pub fn skip_space(c: *mut i8) -> *mut i8  {
 /// Calls: SkipSpace
 #[allow(unused_variables, non_snake_case)]
 pub fn string_to_vector(cs: *mut i8) -> i32 {
+    if cs.is_null() { return 0; }
     extern "C" { fn StringToVector(cs: *mut i8) -> i32; }
-    // SAFETY: delegates to C implementation
+    // SAFETY: cs verified non-null; delegates to C implementation
     unsafe { StringToVector(cs) }
 }
 

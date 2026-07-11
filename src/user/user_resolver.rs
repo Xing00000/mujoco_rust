@@ -44,8 +44,9 @@ pub fn resolver_apply(self_ptr: *mut Resolver) -> bool {
 /// Calls: mj_defaultOption, mj_defaultVisual, mjs_defaultSpec
 #[allow(unused_variables, non_snake_case)]
 pub fn visit_conflicts(parent: *mut mjSpec, child: *const mjSpec, r: *mut Resolver) {
+    if parent.is_null() { return; }
     extern "C" { fn VisitConflicts(parent: *mut mjSpec, child: *const mjSpec, r: *mut Resolver); }
-    // SAFETY: delegates to C implementation
+    // SAFETY: parent verified non-null; delegates to C implementation
     unsafe { VisitConflicts(parent, child, r) }
 }
 

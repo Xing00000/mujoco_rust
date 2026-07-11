@@ -42,8 +42,9 @@ pub fn log_compile_time(t: *const f64) {
 /// Calls: mjs_firstChild, mjs_getFrame, mjs_nextChild, mjs_setFrame
 #[allow(unused_variables, non_snake_case)]
 pub fn set_frame(body: *mut mjsBody, objtype: mjtObj, frame: *mut mjsFrame) {
+    if body.is_null() { return; }
     extern "C" { fn SetFrame(body: *mut mjsBody, objtype: mjtObj, frame: *mut mjsFrame); }
-    // SAFETY: delegates to C implementation
+    // SAFETY: body verified non-null; delegates to C implementation
     unsafe { SetFrame(body, objtype, frame) }
 }
 

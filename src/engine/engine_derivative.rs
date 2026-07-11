@@ -534,8 +534,9 @@ pub fn mjd_actuator_vel(m: *const mjModel, d: *mut mjData) {
 /// Calls: addJTBJSparse, mj_actuatorDamping, mjd_ellipsoidFluid, mjd_inertiaBoxFluid, mjd_xPolyForce, mju_copy
 #[allow(unused_variables, non_snake_case)]
 pub fn mjd_passive_vel(m: *const mjModel, d: *mut mjData) {
+    if m.is_null() { return; }
     extern "C" { fn mjd_passive_vel(m: *const mjModel, d: *mut mjData); }
-    // SAFETY: delegates to C implementation, pointers valid per caller
+    // SAFETY: m verified non-null; delegates to C implementation
     unsafe { mjd_passive_vel(m, d) }
 }
 

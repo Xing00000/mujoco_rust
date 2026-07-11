@@ -228,8 +228,9 @@ pub fn step_gradient(x: *mut f64, m: *const mjModel, s: *const mjSDF, d: *const 
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn triangle_intersect(triangle: *const f64, m: *const mjModel, sdf: *const mjSDF, d: *const mjData) -> i32  {
+    if triangle.is_null() { return 0; }
     extern "C" { fn triangleIntersect(triangle: *const f64, m: *const mjModel, sdf: *const mjSDF, d: *const mjData) -> i32; }
-    // SAFETY: delegates to C implementation
+    // SAFETY: triangle verified non-null; delegates to C implementation
     unsafe { triangleIntersect(triangle, m, sdf, d) }
 }
 
@@ -242,8 +243,9 @@ pub fn triangle_intersect(triangle: *const f64, m: *const mjModel, sdf: *const m
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn box_intersect(bvh: *const f64, offset: *const f64, rotation: *const f64, m: *const mjModel, s: *const mjSDF, d: *const mjData) -> i32  {
+    if bvh.is_null() { return 0; }
     extern "C" { fn boxIntersect(bvh: *const f64, offset: *const f64, rotation: *const f64, m: *const mjModel, s: *const mjSDF, d: *const mjData) -> i32; }
-    // SAFETY: delegates to C implementation
+    // SAFETY: bvh verified non-null; delegates to C implementation
     unsafe { boxIntersect(bvh, offset, rotation, m, s, d) }
 }
 
@@ -359,10 +361,11 @@ pub fn mjc_distance(m: *const mjModel, d: *const mjData, s: *const mjSDF, x: *co
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjc_gradient(m: *const mjModel, d: *const mjData, s: *const mjSDF, gradient: *mut f64, x: *const f64) {
+    if m.is_null() { return; }
     extern "C" {
         fn mjc_gradient(m: *const mjModel, d: *const mjData, s: *const mjSDF, gradient: *mut f64, x: *const f64);
     }
-    // SAFETY: delegates to C implementation, all pointers valid per caller contract
+    // SAFETY: m verified non-null; delegates to C implementation
     unsafe { mjc_gradient(m, d, s, gradient, x) }
 }
 

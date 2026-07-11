@@ -22,8 +22,9 @@ pub fn f2f(dest: *mut f32, src: *const f32, n: i32) {
 /// Calls: mj_id2name, mju_type2Str
 #[allow(unused_variables, non_snake_case)]
 pub fn make_label(m: *const mjModel, r#type: mjtObj, id: i32, label: *mut i8) {
+    if m.is_null() { return; }
     extern "C" { fn makeLabel(m: *const mjModel, r#type: mjtObj, id: i32, label: *mut i8); }
-    // SAFETY: delegates to C implementation; caller guarantees m and label are valid
+    // SAFETY: m verified non-null; delegates to C implementation
     unsafe { makeLabel(m, r#type, id, label) }
 }
 
@@ -123,8 +124,9 @@ pub fn set_material(m: *const mjModel, geom: *mut mjvGeom, matid: i32, rgba: *co
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn add_connector(scn: *mut mjvScene, r#type: i32, width: f64, from: *const f64, to: *const f64, rgba: [f32; 4], objid: i32, category: i32, objtype: i32) {
+    if scn.is_null() { return; }
     extern "C" { fn addConnector(scn: *mut mjvScene, r#type: i32, width: f64, from: *const f64, to: *const f64, rgba: [f32; 4], objid: i32, category: i32, objtype: i32); }
-    // SAFETY: delegates to C implementation
+    // SAFETY: scn verified non-null; delegates to C implementation
     unsafe { addConnector(scn, r#type, width, from, to, rgba, objid, category, objtype) }
 }
 
@@ -250,8 +252,9 @@ pub fn add_site_frame_geoms(m: *const mjModel, d: *mut mjData, vopt: *const mjvO
 /// Calls: acquireGeom, mju_addTo3, mju_mulMatVec3, mjv_initGeom, releaseGeom
 #[allow(unused_variables, non_snake_case)]
 pub fn add_body_bvh_geoms(m: *const mjModel, d: *mut mjData, vopt: *const mjvOption, scn: *mut mjvScene) {
+    if m.is_null() { return; }
     extern "C" { fn addBodyBvhGeoms(m: *const mjModel, d: *mut mjData, vopt: *const mjvOption, scn: *mut mjvScene); }
-    // SAFETY: delegates to C implementation, pointers valid per caller contract
+    // SAFETY: m verified non-null; delegates to C implementation
     unsafe { addBodyBvhGeoms(m, d, vopt, scn) }
 }
 

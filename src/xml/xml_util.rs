@@ -253,8 +253,9 @@ pub fn mj_x_util_read_attr_str(elem: *mut tinyxml2__XMLElement, attr: *const i8,
 /// Calls: ResolveFilePath
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_x_util_read_attr_file(elem: *mut tinyxml2__XMLElement, attr: *const i8, vfs: *const mjVFS, dir: *const mujoco__user__FilePath, required: bool) -> *const () {
+    if elem.is_null() { return core::ptr::null(); }
     extern "C" { fn mjXUtil_ReadAttrFile(elem: *mut tinyxml2__XMLElement, attr: *const i8, vfs: *const mjVFS, dir: *const mujoco__user__FilePath, required: bool) -> *const (); }
-    // SAFETY: delegates to C implementation
+    // SAFETY: elem verified non-null; delegates to C implementation
     unsafe { mjXUtil_ReadAttrFile(elem, attr, vfs, dir, required) }
 }
 

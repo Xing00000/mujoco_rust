@@ -394,10 +394,11 @@ pub fn update_bracket(ctx: *mut mjPrimalContext, p: *mut mjPrimalPnt, candidates
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn primal_search(ctx: *mut mjPrimalContext, tolerance: f64, ls_iterations: f64, improvement: *mut f64) -> f64 {
+    if ctx.is_null() { return 0.0; }
     extern "C" {
         fn PrimalSearch(ctx: *mut mjPrimalContext, tolerance: f64, ls_iterations: f64, improvement: *mut f64) -> f64;
     }
-    // SAFETY: delegates to C implementation, all pointers valid per caller contract
+    // SAFETY: ctx verified non-null; delegates to C implementation
     unsafe { PrimalSearch(ctx, tolerance, ls_iterations, improvement) }
 }
 
@@ -435,10 +436,10 @@ pub fn factorize_hessian(d: *mut mjData, ctx: *mut mjPrimalContext, flg_recomput
 /// Calls: FactorizeHessian, HessianCone, mju_cholUpdate, mju_cholUpdateSparse, mju_scl
 #[allow(unused_variables, non_snake_case)]
 pub fn hessian_incremental(d: *mut mjData, ctx: *mut mjPrimalContext, oldstate: *const i32) {
-    // WARNING: signature changed — verify body
-    // Previous params: (d : * mut mjData, ctx : * mut mjPrimalContext, oldstate : * const i32)
-    // Previous return: ()
-    extern "C" { fn HessianIncremental(d : * mut mjData , ctx : * mut mjPrimalContext , oldstate : * const i32) ; } unsafe { HessianIncremental(d , ctx , oldstate) }
+    if d.is_null() { return; }
+    extern "C" { fn HessianIncremental(d: *mut mjData, ctx: *mut mjPrimalContext, oldstate: *const i32); }
+    // SAFETY: d verified non-null; delegates to C implementation
+    unsafe { HessianIncremental(d, ctx, oldstate) }
 }
 
 /// C: mj_solPrimal (engine/engine_solver.c:2297)

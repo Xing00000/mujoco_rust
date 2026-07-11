@@ -32,8 +32,9 @@ pub fn contact_select(arr: *mut ContactInfo, buf: *mut ContactInfo, n: i32, k: i
 /// Calls: mjc_distance, mjc_getSDF, mju_addTo3, mju_dot3, mju_max, mju_min, mju_mulMatTVec3, mju_mulMatVec3, mju_quat2Mat, mju_rotVecQuat, mju_sub3, mju_transformSpatial
 #[allow(unused_variables, non_snake_case)]
 pub fn tactile_taxel_batch(m: *const mjModel, d: *mut mjData, args: *mut ()) -> *mut () {
+    if m.is_null() { return core::ptr::null_mut(); }
     extern "C" { fn tactile_taxel_batch(m: *const mjModel, d: *mut mjData, args: *mut ()) -> *mut (); }
-    // SAFETY: delegates to C implementation, all pointers valid per caller contract
+    // SAFETY: m verified non-null; delegates to C implementation
     unsafe { tactile_taxel_batch(m, d, args) }
 }
 

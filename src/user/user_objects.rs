@@ -2911,8 +2911,9 @@ pub fn mj_c_mesh_set_bounding_volume(self_ptr: *mut mjCMesh, faceid: i32, dvert:
 /// Calls: mjCMesh::IsMSH, mjCMesh::LoadFromDecoder, mjCMesh::LoadMSH
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_mesh_load_from_resource(self_ptr: *mut mjCMesh, resource: *mut mjResource, remove_repeated: bool) {
+    if self_ptr.is_null() { return; }
     extern "C" { fn mjCMesh_LoadFromResource(self_ptr: *mut mjCMesh, resource: *mut mjResource, remove_repeated: bool); }
-    // SAFETY: delegates to C implementation
+    // SAFETY: self_ptr verified non-null; delegates to C implementation
     unsafe { mjCMesh_LoadFromResource(self_ptr, resource, remove_repeated) }
 }
 
@@ -2929,10 +2930,10 @@ pub fn mj_c_mesh_is_msh(filename: string_view, ct: string_view) -> bool {
 /// Calls: mjCMesh::CheckInitialMesh, mjCMesh::CopyFromSpec, mjCMesh::LoadSDF, mjCMesh::Process, mj_getCache
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_mesh_try_compile(self_ptr: *mut mjCMesh, vfs: *const mjVFS) {
-    // WARNING: signature changed — verify body
-    // Previous params: (self_ptr : * mut mjCMesh, vfs : * const mjVFS)
-    // Previous return: ()
-    extern "C" { fn mjCMesh_TryCompile (self_ptr : * mut mjCMesh , vfs : * const mjVFS) ; } unsafe { mjCMesh_TryCompile (self_ptr , vfs) }
+    if self_ptr.is_null() { return; }
+    extern "C" { fn mjCMesh_TryCompile(self_ptr: *mut mjCMesh, vfs: *const mjVFS); }
+    // SAFETY: self_ptr verified non-null; delegates to C implementation
+    unsafe { mjCMesh_TryCompile(self_ptr, vfs) }
 }
 
 /// C: mjCMesh::LoadCachedMesh (user/user_objects.h:1268)
