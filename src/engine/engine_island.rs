@@ -57,10 +57,11 @@ pub fn tree_iter_init(m: *const mjModel, d: *const mjData, i: i32, iter: *mut mj
 /// Calls: addEdge, mju_message, mju_zeroInt, treeIterInit, treeNext
 #[allow(unused_variables, non_snake_case)]
 pub fn find_edges(m: *const mjModel, d: *const mjData, rownnz: *mut i32, colind: *mut i32, tree_tree: *mut u8, efc_tree: *mut i32, ntree: i32) -> i32 {
+    if m.is_null() { return 0; }
     extern "C" {
         fn findEdges(m: *const mjModel, d: *const mjData, rownnz: *mut i32, colind: *mut i32, tree_tree: *mut u8, efc_tree: *mut i32, ntree: i32) -> i32;
     }
-    // SAFETY: delegates to C implementation, all pointers valid per caller contract
+    // SAFETY: m verified non-null; delegates to C implementation
     unsafe { findEdges(m, d, rownnz, colind, tree_tree, efc_tree, ntree) }
 }
 

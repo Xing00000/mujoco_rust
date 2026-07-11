@@ -44,10 +44,11 @@ pub fn cell_strain_jacobian(npc: i32, cell_nnz: i32, dSdx_local: *const f64, cel
 /// Calls: mj_arenaAllocByte, mj_clearEfc, mj_warning
 #[allow(unused_variables, non_snake_case)]
 pub fn arena_alloc_efc(m: *const mjModel, d: *mut mjData) -> i32 {
+    if m.is_null() { return 0; }
     extern "C" {
         fn arenaAllocEfc(m: *const mjModel, d: *mut mjData) -> i32;
     }
-    // SAFETY: delegates to C implementation, all pointers valid per caller contract
+    // SAFETY: m verified non-null; delegates to C implementation
     unsafe { arenaAllocEfc(m, d) }
 }
 
@@ -96,10 +97,11 @@ pub fn mj_vert_body_weight(m: *const mjModel, d: *const mjData, f: i32, v: *mut 
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_add_constraint(m: *const mjModel, d: *mut mjData, jac: *const f64, pos: *const f64, margin: *const f64, frictionloss: f64, size: i32, r#type: i32, id: i32, NV: i32, chain: *const i32) {
+    if m.is_null() { return; }
     extern "C" {
         fn mj_addConstraint(m: *const mjModel, d: *mut mjData, jac: *const f64, pos: *const f64, margin: *const f64, frictionloss: f64, size: i32, r#type: i32, id: i32, NV: i32, chain: *const i32);
     }
-    // SAFETY: delegates to C implementation, all pointers valid per caller contract
+    // SAFETY: m verified non-null; delegates to C implementation
     unsafe { mj_addConstraint(m, d, jac, pos, margin, frictionloss, size, r#type, id, NV, chain) }
 }
 
@@ -211,8 +213,9 @@ pub fn power(a: f64, b: f64) -> f64  {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn getimpedance(solimp: *const f64, pos: f64, margin: f64, imp: *mut f64, impP: *mut f64) {
+    if solimp.is_null() { return; }
     extern "C" { fn getimpedance(solimp: *const f64, pos: f64, margin: f64, imp: *mut f64, impP: *mut f64); }
-    // SAFETY: delegates to C implementation
+    // SAFETY: solimp verified non-null; delegates to C implementation
     unsafe { getimpedance(solimp, pos, margin, imp, impP) }
 }
 
@@ -220,8 +223,9 @@ pub fn getimpedance(solimp: *const f64, pos: f64, margin: f64, imp: *mut f64, im
 /// Calls: mj_bodyChain, mj_freeStack, mj_markStack, mj_stackAllocInfo, mju_addChains, mju_copyInt
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_jac_sum_count(m: *const mjModel, d: *mut mjData, chain: *mut i32, n: i32, body: *const i32) -> i32  {
+    if m.is_null() { return 0; }
     extern "C" { fn mj_jacSumCount(m: *const mjModel, d: *mut mjData, chain: *mut i32, n: i32, body: *const i32) -> i32; }
-    // SAFETY: delegates to C implementation
+    // SAFETY: m verified non-null; delegates to C implementation
     unsafe { mj_jacSumCount(m, d, chain, n, body) }
 }
 
@@ -295,10 +299,11 @@ pub fn compute_y_backsub(Y: *mut f64, Y_rownnz: *const i32, Y_rowadr: *const i32
 /// Calls: computeY_backsub, computeY_fill, computeY_precount, mj_arenaAllocByte, mj_clearEfc, mj_freeStack, mj_isSparse, mj_markStack, mj_solveM2, mj_stackAllocInfo, mj_warning, mju_dot
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_make_y(m: *const mjModel, d: *mut mjData, flg_diagexact: i32) {
+    if m.is_null() { return; }
     extern "C" {
         fn mj_makeY(m: *const mjModel, d: *mut mjData, flg_diagexact: i32);
     }
-    // SAFETY: delegates to C implementation, all pointers valid per caller contract
+    // SAFETY: m verified non-null; delegates to C implementation
     unsafe { mj_makeY(m, d, flg_diagexact) }
 }
 

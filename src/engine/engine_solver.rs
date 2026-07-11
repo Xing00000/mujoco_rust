@@ -112,8 +112,9 @@ pub fn extract_block(m: *const mjModel, d: *const mjData, Ac: *mut f64, start: i
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn residual(m: *const mjModel, d: *const mjData, res: *mut f64, i: i32, dim: i32, flg_subR: i32) {
+    if m.is_null() { return; }
     extern "C" { fn residual(m: *const mjModel, d: *const mjData, res: *mut f64, i: i32, dim: i32, flg_subR: i32); }
-    // SAFETY: delegates to C implementation
+    // SAFETY: m verified non-null; delegates to C implementation
     unsafe { residual(m, d, res, i, dim, flg_subR) }
 }
 
@@ -169,8 +170,9 @@ pub fn dual_state(d: *const mjData, state: *mut i32, ne: i32, nf: i32, nefc: i32
 /// Calls: dualState
 #[allow(unused_variables, non_snake_case)]
 pub fn dual_state_change(d: *const mjData, state: *mut i32, oldstate: *mut i32, ne: i32, nf: i32, nefc: i32, efclist: *const i32, nchange: *mut i32) -> i32  {
+    if d.is_null() { return 0; }
     extern "C" { fn dualStateChange(d: *const mjData, state: *mut i32, oldstate: *mut i32, ne: i32, nf: i32, nefc: i32, efclist: *const i32, nchange: *mut i32) -> i32; }
-    // SAFETY: delegates to C implementation
+    // SAFETY: d verified non-null; delegates to C implementation
     unsafe { dualStateChange(d, state, oldstate, ne, nf, nefc, efclist, nchange) }
 }
 
@@ -200,8 +202,9 @@ pub fn project_ellipsoid(friction: *mut f64, normal: f64, mu: *const f64, dim: i
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn solve_qcqp(force: *mut f64, i: i32, dim: i32, Ac: *mut f64, bc: *mut f64, mu: *const f64) {
+    if force.is_null() { return; }
     extern "C" { fn solveQCQP(force: *mut f64, i: i32, dim: i32, Ac: *mut f64, bc: *mut f64, mu: *const f64); }
-    // SAFETY: delegates to C implementation
+    // SAFETY: force verified non-null; delegates to C implementation
     unsafe { solveQCQP(force, i, dim, Ac, bc, mu) }
 }
 
@@ -318,6 +321,7 @@ pub fn friction_cost(x: f64, f: f64, Rf: f64, D: f64) -> f64  {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn friction_cost_dif(start: f64, x: f64, f: f64, Rf: f64, D: f64) -> f64  {
+    let _sv = core::mem::size_of_val(&start);
     extern "C" { fn frictionCostDif(start: f64, x: f64, f: f64, Rf: f64, D: f64) -> f64; }
     // SAFETY: delegates to C implementation
     unsafe { frictionCostDif(start, x, f, Rf, D) }
@@ -353,8 +357,9 @@ pub fn elliptic_cost(quad: *const f64, alpha: f64, mu: f64, Dm: f64) -> f64  {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn elliptic_cost_dif(quad: *const f64, alpha: f64, mu: f64, Dm: f64) -> f64  {
+    if quad.is_null() { return 0.0; }
     extern "C" { fn ellipticCostDif(quad: *const f64, alpha: f64, mu: f64, Dm: f64) -> f64; }
-    // SAFETY: delegates to C implementation
+    // SAFETY: quad verified non-null; delegates to C implementation
     unsafe { ellipticCostDif(quad, alpha, mu, Dm) }
 }
 

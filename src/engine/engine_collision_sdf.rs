@@ -50,8 +50,9 @@ pub fn find_oct(w: *mut f64, dw: [[f64; 8]; 3], oct_aabb: *const f64, oct_child:
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn oct_distance(m: *const mjModel, p: *const f64, meshid: i32) -> f64  {
+    if m.is_null() { return 0.0; }
     extern "C" { fn oct_distance(m: *const mjModel, p: *const f64, meshid: i32) -> f64; }
-    // SAFETY: delegates to C implementation
+    // SAFETY: m verified non-null; delegates to C implementation
     unsafe { oct_distance(m, p, meshid) }
 }
 

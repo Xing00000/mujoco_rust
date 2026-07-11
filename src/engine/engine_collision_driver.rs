@@ -171,8 +171,9 @@ pub fn filter_sphere(pos1: *const f64, pos2: *const f64, bound: f64) -> i32 {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_filter_sphere(m: *const mjModel, d: *mut mjData, g1: i32, g2: i32, margin: f64) -> i32  {
+    if m.is_null() { return 0; }
     extern "C" { fn mj_filterSphere(m: *const mjModel, d: *mut mjData, g1: i32, g2: i32, margin: f64) -> i32; }
-    // SAFETY: delegates to C implementation
+    // SAFETY: m verified non-null; delegates to C implementation
     unsafe { mj_filterSphere(m, d, g1, g2, margin) }
 }
 
@@ -253,8 +254,9 @@ pub fn mj_narrowphase(m: *const mjModel, d: *mut mjData, buffer: *const mjcPair,
 /// Calls: mj_addContact, mj_assignMargin, mj_contactParam, mj_setContact, mju_addScl3, mju_copy3, mju_dot3, mju_zero3
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_collide_plane_flex(m: *const mjModel, d: *mut mjData, g: i32, f: i32) {
+    if m.is_null() { return; }
     extern "C" { fn mj_collidePlaneFlex(m: *const mjModel, d: *mut mjData, g: i32, f: i32); }
-    // SAFETY: delegates to C implementation
+    // SAFETY: m verified non-null; delegates to C implementation
     unsafe { mj_collidePlaneFlex(m, d, g, f) }
 }
 
@@ -294,8 +296,9 @@ pub fn contactcompare(c1: *const mjContact, c2: *const mjContact, context: *mut 
 /// Calls: contactcompare
 #[allow(unused_variables, non_snake_case)]
 pub fn contact_sort(arr: *mut mjContact, buf: *mut mjContact, n: i32, context: *mut ()) {
+    if arr.is_null() { return; }
     extern "C" { fn contactSort(arr: *mut mjContact, buf: *mut mjContact, n: i32, context: *mut ()); }
-    // SAFETY: delegates to C implementation
+    // SAFETY: arr verified non-null; delegates to C implementation
     unsafe { contactSort(arr, buf, n, context) }
 }
 
@@ -303,8 +306,9 @@ pub fn contact_sort(arr: *mut mjContact, buf: *mut mjContact, n: i32, context: *
 /// Calls: mj_freeStack, mj_markStack, mj_stackAllocInfo, resetArena
 #[allow(unused_variables, non_snake_case)]
 pub fn filter_flex_contacts(d: *mut mjData, ncon_before: i32) {
+    if d.is_null() { return; }
     extern "C" { fn filterFlexContacts(d: *mut mjData, ncon_before: i32); }
-    // SAFETY: delegates to C implementation
+    // SAFETY: d verified non-null; delegates to C implementation
     unsafe { filterFlexContacts(d, ncon_before) }
 }
 

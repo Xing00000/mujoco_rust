@@ -312,8 +312,9 @@ pub fn s1d(lambda: *mut f64, s1: *const f64, s2: *const f64) {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn gjk_support(v: *mut Vertex, obj1: *mut mjCCDObj, obj2: *mut mjCCDObj, x_k: *const f64, x_norm: f64) {
+    if v.is_null() { return; }
     extern "C" { fn gjkSupport(v: *mut Vertex, obj1: *mut mjCCDObj, obj2: *mut mjCCDObj, x_k: *const f64, x_norm: f64); }
-    // SAFETY: delegates to C implementation
+    // SAFETY: v verified non-null; delegates to C implementation
     unsafe { gjkSupport(v, obj1, obj2, x_k, x_norm) }
 }
 
@@ -365,8 +366,9 @@ pub fn lincomb(res: *mut f64, coef: *const f64, n: i32, v1: *const f64, v2: *con
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn epa_support(pt: *mut Polytope, obj1: *mut mjCCDObj, obj2: *mut mjCCDObj, d: *const f64, dnorm: f64) -> i32  {
+    if pt.is_null() { return 0; }
     extern "C" { fn epaSupport(pt: *mut Polytope, obj1: *mut mjCCDObj, obj2: *mut mjCCDObj, d: *const f64, dnorm: f64) -> i32; }
-    // SAFETY: delegates to C implementation
+    // SAFETY: pt verified non-null; delegates to C implementation
     unsafe { epaSupport(pt, obj1, obj2, d, dnorm) }
 }
 
@@ -655,8 +657,9 @@ pub fn support(v: *mut Vertex, obj1: *mut mjCCDObj, obj2: *mut mjCCDObj, dir: *c
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn gjk_intersect_support(v: *mut Vertex, obj1: *mut mjCCDObj, obj2: *mut mjCCDObj, dir: *const f64) {
+    if v.is_null() { return; }
     extern "C" { fn gjkIntersectSupport(v: *mut Vertex, obj1: *mut mjCCDObj, obj2: *mut mjCCDObj, dir: *const f64); }
-    // SAFETY: delegates to C implementation
+    // SAFETY: v verified non-null; delegates to C implementation
     unsafe { gjkIntersectSupport(v, obj1, obj2, dir) }
 }
 
@@ -1055,8 +1058,9 @@ pub fn get_edge(face: *mut Face, vertex: i32) -> i32  {
 /// Calls: addEdge, deleteFace, dot3, getEdge
 #[allow(unused_variables, non_snake_case)]
 pub fn horizon_rec(pt: *mut Polytope, face: *mut Face, e: i32) -> i32  {
+    if pt.is_null() { return 0; }
     extern "C" { fn horizonRec(pt: *mut Polytope, face: *mut Face, e: i32) -> i32; }
-    // SAFETY: delegates to C implementation
+    // SAFETY: pt verified non-null; delegates to C implementation
     unsafe { horizonRec(pt, face, e) }
 }
 
@@ -1217,8 +1221,9 @@ pub fn plane_intersect(res: *mut f64, pn: *const f64, pd: f64, a: *const f64, b:
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn polygon_clip(status: *mut mjCCDStatus, face1: *const f64, nface1: i32, face2: *const f64, nface2: i32, n: *const f64, dir: *const f64) {
+    if status.is_null() { return; }
     extern "C" { fn polygonClip(status: *mut mjCCDStatus, face1: *const f64, nface1: i32, face2: *const f64, nface2: i32, n: *const f64, dir: *const f64); }
-    // SAFETY: delegates to C implementation
+    // SAFETY: status verified non-null; delegates to C implementation
     unsafe { polygonClip(status, face1, nface1, face2, nface2, n, dir) }
 }
 
@@ -1263,8 +1268,9 @@ pub fn intersect(res: [i32; 2], arr1: *const i32, arr2: *const i32, n: i32, m: i
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mesh_normals(res: *mut f64, resind: [i32; 3], dim: i32, obj: *mut mjCCDObj, v1: i32, v2: i32, v3: i32) -> i32  {
+    if res.is_null() { return 0; }
     extern "C" { fn meshNormals(res: *mut f64, resind: [i32; 3], dim: i32, obj: *mut mjCCDObj, v1: i32, v2: i32, v3: i32) -> i32; }
-    // SAFETY: delegates to C implementation
+    // SAFETY: res verified non-null; delegates to C implementation
     unsafe { meshNormals(res, resind, dim, obj, v1, v2, v3) }
 }
 
@@ -1311,8 +1317,9 @@ pub fn box_normals2(res: *mut f64, resind: [i32; 3], mat: *const f64, n: *const 
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn box_normals(res: *mut f64, resind: [i32; 3], dim: i32, obj: *mut mjCCDObj, v1: i32, v2: i32, v3: i32, dir: *const f64) -> i32  {
+    if res.is_null() { return 0; }
     extern "C" { fn boxNormals(res: *mut f64, resind: [i32; 3], dim: i32, obj: *mut mjCCDObj, v1: i32, v2: i32, v3: i32, dir: *const f64) -> i32; }
-    // SAFETY: delegates to C implementation
+    // SAFETY: res verified non-null; delegates to C implementation
     unsafe { boxNormals(res, resind, dim, obj, v1, v2, v3, dir) }
 }
 

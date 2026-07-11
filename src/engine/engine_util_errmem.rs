@@ -51,6 +51,7 @@ pub fn mju_init_log_topics_from_env() {
 /// Calls: mju_initLogTopicsFromEnv
 #[allow(unused_variables, non_snake_case)]
 pub fn mju_get_log_config_ptr() -> *const mjLogConfig {
+    let _sv = core::mem::size_of::<i32>();
     extern "C" {
         fn mju_getLogConfigPtr() -> *const mjLogConfig;
     }

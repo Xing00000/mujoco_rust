@@ -57,8 +57,9 @@ pub fn clamp_vec(vec: *mut f64, range: *const f64, limited: *const mjtBool, n: i
 /// Calls: mj_constraintUpdate, mj_freeStack, mj_isSparse, mj_markStack, mj_mulJacVec, mj_mulM, mj_stackAllocInfo, mju_copy, mju_dot, mju_mulMatVec, mju_mulMatVecSparse, mju_subFrom, mju_zero
 #[allow(unused_variables, non_snake_case)]
 pub fn warmstart(m: *const mjModel, d: *mut mjData) {
+    if m.is_null() { return; }
     extern "C" { fn warmstart(m: *const mjModel, d: *mut mjData); }
-    // SAFETY: delegates to C implementation
+    // SAFETY: m verified non-null; delegates to C implementation
     unsafe { warmstart(m, d) }
 }
 

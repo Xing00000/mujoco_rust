@@ -43,8 +43,9 @@ pub fn is_smaller(vec: *const f64, weight: *const f64, n: i32, tol: f64) -> i32 
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn tree_can_sleep(m: *const mjModel, d: *const mjData, i: i32, tol: f64) -> i32  {
+    if m.is_null() { return 0; }
     extern "C" { fn treeCanSleep(m: *const mjModel, d: *const mjData, i: i32, tol: f64) -> i32; }
-    // SAFETY: delegates to C implementation
+    // SAFETY: m verified non-null; delegates to C implementation
     unsafe { treeCanSleep(m, d, i, tol) }
 }
 

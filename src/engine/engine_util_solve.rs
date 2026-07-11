@@ -154,7 +154,10 @@ pub fn mju_chol_factor_symbolic(L_colind: *mut i32, L_rownnz: *mut i32, L_rowadr
     // WARNING: signature changed — verify body
     // Previous params: (L_colind : * mut i32, L_rownnz : * mut i32, L_rowadr : * mut i32, LT_colind : * mut i32, LT_rownnz : * mut i32, LT_rowadr : * mut i32, LT_map : * mut i32, rownnz : * const i32, rowadr : * const i32, colind : * const i32, n : i32, d : * mut mjData)
     // Previous return: i32
-    extern "C" { fn mju_cholFactorSymbolic(L_colind : * mut i32 , L_rownnz : * mut i32 , L_rowadr : * mut i32 , LT_colind : * mut i32 , LT_rownnz : * mut i32 , LT_rowadr : * mut i32 , LT_map : * mut i32 , rownnz : * const i32 , rowadr : * const i32 , colind : * const i32 , n : i32 , d : * mut mjData) -> i32 ; } unsafe { mju_cholFactorSymbolic(L_colind , L_rownnz , L_rowadr , LT_colind , LT_rownnz , LT_rowadr , LT_map , rownnz , rowadr , colind , n , d) }
+    if L_colind.is_null() { return 0; }
+    extern "C" { fn mju_cholFactorSymbolic(L_colind: *mut i32, L_rownnz: *mut i32, L_rowadr: *mut i32, LT_colind: *mut i32, LT_rownnz: *mut i32, LT_rowadr: *mut i32, LT_map: *mut i32, rownnz: *const i32, rowadr: *const i32, colind: *const i32, n: i32, d: *mut mjData) -> i32; }
+    // SAFETY: L_colind verified non-null; delegates to C implementation
+    unsafe { mju_cholFactorSymbolic(L_colind, L_rownnz, L_rowadr, LT_colind, LT_rownnz, LT_rowadr, LT_map, rownnz, rowadr, colind, n, d) }
 }
 
 /// C: mju_cholFactorNumeric (engine/engine_util_solve.h:53)

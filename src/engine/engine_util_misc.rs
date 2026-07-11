@@ -159,8 +159,9 @@ pub fn history_find_index(times: *const f64, n: i32, cursor: i32, t: f64) -> i32
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mju_wrap(wpnt: *mut f64, x0: *const f64, x1: *const f64, xpos: *const f64, xmat: *const f64, radius: f64, r#type: i32, side: *const f64) -> f64  {
+    if wpnt.is_null() { return 0.0; }
     extern "C" { fn mju_wrap(wpnt: *mut f64, x0: *const f64, x1: *const f64, xpos: *const f64, xmat: *const f64, radius: f64, r#type: i32, side: *const f64) -> f64; }
-    // SAFETY: delegates to C implementation
+    // SAFETY: wpnt verified non-null; delegates to C implementation
     unsafe { mju_wrap(wpnt, x0, x1, xpos, xmat, radius, r#type, side) }
 }
 

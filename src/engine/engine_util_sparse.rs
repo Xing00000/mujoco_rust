@@ -430,10 +430,11 @@ pub fn mju_sqr_mat_td_sparse_count(res_rownnz: *mut i32, res_rowadr: *mut i32, n
 /// Calls: mj_freeStack, mj_markStack, mj_stackAllocInfo, mju_copyInt, mju_zeroInt
 #[allow(unused_variables, non_snake_case)]
 pub fn mju_sqr_mat_td_sparse_symbolic(res_rownnz: *mut i32, res_rowadr: *mut i32, res_colind: *mut i32, res_diagind: *mut i32, nr: i32, nc: i32, rownnz: *const i32, rowadr: *const i32, colind: *const i32, rownnzT: *const i32, rowadrT: *const i32, colindT: *const i32, rowsuperT: *const i32, d: *mut mjData) -> i32 {
+    if res_rownnz.is_null() { return 0; }
     extern "C" {
         fn mju_sqrMatTDSparseSymbolic(res_rownnz: *mut i32, res_rowadr: *mut i32, res_colind: *mut i32, res_diagind: *mut i32, nr: i32, nc: i32, rownnz: *const i32, rowadr: *const i32, colind: *const i32, rownnzT: *const i32, rowadrT: *const i32, colindT: *const i32, rowsuperT: *const i32, d: *mut mjData) -> i32;
     }
-    // SAFETY: delegates to C implementation, all pointers valid per caller contract
+    // SAFETY: res_rownnz verified non-null; delegates to C implementation
     unsafe { mju_sqrMatTDSparseSymbolic(res_rownnz, res_rowadr, res_colind, res_diagind, nr, nc, rownnz, rowadr, colind, rownnzT, rowadrT, colindT, rowsuperT, d) }
 }
 
