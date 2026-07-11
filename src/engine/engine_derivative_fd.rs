@@ -72,8 +72,9 @@ pub fn clamped_diff(dx: *mut f64, x: *const f64, x_plus: *const f64, x_minus: *c
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn clamped_state_diff(m: *const mjModel, ds: *mut f64, s: *const f64, s_plus: *const f64, s_minus: *const f64, h: f64) {
+    if m.is_null() { return; }
     extern "C" { fn clampedStateDiff(m: *const mjModel, ds: *mut f64, s: *const f64, s_plus: *const f64, s_minus: *const f64, h: f64); }
-    // SAFETY: delegates to C implementation
+    // SAFETY: m verified non-null; delegates to C implementation
     unsafe { clampedStateDiff(m, ds, s, s_plus, s_minus, h) }
 }
 

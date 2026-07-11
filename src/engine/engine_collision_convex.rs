@@ -1496,8 +1496,9 @@ pub fn mjc_convex(m: *const mjModel, d: *mut mjData, con: *mut mjPreContact, g1:
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjc_convex_elem(m: *const mjModel, d: *mut mjData, con: *mut mjPreContact, g1: i32, f1: i32, e1: i32, v1: i32, f2: i32, e2: i32, margin: f64) -> i32 {
+    if m.is_null() { return 0; }
     extern "C" { fn mjc_ConvexElem(m: *const mjModel, d: *mut mjData, con: *mut mjPreContact, g1: i32, f1: i32, e1: i32, v1: i32, f2: i32, e2: i32, margin: f64) -> i32; }
-    // SAFETY: delegates to C implementation, all pointers valid per caller contract
+    // SAFETY: m verified non-null; delegates to C implementation, all pointers valid per caller contract
     unsafe { mjc_ConvexElem(m, d, con, g1, f1, e1, v1, f2, e2, margin) }
 }
 
@@ -1510,8 +1511,9 @@ pub fn mjc_convex_elem(m: *const mjModel, d: *mut mjData, con: *mut mjPreContact
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjc_h_field_elem(m: *const mjModel, d: *mut mjData, con: *mut mjPreContact, g: i32, f: i32, e: i32, margin: f64) -> i32 {
+    if m.is_null() { return 0; }
     extern "C" { fn mjc_HFieldElem(m: *const mjModel, d: *mut mjData, con: *mut mjPreContact, g: i32, f: i32, e: i32, margin: f64) -> i32; }
-    // SAFETY: delegates to C implementation, all pointers valid per caller contract
+    // SAFETY: m verified non-null; delegates to C implementation, all pointers valid per caller contract
     unsafe { mjc_HFieldElem(m, d, con, g, f, e, margin) }
 }
 

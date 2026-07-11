@@ -377,6 +377,7 @@ pub fn compiler_log_handler(msg: *const mjLogMessage) {
 /// Calls: _mjPRIVATE_setTlsLogHandler, mjCMesh::Compile
 #[allow(unused_variables, non_snake_case)]
 pub fn compile_mesh(mesh: *mut mjCMesh, vfs: *const mjVFS, exception: *mut std__exception_ptr, exception_mutex: *mut std__mutex, warningtext: *mut string) {
+    if mesh.is_null() { return; }
     // WARNING: signature changed — verify body
     // Previous params: (mesh : * mut mjCMesh, vfs : * const mjVFS, exception : * mut std__exception_ptr, exception_mutex : * mut std__mutex, warningtext : * mut string)
     // Previous return: ()

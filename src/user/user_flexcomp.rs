@@ -65,8 +65,9 @@ pub fn findstring(buffer: *const i8, buffer_sz: i32, str: *const i8) -> i32 {
 /// Calls: comperr, mjCFlex::PointToLocal, mjCFlexcomp::MakeBox, mjCFlexcomp::MakeGMSH, mjCFlexcomp::MakeGrid, mjCFlexcomp::MakeMesh, mjCFlexcomp::MakeSquare, mjCModel::AddFlex, mjCModel::Default, mjs_addBody, mjs_addJoint, mjs_getName, mjs_getString, mjs_resolveOrientation, mjs_setDefault, mjs_setName, mjs_setString, mjuu_normvec, mjuu_setvec, mjuu_trnVecPose, mjuu_zerovec
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_flexcomp_make(self_ptr: *mut mjCFlexcomp, body: *mut mjsBody, error: *mut i8, error_sz: i32, vfs: *const mjVFS) -> bool {
+    if self_ptr.is_null() { return false; }
     extern "C" { fn mjCFlexcomp_Make(self_ptr: *mut mjCFlexcomp, body: *mut mjsBody, error: *mut i8, error_sz: i32, vfs: *const mjVFS) -> bool; }
-    // SAFETY: delegates to C implementation
+    // SAFETY: self_ptr verified non-null; delegates to C implementation
     unsafe { mjCFlexcomp_Make(self_ptr, body, error, error_sz, vfs) }
 }
 

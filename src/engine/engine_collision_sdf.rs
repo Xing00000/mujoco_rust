@@ -276,8 +276,9 @@ pub fn select_fps(candidate: *const f64, dist: *const f64, ncandidate: i32, sele
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn process_sdf_corners(corners: *const f64, m: *const mjModel, d: *const mjData, sdf: *const mjSDF, nstartpts: i32, candidate: *mut f64, dist: *mut f64, ncandidate: *mut i32) {
+    if corners.is_null() { return; }
     extern "C" { fn processSdfCorners(corners: *const f64, m: *const mjModel, d: *const mjData, sdf: *const mjSDF, nstartpts: i32, candidate: *mut f64, dist: *mut f64, ncandidate: *mut i32); }
-    // SAFETY: delegates to C implementation
+    // SAFETY: corners verified non-null; delegates to C implementation
     unsafe { processSdfCorners(corners, m, d, sdf, nstartpts, candidate, dist, ncandidate) }
 }
 
