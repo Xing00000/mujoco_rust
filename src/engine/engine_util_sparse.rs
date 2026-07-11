@@ -540,10 +540,14 @@ pub fn mju_sqr_mat_td_sparse_numeric(res: *mut f64, nc: i32, res_rownnz: *const 
 /// C: mju_sqrMatTDUncompressedInit (engine/engine_util_sparse.h:163)
 #[allow(unused_variables, non_snake_case)]
 pub fn mju_sqr_mat_td_uncompressed_init(res_rowadr: *mut i32, nc: i32) {
-    // WARNING: signature changed — verify body
-    // Previous params: (res_rowadr : * mut i32, nc : i32)
-    // Previous return: ()
-    todo ! ()
+    // SAFETY: caller guarantees res_rowadr points to at least nc elements
+    unsafe {
+        let mut r: i32 = 0;
+        while r < nc {
+            *res_rowadr.add(r as usize) = r * nc;
+            r += 1;
+        }
+    }
 }
 
 /// C: mju_block (engine/engine_util_sparse.h:166)
@@ -631,29 +635,104 @@ pub fn mju_block_diag_sparse(res: *mut f64, res_rownnz: *mut i32, res_rowadr: *m
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mju_dot_sparse(vec1: *const f64, vec2: *const f64, nnz1: i32, ind1: *const i32) -> f64 {
-    // WARNING: signature changed — verify body
-    // Previous params: (vec1 : * const f64, vec2 : * const f64, nnz1 : i32, ind1 : * const i32)
-    // Previous return: f64
-    todo ! ()
+    // SAFETY: caller guarantees vec1[0..nnz1], vec2 (indexed by ind1), ind1[0..nnz1] are valid
+    unsafe {
+        let mut i: i32 = 0;
+        let n_4 = nnz1 - 4;
+        let mut res0: f64 = 0.0;
+        let mut res1: f64 = 0.0;
+        let mut res2: f64 = 0.0;
+        let mut res3: f64 = 0.0;
+
+        while i <= n_4 {
+            res0 += *vec1.add((i + 0) as usize) * *vec2.add(*ind1.add((i + 0) as usize) as usize);
+            res1 += *vec1.add((i + 1) as usize) * *vec2.add(*ind1.add((i + 1) as usize) as usize);
+            res2 += *vec1.add((i + 2) as usize) * *vec2.add(*ind1.add((i + 2) as usize) as usize);
+            res3 += *vec1.add((i + 3) as usize) * *vec2.add(*ind1.add((i + 3) as usize) as usize);
+            i += 4;
+        }
+
+        let mut res = (res0 + res2) + (res1 + res3);
+
+        // scalar part
+        while i < nnz1 {
+            res += *vec1.add(i as usize) * *vec2.add(*ind1.add(i as usize) as usize);
+            i += 1;
+        }
+
+        res
+    }
 }
 
 /// C: mju_compare (engine/engine_util_sparse.h:231)
 #[allow(unused_variables, non_snake_case)]
 pub fn mju_compare(vec1: *const i32, vec2: *const i32, n: i32) -> i32 {
-    // WARNING: signature changed — verify body
-    // Previous params: (vec1 : * const i32, vec2 : * const i32, n : i32)
-    // Previous return: i32
-    todo ! ()
+    // SAFETY: caller guarantees vec1 and vec2 point to at least n elements
+    unsafe {
+        let s1 = std::slice::from_raw_parts(vec1 as *const u8, (n as usize) * std::mem::size_of::<i32>());
+        let s2 = std::slice::from_raw_parts(vec2 as *const u8, (n as usize) * std::mem::size_of::<i32>());
+        if s1 == s2 { 1 } else { 0 }
+    }
 }
 
 /// C: mj_mergeSorted (engine/engine_util_sparse.h:243)
 /// Calls: mju_compare
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_merge_sorted(merge: *mut i32, chain1: *const i32, n1: i32, chain2: *const i32, n2: i32) -> i32 {
-    // WARNING: signature changed — verify body
-    // Previous params: (merge : * mut i32, chain1 : * const i32, n1 : i32, chain2 : * const i32, n2 : i32)
-    // Previous return: i32
-    todo ! ()
+    // SAFETY: caller guarantees all pointers valid for their respective sizes
+    unsafe {
+        // special case: one or both empty
+        if n1 == 0 {
+            if n2 == 0 {
+                return 0;
+            }
+            std::ptr::copy_nonoverlapping(chain2, merge, n2 as usize);
+            return n2;
+        } else if n2 == 0 {
+            std::ptr::copy_nonoverlapping(chain1, merge, n1 as usize);
+            return n1;
+        }
+
+        // special case: identical pattern
+        if n1 == n2 && mju_compare(chain1, chain2, n1) != 0 {
+            std::ptr::copy_nonoverlapping(chain1, merge, n1 as usize);
+            return n1;
+        }
+
+        // merge while both chains are non-empty
+        let mut i: i32 = 0;
+        let mut j: i32 = 0;
+        let mut k: i32 = 0;
+        while i < n1 && j < n2 {
+            let c1 = *chain1.add(i as usize);
+            let c2 = *chain2.add(j as usize);
+            if c1 < c2 {
+                *merge.add(k as usize) = c1;
+                k += 1;
+                i += 1;
+            } else if c1 > c2 {
+                *merge.add(k as usize) = c2;
+                k += 1;
+                j += 1;
+            } else {
+                *merge.add(k as usize) = c1;
+                k += 1;
+                i += 1;
+                j += 1;
+            }
+        }
+
+        // copy remaining
+        if i < n1 {
+            std::ptr::copy_nonoverlapping(chain1.add(i as usize), merge.add(k as usize), (n1 - i) as usize);
+            k += n1 - i;
+        } else if j < n2 {
+            std::ptr::copy_nonoverlapping(chain2.add(j as usize), merge.add(k as usize), (n2 - j) as usize);
+            k += n2 - j;
+        }
+
+        k
+    }
 }
 
 /// C: mju_addToSclScl (engine/engine_util_sparse.h:297)
@@ -664,10 +743,14 @@ pub fn mj_merge_sorted(merge: *mut i32, chain1: *const i32, n1: i32, chain2: *co
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mju_add_to_scl_scl(res: *mut f64, vec: *const f64, scl1: f64, scl2: f64, n: i32) {
-    // WARNING: signature changed — verify body
-    // Previous params: (res : * mut f64, vec : * const f64, scl1 : f64, scl2 : f64, n : i32)
-    // Previous return: ()
-    todo ! ()
+    // SAFETY: caller guarantees res and vec point to at least n contiguous f64
+    unsafe {
+        let mut i: i32 = 0;
+        while i < n {
+            *res.add(i as usize) = *res.add(i as usize) * scl1 + *vec.add(i as usize) * scl2;
+            i += 1;
+        }
+    }
 }
 
 /// C: mju_combineSparse (engine/engine_util_sparse.h:311)
