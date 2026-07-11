@@ -2408,8 +2408,9 @@ pub fn mj_c_mesh_user_normal(self_ptr: *mut mjCMesh) -> *const i32 {
 /// C: mjCMesh::Texcoord (user/user_objects.h:1177)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_mesh_texcoord(self_ptr: *mut mjCMesh) -> *const i32 {
+    if self_ptr.is_null() { return core::ptr::null(); }
     extern "C" { fn mjCMesh_Texcoord(self_ptr: *mut mjCMesh) -> *const i32; }
-    // SAFETY: delegates to C implementation
+    // SAFETY: self_ptr verified non-null; delegates to C++ getter
     unsafe { mjCMesh_Texcoord(self_ptr) }
 }
 
@@ -2425,8 +2426,9 @@ pub fn mj_c_mesh_face_texcoord(self_ptr: *mut mjCMesh) -> *const i32 {
 /// C: mjCMesh::UserTexcoord (user/user_objects.h:1179)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_mesh_user_texcoord(self_ptr: *mut mjCMesh) -> *const i32 {
+    if self_ptr.is_null() { return core::ptr::null(); }
     extern "C" { fn mjCMesh_UserTexcoord(self_ptr: *mut mjCMesh) -> *const i32; }
-    // SAFETY: delegates to C implementation
+    // SAFETY: self_ptr verified non-null; delegates to C++ getter
     unsafe { mjCMesh_UserTexcoord(self_ptr) }
 }
 
@@ -2442,8 +2444,9 @@ pub fn mj_c_mesh_face(self_ptr: *mut mjCMesh) -> *const i32 {
 /// C: mjCMesh::UserFace (user/user_objects.h:1181)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_mesh_user_face(self_ptr: *mut mjCMesh) -> *const i32 {
+    if self_ptr.is_null() { return core::ptr::null(); }
     extern "C" { fn mjCMesh_UserFace(self_ptr: *mut mjCMesh) -> *const i32; }
-    // SAFETY: delegates to C implementation
+    // SAFETY: self_ptr verified non-null; delegates to C++ getter
     unsafe { mjCMesh_UserFace(self_ptr) }
 }
 
@@ -2482,8 +2485,9 @@ pub fn mj_c_mesh_set_need_hull(self_ptr: *mut mjCMesh, needhull: bool) {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_mesh_aamm(self_ptr: *mut mjCMesh) -> *const f64 {
+    if self_ptr.is_null() { return core::ptr::null(); }
     extern "C" { fn mjCMesh_aamm(self_ptr: *mut mjCMesh) -> *const f64; }
-    // SAFETY: delegates to C implementation
+    // SAFETY: self_ptr verified non-null; delegates to C++ getter
     unsafe { mjCMesh_aamm(self_ptr) }
 }
 
@@ -2512,8 +2516,9 @@ pub fn mj_c_mesh_nnormal(self_ptr: *mut mjCMesh) -> i32 {
 /// C: mjCMesh::ntexcoord (user/user_objects.h:1194)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_mesh_ntexcoord(self_ptr: *mut mjCMesh) -> i32 {
+    if self_ptr.is_null() { return 0; }
     extern "C" { fn mjCMesh_ntexcoord(self_ptr: *mut mjCMesh) -> i32; }
-    // SAFETY: delegates to C implementation
+    // SAFETY: self_ptr verified non-null; delegates to C++ getter
     unsafe { mjCMesh_ntexcoord(self_ptr) }
 }
 
