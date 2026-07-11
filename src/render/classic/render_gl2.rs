@@ -228,7 +228,114 @@ pub fn mjr_rectangle(viewport: mjrRect, r: f32, g: f32, b: f32, a: f32) {
 /// C: mjr_label (render/classic/render_gl2.h:76)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjr_label(viewport: mjrRect, font: i32, txt: *const i8, r: f32, g: f32, b: f32, a: f32, rt: f32, gt: f32, bt: f32, con: *const mjrContext) {
-    todo!("C++: requires OpenGL API (glDisable, glEnable, glBegin, glEnd, glOrtho, glViewport, glColor4f, glVertex2i, glRasterPos2i, glCallLists, glListBase)")
+    extern "C" {
+        fn glDisable(cap: u32);
+        fn glEnable(cap: u32);
+        fn glShadeModel(mode: u32);
+        fn glBlendFunc(sfactor: u32, dfactor: u32);
+        fn glPolygonMode(face: u32, mode: u32);
+        fn glMatrixMode(mode: u32);
+        fn glLoadIdentity();
+        fn glOrtho(left: f64, right: f64, bottom: f64, top: f64, near: f64, far: f64);
+        fn glViewport(x: i32, y: i32, width: i32, height: i32);
+        fn glBegin(mode: u32);
+        fn glEnd();
+        fn glColor4f(r: f32, g: f32, b: f32, a: f32);
+        fn glColor3f(r: f32, g: f32, b: f32);
+        fn glVertex2i(x: i32, y: i32);
+        fn glRasterPos2i(x: i32, y: i32);
+        fn glListBase(base: u32);
+        fn glCallLists(n: i32, r#type: u32, lists: *const i8);
+        fn strlen(s: *const i8) -> usize;
+    }
+
+    const GL_NORMALIZE: u32 = 0x0BA1;
+    const GL_DEPTH_TEST: u32 = 0x0B71;
+    const GL_CULL_FACE: u32 = 0x0B44;
+    const GL_LIGHTING: u32 = 0x0B50;
+    const GL_COLOR_MATERIAL: u32 = 0x0B57;
+    const GL_FLAT: u32 = 0x1D00;
+    const GL_BLEND: u32 = 0x0BE2;
+    const GL_SRC_ALPHA: u32 = 0x0302;
+    const GL_ONE_MINUS_SRC_ALPHA: u32 = 0x0303;
+    const GL_FRONT_AND_BACK: u32 = 0x0408;
+    const GL_FILL: u32 = 0x1B02;
+    const GL_PROJECTION: u32 = 0x1701;
+    const GL_MODELVIEW: u32 = 0x1700;
+    const GL_QUADS: u32 = 0x0007;
+    const GL_UNSIGNED_BYTE: u32 = 0x1401;
+    const mjFONT_BIG: i32 = 2;
+
+    // empty viewport: nothing to do
+    if viewport.width <= 0 || viewport.height <= 0 {
+        return;
+    }
+
+    // SAFETY: all GL calls require valid OpenGL context. Caller guarantees
+    // context is current. con pointer is valid for reads.
+    unsafe {
+        // set OpenGL options
+        glDisable(GL_NORMALIZE);
+        glDisable(GL_DEPTH_TEST);
+        glDisable(GL_CULL_FACE);
+        glDisable(GL_LIGHTING);
+        glDisable(GL_COLOR_MATERIAL);
+        glShadeModel(GL_FLAT);
+        glEnable(GL_BLEND);
+        glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+        glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+
+        // standard 2D projection, in framebuffer units
+        glMatrixMode(GL_PROJECTION);
+        glLoadIdentity();
+        glOrtho(0.0, viewport.width as f64, 0.0, viewport.height as f64, -1.0, 1.0);
+        glMatrixMode(GL_MODELVIEW);
+        glLoadIdentity();
+
+        // set viewport
+        glViewport(viewport.left, viewport.bottom, viewport.width, viewport.height);
+
+        // get sizes
+        let W = viewport.width;
+        let H = viewport.height;
+
+        // render
+        glBegin(GL_QUADS);
+        glColor4f(r, g, b, a);
+        glVertex2i(0, 0);
+        glVertex2i(W, 0);
+        glVertex2i(W, H);
+        glVertex2i(0, H);
+        glEnd();
+
+        // draw text
+        if !txt.is_null() && (*con).rangeFont != 0 {
+            // compute width
+            let mut i: i32 = 0;
+            let mut width: i32 = 0;
+            if font == mjFONT_BIG {
+                while *txt.offset(i as isize) != 0 {
+                    width += (*con).charWidthBig[*txt.offset(i as isize) as u8 as usize];
+                    i += 1;
+                }
+            } else {
+                while *txt.offset(i as isize) != 0 {
+                    width += (*con).charWidth[*txt.offset(i as isize) as u8 as usize];
+                    i += 1;
+                }
+            }
+
+            // compute center
+            let cx = (W - width) / 2;
+            let cy = (H - (if font == mjFONT_BIG { (*con).charHeightBig } else { (*con).charHeight })) / 2;
+
+            // draw
+            glListBase(if font == mjFONT_BIG { (*con).baseFontBig } else { (*con).baseFontNormal });
+            glColor3f(rt, gt, bt);
+            glRasterPos2i(if 0 > cx { 0 } else { cx }, cy);
+            glCallLists(strlen(txt) as i32, GL_UNSIGNED_BYTE, txt);
+        }
+    }
 }
 
 /// C: mjr_figure (render/classic/render_gl2.h:79)

@@ -27,13 +27,20 @@ pub fn mj_save_last_xml(filename: *const i8, m: *const mjModel, error: *mut i8, 
 /// Calls: SetGlobalXmlSpec
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_free_last_xml() {
-    todo ! ()
+    // C++: calls SetGlobalXmlSpec() which is a C++ internal function
+    // not exported from the library. Cannot delegate via FFI.
+    todo!("mj_freeLastXML requires C++ internals (SetGlobalXmlSpec)")
 }
 
 /// C: mj_printSchema (xml/xml_api.h:40)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_print_schema(filename: *const i8, buffer: *mut i8, buffer_sz: i32, flg_html: i32, flg_pad: i32) -> i32 {
-    todo!("C++: requires mjXReader::PrintSchema, std::stringstream, std::ofstream")
+    extern "C" {
+        fn mj_printSchema(filename: *const i8, buffer: *mut i8, buffer_sz: i32, flg_html: i32, flg_pad: i32) -> i32;
+    }
+    // SAFETY: caller guarantees filename (if non-null) is a valid C string,
+    // buffer (if non-null) points to at least buffer_sz bytes.
+    unsafe { mj_printSchema(filename, buffer, buffer_sz, flg_html, flg_pad) }
 }
 
 /// C: mj_loadModel (xml/xml_api.h:45)
