@@ -241,8 +241,9 @@ pub fn mj_size_model(m: *const mjModel) -> usize {
 /// Calls: mjp_getPluginAtSlot, mju_message, numObjects, sensorSize
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_validate_references(m: *const mjModel) -> *const i8 {
+    if m.is_null() { return core::ptr::null(); }
     extern "C" { fn mj_validateReferences(m: *const mjModel) -> *const i8; }
-    // SAFETY: delegates to C implementation
+    // SAFETY: m verified non-null; delegates to C implementation
     unsafe { mj_validateReferences(m) }
 }
 
