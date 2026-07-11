@@ -169,8 +169,9 @@ pub fn triangle(normal: *mut f64, center: *mut f64, v1: *const f64, v2: *const f
 /// C: mjCMesh::ProcessVertices (user/user_mesh.cc:539)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_mesh_process_vertices(self_ptr: *mut mjCMesh, vert: *const i32, remove_repeated: bool) {
+    if self_ptr.is_null() { return; }
     extern "C" { fn mjCMesh_ProcessVertices(self_ptr: *mut mjCMesh, vert: *const i32, remove_repeated: bool); }
-    // SAFETY: delegates to C implementation
+    // SAFETY: self_ptr verified non-null
     unsafe { mjCMesh_ProcessVertices(self_ptr, vert, remove_repeated) }
 }
 

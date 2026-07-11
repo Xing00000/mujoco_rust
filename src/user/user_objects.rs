@@ -2188,6 +2188,7 @@ pub fn mj_c_mesh_copy_from_spec(self_ptr: *mut mjCMesh) {
 /// C: mjCMesh::PointToLocal (user/user_objects.h:1152)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_mesh_point_to_local(self_ptr: *mut mjCMesh) {
+    if self_ptr.is_null() { return; }
     extern "C" { fn mjCMesh_PointToLocal(self_ptr: *mut mjCMesh); }
     // SAFETY: delegates to C implementation
     unsafe { mjCMesh_PointToLocal(self_ptr) }
@@ -2196,6 +2197,7 @@ pub fn mj_c_mesh_point_to_local(self_ptr: *mut mjCMesh) {
 /// C: mjCMesh::NameSpace (user/user_objects.h:1153)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_mesh_name_space(self_ptr: *mut mjCMesh, m: *const mjCModel) {
+    if self_ptr.is_null() { return; }
     extern "C" { fn mjCMesh_NameSpace(self_ptr: *mut mjCMesh, m: *const mjCModel); }
     // SAFETY: delegates to C implementation
     unsafe { mjCMesh_NameSpace(self_ptr, m) }
@@ -2204,6 +2206,7 @@ pub fn mj_c_mesh_name_space(self_ptr: *mut mjCMesh, m: *const mjCModel) {
 /// C: mjCMesh::MakeHemisphere (user/user_objects.h:1156)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_mesh_make_hemisphere(self_ptr: *mut mjCMesh, res: i32, make_faces: bool, make_cap: bool) {
+    if self_ptr.is_null() { return; }
     extern "C" { fn mjCMesh_MakeHemisphere(self_ptr: *mut mjCMesh, res: i32, make_faces: bool, make_cap: bool); }
     // SAFETY: delegates to C implementation
     unsafe { mjCMesh_MakeHemisphere(self_ptr, res, make_faces, make_cap) }
@@ -2212,6 +2215,7 @@ pub fn mj_c_mesh_make_hemisphere(self_ptr: *mut mjCMesh, res: i32, make_faces: b
 /// C: mjCMesh::MakeSphere (user/user_objects.h:1157)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_mesh_make_sphere(self_ptr: *mut mjCMesh, subdiv: i32, make_faces: bool) {
+    if self_ptr.is_null() { return; }
     extern "C" { fn mjCMesh_MakeSphere(self_ptr: *mut mjCMesh, subdiv: i32, make_faces: bool); }
     // SAFETY: delegates to C implementation
     unsafe { mjCMesh_MakeSphere(self_ptr, subdiv, make_faces) }
@@ -2225,6 +2229,7 @@ pub fn mj_c_mesh_make_sphere(self_ptr: *mut mjCMesh, subdiv: i32, make_faces: bo
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_mesh_make_torus(self_ptr: *mut mjCMesh, res: i32, radius: f64) {
+    if self_ptr.is_null() { return; }
     extern "C" { fn mjCMesh_MakeTorus(self_ptr: *mut mjCMesh, res: i32, radius: f64); }
     // SAFETY: delegates to C implementation
     unsafe { mjCMesh_MakeTorus(self_ptr, res, radius) }
@@ -2266,6 +2271,7 @@ pub fn mj_c_mesh_make_supersphere(self_ptr: *mut mjCMesh, res: i32, e: f64, n: f
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_mesh_make_wedge(self_ptr: *mut mjCMesh, resolution: [i32; 2], fov: [f64; 2], gamma: f64) {
+    if self_ptr.is_null() { return; }
     extern "C" { fn mjCMesh_MakeWedge(self_ptr: *mut mjCMesh, resolution: [i32; 2], fov: [f64; 2], gamma: f64); }
     // SAFETY: delegates to C implementation
     unsafe { mjCMesh_MakeWedge(self_ptr, resolution, fov, gamma) }
@@ -2274,6 +2280,7 @@ pub fn mj_c_mesh_make_wedge(self_ptr: *mut mjCMesh, resolution: [i32; 2], fov: [
 /// C: mjCMesh::MakeRect (user/user_objects.h:1162)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_mesh_make_rect(self_ptr: *mut mjCMesh, resolution: [i32; 2]) {
+    if self_ptr.is_null() { return; }
     extern "C" { fn mjCMesh_MakeRect(self_ptr: *mut mjCMesh, resolution: [i32; 2]); }
     // SAFETY: delegates to C implementation
     unsafe { mjCMesh_MakeRect(self_ptr, resolution) }
@@ -2287,6 +2294,7 @@ pub fn mj_c_mesh_make_rect(self_ptr: *mut mjCMesh, resolution: [i32; 2]) {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_mesh_make_cone(self_ptr: *mut mjCMesh, nedge: i32, radius: f64) {
+    if self_ptr.is_null() { return; }
     extern "C" { fn mjCMesh_MakeCone(self_ptr: *mut mjCMesh, nedge: i32, radius: f64); }
     // SAFETY: delegates to C implementation
     unsafe { mjCMesh_MakeCone(self_ptr, nedge, radius) }
@@ -2295,6 +2303,7 @@ pub fn mj_c_mesh_make_cone(self_ptr: *mut mjCMesh, nedge: i32, radius: f64) {
 /// C: mjCMesh::Plugin (user/user_objects.h:1166)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_mesh_plugin(self_ptr: *mut mjCMesh) -> *const mjsPlugin {
+    if self_ptr.is_null() { return core::ptr::null(); }
     extern "C" { fn mjCMesh_Plugin(self_ptr: *mut mjCMesh) -> *const mjsPlugin; }
     // SAFETY: delegates to C implementation
     unsafe { mjCMesh_Plugin(self_ptr) }
@@ -2312,6 +2321,7 @@ pub fn mj_c_mesh_content_type(self_ptr: *mut mjCMesh) -> *const i32 {
 /// C: mjCMesh::File (user/user_objects.h:1168)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_mesh_file(self_ptr: *mut mjCMesh) -> *const i32 {
+    if self_ptr.is_null() { return core::ptr::null(); }
     extern "C" { fn mjCMesh_File(self_ptr: *mut mjCMesh) -> *const i32; }
     // SAFETY: delegates to C implementation
     unsafe { mjCMesh_File(self_ptr) }
@@ -2399,6 +2409,7 @@ pub fn mj_c_mesh_texcoord(self_ptr: *mut mjCMesh) -> *const i32 {
 /// C: mjCMesh::FaceTexcoord (user/user_objects.h:1178)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_mesh_face_texcoord(self_ptr: *mut mjCMesh) -> *const i32 {
+    if self_ptr.is_null() { return core::ptr::null(); }
     extern "C" { fn mjCMesh_FaceTexcoord(self_ptr: *mut mjCMesh) -> *const i32; }
     // SAFETY: delegates to C implementation
     unsafe { mjCMesh_FaceTexcoord(self_ptr) }
@@ -2415,6 +2426,7 @@ pub fn mj_c_mesh_user_texcoord(self_ptr: *mut mjCMesh) -> *const i32 {
 /// C: mjCMesh::Face (user/user_objects.h:1180)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_mesh_face(self_ptr: *mut mjCMesh) -> *const i32 {
+    if self_ptr.is_null() { return core::ptr::null(); }
     extern "C" { fn mjCMesh_Face(self_ptr: *mut mjCMesh) -> *const i32; }
     // SAFETY: delegates to C implementation
     unsafe { mjCMesh_Face(self_ptr) }
@@ -2431,6 +2443,7 @@ pub fn mj_c_mesh_user_face(self_ptr: *mut mjCMesh) -> *const i32 {
 /// C: mjCMesh::Inertia (user/user_objects.h:1182)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_mesh_inertia(self_ptr: *mut mjCMesh) -> mjtMeshInertia {
+    if self_ptr.is_null() { return unsafe { core::mem::transmute(()) }; }
     extern "C" { fn mjCMesh_Inertia(self_ptr: *mut mjCMesh) -> mjtMeshInertia; }
     // SAFETY: delegates to C implementation
     unsafe { mjCMesh_Inertia(self_ptr) }
@@ -2439,6 +2452,7 @@ pub fn mj_c_mesh_inertia(self_ptr: *mut mjCMesh) -> mjtMeshInertia {
 /// C: mjCMesh::Material (user/user_objects.h:1183)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_mesh_material(self_ptr: *mut mjCMesh) -> *const i32 {
+    if self_ptr.is_null() { return core::ptr::null(); }
     extern "C" { fn mjCMesh_Material(self_ptr: *mut mjCMesh) -> *const i32; }
     // SAFETY: delegates to C implementation
     unsafe { mjCMesh_Material(self_ptr) }
@@ -2608,6 +2622,7 @@ pub fn mj_c_mesh_get_quat_ptr(self_ptr: *mut mjCMesh) -> *mut f64 {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_mesh_get_inertia_box_ptr(self_ptr: *mut mjCMesh) -> *mut f64 {
+    if self_ptr.is_null() { return core::ptr::null_mut(); }
     extern "C" { fn mjCMesh_GetInertiaBoxPtr(self_ptr: *mut mjCMesh) -> *mut f64; }
     // SAFETY: delegates to C implementation
     unsafe { mjCMesh_GetInertiaBoxPtr(self_ptr) }
@@ -2655,6 +2670,7 @@ pub fn mj_c_mesh_has_texcoord(self_ptr: *mut mjCMesh) -> bool {
 /// C: mjCMesh::DelTexcoord (user/user_objects.h:1229)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_mesh_del_texcoord(self_ptr: *mut mjCMesh) {
+    if self_ptr.is_null() { return; }
     extern "C" { fn mjCMesh_DelTexcoord(self_ptr: *mut mjCMesh); }
     // SAFETY: delegates to C implementation
     unsafe { mjCMesh_DelTexcoord(self_ptr) }
@@ -2663,6 +2679,7 @@ pub fn mj_c_mesh_del_texcoord(self_ptr: *mut mjCMesh) {
 /// C: mjCMesh::IsVisual (user/user_objects.h:1230)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_mesh_is_visual(self_ptr: *mut mjCMesh) -> bool {
+    if self_ptr.is_null() { return false; }
     extern "C" { fn mjCMesh_IsVisual(self_ptr: *mut mjCMesh) -> bool; }
     // SAFETY: delegates to C implementation
     unsafe { mjCMesh_IsVisual(self_ptr) }
@@ -2684,6 +2701,7 @@ pub fn mj_c_mesh_set_not_visual(self_ptr: *mut mjCMesh) {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_mesh_copy_vert(self_ptr: *mut mjCMesh, arr: *mut f32) {
+    if self_ptr.is_null() { return; }
     extern "C" { fn mjCMesh_CopyVert(self_ptr: *mut mjCMesh, arr: *mut f32); }
     // SAFETY: delegates to C implementation
     unsafe { mjCMesh_CopyVert(self_ptr, arr) }
@@ -2697,6 +2715,7 @@ pub fn mj_c_mesh_copy_vert(self_ptr: *mut mjCMesh, arr: *mut f32) {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_mesh_copy_normal(self_ptr: *mut mjCMesh, arr: *mut f32) {
+    if self_ptr.is_null() { return; }
     extern "C" { fn mjCMesh_CopyNormal(self_ptr: *mut mjCMesh, arr: *mut f32); }
     // SAFETY: delegates to C implementation
     unsafe { mjCMesh_CopyNormal(self_ptr, arr) }
@@ -2705,6 +2724,7 @@ pub fn mj_c_mesh_copy_normal(self_ptr: *mut mjCMesh, arr: *mut f32) {
 /// C: mjCMesh::CopyFace (user/user_objects.h:1235)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_mesh_copy_face(self_ptr: *mut mjCMesh, arr: *mut i32) {
+    if self_ptr.is_null() { return; }
     extern "C" { fn mjCMesh_CopyFace(self_ptr: *mut mjCMesh, arr: *mut i32); }
     // SAFETY: delegates to C implementation
     unsafe { mjCMesh_CopyFace(self_ptr, arr) }
@@ -2713,6 +2733,7 @@ pub fn mj_c_mesh_copy_face(self_ptr: *mut mjCMesh, arr: *mut i32) {
 /// C: mjCMesh::CopyFaceNormal (user/user_objects.h:1236)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_mesh_copy_face_normal(self_ptr: *mut mjCMesh, arr: *mut i32) {
+    if self_ptr.is_null() { return; }
     extern "C" { fn mjCMesh_CopyFaceNormal(self_ptr: *mut mjCMesh, arr: *mut i32); }
     // SAFETY: delegates to C implementation
     unsafe { mjCMesh_CopyFaceNormal(self_ptr, arr) }
@@ -2721,6 +2742,7 @@ pub fn mj_c_mesh_copy_face_normal(self_ptr: *mut mjCMesh, arr: *mut i32) {
 /// C: mjCMesh::CopyFaceTexcoord (user/user_objects.h:1237)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_mesh_copy_face_texcoord(self_ptr: *mut mjCMesh, arr: *mut i32) {
+    if self_ptr.is_null() { return; }
     extern "C" { fn mjCMesh_CopyFaceTexcoord(self_ptr: *mut mjCMesh, arr: *mut i32); }
     // SAFETY: delegates to C implementation
     unsafe { mjCMesh_CopyFaceTexcoord(self_ptr, arr) }
@@ -2734,6 +2756,7 @@ pub fn mj_c_mesh_copy_face_texcoord(self_ptr: *mut mjCMesh, arr: *mut i32) {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_mesh_copy_texcoord(self_ptr: *mut mjCMesh, arr: *mut f32) {
+    if self_ptr.is_null() { return; }
     extern "C" { fn mjCMesh_CopyTexcoord(self_ptr: *mut mjCMesh, arr: *mut f32); }
     // SAFETY: delegates to C implementation
     unsafe { mjCMesh_CopyTexcoord(self_ptr, arr) }
@@ -2753,6 +2776,7 @@ pub fn mj_c_mesh_copy_graph(self_ptr: *mut mjCMesh, arr: *mut i32) {
 /// C: mjCMesh::CopyPolygons (user/user_objects.h:1242)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_mesh_copy_polygons(self_ptr: *mut mjCMesh, verts: *mut i32, adr: *mut i32, num: *mut i32, poly_adr: i32) {
+    if self_ptr.is_null() { return; }
     extern "C" { fn mjCMesh_CopyPolygons(self_ptr: *mut mjCMesh, verts: *mut i32, adr: *mut i32, num: *mut i32, poly_adr: i32); }
     // SAFETY: delegates to C implementation
     unsafe { mjCMesh_CopyPolygons(self_ptr, verts, adr, num, poly_adr) }
@@ -2761,6 +2785,7 @@ pub fn mj_c_mesh_copy_polygons(self_ptr: *mut mjCMesh, verts: *mut i32, adr: *mu
 /// C: mjCMesh::CopyPolygonMap (user/user_objects.h:1245)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_mesh_copy_polygon_map(self_ptr: *mut mjCMesh, faces: *mut i32, adr: *mut i32, num: *mut i32, poly_adr: i32) {
+    if self_ptr.is_null() { return; }
     extern "C" { fn mjCMesh_CopyPolygonMap(self_ptr: *mut mjCMesh, faces: *mut i32, adr: *mut i32, num: *mut i32, poly_adr: i32); }
     // SAFETY: delegates to C implementation
     unsafe { mjCMesh_CopyPolygonMap(self_ptr, faces, adr, num, poly_adr) }
@@ -2774,6 +2799,7 @@ pub fn mj_c_mesh_copy_polygon_map(self_ptr: *mut mjCMesh, faces: *mut i32, adr: 
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_mesh_copy_polygon_normals(self_ptr: *mut mjCMesh, arr: *mut f64) {
+    if self_ptr.is_null() { return; }
     extern "C" { fn mjCMesh_CopyPolygonNormals(self_ptr: *mut mjCMesh, arr: *mut f64); }
     // SAFETY: delegates to C implementation
     unsafe { mjCMesh_CopyPolygonNormals(self_ptr, arr) }
@@ -2827,6 +2853,7 @@ pub fn mj_c_mesh_try_compile(self_ptr: *mut mjCMesh, vfs: *const mjVFS) {
 /// Calls: mju_malloc
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_mesh_load_cached_mesh(self_ptr: *mut mjCMesh, cache: *mut mjCCache, resource: *const mjResource) -> bool {
+    if self_ptr.is_null() { return false; }
     extern "C" { fn mjCMesh_LoadCachedMesh(self_ptr: *mut mjCMesh, cache: *mut mjCCache, resource: *const mjResource) -> bool; }
     // SAFETY: delegates to C implementation
     unsafe { mjCMesh_LoadCachedMesh(self_ptr, cache, resource) }
@@ -2970,6 +2997,7 @@ pub fn mj_c_mesh_check_initial_mesh(self_ptr: *mut mjCMesh) {
 /// C: mjCMesh::CopyPlugin (user/user_objects.h:1290)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_mesh_copy_plugin(self_ptr: *mut mjCMesh) {
+    if self_ptr.is_null() { return; }
     extern "C" { fn mjCMesh_CopyPlugin(self_ptr: *mut mjCMesh); }
     // SAFETY: delegates to C implementation
     unsafe { mjCMesh_CopyPlugin(self_ptr) }
