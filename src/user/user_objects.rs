@@ -239,8 +239,9 @@ pub fn mj_c_octree_subdivide(self_ptr: *mut mjCOctree, task: *const OctreeTask, 
 /// C: mjCOctree::BalanceOctree (user/user_objects.cc:1113)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_octree_balance_octree(self_ptr: *mut mjCOctree, vert_map: *mut i32) {
+    if self_ptr.is_null() { return; }
     extern "C" { fn mjCOctree_BalanceOctree(self_ptr: *mut mjCOctree, vert_map: *mut i32); }
-    // SAFETY: delegates to C implementation
+    // SAFETY: self_ptr verified non-null; delegates to C++ method
     unsafe { mjCOctree_BalanceOctree(self_ptr, vert_map) }
 }
 
@@ -758,8 +759,9 @@ pub fn mj_c_octree_copy_coeff(self_ptr: *mut mjCOctree, coeff: *mut f64) {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_octree_vert(self_ptr: *mut mjCOctree, i: i32) -> *const f64 {
+    if self_ptr.is_null() { return core::ptr::null(); }
     extern "C" { fn mjCOctree_Vert(self_ptr: *mut mjCOctree, i: i32) -> *const f64; }
-    // SAFETY: delegates to C implementation
+    // SAFETY: self_ptr verified non-null; delegates to C++ method
     unsafe { mjCOctree_Vert(self_ptr, i) }
 }
 
@@ -774,16 +776,18 @@ pub fn mj_c_octree_hang(self_ptr: *mut mjCOctree, i: i32) -> *const i32 {
 /// C: mjCOctree::VertId (user/user_objects.h:295)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_octree_vert_id(self_ptr: *mut mjCOctree, n: i32, v: i32) -> i32 {
+    if self_ptr.is_null() { return 0; }
     extern "C" { fn mjCOctree_VertId(self_ptr: *mut mjCOctree, n: i32, v: i32) -> i32; }
-    // SAFETY: delegates to C implementation
+    // SAFETY: self_ptr verified non-null; delegates to C++ method
     unsafe { mjCOctree_VertId(self_ptr, n, v) }
 }
 
 /// C: mjCOctree::Children (user/user_objects.h:296)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_octree_children(self_ptr: *mut mjCOctree, i: i32) -> *const () {
+    if self_ptr.is_null() { return core::ptr::null(); }
     extern "C" { fn mjCOctree_Children(self_ptr: *mut mjCOctree, i: i32) -> *const (); }
-    // SAFETY: delegates to C implementation
+    // SAFETY: self_ptr verified non-null; delegates to C++ method
     unsafe { mjCOctree_Children(self_ptr, i) }
 }
 
@@ -798,8 +802,9 @@ pub fn mj_c_octree_size(self_ptr: *mut mjCOctree) -> i32 {
 /// C: mjCOctree::Clear (user/user_objects.h:302)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_octree_clear(self_ptr: *mut mjCOctree) {
+    if self_ptr.is_null() { return; }
     extern "C" { fn mjCOctree_Clear(self_ptr: *mut mjCOctree); }
-    // SAFETY: delegates to C implementation
+    // SAFETY: self_ptr verified non-null; delegates to C++ method
     unsafe { mjCOctree_Clear(self_ptr) }
 }
 
@@ -811,8 +816,9 @@ pub fn mj_c_octree_clear(self_ptr: *mut mjCOctree) {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_octree_add_coeff(self_ptr: *mut mjCOctree, n: i32, v: i32, coeff: f64) {
+    if self_ptr.is_null() { return; }
     extern "C" { fn mjCOctree_AddCoeff(self_ptr: *mut mjCOctree, n: i32, v: i32, coeff: f64); }
-    // SAFETY: delegates to C implementation
+    // SAFETY: self_ptr verified non-null; delegates to C++ method
     unsafe { mjCOctree_AddCoeff(self_ptr, n, v, coeff) }
 }
 
@@ -824,8 +830,9 @@ pub fn mj_c_octree_add_coeff(self_ptr: *mut mjCOctree, n: i32, v: i32, coeff: f6
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_octree_coeff(self_ptr: *mut mjCOctree, n: i32, v: i32) -> f64 {
+    if self_ptr.is_null() { return 0.0; }
     extern "C" { fn mjCOctree_Coeff(self_ptr: *mut mjCOctree, n: i32, v: i32) -> f64; }
-    // SAFETY: delegates to C implementation
+    // SAFETY: self_ptr verified non-null; delegates to C++ method
     unsafe { mjCOctree_Coeff(self_ptr, n, v) }
 }
 
@@ -4149,16 +4156,18 @@ pub fn mj_c_sensor_copy_plugin(self_ptr: *mut mjCSensor) {
 /// C: mjCNumeric::PointToLocal (user/user_objects.h:1944)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_numeric_point_to_local(self_ptr: *mut mjCNumeric) {
+    if self_ptr.is_null() { return; }
     extern "C" { fn mjCNumeric_PointToLocal(self_ptr: *mut mjCNumeric); }
-    // SAFETY: delegates to C implementation
+    // SAFETY: self_ptr verified non-null; delegates to C++ method
     unsafe { mjCNumeric_PointToLocal(self_ptr) }
 }
 
 /// C: mjCNumeric::CopyFromSpec (user/user_objects.h:1945)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_numeric_copy_from_spec(self_ptr: *mut mjCNumeric) {
+    if self_ptr.is_null() { return; }
     extern "C" { fn mjCNumeric_CopyFromSpec(self_ptr: *mut mjCNumeric); }
-    // SAFETY: delegates to C implementation
+    // SAFETY: self_ptr verified non-null; delegates to C++ method
     unsafe { mjCNumeric_CopyFromSpec(self_ptr) }
 }
 
