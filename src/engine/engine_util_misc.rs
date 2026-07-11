@@ -908,10 +908,16 @@ pub fn mju_history_read(buf: *const f64, n: i32, dim: i32, res: *mut f64, t: f64
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mju_encode_pyramid(pyramid: *mut f64, force: *const f64, mu: *const f64, dim: i32) {
-    // WARNING: signature changed — verify body
-    // Previous params: (pyramid : * mut f64, force : * const f64, mu : * const f64, dim : i32)
-    // Previous return: ()
-    todo ! ()
+    // SAFETY: caller guarantees pyramid, force, mu have enough elements
+    unsafe {
+        let a = *force.add(0) / (dim - 1) as f64;
+
+        for i in 0..(dim - 1) as usize {
+            let b = mju_min(a, *force.add(i + 1) / *mu.add(i));
+            *pyramid.add(2 * i) = 0.5 * (a + b);
+            *pyramid.add(2 * i + 1) = 0.5 * (a - b);
+        }
+    }
 }
 
 /// C: mju_decodePyramid (engine/engine_util_misc.h:204)
@@ -1351,10 +1357,12 @@ pub fn mju_standard_normal(num2: *mut f64) -> f64 {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mju_f2n(res: *mut f64, vec: *const f32, n: i32) {
-    // WARNING: signature changed — verify body
-    // Previous params: (res : * mut f64, vec : * const f32, n : i32)
-    // Previous return: ()
-    todo ! ()
+    // SAFETY: caller guarantees res and vec have at least n elements
+    unsafe {
+        for i in 0..n as usize {
+            *res.add(i) = *vec.add(i) as f64;
+        }
+    }
 }
 
 /// C: mju_n2f (engine/engine_util_misc.h:276)
@@ -1365,10 +1373,12 @@ pub fn mju_f2n(res: *mut f64, vec: *const f32, n: i32) {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mju_n2f(res: *mut f32, vec: *const f64, n: i32) {
-    // WARNING: signature changed — verify body
-    // Previous params: (res : * mut f32, vec : * const f64, n : i32)
-    // Previous return: ()
-    todo ! ()
+    // SAFETY: caller guarantees res and vec have at least n elements
+    unsafe {
+        for i in 0..n as usize {
+            *res.add(i) = *vec.add(i) as f32;
+        }
+    }
 }
 
 /// C: mju_d2n (engine/engine_util_misc.h:279)
@@ -1379,10 +1389,13 @@ pub fn mju_n2f(res: *mut f32, vec: *const f64, n: i32) {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mju_d2n(res: *mut f64, vec: *const f64, n: i32) {
-    // WARNING: signature changed — verify body
-    // Previous params: (res : * mut f64, vec : * const f64, n : i32)
-    // Previous return: ()
-    todo ! ()
+    // SAFETY: caller guarantees res and vec have at least n elements
+    // Note: mjtNum is f64 so this is just a copy
+    unsafe {
+        for i in 0..n as usize {
+            *res.add(i) = *vec.add(i);
+        }
+    }
 }
 
 /// C: mju_n2d (engine/engine_util_misc.h:282)
@@ -1393,10 +1406,13 @@ pub fn mju_d2n(res: *mut f64, vec: *const f64, n: i32) {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mju_n2d(res: *mut f64, vec: *const f64, n: i32) {
-    // WARNING: signature changed — verify body
-    // Previous params: (res : * mut f64, vec : * const f64, n : i32)
-    // Previous return: ()
-    todo ! ()
+    // SAFETY: caller guarantees res and vec have at least n elements
+    // Note: mjtNum is f64 so this is just a copy
+    unsafe {
+        for i in 0..n as usize {
+            *res.add(i) = *vec.add(i);
+        }
+    }
 }
 
 /// C: mju_gather (engine/engine_util_misc.h:285)
@@ -1481,20 +1497,98 @@ pub fn mju_scatter_int(res: *mut i32, vec: *const i32, ind: *const i32, n: i32) 
 /// C: mju_sparseMap (engine/engine_util_misc.h:300)
 #[allow(unused_variables, non_snake_case)]
 pub fn mju_sparse_map(map: *mut i32, nr: i32, res_rowadr: *const i32, res_rownnz: *const i32, res_colind: *const i32, src_rowadr: *const i32, src_rownnz: *const i32, src_colind: *const i32) {
-    // WARNING: signature changed — verify body
-    // Previous params: (map : * mut i32, nr : i32, res_rowadr : * const i32, res_rownnz : * const i32, res_colind : * const i32, src_rowadr : * const i32, src_rownnz : * const i32, src_colind : * const i32)
-    // Previous return: ()
-    todo ! ()
+    // SAFETY: caller guarantees all pointers are valid for the sparse matrix dimensions
+    unsafe {
+        for i in 0..nr as usize {
+            let mut res_cursor = *res_rowadr.add(i) as usize;
+            let res_end = res_cursor + *res_rownnz.add(i) as usize;
+            let mut src_cursor = *src_rowadr.add(i) as usize;
+            let src_end = src_cursor + *src_rownnz.add(i) as usize;
+
+            while res_cursor < res_end {
+                let res_col = *res_colind.add(res_cursor);
+                while src_cursor < src_end && *src_colind.add(src_cursor) < res_col {
+                    src_cursor += 1;
+                }
+
+                // found match, set index and advance cursors
+                *map.add(res_cursor) = src_cursor as i32;
+                res_cursor += 1;
+                src_cursor += 1;
+            }
+        }
+    }
 }
 
 /// C: mju_lower2SymMap (engine/engine_util_misc.h:306)
 /// Calls: mju_fillInt
 #[allow(unused_variables, non_snake_case)]
 pub fn mju_lower2sym_map(map: *mut i32, nr: i32, res_rowadr: *const i32, res_rownnz: *const i32, res_colind: *const i32, src_rowadr: *const i32, src_rownnz: *const i32, src_colind: *const i32, cursor: *mut i32) {
-    // WARNING: signature changed — verify body
-    // Previous params: (map : * mut i32, nr : i32, res_rowadr : * const i32, res_rownnz : * const i32, res_colind : * const i32, src_rowadr : * const i32, src_rownnz : * const i32, src_colind : * const i32, cursor : * mut i32)
-    // Previous return: ()
-    todo ! ()
+    if nr == 0 {
+        return;
+    }
+
+    // SAFETY: caller guarantees all pointers are valid for the sparse matrix dimensions
+    unsafe {
+        // default all map entries to "no source"
+        let nnz = *res_rowadr.add(nr as usize - 1) + *res_rownnz.add(nr as usize - 1);
+        mju_fill_int(map, -1, nnz);
+
+        // initialize per-row cursor
+        for i in 0..nr as usize {
+            *cursor.add(i) = *res_rowadr.add(i);
+        }
+
+        // sweep src rows; for each lower (i,j) set res(i,j) and res(j,i)
+        for i in 0..nr as usize {
+            let src_start = *src_rowadr.add(i) as usize;
+            let src_end = src_start + *src_rownnz.add(i) as usize;
+
+            // sweep src row
+            for k in src_start..src_end {
+                let j = *src_colind.add(k) as usize;
+                if j > i {
+                    break; // use only lower triangle of src
+                }
+
+                // --- lower triangle: res(i, j)
+                let res_start = *res_rowadr.add(i) as usize;
+                let res_end = res_start + *res_rownnz.add(i) as usize;
+                let mut c = *cursor.add(i) as usize;
+
+                // increment c until there is a match
+                while c < res_end && (*res_colind.add(c) as usize) < j {
+                    c += 1;
+                }
+
+                // found match, set index, advance and save cursor
+                if c < res_end && *res_colind.add(c) as usize == j {
+                    *map.add(c) = k as i32;
+                    c += 1;
+                }
+                *cursor.add(i) = c as i32;
+
+                // --- upper mirror: res(j, i)
+                if j != i {
+                    let res_start2 = *res_rowadr.add(j) as usize;
+                    let res_end2 = res_start2 + *res_rownnz.add(j) as usize;
+                    let mut c2 = *cursor.add(j) as usize;
+
+                    // increment c until there is a match
+                    while c2 < res_end2 && (*res_colind.add(c2) as usize) < i {
+                        c2 += 1;
+                    }
+
+                    // found match, set index and advance and save cursor
+                    if c2 < res_end2 && *res_colind.add(c2) as usize == i {
+                        *map.add(c2) = k as i32;
+                        c2 += 1;
+                    }
+                    *cursor.add(j) = c2 as i32;
+                }
+            }
+        }
+    }
 }
 
 /// C: mju_insertionSort (engine/engine_util_misc.h:312)
@@ -1505,19 +1599,35 @@ pub fn mju_lower2sym_map(map: *mut i32, nr: i32, res_rowadr: *const i32, res_row
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mju_insertion_sort(list: *mut f64, n: i32) {
-    // WARNING: signature changed — verify body
-    // Previous params: (list : * mut f64, n : i32)
-    // Previous return: ()
-    todo ! ()
+    // SAFETY: caller guarantees list has at least n elements
+    unsafe {
+        for i in 1..n as usize {
+            let x = *list.add(i);
+            let mut j = i as i32 - 1;
+            while j >= 0 && *list.add(j as usize) > x {
+                *list.add(j as usize + 1) = *list.add(j as usize);
+                j -= 1;
+            }
+            *list.add((j + 1) as usize) = x;
+        }
+    }
 }
 
 /// C: mju_insertionSortInt (engine/engine_util_misc.h:315)
 #[allow(unused_variables, non_snake_case)]
 pub fn mju_insertion_sort_int(list: *mut i32, n: i32) {
-    // WARNING: signature changed — verify body
-    // Previous params: (list : * mut i32, n : i32)
-    // Previous return: ()
-    todo ! ()
+    // SAFETY: caller guarantees list has at least n elements
+    unsafe {
+        for i in 1..n as usize {
+            let x = *list.add(i);
+            let mut j = i as i32 - 1;
+            while j >= 0 && *list.add(j as usize) > x {
+                *list.add(j as usize + 1) = *list.add(j as usize);
+                j -= 1;
+            }
+            *list.add((j + 1) as usize) = x;
+        }
+    }
 }
 
 /// C: mju_Halton (engine/engine_util_misc.h:318)

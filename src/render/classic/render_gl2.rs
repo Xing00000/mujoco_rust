@@ -226,10 +226,7 @@ pub fn mjr_rectangle(viewport: mjrRect, r: f32, g: f32, b: f32, a: f32) {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjr_label(viewport: mjrRect, font: i32, txt: *const i8, r: f32, g: f32, b: f32, a: f32, rt: f32, gt: f32, bt: f32, con: *const mjrContext) {
-    // WARNING: signature changed — verify body
-    // Previous params: (viewport : mjrRect, font : i32, txt : * const i8, r : f32, g : f32, b : f32, a : f32, rt : f32, gt : f32, bt : f32, con : * const mjrContext)
-    // Previous return: ()
-    todo ! ()
+    todo!("C++: requires OpenGL gl* function calls (glDisable, glEnable, glBegin, glEnd, etc.)")
 }
 
 /// C: mjr_figure (render/classic/render_gl2.h:79)

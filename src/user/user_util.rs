@@ -135,10 +135,12 @@ pub fn mjuu_copyvec(dest: *mut T1, src: *const T2, n: i32) {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjuu_addtovec(dest: *mut f64, src: *const f64, n: i32) {
-    // WARNING: signature changed — verify body
-    // Previous params: (dest : * mut f64, src : * const f64, n : i32)
-    // Previous return: ()
-    todo ! ()
+    // SAFETY: caller guarantees dest and src have at least n elements
+    unsafe {
+        for i in 0..n as usize {
+            *dest.add(i) += *src.add(i);
+        }
+    }
 }
 
 /// C: mjuu_zerovec (user/user_util.h:62)

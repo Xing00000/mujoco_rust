@@ -509,9 +509,6 @@ pub fn mjc_fix_normal(m: *const mjModel, d: *const mjData, con: *mut mjPreContac
 /// C: mjc_setCCDBuffer (engine/engine_collision_convex.h:128)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjc_set_ccd_buffer(buffer: *mut ()) {
-    // WARNING: signature changed — verify body
-    // Previous params: (buffer : * mut ())
-    // Previous return: ()
-    todo ! ()
+    todo!("C++: requires global mutable static ccd_buffer")
 }
 

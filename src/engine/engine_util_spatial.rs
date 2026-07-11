@@ -86,10 +86,21 @@ pub fn mju_mul_quat_axis(res: *mut f64, quat: *const f64, axis: *const f64) {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mju_axis_angle2quat(res: *mut f64, axis: *const f64, angle: f64) {
-    // WARNING: signature changed — verify body
-    // Previous params: (res : * mut f64, axis : * const f64, angle : f64)
-    // Previous return: ()
-    todo ! ()
+    // SAFETY: caller guarantees res[4] and axis[3] are valid
+    unsafe {
+        if angle == 0.0 {
+            *res.add(0) = 1.0;
+            *res.add(1) = 0.0;
+            *res.add(2) = 0.0;
+            *res.add(3) = 0.0;
+        } else {
+            let s = (angle * 0.5).sin();
+            *res.add(0) = (angle * 0.5).cos();
+            *res.add(1) = *axis.add(0) * s;
+            *res.add(2) = *axis.add(1) * s;
+            *res.add(3) = *axis.add(2) * s;
+        }
+    }
 }
 
 /// C: mju_quat2Vel (engine/engine_util_spatial.h:42)
@@ -364,10 +375,19 @@ pub fn mju_cross(res: *mut f64, a: *const f64, b: *const f64) {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mju_cross_motion(res: *mut f64, vel: *const f64, v: *const f64) {
-    // WARNING: signature changed — verify body
-    // Previous params: (res : * mut f64, vel : * const f64, v : * const f64)
-    // Previous return: ()
-    todo ! ()
+    // SAFETY: caller guarantees res[6], vel[6], v[6] are valid
+    unsafe {
+        *res.add(0) = -*vel.add(2) * *v.add(1) + *vel.add(1) * *v.add(2);
+        *res.add(1) =  *vel.add(2) * *v.add(0) - *vel.add(0) * *v.add(2);
+        *res.add(2) = -*vel.add(1) * *v.add(0) + *vel.add(0) * *v.add(1);
+        *res.add(3) = -*vel.add(2) * *v.add(4) + *vel.add(1) * *v.add(5);
+        *res.add(4) =  *vel.add(2) * *v.add(3) - *vel.add(0) * *v.add(5);
+        *res.add(5) = -*vel.add(1) * *v.add(3) + *vel.add(0) * *v.add(4);
+
+        *res.add(3) += -*vel.add(5) * *v.add(1) + *vel.add(4) * *v.add(2);
+        *res.add(4) +=  *vel.add(5) * *v.add(0) - *vel.add(3) * *v.add(2);
+        *res.add(5) += -*vel.add(4) * *v.add(0) + *vel.add(3) * *v.add(1);
+    }
 }
 
 /// C: mju_crossForce (engine/engine_util_spatial.h:95)
@@ -378,10 +398,19 @@ pub fn mju_cross_motion(res: *mut f64, vel: *const f64, v: *const f64) {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mju_cross_force(res: *mut f64, vel: *const f64, f: *const f64) {
-    // WARNING: signature changed — verify body
-    // Previous params: (res : * mut f64, vel : * const f64, f : * const f64)
-    // Previous return: ()
-    todo ! ()
+    // SAFETY: caller guarantees res[6], vel[6], f[6] are valid
+    unsafe {
+        *res.add(0) = -*vel.add(2) * *f.add(1) + *vel.add(1) * *f.add(2);
+        *res.add(1) =  *vel.add(2) * *f.add(0) - *vel.add(0) * *f.add(2);
+        *res.add(2) = -*vel.add(1) * *f.add(0) + *vel.add(0) * *f.add(1);
+        *res.add(3) = -*vel.add(2) * *f.add(4) + *vel.add(1) * *f.add(5);
+        *res.add(4) =  *vel.add(2) * *f.add(3) - *vel.add(0) * *f.add(5);
+        *res.add(5) = -*vel.add(1) * *f.add(3) + *vel.add(0) * *f.add(4);
+
+        *res.add(0) += -*vel.add(5) * *f.add(4) + *vel.add(4) * *f.add(5);
+        *res.add(1) +=  *vel.add(5) * *f.add(3) - *vel.add(3) * *f.add(5);
+        *res.add(2) += -*vel.add(4) * *f.add(3) + *vel.add(3) * *f.add(4);
+    }
 }
 
 /// C: mju_inertCom (engine/engine_util_spatial.h:98)

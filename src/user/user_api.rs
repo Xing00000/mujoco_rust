@@ -287,10 +287,7 @@ pub fn mjs_get_double(source: *const i32, size: *mut i32) -> *const f64 {
 /// C: mj_makeSpec (user/user_api.h:40)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_make_spec() -> *mut mjSpec {
-    // WARNING: signature changed — verify body
-    // Previous params: ()
-    // Previous return: * mut mjSpec
-    todo ! ()
+    todo!("C++: requires new mjCModel and vtable access")
 }
 
 /// C: mj_compile (user/user_api.h:43)

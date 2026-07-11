@@ -7,6 +7,6 @@ use crate::types::*;
 /// C: mj_resetCallbacks (engine/engine_callback.h:37)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_reset_callbacks() {
-    todo ! ()
+    todo!("C++: requires global mutable static callback function pointers (mjcb_passive, mjcb_control, etc.)")
 }
 

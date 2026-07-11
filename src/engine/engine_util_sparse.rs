@@ -12,10 +12,34 @@ use crate::types::*;
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mju_dot_sparse2(vec1: *const f64, ind1: *const i32, nnz1: i32, vec2: *const f64, ind2: *const i32, nnz2: i32) -> f64 {
-    // WARNING: signature changed — verify body
-    // Previous params: (vec1 : * const f64, ind1 : * const i32, nnz1 : i32, vec2 : * const f64, ind2 : * const i32, nnz2 : i32)
-    // Previous return: f64
-    todo ! ()
+    let mut i1: usize = 0;
+    let mut i2: usize = 0;
+    let mut res: f64 = 0.0;
+
+    // check for empty array
+    if nnz1 == 0 || nnz2 == 0 {
+        return 0.0;
+    }
+
+    // SAFETY: caller guarantees vec1[nnz1], ind1[nnz1], vec2[nnz2], ind2[nnz2] are valid
+    unsafe {
+        while i1 < nnz1 as usize && i2 < nnz2 as usize {
+            let adr1 = *ind1.add(i1);
+            let adr2 = *ind2.add(i2);
+
+            if adr1 == adr2 {
+                res += *vec1.add(i1) * *vec2.add(i2);
+                i1 += 1;
+                i2 += 1;
+            } else if adr1 < adr2 {
+                i1 += 1;
+            } else {
+                i2 += 1;
+            }
+        }
+    }
+
+    res
 }
 
 /// C: mju_dotSparseX3 (engine/engine_util_sparse.h:36)
@@ -40,10 +64,39 @@ pub fn mju_dot_sparse_x3(res0: *mut f64, res1: *mut f64, res2: *mut f64, vec10: 
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mju_dense2sparse(res: *mut f64, mat: *const f64, nr: i32, nc: i32, rownnz: *mut i32, rowadr: *mut i32, colind: *mut i32, nnz: i32) -> i32 {
-    // WARNING: signature changed — verify body
-    // Previous params: (res : * mut f64, mat : * const f64, nr : i32, nc : i32, rownnz : * mut i32, rowadr : * mut i32, colind : * mut i32, nnz : i32)
-    // Previous return: i32
-    todo ! ()
+    if nnz <= 0 {
+        return 1;
+    }
+
+    let mut adr: usize = 0;
+
+    // SAFETY: caller guarantees all pointers are valid for the matrix dimensions
+    unsafe {
+        for r in 0..nr as usize {
+            // init row
+            *rownnz.add(r) = 0;
+            *rowadr.add(r) = adr as i32;
+
+            // find non-zeros
+            for c in 0..nc as usize {
+                if *mat.add(r * nc as usize + c) != 0.0 {
+                    // check for out of bounds
+                    if adr >= nnz as usize {
+                        return 1;
+                    }
+
+                    // record index and count
+                    *colind.add(adr) = c as i32;
+                    *rownnz.add(r) += 1;
+
+                    // copy element
+                    *res.add(adr) = *mat.add(r * nc as usize + c);
+                    adr += 1;
+                }
+            }
+        }
+    }
+    0
 }
 
 /// C: mju_sparse2dense (engine/engine_util_sparse.h:46)
@@ -82,10 +135,23 @@ pub fn mju_sparse2dense(res: *mut f64, mat: *const f64, nr: i32, nc: i32, rownnz
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mju_sym2dense(res: *mut f64, mat: *const f64, n: i32, rownnz: *const i32, rowadr: *const i32, colind: *const i32) {
-    // WARNING: signature changed — verify body
-    // Previous params: (res : * mut f64, mat : * const f64, n : i32, rownnz : * const i32, rowadr : * const i32, colind : * const i32)
-    // Previous return: ()
-    todo ! ()
+    use crate::engine::engine_util_blas::mju_zero;
+
+    mju_zero(res, n * n);
+
+    // SAFETY: caller guarantees all pointers are valid for the matrix dimensions
+    unsafe {
+        for i in 0..n as usize {
+            let adr = *rowadr.add(i) as usize;
+            for j in 0..*rownnz.add(i) as usize {
+                let col = *colind.add(adr + j) as usize;
+                if col <= i {
+                    *res.add(i * n as usize + col) = *mat.add(adr + j);
+                    *res.add(col * n as usize + i) = *mat.add(adr + j);
+                }
+            }
+        }
+    }
 }
 
 /// C: mju_copySparse (engine/engine_util_sparse.h:54)
@@ -510,10 +576,21 @@ pub fn mju_block(res: *mut f64, mat: *const f64, nc_mat: i32, nc_res: i32, nr: i
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mju_block_diag(res: *mut f64, mat: *const f64, nc_mat: i32, nc_res: i32, nb: i32, perm_r: *const i32, perm_c: *const i32, block_nr: *const i32, block_nc: *const i32, block_r: *const i32, block_c: *const i32) {
-    // WARNING: signature changed — verify body
-    // Previous params: (res : * mut f64, mat : * const f64, nc_mat : i32, nc_res : i32, nb : i32, perm_r : * const i32, perm_c : * const i32, block_nr : * const i32, block_nc : * const i32, block_r : * const i32, block_c : * const i32)
-    // Previous return: ()
-    todo ! ()
+    // SAFETY: caller guarantees all pointers are valid for the block dimensions
+    unsafe {
+        for b in 0..nb as usize {
+            let adr = nc_res as usize * *block_r.add(b) as usize;
+            mju_block(
+                res.add(adr),
+                mat,
+                nc_mat,
+                *block_nc.add(b) as i32,
+                *block_nr.add(b) as i32,
+                perm_r.add(*block_r.add(b) as usize),
+                perm_c.add(*block_c.add(b) as usize),
+            );
+        }
+    }
 }
 
 /// C: mju_blockSparse (engine/engine_util_sparse.h:176)

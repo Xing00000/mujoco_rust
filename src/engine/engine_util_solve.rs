@@ -269,10 +269,16 @@ pub fn mju_band_mul_mat_vec(res: *mut f64, mat: *const f64, vec: *const f64, nto
 /// C: mju_bandDiag (engine/engine_util_solve.h:95)
 #[allow(unused_variables, non_snake_case)]
 pub fn mju_band_diag(i: i32, ntotal: i32, nband: i32, ndense: i32) -> i32 {
-    // WARNING: signature changed — verify body
-    // Previous params: (i : i32, ntotal : i32, nband : i32, ndense : i32)
-    // Previous return: i32
-    todo ! ()
+    let nsparse = ntotal - ndense;
+
+    // sparse part
+    if i < nsparse {
+        i * nband + nband - 1
+    }
+    // dense part
+    else {
+        nsparse * nband + (i - nsparse) * ntotal + i
+    }
 }
 
 /// C: mju_factorLU (engine/engine_util_solve.h:102)

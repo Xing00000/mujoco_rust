@@ -355,16 +355,14 @@ pub fn mj_set_totalmass(m: *mut mjModel, newmass: f64) {
 /// C: mj_version (engine/engine_support.h:121)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_version() -> i32 {
-    todo ! ()
+    3010001
 }
 
 /// C: mj_versionString (engine/engine_support.h:124)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_version_string() -> *const i8 {
-    // WARNING: signature changed — verify body
-    // Previous params: ()
-    // Previous return: * const i8
-    todo ! ()
+    // SAFETY: static byte string with null terminator
+    b"3.10.1\0".as_ptr() as *const i8
 }
 
 /// C: mju_condataSize (engine/engine_support.h:127)
@@ -386,10 +384,17 @@ pub fn mju_condata_size(dataSpec: i32) -> i32 {
 /// C: mju_raydataSize (engine/engine_support.h:130)
 #[allow(unused_variables, non_snake_case)]
 pub fn mju_raydata_size(dataspec: i32) -> i32 {
-    // WARNING: signature changed — verify body
-    // Previous params: (dataspec : i32)
-    // Previous return: i32
-    todo ! ()
+    // mjNRAYDATA = 6, sizes: [1, 3, 3, 3, 3, 1]
+    const MJNRAYDATA: i32 = 6;
+    const MJRAYDATA_SIZE: [i32; 6] = [1, 3, 3, 3, 3, 1];
+
+    let mut size: i32 = 0;
+    for i in 0..MJNRAYDATA as usize {
+        if (dataspec & (1 << i)) != 0 {
+            size += MJRAYDATA_SIZE[i];
+        }
+    }
+    size
 }
 
 /// C: mju_camIntrinsics (engine/engine_support.h:134)

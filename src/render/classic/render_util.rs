@@ -208,9 +208,20 @@ pub fn mjr_transform(translate: *const f32, rotate: *const f32, scale: f32) {
 /// C: mjr_findRect (render/classic/render_util.h:68)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjr_find_rect(x: i32, y: i32, nrect: i32, rect: *const mjrRect) -> i32 {
-    // WARNING: signature changed — verify body
-    // Previous params: (x : i32, y : i32, nrect : i32, rect : * const mjrRect)
-    // Previous return: i32
-    todo ! ()
+    // SAFETY: caller guarantees rect has at least nrect elements
+    unsafe {
+        for i in 0..nrect as usize {
+            let r = &*rect.add(i);
+            if x >= r.left &&
+               x < r.left + r.width &&
+               y >= r.bottom &&
+               y < r.bottom + r.height {
+                return i as i32;
+            }
+        }
+    }
+
+    // not found
+    -1
 }
 
