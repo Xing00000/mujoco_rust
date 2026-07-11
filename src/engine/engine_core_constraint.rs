@@ -738,10 +738,11 @@ pub fn mj_make_constraint(m: *const mjModel, d: *mut mjData) {
 /// Calls: mj_isDual, mj_makeAR, mj_makeImpedance, mj_makeY, mju_gather
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_project_constraint(m: *const mjModel, d: *mut mjData) {
+    if m.is_null() { return; }
     extern "C" {
         fn mj_projectConstraint(m: *const mjModel, d: *mut mjData);
     }
-    // SAFETY: delegates to C implementation, all pointers valid per caller contract
+    // SAFETY: m verified non-null; delegates to C implementation
     unsafe { mj_projectConstraint(m, d) }
 }
 

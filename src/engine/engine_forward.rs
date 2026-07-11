@@ -81,8 +81,9 @@ pub fn solve_island_task(m: *const mjModel, d: *mut mjData, arg: *mut (), thread
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_advance(m: *const mjModel, d: *mut mjData, act_dot: *const f64, qacc: *const f64, qvel: *const f64) {
+    if m.is_null() { return; }
     extern "C" { fn mj_advance(m: *const mjModel, d: *mut mjData, act_dot: *const f64, qacc: *const f64, qvel: *const f64); }
-    // SAFETY: delegates to C implementation, pointers valid per caller
+    // SAFETY: m verified non-null; delegates to C implementation
     unsafe { mj_advance(m, d, act_dot, qacc, qvel) }
 }
 

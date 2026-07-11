@@ -379,8 +379,9 @@ pub fn primal_eval(ctx: *mut mjPrimalContext, p: *mut mjPrimalPnt) {
 /// Calls: PrimalEval
 #[allow(unused_variables, non_snake_case)]
 pub fn update_bracket(ctx: *mut mjPrimalContext, p: *mut mjPrimalPnt, candidates: *const mjPrimalPnt, pnext: *mut mjPrimalPnt) -> i32  {
+    if ctx.is_null() { return 0; }
     extern "C" { fn updateBracket(ctx: *mut mjPrimalContext, p: *mut mjPrimalPnt, candidates: *const mjPrimalPnt, pnext: *mut mjPrimalPnt) -> i32; }
-    // SAFETY: delegates to C implementation
+    // SAFETY: ctx verified non-null; delegates to C implementation
     unsafe { updateBracket(ctx, p, candidates, pnext) }
 }
 
@@ -424,10 +425,10 @@ pub fn hessian_cone(d: *mut mjData, ctx: *mut mjPrimalContext) {
 /// Calls: HessianCone, mju_addToMatSparse, mju_addToSymSparse, mju_cholFactor, mju_cholFactorNumeric, mju_message, mju_sqrMatTDSparseNumeric, mju_sqrMatTDSparseSymbolic, mju_sqrMatTD_impl
 #[allow(unused_variables, non_snake_case)]
 pub fn factorize_hessian(d: *mut mjData, ctx: *mut mjPrimalContext, flg_recompute: i32) {
-    // WARNING: signature changed — verify body
-    // Previous params: (d : * mut mjData, ctx : * mut mjPrimalContext, flg_recompute : i32)
-    // Previous return: ()
-    extern "C" { fn FactorizeHessian(d : * mut mjData , ctx : * mut mjPrimalContext , flg_recompute : i32) ; } unsafe { FactorizeHessian(d , ctx , flg_recompute) }
+    if d.is_null() { return; }
+    extern "C" { fn FactorizeHessian(d: *mut mjData, ctx: *mut mjPrimalContext, flg_recompute: i32); }
+    // SAFETY: d verified non-null; delegates to C implementation
+    unsafe { FactorizeHessian(d, ctx, flg_recompute) }
 }
 
 /// C: HessianIncremental (engine/engine_solver.c:2238)
@@ -506,8 +507,9 @@ pub fn mj_sol_pgs_island(m: *const mjModel, d: *mut mjData, island: i32, maxiter
 /// Calls: solNoSlip
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_sol_no_slip_island(m: *const mjModel, d: *mut mjData, island: i32, maxiter: i32) {
+    if m.is_null() { return; }
     extern "C" { fn mj_solNoSlip_island(m: *const mjModel, d: *mut mjData, island: i32, maxiter: i32); }
-    // SAFETY: delegates to C implementation
+    // SAFETY: m verified non-null; delegates to C implementation
     unsafe { mj_solNoSlip_island(m, d, island, maxiter) }
 }
 

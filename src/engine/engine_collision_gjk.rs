@@ -414,10 +414,11 @@ pub fn gjk_intersect(status: *mut mjCCDStatus, obj1: *mut mjCCDObj, obj2: *mut m
 /// Calls: add3, attachFace, cross3, epaSupport, insertVertex, mju_mulMatVec3, norm3, polytope3, rayTriangle, replaceSimplex3, rotmat, scl3, sub3
 #[allow(unused_variables, non_snake_case)]
 pub fn polytope2(pt: *mut Polytope, status: *mut mjCCDStatus, obj1: *mut mjCCDObj, obj2: *mut mjCCDObj) -> i32 {
+    if pt.is_null() { return 0; }
     extern "C" {
         fn polytope2(pt: *mut Polytope, status: *mut mjCCDStatus, obj1: *mut mjCCDObj, obj2: *mut mjCCDObj) -> i32;
     }
-    // SAFETY: delegates to C implementation, all pointers valid per caller contract
+    // SAFETY: pt verified non-null; delegates to C implementation
     unsafe { polytope2(pt, status, obj1, obj2) }
 }
 
@@ -437,10 +438,11 @@ pub fn polytope3(pt: *mut Polytope, status: *mut mjCCDStatus, obj1: *mut mjCCDOb
 /// Calls: add3, attachFace, insertVertex, polytope3, replaceSimplex3, scl3, testTetra
 #[allow(unused_variables, non_snake_case)]
 pub fn polytope4(pt: *mut Polytope, status: *mut mjCCDStatus, obj1: *mut mjCCDObj, obj2: *mut mjCCDObj) -> i32 {
+    if pt.is_null() { return 0; }
     extern "C" {
         fn polytope4(pt: *mut Polytope, status: *mut mjCCDStatus, obj1: *mut mjCCDObj, obj2: *mut mjCCDObj) -> i32;
     }
-    // SAFETY: delegates to C implementation, all pointers valid per caller contract
+    // SAFETY: pt verified non-null; delegates to C implementation
     unsafe { polytope4(pt, status, obj1, obj2) }
 }
 
@@ -448,10 +450,11 @@ pub fn polytope4(pt: *mut Polytope, status: *mut mjCCDStatus, obj1: *mut mjCCDOb
 /// Calls: attachFace, discreteGeoms, dot3, epaSupport, epaWitness, horizon, maxFaces, mju_warning
 #[allow(unused_variables, non_snake_case)]
 pub fn epa(status: *mut mjCCDStatus, pt: *mut Polytope, obj1: *mut mjCCDObj, obj2: *mut mjCCDObj) -> *mut Face {
+    if status.is_null() { return core::ptr::null_mut(); }
     extern "C" {
         fn epa(status: *mut mjCCDStatus, pt: *mut Polytope, obj1: *mut mjCCDObj, obj2: *mut mjCCDObj) -> *mut Face;
     }
-    // SAFETY: delegates to C implementation, all pointers valid per caller contract
+    // SAFETY: status verified non-null; delegates to C implementation
     unsafe { epa(status, pt, obj1, obj2) }
 }
 
@@ -628,8 +631,9 @@ pub fn discrete_geoms(obj1: *mut mjCCDObj, obj2: *mut mjCCDObj) -> i32 {
 /// Calls: copy3, discreteGeoms, dot3, equal3, gjkIntersect, gjkSupport, lincomb, sub3, subdistance
 #[allow(unused_variables, non_snake_case)]
 pub fn gjk(status: *mut mjCCDStatus, obj1: *mut mjCCDObj, obj2: *mut mjCCDObj) {
+    if status.is_null() { return; }
     extern "C" { fn gjk(status: *mut mjCCDStatus, obj1: *mut mjCCDObj, obj2: *mut mjCCDObj); }
-    // SAFETY: delegates to C implementation
+    // SAFETY: status verified non-null; delegates to C implementation
     unsafe { gjk(status, obj1, obj2) }
 }
 

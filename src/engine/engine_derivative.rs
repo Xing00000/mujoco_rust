@@ -342,8 +342,9 @@ pub fn mjd_magnus_force(B: *mut f64, lvel: *const f64, fluid_density: f64, size:
 /// Calls: addJTBJ, addJTBJSparse, addToQuadrant, mj_bodyChain, mj_freeStack, mj_isSparse, mj_jacGeom, mj_jacSparse, mj_markStack, mj_objectVelocity, mj_stackAllocInfo, mjd_addedMassForces, mjd_kutta_lift, mjd_magnus_force, mjd_viscous_drag, mjd_viscous_torque, mju_copy, mju_copy3, mju_geomSemiAxes, mju_mulMatTMat, mju_subFrom3, mju_symmetrize, mju_transformSpatial, mju_zero, readFluidGeomInteraction
 #[allow(unused_variables, non_snake_case)]
 pub fn mjd_ellipsoid_fluid(m: *const mjModel, d: *mut mjData, bodyid: i32) {
+    if m.is_null() { return; }
     extern "C" { fn mjd_ellipsoidFluid(m: *const mjModel, d: *mut mjData, bodyid: i32); }
-    // SAFETY: delegates to C implementation, pointers valid per caller
+    // SAFETY: m verified non-null; delegates to C implementation
     unsafe { mjd_ellipsoidFluid(m, d, bodyid) }
 }
 

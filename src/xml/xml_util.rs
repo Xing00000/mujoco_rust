@@ -17,8 +17,12 @@ pub fn parse_inf_or_nan(s: *const std__string) -> *const () {
 /// Calls: FilePath::IsAbs, FilePath::c_str, mju_closeResource, mju_openResource
 #[allow(unused_variables, non_snake_case)]
 pub fn resolve_file_path(e: *mut XMLElement, filename: *const FilePath, dir: *const FilePath, vfs: *const mjVFS) -> FilePath {
+    if e.is_null() {
+        // SAFETY: FilePath is a zero-sized type, transmute from empty array is valid
+        return unsafe { core::mem::transmute::<[u8; 0], FilePath>([]) };
+    }
     extern "C" { fn ResolveFilePath(e: *mut XMLElement, filename: *const FilePath, dir: *const FilePath, vfs: *const mjVFS) -> FilePath; }
-    // SAFETY: delegates to C implementation, all pointers valid per caller contract
+    // SAFETY: e verified non-null; delegates to C implementation
     unsafe { ResolveFilePath(e, filename, dir, vfs) }
 }
 

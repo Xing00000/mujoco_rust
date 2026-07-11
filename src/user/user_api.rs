@@ -1007,8 +1007,9 @@ pub fn mjs_first_child(body: *const mjsBody, r#type: mjtObj, recurse: i32) -> *m
 /// Calls: mjCBody::NextChild
 #[allow(unused_variables, non_snake_case)]
 pub fn mjs_next_child(body: *const mjsBody, child: *const mjsElement, recurse: i32) -> *mut mjsElement {
+    if body.is_null() { return core::ptr::null_mut(); }
     extern "C" { fn mjs_nextChild(body: *const mjsBody, child: *const mjsElement, recurse: i32) -> *mut mjsElement; }
-    // SAFETY: delegates to C implementation
+    // SAFETY: body verified non-null; delegates to C implementation
     unsafe { mjs_nextChild(body, child, recurse) }
 }
 
@@ -1393,8 +1394,9 @@ pub fn mjs_set_default(element: *mut mjsElement, def: *const mjsDefault) {
 /// Calls: mjCBase::SetFrame, mjCModel::SetError
 #[allow(unused_variables, non_snake_case)]
 pub fn mjs_set_frame(dest: *mut mjsElement, frame: *mut mjsFrame) -> i32 {
+    if dest.is_null() { return 0; }
     extern "C" { fn mjs_setFrame(dest: *mut mjsElement, frame: *mut mjsFrame) -> i32; }
-    // SAFETY: delegates to C implementation
+    // SAFETY: dest verified non-null; delegates to C implementation
     unsafe { mjs_setFrame(dest, frame) }
 }
 

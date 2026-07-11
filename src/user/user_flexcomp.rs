@@ -94,8 +94,9 @@ pub fn mj_c_flexcomp_make_box(self_ptr: *mut mjCFlexcomp, error: *mut i8, error_
 /// Calls: mjCFlexcomp::MakeGrid, mjuu_normvec
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_flexcomp_make_square(self_ptr: *mut mjCFlexcomp, error: *mut i8, error_sz: i32) -> bool {
+    if self_ptr.is_null() { return false; }
     extern "C" { fn mjCFlexcomp_MakeSquare(self_ptr: *mut mjCFlexcomp, error: *mut i8, error_sz: i32) -> bool; }
-    // SAFETY: delegates to C implementation
+    // SAFETY: self_ptr verified non-null; delegates to C implementation
     unsafe { mjCFlexcomp_MakeSquare(self_ptr, error, error_sz) }
 }
 
@@ -121,8 +122,9 @@ pub fn mj_c_flexcomp_make_gmsh(self_ptr: *mut mjCFlexcomp, model: *mut mjCModel,
 /// Calls: findstring, mjCFlexcomp::LoadGMSH22, mjCFlexcomp::LoadGMSH41, mju_readResource, mju_round
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_flexcomp_load_gmsh(self_ptr: *mut mjCFlexcomp, model: *mut mjCModel, resource: *mut mjResource) {
+    if self_ptr.is_null() { return; }
     extern "C" { fn mjCFlexcomp_LoadGMSH(self_ptr: *mut mjCFlexcomp, model: *mut mjCModel, resource: *mut mjResource); }
-    // SAFETY: delegates to C implementation
+    // SAFETY: self_ptr verified non-null; delegates to C implementation
     unsafe { mjCFlexcomp_LoadGMSH(self_ptr, model, resource) }
 }
 

@@ -37,8 +37,9 @@ pub fn reader_set_node(self_ptr: *mut Reader, node: *mut XMLElement) {
 /// Calls: FirstChildElement, NextSiblingElement, mjXUtil::ReadAttrTxt
 #[allow(unused_variables, non_snake_case)]
 pub fn read_plugin_configs(elem: *mut tinyxml2__XMLElement, p: *mut mjsPlugin) {
+    if elem.is_null() { return; }
     extern "C" { fn ReadPluginConfigs(elem: *mut tinyxml2__XMLElement, p: *mut mjsPlugin); }
-    // SAFETY: delegates to C implementation
+    // SAFETY: elem verified non-null; delegates to C implementation
     unsafe { ReadPluginConfigs(elem, p) }
 }
 
@@ -304,8 +305,9 @@ pub fn mj_x_reader_one_mesh(self_ptr: *mut mjXReader, elem: *mut tinyxml2__XMLEl
 /// Calls: FirstChildElement, NextSiblingElement, mjXReader::AssetDir, mjXUtil::ReadAttrInt, mjXUtil::ReadAttrTxt
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_x_reader_one_skin(self_ptr: *mut mjXReader, elem: *mut tinyxml2__XMLElement, pskin: *mut mjsSkin, vfs: *const mjVFS) {
+    if self_ptr.is_null() { return; }
     extern "C" { fn mjXReader_OneSkin(self_ptr: *mut mjXReader, elem: *mut tinyxml2__XMLElement, pskin: *mut mjsSkin, vfs: *const mjVFS); }
-    // SAFETY: delegates to C implementation
+    // SAFETY: self_ptr verified non-null; delegates to C implementation
     unsafe { mjXReader_OneSkin(self_ptr, elem, pskin, vfs) }
 }
 
@@ -313,8 +315,9 @@ pub fn mj_x_reader_one_skin(self_ptr: *mut mjXReader, elem: *mut tinyxml2__XMLEl
 /// Calls: FirstChildElement, NextSiblingElement, mjXUtil::FindKey, mjXUtil::MapValue, mjXUtil::ReadAttrTxt
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_x_reader_one_material(self_ptr: *mut mjXReader, elem: *mut tinyxml2__XMLElement, pmaterial: *mut mjsMaterial) {
+    if self_ptr.is_null() { return; }
     extern "C" { fn mjXReader_OneMaterial(self_ptr: *mut mjXReader, elem: *mut tinyxml2__XMLElement, pmaterial: *mut mjsMaterial); }
-    // SAFETY: delegates to C implementation
+    // SAFETY: self_ptr verified non-null; delegates to C implementation
     unsafe { mjXReader_OneMaterial(self_ptr, elem, pmaterial) }
 }
 

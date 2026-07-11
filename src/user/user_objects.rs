@@ -8,8 +8,12 @@ use crate::types::*;
 /// Calls: mju_readResource
 #[allow(unused_variables, non_snake_case)]
 pub fn png_image_load(obj: *const mjCBase, resource: *mut mjResource, color_type: LodePNGColorType) -> PNGImage {
+    if obj.is_null() {
+        // SAFETY: PNGImage is a zero-sized type, transmute from empty array is valid
+        return unsafe { core::mem::transmute::<[u8; 0], PNGImage>([]) };
+    }
     extern "C" { fn PNGImage_Load(obj: *const mjCBase, resource: *mut mjResource, color_type: LodePNGColorType) -> PNGImage; }
-    // SAFETY: delegates to C implementation, all pointers valid per caller contract
+    // SAFETY: obj verified non-null; delegates to C implementation
     unsafe { PNGImage_Load(obj, resource, color_type) }
 }
 
@@ -2955,8 +2959,9 @@ pub fn mj_c_mesh_cache_mesh(self_ptr: *mut mjCMesh, cache: *mut mjCCache, resour
 /// Calls: mj_deleteSpec, mjs_asMesh, mjs_firstElement
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_mesh_load_from_decoder(self_ptr: *mut mjCMesh, resource: *mut mjResource, remove_repeated: bool) {
+    if self_ptr.is_null() { return; }
     extern "C" { fn mjCMesh_LoadFromDecoder(self_ptr: *mut mjCMesh, resource: *mut mjResource, remove_repeated: bool); }
-    // SAFETY: delegates to C implementation
+    // SAFETY: self_ptr verified non-null; delegates to C implementation
     unsafe { mjCMesh_LoadFromDecoder(self_ptr, resource, remove_repeated) }
 }
 
@@ -2964,8 +2969,9 @@ pub fn mj_c_mesh_load_from_decoder(self_ptr: *mut mjCMesh, resource: *mut mjReso
 /// Calls: mju_readResource
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_mesh_load_msh(self_ptr: *mut mjCMesh, resource: *mut mjResource, remove_repeated: bool) {
+    if self_ptr.is_null() { return; }
     extern "C" { fn mjCMesh_LoadMSH(self_ptr: *mut mjCMesh, resource: *mut mjResource, remove_repeated: bool); }
-    // SAFETY: delegates to C implementation
+    // SAFETY: self_ptr verified non-null; delegates to C implementation
     unsafe { mjCMesh_LoadMSH(self_ptr, resource, remove_repeated) }
 }
 
@@ -3033,10 +3039,10 @@ pub fn mj_c_mesh_make_center(self_ptr: *mut mjCMesh, dvert: *const f64) {
 /// Calls: mjCMesh::ApplyTransformations, mjCMesh::ComputeFaceCentroid, mjCMesh::ComputeInertia, mjCMesh::CopyGraph, mjCMesh::GetVolumeRef, mjCMesh::MakeCenter, mjCMesh::MakeGraph, mjCMesh::MakeNormal, mjCMesh::MakePolygonNormals, mjCMesh::MakePolygons, mjCMesh::Rotate, mjCMesh::SetBoundingVolume, mjCMesh::nface, mjCMesh::nvert, mjuu_eig3, mjuu_setvec
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_mesh_process(self_ptr: *mut mjCMesh) {
-    // WARNING: signature changed — verify body
-    // Previous params: (self_ptr : * mut mjCMesh)
-    // Previous return: ()
-    extern "C" { fn mjCMesh_Process (self_ptr : * mut mjCMesh) ; } unsafe { mjCMesh_Process (self_ptr) }
+    if self_ptr.is_null() { return; }
+    extern "C" { fn mjCMesh_Process(self_ptr: *mut mjCMesh); }
+    // SAFETY: self_ptr verified non-null; delegates to C implementation
+    unsafe { mjCMesh_Process(self_ptr) }
 }
 
 /// C: mjCMesh::ApplyTransformations (user/user_objects.h:1287)

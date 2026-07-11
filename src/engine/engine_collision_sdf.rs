@@ -119,10 +119,11 @@ pub fn geom_distance(m: *const mjModel, d: *const mjData, p: *const mjpPlugin, i
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn geom_gradient(gradient: *mut f64, m: *const mjModel, d: *const mjData, p: *const mjpPlugin, i: i32, x: *const f64, r#type: mjtGeom) {
+    if gradient.is_null() { return; }
     extern "C" {
         fn geomGradient(gradient: *mut f64, m: *const mjModel, d: *const mjData, p: *const mjpPlugin, i: i32, x: *const f64, r#type: mjtGeom);
     }
-    // SAFETY: delegates to C implementation, all pointers valid per caller contract
+    // SAFETY: gradient verified non-null; delegates to C implementation
     unsafe { geomGradient(gradient, m, d, p, i, x, r#type) }
 }
 
@@ -341,10 +342,11 @@ pub fn mjc_get_sdf(m: *const mjModel, id: i32) -> *const mjpPlugin {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjc_distance(m: *const mjModel, d: *const mjData, s: *const mjSDF, x: *const f64) -> f64 {
+    if m.is_null() { return 0.0; }
     extern "C" {
         fn mjc_distance(m: *const mjModel, d: *const mjData, s: *const mjSDF, x: *const f64) -> f64;
     }
-    // SAFETY: delegates to C implementation, all pointers valid per caller contract
+    // SAFETY: m verified non-null; delegates to C implementation
     unsafe { mjc_distance(m, d, s, x) }
 }
 

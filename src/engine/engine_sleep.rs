@@ -63,8 +63,9 @@ pub fn plural(n: i32) -> *const i8  {
 /// Calls: mju_isTopicEnabled, mju_message, mju_strncpy, mju_zero, plural
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_sleep_trees(m: *const mjModel, d: *mut mjData, tree: *const i32, n: i32) {
+    if m.is_null() { return; }
     extern "C" { fn mj_sleepTrees(m: *const mjModel, d: *mut mjData, tree: *const i32, n: i32); }
-    // SAFETY: delegates to C implementation
+    // SAFETY: m verified non-null; delegates to C implementation
     unsafe { mj_sleepTrees(m, d, tree, n) }
 }
 

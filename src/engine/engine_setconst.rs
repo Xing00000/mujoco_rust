@@ -131,8 +131,9 @@ pub fn mj_set_const(m: *mut mjModel, d: *mut mjData) {
 /// Calls: evalAct, mj_resetData, mju_message
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_set_length_range(m: *mut mjModel, d: *mut mjData, index: i32, opt: *const mjLROpt, error: *mut i8, error_sz: i32) -> i32 {
+    if m.is_null() { return 0; }
     extern "C" { fn mj_setLengthRange(m: *mut mjModel, d: *mut mjData, index: i32, opt: *const mjLROpt, error: *mut i8, error_sz: i32) -> i32; }
-    // SAFETY: delegates to C implementation
+    // SAFETY: m verified non-null; delegates to C implementation
     unsafe { mj_setLengthRange(m, d, index, opt, error, error_sz) }
 }
 

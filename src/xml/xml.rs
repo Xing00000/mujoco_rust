@@ -18,10 +18,10 @@ pub fn locale_override_posix_locale() -> i32 {
 /// Calls: FilePath::IsAbs, FilePath::Str, FilePath::c_str, mjXReader::ModelFileDir, mjXReader::SetAssetDir, mjXReader::SetMeshDir, mjXReader::SetTextureDir, mju_closeResource, mju_getResourceDir, mju_readResource
 #[allow(unused_variables, non_snake_case)]
 pub fn include_xml(reader: *mut mjXReader, elem: *mut XMLElement, dir: *const FilePath, vfs: *const mjVFS, included: *mut i32) {
-    // WARNING: signature changed — verify body
-    // Previous params: (reader : * mut mjXReader, elem : * mut XMLElement, dir : * const FilePath, vfs : * const mjVFS, included : * mut i32)
-    // Previous return: ()
-    extern "C" { fn IncludeXML(reader : * mut mjXReader , elem : * mut XMLElement , dir : * const FilePath , vfs : * const mjVFS , included : * mut i32) ; } unsafe { IncludeXML(reader , elem , dir , vfs , included) }
+    if reader.is_null() { return; }
+    extern "C" { fn IncludeXML(reader: *mut mjXReader, elem: *mut XMLElement, dir: *const FilePath, vfs: *const mjVFS, included: *mut i32); }
+    // SAFETY: reader verified non-null; delegates to C implementation
+    unsafe { IncludeXML(reader, elem, dir, vfs, included) }
 }
 
 /// C: SpecFromXML (xml/xml.cc:243)
@@ -37,8 +37,9 @@ pub fn spec_from_xml(xml: string_view, dir: string_view, filename: string_view, 
 /// Calls: mju_closeResource, mju_getResourceDir, mju_readResource
 #[allow(unused_variables, non_snake_case)]
 pub fn parse_xml(filename: *const i8, vfs: *const mjVFS, error: *mut i8, nerror: i32) -> *mut mjSpec {
+    if filename.is_null() { return core::ptr::null_mut(); }
     extern "C" { fn ParseXML(filename: *const i8, vfs: *const mjVFS, error: *mut i8, nerror: i32) -> *mut mjSpec; }
-    // SAFETY: delegates to C implementation, all pointers valid per caller contract
+    // SAFETY: filename verified non-null; delegates to C implementation
     unsafe { ParseXML(filename, vfs, error, nerror) }
 }
 

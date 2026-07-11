@@ -12,8 +12,9 @@ const MJ_NAN: f64 = f64::NAN;
 /// Calls: mj_defaultLROpt, mj_defaultOption, mj_defaultVisual
 #[allow(unused_variables, non_snake_case)]
 pub fn mjs_default_spec(spec: *mut mjSpec) {
+    if spec.is_null() { return; }
     extern "C" { fn mjs_defaultSpec(spec: *mut mjSpec); }
-    // SAFETY: delegates to C implementation (complex: calls mj_defaultOption, mj_defaultVisual, mj_defaultLROpt)
+    // SAFETY: spec verified non-null; delegates to C implementation
     unsafe { mjs_defaultSpec(spec) }
 }
 
