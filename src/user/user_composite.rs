@@ -81,16 +81,18 @@ pub fn mj_c_composite_make_skin2subgrid(self_ptr: *mut mjCComposite, model: *mut
 /// C: mjCComposite::MakeCableBones (user/user_composite.h:69)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_composite_make_cable_bones(self_ptr: *mut mjCComposite, model: *mut mjCModel, skin: *mut mjsSkin) {
+    if self_ptr.is_null() { return; }
     extern "C" { fn mjCComposite_MakeCableBones(self_ptr: *mut mjCComposite, model: *mut mjCModel, skin: *mut mjsSkin); }
-    // SAFETY: delegates to C implementation
+    // SAFETY: self_ptr verified non-null
     unsafe { mjCComposite_MakeCableBones(self_ptr, model, skin) }
 }
 
 /// C: mjCComposite::MakeCableBonesSubgrid (user/user_composite.h:70)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_composite_make_cable_bones_subgrid(self_ptr: *mut mjCComposite, model: *mut mjCModel, skin: *mut mjsSkin) {
+    if self_ptr.is_null() { return; }
     extern "C" { fn mjCComposite_MakeCableBonesSubgrid(self_ptr: *mut mjCComposite, model: *mut mjCModel, skin: *mut mjsSkin); }
-    // SAFETY: delegates to C implementation
+    // SAFETY: self_ptr verified non-null
     unsafe { mjCComposite_MakeCableBonesSubgrid(self_ptr, model, skin) }
 }
 
@@ -111,8 +113,9 @@ pub fn mj_c_composite_add_cable_body(self_ptr: *mut mjCComposite, model: *mut mj
 /// C: mjCComposite::CopyIntoSkin (user/user_composite.h:115)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_composite_copy_into_skin(self_ptr: *mut mjCComposite, skin: *mut mjsSkin) {
+    if self_ptr.is_null() { return; }
     extern "C" { fn mjCComposite_CopyIntoSkin(self_ptr: *mut mjCComposite, skin: *mut mjsSkin); }
-    // SAFETY: delegates to C implementation
+    // SAFETY: self_ptr verified non-null
     unsafe { mjCComposite_CopyIntoSkin(self_ptr, skin) }
 }
 

@@ -1789,32 +1789,36 @@ pub fn mj_c_site_name_space(self_ptr: *mut mjCSite, m: *const mjCModel) {
 /// C: mjCCamera::get_targetbody (user/user_objects.h:899)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_camera_get_targetbody(self_ptr: *mut mjCCamera) -> *const i32 {
+    if self_ptr.is_null() { return core::ptr::null(); }
     extern "C" { fn mjCCamera_get_targetbody(self_ptr: *mut mjCCamera) -> *const i32; }
-    // SAFETY: delegates to C implementation
+    // SAFETY: self_ptr verified non-null
     unsafe { mjCCamera_get_targetbody(self_ptr) }
 }
 
 /// C: mjCCamera::get_userdata (user/user_objects.h:900)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_camera_get_userdata(self_ptr: *mut mjCCamera) -> *const i32 {
+    if self_ptr.is_null() { return core::ptr::null(); }
     extern "C" { fn mjCCamera_get_userdata(self_ptr: *mut mjCCamera) -> *const i32; }
-    // SAFETY: delegates to C implementation
+    // SAFETY: self_ptr verified non-null
     unsafe { mjCCamera_get_userdata(self_ptr) }
 }
 
 /// C: mjCCamera::SetParent (user/user_objects.h:902)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_camera_set_parent(self_ptr: *mut mjCCamera, _body: *mut mjCBody) {
+    if self_ptr.is_null() { return; }
     extern "C" { fn mjCCamera_SetParent(self_ptr: *mut mjCCamera, _body: *mut mjCBody); }
-    // SAFETY: delegates to C implementation
+    // SAFETY: self_ptr verified non-null
     unsafe { mjCCamera_SetParent(self_ptr, _body) }
 }
 
 /// C: mjCCamera::GetParent (user/user_objects.h:903)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_camera_get_parent(self_ptr: *mut mjCCamera) -> *mut mjCBody {
+    if self_ptr.is_null() { return core::ptr::null_mut(); }
     extern "C" { fn mjCCamera_GetParent(self_ptr: *mut mjCCamera) -> *mut mjCBody; }
-    // SAFETY: delegates to C implementation
+    // SAFETY: self_ptr verified non-null
     unsafe { mjCCamera_GetParent(self_ptr) }
 }
 
@@ -1830,32 +1834,36 @@ pub fn mj_c_camera_compile(self_ptr: *mut mjCCamera) {
 /// C: mjCCamera::CopyFromSpec (user/user_objects.h:907)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_camera_copy_from_spec(self_ptr: *mut mjCCamera) {
+    if self_ptr.is_null() { return; }
     extern "C" { fn mjCCamera_CopyFromSpec(self_ptr: *mut mjCCamera); }
-    // SAFETY: delegates to C implementation
+    // SAFETY: self_ptr verified non-null
     unsafe { mjCCamera_CopyFromSpec(self_ptr) }
 }
 
 /// C: mjCCamera::PointToLocal (user/user_objects.h:908)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_camera_point_to_local(self_ptr: *mut mjCCamera) {
+    if self_ptr.is_null() { return; }
     extern "C" { fn mjCCamera_PointToLocal(self_ptr: *mut mjCCamera); }
-    // SAFETY: delegates to C implementation
+    // SAFETY: self_ptr verified non-null
     unsafe { mjCCamera_PointToLocal(self_ptr) }
 }
 
 /// C: mjCCamera::NameSpace (user/user_objects.h:909)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_camera_name_space(self_ptr: *mut mjCCamera, m: *const mjCModel) {
+    if self_ptr.is_null() { return; }
     extern "C" { fn mjCCamera_NameSpace(self_ptr: *mut mjCCamera, m: *const mjCModel); }
-    // SAFETY: delegates to C implementation
+    // SAFETY: self_ptr verified non-null
     unsafe { mjCCamera_NameSpace(self_ptr, m) }
 }
 
 /// C: mjCCamera::ResolveReferences (user/user_objects.h:910)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_camera_resolve_references(self_ptr: *mut mjCCamera, m: *const mjCModel) {
+    if self_ptr.is_null() { return; }
     extern "C" { fn mjCCamera_ResolveReferences(self_ptr: *mut mjCCamera, m: *const mjCModel); }
-    // SAFETY: delegates to C implementation
+    // SAFETY: self_ptr verified non-null
     unsafe { mjCCamera_ResolveReferences(self_ptr, m) }
 }
 
@@ -4133,24 +4141,27 @@ pub fn mj_c_def_copy_without_children(self_ptr: *mut mjCDef, other: *const mjCDe
 /// C: mjCDef::PointToLocal (user/user_objects.h:2077)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_def_point_to_local(self_ptr: *mut mjCDef) {
+    if self_ptr.is_null() { return; }
     extern "C" { fn mjCDef_PointToLocal(self_ptr: *mut mjCDef); }
-    // SAFETY: delegates to C implementation
+    // SAFETY: self_ptr verified non-null
     unsafe { mjCDef_PointToLocal(self_ptr) }
 }
 
 /// C: mjCDef::CopyFromSpec (user/user_objects.h:2078)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_def_copy_from_spec(self_ptr: *mut mjCDef) {
+    if self_ptr.is_null() { return; }
     extern "C" { fn mjCDef_CopyFromSpec(self_ptr: *mut mjCDef); }
-    // SAFETY: delegates to C implementation
+    // SAFETY: self_ptr verified non-null
     unsafe { mjCDef_CopyFromSpec(self_ptr) }
 }
 
 /// C: mjCDef::NameSpace (user/user_objects.h:2079)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_def_name_space(self_ptr: *mut mjCDef, m: *const mjCModel) {
+    if self_ptr.is_null() { return; }
     extern "C" { fn mjCDef_NameSpace(self_ptr: *mut mjCDef, m: *const mjCModel); }
-    // SAFETY: delegates to C implementation
+    // SAFETY: self_ptr verified non-null
     unsafe { mjCDef_NameSpace(self_ptr, m) }
 }
 
@@ -4166,19 +4177,21 @@ pub fn mj_c_def_compile(self_ptr: *mut mjCDef, model: *const mjCModel) {
 /// C: mjCDef::Joint (user/user_objects.h:2084)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_def_joint(self_ptr: *mut mjCDef) -> *mut mjCJoint {
+    if self_ptr.is_null() { return core::ptr::null_mut(); }
     extern "C" { fn mjCDef_Joint(self_ptr: *mut mjCDef) -> *mut mjCJoint; }
-    // SAFETY: delegates to C implementation
+    // SAFETY: self_ptr verified non-null
     unsafe { mjCDef_Joint(self_ptr) }
 }
 
 /// C: mjCDef::Geom (user/user_objects.h:2085)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_def_geom(self_ptr: *mut mjCDef) -> *mut mjCGeom {
+    if self_ptr.is_null() { return core::ptr::null_mut(); }
     // WARNING: signature changed — verify body
     // Previous params: (self_ptr : * mut mjCDef)
     // Previous return: * mut mjCGeom
     extern "C" { fn mjCDef_Geom(self_ptr: *mut mjCDef) -> *mut mjCGeom; }
-    // SAFETY: delegates to C++ implementation; caller guarantees self_ptr is valid
+    // SAFETY: self_ptr verified non-null
     unsafe { mjCDef_Geom(self_ptr) }
 }
 
@@ -4193,40 +4206,45 @@ pub fn mj_c_def_site(self_ptr: *mut mjCDef) -> *mut mjCSite {
 /// C: mjCDef::Camera (user/user_objects.h:2087)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_def_camera(self_ptr: *mut mjCDef) -> *mut mjCCamera {
+    if self_ptr.is_null() { return core::ptr::null_mut(); }
     extern "C" { fn mjCDef_Camera(self_ptr: *mut mjCDef) -> *mut mjCCamera; }
-    // SAFETY: delegates to C implementation
+    // SAFETY: self_ptr verified non-null
     unsafe { mjCDef_Camera(self_ptr) }
 }
 
 /// C: mjCDef::Light (user/user_objects.h:2088)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_def_light(self_ptr: *mut mjCDef) -> *mut mjCLight {
+    if self_ptr.is_null() { return core::ptr::null_mut(); }
     extern "C" { fn mjCDef_Light(self_ptr: *mut mjCDef) -> *mut mjCLight; }
-    // SAFETY: delegates to C implementation
+    // SAFETY: self_ptr verified non-null
     unsafe { mjCDef_Light(self_ptr) }
 }
 
 /// C: mjCDef::Flex (user/user_objects.h:2089)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_def_flex(self_ptr: *mut mjCDef) -> *mut mjCFlex {
+    if self_ptr.is_null() { return core::ptr::null_mut(); }
     extern "C" { fn mjCDef_Flex(self_ptr: *mut mjCDef) -> *mut mjCFlex; }
-    // SAFETY: delegates to C implementation
+    // SAFETY: self_ptr verified non-null
     unsafe { mjCDef_Flex(self_ptr) }
 }
 
 /// C: mjCDef::Mesh (user/user_objects.h:2090)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_def_mesh(self_ptr: *mut mjCDef) -> *mut mjCMesh {
+    if self_ptr.is_null() { return core::ptr::null_mut(); }
     extern "C" { fn mjCDef_Mesh(self_ptr: *mut mjCDef) -> *mut mjCMesh; }
-    // SAFETY: delegates to C implementation
+    // SAFETY: self_ptr verified non-null
     unsafe { mjCDef_Mesh(self_ptr) }
 }
 
 /// C: mjCDef::Material (user/user_objects.h:2091)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_def_material(self_ptr: *mut mjCDef) -> *mut mjCMaterial {
+    if self_ptr.is_null() { return core::ptr::null_mut(); }
     extern "C" { fn mjCDef_Material(self_ptr: *mut mjCDef) -> *mut mjCMaterial; }
-    // SAFETY: delegates to C implementation
+    // SAFETY: self_ptr verified non-null
     unsafe { mjCDef_Material(self_ptr) }
 }
 
@@ -4241,8 +4259,9 @@ pub fn mj_c_def_pair(self_ptr: *mut mjCDef) -> *mut mjCPair {
 /// C: mjCDef::Equality (user/user_objects.h:2093)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_def_equality(self_ptr: *mut mjCDef) -> *mut mjCEquality {
+    if self_ptr.is_null() { return core::ptr::null_mut(); }
     extern "C" { fn mjCDef_Equality(self_ptr: *mut mjCDef) -> *mut mjCEquality; }
-    // SAFETY: delegates to C implementation
+    // SAFETY: self_ptr verified non-null
     unsafe { mjCDef_Equality(self_ptr) }
 }
 
@@ -4257,8 +4276,9 @@ pub fn mj_c_def_tendon(self_ptr: *mut mjCDef) -> *mut mjCTendon {
 /// C: mjCDef::Actuator (user/user_objects.h:2095)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_def_actuator(self_ptr: *mut mjCDef) -> *mut mjCActuator {
+    if self_ptr.is_null() { return core::ptr::null_mut(); }
     extern "C" { fn mjCDef_Actuator(self_ptr: *mut mjCDef) -> *mut mjCActuator; }
-    // SAFETY: delegates to C implementation
+    // SAFETY: self_ptr verified non-null
     unsafe { mjCDef_Actuator(self_ptr) }
 }
 

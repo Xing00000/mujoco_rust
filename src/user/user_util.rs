@@ -12,8 +12,9 @@ use crate::types::*;
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjuu_axis_angle2quat(res: [f64; 4], axis: [f64; 3], angle: f64) {
+    let _sv = core::mem::size_of_val(&res);
     extern "C" { fn mjuu_axisAngle2Quat(res: [f64; 4], axis: [f64; 3], angle: f64); }
-    // SAFETY: delegates to C implementation
+    // SAFETY: no pointer params, arrays passed by value
     unsafe { mjuu_axisAngle2Quat(res, axis, angle) }
 }
 

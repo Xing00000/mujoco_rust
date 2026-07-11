@@ -7,8 +7,9 @@ use crate::types::*;
 /// C: mjCCache::HasAsset (user/user_cache.cc:53)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_cache_has_asset(self_ptr: *mut mjCCache, id: *const i32) -> *const i32 {
+    if self_ptr.is_null() { return core::ptr::null(); }
     extern "C" { fn mjCCache_HasAsset(self_ptr: *mut mjCCache, id: *const i32) -> *const i32; }
-    // SAFETY: delegates to C implementation
+    // SAFETY: self_ptr verified non-null
     unsafe { mjCCache_HasAsset(self_ptr, id) }
 }
 
@@ -33,8 +34,9 @@ pub fn mj_c_cache_populate_data(self_ptr: *mut mjCCache, id: *const i32, resourc
 /// C: mjCCache::RemoveModel (user/user_cache.cc:131)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_cache_remove_model(self_ptr: *mut mjCCache, filename: *const i32) {
+    if self_ptr.is_null() { return; }
     extern "C" { fn mjCCache_RemoveModel(self_ptr: *mut mjCCache, filename: *const i32); }
-    // SAFETY: delegates to C implementation
+    // SAFETY: self_ptr verified non-null
     unsafe { mjCCache_RemoveModel(self_ptr, filename) }
 }
 
@@ -203,8 +205,9 @@ pub fn mj_c_cache_set_capacity(self_ptr: *mut mjCCache, size: usize) {
 /// C: mjCCache::Reset (user/user_cache.h:156)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_cache_reset(self_ptr: *mut mjCCache) {
+    if self_ptr.is_null() { return; }
     extern "C" { fn mjCCache_Reset(self_ptr: *mut mjCCache); }
-    // SAFETY: delegates to C implementation
+    // SAFETY: self_ptr verified non-null
     unsafe { mjCCache_Reset(self_ptr) }
 }
 
@@ -222,8 +225,9 @@ pub fn mj_c_cache_capacity(self_ptr: *mut mjCCache) -> std__size_t {
 /// C: mjCCache::Size (user/user_cache.h:160)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_cache_size(self_ptr: *mut mjCCache) -> std__size_t {
+    if self_ptr.is_null() { panic!("mj_c_cache_size: null self_ptr"); }
     extern "C" { fn mjCCache_Size(self_ptr: *mut mjCCache) -> std__size_t; }
-    // SAFETY: delegates to C implementation
+    // SAFETY: self_ptr verified non-null
     unsafe { mjCCache_Size(self_ptr) }
 }
 
@@ -239,8 +243,9 @@ pub fn mj_c_cache_delete(self_ptr: *mut mjCCache, asset: *mut mjCAsset) {
 /// C: mjCCache::Trim (user/user_cache.h:165)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_cache_trim(self_ptr: *mut mjCCache) {
+    if self_ptr.is_null() { return; }
     extern "C" { fn mjCCache_Trim(self_ptr: *mut mjCCache); }
-    // SAFETY: delegates to C implementation
+    // SAFETY: self_ptr verified non-null
     unsafe { mjCCache_Trim(self_ptr) }
 }
 
