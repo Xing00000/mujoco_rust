@@ -302,10 +302,19 @@ pub fn mju_muscle_bias(len: f64, lengthrange: *const f64, acc0: f64, prm: *const
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mju_muscle_dynamics_timescale(dctrl: f64, tau_act: f64, tau_deact: f64, smoothing_width: f64) -> f64 {
-    // WARNING: signature changed — verify body
-    // Previous params: (dctrl : f64, tau_act : f64, tau_deact : f64, smoothing_width : f64)
-    // Previous return: f64
-    todo ! ()
+    const MJMINVAL: f64 = 1e-15;
+    let tau: f64;
+
+    // hard switching
+    if smoothing_width < MJMINVAL {
+        tau = if dctrl > 0.0 { tau_act } else { tau_deact };
+    }
+    // smooth switching
+    else {
+        // scale by width, center around 0.5 midpoint, rescale to bounds
+        tau = tau_deact + (tau_act - tau_deact) * mju_sigmoid(dctrl / smoothing_width + 0.5);
+    }
+    tau
 }
 
 /// C: mju_muscleDynamics (engine/engine_util_misc.h:51)
@@ -317,10 +326,26 @@ pub fn mju_muscle_dynamics_timescale(dctrl: f64, tau_act: f64, tau_deact: f64, s
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mju_muscle_dynamics(ctrl: f64, act: f64, prm: *const f64) -> f64 {
-    // WARNING: signature changed — verify body
-    // Previous params: (ctrl : f64, act : f64, prm : * const f64)
-    // Previous return: f64
-    todo ! ()
+    const MJMINVAL: f64 = 1e-15;
+    // SAFETY: caller guarantees prm points to at least 3 contiguous f64
+    unsafe {
+        // clamp control
+        let ctrlclamp = mju_clip(ctrl, 0.0, 1.0);
+
+        // clamp activation
+        let actclamp = mju_clip(act, 0.0, 1.0);
+
+        // compute timescales as in Millard et al. (2013)
+        let tau_act = *prm.add(0) * (0.5 + 1.5 * actclamp);    // activation timescale
+        let tau_deact = *prm.add(1) / (0.5 + 1.5 * actclamp);  // deactivation timescale
+        let smoothing_width = *prm.add(2);                      // width of smoothing sigmoid
+        let dctrl = ctrlclamp - act;                             // excess excitation
+
+        let tau = mju_muscle_dynamics_timescale(dctrl, tau_act, tau_deact, smoothing_width);
+
+        // filter output
+        dctrl / mju_max(MJMINVAL, tau)
+    }
 }
 
 /// C: mj_lugreStribeck (engine/engine_util_misc.h:54)
@@ -346,10 +371,7 @@ pub fn mj_lugre_stribeck(velocity: f64, F_C: f64, F_S: f64, v_S: f64) -> f64 {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_dcmotor_slots(dynprm: *const f64, gainprm: *const f64) -> mjDCMotorSlots {
-    // WARNING: signature changed — verify body
-    // Previous params: (dynprm : * const f64, gainprm : * const f64)
-    // Previous return: mjDCMotorSlots
-    todo ! ()
+    todo!("C++: requires non-opaque mjDCMotorSlots struct definition")
 }
 
 /// C: mju_geomSemiAxes (engine/engine_util_misc.h:71)
@@ -360,10 +382,36 @@ pub fn mj_dcmotor_slots(dynprm: *const f64, gainprm: *const f64) -> mjDCMotorSlo
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mju_geom_semi_axes(semiaxes: *mut f64, size: *const f64, r#type: u32) {
-    // WARNING: signature changed — verify body
-    // Previous params: (semiaxes : * mut f64, size : * const f64, r#type : u32)
-    // Previous return: ()
-    todo ! ()
+    // mjtGeom enum values
+    const MJGEOM_SPHERE: u32 = 2;
+    const MJGEOM_CAPSULE: u32 = 3;
+    const MJGEOM_CYLINDER: u32 = 5;
+
+    // SAFETY: caller guarantees semiaxes points to 3 f64, size points to 3 f64
+    unsafe {
+        match r#type {
+            MJGEOM_SPHERE => {
+                *semiaxes.add(0) = *size.add(0);
+                *semiaxes.add(1) = *size.add(0);
+                *semiaxes.add(2) = *size.add(0);
+            }
+            MJGEOM_CAPSULE => {
+                *semiaxes.add(0) = *size.add(0);
+                *semiaxes.add(1) = *size.add(0);
+                *semiaxes.add(2) = *size.add(1) + *size.add(0);
+            }
+            MJGEOM_CYLINDER => {
+                *semiaxes.add(0) = *size.add(0);
+                *semiaxes.add(1) = *size.add(0);
+                *semiaxes.add(2) = *size.add(1);
+            }
+            _ => {
+                *semiaxes.add(0) = *size.add(0);
+                *semiaxes.add(1) = *size.add(1);
+                *semiaxes.add(2) = *size.add(2);
+            }
+        }
+    }
 }
 
 /// C: mju_insideGeom (engine/engine_util_misc.h:74)
@@ -375,10 +423,59 @@ pub fn mju_geom_semi_axes(semiaxes: *mut f64, size: *const f64, r#type: u32) {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mju_inside_geom(pos: *const f64, mat: *const f64, size: *const f64, r#type: u32, point: *const f64) -> i32 {
-    // WARNING: signature changed — verify body
-    // Previous params: (pos : * const f64, mat : * const f64, size : * const f64, r#type : u32, point : * const f64)
-    // Previous return: i32
-    todo ! ()
+    use crate::engine::engine_util_blas::{mju_sub3, mju_dot3, mju_mul_mat_t_vec3};
+
+    // mjtGeom enum values
+    const MJGEOM_PLANE: u32 = 0;
+    const MJGEOM_SPHERE: u32 = 2;
+    const MJGEOM_CAPSULE: u32 = 3;
+    const MJGEOM_ELLIPSOID: u32 = 4;
+    const MJGEOM_CYLINDER: u32 = 5;
+    const MJGEOM_BOX: u32 = 6;
+
+    // SAFETY: caller guarantees all pointers are valid
+    unsafe {
+        // vector from geom to point
+        let mut vec = [0.0f64; 3];
+        mju_sub3(vec.as_mut_ptr(), point, pos);
+
+        // quick return for spheres, frame rotation not required
+        if r#type == MJGEOM_SPHERE {
+            return (mju_dot3(vec.as_ptr(), vec.as_ptr()) < *size.add(0) * *size.add(0)) as i32;
+        }
+
+        // rotate into local frame
+        let mut plocal = [0.0f64; 3];
+        mju_mul_mat_t_vec3(plocal.as_mut_ptr(), mat, vec.as_ptr());
+
+        // handle other geom types
+        match r#type {
+            MJGEOM_CAPSULE => {
+                let z = plocal[2];
+                let z_clamped = mju_clip(z, -*size.add(1), *size.add(1));
+                let z_dist_sq = (z - z_clamped) * (z - z_clamped);
+                (plocal[0] * plocal[0] + plocal[1] * plocal[1] + z_dist_sq < *size.add(0) * *size.add(0)) as i32
+            }
+            MJGEOM_ELLIPSOID => {
+                (plocal[0] * plocal[0] / (*size.add(0) * *size.add(0))
+                    + plocal[1] * plocal[1] / (*size.add(1) * *size.add(1))
+                    + plocal[2] * plocal[2] / (*size.add(2) * *size.add(2)) < 1.0) as i32
+            }
+            MJGEOM_CYLINDER => {
+                (plocal[2].abs() < *size.add(1)
+                    && plocal[0] * plocal[0] + plocal[1] * plocal[1] < *size.add(0) * *size.add(0)) as i32
+            }
+            MJGEOM_BOX => {
+                (plocal[0].abs() < *size.add(0)
+                    && plocal[1].abs() < *size.add(1)
+                    && plocal[2].abs() < *size.add(2)) as i32
+            }
+            MJGEOM_PLANE => {
+                (plocal[2] < 0.0) as i32
+            }
+            _ => 0,
+        }
+    }
 }
 
 /// C: mju_camPixelRay (engine/engine_util_misc.h:79)
@@ -390,10 +487,38 @@ pub fn mju_inside_geom(pos: *const f64, mat: *const f64, size: *const f64, r#typ
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mju_cam_pixel_ray(origin: *mut f64, direction: *mut f64, cam_xpos: *const f64, cam_xmat: *const f64, col: i32, row: i32, fx: f64, fy: f64, cx: f64, cy: f64, projection: i32, ortho_extent: f64) {
-    // WARNING: signature changed — verify body
-    // Previous params: (origin : * mut f64, direction : * mut f64, cam_xpos : * const f64, cam_xmat : * const f64, col : i32, row : i32, fx : f64, fy : f64, cx : f64, cy : f64, projection : i32, ortho_extent : f64)
-    // Previous return: ()
-    todo ! ()
+    use crate::engine::engine_util_blas::{mju_copy3, mju_mul_mat_vec3, mju_normalize3, mju_add3};
+
+    const MJPROJ_PERSPECTIVE: i32 = 0;
+
+    // SAFETY: caller guarantees all pointers valid
+    unsafe {
+        // pixel center (row 0 = top of image)
+        let px = col as f64 + 0.5 - cx;
+        let py = row as f64 + 0.5 - cy;
+
+        if projection == MJPROJ_PERSPECTIVE {
+            // origin is camera position
+            mju_copy3(origin, cam_xpos);
+
+            // direction in camera frame: (x/fx, -y/fy, -1), then normalized
+            let dir_cam = [px / fx, -py / fy, -1.0];
+            mju_mul_mat_vec3(direction, cam_xmat, dir_cam.as_ptr());
+            mju_normalize3(direction);
+        } else {
+            // orthographic: parallel rays, direction is -Z in camera frame
+            *direction.add(0) = -*cam_xmat.add(2);
+            *direction.add(1) = -*cam_xmat.add(5);
+            *direction.add(2) = -*cam_xmat.add(8);
+
+            // origin offset in camera frame (ortho_extent is full height, use half for each side)
+            let half_extent = ortho_extent / 2.0;
+            let offset_cam = [px / fx * half_extent, -py / fy * half_extent, 0.0];
+            let mut offset_world = [0.0f64; 3];
+            mju_mul_mat_vec3(offset_world.as_mut_ptr(), cam_xmat, offset_cam.as_ptr());
+            mju_add3(origin, cam_xpos, offset_world.as_ptr());
+        }
+    }
 }
 
 /// C: mju_defGradient (engine/engine_util_misc.h:87)
@@ -450,10 +575,51 @@ pub fn mju_eval_basis_array(basis: *mut f64, x: *const f64, order: i32) {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mju_cell_lookup(coord: *const f64, cellnum: *const i32, order: i32, local: *mut f64, nodeindices: *mut i32) -> i32 {
-    // WARNING: signature changed — verify body
-    // Previous params: (coord : * const f64, cellnum : * const i32, order : i32, local : * mut f64, nodeindices : * mut i32)
-    // Previous return: i32
-    todo ! ()
+    // SAFETY: caller guarantees coord[3], cellnum[3], local[3], nodeindices has enough space
+    unsafe {
+        let cx = *cellnum.add(0);
+        let cy = *cellnum.add(1);
+        let cz = *cellnum.add(2);
+
+        // find containing cell
+        let mut ci = (*coord.add(0) * cx as f64).floor() as i32;
+        let mut cj = (*coord.add(1) * cy as f64).floor() as i32;
+        let mut ck = (*coord.add(2) * cz as f64).floor() as i32;
+        ci = ci.min(cx - 1); ci = ci.max(0);
+        cj = cj.min(cy - 1); cj = cj.max(0);
+        ck = ck.min(cz - 1); ck = ck.max(0);
+
+        // local parametric coordinates within cell
+        *local.add(0) = mju_clip(*coord.add(0) * cx as f64 - ci as f64, 0.0, 1.0);
+        *local.add(1) = mju_clip(*coord.add(1) * cy as f64 - cj as f64, 0.0, 1.0);
+        *local.add(2) = mju_clip(*coord.add(2) * cz as f64 - ck as f64, 0.0, 1.0);
+
+        // build node indices for this cell
+        if !nodeindices.is_null() {
+            let gi_base = ci * order;
+            let gj_base = cj * order;
+            let gk_base = ck * order;
+            let ny_g = cy * order + 1;
+            let nz_g = cz * order + 1;
+            let mut ni = 0;
+            for li in 0..=order {
+                let gi = gi_base + li;
+                let gi_stride = gi * ny_g * nz_g;
+                for lj in 0..=order {
+                    let gj = gj_base + lj;
+                    let gj_stride = gi_stride + gj * nz_g;
+                    for lk in 0..=order {
+                        let gk = gk_base + lk;
+                        *nodeindices.add(ni) = gj_stride + gk;
+                        ni += 1;
+                    }
+                }
+            }
+        }
+
+        let npc = (order + 1) * (order + 1) * (order + 1);
+        npc
+    }
 }
 
 /// C: mju_interpolate3D (engine/engine_util_misc.h:100)
@@ -756,10 +922,25 @@ pub fn mju_encode_pyramid(pyramid: *mut f64, force: *const f64, mu: *const f64, 
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mju_decode_pyramid(force: *mut f64, pyramid: *const f64, mu: *const f64, dim: i32) {
-    // WARNING: signature changed — verify body
-    // Previous params: (force : * mut f64, pyramid : * const f64, mu : * const f64, dim : i32)
-    // Previous return: ()
-    todo ! ()
+    // SAFETY: caller guarantees force, pyramid, mu have enough elements
+    unsafe {
+        // special handling of frictionless contacts
+        if dim == 1 {
+            *force.add(0) = *pyramid.add(0);
+            return;
+        }
+
+        // force_normal = sum(pyramid0_i + pyramid1_i)
+        *force.add(0) = 0.0;
+        for i in 0..2 * (dim - 1) as usize {
+            *force.add(0) += *pyramid.add(i);
+        }
+
+        // force_tangent_i = (pyramid0_i - pyramid1_i) * mu_i
+        for i in 0..(dim - 1) as usize {
+            *force.add(i + 1) = (*pyramid.add(2 * i) - *pyramid.add(2 * i + 1)) * *mu.add(i);
+        }
+    }
 }
 
 /// C: mju_springDamper (engine/engine_util_misc.h:208)
@@ -883,10 +1064,14 @@ pub fn mju_sign(x: f64) -> f64 {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mju_round(x: f64) -> i32 {
-    // WARNING: signature changed — verify body
-    // Previous params: (x : f64)
-    // Previous return: i32
-    todo ! ()
+    let lower = x.floor();
+    let upper = x.ceil();
+
+    if x - lower < upper - x {
+        lower as i32
+    } else {
+        upper as i32
+    }
 }
 
 /// C: mju_type2Str (engine/engine_util_misc.h:240)
@@ -1007,10 +1192,58 @@ pub fn mju_write_num_bytes(nbytes: usize) -> *const i8 {
 /// Calls: mju_writeNumBytes
 #[allow(unused_variables, non_snake_case)]
 pub fn mju_warning_text(warning: i32, info: usize) -> *const i8 {
-    // WARNING: signature changed — verify body
-    // Previous params: (warning : i32, info : usize)
-    // Previous return: * const i8
-    todo ! ()
+    use std::cell::RefCell;
+    use std::fmt::Write;
+
+    thread_local! {
+        static STR: RefCell<[u8; 1000]> = RefCell::new([0u8; 1000]);
+    }
+
+    // mjtWarning enum values
+    const MJWARN_INERTIA: i32 = 0;
+    const MJWARN_CONTACTFULL: i32 = 1;
+    const MJWARN_CNSTRFULL: i32 = 2;
+    const MJWARN_BADQPOS: i32 = 4;
+    const MJWARN_BADQVEL: i32 = 5;
+    const MJWARN_BADQACC: i32 = 6;
+    const MJWARN_BADCTRL: i32 = 7;
+
+    STR.with(|cell| {
+        let mut buf = cell.borrow_mut();
+        let mut s = String::new();
+        match warning {
+            MJWARN_INERTIA => {
+                let _ = write!(s, "Inertia matrix is too close to singular at DOF {}. Check model.", info);
+            }
+            MJWARN_CONTACTFULL => {
+                let _ = write!(s, "Too many contacts. The arena memory is full, increase arena memory allocation.(ncon = {})", info);
+            }
+            MJWARN_CNSTRFULL => {
+                // NOTE: in C this calls mju_writeNumBytes but we inline a simpler version
+                let _ = write!(s, "Insufficient arena memory for the number of constraints generated. Increase arena memory allocation above {} bytes.", info);
+            }
+            MJWARN_BADQPOS => {
+                let _ = write!(s, "Nan, Inf or huge value in QPOS at DOF {}. The simulation is unstable.", info);
+            }
+            MJWARN_BADQVEL => {
+                let _ = write!(s, "Nan, Inf or huge value in QVEL at DOF {}. The simulation is unstable.", info);
+            }
+            MJWARN_BADQACC => {
+                let _ = write!(s, "Nan, Inf or huge value in QACC at DOF {}. The simulation is unstable.", info);
+            }
+            MJWARN_BADCTRL => {
+                let _ = write!(s, "Nan, Inf or huge value in CTRL at ACTUATOR {}. The simulation is unstable.", info);
+            }
+            _ => {
+                let _ = write!(s, "Unknown warning type {}.", warning);
+            }
+        }
+        let bytes = s.as_bytes();
+        let len = bytes.len().min(999);
+        buf[..len].copy_from_slice(&bytes[..len]);
+        buf[len] = 0;
+        buf.as_ptr() as *const i8
+    })
 }
 
 /// C: mju_isBad (engine/engine_util_misc.h:252)
@@ -1195,10 +1428,13 @@ pub fn mju_gather(res: *mut f64, vec: *const f64, ind: *const i32, n: i32) {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mju_gather_masked(res: *mut f64, vec: *const f64, ind: *const i32, n: i32) {
-    // WARNING: signature changed — verify body
-    // Previous params: (res : * mut f64, vec : * const f64, ind : * const i32, n : i32)
-    // Previous return: ()
-    todo ! ()
+    // SAFETY: caller guarantees res points to n, vec has enough elements, ind points to n indices
+    unsafe {
+        for i in 0..n as usize {
+            let idx = *ind.add(i);
+            *res.add(i) = if idx >= 0 { *vec.add(idx as usize) } else { 0.0 };
+        }
+    }
 }
 
 /// C: mju_scatter (engine/engine_util_misc.h:291)
@@ -1225,10 +1461,12 @@ pub fn mju_scatter(res: *mut f64, vec: *const f64, ind: *const i32, n: i32) {
 /// C: mju_gatherInt (engine/engine_util_misc.h:294)
 #[allow(unused_variables, non_snake_case)]
 pub fn mju_gather_int(res: *mut i32, vec: *const i32, ind: *const i32, n: i32) {
-    // WARNING: signature changed — verify body
-    // Previous params: (res : * mut i32, vec : * const i32, ind : * const i32, n : i32)
-    // Previous return: ()
-    todo ! ()
+    // SAFETY: caller guarantees res points to n, vec has enough elements, ind points to n indices
+    unsafe {
+        for i in 0..n as usize {
+            *res.add(i) = *vec.add(*ind.add(i) as usize);
+        }
+    }
 }
 
 /// C: mju_scatterInt (engine/engine_util_misc.h:297)
@@ -1290,19 +1528,43 @@ pub fn mju_insertion_sort_int(list: *mut i32, n: i32) {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mju_halton(index: i32, base: i32) -> f64 {
-    // WARNING: signature changed — verify body
-    // Previous params: (index : i32, base : i32)
-    // Previous return: f64
-    todo ! ()
+    let mut n0 = index;
+    let b = base as f64;
+    let mut f = 1.0 / b;
+    let mut hn: f64 = 0.0;
+
+    while n0 > 0 {
+        let n1 = n0 / base;
+        let r = n0 - n1 * base;
+        hn += f * (r as f64);
+        f /= b;
+        n0 = n1;
+    }
+
+    hn
 }
 
 /// C: mju_strncpy (engine/engine_util_misc.h:321)
 #[allow(unused_variables, non_snake_case)]
 pub fn mju_strncpy(dst: *mut i8, src: *const i8, n: i32) -> *mut i8 {
-    // WARNING: signature changed — verify body
-    // Previous params: (dst : * mut i8, src : * const i8, n : i32)
-    // Previous return: * mut i8
-    todo ! ()
+    if !dst.is_null() && !src.is_null() && n > 0 {
+        // SAFETY: caller guarantees dst has at least n bytes, src is valid
+        unsafe {
+            let n_usize = n as usize;
+            // copy up to n bytes
+            let mut i = 0usize;
+            while i < n_usize {
+                *dst.add(i) = *src.add(i);
+                if *src.add(i) == 0 {
+                    break;
+                }
+                i += 1;
+            }
+            // ensure null-termination at n-1
+            *dst.add(n_usize - 1) = 0;
+        }
+    }
+    dst
 }
 
 /// C: mju_polyForce (engine/engine_util_misc.h:326)
@@ -1313,10 +1575,19 @@ pub fn mju_strncpy(dst: *mut i8, src: *const i8, n: i32) -> *mut i8 {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mju_poly_force(linear: f64, poly: *const f64, x: f64, n: i32, flg_odd: i32) -> f64 {
-    // WARNING: signature changed — verify body
-    // Previous params: (linear : f64, poly : * const f64, x : f64, n : i32, flg_odd : i32)
-    // Previous return: f64
-    todo ! ()
+    let x = if flg_odd != 0 { x.abs() } else { x };
+    let mut res = linear;
+
+    // SAFETY: caller guarantees poly points to at least n contiguous f64
+    unsafe {
+        let mut xpow: f64 = 1.0;
+        for i in 0..n as usize {
+            xpow *= x;
+            res += *poly.add(i) * xpow;
+        }
+    }
+
+    res
 }
 
 /// C: mjd_xPolyForce (engine/engine_util_misc.h:329)
@@ -1327,10 +1598,19 @@ pub fn mju_poly_force(linear: f64, poly: *const f64, x: f64, n: i32, flg_odd: i3
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjd_x_poly_force(linear: f64, poly: *const f64, x: f64, n: i32, flg_odd: i32) -> f64 {
-    // WARNING: signature changed — verify body
-    // Previous params: (linear : f64, poly : * const f64, x : f64, n : i32, flg_odd : i32)
-    // Previous return: f64
-    todo ! ()
+    let x = if flg_odd != 0 { x.abs() } else { x };
+    let mut res = linear;
+
+    // SAFETY: caller guarantees poly points to at least n contiguous f64
+    unsafe {
+        let mut xpow: f64 = 1.0;
+        for i in 0..n as usize {
+            xpow *= x;
+            res += (i as f64 + 2.0) * *poly.add(i) * xpow;
+        }
+    }
+
+    res
 }
 
 /// C: mju_polyPotential (engine/engine_util_misc.h:332)

@@ -800,10 +800,7 @@ pub fn mjs_set_to_adhesion(actuator: *mut mjsActuator, gain: f64) -> *const i8 {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjs_set_to_dc_motor(actuator: *mut mjsActuator, motorconst: *mut f64, resistance: f64, nominal: *mut f64, saturation: *mut f64, inductance: *mut f64, cogging: *mut f64, controller: *mut f64, thermal: *mut f64, lugre: *mut f64, input_mode: i32) -> *const i8 {
-    // WARNING: signature changed — verify body
-    // Previous params: (actuator : * mut mjsActuator, motorconst : * mut f64, resistance : f64, nominal : * mut f64, saturation : * mut f64, inductance : * mut f64, cogging : * mut f64, controller : * mut f64, thermal : * mut f64, lugre : * mut f64, input_mode : i32)
-    // Previous return: * const i8
-    todo ! ()
+    todo!("C++: requires vtable access to mjsActuator fields and complex derivation logic")
 }
 
 /// C: mjs_addMesh (user/user_api.h:213)

@@ -370,10 +370,17 @@ pub fn mj_version_string() -> *const i8 {
 /// C: mju_condataSize (engine/engine_support.h:127)
 #[allow(unused_variables, non_snake_case)]
 pub fn mju_condata_size(dataSpec: i32) -> i32 {
-    // WARNING: signature changed — verify body
-    // Previous params: (dataSpec : i32)
-    // Previous return: i32
-    todo ! ()
+    // mjNCONDATA = 7, sizes: [1, 3, 3, 1, 3, 3, 3]
+    const MJNCONDATA: i32 = 7;
+    const MJCONDATA_SIZE: [i32; 7] = [1, 3, 3, 1, 3, 3, 3];
+
+    let mut size: i32 = 0;
+    for i in 0..MJNCONDATA as usize {
+        if (dataSpec & (1 << i)) != 0 {
+            size += MJCONDATA_SIZE[i];
+        }
+    }
+    size
 }
 
 /// C: mju_raydataSize (engine/engine_support.h:130)

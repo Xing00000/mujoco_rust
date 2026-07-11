@@ -55,10 +55,22 @@ pub fn mju_dense2sparse(res: *mut f64, mat: *const f64, nr: i32, nc: i32, rownnz
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mju_sparse2dense(res: *mut f64, mat: *const f64, nr: i32, nc: i32, rownnz: *const i32, rowadr: *const i32, colind: *const i32) {
-    // WARNING: signature changed — verify body
-    // Previous params: (res : * mut f64, mat : * const f64, nr : i32, nc : i32, rownnz : * const i32, rowadr : * const i32, colind : * const i32)
-    // Previous return: ()
-    todo ! ()
+    use crate::engine::engine_util_blas::mju_zero;
+
+    // clear
+    mju_zero(res, nr * nc);
+
+    // SAFETY: caller guarantees all pointers are valid for their respective sizes
+    unsafe {
+        // copy non-zeros
+        for r in 0..nr as usize {
+            for i in 0..*rownnz.add(r) as usize {
+                let adr = *rowadr.add(r) as usize + i;
+                let col = *colind.add(adr) as usize;
+                *res.add(r * nc as usize + col) = *mat.add(adr);
+            }
+        }
+    }
 }
 
 /// C: mju_sym2dense (engine/engine_util_sparse.h:50)
@@ -100,10 +112,15 @@ pub fn mju_copy_sparse(res: *mut f64, mat: *const f64, rownnz: *const i32, rowad
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mju_zero_sparse(res: *mut f64, rownnz: *const i32, rowadr: *const i32, row: *const i32, nrow: i32) {
-    // WARNING: signature changed — verify body
-    // Previous params: (res : * mut f64, rownnz : * const i32, rowadr : * const i32, row : * const i32, nrow : i32)
-    // Previous return: ()
-    todo ! ()
+    use crate::engine::engine_util_blas::mju_zero;
+
+    // SAFETY: caller guarantees all pointers are valid
+    unsafe {
+        for i in 0..nrow as usize {
+            let r = *row.add(i) as usize;
+            mju_zero(res.add(*rowadr.add(r) as usize), *rownnz.add(r));
+        }
+    }
 }
 
 /// C: mju_mulMatVecSparse (engine/engine_util_sparse.h:61)
@@ -242,10 +259,29 @@ pub fn mju_combine_sparse_inc(dst: *mut f64, src: *const f64, n: i32, a: f64, b:
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mju_add_to_scl_sparse_inc(dst: *mut f64, src: *const f64, nnzdst: i32, inddst: *const i32, nnzsrc: i32, indsrc: *const i32, scl: f64) {
-    // WARNING: signature changed — verify body
-    // Previous params: (dst : * mut f64, src : * const f64, nnzdst : i32, inddst : * const i32, nnzsrc : i32, indsrc : * const i32, scl : f64)
-    // Previous return: ()
-    todo ! ()
+    if nnzdst == 0 || nnzsrc == 0 {
+        return;
+    }
+
+    // SAFETY: caller guarantees all pointers valid
+    unsafe {
+        let mut adrs: i32 = 0;
+        let mut adrd: i32 = 0;
+        while adrs < nnzsrc && adrd < nnzdst {
+            let inds = *indsrc.add(adrs as usize);
+            let indd = *inddst.add(adrd as usize);
+
+            if inds == indd {
+                *dst.add(adrd as usize) += scl * *src.add(adrs as usize);
+                adrs += 1;
+                adrd += 1;
+            } else if inds < indd {
+                adrs += 1;
+            } else {
+                adrd += 1;
+            }
+        }
+    }
 }
 
 /// C: mju_addToSparseMat (engine/engine_util_sparse.h:101)
@@ -453,10 +489,16 @@ pub fn mju_sqr_mat_td_uncompressed_init(res_rowadr: *mut i32, nc: i32) {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mju_block(res: *mut f64, mat: *const f64, nc_mat: i32, nc_res: i32, nr: i32, perm_r: *const i32, perm_c: *const i32) {
-    // WARNING: signature changed — verify body
-    // Previous params: (res : * mut f64, mat : * const f64, nc_mat : i32, nc_res : i32, nr : i32, perm_r : * const i32, perm_c : * const i32)
-    // Previous return: ()
-    todo ! ()
+    use crate::engine::engine_util_misc::mju_gather;
+
+    // SAFETY: caller guarantees all pointers are valid
+    unsafe {
+        for r in 0..nr as usize {
+            let res_r = res.add(r * nc_res as usize);
+            let mat_r = mat.add(*perm_r.add(r) as usize * nc_mat as usize);
+            mju_gather(res_r, mat_r, perm_c, nc_res);
+        }
+    }
 }
 
 /// C: mju_blockDiag (engine/engine_util_sparse.h:170)

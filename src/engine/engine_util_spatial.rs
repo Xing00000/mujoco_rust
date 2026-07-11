@@ -27,10 +27,13 @@ pub fn mju_rot_vec_quat(res: *mut f64, vec: *const f64, quat: *const f64) {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mju_neg_quat(res: *mut f64, quat: *const f64) {
-    // WARNING: signature changed — verify body
-    // Previous params: (res : * mut f64, quat : * const f64)
-    // Previous return: ()
-    todo ! ()
+    // SAFETY: caller guarantees res, quat point to at least 4 contiguous f64
+    unsafe {
+        *res.add(0) = *quat.add(0);
+        *res.add(1) = -*quat.add(1);
+        *res.add(2) = -*quat.add(2);
+        *res.add(3) = -*quat.add(3);
+    }
 }
 
 /// C: mju_mulQuat (engine/engine_util_spatial.h:33)
@@ -62,10 +65,17 @@ pub fn mju_mul_quat(res: *mut f64, quat1: *const f64, quat2: *const f64) {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mju_mul_quat_axis(res: *mut f64, quat: *const f64, axis: *const f64) {
-    // WARNING: signature changed — verify body
-    // Previous params: (res : * mut f64, quat : * const f64, axis : * const f64)
-    // Previous return: ()
-    todo ! ()
+    // SAFETY: caller guarantees res points to 4 f64, quat points to 4 f64, axis points to 3 f64
+    unsafe {
+        let tmp0 = -*quat.add(1) * *axis.add(0) - *quat.add(2) * *axis.add(1) - *quat.add(3) * *axis.add(2);
+        let tmp1 =  *quat.add(0) * *axis.add(0) + *quat.add(2) * *axis.add(2) - *quat.add(3) * *axis.add(1);
+        let tmp2 =  *quat.add(0) * *axis.add(1) + *quat.add(3) * *axis.add(0) - *quat.add(1) * *axis.add(2);
+        let tmp3 =  *quat.add(0) * *axis.add(2) + *quat.add(1) * *axis.add(1) - *quat.add(2) * *axis.add(0);
+        *res.add(0) = tmp0;
+        *res.add(1) = tmp1;
+        *res.add(2) = tmp2;
+        *res.add(3) = tmp3;
+    }
 }
 
 /// C: mju_axisAngle2Quat (engine/engine_util_spatial.h:39)
@@ -168,10 +178,41 @@ pub fn mju_quat2mat(res: *mut f64, quat: *const f64) {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mju_mat2quat(quat: *mut f64, mat: *const f64) {
-    // WARNING: signature changed — verify body
-    // Previous params: (quat : * mut f64, mat : * const f64)
-    // Previous return: ()
-    todo ! ()
+    use crate::engine::engine_util_blas::mju_normalize4;
+
+    // SAFETY: caller guarantees quat points to 4 f64, mat points to 9 f64
+    unsafe {
+        // q0 largest
+        if *mat.add(0) + *mat.add(4) + *mat.add(8) > 0.0 {
+            *quat.add(0) = 0.5 * (1.0 + *mat.add(0) + *mat.add(4) + *mat.add(8)).sqrt();
+            *quat.add(1) = 0.25 * (*mat.add(7) - *mat.add(5)) / *quat.add(0);
+            *quat.add(2) = 0.25 * (*mat.add(2) - *mat.add(6)) / *quat.add(0);
+            *quat.add(3) = 0.25 * (*mat.add(3) - *mat.add(1)) / *quat.add(0);
+        }
+        // q1 largest
+        else if *mat.add(0) > *mat.add(4) && *mat.add(0) > *mat.add(8) {
+            *quat.add(1) = 0.5 * (1.0 + *mat.add(0) - *mat.add(4) - *mat.add(8)).sqrt();
+            *quat.add(0) = 0.25 * (*mat.add(7) - *mat.add(5)) / *quat.add(1);
+            *quat.add(2) = 0.25 * (*mat.add(1) + *mat.add(3)) / *quat.add(1);
+            *quat.add(3) = 0.25 * (*mat.add(2) + *mat.add(6)) / *quat.add(1);
+        }
+        // q2 largest
+        else if *mat.add(4) > *mat.add(8) {
+            *quat.add(2) = 0.5 * (1.0 - *mat.add(0) + *mat.add(4) - *mat.add(8)).sqrt();
+            *quat.add(0) = 0.25 * (*mat.add(2) - *mat.add(6)) / *quat.add(2);
+            *quat.add(1) = 0.25 * (*mat.add(1) + *mat.add(3)) / *quat.add(2);
+            *quat.add(3) = 0.25 * (*mat.add(5) + *mat.add(7)) / *quat.add(2);
+        }
+        // q3 largest
+        else {
+            *quat.add(3) = 0.5 * (1.0 - *mat.add(0) - *mat.add(4) + *mat.add(8)).sqrt();
+            *quat.add(0) = 0.25 * (*mat.add(3) - *mat.add(1)) / *quat.add(3);
+            *quat.add(1) = 0.25 * (*mat.add(2) + *mat.add(6)) / *quat.add(3);
+            *quat.add(2) = 0.25 * (*mat.add(5) + *mat.add(7)) / *quat.add(3);
+        }
+
+        mju_normalize4(quat);
+    }
 }
 
 /// C: mju_derivQuat (engine/engine_util_spatial.h:54)
@@ -182,10 +223,13 @@ pub fn mju_mat2quat(quat: *mut f64, mat: *const f64) {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mju_deriv_quat(res: *mut f64, quat: *const f64, vel: *const f64) {
-    // WARNING: signature changed — verify body
-    // Previous params: (res : * mut f64, quat : * const f64, vel : * const f64)
-    // Previous return: ()
-    todo ! ()
+    // SAFETY: caller guarantees res points to 4 f64, quat points to 4 f64, vel points to 3 f64
+    unsafe {
+        *res.add(0) = 0.5 * (-*vel.add(0) * *quat.add(1) - *vel.add(1) * *quat.add(2) - *vel.add(2) * *quat.add(3));
+        *res.add(1) = 0.5 * ( *vel.add(0) * *quat.add(0) + *vel.add(1) * *quat.add(3) - *vel.add(2) * *quat.add(2));
+        *res.add(2) = 0.5 * (-*vel.add(0) * *quat.add(3) + *vel.add(1) * *quat.add(0) + *vel.add(2) * *quat.add(1));
+        *res.add(3) = 0.5 * ( *vel.add(0) * *quat.add(2) - *vel.add(1) * *quat.add(1) + *vel.add(2) * *quat.add(0));
+    }
 }
 
 /// C: mju_quatIntegrate (engine/engine_util_spatial.h:57)
@@ -301,10 +345,15 @@ pub fn mju_euler2quat(quat: *mut f64, euler: *const f64, seq: *const i8) {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mju_cross(res: *mut f64, a: *const f64, b: *const f64) {
-    // WARNING: signature changed — verify body
-    // Previous params: (res : * mut f64, a : * const f64, b : * const f64)
-    // Previous return: ()
-    todo ! ()
+    // SAFETY: caller guarantees res, a, b point to at least 3 contiguous f64
+    unsafe {
+        let tmp0 = *a.add(1) * *b.add(2) - *a.add(2) * *b.add(1);
+        let tmp1 = *a.add(2) * *b.add(0) - *a.add(0) * *b.add(2);
+        let tmp2 = *a.add(0) * *b.add(1) - *a.add(1) * *b.add(0);
+        *res.add(0) = tmp0;
+        *res.add(1) = tmp1;
+        *res.add(2) = tmp2;
+    }
 }
 
 /// C: mju_crossMotion (engine/engine_util_spatial.h:92)
@@ -405,10 +454,15 @@ pub fn mju_dof_com(res: *mut f64, axis: *const f64, offset: *const f64) {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mju_mul_inert_vec(res: *mut f64, inert: *const f64, vec: *const f64) {
-    // WARNING: signature changed — verify body
-    // Previous params: (res : * mut f64, inert : * const f64, vec : * const f64)
-    // Previous return: ()
-    todo ! ()
+    // SAFETY: caller guarantees res points to 6 f64, inert points to 10 f64, vec points to 6 f64
+    unsafe {
+        *res.add(0) = *inert.add(0) * *vec.add(0) + *inert.add(3) * *vec.add(1) + *inert.add(4) * *vec.add(2) - *inert.add(8) * *vec.add(4) + *inert.add(7) * *vec.add(5);
+        *res.add(1) = *inert.add(3) * *vec.add(0) + *inert.add(1) * *vec.add(1) + *inert.add(5) * *vec.add(2) + *inert.add(8) * *vec.add(3) - *inert.add(6) * *vec.add(5);
+        *res.add(2) = *inert.add(4) * *vec.add(0) + *inert.add(5) * *vec.add(1) + *inert.add(2) * *vec.add(2) - *inert.add(7) * *vec.add(3) + *inert.add(6) * *vec.add(4);
+        *res.add(3) = *inert.add(8) * *vec.add(1) - *inert.add(7) * *vec.add(2) + *inert.add(9) * *vec.add(3);
+        *res.add(4) = *inert.add(6) * *vec.add(2) - *inert.add(8) * *vec.add(0) + *inert.add(9) * *vec.add(4);
+        *res.add(5) = *inert.add(7) * *vec.add(0) - *inert.add(6) * *vec.add(1) + *inert.add(9) * *vec.add(5);
+    }
 }
 
 /// C: mju_mulDofVec (engine/engine_util_spatial.h:108)
@@ -420,10 +474,18 @@ pub fn mju_mul_inert_vec(res: *mut f64, inert: *const f64, vec: *const f64) {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mju_mul_dof_vec(res: *mut f64, mat: *const f64, vec: *const f64, n: i32) {
-    // WARNING: signature changed — verify body
-    // Previous params: (res : * mut f64, mat : * const f64, vec : * const f64, n : i32)
-    // Previous return: ()
-    todo ! ()
+    use crate::engine::engine_util_blas::{mju_scl, mju_zero, mju_mul_mat_t_vec};
+
+    if n == 1 {
+        // SAFETY: caller guarantees mat points to 6 f64, vec points to 1 f64
+        unsafe {
+            mju_scl(res, mat, *vec.add(0), 6);
+        }
+    } else if n <= 0 {
+        mju_zero(res, 6);
+    } else {
+        mju_mul_mat_t_vec(res, mat, vec, n, 6);
+    }
 }
 
 /// C: mju_transformSpatial (engine/engine_util_spatial.h:112)

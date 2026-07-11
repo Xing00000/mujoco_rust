@@ -177,10 +177,39 @@ pub fn mj_factor_i_legacy(m: *const mjModel, d: *mut mjData, M: *const f64, qLD:
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_factor_i(mat: *mut f64, diaginv: *mut f64, nv: i32, rownnz: *const i32, rowadr: *const i32, colind: *const i32, index: *const i32) {
-    // WARNING: signature changed — verify body
-    // Previous params: (mat : * mut f64, diaginv : * mut f64, nv : i32, rownnz : * const i32, rowadr : * const i32, colind : * const i32, index : * const i32)
-    // Previous return: ()
-    todo ! ()
+    use crate::engine::engine_util_blas::{mju_add_to_scl, mju_scl};
+
+    // SAFETY: caller guarantees all pointers are valid
+    unsafe {
+        // backward loop over rows
+        for j in (0..nv as usize).rev() {
+            let k = if !index.is_null() { *index.add(j) as usize } else { j };
+
+            // get row k's address, diagonal index, inverse diagonal value
+            let start = *rowadr.add(k) as usize;
+            let diag = *rownnz.add(k) as usize - 1;
+            let end = start + diag;
+            let invD = 1.0 / *mat.add(end);
+            if !diaginv.is_null() {
+                *diaginv.add(k) = invD;
+            }
+
+            // update triangle above row k
+            for adr in (start..end).rev() {
+                // update row i < k: L(i, 0..i) -= L(i, 0..i) * L(k, i) / L(k, k)
+                let i = *colind.add(adr) as usize;
+                mju_add_to_scl(
+                    mat.add(*rowadr.add(i) as usize),
+                    mat.add(start),
+                    -*mat.add(adr) * invD,
+                    *rownnz.add(i),
+                );
+            }
+
+            // update row k: L(k, :) /= L(k, k)
+            mju_scl(mat.add(start), mat.add(start), invD, diag as i32);
+        }
+    }
 }
 
 /// C: mj_factorM (engine/engine_core_smooth.h:76)

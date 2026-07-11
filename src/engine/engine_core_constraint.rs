@@ -500,10 +500,202 @@ pub fn mj_reference_constraint(m: *const mjModel, d: *mut mjData) {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_constraint_update_impl(ne: i32, nf: i32, nefc: i32, D: *const f64, R: *const f64, floss: *const f64, jar: *const f64, r#type: *const i32, id: *const i32, contact: *mut mjContact, state: *mut i32, force: *mut f64, cost: *mut f64, flg_coneHessian: i32) {
-    // WARNING: signature changed — verify body
-    // Previous params: (ne : i32, nf : i32, nefc : i32, D : * const f64, R : * const f64, floss : * const f64, jar : * const f64, r#type : * const i32, id : * const i32, contact : * mut mjContact, state : * mut i32, force : * mut f64, cost : * mut f64, flg_coneHessian : i32)
-    // Previous return: ()
-    todo ! ()
+    use crate::engine::engine_util_blas::{mju_norm, mju_zero};
+
+    const MJCNSTRSTATE_SATISFIED: i32 = 0;
+    const MJCNSTRSTATE_QUADRATIC: i32 = 1;
+    const MJCNSTRSTATE_LINEARNEG: i32 = 2;
+    const MJCNSTRSTATE_LINEARPOS: i32 = 3;
+    const MJCNSTRSTATE_CONE: i32 = 4;
+    const MJCNSTR_CONTACT_ELLIPTIC: i32 = 7;
+
+    // SAFETY: caller guarantees all pointers are valid
+    unsafe {
+        let mut s: f64 = 0.0;
+
+        // no constraints: clear cost, return
+        if nefc == 0 {
+            if !cost.is_null() {
+                *cost = 0.0;
+            }
+            return;
+        }
+
+        // compute unconstrained efc_force
+        for i in 0..nefc as usize {
+            *force.add(i) = -*D.add(i) * *jar.add(i);
+        }
+
+        // update constraints
+        let mut i: usize = 0;
+        while i < nefc as usize {
+            // ==== equality
+            if (i as i32) < ne {
+                if !cost.is_null() {
+                    s += 0.5 * *D.add(i) * *jar.add(i) * *jar.add(i);
+                }
+                *state.add(i) = MJCNSTRSTATE_QUADRATIC;
+                i += 1;
+                continue;
+            }
+
+            // ==== friction
+            if (i as i32) < ne + nf {
+                // linear negative
+                if *jar.add(i) <= -*R.add(i) * *floss.add(i) {
+                    if !cost.is_null() {
+                        s += -0.5 * *R.add(i) * *floss.add(i) * *floss.add(i) - *floss.add(i) * *jar.add(i);
+                    }
+                    *force.add(i) = *floss.add(i);
+                    *state.add(i) = MJCNSTRSTATE_LINEARNEG;
+                }
+                // linear positive
+                else if *jar.add(i) >= *R.add(i) * *floss.add(i) {
+                    if !cost.is_null() {
+                        s += -0.5 * *R.add(i) * *floss.add(i) * *floss.add(i) + *floss.add(i) * *jar.add(i);
+                    }
+                    *force.add(i) = -*floss.add(i);
+                    *state.add(i) = MJCNSTRSTATE_LINEARPOS;
+                }
+                // quadratic
+                else {
+                    if !cost.is_null() {
+                        s += 0.5 * *D.add(i) * *jar.add(i) * *jar.add(i);
+                    }
+                    *state.add(i) = MJCNSTRSTATE_QUADRATIC;
+                }
+                i += 1;
+                continue;
+            }
+
+            // ==== contact
+
+            // non-negative constraint
+            if *r#type.add(i) != MJCNSTR_CONTACT_ELLIPTIC {
+                // constraint is satisfied: no cost
+                if *jar.add(i) >= 0.0 {
+                    *force.add(i) = 0.0;
+                    *state.add(i) = MJCNSTRSTATE_SATISFIED;
+                }
+                // quadratic
+                else {
+                    if !cost.is_null() {
+                        s += 0.5 * *D.add(i) * *jar.add(i) * *jar.add(i);
+                    }
+                    *state.add(i) = MJCNSTRSTATE_QUADRATIC;
+                }
+            }
+            // contact with elliptic cone
+            else {
+                // get contact
+                let con = &mut *contact.add(*id.add(i) as usize);
+                let mu = con.mu;
+                let friction = con.friction.as_ptr();
+                let dim = con.dim as usize;
+
+                // map to regular dual cone space
+                let mut U = [0.0f64; 6];
+                U[0] = *jar.add(i) * mu;
+                for j in 1..dim {
+                    U[j] = *jar.add(i + j) * *friction.add(j - 1);
+                }
+
+                // decompose into normal and tangent
+                let N = U[0];
+                let T = mju_norm(U.as_ptr().add(1), (dim - 1) as i32);
+
+                // top zone
+                if N >= mu * T || (T <= 0.0 && N >= 0.0) {
+                    mju_zero(force.add(i), dim as i32);
+                    *state.add(i) = MJCNSTRSTATE_SATISFIED;
+                }
+                // bottom zone
+                else if mu * N + T <= 0.0 || (T <= 0.0 && N < 0.0) {
+                    if !cost.is_null() {
+                        for j in 0..dim {
+                            s += 0.5 * *D.add(i + j) * *jar.add(i + j) * *jar.add(i + j);
+                        }
+                    }
+                    *state.add(i) = MJCNSTRSTATE_QUADRATIC;
+                }
+                // middle zone
+                else {
+                    // cost: 0.5*D0/(mu*mu*(1+mu*mu))*(N-mu*T)^2
+                    let Dm = *D.add(i) / (mu * mu * (1.0 + mu * mu));
+                    let NmT = N - mu * T;
+
+                    if !cost.is_null() {
+                        s += 0.5 * Dm * NmT * NmT;
+                    }
+
+                    // force: - ds/djar = dU/djar * ds/dU
+                    *force.add(i) = -Dm * NmT * mu;
+                    for j in 1..dim {
+                        *force.add(i + j) = -*force.add(i) / T * U[j] * *friction.add(j - 1);
+                    }
+
+                    // set state
+                    *state.add(i) = MJCNSTRSTATE_CONE;
+
+                    // cone Hessian
+                    if flg_coneHessian != 0 {
+                        let H = (*contact.add(*id.add(i) as usize)).H.as_mut_ptr();
+
+                        // set first row: (1, -mu/T * U)
+                        let mut scl = -mu / T;
+                        *H.add(0) = 1.0;
+                        for j in 1..dim {
+                            *H.add(j) = scl * U[j];
+                        }
+
+                        // set upper block: mu*N/T^3 * U*U'
+                        scl = mu * N / (T * T * T);
+                        for k in 1..dim {
+                            for j in k..dim {
+                                *H.add(k * dim + j) = scl * U[j] * U[k];
+                            }
+                        }
+
+                        // add to diagonal: (mu^2 - mu*N/T) * I
+                        scl = mu * mu - mu * N / T;
+                        for j in 1..dim {
+                            *H.add(j * (dim + 1)) += scl;
+                        }
+
+                        // pre and post multiply by diag(mu, friction), scale by Dm
+                        for k in 0..dim {
+                            scl = Dm * (if k == 0 { mu } else { *friction.add(k - 1) });
+                            for j in k..dim {
+                                *H.add(k * dim + j) *= scl * (if j == 0 { mu } else { *friction.add(j - 1) });
+                            }
+                        }
+
+                        // make symmetric: copy upper into lower
+                        for k in 0..dim {
+                            for j in (k + 1)..dim {
+                                *H.add(j * dim + k) = *H.add(k * dim + j);
+                            }
+                        }
+                    }
+                }
+
+                // replicate state in all cone dimensions
+                for j in 1..dim {
+                    *state.add(i + j) = *state.add(i);
+                }
+
+                // advance to end of contact
+                i += dim - 1;
+            }
+
+            i += 1;
+        }
+
+        // assign cost
+        if !cost.is_null() {
+            *cost = s;
+        }
+    }
 }
 
 /// C: mj_constraintUpdate (engine/engine_core_constraint.h:105)

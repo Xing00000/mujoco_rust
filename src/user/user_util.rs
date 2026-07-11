@@ -92,10 +92,7 @@ pub fn string_to_vector(cs: *mut i8) -> i32 {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjuu_defined(num: f64) -> bool {
-    // WARNING: signature changed — verify body
-    // Previous params: (num : f64)
-    // Previous return: bool
-    todo ! ()
+    !num.is_nan()
 }
 
 /// C: mjuu_matadr (user/user_util.h:39)
