@@ -872,8 +872,9 @@ pub fn mjs_find_child(body: *const mjsBody, name: *const i8) -> *mut mjsBody {
 /// C: mjs_getParent (user/user_api.h:252)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjs_get_parent(element: *const mjsElement) -> *mut mjsBody {
+    if element.is_null() { return core::ptr::null_mut(); }
     extern "C" { fn mjs_getParent(element: *const mjsElement) -> *mut mjsBody; }
-    // SAFETY: delegates to C implementation
+    // SAFETY: element verified non-null; C++ traverses tree to find parent body
     unsafe { mjs_getParent(element) }
 }
 
@@ -1029,24 +1030,27 @@ pub fn mjs_as_body(element: *mut mjsElement) -> *mut mjsBody {
 /// C: mjs_asGeom (user/user_api.h:304)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjs_as_geom(element: *mut mjsElement) -> *mut mjsGeom {
+    if element.is_null() { return core::ptr::null_mut(); }
     extern "C" { fn mjs_asGeom(element: *mut mjsElement) -> *mut mjsGeom; }
-    // SAFETY: delegates to C implementation
+    // SAFETY: element verified non-null; C++ performs type check and static_cast
     unsafe { mjs_asGeom(element) }
 }
 
 /// C: mjs_asJoint (user/user_api.h:307)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjs_as_joint(element: *mut mjsElement) -> *mut mjsJoint {
+    if element.is_null() { return core::ptr::null_mut(); }
     extern "C" { fn mjs_asJoint(element: *mut mjsElement) -> *mut mjsJoint; }
-    // SAFETY: delegates to C implementation
+    // SAFETY: element verified non-null; C++ performs type check and static_cast
     unsafe { mjs_asJoint(element) }
 }
 
 /// C: mjs_asSite (user/user_api.h:310)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjs_as_site(element: *mut mjsElement) -> *mut mjsSite {
+    if element.is_null() { return core::ptr::null_mut(); }
     extern "C" { fn mjs_asSite(element: *mut mjsElement) -> *mut mjsSite; }
-    // SAFETY: delegates to C implementation
+    // SAFETY: element verified non-null; C++ performs type check and static_cast
     unsafe { mjs_asSite(element) }
 }
 
@@ -1062,16 +1066,18 @@ pub fn mjs_as_camera(element: *mut mjsElement) -> *mut mjsCamera {
 /// C: mjs_asLight (user/user_api.h:316)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjs_as_light(element: *mut mjsElement) -> *mut mjsLight {
+    if element.is_null() { return core::ptr::null_mut(); }
     extern "C" { fn mjs_asLight(element: *mut mjsElement) -> *mut mjsLight; }
-    // SAFETY: delegates to C implementation
+    // SAFETY: element verified non-null; C++ performs type check and static_cast
     unsafe { mjs_asLight(element) }
 }
 
 /// C: mjs_asFrame (user/user_api.h:319)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjs_as_frame(element: *mut mjsElement) -> *mut mjsFrame {
+    if element.is_null() { return core::ptr::null_mut(); }
     extern "C" { fn mjs_asFrame(element: *mut mjsElement) -> *mut mjsFrame; }
-    // SAFETY: delegates to C implementation
+    // SAFETY: element verified non-null; C++ performs type check and static_cast
     unsafe { mjs_asFrame(element) }
 }
 
@@ -1087,24 +1093,27 @@ pub fn mjs_as_actuator(element: *mut mjsElement) -> *mut mjsActuator {
 /// C: mjs_asSensor (user/user_api.h:325)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjs_as_sensor(element: *mut mjsElement) -> *mut mjsSensor {
+    if element.is_null() { return core::ptr::null_mut(); }
     extern "C" { fn mjs_asSensor(element: *mut mjsElement) -> *mut mjsSensor; }
-    // SAFETY: delegates to C implementation
+    // SAFETY: element verified non-null; C++ performs type check and static_cast
     unsafe { mjs_asSensor(element) }
 }
 
 /// C: mjs_asFlex (user/user_api.h:328)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjs_as_flex(element: *mut mjsElement) -> *mut mjsFlex {
+    if element.is_null() { return core::ptr::null_mut(); }
     extern "C" { fn mjs_asFlex(element: *mut mjsElement) -> *mut mjsFlex; }
-    // SAFETY: delegates to C implementation
+    // SAFETY: element verified non-null; C++ performs type check and static_cast
     unsafe { mjs_asFlex(element) }
 }
 
 /// C: mjs_asPair (user/user_api.h:331)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjs_as_pair(element: *mut mjsElement) -> *mut mjsPair {
+    if element.is_null() { return core::ptr::null_mut(); }
     extern "C" { fn mjs_asPair(element: *mut mjsElement) -> *mut mjsPair; }
-    // SAFETY: delegates to C implementation
+    // SAFETY: element verified non-null; C++ performs type check and static_cast
     unsafe { mjs_asPair(element) }
 }
 
@@ -1129,40 +1138,45 @@ pub fn mjs_as_exclude(element: *mut mjsElement) -> *mut mjsExclude {
 /// C: mjs_asTendon (user/user_api.h:340)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjs_as_tendon(element: *mut mjsElement) -> *mut mjsTendon {
+    if element.is_null() { return core::ptr::null_mut(); }
     extern "C" { fn mjs_asTendon(element: *mut mjsElement) -> *mut mjsTendon; }
-    // SAFETY: delegates to C implementation
+    // SAFETY: element verified non-null; C++ performs type check and static_cast
     unsafe { mjs_asTendon(element) }
 }
 
 /// C: mjs_asNumeric (user/user_api.h:343)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjs_as_numeric(element: *mut mjsElement) -> *mut mjsNumeric {
+    if element.is_null() { return core::ptr::null_mut(); }
     extern "C" { fn mjs_asNumeric(element: *mut mjsElement) -> *mut mjsNumeric; }
-    // SAFETY: delegates to C implementation
+    // SAFETY: element verified non-null; C++ performs type check and static_cast
     unsafe { mjs_asNumeric(element) }
 }
 
 /// C: mjs_asText (user/user_api.h:346)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjs_as_text(element: *mut mjsElement) -> *mut mjsText {
+    if element.is_null() { return core::ptr::null_mut(); }
     extern "C" { fn mjs_asText(element: *mut mjsElement) -> *mut mjsText; }
-    // SAFETY: delegates to C implementation
+    // SAFETY: element verified non-null; C++ performs type check and static_cast
     unsafe { mjs_asText(element) }
 }
 
 /// C: mjs_asTuple (user/user_api.h:349)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjs_as_tuple(element: *mut mjsElement) -> *mut mjsTuple {
+    if element.is_null() { return core::ptr::null_mut(); }
     extern "C" { fn mjs_asTuple(element: *mut mjsElement) -> *mut mjsTuple; }
-    // SAFETY: delegates to C implementation
+    // SAFETY: element verified non-null; C++ performs type check and static_cast
     unsafe { mjs_asTuple(element) }
 }
 
 /// C: mjs_asKey (user/user_api.h:352)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjs_as_key(element: *mut mjsElement) -> *mut mjsKey {
+    if element.is_null() { return core::ptr::null_mut(); }
     extern "C" { fn mjs_asKey(element: *mut mjsElement) -> *mut mjsKey; }
-    // SAFETY: delegates to C implementation
+    // SAFETY: element verified non-null; C++ performs type check and static_cast
     unsafe { mjs_asKey(element) }
 }
 
@@ -1213,16 +1227,18 @@ pub fn mjs_as_texture(element: *mut mjsElement) -> *mut mjsTexture {
 /// C: mjs_asMaterial (user/user_api.h:367)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjs_as_material(element: *mut mjsElement) -> *mut mjsMaterial {
+    if element.is_null() { return core::ptr::null_mut(); }
     extern "C" { fn mjs_asMaterial(element: *mut mjsElement) -> *mut mjsMaterial; }
-    // SAFETY: delegates to C implementation
+    // SAFETY: element verified non-null; C++ performs type check and static_cast
     unsafe { mjs_asMaterial(element) }
 }
 
 /// C: mjs_asPlugin (user/user_api.h:370)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjs_as_plugin(element: *mut mjsElement) -> *mut mjsPlugin {
+    if element.is_null() { return core::ptr::null_mut(); }
     extern "C" { fn mjs_asPlugin(element: *mut mjsElement) -> *mut mjsPlugin; }
-    // SAFETY: delegates to C implementation
+    // SAFETY: element verified non-null; C++ performs type check and static_cast
     unsafe { mjs_asPlugin(element) }
 }
 

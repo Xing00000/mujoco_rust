@@ -29,16 +29,18 @@ pub fn mjs_default_orientation(orient: *mut mjsOrientation) {
 /// C: mjs_defaultBody (user/user_init.c:75)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjs_default_body(body: *mut mjsBody) {
+    if body.is_null() { return; }
     extern "C" { fn mjs_defaultBody(body: *mut mjsBody); }
-    // SAFETY: delegates to C implementation
+    // SAFETY: body verified non-null; C sets struct defaults
     unsafe { mjs_defaultBody(body) }
 }
 
 /// C: mjs_defaultFrame (user/user_init.c:89)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjs_default_frame(frame: *mut mjsFrame) {
+    if frame.is_null() { return; }
     extern "C" { fn mjs_defaultFrame(frame: *mut mjsFrame); }
-    // SAFETY: delegates to C implementation
+    // SAFETY: frame verified non-null; C sets struct defaults
     unsafe { mjs_defaultFrame(frame) }
 }
 
@@ -63,24 +65,27 @@ pub fn mjs_default_geom(geom: *mut mjsGeom) {
 /// C: mjs_defaultSite (user/user_init.c:151)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjs_default_site(site: *mut mjsSite) {
+    if site.is_null() { return; }
     extern "C" { fn mjs_defaultSite(site: *mut mjsSite); }
-    // SAFETY: delegates to C implementation
+    // SAFETY: site verified non-null; C sets struct defaults
     unsafe { mjs_defaultSite(site) }
 }
 
 /// C: mjs_defaultCamera (user/user_init.c:169)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjs_default_camera(camera: *mut mjsCamera) {
+    if camera.is_null() { return; }
     extern "C" { fn mjs_defaultCamera(camera: *mut mjsCamera); }
-    // SAFETY: delegates to C implementation
+    // SAFETY: camera verified non-null; C sets struct defaults
     unsafe { mjs_defaultCamera(camera) }
 }
 
 /// C: mjs_defaultLight (user/user_init.c:187)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjs_default_light(light: *mut mjsLight) {
+    if light.is_null() { return; }
     extern "C" { fn mjs_defaultLight(light: *mut mjsLight); }
-    // SAFETY: delegates to C implementation
+    // SAFETY: light verified non-null; C sets struct defaults
     unsafe { mjs_defaultLight(light) }
 }
 
@@ -96,24 +101,27 @@ pub fn mjs_default_flex(flex: *mut mjsFlex) {
 /// C: mjs_defaultMesh (user/user_init.c:240)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjs_default_mesh(mesh: *mut mjsMesh) {
+    if mesh.is_null() { return; }
     extern "C" { fn mjs_defaultMesh(mesh: *mut mjsMesh); }
-    // SAFETY: delegates to C implementation
+    // SAFETY: mesh verified non-null; C sets struct defaults
     unsafe { mjs_defaultMesh(mesh) }
 }
 
 /// C: mjs_defaultHField (user/user_init.c:251)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjs_default_h_field(hfield: *mut mjsHField) {
+    if hfield.is_null() { return; }
     extern "C" { fn mjs_defaultHField(hfield: *mut mjsHField); }
-    // SAFETY: delegates to C implementation
+    // SAFETY: hfield verified non-null; C sets struct defaults
     unsafe { mjs_defaultHField(hfield) }
 }
 
 /// C: mjs_defaultSkin (user/user_init.c:257)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjs_default_skin(skin: *mut mjsSkin) {
+    if skin.is_null() { return; }
     extern "C" { fn mjs_defaultSkin(skin: *mut mjsSkin); }
-    // SAFETY: delegates to C implementation
+    // SAFETY: skin verified non-null; C sets struct defaults
     unsafe { mjs_defaultSkin(skin) }
 }
 
@@ -128,8 +136,9 @@ pub fn mjs_default_texture(texture: *mut mjsTexture) {
 /// C: mjs_defaultMaterial (user/user_init.c:280)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjs_default_material(material: *mut mjsMaterial) {
+    if material.is_null() { return; }
     extern "C" { fn mjs_defaultMaterial(material: *mut mjsMaterial); }
-    // SAFETY: delegates to C implementation
+    // SAFETY: material verified non-null; C sets struct defaults
     unsafe { mjs_defaultMaterial(material) }
 }
 
@@ -163,24 +172,27 @@ pub fn mjs_default_tendon(tendon: *mut mjsTendon) {
 /// C: mjs_defaultActuator (user/user_init.c:329)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjs_default_actuator(actuator: *mut mjsActuator) {
+    if actuator.is_null() { return; }
     extern "C" { fn mjs_defaultActuator(actuator: *mut mjsActuator); }
-    // SAFETY: delegates to C implementation
+    // SAFETY: actuator verified non-null; C sets struct defaults
     unsafe { mjs_defaultActuator(actuator) }
 }
 
 /// C: mjs_defaultSensor (user/user_init.c:354)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjs_default_sensor(sensor: *mut mjsSensor) {
+    if sensor.is_null() { return; }
     extern "C" { fn mjs_defaultSensor(sensor: *mut mjsSensor); }
-    // SAFETY: delegates to C implementation
+    // SAFETY: sensor verified non-null; C sets struct defaults
     unsafe { mjs_defaultSensor(sensor) }
 }
 
 /// C: mjs_defaultNumeric (user/user_init.c:364)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjs_default_numeric(numeric: *mut mjsNumeric) {
+    if numeric.is_null() { return; }
     extern "C" { fn mjs_defaultNumeric(numeric: *mut mjsNumeric); }
-    // SAFETY: delegates to C implementation
+    // SAFETY: numeric verified non-null; C sets struct defaults
     unsafe { mjs_defaultNumeric(numeric) }
 }
 
@@ -203,15 +215,17 @@ pub fn mjs_default_tuple(tuple: *mut mjsTuple) {
 /// C: mjs_defaultKey (user/user_init.c:382)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjs_default_key(key: *mut mjsKey) {
+    if key.is_null() { return; }
     extern "C" { fn mjs_defaultKey(key: *mut mjsKey); }
-    // SAFETY: delegates to C implementation
+    // SAFETY: key verified non-null; C sets struct defaults
     unsafe { mjs_defaultKey(key) }
 }
 
 /// C: mjs_defaultPlugin (user/user_init.c:388)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjs_default_plugin(plugin: *mut mjsPlugin) {
+    if plugin.is_null() { return; }
     extern "C" { fn mjs_defaultPlugin(plugin: *mut mjsPlugin); }
-    // SAFETY: delegates to C implementation
+    // SAFETY: plugin verified non-null; C sets struct defaults
     unsafe { mjs_defaultPlugin(plugin) }
 }
