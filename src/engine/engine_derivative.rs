@@ -539,8 +539,9 @@ pub fn mjd_passive_vel(m: *const mjModel, d: *mut mjData) {
 /// Calls: mj_freeStack, mj_markStack, mj_stackAllocInfo, mjd_comVel_vel_dense, mjd_crossForce_frc, mjd_crossForce_vel, mjd_mulInertVec_vel, mju_addTo, mju_addToScl, mju_copy, mju_mulInertVec, mju_mulMatMat, mju_scl, mju_zero
 #[allow(unused_variables, non_snake_case)]
 pub fn mjd_rne_vel_dense(m: *const mjModel, d: *mut mjData) {
+    if m.is_null() { return; }
     extern "C" { fn mjd_rne_vel_dense(m: *const mjModel, d: *mut mjData); }
-    // SAFETY: delegates to C implementation, pointers valid per caller
+    // SAFETY: m verified non-null; delegates to C implementation
     unsafe { mjd_rne_vel_dense(m, d) }
 }
 

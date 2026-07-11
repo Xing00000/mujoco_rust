@@ -48,8 +48,9 @@ pub fn mjs_default_frame(frame: *mut mjsFrame) {
 /// Calls: mj_defaultSolRefImp
 #[allow(unused_variables, non_snake_case)]
 pub fn mjs_default_joint(joint: *mut mjsJoint) {
+    if joint.is_null() { return; }
     extern "C" { fn mjs_defaultJoint(joint: *mut mjsJoint); }
-    // SAFETY: delegates to C implementation
+    // SAFETY: joint verified non-null; delegates to C implementation
     unsafe { mjs_defaultJoint(joint) }
 }
 
@@ -57,8 +58,9 @@ pub fn mjs_default_joint(joint: *mut mjsJoint) {
 /// Calls: mj_defaultSolRefImp
 #[allow(unused_variables, non_snake_case)]
 pub fn mjs_default_geom(geom: *mut mjsGeom) {
+    if geom.is_null() { return; }
     extern "C" { fn mjs_defaultGeom(geom: *mut mjsGeom); }
-    // SAFETY: delegates to C implementation
+    // SAFETY: geom verified non-null; delegates to C implementation
     unsafe { mjs_defaultGeom(geom) }
 }
 
@@ -93,8 +95,9 @@ pub fn mjs_default_light(light: *mut mjsLight) {
 /// Calls: mj_defaultSolRefImp
 #[allow(unused_variables, non_snake_case)]
 pub fn mjs_default_flex(flex: *mut mjsFlex) {
+    if flex.is_null() { return; }
     extern "C" { fn mjs_defaultFlex(flex: *mut mjsFlex); }
-    // SAFETY: delegates to C implementation
+    // SAFETY: flex verified non-null; delegates to C implementation
     unsafe { mjs_defaultFlex(flex) }
 }
 
@@ -147,8 +150,9 @@ pub fn mjs_default_material(material: *mut mjsMaterial) {
 /// Calls: mj_defaultSolRefImp
 #[allow(unused_variables, non_snake_case)]
 pub fn mjs_default_pair(pair: *mut mjsPair) {
+    if pair.is_null() { return; }
     extern "C" { fn mjs_defaultPair(pair: *mut mjsPair); }
-    // SAFETY: delegates to C implementation
+    // SAFETY: pair verified non-null; delegates to C implementation
     unsafe { mjs_defaultPair(pair) }
 }
 
@@ -156,8 +160,9 @@ pub fn mjs_default_pair(pair: *mut mjsPair) {
 /// Calls: mj_defaultSolRefImp
 #[allow(unused_variables, non_snake_case)]
 pub fn mjs_default_equality(equality: *mut mjsEquality) {
+    if equality.is_null() { return; }
     extern "C" { fn mjs_defaultEquality(equality: *mut mjsEquality); }
-    // SAFETY: delegates to C implementation
+    // SAFETY: equality verified non-null; delegates to C implementation
     unsafe { mjs_defaultEquality(equality) }
 }
 
@@ -165,8 +170,9 @@ pub fn mjs_default_equality(equality: *mut mjsEquality) {
 /// Calls: mj_defaultSolRefImp
 #[allow(unused_variables, non_snake_case)]
 pub fn mjs_default_tendon(tendon: *mut mjsTendon) {
+    if tendon.is_null() { return; }
     extern "C" { fn mjs_defaultTendon(tendon: *mut mjsTendon); }
-    // SAFETY: delegates to C implementation
+    // SAFETY: tendon verified non-null; delegates to C implementation
     unsafe { mjs_defaultTendon(tendon) }
 }
 

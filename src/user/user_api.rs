@@ -170,6 +170,7 @@ pub fn mjs_set_string(dest: *mut i32, text: *const i8) {
 /// Calls: mju_error
 #[allow(unused_variables, non_snake_case)]
 pub fn mjs_set_in_string_vec(dest: *mut i32, i: i32, text: *const i8) -> mjtBool {
+    let _sv = core::mem::size_of_val(&dest);
     extern "C" { fn mjs_setInStringVec(dest: *mut i32, i: i32, text: *const i8) -> mjtBool; }
     // SAFETY: delegates to C implementation
     unsafe { mjs_setInStringVec(dest, i, text) }
@@ -325,8 +326,9 @@ pub fn mj_copy_spec(s: *const mjSpec) -> *mut mjSpec {
 /// Calls: mjCModel::GetError, mju_error
 #[allow(unused_variables, non_snake_case)]
 pub fn mjs_get_error(s: *mut mjSpec) -> *const i8 {
+    if s.is_null() { return core::ptr::null(); }
     extern "C" { fn mjs_getError(s: *mut mjSpec) -> *const i8; }
-    // SAFETY: delegates to C implementation
+    // SAFETY: s verified non-null; delegates to C implementation
     unsafe { mjs_getError(s) }
 }
 
@@ -334,8 +336,9 @@ pub fn mjs_get_error(s: *mut mjSpec) -> *const i8 {
 /// Calls: mjCModel::GetError
 #[allow(unused_variables, non_snake_case)]
 pub fn mjs_is_warning(s: *mut mjSpec) -> i32 {
+    if s.is_null() { return 0; }
     extern "C" { fn mjs_isWarning(s: *mut mjSpec) -> i32; }
-    // SAFETY: delegates to C implementation
+    // SAFETY: s verified non-null; delegates to C implementation
     unsafe { mjs_isWarning(s) }
 }
 
@@ -356,8 +359,9 @@ pub fn mj_delete_spec(s: *mut mjSpec) {
 /// Calls: mjCModel::AppendSpec
 #[allow(unused_variables, non_snake_case)]
 pub fn mjs_add_spec(s: *mut mjSpec, child: *mut mjSpec) {
+    if s.is_null() { return; }
     extern "C" { fn mjs_addSpec(s: *mut mjSpec, child: *mut mjSpec); }
-    // SAFETY: delegates to C implementation
+    // SAFETY: s verified non-null; delegates to C implementation
     unsafe { mjs_addSpec(s, child) }
 }
 
@@ -375,8 +379,9 @@ pub fn mjs_activate_plugin(s: *mut mjSpec, name: *const i8) -> i32 {
 /// Calls: mjCModel::SetDeepCopy
 #[allow(unused_variables, non_snake_case)]
 pub fn mjs_set_deep_copy(s: *mut mjSpec, deepcopy: i32) -> i32 {
+    if s.is_null() { return 0; }
     extern "C" { fn mjs_setDeepCopy(s: *mut mjSpec, deepcopy: i32) -> i32; }
-    // SAFETY: delegates to C implementation
+    // SAFETY: s verified non-null; delegates to C implementation
     unsafe { mjs_setDeepCopy(s, deepcopy) }
 }
 
@@ -481,8 +486,9 @@ pub fn mjs_add_frame(body: *mut mjsBody, parentframe: *mut mjsFrame) -> *mut mjs
 /// Calls: mjCModel::IsAttached, mjCModel::SetError
 #[allow(unused_variables, non_snake_case)]
 pub fn mjs_delete(s: *mut mjSpec, element: *mut mjsElement) -> i32 {
+    if s.is_null() { return 0; }
     extern "C" { fn mjs_delete(s: *mut mjSpec, element: *mut mjsElement) -> i32; }
-    // SAFETY: delegates to C implementation
+    // SAFETY: s verified non-null; delegates to C implementation
     unsafe { mjs_delete(s, element) }
 }
 
@@ -500,8 +506,9 @@ pub fn mjs_add_actuator(s: *mut mjSpec, def: *const mjsDefault) -> *mut mjsActua
 /// Calls: mjCModel::AddSensor
 #[allow(unused_variables, non_snake_case)]
 pub fn mjs_add_sensor(s: *mut mjSpec) -> *mut mjsSensor {
+    if s.is_null() { return core::ptr::null_mut(); }
     extern "C" { fn mjs_addSensor(s: *mut mjSpec) -> *mut mjsSensor; }
-    // SAFETY: delegates to C implementation
+    // SAFETY: s verified non-null; delegates to C implementation
     unsafe { mjs_addSensor(s) }
 }
 
@@ -563,8 +570,9 @@ pub fn mjs_add_equality(s: *mut mjSpec, def: *const mjsDefault) -> *mut mjsEqual
 /// Calls: mjCModel::AddTendon
 #[allow(unused_variables, non_snake_case)]
 pub fn mjs_add_tendon(s: *mut mjSpec, def: *const mjsDefault) -> *mut mjsTendon {
+    if s.is_null() { return core::ptr::null_mut(); }
     extern "C" { fn mjs_addTendon(s: *mut mjSpec, def: *const mjsDefault) -> *mut mjsTendon; }
-    // SAFETY: delegates to C implementation
+    // SAFETY: s verified non-null; delegates to C implementation
     unsafe { mjs_addTendon(s, def) }
 }
 
@@ -629,8 +637,9 @@ pub fn mjs_add_numeric(s: *mut mjSpec) -> *mut mjsNumeric {
 /// Calls: mjCModel::AddText
 #[allow(unused_variables, non_snake_case)]
 pub fn mjs_add_text(s: *mut mjSpec) -> *mut mjsText {
+    if s.is_null() { return core::ptr::null_mut(); }
     extern "C" { fn mjs_addText(s: *mut mjSpec) -> *mut mjsText; }
-    // SAFETY: delegates to C implementation
+    // SAFETY: s verified non-null; delegates to C implementation
     unsafe { mjs_addText(s) }
 }
 
@@ -638,8 +647,9 @@ pub fn mjs_add_text(s: *mut mjSpec) -> *mut mjsText {
 /// Calls: mjCModel::AddTuple
 #[allow(unused_variables, non_snake_case)]
 pub fn mjs_add_tuple(s: *mut mjSpec) -> *mut mjsTuple {
+    if s.is_null() { return core::ptr::null_mut(); }
     extern "C" { fn mjs_addTuple(s: *mut mjSpec) -> *mut mjsTuple; }
-    // SAFETY: delegates to C implementation
+    // SAFETY: s verified non-null; delegates to C implementation
     unsafe { mjs_addTuple(s) }
 }
 
@@ -657,8 +667,9 @@ pub fn mjs_add_key(s: *mut mjSpec) -> *mut mjsKey {
 /// Calls: mjCModel::AddPlugin
 #[allow(unused_variables, non_snake_case)]
 pub fn mjs_add_plugin(s: *mut mjSpec) -> *mut mjsPlugin {
+    if s.is_null() { return core::ptr::null_mut(); }
     extern "C" { fn mjs_addPlugin(s: *mut mjSpec) -> *mut mjsPlugin; }
-    // SAFETY: delegates to C implementation
+    // SAFETY: s verified non-null; delegates to C implementation
     unsafe { mjs_addPlugin(s) }
 }
 
@@ -819,8 +830,9 @@ pub fn mjs_add_h_field(s: *mut mjSpec) -> *mut mjsHField {
 /// Calls: mjCModel::AddSkin
 #[allow(unused_variables, non_snake_case)]
 pub fn mjs_add_skin(s: *mut mjSpec) -> *mut mjsSkin {
+    if s.is_null() { return core::ptr::null_mut(); }
     extern "C" { fn mjs_addSkin(s: *mut mjSpec) -> *mut mjsSkin; }
-    // SAFETY: delegates to C implementation
+    // SAFETY: s verified non-null; delegates to C implementation
     unsafe { mjs_addSkin(s) }
 }
 
@@ -828,8 +840,9 @@ pub fn mjs_add_skin(s: *mut mjSpec) -> *mut mjsSkin {
 /// Calls: mjCModel::AddTexture
 #[allow(unused_variables, non_snake_case)]
 pub fn mjs_add_texture(s: *mut mjSpec) -> *mut mjsTexture {
+    if s.is_null() { return core::ptr::null_mut(); }
     extern "C" { fn mjs_addTexture(s: *mut mjSpec) -> *mut mjsTexture; }
-    // SAFETY: delegates to C implementation
+    // SAFETY: s verified non-null; delegates to C implementation
     unsafe { mjs_addTexture(s) }
 }
 
@@ -901,8 +914,9 @@ pub fn mjs_find_body(s: *const mjSpec, name: *const i8) -> *mut mjsBody {
 /// Calls: mjCModel::GetWorld, mjCModel::IsCompiled
 #[allow(unused_variables, non_snake_case)]
 pub fn mjs_find_element(s: *const mjSpec, r#type: mjtObj, name: *const i8) -> *mut mjsElement {
+    if s.is_null() { return core::ptr::null_mut(); }
     extern "C" { fn mjs_findElement(s: *const mjSpec, r#type: mjtObj, name: *const i8) -> *mut mjsElement; }
-    // SAFETY: delegates to C implementation
+    // SAFETY: s verified non-null; delegates to C implementation
     unsafe { mjs_findElement(s, r#type, name) }
 }
 
@@ -964,8 +978,9 @@ pub fn mjs_find_default(s: *const mjSpec, classname: *const i8) -> *mut mjsDefau
 /// Calls: mjCModel::Default
 #[allow(unused_variables, non_snake_case)]
 pub fn mjs_get_spec_default(s: *const mjSpec) -> *mut mjsDefault {
+    if s.is_null() { return core::ptr::null_mut(); }
     extern "C" { fn mjs_getSpecDefault(s: *const mjSpec) -> *mut mjsDefault; }
-    // SAFETY: delegates to C implementation
+    // SAFETY: s verified non-null; delegates to C implementation
     unsafe { mjs_getSpecDefault(s) }
 }
 
@@ -1026,8 +1041,9 @@ pub fn mjs_next_element(s: *const mjSpec, element: *const mjsElement) -> *mut mj
 /// Calls: mjCWrap::Type, mjs_getSpec
 #[allow(unused_variables, non_snake_case)]
 pub fn mjs_get_wrap_target(wrap: *const mjsWrap) -> *mut mjsElement {
+    if wrap.is_null() { return core::ptr::null_mut(); }
     extern "C" { fn mjs_getWrapTarget(wrap: *const mjsWrap) -> *mut mjsElement; }
-    // SAFETY: delegates to C implementation
+    // SAFETY: wrap verified non-null; delegates to C implementation
     unsafe { mjs_getWrapTarget(wrap) }
 }
 
@@ -1035,8 +1051,9 @@ pub fn mjs_get_wrap_target(wrap: *const mjsWrap) -> *mut mjsElement {
 /// Calls: mjCWrap::Type, mjs_asSite, mjs_getSpec
 #[allow(unused_variables, non_snake_case)]
 pub fn mjs_get_wrap_side_site(wrap: *const mjsWrap) -> *mut mjsSite {
+    if wrap.is_null() { return core::ptr::null_mut(); }
     extern "C" { fn mjs_getWrapSideSite(wrap: *const mjsWrap) -> *mut mjsSite; }
-    // SAFETY: delegates to C implementation
+    // SAFETY: wrap verified non-null; delegates to C implementation
     unsafe { mjs_getWrapSideSite(wrap) }
 }
 
@@ -1049,8 +1066,9 @@ pub fn mjs_get_wrap_side_site(wrap: *const mjsWrap) -> *mut mjsSite {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjs_get_wrap_divisor(wrap: *const mjsWrap) -> f64 {
+    if wrap.is_null() { return 0.0; }
     extern "C" { fn mjs_getWrapDivisor(wrap: *const mjsWrap) -> f64; }
-    // SAFETY: delegates to C implementation
+    // SAFETY: wrap verified non-null; delegates to C implementation
     unsafe { mjs_getWrapDivisor(wrap) }
 }
 
@@ -1063,8 +1081,9 @@ pub fn mjs_get_wrap_divisor(wrap: *const mjsWrap) -> f64 {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjs_get_wrap_coef(wrap: *const mjsWrap) -> f64 {
+    if wrap.is_null() { return 0.0; }
     extern "C" { fn mjs_getWrapCoef(wrap: *const mjsWrap) -> f64; }
-    // SAFETY: delegates to C implementation
+    // SAFETY: wrap verified non-null; delegates to C implementation
     unsafe { mjs_getWrapCoef(wrap) }
 }
 
@@ -1315,8 +1334,9 @@ pub fn mjs_set_plugin_attributes(plugin: *mut mjsPlugin, attributes: *mut ()) {
 /// Calls: mjCTendon::NumWraps
 #[allow(unused_variables, non_snake_case)]
 pub fn mjs_get_wrap_num(tendonspec: *const mjsTendon) -> i32 {
+    if tendonspec.is_null() { return 0; }
     extern "C" { fn mjs_getWrapNum(tendonspec: *const mjsTendon) -> i32; }
-    // SAFETY: delegates to C implementation
+    // SAFETY: tendonspec verified non-null; delegates to C implementation
     unsafe { mjs_getWrapNum(tendonspec) }
 }
 
@@ -1324,8 +1344,9 @@ pub fn mjs_get_wrap_num(tendonspec: *const mjsTendon) -> i32 {
 /// Calls: mjCTendon::GetWrap, mjCTendon::NumWraps, mju_error
 #[allow(unused_variables, non_snake_case)]
 pub fn mjs_get_wrap(tendonspec: *const mjsTendon, i: i32) -> *mut mjsWrap {
+    if tendonspec.is_null() { return core::ptr::null_mut(); }
     extern "C" { fn mjs_getWrap(tendonspec: *const mjsTendon, i: i32) -> *mut mjsWrap; }
-    // SAFETY: delegates to C implementation
+    // SAFETY: tendonspec verified non-null; delegates to C implementation
     unsafe { mjs_getWrap(tendonspec, i) }
 }
 
@@ -1396,8 +1417,9 @@ pub fn mjs_resolve_orientation(quat: [f64; 4], degree: u8, sequence: *const i8, 
 /// Calls: mjCBody::ToFrame
 #[allow(unused_variables, non_snake_case)]
 pub fn mjs_body_to_frame(body: *mut *mut mjsBody) -> *mut mjsFrame {
+    if body.is_null() { return core::ptr::null_mut(); }
     extern "C" { fn mjs_bodyToFrame(body: *mut *mut mjsBody) -> *mut mjsFrame; }
-    // SAFETY: delegates to C implementation
+    // SAFETY: body verified non-null; delegates to C implementation
     unsafe { mjs_bodyToFrame(body) }
 }
 
@@ -1405,8 +1427,9 @@ pub fn mjs_body_to_frame(body: *mut *mut mjsBody) -> *mut mjsFrame {
 /// Calls: mjs_setUserValueWithCleanup
 #[allow(unused_variables, non_snake_case)]
 pub fn mjs_set_user_value(element: *mut mjsElement, key: *const i8, data: *const ()) {
+    if element.is_null() { return; }
     extern "C" { fn mjs_setUserValue(element: *mut mjsElement, key: *const i8, data: *const ()); }
-    // SAFETY: delegates to C++ implementation; caller guarantees pointer validity
+    // SAFETY: element verified non-null; delegates to C++ implementation
     unsafe { mjs_setUserValue(element, key, data) }
 }
 
