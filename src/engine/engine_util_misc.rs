@@ -811,10 +811,63 @@ pub fn mju_flex_gather_face_state(order: i32, cx: i32, cy: i32, cz: i32, face_el
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mju_flex_interp_rotation2d(order: i32, xpos_f: *const f64, npe: i32, axis0: i32, axis1: i32, normal_axis: i32, local: *const f64, quat: *mut f64) {
-    // WARNING: signature changed — verify body
-    // Previous params: (order : i32, xpos_f : * const f64, npe : i32, axis0 : i32, axis1 : i32, normal_axis : i32, local : * const f64, quat : * mut f64)
-    // Previous return: ()
-    todo ! ()
+    use crate::engine::engine_util_spatial::{mju_cross, mju_mat2rot, mju_neg_quat};
+
+    // SAFETY: caller guarantees xpos_f points to npe*3 f64, local to 2 f64,
+    // quat to 4 f64. axis0, axis1, normal_axis are in [0,2].
+    unsafe {
+        // compute 3x2 deformation gradient F at parametric point local
+        let mut t1: [f64; 3] = [0.0, 0.0, 0.0]; // tangent along axis0
+        let mut t2: [f64; 3] = [0.0, 0.0, 0.0]; // tangent along axis1
+        let mut idx: i32 = 0;
+        let mut l0 = 0;
+        while l0 <= order {
+            let mut l1 = 0;
+            while l1 <= order {
+                let grad0 = mju_flex_dphi(*local.add(0), l0, order)
+                    * mju_flex_phi(*local.add(1), l1, order);
+                let grad1 = mju_flex_phi(*local.add(0), l0, order)
+                    * mju_flex_dphi(*local.add(1), l1, order);
+                let mut d = 0;
+                while d < 3 {
+                    t1[d as usize] += *xpos_f.add((3 * idx + d) as usize) * grad0;
+                    t2[d as usize] += *xpos_f.add((3 * idx + d) as usize) * grad1;
+                    d += 1;
+                }
+                idx += 1;
+                l1 += 1;
+            }
+            l0 += 1;
+        }
+
+        // normal = t1 x t2
+        let mut normal: [f64; 3] = [0.0; 3];
+        mju_cross(normal.as_mut_ptr(), t1.as_ptr(), t2.as_ptr());
+
+        // build 3x3 matrix with columns assigned to canonical axes (row-major)
+        // axis0 -> t1, axis1 -> t2, normal_axis -> normal
+        let mut mat: [f64; 9] = [0.0; 9];
+        let mut vecs: [*const f64; 3] = [std::ptr::null(); 3];
+        vecs[axis0 as usize] = t1.as_ptr();
+        vecs[axis1 as usize] = t2.as_ptr();
+        vecs[normal_axis as usize] = normal.as_ptr();
+
+        let mut col = 0;
+        while col < 3 {
+            mat[0 * 3 + col] = *vecs[col].add(0);
+            mat[1 * 3 + col] = *vecs[col].add(1);
+            mat[2 * 3 + col] = *vecs[col].add(2);
+            col += 1;
+        }
+
+        // extract rotation via polar decomposition
+        *quat.add(0) = 1.0;
+        *quat.add(1) = 0.0;
+        *quat.add(2) = 0.0;
+        *quat.add(3) = 0.0;
+        mju_mat2rot(quat, mat.as_ptr());
+        mju_neg_quat(quat, quat);
+    }
 }
 
 /// C: mju_flexFaceNormal2D (engine/engine_util_misc.h:124)
@@ -826,10 +879,36 @@ pub fn mju_flex_interp_rotation2d(order: i32, xpos_f: *const f64, npe: i32, axis
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mju_flex_face_normal2d(normal: *mut f64, t1: *mut f64, t2: *mut f64, order: i32, xpos_f: *const f64, local: *const f64) {
-    // WARNING: signature changed — verify body
-    // Previous params: (normal : * mut f64, t1 : * mut f64, t2 : * mut f64, order : i32, xpos_f : * const f64, local : * const f64)
-    // Previous return: ()
-    todo ! ()
+    use crate::engine::engine_util_blas::mju_zero3;
+    use crate::engine::engine_util_spatial::mju_cross;
+
+    // SAFETY: caller guarantees normal, t1, t2 point to 3 f64 each,
+    // xpos_f to (order+1)^2 * 3 f64, local to 2 f64.
+    unsafe {
+        mju_zero3(t1);
+        mju_zero3(t2);
+        let mut idx: i32 = 0;
+        let mut l0 = 0;
+        while l0 <= order {
+            let mut l1 = 0;
+            while l1 <= order {
+                let grad0 = mju_flex_dphi(*local.add(0), l0, order)
+                    * mju_flex_phi(*local.add(1), l1, order);
+                let grad1 = mju_flex_phi(*local.add(0), l0, order)
+                    * mju_flex_dphi(*local.add(1), l1, order);
+                let mut d = 0;
+                while d < 3 {
+                    *t1.add(d as usize) += *xpos_f.add((3 * idx + d) as usize) * grad0;
+                    *t2.add(d as usize) += *xpos_f.add((3 * idx + d) as usize) * grad1;
+                    d += 1;
+                }
+                idx += 1;
+                l1 += 1;
+            }
+            l0 += 1;
+        }
+        mju_cross(normal, t1, t2);
+    }
 }
 
 /// C: mju_flexPhi (engine/engine_util_misc.h:130)
@@ -879,10 +958,109 @@ pub fn mju_flex_dphi(s: f64, i: i32, order: i32) -> f64 {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mju_shell_track_interior(nodexpos: *mut f64, nx: i32, ny: i32, nz: i32) {
-    // WARNING: signature changed — verify body
-    // Previous params: (nodexpos : * mut f64, nx : i32, ny : i32, nz : i32)
-    // Previous return: ()
-    todo ! ()
+    use crate::engine::engine_util_blas::mju_copy3;
+
+    // SAFETY: caller guarantees nodexpos points to nx*ny*nz*3 f64.
+    unsafe {
+        // need at least 3 nodes in each direction to have interior nodes
+        if nx < 3 || ny < 3 || nz < 3 {
+            return;
+        }
+
+        // helper: get nodexpos pointer for node (i,j,k)
+        #[inline(always)]
+        unsafe fn node_at(nodexpos: *const f64, ny: i32, nz: i32, i: i32, j: i32, k: i32) -> *const f64 {
+            nodexpos.add((3 * (i * ny * nz + j * nz + k)) as usize)
+        }
+
+        let mut i = 1;
+        while i < nx - 1 {
+            let mut j = 1;
+            while j < ny - 1 {
+                let mut k = 1;
+                while k < nz - 1 {
+                    // parametric coordinates in [0, 1]
+                    let s = i as f64 / (nx - 1) as f64;
+                    let t = j as f64 / (ny - 1) as f64;
+                    let u = k as f64 / (nz - 1) as f64;
+
+                    let mut result: [f64; 3] = [0.0, 0.0, 0.0];
+
+                    // --- face contributions (bilinear interpolation on each face pair) ---
+                    // x-faces: i=0 and i=nx-1
+                    let mut d = 0;
+                    while d < 3 {
+                        result[d as usize] += (1.0 - s) * *node_at(nodexpos, ny, nz, 0, j, k).add(d as usize)
+                            + s * *node_at(nodexpos, ny, nz, nx - 1, j, k).add(d as usize);
+                        d += 1;
+                    }
+                    // y-faces: j=0 and j=ny-1
+                    d = 0;
+                    while d < 3 {
+                        result[d as usize] += (1.0 - t) * *node_at(nodexpos, ny, nz, i, 0, k).add(d as usize)
+                            + t * *node_at(nodexpos, ny, nz, i, ny - 1, k).add(d as usize);
+                        d += 1;
+                    }
+                    // z-faces: k=0 and k=nz-1
+                    d = 0;
+                    while d < 3 {
+                        result[d as usize] += (1.0 - u) * *node_at(nodexpos, ny, nz, i, j, 0).add(d as usize)
+                            + u * *node_at(nodexpos, ny, nz, i, j, nz - 1).add(d as usize);
+                        d += 1;
+                    }
+
+                    // --- edge corrections (subtract 12 edges) ---
+                    // edges along x (4 edges)
+                    d = 0;
+                    while d < 3 {
+                        result[d as usize] -= (1.0 - t) * (1.0 - u) * *node_at(nodexpos, ny, nz, i, 0, 0).add(d as usize);
+                        result[d as usize] -= (1.0 - t) * u * *node_at(nodexpos, ny, nz, i, 0, nz - 1).add(d as usize);
+                        result[d as usize] -= t * (1.0 - u) * *node_at(nodexpos, ny, nz, i, ny - 1, 0).add(d as usize);
+                        result[d as usize] -= t * u * *node_at(nodexpos, ny, nz, i, ny - 1, nz - 1).add(d as usize);
+                        d += 1;
+                    }
+                    // edges along y (4 edges)
+                    d = 0;
+                    while d < 3 {
+                        result[d as usize] -= (1.0 - s) * (1.0 - u) * *node_at(nodexpos, ny, nz, 0, j, 0).add(d as usize);
+                        result[d as usize] -= (1.0 - s) * u * *node_at(nodexpos, ny, nz, 0, j, nz - 1).add(d as usize);
+                        result[d as usize] -= s * (1.0 - u) * *node_at(nodexpos, ny, nz, nx - 1, j, 0).add(d as usize);
+                        result[d as usize] -= s * u * *node_at(nodexpos, ny, nz, nx - 1, j, nz - 1).add(d as usize);
+                        d += 1;
+                    }
+                    // edges along z (4 edges)
+                    d = 0;
+                    while d < 3 {
+                        result[d as usize] -= (1.0 - s) * (1.0 - t) * *node_at(nodexpos, ny, nz, 0, 0, k).add(d as usize);
+                        result[d as usize] -= (1.0 - s) * t * *node_at(nodexpos, ny, nz, 0, ny - 1, k).add(d as usize);
+                        result[d as usize] -= s * (1.0 - t) * *node_at(nodexpos, ny, nz, nx - 1, 0, k).add(d as usize);
+                        result[d as usize] -= s * t * *node_at(nodexpos, ny, nz, nx - 1, ny - 1, k).add(d as usize);
+                        d += 1;
+                    }
+
+                    // --- corner corrections (add 8 corners back) ---
+                    d = 0;
+                    while d < 3 {
+                        result[d as usize] += (1.0 - s) * (1.0 - t) * (1.0 - u) * *node_at(nodexpos, ny, nz, 0, 0, 0).add(d as usize);
+                        result[d as usize] += (1.0 - s) * (1.0 - t) * u * *node_at(nodexpos, ny, nz, 0, 0, nz - 1).add(d as usize);
+                        result[d as usize] += (1.0 - s) * t * (1.0 - u) * *node_at(nodexpos, ny, nz, 0, ny - 1, 0).add(d as usize);
+                        result[d as usize] += (1.0 - s) * t * u * *node_at(nodexpos, ny, nz, 0, ny - 1, nz - 1).add(d as usize);
+                        result[d as usize] += s * (1.0 - t) * (1.0 - u) * *node_at(nodexpos, ny, nz, nx - 1, 0, 0).add(d as usize);
+                        result[d as usize] += s * (1.0 - t) * u * *node_at(nodexpos, ny, nz, nx - 1, 0, nz - 1).add(d as usize);
+                        result[d as usize] += s * t * (1.0 - u) * *node_at(nodexpos, ny, nz, nx - 1, ny - 1, 0).add(d as usize);
+                        result[d as usize] += s * t * u * *node_at(nodexpos, ny, nz, nx - 1, ny - 1, nz - 1).add(d as usize);
+                        d += 1;
+                    }
+
+                    // write result to interior node
+                    mju_copy3(nodexpos.add((3 * (i * ny * nz + j * nz + k)) as usize), result.as_ptr());
+                    k += 1;
+                }
+                j += 1;
+            }
+            i += 1;
+        }
+    }
 }
 
 /// C: mju_shellTFIWeights (engine/engine_util_misc.h:154)
