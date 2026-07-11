@@ -509,6 +509,10 @@ pub fn mjc_fix_normal(m: *const mjModel, d: *const mjData, con: *mut mjPreContac
 /// C: mjc_setCCDBuffer (engine/engine_collision_convex.h:128)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjc_set_ccd_buffer(buffer: *mut ()) {
-    todo!("C++: requires global mutable static ccd_buffer")
+    use std::cell::Cell;
+    thread_local! {
+        pub static CCD_BUFFER: Cell<*mut ()> = Cell::new(std::ptr::null_mut());
+    }
+    CCD_BUFFER.with(|b| b.set(buffer));
 }
 

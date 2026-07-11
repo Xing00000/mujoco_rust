@@ -956,11 +956,49 @@ pub fn mju_decode_pyramid(force: *mut f64, pyramid: *const f64, mu: *const f64, 
 ///   3. No algebraic simplification
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
-pub fn mju_spring_damper(pos0: f64, vel0: f64, Kp: f64, Kv: f64, dt: f64) -> f64 {
-    // WARNING: signature changed — verify body
-    // Previous params: (pos0 : f64, vel0 : f64, Kp : f64, Kv : f64, dt : f64)
-    // Previous return: f64
-    todo ! ()
+pub fn mju_spring_damper(pos0: f64, vel0: f64, k: f64, b: f64, t: f64) -> f64 {
+    const MJMINVAL: f64 = 1e-15;
+
+    // determinant of characteristic equation
+    let det = b * b - 4.0 * k;
+
+    // overdamping
+    if det > MJMINVAL {
+        // compute w = sqrt(det)/2
+        let w = det.sqrt() / 2.0;
+
+        // compute r1,r2
+        let r1 = -b / 2.0 + w;
+        let r2 = -b / 2.0 - w;
+
+        // compute coefficients
+        let c1 = (pos0 * r2 - vel0) / (r2 - r1);
+        let c2 = (pos0 * r1 - vel0) / (r1 - r2);
+
+        // evaluate result
+        c1 * (r1 * t).exp() + c2 * (r2 * t).exp()
+    }
+    // critical damping
+    else if det <= MJMINVAL && det >= -MJMINVAL {
+        // compute coefficients
+        let c1 = pos0;
+        let c2 = vel0 + b * c1 / 2.0;
+
+        // evaluate result
+        (-b * t / 2.0).exp() * (c1 + c2 * t)
+    }
+    // underdamping
+    else {
+        // compute w
+        let w = det.abs().sqrt() / 2.0;
+
+        // compute coefficients
+        let c1 = pos0;
+        let c2 = (vel0 + b * c1 / 2.0) / w;
+
+        // evaluate result
+        (-b * t / 2.0).exp() * (c1 * (w * t).cos() + c2 * (w * t).sin())
+    }
 }
 
 /// C: mju_outsideBox (engine/engine_util_misc.h:213)
@@ -986,10 +1024,16 @@ pub fn mju_outside_box(point: *const f64, pos: *const f64, mat: *const f64, size
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mju_print_mat(mat: *const f64, nr: i32, nc: i32) {
-    // WARNING: signature changed — verify body
-    // Previous params: (mat : * const f64, nr : i32, nc : i32)
-    // Previous return: ()
-    todo ! ()
+    // SAFETY: caller guarantees mat points to nr*nc f64 values
+    unsafe {
+        for r in 0..nr {
+            for c in 0..nc {
+                print!("{:.8} ", *mat.add((r * nc + c) as usize));
+            }
+            println!();
+        }
+        println!();
+    }
 }
 
 /// C: mju_printMatSparse (engine/engine_util_misc.h:220)
@@ -1000,10 +1044,18 @@ pub fn mju_print_mat(mat: *const f64, nr: i32, nc: i32) {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mju_print_mat_sparse(mat: *const f64, nr: i32, rownnz: *const i32, rowadr: *const i32, colind: *const i32) {
-    // WARNING: signature changed — verify body
-    // Previous params: (mat : * const f64, nr : i32, rownnz : * const i32, rowadr : * const i32, colind : * const i32)
-    // Previous return: ()
-    todo ! ()
+    // SAFETY: caller guarantees all pointers are valid for the sparse matrix dimensions
+    unsafe {
+        for r in 0..nr {
+            let adr_start = *rowadr.add(r as usize);
+            let adr_end = adr_start + *rownnz.add(r as usize);
+            for adr in adr_start..adr_end {
+                print!("({} {}): {:9.6}  ", r, *colind.add(adr as usize), *mat.add(adr as usize));
+            }
+            println!();
+        }
+        println!();
+    }
 }
 
 /// C: mju_min (engine/engine_util_misc.h:225)
@@ -1145,11 +1197,92 @@ pub fn mju_type2str(r#type: i32) -> *const i8 {
 
 /// C: mju_str2Type (engine/engine_util_misc.h:243)
 #[allow(unused_variables, non_snake_case)]
-pub fn mju_str2type(str: *const i8) -> i32 {
-    // WARNING: signature changed — verify body
-    // Previous params: (str : * const i8)
-    // Previous return: i32
-    todo ! ()
+pub fn mju_str2type(str_ptr: *const i8) -> i32 {
+    // mjOBJ enum values
+    const mjOBJ_UNKNOWN: i32 = 0;
+    const mjOBJ_BODY: i32 = 1;
+    const mjOBJ_XBODY: i32 = 2;
+    const mjOBJ_JOINT: i32 = 3;
+    const mjOBJ_DOF: i32 = 4;
+    const mjOBJ_GEOM: i32 = 5;
+    const mjOBJ_SITE: i32 = 6;
+    const mjOBJ_CAMERA: i32 = 7;
+    const mjOBJ_LIGHT: i32 = 8;
+    const mjOBJ_FLEX: i32 = 9;
+    const mjOBJ_MESH: i32 = 10;
+    const mjOBJ_SKIN: i32 = 11;
+    const mjOBJ_HFIELD: i32 = 12;
+    const mjOBJ_TEXTURE: i32 = 13;
+    const mjOBJ_MATERIAL: i32 = 14;
+    const mjOBJ_PAIR: i32 = 15;
+    const mjOBJ_EXCLUDE: i32 = 16;
+    const mjOBJ_EQUALITY: i32 = 17;
+    const mjOBJ_TENDON: i32 = 18;
+    const mjOBJ_ACTUATOR: i32 = 19;
+    const mjOBJ_SENSOR: i32 = 20;
+    const mjOBJ_NUMERIC: i32 = 21;
+    const mjOBJ_TEXT: i32 = 22;
+    const mjOBJ_TUPLE: i32 = 23;
+    const mjOBJ_KEY: i32 = 24;
+    const mjOBJ_PLUGIN: i32 = 25;
+
+    // SAFETY: caller guarantees str_ptr is a valid null-terminated C string
+    unsafe {
+        let s = core::ffi::CStr::from_ptr(str_ptr);
+        if s == core::ffi::CStr::from_bytes_with_nul_unchecked(b"body\0") {
+            mjOBJ_BODY
+        } else if s == core::ffi::CStr::from_bytes_with_nul_unchecked(b"xbody\0") {
+            mjOBJ_XBODY
+        } else if s == core::ffi::CStr::from_bytes_with_nul_unchecked(b"joint\0") {
+            mjOBJ_JOINT
+        } else if s == core::ffi::CStr::from_bytes_with_nul_unchecked(b"dof\0") {
+            mjOBJ_DOF
+        } else if s == core::ffi::CStr::from_bytes_with_nul_unchecked(b"geom\0") {
+            mjOBJ_GEOM
+        } else if s == core::ffi::CStr::from_bytes_with_nul_unchecked(b"site\0") {
+            mjOBJ_SITE
+        } else if s == core::ffi::CStr::from_bytes_with_nul_unchecked(b"camera\0") {
+            mjOBJ_CAMERA
+        } else if s == core::ffi::CStr::from_bytes_with_nul_unchecked(b"light\0") {
+            mjOBJ_LIGHT
+        } else if s == core::ffi::CStr::from_bytes_with_nul_unchecked(b"flex\0") {
+            mjOBJ_FLEX
+        } else if s == core::ffi::CStr::from_bytes_with_nul_unchecked(b"mesh\0") {
+            mjOBJ_MESH
+        } else if s == core::ffi::CStr::from_bytes_with_nul_unchecked(b"skin\0") {
+            mjOBJ_SKIN
+        } else if s == core::ffi::CStr::from_bytes_with_nul_unchecked(b"hfield\0") {
+            mjOBJ_HFIELD
+        } else if s == core::ffi::CStr::from_bytes_with_nul_unchecked(b"texture\0") {
+            mjOBJ_TEXTURE
+        } else if s == core::ffi::CStr::from_bytes_with_nul_unchecked(b"material\0") {
+            mjOBJ_MATERIAL
+        } else if s == core::ffi::CStr::from_bytes_with_nul_unchecked(b"pair\0") {
+            mjOBJ_PAIR
+        } else if s == core::ffi::CStr::from_bytes_with_nul_unchecked(b"exclude\0") {
+            mjOBJ_EXCLUDE
+        } else if s == core::ffi::CStr::from_bytes_with_nul_unchecked(b"equality\0") {
+            mjOBJ_EQUALITY
+        } else if s == core::ffi::CStr::from_bytes_with_nul_unchecked(b"tendon\0") {
+            mjOBJ_TENDON
+        } else if s == core::ffi::CStr::from_bytes_with_nul_unchecked(b"actuator\0") {
+            mjOBJ_ACTUATOR
+        } else if s == core::ffi::CStr::from_bytes_with_nul_unchecked(b"sensor\0") {
+            mjOBJ_SENSOR
+        } else if s == core::ffi::CStr::from_bytes_with_nul_unchecked(b"numeric\0") {
+            mjOBJ_NUMERIC
+        } else if s == core::ffi::CStr::from_bytes_with_nul_unchecked(b"text\0") {
+            mjOBJ_TEXT
+        } else if s == core::ffi::CStr::from_bytes_with_nul_unchecked(b"tuple\0") {
+            mjOBJ_TUPLE
+        } else if s == core::ffi::CStr::from_bytes_with_nul_unchecked(b"key\0") {
+            mjOBJ_KEY
+        } else if s == core::ffi::CStr::from_bytes_with_nul_unchecked(b"plugin\0") {
+            mjOBJ_PLUGIN
+        } else {
+            mjOBJ_UNKNOWN
+        }
+    }
 }
 
 /// C: mju_writeNumBytes (engine/engine_util_misc.h:246)
@@ -1343,10 +1476,35 @@ pub fn mju_fill_int(res: *mut i32, val: i32, n: i32) {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mju_standard_normal(num2: *mut f64) -> f64 {
-    // WARNING: signature changed — verify body
-    // Previous params: (num2 : * mut f64)
-    // Previous return: f64
-    todo ! ()
+    const RAND_MAX: f64 = 2147483647.0;
+    let scale: f64 = 2.0 / RAND_MAX;
+
+    // SAFETY: caller guarantees num2 is either null or points to a valid f64
+    unsafe {
+        let mut x1: f64;
+        let mut x2: f64;
+        let mut w: f64;
+
+        loop {
+            x1 = scale * (rand() as f64) - 1.0;
+            x2 = scale * (rand() as f64) - 1.0;
+            w = x1 * x1 + x2 * x2;
+            if !(w >= 1.0 || w == 0.0) {
+                break;
+            }
+        }
+
+        w = ((-2.0 * w.ln()) / w).sqrt();
+        if !num2.is_null() {
+            *num2 = x2 * w;
+        }
+
+        x1 * w
+    }
+}
+
+extern "C" {
+    fn rand() -> i32;
 }
 
 /// C: mju_f2n (engine/engine_util_misc.h:273)
@@ -1488,10 +1646,13 @@ pub fn mju_gather_int(res: *mut i32, vec: *const i32, ind: *const i32, n: i32) {
 /// C: mju_scatterInt (engine/engine_util_misc.h:297)
 #[allow(unused_variables, non_snake_case)]
 pub fn mju_scatter_int(res: *mut i32, vec: *const i32, ind: *const i32, n: i32) {
-    // WARNING: signature changed — verify body
-    // Previous params: (res : * mut i32, vec : * const i32, ind : * const i32, n : i32)
-    // Previous return: ()
-    todo ! ()
+    // SAFETY: caller guarantees res, vec, ind are valid for n elements,
+    // and ind[i] are valid indices into res
+    unsafe {
+        for i in 0..n as usize {
+            *res.add(*ind.add(i) as usize) = *vec.add(i);
+        }
+    }
 }
 
 /// C: mju_sparseMap (engine/engine_util_misc.h:300)

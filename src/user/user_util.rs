@@ -98,10 +98,20 @@ pub fn mjuu_defined(num: f64) -> bool {
 /// C: mjuu_matadr (user/user_util.h:39)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjuu_matadr(g1: i32, g2: i32, n: i32) -> i32 {
-    // WARNING: signature changed — verify body
-    // Previous params: (g1 : i32, g2 : i32, n : i32)
-    // Previous return: i32
-    todo ! ()
+    if g1 < 0 || g2 < 0 || g1 >= n || g2 >= n {
+        return -1;
+    }
+
+    let mut g1 = g1;
+    let mut g2 = g2;
+
+    if g1 > g2 {
+        let tmp = g1;
+        g1 = g2;
+        g2 = tmp;
+    }
+
+    g1 * n + g2
 }
 
 /// C: mjuu_setvec (user/user_util.h:42)
@@ -193,10 +203,14 @@ pub fn mjuu_dist3(a: *const f64, b: *const f64) -> f64 {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjuu_l1(a: *const f64, b: *const f64, n: i32) -> f64 {
-    // WARNING: signature changed — verify body
-    // Previous params: (a : * const f64, b : * const f64, n : i32)
-    // Previous return: f64
-    todo ! ()
+    let mut res: f64 = 0.0;
+    // SAFETY: caller guarantees a and b point to at least n f64 values
+    unsafe {
+        for i in 0..n as usize {
+            res += (*a.add(i) - *b.add(i)).abs();
+        }
+    }
+    res
 }
 
 /// C: mjuu_normvec (user/user_util.h:78)
