@@ -45,8 +45,9 @@ pub fn mju_get_xml_dependencies(filename: *const i8, dependencies: *mut i32) {
 /// C: printspace (xml/xml_util.cc:391)
 #[allow(unused_variables, non_snake_case)]
 pub fn printspace(str: *mut std__stringstream, n: i32, space: *const i8) {
+    if str.is_null() { return; }
     extern "C" { fn printspace(str: *mut std__stringstream, n: i32, space: *const i8); }
-    // SAFETY: delegates to C implementation
+    // SAFETY: str verified non-null; delegates to C implementation
     unsafe { printspace(str, n, space) }
 }
 

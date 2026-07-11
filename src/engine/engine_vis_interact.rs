@@ -740,8 +740,9 @@ pub fn mjv_move_model(m: *const mjModel, action: i32, reldx: f64, reldy: f64, ro
 /// Calls: mj_freeStack, mj_jac, mj_markStack, mj_solveM2, mj_stackAllocInfo, mju_addTo3, mju_copy3, mju_dot, mju_dot3, mju_max, mju_mulMatVec3, mju_mulQuat, mju_sub3, mjv_cameraInModel, mjv_frustumHeight
 #[allow(unused_variables, non_snake_case)]
 pub fn mjv_init_perturb(m: *const mjModel, d: *mut mjData, scn: *const mjvScene, pert: *mut mjvPerturb) {
+    if m.is_null() { return; }
     extern "C" { fn mjv_initPerturb(m: *const mjModel, d: *mut mjData, scn: *const mjvScene, pert: *mut mjvPerturb); }
-    // SAFETY: delegates to C implementation
+    // SAFETY: m verified non-null; delegates to C implementation
     unsafe { mjv_initPerturb(m, d, scn, pert) }
 }
 

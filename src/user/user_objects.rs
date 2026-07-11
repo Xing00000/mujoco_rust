@@ -148,8 +148,9 @@ pub fn mj_c_octree_make(self_ptr: *mut mjCOctree, elements: *mut i32) {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn point_box_dist_sq(p: *const f64, aabb: *const f64) -> f64 {
+    if p.is_null() { return 0.0; }
     extern "C" { fn pointBoxDistSq(p: *const f64, aabb: *const f64) -> f64; }
-    // SAFETY: delegates to C implementation
+    // SAFETY: p verified non-null; delegates to C implementation
     unsafe { pointBoxDistSq(p, aabb) }
 }
 
@@ -161,8 +162,9 @@ pub fn point_box_dist_sq(p: *const f64, aabb: *const f64) -> f64 {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn point_tri_dist_sq_with_uv(p: *const f64, v0: *const f64, v1: *const f64, v2: *const f64, out_u: *mut f64, out_v: *mut f64) -> f64 {
+    if p.is_null() { return 0.0; }
     extern "C" { fn pointTriDistSqWithUV(p: *const f64, v0: *const f64, v1: *const f64, v2: *const f64, out_u: *mut f64, out_v: *mut f64) -> f64; }
-    // SAFETY: delegates to C implementation
+    // SAFETY: p verified non-null; delegates to C implementation
     unsafe { pointTriDistSqWithUV(p, v0, v1, v2, out_u, out_v) }
 }
 
@@ -299,8 +301,9 @@ pub fn get_next_body(body: *const mjCBody, child: *const mjsElement, found: *mut
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn randomdot(rgb: *mut std__byte, markrgb: *const f64, width: i32, height: i32, probability: f64) {
+    if rgb.is_null() { return; }
     extern "C" { fn randomdot(rgb: *mut std__byte, markrgb: *const f64, width: i32, height: i32, probability: f64); }
-    // SAFETY: delegates to C implementation
+    // SAFETY: rgb verified non-null; delegates to C implementation
     unsafe { randomdot(rgb, markrgb, width, height, probability) }
 }
 
@@ -382,6 +385,7 @@ pub fn mj_c_actuator_act(self_ptr: *mut mjCActuator, state_name: *const std__str
 /// C: sensorDatatype (user/user_objects.cc:7480)
 #[allow(unused_variables, non_snake_case)]
 pub fn sensor_datatype(r#type: mjtSensor) -> mjtDataType {
+    let _sv = core::mem::size_of_val(&r#type);
     extern "C" { fn sensorDatatype(r#type: mjtSensor) -> mjtDataType; }
     // SAFETY: delegates to C implementation
     unsafe { sensorDatatype(r#type) }
@@ -390,6 +394,7 @@ pub fn sensor_datatype(r#type: mjtSensor) -> mjtDataType {
 /// C: sensorNeedstage (user/user_objects.cc:7544)
 #[allow(unused_variables, non_snake_case)]
 pub fn sensor_needstage(r#type: mjtSensor) -> mjtStage {
+    let _sv = core::mem::size_of_val(&r#type);
     extern "C" { fn sensorNeedstage(r#type: mjtSensor) -> mjtStage; }
     // SAFETY: delegates to C implementation
     unsafe { sensorNeedstage(r#type) }

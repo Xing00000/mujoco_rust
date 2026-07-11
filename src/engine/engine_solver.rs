@@ -137,8 +137,9 @@ pub fn cost_change(A: *const f64, force: *mut f64, oldforce: *const f64, res: *c
 /// C: pcg32_next (engine/engine_solver.c:247)
 #[allow(unused_variables, non_snake_case)]
 pub fn pcg32_next(rng: *mut pcg32_state) -> u32 {
+    if rng.is_null() { return 0; }
     extern "C" { fn pcg32_next(rng: *mut pcg32_state) -> u32; }
-    // SAFETY: delegates to C implementation
+    // SAFETY: rng verified non-null; delegates to C implementation
     unsafe { pcg32_next(rng) }
 }
 

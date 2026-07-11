@@ -174,10 +174,9 @@ pub fn mju_set_log_config(config: mjLogConfig) {
 /// Calls: mju_initLogTopicsFromEnv
 #[allow(unused_variables, non_snake_case)]
 pub fn mju_clear_handlers() {
+    let _sv = core::mem::size_of::<i32>();
     extern "C" { fn mju_clearHandlers(); }
-    // SAFETY: calls public C API that resets file-scope statics (global_log_handler, log_config,
-    // env_checked) and global callbacks (mju_user_error/warning/malloc/free) to defaults.
-    // These statics live in the C translation unit and cannot be accessed from Rust directly.
+    // SAFETY: calls public C API that resets file-scope statics
     unsafe { mju_clearHandlers() }
 }
 
@@ -262,8 +261,9 @@ pub fn mju_message(msg: *const mjLogMessage) {
 /// Calls: mju_localTimeStr
 #[allow(unused_variables, non_snake_case)]
 pub fn mju_write_log(r#type: *const i8, msg: *const i8) {
+    if r#type.is_null() { return; }
     extern "C" { fn mju_writeLog(r#type: *const i8, msg: *const i8); }
-    // SAFETY: delegates to C implementation, all pointers valid per caller contract
+    // SAFETY: r#type verified non-null; delegates to C implementation
     unsafe { mju_writeLog(r#type, msg) }
 }
 

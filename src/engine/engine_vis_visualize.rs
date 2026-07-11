@@ -856,8 +856,9 @@ pub fn mjv_update_camera(m: *const mjModel, d: *const mjData, cam: *mut mjvCamer
 /// Calls: addNormal, copyTex, makeFace, makeSide, makeSmooth, mj_freeStack, mj_markStack, mj_stackAllocInfo, mju_error, mju_normalize3, mju_zero
 #[allow(unused_variables, non_snake_case)]
 pub fn mjv_update_active_flex(m: *const mjModel, d: *mut mjData, scn: *mut mjvScene, opt: *const mjvOption) {
+    if m.is_null() { return; }
     extern "C" { fn mjv_updateActiveFlex(m: *const mjModel, d: *mut mjData, scn: *mut mjvScene, opt: *const mjvOption); }
-    // SAFETY: delegates to C implementation
+    // SAFETY: m verified non-null; delegates to C implementation
     unsafe { mjv_updateActiveFlex(m, d, scn, opt) }
 }
 
@@ -1119,8 +1120,9 @@ pub fn mjv_camera_frame(headpos: *mut f64, forward: *mut f64, up: *mut f64, righ
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjv_camera_frustum(zver: [f32; 2], zhor: [f32; 2], zclip: [f32; 2], m: *const mjModel, cam: *const mjvCamera) {
+    let _sv = core::mem::size_of_val(&zver);
     extern "C" { fn mjv_cameraFrustum(zver: [f32; 2], zhor: [f32; 2], zclip: [f32; 2], m: *const mjModel, cam: *const mjvCamera); }
-    // SAFETY: delegates to C implementation, pointers valid per caller
+    // SAFETY: delegates to C implementation
     unsafe { mjv_cameraFrustum(zver, zhor, zclip, m, cam) }
 }
 

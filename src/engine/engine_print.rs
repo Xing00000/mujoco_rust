@@ -8,8 +8,9 @@ use super::engine_util_errmem::mju_warning;
 /// C: printInt (engine/engine_print.c:53)
 #[allow(unused_variables, non_snake_case)]
 pub fn print_int(fp: *mut i32, name: *const i8, value: i32) {
+    if fp.is_null() { return; }
     extern "C" { fn fprintf(fp: *mut i32, format: *const i8, ...) -> i32; }
-    // SAFETY: fp is a valid FILE*, name is a null-terminated C string
+    // SAFETY: fp verified non-null; delegates to fprintf
     unsafe {
         fprintf(fp, b"%-21s\0".as_ptr() as *const i8, name);
         fprintf(fp, b" %d\0".as_ptr() as *const i8, value);
@@ -20,8 +21,9 @@ pub fn print_int(fp: *mut i32, name: *const i8, value: i32) {
 /// C: printStr (engine/engine_print.c:59)
 #[allow(unused_variables, non_snake_case)]
 pub fn print_str(fp: *mut i32, name: *const i8, value: *const i8) {
+    if fp.is_null() { return; }
     extern "C" { fn printStr(fp: *mut i32, name: *const i8, value: *const i8); }
-    // SAFETY: delegates to C implementation
+    // SAFETY: fp verified non-null; delegates to C implementation
     unsafe { printStr(fp, name, value) }
 }
 
@@ -33,8 +35,9 @@ pub fn print_str(fp: *mut i32, name: *const i8, value: *const i8) {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn print_num(fp: *mut i32, name: *const i8, value: f32, float_format: *const i8) {
+    if fp.is_null() { return; }
     extern "C" { fn fprintf(fp: *mut i32, format: *const i8, ...) -> i32; }
-    // SAFETY: fp is a valid FILE*, name/float_format are null-terminated C strings
+    // SAFETY: fp verified non-null; delegates to fprintf
     unsafe {
         fprintf(fp, b"%-21s\0".as_ptr() as *const i8, name);
         fprintf(fp, float_format, value as f64);
@@ -50,8 +53,9 @@ pub fn print_num(fp: *mut i32, name: *const i8, value: f32, float_format: *const
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn print_arr(fp: *mut i32, name: *const i8, data: *const f32, n: i32, float_format: *const i8) {
+    if fp.is_null() { return; }
     extern "C" { fn printArr(fp: *mut i32, name: *const i8, data: *const f32, n: i32, float_format: *const i8); }
-    // SAFETY: delegates to C implementation
+    // SAFETY: fp verified non-null; delegates to C implementation
     unsafe { printArr(fp, name, data, n, float_format) }
 }
 
@@ -63,16 +67,18 @@ pub fn print_arr(fp: *mut i32, name: *const i8, data: *const f32, n: i32, float_
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn print_array2d(str: *const i8, nr: i32, nc: i32, data: *const f64, fp: *mut i32, float_format: *const i8) {
+    if str.is_null() { return; }
     extern "C" { fn printArray2d(str: *const i8, nr: i32, nc: i32, data: *const f64, fp: *mut i32, float_format: *const i8); }
-    // SAFETY: delegates to C implementation
+    // SAFETY: str verified non-null; delegates to C implementation
     unsafe { printArray2d(str, nr, nc, data, fp, float_format) }
 }
 
 /// C: printArray2dInt (engine/engine_print.c:105)
 #[allow(unused_variables, non_snake_case)]
 pub fn print_array2d_int(str: *const i8, nr: i32, nc: i32, data: *const i32, fp: *mut i32) {
+    if str.is_null() { return; }
     extern "C" { fn printArray2dInt(str: *const i8, nr: i32, nc: i32, data: *const i32, fp: *mut i32); }
-    // SAFETY: delegates to C implementation
+    // SAFETY: str verified non-null; delegates to C implementation
     unsafe { printArray2dInt(str, nr, nc, data, fp) }
 }
 
@@ -84,8 +90,9 @@ pub fn print_array2d_int(str: *const i8, nr: i32, nc: i32, data: *const i32, fp:
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn print_delay_buffer(name: *const i8, buf: *const f64, nhistory: i32, dim: i32, fp: *mut i32, float_format: *const i8) {
+    if name.is_null() { return; }
     extern "C" { fn printDelayBuffer(name: *const i8, buf: *const f64, nhistory: i32, dim: i32, fp: *mut i32, float_format: *const i8); }
-    // SAFETY: delegates to C implementation
+    // SAFETY: name verified non-null; delegates to C implementation
     unsafe { printDelayBuffer(name, buf, nhistory, dim, fp, float_format) }
 }
 
@@ -97,8 +104,9 @@ pub fn print_delay_buffer(name: *const i8, buf: *const f64, nhistory: i32, dim: 
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn print_sparse(str: *const i8, mat: *const f64, nr: i32, rownnz: *const i32, rowadr: *const i32, colind: *const i32, fp: *mut i32, float_format: *const i8) {
+    if str.is_null() { return; }
     extern "C" { fn printSparse(str: *const i8, mat: *const f64, nr: i32, rownnz: *const i32, rowadr: *const i32, colind: *const i32, fp: *mut i32, float_format: *const i8); }
-    // SAFETY: delegates to C implementation
+    // SAFETY: str verified non-null; delegates to C implementation
     unsafe { printSparse(str, mat, nr, rownnz, rowadr, colind, fp, float_format) }
 }
 
@@ -110,8 +118,9 @@ pub fn print_sparse(str: *const i8, mat: *const f64, nr: i32, rownnz: *const i32
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn print_block_array(str: *const i8, data: *const f64, nc: i32, nisland: i32, island_nr: *const i32, island_nc: *const i32, island_r: *const i32, island_c: *const i32, map_r: *const i32, map_c: *const i32, fp: *mut i32, float_format: *const i8) {
+    if str.is_null() { return; }
     extern "C" { fn printBlockArray(str: *const i8, data: *const f64, nc: i32, nisland: i32, island_nr: *const i32, island_nc: *const i32, island_r: *const i32, island_c: *const i32, map_r: *const i32, map_c: *const i32, fp: *mut i32, float_format: *const i8); }
-    // SAFETY: delegates to C implementation
+    // SAFETY: str verified non-null; delegates to C implementation
     unsafe { printBlockArray(str, data, nc, nisland, island_nr, island_nc, island_r, island_c, map_r, map_c, fp, float_format) }
 }
 
@@ -123,8 +132,9 @@ pub fn print_block_array(str: *const i8, data: *const f64, nc: i32, nisland: i32
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn print_inertia(str: *const i8, mat: *const f64, m: *const mjModel, fp: *mut i32, float_format: *const i8) {
+    if str.is_null() { return; }
     extern "C" { fn printInertia(str: *const i8, mat: *const f64, m: *const mjModel, fp: *mut i32, float_format: *const i8); }
-    // SAFETY: delegates to C implementation
+    // SAFETY: str verified non-null; delegates to C implementation
     unsafe { printInertia(str, mat, m, fp, float_format) }
 }
 
@@ -154,8 +164,9 @@ pub fn mj_print_block_sparsity(str: *const i8, nr: i32, nc: i32, nisland: i32, i
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn print_vector(str: *const i8, data: *const f64, n: i32, fp: *mut i32, float_format: *const i8) {
+    if str.is_null() { return; }
     extern "C" { fn printVector(str: *const i8, data: *const f64, n: i32, fp: *mut i32, float_format: *const i8); }
-    // SAFETY: delegates to C implementation
+    // SAFETY: str verified non-null; delegates to C implementation
     unsafe { printVector(str, data, n, fp, float_format) }
 }
 
@@ -185,8 +196,9 @@ pub fn size_skin(m: *const mjModel) -> usize  {
 /// C: sizeBVH (engine/engine_print.c:448)
 #[allow(unused_variables, non_snake_case)]
 pub fn size_bvh(m: *const mjModel) -> usize  {
+    if m.is_null() { return 0; }
     extern "C" { fn sizeBVH(m: *const mjModel) -> usize; }
-    // SAFETY: delegates to C implementation
+    // SAFETY: m verified non-null; delegates to C implementation
     unsafe { sizeBVH(m) }
 }
 

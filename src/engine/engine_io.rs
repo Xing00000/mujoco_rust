@@ -62,8 +62,9 @@ pub fn mj_set_ptr_model(m: *mut mjModel) {
 /// Calls: SKIP
 #[allow(unused_variables, non_snake_case)]
 pub fn safe_add_to_buffer_size(offset: *mut isize, nbuffer: *mut usize, type_size: usize, nr: usize, nc: usize) -> usize {
+    if offset.is_null() { return 0; }
     extern "C" { fn safeAddToBufferSize(offset: *mut isize, nbuffer: *mut usize, type_size: usize, nr: usize, nc: usize) -> usize; }
-    // SAFETY: delegates to C implementation
+    // SAFETY: offset verified non-null; delegates to C implementation
     unsafe { safeAddToBufferSize(offset, nbuffer, type_size, nr, nc) }
 }
 
@@ -194,8 +195,9 @@ pub fn mj_copy_model(dest: *mut mjModel, src: *const mjModel) -> *mut mjModel {
 /// Calls: mj_setPtrModel, mju_message
 #[allow(unused_variables, non_snake_case)]
 pub fn mjv_copy_model(dest: *mut mjModel, src: *const mjModel) {
+    if dest.is_null() { return; }
     extern "C" { fn mjv_copyModel(dest: *mut mjModel, src: *const mjModel); }
-    // SAFETY: delegates to C implementation, pointers valid per caller contract
+    // SAFETY: dest verified non-null; delegates to C implementation
     unsafe { mjv_copyModel(dest, src) }
 }
 

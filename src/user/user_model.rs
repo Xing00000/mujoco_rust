@@ -78,8 +78,9 @@ pub fn mj_c_model_copy_list(self_ptr: *mut mjCModel, dest: *mut i32, source: *co
 /// C: resetlist (user/user_model.cc:304)
 #[allow(unused_variables, non_snake_case)]
 pub fn resetlist(list: *mut i32) {
+    if list.is_null() { return; }
     extern "C" { fn resetlist(list: *mut i32); }
-    // SAFETY: delegates to C implementation
+    // SAFETY: list verified non-null; delegates to C implementation
     unsafe { resetlist(list) }
 }
 
@@ -267,16 +268,18 @@ pub fn addtolist(input: *const std__string, adr: i32, output_adr_field: *mut i32
 /// C: namelist (user/user_model.cc:2593)
 #[allow(unused_variables, non_snake_case)]
 pub fn namelist(list: *mut i32, adr: i32, name_adr: *mut i32, names: *mut i8, map: *mut i32) -> i32 {
+    if list.is_null() { return 0; }
     extern "C" { fn namelist(list: *mut i32, adr: i32, name_adr: *mut i32, names: *mut i8, map: *mut i32) -> i32; }
-    // SAFETY: delegates to C implementation
+    // SAFETY: list verified non-null; delegates to C implementation
     unsafe { namelist(list, adr, name_adr, names, map) }
 }
 
 /// C: pathlist (user/user_model.cc:2702)
 #[allow(unused_variables, non_snake_case)]
 pub fn pathlist(list: *mut i32, adr: i32, path_adr: *mut i32, paths: *mut i8) -> i32 {
+    if list.is_null() { return 0; }
     extern "C" { fn pathlist(list: *mut i32, adr: i32, path_adr: *mut i32, paths: *mut i8) -> i32; }
-    // SAFETY: delegates to C implementation
+    // SAFETY: list verified non-null; delegates to C implementation
     unsafe { pathlist(list, adr, path_adr, paths) }
 }
 
@@ -338,8 +341,9 @@ pub fn compare_body_pair(el1: *mut mjCBodyPair, el2: *mut mjCBodyPair) -> i32 {
 /// C: reassignid (user/user_model.cc:4575)
 #[allow(unused_variables, non_snake_case)]
 pub fn reassignid(list: *mut i32) {
+    if list.is_null() { return; }
     extern "C" { fn reassignid(list: *mut i32); }
-    // SAFETY: delegates to C implementation
+    // SAFETY: list verified non-null; delegates to C implementation
     unsafe { reassignid(list) }
 }
 
