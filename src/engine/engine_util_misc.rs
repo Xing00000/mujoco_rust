@@ -714,10 +714,27 @@ pub fn mju_cell_lookup(coord: *const f64, cellnum: *const i32, order: i32, local
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mju_interpolate3d(res: *mut f64, x: *const f64, coeff: *const f64, order: i32, nodeindices: *const i32) {
-    // WARNING: signature changed — verify body
-    // Previous params: (res : * mut f64, x : * const f64, coeff : * const f64, order : i32, nodeindices : * const i32)
-    // Previous return: ()
-    todo ! ()
+    // SAFETY: caller guarantees all pointers are valid with sufficient sizes.
+    unsafe {
+        let npoint = (order + 1) * (order + 1) * (order + 1);
+
+        if npoint > 27 {
+            for j in 0..npoint {
+                let idx = if !nodeindices.is_null() { *nodeindices.add(j as usize) } else { j };
+                let basis_val = mju_eval_basis(x, j, order);
+                crate::engine::engine_util_blas::mju_add_to_scl3(res, coeff.add(3 * idx as usize), basis_val);
+            }
+            return;
+        }
+
+        let mut basis = [0.0f64; 27];
+        mju_eval_basis_array(basis.as_mut_ptr(), x, order);
+
+        for j in 0..npoint {
+            let idx = if !nodeindices.is_null() { *nodeindices.add(j as usize) } else { j };
+            crate::engine::engine_util_blas::mju_add_to_scl3(res, coeff.add(3 * idx as usize), basis[j as usize]);
+        }
+    }
 }
 
 /// C: mju_flexGatherCellState (engine/engine_util_misc.h:104)
