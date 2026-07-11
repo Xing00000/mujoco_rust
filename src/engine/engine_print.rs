@@ -221,12 +221,7 @@ pub fn mj_print_formatted_model(m: *const mjModel, filename: *const i8, float_fo
 /// Calls: mj_printFormattedModel
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_print_model(m: *const mjModel, filename: *const i8) {
-    extern "C" {
-        fn mj_printModel(m: *const mjModel, filename: *const i8);
-    }
-    // SAFETY: caller guarantees m is a valid mjModel pointer and
-    // filename is a valid C string (or null).
-    unsafe { mj_printModel(m, filename) }
+    todo!("requires C internals: mj_printFormattedModel uses FLOAT_FORMAT macro + fwrite/fopen")
 }
 
 /// C: mj_printFormattedData (engine/engine_print.h:40)
@@ -243,24 +238,14 @@ pub fn mj_print_formatted_data(m: *const mjModel, d: *const mjData, filename: *c
 /// Calls: mj_printFormattedData
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_print_data(m: *const mjModel, d: *const mjData, filename: *const i8) {
-    extern "C" {
-        fn mj_printData(m: *const mjModel, d: *const mjData, filename: *const i8);
-    }
-    // SAFETY: caller guarantees m and d are valid pointers,
-    // filename is a valid C string (or null).
-    unsafe { mj_printData(m, d, filename) }
+    todo!("requires C internals: mj_printFormattedData uses FLOAT_FORMAT macro + MJMODEL_POINTERS + fwrite")
 }
 
 /// C: mj_printScene (engine/engine_print.h:51)
 /// Calls: mj_printFormattedScene
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_print_scene(s: *const mjvScene, filename: *const i8) {
-    extern "C" {
-        fn mj_printScene(s: *const mjvScene, filename: *const i8);
-    }
-    // SAFETY: caller guarantees s is a valid mjvScene pointer and
-    // filename is a valid C string (or null).
-    unsafe { mj_printScene(s, filename) }
+    todo!("requires C internals: mj_printFormattedScene uses FLOAT_FORMAT macro + fwrite")
 }
 
 /// C: mj_printFormattedScene (engine/engine_print.h:55)

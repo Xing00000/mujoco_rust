@@ -368,12 +368,7 @@ pub fn mjs_add_spec(s: *mut mjSpec, child: *mut mjSpec) {
 /// Calls: mjCModel::ActivatePlugin, mjp_getPlugin
 #[allow(unused_variables, non_snake_case)]
 pub fn mjs_activate_plugin(s: *mut mjSpec, name: *const i8) -> i32 {
-    extern "C" {
-        fn mjs_activatePlugin(s: *mut mjSpec, name: *const i8) -> i32;
-    }
-    // SAFETY: caller guarantees s is a valid mjSpec pointer and
-    // name is a valid C string.
-    unsafe { mjs_activatePlugin(s, name) }
+    todo!("requires C++ internals: mjCModel::ActivatePlugin + mjp_getPlugin")
 }
 
 /// C: mjs_setDeepCopy (user/user_api.h:67)
@@ -1578,12 +1573,7 @@ pub fn mjs_set_frame(dest: *mut mjsElement, frame: *mut mjsFrame) -> i32 {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjs_resolve_orientation(quat: *mut f64, degree: u8, sequence: *const i8, orientation: *const mjsOrientation) -> *const i8 {
-    extern "C" {
-        fn mjs_resolveOrientation(quat: *mut f64, degree: u8, sequence: *const i8, orientation: *const mjsOrientation) -> *const i8;
-    }
-    // SAFETY: caller guarantees quat points to at least 4 f64 elements,
-    // sequence is a valid C string, orientation is a valid pointer.
-    unsafe { mjs_resolveOrientation(quat, degree, sequence, orientation) }
+    todo!("requires C++ internals: mjCFrame::ResolveOrientation with C++ class methods")
 }
 
 /// C: mjs_bodyToFrame (user/user_api.h:451)

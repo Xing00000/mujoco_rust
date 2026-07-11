@@ -197,12 +197,7 @@ pub fn mjv_copy_model(dest: *mut mjModel, src: *const mjModel) {
 /// Calls: bufwrite, getnptr, getnsize, mj_version, mju_warning
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_save_model(m: *const mjModel, filename: *const i8, buffer: *mut (), buffer_sz: i32) {
-    extern "C" {
-        fn mj_saveModel(m: *const mjModel, filename: *const i8, buffer: *mut (), buffer_sz: i32);
-    }
-    // SAFETY: caller guarantees m is valid, filename is a valid C string or null,
-    // buffer (if non-null) has at least buffer_sz bytes available.
-    unsafe { mj_saveModel(m, filename, buffer, buffer_sz) }
+    todo!("requires C internals: uses MJMODEL_SIZES/MJMODEL_POINTERS macros + bufwrite + fwrite")
 }
 
 /// C: mj_loadModelBuffer (engine/engine_io.h:78)
