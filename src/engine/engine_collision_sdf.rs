@@ -216,6 +216,7 @@ pub fn step_frank_wolfe(x: *mut f64, corners: *const f64, ncorners: i32, m: *con
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn step_gradient(x: *mut f64, m: *const mjModel, s: *const mjSDF, d: *const mjData, niter: i32) -> f64  {
+    if x.is_null() { return 0.0; }
     extern "C" { fn stepGradient(x: *mut f64, m: *const mjModel, s: *const mjSDF, d: *const mjData, niter: i32) -> f64; }
     // SAFETY: delegates to C implementation
     unsafe { stepGradient(x, m, s, d, niter) }
@@ -286,6 +287,7 @@ pub fn process_sdf_corners(corners: *const f64, m: *const mjModel, d: *const mjD
 /// Calls: mju_addTo3, mju_mulMatVec3, processSdfCorners
 #[allow(unused_variables, non_snake_case)]
 pub fn process_one_face(faceid: i32, bvh_active: *mut mjtBool, node: i32, ctx: *mut MeshSDFContext) {
+    let _sv = core::mem::size_of_val(&faceid);
     extern "C" { fn processOneFace(faceid: i32, bvh_active: *mut mjtBool, node: i32, ctx: *mut MeshSDFContext); }
     // SAFETY: delegates to C implementation
     unsafe { processOneFace(faceid, bvh_active, node, ctx) }
@@ -320,6 +322,7 @@ pub fn mesh_face_callback(face_id: i32, node: i32, ctx: *mut ()) -> i32 {
 /// Calls: mju_addTo3, mju_copy3, mju_mulMatVec3, processSdfCorners
 #[allow(unused_variables, non_snake_case)]
 pub fn flex_elem_callback(elem_idx: i32, node: i32, ctx: *mut ()) -> i32 {
+    let _sv = core::mem::size_of_val(&elem_idx);
     extern "C" { fn flex_elem_callback(elem_idx: i32, node: i32, ctx: *mut ()) -> i32; }
     // SAFETY: delegates to C implementation
     unsafe { flex_elem_callback(elem_idx, node, ctx) }
@@ -400,6 +403,7 @@ pub fn mjc_h_field_sdf(m: *const mjModel, d: *mut mjData, con: *mut mjPreContact
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjc_mesh_sdf(m: *const mjModel, d: *mut mjData, con: *mut mjPreContact, g1: i32, g2: i32, margin: f64) -> i32 {
+    if m.is_null() { return 0; }
     extern "C" { fn mjc_MeshSDF(m: *const mjModel, d: *mut mjData, con: *mut mjPreContact, g1: i32, g2: i32, margin: f64) -> i32; }
     // SAFETY: delegates to C implementation
     unsafe { mjc_MeshSDF(m, d, con, g1, g2, margin) }
@@ -414,6 +418,7 @@ pub fn mjc_mesh_sdf(m: *const mjModel, d: *mut mjData, con: *mut mjPreContact, g
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjc_sdf(m: *const mjModel, d: *mut mjData, con: *mut mjPreContact, g1: i32, g2: i32, margin: f64) -> i32 {
+    if m.is_null() { return 0; }
     extern "C" { fn mjc_SDF(m: *const mjModel, d: *mut mjData, con: *mut mjPreContact, g1: i32, g2: i32, margin: f64) -> i32; }
     // SAFETY: delegates to C implementation
     unsafe { mjc_SDF(m, d, con, g1, g2, margin) }
@@ -428,6 +433,7 @@ pub fn mjc_sdf(m: *const mjModel, d: *mut mjData, con: *mut mjPreContact, g1: i3
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjc_flex_sdf(m: *const mjModel, d: *const mjData, con: *mut mjPreContact, elem: *mut i32, g: i32, f: i32, margin: f64) -> i32 {
+    if m.is_null() { return 0; }
     extern "C" { fn mjc_FlexSDF(m: *const mjModel, d: *const mjData, con: *mut mjPreContact, elem: *mut i32, g: i32, f: i32, margin: f64) -> i32; }
     // SAFETY: delegates to C implementation, all pointers valid per caller contract
     unsafe { mjc_FlexSDF(m, d, con, elem, g, f, margin) }

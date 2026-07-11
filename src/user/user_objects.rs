@@ -196,6 +196,7 @@ pub fn query_closest_bvh_with_face(bvh: *const f64, child: *const i32, nodeid: *
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn query_signed_distance(bvh: *const f64, child: *const i32, nodeid: *const i32, nbvh: i32, point: *const f64, vert: *const f64, face: *const i32) -> f64 {
+    if bvh.is_null() { return 0.0; }
     extern "C" { fn querySignedDistance(bvh: *const f64, child: *const i32, nodeid: *const i32, nbvh: i32, point: *const f64, vert: *const f64, face: *const i32) -> f64; }
     // SAFETY: delegates to C implementation
     unsafe { querySignedDistance(bvh, child, nodeid, nbvh, point, vert, face) }
@@ -351,6 +352,7 @@ pub fn mj_c_texture_load_png(self_ptr: *mut mjCTexture, resource: *mut mjResourc
 /// Calls: mju_readResource
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_texture_load_ktx(self_ptr: *mut mjCTexture, resource: *mut mjResource, image: *mut i32, w: *mut u32, h: *mut u32, is_srgb: *mut bool) {
+    if self_ptr.is_null() { return; }
     extern "C" { fn mjCTexture_LoadKTX(self_ptr: *mut mjCTexture, resource: *mut mjResource, image: *mut i32, w: *mut u32, h: *mut u32, is_srgb: *mut bool); }
     // SAFETY: delegates to C implementation
     unsafe { mjCTexture_LoadKTX(self_ptr, resource, image, w, h, is_srgb) }
@@ -360,6 +362,7 @@ pub fn mj_c_texture_load_ktx(self_ptr: *mut mjCTexture, resource: *mut mjResourc
 /// Calls: mju_readResource
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_texture_load_custom(self_ptr: *mut mjCTexture, resource: *mut mjResource, image: *mut i32, w: *mut u32, h: *mut u32, is_srgb: *mut bool) {
+    if self_ptr.is_null() { return; }
     extern "C" { fn mjCTexture_LoadCustom(self_ptr: *mut mjCTexture, resource: *mut mjResource, image: *mut i32, w: *mut u32, h: *mut u32, is_srgb: *mut bool); }
     // SAFETY: delegates to C implementation
     unsafe { mjCTexture_LoadCustom(self_ptr, resource, image, w, h, is_srgb) }
@@ -378,6 +381,7 @@ pub fn mj_c_texture_flip_if_needed(self_ptr: *mut mjCTexture, image: *mut i32, w
 /// Calls: mjCBase::LoadResource, mj_getCache, mju_closeResource
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_texture_load_flip(self_ptr: *mut mjCTexture, filename: string, vfs: *const mjVFS, image: *mut i32, w: *mut u32, h: *mut u32, is_srgb: *mut bool) {
+    if self_ptr.is_null() { return; }
     extern "C" { fn mjCTexture_LoadFlip(self_ptr: *mut mjCTexture, filename: string, vfs: *const mjVFS, image: *mut i32, w: *mut u32, h: *mut u32, is_srgb: *mut bool); }
     // SAFETY: delegates to C implementation
     unsafe { mjCTexture_LoadFlip(self_ptr, filename, vfs, image, w, h, is_srgb) }
@@ -1717,6 +1721,7 @@ pub fn mj_c_geom_del_material(self_ptr: *mut mjCGeom) {
 /// Calls: mjCGeom::ComputeAABB, mjCGeom::CopyFromSpec, mjCGeom::GetVolume, mjCGeom::SetFluidCoefs, mjCGeom::SetInertia, mjCMesh::GetPosPtr, mjCMesh::GetQuatPtr, mjp_getPluginAtSlot, mjuu_addtovec, mjuu_rotVecQuat
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_geom_compile(self_ptr: *mut mjCGeom) {
+    if self_ptr.is_null() { return; }
     extern "C" { fn mjCGeom_Compile(self_ptr: *mut mjCGeom); }
     // SAFETY: delegates to C implementation
     unsafe { mjCGeom_Compile(self_ptr) }
@@ -2167,6 +2172,7 @@ pub fn mj_c_flex_del_texcoord(self_ptr: *mut mjCFlex) {
 /// Calls: mjCFlex::CopyFromSpec, mjCFlex::CreateBVH, mjCFlex::CreateShellPair, mjCFlex::LoadCachedStiffness, mjuu_crossvec, mjuu_dot3
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_flex_compile(self_ptr: *mut mjCFlex, vfs: *const mjVFS) {
+    if self_ptr.is_null() { return; }
     extern "C" { fn mjCFlex_Compile(self_ptr: *mut mjCFlex, vfs: *const mjVFS); }
     // SAFETY: delegates to C implementation
     unsafe { mjCFlex_Compile(self_ptr, vfs) }
@@ -2217,6 +2223,7 @@ pub fn mj_c_flex_compute_stiffness_cache_key(self_ptr: *mut mjCFlex) -> std__str
 /// Calls: mjCCache::PopulateData, mj_getCache
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_flex_load_cached_stiffness(self_ptr: *mut mjCFlex) -> bool {
+    if self_ptr.is_null() { return false; }
     extern "C" { fn mjCFlex_LoadCachedStiffness(self_ptr: *mut mjCFlex) -> bool; }
     // SAFETY: delegates to C implementation
     unsafe { mjCFlex_LoadCachedStiffness(self_ptr) }
@@ -2226,6 +2233,7 @@ pub fn mj_c_flex_load_cached_stiffness(self_ptr: *mut mjCFlex) -> bool {
 /// Calls: mjCCache::Insert, mj_getCache
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_flex_cache_stiffness(self_ptr: *mut mjCFlex) {
+    if self_ptr.is_null() { return; }
     extern "C" { fn mjCFlex_CacheStiffness(self_ptr: *mut mjCFlex); }
     // SAFETY: delegates to C implementation
     unsafe { mjCFlex_CacheStiffness(self_ptr) }
@@ -3331,6 +3339,7 @@ pub fn mj_c_skin_name_space(self_ptr: *mut mjCSkin, m: *const mjCModel) {
 /// Calls: FilePath::Str, mjCBase::LoadResource, mjCSkin::CopyFromSpec, mjCSkin::LoadSKN, mju_closeResource, mjuu_normvec
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_skin_compile(self_ptr: *mut mjCSkin, vfs: *const mjVFS) {
+    if self_ptr.is_null() { return; }
     extern "C" { fn mjCSkin_Compile(self_ptr: *mut mjCSkin, vfs: *const mjVFS); }
     // SAFETY: delegates to C implementation
     unsafe { mjCSkin_Compile(self_ptr, vfs) }
@@ -3340,6 +3349,7 @@ pub fn mj_c_skin_compile(self_ptr: *mut mjCSkin, vfs: *const mjVFS) {
 /// Calls: mju_readResource
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_skin_load_skn(self_ptr: *mut mjCSkin, resource: *mut mjResource) {
+    if self_ptr.is_null() { return; }
     extern "C" { fn mjCSkin_LoadSKN(self_ptr: *mut mjCSkin, resource: *mut mjResource); }
     // SAFETY: delegates to C implementation
     unsafe { mjCSkin_LoadSKN(self_ptr, resource) }
@@ -3394,6 +3404,7 @@ pub fn mj_ch_field_get_userdata(self_ptr: *mut mjCHField) -> *mut i32 {
 /// Calls: FilePath::Str, mjCBase::LoadResource, mjCHField::CopyFromSpec, mjCHField::LoadCustom, mjCHField::LoadPNG, mj_getCache, mju_closeResource
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_ch_field_compile(self_ptr: *mut mjCHField, vfs: *const mjVFS) {
+    if self_ptr.is_null() { return; }
     extern "C" { fn mjCHField_Compile(self_ptr: *mut mjCHField, vfs: *const mjVFS); }
     // SAFETY: delegates to C implementation
     unsafe { mjCHField_Compile(self_ptr, vfs) }
@@ -3412,6 +3423,7 @@ pub fn mj_ch_field_get_cache_id(self_ptr: *mut mjCHField, resource: *const mjRes
 /// Calls: mju_readResource
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_ch_field_load_custom(self_ptr: *mut mjCHField, resource: *mut mjResource) {
+    if self_ptr.is_null() { return; }
     extern "C" { fn mjCHField_LoadCustom(self_ptr: *mut mjCHField, resource: *mut mjResource); }
     // SAFETY: delegates to C implementation
     unsafe { mjCHField_LoadCustom(self_ptr, resource) }

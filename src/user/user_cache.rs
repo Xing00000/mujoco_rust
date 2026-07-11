@@ -46,6 +46,7 @@ pub fn mj_c_cache_remove_model(self_ptr: *mut mjCCache, filename: *const i32) {
 /// Calls: mjCCache::Delete
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_cache_delete_asset(self_ptr: *mut mjCCache, id: *const i32) {
+    if self_ptr.is_null() { return; }
     extern "C" { fn mjCCache_DeleteAsset(self_ptr: *mut mjCCache, id: *const i32); }
     // SAFETY: delegates to C implementation
     unsafe { mjCCache_DeleteAsset(self_ptr, id) }

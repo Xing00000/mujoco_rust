@@ -8,6 +8,7 @@ use crate::types::*;
 /// Calls: mju_getLogConfigPtr, mju_isTopicEnabled, mju_legacy_text, mju_localTimeStr
 #[allow(unused_variables, non_snake_case)]
 pub fn mju_default_log_handler(msg: *const mjLogMessage) {
+    if msg.is_null() { return; }
     extern "C" { fn mju_defaultLogHandler(msg: *const mjLogMessage); }
     // SAFETY: delegates to C implementation
     unsafe { mju_defaultLogHandler(msg) }

@@ -42,6 +42,7 @@ pub fn tactile_taxel_batch(m: *const mjModel, d: *mut mjData, args: *mut ()) -> 
 /// Calls: tactile_taxel_batch
 #[allow(unused_variables, non_snake_case)]
 pub fn tactile_task(m: *const mjModel, d: *mut mjData, arg: *mut (), thread_id: i32, task_id: i32) {
+    if m.is_null() { return; }
     extern "C" { fn tactileTask(m: *const mjModel, d: *mut mjData, arg: *mut (), thread_id: i32, task_id: i32); }
     // SAFETY: delegates to C implementation
     unsafe { tactileTask(m, d, arg, thread_id, task_id) }
@@ -198,6 +199,7 @@ pub fn fill_raydata(ptr: *mut f64, dataspec: i32, dist: f64, origin: *const f64,
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_compute_sensor_pos(m: *const mjModel, d: *mut mjData, i: i32, sensordata: *mut f64) {
+    if m.is_null() { return; }
     extern "C" { fn mj_computeSensorPos(m: *const mjModel, d: *mut mjData, i: i32, sensordata: *mut f64); }
     // SAFETY: delegates to C implementation, pointers valid per caller contract
     unsafe { mj_computeSensorPos(m, d, i, sensordata) }
@@ -304,6 +306,7 @@ pub fn mj_compute_sensor(m: *const mjModel, d: *mut mjData, i: i32, sensordata: 
 /// Calls: compute_or_read_sensor, compute_plugin_sensors, compute_user_sensors, mj_sleepState, mju_zero
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_sensor_pos(m: *const mjModel, d: *mut mjData) {
+    if m.is_null() { return; }
     extern "C" {
         fn mj_sensorPos(m: *const mjModel, d: *mut mjData);
     }
@@ -315,6 +318,7 @@ pub fn mj_sensor_pos(m: *const mjModel, d: *mut mjData) {
 /// Calls: compute_or_read_sensor, compute_plugin_sensors, compute_user_sensors, mj_sleepState, mj_subtreeVel, mju_zero
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_sensor_vel(m: *const mjModel, d: *mut mjData) {
+    if m.is_null() { return; }
     extern "C" { fn mj_sensorVel(m: *const mjModel, d: *mut mjData); }
     // SAFETY: delegates to C implementation, pointers valid per caller
     unsafe { mj_sensorVel(m, d) }
@@ -324,6 +328,7 @@ pub fn mj_sensor_vel(m: *const mjModel, d: *mut mjData) {
 /// Calls: compute_or_read_sensor, compute_plugin_sensors, compute_user_sensors, mj_rnePostConstraint, mj_sleepState, mju_zero
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_sensor_acc(m: *const mjModel, d: *mut mjData) {
+    if m.is_null() { return; }
     extern "C" { fn mj_sensorAcc(m: *const mjModel, d: *mut mjData); }
     // SAFETY: delegates to C implementation, pointers valid per caller
     unsafe { mj_sensorAcc(m, d) }
@@ -333,6 +338,7 @@ pub fn mj_sensor_acc(m: *const mjModel, d: *mut mjData) {
 /// Calls: mj_sleepState, mju_copy4, mju_dot3, mju_isZero, mju_norm3, mju_normalize4, mju_polyPotential, mju_sub3, mju_subQuat
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_energy_pos(m: *const mjModel, d: *mut mjData) {
+    if m.is_null() { return; }
     extern "C" { fn mj_energyPos(m: *const mjModel, d: *mut mjData); }
     // SAFETY: delegates to C implementation, all pointers valid per caller contract
     unsafe { mj_energyPos(m, d) }

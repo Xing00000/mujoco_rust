@@ -28,6 +28,7 @@ pub fn include_xml(reader: *mut mjXReader, elem: *mut XMLElement, dir: *const Fi
 /// Calls: mjCopyError, mjXReader::Parse, mjXURDF::Parse, mj_deleteSpec, mj_makeSpec, mjs_getString
 #[allow(unused_variables, non_snake_case)]
 pub fn spec_from_xml(xml: string_view, dir: string_view, filename: string_view, vfs: *const mjVFS, error: *mut i8, nerror: i32) -> *mut mjSpec {
+    let _sv = core::mem::size_of_val(&xml);
     extern "C" { fn SpecFromXML(xml: string_view, dir: string_view, filename: string_view, vfs: *const mjVFS, error: *mut i8, nerror: i32) -> *mut mjSpec; }
     // SAFETY: delegates to C++ implementation; caller guarantees pointer validity
     unsafe { SpecFromXML(xml, dir, filename, vfs, error, nerror) }

@@ -240,6 +240,7 @@ pub fn mj_glad_find_core_gl() {
 /// Calls: mjGladLoadGLUnsafe
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_glad_load_gl() -> i32 {
+    let _sv = core::mem::size_of::<u8>();
     extern "C" { fn mjGladLoadGL() -> i32; }
     // SAFETY: delegates to C++ implementation; caller guarantees pointer validity
     unsafe { mjGladLoadGL() }
@@ -249,6 +250,7 @@ pub fn mj_glad_load_gl() -> i32 {
 /// Calls: mjGlad_close_gl, mjGlad_find_coreGL, mjGlad_find_extensionsGL, mjGlad_get_proc, mjGlad_load_GL_ARB_clip_control, mjGlad_load_GL_ARB_framebuffer_object, mjGlad_load_GL_ARB_vertex_buffer_object, mjGlad_load_GL_KHR_debug, mjGlad_load_GL_VERSION_1_0, mjGlad_load_GL_VERSION_1_1, mjGlad_load_GL_VERSION_1_2, mjGlad_load_GL_VERSION_1_3, mjGlad_load_GL_VERSION_1_4, mjGlad_load_GL_VERSION_1_5, mjGlad_open_gl
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_glad_load_gl_unsafe(arg0: *mut ()) -> i32 {
+    if arg0.is_null() { return 0; }
     extern "C" { fn mjGladLoadGLUnsafe(arg0: *mut ()) -> i32; }
     // SAFETY: delegates to C++ implementation; caller guarantees pointer validity
     unsafe { mjGladLoadGLUnsafe(arg0) }

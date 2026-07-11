@@ -179,6 +179,7 @@ pub fn mju_ray_slab(aabb: *const f64, xpos: *const f64, xmat: *const f64, pnt: *
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mju_ray_tree(m: *const mjModel, d: *const mjData, id: i32, pnt: *const f64, vec: *const f64, normal: *mut f64) -> f64 {
+    if m.is_null() { return 0.0; }
     extern "C" { fn mju_rayTree(m: *const mjModel, d: *const mjData, id: i32, pnt: *const f64, vec: *const f64, normal: *mut f64) -> f64; }
     // SAFETY: delegates to C implementation
     unsafe { mju_rayTree(m, d, id, pnt, vec, normal) }
@@ -193,6 +194,7 @@ pub fn mju_ray_tree(m: *const mjModel, d: *const mjData, id: i32, pnt: *const f6
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_ray_sdf(m: *const mjModel, d: *const mjData, g: i32, pnt: *const f64, vec: *const f64, normal: *mut f64) -> f64 {
+    if m.is_null() { return 0.0; }
     extern "C" { fn mj_raySdf(m: *const mjModel, d: *const mjData, g: i32, pnt: *const f64, vec: *const f64, normal: *mut f64) -> f64; }
     // SAFETY: delegates to C implementation, pointers valid per caller contract
     unsafe { mj_raySdf(m, d, g, pnt, vec, normal) }
@@ -222,6 +224,7 @@ pub fn point_in_box(aabb: *const f64, xpos: *const f64, xmat: *const f64, pnt: *
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mju_single_ray(m: *const mjModel, d: *mut mjData, pnt: *const f64, vec: *const f64, ray_eliminate: *mut i32, geom_ba: *mut f64, geomid: [i32; 1], normal: *mut f64) -> f64 {
+    if m.is_null() { return 0.0; }
     extern "C" { fn mju_singleRay(m: *const mjModel, d: *mut mjData, pnt: *const f64, vec: *const f64, ray_eliminate: *mut i32, geom_ba: *mut f64, geomid: [i32; 1], normal: *mut f64) -> f64; }
     // SAFETY: delegates to C implementation
     unsafe { mju_singleRay(m, d, pnt, vec, ray_eliminate, geom_ba, geomid, normal) }
@@ -266,6 +269,7 @@ pub fn mj_multi_ray(m: *const mjModel, d: *mut mjData, pnt: *const f64, vec: *co
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_ray(m: *const mjModel, d: *const mjData, pnt: *const f64, vec: *const f64, geomgroup: *const u8, flg_static: mjtBool, bodyexclude: i32, geomid: [i32; 1], normal: *mut f64) -> f64 {
+    if m.is_null() { return 0.0; }
     extern "C" { fn mj_ray(m: *const mjModel, d: *const mjData, pnt: *const f64, vec: *const f64, geomgroup: *const u8, flg_static: mjtBool, bodyexclude: i32, geomid: [i32; 1], normal: *mut f64) -> f64; }
     // SAFETY: delegates to C implementation
     unsafe { mj_ray(m, d, pnt, vec, geomgroup, flg_static, bodyexclude, geomid, normal) }
@@ -380,6 +384,7 @@ pub fn ray_triangle(v: *const [f64; 3], lpnt: *const f64, lvec: *const f64, b0: 
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_ray_mesh(m: *const mjModel, d: *const mjData, geomid: i32, pnt: *const f64, vec: *const f64, normal: *mut f64) -> f64 {
+    if m.is_null() { return 0.0; }
     extern "C" { fn mj_rayMesh(m: *const mjModel, d: *const mjData, geomid: i32, pnt: *const f64, vec: *const f64, normal: *mut f64) -> f64; }
     // SAFETY: delegates to C implementation
     unsafe { mj_rayMesh(m, d, geomid, pnt, vec, normal) }

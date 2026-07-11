@@ -8,6 +8,7 @@ use crate::types::*;
 /// Calls: VFS::Open, VFS::Upcast, mj_defaultVFS, mj_deleteVFS, mju_free, mju_malloc
 #[allow(unused_variables, non_snake_case)]
 pub fn mju_open_resource(dir: *const i8, name: *const i8, vfs: *const mjVFS, error: *mut i8, nerror: usize) -> *mut mjResource {
+    if dir.is_null() { return core::ptr::null_mut(); }
     extern "C" { fn mju_openResource(dir: *const i8, name: *const i8, vfs: *const mjVFS, error: *mut i8, nerror: usize) -> *mut mjResource; }
     // SAFETY: delegates to C implementation
     unsafe { mju_openResource(dir, name, vfs, error, nerror) }
@@ -60,6 +61,7 @@ pub fn mju_is_modified_resource(resource: *const mjResource, timestamp: *const i
 /// Calls: mjp_findDecoder, mju_warning
 #[allow(unused_variables, non_snake_case)]
 pub fn mju_decode_resource(resource: *mut mjResource, content_type: *const i8, vfs: *const mjVFS) -> *mut mjSpec {
+    if resource.is_null() { return core::ptr::null_mut(); }
     extern "C" { fn mju_decodeResource(resource: *mut mjResource, content_type: *const i8, vfs: *const mjVFS) -> *mut mjSpec; }
     // SAFETY: delegates to C implementation
     unsafe { mju_decodeResource(resource, content_type, vfs) }

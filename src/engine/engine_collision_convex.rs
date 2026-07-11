@@ -1468,6 +1468,7 @@ pub fn mjc_plane_convex(m: *const mjModel, d: *mut mjData, con: *mut mjPreContac
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjc_convex_h_field(m: *const mjModel, d: *mut mjData, con: *mut mjPreContact, g1: i32, g2: i32, margin: f64) -> i32 {
+    if m.is_null() { return 0; }
     extern "C" { fn mjc_ConvexHField(m: *const mjModel, d: *mut mjData, con: *mut mjPreContact, g1: i32, g2: i32, margin: f64) -> i32; }
     // SAFETY: delegates to C implementation
     unsafe { mjc_ConvexHField(m, d, con, g1, g2, margin) }
@@ -1482,6 +1483,7 @@ pub fn mjc_convex_h_field(m: *const mjModel, d: *mut mjData, con: *mut mjPreCont
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjc_convex(m: *const mjModel, d: *mut mjData, con: *mut mjPreContact, g1: i32, g2: i32, margin: f64) -> i32 {
+    if m.is_null() { return 0; }
     extern "C" { fn mjc_Convex(m: *const mjModel, d: *mut mjData, con: *mut mjPreContact, g1: i32, g2: i32, margin: f64) -> i32; }
     // SAFETY: delegates to C implementation
     unsafe { mjc_Convex(m, d, con, g1, g2, margin) }

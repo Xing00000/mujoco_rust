@@ -41,6 +41,7 @@ pub fn accumulate_files(files: *mut i32, root: *mut tinyxml2__XMLElement, model_
 /// Calls: mju_closeResource, mju_error, mju_getResourceDir, mju_openResource, mju_readResource
 #[allow(unused_variables, non_snake_case)]
 pub fn mju_get_xml_dependencies(filename: *const i8, dependencies: *mut i32) {
+    if filename.is_null() { return; }
     extern "C" { fn mju_getXMLDependencies(filename: *const i8, dependencies: *mut i32); }
     // SAFETY: delegates to C implementation
     unsafe { mju_getXMLDependencies(filename, dependencies) }
@@ -205,6 +206,7 @@ pub fn mj_x_schema_name_match(self_ptr: *mut mjXSchema, elem: *mut tinyxml2__XML
 /// Calls: FirstChildElement, NextSiblingElement, mjXSchema::NameMatch
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_x_schema_check(self_ptr: *mut mjXSchema, elem: *mut tinyxml2__XMLElement, level: i32) -> *mut tinyxml2__XMLElement {
+    if self_ptr.is_null() { return core::ptr::null_mut(); }
     extern "C" { fn mjXSchema_Check(self_ptr: *mut mjXSchema, elem: *mut tinyxml2__XMLElement, level: i32) -> *mut tinyxml2__XMLElement; }
     // SAFETY: delegates to C implementation
     unsafe { mjXSchema_Check(self_ptr, elem, level) }

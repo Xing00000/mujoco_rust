@@ -102,6 +102,7 @@ pub fn in_range(x1: f64, x2: f64, range: *const f64) -> i32  {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn inverse_skip(m: *const mjModel, d: *mut mjData, stage: mjtStage, skipsensor: i32, flg_actuation: i32, force: *mut f64) {
+    if m.is_null() { return; }
     extern "C" { fn inverseSkip(m: *const mjModel, d: *mut mjData, stage: mjtStage, skipsensor: i32, flg_actuation: i32, force: *mut f64); }
     // SAFETY: delegates to C implementation
     unsafe { inverseSkip(m, d, stage, skipsensor, flg_actuation, force) }
@@ -116,6 +117,7 @@ pub fn inverse_skip(m: *const mjModel, d: *mut mjData, stage: mjtStage, skipsens
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjd_step_fd(m: *const mjModel, d: *mut mjData, eps: f64, flg_centered: mjtBool, DyDq: *mut f64, DyDv: *mut f64, DyDa: *mut f64, DyDu: *mut f64, DsDq: *mut f64, DsDv: *mut f64, DsDa: *mut f64, DsDu: *mut f64) {
+    if m.is_null() { return; }
     extern "C" { fn mjd_stepFD(m: *const mjModel, d: *mut mjData, eps: f64, flg_centered: mjtBool, DyDq: *mut f64, DyDv: *mut f64, DyDa: *mut f64, DyDu: *mut f64, DsDq: *mut f64, DsDv: *mut f64, DsDa: *mut f64, DsDu: *mut f64); }
     // SAFETY: delegates to C implementation
     unsafe { mjd_stepFD(m, d, eps, flg_centered, DyDq, DyDv, DyDa, DyDu, DsDq, DsDv, DsDa, DsDu) }
@@ -299,6 +301,7 @@ pub fn mjd_passive_vel_fd(m: *const mjModel, d: *mut mjData, eps: f64) {
 /// Calls: mj_EulerSkip, mj_RungeKutta, mj_checkAcc, mj_checkPos, mj_checkVel, mj_compareFwdInv, mj_forwardSkip, mj_implicitSkip, mju_message
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_step_skip(m: *const mjModel, d: *mut mjData, skipstage: i32, skipsensor: i32) {
+    if m.is_null() { return; }
     extern "C" {
         fn mj_stepSkip(m: *const mjModel, d: *mut mjData, skipstage: i32, skipsensor: i32);
     }
@@ -315,6 +318,7 @@ pub fn mj_step_skip(m: *const mjModel, d: *mut mjData, skipstage: i32, skipsenso
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjd_transition_fd(m: *const mjModel, d: *mut mjData, eps: f64, centered: mjtBool, A: *mut f64, B: *mut f64, C: *mut f64, D: *mut f64) {
+    if m.is_null() { return; }
     extern "C" { fn mjd_transitionFD(m: *const mjModel, d: *mut mjData, eps: f64, centered: mjtBool, A: *mut f64, B: *mut f64, C: *mut f64, D: *mut f64); }
     // SAFETY: delegates to C implementation
     unsafe { mjd_transitionFD(m, d, eps, centered, A, B, C, D) }
@@ -329,6 +333,7 @@ pub fn mjd_transition_fd(m: *const mjModel, d: *mut mjData, eps: f64, centered: 
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjd_inverse_fd(m: *const mjModel, d: *mut mjData, eps: f64, flg_actuation: mjtBool, DfDq: *mut f64, DfDv: *mut f64, DfDa: *mut f64, DsDq: *mut f64, DsDv: *mut f64, DsDa: *mut f64, DmDq: *mut f64) {
+    if m.is_null() { return; }
     extern "C" { fn mjd_inverseFD(m: *const mjModel, d: *mut mjData, eps: f64, flg_actuation: mjtBool, DfDq: *mut f64, DfDv: *mut f64, DfDa: *mut f64, DsDq: *mut f64, DsDv: *mut f64, DsDa: *mut f64, DmDq: *mut f64); }
     // SAFETY: delegates to C implementation
     unsafe { mjd_inverseFD(m, d, eps, flg_actuation, DfDq, DfDv, DfDa, DsDq, DsDv, DsDa, DmDq) }

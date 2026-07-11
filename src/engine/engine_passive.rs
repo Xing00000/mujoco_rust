@@ -80,6 +80,7 @@ pub fn mj_flex_passive_stretch(m: *const mjModel, d: *mut mjData, f: i32, enbl_s
 /// Calls: mj_actuatorDamping, mj_flexPassiveBend, mj_flexPassiveBendInterp, mj_flexPassiveInterp, mj_flexPassiveStretch, mj_sleepState, mji_addToScl3, mji_copy4, mji_sub3, mji_subQuat, mju_copy, mju_isZero, mju_norm3, mju_normalize4, mju_polyForce
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_springdamper(m: *const mjModel, d: *mut mjData) {
+    if m.is_null() { return; }
     extern "C" { fn mj_springdamper(m: *const mjModel, d: *mut mjData); }
     // SAFETY: delegates to C implementation, pointers valid per caller contract
     unsafe { mj_springdamper(m, d) }
@@ -159,6 +160,7 @@ pub fn mji_ellipsoid_max_moment(size: *const f64, dir: i32) -> f64  {
 /// Calls: mj_contactPassive, mj_fluid, mj_gravcomp, mj_springdamper, mjp_getPluginAtSlotUnsafe, mjp_pluginCount, mju_add, mju_addInd, mju_addTo, mju_addToInd, mju_message, mju_zero, mju_zeroInd
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_passive(m: *const mjModel, d: *mut mjData) {
+    if m.is_null() { return; }
     extern "C" { fn mj_passive(m: *const mjModel, d: *mut mjData); }
     // SAFETY: delegates to C implementation, all pointers valid per caller contract
     unsafe { mj_passive(m, d) }

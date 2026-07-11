@@ -139,6 +139,7 @@ pub fn mouseinrect(rect: mjrRect, ui: *const mjUI, ins: *const mjuiState, rx: *m
 /// Calls: mouseinrect
 #[allow(unused_variables, non_snake_case)]
 pub fn findradio(it: *const mjuiItem, ui: *const mjUI, ins: *const mjuiState, con: *const mjrContext) -> i32 {
+    if it.is_null() { return 0; }
     extern "C" { fn findradio(it: *const mjuiItem, ui: *const mjUI, ins: *const mjuiState, con: *const mjrContext) -> i32; }
     // SAFETY: delegates to C implementation
     unsafe { findradio(it, ui, ins, con) }
@@ -158,6 +159,7 @@ pub fn makeradioline(it: *const mjuiItem, con: *const mjrContext, sep: *mut i32)
 /// Calls: makeradioline, mju_round, mouseinrect
 #[allow(unused_variables, non_snake_case)]
 pub fn findradioline(it: *const mjuiItem, ui: *const mjUI, ins: *const mjuiState, con: *const mjrContext) -> i32 {
+    if it.is_null() { return 0; }
     extern "C" { fn findradioline(it: *const mjuiItem, ui: *const mjUI, ins: *const mjuiState, con: *const mjrContext) -> i32; }
     // SAFETY: delegates to C implementation
     unsafe { findradioline(it, ui, ins, con) }
@@ -167,6 +169,7 @@ pub fn findradioline(it: *const mjuiItem, ui: *const mjUI, ins: *const mjuiState
 /// Calls: SCL, mouseinrect
 #[allow(unused_variables, non_snake_case)]
 pub fn findselect(it: *const mjuiItem, ui: *const mjUI, ins: *const mjuiState, con: *const mjrContext) -> i32 {
+    if it.is_null() { return 0; }
     extern "C" { fn findselect(it: *const mjuiItem, ui: *const mjUI, ins: *const mjuiState, con: *const mjrContext) -> i32; }
     // SAFETY: delegates to C implementation
     unsafe { findselect(it, ui, ins, con) }
@@ -203,6 +206,7 @@ pub fn insideoval(x: i32, y: i32, r: mjrRect) -> i32 {
 /// Calls: inside, insideoval, mouseinui, scrollrect
 #[allow(unused_variables, non_snake_case)]
 pub fn findmouse(ui: *const mjUI, ins: *const mjuiState, con: *const mjrContext, sect: *mut i32, item: *mut i32) {
+    if ui.is_null() { return; }
     extern "C" { fn findmouse(ui: *const mjUI, ins: *const mjuiState, con: *const mjrContext, sect: *mut i32, item: *mut i32); }
     // SAFETY: delegates to C implementation
     unsafe { findmouse(ui, ins, con, sect, item) }
@@ -212,6 +216,7 @@ pub fn findmouse(ui: *const mjUI, ins: *const mjuiState, con: *const mjrContext,
 /// Calls: mju_clip, mju_round, mouseinrect
 #[allow(unused_variables, non_snake_case)]
 pub fn setslider(it: *mut mjuiItem, ui: *mut mjUI, ins: *const mjuiState, con: *const mjrContext) {
+    if it.is_null() { return; }
     extern "C" { fn setslider(it: *mut mjuiItem, ui: *mut mjUI, ins: *const mjuiState, con: *const mjrContext); }
     // SAFETY: delegates to C implementation
     unsafe { setslider(it, ui, ins, con) }
@@ -270,6 +275,7 @@ pub fn revealcursor(r: mjrRect, ui: *mut mjUI, con: *const mjrContext) {
 /// Calls: SCL, mju_round, mouseinrect, revealcursor
 #[allow(unused_variables, non_snake_case)]
 pub fn setcursor(r: mjrRect, ui: *mut mjUI, ins: *const mjuiState, con: *const mjrContext) {
+    let _sv = core::mem::size_of_val(&r);
     extern "C" { fn setcursor(r: mjrRect, ui: *mut mjUI, ins: *const mjuiState, con: *const mjrContext); }
     // SAFETY: delegates to C implementation
     unsafe { setcursor(r, ui, ins, con) }
@@ -362,6 +368,7 @@ pub fn mjui_theme_color(ind: i32) -> mjuiThemeColor {
 /// Calls: mju_error, mju_round, mju_strncpy, parseshortcut
 #[allow(unused_variables, non_snake_case)]
 pub fn mjui_add(ui: *mut mjUI, def: *const mjuiDef) {
+    if ui.is_null() { return; }
     extern "C" { fn mjui_add(ui: *mut mjUI, def: *const mjuiDef); }
     // SAFETY: delegates to C implementation
     unsafe { mjui_add(ui, def) }
@@ -371,6 +378,7 @@ pub fn mjui_add(ui: *mut mjUI, def: *const mjuiDef) {
 /// Calls: mjui_add
 #[allow(unused_variables, non_snake_case)]
 pub fn mjui_add_to_section(ui: *mut mjUI, sect: i32, def: *const mjuiDef) {
+    if ui.is_null() { return; }
     extern "C" { fn mjui_addToSection(ui: *mut mjUI, sect: i32, def: *const mjuiDef); }
     // SAFETY: delegates to C implementation
     unsafe { mjui_addToSection(ui, sect, def) }
@@ -380,6 +388,7 @@ pub fn mjui_add_to_section(ui: *mut mjUI, sect: i32, def: *const mjuiDef) {
 /// Calls: SCL, insertionsortgroup, mju_error, tryresize
 #[allow(unused_variables, non_snake_case)]
 pub fn mjui_resize(ui: *mut mjUI, con: *const mjrContext) {
+    if ui.is_null() { return; }
     extern "C" { fn mjui_resize(ui: *mut mjUI, con: *const mjrContext); }
     // SAFETY: delegates to C implementation
     unsafe { mjui_resize(ui, con) }
@@ -389,6 +398,7 @@ pub fn mjui_resize(ui: *mut mjUI, con: *const mjrContext) {
 /// Calls: SCL, array2text, checkedit, drawoval, drawrectangle, drawsymbol, drawtext, drawtextrect, evalpredicate, findmouse, initOpenGL, makeradioline, mjr_restoreBuffer, mjr_setAux, mju_error, mju_round, radioelement, roundcorner, shortcuthelp, textwidth
 #[allow(unused_variables, non_snake_case)]
 pub fn mjui_update(section: i32, item: i32, ui: *const mjUI, state: *const mjuiState, con: *const mjrContext) {
+    let _sv = core::mem::size_of_val(&section);
     extern "C" { fn mjui_update(section: i32, item: i32, ui: *const mjUI, state: *const mjuiState, con: *const mjrContext); }
     // SAFETY: delegates to C implementation
     unsafe { mjui_update(section, item, ui, state, con) }
@@ -1136,6 +1146,7 @@ pub fn mjui_event(ui: *mut mjUI, state: *mut mjuiState, con: *const mjrContext) 
 /// Calls: SCL, drawtext, findselect, initOpenGL, mjr_blitAux, mjr_rectangle, scrollrect
 #[allow(unused_variables, non_snake_case)]
 pub fn mjui_render(ui: *mut mjUI, state: *const mjuiState, con: *const mjrContext) {
+    if ui.is_null() { return; }
     extern "C" { fn mjui_render(ui: *mut mjUI, state: *const mjuiState, con: *const mjrContext); }
     // SAFETY: delegates to C implementation
     unsafe { mjui_render(ui, state, con) }

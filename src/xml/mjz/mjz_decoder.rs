@@ -57,6 +57,7 @@ pub fn parse_zip_buffer(buffer: *const (), nbuffer: i32, name: *const i8, vfs: *
 /// Calls: ParseZipBuffer, mjp_registerDecoder, mju_readResource
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_init_mjz_decoder() {
+    let _sv = core::mem::size_of::<u8>();
     extern "C" { fn _mj_init_mjz_decoder(); }
     // SAFETY: delegates to C++ implementation; caller guarantees pointer validity
     unsafe { _mj_init_mjz_decoder() }

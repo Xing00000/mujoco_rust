@@ -67,6 +67,7 @@ pub fn warmstart(m: *const mjModel, d: *mut mjData) {
 /// Calls: mj_solCG_island, mj_solNewton_island, mj_solPGS_island
 #[allow(unused_variables, non_snake_case)]
 pub fn solve_island_task(m: *const mjModel, d: *mut mjData, arg: *mut (), thread_id: i32, island: i32) {
+    if m.is_null() { return; }
     extern "C" { fn solveIslandTask(m: *const mjModel, d: *mut mjData, arg: *mut (), thread_id: i32, island: i32); }
     // SAFETY: delegates to C implementation
     unsafe { solveIslandTask(m, d, arg, thread_id, island) }
@@ -446,6 +447,7 @@ pub fn mj_forward_skip(m: *const mjModel, d: *mut mjData, skipstage: i32, skipse
 /// Calls: mj_advance, mj_forwardSkip, mj_freeStack, mj_integratePos, mj_markStack, mj_stackAllocInfo, mju_addToScl, mju_copy, mju_message, mju_zero
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_runge_kutta(m: *const mjModel, d: *mut mjData, N: i32) {
+    if m.is_null() { return; }
     extern "C" { fn mj_RungeKutta(m: *const mjModel, d: *mut mjData, N: i32); }
     // SAFETY: delegates to C implementation, pointers valid per caller
     unsafe { mj_RungeKutta(m, d, N) }
@@ -766,6 +768,7 @@ pub fn mj_fwd_velocity(m: *const mjModel, d: *mut mjData) {
 /// Calls: clampVec, dcmotorVoltage, mj_actuatorDisabled, mj_dcmotorSlots, mj_freeStack, mj_lugreStribeck, mj_markStack, mj_nextActivation, mj_readCtrl, mj_sleepState, mj_stackAllocInfo, mj_warning, mjp_getPluginAtSlotUnsafe, mjp_pluginCount, mju_addTo, mju_clip, mju_isBad, mju_max, mju_message, mju_min, mju_mulMatTVecSparse, mju_muscleBias, mju_muscleDynamics, mju_muscleGain, mju_norm3, mju_zero
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_fwd_actuation(m: *const mjModel, d: *mut mjData) {
+    if m.is_null() { return; }
     extern "C" { fn mj_fwdActuation(m: *const mjModel, d: *mut mjData); }
     // SAFETY: delegates to C implementation, all pointers valid per caller contract
     unsafe { mj_fwdActuation(m, d) }
@@ -821,6 +824,7 @@ pub fn mj_fwd_acceleration(m: *const mjModel, d: *mut mjData) {
 /// Calls: mj_dualFinish, mj_mulJacVec, mj_solCG, mj_solNewton, mj_solNoSlip, mj_solNoSlip_island, mj_solPGS, mju_copy, mju_dispatch, mju_gather, mju_message, mju_scatter, mju_subFrom, mju_zero, mju_zeroInt, warmstart
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_fwd_constraint(m: *const mjModel, d: *mut mjData) {
+    if m.is_null() { return; }
     extern "C" {
         fn mj_fwdConstraint(m: *const mjModel, d: *mut mjData);
     }

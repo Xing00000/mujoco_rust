@@ -37,6 +37,7 @@ pub fn mj_x_writer_set_model(self_ptr: *mut mjXWriter, _spec: *mut mjSpec, m: *c
 /// Calls: mjCModel::Default, mjCModel::GetWorld, mjCModel::IsCompiled, mjCopyError, mjXWriter::Actuator, mjXWriter::Asset, mjXWriter::Body, mjXWriter::Compiler, mjXWriter::Contact, mjXWriter::Custom, mjXWriter::Default, mjXWriter::Deformable, mjXWriter::Equality, mjXWriter::Extension, mjXWriter::InsertEnd, mjXWriter::Keyframe, mjXWriter::Option, mjXWriter::Sensor, mjXWriter::Size, mjXWriter::Statistic, mjXWriter::Tendon, mjXWriter::Visual
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_x_writer_write(self_ptr: *mut mjXWriter, error: *mut i8, error_sz: usize) -> std__string {
+    if self_ptr.is_null() { return; }
     extern "C" { fn mjXWriter_Write(self_ptr: *mut mjXWriter, error: *mut i8, error_sz: usize) -> std__string; }
     // SAFETY: delegates to C implementation
     unsafe { mjXWriter_Write(self_ptr, error, error_sz) }
@@ -65,6 +66,7 @@ pub fn mj_x_writer_compiler(self_ptr: *mut mjXWriter, root: *mut tinyxml2__XMLEl
 /// Calls: mjXUtil::WriteAttrInt, mjXUtil::WriteAttrKey, mjXWriter::InsertEnd, mj_defaultOption
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_x_writer_option(self_ptr: *mut mjXWriter, root: *mut tinyxml2__XMLElement) {
+    if self_ptr.is_null() { return; }
     extern "C" { fn mjXWriter_Option(self_ptr: *mut mjXWriter, root: *mut tinyxml2__XMLElement); }
     // SAFETY: delegates to C implementation
     unsafe { mjXWriter_Option(self_ptr, root) }
@@ -84,6 +86,7 @@ pub fn mj_x_writer_size(self_ptr: *mut mjXWriter, root: *mut tinyxml2__XMLElemen
 /// Calls: mjXWriter::InsertEnd, mj_defaultVisual
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_x_writer_visual(self_ptr: *mut mjXWriter, root: *mut tinyxml2__XMLElement) {
+    if self_ptr.is_null() { return; }
     extern "C" { fn mjXWriter_Visual(self_ptr: *mut mjXWriter, root: *mut tinyxml2__XMLElement); }
     // SAFETY: delegates to C implementation
     unsafe { mjXWriter_Visual(self_ptr, root) }
@@ -103,6 +106,7 @@ pub fn mj_x_writer_statistic(self_ptr: *mut mjXWriter, root: *mut tinyxml2__XMLE
 /// Calls: mjCDef::Actuator, mjCDef::Camera, mjCDef::Equality, mjCDef::Geom, mjCDef::Joint, mjCDef::Light, mjCDef::Material, mjCDef::Mesh, mjCDef::Pair, mjCDef::Site, mjCDef::Tendon, mjXUtil::WriteAttrTxt, mjXWriter::InsertEnd, mjXWriter::OneActuator, mjXWriter::OneCamera, mjXWriter::OneEquality, mjXWriter::OneGeom, mjXWriter::OneJoint, mjXWriter::OneLight, mjXWriter::OneMaterial, mjXWriter::OneMesh, mjXWriter::OnePair, mjXWriter::OneSite, mjXWriter::OneTendon
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_x_writer_default(self_ptr: *mut mjXWriter, root: *mut tinyxml2__XMLElement, def: *mut mjCDef) {
+    if self_ptr.is_null() { return; }
     extern "C" { fn mjXWriter_Default(self_ptr: *mut mjXWriter, root: *mut tinyxml2__XMLElement, def: *mut mjCDef); }
     // SAFETY: delegates to C implementation
     unsafe { mjXWriter_Default(self_ptr, root, def) }
@@ -122,6 +126,7 @@ pub fn mj_x_writer_extension(self_ptr: *mut mjXWriter, root: *mut tinyxml2__XMLE
 /// Calls: mjCModel::GetObject, mjCModel::NumObjects, mjXUtil::WriteAttrInt, mjXUtil::WriteAttrTxt, mjXWriter::InsertEnd, mju_type2Str
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_x_writer_custom(self_ptr: *mut mjXWriter, root: *mut tinyxml2__XMLElement) {
+    if self_ptr.is_null() { return; }
     extern "C" { fn mjXWriter_Custom(self_ptr: *mut mjXWriter, root: *mut tinyxml2__XMLElement); }
     // SAFETY: delegates to C implementation
     unsafe { mjXWriter_Custom(self_ptr, root) }
@@ -131,6 +136,7 @@ pub fn mj_x_writer_custom(self_ptr: *mut mjXWriter, root: *mut tinyxml2__XMLElem
 /// Calls: mjCMesh::File, mjCMesh::Plugin, mjCModel::GetObject, mjCModel::NumObjects, mjXUtil::WriteAttrInt, mjXUtil::WriteAttrKey, mjXUtil::WriteAttrTxt, mjXWriter::InsertEnd, mjXWriter::OneMaterial, mjXWriter::OneMesh, mjXWriter::OnePlugin
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_x_writer_asset(self_ptr: *mut mjXWriter, root: *mut tinyxml2__XMLElement) {
+    if self_ptr.is_null() { return; }
     extern "C" { fn mjXWriter_Asset(self_ptr: *mut mjXWriter, root: *mut tinyxml2__XMLElement); }
     // SAFETY: delegates to C implementation
     unsafe { mjXWriter_Asset(self_ptr, root) }
@@ -140,6 +146,7 @@ pub fn mj_x_writer_asset(self_ptr: *mut mjXWriter, root: *mut tinyxml2__XMLEleme
 /// Calls: mjCModel::GetObject, mjCModel::NumObjects, mjXUtil::WriteAttrTxt, mjXWriter::InsertEnd, mjXWriter::OnePair
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_x_writer_contact(self_ptr: *mut mjXWriter, root: *mut tinyxml2__XMLElement) {
+    if self_ptr.is_null() { return; }
     extern "C" { fn mjXWriter_Contact(self_ptr: *mut mjXWriter, root: *mut tinyxml2__XMLElement); }
     // SAFETY: delegates to C implementation
     unsafe { mjXWriter_Contact(self_ptr, root) }
@@ -149,6 +156,7 @@ pub fn mj_x_writer_contact(self_ptr: *mut mjXWriter, root: *mut tinyxml2__XMLEle
 /// Calls: mjCModel::GetObject, mjCModel::NumObjects, mjXWriter::InsertEnd, mjXWriter::OneFlex, mjXWriter::OneSkin
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_x_writer_deformable(self_ptr: *mut mjXWriter, root: *mut tinyxml2__XMLElement) {
+    if self_ptr.is_null() { return; }
     extern "C" { fn mjXWriter_Deformable(self_ptr: *mut mjXWriter, root: *mut tinyxml2__XMLElement); }
     // SAFETY: delegates to C implementation
     unsafe { mjXWriter_Deformable(self_ptr, root) }
@@ -158,6 +166,7 @@ pub fn mj_x_writer_deformable(self_ptr: *mut mjXWriter, root: *mut tinyxml2__XML
 /// Calls: mjCModel::GetObject, mjCModel::NumObjects, mjXUtil::FindValue, mjXWriter::InsertEnd, mjXWriter::OneEquality
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_x_writer_equality(self_ptr: *mut mjXWriter, root: *mut tinyxml2__XMLElement) {
+    if self_ptr.is_null() { return; }
     extern "C" { fn mjXWriter_Equality(self_ptr: *mut mjXWriter, root: *mut tinyxml2__XMLElement); }
     // SAFETY: delegates to C implementation
     unsafe { mjXWriter_Equality(self_ptr, root) }
@@ -167,6 +176,7 @@ pub fn mj_x_writer_equality(self_ptr: *mut mjXWriter, root: *mut tinyxml2__XMLEl
 /// Calls: mjCModel::GetObject, mjCModel::NumObjects, mjCTendon::GetWrap, mjCTendon::NumWraps, mjCWrap::Type, mjXUtil::WriteAttrTxt, mjXWriter::InsertEnd, mjXWriter::OneTendon
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_x_writer_tendon(self_ptr: *mut mjXWriter, root: *mut tinyxml2__XMLElement) {
+    if self_ptr.is_null() { return; }
     extern "C" { fn mjXWriter_Tendon(self_ptr: *mut mjXWriter, root: *mut tinyxml2__XMLElement); }
     // SAFETY: delegates to C implementation
     unsafe { mjXWriter_Tendon(self_ptr, root) }
@@ -176,6 +186,7 @@ pub fn mj_x_writer_tendon(self_ptr: *mut mjXWriter, root: *mut tinyxml2__XMLElem
 /// Calls: mjCModel::GetObject, mjCModel::NumObjects, mjXWriter::InsertEnd, mjXWriter::OneActuator
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_x_writer_actuator(self_ptr: *mut mjXWriter, root: *mut tinyxml2__XMLElement) {
+    if self_ptr.is_null() { return; }
     extern "C" { fn mjXWriter_Actuator(self_ptr: *mut mjXWriter, root: *mut tinyxml2__XMLElement); }
     // SAFETY: delegates to C implementation
     unsafe { mjXWriter_Actuator(self_ptr, root) }
@@ -185,6 +196,7 @@ pub fn mj_x_writer_actuator(self_ptr: *mut mjXWriter, root: *mut tinyxml2__XMLEl
 /// Calls: mjCModel::NumObjects, mjCSensor::get_objname, mjCSensor::get_refname, mjXUtil::WriteAttrInt, mjXUtil::WriteAttrKey, mjXUtil::WriteAttrTxt, mjXWriter::InsertEnd, mjXWriter::OnePlugin, mju_condataSize, mju_error
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_x_writer_sensor(self_ptr: *mut mjXWriter, root: *mut tinyxml2__XMLElement) {
+    if self_ptr.is_null() { return; }
     extern "C" { fn mjXWriter_Sensor(self_ptr: *mut mjXWriter, root: *mut tinyxml2__XMLElement); }
     // SAFETY: delegates to C implementation
     unsafe { mjXWriter_Sensor(self_ptr, root) }
@@ -204,6 +216,7 @@ pub fn mj_x_writer_keyframe(self_ptr: *mut mjXWriter, root: *mut tinyxml2__XMLEl
 /// Calls: mjCModel::GetWorld, mjXUtil::WriteAttrKey, mjXUtil::WriteAttrTxt, mjXWriter::InsertEnd, mjXWriter::OneCamera, mjXWriter::OneFrame, mjXWriter::OneGeom, mjXWriter::OneJoint, mjXWriter::OneLight, mjXWriter::OnePlugin, mjXWriter::OneSite
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_x_writer_body(self_ptr: *mut mjXWriter, elem: *mut tinyxml2__XMLElement, body: *mut mjCBody, frame: *mut mjCFrame, childclass: string_view) {
+    if self_ptr.is_null() { return; }
     extern "C" { fn mjXWriter_Body(self_ptr: *mut mjXWriter, elem: *mut tinyxml2__XMLElement, body: *mut mjCBody, frame: *mut mjCFrame, childclass: string_view); }
     // SAFETY: delegates to C implementation
     unsafe { mjXWriter_Body(self_ptr, elem, body, frame, childclass) }
@@ -263,6 +276,7 @@ pub fn mj_x_writer_one_joint(self_ptr: *mut mjXWriter, elem: *mut tinyxml2__XMLE
 /// Calls: mjCDef::Geom, mjCGeom::GetVolume, mjCGeom::get_hfieldname, mjCGeom::get_material, mjCGeom::get_meshname, mjCMesh::GetPosPtr, mjCMesh::GetQuatPtr, mjXUtil::WriteAttrInt, mjXUtil::WriteAttrKey, mjXUtil::WriteAttrTxt, mjXWriter::InsertEnd, mjXWriter::OnePlugin, mjuu_frameaccuminv
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_x_writer_one_geom(self_ptr: *mut mjXWriter, elem: *mut tinyxml2__XMLElement, pgeom: *const mjCGeom, def: *mut mjCDef, classname: string_view) {
+    if self_ptr.is_null() { return; }
     extern "C" { fn mjXWriter_OneGeom(self_ptr: *mut mjXWriter, elem: *mut tinyxml2__XMLElement, pgeom: *const mjCGeom, def: *mut mjCDef, classname: string_view); }
     // SAFETY: delegates to C implementation
     unsafe { mjXWriter_OneGeom(self_ptr, elem, pgeom, def, classname) }
@@ -332,6 +346,7 @@ pub fn mj_x_writer_one_tendon(self_ptr: *mut mjXWriter, elem: *mut tinyxml2__XML
 /// Calls: mjCActuator::get_refsite, mjCActuator::get_slidersite, mjCActuator::get_target, mjCDef::Actuator, mjXUtil::WriteAttrInt, mjXUtil::WriteAttrKey, mjXUtil::WriteAttrTxt, mjXWriter::OnePlugin
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_x_writer_one_actuator(self_ptr: *mut mjXWriter, elem: *mut tinyxml2__XMLElement, pactuator: *const mjCActuator, def: *mut mjCDef) {
+    if self_ptr.is_null() { return; }
     extern "C" { fn mjXWriter_OneActuator(self_ptr: *mut mjXWriter, elem: *mut tinyxml2__XMLElement, pactuator: *const mjCActuator, def: *mut mjCDef); }
     // SAFETY: delegates to C implementation
     unsafe { mjXWriter_OneActuator(self_ptr, elem, pactuator, def) }

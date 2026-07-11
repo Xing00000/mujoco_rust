@@ -236,6 +236,7 @@ pub fn can_collide2(m: *const mjModel, bf1: i32, bf2: i32) -> i32  {
 /// Calls: canCollide2, filterBitmask, filterBox, filterCollisionPair, filterSphereBox, mj_assignMargin, mj_collideElems, mj_collideGeomElem, mj_collideOBB, mj_collidePlaneFlex, mj_collideSdfFlex, mj_filterSphere, mj_freeStack, mj_markStack, mj_narrowphase, mj_stackAllocInfo, mju_error, mju_message
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_collide_tree(m: *const mjModel, d: *mut mjData, bf1: i32, bf2: i32, merged: i32, startadr: i32, pairadr: i32) {
+    if m.is_null() { return; }
     extern "C" { fn mj_collideTree(m: *const mjModel, d: *mut mjData, bf1: i32, bf2: i32, merged: i32, startadr: i32, pairadr: i32); }
     // SAFETY: delegates to C implementation, all pointers valid per caller contract
     unsafe { mj_collideTree(m, d, bf1, bf2, merged, startadr, pairadr) }
@@ -245,6 +246,7 @@ pub fn mj_collide_tree(m: *const mjModel, d: *mut mjData, bf1: i32, bf2: i32, me
 /// Calls: getGap, getMargin, mj_arenaAllocByte, mj_contactParam, mj_freeStack, mj_markStack, mj_maxContact, mj_setContact, mj_stackAllocByte, mj_stackAllocInfo, mj_stackAllocInt, mj_warning, mjc_ccdSize, mji_copy3, mju_copy, mju_dispatch, mju_numThread
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_narrowphase(m: *const mjModel, d: *mut mjData, buffer: *const mjcPair, npair: i32, parena: usize) {
+    if m.is_null() { return; }
     extern "C" { fn mj_narrowphase(m: *const mjModel, d: *mut mjData, buffer: *const mjcPair, npair: i32, parena: usize); }
     // SAFETY: delegates to C implementation
     unsafe { mj_narrowphase(m, d, buffer, npair, parena) }
@@ -264,6 +266,7 @@ pub fn mj_collide_plane_flex(m: *const mjModel, d: *mut mjData, g: i32, f: i32) 
 /// Calls: mj_addContact, mj_assignMargin, mj_contactParam, mj_freeStack, mj_markStack, mj_setContact, mj_stackAllocInfo, mjc_FlexSDF, mju_copy3
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_collide_sdf_flex(m: *const mjModel, d: *mut mjData, g: i32, f: i32) {
+    if m.is_null() { return; }
     extern "C" { fn mj_collideSdfFlex(m: *const mjModel, d: *mut mjData, g: i32, f: i32); }
     // SAFETY: delegates to C implementation, all pointers valid per caller contract
     unsafe { mj_collideSdfFlex(m, d, g, f) }
@@ -273,6 +276,7 @@ pub fn mj_collide_sdf_flex(m: *const mjModel, d: *mut mjData, g: i32, f: i32) {
 /// Calls: mj_addContact, mj_collideElemVert, mj_contactParam, mj_setContact, mju_copy3, planeVertex
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_collide_flex_internal(m: *const mjModel, d: *mut mjData, f: i32) {
+    if m.is_null() { return; }
     extern "C" { fn mj_collideFlexInternal(m: *const mjModel, d: *mut mjData, f: i32); }
     // SAFETY: delegates to C implementation, all pointers valid per caller contract
     unsafe { mj_collideFlexInternal(m, d, f) }
@@ -720,6 +724,7 @@ pub fn mj_max_contact(m: *const mjModel, g1: i32, g2: i32, has_margin: i32) -> i
 /// Calls: alignArena, canCollide2, contactSort, filterBitmask, filterCollisionPair, filterFlexContacts, mj_broadphase, mj_clearEfc, mj_collideElems, mj_collideFlexInternal, mj_collideFlexSAP, mj_collideGeomElem, mj_collidePlaneFlex, mj_collideSdfFlex, mj_collideTree, mj_freeStack, mj_isElemActive, mj_markStack, mj_narrowphase, mj_sleepState, mj_stackAllocInfo, pushPairArena, resetArena
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_collision(m: *const mjModel, d: *mut mjData) {
+    if m.is_null() { return; }
     extern "C" { fn mj_collision(m: *const mjModel, d: *mut mjData); }
     // SAFETY: delegates to C implementation, all pointers valid per caller contract
     unsafe { mj_collision(m, d) }
@@ -995,6 +1000,7 @@ pub fn mj_broadphase(m: *const mjModel, d: *mut mjData, bfpair: *mut i32, maxpai
 /// Calls: mj_SAP, mj_collideElems, mj_freeStack, mj_isElemActive, mj_markStack, mj_stackAllocInfo, mju_message
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_collide_flex_sap(m: *const mjModel, d: *mut mjData, f: i32) {
+    if m.is_null() { return; }
     extern "C" { fn mj_collideFlexSAP(m: *const mjModel, d: *mut mjData, f: i32); }
     // SAFETY: delegates to C implementation, all pointers valid per caller contract
     unsafe { mj_collideFlexSAP(m, d, f) }
@@ -1004,6 +1010,7 @@ pub fn mj_collide_flex_sap(m: *const mjModel, d: *mut mjData, f: i32) {
 /// Calls: filterSphereBox, mj_arenaAllocByte, mj_assignMargin, mj_contactParam, mj_freeStack, mj_makeCapsule, mj_markStack, mj_setContact, mj_stackAllocInfo, mj_warning, mjc_ConvexElem, mjc_HFieldElem, mjraw_BoxTriangle, mjraw_CapsuleBox, mjraw_CapsuleCapsule, mjraw_CapsuleTriangle, mjraw_SphereCapsule, mjraw_SphereTriangle, mju_copy3, mju_scl3
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_collide_geom_elem(m: *const mjModel, d: *mut mjData, g: i32, f: i32, e: i32) {
+    if m.is_null() { return; }
     extern "C" { fn mj_collideGeomElem(m: *const mjModel, d: *mut mjData, g: i32, f: i32, e: i32); }
     // SAFETY: delegates to C implementation, all pointers valid per caller contract
     unsafe { mj_collideGeomElem(m, d, g, f, e) }
@@ -1013,6 +1020,7 @@ pub fn mj_collide_geom_elem(m: *const mjModel, d: *mut mjData, g: i32, f: i32, e
 /// Calls: filterBox, mj_arenaAllocByte, mj_assignMargin, mj_contactParam, mj_freeStack, mj_makeCapsule, mj_markStack, mj_setContact, mj_stackAllocInfo, mj_warning, mjc_ConvexElem, mjraw_CapsuleCapsule, mju_copy3
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_collide_elems(m: *const mjModel, d: *mut mjData, f1: i32, e1: i32, f2: i32, e2: i32) {
+    if m.is_null() { return; }
     extern "C" { fn mj_collideElems(m: *const mjModel, d: *mut mjData, f1: i32, e1: i32, f2: i32, e2: i32); }
     // SAFETY: delegates to C implementation, all pointers valid per caller contract
     unsafe { mj_collideElems(m, d, f1, e1, f2, e2) }
@@ -1022,6 +1030,7 @@ pub fn mj_collide_elems(m: *const mjModel, d: *mut mjData, f1: i32, e1: i32, f2:
 /// Calls: mj_arenaAllocByte, mj_assignMargin, mj_contactParam, mj_freeStack, mj_makeCapsule, mj_markStack, mj_setContact, mj_stackAllocInfo, mj_warning, mjc_ConvexElem, mjraw_SphereCapsule, mjraw_SphereTriangle, mju_copy3
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_collide_elem_vert(m: *const mjModel, d: *mut mjData, f: i32, e: i32, v: i32) {
+    if m.is_null() { return; }
     extern "C" { fn mj_collideElemVert(m: *const mjModel, d: *mut mjData, f: i32, e: i32, v: i32); }
     // SAFETY: delegates to C implementation, all pointers valid per caller contract
     unsafe { mj_collideElemVert(m, d, f, e, v) }

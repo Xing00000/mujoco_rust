@@ -138,6 +138,7 @@ pub fn mj_add_buffer_vfs(vfs: *mut mjVFS, name: *const i8, buffer: *const (), nb
 /// Calls: FilePath::Lower, FilePath::StripPath, FilePath::c_str, mj_unmountVFS
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_delete_file_vfs(vfs: *mut mjVFS, filename: *const i8) -> i32 {
+    if vfs.is_null() { return 0; }
     extern "C" { fn mj_deleteFileVFS(vfs: *mut mjVFS, filename: *const i8) -> i32; }
     // SAFETY: delegates to C implementation
     unsafe { mj_deleteFileVFS(vfs, filename) }
@@ -157,6 +158,7 @@ pub fn mj_contains_buffer_vfs(vfs: *mut mjVFS, name: *const i8) -> i32 {
 /// Calls: VFS::ContainsFile, VFS::Upcast, mju_error
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_contains_file_vfs(vfs: *mut mjVFS, directory: *const i8, filename: *const i8) -> i32 {
+    if vfs.is_null() { return 0; }
     extern "C" { fn mj_containsFileVFS(vfs: *mut mjVFS, directory: *const i8, filename: *const i8) -> i32; }
     // SAFETY: delegates to C implementation
     unsafe { mj_containsFileVFS(vfs, directory, filename) }

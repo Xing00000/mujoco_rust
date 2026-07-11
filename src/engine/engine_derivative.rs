@@ -218,6 +218,7 @@ pub fn add_jtbj_mul_sparse(m: *const mjModel, d: *mut mjData, res: *mut f64, vec
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjd_flex_interp_kernel(m: *const mjModel, d: *mut mjData, res: *mut f64, vec: *const f64, s1: f64, s2: f64, K_rot_cache: *const f64, K_rot_out: *mut f64) {
+    if m.is_null() { return; }
     extern "C" { fn mjd_flexInterp_kernel(m: *const mjModel, d: *mut mjData, res: *mut f64, vec: *const f64, s1: f64, s2: f64, K_rot_cache: *const f64, K_rot_out: *mut f64); }
     // SAFETY: delegates to C implementation
     unsafe { mjd_flexInterp_kernel(m, d, res, vec, s1, s2, K_rot_cache, K_rot_out) }
@@ -525,6 +526,7 @@ pub fn mjd_smooth_vel(m: *const mjModel, d: *mut mjData, flg_bias: i32) {
 /// Calls: addJTBJSparse, mj_actuatorDisabled, mj_nextActivation, mj_sleepState, mjd_muscleGain_vel, mju_max
 #[allow(unused_variables, non_snake_case)]
 pub fn mjd_actuator_vel(m: *const mjModel, d: *mut mjData) {
+    if m.is_null() { return; }
     extern "C" { fn mjd_actuator_vel(m: *const mjModel, d: *mut mjData); }
     // SAFETY: delegates to C implementation, all pointers valid per caller contract
     unsafe { mjd_actuator_vel(m, d) }

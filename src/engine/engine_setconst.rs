@@ -65,6 +65,7 @@ pub fn mj_align_flex(m: *mut mjModel, d: *mut mjData) {
 /// Calls: makeFlexSparse, makeTendonSparse, mj_alignFlex, mj_camlight, mj_comPos, mj_factorM, mj_flex, mj_freeStack, mj_jacBodyCom, mj_kinematics, mj_local2Global, mj_makeM, mj_markStack, mj_setM0, mj_solveM, mj_stackAllocInfo, mj_tendon, mj_transmission, mju_copy, mju_copy3, mju_copy9, mju_dot, mju_isZero, mju_max, mju_message, mju_mulMatMatT, mju_mulMatTVec3, mju_mulQuat, mju_negQuat, mju_norm, mju_normalize4, mju_sparse2dense, mju_sub3, mju_subFrom3, mju_zero
 #[allow(unused_variables, non_snake_case)]
 pub fn set0(m: *mut mjModel, d: *mut mjData) {
+    if m.is_null() { return; }
     extern "C" { fn set0(m: *mut mjModel, d: *mut mjData); }
     // SAFETY: delegates to C implementation
     unsafe { set0(m, d) }
@@ -98,6 +99,7 @@ pub fn set_stat(m: *mut mjModel, d: *mut mjData) {
 /// Calls: mj_comPos, mj_kinematics, mj_tendon, mj_transmission, mju_copy
 #[allow(unused_variables, non_snake_case)]
 pub fn set_spring(m: *mut mjModel, d: *mut mjData) {
+    if m.is_null() { return; }
     extern "C" { fn setSpring(m: *mut mjModel, d: *mut mjData); }
     // SAFETY: delegates to C implementation
     unsafe { setSpring(m, d) }
@@ -122,6 +124,7 @@ pub fn eval_act(m: *const mjModel, d: *mut mjData, index: i32, side: i32, opt: *
 /// Calls: set0, setFixed, setSpring, setStat
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_set_const(m: *mut mjModel, d: *mut mjData) {
+    if m.is_null() { return; }
     extern "C" { fn mj_setConst(m: *mut mjModel, d: *mut mjData); }
     // SAFETY: delegates to C implementation
     unsafe { mj_setConst(m, d) }

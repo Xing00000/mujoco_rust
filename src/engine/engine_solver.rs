@@ -227,6 +227,7 @@ pub fn project_cone(force: *mut f64, mu: *const f64, dim: i32, r#type: i32) {
 /// Calls: ARdiaginv, costChange, dualState, dualStateChange, extractBlock, mj_freeStack, mj_isSparse, mj_markStack, mj_stackAllocInfo, mju_clip, mju_copy, mju_dot, mju_gather, mju_mulMatVec, mju_zero, pcg32_next, projectCone, residual, saveStats, shuffle_int, solveQCQP
 #[allow(unused_variables, non_snake_case)]
 pub fn sol_pgs(m: *const mjModel, d: *mut mjData, island: i32, ne: i32, nf: i32, nefc: i32, efclist: *const i32, maxiter: i32) {
+    if m.is_null() { return; }
     extern "C" { fn solPGS(m: *const mjModel, d: *mut mjData, island: i32, ne: i32, nf: i32, nefc: i32, efclist: *const i32, maxiter: i32); }
     // SAFETY: delegates to C implementation
     unsafe { solPGS(m, d, island, ne, nf, nefc, efclist, maxiter) }
@@ -502,6 +503,7 @@ pub fn mj_sol_newton(m: *const mjModel, d: *mut mjData, maxiter: i32) {
 /// Calls: solPGS
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_sol_pgs_island(m: *const mjModel, d: *mut mjData, island: i32, maxiter: i32) {
+    if m.is_null() { return; }
     extern "C" { fn mj_solPGS_island(m: *const mjModel, d: *mut mjData, island: i32, maxiter: i32); }
     // SAFETY: delegates to C implementation
     unsafe { mj_solPGS_island(m, d, island, maxiter) }
@@ -521,6 +523,7 @@ pub fn mj_sol_no_slip_island(m: *const mjModel, d: *mut mjData, island: i32, max
 /// Calls: mj_solPrimal
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_sol_cg_island(m: *const mjModel, d: *mut mjData, island: i32, maxiter: i32) {
+    if m.is_null() { return; }
     extern "C" { fn mj_solCG_island(m: *const mjModel, d: *mut mjData, island: i32, maxiter: i32); }
     // SAFETY: delegates to C implementation
     unsafe { mj_solCG_island(m, d, island, maxiter) }
@@ -530,6 +533,7 @@ pub fn mj_sol_cg_island(m: *const mjModel, d: *mut mjData, island: i32, maxiter:
 /// Calls: mj_solPrimal
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_sol_newton_island(m: *const mjModel, d: *mut mjData, island: i32, maxiter: i32) {
+    if m.is_null() { return; }
     extern "C" { fn mj_solNewton_island(m: *const mjModel, d: *mut mjData, island: i32, maxiter: i32); }
     // SAFETY: delegates to C implementation
     unsafe { mj_solNewton_island(m, d, island, maxiter) }

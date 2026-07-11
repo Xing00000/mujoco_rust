@@ -72,6 +72,7 @@ pub fn safe_add_to_buffer_size(offset: *mut isize, nbuffer: *mut usize, type_siz
 /// Calls: mju_free
 #[allow(unused_variables, non_snake_case)]
 pub fn free_model_buffers(m: *mut mjModel) {
+    if m.is_null() { return; }
     extern "C" { fn freeModelBuffers(m: *mut mjModel); }
     // SAFETY: delegates to C implementation, all pointers valid per caller contract
     unsafe { freeModelBuffers(m) }
@@ -126,6 +127,7 @@ pub fn free_data_buffers(d: *mut mjData) {
 /// Calls: mj_initPlugin, mj_makeRawData, mj_setPtrData, mjp_getPluginAtSlot, mju_free, mju_malloc, mju_message
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_copy_data_visual(dest: *mut mjData, m: *const mjModel, src: *const mjData, flg_all: i32) -> *mut mjData {
+    if dest.is_null() { return core::ptr::null_mut(); }
     extern "C" { fn mj_copyDataVisual(dest: *mut mjData, m: *const mjModel, src: *const mjData, flg_all: i32) -> *mut mjData; }
     // SAFETY: delegates to C implementation
     unsafe { mj_copyDataVisual(dest, m, src, flg_all) }
@@ -135,6 +137,7 @@ pub fn mj_copy_data_visual(dest: *mut mjData, m: *const mjModel, src: *const mjD
 /// Calls: checkDBSparse, mj_camlight, mj_clearEfc, mj_comPos, mj_deleteData, mj_forward, mj_id2name, mj_kinematics, mj_sleep, mj_tendon, mj_updateSleep, mj_updateSleepInit, mjp_getPluginAtSlot, mju_copy, mju_copy3, mju_copy4, mju_fillInt, mju_free, mju_malloc, mju_message, mju_zero, mju_zeroInt
 #[allow(unused_variables, non_snake_case)]
 pub fn reset_data(m: *const mjModel, d: *mut mjData, debug_value: u8) {
+    if m.is_null() { return; }
     extern "C" { fn _resetData(m: *const mjModel, d: *mut mjData, debug_value: u8); }
     // SAFETY: delegates to C implementation; caller guarantees m and d are valid
     unsafe { _resetData(m, d, debug_value) }
@@ -174,6 +177,7 @@ pub fn num_objects(m: *const mjModel, objtype: mjtObj) -> i32 {
 /// Calls: freeModelBuffers, mj_defaultOption, mj_defaultStatistic, mj_defaultVisual, mj_setPtrModel, mju_free, mju_malloc, mju_message, mju_warning, safeAddToBufferSize
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_make_model(dest: *mut *mut mjModel, nq: usize, nv: usize, nu: usize, na: usize, nbody: usize, nbvh: usize, nbvhstatic: usize, nbvhdynamic: usize, noct: usize, njnt: usize, ntree: usize, nM: usize, nB: usize, nC: usize, nD: usize, ngeom: usize, nsite: usize, ncam: usize, nlight: usize, nflex: usize, nflexnode: usize, nflexvert: usize, nflexedge: usize, nflexelem: usize, nflexelemdata: usize, nflexstiffness: usize, nflexbending: usize, nflexelemedge: usize, nflexshelldata: usize, nflexevpair: usize, nflextexcoord: usize, nJfe: usize, nJfv: usize, nmesh: usize, nmeshvert: usize, nmeshnormal: usize, nmeshtexcoord: usize, nmeshface: usize, nmeshgraph: usize, nmeshpoly: usize, nmeshpolyvert: usize, nmeshpolymap: usize, nskin: usize, nskinvert: usize, nskintexvert: usize, nskinface: usize, nskinbone: usize, nskinbonevert: usize, nhfield: usize, nhfielddata: usize, ntex: usize, ntexdata: usize, nmat: usize, npair: usize, nexclude: usize, neq: usize, ntendon: usize, nJten: usize, nwrap: usize, nsensor: usize, nnumeric: usize, nnumericdata: usize, ntext: usize, ntextdata: usize, ntuple: usize, ntupledata: usize, nkey: usize, nmocap: usize, nplugin: usize, npluginattr: usize, nuser_body: usize, nuser_jnt: usize, nuser_geom: usize, nuser_site: usize, nuser_cam: usize, nuser_tendon: usize, nuser_actuator: usize, nuser_sensor: usize, nnames: usize, npaths: usize) {
+    if dest.is_null() { return; }
     extern "C" { fn mj_makeModel(dest: *mut *mut mjModel, nq: usize, nv: usize, nu: usize, na: usize, nbody: usize, nbvh: usize, nbvhstatic: usize, nbvhdynamic: usize, noct: usize, njnt: usize, ntree: usize, nM: usize, nB: usize, nC: usize, nD: usize, ngeom: usize, nsite: usize, ncam: usize, nlight: usize, nflex: usize, nflexnode: usize, nflexvert: usize, nflexedge: usize, nflexelem: usize, nflexelemdata: usize, nflexstiffness: usize, nflexbending: usize, nflexelemedge: usize, nflexshelldata: usize, nflexevpair: usize, nflextexcoord: usize, nJfe: usize, nJfv: usize, nmesh: usize, nmeshvert: usize, nmeshnormal: usize, nmeshtexcoord: usize, nmeshface: usize, nmeshgraph: usize, nmeshpoly: usize, nmeshpolyvert: usize, nmeshpolymap: usize, nskin: usize, nskinvert: usize, nskintexvert: usize, nskinface: usize, nskinbone: usize, nskinbonevert: usize, nhfield: usize, nhfielddata: usize, ntex: usize, ntexdata: usize, nmat: usize, npair: usize, nexclude: usize, neq: usize, ntendon: usize, nJten: usize, nwrap: usize, nsensor: usize, nnumeric: usize, nnumericdata: usize, ntext: usize, ntextdata: usize, ntuple: usize, ntupledata: usize, nkey: usize, nmocap: usize, nplugin: usize, npluginattr: usize, nuser_body: usize, nuser_jnt: usize, nuser_geom: usize, nuser_site: usize, nuser_cam: usize, nuser_tendon: usize, nuser_actuator: usize, nuser_sensor: usize, nnames: usize, npaths: usize); }
     // SAFETY: delegates to C implementation, pointers valid per caller contract
     unsafe { mj_makeModel(dest, nq, nv, nu, na, nbody, nbvh, nbvhstatic, nbvhdynamic, noct, njnt, ntree, nM, nB, nC, nD, ngeom, nsite, ncam, nlight, nflex, nflexnode, nflexvert, nflexedge, nflexelem, nflexelemdata, nflexstiffness, nflexbending, nflexelemedge, nflexshelldata, nflexevpair, nflextexcoord, nJfe, nJfv, nmesh, nmeshvert, nmeshnormal, nmeshtexcoord, nmeshface, nmeshgraph, nmeshpoly, nmeshpolyvert, nmeshpolymap, nskin, nskinvert, nskintexvert, nskinface, nskinbone, nskinbonevert, nhfield, nhfielddata, ntex, ntexdata, nmat, npair, nexclude, neq, ntendon, nJten, nwrap, nsensor, nnumeric, nnumericdata, ntext, ntextdata, ntuple, ntupledata, nkey, nmocap, nplugin, npluginattr, nuser_body, nuser_jnt, nuser_geom, nuser_site, nuser_cam, nuser_tendon, nuser_actuator, nuser_sensor, nnames, npaths) }
@@ -186,6 +190,7 @@ pub fn mj_copy_model(dest: *mut mjModel, src: *const mjModel) -> *mut mjModel {
 
 
 
+    if dest.is_null() { return core::ptr::null_mut(); }
     extern "C" { fn mj_copyModel(dest: *mut mjModel, src: *const mjModel) -> *mut mjModel; }
     // SAFETY: delegates to C implementation
     unsafe { mj_copyModel(dest, src) }
@@ -215,6 +220,7 @@ pub fn mj_save_model(m: *const mjModel, filename: *const i8, buffer: *mut (), bu
 /// Calls: bufread, getnptr, getnsize, mj_deleteModel, mj_makeModel, mj_validateReferences, mj_version, mju_warning
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_load_model_buffer(buffer: *const (), buffer_sz: i32) -> *mut mjModel {
+    if buffer.is_null() { return core::ptr::null_mut(); }
     extern "C" { fn mj_loadModelBuffer(buffer: *const (), buffer_sz: i32) -> *mut mjModel; }
     // SAFETY: delegates to C implementation
     unsafe { mj_loadModelBuffer(buffer, buffer_sz) }
@@ -286,6 +292,7 @@ pub fn mj_make_dof_dof_maps(nv: i32, nM: i32, nC: i32, nD: i32, dof_Madr: *const
 /// Calls: mj_initPlugin, mj_makeRawData, mj_resetData
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_make_data(m: *const mjModel) -> *mut mjData {
+    if m.is_null() { return core::ptr::null_mut(); }
     extern "C" { fn mj_makeData(m: *const mjModel) -> *mut mjData; }
     // SAFETY: delegates to C implementation, all pointers valid per caller contract
     unsafe { mj_makeData(m) }
@@ -295,6 +302,7 @@ pub fn mj_make_data(m: *const mjModel) -> *mut mjData {
 /// Calls: freeDataBuffers, mj_setPtrData, mju_free, mju_malloc, mju_message, mju_warning, safeAddToBufferSize
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_make_raw_data(dest: *mut *mut mjData, m: *const mjModel) {
+    if dest.is_null() { return; }
     extern "C" { fn mj_makeRawData(dest: *mut *mut mjData, m: *const mjModel); }
     // SAFETY: delegates to C implementation, all pointers valid per caller contract
     unsafe { mj_makeRawData(dest, m) }
@@ -304,6 +312,7 @@ pub fn mj_make_raw_data(dest: *mut *mut mjData, m: *const mjModel) {
 /// Calls: mj_copyDataVisual
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_copy_data(dest: *mut mjData, m: *const mjModel, src: *const mjData) -> *mut mjData  {
+    if dest.is_null() { return core::ptr::null_mut(); }
     extern "C" { fn mj_copyData(dest: *mut mjData, m: *const mjModel, src: *const mjData) -> *mut mjData; }
     // SAFETY: delegates to C implementation
     unsafe { mj_copyData(dest, m, src) }
@@ -313,6 +322,7 @@ pub fn mj_copy_data(dest: *mut mjData, m: *const mjModel, src: *const mjData) ->
 /// Calls: mj_copyDataVisual
 #[allow(unused_variables, non_snake_case)]
 pub fn mjv_copy_data(dest: *mut mjData, m: *const mjModel, src: *const mjData) -> *mut mjData  {
+    if dest.is_null() { return core::ptr::null_mut(); }
     extern "C" { fn mjv_copyData(dest: *mut mjData, m: *const mjModel, src: *const mjData) -> *mut mjData; }
     // SAFETY: delegates to C implementation
     unsafe { mjv_copyData(dest, m, src) }

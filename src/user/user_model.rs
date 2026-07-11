@@ -425,6 +425,7 @@ pub fn mj_c_model_point_to_local(self_ptr: *mut mjCModel) {
 /// Calls: _mjPRIVATE_setTlsLogHandler, mjCModel::Clear, mjCModel::ClearCompileWarnings, mjCModel::CopyFromSpec, mjCModel::TryCompile, mj_deleteData, mj_deleteModel
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_model_compile(self_ptr: *mut mjCModel, vfs: *const mjVFS, m: *mut *mut mjModel) -> *mut mjModel {
+    if self_ptr.is_null() { return core::ptr::null_mut(); }
     extern "C" { fn mjCModel_Compile(self_ptr: *mut mjCModel, vfs: *const mjVFS, m: *mut *mut mjModel) -> *mut mjModel; }
     // SAFETY: delegates to C++ implementation; caller guarantees pointer validity
     unsafe { mjCModel_Compile(self_ptr, vfs, m) }
@@ -761,6 +762,7 @@ pub fn mj_c_model_find_default(self_ptr: *mut mjCModel, name: *const std__string
 /// Calls: mjCDef::CopyFromSpec, mjCDef::CopyWithoutChildren
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_model_add_default(self_ptr: *mut mjCModel, name: string, parent: *mut mjCDef) -> *mut mjCDef {
+    if self_ptr.is_null() { return core::ptr::null_mut(); }
     extern "C" { fn mjCModel_AddDefault(self_ptr: *mut mjCModel, name: string, parent: *mut mjCDef) -> *mut mjCDef; }
     // SAFETY: delegates to C implementation
     unsafe { mjCModel_AddDefault(self_ptr, name, parent) }
@@ -1069,6 +1071,7 @@ pub fn mj_c_model_restore_state(self_ptr: *mut mjCModel, state_name: *const std_
 /// Calls: mj_initPlugin, mj_makeRawData, mj_resetData
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_model_make_data(self_ptr: *mut mjCModel, m: *const mjModel, dest: *mut *mut mjData) {
+    if self_ptr.is_null() { return; }
     extern "C" { fn mjCModel_MakeData(self_ptr: *mut mjCModel, m: *const mjModel, dest: *mut *mut mjData); }
     // SAFETY: delegates to C implementation
     unsafe { mjCModel_MakeData(self_ptr, m, dest) }
@@ -1161,6 +1164,7 @@ pub fn mj_c_model_make_tree_lists(self_ptr: *mut mjCModel, body: *mut mjCBody) {
 /// Calls: mjCModel::AddKey, mjCModel::AddWarning, mjCModel::AutoSpringDamper, mjCModel::CheckEmptyNames, mjCModel::ClearCompileWarnings, mjCModel::CompileMeshesAndTextures, mjCModel::ComputeSparseSizes, mjCModel::CopyNames, mjCModel::CopyObjects, mjCModel::CopyPaths, mjCModel::CopyPlugins, mjCModel::CopyTree, mjCModel::ExpandAllKeyframes, mjCModel::FinalizeSimple, mjCModel::FuseStatic, mjCModel::IndexAssets, mjCModel::LengthRange, mjCModel::ProcessLists, mjCModel::ResolveKeyframes, mjCModel::SaveDofOffsets, mjCModel::SetNuser, mjCModel::SetSizes, mjCModel::Signature, mj_deleteData, mj_makeData, mj_makeRawData, mj_normalizeQuat, mj_resetData, mj_setConst, mj_step, mj_validateReferences, mjuu_defined
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_model_try_compile(self_ptr: *mut mjCModel, m: *mut *mut mjModel, d: *mut *mut mjData, vfs: *const mjVFS) {
+    if self_ptr.is_null() { return; }
     extern "C" { fn mjCModel_TryCompile(self_ptr: *mut mjCModel, m: *mut *mut mjModel, d: *mut *mut mjData, vfs: *const mjVFS); }
     // SAFETY: delegates to C implementation
     unsafe { mjCModel_TryCompile(self_ptr, m, d, vfs) }
@@ -1237,6 +1241,7 @@ pub fn mj_c_model_auto_spring_damper(self_ptr: *mut mjCModel, arg0: *mut mjModel
 /// Calls: NumCompilerThreads, ThreadPool::WaitCount, mj_makeData
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_model_length_range(self_ptr: *mut mjCModel, arg0: *mut mjModel, arg1: *mut mjData) {
+    if self_ptr.is_null() { return; }
     extern "C" { fn mjCModel_LengthRange(self_ptr: *mut mjCModel, arg0: *mut mjModel, arg1: *mut mjData); }
     // SAFETY: delegates to C implementation
     unsafe { mjCModel_LengthRange(self_ptr, arg0, arg1) }

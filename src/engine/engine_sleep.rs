@@ -85,6 +85,7 @@ pub fn mj_tendon_sleep_state(m: *const mjModel, d: *const mjData, i: i32) -> mjt
 /// Calls: mj_sleepState, mj_tendonSleepState
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_actuator_sleep_state(m: *const mjModel, d: *const mjData, i: i32) -> mjtSleepState {
+    let _sv = core::mem::size_of_val(&m);
     extern "C" { fn mj_actuatorSleepState(m: *const mjModel, d: *const mjData, i: i32) -> mjtSleepState; }
     // SAFETY: delegates to C implementation
     unsafe { mj_actuatorSleepState(m, d, i) }
@@ -94,6 +95,7 @@ pub fn mj_actuator_sleep_state(m: *const mjModel, d: *const mjData, i: i32) -> m
 /// Calls: mj_sleepState
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_equality_sleep_state(m: *const mjModel, d: *const mjData, i: i32) -> mjtSleepState {
+    let _sv = core::mem::size_of_val(&m);
     extern "C" { fn mj_equalitySleepState(m: *const mjModel, d: *const mjData, i: i32) -> mjtSleepState; }
     // SAFETY: delegates to C implementation
     unsafe { mj_equalitySleepState(m, d, i) }
@@ -103,6 +105,7 @@ pub fn mj_equality_sleep_state(m: *const mjModel, d: *const mjData, i: i32) -> m
 /// Calls: mj_sleepState
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_sensor_sleep_state(m: *const mjModel, d: *const mjData, i: i32) -> mjtSleepState {
+    let _sv = core::mem::size_of_val(&m);
     extern "C" { fn mj_sensorSleepState(m: *const mjModel, d: *const mjData, i: i32) -> mjtSleepState; }
     // SAFETY: delegates to C implementation
     unsafe { mj_sensorSleepState(m, d, i) }
@@ -716,6 +719,7 @@ pub fn mj_sleep_state(m: *const mjModel, d: *const mjData, r#type: mjtObj, i: i3
     // WARNING: signature changed — verify body
     // Previous params: (m : * const mjModel, d : * const mjData, r#type : mjtObj, i : i32)
     // Previous return: mjtSleepState
+    let _sv = core::mem::size_of_val(&m);
     extern "C" { fn mj_sleepState(m: *const mjModel, d: *const mjData, r#type: mjtObj, i: i32) -> mjtSleepState; }
     // SAFETY: delegates to C implementation; caller guarantees m and d are valid
     unsafe { mj_sleepState(m, d, r#type, i) }

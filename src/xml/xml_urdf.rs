@@ -69,6 +69,7 @@ pub fn mj_xurdf_add_to_tree(self_ptr: *mut mjXURDF, n: i32) {
 /// Calls: mjXURDF::Geom, mjXURDF::Origin, mjXUtil::ReadAttrTxt, mjuu_fullInertia, mjuu_mulquat, mjuu_setvec
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_xurdf_body(self_ptr: *mut mjXURDF, body_elem: *mut tinyxml2__XMLElement) {
+    if self_ptr.is_null() { return; }
     extern "C" { fn mjXURDF_Body(self_ptr: *mut mjXURDF, body_elem: *mut tinyxml2__XMLElement); }
     // SAFETY: delegates to C++ implementation; caller guarantees pointer validity
     unsafe { mjXURDF_Body(self_ptr, body_elem) }
@@ -78,6 +79,7 @@ pub fn mj_xurdf_body(self_ptr: *mut mjXURDF, body_elem: *mut tinyxml2__XMLElemen
 /// Calls: mjXURDF::Origin, mjXUtil::FindKey, mjXUtil::ReadAttrTxt, mjs_addJoint, mjuu_quat2mat, mjuu_setvec, mjuu_z2quat
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_xurdf_joint(self_ptr: *mut mjXURDF, joint_elem: *mut tinyxml2__XMLElement) {
+    if self_ptr.is_null() { return; }
     extern "C" { fn mjXURDF_Joint(self_ptr: *mut mjXURDF, joint_elem: *mut tinyxml2__XMLElement); }
     // SAFETY: delegates to C implementation
     unsafe { mjXURDF_Joint(self_ptr, joint_elem) }
@@ -87,6 +89,7 @@ pub fn mj_xurdf_joint(self_ptr: *mut mjXURDF, joint_elem: *mut tinyxml2__XMLElem
 /// Calls: mjXURDF::Origin, mjs_addGeom, mjs_setName
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_xurdf_geom(self_ptr: *mut mjXURDF, geom_elem: *mut tinyxml2__XMLElement, pbody: *mut mjsBody, collision: bool) -> *mut mjsGeom {
+    if self_ptr.is_null() { return core::ptr::null_mut(); }
     extern "C" { fn mjXURDF_Geom(self_ptr: *mut mjXURDF, geom_elem: *mut tinyxml2__XMLElement, pbody: *mut mjsBody, collision: bool) -> *mut mjsGeom; }
     // SAFETY: delegates to C implementation
     unsafe { mjXURDF_Geom(self_ptr, geom_elem, pbody, collision) }
@@ -101,6 +104,7 @@ pub fn mj_xurdf_geom(self_ptr: *mut mjXURDF, geom_elem: *mut tinyxml2__XMLElemen
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_xurdf_origin(self_ptr: *mut mjXURDF, origin_elem: *mut tinyxml2__XMLElement, pos: *mut f64, quat: *mut f64) {
+    if self_ptr.is_null() { return; }
     extern "C" { fn mjXURDF_Origin(self_ptr: *mut mjXURDF, origin_elem: *mut tinyxml2__XMLElement, pos: *mut f64, quat: *mut f64); }
     // SAFETY: delegates to C implementation
     unsafe { mjXURDF_Origin(self_ptr, origin_elem, pos, quat) }

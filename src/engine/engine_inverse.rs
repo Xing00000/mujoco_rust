@@ -25,6 +25,7 @@ pub fn mj_inverse(m: *const mjModel, d: *mut mjData) {
 /// Calls: mj_discreteAcc, mj_energyPos, mj_energyVel, mj_freeStack, mj_invConstraint, mj_invPosition, mj_invVelocity, mj_markStack, mj_mulM, mj_rne, mj_sensorAcc, mj_sensorPos, mj_sensorVel, mj_stackAllocInfo, mj_tendonBias, mju_copy
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_inverse_skip(m: *const mjModel, d: *mut mjData, skipstage: i32, skipsensor: i32) {
+    if m.is_null() { return; }
     extern "C" { fn mj_inverseSkip(m: *const mjModel, d: *mut mjData, skipstage: i32, skipsensor: i32); }
     // SAFETY: delegates to C implementation, all pointers valid per caller contract
     unsafe { mj_inverseSkip(m, d, skipstage, skipsensor) }
@@ -34,6 +35,7 @@ pub fn mj_inverse_skip(m: *const mjModel, d: *mut mjData, skipstage: i32, skipse
 /// Calls: mj_camlight, mj_collision, mj_comPos, mj_factorM, mj_flex, mj_kinematics, mj_makeConstraint, mj_makeM, mj_projectConstraint, mj_tendon, mj_transmission
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_inv_position(m: *const mjModel, d: *mut mjData) {
+    if m.is_null() { return; }
     extern "C" { fn mj_invPosition(m: *const mjModel, d: *mut mjData); }
     // SAFETY: delegates to C implementation, pointers valid per caller contract
     unsafe { mj_invPosition(m, d) }

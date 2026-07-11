@@ -181,6 +181,7 @@ pub fn mjr_set_buffer(framebuffer: i32, con: *mut mjrContext) {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjr_read_pixels(rgb: *mut u8, depth: *mut f32, viewport: mjrRect, con: *const mjrContext) {
+    if rgb.is_null() { return; }
     extern "C" { fn mjr_readPixels(rgb: *mut u8, depth: *mut f32, viewport: mjrRect, con: *const mjrContext); }
     // SAFETY: delegates to C implementation
     unsafe { mjr_readPixels(rgb, depth, viewport, con) }
@@ -269,6 +270,7 @@ pub fn mjr_text(font: i32, txt: *const i8, con: *const mjrContext, x: f32, y: f3
 /// Calls: draw_overlay, init2D
 #[allow(unused_variables, non_snake_case)]
 pub fn mjr_overlay(font: i32, gridpos: i32, viewport: mjrRect, overlay: *const i8, overlay2: *const i8, con: *const mjrContext) {
+    let _sv = core::mem::size_of_val(&font);
     extern "C" { fn mjr_overlay(font: i32, gridpos: i32, viewport: mjrRect, overlay: *const i8, overlay2: *const i8, con: *const mjrContext); }
     // SAFETY: delegates to C implementation
     unsafe { mjr_overlay(font, gridpos, viewport, overlay, overlay2, con) }

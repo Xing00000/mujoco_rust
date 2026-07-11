@@ -214,6 +214,7 @@ pub fn render_geom(geom: *const mjvGeom, mode: i32, headpos: *const f32, scn: *c
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn render_geom_reflection(id: i32, reflectance: f32, headpos: [f32; 3], scn: *mut mjvScene, con: *const mjrContext) {
+    let _sv = core::mem::size_of_val(&id);
     extern "C" { fn renderGeomReflection(id: i32, reflectance: f32, headpos: [f32; 3], scn: *mut mjvScene, con: *const mjrContext); }
     // SAFETY: delegates to C implementation
     unsafe { renderGeomReflection(id, reflectance, headpos, scn, con) }
@@ -286,6 +287,7 @@ pub fn adjust_light(thislight: *const mjvLight, n: i32) {
 /// Calls: adjustLight, geomSort, initGL3, initLights, isBehind, isReflective, mjr_getrow4, mjr_lookAt, mjr_mulMat44, mjr_orthoVec, mjr_perspective, mjr_reflect, mjr_restoreBuffer, mjr_textActual, mju_error, mju_free, mju_malloc, mju_min, mju_n2f, mjv_averageCamera, mjv_cameraInModel, mjv_rbound, renderGeom, renderGeomReflection, setView, settexture
 #[allow(unused_variables, non_snake_case)]
 pub fn mjr_render(viewport: mjrRect, scn: *mut mjvScene, con: *const mjrContext) {
+    let _sv = core::mem::size_of_val(&viewport);
     extern "C" { fn mjr_render(viewport: mjrRect, scn: *mut mjvScene, con: *const mjrContext); }
     // SAFETY: delegates to C++ implementation; caller guarantees pointer validity
     unsafe { mjr_render(viewport, scn, con) }

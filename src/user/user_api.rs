@@ -8,6 +8,7 @@ use crate::types::*;
 /// Calls: mj_defaultVFS, mj_deleteVFS, mj_parseXML, mju_closeResource, mju_decodeResource, mju_free, mju_malloc, mju_openResource
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_parse(filename: *const i8, content_type: *const i8, vfs: *const mjVFS, error: *mut i8, error_sz: i32) -> *mut mjSpec {
+    if filename.is_null() { return core::ptr::null_mut(); }
     extern "C" { fn mj_parse(filename: *const i8, content_type: *const i8, vfs: *const mjVFS, error: *mut i8, error_sz: i32) -> *mut mjSpec; }
     // SAFETY: delegates to C implementation
     unsafe { mj_parse(filename, content_type, vfs, error, error_sz) }
@@ -300,6 +301,7 @@ pub fn mj_make_spec() -> *mut mjSpec {
 /// Calls: LogCompileTime, mjCModel::Compile
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_compile(s: *mut mjSpec, vfs: *const mjVFS) -> *mut mjModel {
+    if s.is_null() { return core::ptr::null_mut(); }
     extern "C" { fn mj_compile(s: *mut mjSpec, vfs: *const mjVFS) -> *mut mjModel; }
     // SAFETY: delegates to C++ implementation; caller guarantees pointer validity
     unsafe { mj_compile(s, vfs) }
@@ -309,6 +311,7 @@ pub fn mj_compile(s: *mut mjSpec, vfs: *const mjVFS) -> *mut mjModel {
 /// Calls: mjCModel::Compile, mjCModel::MakeData, mjCModel::SetError, mj_deleteData
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_recompile(s: *mut mjSpec, vfs: *const mjVFS, m: *mut mjModel, d: *mut mjData) -> i32 {
+    if s.is_null() { return 0; }
     extern "C" { fn mj_recompile(s: *mut mjSpec, vfs: *const mjVFS, m: *mut mjModel, d: *mut mjData) -> i32; }
     // SAFETY: delegates to C++ implementation; caller guarantees pointer validity
     unsafe { mj_recompile(s, vfs, m, d) }
@@ -390,6 +393,7 @@ pub fn mjs_set_deep_copy(s: *mut mjSpec, deepcopy: i32) -> i32 {
 /// Calls: mjCModel::CopyBack
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_copy_back(s: *mut mjSpec, m: *const mjModel) -> i32 {
+    if s.is_null() { return 0; }
     extern "C" { fn mj_copyBack(s: *mut mjSpec, m: *const mjModel) -> i32; }
     // SAFETY: delegates to C implementation
     unsafe { mj_copyBack(s, m) }
@@ -399,6 +403,7 @@ pub fn mj_copy_back(s: *mut mjSpec, m: *const mjModel) -> i32 {
 /// Calls: SetFrame, mjCModel::SetAttachWarningBoundary, mjCModel::SetError, mjs_addFrame, mjs_getParent, mju_error
 #[allow(unused_variables, non_snake_case)]
 pub fn mjs_attach(parent: *mut mjsElement, child: *const mjsElement, prefix: *const i8, suffix: *const i8) -> *mut mjsElement {
+    if parent.is_null() { return core::ptr::null_mut(); }
     extern "C" { fn mjs_attach(parent: *mut mjsElement, child: *const mjsElement, prefix: *const i8, suffix: *const i8) -> *mut mjsElement; }
     // SAFETY: delegates to C++ implementation; caller guarantees pointer validity
     unsafe { mjs_attach(parent, child, prefix, suffix) }
@@ -532,6 +537,7 @@ pub fn mjs_add_flex(s: *mut mjSpec) -> *mut mjsFlex {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjs_make_flex(body: *mut mjsBody, name: *const i8, r#type: *const i8, dim: i32, dof: *const i8, count: [i32; 3], cellcount: [i32; 3], spacing: [f64; 3], scale: [f64; 3], radius: f64, mass: f64, inertiabox: f64, equality: i32, rigid: i32, flatskin: i32, elastic2d: i32, pos: [f64; 3], quat: [f64; 4], origin: [f64; 3], file: *const i8, vfs: *const mjVFS) -> *mut mjsFlex {
+    if body.is_null() { return core::ptr::null_mut(); }
     extern "C" { fn mjs_makeFlex(body: *mut mjsBody, name: *const i8, r#type: *const i8, dim: i32, dof: *const i8, count: [i32; 3], cellcount: [i32; 3], spacing: [f64; 3], scale: [f64; 3], radius: f64, mass: f64, inertiabox: f64, equality: i32, rigid: i32, flatskin: i32, elastic2d: i32, pos: [f64; 3], quat: [f64; 4], origin: [f64; 3], file: *const i8, vfs: *const mjVFS) -> *mut mjsFlex; }
     // SAFETY: delegates to C++ implementation; caller guarantees pointer validity
     unsafe { mjs_makeFlex(body, name, r#type, dim, dof, count, cellcount, spacing, scale, radius, mass, inertiabox, equality, rigid, flatskin, elastic2d, pos, quat, origin, file, vfs) }
@@ -866,6 +872,7 @@ pub fn mjs_add_material(s: *mut mjSpec, def: *const mjsDefault) -> *mut mjsMater
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjs_make_mesh(mesh: *mut mjsMesh, builtin: mjtMeshBuiltin, params: *mut f64, nparams: i32) -> i32 {
+    if mesh.is_null() { return 0; }
     extern "C" { fn mjs_makeMesh(mesh: *mut mjsMesh, builtin: mjtMeshBuiltin, params: *mut f64, nparams: i32) -> i32; }
     // SAFETY: delegates to C implementation
     unsafe { mjs_makeMesh(mesh, builtin, params, nparams) }
@@ -906,6 +913,7 @@ pub fn mjs_find_spec(spec: *const mjSpec, name: *const i8) -> *mut mjSpec {
 /// Calls: mjs_findElement
 #[allow(unused_variables, non_snake_case)]
 pub fn mjs_find_body(s: *const mjSpec, name: *const i8) -> *mut mjsBody {
+    if s.is_null() { return core::ptr::null_mut(); }
     extern "C" { fn mjs_findBody(s: *const mjSpec, name: *const i8) -> *mut mjsBody; }
     // SAFETY: delegates to C implementation
     unsafe { mjs_findBody(s, name) }
@@ -952,6 +960,7 @@ pub fn mjs_get_frame(element: *const mjsElement) -> *mut mjsFrame {
 /// Calls: mjs_findElement
 #[allow(unused_variables, non_snake_case)]
 pub fn mjs_find_frame(s: *const mjSpec, name: *const i8) -> *mut mjsFrame {
+    if s.is_null() { return core::ptr::null_mut(); }
     extern "C" { fn mjs_findFrame(s: *const mjSpec, name: *const i8) -> *mut mjsFrame; }
     // SAFETY: delegates to C implementation
     unsafe { mjs_findFrame(s, name) }
@@ -1487,6 +1496,7 @@ pub fn mj_get_cache_capacity(cache: *const mjCache) -> usize {
 /// Calls: mjCCache::Capacity, mjCCache::SetCapacity
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_set_cache_capacity(cache: *mut mjCache, size: usize) -> usize {
+    if cache.is_null() { return 0; }
     extern "C" { fn mj_setCacheCapacity(cache: *mut mjCache, size: usize) -> usize; }
     // SAFETY: delegates to C implementation
     unsafe { mj_setCacheCapacity(cache, size) }

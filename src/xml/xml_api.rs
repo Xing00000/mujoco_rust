@@ -56,6 +56,7 @@ pub fn mj_print_schema(filename: *const i8, buffer: *mut i8, buffer_sz: i32, flg
 /// Calls: mj_loadModelBuffer, mju_closeResource, mju_readResource
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_load_model(filename: *const i8, vfs: *const mjVFS) -> *mut mjModel {
+    if filename.is_null() { return core::ptr::null_mut(); }
     extern "C" { fn mj_loadModel(filename: *const i8, vfs: *const mjVFS) -> *mut mjModel; }
     // SAFETY: delegates to C implementation
     unsafe { mj_loadModel(filename, vfs) }
@@ -65,6 +66,7 @@ pub fn mj_load_model(filename: *const i8, vfs: *const mjVFS) -> *mut mjModel {
 /// Calls: ParseXML
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_parse_xml(filename: *const i8, vfs: *const mjVFS, error: *mut i8, error_sz: i32) -> *mut mjSpec {
+    if filename.is_null() { return core::ptr::null_mut(); }
     extern "C" { fn mj_parseXML(filename: *const i8, vfs: *const mjVFS, error: *mut i8, error_sz: i32) -> *mut mjSpec; }
     // SAFETY: delegates to C implementation
     unsafe { mj_parseXML(filename, vfs, error, error_sz) }

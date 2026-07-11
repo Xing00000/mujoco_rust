@@ -65,6 +65,7 @@ pub fn strip_error(err: *const i8) -> *const i8 {
 /// Calls: FirstChildElement, NextSiblingElement, mjXReader::Actuator, mjXReader::Asset, mjXReader::Body, mjXReader::Contact, mjXReader::Custom, mjXReader::Default, mjXReader::Deformable, mjXReader::Equality, mjXReader::Extension, mjXReader::Keyframe, mjXReader::Sensor, mjXReader::Statistic, mjXReader::Tendon, mjXReader::Visual, mjXUtil::ReadAttrTxt
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_x_reader_parse(self_ptr: *mut mjXReader, root: *mut tinyxml2__XMLElement, vfs: *const mjVFS) {
+    if self_ptr.is_null() { return; }
     extern "C" { fn mjXReader_Parse(self_ptr: *mut mjXReader, root: *mut tinyxml2__XMLElement, vfs: *const mjVFS); }
     // SAFETY: delegates to C++ implementation; caller guarantees pointer validity
     unsafe { mjXReader_Parse(self_ptr, root, vfs) }
@@ -219,6 +220,7 @@ pub fn mj_x_reader_asset(self_ptr: *mut mjXReader, section: *mut tinyxml2__XMLEl
 /// Calls: FirstChildElement, NextSiblingElement, mjXBase::ReadAlternative, mjXReader::GetClass, mjXReader::OneCamera, mjXReader::OneComposite, mjXReader::OneFlexcomp, mjXReader::OneGeom, mjXReader::OneJoint, mjXReader::OneLight, mjXReader::OnePlugin, mjXReader::OneSite, mjXUtil::MapValue, mjXUtil::ReadAttrInt, mjXUtil::ReadAttrTxt, mjXUtil::ReadQuat, mjs_addBody, mjs_addCamera, mjs_addFrame, mjs_addFreeJoint, mjs_addGeom, mjs_addJoint, mjs_addLight, mjs_addSite, mjs_defaultOrientation, mjs_getDefault, mjs_getId, mjs_setDefault, mjs_setFrame, mjuu_frameaccum, mjuu_setvec
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_x_reader_body(self_ptr: *mut mjXReader, section: *mut tinyxml2__XMLElement, pbody: *mut mjsBody, pframe: *mut mjsFrame, vfs: *const mjVFS) {
+    if self_ptr.is_null() { return; }
     extern "C" { fn mjXReader_Body(self_ptr: *mut mjXReader, section: *mut tinyxml2__XMLElement, pbody: *mut mjsBody, pframe: *mut mjsFrame, vfs: *const mjVFS); }
     // SAFETY: delegates to C++ implementation; caller guarantees pointer validity
     unsafe { mjXReader_Body(self_ptr, section, pbody, pframe, vfs) }
@@ -438,6 +440,7 @@ pub fn mj_x_reader_one_composite(self_ptr: *mut mjXReader, elem: *mut tinyxml2__
 /// Calls: FirstChildElement, NextSiblingElement, mjCFlexcomp::Make, mjXBase::ReadAlternative, mjXReader::OnePlugin, mjXUtil::MapValue, mjXUtil::ReadAttrInt, mjXUtil::ReadAttrTxt
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_x_reader_one_flexcomp(self_ptr: *mut mjXReader, elem: *mut tinyxml2__XMLElement, pbody: *mut mjsBody, vfs: *const mjVFS) {
+    if self_ptr.is_null() { return; }
     extern "C" { fn mjXReader_OneFlexcomp(self_ptr: *mut mjXReader, elem: *mut tinyxml2__XMLElement, pbody: *mut mjsBody, vfs: *const mjVFS); }
     // SAFETY: delegates to C++ implementation; caller guarantees pointer validity
     unsafe { mjXReader_OneFlexcomp(self_ptr, elem, pbody, vfs) }

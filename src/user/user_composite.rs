@@ -38,6 +38,7 @@ pub fn mj_c_composite_add_default_joint(self_ptr: *mut mjCComposite, error: *mut
 /// Calls: comperr, mjCComposite::MakeCable
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_composite_make(self_ptr: *mut mjCComposite, spec: *mut mjSpec, body: *mut mjsBody, error: *mut i8, error_sz: i32) -> bool {
+    if self_ptr.is_null() { return false; }
     extern "C" { fn mjCComposite_Make(self_ptr: *mut mjCComposite, spec: *mut mjSpec, body: *mut mjsBody, error: *mut i8, error_sz: i32) -> bool; }
     // SAFETY: delegates to C++ implementation; caller guarantees pointer validity
     unsafe { mjCComposite_Make(self_ptr, spec, body, error, error_sz) }
@@ -47,6 +48,7 @@ pub fn mj_c_composite_make(self_ptr: *mut mjCComposite, spec: *mut mjSpec, body:
 /// Calls: comperr, mjCComposite::AddCableBody, mjs_addText, mju_error, mjuu_rotVecQuat, mjuu_setvec
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_composite_make_cable(self_ptr: *mut mjCComposite, model: *mut mjCModel, body: *mut mjsBody, error: *mut i8, error_sz: i32) -> bool {
+    if self_ptr.is_null() { return false; }
     extern "C" { fn mjCComposite_MakeCable(self_ptr: *mut mjCComposite, model: *mut mjCModel, body: *mut mjsBody, error: *mut i8, error_sz: i32) -> bool; }
     // SAFETY: delegates to C++ implementation; caller guarantees pointer validity
     unsafe { mjCComposite_MakeCable(self_ptr, model, body, error, error_sz) }
@@ -61,6 +63,7 @@ pub fn mj_c_composite_make_cable(self_ptr: *mut mjCComposite, model: *mut mjCMod
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_composite_make_skin2(self_ptr: *mut mjCComposite, model: *mut mjCModel, inflate: f64) {
+    if self_ptr.is_null() { return; }
     extern "C" { fn mjCComposite_MakeSkin2(self_ptr: *mut mjCComposite, model: *mut mjCModel, inflate: f64); }
     // SAFETY: delegates to C implementation
     unsafe { mjCComposite_MakeSkin2(self_ptr, model, inflate) }
@@ -75,6 +78,7 @@ pub fn mj_c_composite_make_skin2(self_ptr: *mut mjCComposite, model: *mut mjCMod
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_composite_make_skin2subgrid(self_ptr: *mut mjCComposite, model: *mut mjCModel, inflate: f64) {
+    if self_ptr.is_null() { return; }
     extern "C" { fn mjCComposite_MakeSkin2Subgrid(self_ptr: *mut mjCComposite, model: *mut mjCModel, inflate: f64); }
     // SAFETY: delegates to C implementation
     unsafe { mjCComposite_MakeSkin2Subgrid(self_ptr, model, inflate) }
@@ -107,6 +111,7 @@ pub fn mj_c_composite_make_cable_bones_subgrid(self_ptr: *mut mjCComposite, mode
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_composite_add_cable_body(self_ptr: *mut mjCComposite, model: *mut mjCModel, body: *mut mjsBody, ix: i32, normal: [f64; 3], prev_quat: [f64; 4]) -> *mut mjsBody {
+    if self_ptr.is_null() { return core::ptr::null_mut(); }
     extern "C" { fn mjCComposite_AddCableBody(self_ptr: *mut mjCComposite, model: *mut mjCModel, body: *mut mjsBody, ix: i32, normal: [f64; 3], prev_quat: [f64; 4]) -> *mut mjsBody; }
     // SAFETY: delegates to C implementation
     unsafe { mjCComposite_AddCableBody(self_ptr, model, body, ix, normal, prev_quat) }

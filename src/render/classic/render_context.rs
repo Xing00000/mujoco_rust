@@ -18,6 +18,7 @@ pub fn list_allocate(base: *mut GLuint, range: *mut GLsizei, newrange: GLsizei) 
 /// Calls: listAllocate, mju_max
 #[allow(unused_variables, non_snake_case)]
 pub fn make_plane(m: *const mjModel, con: *mut mjrContext) {
+    if m.is_null() { return; }
     extern "C" { fn makePlane(m: *const mjModel, con: *mut mjrContext); }
     // SAFETY: delegates to C implementation
     unsafe { makePlane(m, con) }
@@ -27,6 +28,7 @@ pub fn make_plane(m: *const mjModel, con: *mut mjrContext) {
 /// Calls: listAllocate, mjr_uploadMesh
 #[allow(unused_variables, non_snake_case)]
 pub fn make_mesh(m: *const mjModel, con: *mut mjrContext) {
+    if m.is_null() { return; }
     extern "C" { fn makeMesh(m: *const mjModel, con: *mut mjrContext); }
     // SAFETY: delegates to C implementation
     unsafe { makeMesh(m, con) }
@@ -36,6 +38,7 @@ pub fn make_mesh(m: *const mjModel, con: *mut mjrContext) {
 /// Calls: listAllocate, mjr_uploadHField
 #[allow(unused_variables, non_snake_case)]
 pub fn make_h_field(m: *const mjModel, con: *mut mjrContext) {
+    if m.is_null() { return; }
     extern "C" { fn makeHField(m: *const mjModel, con: *mut mjrContext); }
     // SAFETY: delegates to C implementation
     unsafe { makeHField(m, con) }
@@ -180,6 +183,7 @@ pub fn haze(nSlice: i32, r: f32, rgba: *const f32) {
 /// Calls: cone, cylinder, disk, halfSphere, haze, listAllocate, sphere
 #[allow(unused_variables, non_snake_case)]
 pub fn make_builtin(m: *const mjModel, con: *mut mjrContext) {
+    if m.is_null() { return; }
     extern "C" { fn makeBuiltin(m: *const mjModel, con: *mut mjrContext); }
     // SAFETY: delegates to C implementation
     unsafe { makeBuiltin(m, con) }
@@ -225,6 +229,7 @@ pub fn make_material(m: *const mjModel, con: *mut mjrContext) {
 /// Calls: mjr_uploadTexture, mju_error
 #[allow(unused_variables, non_snake_case)]
 pub fn make_texture(m: *const mjModel, con: *mut mjrContext) {
+    if m.is_null() { return; }
     extern "C" { fn makeTexture(m: *const mjModel, con: *mut mjrContext); }
     // SAFETY: delegates to C implementation
     unsafe { makeTexture(m, con) }
@@ -257,6 +262,7 @@ pub fn gl_debug_enabled() -> i32 {
 /// Calls: glDebugEnabled, makeBuiltin, makeFont, makeHField, makeMaterial, makeMesh, makeOff, makePlane, makeShadow, makeSkin, makeTexture, mjGladLoadGL, mjr_freeContext, mjr_setBuffer, mju_error, mju_round, mju_warning
 #[allow(unused_variables, non_snake_case)]
 pub fn mjr_make_context_off_size(m: *const mjModel, con: *mut mjrContext, fontscale: i32, default_offwidth: i32, default_offheight: i32) {
+    if m.is_null() { return; }
     extern "C" { fn mjr_makeContext_offSize(m: *const mjModel, con: *mut mjrContext, fontscale: i32, default_offwidth: i32, default_offheight: i32); }
     // SAFETY: delegates to C++ implementation; caller guarantees pointer validity
     unsafe { mjr_makeContext_offSize(m, con, fontscale, default_offwidth, default_offheight) }
@@ -282,6 +288,7 @@ pub fn mjr_default_context(con: *mut mjrContext) {
 /// Calls: mjr_makeContext_offSize
 #[allow(unused_variables, non_snake_case)]
 pub fn mjr_make_context(m: *const mjModel, con: *mut mjrContext, fontscale: i32) {
+    if m.is_null() { return; }
     extern "C" { fn mjr_makeContext(m: *const mjModel, con: *mut mjrContext, fontscale: i32); }
     // SAFETY: delegates to C++ implementation; caller guarantees pointer validity
     unsafe { mjr_makeContext(m, con, fontscale) }
@@ -291,6 +298,7 @@ pub fn mjr_make_context(m: *const mjModel, con: *mut mjrContext, fontscale: i32)
 /// Calls: makeFont
 #[allow(unused_variables, non_snake_case)]
 pub fn mjr_change_font(fontscale: i32, con: *mut mjrContext) {
+    let _sv = core::mem::size_of_val(&fontscale);
     extern "C" { fn mjr_changeFont(fontscale: i32, con: *mut mjrContext); }
     // SAFETY: delegates to C implementation
     unsafe { mjr_changeFont(fontscale, con) }
@@ -310,6 +318,7 @@ pub fn mjr_add_aux(index: i32, width: i32, height: i32, samples: i32, con: *mut 
 /// Calls: mjr_defaultContext, mju_free
 #[allow(unused_variables, non_snake_case)]
 pub fn mjr_free_context(con: *mut mjrContext) {
+    if con.is_null() { return; }
     extern "C" { fn mjr_freeContext(con: *mut mjrContext); }
     // SAFETY: delegates to C implementation
     unsafe { mjr_freeContext(con) }
@@ -319,6 +328,7 @@ pub fn mjr_free_context(con: *mut mjrContext) {
 /// Calls: makeOff
 #[allow(unused_variables, non_snake_case)]
 pub fn mjr_resize_offscreen(offwidth: i32, offheight: i32, con: *mut mjrContext) {
+    let _sv = core::mem::size_of_val(&offwidth);
     extern "C" { fn mjr_resizeOffscreen(offwidth: i32, offheight: i32, con: *mut mjrContext); }
     // SAFETY: delegates to C implementation
     unsafe { mjr_resizeOffscreen(offwidth, offheight, con) }
