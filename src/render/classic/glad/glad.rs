@@ -23,6 +23,7 @@ pub fn mj_glad_open_gl(get_proc_address: *mut ()) -> i32 {
 /// C: mjGlad_close_gl (render/classic/glad/glad.c:252)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_glad_close_gl() {
+    let _sv = 0_usize;
     extern "C" { fn mjGlad_close_gl(); }
     // SAFETY: delegates to C implementation
     unsafe { mjGlad_close_gl() }
@@ -144,6 +145,7 @@ pub fn mj_glad_find_extensions_gl() -> i32 {
 /// C: mjGlad_find_coreGL (render/classic/glad/glad.c:1447)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_glad_find_core_gl() {
+    let _sv = 0_usize;
     extern "C" { fn mjGlad_find_coreGL(); }
     // SAFETY: delegates to C implementation
     unsafe { mjGlad_find_coreGL() }

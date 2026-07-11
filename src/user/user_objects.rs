@@ -357,6 +357,7 @@ pub fn mj_c_texture_load_custom(self_ptr: *mut mjCTexture, resource: *mut mjReso
 /// C: mjCTexture::FlipIfNeeded (user/user_objects.cc:5304)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_texture_flip_if_needed(self_ptr: *mut mjCTexture, image: *mut i32, w: u32, h: u32) {
+    if self_ptr.is_null() { return; }
     extern "C" { fn mjCTexture_FlipIfNeeded(self_ptr: *mut mjCTexture, image: *mut i32, w: u32, h: u32); }
     // SAFETY: delegates to C implementation
     unsafe { mjCTexture_FlipIfNeeded(self_ptr, image, w, h) }
@@ -3406,6 +3407,7 @@ pub fn mj_c_texture_copy_from_spec(self_ptr: *mut mjCTexture) {
 /// C: mjCTexture::PointToLocal (user/user_objects.h:1466)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_texture_point_to_local(self_ptr: *mut mjCTexture) {
+    if self_ptr.is_null() { return; }
     extern "C" { fn mjCTexture_PointToLocal(self_ptr: *mut mjCTexture); }
     // SAFETY: delegates to C implementation
     unsafe { mjCTexture_PointToLocal(self_ptr) }
@@ -3414,6 +3416,7 @@ pub fn mj_c_texture_point_to_local(self_ptr: *mut mjCTexture) {
 /// C: mjCTexture::NameSpace (user/user_objects.h:1467)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_texture_name_space(self_ptr: *mut mjCTexture, m: *const mjCModel) {
+    if self_ptr.is_null() { return; }
     extern "C" { fn mjCTexture_NameSpace(self_ptr: *mut mjCTexture, m: *const mjCModel); }
     // SAFETY: delegates to C implementation
     unsafe { mjCTexture_NameSpace(self_ptr, m) }
@@ -3432,6 +3435,7 @@ pub fn mj_c_texture_compile(self_ptr: *mut mjCTexture, vfs: *const mjVFS) {
 /// C: mjCTexture::File (user/user_objects.h:1471)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_texture_file(self_ptr: *mut mjCTexture) -> i32 {
+    if self_ptr.is_null() { return 0; }
     extern "C" { fn mjCTexture_File(self_ptr: *mut mjCTexture) -> i32; }
     // SAFETY: delegates to C implementation
     unsafe { mjCTexture_File(self_ptr) }
@@ -3440,6 +3444,7 @@ pub fn mj_c_texture_file(self_ptr: *mut mjCTexture) -> i32 {
 /// C: mjCTexture::get_content_type (user/user_objects.h:1472)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_texture_get_content_type(self_ptr: *mut mjCTexture) -> i32 {
+    if self_ptr.is_null() { return 0; }
     extern "C" { fn mjCTexture_get_content_type(self_ptr: *mut mjCTexture) -> i32; }
     // SAFETY: delegates to C implementation
     unsafe { mjCTexture_get_content_type(self_ptr) }
@@ -3448,6 +3453,7 @@ pub fn mj_c_texture_get_content_type(self_ptr: *mut mjCTexture) -> i32 {
 /// C: mjCTexture::get_cubefiles (user/user_objects.h:1473)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_texture_get_cubefiles(self_ptr: *mut mjCTexture) -> i32 {
+    if self_ptr.is_null() { return 0; }
     extern "C" { fn mjCTexture_get_cubefiles(self_ptr: *mut mjCTexture) -> i32; }
     // SAFETY: delegates to C implementation
     unsafe { mjCTexture_get_cubefiles(self_ptr) }
@@ -3456,6 +3462,10 @@ pub fn mj_c_texture_get_cubefiles(self_ptr: *mut mjCTexture) -> i32 {
 /// C: mjCTexture::GetCacheId (user/user_objects.h:1477)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_texture_get_cache_id(self_ptr: *mut mjCTexture, resource: *const mjResource, asset_type: *const std__string) -> std__string {
+    if self_ptr.is_null() {
+        // SAFETY: std__string is a ZST; transmuting unit to ZST is sound
+        return unsafe { core::mem::transmute(()) };
+    }
     extern "C" { fn mjCTexture_GetCacheId(self_ptr: *mut mjCTexture, resource: *const mjResource, asset_type: *const std__string) -> std__string; }
     // SAFETY: delegates to C implementation
     unsafe { mjCTexture_GetCacheId(self_ptr, resource, asset_type) }
@@ -3486,6 +3496,7 @@ pub fn mj_c_texture_builtin_cube(self_ptr: *mut mjCTexture) {
 /// C: mjCTexture::Load2D (user/user_objects.h:1480)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_texture_load2d(self_ptr: *mut mjCTexture, filename: string, vfs: *const mjVFS) {
+    if self_ptr.is_null() { return; }
     extern "C" { fn mjCTexture_Load2D(self_ptr: *mut mjCTexture, filename: string, vfs: *const mjVFS); }
     // SAFETY: delegates to C implementation
     unsafe { mjCTexture_Load2D(self_ptr, filename, vfs) }
@@ -3494,6 +3505,7 @@ pub fn mj_c_texture_load2d(self_ptr: *mut mjCTexture, filename: string, vfs: *co
 /// C: mjCTexture::LoadCubeSingle (user/user_objects.h:1481)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_texture_load_cube_single(self_ptr: *mut mjCTexture, filename: string, vfs: *const mjVFS) {
+    if self_ptr.is_null() { return; }
     extern "C" { fn mjCTexture_LoadCubeSingle(self_ptr: *mut mjCTexture, filename: string, vfs: *const mjVFS); }
     // SAFETY: delegates to C implementation
     unsafe { mjCTexture_LoadCubeSingle(self_ptr, filename, vfs) }
@@ -3756,6 +3768,7 @@ pub fn mj_c_equality_compile(self_ptr: *mut mjCEquality) {
 /// C: mjCTendon::set_material (user/user_objects.h:1697)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_tendon_set_material(self_ptr: *mut mjCTendon, _material: i32) {
+    if self_ptr.is_null() { return; }
     extern "C" { fn mjCTendon_set_material(self_ptr: *mut mjCTendon, _material: i32); }
     // SAFETY: delegates to C implementation
     unsafe { mjCTendon_set_material(self_ptr, _material) }
@@ -3764,6 +3777,7 @@ pub fn mj_c_tendon_set_material(self_ptr: *mut mjCTendon, _material: i32) {
 /// C: mjCTendon::get_material (user/user_objects.h:1698)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_tendon_get_material(self_ptr: *mut mjCTendon) -> *const i32 {
+    if self_ptr.is_null() { return core::ptr::null(); }
     extern "C" { fn mjCTendon_get_material(self_ptr: *mut mjCTendon) -> *const i32; }
     // SAFETY: delegates to C implementation
     unsafe { mjCTendon_get_material(self_ptr) }
@@ -3772,6 +3786,7 @@ pub fn mj_c_tendon_get_material(self_ptr: *mut mjCTendon) -> *const i32 {
 /// C: mjCTendon::del_material (user/user_objects.h:1699)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_tendon_del_material(self_ptr: *mut mjCTendon) {
+    if self_ptr.is_null() { return; }
     extern "C" { fn mjCTendon_del_material(self_ptr: *mut mjCTendon); }
     // SAFETY: delegates to C implementation
     unsafe { mjCTendon_del_material(self_ptr) }
@@ -3780,6 +3795,7 @@ pub fn mj_c_tendon_del_material(self_ptr: *mut mjCTendon) {
 /// C: mjCTendon::WrapSite (user/user_objects.h:1702)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_tendon_wrap_site(self_ptr: *mut mjCTendon, wrapname: string, wrapinfo: string_view) {
+    if self_ptr.is_null() { return; }
     extern "C" { fn mjCTendon_WrapSite(self_ptr: *mut mjCTendon, wrapname: string, wrapinfo: string_view); }
     // SAFETY: delegates to C implementation
     unsafe { mjCTendon_WrapSite(self_ptr, wrapname, wrapinfo) }
@@ -3788,6 +3804,7 @@ pub fn mj_c_tendon_wrap_site(self_ptr: *mut mjCTendon, wrapname: string, wrapinf
 /// C: mjCTendon::WrapGeom (user/user_objects.h:1703)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_tendon_wrap_geom(self_ptr: *mut mjCTendon, wrapname: string, side: string, wrapinfo: string_view) {
+    if self_ptr.is_null() { return; }
     extern "C" { fn mjCTendon_WrapGeom(self_ptr: *mut mjCTendon, wrapname: string, side: string, wrapinfo: string_view); }
     // SAFETY: delegates to C implementation
     unsafe { mjCTendon_WrapGeom(self_ptr, wrapname, side, wrapinfo) }
@@ -3801,6 +3818,7 @@ pub fn mj_c_tendon_wrap_geom(self_ptr: *mut mjCTendon, wrapname: string, side: s
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_tendon_wrap_joint(self_ptr: *mut mjCTendon, wrapname: string, coef: f64, wrapinfo: string_view) {
+    if self_ptr.is_null() { return; }
     extern "C" { fn mjCTendon_WrapJoint(self_ptr: *mut mjCTendon, wrapname: string, coef: f64, wrapinfo: string_view); }
     // SAFETY: delegates to C implementation
     unsafe { mjCTendon_WrapJoint(self_ptr, wrapname, coef, wrapinfo) }
@@ -3847,6 +3865,7 @@ pub fn mj_c_tendon_get_wrap(self_ptr: *mut mjCTendon, i: i32) -> *const mjCWrap 
 /// C: mjCTendon::get_userdata (user/user_objects.h:1713)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_tendon_get_userdata(self_ptr: *mut mjCTendon) -> *const i32 {
+    if self_ptr.is_null() { return core::ptr::null(); }
     extern "C" { fn mjCTendon_get_userdata(self_ptr: *mut mjCTendon) -> *const i32; }
     // SAFETY: delegates to C implementation
     unsafe { mjCTendon_get_userdata(self_ptr) }
@@ -3876,6 +3895,7 @@ pub fn mj_c_tendon_copy_from_spec(self_ptr: *mut mjCTendon) {
 /// C: mjCTendon::PointToLocal (user/user_objects.h:1717)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_tendon_point_to_local(self_ptr: *mut mjCTendon) {
+    if self_ptr.is_null() { return; }
     extern "C" { fn mjCTendon_PointToLocal(self_ptr: *mut mjCTendon); }
     // SAFETY: delegates to C implementation
     unsafe { mjCTendon_PointToLocal(self_ptr) }
@@ -3884,6 +3904,7 @@ pub fn mj_c_tendon_point_to_local(self_ptr: *mut mjCTendon) {
 /// C: mjCTendon::ResolveReferences (user/user_objects.h:1718)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_tendon_resolve_references(self_ptr: *mut mjCTendon, m: *const mjCModel) {
+    if self_ptr.is_null() { return; }
     extern "C" { fn mjCTendon_ResolveReferences(self_ptr: *mut mjCTendon, m: *const mjCModel); }
     // SAFETY: delegates to C implementation
     unsafe { mjCTendon_ResolveReferences(self_ptr, m) }
@@ -3901,6 +3922,7 @@ pub fn mj_c_tendon_name_space(self_ptr: *mut mjCTendon, m: *const mjCModel) {
 /// C: mjCTendon::SetModel (user/user_objects.h:1720)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_tendon_set_model(self_ptr: *mut mjCTendon, _model: *mut mjCModel) {
+    if self_ptr.is_null() { return; }
     extern "C" { fn mjCTendon_SetModel(self_ptr: *mut mjCTendon, _model: *mut mjCModel); }
     // SAFETY: delegates to C implementation
     unsafe { mjCTendon_SetModel(self_ptr, _model) }
@@ -3936,6 +3958,7 @@ pub fn mj_c_tendon_compile(self_ptr: *mut mjCTendon) {
 /// C: mjCWrap::CopyFromSpec (user/user_objects.h:1749)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_wrap_copy_from_spec(self_ptr: *mut mjCWrap) {
+    if self_ptr.is_null() { return; }
     extern "C" { fn mjCWrap_CopyFromSpec(self_ptr: *mut mjCWrap); }
     // SAFETY: delegates to C implementation
     unsafe { mjCWrap_CopyFromSpec(self_ptr) }
@@ -3944,6 +3967,7 @@ pub fn mj_c_wrap_copy_from_spec(self_ptr: *mut mjCWrap) {
 /// C: mjCWrap::PointToLocal (user/user_objects.h:1750)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_wrap_point_to_local(self_ptr: *mut mjCWrap) {
+    if self_ptr.is_null() { return; }
     extern "C" { fn mjCWrap_PointToLocal(self_ptr: *mut mjCWrap); }
     // SAFETY: delegates to C implementation
     unsafe { mjCWrap_PointToLocal(self_ptr) }
@@ -3952,6 +3976,7 @@ pub fn mj_c_wrap_point_to_local(self_ptr: *mut mjCWrap) {
 /// C: mjCWrap::ResolveReferences (user/user_objects.h:1751)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_wrap_resolve_references(self_ptr: *mut mjCWrap, m: *const mjCModel) {
+    if self_ptr.is_null() { return; }
     extern "C" { fn mjCWrap_ResolveReferences(self_ptr: *mut mjCWrap, m: *const mjCModel); }
     // SAFETY: delegates to C implementation
     unsafe { mjCWrap_ResolveReferences(self_ptr, m) }
@@ -3960,6 +3985,7 @@ pub fn mj_c_wrap_resolve_references(self_ptr: *mut mjCWrap, m: *const mjCModel) 
 /// C: mjCWrap::NameSpace (user/user_objects.h:1752)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_wrap_name_space(self_ptr: *mut mjCWrap, m: *const mjCModel) {
+    if self_ptr.is_null() { return; }
     extern "C" { fn mjCWrap_NameSpace(self_ptr: *mut mjCWrap, m: *const mjCModel); }
     // SAFETY: delegates to C implementation
     unsafe { mjCWrap_NameSpace(self_ptr, m) }
@@ -4242,6 +4268,7 @@ pub fn mj_c_numeric_compile(self_ptr: *mut mjCNumeric) {
 /// C: mjCText::PointToLocal (user/user_objects.h:1975)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_text_point_to_local(self_ptr: *mut mjCText) {
+    if self_ptr.is_null() { return; }
     extern "C" { fn mjCText_PointToLocal(self_ptr: *mut mjCText); }
     // SAFETY: delegates to C implementation
     unsafe { mjCText_PointToLocal(self_ptr) }
@@ -4250,6 +4277,7 @@ pub fn mj_c_text_point_to_local(self_ptr: *mut mjCText) {
 /// C: mjCText::CopyFromSpec (user/user_objects.h:1976)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_text_copy_from_spec(self_ptr: *mut mjCText) {
+    if self_ptr.is_null() { return; }
     extern "C" { fn mjCText_CopyFromSpec(self_ptr: *mut mjCText); }
     // SAFETY: delegates to C implementation
     unsafe { mjCText_CopyFromSpec(self_ptr) }
@@ -4267,6 +4295,7 @@ pub fn mj_c_text_compile(self_ptr: *mut mjCText) {
 /// C: mjCTuple::PointToLocal (user/user_objects.h:2011)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_tuple_point_to_local(self_ptr: *mut mjCTuple) {
+    if self_ptr.is_null() { return; }
     extern "C" { fn mjCTuple_PointToLocal(self_ptr: *mut mjCTuple); }
     // SAFETY: delegates to C implementation
     unsafe { mjCTuple_PointToLocal(self_ptr) }
@@ -4275,6 +4304,7 @@ pub fn mj_c_tuple_point_to_local(self_ptr: *mut mjCTuple) {
 /// C: mjCTuple::CopyFromSpec (user/user_objects.h:2012)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_tuple_copy_from_spec(self_ptr: *mut mjCTuple) {
+    if self_ptr.is_null() { return; }
     extern "C" { fn mjCTuple_CopyFromSpec(self_ptr: *mut mjCTuple); }
     // SAFETY: delegates to C implementation
     unsafe { mjCTuple_CopyFromSpec(self_ptr) }
@@ -4292,6 +4322,7 @@ pub fn mj_c_tuple_resolve_references(self_ptr: *mut mjCTuple, m: *const mjCModel
 /// C: mjCTuple::NameSpace (user/user_objects.h:2014)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_tuple_name_space(self_ptr: *mut mjCTuple, m: *const mjCModel) {
+    if self_ptr.is_null() { return; }
     extern "C" { fn mjCTuple_NameSpace(self_ptr: *mut mjCTuple, m: *const mjCModel); }
     // SAFETY: delegates to C implementation
     unsafe { mjCTuple_NameSpace(self_ptr, m) }
