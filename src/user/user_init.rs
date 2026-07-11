@@ -128,8 +128,9 @@ pub fn mjs_default_skin(skin: *mut mjsSkin) {
 /// C: mjs_defaultTexture (user/user_init.c:265)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjs_default_texture(texture: *mut mjsTexture) {
+    if texture.is_null() { return; }
     extern "C" { fn mjs_defaultTexture(texture: *mut mjsTexture); }
-    // SAFETY: delegates to C implementation
+    // SAFETY: texture verified non-null; C sets struct defaults
     unsafe { mjs_defaultTexture(texture) }
 }
 
@@ -199,16 +200,18 @@ pub fn mjs_default_numeric(numeric: *mut mjsNumeric) {
 /// C: mjs_defaultText (user/user_init.c:370)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjs_default_text(text: *mut mjsText) {
+    if text.is_null() { return; }
     extern "C" { fn mjs_defaultText(text: *mut mjsText); }
-    // SAFETY: delegates to C implementation
+    // SAFETY: text verified non-null; C sets struct defaults
     unsafe { mjs_defaultText(text) }
 }
 
 /// C: mjs_defaultTuple (user/user_init.c:376)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjs_default_tuple(tuple: *mut mjsTuple) {
+    if tuple.is_null() { return; }
     extern "C" { fn mjs_defaultTuple(tuple: *mut mjsTuple); }
-    // SAFETY: delegates to C implementation
+    // SAFETY: tuple verified non-null; C sets struct defaults
     unsafe { mjs_defaultTuple(tuple) }
 }
 

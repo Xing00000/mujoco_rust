@@ -91,24 +91,27 @@ pub fn attach_frame_to_site(parent: *mut mjCSite, child: *const mjCFrame, prefix
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjs_get_timer(s: *mut mjSpec) -> *const f64 {
+    if s.is_null() { return core::ptr::null(); }
     extern "C" { fn mjs_getTimer(s: *mut mjSpec) -> *const f64; }
-    // SAFETY: delegates to C implementation
+    // SAFETY: s verified non-null; C returns pointer to internal timer array
     unsafe { mjs_getTimer(s) }
 }
 
 /// C: mjs_numWarnings (user/user_api.cc:535)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjs_num_warnings(spec: *const mjSpec) -> i32 {
+    if spec.is_null() { return 0; }
     extern "C" { fn mjs_numWarnings(spec: *const mjSpec) -> i32; }
-    // SAFETY: delegates to C implementation
+    // SAFETY: spec verified non-null; C returns warning count
     unsafe { mjs_numWarnings(spec) }
 }
 
 /// C: mjs_getWarning (user/user_api.cc:544)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjs_get_warning(spec: *const mjSpec, index: i32) -> *const i8 {
+    if spec.is_null() { return core::ptr::null(); }
     extern "C" { fn mjs_getWarning(spec: *const mjSpec, index: i32) -> *const i8; }
-    // SAFETY: delegates to C implementation
+    // SAFETY: spec verified non-null; C returns pointer to warning string
     unsafe { mjs_getWarning(spec, index) }
 }
 
@@ -146,16 +149,18 @@ pub fn mjs_get_compiler(element: *const mjsElement) -> *mut mjsCompiler {
 /// C: mjs_setBuffer (user/user_api.cc:2230)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjs_set_buffer(dest: *mut i32, array: *const (), size: i32) {
+    if dest.is_null() { return; }
     extern "C" { fn mjs_setBuffer(dest: *mut i32, array: *const (), size: i32); }
-    // SAFETY: delegates to C++ implementation; caller guarantees pointer validity
+    // SAFETY: dest verified non-null; C++ copies buffer into internal vector
     unsafe { mjs_setBuffer(dest, array, size) }
 }
 
 /// C: mjs_setString (user/user_api.cc:2240)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjs_set_string(dest: *mut i32, text: *const i8) {
+    if dest.is_null() { return; }
     extern "C" { fn mjs_setString(dest: *mut i32, text: *const i8); }
-    // SAFETY: delegates to C implementation
+    // SAFETY: dest verified non-null; C++ assigns string to internal field
     unsafe { mjs_setString(dest, text) }
 }
 
@@ -171,8 +176,9 @@ pub fn mjs_set_in_string_vec(dest: *mut i32, i: i32, text: *const i8) -> mjtBool
 /// C: mjs_setStringVec (user/user_api.cc:2260)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjs_set_string_vec(dest: *mut i32, text: *const i8) {
+    if dest.is_null() { return; }
     extern "C" { fn mjs_setStringVec(dest: *mut i32, text: *const i8); }
-    // SAFETY: delegates to C implementation
+    // SAFETY: dest verified non-null; C++ sets string vector from text
     unsafe { mjs_setStringVec(dest, text) }
 }
 
@@ -188,8 +194,9 @@ pub fn mjs_append_string(dest: *mut i32, text: *const i8) {
 /// C: mjs_setInt (user/user_api.cc:2274)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjs_set_int(dest: *mut i32, array: *const i32, size: i32) {
+    if dest.is_null() { return; }
     extern "C" { fn mjs_setInt(dest: *mut i32, array: *const i32, size: i32); }
-    // SAFETY: delegates to C implementation
+    // SAFETY: dest verified non-null; C++ assigns int array to internal vector
     unsafe { mjs_setInt(dest, array, size) }
 }
 
@@ -210,8 +217,9 @@ pub fn mjs_append_int_vec(dest: *mut i32, array: *const i32, size: i32) {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjs_set_float(dest: *mut i32, array: *const f32, size: i32) {
+    if dest.is_null() { return; }
     extern "C" { fn mjs_setFloat(dest: *mut i32, array: *const f32, size: i32); }
-    // SAFETY: delegates to C implementation
+    // SAFETY: dest verified non-null; C++ assigns float array to internal vector
     unsafe { mjs_setFloat(dest, array, size) }
 }
 
@@ -237,24 +245,27 @@ pub fn mjs_append_float_vec(dest: *mut i32, array: *const f32, size: i32) {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjs_set_double(dest: *mut i32, array: *const f64, size: i32) {
+    if dest.is_null() { return; }
     extern "C" { fn mjs_setDouble(dest: *mut i32, array: *const f64, size: i32); }
-    // SAFETY: delegates to C implementation
+    // SAFETY: dest verified non-null; C++ assigns double array to internal vector
     unsafe { mjs_setDouble(dest, array, size) }
 }
 
 /// C: mjs_getName (user/user_api.cc:2319)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjs_get_name(element: *mut mjsElement) -> *mut i32 {
+    if element.is_null() { return core::ptr::null_mut(); }
     extern "C" { fn mjs_getName(element: *mut mjsElement) -> *mut i32; }
-    // SAFETY: delegates to C implementation
+    // SAFETY: element verified non-null; C++ returns pointer to name field
     unsafe { mjs_getName(element) }
 }
 
 /// C: mjs_getString (user/user_api.cc:2329)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjs_get_string(source: *const i32) -> *const i8 {
+    if source.is_null() { return core::ptr::null(); }
     extern "C" { fn mjs_getString(source: *const i32) -> *const i8; }
-    // SAFETY: delegates to C implementation
+    // SAFETY: source verified non-null; C++ returns c_str() of internal string
     unsafe { mjs_getString(source) }
 }
 
@@ -266,8 +277,9 @@ pub fn mjs_get_string(source: *const i32) -> *const i8 {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjs_get_double(source: *const i32, size: *mut i32) -> *const f64 {
+    if source.is_null() { return core::ptr::null(); }
     extern "C" { fn mjs_getDouble(source: *const i32, size: *mut i32) -> *const f64; }
-    // SAFETY: delegates to C implementation
+    // SAFETY: source verified non-null; C++ returns pointer to internal double array
     unsafe { mjs_getDouble(source, size) }
 }
 
@@ -541,16 +553,18 @@ pub fn mjs_add_tendon(s: *mut mjSpec, def: *const mjsDefault) -> *mut mjsTendon 
 /// C: mjs_wrapSite (user/user_api.h:142)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjs_wrap_site(tendon: *mut mjsTendon, name: *const i8) -> *mut mjsWrap {
+    if tendon.is_null() { return core::ptr::null_mut(); }
     extern "C" { fn mjs_wrapSite(tendon: *mut mjsTendon, name: *const i8) -> *mut mjsWrap; }
-    // SAFETY: delegates to C implementation
+    // SAFETY: tendon verified non-null; C++ creates wrap site on tendon
     unsafe { mjs_wrapSite(tendon, name) }
 }
 
 /// C: mjs_wrapGeom (user/user_api.h:145)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjs_wrap_geom(tendon: *mut mjsTendon, name: *const i8, sidesite: *const i8) -> *mut mjsWrap {
+    if tendon.is_null() { return core::ptr::null_mut(); }
     extern "C" { fn mjs_wrapGeom(tendon: *mut mjsTendon, name: *const i8, sidesite: *const i8) -> *mut mjsWrap; }
-    // SAFETY: delegates to C implementation
+    // SAFETY: tendon verified non-null; C++ creates wrap geom on tendon
     unsafe { mjs_wrapGeom(tendon, name, sidesite) }
 }
 
@@ -562,8 +576,9 @@ pub fn mjs_wrap_geom(tendon: *mut mjsTendon, name: *const i8, sidesite: *const i
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjs_wrap_joint(tendon: *mut mjsTendon, name: *const i8, coef: f64) -> *mut mjsWrap {
+    if tendon.is_null() { return core::ptr::null_mut(); }
     extern "C" { fn mjs_wrapJoint(tendon: *mut mjsTendon, name: *const i8, coef: f64) -> *mut mjsWrap; }
-    // SAFETY: delegates to C implementation
+    // SAFETY: tendon verified non-null; C++ creates wrap joint on tendon
     unsafe { mjs_wrapJoint(tendon, name, coef) }
 }
 
@@ -820,8 +835,9 @@ pub fn mjs_make_mesh(mesh: *mut mjsMesh, builtin: mjtMeshBuiltin, params: *mut f
 /// C: mjs_getSpec (user/user_api.h:233)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjs_get_spec(element: *const mjsElement) -> *mut mjSpec {
+    if element.is_null() { return core::ptr::null_mut(); }
     extern "C" { fn mjs_getSpec(element: *const mjsElement) -> *mut mjSpec; }
-    // SAFETY: delegates to C implementation
+    // SAFETY: element verified non-null; C++ returns owning spec
     unsafe { mjs_getSpec(element) }
 }
 
@@ -838,8 +854,9 @@ pub fn mjs_get_origin_spec(element: *const mjsElement) -> *mut mjSpec {
 /// C: mjs_findSpec (user/user_api.h:240)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjs_find_spec(spec: *const mjSpec, name: *const i8) -> *mut mjSpec {
+    if spec.is_null() { return core::ptr::null_mut(); }
     extern "C" { fn mjs_findSpec(spec: *const mjSpec, name: *const i8) -> *mut mjSpec; }
-    // SAFETY: delegates to C implementation
+    // SAFETY: spec verified non-null; C++ searches attached specs by name
     unsafe { mjs_findSpec(spec, name) }
 }
 
@@ -864,8 +881,9 @@ pub fn mjs_find_element(s: *const mjSpec, r#type: mjtObj, name: *const i8) -> *m
 /// C: mjs_findChild (user/user_api.h:249)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjs_find_child(body: *const mjsBody, name: *const i8) -> *mut mjsBody {
+    if body.is_null() { return core::ptr::null_mut(); }
     extern "C" { fn mjs_findChild(body: *const mjsBody, name: *const i8) -> *mut mjsBody; }
-    // SAFETY: delegates to C implementation
+    // SAFETY: body verified non-null; C++ searches children by name
     unsafe { mjs_findChild(body, name) }
 }
 
@@ -908,8 +926,9 @@ pub fn mjs_get_default(element: *const mjsElement) -> *mut mjsDefault {
 /// C: mjs_findDefault (user/user_api.h:264)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjs_find_default(s: *const mjSpec, classname: *const i8) -> *mut mjsDefault {
+    if s.is_null() { return core::ptr::null_mut(); }
     extern "C" { fn mjs_findDefault(s: *const mjSpec, classname: *const i8) -> *mut mjsDefault; }
-    // SAFETY: delegates to C implementation
+    // SAFETY: s verified non-null; C++ searches defaults by classname
     unsafe { mjs_findDefault(s, classname) }
 }
 
@@ -1254,8 +1273,9 @@ pub fn mjs_set_name(element: *mut mjsElement, name: *const i8) -> i32 {
 /// C: mjs_setPluginAttributes (user/user_api.h:409)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjs_set_plugin_attributes(plugin: *mut mjsPlugin, attributes: *mut ()) {
+    if plugin.is_null() { return; }
     extern "C" { fn mjs_setPluginAttributes(plugin: *mut mjsPlugin, attributes: *mut ()); }
-    // SAFETY: delegates to C++ implementation; caller guarantees pointer validity
+    // SAFETY: plugin verified non-null; C++ sets plugin attributes map
     unsafe { mjs_setPluginAttributes(plugin, attributes) }
 }
 
@@ -1280,24 +1300,27 @@ pub fn mjs_get_wrap(tendonspec: *const mjsTendon, i: i32) -> *mut mjsWrap {
 /// C: mjs_getPluginAttributes (user/user_api.h:429)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjs_get_plugin_attributes(plugin: *const mjsPlugin) -> *const () {
+    if plugin.is_null() { return core::ptr::null(); }
     extern "C" { fn mjs_getPluginAttributes(plugin: *const mjsPlugin) -> *const (); }
-    // SAFETY: delegates to C implementation
+    // SAFETY: plugin verified non-null; C++ returns pointer to attributes map
     unsafe { mjs_getPluginAttributes(plugin) }
 }
 
 /// C: mjs_isAuthored (user/user_api.h:435)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjs_is_authored(elem_ptr: *const (), field_ptr: *const ()) -> i32 {
+    if elem_ptr.is_null() { return 0; }
     extern "C" { fn mjs_isAuthored(elem_ptr: *const (), field_ptr: *const ()) -> i32; }
-    // SAFETY: delegates to C++ implementation; caller guarantees pointer validity
+    // SAFETY: elem_ptr verified non-null; C++ checks if field was authored
     unsafe { mjs_isAuthored(elem_ptr, field_ptr) }
 }
 
 /// C: mjs_setAuthored (user/user_api.h:438)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjs_set_authored(elem_ptr: *const (), field_ptr: *const (), authored: i32) {
+    if elem_ptr.is_null() { return; }
     extern "C" { fn mjs_setAuthored(elem_ptr: *const (), field_ptr: *const (), authored: i32); }
-    // SAFETY: delegates to C++ implementation; caller guarantees pointer validity
+    // SAFETY: elem_ptr verified non-null; C++ sets authored flag on field
     unsafe { mjs_setAuthored(elem_ptr, field_ptr, authored) }
 }
 
@@ -1357,24 +1380,27 @@ pub fn mjs_set_user_value(element: *mut mjsElement, key: *const i8, data: *const
 /// C: mjs_setUserValueWithCleanup (user/user_api.h:457)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjs_set_user_value_with_cleanup(element: *mut mjsElement, key: *const i8, data: *const (), cleanup: Option<unsafe extern "C" fn()>) {
+    if element.is_null() { return; }
     extern "C" { fn mjs_setUserValueWithCleanup(element: *mut mjsElement, key: *const i8, data: *const (), cleanup: Option<unsafe extern "C" fn()>); }
-    // SAFETY: delegates to C++ implementation; caller guarantees pointer validity
+    // SAFETY: element verified non-null; C++ stores user value with cleanup callback
     unsafe { mjs_setUserValueWithCleanup(element, key, data, cleanup) }
 }
 
 /// C: mjs_getUserValue (user/user_api.h:462)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjs_get_user_value(element: *mut mjsElement, key: *const i8) -> *const () {
+    if element.is_null() { return core::ptr::null(); }
     extern "C" { fn mjs_getUserValue(element: *mut mjsElement, key: *const i8) -> *const (); }
-    // SAFETY: delegates to C implementation
+    // SAFETY: element verified non-null; C++ returns stored user value pointer
     unsafe { mjs_getUserValue(element, key) }
 }
 
 /// C: mjs_deleteUserValue (user/user_api.h:465)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjs_delete_user_value(element: *mut mjsElement, key: *const i8) {
+    if element.is_null() { return; }
     extern "C" { fn mjs_deleteUserValue(element: *mut mjsElement, key: *const i8); }
-    // SAFETY: delegates to C implementation
+    // SAFETY: element verified non-null; C++ removes user value by key
     unsafe { mjs_deleteUserValue(element, key) }
 }
 
@@ -1382,8 +1408,9 @@ pub fn mjs_delete_user_value(element: *mut mjsElement, key: *const i8) {
 /// Calls: mju_condataSize, mju_raydataSize
 #[allow(unused_variables, non_snake_case)]
 pub fn mjs_sensor_dim(sensor: *const mjsSensor) -> i32 {
+    if sensor.is_null() { return 0; }
     extern "C" { fn mjs_sensorDim(sensor: *const mjsSensor) -> i32; }
-    // SAFETY: delegates to C implementation
+    // SAFETY: sensor verified non-null; C++ computes dimension from sensor type
     unsafe { mjs_sensorDim(sensor) }
 }
 
