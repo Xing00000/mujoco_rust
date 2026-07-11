@@ -106,8 +106,9 @@ pub fn islimited(limited: i32, range: [f64; 2]) -> bool {
 /// Calls: mjuu_rotVecQuat
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_bounding_volume_hierarchy_make(self_ptr: *mut mjCBoundingVolumeHierarchy, elements: *mut i32) {
+    if self_ptr.is_null() { return; }
     extern "C" { fn mjCBoundingVolumeHierarchy_Make(self_ptr: *mut mjCBoundingVolumeHierarchy, elements: *mut i32); }
-    // SAFETY: delegates to C implementation
+    // SAFETY: self_ptr verified non-null
     unsafe { mjCBoundingVolumeHierarchy_Make(self_ptr, elements) }
 }
 
@@ -115,8 +116,9 @@ pub fn mj_c_bounding_volume_hierarchy_make(self_ptr: *mut mjCBoundingVolumeHiera
 /// Calls: mjuu_rotVecQuat
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_bounding_volume_hierarchy_make_bvh(self_ptr: *mut mjCBoundingVolumeHierarchy, elements_begin: i32, elements_end: i32, lev: i32, model: *mut mjCModel, owner: *const mjCBase) -> i32 {
+    if self_ptr.is_null() { return 0; }
     extern "C" { fn mjCBoundingVolumeHierarchy_MakeBVH(self_ptr: *mut mjCBoundingVolumeHierarchy, elements_begin: i32, elements_end: i32, lev: i32, model: *mut mjCModel, owner: *const mjCBase) -> i32; }
-    // SAFETY: delegates to C implementation
+    // SAFETY: self_ptr verified non-null
     unsafe { mjCBoundingVolumeHierarchy_MakeBVH(self_ptr, elements_begin, elements_end, lev, model, owner) }
 }
 
@@ -404,16 +406,18 @@ pub fn resolve_orientation(quat: *mut f64, degree: bool, sequence: *const i8, or
 /// C: mjCBoundingVolume::Contype (user/user_objects.h:122)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_bounding_volume_contype(self_ptr: *mut mjCBoundingVolume) -> i32 {
+    if self_ptr.is_null() { return 0; }
     extern "C" { fn mjCBoundingVolume_Contype(self_ptr: *mut mjCBoundingVolume) -> i32; }
-    // SAFETY: delegates to C implementation
+    // SAFETY: self_ptr verified non-null
     unsafe { mjCBoundingVolume_Contype(self_ptr) }
 }
 
 /// C: mjCBoundingVolume::Conaffinity (user/user_objects.h:123)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_bounding_volume_conaffinity(self_ptr: *mut mjCBoundingVolume) -> i32 {
+    if self_ptr.is_null() { return 0; }
     extern "C" { fn mjCBoundingVolume_Conaffinity(self_ptr: *mut mjCBoundingVolume) -> i32; }
-    // SAFETY: delegates to C implementation
+    // SAFETY: self_ptr verified non-null
     unsafe { mjCBoundingVolume_Conaffinity(self_ptr) }
 }
 
@@ -425,8 +429,9 @@ pub fn mj_c_bounding_volume_conaffinity(self_ptr: *mut mjCBoundingVolume) -> i32
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_bounding_volume_aabb(self_ptr: *mut mjCBoundingVolume) -> *const f64 {
+    if self_ptr.is_null() { return core::ptr::null(); }
     extern "C" { fn mjCBoundingVolume_AABB(self_ptr: *mut mjCBoundingVolume) -> *const f64; }
-    // SAFETY: delegates to C implementation
+    // SAFETY: self_ptr verified non-null
     unsafe { mjCBoundingVolume_AABB(self_ptr) }
 }
 
@@ -438,8 +443,9 @@ pub fn mj_c_bounding_volume_aabb(self_ptr: *mut mjCBoundingVolume) -> *const f64
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_bounding_volume_pos(self_ptr: *mut mjCBoundingVolume) -> *const f64 {
+    if self_ptr.is_null() { return core::ptr::null(); }
     extern "C" { fn mjCBoundingVolume_Pos(self_ptr: *mut mjCBoundingVolume) -> *const f64; }
-    // SAFETY: delegates to C implementation
+    // SAFETY: self_ptr verified non-null
     unsafe { mjCBoundingVolume_Pos(self_ptr) }
 }
 
@@ -451,32 +457,36 @@ pub fn mj_c_bounding_volume_pos(self_ptr: *mut mjCBoundingVolume) -> *const f64 
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_bounding_volume_quat(self_ptr: *mut mjCBoundingVolume) -> *const f64 {
+    if self_ptr.is_null() { return core::ptr::null(); }
     extern "C" { fn mjCBoundingVolume_Quat(self_ptr: *mut mjCBoundingVolume) -> *const f64; }
-    // SAFETY: delegates to C implementation
+    // SAFETY: self_ptr verified non-null
     unsafe { mjCBoundingVolume_Quat(self_ptr) }
 }
 
 /// C: mjCBoundingVolume::Id (user/user_objects.h:129)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_bounding_volume_id(self_ptr: *mut mjCBoundingVolume) -> *const i32 {
+    if self_ptr.is_null() { return core::ptr::null(); }
     extern "C" { fn mjCBoundingVolume_Id(self_ptr: *mut mjCBoundingVolume) -> *const i32; }
-    // SAFETY: delegates to C implementation
+    // SAFETY: self_ptr verified non-null
     unsafe { mjCBoundingVolume_Id(self_ptr) }
 }
 
 /// C: mjCBoundingVolume::SetContype (user/user_objects.h:131)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_bounding_volume_set_contype(self_ptr: *mut mjCBoundingVolume, val: i32) {
+    if self_ptr.is_null() { return; }
     extern "C" { fn mjCBoundingVolume_SetContype(self_ptr: *mut mjCBoundingVolume, val: i32); }
-    // SAFETY: delegates to C implementation
+    // SAFETY: self_ptr verified non-null
     unsafe { mjCBoundingVolume_SetContype(self_ptr, val) }
 }
 
 /// C: mjCBoundingVolume::SetConaffinity (user/user_objects.h:132)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_bounding_volume_set_conaffinity(self_ptr: *mut mjCBoundingVolume, val: i32) {
+    if self_ptr.is_null() { return; }
     extern "C" { fn mjCBoundingVolume_SetConaffinity(self_ptr: *mut mjCBoundingVolume, val: i32); }
-    // SAFETY: delegates to C implementation
+    // SAFETY: self_ptr verified non-null
     unsafe { mjCBoundingVolume_SetConaffinity(self_ptr, val) }
 }
 
@@ -488,8 +498,9 @@ pub fn mj_c_bounding_volume_set_conaffinity(self_ptr: *mut mjCBoundingVolume, va
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_bounding_volume_set_aabb(self_ptr: *mut mjCBoundingVolume, aabb: *const f64) {
+    if self_ptr.is_null() { return; }
     extern "C" { fn mjCBoundingVolume_SetAABB(self_ptr: *mut mjCBoundingVolume, aabb: *const f64); }
-    // SAFETY: delegates to C implementation
+    // SAFETY: self_ptr verified non-null
     unsafe { mjCBoundingVolume_SetAABB(self_ptr, aabb) }
 }
 
@@ -501,8 +512,9 @@ pub fn mj_c_bounding_volume_set_aabb(self_ptr: *mut mjCBoundingVolume, aabb: *co
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_bounding_volume_set_pos(self_ptr: *mut mjCBoundingVolume, pos: *const f64) {
+    if self_ptr.is_null() { return; }
     extern "C" { fn mjCBoundingVolume_SetPos(self_ptr: *mut mjCBoundingVolume, pos: *const f64); }
-    // SAFETY: delegates to C implementation
+    // SAFETY: self_ptr verified non-null
     unsafe { mjCBoundingVolume_SetPos(self_ptr, pos) }
 }
 
@@ -514,24 +526,27 @@ pub fn mj_c_bounding_volume_set_pos(self_ptr: *mut mjCBoundingVolume, pos: *cons
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_bounding_volume_set_quat(self_ptr: *mut mjCBoundingVolume, quat: *const f64) {
+    if self_ptr.is_null() { return; }
     extern "C" { fn mjCBoundingVolume_SetQuat(self_ptr: *mut mjCBoundingVolume, quat: *const f64); }
-    // SAFETY: delegates to C implementation
+    // SAFETY: self_ptr verified non-null
     unsafe { mjCBoundingVolume_SetQuat(self_ptr, quat) }
 }
 
 /// C: mjCBoundingVolume::SetId (user/user_objects.h:139)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_bounding_volume_set_id(self_ptr: *mut mjCBoundingVolume, id: *const i32) {
+    if self_ptr.is_null() { return; }
     extern "C" { fn mjCBoundingVolume_SetId(self_ptr: *mut mjCBoundingVolume, id: *const i32); }
-    // SAFETY: delegates to C implementation
+    // SAFETY: self_ptr verified non-null
     unsafe { mjCBoundingVolume_SetId(self_ptr, id) }
 }
 
 /// C: mjCBoundingVolumeHierarchy::CreateBVH (user/user_objects.h:174)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_bounding_volume_hierarchy_create_bvh(self_ptr: *mut mjCBoundingVolumeHierarchy, model: *mut mjCModel, owner: *const mjCBase) {
+    if self_ptr.is_null() { return; }
     extern "C" { fn mjCBoundingVolumeHierarchy_CreateBVH(self_ptr: *mut mjCBoundingVolumeHierarchy, model: *mut mjCModel, owner: *const mjCBase); }
-    // SAFETY: delegates to C implementation
+    // SAFETY: self_ptr verified non-null
     unsafe { mjCBoundingVolumeHierarchy_CreateBVH(self_ptr, model, owner) }
 }
 
@@ -543,24 +558,27 @@ pub fn mj_c_bounding_volume_hierarchy_create_bvh(self_ptr: *mut mjCBoundingVolum
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_bounding_volume_hierarchy_set(self_ptr: *mut mjCBoundingVolumeHierarchy, ipos_element: [f64; 3], iquat_element: [f64; 4]) {
+    if self_ptr.is_null() { return; }
     extern "C" { fn mjCBoundingVolumeHierarchy_Set(self_ptr: *mut mjCBoundingVolumeHierarchy, ipos_element: [f64; 3], iquat_element: [f64; 4]); }
-    // SAFETY: delegates to C implementation
+    // SAFETY: self_ptr verified non-null
     unsafe { mjCBoundingVolumeHierarchy_Set(self_ptr, ipos_element, iquat_element) }
 }
 
 /// C: mjCBoundingVolumeHierarchy::AllocateBoundingVolumes (user/user_objects.h:176)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_bounding_volume_hierarchy_allocate_bounding_volumes(self_ptr: *mut mjCBoundingVolumeHierarchy, nleaf: i32) {
+    if self_ptr.is_null() { return; }
     extern "C" { fn mjCBoundingVolumeHierarchy_AllocateBoundingVolumes(self_ptr: *mut mjCBoundingVolumeHierarchy, nleaf: i32); }
-    // SAFETY: delegates to C implementation
+    // SAFETY: self_ptr verified non-null
     unsafe { mjCBoundingVolumeHierarchy_AllocateBoundingVolumes(self_ptr, nleaf) }
 }
 
 /// C: mjCBoundingVolumeHierarchy::RemoveInactiveVolumes (user/user_objects.h:177)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_bounding_volume_hierarchy_remove_inactive_volumes(self_ptr: *mut mjCBoundingVolumeHierarchy, nmax: i32) {
+    if self_ptr.is_null() { return; }
     extern "C" { fn mjCBoundingVolumeHierarchy_RemoveInactiveVolumes(self_ptr: *mut mjCBoundingVolumeHierarchy, nmax: i32); }
-    // SAFETY: delegates to C implementation
+    // SAFETY: self_ptr verified non-null
     unsafe { mjCBoundingVolumeHierarchy_RemoveInactiveVolumes(self_ptr, nmax) }
 }
 
@@ -572,64 +590,72 @@ pub fn mj_c_bounding_volume_hierarchy_remove_inactive_volumes(self_ptr: *mut mjC
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_bounding_volume_hierarchy_add_bounding_volume(self_ptr: *mut mjCBoundingVolumeHierarchy, id: i32, contype: i32, conaffinity: i32, pos: [f64; 3], quat: [f64; 4], aabb: [f64; 6]) -> *const mjCBoundingVolume {
+    if self_ptr.is_null() { return core::ptr::null(); }
     extern "C" { fn mjCBoundingVolumeHierarchy_AddBoundingVolume(self_ptr: *mut mjCBoundingVolumeHierarchy, id: i32, contype: i32, conaffinity: i32, pos: [f64; 3], quat: [f64; 4], aabb: [f64; 6]) -> *const mjCBoundingVolume; }
-    // SAFETY: delegates to C implementation
+    // SAFETY: self_ptr verified non-null
     unsafe { mjCBoundingVolumeHierarchy_AddBoundingVolume(self_ptr, id, contype, conaffinity, pos, quat, aabb) }
 }
 
 /// C: mjCBoundingVolumeHierarchy::Nbvh (user/user_objects.h:186)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_bounding_volume_hierarchy_nbvh(self_ptr: *mut mjCBoundingVolumeHierarchy) -> i32 {
+    if self_ptr.is_null() { return 0; }
     extern "C" { fn mjCBoundingVolumeHierarchy_Nbvh(self_ptr: *mut mjCBoundingVolumeHierarchy) -> i32; }
-    // SAFETY: delegates to C implementation
+    // SAFETY: self_ptr verified non-null
     unsafe { mjCBoundingVolumeHierarchy_Nbvh(self_ptr) }
 }
 
 /// C: mjCBoundingVolumeHierarchy::Bvh (user/user_objects.h:187)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_bounding_volume_hierarchy_bvh(self_ptr: *mut mjCBoundingVolumeHierarchy) -> *const i32 {
+    if self_ptr.is_null() { return core::ptr::null(); }
     extern "C" { fn mjCBoundingVolumeHierarchy_Bvh(self_ptr: *mut mjCBoundingVolumeHierarchy) -> *const i32; }
-    // SAFETY: delegates to C implementation
+    // SAFETY: self_ptr verified non-null
     unsafe { mjCBoundingVolumeHierarchy_Bvh(self_ptr) }
 }
 
 /// C: mjCBoundingVolumeHierarchy::Child (user/user_objects.h:188)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_bounding_volume_hierarchy_child(self_ptr: *mut mjCBoundingVolumeHierarchy) -> *const i32 {
+    if self_ptr.is_null() { return core::ptr::null(); }
     extern "C" { fn mjCBoundingVolumeHierarchy_Child(self_ptr: *mut mjCBoundingVolumeHierarchy) -> *const i32; }
-    // SAFETY: delegates to C implementation
+    // SAFETY: self_ptr verified non-null
     unsafe { mjCBoundingVolumeHierarchy_Child(self_ptr) }
 }
 
 /// C: mjCBoundingVolumeHierarchy::Nodeid (user/user_objects.h:189)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_bounding_volume_hierarchy_nodeid(self_ptr: *mut mjCBoundingVolumeHierarchy) -> *const i32 {
+    if self_ptr.is_null() { return core::ptr::null(); }
     extern "C" { fn mjCBoundingVolumeHierarchy_Nodeid(self_ptr: *mut mjCBoundingVolumeHierarchy) -> *const i32; }
-    // SAFETY: delegates to C implementation
+    // SAFETY: self_ptr verified non-null
     unsafe { mjCBoundingVolumeHierarchy_Nodeid(self_ptr) }
 }
 
 /// C: mjCBoundingVolumeHierarchy::Nodeidptr (user/user_objects.h:191)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_bounding_volume_hierarchy_nodeidptr(self_ptr: *mut mjCBoundingVolumeHierarchy, id: i32) -> *const i32 {
+    if self_ptr.is_null() { return core::ptr::null(); }
     extern "C" { fn mjCBoundingVolumeHierarchy_Nodeidptr(self_ptr: *mut mjCBoundingVolumeHierarchy, id: i32) -> *const i32; }
-    // SAFETY: delegates to C implementation
+    // SAFETY: self_ptr verified non-null
     unsafe { mjCBoundingVolumeHierarchy_Nodeidptr(self_ptr, id) }
 }
 
 /// C: mjCBoundingVolumeHierarchy::Level (user/user_objects.h:192)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_bounding_volume_hierarchy_level(self_ptr: *mut mjCBoundingVolumeHierarchy) -> *const i32 {
+    if self_ptr.is_null() { return core::ptr::null(); }
     extern "C" { fn mjCBoundingVolumeHierarchy_Level(self_ptr: *mut mjCBoundingVolumeHierarchy) -> *const i32; }
-    // SAFETY: delegates to C implementation
+    // SAFETY: self_ptr verified non-null
     unsafe { mjCBoundingVolumeHierarchy_Level(self_ptr) }
 }
 
 /// C: mjCBoundingVolumeHierarchy::Size (user/user_objects.h:193)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_bounding_volume_hierarchy_size(self_ptr: *mut mjCBoundingVolumeHierarchy) -> i32 {
+    if self_ptr.is_null() { return 0; }
     extern "C" { fn mjCBoundingVolumeHierarchy_Size(self_ptr: *mut mjCBoundingVolumeHierarchy) -> i32; }
-    // SAFETY: delegates to C implementation
+    // SAFETY: self_ptr verified non-null
     unsafe { mjCBoundingVolumeHierarchy_Size(self_ptr) }
 }
 
@@ -641,8 +667,9 @@ pub fn mj_c_bounding_volume_hierarchy_size(self_ptr: *mut mjCBoundingVolumeHiera
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_bounding_volume_hierarchy_query_signed_distance(self_ptr: *mut mjCBoundingVolumeHierarchy, point: *const f64, vert: *const f64, face: *const i32) -> f64 {
+    if self_ptr.is_null() { return 0.0; }
     extern "C" { fn mjCBoundingVolumeHierarchy_QuerySignedDistance(self_ptr: *mut mjCBoundingVolumeHierarchy, point: *const f64, vert: *const f64, face: *const i32) -> f64; }
-    // SAFETY: delegates to C implementation
+    // SAFETY: self_ptr verified non-null
     unsafe { mjCBoundingVolumeHierarchy_QuerySignedDistance(self_ptr, point, vert, face) }
 }
 
@@ -3462,16 +3489,18 @@ pub fn mj_c_body_pair_name_space(self_ptr: *mut mjCBodyPair, m: *const mjCModel)
 /// C: mjCBodyPair::get_bodyname1 (user/user_objects.h:1618)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_body_pair_get_bodyname1(self_ptr: *mut mjCBodyPair) -> i32 {
+    if self_ptr.is_null() { return 0; }
     extern "C" { fn mjCBodyPair_get_bodyname1(self_ptr: *mut mjCBodyPair) -> i32; }
-    // SAFETY: delegates to C implementation
+    // SAFETY: self_ptr verified non-null
     unsafe { mjCBodyPair_get_bodyname1(self_ptr) }
 }
 
 /// C: mjCBodyPair::get_bodyname2 (user/user_objects.h:1619)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_body_pair_get_bodyname2(self_ptr: *mut mjCBodyPair) -> i32 {
+    if self_ptr.is_null() { return 0; }
     extern "C" { fn mjCBodyPair_get_bodyname2(self_ptr: *mut mjCBodyPair) -> i32; }
-    // SAFETY: delegates to C implementation
+    // SAFETY: self_ptr verified non-null
     unsafe { mjCBodyPair_get_bodyname2(self_ptr) }
 }
 
