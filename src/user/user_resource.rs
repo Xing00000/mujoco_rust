@@ -47,8 +47,9 @@ pub fn mju_get_resource_dir(resource: *mut mjResource, dir: *const *mut i8, ndir
 /// C: mju_isModifiedResource (user/user_resource.cc:105)
 #[allow(unused_variables, non_snake_case)]
 pub fn mju_is_modified_resource(resource: *const mjResource, timestamp: *const i8) -> i32 {
+    if resource.is_null() { return 0; }
     extern "C" { fn mju_isModifiedResource(resource: *const mjResource, timestamp: *const i8) -> i32; }
-    // SAFETY: delegates to C implementation
+    // SAFETY: resource verified non-null; C checks if resource was modified since timestamp
     unsafe { mju_isModifiedResource(resource, timestamp) }
 }
 

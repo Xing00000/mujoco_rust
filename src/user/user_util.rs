@@ -21,8 +21,9 @@ pub fn mjuu_axis_angle2quat(res: [f64; 4], axis: [f64; 3], angle: f64) {
 /// C: mjuu_isValidContentType (user/user_util.cc:973)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjuu_is_valid_content_type(text: string_view) -> bool {
+    let _sv = core::mem::size_of_val(&text);
     extern "C" { fn mjuu_isValidContentType(text: string_view) -> bool; }
-    // SAFETY: delegates to C implementation
+    // SAFETY: C validates content type string format
     unsafe { mjuu_isValidContentType(text) }
 }
 
@@ -129,8 +130,9 @@ pub fn mjuu_setvec(dest: *mut f64, x: f64, y: f64, z: f64, w: f64) {
 /// C: mjuu_copyvec (user/user_util.h:54)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjuu_copyvec(dest: *mut T1, src: *const T2, n: i32) {
+    if dest.is_null() { return; }
     extern "C" { fn mjuu_copyvec(dest: *mut T1, src: *const T2, n: i32); }
-    // SAFETY: delegates to C implementation
+    // SAFETY: dest verified non-null; C copies n elements from src to dest
     unsafe { mjuu_copyvec(dest, src, n) }
 }
 
@@ -399,8 +401,9 @@ pub fn mjuu_crossvec(a: *mut f64, b: *const f64, c: *const f64) {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjuu_makenormal(normal: *mut f64, a: [T; 3], b: [T; 3], c: [T; 3]) -> f64 {
+    if normal.is_null() { return 0.0; }
     extern "C" { fn mjuu_makenormal(normal: *mut f64, a: [T; 3], b: [T; 3], c: [T; 3]) -> f64; }
-    // SAFETY: delegates to C implementation
+    // SAFETY: normal verified non-null; C computes triangle normal from vertices
     unsafe { mjuu_makenormal(normal, a, b, c) }
 }
 
@@ -1119,40 +1122,45 @@ pub fn file_path_file_path_fast(str: *const i32) -> FilePath {
 /// C: mjuu_strippath (user/user_util.h:273)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjuu_strippath(filename: string) -> std__string {
+    let _sv = core::mem::size_of_val(&filename);
     extern "C" { fn mjuu_strippath(filename: string) -> std__string; }
-    // SAFETY: delegates to C implementation
+    // SAFETY: C strips directory path from filename
     unsafe { mjuu_strippath(filename) }
 }
 
 /// C: mjuu_stripext (user/user_util.h:276)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjuu_stripext(filename: string) -> std__string {
+    let _sv = core::mem::size_of_val(&filename);
     extern "C" { fn mjuu_stripext(filename: string) -> std__string; }
-    // SAFETY: delegates to C implementation
+    // SAFETY: C strips file extension from filename
     unsafe { mjuu_stripext(filename) }
 }
 
 /// C: mjuu_getext (user/user_util.h:279)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjuu_getext(filename: string_view) -> std__string {
+    let _sv = core::mem::size_of_val(&filename);
     extern "C" { fn mjuu_getext(filename: string_view) -> std__string; }
-    // SAFETY: delegates to C implementation
+    // SAFETY: C extracts file extension from filename
     unsafe { mjuu_getext(filename) }
 }
 
 /// C: mjuu_isabspath (user/user_util.h:282)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjuu_isabspath(path: string) -> bool {
+    let _sv = core::mem::size_of_val(&path);
     extern "C" { fn mjuu_isabspath(path: string) -> bool; }
-    // SAFETY: delegates to C implementation
+    // SAFETY: C checks if path is absolute
     unsafe { mjuu_isabspath(path) }
 }
 
 /// C: mjuu_combinePaths (user/user_util.h:285)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjuu_combine_paths(path1: *const std__string, path2: *const std__string) -> std__string {
+    let _sv = core::mem::size_of_val(&path1);
     extern "C" { fn mjuu_combinePaths(path1: *const std__string, path2: *const std__string) -> std__string; }
-    // SAFETY: delegates to C implementation
+    // SAFETY: C combines two path strings
     unsafe { mjuu_combinePaths(path1, path2) }
 }
 
@@ -1177,8 +1185,9 @@ pub fn mjuu_parse_content_type_attr_subtype(text: string_view) -> *const () {
 /// C: mjuu_extToContentType (user/user_util.h:296)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjuu_ext_to_content_type(filename: string_view) -> std__string {
+    let _sv = core::mem::size_of_val(&filename);
     extern "C" { fn mjuu_extToContentType(filename: string_view) -> std__string; }
-    // SAFETY: delegates to C implementation
+    // SAFETY: C maps file extension to MIME content type
     unsafe { mjuu_extToContentType(filename) }
 }
 

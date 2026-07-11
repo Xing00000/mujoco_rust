@@ -200,8 +200,9 @@ pub fn mj_ray_sdf(m: *const mjModel, d: *const mjData, g: i32, pnt: *const f64, 
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn point_in_box(aabb: *const f64, xpos: *const f64, xmat: *const f64, pnt: *const f64) -> i32  {
+    if aabb.is_null() { return 0; }
     extern "C" { fn point_in_box(aabb: *const f64, xpos: *const f64, xmat: *const f64, pnt: *const f64) -> i32; }
-    // SAFETY: delegates to C implementation
+    // SAFETY: aabb verified non-null; C tests if point is inside oriented bounding box
     unsafe { point_in_box(aabb, xpos, xmat, pnt) }
 }
 

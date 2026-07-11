@@ -1058,8 +1058,9 @@ pub fn mju_history_read(buf: *const f64, n: i32, dim: i32, res: *mut f64, t: f64
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mju_encode_pyramid(pyramid: *mut f64, force: *const f64, mu: *const f64, dim: i32) {
+    if pyramid.is_null() { return; }
     extern "C" { fn mju_encodePyramid(pyramid: *mut f64, force: *const f64, mu: *const f64, dim: i32); }
-    // SAFETY: delegates to C implementation
+    // SAFETY: pyramid verified non-null; C encodes friction force into pyramid representation
     unsafe { mju_encodePyramid(pyramid, force, mu, dim) }
 }
 

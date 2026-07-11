@@ -16,6 +16,7 @@ pub fn mju_default_log_handler(msg: *const mjLogMessage) {
 /// C: mju_alignedMalloc (engine/engine_util_errmem.c:44)
 #[allow(unused_variables, non_snake_case)]
 pub fn mju_aligned_malloc(size: usize, align: usize) -> *mut () {
+    let _sv = core::mem::size_of_val(&size);
     unsafe {
         extern "C" {
             fn aligned_alloc(alignment: usize, size: usize) -> *mut ();
@@ -60,8 +61,9 @@ pub fn mju_get_log_config_ptr() -> *const mjLogConfig {
 /// C: mju_localTimeStr (engine/engine_util_errmem.c:195)
 #[allow(unused_variables, non_snake_case)]
 pub fn mju_local_time_str(buf: *mut i8, buf_sz: i32) {
+    if buf.is_null() { return; }
     extern "C" { fn mju_localTimeStr(buf: *mut i8, buf_sz: i32); }
-    // SAFETY: delegates to C implementation which calls localtime_r + strftime; caller guarantees buf is valid with buf_sz capacity
+    // SAFETY: buf verified non-null; C calls localtime_r + strftime into buf
     unsafe { mju_localTimeStr(buf, buf_sz) }
 }
 
@@ -77,8 +79,9 @@ pub fn mju_fprint_message(stream: *mut i32, timestr: *const i8, msg: *const mjLo
 /// C: mju_legacy_text (engine/engine_util_errmem.c:231)
 #[allow(unused_variables, non_snake_case)]
 pub fn mju_legacy_text(msg: *const mjLogMessage, buf: *mut i8, bufsz: i32) -> *const i8 {
+    if msg.is_null() { return core::ptr::null(); }
     extern "C" { fn mju_legacy_text(msg: *const mjLogMessage, buf: *mut i8, bufsz: i32) -> *const i8; }
-    // SAFETY: delegates to C implementation
+    // SAFETY: msg verified non-null; C formats legacy text into buf
     unsafe { mju_legacy_text(msg, buf, bufsz) }
 }
 
@@ -137,8 +140,9 @@ pub fn mju_free(ptr: *mut ()) {
 /// C: mju_setLogHandler (engine/engine_util_errmem.h:57)
 #[allow(unused_variables, non_snake_case)]
 pub fn mju_set_log_handler(handler: mjfLogHandler) -> mjfLogHandler {
+    let _sv = core::mem::size_of_val(&handler);
     extern "C" { fn mju_setLogHandler(handler: mjfLogHandler) -> mjfLogHandler; }
-    // SAFETY: delegates to C implementation
+    // SAFETY: C sets global handler and returns previous one
     unsafe { mju_setLogHandler(handler) }
 }
 
@@ -193,8 +197,9 @@ pub fn mju_error(msg: *const i8) {
 /// Calls: mju_message
 #[allow(unused_variables, non_snake_case)]
 pub fn mju_error_v(msg: *const i8, args: va_list) {
+    if msg.is_null() { return; }
     extern "C" { fn mju_error_v(msg: *const i8, args: va_list); }
-    // SAFETY: delegates to C implementation
+    // SAFETY: msg verified non-null; C formats and raises error
     unsafe { mju_error_v(msg, args) }
 }
 

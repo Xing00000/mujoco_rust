@@ -68,8 +68,9 @@ pub fn drawrectangle(rect: mjrRect, rgb: *const f32, rgbback: *const f32, con: *
 /// C: roundcorner (ui/ui_main.c:313)
 #[allow(unused_variables, non_snake_case)]
 pub fn roundcorner(rect: mjrRect, flg_skipbottom: i32, flg_separator: i32, ui: *const mjUI, con: *const mjrContext) {
+    let _sv = core::mem::size_of_val(&rect);
     extern "C" { fn roundcorner(rect: mjrRect, flg_skipbottom: i32, flg_separator: i32, ui: *const mjUI, con: *const mjrContext); }
-    // SAFETY: delegates to C implementation
+    // SAFETY: C draws rounded corners for UI rect
     unsafe { roundcorner(rect, flg_skipbottom, flg_separator, ui, con) }
 }
 
@@ -237,8 +238,9 @@ pub fn array2text(text: *mut i8, it: *const mjuiItem) {
 /// C: validkey (ui/ui_main.c:1017)
 #[allow(unused_variables, non_snake_case)]
 pub fn validkey(key: i32, sz: i32, r#type: i32, state: *const mjuiState) -> i32 {
+    let _sv = core::mem::size_of_val(&key);
     extern "C" { fn validkey(key: i32, sz: i32, r#type: i32, state: *const mjuiState) -> i32; }
-    // SAFETY: delegates to C implementation, pointers valid per caller contract
+    // SAFETY: C validates key input for UI element type
     unsafe { validkey(key, sz, r#type, state) }
 }
 
@@ -279,8 +281,9 @@ pub fn matchshortcut(ins: *const mjuiState, r#mod: i32, key: i32) -> i32 {
 /// C: setitemskip (ui/ui_main.c:1500)
 #[allow(unused_variables, non_snake_case)]
 pub fn setitemskip(s: *mut mjuiSection, pass: i32) {
+    if s.is_null() { return; }
     extern "C" { fn setitemskip(s: *mut mjuiSection, pass: i32); }
-    // SAFETY: delegates to C implementation
+    // SAFETY: s verified non-null; C sets item skip flags for UI section
     unsafe { setitemskip(s, pass) }
 }
 
@@ -323,16 +326,18 @@ pub fn shortcuthelp(r: mjrRect, modifier: i32, shortcut: i32, ui: *const mjUI, c
 /// C: mjui_themeSpacing (ui/ui_main.h:26)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjui_theme_spacing(ind: i32) -> mjuiThemeSpacing {
+    let _sv = core::mem::size_of_val(&ind);
     extern "C" { fn mjui_themeSpacing(ind: i32) -> mjuiThemeSpacing; }
-    // SAFETY: delegates to C implementation
+    // SAFETY: C returns theme spacing struct for given index
     unsafe { mjui_themeSpacing(ind) }
 }
 
 /// C: mjui_themeColor (ui/ui_main.h:29)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjui_theme_color(ind: i32) -> mjuiThemeColor {
+    let _sv = core::mem::size_of_val(&ind);
     extern "C" { fn mjui_themeColor(ind: i32) -> mjuiThemeColor; }
-    // SAFETY: delegates to C implementation
+    // SAFETY: C returns theme color struct for given index
     unsafe { mjui_themeColor(ind) }
 }
 

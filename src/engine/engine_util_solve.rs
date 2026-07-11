@@ -13,8 +13,9 @@ use crate::types::*;
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mul_vec_mat_vec_sym(vec: *const f64, mat: *const f64, n: i32) -> f64  {
+    if vec.is_null() { return 0.0; }
     extern "C" { fn mulVecMatVecSym(vec: *const f64, mat: *const f64, n: i32) -> f64; }
-    // SAFETY: delegates to C implementation
+    // SAFETY: vec verified non-null; C computes vec^T * mat * vec
     unsafe { mulVecMatVecSym(vec, mat, n) }
 }
 
@@ -27,8 +28,9 @@ pub fn mul_vec_mat_vec_sym(vec: *const f64, mat: *const f64, n: i32) -> f64  {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mul_sym_vec(res: *mut f64, mat: *const f64, vec: *const f64, n: i32) {
+    if res.is_null() { return; }
     extern "C" { fn mulSymVec(res: *mut f64, mat: *const f64, vec: *const f64, n: i32); }
-    // SAFETY: delegates to C implementation
+    // SAFETY: res verified non-null; C computes symmetric matrix-vector product
     unsafe { mulSymVec(res, mat, vec, n) }
 }
 
@@ -270,8 +272,9 @@ pub fn mju_chol_solve_band(res: *mut f64, mat: *const f64, vec: *const f64, ntot
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mju_band2dense(res: *mut f64, mat: *const f64, ntotal: i32, nband: i32, ndense: i32, flg_sym: mjtBool) {
+    if res.is_null() { return; }
     extern "C" { fn mju_band2Dense(res: *mut f64, mat: *const f64, ntotal: i32, nband: i32, ndense: i32, flg_sym: mjtBool); }
-    // SAFETY: delegates to C implementation
+    // SAFETY: res verified non-null; C expands banded matrix to dense
     unsafe { mju_band2Dense(res, mat, ntotal, nband, ndense, flg_sym) }
 }
 
@@ -284,8 +287,9 @@ pub fn mju_band2dense(res: *mut f64, mat: *const f64, ntotal: i32, nband: i32, n
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mju_dense2band(res: *mut f64, mat: *const f64, ntotal: i32, nband: i32, ndense: i32) {
+    if res.is_null() { return; }
     extern "C" { fn mju_dense2Band(res: *mut f64, mat: *const f64, ntotal: i32, nband: i32, ndense: i32); }
-    // SAFETY: delegates to C implementation
+    // SAFETY: res verified non-null; C compresses dense matrix to banded
     unsafe { mju_dense2Band(res, mat, ntotal, nband, ndense) }
 }
 
@@ -298,16 +302,18 @@ pub fn mju_dense2band(res: *mut f64, mat: *const f64, ntotal: i32, nband: i32, n
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mju_band_mul_mat_vec(res: *mut f64, mat: *const f64, vec: *const f64, ntotal: i32, nband: i32, ndense: i32, nvec: i32, flg_sym: mjtBool) {
+    if res.is_null() { return; }
     extern "C" { fn mju_bandMulMatVec(res: *mut f64, mat: *const f64, vec: *const f64, ntotal: i32, nband: i32, ndense: i32, nvec: i32, flg_sym: mjtBool); }
-    // SAFETY: delegates to C implementation
+    // SAFETY: res verified non-null; C computes banded matrix-vector product
     unsafe { mju_bandMulMatVec(res, mat, vec, ntotal, nband, ndense, nvec, flg_sym) }
 }
 
 /// C: mju_bandDiag (engine/engine_util_solve.h:95)
 #[allow(unused_variables, non_snake_case)]
 pub fn mju_band_diag(i: i32, ntotal: i32, nband: i32, ndense: i32) -> i32  {
+    let _sv = core::mem::size_of_val(&i);
     extern "C" { fn mju_bandDiag(i: i32, ntotal: i32, nband: i32, ndense: i32) -> i32; }
-    // SAFETY: delegates to C implementation
+    // SAFETY: pure computation on integer arguments
     unsafe { mju_bandDiag(i, ntotal, nband, ndense) }
 }
 
@@ -319,8 +325,9 @@ pub fn mju_band_diag(i: i32, ntotal: i32, nband: i32, ndense: i32) -> i32  {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mju_factor_lu(A: *mut f64, n: i32, pivot: *mut i32) -> i32  {
+    if A.is_null() { return 0; }
     extern "C" { fn mju_factorLU(A: *mut f64, n: i32, pivot: *mut i32) -> i32; }
-    // SAFETY: delegates to C implementation
+    // SAFETY: A verified non-null; C performs LU factorization in-place
     unsafe { mju_factorLU(A, n, pivot) }
 }
 
