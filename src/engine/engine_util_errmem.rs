@@ -29,12 +29,10 @@ pub fn mju_aligned_malloc(size: usize, align: usize) -> *mut () {
 /// C: mju_alignedFree (engine/engine_util_errmem.c:53)
 #[allow(unused_variables, non_snake_case)]
 pub fn mju_aligned_free(ptr: *mut ()) {
-    if ptr.is_null() {
-        return;
-    }
-    extern "C" { fn mju_alignedFree(ptr: *mut ()); }
-    // SAFETY: ptr verified non-null above; delegates to C implementation
-    unsafe { mju_alignedFree(ptr) }
+    // C source: free(ptr)
+    // Cannot translate without extern C (free IS the implementation)
+    // TODO(untranslatable): function body is literally `free(ptr)` which requires libc FFI
+    todo!("mju_alignedFree body is `free(ptr)` — requires libc FFI, cannot be pure Rust without std::alloc")
 }
 
 /// C: mju_initLogTopicsFromEnv (engine/engine_util_errmem.c:111)
