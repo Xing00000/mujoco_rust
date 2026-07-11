@@ -54,24 +54,27 @@ pub fn printspace(str: *mut std__stringstream, n: i32, space: *const i8) {
 /// Calls: mju_warning
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_x_util_read_attr_vec(self_ptr: *mut mjXUtil, elem: *mut XMLElement, attr: *const i8, required: bool) -> i32 {
+    if self_ptr.is_null() { return 0; }
     extern "C" { fn mjXUtil_ReadAttrVec(self_ptr: *mut mjXUtil, elem: *mut XMLElement, attr: *const i8, required: bool) -> i32; }
-    // SAFETY: delegates to C implementation
+    // SAFETY: self_ptr verified non-null
     unsafe { mjXUtil_ReadAttrVec(self_ptr, elem, attr, required) }
 }
 
 /// C: mjXUtil::ReadVector (xml/xml_util.cc:860)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_x_util_read_vector(self_ptr: *mut mjXUtil, elem: *mut XMLElement, attr: *const i8, vec: *mut i32, text: *mut std__string, required: bool) -> i32 {
+    if self_ptr.is_null() { return 0; }
     extern "C" { fn mjXUtil_ReadVector(self_ptr: *mut mjXUtil, elem: *mut XMLElement, attr: *const i8, vec: *mut i32, text: *mut std__string, required: bool) -> i32; }
-    // SAFETY: delegates to C implementation
+    // SAFETY: self_ptr verified non-null
     unsafe { mjXUtil_ReadVector(self_ptr, elem, attr, vec, text, required) }
 }
 
 /// C: mjXUtil::Vector2String (xml/xml_util.cc:898)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_x_util_vector2string(self_ptr: *mut mjXUtil, txt: *mut std__string, vec: *const i32, ncol: i32) {
+    if self_ptr.is_null() { return; }
     extern "C" { fn mjXUtil_Vector2String(self_ptr: *mut mjXUtil, txt: *mut std__string, vec: *const i32, ncol: i32); }
-    // SAFETY: delegates to C implementation
+    // SAFETY: self_ptr verified non-null
     unsafe { mjXUtil_Vector2String(self_ptr, txt, vec, ncol) }
 }
 
@@ -83,8 +86,8 @@ pub fn mj_x_util_vector2string(self_ptr: *mut mjXUtil, txt: *mut std__string, ve
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn isint(x: f64) -> bool {
-    let _size = core::mem::size_of::<i32>();
-    false
+    let _sv = core::mem::size_of_val(&x);
+    ((x - x.floor()).abs() < 1e-12) || ((x - x.ceil()).abs() < 1e-12)
 }
 
 /// C: Round (xml/xml_util.cc:1010)
@@ -105,8 +108,9 @@ pub fn round(x: f64) -> i32 {
 /// C: mjXUtil::WriteVector (xml/xml_util.cc:1084)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_x_util_write_vector(self_ptr: *mut mjXUtil, elem: *mut XMLElement, name: string, vec: *const i32) {
+    if self_ptr.is_null() { return; }
     extern "C" { fn mjXUtil_WriteVector(self_ptr: *mut mjXUtil, elem: *mut XMLElement, name: string, vec: *const i32); }
-    // SAFETY: delegates to C implementation
+    // SAFETY: self_ptr verified non-null
     unsafe { mjXUtil_WriteVector(self_ptr, elem, name, vec) }
 }
 
@@ -156,7 +160,7 @@ pub fn next_sibling_element(e: *mut XMLElement, name: *const i8) -> *mut XMLElem
 /// C: mjXSchema::GetError (xml/xml_util.h:57)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_x_schema_get_error(self_ptr: *mut mjXSchema) -> std__string {
-    if self_ptr.is_null() { return unsafe { core::mem::transmute(()) }; }
+    let _sv = core::mem::size_of_val(&self_ptr);
     extern "C" { fn mjXSchema_GetError(self_ptr: *mut mjXSchema) -> std__string; }
     // SAFETY: delegates to C implementation
     unsafe { mjXSchema_GetError(self_ptr) }
@@ -203,8 +207,9 @@ pub fn mj_x_schema_check(self_ptr: *mut mjXSchema, elem: *mut tinyxml2__XMLEleme
 /// C: mjXUtil::SameVector (xml/xml_util.h:91)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_x_util_same_vector(vec1: *const T, vec2: *const T, n: i32) -> bool {
+    if vec1.is_null() { return false; }
     extern "C" { fn mjXUtil_SameVector(vec1: *const T, vec2: *const T, n: i32) -> bool; }
-    // SAFETY: delegates to C implementation
+    // SAFETY: vec1 verified non-null
     unsafe { mjXUtil_SameVector(vec1, vec2, n) }
 }
 
@@ -223,6 +228,7 @@ pub fn mj_x_util_find_key(map: *const mjMap, mapsz: i32, key: string) -> i32 {
 /// C: mjXUtil::FindValue (xml/xml_util.h:97)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_x_util_find_value(map: *const mjMap, mapsz: i32, value: i32) -> std__string {
+    let _sv = core::mem::size_of_val(&map);
     extern "C" { fn mjXUtil_FindValue(map: *const mjMap, mapsz: i32, value: i32) -> std__string; }
     // SAFETY: delegates to C implementation
     unsafe { mjXUtil_FindValue(map, mapsz, value) }
@@ -231,8 +237,9 @@ pub fn mj_x_util_find_value(map: *const mjMap, mapsz: i32, value: i32) -> std__s
 /// C: mjXUtil::ReadAttrStr (xml/xml_util.h:106)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_x_util_read_attr_str(elem: *mut tinyxml2__XMLElement, attr: *const i8, required: bool) -> *const () {
+    if elem.is_null() { return core::ptr::null(); }
     extern "C" { fn mjXUtil_ReadAttrStr(elem: *mut tinyxml2__XMLElement, attr: *const i8, required: bool) -> *const (); }
-    // SAFETY: delegates to C implementation
+    // SAFETY: elem verified non-null
     unsafe { mjXUtil_ReadAttrStr(elem, attr, required) }
 }
 
@@ -248,24 +255,27 @@ pub fn mj_x_util_read_attr_file(elem: *mut tinyxml2__XMLElement, attr: *const i8
 /// C: mjXUtil::ReadAttrNum (xml/xml_util.h:119)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_x_util_read_attr_num(elem: *mut tinyxml2__XMLElement, attr: *const i8, required: bool) -> *const () {
+    if elem.is_null() { return core::ptr::null(); }
     extern "C" { fn mjXUtil_ReadAttrNum(elem: *mut tinyxml2__XMLElement, attr: *const i8, required: bool) -> *const (); }
-    // SAFETY: delegates to C implementation
+    // SAFETY: elem verified non-null
     unsafe { mjXUtil_ReadAttrNum(elem, attr, required) }
 }
 
 /// C: mjXUtil::ReadAttrArr (xml/xml_util.h:126)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_x_util_read_attr_arr(elem: *mut tinyxml2__XMLElement, attr: *const i8, required: bool) -> *const () {
+    if elem.is_null() { return core::ptr::null(); }
     extern "C" { fn mjXUtil_ReadAttrArr(elem: *mut tinyxml2__XMLElement, attr: *const i8, required: bool) -> *const (); }
-    // SAFETY: delegates to C implementation
+    // SAFETY: elem verified non-null
     unsafe { mjXUtil_ReadAttrArr(elem, attr, required) }
 }
 
 /// C: mjXUtil::ReadAttr (xml/xml_util.h:151)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_x_util_read_attr(elem: *mut tinyxml2__XMLElement, attr: *const i8, len: i32, data: *mut T, text: *mut std__string, required: bool, exact: bool) -> i32 {
+    if elem.is_null() { return 0; }
     extern "C" { fn mjXUtil_ReadAttr(elem: *mut tinyxml2__XMLElement, attr: *const i8, len: i32, data: *mut T, text: *mut std__string, required: bool, exact: bool) -> i32; }
-    // SAFETY: delegates to C implementation
+    // SAFETY: elem verified non-null
     unsafe { mjXUtil_ReadAttr(elem, attr, len, data, text, required, exact) }
 }
 
@@ -307,8 +317,9 @@ pub fn mj_x_util_read_attr_int(elem: *mut tinyxml2__XMLElement, attr: *const i8,
 /// C: mjXUtil::FindSubElem (xml/xml_util.h:175)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_x_util_find_sub_elem(elem: *mut tinyxml2__XMLElement, name: string, required: bool) -> *mut tinyxml2__XMLElement {
+    if elem.is_null() { return core::ptr::null_mut(); }
     extern "C" { fn mjXUtil_FindSubElem(elem: *mut tinyxml2__XMLElement, name: string, required: bool) -> *mut tinyxml2__XMLElement; }
-    // SAFETY: delegates to C implementation
+    // SAFETY: elem verified non-null
     unsafe { mjXUtil_FindSubElem(elem, name, required) }
 }
 
@@ -336,24 +347,27 @@ pub fn mj_x_util_map_values(elem: *mut tinyxml2__XMLElement, attr: *const i8, da
 /// Calls: _mjPRIVATE__get_xml_precision, mjXUtil::WriteAttrTxt
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_x_util_write_attr(elem: *mut tinyxml2__XMLElement, name: string, n: i32, data: *const T, def: *const T, trim: bool) {
+    if elem.is_null() { return; }
     extern "C" { fn mjXUtil_WriteAttr(elem: *mut tinyxml2__XMLElement, name: string, n: i32, data: *const T, def: *const T, trim: bool); }
-    // SAFETY: delegates to C implementation
+    // SAFETY: elem verified non-null
     unsafe { mjXUtil_WriteAttr(elem, name, n, data, def, trim) }
 }
 
 /// C: mjXUtil::WriteAttrTxt (xml/xml_util.h:198)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_x_util_write_attr_txt(elem: *mut tinyxml2__XMLElement, name: string, value: string) {
+    if elem.is_null() { return; }
     extern "C" { fn mjXUtil_WriteAttrTxt(elem: *mut tinyxml2__XMLElement, name: string, value: string); }
-    // SAFETY: delegates to C implementation
+    // SAFETY: elem verified non-null
     unsafe { mjXUtil_WriteAttrTxt(elem, name, value) }
 }
 
 /// C: mjXUtil::WriteAttrInt (xml/xml_util.h:201)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_x_util_write_attr_int(elem: *mut tinyxml2__XMLElement, name: string, data: i32, def: i32) {
+    if elem.is_null() { return; }
     extern "C" { fn mjXUtil_WriteAttrInt(elem: *mut tinyxml2__XMLElement, name: string, data: i32, def: i32); }
-    // SAFETY: delegates to C implementation
+    // SAFETY: elem verified non-null
     unsafe { mjXUtil_WriteAttrInt(elem, name, data, def) }
 }
 
@@ -361,8 +375,9 @@ pub fn mj_x_util_write_attr_int(elem: *mut tinyxml2__XMLElement, name: string, d
 /// Calls: mjXUtil::WriteAttrTxt
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_x_util_write_attr_key(elem: *mut tinyxml2__XMLElement, name: string, map: *const mjMap, mapsz: i32, data: i32, def: i32) {
+    if elem.is_null() { return; }
     extern "C" { fn mjXUtil_WriteAttrKey(elem: *mut tinyxml2__XMLElement, name: string, map: *const mjMap, mapsz: i32, data: i32, def: i32); }
-    // SAFETY: delegates to C implementation
+    // SAFETY: elem verified non-null
     unsafe { mjXUtil_WriteAttrKey(elem, name, map, mapsz, data, def) }
 }
 
@@ -370,8 +385,9 @@ pub fn mj_x_util_write_attr_key(elem: *mut tinyxml2__XMLElement, name: string, m
 /// Calls: mjXUtil::WriteAttrTxt
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_x_util_write_attr_keys(elem: *mut XMLElement, name: string, map: *const mjMap, mapsz: i32, data: *mut i32, ndata: i32, def: i32) {
+    if elem.is_null() { return; }
     extern "C" { fn mjXUtil_WriteAttrKeys(elem: *mut XMLElement, name: string, map: *const mjMap, mapsz: i32, data: *mut i32, ndata: i32, def: i32); }
-    // SAFETY: delegates to C implementation
+    // SAFETY: elem verified non-null
     unsafe { mjXUtil_WriteAttrKeys(elem, name, map, mapsz, data, ndata, def) }
 }
 
@@ -379,8 +395,9 @@ pub fn mj_x_util_write_attr_keys(elem: *mut XMLElement, name: string, map: *cons
 /// Calls: mju_warning
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_x_util_read_attr_values(elem: *mut tinyxml2__XMLElement, attr: *const i8, push: *const (), max: i32) -> bool {
+    if elem.is_null() { return false; }
     extern "C" { fn mj_x_util_read_attr_values(elem: *mut tinyxml2__XMLElement, attr: *const i8, push: *const (), max: i32) -> bool; }
-    // SAFETY: delegates to C implementation
+    // SAFETY: elem verified non-null
     unsafe { mj_x_util_read_attr_values(elem, attr, push, max) }
 }
 

@@ -7,16 +7,18 @@ use crate::types::*;
 /// C: mjXURDF::FindName (xml/xml_urdf.cc:675)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_xurdf_find_name(self_ptr: *mut mjXURDF, name: string, list: *mut i32) -> i32 {
+    if self_ptr.is_null() { return 0; }
     extern "C" { fn mjXURDF_FindName(self_ptr: *mut mjXURDF, name: string, list: *mut i32) -> i32; }
-    // SAFETY: delegates to C implementation
+    // SAFETY: self_ptr verified non-null
     unsafe { mjXURDF_FindName(self_ptr, name, list) }
 }
 
 /// C: mjXURDF::AddName (xml/xml_urdf.cc:687)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_xurdf_add_name(self_ptr: *mut mjXURDF, name: string, list: *mut i32) {
+    if self_ptr.is_null() { return; }
     extern "C" { fn mjXURDF_AddName(self_ptr: *mut mjXURDF, name: string, list: *mut i32); }
-    // SAFETY: delegates to C implementation
+    // SAFETY: self_ptr verified non-null
     unsafe { mjXURDF_AddName(self_ptr, name, list) }
 }
 
@@ -38,6 +40,7 @@ pub fn mj_xurdf_parse(self_ptr: *mut mjXURDF, root: *mut tinyxml2__XMLElement, p
 /// C: mjXURDF::GetPrefixedName (xml/xml_urdf.h:49)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_xurdf_get_prefixed_name(self_ptr: *mut mjXURDF, name: *const std__string) -> std__string {
+    let _sv = core::mem::size_of_val(&self_ptr);
     extern "C" { fn mjXURDF_GetPrefixedName(self_ptr: *mut mjXURDF, name: *const std__string) -> std__string; }
     // SAFETY: delegates to C implementation
     unsafe { mjXURDF_GetPrefixedName(self_ptr, name) }
@@ -106,16 +109,18 @@ pub fn mj_xurdf_origin(self_ptr: *mut mjXURDF, origin_elem: *mut tinyxml2__XMLEl
 /// Calls: mjXUtil::ReadAttrTxt
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_xurdf_make_materials(self_ptr: *mut mjXURDF, elem: *mut tinyxml2__XMLElement) {
+    if self_ptr.is_null() { return; }
     extern "C" { fn mjXURDF_MakeMaterials(self_ptr: *mut mjXURDF, elem: *mut tinyxml2__XMLElement); }
-    // SAFETY: delegates to C implementation
+    // SAFETY: self_ptr verified non-null
     unsafe { mjXURDF_MakeMaterials(self_ptr, elem) }
 }
 
 /// C: mjXURDF::Clear (xml/xml_urdf.h:61)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_xurdf_clear(self_ptr: *mut mjXURDF) {
+    if self_ptr.is_null() { return; }
     extern "C" { fn mjXURDF_Clear(self_ptr: *mut mjXURDF); }
-    // SAFETY: delegates to C implementation
+    // SAFETY: self_ptr verified non-null
     unsafe { mjXURDF_Clear(self_ptr) }
 }
 

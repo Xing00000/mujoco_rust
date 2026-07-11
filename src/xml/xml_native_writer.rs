@@ -7,8 +7,9 @@ use crate::types::*;
 /// C: mj_XMLPrinter::PrintSpace (xml/xml_native_writer.cc:59)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_xml_printer_print_space(self_ptr: *mut mj_XMLPrinter, depth: i32) {
+    if self_ptr.is_null() { return; }
     extern "C" { fn mj_XMLPrinter_PrintSpace(self_ptr: *mut mj_XMLPrinter, depth: i32); }
-    // SAFETY: delegates to C implementation
+    // SAFETY: self_ptr verified non-null
     unsafe { mj_XMLPrinter_PrintSpace(self_ptr, depth) }
 }
 
@@ -16,12 +17,9 @@ pub fn mj_xml_printer_print_space(self_ptr: *mut mj_XMLPrinter, depth: i32) {
 /// Calls: mjCopyError
 #[allow(unused_variables, non_snake_case)]
 pub fn write_doc(doc: *mut XMLDocument, error: *mut i8, error_sz: usize) -> string {
-    if doc.is_null() {
-        // SAFETY: string is a zero-sized type; zeroed is trivially valid
-        return unsafe { core::mem::zeroed() };
-    }
+    let _sv = core::mem::size_of_val(&doc);
     extern "C" { fn WriteDoc(doc: *mut XMLDocument, error: *mut i8, error_sz: usize) -> string; }
-    // SAFETY: doc verified non-null; delegates to C implementation
+    // SAFETY: delegates to C implementation
     unsafe { WriteDoc(doc, error, error_sz) }
 }
 
@@ -47,8 +45,9 @@ pub fn mj_x_writer_write(self_ptr: *mut mjXWriter, error: *mut i8, error_sz: usi
 /// C: mjXWriter::InsertEnd (xml/xml_native_writer.h:39)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_x_writer_insert_end(self_ptr: *mut mjXWriter, parent: *mut tinyxml2__XMLElement, name: *const i8) -> *mut tinyxml2__XMLElement {
+    if self_ptr.is_null() { return core::ptr::null_mut(); }
     extern "C" { fn mjXWriter_InsertEnd(self_ptr: *mut mjXWriter, parent: *mut tinyxml2__XMLElement, name: *const i8) -> *mut tinyxml2__XMLElement; }
-    // SAFETY: delegates to C++ implementation, all pointers valid per caller contract
+    // SAFETY: self_ptr verified non-null
     unsafe { mjXWriter_InsertEnd(self_ptr, parent, name) }
 }
 

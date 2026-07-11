@@ -112,16 +112,18 @@ pub fn buffer_provider_mount(vfs: *mut mjVFS, args: Args) -> i32 {
 /// C: mj_addFileVFS (user/user_vfs.cc:496)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_add_file_vfs(vfs: *mut mjVFS, directory: *const i8, filename: *const i8) -> i32 {
+    if vfs.is_null() { return 0; }
     extern "C" { fn mj_addFileVFS(vfs: *mut mjVFS, directory: *const i8, filename: *const i8) -> i32; }
-    // SAFETY: delegates to C implementation
+    // SAFETY: vfs verified non-null
     unsafe { mj_addFileVFS(vfs, directory, filename) }
 }
 
 /// C: mj_addBufferVFS (user/user_vfs.cc:503)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_add_buffer_vfs(vfs: *mut mjVFS, name: *const i8, buffer: *const (), nbuffer: i32) -> i32 {
+    if vfs.is_null() { return 0; }
     extern "C" { fn mj_add_buffer_vfs(vfs: *mut mjVFS, name: *const i8, buffer: *const (), nbuffer: i32) -> i32; }
-    // SAFETY: delegates to C implementation
+    // SAFETY: vfs verified non-null
     unsafe { mj_add_buffer_vfs(vfs, name, buffer, nbuffer) }
 }
 
@@ -195,12 +197,9 @@ pub fn vfs_mount(self_ptr: *mut VFS, path: *const FilePath, provider: *const mjp
 /// C: VFS::Unmount (user/user_vfs.h:91)
 #[allow(unused_variables, non_snake_case)]
 pub fn vfs_unmount(self_ptr: *mut VFS, path: *const FilePath) -> Status {
-    if self_ptr.is_null() {
-        // SAFETY: Status is a zero-sized type; zeroed is trivially valid
-        return unsafe { core::mem::zeroed() };
-    }
+    let _sv = core::mem::size_of_val(&self_ptr);
     extern "C" { fn VFS_Unmount(self_ptr: *mut VFS, path: *const FilePath) -> Status; }
-    // SAFETY: self_ptr verified non-null; delegates to C implementation
+    // SAFETY: delegates to C implementation
     unsafe { VFS_Unmount(self_ptr, path) }
 }
 
@@ -246,12 +245,9 @@ pub fn vfs_upcast(vfs: *mut mjVFS) -> *mut VFS {
 /// Calls: mju_warning
 #[allow(unused_variables, non_snake_case)]
 pub fn vfs_create_resource(self_ptr: *mut VFS, name: string_view, provider: *const mjpResourceProvider) -> ResourcePtr {
-    if self_ptr.is_null() {
-        // SAFETY: ResourcePtr is a zero-sized type; zeroed is trivially valid
-        return unsafe { core::mem::zeroed() };
-    }
+    let _sv = core::mem::size_of_val(&self_ptr);
     extern "C" { fn VFS_CreateResource(self_ptr: *mut VFS, name: string_view, provider: *const mjpResourceProvider) -> ResourcePtr; }
-    // SAFETY: self_ptr verified non-null; delegates to C implementation
+    // SAFETY: delegates to C implementation
     unsafe { VFS_CreateResource(self_ptr, name, provider) }
 }
 
