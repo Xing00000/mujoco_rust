@@ -8,8 +8,9 @@ use crate::types::*;
 /// Calls: mj_actuatorDamping, mj_freeStack, mj_markStack, mj_mulM, mj_solveM, mj_stackAllocInfo, mjd_smooth_vel, mjd_xPolyForce, mju_addScl, mju_addToScl, mju_copy, mju_gather, mju_gatherMasked, mju_isZero, mju_message, mju_mulMatVecSparse, mju_mulSymVecSparse
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_discrete_acc(m: *const mjModel, d: *mut mjData) {
+    if m.is_null() { return; }
     extern "C" { fn mj_discreteAcc(m: *const mjModel, d: *mut mjData); }
-    // SAFETY: delegates to C implementation
+    // SAFETY: m verified non-null; delegates to C implementation
     unsafe { mj_discreteAcc(m, d) }
 }
 

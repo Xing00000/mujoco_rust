@@ -153,8 +153,9 @@ pub fn first_child_element(e: *mut XMLElement, name: *const i8) -> *mut XMLEleme
 /// Calls: FirstChildElement
 #[allow(unused_variables, non_snake_case)]
 pub fn next_sibling_element(e: *mut XMLElement, name: *const i8) -> *mut XMLElement {
+    if e.is_null() { return core::ptr::null_mut(); }
     extern "C" { fn NextSiblingElement(e: *mut XMLElement, name: *const i8) -> *mut XMLElement; }
-    // SAFETY: delegates to C implementation, all pointers valid per caller contract
+    // SAFETY: e verified non-null; delegates to C implementation
     unsafe { NextSiblingElement(e, name) }
 }
 

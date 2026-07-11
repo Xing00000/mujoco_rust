@@ -180,8 +180,9 @@ pub fn mj_c_mesh_process_vertices(self_ptr: *mut mjCMesh, vert: *const i32, remo
 /// Calls: MeshPolygon::CombineIslands
 #[allow(unused_variables, non_snake_case)]
 pub fn mesh_polygon_insert_face(self_ptr: *mut MeshPolygon, v1: i32, v2: i32, v3: i32) {
+    if self_ptr.is_null() { return; }
     extern "C" { fn MeshPolygon_InsertFace(self_ptr: *mut MeshPolygon, v1: i32, v2: i32, v3: i32); }
-    // SAFETY: delegates to C implementation, all pointers valid per caller contract
+    // SAFETY: self_ptr verified non-null; delegates to C implementation
     unsafe { MeshPolygon_InsertFace(self_ptr, v1, v2, v3) }
 }
 
@@ -258,8 +259,9 @@ pub fn compute_volume(x: *const f64, v: [i32; 3]) -> f64  {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn metric_tensor(metric: *mut f64, idx: i32, mu: f64, la: f64, basis: [[f64; 0]; 9]) {
+    if metric.is_null() { return; }
     extern "C" { fn MetricTensor(metric: *mut f64, idx: i32, mu: f64, la: f64, basis: [[f64; 0]; 9]); }
-    // SAFETY: delegates to C implementation, all pointers valid per caller contract
+    // SAFETY: metric verified non-null; delegates to C implementation
     unsafe { MetricTensor(metric, idx, mu, la, basis) }
 }
 

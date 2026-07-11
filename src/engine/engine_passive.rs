@@ -23,8 +23,9 @@ pub fn grad_squared_lengths(gradient: [[[f64; 6]; 2]; 3], xpos: *const f64, vert
 /// Calls: mj_applyFT, mj_freeStack, mj_markStack, mj_stackAllocInfo, mji_addScl3, mji_addTo3, mji_rotVecQuat, mju_flexGatherCellState, mju_flexGatherFaceState, mju_flexGatherState, mju_mulMatVec, mju_negQuat, mju_rotVecQuat, mju_scl3, mju_zero
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_flex_passive_interp(m: *const mjModel, d: *mut mjData, f: i32, enbl_spring: i32, enbl_damper: i32) {
+    if m.is_null() { return; }
     extern "C" { fn mj_flexPassiveInterp(m: *const mjModel, d: *mut mjData, f: i32, enbl_spring: i32, enbl_damper: i32); }
-    // SAFETY: delegates to C implementation, all pointers valid per caller contract
+    // SAFETY: m verified non-null; delegates to C implementation
     unsafe { mj_flexPassiveInterp(m, d, f, enbl_spring, enbl_damper) }
 }
 
@@ -37,6 +38,7 @@ pub fn mj_flex_passive_interp(m: *const mjModel, d: *mut mjData, f: i32, enbl_sp
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mju_dphi2d(s0: f64, l0: i32, s1: f64, l1: i32, order: i32, dir: i32) -> f64  {
+    let _sv = core::mem::size_of_val(&s0);
     extern "C" { fn mju_dphi2D(s0: f64, l0: i32, s1: f64, l1: i32, order: i32, dir: i32) -> f64; }
     // SAFETY: delegates to C implementation
     unsafe { mju_dphi2D(s0, l0, s1, l1, order, dir) }
@@ -67,8 +69,9 @@ pub fn mj_flex_passive_bend(m: *const mjModel, d: *mut mjData, f: i32, enbl_spri
 /// Calls: GradSquaredLengths, mj_applyFT, mj_freeStack, mj_markStack, mj_stackAllocInfo, mju_zero
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_flex_passive_stretch(m: *const mjModel, d: *mut mjData, f: i32, enbl_spring: i32, enbl_damper: i32) {
+    if m.is_null() { return; }
     extern "C" { fn mj_flexPassiveStretch(m: *const mjModel, d: *mut mjData, f: i32, enbl_spring: i32, enbl_damper: i32); }
-    // SAFETY: delegates to C implementation
+    // SAFETY: m verified non-null; delegates to C implementation
     unsafe { mj_flexPassiveStretch(m, d, f, enbl_spring, enbl_damper) }
 }
 
@@ -97,8 +100,9 @@ pub fn mj_gravcomp(m: *const mjModel, d: *mut mjData) -> i32  {
 /// Calls: mj_ellipsoidFluidModel, mj_inertiaBoxFluidModel
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_fluid(m: *const mjModel, d: *mut mjData) -> i32  {
+    if m.is_null() { return 0; }
     extern "C" { fn mj_fluid(m: *const mjModel, d: *mut mjData) -> i32; }
-    // SAFETY: delegates to C implementation
+    // SAFETY: m verified non-null; delegates to C implementation
     unsafe { mj_fluid(m, d) }
 }
 
@@ -106,8 +110,9 @@ pub fn mj_fluid(m: *const mjModel, d: *mut mjData) -> i32  {
 /// Calls: mj_contactJacobian, mj_freeStack, mj_isSparse, mj_markStack, mj_stackAllocInfo, mju_addToScl, mju_mulMatMat, mju_scl
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_contact_passive(m: *const mjModel, d: *mut mjData) -> i32 {
+    if m.is_null() { return 0; }
     extern "C" { fn mj_contactPassive(m: *const mjModel, d: *mut mjData) -> i32; }
-    // SAFETY: delegates to C implementation, all pointers valid per caller contract
+    // SAFETY: m verified non-null; delegates to C implementation
     unsafe { mj_contactPassive(m, d) }
 }
 
@@ -143,8 +148,9 @@ pub fn mji_pow2(val: f64) -> f64  {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mji_ellipsoid_max_moment(size: *const f64, dir: i32) -> f64  {
+    if size.is_null() { return 0.0; }
     extern "C" { fn mji_ellipsoid_max_moment(size: *const f64, dir: i32) -> f64; }
-    // SAFETY: delegates to C implementation
+    // SAFETY: size verified non-null; delegates to C implementation
     unsafe { mji_ellipsoid_max_moment(size, dir) }
 }
 

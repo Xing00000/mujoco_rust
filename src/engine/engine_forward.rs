@@ -104,8 +104,9 @@ pub fn flex_has_implicit_stiffness(m: *const mjModel) -> i32  {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn flex_interp_cgsolve(m: *const mjModel, d: *mut mjData, qacc: *mut f64, qfrc: *const f64, nv: i32) {
+    if m.is_null() { return; }
     extern "C" { fn flexInterp_cgsolve(m: *const mjModel, d: *mut mjData, qacc: *mut f64, qfrc: *const f64, nv: i32); }
-    // SAFETY: delegates to C implementation, all pointers valid per caller contract
+    // SAFETY: m verified non-null; delegates to C implementation
     unsafe { flexInterp_cgsolve(m, d, qacc, qfrc, nv) }
 }
 

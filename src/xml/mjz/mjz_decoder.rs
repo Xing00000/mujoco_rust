@@ -47,8 +47,9 @@ pub fn zip_archive_provider_read(self_ptr: *mut ZipArchiveProvider, name: *const
 /// Calls: SetError
 #[allow(unused_variables, non_snake_case)]
 pub fn parse_zip_buffer(buffer: *const (), nbuffer: i32, name: *const i8, vfs: *mut mjVFS, error: *mut i8, error_sz: i32) -> *mut mjSpec {
+    if buffer.is_null() { return core::ptr::null_mut(); }
     extern "C" { fn ParseZipBuffer(buffer: *const (), nbuffer: i32, name: *const i8, vfs: *mut mjVFS, error: *mut i8, error_sz: i32) -> *mut mjSpec; }
-    // SAFETY: delegates to C++ implementation; caller guarantees pointer validity
+    // SAFETY: buffer verified non-null; delegates to C++ implementation
     unsafe { ParseZipBuffer(buffer, nbuffer, name, vfs, error, error_sz) }
 }
 

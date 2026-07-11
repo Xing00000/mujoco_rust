@@ -126,10 +126,11 @@ pub fn mj_flood_fill(island: *mut i32, nr: i32, rownnz: *const i32, rowadr: *con
 /// Calls: arenaAllocIsland, findEdges, mj_floodFill, mj_freeStack, mj_markStack, mj_stackAllocInfo, mju_compare, mju_copyInt, mju_gather, mju_gatherInt, mju_message, mju_zeroInt
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_island(m: *const mjModel, d: *mut mjData) {
+    if m.is_null() { return; }
     extern "C" {
         fn mj_island(m: *const mjModel, d: *mut mjData);
     }
-    // SAFETY: delegates to C implementation, all pointers valid per caller contract
+    // SAFETY: m verified non-null; delegates to C implementation
     unsafe { mj_island(m, d) }
 }
 

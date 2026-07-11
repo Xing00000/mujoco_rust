@@ -18,8 +18,9 @@ pub fn get_attr_ptr(val: *mut T) -> i32 {
 /// Calls: mjXUtil::ReadAttrTxt
 #[allow(unused_variables, non_snake_case)]
 pub fn reader_txt(self_ptr: *mut Reader, attr: *const i8, target: *mut T, set_func: void_____T____const_char) -> bool {
+    if self_ptr.is_null() { return false; }
     extern "C" { fn Reader_txt(self_ptr: *mut Reader, attr: *const i8, target: *mut T, set_func: void_____T____const_char) -> bool; }
-    // SAFETY: delegates to C implementation
+    // SAFETY: self_ptr verified non-null; delegates to C implementation
     unsafe { Reader_txt(self_ptr, attr, target, set_func) }
 }
 

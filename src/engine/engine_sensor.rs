@@ -131,8 +131,9 @@ pub fn check_match(m: *const mjModel, body: i32, geom: i32, r#type: mjtObj, id: 
 /// Calls: checkMatch, mj_flexBody, mju_insideGeom
 #[allow(unused_variables, non_snake_case)]
 pub fn match_contact(m: *const mjModel, d: *const mjData, conid: i32, type1: mjtObj, id1: i32, type2: mjtObj, id2: i32) -> i32 {
+    if m.is_null() { return 0; }
     extern "C" { fn matchContact(m: *const mjModel, d: *const mjData, conid: i32, type1: mjtObj, id1: i32, type2: mjtObj, id2: i32) -> i32; }
-    // SAFETY: delegates to C implementation, all pointers valid per caller contract
+    // SAFETY: m verified non-null; delegates to C implementation
     unsafe { matchContact(m, d, conid, type1, id1, type2, id2) }
 }
 
@@ -210,8 +211,9 @@ pub fn mj_compute_sensor_pos(m: *const mjModel, d: *mut mjData, i: i32, sensorda
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_compute_sensor_vel(m: *const mjModel, d: *mut mjData, i: i32, sensordata: *mut f64) {
+    if m.is_null() { return; }
     extern "C" { fn mj_computeSensorVel(m: *const mjModel, d: *mut mjData, i: i32, sensordata: *mut f64); }
-    // SAFETY: delegates to C implementation, all pointers valid per caller contract
+    // SAFETY: m verified non-null; delegates to C implementation
     unsafe { mj_computeSensorVel(m, d, i, sensordata) }
 }
 
@@ -250,8 +252,9 @@ pub fn compute_or_read_sensor(m: *const mjModel, d: *mut mjData, i: i32, sensord
 /// Calls: apply_cutoff
 #[allow(unused_variables, non_snake_case)]
 pub fn compute_user_sensors(m: *const mjModel, d: *mut mjData, stage: mjtStage) {
+    if m.is_null() { return; }
     extern "C" { fn compute_user_sensors(m: *const mjModel, d: *mut mjData, stage: mjtStage); }
-    // SAFETY: delegates to C implementation, all pointers valid per caller contract
+    // SAFETY: m verified non-null; delegates to C implementation
     unsafe { compute_user_sensors(m, d, stage) }
 }
 
@@ -259,8 +262,9 @@ pub fn compute_user_sensors(m: *const mjModel, d: *mut mjData, stage: mjtStage) 
 /// Calls: apply_cutoff, mj_rnePostConstraint, mj_subtreeVel, mjp_getPluginAtSlotUnsafe, mjp_pluginCount, mju_message
 #[allow(unused_variables, non_snake_case)]
 pub fn compute_plugin_sensors(m: *const mjModel, d: *mut mjData, stage: mjtStage) {
+    if m.is_null() { return; }
     extern "C" { fn compute_plugin_sensors(m: *const mjModel, d: *mut mjData, stage: mjtStage); }
-    // SAFETY: delegates to C implementation, all pointers valid per caller contract
+    // SAFETY: m verified non-null; delegates to C implementation
     unsafe { compute_plugin_sensors(m, d, stage) }
 }
 

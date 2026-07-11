@@ -66,8 +66,9 @@ pub fn mju_num_thread(d: *const mjData) -> i32 {
 /// Calls: ThreadPoolContext::Dispatch, mj_freeStack, mj_markStack
 #[allow(unused_variables, non_snake_case)]
 pub fn mju_dispatch(m: *const mjModel, d: *mut mjData, func: mjTaskFunc, arg: *mut (), ntask: i32) {
+    if m.is_null() { return; }
     extern "C" { fn mju_dispatch(m: *const mjModel, d: *mut mjData, func: mjTaskFunc, arg: *mut (), ntask: i32); }
-    // SAFETY: delegates to C implementation, all pointers valid per caller contract
+    // SAFETY: m verified non-null; delegates to C implementation
     unsafe { mju_dispatch(m, d, func, arg, ntask) }
 }
 

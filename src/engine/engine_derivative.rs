@@ -132,8 +132,9 @@ pub fn add_to_parent(m: *const mjModel, d: *mut mjData, mat: *mut f64, n: i32) {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjd_com_vel_vel(m: *const mjModel, d: *mut mjData, Dcvel: *mut f64, Dcdofdot: *mut f64) {
+    if m.is_null() { return; }
     extern "C" { fn mjd_comVel_vel(m: *const mjModel, d: *mut mjData, Dcvel: *mut f64, Dcdofdot: *mut f64); }
-    // SAFETY: delegates to C implementation, all pointers valid per caller contract
+    // SAFETY: m verified non-null; delegates to C implementation
     unsafe { mjd_comVel_vel(m, d, Dcvel, Dcdofdot) }
 }
 
@@ -155,8 +156,9 @@ pub fn mjd_rne_vel(m: *const mjModel, d: *mut mjData) {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn add_jtbj(m: *const mjModel, d: *mut mjData, J: *const f64, B: *const f64, n: i32) {
+    if m.is_null() { return; }
     extern "C" { fn addJTBJ(m: *const mjModel, d: *mut mjData, J: *const f64, B: *const f64, n: i32); }
-    // SAFETY: delegates to C implementation
+    // SAFETY: m verified non-null; delegates to C implementation
     unsafe { addJTBJ(m, d, J, B, n) }
 }
 
@@ -238,8 +240,9 @@ pub fn pow2(val: f64) -> f64  {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn ellipsoid_max_moment(size: *const f64, dir: i32) -> f64  {
+    if size.is_null() { return 0.0; }
     extern "C" { fn ellipsoid_max_moment(size: *const f64, dir: i32) -> f64; }
-    // SAFETY: delegates to C implementation
+    // SAFETY: size verified non-null; delegates to C implementation
     unsafe { ellipsoid_max_moment(size, dir) }
 }
 
@@ -266,8 +269,9 @@ pub fn add_to_quadrant(B: *mut f64, D: *const f64, col_quad: i32, row_quad: i32)
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjd_added_mass_forces(B: *mut f64, local_vels: *const f64, fluid_density: f64, virtual_mass: *const f64, virtual_inertia: *const f64) {
+    if B.is_null() { return; }
     extern "C" { fn mjd_addedMassForces(B: *mut f64, local_vels: *const f64, fluid_density: f64, virtual_mass: *const f64, virtual_inertia: *const f64); }
-    // SAFETY: delegates to C implementation
+    // SAFETY: B verified non-null; delegates to C implementation
     unsafe { mjd_addedMassForces(B, local_vels, fluid_density, virtual_mass, virtual_inertia) }
 }
 
@@ -294,8 +298,9 @@ pub fn mjd_viscous_torque(D: *mut f64, lvel: *const f64, fluid_density: f64, flu
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjd_viscous_drag(D: *mut f64, lvel: *const f64, fluid_density: f64, fluid_viscosity: f64, size: *const f64, blunt_drag_coef: f64, slender_drag_coef: f64) {
+    if D.is_null() { return; }
     extern "C" { fn mjd_viscous_drag(D: *mut f64, lvel: *const f64, fluid_density: f64, fluid_viscosity: f64, size: *const f64, blunt_drag_coef: f64, slender_drag_coef: f64); }
-    // SAFETY: delegates to C implementation
+    // SAFETY: D verified non-null; delegates to C implementation
     unsafe { mjd_viscous_drag(D, lvel, fluid_density, fluid_viscosity, size, blunt_drag_coef, slender_drag_coef) }
 }
 
@@ -308,8 +313,9 @@ pub fn mjd_viscous_drag(D: *mut f64, lvel: *const f64, fluid_density: f64, fluid
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjd_kutta_lift(D: *mut f64, lvel: *const f64, fluid_density: f64, size: *const f64, kutta_lift_coef: f64) {
+    if D.is_null() { return; }
     extern "C" { fn mjd_kutta_lift(D: *mut f64, lvel: *const f64, fluid_density: f64, size: *const f64, kutta_lift_coef: f64); }
-    // SAFETY: delegates to C implementation
+    // SAFETY: D verified non-null; delegates to C implementation
     unsafe { mjd_kutta_lift(D, lvel, fluid_density, size, kutta_lift_coef) }
 }
 
@@ -322,8 +328,9 @@ pub fn mjd_kutta_lift(D: *mut f64, lvel: *const f64, fluid_density: f64, size: *
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjd_magnus_force(B: *mut f64, lvel: *const f64, fluid_density: f64, size: *const f64, magnus_lift_coef: f64) {
+    if B.is_null() { return; }
     extern "C" { fn mjd_magnus_force(B: *mut f64, lvel: *const f64, fluid_density: f64, size: *const f64, magnus_lift_coef: f64); }
-    // SAFETY: delegates to C implementation
+    // SAFETY: B verified non-null; delegates to C implementation
     unsafe { mjd_magnus_force(B, lvel, fluid_density, size, magnus_lift_coef) }
 }
 

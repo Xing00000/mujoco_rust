@@ -22,8 +22,9 @@ pub fn mj_default_sol_ref_imp(solref: *mut f64, solimp: *mut f64) {
 /// Calls: mj_defaultSolRefImp
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_default_option(opt: *mut mjOption) {
+    if opt.is_null() { return; }
     extern "C" { fn mj_defaultOption(opt: *mut mjOption); }
-    // SAFETY: delegates to C implementation
+    // SAFETY: opt verified non-null; delegates to C implementation
     unsafe { mj_defaultOption(opt) }
 }
 
