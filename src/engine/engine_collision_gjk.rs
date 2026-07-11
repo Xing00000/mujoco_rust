@@ -7,10 +7,7 @@ use crate::types::*;
 /// C: align8 (engine/engine_collision_gjk.c:49)
 #[allow(unused_variables, non_snake_case)]
 pub fn align8(size: usize) -> usize {
-    // WARNING: signature changed — verify body
-    // Previous params: (size : usize)
-    // Previous return: usize
-    todo ! ()
+    ((size + 7) / 8) * 8
 }
 
 /// C: subdistance (engine/engine_collision_gjk.c:56)
@@ -900,10 +897,19 @@ pub fn inflate(status: *mut mjCCDStatus, margin1: f64, margin2: f64) {
 /// Calls: align8
 #[allow(unused_variables, non_snake_case)]
 pub fn mjc_ccd_size(iterations: i32) -> usize {
-    // WARNING: signature changed — verify body
-    // Previous params: (iterations : i32)
-    // Previous return: usize
-    todo ! ()
+    // sizeof(Vertex) = 80, sizeof(Face) = 56, sizeof(Face*) = 8, sizeof(int) = 4
+    // These match the C struct layouts on this platform (aarch64-apple-darwin).
+    const SIZEOF_VERTEX: usize = 80;
+    const SIZEOF_FACE: usize = 56;
+    const SIZEOF_FACE_PTR: usize = 8;
+    const SIZEOF_INT: usize = 4;
+
+    let n = iterations as usize;
+    align8(SIZEOF_VERTEX * (5 + n))
+        + align8(SIZEOF_FACE * 6 * n)
+        + align8(SIZEOF_FACE_PTR * 6 * n)
+        + align8(SIZEOF_INT * 24)
+        + align8(SIZEOF_INT * 24)
 }
 
 /// C: mjc_ccd (engine/engine_collision_gjk.h:108)
