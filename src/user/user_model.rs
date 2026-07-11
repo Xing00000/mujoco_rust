@@ -458,6 +458,7 @@ pub fn mj_c_model_add_skin(self_ptr: *mut mjCModel) -> *mut mjCSkin {
 /// C: mjCModel::AddHField (user/user_model.h:212)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_model_add_h_field(self_ptr: *mut mjCModel) -> *mut mjCHField {
+    if self_ptr.is_null() { return core::ptr::null_mut(); }
     extern "C" { fn mjCModel_AddHField(self_ptr: *mut mjCModel) -> *mut mjCHField; }
     // SAFETY: delegates to C implementation
     unsafe { mjCModel_AddHField(self_ptr) }
@@ -490,6 +491,7 @@ pub fn mj_c_model_add_pair(self_ptr: *mut mjCModel, def: *mut mjCDef) -> *mut mj
 /// C: mjCModel::AddExclude (user/user_model.h:216)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_model_add_exclude(self_ptr: *mut mjCModel) -> *mut mjCBodyPair {
+    if self_ptr.is_null() { return core::ptr::null_mut(); }
     extern "C" { fn mjCModel_AddExclude(self_ptr: *mut mjCModel) -> *mut mjCBodyPair; }
     // SAFETY: delegates to C implementation
     unsafe { mjCModel_AddExclude(self_ptr) }
@@ -498,6 +500,7 @@ pub fn mj_c_model_add_exclude(self_ptr: *mut mjCModel) -> *mut mjCBodyPair {
 /// C: mjCModel::AddEquality (user/user_model.h:217)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_model_add_equality(self_ptr: *mut mjCModel, def: *mut mjCDef) -> *mut mjCEquality {
+    if self_ptr.is_null() { return core::ptr::null_mut(); }
     extern "C" { fn mjCModel_AddEquality(self_ptr: *mut mjCModel, def: *mut mjCDef) -> *mut mjCEquality; }
     // SAFETY: delegates to C implementation
     unsafe { mjCModel_AddEquality(self_ptr, def) }
@@ -514,6 +517,7 @@ pub fn mj_c_model_add_tendon(self_ptr: *mut mjCModel, def: *mut mjCDef) -> *mut 
 /// C: mjCModel::AddActuator (user/user_model.h:219)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_model_add_actuator(self_ptr: *mut mjCModel, def: *mut mjCDef) -> *mut mjCActuator {
+    if self_ptr.is_null() { return core::ptr::null_mut(); }
     extern "C" { fn mjCModel_AddActuator(self_ptr: *mut mjCModel, def: *mut mjCDef) -> *mut mjCActuator; }
     // SAFETY: delegates to C implementation
     unsafe { mjCModel_AddActuator(self_ptr, def) }
@@ -640,6 +644,7 @@ pub fn mj_c_model_add_warning(self_ptr: *mut mjCModel, msg: string, obj: *const 
 /// Calls: mju_message
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_model_add_grouped_warning(self_ptr: *mut mjCModel, subject: *const std__string, body: *const std__string) {
+    if self_ptr.is_null() { return; }
     extern "C" { fn mjCModel_AddGroupedWarning(self_ptr: *mut mjCModel, subject: *const std__string, body: *const std__string); }
     // SAFETY: delegates to C implementation
     unsafe { mjCModel_AddGroupedWarning(self_ptr, subject, body) }
@@ -738,6 +743,7 @@ pub fn mj_c_model_find_spec(self_ptr: *mut mjCModel, name: string) -> *mut mjSpe
 /// C: mjCModel::ActivatePlugin (user/user_model.h:278)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_model_activate_plugin(self_ptr: *mut mjCModel, plugin: *const mjpPlugin, slot: i32) {
+    if self_ptr.is_null() { return; }
     extern "C" { fn mjCModel_ActivatePlugin(self_ptr: *mut mjCModel, plugin: *const mjpPlugin, slot: i32); }
     // SAFETY: delegates to C implementation
     unsafe { mjCModel_ActivatePlugin(self_ptr, plugin, slot) }
@@ -782,6 +788,7 @@ pub fn mj_c_model_num_defaults(self_ptr: *mut mjCModel) -> i32 {
 /// C: mjCModel::ActivePlugins (user/user_model.h:291)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_model_active_plugins(self_ptr: *mut mjCModel) -> *const i32 {
+    if self_ptr.is_null() { return core::ptr::null(); }
     extern "C" { fn mjCModel_ActivePlugins(self_ptr: *mut mjCModel) -> *const i32; }
     // SAFETY: delegates to C implementation
     unsafe { mjCModel_ActivePlugins(self_ptr) }
@@ -870,6 +877,7 @@ pub fn mj_c_model_tendons(self_ptr: *mut mjCModel) -> *const i32 {
 /// C: mjCModel::Actuators (user/user_model.h:305)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_model_actuators(self_ptr: *mut mjCModel) -> *const i32 {
+    if self_ptr.is_null() { return core::ptr::null(); }
     extern "C" { fn mjCModel_Actuators(self_ptr: *mut mjCModel) -> *const i32; }
     // SAFETY: delegates to C implementation
     unsafe { mjCModel_Actuators(self_ptr) }
