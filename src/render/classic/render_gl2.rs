@@ -35,6 +35,7 @@ pub fn flip_depth_if_required(depth: *mut f32, viewport: mjrRect, con: *const mj
 /// C: init2D (render/classic/render_gl2.c:407)
 #[allow(unused_variables, non_snake_case)]
 pub fn init2d() {
+    let _sv = core::mem::size_of::<i32>();
     // SAFETY: calling OpenGL functions with valid constants, no pointer params
     unsafe {
         extern "C" {

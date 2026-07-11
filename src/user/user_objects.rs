@@ -125,6 +125,7 @@ pub fn mj_c_bounding_volume_hierarchy_make_bvh(self_ptr: *mut mjCBoundingVolumeH
 /// C: mjCOctree::SetFace (user/user_objects.cc:588)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_octree_set_face(self_ptr: *mut mjCOctree, vert: *const i32, face: *const i32) {
+    if self_ptr.is_null() { return; }
     extern "C" { fn mjCOctree_SetFace(self_ptr: *mut mjCOctree, vert: *const i32, face: *const i32); }
     // SAFETY: delegates to C implementation
     unsafe { mjCOctree_SetFace(self_ptr, vert, face) }
@@ -133,6 +134,7 @@ pub fn mj_c_octree_set_face(self_ptr: *mut mjCOctree, vert: *const i32, face: *c
 /// C: mjCOctree::Make (user/user_objects.cc:600)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_octree_make(self_ptr: *mut mjCOctree, elements: *mut i32) {
+    if self_ptr.is_null() { return; }
     extern "C" { fn mjCOctree_Make(self_ptr: *mut mjCOctree, elements: *mut i32); }
     // SAFETY: delegates to C implementation
     unsafe { mjCOctree_Make(self_ptr, elements) }
@@ -223,6 +225,7 @@ pub fn box_triangle(v: *const Triangle, aamm: [f64; 6]) -> bool {
 /// C: mjCOctree::TaskToNode (user/user_objects.cc:980)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_octree_task_to_node(self_ptr: *mut mjCOctree, task: *const OctreeTask, node: *mut OctNode, vert_map: *mut i32) {
+    if self_ptr.is_null() { return; }
     extern "C" { fn mjCOctree_TaskToNode(self_ptr: *mut mjCOctree, task: *const OctreeTask, node: *mut OctNode, vert_map: *mut i32); }
     // SAFETY: delegates to C implementation
     unsafe { mjCOctree_TaskToNode(self_ptr, task, node, vert_map) }
@@ -231,6 +234,7 @@ pub fn mj_c_octree_task_to_node(self_ptr: *mut mjCOctree, task: *const OctreeTas
 /// C: mjCOctree::Subdivide (user/user_objects.cc:1014)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_octree_subdivide(self_ptr: *mut mjCOctree, task: *const OctreeTask, vert_map: *mut i32, queue: *mut i32, colliding: *const i32) {
+    if self_ptr.is_null() { return; }
     extern "C" { fn mjCOctree_Subdivide(self_ptr: *mut mjCOctree, task: *const OctreeTask, vert_map: *mut i32, queue: *mut i32, colliding: *const i32); }
     // SAFETY: delegates to C implementation
     unsafe { mjCOctree_Subdivide(self_ptr, task, vert_map, queue, colliding) }
@@ -253,6 +257,7 @@ pub fn mj_c_octree_balance_octree(self_ptr: *mut mjCOctree, vert_map: *mut i32) 
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_octree_make_octree(self_ptr: *mut mjCOctree, elements: *const i32, aamm: [f64; 6], vert_map: *mut i32) {
+    if self_ptr.is_null() { return; }
     extern "C" { fn mjCOctree_MakeOctree(self_ptr: *mut mjCOctree, elements: *const i32, aamm: [f64; 6], vert_map: *mut i32); }
     // SAFETY: delegates to C implementation
     unsafe { mjCOctree_MakeOctree(self_ptr, elements, aamm, vert_map) }
@@ -700,6 +705,7 @@ pub fn mj_c_octree_num_nodes(self_ptr: *mut mjCOctree) -> i32 {
 /// C: mjCOctree::NumVerts (user/user_objects.h:288)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_octree_num_verts(self_ptr: *mut mjCOctree) -> i32 {
+    if self_ptr.is_null() { return 0; }
     extern "C" { fn mjCOctree_NumVerts(self_ptr: *mut mjCOctree) -> i32; }
     // SAFETY: delegates to C implementation
     unsafe { mjCOctree_NumVerts(self_ptr) }
@@ -768,6 +774,7 @@ pub fn mj_c_octree_vert(self_ptr: *mut mjCOctree, i: i32) -> *const f64 {
 /// C: mjCOctree::Hang (user/user_objects.h:294)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_octree_hang(self_ptr: *mut mjCOctree, i: i32) -> *const i32 {
+    if self_ptr.is_null() { return core::ptr::null(); }
     extern "C" { fn mjCOctree_Hang(self_ptr: *mut mjCOctree, i: i32) -> *const i32; }
     // SAFETY: delegates to C implementation
     unsafe { mjCOctree_Hang(self_ptr, i) }
@@ -794,6 +801,7 @@ pub fn mj_c_octree_children(self_ptr: *mut mjCOctree, i: i32) -> *const () {
 /// C: mjCOctree::Size (user/user_objects.h:298)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_octree_size(self_ptr: *mut mjCOctree) -> i32 {
+    if self_ptr.is_null() { return 0; }
     extern "C" { fn mjCOctree_Size(self_ptr: *mut mjCOctree) -> i32; }
     // SAFETY: delegates to C implementation
     unsafe { mjCOctree_Size(self_ptr) }
@@ -839,6 +847,7 @@ pub fn mj_c_octree_coeff(self_ptr: *mut mjCOctree, n: i32, v: i32) -> f64 {
 /// C: mjCOctree::SetMaxDepth (user/user_objects.h:313)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_octree_set_max_depth(self_ptr: *mut mjCOctree, depth: i32) {
+    if self_ptr.is_null() { return; }
     extern "C" { fn mjCOctree_SetMaxDepth(self_ptr: *mut mjCOctree, depth: i32); }
     // SAFETY: delegates to C implementation
     unsafe { mjCOctree_SetMaxDepth(self_ptr, depth) }
@@ -847,6 +856,7 @@ pub fn mj_c_octree_set_max_depth(self_ptr: *mut mjCOctree, depth: i32) {
 /// C: mjCOctree::MaxDepth (user/user_objects.h:314)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_octree_max_depth(self_ptr: *mut mjCOctree) -> i32 {
+    if self_ptr.is_null() { return 0; }
     extern "C" { fn mjCOctree_MaxDepth(self_ptr: *mut mjCOctree) -> i32; }
     // SAFETY: delegates to C implementation
     unsafe { mjCOctree_MaxDepth(self_ptr) }
@@ -855,6 +865,7 @@ pub fn mj_c_octree_max_depth(self_ptr: *mut mjCOctree) -> i32 {
 /// C: mjCOctree::SetSmoothingIterations (user/user_objects.h:317)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_octree_set_smoothing_iterations(self_ptr: *mut mjCOctree, iterations: i32) {
+    if self_ptr.is_null() { return; }
     extern "C" { fn mjCOctree_SetSmoothingIterations(self_ptr: *mut mjCOctree, iterations: i32); }
     // SAFETY: delegates to C implementation
     unsafe { mjCOctree_SetSmoothingIterations(self_ptr, iterations) }
@@ -863,6 +874,7 @@ pub fn mj_c_octree_set_smoothing_iterations(self_ptr: *mut mjCOctree, iterations
 /// C: mjCOctree::SmoothingIterations (user/user_objects.h:318)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_octree_smoothing_iterations(self_ptr: *mut mjCOctree) -> i32 {
+    if self_ptr.is_null() { return 0; }
     extern "C" { fn mjCOctree_SmoothingIterations(self_ptr: *mut mjCOctree) -> i32; }
     // SAFETY: delegates to C implementation
     unsafe { mjCOctree_SmoothingIterations(self_ptr) }
@@ -894,6 +906,7 @@ pub fn mj_c_octree_find_neighbor(self_ptr: *mut mjCOctree, node_idx: i32, dir: i
 /// C: mjCOctree::FindCoarseNeighbor (user/user_objects.h:333)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_octree_find_coarse_neighbor(self_ptr: *mut mjCOctree, node_idx: i32, dir: i32) -> i32 {
+    if self_ptr.is_null() { return 0; }
     extern "C" { fn mjCOctree_FindCoarseNeighbor(self_ptr: *mut mjCOctree, node_idx: i32, dir: i32) -> i32; }
     // SAFETY: delegates to C implementation
     unsafe { mjCOctree_FindCoarseNeighbor(self_ptr, node_idx, dir) }
@@ -902,6 +915,7 @@ pub fn mj_c_octree_find_coarse_neighbor(self_ptr: *mut mjCOctree, node_idx: i32,
 /// C: mjCOctree::MarkHangingNodes (user/user_objects.h:335)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_octree_mark_hanging_nodes(self_ptr: *mut mjCOctree) {
+    if self_ptr.is_null() { return; }
     extern "C" { fn mjCOctree_MarkHangingNodes(self_ptr: *mut mjCOctree); }
     // SAFETY: delegates to C implementation
     unsafe { mjCOctree_MarkHangingNodes(self_ptr) }
@@ -3530,6 +3544,7 @@ pub fn mj_c_material_compile(self_ptr: *mut mjCMaterial) {
 /// C: mjCPair::CopyFromSpec (user/user_objects.h:1565)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_pair_copy_from_spec(self_ptr: *mut mjCPair) {
+    if self_ptr.is_null() { return; }
     extern "C" { fn mjCPair_CopyFromSpec(self_ptr: *mut mjCPair); }
     // SAFETY: delegates to C implementation
     unsafe { mjCPair_CopyFromSpec(self_ptr) }
@@ -3538,6 +3553,7 @@ pub fn mj_c_pair_copy_from_spec(self_ptr: *mut mjCPair) {
 /// C: mjCPair::PointToLocal (user/user_objects.h:1566)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_pair_point_to_local(self_ptr: *mut mjCPair) {
+    if self_ptr.is_null() { return; }
     extern "C" { fn mjCPair_PointToLocal(self_ptr: *mut mjCPair); }
     // SAFETY: delegates to C implementation
     unsafe { mjCPair_PointToLocal(self_ptr) }
@@ -3546,6 +3562,7 @@ pub fn mj_c_pair_point_to_local(self_ptr: *mut mjCPair) {
 /// C: mjCPair::ResolveReferences (user/user_objects.h:1567)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_pair_resolve_references(self_ptr: *mut mjCPair, m: *const mjCModel) {
+    if self_ptr.is_null() { return; }
     extern "C" { fn mjCPair_ResolveReferences(self_ptr: *mut mjCPair, m: *const mjCModel); }
     // SAFETY: delegates to C implementation
     unsafe { mjCPair_ResolveReferences(self_ptr, m) }
@@ -3554,6 +3571,7 @@ pub fn mj_c_pair_resolve_references(self_ptr: *mut mjCPair, m: *const mjCModel) 
 /// C: mjCPair::NameSpace (user/user_objects.h:1568)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_pair_name_space(self_ptr: *mut mjCPair, m: *const mjCModel) {
+    if self_ptr.is_null() { return; }
     extern "C" { fn mjCPair_NameSpace(self_ptr: *mut mjCPair, m: *const mjCModel); }
     // SAFETY: delegates to C implementation
     unsafe { mjCPair_NameSpace(self_ptr, m) }
@@ -3562,6 +3580,7 @@ pub fn mj_c_pair_name_space(self_ptr: *mut mjCPair, m: *const mjCModel) {
 /// C: mjCPair::get_geomname1 (user/user_objects.h:1570)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_pair_get_geomname1(self_ptr: *mut mjCPair) -> *const i32 {
+    if self_ptr.is_null() { return core::ptr::null(); }
     extern "C" { fn mjCPair_get_geomname1(self_ptr: *mut mjCPair) -> *const i32; }
     // SAFETY: delegates to C implementation
     unsafe { mjCPair_get_geomname1(self_ptr) }
@@ -3570,6 +3589,7 @@ pub fn mj_c_pair_get_geomname1(self_ptr: *mut mjCPair) -> *const i32 {
 /// C: mjCPair::get_geomname2 (user/user_objects.h:1571)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_pair_get_geomname2(self_ptr: *mut mjCPair) -> *const i32 {
+    if self_ptr.is_null() { return core::ptr::null(); }
     extern "C" { fn mjCPair_get_geomname2(self_ptr: *mut mjCPair) -> *const i32; }
     // SAFETY: delegates to C implementation
     unsafe { mjCPair_get_geomname2(self_ptr) }
@@ -3940,6 +3960,7 @@ pub fn mj_c_wrap_compile(self_ptr: *mut mjCWrap) {
 /// C: mjCPlugin::PointToLocal (user/user_objects.h:1791)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_plugin_point_to_local(self_ptr: *mut mjCPlugin) {
+    if self_ptr.is_null() { return; }
     extern "C" { fn mjCPlugin_PointToLocal(self_ptr: *mut mjCPlugin); }
     // SAFETY: delegates to C implementation
     unsafe { mjCPlugin_PointToLocal(self_ptr) }
@@ -3949,6 +3970,7 @@ pub fn mj_c_plugin_point_to_local(self_ptr: *mut mjCPlugin) {
 /// Calls: mjp_getPluginAtSlot
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_plugin_compile(self_ptr: *mut mjCPlugin) {
+    if self_ptr.is_null() { return; }
     extern "C" { fn mjCPlugin_Compile(self_ptr: *mut mjCPlugin); }
     // SAFETY: delegates to C implementation
     unsafe { mjCPlugin_Compile(self_ptr) }
@@ -4075,6 +4097,7 @@ pub fn mj_c_sensor_get_userdata(self_ptr: *mut mjCSensor) -> *const i32 {
 /// C: mjCSensor::get_objname (user/user_objects.h:1902)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_sensor_get_objname(self_ptr: *mut mjCSensor) -> *const i32 {
+    if self_ptr.is_null() { return core::ptr::null(); }
     extern "C" { fn mjCSensor_get_objname(self_ptr: *mut mjCSensor) -> *const i32; }
     // SAFETY: delegates to C implementation
     unsafe { mjCSensor_get_objname(self_ptr) }
@@ -4091,6 +4114,7 @@ pub fn mj_c_sensor_get_refname(self_ptr: *mut mjCSensor) -> *const i32 {
 /// C: mjCSensor::get_obj (user/user_objects.h:1905)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_sensor_get_obj(self_ptr: *mut mjCSensor) -> *const mjCBase {
+    if self_ptr.is_null() { return core::ptr::null(); }
     extern "C" { fn mjCSensor_get_obj(self_ptr: *mut mjCSensor) -> *const mjCBase; }
     // SAFETY: delegates to C implementation
     unsafe { mjCSensor_get_obj(self_ptr) }
@@ -4116,6 +4140,7 @@ pub fn mj_c_sensor_compile(self_ptr: *mut mjCSensor) {
 /// C: mjCSensor::CopyFromSpec (user/user_objects.h:1910)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_sensor_copy_from_spec(self_ptr: *mut mjCSensor) {
+    if self_ptr.is_null() { return; }
     extern "C" { fn mjCSensor_CopyFromSpec(self_ptr: *mut mjCSensor); }
     // SAFETY: delegates to C implementation
     unsafe { mjCSensor_CopyFromSpec(self_ptr) }
@@ -4124,6 +4149,7 @@ pub fn mj_c_sensor_copy_from_spec(self_ptr: *mut mjCSensor) {
 /// C: mjCSensor::PointToLocal (user/user_objects.h:1911)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_sensor_point_to_local(self_ptr: *mut mjCSensor) {
+    if self_ptr.is_null() { return; }
     extern "C" { fn mjCSensor_PointToLocal(self_ptr: *mut mjCSensor); }
     // SAFETY: delegates to C implementation
     unsafe { mjCSensor_PointToLocal(self_ptr) }
@@ -4132,6 +4158,7 @@ pub fn mj_c_sensor_point_to_local(self_ptr: *mut mjCSensor) {
 /// C: mjCSensor::ResolveReferences (user/user_objects.h:1912)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_sensor_resolve_references(self_ptr: *mut mjCSensor, m: *const mjCModel) {
+    if self_ptr.is_null() { return; }
     extern "C" { fn mjCSensor_ResolveReferences(self_ptr: *mut mjCSensor, m: *const mjCModel); }
     // SAFETY: delegates to C implementation
     unsafe { mjCSensor_ResolveReferences(self_ptr, m) }
@@ -4140,6 +4167,7 @@ pub fn mj_c_sensor_resolve_references(self_ptr: *mut mjCSensor, m: *const mjCMod
 /// C: mjCSensor::NameSpace (user/user_objects.h:1913)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_sensor_name_space(self_ptr: *mut mjCSensor, m: *const mjCModel) {
+    if self_ptr.is_null() { return; }
     extern "C" { fn mjCSensor_NameSpace(self_ptr: *mut mjCSensor, m: *const mjCModel); }
     // SAFETY: delegates to C implementation
     unsafe { mjCSensor_NameSpace(self_ptr, m) }
@@ -4148,6 +4176,7 @@ pub fn mj_c_sensor_name_space(self_ptr: *mut mjCSensor, m: *const mjCModel) {
 /// C: mjCSensor::CopyPlugin (user/user_objects.h:1914)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_sensor_copy_plugin(self_ptr: *mut mjCSensor) {
+    if self_ptr.is_null() { return; }
     extern "C" { fn mjCSensor_CopyPlugin(self_ptr: *mut mjCSensor); }
     // SAFETY: delegates to C implementation
     unsafe { mjCSensor_CopyPlugin(self_ptr) }
