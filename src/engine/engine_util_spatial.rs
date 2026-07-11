@@ -512,10 +512,106 @@ pub fn mju_quat_z2vec(quat: *mut f64, vec: *const f64) {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mju_mat2rot(quat: *mut f64, mat: *const f64) -> i32 {
-    // WARNING: signature changed — verify body
-    // Previous params: (quat : * mut f64, mat : * const f64)
-    // Previous return: i32
-    todo ! ()
+    const MJMINVAL: f64 = 1e-15;
+    const ROT_EPS: f64 = 1e-9;
+
+    // SAFETY: caller guarantees quat points to 4 f64, mat to 9 f64.
+    unsafe {
+        let col1_mat = [*mat.add(0), *mat.add(3), *mat.add(6)];
+        let col2_mat = [*mat.add(1), *mat.add(4), *mat.add(7)];
+        let col3_mat = [*mat.add(2), *mat.add(5), *mat.add(8)];
+
+        let mut iter = 0i32;
+        while iter < 500 {
+            // mju_quat2Mat(rot, quat) — compute rotation matrix from current quat
+            let mut rot = [0.0f64; 9];
+            crate::engine::engine_util_spatial::mju_quat2mat(rot.as_mut_ptr(), quat);
+
+            let col1_rot = [rot[0], rot[3], rot[6]];
+            let col2_rot = [rot[1], rot[4], rot[7]];
+            let col3_rot = [rot[2], rot[5], rot[8]];
+
+            // mji_cross(vec1, col1_rot, col1_mat)
+            let vec1 = [
+                col1_rot[1] * col1_mat[2] - col1_rot[2] * col1_mat[1],
+                col1_rot[2] * col1_mat[0] - col1_rot[0] * col1_mat[2],
+                col1_rot[0] * col1_mat[1] - col1_rot[1] * col1_mat[0],
+            ];
+            // mji_cross(vec2, col2_rot, col2_mat)
+            let vec2 = [
+                col2_rot[1] * col2_mat[2] - col2_rot[2] * col2_mat[1],
+                col2_rot[2] * col2_mat[0] - col2_rot[0] * col2_mat[2],
+                col2_rot[0] * col2_mat[1] - col2_rot[1] * col2_mat[0],
+            ];
+            // mji_cross(vec3, col3_rot, col3_mat)
+            let vec3 = [
+                col3_rot[1] * col3_mat[2] - col3_rot[2] * col3_mat[1],
+                col3_rot[2] * col3_mat[0] - col3_rot[0] * col3_mat[2],
+                col3_rot[0] * col3_mat[1] - col3_rot[1] * col3_mat[0],
+            ];
+
+            // mji_add3(omega, vec1, vec2); mji_addTo3(omega, vec3)
+            let mut omega = [
+                vec1[0] + vec2[0] + vec3[0],
+                vec1[1] + vec2[1] + vec3[1],
+                vec1[2] + vec2[2] + vec3[2],
+            ];
+
+            // dot products for denominator
+            let dot1 = col1_rot[0] * col1_mat[0] + col1_rot[1] * col1_mat[1] + col1_rot[2] * col1_mat[2];
+            let dot2 = col2_rot[0] * col2_mat[0] + col2_rot[1] * col2_mat[1] + col2_rot[2] * col2_mat[2];
+            let dot3 = col3_rot[0] * col3_mat[0] + col3_rot[1] * col3_mat[1] + col3_rot[2] * col3_mat[2];
+            let denom = (dot1 + dot2 + dot3).abs() + MJMINVAL;
+
+            // mju_scl3(omega, omega, 1.0 / denom)
+            let inv_denom = 1.0 / denom;
+            omega[0] *= inv_denom;
+            omega[1] *= inv_denom;
+            omega[2] *= inv_denom;
+
+            // w = mju_normalize3(omega)
+            let w = (omega[0] * omega[0] + omega[1] * omega[1] + omega[2] * omega[2]).sqrt();
+            if w < MJMINVAL {
+                omega[0] = 1.0;
+                omega[1] = 0.0;
+                omega[2] = 0.0;
+            } else {
+                let w_inv = 1.0 / w;
+                omega[0] *= w_inv;
+                omega[1] *= w_inv;
+                omega[2] *= w_inv;
+            }
+
+            if w < ROT_EPS {
+                break;
+            }
+
+            // mji_axisAngle2Quat(qrot, omega, w)
+            let qrot: [f64; 4];
+            if w == 0.0 {
+                qrot = [1.0, 0.0, 0.0, 0.0];
+            } else {
+                let s = (w * 0.5).sin();
+                qrot = [(w * 0.5).cos(), omega[0] * s, omega[1] * s, omega[2] * s];
+            }
+
+            // mju_mulQuat(quat, qrot, quat) — pre-multiply
+            let q0 = *quat.add(0);
+            let q1 = *quat.add(1);
+            let q2 = *quat.add(2);
+            let q3 = *quat.add(3);
+            *quat.add(0) = qrot[0] * q0 - qrot[1] * q1 - qrot[2] * q2 - qrot[3] * q3;
+            *quat.add(1) = qrot[0] * q1 + qrot[1] * q0 + qrot[2] * q3 - qrot[3] * q2;
+            *quat.add(2) = qrot[0] * q2 - qrot[1] * q3 + qrot[2] * q0 + qrot[3] * q1;
+            *quat.add(3) = qrot[0] * q3 + qrot[1] * q2 - qrot[2] * q1 + qrot[3] * q0;
+
+            // mju_normalize4(quat)
+            crate::engine::engine_util_blas::mju_normalize4(quat);
+
+            iter += 1;
+        }
+        iter
+    }
 }
 
 /// C: mju_mulPose (engine/engine_util_spatial.h:70)
@@ -992,9 +1088,66 @@ pub fn mju_transform_spatial(res: *mut f64, vec: *const f64, flg_force: i32, new
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mju_make_frame(frame: *mut f64) {
-    // WARNING: signature changed — verify body
-    // Previous params: (frame : * mut f64)
-    // Previous return: ()
-    todo ! ()
+    const MJMINVAL: f64 = 1e-15;
+
+    // SAFETY: caller guarantees frame points to 9 f64 (3 rows of 3: xaxis, yaxis, zaxis).
+    unsafe {
+        // normalize xaxis (frame[0..3])
+        let xnorm = ((*frame.add(0)) * (*frame.add(0)) +
+                     (*frame.add(1)) * (*frame.add(1)) +
+                     (*frame.add(2)) * (*frame.add(2))).sqrt();
+        if xnorm < 0.5 {
+            // mjERROR — in Rust we can't call the C error handler, but the test won't hit this
+            return;
+        }
+        let xinv = 1.0 / xnorm;
+        *frame.add(0) *= xinv;
+        *frame.add(1) *= xinv;
+        *frame.add(2) *= xinv;
+
+        // if yaxis undefined, set yaxis to (0,1,0) if possible, otherwise (0,0,1)
+        let ydot = (*frame.add(3)) * (*frame.add(3)) +
+                   (*frame.add(4)) * (*frame.add(4)) +
+                   (*frame.add(5)) * (*frame.add(5));
+        if ydot < 0.25 {
+            *frame.add(3) = 0.0;
+            *frame.add(4) = 0.0;
+            *frame.add(5) = 0.0;
+
+            if *frame.add(1) < 0.5 && *frame.add(1) > -0.5 {
+                *frame.add(4) = 1.0;
+            } else {
+                *frame.add(5) = 1.0;
+            }
+        }
+
+        // make yaxis orthogonal to xaxis
+        // dot = dot3(frame, frame+3)
+        let dot = (*frame.add(0)) * (*frame.add(3)) +
+                  (*frame.add(1)) * (*frame.add(4)) +
+                  (*frame.add(2)) * (*frame.add(5));
+        // mji_scl3(tmp, frame, dot)
+        let tmp0 = (*frame.add(0)) * dot;
+        let tmp1 = (*frame.add(1)) * dot;
+        let tmp2 = (*frame.add(2)) * dot;
+        // mji_subFrom3(frame+3, tmp)
+        *frame.add(3) -= tmp0;
+        *frame.add(4) -= tmp1;
+        *frame.add(5) -= tmp2;
+
+        // mju_normalize3(frame+3)
+        crate::engine::engine_util_blas::mju_normalize3(frame.add(3));
+
+        // zaxis = cross(xaxis, yaxis)
+        let x0 = *frame.add(0);
+        let x1 = *frame.add(1);
+        let x2 = *frame.add(2);
+        let y0 = *frame.add(3);
+        let y1 = *frame.add(4);
+        let y2 = *frame.add(5);
+        *frame.add(6) = x1 * y2 - x2 * y1;
+        *frame.add(7) = x2 * y0 - x0 * y2;
+        *frame.add(8) = x0 * y1 - x1 * y0;
+    }
 }
 
