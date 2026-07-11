@@ -162,10 +162,32 @@ pub fn mju_wrap(wpnt: *mut f64, x0: *const f64, x1: *const f64, xpos: *const f64
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mju_muscle_gain_length(length: f64, lmin: f64, lmax: f64) -> f64 {
-    // WARNING: signature changed — verify body
-    // Previous params: (length : f64, lmin : f64, lmax : f64)
-    // Previous return: f64
-    todo ! ()
+    const MJMINVAL: f64 = 1e-15;
+    if lmin <= length && length <= lmax {
+        // mid-ranges (maximum is at 1.0)
+        let a = 0.5 * (lmin + 1.0);
+        let b = 0.5 * (1.0 + lmax);
+
+        if length <= a {
+            let denom = if a - lmin > MJMINVAL { a - lmin } else { MJMINVAL };
+            let x = (length - lmin) / denom;
+            return 0.5 * x * x;
+        } else if length <= 1.0 {
+            let denom = if 1.0 - a > MJMINVAL { 1.0 - a } else { MJMINVAL };
+            let x = (1.0 - length) / denom;
+            return 1.0 - 0.5 * x * x;
+        } else if length <= b {
+            let denom = if b - 1.0 > MJMINVAL { b - 1.0 } else { MJMINVAL };
+            let x = (length - 1.0) / denom;
+            return 1.0 - 0.5 * x * x;
+        } else {
+            let denom = if lmax - b > MJMINVAL { lmax - b } else { MJMINVAL };
+            let x = (lmax - length) / denom;
+            return 0.5 * x * x;
+        }
+    }
+
+    0.0
 }
 
 /// C: mju_muscleGain (engine/engine_util_misc.h:39)
@@ -177,10 +199,51 @@ pub fn mju_muscle_gain_length(length: f64, lmin: f64, lmax: f64) -> f64 {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mju_muscle_gain(len: f64, vel: f64, lengthrange: *const f64, acc0: f64, prm: *const f64) -> f64 {
-    // WARNING: signature changed — verify body
-    // Previous params: (len : f64, vel : f64, lengthrange : * const f64, acc0 : f64, prm : * const f64)
-    // Previous return: f64
-    todo ! ()
+    const MJMINVAL: f64 = 1e-15;
+    // SAFETY: caller guarantees lengthrange points to 2, prm points to 9 f64
+    unsafe {
+        // unpack parameters
+        let range0 = *prm.add(0);
+        let range1 = *prm.add(1);
+        let mut force = *prm.add(2);
+        let scale = *prm.add(3);
+        let lmin = *prm.add(4);
+        let lmax = *prm.add(5);
+        let vmax = *prm.add(6);
+        let fvmax = *prm.add(8);
+
+        // scale force if negative
+        if force < 0.0 {
+            force = scale / (if acc0 > MJMINVAL { acc0 } else { MJMINVAL });
+        }
+
+        // optimum length
+        let L0 = (*lengthrange.add(1) - *lengthrange.add(0)) /
+                 (if range1 - range0 > MJMINVAL { range1 - range0 } else { MJMINVAL });
+
+        // normalized length and velocity
+        let L = range0 + (len - *lengthrange.add(0)) / (if L0 > MJMINVAL { L0 } else { MJMINVAL });
+        let V = vel / (if L0 * vmax > MJMINVAL { L0 * vmax } else { MJMINVAL });
+
+        // length curve
+        let FL = mju_muscle_gain_length(L, lmin, lmax);
+
+        // velocity curve
+        let FV;
+        let y = fvmax - 1.0;
+        if V <= -1.0 {
+            FV = 0.0;
+        } else if V <= 0.0 {
+            FV = (V + 1.0) * (V + 1.0);
+        } else if V <= y {
+            FV = fvmax - (y - V) * (y - V) / (if y > MJMINVAL { y } else { MJMINVAL });
+        } else {
+            FV = fvmax;
+        }
+
+        // compute FVL and scale, make it negative
+        -force * FL * FV
+    }
 }
 
 /// C: mju_muscleBias (engine/engine_util_misc.h:43)
@@ -191,10 +254,43 @@ pub fn mju_muscle_gain(len: f64, vel: f64, lengthrange: *const f64, acc0: f64, p
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mju_muscle_bias(len: f64, lengthrange: *const f64, acc0: f64, prm: *const f64) -> f64 {
-    // WARNING: signature changed — verify body
-    // Previous params: (len : f64, lengthrange : * const f64, acc0 : f64, prm : * const f64)
-    // Previous return: f64
-    todo ! ()
+    const MJMINVAL: f64 = 1e-15;
+    // SAFETY: caller guarantees lengthrange points to 2, prm points to 9 f64
+    unsafe {
+        // unpack parameters
+        let range0 = *prm.add(0);
+        let range1 = *prm.add(1);
+        let mut force = *prm.add(2);
+        let scale = *prm.add(3);
+        let lmax = *prm.add(5);
+        let fpmax = *prm.add(7);
+
+        // scale force if negative
+        if force < 0.0 {
+            force = scale / (if acc0 > MJMINVAL { acc0 } else { MJMINVAL });
+        }
+
+        // optimum length
+        let L0 = (*lengthrange.add(1) - *lengthrange.add(0)) /
+                 (if range1 - range0 > MJMINVAL { range1 - range0 } else { MJMINVAL });
+
+        // normalized length
+        let L = range0 + (len - *lengthrange.add(0)) / (if L0 > MJMINVAL { L0 } else { MJMINVAL });
+
+        // half-quadratic to (L0+lmax)/2, linear beyond
+        let b = 0.5 * (1.0 + lmax);
+        if L <= 1.0 {
+            0.0
+        } else if L <= b {
+            let denom = if b - 1.0 > MJMINVAL { b - 1.0 } else { MJMINVAL };
+            let x = (L - 1.0) / denom;
+            -force * fpmax * 0.5 * x * x
+        } else {
+            let denom = if b - 1.0 > MJMINVAL { b - 1.0 } else { MJMINVAL };
+            let x = (L - b) / denom;
+            -force * fpmax * (0.5 + x)
+        }
+    }
 }
 
 /// C: mju_muscleDynamicsTimescale (engine/engine_util_misc.h:47)
@@ -236,10 +332,10 @@ pub fn mju_muscle_dynamics(ctrl: f64, act: f64, prm: *const f64) -> f64 {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_lugre_stribeck(velocity: f64, F_C: f64, F_S: f64, v_S: f64) -> f64 {
-    // WARNING: signature changed — verify body
-    // Previous params: (velocity : f64, F_C : f64, F_S : f64, v_S : f64)
-    // Previous return: f64
-    todo ! ()
+    const MJMINVAL: f64 = 1e-15;
+    let denom = if v_S > MJMINVAL { v_S } else { MJMINVAL };
+    let ratio = velocity / denom;
+    F_C + (F_S - F_C) * (-ratio * ratio).exp()
 }
 
 /// C: mj_dcmotorSlots (engine/engine_util_misc.h:68)
@@ -731,10 +827,7 @@ pub fn mju_print_mat_sparse(mat: *const f64, nr: i32, rownnz: *const i32, rowadr
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mju_min(a: f64, b: f64) -> f64 {
-    // WARNING: signature changed — verify body
-    // Previous params: (a : f64, b : f64)
-    // Previous return: f64
-    todo ! ()
+    if a <= b { a } else { b }
 }
 
 /// C: mju_max (engine/engine_util_misc.h:228)
@@ -756,10 +849,13 @@ pub fn mju_max(a: f64, b: f64) -> f64 {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mju_clip(x: f64, min: f64, max: f64) -> f64 {
-    // WARNING: signature changed — verify body
-    // Previous params: (x : f64, min : f64, max : f64)
-    // Previous return: f64
-    todo ! ()
+    if x < min {
+        min
+    } else if x > max {
+        max
+    } else {
+        x
+    }
 }
 
 /// C: mju_sign (engine/engine_util_misc.h:234)
@@ -770,10 +866,13 @@ pub fn mju_clip(x: f64, min: f64, max: f64) -> f64 {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mju_sign(x: f64) -> f64 {
-    // WARNING: signature changed — verify body
-    // Previous params: (x : f64)
-    // Previous return: f64
-    todo ! ()
+    if x < 0.0 {
+        -1.0
+    } else if x > 0.0 {
+        1.0
+    } else {
+        0.0
+    }
 }
 
 /// C: mju_round (engine/engine_util_misc.h:237)
@@ -865,10 +964,43 @@ pub fn mju_str2type(str: *const i8) -> i32 {
 /// C: mju_writeNumBytes (engine/engine_util_misc.h:246)
 #[allow(unused_variables, non_snake_case)]
 pub fn mju_write_num_bytes(nbytes: usize) -> *const i8 {
-    // WARNING: signature changed — verify body
-    // Previous params: (nbytes : usize)
-    // Previous return: * const i8
-    todo ! ()
+    use std::cell::RefCell;
+    use std::fmt::Write;
+
+    thread_local! {
+        static MESSAGE: RefCell<[u8; 20]> = RefCell::new([0u8; 20]);
+    }
+
+    const SUFFIX: &[u8; 7] = b" KMGTPE";
+
+    // find the largest suffix that divides evenly
+    let mut idx = 0usize;
+    for i in 0..6usize {
+        let bits: usize = 1 << (10 * (6 - i));
+        if nbytes >= bits && (nbytes & (bits - 1)) == 0 {
+            idx = i;
+            break;
+        }
+        if i == 5 {
+            idx = 6;
+        }
+    }
+
+    MESSAGE.with(|msg| {
+        let mut buf = msg.borrow_mut();
+        let shifted = nbytes >> (10 * (6 - idx));
+        let mut s = String::new();
+        if idx < 6 {
+            let _ = write!(s, "{}{}", shifted, SUFFIX[6 - idx] as char);
+        } else {
+            let _ = write!(s, "{}", shifted);
+        }
+        let bytes = s.as_bytes();
+        let len = bytes.len().min(19);
+        buf[..len].copy_from_slice(&bytes[..len]);
+        buf[len] = 0;
+        buf.as_ptr() as *const i8
+    })
 }
 
 /// C: mju_warningText (engine/engine_util_misc.h:249)
@@ -889,10 +1021,8 @@ pub fn mju_warning_text(warning: i32, info: usize) -> *const i8 {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mju_is_bad(x: f64) -> i32 {
-    // WARNING: signature changed — verify body
-    // Previous params: (x : f64)
-    // Previous return: i32
-    todo ! ()
+    const MJMAXVAL: f64 = 1e10;
+    (x != x || x > MJMAXVAL || x < -MJMAXVAL) as i32
 }
 
 /// C: mju_isZero (engine/engine_util_misc.h:255)
@@ -958,10 +1088,12 @@ pub fn mju_copy_int(res: *mut i32, vec: *const i32, n: i32) {
 /// C: mju_fillInt (engine/engine_util_misc.h:267)
 #[allow(unused_variables, non_snake_case)]
 pub fn mju_fill_int(res: *mut i32, val: i32, n: i32) {
-    // WARNING: signature changed — verify body
-    // Previous params: (res : * mut i32, val : i32, n : i32)
-    // Previous return: ()
-    todo ! ()
+    // SAFETY: caller guarantees res points to at least n contiguous i32
+    unsafe {
+        for i in 0..n as usize {
+            *res.add(i) = val;
+        }
+    }
 }
 
 /// C: mju_standardNormal (engine/engine_util_misc.h:270)
@@ -1043,10 +1175,16 @@ pub fn mju_n2d(res: *mut f64, vec: *const f64, n: i32) {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mju_gather(res: *mut f64, vec: *const f64, ind: *const i32, n: i32) {
-    // WARNING: signature changed — verify body
-    // Previous params: (res : * mut f64, vec : * const f64, ind : * const i32, n : i32)
-    // Previous return: ()
-    todo ! ()
+    if ind.is_null() {
+        crate::engine::engine_util_blas::mju_copy(res, vec, n);
+        return;
+    }
+    // SAFETY: caller guarantees res points to n, vec has enough elements, ind points to n indices
+    unsafe {
+        for i in 0..n as usize {
+            *res.add(i) = *vec.add(*ind.add(i) as usize);
+        }
+    }
 }
 
 /// C: mju_gatherMasked (engine/engine_util_misc.h:288)
@@ -1072,10 +1210,16 @@ pub fn mju_gather_masked(res: *mut f64, vec: *const f64, ind: *const i32, n: i32
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mju_scatter(res: *mut f64, vec: *const f64, ind: *const i32, n: i32) {
-    // WARNING: signature changed — verify body
-    // Previous params: (res : * mut f64, vec : * const f64, ind : * const i32, n : i32)
-    // Previous return: ()
-    todo ! ()
+    if ind.is_null() {
+        crate::engine::engine_util_blas::mju_copy(res, vec, n);
+        return;
+    }
+    // SAFETY: caller guarantees res has enough elements, vec points to n, ind points to n indices
+    unsafe {
+        for i in 0..n as usize {
+            *res.add(*ind.add(i) as usize) = *vec.add(i);
+        }
+    }
 }
 
 /// C: mju_gatherInt (engine/engine_util_misc.h:294)
@@ -1220,9 +1364,15 @@ pub fn mju_poly_potential(linear: f64, poly: *const f64, x: f64, n: i32, flg_odd
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mju_sigmoid(x: f64) -> f64 {
-    // WARNING: signature changed — verify body
-    // Previous params: (x : f64)
-    // Previous return: f64
-    todo ! ()
+    // fast return
+    if x <= 0.0 {
+        return 0.0;
+    }
+    if x >= 1.0 {
+        return 1.0;
+    }
+
+    // sigmoid: f(x) = 6*x^5 - 15*x^4 + 10*x^3
+    x * x * x * (3.0 * x * (2.0 * x - 5.0) + 10.0)
 }
 

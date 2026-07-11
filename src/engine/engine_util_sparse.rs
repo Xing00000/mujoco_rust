@@ -282,10 +282,82 @@ pub fn mju_add_chains(res: *mut i32, n: i32, NV1: i32, NV2: i32, chain1: *const 
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mju_transpose_sparse(res: *mut f64, mat: *const f64, nr: i32, nc: i32, res_rownnz: *mut i32, res_rowadr: *mut i32, res_colind: *mut i32, res_rowsuper: *mut i32, rownnz: *const i32, rowadr: *const i32, colind: *const i32) {
-    // WARNING: signature changed — verify body
-    // Previous params: (res : * mut f64, mat : * const f64, nr : i32, nc : i32, res_rownnz : * mut i32, res_rowadr : * mut i32, res_colind : * mut i32, res_rowsuper : * mut i32, rownnz : * const i32, rowadr : * const i32, colind : * const i32)
-    // Previous return: ()
-    todo ! ()
+    if nr == 0 || nc == 0 {
+        return;
+    }
+
+    // SAFETY: caller guarantees all pointers are valid and properly sized
+    unsafe {
+        // clear number of non-zeros for each row of transposed
+        crate::engine::engine_util_misc::mju_zero_int(res_rownnz, nc);
+
+        // handle the case where the first row of mat is nonzero (offset wrt the base pointers)
+        let row_offset = *rowadr.add(0);
+
+        // count the number of non-zeros for each row of the transposed matrix
+        for r in 0..nr as usize {
+            let start = (*rowadr.add(r) - row_offset) as usize;
+            let end = start + *rownnz.add(r) as usize;
+            for j in start..end {
+                let col = *colind.add(j) as usize;
+                *res_rownnz.add(col) += 1;
+            }
+        }
+
+        // init res_rowsuper
+        if !res_rowsuper.is_null() {
+            for i in 0..(nc as usize - 1) {
+                *res_rowsuper.add(i) = (*res_rownnz.add(i) == *res_rownnz.add(i + 1)) as i32;
+            }
+            *res_rowsuper.add(nc as usize - 1) = 0;
+        }
+
+        // compute the row addresses for the transposed matrix
+        *res_rowadr.add(0) = 0;
+        for i in 1..nc as usize {
+            *res_rowadr.add(i) = *res_rowadr.add(i - 1) + *res_rownnz.add(i - 1);
+        }
+
+        // iterate through each row (column) of mat (res)
+        for r in 0..nr as usize {
+            let mut c_prev: i32 = -1;
+            let start = (*rowadr.add(r) - row_offset) as usize;
+            let end = start + *rownnz.add(r) as usize;
+            for i in start..end {
+                // swap rows with columns and increment res_rowadr
+                let c = *colind.add(i) as usize;
+                let adr = *res_rowadr.add(c) as usize;
+                *res_rowadr.add(c) += 1;
+                *res_colind.add(adr) = r as i32;
+                if !res.is_null() {
+                    *res.add(adr) = *mat.add(i);
+                }
+
+                // mark non-supernodes
+                if !res_rowsuper.is_null() {
+                    if c > 0 && c as i32 != c_prev + 1 && *res_rowsuper.add(c - 1) != 0 {
+                        *res_rowsuper.add(c - 1) = 0;
+                    }
+                    c_prev = c as i32;
+                }
+            }
+        }
+
+        // shift back row addresses
+        for i in (1..nc as usize).rev() {
+            *res_rowadr.add(i) = *res_rowadr.add(i - 1);
+        }
+        *res_rowadr.add(0) = 0;
+
+        // accumulate supernodes
+        if !res_rowsuper.is_null() {
+            for i in (0..(nc as usize - 1)).rev() {
+                if *res_rowsuper.add(i) != 0 {
+                    *res_rowsuper.add(i) += *res_rowsuper.add(i + 1);
+                }
+            }
+        }
+    }
 }
 
 /// C: mju_superSparse (engine/engine_util_sparse.h:115)

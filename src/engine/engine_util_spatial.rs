@@ -41,10 +41,17 @@ pub fn mju_neg_quat(res: *mut f64, quat: *const f64) {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mju_mul_quat(res: *mut f64, quat1: *const f64, quat2: *const f64) {
-    // WARNING: signature changed — verify body
-    // Previous params: (res : * mut f64, quat1 : * const f64, quat2 : * const f64)
-    // Previous return: ()
-    todo ! ()
+    // SAFETY: caller guarantees res, quat1, quat2 point to at least 4 contiguous f64
+    unsafe {
+        let tmp0 = *quat1.add(0) * *quat2.add(0) - *quat1.add(1) * *quat2.add(1) - *quat1.add(2) * *quat2.add(2) - *quat1.add(3) * *quat2.add(3);
+        let tmp1 = *quat1.add(0) * *quat2.add(1) + *quat1.add(1) * *quat2.add(0) + *quat1.add(2) * *quat2.add(3) - *quat1.add(3) * *quat2.add(2);
+        let tmp2 = *quat1.add(0) * *quat2.add(2) - *quat1.add(1) * *quat2.add(3) + *quat1.add(2) * *quat2.add(0) + *quat1.add(3) * *quat2.add(1);
+        let tmp3 = *quat1.add(0) * *quat2.add(3) + *quat1.add(1) * *quat2.add(2) - *quat1.add(2) * *quat2.add(1) + *quat1.add(3) * *quat2.add(0);
+        *res.add(0) = tmp0;
+        *res.add(1) = tmp1;
+        *res.add(2) = tmp2;
+        *res.add(3) = tmp3;
+    }
 }
 
 /// C: mju_mulQuatAxis (engine/engine_util_spatial.h:36)
