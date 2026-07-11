@@ -70,6 +70,7 @@ pub fn mj_x_reader_parse(self_ptr: *mut mjXReader, root: *mut tinyxml2__XMLEleme
 /// C: mjXReader::PrintSchema (xml/xml_native_reader.h:35)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_x_reader_print_schema(self_ptr: *mut mjXReader, str: *mut std__stringstream, html: bool, pad: bool) {
+    if self_ptr.is_null() { return; }
     extern "C" { fn mjXReader_PrintSchema(self_ptr: *mut mjXReader, str: *mut std__stringstream, html: bool, pad: bool); }
     // SAFETY: delegates to C implementation
     unsafe { mjXReader_PrintSchema(self_ptr, str, html, pad) }
@@ -78,6 +79,7 @@ pub fn mj_x_reader_print_schema(self_ptr: *mut mjXReader, str: *mut std__strings
 /// C: mjXReader::SetModelFileDir (xml/xml_native_reader.h:37)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_x_reader_set_model_file_dir(self_ptr: *mut mjXReader, modelfiledir: *const std__string) {
+    if self_ptr.is_null() { return; }
     extern "C" { fn mjXReader_SetModelFileDir(self_ptr: *mut mjXReader, modelfiledir: *const std__string); }
     // SAFETY: delegates to C implementation
     unsafe { mjXReader_SetModelFileDir(self_ptr, modelfiledir) }
@@ -97,6 +99,7 @@ pub fn mj_x_reader_model_file_dir(self_ptr: *mut mjXReader) -> *const mujoco__us
 /// C: mjXReader::SetAssetDir (xml/xml_native_reader.h:41)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_x_reader_set_asset_dir(self_ptr: *mut mjXReader, assetdir: *const std__string) {
+    if self_ptr.is_null() { return; }
     extern "C" { fn mjXReader_SetAssetDir(self_ptr: *mut mjXReader, assetdir: *const std__string); }
     // SAFETY: delegates to C implementation
     unsafe { mjXReader_SetAssetDir(self_ptr, assetdir) }
@@ -105,6 +108,7 @@ pub fn mj_x_reader_set_asset_dir(self_ptr: *mut mjXReader, assetdir: *const std_
 /// C: mjXReader::SetMeshDir (xml/xml_native_reader.h:42)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_x_reader_set_mesh_dir(self_ptr: *mut mjXReader, meshdir: *const std__string) {
+    if self_ptr.is_null() { return; }
     extern "C" { fn mjXReader_SetMeshDir(self_ptr: *mut mjXReader, meshdir: *const std__string); }
     // SAFETY: delegates to C implementation
     unsafe { mjXReader_SetMeshDir(self_ptr, meshdir) }
@@ -113,6 +117,7 @@ pub fn mj_x_reader_set_mesh_dir(self_ptr: *mut mjXReader, meshdir: *const std__s
 /// C: mjXReader::SetTextureDir (xml/xml_native_reader.h:43)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_x_reader_set_texture_dir(self_ptr: *mut mjXReader, texturedir: *const std__string) {
+    if self_ptr.is_null() { return; }
     extern "C" { fn mjXReader_SetTextureDir(self_ptr: *mut mjXReader, texturedir: *const std__string); }
     // SAFETY: delegates to C implementation
     unsafe { mjXReader_SetTextureDir(self_ptr, texturedir) }

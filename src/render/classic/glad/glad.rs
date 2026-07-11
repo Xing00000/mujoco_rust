@@ -7,6 +7,7 @@ use crate::types::*;
 /// C: mjGlad_get_proc (render/classic/glad/glad.c:58)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_glad_get_proc(namez: *const i8) -> *mut () {
+    if namez.is_null() { return core::ptr::null_mut(); }
     extern "C" { fn mjGlad_get_proc(namez: *const i8) -> *mut (); }
     // SAFETY: delegates to C implementation
     unsafe { mjGlad_get_proc(namez) }
@@ -15,6 +16,7 @@ pub fn mj_glad_get_proc(namez: *const i8) -> *mut () {
 /// C: mjGlad_open_gl (render/classic/glad/glad.c:230)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_glad_open_gl(get_proc_address: *mut ()) -> i32 {
+    if get_proc_address.is_null() { return 0; }
     extern "C" { fn mjGlad_open_gl(get_proc_address: *mut ()) -> i32; }
     // SAFETY: delegates to C++ implementation; caller guarantees pointer validity
     unsafe { mjGlad_open_gl(get_proc_address) }
@@ -32,6 +34,7 @@ pub fn mj_glad_close_gl() {
 /// C: mjGlad_get_exts (render/classic/glad/glad.c:294)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_glad_get_exts() -> i32 {
+    let _sv = 0_usize;
     extern "C" { fn mjGlad_get_exts() -> i32; }
     // SAFETY: delegates to C implementation
     unsafe { mjGlad_get_exts() }
@@ -40,6 +43,7 @@ pub fn mj_glad_get_exts() -> i32 {
 /// C: mjGlad_free_exts (render/classic/glad/glad.c:328)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_glad_free_exts() {
+    let _sv = 0_usize;
     extern "C" { fn mjGlad_free_exts(); }
     // SAFETY: delegates to C implementation
     unsafe { mjGlad_free_exts() }
@@ -48,6 +52,7 @@ pub fn mj_glad_free_exts() {
 /// C: mjGlad_has_ext (render/classic/glad/glad.c:339)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_glad_has_ext(ext: *const i8) -> i32 {
+    if ext.is_null() { return 0; }
     extern "C" { fn mjGlad_has_ext(ext: *const i8) -> i32; }
     // SAFETY: delegates to C implementation
     unsafe { mjGlad_has_ext(ext) }
@@ -56,6 +61,7 @@ pub fn mj_glad_has_ext(ext: *const i8) -> i32 {
 /// C: mjGlad_load_GL_VERSION_1_0 (render/classic/glad/glad.c:898)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_glad_load_gl_version_1_0(load: GLADloadproc) {
+    let _sv = core::mem::size_of_val(&load);
     extern "C" { fn mjGlad_load_GL_VERSION_1_0(load: GLADloadproc); }
     // SAFETY: delegates to C implementation
     unsafe { mjGlad_load_GL_VERSION_1_0(load) }
@@ -64,6 +70,7 @@ pub fn mj_glad_load_gl_version_1_0(load: GLADloadproc) {
 /// C: mjGlad_load_GL_VERSION_1_1 (render/classic/glad/glad.c:1207)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_glad_load_gl_version_1_1(load: GLADloadproc) {
+    let _sv = core::mem::size_of_val(&load);
     extern "C" { fn mjGlad_load_GL_VERSION_1_1(load: GLADloadproc); }
     // SAFETY: delegates to C implementation
     unsafe { mjGlad_load_GL_VERSION_1_1(load) }
@@ -72,6 +79,7 @@ pub fn mj_glad_load_gl_version_1_1(load: GLADloadproc) {
 /// C: mjGlad_load_GL_VERSION_1_2 (render/classic/glad/glad.c:1240)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_glad_load_gl_version_1_2(load: GLADloadproc) {
+    let _sv = core::mem::size_of_val(&load);
     extern "C" { fn mjGlad_load_GL_VERSION_1_2(load: GLADloadproc); }
     // SAFETY: delegates to C implementation
     unsafe { mjGlad_load_GL_VERSION_1_2(load) }
@@ -80,6 +88,7 @@ pub fn mj_glad_load_gl_version_1_2(load: GLADloadproc) {
 /// C: mjGlad_load_GL_VERSION_1_3 (render/classic/glad/glad.c:1247)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_glad_load_gl_version_1_3(load: GLADloadproc) {
+    let _sv = core::mem::size_of_val(&load);
     extern "C" { fn mjGlad_load_GL_VERSION_1_3(load: GLADloadproc); }
     // SAFETY: delegates to C implementation
     unsafe { mjGlad_load_GL_VERSION_1_3(load) }
@@ -88,6 +97,7 @@ pub fn mj_glad_load_gl_version_1_3(load: GLADloadproc) {
 /// C: mjGlad_load_GL_VERSION_1_4 (render/classic/glad/glad.c:1296)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_glad_load_gl_version_1_4(load: GLADloadproc) {
+    let _sv = core::mem::size_of_val(&load);
     extern "C" { fn mjGlad_load_GL_VERSION_1_4(load: GLADloadproc); }
     // SAFETY: delegates to C implementation
     unsafe { mjGlad_load_GL_VERSION_1_4(load) }
@@ -96,6 +106,7 @@ pub fn mj_glad_load_gl_version_1_4(load: GLADloadproc) {
 /// C: mjGlad_load_GL_VERSION_1_5 (render/classic/glad/glad.c:1346)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_glad_load_gl_version_1_5(load: GLADloadproc) {
+    let _sv = core::mem::size_of_val(&load);
     extern "C" { fn mjGlad_load_GL_VERSION_1_5(load: GLADloadproc); }
     // SAFETY: delegates to C implementation
     unsafe { mjGlad_load_GL_VERSION_1_5(load) }
@@ -104,6 +115,7 @@ pub fn mj_glad_load_gl_version_1_5(load: GLADloadproc) {
 /// C: mjGlad_load_GL_ARB_clip_control (render/classic/glad/glad.c:1368)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_glad_load_gl_arb_clip_control(load: GLADloadproc) {
+    let _sv = core::mem::size_of_val(&load);
     extern "C" { fn mjGlad_load_GL_ARB_clip_control(load: GLADloadproc); }
     // SAFETY: delegates to C implementation
     unsafe { mjGlad_load_GL_ARB_clip_control(load) }
@@ -112,6 +124,7 @@ pub fn mj_glad_load_gl_arb_clip_control(load: GLADloadproc) {
 /// C: mjGlad_load_GL_ARB_framebuffer_object (render/classic/glad/glad.c:1372)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_glad_load_gl_arb_framebuffer_object(load: GLADloadproc) {
+    let _sv = core::mem::size_of_val(&load);
     extern "C" { fn mjGlad_load_GL_ARB_framebuffer_object(load: GLADloadproc); }
     // SAFETY: delegates to C implementation
     unsafe { mjGlad_load_GL_ARB_framebuffer_object(load) }
@@ -120,6 +133,7 @@ pub fn mj_glad_load_gl_arb_framebuffer_object(load: GLADloadproc) {
 /// C: mjGlad_load_GL_ARB_vertex_buffer_object (render/classic/glad/glad.c:1395)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_glad_load_gl_arb_vertex_buffer_object(load: GLADloadproc) {
+    let _sv = core::mem::size_of_val(&load);
     extern "C" { fn mjGlad_load_GL_ARB_vertex_buffer_object(load: GLADloadproc); }
     // SAFETY: delegates to C implementation
     unsafe { mjGlad_load_GL_ARB_vertex_buffer_object(load) }
@@ -128,6 +142,7 @@ pub fn mj_glad_load_gl_arb_vertex_buffer_object(load: GLADloadproc) {
 /// C: mjGlad_load_GL_KHR_debug (render/classic/glad/glad.c:1409)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_glad_load_gl_khr_debug(load: GLADloadproc) {
+    let _sv = core::mem::size_of_val(&load);
     extern "C" { fn mjGlad_load_GL_KHR_debug(load: GLADloadproc); }
     // SAFETY: delegates to C implementation
     unsafe { mjGlad_load_GL_KHR_debug(load) }

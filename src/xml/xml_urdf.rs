@@ -46,6 +46,7 @@ pub fn mj_xurdf_get_prefixed_name(self_ptr: *mut mjXURDF, name: *const std__stri
 /// C: mjXURDF::AddBody (xml/xml_urdf.h:52)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_xurdf_add_body(self_ptr: *mut mjXURDF, name: string) {
+    if self_ptr.is_null() { return; }
     extern "C" { fn mjXURDF_AddBody(self_ptr: *mut mjXURDF, name: string); }
     // SAFETY: delegates to C implementation
     unsafe { mjXURDF_AddBody(self_ptr, name) }

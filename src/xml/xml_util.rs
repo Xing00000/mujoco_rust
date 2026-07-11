@@ -156,6 +156,7 @@ pub fn next_sibling_element(e: *mut XMLElement, name: *const i8) -> *mut XMLElem
 /// C: mjXSchema::GetError (xml/xml_util.h:57)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_x_schema_get_error(self_ptr: *mut mjXSchema) -> std__string {
+    if self_ptr.is_null() { return unsafe { core::mem::transmute(()) }; }
     extern "C" { fn mjXSchema_GetError(self_ptr: *mut mjXSchema) -> std__string; }
     // SAFETY: delegates to C implementation
     unsafe { mjXSchema_GetError(self_ptr) }
@@ -165,6 +166,7 @@ pub fn mj_x_schema_get_error(self_ptr: *mut mjXSchema) -> std__string {
 /// Calls: printspace
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_x_schema_print(self_ptr: *mut mjXSchema, str: *mut std__stringstream, level: i32) {
+    if self_ptr.is_null() { return; }
     extern "C" { fn mjXSchema_Print(self_ptr: *mut mjXSchema, str: *mut std__stringstream, level: i32); }
     // SAFETY: delegates to C implementation
     unsafe { mjXSchema_Print(self_ptr, str, level) }
@@ -174,6 +176,7 @@ pub fn mj_x_schema_print(self_ptr: *mut mjXSchema, str: *mut std__stringstream, 
 /// Calls: printspace
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_x_schema_print_html(self_ptr: *mut mjXSchema, str: *mut std__stringstream, level: i32, pad: bool) {
+    if self_ptr.is_null() { return; }
     extern "C" { fn mjXSchema_PrintHTML(self_ptr: *mut mjXSchema, str: *mut std__stringstream, level: i32, pad: bool); }
     // SAFETY: delegates to C implementation
     unsafe { mjXSchema_PrintHTML(self_ptr, str, level, pad) }
@@ -182,6 +185,7 @@ pub fn mj_x_schema_print_html(self_ptr: *mut mjXSchema, str: *mut std__stringstr
 /// C: mjXSchema::NameMatch (xml/xml_util.h:61)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_x_schema_name_match(self_ptr: *mut mjXSchema, elem: *mut tinyxml2__XMLElement, level: i32) -> bool {
+    if self_ptr.is_null() { return false; }
     extern "C" { fn mjXSchema_NameMatch(self_ptr: *mut mjXSchema, elem: *mut tinyxml2__XMLElement, level: i32) -> bool; }
     // SAFETY: delegates to C implementation
     unsafe { mjXSchema_NameMatch(self_ptr, elem, level) }
