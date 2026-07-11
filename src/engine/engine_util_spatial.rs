@@ -143,10 +143,40 @@ pub fn mju_axis_angle2quat(res: *mut f64, axis: *const f64, angle: f64) {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mju_quat2vel(res: *mut f64, quat: *const f64, dt: f64) {
-    // WARNING: signature changed — verify body
-    // Previous params: (res : * mut f64, quat : * const f64, dt : f64)
-    // Previous return: ()
-    todo ! ()
+    const MJMINVAL: f64 = 1e-15;
+    const MJPI: f64 = 3.14159265358979323846;
+
+    // SAFETY: caller guarantees res points to 3 f64, quat to 4 f64.
+    unsafe {
+        let mut axis = [*quat.add(1), *quat.add(2), *quat.add(3)];
+
+        // mju_normalize3(axis) — returns length before normalization
+        let norm = (axis[0] * axis[0] + axis[1] * axis[1] + axis[2] * axis[2]).sqrt();
+        if norm < MJMINVAL {
+            axis[0] = 1.0;
+            axis[1] = 0.0;
+            axis[2] = 0.0;
+        } else {
+            let norm_inv = 1.0 / norm;
+            axis[0] *= norm_inv;
+            axis[1] *= norm_inv;
+            axis[2] *= norm_inv;
+        }
+        let sin_a_2 = norm;
+
+        let mut speed = 2.0 * sin_a_2.atan2(*quat.add(0));
+
+        // when axis-angle is larger than pi, rotation is in the opposite direction
+        if speed > MJPI {
+            speed -= 2.0 * MJPI;
+        }
+        speed /= dt;
+
+        // mji_scl3(res, axis, speed)
+        *res.add(0) = axis[0] * speed;
+        *res.add(1) = axis[1] * speed;
+        *res.add(2) = axis[2] * speed;
+    }
 }
 
 /// C: mju_subQuat (engine/engine_util_spatial.h:45)
@@ -332,10 +362,62 @@ pub fn mju_deriv_quat(res: *mut f64, quat: *const f64, vel: *const f64) {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mju_quat_integrate(quat: *mut f64, vel: *const f64, scale: f64) {
-    // WARNING: signature changed — verify body
-    // Previous params: (quat : * mut f64, vel : * const f64, scale : f64)
-    // Previous return: ()
-    todo ! ()
+    const MJMINVAL: f64 = 1e-15;
+
+    // SAFETY: caller guarantees quat points to 4 f64, vel to 3 f64.
+    unsafe {
+        // mji_copy3(tmp, vel)
+        let mut tmp = [*vel.add(0), *vel.add(1), *vel.add(2)];
+
+        // angle = scale * mju_normalize3(tmp)
+        let norm = (tmp[0] * tmp[0] + tmp[1] * tmp[1] + tmp[2] * tmp[2]).sqrt();
+        if norm < MJMINVAL {
+            tmp[0] = 1.0;
+            tmp[1] = 0.0;
+            tmp[2] = 0.0;
+        } else {
+            let norm_inv = 1.0 / norm;
+            tmp[0] *= norm_inv;
+            tmp[1] *= norm_inv;
+            tmp[2] *= norm_inv;
+        }
+        let angle = scale * norm;
+
+        // mji_axisAngle2Quat(qrot, tmp, angle) inlined
+        let qrot: [f64; 4];
+        if angle == 0.0 {
+            qrot = [1.0, 0.0, 0.0, 0.0];
+        } else {
+            let s = (angle * 0.5).sin();
+            qrot = [(angle * 0.5).cos(), tmp[0] * s, tmp[1] * s, tmp[2] * s];
+        }
+
+        // mju_normalize4(quat) inlined
+        let qn = (*quat.add(0) * *quat.add(0) + *quat.add(1) * *quat.add(1) +
+                   *quat.add(2) * *quat.add(2) + *quat.add(3) * *quat.add(3)).sqrt();
+        if qn < MJMINVAL {
+            *quat.add(0) = 1.0;
+            *quat.add(1) = 0.0;
+            *quat.add(2) = 0.0;
+            *quat.add(3) = 0.0;
+        } else {
+            let qn_inv = 1.0 / qn;
+            *quat.add(0) *= qn_inv;
+            *quat.add(1) *= qn_inv;
+            *quat.add(2) *= qn_inv;
+            *quat.add(3) *= qn_inv;
+        }
+
+        // mju_mulQuat(quat, quat, qrot) — post-multiply, result in quat
+        let q0 = *quat.add(0);
+        let q1 = *quat.add(1);
+        let q2 = *quat.add(2);
+        let q3 = *quat.add(3);
+        *quat.add(0) = q0 * qrot[0] - q1 * qrot[1] - q2 * qrot[2] - q3 * qrot[3];
+        *quat.add(1) = q0 * qrot[1] + q1 * qrot[0] + q2 * qrot[3] - q3 * qrot[2];
+        *quat.add(2) = q0 * qrot[2] - q1 * qrot[3] + q2 * qrot[0] + q3 * qrot[1];
+        *quat.add(3) = q0 * qrot[3] + q1 * qrot[2] - q2 * qrot[1] + q3 * qrot[0];
+    }
 }
 
 /// C: mju_quatZ2Vec (engine/engine_util_spatial.h:60)
@@ -347,10 +429,78 @@ pub fn mju_quat_integrate(quat: *mut f64, vel: *const f64, scale: f64) {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mju_quat_z2vec(quat: *mut f64, vec: *const f64) {
-    // WARNING: signature changed — verify body
-    // Previous params: (quat : * mut f64, vec : * const f64)
-    // Previous return: ()
-    todo ! ()
+    const MJMINVAL: f64 = 1e-15;
+
+    // SAFETY: caller guarantees quat points to 4 f64, vec to 3 f64.
+    unsafe {
+        // set default result to no-rotation quaternion
+        *quat.add(0) = 1.0;
+        *quat.add(1) = 0.0;
+        *quat.add(2) = 0.0;
+        *quat.add(3) = 0.0;
+
+        // copy and normalize vec
+        let mut vn = [*vec.add(0), *vec.add(1), *vec.add(2)];
+        let vn_norm = (vn[0] * vn[0] + vn[1] * vn[1] + vn[2] * vn[2]).sqrt();
+        if vn_norm < MJMINVAL {
+            return;
+        }
+        let vn_inv = 1.0 / vn_norm;
+        vn[0] *= vn_inv;
+        vn[1] *= vn_inv;
+        vn[2] *= vn_inv;
+
+        // z = {0, 0, 1}
+        // axis = cross(z, vn)
+        let mut axis = [
+            -vn[1],   // 0*vn[2] - 1*vn[1]
+            vn[0],    // 1*vn[0] - 0*vn[2]
+            0.0,      // 0*vn[1] - 0*vn[0]
+        ];
+
+        // a = mju_normalize3(axis) — returns the norm (sin of angle)
+        let a_norm = (axis[0] * axis[0] + axis[1] * axis[1] + axis[2] * axis[2]).sqrt();
+        if a_norm < MJMINVAL {
+            axis[0] = 1.0;
+            axis[1] = 0.0;
+            axis[2] = 0.0;
+        } else {
+            let a_inv = 1.0 / a_norm;
+            axis[0] *= a_inv;
+            axis[1] *= a_inv;
+            axis[2] *= a_inv;
+        }
+        let a = a_norm;
+
+        // almost parallel
+        if a.abs() < MJMINVAL {
+            // opposite: 180 deg rotation around x axis
+            // mju_dot3(vn, z) = vn[2]
+            if vn[2] < 0.0 {
+                *quat.add(0) = 0.0;
+                *quat.add(1) = 1.0;
+            }
+            return;
+        }
+
+        // make quaternion from angle and axis
+        // a = mju_atan2(a, mju_dot3(vn, z))  where dot3(vn, z) = vn[2]
+        let angle = a.atan2(vn[2]);
+
+        // mji_axisAngle2Quat(quat, axis, angle)
+        if angle == 0.0 {
+            *quat.add(0) = 1.0;
+            *quat.add(1) = 0.0;
+            *quat.add(2) = 0.0;
+            *quat.add(3) = 0.0;
+        } else {
+            let s = (angle * 0.5).sin();
+            *quat.add(0) = (angle * 0.5).cos();
+            *quat.add(1) = axis[0] * s;
+            *quat.add(2) = axis[1] * s;
+            *quat.add(3) = axis[2] * s;
+        }
+    }
 }
 
 /// C: mju_mat2Rot (engine/engine_util_spatial.h:64)
@@ -770,10 +920,67 @@ pub fn mju_mul_dof_vec(res: *mut f64, mat: *const f64, vec: *const f64, n: i32) 
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mju_transform_spatial(res: *mut f64, vec: *const f64, flg_force: i32, newpos: *const f64, oldpos: *const f64, rotnew2old: *const f64) {
-    // WARNING: signature changed — verify body
-    // Previous params: (res : * mut f64, vec : * const f64, flg_force : i32, newpos : * const f64, oldpos : * const f64, rotnew2old : * const f64)
-    // Previous return: ()
-    todo ! ()
+    // SAFETY: caller guarantees res/vec point to 6 f64, newpos/oldpos to 3 f64,
+    // rotnew2old to 9 f64 (or null).
+    unsafe {
+        // mju_copy(tran, vec, 6)
+        let mut tran = [
+            *vec.add(0), *vec.add(1), *vec.add(2),
+            *vec.add(3), *vec.add(4), *vec.add(5),
+        ];
+
+        // mji_sub3(dif, newpos, oldpos)
+        let dif = [
+            *newpos.add(0) - *oldpos.add(0),
+            *newpos.add(1) - *oldpos.add(1),
+            *newpos.add(2) - *oldpos.add(2),
+        ];
+
+        if flg_force != 0 {
+            // mji_cross(cros, dif, vec+3)
+            let cros = [
+                dif[1] * *vec.add(5) - dif[2] * *vec.add(4),
+                dif[2] * *vec.add(3) - dif[0] * *vec.add(5),
+                dif[0] * *vec.add(4) - dif[1] * *vec.add(3),
+            ];
+            // mji_sub3(tran, vec, cros)
+            tran[0] = *vec.add(0) - cros[0];
+            tran[1] = *vec.add(1) - cros[1];
+            tran[2] = *vec.add(2) - cros[2];
+        } else {
+            // mji_cross(cros, dif, vec)
+            let cros = [
+                dif[1] * *vec.add(2) - dif[2] * *vec.add(1),
+                dif[2] * *vec.add(0) - dif[0] * *vec.add(2),
+                dif[0] * *vec.add(1) - dif[1] * *vec.add(0),
+            ];
+            // mji_sub3(tran+3, vec+3, cros)
+            tran[3] = *vec.add(3) - cros[0];
+            tran[4] = *vec.add(4) - cros[1];
+            tran[5] = *vec.add(5) - cros[2];
+        }
+
+        // if provided, apply old -> new rotation
+        if !rotnew2old.is_null() {
+            // mji_mulMatTVec3(res, rotnew2old, tran)
+            let m = rotnew2old;
+            *res.add(0) = *m.add(0) * tran[0] + *m.add(3) * tran[1] + *m.add(6) * tran[2];
+            *res.add(1) = *m.add(1) * tran[0] + *m.add(4) * tran[1] + *m.add(7) * tran[2];
+            *res.add(2) = *m.add(2) * tran[0] + *m.add(5) * tran[1] + *m.add(8) * tran[2];
+            // mji_mulMatTVec3(res+3, rotnew2old, tran+3)
+            *res.add(3) = *m.add(0) * tran[3] + *m.add(3) * tran[4] + *m.add(6) * tran[5];
+            *res.add(4) = *m.add(1) * tran[3] + *m.add(4) * tran[4] + *m.add(7) * tran[5];
+            *res.add(5) = *m.add(2) * tran[3] + *m.add(5) * tran[4] + *m.add(8) * tran[5];
+        } else {
+            // mji_copy6(res, tran)
+            *res.add(0) = tran[0];
+            *res.add(1) = tran[1];
+            *res.add(2) = tran[2];
+            *res.add(3) = tran[3];
+            *res.add(4) = tran[4];
+            *res.add(5) = tran[5];
+        }
+    }
 }
 
 /// C: mju_makeFrame (engine/engine_util_spatial.h:117)
