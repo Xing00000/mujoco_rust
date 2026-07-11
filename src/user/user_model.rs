@@ -327,8 +327,9 @@ pub fn mj_c_model_resolve_references(self_ptr: *mut mjCModel, list: *mut i32, bo
 /// Calls: mjCPair::GetSignature
 #[allow(unused_variables, non_snake_case)]
 pub fn compare_pair(el1: *mut mjCPair, el2: *mut mjCPair) -> i32 {
+    if el1.is_null() { return 0; }
     extern "C" { fn comparePair(el1: *mut mjCPair, el2: *mut mjCPair) -> i32; }
-    // SAFETY: delegates to C implementation
+    // SAFETY: el1 verified non-null; delegates to C implementation
     unsafe { comparePair(el1, el2) }
 }
 
@@ -336,8 +337,9 @@ pub fn compare_pair(el1: *mut mjCPair, el2: *mut mjCPair) -> i32 {
 /// Calls: mjCBodyPair::GetSignature
 #[allow(unused_variables, non_snake_case)]
 pub fn compare_body_pair(el1: *mut mjCBodyPair, el2: *mut mjCBodyPair) -> i32 {
+    if el1.is_null() { return 0; }
     extern "C" { fn compareBodyPair(el1: *mut mjCBodyPair, el2: *mut mjCBodyPair) -> i32; }
-    // SAFETY: delegates to C implementation
+    // SAFETY: el1 verified non-null; delegates to C implementation
     unsafe { compareBodyPair(el1, el2) }
 }
 

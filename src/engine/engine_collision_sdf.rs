@@ -36,8 +36,9 @@ pub fn box_projection(point: *mut f64, r#box: *const f64) -> f64  {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn find_oct(w: *mut f64, dw: [[f64; 8]; 3], oct_aabb: *const f64, oct_child: *const i32, p: *const f64) -> i32  {
+    if w.is_null() { return 0; }
     extern "C" { fn findOct(w: *mut f64, dw: [[f64; 8]; 3], oct_aabb: *const f64, oct_child: *const i32, p: *const f64) -> i32; }
-    // SAFETY: delegates to C implementation
+    // SAFETY: w verified non-null; delegates to C implementation
     unsafe { findOct(w, dw, oct_aabb, oct_child, p) }
 }
 

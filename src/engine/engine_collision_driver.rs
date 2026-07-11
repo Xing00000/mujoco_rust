@@ -582,8 +582,9 @@ pub fn mj_make_capsule(m: *const mjModel, d: *mut mjData, f: i32, vid: [i32; 2],
 /// Calls: getGap, getMargin, mjc_setCCDBuffer, mju_message
 #[allow(unused_variables, non_snake_case)]
 pub fn collision_task(m: *const mjModel, d: *mut mjData, arg: *mut (), thread_id: i32, idx: i32) {
+    if m.is_null() { return; }
     extern "C" { fn collisionTask(m: *const mjModel, d: *mut mjData, arg: *mut (), thread_id: i32, idx: i32); }
-    // SAFETY: delegates to C implementation
+    // SAFETY: m verified non-null; delegates to C implementation
     unsafe { collisionTask(m, d, arg, thread_id, idx) }
 }
 

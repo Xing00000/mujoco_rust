@@ -219,8 +219,9 @@ pub fn dot2(a: *const f64, b: *const f64) -> f64 {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn box_triangle(v: *const Triangle, aamm: [f64; 6]) -> bool {
+    if v.is_null() { return false; }
     extern "C" { fn boxTriangle(v: *const Triangle, aamm: [f64; 6]) -> bool; }
-    // SAFETY: delegates to C implementation
+    // SAFETY: v verified non-null; delegates to C implementation
     unsafe { boxTriangle(v, aamm) }
 }
 

@@ -42,8 +42,9 @@ pub fn diff(dx: *mut f64, x1: *const f64, x2: *const f64, h: f64, n: i32) {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn state_diff(m: *const mjModel, ds: *mut f64, s1: *const f64, s2: *const f64, h: f64) {
+    if m.is_null() { return; }
     extern "C" { fn stateDiff(m: *const mjModel, ds: *mut f64, s1: *const f64, s2: *const f64, h: f64); }
-    // SAFETY: delegates to C implementation
+    // SAFETY: m verified non-null; delegates to C implementation
     unsafe { stateDiff(m, ds, s1, s2, h) }
 }
 
@@ -56,8 +57,9 @@ pub fn state_diff(m: *const mjModel, ds: *mut f64, s1: *const f64, s2: *const f6
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn clamped_diff(dx: *mut f64, x: *const f64, x_plus: *const f64, x_minus: *const f64, h: f64, nx: i32) {
+    if dx.is_null() { return; }
     extern "C" { fn clampedDiff(dx: *mut f64, x: *const f64, x_plus: *const f64, x_minus: *const f64, h: f64, nx: i32); }
-    // SAFETY: delegates to C implementation
+    // SAFETY: dx verified non-null; delegates to C implementation
     unsafe { clampedDiff(dx, x, x_plus, x_minus, h, nx) }
 }
 

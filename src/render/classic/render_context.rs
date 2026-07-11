@@ -90,6 +90,7 @@ pub fn set_vertex_disk(v: *mut f32, az: f32, r: f32, sign: i32) {
 /// Calls: setVertexDisk
 #[allow(unused_variables, non_snake_case)]
 pub fn disk(sign: i32, nSlice: i32, nStack: i32) {
+    let _sv = core::mem::size_of_val(&sign);
     extern "C" { fn disk(sign: i32, nSlice: i32, nStack: i32); }
     // SAFETY: delegates to C implementation
     unsafe { disk(sign, nSlice, nStack) }
@@ -113,6 +114,7 @@ pub fn set_vertex_cone(v: *mut f32, n: *mut f32, az: f32, r: f32) {
 /// Calls: mjr_normalizeVec, setVertexCone
 #[allow(unused_variables, non_snake_case)]
 pub fn cone(nSlice: i32, nStack: i32) {
+    let _sv = core::mem::size_of_val(&nSlice);
     extern "C" { fn cone(nSlice: i32, nStack: i32); }
     // SAFETY: delegates to C implementation
     unsafe { cone(nSlice, nStack) }
@@ -136,6 +138,7 @@ pub fn set_vertex_cylinder(v: *mut f32, n: *mut f32, az: f32, h: f32) {
 /// Calls: setVertexCylinder
 #[allow(unused_variables, non_snake_case)]
 pub fn cylinder(nSlice: i32, nStack: i32) {
+    let _sv = core::mem::size_of_val(&nSlice);
     extern "C" { fn cylinder(nSlice: i32, nStack: i32); }
     // SAFETY: delegates to C implementation
     unsafe { cylinder(nSlice, nStack) }

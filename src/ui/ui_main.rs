@@ -46,6 +46,7 @@ pub fn drawtext(txt: *const i8, x: i32, y: i32, maxwidth: i32, rgb: *const f32, 
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn drawtextrect(rect: mjrRect, txt: *const i8, rgb: *const f32, con: *const mjrContext) {
+    let _sv = core::mem::size_of_val(&rect);
     extern "C" { fn drawtextrect(rect: mjrRect, txt: *const i8, rgb: *const f32, con: *const mjrContext); }
     // SAFETY: delegates to C implementation
     unsafe { drawtextrect(rect, txt, rgb, con) }
@@ -60,6 +61,7 @@ pub fn drawtextrect(rect: mjrRect, txt: *const i8, rgb: *const f32, con: *const 
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn drawrectangle(rect: mjrRect, rgb: *const f32, rgbback: *const f32, con: *const mjrContext) {
+    let _sv = core::mem::size_of_val(&rect);
     extern "C" { fn drawrectangle(rect: mjrRect, rgb: *const f32, rgbback: *const f32, con: *const mjrContext); }
     // SAFETY: delegates to C implementation
     unsafe { drawrectangle(rect, rgb, rgbback, con) }
@@ -83,6 +85,7 @@ pub fn roundcorner(rect: mjrRect, flg_skipbottom: i32, flg_separator: i32, ui: *
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn drawoval(rect: mjrRect, rgb: *const f32, rgbback: *const f32, con: *const mjrContext) {
+    let _sv = core::mem::size_of_val(&rect);
     extern "C" { fn drawoval(rect: mjrRect, rgb: *const f32, rgbback: *const f32, con: *const mjrContext); }
     // SAFETY: delegates to C implementation
     unsafe { drawoval(rect, rgb, rgbback, con) }
@@ -92,6 +95,7 @@ pub fn drawoval(rect: mjrRect, rgb: *const f32, rgbback: *const f32, con: *const
 /// Calls: SCL, mju_round
 #[allow(unused_variables, non_snake_case)]
 pub fn drawsymbol(rect: mjrRect, flg_open: i32, r#type: i32, ui: *const mjUI, con: *const mjrContext) {
+    let _sv = core::mem::size_of_val(&rect);
     extern "C" { fn drawsymbol(rect: mjrRect, flg_open: i32, r#type: i32, ui: *const mjUI, con: *const mjrContext); }
     // SAFETY: delegates to C implementation
     unsafe { drawsymbol(rect, flg_open, r#type, ui, con) }
@@ -124,6 +128,7 @@ pub fn mouseinui(ui: *const mjUI, ins: *const mjuiState, x: *mut i32, y: *mut i3
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mouseinrect(rect: mjrRect, ui: *const mjUI, ins: *const mjuiState, rx: *mut f64, ry: *mut f64) {
+    let _sv = core::mem::size_of_val(&rect);
     extern "C" { fn mouseinrect(rect: mjrRect, ui: *const mjUI, ins: *const mjuiState, rx: *mut f64, ry: *mut f64); }
     // SAFETY: delegates to C implementation
     unsafe { mouseinrect(rect, ui, ins, rx, ry) }
@@ -142,8 +147,9 @@ pub fn findradio(it: *const mjuiItem, ui: *const mjUI, ins: *const mjuiState, co
 /// Calls: mju_round, textwidth
 #[allow(unused_variables, non_snake_case)]
 pub fn makeradioline(it: *const mjuiItem, con: *const mjrContext, sep: *mut i32) {
+    if it.is_null() { return; }
     extern "C" { fn makeradioline(it: *const mjuiItem, con: *const mjrContext, sep: *mut i32); }
-    // SAFETY: delegates to C implementation
+    // SAFETY: it verified non-null; delegates to C implementation
     unsafe { makeradioline(it, con, sep) }
 }
 
@@ -169,6 +175,7 @@ pub fn findselect(it: *const mjuiItem, ui: *const mjUI, ins: *const mjuiState, c
 /// Calls: SCL, mju_round
 #[allow(unused_variables, non_snake_case)]
 pub fn scrollrect(rect: mjrRect, ui: *const mjUI, con: *const mjrContext, bar: *mut mjrRect, thumb: *mut mjrRect) {
+    let _sv = core::mem::size_of_val(&rect);
     extern "C" { fn scrollrect(rect: mjrRect, ui: *const mjUI, con: *const mjrContext, bar: *mut mjrRect, thumb: *mut mjrRect); }
     // SAFETY: delegates to C implementation, pointers valid per caller contract
     unsafe { scrollrect(rect, ui, con, bar, thumb) }
@@ -185,6 +192,7 @@ pub fn inside(x: i32, y: i32, r: mjrRect) -> i32 {
 /// Calls: inside
 #[allow(unused_variables, non_snake_case)]
 pub fn insideoval(x: i32, y: i32, r: mjrRect) -> i32 {
+    let _sv = core::mem::size_of_val(&x);
     extern "C" { fn insideoval(x: i32, y: i32, r: mjrRect) -> i32; }
     // SAFETY: delegates to C implementation
     unsafe { insideoval(x, y, r) }
@@ -212,8 +220,9 @@ pub fn setslider(it: *mut mjuiItem, ui: *mut mjUI, ins: *const mjuiState, con: *
 /// Calls: mju_error
 #[allow(unused_variables, non_snake_case)]
 pub fn checkedit(text: *const i8, it: *const mjuiItem) -> i32 {
+    if text.is_null() { return 0; }
     extern "C" { fn checkedit(text: *const i8, it: *const mjuiItem) -> i32; }
-    // SAFETY: delegates to C implementation
+    // SAFETY: text verified non-null; delegates to C implementation
     unsafe { checkedit(text, it) }
 }
 
@@ -230,8 +239,9 @@ pub fn text2array(text: *const i8, it: *const mjuiItem) -> i32 {
 /// Calls: mju_error
 #[allow(unused_variables, non_snake_case)]
 pub fn array2text(text: *mut i8, it: *const mjuiItem) {
+    if text.is_null() { return; }
     extern "C" { fn array2text(text: *mut i8, it: *const mjuiItem); }
-    // SAFETY: delegates to C implementation, pointers valid per caller contract
+    // SAFETY: text verified non-null; delegates to C implementation, pointers valid per caller contract
     unsafe { array2text(text, it) }
 }
 

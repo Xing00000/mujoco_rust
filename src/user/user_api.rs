@@ -69,8 +69,9 @@ pub fn attach_frame(parent: *mut mjCBody, child: *const mjCFrame, prefix: *const
 /// Calls: attachBody, mjCBody::AddFrame, mjCFrame::SetParent, mjCSite::Body
 #[allow(unused_variables, non_snake_case)]
 pub fn attach_to_site(parent: *mut mjCSite, child: *const mjCBody, prefix: *const i8, suffix: *const i8) -> *mut mjsElement {
+    if parent.is_null() { return core::ptr::null_mut(); }
     extern "C" { fn attachToSite(parent: *mut mjCSite, child: *const mjCBody, prefix: *const i8, suffix: *const i8) -> *mut mjsElement; }
-    // SAFETY: delegates to C implementation
+    // SAFETY: parent verified non-null; delegates to C implementation
     unsafe { attachToSite(parent, child, prefix, suffix) }
 }
 
@@ -78,8 +79,9 @@ pub fn attach_to_site(parent: *mut mjCSite, child: *const mjCBody, prefix: *cons
 /// Calls: attachFrame, mjCBody::AddFrame, mjCFrame::SetParent, mjCSite::Body
 #[allow(unused_variables, non_snake_case)]
 pub fn attach_frame_to_site(parent: *mut mjCSite, child: *const mjCFrame, prefix: *const i8, suffix: *const i8) -> *mut mjsElement {
+    if parent.is_null() { return core::ptr::null_mut(); }
     extern "C" { fn attachFrameToSite(parent: *mut mjCSite, child: *const mjCFrame, prefix: *const i8, suffix: *const i8) -> *mut mjsElement; }
-    // SAFETY: delegates to C implementation
+    // SAFETY: parent verified non-null; delegates to C implementation
     unsafe { attachFrameToSite(parent, child, prefix, suffix) }
 }
 

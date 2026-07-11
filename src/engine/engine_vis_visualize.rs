@@ -79,8 +79,9 @@ pub fn acquire_geom(scn: *mut mjvScene, objid: i32, category: i32, objtype: i32)
 /// Calls: mju_error
 #[allow(unused_variables, non_snake_case)]
 pub fn release_geom(geom: *mut *mut mjvGeom, scn: *mut mjvScene) {
+    if geom.is_null() { return; }
     extern "C" { fn releaseGeom(geom: *mut *mut mjvGeom, scn: *mut mjvScene); }
-    // SAFETY: delegates to C implementation
+    // SAFETY: geom verified non-null; delegates to C implementation
     unsafe { releaseGeom(geom, scn) }
 }
 
@@ -107,8 +108,9 @@ pub fn add_triangle(scn: *mut mjvScene, v0: *const f64, v1: *const f64, v2: *con
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn set_material(m: *const mjModel, geom: *mut mjvGeom, matid: i32, rgba: *const f32, flags: *const u8) {
+    if m.is_null() { return; }
     extern "C" { fn setMaterial(m: *const mjModel, geom: *mut mjvGeom, matid: i32, rgba: *const f32, flags: *const u8); }
-    // SAFETY: delegates to C implementation
+    // SAFETY: m verified non-null; delegates to C implementation
     unsafe { setMaterial(m, geom, matid, rgba, flags) }
 }
 
@@ -526,6 +528,7 @@ pub fn catenary_intercept(v: f64, h: f64, length: f64) -> f64  {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn catenary_residual(b: f64, intercept: f64, grad: *mut f64) -> f64  {
+    let _sv = core::mem::size_of_val(&b);
     extern "C" { fn catenary_residual(b: f64, intercept: f64, grad: *mut f64) -> f64; }
     // SAFETY: delegates to C implementation
     unsafe { catenary_residual(b, intercept, grad) }

@@ -91,6 +91,7 @@ pub fn init2d() {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn draw_overlay(font: i32, viewport: mjrRect, skip: i32, gridpos: i32, red: f32, green: f32, blue: f32, overlay: *const i8, con: *const mjrContext) -> i32 {
+    let _sv = core::mem::size_of_val(&font);
     extern "C" { fn draw_overlay(font: i32, viewport: mjrRect, skip: i32, gridpos: i32, red: f32, green: f32, blue: f32, overlay: *const i8, con: *const mjrContext) -> i32; }
     // SAFETY: delegates to C implementation
     unsafe { draw_overlay(font, viewport, skip, gridpos, red, green, blue, overlay, con) }

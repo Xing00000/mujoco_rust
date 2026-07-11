@@ -161,8 +161,9 @@ pub fn mj_contains_file_vfs(vfs: *mut mjVFS, directory: *const i8, filename: *co
 /// Calls: VFS::MaybeSelfDestruct
 #[allow(unused_variables, non_snake_case)]
 pub fn vfs_open(self_ptr: *mut VFS, dir: *const i8, name: *const i8) -> *mut mjResource {
+    if self_ptr.is_null() { return core::ptr::null_mut(); }
     extern "C" { fn VFS_Open(self_ptr: *mut VFS, dir: *const i8, name: *const i8) -> *mut mjResource; }
-    // SAFETY: delegates to C implementation
+    // SAFETY: self_ptr verified non-null; delegates to C implementation
     unsafe { VFS_Open(self_ptr, dir, name) }
 }
 
@@ -226,8 +227,9 @@ pub fn vfs_contains_buffer(self_ptr: *mut VFS, name: *const i8) -> bool {
 /// Calls: FilePath::Lower, FilePath::StripPath
 #[allow(unused_variables, non_snake_case)]
 pub fn vfs_contains_file(self_ptr: *mut VFS, directory: *const i8, filename: *const i8) -> bool {
+    if self_ptr.is_null() { return false; }
     extern "C" { fn VFS_ContainsFile(self_ptr: *mut VFS, directory: *const i8, filename: *const i8) -> bool; }
-    // SAFETY: delegates to C implementation
+    // SAFETY: self_ptr verified non-null; delegates to C implementation
     unsafe { VFS_ContainsFile(self_ptr, directory, filename) }
 }
 
