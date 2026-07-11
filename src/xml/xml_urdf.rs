@@ -59,8 +59,9 @@ pub fn mj_xurdf_add_body(self_ptr: *mut mjXURDF, name: string) {
 /// Calls: mjs_addBody
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_xurdf_add_to_tree(self_ptr: *mut mjXURDF, n: i32) {
+    if self_ptr.is_null() { return; }
     extern "C" { fn mjXURDF_AddToTree(self_ptr: *mut mjXURDF, n: i32); }
-    // SAFETY: delegates to C implementation
+    // SAFETY: self_ptr verified non-null; delegates to C implementation
     unsafe { mjXURDF_AddToTree(self_ptr, n) }
 }
 

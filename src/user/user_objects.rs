@@ -336,8 +336,9 @@ pub fn checker(rgb: *mut std__byte, RGB1: *const std__byte, RGB2: *const std__by
 /// Calls: PNGImage::Height, PNGImage::IsSRGB, PNGImage::Width
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_texture_load_png(self_ptr: *mut mjCTexture, resource: *mut mjResource, image: *mut i32, w: *mut u32, h: *mut u32, is_srgb: *mut bool) {
+    if self_ptr.is_null() { return; }
     extern "C" { fn mjCTexture_LoadPNG(self_ptr: *mut mjCTexture, resource: *mut mjResource, image: *mut i32, w: *mut u32, h: *mut u32, is_srgb: *mut bool); }
-    // SAFETY: delegates to C implementation
+    // SAFETY: self_ptr verified non-null; delegates to C implementation
     unsafe { mjCTexture_LoadPNG(self_ptr, resource, image, w, h, is_srgb) }
 }
 
@@ -696,8 +697,9 @@ pub fn mj_c_bounding_volume_hierarchy_query_signed_distance(self_ptr: *mut mjCBo
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_octree_create_octree(self_ptr: *mut mjCOctree, aamm: [f64; 6]) {
+    if self_ptr.is_null() { return; }
     extern "C" { fn mjCOctree_CreateOctree(self_ptr: *mut mjCOctree, aamm: [f64; 6]); }
-    // SAFETY: delegates to C implementation
+    // SAFETY: self_ptr verified non-null; delegates to C implementation
     unsafe { mjCOctree_CreateOctree(self_ptr, aamm) }
 }
 
@@ -897,8 +899,9 @@ pub fn mj_c_octree_smoothing_iterations(self_ptr: *mut mjCOctree) -> i32 {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_octree_compute_sdf_coeffs(self_ptr: *mut mjCOctree, vert: *const f64, nvert: i32, face: *const i32, nface: i32, tree: *const mjCBoundingVolumeHierarchy) {
+    if self_ptr.is_null() { return; }
     extern "C" { fn mjCOctree_ComputeSdfCoeffs(self_ptr: *mut mjCOctree, vert: *const f64, nvert: i32, face: *const i32, nface: i32, tree: *const mjCBoundingVolumeHierarchy); }
-    // SAFETY: delegates to C implementation
+    // SAFETY: self_ptr verified non-null; delegates to C implementation
     unsafe { mjCOctree_ComputeSdfCoeffs(self_ptr, vert, nvert, face, nface, tree) }
 }
 
@@ -906,8 +909,9 @@ pub fn mj_c_octree_compute_sdf_coeffs(self_ptr: *mut mjCOctree, vert: *const f64
 /// Calls: mjCOctree::FindCoarseNeighbor
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_octree_find_neighbor(self_ptr: *mut mjCOctree, node_idx: i32, dir: i32) -> i32 {
+    if self_ptr.is_null() { return 0; }
     extern "C" { fn mjCOctree_FindNeighbor(self_ptr: *mut mjCOctree, node_idx: i32, dir: i32) -> i32; }
-    // SAFETY: delegates to C implementation
+    // SAFETY: self_ptr verified non-null; delegates to C implementation
     unsafe { mjCOctree_FindNeighbor(self_ptr, node_idx, dir) }
 }
 
@@ -1837,8 +1841,9 @@ pub fn mj_c_site_del_material(self_ptr: *mut mjCSite) {
 /// Calls: mjCSite::CopyFromSpec
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_site_compile(self_ptr: *mut mjCSite) {
+    if self_ptr.is_null() { return; }
     extern "C" { fn mjCSite_Compile(self_ptr: *mut mjCSite); }
-    // SAFETY: delegates to C implementation
+    // SAFETY: self_ptr verified non-null; delegates to C implementation
     unsafe { mjCSite_Compile(self_ptr) }
 }
 
@@ -3690,8 +3695,9 @@ pub fn mj_c_pair_get_signature(self_ptr: *mut mjCPair) -> i32 {
 /// Calls: mjCGeom::SetNotVisual, mjCPair::CopyFromSpec
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_pair_compile(self_ptr: *mut mjCPair) {
+    if self_ptr.is_null() { return; }
     extern "C" { fn mjCPair_Compile(self_ptr: *mut mjCPair); }
-    // SAFETY: delegates to C implementation
+    // SAFETY: self_ptr verified non-null; delegates to C implementation
     unsafe { mjCPair_Compile(self_ptr) }
 }
 
@@ -3999,8 +4005,9 @@ pub fn mj_c_tendon_is_actfrclimited(self_ptr: *mut mjCTendon) -> bool {
 /// Calls: mjCTendon::CopyFromSpec
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_tendon_compile(self_ptr: *mut mjCTendon) {
+    if self_ptr.is_null() { return; }
     extern "C" { fn mjCTendon_Compile(self_ptr: *mut mjCTendon); }
-    // SAFETY: delegates to C implementation
+    // SAFETY: self_ptr verified non-null; delegates to C implementation
     unsafe { mjCTendon_Compile(self_ptr) }
 }
 
@@ -4054,8 +4061,9 @@ pub fn mj_c_wrap_type(self_ptr: *mut mjCWrap) -> mjtWrap {
 /// Calls: mjCWrap::CopyFromSpec
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_wrap_compile(self_ptr: *mut mjCWrap) {
+    if self_ptr.is_null() { return; }
     extern "C" { fn mjCWrap_Compile(self_ptr: *mut mjCWrap); }
-    // SAFETY: delegates to C implementation
+    // SAFETY: self_ptr verified non-null; delegates to C implementation
     unsafe { mjCWrap_Compile(self_ptr) }
 }
 
@@ -4238,8 +4246,9 @@ pub fn mj_c_sensor_get_ref(self_ptr: *mut mjCSensor) -> *const mjCBase {
 /// Calls: mjCJoint::is_limited, mjCSensor::CopyFromSpec, mjCTendon::is_limited, mjp_getPluginAtSlot
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_sensor_compile(self_ptr: *mut mjCSensor) {
+    if self_ptr.is_null() { return; }
     extern "C" { fn mjCSensor_Compile(self_ptr: *mut mjCSensor); }
-    // SAFETY: delegates to C implementation
+    // SAFETY: self_ptr verified non-null; delegates to C implementation
     unsafe { mjCSensor_Compile(self_ptr) }
 }
 
@@ -4310,8 +4319,9 @@ pub fn mj_c_numeric_copy_from_spec(self_ptr: *mut mjCNumeric) {
 /// Calls: mjCNumeric::CopyFromSpec
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_numeric_compile(self_ptr: *mut mjCNumeric) {
+    if self_ptr.is_null() { return; }
     extern "C" { fn mjCNumeric_Compile(self_ptr: *mut mjCNumeric); }
-    // SAFETY: delegates to C implementation
+    // SAFETY: self_ptr verified non-null; delegates to C implementation
     unsafe { mjCNumeric_Compile(self_ptr) }
 }
 
@@ -4337,8 +4347,9 @@ pub fn mj_c_text_copy_from_spec(self_ptr: *mut mjCText) {
 /// Calls: mjCText::CopyFromSpec
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_text_compile(self_ptr: *mut mjCText) {
+    if self_ptr.is_null() { return; }
     extern "C" { fn mjCText_Compile(self_ptr: *mut mjCText); }
-    // SAFETY: delegates to C implementation
+    // SAFETY: self_ptr verified non-null; delegates to C implementation
     unsafe { mjCText_Compile(self_ptr) }
 }
 
@@ -4364,8 +4375,9 @@ pub fn mj_c_tuple_copy_from_spec(self_ptr: *mut mjCTuple) {
 /// Calls: mjCGeom::SetNotVisual
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_tuple_resolve_references(self_ptr: *mut mjCTuple, m: *const mjCModel) {
+    if self_ptr.is_null() { return; }
     extern "C" { fn mjCTuple_ResolveReferences(self_ptr: *mut mjCTuple, m: *const mjCModel); }
-    // SAFETY: delegates to C implementation
+    // SAFETY: self_ptr verified non-null; delegates to C implementation
     unsafe { mjCTuple_ResolveReferences(self_ptr, m) }
 }
 
@@ -4382,8 +4394,9 @@ pub fn mj_c_tuple_name_space(self_ptr: *mut mjCTuple, m: *const mjCModel) {
 /// Calls: mjCTuple::CopyFromSpec
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_tuple_compile(self_ptr: *mut mjCTuple) {
+    if self_ptr.is_null() { return; }
     extern "C" { fn mjCTuple_Compile(self_ptr: *mut mjCTuple); }
-    // SAFETY: delegates to C implementation
+    // SAFETY: self_ptr verified non-null; delegates to C implementation
     unsafe { mjCTuple_Compile(self_ptr) }
 }
 

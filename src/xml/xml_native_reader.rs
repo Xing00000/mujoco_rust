@@ -129,8 +129,9 @@ pub fn mj_x_reader_set_texture_dir(self_ptr: *mut mjXReader, texturedir: *const 
 /// Calls: mjXUtil::MapValue, mjXUtil::ReadAttrTxt, mjs_setAuthored
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_x_reader_compiler(section: *mut tinyxml2__XMLElement, s: *mut mjSpec) {
+    if section.is_null() { return; }
     extern "C" { fn mjXReader_Compiler(section: *mut tinyxml2__XMLElement, s: *mut mjSpec); }
-    // SAFETY: delegates to C implementation
+    // SAFETY: section verified non-null; delegates to C implementation
     unsafe { mjXReader_Compiler(section, s) }
 }
 
@@ -138,8 +139,9 @@ pub fn mj_x_reader_compiler(section: *mut tinyxml2__XMLElement, s: *mut mjSpec) 
 /// Calls: mjXUtil::MapValue
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_x_reader_option(section: *mut tinyxml2__XMLElement, s: *mut mjSpec, opt: *mut mjOption) {
+    if section.is_null() { return; }
     extern "C" { fn mjXReader_Option(section: *mut tinyxml2__XMLElement, s: *mut mjSpec, opt: *mut mjOption); }
-    // SAFETY: delegates to C implementation
+    // SAFETY: section verified non-null; delegates to C implementation
     unsafe { mjXReader_Option(section, s, opt) }
 }
 
@@ -147,8 +149,9 @@ pub fn mj_x_reader_option(section: *mut tinyxml2__XMLElement, s: *mut mjSpec, op
 /// Calls: mjXUtil::ReadAttrInt
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_x_reader_size(section: *mut tinyxml2__XMLElement, s: *mut mjSpec) {
+    if section.is_null() { return; }
     extern "C" { fn mjXReader_Size(section: *mut tinyxml2__XMLElement, s: *mut mjSpec); }
-    // SAFETY: delegates to C implementation
+    // SAFETY: section verified non-null; delegates to C implementation
     unsafe { mjXReader_Size(section, s) }
 }
 
