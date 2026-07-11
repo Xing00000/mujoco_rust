@@ -255,9 +255,17 @@ pub fn mjr_make_context_off_size(m: *const mjModel, con: *mut mjrContext, fontsc
 /// C: mjr_defaultContext (render/classic/render_context.h:42)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjr_default_context(con: *mut mjrContext) {
-    extern "C" { fn mjr_defaultContext(con: *mut mjrContext); }
-    // SAFETY: delegates to C implementation
-    unsafe { mjr_defaultContext(con) }
+    if con.is_null() { return; }
+    // SAFETY: con verified non-null; writing zeros to entire struct (same as C memset(con, 0, sizeof))
+    unsafe {
+        let size = core::mem::size_of::<mjrContext>();
+        let ptr = con as *mut u8;
+        let mut i: usize = 0;
+        while i < size {
+            *ptr.add(i) = 0;
+            i += 1;
+        }
+    }
 }
 
 /// C: mjr_makeContext (render/classic/render_context.h:45)

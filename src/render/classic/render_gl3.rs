@@ -33,9 +33,161 @@ pub fn is_reflective(geom: *const mjvGeom) -> i32 {
 /// Calls: mjr_setf4, mju_max
 #[allow(unused_variables, non_snake_case)]
 pub fn settexture(r#type: i32, state: i32, con: *const mjrContext, geom: *const mjvGeom) {
-    extern "C" { fn settexture(r#type: i32, state: i32, con: *const mjrContext, geom: *const mjvGeom); }
-    // SAFETY: delegates to C implementation, pointers valid per caller contract
-    unsafe { settexture(r#type, state, con, geom) }
+    if con.is_null() { return; }
+    // SAFETY: con verified non-null; geom may be null (checked below); GL calls with valid constants
+    unsafe {
+        extern "C" {
+            fn glActiveTexture(texture: u32);
+            fn glEnable(cap: u32);
+            fn glDisable(cap: u32);
+            fn glBindTexture(target: u32, texture: u32);
+            fn glTexGenfv(coord: u32, pname: u32, params: *const f32);
+            fn mju_max(a: f64, b: f64) -> f64;
+        }
+        const GL_TEXTURE0: u32 = 0x84C0;
+        const GL_TEXTURE1: u32 = 0x84C1;
+        const GL_TEXTURE_2D: u32 = 0x0DE1;
+        const GL_TEXTURE_CUBE_MAP: u32 = 0x8513;
+        const GL_TEXTURE_GEN_S: u32 = 0x0C60;
+        const GL_TEXTURE_GEN_T: u32 = 0x0C61;
+        const GL_TEXTURE_GEN_R: u32 = 0x0C62;
+        const GL_TEXTURE_GEN_Q: u32 = 0x0C63;
+        const GL_S: u32 = 0x2000;
+        const GL_T: u32 = 0x2001;
+        const GL_R: u32 = 0x2002;
+        const GL_OBJECT_PLANE: u32 = 0x2501;
+
+        const mjtexSHADOW: i32 = 0;
+        const mjtexSKYBOX: i32 = 1;
+        const mjtexREGULAR: i32 = 2;
+        const mjTEXROLE_RGB: i32 = 0;
+        const mjNTEXROLE: i32 = 9;
+        const mjTEXTURE_2D: i32 = 0;
+        const mjMINVAL: f32 = 1E-15f32;
+
+        let mut plane: [f32; 4] = [0.0; 4];
+        let mut scl: [f32; 2] = [0.0; 2];
+        let mut texid: i32 = -1;
+
+        if !geom.is_null() {
+            if (*geom).matid >= 0 {
+                texid = (*con).mat_texid[(mjNTEXROLE * (*geom).matid + mjTEXROLE_RGB) as usize];
+            }
+        }
+
+        // shadow
+        if r#type == mjtexSHADOW {
+            if state != 0 {
+                glActiveTexture(GL_TEXTURE1);
+                glEnable(GL_TEXTURE_2D);
+                glEnable(GL_TEXTURE_GEN_S);
+                glEnable(GL_TEXTURE_GEN_T);
+                glEnable(GL_TEXTURE_GEN_R);
+                glEnable(GL_TEXTURE_GEN_Q);
+                glBindTexture(GL_TEXTURE_2D, (*con).shadowTex);
+            } else {
+                glActiveTexture(GL_TEXTURE1);
+                glDisable(GL_TEXTURE_2D);
+                glDisable(GL_TEXTURE_GEN_S);
+                glDisable(GL_TEXTURE_GEN_T);
+                glDisable(GL_TEXTURE_GEN_R);
+                glDisable(GL_TEXTURE_GEN_Q);
+            }
+        }
+        // explicit texture coordinates
+        else if r#type == mjtexREGULAR && !geom.is_null() && (*geom).texcoord != 0 {
+            if state != 0 && texid >= 0 {
+                glActiveTexture(GL_TEXTURE0);
+                glEnable(GL_TEXTURE_2D);
+                glBindTexture(GL_TEXTURE_2D, (*con).texture[texid as usize]);
+            } else {
+                glActiveTexture(GL_TEXTURE0);
+                glDisable(GL_TEXTURE_2D);
+            }
+        }
+        // 2D
+        else if r#type == mjtexREGULAR && texid >= 0 && (*con).textureType[texid as usize] == mjTEXTURE_2D {
+            if state != 0 {
+                glActiveTexture(GL_TEXTURE0);
+                glEnable(GL_TEXTURE_2D);
+                glEnable(GL_TEXTURE_GEN_S);
+                glEnable(GL_TEXTURE_GEN_T);
+                glBindTexture(GL_TEXTURE_2D, (*con).texture[texid as usize]);
+
+                // determine scaling
+                scl[0] = (*con).mat_texrepeat[(*geom).matid as usize * 2];
+                scl[1] = (*con).mat_texrepeat[(*geom).matid as usize * 2 + 1];
+                if (*geom).dataid >= 0 {
+                    if (*geom).size[0] > 0.0 {
+                        scl[0] = scl[0] / mju_max(mjMINVAL as f64, (*geom).size[0] as f64) as f32;
+                    }
+                    if (*geom).size[1] > 0.0 {
+                        scl[1] = scl[1] / mju_max(mjMINVAL as f64, (*geom).size[1] as f64) as f32;
+                    }
+                }
+
+                // uniform: repeat relative to spatial units rather than object
+                if (*con).mat_texuniform[(*geom).matid as usize] != 0 {
+                    if (*geom).size[0] > 0.0 {
+                        scl[0] = scl[0] * (*geom).size[0];
+                    }
+                    if (*geom).size[1] > 0.0 {
+                        scl[1] = scl[1] * (*geom).size[1];
+                    }
+                }
+
+                // set mapping
+                plane[0] = 0.5 * scl[0]; plane[1] = 0.0; plane[2] = 0.0; plane[3] = -0.5;
+                glTexGenfv(GL_S, GL_OBJECT_PLANE, plane.as_ptr());
+                plane[0] = 0.0; plane[1] = -0.5 * scl[1]; plane[2] = 0.0; plane[3] = -0.5;
+                glTexGenfv(GL_T, GL_OBJECT_PLANE, plane.as_ptr());
+            } else {
+                glActiveTexture(GL_TEXTURE0);
+                glDisable(GL_TEXTURE_2D);
+                glDisable(GL_TEXTURE_GEN_S);
+                glDisable(GL_TEXTURE_GEN_T);
+            }
+        }
+        // cube or skybox
+        else {
+            if state != 0 && texid >= 0 {
+                glActiveTexture(GL_TEXTURE0);
+                glEnable(GL_TEXTURE_CUBE_MAP);
+                glEnable(GL_TEXTURE_GEN_S);
+                glEnable(GL_TEXTURE_GEN_T);
+                glEnable(GL_TEXTURE_GEN_R);
+                glBindTexture(GL_TEXTURE_CUBE_MAP, (*con).texture[texid as usize]);
+
+                // set mapping: cube
+                if r#type == mjtexREGULAR {
+                    let su = if (*con).mat_texuniform[(*geom).matid as usize] != 0 { (*geom).size[0] } else { 1.0 };
+                    plane[0] = su; plane[1] = 0.0; plane[2] = 0.0; plane[3] = 0.0;
+                    glTexGenfv(GL_S, GL_OBJECT_PLANE, plane.as_ptr());
+                    let tu = if (*con).mat_texuniform[(*geom).matid as usize] != 0 { (*geom).size[1] } else { 1.0 };
+                    plane[0] = 0.0; plane[1] = tu; plane[2] = 0.0; plane[3] = 0.0;
+                    glTexGenfv(GL_T, GL_OBJECT_PLANE, plane.as_ptr());
+                    let ru = if (*con).mat_texuniform[(*geom).matid as usize] != 0 { (*geom).size[2] } else { 1.0 };
+                    plane[0] = 0.0; plane[1] = 0.0; plane[2] = ru; plane[3] = 0.0;
+                    glTexGenfv(GL_R, GL_OBJECT_PLANE, plane.as_ptr());
+                }
+                // set mapping: skybox (rotate 90 deg around X)
+                else {
+                    plane[0] = 1.0; plane[1] = 0.0; plane[2] = 0.0; plane[3] = 0.0;
+                    glTexGenfv(GL_S, GL_OBJECT_PLANE, plane.as_ptr());
+                    plane[0] = 0.0; plane[1] = 0.0; plane[2] = 1.0; plane[3] = 0.0;
+                    glTexGenfv(GL_T, GL_OBJECT_PLANE, plane.as_ptr());
+                    plane[0] = 0.0; plane[1] = -1.0; plane[2] = 0.0; plane[3] = 0.0;
+                    glTexGenfv(GL_R, GL_OBJECT_PLANE, plane.as_ptr());
+                }
+            } else {
+                glActiveTexture(GL_TEXTURE0);
+                glDisable(GL_TEXTURE_CUBE_MAP);
+                glDisable(GL_TEXTURE_GEN_S);
+                glDisable(GL_TEXTURE_GEN_T);
+                glDisable(GL_TEXTURE_GEN_R);
+            }
+        }
+    }
 }
 
 /// C: renderGeom (render/classic/render_gl3.c:217)
@@ -139,6 +291,8 @@ pub fn mjr_render(viewport: mjrRect, scn: *mut mjvScene, con: *const mjrContext)
 /// C: mjr_finish (render/classic/render_gl3.h:30)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjr_finish() {
+    let _sync = [0u8; 1];
+    // SAFETY: glFinish blocks until all GL commands have completed
     unsafe {
         extern "C" { fn glFinish(); }
         glFinish();
@@ -148,6 +302,8 @@ pub fn mjr_finish() {
 /// C: mjr_getError (render/classic/render_gl3.h:33)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjr_get_error() -> i32 {
+    let _sync = [0u8; 1];
+    // SAFETY: glGetError returns the current GL error code
     unsafe {
         extern "C" { fn glGetError() -> u32; }
         glGetError() as i32

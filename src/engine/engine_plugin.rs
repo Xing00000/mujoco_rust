@@ -76,8 +76,9 @@ pub fn mjp_register_plugin(plugin: *const mjpPlugin) -> i32 {
 /// Calls: IsValidURISchemeFormat, mju_warning
 #[allow(unused_variables, non_snake_case)]
 pub fn mjp_register_resource_provider(provider: *const mjpResourceProvider) -> i32 {
+    if provider.is_null() { return -1; }
     extern "C" { fn mjp_registerResourceProvider(provider: *const mjpResourceProvider) -> i32; }
-    // SAFETY: delegates to C implementation
+    // SAFETY: provider verified non-null; C++ validates URI scheme and registers
     unsafe { mjp_registerResourceProvider(provider) }
 }
 
@@ -417,8 +418,9 @@ pub fn mjp_find_encoder(filename: *const i8, content_type: *const i8) -> *const 
 /// C: mjp_getPluginUnsafe (engine/engine_plugin.h:95)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjp_get_plugin_unsafe(name: *const i8, slot: *mut i32, nslot: i32) -> *const mjpPlugin {
+    if name.is_null() { return core::ptr::null(); }
     extern "C" { fn mjp_getPluginUnsafe(name: *const i8, slot: *mut i32, nslot: i32) -> *const mjpPlugin; }
-    // SAFETY: delegates to C implementation
+    // SAFETY: name verified non-null; C++ looks up plugin in GlobalTable
     unsafe { mjp_getPluginUnsafe(name, slot, nslot) }
 }
 

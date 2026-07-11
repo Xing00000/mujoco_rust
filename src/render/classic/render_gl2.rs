@@ -119,9 +119,31 @@ pub fn textwidth(con: *const mjrContext, text: *const i8) -> i32  {
 /// C: mjr_restoreBuffer (render/classic/render_gl2.h:27)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjr_restore_buffer(con: *const mjrContext) {
-    extern "C" { fn mjr_restoreBuffer(con: *const mjrContext); }
-    // SAFETY: delegates to C implementation which handles GL state
-    unsafe { mjr_restoreBuffer(con) }
+    if con.is_null() { return; }
+    // SAFETY: con verified non-null, GL calls with valid constants
+    unsafe {
+        extern "C" {
+            fn glBindFramebuffer(target: u32, framebuffer: u32);
+            fn glReadBuffer(mode: u32);
+            fn glDrawBuffer(mode: u32);
+        }
+        const GL_FRAMEBUFFER: u32 = 0x8D40;
+        const GL_COLOR_ATTACHMENT0: u32 = 0x8CE0;
+        const GL_BACK: u32 = 0x0405;
+        const GL_FRONT: u32 = 0x0404;
+        const mjFB_WINDOW: i32 = 0;
+
+        if (*con).currentBuffer == mjFB_WINDOW {
+            glBindFramebuffer(GL_FRAMEBUFFER, 0);
+            let buf = if (*con).windowDoublebuffer != 0 { GL_BACK } else { GL_FRONT };
+            glReadBuffer(buf);
+            glDrawBuffer(buf);
+        } else {
+            glBindFramebuffer(GL_FRAMEBUFFER, (*con).offFBO);
+            glReadBuffer(GL_COLOR_ATTACHMENT0);
+            glDrawBuffer(GL_COLOR_ATTACHMENT0);
+        }
+    }
 }
 
 /// C: mjr_textActual (render/classic/render_gl2.h:30)
@@ -169,9 +191,30 @@ pub fn mjr_read_pixels(rgb: *mut u8, depth: *mut f32, viewport: mjrRect, con: *c
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjr_draw_pixels(rgb: *const u8, depth: *const f32, viewport: mjrRect, con: *const mjrContext) {
-    extern "C" { fn mjr_drawPixels(rgb: *const u8, depth: *const f32, viewport: mjrRect, con: *const mjrContext); }
-    // SAFETY: delegates to C implementation
-    unsafe { mjr_drawPixels(rgb, depth, viewport, con) }
+    let _sv = core::mem::size_of_val(&viewport);
+    // SAFETY: GL calls with valid format/type constants; rgb and depth may be null (checked below)
+    unsafe {
+        extern "C" {
+            fn glWindowPos2i(x: i32, y: i32);
+            fn glDrawPixels(width: i32, height: i32, format: u32, type_: u32, data: *const ());
+        }
+        const GL_RGB: u32 = 0x1907;
+        const GL_UNSIGNED_BYTE: u32 = 0x1401;
+        const GL_DEPTH_COMPONENT: u32 = 0x1902;
+        const GL_FLOAT: u32 = 0x1406;
+
+        // set raster position
+        glWindowPos2i(viewport.left, viewport.bottom);
+
+        // write rgb
+        if !rgb.is_null() {
+            glDrawPixels(viewport.width, viewport.height, GL_RGB, GL_UNSIGNED_BYTE, rgb as *const ());
+        }
+        // write depth
+        if !depth.is_null() {
+            glDrawPixels(viewport.width, viewport.height, GL_DEPTH_COMPONENT, GL_FLOAT, depth as *const ());
+        }
+    }
 }
 
 /// C: mjr_blitBuffer (render/classic/render_gl2.h:49)
@@ -227,9 +270,33 @@ pub fn mjr_overlay(font: i32, gridpos: i32, viewport: mjrRect, overlay: *const i
 /// C: mjr_maxViewport (render/classic/render_gl2.h:68)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjr_max_viewport(con: *const mjrContext) -> mjrRect {
-    extern "C" { fn mjr_maxViewport(con: *const mjrContext) -> mjrRect; }
-    // SAFETY: delegates to C implementation
-    unsafe { mjr_maxViewport(con) }
+    if con.is_null() { return mjrRect { left: 0, bottom: 0, width: 0, height: 0 }; }
+    // SAFETY: con verified non-null; GL call reads scissor box dimensions
+    unsafe {
+        extern "C" {
+            fn glGetIntegerv(pname: u32, params: *mut i32);
+        }
+        const GL_SCISSOR_BOX: u32 = 0x0C10;
+        const mjFB_WINDOW: i32 = 0;
+
+        // init with offscreen
+        let mut res = mjrRect {
+            left: 0,
+            bottom: 0,
+            width: (*con).offWidth,
+            height: (*con).offHeight,
+        };
+
+        // window: get from scissor box
+        let mut dims: [i32; 4] = [0; 4];
+        if (*con).currentBuffer == mjFB_WINDOW {
+            glGetIntegerv(GL_SCISSOR_BOX, dims.as_mut_ptr());
+            res.width = dims[2];
+            res.height = dims[3];
+        }
+
+        res
+    }
 }
 
 /// C: mjr_rectangle (render/classic/render_gl2.h:71)
@@ -254,9 +321,116 @@ pub fn mjr_rectangle(viewport: mjrRect, r: f32, g: f32, b: f32, a: f32) {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjr_label(viewport: mjrRect, font: i32, txt: *const i8, r: f32, g: f32, b: f32, a: f32, rt: f32, gt: f32, bt: f32, con: *const mjrContext) {
-    extern "C" { fn mjr_label(viewport: mjrRect, font: i32, txt: *const i8, r: f32, g: f32, b: f32, a: f32, rt: f32, gt: f32, bt: f32, con: *const mjrContext); }
-    // SAFETY: delegates to C implementation
-    unsafe { mjr_label(viewport, font, txt, r, g, b, a, rt, gt, bt, con) }
+    let _sv = core::mem::size_of_val(&viewport);
+    if con.is_null() { return; }
+    // empty viewport: nothing to do
+    if viewport.width <= 0 || viewport.height <= 0 {
+        return;
+    }
+    // SAFETY: con verified non-null, all GL calls use valid constants
+    unsafe {
+        extern "C" {
+            fn glDisable(cap: u32);
+            fn glEnable(cap: u32);
+            fn glShadeModel(mode: u32);
+            fn glBlendFunc(sfactor: u32, dfactor: u32);
+            fn glPolygonMode(face: u32, mode: u32);
+            fn glMatrixMode(mode: u32);
+            fn glLoadIdentity();
+            fn glOrtho(left: f64, right: f64, bottom: f64, top: f64, near_val: f64, far_val: f64);
+            fn glViewport(x: i32, y: i32, width: i32, height: i32);
+            fn glBegin(mode: u32);
+            fn glEnd();
+            fn glColor4f(r: f32, g: f32, b: f32, a: f32);
+            fn glColor3f(r: f32, g: f32, b: f32);
+            fn glVertex2i(x: i32, y: i32);
+            fn glListBase(base: u32);
+            fn glRasterPos2i(x: i32, y: i32);
+            fn glCallLists(n: i32, type_: u32, lists: *const ());
+            fn strlen(s: *const i8) -> usize;
+        }
+        const GL_NORMALIZE: u32 = 0x0BA1;
+        const GL_DEPTH_TEST: u32 = 0x0B71;
+        const GL_CULL_FACE: u32 = 0x0B44;
+        const GL_LIGHTING: u32 = 0x0B50;
+        const GL_COLOR_MATERIAL: u32 = 0x0B57;
+        const GL_FLAT: u32 = 0x1D00;
+        const GL_BLEND: u32 = 0x0BE2;
+        const GL_SRC_ALPHA: u32 = 0x0302;
+        const GL_ONE_MINUS_SRC_ALPHA: u32 = 0x0303;
+        const GL_FRONT_AND_BACK: u32 = 0x0408;
+        const GL_FILL: u32 = 0x1B02;
+        const GL_PROJECTION: u32 = 0x1701;
+        const GL_MODELVIEW: u32 = 0x1700;
+        const GL_QUADS: u32 = 0x0007;
+        const GL_UNSIGNED_BYTE: u32 = 0x1401;
+        const mjFONT_BIG: i32 = 2;
+
+        // set OpenGL options
+        glDisable(GL_NORMALIZE);
+        glDisable(GL_DEPTH_TEST);
+        glDisable(GL_CULL_FACE);
+        glDisable(GL_LIGHTING);
+        glDisable(GL_COLOR_MATERIAL);
+        glShadeModel(GL_FLAT);
+        glEnable(GL_BLEND);
+        glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+        glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+
+        // standard 2D projection, in framebuffer units
+        glMatrixMode(GL_PROJECTION);
+        glLoadIdentity();
+        glOrtho(0.0, viewport.width as f64, 0.0, viewport.height as f64, -1.0, 1.0);
+        glMatrixMode(GL_MODELVIEW);
+        glLoadIdentity();
+
+        // set viewport
+        glViewport(viewport.left, viewport.bottom, viewport.width, viewport.height);
+
+        // get sizes
+        let W: i32 = viewport.width;
+        let H: i32 = viewport.height;
+
+        // render background quad
+        glBegin(GL_QUADS);
+        glColor4f(r, g, b, a);
+        glVertex2i(0, 0);
+        glVertex2i(W, 0);
+        glVertex2i(W, H);
+        glVertex2i(0, H);
+        glEnd();
+
+        // draw text
+        if !txt.is_null() && (*con).rangeFont != 0 {
+            // compute width
+            let mut i: i32 = 0;
+            let mut width: i32 = 0;
+            if font == mjFONT_BIG {
+                while *txt.add(i as usize) != 0 {
+                    width += (*con).charWidthBig[*txt.add(i as usize) as u8 as usize];
+                    i += 1;
+                }
+            } else {
+                while *txt.add(i as usize) != 0 {
+                    width += (*con).charWidth[*txt.add(i as usize) as u8 as usize];
+                    i += 1;
+                }
+            }
+
+            // compute center
+            let ch = if font == mjFONT_BIG { (*con).charHeightBig } else { (*con).charHeight };
+            let cx: i32 = (W - width) / 2;
+            let cy: i32 = (H - ch) / 2;
+
+            // draw
+            let base = if font == mjFONT_BIG { (*con).baseFontBig } else { (*con).baseFontNormal };
+            glListBase(base);
+            glColor3f(rt, gt, bt);
+            let max_cx = if cx > 0 { cx } else { 0 };
+            glRasterPos2i(max_cx, cy);
+            glCallLists(strlen(txt) as i32, GL_UNSIGNED_BYTE, txt as *const ());
+        }
+    }
 }
 
 /// C: mjr_figure (render/classic/render_gl2.h:79)

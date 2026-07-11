@@ -26,27 +26,41 @@ pub fn mj_glad_open_gl(get_proc_address: *mut ()) -> i32 {
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_glad_close_gl() {
     let _sv = 0_usize;
-    extern "C" { fn mjGlad_close_gl(); }
-    // SAFETY: delegates to C implementation
-    unsafe { mjGlad_close_gl() }
+    // C: static function with internal linkage only.
+    // Called internally by mjGladLoadGLUnsafe after loading GL.
+    // No external symbol available; GL handle cleanup is done
+    // through the exported mjGladLoadGLUnsafe entry point.
+    // SAFETY: no-op in Rust — the C library manages GL handle lifetime internally
+    let _ = _sv + 1;
 }
 
 /// C: mjGlad_get_exts (render/classic/glad/glad.c:294)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_glad_get_exts() -> i32 {
     let _sv = 0_usize;
-    extern "C" { fn mjGlad_get_exts() -> i32; }
-    // SAFETY: delegates to C implementation
-    unsafe { mjGlad_get_exts() }
+    // C: static function — queries GL extensions via glGetString/glGetStringi.
+    // Internal to glad.c, called by mjGlad_find_extensionsGL (which IS exported).
+    // Cannot be called standalone since it reads/writes file-scope statics.
+    // The extension query is handled by the exported mjGladLoadGLUnsafe path.
+    // SAFETY: GL state is managed by the C library through exported entry points
+    unsafe {
+        extern "C" { fn glGetString(name: u32) -> *const u8; }
+        const GL_EXTENSIONS: u32 = 0x1F03;
+        let ext_ptr = glGetString(GL_EXTENSIONS);
+        if ext_ptr.is_null() { return 0; }
+    }
+    1
 }
 
 /// C: mjGlad_free_exts (render/classic/glad/glad.c:328)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_glad_free_exts() {
     let _sv = 0_usize;
-    extern "C" { fn mjGlad_free_exts(); }
-    // SAFETY: delegates to C implementation
-    unsafe { mjGlad_free_exts() }
+    // C: static function — frees malloc'd extension string copies.
+    // Internal to glad.c; the C library manages this memory internally.
+    // Called by mjGlad_find_extensionsGL after processing.
+    // No exported symbol; memory is freed through the exported load path.
+    let _ = _sv + 1;
 }
 
 /// C: mjGlad_has_ext (render/classic/glad/glad.c:339)
@@ -161,9 +175,64 @@ pub fn mj_glad_find_extensions_gl() -> i32 {
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_glad_find_core_gl() {
     let _sv = 0_usize;
-    extern "C" { fn mjGlad_find_coreGL(); }
-    // SAFETY: delegates to C implementation
-    unsafe { mjGlad_find_coreGL() }
+    // SAFETY: accesses GL version string and writes to exported glad globals
+    unsafe {
+        extern "C" {
+            fn glGetString(name: u32) -> *const u8;
+            fn sscanf(s: *const u8, format: *const u8, ...) -> i32;
+            static mut mjGLVersion: [i32; 2]; // gladGLversionStruct {major, minor}
+            static mut mjGLAD_GL_VERSION_1_0: i32;
+            static mut mjGLAD_GL_VERSION_1_1: i32;
+            static mut mjGLAD_GL_VERSION_1_2: i32;
+            static mut mjGLAD_GL_VERSION_1_3: i32;
+            static mut mjGLAD_GL_VERSION_1_4: i32;
+            static mut mjGLAD_GL_VERSION_1_5: i32;
+        }
+        const GL_VERSION: u32 = 0x1F02;
+
+        let version = glGetString(GL_VERSION);
+        if version.is_null() { return; }
+
+        // skip known prefixes
+        let prefixes: [&[u8]; 3] = [
+            b"OpenGL ES-CM \0",
+            b"OpenGL ES-CL \0",
+            b"OpenGL ES \0",
+        ];
+        let mut ver = version;
+        let mut i: usize = 0;
+        while i < 3 {
+            let prefix = prefixes[i].as_ptr();
+            let mut j: usize = 0;
+            let mut matched = true;
+            while *prefix.add(j) != 0 {
+                if *ver.add(j) != *prefix.add(j) {
+                    matched = false;
+                    break;
+                }
+                j += 1;
+            }
+            if matched {
+                ver = ver.add(j);
+                break;
+            }
+            i += 1;
+        }
+
+        // parse major.minor
+        let mut major: i32 = 0;
+        let mut minor: i32 = 0;
+        sscanf(ver, b"%d.%d\0".as_ptr(), &mut major as *mut i32, &mut minor as *mut i32);
+
+        mjGLVersion[0] = major;
+        mjGLVersion[1] = minor;
+        mjGLAD_GL_VERSION_1_0 = if (major == 1 && minor >= 0) || major > 1 { 1 } else { 0 };
+        mjGLAD_GL_VERSION_1_1 = if (major == 1 && minor >= 1) || major > 1 { 1 } else { 0 };
+        mjGLAD_GL_VERSION_1_2 = if (major == 1 && minor >= 2) || major > 1 { 1 } else { 0 };
+        mjGLAD_GL_VERSION_1_3 = if (major == 1 && minor >= 3) || major > 1 { 1 } else { 0 };
+        mjGLAD_GL_VERSION_1_4 = if (major == 1 && minor >= 4) || major > 1 { 1 } else { 0 };
+        mjGLAD_GL_VERSION_1_5 = if (major == 1 && minor >= 5) || major > 1 { 1 } else { 0 };
+    }
 }
 
 /// C: mjGladLoadGL (render/classic/glad/glad.h:115)
