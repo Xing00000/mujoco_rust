@@ -35,12 +35,7 @@ pub fn mj_free_last_xml() {
 /// C: mj_printSchema (xml/xml_api.h:40)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_print_schema(filename: *const i8, buffer: *mut i8, buffer_sz: i32, flg_html: i32, flg_pad: i32) -> i32 {
-    extern "C" {
-        fn mj_printSchema(filename: *const i8, buffer: *mut i8, buffer_sz: i32, flg_html: i32, flg_pad: i32) -> i32;
-    }
-    // SAFETY: caller guarantees filename (if non-null) is a valid C string,
-    // buffer (if non-null) points to at least buffer_sz bytes.
-    unsafe { mj_printSchema(filename, buffer, buffer_sz, flg_html, flg_pad) }
+    todo!("requires C++ internals: mjXReader::PrintSchema + std::stringstream + std::ofstream")
 }
 
 /// C: mj_loadModel (xml/xml_api.h:45)

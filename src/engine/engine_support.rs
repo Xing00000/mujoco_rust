@@ -263,7 +263,62 @@ pub fn mj_differentiate_pos(m: *const mjModel, qvel: *mut f64, dt: f64, qpos1: *
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_integrate_pos_ind(m: *const mjModel, qpos: *mut f64, qvel: *const f64, dt: f64, index: *const i32, nbody: i32) {
-    todo!("requires C internals: switch on mjtJoint enum + mjFALLTHROUGH + mju_quatIntegrate call with model field access")
+    // mjtJoint enum values from mjtype.h
+    const mjJNT_FREE: i32 = 0;
+    const mjJNT_BALL: i32 = 1;
+    const mjJNT_SLIDE: i32 = 2;
+    const mjJNT_HINGE: i32 = 3;
+
+    // SAFETY: caller guarantees m points to a valid mjModel, qpos/qvel are valid arrays
+    // with sizes matching m->nq/m->nv, index (if non-null) has at least nbody elements.
+    unsafe {
+        let mut b: i32 = 1;
+        while b < nbody {
+            let k: i32 = if index.is_null() { b } else { *index.add(b as usize) };
+            let start: i32 = *(*m).body_jntadr.add(k as usize);
+            let end: i32 = start + *(*m).body_jntnum.add(k as usize);
+
+            let mut j: i32 = start;
+            while j < end {
+                // get addresses in qpos and qvel
+                let mut padr: i32 = *(*m).jnt_qposadr.add(j as usize);
+                let mut vadr: i32 = *(*m).jnt_dofadr.add(j as usize);
+
+                let jnt_type: i32 = *(*m).jnt_type.add(j as usize);
+
+                if jnt_type == mjJNT_FREE {
+                    // position update
+                    let mut i: i32 = 0;
+                    while i < 3 {
+                        *qpos.add((padr + i) as usize) += dt * *qvel.add((vadr + i) as usize);
+                        i += 1;
+                    }
+                    padr += 3;
+                    vadr += 3;
+
+                    // fallthrough to quaternion update
+                    crate::engine::engine_util_spatial::mju_quat_integrate(
+                        qpos.add(padr as usize),
+                        qvel.add(vadr as usize),
+                        dt,
+                    );
+                } else if jnt_type == mjJNT_BALL {
+                    // quaternion update
+                    crate::engine::engine_util_spatial::mju_quat_integrate(
+                        qpos.add(padr as usize),
+                        qvel.add(vadr as usize),
+                        dt,
+                    );
+                } else if jnt_type == mjJNT_HINGE || jnt_type == mjJNT_SLIDE {
+                    // scalar update: same for rotation and translation
+                    *qpos.add(padr as usize) += dt * *qvel.add(vadr as usize);
+                }
+
+                j += 1;
+            }
+            b += 1;
+        }
+    }
 }
 
 /// C: mj_integratePos (engine/engine_support.h:102)

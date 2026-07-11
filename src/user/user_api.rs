@@ -287,12 +287,7 @@ pub fn mjs_get_double(source: *const i32, size: *mut i32) -> *const f64 {
 /// C: mj_makeSpec (user/user_api.h:40)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_make_spec() -> *mut mjSpec {
-    extern "C" {
-        fn mj_makeSpec() -> *mut mjSpec;
-    }
-    // SAFETY: calls into C++ which allocates mjCModel and returns &modelC->spec.
-    // Caller owns the returned pointer.
-    unsafe { mj_makeSpec() }
+    todo!("requires C++ internals: new mjCModel allocates C++ object with vtable, returns &modelC->spec")
 }
 
 /// C: mj_compile (user/user_api.h:43)
