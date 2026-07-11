@@ -1345,8 +1345,9 @@ pub fn mj_c_body_copy_plugin(self_ptr: *mut mjCBody) {
 /// C: mjCFrame::CopyFromSpec (user/user_objects.h:654)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_frame_copy_from_spec(self_ptr: *mut mjCFrame) {
+    if self_ptr.is_null() { return; }
     extern "C" { fn mjCFrame_CopyFromSpec(self_ptr: *mut mjCFrame); }
-    // SAFETY: delegates to C implementation
+    // SAFETY: self_ptr verified non-null
     unsafe { mjCFrame_CopyFromSpec(self_ptr) }
 }
 
@@ -1943,8 +1944,9 @@ pub fn mj_c_light_resolve_references(self_ptr: *mut mjCLight, m: *const mjCModel
 /// C: mjCFlex::CopyFromSpec (user/user_objects.h:1032)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_flex_copy_from_spec(self_ptr: *mut mjCFlex) {
+    if self_ptr.is_null() { return; }
     extern "C" { fn mjCFlex_CopyFromSpec(self_ptr: *mut mjCFlex); }
-    // SAFETY: delegates to C implementation
+    // SAFETY: self_ptr verified non-null
     unsafe { mjCFlex_CopyFromSpec(self_ptr) }
 }
 
@@ -1960,96 +1962,108 @@ pub fn mj_c_flex_point_to_local(self_ptr: *mut mjCFlex) {
 /// C: mjCFlex::ResolveReferences (user/user_objects.h:1034)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_flex_resolve_references(self_ptr: *mut mjCFlex, m: *const mjCModel) {
+    if self_ptr.is_null() { return; }
     extern "C" { fn mjCFlex_ResolveReferences(self_ptr: *mut mjCFlex, m: *const mjCModel); }
-    // SAFETY: delegates to C implementation
+    // SAFETY: self_ptr verified non-null
     unsafe { mjCFlex_ResolveReferences(self_ptr, m) }
 }
 
 /// C: mjCFlex::NameSpace (user/user_objects.h:1035)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_flex_name_space(self_ptr: *mut mjCFlex, m: *const mjCModel) {
+    if self_ptr.is_null() { return; }
     extern "C" { fn mjCFlex_NameSpace(self_ptr: *mut mjCFlex, m: *const mjCModel); }
-    // SAFETY: delegates to C implementation
+    // SAFETY: self_ptr verified non-null
     unsafe { mjCFlex_NameSpace(self_ptr, m) }
 }
 
 /// C: mjCFlex::get_material (user/user_objects.h:1038)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_flex_get_material(self_ptr: *mut mjCFlex) -> *const i32 {
+    if self_ptr.is_null() { return core::ptr::null(); }
     extern "C" { fn mjCFlex_get_material(self_ptr: *mut mjCFlex) -> *const i32; }
-    // SAFETY: delegates to C implementation
+    // SAFETY: self_ptr verified non-null
     unsafe { mjCFlex_get_material(self_ptr) }
 }
 
 /// C: mjCFlex::get_vertbody (user/user_objects.h:1039)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_flex_get_vertbody(self_ptr: *mut mjCFlex) -> *const i32 {
+    if self_ptr.is_null() { return core::ptr::null(); }
     extern "C" { fn mjCFlex_get_vertbody(self_ptr: *mut mjCFlex) -> *const i32; }
-    // SAFETY: delegates to C implementation
+    // SAFETY: self_ptr verified non-null
     unsafe { mjCFlex_get_vertbody(self_ptr) }
 }
 
 /// C: mjCFlex::get_vert (user/user_objects.h:1040)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_flex_get_vert(self_ptr: *mut mjCFlex) -> *const i32 {
+    if self_ptr.is_null() { return core::ptr::null(); }
     extern "C" { fn mjCFlex_get_vert(self_ptr: *mut mjCFlex) -> *const i32; }
-    // SAFETY: delegates to C implementation
+    // SAFETY: self_ptr verified non-null
     unsafe { mjCFlex_get_vert(self_ptr) }
 }
 
 /// C: mjCFlex::get_elemaabb (user/user_objects.h:1041)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_flex_get_elemaabb(self_ptr: *mut mjCFlex) -> *const i32 {
+    if self_ptr.is_null() { return core::ptr::null(); }
     extern "C" { fn mjCFlex_get_elemaabb(self_ptr: *mut mjCFlex) -> *const i32; }
-    // SAFETY: delegates to C implementation
+    // SAFETY: self_ptr verified non-null
     unsafe { mjCFlex_get_elemaabb(self_ptr) }
 }
 
 /// C: mjCFlex::get_elem (user/user_objects.h:1042)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_flex_get_elem(self_ptr: *mut mjCFlex) -> *const i32 {
+    if self_ptr.is_null() { return core::ptr::null(); }
     extern "C" { fn mjCFlex_get_elem(self_ptr: *mut mjCFlex) -> *const i32; }
-    // SAFETY: delegates to C implementation
+    // SAFETY: self_ptr verified non-null
     unsafe { mjCFlex_get_elem(self_ptr) }
 }
 
 /// C: mjCFlex::get_texcoord (user/user_objects.h:1043)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_flex_get_texcoord(self_ptr: *mut mjCFlex) -> *const i32 {
+    if self_ptr.is_null() { return core::ptr::null(); }
     extern "C" { fn mjCFlex_get_texcoord(self_ptr: *mut mjCFlex) -> *const i32; }
-    // SAFETY: delegates to C implementation
+    // SAFETY: self_ptr verified non-null
     unsafe { mjCFlex_get_texcoord(self_ptr) }
 }
 
 /// C: mjCFlex::get_elemtexcoord (user/user_objects.h:1044)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_flex_get_elemtexcoord(self_ptr: *mut mjCFlex) -> *const i32 {
+    if self_ptr.is_null() { return core::ptr::null(); }
     extern "C" { fn mjCFlex_get_elemtexcoord(self_ptr: *mut mjCFlex) -> *const i32; }
-    // SAFETY: delegates to C implementation
+    // SAFETY: self_ptr verified non-null
     unsafe { mjCFlex_get_elemtexcoord(self_ptr) }
 }
 
 /// C: mjCFlex::get_nodebody (user/user_objects.h:1045)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_flex_get_nodebody(self_ptr: *mut mjCFlex) -> *const i32 {
+    if self_ptr.is_null() { return core::ptr::null(); }
     extern "C" { fn mjCFlex_get_nodebody(self_ptr: *mut mjCFlex) -> *const i32; }
-    // SAFETY: delegates to C implementation
+    // SAFETY: self_ptr verified non-null
     unsafe { mjCFlex_get_nodebody(self_ptr) }
 }
 
 /// C: mjCFlex::HasTexcoord (user/user_objects.h:1047)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_flex_has_texcoord(self_ptr: *mut mjCFlex) -> bool {
+    if self_ptr.is_null() { return false; }
     extern "C" { fn mjCFlex_HasTexcoord(self_ptr: *mut mjCFlex) -> bool; }
-    // SAFETY: delegates to C implementation
+    // SAFETY: self_ptr verified non-null
     unsafe { mjCFlex_HasTexcoord(self_ptr) }
 }
 
 /// C: mjCFlex::DelTexcoord (user/user_objects.h:1048)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_flex_del_texcoord(self_ptr: *mut mjCFlex) {
+    if self_ptr.is_null() { return; }
     extern "C" { fn mjCFlex_DelTexcoord(self_ptr: *mut mjCFlex); }
-    // SAFETY: delegates to C implementation
+    // SAFETY: self_ptr verified non-null
     unsafe { mjCFlex_DelTexcoord(self_ptr) }
 }
 
@@ -2065,16 +2079,18 @@ pub fn mj_c_flex_compile(self_ptr: *mut mjCFlex, vfs: *const mjVFS) {
 /// C: mjCFlex::CreateBVH (user/user_objects.h:1056)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_flex_create_bvh(self_ptr: *mut mjCFlex) {
+    if self_ptr.is_null() { return; }
     extern "C" { fn mjCFlex_CreateBVH(self_ptr: *mut mjCFlex); }
-    // SAFETY: delegates to C implementation
+    // SAFETY: self_ptr verified non-null
     unsafe { mjCFlex_CreateBVH(self_ptr) }
 }
 
 /// C: mjCFlex::CreateShellPair (user/user_objects.h:1057)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_flex_create_shell_pair(self_ptr: *mut mjCFlex) {
+    if self_ptr.is_null() { return; }
     extern "C" { fn mjCFlex_CreateShellPair(self_ptr: *mut mjCFlex); }
-    // SAFETY: delegates to C implementation
+    // SAFETY: self_ptr verified non-null
     unsafe { mjCFlex_CreateShellPair(self_ptr) }
 }
 
@@ -2086,16 +2102,18 @@ pub fn mj_c_flex_create_shell_pair(self_ptr: *mut mjCFlex) {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_flex_compute_cell_empty(self_ptr: *mut mjCFlex, vpos: *const f64, elems: *const i32, nv: i32, ne: i32, fdim: i32, bbox: *const f64) {
+    if self_ptr.is_null() { return; }
     extern "C" { fn mjCFlex_ComputeCellEmpty(self_ptr: *mut mjCFlex, vpos: *const f64, elems: *const i32, nv: i32, ne: i32, fdim: i32, bbox: *const f64); }
-    // SAFETY: delegates to C implementation
+    // SAFETY: self_ptr verified non-null
     unsafe { mjCFlex_ComputeCellEmpty(self_ptr, vpos, elems, nv, ne, fdim, bbox) }
 }
 
 /// C: mjCFlex::ComputeStiffnessCacheKey (user/user_objects.h:1071)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_flex_compute_stiffness_cache_key(self_ptr: *mut mjCFlex) -> std__string {
+    if self_ptr.is_null() { panic!("mj_c_flex_compute_stiffness_cache_key: null self_ptr"); }
     extern "C" { fn mjCFlex_ComputeStiffnessCacheKey(self_ptr: *mut mjCFlex) -> std__string; }
-    // SAFETY: delegates to C implementation
+    // SAFETY: self_ptr verified non-null
     unsafe { mjCFlex_ComputeStiffnessCacheKey(self_ptr) }
 }
 
@@ -3533,32 +3551,36 @@ pub fn mj_c_body_pair_compile(self_ptr: *mut mjCBodyPair) {
 /// C: mjCEquality::CopyFromSpec (user/user_objects.h:1658)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_equality_copy_from_spec(self_ptr: *mut mjCEquality) {
+    if self_ptr.is_null() { return; }
     extern "C" { fn mjCEquality_CopyFromSpec(self_ptr: *mut mjCEquality); }
-    // SAFETY: delegates to C implementation
+    // SAFETY: self_ptr verified non-null
     unsafe { mjCEquality_CopyFromSpec(self_ptr) }
 }
 
 /// C: mjCEquality::PointToLocal (user/user_objects.h:1659)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_equality_point_to_local(self_ptr: *mut mjCEquality) {
+    if self_ptr.is_null() { return; }
     extern "C" { fn mjCEquality_PointToLocal(self_ptr: *mut mjCEquality); }
-    // SAFETY: delegates to C implementation
+    // SAFETY: self_ptr verified non-null
     unsafe { mjCEquality_PointToLocal(self_ptr) }
 }
 
 /// C: mjCEquality::ResolveReferences (user/user_objects.h:1660)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_equality_resolve_references(self_ptr: *mut mjCEquality, m: *const mjCModel) {
+    if self_ptr.is_null() { return; }
     extern "C" { fn mjCEquality_ResolveReferences(self_ptr: *mut mjCEquality, m: *const mjCModel); }
-    // SAFETY: delegates to C implementation
+    // SAFETY: self_ptr verified non-null
     unsafe { mjCEquality_ResolveReferences(self_ptr, m) }
 }
 
 /// C: mjCEquality::NameSpace (user/user_objects.h:1661)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_equality_name_space(self_ptr: *mut mjCEquality, m: *const mjCModel) {
+    if self_ptr.is_null() { return; }
     extern "C" { fn mjCEquality_NameSpace(self_ptr: *mut mjCEquality, m: *const mjCModel); }
-    // SAFETY: delegates to C implementation
+    // SAFETY: self_ptr verified non-null
     unsafe { mjCEquality_NameSpace(self_ptr, m) }
 }
 
@@ -4198,8 +4220,9 @@ pub fn mj_c_def_geom(self_ptr: *mut mjCDef) -> *mut mjCGeom {
 /// C: mjCDef::Site (user/user_objects.h:2086)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_def_site(self_ptr: *mut mjCDef) -> *mut mjCSite {
+    if self_ptr.is_null() { return core::ptr::null_mut(); }
     extern "C" { fn mjCDef_Site(self_ptr: *mut mjCDef) -> *mut mjCSite; }
-    // SAFETY: delegates to C implementation
+    // SAFETY: self_ptr verified non-null
     unsafe { mjCDef_Site(self_ptr) }
 }
 
@@ -4251,8 +4274,9 @@ pub fn mj_c_def_material(self_ptr: *mut mjCDef) -> *mut mjCMaterial {
 /// C: mjCDef::Pair (user/user_objects.h:2092)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_def_pair(self_ptr: *mut mjCDef) -> *mut mjCPair {
+    if self_ptr.is_null() { return core::ptr::null_mut(); }
     extern "C" { fn mjCDef_Pair(self_ptr: *mut mjCDef) -> *mut mjCPair; }
-    // SAFETY: delegates to C implementation
+    // SAFETY: self_ptr verified non-null
     unsafe { mjCDef_Pair(self_ptr) }
 }
 
@@ -4268,8 +4292,9 @@ pub fn mj_c_def_equality(self_ptr: *mut mjCDef) -> *mut mjCEquality {
 /// C: mjCDef::Tendon (user/user_objects.h:2094)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_def_tendon(self_ptr: *mut mjCDef) -> *mut mjCTendon {
+    if self_ptr.is_null() { return core::ptr::null_mut(); }
     extern "C" { fn mjCDef_Tendon(self_ptr: *mut mjCDef) -> *mut mjCTendon; }
-    // SAFETY: delegates to C implementation
+    // SAFETY: self_ptr verified non-null
     unsafe { mjCDef_Tendon(self_ptr) }
 }
 

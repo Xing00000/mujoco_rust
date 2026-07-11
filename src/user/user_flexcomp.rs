@@ -145,16 +145,18 @@ pub fn mj_c_flexcomp_load_gmsh22(self_ptr: *mut mjCFlexcomp, buffer: *mut i8, bi
 /// C: mjCFlexcomp::GridID (user/user_flexcomp.h:73)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_flexcomp_grid_id(self_ptr: *mut mjCFlexcomp, ix: i32, iy: i32) -> i32 {
+    if self_ptr.is_null() { return 0; }
     extern "C" { fn mjCFlexcomp_GridID(self_ptr: *mut mjCFlexcomp, ix: i32, iy: i32) -> i32; }
-    // SAFETY: delegates to C implementation
+    // SAFETY: self_ptr verified non-null
     unsafe { mjCFlexcomp_GridID(self_ptr, ix, iy) }
 }
 
 /// C: mjCFlexcomp::BoxID (user/user_flexcomp.h:75)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_flexcomp_box_id(self_ptr: *mut mjCFlexcomp, ix: i32, iy: i32, iz: i32) -> i32 {
+    if self_ptr.is_null() { return 0; }
     extern "C" { fn mjCFlexcomp_BoxID(self_ptr: *mut mjCFlexcomp, ix: i32, iy: i32, iz: i32) -> i32; }
-    // SAFETY: delegates to C implementation
+    // SAFETY: self_ptr verified non-null
     unsafe { mjCFlexcomp_BoxID(self_ptr, ix, iy, iz) }
 }
 
@@ -181,8 +183,9 @@ pub fn mj_c_flexcomp_box_project(self_ptr: *mut mjCFlexcomp, pos: *mut f64, ix: 
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_flexcomp_mark_empty_cells(self_ptr: *mut mjCFlexcomp, flex: *mut mjCFlex, points: *const f64, npnt: i32, minmax: [f64; 6], nx: i32, ny: i32, nz: i32) {
+    if self_ptr.is_null() { return; }
     extern "C" { fn mjCFlexcomp_MarkEmptyCells(self_ptr: *mut mjCFlexcomp, flex: *mut mjCFlex, points: *const f64, npnt: i32, minmax: [f64; 6], nx: i32, ny: i32, nz: i32); }
-    // SAFETY: delegates to C implementation
+    // SAFETY: self_ptr verified non-null
     unsafe { mjCFlexcomp_MarkEmptyCells(self_ptr, flex, points, npnt, minmax, nx, ny, nz) }
 }
 

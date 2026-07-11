@@ -514,8 +514,9 @@ pub fn compute_interp_bending(bending: *mut i32, nodexpos_local: *const i32, ord
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_flex_compute_unrotated_node_positions(self_ptr: *mut mjCFlex, nodexpos: *const i32, R0_out: *mut f64) -> i32 {
+    if self_ptr.is_null() { return 0; }
     extern "C" { fn mjCFlex_ComputeUnrotatedNodePositions(self_ptr: *mut mjCFlex, nodexpos: *const i32, R0_out: *mut f64) -> i32; }
-    // SAFETY: delegates to C implementation
+    // SAFETY: self_ptr verified non-null
     unsafe { mjCFlex_ComputeUnrotatedNodePositions(self_ptr, nodexpos, R0_out) }
 }
 
