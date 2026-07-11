@@ -66,8 +66,9 @@ pub fn oct_distance(m: *const mjModel, p: *const f64, meshid: i32) -> f64  {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn oct_gradient(m: *const mjModel, grad: *mut f64, point: *const f64, meshid: i32) {
+    if m.is_null() { return; }
     extern "C" { fn oct_gradient(m: *const mjModel, grad: *mut f64, point: *const f64, meshid: i32); }
-    // SAFETY: delegates to C implementation
+    // SAFETY: m verified non-null; delegates to C implementation
     unsafe { oct_gradient(m, grad, point, meshid) }
 }
 
@@ -101,10 +102,11 @@ pub fn radial_field3d(field: *mut f64, a: *const f64, x: *const f64, size: *cons
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn geom_distance(m: *const mjModel, d: *const mjData, p: *const mjpPlugin, i: i32, x: *const f64, r#type: mjtGeom) -> f64 {
+    if m.is_null() { return 0.0; }
     extern "C" {
         fn geomDistance(m: *const mjModel, d: *const mjData, p: *const mjpPlugin, i: i32, x: *const f64, r#type: mjtGeom) -> f64;
     }
-    // SAFETY: delegates to C implementation, all pointers valid per caller contract
+    // SAFETY: m verified non-null; delegates to C implementation
     unsafe { geomDistance(m, d, p, i, x, r#type) }
 }
 

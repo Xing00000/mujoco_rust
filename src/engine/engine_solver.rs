@@ -236,8 +236,9 @@ pub fn sol_pgs(m: *const mjModel, d: *mut mjData, island: i32, ne: i32, nf: i32,
 /// Calls: ARdiaginv, costChange, dualState, dualStateChange, extractBlock, mj_freeStack, mj_markStack, mj_stackAllocInfo, mju_copy, mju_dot, mju_zero, residual, saveStats, solveQCQP
 #[allow(unused_variables, non_snake_case)]
 pub fn sol_no_slip(m: *const mjModel, d: *mut mjData, island: i32, ne: i32, nf: i32, nefc: i32, efclist: *const i32, maxiter: i32) {
+    if m.is_null() { return; }
     extern "C" { fn solNoSlip(m: *const mjModel, d: *mut mjData, island: i32, ne: i32, nf: i32, nefc: i32, efclist: *const i32, maxiter: i32); }
-    // SAFETY: delegates to C implementation
+    // SAFETY: m verified non-null; delegates to C implementation
     unsafe { solNoSlip(m, d, island, ne, nf, nefc, efclist, maxiter) }
 }
 
@@ -368,8 +369,9 @@ pub fn elliptic_cost_dif(quad: *const f64, alpha: f64, mu: f64, Dm: f64) -> f64 
 /// Calls: ellipticCostDif, frictionCostDif, mju_warning
 #[allow(unused_variables, non_snake_case)]
 pub fn primal_eval(ctx: *mut mjPrimalContext, p: *mut mjPrimalPnt) {
+    if ctx.is_null() { return; }
     extern "C" { fn PrimalEval(ctx: *mut mjPrimalContext, p: *mut mjPrimalPnt); }
-    // SAFETY: delegates to C implementation
+    // SAFETY: ctx verified non-null; delegates to C implementation
     unsafe { PrimalEval(ctx, p) }
 }
 
@@ -402,20 +404,20 @@ pub fn primal_search(ctx: *mut mjPrimalContext, tolerance: f64, ls_iterations: f
 /// Calls: mj_stackAllocInfo, mju_addToMatSparse, mju_addToSymSparse, mju_cholFactorSymbolic, mju_sqrMatTDSparseNumeric, mju_sqrMatTDSparseSymbolic, mju_sqrMatTD_impl, mju_transposeSparse
 #[allow(unused_variables, non_snake_case)]
 pub fn make_hessian(d: *mut mjData, ctx: *mut mjPrimalContext) {
-    // WARNING: signature changed — verify body
-    // Previous params: (d : * mut mjData, ctx : * mut mjPrimalContext)
-    // Previous return: ()
-    extern "C" { fn MakeHessian(d : * mut mjData , ctx : * mut mjPrimalContext) ; } unsafe { MakeHessian(d , ctx) }
+    if d.is_null() { return; }
+    extern "C" { fn MakeHessian(d: *mut mjData, ctx: *mut mjPrimalContext); }
+    // SAFETY: d verified non-null; delegates to C implementation
+    unsafe { MakeHessian(d, ctx) }
 }
 
 /// C: HessianCone (engine/engine_solver.c:2099)
 /// Calls: mju_addToScl, mju_cholFactor, mju_cholUpdate, mju_cholUpdateSparse, mju_copy, mju_zero
 #[allow(unused_variables, non_snake_case)]
 pub fn hessian_cone(d: *mut mjData, ctx: *mut mjPrimalContext) {
-    // WARNING: signature changed — verify body
-    // Previous params: (d : * mut mjData, ctx : * mut mjPrimalContext)
-    // Previous return: ()
-    extern "C" { fn HessianCone(d : * mut mjData , ctx : * mut mjPrimalContext) ; } unsafe { HessianCone(d , ctx) }
+    if d.is_null() { return; }
+    extern "C" { fn HessianCone(d: *mut mjData, ctx: *mut mjPrimalContext); }
+    // SAFETY: d verified non-null; delegates to C implementation
+    unsafe { HessianCone(d, ctx) }
 }
 
 /// C: FactorizeHessian (engine/engine_solver.c:2102)

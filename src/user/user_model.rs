@@ -386,10 +386,10 @@ pub fn compile_mesh(mesh: *mut mjCMesh, vfs: *const mjVFS, exception: *mut std__
 /// Calls: _mjPRIVATE_setTlsLogHandler, mjCTexture::Compile
 #[allow(unused_variables, non_snake_case)]
 pub fn compile_texture(texture: *mut mjCTexture, vfs: *const mjVFS, exception: *mut std__exception_ptr, exception_mutex: *mut std__mutex, warningtext: *mut string) {
-    // WARNING: signature changed — verify body
-    // Previous params: (texture : * mut mjCTexture, vfs : * const mjVFS, exception : * mut std__exception_ptr, exception_mutex : * mut std__mutex, warningtext : * mut string)
-    // Previous return: ()
-    extern "C" { fn CompileTexture (texture : * mut mjCTexture , vfs : * const mjVFS , exception : * mut std__exception_ptr , exception_mutex : * mut std__mutex , warningtext : * mut string) ; } unsafe { CompileTexture (texture , vfs , exception , exception_mutex , warningtext) }
+    if texture.is_null() { return; }
+    extern "C" { fn CompileTexture(texture: *mut mjCTexture, vfs: *const mjVFS, exception: *mut std__exception_ptr, exception_mutex: *mut std__mutex, warningtext: *mut string); }
+    // SAFETY: texture verified non-null; delegates to C implementation
+    unsafe { CompileTexture(texture, vfs, exception, exception_mutex, warningtext) }
 }
 
 /// C: PrintIndent (user/user_model.cc:5457)

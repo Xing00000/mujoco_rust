@@ -242,10 +242,11 @@ pub fn mj_ne(m: *const mjModel, d: *mut mjData, nnz: *mut i32) -> i32 {
 /// Calls: mj_elemBodyWeight, mj_flexBody, mj_freeStack, mj_isPyramidal, mj_isSparse, mj_jacDifPair, mj_jacSumCount, mj_markStack, mj_stackAllocInfo, mj_vertBodyWeight, mju_message
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_nc(m: *const mjModel, d: *mut mjData, nnz: *mut i32) -> i32 {
+    if m.is_null() { return 0; }
     extern "C" {
         fn mj_nc(m: *const mjModel, d: *mut mjData, nnz: *mut i32) -> i32;
     }
-    // SAFETY: delegates to C implementation, all pointers valid per caller contract
+    // SAFETY: m verified non-null; delegates to C implementation
     unsafe { mj_nc(m, d, nnz) }
 }
 
@@ -311,10 +312,11 @@ pub fn mj_make_y(m: *const mjModel, d: *mut mjData, flg_diagexact: i32) {
 /// Calls: mj_arenaAllocByte, mj_clearEfc, mj_freeStack, mj_isSparse, mj_markStack, mj_stackAllocInfo, mj_warning, mju_sqrMatTD, mju_sqrMatTDSparseNumeric, mju_sqrMatTDSparseSymbolic, mju_transpose, mju_transposeSparse
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_make_ar(m: *const mjModel, d: *mut mjData) {
+    if m.is_null() { return; }
     extern "C" {
         fn mj_makeAR(m: *const mjModel, d: *mut mjData);
     }
-    // SAFETY: delegates to C implementation, all pointers valid per caller contract
+    // SAFETY: m verified non-null; delegates to C implementation
     unsafe { mj_makeAR(m, d) }
 }
 

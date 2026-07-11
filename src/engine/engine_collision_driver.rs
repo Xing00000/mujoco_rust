@@ -328,8 +328,9 @@ pub fn push_pair_arena(m: *const mjModel, d: *mut mjData, g1: i32, g2: i32, ipai
 /// Calls: filterBitmask, getGap, getMargin, mj_filterSphere
 #[allow(unused_variables, non_snake_case)]
 pub fn filter_collision_pair(m: *const mjModel, d: *mut mjData, g1: i32, g2: i32, ipair: i32, merged: i32, startadr: i32, pairadr: i32) -> i32  {
+    if m.is_null() { return 0; }
     extern "C" { fn filterCollisionPair(m: *const mjModel, d: *mut mjData, g1: i32, g2: i32, ipair: i32, merged: i32, startadr: i32, pairadr: i32) -> i32; }
-    // SAFETY: delegates to C implementation
+    // SAFETY: m verified non-null; delegates to C implementation
     unsafe { filterCollisionPair(m, d, g1, g2, ipair, merged, startadr, pairadr) }
 }
 

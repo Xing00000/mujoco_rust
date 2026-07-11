@@ -1033,8 +1033,9 @@ pub fn mju_history_init(buf: *mut f64, n: i32, dim: i32, times: *const f64, valu
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mju_history_insert(buf: *mut f64, n: i32, dim: i32, t: f64) -> *mut f64  {
+    if buf.is_null() { return core::ptr::null_mut(); }
     extern "C" { fn mju_historyInsert(buf: *mut f64, n: i32, dim: i32, t: f64) -> *mut f64; }
-    // SAFETY: delegates to C implementation
+    // SAFETY: buf verified non-null; delegates to C implementation
     unsafe { mju_historyInsert(buf, n, dim, t) }
 }
 
@@ -1047,8 +1048,9 @@ pub fn mju_history_insert(buf: *mut f64, n: i32, dim: i32, t: f64) -> *mut f64  
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mju_history_read(buf: *const f64, n: i32, dim: i32, res: *mut f64, t: f64, interp: i32) -> *const f64  {
+    if buf.is_null() { return core::ptr::null(); }
     extern "C" { fn mju_historyRead(buf: *const f64, n: i32, dim: i32, res: *mut f64, t: f64, interp: i32) -> *const f64; }
-    // SAFETY: delegates to C implementation
+    // SAFETY: buf verified non-null; delegates to C implementation
     unsafe { mju_historyRead(buf, n, dim, res, t, interp) }
 }
 

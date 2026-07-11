@@ -404,8 +404,9 @@ pub fn attach_face(pt: *mut Polytope, v1: i32, v2: i32, v3: i32, adj1: i32, adj2
 /// Calls: dot3, gjkIntersectSupport, signedDistance
 #[allow(unused_variables, non_snake_case)]
 pub fn gjk_intersect(status: *mut mjCCDStatus, obj1: *mut mjCCDObj, obj2: *mut mjCCDObj) -> i32  {
+    if status.is_null() { return 0; }
     extern "C" { fn gjkIntersect(status: *mut mjCCDStatus, obj1: *mut mjCCDObj, obj2: *mut mjCCDObj) -> i32; }
-    // SAFETY: delegates to C implementation
+    // SAFETY: status verified non-null; delegates to C implementation
     unsafe { gjkIntersect(status, obj1, obj2) }
 }
 
@@ -424,10 +425,11 @@ pub fn polytope2(pt: *mut Polytope, status: *mut mjCCDStatus, obj1: *mut mjCCDOb
 /// Calls: add3, attachFace, cross3, epaSupport, insertVertex, norm3, scl3, sub3, testTetra, triPointIntersect
 #[allow(unused_variables, non_snake_case)]
 pub fn polytope3(pt: *mut Polytope, status: *mut mjCCDStatus, obj1: *mut mjCCDObj, obj2: *mut mjCCDObj) -> i32 {
+    if pt.is_null() { return 0; }
     extern "C" {
         fn polytope3(pt: *mut Polytope, status: *mut mjCCDStatus, obj1: *mut mjCCDObj, obj2: *mut mjCCDObj) -> i32;
     }
-    // SAFETY: delegates to C implementation, all pointers valid per caller contract
+    // SAFETY: pt verified non-null; delegates to C implementation
     unsafe { polytope3(pt, status, obj1, obj2) }
 }
 
@@ -1068,8 +1070,9 @@ pub fn horizon_rec(pt: *mut Polytope, face: *mut Face, e: i32) -> i32  {
 /// Calls: addEdge, deleteFace, getEdge, horizonRec
 #[allow(unused_variables, non_snake_case)]
 pub fn horizon(pt: *mut Polytope, face: *mut Face) {
+    if pt.is_null() { return; }
     extern "C" { fn horizon(pt: *mut Polytope, face: *mut Face); }
-    // SAFETY: delegates to C implementation
+    // SAFETY: pt verified non-null; delegates to C implementation
     unsafe { horizon(pt, face) }
 }
 
@@ -1428,10 +1431,11 @@ pub fn simplex_dim(v1i: *mut i32, v2i: *mut i32, v3i: *mut i32, v1: *mut *mut f6
 /// Calls: alignedFaceEdge, alignedFaces, boxEdgeNormals, boxFace, boxNormals, copy3, meshEdgeNormals, meshFace, meshNormals, norm3, polygonClip, scl3, simplexDim, sub3
 #[allow(unused_variables, non_snake_case)]
 pub fn multicontact(pt: *mut Polytope, face: *mut Face, status: *mut mjCCDStatus, obj1: *mut mjCCDObj, obj2: *mut mjCCDObj) {
+    if pt.is_null() { return; }
     extern "C" {
         fn multicontact(pt: *mut Polytope, face: *mut Face, status: *mut mjCCDStatus, obj1: *mut mjCCDObj, obj2: *mut mjCCDObj);
     }
-    // SAFETY: delegates to C implementation, all pointers valid per caller contract
+    // SAFETY: pt verified non-null; delegates to C implementation
     unsafe { multicontact(pt, face, status, obj1, obj2) }
 }
 

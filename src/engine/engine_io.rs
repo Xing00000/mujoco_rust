@@ -116,10 +116,10 @@ pub fn mj_set_ptr_data(m: *const mjModel, d: *mut mjData) {
 /// Calls: mjp_getPluginAtSlot, mju_free
 #[allow(unused_variables, non_snake_case)]
 pub fn free_data_buffers(d: *mut mjData) {
-    // WARNING: signature changed — verify body
-    // Previous params: (d : * mut mjData)
-    // Previous return: ()
-    extern "C" { fn freeDataBuffers(d : * mut mjData) ; } unsafe { freeDataBuffers(d) }
+    if d.is_null() { return; }
+    extern "C" { fn freeDataBuffers(d: *mut mjData); }
+    // SAFETY: d verified non-null; delegates to C implementation
+    unsafe { freeDataBuffers(d) }
 }
 
 /// C: mj_copyDataVisual (engine/engine_io.c:1142)

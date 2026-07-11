@@ -294,6 +294,7 @@ pub fn mj_private_get_global_log_handler() -> mjfLogHandler {
 /// Calls: mju_getLogConfigPtr
 #[allow(unused_variables, non_snake_case)]
 pub fn mju_is_topic_enabled(topic: i32) -> mjtBool {
+    let _sv = core::mem::size_of_val(&topic);
     extern "C" {
         fn mju_isTopicEnabled(topic: i32) -> mjtBool;
     }

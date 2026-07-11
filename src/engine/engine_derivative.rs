@@ -143,8 +143,9 @@ pub fn mjd_com_vel_vel(m: *const mjModel, d: *mut mjData, Dcvel: *mut f64, Dcdof
 /// Calls: addToParent, copyFromParent, mj_freeStack, mj_markStack, mj_stackAllocInfo, mjd_comVel_vel, mjd_crossForce_frc, mjd_crossForce_vel, mjd_mulInertVec_vel, mju_addTo, mju_addToScl, mju_mulInertVec, mju_mulMatMat, mju_mulMatVec, mju_subFrom, mju_transpose, mju_zero
 #[allow(unused_variables, non_snake_case)]
 pub fn mjd_rne_vel(m: *const mjModel, d: *mut mjData) {
+    if m.is_null() { return; }
     extern "C" { fn mjd_rne_vel(m: *const mjModel, d: *mut mjData); }
-    // SAFETY: delegates to C implementation, all pointers valid per caller contract
+    // SAFETY: m verified non-null; delegates to C implementation
     unsafe { mjd_rne_vel(m, d) }
 }
 
@@ -286,8 +287,9 @@ pub fn mjd_added_mass_forces(B: *mut f64, local_vels: *const f64, fluid_density:
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjd_viscous_torque(D: *mut f64, lvel: *const f64, fluid_density: f64, fluid_viscosity: f64, size: *const f64, slender_drag_coef: f64, ang_drag_coef: f64) {
+    if D.is_null() { return; }
     extern "C" { fn mjd_viscous_torque(D: *mut f64, lvel: *const f64, fluid_density: f64, fluid_viscosity: f64, size: *const f64, slender_drag_coef: f64, ang_drag_coef: f64); }
-    // SAFETY: delegates to C implementation
+    // SAFETY: D verified non-null; delegates to C implementation
     unsafe { mjd_viscous_torque(D, lvel, fluid_density, fluid_viscosity, size, slender_drag_coef, ang_drag_coef) }
 }
 
@@ -349,8 +351,9 @@ pub fn mjd_ellipsoid_fluid(m: *const mjModel, d: *mut mjData, bodyid: i32) {
 /// Calls: addJTBJ, addJTBJSparse, mj_bodyChain, mj_freeStack, mj_isSparse, mj_jacBodyCom, mj_jacSparse, mj_markStack, mj_objectVelocity, mj_stackAllocInfo, mju_copy, mju_copy3, mju_max, mju_mulMatTMat, mju_subFrom3, mju_transformSpatial, mju_zero
 #[allow(unused_variables, non_snake_case)]
 pub fn mjd_inertia_box_fluid(m: *const mjModel, d: *mut mjData, i: i32) {
+    if m.is_null() { return; }
     extern "C" { fn mjd_inertiaBoxFluid(m: *const mjModel, d: *mut mjData, i: i32); }
-    // SAFETY: delegates to C implementation, all pointers valid per caller contract
+    // SAFETY: m verified non-null; delegates to C implementation
     unsafe { mjd_inertiaBoxFluid(m, d, i) }
 }
 

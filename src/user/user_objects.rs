@@ -2237,10 +2237,10 @@ pub fn mj_c_flex_cache_stiffness(self_ptr: *mut mjCFlex) {
 /// Calls: mju_free
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_mesh_copy_from_spec(self_ptr: *mut mjCMesh) {
-    // WARNING: signature changed — verify body
-    // Previous params: (self_ptr : * mut mjCMesh)
-    // Previous return: ()
-    extern "C" { fn mjCMesh_CopyFromSpec (self_ptr : * mut mjCMesh) ; } unsafe { mjCMesh_CopyFromSpec (self_ptr) }
+    if self_ptr.is_null() { return; }
+    extern "C" { fn mjCMesh_CopyFromSpec(self_ptr: *mut mjCMesh); }
+    // SAFETY: self_ptr verified non-null; delegates to C implementation
+    unsafe { mjCMesh_CopyFromSpec(self_ptr) }
 }
 
 /// C: mjCMesh::PointToLocal (user/user_objects.h:1152)
@@ -2990,10 +2990,10 @@ pub fn mj_c_mesh_load_sdf(self_ptr: *mut mjCMesh) {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_mesh_make_graph(self_ptr: *mut mjCMesh, dvert: *const f64) {
-    // WARNING: signature changed — verify body
-    // Previous params: (self_ptr : * mut mjCMesh, dvert : * const f64)
-    // Previous return: ()
-    extern "C" { fn mjCMesh_MakeGraph (self_ptr : * mut mjCMesh , dvert : * const f64) ; } unsafe { mjCMesh_MakeGraph (self_ptr , dvert) }
+    if self_ptr.is_null() { return; }
+    extern "C" { fn mjCMesh_MakeGraph(self_ptr: *mut mjCMesh, dvert: *const f64); }
+    // SAFETY: self_ptr verified non-null; delegates to C implementation
+    unsafe { mjCMesh_MakeGraph(self_ptr, dvert) }
 }
 
 /// C: mjCMesh::MakeNormal (user/user_objects.h:1284)
@@ -3005,10 +3005,10 @@ pub fn mj_c_mesh_make_graph(self_ptr: *mut mjCMesh, dvert: *const f64) {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_mesh_make_normal(self_ptr: *mut mjCMesh, dvert: *const f64) {
-    // WARNING: signature changed — verify body
-    // Previous params: (self_ptr : * mut mjCMesh, dvert : * const f64)
-    // Previous return: ()
-    extern "C" { fn mjCMesh_MakeNormal (self_ptr : * mut mjCMesh , dvert : * const f64) ; } unsafe { mjCMesh_MakeNormal (self_ptr , dvert) }
+    if self_ptr.is_null() { return; }
+    extern "C" { fn mjCMesh_MakeNormal(self_ptr: *mut mjCMesh, dvert: *const f64); }
+    // SAFETY: self_ptr verified non-null; delegates to C implementation
+    unsafe { mjCMesh_MakeNormal(self_ptr, dvert) }
 }
 
 /// C: mjCMesh::MakeCenter (user/user_objects.h:1285)
