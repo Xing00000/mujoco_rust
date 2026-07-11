@@ -44,8 +44,9 @@ pub fn make_tendon_sparse(m: *mut mjModel) {
 /// Calls: mj_bodyChain, mj_freeStack, mj_jacDifPair, mj_markStack, mj_stackAllocInfo, mju_copyInt, mju_message, mju_sub3, mju_zero, mju_zeroInt
 #[allow(unused_variables, non_snake_case)]
 pub fn make_flex_sparse(m: *mut mjModel, d: *mut mjData) {
+    if m.is_null() { return; }
     extern "C" { fn makeFlexSparse(m: *mut mjModel, d: *mut mjData); }
-    // SAFETY: delegates to C implementation
+    // SAFETY: m verified non-null; delegates to C implementation
     unsafe { makeFlexSparse(m, d) }
 }
 

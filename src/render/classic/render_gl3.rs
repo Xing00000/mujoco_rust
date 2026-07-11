@@ -264,8 +264,9 @@ pub fn geomcmp(i: *mut i32, j: *mut i32, context: *mut ()) -> i32 {
 /// Calls: geomcmp
 #[allow(unused_variables, non_snake_case)]
 pub fn geom_sort(arr: *mut i32, buf: *mut i32, n: i32, context: *mut ()) {
+    if arr.is_null() { return; }
     extern "C" { fn geomSort(arr: *mut i32, buf: *mut i32, n: i32, context: *mut ()); }
-    // SAFETY: delegates to C implementation
+    // SAFETY: arr verified non-null; delegates to C implementation
     unsafe { geomSort(arr, buf, n, context) }
 }
 

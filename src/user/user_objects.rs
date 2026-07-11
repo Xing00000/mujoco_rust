@@ -270,8 +270,9 @@ pub fn mj_c_octree_make_octree(self_ptr: *mut mjCOctree, elements: *const i32, a
 /// Calls: mjCFrame::IsAncestor
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_body_copy_list(self_ptr: *mut mjCBody, dst: *mut i32, src: *const i32, fmap: *mut i32, pframe: *const mjCFrame) {
+    if self_ptr.is_null() { return; }
     extern "C" { fn mjCBody_CopyList(self_ptr: *mut mjCBody, dst: *mut i32, src: *const i32, fmap: *mut i32, pframe: *const mjCFrame); }
-    // SAFETY: delegates to C implementation
+    // SAFETY: self_ptr verified non-null; delegates to C implementation
     unsafe { mjCBody_CopyList(self_ptr, dst, src, fmap, pframe) }
 }
 
@@ -1005,8 +1006,9 @@ pub fn mj_c_base_get_parent(self_ptr: *mut mjCBase) -> *mut mjCBase {
 /// Calls: mjCModel::FindSpec
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_base_find_compiler(self_ptr: *mut mjCBase, compiler: *const mjsCompiler) -> *mut mjsCompiler {
+    if self_ptr.is_null() { return core::ptr::null_mut(); }
     extern "C" { fn mjCBase_FindCompiler(self_ptr: *mut mjCBase, compiler: *const mjsCompiler) -> *mut mjsCompiler; }
-    // SAFETY: delegates to C implementation
+    // SAFETY: self_ptr verified non-null; delegates to C implementation
     unsafe { mjCBase_FindCompiler(self_ptr, compiler) }
 }
 
@@ -1161,8 +1163,9 @@ pub fn mj_c_body_num_objects(self_ptr: *mut mjCBody, r#type: mjtObj) -> i32 {
 /// Calls: mjCBody::NumObjects
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_body_get_object(self_ptr: *mut mjCBody, r#type: mjtObj, id: i32) -> *mut mjCBase {
+    if self_ptr.is_null() { return core::ptr::null_mut(); }
     extern "C" { fn mjCBody_GetObject(self_ptr: *mut mjCBody, r#type: mjtObj, id: i32) -> *mut mjCBase; }
-    // SAFETY: delegates to C implementation
+    // SAFETY: self_ptr verified non-null; delegates to C implementation
     unsafe { mjCBody_GetObject(self_ptr, r#type, id) }
 }
 
@@ -1327,8 +1330,9 @@ pub fn mj_c_body_accumulate_inertia(self_ptr: *mut mjCBody, other: *const mjsBod
 /// Calls: mjCBody::ComputeBVH, mjCBody::CopyFromSpec, mjCBody::InertiaFromGeom, mjp_getPluginAtSlot
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_body_compile(self_ptr: *mut mjCBody) {
+    if self_ptr.is_null() { return; }
     extern "C" { fn mjCBody_Compile(self_ptr: *mut mjCBody); }
-    // SAFETY: delegates to C implementation
+    // SAFETY: self_ptr verified non-null; delegates to C implementation
     unsafe { mjCBody_Compile(self_ptr) }
 }
 
@@ -1429,8 +1433,9 @@ pub fn mj_c_frame_is_ancestor(self_ptr: *mut mjCFrame, child: *const mjCFrame) -
 /// Calls: mjCFrame::CopyFromSpec
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_frame_compile(self_ptr: *mut mjCFrame) {
+    if self_ptr.is_null() { return; }
     extern "C" { fn mjCFrame_Compile(self_ptr: *mut mjCFrame); }
-    // SAFETY: delegates to C implementation
+    // SAFETY: self_ptr verified non-null; delegates to C implementation
     unsafe { mjCFrame_Compile(self_ptr) }
 }
 
@@ -1902,8 +1907,9 @@ pub fn mj_c_camera_get_parent(self_ptr: *mut mjCCamera) -> *mut mjCBody {
 /// Calls: mjCCamera::CopyFromSpec
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_camera_compile(self_ptr: *mut mjCCamera) {
+    if self_ptr.is_null() { return; }
     extern "C" { fn mjCCamera_Compile(self_ptr: *mut mjCCamera); }
-    // SAFETY: delegates to C implementation
+    // SAFETY: self_ptr verified non-null; delegates to C implementation
     unsafe { mjCCamera_Compile(self_ptr) }
 }
 
@@ -3747,8 +3753,9 @@ pub fn mj_c_body_pair_get_signature(self_ptr: *mut mjCBodyPair) -> i32 {
 /// Calls: mjCBodyPair::CopyFromSpec
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_body_pair_compile(self_ptr: *mut mjCBodyPair) {
+    if self_ptr.is_null() { return; }
     extern "C" { fn mjCBodyPair_Compile(self_ptr: *mut mjCBodyPair); }
-    // SAFETY: delegates to C implementation
+    // SAFETY: self_ptr verified non-null; delegates to C implementation
     unsafe { mjCBodyPair_Compile(self_ptr) }
 }
 
@@ -3792,8 +3799,9 @@ pub fn mj_c_equality_name_space(self_ptr: *mut mjCEquality, m: *const mjCModel) 
 /// Calls: mjCEquality::CopyFromSpec
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_equality_compile(self_ptr: *mut mjCEquality) {
+    if self_ptr.is_null() { return; }
     extern "C" { fn mjCEquality_Compile(self_ptr: *mut mjCEquality); }
-    // SAFETY: delegates to C implementation
+    // SAFETY: self_ptr verified non-null; delegates to C implementation
     unsafe { mjCEquality_Compile(self_ptr) }
 }
 
@@ -4130,8 +4138,9 @@ pub fn mj_c_actuator_ctrl(self_ptr: *mut mjCActuator, state_name: *const std__st
 /// Calls: mjCActuator::CopyFromSpec, mjCJoint::get_range, mjCTendon::get_range, mjp_getPluginAtSlot
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_actuator_compile(self_ptr: *mut mjCActuator) {
+    if self_ptr.is_null() { return; }
     extern "C" { fn mjCActuator_Compile(self_ptr: *mut mjCActuator); }
-    // SAFETY: delegates to C implementation
+    // SAFETY: self_ptr verified non-null; delegates to C implementation
     unsafe { mjCActuator_Compile(self_ptr) }
 }
 
@@ -4400,8 +4409,9 @@ pub fn mj_c_key_compile(self_ptr: *mut mjCKey, m: *const mjModel) {
 /// Calls: mjCDef::PointToLocal
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_def_copy_without_children(self_ptr: *mut mjCDef, other: *const mjCDef) {
+    if self_ptr.is_null() { return; }
     extern "C" { fn mjCDef_CopyWithoutChildren(self_ptr: *mut mjCDef, other: *const mjCDef); }
-    // SAFETY: delegates to C implementation
+    // SAFETY: self_ptr verified non-null; delegates to C implementation
     unsafe { mjCDef_CopyWithoutChildren(self_ptr, other) }
 }
 
@@ -4436,8 +4446,9 @@ pub fn mj_c_def_name_space(self_ptr: *mut mjCDef, m: *const mjCModel) {
 /// Calls: mjCDef::CopyFromSpec
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_def_compile(self_ptr: *mut mjCDef, model: *const mjCModel) {
+    if self_ptr.is_null() { return; }
     extern "C" { fn mjCDef_Compile(self_ptr: *mut mjCDef, model: *const mjCModel); }
-    // SAFETY: delegates to C implementation
+    // SAFETY: self_ptr verified non-null; delegates to C implementation
     unsafe { mjCDef_Compile(self_ptr, model) }
 }
 

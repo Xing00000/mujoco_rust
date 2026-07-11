@@ -17,8 +17,9 @@ pub fn mj_c_cache_has_asset(self_ptr: *mut mjCCache, id: *const i32) -> *const i
 /// Calls: mjCAsset::BytesCount, mjCAsset::ReplaceData, mjCAsset::SetInsertNum
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_cache_insert(self_ptr: *mut mjCCache, modelname: *const i32, id: *const i32, resource: *const mjResource, data: *const (), size: usize) -> bool {
+    if self_ptr.is_null() { return false; }
     extern "C" { fn mj_c_cache_insert(self_ptr: *mut mjCCache, modelname: *const i32, id: *const i32, resource: *const mjResource, data: *const (), size: usize) -> bool; }
-    // SAFETY: delegates to C implementation
+    // SAFETY: self_ptr verified non-null; delegates to C implementation
     unsafe { mj_c_cache_insert(self_ptr, modelname, id, resource, data, size) }
 }
 
@@ -26,8 +27,9 @@ pub fn mj_c_cache_insert(self_ptr: *mut mjCCache, modelname: *const i32, id: *co
 /// Calls: mjCAsset::IncrementAccess, mjCAsset::PopulateData
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_cache_populate_data(self_ptr: *mut mjCCache, id: *const i32, resource: *const mjResource, r#fn: mjCDataFunc) -> bool {
+    if self_ptr.is_null() { return false; }
     extern "C" { fn mjCCache_PopulateData(self_ptr: *mut mjCCache, id: *const i32, resource: *const mjResource, r#fn: mjCDataFunc) -> bool; }
-    // SAFETY: delegates to C implementation
+    // SAFETY: self_ptr verified non-null; delegates to C implementation
     unsafe { mjCCache_PopulateData(self_ptr, id, resource, r#fn) }
 }
 
@@ -197,8 +199,9 @@ pub fn mj_c_asset_references(self_ptr: *mut mjCAsset) -> *const i32 {
 /// Calls: mjCCache::Trim
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_cache_set_capacity(self_ptr: *mut mjCCache, size: usize) {
+    if self_ptr.is_null() { return; }
     extern "C" { fn mjCCache_SetCapacity(self_ptr: *mut mjCCache, size: usize); }
-    // SAFETY: delegates to C implementation
+    // SAFETY: self_ptr verified non-null; delegates to C implementation
     unsafe { mjCCache_SetCapacity(self_ptr, size) }
 }
 
@@ -235,8 +238,9 @@ pub fn mj_c_cache_size(self_ptr: *mut mjCCache) -> std__size_t {
 /// Calls: mjCAsset::BytesCount
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_cache_delete(self_ptr: *mut mjCCache, asset: *mut mjCAsset) {
+    if self_ptr.is_null() { return; }
     extern "C" { fn mjCCache_Delete(self_ptr: *mut mjCCache, asset: *mut mjCAsset); }
-    // SAFETY: delegates to C implementation
+    // SAFETY: self_ptr verified non-null; delegates to C implementation
     unsafe { mjCCache_Delete(self_ptr, asset) }
 }
 

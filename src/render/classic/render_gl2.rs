@@ -27,8 +27,9 @@ pub fn warn_about_arb_depth_buffer() {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn flip_depth_if_required(depth: *mut f32, viewport: mjrRect, con: *const mjrContext) {
+    if depth.is_null() { return; }
     extern "C" { fn flipDepthIfRequired(depth: *mut f32, viewport: mjrRect, con: *const mjrContext); }
-    // SAFETY: delegates to C implementation
+    // SAFETY: depth verified non-null; delegates to C implementation
     unsafe { flipDepthIfRequired(depth, viewport, con) }
 }
 

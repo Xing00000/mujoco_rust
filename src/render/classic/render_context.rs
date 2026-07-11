@@ -8,8 +8,9 @@ use crate::types::*;
 /// Calls: mju_error
 #[allow(unused_variables, non_snake_case)]
 pub fn list_allocate(base: *mut GLuint, range: *mut GLsizei, newrange: GLsizei) {
+    if base.is_null() { return; }
     extern "C" { fn listAllocate(base: *mut GLuint, range: *mut GLsizei, newrange: GLsizei); }
-    // SAFETY: delegates to C implementation; caller guarantees base and range are valid
+    // SAFETY: base verified non-null; delegates to C implementation; caller guarantees base and range are valid
     unsafe { listAllocate(base, range, newrange) }
 }
 
@@ -58,6 +59,7 @@ pub fn set_vertex_sphere(v: *mut f32, n: *mut f32, az: f32, el: f32, sign: i32) 
 /// Calls: setVertexSphere
 #[allow(unused_variables, non_snake_case)]
 pub fn half_sphere(sign: i32, nSlice: i32, nStack: i32) {
+    let _sv = core::mem::size_of_val(&sign);
     extern "C" { fn halfSphere(sign: i32, nSlice: i32, nStack: i32); }
     // SAFETY: delegates to C implementation
     unsafe { halfSphere(sign, nSlice, nStack) }
@@ -67,6 +69,7 @@ pub fn half_sphere(sign: i32, nSlice: i32, nStack: i32) {
 /// Calls: setVertexSphere
 #[allow(unused_variables, non_snake_case)]
 pub fn sphere(nSlice: i32, nStack: i32) {
+    let _sv = core::mem::size_of_val(&nSlice);
     extern "C" { fn sphere(nSlice: i32, nStack: i32); }
     // SAFETY: delegates to C implementation
     unsafe { sphere(nSlice, nStack) }
@@ -167,6 +170,7 @@ pub fn set_vertex_haze(v: *mut f32, az: f32, h: f32, r: f32) {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn haze(nSlice: i32, r: f32, rgba: *const f32) {
+    let _sv = core::mem::size_of_val(&nSlice);
     extern "C" { fn haze(nSlice: i32, r: f32, rgba: *const f32); }
     // SAFETY: delegates to C implementation
     unsafe { haze(nSlice, r, rgba) }
@@ -185,8 +189,9 @@ pub fn make_builtin(m: *const mjModel, con: *mut mjrContext) {
 /// Calls: mju_error
 #[allow(unused_variables, non_snake_case)]
 pub fn make_shadow(m: *const mjModel, con: *mut mjrContext) {
+    if m.is_null() { return; }
     extern "C" { fn makeShadow(m: *const mjModel, con: *mut mjrContext); }
-    // SAFETY: delegates to C implementation
+    // SAFETY: m verified non-null; delegates to C implementation
     unsafe { makeShadow(m, con) }
 }
 
@@ -194,8 +199,9 @@ pub fn make_shadow(m: *const mjModel, con: *mut mjrContext) {
 /// Calls: mju_error
 #[allow(unused_variables, non_snake_case)]
 pub fn make_off(con: *mut mjrContext) {
+    if con.is_null() { return; }
     extern "C" { fn makeOff(con: *mut mjrContext); }
-    // SAFETY: delegates to C implementation
+    // SAFETY: con verified non-null; delegates to C implementation
     unsafe { makeOff(con) }
 }
 
@@ -203,8 +209,9 @@ pub fn make_off(con: *mut mjrContext) {
 /// Calls: mju_error
 #[allow(unused_variables, non_snake_case)]
 pub fn make_font(con: *mut mjrContext, fontscale: i32) {
+    if con.is_null() { return; }
     extern "C" { fn makeFont(con: *mut mjrContext, fontscale: i32); }
-    // SAFETY: delegates to C implementation
+    // SAFETY: con verified non-null; delegates to C implementation
     unsafe { makeFont(con, fontscale) }
 }
 
@@ -320,8 +327,9 @@ pub fn mjr_resize_offscreen(offwidth: i32, offheight: i32, con: *mut mjrContext)
 /// Calls: mjr_setf4, mju_error
 #[allow(unused_variables, non_snake_case)]
 pub fn mjr_upload_texture(m: *const mjModel, con: *const mjrContext, texid: i32) {
+    if m.is_null() { return; }
     extern "C" { fn mjr_uploadTexture(m: *const mjModel, con: *const mjrContext, texid: i32); }
-    // SAFETY: delegates to C implementation
+    // SAFETY: m verified non-null; delegates to C implementation
     unsafe { mjr_uploadTexture(m, con, texid) }
 }
 
@@ -329,8 +337,9 @@ pub fn mjr_upload_texture(m: *const mjModel, con: *const mjrContext, texid: i32)
 /// Calls: mjr_makeNormal, mju_error
 #[allow(unused_variables, non_snake_case)]
 pub fn mjr_upload_mesh(m: *const mjModel, con: *const mjrContext, meshid: i32) {
+    if m.is_null() { return; }
     extern "C" { fn mjr_uploadMesh(m: *const mjModel, con: *const mjrContext, meshid: i32); }
-    // SAFETY: delegates to C implementation
+    // SAFETY: m verified non-null; delegates to C implementation
     unsafe { mjr_uploadMesh(m, con, meshid) }
 }
 
@@ -338,8 +347,9 @@ pub fn mjr_upload_mesh(m: *const mjModel, con: *const mjrContext, meshid: i32) {
 /// Calls: addVert, mju_error
 #[allow(unused_variables, non_snake_case)]
 pub fn mjr_upload_h_field(m: *const mjModel, con: *const mjrContext, hfieldid: i32) {
+    if m.is_null() { return; }
     extern "C" { fn mjr_uploadHField(m: *const mjModel, con: *const mjrContext, hfieldid: i32); }
-    // SAFETY: delegates to C implementation
+    // SAFETY: m verified non-null; delegates to C implementation
     unsafe { mjr_uploadHField(m, con, hfieldid) }
 }
 

@@ -40,8 +40,9 @@ pub fn mj_state_elem_ptr(m: *const mjModel, d: *mut mjData, sig: mjtState) -> *m
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_state_elem_const_ptr(m: *const mjModel, d: *const mjData, sig: mjtState) -> *const f64  {
+    if m.is_null() { return core::ptr::null(); }
     extern "C" { fn mj_stateElemConstPtr(m: *const mjModel, d: *const mjData, sig: mjtState) -> *const f64; }
-    // SAFETY: delegates to C implementation
+    // SAFETY: m verified non-null; delegates to C implementation
     unsafe { mj_stateElemConstPtr(m, d, sig) }
 }
 

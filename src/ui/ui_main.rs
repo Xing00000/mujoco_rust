@@ -310,8 +310,9 @@ pub fn tryresize(ui: *mut mjUI, con: *const mjrContext) {
 /// Calls: mju_error
 #[allow(unused_variables, non_snake_case)]
 pub fn insertionsortgroup(list: *mut i32, num: i32, stride: i32) {
+    if list.is_null() { return; }
     extern "C" { fn insertionsortgroup(list: *mut i32, num: i32, stride: i32); }
-    // SAFETY: delegates to C implementation
+    // SAFETY: list verified non-null; delegates to C implementation
     unsafe { insertionsortgroup(list, num, stride) }
 }
 
