@@ -28,8 +28,9 @@ pub fn get_stack_info_from_data(d: *const mjData) -> mjStackInfo {
 /// Calls: fastmod
 #[allow(unused_variables, non_snake_case)]
 pub fn stackallocinternal(d: *mut mjData, stack_info: *mut mjStackInfo, size: usize, alignment: usize, caller: *const i8, line: i32) -> *mut () {
+    if d.is_null() { return core::ptr::null_mut(); }
     extern "C" { fn stackallocinternal(d: *mut mjData, stack_info: *mut mjStackInfo, size: usize, alignment: usize, caller: *const i8, line: i32) -> *mut (); }
-    // SAFETY: delegates to C implementation
+    // SAFETY: d verified non-null; delegates to C implementation
     unsafe { stackallocinternal(d, stack_info, size, alignment, caller, line) }
 }
 
@@ -37,8 +38,9 @@ pub fn stackallocinternal(d: *mut mjData, stack_info: *mut mjStackInfo, size: us
 /// Calls: fastmod, get_stack_info_from_data, stackallocinternal
 #[allow(unused_variables, non_snake_case)]
 pub fn stackalloc(d: *mut mjData, size: usize, alignment: usize, caller: *const i8, line: i32) -> *mut () {
+    if d.is_null() { return core::ptr::null_mut(); }
     extern "C" { fn stackalloc(d: *mut mjData, size: usize, alignment: usize, caller: *const i8, line: i32) -> *mut (); }
-    // SAFETY: delegates to C implementation
+    // SAFETY: d verified non-null; delegates to C implementation
     unsafe { stackalloc(d, size, alignment, caller, line) }
 }
 

@@ -431,8 +431,9 @@ pub fn read_fluid_geom_interaction(geom_fluid_coefs: *const f64, geom_fluid_coef
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn write_fluid_geom_interaction(geom_fluid_coefs: *mut f64, geom_fluid_coef: *const f64, blunt_drag_coef: *const f64, slender_drag_coef: *const f64, ang_drag_coef: *const f64, kutta_lift_coef: *const f64, magnus_lift_coef: *const f64, virtual_mass: *const f64, virtual_inertia: *const f64) {
+    if geom_fluid_coefs.is_null() { return; }
     extern "C" { fn writeFluidGeomInteraction(geom_fluid_coefs: *mut f64, geom_fluid_coef: *const f64, blunt_drag_coef: *const f64, slender_drag_coef: *const f64, ang_drag_coef: *const f64, kutta_lift_coef: *const f64, magnus_lift_coef: *const f64, virtual_mass: *const f64, virtual_inertia: *const f64); }
-    // SAFETY: delegates to C implementation
+    // SAFETY: geom_fluid_coefs verified non-null; delegates to C implementation
     unsafe { writeFluidGeomInteraction(geom_fluid_coefs, geom_fluid_coef, blunt_drag_coef, slender_drag_coef, ang_drag_coef, kutta_lift_coef, magnus_lift_coef, virtual_mass, virtual_inertia) }
 }
 

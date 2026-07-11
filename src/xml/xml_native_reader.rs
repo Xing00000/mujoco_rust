@@ -53,8 +53,9 @@ pub fn update_string(psuffix: *mut string, count: i32, i: i32) {
 /// C: stripError (xml/xml_native_reader.cc:3878)
 #[allow(unused_variables, non_snake_case)]
 pub fn strip_error(err: *const i8) -> *const i8 {
+    if err.is_null() { return core::ptr::null(); }
     extern "C" { fn stripError(err: *const i8) -> *const i8; }
-    // SAFETY: delegates to C implementation
+    // SAFETY: err verified non-null; delegates to C implementation
     unsafe { stripError(err) }
 }
 

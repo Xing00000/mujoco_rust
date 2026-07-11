@@ -180,16 +180,18 @@ pub fn memory_size(nbytes: usize) -> *const i8  {
 /// C: sizeMesh (engine/engine_print.c:410)
 #[allow(unused_variables, non_snake_case)]
 pub fn size_mesh(m: *const mjModel) -> usize  {
+    if m.is_null() { return 0; }
     extern "C" { fn sizeMesh(m: *const mjModel) -> usize; }
-    // SAFETY: delegates to C implementation
+    // SAFETY: m verified non-null; delegates to C implementation
     unsafe { sizeMesh(m) }
 }
 
 /// C: sizeSkin (engine/engine_print.c:431)
 #[allow(unused_variables, non_snake_case)]
 pub fn size_skin(m: *const mjModel) -> usize  {
+    if m.is_null() { return 0; }
     extern "C" { fn sizeSkin(m: *const mjModel) -> usize; }
-    // SAFETY: delegates to C implementation
+    // SAFETY: m verified non-null; delegates to C implementation
     unsafe { sizeSkin(m) }
 }
 
@@ -206,8 +208,9 @@ pub fn size_bvh(m: *const mjModel) -> usize  {
 /// Calls: mju_warning
 #[allow(unused_variables, non_snake_case)]
 pub fn validate_float_format(float_format: *const i8) -> bool {
+    if float_format.is_null() { return false; }
     extern "C" { fn validateFloatFormat(float_format: *const i8) -> bool; }
-    // SAFETY: delegates to C implementation
+    // SAFETY: float_format verified non-null; delegates to C implementation
     unsafe { validateFloatFormat(float_format) }
 }
 

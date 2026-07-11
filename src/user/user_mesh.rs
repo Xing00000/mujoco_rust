@@ -382,8 +382,13 @@ pub fn dphi(s: f64, i: i32, order: i32) -> f64  {
 /// C: sym (user/user_mesh.cc:3798)
 #[allow(unused_variables, non_snake_case)]
 pub fn sym(tensor: *const Matrix) -> Matrix {
+    if tensor.is_null() {
+        extern "C" { fn sym(tensor: *const Matrix) -> Matrix; }
+        // SAFETY: delegates to C++; null handling is C++'s responsibility
+        return unsafe { sym(tensor) };
+    }
     extern "C" { fn sym(tensor: *const Matrix) -> Matrix; }
-    // SAFETY: delegates to C implementation
+    // SAFETY: tensor verified non-null; delegates to C implementation
     unsafe { sym(tensor) }
 }
 
@@ -408,8 +413,9 @@ pub fn inner(tensor1: *const Matrix, tensor2: *const Matrix) -> Matrix {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn trace(tensor: *const Matrix) -> f64 {
+    if tensor.is_null() { return 0.0; }
     extern "C" { fn trace(tensor: *const Matrix) -> f64; }
-    // SAFETY: delegates to C implementation
+    // SAFETY: tensor verified non-null; delegates to C implementation
     unsafe { trace(tensor) }
 }
 

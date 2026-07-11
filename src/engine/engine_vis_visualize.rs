@@ -845,10 +845,11 @@ pub fn mjv_make_lights(m: *const mjModel, d: *const mjData, scn: *mut mjvScene) 
 /// Calls: mju_copy3, mju_message, mjv_cameraFrame, mjv_cameraFrustum
 #[allow(unused_variables, non_snake_case)]
 pub fn mjv_update_camera(m: *const mjModel, d: *const mjData, cam: *mut mjvCamera, scn: *mut mjvScene) {
+    if m.is_null() { return; }
     extern "C" {
         fn mjv_updateCamera(m: *const mjModel, d: *const mjData, cam: *mut mjvCamera, scn: *mut mjvScene);
     }
-    // SAFETY: delegates to C implementation, all pointers valid per caller contract
+    // SAFETY: m verified non-null; delegates to C implementation
     unsafe { mjv_updateCamera(m, d, cam, scn) }
 }
 
