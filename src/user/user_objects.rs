@@ -1775,6 +1775,7 @@ pub fn mj_c_site_body(self_ptr: *mut mjCSite) -> *mut mjCBody {
 /// C: mjCSite::SetParent (user/user_objects.h:850)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_site_set_parent(self_ptr: *mut mjCSite, _body: *mut mjCBody) {
+    if self_ptr.is_null() { return; }
     extern "C" { fn mjCSite_SetParent(self_ptr: *mut mjCSite, _body: *mut mjCBody); }
     // SAFETY: delegates to C implementation
     unsafe { mjCSite_SetParent(self_ptr, _body) }
@@ -1783,6 +1784,7 @@ pub fn mj_c_site_set_parent(self_ptr: *mut mjCSite, _body: *mut mjCBody) {
 /// C: mjCSite::GetParent (user/user_objects.h:851)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_site_get_parent(self_ptr: *mut mjCSite) -> *mut mjCBody {
+    if self_ptr.is_null() { return core::ptr::null_mut(); }
     extern "C" { fn mjCSite_GetParent(self_ptr: *mut mjCSite) -> *mut mjCBody; }
     // SAFETY: delegates to C implementation
     unsafe { mjCSite_GetParent(self_ptr) }
@@ -1791,6 +1793,7 @@ pub fn mj_c_site_get_parent(self_ptr: *mut mjCSite) -> *mut mjCBody {
 /// C: mjCSite::get_userdata (user/user_objects.h:857)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_site_get_userdata(self_ptr: *mut mjCSite) -> *const i32 {
+    if self_ptr.is_null() { return core::ptr::null(); }
     extern "C" { fn mjCSite_get_userdata(self_ptr: *mut mjCSite) -> *const i32; }
     // SAFETY: delegates to C implementation
     unsafe { mjCSite_get_userdata(self_ptr) }
@@ -1799,6 +1802,7 @@ pub fn mj_c_site_get_userdata(self_ptr: *mut mjCSite) -> *const i32 {
 /// C: mjCSite::get_material (user/user_objects.h:858)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_site_get_material(self_ptr: *mut mjCSite) -> *const i32 {
+    if self_ptr.is_null() { return core::ptr::null(); }
     extern "C" { fn mjCSite_get_material(self_ptr: *mut mjCSite) -> *const i32; }
     // SAFETY: delegates to C implementation
     unsafe { mjCSite_get_material(self_ptr) }
@@ -1807,6 +1811,7 @@ pub fn mj_c_site_get_material(self_ptr: *mut mjCSite) -> *const i32 {
 /// C: mjCSite::del_material (user/user_objects.h:859)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_site_del_material(self_ptr: *mut mjCSite) {
+    if self_ptr.is_null() { return; }
     extern "C" { fn mjCSite_del_material(self_ptr: *mut mjCSite); }
     // SAFETY: delegates to C implementation
     unsafe { mjCSite_del_material(self_ptr) }
@@ -1824,6 +1829,7 @@ pub fn mj_c_site_compile(self_ptr: *mut mjCSite) {
 /// C: mjCSite::CopyFromSpec (user/user_objects.h:863)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_site_copy_from_spec(self_ptr: *mut mjCSite) {
+    if self_ptr.is_null() { return; }
     extern "C" { fn mjCSite_CopyFromSpec(self_ptr: *mut mjCSite); }
     // SAFETY: delegates to C implementation
     unsafe { mjCSite_CopyFromSpec(self_ptr) }
@@ -1832,6 +1838,7 @@ pub fn mj_c_site_copy_from_spec(self_ptr: *mut mjCSite) {
 /// C: mjCSite::PointToLocal (user/user_objects.h:864)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_site_point_to_local(self_ptr: *mut mjCSite) {
+    if self_ptr.is_null() { return; }
     extern "C" { fn mjCSite_PointToLocal(self_ptr: *mut mjCSite); }
     // SAFETY: delegates to C implementation
     unsafe { mjCSite_PointToLocal(self_ptr) }
@@ -1840,6 +1847,7 @@ pub fn mj_c_site_point_to_local(self_ptr: *mut mjCSite) {
 /// C: mjCSite::NameSpace (user/user_objects.h:865)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_site_name_space(self_ptr: *mut mjCSite, m: *const mjCModel) {
+    if self_ptr.is_null() { return; }
     extern "C" { fn mjCSite_NameSpace(self_ptr: *mut mjCSite, m: *const mjCModel); }
     // SAFETY: delegates to C implementation
     unsafe { mjCSite_NameSpace(self_ptr, m) }
@@ -3153,6 +3161,7 @@ pub fn mj_c_mesh_compute_surface_area(self_ptr: *mut mjCMesh, CoM: [f64; 3], fac
 /// C: mjCSkin::File (user/user_objects.h:1364)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_skin_file(self_ptr: *mut mjCSkin) -> *const i32 {
+    if self_ptr.is_null() { return core::ptr::null(); }
     extern "C" { fn mjCSkin_File(self_ptr: *mut mjCSkin) -> *const i32; }
     // SAFETY: delegates to C implementation
     unsafe { mjCSkin_File(self_ptr) }
@@ -3161,6 +3170,7 @@ pub fn mj_c_skin_file(self_ptr: *mut mjCSkin) -> *const i32 {
 /// C: mjCSkin::get_material (user/user_objects.h:1365)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_skin_get_material(self_ptr: *mut mjCSkin) -> *const i32 {
+    if self_ptr.is_null() { return core::ptr::null(); }
     extern "C" { fn mjCSkin_get_material(self_ptr: *mut mjCSkin) -> *const i32; }
     // SAFETY: delegates to C implementation
     unsafe { mjCSkin_get_material(self_ptr) }
@@ -3169,6 +3179,7 @@ pub fn mj_c_skin_get_material(self_ptr: *mut mjCSkin) -> *const i32 {
 /// C: mjCSkin::get_vert (user/user_objects.h:1366)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_skin_get_vert(self_ptr: *mut mjCSkin) -> *const i32 {
+    if self_ptr.is_null() { return core::ptr::null(); }
     extern "C" { fn mjCSkin_get_vert(self_ptr: *mut mjCSkin) -> *const i32; }
     // SAFETY: delegates to C implementation
     unsafe { mjCSkin_get_vert(self_ptr) }
@@ -3177,6 +3188,7 @@ pub fn mj_c_skin_get_vert(self_ptr: *mut mjCSkin) -> *const i32 {
 /// C: mjCSkin::get_texcoord (user/user_objects.h:1367)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_skin_get_texcoord(self_ptr: *mut mjCSkin) -> *const i32 {
+    if self_ptr.is_null() { return core::ptr::null(); }
     extern "C" { fn mjCSkin_get_texcoord(self_ptr: *mut mjCSkin) -> *const i32; }
     // SAFETY: delegates to C implementation
     unsafe { mjCSkin_get_texcoord(self_ptr) }
@@ -3185,6 +3197,7 @@ pub fn mj_c_skin_get_texcoord(self_ptr: *mut mjCSkin) -> *const i32 {
 /// C: mjCSkin::get_face (user/user_objects.h:1368)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_skin_get_face(self_ptr: *mut mjCSkin) -> *const i32 {
+    if self_ptr.is_null() { return core::ptr::null(); }
     extern "C" { fn mjCSkin_get_face(self_ptr: *mut mjCSkin) -> *const i32; }
     // SAFETY: delegates to C implementation
     unsafe { mjCSkin_get_face(self_ptr) }
@@ -3193,6 +3206,7 @@ pub fn mj_c_skin_get_face(self_ptr: *mut mjCSkin) -> *const i32 {
 /// C: mjCSkin::get_bodyname (user/user_objects.h:1369)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_skin_get_bodyname(self_ptr: *mut mjCSkin) -> *const i32 {
+    if self_ptr.is_null() { return core::ptr::null(); }
     extern "C" { fn mjCSkin_get_bodyname(self_ptr: *mut mjCSkin) -> *const i32; }
     // SAFETY: delegates to C implementation
     unsafe { mjCSkin_get_bodyname(self_ptr) }
@@ -3201,6 +3215,7 @@ pub fn mj_c_skin_get_bodyname(self_ptr: *mut mjCSkin) -> *const i32 {
 /// C: mjCSkin::get_bindpos (user/user_objects.h:1370)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_skin_get_bindpos(self_ptr: *mut mjCSkin) -> *const i32 {
+    if self_ptr.is_null() { return core::ptr::null(); }
     extern "C" { fn mjCSkin_get_bindpos(self_ptr: *mut mjCSkin) -> *const i32; }
     // SAFETY: delegates to C implementation
     unsafe { mjCSkin_get_bindpos(self_ptr) }
@@ -3209,6 +3224,7 @@ pub fn mj_c_skin_get_bindpos(self_ptr: *mut mjCSkin) -> *const i32 {
 /// C: mjCSkin::get_bindquat (user/user_objects.h:1371)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_skin_get_bindquat(self_ptr: *mut mjCSkin) -> *const i32 {
+    if self_ptr.is_null() { return core::ptr::null(); }
     extern "C" { fn mjCSkin_get_bindquat(self_ptr: *mut mjCSkin) -> *const i32; }
     // SAFETY: delegates to C implementation
     unsafe { mjCSkin_get_bindquat(self_ptr) }
@@ -3217,6 +3233,7 @@ pub fn mj_c_skin_get_bindquat(self_ptr: *mut mjCSkin) -> *const i32 {
 /// C: mjCSkin::get_vertid (user/user_objects.h:1372)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_skin_get_vertid(self_ptr: *mut mjCSkin) -> *const i32 {
+    if self_ptr.is_null() { return core::ptr::null(); }
     extern "C" { fn mjCSkin_get_vertid(self_ptr: *mut mjCSkin) -> *const i32; }
     // SAFETY: delegates to C implementation
     unsafe { mjCSkin_get_vertid(self_ptr) }
@@ -3225,6 +3242,7 @@ pub fn mj_c_skin_get_vertid(self_ptr: *mut mjCSkin) -> *const i32 {
 /// C: mjCSkin::get_vertweight (user/user_objects.h:1373)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_skin_get_vertweight(self_ptr: *mut mjCSkin) -> *const i32 {
+    if self_ptr.is_null() { return core::ptr::null(); }
     extern "C" { fn mjCSkin_get_vertweight(self_ptr: *mut mjCSkin) -> *const i32; }
     // SAFETY: delegates to C implementation
     unsafe { mjCSkin_get_vertweight(self_ptr) }
@@ -3233,6 +3251,7 @@ pub fn mj_c_skin_get_vertweight(self_ptr: *mut mjCSkin) -> *const i32 {
 /// C: mjCSkin::del_material (user/user_objects.h:1374)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_skin_del_material(self_ptr: *mut mjCSkin) {
+    if self_ptr.is_null() { return; }
     extern "C" { fn mjCSkin_del_material(self_ptr: *mut mjCSkin); }
     // SAFETY: delegates to C implementation
     unsafe { mjCSkin_del_material(self_ptr) }
@@ -3241,6 +3260,7 @@ pub fn mj_c_skin_del_material(self_ptr: *mut mjCSkin) {
 /// C: mjCSkin::CopyFromSpec (user/user_objects.h:1376)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_skin_copy_from_spec(self_ptr: *mut mjCSkin) {
+    if self_ptr.is_null() { return; }
     extern "C" { fn mjCSkin_CopyFromSpec(self_ptr: *mut mjCSkin); }
     // SAFETY: delegates to C implementation
     unsafe { mjCSkin_CopyFromSpec(self_ptr) }
@@ -3249,6 +3269,7 @@ pub fn mj_c_skin_copy_from_spec(self_ptr: *mut mjCSkin) {
 /// C: mjCSkin::PointToLocal (user/user_objects.h:1377)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_skin_point_to_local(self_ptr: *mut mjCSkin) {
+    if self_ptr.is_null() { return; }
     extern "C" { fn mjCSkin_PointToLocal(self_ptr: *mut mjCSkin); }
     // SAFETY: delegates to C implementation
     unsafe { mjCSkin_PointToLocal(self_ptr) }
@@ -3257,6 +3278,7 @@ pub fn mj_c_skin_point_to_local(self_ptr: *mut mjCSkin) {
 /// C: mjCSkin::ResolveReferences (user/user_objects.h:1380)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_skin_resolve_references(self_ptr: *mut mjCSkin, m: *const mjCModel) {
+    if self_ptr.is_null() { return; }
     extern "C" { fn mjCSkin_ResolveReferences(self_ptr: *mut mjCSkin, m: *const mjCModel); }
     // SAFETY: delegates to C implementation
     unsafe { mjCSkin_ResolveReferences(self_ptr, m) }
@@ -3265,6 +3287,7 @@ pub fn mj_c_skin_resolve_references(self_ptr: *mut mjCSkin, m: *const mjCModel) 
 /// C: mjCSkin::NameSpace (user/user_objects.h:1381)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_skin_name_space(self_ptr: *mut mjCSkin, m: *const mjCModel) {
+    if self_ptr.is_null() { return; }
     extern "C" { fn mjCSkin_NameSpace(self_ptr: *mut mjCSkin, m: *const mjCModel); }
     // SAFETY: delegates to C implementation
     unsafe { mjCSkin_NameSpace(self_ptr, m) }
@@ -3800,6 +3823,7 @@ pub fn mj_c_tendon_wrap_pulley(self_ptr: *mut mjCTendon, divisor: f64, wrapinfo:
 /// C: mjCTendon::NumWraps (user/user_objects.h:1708)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_tendon_num_wraps(self_ptr: *mut mjCTendon) -> i32 {
+    if self_ptr.is_null() { return 0; }
     // WARNING: signature changed — verify body
     // Previous params: (self_ptr : * mut mjCTendon)
     // Previous return: i32
@@ -3811,6 +3835,7 @@ pub fn mj_c_tendon_num_wraps(self_ptr: *mut mjCTendon) -> i32 {
 /// C: mjCTendon::GetWrap (user/user_objects.h:1709)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_tendon_get_wrap(self_ptr: *mut mjCTendon, i: i32) -> *const mjCWrap {
+    if self_ptr.is_null() { return core::ptr::null(); }
     // WARNING: signature changed — verify body
     // Previous params: (self_ptr : * mut mjCTendon, i : i32)
     // Previous return: * const mjCWrap
@@ -3842,6 +3867,7 @@ pub fn mj_c_tendon_get_range(self_ptr: *mut mjCTendon) -> *const f64 {
 /// C: mjCTendon::CopyFromSpec (user/user_objects.h:1716)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_tendon_copy_from_spec(self_ptr: *mut mjCTendon) {
+    if self_ptr.is_null() { return; }
     extern "C" { fn mjCTendon_CopyFromSpec(self_ptr: *mut mjCTendon); }
     // SAFETY: delegates to C implementation
     unsafe { mjCTendon_CopyFromSpec(self_ptr) }
@@ -3866,6 +3892,7 @@ pub fn mj_c_tendon_resolve_references(self_ptr: *mut mjCTendon, m: *const mjCMod
 /// C: mjCTendon::NameSpace (user/user_objects.h:1719)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_tendon_name_space(self_ptr: *mut mjCTendon, m: *const mjCModel) {
+    if self_ptr.is_null() { return; }
     extern "C" { fn mjCTendon_NameSpace(self_ptr: *mut mjCTendon, m: *const mjCModel); }
     // SAFETY: delegates to C implementation
     unsafe { mjCTendon_NameSpace(self_ptr, m) }
@@ -4089,6 +4116,7 @@ pub fn mj_c_actuator_forget_keyframes(self_ptr: *mut mjCActuator) {
 /// C: mjCSensor::get_userdata (user/user_objects.h:1901)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_sensor_get_userdata(self_ptr: *mut mjCSensor) -> *const i32 {
+    if self_ptr.is_null() { return core::ptr::null(); }
     extern "C" { fn mjCSensor_get_userdata(self_ptr: *mut mjCSensor) -> *const i32; }
     // SAFETY: delegates to C implementation
     unsafe { mjCSensor_get_userdata(self_ptr) }
@@ -4106,6 +4134,7 @@ pub fn mj_c_sensor_get_objname(self_ptr: *mut mjCSensor) -> *const i32 {
 /// C: mjCSensor::get_refname (user/user_objects.h:1903)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_sensor_get_refname(self_ptr: *mut mjCSensor) -> *const i32 {
+    if self_ptr.is_null() { return core::ptr::null(); }
     extern "C" { fn mjCSensor_get_refname(self_ptr: *mut mjCSensor) -> *const i32; }
     // SAFETY: delegates to C implementation
     unsafe { mjCSensor_get_refname(self_ptr) }
@@ -4123,6 +4152,7 @@ pub fn mj_c_sensor_get_obj(self_ptr: *mut mjCSensor) -> *const mjCBase {
 /// C: mjCSensor::get_ref (user/user_objects.h:1906)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_sensor_get_ref(self_ptr: *mut mjCSensor) -> *const mjCBase {
+    if self_ptr.is_null() { return core::ptr::null(); }
     extern "C" { fn mjCSensor_get_ref(self_ptr: *mut mjCSensor) -> *const mjCBase; }
     // SAFETY: delegates to C implementation
     unsafe { mjCSensor_get_ref(self_ptr) }
