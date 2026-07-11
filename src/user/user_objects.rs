@@ -1354,8 +1354,9 @@ pub fn mj_c_frame_copy_from_spec(self_ptr: *mut mjCFrame) {
 /// C: mjCFrame::PointToLocal (user/user_objects.h:655)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_frame_point_to_local(self_ptr: *mut mjCFrame) {
+    if self_ptr.is_null() { return; }
     extern "C" { fn mjCFrame_PointToLocal(self_ptr: *mut mjCFrame); }
-    // SAFETY: delegates to C implementation
+    // SAFETY: self_ptr verified non-null
     unsafe { mjCFrame_PointToLocal(self_ptr) }
 }
 
@@ -1374,8 +1375,9 @@ pub fn mj_c_frame_set_parent(self_ptr: *mut mjCFrame, _body: *mut mjCBody) {
 /// C: mjCFrame::GetParent (user/user_objects.h:657)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_frame_get_parent(self_ptr: *mut mjCFrame) -> *mut mjCBody {
+    if self_ptr.is_null() { return core::ptr::null_mut(); }
     extern "C" { fn mjCFrame_GetParent(self_ptr: *mut mjCFrame) -> *mut mjCBody; }
-    // SAFETY: delegates to C implementation
+    // SAFETY: self_ptr verified non-null
     unsafe { mjCFrame_GetParent(self_ptr) }
 }
 
@@ -1527,56 +1529,63 @@ pub fn mj_c_joint_point_to_local(self_ptr: *mut mjCJoint) {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_geom_get_volume(self_ptr: *mut mjCGeom) -> f64 {
+    if self_ptr.is_null() { return 0.0; }
     extern "C" { fn mjCGeom_GetVolume(self_ptr: *mut mjCGeom) -> f64; }
-    // SAFETY: delegates to C implementation
+    // SAFETY: self_ptr verified non-null
     unsafe { mjCGeom_GetVolume(self_ptr) }
 }
 
 /// C: mjCGeom::SetInertia (user/user_objects.h:784)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_geom_set_inertia(self_ptr: *mut mjCGeom) {
+    if self_ptr.is_null() { return; }
     extern "C" { fn mjCGeom_SetInertia(self_ptr: *mut mjCGeom); }
-    // SAFETY: delegates to C implementation
+    // SAFETY: self_ptr verified non-null
     unsafe { mjCGeom_SetInertia(self_ptr) }
 }
 
 /// C: mjCGeom::IsVisual (user/user_objects.h:785)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_geom_is_visual(self_ptr: *mut mjCGeom) -> bool {
+    if self_ptr.is_null() { return false; }
     extern "C" { fn mjCGeom_IsVisual(self_ptr: *mut mjCGeom) -> bool; }
-    // SAFETY: delegates to C implementation
+    // SAFETY: self_ptr verified non-null
     unsafe { mjCGeom_IsVisual(self_ptr) }
 }
 
 /// C: mjCGeom::SetNotVisual (user/user_objects.h:786)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_geom_set_not_visual(self_ptr: *mut mjCGeom) {
+    if self_ptr.is_null() { return; }
     extern "C" { fn mjCGeom_SetNotVisual(self_ptr: *mut mjCGeom); }
-    // SAFETY: delegates to C implementation
+    // SAFETY: self_ptr verified non-null
     unsafe { mjCGeom_SetNotVisual(self_ptr) }
 }
 
 /// C: mjCGeom::SetParent (user/user_objects.h:787)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_geom_set_parent(self_ptr: *mut mjCGeom, _body: *mut mjCBody) {
+    if self_ptr.is_null() { return; }
     extern "C" { fn mjCGeom_SetParent(self_ptr: *mut mjCGeom, _body: *mut mjCBody); }
-    // SAFETY: delegates to C implementation
+    // SAFETY: self_ptr verified non-null
     unsafe { mjCGeom_SetParent(self_ptr, _body) }
 }
 
 /// C: mjCGeom::GetParent (user/user_objects.h:788)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_geom_get_parent(self_ptr: *mut mjCGeom) -> *mut mjCBody {
+    if self_ptr.is_null() { return core::ptr::null_mut(); }
     extern "C" { fn mjCGeom_GetParent(self_ptr: *mut mjCGeom) -> *mut mjCBody; }
-    // SAFETY: delegates to C implementation
+    // SAFETY: self_ptr verified non-null
     unsafe { mjCGeom_GetParent(self_ptr) }
 }
 
 /// C: mjCGeom::Type (user/user_objects.h:789)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_geom_type(self_ptr: *mut mjCGeom) -> mjtGeom {
+    if self_ptr.is_null() { panic!("mj_c_geom_type: null self_ptr"); }
     extern "C" { fn mjCGeom_Type(self_ptr: *mut mjCGeom) -> mjtGeom; }
-    // SAFETY: delegates to C implementation
+    // SAFETY: self_ptr verified non-null
     unsafe { mjCGeom_Type(self_ptr) }
 }
 
@@ -1597,48 +1606,54 @@ pub fn mj_c_geom_set_fluid_coefs(self_ptr: *mut mjCGeom) {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_geom_get_added_mass_kappa(self_ptr: *mut mjCGeom, dx: f64, dy: f64, dz: f64) -> f64 {
+    if self_ptr.is_null() { return 0.0; }
     extern "C" { fn mjCGeom_GetAddedMassKappa(self_ptr: *mut mjCGeom, dx: f64, dy: f64, dz: f64) -> f64; }
-    // SAFETY: delegates to C implementation
+    // SAFETY: self_ptr verified non-null
     unsafe { mjCGeom_GetAddedMassKappa(self_ptr, dx, dy, dz) }
 }
 
 /// C: mjCGeom::get_userdata (user/user_objects.h:797)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_geom_get_userdata(self_ptr: *mut mjCGeom) -> *const i32 {
+    if self_ptr.is_null() { return core::ptr::null(); }
     extern "C" { fn mjCGeom_get_userdata(self_ptr: *mut mjCGeom) -> *const i32; }
-    // SAFETY: delegates to C implementation
+    // SAFETY: self_ptr verified non-null
     unsafe { mjCGeom_get_userdata(self_ptr) }
 }
 
 /// C: mjCGeom::get_hfieldname (user/user_objects.h:798)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_geom_get_hfieldname(self_ptr: *mut mjCGeom) -> *const i32 {
+    if self_ptr.is_null() { return core::ptr::null(); }
     extern "C" { fn mjCGeom_get_hfieldname(self_ptr: *mut mjCGeom) -> *const i32; }
-    // SAFETY: delegates to C implementation
+    // SAFETY: self_ptr verified non-null
     unsafe { mjCGeom_get_hfieldname(self_ptr) }
 }
 
 /// C: mjCGeom::get_meshname (user/user_objects.h:799)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_geom_get_meshname(self_ptr: *mut mjCGeom) -> *const i32 {
+    if self_ptr.is_null() { return core::ptr::null(); }
     extern "C" { fn mjCGeom_get_meshname(self_ptr: *mut mjCGeom) -> *const i32; }
-    // SAFETY: delegates to C implementation
+    // SAFETY: self_ptr verified non-null
     unsafe { mjCGeom_get_meshname(self_ptr) }
 }
 
 /// C: mjCGeom::get_material (user/user_objects.h:800)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_geom_get_material(self_ptr: *mut mjCGeom) -> *const std__string {
+    if self_ptr.is_null() { return core::ptr::null(); }
     extern "C" { fn mjCGeom_get_material(self_ptr: *mut mjCGeom) -> *const std__string; }
-    // SAFETY: delegates to C implementation
+    // SAFETY: self_ptr verified non-null
     unsafe { mjCGeom_get_material(self_ptr) }
 }
 
 /// C: mjCGeom::del_material (user/user_objects.h:801)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_geom_del_material(self_ptr: *mut mjCGeom) {
+    if self_ptr.is_null() { return; }
     extern "C" { fn mjCGeom_del_material(self_ptr: *mut mjCGeom); }
-    // SAFETY: delegates to C implementation
+    // SAFETY: self_ptr verified non-null
     unsafe { mjCGeom_del_material(self_ptr) }
 }
 
@@ -1659,8 +1674,9 @@ pub fn mj_c_geom_compile(self_ptr: *mut mjCGeom) {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_geom_get_r_bound(self_ptr: *mut mjCGeom) -> f64 {
+    if self_ptr.is_null() { return 0.0; }
     extern "C" { fn mjCGeom_GetRBound(self_ptr: *mut mjCGeom) -> f64; }
-    // SAFETY: delegates to C implementation
+    // SAFETY: self_ptr verified non-null
     unsafe { mjCGeom_GetRBound(self_ptr) }
 }
 
@@ -1668,40 +1684,45 @@ pub fn mj_c_geom_get_r_bound(self_ptr: *mut mjCGeom) -> f64 {
 /// Calls: mjuu_setvec
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_geom_compute_aabb(self_ptr: *mut mjCGeom) {
+    if self_ptr.is_null() { return; }
     extern "C" { fn mjCGeom_ComputeAABB(self_ptr: *mut mjCGeom); }
-    // SAFETY: delegates to C implementation
+    // SAFETY: self_ptr verified non-null
     unsafe { mjCGeom_ComputeAABB(self_ptr) }
 }
 
 /// C: mjCGeom::CopyFromSpec (user/user_objects.h:807)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_geom_copy_from_spec(self_ptr: *mut mjCGeom) {
+    if self_ptr.is_null() { return; }
     extern "C" { fn mjCGeom_CopyFromSpec(self_ptr: *mut mjCGeom); }
-    // SAFETY: delegates to C implementation
+    // SAFETY: self_ptr verified non-null
     unsafe { mjCGeom_CopyFromSpec(self_ptr) }
 }
 
 /// C: mjCGeom::PointToLocal (user/user_objects.h:808)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_geom_point_to_local(self_ptr: *mut mjCGeom) {
+    if self_ptr.is_null() { return; }
     extern "C" { fn mjCGeom_PointToLocal(self_ptr: *mut mjCGeom); }
-    // SAFETY: delegates to C implementation
+    // SAFETY: self_ptr verified non-null
     unsafe { mjCGeom_PointToLocal(self_ptr) }
 }
 
 /// C: mjCGeom::NameSpace (user/user_objects.h:809)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_geom_name_space(self_ptr: *mut mjCGeom, m: *const mjCModel) {
+    if self_ptr.is_null() { return; }
     extern "C" { fn mjCGeom_NameSpace(self_ptr: *mut mjCGeom, m: *const mjCModel); }
-    // SAFETY: delegates to C implementation
+    // SAFETY: self_ptr verified non-null
     unsafe { mjCGeom_NameSpace(self_ptr, m) }
 }
 
 /// C: mjCGeom::CopyPlugin (user/user_objects.h:810)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_geom_copy_plugin(self_ptr: *mut mjCGeom) {
+    if self_ptr.is_null() { return; }
     extern "C" { fn mjCGeom_CopyPlugin(self_ptr: *mut mjCGeom); }
-    // SAFETY: delegates to C implementation
+    // SAFETY: self_ptr verified non-null
     unsafe { mjCGeom_CopyPlugin(self_ptr) }
 }
 
@@ -2539,8 +2560,9 @@ pub fn mj_c_mesh_compile(self_ptr: *mut mjCMesh, vfs: *const mjVFS) {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_mesh_get_pos_ptr(self_ptr: *mut mjCMesh) -> *mut f64 {
+    if self_ptr.is_null() { return core::ptr::null_mut(); }
     extern "C" { fn mjCMesh_GetPosPtr(self_ptr: *mut mjCMesh) -> *mut f64; }
-    // SAFETY: delegates to C++ implementation; caller guarantees self_ptr is valid
+    // SAFETY: self_ptr verified non-null
     unsafe { mjCMesh_GetPosPtr(self_ptr) }
 }
 
@@ -2552,8 +2574,9 @@ pub fn mj_c_mesh_get_pos_ptr(self_ptr: *mut mjCMesh) -> *mut f64 {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_mesh_get_quat_ptr(self_ptr: *mut mjCMesh) -> *mut f64 {
+    if self_ptr.is_null() { return core::ptr::null_mut(); }
     extern "C" { fn mjCMesh_GetQuatPtr(self_ptr: *mut mjCMesh) -> *mut f64; }
-    // SAFETY: delegates to C++ implementation; caller guarantees self_ptr is valid
+    // SAFETY: self_ptr verified non-null
     unsafe { mjCMesh_GetQuatPtr(self_ptr) }
 }
 
@@ -3172,32 +3195,36 @@ pub fn mj_c_skin_load_skn(self_ptr: *mut mjCSkin, resource: *mut mjResource) {
 /// C: mjCHField::CopyFromSpec (user/user_objects.h:1417)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_ch_field_copy_from_spec(self_ptr: *mut mjCHField) {
+    if self_ptr.is_null() { return; }
     extern "C" { fn mjCHField_CopyFromSpec(self_ptr: *mut mjCHField); }
-    // SAFETY: delegates to C implementation
+    // SAFETY: self_ptr verified non-null
     unsafe { mjCHField_CopyFromSpec(self_ptr) }
 }
 
 /// C: mjCHField::PointToLocal (user/user_objects.h:1418)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_ch_field_point_to_local(self_ptr: *mut mjCHField) {
+    if self_ptr.is_null() { return; }
     extern "C" { fn mjCHField_PointToLocal(self_ptr: *mut mjCHField); }
-    // SAFETY: delegates to C implementation
+    // SAFETY: self_ptr verified non-null
     unsafe { mjCHField_PointToLocal(self_ptr) }
 }
 
 /// C: mjCHField::NameSpace (user/user_objects.h:1419)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_ch_field_name_space(self_ptr: *mut mjCHField, m: *const mjCModel) {
+    if self_ptr.is_null() { return; }
     extern "C" { fn mjCHField_NameSpace(self_ptr: *mut mjCHField, m: *const mjCModel); }
-    // SAFETY: delegates to C implementation
+    // SAFETY: self_ptr verified non-null
     unsafe { mjCHField_NameSpace(self_ptr, m) }
 }
 
 /// C: mjCHField::File (user/user_objects.h:1421)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_ch_field_file(self_ptr: *mut mjCHField) -> i32 {
+    if self_ptr.is_null() { return 0; }
     extern "C" { fn mjCHField_File(self_ptr: *mut mjCHField) -> i32; }
-    // SAFETY: delegates to C implementation
+    // SAFETY: self_ptr verified non-null
     unsafe { mjCHField_File(self_ptr) }
 }
 
@@ -3221,8 +3248,9 @@ pub fn mj_ch_field_compile(self_ptr: *mut mjCHField, vfs: *const mjVFS) {
 /// C: mjCHField::GetCacheId (user/user_objects.h:1429)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_ch_field_get_cache_id(self_ptr: *mut mjCHField, resource: *const mjResource, asset_type: *const std__string) -> std__string {
+    if self_ptr.is_null() { panic!("mj_ch_field_get_cache_id: null self_ptr"); }
     extern "C" { fn mjCHField_GetCacheId(self_ptr: *mut mjCHField, resource: *const mjResource, asset_type: *const std__string) -> std__string; }
-    // SAFETY: delegates to C implementation
+    // SAFETY: self_ptr verified non-null
     unsafe { mjCHField_GetCacheId(self_ptr, resource, asset_type) }
 }
 
@@ -3238,8 +3266,9 @@ pub fn mj_ch_field_load_custom(self_ptr: *mut mjCHField, resource: *mut mjResour
 /// C: mjCHField::LoadPNG (user/user_objects.h:1431)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_ch_field_load_png(self_ptr: *mut mjCHField, resource: *mut mjResource) {
+    if self_ptr.is_null() { return; }
     extern "C" { fn mjCHField_LoadPNG(self_ptr: *mut mjCHField, resource: *mut mjResource); }
-    // SAFETY: delegates to C implementation
+    // SAFETY: self_ptr verified non-null
     unsafe { mjCHField_LoadPNG(self_ptr, resource) }
 }
 
