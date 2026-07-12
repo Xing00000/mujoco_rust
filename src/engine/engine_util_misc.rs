@@ -759,10 +759,13 @@ pub fn mju_clip(x: f64, min: f64, max: f64) -> f64 {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mju_sign(x: f64) -> f64 {
-    // NOTE: signature changed from previous IR version
-    // Previous params: (x : f64)
-    // Previous return: f64
-    todo!("re-translate: params renamed")
+    if x < 0.0 {
+        -1.0
+    } else if x > 0.0 {
+        1.0
+    } else {
+        0.0
+    }
 }
 
 /// C: mju_round (engine/engine_util_misc.h:237)
