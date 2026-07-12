@@ -291,7 +291,14 @@ pub fn mjuu_quat2mat(res: *mut f64, quat: *const f64) {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjuu_mulquat(res: *mut f64, qa: *const f64, qb: *const f64) {
-    todo!() // mjuu_mulquat
+    // SAFETY: caller guarantees res[4], qa[4], qb[4] are valid
+    unsafe {
+        *res.add(0) = *qa.add(0) * *qb.add(0) - *qa.add(1) * *qb.add(1) - *qa.add(2) * *qb.add(2) - *qa.add(3) * *qb.add(3);
+        *res.add(1) = *qa.add(0) * *qb.add(1) + *qa.add(1) * *qb.add(0) + *qa.add(2) * *qb.add(3) - *qa.add(3) * *qb.add(2);
+        *res.add(2) = *qa.add(0) * *qb.add(2) - *qa.add(1) * *qb.add(3) + *qa.add(2) * *qb.add(0) + *qa.add(3) * *qb.add(1);
+        *res.add(3) = *qa.add(0) * *qb.add(3) + *qa.add(1) * *qb.add(2) - *qa.add(2) * *qb.add(1) + *qa.add(3) * *qb.add(0);
+    }
+    mjuu_normvec(res, 4);
 }
 
 /// C: mjuu_mulvecmat (user/user_util.h:91)

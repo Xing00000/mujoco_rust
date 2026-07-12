@@ -580,7 +580,20 @@ pub fn mju_decode_pyramid(force: *mut f64, pyramid: *const f64, mu: *const f64, 
     // NOTE: signature changed from previous IR version
     // Previous params: (force : * mut f64, pyramid : * const f64, mu : * const f64, dim : i32)
     // Previous return: ()
-    todo!("re-translate: params renamed")
+    // SAFETY: caller guarantees force, pyramid, mu arrays are valid for dim
+    unsafe {
+        if dim == 1 {
+            *force.add(0) = *pyramid.add(0);
+            return;
+        }
+        *force.add(0) = 0.0;
+        for i in 0..2 * (dim - 1) as usize {
+            *force.add(0) += *pyramid.add(i);
+        }
+        for i in 0..(dim - 1) as usize {
+            *force.add(i + 1) = (*pyramid.add(2 * i) - *pyramid.add(2 * i + 1)) * *mu.add(i);
+        }
+    }
 }
 
 /// C: mju_springDamper (engine/engine_util_misc.h:208)
@@ -659,7 +672,7 @@ pub fn mju_min(a: f64, b: f64) -> f64 {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mju_max(a: f64, b: f64) -> f64 {
-    todo!() // mju_max
+    if a >= b { a } else { b }
 }
 
 /// C: mju_clip (engine/engine_util_misc.h:231)
@@ -670,7 +683,7 @@ pub fn mju_max(a: f64, b: f64) -> f64 {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mju_clip(x: f64, min: f64, max: f64) -> f64 {
-    todo!() // mju_clip
+    if x < min { min } else if x > max { max } else { x }
 }
 
 /// C: mju_sign (engine/engine_util_misc.h:234)
@@ -681,7 +694,7 @@ pub fn mju_clip(x: f64, min: f64, max: f64) -> f64 {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mju_sign(x: f64) -> f64 {
-    todo!() // mju_sign
+    if x < 0.0 { -1.0 } else if x > 0.0 { 1.0 } else { 0.0 }
 }
 
 /// C: mju_round (engine/engine_util_misc.h:237)
@@ -692,13 +705,15 @@ pub fn mju_sign(x: f64) -> f64 {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mju_round(x: f64) -> i32 {
-    todo!() // mju_round
+    let lower = x.floor();
+    let upper = x.ceil();
+    if x - lower < upper - x { lower as i32 } else { upper as i32 }
 }
 
 /// C: mju_type2Str (engine/engine_util_misc.h:240)
 #[allow(unused_variables, non_snake_case)]
 pub fn mju_type2str(r#type: i32) -> *const i8 {
-    todo!() // mju_type2Str
+    todo!("requires static string table")
 }
 
 /// C: mju_str2Type (engine/engine_util_misc.h:243)
@@ -763,13 +778,15 @@ pub fn mju_is_zero_byte(vec: *const u8, n: i32) -> i32 {
 /// C: mju_zeroInt (engine/engine_util_misc.h:261)
 #[allow(unused_variables, non_snake_case)]
 pub fn mju_zero_int(res: *mut i32, n: i32) {
-    todo!() // mju_zeroInt
+    // SAFETY: caller guarantees res points to valid array of at least n i32 elements
+    unsafe { std::ptr::write_bytes(res, 0, n as usize); }
 }
 
 /// C: mju_copyInt (engine/engine_util_misc.h:264)
 #[allow(unused_variables, non_snake_case)]
 pub fn mju_copy_int(res: *mut i32, vec: *const i32, n: i32) {
-    todo!() // mju_copyInt
+    // SAFETY: caller guarantees res and vec point to valid arrays of at least n i32 elements
+    unsafe { std::ptr::copy_nonoverlapping(vec, res, n as usize); }
 }
 
 /// C: mju_fillInt (engine/engine_util_misc.h:267)
@@ -778,10 +795,13 @@ pub fn mju_fill_int(res: *mut i32, val: i32, n: i32) {
     // NOTE: signature changed from previous IR version
     // Previous params: (res : * mut i32, val : i32, n : i32)
     // Previous return: ()
-    todo!("re-translate: params renamed")
+    // SAFETY: caller guarantees res points to valid array of at least n i32 elements
+    unsafe {
+        for i in 0..n as usize {
+            *res.add(i) = val;
+        }
+    }
 }
-
-/// C: mju_standardNormal (engine/engine_util_misc.h:270)
 /// ⚠️ BITEXACT RULES:
 ///   1. Copy exact C accumulation order (no iter().sum())
 ///   2. No f64::mul_add() (FMA changes precision)
@@ -820,7 +840,12 @@ pub fn mju_n2f(res: *mut f32, vec: *const f64, n: i32) {
     // NOTE: signature changed from previous IR version
     // Previous params: (res : * mut f32, vec : * const f64, n : i32)
     // Previous return: ()
-    todo!("re-translate: params renamed")
+    // SAFETY: caller guarantees res points to n f32 and vec points to n f64
+    unsafe {
+        for i in 0..n as usize {
+            *res.add(i) = *vec.add(i) as f32;
+        }
+    }
 }
 
 /// C: mju_d2n (engine/engine_util_misc.h:279)
@@ -963,16 +988,31 @@ pub fn mju_halton(index: i32, base: i32) -> f64 {
     // NOTE: signature changed from previous IR version
     // Previous params: (index : i32, base : i32)
     // Previous return: f64
-    todo!("re-translate: params renamed")
+    let mut n0 = index;
+    let b = base as f64;
+    let mut f = 1.0 / b;
+    let mut hn = 0.0;
+    while n0 > 0 {
+        let n1 = n0 / base;
+        let r = n0 - n1 * base;
+        hn += f * (r as f64);
+        f /= b;
+        n0 = n1;
+    }
+    hn
 }
 
 /// C: mju_strncpy (engine/engine_util_misc.h:321)
 #[allow(unused_variables, non_snake_case)]
 pub fn mju_strncpy(dst: *mut i8, src: *const i8, n: i32) -> *mut i8 {
-    // NOTE: signature changed from previous IR version
-    // Previous params: (dst : * mut i8, src : * const i8, n : i32)
-    // Previous return: * mut i8
-    todo!("re-translate: params renamed")
+    // SAFETY: caller guarantees dst/src point to valid buffers of at least n bytes
+    unsafe {
+        if !dst.is_null() && !src.is_null() && n > 0 {
+            std::ptr::copy_nonoverlapping(src as *const u8, dst as *mut u8, n as usize);
+            *dst.add((n - 1) as usize) = 0;
+        }
+        dst
+    }
 }
 
 /// C: mju_polyForce (engine/engine_util_misc.h:326)

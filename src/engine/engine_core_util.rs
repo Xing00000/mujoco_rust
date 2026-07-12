@@ -7,40 +7,42 @@ use crate::types::*;
 /// C: mj_isPyramidal (engine/engine_core_util.h:31)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_is_pyramidal(m: *const mjModel) -> i32 {
-    // NOTE: signature changed from previous IR version
-    // Previous params: (m : * const mjModel)
-    // Previous return: i32
-    todo!("re-translate: params renamed")
+    // SAFETY: m points to valid mjModel; accessing opt.cone at offset 988
+    unsafe {
+        let m_ptr = m as *const u8;
+        let cone = *(m_ptr.add(988) as *const i32);
+        if cone == 0 { 1 } else { 0 }
+    }
 }
 
 /// C: mj_isSparse (engine/engine_core_util.h:34)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_is_sparse(m: *const mjModel) -> i32 {
-    todo!() // mj_isSparse
+    // SAFETY: m points to valid mjModel; accessing opt.jacobian at offset 992 and nv at offset 8
+    unsafe {
+        let m_ptr = m as *const u8;
+        let jacobian = *(m_ptr.add(992) as *const i32);
+        let nv = *(m_ptr.add(8) as *const usize);
+        if jacobian == 1 || (jacobian == 2 && nv >= 60) { 1 } else { 0 }
+    }
 }
 
 /// C: mj_mergeChain (engine/engine_core_util.h:40)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_merge_chain(m: *const mjModel, chain: *mut i32, b1: i32, b2: i32, flg_skipcommon: i32) -> i32 {
-    // NOTE: signature changed from previous IR version
-    // Previous params: (m : * const mjModel, chain : * mut i32, b1 : i32, b2 : i32, flg_skipcommon : i32)
-    // Previous return: i32
-    todo!("re-translate: params renamed")
+    todo!("requires complex mjModel field traversal")
 }
 
 /// C: mj_mergeChainSimple (engine/engine_core_util.h:43)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_merge_chain_simple(m: *const mjModel, chain: *mut i32, b1: i32, b2: i32) -> i32 {
-    // NOTE: signature changed from previous IR version
-    // Previous params: (m : * const mjModel, chain : * mut i32, b1 : i32, b2 : i32)
-    // Previous return: i32
-    todo!("re-translate: params renamed")
+    todo!("requires complex mjModel field traversal")
 }
 
 /// C: mj_bodyChain (engine/engine_core_util.h:46)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_body_chain(m: *const mjModel, body: i32, chain: *mut i32) -> i32 {
-    todo!() // mj_bodyChain
+    todo!("requires complex mjModel field traversal")
 }
 
 /// C: mj_jac (engine/engine_core_util.h:52)

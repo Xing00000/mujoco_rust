@@ -201,10 +201,7 @@ pub fn mj_factor_m(m: *const mjModel, d: *mut mjData) {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_solve_ld_legacy(m: *const mjModel, x: *mut f64, n: i32, qLD: *const f64, qLDiagInv: *const f64) {
-    // NOTE: signature changed from previous IR version
-    // Previous params: (m : * const mjModel, x : * mut f64, n : i32, qLD : * const f64, qLDiagInv : * const f64)
-    // Previous return: ()
-    todo!("re-translate: params renamed")
+    todo!("requires complex mjModel field traversal")
 }
 
 /// C: mj_solveLD (engine/engine_core_smooth.h:84)

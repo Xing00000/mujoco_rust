@@ -33,7 +33,7 @@ pub fn mj_free_last_xml() {
 /// C: mj_printSchema (xml/xml_api.h:40)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_print_schema(filename: *const i8, buffer: *mut i8, buffer_sz: i32, flg_html: i32, flg_pad: i32) -> i32 {
-    todo!() // mj_printSchema
+    todo!("requires allocator/complex API")
 }
 
 /// C: mj_loadModel (xml/xml_api.h:45)

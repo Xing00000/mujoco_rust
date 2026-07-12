@@ -390,7 +390,32 @@ pub fn mju_copy4(res: *mut f64, data: *const f64) {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mju_normalize4(vec: *mut f64) -> f64 {
-    todo!() // mju_normalize4
+    const MJ_MINVAL: f64 = 1E-15_f64;
+
+    // SAFETY: caller guarantees vec points to at least 4 f64
+    unsafe {
+        let norm: f64 = f64::sqrt(
+            *vec.add(0) * *vec.add(0)
+            + *vec.add(1) * *vec.add(1)
+            + *vec.add(2) * *vec.add(2)
+            + *vec.add(3) * *vec.add(3)
+        );
+
+        if norm < MJ_MINVAL {
+            *vec.add(0) = 1.0;
+            *vec.add(1) = 0.0;
+            *vec.add(2) = 0.0;
+            *vec.add(3) = 0.0;
+        } else {
+            let inv = 1.0 / norm;
+            *vec.add(0) *= inv;
+            *vec.add(1) *= inv;
+            *vec.add(2) *= inv;
+            *vec.add(3) *= inv;
+        }
+
+        norm
+    }
 }
 
 /// C: mju_zero (engine/engine_util_blas.h:145)
@@ -401,7 +426,8 @@ pub fn mju_normalize4(vec: *mut f64) -> f64 {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mju_zero(res: *mut f64, n: i32) {
-    todo!() // mju_zero
+    // SAFETY: caller guarantees res points to valid array of at least n f64
+    unsafe { std::ptr::write_bytes(res, 0, n as usize); }
 }
 
 /// C: mju_zeroInd (engine/engine_util_blas.h:148)
@@ -440,7 +466,8 @@ pub fn mju_fill(res: *mut f64, val: f64, n: i32) {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mju_copy(res: *mut f64, vec: *const f64, n: i32) {
-    todo!() // mju_copy
+    // SAFETY: caller guarantees res and vec point to valid non-overlapping arrays of at least n f64
+    unsafe { std::ptr::copy_nonoverlapping(vec, res, n as usize); }
 }
 
 /// C: mju_copyInd (engine/engine_util_blas.h:157)
@@ -490,7 +517,12 @@ pub fn mju_l1(vec: *const f64, n: i32) -> f64 {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mju_scl(res: *mut f64, vec: *const f64, scl: f64, n: i32) {
-    todo!() // mju_scl
+    // SAFETY: caller guarantees res and vec point to valid arrays of at least n f64
+    unsafe {
+        for i in 0..n as usize {
+            *res.add(i) = *vec.add(i) * scl;
+        }
+    }
 }
 
 /// C: mju_add (engine/engine_util_blas.h:169)
@@ -529,7 +561,12 @@ pub fn mju_add_ind(res: *mut f64, vec1: *const f64, vec2: *const f64, ind: *cons
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mju_sub(res: *mut f64, vec1: *const f64, vec2: *const f64, n: i32) {
-    todo!() // mju_sub
+    // SAFETY: caller guarantees res, vec1, vec2 point to valid arrays of at least n f64
+    unsafe {
+        for i in 0..n as usize {
+            *res.add(i) = *vec1.add(i) - *vec2.add(i);
+        }
+    }
 }
 
 /// C: mju_subInd (engine/engine_util_blas.h:178)
@@ -587,7 +624,12 @@ pub fn mju_sub_from(res: *mut f64, vec: *const f64, n: i32) {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mju_add_to_scl(res: *mut f64, vec: *const f64, scl: f64, n: i32) {
-    todo!() // mju_addToScl
+    // SAFETY: caller guarantees res and vec point to valid arrays of at least n f64
+    unsafe {
+        for i in 0..n as usize {
+            *res.add(i) += *vec.add(i) * scl;
+        }
+    }
 }
 
 /// C: mju_addToSclInd (engine/engine_util_blas.h:193)
@@ -656,7 +698,32 @@ pub fn mju_norm(res: *const f64, n: i32) -> f64 {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mju_dot(vec1: *const f64, vec2: *const f64, n: i32) -> f64 {
-    todo!() // mju_dot
+    // SAFETY: caller guarantees vec1 and vec2 point to valid arrays of at least n f64
+    unsafe {
+        let mut i: i32 = 0;
+        let n_4 = n - 4;
+        let (mut res0, mut res1, mut res2, mut res3) = (0.0_f64, 0.0_f64, 0.0_f64, 0.0_f64);
+        while i <= n_4 {
+            res0 += *vec1.add(i as usize) * *vec2.add(i as usize);
+            res1 += *vec1.add((i + 1) as usize) * *vec2.add((i + 1) as usize);
+            res2 += *vec1.add((i + 2) as usize) * *vec2.add((i + 2) as usize);
+            res3 += *vec1.add((i + 3) as usize) * *vec2.add((i + 3) as usize);
+            i += 4;
+        }
+        let mut res = (res0 + res2) + (res1 + res3);
+        let n_i = n - i;
+        if n_i == 3 {
+            res += *vec1.add(i as usize) * *vec2.add(i as usize)
+                + *vec1.add((i + 1) as usize) * *vec2.add((i + 1) as usize)
+                + *vec1.add((i + 2) as usize) * *vec2.add((i + 2) as usize);
+        } else if n_i == 2 {
+            res += *vec1.add(i as usize) * *vec2.add(i as usize)
+                + *vec1.add((i + 1) as usize) * *vec2.add((i + 1) as usize);
+        } else if n_i == 1 {
+            res += *vec1.add(i as usize) * *vec2.add(i as usize);
+        }
+        res
+    }
 }
 
 /// C: mju_dotInd (engine/engine_util_blas.h:208)

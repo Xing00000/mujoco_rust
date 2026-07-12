@@ -346,10 +346,7 @@ pub fn mj_next_activation(m: *const mjModel, d: *const mjData, actuator_id: i32,
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_get_totalmass(m: *const mjModel) -> f64 {
-    // NOTE: signature changed from previous IR version
-    // Previous params: (m : * const mjModel)
-    // Previous return: f64
-    todo!("re-translate: params renamed")
+    todo!("requires mjModel body_mass array access")
 }
 
 /// C: mj_setTotalmass (engine/engine_support.h:118)
@@ -376,10 +373,7 @@ pub fn mj_version() -> i32 {
 /// C: mj_versionString (engine/engine_support.h:124)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_version_string() -> *const i8 {
-    // NOTE: signature changed from previous IR version
-    // Previous params: ()
-    // Previous return: * const i8
-    todo!("re-translate: params renamed")
+    todo!("requires static version string")
 }
 
 /// C: mju_condataSize (engine/engine_support.h:127)
