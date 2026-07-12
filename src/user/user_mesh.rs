@@ -12,10 +12,21 @@ use crate::types::*;
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn fovea(x: f64, gamma: f64) -> f64 {
-    // WARNING: signature changed — verify body
-    // Previous params: (x : f64, gamma : f64)
-    // Previous return: f64
-    todo ! ()
+    // C: if (!gamma) return x;
+    if gamma == 0.0 {
+        return x;
+    }
+
+    // C: double g = mjMAX(0, mjMIN(1, gamma));
+    let g: f64 = if 0.0 > (if 1.0 < gamma { 1.0 } else { gamma }) {
+        0.0
+    } else {
+        if 1.0 < gamma { 1.0 } else { gamma }
+    };
+
+    // C: return g * pow(x, 5) + (1 - g) * x;
+    // SAFETY: powf matches C pow() for bitexact behavior
+    g * x.powf(5.0) + (1.0 - g) * x
 }
 
 /// C: LinSpace (user/user_mesh.cc:93)
@@ -26,10 +37,26 @@ pub fn fovea(x: f64, gamma: f64) -> f64 {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn lin_space(lower: f64, upper: f64, n: i32, array: *mut f64) {
-    // WARNING: signature changed — verify body
-    // Previous params: (lower : f64, upper : f64, n : i32, array : * mut f64)
-    // Previous return: ()
-    todo ! ()
+    // C: double increment = n > 1 ? (upper - lower) / (n - 1) : 0;
+    let increment: f64 = if n > 1 {
+        (upper - lower) / ((n - 1) as f64)
+    } else {
+        0.0
+    };
+
+    // C: for (int i = 0; i < n; ++i) { *array = lower; ++array; lower += increment; }
+    // SAFETY: caller must ensure array points to valid memory for n f64 elements
+    let mut lower = lower;
+    let mut ptr = array;
+    let mut i: i32 = 0;
+    while i < n {
+        // SAFETY: caller guarantees array has at least n elements
+        unsafe { *ptr = lower; }
+        // SAFETY: pointer arithmetic within allocated array
+        unsafe { ptr = ptr.add(1); }
+        lower += increment;
+        i += 1;
+    }
 }
 
 /// C: BinEdges (user/user_mesh.cc:103)
