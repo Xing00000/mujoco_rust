@@ -236,10 +236,9 @@ pub fn mju_muscle_dynamics(ctrl: f64, act: f64, prm: *const f64) -> f64 {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_lugre_stribeck(velocity: f64, F_C: f64, F_S: f64, v_S: f64) -> f64 {
-    // NOTE: signature changed from previous IR version
-    // Previous params: (velocity : f64, F_C : f64, F_S : f64, v_S : f64)
-    // Previous return: f64
-    todo!("re-translate: params renamed")
+    const MJ_MINVAL: f64 = 1E-15;
+    let ratio: f64 = velocity / mju_max(MJ_MINVAL, v_S);
+    F_C + (F_S - F_C) * (-ratio * ratio).exp()
 }
 
 /// C: mj_dcmotorSlots (engine/engine_util_misc.h:68)
@@ -721,10 +720,7 @@ pub fn mju_print_mat_sparse(mat: *const f64, nr: i32, rownnz: *const i32, rowadr
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mju_min(a: f64, b: f64) -> f64 {
-    // NOTE: signature changed from previous IR version
-    // Previous params: (a : f64, b : f64)
-    // Previous return: f64
-    todo!("re-translate: params renamed")
+    if a <= b { a } else { b }
 }
 
 /// C: mju_max (engine/engine_util_misc.h:228)
@@ -746,10 +742,13 @@ pub fn mju_max(a: f64, b: f64) -> f64 {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mju_clip(x: f64, min: f64, max: f64) -> f64 {
-    // NOTE: signature changed from previous IR version
-    // Previous params: (x : f64, min : f64, max : f64)
-    // Previous return: f64
-    todo!("re-translate: params renamed")
+    if x < min {
+        min
+    } else if x > max {
+        max
+    } else {
+        x
+    }
 }
 
 /// C: mju_sign (engine/engine_util_misc.h:234)
@@ -783,10 +782,35 @@ pub fn mju_round(x: f64) -> i32 {
 /// C: mju_type2Str (engine/engine_util_misc.h:240)
 #[allow(unused_variables, non_snake_case)]
 pub fn mju_type2str(r#type: i32) -> *const i8 {
-    // NOTE: signature changed from previous IR version
-    // Previous params: (r#type : i32)
-    // Previous return: * const i8
-    todo!("re-translate: params renamed")
+    match r#type {
+        1 => b"body\0".as_ptr() as *const i8,
+        2 => b"xbody\0".as_ptr() as *const i8,
+        3 => b"joint\0".as_ptr() as *const i8,
+        4 => b"dof\0".as_ptr() as *const i8,
+        5 => b"geom\0".as_ptr() as *const i8,
+        6 => b"site\0".as_ptr() as *const i8,
+        7 => b"camera\0".as_ptr() as *const i8,
+        8 => b"light\0".as_ptr() as *const i8,
+        9 => b"flex\0".as_ptr() as *const i8,
+        10 => b"mesh\0".as_ptr() as *const i8,
+        11 => b"skin\0".as_ptr() as *const i8,
+        12 => b"hfield\0".as_ptr() as *const i8,
+        13 => b"texture\0".as_ptr() as *const i8,
+        14 => b"material\0".as_ptr() as *const i8,
+        15 => b"pair\0".as_ptr() as *const i8,
+        16 => b"exclude\0".as_ptr() as *const i8,
+        17 => b"equality\0".as_ptr() as *const i8,
+        18 => b"tendon\0".as_ptr() as *const i8,
+        19 => b"actuator\0".as_ptr() as *const i8,
+        20 => b"sensor\0".as_ptr() as *const i8,
+        21 => b"numeric\0".as_ptr() as *const i8,
+        22 => b"text\0".as_ptr() as *const i8,
+        23 => b"tuple\0".as_ptr() as *const i8,
+        24 => b"key\0".as_ptr() as *const i8,
+        25 => b"plugin\0".as_ptr() as *const i8,
+        26 => b"frame\0".as_ptr() as *const i8,
+        _ => std::ptr::null(),
+    }
 }
 
 /// C: mju_str2Type (engine/engine_util_misc.h:243)
@@ -839,19 +863,30 @@ pub fn mju_is_bad(x: f64) -> i32 {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mju_is_zero(vec: *const f64, n: i32) -> i32 {
-    // NOTE: signature changed from previous IR version
-    // Previous params: (vec : * const f64, n : i32)
-    // Previous return: i32
-    todo!("re-translate: params renamed")
+    unsafe {
+        // SAFETY: caller guarantees vec points to at least n contiguous f64 elements
+        for i in 0..n {
+            if *vec.add(i as usize) != 0.0 {
+                return 0;
+            }
+        }
+    }
+    1
 }
 
 /// C: mju_isZeroByte (engine/engine_util_misc.h:258)
 #[allow(unused_variables, non_snake_case)]
 pub fn mju_is_zero_byte(vec: *const u8, n: i32) -> i32 {
-    // NOTE: signature changed from previous IR version
-    // Previous params: (vec : * const u8, n : i32)
-    // Previous return: i32
-    todo!("re-translate: params renamed")
+    unsafe {
+        // SAFETY: caller guarantees vec points to at least n contiguous u8 elements
+        if n == 0 || *vec != 0 {
+            return if n == 0 { 1 } else { 0 };
+        }
+        // Compare vec[0..n-1] with vec[1..n]: all bytes must equal vec[0] (which is 0)
+        let slice1 = core::slice::from_raw_parts(vec, (n - 1) as usize);
+        let slice2 = core::slice::from_raw_parts(vec.add(1), (n - 1) as usize);
+        if slice1 == slice2 { 1 } else { 0 }
+    }
 }
 
 /// C: mju_zeroInt (engine/engine_util_misc.h:261)
@@ -996,10 +1031,16 @@ pub fn mju_gather_masked(res: *mut f64, vec: *const f64, ind: *const i32, n: i32
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mju_scatter(res: *mut f64, vec: *const f64, ind: *const i32, n: i32) {
-    // NOTE: signature changed from previous IR version
-    // Previous params: (res : * mut f64, vec : * const f64, ind : * const i32, n : i32)
-    // Previous return: ()
-    todo!("re-translate: params renamed")
+    unsafe {
+        // SAFETY: caller guarantees res, vec point to valid memory; ind is either null or points to n i32 elements
+        if ind.is_null() {
+            crate::engine::engine_util_blas::mju_copy(res, vec, n);
+            return;
+        }
+        for i in 0..n {
+            *res.add(*ind.add(i as usize) as usize) = *vec.add(i as usize);
+        }
+    }
 }
 
 /// C: mju_gatherInt (engine/engine_util_misc.h:294)
@@ -1121,10 +1162,17 @@ pub fn mjd_x_poly_force(linear: f64, poly: *const f64, x: f64, n: i32, flg_odd: 
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mju_poly_potential(linear: f64, poly: *const f64, x: f64, n: i32, flg_odd: i32) -> f64 {
-    // NOTE: signature changed from previous IR version
-    // Previous params: (linear : f64, poly : * const f64, x : f64, n : i32, flg_odd : i32)
-    // Previous return: f64
-    todo!("re-translate: params renamed")
+    unsafe {
+        // SAFETY: caller guarantees poly points to at least n contiguous f64 elements
+        let x = if flg_odd != 0 { x.abs() } else { x };
+        let mut res: f64 = 0.5 * linear * (x * x);
+        let mut xpow: f64 = x;
+        for i in 0..n {
+            xpow *= x;
+            res += *poly.add(i as usize) / (i as f64 + 3.0) * (xpow * x);
+        }
+        res
+    }
 }
 
 /// C: mju_sigmoid (engine/engine_util_misc.h:335)

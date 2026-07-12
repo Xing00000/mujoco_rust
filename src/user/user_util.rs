@@ -307,10 +307,19 @@ pub fn mjuu_quat2mat(res: *mut f64, quat: *const f64) {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjuu_mulquat(res: *mut f64, qa: *const f64, qb: *const f64) {
-    // NOTE: signature changed from previous IR version
-    // Previous params: (res : * mut f64, qa : * const f64, qb : * const f64)
-    // Previous return: ()
-    todo!("re-translate: params renamed")
+    unsafe {
+        // SAFETY: caller guarantees qa, qb point to 4 f64 elements, res points to 4 f64 elements
+        let mut tmp: [f64; 4] = [0.0; 4];
+        tmp[0] = *qa.add(0) * *qb.add(0) - *qa.add(1) * *qb.add(1) - *qa.add(2) * *qb.add(2) - *qa.add(3) * *qb.add(3);
+        tmp[1] = *qa.add(0) * *qb.add(1) + *qa.add(1) * *qb.add(0) + *qa.add(2) * *qb.add(3) - *qa.add(3) * *qb.add(2);
+        tmp[2] = *qa.add(0) * *qb.add(2) - *qa.add(1) * *qb.add(3) + *qa.add(2) * *qb.add(0) + *qa.add(3) * *qb.add(1);
+        tmp[3] = *qa.add(0) * *qb.add(3) + *qa.add(1) * *qb.add(2) - *qa.add(2) * *qb.add(1) + *qa.add(3) * *qb.add(0);
+        mjuu_normvec(tmp.as_mut_ptr(), 4);
+        *res.add(0) = tmp[0];
+        *res.add(1) = tmp[1];
+        *res.add(2) = tmp[2];
+        *res.add(3) = tmp[3];
+    }
 }
 
 /// C: mjuu_mulvecmat (user/user_util.h:91)

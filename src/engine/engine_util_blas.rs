@@ -12,10 +12,12 @@ use crate::types::*;
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mju_zero3(res: *mut f64) {
-    // NOTE: signature changed from previous IR version
-    // Previous params: (res : * mut f64)
-    // Previous return: ()
-    todo!("re-translate: params renamed")
+    unsafe {
+        // SAFETY: caller guarantees res points to at least 3 f64 elements
+        *res.add(0) = 0.0;
+        *res.add(1) = 0.0;
+        *res.add(2) = 0.0;
+    }
 }
 
 /// C: mju_equal3 (engine/engine_util_blas.h:71)
@@ -68,10 +70,12 @@ pub fn mju_copy9(res: *mut f64, mat: *const f64) {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mju_scl3(res: *mut f64, vec: *const f64, scl: f64) {
-    // NOTE: signature changed from previous IR version
-    // Previous params: (res : * mut f64, vec : * const f64, scl : f64)
-    // Previous return: ()
-    todo!("re-translate: params renamed")
+    unsafe {
+        // SAFETY: caller guarantees res points to at least 3 f64 elements, vec points to at least 3 f64 elements
+        *res.add(0) = *vec.add(0) * scl;
+        *res.add(1) = *vec.add(1) * scl;
+        *res.add(2) = *vec.add(2) * scl;
+    }
 }
 
 /// C: mju_add3 (engine/engine_util_blas.h:83)
@@ -96,10 +100,12 @@ pub fn mju_add3(res: *mut f64, vec1: *const f64, vec2: *const f64) {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mju_sub3(res: *mut f64, vec1: *const f64, vec2: *const f64) {
-    // NOTE: signature changed from previous IR version
-    // Previous params: (res : * mut f64, vec1 : * const f64, vec2 : * const f64)
-    // Previous return: ()
-    todo!("re-translate: params renamed")
+    unsafe {
+        // SAFETY: caller guarantees res, vec1, vec2 point to at least 3 f64 elements
+        *res.add(0) = *vec1.add(0) - *vec2.add(0);
+        *res.add(1) = *vec1.add(1) - *vec2.add(1);
+        *res.add(2) = *vec1.add(2) - *vec2.add(2);
+    }
 }
 
 /// C: mju_addTo3 (engine/engine_util_blas.h:89)
@@ -166,10 +172,22 @@ pub fn mju_add_scl3(res: *mut f64, vec1: *const f64, vec2: *const f64, scl: f64)
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mju_normalize3(vec: *mut f64) -> f64 {
-    // NOTE: signature changed from previous IR version
-    // Previous params: (vec : * mut f64)
-    // Previous return: f64
-    todo!("re-translate: params renamed")
+    const MJ_MINVAL: f64 = 1E-15f64;
+    unsafe {
+        // SAFETY: caller guarantees vec points to at least 3 f64 elements
+        let norm = (*vec.add(0) * *vec.add(0) + *vec.add(1) * *vec.add(1) + *vec.add(2) * *vec.add(2)).sqrt();
+        if norm < MJ_MINVAL {
+            *vec.add(0) = 1.0;
+            *vec.add(1) = 0.0;
+            *vec.add(2) = 0.0;
+        } else {
+            let norm_inv = 1.0 / norm;
+            *vec.add(0) *= norm_inv;
+            *vec.add(1) *= norm_inv;
+            *vec.add(2) *= norm_inv;
+        }
+        norm
+    }
 }
 
 /// C: mju_norm3 (engine/engine_util_blas.h:104)
@@ -180,10 +198,10 @@ pub fn mju_normalize3(vec: *mut f64) -> f64 {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mju_norm3(vec: *const f64) -> f64 {
-    // NOTE: signature changed from previous IR version
-    // Previous params: (vec : * const f64)
-    // Previous return: f64
-    todo!("re-translate: params renamed")
+    unsafe {
+        // SAFETY: caller guarantees vec points to at least 3 f64 elements
+        (*vec.add(0) * *vec.add(0) + *vec.add(1) * *vec.add(1) + *vec.add(2) * *vec.add(2)).sqrt()
+    }
 }
 
 /// C: mju_dot3 (engine/engine_util_blas.h:107)
@@ -194,10 +212,10 @@ pub fn mju_norm3(vec: *const f64) -> f64 {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mju_dot3(vec1: *const f64, vec2: *const f64) -> f64 {
-    // NOTE: signature changed from previous IR version
-    // Previous params: (vec1 : * const f64, vec2 : * const f64)
-    // Previous return: f64
-    todo!("re-translate: params renamed")
+    unsafe {
+        // SAFETY: caller guarantees vec1 and vec2 point to at least 3 f64 elements
+        *vec1.add(0) * *vec2.add(0) + *vec1.add(1) * *vec2.add(1) + *vec1.add(2) * *vec2.add(2)
+    }
 }
 
 /// C: mju_dist3 (engine/engine_util_blas.h:110)
@@ -320,10 +338,13 @@ pub fn mju_unit4(res: *mut f64) {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mju_copy4(res: *mut f64, data: *const f64) {
-    // NOTE: signature changed from previous IR version
-    // Previous params: (res : * mut f64, data : * const f64)
-    // Previous return: ()
-    todo!("re-translate: params renamed")
+    unsafe {
+        // SAFETY: caller guarantees res and data point to at least 4 f64 elements
+        *res.add(0) = *data.add(0);
+        *res.add(1) = *data.add(1);
+        *res.add(2) = *data.add(2);
+        *res.add(3) = *data.add(3);
+    }
 }
 
 /// C: mju_normalize4 (engine/engine_util_blas.h:139)
@@ -334,10 +355,24 @@ pub fn mju_copy4(res: *mut f64, data: *const f64) {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mju_normalize4(vec: *mut f64) -> f64 {
-    // NOTE: signature changed from previous IR version
-    // Previous params: (vec : * mut f64)
-    // Previous return: f64
-    todo!("re-translate: params renamed")
+    const MJ_MINVAL: f64 = 1E-15f64;
+    unsafe {
+        // SAFETY: caller guarantees vec points to at least 4 f64 elements
+        let norm = (*vec.add(0) * *vec.add(0) + *vec.add(1) * *vec.add(1) + *vec.add(2) * *vec.add(2) + *vec.add(3) * *vec.add(3)).sqrt();
+        if norm < MJ_MINVAL {
+            *vec.add(0) = 1.0;
+            *vec.add(1) = 0.0;
+            *vec.add(2) = 0.0;
+            *vec.add(3) = 0.0;
+        } else if (norm - 1.0).abs() > MJ_MINVAL {
+            let norm_inv = 1.0 / norm;
+            *vec.add(0) *= norm_inv;
+            *vec.add(1) *= norm_inv;
+            *vec.add(2) *= norm_inv;
+            *vec.add(3) *= norm_inv;
+        }
+        norm
+    }
 }
 
 /// C: mju_zero (engine/engine_util_blas.h:145)
@@ -404,10 +439,13 @@ pub fn mju_copy(res: *mut f64, vec: *const f64, n: i32) {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mju_copy_ind(res: *mut f64, vec: *const f64, ind: *const i32, n: i32) {
-    // NOTE: signature changed from previous IR version
-    // Previous params: (res : * mut f64, vec : * const f64, ind : * const i32, n : i32)
-    // Previous return: ()
-    todo!("re-translate: params renamed")
+    unsafe {
+        // SAFETY: caller guarantees res, vec, ind point to valid memory; ind[i] is a valid index into res and vec
+        for i in 0..n as usize {
+            let j = *ind.add(i) as usize;
+            *res.add(j) = *vec.add(j);
+        }
+    }
 }
 
 /// C: mju_sum (engine/engine_util_blas.h:160)
@@ -490,10 +528,12 @@ pub fn mju_add_ind(res: *mut f64, vec1: *const f64, vec2: *const f64, ind: *cons
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mju_sub(res: *mut f64, vec1: *const f64, vec2: *const f64, n: i32) {
-    // NOTE: signature changed from previous IR version
-    // Previous params: (res : * mut f64, vec1 : * const f64, vec2 : * const f64, n : i32)
-    // Previous return: ()
-    todo!("re-translate: params renamed")
+    unsafe {
+        // SAFETY: caller guarantees res, vec1, vec2 point to at least n f64 elements
+        for i in 0..n as usize {
+            *res.add(i) = *vec1.add(i) - *vec2.add(i);
+        }
+    }
 }
 
 /// C: mju_subInd (engine/engine_util_blas.h:178)
@@ -504,10 +544,13 @@ pub fn mju_sub(res: *mut f64, vec1: *const f64, vec2: *const f64, n: i32) {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mju_sub_ind(res: *mut f64, vec1: *const f64, vec2: *const f64, ind: *const i32, n: i32) {
-    // NOTE: signature changed from previous IR version
-    // Previous params: (res : * mut f64, vec1 : * const f64, vec2 : * const f64, ind : * const i32, n : i32)
-    // Previous return: ()
-    todo!("re-translate: params renamed")
+    unsafe {
+        // SAFETY: caller guarantees res, vec1, vec2, ind point to valid memory; ind[i] is a valid index
+        for i in 0..n as usize {
+            let j = *ind.add(i) as usize;
+            *res.add(j) = *vec1.add(j) - *vec2.add(j);
+        }
+    }
 }
 
 /// C: mju_addTo (engine/engine_util_blas.h:181)
@@ -518,10 +561,12 @@ pub fn mju_sub_ind(res: *mut f64, vec1: *const f64, vec2: *const f64, ind: *cons
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mju_add_to(res: *mut f64, vec: *const f64, n: i32) {
-    // NOTE: signature changed from previous IR version
-    // Previous params: (res : * mut f64, vec : * const f64, n : i32)
-    // Previous return: ()
-    todo!("re-translate: params renamed")
+    unsafe {
+        // SAFETY: caller guarantees res and vec point to at least n f64 elements
+        for i in 0..n as usize {
+            *res.add(i) += *vec.add(i);
+        }
+    }
 }
 
 /// C: mju_addToInd (engine/engine_util_blas.h:184)
@@ -532,10 +577,13 @@ pub fn mju_add_to(res: *mut f64, vec: *const f64, n: i32) {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mju_add_to_ind(res: *mut f64, vec: *const f64, ind: *const i32, n: i32) {
-    // NOTE: signature changed from previous IR version
-    // Previous params: (res : * mut f64, vec : * const f64, ind : * const i32, n : i32)
-    // Previous return: ()
-    todo!("re-translate: params renamed")
+    unsafe {
+        // SAFETY: caller guarantees res, vec, ind point to valid memory; ind[i] is a valid index into res and vec
+        for i in 0..n as usize {
+            let j = *ind.add(i) as usize;
+            *res.add(j) += *vec.add(j);
+        }
+    }
 }
 
 /// C: mju_subFrom (engine/engine_util_blas.h:187)
@@ -709,10 +757,17 @@ pub fn mju_mul_mat_vec(res: *mut f64, mat: *const f64, vec: *const f64, nr: i32,
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mju_mul_mat_t_vec(res: *mut f64, mat: *const f64, vec: *const f64, nr: i32, nc: i32) {
-    // NOTE: signature changed from previous IR version
-    // Previous params: (res : * mut f64, mat : * const f64, vec : * const f64, nr : i32, nc : i32)
-    // Previous return: ()
-    todo!("re-translate: params renamed")
+    unsafe {
+        // SAFETY: caller guarantees res points to at least nc elements, mat points to nr*nc elements,
+        // vec points to at least nr elements
+        mju_zero(res, nc);
+        for r in 0..nr as usize {
+            let tmp = *vec.add(r);
+            if tmp != 0.0 {
+                mju_add_to_scl(res, mat.add(r * nc as usize), tmp, nc);
+            }
+        }
+    }
 }
 
 /// C: mju_mulVecMatVec (engine/engine_util_blas.h:219)
@@ -738,10 +793,14 @@ pub fn mju_mul_vec_mat_vec(vec1: *const f64, mat: *const f64, vec2: *const f64, 
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mju_transpose(res: *mut f64, mat: *const f64, nr: i32, nc: i32) {
-    // NOTE: signature changed from previous IR version
-    // Previous params: (res : * mut f64, mat : * const f64, nr : i32, nc : i32)
-    // Previous return: ()
-    todo!("re-translate: params renamed")
+    unsafe {
+        // SAFETY: caller guarantees res points to nc*nr elements, mat points to nr*nc elements
+        for i in 0..nr as usize {
+            for j in 0..nc as usize {
+                *res.add(j * nr as usize + i) = *mat.add(i * nc as usize + j);
+            }
+        }
+    }
 }
 
 /// C: mju_symmetrize (engine/engine_util_blas.h:228)
@@ -842,10 +901,39 @@ pub fn mju_mul_mat_t_mat(res: *mut f64, mat1: *const f64, mat2: *const f64, r1: 
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mju_sqr_mat_td_impl(res: *mut f64, mat: *const f64, diag: *const f64, nr: i32, nc: i32, flg_upper: i32) {
-    // NOTE: signature changed from previous IR version
-    // Previous params: (res : * mut f64, mat : * const f64, diag : * const f64, nr : i32, nc : i32, flg_upper : i32)
-    // Previous return: ()
-    todo!("re-translate: params renamed")
+    unsafe {
+        // SAFETY: caller guarantees res points to nc*nc elements, mat points to nr*nc elements,
+        // diag (if non-null) points to nr elements
+        mju_zero(res, nc * nc);
+        if !diag.is_null() {
+            for j in 0..nr as usize {
+                if *diag.add(j) != 0.0 {
+                    for i in 0..nc as usize {
+                        let tmp = *mat.add(j * nc as usize + i);
+                        if tmp != 0.0 {
+                            mju_add_to_scl(res.add(i * nc as usize), mat.add(j * nc as usize), tmp * *diag.add(j), i as i32 + 1);
+                        }
+                    }
+                }
+            }
+        } else {
+            for i in 0..nc as usize {
+                for j in 0..nr as usize {
+                    let tmp = *mat.add(j * nc as usize + i);
+                    if tmp != 0.0 {
+                        mju_add_to_scl(res.add(i * nc as usize), mat.add(j * nc as usize), tmp, i as i32 + 1);
+                    }
+                }
+            }
+        }
+        if flg_upper != 0 {
+            for i in 0..nc as usize {
+                for j in (i + 1)..nc as usize {
+                    *res.add(i * nc as usize + j) = *res.add(j * nc as usize + i);
+                }
+            }
+        }
+    }
 }
 
 /// C: mju_sqrMatTD (engine/engine_util_blas.h:255)

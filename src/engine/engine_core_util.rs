@@ -60,11 +60,62 @@ pub fn mj_merge_chain_simple(m: *const mjModel, chain: *mut i32, b1: i32, b2: i3
 
 /// C: mj_bodyChain (engine/engine_core_util.h:46)
 #[allow(unused_variables, non_snake_case)]
-pub fn mj_body_chain(m: *const mjModel, body: i32, chain: *mut i32) -> i32 {
-    // NOTE: signature changed from previous IR version
-    // Previous params: (m : * const mjModel, body : i32, chain : * mut i32)
-    // Previous return: i32
-    todo!("re-translate: params renamed")
+pub fn mj_body_chain(m: *const mjModel, mut body: i32, chain: *mut i32) -> i32 {
+    // mjModel field offsets (verified via offsetof):
+    const OFF_BODY_WELDID: usize = 1768;    // int* body_weldid
+    const OFF_BODY_DOFNUM: usize = 1800;    // int* body_dofnum
+    const OFF_BODY_DOFADR: usize = 1808;    // int* body_dofadr
+    const OFF_BODY_SIMPLE: usize = 1840;    // int* body_simple
+    const OFF_DOF_PARENTID: usize = 2216;   // int* dof_parentid
+
+    // SAFETY: m is a valid mjModel pointer. All fields are int* pointers within the struct
+    // at known offsets. body is a valid index into these arrays.
+    unsafe {
+        let base = m as *const u8;
+        let body_simple = *(base.add(OFF_BODY_SIMPLE) as *const *const i32);
+        let body_dofnum = *(base.add(OFF_BODY_DOFNUM) as *const *const i32);
+        let body_dofadr = *(base.add(OFF_BODY_DOFADR) as *const *const i32);
+        let body_weldid = *(base.add(OFF_BODY_WELDID) as *const *const i32);
+        let dof_parentid = *(base.add(OFF_DOF_PARENTID) as *const *const i32);
+
+        // simple body
+        if *body_simple.add(body as usize) != 0 {
+            let dofnum = *body_dofnum.add(body as usize);
+            let dofadr = *body_dofadr.add(body as usize);
+            for i in 0..dofnum {
+                *chain.add(i as usize) = dofadr + i;
+            }
+            return dofnum;
+        }
+
+        // general case: skip fixed bodies
+        body = *body_weldid.add(body as usize);
+
+        // not movable: empty chain
+        if body == 0 {
+            return 0;
+        }
+
+        // initialize last dof
+        let mut da = *body_dofadr.add(body as usize) + *body_dofnum.add(body as usize) - 1;
+        let mut nv = 0i32;
+
+        // construct chain from child to parent
+        while da >= 0 {
+            *chain.add(nv as usize) = da;
+            nv += 1;
+            da = *dof_parentid.add(da as usize);
+        }
+
+        // reverse order of chain: make it increasing
+        for i in 0..nv / 2 {
+            let tmp = *chain.add(i as usize);
+            *chain.add(i as usize) = *chain.add((nv - i - 1) as usize);
+            *chain.add((nv - i - 1) as usize) = tmp;
+        }
+
+        nv
+    }
 }
 
 /// C: mj_jac (engine/engine_core_util.h:52)

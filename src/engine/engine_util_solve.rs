@@ -43,10 +43,37 @@ pub fn mul_sym_vec(res: *mut f64, mat: *const f64, vec: *const f64, n: i32) {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mju_chol_factor(mat: *mut f64, n: i32, mindiag: f64) -> i32 {
-    // NOTE: signature changed from previous IR version
-    // Previous params: (mat : * mut f64, n : i32, mindiag : f64)
-    // Previous return: i32
-    todo!("re-translate: params renamed")
+    unsafe {
+        // SAFETY: caller guarantees mat points to n*n contiguous f64 elements
+        let mut rank: i32 = n;
+        for j in 0..n {
+            let mut tmp: f64 = *mat.add((j as usize) * ((n + 1) as usize));
+            if j != 0 {
+                tmp -= crate::engine::engine_util_blas::mju_dot(
+                    mat.add((j as usize) * (n as usize)),
+                    mat.add((j as usize) * (n as usize)),
+                    j,
+                );
+            }
+            if tmp < mindiag {
+                tmp = mindiag;
+                rank -= 1;
+            }
+            *mat.add((j as usize) * ((n + 1) as usize)) = tmp.sqrt();
+            tmp = 1.0 / *mat.add((j as usize) * ((n + 1) as usize));
+            for i in (j + 1)..n {
+                *mat.add((i as usize) * (n as usize) + (j as usize)) =
+                    (*mat.add((i as usize) * (n as usize) + (j as usize))
+                        - crate::engine::engine_util_blas::mju_dot(
+                            mat.add((i as usize) * (n as usize)),
+                            mat.add((j as usize) * (n as usize)),
+                            j,
+                        ))
+                        * tmp;
+            }
+        }
+        rank
+    }
 }
 
 /// C: mju_cholSolve (engine/engine_util_solve.h:30)
