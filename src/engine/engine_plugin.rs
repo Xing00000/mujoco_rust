@@ -53,10 +53,10 @@ pub fn plugin_attr_seek(m: *const mjModel, plugin_id: i32, attrib_id: i32) -> *c
 /// C: mjp_defaultPlugin (engine/engine_plugin.h:26)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjp_default_plugin(plugin: *mut mjpPlugin) {
-    // WARNING: signature changed — verify body
-    // Previous params: (plugin : * mut mjpPlugin)
-    // Previous return: ()
-    todo ! ()
+    // SAFETY: caller guarantees plugin is a valid pointer to mjpPlugin
+    unsafe {
+        std::ptr::write_bytes(plugin as *mut u8, 0, std::mem::size_of::<mjpPlugin>());
+    }
 }
 
 /// C: mjp_registerPlugin (engine/engine_plugin.h:29)
@@ -82,13 +82,13 @@ pub fn mjp_register_resource_provider(provider: *const mjpResourceProvider) -> i
 /// C: mjp_pluginCount (engine/engine_plugin.h:35)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjp_plugin_count() -> i32 {
-    todo ! ()
+    todo!("requires C++ GlobalTable<mjpPlugin>::GetSingleton().count()")
 }
 
 /// C: mjp_resourceProviderCount (engine/engine_plugin.h:38)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjp_resource_provider_count() -> i32 {
-    todo ! ()
+    todo!("requires C++ GlobalTable<mjpResourceProvider>::GetSingleton().count()")
 }
 
 /// C: mjp_getPlugin (engine/engine_plugin.h:41)
@@ -97,16 +97,16 @@ pub fn mjp_get_plugin(name: *const i8, slot: *mut i32) -> *const mjpPlugin {
     // WARNING: signature changed — verify body
     // Previous params: (name : * const i8, slot : * mut i32)
     // Previous return: * const mjpPlugin
-    todo ! ()
+    todo!("requires C++ GlobalTable<mjpPlugin>::GetSingleton().GetByKey()")
 }
 
 /// C: mjp_defaultResourceProvider (engine/engine_plugin.h:44)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjp_default_resource_provider(provider: *mut mjpResourceProvider) {
-    // WARNING: signature changed — verify body
-    // Previous params: (provider : * mut mjpResourceProvider)
-    // Previous return: ()
-    todo ! ()
+    // SAFETY: caller guarantees provider is a valid pointer to mjpResourceProvider
+    unsafe {
+        std::ptr::write_bytes(provider as *mut u8, 0, std::mem::size_of::<mjpResourceProvider>());
+    }
 }
 
 /// C: mjp_getResourceProvider (engine/engine_plugin.h:47)
@@ -115,7 +115,7 @@ pub fn mjp_get_resource_provider(resource_name: *const i8) -> *const mjpResource
     // WARNING: signature changed — verify body
     // Previous params: (resource_name : * const i8)
     // Previous return: * const mjpResourceProvider
-    todo ! ()
+    todo!("requires C++ GlobalTable<mjpResourceProvider>::GetSingleton().GetByKey()")
 }
 
 /// C: mjp_getPluginAtSlot (engine/engine_plugin.h:50)
@@ -124,7 +124,7 @@ pub fn mjp_get_plugin_at_slot(slot: i32) -> *const mjpPlugin {
     // WARNING: signature changed — verify body
     // Previous params: (slot : i32)
     // Previous return: * const mjpPlugin
-    todo ! ()
+    todo!("requires C++ GlobalTable<mjpPlugin>::GetSingleton().GetAtSlot()")
 }
 
 /// C: mjp_getResourceProviderAtSlot (engine/engine_plugin.h:53)
@@ -133,7 +133,7 @@ pub fn mjp_get_resource_provider_at_slot(slot: i32) -> *const mjpResourceProvide
     // WARNING: signature changed — verify body
     // Previous params: (slot : i32)
     // Previous return: * const mjpResourceProvider
-    todo ! ()
+    todo!("requires C++ GlobalTable<mjpResourceProvider>::GetSingleton().GetAtSlot()")
 }
 
 /// C: mj_getPluginConfig (engine/engine_plugin.h:57)
@@ -179,10 +179,10 @@ pub fn mjp_register_decoder(decoder: *const mjpDecoder) {
 /// C: mjp_defaultDecoder (engine/engine_plugin.h:69)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjp_default_decoder(decoder: *mut mjpDecoder) {
-    // WARNING: signature changed — verify body
-    // Previous params: (decoder : * mut mjpDecoder)
-    // Previous return: ()
-    todo ! ()
+    // SAFETY: caller guarantees decoder is a valid pointer to mjpDecoder
+    unsafe {
+        std::ptr::write_bytes(decoder as *mut u8, 0, std::mem::size_of::<mjpDecoder>());
+    }
 }
 
 /// C: mjp_findDecoder (engine/engine_plugin.h:72)
@@ -208,10 +208,10 @@ pub fn mjp_register_encoder(encoder: *const mjpEncoder) {
 /// C: mjp_defaultEncoder (engine/engine_plugin.h:78)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjp_default_encoder(encoder: *mut mjpEncoder) {
-    // WARNING: signature changed — verify body
-    // Previous params: (encoder : * mut mjpEncoder)
-    // Previous return: ()
-    todo ! ()
+    // SAFETY: caller guarantees encoder is a valid pointer to mjpEncoder
+    unsafe {
+        std::ptr::write_bytes(encoder as *mut u8, 0, std::mem::size_of::<mjpEncoder>());
+    }
 }
 
 /// C: mjp_findEncoder (engine/engine_plugin.h:81)
@@ -230,7 +230,7 @@ pub fn mjp_get_plugin_unsafe(name: *const i8, slot: *mut i32, nslot: i32) -> *co
     // WARNING: signature changed — verify body
     // Previous params: (name : * const i8, slot : * mut i32, nslot : i32)
     // Previous return: * const mjpPlugin
-    todo ! ()
+    todo!("requires C++ GlobalTable<mjpPlugin>::GetSingleton().GetByKey()")
 }
 
 /// C: mjp_getPluginAtSlotUnsafe (engine/engine_plugin.h:98)
@@ -239,6 +239,6 @@ pub fn mjp_get_plugin_at_slot_unsafe(slot: i32, nslot: i32) -> *const mjpPlugin 
     // WARNING: signature changed — verify body
     // Previous params: (slot : i32, nslot : i32)
     // Previous return: * const mjpPlugin
-    todo ! ()
+    todo!("requires C++ GlobalTable<mjpPlugin>::GetSingleton().GetAtSlot()")
 }
 

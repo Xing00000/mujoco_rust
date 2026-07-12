@@ -360,10 +360,63 @@ pub fn mju_band_diag(i: i32, ntotal: i32, nband: i32, ndense: i32) -> i32 {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mju_factor_lu(A: *mut f64, n: i32, pivot: *mut i32) -> i32 {
-    // WARNING: signature changed — verify body
-    // Previous params: (A : * mut f64, n : i32, pivot : * mut i32)
-    // Previous return: i32
-    todo ! ()
+    const MJMINVAL: f64 = 1e-15;
+    // SAFETY: caller guarantees A points to n*n f64, pivot to n i32
+    unsafe {
+        let n = n as usize;
+        let mut k: usize = 0;
+        while k < n {
+            // initialize pivot
+            *pivot.add(k) = k as i32;
+
+            // find pivot: max absolute value in column k, rows k..n-1
+            let mut maxval: f64 = (*A.add(k * n + k)).abs();
+            let mut maxrow: usize = k;
+            let mut i: usize = k + 1;
+            while i < n {
+                let val: f64 = (*A.add(i * n + k)).abs();
+                if val > maxval {
+                    maxval = val;
+                    maxrow = i;
+                }
+                i += 1;
+            }
+
+            // check singularity
+            if maxval < MJMINVAL {
+                return 0;
+            }
+
+            // swap rows k and maxrow
+            if maxrow != k {
+                *pivot.add(k) = maxrow as i32;
+                let mut j: usize = 0;
+                while j < n {
+                    let tmp = *A.add(k * n + j);
+                    *A.add(k * n + j) = *A.add(maxrow * n + j);
+                    *A.add(maxrow * n + j) = tmp;
+                    j += 1;
+                }
+            }
+
+            // compute multipliers and update trailing submatrix
+            let diaginv: f64 = 1.0 / *A.add(k * n + k);
+            i = k + 1;
+            while i < n {
+                *A.add(i * n + k) = *A.add(i * n + k) * diaginv;
+                let Aik: f64 = *A.add(i * n + k);
+                let mut j: usize = k + 1;
+                while j < n {
+                    *A.add(i * n + j) = *A.add(i * n + j) - Aik * *A.add(k * n + j);
+                    j += 1;
+                }
+                i += 1;
+            }
+
+            k += 1;
+        }
+        1
+    }
 }
 
 /// C: mju_solveLU (engine/engine_util_solve.h:105)
@@ -375,10 +428,45 @@ pub fn mju_factor_lu(A: *mut f64, n: i32, pivot: *mut i32) -> i32 {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mju_solve_lu(x: *mut f64, LU: *const f64, b: *const f64, pivot: *const i32, n: i32) {
-    // WARNING: signature changed — verify body
-    // Previous params: (x : * mut f64, LU : * const f64, b : * const f64, pivot : * const i32, n : i32)
-    // Previous return: ()
-    todo ! ()
+    use crate::engine::engine_util_blas::mju_copy;
+    // SAFETY: caller guarantees x[n], LU[n*n], b[n], pivot[n] are valid
+    unsafe {
+        let n = n as usize;
+        // copy b into x
+        mju_copy(x, b, n as i32);
+
+        // apply row permutation and forward substitution: solve L*y = P*b
+        let mut i: usize = 0;
+        while i < n {
+            // apply pivot swap
+            if *pivot.add(i) != i as i32 {
+                let pi = *pivot.add(i) as usize;
+                let tmp = *x.add(i);
+                *x.add(i) = *x.add(pi);
+                *x.add(pi) = tmp;
+            }
+            // subtract known terms
+            let mut j: usize = 0;
+            while j < i {
+                *x.add(i) = *x.add(i) - *LU.add(i * n + j) * *x.add(j);
+                j += 1;
+            }
+            i += 1;
+        }
+
+        // back substitution: solve U*x = y
+        let mut i: i32 = n as i32 - 1;
+        while i >= 0 {
+            let iu = i as usize;
+            let mut j: usize = iu + 1;
+            while j < n {
+                *x.add(iu) = *x.add(iu) - *LU.add(iu * n + j) * *x.add(j);
+                j += 1;
+            }
+            *x.add(iu) = *x.add(iu) / *LU.add(iu * n + iu);
+            i -= 1;
+        }
+    }
 }
 
 /// C: mju_factorLUSparse (engine/engine_util_solve.h:109)
