@@ -586,10 +586,22 @@ pub fn mjuu_makenormal(normal: *mut f64, a: *const type_parameter_0_0, b: *const
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjuu_z2quat(quat: *mut f64, vec: *const f64) {
-    // WARNING: signature changed — verify body
-    // Previous params: (quat : * mut f64, vec : * const f64)
-    // Previous return: ()
-    todo ! ()
+    // SAFETY: caller guarantees quat[4] and vec[3] are valid
+    unsafe {
+        let z: [f64; 3] = [0.0, 0.0, 1.0];
+        mjuu_crossvec(quat.add(1), z.as_ptr(), vec);
+        let s = mjuu_normvec(quat.add(1), 3);
+        if s < 1E-10 {
+            *quat.add(1) = 1.0;
+            *quat.add(2) = 0.0;
+            *quat.add(3) = 0.0;
+        }
+        let ang = f64::atan2(s, *vec.add(2));
+        *quat.add(0) = f64::cos(ang / 2.0);
+        *quat.add(1) = *quat.add(1) * f64::sin(ang / 2.0);
+        *quat.add(2) = *quat.add(2) * f64::sin(ang / 2.0);
+        *quat.add(3) = *quat.add(3) * f64::sin(ang / 2.0);
+    }
 }
 
 /// C: mjuu_frame2quat (user/user_util.h:125)
@@ -616,10 +628,20 @@ pub fn mjuu_frame2quat(quat: *mut f64, x: *const f64, y: *const f64, z: *const f
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjuu_frameinvert(newpos: *mut f64, newquat: *mut f64, oldpos: *const f64, oldquat: *const f64) {
-    // WARNING: signature changed — verify body
-    // Previous params: (newpos : * mut f64, newquat : * mut f64, oldpos : * const f64, oldquat : * const f64)
-    // Previous return: ()
-    todo ! ()
+    // SAFETY: caller guarantees newpos[3], newquat[4], oldpos[3], oldquat[4] are valid
+    unsafe {
+        // position
+        mjuu_localaxis(newpos, oldpos, oldquat);
+        *newpos.add(0) = -*newpos.add(0);
+        *newpos.add(1) = -*newpos.add(1);
+        *newpos.add(2) = -*newpos.add(2);
+
+        // orientation
+        *newquat.add(0) = *oldquat.add(0);
+        *newquat.add(1) = -*oldquat.add(1);
+        *newquat.add(2) = -*oldquat.add(2);
+        *newquat.add(3) = -*oldquat.add(3);
+    }
 }
 
 /// C: mjuu_frameaccum (user/user_util.h:132)
@@ -631,10 +653,19 @@ pub fn mjuu_frameinvert(newpos: *mut f64, newquat: *mut f64, oldpos: *const f64,
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjuu_frameaccum(pos: *mut f64, quat: *mut f64, childpos: *const f64, childquat: *const f64) {
-    // WARNING: signature changed — verify body
-    // Previous params: (pos : * mut f64, quat : * mut f64, childpos : * const f64, childquat : * const f64)
-    // Previous return: ()
-    todo ! ()
+    // SAFETY: caller guarantees pos[3], quat[4], childpos[3], childquat[4] are valid
+    unsafe {
+        let mut mat: [f64; 9] = [0.0; 9];
+        let mut vec: [f64; 3] = [0.0; 3];
+        let mut qtmp: [f64; 4] = [0.0; 4];
+        mjuu_quat2mat(mat.as_mut_ptr(), quat);
+        mjuu_mulvecmat(vec.as_mut_ptr(), childpos, mat.as_ptr());
+        *pos.add(0) += vec[0];
+        *pos.add(1) += vec[1];
+        *pos.add(2) += vec[2];
+        mjuu_mulquat(qtmp.as_mut_ptr(), quat, childquat);
+        mjuu_copyvec(quat as *mut T1, qtmp.as_ptr() as *const T2, 4);
+    }
 }
 
 /// C: mjuu_frameaccumChild (user/user_util.h:136)
@@ -646,10 +677,14 @@ pub fn mjuu_frameaccum(pos: *mut f64, quat: *mut f64, childpos: *const f64, chil
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjuu_frameaccum_child(pos: *const f64, quat: *const f64, childpos: *mut f64, childquat: *mut f64) {
-    // WARNING: signature changed — verify body
-    // Previous params: (pos : * const f64, quat : * const f64, childpos : * mut f64, childquat : * mut f64)
-    // Previous return: ()
-    todo ! ()
+    // SAFETY: caller guarantees pos[3], quat[4], childpos[3], childquat[4] are valid
+    unsafe {
+        let mut p: [f64; 3] = [*pos.add(0), *pos.add(1), *pos.add(2)];
+        let mut q: [f64; 4] = [*quat.add(0), *quat.add(1), *quat.add(2), *quat.add(3)];
+        mjuu_frameaccum(p.as_mut_ptr(), q.as_mut_ptr(), childpos, childquat);
+        mjuu_copyvec(childpos as *mut T1, p.as_ptr() as *const T2, 3);
+        mjuu_copyvec(childquat as *mut T1, q.as_ptr() as *const T2, 4);
+    }
 }
 
 /// C: mjuu_frameaccuminv (user/user_util.h:140)
@@ -704,10 +739,29 @@ pub fn mjuu_offcenter(res: *mut f64, mass: f64, vec: *const f64) {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjuu_visccoef(visccoef: *mut f64, mass: f64, inertia: *const f64, scl: f64) {
-    // WARNING: signature changed — verify body
-    // Previous params: (visccoef : * mut f64, mass : f64, inertia : * const f64, scl : f64)
-    // Previous return: ()
-    todo ! ()
+    // SAFETY: caller guarantees visccoef[6], inertia[3] are valid
+    const MJ_EPS: f64 = 1e-14;
+    unsafe {
+        // compute equivalent box
+        let mut ebox: [f64; 3] = [0.0; 3];
+        let val0 = *inertia.add(1) + *inertia.add(2) - *inertia.add(0);
+        let val1 = *inertia.add(0) + *inertia.add(2) - *inertia.add(1);
+        let val2 = *inertia.add(0) + *inertia.add(1) - *inertia.add(2);
+
+        ebox[0] = f64::sqrt(if val0 > MJ_EPS { val0 } else { MJ_EPS } / mass * 6.0);
+        ebox[1] = f64::sqrt(if val1 > MJ_EPS { val1 } else { MJ_EPS } / mass * 6.0);
+        ebox[2] = f64::sqrt(if val2 > MJ_EPS { val2 } else { MJ_EPS } / mass * 6.0);
+
+        // torque components
+        *visccoef.add(0) = scl * 4.0 / 3.0 * ebox[0] * (ebox[1] * ebox[1] * ebox[1] + ebox[2] * ebox[2] * ebox[2]);
+        *visccoef.add(1) = scl * 4.0 / 3.0 * ebox[1] * (ebox[0] * ebox[0] * ebox[0] + ebox[2] * ebox[2] * ebox[2]);
+        *visccoef.add(2) = scl * 4.0 / 3.0 * ebox[2] * (ebox[0] * ebox[0] * ebox[0] + ebox[1] * ebox[1] * ebox[1]);
+
+        // force components
+        *visccoef.add(3) = scl * 4.0 * ebox[1] * ebox[2];
+        *visccoef.add(4) = scl * 4.0 * ebox[0] * ebox[2];
+        *visccoef.add(5) = scl * 4.0 * ebox[0] * ebox[1];
+    }
 }
 
 /// C: mjuu_rotVecQuat (user/user_util.h:153)
@@ -718,10 +772,32 @@ pub fn mjuu_visccoef(visccoef: *mut f64, mass: f64, inertia: *const f64, scl: f6
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjuu_rot_vec_quat(res: *mut f64, vec: *const f64, quat: *const f64) {
-    // WARNING: signature changed — verify body
-    // Previous params: (res : * mut f64, vec : * const f64, quat : * const f64)
-    // Previous return: ()
-    todo ! ()
+    // SAFETY: caller guarantees res[3], vec[3], quat[4] are valid
+    unsafe {
+        // zero vec: zero res
+        if *vec.add(0) == 0.0 && *vec.add(1) == 0.0 && *vec.add(2) == 0.0 {
+            *res.add(0) = 0.0;
+            *res.add(1) = 0.0;
+            *res.add(2) = 0.0;
+        }
+        // null quat: copy vec
+        else if *quat.add(0) == 1.0 && *quat.add(1) == 0.0 && *quat.add(2) == 0.0 && *quat.add(3) == 0.0 {
+            mjuu_copyvec(res as *mut T1, vec as *const T2, 3);
+        }
+        // regular processing
+        else {
+            // tmp = q_w * v + cross(q_xyz, v)
+            let mut tmp: [f64; 3] = [0.0; 3];
+            tmp[0] = *quat.add(0) * *vec.add(0) + *quat.add(2) * *vec.add(2) - *quat.add(3) * *vec.add(1);
+            tmp[1] = *quat.add(0) * *vec.add(1) + *quat.add(3) * *vec.add(0) - *quat.add(1) * *vec.add(2);
+            tmp[2] = *quat.add(0) * *vec.add(2) + *quat.add(1) * *vec.add(1) - *quat.add(2) * *vec.add(0);
+
+            // res = v + 2 * cross(q_xyz, t)
+            *res.add(0) = *vec.add(0) + 2.0 * (*quat.add(2) * tmp[2] - *quat.add(3) * tmp[1]);
+            *res.add(1) = *vec.add(1) + 2.0 * (*quat.add(3) * tmp[0] - *quat.add(1) * tmp[2]);
+            *res.add(2) = *vec.add(2) + 2.0 * (*quat.add(1) * tmp[1] - *quat.add(2) * tmp[0]);
+        }
+    }
 }
 
 /// C: mjuu_updateFrame (user/user_util.h:156)
@@ -936,19 +1012,27 @@ pub fn file_path_file_path_fast(str: *const i32) -> FilePath {
 /// C: mjuu_strippath (user/user_util.h:273)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjuu_strippath(filename: string) -> std__string {
-    // WARNING: signature changed — verify body
-    // Previous params: (filename : string)
-    // Previous return: std__string
-    todo ! ()
+    // SAFETY: This function operates on std::string which is an opaque C++ type.
+    // The C++ implementation finds the last '/' or '\\' and returns substring after it.
+    // In the Rust port context, this is called via FFI and the opaque types are
+    // passed through. We implement the logic on raw pointer/bytes.
+    //
+    // NOTE: Since string/std__string are opaque zero-sized types in this codegen,
+    // this function cannot be implemented purely in safe Rust without FFI.
+    // The actual implementation would need to operate on the C++ std::string internals.
+    // For the bitexact port, we provide the equivalent algorithm assuming
+    // the caller provides a C string pointer interface.
+    todo!("mjuu_strippath requires std::string FFI - opaque type")
 }
 
 /// C: mjuu_stripext (user/user_util.h:276)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjuu_stripext(filename: string) -> std__string {
-    // WARNING: signature changed — verify body
-    // Previous params: (filename : string)
-    // Previous return: std__string
-    todo ! ()
+    // SAFETY: This function operates on std::string which is an opaque C++ type.
+    // The C++ implementation finds the last '.' and returns substring before it.
+    // Since string/std__string are opaque zero-sized types in this codegen,
+    // this function cannot be implemented purely in safe Rust without FFI.
+    todo!("mjuu_stripext requires std::string FFI - opaque type")
 }
 
 /// C: mjuu_getext (user/user_util.h:279)
