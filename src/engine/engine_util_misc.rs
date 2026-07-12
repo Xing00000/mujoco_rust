@@ -261,10 +261,51 @@ pub fn mju_muscle_gain_length(length: f64, lmin: f64, lmax: f64) -> f64 {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mju_muscle_gain(len: f64, vel: f64, lengthrange: *const f64, acc0: f64, prm: *const f64) -> f64 {
-    // NOTE: signature changed from previous IR version
-    // Previous params: (len : f64, vel : f64, lengthrange : * const f64, acc0 : f64, prm : * const f64)
-    // Previous return: f64
-    todo!("re-translate: params renamed")
+    const MJ_MINVAL: f64 = 1E-15_f64;
+
+    // SAFETY: caller guarantees lengthrange[2] and prm[9] are valid
+    unsafe {
+        // unpack parameters
+        let range0 = *prm.add(0);
+        let range1 = *prm.add(1);
+        let mut force = *prm.add(2);
+        let scale = *prm.add(3);
+        let lmin = *prm.add(4);
+        let lmax = *prm.add(5);
+        let vmax = *prm.add(6);
+        let fvmax = *prm.add(8);
+
+        // scale force if negative
+        if force < 0.0 {
+            force = scale / f64::max(MJ_MINVAL, acc0);
+        }
+
+        // optimum length
+        let L0 = (*lengthrange.add(1) - *lengthrange.add(0)) / f64::max(MJ_MINVAL, range1 - range0);
+
+        // normalized length and velocity
+        let L = range0 + (len - *lengthrange.add(0)) / f64::max(MJ_MINVAL, L0);
+        let V = vel / f64::max(MJ_MINVAL, L0 * vmax);
+
+        // length curve
+        let FL = mju_muscle_gain_length(L, lmin, lmax);
+
+        // velocity curve
+        let FV: f64;
+        let y = fvmax - 1.0;
+        if V <= -1.0 {
+            FV = 0.0;
+        } else if V <= 0.0 {
+            FV = (V + 1.0) * (V + 1.0);
+        } else if V <= y {
+            FV = fvmax - (y - V) * (y - V) / f64::max(MJ_MINVAL, y);
+        } else {
+            FV = fvmax;
+        }
+
+        // compute FVL and scale, make it negative
+        -force * FL * FV
+    }
 }
 
 /// C: mju_muscleBias (engine/engine_util_misc.h:43)
@@ -275,10 +316,41 @@ pub fn mju_muscle_gain(len: f64, vel: f64, lengthrange: *const f64, acc0: f64, p
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mju_muscle_bias(len: f64, lengthrange: *const f64, acc0: f64, prm: *const f64) -> f64 {
-    // NOTE: signature changed from previous IR version
-    // Previous params: (len : f64, lengthrange : * const f64, acc0 : f64, prm : * const f64)
-    // Previous return: f64
-    todo!("re-translate: params renamed")
+    const MJ_MINVAL: f64 = 1E-15_f64;
+
+    // SAFETY: caller guarantees lengthrange[2] and prm[9] are valid
+    unsafe {
+        // unpack parameters
+        let range0 = *prm.add(0);
+        let range1 = *prm.add(1);
+        let mut force = *prm.add(2);
+        let scale = *prm.add(3);
+        let lmax = *prm.add(5);
+        let fpmax = *prm.add(7);
+
+        // scale force if negative
+        if force < 0.0 {
+            force = scale / f64::max(MJ_MINVAL, acc0);
+        }
+
+        // optimum length
+        let L0 = (*lengthrange.add(1) - *lengthrange.add(0)) / f64::max(MJ_MINVAL, range1 - range0);
+
+        // normalized length
+        let L = range0 + (len - *lengthrange.add(0)) / f64::max(MJ_MINVAL, L0);
+
+        // half-quadratic to (L0+lmax)/2, linear beyond
+        let b = 0.5 * (1.0 + lmax);
+        if L <= 1.0 {
+            0.0
+        } else if L <= b {
+            let x = (L - 1.0) / f64::max(MJ_MINVAL, b - 1.0);
+            -force * fpmax * 0.5 * x * x
+        } else {
+            let x = (L - b) / f64::max(MJ_MINVAL, b - 1.0);
+            -force * fpmax * (0.5 + x)
+        }
+    }
 }
 
 /// C: mju_muscleDynamicsTimescale (engine/engine_util_misc.h:47)
@@ -698,10 +770,16 @@ pub fn mju_history_read(buf: *const f64, n: i32, dim: i32, res: *mut f64, t: f64
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mju_encode_pyramid(pyramid: *mut f64, force: *const f64, mu: *const f64, dim: i32) {
-    // NOTE: signature changed from previous IR version
-    // Previous params: (pyramid : * mut f64, force : * const f64, mu : * const f64, dim : i32)
-    // Previous return: ()
-    todo!("re-translate: params renamed")
+    // SAFETY: caller guarantees pyramid, force, mu point to valid arrays of appropriate size
+    unsafe {
+        let a = *force.add(0) / ((dim - 1) as f64);
+
+        for i in 0..(dim - 1) as usize {
+            let b = mju_min(a, *force.add(i + 1) / *mu.add(i));
+            *pyramid.add(2 * i) = 0.5 * (a + b);
+            *pyramid.add(2 * i + 1) = 0.5 * (a - b);
+        }
+    }
 }
 
 /// C: mju_decodePyramid (engine/engine_util_misc.h:204)
@@ -739,10 +817,33 @@ pub fn mju_decode_pyramid(force: *mut f64, pyramid: *const f64, mu: *const f64, 
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mju_spring_damper(pos0: f64, vel0: f64, Kp: f64, Kv: f64, dt: f64) -> f64 {
-    // NOTE: signature changed from previous IR version
-    // Previous params: (pos0 : f64, vel0 : f64, Kp : f64, Kv : f64, dt : f64)
-    // Previous return: f64
-    todo!("re-translate: params renamed")
+    const MJ_MINVAL: f64 = 1E-15_f64;
+
+    // determinant of characteristic equation
+    let det: f64 = Kv * Kv - 4.0 * Kp;
+
+    // overdamping
+    if det > MJ_MINVAL {
+        let w: f64 = f64::sqrt(det) / 2.0;
+        let r1: f64 = -Kv / 2.0 + w;
+        let r2: f64 = -Kv / 2.0 - w;
+        let c1: f64 = (pos0 * r2 - vel0) / (r2 - r1);
+        let c2: f64 = (pos0 * r1 - vel0) / (r1 - r2);
+        c1 * f64::exp(r1 * dt) + c2 * f64::exp(r2 * dt)
+    }
+    // critical damping
+    else if det <= MJ_MINVAL && det >= -MJ_MINVAL {
+        let c1: f64 = pos0;
+        let c2: f64 = vel0 + Kv * c1 / 2.0;
+        f64::exp(-Kv * dt / 2.0) * (c1 + c2 * dt)
+    }
+    // underdamping
+    else {
+        let w: f64 = f64::sqrt(f64::abs(det)) / 2.0;
+        let c1: f64 = pos0;
+        let c2: f64 = (vel0 + Kv * c1 / 2.0) / w;
+        f64::exp(-Kv * dt / 2.0) * (c1 * f64::cos(w * dt) + c2 * f64::sin(w * dt))
+    }
 }
 
 /// C: mju_outsideBox (engine/engine_util_misc.h:213)
@@ -1192,10 +1293,19 @@ pub fn mju_strncpy(dst: *mut i8, src: *const i8, n: i32) -> *mut i8 {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mju_poly_force(linear: f64, poly: *const f64, x: f64, n: i32, flg_odd: i32) -> f64 {
-    // NOTE: signature changed from previous IR version
-    // Previous params: (linear : f64, poly : * const f64, x : f64, n : i32, flg_odd : i32)
-    // Previous return: f64
-    todo!("re-translate: params renamed")
+    // SAFETY: poly points to at least n f64 (caller contract)
+    unsafe {
+        let x = if flg_odd != 0 { f64::abs(x) } else { x };
+        let mut res: f64 = linear;
+
+        let mut xpow: f64 = 1.0;
+        for i in 0..n as usize {
+            xpow *= x;
+            res += *poly.add(i) * xpow;
+        }
+
+        res
+    }
 }
 
 /// C: mjd_xPolyForce (engine/engine_util_misc.h:329)
