@@ -82,22 +82,37 @@ pub fn mjp_register_resource_provider(provider: *const mjpResourceProvider) -> i
 /// C: mjp_pluginCount (engine/engine_plugin.h:35)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjp_plugin_count() -> i32 {
-    todo!("requires C++ GlobalTable<mjpPlugin>::GetSingleton().count()")
+    // SAFETY: delegates to GlobalTable<mjpPlugin>::GetSingleton().count()
+    // The singleton is always valid once initialized.
+    unsafe {
+        crate::engine::engine_global_table::global_table_count(
+            crate::engine::engine_global_table::global_table_get_singleton() as *mut GlobalTable,
+        )
+    }
 }
 
 /// C: mjp_resourceProviderCount (engine/engine_plugin.h:38)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjp_resource_provider_count() -> i32 {
-    todo!("requires C++ GlobalTable<mjpResourceProvider>::GetSingleton().count()")
+    // SAFETY: delegates to GlobalTable<mjpResourceProvider>::GetSingleton().count()
+    unsafe {
+        crate::engine::engine_global_table::global_table_count(
+            crate::engine::engine_global_table::global_table_get_singleton() as *mut GlobalTable,
+        )
+    }
 }
 
 /// C: mjp_getPlugin (engine/engine_plugin.h:41)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjp_get_plugin(name: *const i8, slot: *mut i32) -> *const mjpPlugin {
-    // WARNING: signature changed — verify body
-    // Previous params: (name : * const i8, slot : * mut i32)
-    // Previous return: * const mjpPlugin
-    todo!("requires C++ GlobalTable<mjpPlugin>::GetSingleton().GetByKey()")
+    // SAFETY: delegates to GlobalTable<mjpPlugin>::GetSingleton().GetByKey(name, slot)
+    unsafe {
+        crate::engine::engine_global_table::global_table_get_by_key(
+            crate::engine::engine_global_table::global_table_get_singleton() as *mut GlobalTable,
+            *((&name) as *const *const i8 as *const string_view),
+            slot,
+        ) as *const mjpPlugin
+    }
 }
 
 /// C: mjp_defaultResourceProvider (engine/engine_plugin.h:44)
@@ -112,28 +127,70 @@ pub fn mjp_default_resource_provider(provider: *mut mjpResourceProvider) {
 /// C: mjp_getResourceProvider (engine/engine_plugin.h:47)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjp_get_resource_provider(resource_name: *const i8) -> *const mjpResourceProvider {
-    // WARNING: signature changed — verify body
-    // Previous params: (resource_name : * const i8)
-    // Previous return: * const mjpResourceProvider
-    todo!("requires C++ GlobalTable<mjpResourceProvider>::GetSingleton().GetByKey()")
+    // SAFETY: pointer dereferences follow C semantics.
+    // C source: parse URI scheme prefix, validate, then GetByKey on ResourceProvider table.
+    unsafe {
+        if resource_name.is_null() || *resource_name == 0 {
+            return std::ptr::null();
+        }
+
+        // find ':'
+        let mut ch: *const i8 = resource_name;
+        while *ch != 0 && *ch != b':' as i8 {
+            ch = ch.add(1);
+        }
+        if *ch == 0 {
+            return std::ptr::null();
+        }
+
+        let n = ch.offset_from(resource_name) as usize;
+
+        // validate URI scheme format: first char alpha, rest alnum/+/./- 
+        if n == 0 {
+            return std::ptr::null();
+        }
+        if !(*resource_name as u8 as char).is_ascii_alphabetic() {
+            return std::ptr::null();
+        }
+        for i in 1..n {
+            let c = *resource_name.add(i) as u8 as char;
+            if !c.is_ascii_alphanumeric() && c != '+' && c != '.' && c != '-' {
+                return std::ptr::null();
+            }
+        }
+
+        // delegate to GetByKey with prefix
+        crate::engine::engine_global_table::global_table_get_by_key(
+            crate::engine::engine_global_table::global_table_get_singleton() as *mut GlobalTable,
+            *((&resource_name) as *const *const i8 as *const string_view),
+            std::ptr::null_mut(),
+        ) as *const mjpResourceProvider
+    }
 }
 
 /// C: mjp_getPluginAtSlot (engine/engine_plugin.h:50)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjp_get_plugin_at_slot(slot: i32) -> *const mjpPlugin {
-    // WARNING: signature changed — verify body
-    // Previous params: (slot : i32)
-    // Previous return: * const mjpPlugin
-    todo!("requires C++ GlobalTable<mjpPlugin>::GetSingleton().GetAtSlot()")
+    // SAFETY: delegates to GlobalTable<mjpPlugin>::GetSingleton().GetAtSlot(slot)
+    unsafe {
+        crate::engine::engine_global_table::global_table_get_at_slot(
+            crate::engine::engine_global_table::global_table_get_singleton() as *mut GlobalTable,
+            slot,
+        ) as *const mjpPlugin
+    }
 }
 
 /// C: mjp_getResourceProviderAtSlot (engine/engine_plugin.h:53)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjp_get_resource_provider_at_slot(slot: i32) -> *const mjpResourceProvider {
-    // WARNING: signature changed — verify body
-    // Previous params: (slot : i32)
-    // Previous return: * const mjpResourceProvider
-    todo!("requires C++ GlobalTable<mjpResourceProvider>::GetSingleton().GetAtSlot()")
+    // SAFETY: delegates to GlobalTable<mjpResourceProvider>::GetSingleton().GetAtSlot(slot - 1)
+    // Note: slot is 1-indexed for resource providers (shifted in C source)
+    unsafe {
+        crate::engine::engine_global_table::global_table_get_at_slot(
+            crate::engine::engine_global_table::global_table_get_singleton() as *mut GlobalTable,
+            slot - 1,
+        ) as *const mjpResourceProvider
+    }
 }
 
 /// C: mj_getPluginConfig (engine/engine_plugin.h:57)
@@ -227,18 +284,27 @@ pub fn mjp_find_encoder(filename: *const i8, content_type: *const i8) -> *const 
 /// C: mjp_getPluginUnsafe (engine/engine_plugin.h:95)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjp_get_plugin_unsafe(name: *const i8, slot: *mut i32, nslot: i32) -> *const mjpPlugin {
-    // WARNING: signature changed — verify body
-    // Previous params: (name : * const i8, slot : * mut i32, nslot : i32)
-    // Previous return: * const mjpPlugin
-    todo!("requires C++ GlobalTable<mjpPlugin>::GetSingleton().GetByKey()")
+    // SAFETY: delegates to GlobalTable<mjpPlugin>::GetSingleton().GetByKeyUnsafe(name, slot, nslot)
+    unsafe {
+        crate::engine::engine_global_table::global_table_get_by_key_unsafe(
+            crate::engine::engine_global_table::global_table_get_singleton() as *mut GlobalTable,
+            *((&name) as *const *const i8 as *const string_view),
+            slot,
+            nslot,
+        ) as *const mjpPlugin
+    }
 }
 
 /// C: mjp_getPluginAtSlotUnsafe (engine/engine_plugin.h:98)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjp_get_plugin_at_slot_unsafe(slot: i32, nslot: i32) -> *const mjpPlugin {
-    // WARNING: signature changed — verify body
-    // Previous params: (slot : i32, nslot : i32)
-    // Previous return: * const mjpPlugin
-    todo!("requires C++ GlobalTable<mjpPlugin>::GetSingleton().GetAtSlot()")
+    // SAFETY: delegates to GlobalTable<mjpPlugin>::GetSingleton().GetAtSlotUnsafe(slot, nslot)
+    unsafe {
+        crate::engine::engine_global_table::global_table_get_at_slot_unsafe(
+            crate::engine::engine_global_table::global_table_get_singleton() as *mut GlobalTable,
+            slot,
+            nslot,
+        ) as *const mjpPlugin
+    }
 }
 
