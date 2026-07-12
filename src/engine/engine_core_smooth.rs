@@ -230,10 +230,103 @@ pub fn mj_factor_m(m: *const mjModel, d: *mut mjData) {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_solve_ld_legacy(m: *const mjModel, x: *mut f64, n: i32, qLD: *const f64, qLDiagInv: *const f64) {
-    // WARNING: signature changed — verify body
-    // Previous params: (m : * const mjModel, x : * mut f64, n : i32, qLD : * const f64, qLDiagInv : * const f64)
-    // Previous return: ()
-    todo ! ()
+    // SAFETY: caller guarantees valid model pointer and arrays
+    unsafe {
+        let dof_Madr = (*m).dof_Madr;
+        let dof_parentid = (*m).dof_parentid;
+        let nv = (*m).nv as i32;
+
+        if n == 1 {
+            // x <- inv(L') * x; skip simple, exploit sparsity
+            let mut i: i32 = nv - 1;
+            while i >= 0 {
+                if *(*m).dof_simplenum.add(i as usize) == 0 && *x.add(i as usize) != 0.0 {
+                    let mut Madr_ij = *dof_Madr.add(i as usize) + 1;
+                    let mut j = *dof_parentid.add(i as usize);
+                    while j >= 0 {
+                        *x.add(j as usize) -= *qLD.add(Madr_ij as usize) * *x.add(i as usize);
+                        Madr_ij += 1;
+                        j = *dof_parentid.add(j as usize);
+                    }
+                }
+                i -= 1;
+            }
+
+            // x <- inv(D) * x
+            i = 0;
+            while i < nv {
+                *x.add(i as usize) *= *qLDiagInv.add(i as usize);
+                i += 1;
+            }
+
+            // x <- inv(L) * x; skip simple
+            i = 0;
+            while i < nv {
+                if *(*m).dof_simplenum.add(i as usize) == 0 {
+                    let mut Madr_ij = *dof_Madr.add(i as usize) + 1;
+                    let mut j = *dof_parentid.add(i as usize);
+                    while j >= 0 {
+                        *x.add(i as usize) -= *qLD.add(Madr_ij as usize) * *x.add(j as usize);
+                        Madr_ij += 1;
+                        j = *dof_parentid.add(j as usize);
+                    }
+                }
+                i += 1;
+            }
+        } else {
+            // x <- inv(L') * x; skip simple
+            let mut i: i32 = nv - 1;
+            while i >= 0 {
+                if *(*m).dof_simplenum.add(i as usize) == 0 {
+                    let mut Madr_ij = *dof_Madr.add(i as usize) + 1;
+                    let mut j = *dof_parentid.add(i as usize);
+                    while j >= 0 {
+                        let mut offset: i32 = 0;
+                        while offset < n * nv {
+                            let tmp = *x.add((i + offset) as usize);
+                            if tmp != 0.0 {
+                                *x.add((j + offset) as usize) -= *qLD.add(Madr_ij as usize) * tmp;
+                            }
+                            offset += nv;
+                        }
+                        Madr_ij += 1;
+                        j = *dof_parentid.add(j as usize);
+                    }
+                }
+                i -= 1;
+            }
+
+            // x <- inv(D) * x
+            i = 0;
+            while i < nv {
+                let mut offset: i32 = 0;
+                while offset < n * nv {
+                    *x.add((i + offset) as usize) *= *qLDiagInv.add(i as usize);
+                    offset += nv;
+                }
+                i += 1;
+            }
+
+            // x <- inv(L) * x; skip simple
+            i = 0;
+            while i < nv {
+                if *(*m).dof_simplenum.add(i as usize) == 0 {
+                    let mut Madr_ij = *dof_Madr.add(i as usize) + 1;
+                    let mut j = *dof_parentid.add(i as usize);
+                    while j >= 0 {
+                        let mut offset: i32 = 0;
+                        while offset < n * nv {
+                            *x.add((i + offset) as usize) -= *qLD.add(Madr_ij as usize) * *x.add((j + offset) as usize);
+                            offset += nv;
+                        }
+                        Madr_ij += 1;
+                        j = *dof_parentid.add(j as usize);
+                    }
+                }
+                i += 1;
+            }
+        }
+    }
 }
 
 /// C: mj_solveLD (engine/engine_core_smooth.h:84)
@@ -346,10 +439,16 @@ pub fn mj_solve_ld(x: *mut f64, qLD: *const f64, qLDiagInv: *const f64, nv: i32,
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_solve_m(m: *const mjModel, d: *mut mjData, x: *mut f64, y: *const f64, n: i32) {
-    // WARNING: signature changed — verify body
-    // Previous params: (m : * const mjModel, d : * mut mjData, x : * mut f64, y : * const f64, n : i32)
-    // Previous return: ()
-    todo ! ()
+    use crate::engine::engine_util_blas::mju_copy;
+    // SAFETY: caller guarantees valid model/data pointers
+    unsafe {
+        let nv = (*m).nv as i32;
+        if x != y as *mut f64 {
+            mju_copy(x, y, n * nv);
+        }
+        mj_solve_ld(x, (*d).qLD, (*d).qLDiagInv, nv, n,
+                    (*m).M_rownnz, (*m).M_rowadr, (*m).M_colind, std::ptr::null());
+    }
 }
 
 /// C: mj_solveM2 (engine/engine_core_smooth.h:91)

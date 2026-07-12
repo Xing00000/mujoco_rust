@@ -598,10 +598,43 @@ pub fn mju_raydata_size(dataspec: i32) -> i32 {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mju_cam_intrinsics(m: *const mjModel, camid: i32, fx: *mut f64, fy: *mut f64, cx: *mut f64, cy: *mut f64, ortho_extent: *mut f64) {
-    // WARNING: signature changed — verify body
-    // Previous params: (m : * const mjModel, camid : i32, fx : * mut f64, fy : * mut f64, cx : * mut f64, cy : * mut f64, ortho_extent : * mut f64)
-    // Previous return: ()
-    todo ! ()
+    const MJPI: f64 = std::f64::consts::PI;
+    const MJ_PROJ_PERSPECTIVE: i32 = 0;
+    const MJ_PROJ_ORTHOGRAPHIC: i32 = 1;
+    // SAFETY: caller guarantees model and output pointers are valid
+    unsafe {
+        let width = *(*m).cam_resolution.add((2 * camid) as usize) as f64;
+        let height = *(*m).cam_resolution.add((2 * camid + 1) as usize) as f64;
+        let sensorsize = (*m).cam_sensorsize.add((2 * camid) as usize);
+        let intrinsic = (*m).cam_intrinsic.add((4 * camid) as usize);
+        let projection = *(*m).cam_projection.add(camid as usize) as i32;
+
+        if projection == MJ_PROJ_PERSPECTIVE {
+            if *sensorsize.add(0) != 0.0 && *sensorsize.add(1) != 0.0 {
+                // intrinsic-based perspective camera
+                *fx = *intrinsic.add(0) as f64 / *sensorsize.add(0) as f64 * width;
+                *fy = *intrinsic.add(1) as f64 / *sensorsize.add(1) as f64 * height;
+                *cx = *intrinsic.add(2) as f64 / *sensorsize.add(0) as f64 * width;
+                *cy = *intrinsic.add(3) as f64 / *sensorsize.add(1) as f64 * height;
+            } else {
+                // fovy-based perspective camera
+                let val = 0.5 / (*(*m).cam_fovy.add(camid as usize) * MJPI / 360.0).tan() * height;
+                *fx = val;
+                *fy = val;
+                *cx = width / 2.0;
+                *cy = height / 2.0;
+            }
+        } else if projection == MJ_PROJ_ORTHOGRAPHIC {
+            // orthographic
+            *fx = width / 2.0;
+            *fy = height / 2.0;
+            *cx = *fx;
+            *cy = *fy;
+        }
+
+        // extent only used for orthographic cameras
+        *ortho_extent = *(*m).cam_fovy.add(camid as usize);
+    }
 }
 
 /// C: mj_readCtrl (engine/engine_support.h:141)
