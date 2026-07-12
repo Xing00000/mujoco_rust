@@ -1213,28 +1213,47 @@ pub fn mju_scatter(res: *mut f64, vec: *const f64, ind: *const i32, n: i32) {
 /// C: mju_gatherInt (engine/engine_util_misc.h:294)
 #[allow(unused_variables, non_snake_case)]
 pub fn mju_gather_int(res: *mut i32, vec: *const i32, ind: *const i32, n: i32) {
-    // NOTE: signature changed from previous IR version
-    // Previous params: (res : * mut i32, vec : * const i32, ind : * const i32, n : i32)
-    // Previous return: ()
-    todo!("re-translate: params renamed")
+    // SAFETY: caller guarantees all pointers valid for n elements
+    unsafe {
+        for i in 0..n as usize {
+            *res.add(i) = *vec.add(*ind.add(i) as usize);
+        }
+    }
 }
 
 /// C: mju_scatterInt (engine/engine_util_misc.h:297)
 #[allow(unused_variables, non_snake_case)]
 pub fn mju_scatter_int(res: *mut i32, vec: *const i32, ind: *const i32, n: i32) {
-    // NOTE: signature changed from previous IR version
-    // Previous params: (res : * mut i32, vec : * const i32, ind : * const i32, n : i32)
-    // Previous return: ()
-    todo!("re-translate: params renamed")
+    // SAFETY: caller guarantees all pointers valid for n elements
+    unsafe {
+        for i in 0..n as usize {
+            *res.add(*ind.add(i) as usize) = *vec.add(i);
+        }
+    }
 }
 
 /// C: mju_sparseMap (engine/engine_util_misc.h:300)
 #[allow(unused_variables, non_snake_case)]
 pub fn mju_sparse_map(map: *mut i32, nr: i32, res_rowadr: *const i32, res_rownnz: *const i32, res_colind: *const i32, src_rowadr: *const i32, src_rownnz: *const i32, src_colind: *const i32) {
-    // NOTE: signature changed from previous IR version
-    // Previous params: (map : * mut i32, nr : i32, res_rowadr : * const i32, res_rownnz : * const i32, res_colind : * const i32, src_rowadr : * const i32, src_rownnz : * const i32, src_colind : * const i32)
-    // Previous return: ()
-    todo!("re-translate: params renamed")
+    // SAFETY: caller guarantees all pointers are valid for the sparse matrix dimensions
+    unsafe {
+        for i in 0..nr as usize {
+            let mut res_cursor = *res_rowadr.add(i);
+            let res_end = res_cursor + *res_rownnz.add(i);
+            let mut src_cursor = *src_rowadr.add(i);
+            let src_end = src_cursor + *src_rownnz.add(i);
+
+            while res_cursor < res_end {
+                let res_col = *res_colind.add(res_cursor as usize);
+                while src_cursor < src_end && *src_colind.add(src_cursor as usize) < res_col {
+                    src_cursor += 1;
+                }
+                *map.add(res_cursor as usize) = src_cursor;
+                res_cursor += 1;
+                src_cursor += 1;
+            }
+        }
+    }
 }
 
 /// C: mju_lower2SymMap (engine/engine_util_misc.h:306)
