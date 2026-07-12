@@ -518,13 +518,38 @@ pub fn mju_inside_geom(pos: *const f64, mat: *const f64, size: *const f64, r#typ
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mju_cam_pixel_ray(origin: *mut f64, direction: *mut f64, cam_xpos: *const f64, cam_xmat: *const f64, col: i32, row: i32, fx: f64, fy: f64, cx: f64, cy: f64, projection: i32, ortho_extent: f64) {
-    // NOTE: signature changed from previous IR version
-    // Previous params: (origin : * mut f64, direction : * mut f64, cam_xpos : * const f64, cam_xmat : * const f64, col : i32, row : i32, fx : f64, fy : f64, cx : f64, cy : f64, projection : i32, ortho_extent : f64)
-    // Previous return: ()
-    todo!("re-translate: params renamed")
+    // SAFETY: caller guarantees origin[3], direction[3], cam_xpos[3], cam_xmat[9] are valid
+    unsafe {
+        // pixel center (row 0 = top of image)
+        let px: f64 = col as f64 + 0.5 - cx;
+        let py: f64 = row as f64 + 0.5 - cy;
+
+        if projection == 0 {
+            // perspective: origin is camera position
+            crate::engine::engine_util_blas::mju_copy3(origin, cam_xpos);
+
+            // direction in camera frame: (x/fx, -y/fy, -1), then normalized
+            let mut dir_cam: [f64; 3] = [px / fx, -py / fy, -1.0];
+            crate::engine::engine_util_blas::mju_mul_mat_vec3(direction, cam_xmat, dir_cam.as_ptr());
+            crate::engine::engine_util_blas::mju_normalize3(direction);
+        } else {
+            // orthographic: parallel rays, direction is -Z in camera frame
+            *direction.add(0) = -*cam_xmat.add(2);
+            *direction.add(1) = -*cam_xmat.add(5);
+            *direction.add(2) = -*cam_xmat.add(8);
+
+            // origin offset in camera frame
+            let half_extent: f64 = ortho_extent / 2.0;
+            let mut offset_cam: [f64; 3] = [px / fx * half_extent, -py / fy * half_extent, 0.0];
+            let mut offset_world: [f64; 3] = [0.0; 3];
+            crate::engine::engine_util_blas::mju_mul_mat_vec3(
+                offset_world.as_mut_ptr(), cam_xmat, offset_cam.as_ptr(),
+            );
+            crate::engine::engine_util_blas::mju_add3(origin, cam_xpos, offset_world.as_ptr());
+        }
+    }
 }
 
-/// C: mju_defGradient (engine/engine_util_misc.h:87)
 /// Calls: mju_flexDphi, mju_flexPhi, mju_zero
 /// ⚠️ BITEXACT RULES:
 ///   1. Copy exact C accumulation order (no iter().sum())
@@ -578,13 +603,53 @@ pub fn mju_eval_basis_array(basis: *mut f64, x: *const f64, order: i32) {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mju_cell_lookup(coord: *const f64, cellnum: *const i32, order: i32, local: *mut f64, nodeindices: *mut i32) -> i32 {
-    // NOTE: signature changed from previous IR version
-    // Previous params: (coord : * const f64, cellnum : * const i32, order : i32, local : * mut f64, nodeindices : * mut i32)
-    // Previous return: i32
-    todo!("re-translate: params renamed")
+    // SAFETY: caller guarantees coord[3], cellnum[3], local[3] are valid; nodeindices may be null
+    unsafe {
+        let cx: i32 = *cellnum.add(0);
+        let cy: i32 = *cellnum.add(1);
+        let cz: i32 = *cellnum.add(2);
+
+        // find containing cell
+        let mut ci: i32 = (*coord.add(0) * cx as f64).floor() as i32;
+        let mut cj: i32 = (*coord.add(1) * cy as f64).floor() as i32;
+        let mut ck: i32 = (*coord.add(2) * cz as f64).floor() as i32;
+        ci = if ci < cx - 1 { ci } else { cx - 1 }; ci = if ci > 0 { ci } else { 0 };
+        cj = if cj < cy - 1 { cj } else { cy - 1 }; cj = if cj > 0 { cj } else { 0 };
+        ck = if ck < cz - 1 { ck } else { cz - 1 }; ck = if ck > 0 { ck } else { 0 };
+
+        // local parametric coordinates within cell
+        *local.add(0) = mju_clip(*coord.add(0) * cx as f64 - ci as f64, 0.0, 1.0);
+        *local.add(1) = mju_clip(*coord.add(1) * cy as f64 - cj as f64, 0.0, 1.0);
+        *local.add(2) = mju_clip(*coord.add(2) * cz as f64 - ck as f64, 0.0, 1.0);
+
+        // build node indices for this cell
+        if !nodeindices.is_null() {
+            let gi_base: i32 = ci * order;
+            let gj_base: i32 = cj * order;
+            let gk_base: i32 = ck * order;
+            let ny_g: i32 = cy * order + 1;
+            let nz_g: i32 = cz * order + 1;
+            let mut ni: usize = 0;
+            for li in 0..=order {
+                let gi: i32 = gi_base + li;
+                let gi_stride: i32 = gi * ny_g * nz_g;
+                for lj in 0..=order {
+                    let gj: i32 = gj_base + lj;
+                    let gj_stride: i32 = gi_stride + gj * nz_g;
+                    for lk in 0..=order {
+                        let gk: i32 = gk_base + lk;
+                        *nodeindices.add(ni) = gj_stride + gk;
+                        ni += 1;
+                    }
+                }
+            }
+        }
+
+        let npc: i32 = (order + 1) * (order + 1) * (order + 1);
+        npc
+    }
 }
 
-/// C: mju_interpolate3D (engine/engine_util_misc.h:100)
 /// Calls: mju_addToScl3, mju_evalBasis, mju_evalBasisArray
 /// ⚠️ BITEXACT RULES:
 ///   1. Copy exact C accumulation order (no iter().sum())

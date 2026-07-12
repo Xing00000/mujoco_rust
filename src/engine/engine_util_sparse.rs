@@ -413,14 +413,16 @@ pub fn mju_sqr_mat_td_uncompressed_init(res_rowadr: *mut i32, nc: i32) {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mju_block(res: *mut f64, mat: *const f64, nc_mat: i32, nc_res: i32, nr: i32, perm_r: *const i32, perm_c: *const i32) {
-    // NOTE: signature changed from previous IR version
-    // Previous params: (res : * mut f64, mat : * const f64, nc_mat : i32, nc_res : i32, nr : i32, perm_r : * const i32, perm_c : * const i32)
-    // Previous return: ()
-    todo!("re-translate: params renamed")
+    // SAFETY: caller guarantees valid pointers and bounds
+    unsafe {
+        for r in 0..nr as usize {
+            let res_r: *mut f64 = res.add(r * nc_res as usize);
+            let mat_r: *const f64 = mat.add(*perm_r.add(r) as usize * nc_mat as usize);
+            crate::engine::engine_util_misc::mju_gather(res_r, mat_r, perm_c, nc_res);
+        }
+    }
 }
 
-/// C: mju_blockDiag (engine/engine_util_sparse.h:170)
-/// Calls: mju_block
 /// ⚠️ BITEXACT RULES:
 ///   1. Copy exact C accumulation order (no iter().sum())
 ///   2. No f64::mul_add() (FMA changes precision)

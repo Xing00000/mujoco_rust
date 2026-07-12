@@ -94,7 +94,52 @@ pub fn mju_chol_solve(res: *mut f64, mat: *const f64, vec: *const f64, n: i32) {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mju_chol_update(mat: *mut f64, x: *mut f64, n: i32, flg_plus: i32) -> i32 {
-    todo!() // mju_cholUpdate
+    const MJ_MINVAL: f64 = 1E-15_f64;
+
+    // SAFETY: caller guarantees mat[n*n] and x[n] are valid
+    unsafe {
+        let mut rank: i32 = n;
+
+        for k in 0..n as usize {
+            if *x.add(k) != 0.0 {
+                // prepare constants
+                let Lkk: f64 = *mat.add(k * (n as usize + 1));
+                let mut tmp: f64 = Lkk * Lkk
+                    + if flg_plus != 0 { *x.add(k) * *x.add(k) } else { -(*x.add(k) * *x.add(k)) };
+                if tmp < MJ_MINVAL {
+                    tmp = MJ_MINVAL;
+                    rank -= 1;
+                }
+                let r: f64 = f64::sqrt(tmp);
+                let c: f64 = r / Lkk;
+                let cinv: f64 = 1.0 / c;
+                let s: f64 = *x.add(k) / Lkk;
+
+                // update diagonal
+                *mat.add(k * (n as usize + 1)) = r;
+
+                // update mat
+                if flg_plus != 0 {
+                    for i in (k + 1)..n as usize {
+                        *mat.add(i * n as usize + k) =
+                            (*mat.add(i * n as usize + k) + s * *x.add(i)) * cinv;
+                    }
+                } else {
+                    for i in (k + 1)..n as usize {
+                        *mat.add(i * n as usize + k) =
+                            (*mat.add(i * n as usize + k) - s * *x.add(i)) * cinv;
+                    }
+                }
+
+                // update x
+                for i in (k + 1)..n as usize {
+                    *x.add(i) = c * *x.add(i) - s * *mat.add(i * n as usize + k);
+                }
+            }
+        }
+
+        rank
+    }
 }
 
 /// C: mju_cholFactorSparse (engine/engine_util_solve.h:37)
@@ -313,10 +358,82 @@ pub fn mju_chol_solve_band(res: *mut f64, mat: *const f64, vec: *const f64, ntot
     // NOTE: signature changed from previous IR version
     // Previous params: (res : * mut f64, mat : * const f64, vec : * const f64, ntotal : i32, nband : i32, ndense : i32)
     // Previous return: ()
-    todo!("re-translate: params renamed")
+    // SAFETY: caller guarantees res[ntotal], mat, vec[ntotal] are valid
+    unsafe {
+        let ntotal = ntotal as usize;
+        let nband = nband as usize;
+        let ndense = ndense as usize;
+        let nsparse: usize = ntotal - ndense;
+
+        // copy into result if different
+        if res != vec as *mut f64 {
+            crate::engine::engine_util_blas::mju_copy(res, vec, ntotal as i32);
+        }
+
+        //------- forward substitution: solve L*res = vec
+
+        // sparse part
+        for i in 0..nsparse {
+            // number of non-zeros left of (i,i)
+            let width: usize = if i < nband - 1 { i } else { nband - 1 };
+
+            if width > 0 {
+                *res.add(i) -= crate::engine::engine_util_blas::mju_dot(
+                    mat.add((i + 1) * nband - 1 - width),
+                    res.add(i - width),
+                    width as i32,
+                );
+            }
+
+            // diagonal
+            *res.add(i) /= *mat.add((i + 1) * nband - 1);
+        }
+
+        // dense part
+        for i in nsparse..ntotal {
+            *res.add(i) -= crate::engine::engine_util_blas::mju_dot(
+                mat.add(nsparse * nband + (i - nsparse) * ntotal),
+                res,
+                i as i32,
+            );
+
+            // diagonal
+            *res.add(i) /= *mat.add(nsparse * nband + (i - nsparse) * ntotal + i);
+        }
+
+        //------- backward substitution: solve L'*res = res
+
+        // dense part
+        for i in (nsparse..ntotal).rev() {
+            for j in (i + 1)..ntotal {
+                *res.add(i) -= *mat.add(nsparse * nband + (j - nsparse) * ntotal + i) * *res.add(j);
+            }
+
+            // diagonal
+            *res.add(i) /= *mat.add(nsparse * nband + (i - nsparse) * ntotal + i);
+        }
+
+        // sparse part
+        for i in (0..nsparse).rev() {
+            // number of non-zeros below (i,i), sparse part
+            let height: usize = if nsparse - 1 - i < nband - 1 { nsparse - 1 - i } else { nband - 1 };
+
+            // sparse rows
+            for j in (i + 1)..=(i + height) {
+                *res.add(i) -= *mat.add((j + 1) * nband - 1 - (j - i)) * *res.add(j);
+            }
+
+            // dense rows
+            for j in nsparse..ntotal {
+                *res.add(i) -= *mat.add(nsparse * nband + (j - nsparse) * ntotal + i) * *res.add(j);
+            }
+
+            // diagonal
+            *res.add(i) /= *mat.add((i + 1) * nband - 1);
+        }
+    }
 }
 
-/// C: mju_band2Dense (engine/engine_util_solve.h:84)
 /// Calls: mju_copy, mju_zero
 /// ⚠️ BITEXACT RULES:
 ///   1. Copy exact C accumulation order (no iter().sum())
