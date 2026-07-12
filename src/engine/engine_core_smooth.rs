@@ -11,7 +11,7 @@ pub fn mj_update_dynamic_bvh(m: *const mjModel, d: *mut mjData, bvhadr: i32, bvh
     // NOTE: signature changed from previous IR version
     // Previous params: (m : * const mjModel, d : * mut mjData, bvhadr : i32, bvhnum : i32)
     // Previous return: ()
-    todo!("re-translate: params renamed")
+    todo!("requires mjModel/mjData field access")
 }
 
 /// C: mju_mulMatMat322 (engine/engine_core_smooth.c:537)
@@ -25,7 +25,7 @@ pub fn mju_mul_mat_mat322(C: *mut f64, A: *const f64, B: *const f64) {
     // NOTE: signature changed from previous IR version
     // Previous params: (C : * mut f64, A : * const f64, B : * const f64)
     // Previous return: ()
-    todo!("re-translate: params renamed")
+    todo!("requires mjModel/mjData field access")
 }
 
 /// C: mj_kinematics1 (engine/engine_core_smooth.h:29)
@@ -35,7 +35,7 @@ pub fn mj_kinematics1(m: *const mjModel, d: *mut mjData) {
     // NOTE: signature changed from previous IR version
     // Previous params: (m : * const mjModel, d : * mut mjData)
     // Previous return: ()
-    todo!("re-translate: params renamed")
+    todo!("requires mjModel/mjData field access")
 }
 
 /// C: mj_kinematics2 (engine/engine_core_smooth.h:32)
@@ -45,7 +45,7 @@ pub fn mj_kinematics2(m: *const mjModel, d: *mut mjData) {
     // NOTE: signature changed from previous IR version
     // Previous params: (m : * const mjModel, d : * mut mjData)
     // Previous return: ()
-    todo!("re-translate: params renamed")
+    todo!("requires mjModel/mjData field access")
 }
 
 /// C: mj_kinematics (engine/engine_core_smooth.h:35)
@@ -55,7 +55,7 @@ pub fn mj_kinematics(m: *const mjModel, d: *mut mjData) {
     // NOTE: signature changed from previous IR version
     // Previous params: (m : * const mjModel, d : * mut mjData)
     // Previous return: ()
-    todo!("re-translate: params renamed")
+    todo!("requires mjModel/mjData field access")
 }
 
 /// C: mj_comPos (engine/engine_core_smooth.h:38)
@@ -65,7 +65,7 @@ pub fn mj_com_pos(m: *const mjModel, d: *mut mjData) {
     // NOTE: signature changed from previous IR version
     // Previous params: (m : * const mjModel, d : * mut mjData)
     // Previous return: ()
-    todo!("re-translate: params renamed")
+    todo!("requires mjModel/mjData field access")
 }
 
 /// C: mj_camlight (engine/engine_core_smooth.h:41)
@@ -75,7 +75,7 @@ pub fn mj_camlight(m: *const mjModel, d: *mut mjData) {
     // NOTE: signature changed from previous IR version
     // Previous params: (m : * const mjModel, d : * mut mjData)
     // Previous return: ()
-    todo!("re-translate: params renamed")
+    todo!("requires mjModel/mjData field access")
 }
 
 /// C: mj_flex (engine/engine_core_smooth.h:44)
@@ -85,7 +85,7 @@ pub fn mj_flex(m: *const mjModel, d: *mut mjData) {
     // NOTE: signature changed from previous IR version
     // Previous params: (m : * const mjModel, d : * mut mjData)
     // Previous return: ()
-    todo!("re-translate: params renamed")
+    todo!("requires mjModel/mjData field access")
 }
 
 /// C: mj_tendon (engine/engine_core_smooth.h:47)
@@ -95,7 +95,7 @@ pub fn mj_tendon(m: *const mjModel, d: *mut mjData) {
     // NOTE: signature changed from previous IR version
     // Previous params: (m : * const mjModel, d : * mut mjData)
     // Previous return: ()
-    todo!("re-translate: params renamed")
+    todo!("requires mjModel/mjData field access")
 }
 
 /// C: mj_tendonDot (engine/engine_core_smooth.h:50)
@@ -110,7 +110,7 @@ pub fn mj_tendon_dot(m: *const mjModel, d: *mut mjData, id: i32, vec: *const f64
     // NOTE: signature changed from previous IR version
     // Previous params: (m : * const mjModel, d : * mut mjData, id : i32, vec : * const f64)
     // Previous return: f64
-    todo!("re-translate: params renamed")
+    todo!("requires mjModel/mjData field access")
 }
 
 /// C: mj_transmission (engine/engine_core_smooth.h:53)
@@ -120,7 +120,7 @@ pub fn mj_transmission(m: *const mjModel, d: *mut mjData) {
     // NOTE: signature changed from previous IR version
     // Previous params: (m : * const mjModel, d : * mut mjData)
     // Previous return: ()
-    todo!("re-translate: params renamed")
+    todo!("requires mjModel/mjData field access")
 }
 
 /// C: mj_crb (engine/engine_core_smooth.h:59)
@@ -130,7 +130,7 @@ pub fn mj_crb(m: *const mjModel, d: *mut mjData) {
     // NOTE: signature changed from previous IR version
     // Previous params: (m : * const mjModel, d : * mut mjData)
     // Previous return: ()
-    todo!("re-translate: params renamed")
+    todo!("requires mjModel/mjData field access")
 }
 
 /// C: mj_tendonArmature (engine/engine_core_smooth.h:62)
@@ -140,7 +140,7 @@ pub fn mj_tendon_armature(m: *const mjModel, d: *mut mjData) {
     // NOTE: signature changed from previous IR version
     // Previous params: (m : * const mjModel, d : * mut mjData)
     // Previous return: ()
-    todo!("re-translate: params renamed")
+    todo!("requires mjModel/mjData field access")
 }
 
 /// C: mj_makeM (engine/engine_core_smooth.h:65)
@@ -150,7 +150,7 @@ pub fn mj_make_m(m: *const mjModel, d: *mut mjData) {
     // NOTE: signature changed from previous IR version
     // Previous params: (m : * const mjModel, d : * mut mjData)
     // Previous return: ()
-    todo!("re-translate: params renamed")
+    todo!("requires mjModel/mjData field access")
 }
 
 /// C: mj_factorI_legacy (engine/engine_core_smooth.h:68)
@@ -165,7 +165,7 @@ pub fn mj_factor_i_legacy(m: *const mjModel, d: *mut mjData, M: *const f64, qLD:
     // NOTE: signature changed from previous IR version
     // Previous params: (m : * const mjModel, d : * mut mjData, M : * const f64, qLD : * mut f64, qLDiagInv : * mut f64)
     // Previous return: ()
-    todo!("re-translate: params renamed")
+    todo!("requires mjModel/mjData field access")
 }
 
 /// C: mj_factorI (engine/engine_core_smooth.h:72)
@@ -187,7 +187,7 @@ pub fn mj_factor_m(m: *const mjModel, d: *mut mjData) {
     // NOTE: signature changed from previous IR version
     // Previous params: (m : * const mjModel, d : * mut mjData)
     // Previous return: ()
-    todo!("re-translate: params renamed")
+    todo!("requires mjModel/mjData field access")
 }
 
 /// C: mj_solveLD_legacy (engine/engine_core_smooth.h:79)
@@ -225,7 +225,7 @@ pub fn mj_solve_m(m: *const mjModel, d: *mut mjData, x: *mut f64, y: *const f64,
     // NOTE: signature changed from previous IR version
     // Previous params: (m : * const mjModel, d : * mut mjData, x : * mut f64, y : * const f64, n : i32)
     // Previous return: ()
-    todo!("re-translate: params renamed")
+    todo!("requires mjModel/mjData field access")
 }
 
 /// C: mj_solveM2 (engine/engine_core_smooth.h:91)
@@ -247,7 +247,7 @@ pub fn mj_com_vel(m: *const mjModel, d: *mut mjData) {
     // NOTE: signature changed from previous IR version
     // Previous params: (m : * const mjModel, d : * mut mjData)
     // Previous return: ()
-    todo!("re-translate: params renamed")
+    todo!("requires mjModel/mjData field access")
 }
 
 /// C: mj_subtreeVel (engine/engine_core_smooth.h:101)
@@ -257,7 +257,7 @@ pub fn mj_subtree_vel(m: *const mjModel, d: *mut mjData) {
     // NOTE: signature changed from previous IR version
     // Previous params: (m : * const mjModel, d : * mut mjData)
     // Previous return: ()
-    todo!("re-translate: params renamed")
+    todo!("requires mjModel/mjData field access")
 }
 
 /// C: mj_rne (engine/engine_core_smooth.h:107)
@@ -272,7 +272,7 @@ pub fn mj_rne(m: *const mjModel, d: *mut mjData, flg_acc: i32, result: *mut f64)
     // NOTE: signature changed from previous IR version
     // Previous params: (m : * const mjModel, d : * mut mjData, flg_acc : i32, result : * mut f64)
     // Previous return: ()
-    todo!("re-translate: params renamed")
+    todo!("requires mjModel/mjData field access")
 }
 
 /// C: mj_rnePostConstraint (engine/engine_core_smooth.h:110)
@@ -282,7 +282,7 @@ pub fn mj_rne_post_constraint(m: *const mjModel, d: *mut mjData) {
     // NOTE: signature changed from previous IR version
     // Previous params: (m : * const mjModel, d : * mut mjData)
     // Previous return: ()
-    todo!("re-translate: params renamed")
+    todo!("requires mjModel/mjData field access")
 }
 
 /// C: mj_tendonBias (engine/engine_core_smooth.h:116)
@@ -297,6 +297,6 @@ pub fn mj_tendon_bias(m: *const mjModel, d: *mut mjData, qfrc: *mut f64) {
     // NOTE: signature changed from previous IR version
     // Previous params: (m : * const mjModel, d : * mut mjData, qfrc : * mut f64)
     // Previous return: ()
-    todo!("re-translate: params renamed")
+    todo!("requires mjModel/mjData field access")
 }
 

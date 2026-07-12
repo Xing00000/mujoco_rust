@@ -30,19 +30,19 @@ pub fn mj_is_sparse(m: *const mjModel) -> i32 {
 /// C: mj_mergeChain (engine/engine_core_util.h:40)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_merge_chain(m: *const mjModel, chain: *mut i32, b1: i32, b2: i32, flg_skipcommon: i32) -> i32 {
-    todo!("requires complex mjModel field traversal")
+    todo!("requires mjModel/mjData field access")
 }
 
 /// C: mj_mergeChainSimple (engine/engine_core_util.h:43)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_merge_chain_simple(m: *const mjModel, chain: *mut i32, b1: i32, b2: i32) -> i32 {
-    todo!("requires complex mjModel field traversal")
+    todo!("requires mjModel/mjData field access")
 }
 
 /// C: mj_bodyChain (engine/engine_core_util.h:46)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_body_chain(m: *const mjModel, body: i32, chain: *mut i32) -> i32 {
-    todo!("requires complex mjModel field traversal")
+    todo!("requires mjModel/mjData field access")
 }
 
 /// C: mj_jac (engine/engine_core_util.h:52)
@@ -57,7 +57,7 @@ pub fn mj_jac(m: *const mjModel, d: *const mjData, jacp: *mut f64, jacr: *mut f6
     // NOTE: signature changed from previous IR version
     // Previous params: (m : * const mjModel, d : * const mjData, jacp : * mut f64, jacr : * mut f64, point : * const f64, body : i32)
     // Previous return: ()
-    todo!("re-translate: params renamed")
+    todo!("requires mjModel/mjData field access")
 }
 
 /// C: mj_jacBody (engine/engine_core_util.h:56)
@@ -72,7 +72,7 @@ pub fn mj_jac_body(m: *const mjModel, d: *const mjData, jacp: *mut f64, jacr: *m
     // NOTE: signature changed from previous IR version
     // Previous params: (m : * const mjModel, d : * const mjData, jacp : * mut f64, jacr : * mut f64, body : i32)
     // Previous return: ()
-    todo!("re-translate: params renamed")
+    todo!("requires mjModel/mjData field access")
 }
 
 /// C: mj_jacBodyCom (engine/engine_core_util.h:60)
@@ -87,7 +87,7 @@ pub fn mj_jac_body_com(m: *const mjModel, d: *const mjData, jacp: *mut f64, jacr
     // NOTE: signature changed from previous IR version
     // Previous params: (m : * const mjModel, d : * const mjData, jacp : * mut f64, jacr : * mut f64, body : i32)
     // Previous return: ()
-    todo!("re-translate: params renamed")
+    todo!("requires mjModel/mjData field access")
 }
 
 /// C: mj_jacSubtreeCom (engine/engine_core_util.h:64)
@@ -102,7 +102,7 @@ pub fn mj_jac_subtree_com(m: *const mjModel, d: *mut mjData, jacp: *mut f64, bod
     // NOTE: signature changed from previous IR version
     // Previous params: (m : * const mjModel, d : * mut mjData, jacp : * mut f64, body : i32)
     // Previous return: ()
-    todo!("re-translate: params renamed")
+    todo!("requires mjModel/mjData field access")
 }
 
 /// C: mj_jacGeom (engine/engine_core_util.h:67)
@@ -117,7 +117,7 @@ pub fn mj_jac_geom(m: *const mjModel, d: *const mjData, jacp: *mut f64, jacr: *m
     // NOTE: signature changed from previous IR version
     // Previous params: (m : * const mjModel, d : * const mjData, jacp : * mut f64, jacr : * mut f64, geom : i32)
     // Previous return: ()
-    todo!("re-translate: params renamed")
+    todo!("requires mjModel/mjData field access")
 }
 
 /// C: mj_jacSite (engine/engine_core_util.h:71)
@@ -132,7 +132,7 @@ pub fn mj_jac_site(m: *const mjModel, d: *const mjData, jacp: *mut f64, jacr: *m
     // NOTE: signature changed from previous IR version
     // Previous params: (m : * const mjModel, d : * const mjData, jacp : * mut f64, jacr : * mut f64, site : i32)
     // Previous return: ()
-    todo!("re-translate: params renamed")
+    todo!("requires mjModel/mjData field access")
 }
 
 /// C: mj_jacPointAxis (engine/engine_core_util.h:75)
@@ -147,7 +147,7 @@ pub fn mj_jac_point_axis(m: *const mjModel, d: *mut mjData, jacPoint: *mut f64, 
     // NOTE: signature changed from previous IR version
     // Previous params: (m : * const mjModel, d : * mut mjData, jacPoint : * mut f64, jacAxis : * mut f64, point : * const f64, axis : * const f64, body : i32)
     // Previous return: ()
-    todo!("re-translate: params renamed")
+    todo!("requires mjModel/mjData field access")
 }
 
 /// C: mj_jacSparse (engine/engine_core_util.h:80)
@@ -162,7 +162,7 @@ pub fn mj_jac_sparse(m: *const mjModel, d: *const mjData, jacp: *mut f64, jacr: 
     // NOTE: signature changed from previous IR version
     // Previous params: (m : * const mjModel, d : * const mjData, jacp : * mut f64, jacr : * mut f64, point : * const f64, body : i32, NV : i32, chain : * const i32, flg_skipcommon : i32)
     // Previous return: ()
-    todo!("re-translate: params renamed")
+    todo!("requires mjModel/mjData field access")
 }
 
 /// C: mj_jacSparseSimple (engine/engine_core_util.h:85)
@@ -177,7 +177,7 @@ pub fn mj_jac_sparse_simple(m: *const mjModel, d: *const mjData, jacdifp: *mut f
     // NOTE: signature changed from previous IR version
     // Previous params: (m : * const mjModel, d : * const mjData, jacdifp : * mut f64, jacdifr : * mut f64, point : * const f64, body : i32, flg_second : i32, NV : i32, start : i32)
     // Previous return: ()
-    todo!("re-translate: params renamed")
+    todo!("requires mjModel/mjData field access")
 }
 
 /// C: mj_jacDotSparse (engine/engine_core_util.h:90)
@@ -192,7 +192,7 @@ pub fn mj_jac_dot_sparse(m: *const mjModel, d: *const mjData, jacp: *mut f64, ja
     // NOTE: signature changed from previous IR version
     // Previous params: (m : * const mjModel, d : * const mjData, jacp : * mut f64, jacr : * mut f64, point : * const f64, body : i32, NV : i32, chain : * const i32)
     // Previous return: ()
-    todo!("re-translate: params renamed")
+    todo!("requires mjModel/mjData field access")
 }
 
 /// C: mj_jacDifPair (engine/engine_core_util.h:95)
@@ -207,7 +207,7 @@ pub fn mj_jac_dif_pair(m: *const mjModel, d: *const mjData, chain: *mut i32, b1:
     // NOTE: signature changed from previous IR version
     // Previous params: (m : * const mjModel, d : * const mjData, chain : * mut i32, b1 : i32, b2 : i32, pos1 : * const f64, pos2 : * const f64, jac1p : * mut f64, jac2p : * mut f64, jacdifp : * mut f64, jac1r : * mut f64, jac2r : * mut f64, jacdifr : * mut f64, issparse : i32, flg_skipcommon : i32)
     // Previous return: i32
-    todo!("re-translate: params renamed")
+    todo!("requires mjModel/mjData field access")
 }
 
 /// C: mj_jacSum (engine/engine_core_util.h:102)
@@ -222,7 +222,7 @@ pub fn mj_jac_sum(m: *const mjModel, d: *mut mjData, chain: *mut i32, n: i32, bo
     // NOTE: signature changed from previous IR version
     // Previous params: (m : * const mjModel, d : * mut mjData, chain : * mut i32, n : i32, body : * const i32, weight : * const f64, point : * const f64, jac : * mut f64, flg_rot : i32)
     // Previous return: i32
-    todo!("re-translate: params renamed")
+    todo!("requires mjModel/mjData field access")
 }
 
 /// C: mj_jacDot (engine/engine_core_util.h:107)
@@ -237,7 +237,7 @@ pub fn mj_jac_dot(m: *const mjModel, d: *const mjData, jacp: *mut f64, jacr: *mu
     // NOTE: signature changed from previous IR version
     // Previous params: (m : * const mjModel, d : * const mjData, jacp : * mut f64, jacr : * mut f64, point : * const f64, body : i32)
     // Previous return: ()
-    todo!("re-translate: params renamed")
+    todo!("requires mjModel/mjData field access")
 }
 
 /// C: mj_angmomMat (engine/engine_core_util.h:111)
@@ -252,7 +252,7 @@ pub fn mj_angmom_mat(m: *const mjModel, d: *mut mjData, mat: *mut f64, body: i32
     // NOTE: signature changed from previous IR version
     // Previous params: (m : * const mjModel, d : * mut mjData, mat : * mut f64, body : i32)
     // Previous return: ()
-    todo!("re-translate: params renamed")
+    todo!("requires mjModel/mjData field access")
 }
 
 /// C: mj_objectVelocity (engine/engine_core_util.h:117)
@@ -267,7 +267,7 @@ pub fn mj_object_velocity(m: *const mjModel, d: *const mjData, objtype: i32, obj
     // NOTE: signature changed from previous IR version
     // Previous params: (m : * const mjModel, d : * const mjData, objtype : i32, objid : i32, res : * mut f64, flg_local : i32)
     // Previous return: ()
-    todo!("re-translate: params renamed")
+    todo!("requires mjModel/mjData field access")
 }
 
 /// C: mj_objectAcceleration (engine/engine_core_util.h:121)
@@ -282,7 +282,7 @@ pub fn mj_object_acceleration(m: *const mjModel, d: *const mjData, objtype: i32,
     // NOTE: signature changed from previous IR version
     // Previous params: (m : * const mjModel, d : * const mjData, objtype : i32, objid : i32, res : * mut f64, flg_local : i32)
     // Previous return: ()
-    todo!("re-translate: params renamed")
+    todo!("requires mjModel/mjData field access")
 }
 
 /// C: mj_local2Global (engine/engine_core_util.h:125)
@@ -297,7 +297,7 @@ pub fn mj_local2global(d: *mut mjData, xpos: *mut f64, xmat: *mut f64, pos: *con
     // NOTE: signature changed from previous IR version
     // Previous params: (d : * mut mjData, xpos : * mut f64, xmat : * mut f64, pos : * const f64, quat : * const f64, body : i32, sameframe : u8)
     // Previous return: ()
-    todo!("re-translate: params renamed")
+    todo!("requires mjModel/mjData field access")
 }
 
 /// C: mju_flexGatherState (engine/engine_core_util.h:133)
@@ -312,7 +312,7 @@ pub fn mju_flex_gather_state(m: *const mjModel, d: *const mjData, f: i32, xpos: 
     // NOTE: signature changed from previous IR version
     // Previous params: (m : * const mjModel, d : * const mjData, f : i32, xpos : * mut f64, vel : * mut f64)
     // Previous return: ()
-    todo!("re-translate: params renamed")
+    todo!("requires mjModel/mjData field access")
 }
 
 /// C: mj_contactForce (engine/engine_core_util.h:136)
@@ -338,7 +338,7 @@ pub fn tendon_limit(m: *const mjModel, ten_length: *const f64, i: i32) -> i32 {
     // NOTE: signature changed from previous IR version
     // Previous params: (m : * const mjModel, ten_length : * const f64, i : i32)
     // Previous return: i32
-    todo!("re-translate: params renamed")
+    todo!("requires mjModel/mjData field access")
 }
 
 /// C: mj_actuatorDamping (engine/engine_core_util.h:142)
@@ -353,7 +353,7 @@ pub fn mj_actuator_damping(m: *const mjModel, r#type: u32, id: i32, poly: *mut f
     // NOTE: signature changed from previous IR version
     // Previous params: (m : * const mjModel, r#type : u32, id : i32, poly : * mut f64)
     // Previous return: f64
-    todo!("re-translate: params renamed")
+    todo!("requires mjModel/mjData field access")
 }
 
 /// C: mj_actuatorArmature (engine/engine_core_util.h:145)
@@ -368,7 +368,7 @@ pub fn mj_actuator_armature(m: *const mjModel, r#type: u32, id: i32) -> f64 {
     // NOTE: signature changed from previous IR version
     // Previous params: (m : * const mjModel, r#type : u32, id : i32)
     // Previous return: f64
-    todo!("re-translate: params renamed")
+    todo!("requires mjModel/mjData field access")
 }
 
 /// C: mj_warning (engine/engine_core_util.h:148)
@@ -378,6 +378,6 @@ pub fn mj_warning(d: *mut mjData, warning: i32, info: i32) {
     // NOTE: signature changed from previous IR version
     // Previous params: (d : * mut mjData, warning : i32, info : i32)
     // Previous return: ()
-    todo!("re-translate: params renamed")
+    todo!("requires mjModel/mjData field access")
 }
 

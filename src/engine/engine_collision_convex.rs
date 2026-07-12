@@ -351,10 +351,7 @@ pub fn mjc_ellipsoid_outside(nrm: *mut f64, pos: *const f64, size: *const f64) -
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjc_init_ccd_obj(obj: *mut mjCCDObj, m: *const mjModel, d: *const mjData, g: i32, margin: f64) {
-    // NOTE: signature changed from previous IR version
-    // Previous params: (obj : * mut mjCCDObj, m : * const mjModel, d : * const mjData, g : i32, margin : f64)
-    // Previous return: ()
-    todo!("re-translate: params renamed")
+    todo!("requires mjModel/mjData field access")
 }
 
 /// C: mjc_center (engine/engine_collision_convex.h:97)

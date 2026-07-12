@@ -10,7 +10,7 @@ pub fn mj_load_xml(filename: *const i8, vfs: *const mjVFS, error: *mut i8, error
     // NOTE: signature changed from previous IR version
     // Previous params: (filename : * const i8, vfs : * const mjVFS, error : * mut i8, error_sz : i32)
     // Previous return: * mut mjModel
-    todo!("re-translate: params renamed")
+    todo!("requires XML schema")
 }
 
 /// C: mj_saveLastXML (xml/xml_api.h:34)
@@ -20,20 +20,20 @@ pub fn mj_save_last_xml(filename: *const i8, m: *const mjModel, error: *mut i8, 
     // NOTE: signature changed from previous IR version
     // Previous params: (filename : * const i8, m : * const mjModel, error : * mut i8, error_sz : i32)
     // Previous return: i32
-    todo!("re-translate: params renamed")
+    todo!("requires XML schema")
 }
 
 /// C: mj_freeLastXML (xml/xml_api.h:37)
 /// Calls: SetGlobalXmlSpec
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_free_last_xml() {
-    todo!() // mj_freeLastXML
+    todo!("requires XML schema")
 }
 
 /// C: mj_printSchema (xml/xml_api.h:40)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_print_schema(filename: *const i8, buffer: *mut i8, buffer_sz: i32, flg_html: i32, flg_pad: i32) -> i32 {
-    todo!("requires allocator/complex API")
+    todo!("requires XML schema")
 }
 
 /// C: mj_loadModel (xml/xml_api.h:45)
@@ -43,7 +43,7 @@ pub fn mj_load_model(filename: *const i8, vfs: *const mjVFS) -> *mut mjModel {
     // NOTE: signature changed from previous IR version
     // Previous params: (filename : * const i8, vfs : * const mjVFS)
     // Previous return: * mut mjModel
-    todo!("re-translate: params renamed")
+    todo!("requires XML schema")
 }
 
 /// C: mj_parseXML (xml/xml_api.h:48)
@@ -53,7 +53,7 @@ pub fn mj_parse_xml(filename: *const i8, vfs: *const mjVFS, error: *mut i8, erro
     // NOTE: signature changed from previous IR version
     // Previous params: (filename : * const i8, vfs : * const mjVFS, error : * mut i8, error_sz : i32)
     // Previous return: * mut mjSpec
-    todo!("re-translate: params renamed")
+    todo!("requires XML schema")
 }
 
 /// C: mj_parseXMLString (xml/xml_api.h:49)
@@ -62,7 +62,7 @@ pub fn mj_parse_xml_string(xml: *const i8, vfs: *const mjVFS, error: *mut i8, er
     // NOTE: signature changed from previous IR version
     // Previous params: (xml : * const i8, vfs : * const mjVFS, error : * mut i8, error_sz : i32)
     // Previous return: * mut mjSpec
-    todo!("re-translate: params renamed")
+    todo!("requires XML schema")
 }
 
 /// C: mj_saveXML (xml/xml_api.h:52)
@@ -71,7 +71,7 @@ pub fn mj_save_xml(s: *const mjSpec, filename: *const i8, error: *mut i8, error_
     // NOTE: signature changed from previous IR version
     // Previous params: (s : * const mjSpec, filename : * const i8, error : * mut i8, error_sz : i32)
     // Previous return: i32
-    todo!("re-translate: params renamed")
+    todo!("requires XML schema")
 }
 
 /// C: mj_saveXMLString (xml/xml_api.h:53)
@@ -80,6 +80,6 @@ pub fn mj_save_xml_string(s: *const mjSpec, xml: *mut i8, xml_sz: i32, error: *m
     // NOTE: signature changed from previous IR version
     // Previous params: (s : * const mjSpec, xml : * mut i8, xml_sz : i32, error : * mut i8, error_sz : i32)
     // Previous return: i32
-    todo!("re-translate: params renamed")
+    todo!("requires XML schema")
 }
 

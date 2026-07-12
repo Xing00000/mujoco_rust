@@ -892,10 +892,12 @@ pub fn mju_standard_normal(num2: *mut f64) -> f64 {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mju_f2n(res: *mut f64, vec: *const f32, n: i32) {
-    // NOTE: signature changed from previous IR version
-    // Previous params: (res : * mut f64, vec : * const f32, n : i32)
-    // Previous return: ()
-    todo!("re-translate: params renamed")
+    // SAFETY: caller guarantees res and vec point to valid arrays of at least n elements
+    unsafe {
+        for i in 0..n as usize {
+            *res.add(i) = *vec.add(i) as f64;
+        }
+    }
 }
 
 /// C: mju_n2f (engine/engine_util_misc.h:276)

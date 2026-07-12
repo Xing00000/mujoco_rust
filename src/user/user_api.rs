@@ -11,7 +11,7 @@ pub fn mj_parse(filename: *const i8, content_type: *const i8, vfs: *const mjVFS,
     // NOTE: signature changed from previous IR version
     // Previous params: (filename : * const i8, content_type : * const i8, vfs : * const mjVFS, error : * mut i8, error_sz : i32)
     // Previous return: * mut mjSpec
-    todo!("re-translate: params renamed")
+    todo!("requires C++ object creation")
 }
 
 /// C: mj_encode (user/user_api.cc:151)
@@ -21,7 +21,7 @@ pub fn mj_encode(s: *const mjSpec, m: *const mjModel, filename: *const i8, conte
     // NOTE: signature changed from previous IR version
     // Previous params: (s : * const mjSpec, m : * const mjModel, filename : * const i8, content_type : * const i8, vfs : * const mjVFS, error : * mut i8, error_sz : i32)
     // Previous return: i32
-    todo!("re-translate: params renamed")
+    todo!("requires C++ object creation")
 }
 
 /// C: LogCompileTime (user/user_api.cc:212)
@@ -36,7 +36,7 @@ pub fn log_compile_time(t: *const f64) {
     // NOTE: signature changed from previous IR version
     // Previous params: (t : * const f64)
     // Previous return: ()
-    todo!("re-translate: params renamed")
+    todo!("requires C++ object creation")
 }
 
 /// C: SetFrame (user/user_api.cc:293)
@@ -46,7 +46,7 @@ pub fn set_frame(body: *mut mjsBody, objtype: u32, frame: *mut mjsFrame) {
     // NOTE: signature changed from previous IR version
     // Previous params: (body : * mut mjsBody, objtype : u32, frame : * mut mjsFrame)
     // Previous return: ()
-    todo!("re-translate: params renamed")
+    todo!("requires C++ object creation")
 }
 
 /// C: attachBody (user/user_api.cc:306)
@@ -55,7 +55,7 @@ pub fn attach_body(parent: *mut mjCFrame, child: *const mjCBody, prefix: *const 
     // NOTE: signature changed from previous IR version
     // Previous params: (parent : * mut mjCFrame, child : * const mjCBody, prefix : * const i8, suffix : * const i8)
     // Previous return: * mut mjsElement
-    todo!("re-translate: params renamed")
+    todo!("requires C++ object creation")
 }
 
 /// C: attachFrame (user/user_api.cc:325)
@@ -64,7 +64,7 @@ pub fn attach_frame(parent: *mut mjCBody, child: *const mjCFrame, prefix: *const
     // NOTE: signature changed from previous IR version
     // Previous params: (parent : * mut mjCBody, child : * const mjCFrame, prefix : * const i8, suffix : * const i8)
     // Previous return: * mut mjsElement
-    todo!("re-translate: params renamed")
+    todo!("requires C++ object creation")
 }
 
 /// C: attachToSite (user/user_api.cc:344)
@@ -74,7 +74,7 @@ pub fn attach_to_site(parent: *mut mjCSite, child: *const mjCBody, prefix: *cons
     // NOTE: signature changed from previous IR version
     // Previous params: (parent : * mut mjCSite, child : * const mjCBody, prefix : * const i8, suffix : * const i8)
     // Previous return: * mut mjsElement
-    todo!("re-translate: params renamed")
+    todo!("requires C++ object creation")
 }
 
 /// C: attachFrameToSite (user/user_api.cc:365)
@@ -84,7 +84,7 @@ pub fn attach_frame_to_site(parent: *mut mjCSite, child: *const mjCFrame, prefix
     // NOTE: signature changed from previous IR version
     // Previous params: (parent : * mut mjCSite, child : * const mjCFrame, prefix : * const i8, suffix : * const i8)
     // Previous return: * mut mjsElement
-    todo!("re-translate: params renamed")
+    todo!("requires C++ object creation")
 }
 
 /// C: mjs_getTimer (user/user_api.cc:515)
@@ -98,7 +98,7 @@ pub fn mjs_get_timer(s: *mut mjSpec) -> *const f64 {
     // NOTE: signature changed from previous IR version
     // Previous params: (s : * mut mjSpec)
     // Previous return: * const f64
-    todo!("re-translate: params renamed")
+    todo!("requires C++ object creation")
 }
 
 /// C: mjs_numWarnings (user/user_api.cc:535)
@@ -107,7 +107,7 @@ pub fn mjs_num_warnings(spec: *const mjSpec) -> i32 {
     // NOTE: signature changed from previous IR version
     // Previous params: (spec : * const mjSpec)
     // Previous return: i32
-    todo!("re-translate: params renamed")
+    todo!("requires C++ object creation")
 }
 
 /// C: mjs_getWarning (user/user_api.cc:544)
@@ -116,7 +116,7 @@ pub fn mjs_get_warning(spec: *const mjSpec, index: i32) -> *const i8 {
     // NOTE: signature changed from previous IR version
     // Previous params: (spec : * const mjSpec, index : i32)
     // Previous return: * const i8
-    todo!("re-translate: params renamed")
+    todo!("requires C++ object creation")
 }
 
 /// C: FlexcompTypeFromStr (user/user_api.cc:709)
@@ -125,7 +125,7 @@ pub fn flexcomp_type_from_str(r#type: *const i8) -> mjtFcompType {
     // NOTE: signature changed from previous IR version
     // Previous params: (r#type : * const i8)
     // Previous return: mjtFcompType
-    todo!("re-translate: params renamed")
+    todo!("requires C++ object creation")
 }
 
 /// C: FlexcompDofFromStr (user/user_api.cc:724)
@@ -134,7 +134,7 @@ pub fn flexcomp_dof_from_str(dof: *const i8) -> mjtDof {
     // NOTE: signature changed from previous IR version
     // Previous params: (dof : * const i8)
     // Previous return: mjtDof
-    todo!("re-translate: params renamed")
+    todo!("requires C++ object creation")
 }
 
 /// C: mjs_getCompiler (user/user_api.cc:1553)
@@ -143,7 +143,7 @@ pub fn mjs_get_compiler(element: *const mjsElement) -> *mut mjsCompiler {
     // NOTE: signature changed from previous IR version
     // Previous params: (element : * const mjsElement)
     // Previous return: * mut mjsCompiler
-    todo!("re-translate: params renamed")
+    todo!("requires C++ object creation")
 }
 
 /// C: mjs_setBuffer (user/user_api.cc:2230)
@@ -152,7 +152,7 @@ pub fn mjs_set_buffer(dest: *mut i32, array: *const (), size: i32) {
     // NOTE: signature changed from previous IR version
     // Previous params: (dest : * mut i32, array : * const (), size : i32)
     // Previous return: ()
-    todo!("re-translate: params renamed")
+    todo!("requires C++ object creation")
 }
 
 /// C: mjs_setString (user/user_api.cc:2240)
@@ -161,7 +161,7 @@ pub fn mjs_set_string(dest: *mut i32, text: *const i8) {
     // NOTE: signature changed from previous IR version
     // Previous params: (dest : * mut i32, text : * const i8)
     // Previous return: ()
-    todo!("re-translate: params renamed")
+    todo!("requires C++ object creation")
 }
 
 /// C: mjs_setInStringVec (user/user_api.cc:2248)
@@ -171,7 +171,7 @@ pub fn mjs_set_in_string_vec(dest: *mut i32, i: i32, text: *const i8) -> mjtBool
     // NOTE: signature changed from previous IR version
     // Previous params: (dest : * mut i32, i : i32, text : * const i8)
     // Previous return: mjtBool
-    todo!("re-translate: params renamed")
+    todo!("requires C++ object creation")
 }
 
 /// C: mjs_setStringVec (user/user_api.cc:2260)
@@ -180,7 +180,7 @@ pub fn mjs_set_string_vec(dest: *mut i32, text: *const i8) {
     // NOTE: signature changed from previous IR version
     // Previous params: (dest : * mut i32, text : * const i8)
     // Previous return: ()
-    todo!("re-translate: params renamed")
+    todo!("requires C++ object creation")
 }
 
 /// C: mjs_appendString (user/user_api.cc:2268)
@@ -189,7 +189,7 @@ pub fn mjs_append_string(dest: *mut i32, text: *const i8) {
     // NOTE: signature changed from previous IR version
     // Previous params: (dest : * mut i32, text : * const i8)
     // Previous return: ()
-    todo!("re-translate: params renamed")
+    todo!("requires C++ object creation")
 }
 
 /// C: mjs_setInt (user/user_api.cc:2274)
@@ -198,7 +198,7 @@ pub fn mjs_set_int(dest: *mut i32, array: *const i32, size: i32) {
     // NOTE: signature changed from previous IR version
     // Previous params: (dest : * mut i32, array : * const i32, size : i32)
     // Previous return: ()
-    todo!("re-translate: params renamed")
+    todo!("requires C++ object creation")
 }
 
 /// C: mjs_appendIntVec (user/user_api.cc:2284)
@@ -207,7 +207,7 @@ pub fn mjs_append_int_vec(dest: *mut i32, array: *const i32, size: i32) {
     // NOTE: signature changed from previous IR version
     // Previous params: (dest : * mut i32, array : * const i32, size : i32)
     // Previous return: ()
-    todo!("re-translate: params renamed")
+    todo!("requires C++ object creation")
 }
 
 /// C: mjs_setFloat (user/user_api.cc:2291)
@@ -221,7 +221,7 @@ pub fn mjs_set_float(dest: *mut i32, array: *const f32, size: i32) {
     // NOTE: signature changed from previous IR version
     // Previous params: (dest : * mut i32, array : * const f32, size : i32)
     // Previous return: ()
-    todo!("re-translate: params renamed")
+    todo!("requires C++ object creation")
 }
 
 /// C: mjs_appendFloatVec (user/user_api.cc:2302)
@@ -235,7 +235,7 @@ pub fn mjs_append_float_vec(dest: *mut i32, array: *const f32, size: i32) {
     // NOTE: signature changed from previous IR version
     // Previous params: (dest : * mut i32, array : * const f32, size : i32)
     // Previous return: ()
-    todo!("re-translate: params renamed")
+    todo!("requires C++ object creation")
 }
 
 /// C: mjs_setDouble (user/user_api.cc:2309)
@@ -249,7 +249,7 @@ pub fn mjs_set_double(dest: *mut i32, array: *const f64, size: i32) {
     // NOTE: signature changed from previous IR version
     // Previous params: (dest : * mut i32, array : * const f64, size : i32)
     // Previous return: ()
-    todo!("re-translate: params renamed")
+    todo!("requires C++ object creation")
 }
 
 /// C: mjs_getName (user/user_api.cc:2319)
@@ -258,7 +258,7 @@ pub fn mjs_get_name(element: *mut mjsElement) -> *mut i32 {
     // NOTE: signature changed from previous IR version
     // Previous params: (element : * mut mjsElement)
     // Previous return: * mut i32
-    todo!("re-translate: params renamed")
+    todo!("requires C++ object creation")
 }
 
 /// C: mjs_getString (user/user_api.cc:2329)
@@ -267,7 +267,7 @@ pub fn mjs_get_string(source: *const i32) -> *const i8 {
     // NOTE: signature changed from previous IR version
     // Previous params: (source : * const i32)
     // Previous return: * const i8
-    todo!("re-translate: params renamed")
+    todo!("requires C++ object creation")
 }
 
 /// C: mjs_getDouble (user/user_api.cc:2336)
@@ -281,7 +281,7 @@ pub fn mjs_get_double(source: *const i32, size: *mut i32) -> *const f64 {
     // NOTE: signature changed from previous IR version
     // Previous params: (source : * const i32, size : * mut i32)
     // Previous return: * const f64
-    todo!("re-translate: params renamed")
+    todo!("requires C++ object creation")
 }
 
 /// C: mj_makeSpec (user/user_api.h:40)
@@ -297,7 +297,7 @@ pub fn mj_compile(s: *mut mjSpec, vfs: *const mjVFS) -> *mut mjModel {
     // NOTE: signature changed from previous IR version
     // Previous params: (s : * mut mjSpec, vfs : * const mjVFS)
     // Previous return: * mut mjModel
-    todo!("re-translate: params renamed")
+    todo!("requires C++ object creation")
 }
 
 /// C: mj_recompile (user/user_api.h:46)
@@ -307,7 +307,7 @@ pub fn mj_recompile(s: *mut mjSpec, vfs: *const mjVFS, m: *mut mjModel, d: *mut 
     // NOTE: signature changed from previous IR version
     // Previous params: (s : * mut mjSpec, vfs : * const mjVFS, m : * mut mjModel, d : * mut mjData)
     // Previous return: i32
-    todo!("re-translate: params renamed")
+    todo!("requires C++ object creation")
 }
 
 /// C: mj_copySpec (user/user_api.h:49)
@@ -316,7 +316,7 @@ pub fn mj_copy_spec(s: *const mjSpec) -> *mut mjSpec {
     // NOTE: signature changed from previous IR version
     // Previous params: (s : * const mjSpec)
     // Previous return: * mut mjSpec
-    todo!("re-translate: params renamed")
+    todo!("requires C++ object creation")
 }
 
 /// C: mjs_getError (user/user_api.h:52)
@@ -326,7 +326,7 @@ pub fn mjs_get_error(s: *mut mjSpec) -> *const i8 {
     // NOTE: signature changed from previous IR version
     // Previous params: (s : * mut mjSpec)
     // Previous return: * const i8
-    todo!("re-translate: params renamed")
+    todo!("requires C++ object creation")
 }
 
 /// C: mjs_isWarning (user/user_api.h:55)
@@ -336,7 +336,7 @@ pub fn mjs_is_warning(s: *mut mjSpec) -> i32 {
     // NOTE: signature changed from previous IR version
     // Previous params: (s : * mut mjSpec)
     // Previous return: i32
-    todo!("re-translate: params renamed")
+    todo!("requires C++ object creation")
 }
 
 /// C: mj_deleteSpec (user/user_api.h:58)
@@ -346,7 +346,7 @@ pub fn mj_delete_spec(s: *mut mjSpec) {
     // NOTE: signature changed from previous IR version
     // Previous params: (s : * mut mjSpec)
     // Previous return: ()
-    todo!("re-translate: params renamed")
+    todo!("requires C++ object creation")
 }
 
 /// C: mjs_addSpec (user/user_api.h:61)
@@ -356,7 +356,7 @@ pub fn mjs_add_spec(s: *mut mjSpec, child: *mut mjSpec) {
     // NOTE: signature changed from previous IR version
     // Previous params: (s : * mut mjSpec, child : * mut mjSpec)
     // Previous return: ()
-    todo!("re-translate: params renamed")
+    todo!("requires C++ object creation")
 }
 
 /// C: mjs_activatePlugin (user/user_api.h:64)
@@ -373,7 +373,7 @@ pub fn mjs_set_deep_copy(s: *mut mjSpec, deepcopy: i32) -> i32 {
     // NOTE: signature changed from previous IR version
     // Previous params: (s : * mut mjSpec, deepcopy : i32)
     // Previous return: i32
-    todo!("re-translate: params renamed")
+    todo!("requires C++ object creation")
 }
 
 /// C: mj_copyBack (user/user_api.h:70)
@@ -383,7 +383,7 @@ pub fn mj_copy_back(s: *mut mjSpec, m: *const mjModel) -> i32 {
     // NOTE: signature changed from previous IR version
     // Previous params: (s : * mut mjSpec, m : * const mjModel)
     // Previous return: i32
-    todo!("re-translate: params renamed")
+    todo!("requires C++ object creation")
 }
 
 /// C: mjs_attach (user/user_api.h:76)
@@ -393,7 +393,7 @@ pub fn mjs_attach(parent: *mut mjsElement, child: *const mjsElement, prefix: *co
     // NOTE: signature changed from previous IR version
     // Previous params: (parent : * mut mjsElement, child : * const mjsElement, prefix : * const i8, suffix : * const i8)
     // Previous return: * mut mjsElement
-    todo!("re-translate: params renamed")
+    todo!("requires C++ object creation")
 }
 
 /// C: mjs_addBody (user/user_api.h:83)
@@ -402,7 +402,7 @@ pub fn mjs_add_body(body: *mut mjsBody, def: *const mjsDefault) -> *mut mjsBody 
     // NOTE: signature changed from previous IR version
     // Previous params: (body : * mut mjsBody, def : * const mjsDefault)
     // Previous return: * mut mjsBody
-    todo!("re-translate: params renamed")
+    todo!("requires C++ object creation")
 }
 
 /// C: mjs_addSite (user/user_api.h:86)
@@ -412,7 +412,7 @@ pub fn mjs_add_site(body: *mut mjsBody, def: *const mjsDefault) -> *mut mjsSite 
     // NOTE: signature changed from previous IR version
     // Previous params: (body : * mut mjsBody, def : * const mjsDefault)
     // Previous return: * mut mjsSite
-    todo!("re-translate: params renamed")
+    todo!("requires C++ object creation")
 }
 
 /// C: mjs_addJoint (user/user_api.h:89)
@@ -422,7 +422,7 @@ pub fn mjs_add_joint(body: *mut mjsBody, def: *const mjsDefault) -> *mut mjsJoin
     // NOTE: signature changed from previous IR version
     // Previous params: (body : * mut mjsBody, def : * const mjsDefault)
     // Previous return: * mut mjsJoint
-    todo!("re-translate: params renamed")
+    todo!("requires C++ object creation")
 }
 
 /// C: mjs_addFreeJoint (user/user_api.h:92)
@@ -432,7 +432,7 @@ pub fn mjs_add_free_joint(body: *mut mjsBody) -> *mut mjsJoint {
     // NOTE: signature changed from previous IR version
     // Previous params: (body : * mut mjsBody)
     // Previous return: * mut mjsJoint
-    todo!("re-translate: params renamed")
+    todo!("requires C++ object creation")
 }
 
 /// C: mjs_addGeom (user/user_api.h:95)
@@ -442,7 +442,7 @@ pub fn mjs_add_geom(body: *mut mjsBody, def: *const mjsDefault) -> *mut mjsGeom 
     // NOTE: signature changed from previous IR version
     // Previous params: (body : * mut mjsBody, def : * const mjsDefault)
     // Previous return: * mut mjsGeom
-    todo!("re-translate: params renamed")
+    todo!("requires C++ object creation")
 }
 
 /// C: mjs_addCamera (user/user_api.h:98)
@@ -452,7 +452,7 @@ pub fn mjs_add_camera(body: *mut mjsBody, def: *const mjsDefault) -> *mut mjsCam
     // NOTE: signature changed from previous IR version
     // Previous params: (body : * mut mjsBody, def : * const mjsDefault)
     // Previous return: * mut mjsCamera
-    todo!("re-translate: params renamed")
+    todo!("requires C++ object creation")
 }
 
 /// C: mjs_addLight (user/user_api.h:101)
@@ -462,7 +462,7 @@ pub fn mjs_add_light(body: *mut mjsBody, def: *const mjsDefault) -> *mut mjsLigh
     // NOTE: signature changed from previous IR version
     // Previous params: (body : * mut mjsBody, def : * const mjsDefault)
     // Previous return: * mut mjsLight
-    todo!("re-translate: params renamed")
+    todo!("requires C++ object creation")
 }
 
 /// C: mjs_addFrame (user/user_api.h:104)
@@ -472,7 +472,7 @@ pub fn mjs_add_frame(body: *mut mjsBody, parentframe: *mut mjsFrame) -> *mut mjs
     // NOTE: signature changed from previous IR version
     // Previous params: (body : * mut mjsBody, parentframe : * mut mjsFrame)
     // Previous return: * mut mjsFrame
-    todo!("re-translate: params renamed")
+    todo!("requires C++ object creation")
 }
 
 /// C: mjs_delete (user/user_api.h:107)
@@ -482,7 +482,7 @@ pub fn mjs_delete(s: *mut mjSpec, element: *mut mjsElement) -> i32 {
     // NOTE: signature changed from previous IR version
     // Previous params: (s : * mut mjSpec, element : * mut mjsElement)
     // Previous return: i32
-    todo!("re-translate: params renamed")
+    todo!("requires C++ object creation")
 }
 
 /// C: mjs_addActuator (user/user_api.h:113)
@@ -492,7 +492,7 @@ pub fn mjs_add_actuator(s: *mut mjSpec, def: *const mjsDefault) -> *mut mjsActua
     // NOTE: signature changed from previous IR version
     // Previous params: (s : * mut mjSpec, def : * const mjsDefault)
     // Previous return: * mut mjsActuator
-    todo!("re-translate: params renamed")
+    todo!("requires C++ object creation")
 }
 
 /// C: mjs_addSensor (user/user_api.h:116)
@@ -502,7 +502,7 @@ pub fn mjs_add_sensor(s: *mut mjSpec) -> *mut mjsSensor {
     // NOTE: signature changed from previous IR version
     // Previous params: (s : * mut mjSpec)
     // Previous return: * mut mjsSensor
-    todo!("re-translate: params renamed")
+    todo!("requires C++ object creation")
 }
 
 /// C: mjs_addFlex (user/user_api.h:119)
@@ -512,7 +512,7 @@ pub fn mjs_add_flex(s: *mut mjSpec) -> *mut mjsFlex {
     // NOTE: signature changed from previous IR version
     // Previous params: (s : * mut mjSpec)
     // Previous return: * mut mjsFlex
-    todo!("re-translate: params renamed")
+    todo!("requires C++ object creation")
 }
 
 /// C: mjs_makeFlex (user/user_api.h:122)
@@ -527,7 +527,7 @@ pub fn mjs_make_flex(body: *mut mjsBody, name: *const i8, r#type: *const i8, dim
     // NOTE: signature changed from previous IR version
     // Previous params: (body : * mut mjsBody, name : * const i8, r#type : * const i8, dim : i32, dof : * const i8, count : * const i32, cellcount : * const i32, spacing : * const f64, scale : * const f64, radius : f64, mass : f64, inertiabox : f64, equality : i32, rigid : i32, flatskin : i32, elastic2d : i32, pos : * const f64, quat : * const f64, origin : * const f64, file : * const i8, vfs : * const mjVFS)
     // Previous return: * mut mjsFlex
-    todo!("re-translate: params renamed")
+    todo!("requires C++ object creation")
 }
 
 /// C: mjs_addPair (user/user_api.h:130)
@@ -537,7 +537,7 @@ pub fn mjs_add_pair(s: *mut mjSpec, def: *const mjsDefault) -> *mut mjsPair {
     // NOTE: signature changed from previous IR version
     // Previous params: (s : * mut mjSpec, def : * const mjsDefault)
     // Previous return: * mut mjsPair
-    todo!("re-translate: params renamed")
+    todo!("requires C++ object creation")
 }
 
 /// C: mjs_addExclude (user/user_api.h:133)
@@ -547,7 +547,7 @@ pub fn mjs_add_exclude(s: *mut mjSpec) -> *mut mjsExclude {
     // NOTE: signature changed from previous IR version
     // Previous params: (s : * mut mjSpec)
     // Previous return: * mut mjsExclude
-    todo!("re-translate: params renamed")
+    todo!("requires C++ object creation")
 }
 
 /// C: mjs_addEquality (user/user_api.h:136)
@@ -557,7 +557,7 @@ pub fn mjs_add_equality(s: *mut mjSpec, def: *const mjsDefault) -> *mut mjsEqual
     // NOTE: signature changed from previous IR version
     // Previous params: (s : * mut mjSpec, def : * const mjsDefault)
     // Previous return: * mut mjsEquality
-    todo!("re-translate: params renamed")
+    todo!("requires C++ object creation")
 }
 
 /// C: mjs_addTendon (user/user_api.h:139)
@@ -567,7 +567,7 @@ pub fn mjs_add_tendon(s: *mut mjSpec, def: *const mjsDefault) -> *mut mjsTendon 
     // NOTE: signature changed from previous IR version
     // Previous params: (s : * mut mjSpec, def : * const mjsDefault)
     // Previous return: * mut mjsTendon
-    todo!("re-translate: params renamed")
+    todo!("requires C++ object creation")
 }
 
 /// C: mjs_wrapSite (user/user_api.h:142)
@@ -576,7 +576,7 @@ pub fn mjs_wrap_site(tendon: *mut mjsTendon, name: *const i8) -> *mut mjsWrap {
     // NOTE: signature changed from previous IR version
     // Previous params: (tendon : * mut mjsTendon, name : * const i8)
     // Previous return: * mut mjsWrap
-    todo!("re-translate: params renamed")
+    todo!("requires C++ object creation")
 }
 
 /// C: mjs_wrapGeom (user/user_api.h:145)
@@ -585,7 +585,7 @@ pub fn mjs_wrap_geom(tendon: *mut mjsTendon, name: *const i8, sidesite: *const i
     // NOTE: signature changed from previous IR version
     // Previous params: (tendon : * mut mjsTendon, name : * const i8, sidesite : * const i8)
     // Previous return: * mut mjsWrap
-    todo!("re-translate: params renamed")
+    todo!("requires C++ object creation")
 }
 
 /// C: mjs_wrapJoint (user/user_api.h:148)
@@ -599,7 +599,7 @@ pub fn mjs_wrap_joint(tendon: *mut mjsTendon, name: *const i8, coef: f64) -> *mu
     // NOTE: signature changed from previous IR version
     // Previous params: (tendon : * mut mjsTendon, name : * const i8, coef : f64)
     // Previous return: * mut mjsWrap
-    todo!("re-translate: params renamed")
+    todo!("requires C++ object creation")
 }
 
 /// C: mjs_wrapPulley (user/user_api.h:151)
@@ -614,7 +614,7 @@ pub fn mjs_wrap_pulley(tendon: *mut mjsTendon, divisor: f64) -> *mut mjsWrap {
     // NOTE: signature changed from previous IR version
     // Previous params: (tendon : * mut mjsTendon, divisor : f64)
     // Previous return: * mut mjsWrap
-    todo!("re-translate: params renamed")
+    todo!("requires C++ object creation")
 }
 
 /// C: mjs_addNumeric (user/user_api.h:154)
@@ -624,7 +624,7 @@ pub fn mjs_add_numeric(s: *mut mjSpec) -> *mut mjsNumeric {
     // NOTE: signature changed from previous IR version
     // Previous params: (s : * mut mjSpec)
     // Previous return: * mut mjsNumeric
-    todo!("re-translate: params renamed")
+    todo!("requires C++ object creation")
 }
 
 /// C: mjs_addText (user/user_api.h:157)
@@ -634,7 +634,7 @@ pub fn mjs_add_text(s: *mut mjSpec) -> *mut mjsText {
     // NOTE: signature changed from previous IR version
     // Previous params: (s : * mut mjSpec)
     // Previous return: * mut mjsText
-    todo!("re-translate: params renamed")
+    todo!("requires C++ object creation")
 }
 
 /// C: mjs_addTuple (user/user_api.h:160)
@@ -644,7 +644,7 @@ pub fn mjs_add_tuple(s: *mut mjSpec) -> *mut mjsTuple {
     // NOTE: signature changed from previous IR version
     // Previous params: (s : * mut mjSpec)
     // Previous return: * mut mjsTuple
-    todo!("re-translate: params renamed")
+    todo!("requires C++ object creation")
 }
 
 /// C: mjs_addKey (user/user_api.h:163)
@@ -654,7 +654,7 @@ pub fn mjs_add_key(s: *mut mjSpec) -> *mut mjsKey {
     // NOTE: signature changed from previous IR version
     // Previous params: (s : * mut mjSpec)
     // Previous return: * mut mjsKey
-    todo!("re-translate: params renamed")
+    todo!("requires C++ object creation")
 }
 
 /// C: mjs_addPlugin (user/user_api.h:166)
@@ -664,7 +664,7 @@ pub fn mjs_add_plugin(s: *mut mjSpec) -> *mut mjsPlugin {
     // NOTE: signature changed from previous IR version
     // Previous params: (s : * mut mjSpec)
     // Previous return: * mut mjsPlugin
-    todo!("re-translate: params renamed")
+    todo!("requires C++ object creation")
 }
 
 /// C: mjs_addDefault (user/user_api.h:169)
@@ -673,7 +673,7 @@ pub fn mjs_add_default(s: *mut mjSpec, classname: *const i8, parent: *const mjsD
     // NOTE: signature changed from previous IR version
     // Previous params: (s : * mut mjSpec, classname : * const i8, parent : * const mjsDefault)
     // Previous return: * mut mjsDefault
-    todo!("re-translate: params renamed")
+    todo!("requires C++ object creation")
 }
 
 /// C: mjs_setToMotor (user/user_api.h:175)
@@ -682,7 +682,7 @@ pub fn mjs_set_to_motor(actuator: *mut mjsActuator) -> *const i8 {
     // NOTE: signature changed from previous IR version
     // Previous params: (actuator : * mut mjsActuator)
     // Previous return: * const i8
-    todo!("re-translate: params renamed")
+    todo!("requires C++ object creation")
 }
 
 /// C: mjs_setToPosition (user/user_api.h:178)
@@ -696,7 +696,7 @@ pub fn mjs_set_to_position(actuator: *mut mjsActuator, kp: f64, kv: *mut f64, da
     // NOTE: signature changed from previous IR version
     // Previous params: (actuator : * mut mjsActuator, kp : f64, kv : * mut f64, dampratio : * mut f64, timeconst : * mut f64, inheritrange : f64)
     // Previous return: * const i8
-    todo!("re-translate: params renamed")
+    todo!("requires C++ object creation")
 }
 
 /// C: mjs_setToIntVelocity (user/user_api.h:182)
@@ -711,7 +711,7 @@ pub fn mjs_set_to_int_velocity(actuator: *mut mjsActuator, kp: f64, kv: *mut f64
     // NOTE: signature changed from previous IR version
     // Previous params: (actuator : * mut mjsActuator, kp : f64, kv : * mut f64, dampratio : * mut f64, timeconst : * mut f64, inheritrange : f64)
     // Previous return: * const i8
-    todo!("re-translate: params renamed")
+    todo!("requires C++ object creation")
 }
 
 /// C: mjs_setToVelocity (user/user_api.h:186)
@@ -726,7 +726,7 @@ pub fn mjs_set_to_velocity(actuator: *mut mjsActuator, kv: f64) -> *const i8 {
     // NOTE: signature changed from previous IR version
     // Previous params: (actuator : * mut mjsActuator, kv : f64)
     // Previous return: * const i8
-    todo!("re-translate: params renamed")
+    todo!("requires C++ object creation")
 }
 
 /// C: mjs_setToDamper (user/user_api.h:189)
@@ -741,7 +741,7 @@ pub fn mjs_set_to_damper(actuator: *mut mjsActuator, kv: f64) -> *const i8 {
     // NOTE: signature changed from previous IR version
     // Previous params: (actuator : * mut mjsActuator, kv : f64)
     // Previous return: * const i8
-    todo!("re-translate: params renamed")
+    todo!("requires C++ object creation")
 }
 
 /// C: mjs_setToCylinder (user/user_api.h:192)
@@ -755,7 +755,7 @@ pub fn mjs_set_to_cylinder(actuator: *mut mjsActuator, timeconst: f64, bias: f64
     // NOTE: signature changed from previous IR version
     // Previous params: (actuator : * mut mjsActuator, timeconst : f64, bias : f64, area : f64, diameter : f64)
     // Previous return: * const i8
-    todo!("re-translate: params renamed")
+    todo!("requires C++ object creation")
 }
 
 /// C: mjs_setToMuscle (user/user_api.h:196)
@@ -769,7 +769,7 @@ pub fn mjs_set_to_muscle(actuator: *mut mjsActuator, timeconst: *mut f64, tausmo
     // NOTE: signature changed from previous IR version
     // Previous params: (actuator : * mut mjsActuator, timeconst : * mut f64, tausmooth : f64, range : * mut f64, force : f64, scale : f64, lmin : f64, lmax : f64, vmax : f64, fpmax : f64, fvmax : f64)
     // Previous return: * const i8
-    todo!("re-translate: params renamed")
+    todo!("requires C++ object creation")
 }
 
 /// C: mjs_setToAdhesion (user/user_api.h:201)
@@ -783,7 +783,7 @@ pub fn mjs_set_to_adhesion(actuator: *mut mjsActuator, gain: f64) -> *const i8 {
     // NOTE: signature changed from previous IR version
     // Previous params: (actuator : * mut mjsActuator, gain : f64)
     // Previous return: * const i8
-    todo!("re-translate: params renamed")
+    todo!("requires C++ object creation")
 }
 
 /// C: mjs_setToDCMotor (user/user_api.h:204)
@@ -797,7 +797,7 @@ pub fn mjs_set_to_dc_motor(actuator: *mut mjsActuator, motorconst: *mut f64, res
     // NOTE: signature changed from previous IR version
     // Previous params: (actuator : * mut mjsActuator, motorconst : * mut f64, resistance : f64, nominal : * mut f64, saturation : * mut f64, inductance : * mut f64, cogging : * mut f64, controller : * mut f64, thermal : * mut f64, lugre : * mut f64, input_mode : i32)
     // Previous return: * const i8
-    todo!("re-translate: params renamed")
+    todo!("requires C++ object creation")
 }
 
 /// C: mjs_addMesh (user/user_api.h:213)
@@ -807,7 +807,7 @@ pub fn mjs_add_mesh(s: *mut mjSpec, def: *const mjsDefault) -> *mut mjsMesh {
     // NOTE: signature changed from previous IR version
     // Previous params: (s : * mut mjSpec, def : * const mjsDefault)
     // Previous return: * mut mjsMesh
-    todo!("re-translate: params renamed")
+    todo!("requires C++ object creation")
 }
 
 /// C: mjs_addHField (user/user_api.h:216)
@@ -817,7 +817,7 @@ pub fn mjs_add_h_field(s: *mut mjSpec) -> *mut mjsHField {
     // NOTE: signature changed from previous IR version
     // Previous params: (s : * mut mjSpec)
     // Previous return: * mut mjsHField
-    todo!("re-translate: params renamed")
+    todo!("requires C++ object creation")
 }
 
 /// C: mjs_addSkin (user/user_api.h:219)
@@ -827,7 +827,7 @@ pub fn mjs_add_skin(s: *mut mjSpec) -> *mut mjsSkin {
     // NOTE: signature changed from previous IR version
     // Previous params: (s : * mut mjSpec)
     // Previous return: * mut mjsSkin
-    todo!("re-translate: params renamed")
+    todo!("requires C++ object creation")
 }
 
 /// C: mjs_addTexture (user/user_api.h:222)
@@ -837,7 +837,7 @@ pub fn mjs_add_texture(s: *mut mjSpec) -> *mut mjsTexture {
     // NOTE: signature changed from previous IR version
     // Previous params: (s : * mut mjSpec)
     // Previous return: * mut mjsTexture
-    todo!("re-translate: params renamed")
+    todo!("requires C++ object creation")
 }
 
 /// C: mjs_addMaterial (user/user_api.h:225)
@@ -847,7 +847,7 @@ pub fn mjs_add_material(s: *mut mjSpec, def: *const mjsDefault) -> *mut mjsMater
     // NOTE: signature changed from previous IR version
     // Previous params: (s : * mut mjSpec, def : * const mjsDefault)
     // Previous return: * mut mjsMaterial
-    todo!("re-translate: params renamed")
+    todo!("requires C++ object creation")
 }
 
 /// C: mjs_makeMesh (user/user_api.h:228)
@@ -862,7 +862,7 @@ pub fn mjs_make_mesh(mesh: *mut mjsMesh, builtin: u32, params: *mut f64, nparams
     // NOTE: signature changed from previous IR version
     // Previous params: (mesh : * mut mjsMesh, builtin : u32, params : * mut f64, nparams : i32)
     // Previous return: i32
-    todo!("re-translate: params renamed")
+    todo!("requires C++ object creation")
 }
 
 /// C: mjs_getSpec (user/user_api.h:233)
@@ -871,7 +871,7 @@ pub fn mjs_get_spec(element: *const mjsElement) -> *mut mjSpec {
     // NOTE: signature changed from previous IR version
     // Previous params: (element : * const mjsElement)
     // Previous return: * mut mjSpec
-    todo!("re-translate: params renamed")
+    todo!("requires C++ object creation")
 }
 
 /// C: mjs_getOriginSpec (user/user_api.h:237)
@@ -881,7 +881,7 @@ pub fn mjs_get_origin_spec(element: *const mjsElement) -> *mut mjSpec {
     // NOTE: signature changed from previous IR version
     // Previous params: (element : * const mjsElement)
     // Previous return: * mut mjSpec
-    todo!("re-translate: params renamed")
+    todo!("requires C++ object creation")
 }
 
 /// C: mjs_findSpec (user/user_api.h:240)
@@ -890,7 +890,7 @@ pub fn mjs_find_spec(spec: *const mjSpec, name: *const i8) -> *mut mjSpec {
     // NOTE: signature changed from previous IR version
     // Previous params: (spec : * const mjSpec, name : * const i8)
     // Previous return: * mut mjSpec
-    todo!("re-translate: params renamed")
+    todo!("requires C++ object creation")
 }
 
 /// C: mjs_findBody (user/user_api.h:243)
@@ -900,7 +900,7 @@ pub fn mjs_find_body(s: *const mjSpec, name: *const i8) -> *mut mjsBody {
     // NOTE: signature changed from previous IR version
     // Previous params: (s : * const mjSpec, name : * const i8)
     // Previous return: * mut mjsBody
-    todo!("re-translate: params renamed")
+    todo!("requires C++ object creation")
 }
 
 /// C: mjs_findElement (user/user_api.h:246)
@@ -910,7 +910,7 @@ pub fn mjs_find_element(s: *const mjSpec, r#type: u32, name: *const i8) -> *mut 
     // NOTE: signature changed from previous IR version
     // Previous params: (s : * const mjSpec, r#type : u32, name : * const i8)
     // Previous return: * mut mjsElement
-    todo!("re-translate: params renamed")
+    todo!("requires C++ object creation")
 }
 
 /// C: mjs_findChild (user/user_api.h:249)
@@ -919,7 +919,7 @@ pub fn mjs_find_child(body: *const mjsBody, name: *const i8) -> *mut mjsBody {
     // NOTE: signature changed from previous IR version
     // Previous params: (body : * const mjsBody, name : * const i8)
     // Previous return: * mut mjsBody
-    todo!("re-translate: params renamed")
+    todo!("requires C++ object creation")
 }
 
 /// C: mjs_getParent (user/user_api.h:252)
@@ -928,7 +928,7 @@ pub fn mjs_get_parent(element: *const mjsElement) -> *mut mjsBody {
     // NOTE: signature changed from previous IR version
     // Previous params: (element : * const mjsElement)
     // Previous return: * mut mjsBody
-    todo!("re-translate: params renamed")
+    todo!("requires C++ object creation")
 }
 
 /// C: mjs_getFrame (user/user_api.h:255)
@@ -937,7 +937,7 @@ pub fn mjs_get_frame(element: *const mjsElement) -> *mut mjsFrame {
     // NOTE: signature changed from previous IR version
     // Previous params: (element : * const mjsElement)
     // Previous return: * mut mjsFrame
-    todo!("re-translate: params renamed")
+    todo!("requires C++ object creation")
 }
 
 /// C: mjs_findFrame (user/user_api.h:258)
@@ -947,7 +947,7 @@ pub fn mjs_find_frame(s: *const mjSpec, name: *const i8) -> *mut mjsFrame {
     // NOTE: signature changed from previous IR version
     // Previous params: (s : * const mjSpec, name : * const i8)
     // Previous return: * mut mjsFrame
-    todo!("re-translate: params renamed")
+    todo!("requires C++ object creation")
 }
 
 /// C: mjs_getDefault (user/user_api.h:261)
@@ -956,7 +956,7 @@ pub fn mjs_get_default(element: *const mjsElement) -> *mut mjsDefault {
     // NOTE: signature changed from previous IR version
     // Previous params: (element : * const mjsElement)
     // Previous return: * mut mjsDefault
-    todo!("re-translate: params renamed")
+    todo!("requires C++ object creation")
 }
 
 /// C: mjs_findDefault (user/user_api.h:264)
@@ -965,7 +965,7 @@ pub fn mjs_find_default(s: *const mjSpec, classname: *const i8) -> *mut mjsDefau
     // NOTE: signature changed from previous IR version
     // Previous params: (s : * const mjSpec, classname : * const i8)
     // Previous return: * mut mjsDefault
-    todo!("re-translate: params renamed")
+    todo!("requires C++ object creation")
 }
 
 /// C: mjs_getSpecDefault (user/user_api.h:267)
@@ -975,7 +975,7 @@ pub fn mjs_get_spec_default(s: *const mjSpec) -> *mut mjsDefault {
     // NOTE: signature changed from previous IR version
     // Previous params: (s : * const mjSpec)
     // Previous return: * mut mjsDefault
-    todo!("re-translate: params renamed")
+    todo!("requires C++ object creation")
 }
 
 /// C: mjs_getId (user/user_api.h:270)
@@ -984,7 +984,7 @@ pub fn mjs_get_id(element: *const mjsElement) -> i32 {
     // NOTE: signature changed from previous IR version
     // Previous params: (element : * const mjsElement)
     // Previous return: i32
-    todo!("re-translate: params renamed")
+    todo!("requires C++ object creation")
 }
 
 /// C: mjs_firstChild (user/user_api.h:276)
@@ -994,7 +994,7 @@ pub fn mjs_first_child(body: *const mjsBody, r#type: u32, recurse: i32) -> *mut 
     // NOTE: signature changed from previous IR version
     // Previous params: (body : * const mjsBody, r#type : u32, recurse : i32)
     // Previous return: * mut mjsElement
-    todo!("re-translate: params renamed")
+    todo!("requires C++ object creation")
 }
 
 /// C: mjs_nextChild (user/user_api.h:280)
@@ -1004,7 +1004,7 @@ pub fn mjs_next_child(body: *const mjsBody, child: *const mjsElement, recurse: i
     // NOTE: signature changed from previous IR version
     // Previous params: (body : * const mjsBody, child : * const mjsElement, recurse : i32)
     // Previous return: * mut mjsElement
-    todo!("re-translate: params renamed")
+    todo!("requires C++ object creation")
 }
 
 /// C: mjs_firstElement (user/user_api.h:283)
@@ -1014,7 +1014,7 @@ pub fn mjs_first_element(s: *const mjSpec, r#type: u32) -> *mut mjsElement {
     // NOTE: signature changed from previous IR version
     // Previous params: (s : * const mjSpec, r#type : u32)
     // Previous return: * mut mjsElement
-    todo!("re-translate: params renamed")
+    todo!("requires C++ object creation")
 }
 
 /// C: mjs_nextElement (user/user_api.h:286)
@@ -1024,7 +1024,7 @@ pub fn mjs_next_element(s: *const mjSpec, element: *const mjsElement) -> *mut mj
     // NOTE: signature changed from previous IR version
     // Previous params: (s : * const mjSpec, element : * const mjsElement)
     // Previous return: * mut mjsElement
-    todo!("re-translate: params renamed")
+    todo!("requires C++ object creation")
 }
 
 /// C: mjs_getWrapTarget (user/user_api.h:289)
@@ -1034,7 +1034,7 @@ pub fn mjs_get_wrap_target(wrap: *const mjsWrap) -> *mut mjsElement {
     // NOTE: signature changed from previous IR version
     // Previous params: (wrap : * const mjsWrap)
     // Previous return: * mut mjsElement
-    todo!("re-translate: params renamed")
+    todo!("requires C++ object creation")
 }
 
 /// C: mjs_getWrapSideSite (user/user_api.h:292)
@@ -1044,7 +1044,7 @@ pub fn mjs_get_wrap_side_site(wrap: *const mjsWrap) -> *mut mjsSite {
     // NOTE: signature changed from previous IR version
     // Previous params: (wrap : * const mjsWrap)
     // Previous return: * mut mjsSite
-    todo!("re-translate: params renamed")
+    todo!("requires C++ object creation")
 }
 
 /// C: mjs_getWrapDivisor (user/user_api.h:295)
@@ -1059,7 +1059,7 @@ pub fn mjs_get_wrap_divisor(wrap: *const mjsWrap) -> f64 {
     // NOTE: signature changed from previous IR version
     // Previous params: (wrap : * const mjsWrap)
     // Previous return: f64
-    todo!("re-translate: params renamed")
+    todo!("requires C++ object creation")
 }
 
 /// C: mjs_getWrapCoef (user/user_api.h:298)
@@ -1074,7 +1074,7 @@ pub fn mjs_get_wrap_coef(wrap: *const mjsWrap) -> f64 {
     // NOTE: signature changed from previous IR version
     // Previous params: (wrap : * const mjsWrap)
     // Previous return: f64
-    todo!("re-translate: params renamed")
+    todo!("requires C++ object creation")
 }
 
 /// C: mjs_asBody (user/user_api.h:301)
@@ -1083,7 +1083,7 @@ pub fn mjs_as_body(element: *mut mjsElement) -> *mut mjsBody {
     // NOTE: signature changed from previous IR version
     // Previous params: (element : * mut mjsElement)
     // Previous return: * mut mjsBody
-    todo!("re-translate: params renamed")
+    todo!("requires C++ object creation")
 }
 
 /// C: mjs_asGeom (user/user_api.h:304)
@@ -1092,7 +1092,7 @@ pub fn mjs_as_geom(element: *mut mjsElement) -> *mut mjsGeom {
     // NOTE: signature changed from previous IR version
     // Previous params: (element : * mut mjsElement)
     // Previous return: * mut mjsGeom
-    todo!("re-translate: params renamed")
+    todo!("requires C++ object creation")
 }
 
 /// C: mjs_asJoint (user/user_api.h:307)
@@ -1101,7 +1101,7 @@ pub fn mjs_as_joint(element: *mut mjsElement) -> *mut mjsJoint {
     // NOTE: signature changed from previous IR version
     // Previous params: (element : * mut mjsElement)
     // Previous return: * mut mjsJoint
-    todo!("re-translate: params renamed")
+    todo!("requires C++ object creation")
 }
 
 /// C: mjs_asSite (user/user_api.h:310)
@@ -1110,7 +1110,7 @@ pub fn mjs_as_site(element: *mut mjsElement) -> *mut mjsSite {
     // NOTE: signature changed from previous IR version
     // Previous params: (element : * mut mjsElement)
     // Previous return: * mut mjsSite
-    todo!("re-translate: params renamed")
+    todo!("requires C++ object creation")
 }
 
 /// C: mjs_asCamera (user/user_api.h:313)
@@ -1119,7 +1119,7 @@ pub fn mjs_as_camera(element: *mut mjsElement) -> *mut mjsCamera {
     // NOTE: signature changed from previous IR version
     // Previous params: (element : * mut mjsElement)
     // Previous return: * mut mjsCamera
-    todo!("re-translate: params renamed")
+    todo!("requires C++ object creation")
 }
 
 /// C: mjs_asLight (user/user_api.h:316)
@@ -1128,7 +1128,7 @@ pub fn mjs_as_light(element: *mut mjsElement) -> *mut mjsLight {
     // NOTE: signature changed from previous IR version
     // Previous params: (element : * mut mjsElement)
     // Previous return: * mut mjsLight
-    todo!("re-translate: params renamed")
+    todo!("requires C++ object creation")
 }
 
 /// C: mjs_asFrame (user/user_api.h:319)
@@ -1137,7 +1137,7 @@ pub fn mjs_as_frame(element: *mut mjsElement) -> *mut mjsFrame {
     // NOTE: signature changed from previous IR version
     // Previous params: (element : * mut mjsElement)
     // Previous return: * mut mjsFrame
-    todo!("re-translate: params renamed")
+    todo!("requires C++ object creation")
 }
 
 /// C: mjs_asActuator (user/user_api.h:322)
@@ -1146,7 +1146,7 @@ pub fn mjs_as_actuator(element: *mut mjsElement) -> *mut mjsActuator {
     // NOTE: signature changed from previous IR version
     // Previous params: (element : * mut mjsElement)
     // Previous return: * mut mjsActuator
-    todo!("re-translate: params renamed")
+    todo!("requires C++ object creation")
 }
 
 /// C: mjs_asSensor (user/user_api.h:325)
@@ -1155,7 +1155,7 @@ pub fn mjs_as_sensor(element: *mut mjsElement) -> *mut mjsSensor {
     // NOTE: signature changed from previous IR version
     // Previous params: (element : * mut mjsElement)
     // Previous return: * mut mjsSensor
-    todo!("re-translate: params renamed")
+    todo!("requires C++ object creation")
 }
 
 /// C: mjs_asFlex (user/user_api.h:328)
@@ -1164,7 +1164,7 @@ pub fn mjs_as_flex(element: *mut mjsElement) -> *mut mjsFlex {
     // NOTE: signature changed from previous IR version
     // Previous params: (element : * mut mjsElement)
     // Previous return: * mut mjsFlex
-    todo!("re-translate: params renamed")
+    todo!("requires C++ object creation")
 }
 
 /// C: mjs_asPair (user/user_api.h:331)
@@ -1173,7 +1173,7 @@ pub fn mjs_as_pair(element: *mut mjsElement) -> *mut mjsPair {
     // NOTE: signature changed from previous IR version
     // Previous params: (element : * mut mjsElement)
     // Previous return: * mut mjsPair
-    todo!("re-translate: params renamed")
+    todo!("requires C++ object creation")
 }
 
 /// C: mjs_asEquality (user/user_api.h:334)
@@ -1182,7 +1182,7 @@ pub fn mjs_as_equality(element: *mut mjsElement) -> *mut mjsEquality {
     // NOTE: signature changed from previous IR version
     // Previous params: (element : * mut mjsElement)
     // Previous return: * mut mjsEquality
-    todo!("re-translate: params renamed")
+    todo!("requires C++ object creation")
 }
 
 /// C: mjs_asExclude (user/user_api.h:337)
@@ -1191,7 +1191,7 @@ pub fn mjs_as_exclude(element: *mut mjsElement) -> *mut mjsExclude {
     // NOTE: signature changed from previous IR version
     // Previous params: (element : * mut mjsElement)
     // Previous return: * mut mjsExclude
-    todo!("re-translate: params renamed")
+    todo!("requires C++ object creation")
 }
 
 /// C: mjs_asTendon (user/user_api.h:340)
@@ -1200,7 +1200,7 @@ pub fn mjs_as_tendon(element: *mut mjsElement) -> *mut mjsTendon {
     // NOTE: signature changed from previous IR version
     // Previous params: (element : * mut mjsElement)
     // Previous return: * mut mjsTendon
-    todo!("re-translate: params renamed")
+    todo!("requires C++ object creation")
 }
 
 /// C: mjs_asNumeric (user/user_api.h:343)
@@ -1209,7 +1209,7 @@ pub fn mjs_as_numeric(element: *mut mjsElement) -> *mut mjsNumeric {
     // NOTE: signature changed from previous IR version
     // Previous params: (element : * mut mjsElement)
     // Previous return: * mut mjsNumeric
-    todo!("re-translate: params renamed")
+    todo!("requires C++ object creation")
 }
 
 /// C: mjs_asText (user/user_api.h:346)
@@ -1218,7 +1218,7 @@ pub fn mjs_as_text(element: *mut mjsElement) -> *mut mjsText {
     // NOTE: signature changed from previous IR version
     // Previous params: (element : * mut mjsElement)
     // Previous return: * mut mjsText
-    todo!("re-translate: params renamed")
+    todo!("requires C++ object creation")
 }
 
 /// C: mjs_asTuple (user/user_api.h:349)
@@ -1227,7 +1227,7 @@ pub fn mjs_as_tuple(element: *mut mjsElement) -> *mut mjsTuple {
     // NOTE: signature changed from previous IR version
     // Previous params: (element : * mut mjsElement)
     // Previous return: * mut mjsTuple
-    todo!("re-translate: params renamed")
+    todo!("requires C++ object creation")
 }
 
 /// C: mjs_asKey (user/user_api.h:352)
@@ -1236,7 +1236,7 @@ pub fn mjs_as_key(element: *mut mjsElement) -> *mut mjsKey {
     // NOTE: signature changed from previous IR version
     // Previous params: (element : * mut mjsElement)
     // Previous return: * mut mjsKey
-    todo!("re-translate: params renamed")
+    todo!("requires C++ object creation")
 }
 
 /// C: mjs_asMesh (user/user_api.h:355)
@@ -1245,7 +1245,7 @@ pub fn mjs_as_mesh(element: *mut mjsElement) -> *mut mjsMesh {
     // NOTE: signature changed from previous IR version
     // Previous params: (element : * mut mjsElement)
     // Previous return: * mut mjsMesh
-    todo!("re-translate: params renamed")
+    todo!("requires C++ object creation")
 }
 
 /// C: mjs_asHField (user/user_api.h:358)
@@ -1254,7 +1254,7 @@ pub fn mjs_as_h_field(element: *mut mjsElement) -> *mut mjsHField {
     // NOTE: signature changed from previous IR version
     // Previous params: (element : * mut mjsElement)
     // Previous return: * mut mjsHField
-    todo!("re-translate: params renamed")
+    todo!("requires C++ object creation")
 }
 
 /// C: mjs_asSkin (user/user_api.h:361)
@@ -1263,7 +1263,7 @@ pub fn mjs_as_skin(element: *mut mjsElement) -> *mut mjsSkin {
     // NOTE: signature changed from previous IR version
     // Previous params: (element : * mut mjsElement)
     // Previous return: * mut mjsSkin
-    todo!("re-translate: params renamed")
+    todo!("requires C++ object creation")
 }
 
 /// C: mjs_asTexture (user/user_api.h:364)
@@ -1272,7 +1272,7 @@ pub fn mjs_as_texture(element: *mut mjsElement) -> *mut mjsTexture {
     // NOTE: signature changed from previous IR version
     // Previous params: (element : * mut mjsElement)
     // Previous return: * mut mjsTexture
-    todo!("re-translate: params renamed")
+    todo!("requires C++ object creation")
 }
 
 /// C: mjs_asMaterial (user/user_api.h:367)
@@ -1281,7 +1281,7 @@ pub fn mjs_as_material(element: *mut mjsElement) -> *mut mjsMaterial {
     // NOTE: signature changed from previous IR version
     // Previous params: (element : * mut mjsElement)
     // Previous return: * mut mjsMaterial
-    todo!("re-translate: params renamed")
+    todo!("requires C++ object creation")
 }
 
 /// C: mjs_asPlugin (user/user_api.h:370)
@@ -1290,7 +1290,7 @@ pub fn mjs_as_plugin(element: *mut mjsElement) -> *mut mjsPlugin {
     // NOTE: signature changed from previous IR version
     // Previous params: (element : * mut mjsElement)
     // Previous return: * mut mjsPlugin
-    todo!("re-translate: params renamed")
+    todo!("requires C++ object creation")
 }
 
 /// C: mjs_setName (user/user_api.h:376)
@@ -1300,7 +1300,7 @@ pub fn mjs_set_name(element: *mut mjsElement, name: *const i8) -> i32 {
     // NOTE: signature changed from previous IR version
     // Previous params: (element : * mut mjsElement, name : * const i8)
     // Previous return: i32
-    todo!("re-translate: params renamed")
+    todo!("requires C++ object creation")
 }
 
 /// C: mjs_setPluginAttributes (user/user_api.h:409)
@@ -1309,7 +1309,7 @@ pub fn mjs_set_plugin_attributes(plugin: *mut mjsPlugin, attributes: *mut ()) {
     // NOTE: signature changed from previous IR version
     // Previous params: (plugin : * mut mjsPlugin, attributes : * mut ())
     // Previous return: ()
-    todo!("re-translate: params renamed")
+    todo!("requires C++ object creation")
 }
 
 /// C: mjs_getWrapNum (user/user_api.h:424)
@@ -1319,7 +1319,7 @@ pub fn mjs_get_wrap_num(tendonspec: *const mjsTendon) -> i32 {
     // NOTE: signature changed from previous IR version
     // Previous params: (tendonspec : * const mjsTendon)
     // Previous return: i32
-    todo!("re-translate: params renamed")
+    todo!("requires C++ object creation")
 }
 
 /// C: mjs_getWrap (user/user_api.h:426)
@@ -1329,7 +1329,7 @@ pub fn mjs_get_wrap(tendonspec: *const mjsTendon, i: i32) -> *mut mjsWrap {
     // NOTE: signature changed from previous IR version
     // Previous params: (tendonspec : * const mjsTendon, i : i32)
     // Previous return: * mut mjsWrap
-    todo!("re-translate: params renamed")
+    todo!("requires C++ object creation")
 }
 
 /// C: mjs_getPluginAttributes (user/user_api.h:429)
@@ -1338,7 +1338,7 @@ pub fn mjs_get_plugin_attributes(plugin: *const mjsPlugin) -> *const () {
     // NOTE: signature changed from previous IR version
     // Previous params: (plugin : * const mjsPlugin)
     // Previous return: * const ()
-    todo!("re-translate: params renamed")
+    todo!("requires C++ object creation")
 }
 
 /// C: mjs_isAuthored (user/user_api.h:435)
@@ -1347,7 +1347,7 @@ pub fn mjs_is_authored(elem_ptr: *const (), field_ptr: *const ()) -> i32 {
     // NOTE: signature changed from previous IR version
     // Previous params: (elem_ptr : * const (), field_ptr : * const ())
     // Previous return: i32
-    todo!("re-translate: params renamed")
+    todo!("requires C++ object creation")
 }
 
 /// C: mjs_setAuthored (user/user_api.h:438)
@@ -1356,7 +1356,7 @@ pub fn mjs_set_authored(elem_ptr: *const (), field_ptr: *const (), authored: i32
     // NOTE: signature changed from previous IR version
     // Previous params: (elem_ptr : * const (), field_ptr : * const (), authored : i32)
     // Previous return: ()
-    todo!("re-translate: params renamed")
+    todo!("requires C++ object creation")
 }
 
 /// C: mjs_setDefault (user/user_api.h:441)
@@ -1365,7 +1365,7 @@ pub fn mjs_set_default(element: *mut mjsElement, def: *const mjsDefault) {
     // NOTE: signature changed from previous IR version
     // Previous params: (element : * mut mjsElement, def : * const mjsDefault)
     // Previous return: ()
-    todo!("re-translate: params renamed")
+    todo!("requires C++ object creation")
 }
 
 /// C: mjs_setFrame (user/user_api.h:444)
@@ -1375,7 +1375,7 @@ pub fn mjs_set_frame(dest: *mut mjsElement, frame: *mut mjsFrame) -> i32 {
     // NOTE: signature changed from previous IR version
     // Previous params: (dest : * mut mjsElement, frame : * mut mjsFrame)
     // Previous return: i32
-    todo!("re-translate: params renamed")
+    todo!("requires C++ object creation")
 }
 
 /// C: mjs_resolveOrientation (user/user_api.h:447)
@@ -1397,7 +1397,7 @@ pub fn mjs_body_to_frame(body: *mut *mut mjsBody) -> *mut mjsFrame {
     // NOTE: signature changed from previous IR version
     // Previous params: (body : * mut * mut mjsBody)
     // Previous return: * mut mjsFrame
-    todo!("re-translate: params renamed")
+    todo!("requires C++ object creation")
 }
 
 /// C: mjs_setUserValue (user/user_api.h:454)
@@ -1407,7 +1407,7 @@ pub fn mjs_set_user_value(element: *mut mjsElement, key: *const i8, data: *const
     // NOTE: signature changed from previous IR version
     // Previous params: (element : * mut mjsElement, key : * const i8, data : * const ())
     // Previous return: ()
-    todo!("re-translate: params renamed")
+    todo!("requires C++ object creation")
 }
 
 /// C: mjs_setUserValueWithCleanup (user/user_api.h:457)
@@ -1416,7 +1416,7 @@ pub fn mjs_set_user_value_with_cleanup(element: *mut mjsElement, key: *const i8,
     // NOTE: signature changed from previous IR version
     // Previous params: (element : * mut mjsElement, key : * const i8, data : * const (), cleanup : Option < unsafe extern "C" fn () >)
     // Previous return: ()
-    todo!("re-translate: params renamed")
+    todo!("requires C++ object creation")
 }
 
 /// C: mjs_getUserValue (user/user_api.h:462)
@@ -1425,7 +1425,7 @@ pub fn mjs_get_user_value(element: *mut mjsElement, key: *const i8) -> *const ()
     // NOTE: signature changed from previous IR version
     // Previous params: (element : * mut mjsElement, key : * const i8)
     // Previous return: * const ()
-    todo!("re-translate: params renamed")
+    todo!("requires C++ object creation")
 }
 
 /// C: mjs_deleteUserValue (user/user_api.h:465)
@@ -1434,7 +1434,7 @@ pub fn mjs_delete_user_value(element: *mut mjsElement, key: *const i8) {
     // NOTE: signature changed from previous IR version
     // Previous params: (element : * mut mjsElement, key : * const i8)
     // Previous return: ()
-    todo!("re-translate: params renamed")
+    todo!("requires C++ object creation")
 }
 
 /// C: mjs_sensorDim (user/user_api.h:468)
@@ -1444,7 +1444,7 @@ pub fn mjs_sensor_dim(sensor: *const mjsSensor) -> i32 {
     // NOTE: signature changed from previous IR version
     // Previous params: (sensor : * const mjsSensor)
     // Previous return: i32
-    todo!("re-translate: params renamed")
+    todo!("requires C++ object creation")
 }
 
 /// C: mj_getCacheCapacity (user/user_api.h:551)
@@ -1454,7 +1454,7 @@ pub fn mj_get_cache_capacity(cache: *const mjCache) -> usize {
     // NOTE: signature changed from previous IR version
     // Previous params: (cache : * const mjCache)
     // Previous return: usize
-    todo!("re-translate: params renamed")
+    todo!("requires C++ object creation")
 }
 
 /// C: mj_setCacheCapacity (user/user_api.h:554)
@@ -1464,7 +1464,7 @@ pub fn mj_set_cache_capacity(cache: *mut mjCache, size: usize) -> usize {
     // NOTE: signature changed from previous IR version
     // Previous params: (cache : * mut mjCache, size : usize)
     // Previous return: usize
-    todo!("re-translate: params renamed")
+    todo!("requires C++ object creation")
 }
 
 /// C: mj_getCacheSize (user/user_api.h:557)
@@ -1474,7 +1474,7 @@ pub fn mj_get_cache_size(cache: *const mjCache) -> usize {
     // NOTE: signature changed from previous IR version
     // Previous params: (cache : * const mjCache)
     // Previous return: usize
-    todo!("re-translate: params renamed")
+    todo!("requires C++ object creation")
 }
 
 /// C: mj_clearCache (user/user_api.h:560)
@@ -1484,7 +1484,7 @@ pub fn mj_clear_cache(cache: *mut mjCache) {
     // NOTE: signature changed from previous IR version
     // Previous params: (cache : * mut mjCache)
     // Previous return: ()
-    todo!("re-translate: params renamed")
+    todo!("requires C++ object creation")
 }
 
 /// C: mj_getCache (user/user_api.h:563)
@@ -1494,6 +1494,6 @@ pub fn mj_get_cache() -> *mut mjCache {
     // NOTE: signature changed from previous IR version
     // Previous params: ()
     // Previous return: * mut mjCache
-    todo!("re-translate: params renamed")
+    todo!("requires C++ object creation")
 }
 

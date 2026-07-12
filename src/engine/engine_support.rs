@@ -143,10 +143,7 @@ pub fn mj_set_keyframe(m: *mut mjModel, d: *const mjData, k: i32) {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_full_m(m: *const mjModel, d: *const mjData, dst: *mut f64) {
-    // NOTE: signature changed from previous IR version
-    // Previous params: (m : * const mjModel, d : * const mjData, dst : * mut f64)
-    // Previous return: ()
-    todo!("re-translate: params renamed")
+    todo!("requires mjModel/mjData field access")
 }
 
 /// C: mj_mulM (engine/engine_support.h:65)
@@ -343,7 +340,7 @@ pub fn mj_next_activation(m: *const mjModel, d: *const mjData, actuator_id: i32,
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_get_totalmass(m: *const mjModel) -> f64 {
-    todo!("requires mjModel body_mass array access")
+    todo!("requires mjModel field access")
 }
 
 /// C: mj_setTotalmass (engine/engine_support.h:118)
