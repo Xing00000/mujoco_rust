@@ -220,10 +220,16 @@ pub fn mju_band_mul_mat_vec(res: *mut f64, mat: *const f64, vec: *const f64, nto
 /// C: mju_bandDiag (engine/engine_util_solve.h:95)
 #[allow(unused_variables, non_snake_case)]
 pub fn mju_band_diag(i: i32, ntotal: i32, nband: i32, ndense: i32) -> i32 {
-    // NOTE: signature changed from previous IR version
-    // Previous params: (i : i32, ntotal : i32, nband : i32, ndense : i32)
-    // Previous return: i32
-    todo!("re-translate: params renamed")
+    let nsparse = ntotal - ndense;
+
+    // sparse part
+    if i < nsparse {
+        i * nband + nband - 1
+    }
+    // dense part
+    else {
+        nsparse * nband + (i - nsparse) * ntotal + i
+    }
 }
 
 /// C: mju_factorLU (engine/engine_util_solve.h:102)
@@ -322,10 +328,67 @@ pub fn mju_eig3(eigval: *mut f64, eigvec: *mut f64, quat: *mut f64, mat: *const 
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mju_qcqp2(res: *mut f64, Ain: *const f64, bin: *const f64, d: *const f64, r: f64) -> i32 {
-    // NOTE: signature changed from previous IR version
-    // Previous params: (res : * mut f64, Ain : * const f64, bin : * const f64, d : * const f64, r : f64)
-    // Previous return: i32
-    todo!("re-translate: params renamed")
+    // SAFETY: caller guarantees res[2], Ain[4], bin[2], d[2] are valid
+    unsafe {
+        // scale A,b so that constraint becomes x'*x <= r*r
+        let b1 = *bin.add(0) * *d.add(0);
+        let b2 = *bin.add(1) * *d.add(1);
+        let A11 = *Ain.add(0) * *d.add(0) * *d.add(0);
+        let A22 = *Ain.add(3) * *d.add(1) * *d.add(1);
+        let A12 = *Ain.add(1) * *d.add(0) * *d.add(1);
+
+        // Newton iteration
+        let mut la: f64 = 0.0;
+        let mut v1: f64 = 0.0;
+        let mut v2: f64 = 0.0;
+
+        for _iter in 0..20 {
+            // det(A+la)
+            let det = (A11 + la) * (A22 + la) - A12 * A12;
+
+            // check SPD
+            if det < 1e-10 {
+                *res.add(0) = 0.0;
+                *res.add(1) = 0.0;
+                return 0;
+            }
+
+            // P = inv(A+la)
+            let detinv = 1.0 / det;
+            let P11 = (A22 + la) * detinv;
+            let P22 = (A11 + la) * detinv;
+            let P12 = -A12 * detinv;
+
+            // v = -P*b
+            v1 = -P11 * b1 - P12 * b2;
+            v2 = -P12 * b1 - P22 * b2;
+
+            // val = v'*v - r*r
+            let val = v1 * v1 + v2 * v2 - r * r;
+
+            // check convergence
+            if val < 1e-10 {
+                break;
+            }
+
+            // deriv = -2 * v' * P * v
+            let deriv = -2.0 * (P11 * v1 * v1 + 2.0 * P12 * v1 * v2 + P22 * v2 * v2);
+
+            // compute update
+            let delta = -val / deriv;
+            if delta < 1e-10 {
+                break;
+            }
+
+            la += delta;
+        }
+
+        // undo scaling
+        *res.add(0) = v1 * *d.add(0);
+        *res.add(1) = v2 * *d.add(1);
+
+        if la != 0.0 { 1 } else { 0 }
+    }
 }
 
 /// C: mju_QCQP3 (engine/engine_util_solve.h:131)
@@ -336,10 +399,89 @@ pub fn mju_qcqp2(res: *mut f64, Ain: *const f64, bin: *const f64, d: *const f64,
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mju_qcqp3(res: *mut f64, Ain: *const f64, bin: *const f64, d: *const f64, r: f64) -> i32 {
-    // NOTE: signature changed from previous IR version
-    // Previous params: (res : * mut f64, Ain : * const f64, bin : * const f64, d : * const f64, r : f64)
-    // Previous return: i32
-    todo!("re-translate: params renamed")
+    // SAFETY: caller guarantees res[3], Ain[9], bin[3], d[3] are valid
+    unsafe {
+        // scale A,b so that constraint becomes x'*x <= r*r
+        let b1 = *bin.add(0) * *d.add(0);
+        let b2 = *bin.add(1) * *d.add(1);
+        let b3 = *bin.add(2) * *d.add(2);
+        let A11 = *Ain.add(0) * *d.add(0) * *d.add(0);
+        let A22 = *Ain.add(4) * *d.add(1) * *d.add(1);
+        let A33 = *Ain.add(8) * *d.add(2) * *d.add(2);
+        let A12 = *Ain.add(1) * *d.add(0) * *d.add(1);
+        let A13 = *Ain.add(2) * *d.add(0) * *d.add(2);
+        let A23 = *Ain.add(5) * *d.add(1) * *d.add(2);
+
+        // Newton iteration
+        let mut la: f64 = 0.0;
+        let mut v1: f64 = 0.0;
+        let mut v2: f64 = 0.0;
+        let mut v3: f64 = 0.0;
+
+        for _iter in 0..20 {
+            // unscaled P
+            let mut P11 = (A22 + la) * (A33 + la) - A23 * A23;
+            let mut P22 = (A11 + la) * (A33 + la) - A13 * A13;
+            let mut P33 = (A11 + la) * (A22 + la) - A12 * A12;
+            let mut P12 = A13 * A23 - A12 * (A33 + la);
+            let mut P13 = A12 * A23 - A13 * (A22 + la);
+            let mut P23 = A12 * A13 - A23 * (A11 + la);
+
+            // det(A+la)
+            let det = (A11 + la) * P11 + A12 * P12 + A13 * P13;
+
+            // check SPD
+            if det < 1e-10 {
+                *res.add(0) = 0.0;
+                *res.add(1) = 0.0;
+                *res.add(2) = 0.0;
+                return 0;
+            }
+
+            // detinv
+            let detinv = 1.0 / det;
+
+            // final P
+            P11 *= detinv;
+            P22 *= detinv;
+            P33 *= detinv;
+            P12 *= detinv;
+            P13 *= detinv;
+            P23 *= detinv;
+
+            // v = -P*b
+            v1 = -P11 * b1 - P12 * b2 - P13 * b3;
+            v2 = -P12 * b1 - P22 * b2 - P23 * b3;
+            v3 = -P13 * b1 - P23 * b2 - P33 * b3;
+
+            // val = v'*v - r*r
+            let val = v1 * v1 + v2 * v2 + v3 * v3 - r * r;
+
+            // check convergence
+            if val < 1e-10 {
+                break;
+            }
+
+            // deriv = -2 * v' * P * v
+            let deriv = -2.0 * (P11 * v1 * v1 + P22 * v2 * v2 + P33 * v3 * v3)
+                        - 4.0 * (P12 * v1 * v2 + P13 * v1 * v3 + P23 * v2 * v3);
+
+            // compute update
+            let delta = -val / deriv;
+            if delta < 1e-10 {
+                break;
+            }
+
+            la += delta;
+        }
+
+        // undo scaling
+        *res.add(0) = v1 * *d.add(0);
+        *res.add(1) = v2 * *d.add(1);
+        *res.add(2) = v3 * *d.add(2);
+
+        if la != 0.0 { 1 } else { 0 }
+    }
 }
 
 /// C: mju_QCQP (engine/engine_util_solve.h:136)

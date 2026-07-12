@@ -1169,10 +1169,17 @@ pub fn mju_n2d(res: *mut f64, vec: *const f64, n: i32) {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mju_gather(res: *mut f64, vec: *const f64, ind: *const i32, n: i32) {
-    // NOTE: signature changed from previous IR version
-    // Previous params: (res : * mut f64, vec : * const f64, ind : * const i32, n : i32)
-    // Previous return: ()
-    todo!("re-translate: params renamed")
+    // SAFETY: caller guarantees res, vec, ind are valid for n elements
+    unsafe {
+        if ind.is_null() {
+            crate::engine::engine_util_blas::mju_copy(res, vec, n);
+            return;
+        }
+
+        for i in 0..n as usize {
+            *res.add(i) = *vec.add(*ind.add(i) as usize);
+        }
+    }
 }
 
 /// C: mju_gatherMasked (engine/engine_util_misc.h:288)

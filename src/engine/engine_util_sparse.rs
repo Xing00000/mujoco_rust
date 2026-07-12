@@ -171,7 +171,28 @@ pub fn mju_add_to_mat_sparse(dst: *mut f64, rownnz: *mut i32, rowadr: *mut i32, 
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mju_add_to_sym_sparse(res: *mut f64, mat: *const f64, n: i32, rownnz: *const i32, rowadr: *const i32, colind: *const i32, flg_upper: i32) {
-    todo!() // mju_addToSymSparse
+    // SAFETY: caller guarantees all pointers valid for the sparse matrix dimensions
+    unsafe {
+        for i in 0..n as usize {
+            let start = *rowadr.add(i);
+            let end = start + *rownnz.add(i);
+            let mut adr = start;
+            while adr < end {
+                let val = *mat.add(adr as usize);
+                let j = *colind.add(adr as usize) as usize;
+
+                // lower + diagonal
+                *res.add(i * (n as usize) + j) += val;
+
+                // strict upper
+                if flg_upper != 0 && j < i {
+                    *res.add(j * (n as usize) + i) += val;
+                }
+
+                adr += 1;
+            }
+        }
+    }
 }
 
 /// C: mju_mulSymVecSparse (engine/engine_util_sparse.h:81)
