@@ -245,10 +245,96 @@ pub fn mj_solve_ld_legacy(m: *const mjModel, x: *mut f64, n: i32, qLD: *const f6
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_solve_ld(x: *mut f64, qLD: *const f64, qLDiagInv: *const f64, nv: i32, n: i32, rownnz: *const i32, rowadr: *const i32, colind: *const i32, index: *const i32) {
-    // WARNING: signature changed — verify body
-    // Previous params: (x : * mut f64, qLD : * const f64, qLDiagInv : * const f64, nv : i32, n : i32, rownnz : * const i32, rowadr : * const i32, colind : * const i32, index : * const i32)
-    // Previous return: ()
-    todo ! ()
+    use crate::engine::engine_util_sparse::mju_dot_sparse;
+    // SAFETY: caller guarantees all pointers valid for nv elements
+    unsafe {
+        // x <- L^-T x
+        let mut k: i32 = nv - 1;
+        while k >= 0 {
+            let i = if !index.is_null() { *index.add(k as usize) } else { k };
+
+            // skip diagonal rows
+            if *rownnz.add(i as usize) == 1 {
+                k -= 1;
+                continue;
+            }
+
+            if n == 1 {
+                let x_i = *x.add(i as usize);
+                if x_i != 0.0 {
+                    let start = *rowadr.add(i as usize);
+                    let end = start + *rownnz.add(i as usize) - 1;
+                    let mut adr = start;
+                    while adr < end {
+                        *x.add(*colind.add(adr as usize) as usize) -= *qLD.add(adr as usize) * x_i;
+                        adr += 1;
+                    }
+                }
+            } else {
+                let start = *rowadr.add(i as usize);
+                let end = start + *rownnz.add(i as usize) - 1;
+                let mut offset: i32 = 0;
+                while offset < n * nv {
+                    let x_i = *x.add((i + offset) as usize);
+                    if x_i != 0.0 {
+                        let mut adr = start;
+                        while adr < end {
+                            *x.add((offset + *colind.add(adr as usize)) as usize) -= *qLD.add(adr as usize) * x_i;
+                            adr += 1;
+                        }
+                    }
+                    offset += nv;
+                }
+            }
+            k -= 1;
+        }
+
+        // x <- D^-1 x
+        k = 0;
+        while k < nv {
+            let i = if !index.is_null() { *index.add(k as usize) } else { k };
+            let invD_i = *qLDiagInv.add(i as usize);
+
+            if n == 1 {
+                *x.add(i as usize) *= invD_i;
+            } else {
+                let mut offset: i32 = 0;
+                while offset < n * nv {
+                    *x.add((i + offset) as usize) *= invD_i;
+                    offset += nv;
+                }
+            }
+            k += 1;
+        }
+
+        // x <- L^-1 x
+        k = 0;
+        while k < nv {
+            let i = if !index.is_null() { *index.add(k as usize) } else { k };
+
+            // skip diagonal rows
+            if *rownnz.add(i as usize) == 1 {
+                k += 1;
+                continue;
+            }
+
+            let d = *rownnz.add(i as usize) - 1;
+            if d > 0 {
+                let adr = *rowadr.add(i as usize);
+
+                if n == 1 {
+                    *x.add(i as usize) -= mju_dot_sparse(qLD.add(adr as usize), x, d, colind.add(adr as usize));
+                } else {
+                    let mut offset: i32 = 0;
+                    while offset < n * nv {
+                        *x.add((i + offset) as usize) -= mju_dot_sparse(qLD.add(adr as usize), x.add(offset as usize), d, colind.add(adr as usize));
+                        offset += nv;
+                    }
+                }
+            }
+            k += 1;
+        }
+    }
 }
 
 /// C: mj_solveM (engine/engine_core_smooth.h:88)
@@ -275,10 +361,59 @@ pub fn mj_solve_m(m: *const mjModel, d: *mut mjData, x: *mut f64, y: *const f64,
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_solve_m2(m: *const mjModel, d: *mut mjData, x: *mut f64, y: *const f64, sqrtInvD: *const f64, n: i32) {
-    // WARNING: signature changed — verify body
-    // Previous params: (m : * const mjModel, d : * mut mjData, x : * mut f64, y : * const f64, sqrtInvD : * const f64, n : i32)
-    // Previous return: ()
-    todo ! ()
+    use crate::engine::engine_util_blas::mju_copy;
+    // SAFETY: caller guarantees all model/data pointers are valid
+    unsafe {
+        let nv = (*m).nv as i32;
+        let rownnz = (*m).M_rownnz;
+        let rowadr = (*m).M_rowadr;
+        let colind = (*m).M_colind;
+        let diagnum = (*m).dof_simplenum;
+        let qLD = (*d).qLD;
+
+        // x = y
+        mju_copy(x, y, n * nv);
+
+        // x <- L^-T x
+        let mut i: i32 = nv - 1;
+        while i > 0 {
+            // skip diagonal rows
+            if *diagnum.add(i as usize) != 0 {
+                i -= 1;
+                continue;
+            }
+
+            let start = *rowadr.add(i as usize);
+            let end = start + *rownnz.add(i as usize) - 1;
+
+            // process all vectors
+            let mut offset: i32 = 0;
+            while offset < n * nv {
+                let x_i = *x.add((i + offset) as usize);
+                if x_i != 0.0 {
+                    let mut adr = start;
+                    while adr < end {
+                        *x.add((offset + *colind.add(adr as usize)) as usize) -= *qLD.add(adr as usize) * x_i;
+                        adr += 1;
+                    }
+                }
+                offset += nv;
+            }
+            i -= 1;
+        }
+
+        // x <- D^-1/2 x
+        i = 0;
+        while i < nv {
+            let invD_i = *sqrtInvD.add(i as usize);
+            let mut offset: i32 = 0;
+            while offset < n * nv {
+                *x.add((i + offset) as usize) *= invD_i;
+                offset += nv;
+            }
+            i += 1;
+        }
+    }
 }
 
 /// C: mj_comVel (engine/engine_core_smooth.h:98)
