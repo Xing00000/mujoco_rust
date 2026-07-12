@@ -40,10 +40,40 @@ pub fn mju_dot_sparse_x3(res0: *mut f64, res1: *mut f64, res2: *mut f64, vec10: 
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mju_dense2sparse(res: *mut f64, mat: *const f64, nr: i32, nc: i32, rownnz: *mut i32, rowadr: *mut i32, colind: *mut i32, nnz: i32) -> i32 {
-    // NOTE: signature changed from previous IR version
-    // Previous params: (res : * mut f64, mat : * const f64, nr : i32, nc : i32, rownnz : * mut i32, rowadr : * mut i32, colind : * mut i32, nnz : i32)
-    // Previous return: i32
-    todo!("re-translate: params renamed")
+    // SAFETY: caller guarantees all pointers are valid for their respective dimensions
+    unsafe {
+        if nnz <= 0 {
+            return 1;
+        }
+
+        let mut adr: i32 = 0;
+
+        // find non-zeros and construct sparse
+        for r in 0..nr {
+            // init row
+            *rownnz.add(r as usize) = 0;
+            *rowadr.add(r as usize) = adr;
+
+            // find non-zeros
+            for c in 0..nc {
+                if *mat.add((r * nc + c) as usize) != 0.0 {
+                    // check for out of bounds
+                    if adr >= nnz {
+                        return 1;
+                    }
+
+                    // record index and count
+                    *colind.add(adr as usize) = c;
+                    *rownnz.add(r as usize) += 1;
+
+                    // copy element
+                    *res.add(adr as usize) = *mat.add((r * nc + c) as usize);
+                    adr += 1;
+                }
+            }
+        }
+        0
+    }
 }
 
 /// C: mju_sparse2dense (engine/engine_util_sparse.h:46)
@@ -430,10 +460,21 @@ pub fn mju_block(res: *mut f64, mat: *const f64, nc_mat: i32, nc_res: i32, nr: i
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mju_block_diag(res: *mut f64, mat: *const f64, nc_mat: i32, nc_res: i32, nb: i32, perm_r: *const i32, perm_c: *const i32, block_nr: *const i32, block_nc: *const i32, block_r: *const i32, block_c: *const i32) {
-    // NOTE: signature changed from previous IR version
-    // Previous params: (res : * mut f64, mat : * const f64, nc_mat : i32, nc_res : i32, nb : i32, perm_r : * const i32, perm_c : * const i32, block_nr : * const i32, block_nc : * const i32, block_r : * const i32, block_c : * const i32)
-    // Previous return: ()
-    todo!("re-translate: params renamed")
+    // SAFETY: caller guarantees all pointers are valid for their respective dimensions
+    unsafe {
+        for b in 0..nb as usize {
+            let adr = nc_res as usize * *block_r.add(b) as usize;
+            mju_block(
+                res.add(adr),
+                mat,
+                nc_mat,
+                *block_nc.add(b),
+                *block_nr.add(b),
+                perm_r.add(*block_r.add(b) as usize),
+                perm_c.add(*block_c.add(b) as usize),
+            );
+        }
+    }
 }
 
 /// C: mju_blockSparse (engine/engine_util_sparse.h:176)

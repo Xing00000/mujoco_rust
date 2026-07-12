@@ -457,10 +457,32 @@ pub fn mju_band2dense(res: *mut f64, mat: *const f64, ntotal: i32, nband: i32, n
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mju_dense2band(res: *mut f64, mat: *const f64, ntotal: i32, nband: i32, ndense: i32) {
-    // NOTE: signature changed from previous IR version
-    // Previous params: (res : * mut f64, mat : * const f64, ntotal : i32, nband : i32, ndense : i32)
-    // Previous return: ()
-    todo!("re-translate: params renamed")
+    // SAFETY: caller guarantees res and mat are valid for their dimensions
+    unsafe {
+        let nsparse = ntotal - ndense;
+
+        // sparse part
+        for i in 0..nsparse {
+            // number of non-zeros left of (i,i)
+            let width = if i < nband - 1 { i } else { nband - 1 };
+
+            // copy data
+            crate::engine::engine_util_blas::mju_copy(
+                res.add(((i + 1) * nband - (width + 1)) as usize),
+                mat.add((i * ntotal + i - width) as usize),
+                width + 1,
+            );
+        }
+
+        // dense part
+        for i in nsparse..ntotal {
+            crate::engine::engine_util_blas::mju_copy(
+                res.add((nsparse * nband + (i - nsparse) * ntotal) as usize),
+                mat.add((i * ntotal) as usize),
+                i + 1,
+            );
+        }
+    }
 }
 
 /// C: mju_bandMulMatVec (engine/engine_util_solve.h:91)

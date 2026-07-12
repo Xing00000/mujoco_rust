@@ -798,10 +798,60 @@ pub fn mju_is_valid_base64(s: *const i8) -> usize {
 /// Calls: _decode
 #[allow(unused_variables, non_snake_case)]
 pub fn mju_decode_base64(buf: *mut u8, s: *const i8) -> usize {
-    // NOTE: signature changed from previous IR version
-    // Previous params: (buf : * mut u8, s : * const i8)
-    // Previous return: usize
-    todo!("re-translate: params renamed")
+    // SAFETY: caller guarantees buf has enough space and s is a valid null-terminated base64 string
+    unsafe {
+        let mut i: usize = 0;
+        let mut j: usize = 0;
+
+        // loop over 24 bit chunks
+        while *s.add(i) != 0 {
+            // take next 24 bit chunk (4 chars; 6 bits each)
+            let char_1 = decode_base64_char(*s.add(i) as u8);
+            i += 1;
+            let char_2 = decode_base64_char(*s.add(i) as u8);
+            i += 1;
+            let char_3 = decode_base64_char(*s.add(i) as u8);
+            i += 1;
+            let char_4 = decode_base64_char(*s.add(i) as u8);
+            i += 1;
+
+            // merge into 32 bit int
+            let k: u32 = (char_1 << 18) | (char_2 << 12) | (char_3 << 6) | char_4;
+
+            // write up to three bytes (exclude padding at end)
+            *buf.add(j) = ((k >> 16) & 0xFF) as u8;
+            j += 1;
+            if *s.add(i - 2) as u8 != b'=' {
+                *buf.add(j) = ((k >> 8) & 0xFF) as u8;
+                j += 1;
+            }
+            if *s.add(i - 1) as u8 != b'=' {
+                *buf.add(j) = (k & 0xFF) as u8;
+                j += 1;
+            }
+        }
+        j
+    }
+}
+
+#[inline]
+fn decode_base64_char(ch: u8) -> u32 {
+    if ch >= b'A' && ch <= b'Z' {
+        return (ch - b'A') as u32;
+    }
+    if ch >= b'a' && ch <= b'z' {
+        return (ch - b'a') as u32 + 26;
+    }
+    if ch >= b'0' && ch <= b'9' {
+        return (ch - b'0') as u32 + 52;
+    }
+    if ch == b'+' {
+        return 62;
+    }
+    if ch == b'/' {
+        return 63;
+    }
+    0
 }
 
 /// C: mju_historyInit (engine/engine_util_misc.h:184)
@@ -1205,10 +1255,12 @@ pub fn mju_n2f(res: *mut f32, vec: *const f64, n: i32) {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mju_d2n(res: *mut f64, vec: *const f64, n: i32) {
-    // NOTE: signature changed from previous IR version
-    // Previous params: (res : * mut f64, vec : * const f64, n : i32)
-    // Previous return: ()
-    todo!("re-translate: params renamed")
+    // SAFETY: caller guarantees res and vec are valid for n elements
+    unsafe {
+        for i in 0..n as usize {
+            *res.add(i) = *vec.add(i);
+        }
+    }
 }
 
 /// C: mju_n2d (engine/engine_util_misc.h:282)
