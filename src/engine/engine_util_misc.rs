@@ -493,19 +493,83 @@ pub fn mju_shell_tfi_weights(nx: i32, ny: i32, nz: i32, i: i32, j: i32, k: i32, 
 /// C: mju_encodeBase64 (engine/engine_util_misc.h:163)
 #[allow(unused_variables, non_snake_case)]
 pub fn mju_encode_base64(buf: *mut i8, data: *const u8, ndata: usize) -> usize {
-    // NOTE: signature changed from previous IR version
-    // Previous params: (buf : * mut i8, data : * const u8, ndata : usize)
-    // Previous return: usize
-    todo!("re-translate: params renamed")
+    const TABLE: &[u8; 64] = b"ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
+
+    let mut i: usize = 0;
+    let mut j: usize = 0;
+
+    // SAFETY: data points to at least ndata bytes; buf points to at least 4*((ndata+2)/3)+1 bytes.
+    // We index within bounds derived from ndata.
+    unsafe {
+        while i + 3 <= ndata {
+            let byte_1: u32 = *data.add(i) as u32; i += 1;
+            let byte_2: u32 = *data.add(i) as u32; i += 1;
+            let byte_3: u32 = *data.add(i) as u32; i += 1;
+            let k: u32 = (byte_1 << 16) | (byte_2 << 8) | byte_3;
+            *buf.add(j) = TABLE[((k >> 18) & 63) as usize] as i8; j += 1;
+            *buf.add(j) = TABLE[((k >> 12) & 63) as usize] as i8; j += 1;
+            *buf.add(j) = TABLE[((k >> 6) & 63) as usize] as i8; j += 1;
+            *buf.add(j) = TABLE[((k >> 0) & 63) as usize] as i8; j += 1;
+        }
+
+        if i + 1 == ndata {
+            let byte_1: u32 = *data.add(i) as u32;
+            let k: u32 = byte_1 << 16;
+            *buf.add(j) = TABLE[((k >> 18) & 63) as usize] as i8; j += 1;
+            *buf.add(j) = TABLE[((k >> 12) & 63) as usize] as i8; j += 1;
+            *buf.add(j) = b'=' as i8; j += 1;
+            *buf.add(j) = b'=' as i8; j += 1;
+        }
+
+        if i + 2 == ndata {
+            let byte_1: u32 = *data.add(i) as u32; i += 1;
+            let byte_2: u32 = *data.add(i) as u32;
+            let k: u32 = (byte_1 << 16) + (byte_2 << 8);
+            *buf.add(j) = TABLE[((k >> 18) & 63) as usize] as i8; j += 1;
+            *buf.add(j) = TABLE[((k >> 12) & 63) as usize] as i8; j += 1;
+            *buf.add(j) = TABLE[((k >> 6) & 63) as usize] as i8; j += 1;
+            *buf.add(j) = b'=' as i8; j += 1;
+        }
+
+        *buf.add(j) = 0i8;
+    }
+
+    4 * ((ndata + 2) / 3) + 1
 }
 
 /// C: mju_isValidBase64 (engine/engine_util_misc.h:167)
 #[allow(unused_variables, non_snake_case)]
 pub fn mju_is_valid_base64(s: *const i8) -> usize {
-    // NOTE: signature changed from previous IR version
-    // Previous params: (s : * const i8)
-    // Previous return: usize
-    todo!("re-translate: params renamed")
+    let mut i: usize = 0;
+    let mut pad: i32 = 0;
+
+    // SAFETY: s is a valid null-terminated C string pointer.
+    unsafe {
+        while *s.add(i) != 0 && *s.add(i) != b'=' as i8 {
+            let c = *s.add(i);
+            if !(c as u8).is_ascii_alphanumeric() && c != b'/' as i8 && c != b'+' as i8 {
+                return 0;
+            }
+            i += 1;
+        }
+
+        if *s.add(i) == b'=' as i8 {
+            if *s.add(i + 1) == 0 {
+                pad = 1;
+            } else if *s.add(i + 1) == b'=' as i8 && *s.add(i + 2) == 0 {
+                pad = 2;
+            } else {
+                return 0;
+            }
+        }
+    }
+
+    let len: i32 = i as i32 + pad;
+    if len % 4 != 0 {
+        0
+    } else {
+        (3 * (len / 4) - pad) as usize
+    }
 }
 
 /// C: mju_decodeBase64 (engine/engine_util_misc.h:171)
@@ -671,10 +735,7 @@ pub fn mju_min(a: f64, b: f64) -> f64 {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mju_max(a: f64, b: f64) -> f64 {
-    // NOTE: signature changed from previous IR version
-    // Previous params: (a : f64, b : f64)
-    // Previous return: f64
-    todo!("re-translate: params renamed")
+    if a >= b { a } else { b }
 }
 
 /// C: mju_clip (engine/engine_util_misc.h:231)
@@ -796,19 +857,26 @@ pub fn mju_is_zero_byte(vec: *const u8, n: i32) -> i32 {
 /// C: mju_zeroInt (engine/engine_util_misc.h:261)
 #[allow(unused_variables, non_snake_case)]
 pub fn mju_zero_int(res: *mut i32, n: i32) {
-    // NOTE: signature changed from previous IR version
-    // Previous params: (res : * mut i32, n : i32)
-    // Previous return: ()
-    todo!("re-translate: params renamed")
+    // SAFETY: res points to at least n contiguous i32 elements.
+    // Equivalent to memset(res, 0, n*sizeof(int)).
+    unsafe {
+        let slice = core::slice::from_raw_parts_mut(res as *mut u8, n as usize * core::mem::size_of::<i32>());
+        for byte in slice.iter_mut() {
+            *byte = 0;
+        }
+    }
 }
 
 /// C: mju_copyInt (engine/engine_util_misc.h:264)
 #[allow(unused_variables, non_snake_case)]
 pub fn mju_copy_int(res: *mut i32, vec: *const i32, n: i32) {
-    // NOTE: signature changed from previous IR version
-    // Previous params: (res : * mut i32, vec : * const i32, n : i32)
-    // Previous return: ()
-    todo!("re-translate: params renamed")
+    // SAFETY: res and vec each point to at least n contiguous i32 elements.
+    // Equivalent to memcpy(res, vec, n*sizeof(int)).
+    unsafe {
+        let src = core::slice::from_raw_parts(vec as *const u8, n as usize * core::mem::size_of::<i32>());
+        let dst = core::slice::from_raw_parts_mut(res as *mut u8, n as usize * core::mem::size_of::<i32>());
+        dst.copy_from_slice(src);
+    }
 }
 
 /// C: mju_fillInt (engine/engine_util_misc.h:267)

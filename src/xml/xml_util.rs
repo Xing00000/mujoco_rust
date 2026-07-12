@@ -119,10 +119,29 @@ pub fn mj_x_util_write_vector(self_ptr: *mut mjXUtil, elem: *mut XMLElement, nam
 /// C: mjCopyError (xml/xml_util.h:32)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_copy_error(dst: *mut i8, src: *const i8, maxlen: i32) {
-    // NOTE: signature changed from previous IR version
-    // Previous params: (dst : * mut i8, src : * const i8, maxlen : i32)
-    // Previous return: ()
-    todo!("re-translate: params renamed")
+    unsafe {
+        // SAFETY: caller guarantees dst (if non-null) points to at least maxlen bytes,
+        // src points to a valid C string or at least maxlen bytes
+        if !dst.is_null() && maxlen > 0 {
+            // strncpy semantics: copy up to maxlen bytes, pad with 0 if src is shorter
+            let mut i: i32 = 0;
+            let mut found_null = false;
+            while i < maxlen {
+                if !found_null {
+                    let c = *src.add(i as usize);
+                    *dst.add(i as usize) = c;
+                    if c == 0 {
+                        found_null = true;
+                    }
+                } else {
+                    *dst.add(i as usize) = 0;
+                }
+                i += 1;
+            }
+            // ensure null termination
+            *dst.add((maxlen - 1) as usize) = 0;
+        }
+    }
 }
 
 /// C: FirstChildElement (xml/xml_util.h:36)

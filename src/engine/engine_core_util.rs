@@ -16,10 +16,28 @@ pub fn mj_is_pyramidal(m: *const mjModel) -> i32 {
 /// C: mj_isSparse (engine/engine_core_util.h:34)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_is_sparse(m: *const mjModel) -> i32 {
-    // NOTE: signature changed from previous IR version
-    // Previous params: (m : * const mjModel)
-    // Previous return: i32
-    todo!("re-translate: params renamed")
+    // mjModel offsets (verified via offsetof):
+    //   nv: offset 8 (mjtSize = i64)
+    //   opt.jacobian: offset 736 + 256 = 992 (int = i32)
+    // enum values: mjJAC_SPARSE = 1, mjJAC_AUTO = 2
+    const OFFSET_NV: usize = 8;
+    const OFFSET_OPT_JACOBIAN: usize = 736 + 256; // opt at 736, jacobian at 256 within opt
+    const MJ_JAC_SPARSE: i32 = 1;
+    const MJ_JAC_AUTO: i32 = 2;
+
+    // SAFETY: m is a valid pointer to mjModel (5512 bytes); we read fields at known offsets
+    // derived from the C struct layout (verified with offsetof).
+    unsafe {
+        let base = m as *const u8;
+        let jacobian = *(base.add(OFFSET_OPT_JACOBIAN) as *const i32);
+        let nv = *(base.add(OFFSET_NV) as *const i64);
+
+        if jacobian == MJ_JAC_SPARSE || (jacobian == MJ_JAC_AUTO && nv >= 60) {
+            1
+        } else {
+            0
+        }
+    }
 }
 
 /// C: mj_mergeChain (engine/engine_core_util.h:40)

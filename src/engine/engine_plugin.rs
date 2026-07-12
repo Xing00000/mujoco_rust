@@ -132,10 +132,14 @@ pub fn mjp_get_resource_provider(resource_name: *const i8) -> *const mjpResource
 /// C: mjp_getPluginAtSlot (engine/engine_plugin.h:50)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjp_get_plugin_at_slot(slot: i32) -> *const mjpPlugin {
-    // NOTE: signature changed from previous IR version
-    // Previous params: (slot : i32)
-    // Previous return: * const mjpPlugin
-    todo!("re-translate: params renamed")
+    // SAFETY: delegates to GlobalTable<mjpPlugin>::GetSingleton().GetAtSlot(slot)
+    // The singleton is always valid once initialized; GetAtSlot checks bounds.
+    unsafe {
+        crate::engine::engine_global_table::global_table_get_at_slot(
+            crate::engine::engine_global_table::global_table_get_singleton() as *mut GlobalTable,
+            slot,
+        ) as *const mjpPlugin
+    }
 }
 
 /// C: mjp_getResourceProviderAtSlot (engine/engine_plugin.h:53)

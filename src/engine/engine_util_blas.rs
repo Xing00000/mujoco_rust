@@ -348,10 +348,10 @@ pub fn mju_normalize4(vec: *mut f64) -> f64 {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mju_zero(res: *mut f64, n: i32) {
-    // NOTE: signature changed from previous IR version
-    // Previous params: (res : * mut f64, n : i32)
-    // Previous return: ()
-    todo!("re-translate: params renamed")
+    unsafe {
+        // SAFETY: caller guarantees res points to at least n f64 elements
+        std::ptr::write_bytes(res, 0, n as usize);
+    }
 }
 
 /// C: mju_zeroInd (engine/engine_util_blas.h:148)
@@ -390,10 +390,10 @@ pub fn mju_fill(res: *mut f64, val: f64, n: i32) {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mju_copy(res: *mut f64, vec: *const f64, n: i32) {
-    // NOTE: signature changed from previous IR version
-    // Previous params: (res : * mut f64, vec : * const f64, n : i32)
-    // Previous return: ()
-    todo!("re-translate: params renamed")
+    unsafe {
+        // SAFETY: caller guarantees res and vec point to at least n f64 elements, non-overlapping
+        std::ptr::copy_nonoverlapping(vec, res, n as usize);
+    }
 }
 
 /// C: mju_copyInd (engine/engine_util_blas.h:157)
@@ -446,10 +446,12 @@ pub fn mju_l1(vec: *const f64, n: i32) -> f64 {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mju_scl(res: *mut f64, vec: *const f64, scl: f64, n: i32) {
-    // NOTE: signature changed from previous IR version
-    // Previous params: (res : * mut f64, vec : * const f64, scl : f64, n : i32)
-    // Previous return: ()
-    todo!("re-translate: params renamed")
+    unsafe {
+        // SAFETY: caller guarantees res and vec point to at least n f64 elements
+        for i in 0..n {
+            *res.add(i as usize) = *vec.add(i as usize) * scl;
+        }
+    }
 }
 
 /// C: mju_add (engine/engine_util_blas.h:169)
@@ -558,10 +560,12 @@ pub fn mju_sub_from(res: *mut f64, vec: *const f64, n: i32) {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mju_add_to_scl(res: *mut f64, vec: *const f64, scl: f64, n: i32) {
-    // NOTE: signature changed from previous IR version
-    // Previous params: (res : * mut f64, vec : * const f64, scl : f64, n : i32)
-    // Previous return: ()
-    todo!("re-translate: params renamed")
+    unsafe {
+        // SAFETY: caller guarantees res and vec point to at least n f64 elements
+        for i in 0..n {
+            *res.add(i as usize) += *vec.add(i as usize) * scl;
+        }
+    }
 }
 
 /// C: mju_addToSclInd (engine/engine_util_blas.h:193)
@@ -630,10 +634,41 @@ pub fn mju_norm(res: *const f64, n: i32) -> f64 {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mju_dot(vec1: *const f64, vec2: *const f64, n: i32) -> f64 {
-    // NOTE: signature changed from previous IR version
-    // Previous params: (vec1 : * const f64, vec2 : * const f64, n : i32)
-    // Previous return: f64
-    todo!("re-translate: params renamed")
+    unsafe {
+        // SAFETY: caller guarantees vec1 and vec2 point to at least n f64 elements
+        let mut res: f64;
+        let mut i: i32 = 0;
+        let n_4: i32 = n - 4;
+        let mut res0: f64 = 0.0;
+        let mut res1: f64 = 0.0;
+        let mut res2: f64 = 0.0;
+        let mut res3: f64 = 0.0;
+
+        while i <= n_4 {
+            res0 += *vec1.add(i as usize) * *vec2.add(i as usize);
+            res1 += *vec1.add((i + 1) as usize) * *vec2.add((i + 1) as usize);
+            res2 += *vec1.add((i + 2) as usize) * *vec2.add((i + 2) as usize);
+            res3 += *vec1.add((i + 3) as usize) * *vec2.add((i + 3) as usize);
+            i += 4;
+        }
+
+        // CRITICAL: preserve exact reduction order (res0+res2)+(res1+res3)
+        res = (res0 + res2) + (res1 + res3);
+
+        let n_i = n - i;
+        if n_i == 3 {
+            res += *vec1.add(i as usize) * *vec2.add(i as usize)
+                + *vec1.add((i + 1) as usize) * *vec2.add((i + 1) as usize)
+                + *vec1.add((i + 2) as usize) * *vec2.add((i + 2) as usize);
+        } else if n_i == 2 {
+            res += *vec1.add(i as usize) * *vec2.add(i as usize)
+                + *vec1.add((i + 1) as usize) * *vec2.add((i + 1) as usize);
+        } else if n_i == 1 {
+            res += *vec1.add(i as usize) * *vec2.add(i as usize);
+        }
+
+        res
+    }
 }
 
 /// C: mju_dotInd (engine/engine_util_blas.h:208)
