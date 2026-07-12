@@ -708,10 +708,10 @@ pub struct tinyxml2__XMLElement { _opaque: [u8; 0] }
 #[derive(Clone, Copy)]
 pub struct type_parameter_0_0 { _opaque: [u8; 0] }
 
-/// Opaque C struct: union__unnamed_at__Users_xing_Desktop_projects_c2rust_bitexact_projects_mujoco_src_engine_engine_collision_convex_h_52_3 (unsized, pointer-only)
-#[repr(C)]
+/// Sized opaque C struct: union__unnamed_at__Users_xing_Desktop_projects_c2rust_bitexact_projects_mujoco_src_engine_engine_collision_convex_h_52_3 (160 bytes, align 8)
+#[repr(C, align(8))]
 #[derive(Clone, Copy)]
-pub struct union__unnamed_at__Users_xing_Desktop_projects_c2rust_bitexact_projects_mujoco_src_engine_engine_collision_convex_h_52_3 { _opaque: [u8; 0] }
+pub struct union__unnamed_at__Users_xing_Desktop_projects_c2rust_bitexact_projects_mujoco_src_engine_engine_collision_convex_h_52_3 { pub _data: [u8; 160] }
 
 /// Opaque C struct: va_list (unsized, pointer-only)
 #[repr(C)]
