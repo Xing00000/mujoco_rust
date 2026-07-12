@@ -12,10 +12,34 @@ use crate::types::*;
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mju_dot_sparse2(vec1: *const f64, ind1: *const i32, nnz1: i32, vec2: *const f64, ind2: *const i32, nnz2: i32) -> f64 {
-    // NOTE: signature changed from previous IR version
-    // Previous params: (vec1 : * const f64, ind1 : * const i32, nnz1 : i32, vec2 : * const f64, ind2 : * const i32, nnz2 : i32)
-    // Previous return: f64
-    todo!("re-translate: params renamed")
+    // SAFETY: vec1/ind1 have nnz1 elements, vec2/ind2 have nnz2 elements per caller contract
+    unsafe {
+        let mut i1: i32 = 0;
+        let mut i2: i32 = 0;
+        let mut res: f64 = 0.0;
+
+        // check for empty array
+        if nnz1 == 0 || nnz2 == 0 {
+            return 0.0;
+        }
+
+        while i1 < nnz1 && i2 < nnz2 {
+            let adr1 = *ind1.add(i1 as usize);
+            let adr2 = *ind2.add(i2 as usize);
+
+            if adr1 == adr2 {
+                res += *vec1.add(i1 as usize) * *vec2.add(i2 as usize);
+                i1 += 1;
+                i2 += 1;
+            } else if adr1 < adr2 {
+                i1 += 1;
+            } else {
+                i2 += 1;
+            }
+        }
+
+        res
+    }
 }
 
 /// C: mju_dotSparseX3 (engine/engine_util_sparse.h:36)

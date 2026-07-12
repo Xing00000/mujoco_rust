@@ -523,10 +523,53 @@ pub fn mju_band_diag(i: i32, ntotal: i32, nband: i32, ndense: i32) -> i32 {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mju_factor_lu(A: *mut f64, n: i32, pivot: *mut i32) -> i32 {
-    // NOTE: signature changed from previous IR version
-    // Previous params: (A : * mut f64, n : i32, pivot : * mut i32)
-    // Previous return: i32
-    todo!("re-translate: params renamed")
+    const MJ_MINVAL: f64 = 1E-15_f64;
+
+    // SAFETY: A points to n*n matrix, pivot points to n ints per caller contract
+    unsafe {
+        for k in 0..n {
+            // initialize pivot
+            *pivot.add(k as usize) = k;
+
+            // find pivot: max absolute value in column k, rows k..n-1
+            let mut maxval = (*A.add((k * n + k) as usize)).abs();
+            let mut maxrow = k;
+            for i in (k + 1)..n {
+                let val = (*A.add((i * n + k) as usize)).abs();
+                if val > maxval {
+                    maxval = val;
+                    maxrow = i;
+                }
+            }
+
+            // check singularity
+            if maxval < MJ_MINVAL {
+                return 0;
+            }
+
+            // swap rows k and maxrow
+            if maxrow != k {
+                *pivot.add(k as usize) = maxrow;
+                for j in 0..n {
+                    let tmp = *A.add((k * n + j) as usize);
+                    *A.add((k * n + j) as usize) = *A.add((maxrow * n + j) as usize);
+                    *A.add((maxrow * n + j) as usize) = tmp;
+                }
+            }
+
+            // compute multipliers and update trailing submatrix
+            let diaginv = 1.0 / *A.add((k * n + k) as usize);
+            for i in (k + 1)..n {
+                *A.add((i * n + k) as usize) *= diaginv;
+                let a_ik = *A.add((i * n + k) as usize);
+                for j in (k + 1)..n {
+                    *A.add((i * n + j) as usize) -= a_ik * *A.add((k * n + j) as usize);
+                }
+            }
+        }
+
+        1
+    }
 }
 
 /// C: mju_solveLU (engine/engine_util_solve.h:105)

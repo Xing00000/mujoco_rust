@@ -441,10 +441,35 @@ pub fn mj_dcmotor_slots(dynprm: *const f64, gainprm: *const f64) -> mjDCMotorSlo
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mju_geom_semi_axes(semiaxes: *mut f64, size: *const f64, r#type: u32) {
-    // NOTE: signature changed from previous IR version
-    // Previous params: (semiaxes : * mut f64, size : * const f64, r#type : u32)
-    // Previous return: ()
-    todo!("re-translate: params renamed")
+    const GEOM_SPHERE: u32 = 2;
+    const GEOM_CAPSULE: u32 = 3;
+    const GEOM_CYLINDER: u32 = 5;
+
+    // SAFETY: semiaxes and size point to valid f64 arrays of length >= 3 per caller contract
+    unsafe {
+        match r#type {
+            GEOM_SPHERE => {
+                *semiaxes.add(0) = *size.add(0);
+                *semiaxes.add(1) = *size.add(0);
+                *semiaxes.add(2) = *size.add(0);
+            }
+            GEOM_CAPSULE => {
+                *semiaxes.add(0) = *size.add(0);
+                *semiaxes.add(1) = *size.add(0);
+                *semiaxes.add(2) = *size.add(1) + *size.add(0);
+            }
+            GEOM_CYLINDER => {
+                *semiaxes.add(0) = *size.add(0);
+                *semiaxes.add(1) = *size.add(0);
+                *semiaxes.add(2) = *size.add(1);
+            }
+            _ => {
+                *semiaxes.add(0) = *size.add(0);
+                *semiaxes.add(1) = *size.add(1);
+                *semiaxes.add(2) = *size.add(2);
+            }
+        }
+    }
 }
 
 /// C: mju_insideGeom (engine/engine_util_misc.h:74)
@@ -785,7 +810,53 @@ pub fn mju_shell_tfi_weights(nx: i32, ny: i32, nz: i32, i: i32, j: i32, k: i32, 
 /// C: mju_encodeBase64 (engine/engine_util_misc.h:163)
 #[allow(unused_variables, non_snake_case)]
 pub fn mju_encode_base64(buf: *mut i8, data: *const u8, ndata: usize) -> usize {
-    todo!() // mju_encodeBase64
+    const TABLE: &[u8; 64] = b"ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
+
+    // SAFETY: buf points to a buffer large enough for base64 output, data points to ndata bytes
+    unsafe {
+        let mut i: usize = 0;
+        let mut j: usize = 0;
+
+        // loop over 24 bit chunks
+        while i + 3 <= ndata {
+            let byte_1 = *data.add(i) as u32; i += 1;
+            let byte_2 = *data.add(i) as u32; i += 1;
+            let byte_3 = *data.add(i) as u32; i += 1;
+
+            let k = (byte_1 << 16) | (byte_2 << 8) | byte_3;
+
+            *buf.add(j) = TABLE[((k >> 18) & 63) as usize] as i8; j += 1;
+            *buf.add(j) = TABLE[((k >> 12) & 63) as usize] as i8; j += 1;
+            *buf.add(j) = TABLE[((k >>  6) & 63) as usize] as i8; j += 1;
+            *buf.add(j) = TABLE[((k >>  0) & 63) as usize] as i8; j += 1;
+        }
+
+        // one byte left
+        if i + 1 == ndata {
+            let byte_1 = *data.add(i) as u32;
+            let k = byte_1 << 16;
+            *buf.add(j) = TABLE[((k >> 18) & 63) as usize] as i8; j += 1;
+            *buf.add(j) = TABLE[((k >> 12) & 63) as usize] as i8; j += 1;
+            *buf.add(j) = b'=' as i8; j += 1;
+            *buf.add(j) = b'=' as i8; j += 1;
+        }
+
+        // two bytes left
+        if i + 2 == ndata {
+            let byte_1 = *data.add(i) as u32; i += 1;
+            let byte_2 = *data.add(i) as u32;
+
+            let k = (byte_1 << 16) + (byte_2 << 8);
+
+            *buf.add(j) = TABLE[((k >> 18) & 63) as usize] as i8; j += 1;
+            *buf.add(j) = TABLE[((k >> 12) & 63) as usize] as i8; j += 1;
+            *buf.add(j) = TABLE[((k >>  6) & 63) as usize] as i8; j += 1;
+            *buf.add(j) = b'=' as i8; j += 1;
+        }
+
+        *buf.add(j) = 0; // null terminator
+        4 * ((ndata + 2) / 3) + 1
+    }
 }
 
 /// C: mju_isValidBase64 (engine/engine_util_misc.h:167)
@@ -1307,10 +1378,13 @@ pub fn mju_gather(res: *mut f64, vec: *const f64, ind: *const i32, n: i32) {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mju_gather_masked(res: *mut f64, vec: *const f64, ind: *const i32, n: i32) {
-    // NOTE: signature changed from previous IR version
-    // Previous params: (res : * mut f64, vec : * const f64, ind : * const i32, n : i32)
-    // Previous return: ()
-    todo!("re-translate: params renamed")
+    // SAFETY: res, vec, ind point to valid arrays of length >= n per caller contract
+    unsafe {
+        for i in 0..n as usize {
+            let idx = *ind.add(i);
+            *res.add(i) = if idx >= 0 { *vec.add(idx as usize) } else { 0.0 };
+        }
+    }
 }
 
 /// C: mju_scatter (engine/engine_util_misc.h:291)
