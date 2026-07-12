@@ -241,10 +241,50 @@ pub fn mju_chol_factor_numeric(L: *mut f64, n: i32, mindiag: f64, L_rownnz: *con
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mju_chol_solve_sparse(res: *mut f64, mat: *const f64, vec: *const f64, n: i32, rownnz: *const i32, rowadr: *const i32, colind: *const i32) {
-    // WARNING: signature changed — verify body
-    // Previous params: (res : * mut f64, mat : * const f64, vec : * const f64, n : i32, rownnz : * const i32, rowadr : * const i32, colind : * const i32)
-    // Previous return: ()
-    todo ! ()
+    use crate::engine::engine_util_blas::mju_copy;
+    use crate::engine::engine_util_sparse::mju_dot_sparse;
+    // SAFETY: caller guarantees all pointers valid for sparse matrix layout
+    unsafe {
+        // copy input into result
+        mju_copy(res, vec, n);
+
+        // res <- L^-T res
+        let mut i: i32 = n - 1;
+        while i >= 0 {
+            if *res.add(i as usize) != 0.0 {
+                let adr = *rowadr.add(i as usize);
+                let nnz = *rownnz.add(i as usize);
+
+                // x(i) /= L(i,i)
+                *res.add(i as usize) /= *mat.add((adr + nnz - 1) as usize);
+                let tmp = *res.add(i as usize);
+
+                // x(j) -= L(i,j)*x(i), j=0:i-1
+                let mut j: i32 = 0;
+                while j < nnz - 1 {
+                    *res.add(*colind.add((adr + j) as usize) as usize) -= *mat.add((adr + j) as usize) * tmp;
+                    j += 1;
+                }
+            }
+            i -= 1;
+        }
+
+        // res <- L^-1 res
+        i = 0;
+        while i < n {
+            let adr = *rowadr.add(i as usize);
+            let nnz = *rownnz.add(i as usize);
+
+            // x(i) -= sum_j L(i,j)*x(j)
+            if nnz > 1 {
+                *res.add(i as usize) -= mju_dot_sparse(mat.add(adr as usize), res, nnz - 1, colind.add(adr as usize));
+            }
+
+            // x(i) /= L(i,i)
+            *res.add(i as usize) /= *mat.add((adr + nnz - 1) as usize);
+            i += 1;
+        }
+    }
 }
 
 /// C: mju_cholUpdateSparse (engine/engine_util_solve.h:66)
@@ -693,10 +733,42 @@ pub fn mju_factor_lu_sparse(LU: *mut f64, n: i32, scratch: *mut i32, rownnz: *co
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mju_solve_lu_sparse(res: *mut f64, LU: *const f64, vec: *const f64, n: i32, rownnz: *const i32, rowadr: *const i32, diag: *const i32, colind: *const i32, index: *const i32) {
-    // WARNING: signature changed — verify body
-    // Previous params: (res : * mut f64, LU : * const f64, vec : * const f64, n : i32, rownnz : * const i32, rowadr : * const i32, diag : * const i32, colind : * const i32, index : * const i32)
-    // Previous return: ()
-    todo ! ()
+    use crate::engine::engine_util_sparse::mju_dot_sparse;
+    // SAFETY: caller guarantees all pointers valid for sparse matrix layout
+    unsafe {
+        // solve (U+I)*res = vec
+        let mut k: i32 = n - 1;
+        while k >= 0 {
+            let i = if !index.is_null() { *index.add(k as usize) } else { k };
+
+            // init: diagonal of (U+I) is 1
+            *res.add(i as usize) = *vec.add(i as usize);
+
+            let d1 = *diag.add(i as usize) + 1;
+            let nnz = *rownnz.add(i as usize) - d1;
+            if nnz > 0 {
+                let adr = *rowadr.add(i as usize) + d1;
+                *res.add(i as usize) -= mju_dot_sparse(LU.add(adr as usize), res, nnz, colind.add(adr as usize));
+            }
+            k -= 1;
+        }
+
+        // solve L*res(new) = res
+        k = 0;
+        while k < n {
+            let i = if !index.is_null() { *index.add(k as usize) } else { k };
+
+            let d = *diag.add(i as usize);
+            let adr = *rowadr.add(i as usize);
+            if d > 0 {
+                *res.add(i as usize) -= mju_dot_sparse(LU.add(adr as usize), res, d, colind.add(adr as usize));
+            }
+
+            // divide by diagonal element of L
+            *res.add(i as usize) /= *LU.add((adr + d) as usize);
+            k += 1;
+        }
+    }
 }
 
 /// C: mju_solve3 (engine/engine_util_solve.h:118)
