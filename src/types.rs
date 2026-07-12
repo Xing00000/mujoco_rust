@@ -498,70 +498,70 @@ pub struct mj_XMLPrinter { _opaque: [u8; 0] }
 #[derive(Clone, Copy)]
 pub struct mjcPair { _opaque: [u8; 0] }
 
-/// Opaque C struct: mjfCanDecode (unsized, pointer-only)
-#[repr(C)]
+/// Sized opaque C struct: mjfCanDecode (8 bytes, align 8)
+#[repr(C, align(8))]
 #[derive(Clone, Copy)]
-pub struct mjfCanDecode { _opaque: [u8; 0] }
+pub struct mjfCanDecode { pub _data: [u8; 8] }
 
-/// Opaque C struct: mjfCloseResource (unsized, pointer-only)
-#[repr(C)]
+/// Sized opaque C struct: mjfCloseResource (8 bytes, align 8)
+#[repr(C, align(8))]
 #[derive(Clone, Copy)]
-pub struct mjfCloseResource { _opaque: [u8; 0] }
+pub struct mjfCloseResource { pub _data: [u8; 8] }
 
-/// Opaque C struct: mjfDecode (unsized, pointer-only)
-#[repr(C)]
+/// Sized opaque C struct: mjfDecode (8 bytes, align 8)
+#[repr(C, align(8))]
 #[derive(Clone, Copy)]
-pub struct mjfDecode { _opaque: [u8; 0] }
+pub struct mjfDecode { pub _data: [u8; 8] }
 
-/// Opaque C struct: mjfEncode (unsized, pointer-only)
-#[repr(C)]
+/// Sized opaque C struct: mjfEncode (8 bytes, align 8)
+#[repr(C, align(8))]
 #[derive(Clone, Copy)]
-pub struct mjfEncode { _opaque: [u8; 0] }
+pub struct mjfEncode { pub _data: [u8; 8] }
 
-/// Opaque C struct: mjfItemEnable (unsized, pointer-only)
-#[repr(C)]
+/// Sized opaque C struct: mjfItemEnable (8 bytes, align 8)
+#[repr(C, align(8))]
 #[derive(Clone, Copy)]
-pub struct mjfItemEnable { _opaque: [u8; 0] }
+pub struct mjfItemEnable { pub _data: [u8; 8] }
 
 /// Opaque C struct: mjfLogHandler (unsized, pointer-only)
 #[repr(C)]
 #[derive(Clone, Copy)]
 pub struct mjfLogHandler { _opaque: [u8; 0] }
 
-/// Opaque C struct: mjfMountResource (unsized, pointer-only)
-#[repr(C)]
+/// Sized opaque C struct: mjfMountResource (8 bytes, align 8)
+#[repr(C, align(8))]
 #[derive(Clone, Copy)]
-pub struct mjfMountResource { _opaque: [u8; 0] }
+pub struct mjfMountResource { pub _data: [u8; 8] }
 
-/// Opaque C struct: mjfOpenResource (unsized, pointer-only)
-#[repr(C)]
+/// Sized opaque C struct: mjfOpenResource (8 bytes, align 8)
+#[repr(C, align(8))]
 #[derive(Clone, Copy)]
-pub struct mjfOpenResource { _opaque: [u8; 0] }
+pub struct mjfOpenResource { pub _data: [u8; 8] }
 
 /// Opaque C struct: mjfPluginLibraryLoadCallback (unsized, pointer-only)
 #[repr(C)]
 #[derive(Clone, Copy)]
 pub struct mjfPluginLibraryLoadCallback { _opaque: [u8; 0] }
 
-/// Opaque C struct: mjfReadResource (unsized, pointer-only)
-#[repr(C)]
+/// Sized opaque C struct: mjfReadResource (8 bytes, align 8)
+#[repr(C, align(8))]
 #[derive(Clone, Copy)]
-pub struct mjfReadResource { _opaque: [u8; 0] }
+pub struct mjfReadResource { pub _data: [u8; 8] }
 
-/// Opaque C struct: mjfResourceModified (unsized, pointer-only)
-#[repr(C)]
+/// Sized opaque C struct: mjfResourceModified (8 bytes, align 8)
+#[repr(C, align(8))]
 #[derive(Clone, Copy)]
-pub struct mjfResourceModified { _opaque: [u8; 0] }
+pub struct mjfResourceModified { pub _data: [u8; 8] }
 
-/// Opaque C struct: mjfUnmountResource (unsized, pointer-only)
-#[repr(C)]
+/// Sized opaque C struct: mjfUnmountResource (8 bytes, align 8)
+#[repr(C, align(8))]
 #[derive(Clone, Copy)]
-pub struct mjfUnmountResource { _opaque: [u8; 0] }
+pub struct mjfUnmountResource { pub _data: [u8; 8] }
 
-/// Opaque C struct: mjsAuthored (unsized, pointer-only)
-#[repr(C)]
+/// Sized opaque C struct: mjsAuthored (72 bytes, align 8)
+#[repr(C, align(8))]
 #[derive(Clone, Copy)]
-pub struct mjsAuthored { _opaque: [u8; 0] }
+pub struct mjsAuthored { pub _data: [u8; 72] }
 
 /// Opaque C struct: mjsExclude (unsized, pointer-only)
 #[repr(C)]
@@ -573,10 +573,10 @@ pub struct mjsExclude { _opaque: [u8; 0] }
 #[derive(Clone, Copy)]
 pub struct mjsWrap { _opaque: [u8; 0] }
 
-/// Opaque C struct: mjtBool (unsized, pointer-only)
-#[repr(C)]
+/// Sized opaque C struct: mjtBool (1 bytes, align 8)
+#[repr(C, align(8))]
 #[derive(Clone, Copy)]
-pub struct mjtBool { _opaque: [u8; 0] }
+pub struct mjtBool { pub _data: [u8; 1] }
 
 /// Opaque C struct: mjtDof (unsized, pointer-only)
 #[repr(C)]
@@ -588,20 +588,20 @@ pub struct mjtDof { _opaque: [u8; 0] }
 #[derive(Clone, Copy)]
 pub struct mjtFcompType { _opaque: [u8; 0] }
 
-/// Opaque C struct: mjuiItem____anonymous_union_at__Users_xing_Desktop_projects_c2rust_bitexact_projects_mujoco_include_mujoco_mjui_h_256_3 (unsized, pointer-only)
-#[repr(C)]
+/// Sized opaque C struct: mjuiItem____anonymous_union_at__Users_xing_Desktop_projects_c2rust_bitexact_projects_mujoco_include_mujoco_mjui_h_256_3 (1408 bytes, align 8)
+#[repr(C, align(8))]
 #[derive(Clone, Copy)]
-pub struct mjuiItem____anonymous_union_at__Users_xing_Desktop_projects_c2rust_bitexact_projects_mujoco_include_mujoco_mjui_h_256_3 { _opaque: [u8; 0] }
+pub struct mjuiItem____anonymous_union_at__Users_xing_Desktop_projects_c2rust_bitexact_projects_mujoco_include_mujoco_mjui_h_256_3 { pub _data: [u8; 1408] }
 
-/// Opaque C struct: mjuiThemeColor (unsized, pointer-only)
-#[repr(C)]
+/// Sized opaque C struct: mjuiThemeColor (336 bytes, align 8)
+#[repr(C, align(8))]
 #[derive(Clone, Copy)]
-pub struct mjuiThemeColor { _opaque: [u8; 0] }
+pub struct mjuiThemeColor { pub _data: [u8; 336] }
 
-/// Opaque C struct: mjuiThemeSpacing (unsized, pointer-only)
-#[repr(C)]
+/// Sized opaque C struct: mjuiThemeSpacing (52 bytes, align 8)
+#[repr(C, align(8))]
 #[derive(Clone, Copy)]
-pub struct mjuiThemeSpacing { _opaque: [u8; 0] }
+pub struct mjuiThemeSpacing { pub _data: [u8; 52] }
 
 /// Opaque C struct: mujoco__user__FilePath (unsized, pointer-only)
 #[repr(C)]
@@ -653,45 +653,45 @@ pub struct std__uint64_t { _opaque: [u8; 0] }
 #[derive(Clone, Copy)]
 pub struct string { _opaque: [u8; 0] }
 
-/// Opaque C struct: string_type (unsized, pointer-only)
-#[repr(C)]
+/// Sized opaque C struct: string_type (4 bytes, align 8)
+#[repr(C, align(8))]
 #[derive(Clone, Copy)]
-pub struct string_type { _opaque: [u8; 0] }
+pub struct string_type { pub _data: [u8; 4] }
 
 /// Opaque C struct: string_view (unsized, pointer-only)
 #[repr(C)]
 #[derive(Clone, Copy)]
 pub struct string_view { _opaque: [u8; 0] }
 
-/// Opaque C struct: struct__unnamed_at__Users_xing_Desktop_projects_c2rust_bitexact_projects_mujoco_include_mujoco_mjmodel_h_132_3 (unsized, pointer-only)
-#[repr(C)]
+/// Sized opaque C struct: struct__unnamed_at__Users_xing_Desktop_projects_c2rust_bitexact_projects_mujoco_include_mujoco_mjmodel_h_132_3 (52 bytes, align 8)
+#[repr(C, align(8))]
 #[derive(Clone, Copy)]
-pub struct struct__unnamed_at__Users_xing_Desktop_projects_c2rust_bitexact_projects_mujoco_include_mujoco_mjmodel_h_132_3 { _opaque: [u8; 0] }
+pub struct struct__unnamed_at__Users_xing_Desktop_projects_c2rust_bitexact_projects_mujoco_include_mujoco_mjmodel_h_132_3 { pub _data: [u8; 52] }
 
-/// Opaque C struct: struct__unnamed_at__Users_xing_Desktop_projects_c2rust_bitexact_projects_mujoco_include_mujoco_mjmodel_h_148_3 (unsized, pointer-only)
-#[repr(C)]
+/// Sized opaque C struct: struct__unnamed_at__Users_xing_Desktop_projects_c2rust_bitexact_projects_mujoco_include_mujoco_mjmodel_h_148_3 (20 bytes, align 8)
+#[repr(C, align(8))]
 #[derive(Clone, Copy)]
-pub struct struct__unnamed_at__Users_xing_Desktop_projects_c2rust_bitexact_projects_mujoco_include_mujoco_mjmodel_h_148_3 { _opaque: [u8; 0] }
+pub struct struct__unnamed_at__Users_xing_Desktop_projects_c2rust_bitexact_projects_mujoco_include_mujoco_mjmodel_h_148_3 { pub _data: [u8; 20] }
 
-/// Opaque C struct: struct__unnamed_at__Users_xing_Desktop_projects_c2rust_bitexact_projects_mujoco_include_mujoco_mjmodel_h_156_3 (unsized, pointer-only)
-#[repr(C)]
+/// Sized opaque C struct: struct__unnamed_at__Users_xing_Desktop_projects_c2rust_bitexact_projects_mujoco_include_mujoco_mjmodel_h_156_3 (40 bytes, align 8)
+#[repr(C, align(8))]
 #[derive(Clone, Copy)]
-pub struct struct__unnamed_at__Users_xing_Desktop_projects_c2rust_bitexact_projects_mujoco_include_mujoco_mjmodel_h_156_3 { _opaque: [u8; 0] }
+pub struct struct__unnamed_at__Users_xing_Desktop_projects_c2rust_bitexact_projects_mujoco_include_mujoco_mjmodel_h_156_3 { pub _data: [u8; 40] }
 
-/// Opaque C struct: struct__unnamed_at__Users_xing_Desktop_projects_c2rust_bitexact_projects_mujoco_include_mujoco_mjmodel_h_163_3 (unsized, pointer-only)
-#[repr(C)]
+/// Sized opaque C struct: struct__unnamed_at__Users_xing_Desktop_projects_c2rust_bitexact_projects_mujoco_include_mujoco_mjmodel_h_163_3 (52 bytes, align 8)
+#[repr(C, align(8))]
 #[derive(Clone, Copy)]
-pub struct struct__unnamed_at__Users_xing_Desktop_projects_c2rust_bitexact_projects_mujoco_include_mujoco_mjmodel_h_163_3 { _opaque: [u8; 0] }
+pub struct struct__unnamed_at__Users_xing_Desktop_projects_c2rust_bitexact_projects_mujoco_include_mujoco_mjmodel_h_163_3 { pub _data: [u8; 52] }
 
-/// Opaque C struct: struct__unnamed_at__Users_xing_Desktop_projects_c2rust_bitexact_projects_mujoco_include_mujoco_mjmodel_h_179_3 (unsized, pointer-only)
-#[repr(C)]
+/// Sized opaque C struct: struct__unnamed_at__Users_xing_Desktop_projects_c2rust_bitexact_projects_mujoco_include_mujoco_mjmodel_h_179_3 (68 bytes, align 8)
+#[repr(C, align(8))]
 #[derive(Clone, Copy)]
-pub struct struct__unnamed_at__Users_xing_Desktop_projects_c2rust_bitexact_projects_mujoco_include_mujoco_mjmodel_h_179_3 { _opaque: [u8; 0] }
+pub struct struct__unnamed_at__Users_xing_Desktop_projects_c2rust_bitexact_projects_mujoco_include_mujoco_mjmodel_h_179_3 { pub _data: [u8; 68] }
 
-/// Opaque C struct: struct__unnamed_at__Users_xing_Desktop_projects_c2rust_bitexact_projects_mujoco_include_mujoco_mjmodel_h_199_3 (unsized, pointer-only)
-#[repr(C)]
+/// Sized opaque C struct: struct__unnamed_at__Users_xing_Desktop_projects_c2rust_bitexact_projects_mujoco_include_mujoco_mjmodel_h_199_3 (400 bytes, align 8)
+#[repr(C, align(8))]
 #[derive(Clone, Copy)]
-pub struct struct__unnamed_at__Users_xing_Desktop_projects_c2rust_bitexact_projects_mujoco_include_mujoco_mjmodel_h_199_3 { _opaque: [u8; 0] }
+pub struct struct__unnamed_at__Users_xing_Desktop_projects_c2rust_bitexact_projects_mujoco_include_mujoco_mjmodel_h_199_3 { pub _data: [u8; 400] }
 
 /// Opaque C struct: struct_mjpResourceProvider (unsized, pointer-only)
 #[repr(C)]
@@ -708,10 +708,10 @@ pub struct tinyxml2__XMLElement { _opaque: [u8; 0] }
 #[derive(Clone, Copy)]
 pub struct type_parameter_0_0 { _opaque: [u8; 0] }
 
-/// Opaque C struct: union__unnamed_at__Users_xing_Desktop_projects_c2rust_bitexact_projects_mujoco_src_engine_engine_collision_convex_h_52_3 (unsized, pointer-only)
-#[repr(C)]
+/// Sized opaque C struct: union__unnamed_at__Users_xing_Desktop_projects_c2rust_bitexact_projects_mujoco_src_engine_engine_collision_convex_h_52_3 (160 bytes, align 8)
+#[repr(C, align(8))]
 #[derive(Clone, Copy)]
-pub struct union__unnamed_at__Users_xing_Desktop_projects_c2rust_bitexact_projects_mujoco_src_engine_engine_collision_convex_h_52_3 { _opaque: [u8; 0] }
+pub struct union__unnamed_at__Users_xing_Desktop_projects_c2rust_bitexact_projects_mujoco_src_engine_engine_collision_convex_h_52_3 { pub _data: [u8; 160] }
 
 /// Opaque C struct: va_list (unsized, pointer-only)
 #[repr(C)]

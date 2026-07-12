@@ -1,5 +1,5 @@
 //! Port of: engine/engine_core_smooth.c
-//! IR hash: c6d98e4f4b63b7f2
+//! IR hash: 32301b9dc9774d55
 //! CODEGEN: signatures locked. Only fill todo!() bodies.
 
 use crate::types::*;
@@ -216,98 +216,7 @@ pub fn mj_solve_ld_legacy(m: *const mjModel, x: *mut f64, n: i32, qLD: *const f6
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_solve_ld(x: *mut f64, qLD: *const f64, qLDiagInv: *const f64, nv: i32, n: i32, rownnz: *const i32, rowadr: *const i32, colind: *const i32, index: *const i32) {
-    // SAFETY: All pointers are guaranteed valid by the caller (MuJoCo engine internals).
-    // Pointer arithmetic uses checked offsets derived from sparse matrix structure.
-    unsafe {
-        // x <- L^-T x
-        let mut k: i32 = nv - 1;
-        while k >= 0 {
-            let i: i32 = if !index.is_null() { *index.add(k as usize) } else { k };
-            if *rownnz.add(i as usize) == 1 {
-                k -= 1;
-                continue;
-            }
-            if n == 1 {
-                let x_i: f64 = *x.add(i as usize);
-                if x_i != 0.0 {
-                    let start: i32 = *rowadr.add(i as usize);
-                    let end: i32 = start + *rownnz.add(i as usize) - 1;
-                    let mut adr: i32 = start;
-                    while adr < end {
-                        *x.add(*colind.add(adr as usize) as usize) -= *qLD.add(adr as usize) * x_i;
-                        adr += 1;
-                    }
-                }
-            } else {
-                let start: i32 = *rowadr.add(i as usize);
-                let end: i32 = start + *rownnz.add(i as usize) - 1;
-                let mut offset: i32 = 0;
-                while offset < n * nv {
-                    let x_i: f64 = *x.add((i + offset) as usize);
-                    if x_i != 0.0 {
-                        let mut adr: i32 = start;
-                        while adr < end {
-                            *x.add((offset + *colind.add(adr as usize)) as usize) -= *qLD.add(adr as usize) * x_i;
-                            adr += 1;
-                        }
-                    }
-                    offset += nv;
-                }
-            }
-            k -= 1;
-        }
-
-        // x <- D^-1 x
-        let mut k: i32 = 0;
-        while k < nv {
-            let i: i32 = if !index.is_null() { *index.add(k as usize) } else { k };
-            let invD_i: f64 = *qLDiagInv.add(i as usize);
-            if n == 1 {
-                *x.add(i as usize) *= invD_i;
-            } else {
-                let mut offset: i32 = 0;
-                while offset < n * nv {
-                    *x.add((i + offset) as usize) *= invD_i;
-                    offset += nv;
-                }
-            }
-            k += 1;
-        }
-
-        // x <- L^-1 x
-        let mut k: i32 = 0;
-        while k < nv {
-            let i: i32 = if !index.is_null() { *index.add(k as usize) } else { k };
-            if *rownnz.add(i as usize) == 1 {
-                k += 1;
-                continue;
-            }
-            let d: i32 = *rownnz.add(i as usize) - 1;
-            if d > 0 {
-                let adr: i32 = *rowadr.add(i as usize);
-                if n == 1 {
-                    *x.add(i as usize) -= crate::engine::engine_util_sparse::mju_dot_sparse(
-                        qLD.add(adr as usize),
-                        x as *const f64,
-                        d,
-                        colind.add(adr as usize),
-                    );
-                } else {
-                    let mut offset: i32 = 0;
-                    while offset < n * nv {
-                        *x.add((i + offset) as usize) -= crate::engine::engine_util_sparse::mju_dot_sparse(
-                            qLD.add(adr as usize),
-                            (x as *const f64).add(offset as usize),
-                            d,
-                            colind.add(adr as usize),
-                        );
-                        offset += nv;
-                    }
-                }
-            }
-            k += 1;
-        }
-    }
+    todo!() // mj_solveLD
 }
 
 /// C: mj_solveM (engine/engine_core_smooth.h:88)

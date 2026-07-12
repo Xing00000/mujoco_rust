@@ -1,5 +1,5 @@
 //! Port of: engine/engine_util_spatial.h
-//! IR hash: c6d98e4f4b63b7f2
+//! IR hash: 32301b9dc9774d55
 //! CODEGEN: signatures locked. Only fill todo!() bodies.
 
 use crate::types::*;
@@ -113,34 +113,7 @@ pub fn mju_sub_quat(res: *mut f64, qa: *const f64, qb: *const f64) {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mju_quat2mat(res: *mut f64, quat: *const f64) {
-    unsafe {
-        // SAFETY: caller guarantees quat points to 4 f64 and res points to 9 f64
-        if *quat.add(0) == 1.0 && *quat.add(1) == 0.0 && *quat.add(2) == 0.0 && *quat.add(3) == 0.0 {
-            *res.add(0) = 1.0; *res.add(1) = 0.0; *res.add(2) = 0.0;
-            *res.add(3) = 0.0; *res.add(4) = 1.0; *res.add(5) = 0.0;
-            *res.add(6) = 0.0; *res.add(7) = 0.0; *res.add(8) = 1.0;
-        } else {
-            let q00 = *quat.add(0) * *quat.add(0);
-            let q01 = *quat.add(0) * *quat.add(1);
-            let q02 = *quat.add(0) * *quat.add(2);
-            let q03 = *quat.add(0) * *quat.add(3);
-            let q11 = *quat.add(1) * *quat.add(1);
-            let q12 = *quat.add(1) * *quat.add(2);
-            let q13 = *quat.add(1) * *quat.add(3);
-            let q22 = *quat.add(2) * *quat.add(2);
-            let q23 = *quat.add(2) * *quat.add(3);
-            let q33 = *quat.add(3) * *quat.add(3);
-            *res.add(0) = q00 + q11 - q22 - q33;
-            *res.add(4) = q00 - q11 + q22 - q33;
-            *res.add(8) = q00 - q11 - q22 + q33;
-            *res.add(1) = 2.0 * (q12 - q03);
-            *res.add(2) = 2.0 * (q13 + q02);
-            *res.add(3) = 2.0 * (q12 + q03);
-            *res.add(5) = 2.0 * (q23 - q01);
-            *res.add(6) = 2.0 * (q13 - q02);
-            *res.add(7) = 2.0 * (q23 + q01);
-        }
-    }
+    todo!() // mju_quat2Mat
 }
 
 /// C: mju_mat2Quat (engine/engine_util_spatial.h:51)
@@ -285,10 +258,17 @@ pub fn mju_euler2quat(quat: *mut f64, euler: *const f64, seq: *const i8) {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mju_cross(res: *mut f64, a: *const f64, b: *const f64) {
-    // NOTE: signature changed from previous IR version
-    // Previous params: (res : * mut f64, a : * const f64, b : * const f64)
-    // Previous return: ()
-    todo!("re-translate: params renamed")
+    // SAFETY: res points to 3 f64, a points to 3 f64, b points to 3 f64 (caller contract)
+    // Use tmp to handle aliasing (res may alias a or b)
+    unsafe {
+        let tmp0: f64 = *a.add(1) * *b.add(2) - *a.add(2) * *b.add(1);
+        let tmp1: f64 = *a.add(2) * *b.add(0) - *a.add(0) * *b.add(2);
+        let tmp2: f64 = *a.add(0) * *b.add(1) - *a.add(1) * *b.add(0);
+
+        *res.add(0) = tmp0;
+        *res.add(1) = tmp1;
+        *res.add(2) = tmp2;
+    }
 }
 
 /// C: mju_crossMotion (engine/engine_util_spatial.h:92)
@@ -327,38 +307,7 @@ pub fn mju_cross_force(res: *mut f64, vel: *const f64, f: *const f64) {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mju_inert_com(res: *mut f64, inert: *const f64, mat: *const f64, dif: *const f64, mass: f64) {
-    unsafe {
-        // SAFETY: caller guarantees inert points to 3 f64, mat points to 9 f64, dif points to 3 f64, res points to 10 f64
-        let tmp: [f64; 9] = [
-            *mat.add(0) * *inert.add(0),
-            *mat.add(3) * *inert.add(0),
-            *mat.add(6) * *inert.add(0),
-            *mat.add(1) * *inert.add(1),
-            *mat.add(4) * *inert.add(1),
-            *mat.add(7) * *inert.add(1),
-            *mat.add(2) * *inert.add(2),
-            *mat.add(5) * *inert.add(2),
-            *mat.add(8) * *inert.add(2),
-        ];
-        *res.add(0) = *mat.add(0) * tmp[0] + *mat.add(1) * tmp[3] + *mat.add(2) * tmp[6];
-        *res.add(1) = *mat.add(3) * tmp[1] + *mat.add(4) * tmp[4] + *mat.add(5) * tmp[7];
-        *res.add(2) = *mat.add(6) * tmp[2] + *mat.add(7) * tmp[5] + *mat.add(8) * tmp[8];
-        *res.add(3) = *mat.add(0) * tmp[1] + *mat.add(1) * tmp[4] + *mat.add(2) * tmp[7];
-        *res.add(4) = *mat.add(0) * tmp[2] + *mat.add(1) * tmp[5] + *mat.add(2) * tmp[8];
-        *res.add(5) = *mat.add(3) * tmp[2] + *mat.add(4) * tmp[5] + *mat.add(5) * tmp[8];
-
-        *res.add(0) += mass * (*dif.add(1) * *dif.add(1) + *dif.add(2) * *dif.add(2));
-        *res.add(1) += mass * (*dif.add(0) * *dif.add(0) + *dif.add(2) * *dif.add(2));
-        *res.add(2) += mass * (*dif.add(0) * *dif.add(0) + *dif.add(1) * *dif.add(1));
-        *res.add(3) -= mass * *dif.add(0) * *dif.add(1);
-        *res.add(4) -= mass * *dif.add(0) * *dif.add(2);
-        *res.add(5) -= mass * *dif.add(1) * *dif.add(2);
-
-        *res.add(6) = mass * *dif.add(0);
-        *res.add(7) = mass * *dif.add(1);
-        *res.add(8) = mass * *dif.add(2);
-        *res.add(9) = mass;
-    }
+    todo!() // mju_inertCom
 }
 
 /// C: mju_dofCom (engine/engine_util_spatial.h:102)

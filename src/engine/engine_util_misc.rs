@@ -1,5 +1,5 @@
 //! Port of: engine/engine_util_misc.c
-//! IR hash: c6d98e4f4b63b7f2
+//! IR hash: 32301b9dc9774d55
 //! CODEGEN: signatures locked. Only fill todo!() bodies.
 
 use crate::types::*;
@@ -236,9 +236,7 @@ pub fn mju_muscle_dynamics(ctrl: f64, act: f64, prm: *const f64) -> f64 {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_lugre_stribeck(velocity: f64, F_C: f64, F_S: f64, v_S: f64) -> f64 {
-    const MJ_MINVAL: f64 = 1E-15;
-    let ratio: f64 = velocity / mju_max(MJ_MINVAL, v_S);
-    F_C + (F_S - F_C) * (-ratio * ratio).exp()
+    todo!() // mj_lugreStribeck
 }
 
 /// C: mj_dcmotorSlots (engine/engine_util_misc.h:68)
@@ -492,83 +490,13 @@ pub fn mju_shell_tfi_weights(nx: i32, ny: i32, nz: i32, i: i32, j: i32, k: i32, 
 /// C: mju_encodeBase64 (engine/engine_util_misc.h:163)
 #[allow(unused_variables, non_snake_case)]
 pub fn mju_encode_base64(buf: *mut i8, data: *const u8, ndata: usize) -> usize {
-    const TABLE: &[u8; 64] = b"ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
-
-    let mut i: usize = 0;
-    let mut j: usize = 0;
-
-    // SAFETY: data points to at least ndata bytes; buf points to at least 4*((ndata+2)/3)+1 bytes.
-    // We index within bounds derived from ndata.
-    unsafe {
-        while i + 3 <= ndata {
-            let byte_1: u32 = *data.add(i) as u32; i += 1;
-            let byte_2: u32 = *data.add(i) as u32; i += 1;
-            let byte_3: u32 = *data.add(i) as u32; i += 1;
-            let k: u32 = (byte_1 << 16) | (byte_2 << 8) | byte_3;
-            *buf.add(j) = TABLE[((k >> 18) & 63) as usize] as i8; j += 1;
-            *buf.add(j) = TABLE[((k >> 12) & 63) as usize] as i8; j += 1;
-            *buf.add(j) = TABLE[((k >> 6) & 63) as usize] as i8; j += 1;
-            *buf.add(j) = TABLE[((k >> 0) & 63) as usize] as i8; j += 1;
-        }
-
-        if i + 1 == ndata {
-            let byte_1: u32 = *data.add(i) as u32;
-            let k: u32 = byte_1 << 16;
-            *buf.add(j) = TABLE[((k >> 18) & 63) as usize] as i8; j += 1;
-            *buf.add(j) = TABLE[((k >> 12) & 63) as usize] as i8; j += 1;
-            *buf.add(j) = b'=' as i8; j += 1;
-            *buf.add(j) = b'=' as i8; j += 1;
-        }
-
-        if i + 2 == ndata {
-            let byte_1: u32 = *data.add(i) as u32; i += 1;
-            let byte_2: u32 = *data.add(i) as u32;
-            let k: u32 = (byte_1 << 16) + (byte_2 << 8);
-            *buf.add(j) = TABLE[((k >> 18) & 63) as usize] as i8; j += 1;
-            *buf.add(j) = TABLE[((k >> 12) & 63) as usize] as i8; j += 1;
-            *buf.add(j) = TABLE[((k >> 6) & 63) as usize] as i8; j += 1;
-            *buf.add(j) = b'=' as i8; j += 1;
-        }
-
-        *buf.add(j) = 0i8;
-    }
-
-    4 * ((ndata + 2) / 3) + 1
+    todo!() // mju_encodeBase64
 }
 
 /// C: mju_isValidBase64 (engine/engine_util_misc.h:167)
 #[allow(unused_variables, non_snake_case)]
 pub fn mju_is_valid_base64(s: *const i8) -> usize {
-    let mut i: usize = 0;
-    let mut pad: i32 = 0;
-
-    // SAFETY: s is a valid null-terminated C string pointer.
-    unsafe {
-        while *s.add(i) != 0 && *s.add(i) != b'=' as i8 {
-            let c = *s.add(i);
-            if !(c as u8).is_ascii_alphanumeric() && c != b'/' as i8 && c != b'+' as i8 {
-                return 0;
-            }
-            i += 1;
-        }
-
-        if *s.add(i) == b'=' as i8 {
-            if *s.add(i + 1) == 0 {
-                pad = 1;
-            } else if *s.add(i + 1) == b'=' as i8 && *s.add(i + 2) == 0 {
-                pad = 2;
-            } else {
-                return 0;
-            }
-        }
-    }
-
-    let len: i32 = i as i32 + pad;
-    if len % 4 != 0 {
-        0
-    } else {
-        (3 * (len / 4) - pad) as usize
-    }
+    todo!() // mju_isValidBase64
 }
 
 /// C: mju_decodeBase64 (engine/engine_util_misc.h:171)
@@ -664,7 +592,7 @@ pub fn mju_decode_pyramid(force: *mut f64, pyramid: *const f64, mu: *const f64, 
 #[allow(unused_variables, non_snake_case)]
 pub fn mju_spring_damper(pos0: f64, vel0: f64, Kp: f64, Kv: f64, dt: f64) -> f64 {
     // NOTE: signature changed from previous IR version
-    // Previous params: (pos0 : f64, vel0 : f64, k : f64, b : f64, t : f64)
+    // Previous params: (pos0 : f64, vel0 : f64, Kp : f64, Kv : f64, dt : f64)
     // Previous return: f64
     todo!("re-translate: params renamed")
 }
@@ -720,7 +648,7 @@ pub fn mju_print_mat_sparse(mat: *const f64, nr: i32, rownnz: *const i32, rowadr
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mju_min(a: f64, b: f64) -> f64 {
-    if a <= b { a } else { b }
+    todo!() // mju_min
 }
 
 /// C: mju_max (engine/engine_util_misc.h:228)
@@ -731,7 +659,7 @@ pub fn mju_min(a: f64, b: f64) -> f64 {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mju_max(a: f64, b: f64) -> f64 {
-    if a >= b { a } else { b }
+    todo!() // mju_max
 }
 
 /// C: mju_clip (engine/engine_util_misc.h:231)
@@ -742,13 +670,7 @@ pub fn mju_max(a: f64, b: f64) -> f64 {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mju_clip(x: f64, min: f64, max: f64) -> f64 {
-    if x < min {
-        min
-    } else if x > max {
-        max
-    } else {
-        x
-    }
+    todo!() // mju_clip
 }
 
 /// C: mju_sign (engine/engine_util_misc.h:234)
@@ -759,13 +681,7 @@ pub fn mju_clip(x: f64, min: f64, max: f64) -> f64 {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mju_sign(x: f64) -> f64 {
-    if x < 0.0 {
-        -1.0
-    } else if x > 0.0 {
-        1.0
-    } else {
-        0.0
-    }
+    todo!() // mju_sign
 }
 
 /// C: mju_round (engine/engine_util_misc.h:237)
@@ -776,55 +692,20 @@ pub fn mju_sign(x: f64) -> f64 {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mju_round(x: f64) -> i32 {
-    let lower = x.floor();
-    let upper = x.ceil();
-
-    if x - lower < upper - x {
-        lower as i32
-    } else {
-        upper as i32
-    }
+    todo!() // mju_round
 }
 
 /// C: mju_type2Str (engine/engine_util_misc.h:240)
 #[allow(unused_variables, non_snake_case)]
 pub fn mju_type2str(r#type: i32) -> *const i8 {
-    match r#type {
-        1 => b"body\0".as_ptr() as *const i8,
-        2 => b"xbody\0".as_ptr() as *const i8,
-        3 => b"joint\0".as_ptr() as *const i8,
-        4 => b"dof\0".as_ptr() as *const i8,
-        5 => b"geom\0".as_ptr() as *const i8,
-        6 => b"site\0".as_ptr() as *const i8,
-        7 => b"camera\0".as_ptr() as *const i8,
-        8 => b"light\0".as_ptr() as *const i8,
-        9 => b"flex\0".as_ptr() as *const i8,
-        10 => b"mesh\0".as_ptr() as *const i8,
-        11 => b"skin\0".as_ptr() as *const i8,
-        12 => b"hfield\0".as_ptr() as *const i8,
-        13 => b"texture\0".as_ptr() as *const i8,
-        14 => b"material\0".as_ptr() as *const i8,
-        15 => b"pair\0".as_ptr() as *const i8,
-        16 => b"exclude\0".as_ptr() as *const i8,
-        17 => b"equality\0".as_ptr() as *const i8,
-        18 => b"tendon\0".as_ptr() as *const i8,
-        19 => b"actuator\0".as_ptr() as *const i8,
-        20 => b"sensor\0".as_ptr() as *const i8,
-        21 => b"numeric\0".as_ptr() as *const i8,
-        22 => b"text\0".as_ptr() as *const i8,
-        23 => b"tuple\0".as_ptr() as *const i8,
-        24 => b"key\0".as_ptr() as *const i8,
-        25 => b"plugin\0".as_ptr() as *const i8,
-        26 => b"frame\0".as_ptr() as *const i8,
-        _ => std::ptr::null(),
-    }
+    todo!() // mju_type2Str
 }
 
 /// C: mju_str2Type (engine/engine_util_misc.h:243)
 #[allow(unused_variables, non_snake_case)]
 pub fn mju_str2type(str: *const i8) -> i32 {
     // NOTE: signature changed from previous IR version
-    // Previous params: (str_ptr : * const i8)
+    // Previous params: (str : * const i8)
     // Previous return: i32
     todo!("re-translate: params renamed")
 }
@@ -870,55 +751,25 @@ pub fn mju_is_bad(x: f64) -> i32 {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mju_is_zero(vec: *const f64, n: i32) -> i32 {
-    unsafe {
-        // SAFETY: caller guarantees vec points to at least n contiguous f64 elements
-        for i in 0..n {
-            if *vec.add(i as usize) != 0.0 {
-                return 0;
-            }
-        }
-    }
-    1
+    todo!() // mju_isZero
 }
 
 /// C: mju_isZeroByte (engine/engine_util_misc.h:258)
 #[allow(unused_variables, non_snake_case)]
 pub fn mju_is_zero_byte(vec: *const u8, n: i32) -> i32 {
-    unsafe {
-        // SAFETY: caller guarantees vec points to at least n contiguous u8 elements
-        if n == 0 || *vec != 0 {
-            return if n == 0 { 1 } else { 0 };
-        }
-        // Compare vec[0..n-1] with vec[1..n]: all bytes must equal vec[0] (which is 0)
-        let slice1 = core::slice::from_raw_parts(vec, (n - 1) as usize);
-        let slice2 = core::slice::from_raw_parts(vec.add(1), (n - 1) as usize);
-        if slice1 == slice2 { 1 } else { 0 }
-    }
+    todo!() // mju_isZeroByte
 }
 
 /// C: mju_zeroInt (engine/engine_util_misc.h:261)
 #[allow(unused_variables, non_snake_case)]
 pub fn mju_zero_int(res: *mut i32, n: i32) {
-    // SAFETY: res points to at least n contiguous i32 elements.
-    // Equivalent to memset(res, 0, n*sizeof(int)).
-    unsafe {
-        let slice = core::slice::from_raw_parts_mut(res as *mut u8, n as usize * core::mem::size_of::<i32>());
-        for byte in slice.iter_mut() {
-            *byte = 0;
-        }
-    }
+    todo!() // mju_zeroInt
 }
 
 /// C: mju_copyInt (engine/engine_util_misc.h:264)
 #[allow(unused_variables, non_snake_case)]
 pub fn mju_copy_int(res: *mut i32, vec: *const i32, n: i32) {
-    // SAFETY: res and vec each point to at least n contiguous i32 elements.
-    // Equivalent to memcpy(res, vec, n*sizeof(int)).
-    unsafe {
-        let src = core::slice::from_raw_parts(vec as *const u8, n as usize * core::mem::size_of::<i32>());
-        let dst = core::slice::from_raw_parts_mut(res as *mut u8, n as usize * core::mem::size_of::<i32>());
-        dst.copy_from_slice(src);
-    }
+    todo!() // mju_copyInt
 }
 
 /// C: mju_fillInt (engine/engine_util_misc.h:267)
@@ -1038,16 +889,7 @@ pub fn mju_gather_masked(res: *mut f64, vec: *const f64, ind: *const i32, n: i32
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mju_scatter(res: *mut f64, vec: *const f64, ind: *const i32, n: i32) {
-    unsafe {
-        // SAFETY: caller guarantees res, vec point to valid memory; ind is either null or points to n i32 elements
-        if ind.is_null() {
-            crate::engine::engine_util_blas::mju_copy(res, vec, n);
-            return;
-        }
-        for i in 0..n {
-            *res.add(*ind.add(i as usize) as usize) = *vec.add(i as usize);
-        }
-    }
+    todo!() // mju_scatter
 }
 
 /// C: mju_gatherInt (engine/engine_util_misc.h:294)
@@ -1169,17 +1011,7 @@ pub fn mjd_x_poly_force(linear: f64, poly: *const f64, x: f64, n: i32, flg_odd: 
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mju_poly_potential(linear: f64, poly: *const f64, x: f64, n: i32, flg_odd: i32) -> f64 {
-    unsafe {
-        // SAFETY: caller guarantees poly points to at least n contiguous f64 elements
-        let x = if flg_odd != 0 { x.abs() } else { x };
-        let mut res: f64 = 0.5 * linear * (x * x);
-        let mut xpow: f64 = x;
-        for i in 0..n {
-            xpow *= x;
-            res += *poly.add(i as usize) / (i as f64 + 3.0) * (xpow * x);
-        }
-        res
-    }
+    todo!() // mju_polyPotential
 }
 
 /// C: mju_sigmoid (engine/engine_util_misc.h:335)

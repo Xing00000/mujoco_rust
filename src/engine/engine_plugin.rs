@@ -1,5 +1,5 @@
 //! Port of: engine/engine_plugin.cc
-//! IR hash: c6d98e4f4b63b7f2
+//! IR hash: 32301b9dc9774d55
 //! CODEGEN: signatures locked. Only fill todo!() bodies.
 
 use crate::types::*;
@@ -132,14 +132,7 @@ pub fn mjp_get_resource_provider(resource_name: *const i8) -> *const mjpResource
 /// C: mjp_getPluginAtSlot (engine/engine_plugin.h:50)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjp_get_plugin_at_slot(slot: i32) -> *const mjpPlugin {
-    // SAFETY: delegates to GlobalTable<mjpPlugin>::GetSingleton().GetAtSlot(slot)
-    // The singleton is always valid once initialized; GetAtSlot checks bounds.
-    unsafe {
-        crate::engine::engine_global_table::global_table_get_at_slot(
-            crate::engine::engine_global_table::global_table_get_singleton() as *mut GlobalTable,
-            slot,
-        ) as *const mjpPlugin
-    }
+    todo!() // mjp_getPluginAtSlot
 }
 
 /// C: mjp_getResourceProviderAtSlot (engine/engine_plugin.h:53)

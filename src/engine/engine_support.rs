@@ -1,5 +1,5 @@
 //! Port of: engine/engine_support.c
-//! IR hash: c6d98e4f4b63b7f2
+//! IR hash: 32301b9dc9774d55
 //! CODEGEN: signatures locked. Only fill todo!() bodies.
 
 use crate::types::*;
@@ -302,24 +302,7 @@ pub fn mj_normalize_quat(m: *const mjModel, qpos: *mut f64) {
 /// C: mj_actuatorDisabled (engine/engine_support.h:108)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_actuator_disabled(m: *const mjModel, i: i32) -> i32 {
-    // mjModel field offsets (verified via offsetof):
-    const OFF_OPT_DISABLEACTUATOR: usize = 1024;  // opt.disableactuator (int within mjOption)
-    const OFF_ACTUATOR_GROUP: usize = 4696;        // int* actuator_group
-
-    // SAFETY: m is a valid mjModel pointer. actuator_group is an int* at known offset.
-    // opt.disableactuator is an int at known offset within the struct.
-    unsafe {
-        let base = m as *const u8;
-        let actuator_group = *(base.add(OFF_ACTUATOR_GROUP) as *const *const i32);
-        let group = *actuator_group.add(i as usize);
-
-        if group < 0 || group > 30 {
-            0
-        } else {
-            let disableactuator = *(base.add(OFF_OPT_DISABLEACTUATOR) as *const i32);
-            if disableactuator & (1 << group) != 0 { 1 } else { 0 }
-        }
-    }
+    todo!() // mj_actuatorDisabled
 }
 
 /// C: mj_nextActivation (engine/engine_support.h:111)

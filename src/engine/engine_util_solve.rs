@@ -1,5 +1,5 @@
 //! Port of: engine/engine_util_solve.c
-//! IR hash: c6d98e4f4b63b7f2
+//! IR hash: 32301b9dc9774d55
 //! CODEGEN: signatures locked. Only fill todo!() bodies.
 
 use crate::types::*;
@@ -43,37 +43,7 @@ pub fn mul_sym_vec(res: *mut f64, mat: *const f64, vec: *const f64, n: i32) {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mju_chol_factor(mat: *mut f64, n: i32, mindiag: f64) -> i32 {
-    unsafe {
-        // SAFETY: caller guarantees mat points to n*n contiguous f64 elements
-        let mut rank: i32 = n;
-        for j in 0..n {
-            let mut tmp: f64 = *mat.add((j as usize) * ((n + 1) as usize));
-            if j != 0 {
-                tmp -= crate::engine::engine_util_blas::mju_dot(
-                    mat.add((j as usize) * (n as usize)),
-                    mat.add((j as usize) * (n as usize)),
-                    j,
-                );
-            }
-            if tmp < mindiag {
-                tmp = mindiag;
-                rank -= 1;
-            }
-            *mat.add((j as usize) * ((n + 1) as usize)) = tmp.sqrt();
-            tmp = 1.0 / *mat.add((j as usize) * ((n + 1) as usize));
-            for i in (j + 1)..n {
-                *mat.add((i as usize) * (n as usize) + (j as usize)) =
-                    (*mat.add((i as usize) * (n as usize) + (j as usize))
-                        - crate::engine::engine_util_blas::mju_dot(
-                            mat.add((i as usize) * (n as usize)),
-                            mat.add((j as usize) * (n as usize)),
-                            j,
-                        ))
-                        * tmp;
-            }
-        }
-        rank
-    }
+    todo!() // mju_cholFactor
 }
 
 /// C: mju_cholSolve (engine/engine_util_solve.h:30)
@@ -99,59 +69,7 @@ pub fn mju_chol_solve(res: *mut f64, mat: *const f64, vec: *const f64, n: i32) {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mju_chol_update(mat: *mut f64, x: *mut f64, n: i32, flg_plus: i32) -> i32 {
-    const MJ_MINVAL: f64 = 1E-15f64;
-
-    unsafe {
-        // SAFETY: caller guarantees mat points to n*n f64 matrix, x points to n f64 elements
-        let mut rank: i32 = n;
-
-        for k in 0..n {
-            if *x.add(k as usize) != 0.0 {
-                let Lkk: f64 = *mat.add((k as usize) * ((n + 1) as usize));
-                let mut tmp: f64 = Lkk * Lkk
-                    + if flg_plus != 0 {
-                        *x.add(k as usize) * *x.add(k as usize)
-                    } else {
-                        -(*x.add(k as usize) * *x.add(k as usize))
-                    };
-
-                if tmp < MJ_MINVAL {
-                    tmp = MJ_MINVAL;
-                    rank -= 1;
-                }
-
-                let r: f64 = tmp.sqrt();
-                let c: f64 = r / Lkk;
-                let cinv: f64 = 1.0 / c;
-                let s: f64 = *x.add(k as usize) / Lkk;
-
-                *mat.add((k as usize) * ((n + 1) as usize)) = r;
-
-                if flg_plus != 0 {
-                    for i in (k + 1)..n {
-                        *mat.add((i as usize) * (n as usize) + (k as usize)) =
-                            (*mat.add((i as usize) * (n as usize) + (k as usize))
-                                + s * *x.add(i as usize))
-                                * cinv;
-                    }
-                } else {
-                    for i in (k + 1)..n {
-                        *mat.add((i as usize) * (n as usize) + (k as usize)) =
-                            (*mat.add((i as usize) * (n as usize) + (k as usize))
-                                - s * *x.add(i as usize))
-                                * cinv;
-                    }
-                }
-
-                for i in (k + 1)..n {
-                    *x.add(i as usize) = c * *x.add(i as usize)
-                        - s * *mat.add((i as usize) * (n as usize) + (k as usize));
-                }
-            }
-        }
-
-        rank
-    }
+    todo!() // mju_cholUpdate
 }
 
 /// C: mju_cholFactorSparse (engine/engine_util_solve.h:37)

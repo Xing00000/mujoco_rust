@@ -1,5 +1,5 @@
 //! Port of: engine/engine_util_sparse.h
-//! IR hash: c6d98e4f4b63b7f2
+//! IR hash: 32301b9dc9774d55
 //! CODEGEN: signatures locked. Only fill todo!() bodies.
 
 use crate::types::*;
@@ -159,27 +159,7 @@ pub fn mju_add_to_mat_sparse(dst: *mut f64, rownnz: *mut i32, rowadr: *mut i32, 
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mju_add_to_sym_sparse(res: *mut f64, mat: *const f64, n: i32, rownnz: *const i32, rowadr: *const i32, colind: *const i32, flg_upper: i32) {
-    unsafe {
-        // SAFETY: caller guarantees res points to n*n dense matrix,
-        // mat/rownnz/rowadr/colind describe a valid sparse matrix with n rows
-        for i in 0..n {
-            let start: i32 = *rowadr.add(i as usize);
-            let end: i32 = start + *rownnz.add(i as usize);
-
-            for adr in start..end {
-                let val: f64 = *mat.add(adr as usize);
-                let j: i32 = *colind.add(adr as usize);
-
-                // lower + diagonal
-                *res.add((i as usize) * (n as usize) + (j as usize)) += val;
-
-                // strict upper
-                if flg_upper != 0 && j < i {
-                    *res.add((j as usize) * (n as usize) + (i as usize)) += val;
-                }
-            }
-        }
-    }
+    todo!() // mju_addToSymSparse
 }
 
 /// C: mju_mulSymVecSparse (engine/engine_util_sparse.h:81)
@@ -441,45 +421,13 @@ pub fn mju_block_diag_sparse(res: *mut f64, res_rownnz: *mut i32, res_rowadr: *m
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mju_dot_sparse(vec1: *const f64, vec2: *const f64, nnz1: i32, ind1: *const i32) -> f64 {
-    unsafe {
-        // SAFETY: caller guarantees vec1 has at least nnz1 elements,
-        // ind1 has at least nnz1 elements, vec2 is indexed by ind1 values
-        let mut i: i32 = 0;
-        let n_4: i32 = nnz1 - 4;
-        let mut res0: f64 = 0.0;
-        let mut res1: f64 = 0.0;
-        let mut res2: f64 = 0.0;
-        let mut res3: f64 = 0.0;
-
-        while i <= n_4 {
-            res0 += *vec1.add(i as usize) * *vec2.add(*ind1.add(i as usize) as usize);
-            res1 += *vec1.add((i + 1) as usize) * *vec2.add(*ind1.add((i + 1) as usize) as usize);
-            res2 += *vec1.add((i + 2) as usize) * *vec2.add(*ind1.add((i + 2) as usize) as usize);
-            res3 += *vec1.add((i + 3) as usize) * *vec2.add(*ind1.add((i + 3) as usize) as usize);
-            i += 4;
-        }
-
-        // CRITICAL: preserve exact reduction order (res0+res2)+(res1+res3)
-        let mut res: f64 = (res0 + res2) + (res1 + res3);
-
-        while i < nnz1 {
-            res += *vec1.add(i as usize) * *vec2.add(*ind1.add(i as usize) as usize);
-            i += 1;
-        }
-
-        res
-    }
+    todo!() // mju_dotSparse
 }
 
 /// C: mju_compare (engine/engine_util_sparse.h:231)
 #[allow(unused_variables, non_snake_case)]
 pub fn mju_compare(vec1: *const i32, vec2: *const i32, n: i32) -> i32 {
-    unsafe {
-        // SAFETY: caller guarantees vec1 and vec2 point to at least n i32 elements
-        let s1 = std::slice::from_raw_parts(vec1, n as usize);
-        let s2 = std::slice::from_raw_parts(vec2, n as usize);
-        if s1 == s2 { 1 } else { 0 }
-    }
+    todo!() // mju_compare
 }
 
 /// C: mj_mergeSorted (engine/engine_util_sparse.h:243)
@@ -500,12 +448,7 @@ pub fn mj_merge_sorted(merge: *mut i32, chain1: *const i32, n1: i32, chain2: *co
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mju_add_to_scl_scl(res: *mut f64, vec: *const f64, scl1: f64, scl2: f64, n: i32) {
-    unsafe {
-        // SAFETY: caller guarantees res and vec point to at least n f64 elements
-        for i in 0..n {
-            *res.add(i as usize) = *res.add(i as usize) * scl1 + *vec.add(i as usize) * scl2;
-        }
-    }
+    todo!() // mju_addToSclScl
 }
 
 /// C: mju_combineSparse (engine/engine_util_sparse.h:311)
