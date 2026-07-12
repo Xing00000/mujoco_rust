@@ -183,10 +183,104 @@ pub fn mjv_init_perturb(m: *const mjModel, d: *mut mjData, scn: *const mjvScene,
 /// Calls: mju_copy3, mju_copy4, mju_mulPose, mju_negPose
 #[allow(unused_variables, non_snake_case)]
 pub fn mjv_apply_perturb_pose(m: *const mjModel, d: *mut mjData, pert: *const mjvPerturb, flg_paused: i32) {
-    // WARNING: signature changed — verify body
-    // Previous params: (m : * const mjModel, d : * mut mjData, pert : * const mjvPerturb, flg_paused : i32)
-    // Previous return: ()
-    todo ! ()
+    use crate::engine::engine_util_blas::{mju_copy3, mju_copy4};
+    use crate::engine::engine_util_spatial::{mju_mul_pose, mju_neg_pose};
+
+    // SAFETY: all pointers are valid model/data/pert structs passed from MuJoCo runtime.
+    unsafe {
+        const MJ_JNT_FREE: i32 = 0;
+
+        let sel: i32 = (*pert).select;
+        let mut pos1: [f64; 3] = [0.0; 3];
+        let mut quat1: [f64; 4] = [0.0; 4];
+        let mut pos2: [f64; 3] = [0.0; 3];
+        let mut quat2: [f64; 4] = [0.0; 4];
+        let mut refpos: [f64; 3] = [0.0; 3];
+        let mut refquat: [f64; 4] = [0.0; 4];
+
+        // exit if nothing to do
+        if sel <= 0 || sel as usize >= (*m).nbody || ((*pert).active | (*pert).active2) == 0 {
+            return;
+        }
+
+        let sel_usize = sel as usize;
+
+        // get rootid above selected body
+        let rootid: i32 = *(*m).body_rootid.add(sel_usize);
+        let rootid_usize = rootid as usize;
+
+        // transform refpos,refquat from I-frame to X-frame of body[sel]
+        mju_neg_pose(
+            pos1.as_mut_ptr(),
+            quat1.as_mut_ptr(),
+            (*m).body_ipos.add(3 * sel_usize),
+            (*m).body_iquat.add(4 * sel_usize),
+        );
+        mju_mul_pose(
+            refpos.as_mut_ptr(),
+            refquat.as_mut_ptr(),
+            (*pert).refpos.as_ptr(),
+            (*pert).refquat.as_ptr(),
+            pos1.as_ptr(),
+            quat1.as_ptr(),
+        );
+
+        // mocap body
+        if *(*m).body_mocapid.add(sel_usize) >= 0 {
+            let mocapid = *(*m).body_mocapid.add(sel_usize) as usize;
+
+            // copy ref pose into mocap pose
+            mju_copy3((*d).mocap_pos.add(3 * mocapid), refpos.as_ptr());
+            mju_copy4((*d).mocap_quat.add(4 * mocapid), refquat.as_ptr());
+        }
+        // floating body, paused
+        else if flg_paused != 0
+            && *(*m).body_jntnum.add(sel_usize) == 1
+            && *(*m).jnt_type.add(*(*m).body_jntadr.add(sel_usize) as usize) == MJ_JNT_FREE
+        {
+            let qposadr =
+                *(*m).jnt_qposadr.add(*(*m).body_jntadr.add(sel_usize) as usize) as usize;
+
+            // copy ref pose into qpos
+            mju_copy3((*d).qpos.add(qposadr), refpos.as_ptr());
+            mju_copy4((*d).qpos.add(qposadr + 3), refquat.as_ptr());
+        }
+        // child of floating body, paused
+        else if flg_paused != 0
+            && *(*m).body_jntnum.add(rootid_usize) == 1
+            && *(*m).jnt_type.add(*(*m).body_jntadr.add(rootid_usize) as usize) == MJ_JNT_FREE
+        {
+            let qposadr =
+                *(*m).jnt_qposadr.add(*(*m).body_jntadr.add(rootid_usize) as usize) as usize;
+
+            // get pointers to root
+            let Rpos: *mut f64 = (*d).qpos.add(qposadr);
+            let Rquat: *mut f64 = Rpos.add(3);
+
+            // get pointers to child
+            let Cpos: *const f64 = (*d).xpos.add(3 * sel_usize);
+            let Cquat: *const f64 = (*d).xquat.add(4 * sel_usize);
+
+            // set root <- ref*neg(child)*root
+            mju_neg_pose(pos1.as_mut_ptr(), quat1.as_mut_ptr(), Cpos, Cquat); // neg(child)
+            mju_mul_pose(
+                pos2.as_mut_ptr(),
+                quat2.as_mut_ptr(),
+                pos1.as_ptr(),
+                quat1.as_ptr(),
+                Rpos,
+                Rquat,
+            ); // neg(child)*root
+            mju_mul_pose(
+                Rpos,
+                Rquat,
+                refpos.as_ptr(),
+                refquat.as_ptr(),
+                pos2.as_ptr(),
+                quat2.as_ptr(),
+            ); // ref*neg(child)*root
+        }
+    }
 }
 
 /// C: mjv_applyPerturbForce (engine/engine_vis_interact.h:70)

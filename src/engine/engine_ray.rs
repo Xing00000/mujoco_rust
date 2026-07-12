@@ -303,7 +303,87 @@ pub fn mj_ray_hfield(m: *const mjModel, d: *const mjData, geomid: i32, pnt: *con
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn ray_triangle(v: *mut [f64; 3], lpnt: *const f64, lvec: *const f64, b0: *const f64, b1: *const f64, normal: *mut f64) -> f64 {
-    todo!("ray_triangle: golden test harness not yet implemented - cannot verify")
+    use crate::engine::engine_util_blas::{mju_zero3, mju_dot3, mju_sub3, mju_copy3, mju_normalize3};
+    use crate::engine::engine_util_spatial::mju_cross;
+
+    const MJMINVAL: f64 = 1e-15;
+
+    // SAFETY: all pointer dereferences follow C semantics exactly —
+    // caller guarantees v points to 3 consecutive [f64;3], lpnt/lvec/b0/b1
+    // point to at least 3 f64s, normal is either null or points to 3 f64s.
+    unsafe {
+        // clear normal if given
+        if !normal.is_null() {
+            mju_zero3(normal);
+        }
+
+        // dif = v[i] - lpnt
+        let mut dif: [[f64; 3]; 3] = [[0.0; 3]; 3];
+        for i in 0..3 {
+            for j in 0..3 {
+                dif[i][j] = (*v.add(i))[j] - *lpnt.add(j);
+            }
+        }
+
+        // project difference vectors in normal plane
+        let mut planar: [[f64; 2]; 3] = [[0.0; 2]; 3];
+        for i in 0..3 {
+            planar[i][0] = mju_dot3(b0, dif[i].as_ptr());
+            planar[i][1] = mju_dot3(b1, dif[i].as_ptr());
+        }
+
+        // reject if on the same side of any coordinate axis
+        if (planar[0][0] > 0.0 && planar[1][0] > 0.0 && planar[2][0] > 0.0)
+            || (planar[0][0] < 0.0 && planar[1][0] < 0.0 && planar[2][0] < 0.0)
+            || (planar[0][1] > 0.0 && planar[1][1] > 0.0 && planar[2][1] > 0.0)
+            || (planar[0][1] < 0.0 && planar[1][1] < 0.0 && planar[2][1] < 0.0)
+        {
+            return -1.0;
+        }
+
+        // determine if origin is inside planar projection of triangle
+        // A = (p0-p2, p1-p2), b = -p2, solve A*t = b
+        let A: [f64; 4] = [
+            planar[0][0] - planar[2][0],
+            planar[1][0] - planar[2][0],
+            planar[0][1] - planar[2][1],
+            planar[1][1] - planar[2][1],
+        ];
+        let b: [f64; 2] = [-planar[2][0], -planar[2][1]];
+        let det: f64 = A[0] * A[3] - A[1] * A[2];
+        if det.abs() < MJMINVAL {
+            return -1.0;
+        }
+        let t0: f64 = (A[3] * b[0] - A[1] * b[1]) / det;
+        let t1: f64 = (-A[2] * b[0] + A[0] * b[1]) / det;
+
+        // check if outside
+        if t0 < 0.0 || t1 < 0.0 || t0 + t1 > 1.0 {
+            return -1.0;
+        }
+
+        // intersect ray with plane of triangle
+        mju_sub3(dif[0].as_mut_ptr(), (*v.add(0)).as_ptr(), (*v.add(2)).as_ptr()); // v0-v2
+        mju_sub3(dif[1].as_mut_ptr(), (*v.add(1)).as_ptr(), (*v.add(2)).as_ptr()); // v1-v2
+        mju_sub3(dif[2].as_mut_ptr(), lpnt, (*v.add(2)).as_ptr());                 // lp-v2
+        let mut nrm: [f64; 3] = [0.0; 3];
+        mju_cross(nrm.as_mut_ptr(), dif[0].as_ptr(), dif[1].as_ptr()); // normal to triangle plane
+        let denom: f64 = mju_dot3(lvec, nrm.as_ptr());
+        if denom.abs() < MJMINVAL {
+            return -1.0;
+        }
+
+        // compute distance
+        let x: f64 = -mju_dot3(dif[2].as_ptr(), nrm.as_ptr()) / denom;
+
+        // compute normal if given
+        if !normal.is_null() {
+            mju_normalize3(nrm.as_mut_ptr());
+            mju_copy3(normal, nrm.as_ptr());
+        }
+
+        x
+    }
 }
 
 /// C: mj_rayMesh (engine/engine_ray.h:55)
