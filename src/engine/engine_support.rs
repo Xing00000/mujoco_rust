@@ -143,10 +143,17 @@ pub fn mj_set_keyframe(m: *mut mjModel, d: *const mjData, k: i32) {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_full_m(m: *const mjModel, d: *const mjData, dst: *mut f64) {
-    // WARNING: signature changed — verify body
-    // Previous params: (m : * const mjModel, d : * const mjData, dst : * mut f64)
-    // Previous return: ()
-    todo ! ()
+    // SAFETY: caller guarantees m, d point to valid mjModel/mjData, dst has nv*nv capacity.
+    unsafe {
+        crate::engine::engine_util_sparse::mju_sym2dense(
+            dst,
+            (*d).M,
+            (*m).nv as i32,
+            (*m).M_rownnz,
+            (*m).M_rowadr,
+            (*m).M_colind,
+        );
+    }
 }
 
 /// C: mj_mulM (engine/engine_support.h:65)
@@ -248,10 +255,64 @@ pub fn mj_geom_distance(m: *const mjModel, d: *mut mjData, geom1: i32, geom2: i3
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_differentiate_pos(m: *const mjModel, qvel: *mut f64, dt: f64, qpos1: *const f64, qpos2: *const f64) {
-    // WARNING: signature changed — verify body
-    // Previous params: (m : * const mjModel, qvel : * mut f64, dt : f64, qpos1 : * const f64, qpos2 : * const f64)
-    // Previous return: ()
-    todo ! ()
+    // mjtJoint enum values
+    const mjJNT_FREE: i32 = 0;
+    const mjJNT_BALL: i32 = 1;
+    const mjJNT_SLIDE: i32 = 2;
+    const mjJNT_HINGE: i32 = 3;
+
+    // SAFETY: caller guarantees m points to a valid mjModel, qvel/qpos1/qpos2 are valid arrays.
+    unsafe {
+        // loop over joints
+        let mut j: i32 = 0;
+        while j < (*m).njnt as i32 {
+            // get addresses in qpos and qvel
+            let mut padr: i32 = *(*m).jnt_qposadr.add(j as usize);
+            let mut vadr: i32 = *(*m).jnt_dofadr.add(j as usize);
+
+            let jnt_type: i32 = *(*m).jnt_type.add(j as usize);
+
+            if jnt_type == mjJNT_FREE {
+                let mut i: i32 = 0;
+                while i < 3 {
+                    *qvel.add((vadr + i) as usize) =
+                        (*qpos2.add((padr + i) as usize) - *qpos1.add((padr + i) as usize)) / dt;
+                    i += 1;
+                }
+                vadr += 3;
+                padr += 3;
+
+                // continue with rotations (fallthrough to BALL)
+                crate::engine::engine_util_spatial::mju_sub_quat(
+                    qvel.add(vadr as usize),
+                    qpos2.add(padr as usize),
+                    qpos1.add(padr as usize),
+                );
+                crate::engine::engine_util_blas::mju_scl3(
+                    qvel.add(vadr as usize),
+                    qvel.add(vadr as usize),
+                    1.0 / dt,
+                );
+            } else if jnt_type == mjJNT_BALL {
+                // solve: qpos1 * quat(qvel * dt) = qpos2
+                crate::engine::engine_util_spatial::mju_sub_quat(
+                    qvel.add(vadr as usize),
+                    qpos2.add(padr as usize),
+                    qpos1.add(padr as usize),
+                );
+                crate::engine::engine_util_blas::mju_scl3(
+                    qvel.add(vadr as usize),
+                    qvel.add(vadr as usize),
+                    1.0 / dt,
+                );
+            } else if jnt_type == mjJNT_HINGE || jnt_type == mjJNT_SLIDE {
+                *qvel.add(vadr as usize) =
+                    (*qpos2.add(padr as usize) - *qpos1.add(padr as usize)) / dt;
+            }
+
+            j += 1;
+        }
+    }
 }
 
 /// C: mj_integratePosInd (engine/engine_support.h:98)
@@ -330,10 +391,10 @@ pub fn mj_integrate_pos_ind(m: *const mjModel, qpos: *mut f64, qvel: *const f64,
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_integrate_pos(m: *const mjModel, qpos: *mut f64, qvel: *const f64, dt: f64) {
-    // WARNING: signature changed — verify body
-    // Previous params: (m : * const mjModel, qpos : * mut f64, qvel : * const f64, dt : f64)
-    // Previous return: ()
-    todo ! ()
+    // SAFETY: caller guarantees m points to a valid mjModel, qpos/qvel are valid arrays.
+    unsafe {
+        mj_integrate_pos_ind(m, qpos, qvel, dt, std::ptr::null(), (*m).nbody as i32);
+    }
 }
 
 /// C: mj_normalizeQuat (engine/engine_support.h:105)
@@ -345,19 +406,40 @@ pub fn mj_integrate_pos(m: *const mjModel, qpos: *mut f64, qvel: *const f64, dt:
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_normalize_quat(m: *const mjModel, qpos: *mut f64) {
-    // WARNING: signature changed — verify body
-    // Previous params: (m : * const mjModel, qpos : * mut f64)
-    // Previous return: ()
-    todo ! ()
+    const mjJNT_FREE: i32 = 0;
+    const mjJNT_BALL: i32 = 1;
+
+    // SAFETY: caller guarantees m points to a valid mjModel, qpos is a valid array of size m->nq
+    unsafe {
+        let mut i: i32 = 0;
+        while i < (*m).njnt as i32 {
+            let jnt_type = *(*m).jnt_type.add(i as usize);
+            if jnt_type == mjJNT_BALL || jnt_type == mjJNT_FREE {
+                let offset = *(*m).jnt_qposadr.add(i as usize)
+                    + 3 * (if jnt_type == mjJNT_FREE { 1 } else { 0 });
+                crate::engine::engine_util_blas::mju_normalize4(qpos.add(offset as usize));
+            }
+            i += 1;
+        }
+    }
 }
 
 /// C: mj_actuatorDisabled (engine/engine_support.h:108)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_actuator_disabled(m: *const mjModel, i: i32) -> i32 {
-    // WARNING: signature changed — verify body
-    // Previous params: (m : * const mjModel, i : i32)
-    // Previous return: i32
-    todo ! ()
+    // SAFETY: caller guarantees m points to a valid mjModel, i is a valid actuator index
+    unsafe {
+        let group: i32 = *(*m).actuator_group.add(i as usize);
+        if group < 0 || group > 30 {
+            0
+        } else {
+            if (*m).opt.disableactuator & (1 << group) != 0 {
+                1
+            } else {
+                0
+            }
+        }
+    }
 }
 
 /// C: mj_nextActivation (engine/engine_support.h:111)
@@ -383,10 +465,16 @@ pub fn mj_next_activation(m: *const mjModel, d: *const mjData, actuator_id: i32,
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_get_totalmass(m: *const mjModel) -> f64 {
-    // WARNING: signature changed — verify body
-    // Previous params: (m : * const mjModel)
-    // Previous return: f64
-    todo ! ()
+    // SAFETY: caller guarantees m points to a valid mjModel with body_mass array of size nbody
+    unsafe {
+        let mut res: f64 = 0.0;
+        let mut i: i32 = 1;
+        while i < (*m).nbody as i32 {
+            res += *(*m).body_mass.add(i as usize);
+            i += 1;
+        }
+        res
+    }
 }
 
 /// C: mj_setTotalmass (engine/engine_support.h:118)

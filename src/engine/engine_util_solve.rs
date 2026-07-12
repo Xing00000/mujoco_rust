@@ -348,10 +348,42 @@ pub fn mju_solve_lu_sparse(res: *mut f64, LU: *const f64, vec: *const f64, n: i3
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mju_solve3(x: *mut f64, A: *const f64, b: *const f64) {
-    // WARNING: signature changed — verify body
-    // Previous params: (x : * mut f64, A : * const f64, b : * const f64)
-    // Previous return: ()
-    todo ! ()
+    // SAFETY: caller guarantees x has 3 elements, A has 9 elements, b has 3 elements
+    unsafe {
+        let mut M: [[f64; 4]; 3] = [
+            [*A.add(0), *A.add(1), *A.add(2), *b.add(0)],
+            [*A.add(3), *A.add(4), *A.add(5), *b.add(1)],
+            [*A.add(6), *A.add(7), *A.add(8), *b.add(2)],
+        ];
+
+        let mut i: i32 = 0;
+        while i < 3 {
+            let pivot = M[i as usize][i as usize];
+            let mut j: i32 = i;
+            while j < 4 {
+                M[i as usize][j as usize] /= pivot;
+                j += 1;
+            }
+
+            let mut k: i32 = 0;
+            while k < 3 {
+                if k != i {
+                    let factor = M[k as usize][i as usize];
+                    let mut j: i32 = i;
+                    while j < 4 {
+                        M[k as usize][j as usize] -= factor * M[i as usize][j as usize];
+                        j += 1;
+                    }
+                }
+                k += 1;
+            }
+            i += 1;
+        }
+
+        *x.add(0) = M[0][3];
+        *x.add(1) = M[1][3];
+        *x.add(2) = M[2][3];
+    }
 }
 
 /// C: mju_eig3 (engine/engine_util_solve.h:121)

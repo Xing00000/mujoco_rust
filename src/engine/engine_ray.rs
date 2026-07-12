@@ -303,10 +303,7 @@ pub fn mj_ray_hfield(m: *const mjModel, d: *const mjData, geomid: i32, pnt: *con
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn ray_triangle(v: *mut [f64; 3], lpnt: *const f64, lvec: *const f64, b0: *const f64, b1: *const f64, normal: *mut f64) -> f64 {
-    // WARNING: signature changed — verify body
-    // Previous params: (v : * mut [f64 ; 3], lpnt : * const f64, lvec : * const f64, b0 : * const f64, b1 : * const f64, normal : * mut f64)
-    // Previous return: f64
-    todo ! ()
+    todo!("ray_triangle: golden test harness not yet implemented - cannot verify")
 }
 
 /// C: mj_rayMesh (engine/engine_ray.h:55)
