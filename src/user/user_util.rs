@@ -134,10 +134,18 @@ pub fn mjuu_setvec(dest: *mut f64, x: f64, y: f64, z: f64, w: f64) {
 /// C: mjuu_copyvec (user/user_util.h:54)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjuu_copyvec(dest: *mut T1, src: *const T2, n: i32) {
-    // WARNING: signature changed — verify body
-    // Previous params: (dest : * mut T1, src : * const T2, n : i32)
-    // Previous return: ()
-    todo ! ()
+    // SAFETY: caller guarantees dest and src point to at least n contiguous f64 values.
+    // T1/T2 are opaque codegen artifacts; in the C++ source this is a template
+    // instantiated as double* → double*. We cast accordingly.
+    unsafe {
+        let d = dest as *mut f64;
+        let s = src as *const f64;
+        let mut i: i32 = 0;
+        while i < n {
+            *d.add(i as usize) = *s.add(i as usize);
+            i += 1;
+        }
+    }
 }
 
 /// C: mjuu_addtovec (user/user_util.h:59)
@@ -284,10 +292,45 @@ pub fn mjuu_scalevec(res: *mut f64, vec: *const f64, s: f64, n: i32) {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjuu_quat2mat(res: *mut f64, quat: *const f64) {
-    // WARNING: signature changed — verify body
-    // Previous params: (res : * mut f64, quat : * const f64)
-    // Previous return: ()
-    todo ! ()
+    // SAFETY: caller guarantees res points to at least 9 f64, quat to at least 4 f64
+    unsafe {
+        // identity quat: identity mat
+        if *quat.add(0) == 1.0 && *quat.add(1) == 0.0 && *quat.add(2) == 0.0 && *quat.add(3) == 0.0 {
+            *res.add(0) = 1.0;
+            *res.add(1) = 0.0;
+            *res.add(2) = 0.0;
+            *res.add(3) = 0.0;
+            *res.add(4) = 1.0;
+            *res.add(5) = 0.0;
+            *res.add(6) = 0.0;
+            *res.add(7) = 0.0;
+            *res.add(8) = 1.0;
+            return;
+        }
+
+        // regular processing
+        let q00 = *quat.add(0) * *quat.add(0);
+        let q01 = *quat.add(0) * *quat.add(1);
+        let q02 = *quat.add(0) * *quat.add(2);
+        let q03 = *quat.add(0) * *quat.add(3);
+        let q11 = *quat.add(1) * *quat.add(1);
+        let q12 = *quat.add(1) * *quat.add(2);
+        let q13 = *quat.add(1) * *quat.add(3);
+        let q22 = *quat.add(2) * *quat.add(2);
+        let q23 = *quat.add(2) * *quat.add(3);
+        let q33 = *quat.add(3) * *quat.add(3);
+
+        *res.add(0) = q00 + q11 - q22 - q33;
+        *res.add(4) = q00 - q11 + q22 - q33;
+        *res.add(8) = q00 - q11 - q22 + q33;
+
+        *res.add(1) = 2.0 * (q12 - q03);
+        *res.add(2) = 2.0 * (q13 + q02);
+        *res.add(3) = 2.0 * (q12 + q03);
+        *res.add(5) = 2.0 * (q23 - q01);
+        *res.add(6) = 2.0 * (q13 - q02);
+        *res.add(7) = 2.0 * (q23 + q01);
+    }
 }
 
 /// C: mjuu_mulquat (user/user_util.h:88)
@@ -464,10 +507,12 @@ pub fn mjuu_localquat(local: *mut f64, child: *const f64, parent: *const f64) {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjuu_crossvec(a: *mut f64, b: *const f64, c: *const f64) {
-    // WARNING: signature changed — verify body
-    // Previous params: (a : * mut f64, b : * const f64, c : * const f64)
-    // Previous return: ()
-    todo ! ()
+    // SAFETY: caller guarantees a, b, c point to at least 3 contiguous f64 values
+    unsafe {
+        *a.add(0) = *b.add(1) * *c.add(2) - *b.add(2) * *c.add(1);
+        *a.add(1) = *b.add(2) * *c.add(0) - *b.add(0) * *c.add(2);
+        *a.add(2) = *b.add(0) * *c.add(1) - *b.add(1) * *c.add(0);
+    }
 }
 
 /// C: mjuu_makenormal (user/user_util.h:118)
