@@ -166,11 +166,11 @@ pub fn mju_sub_quat(res: *mut f64, qa: *const f64, qb: *const f64) {
     // qdif = neg(qb)*qa
     let mut qneg: [f64; 4] = [0.0; 4];
     let mut qdif: [f64; 4] = [0.0; 4];
-    mju_neg_quat(qneg.as_mut_ptr(), qb);
-    mju_mul_quat(qdif.as_mut_ptr(), qneg.as_ptr(), qa);
+    crate::engine::engine_inline::mji_neg_quat(qneg.as_mut_ptr(), qb);
+    crate::engine::engine_inline::mji_mul_quat(qdif.as_mut_ptr(), qneg.as_ptr(), qa);
 
     // convert to velocity
-    mju_quat2vel(res, qdif.as_ptr(), 1.0);
+    crate::engine::engine_inline::mji_quat2vel(res, qdif.as_ptr(), 1.0);
 }
 
 /// C: mju_quat2Mat (engine/engine_util_spatial.h:48)
@@ -289,13 +289,15 @@ pub fn mju_deriv_quat(res: *mut f64, quat: *const f64, vel: *const f64) {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mju_quat_integrate(quat: *mut f64, vel: *const f64, scale: f64) {
+    use crate::engine::engine_inline::{mji_copy3, mji_axis_angle2quat};
     // SAFETY: caller guarantees quat[4] and vel[3] are valid
     unsafe {
-        let mut tmp: [f64; 3] = [*vel.add(0), *vel.add(1), *vel.add(2)];
-        let angle = scale * crate::engine::engine_util_blas::mju_normalize3(tmp.as_mut_ptr());
-
+        let mut tmp: [f64; 4] = [0.0; 4];
         let mut qrot: [f64; 4] = [0.0; 4];
-        mju_axis_angle2quat(qrot.as_mut_ptr(), tmp.as_ptr(), angle);
+
+        mji_copy3(tmp.as_mut_ptr(), vel);
+        let angle = scale * crate::engine::engine_util_blas::mju_normalize3(tmp.as_mut_ptr());
+        mji_axis_angle2quat(qrot.as_mut_ptr(), tmp.as_ptr(), angle);
         crate::engine::engine_util_blas::mju_normalize4(quat);
         mju_mul_quat(quat, quat, qrot.as_ptr());
     }
@@ -311,6 +313,7 @@ pub fn mju_quat_integrate(quat: *mut f64, vel: *const f64, scale: f64) {
 #[allow(unused_variables, non_snake_case)]
 pub fn mju_quat_z2vec(quat: *mut f64, vec: *const f64) {
     const MJ_MINVAL: f64 = 1E-15_f64;
+    use crate::engine::engine_inline::mji_cross;
     // SAFETY: caller guarantees quat[4] and vec[3] are valid
     unsafe {
         let mut vn: [f64; 3] = [*vec.add(0), *vec.add(1), *vec.add(2)];
@@ -318,27 +321,22 @@ pub fn mju_quat_z2vec(quat: *mut f64, vec: *const f64) {
 
         // default: no-rotation quaternion
         *quat.add(0) = 1.0;
-        *quat.add(1) = 0.0;
-        *quat.add(2) = 0.0;
-        *quat.add(3) = 0.0;
+        crate::engine::engine_util_blas::mju_zero3(quat.add(1));
 
         // normalize vector; if too small, no rotation
         if crate::engine::engine_util_blas::mju_normalize3(vn.as_mut_ptr()) < MJ_MINVAL {
             return;
         }
 
-        // compute angle and axis: axis = cross(z, vn)
-        let mut axis: [f64; 3] = [
-            z[1] * vn[2] - z[2] * vn[1],
-            z[2] * vn[0] - z[0] * vn[2],
-            z[0] * vn[1] - z[1] * vn[0],
-        ];
+        // compute angle and axis
+        let mut axis: [f64; 3] = [0.0; 3];
+        mji_cross(axis.as_mut_ptr(), z.as_ptr(), vn.as_ptr());
         let a = crate::engine::engine_util_blas::mju_normalize3(axis.as_mut_ptr());
 
         // almost parallel
         if a.abs() < MJ_MINVAL {
             // opposite: 180 deg rotation around x axis
-            let dot = vn[0] * z[0] + vn[1] * z[1] + vn[2] * z[2];
+            let dot = crate::engine::engine_util_blas::mju_dot3(vn.as_ptr(), z.as_ptr());
             if dot < 0.0 {
                 *quat.add(0) = 0.0;
                 *quat.add(1) = 1.0;
@@ -347,9 +345,9 @@ pub fn mju_quat_z2vec(quat: *mut f64, vec: *const f64) {
         }
 
         // make quaternion from angle and axis
-        let dot = vn[0] * z[0] + vn[1] * z[1] + vn[2] * z[2];
+        let dot = crate::engine::engine_util_blas::mju_dot3(vn.as_ptr(), z.as_ptr());
         let angle = f64::atan2(a, dot);
-        mju_axis_angle2quat(quat, axis.as_ptr(), angle);
+        crate::engine::engine_inline::mji_axis_angle2quat(quat, axis.as_ptr(), angle);
     }
 }
 
@@ -362,10 +360,55 @@ pub fn mju_quat_z2vec(quat: *mut f64, vec: *const f64) {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mju_mat2rot(quat: *mut f64, mat: *const f64) -> i32 {
-    // NOTE: signature changed from previous IR version
-    // Previous params: (quat : * mut f64, mat : * const f64)
-    // Previous return: i32
-    todo!("re-translate: params renamed")
+    const ROT_EPS: f64 = 1e-9;
+    const MJ_MINVAL: f64 = 1E-15_f64;
+    use crate::engine::engine_inline::{mji_cross, mji_add3, mji_add_to3, mji_axis_angle2quat};
+    use crate::engine::engine_util_blas::{mju_dot3, mju_normalize3, mju_normalize4, mju_scl3};
+
+    // SAFETY: caller guarantees quat[4] and mat[9] are valid
+    unsafe {
+        let col1_mat: [f64; 3] = [*mat.add(0), *mat.add(3), *mat.add(6)];
+        let col2_mat: [f64; 3] = [*mat.add(1), *mat.add(4), *mat.add(7)];
+        let col3_mat: [f64; 3] = [*mat.add(2), *mat.add(5), *mat.add(8)];
+
+        let mut iter = 0i32;
+        while iter < 500 {
+            let mut rot: [f64; 9] = [0.0; 9];
+            mju_quat2mat(rot.as_mut_ptr(), quat);
+            let col1_rot: [f64; 3] = [rot[0], rot[3], rot[6]];
+            let col2_rot: [f64; 3] = [rot[1], rot[4], rot[7]];
+            let col3_rot: [f64; 3] = [rot[2], rot[5], rot[8]];
+
+            let mut vec1: [f64; 3] = [0.0; 3];
+            let mut vec2: [f64; 3] = [0.0; 3];
+            let mut vec3: [f64; 3] = [0.0; 3];
+            let mut omega: [f64; 3] = [0.0; 3];
+
+            mji_cross(vec1.as_mut_ptr(), col1_rot.as_ptr(), col1_mat.as_ptr());
+            mji_cross(vec2.as_mut_ptr(), col2_rot.as_ptr(), col2_mat.as_ptr());
+            mji_cross(vec3.as_mut_ptr(), col3_rot.as_ptr(), col3_mat.as_ptr());
+            mji_add3(omega.as_mut_ptr(), vec1.as_ptr(), vec2.as_ptr());
+            mji_add_to3(omega.as_mut_ptr(), vec3.as_ptr());
+
+            let denom = (mju_dot3(col1_rot.as_ptr(), col1_mat.as_ptr())
+                + mju_dot3(col2_rot.as_ptr(), col2_mat.as_ptr())
+                + mju_dot3(col3_rot.as_ptr(), col3_mat.as_ptr())).abs() + MJ_MINVAL;
+            mju_scl3(omega.as_mut_ptr(), omega.as_ptr(), 1.0 / denom);
+
+            let w = mju_normalize3(omega.as_mut_ptr());
+            if w < ROT_EPS {
+                break;
+            }
+
+            let mut qrot: [f64; 4] = [0.0; 4];
+            mji_axis_angle2quat(qrot.as_mut_ptr(), omega.as_ptr(), w);
+            mju_mul_quat(quat, qrot.as_ptr(), quat);
+            mju_normalize4(quat);
+
+            iter += 1;
+        }
+        iter
+    }
 }
 
 /// C: mju_mulPose (engine/engine_util_spatial.h:70)
@@ -377,19 +420,14 @@ pub fn mju_mat2rot(quat: *mut f64, mat: *const f64) -> i32 {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mju_mul_pose(posres: *mut f64, quatres: *mut f64, pos1: *const f64, quat1: *const f64, pos2: *const f64, quat2: *const f64) {
-    // SAFETY: caller guarantees posres[3], quatres[4], pos1[3], quat1[4], pos2[3], quat2[4]
+    use crate::engine::engine_inline::{mji_mul_quat, mji_rot_vec_quat, mji_add_to3};
     // quatres = quat1*quat2
-    mju_mul_quat(quatres, quat1, quat2);
+    mji_mul_quat(quatres, quat1, quat2);
     crate::engine::engine_util_blas::mju_normalize4(quatres);
 
     // posres = quat1*pos2 + pos1
-    mju_rot_vec_quat(posres, pos2, quat1);
-    // SAFETY: posres[3] and pos1[3] valid
-    unsafe {
-        *posres.add(0) += *pos1.add(0);
-        *posres.add(1) += *pos1.add(1);
-        *posres.add(2) += *pos1.add(2);
-    }
+    mji_rot_vec_quat(posres, pos2, quat1);
+    mji_add_to3(posres, pos1);
 }
 
 /// C: mju_negPose (engine/engine_util_spatial.h:75)
@@ -401,17 +439,13 @@ pub fn mju_mul_pose(posres: *mut f64, quatres: *mut f64, pos1: *const f64, quat1
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mju_neg_pose(posres: *mut f64, quatres: *mut f64, pos: *const f64, quat: *const f64) {
+    use crate::engine::engine_inline::{mji_neg_quat, mji_rot_vec_quat};
     // qres = neg(quat)
-    mju_neg_quat(quatres, quat);
+    mji_neg_quat(quatres, quat);
 
     // pres = -neg(quat)*pos
-    mju_rot_vec_quat(posres, pos, quatres);
-    // SAFETY: posres[3] valid
-    unsafe {
-        *posres.add(0) = -*posres.add(0);
-        *posres.add(1) = -*posres.add(1);
-        *posres.add(2) = -*posres.add(2);
-    }
+    mji_rot_vec_quat(posres, pos, quatres);
+    crate::engine::engine_util_blas::mju_scl3(posres, posres, -1.0);
 }
 
 /// C: mju_trnVecPose (engine/engine_util_spatial.h:79)
@@ -423,14 +457,10 @@ pub fn mju_neg_pose(posres: *mut f64, quatres: *mut f64, pos: *const f64, quat: 
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mju_trn_vec_pose(res: *mut f64, pos: *const f64, quat: *const f64, vec: *const f64) {
+    use crate::engine::engine_inline::{mji_rot_vec_quat, mji_add_to3};
     // res = quat*vec + pos
-    mju_rot_vec_quat(res, vec, quat);
-    // SAFETY: res[3] and pos[3] valid
-    unsafe {
-        *res.add(0) += *pos.add(0);
-        *res.add(1) += *pos.add(1);
-        *res.add(2) += *pos.add(2);
-    }
+    mji_rot_vec_quat(res, vec, quat);
+    mji_add_to3(res, pos);
 }
 
 /// C: mju_euler2Quat (engine/engine_util_spatial.h:84)
@@ -442,10 +472,43 @@ pub fn mju_trn_vec_pose(res: *mut f64, pos: *const f64, quat: *const f64, vec: *
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mju_euler2quat(quat: *mut f64, euler: *const f64, seq: *const i8) {
-    // NOTE: signature changed from previous IR version
-    // Previous params: (quat : * mut f64, euler : * const f64, seq : * const i8)
-    // Previous return: ()
-    todo!("re-translate: params renamed")
+    use crate::engine::engine_inline::mji_copy4;
+    // SAFETY: caller guarantees quat[4], euler[3], seq[3] are valid
+    unsafe {
+        // init
+        let mut tmp: [f64; 4] = [1.0, 0.0, 0.0, 0.0];
+
+        // loop over euler angles, accumulate rotations
+        for i in 0..3 {
+            let angle = *euler.add(i);
+            let mut rot: [f64; 4] = [(angle / 2.0).cos(), 0.0, 0.0, 0.0];
+            let sa = (angle / 2.0).sin();
+            let ch = *seq.add(i) as u8;
+
+            if ch == b'x' || ch == b'X' {
+                rot[1] = sa;
+            } else if ch == b'y' || ch == b'Y' {
+                rot[2] = sa;
+            } else if ch == b'z' || ch == b'Z' {
+                rot[3] = sa;
+            } else {
+                panic!("mju_euler2Quat: seq[{}] is '{}', should be one of x, y, z, X, Y, Z", i, ch as char);
+            }
+
+            // accumulate rotation
+            let mut res: [f64; 4] = [0.0; 4];
+            if ch == b'x' || ch == b'y' || ch == b'z' {
+                // moving axes: post-multiply
+                mju_mul_quat(res.as_mut_ptr(), tmp.as_ptr(), rot.as_ptr());
+            } else {
+                // fixed axes: pre-multiply
+                mju_mul_quat(res.as_mut_ptr(), rot.as_ptr(), tmp.as_ptr());
+            }
+            tmp = res;
+        }
+
+        mji_copy4(quat, tmp.as_ptr());
+    }
 }
 
 /// C: mju_cross (engine/engine_util_spatial.h:89)
@@ -456,7 +519,7 @@ pub fn mju_euler2quat(quat: *mut f64, euler: *const f64, seq: *const i8) {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mju_cross(res: *mut f64, a: *const f64, b: *const f64) {
-    // SAFETY: res points to 3 f64, a points to 3 f64, b points to 3 f64 (caller contract)
+    // SAFETY: caller guarantees res[3], a[3], b[3] are valid
     // Use tmp to handle aliasing (res may alias a or b)
     unsafe {
         let tmp0: f64 = *a.add(1) * *b.add(2) - *a.add(2) * *b.add(1);
@@ -567,10 +630,19 @@ pub fn mju_inert_com(res: *mut f64, inert: *const f64, mat: *const f64, dif: *co
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mju_dof_com(res: *mut f64, axis: *const f64, offset: *const f64) {
-    // NOTE: signature changed from previous IR version
-    // Previous params: (res : * mut f64, axis : * const f64, offset : * const f64)
-    // Previous return: ()
-    todo!("re-translate: params renamed")
+    use crate::engine::engine_inline::{mji_copy3, mji_cross};
+    // SAFETY: caller guarantees res[6], axis[3] are valid; offset may be null
+    unsafe {
+        if !offset.is_null() {
+            // hinge
+            mji_copy3(res, axis);
+            mji_cross(res.add(3), axis, offset);
+        } else {
+            // slide
+            crate::engine::engine_util_blas::mju_zero3(res);
+            mji_copy3(res.add(3), axis);
+        }
+    }
 }
 
 /// C: mju_mulInertVec (engine/engine_util_spatial.h:105)
@@ -581,10 +653,15 @@ pub fn mju_dof_com(res: *mut f64, axis: *const f64, offset: *const f64) {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mju_mul_inert_vec(res: *mut f64, inert: *const f64, vec: *const f64) {
-    // NOTE: signature changed from previous IR version
-    // Previous params: (res : * mut f64, inert : * const f64, vec : * const f64)
-    // Previous return: ()
-    todo!("re-translate: params renamed")
+    // SAFETY: caller guarantees res[6], inert[10], vec[6] are valid
+    unsafe {
+        *res.add(0) = *inert.add(0) * *vec.add(0) + *inert.add(3) * *vec.add(1) + *inert.add(4) * *vec.add(2) - *inert.add(8) * *vec.add(4) + *inert.add(7) * *vec.add(5);
+        *res.add(1) = *inert.add(3) * *vec.add(0) + *inert.add(1) * *vec.add(1) + *inert.add(5) * *vec.add(2) + *inert.add(8) * *vec.add(3) - *inert.add(6) * *vec.add(5);
+        *res.add(2) = *inert.add(4) * *vec.add(0) + *inert.add(5) * *vec.add(1) + *inert.add(2) * *vec.add(2) - *inert.add(7) * *vec.add(3) + *inert.add(6) * *vec.add(4);
+        *res.add(3) = *inert.add(8) * *vec.add(1) - *inert.add(7) * *vec.add(2) + *inert.add(9) * *vec.add(3);
+        *res.add(4) = *inert.add(6) * *vec.add(2) - *inert.add(8) * *vec.add(0) + *inert.add(9) * *vec.add(4);
+        *res.add(5) = *inert.add(7) * *vec.add(0) - *inert.add(6) * *vec.add(1) + *inert.add(9) * *vec.add(5);
+    }
 }
 
 /// C: mju_mulDofVec (engine/engine_util_spatial.h:108)
@@ -596,10 +673,17 @@ pub fn mju_mul_inert_vec(res: *mut f64, inert: *const f64, vec: *const f64) {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mju_mul_dof_vec(res: *mut f64, mat: *const f64, vec: *const f64, n: i32) {
-    // NOTE: signature changed from previous IR version
-    // Previous params: (res : * mut f64, mat : * const f64, vec : * const f64, n : i32)
-    // Previous return: ()
-    todo!("re-translate: params renamed")
+    use crate::engine::engine_util_blas::{mju_scl, mju_zero, mju_mul_mat_t_vec};
+    // SAFETY: caller guarantees res[6], mat[6*n], vec[n] are valid
+    unsafe {
+        if n == 1 {
+            mju_scl(res, mat, *vec.add(0), 6);
+        } else if n <= 0 {
+            mju_zero(res, 6);
+        } else {
+            mju_mul_mat_t_vec(res, mat, vec, n, 6);
+        }
+    }
 }
 
 /// C: mju_transformSpatial (engine/engine_util_spatial.h:112)
@@ -611,10 +695,35 @@ pub fn mju_mul_dof_vec(res: *mut f64, mat: *const f64, vec: *const f64, n: i32) 
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mju_transform_spatial(res: *mut f64, vec: *const f64, flg_force: i32, newpos: *const f64, oldpos: *const f64, rotnew2old: *const f64) {
-    // NOTE: signature changed from previous IR version
-    // Previous params: (res : * mut f64, vec : * const f64, flg_force : i32, newpos : * const f64, oldpos : * const f64, rotnew2old : * const f64)
-    // Previous return: ()
-    todo!("re-translate: params renamed")
+    use crate::engine::engine_inline::{mji_sub3, mji_cross, mji_mul_mat_t_vec3, mji_copy6};
+    // SAFETY: caller guarantees res[6], vec[6], newpos[3], oldpos[3] are valid; rotnew2old may be null
+    unsafe {
+        let mut cros: [f64; 3] = [0.0; 3];
+        let mut dif: [f64; 3] = [0.0; 3];
+        let mut tran: [f64; 6] = [0.0; 6];
+
+        // apply translation
+        crate::engine::engine_util_blas::mju_copy(tran.as_mut_ptr(), vec, 6);
+        mji_sub3(dif.as_mut_ptr(), newpos, oldpos);
+
+        if flg_force != 0 {
+            mji_cross(cros.as_mut_ptr(), dif.as_ptr(), vec.add(3));
+            mji_sub3(tran.as_mut_ptr(), vec, cros.as_ptr());
+        } else {
+            mji_cross(cros.as_mut_ptr(), dif.as_ptr(), vec);
+            mji_sub3(tran.as_mut_ptr().add(3), vec.add(3), cros.as_ptr());
+        }
+
+        // if provided, apply old -> new rotation
+        if !rotnew2old.is_null() {
+            mji_mul_mat_t_vec3(res, rotnew2old, tran.as_ptr());
+            mji_mul_mat_t_vec3(res.add(3), rotnew2old, tran.as_ptr().add(3));
+        }
+        // otherwise copy
+        else {
+            mji_copy6(res, tran.as_ptr());
+        }
+    }
 }
 
 /// C: mju_makeFrame (engine/engine_util_spatial.h:117)
@@ -626,9 +735,33 @@ pub fn mju_transform_spatial(res: *mut f64, vec: *const f64, flg_force: i32, new
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mju_make_frame(frame: *mut f64) {
-    // NOTE: signature changed from previous IR version
-    // Previous params: (frame : * mut f64)
-    // Previous return: ()
-    todo!("re-translate: params renamed")
-}
+    use crate::engine::engine_inline::{mji_cross, mji_scl3, mji_sub_from3};
+    use crate::engine::engine_util_blas::{mju_dot3, mju_normalize3, mju_zero3};
+    // SAFETY: caller guarantees frame[9] is valid
+    unsafe {
+        // normalize xaxis
+        if mju_normalize3(frame) < 0.5 {
+            panic!("mju_makeFrame: xaxis of contact frame undefined");
+        }
 
+        // if yaxis undefined, set yaxis to (0,1,0) if possible, otherwise (0,0,1)
+        if mju_dot3(frame.add(3), frame.add(3)) < 0.25 {
+            mju_zero3(frame.add(3));
+
+            if *frame.add(1) < 0.5 && *frame.add(1) > -0.5 {
+                *frame.add(4) = 1.0;
+            } else {
+                *frame.add(5) = 1.0;
+            }
+        }
+
+        // make yaxis orthogonal to xaxis
+        let mut tmp: [f64; 3] = [0.0; 3];
+        mji_scl3(tmp.as_mut_ptr(), frame, mju_dot3(frame, frame.add(3)));
+        mji_sub_from3(frame.add(3), tmp.as_ptr());
+        mju_normalize3(frame.add(3));
+
+        // zaxis = cross(xaxis, yaxis)
+        mji_cross(frame.add(6), frame, frame.add(3));
+    }
+}
