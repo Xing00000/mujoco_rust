@@ -776,10 +776,14 @@ pub fn mju_sign(x: f64) -> f64 {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mju_round(x: f64) -> i32 {
-    // NOTE: signature changed from previous IR version
-    // Previous params: (x : f64)
-    // Previous return: i32
-    todo!("re-translate: params renamed")
+    let lower = x.floor();
+    let upper = x.ceil();
+
+    if x - lower < upper - x {
+        lower as i32
+    } else {
+        upper as i32
+    }
 }
 
 /// C: mju_type2Str (engine/engine_util_misc.h:240)
