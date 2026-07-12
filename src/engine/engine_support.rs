@@ -180,10 +180,45 @@ pub fn mj_mul_m(m: *const mjModel, d: *const mjData, res: *mut f64, vec: *const 
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_mul_m2(m: *const mjModel, d: *const mjData, res: *mut f64, vec: *const f64) {
-    // WARNING: signature changed — verify body
-    // Previous params: (m : * const mjModel, d : * const mjData, res : * mut f64, vec : * const f64)
-    // Previous return: ()
-    todo ! ()
+    use crate::engine::engine_util_blas::mju_zero;
+    use crate::engine::engine_util_sparse::mju_dot_sparse;
+
+    // SAFETY: caller guarantees m, d, res, vec are valid; res and vec have nv elements
+    unsafe {
+        let nv: usize = (*m).nv;
+        let qLD: *const f64 = (*d).qLD;
+
+        mju_zero(res, nv as i32);
+
+        // res = L * vec
+        let mut i: usize = 0;
+        while i < nv {
+            // diagonal
+            *res.add(i) = *vec.add(i);
+
+            // non-simple: add off-diagonals
+            if *(*m).dof_simplenum.add(i) == 0 {
+                let adr: usize = *(*m).M_rowadr.add(i) as usize;
+                *res.add(i) += mju_dot_sparse(
+                    qLD.add(adr),
+                    vec,
+                    *(*m).M_rownnz.add(i) - 1,
+                    (*m).M_colind.add(adr),
+                );
+            }
+
+            i += 1;
+        }
+
+        // res *= sqrt(D)
+        let mut i: usize = 0;
+        while i < nv {
+            let diag: usize = (*(*m).M_rowadr.add(i) + *(*m).M_rownnz.add(i) - 1) as usize;
+            *res.add(i) *= (*qLD.add(diag)).sqrt();
+
+            i += 1;
+        }
+    }
 }
 
 /// C: mj_addM (engine/engine_support.h:72)
@@ -486,10 +521,28 @@ pub fn mj_get_totalmass(m: *const mjModel) -> f64 {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_set_totalmass(m: *mut mjModel, newmass: f64) {
-    // WARNING: signature changed — verify body
-    // Previous params: (m : * mut mjModel, newmass : f64)
-    // Previous return: ()
-    todo ! ()
+    use crate::engine::engine_util_misc::mju_max;
+
+    const MJMINVAL: f64 = 1e-15;
+
+    // SAFETY: caller guarantees m points to a valid mjModel
+    unsafe {
+        // compute scale factor, avoid zeros
+        let scale: f64 = mju_max(MJMINVAL, newmass / mju_max(MJMINVAL, mj_get_totalmass(m as *const mjModel)));
+
+        // scale all masses and inertias
+        let mut i: usize = 1;
+        while i < (*m).nbody {
+            *(*m).body_mass.add(i) *= scale;
+            *(*m).body_inertia.add(3 * i) *= scale;
+            *(*m).body_inertia.add(3 * i + 1) *= scale;
+            *(*m).body_inertia.add(3 * i + 2) *= scale;
+
+            i += 1;
+        }
+
+        // don't forget to call mj_set0 after changing masses
+    }
 }
 
 /// C: mj_version (engine/engine_support.h:121)

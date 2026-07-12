@@ -43,10 +43,44 @@ pub fn mul_sym_vec(res: *mut f64, mat: *const f64, vec: *const f64, n: i32) {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mju_chol_factor(mat: *mut f64, n: i32, mindiag: f64) -> i32 {
-    // WARNING: signature changed — verify body
-    // Previous params: (mat : * mut f64, n : i32, mindiag : f64)
-    // Previous return: i32
-    todo ! ()
+    use crate::engine::engine_util_blas::mju_dot;
+
+    // SAFETY: caller guarantees mat points to n*n f64 array
+    unsafe {
+        let n = n as usize;
+        let mut rank = n as i32;
+
+        // in-place Cholesky factorization
+        let mut j: usize = 0;
+        while j < n {
+            // compute new diagonal
+            let mut tmp: f64 = *mat.add(j * (n + 1));
+            if j > 0 {
+                tmp -= mju_dot(mat.add(j * n), mat.add(j * n), j as i32);
+            }
+
+            // correct diagonal values below threshold
+            if tmp < mindiag {
+                tmp = mindiag;
+                rank -= 1;
+            }
+
+            // save diagonal
+            *mat.add(j * (n + 1)) = tmp.sqrt();
+
+            // process off-diagonal entries
+            tmp = 1.0 / *mat.add(j * (n + 1));
+            let mut i: usize = j + 1;
+            while i < n {
+                *mat.add(i * n + j) = (*mat.add(i * n + j) - mju_dot(mat.add(i * n), mat.add(j * n), j as i32)) * tmp;
+                i += 1;
+            }
+
+            j += 1;
+        }
+
+        rank
+    }
 }
 
 /// C: mju_cholSolve (engine/engine_util_solve.h:30)
@@ -58,10 +92,47 @@ pub fn mju_chol_factor(mat: *mut f64, n: i32, mindiag: f64) -> i32 {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mju_chol_solve(res: *mut f64, mat: *const f64, vec: *const f64, n: i32) {
-    // WARNING: signature changed — verify body
-    // Previous params: (res : * mut f64, mat : * const f64, vec : * const f64, n : i32)
-    // Previous return: ()
-    todo ! ()
+    use crate::engine::engine_util_blas::{mju_copy, mju_dot};
+
+    // SAFETY: caller guarantees mat points to n*n f64, res and vec point to n f64
+    unsafe {
+        let n_u = n as usize;
+
+        // copy if source and destination are different
+        if res != vec as *mut f64 {
+            mju_copy(res, vec, n);
+        }
+
+        // forward substitution: solve L*res = vec
+        let mut i: usize = 0;
+        while i < n_u {
+            if i > 0 {
+                *res.add(i) -= mju_dot(mat.add(i * n_u), res as *const f64, i as i32);
+            }
+
+            // diagonal
+            *res.add(i) /= *mat.add(i * (n_u + 1));
+
+            i += 1;
+        }
+
+        // backward substitution: solve L'*res = res
+        let mut i: i32 = n - 1;
+        while i >= 0 {
+            let iu = i as usize;
+            if iu < n_u - 1 {
+                let mut j: usize = iu + 1;
+                while j < n_u {
+                    *res.add(iu) -= *mat.add(j * n_u + iu) * *res.add(j);
+                    j += 1;
+                }
+            }
+            // diagonal
+            *res.add(iu) /= *mat.add(iu * (n_u + 1));
+
+            i -= 1;
+        }
+    }
 }
 
 /// C: mju_cholUpdate (engine/engine_util_solve.h:33)
@@ -409,10 +480,71 @@ pub fn mju_eig3(eigval: *mut f64, eigvec: *mut f64, quat: *mut f64, mat: *const 
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mju_qcqp2(res: *mut f64, Ain: *const f64, bin: *const f64, d: *const f64, r: f64) -> i32 {
-    // WARNING: signature changed — verify body
-    // Previous params: (res : * mut f64, Ain : * const f64, bin : * const f64, d : * const f64, r : f64)
-    // Previous return: i32
-    todo ! ()
+    // SAFETY: caller guarantees res[2], Ain[4], bin[2], d[2] are valid
+    unsafe {
+        // scale A,b so that constraint becomes x'*x <= r*r
+        let b1: f64 = *bin.add(0) * *d.add(0);
+        let b2: f64 = *bin.add(1) * *d.add(1);
+        let A11: f64 = *Ain.add(0) * *d.add(0) * *d.add(0);
+        let A22: f64 = *Ain.add(3) * *d.add(1) * *d.add(1);
+        let A12: f64 = *Ain.add(1) * *d.add(0) * *d.add(1);
+
+        // Newton iteration
+        let mut la: f64 = 0.0;
+        let mut v1: f64 = 0.0;
+        let mut v2: f64 = 0.0;
+
+        let mut iter: i32 = 0;
+        while iter < 20 {
+            // det(A+la)
+            let det: f64 = (A11 + la) * (A22 + la) - A12 * A12;
+
+            // check SPD, with 1e-10 threshold
+            if det < 1e-10 {
+                *res.add(0) = 0.0;
+                *res.add(1) = 0.0;
+                return 0;
+            }
+
+            // P = inv(A+la)
+            let detinv: f64 = 1.0 / det;
+            let P11: f64 = (A22 + la) * detinv;
+            let P22: f64 = (A11 + la) * detinv;
+            let P12: f64 = -A12 * detinv;
+
+            // v = -P*b
+            v1 = -P11 * b1 - P12 * b2;
+            v2 = -P12 * b1 - P22 * b2;
+
+            // val = v'*v - r*r
+            let val: f64 = v1 * v1 + v2 * v2 - r * r;
+
+            // check for convergence, or initial solution inside constraint set
+            if val < 1e-10 {
+                break;
+            }
+
+            // deriv = -2 * v' * P * v
+            let deriv: f64 = -2.0 * (P11 * v1 * v1 + 2.0 * P12 * v1 * v2 + P22 * v2 * v2);
+
+            // compute update, exit if too small
+            let delta: f64 = -val / deriv;
+            if delta < 1e-10 {
+                break;
+            }
+
+            // update
+            la += delta;
+
+            iter += 1;
+        }
+
+        // undo scaling
+        *res.add(0) = v1 * *d.add(0);
+        *res.add(1) = v2 * *d.add(1);
+
+        (la != 0.0) as i32
+    }
 }
 
 /// C: mju_QCQP3 (engine/engine_util_solve.h:131)
@@ -423,10 +555,93 @@ pub fn mju_qcqp2(res: *mut f64, Ain: *const f64, bin: *const f64, d: *const f64,
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mju_qcqp3(res: *mut f64, Ain: *const f64, bin: *const f64, d: *const f64, r: f64) -> i32 {
-    // WARNING: signature changed — verify body
-    // Previous params: (res : * mut f64, Ain : * const f64, bin : * const f64, d : * const f64, r : f64)
-    // Previous return: i32
-    todo ! ()
+    // SAFETY: caller guarantees res[3], Ain[9], bin[3], d[3] are valid
+    unsafe {
+        // scale A,b so that constraint becomes x'*x <= r*r
+        let b1: f64 = *bin.add(0) * *d.add(0);
+        let b2: f64 = *bin.add(1) * *d.add(1);
+        let b3: f64 = *bin.add(2) * *d.add(2);
+        let A11: f64 = *Ain.add(0) * *d.add(0) * *d.add(0);
+        let A22: f64 = *Ain.add(4) * *d.add(1) * *d.add(1);
+        let A33: f64 = *Ain.add(8) * *d.add(2) * *d.add(2);
+        let A12: f64 = *Ain.add(1) * *d.add(0) * *d.add(1);
+        let A13: f64 = *Ain.add(2) * *d.add(0) * *d.add(2);
+        let A23: f64 = *Ain.add(5) * *d.add(1) * *d.add(2);
+
+        // Newton iteration
+        let mut la: f64 = 0.0;
+        let mut v1: f64 = 0.0;
+        let mut v2: f64 = 0.0;
+        let mut v3: f64 = 0.0;
+
+        let mut iter: i32 = 0;
+        while iter < 20 {
+            // unscaled P
+            let mut P11: f64 = (A22 + la) * (A33 + la) - A23 * A23;
+            let mut P22: f64 = (A11 + la) * (A33 + la) - A13 * A13;
+            let mut P33: f64 = (A11 + la) * (A22 + la) - A12 * A12;
+            let mut P12: f64 = A13 * A23 - A12 * (A33 + la);
+            let mut P13: f64 = A12 * A23 - A13 * (A22 + la);
+            let mut P23: f64 = A12 * A13 - A23 * (A11 + la);
+
+            // det(A+la)
+            let det: f64 = (A11 + la) * P11 + A12 * P12 + A13 * P13;
+
+            // check SPD, with 1e-10 threshold
+            if det < 1e-10 {
+                *res.add(0) = 0.0;
+                *res.add(1) = 0.0;
+                *res.add(2) = 0.0;
+                return 0;
+            }
+
+            // detinv
+            let detinv: f64 = 1.0 / det;
+
+            // final P
+            P11 *= detinv;
+            P22 *= detinv;
+            P33 *= detinv;
+            P12 *= detinv;
+            P13 *= detinv;
+            P23 *= detinv;
+
+            // v = -P*b
+            v1 = -P11 * b1 - P12 * b2 - P13 * b3;
+            v2 = -P12 * b1 - P22 * b2 - P23 * b3;
+            v3 = -P13 * b1 - P23 * b2 - P33 * b3;
+
+            // val = v'*v - r*r
+            let val: f64 = v1 * v1 + v2 * v2 + v3 * v3 - r * r;
+
+            // check for convergence, or initial solution inside constraint set
+            if val < 1e-10 {
+                break;
+            }
+
+            // deriv = -2 * v' * P * v
+            let deriv: f64 = -2.0 * (P11 * v1 * v1 + P22 * v2 * v2 + P33 * v3 * v3)
+                             - 4.0 * (P12 * v1 * v2 + P13 * v1 * v3 + P23 * v2 * v3);
+
+            // compute update, exit if too small
+            let delta: f64 = -val / deriv;
+            if delta < 1e-10 {
+                break;
+            }
+
+            // update
+            la += delta;
+
+            iter += 1;
+        }
+
+        // undo scaling
+        *res.add(0) = v1 * *d.add(0);
+        *res.add(1) = v2 * *d.add(1);
+        *res.add(2) = v3 * *d.add(2);
+
+        (la != 0.0) as i32
+    }
 }
 
 /// C: mju_QCQP (engine/engine_util_solve.h:136)
