@@ -122,10 +122,13 @@ pub fn mjuu_matadr(g1: i32, g2: i32, n: i32) -> i32 {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjuu_setvec(dest: *mut f64, x: f64, y: f64, z: f64, w: f64) {
-    // WARNING: signature changed — verify body
-    // Previous params: (dest : * mut f64, x : f64, y : f64, z : f64, w : f64)
-    // Previous return: ()
-    todo ! ()
+    // SAFETY: caller guarantees dest points to at least 4 contiguous f64 values
+    unsafe {
+        *dest.add(0) = x;
+        *dest.add(1) = y;
+        *dest.add(2) = z;
+        *dest.add(3) = w;
+    }
 }
 
 /// C: mjuu_copyvec (user/user_util.h:54)
@@ -161,10 +164,14 @@ pub fn mjuu_addtovec(dest: *mut f64, src: *const f64, n: i32) {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjuu_zerovec(dest: *mut f64, n: i32) {
-    // WARNING: signature changed — verify body
-    // Previous params: (dest : * mut f64, n : i32)
-    // Previous return: ()
-    todo ! ()
+    // SAFETY: caller guarantees dest points to at least n contiguous f64 values
+    unsafe {
+        let mut i: i32 = 0;
+        while i < n {
+            *dest.add(i as usize) = 0.0;
+            i += 1;
+        }
+    }
 }
 
 /// C: mjuu_dot3 (user/user_util.h:68)
@@ -175,10 +182,10 @@ pub fn mjuu_zerovec(dest: *mut f64, n: i32) {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjuu_dot3(a: *const f64, b: *const f64) -> f64 {
-    // WARNING: signature changed — verify body
-    // Previous params: (a : * const f64, b : * const f64)
-    // Previous return: f64
-    todo ! ()
+    // SAFETY: caller guarantees a and b point to at least 3 contiguous f64 values
+    unsafe {
+        *a.add(0) * *b.add(0) + *a.add(1) * *b.add(1) + *a.add(2) * *b.add(2)
+    }
 }
 
 /// C: mjuu_dist3 (user/user_util.h:71)
@@ -189,10 +196,13 @@ pub fn mjuu_dot3(a: *const f64, b: *const f64) -> f64 {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjuu_dist3(a: *const f64, b: *const f64) -> f64 {
-    // WARNING: signature changed — verify body
-    // Previous params: (a : * const f64, b : * const f64)
-    // Previous return: f64
-    todo ! ()
+    // SAFETY: caller guarantees a and b point to at least 3 contiguous f64 values
+    unsafe {
+        let d0 = *a.add(0) - *b.add(0);
+        let d1 = *a.add(1) - *b.add(1);
+        let d2 = *a.add(2) - *b.add(2);
+        (d0 * d0 + d1 * d1 + d2 * d2).sqrt()
+    }
 }
 
 /// C: mjuu_L1 (user/user_util.h:74)
@@ -221,10 +231,33 @@ pub fn mjuu_l1(a: *const f64, b: *const f64, n: i32) -> f64 {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjuu_normvec(vec: *mut f64, n: i32) -> f64 {
-    // WARNING: signature changed — verify body
-    // Previous params: (vec : * mut f64, n : i32)
-    // Previous return: f64
-    todo ! ()
+    // SAFETY: caller guarantees vec points to at least n contiguous f64 values
+    const MJ_EPS: f64 = 1e-14;
+    unsafe {
+        let mut nrm: f64 = 0.0;
+
+        let mut i: i32 = 0;
+        while i < n {
+            nrm += *vec.add(i as usize) * *vec.add(i as usize);
+            i += 1;
+        }
+        if nrm < MJ_EPS {
+            return 0.0;
+        }
+
+        nrm = nrm.sqrt();
+
+        // don't normalize if nrm is within mjEPS of 1
+        if (nrm - 1.0).abs() > MJ_EPS {
+            let mut i: i32 = 0;
+            while i < n {
+                *vec.add(i as usize) /= nrm;
+                i += 1;
+            }
+        }
+
+        nrm
+    }
 }
 
 /// C: mjuu_scalevec (user/user_util.h:82)
@@ -280,10 +313,15 @@ pub fn mjuu_mulquat(res: *mut f64, qa: *const f64, qb: *const f64) {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjuu_mulvecmat(res: *mut f64, vec: *const f64, mat: *const f64) {
-    // WARNING: signature changed — verify body
-    // Previous params: (res : * mut f64, vec : * const f64, mat : * const f64)
-    // Previous return: ()
-    todo ! ()
+    // SAFETY: caller guarantees res[3], vec[3], mat[9] are valid
+    unsafe {
+        let tmp0 = *mat.add(0) * *vec.add(0) + *mat.add(1) * *vec.add(1) + *mat.add(2) * *vec.add(2);
+        let tmp1 = *mat.add(3) * *vec.add(0) + *mat.add(4) * *vec.add(1) + *mat.add(5) * *vec.add(2);
+        let tmp2 = *mat.add(6) * *vec.add(0) + *mat.add(7) * *vec.add(1) + *mat.add(8) * *vec.add(2);
+        *res.add(0) = tmp0;
+        *res.add(1) = tmp1;
+        *res.add(2) = tmp2;
+    }
 }
 
 /// C: mjuu_mulvecmatT (user/user_util.h:94)
@@ -294,10 +332,15 @@ pub fn mjuu_mulvecmat(res: *mut f64, vec: *const f64, mat: *const f64) {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjuu_mulvecmat_t(res: *mut f64, vec: *const f64, mat: *const f64) {
-    // WARNING: signature changed — verify body
-    // Previous params: (res : * mut f64, vec : * const f64, mat : * const f64)
-    // Previous return: ()
-    todo ! ()
+    // SAFETY: caller guarantees res[3], vec[3], mat[9] are valid
+    unsafe {
+        let tmp0 = *mat.add(0) * *vec.add(0) + *mat.add(3) * *vec.add(1) + *mat.add(6) * *vec.add(2);
+        let tmp1 = *mat.add(1) * *vec.add(0) + *mat.add(4) * *vec.add(1) + *mat.add(7) * *vec.add(2);
+        let tmp2 = *mat.add(2) * *vec.add(0) + *mat.add(5) * *vec.add(1) + *mat.add(8) * *vec.add(2);
+        *res.add(0) = tmp0;
+        *res.add(1) = tmp1;
+        *res.add(2) = tmp2;
+    }
 }
 
 /// C: mjuu_mulRMRT (user/user_util.h:97)
@@ -322,10 +365,27 @@ pub fn mjuu_mul_rmrt(res: *mut f64, R: *const f64, M: *const f64) {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjuu_mulmat(res: *mut f64, A: *const f64, B: *const f64) {
-    // WARNING: signature changed — verify body
-    // Previous params: (res : * mut f64, A : * const f64, B : * const f64)
-    // Previous return: ()
-    todo ! ()
+    // SAFETY: caller guarantees res[9], A[9], B[9] are valid
+    unsafe {
+        let mut tmp: [f64; 9] = [0.0; 9];
+        tmp[0] = *A.add(0) * *B.add(0) + *A.add(1) * *B.add(3) + *A.add(2) * *B.add(6);
+        tmp[1] = *A.add(0) * *B.add(1) + *A.add(1) * *B.add(4) + *A.add(2) * *B.add(7);
+        tmp[2] = *A.add(0) * *B.add(2) + *A.add(1) * *B.add(5) + *A.add(2) * *B.add(8);
+
+        tmp[3] = *A.add(3) * *B.add(0) + *A.add(4) * *B.add(3) + *A.add(5) * *B.add(6);
+        tmp[4] = *A.add(3) * *B.add(1) + *A.add(4) * *B.add(4) + *A.add(5) * *B.add(7);
+        tmp[5] = *A.add(3) * *B.add(2) + *A.add(4) * *B.add(5) + *A.add(5) * *B.add(8);
+
+        tmp[6] = *A.add(6) * *B.add(0) + *A.add(7) * *B.add(3) + *A.add(8) * *B.add(6);
+        tmp[7] = *A.add(6) * *B.add(1) + *A.add(7) * *B.add(4) + *A.add(8) * *B.add(7);
+        tmp[8] = *A.add(6) * *B.add(2) + *A.add(7) * *B.add(5) + *A.add(8) * *B.add(8);
+
+        let mut i: i32 = 0;
+        while i < 9 {
+            *res.add(i as usize) = tmp[i as usize];
+            i += 1;
+        }
+    }
 }
 
 /// C: mjuu_transposemat (user/user_util.h:103)
@@ -336,10 +396,19 @@ pub fn mjuu_mulmat(res: *mut f64, A: *const f64, B: *const f64) {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjuu_transposemat(res: *mut f64, mat: *const f64) {
-    // WARNING: signature changed — verify body
-    // Previous params: (res : * mut f64, mat : * const f64)
-    // Previous return: ()
-    todo ! ()
+    // SAFETY: caller guarantees res[9] and mat[9] are valid
+    unsafe {
+        let tmp: [f64; 9] = [
+            *mat.add(0), *mat.add(3), *mat.add(6),
+            *mat.add(1), *mat.add(4), *mat.add(7),
+            *mat.add(2), *mat.add(5), *mat.add(8),
+        ];
+        let mut i: i32 = 0;
+        while i < 9 {
+            *res.add(i as usize) = tmp[i as usize];
+            i += 1;
+        }
+    }
 }
 
 /// C: mjuu_localaxis (user/user_util.h:106)
