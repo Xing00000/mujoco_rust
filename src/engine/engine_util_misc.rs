@@ -862,7 +862,38 @@ pub fn mju_encode_base64(buf: *mut i8, data: *const u8, ndata: usize) -> usize {
 /// C: mju_isValidBase64 (engine/engine_util_misc.h:167)
 #[allow(unused_variables, non_snake_case)]
 pub fn mju_is_valid_base64(s: *const i8) -> usize {
-    todo!() // mju_isValidBase64
+    // SAFETY: caller guarantees s is a valid null-terminated string
+    unsafe {
+        let mut i: usize = 0;
+        let mut pad: i32 = 0;
+
+        // validate chars
+        while *s.add(i) != 0 && *s.add(i) != b'=' as i8 {
+            let c = *s.add(i) as u8;
+            if !c.is_ascii_alphanumeric() && c != b'/' && c != b'+' {
+                return 0;
+            }
+            i += 1;
+        }
+
+        // padding at end
+        if *s.add(i) == b'=' as i8 {
+            if *s.add(i + 1) == 0 {
+                pad = 1;
+            } else if *s.add(i + 1) == b'=' as i8 && *s.add(i + 2) == 0 {
+                pad = 2;
+            } else {
+                return 0;
+            }
+        }
+
+        // strlen(s) must be a multiple of 4
+        let len: i32 = i as i32 + pad;
+        if len % 4 != 0 {
+            return 0;
+        }
+        (3 * (len / 4) - pad) as usize
+    }
 }
 
 /// C: mju_decodeBase64 (engine/engine_util_misc.h:171)
@@ -964,10 +995,96 @@ pub fn mju_history_insert(buf: *mut f64, n: i32, dim: i32, t: f64) -> *mut f64 {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mju_history_read(buf: *const f64, n: i32, dim: i32, res: *mut f64, t: f64, interp: i32) -> *const f64 {
-    // NOTE: signature changed from previous IR version
-    // Previous params: (buf : * const f64, n : i32, dim : i32, res : * mut f64, t : f64, interp : i32)
-    // Previous return: * const f64
-    todo!("re-translate: params renamed")
+    const MJ_MINVAL: f64 = 1E-15_f64;
+
+    // SAFETY: caller guarantees buf has layout [capacity, cursor, times[n], values[n*dim]]
+    //         and res has space for dim elements
+    unsafe {
+        let cursor = *buf.add(1) as i32;
+        let times = buf.add(2);
+        let values = buf.add(2 + n as usize);
+
+        let oldest_phys = history_physical_index(cursor, n, 0);
+        let newest_phys = history_physical_index(cursor, n, n - 1);
+        let t_oldest = *times.add(oldest_phys as usize);
+        let t_newest = *times.add(newest_phys as usize);
+
+        // extrapolate before oldest: return pointer to oldest value
+        if t <= t_oldest + MJ_MINVAL {
+            return values.add((oldest_phys as usize) * (dim as usize));
+        }
+
+        // extrapolate after newest: return pointer to newest value
+        if t >= t_newest - MJ_MINVAL {
+            return values.add((newest_phys as usize) * (dim as usize));
+        }
+
+        // find bracketing logical index: times[i-1] < t <= times[i]
+        let i = history_find_index(times, n, cursor, t);
+        let phys_i = history_physical_index(cursor, n, i);
+
+        // check for exact match at i
+        if (t - *times.add(phys_i as usize)).abs() < MJ_MINVAL {
+            return values.add((phys_i as usize) * (dim as usize));
+        }
+
+        // lo = i-1, hi = i (we know i > 0 because t > t_oldest)
+        let phys_lo = history_physical_index(cursor, n, i - 1);
+        let phys_hi = phys_i;
+
+        // zero-order hold: return pointer to lo (most recent sample <= t)
+        if interp == 0 {
+            return values.add((phys_lo as usize) * (dim as usize));
+        }
+
+        let dt = *times.add(phys_hi as usize) - *times.add(phys_lo as usize);
+        let alpha = (t - *times.add(phys_lo as usize)) / dt;
+
+        // piecewise linear interpolation
+        if interp == 1 {
+            for d in 0..dim as usize {
+                *res.add(d) = *values.add((phys_lo as usize) * (dim as usize) + d)
+                    + alpha * (*values.add((phys_hi as usize) * (dim as usize) + d)
+                        - *values.add((phys_lo as usize) * (dim as usize) + d));
+            }
+        } else {
+            // cubic spline interpolation - Hermite basis functions
+            let alpha2 = alpha * alpha;
+            let alpha3 = alpha2 * alpha;
+            let h00 = 2.0 * alpha3 - 3.0 * alpha2 + 1.0;
+            let h10 = alpha3 - 2.0 * alpha2 + alpha;
+            let h01 = -2.0 * alpha3 + 3.0 * alpha2;
+            let h11 = alpha3 - alpha2;
+
+            for d in 0..dim as usize {
+                // finite differenced catmull-rom slopes, 0 at endpoints
+                let mut m_lo: f64 = 0.0;
+                if i > 1 {
+                    let phys_lo_prev = history_physical_index(cursor, n, i - 2);
+                    let dt_lo = *times.add(phys_hi as usize) - *times.add(phys_lo_prev as usize);
+                    m_lo = (*values.add((phys_hi as usize) * (dim as usize) + d)
+                        - *values.add((phys_lo_prev as usize) * (dim as usize) + d))
+                        / dt_lo;
+                }
+
+                let mut m_hi: f64 = 0.0;
+                if i < n - 1 {
+                    let phys_hi_next = history_physical_index(cursor, n, i + 1);
+                    let dt_hi = *times.add(phys_hi_next as usize) - *times.add(phys_lo as usize);
+                    m_hi = (*values.add((phys_hi_next as usize) * (dim as usize) + d)
+                        - *values.add((phys_lo as usize) * (dim as usize) + d))
+                        / dt_hi;
+                }
+
+                *res.add(d) = h00 * *values.add((phys_lo as usize) * (dim as usize) + d)
+                    + h10 * dt * m_lo
+                    + h01 * *values.add((phys_hi as usize) * (dim as usize) + d)
+                    + h11 * dt * m_hi;
+            }
+        }
+
+        std::ptr::null()
+    }
 }
 
 /// C: mju_encodePyramid (engine/engine_util_misc.h:200)
@@ -1197,10 +1314,12 @@ pub fn mju_warning_text(warning: i32, info: usize) -> *const i8 {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mju_is_bad(x: f64) -> i32 {
-    // NOTE: signature changed from previous IR version
-    // Previous params: (x : f64)
-    // Previous return: i32
-    todo!("re-translate: params renamed")
+    const MJ_MAXVAL: f64 = 1E10_f64;
+    if x.is_nan() || x > MJ_MAXVAL || x < -MJ_MAXVAL {
+        1
+    } else {
+        0
+    }
 }
 
 /// C: mju_isZero (engine/engine_util_misc.h:255)
@@ -1472,19 +1591,35 @@ pub fn mju_lower2sym_map(map: *mut i32, nr: i32, res_rowadr: *const i32, res_row
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mju_insertion_sort(list: *mut f64, n: i32) {
-    // NOTE: signature changed from previous IR version
-    // Previous params: (list : * mut f64, n : i32)
-    // Previous return: ()
-    todo!("re-translate: params renamed")
+    // SAFETY: caller guarantees list points to a valid array of n elements
+    unsafe {
+        for i in 1..n as usize {
+            let x = *list.add(i);
+            let mut j: i32 = i as i32 - 1;
+            while j >= 0 && *list.add(j as usize) > x {
+                *list.add((j + 1) as usize) = *list.add(j as usize);
+                j -= 1;
+            }
+            *list.add((j + 1) as usize) = x;
+        }
+    }
 }
 
 /// C: mju_insertionSortInt (engine/engine_util_misc.h:315)
 #[allow(unused_variables, non_snake_case)]
 pub fn mju_insertion_sort_int(list: *mut i32, n: i32) {
-    // NOTE: signature changed from previous IR version
-    // Previous params: (list : * mut i32, n : i32)
-    // Previous return: ()
-    todo!("re-translate: params renamed")
+    // SAFETY: caller guarantees list points to a valid array of n elements
+    unsafe {
+        for i in 1..n as usize {
+            let x = *list.add(i);
+            let mut j: i32 = i as i32 - 1;
+            while j >= 0 && *list.add(j as usize) > x {
+                *list.add((j + 1) as usize) = *list.add(j as usize);
+                j -= 1;
+            }
+            *list.add((j + 1) as usize) = x;
+        }
+    }
 }
 
 /// C: mju_Halton (engine/engine_util_misc.h:318)
