@@ -13,10 +13,10 @@ use crate::types::*;
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjr_make_normal(normal: *mut f32, p1: *const f32, p2: *const f32, p3: *const f32) {
-    // WARNING: signature changed — verify body
+    // NOTE: signature changed from previous IR version
     // Previous params: (normal : * mut f32, p1 : * const f32, p2 : * const f32, p3 : * const f32)
     // Previous return: ()
-    todo ! ()
+    todo!("re-translate: params renamed")
 }
 
 /// C: mjr_setf4 (render/classic/render_util.h:29)
@@ -27,10 +27,10 @@ pub fn mjr_make_normal(normal: *mut f32, p1: *const f32, p2: *const f32, p3: *co
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjr_setf4(vec: *mut f32, f0: f32, f1: f32, f2: f32, f3: f32) {
-    // WARNING: signature changed — verify body
+    // NOTE: signature changed from previous IR version
     // Previous params: (vec : * mut f32, f0 : f32, f1 : f32, f2 : f32, f3 : f32)
     // Previous return: ()
-    todo ! ()
+    todo!("re-translate: params renamed")
 }
 
 /// C: mjr_setf3 (render/classic/render_util.h:32)
@@ -41,10 +41,10 @@ pub fn mjr_setf4(vec: *mut f32, f0: f32, f1: f32, f2: f32, f3: f32) {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjr_setf3(vec: *mut f32, f0: f32, f1: f32, f2: f32) {
-    // WARNING: signature changed — verify body
+    // NOTE: signature changed from previous IR version
     // Previous params: (vec : * mut f32, f0 : f32, f1 : f32, f2 : f32)
     // Previous return: ()
-    todo ! ()
+    todo!("re-translate: params renamed")
 }
 
 /// C: mjr_mulMat44 (render/classic/render_util.h:35)
@@ -55,10 +55,10 @@ pub fn mjr_setf3(vec: *mut f32, f0: f32, f1: f32, f2: f32) {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjr_mul_mat44(res: *mut f32, A: *const f32, B: *const f32) {
-    // WARNING: signature changed — verify body
+    // NOTE: signature changed from previous IR version
     // Previous params: (res : * mut f32, A : * const f32, B : * const f32)
     // Previous return: ()
-    todo ! ()
+    todo!("re-translate: params renamed")
 }
 
 /// C: mjr_getrow4 (render/classic/render_util.h:38)
@@ -69,10 +69,10 @@ pub fn mjr_mul_mat44(res: *mut f32, A: *const f32, B: *const f32) {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjr_getrow4(res: *mut f32, A: *const f32, r: i32) {
-    // WARNING: signature changed — verify body
+    // NOTE: signature changed from previous IR version
     // Previous params: (res : * mut f32, A : * const f32, r : i32)
     // Previous return: ()
-    todo ! ()
+    todo!("re-translate: params renamed")
 }
 
 /// C: mjr_crossVec (render/classic/render_util.h:41)
@@ -83,10 +83,10 @@ pub fn mjr_getrow4(res: *mut f32, A: *const f32, r: i32) {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjr_cross_vec(a: *mut f32, b: *const f32, c: *const f32) {
-    // WARNING: signature changed — verify body
+    // NOTE: signature changed from previous IR version
     // Previous params: (a : * mut f32, b : * const f32, c : * const f32)
     // Previous return: ()
-    todo ! ()
+    todo!("re-translate: params renamed")
 }
 
 /// C: mjr_normalizeVec (render/classic/render_util.h:44)
@@ -97,10 +97,10 @@ pub fn mjr_cross_vec(a: *mut f32, b: *const f32, c: *const f32) {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjr_normalize_vec(v: *mut f32) {
-    // WARNING: signature changed — verify body
+    // NOTE: signature changed from previous IR version
     // Previous params: (v : * mut f32)
     // Previous return: ()
-    todo ! ()
+    todo!("re-translate: params renamed")
 }
 
 /// C: mjr_orthoVec (render/classic/render_util.h:47)
@@ -112,10 +112,10 @@ pub fn mjr_normalize_vec(v: *mut f32) {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjr_ortho_vec(res: *mut f32, v: *const f32) {
-    // WARNING: signature changed — verify body
+    // NOTE: signature changed from previous IR version
     // Previous params: (res : * mut f32, v : * const f32)
     // Previous return: ()
-    todo ! ()
+    todo!("re-translate: params renamed")
 }
 
 /// C: mjr_dotVec (render/classic/render_util.h:50)
@@ -126,10 +126,10 @@ pub fn mjr_ortho_vec(res: *mut f32, v: *const f32) {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjr_dot_vec(a: *const f32, b: *const f32) -> f32 {
-    // WARNING: signature changed — verify body
+    // NOTE: signature changed from previous IR version
     // Previous params: (a : * const f32, b : * const f32)
     // Previous return: f32
-    todo ! ()
+    todo!("re-translate: params renamed")
 }
 
 /// C: mjr_multiply4 (render/classic/render_util.h:53)
@@ -140,10 +140,10 @@ pub fn mjr_dot_vec(a: *const f32, b: *const f32) -> f32 {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjr_multiply4(res: *mut f32, mat: *const f32, vec: *const f32) {
-    // WARNING: signature changed — verify body
+    // NOTE: signature changed from previous IR version
     // Previous params: (res : * mut f32, mat : * const f32, vec : * const f32)
     // Previous return: ()
-    todo ! ()
+    todo!("re-translate: params renamed")
 }
 
 /// C: mjr_lookAt (render/classic/render_util.h:56)
@@ -155,10 +155,10 @@ pub fn mjr_multiply4(res: *mut f32, mat: *const f32, vec: *const f32) {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjr_look_at(eye: *const f32, forward: *const f32, up: *const f32) {
-    // WARNING: signature changed — verify body
+    // NOTE: signature changed from previous IR version
     // Previous params: (eye : * const f32, forward : * const f32, up : * const f32)
     // Previous return: ()
-    todo ! ()
+    todo!("re-translate: params renamed")
 }
 
 /// C: mjr_perspective (render/classic/render_util.h:59)
@@ -169,10 +169,10 @@ pub fn mjr_look_at(eye: *const f32, forward: *const f32, up: *const f32) {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjr_perspective(fovy: f32, aspect: f32, znear: f32, zfar: f32) {
-    // WARNING: signature changed — verify body
+    // NOTE: signature changed from previous IR version
     // Previous params: (fovy : f32, aspect : f32, znear : f32, zfar : f32)
     // Previous return: ()
-    todo ! ()
+    todo!("re-translate: params renamed")
 }
 
 /// C: mjr_reflect (render/classic/render_util.h:62)
@@ -184,10 +184,10 @@ pub fn mjr_perspective(fovy: f32, aspect: f32, znear: f32, zfar: f32) {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjr_reflect(pos: *const f32, mat: *const f32) {
-    // WARNING: signature changed — verify body
+    // NOTE: signature changed from previous IR version
     // Previous params: (pos : * const f32, mat : * const f32)
     // Previous return: ()
-    todo ! ()
+    todo!("re-translate: params renamed")
 }
 
 /// C: mjr_transform (render/classic/render_util.h:65)
@@ -199,29 +199,18 @@ pub fn mjr_reflect(pos: *const f32, mat: *const f32) {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjr_transform(translate: *const f32, rotate: *const f32, scale: f32) {
-    // WARNING: signature changed — verify body
+    // NOTE: signature changed from previous IR version
     // Previous params: (translate : * const f32, rotate : * const f32, scale : f32)
     // Previous return: ()
-    todo ! ()
+    todo!("re-translate: params renamed")
 }
 
 /// C: mjr_findRect (render/classic/render_util.h:68)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjr_find_rect(x: i32, y: i32, nrect: i32, rect: *const mjrRect) -> i32 {
-    // SAFETY: caller guarantees rect has at least nrect elements
-    unsafe {
-        for i in 0..nrect as usize {
-            let r = &*rect.add(i);
-            if x >= r.left &&
-               x < r.left + r.width &&
-               y >= r.bottom &&
-               y < r.bottom + r.height {
-                return i as i32;
-            }
-        }
-    }
-
-    // not found
-    -1
+    // NOTE: signature changed from previous IR version
+    // Previous params: (x : i32, y : i32, nrect : i32, rect : * const mjrRect)
+    // Previous return: i32
+    todo!("re-translate: params renamed")
 }
 

@@ -13,10 +13,10 @@ use crate::types::*;
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mju_clamp_vec(vec: *mut f64, limit: *const f64, n: i32) {
-    // WARNING: signature changed — verify body
+    // NOTE: signature changed from previous IR version
     // Previous params: (vec : * mut f64, limit : * const f64, n : i32)
     // Previous return: ()
-    todo ! ()
+    todo!("re-translate: params renamed")
 }
 
 /// C: mjraw_SphereBox (engine/engine_collision_box.c:34)
@@ -28,10 +28,10 @@ pub fn mju_clamp_vec(vec: *mut f64, limit: *const f64, n: i32) {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjraw_sphere_box(con: *mut mjPreContact, margin: f64, pos1: *const f64, mat1: *const f64, size1: *const f64, pos2: *const f64, mat2: *const f64, size2: *const f64) -> i32 {
-    // WARNING: signature changed — verify body
+    // NOTE: signature changed from previous IR version
     // Previous params: (con : * mut mjPreContact, margin : f64, pos1 : * const f64, mat1 : * const f64, size1 : * const f64, pos2 : * const f64, mat2 : * const f64, size2 : * const f64)
     // Previous return: i32
-    todo ! ()
+    todo!("re-translate: params renamed")
 }
 
 /// C: _boxbox (engine/engine_collision_box.c:605)
@@ -43,9 +43,9 @@ pub fn mjraw_sphere_box(con: *mut mjPreContact, margin: f64, pos1: *const f64, m
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn boxbox(M: *const mjModel, D: *const mjData, con: *mut mjPreContact, g1: i32, g2: i32, margin: f64) -> i32 {
-    // WARNING: signature changed — verify body
+    // NOTE: signature changed from previous IR version
     // Previous params: (M : * const mjModel, D : * const mjData, con : * mut mjPreContact, g1 : i32, g2 : i32, margin : f64)
     // Previous return: i32
-    todo ! ()
+    todo!("re-translate: params renamed")
 }
 

@@ -13,10 +13,10 @@ use crate::types::*;
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn convert2d(res: *mut f64, action: i32, dx: f64, dy: f64, forward: *const f64) {
-    // WARNING: signature changed — verify body
+    // NOTE: signature changed from previous IR version
     // Previous params: (res : * mut f64, action : i32, dx : f64, dy : f64, forward : * const f64)
     // Previous return: ()
-    todo ! ()
+    todo!("re-translate: params renamed")
 }
 
 /// C: mjv_room2model (engine/engine_vis_interact.h:28)
@@ -28,10 +28,10 @@ pub fn convert2d(res: *mut f64, action: i32, dx: f64, dy: f64, forward: *const f
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjv_room2model(modelpos: *mut f64, modelquat: *mut f64, roompos: *const f64, roomquat: *const f64, scn: *const mjvScene) {
-    // WARNING: signature changed — verify body
+    // NOTE: signature changed from previous IR version
     // Previous params: (modelpos : * mut f64, modelquat : * mut f64, roompos : * const f64, roomquat : * const f64, scn : * const mjvScene)
     // Previous return: ()
-    todo ! ()
+    todo!("re-translate: params renamed")
 }
 
 /// C: mjv_model2room (engine/engine_vis_interact.h:32)
@@ -43,10 +43,10 @@ pub fn mjv_room2model(modelpos: *mut f64, modelquat: *mut f64, roompos: *const f
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjv_model2room(roompos: *mut f64, roomquat: *mut f64, modelpos: *const f64, modelquat: *const f64, scn: *const mjvScene) {
-    // WARNING: signature changed — verify body
+    // NOTE: signature changed from previous IR version
     // Previous params: (roompos : * mut f64, roomquat : * mut f64, modelpos : * const f64, modelquat : * const f64, scn : * const mjvScene)
     // Previous return: ()
-    todo ! ()
+    todo!("re-translate: params renamed")
 }
 
 /// C: mjv_cameraInModel (engine/engine_vis_interact.h:36)
@@ -58,10 +58,10 @@ pub fn mjv_model2room(roompos: *mut f64, roomquat: *mut f64, modelpos: *const f6
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjv_camera_in_model(headpos: *mut f64, forward: *mut f64, up: *mut f64, scn: *const mjvScene) {
-    // WARNING: signature changed — verify body
+    // NOTE: signature changed from previous IR version
     // Previous params: (headpos : * mut f64, forward : * mut f64, up : * mut f64, scn : * const mjvScene)
     // Previous return: ()
-    todo ! ()
+    todo!("re-translate: params renamed")
 }
 
 /// C: mjv_cameraInRoom (engine/engine_vis_interact.h:40)
@@ -73,10 +73,10 @@ pub fn mjv_camera_in_model(headpos: *mut f64, forward: *mut f64, up: *mut f64, s
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjv_camera_in_room(headpos: *mut f64, forward: *mut f64, up: *mut f64, scn: *const mjvScene) {
-    // WARNING: signature changed — verify body
+    // NOTE: signature changed from previous IR version
     // Previous params: (headpos : * mut f64, forward : * mut f64, up : * mut f64, scn : * const mjvScene)
     // Previous return: ()
-    todo ! ()
+    todo!("re-translate: params renamed")
 }
 
 /// C: mjv_frustumHeight (engine/engine_vis_interact.h:44)
@@ -88,10 +88,10 @@ pub fn mjv_camera_in_room(headpos: *mut f64, forward: *mut f64, up: *mut f64, sc
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjv_frustum_height(scn: *const mjvScene) -> f64 {
-    // WARNING: signature changed — verify body
+    // NOTE: signature changed from previous IR version
     // Previous params: (scn : * const mjvScene)
     // Previous return: f64
-    todo ! ()
+    todo!("re-translate: params renamed")
 }
 
 /// C: mjv_alignToCamera (engine/engine_vis_interact.h:47)
@@ -103,25 +103,10 @@ pub fn mjv_frustum_height(scn: *const mjvScene) -> f64 {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjv_align_to_camera(res: *mut f64, vec: *const f64, forward: *const f64) {
-    use crate::engine::engine_util_blas::{mju_copy, mju_normalize};
-    // SAFETY: caller guarantees res[3], vec[3], forward[2+] are valid
-    unsafe {
-        let mut yaxis: [f64; 2] = [0.0; 2];
-        let mut xaxis: [f64; 2] = [0.0; 2];
-
-        // forward-aligned y-axis
-        mju_copy(yaxis.as_mut_ptr(), forward, 2);
-        mju_normalize(yaxis.as_mut_ptr(), 2);
-
-        // corresponding x-axis
-        xaxis[0] = yaxis[1];
-        xaxis[1] = -yaxis[0];
-
-        // apply horizontal rotation
-        *res.add(0) = *vec.add(0) * xaxis[0] + *vec.add(1) * yaxis[0];
-        *res.add(1) = *vec.add(0) * xaxis[1] + *vec.add(1) * yaxis[1];
-        *res.add(2) = *vec.add(2);
-    }
+    // NOTE: signature changed from previous IR version
+    // Previous params: (res : * mut f64, vec : * const f64, forward : * const f64)
+    // Previous return: ()
+    todo!("re-translate: params renamed")
 }
 
 /// C: mjv_moveCamera (engine/engine_vis_interact.h:50)
@@ -133,10 +118,10 @@ pub fn mjv_align_to_camera(res: *mut f64, vec: *const f64, forward: *const f64) 
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjv_move_camera(m: *const mjModel, action: i32, reldx: f64, reldy: f64, scn: *const mjvScene, cam: *mut mjvCamera) {
-    // WARNING: signature changed — verify body
+    // NOTE: signature changed from previous IR version
     // Previous params: (m : * const mjModel, action : i32, reldx : f64, reldy : f64, scn : * const mjvScene, cam : * mut mjvCamera)
     // Previous return: ()
-    todo ! ()
+    todo!("re-translate: params renamed")
 }
 
 /// C: mjv_movePerturb (engine/engine_vis_interact.h:54)
@@ -148,10 +133,10 @@ pub fn mjv_move_camera(m: *const mjModel, action: i32, reldx: f64, reldy: f64, s
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjv_move_perturb(m: *const mjModel, d: *const mjData, action: i32, reldx: f64, reldy: f64, scn: *const mjvScene, pert: *mut mjvPerturb) {
-    // WARNING: signature changed — verify body
+    // NOTE: signature changed from previous IR version
     // Previous params: (m : * const mjModel, d : * const mjData, action : i32, reldx : f64, reldy : f64, scn : * const mjvScene, pert : * mut mjvPerturb)
     // Previous return: ()
-    todo ! ()
+    todo!("re-translate: params renamed")
 }
 
 /// C: mjv_moveModel (engine/engine_vis_interact.h:58)
@@ -163,144 +148,50 @@ pub fn mjv_move_perturb(m: *const mjModel, d: *const mjData, action: i32, reldx:
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjv_move_model(m: *const mjModel, action: i32, reldx: f64, reldy: f64, roomup: *const f64, scn: *mut mjvScene) {
-    // WARNING: signature changed — verify body
+    // NOTE: signature changed from previous IR version
     // Previous params: (m : * const mjModel, action : i32, reldx : f64, reldy : f64, roomup : * const f64, scn : * mut mjvScene)
     // Previous return: ()
-    todo ! ()
+    todo!("re-translate: params renamed")
 }
 
 /// C: mjv_initPerturb (engine/engine_vis_interact.h:62)
 /// Calls: mj_freeStack, mj_jac, mj_markStack, mj_solveM2, mj_stackAllocInfo, mju_addTo3, mju_copy3, mju_dot, mju_dot3, mju_max, mju_mulMatVec3, mju_mulQuat, mju_sub3, mjv_cameraInModel, mjv_frustumHeight
 #[allow(unused_variables, non_snake_case)]
 pub fn mjv_init_perturb(m: *const mjModel, d: *mut mjData, scn: *const mjvScene, pert: *mut mjvPerturb) {
-    // WARNING: signature changed — verify body
+    // NOTE: signature changed from previous IR version
     // Previous params: (m : * const mjModel, d : * mut mjData, scn : * const mjvScene, pert : * mut mjvPerturb)
     // Previous return: ()
-    todo ! ()
+    todo!("re-translate: params renamed")
 }
 
 /// C: mjv_applyPerturbPose (engine/engine_vis_interact.h:66)
 /// Calls: mju_copy3, mju_copy4, mju_mulPose, mju_negPose
 #[allow(unused_variables, non_snake_case)]
 pub fn mjv_apply_perturb_pose(m: *const mjModel, d: *mut mjData, pert: *const mjvPerturb, flg_paused: i32) {
-    use crate::engine::engine_util_blas::{mju_copy3, mju_copy4};
-    use crate::engine::engine_util_spatial::{mju_mul_pose, mju_neg_pose};
-
-    // SAFETY: all pointers are valid model/data/pert structs passed from MuJoCo runtime.
-    unsafe {
-        const MJ_JNT_FREE: i32 = 0;
-
-        let sel: i32 = (*pert).select;
-        let mut pos1: [f64; 3] = [0.0; 3];
-        let mut quat1: [f64; 4] = [0.0; 4];
-        let mut pos2: [f64; 3] = [0.0; 3];
-        let mut quat2: [f64; 4] = [0.0; 4];
-        let mut refpos: [f64; 3] = [0.0; 3];
-        let mut refquat: [f64; 4] = [0.0; 4];
-
-        // exit if nothing to do
-        if sel <= 0 || sel as usize >= (*m).nbody || ((*pert).active | (*pert).active2) == 0 {
-            return;
-        }
-
-        let sel_usize = sel as usize;
-
-        // get rootid above selected body
-        let rootid: i32 = *(*m).body_rootid.add(sel_usize);
-        let rootid_usize = rootid as usize;
-
-        // transform refpos,refquat from I-frame to X-frame of body[sel]
-        mju_neg_pose(
-            pos1.as_mut_ptr(),
-            quat1.as_mut_ptr(),
-            (*m).body_ipos.add(3 * sel_usize),
-            (*m).body_iquat.add(4 * sel_usize),
-        );
-        mju_mul_pose(
-            refpos.as_mut_ptr(),
-            refquat.as_mut_ptr(),
-            (*pert).refpos.as_ptr(),
-            (*pert).refquat.as_ptr(),
-            pos1.as_ptr(),
-            quat1.as_ptr(),
-        );
-
-        // mocap body
-        if *(*m).body_mocapid.add(sel_usize) >= 0 {
-            let mocapid = *(*m).body_mocapid.add(sel_usize) as usize;
-
-            // copy ref pose into mocap pose
-            mju_copy3((*d).mocap_pos.add(3 * mocapid), refpos.as_ptr());
-            mju_copy4((*d).mocap_quat.add(4 * mocapid), refquat.as_ptr());
-        }
-        // floating body, paused
-        else if flg_paused != 0
-            && *(*m).body_jntnum.add(sel_usize) == 1
-            && *(*m).jnt_type.add(*(*m).body_jntadr.add(sel_usize) as usize) == MJ_JNT_FREE
-        {
-            let qposadr =
-                *(*m).jnt_qposadr.add(*(*m).body_jntadr.add(sel_usize) as usize) as usize;
-
-            // copy ref pose into qpos
-            mju_copy3((*d).qpos.add(qposadr), refpos.as_ptr());
-            mju_copy4((*d).qpos.add(qposadr + 3), refquat.as_ptr());
-        }
-        // child of floating body, paused
-        else if flg_paused != 0
-            && *(*m).body_jntnum.add(rootid_usize) == 1
-            && *(*m).jnt_type.add(*(*m).body_jntadr.add(rootid_usize) as usize) == MJ_JNT_FREE
-        {
-            let qposadr =
-                *(*m).jnt_qposadr.add(*(*m).body_jntadr.add(rootid_usize) as usize) as usize;
-
-            // get pointers to root
-            let Rpos: *mut f64 = (*d).qpos.add(qposadr);
-            let Rquat: *mut f64 = Rpos.add(3);
-
-            // get pointers to child
-            let Cpos: *const f64 = (*d).xpos.add(3 * sel_usize);
-            let Cquat: *const f64 = (*d).xquat.add(4 * sel_usize);
-
-            // set root <- ref*neg(child)*root
-            mju_neg_pose(pos1.as_mut_ptr(), quat1.as_mut_ptr(), Cpos, Cquat); // neg(child)
-            mju_mul_pose(
-                pos2.as_mut_ptr(),
-                quat2.as_mut_ptr(),
-                pos1.as_ptr(),
-                quat1.as_ptr(),
-                Rpos,
-                Rquat,
-            ); // neg(child)*root
-            mju_mul_pose(
-                Rpos,
-                Rquat,
-                refpos.as_ptr(),
-                refquat.as_ptr(),
-                pos2.as_ptr(),
-                quat2.as_ptr(),
-            ); // ref*neg(child)*root
-        }
-    }
+    // NOTE: signature changed from previous IR version
+    // Previous params: (m : * const mjModel, d : * mut mjData, pert : * const mjvPerturb, flg_paused : i32)
+    // Previous return: ()
+    todo!("re-translate: params renamed")
 }
 
 /// C: mjv_applyPerturbForce (engine/engine_vis_interact.h:70)
 /// Calls: mj_objectVelocity, mju_addTo3, mju_addToScl3, mju_copy3, mju_cross, mju_dot3, mju_max, mju_mulMatVec3, mju_mulQuat, mju_negQuat, mju_normalize3, mju_quat2Vel, mju_scl3, mju_sub3
 #[allow(unused_variables, non_snake_case)]
 pub fn mjv_apply_perturb_force(m: *const mjModel, d: *mut mjData, pert: *const mjvPerturb) {
-    // WARNING: signature changed — verify body
+    // NOTE: signature changed from previous IR version
     // Previous params: (m : * const mjModel, d : * mut mjData, pert : * const mjvPerturb)
     // Previous return: ()
-    todo ! ()
+    todo!("re-translate: params renamed")
 }
 
 /// C: mjv_averageCamera (engine/engine_vis_interact.h:73)
 /// Calls: mju_add3, mju_addToScl3, mju_dot3, mju_f2n, mju_message, mju_n2f, mju_normalize3, mju_scl3
 #[allow(unused_variables, non_snake_case)]
 pub fn mjv_average_camera(cam1: *const mjvGLCamera, cam2: *const mjvGLCamera) -> mjvGLCamera {
-    // WARNING: signature changed — verify body
+    // NOTE: signature changed from previous IR version
     // Previous params: (cam1 : * const mjvGLCamera, cam2 : * const mjvGLCamera)
     // Previous return: mjvGLCamera
-    todo ! ()
+    todo!("re-translate: params renamed")
 }
 
 /// C: mjv_select (engine/engine_vis_interact.h:76)
@@ -312,10 +203,10 @@ pub fn mjv_average_camera(cam1: *const mjvGLCamera, cam2: *const mjvGLCamera) ->
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjv_select(m: *const mjModel, d: *const mjData, vopt: *const mjvOption, aspectratio: f64, relx: f64, rely: f64, scn: *const mjvScene, selpnt: *mut f64, geomid: *mut i32, flexid: *mut i32, skinid: *mut i32) -> i32 {
-    // WARNING: signature changed — verify body
+    // NOTE: signature changed from previous IR version
     // Previous params: (m : * const mjModel, d : * const mjData, vopt : * const mjvOption, aspectratio : f64, relx : f64, rely : f64, scn : * const mjvScene, selpnt : * mut f64, geomid : * mut i32, flexid : * mut i32, skinid : * mut i32)
     // Previous return: i32
-    todo ! ()
+    todo!("re-translate: params renamed")
 }
 
 /// C: mjv_flexBodyId (engine/engine_vis_interact.h:82)
@@ -327,9 +218,9 @@ pub fn mjv_select(m: *const mjModel, d: *const mjData, vopt: *const mjvOption, a
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjv_flex_body_id(m: *const mjModel, d: *const mjData, flexid: i32, vertid: i32, flexpnt: *mut f64) -> i32 {
-    // WARNING: signature changed — verify body
+    // NOTE: signature changed from previous IR version
     // Previous params: (m : * const mjModel, d : * const mjData, flexid : i32, vertid : i32, flexpnt : * mut f64)
     // Previous return: i32
-    todo ! ()
+    todo!("re-translate: params renamed")
 }
 

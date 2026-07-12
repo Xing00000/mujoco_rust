@@ -12,76 +12,76 @@ use crate::types::*;
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjuu_axis_angle2quat(res: *mut f64, axis: *const f64, angle: f64) {
-    // WARNING: signature changed — verify body
+    // NOTE: signature changed from previous IR version
     // Previous params: (res : * mut f64, axis : * const f64, angle : f64)
     // Previous return: ()
-    todo ! ()
+    todo!("re-translate: params renamed")
 }
 
 /// C: mjuu_isValidContentType (user/user_util.cc:973)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjuu_is_valid_content_type(text: string_view) -> bool {
-    // WARNING: signature changed — verify body
+    // NOTE: signature changed from previous IR version
     // Previous params: (text : string_view)
     // Previous return: bool
-    todo ! ()
+    todo!("re-translate: params renamed")
 }
 
 /// C: FileToMemory (user/user_util.cc:1196)
 /// Calls: mju_warning
 #[allow(unused_variables, non_snake_case)]
 pub fn file_to_memory(filename: *const i8) -> i32 {
-    // WARNING: signature changed — verify body
+    // NOTE: signature changed from previous IR version
     // Previous params: (filename : * const i8)
     // Previous return: i32
-    todo ! ()
+    todo!("re-translate: params renamed")
 }
 
 /// C: VectorToString (user/user_util.cc:1256)
 #[allow(unused_variables, non_snake_case)]
 pub fn vector_to_string(v: *const i32) -> std__string {
-    // WARNING: signature changed — verify body
+    // NOTE: signature changed from previous IR version
     // Previous params: (v : * const i32)
     // Previous return: std__string
-    todo ! ()
+    todo!("re-translate: params renamed")
 }
 
 /// C: StrToNum (user/user_util.cc:1277)
 #[allow(unused_variables, non_snake_case)]
 pub fn str_to_num(str: *mut i8, c: *mut *mut i8) -> i32 {
-    // WARNING: signature changed — verify body
+    // NOTE: signature changed from previous IR version
     // Previous params: (str : * mut i8, c : * mut * mut i8)
     // Previous return: i32
-    todo ! ()
+    todo!("re-translate: params renamed")
 }
 
 /// C: IsNullOrSpace (user/user_util.cc:1301)
 #[allow(unused_variables, non_snake_case)]
 pub fn is_null_or_space(c: *mut i8) -> bool {
-    // WARNING: signature changed — verify body
+    // NOTE: signature changed from previous IR version
     // Previous params: (c : * mut i8)
     // Previous return: bool
-    todo ! ()
+    todo!("re-translate: params renamed")
 }
 
 /// C: SkipSpace (user/user_util.cc:1305)
 /// Calls: IsNullOrSpace
 #[allow(unused_variables, non_snake_case)]
 pub fn skip_space(c: *mut i8) -> *mut i8 {
-    // WARNING: signature changed — verify body
+    // NOTE: signature changed from previous IR version
     // Previous params: (c : * mut i8)
     // Previous return: * mut i8
-    todo ! ()
+    todo!("re-translate: params renamed")
 }
 
 /// C: StringToVector (user/user_util.cc:1315)
 /// Calls: SkipSpace
 #[allow(unused_variables, non_snake_case)]
 pub fn string_to_vector(cs: *mut i8) -> i32 {
-    // WARNING: signature changed — verify body
+    // NOTE: signature changed from previous IR version
     // Previous params: (cs : * mut i8)
     // Previous return: i32
-    todo ! ()
+    todo!("re-translate: params renamed")
 }
 
 /// C: mjuu_defined (user/user_util.h:35)
@@ -92,26 +92,19 @@ pub fn string_to_vector(cs: *mut i8) -> i32 {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjuu_defined(num: f64) -> bool {
-    !num.is_nan()
+    // NOTE: signature changed from previous IR version
+    // Previous params: (num : f64)
+    // Previous return: bool
+    todo!("re-translate: params renamed")
 }
 
 /// C: mjuu_matadr (user/user_util.h:39)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjuu_matadr(g1: i32, g2: i32, n: i32) -> i32 {
-    if g1 < 0 || g2 < 0 || g1 >= n || g2 >= n {
-        return -1;
-    }
-
-    let mut g1 = g1;
-    let mut g2 = g2;
-
-    if g1 > g2 {
-        let tmp = g1;
-        g1 = g2;
-        g2 = tmp;
-    }
-
-    g1 * n + g2
+    // NOTE: signature changed from previous IR version
+    // Previous params: (g1 : i32, g2 : i32, n : i32)
+    // Previous return: i32
+    todo!("re-translate: params renamed")
 }
 
 /// C: mjuu_setvec (user/user_util.h:42)
@@ -122,30 +115,19 @@ pub fn mjuu_matadr(g1: i32, g2: i32, n: i32) -> i32 {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjuu_setvec(dest: *mut f64, x: f64, y: f64, z: f64, w: f64) {
-    // SAFETY: caller guarantees dest points to at least 4 contiguous f64 values
-    unsafe {
-        *dest.add(0) = x;
-        *dest.add(1) = y;
-        *dest.add(2) = z;
-        *dest.add(3) = w;
-    }
+    // NOTE: signature changed from previous IR version
+    // Previous params: (dest : * mut f64, x : f64, y : f64, z : f64, w : f64)
+    // Previous return: ()
+    todo!("re-translate: params renamed")
 }
 
 /// C: mjuu_copyvec (user/user_util.h:54)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjuu_copyvec(dest: *mut T1, src: *const T2, n: i32) {
-    // SAFETY: caller guarantees dest and src point to at least n contiguous f64 values.
-    // T1/T2 are opaque codegen artifacts; in the C++ source this is a template
-    // instantiated as double* → double*. We cast accordingly.
-    unsafe {
-        let d = dest as *mut f64;
-        let s = src as *const f64;
-        let mut i: i32 = 0;
-        while i < n {
-            *d.add(i as usize) = *s.add(i as usize);
-            i += 1;
-        }
-    }
+    // NOTE: signature changed from previous IR version
+    // Previous params: (dest : * mut T1, src : * const T2, n : i32)
+    // Previous return: ()
+    todo!("re-translate: params renamed")
 }
 
 /// C: mjuu_addtovec (user/user_util.h:59)
@@ -156,12 +138,10 @@ pub fn mjuu_copyvec(dest: *mut T1, src: *const T2, n: i32) {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjuu_addtovec(dest: *mut f64, src: *const f64, n: i32) {
-    // SAFETY: caller guarantees dest and src have at least n elements
-    unsafe {
-        for i in 0..n as usize {
-            *dest.add(i) += *src.add(i);
-        }
-    }
+    // NOTE: signature changed from previous IR version
+    // Previous params: (dest : * mut f64, src : * const f64, n : i32)
+    // Previous return: ()
+    todo!("re-translate: params renamed")
 }
 
 /// C: mjuu_zerovec (user/user_util.h:62)
@@ -172,14 +152,10 @@ pub fn mjuu_addtovec(dest: *mut f64, src: *const f64, n: i32) {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjuu_zerovec(dest: *mut f64, n: i32) {
-    // SAFETY: caller guarantees dest points to at least n contiguous f64 values
-    unsafe {
-        let mut i: i32 = 0;
-        while i < n {
-            *dest.add(i as usize) = 0.0;
-            i += 1;
-        }
-    }
+    // NOTE: signature changed from previous IR version
+    // Previous params: (dest : * mut f64, n : i32)
+    // Previous return: ()
+    todo!("re-translate: params renamed")
 }
 
 /// C: mjuu_dot3 (user/user_util.h:68)
@@ -190,10 +166,10 @@ pub fn mjuu_zerovec(dest: *mut f64, n: i32) {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjuu_dot3(a: *const f64, b: *const f64) -> f64 {
-    // SAFETY: caller guarantees a and b point to at least 3 contiguous f64 values
-    unsafe {
-        *a.add(0) * *b.add(0) + *a.add(1) * *b.add(1) + *a.add(2) * *b.add(2)
-    }
+    // NOTE: signature changed from previous IR version
+    // Previous params: (a : * const f64, b : * const f64)
+    // Previous return: f64
+    todo!("re-translate: params renamed")
 }
 
 /// C: mjuu_dist3 (user/user_util.h:71)
@@ -204,13 +180,10 @@ pub fn mjuu_dot3(a: *const f64, b: *const f64) -> f64 {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjuu_dist3(a: *const f64, b: *const f64) -> f64 {
-    // SAFETY: caller guarantees a and b point to at least 3 contiguous f64 values
-    unsafe {
-        let d0 = *a.add(0) - *b.add(0);
-        let d1 = *a.add(1) - *b.add(1);
-        let d2 = *a.add(2) - *b.add(2);
-        (d0 * d0 + d1 * d1 + d2 * d2).sqrt()
-    }
+    // NOTE: signature changed from previous IR version
+    // Previous params: (a : * const f64, b : * const f64)
+    // Previous return: f64
+    todo!("re-translate: params renamed")
 }
 
 /// C: mjuu_L1 (user/user_util.h:74)
@@ -221,14 +194,10 @@ pub fn mjuu_dist3(a: *const f64, b: *const f64) -> f64 {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjuu_l1(a: *const f64, b: *const f64, n: i32) -> f64 {
-    let mut res: f64 = 0.0;
-    // SAFETY: caller guarantees a and b point to at least n f64 values
-    unsafe {
-        for i in 0..n as usize {
-            res += (*a.add(i) - *b.add(i)).abs();
-        }
-    }
-    res
+    // NOTE: signature changed from previous IR version
+    // Previous params: (a : * const f64, b : * const f64, n : i32)
+    // Previous return: f64
+    todo!("re-translate: params renamed")
 }
 
 /// C: mjuu_normvec (user/user_util.h:78)
@@ -239,33 +208,10 @@ pub fn mjuu_l1(a: *const f64, b: *const f64, n: i32) -> f64 {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjuu_normvec(vec: *mut f64, n: i32) -> f64 {
-    // SAFETY: caller guarantees vec points to at least n contiguous f64 values
-    const MJ_EPS: f64 = 1e-14;
-    unsafe {
-        let mut nrm: f64 = 0.0;
-
-        let mut i: i32 = 0;
-        while i < n {
-            nrm += *vec.add(i as usize) * *vec.add(i as usize);
-            i += 1;
-        }
-        if nrm < MJ_EPS {
-            return 0.0;
-        }
-
-        nrm = nrm.sqrt();
-
-        // don't normalize if nrm is within mjEPS of 1
-        if (nrm - 1.0).abs() > MJ_EPS {
-            let mut i: i32 = 0;
-            while i < n {
-                *vec.add(i as usize) /= nrm;
-                i += 1;
-            }
-        }
-
-        nrm
-    }
+    // NOTE: signature changed from previous IR version
+    // Previous params: (vec : * mut f64, n : i32)
+    // Previous return: f64
+    todo!("re-translate: params renamed")
 }
 
 /// C: mjuu_scalevec (user/user_util.h:82)
@@ -276,12 +222,10 @@ pub fn mjuu_normvec(vec: *mut f64, n: i32) -> f64 {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjuu_scalevec(res: *mut f64, vec: *const f64, s: f64, n: i32) {
-    // SAFETY: caller guarantees res, vec point to at least n contiguous f64
-    unsafe {
-        for i in 0..n as usize {
-            *res.add(i) = s * *vec.add(i);
-        }
-    }
+    // NOTE: signature changed from previous IR version
+    // Previous params: (res : * mut f64, vec : * const f64, s : f64, n : i32)
+    // Previous return: ()
+    todo!("re-translate: params renamed")
 }
 
 /// C: mjuu_quat2mat (user/user_util.h:85)
@@ -292,45 +236,10 @@ pub fn mjuu_scalevec(res: *mut f64, vec: *const f64, s: f64, n: i32) {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjuu_quat2mat(res: *mut f64, quat: *const f64) {
-    // SAFETY: caller guarantees res points to at least 9 f64, quat to at least 4 f64
-    unsafe {
-        // identity quat: identity mat
-        if *quat.add(0) == 1.0 && *quat.add(1) == 0.0 && *quat.add(2) == 0.0 && *quat.add(3) == 0.0 {
-            *res.add(0) = 1.0;
-            *res.add(1) = 0.0;
-            *res.add(2) = 0.0;
-            *res.add(3) = 0.0;
-            *res.add(4) = 1.0;
-            *res.add(5) = 0.0;
-            *res.add(6) = 0.0;
-            *res.add(7) = 0.0;
-            *res.add(8) = 1.0;
-            return;
-        }
-
-        // regular processing
-        let q00 = *quat.add(0) * *quat.add(0);
-        let q01 = *quat.add(0) * *quat.add(1);
-        let q02 = *quat.add(0) * *quat.add(2);
-        let q03 = *quat.add(0) * *quat.add(3);
-        let q11 = *quat.add(1) * *quat.add(1);
-        let q12 = *quat.add(1) * *quat.add(2);
-        let q13 = *quat.add(1) * *quat.add(3);
-        let q22 = *quat.add(2) * *quat.add(2);
-        let q23 = *quat.add(2) * *quat.add(3);
-        let q33 = *quat.add(3) * *quat.add(3);
-
-        *res.add(0) = q00 + q11 - q22 - q33;
-        *res.add(4) = q00 - q11 + q22 - q33;
-        *res.add(8) = q00 - q11 - q22 + q33;
-
-        *res.add(1) = 2.0 * (q12 - q03);
-        *res.add(2) = 2.0 * (q13 + q02);
-        *res.add(3) = 2.0 * (q12 + q03);
-        *res.add(5) = 2.0 * (q23 - q01);
-        *res.add(6) = 2.0 * (q13 - q02);
-        *res.add(7) = 2.0 * (q23 + q01);
-    }
+    // NOTE: signature changed from previous IR version
+    // Previous params: (res : * mut f64, quat : * const f64)
+    // Previous return: ()
+    todo!("re-translate: params renamed")
 }
 
 /// C: mjuu_mulquat (user/user_util.h:88)
@@ -342,16 +251,10 @@ pub fn mjuu_quat2mat(res: *mut f64, quat: *const f64) {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjuu_mulquat(res: *mut f64, qa: *const f64, qb: *const f64) {
-    // SAFETY: caller guarantees res[4], qa[4], qb[4] are valid
-    unsafe {
-        let mut tmp: [f64; 4] = [0.0; 4];
-        tmp[0] = *qa.add(0) * *qb.add(0) - *qa.add(1) * *qb.add(1) - *qa.add(2) * *qb.add(2) - *qa.add(3) * *qb.add(3);
-        tmp[1] = *qa.add(0) * *qb.add(1) + *qa.add(1) * *qb.add(0) + *qa.add(2) * *qb.add(3) - *qa.add(3) * *qb.add(2);
-        tmp[2] = *qa.add(0) * *qb.add(2) - *qa.add(1) * *qb.add(3) + *qa.add(2) * *qb.add(0) + *qa.add(3) * *qb.add(1);
-        tmp[3] = *qa.add(0) * *qb.add(3) + *qa.add(1) * *qb.add(2) - *qa.add(2) * *qb.add(1) + *qa.add(3) * *qb.add(0);
-        mjuu_normvec(tmp.as_mut_ptr(), 4);
-        mjuu_copyvec(res as *mut T1, tmp.as_ptr() as *const T2, 4);
-    }
+    // NOTE: signature changed from previous IR version
+    // Previous params: (res : * mut f64, qa : * const f64, qb : * const f64)
+    // Previous return: ()
+    todo!("re-translate: params renamed")
 }
 
 /// C: mjuu_mulvecmat (user/user_util.h:91)
@@ -362,15 +265,10 @@ pub fn mjuu_mulquat(res: *mut f64, qa: *const f64, qb: *const f64) {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjuu_mulvecmat(res: *mut f64, vec: *const f64, mat: *const f64) {
-    // SAFETY: caller guarantees res[3], vec[3], mat[9] are valid
-    unsafe {
-        let tmp0 = *mat.add(0) * *vec.add(0) + *mat.add(1) * *vec.add(1) + *mat.add(2) * *vec.add(2);
-        let tmp1 = *mat.add(3) * *vec.add(0) + *mat.add(4) * *vec.add(1) + *mat.add(5) * *vec.add(2);
-        let tmp2 = *mat.add(6) * *vec.add(0) + *mat.add(7) * *vec.add(1) + *mat.add(8) * *vec.add(2);
-        *res.add(0) = tmp0;
-        *res.add(1) = tmp1;
-        *res.add(2) = tmp2;
-    }
+    // NOTE: signature changed from previous IR version
+    // Previous params: (res : * mut f64, vec : * const f64, mat : * const f64)
+    // Previous return: ()
+    todo!("re-translate: params renamed")
 }
 
 /// C: mjuu_mulvecmatT (user/user_util.h:94)
@@ -381,15 +279,10 @@ pub fn mjuu_mulvecmat(res: *mut f64, vec: *const f64, mat: *const f64) {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjuu_mulvecmat_t(res: *mut f64, vec: *const f64, mat: *const f64) {
-    // SAFETY: caller guarantees res[3], vec[3], mat[9] are valid
-    unsafe {
-        let tmp0 = *mat.add(0) * *vec.add(0) + *mat.add(3) * *vec.add(1) + *mat.add(6) * *vec.add(2);
-        let tmp1 = *mat.add(1) * *vec.add(0) + *mat.add(4) * *vec.add(1) + *mat.add(7) * *vec.add(2);
-        let tmp2 = *mat.add(2) * *vec.add(0) + *mat.add(5) * *vec.add(1) + *mat.add(8) * *vec.add(2);
-        *res.add(0) = tmp0;
-        *res.add(1) = tmp1;
-        *res.add(2) = tmp2;
-    }
+    // NOTE: signature changed from previous IR version
+    // Previous params: (res : * mut f64, vec : * const f64, mat : * const f64)
+    // Previous return: ()
+    todo!("re-translate: params renamed")
 }
 
 /// C: mjuu_mulRMRT (user/user_util.h:97)
@@ -400,32 +293,10 @@ pub fn mjuu_mulvecmat_t(res: *mut f64, vec: *const f64, mat: *const f64) {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjuu_mul_rmrt(res: *mut f64, R: *const f64, M: *const f64) {
-    // SAFETY: caller guarantees res[9], R[9], M[9] are valid
-    unsafe {
-        let mut tmp: [f64; 9] = [0.0; 9];
-
-        // tmp = R*M
-        tmp[0] = *R.add(0) * *M.add(0) + *R.add(1) * *M.add(3) + *R.add(2) * *M.add(6);
-        tmp[1] = *R.add(0) * *M.add(1) + *R.add(1) * *M.add(4) + *R.add(2) * *M.add(7);
-        tmp[2] = *R.add(0) * *M.add(2) + *R.add(1) * *M.add(5) + *R.add(2) * *M.add(8);
-        tmp[3] = *R.add(3) * *M.add(0) + *R.add(4) * *M.add(3) + *R.add(5) * *M.add(6);
-        tmp[4] = *R.add(3) * *M.add(1) + *R.add(4) * *M.add(4) + *R.add(5) * *M.add(7);
-        tmp[5] = *R.add(3) * *M.add(2) + *R.add(4) * *M.add(5) + *R.add(5) * *M.add(8);
-        tmp[6] = *R.add(6) * *M.add(0) + *R.add(7) * *M.add(3) + *R.add(8) * *M.add(6);
-        tmp[7] = *R.add(6) * *M.add(1) + *R.add(7) * *M.add(4) + *R.add(8) * *M.add(7);
-        tmp[8] = *R.add(6) * *M.add(2) + *R.add(7) * *M.add(5) + *R.add(8) * *M.add(8);
-
-        // res = tmp*R'
-        *res.add(0) = tmp[0] * *R.add(0) + tmp[1] * *R.add(1) + tmp[2] * *R.add(2);
-        *res.add(1) = tmp[0] * *R.add(3) + tmp[1] * *R.add(4) + tmp[2] * *R.add(5);
-        *res.add(2) = tmp[0] * *R.add(6) + tmp[1] * *R.add(7) + tmp[2] * *R.add(8);
-        *res.add(3) = tmp[3] * *R.add(0) + tmp[4] * *R.add(1) + tmp[5] * *R.add(2);
-        *res.add(4) = tmp[3] * *R.add(3) + tmp[4] * *R.add(4) + tmp[5] * *R.add(5);
-        *res.add(5) = tmp[3] * *R.add(6) + tmp[4] * *R.add(7) + tmp[5] * *R.add(8);
-        *res.add(6) = tmp[6] * *R.add(0) + tmp[7] * *R.add(1) + tmp[8] * *R.add(2);
-        *res.add(7) = tmp[6] * *R.add(3) + tmp[7] * *R.add(4) + tmp[8] * *R.add(5);
-        *res.add(8) = tmp[6] * *R.add(6) + tmp[7] * *R.add(7) + tmp[8] * *R.add(8);
-    }
+    // NOTE: signature changed from previous IR version
+    // Previous params: (res : * mut f64, R : * const f64, M : * const f64)
+    // Previous return: ()
+    todo!("re-translate: params renamed")
 }
 
 /// C: mjuu_mulmat (user/user_util.h:100)
@@ -436,27 +307,10 @@ pub fn mjuu_mul_rmrt(res: *mut f64, R: *const f64, M: *const f64) {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjuu_mulmat(res: *mut f64, A: *const f64, B: *const f64) {
-    // SAFETY: caller guarantees res[9], A[9], B[9] are valid
-    unsafe {
-        let mut tmp: [f64; 9] = [0.0; 9];
-        tmp[0] = *A.add(0) * *B.add(0) + *A.add(1) * *B.add(3) + *A.add(2) * *B.add(6);
-        tmp[1] = *A.add(0) * *B.add(1) + *A.add(1) * *B.add(4) + *A.add(2) * *B.add(7);
-        tmp[2] = *A.add(0) * *B.add(2) + *A.add(1) * *B.add(5) + *A.add(2) * *B.add(8);
-
-        tmp[3] = *A.add(3) * *B.add(0) + *A.add(4) * *B.add(3) + *A.add(5) * *B.add(6);
-        tmp[4] = *A.add(3) * *B.add(1) + *A.add(4) * *B.add(4) + *A.add(5) * *B.add(7);
-        tmp[5] = *A.add(3) * *B.add(2) + *A.add(4) * *B.add(5) + *A.add(5) * *B.add(8);
-
-        tmp[6] = *A.add(6) * *B.add(0) + *A.add(7) * *B.add(3) + *A.add(8) * *B.add(6);
-        tmp[7] = *A.add(6) * *B.add(1) + *A.add(7) * *B.add(4) + *A.add(8) * *B.add(7);
-        tmp[8] = *A.add(6) * *B.add(2) + *A.add(7) * *B.add(5) + *A.add(8) * *B.add(8);
-
-        let mut i: i32 = 0;
-        while i < 9 {
-            *res.add(i as usize) = tmp[i as usize];
-            i += 1;
-        }
-    }
+    // NOTE: signature changed from previous IR version
+    // Previous params: (res : * mut f64, A : * const f64, B : * const f64)
+    // Previous return: ()
+    todo!("re-translate: params renamed")
 }
 
 /// C: mjuu_transposemat (user/user_util.h:103)
@@ -467,19 +321,10 @@ pub fn mjuu_mulmat(res: *mut f64, A: *const f64, B: *const f64) {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjuu_transposemat(res: *mut f64, mat: *const f64) {
-    // SAFETY: caller guarantees res[9] and mat[9] are valid
-    unsafe {
-        let tmp: [f64; 9] = [
-            *mat.add(0), *mat.add(3), *mat.add(6),
-            *mat.add(1), *mat.add(4), *mat.add(7),
-            *mat.add(2), *mat.add(5), *mat.add(8),
-        ];
-        let mut i: i32 = 0;
-        while i < 9 {
-            *res.add(i as usize) = tmp[i as usize];
-            i += 1;
-        }
-    }
+    // NOTE: signature changed from previous IR version
+    // Previous params: (res : * mut f64, mat : * const f64)
+    // Previous return: ()
+    todo!("re-translate: params renamed")
 }
 
 /// C: mjuu_localaxis (user/user_util.h:106)
@@ -491,18 +336,10 @@ pub fn mjuu_transposemat(res: *mut f64, mat: *const f64) {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjuu_localaxis(al: *mut f64, ag: *const f64, quat: *const f64) {
-    // SAFETY: caller guarantees al[3], ag[3], quat[4] are valid
-    unsafe {
-        let mut mat: [f64; 9] = [0.0; 9];
-        let qneg: [f64; 4] = [
-            *quat.add(0),
-            -*quat.add(1),
-            -*quat.add(2),
-            -*quat.add(3),
-        ];
-        mjuu_quat2mat(mat.as_mut_ptr(), qneg.as_ptr());
-        mjuu_mulvecmat(al, ag, mat.as_ptr());
-    }
+    // NOTE: signature changed from previous IR version
+    // Previous params: (al : * mut f64, ag : * const f64, quat : * const f64)
+    // Previous return: ()
+    todo!("re-translate: params renamed")
 }
 
 /// C: mjuu_localpos (user/user_util.h:109)
@@ -514,15 +351,10 @@ pub fn mjuu_localaxis(al: *mut f64, ag: *const f64, quat: *const f64) {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjuu_localpos(pl: *mut f64, pg: *const f64, pos: *const f64, quat: *const f64) {
-    // SAFETY: caller guarantees pl[3], pg[3], pos[3], quat[4] are valid
-    unsafe {
-        let mut a: [f64; 3] = [
-            *pg.add(0) - *pos.add(0),
-            *pg.add(1) - *pos.add(1),
-            *pg.add(2) - *pos.add(2),
-        ];
-        mjuu_localaxis(pl, a.as_ptr(), quat);
-    }
+    // NOTE: signature changed from previous IR version
+    // Previous params: (pl : * mut f64, pg : * const f64, pos : * const f64, quat : * const f64)
+    // Previous return: ()
+    todo!("re-translate: params renamed")
 }
 
 /// C: mjuu_localquat (user/user_util.h:112)
@@ -534,16 +366,10 @@ pub fn mjuu_localpos(pl: *mut f64, pg: *const f64, pos: *const f64, quat: *const
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjuu_localquat(local: *mut f64, child: *const f64, parent: *const f64) {
-    // SAFETY: caller guarantees local[4], child[4], parent[4] are valid
-    unsafe {
-        let pneg: [f64; 4] = [
-            *parent.add(0),
-            -*parent.add(1),
-            -*parent.add(2),
-            -*parent.add(3),
-        ];
-        mjuu_mulquat(local, pneg.as_ptr(), child);
-    }
+    // NOTE: signature changed from previous IR version
+    // Previous params: (local : * mut f64, child : * const f64, parent : * const f64)
+    // Previous return: ()
+    todo!("re-translate: params renamed")
 }
 
 /// C: mjuu_crossvec (user/user_util.h:115)
@@ -554,12 +380,10 @@ pub fn mjuu_localquat(local: *mut f64, child: *const f64, parent: *const f64) {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjuu_crossvec(a: *mut f64, b: *const f64, c: *const f64) {
-    // SAFETY: caller guarantees a, b, c point to at least 3 contiguous f64 values
-    unsafe {
-        *a.add(0) = *b.add(1) * *c.add(2) - *b.add(2) * *c.add(1);
-        *a.add(1) = *b.add(2) * *c.add(0) - *b.add(0) * *c.add(2);
-        *a.add(2) = *b.add(0) * *c.add(1) - *b.add(1) * *c.add(0);
-    }
+    // NOTE: signature changed from previous IR version
+    // Previous params: (a : * mut f64, b : * const f64, c : * const f64)
+    // Previous return: ()
+    todo!("re-translate: params renamed")
 }
 
 /// C: mjuu_makenormal (user/user_util.h:118)
@@ -571,10 +395,10 @@ pub fn mjuu_crossvec(a: *mut f64, b: *const f64, c: *const f64) {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjuu_makenormal(normal: *mut f64, a: *const type_parameter_0_0, b: *const type_parameter_0_0, c: *const type_parameter_0_0) -> f64 {
-    // WARNING: signature changed — verify body
+    // NOTE: signature changed from previous IR version
     // Previous params: (normal : * mut f64, a : * const type_parameter_0_0, b : * const type_parameter_0_0, c : * const type_parameter_0_0)
     // Previous return: f64
-    todo ! ()
+    todo!("re-translate: params renamed")
 }
 
 /// C: mjuu_z2quat (user/user_util.h:122)
@@ -586,22 +410,10 @@ pub fn mjuu_makenormal(normal: *mut f64, a: *const type_parameter_0_0, b: *const
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjuu_z2quat(quat: *mut f64, vec: *const f64) {
-    // SAFETY: caller guarantees quat[4] and vec[3] are valid
-    unsafe {
-        let z: [f64; 3] = [0.0, 0.0, 1.0];
-        mjuu_crossvec(quat.add(1), z.as_ptr(), vec);
-        let s = mjuu_normvec(quat.add(1), 3);
-        if s < 1E-10 {
-            *quat.add(1) = 1.0;
-            *quat.add(2) = 0.0;
-            *quat.add(3) = 0.0;
-        }
-        let ang = f64::atan2(s, *vec.add(2));
-        *quat.add(0) = f64::cos(ang / 2.0);
-        *quat.add(1) = *quat.add(1) * f64::sin(ang / 2.0);
-        *quat.add(2) = *quat.add(2) * f64::sin(ang / 2.0);
-        *quat.add(3) = *quat.add(3) * f64::sin(ang / 2.0);
-    }
+    // NOTE: signature changed from previous IR version
+    // Previous params: (quat : * mut f64, vec : * const f64)
+    // Previous return: ()
+    todo!("re-translate: params renamed")
 }
 
 /// C: mjuu_frame2quat (user/user_util.h:125)
@@ -613,10 +425,10 @@ pub fn mjuu_z2quat(quat: *mut f64, vec: *const f64) {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjuu_frame2quat(quat: *mut f64, x: *const f64, y: *const f64, z: *const f64) {
-    // WARNING: signature changed — verify body
+    // NOTE: signature changed from previous IR version
     // Previous params: (quat : * mut f64, x : * const f64, y : * const f64, z : * const f64)
     // Previous return: ()
-    todo ! ()
+    todo!("re-translate: params renamed")
 }
 
 /// C: mjuu_frameinvert (user/user_util.h:128)
@@ -628,20 +440,10 @@ pub fn mjuu_frame2quat(quat: *mut f64, x: *const f64, y: *const f64, z: *const f
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjuu_frameinvert(newpos: *mut f64, newquat: *mut f64, oldpos: *const f64, oldquat: *const f64) {
-    // SAFETY: caller guarantees newpos[3], newquat[4], oldpos[3], oldquat[4] are valid
-    unsafe {
-        // position
-        mjuu_localaxis(newpos, oldpos, oldquat);
-        *newpos.add(0) = -*newpos.add(0);
-        *newpos.add(1) = -*newpos.add(1);
-        *newpos.add(2) = -*newpos.add(2);
-
-        // orientation
-        *newquat.add(0) = *oldquat.add(0);
-        *newquat.add(1) = -*oldquat.add(1);
-        *newquat.add(2) = -*oldquat.add(2);
-        *newquat.add(3) = -*oldquat.add(3);
-    }
+    // NOTE: signature changed from previous IR version
+    // Previous params: (newpos : * mut f64, newquat : * mut f64, oldpos : * const f64, oldquat : * const f64)
+    // Previous return: ()
+    todo!("re-translate: params renamed")
 }
 
 /// C: mjuu_frameaccum (user/user_util.h:132)
@@ -653,19 +455,10 @@ pub fn mjuu_frameinvert(newpos: *mut f64, newquat: *mut f64, oldpos: *const f64,
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjuu_frameaccum(pos: *mut f64, quat: *mut f64, childpos: *const f64, childquat: *const f64) {
-    // SAFETY: caller guarantees pos[3], quat[4], childpos[3], childquat[4] are valid
-    unsafe {
-        let mut mat: [f64; 9] = [0.0; 9];
-        let mut vec: [f64; 3] = [0.0; 3];
-        let mut qtmp: [f64; 4] = [0.0; 4];
-        mjuu_quat2mat(mat.as_mut_ptr(), quat);
-        mjuu_mulvecmat(vec.as_mut_ptr(), childpos, mat.as_ptr());
-        *pos.add(0) += vec[0];
-        *pos.add(1) += vec[1];
-        *pos.add(2) += vec[2];
-        mjuu_mulquat(qtmp.as_mut_ptr(), quat, childquat);
-        mjuu_copyvec(quat as *mut T1, qtmp.as_ptr() as *const T2, 4);
-    }
+    // NOTE: signature changed from previous IR version
+    // Previous params: (pos : * mut f64, quat : * mut f64, childpos : * const f64, childquat : * const f64)
+    // Previous return: ()
+    todo!("re-translate: params renamed")
 }
 
 /// C: mjuu_frameaccumChild (user/user_util.h:136)
@@ -677,14 +470,10 @@ pub fn mjuu_frameaccum(pos: *mut f64, quat: *mut f64, childpos: *const f64, chil
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjuu_frameaccum_child(pos: *const f64, quat: *const f64, childpos: *mut f64, childquat: *mut f64) {
-    // SAFETY: caller guarantees pos[3], quat[4], childpos[3], childquat[4] are valid
-    unsafe {
-        let mut p: [f64; 3] = [*pos.add(0), *pos.add(1), *pos.add(2)];
-        let mut q: [f64; 4] = [*quat.add(0), *quat.add(1), *quat.add(2), *quat.add(3)];
-        mjuu_frameaccum(p.as_mut_ptr(), q.as_mut_ptr(), childpos, childquat);
-        mjuu_copyvec(childpos as *mut T1, p.as_ptr() as *const T2, 3);
-        mjuu_copyvec(childquat as *mut T1, q.as_ptr() as *const T2, 4);
-    }
+    // NOTE: signature changed from previous IR version
+    // Previous params: (pos : * const f64, quat : * const f64, childpos : * mut f64, childquat : * mut f64)
+    // Previous return: ()
+    todo!("re-translate: params renamed")
 }
 
 /// C: mjuu_frameaccuminv (user/user_util.h:140)
@@ -696,10 +485,10 @@ pub fn mjuu_frameaccum_child(pos: *const f64, quat: *const f64, childpos: *mut f
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjuu_frameaccuminv(pos: *mut f64, quat: *mut f64, childpos: *const f64, childquat: *const f64) {
-    // WARNING: signature changed — verify body
+    // NOTE: signature changed from previous IR version
     // Previous params: (pos : * mut f64, quat : * mut f64, childpos : * const f64, childquat : * const f64)
     // Previous return: ()
-    todo ! ()
+    todo!("re-translate: params renamed")
 }
 
 /// C: mjuu_globalinertia (user/user_util.h:144)
@@ -711,10 +500,10 @@ pub fn mjuu_frameaccuminv(pos: *mut f64, quat: *mut f64, childpos: *const f64, c
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjuu_globalinertia(global: *mut f64, local: *const f64, quat: *const f64) {
-    // WARNING: signature changed — verify body
+    // NOTE: signature changed from previous IR version
     // Previous params: (global : * mut f64, local : * const f64, quat : * const f64)
     // Previous return: ()
-    todo ! ()
+    todo!("re-translate: params renamed")
 }
 
 /// C: mjuu_offcenter (user/user_util.h:147)
@@ -725,10 +514,10 @@ pub fn mjuu_globalinertia(global: *mut f64, local: *const f64, quat: *const f64)
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjuu_offcenter(res: *mut f64, mass: f64, vec: *const f64) {
-    // WARNING: signature changed — verify body
+    // NOTE: signature changed from previous IR version
     // Previous params: (res : * mut f64, mass : f64, vec : * const f64)
     // Previous return: ()
-    todo ! ()
+    todo!("re-translate: params renamed")
 }
 
 /// C: mjuu_visccoef (user/user_util.h:150)
@@ -739,29 +528,10 @@ pub fn mjuu_offcenter(res: *mut f64, mass: f64, vec: *const f64) {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjuu_visccoef(visccoef: *mut f64, mass: f64, inertia: *const f64, scl: f64) {
-    // SAFETY: caller guarantees visccoef[6], inertia[3] are valid
-    const MJ_EPS: f64 = 1e-14;
-    unsafe {
-        // compute equivalent box
-        let mut ebox: [f64; 3] = [0.0; 3];
-        let val0 = *inertia.add(1) + *inertia.add(2) - *inertia.add(0);
-        let val1 = *inertia.add(0) + *inertia.add(2) - *inertia.add(1);
-        let val2 = *inertia.add(0) + *inertia.add(1) - *inertia.add(2);
-
-        ebox[0] = f64::sqrt(if val0 > MJ_EPS { val0 } else { MJ_EPS } / mass * 6.0);
-        ebox[1] = f64::sqrt(if val1 > MJ_EPS { val1 } else { MJ_EPS } / mass * 6.0);
-        ebox[2] = f64::sqrt(if val2 > MJ_EPS { val2 } else { MJ_EPS } / mass * 6.0);
-
-        // torque components
-        *visccoef.add(0) = scl * 4.0 / 3.0 * ebox[0] * (ebox[1] * ebox[1] * ebox[1] + ebox[2] * ebox[2] * ebox[2]);
-        *visccoef.add(1) = scl * 4.0 / 3.0 * ebox[1] * (ebox[0] * ebox[0] * ebox[0] + ebox[2] * ebox[2] * ebox[2]);
-        *visccoef.add(2) = scl * 4.0 / 3.0 * ebox[2] * (ebox[0] * ebox[0] * ebox[0] + ebox[1] * ebox[1] * ebox[1]);
-
-        // force components
-        *visccoef.add(3) = scl * 4.0 * ebox[1] * ebox[2];
-        *visccoef.add(4) = scl * 4.0 * ebox[0] * ebox[2];
-        *visccoef.add(5) = scl * 4.0 * ebox[0] * ebox[1];
-    }
+    // NOTE: signature changed from previous IR version
+    // Previous params: (visccoef : * mut f64, mass : f64, inertia : * const f64, scl : f64)
+    // Previous return: ()
+    todo!("re-translate: params renamed")
 }
 
 /// C: mjuu_rotVecQuat (user/user_util.h:153)
@@ -772,32 +542,10 @@ pub fn mjuu_visccoef(visccoef: *mut f64, mass: f64, inertia: *const f64, scl: f6
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjuu_rot_vec_quat(res: *mut f64, vec: *const f64, quat: *const f64) {
-    // SAFETY: caller guarantees res[3], vec[3], quat[4] are valid
-    unsafe {
-        // zero vec: zero res
-        if *vec.add(0) == 0.0 && *vec.add(1) == 0.0 && *vec.add(2) == 0.0 {
-            *res.add(0) = 0.0;
-            *res.add(1) = 0.0;
-            *res.add(2) = 0.0;
-        }
-        // null quat: copy vec
-        else if *quat.add(0) == 1.0 && *quat.add(1) == 0.0 && *quat.add(2) == 0.0 && *quat.add(3) == 0.0 {
-            mjuu_copyvec(res as *mut T1, vec as *const T2, 3);
-        }
-        // regular processing
-        else {
-            // tmp = q_w * v + cross(q_xyz, v)
-            let mut tmp: [f64; 3] = [0.0; 3];
-            tmp[0] = *quat.add(0) * *vec.add(0) + *quat.add(2) * *vec.add(2) - *quat.add(3) * *vec.add(1);
-            tmp[1] = *quat.add(0) * *vec.add(1) + *quat.add(3) * *vec.add(0) - *quat.add(1) * *vec.add(2);
-            tmp[2] = *quat.add(0) * *vec.add(2) + *quat.add(1) * *vec.add(1) - *quat.add(2) * *vec.add(0);
-
-            // res = v + 2 * cross(q_xyz, t)
-            *res.add(0) = *vec.add(0) + 2.0 * (*quat.add(2) * tmp[2] - *quat.add(3) * tmp[1]);
-            *res.add(1) = *vec.add(1) + 2.0 * (*quat.add(3) * tmp[0] - *quat.add(1) * tmp[2]);
-            *res.add(2) = *vec.add(2) + 2.0 * (*quat.add(1) * tmp[1] - *quat.add(2) * tmp[0]);
-        }
-    }
+    // NOTE: signature changed from previous IR version
+    // Previous params: (res : * mut f64, vec : * const f64, quat : * const f64)
+    // Previous return: ()
+    todo!("re-translate: params renamed")
 }
 
 /// C: mjuu_updateFrame (user/user_util.h:156)
@@ -809,10 +557,10 @@ pub fn mjuu_rot_vec_quat(res: *mut f64, vec: *const f64, quat: *const f64) {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjuu_update_frame(quat: *mut f64, normal: *mut f64, edge: *const f64, tprv: *const f64, tnxt: *const f64, first: i32) -> f64 {
-    // WARNING: signature changed — verify body
+    // NOTE: signature changed from previous IR version
     // Previous params: (quat : * mut f64, normal : * mut f64, edge : * const f64, tprv : * const f64, tnxt : * const f64, first : i32)
     // Previous return: f64
-    todo ! ()
+    todo!("re-translate: params renamed")
 }
 
 /// C: mjuu_eig3 (user/user_util.h:160)
@@ -824,10 +572,10 @@ pub fn mjuu_update_frame(quat: *mut f64, normal: *mut f64, edge: *const f64, tpr
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjuu_eig3(eigval: *mut f64, eigvec: *mut f64, quat: *mut f64, mat: *const f64) -> i32 {
-    // WARNING: signature changed — verify body
+    // NOTE: signature changed from previous IR version
     // Previous params: (eigval : * mut f64, eigvec : * mut f64, quat : * mut f64, mat : * const f64)
     // Previous return: i32
-    todo ! ()
+    todo!("re-translate: params renamed")
 }
 
 /// C: mjuu_eigendecompose (user/user_util.h:166)
@@ -838,10 +586,10 @@ pub fn mjuu_eig3(eigval: *mut f64, eigvec: *mut f64, quat: *mut f64, mat: *const
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjuu_eigendecompose(mat: *mut f64, eigval: *mut f64, eigvec: *mut f64, n: i32) -> i32 {
-    // WARNING: signature changed — verify body
+    // NOTE: signature changed from previous IR version
     // Previous params: (mat : * mut f64, eigval : * mut f64, eigvec : * mut f64, n : i32)
     // Previous return: i32
-    todo ! ()
+    todo!("re-translate: params renamed")
 }
 
 /// C: mjuu_trnVecPose (user/user_util.h:169)
@@ -853,10 +601,10 @@ pub fn mjuu_eigendecompose(mat: *mut f64, eigval: *mut f64, eigvec: *mut f64, n:
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjuu_trn_vec_pose(res: *mut f64, pos: *const f64, quat: *const f64, vec: *const f64) {
-    // WARNING: signature changed — verify body
+    // NOTE: signature changed from previous IR version
     // Previous params: (res : * mut f64, pos : * const f64, quat : * const f64, vec : * const f64)
     // Previous return: ()
-    todo ! ()
+    todo!("re-translate: params renamed")
 }
 
 /// C: mjuu_fullInertia (user/user_util.h:172)
@@ -868,235 +616,221 @@ pub fn mjuu_trn_vec_pose(res: *mut f64, pos: *const f64, quat: *const f64, vec: 
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjuu_full_inertia(quat: *mut f64, inertia: *mut f64, fullinertia: *const f64) -> *const i8 {
-    // WARNING: signature changed — verify body
+    // NOTE: signature changed from previous IR version
     // Previous params: (quat : * mut f64, inertia : * mut f64, fullinertia : * const f64)
     // Previous return: * const i8
-    todo ! ()
+    todo!("re-translate: params renamed")
 }
 
 /// C: FilePath::IsAbs (user/user_util.h:191)
 #[allow(unused_variables, non_snake_case)]
 pub fn file_path_is_abs(self_ptr: *mut FilePath) -> bool {
-    // WARNING: signature changed — verify body
+    // NOTE: signature changed from previous IR version
     // Previous params: (self_ptr : * mut FilePath)
     // Previous return: bool
-    todo ! ()
+    todo!("re-translate: params renamed")
 }
 
 /// C: FilePath::AbsPrefix (user/user_util.h:195)
 #[allow(unused_variables, non_snake_case)]
 pub fn file_path_abs_prefix(self_ptr: *mut FilePath) -> i32 {
-    // WARNING: signature changed — verify body
+    // NOTE: signature changed from previous IR version
     // Previous params: (self_ptr : * mut FilePath)
     // Previous return: i32
-    todo ! ()
+    todo!("re-translate: params renamed")
 }
 
 /// C: FilePath::Str (user/user_util.h:198)
 #[allow(unused_variables, non_snake_case)]
 pub fn file_path_str(self_ptr: *mut FilePath) -> *const i32 {
-    // WARNING: signature changed — verify body
+    // NOTE: signature changed from previous IR version
     // Previous params: (self_ptr : * mut FilePath)
     // Previous return: * const i32
-    todo ! ()
+    todo!("re-translate: params renamed")
 }
 
 /// C: FilePath::StrLower (user/user_util.h:202)
 #[allow(unused_variables, non_snake_case)]
 pub fn file_path_str_lower(self_ptr: *mut FilePath) -> std__string {
-    // WARNING: signature changed — verify body
+    // NOTE: signature changed from previous IR version
     // Previous params: (self_ptr : * mut FilePath)
     // Previous return: std__string
-    todo ! ()
+    todo!("re-translate: params renamed")
 }
 
 /// C: FilePath::Ext (user/user_util.h:205)
 #[allow(unused_variables, non_snake_case)]
 pub fn file_path_ext(self_ptr: *mut FilePath) -> std__string {
-    // WARNING: signature changed — verify body
+    // NOTE: signature changed from previous IR version
     // Previous params: (self_ptr : * mut FilePath)
     // Previous return: std__string
-    todo ! ()
+    todo!("re-translate: params renamed")
 }
 
 /// C: FilePath::StripExt (user/user_util.h:211)
 #[allow(unused_variables, non_snake_case)]
 pub fn file_path_strip_ext(self_ptr: *mut FilePath) -> FilePath {
-    // WARNING: signature changed — verify body
+    // NOTE: signature changed from previous IR version
     // Previous params: (self_ptr : * mut FilePath)
     // Previous return: FilePath
-    todo ! ()
+    todo!("re-translate: params renamed")
 }
 
 /// C: FilePath::StripPath (user/user_util.h:214)
 #[allow(unused_variables, non_snake_case)]
 pub fn file_path_strip_path(self_ptr: *mut FilePath) -> FilePath {
-    // WARNING: signature changed — verify body
+    // NOTE: signature changed from previous IR version
     // Previous params: (self_ptr : * mut FilePath)
     // Previous return: FilePath
-    todo ! ()
+    todo!("re-translate: params renamed")
 }
 
 /// C: FilePath::Lower (user/user_util.h:217)
 #[allow(unused_variables, non_snake_case)]
 pub fn file_path_lower(self_ptr: *mut FilePath) -> FilePath {
-    // WARNING: signature changed — verify body
+    // NOTE: signature changed from previous IR version
     // Previous params: (self_ptr : * mut FilePath)
     // Previous return: FilePath
-    todo ! ()
+    todo!("re-translate: params renamed")
 }
 
 /// C: FilePath::size (user/user_util.h:220)
 #[allow(unused_variables, non_snake_case)]
 pub fn file_path_size(self_ptr: *mut FilePath) -> std__size_t {
-    // WARNING: signature changed — verify body
+    // NOTE: signature changed from previous IR version
     // Previous params: (self_ptr : * mut FilePath)
     // Previous return: std__size_t
-    todo ! ()
+    todo!("re-translate: params renamed")
 }
 
 /// C: FilePath::c_str (user/user_util.h:221)
 #[allow(unused_variables, non_snake_case)]
 pub fn file_path_c_str(self_ptr: *mut FilePath) -> *const i8 {
-    // WARNING: signature changed — verify body
+    // NOTE: signature changed from previous IR version
     // Previous params: (self_ptr : * mut FilePath)
     // Previous return: * const i8
-    todo ! ()
+    todo!("re-translate: params renamed")
 }
 
 /// C: FilePath::empty (user/user_util.h:222)
 #[allow(unused_variables, non_snake_case)]
 pub fn file_path_empty(self_ptr: *mut FilePath) -> bool {
-    // WARNING: signature changed — verify body
+    // NOTE: signature changed from previous IR version
     // Previous params: (self_ptr : * mut FilePath)
     // Previous return: bool
-    todo ! ()
+    todo!("re-translate: params renamed")
 }
 
 /// C: FilePath::PathReduce (user/user_util.h:227)
 #[allow(unused_variables, non_snake_case)]
 pub fn file_path_path_reduce(str: *const std__string) -> std__string {
-    // WARNING: signature changed — verify body
+    // NOTE: signature changed from previous IR version
     // Previous params: (str : * const std__string)
     // Previous return: std__string
-    todo ! ()
+    todo!("re-translate: params renamed")
 }
 
 /// C: FilePath::IsSeparator (user/user_util.h:228)
 #[allow(unused_variables, non_snake_case)]
 pub fn file_path_is_separator(c: i8) -> bool {
-    // WARNING: signature changed — verify body
+    // NOTE: signature changed from previous IR version
     // Previous params: (c : i8)
     // Previous return: bool
-    todo ! ()
+    todo!("re-translate: params renamed")
 }
 
 /// C: FilePath::Combine (user/user_util.h:231)
 #[allow(unused_variables, non_snake_case)]
 pub fn file_path_combine(s1: *const std__string, s2: *const std__string) -> std__string {
-    // WARNING: signature changed — verify body
+    // NOTE: signature changed from previous IR version
     // Previous params: (s1 : * const std__string, s2 : * const std__string)
     // Previous return: std__string
-    todo ! ()
+    todo!("re-translate: params renamed")
 }
 
 /// C: FilePath::FilePathFast (user/user_util.h:234)
 #[allow(unused_variables, non_snake_case)]
 pub fn file_path_file_path_fast(str: *const i32) -> FilePath {
-    // WARNING: signature changed — verify body
+    // NOTE: signature changed from previous IR version
     // Previous params: (str : * const i32)
     // Previous return: FilePath
-    todo ! ()
+    todo!("re-translate: params renamed")
 }
 
 /// C: mjuu_strippath (user/user_util.h:273)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjuu_strippath(filename: string) -> std__string {
-    // SAFETY: This function operates on std::string which is an opaque C++ type.
-    // The C++ implementation finds the last '/' or '\\' and returns substring after it.
-    // In the Rust port context, this is called via FFI and the opaque types are
-    // passed through. We implement the logic on raw pointer/bytes.
-    //
-    // NOTE: Since string/std__string are opaque zero-sized types in this codegen,
-    // this function cannot be implemented purely in safe Rust without FFI.
-    // The actual implementation would need to operate on the C++ std::string internals.
-    // For the bitexact port, we provide the equivalent algorithm assuming
-    // the caller provides a C string pointer interface.
-    todo!("mjuu_strippath requires std::string FFI - opaque type")
+    todo!() // mjuu_strippath
 }
 
 /// C: mjuu_stripext (user/user_util.h:276)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjuu_stripext(filename: string) -> std__string {
-    // SAFETY: This function operates on std::string which is an opaque C++ type.
-    // The C++ implementation finds the last '.' and returns substring before it.
-    // Since string/std__string are opaque zero-sized types in this codegen,
-    // this function cannot be implemented purely in safe Rust without FFI.
-    todo!("mjuu_stripext requires std::string FFI - opaque type")
+    todo!() // mjuu_stripext
 }
 
 /// C: mjuu_getext (user/user_util.h:279)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjuu_getext(filename: string_view) -> std__string {
-    // WARNING: signature changed — verify body
+    // NOTE: signature changed from previous IR version
     // Previous params: (filename : string_view)
     // Previous return: std__string
-    todo ! ()
+    todo!("re-translate: params renamed")
 }
 
 /// C: mjuu_isabspath (user/user_util.h:282)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjuu_isabspath(path: string) -> bool {
-    // WARNING: signature changed — verify body
+    // NOTE: signature changed from previous IR version
     // Previous params: (path : string)
     // Previous return: bool
-    todo ! ()
+    todo!("re-translate: params renamed")
 }
 
 /// C: mjuu_combinePaths (user/user_util.h:285)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjuu_combine_paths(path1: *const std__string, path2: *const std__string) -> std__string {
-    // WARNING: signature changed — verify body
+    // NOTE: signature changed from previous IR version
     // Previous params: (path1 : * const std__string, path2 : * const std__string)
     // Previous return: std__string
-    todo ! ()
+    todo!("re-translate: params renamed")
 }
 
 /// C: mjuu_parseContentTypeAttrType (user/user_util.h:290)
 /// Calls: mjuu_isValidContentType
 #[allow(unused_variables, non_snake_case)]
 pub fn mjuu_parse_content_type_attr_type(text: string_view) -> *const () {
-    // WARNING: signature changed — verify body
+    // NOTE: signature changed from previous IR version
     // Previous params: (text : string_view)
     // Previous return: * const ()
-    todo ! ()
+    todo!("re-translate: params renamed")
 }
 
 /// C: mjuu_parseContentTypeAttrSubtype (user/user_util.h:293)
 /// Calls: mjuu_isValidContentType
 #[allow(unused_variables, non_snake_case)]
 pub fn mjuu_parse_content_type_attr_subtype(text: string_view) -> *const () {
-    // WARNING: signature changed — verify body
+    // NOTE: signature changed from previous IR version
     // Previous params: (text : string_view)
     // Previous return: * const ()
-    todo ! ()
+    todo!("re-translate: params renamed")
 }
 
 /// C: mjuu_extToContentType (user/user_util.h:296)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjuu_ext_to_content_type(filename: string_view) -> std__string {
-    // WARNING: signature changed — verify body
+    // NOTE: signature changed from previous IR version
     // Previous params: (filename : string_view)
     // Previous return: std__string
-    todo ! ()
+    todo!("re-translate: params renamed")
 }
 
 /// C: mjuu_dirnamelen (user/user_util.h:299)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjuu_dirnamelen(path: *const i8) -> i32 {
-    // WARNING: signature changed — verify body
+    // NOTE: signature changed from previous IR version
     // Previous params: (path : * const i8)
     // Previous return: i32
-    todo ! ()
+    todo!("re-translate: params renamed")
 }
 

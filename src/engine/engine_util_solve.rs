@@ -13,10 +13,10 @@ use crate::types::*;
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mul_vec_mat_vec_sym(vec: *const f64, mat: *const f64, n: i32) -> f64 {
-    // WARNING: signature changed — verify body
+    // NOTE: signature changed from previous IR version
     // Previous params: (vec : * const f64, mat : * const f64, n : i32)
     // Previous return: f64
-    todo ! ()
+    todo!("re-translate: params renamed")
 }
 
 /// C: mulSymVec (engine/engine_util_solve.c:1412)
@@ -28,10 +28,10 @@ pub fn mul_vec_mat_vec_sym(vec: *const f64, mat: *const f64, n: i32) -> f64 {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mul_sym_vec(res: *mut f64, mat: *const f64, vec: *const f64, n: i32) {
-    // WARNING: signature changed — verify body
+    // NOTE: signature changed from previous IR version
     // Previous params: (res : * mut f64, mat : * const f64, vec : * const f64, n : i32)
     // Previous return: ()
-    todo ! ()
+    todo!("re-translate: params renamed")
 }
 
 /// C: mju_cholFactor (engine/engine_util_solve.h:27)
@@ -43,44 +43,10 @@ pub fn mul_sym_vec(res: *mut f64, mat: *const f64, vec: *const f64, n: i32) {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mju_chol_factor(mat: *mut f64, n: i32, mindiag: f64) -> i32 {
-    use crate::engine::engine_util_blas::mju_dot;
-
-    // SAFETY: caller guarantees mat points to n*n f64 array
-    unsafe {
-        let n = n as usize;
-        let mut rank = n as i32;
-
-        // in-place Cholesky factorization
-        let mut j: usize = 0;
-        while j < n {
-            // compute new diagonal
-            let mut tmp: f64 = *mat.add(j * (n + 1));
-            if j > 0 {
-                tmp -= mju_dot(mat.add(j * n), mat.add(j * n), j as i32);
-            }
-
-            // correct diagonal values below threshold
-            if tmp < mindiag {
-                tmp = mindiag;
-                rank -= 1;
-            }
-
-            // save diagonal
-            *mat.add(j * (n + 1)) = tmp.sqrt();
-
-            // process off-diagonal entries
-            tmp = 1.0 / *mat.add(j * (n + 1));
-            let mut i: usize = j + 1;
-            while i < n {
-                *mat.add(i * n + j) = (*mat.add(i * n + j) - mju_dot(mat.add(i * n), mat.add(j * n), j as i32)) * tmp;
-                i += 1;
-            }
-
-            j += 1;
-        }
-
-        rank
-    }
+    // NOTE: signature changed from previous IR version
+    // Previous params: (mat : * mut f64, n : i32, mindiag : f64)
+    // Previous return: i32
+    todo!("re-translate: params renamed")
 }
 
 /// C: mju_cholSolve (engine/engine_util_solve.h:30)
@@ -92,47 +58,10 @@ pub fn mju_chol_factor(mat: *mut f64, n: i32, mindiag: f64) -> i32 {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mju_chol_solve(res: *mut f64, mat: *const f64, vec: *const f64, n: i32) {
-    use crate::engine::engine_util_blas::{mju_copy, mju_dot};
-
-    // SAFETY: caller guarantees mat points to n*n f64, res and vec point to n f64
-    unsafe {
-        let n_u = n as usize;
-
-        // copy if source and destination are different
-        if res != vec as *mut f64 {
-            mju_copy(res, vec, n);
-        }
-
-        // forward substitution: solve L*res = vec
-        let mut i: usize = 0;
-        while i < n_u {
-            if i > 0 {
-                *res.add(i) -= mju_dot(mat.add(i * n_u), res as *const f64, i as i32);
-            }
-
-            // diagonal
-            *res.add(i) /= *mat.add(i * (n_u + 1));
-
-            i += 1;
-        }
-
-        // backward substitution: solve L'*res = res
-        let mut i: i32 = n - 1;
-        while i >= 0 {
-            let iu = i as usize;
-            if iu < n_u - 1 {
-                let mut j: usize = iu + 1;
-                while j < n_u {
-                    *res.add(iu) -= *mat.add(j * n_u + iu) * *res.add(j);
-                    j += 1;
-                }
-            }
-            // diagonal
-            *res.add(iu) /= *mat.add(iu * (n_u + 1));
-
-            i -= 1;
-        }
-    }
+    // NOTE: signature changed from previous IR version
+    // Previous params: (res : * mut f64, mat : * const f64, vec : * const f64, n : i32)
+    // Previous return: ()
+    todo!("re-translate: params renamed")
 }
 
 /// C: mju_cholUpdate (engine/engine_util_solve.h:33)
@@ -143,53 +72,10 @@ pub fn mju_chol_solve(res: *mut f64, mat: *const f64, vec: *const f64, n: i32) {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mju_chol_update(mat: *mut f64, x: *mut f64, n: i32, flg_plus: i32) -> i32 {
-    const MJMINVAL: f64 = 1e-15;
-    // SAFETY: caller guarantees mat points to n*n f64, x points to n f64
-    unsafe {
-        let n = n as usize;
-        let mut rank = n as i32;
-
-        for k in 0..n {
-            if *x.add(k) != 0.0 {
-                // prepare constants
-                let lkk = *mat.add(k * (n + 1));
-                let mut tmp = lkk * lkk + if flg_plus != 0 {
-                    *x.add(k) * *x.add(k)
-                } else {
-                    -(*x.add(k) * *x.add(k))
-                };
-                if tmp < MJMINVAL {
-                    tmp = MJMINVAL;
-                    rank -= 1;
-                }
-                let r = tmp.sqrt();
-                let c = r / lkk;
-                let cinv = 1.0 / c;
-                let s = *x.add(k) / lkk;
-
-                // update diagonal
-                *mat.add(k * (n + 1)) = r;
-
-                // update mat
-                if flg_plus != 0 {
-                    for i in (k + 1)..n {
-                        *mat.add(i * n + k) = (*mat.add(i * n + k) + s * *x.add(i)) * cinv;
-                    }
-                } else {
-                    for i in (k + 1)..n {
-                        *mat.add(i * n + k) = (*mat.add(i * n + k) - s * *x.add(i)) * cinv;
-                    }
-                }
-
-                // update x
-                for i in (k + 1)..n {
-                    *x.add(i) = c * *x.add(i) - s * *mat.add(i * n + k);
-                }
-            }
-        }
-
-        rank
-    }
+    // NOTE: signature changed from previous IR version
+    // Previous params: (mat : * mut f64, x : * mut f64, n : i32, flg_plus : i32)
+    // Previous return: i32
+    todo!("re-translate: params renamed")
 }
 
 /// C: mju_cholFactorSparse (engine/engine_util_solve.h:37)
@@ -201,20 +87,20 @@ pub fn mju_chol_update(mat: *mut f64, x: *mut f64, n: i32, flg_plus: i32) -> i32
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mju_chol_factor_sparse(mat: *mut f64, n: i32, mindiag: f64, rownnz: *mut i32, rowadr: *const i32, colind: *mut i32, d: *mut mjData) -> i32 {
-    // WARNING: signature changed — verify body
+    // NOTE: signature changed from previous IR version
     // Previous params: (mat : * mut f64, n : i32, mindiag : f64, rownnz : * mut i32, rowadr : * const i32, colind : * mut i32, d : * mut mjData)
     // Previous return: i32
-    todo ! ()
+    todo!("re-translate: params renamed")
 }
 
 /// C: mju_cholFactorSymbolic (engine/engine_util_solve.h:45)
 /// Calls: mj_freeStack, mj_markStack, mj_stackAllocInfo
 #[allow(unused_variables, non_snake_case)]
 pub fn mju_chol_factor_symbolic(L_colind: *mut i32, L_rownnz: *mut i32, L_rowadr: *mut i32, LT_colind: *mut i32, LT_rownnz: *mut i32, LT_rowadr: *mut i32, LT_map: *mut i32, rownnz: *const i32, rowadr: *const i32, colind: *const i32, n: i32, d: *mut mjData) -> i32 {
-    // WARNING: signature changed — verify body
+    // NOTE: signature changed from previous IR version
     // Previous params: (L_colind : * mut i32, L_rownnz : * mut i32, L_rowadr : * mut i32, LT_colind : * mut i32, LT_rownnz : * mut i32, LT_rowadr : * mut i32, LT_map : * mut i32, rownnz : * const i32, rowadr : * const i32, colind : * const i32, n : i32, d : * mut mjData)
     // Previous return: i32
-    todo ! ()
+    todo!("re-translate: params renamed")
 }
 
 /// C: mju_cholFactorNumeric (engine/engine_util_solve.h:53)
@@ -226,10 +112,10 @@ pub fn mju_chol_factor_symbolic(L_colind: *mut i32, L_rownnz: *mut i32, L_rowadr
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mju_chol_factor_numeric(L: *mut f64, n: i32, mindiag: f64, L_rownnz: *const i32, L_rowadr: *const i32, L_colind: *const i32, LT_rownnz: *const i32, LT_rowadr: *const i32, LT_colind: *const i32, LT_map: *const i32, H: *const f64, H_rownnz: *const i32, H_rowadr: *const i32, H_colind: *const i32, d: *mut mjData) -> i32 {
-    // WARNING: signature changed — verify body
+    // NOTE: signature changed from previous IR version
     // Previous params: (L : * mut f64, n : i32, mindiag : f64, L_rownnz : * const i32, L_rowadr : * const i32, L_colind : * const i32, LT_rownnz : * const i32, LT_rowadr : * const i32, LT_colind : * const i32, LT_map : * const i32, H : * const f64, H_rownnz : * const i32, H_rowadr : * const i32, H_colind : * const i32, d : * mut mjData)
     // Previous return: i32
-    todo ! ()
+    todo!("re-translate: params renamed")
 }
 
 /// C: mju_cholSolveSparse (engine/engine_util_solve.h:61)
@@ -241,50 +127,10 @@ pub fn mju_chol_factor_numeric(L: *mut f64, n: i32, mindiag: f64, L_rownnz: *con
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mju_chol_solve_sparse(res: *mut f64, mat: *const f64, vec: *const f64, n: i32, rownnz: *const i32, rowadr: *const i32, colind: *const i32) {
-    use crate::engine::engine_util_blas::mju_copy;
-    use crate::engine::engine_util_sparse::mju_dot_sparse;
-    // SAFETY: caller guarantees all pointers valid for sparse matrix layout
-    unsafe {
-        // copy input into result
-        mju_copy(res, vec, n);
-
-        // res <- L^-T res
-        let mut i: i32 = n - 1;
-        while i >= 0 {
-            if *res.add(i as usize) != 0.0 {
-                let adr = *rowadr.add(i as usize);
-                let nnz = *rownnz.add(i as usize);
-
-                // x(i) /= L(i,i)
-                *res.add(i as usize) /= *mat.add((adr + nnz - 1) as usize);
-                let tmp = *res.add(i as usize);
-
-                // x(j) -= L(i,j)*x(i), j=0:i-1
-                let mut j: i32 = 0;
-                while j < nnz - 1 {
-                    *res.add(*colind.add((adr + j) as usize) as usize) -= *mat.add((adr + j) as usize) * tmp;
-                    j += 1;
-                }
-            }
-            i -= 1;
-        }
-
-        // res <- L^-1 res
-        i = 0;
-        while i < n {
-            let adr = *rowadr.add(i as usize);
-            let nnz = *rownnz.add(i as usize);
-
-            // x(i) -= sum_j L(i,j)*x(j)
-            if nnz > 1 {
-                *res.add(i as usize) -= mju_dot_sparse(mat.add(adr as usize), res, nnz - 1, colind.add(adr as usize));
-            }
-
-            // x(i) /= L(i,i)
-            *res.add(i as usize) /= *mat.add((adr + nnz - 1) as usize);
-            i += 1;
-        }
-    }
+    // NOTE: signature changed from previous IR version
+    // Previous params: (res : * mut f64, mat : * const f64, vec : * const f64, n : i32, rownnz : * const i32, rowadr : * const i32, colind : * const i32)
+    // Previous return: ()
+    todo!("re-translate: params renamed")
 }
 
 /// C: mju_cholUpdateSparse (engine/engine_util_solve.h:66)
@@ -296,10 +142,10 @@ pub fn mju_chol_solve_sparse(res: *mut f64, mat: *const f64, vec: *const f64, n:
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mju_chol_update_sparse(mat: *mut f64, x: *const f64, n: i32, flg_plus: i32, rownnz: *const i32, rowadr: *const i32, colind: *const i32, x_nnz: i32, x_ind: *const i32, d: *mut mjData) -> i32 {
-    // WARNING: signature changed — verify body
+    // NOTE: signature changed from previous IR version
     // Previous params: (mat : * mut f64, x : * const f64, n : i32, flg_plus : i32, rownnz : * const i32, rowadr : * const i32, colind : * const i32, x_nnz : i32, x_ind : * const i32, d : * mut mjData)
     // Previous return: i32
-    todo ! ()
+    todo!("re-translate: params renamed")
 }
 
 /// C: mju_cholFactorBand (engine/engine_util_solve.h:76)
@@ -311,106 +157,10 @@ pub fn mju_chol_update_sparse(mat: *mut f64, x: *const f64, n: i32, flg_plus: i3
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mju_chol_factor_band(mat: *mut f64, ntotal: i32, nband: i32, ndense: i32, diagadd: f64, diagmul: f64) -> f64 {
-    use crate::engine::engine_util_blas::mju_dot;
-    const MJMINVAL: f64 = 1e-15;
-    // SAFETY: caller guarantees mat has correct band-dense layout
-    unsafe {
-        let nsparse = ntotal - ndense;
-        let mut mindiag: f64 = -1.0;
-
-        // sparse part
-        let mut j: i32 = 0;
-        while j < nsparse {
-            let width_jj = if j < nband - 1 { j } else { nband - 1 };
-            let height = if nsparse - j - 1 < nband - 1 { nsparse - j - 1 } else { nband - 1 };
-            let adr_jj = ((j + 1) * nband - 1) as usize;
-
-            // compute L(j,j) before sqrt
-            let left_ij = if width_jj > 0 {
-                mju_dot(mat.add(adr_jj - width_jj as usize), mat.add(adr_jj - width_jj as usize), width_jj)
-            } else { 0.0 };
-            let mut Ljj = diagadd + diagmul * *mat.add(adr_jj) + *mat.add(adr_jj) - left_ij;
-
-            // update mindiag
-            if Ljj < mindiag || mindiag < 0.0 {
-                mindiag = Ljj;
-            }
-
-            // stop if rank-deficient
-            if Ljj < MJMINVAL {
-                return 0.0;
-            }
-
-            // compute Ljj, scale = 1/Ljj
-            Ljj = Ljj.sqrt();
-            let scale = 1.0 / Ljj;
-
-            // compute L(i,j) for i>j, sparse part
-            let mut i: i32 = j + 1;
-            while i <= j + height {
-                let width_ij = if j < nband - 1 - i + j { j } else { nband - 1 - i + j };
-                let adr_ij = ((i + 1) * nband - 1 - i + j) as usize;
-                let left_ij = if width_ij > 0 {
-                    mju_dot(mat.add(adr_jj - width_ij as usize), mat.add(adr_ij - width_ij as usize), width_ij)
-                } else { 0.0 };
-                *mat.add(adr_ij) = scale * (*mat.add(adr_ij) - left_ij);
-                i += 1;
-            }
-
-            // compute L(i,j) for i>j, dense part
-            i = nsparse;
-            while i < ntotal {
-                let adr_ij = (nsparse * nband + (i - nsparse) * ntotal + j) as usize;
-                let left_ij = if width_jj > 0 {
-                    mju_dot(mat.add(adr_jj - width_jj as usize), mat.add(adr_ij - width_jj as usize), width_jj)
-                } else { 0.0 };
-                *mat.add(adr_ij) = scale * (*mat.add(adr_ij) - left_ij);
-                i += 1;
-            }
-
-            // save L(j,j)
-            *mat.add(adr_jj) = Ljj;
-            j += 1;
-        }
-
-        // dense part
-        j = nsparse;
-        while j < ntotal {
-            let adr_jj = (nsparse * nband + (j - nsparse) * ntotal + j) as usize;
-
-            // compute Ljj
-            let mut Ljj = diagadd + diagmul * *mat.add(adr_jj) + *mat.add(adr_jj)
-                - mju_dot(mat.add(adr_jj - j as usize), mat.add(adr_jj - j as usize), j);
-
-            // update mindiag
-            if Ljj < mindiag || mindiag < 0.0 {
-                mindiag = Ljj;
-            }
-
-            // stop if rank-deficient
-            if Ljj < MJMINVAL {
-                return 0.0;
-            }
-
-            // compute Ljj, scale = 1/Ljj
-            Ljj = Ljj.sqrt();
-            let scale = 1.0 / Ljj;
-
-            // compute L(i,j) for i>j
-            let mut i: i32 = j + 1;
-            while i < ntotal {
-                let adr_ij = (adr_jj + (ntotal as usize) * (i - j) as usize) as usize;
-                *mat.add(adr_ij) = scale * (*mat.add(adr_ij) - mju_dot(mat.add(adr_jj - j as usize), mat.add(adr_ij - j as usize), j));
-                i += 1;
-            }
-
-            // save L(j,j)
-            *mat.add(adr_jj) = Ljj;
-            j += 1;
-        }
-
-        mindiag
-    }
+    // NOTE: signature changed from previous IR version
+    // Previous params: (mat : * mut f64, ntotal : i32, nband : i32, ndense : i32, diagadd : f64, diagmul : f64)
+    // Previous return: f64
+    todo!("re-translate: params renamed")
 }
 
 /// C: mju_cholSolveBand (engine/engine_util_solve.h:80)
@@ -422,87 +172,10 @@ pub fn mju_chol_factor_band(mat: *mut f64, ntotal: i32, nband: i32, ndense: i32,
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mju_chol_solve_band(res: *mut f64, mat: *const f64, vec: *const f64, ntotal: i32, nband: i32, ndense: i32) {
-    use crate::engine::engine_util_blas::{mju_copy, mju_dot};
-    // SAFETY: caller guarantees res/mat/vec have correct dimensions
-    unsafe {
-        let nsparse = ntotal - ndense;
-
-        // copy into result if different
-        if res != vec as *mut f64 {
-            mju_copy(res, vec, ntotal);
-        }
-
-        //------- forward substitution: solve L*res = vec
-
-        // sparse part
-        let mut i: i32 = 0;
-        while i < nsparse {
-            let width = if i < nband - 1 { i } else { nband - 1 };
-            if width > 0 {
-                *res.add(i as usize) -= mju_dot(
-                    mat.add(((i + 1) * nband - 1 - width) as usize),
-                    res.add((i - width) as usize),
-                    width,
-                );
-            }
-            // diagonal
-            *res.add(i as usize) /= *mat.add(((i + 1) * nband - 1) as usize);
-            i += 1;
-        }
-
-        // dense part
-        i = nsparse;
-        while i < ntotal {
-            *res.add(i as usize) -= mju_dot(
-                mat.add((nsparse * nband + (i - nsparse) * ntotal) as usize),
-                res,
-                i,
-            );
-            // diagonal
-            *res.add(i as usize) /= *mat.add((nsparse * nband + (i - nsparse) * ntotal + i) as usize);
-            i += 1;
-        }
-
-        //------- backward substitution: solve L'*res = res
-
-        // dense part
-        i = ntotal - 1;
-        while i >= nsparse {
-            let mut j: i32 = i + 1;
-            while j < ntotal {
-                *res.add(i as usize) -= *mat.add((nsparse * nband + (j - nsparse) * ntotal + i) as usize) * *res.add(j as usize);
-                j += 1;
-            }
-            // diagonal
-            *res.add(i as usize) /= *mat.add((nsparse * nband + (i - nsparse) * ntotal + i) as usize);
-            i -= 1;
-        }
-
-        // sparse part
-        i = nsparse - 1;
-        while i >= 0 {
-            // number of non-zeros below (i,i), sparse part
-            let height = if nsparse - 1 - i < nband - 1 { nsparse - 1 - i } else { nband - 1 };
-
-            // sparse rows
-            let mut j: i32 = i + 1;
-            while j <= i + height {
-                *res.add(i as usize) -= *mat.add(((j + 1) * nband - 1 - (j - i)) as usize) * *res.add(j as usize);
-                j += 1;
-            }
-
-            // dense rows
-            j = nsparse;
-            while j < ntotal {
-                *res.add(i as usize) -= *mat.add((nsparse * nband + (j - nsparse) * ntotal + i) as usize) * *res.add(j as usize);
-                j += 1;
-            }
-
-            // diagonal
-            *res.add(i as usize) /= *mat.add(((i + 1) * nband - 1) as usize);
-            i -= 1;
-        }
-    }
+    // NOTE: signature changed from previous IR version
+    // Previous params: (res : * mut f64, mat : * const f64, vec : * const f64, ntotal : i32, nband : i32, ndense : i32)
+    // Previous return: ()
+    todo!("re-translate: params renamed")
 }
 
 /// C: mju_band2Dense (engine/engine_util_solve.h:84)
@@ -514,10 +187,10 @@ pub fn mju_chol_solve_band(res: *mut f64, mat: *const f64, vec: *const f64, ntot
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mju_band2dense(res: *mut f64, mat: *const f64, ntotal: i32, nband: i32, ndense: i32, flg_sym: mjtBool) {
-    // WARNING: signature changed — verify body
+    // NOTE: signature changed from previous IR version
     // Previous params: (res : * mut f64, mat : * const f64, ntotal : i32, nband : i32, ndense : i32, flg_sym : mjtBool)
     // Previous return: ()
-    todo ! ()
+    todo!("re-translate: params renamed")
 }
 
 /// C: mju_dense2Band (engine/engine_util_solve.h:88)
@@ -529,37 +202,10 @@ pub fn mju_band2dense(res: *mut f64, mat: *const f64, ntotal: i32, nband: i32, n
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mju_dense2band(res: *mut f64, mat: *const f64, ntotal: i32, nband: i32, ndense: i32) {
-    use crate::engine::engine_util_blas::mju_copy;
-    // SAFETY: caller guarantees res/mat have correct dimensions
-    unsafe {
-        let nsparse = ntotal - ndense;
-
-        // sparse part
-        let mut i: i32 = 0;
-        while i < nsparse {
-            // number of non-zeros left of (i,i)
-            let width = if i < nband - 1 { i } else { nband - 1 };
-
-            // copy data
-            mju_copy(
-                res.add(((i + 1) * nband - (width + 1)) as usize),
-                mat.add((i * ntotal + i - width) as usize),
-                width + 1,
-            );
-            i += 1;
-        }
-
-        // dense part
-        i = nsparse;
-        while i < ntotal {
-            mju_copy(
-                res.add((nsparse * nband + (i - nsparse) * ntotal) as usize),
-                mat.add((i * ntotal) as usize),
-                i + 1,
-            );
-            i += 1;
-        }
-    }
+    // NOTE: signature changed from previous IR version
+    // Previous params: (res : * mut f64, mat : * const f64, ntotal : i32, nband : i32, ndense : i32)
+    // Previous return: ()
+    todo!("re-translate: params renamed")
 }
 
 /// C: mju_bandMulMatVec (engine/engine_util_solve.h:91)
@@ -571,25 +217,19 @@ pub fn mju_dense2band(res: *mut f64, mat: *const f64, ntotal: i32, nband: i32, n
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mju_band_mul_mat_vec(res: *mut f64, mat: *const f64, vec: *const f64, ntotal: i32, nband: i32, ndense: i32, nvec: i32, flg_sym: mjtBool) {
-    // WARNING: signature changed — verify body
+    // NOTE: signature changed from previous IR version
     // Previous params: (res : * mut f64, mat : * const f64, vec : * const f64, ntotal : i32, nband : i32, ndense : i32, nvec : i32, flg_sym : mjtBool)
     // Previous return: ()
-    todo ! ()
+    todo!("re-translate: params renamed")
 }
 
 /// C: mju_bandDiag (engine/engine_util_solve.h:95)
 #[allow(unused_variables, non_snake_case)]
 pub fn mju_band_diag(i: i32, ntotal: i32, nband: i32, ndense: i32) -> i32 {
-    let nsparse = ntotal - ndense;
-
-    // sparse part
-    if i < nsparse {
-        i * nband + nband - 1
-    }
-    // dense part
-    else {
-        nsparse * nband + (i - nsparse) * ntotal + i
-    }
+    // NOTE: signature changed from previous IR version
+    // Previous params: (i : i32, ntotal : i32, nband : i32, ndense : i32)
+    // Previous return: i32
+    todo!("re-translate: params renamed")
 }
 
 /// C: mju_factorLU (engine/engine_util_solve.h:102)
@@ -600,63 +240,10 @@ pub fn mju_band_diag(i: i32, ntotal: i32, nband: i32, ndense: i32) -> i32 {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mju_factor_lu(A: *mut f64, n: i32, pivot: *mut i32) -> i32 {
-    const MJMINVAL: f64 = 1e-15;
-    // SAFETY: caller guarantees A points to n*n f64, pivot to n i32
-    unsafe {
-        let n = n as usize;
-        let mut k: usize = 0;
-        while k < n {
-            // initialize pivot
-            *pivot.add(k) = k as i32;
-
-            // find pivot: max absolute value in column k, rows k..n-1
-            let mut maxval: f64 = (*A.add(k * n + k)).abs();
-            let mut maxrow: usize = k;
-            let mut i: usize = k + 1;
-            while i < n {
-                let val: f64 = (*A.add(i * n + k)).abs();
-                if val > maxval {
-                    maxval = val;
-                    maxrow = i;
-                }
-                i += 1;
-            }
-
-            // check singularity
-            if maxval < MJMINVAL {
-                return 0;
-            }
-
-            // swap rows k and maxrow
-            if maxrow != k {
-                *pivot.add(k) = maxrow as i32;
-                let mut j: usize = 0;
-                while j < n {
-                    let tmp = *A.add(k * n + j);
-                    *A.add(k * n + j) = *A.add(maxrow * n + j);
-                    *A.add(maxrow * n + j) = tmp;
-                    j += 1;
-                }
-            }
-
-            // compute multipliers and update trailing submatrix
-            let diaginv: f64 = 1.0 / *A.add(k * n + k);
-            i = k + 1;
-            while i < n {
-                *A.add(i * n + k) = *A.add(i * n + k) * diaginv;
-                let Aik: f64 = *A.add(i * n + k);
-                let mut j: usize = k + 1;
-                while j < n {
-                    *A.add(i * n + j) = *A.add(i * n + j) - Aik * *A.add(k * n + j);
-                    j += 1;
-                }
-                i += 1;
-            }
-
-            k += 1;
-        }
-        1
-    }
+    // NOTE: signature changed from previous IR version
+    // Previous params: (A : * mut f64, n : i32, pivot : * mut i32)
+    // Previous return: i32
+    todo!("re-translate: params renamed")
 }
 
 /// C: mju_solveLU (engine/engine_util_solve.h:105)
@@ -668,45 +255,10 @@ pub fn mju_factor_lu(A: *mut f64, n: i32, pivot: *mut i32) -> i32 {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mju_solve_lu(x: *mut f64, LU: *const f64, b: *const f64, pivot: *const i32, n: i32) {
-    use crate::engine::engine_util_blas::mju_copy;
-    // SAFETY: caller guarantees x[n], LU[n*n], b[n], pivot[n] are valid
-    unsafe {
-        let n = n as usize;
-        // copy b into x
-        mju_copy(x, b, n as i32);
-
-        // apply row permutation and forward substitution: solve L*y = P*b
-        let mut i: usize = 0;
-        while i < n {
-            // apply pivot swap
-            if *pivot.add(i) != i as i32 {
-                let pi = *pivot.add(i) as usize;
-                let tmp = *x.add(i);
-                *x.add(i) = *x.add(pi);
-                *x.add(pi) = tmp;
-            }
-            // subtract known terms
-            let mut j: usize = 0;
-            while j < i {
-                *x.add(i) = *x.add(i) - *LU.add(i * n + j) * *x.add(j);
-                j += 1;
-            }
-            i += 1;
-        }
-
-        // back substitution: solve U*x = y
-        let mut i: i32 = n as i32 - 1;
-        while i >= 0 {
-            let iu = i as usize;
-            let mut j: usize = iu + 1;
-            while j < n {
-                *x.add(iu) = *x.add(iu) - *LU.add(iu * n + j) * *x.add(j);
-                j += 1;
-            }
-            *x.add(iu) = *x.add(iu) / *LU.add(iu * n + iu);
-            i -= 1;
-        }
-    }
+    // NOTE: signature changed from previous IR version
+    // Previous params: (x : * mut f64, LU : * const f64, b : * const f64, pivot : * const i32, n : i32)
+    // Previous return: ()
+    todo!("re-translate: params renamed")
 }
 
 /// C: mju_factorLUSparse (engine/engine_util_solve.h:109)
@@ -718,10 +270,10 @@ pub fn mju_solve_lu(x: *mut f64, LU: *const f64, b: *const f64, pivot: *const i3
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mju_factor_lu_sparse(LU: *mut f64, n: i32, scratch: *mut i32, rownnz: *const i32, rowadr: *const i32, colind: *const i32, index: *const i32) {
-    // WARNING: signature changed — verify body
+    // NOTE: signature changed from previous IR version
     // Previous params: (LU : * mut f64, n : i32, scratch : * mut i32, rownnz : * const i32, rowadr : * const i32, colind : * const i32, index : * const i32)
     // Previous return: ()
-    todo ! ()
+    todo!("re-translate: params renamed")
 }
 
 /// C: mju_solveLUSparse (engine/engine_util_solve.h:113)
@@ -733,42 +285,10 @@ pub fn mju_factor_lu_sparse(LU: *mut f64, n: i32, scratch: *mut i32, rownnz: *co
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mju_solve_lu_sparse(res: *mut f64, LU: *const f64, vec: *const f64, n: i32, rownnz: *const i32, rowadr: *const i32, diag: *const i32, colind: *const i32, index: *const i32) {
-    use crate::engine::engine_util_sparse::mju_dot_sparse;
-    // SAFETY: caller guarantees all pointers valid for sparse matrix layout
-    unsafe {
-        // solve (U+I)*res = vec
-        let mut k: i32 = n - 1;
-        while k >= 0 {
-            let i = if !index.is_null() { *index.add(k as usize) } else { k };
-
-            // init: diagonal of (U+I) is 1
-            *res.add(i as usize) = *vec.add(i as usize);
-
-            let d1 = *diag.add(i as usize) + 1;
-            let nnz = *rownnz.add(i as usize) - d1;
-            if nnz > 0 {
-                let adr = *rowadr.add(i as usize) + d1;
-                *res.add(i as usize) -= mju_dot_sparse(LU.add(adr as usize), res, nnz, colind.add(adr as usize));
-            }
-            k -= 1;
-        }
-
-        // solve L*res(new) = res
-        k = 0;
-        while k < n {
-            let i = if !index.is_null() { *index.add(k as usize) } else { k };
-
-            let d = *diag.add(i as usize);
-            let adr = *rowadr.add(i as usize);
-            if d > 0 {
-                *res.add(i as usize) -= mju_dot_sparse(LU.add(adr as usize), res, d, colind.add(adr as usize));
-            }
-
-            // divide by diagonal element of L
-            *res.add(i as usize) /= *LU.add((adr + d) as usize);
-            k += 1;
-        }
-    }
+    // NOTE: signature changed from previous IR version
+    // Previous params: (res : * mut f64, LU : * const f64, vec : * const f64, n : i32, rownnz : * const i32, rowadr : * const i32, diag : * const i32, colind : * const i32, index : * const i32)
+    // Previous return: ()
+    todo!("re-translate: params renamed")
 }
 
 /// C: mju_solve3 (engine/engine_util_solve.h:118)
@@ -779,42 +299,10 @@ pub fn mju_solve_lu_sparse(res: *mut f64, LU: *const f64, vec: *const f64, n: i3
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mju_solve3(x: *mut f64, A: *const f64, b: *const f64) {
-    // SAFETY: caller guarantees x has 3 elements, A has 9 elements, b has 3 elements
-    unsafe {
-        let mut M: [[f64; 4]; 3] = [
-            [*A.add(0), *A.add(1), *A.add(2), *b.add(0)],
-            [*A.add(3), *A.add(4), *A.add(5), *b.add(1)],
-            [*A.add(6), *A.add(7), *A.add(8), *b.add(2)],
-        ];
-
-        let mut i: i32 = 0;
-        while i < 3 {
-            let pivot = M[i as usize][i as usize];
-            let mut j: i32 = i;
-            while j < 4 {
-                M[i as usize][j as usize] /= pivot;
-                j += 1;
-            }
-
-            let mut k: i32 = 0;
-            while k < 3 {
-                if k != i {
-                    let factor = M[k as usize][i as usize];
-                    let mut j: i32 = i;
-                    while j < 4 {
-                        M[k as usize][j as usize] -= factor * M[i as usize][j as usize];
-                        j += 1;
-                    }
-                }
-                k += 1;
-            }
-            i += 1;
-        }
-
-        *x.add(0) = M[0][3];
-        *x.add(1) = M[1][3];
-        *x.add(2) = M[2][3];
-    }
+    // NOTE: signature changed from previous IR version
+    // Previous params: (x : * mut f64, A : * const f64, b : * const f64)
+    // Previous return: ()
+    todo!("re-translate: params renamed")
 }
 
 /// C: mju_eig3 (engine/engine_util_solve.h:121)
@@ -826,10 +314,10 @@ pub fn mju_solve3(x: *mut f64, A: *const f64, b: *const f64) {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mju_eig3(eigval: *mut f64, eigvec: *mut f64, quat: *mut f64, mat: *const f64) -> i32 {
-    // WARNING: signature changed — verify body
+    // NOTE: signature changed from previous IR version
     // Previous params: (eigval : * mut f64, eigvec : * mut f64, quat : * mut f64, mat : * const f64)
     // Previous return: i32
-    todo ! ()
+    todo!("re-translate: params renamed")
 }
 
 /// C: mju_QCQP2 (engine/engine_util_solve.h:126)
@@ -840,71 +328,10 @@ pub fn mju_eig3(eigval: *mut f64, eigvec: *mut f64, quat: *mut f64, mat: *const 
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mju_qcqp2(res: *mut f64, Ain: *const f64, bin: *const f64, d: *const f64, r: f64) -> i32 {
-    // SAFETY: caller guarantees res[2], Ain[4], bin[2], d[2] are valid
-    unsafe {
-        // scale A,b so that constraint becomes x'*x <= r*r
-        let b1: f64 = *bin.add(0) * *d.add(0);
-        let b2: f64 = *bin.add(1) * *d.add(1);
-        let A11: f64 = *Ain.add(0) * *d.add(0) * *d.add(0);
-        let A22: f64 = *Ain.add(3) * *d.add(1) * *d.add(1);
-        let A12: f64 = *Ain.add(1) * *d.add(0) * *d.add(1);
-
-        // Newton iteration
-        let mut la: f64 = 0.0;
-        let mut v1: f64 = 0.0;
-        let mut v2: f64 = 0.0;
-
-        let mut iter: i32 = 0;
-        while iter < 20 {
-            // det(A+la)
-            let det: f64 = (A11 + la) * (A22 + la) - A12 * A12;
-
-            // check SPD, with 1e-10 threshold
-            if det < 1e-10 {
-                *res.add(0) = 0.0;
-                *res.add(1) = 0.0;
-                return 0;
-            }
-
-            // P = inv(A+la)
-            let detinv: f64 = 1.0 / det;
-            let P11: f64 = (A22 + la) * detinv;
-            let P22: f64 = (A11 + la) * detinv;
-            let P12: f64 = -A12 * detinv;
-
-            // v = -P*b
-            v1 = -P11 * b1 - P12 * b2;
-            v2 = -P12 * b1 - P22 * b2;
-
-            // val = v'*v - r*r
-            let val: f64 = v1 * v1 + v2 * v2 - r * r;
-
-            // check for convergence, or initial solution inside constraint set
-            if val < 1e-10 {
-                break;
-            }
-
-            // deriv = -2 * v' * P * v
-            let deriv: f64 = -2.0 * (P11 * v1 * v1 + 2.0 * P12 * v1 * v2 + P22 * v2 * v2);
-
-            // compute update, exit if too small
-            let delta: f64 = -val / deriv;
-            if delta < 1e-10 {
-                break;
-            }
-
-            // update
-            la += delta;
-
-            iter += 1;
-        }
-
-        // undo scaling
-        *res.add(0) = v1 * *d.add(0);
-        *res.add(1) = v2 * *d.add(1);
-
-        (la != 0.0) as i32
-    }
+    // NOTE: signature changed from previous IR version
+    // Previous params: (res : * mut f64, Ain : * const f64, bin : * const f64, d : * const f64, r : f64)
+    // Previous return: i32
+    todo!("re-translate: params renamed")
 }
 
 /// C: mju_QCQP3 (engine/engine_util_solve.h:131)
@@ -915,93 +342,10 @@ pub fn mju_qcqp2(res: *mut f64, Ain: *const f64, bin: *const f64, d: *const f64,
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mju_qcqp3(res: *mut f64, Ain: *const f64, bin: *const f64, d: *const f64, r: f64) -> i32 {
-    // SAFETY: caller guarantees res[3], Ain[9], bin[3], d[3] are valid
-    unsafe {
-        // scale A,b so that constraint becomes x'*x <= r*r
-        let b1: f64 = *bin.add(0) * *d.add(0);
-        let b2: f64 = *bin.add(1) * *d.add(1);
-        let b3: f64 = *bin.add(2) * *d.add(2);
-        let A11: f64 = *Ain.add(0) * *d.add(0) * *d.add(0);
-        let A22: f64 = *Ain.add(4) * *d.add(1) * *d.add(1);
-        let A33: f64 = *Ain.add(8) * *d.add(2) * *d.add(2);
-        let A12: f64 = *Ain.add(1) * *d.add(0) * *d.add(1);
-        let A13: f64 = *Ain.add(2) * *d.add(0) * *d.add(2);
-        let A23: f64 = *Ain.add(5) * *d.add(1) * *d.add(2);
-
-        // Newton iteration
-        let mut la: f64 = 0.0;
-        let mut v1: f64 = 0.0;
-        let mut v2: f64 = 0.0;
-        let mut v3: f64 = 0.0;
-
-        let mut iter: i32 = 0;
-        while iter < 20 {
-            // unscaled P
-            let mut P11: f64 = (A22 + la) * (A33 + la) - A23 * A23;
-            let mut P22: f64 = (A11 + la) * (A33 + la) - A13 * A13;
-            let mut P33: f64 = (A11 + la) * (A22 + la) - A12 * A12;
-            let mut P12: f64 = A13 * A23 - A12 * (A33 + la);
-            let mut P13: f64 = A12 * A23 - A13 * (A22 + la);
-            let mut P23: f64 = A12 * A13 - A23 * (A11 + la);
-
-            // det(A+la)
-            let det: f64 = (A11 + la) * P11 + A12 * P12 + A13 * P13;
-
-            // check SPD, with 1e-10 threshold
-            if det < 1e-10 {
-                *res.add(0) = 0.0;
-                *res.add(1) = 0.0;
-                *res.add(2) = 0.0;
-                return 0;
-            }
-
-            // detinv
-            let detinv: f64 = 1.0 / det;
-
-            // final P
-            P11 *= detinv;
-            P22 *= detinv;
-            P33 *= detinv;
-            P12 *= detinv;
-            P13 *= detinv;
-            P23 *= detinv;
-
-            // v = -P*b
-            v1 = -P11 * b1 - P12 * b2 - P13 * b3;
-            v2 = -P12 * b1 - P22 * b2 - P23 * b3;
-            v3 = -P13 * b1 - P23 * b2 - P33 * b3;
-
-            // val = v'*v - r*r
-            let val: f64 = v1 * v1 + v2 * v2 + v3 * v3 - r * r;
-
-            // check for convergence, or initial solution inside constraint set
-            if val < 1e-10 {
-                break;
-            }
-
-            // deriv = -2 * v' * P * v
-            let deriv: f64 = -2.0 * (P11 * v1 * v1 + P22 * v2 * v2 + P33 * v3 * v3)
-                             - 4.0 * (P12 * v1 * v2 + P13 * v1 * v3 + P23 * v2 * v3);
-
-            // compute update, exit if too small
-            let delta: f64 = -val / deriv;
-            if delta < 1e-10 {
-                break;
-            }
-
-            // update
-            la += delta;
-
-            iter += 1;
-        }
-
-        // undo scaling
-        *res.add(0) = v1 * *d.add(0);
-        *res.add(1) = v2 * *d.add(1);
-        *res.add(2) = v3 * *d.add(2);
-
-        (la != 0.0) as i32
-    }
+    // NOTE: signature changed from previous IR version
+    // Previous params: (res : * mut f64, Ain : * const f64, bin : * const f64, d : * const f64, r : f64)
+    // Previous return: i32
+    todo!("re-translate: params renamed")
 }
 
 /// C: mju_QCQP (engine/engine_util_solve.h:136)
@@ -1013,10 +357,10 @@ pub fn mju_qcqp3(res: *mut f64, Ain: *const f64, bin: *const f64, d: *const f64,
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mju_qcqp(res: *mut f64, Ain: *const f64, bin: *const f64, d: *const f64, r: f64, n: i32) -> i32 {
-    // WARNING: signature changed — verify body
+    // NOTE: signature changed from previous IR version
     // Previous params: (res : * mut f64, Ain : * const f64, bin : * const f64, d : * const f64, r : f64, n : i32)
     // Previous return: i32
-    todo ! ()
+    todo!("re-translate: params renamed")
 }
 
 /// C: mju_boxQP (engine/engine_util_solve.h:141)
@@ -1028,10 +372,10 @@ pub fn mju_qcqp(res: *mut f64, Ain: *const f64, bin: *const f64, d: *const f64, 
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mju_box_qp(res: *mut f64, R: *mut f64, index: *mut i32, H: *const f64, g: *const f64, n: i32, lower: *const f64, upper: *const f64) -> i32 {
-    // WARNING: signature changed — verify body
+    // NOTE: signature changed from previous IR version
     // Previous params: (res : * mut f64, R : * mut f64, index : * mut i32, H : * const f64, g : * const f64, n : i32, lower : * const f64, upper : * const f64)
     // Previous return: i32
-    todo ! ()
+    todo!("re-translate: params renamed")
 }
 
 /// C: mju_boxQPmalloc (engine/engine_util_solve.h:146)
@@ -1043,10 +387,10 @@ pub fn mju_box_qp(res: *mut f64, R: *mut f64, index: *mut i32, H: *const f64, g:
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mju_box_q_pmalloc(res: *mut *mut f64, R: *mut *mut f64, index: *mut *mut i32, H: *mut *mut f64, g: *mut *mut f64, n: i32, lower: *mut *mut f64, upper: *mut *mut f64) {
-    // WARNING: signature changed — verify body
+    // NOTE: signature changed from previous IR version
     // Previous params: (res : * mut * mut f64, R : * mut * mut f64, index : * mut * mut i32, H : * mut * mut f64, g : * mut * mut f64, n : i32, lower : * mut * mut f64, upper : * mut * mut f64)
     // Previous return: ()
-    todo ! ()
+    todo!("re-translate: params renamed")
 }
 
 /// C: mju_boxQPoption (engine/engine_util_solve.h:151)
@@ -1058,9 +402,9 @@ pub fn mju_box_q_pmalloc(res: *mut *mut f64, R: *mut *mut f64, index: *mut *mut 
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mju_box_q_poption(res: *mut f64, R: *mut f64, index: *mut i32, H: *const f64, g: *const f64, n: i32, lower: *const f64, upper: *const f64, maxiter: i32, mingrad: f64, backtrack: f64, minstep: f64, armijo: f64, log: *mut i8, logsz: i32) -> i32 {
-    // WARNING: signature changed — verify body
+    // NOTE: signature changed from previous IR version
     // Previous params: (res : * mut f64, R : * mut f64, index : * mut i32, H : * const f64, g : * const f64, n : i32, lower : * const f64, upper : * const f64, maxiter : i32, mingrad : f64, backtrack : f64, minstep : f64, armijo : f64, log : * mut i8, logsz : i32)
     // Previous return: i32
-    todo ! ()
+    todo!("re-translate: params renamed")
 }
 

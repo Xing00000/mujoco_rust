@@ -12,10 +12,10 @@ use crate::types::*;
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mji_zero3(res: *mut f64) {
-    // WARNING: signature changed — verify body
+    // NOTE: signature changed from previous IR version
     // Previous params: (res : * mut f64)
     // Previous return: ()
-    todo ! ()
+    todo!("re-translate: params renamed")
 }
 
 /// C: mji_copy3 (engine/engine_inline.h:55)
@@ -26,10 +26,10 @@ pub fn mji_zero3(res: *mut f64) {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mji_copy3(res: *mut f64, vec: *const f64) {
-    // WARNING: signature changed — verify body
+    // NOTE: signature changed from previous IR version
     // Previous params: (res : * mut f64, vec : * const f64)
     // Previous return: ()
-    todo ! ()
+    todo!("re-translate: params renamed")
 }
 
 /// C: mji_scl3 (engine/engine_inline.h:64)
@@ -40,10 +40,10 @@ pub fn mji_copy3(res: *mut f64, vec: *const f64) {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mji_scl3(res: *mut f64, vec: *const f64, scl: f64) {
-    // WARNING: signature changed — verify body
+    // NOTE: signature changed from previous IR version
     // Previous params: (res : * mut f64, vec : * const f64, scl : f64)
     // Previous return: ()
-    todo ! ()
+    todo!("re-translate: params renamed")
 }
 
 /// C: mji_add3 (engine/engine_inline.h:73)
@@ -54,10 +54,10 @@ pub fn mji_scl3(res: *mut f64, vec: *const f64, scl: f64) {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mji_add3(res: *mut f64, vec1: *const f64, vec2: *const f64) {
-    // WARNING: signature changed — verify body
+    // NOTE: signature changed from previous IR version
     // Previous params: (res : * mut f64, vec1 : * const f64, vec2 : * const f64)
     // Previous return: ()
-    todo ! ()
+    todo!("re-translate: params renamed")
 }
 
 /// C: mji_sub3 (engine/engine_inline.h:82)
@@ -68,10 +68,10 @@ pub fn mji_add3(res: *mut f64, vec1: *const f64, vec2: *const f64) {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mji_sub3(res: *mut f64, vec1: *const f64, vec2: *const f64) {
-    // WARNING: signature changed — verify body
+    // NOTE: signature changed from previous IR version
     // Previous params: (res : * mut f64, vec1 : * const f64, vec2 : * const f64)
     // Previous return: ()
-    todo ! ()
+    todo!("re-translate: params renamed")
 }
 
 /// C: mji_addTo3 (engine/engine_inline.h:91)
@@ -82,10 +82,10 @@ pub fn mji_sub3(res: *mut f64, vec1: *const f64, vec2: *const f64) {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mji_add_to3(res: *mut f64, vec: *const f64) {
-    // WARNING: signature changed — verify body
+    // NOTE: signature changed from previous IR version
     // Previous params: (res : * mut f64, vec : * const f64)
     // Previous return: ()
-    todo ! ()
+    todo!("re-translate: params renamed")
 }
 
 /// C: mji_subFrom3 (engine/engine_inline.h:100)
@@ -96,10 +96,10 @@ pub fn mji_add_to3(res: *mut f64, vec: *const f64) {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mji_sub_from3(res: *mut f64, vec: *const f64) {
-    // WARNING: signature changed — verify body
+    // NOTE: signature changed from previous IR version
     // Previous params: (res : * mut f64, vec : * const f64)
     // Previous return: ()
-    todo ! ()
+    todo!("re-translate: params renamed")
 }
 
 /// C: mji_addToScl3 (engine/engine_inline.h:109)
@@ -110,10 +110,10 @@ pub fn mji_sub_from3(res: *mut f64, vec: *const f64) {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mji_add_to_scl3(res: *mut f64, vec: *const f64, scl: f64) {
-    // WARNING: signature changed — verify body
+    // NOTE: signature changed from previous IR version
     // Previous params: (res : * mut f64, vec : * const f64, scl : f64)
     // Previous return: ()
-    todo ! ()
+    todo!("re-translate: params renamed")
 }
 
 /// C: mji_addScl3 (engine/engine_inline.h:118)
@@ -124,10 +124,10 @@ pub fn mji_add_to_scl3(res: *mut f64, vec: *const f64, scl: f64) {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mji_add_scl3(res: *mut f64, vec1: *const f64, vec2: *const f64, scl: f64) {
-    // WARNING: signature changed — verify body
+    // NOTE: signature changed from previous IR version
     // Previous params: (res : * mut f64, vec1 : * const f64, vec2 : * const f64, scl : f64)
     // Previous return: ()
-    todo ! ()
+    todo!("re-translate: params renamed")
 }
 
 /// C: mji__normalize3 (engine/engine_inline.h:128)
@@ -138,10 +138,10 @@ pub fn mji_add_scl3(res: *mut f64, vec1: *const f64, vec2: *const f64, scl: f64)
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mji_normalize3(vec: *mut f64) -> f64 {
-    // WARNING: signature changed — verify body
+    // NOTE: signature changed from previous IR version
     // Previous params: (vec : * mut f64)
     // Previous return: f64
-    todo ! ()
+    todo!("re-translate: params renamed")
 }
 
 /// C: mji_mulMatVec3 (engine/engine_inline.h:148)
@@ -152,10 +152,10 @@ pub fn mji_normalize3(vec: *mut f64) -> f64 {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mji_mul_mat_vec3(res: *mut f64, mat: *const f64, vec: *const f64) {
-    // WARNING: signature changed — verify body
+    // NOTE: signature changed from previous IR version
     // Previous params: (res : * mut f64, mat : * const f64, vec : * const f64)
     // Previous return: ()
-    todo ! ()
+    todo!("re-translate: params renamed")
 }
 
 /// C: mji_mulMatTVec3 (engine/engine_inline.h:158)
@@ -166,10 +166,10 @@ pub fn mji_mul_mat_vec3(res: *mut f64, mat: *const f64, vec: *const f64) {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mji_mul_mat_t_vec3(res: *mut f64, mat: *const f64, vec: *const f64) {
-    // WARNING: signature changed — verify body
+    // NOTE: signature changed from previous IR version
     // Previous params: (res : * mut f64, mat : * const f64, vec : * const f64)
     // Previous return: ()
-    todo ! ()
+    todo!("re-translate: params renamed")
 }
 
 /// C: mji_mulMatMat3 (engine/engine_inline.h:168)
@@ -180,10 +180,10 @@ pub fn mji_mul_mat_t_vec3(res: *mut f64, mat: *const f64, vec: *const f64) {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mji_mul_mat_mat3(res: *mut f64, mat1: *const f64, mat2: *const f64) {
-    // WARNING: signature changed — verify body
+    // NOTE: signature changed from previous IR version
     // Previous params: (res : * mut f64, mat1 : * const f64, mat2 : * const f64)
     // Previous return: ()
-    todo ! ()
+    todo!("re-translate: params renamed")
 }
 
 /// C: mji_mulMatTMat3 (engine/engine_inline.h:184)
@@ -194,10 +194,10 @@ pub fn mji_mul_mat_mat3(res: *mut f64, mat1: *const f64, mat2: *const f64) {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mji_mul_mat_t_mat3(res: *mut f64, mat1: *const f64, mat2: *const f64) {
-    // WARNING: signature changed — verify body
+    // NOTE: signature changed from previous IR version
     // Previous params: (res : * mut f64, mat1 : * const f64, mat2 : * const f64)
     // Previous return: ()
-    todo ! ()
+    todo!("re-translate: params renamed")
 }
 
 /// C: mji_transpose3 (engine/engine_inline.h:200)
@@ -208,10 +208,10 @@ pub fn mji_mul_mat_t_mat3(res: *mut f64, mat1: *const f64, mat2: *const f64) {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mji_transpose3(res: *mut f64, mat: *const f64) {
-    // WARNING: signature changed — verify body
+    // NOTE: signature changed from previous IR version
     // Previous params: (res : * mut f64, mat : * const f64)
     // Previous return: ()
-    todo ! ()
+    todo!("re-translate: params renamed")
 }
 
 /// C: mji_copy4 (engine/engine_inline.h:218)
@@ -222,10 +222,10 @@ pub fn mji_transpose3(res: *mut f64, mat: *const f64) {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mji_copy4(res: *mut f64, data: *const f64) {
-    // WARNING: signature changed — verify body
+    // NOTE: signature changed from previous IR version
     // Previous params: (res : * mut f64, data : * const f64)
     // Previous return: ()
-    todo ! ()
+    todo!("re-translate: params renamed")
 }
 
 /// C: mji__normalize4 (engine/engine_inline.h:229)
@@ -236,10 +236,10 @@ pub fn mji_copy4(res: *mut f64, data: *const f64) {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mji_normalize4(vec: *mut f64) -> f64 {
-    // WARNING: signature changed — verify body
+    // NOTE: signature changed from previous IR version
     // Previous params: (vec : * mut f64)
     // Previous return: f64
-    todo ! ()
+    todo!("re-translate: params renamed")
 }
 
 /// C: mji_rotVecQuat (engine/engine_inline.h:253)
@@ -251,10 +251,10 @@ pub fn mji_normalize4(vec: *mut f64) -> f64 {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mji_rot_vec_quat(res: *mut f64, vec: *const f64, quat: *const f64) {
-    // WARNING: signature changed — verify body
+    // NOTE: signature changed from previous IR version
     // Previous params: (res : * mut f64, vec : * const f64, quat : * const f64)
     // Previous return: ()
-    todo ! ()
+    todo!("re-translate: params renamed")
 }
 
 /// C: mji_negQuat (engine/engine_inline.h:277)
@@ -265,10 +265,10 @@ pub fn mji_rot_vec_quat(res: *mut f64, vec: *const f64, quat: *const f64) {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mji_neg_quat(res: *mut f64, quat: *const f64) {
-    // WARNING: signature changed — verify body
+    // NOTE: signature changed from previous IR version
     // Previous params: (res : * mut f64, quat : * const f64)
     // Previous return: ()
-    todo ! ()
+    todo!("re-translate: params renamed")
 }
 
 /// C: mji_mulQuat (engine/engine_inline.h:287)
@@ -279,10 +279,10 @@ pub fn mji_neg_quat(res: *mut f64, quat: *const f64) {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mji_mul_quat(res: *mut f64, qa: *const f64, qb: *const f64) {
-    // WARNING: signature changed — verify body
+    // NOTE: signature changed from previous IR version
     // Previous params: (res : * mut f64, qa : * const f64, qb : * const f64)
     // Previous return: ()
-    todo ! ()
+    todo!("re-translate: params renamed")
 }
 
 /// C: mji_mulQuatAxis (engine/engine_inline.h:298)
@@ -293,10 +293,10 @@ pub fn mji_mul_quat(res: *mut f64, qa: *const f64, qb: *const f64) {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mji_mul_quat_axis(res: *mut f64, quat: *const f64, axis: *const f64) {
-    // WARNING: signature changed — verify body
+    // NOTE: signature changed from previous IR version
     // Previous params: (res : * mut f64, quat : * const f64, axis : * const f64)
     // Previous return: ()
-    todo ! ()
+    todo!("re-translate: params renamed")
 }
 
 /// C: mji_axisAngle2Quat (engine/engine_inline.h:309)
@@ -307,10 +307,10 @@ pub fn mji_mul_quat_axis(res: *mut f64, quat: *const f64, axis: *const f64) {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mji_axis_angle2quat(res: *mut f64, axis: *const f64, angle: f64) {
-    // WARNING: signature changed — verify body
+    // NOTE: signature changed from previous IR version
     // Previous params: (res : * mut f64, axis : * const f64, angle : f64)
     // Previous return: ()
-    todo ! ()
+    todo!("re-translate: params renamed")
 }
 
 /// C: mji_quat2Vel (engine/engine_inline.h:331)
@@ -322,10 +322,10 @@ pub fn mji_axis_angle2quat(res: *mut f64, axis: *const f64, angle: f64) {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mji_quat2vel(res: *mut f64, quat: *const f64, dt: f64) {
-    // WARNING: signature changed — verify body
+    // NOTE: signature changed from previous IR version
     // Previous params: (res : * mut f64, quat : * const f64, dt : f64)
     // Previous return: ()
-    todo ! ()
+    todo!("re-translate: params renamed")
 }
 
 /// C: mji_subQuat (engine/engine_inline.h:348)
@@ -337,10 +337,10 @@ pub fn mji_quat2vel(res: *mut f64, quat: *const f64, dt: f64) {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mji_sub_quat(res: *mut f64, qa: *const f64, qb: *const f64) {
-    // WARNING: signature changed — verify body
+    // NOTE: signature changed from previous IR version
     // Previous params: (res : * mut f64, qa : * const f64, qb : * const f64)
     // Previous return: ()
-    todo ! ()
+    todo!("re-translate: params renamed")
 }
 
 /// C: mji_mat2Quat (engine/engine_inline.h:361)
@@ -352,10 +352,10 @@ pub fn mji_sub_quat(res: *mut f64, qa: *const f64, qb: *const f64) {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mji_mat2quat(quat: *mut f64, mat: *const f64) {
-    // WARNING: signature changed — verify body
+    // NOTE: signature changed from previous IR version
     // Previous params: (quat : * mut f64, mat : * const f64)
     // Previous return: ()
-    todo ! ()
+    todo!("re-translate: params renamed")
 }
 
 /// C: mji_quatIntegrate (engine/engine_inline.h:401)
@@ -367,10 +367,10 @@ pub fn mji_mat2quat(quat: *mut f64, mat: *const f64) {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mji_quat_integrate(quat: *mut f64, vel: *const f64, scale: f64) {
-    // WARNING: signature changed — verify body
+    // NOTE: signature changed from previous IR version
     // Previous params: (quat : * mut f64, vel : * const f64, scale : f64)
     // Previous return: ()
-    todo ! ()
+    todo!("re-translate: params renamed")
 }
 
 /// C: mji_cross (engine/engine_inline.h:419)
@@ -381,10 +381,10 @@ pub fn mji_quat_integrate(quat: *mut f64, vel: *const f64, scale: f64) {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mji_cross(res: *mut f64, a: *const f64, b: *const f64) {
-    // WARNING: signature changed — verify body
+    // NOTE: signature changed from previous IR version
     // Previous params: (res : * mut f64, a : * const f64, b : * const f64)
     // Previous return: ()
-    todo ! ()
+    todo!("re-translate: params renamed")
 }
 
 /// C: mji_crossMotion (engine/engine_inline.h:429)
@@ -395,10 +395,10 @@ pub fn mji_cross(res: *mut f64, a: *const f64, b: *const f64) {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mji_cross_motion(res: *mut f64, vel: *const f64, v: *const f64) {
-    // WARNING: signature changed — verify body
+    // NOTE: signature changed from previous IR version
     // Previous params: (res : * mut f64, vel : * const f64, v : * const f64)
     // Previous return: ()
-    todo ! ()
+    todo!("re-translate: params renamed")
 }
 
 /// C: mji_crossForce (engine/engine_inline.h:446)
@@ -409,10 +409,10 @@ pub fn mji_cross_motion(res: *mut f64, vel: *const f64, v: *const f64) {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mji_cross_force(res: *mut f64, vel: *const f64, f: *const f64) {
-    // WARNING: signature changed — verify body
+    // NOTE: signature changed from previous IR version
     // Previous params: (res : * mut f64, vel : * const f64, f : * const f64)
     // Previous return: ()
-    todo ! ()
+    todo!("re-translate: params renamed")
 }
 
 /// C: mji_dot6 (engine/engine_inline.h:463)
@@ -423,10 +423,10 @@ pub fn mji_cross_force(res: *mut f64, vel: *const f64, f: *const f64) {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mji_dot6(vec1: *const f64, vec2: *const f64) -> f64 {
-    // WARNING: signature changed — verify body
+    // NOTE: signature changed from previous IR version
     // Previous params: (vec1 : * const f64, vec2 : * const f64)
     // Previous return: f64
-    todo ! ()
+    todo!("re-translate: params renamed")
 }
 
 /// C: mji_copy6 (engine/engine_inline.h:473)
@@ -437,10 +437,10 @@ pub fn mji_dot6(vec1: *const f64, vec2: *const f64) -> f64 {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mji_copy6(res: *mut f64, vec: *const f64) {
-    // WARNING: signature changed — verify body
+    // NOTE: signature changed from previous IR version
     // Previous params: (res : * mut f64, vec : * const f64)
     // Previous return: ()
-    todo ! ()
+    todo!("re-translate: params renamed")
 }
 
 /// C: mji_copy9 (engine/engine_inline.h:485)
@@ -451,9 +451,9 @@ pub fn mji_copy6(res: *mut f64, vec: *const f64) {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mji_copy9(res: *mut f64, data: *const f64) {
-    // WARNING: signature changed — verify body
+    // NOTE: signature changed from previous IR version
     // Previous params: (res : * mut f64, data : * const f64)
     // Previous return: ()
-    todo ! ()
+    todo!("re-translate: params renamed")
 }
 

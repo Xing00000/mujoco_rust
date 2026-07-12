@@ -8,48 +8,48 @@ use crate::types::*;
 /// Calls: GetGlobalModel, mj_deleteSpec
 #[allow(unused_variables, non_snake_case)]
 pub fn global_model_set(self_ptr: *mut GlobalModel, spec: *mut mjSpec) {
-    // WARNING: signature changed — verify body
+    // NOTE: signature changed from previous IR version
     // Previous params: (self_ptr : * mut GlobalModel, spec : * mut mjSpec)
     // Previous return: ()
-    todo ! ()
+    todo!("re-translate: params renamed")
 }
 
 /// C: GlobalModel::ToXML (xml/xml_global.cc:35)
 /// Calls: mjCopyError
 #[allow(unused_variables, non_snake_case)]
 pub fn global_model_to_xml(self_ptr: *mut GlobalModel, m: *const mjModel, error: *mut i8, error_sz: i32) -> std__string {
-    // WARNING: signature changed — verify body
+    // NOTE: signature changed from previous IR version
     // Previous params: (self_ptr : * mut GlobalModel, m : * const mjModel, error : * mut i8, error_sz : i32)
     // Previous return: std__string
-    todo ! ()
+    todo!("re-translate: params renamed")
 }
 
 /// C: GetGlobalModel (xml/xml_global.cc:53)
 #[allow(unused_variables, non_snake_case)]
 pub fn get_global_model() -> *mut GlobalModel {
-    // WARNING: signature changed — verify body
+    // NOTE: signature changed from previous IR version
     // Previous params: ()
     // Previous return: * mut GlobalModel
-    todo ! ()
+    todo!("re-translate: params renamed")
 }
 
 /// C: SetGlobalXmlSpec (xml/xml_global.h:23)
 /// Calls: GetGlobalModel, GlobalModel::Set
 #[allow(unused_variables, non_snake_case)]
 pub fn set_global_xml_spec(spec: *mut mjSpec) {
-    // WARNING: signature changed — verify body
+    // NOTE: signature changed from previous IR version
     // Previous params: (spec : * mut mjSpec)
     // Previous return: ()
-    todo ! ()
+    todo!("re-translate: params renamed")
 }
 
 /// C: GetGlobalXmlSpec (xml/xml_global.h:25)
 /// Calls: GetGlobalModel
 #[allow(unused_variables, non_snake_case)]
 pub fn get_global_xml_spec(m: *const mjModel, error: *mut i8, error_sz: i32) -> std__string {
-    // WARNING: signature changed — verify body
+    // NOTE: signature changed from previous IR version
     // Previous params: (m : * const mjModel, error : * mut i8, error_sz : i32)
     // Previous return: std__string
-    todo ! ()
+    todo!("re-translate: params renamed")
 }
 

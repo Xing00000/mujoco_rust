@@ -7,10 +7,10 @@ use crate::types::*;
 /// C: fmtVal (user/user_resolver.cc:34)
 #[allow(unused_variables, non_snake_case)]
 pub fn fmt_val(val: T) -> std__string {
-    // WARNING: signature changed — verify body
+    // NOTE: signature changed from previous IR version
     // Previous params: (val : T)
     // Previous return: std__string
-    todo ! ()
+    todo!("re-translate: params renamed")
 }
 
 /// C: fmtArr (user/user_resolver.cc:45)
@@ -21,47 +21,47 @@ pub fn fmt_val(val: T) -> std__string {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn fmt_arr(val: *const f64, n: i32) -> std__string {
-    // WARNING: signature changed — verify body
+    // NOTE: signature changed from previous IR version
     // Previous params: (val : * const f64, n : i32)
     // Previous return: std__string
-    todo ! ()
+    todo!("re-translate: params renamed")
 }
 
 /// C: Resolver::Apply (user/user_resolver.cc:291)
 #[allow(unused_variables, non_snake_case)]
 pub fn resolver_apply(self_ptr: *mut Resolver) -> bool {
-    // WARNING: signature changed — verify body
+    // NOTE: signature changed from previous IR version
     // Previous params: (self_ptr : * mut Resolver)
     // Previous return: bool
-    todo ! ()
+    todo!("re-translate: params renamed")
 }
 
 /// C: VisitConflicts (user/user_resolver.cc:299)
 /// Calls: mj_defaultOption, mj_defaultVisual, mjs_defaultSpec
 #[allow(unused_variables, non_snake_case)]
 pub fn visit_conflicts(parent: *mut mjSpec, child: *const mjSpec, r: *mut Resolver) {
-    // WARNING: signature changed — verify body
+    // NOTE: signature changed from previous IR version
     // Previous params: (parent : * mut mjSpec, child : * const mjSpec, r : * mut Resolver)
     // Previous return: ()
-    todo ! ()
+    todo!("re-translate: params renamed")
 }
 
 /// C: ConflictSubject (user/user_resolver.cc:395)
 #[allow(unused_variables, non_snake_case)]
 pub fn conflict_subject(parent: *const mjSpec, child: *const mjSpec) -> std__string {
-    // WARNING: signature changed — verify body
+    // NOTE: signature changed from previous IR version
     // Previous params: (parent : * const mjSpec, child : * const mjSpec)
     // Previous return: std__string
-    todo ! ()
+    todo!("re-translate: params renamed")
 }
 
 /// C: ResolveConflicts (user/user_resolver.h:28)
 /// Calls: Resolver::Apply, VisitConflicts
 #[allow(unused_variables, non_snake_case)]
 pub fn resolve_conflicts(parent: *mut mjSpec, child: *const mjSpec, mode: u32, error_msg: *mut string, warning_subject: *mut string, warning_body: *mut string) -> bool {
-    // WARNING: signature changed — verify body
+    // NOTE: signature changed from previous IR version
     // Previous params: (parent : * mut mjSpec, child : * const mjSpec, mode : u32, error_msg : * mut string, warning_subject : * mut string, warning_body : * mut string)
     // Previous return: bool
-    todo ! ()
+    todo!("re-translate: params renamed")
 }
 

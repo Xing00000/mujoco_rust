@@ -8,10 +8,10 @@ use crate::types::*;
 /// Calls: mj_freeStack, mj_markStack, mj_stackAllocInfo, mju_max, mju_min, mju_zeroInt
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_update_dynamic_bvh(m: *const mjModel, d: *mut mjData, bvhadr: i32, bvhnum: i32) {
-    // WARNING: signature changed — verify body
+    // NOTE: signature changed from previous IR version
     // Previous params: (m : * const mjModel, d : * mut mjData, bvhadr : i32, bvhnum : i32)
     // Previous return: ()
-    todo ! ()
+    todo!("re-translate: params renamed")
 }
 
 /// C: mju_mulMatMat322 (engine/engine_core_smooth.c:537)
@@ -22,80 +22,80 @@ pub fn mj_update_dynamic_bvh(m: *const mjModel, d: *mut mjData, bvhadr: i32, bvh
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mju_mul_mat_mat322(C: *mut f64, A: *const f64, B: *const f64) {
-    // WARNING: signature changed — verify body
+    // NOTE: signature changed from previous IR version
     // Previous params: (C : * mut f64, A : * const f64, B : * const f64)
     // Previous return: ()
-    todo ! ()
+    todo!("re-translate: params renamed")
 }
 
 /// C: mj_kinematics1 (engine/engine_core_smooth.h:29)
 /// Calls: mji_addTo3, mji_addToScl3, mji_axisAngle2Quat, mji_copy3, mji_copy4, mji_mulMatVec3, mji_mulQuat, mji_rotVecQuat, mji_sub3, mju_message, mju_mulQuat, mju_normalize4, mju_quat2Mat, mju_unit4, mju_zero, mju_zero3
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_kinematics1(m: *const mjModel, d: *mut mjData) {
-    // WARNING: signature changed — verify body
+    // NOTE: signature changed from previous IR version
     // Previous params: (m : * const mjModel, d : * mut mjData)
     // Previous return: ()
-    todo ! ()
+    todo!("re-translate: params renamed")
 }
 
 /// C: mj_kinematics2 (engine/engine_core_smooth.h:32)
 /// Calls: mj_local2Global
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_kinematics2(m: *const mjModel, d: *mut mjData) {
-    // WARNING: signature changed — verify body
+    // NOTE: signature changed from previous IR version
     // Previous params: (m : * const mjModel, d : * mut mjData)
     // Previous return: ()
-    todo ! ()
+    todo!("re-translate: params renamed")
 }
 
 /// C: mj_kinematics (engine/engine_core_smooth.h:35)
 /// Calls: mj_kinematics1, mj_kinematics2, mj_updateSleep, mj_wake
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_kinematics(m: *const mjModel, d: *mut mjData) {
-    // WARNING: signature changed — verify body
+    // NOTE: signature changed from previous IR version
     // Previous params: (m : * const mjModel, d : * mut mjData)
     // Previous return: ()
-    todo ! ()
+    todo!("re-translate: params renamed")
 }
 
 /// C: mj_comPos (engine/engine_core_smooth.h:38)
 /// Calls: mji_addTo3, mji_copy3, mji_scl3, mji_sub3, mju_dofCom, mju_inertCom, mju_scl3, mju_zero
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_com_pos(m: *const mjModel, d: *mut mjData) {
-    // WARNING: signature changed — verify body
+    // NOTE: signature changed from previous IR version
     // Previous params: (m : * const mjModel, d : * mut mjData)
     // Previous return: ()
-    todo ! ()
+    todo!("re-translate: params renamed")
 }
 
 /// C: mj_camlight (engine/engine_core_smooth.h:41)
 /// Calls: mj_local2Global, mji_add3, mji_copy3, mji_copy9, mji_cross, mji_rotVecQuat, mji_sub3, mju_normalize3, mju_transpose
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_camlight(m: *const mjModel, d: *mut mjData) {
-    // WARNING: signature changed — verify body
+    // NOTE: signature changed from previous IR version
     // Previous params: (m : * const mjModel, d : * mut mjData)
     // Previous return: ()
-    todo ! ()
+    todo!("re-translate: params renamed")
 }
 
 /// C: mj_flex (engine/engine_core_smooth.h:44)
 /// Calls: mj_bodyChain, mj_freeStack, mj_jacDifPair, mj_jacSparse, mj_markStack, mj_stackAllocInfo, mj_updateDynamicBVH, mji_addTo3, mji_copy3, mji_copy6, mji_mulMatVec3, mji_sub3, mju_cellLookup, mju_interpolate3D, mju_max, mju_message, mju_min, mju_mulMatMat322, mju_mulMatTVec, mju_mulMatVec, mju_normalize3, mju_scl3, mju_shellTrackInterior, mju_sub3, mju_zero, mju_zero3
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_flex(m: *const mjModel, d: *mut mjData) {
-    // WARNING: signature changed — verify body
+    // NOTE: signature changed from previous IR version
     // Previous params: (m : * const mjModel, d : * mut mjData)
     // Previous return: ()
-    todo ! ()
+    todo!("re-translate: params renamed")
 }
 
 /// C: mj_tendon (engine/engine_core_smooth.h:47)
 /// Calls: mj_freeStack, mj_jacDifPair, mj_markStack, mj_sleepState, mj_stackAllocInfo, mji_copy3, mji_copy9, mji_sub3, mju_combineSparseInc, mju_dist3, mju_message, mju_mulMatTVec, mju_normalize3, mju_round, mju_wrap, mju_zero, mju_zero3
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_tendon(m: *const mjModel, d: *mut mjData) {
-    // WARNING: signature changed — verify body
+    // NOTE: signature changed from previous IR version
     // Previous params: (m : * const mjModel, d : * mut mjData)
     // Previous return: ()
-    todo ! ()
+    todo!("re-translate: params renamed")
 }
 
 /// C: mj_tendonDot (engine/engine_core_smooth.h:50)
@@ -107,50 +107,50 @@ pub fn mj_tendon(m: *const mjModel, d: *mut mjData) {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_tendon_dot(m: *const mjModel, d: *mut mjData, id: i32, vec: *const f64) -> f64 {
-    // WARNING: signature changed — verify body
+    // NOTE: signature changed from previous IR version
     // Previous params: (m : * const mjModel, d : * mut mjData, id : i32, vec : * const f64)
     // Previous return: f64
-    todo ! ()
+    todo!("re-translate: params renamed")
 }
 
 /// C: mj_transmission (engine/engine_core_smooth.h:53)
 /// Calls: mj_freeStack, mj_isSparse, mj_jacDifPair, mj_jacPointAxis, mj_jacSite, mj_markStack, mj_mulJacTVec, mj_sleepState, mj_stackAllocInfo, mji_addTo3, mji_copy3, mji_copy4, mji_mulMatVec3, mji_mulQuat, mji_quat2Vel, mji_rotVecQuat, mji_subQuat, mju_addTo, mju_copyInt, mju_dot3, mju_isZero, mju_message, mju_mulMatMat, mju_mulMatTVec, mju_mulMatTVec3, mju_negQuat, mju_normalize4, mju_scl, mju_scl3, mju_sub3, mju_subFrom, mju_zero
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_transmission(m: *const mjModel, d: *mut mjData) {
-    // WARNING: signature changed — verify body
+    // NOTE: signature changed from previous IR version
     // Previous params: (m : * const mjModel, d : * mut mjData)
     // Previous return: ()
-    todo ! ()
+    todo!("re-translate: params renamed")
 }
 
 /// C: mj_crb (engine/engine_core_smooth.h:59)
 /// Calls: mj_actuatorArmature, mji_dot6, mju_addTo, mju_copy, mju_copyRows, mju_mulInertVec, mju_zero, mju_zeroSparse
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_crb(m: *const mjModel, d: *mut mjData) {
-    // WARNING: signature changed — verify body
+    // NOTE: signature changed from previous IR version
     // Previous params: (m : * const mjModel, d : * mut mjData)
     // Previous return: ()
-    todo ! ()
+    todo!("re-translate: params renamed")
 }
 
 /// C: mj_tendonArmature (engine/engine_core_smooth.h:62)
 /// Calls: mj_actuatorArmature, mj_sleepState, mju_addToSclSparseInc
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_tendon_armature(m: *const mjModel, d: *mut mjData) {
-    // WARNING: signature changed — verify body
+    // NOTE: signature changed from previous IR version
     // Previous params: (m : * const mjModel, d : * mut mjData)
     // Previous return: ()
-    todo ! ()
+    todo!("re-translate: params renamed")
 }
 
 /// C: mj_makeM (engine/engine_core_smooth.h:65)
 /// Calls: mj_crb, mj_tendonArmature, mju_scatter
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_make_m(m: *const mjModel, d: *mut mjData) {
-    // WARNING: signature changed — verify body
+    // NOTE: signature changed from previous IR version
     // Previous params: (m : * const mjModel, d : * mut mjData)
     // Previous return: ()
-    todo ! ()
+    todo!("re-translate: params renamed")
 }
 
 /// C: mj_factorI_legacy (engine/engine_core_smooth.h:68)
@@ -162,10 +162,10 @@ pub fn mj_make_m(m: *const mjModel, d: *mut mjData) {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_factor_i_legacy(m: *const mjModel, d: *mut mjData, M: *const f64, qLD: *mut f64, qLDiagInv: *mut f64) {
-    // WARNING: signature changed — verify body
+    // NOTE: signature changed from previous IR version
     // Previous params: (m : * const mjModel, d : * mut mjData, M : * const f64, qLD : * mut f64, qLDiagInv : * mut f64)
     // Previous return: ()
-    todo ! ()
+    todo!("re-translate: params renamed")
 }
 
 /// C: mj_factorI (engine/engine_core_smooth.h:72)
@@ -177,49 +177,20 @@ pub fn mj_factor_i_legacy(m: *const mjModel, d: *mut mjData, M: *const f64, qLD:
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_factor_i(mat: *mut f64, diaginv: *mut f64, nv: i32, rownnz: *const i32, rowadr: *const i32, colind: *const i32, index: *const i32) {
-    use crate::engine::engine_util_blas::{mju_add_to_scl, mju_scl};
-
-    // SAFETY: caller guarantees all pointers are valid
-    unsafe {
-        // backward loop over rows
-        for j in (0..nv as usize).rev() {
-            let k = if !index.is_null() { *index.add(j) as usize } else { j };
-
-            // get row k's address, diagonal index, inverse diagonal value
-            let start = *rowadr.add(k) as usize;
-            let diag = *rownnz.add(k) as usize - 1;
-            let end = start + diag;
-            let invD = 1.0 / *mat.add(end);
-            if !diaginv.is_null() {
-                *diaginv.add(k) = invD;
-            }
-
-            // update triangle above row k
-            for adr in (start..end).rev() {
-                // update row i < k: L(i, 0..i) -= L(i, 0..i) * L(k, i) / L(k, k)
-                let i = *colind.add(adr) as usize;
-                mju_add_to_scl(
-                    mat.add(*rowadr.add(i) as usize),
-                    mat.add(start),
-                    -*mat.add(adr) * invD,
-                    *rownnz.add(i),
-                );
-            }
-
-            // update row k: L(k, :) /= L(k, k)
-            mju_scl(mat.add(start), mat.add(start), invD, diag as i32);
-        }
-    }
+    // NOTE: signature changed from previous IR version
+    // Previous params: (mat : * mut f64, diaginv : * mut f64, nv : i32, rownnz : * const i32, rowadr : * const i32, colind : * const i32, index : * const i32)
+    // Previous return: ()
+    todo!("re-translate: params renamed")
 }
 
 /// C: mj_factorM (engine/engine_core_smooth.h:76)
 /// Calls: mj_factorI, mju_copy, mju_copySparse
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_factor_m(m: *const mjModel, d: *mut mjData) {
-    // WARNING: signature changed — verify body
+    // NOTE: signature changed from previous IR version
     // Previous params: (m : * const mjModel, d : * mut mjData)
     // Previous return: ()
-    todo ! ()
+    todo!("re-translate: params renamed")
 }
 
 /// C: mj_solveLD_legacy (engine/engine_core_smooth.h:79)
@@ -230,103 +201,10 @@ pub fn mj_factor_m(m: *const mjModel, d: *mut mjData) {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_solve_ld_legacy(m: *const mjModel, x: *mut f64, n: i32, qLD: *const f64, qLDiagInv: *const f64) {
-    // SAFETY: caller guarantees valid model pointer and arrays
-    unsafe {
-        let dof_Madr = (*m).dof_Madr;
-        let dof_parentid = (*m).dof_parentid;
-        let nv = (*m).nv as i32;
-
-        if n == 1 {
-            // x <- inv(L') * x; skip simple, exploit sparsity
-            let mut i: i32 = nv - 1;
-            while i >= 0 {
-                if *(*m).dof_simplenum.add(i as usize) == 0 && *x.add(i as usize) != 0.0 {
-                    let mut Madr_ij = *dof_Madr.add(i as usize) + 1;
-                    let mut j = *dof_parentid.add(i as usize);
-                    while j >= 0 {
-                        *x.add(j as usize) -= *qLD.add(Madr_ij as usize) * *x.add(i as usize);
-                        Madr_ij += 1;
-                        j = *dof_parentid.add(j as usize);
-                    }
-                }
-                i -= 1;
-            }
-
-            // x <- inv(D) * x
-            i = 0;
-            while i < nv {
-                *x.add(i as usize) *= *qLDiagInv.add(i as usize);
-                i += 1;
-            }
-
-            // x <- inv(L) * x; skip simple
-            i = 0;
-            while i < nv {
-                if *(*m).dof_simplenum.add(i as usize) == 0 {
-                    let mut Madr_ij = *dof_Madr.add(i as usize) + 1;
-                    let mut j = *dof_parentid.add(i as usize);
-                    while j >= 0 {
-                        *x.add(i as usize) -= *qLD.add(Madr_ij as usize) * *x.add(j as usize);
-                        Madr_ij += 1;
-                        j = *dof_parentid.add(j as usize);
-                    }
-                }
-                i += 1;
-            }
-        } else {
-            // x <- inv(L') * x; skip simple
-            let mut i: i32 = nv - 1;
-            while i >= 0 {
-                if *(*m).dof_simplenum.add(i as usize) == 0 {
-                    let mut Madr_ij = *dof_Madr.add(i as usize) + 1;
-                    let mut j = *dof_parentid.add(i as usize);
-                    while j >= 0 {
-                        let mut offset: i32 = 0;
-                        while offset < n * nv {
-                            let tmp = *x.add((i + offset) as usize);
-                            if tmp != 0.0 {
-                                *x.add((j + offset) as usize) -= *qLD.add(Madr_ij as usize) * tmp;
-                            }
-                            offset += nv;
-                        }
-                        Madr_ij += 1;
-                        j = *dof_parentid.add(j as usize);
-                    }
-                }
-                i -= 1;
-            }
-
-            // x <- inv(D) * x
-            i = 0;
-            while i < nv {
-                let mut offset: i32 = 0;
-                while offset < n * nv {
-                    *x.add((i + offset) as usize) *= *qLDiagInv.add(i as usize);
-                    offset += nv;
-                }
-                i += 1;
-            }
-
-            // x <- inv(L) * x; skip simple
-            i = 0;
-            while i < nv {
-                if *(*m).dof_simplenum.add(i as usize) == 0 {
-                    let mut Madr_ij = *dof_Madr.add(i as usize) + 1;
-                    let mut j = *dof_parentid.add(i as usize);
-                    while j >= 0 {
-                        let mut offset: i32 = 0;
-                        while offset < n * nv {
-                            *x.add((i + offset) as usize) -= *qLD.add(Madr_ij as usize) * *x.add((j + offset) as usize);
-                            offset += nv;
-                        }
-                        Madr_ij += 1;
-                        j = *dof_parentid.add(j as usize);
-                    }
-                }
-                i += 1;
-            }
-        }
-    }
+    // NOTE: signature changed from previous IR version
+    // Previous params: (m : * const mjModel, x : * mut f64, n : i32, qLD : * const f64, qLDiagInv : * const f64)
+    // Previous return: ()
+    todo!("re-translate: params renamed")
 }
 
 /// C: mj_solveLD (engine/engine_core_smooth.h:84)
@@ -338,96 +216,10 @@ pub fn mj_solve_ld_legacy(m: *const mjModel, x: *mut f64, n: i32, qLD: *const f6
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_solve_ld(x: *mut f64, qLD: *const f64, qLDiagInv: *const f64, nv: i32, n: i32, rownnz: *const i32, rowadr: *const i32, colind: *const i32, index: *const i32) {
-    use crate::engine::engine_util_sparse::mju_dot_sparse;
-    // SAFETY: caller guarantees all pointers valid for nv elements
-    unsafe {
-        // x <- L^-T x
-        let mut k: i32 = nv - 1;
-        while k >= 0 {
-            let i = if !index.is_null() { *index.add(k as usize) } else { k };
-
-            // skip diagonal rows
-            if *rownnz.add(i as usize) == 1 {
-                k -= 1;
-                continue;
-            }
-
-            if n == 1 {
-                let x_i = *x.add(i as usize);
-                if x_i != 0.0 {
-                    let start = *rowadr.add(i as usize);
-                    let end = start + *rownnz.add(i as usize) - 1;
-                    let mut adr = start;
-                    while adr < end {
-                        *x.add(*colind.add(adr as usize) as usize) -= *qLD.add(adr as usize) * x_i;
-                        adr += 1;
-                    }
-                }
-            } else {
-                let start = *rowadr.add(i as usize);
-                let end = start + *rownnz.add(i as usize) - 1;
-                let mut offset: i32 = 0;
-                while offset < n * nv {
-                    let x_i = *x.add((i + offset) as usize);
-                    if x_i != 0.0 {
-                        let mut adr = start;
-                        while adr < end {
-                            *x.add((offset + *colind.add(adr as usize)) as usize) -= *qLD.add(adr as usize) * x_i;
-                            adr += 1;
-                        }
-                    }
-                    offset += nv;
-                }
-            }
-            k -= 1;
-        }
-
-        // x <- D^-1 x
-        k = 0;
-        while k < nv {
-            let i = if !index.is_null() { *index.add(k as usize) } else { k };
-            let invD_i = *qLDiagInv.add(i as usize);
-
-            if n == 1 {
-                *x.add(i as usize) *= invD_i;
-            } else {
-                let mut offset: i32 = 0;
-                while offset < n * nv {
-                    *x.add((i + offset) as usize) *= invD_i;
-                    offset += nv;
-                }
-            }
-            k += 1;
-        }
-
-        // x <- L^-1 x
-        k = 0;
-        while k < nv {
-            let i = if !index.is_null() { *index.add(k as usize) } else { k };
-
-            // skip diagonal rows
-            if *rownnz.add(i as usize) == 1 {
-                k += 1;
-                continue;
-            }
-
-            let d = *rownnz.add(i as usize) - 1;
-            if d > 0 {
-                let adr = *rowadr.add(i as usize);
-
-                if n == 1 {
-                    *x.add(i as usize) -= mju_dot_sparse(qLD.add(adr as usize), x, d, colind.add(adr as usize));
-                } else {
-                    let mut offset: i32 = 0;
-                    while offset < n * nv {
-                        *x.add((i + offset) as usize) -= mju_dot_sparse(qLD.add(adr as usize), x.add(offset as usize), d, colind.add(adr as usize));
-                        offset += nv;
-                    }
-                }
-            }
-            k += 1;
-        }
-    }
+    // NOTE: signature changed from previous IR version
+    // Previous params: (x : * mut f64, qLD : * const f64, qLDiagInv : * const f64, nv : i32, n : i32, rownnz : * const i32, rowadr : * const i32, colind : * const i32, index : * const i32)
+    // Previous return: ()
+    todo!("re-translate: params renamed")
 }
 
 /// C: mj_solveM (engine/engine_core_smooth.h:88)
@@ -439,16 +231,10 @@ pub fn mj_solve_ld(x: *mut f64, qLD: *const f64, qLDiagInv: *const f64, nv: i32,
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_solve_m(m: *const mjModel, d: *mut mjData, x: *mut f64, y: *const f64, n: i32) {
-    use crate::engine::engine_util_blas::mju_copy;
-    // SAFETY: caller guarantees valid model/data pointers
-    unsafe {
-        let nv = (*m).nv as i32;
-        if x != y as *mut f64 {
-            mju_copy(x, y, n * nv);
-        }
-        mj_solve_ld(x, (*d).qLD, (*d).qLDiagInv, nv, n,
-                    (*m).M_rownnz, (*m).M_rowadr, (*m).M_colind, std::ptr::null());
-    }
+    // NOTE: signature changed from previous IR version
+    // Previous params: (m : * const mjModel, d : * mut mjData, x : * mut f64, y : * const f64, n : i32)
+    // Previous return: ()
+    todo!("re-translate: params renamed")
 }
 
 /// C: mj_solveM2 (engine/engine_core_smooth.h:91)
@@ -460,79 +246,30 @@ pub fn mj_solve_m(m: *const mjModel, d: *mut mjData, x: *mut f64, y: *const f64,
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_solve_m2(m: *const mjModel, d: *mut mjData, x: *mut f64, y: *const f64, sqrtInvD: *const f64, n: i32) {
-    use crate::engine::engine_util_blas::mju_copy;
-    // SAFETY: caller guarantees all model/data pointers are valid
-    unsafe {
-        let nv = (*m).nv as i32;
-        let rownnz = (*m).M_rownnz;
-        let rowadr = (*m).M_rowadr;
-        let colind = (*m).M_colind;
-        let diagnum = (*m).dof_simplenum;
-        let qLD = (*d).qLD;
-
-        // x = y
-        mju_copy(x, y, n * nv);
-
-        // x <- L^-T x
-        let mut i: i32 = nv - 1;
-        while i > 0 {
-            // skip diagonal rows
-            if *diagnum.add(i as usize) != 0 {
-                i -= 1;
-                continue;
-            }
-
-            let start = *rowadr.add(i as usize);
-            let end = start + *rownnz.add(i as usize) - 1;
-
-            // process all vectors
-            let mut offset: i32 = 0;
-            while offset < n * nv {
-                let x_i = *x.add((i + offset) as usize);
-                if x_i != 0.0 {
-                    let mut adr = start;
-                    while adr < end {
-                        *x.add((offset + *colind.add(adr as usize)) as usize) -= *qLD.add(adr as usize) * x_i;
-                        adr += 1;
-                    }
-                }
-                offset += nv;
-            }
-            i -= 1;
-        }
-
-        // x <- D^-1/2 x
-        i = 0;
-        while i < nv {
-            let invD_i = *sqrtInvD.add(i as usize);
-            let mut offset: i32 = 0;
-            while offset < n * nv {
-                *x.add((i + offset) as usize) *= invD_i;
-                offset += nv;
-            }
-            i += 1;
-        }
-    }
+    // NOTE: signature changed from previous IR version
+    // Previous params: (m : * const mjModel, d : * mut mjData, x : * mut f64, y : * const f64, sqrtInvD : * const f64, n : i32)
+    // Previous return: ()
+    todo!("re-translate: params renamed")
 }
 
 /// C: mj_comVel (engine/engine_core_smooth.h:98)
 /// Calls: mji_copy6, mji_crossMotion, mju_addTo, mju_copy, mju_mulDofVec, mju_zero
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_com_vel(m: *const mjModel, d: *mut mjData) {
-    // WARNING: signature changed — verify body
+    // NOTE: signature changed from previous IR version
     // Previous params: (m : * const mjModel, d : * mut mjData)
     // Previous return: ()
-    todo ! ()
+    todo!("re-translate: params renamed")
 }
 
 /// C: mj_subtreeVel (engine/engine_core_smooth.h:101)
 /// Calls: mj_freeStack, mj_markStack, mj_objectVelocity, mj_stackAllocInfo, mji_addTo3, mji_cross, mji_mulMatVec3, mju_max, mju_mulMatTVec3, mju_scl3, mju_sub3
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_subtree_vel(m: *const mjModel, d: *mut mjData) {
-    // WARNING: signature changed — verify body
+    // NOTE: signature changed from previous IR version
     // Previous params: (m : * const mjModel, d : * mut mjData)
     // Previous return: ()
-    todo ! ()
+    todo!("re-translate: params renamed")
 }
 
 /// C: mj_rne (engine/engine_core_smooth.h:107)
@@ -544,20 +281,20 @@ pub fn mj_subtree_vel(m: *const mjModel, d: *mut mjData) {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_rne(m: *const mjModel, d: *mut mjData, flg_acc: i32, result: *mut f64) {
-    // WARNING: signature changed — verify body
+    // NOTE: signature changed from previous IR version
     // Previous params: (m : * const mjModel, d : * mut mjData, flg_acc : i32, result : * mut f64)
     // Previous return: ()
-    todo ! ()
+    todo!("re-translate: params renamed")
 }
 
 /// C: mj_rnePostConstraint (engine/engine_core_smooth.h:110)
 /// Calls: mj_contactForce, mj_local2Global, mji_copy3, mji_crossForce, mju_add, mju_addTo, mju_isZero, mju_message, mju_mulDofVec, mju_mulInertVec, mju_mulMatTVec3, mju_scl3, mju_sub, mju_subFrom, mju_transformSpatial, mju_zero, mju_zero3
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_rne_post_constraint(m: *const mjModel, d: *mut mjData) {
-    // WARNING: signature changed — verify body
+    // NOTE: signature changed from previous IR version
     // Previous params: (m : * const mjModel, d : * mut mjData)
     // Previous return: ()
-    todo ! ()
+    todo!("re-translate: params renamed")
 }
 
 /// C: mj_tendonBias (engine/engine_core_smooth.h:116)
@@ -569,9 +306,9 @@ pub fn mj_rne_post_constraint(m: *const mjModel, d: *mut mjData) {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_tendon_bias(m: *const mjModel, d: *mut mjData, qfrc: *mut f64) {
-    // WARNING: signature changed — verify body
+    // NOTE: signature changed from previous IR version
     // Previous params: (m : * const mjModel, d : * mut mjData, qfrc : * mut f64)
     // Previous return: ()
-    todo ! ()
+    todo!("re-translate: params renamed")
 }
 
