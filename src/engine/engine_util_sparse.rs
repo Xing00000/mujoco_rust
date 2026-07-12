@@ -223,10 +223,28 @@ pub fn mju_combine_sparse_inc(dst: *mut f64, src: *const f64, n: i32, a: f64, b:
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mju_add_to_scl_sparse_inc(dst: *mut f64, src: *const f64, nnzdst: i32, inddst: *const i32, nnzsrc: i32, indsrc: *const i32, scl: f64) {
-    // NOTE: signature changed from previous IR version
-    // Previous params: (dst : * mut f64, src : * const f64, nnzdst : i32, inddst : * const i32, nnzsrc : i32, indsrc : * const i32, scl : f64)
-    // Previous return: ()
-    todo!("re-translate: params renamed")
+    if nnzdst == 0 || nnzsrc == 0 {
+        return;
+    }
+    // SAFETY: caller guarantees dst, src, inddst, indsrc point to valid arrays of respective lengths
+    unsafe {
+        let mut adrs: i32 = 0;
+        let mut adrd: i32 = 0;
+        while adrs < nnzsrc && adrd < nnzdst {
+            let inds = *indsrc.add(adrs as usize);
+            let indd = *inddst.add(adrd as usize);
+
+            if inds == indd {
+                *dst.add(adrd as usize) += scl * *src.add(adrs as usize);
+                adrs += 1;
+                adrd += 1;
+            } else if inds < indd {
+                adrs += 1;
+            } else {
+                adrd += 1;
+            }
+        }
+    }
 }
 
 /// C: mju_addToSparseMat (engine/engine_util_sparse.h:101)

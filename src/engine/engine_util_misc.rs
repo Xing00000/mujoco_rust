@@ -648,7 +648,7 @@ pub fn mju_print_mat_sparse(mat: *const f64, nr: i32, rownnz: *const i32, rowadr
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mju_min(a: f64, b: f64) -> f64 {
-    todo!() // mju_min
+    if a <= b { a } else { b }
 }
 
 /// C: mju_max (engine/engine_util_misc.h:228)

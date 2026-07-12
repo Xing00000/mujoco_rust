@@ -302,7 +302,25 @@ pub fn mj_normalize_quat(m: *const mjModel, qpos: *mut f64) {
 /// C: mj_actuatorDisabled (engine/engine_support.h:108)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_actuator_disabled(m: *const mjModel, i: i32) -> i32 {
-    todo!() // mj_actuatorDisabled
+    // SAFETY: caller guarantees m is valid and i is a valid actuator index.
+    // mjModel is opaque; access fields via byte offsets from IR:
+    //   actuator_group: *mut i32 at offset 4696
+    //   opt.disableactuator: i32 at offset 736+288 = 1024
+    unsafe {
+        let m_ptr = m as *const u8;
+
+        // m->actuator_group is a pointer at offset 4696
+        let actuator_group_ptr = *(m_ptr.add(4696) as *const *const i32);
+        let group: i32 = *actuator_group_ptr.add(i as usize);
+
+        if group < 0 || group > 30 {
+            0
+        } else {
+            // m->opt.disableactuator is i32 at offset 1024
+            let disableactuator = *(m_ptr.add(1024) as *const i32);
+            if disableactuator & (1 << group) != 0 { 1 } else { 0 }
+        }
+    }
 }
 
 /// C: mj_nextActivation (engine/engine_support.h:111)

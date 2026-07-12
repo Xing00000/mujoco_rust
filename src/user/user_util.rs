@@ -196,7 +196,25 @@ pub fn mjuu_l1(a: *const f64, b: *const f64, n: i32) -> f64 {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjuu_normvec(vec: *mut f64, n: i32) -> f64 {
-    todo!() // mjuu_normvec
+    const MJ_EPS: f64 = 1E-14_f64;
+    // SAFETY: caller guarantees vec points to valid array of length >= n
+    unsafe {
+        let mut nrm: f64 = 0.0;
+        for i in 0..n as usize {
+            nrm += *vec.add(i) * *vec.add(i);
+        }
+        if nrm < MJ_EPS {
+            return 0.0;
+        }
+        nrm = nrm.sqrt();
+        // don't normalize if nrm is within mjEPS of 1
+        if (nrm - 1.0).abs() > MJ_EPS {
+            for i in 0..n as usize {
+                *vec.add(i) /= nrm;
+            }
+        }
+        nrm
+    }
 }
 
 /// C: mjuu_scalevec (user/user_util.h:82)
@@ -207,7 +225,12 @@ pub fn mjuu_normvec(vec: *mut f64, n: i32) -> f64 {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjuu_scalevec(res: *mut f64, vec: *const f64, s: f64, n: i32) {
-    todo!() // mjuu_scalevec
+    // SAFETY: caller guarantees res and vec point to valid arrays of length >= n
+    unsafe {
+        for i in 0..n as usize {
+            *res.add(i) = s * *vec.add(i);
+        }
+    }
 }
 
 /// C: mjuu_quat2mat (user/user_util.h:85)
@@ -218,7 +241,45 @@ pub fn mjuu_scalevec(res: *mut f64, vec: *const f64, s: f64, n: i32) {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjuu_quat2mat(res: *mut f64, quat: *const f64) {
-    todo!() // mjuu_quat2mat
+    // SAFETY: caller guarantees res[9] and quat[4] are valid
+    unsafe {
+        // identity quat: identity mat
+        if *quat.add(0) == 1.0 && *quat.add(1) == 0.0 && *quat.add(2) == 0.0 && *quat.add(3) == 0.0 {
+            *res.add(0) = 1.0;
+            *res.add(1) = 0.0;
+            *res.add(2) = 0.0;
+            *res.add(3) = 0.0;
+            *res.add(4) = 1.0;
+            *res.add(5) = 0.0;
+            *res.add(6) = 0.0;
+            *res.add(7) = 0.0;
+            *res.add(8) = 1.0;
+            return;
+        }
+
+        // regular processing
+        let q00 = *quat.add(0) * *quat.add(0);
+        let q01 = *quat.add(0) * *quat.add(1);
+        let q02 = *quat.add(0) * *quat.add(2);
+        let q03 = *quat.add(0) * *quat.add(3);
+        let q11 = *quat.add(1) * *quat.add(1);
+        let q12 = *quat.add(1) * *quat.add(2);
+        let q13 = *quat.add(1) * *quat.add(3);
+        let q22 = *quat.add(2) * *quat.add(2);
+        let q23 = *quat.add(2) * *quat.add(3);
+        let q33 = *quat.add(3) * *quat.add(3);
+
+        *res.add(0) = q00 + q11 - q22 - q33;
+        *res.add(4) = q00 - q11 + q22 - q33;
+        *res.add(8) = q00 - q11 - q22 + q33;
+
+        *res.add(1) = 2.0 * (q12 - q03);
+        *res.add(2) = 2.0 * (q13 + q02);
+        *res.add(3) = 2.0 * (q12 + q03);
+        *res.add(5) = 2.0 * (q23 - q01);
+        *res.add(6) = 2.0 * (q13 - q02);
+        *res.add(7) = 2.0 * (q23 + q01);
+    }
 }
 
 /// C: mjuu_mulquat (user/user_util.h:88)
@@ -241,7 +302,15 @@ pub fn mjuu_mulquat(res: *mut f64, qa: *const f64, qb: *const f64) {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjuu_mulvecmat(res: *mut f64, vec: *const f64, mat: *const f64) {
-    todo!() // mjuu_mulvecmat
+    // SAFETY: caller guarantees res[3], vec[3], mat[9] are valid
+    unsafe {
+        let tmp0 = *mat.add(0) * *vec.add(0) + *mat.add(1) * *vec.add(1) + *mat.add(2) * *vec.add(2);
+        let tmp1 = *mat.add(3) * *vec.add(0) + *mat.add(4) * *vec.add(1) + *mat.add(5) * *vec.add(2);
+        let tmp2 = *mat.add(6) * *vec.add(0) + *mat.add(7) * *vec.add(1) + *mat.add(8) * *vec.add(2);
+        *res.add(0) = tmp0;
+        *res.add(1) = tmp1;
+        *res.add(2) = tmp2;
+    }
 }
 
 /// C: mjuu_mulvecmatT (user/user_util.h:94)
@@ -344,7 +413,12 @@ pub fn mjuu_localquat(local: *mut f64, child: *const f64, parent: *const f64) {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjuu_crossvec(a: *mut f64, b: *const f64, c: *const f64) {
-    todo!() // mjuu_crossvec
+    // SAFETY: caller guarantees a, b, c point to valid arrays of length >= 3
+    unsafe {
+        *a.add(0) = *b.add(1) * *c.add(2) - *b.add(2) * *c.add(1);
+        *a.add(1) = *b.add(2) * *c.add(0) - *b.add(0) * *c.add(2);
+        *a.add(2) = *b.add(0) * *c.add(1) - *b.add(1) * *c.add(0);
+    }
 }
 
 /// C: mjuu_makenormal (user/user_util.h:118)

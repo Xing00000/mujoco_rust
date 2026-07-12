@@ -7,10 +7,7 @@ use crate::types::*;
 /// C: align8 (engine/engine_collision_gjk.c:49)
 #[allow(unused_variables, non_snake_case)]
 pub fn align8(size: usize) -> usize {
-    // NOTE: signature changed from previous IR version
-    // Previous params: (size : usize)
-    // Previous return: usize
-    todo!("re-translate: params renamed")
+    ((size + 7) / 8) * 8
 }
 
 /// C: subdistance (engine/engine_collision_gjk.c:56)
