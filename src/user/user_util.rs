@@ -497,10 +497,23 @@ pub fn mjuu_frameinvert(newpos: *mut f64, newquat: *mut f64, oldpos: *const f64,
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjuu_frameaccum(pos: *mut f64, quat: *mut f64, childpos: *const f64, childquat: *const f64) {
-    // NOTE: signature changed from previous IR version
-    // Previous params: (pos : * mut f64, quat : * mut f64, childpos : * const f64, childquat : * const f64)
-    // Previous return: ()
-    todo!("re-translate: params renamed")
+    // SAFETY: pos points to 3 f64, quat to 4 f64, childpos to 3 f64, childquat to 4 f64
+    unsafe {
+        let mut mat: [f64; 9] = [0.0; 9];
+        let mut vec: [f64; 3] = [0.0; 3];
+        let mut qtmp: [f64; 4] = [0.0; 4];
+        mjuu_quat2mat(mat.as_mut_ptr(), quat);
+        mjuu_mulvecmat(vec.as_mut_ptr(), childpos, mat.as_ptr());
+        *pos.add(0) += vec[0];
+        *pos.add(1) += vec[1];
+        *pos.add(2) += vec[2];
+        mjuu_mulquat(qtmp.as_mut_ptr(), quat, childquat);
+        // inline copyvec: quat = qtmp (4 elements)
+        *quat.add(0) = qtmp[0];
+        *quat.add(1) = qtmp[1];
+        *quat.add(2) = qtmp[2];
+        *quat.add(3) = qtmp[3];
+    }
 }
 
 /// C: mjuu_frameaccumChild (user/user_util.h:136)

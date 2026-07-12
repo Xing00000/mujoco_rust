@@ -293,10 +293,7 @@ pub fn mj_integrate_pos(m: *const mjModel, qpos: *mut f64, qvel: *const f64, dt:
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_normalize_quat(m: *const mjModel, qpos: *mut f64) {
-    // NOTE: signature changed from previous IR version
-    // Previous params: (m : * const mjModel, qpos : * mut f64)
-    // Previous return: ()
-    todo!("re-translate: params renamed")
+    todo!("requires mjModel field access")
 }
 
 /// C: mj_actuatorDisabled (engine/engine_support.h:108)

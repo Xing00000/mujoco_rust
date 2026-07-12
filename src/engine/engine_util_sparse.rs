@@ -70,10 +70,22 @@ pub fn mju_sparse2dense(res: *mut f64, mat: *const f64, nr: i32, nc: i32, rownnz
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mju_sym2dense(res: *mut f64, mat: *const f64, n: i32, rownnz: *const i32, rowadr: *const i32, colind: *const i32) {
-    // NOTE: signature changed from previous IR version
-    // Previous params: (res : * mut f64, mat : * const f64, n : i32, rownnz : * const i32, rowadr : * const i32, colind : * const i32)
-    // Previous return: ()
-    todo!("re-translate: params renamed")
+    use crate::engine::engine_util_blas::mju_zero;
+
+    // SAFETY: all pointers valid per caller contract
+    unsafe {
+        mju_zero(res, n * n);
+        for i in 0..n as usize {
+            let adr = *rowadr.add(i) as usize;
+            for j in 0..*rownnz.add(i) as usize {
+                let col = *colind.add(adr + j) as usize;
+                if col <= i {
+                    *res.add(i * n as usize + col) = *mat.add(adr + j);
+                    *res.add(col * n as usize + i) = *mat.add(adr + j);
+                }
+            }
+        }
+    }
 }
 
 /// C: mju_copySparse (engine/engine_util_sparse.h:54)

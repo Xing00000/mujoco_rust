@@ -897,10 +897,7 @@ pub fn inflate(status: *mut mjCCDStatus, margin1: f64, margin2: f64) {
 /// Calls: align8
 #[allow(unused_variables, non_snake_case)]
 pub fn mjc_ccd_size(iterations: i32) -> usize {
-    // NOTE: signature changed from previous IR version
-    // Previous params: (iterations : i32)
-    // Previous return: usize
-    todo!("re-translate: params renamed")
+    todo!("requires internal Vertex/Face struct sizes from C")
 }
 
 /// C: mjc_ccd (engine/engine_collision_gjk.h:108)

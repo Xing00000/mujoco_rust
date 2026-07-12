@@ -415,10 +415,22 @@ pub fn mjc_point_support(res: *mut f64, obj: *mut mjCCDObj, dir: *const f64) {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjc_line_support(res: *mut f64, obj: *mut mjCCDObj, dir: *const f64) {
-    // NOTE: signature changed from previous IR version
-    // Previous params: (res : * mut f64, obj : * mut mjCCDObj, dir : * const f64)
-    // Previous return: ()
-    todo!("re-translate: params renamed")
+    // SAFETY: obj points to valid mjCCDObj, res/dir point to 3 f64
+    // mjCCDObj layout: size at offset 8, pos at offset 40, mat at offset 64
+    unsafe {
+        let obj_ptr = obj as *const u8;
+        let mat = obj_ptr.add(64) as *const f64;
+        let pos = obj_ptr.add(40) as *const f64;
+        let size = obj_ptr.add(8) as *const f64;
+        let length = *size.add(1);
+
+        let dot: f64 = *mat.add(2) * *dir.add(0) + *mat.add(5) * *dir.add(1) + *mat.add(8) * *dir.add(2);
+        let scl: f64 = if dot >= 0.0 { length } else { -length };
+
+        *res.add(0) = *mat.add(2) * scl + *pos.add(0);
+        *res.add(1) = *mat.add(5) * scl + *pos.add(1);
+        *res.add(2) = *mat.add(8) * scl + *pos.add(2);
+    }
 }
 
 /// C: mjc_PlaneConvex (engine/engine_collision_convex.h:112)
@@ -509,9 +521,6 @@ pub fn mjc_fix_normal(m: *const mjModel, d: *const mjData, con: *mut mjPreContac
 /// C: mjc_setCCDBuffer (engine/engine_collision_convex.h:128)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjc_set_ccd_buffer(buffer: *mut ()) {
-    // NOTE: signature changed from previous IR version
-    // Previous params: (buffer : * mut ())
-    // Previous return: ()
-    todo!("re-translate: params renamed")
+    todo!("requires static mutable global ccd_buffer")
 }
 

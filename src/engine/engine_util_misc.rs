@@ -162,10 +162,28 @@ pub fn mju_wrap(wpnt: *mut f64, x0: *const f64, x1: *const f64, xpos: *const f64
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mju_muscle_gain_length(length: f64, lmin: f64, lmax: f64) -> f64 {
-    // NOTE: signature changed from previous IR version
-    // Previous params: (length : f64, lmin : f64, lmax : f64)
-    // Previous return: f64
-    todo!("re-translate: params renamed")
+    const MJ_MINVAL: f64 = 1E-15_f64;
+
+    if lmin <= length && length <= lmax {
+        let a: f64 = 0.5 * (lmin + 1.0);
+        let b: f64 = 0.5 * (1.0 + lmax);
+
+        if length <= a {
+            let x: f64 = (length - lmin) / f64::max(MJ_MINVAL, a - lmin);
+            return 0.5 * x * x;
+        } else if length <= 1.0 {
+            let x: f64 = (1.0 - length) / f64::max(MJ_MINVAL, 1.0 - a);
+            return 1.0 - 0.5 * x * x;
+        } else if length <= b {
+            let x: f64 = (length - 1.0) / f64::max(MJ_MINVAL, b - 1.0);
+            return 1.0 - 0.5 * x * x;
+        } else {
+            let x: f64 = (lmax - length) / f64::max(MJ_MINVAL, lmax - b);
+            return 0.5 * x * x;
+        }
+    }
+
+    0.0
 }
 
 /// C: mju_muscleGain (engine/engine_util_misc.h:39)
@@ -236,7 +254,11 @@ pub fn mju_muscle_dynamics(ctrl: f64, act: f64, prm: *const f64) -> f64 {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_lugre_stribeck(velocity: f64, F_C: f64, F_S: f64, v_S: f64) -> f64 {
-    todo!() // mj_lugreStribeck
+    const MJ_MINVAL: f64 = 1E-15_f64;
+
+    // SAFETY: pure math, no pointer dereference
+    let ratio: f64 = velocity / f64::max(MJ_MINVAL, v_S);
+    F_C + (F_S - F_C) * f64::exp(-ratio * ratio)
 }
 
 /// C: mj_dcmotorSlots (engine/engine_util_misc.h:68)
@@ -273,10 +295,57 @@ pub fn mju_geom_semi_axes(semiaxes: *mut f64, size: *const f64, r#type: u32) {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mju_inside_geom(pos: *const f64, mat: *const f64, size: *const f64, r#type: u32, point: *const f64) -> i32 {
-    // NOTE: signature changed from previous IR version
-    // Previous params: (pos : * const f64, mat : * const f64, size : * const f64, r#type : u32, point : * const f64)
-    // Previous return: i32
-    todo!("re-translate: params renamed")
+    use crate::engine::engine_util_blas::{mju_sub3, mju_dot3, mju_mul_mat_t_vec3};
+
+    const GEOM_PLANE: u32 = 0;
+    const GEOM_SPHERE: u32 = 2;
+    const GEOM_CAPSULE: u32 = 3;
+    const GEOM_ELLIPSOID: u32 = 4;
+    const GEOM_CYLINDER: u32 = 5;
+    const GEOM_BOX: u32 = 6;
+
+    // SAFETY: pos, mat, size, point all point to valid memory per caller contract
+    unsafe {
+        // vector from geom to point
+        let mut vec: [f64; 3] = [0.0; 3];
+        mju_sub3(vec.as_mut_ptr(), point, pos);
+
+        // quick return for spheres
+        if r#type == GEOM_SPHERE {
+            return if mju_dot3(vec.as_ptr(), vec.as_ptr()) < *size.add(0) * *size.add(0) { 1 } else { 0 };
+        }
+
+        // rotate into local frame
+        let mut plocal: [f64; 3] = [0.0; 3];
+        mju_mul_mat_t_vec3(plocal.as_mut_ptr(), mat, vec.as_ptr());
+
+        match r#type {
+            GEOM_CAPSULE => {
+                let z = plocal[2];
+                let z_clamped = mju_clip(z, -*size.add(1), *size.add(1));
+                let z_dist_sq = (z - z_clamped) * (z - z_clamped);
+                if plocal[0] * plocal[0] + plocal[1] * plocal[1] + z_dist_sq < *size.add(0) * *size.add(0) { 1 } else { 0 }
+            }
+            GEOM_ELLIPSOID => {
+                if plocal[0] * plocal[0] / (*size.add(0) * *size.add(0))
+                    + plocal[1] * plocal[1] / (*size.add(1) * *size.add(1))
+                    + plocal[2] * plocal[2] / (*size.add(2) * *size.add(2)) < 1.0 { 1 } else { 0 }
+            }
+            GEOM_CYLINDER => {
+                if f64::abs(plocal[2]) < *size.add(1)
+                    && plocal[0] * plocal[0] + plocal[1] * plocal[1] < *size.add(0) * *size.add(0) { 1 } else { 0 }
+            }
+            GEOM_BOX => {
+                if f64::abs(plocal[0]) < *size.add(0)
+                    && f64::abs(plocal[1]) < *size.add(1)
+                    && f64::abs(plocal[2]) < *size.add(2) { 1 } else { 0 }
+            }
+            GEOM_PLANE => {
+                if plocal[2] < 0.0 { 1 } else { 0 }
+            }
+            _ => 0
+        }
+    }
 }
 
 /// C: mju_camPixelRay (engine/engine_util_misc.h:79)
@@ -713,7 +782,7 @@ pub fn mju_round(x: f64) -> i32 {
 /// C: mju_type2Str (engine/engine_util_misc.h:240)
 #[allow(unused_variables, non_snake_case)]
 pub fn mju_type2str(r#type: i32) -> *const i8 {
-    todo!("requires static string table")
+    todo!("requires static string table with C lifetime")
 }
 
 /// C: mju_str2Type (engine/engine_util_misc.h:243)
@@ -1037,10 +1106,19 @@ pub fn mju_poly_force(linear: f64, poly: *const f64, x: f64, n: i32, flg_odd: i3
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjd_x_poly_force(linear: f64, poly: *const f64, x: f64, n: i32, flg_odd: i32) -> f64 {
-    // NOTE: signature changed from previous IR version
-    // Previous params: (linear : f64, poly : * const f64, x : f64, n : i32, flg_odd : i32)
-    // Previous return: f64
-    todo!("re-translate: params renamed")
+    // SAFETY: poly points to at least n f64 (caller contract)
+    unsafe {
+        let x = if flg_odd != 0 { f64::abs(x) } else { x };
+        let mut res: f64 = linear;
+
+        let mut xpow: f64 = 1.0;
+        for i in 0..n as usize {
+            xpow *= x;
+            res += (i as f64 + 2.0) * *poly.add(i) * xpow;
+        }
+
+        res
+    }
 }
 
 /// C: mju_polyPotential (engine/engine_util_misc.h:332)
