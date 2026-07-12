@@ -55,10 +55,35 @@ pub fn mju_chol_factor(mat: *mut f64, n: i32, mindiag: f64) -> i32 {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mju_chol_solve(res: *mut f64, mat: *const f64, vec: *const f64, n: i32) {
-    // NOTE: signature changed from previous IR version
-    // Previous params: (res : * mut f64, mat : * const f64, vec : * const f64, n : i32)
-    // Previous return: ()
-    todo!("re-translate: params renamed")
+    // SAFETY: caller guarantees res[n], mat[n*n], vec[n] are valid
+    unsafe {
+        // copy if source and destination are different
+        if res != vec as *mut f64 {
+            crate::engine::engine_util_blas::mju_copy(res, vec, n);
+        }
+
+        let n = n as usize;
+
+        // forward substitution: solve L*res = vec
+        for i in 0..n {
+            if i > 0 {
+                *res.add(i) -= crate::engine::engine_util_blas::mju_dot(mat.add(i * n), res, i as i32);
+            }
+            // diagonal
+            *res.add(i) /= *mat.add(i * (n + 1));
+        }
+
+        // backward substitution: solve L'*res = res
+        for i in (0..n).rev() {
+            if i < n - 1 {
+                for j in (i + 1)..n {
+                    *res.add(i) -= *mat.add(j * n + i) * *res.add(j);
+                }
+            }
+            // diagonal
+            *res.add(i) /= *mat.add(i * (n + 1));
+        }
+    }
 }
 
 /// C: mju_cholUpdate (engine/engine_util_solve.h:33)
@@ -151,10 +176,129 @@ pub fn mju_chol_update_sparse(mat: *mut f64, x: *const f64, n: i32, flg_plus: i3
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mju_chol_factor_band(mat: *mut f64, ntotal: i32, nband: i32, ndense: i32, diagadd: f64, diagmul: f64) -> f64 {
-    // NOTE: signature changed from previous IR version
-    // Previous params: (mat : * mut f64, ntotal : i32, nband : i32, ndense : i32, diagadd : f64, diagmul : f64)
-    // Previous return: f64
-    todo!("re-translate: params renamed")
+    const MJ_MINVAL: f64 = 1E-15_f64;
+
+    // SAFETY: caller guarantees mat is valid banded matrix storage
+    unsafe {
+        let nsparse = ntotal - ndense;
+        let mut mindiag: f64 = -1.0;
+
+        // sparse part
+        for j in 0..nsparse {
+            // number of non-zeros left of (j,j)
+            let width_jj = if j < nband - 1 { j } else { nband - 1 };
+
+            // number of non-zeros below (j,j), sparse part
+            let height = if nsparse - j - 1 < nband - 1 { nsparse - j - 1 } else { nband - 1 };
+
+            // address of (j,j)
+            let adr_jj = ((j + 1) * nband - 1) as usize;
+
+            // compute L(j,j), before sqrt
+            let left_ij = if width_jj > 0 {
+                crate::engine::engine_util_blas::mju_dot(
+                    mat.add(adr_jj - width_jj as usize),
+                    mat.add(adr_jj - width_jj as usize) as *const f64,
+                    width_jj)
+            } else { 0.0 };
+            let mut Ljj = diagadd + diagmul * *mat.add(adr_jj) + *mat.add(adr_jj) - left_ij;
+
+            // update mindiag
+            if Ljj < mindiag || mindiag < 0.0 {
+                mindiag = Ljj;
+            }
+
+            // stop if rank-deficient
+            if Ljj < MJ_MINVAL {
+                return 0.0;
+            }
+
+            // compute Ljj, scale = 1/Ljj
+            Ljj = f64::sqrt(Ljj);
+            let scale = 1.0 / Ljj;
+
+            // compute L(i,j) for i>j, sparse part
+            for i in (j + 1)..=(j + height) {
+                // number of non-zeros left of (i,j)
+                let width_ij = if j < nband - 1 - i + j { j } else { nband - 1 - i + j };
+
+                // address of (i,j)
+                let adr_ij = ((i + 1) * nband - 1 - i + j) as usize;
+
+                // in-place computation of L(i,j)
+                let left = if width_ij > 0 {
+                    crate::engine::engine_util_blas::mju_dot(
+                        mat.add(adr_jj - width_ij as usize),
+                        mat.add(adr_ij - width_ij as usize) as *const f64,
+                        width_ij)
+                } else { 0.0 };
+                *mat.add(adr_ij) = scale * (*mat.add(adr_ij) - left);
+            }
+
+            // compute L(i,j) for i>j, dense part
+            for i in nsparse..ntotal {
+                // address of (i,j)
+                let adr_ij = (nsparse * nband + (i - nsparse) * ntotal + j) as usize;
+
+                // in-place computation of L(i,j)
+                let left = if width_jj > 0 {
+                    crate::engine::engine_util_blas::mju_dot(
+                        mat.add(adr_jj - width_jj as usize),
+                        mat.add(adr_ij - width_jj as usize) as *const f64,
+                        width_jj)
+                } else { 0.0 };
+                *mat.add(adr_ij) = scale * (*mat.add(adr_ij) - left);
+            }
+
+            // save L(j,j)
+            *mat.add(adr_jj) = Ljj;
+        }
+
+        // dense part
+        for j in nsparse..ntotal {
+            // address of (j,j)
+            let adr_jj = (nsparse * nband + (j - nsparse) * ntotal + j) as usize;
+
+            // compute Ljj
+            let mut Ljj = diagadd + diagmul * *mat.add(adr_jj) + *mat.add(adr_jj)
+                - crate::engine::engine_util_blas::mju_dot(
+                    mat.add(adr_jj - j as usize),
+                    mat.add(adr_jj - j as usize) as *const f64,
+                    j);
+
+            // update mindiag
+            if Ljj < mindiag || mindiag < 0.0 {
+                mindiag = Ljj;
+            }
+
+            // stop if rank-deficient
+            if Ljj < MJ_MINVAL {
+                return 0.0;
+            }
+
+            // compute Ljj, scale = 1/Ljj
+            Ljj = f64::sqrt(Ljj);
+            let scale = 1.0 / Ljj;
+
+            // compute L(i,j) for i>j
+            for i in (j + 1)..ntotal {
+                // address of off-diagonal element
+                let adr_ij = adr_jj + (ntotal as usize) * ((i - j) as usize);
+
+                // in-place computation of L(i,j)
+                *mat.add(adr_ij) = scale * (*mat.add(adr_ij)
+                    - crate::engine::engine_util_blas::mju_dot(
+                        mat.add(adr_jj - j as usize),
+                        mat.add(adr_ij - j as usize) as *const f64,
+                        j));
+            }
+
+            // save L(j,j)
+            *mat.add(adr_jj) = Ljj;
+        }
+
+        mindiag
+    }
 }
 
 /// C: mju_cholSolveBand (engine/engine_util_solve.h:80)
