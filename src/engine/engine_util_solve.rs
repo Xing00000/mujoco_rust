@@ -271,10 +271,106 @@ pub fn mju_chol_update_sparse(mat: *mut f64, x: *const f64, n: i32, flg_plus: i3
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mju_chol_factor_band(mat: *mut f64, ntotal: i32, nband: i32, ndense: i32, diagadd: f64, diagmul: f64) -> f64 {
-    // WARNING: signature changed — verify body
-    // Previous params: (mat : * mut f64, ntotal : i32, nband : i32, ndense : i32, diagadd : f64, diagmul : f64)
-    // Previous return: f64
-    todo ! ()
+    use crate::engine::engine_util_blas::mju_dot;
+    const MJMINVAL: f64 = 1e-15;
+    // SAFETY: caller guarantees mat has correct band-dense layout
+    unsafe {
+        let nsparse = ntotal - ndense;
+        let mut mindiag: f64 = -1.0;
+
+        // sparse part
+        let mut j: i32 = 0;
+        while j < nsparse {
+            let width_jj = if j < nband - 1 { j } else { nband - 1 };
+            let height = if nsparse - j - 1 < nband - 1 { nsparse - j - 1 } else { nband - 1 };
+            let adr_jj = ((j + 1) * nband - 1) as usize;
+
+            // compute L(j,j) before sqrt
+            let left_ij = if width_jj > 0 {
+                mju_dot(mat.add(adr_jj - width_jj as usize), mat.add(adr_jj - width_jj as usize), width_jj)
+            } else { 0.0 };
+            let mut Ljj = diagadd + diagmul * *mat.add(adr_jj) + *mat.add(adr_jj) - left_ij;
+
+            // update mindiag
+            if Ljj < mindiag || mindiag < 0.0 {
+                mindiag = Ljj;
+            }
+
+            // stop if rank-deficient
+            if Ljj < MJMINVAL {
+                return 0.0;
+            }
+
+            // compute Ljj, scale = 1/Ljj
+            Ljj = Ljj.sqrt();
+            let scale = 1.0 / Ljj;
+
+            // compute L(i,j) for i>j, sparse part
+            let mut i: i32 = j + 1;
+            while i <= j + height {
+                let width_ij = if j < nband - 1 - i + j { j } else { nband - 1 - i + j };
+                let adr_ij = ((i + 1) * nband - 1 - i + j) as usize;
+                let left_ij = if width_ij > 0 {
+                    mju_dot(mat.add(adr_jj - width_ij as usize), mat.add(adr_ij - width_ij as usize), width_ij)
+                } else { 0.0 };
+                *mat.add(adr_ij) = scale * (*mat.add(adr_ij) - left_ij);
+                i += 1;
+            }
+
+            // compute L(i,j) for i>j, dense part
+            i = nsparse;
+            while i < ntotal {
+                let adr_ij = (nsparse * nband + (i - nsparse) * ntotal + j) as usize;
+                let left_ij = if width_jj > 0 {
+                    mju_dot(mat.add(adr_jj - width_jj as usize), mat.add(adr_ij - width_jj as usize), width_jj)
+                } else { 0.0 };
+                *mat.add(adr_ij) = scale * (*mat.add(adr_ij) - left_ij);
+                i += 1;
+            }
+
+            // save L(j,j)
+            *mat.add(adr_jj) = Ljj;
+            j += 1;
+        }
+
+        // dense part
+        j = nsparse;
+        while j < ntotal {
+            let adr_jj = (nsparse * nband + (j - nsparse) * ntotal + j) as usize;
+
+            // compute Ljj
+            let mut Ljj = diagadd + diagmul * *mat.add(adr_jj) + *mat.add(adr_jj)
+                - mju_dot(mat.add(adr_jj - j as usize), mat.add(adr_jj - j as usize), j);
+
+            // update mindiag
+            if Ljj < mindiag || mindiag < 0.0 {
+                mindiag = Ljj;
+            }
+
+            // stop if rank-deficient
+            if Ljj < MJMINVAL {
+                return 0.0;
+            }
+
+            // compute Ljj, scale = 1/Ljj
+            Ljj = Ljj.sqrt();
+            let scale = 1.0 / Ljj;
+
+            // compute L(i,j) for i>j
+            let mut i: i32 = j + 1;
+            while i < ntotal {
+                let adr_ij = (adr_jj + (ntotal as usize) * (i - j) as usize) as usize;
+                *mat.add(adr_ij) = scale * (*mat.add(adr_ij) - mju_dot(mat.add(adr_jj - j as usize), mat.add(adr_ij - j as usize), j));
+                i += 1;
+            }
+
+            // save L(j,j)
+            *mat.add(adr_jj) = Ljj;
+            j += 1;
+        }
+
+        mindiag
+    }
 }
 
 /// C: mju_cholSolveBand (engine/engine_util_solve.h:80)
@@ -286,10 +382,87 @@ pub fn mju_chol_factor_band(mat: *mut f64, ntotal: i32, nband: i32, ndense: i32,
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mju_chol_solve_band(res: *mut f64, mat: *const f64, vec: *const f64, ntotal: i32, nband: i32, ndense: i32) {
-    // WARNING: signature changed — verify body
-    // Previous params: (res : * mut f64, mat : * const f64, vec : * const f64, ntotal : i32, nband : i32, ndense : i32)
-    // Previous return: ()
-    todo ! ()
+    use crate::engine::engine_util_blas::{mju_copy, mju_dot};
+    // SAFETY: caller guarantees res/mat/vec have correct dimensions
+    unsafe {
+        let nsparse = ntotal - ndense;
+
+        // copy into result if different
+        if res != vec as *mut f64 {
+            mju_copy(res, vec, ntotal);
+        }
+
+        //------- forward substitution: solve L*res = vec
+
+        // sparse part
+        let mut i: i32 = 0;
+        while i < nsparse {
+            let width = if i < nband - 1 { i } else { nband - 1 };
+            if width > 0 {
+                *res.add(i as usize) -= mju_dot(
+                    mat.add(((i + 1) * nband - 1 - width) as usize),
+                    res.add((i - width) as usize),
+                    width,
+                );
+            }
+            // diagonal
+            *res.add(i as usize) /= *mat.add(((i + 1) * nband - 1) as usize);
+            i += 1;
+        }
+
+        // dense part
+        i = nsparse;
+        while i < ntotal {
+            *res.add(i as usize) -= mju_dot(
+                mat.add((nsparse * nband + (i - nsparse) * ntotal) as usize),
+                res,
+                i,
+            );
+            // diagonal
+            *res.add(i as usize) /= *mat.add((nsparse * nband + (i - nsparse) * ntotal + i) as usize);
+            i += 1;
+        }
+
+        //------- backward substitution: solve L'*res = res
+
+        // dense part
+        i = ntotal - 1;
+        while i >= nsparse {
+            let mut j: i32 = i + 1;
+            while j < ntotal {
+                *res.add(i as usize) -= *mat.add((nsparse * nband + (j - nsparse) * ntotal + i) as usize) * *res.add(j as usize);
+                j += 1;
+            }
+            // diagonal
+            *res.add(i as usize) /= *mat.add((nsparse * nband + (i - nsparse) * ntotal + i) as usize);
+            i -= 1;
+        }
+
+        // sparse part
+        i = nsparse - 1;
+        while i >= 0 {
+            // number of non-zeros below (i,i), sparse part
+            let height = if nsparse - 1 - i < nband - 1 { nsparse - 1 - i } else { nband - 1 };
+
+            // sparse rows
+            let mut j: i32 = i + 1;
+            while j <= i + height {
+                *res.add(i as usize) -= *mat.add(((j + 1) * nband - 1 - (j - i)) as usize) * *res.add(j as usize);
+                j += 1;
+            }
+
+            // dense rows
+            j = nsparse;
+            while j < ntotal {
+                *res.add(i as usize) -= *mat.add((nsparse * nband + (j - nsparse) * ntotal + i) as usize) * *res.add(j as usize);
+                j += 1;
+            }
+
+            // diagonal
+            *res.add(i as usize) /= *mat.add(((i + 1) * nband - 1) as usize);
+            i -= 1;
+        }
+    }
 }
 
 /// C: mju_band2Dense (engine/engine_util_solve.h:84)
@@ -316,10 +489,37 @@ pub fn mju_band2dense(res: *mut f64, mat: *const f64, ntotal: i32, nband: i32, n
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mju_dense2band(res: *mut f64, mat: *const f64, ntotal: i32, nband: i32, ndense: i32) {
-    // WARNING: signature changed — verify body
-    // Previous params: (res : * mut f64, mat : * const f64, ntotal : i32, nband : i32, ndense : i32)
-    // Previous return: ()
-    todo ! ()
+    use crate::engine::engine_util_blas::mju_copy;
+    // SAFETY: caller guarantees res/mat have correct dimensions
+    unsafe {
+        let nsparse = ntotal - ndense;
+
+        // sparse part
+        let mut i: i32 = 0;
+        while i < nsparse {
+            // number of non-zeros left of (i,i)
+            let width = if i < nband - 1 { i } else { nband - 1 };
+
+            // copy data
+            mju_copy(
+                res.add(((i + 1) * nband - (width + 1)) as usize),
+                mat.add((i * ntotal + i - width) as usize),
+                width + 1,
+            );
+            i += 1;
+        }
+
+        // dense part
+        i = nsparse;
+        while i < ntotal {
+            mju_copy(
+                res.add((nsparse * nband + (i - nsparse) * ntotal) as usize),
+                mat.add((i * ntotal) as usize),
+                i + 1,
+            );
+            i += 1;
+        }
+    }
 }
 
 /// C: mju_bandMulMatVec (engine/engine_util_solve.h:91)
