@@ -103,10 +103,25 @@ pub fn mjv_frustum_height(scn: *const mjvScene) -> f64 {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjv_align_to_camera(res: *mut f64, vec: *const f64, forward: *const f64) {
-    // WARNING: signature changed — verify body
-    // Previous params: (res : * mut f64, vec : * const f64, forward : * const f64)
-    // Previous return: ()
-    todo ! ()
+    use crate::engine::engine_util_blas::{mju_copy, mju_normalize};
+    // SAFETY: caller guarantees res[3], vec[3], forward[2+] are valid
+    unsafe {
+        let mut yaxis: [f64; 2] = [0.0; 2];
+        let mut xaxis: [f64; 2] = [0.0; 2];
+
+        // forward-aligned y-axis
+        mju_copy(yaxis.as_mut_ptr(), forward, 2);
+        mju_normalize(yaxis.as_mut_ptr(), 2);
+
+        // corresponding x-axis
+        xaxis[0] = yaxis[1];
+        xaxis[1] = -yaxis[0];
+
+        // apply horizontal rotation
+        *res.add(0) = *vec.add(0) * xaxis[0] + *vec.add(1) * yaxis[0];
+        *res.add(1) = *vec.add(0) * xaxis[1] + *vec.add(1) * yaxis[1];
+        *res.add(2) = *vec.add(2);
+    }
 }
 
 /// C: mjv_moveCamera (engine/engine_vis_interact.h:50)

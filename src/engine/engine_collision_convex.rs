@@ -415,10 +415,20 @@ pub fn mjc_point_support(res: *mut f64, obj: *mut mjCCDObj, dir: *const f64) {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjc_line_support(res: *mut f64, obj: *mut mjCCDObj, dir: *const f64) {
-    // WARNING: signature changed — verify body
-    // Previous params: (res : * mut f64, obj : * mut mjCCDObj, dir : * const f64)
-    // Previous return: ()
-    todo ! ()
+    // SAFETY: caller guarantees res[3], obj, dir[3] are valid
+    unsafe {
+        let mat = (*obj).mat.as_ptr();
+        let pos = (*obj).pos.as_ptr();
+        let length = (*obj).size[1];
+
+        let dot = *mat.add(2) * *dir.add(0) + *mat.add(5) * *dir.add(1) + *mat.add(8) * *dir.add(2);
+        let scl = if dot >= 0.0 { length } else { -length };
+
+        // transform result to global frame
+        *res.add(0) = *mat.add(2) * scl + *pos.add(0);
+        *res.add(1) = *mat.add(5) * scl + *pos.add(1);
+        *res.add(2) = *mat.add(8) * scl + *pos.add(2);
+    }
 }
 
 /// C: mjc_PlaneConvex (engine/engine_collision_convex.h:112)
