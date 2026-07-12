@@ -115,7 +115,13 @@ pub fn mjuu_matadr(g1: i32, g2: i32, n: i32) -> i32 {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjuu_setvec(dest: *mut f64, x: f64, y: f64, z: f64, w: f64) {
-    todo!() // mjuu_setvec
+    // SAFETY: caller guarantees dest points to valid array of at least 4 f64
+    unsafe {
+        *dest.add(0) = x;
+        *dest.add(1) = y;
+        *dest.add(2) = z;
+        *dest.add(3) = w;
+    }
 }
 
 /// C: mjuu_copyvec (user/user_util.h:54)
@@ -149,7 +155,12 @@ pub fn mjuu_addtovec(dest: *mut f64, src: *const f64, n: i32) {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjuu_zerovec(dest: *mut f64, n: i32) {
-    todo!() // mjuu_zerovec
+    // SAFETY: caller guarantees dest points to valid array of at least n f64
+    unsafe {
+        for i in 0..n as usize {
+            *dest.add(i) = 0.0;
+        }
+    }
 }
 
 /// C: mjuu_dot3 (user/user_util.h:68)
@@ -160,7 +171,10 @@ pub fn mjuu_zerovec(dest: *mut f64, n: i32) {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjuu_dot3(a: *const f64, b: *const f64) -> f64 {
-    todo!() // mjuu_dot3
+    // SAFETY: caller guarantees a[3] and b[3] are valid
+    unsafe {
+        *a.add(0) * *b.add(0) + *a.add(1) * *b.add(1) + *a.add(2) * *b.add(2)
+    }
 }
 
 /// C: mjuu_dist3 (user/user_util.h:71)
@@ -171,7 +185,13 @@ pub fn mjuu_dot3(a: *const f64, b: *const f64) -> f64 {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjuu_dist3(a: *const f64, b: *const f64) -> f64 {
-    todo!() // mjuu_dist3
+    // SAFETY: caller guarantees a[3] and b[3] are valid
+    unsafe {
+        let d0 = *a.add(0) - *b.add(0);
+        let d1 = *a.add(1) - *b.add(1);
+        let d2 = *a.add(2) - *b.add(2);
+        (d0 * d0 + d1 * d1 + d2 * d2).sqrt()
+    }
 }
 
 /// C: mjuu_L1 (user/user_util.h:74)
@@ -328,7 +348,15 @@ pub fn mjuu_mulvecmat(res: *mut f64, vec: *const f64, mat: *const f64) {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjuu_mulvecmat_t(res: *mut f64, vec: *const f64, mat: *const f64) {
-    todo!() // mjuu_mulvecmatT
+    // SAFETY: caller guarantees res[3], vec[3], mat[9] are valid
+    unsafe {
+        let tmp0 = *mat.add(0) * *vec.add(0) + *mat.add(3) * *vec.add(1) + *mat.add(6) * *vec.add(2);
+        let tmp1 = *mat.add(1) * *vec.add(0) + *mat.add(4) * *vec.add(1) + *mat.add(7) * *vec.add(2);
+        let tmp2 = *mat.add(2) * *vec.add(0) + *mat.add(5) * *vec.add(1) + *mat.add(8) * *vec.add(2);
+        *res.add(0) = tmp0;
+        *res.add(1) = tmp1;
+        *res.add(2) = tmp2;
+    }
 }
 
 /// C: mjuu_mulRMRT (user/user_util.h:97)
@@ -353,7 +381,30 @@ pub fn mjuu_mul_rmrt(res: *mut f64, R: *const f64, M: *const f64) {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjuu_mulmat(res: *mut f64, A: *const f64, B: *const f64) {
-    todo!() // mjuu_mulmat
+    // SAFETY: caller guarantees res[9], A[9], B[9] are valid
+    unsafe {
+        let tmp0 = *A.add(0) * *B.add(0) + *A.add(1) * *B.add(3) + *A.add(2) * *B.add(6);
+        let tmp1 = *A.add(0) * *B.add(1) + *A.add(1) * *B.add(4) + *A.add(2) * *B.add(7);
+        let tmp2 = *A.add(0) * *B.add(2) + *A.add(1) * *B.add(5) + *A.add(2) * *B.add(8);
+
+        let tmp3 = *A.add(3) * *B.add(0) + *A.add(4) * *B.add(3) + *A.add(5) * *B.add(6);
+        let tmp4 = *A.add(3) * *B.add(1) + *A.add(4) * *B.add(4) + *A.add(5) * *B.add(7);
+        let tmp5 = *A.add(3) * *B.add(2) + *A.add(4) * *B.add(5) + *A.add(5) * *B.add(8);
+
+        let tmp6 = *A.add(6) * *B.add(0) + *A.add(7) * *B.add(3) + *A.add(8) * *B.add(6);
+        let tmp7 = *A.add(6) * *B.add(1) + *A.add(7) * *B.add(4) + *A.add(8) * *B.add(7);
+        let tmp8 = *A.add(6) * *B.add(2) + *A.add(7) * *B.add(5) + *A.add(8) * *B.add(8);
+
+        *res.add(0) = tmp0;
+        *res.add(1) = tmp1;
+        *res.add(2) = tmp2;
+        *res.add(3) = tmp3;
+        *res.add(4) = tmp4;
+        *res.add(5) = tmp5;
+        *res.add(6) = tmp6;
+        *res.add(7) = tmp7;
+        *res.add(8) = tmp8;
+    }
 }
 
 /// C: mjuu_transposemat (user/user_util.h:103)
@@ -364,7 +415,23 @@ pub fn mjuu_mulmat(res: *mut f64, A: *const f64, B: *const f64) {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjuu_transposemat(res: *mut f64, mat: *const f64) {
-    todo!() // mjuu_transposemat
+    // SAFETY: caller guarantees res[9] and mat[9] are valid
+    unsafe {
+        let tmp: [f64; 9] = [
+            *mat.add(0), *mat.add(3), *mat.add(6),
+            *mat.add(1), *mat.add(4), *mat.add(7),
+            *mat.add(2), *mat.add(5), *mat.add(8),
+        ];
+        *res.add(0) = tmp[0];
+        *res.add(1) = tmp[1];
+        *res.add(2) = tmp[2];
+        *res.add(3) = tmp[3];
+        *res.add(4) = tmp[4];
+        *res.add(5) = tmp[5];
+        *res.add(6) = tmp[6];
+        *res.add(7) = tmp[7];
+        *res.add(8) = tmp[8];
+    }
 }
 
 /// C: mjuu_localaxis (user/user_util.h:106)

@@ -12,10 +12,26 @@ use crate::types::*;
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn is_intersect(p1: *const f64, p2: *const f64, p3: *const f64, p4: *const f64) -> mjtBool {
-    // NOTE: signature changed from previous IR version
-    // Previous params: (p1 : * const f64, p2 : * const f64, p3 : * const f64, p4 : * const f64)
-    // Previous return: mjtBool
-    todo!("re-translate: params renamed")
+    const MJ_MINVAL: f64 = 1E-15_f64;
+    // SAFETY: caller guarantees p1, p2, p3, p4 each point to at least 2 f64
+    unsafe {
+        let det = (*p4.add(1) - *p3.add(1)) * (*p2.add(0) - *p1.add(0))
+                - (*p4.add(0) - *p3.add(0)) * (*p2.add(1) - *p1.add(1));
+        if det.abs() < MJ_MINVAL {
+            return mjtBool { _data: [0] };
+        }
+
+        let a = ((*p4.add(0) - *p3.add(0)) * (*p1.add(1) - *p3.add(1))
+               - (*p4.add(1) - *p3.add(1)) * (*p1.add(0) - *p3.add(0))) / det;
+        let b = ((*p2.add(0) - *p1.add(0)) * (*p1.add(1) - *p3.add(1))
+               - (*p2.add(1) - *p1.add(1)) * (*p1.add(0) - *p3.add(0))) / det;
+
+        if a >= 0.0 && a <= 1.0 && b >= 0.0 && b <= 1.0 {
+            mjtBool { _data: [1] }
+        } else {
+            mjtBool { _data: [0] }
+        }
+    }
 }
 
 /// C: length_circle (engine/engine_util_misc.c:55)
@@ -86,10 +102,10 @@ pub fn flex_interp_rotation(order: i32, xpos_c: *const f64, local: *const f64, q
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn node_at(nodexpos: *const f64, ny: i32, nz: i32, i: i32, j: i32, k: i32) -> *const f64 {
-    // NOTE: signature changed from previous IR version
-    // Previous params: (nodexpos : * const f64, ny : i32, nz : i32, i : i32, j : i32, k : i32)
-    // Previous return: * const f64
-    todo!("re-translate: params renamed")
+    // SAFETY: caller guarantees nodexpos has sufficient extent for the index computation
+    unsafe {
+        nodexpos.add(3 * (i as usize * ny as usize * nz as usize + j as usize * nz as usize + k as usize))
+    }
 }
 
 /// C: addWeight (engine/engine_util_misc.c:984)
@@ -100,28 +116,50 @@ pub fn node_at(nodexpos: *const f64, ny: i32, nz: i32, i: i32, j: i32, k: i32) -
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn add_weight(nb: *mut i32, body: *mut i32, bweight: *mut f64, b: i32, w: f64) {
-    // NOTE: signature changed from previous IR version
-    // Previous params: (nb : * mut i32, body : * mut i32, bweight : * mut f64, b : i32, w : f64)
-    // Previous return: ()
-    todo!("re-translate: params renamed")
+    // SAFETY: caller guarantees nb, body, bweight valid; body/bweight have sufficient capacity
+    unsafe {
+        for i in 0..*nb as usize {
+            if *body.add(i) == b {
+                if !bweight.is_null() {
+                    *bweight.add(i) += w;
+                }
+                return;
+            }
+        }
+        *body.add(*nb as usize) = b;
+        if !bweight.is_null() {
+            *bweight.add(*nb as usize) = w;
+        }
+        *nb += 1;
+    }
 }
 
 /// C: _decode (engine/engine_util_misc.c:1217)
 #[allow(unused_variables, non_snake_case)]
 pub fn decode(ch: i8) -> u32 {
-    // NOTE: signature changed from previous IR version
-    // Previous params: (ch : i8)
-    // Previous return: u32
-    todo!("re-translate: params renamed")
+    let ch = ch as u8 as char;
+    if ch >= 'A' && ch <= 'Z' {
+        return (ch as u32) - ('A' as u32);
+    }
+    if ch >= 'a' && ch <= 'z' {
+        return (ch as u32) - ('a' as u32) + 26;
+    }
+    if ch >= '0' && ch <= '9' {
+        return (ch as u32) - ('0' as u32) + 52;
+    }
+    if ch == '+' {
+        return 62;
+    }
+    if ch == '/' {
+        return 63;
+    }
+    0
 }
 
 /// C: historyPhysicalIndex (engine/engine_util_misc.c:1359)
 #[allow(unused_variables, non_snake_case)]
 pub fn history_physical_index(cursor: i32, n: i32, logical: i32) -> i32 {
-    // NOTE: signature changed from previous IR version
-    // Previous params: (cursor : i32, n : i32, logical : i32)
-    // Previous return: i32
-    todo!("re-translate: params renamed")
+    (cursor + 1 + logical) % n
 }
 
 /// C: historyFindIndex (engine/engine_util_misc.c:1367)
@@ -133,10 +171,38 @@ pub fn history_physical_index(cursor: i32, n: i32, logical: i32) -> i32 {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn history_find_index(times: *const f64, n: i32, cursor: i32, t: f64) -> i32 {
-    // NOTE: signature changed from previous IR version
-    // Previous params: (times : * const f64, n : i32, cursor : i32, t : f64)
-    // Previous return: i32
-    todo!("re-translate: params renamed")
+    // SAFETY: caller guarantees times[n] is valid
+    unsafe {
+        let oldest_phys = history_physical_index(cursor, n, 0);
+        let newest_phys = history_physical_index(cursor, n, n - 1);
+        let t_oldest = *times.add(oldest_phys as usize);
+        let t_newest = *times.add(newest_phys as usize);
+
+        // before or at first element
+        if t <= t_oldest {
+            return 0;
+        }
+
+        // after last element
+        if t > t_newest {
+            return n;
+        }
+
+        // circular binary search
+        let mut lo: i32 = 0;
+        let mut hi: i32 = n - 1;
+        while hi - lo > 1 {
+            let mid = (lo + hi) / 2;
+            let mid_phys = history_physical_index(cursor, n, mid);
+            if *times.add(mid_phys as usize) < t {
+                lo = mid;
+            } else {
+                hi = mid;
+            }
+        }
+
+        hi
+    }
 }
 
 /// C: mju_wrap (engine/engine_util_misc.h:32)
@@ -835,13 +901,36 @@ pub fn mju_is_bad(x: f64) -> i32 {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mju_is_zero(vec: *const f64, n: i32) -> i32 {
-    todo!() // mju_isZero
+    // SAFETY: caller guarantees vec points to valid array of at least n f64
+    unsafe {
+        for i in 0..n as usize {
+            if *vec.add(i) != 0.0 {
+                return 0;
+            }
+        }
+    }
+    1
 }
 
 /// C: mju_isZeroByte (engine/engine_util_misc.h:258)
 #[allow(unused_variables, non_snake_case)]
 pub fn mju_is_zero_byte(vec: *const u8, n: i32) -> i32 {
-    todo!() // mju_isZeroByte
+    // SAFETY: caller guarantees vec points to valid array of at least n bytes
+    unsafe {
+        if n == 0 {
+            return 1;
+        }
+        if *vec != 0 {
+            return 0;
+        }
+        // compare vec[0..n-1] with vec[1..n] — if first byte is 0 and all equal, all are 0
+        for i in 1..n as usize {
+            if *vec.add(i) != *vec {
+                return 0;
+            }
+        }
+    }
+    1
 }
 
 /// C: mju_zeroInt (engine/engine_util_misc.h:261)
@@ -985,7 +1074,16 @@ pub fn mju_gather_masked(res: *mut f64, vec: *const f64, ind: *const i32, n: i32
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mju_scatter(res: *mut f64, vec: *const f64, ind: *const i32, n: i32) {
-    todo!() // mju_scatter
+    // SAFETY: caller guarantees res, vec, ind point to valid memory
+    unsafe {
+        if ind.is_null() {
+            crate::engine::engine_util_blas::mju_copy(res, vec, n);
+            return;
+        }
+        for i in 0..n as usize {
+            *res.add(*ind.add(i) as usize) = *vec.add(i);
+        }
+    }
 }
 
 /// C: mju_gatherInt (engine/engine_util_misc.h:294)
@@ -1131,7 +1229,19 @@ pub fn mjd_x_poly_force(linear: f64, poly: *const f64, x: f64, n: i32, flg_odd: 
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mju_poly_potential(linear: f64, poly: *const f64, x: f64, n: i32, flg_odd: i32) -> f64 {
-    todo!() // mju_polyPotential
+    // SAFETY: caller guarantees poly points to valid array of at least n f64
+    unsafe {
+        let x = if flg_odd != 0 { x.abs() } else { x };
+        let mut res = 0.5 * linear * (x * x);
+
+        let mut xpow = x;
+        for i in 0..n as usize {
+            xpow *= x;
+            res += *poly.add(i) / ((i as f64) + 3.0) * (xpow * x);
+        }
+
+        res
+    }
 }
 
 /// C: mju_sigmoid (engine/engine_util_misc.h:335)
