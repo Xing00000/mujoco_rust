@@ -362,10 +362,16 @@ pub fn mju_muscle_bias(len: f64, lengthrange: *const f64, acc0: f64, prm: *const
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mju_muscle_dynamics_timescale(dctrl: f64, tau_act: f64, tau_deact: f64, smoothing_width: f64) -> f64 {
-    // NOTE: signature changed from previous IR version
-    // Previous params: (dctrl : f64, tau_act : f64, tau_deact : f64, smoothing_width : f64)
-    // Previous return: f64
-    todo!("re-translate: params renamed")
+    const MJ_MINVAL: f64 = 1E-15_f64;
+
+    // hard switching
+    if smoothing_width < MJ_MINVAL {
+        if dctrl > 0.0 { tau_act } else { tau_deact }
+    }
+    // smooth switching
+    else {
+        tau_deact + (tau_act - tau_deact) * mju_sigmoid(dctrl / smoothing_width + 0.5)
+    }
 }
 
 /// C: mju_muscleDynamics (engine/engine_util_misc.h:51)
@@ -377,10 +383,27 @@ pub fn mju_muscle_dynamics_timescale(dctrl: f64, tau_act: f64, tau_deact: f64, s
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mju_muscle_dynamics(ctrl: f64, act: f64, prm: *const f64) -> f64 {
-    // NOTE: signature changed from previous IR version
-    // Previous params: (ctrl : f64, act : f64, prm : * const f64)
-    // Previous return: f64
-    todo!("re-translate: params renamed")
+    const MJ_MINVAL: f64 = 1E-15_f64;
+
+    // SAFETY: caller guarantees prm points to at least 3 f64
+    unsafe {
+        // clamp control
+        let ctrlclamp = mju_clip(ctrl, 0.0, 1.0);
+
+        // clamp activation
+        let actclamp = mju_clip(act, 0.0, 1.0);
+
+        // compute timescales as in Millard et al. (2013)
+        let tau_act = *prm.add(0) * (0.5 + 1.5 * actclamp);
+        let tau_deact = *prm.add(1) / (0.5 + 1.5 * actclamp);
+        let smoothing_width = *prm.add(2);
+        let dctrl = ctrlclamp - act;
+
+        let tau = mju_muscle_dynamics_timescale(dctrl, tau_act, tau_deact, smoothing_width);
+
+        // filter output
+        dctrl / f64::max(MJ_MINVAL, tau)
+    }
 }
 
 /// C: mj_lugreStribeck (engine/engine_util_misc.h:54)
@@ -1362,9 +1385,14 @@ pub fn mju_poly_potential(linear: f64, poly: *const f64, x: f64, n: i32, flg_odd
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mju_sigmoid(x: f64) -> f64 {
-    // NOTE: signature changed from previous IR version
-    // Previous params: (x : f64)
-    // Previous return: f64
-    todo!("re-translate: params renamed")
+    // fast return
+    if x <= 0.0 {
+        return 0.0;
+    }
+    if x >= 1.0 {
+        return 1.0;
+    }
+    // sigmoid: f(x) = 6*x^5 - 15*x^4 + 10*x^3
+    x * x * x * (3.0 * x * (2.0 * x - 5.0) + 10.0)
 }
 
