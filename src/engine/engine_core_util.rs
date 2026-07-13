@@ -30,28 +30,144 @@ pub fn mj_is_sparse(m: *const mjModel) -> i32 {
 /// C: mj_mergeChain (engine/engine_core_util.h:40)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_merge_chain(m: *const mjModel, chain: *mut i32, b1: i32, b2: i32, flg_skipcommon: i32) -> i32 {
-    // NOTE: signature changed from previous IR version
-    // Previous params: (m : * const mjModel, chain : * mut i32, b1 : i32, b2 : i32, flg_skipcommon : i32)
-    // Previous return: i32
-    todo!("re-translate: params renamed")
+    // SAFETY: m valid, chain valid output. Byte offsets:
+    //   body_weldid: *const i32 at 1768, body_dofadr: *const i32 at 1808
+    //   body_dofnum: *const i32 at 1800, dof_parentid: *const i32 at 2216
+    unsafe {
+        let m_ptr = m as *const u8;
+        let body_weldid = *(m_ptr.add(1768) as *const *const i32);
+        let body_dofadr = *(m_ptr.add(1808) as *const *const i32);
+        let body_dofnum = *(m_ptr.add(1800) as *const *const i32);
+        let dof_parentid = *(m_ptr.add(2216) as *const *const i32);
+
+        // skip fixed bodies
+        let b1w = *body_weldid.add(b1 as usize);
+        let b2w = *body_weldid.add(b2 as usize);
+
+        if b1w == 0 && b2w == 0 {
+            return 0;
+        }
+
+        let mut da1 = *body_dofadr.add(b1w as usize) + *body_dofnum.add(b1w as usize) - 1;
+        let mut da2 = *body_dofadr.add(b2w as usize) + *body_dofnum.add(b2w as usize) - 1;
+        let mut NV: i32 = 0;
+
+        while da1 >= 0 || da2 >= 0 {
+            let da = if da1 > da2 { da1 } else { da2 };
+            if flg_skipcommon != 0 && da1 == da && da2 == da {
+                break;
+            }
+            *chain.add(NV as usize) = da;
+            if da1 == da {
+                da1 = *dof_parentid.add(da1 as usize);
+            }
+            if da2 == da {
+                da2 = *dof_parentid.add(da2 as usize);
+            }
+            NV += 1;
+        }
+
+        // reverse
+        for i in 0..(NV / 2) {
+            let tmp = *chain.add(i as usize);
+            *chain.add(i as usize) = *chain.add((NV - i - 1) as usize);
+            *chain.add((NV - i - 1) as usize) = tmp;
+        }
+
+        NV
+    }
 }
 
 /// C: mj_mergeChainSimple (engine/engine_core_util.h:43)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_merge_chain_simple(m: *const mjModel, chain: *mut i32, b1: i32, b2: i32) -> i32 {
-    // NOTE: signature changed from previous IR version
-    // Previous params: (m : * const mjModel, chain : * mut i32, b1 : i32, b2 : i32)
-    // Previous return: i32
-    todo!("re-translate: params renamed")
+    // SAFETY: m valid, chain valid. Byte offsets:
+    //   body_dofnum: *const i32 at 1800, body_dofadr: *const i32 at 1808
+    unsafe {
+        let m_ptr = m as *const u8;
+        let body_dofnum = *(m_ptr.add(1800) as *const *const i32);
+        let body_dofadr = *(m_ptr.add(1808) as *const *const i32);
+
+        // swap bodies if wrong order
+        let (b1, b2) = if b1 > b2 { (b2, b1) } else { (b1, b2) };
+
+        let n1 = *body_dofnum.add(b1 as usize);
+        let n2 = *body_dofnum.add(b2 as usize);
+
+        if n1 == 0 && n2 == 0 {
+            return 0;
+        }
+
+        // copy b1 dofs
+        for i in 0..n1 {
+            *chain.add(i as usize) = *body_dofadr.add(b1 as usize) + i;
+        }
+
+        // copy b2 dofs
+        for i in 0..n2 {
+            *chain.add((n1 + i) as usize) = *body_dofadr.add(b2 as usize) + i;
+        }
+
+        n1 + n2
+    }
 }
 
 /// C: mj_bodyChain (engine/engine_core_util.h:46)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_body_chain(m: *const mjModel, body: i32, chain: *mut i32) -> i32 {
-    // NOTE: signature changed from previous IR version
-    // Previous params: (m : * const mjModel, body : i32, chain : * mut i32)
-    // Previous return: i32
-    todo!("re-translate: params renamed")
+    // SAFETY: m valid mjModel, chain valid output array. Byte offsets from IR:
+    //   body_simple: *const u8 at offset 1840
+    //   body_dofnum: *const i32 at offset 1800
+    //   body_dofadr: *const i32 at offset 1808
+    //   body_weldid: *const i32 at offset 1768
+    //   dof_parentid: *const i32 at offset 2216
+    unsafe {
+        let m_ptr = m as *const u8;
+        let body_simple = *(m_ptr.add(1840) as *const *const u8);
+        let body_dofnum = *(m_ptr.add(1800) as *const *const i32);
+        let body_dofadr = *(m_ptr.add(1808) as *const *const i32);
+        let body_weldid = *(m_ptr.add(1768) as *const *const i32);
+        let dof_parentid = *(m_ptr.add(2216) as *const *const i32);
+
+        let b = body as usize;
+
+        // simple body
+        if *body_simple.add(b) != 0 {
+            let dofnum = *body_dofnum.add(b);
+            for i in 0..dofnum {
+                *chain.add(i as usize) = *body_dofadr.add(b) + i;
+            }
+            return dofnum;
+        }
+
+        // general case: skip fixed bodies
+        let mut body_w = *body_weldid.add(b);
+
+        // not movable: empty chain
+        if body_w == 0 {
+            return 0;
+        }
+
+        // initialize last dof
+        let mut da = *body_dofadr.add(body_w as usize) + *body_dofnum.add(body_w as usize) - 1;
+        let mut NV: i32 = 0;
+
+        // construct chain from child to parent
+        while da >= 0 {
+            *chain.add(NV as usize) = da;
+            NV += 1;
+            da = *dof_parentid.add(da as usize);
+        }
+
+        // reverse order of chain: make it increasing
+        for i in 0..(NV / 2) {
+            let tmp = *chain.add(i as usize);
+            *chain.add(i as usize) = *chain.add((NV - i - 1) as usize);
+            *chain.add((NV - i - 1) as usize) = tmp;
+        }
+
+        NV
+    }
 }
 
 /// C: mj_jac (engine/engine_core_util.h:52)
