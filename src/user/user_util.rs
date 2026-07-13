@@ -101,10 +101,12 @@ pub fn mjuu_defined(num: f64) -> bool {
 /// C: mjuu_matadr (user/user_util.h:39)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjuu_matadr(g1: i32, g2: i32, n: i32) -> i32 {
-    // NOTE: signature changed from previous IR version
-    // Previous params: (g1 : i32, g2 : i32, n : i32)
-    // Previous return: i32
-    todo!("re-translate: params renamed")
+    if g1 < 0 || g2 < 0 || g1 >= n || g2 >= n {
+        return -1;
+    }
+
+    let (g1, g2) = if g1 > g2 { (g2, g1) } else { (g1, g2) };
+    g1 * n + g2
 }
 
 /// C: mjuu_setvec (user/user_util.h:42)
@@ -333,10 +335,31 @@ pub fn mjuu_mulvecmat_t(res: *mut f64, vec: *const f64, mat: *const f64) {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjuu_mul_rmrt(res: *mut f64, R: *const f64, M: *const f64) {
-    // NOTE: signature changed from previous IR version
-    // Previous params: (res : * mut f64, R : * const f64, M : * const f64)
-    // Previous return: ()
-    todo!("re-translate: params renamed")
+    // SAFETY: res[9], R[9], M[9] valid (caller contract)
+    unsafe {
+        // tmp = R*M
+        let mut tmp: [f64; 9] = [0.0; 9];
+        tmp[0] = *R.add(0) * *M.add(0) + *R.add(1) * *M.add(3) + *R.add(2) * *M.add(6);
+        tmp[1] = *R.add(0) * *M.add(1) + *R.add(1) * *M.add(4) + *R.add(2) * *M.add(7);
+        tmp[2] = *R.add(0) * *M.add(2) + *R.add(1) * *M.add(5) + *R.add(2) * *M.add(8);
+        tmp[3] = *R.add(3) * *M.add(0) + *R.add(4) * *M.add(3) + *R.add(5) * *M.add(6);
+        tmp[4] = *R.add(3) * *M.add(1) + *R.add(4) * *M.add(4) + *R.add(5) * *M.add(7);
+        tmp[5] = *R.add(3) * *M.add(2) + *R.add(4) * *M.add(5) + *R.add(5) * *M.add(8);
+        tmp[6] = *R.add(6) * *M.add(0) + *R.add(7) * *M.add(3) + *R.add(8) * *M.add(6);
+        tmp[7] = *R.add(6) * *M.add(1) + *R.add(7) * *M.add(4) + *R.add(8) * *M.add(7);
+        tmp[8] = *R.add(6) * *M.add(2) + *R.add(7) * *M.add(5) + *R.add(8) * *M.add(8);
+
+        // res = tmp*R'
+        *res.add(0) = tmp[0] * *R.add(0) + tmp[1] * *R.add(1) + tmp[2] * *R.add(2);
+        *res.add(1) = tmp[0] * *R.add(3) + tmp[1] * *R.add(4) + tmp[2] * *R.add(5);
+        *res.add(2) = tmp[0] * *R.add(6) + tmp[1] * *R.add(7) + tmp[2] * *R.add(8);
+        *res.add(3) = tmp[3] * *R.add(0) + tmp[4] * *R.add(1) + tmp[5] * *R.add(2);
+        *res.add(4) = tmp[3] * *R.add(3) + tmp[4] * *R.add(4) + tmp[5] * *R.add(5);
+        *res.add(5) = tmp[3] * *R.add(6) + tmp[4] * *R.add(7) + tmp[5] * *R.add(8);
+        *res.add(6) = tmp[6] * *R.add(0) + tmp[7] * *R.add(1) + tmp[8] * *R.add(2);
+        *res.add(7) = tmp[6] * *R.add(3) + tmp[7] * *R.add(4) + tmp[8] * *R.add(5);
+        *res.add(8) = tmp[6] * *R.add(6) + tmp[7] * *R.add(7) + tmp[8] * *R.add(8);
+    }
 }
 
 /// C: mjuu_mulmat (user/user_util.h:100)
