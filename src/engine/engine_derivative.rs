@@ -45,7 +45,34 @@ pub fn mjd_cross(a: *const f64, b: *const f64, Da: *mut f64, Db: *mut f64) {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjd_cross_motion_vel(D: *mut f64, v: *const f64) {
-    todo!() // mjd_crossMotion_vel
+    // SAFETY: caller guarantees D points to [36] array, v points to [6] array
+    unsafe {
+        crate::engine::engine_util_blas::mju_zero(D, 36);
+
+        *D.add(0 + 2) = -*v.add(1);
+        *D.add(0 + 1) = *v.add(2);
+
+        *D.add(6 + 2) = *v.add(0);
+        *D.add(6 + 0) = -*v.add(2);
+
+        *D.add(12 + 1) = -*v.add(0);
+        *D.add(12 + 0) = *v.add(1);
+
+        *D.add(18 + 2) = -*v.add(4);
+        *D.add(18 + 1) = *v.add(5);
+        *D.add(18 + 5) = -*v.add(1);
+        *D.add(18 + 4) = *v.add(2);
+
+        *D.add(24 + 2) = *v.add(3);
+        *D.add(24 + 0) = -*v.add(5);
+        *D.add(24 + 5) = *v.add(0);
+        *D.add(24 + 3) = -*v.add(2);
+
+        *D.add(30 + 1) = -*v.add(3);
+        *D.add(30 + 0) = *v.add(4);
+        *D.add(30 + 4) = -*v.add(0);
+        *D.add(30 + 3) = *v.add(1);
+    }
 }
 
 /// C: mjd_crossForce_vel (engine/engine_derivative.c:101)
@@ -57,7 +84,34 @@ pub fn mjd_cross_motion_vel(D: *mut f64, v: *const f64) {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjd_cross_force_vel(D: *mut f64, f: *const f64) {
-    todo!() // mjd_crossForce_vel
+    // SAFETY: caller guarantees D points to [36] array, f points to [6] array
+    unsafe {
+        crate::engine::engine_util_blas::mju_zero(D, 36);
+
+        *D.add(0 + 2) = -*f.add(1);
+        *D.add(0 + 1) = *f.add(2);
+        *D.add(0 + 5) = -*f.add(4);
+        *D.add(0 + 4) = *f.add(5);
+
+        *D.add(6 + 2) = *f.add(0);
+        *D.add(6 + 0) = -*f.add(2);
+        *D.add(6 + 5) = *f.add(3);
+        *D.add(6 + 3) = -*f.add(5);
+
+        *D.add(12 + 1) = -*f.add(0);
+        *D.add(12 + 0) = *f.add(1);
+        *D.add(12 + 4) = -*f.add(3);
+        *D.add(12 + 3) = *f.add(4);
+
+        *D.add(18 + 2) = -*f.add(4);
+        *D.add(18 + 1) = *f.add(5);
+
+        *D.add(24 + 2) = *f.add(3);
+        *D.add(24 + 0) = -*f.add(5);
+
+        *D.add(30 + 1) = -*f.add(3);
+        *D.add(30 + 0) = *f.add(4);
+    }
 }
 
 /// C: mjd_crossForce_frc (engine/engine_derivative.c:137)
@@ -69,7 +123,34 @@ pub fn mjd_cross_force_vel(D: *mut f64, f: *const f64) {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjd_cross_force_frc(D: *mut f64, vel: *const f64) {
-    todo!() // mjd_crossForce_frc
+    // SAFETY: caller guarantees D points to [36] array, vel points to [6] array
+    unsafe {
+        crate::engine::engine_util_blas::mju_zero(D, 36);
+
+        *D.add(0 + 1) = -*vel.add(2);
+        *D.add(0 + 2) = *vel.add(1);
+        *D.add(0 + 4) = -*vel.add(5);
+        *D.add(0 + 5) = *vel.add(4);
+
+        *D.add(6 + 0) = *vel.add(2);
+        *D.add(6 + 2) = -*vel.add(0);
+        *D.add(6 + 3) = *vel.add(5);
+        *D.add(6 + 5) = -*vel.add(3);
+
+        *D.add(12 + 0) = -*vel.add(1);
+        *D.add(12 + 1) = *vel.add(0);
+        *D.add(12 + 3) = -*vel.add(4);
+        *D.add(12 + 4) = *vel.add(3);
+
+        *D.add(18 + 4) = -*vel.add(2);
+        *D.add(18 + 5) = *vel.add(1);
+
+        *D.add(24 + 3) = *vel.add(2);
+        *D.add(24 + 5) = -*vel.add(0);
+
+        *D.add(30 + 3) = -*vel.add(1);
+        *D.add(30 + 4) = *vel.add(0);
+    }
 }
 
 /// C: mjd_mulInertVec_vel (engine/engine_derivative.c:173)
