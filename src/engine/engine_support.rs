@@ -380,10 +380,29 @@ pub fn mj_get_totalmass(m: *const mjModel) -> f64 {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_set_totalmass(m: *mut mjModel, newmass: f64) {
-    // NOTE: signature changed from previous IR version
-    // Previous params: (m : * mut mjModel, newmass : f64)
-    // Previous return: ()
-    todo!("re-translate: params renamed")
+    const MJ_MINVAL: f64 = 1E-15_f64;
+    // SAFETY: m is valid mutable mjModel. Access fields via byte offsets:
+    //   nbody: usize at offset 32
+    //   body_mass: *mut f64 at offset 1888
+    //   body_inertia: *mut f64 at offset 1904
+    unsafe {
+        let m_ptr = m as *mut u8;
+        let nbody = *(m_ptr.add(32) as *const usize);
+        let body_mass = *(m_ptr.add(1888) as *const *mut f64);
+        let body_inertia = *(m_ptr.add(1904) as *const *mut f64);
+
+        // compute scale factor
+        let current = mj_get_totalmass(m);
+        let scale = f64::max(MJ_MINVAL, newmass / f64::max(MJ_MINVAL, current));
+
+        // scale all masses and inertias
+        for i in 1..nbody {
+            *body_mass.add(i) *= scale;
+            *body_inertia.add(3 * i) *= scale;
+            *body_inertia.add(3 * i + 1) *= scale;
+            *body_inertia.add(3 * i + 2) *= scale;
+        }
+    }
 }
 
 /// C: mj_version (engine/engine_support.h:121)
