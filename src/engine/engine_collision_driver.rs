@@ -1,5 +1,5 @@
 //! Port of: engine/engine_collision_driver.c
-//! IR hash: 6ff71909dacce27f
+//! IR hash: d784001b6381c4aa
 //! CODEGEN: signatures locked. Only fill todo!() bodies.
 
 use crate::types::*;
@@ -60,7 +60,11 @@ pub fn has_plane(m: *const mjModel, body: i32) -> i32 {
 /// C: filterBitmask (engine/engine_collision_driver.c:227)
 #[allow(unused_variables, non_snake_case)]
 pub fn filter_bitmask(contype1: i32, conaffinity1: i32, contype2: i32, conaffinity2: i32) -> i32 {
-    todo!() // filterBitmask
+    if (contype1 & conaffinity2) == 0 && (contype2 & conaffinity1) == 0 {
+        1
+    } else {
+        0
+    }
 }
 
 /// C: filterBox (engine/engine_collision_driver.c:234)
@@ -71,7 +75,16 @@ pub fn filter_bitmask(contype1: i32, conaffinity1: i32, contype2: i32, conaffini
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn filter_box(aabb1: *const f64, aabb2: *const f64, margin: f64) -> i32 {
-    todo!() // filterBox
+    // SAFETY: aabb1 and aabb2 point to arrays of 6 f64 from caller contract
+    unsafe {
+        if *aabb1.add(0) + *aabb1.add(3) + margin < *aabb2.add(0) - *aabb2.add(3) { return 1; }
+        if *aabb1.add(1) + *aabb1.add(4) + margin < *aabb2.add(1) - *aabb2.add(4) { return 1; }
+        if *aabb1.add(2) + *aabb1.add(5) + margin < *aabb2.add(2) - *aabb2.add(5) { return 1; }
+        if *aabb2.add(0) + *aabb2.add(3) + margin < *aabb1.add(0) - *aabb1.add(3) { return 1; }
+        if *aabb2.add(1) + *aabb2.add(4) + margin < *aabb1.add(1) - *aabb1.add(4) { return 1; }
+        if *aabb2.add(2) + *aabb2.add(5) + margin < *aabb1.add(2) - *aabb1.add(5) { return 1; }
+    }
+    0
 }
 
 /// C: filterSphereBox (engine/engine_collision_driver.c:246)
@@ -82,7 +95,16 @@ pub fn filter_box(aabb1: *const f64, aabb2: *const f64, margin: f64) -> i32 {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn filter_sphere_box(s: *const f64, bound: f64, aabb: *const f64) -> i32 {
-    todo!() // filterSphereBox
+    // SAFETY: s points to array of 3 f64, aabb points to array of 6 f64 from caller contract
+    unsafe {
+        if *s.add(0) + bound < *aabb.add(0) - *aabb.add(3) { return 1; }
+        if *s.add(1) + bound < *aabb.add(1) - *aabb.add(4) { return 1; }
+        if *s.add(2) + bound < *aabb.add(2) - *aabb.add(5) { return 1; }
+        if *s.add(0) - bound > *aabb.add(0) + *aabb.add(3) { return 1; }
+        if *s.add(1) - bound > *aabb.add(1) + *aabb.add(4) { return 1; }
+        if *s.add(2) - bound > *aabb.add(2) + *aabb.add(5) { return 1; }
+    }
+    0
 }
 
 /// C: filterSphere (engine/engine_collision_driver.c:258)
@@ -93,7 +115,14 @@ pub fn filter_sphere_box(s: *const f64, bound: f64, aabb: *const f64) -> i32 {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn filter_sphere(pos1: *const f64, pos2: *const f64, bound: f64) -> i32 {
-    todo!() // filterSphere
+    // SAFETY: pos1 and pos2 point to arrays of 3 f64 from caller contract
+    unsafe {
+        let dif0 = *pos1.add(0) - *pos2.add(0);
+        let dif1 = *pos1.add(1) - *pos2.add(1);
+        let dif2 = *pos1.add(2) - *pos2.add(2);
+        let distsqr = dif0 * dif0 + dif1 * dif1 + dif2 * dif2;
+        if distsqr > bound * bound { 1 } else { 0 }
+    }
 }
 
 /// C: mj_filterSphere (engine/engine_collision_driver.c:267)
@@ -111,7 +140,12 @@ pub fn mj_filter_sphere(m: *const mjModel, d: *mut mjData, g1: i32, g2: i32, mar
 /// C: filterBodyPair (engine/engine_collision_driver.c:288)
 #[allow(unused_variables, non_snake_case)]
 pub fn filter_body_pair(weldbody1: i32, weldparent1: i32, asleep1: i32, weldbody2: i32, weldparent2: i32, asleep2: i32, dsbl_filterparent: i32) -> i32 {
-    todo!() // filterBodyPair
+    if weldbody1 == weldbody2 { return 1; }
+    if asleep1 != 0 && asleep2 != 0 { return 1; }
+    if (asleep1 != 0 && weldbody2 == 0) || (asleep2 != 0 && weldbody1 == 0) { return 1; }
+    if (dsbl_filterparent == 0 && weldbody1 != 0 && weldbody2 != 0)
+        && (weldbody1 == weldparent2 || weldbody2 == weldparent1) { return 1; }
+    0
 }
 
 /// C: canCollide (engine/engine_collision_driver.c:318)
