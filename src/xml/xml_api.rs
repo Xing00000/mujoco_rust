@@ -47,7 +47,7 @@ pub fn mj_parse_xml(filename: *const i8, vfs: *const mjVFS, error: *mut i8, erro
 /// C: mj_parseXMLString (xml/xml_api.h:49)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_parse_xml_string(xml: *const i8, vfs: *const mjVFS, error: *mut i8, error_sz: i32) -> *mut mjSpec {
-    todo!() // mj_parseXMLString
+    todo!("requires C++ XML parser infrastructure (ParseSpecFromString)")
 }
 
 /// C: mj_saveXML (xml/xml_api.h:52)

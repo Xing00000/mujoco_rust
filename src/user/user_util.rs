@@ -558,7 +558,22 @@ pub fn mjuu_frameaccuminv(pos: *mut f64, quat: *mut f64, childpos: *const f64, c
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjuu_globalinertia(global: *mut f64, local: *const f64, quat: *const f64) {
-    todo!() // mjuu_globalinertia
+    // SAFETY: global[6], local[3], quat[4] valid (caller contract)
+    unsafe {
+        let mut mat: [f64; 9] = [0.0; 9];
+        mjuu_quat2mat(mat.as_mut_ptr(), quat);
+        let tmp: [f64; 9] = [
+            mat[0] * *local.add(0), mat[3] * *local.add(0), mat[6] * *local.add(0),
+            mat[1] * *local.add(1), mat[4] * *local.add(1), mat[7] * *local.add(1),
+            mat[2] * *local.add(2), mat[5] * *local.add(2), mat[8] * *local.add(2),
+        ];
+        *global.add(0) = mat[0] * tmp[0] + mat[1] * tmp[3] + mat[2] * tmp[6];
+        *global.add(1) = mat[3] * tmp[1] + mat[4] * tmp[4] + mat[5] * tmp[7];
+        *global.add(2) = mat[6] * tmp[2] + mat[7] * tmp[5] + mat[8] * tmp[8];
+        *global.add(3) = mat[0] * tmp[1] + mat[1] * tmp[4] + mat[2] * tmp[7];
+        *global.add(4) = mat[0] * tmp[2] + mat[1] * tmp[5] + mat[2] * tmp[8];
+        *global.add(5) = mat[3] * tmp[2] + mat[4] * tmp[5] + mat[5] * tmp[8];
+    }
 }
 
 /// C: mjuu_offcenter (user/user_util.h:147)
@@ -569,7 +584,15 @@ pub fn mjuu_globalinertia(global: *mut f64, local: *const f64, quat: *const f64)
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjuu_offcenter(res: *mut f64, mass: f64, vec: *const f64) {
-    todo!() // mjuu_offcenter
+    // SAFETY: res[6], vec[3] valid (caller contract)
+    unsafe {
+        *res.add(0) = mass * (*vec.add(1) * *vec.add(1) + *vec.add(2) * *vec.add(2));
+        *res.add(1) = mass * (*vec.add(0) * *vec.add(0) + *vec.add(2) * *vec.add(2));
+        *res.add(2) = mass * (*vec.add(0) * *vec.add(0) + *vec.add(1) * *vec.add(1));
+        *res.add(3) = -mass * *vec.add(0) * *vec.add(1);
+        *res.add(4) = -mass * *vec.add(0) * *vec.add(2);
+        *res.add(5) = -mass * *vec.add(1) * *vec.add(2);
+    }
 }
 
 /// C: mjuu_visccoef (user/user_util.h:150)
@@ -662,7 +685,13 @@ pub fn mjuu_eigendecompose(mat: *mut f64, eigval: *mut f64, eigvec: *mut f64, n:
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjuu_trn_vec_pose(res: *mut f64, pos: *const f64, quat: *const f64, vec: *const f64) {
-    todo!() // mjuu_trnVecPose
+    // SAFETY: res[3], pos[3], quat[4], vec[3] valid (caller contract)
+    unsafe {
+        mjuu_rot_vec_quat(res, vec, quat);
+        *res.add(0) += *pos.add(0);
+        *res.add(1) += *pos.add(1);
+        *res.add(2) += *pos.add(2);
+    }
 }
 
 /// C: mjuu_fullInertia (user/user_util.h:172)
@@ -820,6 +849,20 @@ pub fn mjuu_ext_to_content_type(filename: string_view) -> std__string {
 /// C: mjuu_dirnamelen (user/user_util.h:299)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjuu_dirnamelen(path: *const i8) -> i32 {
-    todo!() // mjuu_dirnamelen
+    if path.is_null() {
+        return 0;
+    }
+    // SAFETY: path is a valid null-terminated C string (caller contract)
+    unsafe {
+        let mut pos: i32 = -1;
+        let mut i: i32 = 0;
+        while *path.offset(i as isize) != 0 {
+            if *path.offset(i as isize) == b'/' as i8 || *path.offset(i as isize) == b'\\' as i8 {
+                pos = i;
+            }
+            i += 1;
+        }
+        pos + 1
+    }
 }
 

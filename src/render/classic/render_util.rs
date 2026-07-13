@@ -24,7 +24,13 @@ pub fn mjr_make_normal(normal: *mut f32, p1: *const f32, p2: *const f32, p3: *co
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjr_setf4(vec: *mut f32, f0: f32, f1: f32, f2: f32, f3: f32) {
-    todo!() // mjr_setf4
+    // SAFETY: caller guarantees vec points to at least 4 elements
+    unsafe {
+        *vec.add(0) = f0;
+        *vec.add(1) = f1;
+        *vec.add(2) = f2;
+        *vec.add(3) = f3;
+    }
 }
 
 /// C: mjr_setf3 (render/classic/render_util.h:32)
@@ -35,7 +41,12 @@ pub fn mjr_setf4(vec: *mut f32, f0: f32, f1: f32, f2: f32, f3: f32) {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjr_setf3(vec: *mut f32, f0: f32, f1: f32, f2: f32) {
-    todo!() // mjr_setf3
+    // SAFETY: caller guarantees vec points to at least 3 elements
+    unsafe {
+        *vec.add(0) = f0;
+        *vec.add(1) = f1;
+        *vec.add(2) = f2;
+    }
 }
 
 /// C: mjr_mulMat44 (render/classic/render_util.h:35)
@@ -46,7 +57,17 @@ pub fn mjr_setf3(vec: *mut f32, f0: f32, f1: f32, f2: f32) {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjr_mul_mat44(res: *mut f32, A: *const f32, B: *const f32) {
-    todo!() // mjr_mulMat44
+    // SAFETY: caller guarantees res, A, B point to at least 16 elements (4x4 column-major)
+    unsafe {
+        for r in 0..4 {
+            for c in 0..4 {
+                *res.add(r + 4 * c) = 0.0;
+                for i in 0..4 {
+                    *res.add(r + 4 * c) += *A.add(r + 4 * i) * *B.add(i + 4 * c);
+                }
+            }
+        }
+    }
 }
 
 /// C: mjr_getrow4 (render/classic/render_util.h:38)
@@ -68,7 +89,12 @@ pub fn mjr_getrow4(res: *mut f32, A: *const f32, r: i32) {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjr_cross_vec(a: *mut f32, b: *const f32, c: *const f32) {
-    todo!() // mjr_crossVec
+    // SAFETY: caller guarantees a, b, c point to at least 3 elements
+    unsafe {
+        *a.add(0) = *b.add(1) * *c.add(2) - *b.add(2) * *c.add(1);
+        *a.add(1) = *b.add(2) * *c.add(0) - *b.add(0) * *c.add(2);
+        *a.add(2) = *b.add(0) * *c.add(1) - *b.add(1) * *c.add(0);
+    }
 }
 
 /// C: mjr_normalizeVec (render/classic/render_util.h:44)
@@ -79,7 +105,20 @@ pub fn mjr_cross_vec(a: *mut f32, b: *const f32, c: *const f32) {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjr_normalize_vec(v: *mut f32) {
-    todo!() // mjr_normalizeVec
+    // SAFETY: caller guarantees v points to at least 3 elements
+    unsafe {
+        let len: f32 = (*v.add(0) * *v.add(0) + *v.add(1) * *v.add(1) + *v.add(2) * *v.add(2)).sqrt();
+        if len < 1E-10f32 {
+            *v.add(0) = 0.0;
+            *v.add(1) = 0.0;
+            *v.add(2) = 1.0;
+        } else {
+            let scl: f32 = 1.0f32 / len;
+            *v.add(0) *= scl;
+            *v.add(1) *= scl;
+            *v.add(2) *= scl;
+        }
+    }
 }
 
 /// C: mjr_orthoVec (render/classic/render_util.h:47)
@@ -102,7 +141,10 @@ pub fn mjr_ortho_vec(res: *mut f32, v: *const f32) {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjr_dot_vec(a: *const f32, b: *const f32) -> f32 {
-    todo!() // mjr_dotVec
+    // SAFETY: caller guarantees a, b point to at least 3 elements
+    unsafe {
+        *a.add(0) * *b.add(0) + *a.add(1) * *b.add(1) + *a.add(2) * *b.add(2)
+    }
 }
 
 /// C: mjr_multiply4 (render/classic/render_util.h:53)
@@ -113,7 +155,16 @@ pub fn mjr_dot_vec(a: *const f32, b: *const f32) -> f32 {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjr_multiply4(res: *mut f32, mat: *const f32, vec: *const f32) {
-    todo!() // mjr_multiply4
+    // SAFETY: caller guarantees res points to at least 4 elements,
+    // mat points to at least 16 elements (4x4 column-major), vec points to at least 4 elements
+    unsafe {
+        for i in 0..4 {
+            *res.add(i) = 0.0;
+            for j in 0..4 {
+                *res.add(i) += *mat.add(i + 4 * j) * *vec.add(j);
+            }
+        }
+    }
 }
 
 /// C: mjr_lookAt (render/classic/render_util.h:56)
