@@ -1,5 +1,5 @@
 //! Port of: engine/engine_plugin.cc
-//! IR hash: 32301b9dc9774d55
+//! IR hash: d3ac8715281cd691
 //! CODEGEN: signatures locked. Only fill todo!() bodies.
 
 use crate::types::*;
@@ -53,10 +53,7 @@ pub fn plugin_attr_seek(m: *const mjModel, plugin_id: i32, attrib_id: i32) -> *c
 /// C: mjp_defaultPlugin (engine/engine_plugin.h:26)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjp_default_plugin(plugin: *mut mjpPlugin) {
-    // SAFETY: caller guarantees plugin points to valid mjpPlugin (152 bytes)
-    unsafe {
-        std::ptr::write_bytes(plugin as *mut u8, 0, std::mem::size_of::<mjpPlugin>());
-    }
+    todo!() // mjp_defaultPlugin
 }
 
 /// C: mjp_registerPlugin (engine/engine_plugin.h:29)
@@ -105,40 +102,40 @@ pub fn mjp_resource_provider_count() -> i32 {
 /// C: mjp_getPlugin (engine/engine_plugin.h:41)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjp_get_plugin(name: *const i8, slot: *mut i32) -> *const mjpPlugin {
-    todo!("requires global plugin table")
+    // NOTE: signature changed from previous IR version
+    // Previous params: (name : * const i8, slot : * mut i32)
+    // Previous return: * const mjpPlugin
+    todo!("re-translate: params renamed")
 }
 
 /// C: mjp_defaultResourceProvider (engine/engine_plugin.h:44)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjp_default_resource_provider(provider: *mut mjpResourceProvider) {
-    // SAFETY: caller guarantees provider points to valid mjpResourceProvider (64 bytes)
-    unsafe {
-        std::ptr::write_bytes(provider as *mut u8, 0, std::mem::size_of::<mjpResourceProvider>());
-    }
+    todo!() // mjp_defaultResourceProvider
 }
 
 /// C: mjp_getResourceProvider (engine/engine_plugin.h:47)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjp_get_resource_provider(resource_name: *const i8) -> *const mjpResourceProvider {
-    todo!("requires global resource provider table")
+    // NOTE: signature changed from previous IR version
+    // Previous params: (resource_name : * const i8)
+    // Previous return: * const mjpResourceProvider
+    todo!("re-translate: params renamed")
 }
 
 /// C: mjp_getPluginAtSlot (engine/engine_plugin.h:50)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjp_get_plugin_at_slot(slot: i32) -> *const mjpPlugin {
-    // SAFETY: delegates to GlobalTable<mjpPlugin>::GetSingleton().GetAtSlot(slot)
-    unsafe {
-        crate::engine::engine_global_table::global_table_get_at_slot(
-            crate::engine::engine_global_table::global_table_get_singleton() as *mut GlobalTable,
-            slot,
-        ) as *const mjpPlugin
-    }
+    todo!() // mjp_getPluginAtSlot
 }
 
 /// C: mjp_getResourceProviderAtSlot (engine/engine_plugin.h:53)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjp_get_resource_provider_at_slot(slot: i32) -> *const mjpResourceProvider {
-    todo!("requires global resource provider table")
+    // NOTE: signature changed from previous IR version
+    // Previous params: (slot : i32)
+    // Previous return: * const mjpResourceProvider
+    todo!("re-translate: params renamed")
 }
 
 /// C: mj_getPluginConfig (engine/engine_plugin.h:57)
@@ -184,10 +181,7 @@ pub fn mjp_register_decoder(decoder: *const mjpDecoder) {
 /// C: mjp_defaultDecoder (engine/engine_plugin.h:69)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjp_default_decoder(decoder: *mut mjpDecoder) {
-    // SAFETY: caller guarantees decoder points to valid mjpDecoder (32 bytes)
-    unsafe {
-        std::ptr::write_bytes(decoder as *mut u8, 0, std::mem::size_of::<mjpDecoder>());
-    }
+    todo!() // mjp_defaultDecoder
 }
 
 /// C: mjp_findDecoder (engine/engine_plugin.h:72)
@@ -213,10 +207,7 @@ pub fn mjp_register_encoder(encoder: *const mjpEncoder) {
 /// C: mjp_defaultEncoder (engine/engine_plugin.h:78)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjp_default_encoder(encoder: *mut mjpEncoder) {
-    // SAFETY: caller guarantees encoder points to valid mjpEncoder (32 bytes)
-    unsafe {
-        std::ptr::write_bytes(encoder as *mut u8, 0, std::mem::size_of::<mjpEncoder>());
-    }
+    todo!() // mjp_defaultEncoder
 }
 
 /// C: mjp_findEncoder (engine/engine_plugin.h:81)
@@ -232,12 +223,18 @@ pub fn mjp_find_encoder(filename: *const i8, content_type: *const i8) -> *const 
 /// C: mjp_getPluginUnsafe (engine/engine_plugin.h:95)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjp_get_plugin_unsafe(name: *const i8, slot: *mut i32, nslot: i32) -> *const mjpPlugin {
-    todo!("requires global plugin table")
+    // NOTE: signature changed from previous IR version
+    // Previous params: (name : * const i8, slot : * mut i32, nslot : i32)
+    // Previous return: * const mjpPlugin
+    todo!("re-translate: params renamed")
 }
 
 /// C: mjp_getPluginAtSlotUnsafe (engine/engine_plugin.h:98)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjp_get_plugin_at_slot_unsafe(slot: i32, nslot: i32) -> *const mjpPlugin {
-    todo!("requires global plugin table")
+    // NOTE: signature changed from previous IR version
+    // Previous params: (slot : i32, nslot : i32)
+    // Previous return: * const mjpPlugin
+    todo!("re-translate: params renamed")
 }
 

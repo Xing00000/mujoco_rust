@@ -1,5 +1,5 @@
 //! Port of: engine/engine_derivative.c
-//! IR hash: 32301b9dc9774d55
+//! IR hash: d3ac8715281cd691
 //! CODEGEN: signatures locked. Only fill todo!() bodies.
 
 use crate::types::*;

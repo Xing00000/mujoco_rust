@@ -1,5 +1,5 @@
 //! Port of: xml/xml_numeric_format.h
-//! IR hash: 32301b9dc9774d55
+//! IR hash: d3ac8715281cd691
 //! CODEGEN: signatures locked. Only fill todo!() bodies.
 
 use crate::types::*;
@@ -16,6 +16,6 @@ pub fn mj_private_get_xml_precision() -> i32 {
 /// C: _mjPRIVATE__set_xml_precision (xml/xml_numeric_format.h:24)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_private_set_xml_precision(precision: i32) {
-    PRECISION.with(|p| p.set(precision));
+    todo!() // _mjPRIVATE__set_xml_precision
 }
 

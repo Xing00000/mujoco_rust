@@ -1,5 +1,5 @@
 //! Port of: engine/engine_collision_gjk.c
-//! IR hash: 32301b9dc9774d55
+//! IR hash: d3ac8715281cd691
 //! CODEGEN: signatures locked. Only fill todo!() bodies.
 
 use crate::types::*;
@@ -7,7 +7,7 @@ use crate::types::*;
 /// C: align8 (engine/engine_collision_gjk.c:49)
 #[allow(unused_variables, non_snake_case)]
 pub fn align8(size: usize) -> usize {
-    ((size + 7) / 8) * 8
+    todo!() // align8
 }
 
 /// C: subdistance (engine/engine_collision_gjk.c:56)
@@ -897,7 +897,10 @@ pub fn inflate(status: *mut mjCCDStatus, margin1: f64, margin2: f64) {
 /// Calls: align8
 #[allow(unused_variables, non_snake_case)]
 pub fn mjc_ccd_size(iterations: i32) -> usize {
-    todo!("requires internal Vertex/Face struct sizes from C")
+    // NOTE: signature changed from previous IR version
+    // Previous params: (iterations : i32)
+    // Previous return: usize
+    todo!("re-translate: params renamed")
 }
 
 /// C: mjc_ccd (engine/engine_collision_gjk.h:108)

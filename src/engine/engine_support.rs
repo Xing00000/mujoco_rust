@@ -1,5 +1,5 @@
 //! Port of: engine/engine_support.c
-//! IR hash: 32301b9dc9774d55
+//! IR hash: d3ac8715281cd691
 //! CODEGEN: signatures locked. Only fill todo!() bodies.
 
 use crate::types::*;
@@ -143,7 +143,10 @@ pub fn mj_set_keyframe(m: *mut mjModel, d: *const mjData, k: i32) {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_full_m(m: *const mjModel, d: *const mjData, dst: *mut f64) {
-    todo!("requires mjModel/mjData field access")
+    // NOTE: signature changed from previous IR version
+    // Previous params: (m : * const mjModel, d : * const mjData, dst : * mut f64)
+    // Previous return: ()
+    todo!("re-translate: params renamed")
 }
 
 /// C: mj_mulM (engine/engine_support.h:65)
@@ -290,31 +293,16 @@ pub fn mj_integrate_pos(m: *const mjModel, qpos: *mut f64, qvel: *const f64, dt:
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_normalize_quat(m: *const mjModel, qpos: *mut f64) {
-    todo!("requires mjModel field access")
+    // NOTE: signature changed from previous IR version
+    // Previous params: (m : * const mjModel, qpos : * mut f64)
+    // Previous return: ()
+    todo!("re-translate: params renamed")
 }
 
 /// C: mj_actuatorDisabled (engine/engine_support.h:108)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_actuator_disabled(m: *const mjModel, i: i32) -> i32 {
-    // SAFETY: caller guarantees m is valid and i is a valid actuator index.
-    // mjModel is opaque; access fields via byte offsets from IR:
-    //   actuator_group: *mut i32 at offset 4696
-    //   opt.disableactuator: i32 at offset 736+288 = 1024
-    unsafe {
-        let m_ptr = m as *const u8;
-
-        // m->actuator_group is a pointer at offset 4696
-        let actuator_group_ptr = *(m_ptr.add(4696) as *const *const i32);
-        let group: i32 = *actuator_group_ptr.add(i as usize);
-
-        if group < 0 || group > 30 {
-            0
-        } else {
-            // m->opt.disableactuator is i32 at offset 1024
-            let disableactuator = *(m_ptr.add(1024) as *const i32);
-            if disableactuator & (1 << group) != 0 { 1 } else { 0 }
-        }
-    }
+    todo!() // mj_actuatorDisabled
 }
 
 /// C: mj_nextActivation (engine/engine_support.h:111)
@@ -340,7 +328,10 @@ pub fn mj_next_activation(m: *const mjModel, d: *const mjData, actuator_id: i32,
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_get_totalmass(m: *const mjModel) -> f64 {
-    todo!("requires mjModel field access")
+    // NOTE: signature changed from previous IR version
+    // Previous params: (m : * const mjModel)
+    // Previous return: f64
+    todo!("re-translate: params renamed")
 }
 
 /// C: mj_setTotalmass (engine/engine_support.h:118)
@@ -367,7 +358,10 @@ pub fn mj_version() -> i32 {
 /// C: mj_versionString (engine/engine_support.h:124)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_version_string() -> *const i8 {
-    todo!("requires static version string")
+    // NOTE: signature changed from previous IR version
+    // Previous params: ()
+    // Previous return: * const i8
+    todo!("re-translate: params renamed")
 }
 
 /// C: mju_condataSize (engine/engine_support.h:127)

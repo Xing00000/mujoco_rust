@@ -1,5 +1,5 @@
 //! Port of: xml/xml_util.cc
-//! IR hash: 32301b9dc9774d55
+//! IR hash: d3ac8715281cd691
 //! CODEGEN: signatures locked. Only fill todo!() bodies.
 
 use crate::types::*;
@@ -119,24 +119,7 @@ pub fn mj_x_util_write_vector(self_ptr: *mut mjXUtil, elem: *mut XMLElement, nam
 /// C: mjCopyError (xml/xml_util.h:32)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_copy_error(dst: *mut i8, src: *const i8, maxlen: i32) {
-    if dst.is_null() || maxlen <= 0 {
-        return;
-    }
-    // SAFETY: caller guarantees dst points to buffer of at least maxlen bytes,
-    // src is a valid C string
-    unsafe {
-        let n = maxlen as usize;
-        let mut i = 0usize;
-        while i < n {
-            let c = *src.add(i);
-            *dst.add(i) = c;
-            if c == 0 {
-                break;
-            }
-            i += 1;
-        }
-        *dst.add(n - 1) = 0;
-    }
+    todo!() // mjCopyError
 }
 
 /// C: FirstChildElement (xml/xml_util.h:36)
