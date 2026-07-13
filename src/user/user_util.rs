@@ -324,7 +324,15 @@ pub fn mjuu_mulvecmat(res: *mut f64, vec: *const f64, mat: *const f64) {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjuu_mulvecmat_t(res: *mut f64, vec: *const f64, mat: *const f64) {
-    todo!() // mjuu_mulvecmatT
+    // SAFETY: res[3], vec[3], mat[9] valid (caller contract)
+    unsafe {
+        let tmp0 = *mat.add(0) * *vec.add(0) + *mat.add(3) * *vec.add(1) + *mat.add(6) * *vec.add(2);
+        let tmp1 = *mat.add(1) * *vec.add(0) + *mat.add(4) * *vec.add(1) + *mat.add(7) * *vec.add(2);
+        let tmp2 = *mat.add(2) * *vec.add(0) + *mat.add(5) * *vec.add(1) + *mat.add(8) * *vec.add(2);
+        *res.add(0) = tmp0;
+        *res.add(1) = tmp1;
+        *res.add(2) = tmp2;
+    }
 }
 
 /// C: mjuu_mulRMRT (user/user_util.h:97)
@@ -637,10 +645,31 @@ pub fn mjuu_visccoef(visccoef: *mut f64, mass: f64, inertia: *const f64, scl: f6
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjuu_rot_vec_quat(res: *mut f64, vec: *const f64, quat: *const f64) {
-    // NOTE: signature changed from previous IR version
-    // Previous params: (res : * mut f64, vec : * const f64, quat : * const f64)
-    // Previous return: ()
-    todo!("re-translate: params renamed")
+    // SAFETY: res[3], vec[3], quat[4] valid (caller contract)
+    unsafe {
+        // zero vec: zero res
+        if *vec.add(0) == 0.0 && *vec.add(1) == 0.0 && *vec.add(2) == 0.0 {
+            *res.add(0) = 0.0;
+            *res.add(1) = 0.0;
+            *res.add(2) = 0.0;
+        }
+        // null quat: copy vec
+        else if *quat.add(0) == 1.0 && *quat.add(1) == 0.0 && *quat.add(2) == 0.0 && *quat.add(3) == 0.0 {
+            std::ptr::copy_nonoverlapping(vec, res, 3);
+        }
+        // regular processing
+        else {
+            // tmp = q_w * v + cross(q_xyz, v)
+            let tmp0 = *quat.add(0) * *vec.add(0) + *quat.add(2) * *vec.add(2) - *quat.add(3) * *vec.add(1);
+            let tmp1 = *quat.add(0) * *vec.add(1) + *quat.add(3) * *vec.add(0) - *quat.add(1) * *vec.add(2);
+            let tmp2 = *quat.add(0) * *vec.add(2) + *quat.add(1) * *vec.add(1) - *quat.add(2) * *vec.add(0);
+
+            // res = v + 2 * cross(q_xyz, t)
+            *res.add(0) = *vec.add(0) + 2.0 * (*quat.add(2) * tmp2 - *quat.add(3) * tmp1);
+            *res.add(1) = *vec.add(1) + 2.0 * (*quat.add(3) * tmp0 - *quat.add(1) * tmp2);
+            *res.add(2) = *vec.add(2) + 2.0 * (*quat.add(1) * tmp1 - *quat.add(2) * tmp0);
+        }
+    }
 }
 
 /// C: mjuu_updateFrame (user/user_util.h:156)
