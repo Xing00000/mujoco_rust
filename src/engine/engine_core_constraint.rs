@@ -136,7 +136,13 @@ pub fn getposdim(m: *const mjModel, d: *const mjData, i: i32, pos: *mut f64, dim
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn power(a: f64, b: f64) -> f64 {
-    todo!() // power
+    if b == 1.0 {
+        a
+    } else if b == 2.0 {
+        a * a
+    } else {
+        f64::powf(a, b)
+    }
 }
 
 /// C: getimpedance (engine/engine_core_constraint.c:2100)

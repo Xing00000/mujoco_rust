@@ -357,7 +357,35 @@ pub fn make_face(_face: *mut f32, _normal: *mut f32, radius: f64, vertxpos: *con
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn add_normal(vertnorm: *mut f64, vertxpos: *const f64, i0: i32, i1: i32, i2: i32) {
-    todo!() // addNormal
+    // SAFETY: caller guarantees vertnorm and vertxpos point to valid arrays
+    // with at least 3*(max(i0,i1,i2)+1) elements
+    unsafe {
+        let i0 = i0 as usize;
+        let i1 = i1 as usize;
+        let i2 = i2 as usize;
+
+        let e01: [f64; 3] = [
+            *vertxpos.add(3 * i1) - *vertxpos.add(3 * i0),
+            *vertxpos.add(3 * i1 + 1) - *vertxpos.add(3 * i0 + 1),
+            *vertxpos.add(3 * i1 + 2) - *vertxpos.add(3 * i0 + 2),
+        ];
+        let e02: [f64; 3] = [
+            *vertxpos.add(3 * i2) - *vertxpos.add(3 * i0),
+            *vertxpos.add(3 * i2 + 1) - *vertxpos.add(3 * i0 + 1),
+            *vertxpos.add(3 * i2 + 2) - *vertxpos.add(3 * i0 + 2),
+        ];
+        let n: [f64; 3] = [
+            e01[1] * e02[2] - e01[2] * e02[1],
+            e01[2] * e02[0] - e01[0] * e02[2],
+            e01[0] * e02[1] - e01[1] * e02[0],
+        ];
+
+        for k in 0..3 {
+            *vertnorm.add(3 * i0 + k) += n[k];
+            *vertnorm.add(3 * i1 + k) += n[k];
+            *vertnorm.add(3 * i2 + k) += n[k];
+        }
+    }
 }
 
 /// C: makeSmooth (engine/engine_vis_visualize.c:3076)
@@ -431,7 +459,16 @@ pub fn catenary_intercept(v: f64, h: f64, length: f64) -> f64 {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn catenary_residual(b: f64, intercept: f64, grad: *mut f64) -> f64 {
-    todo!() // catenary_residual
+    let a: f64 = 0.5 / b;
+    let mut sinh_val: f64 = 0.0;
+    let cosh_val: f64 = cosh_sinh(a, &mut sinh_val);
+    if !grad.is_null() {
+        // SAFETY: caller guarantees grad points to a valid f64 when non-null
+        unsafe {
+            *grad = (a * cosh_val - sinh_val) * f64::powf(2.0 * b * sinh_val - 1.0, -1.5);
+        }
+    }
+    1.0 / f64::sqrt(2.0 * b * sinh_val - 1.0) - intercept
 }
 
 /// C: solve_catenary (engine/engine_vis_visualize.c:3549)

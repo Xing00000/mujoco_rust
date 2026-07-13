@@ -36,7 +36,14 @@ pub fn reset_arena(d: *mut mjData) {
 /// C: alignArena (engine/engine_collision_driver.c:189)
 #[allow(unused_variables, non_snake_case)]
 pub fn align_arena(d: *mut mjData, alignment: usize) -> usize {
-    todo!() // alignArena
+    // SAFETY: caller guarantees d is a valid pointer to mjData
+    unsafe {
+        let misalignment = (*d).parena % alignment;
+        if misalignment != 0 {
+            (*d).parena += alignment - misalignment;
+        }
+        (*d).parena
+    }
 }
 
 /// C: planeGeomDist (engine/engine_collision_driver.c:199)
@@ -151,7 +158,23 @@ pub fn filter_body_pair(weldbody1: i32, weldparent1: i32, asleep1: i32, weldbody
 /// C: canCollide (engine/engine_collision_driver.c:318)
 #[allow(unused_variables, non_snake_case)]
 pub fn can_collide(m: *const mjModel, bf: i32) -> i32 {
-    todo!() // canCollide
+    // SAFETY: caller guarantees m is a valid pointer to mjModel with valid array fields
+    unsafe {
+        if (bf as usize) < (*m).nbody {
+            if *(*m).body_contype.add(bf as usize) != 0 || *(*m).body_conaffinity.add(bf as usize) != 0 {
+                1
+            } else {
+                0
+            }
+        } else {
+            let f = bf as usize - (*m).nbody;
+            if *(*m).flex_contype.add(f) != 0 || *(*m).flex_conaffinity.add(f) != 0 {
+                1
+            } else {
+                0
+            }
+        }
+    }
 }
 
 /// C: canCollide2 (engine/engine_collision_driver.c:329)
