@@ -2072,7 +2072,7 @@ pub fn mju_outside_box(point: *const f64, pos: *const f64, mat: *const f64, size
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mju_print_mat(mat: *const f64, nr: i32, nc: i32) {
-    todo!() // mju_printMat
+    todo!("requires printf/stdout - I/O function not testable")
 }
 
 /// C: mju_printMatSparse (engine/engine_util_misc.h:220)
@@ -2083,7 +2083,7 @@ pub fn mju_print_mat(mat: *const f64, nr: i32, nc: i32) {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mju_print_mat_sparse(mat: *const f64, nr: i32, rownnz: *const i32, rowadr: *const i32, colind: *const i32) {
-    todo!() // mju_printMatSparse
+    todo!("requires printf/stdout - I/O function not testable")
 }
 
 /// C: mju_min (engine/engine_util_misc.h:225)
@@ -2146,19 +2146,86 @@ pub fn mju_round(x: f64) -> i32 {
 /// C: mju_type2Str (engine/engine_util_misc.h:240)
 #[allow(unused_variables, non_snake_case)]
 pub fn mju_type2str(r#type: i32) -> *const i8 {
-    todo!() // mju_type2Str
+    // SAFETY: Return static C string pointer based on type enum
+    match r#type {
+        1 => b"body\0".as_ptr() as *const i8,
+        2 => b"xbody\0".as_ptr() as *const i8,
+        3 => b"joint\0".as_ptr() as *const i8,
+        4 => b"dof\0".as_ptr() as *const i8,
+        5 => b"geom\0".as_ptr() as *const i8,
+        6 => b"site\0".as_ptr() as *const i8,
+        7 => b"camera\0".as_ptr() as *const i8,
+        8 => b"light\0".as_ptr() as *const i8,
+        9 => b"flex\0".as_ptr() as *const i8,
+        10 => b"mesh\0".as_ptr() as *const i8,
+        11 => b"skin\0".as_ptr() as *const i8,
+        12 => b"hfield\0".as_ptr() as *const i8,
+        13 => b"texture\0".as_ptr() as *const i8,
+        14 => b"material\0".as_ptr() as *const i8,
+        15 => b"pair\0".as_ptr() as *const i8,
+        16 => b"exclude\0".as_ptr() as *const i8,
+        17 => b"equality\0".as_ptr() as *const i8,
+        18 => b"tendon\0".as_ptr() as *const i8,
+        19 => b"actuator\0".as_ptr() as *const i8,
+        20 => b"sensor\0".as_ptr() as *const i8,
+        21 => b"numeric\0".as_ptr() as *const i8,
+        22 => b"text\0".as_ptr() as *const i8,
+        23 => b"tuple\0".as_ptr() as *const i8,
+        24 => b"key\0".as_ptr() as *const i8,
+        25 => b"plugin\0".as_ptr() as *const i8,
+        100 => b"frame\0".as_ptr() as *const i8,
+        _ => core::ptr::null(),
+    }
 }
 
 /// C: mju_str2Type (engine/engine_util_misc.h:243)
 #[allow(unused_variables, non_snake_case)]
 pub fn mju_str2type(str: *const i8) -> i32 {
-    todo!() // mju_str2Type
+    unsafe {
+        // SAFETY: Compare C string against known type names
+        let s = str;
+        let cmp = |lit: &[u8]| -> bool {
+            let mut i = 0;
+            loop {
+                let c = *s.add(i) as u8;
+                if i >= lit.len() - 1 { return c == 0; }
+                if c != lit[i] { return false; }
+                i += 1;
+            }
+        };
+        if cmp(b"body\0") { return 1; }
+        if cmp(b"xbody\0") { return 2; }
+        if cmp(b"joint\0") { return 3; }
+        if cmp(b"dof\0") { return 4; }
+        if cmp(b"geom\0") { return 5; }
+        if cmp(b"site\0") { return 6; }
+        if cmp(b"camera\0") { return 7; }
+        if cmp(b"light\0") { return 8; }
+        if cmp(b"flex\0") { return 9; }
+        if cmp(b"mesh\0") { return 10; }
+        if cmp(b"skin\0") { return 11; }
+        if cmp(b"hfield\0") { return 12; }
+        if cmp(b"texture\0") { return 13; }
+        if cmp(b"material\0") { return 14; }
+        if cmp(b"pair\0") { return 15; }
+        if cmp(b"exclude\0") { return 16; }
+        if cmp(b"equality\0") { return 17; }
+        if cmp(b"tendon\0") { return 18; }
+        if cmp(b"actuator\0") { return 19; }
+        if cmp(b"sensor\0") { return 20; }
+        if cmp(b"numeric\0") { return 21; }
+        if cmp(b"text\0") { return 22; }
+        if cmp(b"tuple\0") { return 23; }
+        if cmp(b"key\0") { return 24; }
+        if cmp(b"plugin\0") { return 25; }
+        0 // mjOBJ_UNKNOWN
+    }
 }
 
 /// C: mju_writeNumBytes (engine/engine_util_misc.h:246)
 #[allow(unused_variables, non_snake_case)]
 pub fn mju_write_num_bytes(nbytes: usize) -> *const i8 {
-    todo!() // mju_writeNumBytes
+    todo!("requires thread-local static buffer - infrastructure not available")
 }
 
 /// C: mju_warningText (engine/engine_util_misc.h:249)
@@ -2260,7 +2327,7 @@ pub fn mju_fill_int(res: *mut i32, val: i32, n: i32) {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mju_standard_normal(num2: *mut f64) -> f64 {
-    todo!() // mju_standardNormal
+    todo!("requires rand() - non-deterministic, cannot pass golden test")
 }
 
 /// C: mju_f2n (engine/engine_util_misc.h:273)

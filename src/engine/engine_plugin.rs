@@ -81,7 +81,7 @@ pub fn mjp_resource_provider_count() -> i32 {
 /// C: mjp_getPlugin (engine/engine_plugin.h:41)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjp_get_plugin(name: *const i8, slot: *mut i32) -> *const mjpPlugin {
-    todo!() // mjp_getPlugin
+    todo!("requires global plugin registry - infrastructure not available")
 }
 
 /// C: mjp_defaultResourceProvider (engine/engine_plugin.h:44)
@@ -99,13 +99,13 @@ pub fn mjp_get_resource_provider(resource_name: *const i8) -> *const mjpResource
 /// C: mjp_getPluginAtSlot (engine/engine_plugin.h:50)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjp_get_plugin_at_slot(slot: i32) -> *const mjpPlugin {
-    todo!() // mjp_getPluginAtSlot
+    todo!("requires global plugin registry - infrastructure not available")
 }
 
 /// C: mjp_getResourceProviderAtSlot (engine/engine_plugin.h:53)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjp_get_resource_provider_at_slot(slot: i32) -> *const mjpResourceProvider {
-    todo!() // mjp_getResourceProviderAtSlot
+    todo!("requires global resource provider registry - infrastructure not available")
 }
 
 /// C: mj_getPluginConfig (engine/engine_plugin.h:57)
@@ -172,12 +172,12 @@ pub fn mjp_find_encoder(filename: *const i8, content_type: *const i8) -> *const 
 /// C: mjp_getPluginUnsafe (engine/engine_plugin.h:95)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjp_get_plugin_unsafe(name: *const i8, slot: *mut i32, nslot: i32) -> *const mjpPlugin {
-    todo!() // mjp_getPluginUnsafe
+    todo!("requires global plugin registry - infrastructure not available")
 }
 
 /// C: mjp_getPluginAtSlotUnsafe (engine/engine_plugin.h:98)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjp_get_plugin_at_slot_unsafe(slot: i32, nslot: i32) -> *const mjpPlugin {
-    todo!() // mjp_getPluginAtSlotUnsafe
+    todo!("requires global plugin registry - infrastructure not available")
 }
 
