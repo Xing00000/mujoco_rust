@@ -2072,7 +2072,17 @@ pub fn mju_outside_box(point: *const f64, pos: *const f64, mat: *const f64, size
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mju_print_mat(mat: *const f64, nr: i32, nc: i32) {
-    todo!("requires printf/stdout - I/O function not testable")
+    extern "C" { fn printf(fmt: *const i8, ...) -> i32; }
+    // SAFETY: mat points to nr*nc contiguous f64 values, caller guarantees valid pointer
+    unsafe {
+        for r in 0..nr {
+            for c in 0..nc {
+                printf(b"%.8f \0".as_ptr() as *const i8, *mat.add((r * nc + c) as usize));
+            }
+            printf(b"\n\0".as_ptr() as *const i8);
+        }
+        printf(b"\n\0".as_ptr() as *const i8);
+    }
 }
 
 /// C: mju_printMatSparse (engine/engine_util_misc.h:220)
@@ -2083,7 +2093,24 @@ pub fn mju_print_mat(mat: *const f64, nr: i32, nc: i32) {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mju_print_mat_sparse(mat: *const f64, nr: i32, rownnz: *const i32, rowadr: *const i32, colind: *const i32) {
-    todo!("requires printf/stdout - I/O function not testable")
+    extern "C" { fn printf(fmt: *const i8, ...) -> i32; }
+    // SAFETY: mat, rownnz, rowadr, colind are valid pointers from caller
+    unsafe {
+        for r in 0..nr {
+            let adr_start = *rowadr.add(r as usize);
+            let adr_end = adr_start + *rownnz.add(r as usize);
+            for adr in adr_start..adr_end {
+                printf(
+                    b"(%d %d): %9.6f  \0".as_ptr() as *const i8,
+                    r,
+                    *colind.add(adr as usize),
+                    *mat.add(adr as usize),
+                );
+            }
+            printf(b"\n\0".as_ptr() as *const i8);
+        }
+        printf(b"\n\0".as_ptr() as *const i8);
+    }
 }
 
 /// C: mju_min (engine/engine_util_misc.h:225)
@@ -2225,7 +2252,43 @@ pub fn mju_str2type(str: *const i8) -> i32 {
 /// C: mju_writeNumBytes (engine/engine_util_misc.h:246)
 #[allow(unused_variables, non_snake_case)]
 pub fn mju_write_num_bytes(nbytes: usize) -> *const i8 {
-    todo!("requires thread-local static buffer - infrastructure not available")
+    thread_local! {
+        static MESSAGE: std::cell::RefCell<[u8; 20]> = std::cell::RefCell::new([0u8; 20]);
+    }
+    extern "C" { fn snprintf(s: *mut i8, n: usize, fmt: *const i8, ...) -> i32; }
+    const SUFFIX: &[u8; 7] = b" KMGTPE";
+
+    let mut i: i32 = 0;
+    while i < 6 {
+        let bits: usize = 1usize << (10 * (6 - i));
+        if nbytes >= bits && (nbytes & (bits - 1)) == 0 {
+            break;
+        }
+        i += 1;
+    }
+
+    MESSAGE.with(|cell| {
+        let mut buf = cell.borrow_mut();
+        let ptr = buf.as_mut_ptr() as *mut i8;
+        // SAFETY: ptr points to 20-byte thread-local buffer, snprintf will not overflow
+        unsafe {
+            if i < 6 {
+                snprintf(
+                    ptr, 20,
+                    b"%zu%c\0".as_ptr() as *const i8,
+                    nbytes >> (10 * (6 - i)),
+                    SUFFIX[(6 - i) as usize] as i32,
+                );
+            } else {
+                snprintf(
+                    ptr, 20,
+                    b"%zu\0".as_ptr() as *const i8,
+                    nbytes >> (10 * (6 - i)),
+                );
+            }
+        }
+        buf.as_ptr() as *const i8
+    })
 }
 
 /// C: mju_warningText (engine/engine_util_misc.h:249)
@@ -2327,7 +2390,30 @@ pub fn mju_fill_int(res: *mut i32, val: i32, n: i32) {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mju_standard_normal(num2: *mut f64) -> f64 {
-    todo!("requires rand() - non-deterministic, cannot pass golden test")
+    extern "C" { fn rand() -> i32; }
+    const RAND_MAX: f64 = 2147483647.0;
+    let scale: f64 = 2.0 / RAND_MAX;
+
+    let mut x1: f64;
+    let mut x2: f64;
+    let mut w: f64;
+    // SAFETY: rand() is a standard C library function, always safe to call
+    unsafe {
+        loop {
+            x1 = scale * (rand() as f64) - 1.0;
+            x2 = scale * (rand() as f64) - 1.0;
+            w = x1 * x1 + x2 * x2;
+            if !(w >= 1.0 || w == 0.0) {
+                break;
+            }
+        }
+    }
+    w = ((-2.0 * w.ln()) / w).sqrt();
+    if !num2.is_null() {
+        // SAFETY: caller guarantees num2 is valid when non-null
+        unsafe { *num2 = x2 * w; }
+    }
+    x1 * w
 }
 
 /// C: mju_f2n (engine/engine_util_misc.h:273)

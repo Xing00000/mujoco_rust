@@ -383,7 +383,169 @@ pub fn mj_reference_constraint(m: *const mjModel, d: *mut mjData) {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_constraint_update_impl(ne: i32, nf: i32, nefc: i32, D: *const f64, R: *const f64, floss: *const f64, jar: *const f64, r#type: *const i32, id: *const i32, contact: *mut mjContact, state: *mut i32, force: *mut f64, cost: *mut f64, flg_coneHessian: i32) {
-    todo!() // mj_constraintUpdate_impl
+    use crate::engine::engine_util_blas::{mju_norm, mju_zero};
+
+    const mjCNSTRSTATE_SATISFIED: i32 = 0;
+    const mjCNSTRSTATE_QUADRATIC: i32 = 1;
+    const mjCNSTRSTATE_LINEARNEG: i32 = 2;
+    const mjCNSTRSTATE_LINEARPOS: i32 = 3;
+    const mjCNSTRSTATE_CONE: i32 = 4;
+    const mjCNSTR_CONTACT_ELLIPTIC: i32 = 7;
+
+    // SAFETY: all pointer dereferences follow C contract — caller guarantees valid arrays
+    // of size nefc for D, R, floss, jar, type, id, state, force; contact indexed by id[i].
+    unsafe {
+        let mut s: f64 = 0.0;
+
+        if nefc == 0 {
+            if !cost.is_null() {
+                *cost = 0.0;
+            }
+            return;
+        }
+
+        // force[i] = -D[i]*jar[i]
+        for i in 0..nefc as isize {
+            *force.offset(i) = -*D.offset(i) * *jar.offset(i);
+        }
+
+        let mut i: i32 = 0;
+        while i < nefc {
+            if i < ne {
+                if !cost.is_null() {
+                    s += 0.5 * *D.offset(i as isize) * *jar.offset(i as isize) * *jar.offset(i as isize);
+                }
+                *state.offset(i as isize) = mjCNSTRSTATE_QUADRATIC;
+                i += 1;
+                continue;
+            }
+
+            if i < ne + nf {
+                if *jar.offset(i as isize) <= -*R.offset(i as isize) * *floss.offset(i as isize) {
+                    if !cost.is_null() {
+                        s += -0.5 * *R.offset(i as isize) * *floss.offset(i as isize) * *floss.offset(i as isize)
+                            - *floss.offset(i as isize) * *jar.offset(i as isize);
+                    }
+                    *force.offset(i as isize) = *floss.offset(i as isize);
+                    *state.offset(i as isize) = mjCNSTRSTATE_LINEARNEG;
+                } else if *jar.offset(i as isize) >= *R.offset(i as isize) * *floss.offset(i as isize) {
+                    if !cost.is_null() {
+                        s += -0.5 * *R.offset(i as isize) * *floss.offset(i as isize) * *floss.offset(i as isize)
+                            + *floss.offset(i as isize) * *jar.offset(i as isize);
+                    }
+                    *force.offset(i as isize) = -*floss.offset(i as isize);
+                    *state.offset(i as isize) = mjCNSTRSTATE_LINEARPOS;
+                } else {
+                    if !cost.is_null() {
+                        s += 0.5 * *D.offset(i as isize) * *jar.offset(i as isize) * *jar.offset(i as isize);
+                    }
+                    *state.offset(i as isize) = mjCNSTRSTATE_QUADRATIC;
+                }
+                i += 1;
+                continue;
+            }
+
+            // contact
+            if *r#type.offset(i as isize) != mjCNSTR_CONTACT_ELLIPTIC {
+                if *jar.offset(i as isize) >= 0.0 {
+                    *force.offset(i as isize) = 0.0;
+                    *state.offset(i as isize) = mjCNSTRSTATE_SATISFIED;
+                } else {
+                    if !cost.is_null() {
+                        s += 0.5 * *D.offset(i as isize) * *jar.offset(i as isize) * *jar.offset(i as isize);
+                    }
+                    *state.offset(i as isize) = mjCNSTRSTATE_QUADRATIC;
+                }
+            } else {
+                let con: *mut mjContact = contact.offset(*id.offset(i as isize) as isize);
+                let mu: f64 = (*con).mu;
+                let friction: *mut f64 = (*con).friction.as_mut_ptr();
+                let dim: i32 = (*con).dim;
+
+                let mut U: [f64; 6] = [0.0; 6];
+                U[0] = *jar.offset(i as isize) * mu;
+                for j in 1..dim {
+                    U[j as usize] = *jar.offset((i + j) as isize) * *friction.offset((j - 1) as isize);
+                }
+
+                let N: f64 = U[0];
+                let T: f64 = mju_norm(U.as_ptr().add(1), dim - 1);
+
+                if N >= mu * T || (T <= 0.0 && N >= 0.0) {
+                    mju_zero(force.offset(i as isize), dim);
+                    *state.offset(i as isize) = mjCNSTRSTATE_SATISFIED;
+                } else if mu * N + T <= 0.0 || (T <= 0.0 && N < 0.0) {
+                    if !cost.is_null() {
+                        for j in 0..dim {
+                            s += 0.5 * *D.offset((i + j) as isize) * *jar.offset((i + j) as isize) * *jar.offset((i + j) as isize);
+                        }
+                    }
+                    *state.offset(i as isize) = mjCNSTRSTATE_QUADRATIC;
+                } else {
+                    let Dm: f64 = *D.offset(i as isize) / (mu * mu * (1.0 + mu * mu));
+                    let NmT: f64 = N - mu * T;
+
+                    if !cost.is_null() {
+                        s += 0.5 * Dm * NmT * NmT;
+                    }
+
+                    *force.offset(i as isize) = -Dm * NmT * mu;
+
+                    for j in 1..dim {
+                        *force.offset((i + j) as isize) = -*force.offset(i as isize) / T * U[j as usize] * *friction.offset((j - 1) as isize);
+                    }
+
+                    *state.offset(i as isize) = mjCNSTRSTATE_CONE;
+
+                    if flg_coneHessian != 0 {
+                        let H: *mut f64 = (*contact.offset(*id.offset(i as isize) as isize)).H.as_mut_ptr();
+
+                        let mut scl: f64 = -mu / T;
+                        *H.offset(0) = 1.0;
+                        for j in 1..dim {
+                            *H.offset(j as isize) = scl * U[j as usize];
+                        }
+
+                        scl = mu * N / (T * T * T);
+                        for k in 1..dim {
+                            for j in k..dim {
+                                *H.offset((k * dim + j) as isize) = scl * U[j as usize] * U[k as usize];
+                            }
+                        }
+
+                        scl = mu * mu - mu * N / T;
+                        for j in 1..dim {
+                            *H.offset((j * (dim + 1)) as isize) += scl;
+                        }
+
+                        for k in 0..dim {
+                            scl = Dm * (if k == 0 { mu } else { *friction.offset((k - 1) as isize) });
+                            for j in k..dim {
+                                *H.offset((k * dim + j) as isize) *= scl * (if j == 0 { mu } else { *friction.offset((j - 1) as isize) });
+                            }
+                        }
+
+                        for k in 0..dim {
+                            for j in (k + 1)..dim {
+                                *H.offset((j * dim + k) as isize) = *H.offset((k * dim + j) as isize);
+                            }
+                        }
+                    }
+                }
+
+                for j in 1..dim {
+                    *state.offset((i + j) as isize) = *state.offset(i as isize);
+                }
+                i += dim - 1;
+            }
+
+            i += 1;
+        }
+
+        if !cost.is_null() {
+            *cost = s;
+        }
+    }
 }
 
 /// C: mj_constraintUpdate (engine/engine_core_constraint.h:105)

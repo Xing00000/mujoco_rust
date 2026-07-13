@@ -277,9 +277,174 @@ pub fn mjc_ellipsoid_outside(nrm: *mut f64, pos: *const f64, size: *const f64) -
 ///   2. No f64::mul_add() (FMA changes precision)
 ///   3. No algebraic simplification
 ///   4. No iter().sum()/product() (order undefined)
-#[allow(unused_variables, non_snake_case)]
+#[allow(unused_variables, non_snake_case, non_upper_case_globals)]
 pub fn mjc_init_ccd_obj(obj: *mut mjCCDObj, m: *const mjModel, d: *const mjData, g: i32, margin: f64) {
-    todo!() // mjc_initCCDObj
+    const mjGEOM_HFIELD: i32 = 1;
+    const mjGEOM_SPHERE: i32 = 2;
+    const mjGEOM_CAPSULE: i32 = 3;
+    const mjGEOM_ELLIPSOID: i32 = 4;
+    const mjGEOM_CYLINDER: i32 = 5;
+    const mjGEOM_BOX: i32 = 6;
+    const mjGEOM_MESH: i32 = 7;
+    const mjGEOM_SDF: i32 = 8;
+    const mjGEOM_FLEX: i32 = 105;
+    const mjMESH_HILLCLIMB_MIN: i32 = 10;
+
+    #[repr(C)]
+    struct MeshData {
+        nvert: i32,
+        mesh_polynum: i32,
+        vert: *const f32,
+        mpolymapadr: *const i32,
+        mpolymapnum: *const i32,
+        polymap: *const i32,
+        polyvertadr: *const i32,
+        polyvertnum: *const i32,
+        polyvert: *const i32,
+        polynormal: *const f64,
+        graph: *const i32,
+    }
+
+    #[repr(C)]
+    struct HfieldData {
+        prism: [f64; 18],
+        hfield_data: *const f32,
+        hfield_nrow: i32,
+        hfield_ncol: i32,
+    }
+
+    #[repr(C)]
+    struct FlexData {
+        elem: *const i32,
+        dim: *const i32,
+        aabb: *const f64,
+        elemadr: *const i32,
+        elemdataadr: *const i32,
+        vert_xpos: *const f64,
+        vertadr: *const i32,
+        xradius: *const f64,
+    }
+
+    // SAFETY: obj, m, d are valid pointers from caller. All field accesses follow C layout exactly.
+    unsafe {
+        (*obj).geom = g;
+        (*obj).margin = margin;
+        (*obj).center = Some(std::mem::transmute::<_, unsafe extern "C" fn()>(mjc_center as usize));
+        (*obj).vertindex = -1;
+        (*obj).meshindex = -1;
+        (*obj).flex = -1;
+        (*obj).elem = -1;
+        (*obj).vert = -1;
+
+        // mju_zero4(obj->rotate)
+        (*obj).rotate[0] = 0.0;
+        (*obj).rotate[1] = 0.0;
+        (*obj).rotate[2] = 0.0;
+        (*obj).rotate[3] = 0.0;
+        (*obj).rotate[0] = 1.0;
+
+        if g >= 0 {
+            // mju_copy(obj->size, m->geom_size+3*g, 3)
+            crate::engine::engine_util_blas::mju_copy(
+                (*obj).size.as_mut_ptr(),
+                (*m).geom_size.add(3 * g as usize),
+                3,
+            );
+            // mju_copy(obj->pos, d->geom_xpos+3*g, 3)
+            crate::engine::engine_util_blas::mju_copy(
+                (*obj).pos.as_mut_ptr(),
+                (*d).geom_xpos.add(3 * g as usize),
+                3,
+            );
+            // mju_copy(obj->mat, d->geom_xmat+9*g, 9)
+            crate::engine::engine_util_blas::mju_copy(
+                (*obj).mat.as_mut_ptr(),
+                (*d).geom_xmat.add(9 * g as usize),
+                9,
+            );
+
+            (*obj).geom_type = *(*m).geom_type.add(g as usize);
+
+            match (*obj).geom_type {
+                mjGEOM_ELLIPSOID => {
+                    (*obj).support = Some(std::mem::transmute::<_, unsafe extern "C" fn()>(mjc_ellipsoid_support as usize));
+                }
+                mjGEOM_MESH | mjGEOM_SDF => {
+                    let dataid = *(*m).geom_dataid.add(g as usize) as usize;
+                    let graphadr = *(*m).mesh_graphadr.add(dataid);
+                    let vertadr = *(*m).mesh_vertadr.add(dataid);
+                    let polyadr = *(*m).mesh_polyadr.add(dataid);
+
+                    let mesh_ptr = &mut (*obj).data as *mut _ as *mut MeshData;
+
+                    if graphadr < 0 || *(*m).mesh_vertnum.add(dataid) < mjMESH_HILLCLIMB_MIN {
+                        (*mesh_ptr).graph = std::ptr::null();
+                        (*obj).support = Some(std::mem::transmute::<_, unsafe extern "C" fn()>(mjc_mesh_support as usize));
+                    } else {
+                        (*mesh_ptr).graph = (*m).mesh_graph.add(graphadr as usize);
+                        (*obj).support = Some(std::mem::transmute::<_, unsafe extern "C" fn()>(mjc_hillclimb_support as usize));
+                    }
+
+                    (*mesh_ptr).vert = (*m).mesh_vert.add(3 * vertadr as usize);
+                    (*mesh_ptr).nvert = *(*m).mesh_vertnum.add(dataid);
+                    (*mesh_ptr).mpolymapadr = (*m).mesh_polymapadr.add(vertadr as usize);
+                    (*mesh_ptr).mpolymapnum = (*m).mesh_polymapnum.add(vertadr as usize);
+                    (*mesh_ptr).polymap = (*m).mesh_polymap;
+                    (*mesh_ptr).polynormal = (*m).mesh_polynormal.add(3 * polyadr as usize);
+                    (*mesh_ptr).polyvertadr = (*m).mesh_polyvertadr.add(polyadr as usize);
+                    (*mesh_ptr).polyvertnum = (*m).mesh_polyvertnum.add(polyadr as usize);
+                    (*mesh_ptr).polyvert = (*m).mesh_polyvert;
+                    (*mesh_ptr).mesh_polynum = *(*m).mesh_polynum.add(dataid);
+                }
+                mjGEOM_SPHERE => {
+                    (*obj).support = Some(std::mem::transmute::<_, unsafe extern "C" fn()>(mjc_sphere_support as usize));
+                }
+                mjGEOM_CAPSULE => {
+                    (*obj).support = Some(std::mem::transmute::<_, unsafe extern "C" fn()>(mjc_capsule_support as usize));
+                }
+                mjGEOM_CYLINDER => {
+                    (*obj).support = Some(std::mem::transmute::<_, unsafe extern "C" fn()>(mjc_cylinder_support as usize));
+                }
+                mjGEOM_BOX => {
+                    (*obj).support = Some(std::mem::transmute::<_, unsafe extern "C" fn()>(mjc_box_support as usize));
+                }
+                mjGEOM_HFIELD => {
+                    (*obj).center = Some(std::mem::transmute::<_, unsafe extern "C" fn()>(mjc_center as usize));
+                    (*obj).support = Some(std::mem::transmute::<_, unsafe extern "C" fn()>(mjc_prism_support as usize));
+                    let hid = *(*m).geom_dataid.add(g as usize) as usize;
+
+                    let hfield_ptr = &mut (*obj).data as *mut _ as *mut HfieldData;
+                    (*hfield_ptr).hfield_nrow = *(*m).hfield_nrow.add(hid);
+                    (*hfield_ptr).hfield_ncol = *(*m).hfield_ncol.add(hid);
+
+                    // mju_copy(obj->size, m->hfield_size + 4*hid, 4)
+                    crate::engine::engine_util_blas::mju_copy(
+                        (*obj).size.as_mut_ptr(),
+                        (*m).hfield_size.add(4 * hid),
+                        4,
+                    );
+
+                    (*hfield_ptr).hfield_data = (*m).hfield_data.add(*(*m).hfield_adr.add(hid) as usize);
+                }
+                _ => {
+                    (*obj).support = None;
+                }
+            }
+        } else {
+            (*obj).geom_type = mjGEOM_FLEX;
+
+            let flex_ptr = &mut (*obj).data as *mut _ as *mut FlexData;
+            (*flex_ptr).dim = (*m).flex_dim;
+            (*obj).support = Some(std::mem::transmute::<_, unsafe extern "C" fn()>(mjc_flex_support as usize));
+            (*flex_ptr).aabb = (*d).flexelem_aabb;
+            (*flex_ptr).elemadr = (*m).flex_elemadr;
+            (*flex_ptr).vert_xpos = (*d).flexvert_xpos;
+            (*flex_ptr).vertadr = (*m).flex_vertadr;
+            (*flex_ptr).xradius = (*m).flex_radius;
+            (*flex_ptr).elemdataadr = (*m).flex_elemdataadr;
+            (*flex_ptr).elem = (*m).flex_elem;
+        }
+    }
 }
 
 /// C: mjc_center (engine/engine_collision_convex.h:97)
@@ -413,6 +578,11 @@ pub fn mjc_fix_normal(m: *const mjModel, d: *const mjData, con: *mut mjPreContac
 /// C: mjc_setCCDBuffer (engine/engine_collision_convex.h:128)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjc_set_ccd_buffer(buffer: *mut ()) {
-    todo!("requires global state") // mjc_setCCDBuffer: sets thread-local ccd_buffer pointer
+    // SAFETY: storing the raw pointer value as bytes into the mutex-protected CCD_BUFFER
+    unsafe {
+        let bytes = (buffer as usize).to_ne_bytes();
+        let mut guard = CCD_BUFFER.lock().unwrap();
+        guard.copy_from_slice(&bytes);
+    }
 }
 

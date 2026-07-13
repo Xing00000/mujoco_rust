@@ -132,7 +132,39 @@ pub fn mj_factor_i_legacy(m: *const mjModel, d: *mut mjData, M: *const f64, qLD:
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_factor_i(mat: *mut f64, diaginv: *mut f64, nv: i32, rownnz: *const i32, rowadr: *const i32, colind: *const i32, index: *const i32) {
-    todo!() // mj_factorI
+    // SAFETY: caller guarantees all pointers are valid for the sparse matrix layout.
+    // index may be null (optional permutation). diaginv may be null.
+    unsafe {
+        let mut j: i32 = nv - 1;
+        while j >= 0 {
+            let k: i32 = if !index.is_null() { *index.add(j as usize) } else { j };
+            let start: i32 = *rowadr.add(k as usize);
+            let diag: i32 = *rownnz.add(k as usize) - 1;
+            let end: i32 = start + diag;
+            let invD: f64 = 1.0 / *mat.add(end as usize);
+            if !diaginv.is_null() {
+                *diaginv.add(k as usize) = invD;
+            }
+            let mut adr: i32 = end - 1;
+            while adr >= start {
+                let i: i32 = *colind.add(adr as usize);
+                crate::engine::engine_util_blas::mju_add_to_scl(
+                    mat.add(*rowadr.add(i as usize) as usize),
+                    mat.add(start as usize) as *const f64,
+                    -*mat.add(adr as usize) * invD,
+                    *rownnz.add(i as usize),
+                );
+                adr -= 1;
+            }
+            crate::engine::engine_util_blas::mju_scl(
+                mat.add(start as usize),
+                mat.add(start as usize) as *const f64,
+                invD,
+                diag,
+            );
+            j -= 1;
+        }
+    }
 }
 
 /// C: mj_factorM (engine/engine_core_smooth.h:76)
@@ -150,7 +182,107 @@ pub fn mj_factor_m(m: *const mjModel, d: *mut mjData) {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_solve_ld_legacy(m: *const mjModel, x: *mut f64, n: i32, qLD: *const f64, qLDiagInv: *const f64) {
-    todo!() // mj_solveLD_legacy
+    // SAFETY: caller guarantees m is valid, x has n*nv elements,
+    // qLD and qLDiagInv are valid for the model's sparse structure.
+    unsafe {
+        let dof_Madr = (*m).dof_Madr;
+        let dof_parentid = (*m).dof_parentid;
+        let nv = (*m).nv as i32;
+
+        if n == 1 {
+            // x <- inv(L') * x
+            let mut i: i32 = nv - 1;
+            while i >= 0 {
+                if *(*m).dof_simplenum.add(i as usize) == 0 && *x.add(i as usize) != 0.0 {
+                    let mut Madr_ij: i32 = *dof_Madr.add(i as usize) + 1;
+                    let mut j: i32 = *dof_parentid.add(i as usize);
+                    while j >= 0 {
+                        *x.add(j as usize) -= *qLD.add(Madr_ij as usize) * *x.add(i as usize);
+                        Madr_ij += 1;
+                        j = *dof_parentid.add(j as usize);
+                    }
+                }
+                i -= 1;
+            }
+
+            // x <- inv(D) * x
+            let mut i: i32 = 0;
+            while i < nv {
+                *x.add(i as usize) *= *qLDiagInv.add(i as usize);
+                i += 1;
+            }
+
+            // x <- inv(L) * x
+            let mut i: i32 = 0;
+            while i < nv {
+                if *(*m).dof_simplenum.add(i as usize) == 0 {
+                    let mut Madr_ij: i32 = *dof_Madr.add(i as usize) + 1;
+                    let mut j: i32 = *dof_parentid.add(i as usize);
+                    while j >= 0 {
+                        *x.add(i as usize) -= *qLD.add(Madr_ij as usize) * *x.add(j as usize);
+                        Madr_ij += 1;
+                        j = *dof_parentid.add(j as usize);
+                    }
+                }
+                i += 1;
+            }
+        } else {
+            let mut offset: i32;
+            let mut tmp: f64;
+
+            // x <- inv(L') * x
+            let mut i: i32 = nv - 1;
+            while i >= 0 {
+                if *(*m).dof_simplenum.add(i as usize) == 0 {
+                    let mut Madr_ij: i32 = *dof_Madr.add(i as usize) + 1;
+                    let mut j: i32 = *dof_parentid.add(i as usize);
+                    while j >= 0 {
+                        offset = 0;
+                        while offset < n * nv {
+                            tmp = *x.add((i + offset) as usize);
+                            if tmp != 0.0 {
+                                *x.add((j + offset) as usize) -= *qLD.add(Madr_ij as usize) * tmp;
+                            }
+                            offset += nv;
+                        }
+                        Madr_ij += 1;
+                        j = *dof_parentid.add(j as usize);
+                    }
+                }
+                i -= 1;
+            }
+
+            // x <- inv(D) * x
+            let mut i: i32 = 0;
+            while i < nv {
+                offset = 0;
+                while offset < n * nv {
+                    *x.add((i + offset) as usize) *= *qLDiagInv.add(i as usize);
+                    offset += nv;
+                }
+                i += 1;
+            }
+
+            // x <- inv(L) * x
+            let mut i: i32 = 0;
+            while i < nv {
+                if *(*m).dof_simplenum.add(i as usize) == 0 {
+                    let mut Madr_ij: i32 = *dof_Madr.add(i as usize) + 1;
+                    let mut j: i32 = *dof_parentid.add(i as usize);
+                    while j >= 0 {
+                        offset = 0;
+                        while offset < n * nv {
+                            *x.add((i + offset) as usize) -= *qLD.add(Madr_ij as usize) * *x.add((j + offset) as usize);
+                            offset += nv;
+                        }
+                        Madr_ij += 1;
+                        j = *dof_parentid.add(j as usize);
+                    }
+                }
+                i += 1;
+            }
+        }
+    }
 }
 
 /// C: mj_solveLD (engine/engine_core_smooth.h:84)
@@ -186,7 +318,54 @@ pub fn mj_solve_m(m: *const mjModel, d: *mut mjData, x: *mut f64, y: *const f64,
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_solve_m2(m: *const mjModel, d: *mut mjData, x: *mut f64, y: *const f64, sqrtInvD: *const f64, n: i32) {
-    todo!() // mj_solveM2
+    // SAFETY: caller guarantees m, d are valid structs, x/y have n*nv elements,
+    // sqrtInvD has nv elements, and the sparse matrix fields are valid.
+    unsafe {
+        let nv = (*m).nv as i32;
+        let rownnz = (*m).M_rownnz;
+        let rowadr = (*m).M_rowadr;
+        let colind = (*m).M_colind;
+        let diagnum = (*m).dof_simplenum;
+        let qLD = (*d).qLD as *const f64;
+
+        crate::engine::engine_util_blas::mju_copy(x, y, n * nv);
+
+        // x <- L^-T x
+        let mut i: i32 = nv - 1;
+        while i > 0 {
+            if *diagnum.add(i as usize) != 0 {
+                i -= 1;
+                continue;
+            }
+            let start: i32 = *rowadr.add(i as usize);
+            let end: i32 = start + *rownnz.add(i as usize) - 1;
+            let mut offset: i32 = 0;
+            while offset < n * nv {
+                let x_i: f64 = *x.add((i + offset) as usize);
+                if x_i != 0.0 {
+                    let mut adr: i32 = start;
+                    while adr < end {
+                        *x.add((offset + *colind.add(adr as usize)) as usize) -= *qLD.add(adr as usize) * x_i;
+                        adr += 1;
+                    }
+                }
+                offset += nv;
+            }
+            i -= 1;
+        }
+
+        // x <- D^-1/2 x
+        let mut i: i32 = 0;
+        while i < nv {
+            let invD_i: f64 = *sqrtInvD.add(i as usize);
+            let mut offset: i32 = 0;
+            while offset < n * nv {
+                *x.add((i + offset) as usize) *= invD_i;
+                offset += nv;
+            }
+            i += 1;
+        }
+    }
 }
 
 /// C: mj_comVel (engine/engine_core_smooth.h:98)
