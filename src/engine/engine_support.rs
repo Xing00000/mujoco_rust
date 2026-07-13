@@ -482,7 +482,61 @@ pub fn mju_raydata_size(dataspec: i32) -> i32 {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mju_cam_intrinsics(m: *const mjModel, camid: i32, fx: *mut f64, fy: *mut f64, cx: *mut f64, cy: *mut f64, ortho_extent: *mut f64) {
-    todo!("requires mjModel field access")
+    // SAFETY: m valid mjModel. Byte offsets:
+    //   cam_projection: *const i32 at 2704
+    //   cam_fovy: *const f64 at 2712
+    //   cam_resolution: *const i32 at 2728
+    //   cam_sensorsize: *const f32 at 2744
+    //   cam_intrinsic: *const f32 at 2752
+    // mjPROJ_PERSPECTIVE = 0, mjPROJ_ORTHOGRAPHIC = 1
+    unsafe {
+        let m_ptr = m as *const u8;
+        let cam_projection = *(m_ptr.add(2704) as *const *const i32);
+        let cam_fovy = *(m_ptr.add(2712) as *const *const f64);
+        let cam_resolution = *(m_ptr.add(2728) as *const *const i32);
+        let cam_sensorsize = *(m_ptr.add(2744) as *const *const f32);
+        let cam_intrinsic = *(m_ptr.add(2752) as *const *const f32);
+
+        let cid = camid as usize;
+        let width = *cam_resolution.add(2 * cid) as f64;
+        let height = *cam_resolution.add(2 * cid + 1) as f64;
+        let ss0 = *cam_sensorsize.add(2 * cid) as f64;
+        let ss1 = *cam_sensorsize.add(2 * cid + 1) as f64;
+        let projection = *cam_projection.add(cid);
+
+        match projection {
+            0 => {
+                // mjPROJ_PERSPECTIVE
+                if ss0 != 0.0 && ss1 != 0.0 {
+                    let intr0 = *cam_intrinsic.add(4 * cid) as f64;
+                    let intr1 = *cam_intrinsic.add(4 * cid + 1) as f64;
+                    let intr2 = *cam_intrinsic.add(4 * cid + 2) as f64;
+                    let intr3 = *cam_intrinsic.add(4 * cid + 3) as f64;
+                    *fx = intr0 / ss0 * width;
+                    *fy = intr1 / ss1 * height;
+                    *cx = intr2 / ss0 * width;
+                    *cy = intr3 / ss1 * height;
+                } else {
+                    let fovy = *cam_fovy.add(cid);
+                    let f = 0.5 / f64::tan(fovy * std::f64::consts::PI / 360.0) * height;
+                    *fx = f;
+                    *fy = f;
+                    *cx = width / 2.0;
+                    *cy = height / 2.0;
+                }
+            }
+            _ => {
+                // mjPROJ_ORTHOGRAPHIC
+                *fx = width / 2.0;
+                *fy = height / 2.0;
+                *cx = *fx;
+                *cy = *fy;
+            }
+        }
+
+        // extent only used for orthographic cameras
+        *ortho_extent = *cam_fovy.add(cid);
+    }
 }
 
 /// C: mj_readCtrl (engine/engine_support.h:141)
