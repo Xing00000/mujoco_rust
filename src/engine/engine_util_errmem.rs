@@ -14,13 +14,22 @@ pub fn mju_default_log_handler(msg: *const mjLogMessage) {
 /// C: mju_alignedMalloc (engine/engine_util_errmem.c:44)
 #[allow(unused_variables, non_snake_case)]
 pub fn mju_aligned_malloc(size: usize, align: usize) -> *mut () {
-    todo!() // mju_alignedMalloc
+    // SAFETY: align must be a power of two and size must be a multiple of align (C aligned_alloc contract).
+    // Layout::from_size_align_unchecked is fine here because the C caller guarantees valid args.
+    unsafe {
+        let layout = std::alloc::Layout::from_size_align_unchecked(size, align);
+        std::alloc::alloc(layout) as *mut ()
+    }
 }
 
 /// C: mju_alignedFree (engine/engine_util_errmem.c:53)
 #[allow(unused_variables, non_snake_case)]
 pub fn mju_aligned_free(ptr: *mut ()) {
-    todo!() // mju_alignedFree
+    extern "C" { fn free(ptr: *mut std::ffi::c_void); }
+    // SAFETY: ptr was allocated by aligned_alloc (via mju_aligned_malloc). C free() is valid for it.
+    unsafe {
+        free(ptr as *mut std::ffi::c_void);
+    }
 }
 
 /// C: mju_initLogTopicsFromEnv (engine/engine_util_errmem.c:111)

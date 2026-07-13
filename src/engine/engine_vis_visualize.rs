@@ -51,7 +51,19 @@ pub fn mixcolor(rgba: *mut f32, r#ref: *const f32, flg1: i32, flg2: i32) {
 /// C: bodycategory (engine/engine_vis_visualize.c:157)
 #[allow(unused_variables, non_snake_case)]
 pub fn bodycategory(m: *const mjModel, bodyid: i32) -> i32 {
-    todo!() // bodycategory
+    const MJCAT_STATIC: i32 = 1;
+    const MJCAT_DYNAMIC: i32 = 2;
+    // SAFETY: m is valid mjModel pointer; body_weldid, body_rootid, body_mocapid are valid arrays indexed by bodyid
+    unsafe {
+        let rootid = *(*m).body_rootid.add(bodyid as usize);
+        if *(*m).body_weldid.add(bodyid as usize) == 0
+            && *(*m).body_mocapid.add(rootid as usize) == -1
+        {
+            MJCAT_STATIC
+        } else {
+            MJCAT_DYNAMIC
+        }
+    }
 }
 
 /// C: acquireGeom (engine/engine_vis_visualize.c:169)

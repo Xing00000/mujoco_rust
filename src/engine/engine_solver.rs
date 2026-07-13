@@ -31,7 +31,51 @@ pub fn dual_finish(m: *const mjModel, d: *mut mjData) {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn a_rdiaginv(m: *const mjModel, d: *const mjData, res: *mut f64, nefc: i32, efclist: *const i32, flg_subR: i32) {
-    todo!() // ARdiaginv
+    use crate::engine::engine_core_util::mj_is_sparse;
+    use crate::engine::engine_util_misc::mju_max;
+    const MJ_MINVAL: f64 = 1E-15_f64;
+
+    // SAFETY: m, d are valid model/data pointers. res has at least nefc elements.
+    // efc_AR, efc_R, efc_AR_rowadr, efc_AR_rownnz, efc_AR_colind are valid arrays in mjData.
+    // efclist (if non-null) has at least nefc elements.
+    unsafe {
+        let AR = (*d).efc_AR;
+        let R = (*d).efc_R;
+
+        if mj_is_sparse(m) != 0 {
+            let rowadr = (*d).efc_AR_rowadr;
+            let rownnz = (*d).efc_AR_rownnz;
+            let colind = (*d).efc_AR_colind;
+
+            for c in 0..nefc {
+                let i = if !efclist.is_null() { *efclist.add(c as usize) } else { c };
+                let nnz = *rownnz.add(i as usize);
+
+                for j in 0..nnz {
+                    let adr = *rowadr.add(i as usize) + j;
+                    if i == *colind.add(adr as usize) {
+                        let ar_val = *AR.add(adr as usize);
+                        *res.add(c as usize) = 1.0 / (if flg_subR != 0 {
+                            mju_max(MJ_MINVAL, ar_val - *R.add(i as usize))
+                        } else {
+                            ar_val
+                        });
+                        break;
+                    }
+                }
+            }
+        } else {
+            for c in 0..nefc {
+                let i = if !efclist.is_null() { *efclist.add(c as usize) } else { c };
+                let ar_val = *AR.add((nefc * i + i) as usize);
+                *res.add(c as usize) = 1.0 / (if flg_subR != 0 {
+                    mju_max(MJ_MINVAL, ar_val - *R.add(i as usize))
+                } else {
+                    ar_val
+                });
+            }
+        }
+    }
 }
 
 /// C: extractBlock (engine/engine_solver.c:127)
