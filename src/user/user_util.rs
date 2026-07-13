@@ -1,5 +1,5 @@
 //! Port of: user/user_util.cc
-//! IR hash: 6ff71909dacce27f
+//! IR hash: d784001b6381c4aa
 //! CODEGEN: signatures locked. Only fill todo!() bodies.
 
 use crate::types::*;
@@ -12,7 +12,21 @@ use crate::types::*;
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjuu_axis_angle2quat(res: *mut f64, axis: *const f64, angle: f64) {
-    todo!() // mjuu_axisAngle2Quat
+    // SAFETY: res[4], axis[3] valid (caller contract)
+    unsafe {
+        if angle == 0.0 {
+            *res.add(0) = 1.0;
+            *res.add(1) = 0.0;
+            *res.add(2) = 0.0;
+            *res.add(3) = 0.0;
+        } else {
+            let s = (angle * 0.5).sin();
+            *res.add(0) = (angle * 0.5).cos();
+            *res.add(1) = *axis.add(0) * s;
+            *res.add(2) = *axis.add(1) * s;
+            *res.add(3) = *axis.add(2) * s;
+        }
+    }
 }
 
 /// C: mjuu_isValidContentType (user/user_util.cc:973)
@@ -29,6 +43,7 @@ pub fn file_to_memory(filename: *const i8) -> i32 {
 }
 
 /// C: VectorToString (user/user_util.cc:1256)
+/// Calls: FilePath::empty
 #[allow(unused_variables, non_snake_case)]
 pub fn vector_to_string(v: *const i32) -> std__string {
     todo!() // VectorToString
@@ -102,7 +117,16 @@ pub fn mjuu_setvec(dest: *mut f64, x: f64, y: f64, z: f64, w: f64) {
 /// C: mjuu_copyvec (user/user_util.h:54)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjuu_copyvec(dest: *mut T1, src: *const T2, n: i32) {
-    todo!() // mjuu_copyvec
+    // SAFETY: caller guarantees dest and src point to at least n f64 elements
+    unsafe {
+        let d = dest as *mut f64;
+        let s = src as *const f64;
+        let mut i: i32 = 0;
+        while i < n {
+            *d.offset(i as isize) = *s.offset(i as isize);
+            i += 1;
+        }
+    }
 }
 
 /// C: mjuu_addtovec (user/user_util.h:59)
@@ -179,7 +203,16 @@ pub fn mjuu_dist3(a: *const f64, b: *const f64) -> f64 {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjuu_l1(a: *const f64, b: *const f64, n: i32) -> f64 {
-    todo!() // mjuu_L1
+    // SAFETY: caller guarantees a and b point to at least n f64
+    unsafe {
+        let mut res: f64 = 0.0;
+        let mut i: i32 = 0;
+        while i < n {
+            res += (*a.offset(i as isize) - *b.offset(i as isize)).abs();
+            i += 1;
+        }
+        res
+    }
 }
 
 /// C: mjuu_normvec (user/user_util.h:78)
@@ -190,7 +223,28 @@ pub fn mjuu_l1(a: *const f64, b: *const f64, n: i32) -> f64 {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjuu_normvec(vec: *mut f64, n: i32) -> f64 {
-    todo!() // mjuu_normvec
+    const MJEPS: f64 = 1e-14;
+    // SAFETY: caller guarantees vec points to at least n f64
+    unsafe {
+        let mut nrm: f64 = 0.0;
+        let mut i: i32 = 0;
+        while i < n {
+            nrm += *vec.offset(i as isize) * *vec.offset(i as isize);
+            i += 1;
+        }
+        if nrm < MJEPS {
+            return 0.0;
+        }
+        nrm = nrm.sqrt();
+        if (nrm - 1.0).abs() > MJEPS {
+            i = 0;
+            while i < n {
+                *vec.offset(i as isize) /= nrm;
+                i += 1;
+            }
+        }
+        nrm
+    }
 }
 
 /// C: mjuu_scalevec (user/user_util.h:82)
@@ -267,7 +321,20 @@ pub fn mjuu_quat2mat(res: *mut f64, quat: *const f64) {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjuu_mulquat(res: *mut f64, qa: *const f64, qb: *const f64) {
-    todo!() // mjuu_mulquat
+    // SAFETY: res[4], qa[4], qb[4] valid (caller contract)
+    unsafe {
+        let mut tmp: [f64; 4] = [0.0; 4];
+        tmp[0] = *qa.add(0) * *qb.add(0) - *qa.add(1) * *qb.add(1) - *qa.add(2) * *qb.add(2) - *qa.add(3) * *qb.add(3);
+        tmp[1] = *qa.add(0) * *qb.add(1) + *qa.add(1) * *qb.add(0) + *qa.add(2) * *qb.add(3) - *qa.add(3) * *qb.add(2);
+        tmp[2] = *qa.add(0) * *qb.add(2) - *qa.add(1) * *qb.add(3) + *qa.add(2) * *qb.add(0) + *qa.add(3) * *qb.add(1);
+        tmp[3] = *qa.add(0) * *qb.add(3) + *qa.add(1) * *qb.add(2) - *qa.add(2) * *qb.add(1) + *qa.add(3) * *qb.add(0);
+        mjuu_normvec(tmp.as_mut_ptr(), 4);
+        // copyvec: res = tmp
+        *res.add(0) = tmp[0];
+        *res.add(1) = tmp[1];
+        *res.add(2) = tmp[2];
+        *res.add(3) = tmp[3];
+    }
 }
 
 /// C: mjuu_mulvecmat (user/user_util.h:91)
@@ -344,6 +411,7 @@ pub fn mjuu_mul_rmrt(res: *mut f64, R: *const f64, M: *const f64) {
 }
 
 /// C: mjuu_mulmat (user/user_util.h:100)
+/// Calls: mjuu_copyvec
 /// ⚠️ BITEXACT RULES:
 ///   1. Copy exact C accumulation order (no iter().sum())
 ///   2. No f64::mul_add() (FMA changes precision)
@@ -368,6 +436,7 @@ pub fn mjuu_mulmat(res: *mut f64, A: *const f64, B: *const f64) {
 }
 
 /// C: mjuu_transposemat (user/user_util.h:103)
+/// Calls: mjuu_copyvec
 /// ⚠️ BITEXACT RULES:
 ///   1. Copy exact C accumulation order (no iter().sum())
 ///   2. No f64::mul_add() (FMA changes precision)
@@ -485,7 +554,15 @@ pub fn mjuu_z2quat(quat: *mut f64, vec: *const f64) {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjuu_frame2quat(quat: *mut f64, x: *const f64, y: *const f64, z: *const f64) {
-    todo!() // mjuu_frame2quat
+    // SAFETY: quat[4], x[3], y[3], z[3] valid (caller contract)
+    unsafe {
+        let mat: [f64; 9] = [
+            *x.add(0), *y.add(0), *z.add(0),
+            *x.add(1), *y.add(1), *z.add(1),
+            *x.add(2), *y.add(2), *z.add(2),
+        ];
+        crate::engine::engine_util_spatial::mju_mat2quat(quat, mat.as_ptr());
+    }
 }
 
 /// C: mjuu_frameinvert (user/user_util.h:128)
@@ -607,6 +684,7 @@ pub fn mjuu_visccoef(visccoef: *mut f64, mass: f64, inertia: *const f64, scl: f6
 }
 
 /// C: mjuu_rotVecQuat (user/user_util.h:153)
+/// Calls: mjuu_copyvec
 /// ⚠️ BITEXACT RULES:
 ///   1. Copy exact C accumulation order (no iter().sum())
 ///   2. No f64::mul_add() (FMA changes precision)
@@ -650,7 +728,50 @@ pub fn mjuu_rot_vec_quat(res: *mut f64, vec: *const f64, quat: *const f64) {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjuu_update_frame(quat: *mut f64, normal: *mut f64, edge: *const f64, tprv: *const f64, tnxt: *const f64, first: i32) -> f64 {
-    todo!() // mjuu_updateFrame
+    // SAFETY: quat[4], normal[3], edge[3], tprv[3], tnxt[3] valid (caller contract)
+    unsafe {
+        let mut tangent: [f64; 3] = [0.0; 3];
+        let mut binormal: [f64; 3] = [0.0; 3];
+
+        // normalize tangent
+        for i in 0..3 {
+            tangent[i] = *edge.add(i);
+        }
+        mjuu_normvec(tangent.as_mut_ptr(), 3);
+
+        // compute moving frame
+        if first != 0 {
+            // use the first vertex binormal for the first edge
+            mjuu_crossvec(binormal.as_mut_ptr(), tangent.as_ptr(), tnxt);
+            mjuu_normvec(binormal.as_mut_ptr(), 3);
+
+            // compute edge normal given tangent and binormal
+            mjuu_crossvec(normal, binormal.as_ptr(), tangent.as_ptr());
+            mjuu_normvec(normal, 3);
+        } else {
+            let mut darboux: [f64; 4] = [0.0; 4];
+
+            // rotate edge normal about the vertex binormal
+            mjuu_crossvec(binormal.as_mut_ptr(), tprv, tangent.as_ptr());
+            let angle = f64::atan2(
+                mjuu_normvec(binormal.as_mut_ptr(), 3),
+                mjuu_dot3(tprv, tangent.as_ptr()),
+            );
+            mjuu_axis_angle2quat(darboux.as_mut_ptr(), binormal.as_ptr(), angle);
+            mjuu_rot_vec_quat(normal, normal, darboux.as_ptr());
+            mjuu_normvec(normal, 3);
+
+            // compute edge binormal given tangent and normal
+            mjuu_crossvec(binormal.as_mut_ptr(), tangent.as_ptr(), normal);
+            mjuu_normvec(binormal.as_mut_ptr(), 3);
+        }
+
+        // global orientation of the frame
+        mjuu_frame2quat(quat, tangent.as_ptr(), normal, binormal.as_ptr());
+
+        // return edge length
+        f64::sqrt(mjuu_dot3(edge, edge))
+    }
 }
 
 /// C: mjuu_eig3 (user/user_util.h:160)
@@ -662,7 +783,120 @@ pub fn mjuu_update_frame(quat: *mut f64, normal: *mut f64, edge: *const f64, tpr
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjuu_eig3(eigval: *mut f64, eigvec: *mut f64, quat: *mut f64, mat: *const f64) -> i32 {
-    todo!() // mjuu_eig3
+    // SAFETY: eigval[3], eigvec[9], quat[4], mat[9] valid (caller contract)
+    unsafe {
+        const K_EIG_EPS: f64 = 1e-12;
+        let mut d: [f64; 9] = [0.0; 9];
+        let mut tmp: [f64; 9] = [0.0; 9];
+        let mut tmp2: [f64; 9] = [0.0; 9];
+
+        // initialize with unit quaternion
+        *quat.add(0) = 1.0;
+        *quat.add(1) = 0.0;
+        *quat.add(2) = 0.0;
+        *quat.add(3) = 0.0;
+
+        // Jacobi iteration
+        let mut iter: i32 = 0;
+        while iter < 500 {
+            // make quaternion matrix eigvec, compute D = eigvec'*mat*eigvec
+            mjuu_quat2mat(eigvec, quat);
+            mjuu_transposemat(tmp2.as_mut_ptr(), eigvec);
+            mjuu_mulmat(tmp.as_mut_ptr(), tmp2.as_ptr(), mat);
+            mjuu_mulmat(d.as_mut_ptr(), tmp.as_ptr(), eigvec);
+
+            // assign eigenvalues
+            *eigval.add(0) = d[0];
+            *eigval.add(1) = d[4];
+            *eigval.add(2) = d[8];
+
+            // find max off-diagonal element, set indices
+            let (rk, ck, rotk): (usize, usize, usize);
+            if f64::abs(d[1]) > f64::abs(d[2]) && f64::abs(d[1]) > f64::abs(d[5]) {
+                rk = 0;
+                ck = 1;
+                rotk = 2;
+            } else if f64::abs(d[2]) > f64::abs(d[5]) {
+                rk = 0;
+                ck = 2;
+                rotk = 1;
+            } else {
+                rk = 1;
+                ck = 2;
+                rotk = 0;
+            }
+
+            // terminate if max off-diagonal element too small
+            if f64::abs(d[3 * rk + ck]) < K_EIG_EPS {
+                break;
+            }
+
+            // 2x2 symmetric Schur decomposition
+            let tau = (d[4 * ck] - d[4 * rk]) / (2.0 * d[3 * rk + ck]);
+            let t: f64;
+            if tau >= 0.0 {
+                t = 1.0 / (tau + f64::sqrt(1.0 + tau * tau));
+            } else {
+                t = -1.0 / (-tau + f64::sqrt(1.0 + tau * tau));
+            }
+            let c = 1.0 / f64::sqrt(1.0 + t * t);
+
+            // terminate if cosine too close to 1
+            if c > 1.0 - K_EIG_EPS {
+                break;
+            }
+
+            // express rotation as quaternion
+            let mut q_rot: [f64; 4] = [0.0; 4];
+            q_rot[1] = 0.0;
+            q_rot[2] = 0.0;
+            q_rot[3] = 0.0;
+            q_rot[rotk + 1] = if tau >= 0.0 {
+                -f64::sqrt(0.5 - 0.5 * c)
+            } else {
+                f64::sqrt(0.5 - 0.5 * c)
+            };
+            if rotk == 1 {
+                q_rot[rotk + 1] = -q_rot[rotk + 1];
+            }
+            q_rot[0] = f64::sqrt(1.0 - q_rot[rotk + 1] * q_rot[rotk + 1]);
+            mjuu_normvec(q_rot.as_mut_ptr(), 4);
+
+            // accumulate quaternion rotation
+            mjuu_mulquat(quat, quat, q_rot.as_ptr());
+            mjuu_normvec(quat, 4);
+
+            iter += 1;
+        }
+
+        // sort eigenvalues in decreasing order (bubblesort: 0, 1, 0)
+        for j in 0..3i32 {
+            let j1 = (j % 2) as usize;
+
+            // only swap if the eigenvalues are different
+            if *eigval.add(j1) + K_EIG_EPS < *eigval.add(j1 + 1) {
+                // swap eigenvalues
+                let t_swap = *eigval.add(j1);
+                *eigval.add(j1) = *eigval.add(j1 + 1);
+                *eigval.add(j1 + 1) = t_swap;
+
+                // rotate quaternion
+                let mut q_swap: [f64; 4] = [0.0; 4];
+                q_swap[0] = 0.707106781186548;
+                q_swap[1] = 0.0;
+                q_swap[2] = 0.0;
+                q_swap[3] = 0.0;
+                q_swap[(j1 + 2) % 3 + 1] = q_swap[0];
+                mjuu_mulquat(quat, quat, q_swap.as_ptr());
+                mjuu_normvec(quat, 4);
+            }
+        }
+
+        // recompute eigvec
+        mjuu_quat2mat(eigvec, quat);
+
+        iter
+    }
 }
 
 /// C: mjuu_eigendecompose (user/user_util.h:166)
@@ -707,6 +941,7 @@ pub fn mjuu_full_inertia(quat: *mut f64, inertia: *mut f64, fullinertia: *const 
 }
 
 /// C: FilePath::IsAbs (user/user_util.h:191)
+/// Calls: FilePath::AbsPrefix, FilePath::empty
 #[allow(unused_variables, non_snake_case)]
 pub fn file_path_is_abs(self_ptr: *mut FilePath) -> bool {
     todo!() // FilePath::IsAbs
@@ -737,18 +972,21 @@ pub fn file_path_ext(self_ptr: *mut FilePath) -> std__string {
 }
 
 /// C: FilePath::StripExt (user/user_util.h:211)
+/// Calls: FilePath::FilePathFast
 #[allow(unused_variables, non_snake_case)]
 pub fn file_path_strip_ext(self_ptr: *mut FilePath) -> FilePath {
     todo!() // FilePath::StripExt
 }
 
 /// C: FilePath::StripPath (user/user_util.h:214)
+/// Calls: FilePath::FilePathFast
 #[allow(unused_variables, non_snake_case)]
 pub fn file_path_strip_path(self_ptr: *mut FilePath) -> FilePath {
     todo!() // FilePath::StripPath
 }
 
 /// C: FilePath::Lower (user/user_util.h:217)
+/// Calls: FilePath::FilePathFast, FilePath::StrLower
 #[allow(unused_variables, non_snake_case)]
 pub fn file_path_lower(self_ptr: *mut FilePath) -> FilePath {
     todo!() // FilePath::Lower
@@ -773,6 +1011,7 @@ pub fn file_path_empty(self_ptr: *mut FilePath) -> bool {
 }
 
 /// C: FilePath::PathReduce (user/user_util.h:227)
+/// Calls: FilePath::AbsPrefix, FilePath::IsSeparator, FilePath::empty, FilePath::size
 #[allow(unused_variables, non_snake_case)]
 pub fn file_path_path_reduce(str: *const std__string) -> std__string {
     todo!() // FilePath::PathReduce
@@ -785,6 +1024,7 @@ pub fn file_path_is_separator(c: i8) -> bool {
 }
 
 /// C: FilePath::Combine (user/user_util.h:231)
+/// Calls: FilePath::AbsPrefix, FilePath::empty
 #[allow(unused_variables, non_snake_case)]
 pub fn file_path_combine(s1: *const std__string, s2: *const std__string) -> std__string {
     todo!() // FilePath::Combine
@@ -815,12 +1055,14 @@ pub fn mjuu_getext(filename: string_view) -> std__string {
 }
 
 /// C: mjuu_isabspath (user/user_util.h:282)
+/// Calls: FilePath::c_str, mjp_getResourceProvider
 #[allow(unused_variables, non_snake_case)]
 pub fn mjuu_isabspath(path: string) -> bool {
     todo!() // mjuu_isabspath
 }
 
 /// C: mjuu_combinePaths (user/user_util.h:285)
+/// Calls: mjuu_isabspath
 #[allow(unused_variables, non_snake_case)]
 pub fn mjuu_combine_paths(path1: *const std__string, path2: *const std__string) -> std__string {
     todo!() // mjuu_combinePaths
@@ -841,6 +1083,7 @@ pub fn mjuu_parse_content_type_attr_subtype(text: string_view) -> *const () {
 }
 
 /// C: mjuu_extToContentType (user/user_util.h:296)
+/// Calls: FilePath::c_str, getext, mjuu_getext
 #[allow(unused_variables, non_snake_case)]
 pub fn mjuu_ext_to_content_type(filename: string_view) -> std__string {
     todo!() // mjuu_extToContentType
