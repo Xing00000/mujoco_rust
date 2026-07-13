@@ -2080,7 +2080,7 @@ pub fn mju_outside_box(point: *const f64, pos: *const f64, mat: *const f64, size
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mju_print_mat(mat: *const f64, nr: i32, nc: i32) {
-    todo!("requires C stdio for formatted output")
+    todo!("requires C stdio")
 }
 
 /// C: mju_printMatSparse (engine/engine_util_misc.h:220)
@@ -2091,7 +2091,7 @@ pub fn mju_print_mat(mat: *const f64, nr: i32, nc: i32) {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mju_print_mat_sparse(mat: *const f64, nr: i32, rownnz: *const i32, rowadr: *const i32, colind: *const i32) {
-    todo!("requires C stdio for formatted output")
+    todo!("requires C stdio")
 }
 
 /// C: mju_min (engine/engine_util_misc.h:225)

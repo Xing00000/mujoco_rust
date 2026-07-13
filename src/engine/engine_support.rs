@@ -377,19 +377,37 @@ pub fn mj_version_string() -> *const i8 {
 /// C: mju_condataSize (engine/engine_support.h:127)
 #[allow(unused_variables, non_snake_case)]
 pub fn mju_condata_size(dataSpec: i32) -> i32 {
-    // NOTE: signature changed from previous IR version
-    // Previous params: (dataSpec : i32)
-    // Previous return: i32
-    todo!("re-translate: params renamed")
+    // mjNCONDATA = 7, mjCONDATA_SIZE = [1, 3, 3, 1, 3, 3, 3]
+    const MJ_NCONDATA: i32 = 7;
+    const MJ_CONDATA_SIZE: [i32; 7] = [1, 3, 3, 1, 3, 3, 3];
+
+    let mut size: i32 = 0;
+    let mut i: i32 = 0;
+    while i < MJ_NCONDATA {
+        if (dataSpec & (1 << i)) != 0 {
+            size += MJ_CONDATA_SIZE[i as usize];
+        }
+        i += 1;
+    }
+    size
 }
 
 /// C: mju_raydataSize (engine/engine_support.h:130)
 #[allow(unused_variables, non_snake_case)]
 pub fn mju_raydata_size(dataspec: i32) -> i32 {
-    // NOTE: signature changed from previous IR version
-    // Previous params: (dataspec : i32)
-    // Previous return: i32
-    todo!("re-translate: params renamed")
+    // mjNRAYDATA = 6, mjRAYDATA_SIZE = [1, 3, 3, 3, 3, 1]
+    const MJ_NRAYDATA: i32 = 6;
+    const MJ_RAYDATA_SIZE: [i32; 6] = [1, 3, 3, 3, 3, 1];
+
+    let mut size: i32 = 0;
+    let mut i: i32 = 0;
+    while i < MJ_NRAYDATA {
+        if (dataspec & (1 << i)) != 0 {
+            size += MJ_RAYDATA_SIZE[i as usize];
+        }
+        i += 1;
+    }
+    size
 }
 
 /// C: mju_camIntrinsics (engine/engine_support.h:134)
@@ -400,10 +418,7 @@ pub fn mju_raydata_size(dataspec: i32) -> i32 {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mju_cam_intrinsics(m: *const mjModel, camid: i32, fx: *mut f64, fy: *mut f64, cx: *mut f64, cy: *mut f64, ortho_extent: *mut f64) {
-    // NOTE: signature changed from previous IR version
-    // Previous params: (m : * const mjModel, camid : i32, fx : * mut f64, fy : * mut f64, cx : * mut f64, cy : * mut f64, ortho_extent : * mut f64)
-    // Previous return: ()
-    todo!("re-translate: params renamed")
+    todo!("requires mjModel field access")
 }
 
 /// C: mj_readCtrl (engine/engine_support.h:141)

@@ -149,7 +149,12 @@ pub fn mjuu_addtovec(dest: *mut f64, src: *const f64, n: i32) {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjuu_zerovec(dest: *mut f64, n: i32) {
-    todo!() // mjuu_zerovec
+    let mut i: i32 = 0;
+    while i < n {
+        // SAFETY: caller guarantees dest points to at least n doubles
+        unsafe { *dest.offset(i as isize) = 0.0; }
+        i += 1;
+    }
 }
 
 /// C: mjuu_dot3 (user/user_util.h:68)

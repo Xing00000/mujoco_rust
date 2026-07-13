@@ -897,10 +897,20 @@ pub fn inflate(status: *mut mjCCDStatus, margin1: f64, margin2: f64) {
 /// Calls: align8
 #[allow(unused_variables, non_snake_case)]
 pub fn mjc_ccd_size(iterations: i32) -> usize {
-    // NOTE: signature changed from previous IR version
-    // Previous params: (iterations : i32)
-    // Previous return: usize
-    todo!("re-translate: params renamed")
+    // C struct sizes (double precision, 64-bit):
+    //   Vertex: 3*mjtNum[3] + 2*int = 72 + 8 = 80 bytes
+    //   Face: int + int[3] + mjtNum[3] + mjtNum + int + padding = 56 bytes
+    const SIZEOF_VERTEX: usize = 80;
+    const SIZEOF_FACE: usize = 56;
+    const SIZEOF_FACE_PTR: usize = 8;  // pointer size on 64-bit
+    const SIZEOF_INT: usize = 4;
+
+    let n = iterations as usize;
+    align8(SIZEOF_VERTEX * (5 + n))       // vertices in polytope
+        + align8(SIZEOF_FACE * 6 * n)     // faces in polytope
+        + align8(SIZEOF_FACE_PTR * 6 * n) // map in polytope
+        + align8(SIZEOF_INT * 24)         // horizon indices
+        + align8(SIZEOF_INT * 24)         // horizon edges
 }
 
 /// C: mjc_ccd (engine/engine_collision_gjk.h:108)

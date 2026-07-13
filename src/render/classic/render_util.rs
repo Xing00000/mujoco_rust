@@ -208,9 +208,19 @@ pub fn mjr_transform(translate: *const f32, rotate: *const f32, scale: f32) {
 /// C: mjr_findRect (render/classic/render_util.h:68)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjr_find_rect(x: i32, y: i32, nrect: i32, rect: *const mjrRect) -> i32 {
-    // NOTE: signature changed from previous IR version
-    // Previous params: (x : i32, y : i32, nrect : i32, rect : * const mjrRect)
-    // Previous return: i32
-    todo!("re-translate: params renamed")
+    let mut i: i32 = 0;
+    while i < nrect {
+        // SAFETY: caller guarantees rect points to at least nrect elements
+        let r = unsafe { &*rect.offset(i as isize) };
+        if x >= r.left
+            && x < r.left + r.width
+            && y >= r.bottom
+            && y < r.bottom + r.height
+        {
+            return i;
+        }
+        i += 1;
+    }
+    -1
 }
 
