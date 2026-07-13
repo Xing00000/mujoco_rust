@@ -293,10 +293,27 @@ pub fn mj_integrate_pos(m: *const mjModel, qpos: *mut f64, qvel: *const f64, dt:
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_normalize_quat(m: *const mjModel, qpos: *mut f64) {
-    // NOTE: signature changed from previous IR version
-    // Previous params: (m : * const mjModel, qpos : * mut f64)
-    // Previous return: ()
-    todo!("re-translate: params renamed")
+    // SAFETY: m is valid mjModel, qpos is valid qpos array. Access fields via byte offsets:
+    //   njnt: usize at offset 72
+    //   jnt_type: *const i32 at offset 2048
+    //   jnt_qposadr: *const i32 at offset 2056
+    // mjJNT_BALL = 1, mjJNT_FREE = 0
+    unsafe {
+        let m_ptr = m as *const u8;
+        let njnt = *(m_ptr.add(72) as *const usize);
+        let jnt_type = *(m_ptr.add(2048) as *const *const i32);
+        let jnt_qposadr = *(m_ptr.add(2056) as *const *const i32);
+
+        for i in 0..njnt {
+            let jtype = *jnt_type.add(i);
+            // mjJNT_FREE = 0, mjJNT_BALL = 1
+            if jtype == 1 || jtype == 0 {
+                let offset = if jtype == 0 { 3 } else { 0 }; // FREE has 3 pos before quat
+                let adr = *jnt_qposadr.add(i) as usize + offset as usize;
+                crate::engine::engine_util_blas::mju_normalize4(qpos.add(adr));
+            }
+        }
+    }
 }
 
 /// C: mj_actuatorDisabled (engine/engine_support.h:108)
@@ -338,10 +355,20 @@ pub fn mj_next_activation(m: *const mjModel, d: *const mjData, actuator_id: i32,
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_get_totalmass(m: *const mjModel) -> f64 {
-    // NOTE: signature changed from previous IR version
-    // Previous params: (m : * const mjModel)
-    // Previous return: f64
-    todo!("re-translate: params renamed")
+    // SAFETY: m is valid mjModel. Access fields via byte offsets:
+    //   nbody: usize at offset 32
+    //   body_mass: *const f64 at offset 1888
+    unsafe {
+        let m_ptr = m as *const u8;
+        let nbody = *(m_ptr.add(32) as *const usize);
+        let body_mass = *(m_ptr.add(1888) as *const *const f64);
+
+        let mut res: f64 = 0.0;
+        for i in 1..nbody {
+            res += *body_mass.add(i);
+        }
+        res
+    }
 }
 
 /// C: mj_setTotalmass (engine/engine_support.h:118)
@@ -368,10 +395,8 @@ pub fn mj_version() -> i32 {
 /// C: mj_versionString (engine/engine_support.h:124)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_version_string() -> *const i8 {
-    // NOTE: signature changed from previous IR version
-    // Previous params: ()
-    // Previous return: * const i8
-    todo!("re-translate: params renamed")
+    // SAFETY: returns pointer to static null-terminated string
+    b"3.10.1\0".as_ptr() as *const i8
 }
 
 /// C: mju_condataSize (engine/engine_support.h:127)

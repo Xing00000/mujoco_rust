@@ -347,10 +347,37 @@ pub fn mj_contact_force(m: *const mjModel, d: *const mjData, id: i32, result: *m
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn tendon_limit(m: *const mjModel, ten_length: *const f64, i: i32) -> i32 {
-    // NOTE: signature changed from previous IR version
-    // Previous params: (m : * const mjModel, ten_length : * const f64, i : i32)
-    // Previous return: i32
-    todo!("re-translate: params renamed")
+    // SAFETY: m is valid mjModel, ten_length valid array. Access fields via byte offsets:
+    //   tendon_limited: *const u8 at offset 4424
+    //   tendon_range: *const f64 at offset 4480
+    //   tendon_margin: *const f64 at offset 4496
+    unsafe {
+        let m_ptr = m as *const u8;
+        let tendon_limited = *(m_ptr.add(4424) as *const *const u8);
+        let tendon_range = *(m_ptr.add(4480) as *const *const f64);
+        let tendon_margin = *(m_ptr.add(4496) as *const *const f64);
+
+        if *tendon_limited.add(i as usize) == 0 {
+            return 0;
+        }
+
+        let mut nl: i32 = 0;
+        let value = *ten_length.add(i as usize);
+        let margin = *tendon_margin.add(i as usize);
+
+        // tendon limits can be bilateral, check both sides
+        let mut side: i32 = -1;
+        while side <= 1 {
+            let idx = (2 * i + (side + 1) / 2) as usize;
+            let dist = (side as f64) * (*tendon_range.add(idx) - value);
+            if dist < margin {
+                nl += 1;
+            }
+            side += 2;
+        }
+
+        nl
+    }
 }
 
 /// C: mj_actuatorDamping (engine/engine_core_util.h:142)
