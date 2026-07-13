@@ -117,7 +117,13 @@ pub fn mjuu_matadr(g1: i32, g2: i32, n: i32) -> i32 {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjuu_setvec(dest: *mut f64, x: f64, y: f64, z: f64, w: f64) {
-    todo!() // mjuu_setvec
+    // SAFETY: dest points to at least 4 f64 (caller contract)
+    unsafe {
+        *dest.add(0) = x;
+        *dest.add(1) = y;
+        *dest.add(2) = z;
+        *dest.add(3) = w;
+    }
 }
 
 /// C: mjuu_copyvec (user/user_util.h:54)
