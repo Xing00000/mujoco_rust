@@ -78,7 +78,40 @@ pub fn find_edges(m: *const mjModel, d: *const mjData, rownnz: *mut i32, colind:
 /// Calls: mju_copyInt, mju_fillInt
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_flood_fill(island: *mut i32, nr: i32, rownnz: *const i32, rowadr: *const i32, colind: *const i32, stack: *mut i32) -> i32 {
-    todo!() // mj_floodFill
+    // SAFETY: caller guarantees all pointers are valid with sufficient length
+    unsafe {
+        let mut nisland: i32 = 0;
+        crate::engine::engine_util_misc::mju_fill_int(island, -1, nr);
+
+        for i in 0..nr {
+            if *island.add(i as usize) != -1 || *rownnz.add(i as usize) == 0 {
+                continue;
+            }
+
+            let mut nstack: i32 = 0;
+            *stack.add(nstack as usize) = i;
+            nstack += 1;
+
+            while nstack != 0 {
+                nstack -= 1;
+                let v = *stack.add(nstack as usize);
+                if *island.add(v as usize) != -1 {
+                    continue;
+                }
+                *island.add(v as usize) = nisland;
+                crate::engine::engine_util_misc::mju_copy_int(
+                    stack.add(nstack as usize),
+                    colind.add(*rowadr.add(v as usize) as usize),
+                    *rownnz.add(v as usize),
+                );
+                nstack += *rownnz.add(v as usize);
+            }
+
+            nisland += 1;
+        }
+
+        nisland
+    }
 }
 
 /// C: mj_island (engine/engine_island.h:35)

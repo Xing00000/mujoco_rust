@@ -19,7 +19,15 @@ pub fn mj_update_dynamic_bvh(m: *const mjModel, d: *mut mjData, bvhadr: i32, bvh
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mju_mul_mat_mat322(C: *mut f64, A: *const f64, B: *const f64) {
-    todo!() // mju_mulMatMat322
+    // SAFETY: caller guarantees C[6], A[6], B[4] are valid
+    unsafe {
+        *C.add(0) = *A.add(0) * *B.add(0) + *A.add(1) * *B.add(2);
+        *C.add(1) = *A.add(0) * *B.add(1) + *A.add(1) * *B.add(3);
+        *C.add(2) = *A.add(2) * *B.add(0) + *A.add(3) * *B.add(2);
+        *C.add(3) = *A.add(2) * *B.add(1) + *A.add(3) * *B.add(3);
+        *C.add(4) = *A.add(4) * *B.add(0) + *A.add(5) * *B.add(2);
+        *C.add(5) = *A.add(4) * *B.add(1) + *A.add(5) * *B.add(3);
+    }
 }
 
 /// C: mj_kinematics1 (engine/engine_core_smooth.h:29)

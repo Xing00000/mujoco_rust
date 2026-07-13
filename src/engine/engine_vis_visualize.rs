@@ -420,7 +420,18 @@ pub fn make_side(_face: *mut f32, _normal: *mut f32, radius: f64, vertnorm: *con
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn copy_tex(dst: *mut f32, src: *const f32, nface: i32, i0: i32, i1: i32, i2: i32) {
-    todo!() // copyTex
+    if dst.is_null() || src.is_null() {
+        return;
+    }
+    // SAFETY: caller guarantees dst has at least 6*nface+6 elements, src has at least 2*max(i0,i1,i2)+2 elements
+    unsafe {
+        *dst.add((6 * nface + 0) as usize) = *src.add((2 * i0) as usize);
+        *dst.add((6 * nface + 1) as usize) = *src.add((2 * i0 + 1) as usize);
+        *dst.add((6 * nface + 2) as usize) = *src.add((2 * i1) as usize);
+        *dst.add((6 * nface + 3) as usize) = *src.add((2 * i1 + 1) as usize);
+        *dst.add((6 * nface + 4) as usize) = *src.add((2 * i2) as usize);
+        *dst.add((6 * nface + 5) as usize) = *src.add((2 * i2 + 1) as usize);
+    }
 }
 
 /// C: cosh_sinh (engine/engine_vis_visualize.c:3516)
