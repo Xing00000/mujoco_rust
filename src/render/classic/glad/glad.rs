@@ -1,5 +1,5 @@
 //! Port of: render/classic/glad/glad.c
-//! IR hash: 6ff71909dacce27f
+//! IR hash: e878892ca48fe222
 //! CODEGEN: signatures locked. Only fill todo!() bodies.
 
 use crate::types::*;
@@ -47,6 +47,7 @@ pub fn mj_glad_load_gl_version_1_0(load: GLADloadproc) {
 }
 
 /// C: mjGlad_load_GL_VERSION_1_1 (render/classic/glad/glad.c:1207)
+/// Calls: mjCModel::Textures
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_glad_load_gl_version_1_1(load: GLADloadproc) {
     todo!() // mjGlad_load_GL_VERSION_1_1
@@ -71,6 +72,7 @@ pub fn mj_glad_load_gl_version_1_4(load: GLADloadproc) {
 }
 
 /// C: mjGlad_load_GL_VERSION_1_5 (render/classic/glad/glad.c:1346)
+/// Calls: mjCAsset::Data
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_glad_load_gl_version_1_5(load: GLADloadproc) {
     todo!() // mjGlad_load_GL_VERSION_1_5
@@ -95,6 +97,7 @@ pub fn mj_glad_load_gl_arb_vertex_buffer_object(load: GLADloadproc) {
 }
 
 /// C: mjGlad_load_GL_KHR_debug (render/classic/glad/glad.c:1409)
+/// Calls: mjCCache::Insert
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_glad_load_gl_khr_debug(load: GLADloadproc) {
     todo!() // mjGlad_load_GL_KHR_debug

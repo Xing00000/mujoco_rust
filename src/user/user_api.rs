@@ -1,18 +1,18 @@
 //! Port of: user/user_api.cc
-//! IR hash: 6ff71909dacce27f
+//! IR hash: e878892ca48fe222
 //! CODEGEN: signatures locked. Only fill todo!() bodies.
 
 use crate::types::*;
 
 /// C: mj_parse (user/user_api.cc:78)
-/// Calls: mj_defaultVFS, mj_deleteVFS, mj_parseXML, mju_closeResource, mju_decodeResource, mju_free, mju_malloc, mju_openResource
+/// Calls: FilePath::Ext, mj_defaultVFS, mj_deleteVFS, mj_parseXML, mju_closeResource, mju_decodeResource, mju_free, mju_malloc, mju_openResource
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_parse(filename: *const i8, content_type: *const i8, vfs: *const mjVFS, error: *mut i8, error_sz: i32) -> *mut mjSpec {
     todo!() // mj_parse
 }
 
 /// C: mj_encode (user/user_api.cc:151)
-/// Calls: mj_saveXML, mjp_findEncoder
+/// Calls: FilePath::Ext, mj_saveXML, mjp_findEncoder
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_encode(s: *const mjSpec, m: *const mjModel, filename: *const i8, content_type: *const i8, vfs: *const mjVFS, error: *mut i8, error_sz: i32) -> i32 {
     todo!() // mj_encode
@@ -38,26 +38,28 @@ pub fn set_frame(body: *mut mjsBody, objtype: u32, frame: *mut mjsFrame) {
 }
 
 /// C: attachBody (user/user_api.cc:306)
+/// Calls: mjCModel::SetError
 #[allow(unused_variables, non_snake_case)]
 pub fn attach_body(parent: *mut mjCFrame, child: *const mjCBody, prefix: *const i8, suffix: *const i8) -> *mut mjsElement {
     todo!() // attachBody
 }
 
 /// C: attachFrame (user/user_api.cc:325)
+/// Calls: mjCModel::SetError
 #[allow(unused_variables, non_snake_case)]
 pub fn attach_frame(parent: *mut mjCBody, child: *const mjCFrame, prefix: *const i8, suffix: *const i8) -> *mut mjsElement {
     todo!() // attachFrame
 }
 
 /// C: attachToSite (user/user_api.cc:344)
-/// Calls: attachBody, mjCBody::AddFrame, mjCFrame::SetParent, mjCSite::Body
+/// Calls: attachBody, mjCBody::AddFrame, mjCFrame::SetParent, mjCSite::Body, mjs_getSpec, mjs_resolveOrientation
 #[allow(unused_variables, non_snake_case)]
 pub fn attach_to_site(parent: *mut mjCSite, child: *const mjCBody, prefix: *const i8, suffix: *const i8) -> *mut mjsElement {
     todo!() // attachToSite
 }
 
 /// C: attachFrameToSite (user/user_api.cc:365)
-/// Calls: attachFrame, mjCBody::AddFrame, mjCFrame::SetParent, mjCSite::Body
+/// Calls: attachFrame, mjCBody::AddFrame, mjCFrame::SetParent, mjCSite::Body, mjs_getSpec, mjs_resolveOrientation, mjs_setFrame
 #[allow(unused_variables, non_snake_case)]
 pub fn attach_frame_to_site(parent: *mut mjCSite, child: *const mjCFrame, prefix: *const i8, suffix: *const i8) -> *mut mjsElement {
     todo!() // attachFrameToSite
@@ -75,12 +77,14 @@ pub fn mjs_get_timer(s: *mut mjSpec) -> *const f64 {
 }
 
 /// C: mjs_numWarnings (user/user_api.cc:535)
+/// Calls: mjCModel::GetWarnings
 #[allow(unused_variables, non_snake_case)]
 pub fn mjs_num_warnings(spec: *const mjSpec) -> i32 {
     todo!() // mjs_numWarnings
 }
 
 /// C: mjs_getWarning (user/user_api.cc:544)
+/// Calls: mjCModel::GetWarnings
 #[allow(unused_variables, non_snake_case)]
 pub fn mjs_get_warning(spec: *const mjSpec, index: i32) -> *const i8 {
     todo!() // mjs_getWarning
@@ -104,105 +108,6 @@ pub fn mjs_get_compiler(element: *const mjsElement) -> *mut mjsCompiler {
     todo!() // mjs_getCompiler
 }
 
-/// C: mjs_setBuffer (user/user_api.cc:2230)
-#[allow(unused_variables, non_snake_case)]
-pub fn mjs_set_buffer(dest: *mut i32, array: *const (), size: i32) {
-    todo!() // mjs_setBuffer
-}
-
-/// C: mjs_setString (user/user_api.cc:2240)
-#[allow(unused_variables, non_snake_case)]
-pub fn mjs_set_string(dest: *mut i32, text: *const i8) {
-    todo!() // mjs_setString
-}
-
-/// C: mjs_setInStringVec (user/user_api.cc:2248)
-/// Calls: mju_error
-#[allow(unused_variables, non_snake_case)]
-pub fn mjs_set_in_string_vec(dest: *mut i32, i: i32, text: *const i8) -> mjtBool {
-    todo!() // mjs_setInStringVec
-}
-
-/// C: mjs_setStringVec (user/user_api.cc:2260)
-#[allow(unused_variables, non_snake_case)]
-pub fn mjs_set_string_vec(dest: *mut i32, text: *const i8) {
-    todo!() // mjs_setStringVec
-}
-
-/// C: mjs_appendString (user/user_api.cc:2268)
-#[allow(unused_variables, non_snake_case)]
-pub fn mjs_append_string(dest: *mut i32, text: *const i8) {
-    todo!() // mjs_appendString
-}
-
-/// C: mjs_setInt (user/user_api.cc:2274)
-#[allow(unused_variables, non_snake_case)]
-pub fn mjs_set_int(dest: *mut i32, array: *const i32, size: i32) {
-    todo!() // mjs_setInt
-}
-
-/// C: mjs_appendIntVec (user/user_api.cc:2284)
-#[allow(unused_variables, non_snake_case)]
-pub fn mjs_append_int_vec(dest: *mut i32, array: *const i32, size: i32) {
-    todo!() // mjs_appendIntVec
-}
-
-/// C: mjs_setFloat (user/user_api.cc:2291)
-/// ⚠️ BITEXACT RULES:
-///   1. Copy exact C accumulation order (no iter().sum())
-///   2. No f64::mul_add() (FMA changes precision)
-///   3. No algebraic simplification
-///   4. No iter().sum()/product() (order undefined)
-#[allow(unused_variables, non_snake_case)]
-pub fn mjs_set_float(dest: *mut i32, array: *const f32, size: i32) {
-    todo!() // mjs_setFloat
-}
-
-/// C: mjs_appendFloatVec (user/user_api.cc:2302)
-/// ⚠️ BITEXACT RULES:
-///   1. Copy exact C accumulation order (no iter().sum())
-///   2. No f64::mul_add() (FMA changes precision)
-///   3. No algebraic simplification
-///   4. No iter().sum()/product() (order undefined)
-#[allow(unused_variables, non_snake_case)]
-pub fn mjs_append_float_vec(dest: *mut i32, array: *const f32, size: i32) {
-    todo!() // mjs_appendFloatVec
-}
-
-/// C: mjs_setDouble (user/user_api.cc:2309)
-/// ⚠️ BITEXACT RULES:
-///   1. Copy exact C accumulation order (no iter().sum())
-///   2. No f64::mul_add() (FMA changes precision)
-///   3. No algebraic simplification
-///   4. No iter().sum()/product() (order undefined)
-#[allow(unused_variables, non_snake_case)]
-pub fn mjs_set_double(dest: *mut i32, array: *const f64, size: i32) {
-    todo!() // mjs_setDouble
-}
-
-/// C: mjs_getName (user/user_api.cc:2319)
-#[allow(unused_variables, non_snake_case)]
-pub fn mjs_get_name(element: *mut mjsElement) -> *mut i32 {
-    todo!() // mjs_getName
-}
-
-/// C: mjs_getString (user/user_api.cc:2329)
-#[allow(unused_variables, non_snake_case)]
-pub fn mjs_get_string(source: *const i32) -> *const i8 {
-    todo!() // mjs_getString
-}
-
-/// C: mjs_getDouble (user/user_api.cc:2336)
-/// ⚠️ BITEXACT RULES:
-///   1. Copy exact C accumulation order (no iter().sum())
-///   2. No f64::mul_add() (FMA changes precision)
-///   3. No algebraic simplification
-///   4. No iter().sum()/product() (order undefined)
-#[allow(unused_variables, non_snake_case)]
-pub fn mjs_get_double(source: *const i32, size: *mut i32) -> *const f64 {
-    todo!() // mjs_getDouble
-}
-
 /// C: mj_makeSpec (user/user_api.h:40)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_make_spec() -> *mut mjSpec {
@@ -217,13 +122,14 @@ pub fn mj_compile(s: *mut mjSpec, vfs: *const mjVFS) -> *mut mjModel {
 }
 
 /// C: mj_recompile (user/user_api.h:46)
-/// Calls: mjCModel::Compile, mjCModel::MakeData, mjCModel::SetError, mj_deleteData
+/// Calls: mjCModel::Compile, mjCModel::MakeData, mjCModel::RestoreState, mjCModel::SaveState, mjCModel::SetError, mj_deleteData
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_recompile(s: *mut mjSpec, vfs: *const mjVFS, m: *mut mjModel, d: *mut mjData) -> i32 {
     todo!() // mj_recompile
 }
 
 /// C: mj_copySpec (user/user_api.h:49)
+/// Calls: mjCModel::SetError
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_copy_spec(s: *const mjSpec) -> *mut mjSpec {
     todo!() // mj_copySpec
@@ -237,7 +143,7 @@ pub fn mjs_get_error(s: *mut mjSpec) -> *const i8 {
 }
 
 /// C: mjs_isWarning (user/user_api.h:55)
-/// Calls: mjCModel::GetError
+/// Calls: mjCModel::GetError, mjCModel::GetWarnings
 #[allow(unused_variables, non_snake_case)]
 pub fn mjs_is_warning(s: *mut mjSpec) -> i32 {
     todo!() // mjs_isWarning
@@ -279,13 +185,14 @@ pub fn mj_copy_back(s: *mut mjSpec, m: *const mjModel) -> i32 {
 }
 
 /// C: mjs_attach (user/user_api.h:76)
-/// Calls: SetFrame, mjCModel::SetAttachWarningBoundary, mjCModel::SetError, mjs_addFrame, mjs_getParent, mju_error
+/// Calls: ResolveConflicts, SetFrame, attachBody, attachFrame, attachFrameToSite, attachToSite, mjCModel::AddGroupedWarning, mjCModel::SetAttachWarningBoundary, mjCModel::SetError, mjs_addFrame, mjs_findBody, mjs_getParent, mjs_getSpec, mjs_setFrame, mju_error
 #[allow(unused_variables, non_snake_case)]
 pub fn mjs_attach(parent: *mut mjsElement, child: *const mjsElement, prefix: *const i8, suffix: *const i8) -> *mut mjsElement {
     todo!() // mjs_attach
 }
 
 /// C: mjs_addBody (user/user_api.h:83)
+/// Calls: mjCBody::AddBody
 #[allow(unused_variables, non_snake_case)]
 pub fn mjs_add_body(body: *mut mjsBody, def: *const mjsDefault) -> *mut mjsBody {
     todo!() // mjs_addBody
@@ -369,7 +276,7 @@ pub fn mjs_add_flex(s: *mut mjSpec) -> *mut mjsFlex {
 }
 
 /// C: mjs_makeFlex (user/user_api.h:122)
-/// Calls: FlexcompDofFromStr, FlexcompTypeFromStr, mjCFlexcomp::Make, mjCModel::SetError, mju_error
+/// Calls: FlexcompDofFromStr, FlexcompTypeFromStr, mjCFlexcomp::Make, mjCModel::Flexes, mjCModel::SetError, mju_error
 /// ⚠️ BITEXACT RULES:
 ///   1. Copy exact C accumulation order (no iter().sum())
 ///   2. No f64::mul_add() (FMA changes precision)
@@ -409,18 +316,21 @@ pub fn mjs_add_tendon(s: *mut mjSpec, def: *const mjsDefault) -> *mut mjsTendon 
 }
 
 /// C: mjs_wrapSite (user/user_api.h:142)
+/// Calls: mjCTendon::WrapSite
 #[allow(unused_variables, non_snake_case)]
 pub fn mjs_wrap_site(tendon: *mut mjsTendon, name: *const i8) -> *mut mjsWrap {
     todo!() // mjs_wrapSite
 }
 
 /// C: mjs_wrapGeom (user/user_api.h:145)
+/// Calls: mjCTendon::WrapGeom
 #[allow(unused_variables, non_snake_case)]
 pub fn mjs_wrap_geom(tendon: *mut mjsTendon, name: *const i8, sidesite: *const i8) -> *mut mjsWrap {
     todo!() // mjs_wrapGeom
 }
 
 /// C: mjs_wrapJoint (user/user_api.h:148)
+/// Calls: mjCTendon::WrapJoint
 /// ⚠️ BITEXACT RULES:
 ///   1. Copy exact C accumulation order (no iter().sum())
 ///   2. No f64::mul_add() (FMA changes precision)
@@ -479,6 +389,7 @@ pub fn mjs_add_plugin(s: *mut mjSpec) -> *mut mjsPlugin {
 }
 
 /// C: mjs_addDefault (user/user_api.h:169)
+/// Calls: mjCModel::AddDefault, mjCModel::Default
 #[allow(unused_variables, non_snake_case)]
 pub fn mjs_add_default(s: *mut mjSpec, classname: *const i8, parent: *const mjsDefault) -> *mut mjsDefault {
     todo!() // mjs_addDefault
@@ -642,6 +553,7 @@ pub fn mjs_get_origin_spec(element: *const mjsElement) -> *mut mjSpec {
 }
 
 /// C: mjs_findSpec (user/user_api.h:240)
+/// Calls: mjCModel::FindSpec
 #[allow(unused_variables, non_snake_case)]
 pub fn mjs_find_spec(spec: *const mjSpec, name: *const i8) -> *mut mjSpec {
     todo!() // mjs_findSpec
@@ -655,19 +567,21 @@ pub fn mjs_find_body(s: *const mjSpec, name: *const i8) -> *mut mjsBody {
 }
 
 /// C: mjs_findElement (user/user_api.h:246)
-/// Calls: mjCModel::GetWorld, mjCModel::IsCompiled
+/// Calls: mjCModel::FindAsset, mjCModel::FindObject, mjCModel::FindTree, mjCModel::GetWorld, mjCModel::IsCompiled, mjCModel::Meshes, mjCModel::Textures
 #[allow(unused_variables, non_snake_case)]
 pub fn mjs_find_element(s: *const mjSpec, r#type: u32, name: *const i8) -> *mut mjsElement {
     todo!() // mjs_findElement
 }
 
 /// C: mjs_findChild (user/user_api.h:249)
+/// Calls: mjCBody::FindObject
 #[allow(unused_variables, non_snake_case)]
 pub fn mjs_find_child(body: *const mjsBody, name: *const i8) -> *mut mjsBody {
     todo!() // mjs_findChild
 }
 
 /// C: mjs_getParent (user/user_api.h:252)
+/// Calls: mjCBody::GetParent, mjCCamera::GetParent, mjCFrame::GetParent, mjCGeom::GetParent, mjCJoint::GetParent, mjCLight::GetParent, mjCSite::GetParent
 #[allow(unused_variables, non_snake_case)]
 pub fn mjs_get_parent(element: *const mjsElement) -> *mut mjsBody {
     todo!() // mjs_getParent
@@ -693,6 +607,7 @@ pub fn mjs_get_default(element: *const mjsElement) -> *mut mjsDefault {
 }
 
 /// C: mjs_findDefault (user/user_api.h:264)
+/// Calls: mjCModel::FindDefault
 #[allow(unused_variables, non_snake_case)]
 pub fn mjs_find_default(s: *const mjSpec, classname: *const i8) -> *mut mjsDefault {
     todo!() // mjs_findDefault
@@ -712,14 +627,14 @@ pub fn mjs_get_id(element: *const mjsElement) -> i32 {
 }
 
 /// C: mjs_firstChild (user/user_api.h:276)
-/// Calls: mjCBody::NextChild
+/// Calls: mjCBody::NextChild, mjCModel::SetError
 #[allow(unused_variables, non_snake_case)]
 pub fn mjs_first_child(body: *const mjsBody, r#type: u32, recurse: i32) -> *mut mjsElement {
     todo!() // mjs_firstChild
 }
 
 /// C: mjs_nextChild (user/user_api.h:280)
-/// Calls: mjCBody::NextChild
+/// Calls: mjCBody::NextChild, mjCModel::SetError
 #[allow(unused_variables, non_snake_case)]
 pub fn mjs_next_child(body: *const mjsBody, child: *const mjsElement, recurse: i32) -> *mut mjsElement {
     todo!() // mjs_nextChild
@@ -740,21 +655,21 @@ pub fn mjs_next_element(s: *const mjSpec, element: *const mjsElement) -> *mut mj
 }
 
 /// C: mjs_getWrapTarget (user/user_api.h:289)
-/// Calls: mjCWrap::Type, mjs_getSpec
+/// Calls: mjCWrap::Type, mjs_findElement, mjs_getSpec
 #[allow(unused_variables, non_snake_case)]
 pub fn mjs_get_wrap_target(wrap: *const mjsWrap) -> *mut mjsElement {
     todo!() // mjs_getWrapTarget
 }
 
 /// C: mjs_getWrapSideSite (user/user_api.h:292)
-/// Calls: mjCWrap::Type, mjs_asSite, mjs_getSpec
+/// Calls: mjCWrap::Type, mjs_asSite, mjs_findElement, mjs_getSpec, mju_warning
 #[allow(unused_variables, non_snake_case)]
 pub fn mjs_get_wrap_side_site(wrap: *const mjsWrap) -> *mut mjsSite {
     todo!() // mjs_getWrapSideSite
 }
 
 /// C: mjs_getWrapDivisor (user/user_api.h:295)
-/// Calls: mjCWrap::Type
+/// Calls: mjCWrap::Type, mju_warning
 /// ⚠️ BITEXACT RULES:
 ///   1. Copy exact C accumulation order (no iter().sum())
 ///   2. No f64::mul_add() (FMA changes precision)
@@ -766,7 +681,7 @@ pub fn mjs_get_wrap_divisor(wrap: *const mjsWrap) -> f64 {
 }
 
 /// C: mjs_getWrapCoef (user/user_api.h:298)
-/// Calls: mjCWrap::Type
+/// Calls: mjCWrap::Type, mju_warning
 /// ⚠️ BITEXACT RULES:
 ///   1. Copy exact C accumulation order (no iter().sum())
 ///   2. No f64::mul_add() (FMA changes precision)
@@ -928,10 +843,149 @@ pub fn mjs_set_name(element: *mut mjsElement, name: *const i8) -> i32 {
     todo!() // mjs_setName
 }
 
+/// C: mjs_setBuffer (user/user_api.h:379)
+#[allow(unused_variables, non_snake_case)]
+pub fn mjs_set_buffer(dest: *mut mjByteVec, array: *const (), size: i32) {
+    // NOTE: signature changed from previous IR version
+    // Previous params: (dest : * mut i32, array : * const (), size : i32)
+    // Previous return: ()
+    todo!("re-translate: params renamed")
+}
+
+/// C: mjs_setString (user/user_api.h:382)
+#[allow(unused_variables, non_snake_case)]
+pub fn mjs_set_string(dest: *mut mjString, text: *const i8) {
+    // NOTE: signature changed from previous IR version
+    // Previous params: (dest : * mut i32, text : * const i8)
+    // Previous return: ()
+    todo!("re-translate: params renamed")
+}
+
+/// C: mjs_setStringVec (user/user_api.h:385)
+/// Calls: StringToVector
+#[allow(unused_variables, non_snake_case)]
+pub fn mjs_set_string_vec(dest: *mut mjStringVec, text: *const i8) {
+    // NOTE: signature changed from previous IR version
+    // Previous params: (dest : * mut i32, text : * const i8)
+    // Previous return: ()
+    todo!("re-translate: params renamed")
+}
+
+/// C: mjs_setInStringVec (user/user_api.h:388)
+/// Calls: mju_error
+#[allow(unused_variables, non_snake_case)]
+pub fn mjs_set_in_string_vec(dest: *mut mjStringVec, i: i32, text: *const i8) -> mjtBool {
+    // NOTE: signature changed from previous IR version
+    // Previous params: (dest : * mut i32, i : i32, text : * const i8)
+    // Previous return: mjtBool
+    todo!("re-translate: params renamed")
+}
+
+/// C: mjs_appendString (user/user_api.h:391)
+#[allow(unused_variables, non_snake_case)]
+pub fn mjs_append_string(dest: *mut mjStringVec, text: *const i8) {
+    // NOTE: signature changed from previous IR version
+    // Previous params: (dest : * mut i32, text : * const i8)
+    // Previous return: ()
+    todo!("re-translate: params renamed")
+}
+
+/// C: mjs_setInt (user/user_api.h:394)
+#[allow(unused_variables, non_snake_case)]
+pub fn mjs_set_int(dest: *mut mjIntVec, array: *const i32, size: i32) {
+    // NOTE: signature changed from previous IR version
+    // Previous params: (dest : * mut i32, array : * const i32, size : i32)
+    // Previous return: ()
+    todo!("re-translate: params renamed")
+}
+
+/// C: mjs_appendIntVec (user/user_api.h:397)
+#[allow(unused_variables, non_snake_case)]
+pub fn mjs_append_int_vec(dest: *mut mjIntVecVec, array: *const i32, size: i32) {
+    // NOTE: signature changed from previous IR version
+    // Previous params: (dest : * mut i32, array : * const i32, size : i32)
+    // Previous return: ()
+    todo!("re-translate: params renamed")
+}
+
+/// C: mjs_setFloat (user/user_api.h:400)
+/// ⚠️ BITEXACT RULES:
+///   1. Copy exact C accumulation order (no iter().sum())
+///   2. No f64::mul_add() (FMA changes precision)
+///   3. No algebraic simplification
+///   4. No iter().sum()/product() (order undefined)
+#[allow(unused_variables, non_snake_case)]
+pub fn mjs_set_float(dest: *mut mjFloatVec, array: *const f32, size: i32) {
+    // NOTE: signature changed from previous IR version
+    // Previous params: (dest : * mut i32, array : * const f32, size : i32)
+    // Previous return: ()
+    todo!("re-translate: params renamed")
+}
+
+/// C: mjs_appendFloatVec (user/user_api.h:403)
+/// ⚠️ BITEXACT RULES:
+///   1. Copy exact C accumulation order (no iter().sum())
+///   2. No f64::mul_add() (FMA changes precision)
+///   3. No algebraic simplification
+///   4. No iter().sum()/product() (order undefined)
+#[allow(unused_variables, non_snake_case)]
+pub fn mjs_append_float_vec(dest: *mut mjFloatVecVec, array: *const f32, size: i32) {
+    // NOTE: signature changed from previous IR version
+    // Previous params: (dest : * mut i32, array : * const f32, size : i32)
+    // Previous return: ()
+    todo!("re-translate: params renamed")
+}
+
+/// C: mjs_setDouble (user/user_api.h:406)
+/// ⚠️ BITEXACT RULES:
+///   1. Copy exact C accumulation order (no iter().sum())
+///   2. No f64::mul_add() (FMA changes precision)
+///   3. No algebraic simplification
+///   4. No iter().sum()/product() (order undefined)
+#[allow(unused_variables, non_snake_case)]
+pub fn mjs_set_double(dest: *mut mjDoubleVec, array: *const f64, size: i32) {
+    // NOTE: signature changed from previous IR version
+    // Previous params: (dest : * mut i32, array : * const f64, size : i32)
+    // Previous return: ()
+    todo!("re-translate: params renamed")
+}
+
 /// C: mjs_setPluginAttributes (user/user_api.h:409)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjs_set_plugin_attributes(plugin: *mut mjsPlugin, attributes: *mut ()) {
     todo!() // mjs_setPluginAttributes
+}
+
+/// C: mjs_getName (user/user_api.h:415)
+#[allow(unused_variables, non_snake_case)]
+pub fn mjs_get_name(element: *mut mjsElement) -> *mut mjString {
+    // NOTE: signature changed from previous IR version
+    // Previous params: (element : * mut mjsElement)
+    // Previous return: * mut i32
+    todo!("re-translate: params renamed")
+}
+
+/// C: mjs_getString (user/user_api.h:418)
+#[allow(unused_variables, non_snake_case)]
+pub fn mjs_get_string(source: *const mjString) -> *const i8 {
+    // NOTE: signature changed from previous IR version
+    // Previous params: (source : * const i32)
+    // Previous return: * const i8
+    todo!("re-translate: params renamed")
+}
+
+/// C: mjs_getDouble (user/user_api.h:421)
+/// ⚠️ BITEXACT RULES:
+///   1. Copy exact C accumulation order (no iter().sum())
+///   2. No f64::mul_add() (FMA changes precision)
+///   3. No algebraic simplification
+///   4. No iter().sum()/product() (order undefined)
+#[allow(unused_variables, non_snake_case)]
+pub fn mjs_get_double(source: *const mjDoubleVec, size: *mut i32) -> *const f64 {
+    // NOTE: signature changed from previous IR version
+    // Previous params: (source : * const i32, size : * mut i32)
+    // Previous return: * const f64
+    todo!("re-translate: params renamed")
 }
 
 /// C: mjs_getWrapNum (user/user_api.h:424)
@@ -1006,25 +1060,28 @@ pub fn mjs_set_user_value(element: *mut mjsElement, key: *const i8, data: *const
 }
 
 /// C: mjs_setUserValueWithCleanup (user/user_api.h:457)
+/// Calls: mjCBase::SetUserValue
 #[allow(unused_variables, non_snake_case)]
 pub fn mjs_set_user_value_with_cleanup(element: *mut mjsElement, key: *const i8, data: *const (), cleanup: Option<unsafe extern "C" fn()>) {
     todo!() // mjs_setUserValueWithCleanup
 }
 
 /// C: mjs_getUserValue (user/user_api.h:462)
+/// Calls: mjCBase::GetUserValue
 #[allow(unused_variables, non_snake_case)]
 pub fn mjs_get_user_value(element: *mut mjsElement, key: *const i8) -> *const () {
     todo!() // mjs_getUserValue
 }
 
 /// C: mjs_deleteUserValue (user/user_api.h:465)
+/// Calls: mjCBase::DeleteUserValue
 #[allow(unused_variables, non_snake_case)]
 pub fn mjs_delete_user_value(element: *mut mjsElement, key: *const i8) {
     todo!() // mjs_deleteUserValue
 }
 
 /// C: mjs_sensorDim (user/user_api.h:468)
-/// Calls: mju_condataSize, mju_raydataSize
+/// Calls: mjCMesh::nvert, mjCSensor::get_obj, mju_condataSize, mju_raydataSize
 #[allow(unused_variables, non_snake_case)]
 pub fn mjs_sensor_dim(sensor: *const mjsSensor) -> i32 {
     todo!() // mjs_sensorDim

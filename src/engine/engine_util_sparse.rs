@@ -1,10 +1,11 @@
 //! Port of: engine/engine_util_sparse.h
-//! IR hash: 6ff71909dacce27f
+//! IR hash: e878892ca48fe222
 //! CODEGEN: signatures locked. Only fill todo!() bodies.
 
 use crate::types::*;
 
 /// C: mju_dotSparse2 (engine/engine_util_sparse.h:32)
+/// Calls: FilePath::empty
 /// ⚠️ BITEXACT RULES:
 ///   1. Copy exact C accumulation order (no iter().sum())
 ///   2. No f64::mul_add() (FMA changes precision)
@@ -406,6 +407,7 @@ pub fn mju_compress_sparse(mat: *mut f64, nr: i32, nc: i32, rownnz: *mut i32, ro
 }
 
 /// C: mju_combineSparseCount (engine/engine_util_sparse.h:89)
+/// Calls: GlobalTable::count
 #[allow(unused_variables, non_snake_case)]
 pub fn mju_combine_sparse_count(a_nnz: i32, b_nnz: i32, a_ind: *const i32, b_ind: *const i32) -> i32 {
     // SAFETY: a_ind[a_nnz] and b_ind[b_nnz] valid per caller contract

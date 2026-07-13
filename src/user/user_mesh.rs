@@ -1,5 +1,5 @@
 //! Port of: user/user_mesh.cc
-//! IR hash: d784001b6381c4aa
+//! IR hash: e878892ca48fe222
 //! CODEGEN: signatures locked. Only fill todo!() bodies.
 
 use crate::types::*;
@@ -91,7 +91,7 @@ pub fn spherical_to_cartesian(aer: *const f64, xyz: *mut f32) {
 }
 
 /// C: TangentFrame (user/user_mesh.cc:131)
-/// Calls: mjuu_crossvec, mjuu_normvec
+/// Calls: mjuu_copyvec, mjuu_crossvec, mjuu_normvec
 /// ⚠️ BITEXACT RULES:
 ///   1. Copy exact C accumulation order (no iter().sum())
 ///   2. No f64::mul_add() (FMA changes precision)
@@ -136,17 +136,20 @@ pub fn triangle(normal: *mut f64, center: *mut f64, v1: *const f64, v2: *const f
     todo!() // triangle
 }
 
-/// C: mjCMesh::ProcessVertices (user/user_mesh.cc:539)
-#[allow(unused_variables, non_snake_case)]
-pub fn mj_c_mesh_process_vertices(self_ptr: *mut mjCMesh, vert: *const i32, remove_repeated: bool) {
-    todo!() // mjCMesh::ProcessVertices
-}
-
 /// C: MeshPolygon::InsertFace (user/user_mesh.cc:2685)
 /// Calls: MeshPolygon::CombineIslands
 #[allow(unused_variables, non_snake_case)]
 pub fn mesh_polygon_insert_face(self_ptr: *mut MeshPolygon, v1: i32, v2: i32, v3: i32) {
     todo!() // MeshPolygon::InsertFace
+}
+
+/// C: MeshPolygon::Paths (user/user_mesh.cc:2686)
+#[allow(unused_variables, non_snake_case)]
+pub fn mesh_polygon_paths(self_ptr: *mut MeshPolygon) -> *const () {
+    // NOTE: signature changed from previous IR version
+    // Previous params: (self_ptr : * mut MeshPolygon)
+    // Previous return: i32
+    todo!("re-translate: params renamed")
 }
 
 /// C: MeshPolygon::Normal (user/user_mesh.cc:2687)
@@ -161,7 +164,6 @@ pub fn mesh_polygon_normal(self_ptr: *mut MeshPolygon) -> *const f64 {
 }
 
 /// C: MeshPolygon::CombineIslands (user/user_mesh.cc:2698)
-/// Calls: FilePath::size
 #[allow(unused_variables, non_snake_case)]
 pub fn mesh_polygon_combine_islands(self_ptr: *mut MeshPolygon, island1: *mut i32, island2: *mut i32) {
     todo!() // MeshPolygon::CombineIslands
@@ -177,13 +179,6 @@ pub fn mesh_polygon_combine_islands(self_ptr: *mut MeshPolygon, island1: *mut i3
 #[allow(unused_variables, non_snake_case)]
 pub fn mesh_polygon_key(angles: *const (), v1: *const f64, v2: *const f64, v3: *const f64, angle_tol: f64) -> bool {
     todo!() // MeshPolygonKey
-}
-
-/// C: MeshPolygon::Paths (user/user_mesh.cc:2839)
-/// Calls: FilePath::empty, FilePath::size, next
-#[allow(unused_variables, non_snake_case)]
-pub fn mesh_polygon_paths(self_ptr: *mut MeshPolygon) -> i32 {
-    todo!() // MeshPolygon::Paths
 }
 
 /// C: ComputeVolume (user/user_mesh.cc:3421)
@@ -229,15 +224,21 @@ pub fn compute_basis(basis: *mut f64, x: *const f64, v: *const i32, faceL: *cons
 ///   3. No algebraic simplification
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
-pub fn compute_stiffness(stiffness: *mut i32, body_pos: *const i32, v: *const i32, t: i32, E: f64, nu: f64, thickness: f64) {
-    todo!() // ComputeStiffness
+pub fn compute_stiffness(stiffness: *const (), body_pos: *const (), v: *const i32, t: i32, E: f64, nu: f64, thickness: f64) {
+    // NOTE: signature changed from previous IR version
+    // Previous params: (stiffness : * mut i32, body_pos : * const i32, v : * const i32, t : i32, E : f64, nu : f64, thickness : f64)
+    // Previous return: ()
+    todo!("re-translate: params renamed")
 }
 
 /// C: CreateFlapStencil (user/user_mesh.cc:3605)
 /// Calls: mju_error
 #[allow(unused_variables, non_snake_case)]
-pub fn create_flap_stencil(flaps: *mut i32, simplex: *const i32, edgeidx: *const i32) {
-    todo!() // CreateFlapStencil
+pub fn create_flap_stencil(flaps: *const (), simplex: *const (), edgeidx: *const ()) {
+    // NOTE: signature changed from previous IR version
+    // Previous params: (flaps : * mut i32, simplex : * const i32, edgeidx : * const i32)
+    // Previous return: ()
+    todo!("re-translate: params renamed")
 }
 
 /// C: cot (user/user_mesh.cc:3657)
@@ -324,27 +325,33 @@ pub fn trace(tensor: *const Matrix) -> f64 {
 }
 
 /// C: ComputeLinearStiffness (user/user_mesh.cc:3826)
-/// Calls: dphi, phi
+/// Calls: dphi, inner, mjuu_zerovec, phi, quadratureGaussLegendre, sym, trace
 /// ⚠️ BITEXACT RULES:
 ///   1. Copy exact C accumulation order (no iter().sum())
 ///   2. No f64::mul_add() (FMA changes precision)
 ///   3. No algebraic simplification
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
-pub fn compute_linear_stiffness(K: *mut i32, pos: *const f64, E: f64, nu: f64, order: i32) {
-    todo!() // ComputeLinearStiffness
+pub fn compute_linear_stiffness(K: *const (), pos: *const f64, E: f64, nu: f64, order: i32) {
+    // NOTE: signature changed from previous IR version
+    // Previous params: (K : * mut i32, pos : * const f64, E : f64, nu : f64, order : i32)
+    // Previous return: ()
+    todo!("re-translate: params renamed")
 }
 
 /// C: ComputeLinearStiffness2D (user/user_mesh.cc:3914)
-/// Calls: dphi, phi
+/// Calls: dphi, inner, mjuu_zerovec, phi, quadratureGaussLegendre, sym, trace
 /// ⚠️ BITEXACT RULES:
 ///   1. Copy exact C accumulation order (no iter().sum())
 ///   2. No f64::mul_add() (FMA changes precision)
 ///   3. No algebraic simplification
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
-pub fn compute_linear_stiffness2d(K: *mut i32, pos: *const f64, E: f64, nu: f64, order: i32, thickness: f64, normal_axis: i32) {
-    todo!() // ComputeLinearStiffness2D
+pub fn compute_linear_stiffness2d(K: *const (), pos: *const f64, E: f64, nu: f64, order: i32, thickness: f64, normal_axis: i32) {
+    // NOTE: signature changed from previous IR version
+    // Previous params: (K : * mut i32, pos : * const f64, E : f64, nu : f64, order : i32, thickness : f64, normal_axis : i32)
+    // Previous return: ()
+    todo!("re-translate: params renamed")
 }
 
 /// C: ComputeWarpMode (user/user_mesh.cc:4007)
@@ -382,26 +389,17 @@ pub fn eigendecompose_stiffness(K_cell_data: *const f64, out: *mut f64, ndof: i3
 }
 
 /// C: ComputeInterpBending (user/user_mesh.cc:4391)
-/// Calls: dphi, mjuu_crossvec, mjuu_normvec, mjuu_zerovec, phi
+/// Calls: dphi, mjuu_copyvec, mjuu_crossvec, mjuu_normvec, mjuu_zerovec, phi
 /// ⚠️ BITEXACT RULES:
 ///   1. Copy exact C accumulation order (no iter().sum())
 ///   2. No f64::mul_add() (FMA changes precision)
 ///   3. No algebraic simplification
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
-pub fn compute_interp_bending(bending: *mut i32, nodexpos_local: *const i32, order: i32, cellcount: *const i32, young: f64, poisson: f64, thickness: f64) {
-    todo!() // ComputeInterpBending
-}
-
-/// C: mjCFlex::ComputeUnrotatedNodePositions (user/user_mesh.cc:5202)
-/// Calls: mjuu_dot3, mjuu_mulvecmat, mjuu_normvec
-/// ⚠️ BITEXACT RULES:
-///   1. Copy exact C accumulation order (no iter().sum())
-///   2. No f64::mul_add() (FMA changes precision)
-///   3. No algebraic simplification
-///   4. No iter().sum()/product() (order undefined)
-#[allow(unused_variables, non_snake_case)]
-pub fn mj_c_flex_compute_unrotated_node_positions(self_ptr: *mut mjCFlex, nodexpos: *const i32, R0_out: *mut f64) -> i32 {
-    todo!() // mjCFlex::ComputeUnrotatedNodePositions
+pub fn compute_interp_bending(bending: *const (), nodexpos_local: *const (), order: i32, cellcount: *const i32, young: f64, poisson: f64, thickness: f64) {
+    // NOTE: signature changed from previous IR version
+    // Previous params: (bending : * mut i32, nodexpos_local : * const i32, order : i32, cellcount : * const i32, young : f64, poisson : f64, thickness : f64)
+    // Previous return: ()
+    todo!("re-translate: params renamed")
 }
 

@@ -1,5 +1,5 @@
 //! Port of: engine/engine_collision_sdf.c
-//! IR hash: 6ff71909dacce27f
+//! IR hash: e878892ca48fe222
 //! CODEGEN: signatures locked. Only fill todo!() bodies.
 
 use crate::types::*;
@@ -173,6 +173,7 @@ pub fn box_intersect(bvh: *const f64, offset: *const f64, rotation: *const f64, 
 }
 
 /// C: selectFPS (engine/engine_collision_sdf.c:752)
+/// Calls: next
 /// ⚠️ BITEXACT RULES:
 ///   1. Copy exact C accumulation order (no iter().sum())
 ///   2. No f64::mul_add() (FMA changes precision)

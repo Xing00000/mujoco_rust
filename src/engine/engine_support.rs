@@ -1,5 +1,5 @@
 //! Port of: engine/engine_support.c
-//! IR hash: 6ff71909dacce27f
+//! IR hash: e878892ca48fe222
 //! CODEGEN: signatures locked. Only fill todo!() bodies.
 
 use crate::types::*;
@@ -382,6 +382,7 @@ pub fn mj_version_string() -> *const i8 {
 }
 
 /// C: mju_condataSize (engine/engine_support.h:127)
+/// Calls: FilePath::size
 #[allow(unused_variables, non_snake_case)]
 pub fn mju_condata_size(dataSpec: i32) -> i32 {
     // mjNCONDATA = 7, mjCONDATA_SIZE = [1, 3, 3, 1, 3, 3, 3]
@@ -400,6 +401,7 @@ pub fn mju_condata_size(dataSpec: i32) -> i32 {
 }
 
 /// C: mju_raydataSize (engine/engine_support.h:130)
+/// Calls: FilePath::size
 #[allow(unused_variables, non_snake_case)]
 pub fn mju_raydata_size(dataspec: i32) -> i32 {
     // mjNRAYDATA = 6, mjRAYDATA_SIZE = [1, 3, 3, 3, 3, 1]

@@ -1,5 +1,5 @@
 //! Port of: engine/engine_plugin.cc
-//! IR hash: 6ff71909dacce27f
+//! IR hash: e878892ca48fe222
 //! CODEGEN: signatures locked. Only fill todo!() bodies.
 
 use crate::types::*;
@@ -19,8 +19,11 @@ pub fn getext(filename: string_view) -> std__string {
 /// C: CopyName (engine/engine_plugin.cc:78)
 /// Calls: strklen
 #[allow(unused_variables, non_snake_case)]
-pub fn copy_name(s: *const i8) -> i32 {
-    todo!() // CopyName
+pub fn copy_name(s: *const i8) -> *const () {
+    // NOTE: signature changed from previous IR version
+    // Previous params: (s : * const i8)
+    // Previous return: i32
+    todo!("re-translate: params renamed")
 }
 
 /// C: IsValidURISchemeFormat (engine/engine_plugin.cc:93)
@@ -35,6 +38,32 @@ pub fn plugin_attr_seek(m: *const mjModel, plugin_id: i32, attrib_id: i32) -> *c
     todo!() // PluginAttrSeek
 }
 
+/// C: GlobalTable::HumanReadableTypeName (engine/engine_plugin.cc:132)
+#[allow(unused_variables, non_snake_case)]
+pub fn global_table_human_readable_type_name() -> *const i8 {
+    todo!() // GlobalTable::HumanReadableTypeName
+}
+
+/// C: GlobalTable::ObjectKey (engine/engine_plugin.cc:137)
+/// Calls: strklen
+#[allow(unused_variables, non_snake_case)]
+pub fn global_table_object_key(arg0: *const mjpPlugin) -> std__string_view {
+    todo!() // GlobalTable::ObjectKey
+}
+
+/// C: GlobalTable::ObjectEqual (engine/engine_plugin.cc:143)
+#[allow(unused_variables, non_snake_case)]
+pub fn global_table_object_equal(arg0: *const mjpPlugin, arg1: *const mjpPlugin) -> bool {
+    todo!() // GlobalTable::ObjectEqual
+}
+
+/// C: GlobalTable::CopyObject (engine/engine_plugin.cc:182)
+/// Calls: CopyName, strklen
+#[allow(unused_variables, non_snake_case)]
+pub fn global_table_copy_object(dst: *mut mjpPlugin, src: *const mjpPlugin, err: *mut ErrorMessage) -> bool {
+    todo!() // GlobalTable::CopyObject
+}
+
 /// C: mjp_defaultPlugin (engine/engine_plugin.h:26)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjp_default_plugin(plugin: *mut mjpPlugin) {
@@ -42,20 +71,21 @@ pub fn mjp_default_plugin(plugin: *mut mjpPlugin) {
 }
 
 /// C: mjp_registerPlugin (engine/engine_plugin.h:29)
-/// Calls: mju_error
+/// Calls: GlobalTable::AppendIfUnique, GlobalTable::GetSingleton, mju_error
 #[allow(unused_variables, non_snake_case)]
 pub fn mjp_register_plugin(plugin: *const mjpPlugin) -> i32 {
     todo!() // mjp_registerPlugin
 }
 
 /// C: mjp_registerResourceProvider (engine/engine_plugin.h:32)
-/// Calls: IsValidURISchemeFormat, mju_warning
+/// Calls: GlobalTable::AppendIfUnique, GlobalTable::GetSingleton, IsValidURISchemeFormat, mju_warning
 #[allow(unused_variables, non_snake_case)]
 pub fn mjp_register_resource_provider(provider: *const mjpResourceProvider) -> i32 {
     todo!() // mjp_registerResourceProvider
 }
 
 /// C: mjp_pluginCount (engine/engine_plugin.h:35)
+/// Calls: GlobalTable::GetSingleton, GlobalTable::count
 #[allow(unused_variables, non_snake_case)]
 pub fn mjp_plugin_count() -> i32 {
     // SAFETY: delegates to GlobalTable<mjpPlugin>::GetSingleton().count()
@@ -68,6 +98,7 @@ pub fn mjp_plugin_count() -> i32 {
 }
 
 /// C: mjp_resourceProviderCount (engine/engine_plugin.h:38)
+/// Calls: GlobalTable::GetSingleton, GlobalTable::count
 #[allow(unused_variables, non_snake_case)]
 pub fn mjp_resource_provider_count() -> i32 {
     // SAFETY: delegates to GlobalTable<mjpResourceProvider>::GetSingleton().count()
@@ -79,6 +110,7 @@ pub fn mjp_resource_provider_count() -> i32 {
 }
 
 /// C: mjp_getPlugin (engine/engine_plugin.h:41)
+/// Calls: GlobalTable::GetByKey, GlobalTable::GetSingleton
 #[allow(unused_variables, non_snake_case)]
 pub fn mjp_get_plugin(name: *const i8, slot: *mut i32) -> *const mjpPlugin {
     // SAFETY: delegates to GlobalTable<mjpPlugin>::GetSingleton().GetByKey(name, slot)
@@ -99,12 +131,14 @@ pub fn mjp_default_resource_provider(provider: *mut mjpResourceProvider) {
 }
 
 /// C: mjp_getResourceProvider (engine/engine_plugin.h:47)
+/// Calls: GlobalTable::GetByKey, GlobalTable::GetSingleton, IsValidURISchemeFormat
 #[allow(unused_variables, non_snake_case)]
 pub fn mjp_get_resource_provider(resource_name: *const i8) -> *const mjpResourceProvider {
     todo!() // mjp_getResourceProvider
 }
 
 /// C: mjp_getPluginAtSlot (engine/engine_plugin.h:50)
+/// Calls: GlobalTable::GetAtSlot, GlobalTable::GetSingleton
 #[allow(unused_variables, non_snake_case)]
 pub fn mjp_get_plugin_at_slot(slot: i32) -> *const mjpPlugin {
     // SAFETY: delegates to GlobalTable<mjpPlugin>::GetSingleton().GetAtSlot(slot)
@@ -118,6 +152,7 @@ pub fn mjp_get_plugin_at_slot(slot: i32) -> *const mjpPlugin {
 }
 
 /// C: mjp_getResourceProviderAtSlot (engine/engine_plugin.h:53)
+/// Calls: GlobalTable::GetAtSlot, GlobalTable::GetSingleton
 #[allow(unused_variables, non_snake_case)]
 pub fn mjp_get_resource_provider_at_slot(slot: i32) -> *const mjpResourceProvider {
     // SAFETY: delegates to GlobalTable<mjpResourceProvider>::GetSingleton().GetAtSlot(slot - 1)
@@ -145,14 +180,14 @@ pub fn mj_load_plugin_library(path: *const i8) {
 }
 
 /// C: mj_loadAllPluginLibraries (engine/engine_plugin.h:63)
-/// Calls: mjp_pluginCount
+/// Calls: GlobalTable::GetSingleton, GlobalTable::LockExclusively, mj_loadPluginLibrary, mjp_pluginCount
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_load_all_plugin_libraries(directory: *const i8, callback: mjfPluginLibraryLoadCallback) {
     todo!() // mj_loadAllPluginLibraries
 }
 
 /// C: mjp_registerDecoder (engine/engine_plugin.h:66)
-/// Calls: mju_warning
+/// Calls: GlobalTable::AppendIfUnique, GlobalTable::GetSingleton, mju_warning
 #[allow(unused_variables, non_snake_case)]
 pub fn mjp_register_decoder(decoder: *const mjpDecoder) {
     todo!() // mjp_registerDecoder
@@ -165,14 +200,14 @@ pub fn mjp_default_decoder(decoder: *mut mjpDecoder) {
 }
 
 /// C: mjp_findDecoder (engine/engine_plugin.h:72)
-/// Calls: mju_warning, strklen
+/// Calls: GlobalTable::GetByKey, GlobalTable::GetSingleton, getext, mju_warning, strklen
 #[allow(unused_variables, non_snake_case)]
 pub fn mjp_find_decoder(resource: *const mjResource, content_type: *const i8) -> *const mjpDecoder {
     todo!() // mjp_findDecoder
 }
 
 /// C: mjp_registerEncoder (engine/engine_plugin.h:75)
-/// Calls: mju_warning
+/// Calls: GlobalTable::AppendIfUnique, GlobalTable::GetSingleton, mju_warning
 #[allow(unused_variables, non_snake_case)]
 pub fn mjp_register_encoder(encoder: *const mjpEncoder) {
     todo!() // mjp_registerEncoder
@@ -185,13 +220,14 @@ pub fn mjp_default_encoder(encoder: *mut mjpEncoder) {
 }
 
 /// C: mjp_findEncoder (engine/engine_plugin.h:81)
-/// Calls: mju_warning, strklen
+/// Calls: GlobalTable::GetByKey, GlobalTable::GetSingleton, getext, mju_warning, strklen
 #[allow(unused_variables, non_snake_case)]
 pub fn mjp_find_encoder(filename: *const i8, content_type: *const i8) -> *const mjpEncoder {
     todo!() // mjp_findEncoder
 }
 
 /// C: mjp_getPluginUnsafe (engine/engine_plugin.h:95)
+/// Calls: GlobalTable::GetByKeyUnsafe, GlobalTable::GetSingleton
 #[allow(unused_variables, non_snake_case)]
 pub fn mjp_get_plugin_unsafe(name: *const i8, slot: *mut i32, nslot: i32) -> *const mjpPlugin {
     // SAFETY: delegates to GlobalTable<mjpPlugin>::GetSingleton().GetByKeyUnsafe(name, slot, nslot)
@@ -207,6 +243,7 @@ pub fn mjp_get_plugin_unsafe(name: *const i8, slot: *mut i32, nslot: i32) -> *co
 }
 
 /// C: mjp_getPluginAtSlotUnsafe (engine/engine_plugin.h:98)
+/// Calls: GlobalTable::GetAtSlotUnsafe, GlobalTable::GetSingleton
 #[allow(unused_variables, non_snake_case)]
 pub fn mjp_get_plugin_at_slot_unsafe(slot: i32, nslot: i32) -> *const mjpPlugin {
     // SAFETY: delegates to GlobalTable<mjpPlugin>::GetSingleton().GetAtSlotUnsafe(slot, nslot)

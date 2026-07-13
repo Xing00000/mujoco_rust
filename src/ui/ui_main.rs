@@ -1,5 +1,5 @@
 //! Port of: ui/ui_main.c
-//! IR hash: 6ff71909dacce27f
+//! IR hash: e878892ca48fe222
 //! CODEGEN: signatures locked. Only fill todo!() bodies.
 
 use crate::types::*;
@@ -85,6 +85,7 @@ pub fn radioelement(it: *const mjuiItem, n: i32, ui: *const mjUI, con: *const mj
 }
 
 /// C: mouseinui (ui/ui_main.c:549)
+/// Calls: mjCActuator::act
 #[allow(unused_variables, non_snake_case)]
 pub fn mouseinui(ui: *const mjUI, ins: *const mjuiState, x: *mut i32, y: *mut i32) {
     todo!() // mouseinui

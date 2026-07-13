@@ -1,5 +1,5 @@
 //! Port of: engine/engine_sensor.c
-//! IR hash: 6ff71909dacce27f
+//! IR hash: e878892ca48fe222
 //! CODEGEN: signatures locked. Only fill todo!() bodies.
 
 use crate::types::*;
@@ -80,6 +80,7 @@ pub fn cam_project(sensordata: *mut f64, target_xpos: *const f64, cam_xpos: *con
 }
 
 /// C: checkMatch (engine/engine_sensor.c:320)
+/// Calls: mjCMesh::tree
 #[allow(unused_variables, non_snake_case)]
 pub fn check_match(m: *const mjModel, body: i32, geom: i32, r#type: u32, id: i32) -> i32 {
     todo!() // checkMatch

@@ -1,10 +1,11 @@
 //! Port of: engine/engine_core_util.h
-//! IR hash: 6ff71909dacce27f
+//! IR hash: e878892ca48fe222
 //! CODEGEN: signatures locked. Only fill todo!() bodies.
 
 use crate::types::*;
 
 /// C: mj_isPyramidal (engine/engine_core_util.h:31)
+/// Calls: cone
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_is_pyramidal(m: *const mjModel) -> i32 {
     // SAFETY: m is a valid mjModel pointer; cone is i32 at byte offset 988
@@ -28,6 +29,7 @@ pub fn mj_is_sparse(m: *const mjModel) -> i32 {
 }
 
 /// C: mj_mergeChain (engine/engine_core_util.h:40)
+/// Calls: FilePath::empty
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_merge_chain(m: *const mjModel, chain: *mut i32, b1: i32, b2: i32, flg_skipcommon: i32) -> i32 {
     // SAFETY: m valid, chain valid output. Byte offsets:
@@ -113,6 +115,7 @@ pub fn mj_merge_chain_simple(m: *const mjModel, chain: *mut i32, b1: i32, b2: i3
 }
 
 /// C: mj_bodyChain (engine/engine_core_util.h:46)
+/// Calls: FilePath::empty
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_body_chain(m: *const mjModel, body: i32, chain: *mut i32) -> i32 {
     // SAFETY: m valid mjModel, chain valid output array. Byte offsets from IR:

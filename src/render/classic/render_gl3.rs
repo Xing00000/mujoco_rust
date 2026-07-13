@@ -1,5 +1,5 @@
 //! Port of: render/classic/render_gl3.c
-//! IR hash: 6ff71909dacce27f
+//! IR hash: e878892ca48fe222
 //! CODEGEN: signatures locked. Only fill todo!() bodies.
 
 use crate::types::*;
@@ -53,6 +53,7 @@ pub fn render_geom_reflection(id: i32, reflectance: f32, headpos: *mut f32, scn:
 }
 
 /// C: initGL3 (render/classic/render_gl3.c:614)
+/// Calls: PNGImage::Width, mjCMesh::Face
 #[allow(unused_variables, non_snake_case)]
 pub fn init_gl3(scn: *const mjvScene, con: *const mjrContext) {
     todo!() // initGL3

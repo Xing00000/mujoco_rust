@@ -1,10 +1,11 @@
 //! Port of: engine/engine_name.c
-//! IR hash: 6ff71909dacce27f
+//! IR hash: e878892ca48fe222
 //! CODEGEN: signatures locked. Only fill todo!() bodies.
 
 use crate::types::*;
 
 /// C: _getnumadr (engine/engine_name.c:28)
+/// Calls: FilePath::size, mjCActuator::act
 #[allow(unused_variables, non_snake_case)]
 pub fn getnumadr(m: *const mjModel, r#type: u32, padr: *mut *mut i32, mapadr: *mut i32) -> i32 {
     todo!() // _getnumadr

@@ -1,5 +1,5 @@
 //! Port of: xml/xml_base.h
-//! IR hash: 6ff71909dacce27f
+//! IR hash: e878892ca48fe222
 //! CODEGEN: signatures locked. Only fill todo!() bodies.
 
 use crate::types::*;
@@ -23,6 +23,7 @@ pub fn mj_x_base_set_model(self_ptr: *mut mjXBase, arg0: *mut mjSpec, arg1: *con
 }
 
 /// C: mjXBase::ReadAlternative (xml/xml_base.h:111)
+/// Calls: mjXUtil::ReadAttr
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_x_base_read_alternative(elem: *mut tinyxml2__XMLElement, alt: *mut mjsOrientation) -> i32 {
     todo!() // mjXBase::ReadAlternative

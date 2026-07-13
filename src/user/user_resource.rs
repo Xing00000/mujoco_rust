@@ -1,11 +1,11 @@
 //! Port of: user/user_resource.cc
-//! IR hash: 6ff71909dacce27f
+//! IR hash: e878892ca48fe222
 //! CODEGEN: signatures locked. Only fill todo!() bodies.
 
 use crate::types::*;
 
 /// C: mju_openResource (user/user_resource.cc:34)
-/// Calls: VFS::Open, VFS::Upcast, mj_defaultVFS, mj_deleteVFS, mju_free, mju_malloc
+/// Calls: VFS::Open, VFS::SetToSelfDestruct, VFS::Upcast, mj_defaultVFS, mj_deleteVFS, mju_free, mju_malloc
 #[allow(unused_variables, non_snake_case)]
 pub fn mju_open_resource(dir: *const i8, name: *const i8, vfs: *const mjVFS, error: *mut i8, nerror: usize) -> *mut mjResource {
     todo!() // mju_openResource
@@ -38,7 +38,7 @@ pub fn mju_is_modified_resource(resource: *const mjResource, timestamp: *const i
 }
 
 /// C: mju_decodeResource (user/user_resource.cc:112)
-/// Calls: mjp_findDecoder, mju_warning
+/// Calls: mjp_findDecoder, mju_warning, mjuu_extToContentType
 #[allow(unused_variables, non_snake_case)]
 pub fn mju_decode_resource(resource: *mut mjResource, content_type: *const i8, vfs: *const mjVFS) -> *mut mjSpec {
     todo!() // mju_decodeResource

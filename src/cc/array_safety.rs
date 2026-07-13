@@ -1,5 +1,5 @@
 //! Port of: cc/array_safety.h
-//! IR hash: 6ff71909dacce27f
+//! IR hash: e878892ca48fe222
 //! CODEGEN: signatures locked. Only fill todo!() bodies.
 
 use crate::types::*;
@@ -29,6 +29,7 @@ pub fn sprintf_arr(dest: [char; 0], format: *const i8) -> i32 {
 }
 
 /// C: strcat_arr (cc/array_safety.h:75)
+/// Calls: sizeof_arr, strlen_arr
 #[allow(unused_variables, non_snake_case)]
 pub fn strcat_arr(dest: [char; 0], src: *const i8) -> *mut i8 {
     todo!() // strcat_arr

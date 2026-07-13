@@ -1,11 +1,11 @@
 //! Port of: engine/engine_util_errmem.c
-//! IR hash: 6ff71909dacce27f
+//! IR hash: e878892ca48fe222
 //! CODEGEN: signatures locked. Only fill todo!() bodies.
 
 use crate::types::*;
 
 /// C: mju_defaultLogHandler (engine/engine_util_errmem.c:34)
-/// Calls: mju_getLogConfigPtr, mju_isTopicEnabled, mju_legacy_text, mju_localTimeStr
+/// Calls: mju_fprint_message, mju_getLogConfigPtr, mju_isTopicEnabled, mju_legacy_text, mju_localTimeStr
 #[allow(unused_variables, non_snake_case)]
 pub fn mju_default_log_handler(msg: *const mjLogMessage) {
     todo!() // mju_defaultLogHandler
@@ -45,8 +45,11 @@ pub fn mju_local_time_str(buf: *mut i8, buf_sz: i32) {
 /// C: mju_fprint_message (engine/engine_util_errmem.c:214)
 /// Calls: BaseName
 #[allow(unused_variables, non_snake_case)]
-pub fn mju_fprint_message(stream: *mut i32, timestr: *const i8, msg: *const mjLogMessage) {
-    todo!() // mju_fprint_message
+pub fn mju_fprint_message(stream: *mut FILE, timestr: *const i8, msg: *const mjLogMessage) {
+    // NOTE: signature changed from previous IR version
+    // Previous params: (stream : * mut i32, timestr : * const i8, msg : * const mjLogMessage)
+    // Previous return: ()
+    todo!("re-translate: params renamed")
 }
 
 /// C: mju_legacy_text (engine/engine_util_errmem.c:231)

@@ -1,5 +1,5 @@
 //! Port of: render/classic/render_context.c
-//! IR hash: 6ff71909dacce27f
+//! IR hash: e878892ca48fe222
 //! CODEGEN: signatures locked. Only fill todo!() bodies.
 
 use crate::types::*;
@@ -163,6 +163,7 @@ pub fn make_font(con: *mut mjrContext, fontscale: i32) {
 }
 
 /// C: makeMaterial (render/classic/render_context.c:1303)
+/// Calls: mju_error
 #[allow(unused_variables, non_snake_case)]
 pub fn make_material(m: *const mjModel, con: *mut mjrContext) {
     todo!() // makeMaterial

@@ -1,16 +1,18 @@
 //! Port of: user/user_vfs.cc
-//! IR hash: 6ff71909dacce27f
+//! IR hash: e878892ca48fe222
 //! CODEGEN: signatures locked. Only fill todo!() bodies.
 
 use crate::types::*;
 
 /// C: OpenFile (user/user_vfs.cc:50)
+/// Calls: mju_encodeBase64
 #[allow(unused_variables, non_snake_case)]
 pub fn open_file(filename: *const i8, resource: *mut mjResource) -> i32 {
     todo!() // OpenFile
 }
 
 /// C: ReadFile (user/user_vfs.cc:64)
+/// Calls: FileToMemory
 #[allow(unused_variables, non_snake_case)]
 pub fn read_file(filename: *const i8, resource: *mut mjResource, buffer: *const *mut ()) -> i32 {
     todo!() // ReadFile
@@ -23,7 +25,7 @@ pub fn close_file(resource: *mut mjResource) {
 }
 
 /// C: FileModified (user/user_vfs.cc:79)
-/// Calls: mju_decodeBase64
+/// Calls: mju_decodeBase64, mju_isValidBase64
 #[allow(unused_variables, non_snake_case)]
 pub fn file_modified(resource: *const mjResource, timestamp: *const i8) -> i32 {
     todo!() // FileModified
@@ -31,14 +33,11 @@ pub fn file_modified(resource: *const mjResource, timestamp: *const i8) -> i32 {
 
 /// C: StripPathAndLower (user/user_vfs.cc:94)
 #[allow(unused_variables, non_snake_case)]
-pub fn strip_path_and_lower(path: i32) -> i32 {
-    todo!() // StripPathAndLower
-}
-
-/// C: VFS::FindMount (user/user_vfs.cc:287)
-#[allow(unused_variables, non_snake_case)]
-pub fn vfs_find_mount(self_ptr: *mut VFS, fullpath: *const i32) -> *mut mjResource {
-    todo!() // VFS::FindMount
+pub fn strip_path_and_lower(path: string) -> std__string {
+    // NOTE: signature changed from previous IR version
+    // Previous params: (path : i32)
+    // Previous return: i32
+    todo!("re-translate: params renamed")
 }
 
 /// C: mj_defaultVFS (user/user_vfs.cc:355)
@@ -77,12 +76,14 @@ pub fn buffer_provider_mount(vfs: *mut mjVFS, args: Args) -> i32 {
 }
 
 /// C: mj_addFileVFS (user/user_vfs.cc:496)
+/// Calls: BufferProvider::Mount
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_add_file_vfs(vfs: *mut mjVFS, directory: *const i8, filename: *const i8) -> i32 {
     todo!() // mj_addFileVFS
 }
 
 /// C: mj_addBufferVFS (user/user_vfs.cc:503)
+/// Calls: BufferProvider::Mount
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_add_buffer_vfs(vfs: *mut mjVFS, name: *const i8, buffer: *const (), nbuffer: i32) -> i32 {
     todo!() // mj_addBufferVFS
@@ -110,7 +111,7 @@ pub fn mj_contains_file_vfs(vfs: *mut mjVFS, directory: *const i8, filename: *co
 }
 
 /// C: VFS::Open (user/user_vfs.h:75)
-/// Calls: VFS::MaybeSelfDestruct
+/// Calls: FilePath::Str, VFS::CreateResource, VFS::FindMount, VFS::MaybeSelfDestruct
 #[allow(unused_variables, non_snake_case)]
 pub fn vfs_open(self_ptr: *mut VFS, dir: *const i8, name: *const i8) -> *mut mjResource {
     todo!() // VFS::Open
@@ -130,12 +131,14 @@ pub fn vfs_close(self_ptr: *mut VFS, resource: *mut mjResource) -> i32 {
 }
 
 /// C: VFS::Mount (user/user_vfs.h:88)
+/// Calls: FilePath::Str, FilePath::c_str, VFS::CreateResource
 #[allow(unused_variables, non_snake_case)]
 pub fn vfs_mount(self_ptr: *mut VFS, path: *const FilePath, provider: *const mjpResourceProvider) -> i32 {
     todo!() // VFS::Mount
 }
 
 /// C: VFS::Unmount (user/user_vfs.h:91)
+/// Calls: FilePath::Str
 #[allow(unused_variables, non_snake_case)]
 pub fn vfs_unmount(self_ptr: *mut VFS, path: *const FilePath) -> i32 {
     todo!() // VFS::Unmount
@@ -148,7 +151,7 @@ pub fn vfs_contains_buffer(self_ptr: *mut VFS, name: *const i8) -> bool {
 }
 
 /// C: VFS::ContainsFile (user/user_vfs.h:97)
-/// Calls: FilePath::Lower, FilePath::StripPath
+/// Calls: FilePath::Lower, FilePath::Str, FilePath::StripPath
 #[allow(unused_variables, non_snake_case)]
 pub fn vfs_contains_file(self_ptr: *mut VFS, directory: *const i8, filename: *const i8) -> bool {
     todo!() // VFS::ContainsFile
@@ -171,6 +174,16 @@ pub fn vfs_upcast(vfs: *mut mjVFS) -> *mut VFS {
 #[allow(unused_variables, non_snake_case)]
 pub fn vfs_create_resource(self_ptr: *mut VFS, name: string_view, provider: *const mjpResourceProvider) -> ResourcePtr {
     todo!() // VFS::CreateResource
+}
+
+/// C: VFS::FindMount (user/user_vfs.h:119)
+/// Calls: StripPathAndLower, VFS::CreateResource, mjp_getResourceProvider
+#[allow(unused_variables, non_snake_case)]
+pub fn vfs_find_mount(self_ptr: *mut VFS, fullpath: *const std__string) -> *mut mjResource {
+    // NOTE: signature changed from previous IR version
+    // Previous params: (self_ptr : * mut VFS, fullpath : * const i32)
+    // Previous return: * mut mjResource
+    todo!("re-translate: params renamed")
 }
 
 /// C: VFS::MaybeSelfDestruct (user/user_vfs.h:124)

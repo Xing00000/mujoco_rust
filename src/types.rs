@@ -4732,3 +4732,61 @@ pub static URJOINT_SZ: std::sync::LazyLock<std::sync::Mutex<[u8; 4]>> = std::syn
 /// C static: warningtext (char[500])
 pub static WARNINGTEXT: std::sync::LazyLock<std::sync::Mutex<[u8; 500]>> = std::sync::LazyLock::new(|| std::sync::Mutex::new([0u8; 500]));
 
+
+// ─── Opaque type stubs for C++/system types ───
+
+/// Opaque C/C++ type: ErrorMessage (pointer-only)
+#[repr(C)]
+pub struct ErrorMessage { _opaque: [u8; 0] }
+
+/// Opaque C/C++ type: FILE (pointer-only)
+#[repr(C)]
+pub struct FILE { _opaque: [u8; 0] }
+
+/// Opaque C/C++ type: RewriteMap (pointer-only)
+#[repr(C)]
+pub struct RewriteMap { _opaque: [u8; 0] }
+
+/// Opaque C/C++ type: iterator (pointer-only)
+#[repr(C)]
+pub struct iterator { _opaque: [u8; 0] }
+
+/// Opaque C/C++ type: locale_t (pointer-only)
+#[repr(C)]
+pub struct locale_t { _opaque: [u8; 0] }
+
+/// Opaque C/C++ type: mjByteVec (pointer-only)
+#[repr(C)]
+pub struct mjByteVec { _opaque: [u8; 0] }
+
+/// Opaque C/C++ type: mjDoubleVec (pointer-only)
+#[repr(C)]
+pub struct mjDoubleVec { _opaque: [u8; 0] }
+
+/// Opaque C/C++ type: mjFloatVec (pointer-only)
+#[repr(C)]
+pub struct mjFloatVec { _opaque: [u8; 0] }
+
+/// Opaque C/C++ type: mjFloatVecVec (pointer-only)
+#[repr(C)]
+pub struct mjFloatVecVec { _opaque: [u8; 0] }
+
+/// Opaque C/C++ type: mjIntVec (pointer-only)
+#[repr(C)]
+pub struct mjIntVec { _opaque: [u8; 0] }
+
+/// Opaque C/C++ type: mjIntVecVec (pointer-only)
+#[repr(C)]
+pub struct mjIntVecVec { _opaque: [u8; 0] }
+
+/// Opaque C/C++ type: mjString (pointer-only)
+#[repr(C)]
+pub struct mjString { _opaque: [u8; 0] }
+
+/// Opaque C/C++ type: mjStringVec (pointer-only)
+#[repr(C)]
+pub struct mjStringVec { _opaque: [u8; 0] }
+
+/// Opaque C/C++ type: std__string_view (pointer-only)
+#[repr(C)]
+pub struct std__string_view { _opaque: [u8; 0] }

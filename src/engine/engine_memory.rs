@@ -1,10 +1,11 @@
 //! Port of: engine/engine_memory.c
-//! IR hash: 6ff71909dacce27f
+//! IR hash: e878892ca48fe222
 //! CODEGEN: signatures locked. Only fill todo!() bodies.
 
 use crate::types::*;
 
 /// C: fastmod (engine/engine_memory.c:52)
+/// Calls: power
 #[allow(unused_variables, non_snake_case)]
 pub fn fastmod(a: usize, b: usize) -> usize {
     todo!() // fastmod
@@ -17,14 +18,14 @@ pub fn get_stack_info_from_data(d: *const mjData) -> mjStackInfo {
 }
 
 /// C: stackallocinternal (engine/engine_memory.c:144)
-/// Calls: fastmod
+/// Calls: fastmod, mju_error
 #[allow(unused_variables, non_snake_case)]
 pub fn stackallocinternal(d: *mut mjData, stack_info: *mut mjStackInfo, size: usize, alignment: usize, caller: *const i8, line: i32) -> *mut () {
     todo!() // stackallocinternal
 }
 
 /// C: stackalloc (engine/engine_memory.c:208)
-/// Calls: fastmod, get_stack_info_from_data, stackallocinternal
+/// Calls: fastmod, get_stack_info_from_data, mju_error, stackallocinternal
 #[allow(unused_variables, non_snake_case)]
 pub fn stackalloc(d: *mut mjData, size: usize, alignment: usize, caller: *const i8, line: i32) -> *mut () {
     todo!() // stackalloc
@@ -38,6 +39,7 @@ pub fn markstackinternal(d: *mut mjData, stack_info: *mut mjStackInfo) {
 }
 
 /// C: freestackinternal (engine/engine_memory.c:292)
+/// Calls: mj_freeStack
 #[allow(unused_variables, non_snake_case)]
 pub fn freestackinternal(stack_info: *mut mjStackInfo) {
     todo!() // freestackinternal
@@ -98,6 +100,7 @@ pub fn mj_stack_alloc_int(d: *mut mjData, size: usize) -> *mut i32 {
 }
 
 /// C: mj_clearEfc (engine/engine_memory.h:70)
+/// Calls: mjCActuator::act
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_clear_efc(d: *mut mjData) {
     todo!() // mj_clearEfc

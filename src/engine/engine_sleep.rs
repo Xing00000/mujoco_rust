@@ -1,5 +1,5 @@
 //! Port of: engine/engine_sleep.c
-//! IR hash: 6ff71909dacce27f
+//! IR hash: e878892ca48fe222
 //! CODEGEN: signatures locked. Only fill todo!() bodies.
 
 use crate::types::*;
@@ -69,6 +69,7 @@ pub fn mj_sensor_sleep_state(m: *const mjModel, d: *const mjData, i: i32) -> i32
 }
 
 /// C: mj_updateSleepInit (engine/engine_sleep.h:28)
+/// Calls: mjCMesh::tree
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_update_sleep_init(m: *const mjModel, d: *mut mjData, flg_staticawake: i32) {
     todo!() // mj_updateSleepInit
@@ -82,6 +83,7 @@ pub fn mj_update_sleep(m: *const mjModel, d: *mut mjData) {
 }
 
 /// C: mj_sleepCycle (engine/engine_sleep.h:34)
+/// Calls: GlobalTable::count, next
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_sleep_cycle(tree_asleep: *const i32, ntree: i32, i: i32) -> i32 {
     todo!() // mj_sleepCycle
@@ -135,6 +137,7 @@ pub fn mj_sleep(m: *const mjModel, d: *mut mjData) -> i32 {
 }
 
 /// C: mj_flexBody (engine/engine_sleep.h:56)
+/// Calls: mjCActuator::act
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_flex_body(m: *const mjModel, con: *const mjContact, side: i32) -> i32 {
     todo!() // mj_flexBody

@@ -1,5 +1,5 @@
 //! Port of: user/user_resolver.cc
-//! IR hash: 6ff71909dacce27f
+//! IR hash: e878892ca48fe222
 //! CODEGEN: signatures locked. Only fill todo!() bodies.
 
 use crate::types::*;
@@ -11,6 +11,7 @@ pub fn fmt_val(val: T) -> std__string {
 }
 
 /// C: fmtArr (user/user_resolver.cc:45)
+/// Calls: fmtVal
 /// ⚠️ BITEXACT RULES:
 ///   1. Copy exact C accumulation order (no iter().sum())
 ///   2. No f64::mul_add() (FMA changes precision)
@@ -41,7 +42,7 @@ pub fn conflict_subject(parent: *const mjSpec, child: *const mjSpec) -> std__str
 }
 
 /// C: ResolveConflicts (user/user_resolver.h:28)
-/// Calls: Resolver::Apply, VisitConflicts
+/// Calls: ConflictSubject, Resolver::Apply, VisitConflicts
 #[allow(unused_variables, non_snake_case)]
 pub fn resolve_conflicts(parent: *mut mjSpec, child: *const mjSpec, mode: u32, error_msg: *mut string, warning_subject: *mut string, warning_body: *mut string) -> bool {
     todo!() // ResolveConflicts

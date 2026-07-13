@@ -1,5 +1,5 @@
 //! Port of: user/user_flexcomp.cc
-//! IR hash: 6ff71909dacce27f
+//! IR hash: e878892ca48fe222
 //! CODEGEN: signatures locked. Only fill todo!() bodies.
 
 use crate::types::*;
@@ -31,8 +31,11 @@ pub fn mat2lin(ix: i32, iy: i32, iz: i32, count: *const i32) -> i32 {
 /// C: VecToArray (user/user_flexcomp.cc:1308)
 /// Calls: mju_malloc
 #[allow(unused_variables, non_snake_case)]
-pub fn vec_to_array(vector: *mut i32, clear: bool) -> *mut T {
-    todo!() // VecToArray
+pub fn vec_to_array(vector: *const (), clear: bool) -> *mut T {
+    // NOTE: signature changed from previous IR version
+    // Previous params: (vector : * mut i32, clear : bool)
+    // Previous return: * mut T
+    todo!("re-translate: params renamed")
 }
 
 /// C: findstring (user/user_flexcomp.cc:1426)
@@ -42,21 +45,21 @@ pub fn findstring(buffer: *const i8, buffer_sz: i32, str: *const i8) -> i32 {
 }
 
 /// C: mjCFlexcomp::Make (user/user_flexcomp.h:57)
-/// Calls: comperr, mjCFlex::PointToLocal, mjCFlexcomp::MakeBox, mjCFlexcomp::MakeGMSH, mjCFlexcomp::MakeGrid, mjCFlexcomp::MakeMesh, mjCFlexcomp::MakeSquare, mjCModel::AddFlex, mjCModel::Default, mjs_addBody, mjs_addJoint, mjs_getName, mjs_getString, mjs_resolveOrientation, mjs_setDefault, mjs_setName, mjs_setString, mjuu_normvec, mjuu_setvec, mjuu_trnVecPose, mjuu_zerovec
+/// Calls: comperr, mjCDef::Flex, mjCFlex::PointToLocal, mjCFlexcomp::GridID, mjCFlexcomp::MakeBox, mjCFlexcomp::MakeGMSH, mjCFlexcomp::MakeGrid, mjCFlexcomp::MakeMesh, mjCFlexcomp::MakeSquare, mjCFlexcomp::MarkEmptyCells, mjCModel::AddFlex, mjCModel::Default, mjs_addBody, mjs_addEquality, mjs_addJoint, mjs_appendString, mjs_getName, mjs_getString, mjs_resolveOrientation, mjs_setDefault, mjs_setDouble, mjs_setFloat, mjs_setInt, mjs_setName, mjs_setString, mjuu_copyvec, mjuu_normvec, mjuu_setvec, mjuu_trnVecPose, mjuu_zerovec, sprintf_arr
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_flexcomp_make(self_ptr: *mut mjCFlexcomp, body: *mut mjsBody, error: *mut i8, error_sz: i32, vfs: *const mjVFS) -> bool {
     todo!() // mjCFlexcomp::Make
 }
 
 /// C: mjCFlexcomp::MakeGrid (user/user_flexcomp.h:59)
-/// Calls: comperr
+/// Calls: comperr, mjCDef::Flex, mjs_getString
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_flexcomp_make_grid(self_ptr: *mut mjCFlexcomp, error: *mut i8, error_sz: i32) -> bool {
     todo!() // mjCFlexcomp::MakeGrid
 }
 
 /// C: mjCFlexcomp::MakeBox (user/user_flexcomp.h:60)
-/// Calls: mat2lin, mjCFlexcomp::BoxProject
+/// Calls: mat2lin, mjCFlexcomp::BoxID, mjCFlexcomp::BoxProject, mjs_getString
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_flexcomp_make_box(self_ptr: *mut mjCFlexcomp, error: *mut i8, error_sz: i32, dim: i32, open: bool) -> bool {
     todo!() // mjCFlexcomp::MakeBox
@@ -70,14 +73,14 @@ pub fn mj_c_flexcomp_make_square(self_ptr: *mut mjCFlexcomp, error: *mut i8, err
 }
 
 /// C: mjCFlexcomp::MakeMesh (user/user_flexcomp.h:62)
-/// Calls: comperr, mjCBase::LoadResource, mjCMesh::HasTexcoord, mjCMesh::LoadFromResource, mjs_getString, mju_closeResource, mjuu_crossvec, mjuu_dot3
+/// Calls: comperr, mjCBase::LoadResource, mjCMesh::Face, mjCMesh::FaceTexcoord, mjCMesh::HasTexcoord, mjCMesh::IsMSH, mjCMesh::LoadFromResource, mjCMesh::Texcoord, mjCMesh::Vert, mjs_getString, mju_closeResource, mjuu_combinePaths, mjuu_crossvec, mjuu_dot3, mjuu_strippath
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_flexcomp_make_mesh(self_ptr: *mut mjCFlexcomp, model: *mut mjCModel, compiler: *mut mjsCompiler, error: *mut i8, error_sz: i32, vfs: *const mjVFS) -> bool {
     todo!() // mjCFlexcomp::MakeMesh
 }
 
 /// C: mjCFlexcomp::MakeGMSH (user/user_flexcomp.h:64)
-/// Calls: comperr, mjCBase::LoadResource, mjCFlexcomp::LoadGMSH, mjs_getString, mju_closeResource
+/// Calls: comperr, mjCBase::LoadResource, mjCFlexcomp::LoadGMSH, mjs_getString, mju_closeResource, mjuu_combinePaths, mjuu_strippath
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_flexcomp_make_gmsh(self_ptr: *mut mjCFlexcomp, model: *mut mjCModel, compiler: *mut mjsCompiler, error: *mut i8, error_sz: i32, vfs: *const mjVFS) -> bool {
     todo!() // mjCFlexcomp::MakeGMSH
@@ -91,12 +94,14 @@ pub fn mj_c_flexcomp_load_gmsh(self_ptr: *mut mjCFlexcomp, model: *mut mjCModel,
 }
 
 /// C: mjCFlexcomp::LoadGMSH41 (user/user_flexcomp.h:67)
+/// Calls: ReadFromBuffer
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_flexcomp_load_gmsh41(self_ptr: *mut mjCFlexcomp, buffer: *mut i8, binary: i32, nodeend: i32, nodebegin: i32, elemend: i32, elembegin: i32) {
     todo!() // mjCFlexcomp::LoadGMSH41
 }
 
 /// C: mjCFlexcomp::LoadGMSH22 (user/user_flexcomp.h:69)
+/// Calls: IsValidElementOrNodeHeader22, ReadFromBuffer, ReadStrFromBuffer
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_flexcomp_load_gmsh22(self_ptr: *mut mjCFlexcomp, buffer: *mut i8, binary: i32, nodeend: i32, nodebegin: i32, elemend: i32, elembegin: i32) {
     todo!() // mjCFlexcomp::LoadGMSH22
@@ -127,6 +132,7 @@ pub fn mj_c_flexcomp_box_project(self_ptr: *mut mjCFlexcomp, pos: *mut f64, ix: 
 }
 
 /// C: mjCFlexcomp::MarkEmptyCells (user/user_flexcomp.h:123)
+/// Calls: mjCFlex::ComputeCellEmpty
 /// ⚠️ BITEXACT RULES:
 ///   1. Copy exact C accumulation order (no iter().sum())
 ///   2. No f64::mul_add() (FMA changes precision)

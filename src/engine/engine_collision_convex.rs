@@ -1,5 +1,5 @@
 //! Port of: engine/engine_collision_convex.c
-//! IR hash: 6ff71909dacce27f
+//! IR hash: e878892ca48fe222
 //! CODEGEN: signatures locked. Only fill todo!() bodies.
 
 use crate::types::*;
@@ -57,6 +57,7 @@ pub fn local_to_global(res: *mut f64, mat: *const f64, dir: *const f64, pos: *co
 }
 
 /// C: mjc_sphereSupport (engine/engine_collision_convex.c:202)
+/// Calls: sphere
 /// ⚠️ BITEXACT RULES:
 ///   1. Copy exact C accumulation order (no iter().sum())
 ///   2. No f64::mul_add() (FMA changes precision)
@@ -277,7 +278,7 @@ pub fn mjc_ellipsoid_outside(nrm: *mut f64, pos: *const f64, size: *const f64) -
 ///   2. No f64::mul_add() (FMA changes precision)
 ///   3. No algebraic simplification
 ///   4. No iter().sum()/product() (order undefined)
-#[allow(unused_variables, non_snake_case, non_upper_case_globals)]
+#[allow(unused_variables, non_snake_case)]
 pub fn mjc_init_ccd_obj(obj: *mut mjCCDObj, m: *const mjModel, d: *const mjData, g: i32, margin: f64) {
     const mjGEOM_HFIELD: i32 = 1;
     const mjGEOM_SPHERE: i32 = 2;

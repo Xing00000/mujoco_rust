@@ -1,5 +1,5 @@
 //! Port of: user/user_util.cc
-//! IR hash: d784001b6381c4aa
+//! IR hash: e878892ca48fe222
 //! CODEGEN: signatures locked. Only fill todo!() bodies.
 
 use crate::types::*;
@@ -35,20 +35,6 @@ pub fn mjuu_is_valid_content_type(text: string_view) -> bool {
     todo!() // mjuu_isValidContentType
 }
 
-/// C: FileToMemory (user/user_util.cc:1196)
-/// Calls: mju_warning
-#[allow(unused_variables, non_snake_case)]
-pub fn file_to_memory(filename: *const i8) -> i32 {
-    todo!() // FileToMemory
-}
-
-/// C: VectorToString (user/user_util.cc:1256)
-/// Calls: FilePath::empty
-#[allow(unused_variables, non_snake_case)]
-pub fn vector_to_string(v: *const i32) -> std__string {
-    todo!() // VectorToString
-}
-
 /// C: StrToNum (user/user_util.cc:1277)
 #[allow(unused_variables, non_snake_case)]
 pub fn str_to_num(str: *mut i8, c: *mut *mut i8) -> i32 {
@@ -66,13 +52,6 @@ pub fn is_null_or_space(c: *mut i8) -> bool {
 #[allow(unused_variables, non_snake_case)]
 pub fn skip_space(c: *mut i8) -> *mut i8 {
     todo!() // SkipSpace
-}
-
-/// C: StringToVector (user/user_util.cc:1315)
-/// Calls: SkipSpace
-#[allow(unused_variables, non_snake_case)]
-pub fn string_to_vector(cs: *mut i8) -> i32 {
-    todo!() // StringToVector
 }
 
 /// C: mjuu_defined (user/user_util.h:35)
@@ -313,7 +292,7 @@ pub fn mjuu_quat2mat(res: *mut f64, quat: *const f64) {
 }
 
 /// C: mjuu_mulquat (user/user_util.h:88)
-/// Calls: mjuu_normvec
+/// Calls: mjuu_copyvec, mjuu_normvec
 /// ⚠️ BITEXACT RULES:
 ///   1. Copy exact C accumulation order (no iter().sum())
 ///   2. No f64::mul_add() (FMA changes precision)
@@ -591,7 +570,7 @@ pub fn mjuu_frameinvert(newpos: *mut f64, newquat: *mut f64, oldpos: *const f64,
 }
 
 /// C: mjuu_frameaccum (user/user_util.h:132)
-/// Calls: mjuu_mulquat, mjuu_mulvecmat, mjuu_quat2mat
+/// Calls: mjuu_copyvec, mjuu_mulquat, mjuu_mulvecmat, mjuu_quat2mat
 /// ⚠️ BITEXACT RULES:
 ///   1. Copy exact C accumulation order (no iter().sum())
 ///   2. No f64::mul_add() (FMA changes precision)
@@ -603,7 +582,7 @@ pub fn mjuu_frameaccum(pos: *mut f64, quat: *mut f64, childpos: *const f64, chil
 }
 
 /// C: mjuu_frameaccumChild (user/user_util.h:136)
-/// Calls: mjuu_frameaccum
+/// Calls: mjuu_copyvec, mjuu_frameaccum
 /// ⚠️ BITEXACT RULES:
 ///   1. Copy exact C accumulation order (no iter().sum())
 ///   2. No f64::mul_add() (FMA changes precision)
@@ -615,7 +594,7 @@ pub fn mjuu_frameaccum_child(pos: *const f64, quat: *const f64, childpos: *mut f
 }
 
 /// C: mjuu_frameaccuminv (user/user_util.h:140)
-/// Calls: mjuu_mulquat, mjuu_mulvecmat, mjuu_quat2mat
+/// Calls: mjuu_copyvec, mjuu_mulquat, mjuu_mulvecmat, mjuu_quat2mat
 /// ⚠️ BITEXACT RULES:
 ///   1. Copy exact C accumulation order (no iter().sum())
 ///   2. No f64::mul_add() (FMA changes precision)
@@ -720,7 +699,7 @@ pub fn mjuu_rot_vec_quat(res: *mut f64, vec: *const f64, quat: *const f64) {
 }
 
 /// C: mjuu_updateFrame (user/user_util.h:156)
-/// Calls: mjuu_axisAngle2Quat, mjuu_crossvec, mjuu_dot3, mjuu_frame2quat, mjuu_normvec, mjuu_rotVecQuat
+/// Calls: mjuu_axisAngle2Quat, mjuu_copyvec, mjuu_crossvec, mjuu_dot3, mjuu_frame2quat, mjuu_normvec, mjuu_rotVecQuat
 /// ⚠️ BITEXACT RULES:
 ///   1. Copy exact C accumulation order (no iter().sum())
 ///   2. No f64::mul_add() (FMA changes precision)
@@ -929,7 +908,7 @@ pub fn mjuu_trn_vec_pose(res: *mut f64, pos: *const f64, quat: *const f64, vec: 
 }
 
 /// C: mjuu_fullInertia (user/user_util.h:172)
-/// Calls: mjuu_defined, mjuu_eig3
+/// Calls: mjuu_copyvec, mjuu_defined, mjuu_eig3
 /// ⚠️ BITEXACT RULES:
 ///   1. Copy exact C accumulation order (no iter().sum())
 ///   2. No f64::mul_add() (FMA changes precision)
@@ -941,7 +920,7 @@ pub fn mjuu_full_inertia(quat: *mut f64, inertia: *mut f64, fullinertia: *const 
 }
 
 /// C: FilePath::IsAbs (user/user_util.h:191)
-/// Calls: FilePath::AbsPrefix, FilePath::empty
+/// Calls: FilePath::AbsPrefix
 #[allow(unused_variables, non_snake_case)]
 pub fn file_path_is_abs(self_ptr: *mut FilePath) -> bool {
     todo!() // FilePath::IsAbs
@@ -949,14 +928,20 @@ pub fn file_path_is_abs(self_ptr: *mut FilePath) -> bool {
 
 /// C: FilePath::AbsPrefix (user/user_util.h:195)
 #[allow(unused_variables, non_snake_case)]
-pub fn file_path_abs_prefix(self_ptr: *mut FilePath) -> i32 {
-    todo!() // FilePath::AbsPrefix
+pub fn file_path_abs_prefix(self_ptr: *mut FilePath) -> std__string {
+    // NOTE: signature changed from previous IR version
+    // Previous params: (self_ptr : * mut FilePath)
+    // Previous return: i32
+    todo!("re-translate: params renamed")
 }
 
 /// C: FilePath::Str (user/user_util.h:198)
 #[allow(unused_variables, non_snake_case)]
-pub fn file_path_str(self_ptr: *mut FilePath) -> *const i32 {
-    todo!() // FilePath::Str
+pub fn file_path_str(self_ptr: *mut FilePath) -> *const std__string {
+    // NOTE: signature changed from previous IR version
+    // Previous params: (self_ptr : * mut FilePath)
+    // Previous return: * const i32
+    todo!("re-translate: params renamed")
 }
 
 /// C: FilePath::StrLower (user/user_util.h:202)
@@ -1011,7 +996,7 @@ pub fn file_path_empty(self_ptr: *mut FilePath) -> bool {
 }
 
 /// C: FilePath::PathReduce (user/user_util.h:227)
-/// Calls: FilePath::AbsPrefix, FilePath::IsSeparator, FilePath::empty, FilePath::size
+/// Calls: FilePath::AbsPrefix, FilePath::IsSeparator
 #[allow(unused_variables, non_snake_case)]
 pub fn file_path_path_reduce(str: *const std__string) -> std__string {
     todo!() // FilePath::PathReduce
@@ -1024,7 +1009,7 @@ pub fn file_path_is_separator(c: i8) -> bool {
 }
 
 /// C: FilePath::Combine (user/user_util.h:231)
-/// Calls: FilePath::AbsPrefix, FilePath::empty
+/// Calls: FilePath::AbsPrefix
 #[allow(unused_variables, non_snake_case)]
 pub fn file_path_combine(s1: *const std__string, s2: *const std__string) -> std__string {
     todo!() // FilePath::Combine
@@ -1032,8 +1017,40 @@ pub fn file_path_combine(s1: *const std__string, s2: *const std__string) -> std_
 
 /// C: FilePath::FilePathFast (user/user_util.h:234)
 #[allow(unused_variables, non_snake_case)]
-pub fn file_path_file_path_fast(str: *const i32) -> FilePath {
-    todo!() // FilePath::FilePathFast
+pub fn file_path_file_path_fast(str: *const std__string) -> FilePath {
+    // NOTE: signature changed from previous IR version
+    // Previous params: (str : * const i32)
+    // Previous return: FilePath
+    todo!("re-translate: params renamed")
+}
+
+/// C: FileToMemory (user/user_util.h:259)
+/// Calls: mju_warning
+#[allow(unused_variables, non_snake_case)]
+pub fn file_to_memory(filename: *const i8) -> *const () {
+    // NOTE: signature changed from previous IR version
+    // Previous params: (filename : * const i8)
+    // Previous return: i32
+    todo!("re-translate: params renamed")
+}
+
+/// C: VectorToString (user/user_util.h:262)
+#[allow(unused_variables, non_snake_case)]
+pub fn vector_to_string(v: *const ()) -> std__string {
+    // NOTE: signature changed from previous IR version
+    // Previous params: (v : * const i32)
+    // Previous return: std__string
+    todo!("re-translate: params renamed")
+}
+
+/// C: StringToVector (user/user_util.h:265)
+/// Calls: IsNullOrSpace, SkipSpace
+#[allow(unused_variables, non_snake_case)]
+pub fn string_to_vector(cs: *mut i8) -> *const () {
+    // NOTE: signature changed from previous IR version
+    // Previous params: (cs : * mut i8)
+    // Previous return: i32
+    todo!("re-translate: params renamed")
 }
 
 /// C: mjuu_strippath (user/user_util.h:273)
@@ -1055,7 +1072,7 @@ pub fn mjuu_getext(filename: string_view) -> std__string {
 }
 
 /// C: mjuu_isabspath (user/user_util.h:282)
-/// Calls: FilePath::c_str, mjp_getResourceProvider
+/// Calls: mjp_getResourceProvider
 #[allow(unused_variables, non_snake_case)]
 pub fn mjuu_isabspath(path: string) -> bool {
     todo!() // mjuu_isabspath
@@ -1083,7 +1100,7 @@ pub fn mjuu_parse_content_type_attr_subtype(text: string_view) -> *const () {
 }
 
 /// C: mjuu_extToContentType (user/user_util.h:296)
-/// Calls: FilePath::c_str, getext, mjuu_getext
+/// Calls: mjuu_getext
 #[allow(unused_variables, non_snake_case)]
 pub fn mjuu_ext_to_content_type(filename: string_view) -> std__string {
     todo!() // mjuu_extToContentType
