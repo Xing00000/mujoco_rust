@@ -112,7 +112,7 @@ pub fn mji_pow4(val: f64) -> f64 {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mji_pow2(val: f64) -> f64 {
-    todo!() // mji_pow2
+    val * val
 }
 
 /// C: mji_ellipsoid_max_moment (engine/engine_passive.c:1223)

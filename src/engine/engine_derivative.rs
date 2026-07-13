@@ -186,7 +186,31 @@ pub fn mjd_com_vel_vel_dense(m: *const mjModel, d: *mut mjData, Dcvel: *mut f64,
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn copy_from_parent(m: *const mjModel, d: *mut mjData, mat: *mut f64, n: i32) {
-    todo!() // copyFromParent
+    // SAFETY: caller guarantees m is valid mjModel, mat is valid array, n is valid body index
+    unsafe {
+        // return if this is world or parent is world
+        if n == 0 || *(*m).body_weldid.add(*(*m).body_parentid.add(n as usize) as usize) == 0 {
+            return;
+        }
+
+        // count dofs in ancestors
+        let mut ndof: i32 = 0;
+        let mut np = *(*m).body_weldid.add(*(*m).body_parentid.add(n as usize) as usize);
+        while np > 0 {
+            // add self dofs
+            ndof += *(*m).body_dofnum.add(np as usize);
+
+            // advance to parent
+            np = *(*m).body_weldid.add(*(*m).body_parentid.add(np as usize) as usize);
+        }
+
+        // copy: guaranteed to be at beginning of sparse array, due to sorting
+        crate::engine::engine_util_blas::mju_copy(
+            mat.add(6 * *(*m).B_rowadr.add(n as usize) as usize),
+            mat.add(6 * *(*m).B_rowadr.add(*(*m).body_parentid.add(n as usize) as usize) as usize),
+            6 * ndof,
+        );
+    }
 }
 
 /// C: addToParent (engine/engine_derivative.c:491)

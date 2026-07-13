@@ -40,7 +40,32 @@ pub fn tactile_task(m: *const mjModel, d: *mut mjData, arg: *mut (), thread_id: 
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn apply_cutoff(m: *const mjModel, i: i32, data: *mut f64) {
-    todo!() // apply_cutoff
+    // SAFETY: caller guarantees m is valid mjModel, data has at least sensor_dim[i] elements
+    unsafe {
+        let cutoff = *(*m).sensor_cutoff.add(i as usize);
+        if cutoff <= 0.0 {
+            return;
+        }
+
+        // cutoff ignored for contact and fromto sensors
+        let sensor_type = *(*m).sensor_type.add(i as usize) as u32;
+        if sensor_type == mjtSensor_mjSENS_CONTACT || sensor_type == mjtSensor_mjSENS_GEOMFROMTO {
+            return;
+        }
+
+        let dim = *(*m).sensor_dim.add(i as usize);
+
+        for j in 0..dim as usize {
+            // real: apply on both sides
+            if *(*m).sensor_datatype.add(i as usize) as u32 == mjtDataType_mjDATATYPE_REAL {
+                *data.add(j) = crate::engine::engine_util_misc::mju_clip(*data.add(j), -cutoff, cutoff);
+            }
+            // positive: apply on positive side only
+            else if *(*m).sensor_datatype.add(i as usize) as u32 == mjtDataType_mjDATATYPE_POSITIVE {
+                *data.add(j) = crate::engine::engine_util_misc::mju_min(cutoff, *data.add(j));
+            }
+        }
+    }
 }
 
 /// C: get_xpos_xmat (engine/engine_sensor.c:227)

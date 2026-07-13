@@ -814,7 +814,19 @@ pub fn aligned_faces(res: *mut i32, v: *const f64, nv: i32, w: *const f64, nw: i
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn aligned_face_edge(res: *mut i32, edge: *const f64, nedge: i32, face: *const f64, nface: i32) -> i32 {
-    todo!() // alignedFaceEdge
+    // SAFETY: caller guarantees res points to [2], edge to [nedge*3], face to [nface*3]
+    unsafe {
+        for i in 0..nface as usize {
+            for j in 0..nedge as usize {
+                if dot3(edge.add(3 * j), face.add(3 * i)).abs() < 0.00159999931 {
+                    *res.add(0) = j as i32;
+                    *res.add(1) = i as i32;
+                    return 1;
+                }
+            }
+        }
+        0
+    }
 }
 
 /// C: simplexDim (engine/engine_collision_gjk.c:2104)

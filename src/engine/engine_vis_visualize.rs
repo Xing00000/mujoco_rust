@@ -34,7 +34,34 @@ pub fn make_label(m: *const mjModel, r#type: u32, id: i32, label: *mut i8) {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn island_color(rgba: *mut f32, h: i32, awake: i32) {
-    todo!() // islandColor
+    // SAFETY: caller guarantees rgba points to [4] float array
+    unsafe {
+        // default to gray R = G = B = 0.7
+        let mut hue: f32 = 1.0f32;
+        let mut saturation: f32 = 0.0f32;
+        let mut value: f32 = 0.7f32;
+
+        // island index given, use Halton sequence to generate pseudo-random color
+        if h >= 0 {
+            // hue in [0, 1]
+            hue = crate::engine::engine_util_misc::mju_halton(h + 1, 7) as f32;
+
+            // saturation in [0.5, 1.0]
+            saturation = (0.5 + 0.5 * crate::engine::engine_util_misc::mju_halton(h + 1, 3)) as f32;
+
+            // value in [0.6, 1.0]
+            value = (0.6 + 0.4 * crate::engine::engine_util_misc::mju_halton(h + 1, 5)) as f32;
+        }
+
+        // if asleep, decrease saturation and value
+        if awake == 0 {
+            value *= 0.6f32;
+            saturation *= 0.7f32;
+        }
+
+        hsv2rgb(rgba, hue, saturation, value);
+        *rgba.add(3) = 1.0f32;
+    }
 }
 
 /// C: mixcolor (engine/engine_vis_visualize.c:140)
@@ -45,7 +72,25 @@ pub fn island_color(rgba: *mut f32, h: i32, awake: i32) {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mixcolor(rgba: *mut f32, r#ref: *const f32, flg1: i32, flg2: i32) {
-    todo!() // mixcolor
+    // SAFETY: caller guarantees rgba and ref point to [4] float arrays
+    unsafe {
+        *rgba.add(0) = if flg1 != 0 { *r#ref.add(0) } else { 0.0 };
+        if flg2 != 0 {
+            let v = *rgba.add(0);
+            let r1 = *r#ref.add(1);
+            *rgba.add(0) = if v > r1 { v } else { r1 };
+        }
+
+        *rgba.add(1) = if flg1 != 0 { *r#ref.add(1) } else { 0.0 };
+        if flg2 != 0 {
+            let v = *rgba.add(1);
+            let r0 = *r#ref.add(0);
+            *rgba.add(1) = if v > r0 { v } else { r0 };
+        }
+
+        *rgba.add(2) = *r#ref.add(2);
+        *rgba.add(3) = *r#ref.add(3);
+    }
 }
 
 /// C: bodycategory (engine/engine_vis_visualize.c:157)
