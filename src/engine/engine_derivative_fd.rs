@@ -53,7 +53,20 @@ pub fn state_diff(m: *const mjModel, ds: *mut f64, s1: *const f64, s2: *const f6
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn clamped_diff(dx: *mut f64, x: *const f64, x_plus: *const f64, x_minus: *const f64, h: f64, nx: i32) {
-    todo!() // clampedDiff
+    use crate::engine::engine_util_blas::mju_zero;
+    if !x_plus.is_null() && x_minus.is_null() {
+        // forward differencing
+        diff(dx, x_plus, x, h, nx);
+    } else if x_plus.is_null() && !x_minus.is_null() {
+        // backward differencing
+        diff(dx, x, x_minus, h, nx);
+    } else if !x_plus.is_null() && !x_minus.is_null() {
+        // centered differencing
+        diff(dx, x_plus, x_minus, 2.0 * h, nx);
+    } else {
+        // differencing failed, write zeros
+        mju_zero(dx, nx);
+    }
 }
 
 /// C: clampedStateDiff (engine/engine_derivative_fd.c:87)

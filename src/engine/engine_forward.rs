@@ -13,7 +13,29 @@ use crate::types::*;
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn dcmotor_voltage(ctrl: f64, length: f64, velocity: f64, x_I: f64, gainprm: *const f64) -> f64 {
-    todo!() // dcmotorVoltage
+    use crate::engine::engine_util_misc::mju_clip;
+    // SAFETY: gainprm points to at least 9 f64 elements (caller contract)
+    unsafe {
+        let input_mode = *gainprm.add(8) as i32;
+        let Vmax = *gainprm.add(7);
+        let mut voltage;
+        if input_mode > 0 {
+            let kp = *gainprm.add(4);
+            let ki = *gainprm.add(5);
+            let kd = *gainprm.add(6);
+            if input_mode == 1 {
+                voltage = kp * (ctrl - length) + ki * x_I - kd * velocity;
+            } else {
+                voltage = kp * (ctrl - velocity) + ki * (x_I - length);
+            }
+        } else {
+            voltage = ctrl;
+        }
+        if Vmax > 0.0 {
+            voltage = mju_clip(voltage, -Vmax, Vmax);
+        }
+        voltage
+    }
 }
 
 /// C: clampVec (engine/engine_forward.c:253)

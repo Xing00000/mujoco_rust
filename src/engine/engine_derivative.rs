@@ -311,7 +311,20 @@ pub fn ellipsoid_max_moment(size: *const f64, dir: i32) -> f64 {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn add_to_quadrant(B: *mut f64, D: *const f64, col_quad: i32, row_quad: i32) {
-    todo!() // addToQuadrant
+    // SAFETY: B points to a 6x6 matrix, D points to 9 f64 elements (caller contract)
+    unsafe {
+        let r = 3 * row_quad as usize;
+        let c = 3 * col_quad as usize;
+        *B.add(6 * (c + 0) + r + 0) += *D.add(0);
+        *B.add(6 * (c + 0) + r + 1) += *D.add(1);
+        *B.add(6 * (c + 0) + r + 2) += *D.add(2);
+        *B.add(6 * (c + 1) + r + 0) += *D.add(3);
+        *B.add(6 * (c + 1) + r + 1) += *D.add(4);
+        *B.add(6 * (c + 1) + r + 2) += *D.add(5);
+        *B.add(6 * (c + 2) + r + 0) += *D.add(6);
+        *B.add(6 * (c + 2) + r + 1) += *D.add(7);
+        *B.add(6 * (c + 2) + r + 2) += *D.add(8);
+    }
 }
 
 /// C: mjd_addedMassForces (engine/engine_derivative.c:1371)

@@ -13,7 +13,18 @@ use crate::types::*;
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn is_smaller(vec: *const f64, weight: *const f64, n: i32, tol: f64) -> i32 {
-    todo!() // isSmaller
+    // SAFETY: vec and weight point to at least n f64 elements (caller contract)
+    unsafe {
+        let mut max: f64 = 0.0;
+        for i in 0..n as usize {
+            let val = *weight.add(i) * (*vec.add(i)).abs();
+            max = if max > val { max } else { val };
+            if max >= tol {
+                return 0;
+            }
+        }
+        1
+    }
 }
 
 /// C: treeCanSleep (engine/engine_sleep.c:123)
