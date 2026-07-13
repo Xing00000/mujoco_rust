@@ -1,5 +1,5 @@
 //! Port of: engine/engine_derivative_fd.c
-//! IR hash: 6ff71909dacce27f
+//! IR hash: d784001b6381c4aa
 //! CODEGEN: signatures locked. Only fill todo!() bodies.
 
 use crate::types::*;
@@ -24,7 +24,12 @@ pub fn get_state(m: *const mjModel, d: *const mjData, state: *mut f64, sensordat
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn diff(dx: *mut f64, x1: *const f64, x2: *const f64, h: f64, n: i32) {
-    todo!() // diff
+    // SAFETY: caller guarantees dx, x1, x2 point to arrays of at least n elements
+    unsafe {
+        for i in 0..n as usize {
+            *dx.add(i) = (*x1.add(i) - *x2.add(i)) / h;
+        }
+    }
 }
 
 /// C: stateDiff (engine/engine_derivative_fd.c:55)

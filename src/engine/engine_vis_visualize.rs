@@ -1,5 +1,5 @@
 //! Port of: engine/engine_vis_visualize.c
-//! IR hash: 6ff71909dacce27f
+//! IR hash: d784001b6381c4aa
 //! CODEGEN: signatures locked. Only fill todo!() bodies.
 
 use crate::types::*;
@@ -400,7 +400,12 @@ pub fn copy_tex(dst: *mut f32, src: *const f32, nface: i32, i0: i32, i1: i32, i2
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn cosh_sinh(x: f64, sinh: *mut f64) -> f64 {
-    todo!() // cosh_sinh
+    let expx: f64 = f64::exp(x);
+    if !sinh.is_null() {
+        // SAFETY: caller guarantees sinh points to a valid f64 when non-null
+        unsafe { *sinh = 0.5 * (expx - 1.0 / expx); }
+    }
+    0.5 * (expx + 1.0 / expx)
 }
 
 /// C: catenary_intercept (engine/engine_vis_visualize.c:3526)
@@ -411,7 +416,7 @@ pub fn cosh_sinh(x: f64, sinh: *mut f64) -> f64 {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn catenary_intercept(v: f64, h: f64, length: f64) -> f64 {
-    todo!() // catenary_intercept
+    1.0 / f64::sqrt(f64::sqrt(length * length - v * v) / h - 1.0)
 }
 
 /// C: catenary_residual (engine/engine_vis_visualize.c:3532)

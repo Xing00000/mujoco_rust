@@ -1,5 +1,5 @@
 //! Port of: engine/engine_derivative.c
-//! IR hash: 6ff71909dacce27f
+//! IR hash: d784001b6381c4aa
 //! CODEGEN: signatures locked. Only fill todo!() bodies.
 
 use crate::types::*;
@@ -13,7 +13,27 @@ use crate::types::*;
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjd_cross(a: *const f64, b: *const f64, Da: *mut f64, Db: *mut f64) {
-    todo!() // mjd_cross
+    // SAFETY: caller guarantees a, b point to [3] arrays; Da, Db (if non-null) point to [9] arrays
+    unsafe {
+        if !Da.is_null() {
+            crate::engine::engine_util_blas::mju_zero(Da, 9);
+            *Da.add(1) = *b.add(2);
+            *Da.add(2) = -*b.add(1);
+            *Da.add(3) = -*b.add(2);
+            *Da.add(5) = *b.add(0);
+            *Da.add(6) = *b.add(1);
+            *Da.add(7) = -*b.add(0);
+        }
+        if !Db.is_null() {
+            crate::engine::engine_util_blas::mju_zero(Db, 9);
+            *Db.add(1) = -*a.add(2);
+            *Db.add(2) = *a.add(1);
+            *Db.add(3) = *a.add(2);
+            *Db.add(5) = -*a.add(0);
+            *Db.add(6) = -*a.add(1);
+            *Db.add(7) = *a.add(0);
+        }
+    }
 }
 
 /// C: mjd_crossMotion_vel (engine/engine_derivative.c:65)
@@ -187,7 +207,7 @@ pub fn mjd_flex_interp_kernel(m: *const mjModel, d: *mut mjData, res: *mut f64, 
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn pow2(val: f64) -> f64 {
-    todo!() // pow2
+    val * val
 }
 
 /// C: ellipsoid_max_moment (engine/engine_derivative.c:1344)
