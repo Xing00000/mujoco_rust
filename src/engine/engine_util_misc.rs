@@ -43,10 +43,27 @@ pub fn is_intersect(p1: *const f64, p2: *const f64, p3: *const f64, p4: *const f
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn length_circle(p0: *const f64, p1: *const f64, ind: i32, radius: f64) -> f64 {
-    // NOTE: signature changed from previous IR version
-    // Previous params: (p0 : * const f64, p1 : * const f64, ind : i32, radius : f64)
-    // Previous return: f64
-    todo!("re-translate: params renamed")
+    use crate::engine::engine_util_blas::{mju_normalize, mju_dot};
+    const MJ_PI: f64 = 3.14159265358979323846_f64;
+
+    // SAFETY: caller guarantees p0[2], p1[2] are valid
+    unsafe {
+        let mut p0n: [f64; 2] = [*p0.add(0), *p0.add(1)];
+        let mut p1n: [f64; 2] = [*p1.add(0), *p1.add(1)];
+
+        // compute angle between 0 and pi
+        mju_normalize(p0n.as_mut_ptr(), 2);
+        mju_normalize(p1n.as_mut_ptr(), 2);
+        let mut angle: f64 = f64::acos(mju_dot(p0n.as_ptr(), p1n.as_ptr(), 2));
+
+        // flip if necessary
+        let cross: f64 = *p0.add(1) * *p1.add(0) - *p0.add(0) * *p1.add(1);
+        if (cross > 0.0 && ind != 0) || (cross < 0.0 && ind == 0) {
+            angle = 2.0 * MJ_PI - angle;
+        }
+
+        radius * angle
+    }
 }
 
 /// C: wrap_circle (engine/engine_util_misc.c:78)
@@ -58,10 +75,90 @@ pub fn length_circle(p0: *const f64, p1: *const f64, ind: i32, radius: f64) -> f
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn wrap_circle(pnt: *mut f64, end: *const f64, side: *const f64, radius: f64) -> f64 {
-    // NOTE: signature changed from previous IR version
-    // Previous params: (pnt : * mut f64, end : * const f64, side : * const f64, radius : f64)
-    // Previous return: f64
-    todo!("re-translate: params renamed")
+    use crate::engine::engine_util_blas::{mju_add, mju_sub, mju_normalize, mju_dot};
+    const MJ_MINVAL: f64 = 1E-15_f64;
+
+    // SAFETY: caller guarantees pnt[4], end[4], side[2] (or null) are valid
+    unsafe {
+        let sqlen0: f64 = *end.add(0) * *end.add(0) + *end.add(1) * *end.add(1);
+        let sqlen1: f64 = *end.add(2) * *end.add(2) + *end.add(3) * *end.add(3);
+        let sqrad: f64 = radius * radius;
+
+        // either point inside circle or circle too small: no wrap
+        if sqlen0 < sqrad || sqlen1 < sqrad || radius < MJ_MINVAL {
+            return -1.0;
+        }
+
+        // points too close: no wrap
+        let dif: [f64; 2] = [*end.add(2) - *end.add(0), *end.add(3) - *end.add(1)];
+        let dd: f64 = dif[0] * dif[0] + dif[1] * dif[1];
+        if dd < MJ_MINVAL {
+            return -1.0;
+        }
+
+        // find nearest point on line segment to origin: a*dif + d0
+        let mut a: f64 = -(dif[0] * *end.add(0) + dif[1] * *end.add(1)) / dd;
+        if a < 0.0 {
+            a = 0.0;
+        } else if a > 1.0 {
+            a = 1.0;
+        }
+
+        // check for intersection and side
+        let tmp_check: [f64; 2] = [a * dif[0] + *end.add(0), a * dif[1] + *end.add(1)];
+        if tmp_check[0] * tmp_check[0] + tmp_check[1] * tmp_check[1] > sqrad
+            && (side.is_null() || mju_dot(side, tmp_check.as_ptr(), 2) >= 0.0)
+        {
+            return -1.0;
+        }
+
+        let sqrt0: f64 = f64::sqrt(sqlen0 - sqrad);
+        let sqrt1: f64 = f64::sqrt(sqlen1 - sqrad);
+
+        // construct the two solutions, compute goodness
+        let mut sol: [[[f64; 2]; 2]; 2] = [[[0.0; 2]; 2]; 2];
+        let mut good: [f64; 2] = [0.0; 2];
+        let mut tmp: [f64; 2] = [0.0; 2];
+
+        for i in 0..2 {
+            let sgn: f64 = if i == 0 { 1.0 } else { -1.0 };
+
+            sol[i][0][0] = (*end.add(0) * sqrad + sgn * radius * *end.add(1) * sqrt0) / sqlen0;
+            sol[i][0][1] = (*end.add(1) * sqrad - sgn * radius * *end.add(0) * sqrt0) / sqlen0;
+            sol[i][1][0] = (*end.add(2) * sqrad - sgn * radius * *end.add(3) * sqrt1) / sqlen1;
+            sol[i][1][1] = (*end.add(3) * sqrad + sgn * radius * *end.add(2) * sqrt1) / sqlen1;
+
+            // goodness: close to sd, or shorter path
+            if !side.is_null() {
+                mju_add(tmp.as_mut_ptr(), sol[i][0].as_ptr(), sol[i][1].as_ptr(), 2);
+                mju_normalize(tmp.as_mut_ptr(), 2);
+                good[i] = mju_dot(tmp.as_ptr(), side, 2);
+            } else {
+                mju_sub(tmp.as_mut_ptr(), sol[i][0].as_ptr(), sol[i][1].as_ptr(), 2);
+                good[i] = -mju_dot(tmp.as_ptr(), tmp.as_ptr(), 2);
+            }
+
+            // penalize for intersection
+            if is_intersect(end, sol[i][0].as_ptr(), end.add(2), sol[i][1].as_ptr())._data[0] != 0 {
+                good[i] = -10000.0;
+            }
+        }
+
+        // select the better solution
+        let i: usize = if good[0] > good[1] { 0 } else { 1 };
+        *pnt.add(0) = sol[i][0][0];
+        *pnt.add(1) = sol[i][0][1];
+        *pnt.add(2) = sol[i][1][0];
+        *pnt.add(3) = sol[i][1][1];
+
+        // check for intersection
+        if is_intersect(end, pnt, end.add(2), pnt.add(2))._data[0] != 0 {
+            return -1.0;
+        }
+
+        // return curve length
+        length_circle(sol[i][0].as_ptr(), sol[i][1].as_ptr(), i as i32, radius)
+    }
 }
 
 /// C: wrap_inside (engine/engine_util_misc.c:158)
@@ -73,10 +170,126 @@ pub fn wrap_circle(pnt: *mut f64, end: *const f64, side: *const f64, radius: f64
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn wrap_inside(pnt: *mut f64, end: *const f64, radius: f64) -> f64 {
-    // NOTE: signature changed from previous IR version
-    // Previous params: (pnt : * mut f64, end : * const f64, radius : f64)
-    // Previous return: f64
-    todo!("re-translate: params renamed")
+    use crate::engine::engine_util_blas::{mju_add_scl, mju_copy, mju_norm, mju_normalize, mju_scl};
+    const MJ_MINVAL: f64 = 1E-15_f64;
+
+    // SAFETY: caller guarantees pnt[4], end[4] are valid
+    unsafe {
+        // algorithm parameters
+        let maxiter: i32 = 20;
+        let zinit: f64 = 1.0 - 1e-7;
+        let tolerance: f64 = 1e-6;
+
+        // constants
+        let len0: f64 = mju_norm(end, 2);
+        let len1: f64 = mju_norm(end.add(2), 2);
+        let dif: [f64; 2] = [*end.add(2) - *end.add(0), *end.add(3) - *end.add(1)];
+        let dd: f64 = dif[0] * dif[0] + dif[1] * dif[1];
+
+        // either point inside circle or circle too small: no wrap
+        if len0 <= radius || len1 <= radius || radius < MJ_MINVAL || len0 < MJ_MINVAL || len1 < MJ_MINVAL {
+            return -1.0;
+        }
+
+        // segment-circle intersection: no wrap
+        if dd > MJ_MINVAL {
+            // find nearest point on line segment to origin: d0 + a*dif
+            let a: f64 = -(dif[0] * *end.add(0) + dif[1] * *end.add(1)) / dd;
+
+            // in segment
+            if a > 0.0 && a < 1.0 {
+                let mut tmp: [f64; 2] = [0.0; 2];
+                mju_add_scl(tmp.as_mut_ptr(), end, dif.as_ptr(), a, 2);
+                if mju_norm(tmp.as_ptr(), 2) <= radius {
+                    return -1.0;
+                }
+            }
+        }
+
+        // prepare default in case of numerical failure: average
+        *pnt.add(0) = 0.5 * (*end.add(0) + *end.add(2));
+        *pnt.add(1) = 0.5 * (*end.add(1) + *end.add(3));
+        mju_normalize(pnt, 2);
+        mju_scl(pnt, pnt, radius, 2);
+        *pnt.add(2) = *pnt.add(0);
+        *pnt.add(3) = *pnt.add(1);
+
+        // compute function parameters: asin(A*z) + asin(B*z) - 2*asin(z) + G = 0
+        let a_coeff: f64 = radius / len0;
+        let b_coeff: f64 = radius / len1;
+        let cos_g: f64 = (len0 * len0 + len1 * len1 - dd) / (2.0 * len0 * len1);
+        if cos_g < -1.0 + MJ_MINVAL {
+            return -1.0;
+        } else if cos_g > 1.0 - MJ_MINVAL {
+            return 0.0;
+        }
+        let g: f64 = f64::acos(cos_g);
+
+        // init
+        let mut z: f64 = zinit;
+        let mut f: f64 = f64::asin(a_coeff * z) + f64::asin(b_coeff * z) - 2.0 * f64::asin(z) + g;
+
+        // make sure init is not on the other side
+        if f > 0.0 {
+            return 0.0;
+        }
+
+        // Newton method
+        let mut iter: i32 = 0;
+        while iter < maxiter && f64::abs(f) > tolerance {
+            // derivative
+            let df: f64 = a_coeff / f64::max(MJ_MINVAL, f64::sqrt(1.0 - z * z * a_coeff * a_coeff))
+                        + b_coeff / f64::max(MJ_MINVAL, f64::sqrt(1.0 - z * z * b_coeff * b_coeff))
+                        - 2.0 / f64::max(MJ_MINVAL, f64::sqrt(1.0 - z * z));
+
+            // check sign; SHOULD NOT OCCUR
+            if df > -MJ_MINVAL {
+                return 0.0;
+            }
+
+            // new point
+            let z1: f64 = z - f / df;
+
+            // make sure we are moving to the left; SHOULD NOT OCCUR
+            if z1 > z {
+                return 0.0;
+            }
+
+            // update solution
+            z = z1;
+            f = f64::asin(a_coeff * z) + f64::asin(b_coeff * z) - 2.0 * f64::asin(z) + g;
+
+            // exit if positive; SHOULD NOT OCCUR
+            if f > tolerance {
+                return 0.0;
+            }
+
+            iter += 1;
+        }
+
+        // check convergence
+        if iter >= maxiter {
+            return 0.0;
+        }
+
+        // finalize: rotation by ang from vec = a or b, depending on cross(a,b) sign
+        let mut vec: [f64; 2] = [0.0; 2];
+        let ang: f64;
+        if *end.add(0) * *end.add(3) - *end.add(1) * *end.add(2) > 0.0 {
+            mju_copy(vec.as_mut_ptr(), end, 2);
+            ang = f64::asin(z) - f64::asin(a_coeff * z);
+        } else {
+            mju_copy(vec.as_mut_ptr(), end.add(2), 2);
+            ang = f64::asin(z) - f64::asin(b_coeff * z);
+        }
+        mju_normalize(vec.as_mut_ptr(), 2);
+        *pnt.add(0) = radius * (f64::cos(ang) * vec[0] - f64::sin(ang) * vec[1]);
+        *pnt.add(1) = radius * (f64::sin(ang) * vec[0] + f64::cos(ang) * vec[1]);
+        *pnt.add(2) = *pnt.add(0);
+        *pnt.add(3) = *pnt.add(1);
+
+        0.0
+    }
 }
 
 /// C: flexInterpRotation (engine/engine_util_misc.c:694)
@@ -88,10 +301,29 @@ pub fn wrap_inside(pnt: *mut f64, end: *const f64, radius: f64) -> f64 {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn flex_interp_rotation(order: i32, xpos_c: *const f64, local: *const f64, quat: *mut f64) {
-    // NOTE: signature changed from previous IR version
-    // Previous params: (order : i32, xpos_c : * const f64, local : * const f64, quat : * mut f64)
-    // Previous return: ()
-    todo!("re-translate: params renamed")
+    use crate::engine::engine_util_spatial::{mju_mat2rot, mju_neg_quat};
+
+    // SAFETY: caller guarantees xpos_c, local[3], quat[4] are valid
+    unsafe {
+        let mut mat: [f64; 9] = [0.0; 9];
+
+        if order > 0 {
+            mju_def_gradient(mat.as_mut_ptr(), local, xpos_c, order);
+        } else {
+            // order 0: fallback to identity matrix
+            mat[0] = 1.0;
+            mat[4] = 1.0;
+            mat[8] = 1.0;
+        }
+
+        // find rotation
+        *quat.add(0) = 1.0;
+        *quat.add(1) = 0.0;
+        *quat.add(2) = 0.0;
+        *quat.add(3) = 0.0;
+        mju_mat2rot(quat, mat.as_ptr());
+        mju_neg_quat(quat, quat);
+    }
 }
 
 /// C: nodeAt (engine/engine_util_misc.c:902)
@@ -214,10 +446,166 @@ pub fn history_find_index(times: *const f64, n: i32, cursor: i32, t: f64) -> i32
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mju_wrap(wpnt: *mut f64, x0: *const f64, x1: *const f64, xpos: *const f64, xmat: *const f64, radius: f64, r#type: i32, side: *const f64) -> f64 {
-    // NOTE: signature changed from previous IR version
-    // Previous params: (wpnt : * mut f64, x0 : * const f64, x1 : * const f64, xpos : * const f64, xmat : * const f64, radius : f64, r#type : i32, side : * const f64)
-    // Previous return: f64
-    todo!("re-translate: params renamed")
+    use crate::engine::engine_util_blas::{
+        mju_sub3, mju_mul_mat_t_vec3, mju_mul_mat_vec3, mju_norm3,
+        mju_copy3, mju_normalize3, mju_scl3, mju_add_to3,
+        mju_dot3, mju_dot, mju_normalize, mju_scl, mju_norm,
+    };
+    use crate::engine::engine_util_spatial::mju_cross;
+
+    const MJ_MINVAL: f64 = 1E-15_f64;
+    const MJ_WRAP_SPHERE: i32 = 4;
+    const MJ_WRAP_CYLINDER: i32 = 5;
+
+    // SAFETY: caller guarantees all pointers are valid with appropriate sizes
+    unsafe {
+        // check object type; SHOULD NOT OCCUR
+        if r#type != MJ_WRAP_SPHERE && r#type != MJ_WRAP_CYLINDER {
+            panic!("mju_wrap: unknown wrapping object type {}", r#type);
+        }
+
+        // map sites to wrap object's local frame
+        let mut tmp: [f64; 3] = [0.0; 3];
+        mju_sub3(tmp.as_mut_ptr(), x0, xpos);
+        let mut p: [[f64; 3]; 2] = [[0.0; 3]; 2];
+        mju_mul_mat_t_vec3(p[0].as_mut_ptr(), xmat, tmp.as_ptr());
+        mju_sub3(tmp.as_mut_ptr(), x1, xpos);
+        mju_mul_mat_t_vec3(p[1].as_mut_ptr(), xmat, tmp.as_ptr());
+
+        // too close to origin: return
+        if mju_norm3(p[0].as_ptr()) < MJ_MINVAL || mju_norm3(p[1].as_ptr()) < MJ_MINVAL {
+            return -1.0;
+        }
+
+        // construct 2D frame for circle wrap
+        let mut axis: [[f64; 3]; 2] = [[0.0; 3]; 2];
+        if r#type == MJ_WRAP_SPHERE {
+            // 1st axis = p0
+            mju_copy3(axis[0].as_mut_ptr(), p[0].as_ptr());
+            mju_normalize3(axis[0].as_mut_ptr());
+
+            // normal to p0-0-p1 plane = cross(p0, p1)
+            let mut normal: [f64; 3] = [0.0; 3];
+            mju_cross(normal.as_mut_ptr(), p[0].as_ptr(), p[1].as_ptr());
+            let nrm: f64 = mju_normalize3(normal.as_mut_ptr());
+
+            // if (p0, p1) parallel: different normal
+            if nrm < MJ_MINVAL {
+                // find max component of axis0
+                let mut i: usize = 0;
+                if f64::abs(axis[0][1]) > f64::abs(axis[0][0])
+                    && f64::abs(axis[0][1]) > f64::abs(axis[0][2])
+                {
+                    i = 1;
+                }
+                if f64::abs(axis[0][2]) > f64::abs(axis[0][0])
+                    && f64::abs(axis[0][2]) > f64::abs(axis[0][1])
+                {
+                    i = 2;
+                }
+
+                // init second axis: 0 at i; 1 elsewhere
+                axis[1][0] = 1.0;
+                axis[1][1] = 1.0;
+                axis[1][2] = 1.0;
+                axis[1][i] = 0.0;
+
+                // recompute normal
+                mju_cross(normal.as_mut_ptr(), axis[0].as_ptr(), axis[1].as_ptr());
+                mju_normalize3(normal.as_mut_ptr());
+            }
+
+            // 2nd axis = cross(normal, p0)
+            mju_cross(axis[1].as_mut_ptr(), normal.as_ptr(), axis[0].as_ptr());
+            mju_normalize3(axis[1].as_mut_ptr());
+        } else {
+            // 1st axis = x
+            axis[0][0] = 1.0;
+            axis[0][1] = 0.0;
+            axis[0][2] = 0.0;
+
+            // 2nd axis = y
+            axis[1][0] = 0.0;
+            axis[1][1] = 1.0;
+            axis[1][2] = 0.0;
+        }
+
+        // project points in 2D frame: p => d
+        let mut s: [f64; 3] = [0.0; 3];
+        let mut d: [f64; 4] = [0.0; 4];
+        let mut sd: [f64; 2] = [0.0; 2];
+        d[0] = mju_dot3(p[0].as_ptr(), axis[0].as_ptr());
+        d[1] = mju_dot3(p[0].as_ptr(), axis[1].as_ptr());
+        d[2] = mju_dot3(p[1].as_ptr(), axis[0].as_ptr());
+        d[3] = mju_dot3(p[1].as_ptr(), axis[1].as_ptr());
+
+        // handle sidesite
+        if !side.is_null() {
+            // side point: apply same projection as x0, x1
+            mju_sub3(tmp.as_mut_ptr(), side, xpos);
+            mju_mul_mat_t_vec3(s.as_mut_ptr(), xmat, tmp.as_ptr());
+
+            // side point: project and rescale
+            sd[0] = mju_dot3(s.as_ptr(), axis[0].as_ptr());
+            sd[1] = mju_dot3(s.as_ptr(), axis[1].as_ptr());
+            mju_normalize(sd.as_mut_ptr(), 2);
+            mju_scl(sd.as_mut_ptr(), sd.as_ptr(), radius, 2);
+        }
+
+        // apply inside wrap or circle wrap
+        let wlen: f64;
+        let mut pnt: [f64; 4] = [0.0; 4];
+        if !side.is_null() && mju_norm3(s.as_ptr()) < radius {
+            wlen = wrap_inside(pnt.as_mut_ptr(), d.as_ptr(), radius);
+        } else {
+            wlen = wrap_circle(
+                pnt.as_mut_ptr(),
+                d.as_ptr(),
+                if !side.is_null() { sd.as_ptr() } else { std::ptr::null() },
+                radius,
+            );
+        }
+
+        // no wrap: return
+        if wlen < 0.0 {
+            return -1.0;
+        }
+
+        // reconstruct 3D points in local frame: res
+        let mut res: [f64; 6] = [0.0; 6];
+        for i in 0..2 {
+            // res = axis0*d0 + axis1*d1
+            mju_scl3(res.as_mut_ptr().add(3 * i), axis[0].as_ptr(), pnt[2 * i]);
+            mju_scl3(tmp.as_mut_ptr(), axis[1].as_ptr(), pnt[2 * i + 1]);
+            mju_add_to3(res.as_mut_ptr().add(3 * i), tmp.as_ptr());
+        }
+
+        // cylinder: correct along z
+        let mut wlen = wlen;
+        if r#type == MJ_WRAP_CYLINDER {
+            // set vertical coordinates
+            let l0: f64 = f64::sqrt(
+                (p[0][0] - res[0]) * (p[0][0] - res[0]) + (p[0][1] - res[1]) * (p[0][1] - res[1]),
+            );
+            let l1: f64 = f64::sqrt(
+                (p[1][0] - res[3]) * (p[1][0] - res[3]) + (p[1][1] - res[4]) * (p[1][1] - res[4]),
+            );
+            res[2] = p[0][2] + (p[1][2] - p[0][2]) * l0 / (l0 + wlen + l1);
+            res[5] = p[0][2] + (p[1][2] - p[0][2]) * (l0 + wlen) / (l0 + wlen + l1);
+
+            // correct wlen for height
+            let height: f64 = f64::abs(res[5] - res[2]);
+            wlen = f64::sqrt(wlen * wlen + height * height);
+        }
+
+        // map back to global frame: wpnt
+        mju_mul_mat_vec3(wpnt, xmat, res.as_ptr());
+        mju_mul_mat_vec3(wpnt.add(3), xmat, res.as_ptr().add(3));
+        mju_add_to3(wpnt, xpos);
+        mju_add_to3(wpnt.add(3), xpos);
+
+        wlen
+    }
 }
 
 /// C: mju_muscleGainLength (engine/engine_util_misc.h:36)
@@ -583,10 +971,37 @@ pub fn mju_cam_pixel_ray(origin: *mut f64, direction: *mut f64, cam_xpos: *const
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mju_def_gradient(res: *mut f64, p: *const f64, dof: *const f64, order: i32) {
-    // NOTE: signature changed from previous IR version
-    // Previous params: (res : * mut f64, p : * const f64, dof : * const f64, order : i32)
-    // Previous return: ()
-    todo!("re-translate: params renamed")
+    // SAFETY: caller guarantees res[9], p[3], dof[3*(order+1)^3] are valid
+    unsafe {
+        crate::engine::engine_util_blas::mju_zero(res, 9);
+        let mut idx: usize = 0;
+        let mut gradient: [f64; 3] = [0.0; 3];
+        for i in 0..=order {
+            for j in 0..=order {
+                for k in 0..=order {
+                    gradient[0] = mju_flex_dphi(*p.add(0), i, order)
+                                * mju_flex_phi(*p.add(1), j, order)
+                                * mju_flex_phi(*p.add(2), k, order);
+                    gradient[1] = mju_flex_phi(*p.add(0), i, order)
+                                * mju_flex_dphi(*p.add(1), j, order)
+                                * mju_flex_phi(*p.add(2), k, order);
+                    gradient[2] = mju_flex_phi(*p.add(0), i, order)
+                                * mju_flex_phi(*p.add(1), j, order)
+                                * mju_flex_dphi(*p.add(2), k, order);
+                    *res.add(0) += *dof.add(3 * idx + 0) * gradient[0];
+                    *res.add(1) += *dof.add(3 * idx + 0) * gradient[1];
+                    *res.add(2) += *dof.add(3 * idx + 0) * gradient[2];
+                    *res.add(3) += *dof.add(3 * idx + 1) * gradient[0];
+                    *res.add(4) += *dof.add(3 * idx + 1) * gradient[1];
+                    *res.add(5) += *dof.add(3 * idx + 1) * gradient[2];
+                    *res.add(6) += *dof.add(3 * idx + 2) * gradient[0];
+                    *res.add(7) += *dof.add(3 * idx + 2) * gradient[1];
+                    *res.add(8) += *dof.add(3 * idx + 2) * gradient[2];
+                    idx += 1;
+                }
+            }
+        }
+    }
 }
 
 /// C: mju_evalBasis (engine/engine_util_misc.h:90)
@@ -598,10 +1013,20 @@ pub fn mju_def_gradient(res: *mut f64, p: *const f64, dof: *const f64, order: i3
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mju_eval_basis(x: *const f64, i: i32, order: i32) -> f64 {
-    // NOTE: signature changed from previous IR version
-    // Previous params: (x : * const f64, i : i32, order : i32)
-    // Previous return: f64
-    todo!("re-translate: params renamed")
+    // SAFETY: caller guarantees x points to at least 3 f64
+    unsafe {
+        if order == 1 {
+            return mju_flex_phi(*x.add(2), i & 1, order)
+                 * mju_flex_phi(*x.add(1), (i >> 1) & 1, order)
+                 * mju_flex_phi(*x.add(0), (i >> 2) & 1, order);
+        } else if order == 2 {
+            return mju_flex_phi(*x.add(2), i % 3, order)
+                 * mju_flex_phi(*x.add(1), (i / 3) % 3, order)
+                 * mju_flex_phi(*x.add(0), i / 9, order);
+        } else {
+            return -1.0;
+        }
+    }
 }
 
 /// C: mju_evalBasisArray (engine/engine_util_misc.h:93)
@@ -613,10 +1038,45 @@ pub fn mju_eval_basis(x: *const f64, i: i32, order: i32) -> f64 {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mju_eval_basis_array(basis: *mut f64, x: *const f64, order: i32) {
-    // NOTE: signature changed from previous IR version
-    // Previous params: (basis : * mut f64, x : * const f64, order : i32)
-    // Previous return: ()
-    todo!("re-translate: params renamed")
+    // SAFETY: caller guarantees x[3] valid, basis has space for (order+1)^3 elements
+    unsafe {
+        if order == 1 {
+            let p: [[f64; 2]; 3] = [
+                [1.0 - *x.add(0), *x.add(0)],
+                [1.0 - *x.add(1), *x.add(1)],
+                [1.0 - *x.add(2), *x.add(2)],
+            ];
+            let mut j: usize = 0;
+            for i0 in 0..2 {
+                let w0 = p[0][i0];
+                for i1 in 0..2 {
+                    let w01 = w0 * p[1][i1];
+                    for i2 in 0..2 {
+                        *basis.add(j) = w01 * p[2][i2];
+                        j += 1;
+                    }
+                }
+            }
+        } else if order == 2 {
+            let mut p: [[f64; 3]; 3] = [[0.0; 3]; 3];
+            for d in 0..3 {
+                for i in 0..3 {
+                    p[d][i] = mju_flex_phi(*x.add(d), i as i32, 2);
+                }
+            }
+            let mut j: usize = 0;
+            for i0 in 0..3 {
+                let w0 = p[0][i0];
+                for i1 in 0..3 {
+                    let w01 = w0 * p[1][i1];
+                    for i2 in 0..3 {
+                        *basis.add(j) = w01 * p[2][i2];
+                        j += 1;
+                    }
+                }
+            }
+        }
+    }
 }
 
 /// C: mju_cellLookup (engine/engine_util_misc.h:96)
@@ -683,10 +1143,28 @@ pub fn mju_cell_lookup(coord: *const f64, cellnum: *const i32, order: i32, local
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mju_interpolate3d(res: *mut f64, x: *const f64, coeff: *const f64, order: i32, nodeindices: *const i32) {
-    // NOTE: signature changed from previous IR version
-    // Previous params: (res : * mut f64, x : * const f64, coeff : * const f64, order : i32, nodeindices : * const i32)
-    // Previous return: ()
-    todo!("re-translate: params renamed")
+    use crate::engine::engine_util_blas::mju_add_to_scl3;
+
+    let npoint: i32 = (order + 1) * (order + 1) * (order + 1);
+
+    // SAFETY: caller guarantees res[3], x[3], coeff[3*N], nodeindices[npoint] are valid
+    unsafe {
+        if npoint > 27 {
+            for j in 0..npoint {
+                let idx = if !nodeindices.is_null() { *nodeindices.add(j as usize) } else { j };
+                mju_add_to_scl3(res, coeff.add(3 * idx as usize), mju_eval_basis(x, j, order));
+            }
+            return;
+        }
+
+        let mut basis: [f64; 27] = [0.0; 27];
+        mju_eval_basis_array(basis.as_mut_ptr(), x, order);
+
+        for j in 0..npoint {
+            let idx = if !nodeindices.is_null() { *nodeindices.add(j as usize) } else { j };
+            mju_add_to_scl3(res, coeff.add(3 * idx as usize), basis[j as usize]);
+        }
+    }
 }
 
 /// C: mju_flexGatherCellState (engine/engine_util_misc.h:104)
@@ -698,10 +1176,45 @@ pub fn mju_interpolate3d(res: *mut f64, x: *const f64, coeff: *const f64, order:
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mju_flex_gather_cell_state(order: i32, cy: i32, cz: i32, ci: i32, cj: i32, ck: i32, xpos_g: *const f64, vel_g: *const f64, xpos0_g: *const f64, xpos_c: *mut f64, vel_c: *mut f64, xpos0_c: *mut f64, nodeindices: *mut i32, quat: *mut f64) {
-    // NOTE: signature changed from previous IR version
-    // Previous params: (order : i32, cy : i32, cz : i32, ci : i32, cj : i32, ck : i32, xpos_g : * const f64, vel_g : * const f64, xpos0_g : * const f64, xpos_c : * mut f64, vel_c : * mut f64, xpos0_c : * mut f64, nodeindices : * mut i32, quat : * mut f64)
-    // Previous return: ()
-    todo!("re-translate: params renamed")
+    use crate::engine::engine_util_blas::mju_copy3;
+
+    // SAFETY: caller guarantees all non-null pointers have sufficient extent
+    unsafe {
+        let ny_g: i32 = cy * order + 1;
+        let nz_g: i32 = cz * order + 1;
+
+        let mut local_idx: usize = 0;
+        for li in 0..=order {
+            for lj in 0..=order {
+                for lk in 0..=order {
+                    let gi: i32 = ci * order + li;
+                    let gj: i32 = cj * order + lj;
+                    let gk: i32 = ck * order + lk;
+                    let gidx: i32 = gi * ny_g * nz_g + gj * nz_g + gk;
+
+                    if !xpos_c.is_null() && !xpos_g.is_null() {
+                        mju_copy3(xpos_c.add(3 * local_idx), xpos_g.add(3 * gidx as usize));
+                    }
+                    if !vel_c.is_null() && !vel_g.is_null() {
+                        mju_copy3(vel_c.add(3 * local_idx), vel_g.add(3 * gidx as usize));
+                    }
+                    if !xpos0_c.is_null() && !xpos0_g.is_null() {
+                        mju_copy3(xpos0_c.add(3 * local_idx), xpos0_g.add(3 * gidx as usize));
+                    }
+                    if !nodeindices.is_null() {
+                        *nodeindices.add(local_idx) = gidx;
+                    }
+
+                    local_idx += 1;
+                }
+            }
+        }
+
+        if !quat.is_null() && !xpos_c.is_null() {
+            let p: [f64; 3] = [0.5, 0.5, 0.5];
+            flex_interp_rotation(order, xpos_c, p.as_ptr(), quat);
+        }
+    }
 }
 
 /// C: mju_flexGatherFaceState (engine/engine_util_misc.h:110)
@@ -713,10 +1226,73 @@ pub fn mju_flex_gather_cell_state(order: i32, cy: i32, cz: i32, ci: i32, cj: i32
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mju_flex_gather_face_state(order: i32, cx: i32, cy: i32, cz: i32, face_elem_idx: i32, xpos_g: *const f64, vel_g: *const f64, xpos0_g: *const f64, xpos_f: *mut f64, vel_f: *mut f64, xpos0_f: *mut f64, nodeindices: *mut i32, quat: *mut f64) {
-    // NOTE: signature changed from previous IR version
-    // Previous params: (order : i32, cx : i32, cy : i32, cz : i32, face_elem_idx : i32, xpos_g : * const f64, vel_g : * const f64, xpos0_g : * const f64, xpos_f : * mut f64, vel_f : * mut f64, xpos0_f : * mut f64, nodeindices : * mut i32, quat : * mut f64)
-    // Previous return: ()
-    todo!("re-translate: params renamed")
+    use crate::engine::engine_util_blas::mju_copy3;
+
+    // SAFETY: caller guarantees all non-null pointers have sufficient extent
+    unsafe {
+        let ny_g: i32 = cy * order + 1;
+        let nz_g: i32 = cz * order + 1;
+        let npe: i32 = (order + 1) * (order + 1);
+
+        // face sizes and properties
+        let face_sizes: [i32; 6] = [cy * cz, cy * cz, cx * cz, cx * cz, cx * cy, cx * cy];
+        let face_normal: [i32; 6] = [0, 0, 1, 1, 2, 2];
+        let face_count1: [i32; 6] = [cz, cz, cx, cx, cy, cy];
+        let face_fixed_vals: [i32; 6] = [0, cx * order, 0, cy * order, 0, cz * order];
+
+        // determine which face and quad within face
+        let mut face_id: usize = 0;
+        let mut within_face: i32 = face_elem_idx;
+        let mut cumul: i32 = 0;
+        for f in 0..6 {
+            if face_elem_idx < cumul + face_sizes[f] {
+                face_id = f;
+                within_face = face_elem_idx - cumul;
+                break;
+            }
+            cumul += face_sizes[f];
+        }
+
+        let normal_axis: i32 = face_normal[face_id];
+        let na0: i32 = (normal_axis + 1) % 3;  // slow in-plane axis
+        let na1: i32 = (normal_axis + 2) % 3;  // fast in-plane axis
+        let c1: i32 = face_count1[face_id];
+        let g_fixed: i32 = face_fixed_vals[face_id];
+        let q0: i32 = within_face / c1;
+        let q1: i32 = within_face % c1;
+
+        // gather nodes
+        let mut local_idx: usize = 0;
+        for l0 in 0..=order {
+            for l1 in 0..=order {
+                let mut g: [i32; 3] = [0; 3];
+                g[normal_axis as usize] = g_fixed;
+                g[na0 as usize] = q0 * order + l0;
+                g[na1 as usize] = q1 * order + l1;
+                let gidx: i32 = g[0] * ny_g * nz_g + g[1] * nz_g + g[2];
+
+                if !xpos_f.is_null() && !xpos_g.is_null() {
+                    mju_copy3(xpos_f.add(3 * local_idx), xpos_g.add(3 * gidx as usize));
+                }
+                if !vel_f.is_null() && !vel_g.is_null() {
+                    mju_copy3(vel_f.add(3 * local_idx), vel_g.add(3 * gidx as usize));
+                }
+                if !xpos0_f.is_null() && !xpos0_g.is_null() {
+                    mju_copy3(xpos0_f.add(3 * local_idx), xpos0_g.add(3 * gidx as usize));
+                }
+                if !nodeindices.is_null() {
+                    *nodeindices.add(local_idx) = gidx;
+                }
+
+                local_idx += 1;
+            }
+        }
+
+        if !quat.is_null() && !xpos_f.is_null() {
+            let p: [f64; 2] = [0.5, 0.5];
+            mju_flex_interp_rotation2d(order, xpos_f, npe, na0, na1, normal_axis, p.as_ptr(), quat);
+        }
+    }
 }
 
 /// C: mju_flexInterpRotation2D (engine/engine_util_misc.h:118)
@@ -728,10 +1304,53 @@ pub fn mju_flex_gather_face_state(order: i32, cx: i32, cy: i32, cz: i32, face_el
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mju_flex_interp_rotation2d(order: i32, xpos_f: *const f64, npe: i32, axis0: i32, axis1: i32, normal_axis: i32, local: *const f64, quat: *mut f64) {
-    // NOTE: signature changed from previous IR version
-    // Previous params: (order : i32, xpos_f : * const f64, npe : i32, axis0 : i32, axis1 : i32, normal_axis : i32, local : * const f64, quat : * mut f64)
-    // Previous return: ()
-    todo!("re-translate: params renamed")
+    use crate::engine::engine_util_spatial::{mju_cross, mju_mat2rot, mju_neg_quat};
+
+    // SAFETY: caller guarantees xpos_f[3*npe], local[2], quat[4] are valid
+    unsafe {
+        // compute 3x2 deformation gradient F at parametric point local
+        let mut t1: [f64; 3] = [0.0, 0.0, 0.0];
+        let mut t2: [f64; 3] = [0.0, 0.0, 0.0];
+        let mut idx: usize = 0;
+        for l0 in 0..=order {
+            for l1 in 0..=order {
+                let grad0: f64 = mju_flex_dphi(*local.add(0), l0, order)
+                               * mju_flex_phi(*local.add(1), l1, order);
+                let grad1: f64 = mju_flex_phi(*local.add(0), l0, order)
+                               * mju_flex_dphi(*local.add(1), l1, order);
+                for d in 0..3 {
+                    t1[d] += *xpos_f.add(3 * idx + d) * grad0;
+                    t2[d] += *xpos_f.add(3 * idx + d) * grad1;
+                }
+                idx += 1;
+            }
+        }
+
+        // normal = t1 x t2
+        let mut normal: [f64; 3] = [0.0; 3];
+        mju_cross(normal.as_mut_ptr(), t1.as_ptr(), t2.as_ptr());
+
+        // build 3x3 matrix with columns assigned to canonical axes (row-major)
+        let mut vecs: [*const f64; 3] = [std::ptr::null(); 3];
+        vecs[axis0 as usize] = t1.as_ptr();
+        vecs[axis1 as usize] = t2.as_ptr();
+        vecs[normal_axis as usize] = normal.as_ptr();
+
+        let mut mat: [f64; 9] = [0.0; 9];
+        for col in 0..3 {
+            mat[0 * 3 + col] = *vecs[col].add(0);
+            mat[1 * 3 + col] = *vecs[col].add(1);
+            mat[2 * 3 + col] = *vecs[col].add(2);
+        }
+
+        // extract rotation via polar decomposition
+        *quat.add(0) = 1.0;
+        *quat.add(1) = 0.0;
+        *quat.add(2) = 0.0;
+        *quat.add(3) = 0.0;
+        mju_mat2rot(quat, mat.as_ptr());
+        mju_neg_quat(quat, quat);
+    }
 }
 
 /// C: mju_flexFaceNormal2D (engine/engine_util_misc.h:124)
@@ -743,10 +1362,29 @@ pub fn mju_flex_interp_rotation2d(order: i32, xpos_f: *const f64, npe: i32, axis
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mju_flex_face_normal2d(normal: *mut f64, t1: *mut f64, t2: *mut f64, order: i32, xpos_f: *const f64, local: *const f64) {
-    // NOTE: signature changed from previous IR version
-    // Previous params: (normal : * mut f64, t1 : * mut f64, t2 : * mut f64, order : i32, xpos_f : * const f64, local : * const f64)
-    // Previous return: ()
-    todo!("re-translate: params renamed")
+    use crate::engine::engine_util_blas::mju_zero3;
+    use crate::engine::engine_util_spatial::mju_cross;
+
+    // SAFETY: caller guarantees normal[3], t1[3], t2[3], xpos_f[3*npe], local[2] are valid
+    unsafe {
+        mju_zero3(t1);
+        mju_zero3(t2);
+        let mut idx: usize = 0;
+        for l0 in 0..=order {
+            for l1 in 0..=order {
+                let grad0: f64 = mju_flex_dphi(*local.add(0), l0, order)
+                               * mju_flex_phi(*local.add(1), l1, order);
+                let grad1: f64 = mju_flex_phi(*local.add(0), l0, order)
+                               * mju_flex_dphi(*local.add(1), l1, order);
+                for d in 0..3 {
+                    *t1.add(d) += *xpos_f.add(3 * idx + d) * grad0;
+                    *t2.add(d) += *xpos_f.add(3 * idx + d) * grad1;
+                }
+                idx += 1;
+            }
+        }
+        mju_cross(normal, t1, t2);
+    }
 }
 
 /// C: mju_flexPhi (engine/engine_util_misc.h:130)
@@ -757,10 +1395,15 @@ pub fn mju_flex_face_normal2d(normal: *mut f64, t1: *mut f64, t2: *mut f64, orde
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mju_flex_phi(s: f64, i: i32, order: i32) -> f64 {
-    // NOTE: signature changed from previous IR version
-    // Previous params: (s : f64, i : i32, order : i32)
-    // Previous return: f64
-    todo!("re-translate: params renamed")
+    if order == 1 {
+        return if i == 0 { 1.0 - s } else { s };
+    }
+    match i {
+        0 => 2.0 * s * s - 3.0 * s + 1.0,
+        1 => 4.0 * (s - s * s),
+        2 => 2.0 * s * s - s,
+        _ => 0.0,
+    }
 }
 
 /// C: mju_flexDphi (engine/engine_util_misc.h:141)
@@ -771,10 +1414,15 @@ pub fn mju_flex_phi(s: f64, i: i32, order: i32) -> f64 {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mju_flex_dphi(s: f64, i: i32, order: i32) -> f64 {
-    // NOTE: signature changed from previous IR version
-    // Previous params: (s : f64, i : i32, order : i32)
-    // Previous return: f64
-    todo!("re-translate: params renamed")
+    if order == 1 {
+        return if i == 0 { -1.0 } else { 1.0 };
+    }
+    match i {
+        0 => 4.0 * s - 3.0,
+        1 => 4.0 * (1.0 - 2.0 * s),
+        2 => 4.0 * s - 1.0,
+        _ => 0.0,
+    }
 }
 
 /// C: mju_shellTrackInterior (engine/engine_util_misc.h:151)
@@ -786,10 +1434,84 @@ pub fn mju_flex_dphi(s: f64, i: i32, order: i32) -> f64 {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mju_shell_track_interior(nodexpos: *mut f64, nx: i32, ny: i32, nz: i32) {
-    // NOTE: signature changed from previous IR version
-    // Previous params: (nodexpos : * mut f64, nx : i32, ny : i32, nz : i32)
-    // Previous return: ()
-    todo!("re-translate: params renamed")
+    // need at least 3 nodes in each direction to have interior nodes
+    if nx < 3 || ny < 3 || nz < 3 {
+        return;
+    }
+
+    // SAFETY: caller guarantees nodexpos has dimensions [nx*ny*nz][3]
+    unsafe {
+        for i in 1..nx - 1 {
+            for j in 1..ny - 1 {
+                for k in 1..nz - 1 {
+                    // parametric coordinates in [0, 1]
+                    let s: f64 = i as f64 / (nx - 1) as f64;
+                    let t: f64 = j as f64 / (ny - 1) as f64;
+                    let u: f64 = k as f64 / (nz - 1) as f64;
+
+                    let mut result: [f64; 3] = [0.0, 0.0, 0.0];
+
+                    // --- face contributions (bilinear interpolation on each face pair) ---
+                    // x-faces: i=0 and i=nx-1
+                    for d in 0..3 {
+                        *result.as_mut_ptr().add(d) += (1.0 - s) * *node_at(nodexpos, ny, nz, 0, j, k).add(d)
+                                                     + s * *node_at(nodexpos, ny, nz, nx - 1, j, k).add(d);
+                    }
+                    // y-faces: j=0 and j=ny-1
+                    for d in 0..3 {
+                        *result.as_mut_ptr().add(d) += (1.0 - t) * *node_at(nodexpos, ny, nz, i, 0, k).add(d)
+                                                     + t * *node_at(nodexpos, ny, nz, i, ny - 1, k).add(d);
+                    }
+                    // z-faces: k=0 and k=nz-1
+                    for d in 0..3 {
+                        *result.as_mut_ptr().add(d) += (1.0 - u) * *node_at(nodexpos, ny, nz, i, j, 0).add(d)
+                                                     + u * *node_at(nodexpos, ny, nz, i, j, nz - 1).add(d);
+                    }
+
+                    // --- edge corrections (subtract 12 edges, each linearly interpolated) ---
+                    // edges along x (4 edges: (j,k) at corners of y-z face)
+                    for d in 0..3 {
+                        result[d] -= (1.0 - t) * (1.0 - u) * *node_at(nodexpos, ny, nz, i, 0, 0).add(d);
+                        result[d] -= (1.0 - t) * u * *node_at(nodexpos, ny, nz, i, 0, nz - 1).add(d);
+                        result[d] -= t * (1.0 - u) * *node_at(nodexpos, ny, nz, i, ny - 1, 0).add(d);
+                        result[d] -= t * u * *node_at(nodexpos, ny, nz, i, ny - 1, nz - 1).add(d);
+                    }
+                    // edges along y (4 edges: (i,k) at corners of x-z face)
+                    for d in 0..3 {
+                        result[d] -= (1.0 - s) * (1.0 - u) * *node_at(nodexpos, ny, nz, 0, j, 0).add(d);
+                        result[d] -= (1.0 - s) * u * *node_at(nodexpos, ny, nz, 0, j, nz - 1).add(d);
+                        result[d] -= s * (1.0 - u) * *node_at(nodexpos, ny, nz, nx - 1, j, 0).add(d);
+                        result[d] -= s * u * *node_at(nodexpos, ny, nz, nx - 1, j, nz - 1).add(d);
+                    }
+                    // edges along z (4 edges: (i,j) at corners of x-y face)
+                    for d in 0..3 {
+                        result[d] -= (1.0 - s) * (1.0 - t) * *node_at(nodexpos, ny, nz, 0, 0, k).add(d);
+                        result[d] -= (1.0 - s) * t * *node_at(nodexpos, ny, nz, 0, ny - 1, k).add(d);
+                        result[d] -= s * (1.0 - t) * *node_at(nodexpos, ny, nz, nx - 1, 0, k).add(d);
+                        result[d] -= s * t * *node_at(nodexpos, ny, nz, nx - 1, ny - 1, k).add(d);
+                    }
+
+                    // --- corner corrections (add 8 corners back) ---
+                    for d in 0..3 {
+                        result[d] += (1.0 - s) * (1.0 - t) * (1.0 - u) * *node_at(nodexpos, ny, nz, 0, 0, 0).add(d);
+                        result[d] += (1.0 - s) * (1.0 - t) * u * *node_at(nodexpos, ny, nz, 0, 0, nz - 1).add(d);
+                        result[d] += (1.0 - s) * t * (1.0 - u) * *node_at(nodexpos, ny, nz, 0, ny - 1, 0).add(d);
+                        result[d] += (1.0 - s) * t * u * *node_at(nodexpos, ny, nz, 0, ny - 1, nz - 1).add(d);
+                        result[d] += s * (1.0 - t) * (1.0 - u) * *node_at(nodexpos, ny, nz, nx - 1, 0, 0).add(d);
+                        result[d] += s * (1.0 - t) * u * *node_at(nodexpos, ny, nz, nx - 1, 0, nz - 1).add(d);
+                        result[d] += s * t * (1.0 - u) * *node_at(nodexpos, ny, nz, nx - 1, ny - 1, 0).add(d);
+                        result[d] += s * t * u * *node_at(nodexpos, ny, nz, nx - 1, ny - 1, nz - 1).add(d);
+                    }
+
+                    // write result to interior node
+                    crate::engine::engine_util_blas::mju_copy3(
+                        nodexpos.add(3 * (i as usize * ny as usize * nz as usize + j as usize * nz as usize + k as usize)),
+                        result.as_ptr(),
+                    );
+                }
+            }
+        }
+    }
 }
 
 /// C: mju_shellTFIWeights (engine/engine_util_misc.h:154)
@@ -1013,10 +1735,31 @@ fn decode_base64_char(ch: u8) -> u32 {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mju_history_init(buf: *mut f64, n: i32, dim: i32, times: *const f64, values: *const f64, user: f64) {
-    // NOTE: signature changed from previous IR version
-    // Previous params: (buf : * mut f64, n : i32, dim : i32, times : * const f64, values : * const f64, user : f64)
-    // Previous return: ()
-    todo!("re-translate: params renamed")
+    const MJ_MINVAL: f64 = 1E-15_f64;
+
+    // SAFETY: caller guarantees buf[2 + n*(1+dim)], times[n], values[n*dim] are valid
+    unsafe {
+        // check strict monotonicity of times
+        for i in 0..(n - 1) as usize {
+            if *times.add(i + 1) - *times.add(i) < MJ_MINVAL {
+                panic!("mju_historyInit: times must be strictly increasing");
+            }
+        }
+
+        // buf layout: [user(1), cursor(1), times(n), values(n*dim)]
+        *buf.add(0) = user;
+        *buf.add(1) = (n - 1) as f64;  // cursor points to newest
+
+        let buf_times = buf.add(2);
+        let buf_values = buf.add(2 + n as usize);
+
+        if times != buf_times {
+            crate::engine::engine_util_blas::mju_copy(buf_times, times, n);
+        }
+        if !values.is_null() {
+            crate::engine::engine_util_blas::mju_copy(buf_values, values, n * dim);
+        }
+    }
 }
 
 /// C: mju_historyInsert (engine/engine_util_misc.h:189)
@@ -1028,10 +1771,56 @@ pub fn mju_history_init(buf: *mut f64, n: i32, dim: i32, times: *const f64, valu
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mju_history_insert(buf: *mut f64, n: i32, dim: i32, t: f64) -> *mut f64 {
-    // NOTE: signature changed from previous IR version
-    // Previous params: (buf : * mut f64, n : i32, dim : i32, t : f64)
-    // Previous return: * mut f64
-    todo!("re-translate: params renamed")
+    const MJ_MINVAL: f64 = 1E-15_f64;
+
+    // SAFETY: caller guarantees buf has layout [user(1), cursor(1), times(n), values(n*dim)]
+    unsafe {
+        let cursor_ptr = buf.add(1);
+        let mut cursor = *cursor_ptr as i32;
+        let times = buf.add(2);
+        let values = buf.add(2 + n as usize);
+
+        // find logical insertion index: times[i-1] < t <= times[i]
+        let i = history_find_index(times, n, cursor, t);
+
+        // exact match at logical i: return pointer to existing slot
+        if i < n {
+            let phys_i = history_physical_index(cursor, n, i);
+            if f64::abs(t - *times.add(phys_i as usize)) < MJ_MINVAL {
+                return values.add((phys_i as usize) * (dim as usize));
+            }
+        }
+
+        // logical i == 0: new sample is older than oldest, replace oldest slot
+        if i == 0 {
+            let oldest_phys = history_physical_index(cursor, n, 0);
+            *times.add(oldest_phys as usize) = t;
+            return values.add((oldest_phys as usize) * (dim as usize));
+        }
+
+        // logical i == n: new sample is newer than newest, advance cursor and write
+        if i == n {
+            cursor = (cursor + 1) % n;
+            *cursor_ptr = cursor as f64;
+            *times.add(cursor as usize) = t;
+            return values.add((cursor as usize) * (dim as usize));
+        }
+
+        // 0 < i < n: out-of-order insertion, shift [1, i-1] left (dropping 0), insert at i-1
+        for j in 0..i - 1 {
+            let src_phys = history_physical_index(cursor, n, j + 1);
+            let dst_phys = history_physical_index(cursor, n, j);
+            *times.add(dst_phys as usize) = *times.add(src_phys as usize);
+            crate::engine::engine_util_blas::mju_copy(
+                values.add((dst_phys as usize) * (dim as usize)),
+                values.add((src_phys as usize) * (dim as usize)),
+                dim,
+            );
+        }
+        let insert_phys = history_physical_index(cursor, n, i - 1);
+        *times.add(insert_phys as usize) = t;
+        values.add((insert_phys as usize) * (dim as usize))
+    }
 }
 
 /// C: mju_historyRead (engine/engine_util_misc.h:194)
@@ -1229,10 +2018,58 @@ pub fn mju_spring_damper(pos0: f64, vel0: f64, Kp: f64, Kv: f64, dt: f64) -> f64
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mju_outside_box(point: *const f64, pos: *const f64, mat: *const f64, size: *const f64, inflate: f64) -> i32 {
-    // NOTE: signature changed from previous IR version
-    // Previous params: (point : * const f64, pos : * const f64, mat : * const f64, size : * const f64, inflate : f64)
-    // Previous return: i32
-    todo!("re-translate: params renamed")
+    use crate::engine::engine_util_blas::{mju_mul_mat_t_vec3, mju_scl3};
+
+    // check inflation coefficient
+    if inflate < 1.0 {
+        panic!("mju_outsideBox: inflation coefficient must be >= 1");
+    }
+
+    // SAFETY: caller guarantees point[3], pos[3], mat[9], size[3] are valid
+    unsafe {
+        // vector from pos to point, projected to box frame
+        let mut vec: [f64; 3] = [
+            *point.add(0) - *pos.add(0),
+            *point.add(1) - *pos.add(1),
+            *point.add(2) - *pos.add(2),
+        ];
+        mju_mul_mat_t_vec3(vec.as_mut_ptr(), mat, vec.as_ptr());
+
+        // big: inflated box
+        let mut big: [f64; 3] = [*size.add(0), *size.add(1), *size.add(2)];
+        if inflate > 1.0 {
+            mju_scl3(big.as_mut_ptr(), big.as_ptr(), inflate);
+        }
+
+        // check if outside big box
+        if vec[0] > big[0] || vec[0] < -big[0]
+            || vec[1] > big[1] || vec[1] < -big[1]
+            || vec[2] > big[2] || vec[2] < -big[2]
+        {
+            return 1;
+        }
+
+        // quick return if no inflation
+        if inflate == 1.0 {
+            return -1;
+        }
+
+        // check if inside small (deflated) box
+        let small: [f64; 3] = [
+            *size.add(0) / inflate,
+            *size.add(1) / inflate,
+            *size.add(2) / inflate,
+        ];
+        if vec[0] < small[0] && vec[0] > -small[0]
+            && vec[1] < small[1] && vec[1] > -small[1]
+            && vec[2] < small[2] && vec[2] > -small[2]
+        {
+            return -1;
+        }
+
+        // within margin between small and big box
+        0
+    }
 }
 
 /// C: mju_printMat (engine/engine_util_misc.h:217)
@@ -1438,10 +2275,7 @@ pub fn mju_fill_int(res: *mut i32, val: i32, n: i32) {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mju_standard_normal(num2: *mut f64) -> f64 {
-    // NOTE: signature changed from previous IR version
-    // Previous params: (num2 : * mut f64)
-    // Previous return: f64
-    todo!("re-translate: params renamed")
+    todo!("requires C rand() function")
 }
 
 /// C: mju_f2n (engine/engine_util_misc.h:273)
