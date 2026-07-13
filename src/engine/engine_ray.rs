@@ -1,5 +1,5 @@
 //! Port of: engine/engine_ray.c
-//! IR hash: d3ac8715281cd691
+//! IR hash: 6ff71909dacce27f
 //! CODEGEN: signatures locked. Only fill todo!() bodies.
 
 use crate::types::*;
@@ -61,7 +61,7 @@ pub fn latitude(vec: *const f64) -> f64 {
 /// C: ray_eliminate (engine/engine_ray.c:68)
 #[allow(unused_variables, non_snake_case)]
 pub fn ray_eliminate(m: *const mjModel, d: *const mjData, geomid: i32, geomgroup: *const u8, flg_static: mjtBool, bodyexclude: i32) -> i32 {
-    todo!("requires mjModel/mjData field access")
+    todo!() // ray_eliminate
 }
 
 /// C: ray_quad (engine/engine_ray.c:103)
@@ -567,7 +567,7 @@ pub fn mju_ray_slab(aabb: *const f64, xpos: *const f64, xmat: *const f64, pnt: *
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mju_ray_tree(m: *const mjModel, d: *const mjData, id: i32, pnt: *const f64, vec: *const f64, normal: *mut f64) -> f64 {
-    todo!("requires mjModel/mjData field access")
+    todo!() // mju_rayTree
 }
 
 /// C: mj_raySdf (engine/engine_ray.c:885)
@@ -579,7 +579,7 @@ pub fn mju_ray_tree(m: *const mjModel, d: *const mjData, id: i32, pnt: *const f6
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_ray_sdf(m: *const mjModel, d: *const mjData, g: i32, pnt: *const f64, vec: *const f64, normal: *mut f64) -> f64 {
-    todo!("requires mjModel/mjData field access")
+    todo!() // mj_raySdf
 }
 
 /// C: point_in_box (engine/engine_ray.c:1283)
@@ -620,7 +620,7 @@ pub fn point_in_box(aabb: *const f64, xpos: *const f64, xmat: *const f64, pnt: *
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mju_single_ray(m: *const mjModel, d: *mut mjData, pnt: *const f64, vec: *const f64, ray_eliminate: *mut i32, geom_ba: *mut f64, geomid: *mut i32, normal: *mut f64) -> f64 {
-    todo!("requires mjModel/mjData field access")
+    todo!() // mju_singleRay
 }
 
 /// C: mju_multiRayPrepare (engine/engine_ray.h:26)
@@ -632,7 +632,7 @@ pub fn mju_single_ray(m: *const mjModel, d: *mut mjData, pnt: *const f64, vec: *
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mju_multi_ray_prepare(m: *const mjModel, d: *const mjData, pnt: *const f64, ray_xmat: *const f64, geomgroup: *const u8, flg_static: mjtBool, bodyexclude: i32, cutoff: f64, geom_ba: *mut f64, geom_eliminate: *mut i32) {
-    todo!("requires mjModel/mjData field access")
+    todo!() // mju_multiRayPrepare
 }
 
 /// C: mj_multiRay (engine/engine_ray.h:34)
@@ -644,7 +644,7 @@ pub fn mju_multi_ray_prepare(m: *const mjModel, d: *const mjData, pnt: *const f6
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_multi_ray(m: *const mjModel, d: *mut mjData, pnt: *const f64, vec: *const f64, geomgroup: *const u8, flg_static: mjtBool, bodyexclude: i32, geomid: *mut i32, dist: *mut f64, normal: *mut f64, nray: i32, cutoff: f64) {
-    todo!("requires mjModel/mjData field access")
+    todo!() // mj_multiRay
 }
 
 /// C: mj_ray (engine/engine_ray.h:42)
@@ -656,7 +656,7 @@ pub fn mj_multi_ray(m: *const mjModel, d: *mut mjData, pnt: *const f64, vec: *co
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_ray(m: *const mjModel, d: *const mjData, pnt: *const f64, vec: *const f64, geomgroup: *const u8, flg_static: mjtBool, bodyexclude: i32, geomid: *mut i32, normal: *mut f64) -> f64 {
-    todo!("requires mjModel/mjData field access")
+    todo!() // mj_ray
 }
 
 /// C: mj_rayHfield (engine/engine_ray.h:47)
@@ -668,7 +668,7 @@ pub fn mj_ray(m: *const mjModel, d: *const mjData, pnt: *const f64, vec: *const 
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_ray_hfield(m: *const mjModel, d: *const mjData, geomid: i32, pnt: *const f64, vec: *const f64, normal: *mut f64) -> f64 {
-    todo!("requires mjModel/mjData field access")
+    todo!() // mj_rayHfield
 }
 
 /// C: ray_triangle (engine/engine_ray.h:51)
@@ -765,7 +765,7 @@ pub fn ray_triangle(v: *mut [f64; 3], lpnt: *const f64, lvec: *const f64, b0: *c
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_ray_mesh(m: *const mjModel, d: *const mjData, geomid: i32, pnt: *const f64, vec: *const f64, normal: *mut f64) -> f64 {
-    todo!("requires mjModel/mjData field access")
+    todo!() // mj_rayMesh
 }
 
 /// C: mju_rayGeom (engine/engine_ray.h:59)
@@ -814,7 +814,7 @@ pub fn mju_ray_geom(pos: *const f64, mat: *const f64, size: *const f64, pnt: *co
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_ray_flex(m: *const mjModel, d: *const mjData, flex_layer: i32, flg_vert: mjtBool, flg_edge: mjtBool, flg_face: mjtBool, flg_skin: mjtBool, flexid: i32, pnt: *const f64, vec: *const f64, vertid: *mut i32, normal: *mut f64) -> f64 {
-    todo!("requires mjModel/mjData field access")
+    todo!() // mj_rayFlex
 }
 
 /// C: mju_raySkin (engine/engine_ray.h:70)

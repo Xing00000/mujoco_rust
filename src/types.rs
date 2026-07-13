@@ -2974,9 +2974,11 @@ pub static MJCBODY_GETLIST: std::sync::LazyLock<std::sync::Mutex<[u8; 8]>> = std
 /// C static: mjCFlex::kNumEdges (const int[3])
 pub static MJCFLEX_KNUMEDGES: std::sync::LazyLock<std::sync::Mutex<[u8; 12]>> = std::sync::LazyLock::new(|| std::sync::Mutex::new([0u8; 12]));
 
-// TODO: static mjCModel::Delete : void (size unknown — needs manual resolution)
+/// C static: mjCModel::Delete (void)
+pub static MJ_C_MODEL_DELETE: std::sync::LazyLock<std::sync::Mutex<Option<unsafe extern "C" fn()>>> = std::sync::LazyLock::new(|| std::sync::Mutex::new(None));
 
-// TODO: static mjCModel::DeleteAll : void (size unknown — needs manual resolution)
+/// C static: mjCModel::DeleteAll (void)
+pub static MJ_C_MODEL_DELETE_ALL: std::sync::LazyLock<std::sync::Mutex<Option<unsafe extern "C" fn()>>> = std::sync::LazyLock::new(|| std::sync::Mutex::new(None));
 
 /// C static: mjCOLLISIONFUNC (mjfCollision[9][9])
 pub static MJCOLLISIONFUNC: std::sync::LazyLock<std::sync::Mutex<[u8; 648]>> = std::sync::LazyLock::new(|| std::sync::Mutex::new([0u8; 648]));

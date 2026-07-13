@@ -1,5 +1,5 @@
 //! Port of: engine/engine_util_solve.c
-//! IR hash: d3ac8715281cd691
+//! IR hash: 6ff71909dacce27f
 //! CODEGEN: signatures locked. Only fill todo!() bodies.
 
 use crate::types::*;
@@ -255,7 +255,7 @@ pub fn mju_chol_factor_sparse(mat: *mut f64, n: i32, mindiag: f64, rownnz: *mut 
 /// Calls: mj_freeStack, mj_markStack, mj_stackAllocInfo
 #[allow(unused_variables, non_snake_case)]
 pub fn mju_chol_factor_symbolic(L_colind: *mut i32, L_rownnz: *mut i32, L_rowadr: *mut i32, LT_colind: *mut i32, LT_rownnz: *mut i32, LT_rowadr: *mut i32, LT_map: *mut i32, rownnz: *const i32, rowadr: *const i32, colind: *const i32, n: i32, d: *mut mjData) -> i32 {
-    todo!("requires mjData stack allocator: mj_markStack/mjSTACKALLOC/mj_freeStack")
+    todo!() // mju_cholFactorSymbolic
 }
 
 /// C: mju_cholFactorNumeric (engine/engine_util_solve.h:53)
@@ -267,7 +267,7 @@ pub fn mju_chol_factor_symbolic(L_colind: *mut i32, L_rownnz: *mut i32, L_rowadr
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mju_chol_factor_numeric(L: *mut f64, n: i32, mindiag: f64, L_rownnz: *const i32, L_rowadr: *const i32, L_colind: *const i32, LT_rownnz: *const i32, LT_rowadr: *const i32, LT_colind: *const i32, LT_map: *const i32, H: *const f64, H_rownnz: *const i32, H_rowadr: *const i32, H_colind: *const i32, d: *mut mjData) -> i32 {
-    todo!("requires mjData stack allocator: mj_markStack/mjSTACKALLOC/mj_freeStack")
+    todo!() // mju_cholFactorNumeric
 }
 
 /// C: mju_cholSolveSparse (engine/engine_util_solve.h:61)
@@ -327,7 +327,7 @@ pub fn mju_chol_solve_sparse(res: *mut f64, mat: *const f64, vec: *const f64, n:
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mju_chol_update_sparse(mat: *mut f64, x: *const f64, n: i32, flg_plus: i32, rownnz: *const i32, rowadr: *const i32, colind: *const i32, x_nnz: i32, x_ind: *const i32, d: *mut mjData) -> i32 {
-    todo!("requires mjData stack allocator: mj_markStack/mjSTACKALLOC/mj_freeStack")
+    todo!() // mju_cholUpdateSparse
 }
 
 /// C: mju_cholFactorBand (engine/engine_util_solve.h:76)
@@ -552,6 +552,7 @@ pub fn mju_chol_solve_band(res: *mut f64, mat: *const f64, vec: *const f64, ntot
     }
 }
 
+/// C: mju_band2Dense (engine/engine_util_solve.h:84)
 /// Calls: mju_copy, mju_zero
 /// ⚠️ BITEXACT RULES:
 ///   1. Copy exact C accumulation order (no iter().sum())

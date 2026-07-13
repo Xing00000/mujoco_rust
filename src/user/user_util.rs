@@ -1,5 +1,5 @@
 //! Port of: user/user_util.cc
-//! IR hash: d3ac8715281cd691
+//! IR hash: 6ff71909dacce27f
 //! CODEGEN: signatures locked. Only fill todo!() bodies.
 
 use crate::types::*;
@@ -12,76 +12,52 @@ use crate::types::*;
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjuu_axis_angle2quat(res: *mut f64, axis: *const f64, angle: f64) {
-    // NOTE: signature changed from previous IR version
-    // Previous params: (res : * mut f64, axis : * const f64, angle : f64)
-    // Previous return: ()
-    todo!("re-translate: params renamed")
+    todo!() // mjuu_axisAngle2Quat
 }
 
 /// C: mjuu_isValidContentType (user/user_util.cc:973)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjuu_is_valid_content_type(text: string_view) -> bool {
-    // NOTE: signature changed from previous IR version
-    // Previous params: (text : string_view)
-    // Previous return: bool
-    todo!("re-translate: params renamed")
+    todo!() // mjuu_isValidContentType
 }
 
 /// C: FileToMemory (user/user_util.cc:1196)
 /// Calls: mju_warning
 #[allow(unused_variables, non_snake_case)]
 pub fn file_to_memory(filename: *const i8) -> i32 {
-    // NOTE: signature changed from previous IR version
-    // Previous params: (filename : * const i8)
-    // Previous return: i32
-    todo!("re-translate: params renamed")
+    todo!() // FileToMemory
 }
 
 /// C: VectorToString (user/user_util.cc:1256)
 #[allow(unused_variables, non_snake_case)]
 pub fn vector_to_string(v: *const i32) -> std__string {
-    // NOTE: signature changed from previous IR version
-    // Previous params: (v : * const i32)
-    // Previous return: std__string
-    todo!("re-translate: params renamed")
+    todo!() // VectorToString
 }
 
 /// C: StrToNum (user/user_util.cc:1277)
 #[allow(unused_variables, non_snake_case)]
 pub fn str_to_num(str: *mut i8, c: *mut *mut i8) -> i32 {
-    // NOTE: signature changed from previous IR version
-    // Previous params: (str : * mut i8, c : * mut * mut i8)
-    // Previous return: i32
-    todo!("re-translate: params renamed")
+    todo!() // StrToNum
 }
 
 /// C: IsNullOrSpace (user/user_util.cc:1301)
 #[allow(unused_variables, non_snake_case)]
 pub fn is_null_or_space(c: *mut i8) -> bool {
-    // NOTE: signature changed from previous IR version
-    // Previous params: (c : * mut i8)
-    // Previous return: bool
-    todo!("re-translate: params renamed")
+    todo!() // IsNullOrSpace
 }
 
 /// C: SkipSpace (user/user_util.cc:1305)
 /// Calls: IsNullOrSpace
 #[allow(unused_variables, non_snake_case)]
 pub fn skip_space(c: *mut i8) -> *mut i8 {
-    // NOTE: signature changed from previous IR version
-    // Previous params: (c : * mut i8)
-    // Previous return: * mut i8
-    todo!("re-translate: params renamed")
+    todo!() // SkipSpace
 }
 
 /// C: StringToVector (user/user_util.cc:1315)
 /// Calls: SkipSpace
 #[allow(unused_variables, non_snake_case)]
 pub fn string_to_vector(cs: *mut i8) -> i32 {
-    // NOTE: signature changed from previous IR version
-    // Previous params: (cs : * mut i8)
-    // Previous return: i32
-    todo!("re-translate: params renamed")
+    todo!() // StringToVector
 }
 
 /// C: mjuu_defined (user/user_util.h:35)
@@ -92,10 +68,7 @@ pub fn string_to_vector(cs: *mut i8) -> i32 {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjuu_defined(num: f64) -> bool {
-    // NOTE: signature changed from previous IR version
-    // Previous params: (num : f64)
-    // Previous return: bool
-    todo!("re-translate: params renamed")
+    todo!() // mjuu_defined
 }
 
 /// C: mjuu_matadr (user/user_util.h:39)
@@ -129,10 +102,7 @@ pub fn mjuu_setvec(dest: *mut f64, x: f64, y: f64, z: f64, w: f64) {
 /// C: mjuu_copyvec (user/user_util.h:54)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjuu_copyvec(dest: *mut T1, src: *const T2, n: i32) {
-    // NOTE: signature changed from previous IR version
-    // Previous params: (dest : * mut T1, src : * const T2, n : i32)
-    // Previous return: ()
-    todo!("re-translate: params renamed")
+    todo!() // mjuu_copyvec
 }
 
 /// C: mjuu_addtovec (user/user_util.h:59)
@@ -209,10 +179,7 @@ pub fn mjuu_dist3(a: *const f64, b: *const f64) -> f64 {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjuu_l1(a: *const f64, b: *const f64, n: i32) -> f64 {
-    // NOTE: signature changed from previous IR version
-    // Previous params: (a : * const f64, b : * const f64, n : i32)
-    // Previous return: f64
-    todo!("re-translate: params renamed")
+    todo!() // mjuu_L1
 }
 
 /// C: mjuu_normvec (user/user_util.h:78)
@@ -466,10 +433,7 @@ pub fn mjuu_localpos(pl: *mut f64, pg: *const f64, pos: *const f64, quat: *const
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjuu_localquat(local: *mut f64, child: *const f64, parent: *const f64) {
-    // NOTE: signature changed from previous IR version
-    // Previous params: (local : * mut f64, child : * const f64, parent : * const f64)
-    // Previous return: ()
-    todo!("re-translate: params renamed")
+    todo!() // mjuu_localquat
 }
 
 /// C: mjuu_crossvec (user/user_util.h:115)
@@ -497,10 +461,7 @@ pub fn mjuu_crossvec(a: *mut f64, b: *const f64, c: *const f64) {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjuu_makenormal(normal: *mut f64, a: *const type_parameter_0_0, b: *const type_parameter_0_0, c: *const type_parameter_0_0) -> f64 {
-    // NOTE: signature changed from previous IR version
-    // Previous params: (normal : * mut f64, a : * const type_parameter_0_0, b : * const type_parameter_0_0, c : * const type_parameter_0_0)
-    // Previous return: f64
-    todo!("re-translate: params renamed")
+    todo!() // mjuu_makenormal
 }
 
 /// C: mjuu_z2quat (user/user_util.h:122)
@@ -512,10 +473,7 @@ pub fn mjuu_makenormal(normal: *mut f64, a: *const type_parameter_0_0, b: *const
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjuu_z2quat(quat: *mut f64, vec: *const f64) {
-    // NOTE: signature changed from previous IR version
-    // Previous params: (quat : * mut f64, vec : * const f64)
-    // Previous return: ()
-    todo!("re-translate: params renamed")
+    todo!() // mjuu_z2quat
 }
 
 /// C: mjuu_frame2quat (user/user_util.h:125)
@@ -527,10 +485,7 @@ pub fn mjuu_z2quat(quat: *mut f64, vec: *const f64) {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjuu_frame2quat(quat: *mut f64, x: *const f64, y: *const f64, z: *const f64) {
-    // NOTE: signature changed from previous IR version
-    // Previous params: (quat : * mut f64, x : * const f64, y : * const f64, z : * const f64)
-    // Previous return: ()
-    todo!("re-translate: params renamed")
+    todo!() // mjuu_frame2quat
 }
 
 /// C: mjuu_frameinvert (user/user_util.h:128)
@@ -579,10 +534,7 @@ pub fn mjuu_frameaccum(pos: *mut f64, quat: *mut f64, childpos: *const f64, chil
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjuu_frameaccum_child(pos: *const f64, quat: *const f64, childpos: *mut f64, childquat: *mut f64) {
-    // NOTE: signature changed from previous IR version
-    // Previous params: (pos : * const f64, quat : * const f64, childpos : * mut f64, childquat : * mut f64)
-    // Previous return: ()
-    todo!("re-translate: params renamed")
+    todo!() // mjuu_frameaccumChild
 }
 
 /// C: mjuu_frameaccuminv (user/user_util.h:140)
@@ -594,10 +546,7 @@ pub fn mjuu_frameaccum_child(pos: *const f64, quat: *const f64, childpos: *mut f
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjuu_frameaccuminv(pos: *mut f64, quat: *mut f64, childpos: *const f64, childquat: *const f64) {
-    // NOTE: signature changed from previous IR version
-    // Previous params: (pos : * mut f64, quat : * mut f64, childpos : * const f64, childquat : * const f64)
-    // Previous return: ()
-    todo!("re-translate: params renamed")
+    todo!() // mjuu_frameaccuminv
 }
 
 /// C: mjuu_globalinertia (user/user_util.h:144)
@@ -609,10 +558,7 @@ pub fn mjuu_frameaccuminv(pos: *mut f64, quat: *mut f64, childpos: *const f64, c
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjuu_globalinertia(global: *mut f64, local: *const f64, quat: *const f64) {
-    // NOTE: signature changed from previous IR version
-    // Previous params: (global : * mut f64, local : * const f64, quat : * const f64)
-    // Previous return: ()
-    todo!("re-translate: params renamed")
+    todo!() // mjuu_globalinertia
 }
 
 /// C: mjuu_offcenter (user/user_util.h:147)
@@ -623,10 +569,7 @@ pub fn mjuu_globalinertia(global: *mut f64, local: *const f64, quat: *const f64)
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjuu_offcenter(res: *mut f64, mass: f64, vec: *const f64) {
-    // NOTE: signature changed from previous IR version
-    // Previous params: (res : * mut f64, mass : f64, vec : * const f64)
-    // Previous return: ()
-    todo!("re-translate: params renamed")
+    todo!() // mjuu_offcenter
 }
 
 /// C: mjuu_visccoef (user/user_util.h:150)
@@ -637,10 +580,7 @@ pub fn mjuu_offcenter(res: *mut f64, mass: f64, vec: *const f64) {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjuu_visccoef(visccoef: *mut f64, mass: f64, inertia: *const f64, scl: f64) {
-    // NOTE: signature changed from previous IR version
-    // Previous params: (visccoef : * mut f64, mass : f64, inertia : * const f64, scl : f64)
-    // Previous return: ()
-    todo!("re-translate: params renamed")
+    todo!() // mjuu_visccoef
 }
 
 /// C: mjuu_rotVecQuat (user/user_util.h:153)
@@ -687,10 +627,7 @@ pub fn mjuu_rot_vec_quat(res: *mut f64, vec: *const f64, quat: *const f64) {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjuu_update_frame(quat: *mut f64, normal: *mut f64, edge: *const f64, tprv: *const f64, tnxt: *const f64, first: i32) -> f64 {
-    // NOTE: signature changed from previous IR version
-    // Previous params: (quat : * mut f64, normal : * mut f64, edge : * const f64, tprv : * const f64, tnxt : * const f64, first : i32)
-    // Previous return: f64
-    todo!("re-translate: params renamed")
+    todo!() // mjuu_updateFrame
 }
 
 /// C: mjuu_eig3 (user/user_util.h:160)
@@ -702,10 +639,7 @@ pub fn mjuu_update_frame(quat: *mut f64, normal: *mut f64, edge: *const f64, tpr
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjuu_eig3(eigval: *mut f64, eigvec: *mut f64, quat: *mut f64, mat: *const f64) -> i32 {
-    // NOTE: signature changed from previous IR version
-    // Previous params: (eigval : * mut f64, eigvec : * mut f64, quat : * mut f64, mat : * const f64)
-    // Previous return: i32
-    todo!("re-translate: params renamed")
+    todo!() // mjuu_eig3
 }
 
 /// C: mjuu_eigendecompose (user/user_util.h:166)
@@ -716,10 +650,7 @@ pub fn mjuu_eig3(eigval: *mut f64, eigvec: *mut f64, quat: *mut f64, mat: *const
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjuu_eigendecompose(mat: *mut f64, eigval: *mut f64, eigvec: *mut f64, n: i32) -> i32 {
-    // NOTE: signature changed from previous IR version
-    // Previous params: (mat : * mut f64, eigval : * mut f64, eigvec : * mut f64, n : i32)
-    // Previous return: i32
-    todo!("re-translate: params renamed")
+    todo!() // mjuu_eigendecompose
 }
 
 /// C: mjuu_trnVecPose (user/user_util.h:169)
@@ -731,10 +662,7 @@ pub fn mjuu_eigendecompose(mat: *mut f64, eigval: *mut f64, eigvec: *mut f64, n:
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjuu_trn_vec_pose(res: *mut f64, pos: *const f64, quat: *const f64, vec: *const f64) {
-    // NOTE: signature changed from previous IR version
-    // Previous params: (res : * mut f64, pos : * const f64, quat : * const f64, vec : * const f64)
-    // Previous return: ()
-    todo!("re-translate: params renamed")
+    todo!() // mjuu_trnVecPose
 }
 
 /// C: mjuu_fullInertia (user/user_util.h:172)
@@ -746,145 +674,97 @@ pub fn mjuu_trn_vec_pose(res: *mut f64, pos: *const f64, quat: *const f64, vec: 
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjuu_full_inertia(quat: *mut f64, inertia: *mut f64, fullinertia: *const f64) -> *const i8 {
-    // NOTE: signature changed from previous IR version
-    // Previous params: (quat : * mut f64, inertia : * mut f64, fullinertia : * const f64)
-    // Previous return: * const i8
-    todo!("re-translate: params renamed")
+    todo!() // mjuu_fullInertia
 }
 
 /// C: FilePath::IsAbs (user/user_util.h:191)
 #[allow(unused_variables, non_snake_case)]
 pub fn file_path_is_abs(self_ptr: *mut FilePath) -> bool {
-    // NOTE: signature changed from previous IR version
-    // Previous params: (self_ptr : * mut FilePath)
-    // Previous return: bool
-    todo!("re-translate: params renamed")
+    todo!() // FilePath::IsAbs
 }
 
 /// C: FilePath::AbsPrefix (user/user_util.h:195)
 #[allow(unused_variables, non_snake_case)]
 pub fn file_path_abs_prefix(self_ptr: *mut FilePath) -> i32 {
-    // NOTE: signature changed from previous IR version
-    // Previous params: (self_ptr : * mut FilePath)
-    // Previous return: i32
-    todo!("re-translate: params renamed")
+    todo!() // FilePath::AbsPrefix
 }
 
 /// C: FilePath::Str (user/user_util.h:198)
 #[allow(unused_variables, non_snake_case)]
 pub fn file_path_str(self_ptr: *mut FilePath) -> *const i32 {
-    // NOTE: signature changed from previous IR version
-    // Previous params: (self_ptr : * mut FilePath)
-    // Previous return: * const i32
-    todo!("re-translate: params renamed")
+    todo!() // FilePath::Str
 }
 
 /// C: FilePath::StrLower (user/user_util.h:202)
 #[allow(unused_variables, non_snake_case)]
 pub fn file_path_str_lower(self_ptr: *mut FilePath) -> std__string {
-    // NOTE: signature changed from previous IR version
-    // Previous params: (self_ptr : * mut FilePath)
-    // Previous return: std__string
-    todo!("re-translate: params renamed")
+    todo!() // FilePath::StrLower
 }
 
 /// C: FilePath::Ext (user/user_util.h:205)
 #[allow(unused_variables, non_snake_case)]
 pub fn file_path_ext(self_ptr: *mut FilePath) -> std__string {
-    // NOTE: signature changed from previous IR version
-    // Previous params: (self_ptr : * mut FilePath)
-    // Previous return: std__string
-    todo!("re-translate: params renamed")
+    todo!() // FilePath::Ext
 }
 
 /// C: FilePath::StripExt (user/user_util.h:211)
 #[allow(unused_variables, non_snake_case)]
 pub fn file_path_strip_ext(self_ptr: *mut FilePath) -> FilePath {
-    // NOTE: signature changed from previous IR version
-    // Previous params: (self_ptr : * mut FilePath)
-    // Previous return: FilePath
-    todo!("re-translate: params renamed")
+    todo!() // FilePath::StripExt
 }
 
 /// C: FilePath::StripPath (user/user_util.h:214)
 #[allow(unused_variables, non_snake_case)]
 pub fn file_path_strip_path(self_ptr: *mut FilePath) -> FilePath {
-    // NOTE: signature changed from previous IR version
-    // Previous params: (self_ptr : * mut FilePath)
-    // Previous return: FilePath
-    todo!("re-translate: params renamed")
+    todo!() // FilePath::StripPath
 }
 
 /// C: FilePath::Lower (user/user_util.h:217)
 #[allow(unused_variables, non_snake_case)]
 pub fn file_path_lower(self_ptr: *mut FilePath) -> FilePath {
-    // NOTE: signature changed from previous IR version
-    // Previous params: (self_ptr : * mut FilePath)
-    // Previous return: FilePath
-    todo!("re-translate: params renamed")
+    todo!() // FilePath::Lower
 }
 
 /// C: FilePath::size (user/user_util.h:220)
 #[allow(unused_variables, non_snake_case)]
 pub fn file_path_size(self_ptr: *mut FilePath) -> std__size_t {
-    // NOTE: signature changed from previous IR version
-    // Previous params: (self_ptr : * mut FilePath)
-    // Previous return: std__size_t
-    todo!("re-translate: params renamed")
+    todo!() // FilePath::size
 }
 
 /// C: FilePath::c_str (user/user_util.h:221)
 #[allow(unused_variables, non_snake_case)]
 pub fn file_path_c_str(self_ptr: *mut FilePath) -> *const i8 {
-    // NOTE: signature changed from previous IR version
-    // Previous params: (self_ptr : * mut FilePath)
-    // Previous return: * const i8
-    todo!("re-translate: params renamed")
+    todo!() // FilePath::c_str
 }
 
 /// C: FilePath::empty (user/user_util.h:222)
 #[allow(unused_variables, non_snake_case)]
 pub fn file_path_empty(self_ptr: *mut FilePath) -> bool {
-    // NOTE: signature changed from previous IR version
-    // Previous params: (self_ptr : * mut FilePath)
-    // Previous return: bool
-    todo!("re-translate: params renamed")
+    todo!() // FilePath::empty
 }
 
 /// C: FilePath::PathReduce (user/user_util.h:227)
 #[allow(unused_variables, non_snake_case)]
 pub fn file_path_path_reduce(str: *const std__string) -> std__string {
-    // NOTE: signature changed from previous IR version
-    // Previous params: (str : * const std__string)
-    // Previous return: std__string
-    todo!("re-translate: params renamed")
+    todo!() // FilePath::PathReduce
 }
 
 /// C: FilePath::IsSeparator (user/user_util.h:228)
 #[allow(unused_variables, non_snake_case)]
 pub fn file_path_is_separator(c: i8) -> bool {
-    // NOTE: signature changed from previous IR version
-    // Previous params: (c : i8)
-    // Previous return: bool
-    todo!("re-translate: params renamed")
+    todo!() // FilePath::IsSeparator
 }
 
 /// C: FilePath::Combine (user/user_util.h:231)
 #[allow(unused_variables, non_snake_case)]
 pub fn file_path_combine(s1: *const std__string, s2: *const std__string) -> std__string {
-    // NOTE: signature changed from previous IR version
-    // Previous params: (s1 : * const std__string, s2 : * const std__string)
-    // Previous return: std__string
-    todo!("re-translate: params renamed")
+    todo!() // FilePath::Combine
 }
 
 /// C: FilePath::FilePathFast (user/user_util.h:234)
 #[allow(unused_variables, non_snake_case)]
 pub fn file_path_file_path_fast(str: *const i32) -> FilePath {
-    // NOTE: signature changed from previous IR version
-    // Previous params: (str : * const i32)
-    // Previous return: FilePath
-    todo!("re-translate: params renamed")
+    todo!() // FilePath::FilePathFast
 }
 
 /// C: mjuu_strippath (user/user_util.h:273)
@@ -902,65 +782,44 @@ pub fn mjuu_stripext(filename: string) -> std__string {
 /// C: mjuu_getext (user/user_util.h:279)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjuu_getext(filename: string_view) -> std__string {
-    // NOTE: signature changed from previous IR version
-    // Previous params: (filename : string_view)
-    // Previous return: std__string
-    todo!("re-translate: params renamed")
+    todo!() // mjuu_getext
 }
 
 /// C: mjuu_isabspath (user/user_util.h:282)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjuu_isabspath(path: string) -> bool {
-    // NOTE: signature changed from previous IR version
-    // Previous params: (path : string)
-    // Previous return: bool
-    todo!("re-translate: params renamed")
+    todo!() // mjuu_isabspath
 }
 
 /// C: mjuu_combinePaths (user/user_util.h:285)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjuu_combine_paths(path1: *const std__string, path2: *const std__string) -> std__string {
-    // NOTE: signature changed from previous IR version
-    // Previous params: (path1 : * const std__string, path2 : * const std__string)
-    // Previous return: std__string
-    todo!("re-translate: params renamed")
+    todo!() // mjuu_combinePaths
 }
 
 /// C: mjuu_parseContentTypeAttrType (user/user_util.h:290)
 /// Calls: mjuu_isValidContentType
 #[allow(unused_variables, non_snake_case)]
 pub fn mjuu_parse_content_type_attr_type(text: string_view) -> *const () {
-    // NOTE: signature changed from previous IR version
-    // Previous params: (text : string_view)
-    // Previous return: * const ()
-    todo!("re-translate: params renamed")
+    todo!() // mjuu_parseContentTypeAttrType
 }
 
 /// C: mjuu_parseContentTypeAttrSubtype (user/user_util.h:293)
 /// Calls: mjuu_isValidContentType
 #[allow(unused_variables, non_snake_case)]
 pub fn mjuu_parse_content_type_attr_subtype(text: string_view) -> *const () {
-    // NOTE: signature changed from previous IR version
-    // Previous params: (text : string_view)
-    // Previous return: * const ()
-    todo!("re-translate: params renamed")
+    todo!() // mjuu_parseContentTypeAttrSubtype
 }
 
 /// C: mjuu_extToContentType (user/user_util.h:296)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjuu_ext_to_content_type(filename: string_view) -> std__string {
-    // NOTE: signature changed from previous IR version
-    // Previous params: (filename : string_view)
-    // Previous return: std__string
-    todo!("re-translate: params renamed")
+    todo!() // mjuu_extToContentType
 }
 
 /// C: mjuu_dirnamelen (user/user_util.h:299)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjuu_dirnamelen(path: *const i8) -> i32 {
-    // NOTE: signature changed from previous IR version
-    // Previous params: (path : * const i8)
-    // Previous return: i32
-    todo!("re-translate: params renamed")
+    todo!() // mjuu_dirnamelen
 }
 

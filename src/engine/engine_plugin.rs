@@ -1,5 +1,5 @@
 //! Port of: engine/engine_plugin.cc
-//! IR hash: d3ac8715281cd691
+//! IR hash: 6ff71909dacce27f
 //! CODEGEN: signatures locked. Only fill todo!() bodies.
 
 use crate::types::*;
@@ -7,47 +7,32 @@ use crate::types::*;
 /// C: strklen (engine/engine_plugin.cc:58)
 #[allow(unused_variables, non_snake_case)]
 pub fn strklen(s: *const i8) -> i32 {
-    // NOTE: signature changed from previous IR version
-    // Previous params: (s : * const i8)
-    // Previous return: i32
-    todo!("re-translate: params renamed")
+    todo!() // strklen
 }
 
 /// C: getext (engine/engine_plugin.cc:68)
 #[allow(unused_variables, non_snake_case)]
 pub fn getext(filename: string_view) -> std__string {
-    // NOTE: signature changed from previous IR version
-    // Previous params: (filename : string_view)
-    // Previous return: std__string
-    todo!("re-translate: params renamed")
+    todo!() // getext
 }
 
 /// C: CopyName (engine/engine_plugin.cc:78)
 /// Calls: strklen
 #[allow(unused_variables, non_snake_case)]
 pub fn copy_name(s: *const i8) -> i32 {
-    // NOTE: signature changed from previous IR version
-    // Previous params: (s : * const i8)
-    // Previous return: i32
-    todo!("re-translate: params renamed")
+    todo!() // CopyName
 }
 
 /// C: IsValidURISchemeFormat (engine/engine_plugin.cc:93)
 #[allow(unused_variables, non_snake_case)]
 pub fn is_valid_uri_scheme_format(prefix: *const i8) -> bool {
-    // NOTE: signature changed from previous IR version
-    // Previous params: (prefix : * const i8)
-    // Previous return: bool
-    todo!("re-translate: params renamed")
+    todo!() // IsValidURISchemeFormat
 }
 
 /// C: PluginAttrSeek (engine/engine_plugin.cc:119)
 #[allow(unused_variables, non_snake_case)]
 pub fn plugin_attr_seek(m: *const mjModel, plugin_id: i32, attrib_id: i32) -> *const i8 {
-    // NOTE: signature changed from previous IR version
-    // Previous params: (m : * const mjModel, plugin_id : i32, attrib_id : i32)
-    // Previous return: * const i8
-    todo!("re-translate: params renamed")
+    todo!() // PluginAttrSeek
 }
 
 /// C: mjp_defaultPlugin (engine/engine_plugin.h:26)
@@ -60,20 +45,14 @@ pub fn mjp_default_plugin(plugin: *mut mjpPlugin) {
 /// Calls: mju_error
 #[allow(unused_variables, non_snake_case)]
 pub fn mjp_register_plugin(plugin: *const mjpPlugin) -> i32 {
-    // NOTE: signature changed from previous IR version
-    // Previous params: (plugin : * const mjpPlugin)
-    // Previous return: i32
-    todo!("re-translate: params renamed")
+    todo!() // mjp_registerPlugin
 }
 
 /// C: mjp_registerResourceProvider (engine/engine_plugin.h:32)
 /// Calls: IsValidURISchemeFormat, mju_warning
 #[allow(unused_variables, non_snake_case)]
 pub fn mjp_register_resource_provider(provider: *const mjpResourceProvider) -> i32 {
-    // NOTE: signature changed from previous IR version
-    // Previous params: (provider : * const mjpResourceProvider)
-    // Previous return: i32
-    todo!("re-translate: params renamed")
+    todo!() // mjp_registerResourceProvider
 }
 
 /// C: mjp_pluginCount (engine/engine_plugin.h:35)
@@ -102,10 +81,7 @@ pub fn mjp_resource_provider_count() -> i32 {
 /// C: mjp_getPlugin (engine/engine_plugin.h:41)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjp_get_plugin(name: *const i8, slot: *mut i32) -> *const mjpPlugin {
-    // NOTE: signature changed from previous IR version
-    // Previous params: (name : * const i8, slot : * mut i32)
-    // Previous return: * const mjpPlugin
-    todo!("re-translate: params renamed")
+    todo!() // mjp_getPlugin
 }
 
 /// C: mjp_defaultResourceProvider (engine/engine_plugin.h:44)
@@ -117,10 +93,7 @@ pub fn mjp_default_resource_provider(provider: *mut mjpResourceProvider) {
 /// C: mjp_getResourceProvider (engine/engine_plugin.h:47)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjp_get_resource_provider(resource_name: *const i8) -> *const mjpResourceProvider {
-    // NOTE: signature changed from previous IR version
-    // Previous params: (resource_name : * const i8)
-    // Previous return: * const mjpResourceProvider
-    todo!("re-translate: params renamed")
+    todo!() // mjp_getResourceProvider
 }
 
 /// C: mjp_getPluginAtSlot (engine/engine_plugin.h:50)
@@ -132,50 +105,35 @@ pub fn mjp_get_plugin_at_slot(slot: i32) -> *const mjpPlugin {
 /// C: mjp_getResourceProviderAtSlot (engine/engine_plugin.h:53)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjp_get_resource_provider_at_slot(slot: i32) -> *const mjpResourceProvider {
-    // NOTE: signature changed from previous IR version
-    // Previous params: (slot : i32)
-    // Previous return: * const mjpResourceProvider
-    todo!("re-translate: params renamed")
+    todo!() // mjp_getResourceProviderAtSlot
 }
 
 /// C: mj_getPluginConfig (engine/engine_plugin.h:57)
 /// Calls: PluginAttrSeek, mjp_getPluginAtSlot
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_get_plugin_config(m: *const mjModel, plugin_id: i32, attrib: *const i8) -> *const i8 {
-    // NOTE: signature changed from previous IR version
-    // Previous params: (m : * const mjModel, plugin_id : i32, attrib : * const i8)
-    // Previous return: * const i8
-    todo!("re-translate: params renamed")
+    todo!() // mj_getPluginConfig
 }
 
 /// C: mj_loadPluginLibrary (engine/engine_plugin.h:60)
 /// Calls: mju_error
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_load_plugin_library(path: *const i8) {
-    // NOTE: signature changed from previous IR version
-    // Previous params: (path : * const i8)
-    // Previous return: ()
-    todo!("re-translate: params renamed")
+    todo!() // mj_loadPluginLibrary
 }
 
 /// C: mj_loadAllPluginLibraries (engine/engine_plugin.h:63)
 /// Calls: mjp_pluginCount
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_load_all_plugin_libraries(directory: *const i8, callback: mjfPluginLibraryLoadCallback) {
-    // NOTE: signature changed from previous IR version
-    // Previous params: (directory : * const i8, callback : mjfPluginLibraryLoadCallback)
-    // Previous return: ()
-    todo!("re-translate: params renamed")
+    todo!() // mj_loadAllPluginLibraries
 }
 
 /// C: mjp_registerDecoder (engine/engine_plugin.h:66)
 /// Calls: mju_warning
 #[allow(unused_variables, non_snake_case)]
 pub fn mjp_register_decoder(decoder: *const mjpDecoder) {
-    // NOTE: signature changed from previous IR version
-    // Previous params: (decoder : * const mjpDecoder)
-    // Previous return: ()
-    todo!("re-translate: params renamed")
+    todo!() // mjp_registerDecoder
 }
 
 /// C: mjp_defaultDecoder (engine/engine_plugin.h:69)
@@ -188,20 +146,14 @@ pub fn mjp_default_decoder(decoder: *mut mjpDecoder) {
 /// Calls: mju_warning, strklen
 #[allow(unused_variables, non_snake_case)]
 pub fn mjp_find_decoder(resource: *const mjResource, content_type: *const i8) -> *const mjpDecoder {
-    // NOTE: signature changed from previous IR version
-    // Previous params: (resource : * const mjResource, content_type : * const i8)
-    // Previous return: * const mjpDecoder
-    todo!("re-translate: params renamed")
+    todo!() // mjp_findDecoder
 }
 
 /// C: mjp_registerEncoder (engine/engine_plugin.h:75)
 /// Calls: mju_warning
 #[allow(unused_variables, non_snake_case)]
 pub fn mjp_register_encoder(encoder: *const mjpEncoder) {
-    // NOTE: signature changed from previous IR version
-    // Previous params: (encoder : * const mjpEncoder)
-    // Previous return: ()
-    todo!("re-translate: params renamed")
+    todo!() // mjp_registerEncoder
 }
 
 /// C: mjp_defaultEncoder (engine/engine_plugin.h:78)
@@ -214,27 +166,18 @@ pub fn mjp_default_encoder(encoder: *mut mjpEncoder) {
 /// Calls: mju_warning, strklen
 #[allow(unused_variables, non_snake_case)]
 pub fn mjp_find_encoder(filename: *const i8, content_type: *const i8) -> *const mjpEncoder {
-    // NOTE: signature changed from previous IR version
-    // Previous params: (filename : * const i8, content_type : * const i8)
-    // Previous return: * const mjpEncoder
-    todo!("re-translate: params renamed")
+    todo!() // mjp_findEncoder
 }
 
 /// C: mjp_getPluginUnsafe (engine/engine_plugin.h:95)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjp_get_plugin_unsafe(name: *const i8, slot: *mut i32, nslot: i32) -> *const mjpPlugin {
-    // NOTE: signature changed from previous IR version
-    // Previous params: (name : * const i8, slot : * mut i32, nslot : i32)
-    // Previous return: * const mjpPlugin
-    todo!("re-translate: params renamed")
+    todo!() // mjp_getPluginUnsafe
 }
 
 /// C: mjp_getPluginAtSlotUnsafe (engine/engine_plugin.h:98)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjp_get_plugin_at_slot_unsafe(slot: i32, nslot: i32) -> *const mjpPlugin {
-    // NOTE: signature changed from previous IR version
-    // Previous params: (slot : i32, nslot : i32)
-    // Previous return: * const mjpPlugin
-    todo!("re-translate: params renamed")
+    todo!() // mjp_getPluginAtSlotUnsafe
 }
 

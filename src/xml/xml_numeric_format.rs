@@ -1,5 +1,5 @@
 //! Port of: xml/xml_numeric_format.h
-//! IR hash: d3ac8715281cd691
+//! IR hash: 6ff71909dacce27f
 //! CODEGEN: signatures locked. Only fill todo!() bodies.
 
 use crate::types::*;

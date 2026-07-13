@@ -1,5 +1,5 @@
 //! Port of: xml/xml_global.cc
-//! IR hash: d3ac8715281cd691
+//! IR hash: 6ff71909dacce27f
 //! CODEGEN: signatures locked. Only fill todo!() bodies.
 
 use crate::types::*;
@@ -8,48 +8,33 @@ use crate::types::*;
 /// Calls: GetGlobalModel, mj_deleteSpec
 #[allow(unused_variables, non_snake_case)]
 pub fn global_model_set(self_ptr: *mut GlobalModel, spec: *mut mjSpec) {
-    // NOTE: signature changed from previous IR version
-    // Previous params: (self_ptr : * mut GlobalModel, spec : * mut mjSpec)
-    // Previous return: ()
-    todo!("re-translate: params renamed")
+    todo!() // GlobalModel::Set
 }
 
 /// C: GlobalModel::ToXML (xml/xml_global.cc:35)
 /// Calls: mjCopyError
 #[allow(unused_variables, non_snake_case)]
 pub fn global_model_to_xml(self_ptr: *mut GlobalModel, m: *const mjModel, error: *mut i8, error_sz: i32) -> std__string {
-    // NOTE: signature changed from previous IR version
-    // Previous params: (self_ptr : * mut GlobalModel, m : * const mjModel, error : * mut i8, error_sz : i32)
-    // Previous return: std__string
-    todo!("re-translate: params renamed")
+    todo!() // GlobalModel::ToXML
 }
 
 /// C: GetGlobalModel (xml/xml_global.cc:53)
 #[allow(unused_variables, non_snake_case)]
 pub fn get_global_model() -> *mut GlobalModel {
-    // NOTE: signature changed from previous IR version
-    // Previous params: ()
-    // Previous return: * mut GlobalModel
-    todo!("re-translate: params renamed")
+    todo!() // GetGlobalModel
 }
 
 /// C: SetGlobalXmlSpec (xml/xml_global.h:23)
 /// Calls: GetGlobalModel, GlobalModel::Set
 #[allow(unused_variables, non_snake_case)]
 pub fn set_global_xml_spec(spec: *mut mjSpec) {
-    // NOTE: signature changed from previous IR version
-    // Previous params: (spec : * mut mjSpec)
-    // Previous return: ()
-    todo!("re-translate: params renamed")
+    todo!() // SetGlobalXmlSpec
 }
 
 /// C: GetGlobalXmlSpec (xml/xml_global.h:25)
 /// Calls: GetGlobalModel
 #[allow(unused_variables, non_snake_case)]
 pub fn get_global_xml_spec(m: *const mjModel, error: *mut i8, error_sz: i32) -> std__string {
-    // NOTE: signature changed from previous IR version
-    // Previous params: (m : * const mjModel, error : * mut i8, error_sz : i32)
-    // Previous return: std__string
-    todo!("re-translate: params renamed")
+    todo!() // GetGlobalXmlSpec
 }
 

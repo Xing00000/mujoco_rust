@@ -1,5 +1,5 @@
 //! Port of: engine/engine_util_spatial.h
-//! IR hash: d3ac8715281cd691
+//! IR hash: 6ff71909dacce27f
 //! CODEGEN: signatures locked. Only fill todo!() bodies.
 
 use crate::types::*;
@@ -765,3 +765,4 @@ pub fn mju_make_frame(frame: *mut f64) {
         mji_cross(frame.add(6), frame, frame.add(3));
     }
 }
+

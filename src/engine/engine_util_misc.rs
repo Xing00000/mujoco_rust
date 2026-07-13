@@ -1,5 +1,5 @@
 //! Port of: engine/engine_util_misc.c
-//! IR hash: d3ac8715281cd691
+//! IR hash: 6ff71909dacce27f
 //! CODEGEN: signatures locked. Only fill todo!() bodies.
 
 use crate::types::*;
@@ -963,6 +963,7 @@ pub fn mju_cam_pixel_ray(origin: *mut f64, direction: *mut f64, cam_xpos: *const
     }
 }
 
+/// C: mju_defGradient (engine/engine_util_misc.h:87)
 /// Calls: mju_flexDphi, mju_flexPhi, mju_zero
 /// ⚠️ BITEXACT RULES:
 ///   1. Copy exact C accumulation order (no iter().sum())
@@ -1135,6 +1136,7 @@ pub fn mju_cell_lookup(coord: *const f64, cellnum: *const i32, order: i32, local
     }
 }
 
+/// C: mju_interpolate3D (engine/engine_util_misc.h:100)
 /// Calls: mju_addToScl3, mju_evalBasis, mju_evalBasisArray
 /// ⚠️ BITEXACT RULES:
 ///   1. Copy exact C accumulation order (no iter().sum())
@@ -2070,7 +2072,7 @@ pub fn mju_outside_box(point: *const f64, pos: *const f64, mat: *const f64, size
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mju_print_mat(mat: *const f64, nr: i32, nc: i32) {
-    todo!("requires C stdio")
+    todo!() // mju_printMat
 }
 
 /// C: mju_printMatSparse (engine/engine_util_misc.h:220)
@@ -2081,7 +2083,7 @@ pub fn mju_print_mat(mat: *const f64, nr: i32, nc: i32) {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mju_print_mat_sparse(mat: *const f64, nr: i32, rownnz: *const i32, rowadr: *const i32, colind: *const i32) {
-    todo!("requires C stdio")
+    todo!() // mju_printMatSparse
 }
 
 /// C: mju_min (engine/engine_util_misc.h:225)
@@ -2144,29 +2146,26 @@ pub fn mju_round(x: f64) -> i32 {
 /// C: mju_type2Str (engine/engine_util_misc.h:240)
 #[allow(unused_variables, non_snake_case)]
 pub fn mju_type2str(r#type: i32) -> *const i8 {
-    todo!("requires static string table with C lifetime")
+    todo!() // mju_type2Str
 }
 
 /// C: mju_str2Type (engine/engine_util_misc.h:243)
 #[allow(unused_variables, non_snake_case)]
 pub fn mju_str2type(str: *const i8) -> i32 {
-    todo!("requires string comparison with C string literals")
+    todo!() // mju_str2Type
 }
 
 /// C: mju_writeNumBytes (engine/engine_util_misc.h:246)
 #[allow(unused_variables, non_snake_case)]
 pub fn mju_write_num_bytes(nbytes: usize) -> *const i8 {
-    todo!("requires static buffer + sprintf")
+    todo!() // mju_writeNumBytes
 }
 
 /// C: mju_warningText (engine/engine_util_misc.h:249)
 /// Calls: mju_writeNumBytes
 #[allow(unused_variables, non_snake_case)]
 pub fn mju_warning_text(warning: i32, info: usize) -> *const i8 {
-    // NOTE: signature changed from previous IR version
-    // Previous params: (warning : i32, info : usize)
-    // Previous return: * const i8
-    todo!("re-translate: params renamed")
+    todo!() // mju_warningText
 }
 
 /// C: mju_isBad (engine/engine_util_misc.h:252)
@@ -2252,6 +2251,8 @@ pub fn mju_fill_int(res: *mut i32, val: i32, n: i32) {
         }
     }
 }
+
+/// C: mju_standardNormal (engine/engine_util_misc.h:270)
 /// ⚠️ BITEXACT RULES:
 ///   1. Copy exact C accumulation order (no iter().sum())
 ///   2. No f64::mul_add() (FMA changes precision)
@@ -2259,9 +2260,8 @@ pub fn mju_fill_int(res: *mut i32, val: i32, n: i32) {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mju_standard_normal(num2: *mut f64) -> f64 {
-    todo!("requires C rand() function")
+    todo!() // mju_standardNormal
 }
-
 
 /// C: mju_f2n (engine/engine_util_misc.h:273)
 /// ⚠️ BITEXACT RULES:

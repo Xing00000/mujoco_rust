@@ -1,5 +1,5 @@
 //! Port of: engine/engine_inline.h
-//! IR hash: d3ac8715281cd691
+//! IR hash: 6ff71909dacce27f
 //! CODEGEN: signatures locked. Only fill todo!() bodies.
 
 use crate::types::*;
@@ -661,3 +661,4 @@ pub fn mji_copy9(res: *mut f64, data: *const f64) {
         *res.add(8) = *data.add(8);
     }
 }
+

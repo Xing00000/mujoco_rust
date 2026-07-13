@@ -1,5 +1,5 @@
 //! Port of: engine/engine_util_sparse.h
-//! IR hash: d3ac8715281cd691
+//! IR hash: 6ff71909dacce27f
 //! CODEGEN: signatures locked. Only fill todo!() bodies.
 
 use crate::types::*;
@@ -764,7 +764,7 @@ pub fn mju_super_sparse(nr: i32, rowsuper: *mut i32, rownnz: *const i32, rowadr:
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mju_sqr_mat_td_sparse(res: *mut f64, mat: *const f64, matT: *const f64, diag: *const f64, nr: i32, nc: i32, res_rownnz: *mut i32, res_rowadr: *const i32, res_colind: *mut i32, rownnz: *const i32, rowadr: *const i32, colind: *const i32, rowsuper: *const i32, rownnzT: *const i32, rowadrT: *const i32, colindT: *const i32, rowsuperT: *const i32, d: *mut mjData, diagind: *mut i32) {
-    todo!("requires mjData stack allocator: mj_markStack/mjSTACKALLOC/mj_freeStack")
+    todo!() // mju_sqrMatTDSparse
 }
 
 /// C: mju_sqrMatTDSparse_row (engine/engine_util_sparse.h:129)
@@ -776,21 +776,21 @@ pub fn mju_sqr_mat_td_sparse(res: *mut f64, mat: *const f64, matT: *const f64, d
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mju_sqr_mat_td_sparse_row(res: *mut f64, mat: *const f64, matT: *const f64, diag: *const f64, nr: i32, nc: i32, res_rownnz: *mut i32, res_rowadr: *const i32, res_colind: *mut i32, rownnz: *const i32, rowadr: *const i32, colind: *const i32, rowsuper: *const i32, rownnzT: *const i32, rowadrT: *const i32, colindT: *const i32, rowsuperT: *const i32, d: *mut mjData, diagind: *mut i32) {
-    todo!("requires mjData stack allocator: mj_markStack/mjSTACKALLOC/mj_freeStack")
+    todo!() // mju_sqrMatTDSparse_row
 }
 
 /// C: mju_sqrMatTDSparseCount (engine/engine_util_sparse.h:139)
 /// Calls: mj_freeStack, mj_markStack, mj_stackAllocInfo
 #[allow(unused_variables, non_snake_case)]
 pub fn mju_sqr_mat_td_sparse_count(res_rownnz: *mut i32, res_rowadr: *mut i32, nr: i32, rownnz: *const i32, rowadr: *const i32, colind: *const i32, rownnzT: *const i32, rowadrT: *const i32, colindT: *const i32, rowsuperT: *const i32, d: *mut mjData, flg_upper: i32) -> i32 {
-    todo!("requires mjData stack allocator: mj_markStack/mjSTACKALLOC/mj_freeStack")
+    todo!() // mju_sqrMatTDSparseCount
 }
 
 /// C: mju_sqrMatTDSparseSymbolic (engine/engine_util_sparse.h:148)
 /// Calls: mj_freeStack, mj_markStack, mj_stackAllocInfo, mju_copyInt, mju_zeroInt
 #[allow(unused_variables, non_snake_case)]
 pub fn mju_sqr_mat_td_sparse_symbolic(res_rownnz: *mut i32, res_rowadr: *mut i32, res_colind: *mut i32, res_diagind: *mut i32, nr: i32, nc: i32, rownnz: *const i32, rowadr: *const i32, colind: *const i32, rownnzT: *const i32, rowadrT: *const i32, colindT: *const i32, rowsuperT: *const i32, d: *mut mjData) -> i32 {
-    todo!("requires mjData stack allocator: mj_markStack/mjSTACKALLOC/mj_freeStack")
+    todo!() // mju_sqrMatTDSparseSymbolic
 }
 
 /// C: mju_sqrMatTDSparseNumeric (engine/engine_util_sparse.h:155)
@@ -802,7 +802,7 @@ pub fn mju_sqr_mat_td_sparse_symbolic(res_rownnz: *mut i32, res_rowadr: *mut i32
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mju_sqr_mat_td_sparse_numeric(res: *mut f64, nc: i32, res_rownnz: *const i32, res_rowadr: *const i32, res_colind: *const i32, res_diagind: *const i32, mat: *const f64, rownnz: *const i32, rowadr: *const i32, colind: *const i32, matT: *const f64, rownnzT: *const i32, rowadrT: *const i32, colindT: *const i32, rowsuperT: *const i32, diag: *const f64, d: *mut mjData) {
-    todo!("requires mjData stack allocator: mj_markStack/mjSTACKALLOC/mj_freeStack")
+    todo!() // mju_sqrMatTDSparseNumeric
 }
 
 /// C: mju_sqrMatTDUncompressedInit (engine/engine_util_sparse.h:163)
@@ -835,6 +835,8 @@ pub fn mju_block(res: *mut f64, mat: *const f64, nc_mat: i32, nc_res: i32, nr: i
     }
 }
 
+/// C: mju_blockDiag (engine/engine_util_sparse.h:170)
+/// Calls: mju_block
 /// ⚠️ BITEXACT RULES:
 ///   1. Copy exact C accumulation order (no iter().sum())
 ///   2. No f64::mul_add() (FMA changes precision)

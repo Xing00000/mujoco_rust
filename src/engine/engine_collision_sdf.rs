@@ -1,5 +1,5 @@
 //! Port of: engine/engine_collision_sdf.c
-//! IR hash: d3ac8715281cd691
+//! IR hash: 6ff71909dacce27f
 //! CODEGEN: signatures locked. Only fill todo!() bodies.
 
 use crate::types::*;
@@ -13,10 +13,7 @@ use crate::types::*;
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn box_projection(point: *mut f64, r#box: *const f64) -> f64 {
-    // NOTE: signature changed from previous IR version
-    // Previous params: (point : * mut f64, r#box : * const f64)
-    // Previous return: f64
-    todo!("re-translate: params renamed")
+    todo!() // boxProjection
 }
 
 /// C: findOct (engine/engine_collision_sdf.c:69)
@@ -28,10 +25,7 @@ pub fn box_projection(point: *mut f64, r#box: *const f64) -> f64 {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn find_oct(w: *mut f64, dw: *mut [f64; 3], oct_aabb: *const f64, oct_child: *const i32, p: *const f64) -> i32 {
-    // NOTE: signature changed from previous IR version
-    // Previous params: (w : * mut f64, dw : * mut [f64 ; 3], oct_aabb : * const f64, oct_child : * const i32, p : * const f64)
-    // Previous return: i32
-    todo!("re-translate: params renamed")
+    todo!() // findOct
 }
 
 /// C: oct_distance (engine/engine_collision_sdf.c:138)
@@ -43,10 +37,7 @@ pub fn find_oct(w: *mut f64, dw: *mut [f64; 3], oct_aabb: *const f64, oct_child:
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn oct_distance(m: *const mjModel, p: *const f64, meshid: i32) -> f64 {
-    // NOTE: signature changed from previous IR version
-    // Previous params: (m : * const mjModel, p : * const f64, meshid : i32)
-    // Previous return: f64
-    todo!("re-translate: params renamed")
+    todo!() // oct_distance
 }
 
 /// C: oct_gradient (engine/engine_collision_sdf.c:162)
@@ -58,10 +49,7 @@ pub fn oct_distance(m: *const mjModel, p: *const f64, meshid: i32) -> f64 {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn oct_gradient(m: *const mjModel, grad: *mut f64, point: *const f64, meshid: i32) {
-    // NOTE: signature changed from previous IR version
-    // Previous params: (m : * const mjModel, grad : * mut f64, point : * const f64, meshid : i32)
-    // Previous return: ()
-    todo!("re-translate: params renamed")
+    todo!() // oct_gradient
 }
 
 /// C: radialField3d (engine/engine_collision_sdf.c:205)
@@ -73,10 +61,7 @@ pub fn oct_gradient(m: *const mjModel, grad: *mut f64, point: *const f64, meshid
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn radial_field3d(field: *mut f64, a: *const f64, x: *const f64, size: *const f64) {
-    // NOTE: signature changed from previous IR version
-    // Previous params: (field : * mut f64, a : * const f64, x : * const f64, size : * const f64)
-    // Previous return: ()
-    todo!("re-translate: params renamed")
+    todo!() // radialField3d
 }
 
 /// C: geomDistance (engine/engine_collision_sdf.c:218)
@@ -88,10 +73,7 @@ pub fn radial_field3d(field: *mut f64, a: *const f64, x: *const f64, size: *cons
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn geom_distance(m: *const mjModel, d: *const mjData, p: *const mjpPlugin, i: i32, x: *const f64, r#type: u32) -> f64 {
-    // NOTE: signature changed from previous IR version
-    // Previous params: (m : * const mjModel, d : * const mjData, p : * const mjpPlugin, i : i32, x : * const f64, r#type : u32)
-    // Previous return: f64
-    todo!("re-translate: params renamed")
+    todo!() // geomDistance
 }
 
 /// C: geomGradient (engine/engine_collision_sdf.c:295)
@@ -103,10 +85,7 @@ pub fn geom_distance(m: *const mjModel, d: *const mjData, p: *const mjpPlugin, i
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn geom_gradient(gradient: *mut f64, m: *const mjModel, d: *const mjData, p: *const mjpPlugin, i: i32, x: *const f64, r#type: u32) {
-    // NOTE: signature changed from previous IR version
-    // Previous params: (gradient : * mut f64, m : * const mjModel, d : * const mjData, p : * const mjpPlugin, i : i32, x : * const f64, r#type : u32)
-    // Previous return: ()
-    todo!("re-translate: params renamed")
+    todo!() // geomGradient
 }
 
 /// C: mapPose (engine/engine_collision_sdf.c:519)
@@ -118,10 +97,7 @@ pub fn geom_gradient(gradient: *mut f64, m: *const mjModel, d: *const mjData, p:
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn map_pose(xpos1: *const f64, xquat1: *const f64, xpos2: *const f64, xquat2: *const f64, pos12: *mut f64, mat12: *mut f64) {
-    // NOTE: signature changed from previous IR version
-    // Previous params: (xpos1 : * const f64, xquat1 : * const f64, xpos2 : * const f64, xquat2 : * const f64, pos12 : * mut f64, mat12 : * mut f64)
-    // Previous return: ()
-    todo!("re-translate: params renamed")
+    todo!() // mapPose
 }
 
 /// C: isknown (engine/engine_collision_sdf.c:532)
@@ -133,10 +109,7 @@ pub fn map_pose(xpos1: *const f64, xquat1: *const f64, xpos2: *const f64, xquat2
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn isknown(points: *const f64, x: *const f64, cnt: i32) -> i32 {
-    // NOTE: signature changed from previous IR version
-    // Previous params: (points : * const f64, x : * const f64, cnt : i32)
-    // Previous return: i32
-    todo!("re-translate: params renamed")
+    todo!() // isknown
 }
 
 /// C: addPreContact (engine/engine_collision_sdf.c:545)
@@ -148,10 +121,7 @@ pub fn isknown(points: *const f64, x: *const f64, cnt: i32) -> i32 {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn add_pre_contact(points: *mut f64, con: *mut mjPreContact, x: *const f64, pos2: *const f64, quat2: *const f64, dist: f64, cnt: i32, m: *const mjModel, s: *const mjSDF, d: *const mjData, flipNormal: i32) -> i32 {
-    // NOTE: signature changed from previous IR version
-    // Previous params: (points : * mut f64, con : * mut mjPreContact, x : * const f64, pos2 : * const f64, quat2 : * const f64, dist : f64, cnt : i32, m : * const mjModel, s : * const mjSDF, d : * const mjData, flipNormal : i32)
-    // Previous return: i32
-    todo!("re-translate: params renamed")
+    todo!() // addPreContact
 }
 
 /// C: stepFrankWolfe (engine/engine_collision_sdf.c:585)
@@ -163,10 +133,7 @@ pub fn add_pre_contact(points: *mut f64, con: *mut mjPreContact, x: *const f64, 
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn step_frank_wolfe(x: *mut f64, corners: *const f64, ncorners: i32, m: *const mjModel, sdf: *const mjSDF, d: *const mjData) -> f64 {
-    // NOTE: signature changed from previous IR version
-    // Previous params: (x : * mut f64, corners : * const f64, ncorners : i32, m : * const mjModel, sdf : * const mjSDF, d : * const mjData)
-    // Previous return: f64
-    todo!("re-translate: params renamed")
+    todo!() // stepFrankWolfe
 }
 
 /// C: stepGradient (engine/engine_collision_sdf.c:615)
@@ -178,10 +145,7 @@ pub fn step_frank_wolfe(x: *mut f64, corners: *const f64, ncorners: i32, m: *con
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn step_gradient(x: *mut f64, m: *const mjModel, s: *const mjSDF, d: *const mjData, niter: i32) -> f64 {
-    // NOTE: signature changed from previous IR version
-    // Previous params: (x : * mut f64, m : * const mjModel, s : * const mjSDF, d : * const mjData, niter : i32)
-    // Previous return: f64
-    todo!("re-translate: params renamed")
+    todo!() // stepGradient
 }
 
 /// C: triangleIntersect (engine/engine_collision_sdf.c:665)
@@ -193,10 +157,7 @@ pub fn step_gradient(x: *mut f64, m: *const mjModel, s: *const mjSDF, d: *const 
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn triangle_intersect(triangle: *const f64, m: *const mjModel, sdf: *const mjSDF, d: *const mjData) -> i32 {
-    // NOTE: signature changed from previous IR version
-    // Previous params: (triangle : * const f64, m : * const mjModel, sdf : * const mjSDF, d : * const mjData)
-    // Previous return: i32
-    todo!("re-translate: params renamed")
+    todo!() // triangleIntersect
 }
 
 /// C: boxIntersect (engine/engine_collision_sdf.c:737)
@@ -208,10 +169,7 @@ pub fn triangle_intersect(triangle: *const f64, m: *const mjModel, sdf: *const m
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn box_intersect(bvh: *const f64, offset: *const f64, rotation: *const f64, m: *const mjModel, s: *const mjSDF, d: *const mjData) -> i32 {
-    // NOTE: signature changed from previous IR version
-    // Previous params: (bvh : * const f64, offset : * const f64, rotation : * const f64, m : * const mjModel, s : * const mjSDF, d : * const mjData)
-    // Previous return: i32
-    todo!("re-translate: params renamed")
+    todo!() // boxIntersect
 }
 
 /// C: selectFPS (engine/engine_collision_sdf.c:752)
@@ -222,10 +180,7 @@ pub fn box_intersect(bvh: *const f64, offset: *const f64, rotation: *const f64, 
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn select_fps(candidate: *const f64, dist: *const f64, ncandidate: i32, selected_indices: *mut i32, max_select: i32) -> i32 {
-    // NOTE: signature changed from previous IR version
-    // Previous params: (candidate : * const f64, dist : * const f64, ncandidate : i32, selected_indices : * mut i32, max_select : i32)
-    // Previous return: i32
-    todo!("re-translate: params renamed")
+    todo!() // selectFPS
 }
 
 /// C: processSdfCorners (engine/engine_collision_sdf.c:808)
@@ -237,20 +192,14 @@ pub fn select_fps(candidate: *const f64, dist: *const f64, ncandidate: i32, sele
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn process_sdf_corners(corners: *const f64, m: *const mjModel, d: *const mjData, sdf: *const mjSDF, nstartpts: i32, candidate: *mut f64, dist: *mut f64, ncandidate: *mut i32) {
-    // NOTE: signature changed from previous IR version
-    // Previous params: (corners : * const f64, m : * const mjModel, d : * const mjData, sdf : * const mjSDF, nstartpts : i32, candidate : * mut f64, dist : * mut f64, ncandidate : * mut i32)
-    // Previous return: ()
-    todo!("re-translate: params renamed")
+    todo!() // processSdfCorners
 }
 
 /// C: processOneFace (engine/engine_collision_sdf.c:866)
 /// Calls: mju_addTo3, mju_mulMatVec3, processSdfCorners
 #[allow(unused_variables, non_snake_case)]
 pub fn process_one_face(faceid: i32, bvh_active: *mut mjtBool, node: i32, ctx: *mut MeshSDFContext) {
-    // NOTE: signature changed from previous IR version
-    // Previous params: (faceid : i32, bvh_active : * mut mjtBool, node : i32, ctx : * mut MeshSDFContext)
-    // Previous return: ()
-    todo!("re-translate: params renamed")
+    todo!() // processOneFace
 }
 
 /// C: traverseBVH (engine/engine_collision_sdf.c:903)
@@ -262,40 +211,28 @@ pub fn process_one_face(faceid: i32, bvh_active: *mut mjtBool, node: i32, ctx: *
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn traverse_bvh(bvh: *const f64, nodeid: *const i32, child: *const i32, bvh_active: *mut mjtBool, offset: *const f64, rotation: *const f64, m: *const mjModel, d: *const mjData, sdf: *const mjSDF, callback: BVHLeafCallback, ctx: *mut ()) {
-    // NOTE: signature changed from previous IR version
-    // Previous params: (bvh : * const f64, nodeid : * const i32, child : * const i32, bvh_active : * mut mjtBool, offset : * const f64, rotation : * const f64, m : * const mjModel, d : * const mjData, sdf : * const mjSDF, callback : BVHLeafCallback, ctx : * mut ())
-    // Previous return: ()
-    todo!("re-translate: params renamed")
+    todo!() // traverseBVH
 }
 
 /// C: meshFaceCallback (engine/engine_collision_sdf.c:943)
 /// Calls: processOneFace
 #[allow(unused_variables, non_snake_case)]
 pub fn mesh_face_callback(face_id: i32, node: i32, ctx: *mut ()) -> i32 {
-    // NOTE: signature changed from previous IR version
-    // Previous params: (face_id : i32, node : i32, ctx : * mut ())
-    // Previous return: i32
-    todo!("re-translate: params renamed")
+    todo!() // meshFaceCallback
 }
 
 /// C: flexElemCallback (engine/engine_collision_sdf.c:1198)
 /// Calls: mju_addTo3, mju_copy3, mju_mulMatVec3, processSdfCorners
 #[allow(unused_variables, non_snake_case)]
 pub fn flex_elem_callback(elem_idx: i32, node: i32, ctx: *mut ()) -> i32 {
-    // NOTE: signature changed from previous IR version
-    // Previous params: (elem_idx : i32, node : i32, ctx : * mut ())
-    // Previous return: i32
-    todo!("re-translate: params renamed")
+    todo!() // flexElemCallback
 }
 
 /// C: mjc_getSDF (engine/engine_collision_sdf.h:29)
 /// Calls: mjp_getPluginAtSlotUnsafe, mjp_pluginCount, mju_message
 #[allow(unused_variables, non_snake_case)]
 pub fn mjc_get_sdf(m: *const mjModel, id: i32) -> *const mjpPlugin {
-    // NOTE: signature changed from previous IR version
-    // Previous params: (m : * const mjModel, id : i32)
-    // Previous return: * const mjpPlugin
-    todo!("re-translate: params renamed")
+    todo!() // mjc_getSDF
 }
 
 /// C: mjc_distance (engine/engine_collision_sdf.h:32)
@@ -307,10 +244,7 @@ pub fn mjc_get_sdf(m: *const mjModel, id: i32) -> *const mjpPlugin {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjc_distance(m: *const mjModel, d: *const mjData, s: *const mjSDF, x: *const f64) -> f64 {
-    // NOTE: signature changed from previous IR version
-    // Previous params: (m : * const mjModel, d : * const mjData, s : * const mjSDF, x : * const f64)
-    // Previous return: f64
-    todo!("re-translate: params renamed")
+    todo!() // mjc_distance
 }
 
 /// C: mjc_gradient (engine/engine_collision_sdf.h:35)
@@ -322,10 +256,7 @@ pub fn mjc_distance(m: *const mjModel, d: *const mjData, s: *const mjSDF, x: *co
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjc_gradient(m: *const mjModel, d: *const mjData, s: *const mjSDF, gradient: *mut f64, x: *const f64) {
-    // NOTE: signature changed from previous IR version
-    // Previous params: (m : * const mjModel, d : * const mjData, s : * const mjSDF, gradient : * mut f64, x : * const f64)
-    // Previous return: ()
-    todo!("re-translate: params renamed")
+    todo!() // mjc_gradient
 }
 
 /// C: mjc_HFieldSDF (engine/engine_collision_sdf.h:39)
@@ -337,10 +268,7 @@ pub fn mjc_gradient(m: *const mjModel, d: *const mjData, s: *const mjSDF, gradie
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjc_h_field_sdf(m: *const mjModel, d: *mut mjData, con: *mut mjPreContact, g1: i32, g2: i32, margin: f64) -> i32 {
-    // NOTE: signature changed from previous IR version
-    // Previous params: (m : * const mjModel, d : * mut mjData, con : * mut mjPreContact, g1 : i32, g2 : i32, margin : f64)
-    // Previous return: i32
-    todo!("re-translate: params renamed")
+    todo!() // mjc_HFieldSDF
 }
 
 /// C: mjc_MeshSDF (engine/engine_collision_sdf.h:42)
@@ -352,10 +280,7 @@ pub fn mjc_h_field_sdf(m: *const mjModel, d: *mut mjData, con: *mut mjPreContact
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjc_mesh_sdf(m: *const mjModel, d: *mut mjData, con: *mut mjPreContact, g1: i32, g2: i32, margin: f64) -> i32 {
-    // NOTE: signature changed from previous IR version
-    // Previous params: (m : * const mjModel, d : * mut mjData, con : * mut mjPreContact, g1 : i32, g2 : i32, margin : f64)
-    // Previous return: i32
-    todo!("re-translate: params renamed")
+    todo!() // mjc_MeshSDF
 }
 
 /// C: mjc_SDF (engine/engine_collision_sdf.h:45)
@@ -367,10 +292,7 @@ pub fn mjc_mesh_sdf(m: *const mjModel, d: *mut mjData, con: *mut mjPreContact, g
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjc_sdf(m: *const mjModel, d: *mut mjData, con: *mut mjPreContact, g1: i32, g2: i32, margin: f64) -> i32 {
-    // NOTE: signature changed from previous IR version
-    // Previous params: (m : * const mjModel, d : * mut mjData, con : * mut mjPreContact, g1 : i32, g2 : i32, margin : f64)
-    // Previous return: i32
-    todo!("re-translate: params renamed")
+    todo!() // mjc_SDF
 }
 
 /// C: mjc_FlexSDF (engine/engine_collision_sdf.h:48)
@@ -382,9 +304,6 @@ pub fn mjc_sdf(m: *const mjModel, d: *mut mjData, con: *mut mjPreContact, g1: i3
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjc_flex_sdf(m: *const mjModel, d: *const mjData, con: *mut mjPreContact, elem: *mut i32, g: i32, f: i32, margin: f64) -> i32 {
-    // NOTE: signature changed from previous IR version
-    // Previous params: (m : * const mjModel, d : * const mjData, con : * mut mjPreContact, elem : * mut i32, g : i32, f : i32, margin : f64)
-    // Previous return: i32
-    todo!("re-translate: params renamed")
+    todo!() // mjc_FlexSDF
 }
 
