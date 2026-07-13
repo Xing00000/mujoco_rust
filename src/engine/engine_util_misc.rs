@@ -1672,19 +1672,29 @@ pub fn mju_is_valid_base64(s: *const i8) -> usize {
 pub fn mju_decode_base64(buf: *mut u8, s: *const i8) -> usize {
     // SAFETY: caller guarantees buf has enough space and s is a valid null-terminated base64 string
     unsafe {
+        // inline base64 char decoder
+        let decode = |ch: u8| -> u32 {
+            if ch >= b'A' && ch <= b'Z' { return (ch - b'A') as u32; }
+            if ch >= b'a' && ch <= b'z' { return (ch - b'a') as u32 + 26; }
+            if ch >= b'0' && ch <= b'9' { return (ch - b'0') as u32 + 52; }
+            if ch == b'+' { return 62; }
+            if ch == b'/' { return 63; }
+            0
+        };
+
         let mut i: usize = 0;
         let mut j: usize = 0;
 
         // loop over 24 bit chunks
         while *s.add(i) != 0 {
             // take next 24 bit chunk (4 chars; 6 bits each)
-            let char_1 = decode_base64_char(*s.add(i) as u8);
+            let char_1 = decode(*s.add(i) as u8);
             i += 1;
-            let char_2 = decode_base64_char(*s.add(i) as u8);
+            let char_2 = decode(*s.add(i) as u8);
             i += 1;
-            let char_3 = decode_base64_char(*s.add(i) as u8);
+            let char_3 = decode(*s.add(i) as u8);
             i += 1;
-            let char_4 = decode_base64_char(*s.add(i) as u8);
+            let char_4 = decode(*s.add(i) as u8);
             i += 1;
 
             // merge into 32 bit int
@@ -1704,26 +1714,6 @@ pub fn mju_decode_base64(buf: *mut u8, s: *const i8) -> usize {
         }
         j
     }
-}
-
-#[inline]
-fn decode_base64_char(ch: u8) -> u32 {
-    if ch >= b'A' && ch <= b'Z' {
-        return (ch - b'A') as u32;
-    }
-    if ch >= b'a' && ch <= b'z' {
-        return (ch - b'a') as u32 + 26;
-    }
-    if ch >= b'0' && ch <= b'9' {
-        return (ch - b'0') as u32 + 52;
-    }
-    if ch == b'+' {
-        return 62;
-    }
-    if ch == b'/' {
-        return 63;
-    }
-    0
 }
 
 /// C: mju_historyInit (engine/engine_util_misc.h:184)
