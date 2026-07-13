@@ -2160,19 +2160,13 @@ pub fn mju_type2str(r#type: i32) -> *const i8 {
 /// C: mju_str2Type (engine/engine_util_misc.h:243)
 #[allow(unused_variables, non_snake_case)]
 pub fn mju_str2type(str: *const i8) -> i32 {
-    // NOTE: signature changed from previous IR version
-    // Previous params: (str : * const i8)
-    // Previous return: i32
-    todo!("re-translate: params renamed")
+    todo!("requires string comparison with C string literals")
 }
 
 /// C: mju_writeNumBytes (engine/engine_util_misc.h:246)
 #[allow(unused_variables, non_snake_case)]
 pub fn mju_write_num_bytes(nbytes: usize) -> *const i8 {
-    // NOTE: signature changed from previous IR version
-    // Previous params: (nbytes : usize)
-    // Previous return: * const i8
-    todo!("re-translate: params renamed")
+    todo!("requires static buffer + sprintf")
 }
 
 /// C: mju_warningText (engine/engine_util_misc.h:249)
@@ -2277,6 +2271,7 @@ pub fn mju_fill_int(res: *mut i32, val: i32, n: i32) {
 pub fn mju_standard_normal(num2: *mut f64) -> f64 {
     todo!("requires C rand() function")
 }
+
 
 /// C: mju_f2n (engine/engine_util_misc.h:273)
 /// ⚠️ BITEXACT RULES:

@@ -135,10 +135,14 @@ pub fn mjuu_copyvec(dest: *mut T1, src: *const T2, n: i32) {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjuu_addtovec(dest: *mut f64, src: *const f64, n: i32) {
-    // NOTE: signature changed from previous IR version
-    // Previous params: (dest : * mut f64, src : * const f64, n : i32)
-    // Previous return: ()
-    todo!("re-translate: params renamed")
+    // SAFETY: caller guarantees dest and src point to at least n f64
+    unsafe {
+        let mut i: i32 = 0;
+        while i < n {
+            *dest.offset(i as isize) += *src.offset(i as isize);
+            i += 1;
+        }
+    }
 }
 
 /// C: mjuu_zerovec (user/user_util.h:62)
@@ -176,7 +180,14 @@ pub fn mjuu_dot3(a: *const f64, b: *const f64) -> f64 {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjuu_dist3(a: *const f64, b: *const f64) -> f64 {
-    todo!() // mjuu_dist3
+    // SAFETY: caller guarantees a and b point to at least 3 f64
+    unsafe {
+        f64::sqrt(
+            (*a.add(0) - *b.add(0)) * (*a.add(0) - *b.add(0))
+          + (*a.add(1) - *b.add(1)) * (*a.add(1) - *b.add(1))
+          + (*a.add(2) - *b.add(2)) * (*a.add(2) - *b.add(2))
+        )
+    }
 }
 
 /// C: mjuu_L1 (user/user_util.h:74)
