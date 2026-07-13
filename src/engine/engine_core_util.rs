@@ -395,7 +395,31 @@ pub fn mju_flex_gather_state(m: *const mjModel, d: *const mjData, f: i32, xpos: 
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_contact_force(m: *const mjModel, d: *const mjData, id: i32, result: *mut f64) {
-    todo!() // mj_contactForce
+    unsafe {
+        // SAFETY: Caller guarantees m, d, result are valid. id is checked.
+        // Clear result
+        crate::engine::engine_util_blas::mju_zero(result, 6);
+
+        // Make sure contact is valid
+        if id >= 0 && id < (*d).ncon && (*(*d).contact.add(id as usize)).efc_address >= 0 {
+            let con = &*(*d).contact.add(id as usize);
+
+            if crate::engine::engine_core_util::mj_is_pyramidal(m) != 0 {
+                crate::engine::engine_util_misc::mju_decode_pyramid(
+                    result,
+                    (*d).efc_force.add(con.efc_address as usize),
+                    con.friction.as_ptr(),
+                    con.dim,
+                );
+            } else {
+                crate::engine::engine_util_blas::mju_copy(
+                    result,
+                    (*d).efc_force.add(con.efc_address as usize),
+                    con.dim,
+                );
+            }
+        }
+    }
 }
 
 /// C: tendonLimit (engine/engine_core_util.h:139)
