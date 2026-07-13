@@ -7,7 +7,43 @@ use crate::types::*;
 /// C: clearIsland (engine/engine_island.c:39)
 #[allow(unused_variables, non_snake_case)]
 pub fn clear_island(d: *mut mjData, parena: usize) {
-    todo!() // clearIsland
+    // SAFETY: caller guarantees d is valid
+    unsafe {
+        (*d).tree_island = std::ptr::null_mut();
+        (*d).island_ntree = std::ptr::null_mut();
+        (*d).island_itreeadr = std::ptr::null_mut();
+        (*d).map_itree2tree = std::ptr::null_mut();
+        (*d).dof_island = std::ptr::null_mut();
+        (*d).island_nv = std::ptr::null_mut();
+        (*d).island_idofadr = std::ptr::null_mut();
+        (*d).island_dofadr = std::ptr::null_mut();
+        (*d).map_dof2idof = std::ptr::null_mut();
+        (*d).map_idof2dof = std::ptr::null_mut();
+        (*d).ifrc_smooth = std::ptr::null_mut();
+        (*d).iacc_smooth = std::ptr::null_mut();
+        (*d).iacc = std::ptr::null_mut();
+        (*d).efc_island = std::ptr::null_mut();
+        (*d).island_ne = std::ptr::null_mut();
+        (*d).island_nf = std::ptr::null_mut();
+        (*d).island_nefc = std::ptr::null_mut();
+        (*d).island_iefcadr = std::ptr::null_mut();
+        (*d).map_efc2iefc = std::ptr::null_mut();
+        (*d).map_iefc2efc = std::ptr::null_mut();
+        (*d).iefc_type = std::ptr::null_mut();
+        (*d).iefc_id = std::ptr::null_mut();
+        (*d).iefc_frictionloss = std::ptr::null_mut();
+        (*d).iefc_D = std::ptr::null_mut();
+        (*d).iefc_R = std::ptr::null_mut();
+        (*d).iefc_aref = std::ptr::null_mut();
+        (*d).iefc_state = std::ptr::null_mut();
+        (*d).iefc_force = std::ptr::null_mut();
+        (*d).ifrc_constraint = std::ptr::null_mut();
+
+        (*d).nefc = 0;
+        (*d).nisland = 0;
+        (*d).nidof = 0;
+        (*d).parena = parena;
+    }
 }
 
 /// C: arenaAllocIsland (engine/engine_island.c:57)

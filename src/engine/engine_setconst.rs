@@ -14,7 +14,32 @@ pub fn mj_set_m0(m: *mut mjModel, d: *mut mjData) {
 /// C: GetWrapBodyTreeId (engine/engine_setconst.c:64)
 #[allow(unused_variables, non_snake_case)]
 pub fn get_wrap_body_tree_id(m: *const mjModel, wrap_index: i32) -> i32 {
-    todo!() // GetWrapBodyTreeId
+    // SAFETY: caller guarantees m is valid and wrap_index is in bounds
+    unsafe {
+        let mut bodyid: i32 = -1;
+        let objid: i32 = *(*m).wrap_objid.add(wrap_index as usize);
+
+        match *(*m).wrap_type.add(wrap_index as usize) {
+            1 => { // mjWRAP_JOINT
+                bodyid = *(*m).jnt_bodyid.add(objid as usize);
+            }
+            4 => { // mjWRAP_SITE
+                bodyid = *(*m).site_bodyid.add(objid as usize);
+            }
+            2 | 3 => { // mjWRAP_SPHERE | mjWRAP_CYLINDER
+                bodyid = *(*m).geom_bodyid.add(objid as usize);
+            }
+            5 | 0 => { // mjWRAP_PULLEY | mjWRAP_NONE
+            }
+            _ => {}
+        }
+
+        if bodyid != -1 {
+            *(*m).body_treeid.add(bodyid as usize)
+        } else {
+            -1
+        }
+    }
 }
 
 /// C: setFixed (engine/engine_setconst.c:86)

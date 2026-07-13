@@ -76,7 +76,43 @@ pub fn get_xquat(m: *const mjModel, d: *const mjData, r#type: u32, id: i32, sens
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn cam_project(sensordata: *mut f64, target_xpos: *const f64, cam_xpos: *const f64, cam_xmat: *const f64, cam_res: *const i32, cam_fovy: f64, cam_intrinsic: *const f32, cam_sensorsize: *const f32) {
-    todo!() // cam_project
+    use crate::engine::engine_util_blas::{mju_sub3, mju_mul_mat_t_vec};
+
+    const MJ_MINVAL: f64 = 1e-15;
+    const MJ_PI: f64 = std::f64::consts::PI;
+
+    // SAFETY: caller guarantees all pointers are valid with correct sizes
+    unsafe {
+        let fx: f64;
+        let fy: f64;
+
+        if *cam_sensorsize.add(0) != 0.0 && *cam_sensorsize.add(1) != 0.0 {
+            fx = (*cam_intrinsic.add(0) as f64) / (*cam_sensorsize.add(0) as f64) * (*cam_res.add(0) as f64);
+            fy = (*cam_intrinsic.add(1) as f64) / (*cam_sensorsize.add(1) as f64) * (*cam_res.add(1) as f64);
+        } else {
+            let val = 0.5 / f64::tan(cam_fovy * MJ_PI / 360.0) * (*cam_res.add(1) as f64);
+            fx = val;
+            fy = val;
+        }
+
+        let mut relative_pos: [f64; 3] = [0.0; 3];
+        mju_sub3(relative_pos.as_mut_ptr(), target_xpos, cam_xpos);
+
+        let mut cam_pos: [f64; 3] = [0.0; 3];
+        mju_mul_mat_t_vec(cam_pos.as_mut_ptr(), cam_xmat, relative_pos.as_ptr(), 3, 3);
+
+        let mut denom: f64 = cam_pos[2];
+        if f64::abs(denom) < MJ_MINVAL {
+            if denom < 0.0 {
+                denom = if denom < -MJ_MINVAL { denom } else { -MJ_MINVAL };
+            } else {
+                denom = if denom > MJ_MINVAL { denom } else { MJ_MINVAL };
+            }
+        }
+
+        *sensordata.add(0) = -fx * (cam_pos[0] / denom) + 0.5 * (*cam_res.add(0) as f64);
+        *sensordata.add(1) =  fy * (cam_pos[1] / denom) + 0.5 * (*cam_res.add(1) as f64);
+    }
 }
 
 /// C: checkMatch (engine/engine_sensor.c:320)

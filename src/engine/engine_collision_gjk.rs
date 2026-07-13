@@ -56,7 +56,35 @@ pub fn s2d(lambda: *mut f64, s1: *const f64, s2: *const f64, s3: *const f64) {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn s1d(lambda: *mut f64, s1: *const f64, s2: *const f64) {
-    todo!() // S1D
+    // SAFETY: caller guarantees lambda[2], s1[3], s2[3] are valid
+    unsafe {
+        let mut p_o: [f64; 3] = [0.0; 3];
+        project_origin_line(p_o.as_mut_ptr(), s1, s2);
+
+        let mut mu: f64 = *s1.add(0) - *s2.add(0);
+        let mut mu_max: f64 = mu;
+        let mut index: usize = 0;
+
+        mu = *s1.add(1) - *s2.add(1);
+        if f64::abs(mu) >= f64::abs(mu_max) {
+            mu_max = mu;
+            index = 1;
+        }
+
+        mu = *s1.add(2) - *s2.add(2);
+        if f64::abs(mu) >= f64::abs(mu_max) {
+            mu_max = mu;
+            index = 2;
+        }
+
+        let c1: f64 = p_o[index] - *s2.add(index);
+        let c2: f64 = *s1.add(index) - p_o[index];
+
+        let same: bool = same_sign2(mu_max, c1) != 0 && same_sign2(mu_max, c2) != 0;
+
+        *lambda.add(0) = if same { c1 / mu_max } else { 0.0 };
+        *lambda.add(1) = if same { c2 / mu_max } else { 1.0 };
+    }
 }
 
 /// C: gjkSupport (engine/engine_collision_gjk.c:66)
