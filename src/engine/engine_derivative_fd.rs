@@ -76,7 +76,14 @@ pub fn clamped_state_diff(m: *const mjModel, ds: *mut f64, s: *const f64, s_plus
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn in_range(x1: f64, x2: f64, range: *const f64) -> i32 {
-    todo!() // inRange
+    // SAFETY: range points to at least 2 f64 elements (caller contract)
+    unsafe {
+        if x1 >= *range.add(0) && x1 <= *range.add(1) && x2 >= *range.add(0) && x2 <= *range.add(1) {
+            1
+        } else {
+            0
+        }
+    }
 }
 
 /// C: inverseSkip (engine/engine_derivative_fd.c:152)

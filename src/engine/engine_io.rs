@@ -33,7 +33,7 @@ pub fn bufread(dest: *mut (), num: i32, szbuf: usize, buf: *const (), ptrbuf: *m
 /// C: SKIP (engine/engine_io.c:132)
 #[allow(unused_variables, non_snake_case)]
 pub fn skip(offset: isize) -> u32 {
-    todo!() // SKIP
+    (64 - offset % 64) as u32
 }
 
 /// C: mj_setPtrModel (engine/engine_io.c:142)

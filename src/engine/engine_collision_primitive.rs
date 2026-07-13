@@ -37,7 +37,12 @@ pub fn mjraw_sphere_sphere(con: *mut mjPreContact, margin: f64, pos1: *const f64
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn area_sign(p1: *const f64, p2: *const f64, p3: *const f64) -> f64 {
-    todo!() // areaSign
+    // SAFETY: p1, p2, p3 each point to at least 2 f64 elements (caller contract)
+    unsafe {
+        let val = (*p1.add(0) - *p3.add(0)) * (*p2.add(1) - *p3.add(1))
+                - (*p2.add(0) - *p3.add(0)) * (*p1.add(1) - *p3.add(1));
+        if val > 0.0 { 1.0 } else if val < 0.0 { -1.0 } else { 0.0 }
+    }
 }
 
 /// C: pointSegment (engine/engine_collision_primitive.c:540)

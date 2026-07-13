@@ -124,7 +124,10 @@ pub fn mjc_box_support(res: *mut f64, obj: *mut mjCCDObj, dir: *const f64) {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn dot3f(a: *const f64, b: *const f32) -> f64 {
-    todo!() // dot3f
+    // SAFETY: a points to 3 f64 elements, b points to 3 f32 elements (caller contract)
+    unsafe {
+        (*a.add(0)) * (*b.add(0) as f64) + (*a.add(1)) * (*b.add(1) as f64) + (*a.add(2)) * (*b.add(2) as f64)
+    }
 }
 
 /// C: mjc_meshSupport (engine/engine_collision_convex.c:349)

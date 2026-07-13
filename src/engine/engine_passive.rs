@@ -12,7 +12,17 @@ use crate::types::*;
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn grad_squared_lengths(gradient: *mut [[f64; 3]; 2], xpos: *const f64, vert: *const i32, edge: *const [i32; 2], nedge: i32) {
-    todo!() // GradSquaredLengths
+    // SAFETY: caller guarantees all pointers are valid and arrays are properly sized
+    unsafe {
+        for e in 0..nedge as usize {
+            for d in 0..3usize {
+                let v0 = *vert.add((*edge.add(e))[0] as usize);
+                let v1 = *vert.add((*edge.add(e))[1] as usize);
+                (*gradient.add(e))[0][d] = *xpos.add(3 * v0 as usize + d) - *xpos.add(3 * v1 as usize + d);
+                (*gradient.add(e))[1][d] = *xpos.add(3 * v1 as usize + d) - *xpos.add(3 * v0 as usize + d);
+            }
+        }
+    }
 }
 
 /// C: mj_flexPassiveInterp (engine/engine_passive.c:63)
@@ -91,7 +101,7 @@ pub fn mj_contact_passive(m: *const mjModel, d: *mut mjData) -> i32 {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mji_pow4(val: f64) -> f64 {
-    todo!() // mji_pow4
+    (val * val) * (val * val)
 }
 
 /// C: mji_pow2 (engine/engine_passive.c:1219)

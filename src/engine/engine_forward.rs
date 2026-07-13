@@ -25,7 +25,16 @@ pub fn dcmotor_voltage(ctrl: f64, length: f64, velocity: f64, x_I: f64, gainprm:
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn clamp_vec(vec: *mut f64, range: *const f64, limited: *const mjtBool, n: i32, index: *const i32) {
-    todo!() // clampVec
+    use crate::engine::engine_util_misc::mju_clip;
+    // SAFETY: caller guarantees all pointers are valid with at least n elements
+    unsafe {
+        for i in 0..n as usize {
+            let j = if index.is_null() { i } else { *index.add(i) as usize };
+            if (*limited.add(i))._data[0] != 0 {
+                *vec.add(j) = mju_clip(*vec.add(j), *range.add(2 * i), *range.add(2 * i + 1));
+            }
+        }
+    }
 }
 
 /// C: warmstart (engine/engine_forward.c:786)

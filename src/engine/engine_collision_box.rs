@@ -13,7 +13,13 @@ use crate::types::*;
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mju_clamp_vec(vec: *mut f64, limit: *const f64, n: i32) {
-    todo!() // mju_clampVec
+    use crate::engine::engine_util_misc::{mju_max, mju_min};
+    // SAFETY: caller guarantees vec has at least n elements, limit has at least 2*n elements
+    unsafe {
+        for i in 0..n as usize {
+            *vec.add(i) = mju_max(*limit.add(2 * i), mju_min(*limit.add(2 * i + 1), *vec.add(i)));
+        }
+    }
 }
 
 /// C: mjraw_SphereBox (engine/engine_collision_box.c:34)

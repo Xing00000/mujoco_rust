@@ -181,7 +181,38 @@ pub fn can_collide(m: *const mjModel, bf: i32) -> i32 {
 /// Calls: filterBitmask
 #[allow(unused_variables, non_snake_case)]
 pub fn can_collide2(m: *const mjModel, bf1: i32, bf2: i32) -> i32 {
-    todo!() // canCollide2
+    // SAFETY: caller guarantees m is a valid pointer to mjModel with valid array fields
+    unsafe {
+        let nbody = (*m).nbody;
+        let contype1: i32;
+        let conaffinity1: i32;
+        let contype2: i32;
+        let conaffinity2: i32;
+
+        if (bf1 as usize) < nbody {
+            contype1 = *(*m).body_contype.add(bf1 as usize);
+            conaffinity1 = *(*m).body_conaffinity.add(bf1 as usize);
+        } else {
+            let f = bf1 as usize - nbody;
+            contype1 = *(*m).flex_contype.add(f);
+            conaffinity1 = *(*m).flex_conaffinity.add(f);
+        }
+
+        if (bf2 as usize) < nbody {
+            contype2 = *(*m).body_contype.add(bf2 as usize);
+            conaffinity2 = *(*m).body_conaffinity.add(bf2 as usize);
+        } else {
+            let f = bf2 as usize - nbody;
+            contype2 = *(*m).flex_contype.add(f);
+            conaffinity2 = *(*m).flex_conaffinity.add(f);
+        }
+
+        if (contype1 & conaffinity2) != 0 || (contype2 & conaffinity1) != 0 {
+            1
+        } else {
+            0
+        }
+    }
 }
 
 /// C: mj_collideTree (engine/engine_collision_driver.c:361)

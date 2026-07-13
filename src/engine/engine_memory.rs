@@ -8,7 +8,11 @@ use crate::types::*;
 /// Calls: power
 #[allow(unused_variables, non_snake_case)]
 pub fn fastmod(a: usize, b: usize) -> usize {
-    todo!() // fastmod
+    if (b & (b - 1)) == 0 {
+        a & (b - 1)
+    } else {
+        a % b
+    }
 }
 
 /// C: get_stack_info_from_data (engine/engine_memory.c:74)

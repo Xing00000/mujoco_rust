@@ -13,7 +13,41 @@ use crate::types::*;
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn box_projection(point: *mut f64, r#box: *const f64) -> f64 {
-    todo!() // boxProjection
+    // SAFETY: point is a mutable array of 3 f64, box is an array of 6 f64 (caller contract)
+    unsafe {
+        let r: [f64; 3] = [
+            *point.add(0) - *r#box.add(0),
+            *point.add(1) - *r#box.add(1),
+            *point.add(2) - *r#box.add(2),
+        ];
+        let q: [f64; 3] = [
+            f64::abs(r[0]) - *r#box.add(3),
+            f64::abs(r[1]) - *r#box.add(4),
+            f64::abs(r[2]) - *r#box.add(5),
+        ];
+        let mut dist_sqr: f64 = 0.0;
+        let eps: f64 = 1e-6;
+
+        if q[0] <= 0.0 && q[1] <= 0.0 && q[2] <= 0.0 {
+            let max_q12 = if q[1] > q[2] { q[1] } else { q[2] };
+            return if q[0] > max_q12 { q[0] } else { max_q12 };
+        }
+
+        if q[0] >= 0.0 {
+            dist_sqr += q[0] * q[0];
+            *point.add(0) -= if r[0] > 0.0 { q[0] + eps } else { -(q[0] + eps) };
+        }
+        if q[1] >= 0.0 {
+            dist_sqr += q[1] * q[1];
+            *point.add(1) -= if r[1] > 0.0 { q[1] + eps } else { -(q[1] + eps) };
+        }
+        if q[2] >= 0.0 {
+            dist_sqr += q[2] * q[2];
+            *point.add(2) -= if r[2] > 0.0 { q[2] + eps } else { -(q[2] + eps) };
+        }
+
+        f64::sqrt(dist_sqr)
+    }
 }
 
 /// C: findOct (engine/engine_collision_sdf.c:69)
