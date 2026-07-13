@@ -143,10 +143,20 @@ pub fn mj_set_keyframe(m: *mut mjModel, d: *const mjData, k: i32) {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_full_m(m: *const mjModel, d: *const mjData, dst: *mut f64) {
-    // NOTE: signature changed from previous IR version
-    // Previous params: (m : * const mjModel, d : * const mjData, dst : * mut f64)
-    // Previous return: ()
-    todo!("re-translate: params renamed")
+    // SAFETY: m, d, dst valid. Calls mju_sym2dense with sparse M from mjData.
+    //   mjModel: nv at 8, M_rownnz at 5424, M_rowadr at 5432, M_colind at 5440
+    //   mjData: M at 161120
+    unsafe {
+        let m_ptr = m as *const u8;
+        let d_ptr = d as *const u8;
+        let nv = *(m_ptr.add(8) as *const usize) as i32;
+        let M_rownnz = *(m_ptr.add(5424) as *const *const i32);
+        let M_rowadr = *(m_ptr.add(5432) as *const *const i32);
+        let M_colind = *(m_ptr.add(5440) as *const *const i32);
+        let M = *(d_ptr.add(161120) as *const *const f64);
+
+        crate::engine::engine_util_sparse::mju_sym2dense(dst, M, nv, M_rownnz, M_rowadr, M_colind);
+    }
 }
 
 /// C: mj_mulM (engine/engine_support.h:65)
@@ -158,10 +168,20 @@ pub fn mj_full_m(m: *const mjModel, d: *const mjData, dst: *mut f64) {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_mul_m(m: *const mjModel, d: *const mjData, res: *mut f64, vec: *const f64) {
-    // NOTE: signature changed from previous IR version
-    // Previous params: (m : * const mjModel, d : * const mjData, res : * mut f64, vec : * const f64)
-    // Previous return: ()
-    todo!("re-translate: params renamed")
+    // SAFETY: m, d, res, vec valid. Calls mju_mulSymVecSparse.
+    //   mjModel: nv at 8, M_rownnz at 5424, M_rowadr at 5432, M_colind at 5440
+    //   mjData: M at 161120
+    unsafe {
+        let m_ptr = m as *const u8;
+        let d_ptr = d as *const u8;
+        let nv = *(m_ptr.add(8) as *const usize) as i32;
+        let M_rownnz = *(m_ptr.add(5424) as *const *const i32);
+        let M_rowadr = *(m_ptr.add(5432) as *const *const i32);
+        let M_colind = *(m_ptr.add(5440) as *const *const i32);
+        let M = *(d_ptr.add(161120) as *const *const f64);
+
+        crate::engine::engine_util_sparse::mju_mul_sym_vec_sparse(res, M, vec, nv, M_rownnz, M_rowadr, M_colind);
+    }
 }
 
 /// C: mj_mulM2 (engine/engine_support.h:68)
