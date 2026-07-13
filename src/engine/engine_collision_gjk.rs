@@ -1,10 +1,11 @@
 //! Port of: engine/engine_collision_gjk.c
-//! IR hash: 6ff71909dacce27f
+//! IR hash: d784001b6381c4aa
 //! CODEGEN: signatures locked. Only fill todo!() bodies.
 
 use crate::types::*;
 
 /// C: align8 (engine/engine_collision_gjk.c:49)
+/// Calls: FilePath::size
 #[allow(unused_variables, non_snake_case)]
 pub fn align8(size: usize) -> usize {
     (size + 7) & !7
@@ -78,7 +79,32 @@ pub fn gjk_support(v: *mut Vertex, obj1: *mut mjCCDObj, obj2: *mut mjCCDObj, x_k
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn lincomb(res: *mut f64, coef: *const f64, n: i32, v1: *const f64, v2: *const f64, v3: *const f64, v4: *const f64) {
-    todo!() // lincomb
+    // SAFETY: raw pointer arithmetic matching C array access; caller guarantees valid pointers and sizes
+    unsafe {
+        match n {
+            1 => {
+                *res.add(0) = *coef.add(0) * *v1.add(0);
+                *res.add(1) = *coef.add(0) * *v1.add(1);
+                *res.add(2) = *coef.add(0) * *v1.add(2);
+            }
+            2 => {
+                *res.add(0) = *coef.add(0) * *v1.add(0) + *coef.add(1) * *v2.add(0);
+                *res.add(1) = *coef.add(0) * *v1.add(1) + *coef.add(1) * *v2.add(1);
+                *res.add(2) = *coef.add(0) * *v1.add(2) + *coef.add(1) * *v2.add(2);
+            }
+            3 => {
+                *res.add(0) = *coef.add(0) * *v1.add(0) + *coef.add(1) * *v2.add(0) + *coef.add(2) * *v3.add(0);
+                *res.add(1) = *coef.add(0) * *v1.add(1) + *coef.add(1) * *v2.add(1) + *coef.add(2) * *v3.add(1);
+                *res.add(2) = *coef.add(0) * *v1.add(2) + *coef.add(1) * *v2.add(2) + *coef.add(2) * *v3.add(2);
+            }
+            4 => {
+                *res.add(0) = *coef.add(0) * *v1.add(0) + *coef.add(1) * *v2.add(0) + *coef.add(2) * *v3.add(0) + *coef.add(3) * *v4.add(0);
+                *res.add(1) = *coef.add(0) * *v1.add(1) + *coef.add(1) * *v2.add(1) + *coef.add(2) * *v3.add(1) + *coef.add(3) * *v4.add(1);
+                *res.add(2) = *coef.add(0) * *v1.add(2) + *coef.add(1) * *v2.add(2) + *coef.add(2) * *v3.add(2) + *coef.add(3) * *v4.add(2);
+            }
+            _ => {}
+        }
+    }
 }
 
 /// C: epaSupport (engine/engine_collision_gjk.c:108)
@@ -154,7 +180,17 @@ pub fn epa(status: *mut mjCCDStatus, pt: *mut Polytope, obj1: *mut mjCCDObj, obj
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn equal3(v1: *const f64, v2: *const f64) -> i32 {
-    todo!() // equal3
+    // SAFETY: raw pointer arithmetic matching C array access; caller guarantees valid pointers
+    unsafe {
+        if (*v1.add(0) - *v2.add(0)).abs() < 1e-15
+            && (*v1.add(1) - *v2.add(1)).abs() < 1e-15
+            && (*v1.add(2) - *v2.add(2)).abs() < 1e-15
+        {
+            1
+        } else {
+            0
+        }
+    }
 }
 
 /// C: add3 (engine/engine_collision_gjk.c:140)
@@ -165,7 +201,12 @@ pub fn equal3(v1: *const f64, v2: *const f64) -> i32 {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn add3(res: *mut f64, v1: *const f64, v2: *const f64) {
-    todo!() // add3
+    // SAFETY: raw pointer arithmetic matching C array access; caller guarantees valid pointers
+    unsafe {
+        *res.add(0) = *v1.add(0) + *v2.add(0);
+        *res.add(1) = *v1.add(1) + *v2.add(1);
+        *res.add(2) = *v1.add(2) + *v2.add(2);
+    }
 }
 
 /// C: sub3 (engine/engine_collision_gjk.c:145)
@@ -176,7 +217,12 @@ pub fn add3(res: *mut f64, v1: *const f64, v2: *const f64) {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn sub3(res: *mut f64, v1: *const f64, v2: *const f64) {
-    todo!() // sub3
+    // SAFETY: raw pointer arithmetic matching C array access; caller guarantees valid pointers
+    unsafe {
+        *res.add(0) = *v1.add(0) - *v2.add(0);
+        *res.add(1) = *v1.add(1) - *v2.add(1);
+        *res.add(2) = *v1.add(2) - *v2.add(2);
+    }
 }
 
 /// C: dot3 (engine/engine_collision_gjk.c:150)
@@ -187,7 +233,10 @@ pub fn sub3(res: *mut f64, v1: *const f64, v2: *const f64) {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn dot3(v1: *const f64, v2: *const f64) -> f64 {
-    todo!() // dot3
+    // SAFETY: raw pointer arithmetic matching C array access; caller guarantees valid pointers
+    unsafe {
+        *v1.add(0) * *v2.add(0) + *v1.add(1) * *v2.add(1) + *v1.add(2) * *v2.add(2)
+    }
 }
 
 /// C: norm3 (engine/engine_collision_gjk.c:155)
@@ -199,7 +248,7 @@ pub fn dot3(v1: *const f64, v2: *const f64) -> f64 {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn norm3(v: *const f64) -> f64 {
-    todo!() // norm3
+    dot3(v, v).sqrt()
 }
 
 /// C: copy3 (engine/engine_collision_gjk.c:160)
@@ -210,7 +259,12 @@ pub fn norm3(v: *const f64) -> f64 {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn copy3(res: *mut f64, v: *const f64) {
-    todo!() // copy3
+    // SAFETY: raw pointer arithmetic matching C array access; caller guarantees valid pointers
+    unsafe {
+        *res.add(0) = *v.add(0);
+        *res.add(1) = *v.add(1);
+        *res.add(2) = *v.add(2);
+    }
 }
 
 /// C: scl3 (engine/engine_collision_gjk.c:165)
@@ -221,7 +275,12 @@ pub fn copy3(res: *mut f64, v: *const f64) {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn scl3(res: *mut f64, v: *const f64, s: f64) {
-    todo!() // scl3
+    // SAFETY: raw pointer arithmetic matching C array access; caller guarantees valid pointers
+    unsafe {
+        *res.add(0) = s * *v.add(0);
+        *res.add(1) = s * *v.add(1);
+        *res.add(2) = s * *v.add(2);
+    }
 }
 
 /// C: cross3 (engine/engine_collision_gjk.c:170)
@@ -232,7 +291,12 @@ pub fn scl3(res: *mut f64, v: *const f64, s: f64) {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn cross3(res: *mut f64, v1: *const f64, v2: *const f64) {
-    todo!() // cross3
+    // SAFETY: raw pointer arithmetic matching C array access; caller guarantees valid pointers
+    unsafe {
+        *res.add(0) = *v1.add(1) * *v2.add(2) - *v1.add(2) * *v2.add(1);
+        *res.add(1) = *v1.add(2) * *v2.add(0) - *v1.add(0) * *v2.add(2);
+        *res.add(2) = *v1.add(0) * *v2.add(1) - *v1.add(1) * *v2.add(0);
+    }
 }
 
 /// C: det3 (engine/engine_collision_gjk.c:177)
@@ -243,7 +307,12 @@ pub fn cross3(res: *mut f64, v1: *const f64, v2: *const f64) {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn det3(v1: *const f64, v2: *const f64, v3: *const f64) -> f64 {
-    todo!() // det3
+    // SAFETY: raw pointer arithmetic matching C array access; caller guarantees valid pointers
+    unsafe {
+        *v1.add(0) * (*v2.add(1) * *v3.add(2) - *v2.add(2) * *v3.add(1))
+            + *v1.add(1) * (*v2.add(2) * *v3.add(0) - *v2.add(0) * *v3.add(2))
+            + *v1.add(2) * (*v2.add(0) * *v3.add(1) - *v2.add(1) * *v3.add(0))
+    }
 }
 
 /// C: discreteGeoms (engine/engine_collision_gjk.c:188)
@@ -327,7 +396,13 @@ pub fn project_origin_line(res: *mut f64, v1: *const f64, v2: *const f64) {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn same_sign2(a: f64, b: f64) -> i32 {
-    todo!() // sameSign2
+    if a > 0.0 && b > 0.0 {
+        return 1;
+    }
+    if a < 0.0 && b < 0.0 {
+        return -1;
+    }
+    0
 }
 
 /// C: replaceSimplex3 (engine/engine_collision_gjk.c:849)
@@ -470,6 +545,7 @@ pub fn area4(a: *const f64, b: *const f64, c: *const f64, d: *const f64) -> f64 
 }
 
 /// C: next (engine/engine_collision_gjk.c:1520)
+/// Calls: mjCMesh::nvert
 /// ⚠️ BITEXACT RULES:
 ///   1. Copy exact C accumulation order (no iter().sum())
 ///   2. No f64::mul_add() (FMA changes precision)
@@ -552,6 +628,7 @@ pub fn globalcoord(res: *mut f64, mat: *const f64, pos: *const f64, l1: f64, l2:
 }
 
 /// C: intersect (engine/engine_collision_gjk.c:1759)
+/// Calls: GlobalTable::count
 #[allow(unused_variables, non_snake_case)]
 pub fn intersect(res: *mut i32, arr1: *const i32, arr2: *const i32, n: i32, m: i32) -> i32 {
     todo!() // intersect
