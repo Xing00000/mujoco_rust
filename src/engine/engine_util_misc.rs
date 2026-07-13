@@ -2295,7 +2295,74 @@ pub fn mju_write_num_bytes(nbytes: usize) -> *const i8 {
 /// Calls: mju_writeNumBytes
 #[allow(unused_variables, non_snake_case)]
 pub fn mju_warning_text(warning: i32, info: usize) -> *const i8 {
-    todo!() // mju_warningText
+    // thread-local buffer for warning string
+    thread_local! {
+        static STR: std::cell::RefCell<[u8; 1000]> = std::cell::RefCell::new([0u8; 1000]);
+    }
+
+    extern "C" {
+        fn snprintf(s: *mut i8, n: usize, fmt: *const i8, ...) -> i32;
+    }
+
+    const mjWARN_INERTIA: i32 = 0;
+    const mjWARN_CONTACTFULL: i32 = 1;
+    const mjWARN_CNSTRFULL: i32 = 2;
+    const mjWARN_BADQPOS: i32 = 3;
+    const mjWARN_BADQVEL: i32 = 4;
+    const mjWARN_BADQACC: i32 = 5;
+    const mjWARN_BADCTRL: i32 = 6;
+
+    STR.with(|cell| {
+        let mut buf = cell.borrow_mut();
+        let ptr = buf.as_mut_ptr() as *mut i8;
+        // SAFETY: ptr is a valid buffer of 1000 bytes, format strings are null-terminated
+        unsafe {
+            match warning {
+                mjWARN_INERTIA => {
+                    snprintf(ptr, 1000,
+                        b"Inertia matrix is too close to singular at DOF %zu. Check model.\0".as_ptr() as *const i8,
+                        info);
+                }
+                mjWARN_CONTACTFULL => {
+                    snprintf(ptr, 1000,
+                        b"Too many contacts. The arena memory is full, increase arena memory allocation.(ncon = %zu)\0".as_ptr() as *const i8,
+                        info);
+                }
+                mjWARN_CNSTRFULL => {
+                    let bytes_str = mju_write_num_bytes(info);
+                    snprintf(ptr, 1000,
+                        b"Insufficient arena memory for the number of constraints generated. Increase arena memory allocation above %s bytes.\0".as_ptr() as *const i8,
+                        bytes_str);
+                }
+                mjWARN_BADQPOS => {
+                    snprintf(ptr, 1000,
+                        b"Nan, Inf or huge value in QPOS at DOF %zu. The simulation is unstable.\0".as_ptr() as *const i8,
+                        info);
+                }
+                mjWARN_BADQVEL => {
+                    snprintf(ptr, 1000,
+                        b"Nan, Inf or huge value in QVEL at DOF %zu. The simulation is unstable.\0".as_ptr() as *const i8,
+                        info);
+                }
+                mjWARN_BADQACC => {
+                    snprintf(ptr, 1000,
+                        b"Nan, Inf or huge value in QACC at DOF %zu. The simulation is unstable.\0".as_ptr() as *const i8,
+                        info);
+                }
+                mjWARN_BADCTRL => {
+                    snprintf(ptr, 1000,
+                        b"Nan, Inf or huge value in CTRL at ACTUATOR %zu. The simulation is unstable.\0".as_ptr() as *const i8,
+                        info);
+                }
+                _ => {
+                    snprintf(ptr, 1000,
+                        b"Unknown warning type %d.\0".as_ptr() as *const i8,
+                        warning);
+                }
+            }
+        }
+        buf.as_ptr() as *const i8
+    })
 }
 
 /// C: mju_isBad (engine/engine_util_misc.h:252)

@@ -171,7 +171,41 @@ pub fn mj_factor_i(mat: *mut f64, diaginv: *mut f64, nv: i32, rownnz: *const i32
 /// Calls: mj_factorI, mju_copy, mju_copySparse
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_factor_m(m: *const mjModel, d: *mut mjData) {
-    todo!() // mj_factorM
+    // SAFETY: m and d are valid pointers from caller; all field accesses are within bounds
+    unsafe {
+        const mjENBL_SLEEP: i32 = 1 << 4;
+
+        // sleep filtering
+        let sleep_filter = ((*m).opt.enableflags & mjENBL_SLEEP) != 0
+            && (*d).nv_awake < (*m).nv as i32;
+
+        let index: *const i32;
+        let nv: i32;
+
+        // no sleep filtering: copy everything
+        if sleep_filter == false {
+            index = std::ptr::null();
+            nv = (*m).nv as i32;
+            crate::engine::engine_util_blas::mju_copy(
+                (*d).qLD, (*d).M, (*m).nC as i32,
+            );
+        } else {
+            // sleep filtering: copy only awake dofs
+            index = (*d).dof_awake_ind;
+            nv = (*d).nv_awake;
+            crate::engine::engine_util_sparse::mju_copy_sparse(
+                (*d).qLD, (*d).M,
+                (*m).M_rownnz, (*m).M_rowadr,
+                (*d).dof_awake_ind, (*d).nv_awake,
+            );
+        }
+
+        // factorize
+        mj_factor_i(
+            (*d).qLD, (*d).qLDiagInv, nv,
+            (*m).M_rownnz, (*m).M_rowadr, (*m).M_colind, index,
+        );
+    }
 }
 
 /// C: mj_solveLD_legacy (engine/engine_core_smooth.h:79)
