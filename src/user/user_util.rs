@@ -409,10 +409,15 @@ pub fn mjuu_localaxis(al: *mut f64, ag: *const f64, quat: *const f64) {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjuu_localpos(pl: *mut f64, pg: *const f64, pos: *const f64, quat: *const f64) {
-    // NOTE: signature changed from previous IR version
-    // Previous params: (pl : * mut f64, pg : * const f64, pos : * const f64, quat : * const f64)
-    // Previous return: ()
-    todo!("re-translate: params renamed")
+    // SAFETY: pl[3], pg[3], pos[3], quat[4] valid (caller contract)
+    unsafe {
+        let a: [f64; 3] = [
+            *pg.add(0) - *pos.add(0),
+            *pg.add(1) - *pos.add(1),
+            *pg.add(2) - *pos.add(2),
+        ];
+        mjuu_localaxis(pl, a.as_ptr(), quat);
+    }
 }
 
 /// C: mjuu_localquat (user/user_util.h:112)
@@ -500,10 +505,20 @@ pub fn mjuu_frame2quat(quat: *mut f64, x: *const f64, y: *const f64, z: *const f
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjuu_frameinvert(newpos: *mut f64, newquat: *mut f64, oldpos: *const f64, oldquat: *const f64) {
-    // NOTE: signature changed from previous IR version
-    // Previous params: (newpos : * mut f64, newquat : * mut f64, oldpos : * const f64, oldquat : * const f64)
-    // Previous return: ()
-    todo!("re-translate: params renamed")
+    // SAFETY: newpos[3], newquat[4], oldpos[3], oldquat[4] valid (caller contract)
+    unsafe {
+        // position
+        mjuu_localaxis(newpos, oldpos, oldquat);
+        *newpos.add(0) = -*newpos.add(0);
+        *newpos.add(1) = -*newpos.add(1);
+        *newpos.add(2) = -*newpos.add(2);
+
+        // orientation
+        *newquat.add(0) = *oldquat.add(0);
+        *newquat.add(1) = -*oldquat.add(1);
+        *newquat.add(2) = -*oldquat.add(2);
+        *newquat.add(3) = -*oldquat.add(3);
+    }
 }
 
 /// C: mjuu_frameaccum (user/user_util.h:132)
