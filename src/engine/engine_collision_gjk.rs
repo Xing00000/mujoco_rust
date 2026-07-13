@@ -373,7 +373,46 @@ pub fn signed_distance(normal: *mut f64, v1: *const Vertex, v2: *const Vertex, v
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn project_origin_plane(res: *mut f64, v1: *const f64, v2: *const f64, v3: *const f64) -> i32 {
-    todo!() // projectOriginPlane
+    const MJ_MINVAL: f64 = 1E-15_f64;
+    let mut diff21: [f64; 3] = [0.0; 3];
+    let mut diff31: [f64; 3] = [0.0; 3];
+    let mut diff32: [f64; 3] = [0.0; 3];
+    let mut n: [f64; 3] = [0.0; 3];
+
+    sub3(diff21.as_mut_ptr(), v2, v1);
+    sub3(diff31.as_mut_ptr(), v3, v1);
+    sub3(diff32.as_mut_ptr(), v3, v2);
+
+    // n = (v1 - v2) x (v3 - v2)
+    cross3(n.as_mut_ptr(), diff32.as_ptr(), diff21.as_ptr());
+    let mut nv = dot3(n.as_ptr(), v2);
+    let mut nn = dot3(n.as_ptr(), n.as_ptr());
+    if nn == 0.0 {
+        return 1;
+    }
+    if nv != 0.0 && nn > MJ_MINVAL {
+        scl3(res, n.as_ptr(), nv / nn);
+        return 0;
+    }
+
+    // n = (v2 - v1) x (v3 - v1)
+    cross3(n.as_mut_ptr(), diff21.as_ptr(), diff31.as_ptr());
+    nv = dot3(n.as_ptr(), v1);
+    nn = dot3(n.as_ptr(), n.as_ptr());
+    if nn == 0.0 {
+        return 1;
+    }
+    if nv != 0.0 && nn > MJ_MINVAL {
+        scl3(res, n.as_ptr(), nv / nn);
+        return 0;
+    }
+
+    // n = (v1 - v3) x (v2 - v3)
+    cross3(n.as_mut_ptr(), diff31.as_ptr(), diff32.as_ptr());
+    nv = dot3(n.as_ptr(), v3);
+    nn = dot3(n.as_ptr(), n.as_ptr());
+    scl3(res, n.as_ptr(), nv / nn);
+    0
 }
 
 /// C: projectOriginLine (engine/engine_collision_gjk.c:544)
@@ -385,7 +424,15 @@ pub fn project_origin_plane(res: *mut f64, v1: *const f64, v2: *const f64, v3: *
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn project_origin_line(res: *mut f64, v1: *const f64, v2: *const f64) {
-    todo!() // projectOriginLine
+    let mut diff: [f64; 3] = [0.0; 3];
+    sub3(diff.as_mut_ptr(), v2, v1);
+    let scl = -(dot3(v2, diff.as_ptr()) / dot3(diff.as_ptr(), diff.as_ptr()));
+    // SAFETY: raw pointer arithmetic matching C array access; caller guarantees valid pointers
+    unsafe {
+        *res.add(0) = *v2.add(0) + scl * *diff.get_unchecked(0);
+        *res.add(1) = *v2.add(1) + scl * *diff.get_unchecked(1);
+        *res.add(2) = *v2.add(2) + scl * *diff.get_unchecked(2);
+    }
 }
 
 /// C: sameSign2 (engine/engine_collision_gjk.c:556)
