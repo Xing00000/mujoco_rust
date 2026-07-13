@@ -371,7 +371,15 @@ pub fn mjuu_mulmat(res: *mut f64, A: *const f64, B: *const f64) {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjuu_transposemat(res: *mut f64, mat: *const f64) {
-    todo!() // mjuu_transposemat
+    // SAFETY: res[9], mat[9] valid (caller contract). Use tmp for aliasing safety.
+    unsafe {
+        let tmp: [f64; 9] = [
+            *mat.add(0), *mat.add(3), *mat.add(6),
+            *mat.add(1), *mat.add(4), *mat.add(7),
+            *mat.add(2), *mat.add(5), *mat.add(8),
+        ];
+        std::ptr::copy_nonoverlapping(tmp.as_ptr(), res, 9);
+    }
 }
 
 /// C: mjuu_localaxis (user/user_util.h:106)
@@ -383,10 +391,13 @@ pub fn mjuu_transposemat(res: *mut f64, mat: *const f64) {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjuu_localaxis(al: *mut f64, ag: *const f64, quat: *const f64) {
-    // NOTE: signature changed from previous IR version
-    // Previous params: (al : * mut f64, ag : * const f64, quat : * const f64)
-    // Previous return: ()
-    todo!("re-translate: params renamed")
+    // SAFETY: al[3], ag[3], quat[4] valid (caller contract)
+    unsafe {
+        let mut mat: [f64; 9] = [0.0; 9];
+        let qneg: [f64; 4] = [*quat.add(0), -*quat.add(1), -*quat.add(2), -*quat.add(3)];
+        mjuu_quat2mat(mat.as_mut_ptr(), qneg.as_ptr());
+        mjuu_mulvecmat(al, ag, mat.as_ptr());
+    }
 }
 
 /// C: mjuu_localpos (user/user_util.h:109)
