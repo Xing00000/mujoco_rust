@@ -7,13 +7,24 @@ use crate::types::*;
 /// C: mj_isPyramidal (engine/engine_core_util.h:31)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_is_pyramidal(m: *const mjModel) -> i32 {
-    todo!() // mj_isPyramidal
+    // SAFETY: m is a valid mjModel pointer; cone is i32 at byte offset 988
+    unsafe {
+        let m_ptr = m as *const u8;
+        let cone = *(m_ptr.add(988) as *const i32);
+        if cone == 0 { 1 } else { 0 }
+    }
 }
 
 /// C: mj_isSparse (engine/engine_core_util.h:34)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_is_sparse(m: *const mjModel) -> i32 {
-    todo!() // mj_isSparse
+    // SAFETY: m is a valid mjModel pointer; jacobian is i32 at offset 992, nv is usize at offset 8
+    unsafe {
+        let m_ptr = m as *const u8;
+        let jacobian = *(m_ptr.add(992) as *const i32);
+        let nv = *(m_ptr.add(8) as *const usize);
+        if jacobian == 1 || (jacobian == 2 && nv >= 60) { 1 } else { 0 }
+    }
 }
 
 /// C: mj_mergeChain (engine/engine_core_util.h:40)

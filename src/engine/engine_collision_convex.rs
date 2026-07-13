@@ -415,7 +415,19 @@ pub fn mjc_point_support(res: *mut f64, obj: *mut mjCCDObj, dir: *const f64) {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjc_line_support(res: *mut f64, obj: *mut mjCCDObj, dir: *const f64) {
-    todo!() // mjc_lineSupport
+    // SAFETY: res, obj, dir are valid pointers from caller
+    unsafe {
+        let mat = (*obj).mat.as_ptr();
+        let pos = (*obj).pos.as_ptr();
+        let length = (*obj).size[1];
+
+        let dot = *mat.add(2) * *dir.add(0) + *mat.add(5) * *dir.add(1) + *mat.add(8) * *dir.add(2);
+        let scl = if dot >= 0.0 { length } else { -length };
+
+        *res.add(0) = *mat.add(2) * scl + *pos.add(0);
+        *res.add(1) = *mat.add(5) * scl + *pos.add(1);
+        *res.add(2) = *mat.add(8) * scl + *pos.add(2);
+    }
 }
 
 /// C: mjc_PlaneConvex (engine/engine_collision_convex.h:112)
@@ -506,9 +518,6 @@ pub fn mjc_fix_normal(m: *const mjModel, d: *const mjData, con: *mut mjPreContac
 /// C: mjc_setCCDBuffer (engine/engine_collision_convex.h:128)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjc_set_ccd_buffer(buffer: *mut ()) {
-    // NOTE: signature changed from previous IR version
-    // Previous params: (buffer : * mut ())
-    // Previous return: ()
-    todo!("re-translate: params renamed")
+    todo!("requires global state") // mjc_setCCDBuffer: sets thread-local ccd_buffer pointer
 }
 

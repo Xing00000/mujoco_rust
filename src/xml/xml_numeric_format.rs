@@ -16,6 +16,6 @@ pub fn mj_private_get_xml_precision() -> i32 {
 /// C: _mjPRIVATE__set_xml_precision (xml/xml_numeric_format.h:24)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_private_set_xml_precision(precision: i32) {
-    todo!() // _mjPRIVATE__set_xml_precision
+    PRECISION.with(|p| p.set(precision));
 }
 

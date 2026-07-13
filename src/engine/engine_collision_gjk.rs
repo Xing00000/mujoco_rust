@@ -7,7 +7,7 @@ use crate::types::*;
 /// C: align8 (engine/engine_collision_gjk.c:49)
 #[allow(unused_variables, non_snake_case)]
 pub fn align8(size: usize) -> usize {
-    todo!() // align8
+    (size + 7) & !7
 }
 
 /// C: subdistance (engine/engine_collision_gjk.c:56)
