@@ -306,7 +306,16 @@ pub fn add_pair(m: *const mjModel, bf1: i32, bf2: i32, npair: *mut i32, pair: *m
 /// C: SAPcmp (engine/engine_collision_driver.c:1383)
 #[allow(unused_variables, non_snake_case)]
 pub fn sa_pcmp(obj1: *mut mjtSAP, obj2: *mut mjtSAP, context: *mut ()) -> i32 {
-    todo!() // SAPcmp
+    // SAFETY: obj1, obj2 are valid mjtSAP pointers (caller contract)
+    unsafe {
+        if (*obj1).value < (*obj2).value {
+            -1
+        } else if (*obj1).value == (*obj2).value {
+            0
+        } else {
+            1
+        }
+    }
 }
 
 /// C: SAPsort (engine/engine_collision_driver.c:1394)

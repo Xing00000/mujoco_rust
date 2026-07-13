@@ -14,7 +14,20 @@ pub fn getnumadr(m: *const mjModel, r#type: u32, padr: *mut *mut i32, mapadr: *m
 /// C: mj_hashString (engine/engine_name.h:30)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_hash_string(s: *const i8, n: u64) -> u64 {
-    todo!() // mj_hashString
+    let mut h: u64 = 5381;
+    let mut ptr = s;
+    // SAFETY: s is a null-terminated C string, we read bytes until null
+    unsafe {
+        loop {
+            let c = *ptr as u8;
+            if c == 0 {
+                break;
+            }
+            h = ((h << 5) + h) ^ (c as u64);
+            ptr = ptr.add(1);
+        }
+    }
+    h % n
 }
 
 /// C: mj_name2id (engine/engine_name.h:33)

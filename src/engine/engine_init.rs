@@ -12,7 +12,23 @@ use crate::types::*;
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_default_sol_ref_imp(solref: *mut f64, solimp: *mut f64) {
-    todo!() // mj_defaultSolRefImp
+    if !solref.is_null() {
+        // SAFETY: solref points to at least 2 f64 (caller contract)
+        unsafe {
+            *solref.add(0) = 0.02;
+            *solref.add(1) = 1.0;
+        }
+    }
+    if !solimp.is_null() {
+        // SAFETY: solimp points to at least 5 f64 (caller contract)
+        unsafe {
+            *solimp.add(0) = 0.9;
+            *solimp.add(1) = 0.95;
+            *solimp.add(2) = 0.001;
+            *solimp.add(3) = 0.5;
+            *solimp.add(4) = 2.0;
+        }
+    }
 }
 
 /// C: mj_defaultOption (engine/engine_init.c:51)

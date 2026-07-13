@@ -206,7 +206,39 @@ pub fn compute_y_fill(Y: *mut f64, Y_colind: *mut i32, Y_rownnz: *const i32, Y_r
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn compute_y_backsub(Y: *mut f64, Y_rownnz: *const i32, Y_rowadr: *const i32, Y_colind: *const i32, nefc: i32, qLD: *const f64, M_rownnz: *const i32, M_rowadr: *const i32, M_colind: *const i32, sqrtInvD: *const f64) {
-    todo!() // computeY_backsub
+    // SAFETY: all pointers are valid sparse matrix data (caller contract)
+    unsafe {
+        for r in 0..nefc {
+            let nnzY = *Y_rownnz.add(r as usize);
+            let adrY = *Y_rowadr.add(r as usize);
+
+            // Y(r,:) <- inv(L') * Y(r,:), exploit sparsity of input vector
+            let mut i = adrY + nnzY - 1;
+            while i >= adrY {
+                let val = *Y.add(i as usize);
+                if val != 0.0 {
+                    let j = *Y_colind.add(i as usize);
+                    let adrM = *M_rowadr.add(j as usize);
+                    crate::engine::engine_util_sparse::mju_add_to_scl_sparse_inc(
+                        Y.add(adrY as usize),
+                        qLD.add(adrM as usize),
+                        nnzY,
+                        Y_colind.add(adrY as usize),
+                        *M_rownnz.add(j as usize) - 1,
+                        M_colind.add(adrM as usize),
+                        -val,
+                    );
+                }
+                i -= 1;
+            }
+
+            // Y(r,:) <- sqrt(inv(D)) * Y(r,:)
+            for i in adrY..(adrY + nnzY) {
+                let j = *Y_colind.add(i as usize);
+                *Y.add(i as usize) *= *sqrtInvD.add(j as usize);
+            }
+        }
+    }
 }
 
 /// C: mj_makeY (engine/engine_core_constraint.c:2908)
