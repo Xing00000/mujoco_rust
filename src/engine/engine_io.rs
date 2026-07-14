@@ -7,20 +7,45 @@ use crate::types::*;
 /// C: getnsize (engine/engine_io.c:72)
 #[allow(unused_variables, non_snake_case)]
 pub fn getnsize() -> i32 {
-    todo ! ()
+    92
 }
 
 /// C: getnptr (engine/engine_io.c:84)
 #[allow(unused_variables, non_snake_case)]
 pub fn getnptr() -> i32 {
-    todo ! ()
+    471
 }
 
 /// C: bufwrite (engine/engine_io.c:96)
 /// Calls: mju_message
 #[allow(unused_variables, non_snake_case)]
 pub fn bufwrite(src: *const (), num: i32, szbuf: usize, buf: *mut (), ptrbuf: *mut usize) {
-    todo!() // bufwrite
+    extern "C" {
+        fn mju_error(msg: *const i8);
+    }
+
+    // SAFETY: caller guarantees src, buf, ptrbuf are valid pointers when non-null
+    unsafe {
+        // check pointers
+        if src.is_null() || buf.is_null() || ptrbuf.is_null() {
+            mju_error(b"NULL pointer passed to bufwrite\0".as_ptr() as *const i8);
+            return;
+        }
+
+        // check size
+        if *ptrbuf + num as usize > szbuf {
+            mju_error(b"attempting to write outside model buffer\0".as_ptr() as *const i8);
+            return;
+        }
+
+        // write, advance pointer
+        std::ptr::copy_nonoverlapping(
+            src as *const u8,
+            (buf as *mut u8).add(*ptrbuf),
+            num as usize,
+        );
+        *ptrbuf += num as usize;
+    }
 }
 
 /// C: bufread (engine/engine_io.c:114)

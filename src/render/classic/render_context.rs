@@ -164,7 +164,116 @@ pub fn half_sphere(sign: i32, nSlice: i32, nStack: i32) {
 /// Calls: setVertexSphere
 #[allow(unused_variables, non_snake_case)]
 pub fn sphere(nSlice: i32, nStack: i32) {
-    todo!() // sphere
+    const GL_TRIANGLES: u32 = 0x0004;
+    const GL_QUADS: u32 = 0x0007;
+    const MJ_PI: f32 = std::f32::consts::PI;
+
+    extern "C" {
+        fn glBegin(mode: u32);
+        fn glEnd();
+        fn glNormal3fv(v: *const f32);
+        fn glVertex3fv(v: *const f32);
+    }
+
+    let mut az1: f32;
+    let mut az2: f32;
+    let mut el1: f32;
+    let mut el2: f32;
+    let mut v1 = [0.0f32; 3];
+    let mut v2 = [0.0f32; 3];
+    let mut v3 = [0.0f32; 3];
+    let mut v4 = [0.0f32; 3];
+    let mut n1 = [0.0f32; 3];
+    let mut n2 = [0.0f32; 3];
+    let mut n3 = [0.0f32; 3];
+    let mut n4 = [0.0f32; 3];
+
+    // SAFETY: GL functions are linked from mujoco C library; all array pointers are stack-local
+    unsafe {
+        // poles: use triangles
+        glBegin(GL_TRIANGLES);
+        let mut sign: i32 = -1;
+        while sign <= 1 {
+            el1 = (0.5 * MJ_PI * sign as f32 * (nStack / 2 - 1) as f32) / (nStack / 2) as f32;
+            for j in 0..nSlice {
+                az1 = (2.0f32 * MJ_PI * (j as f32 + 0.0f32)) / nSlice as f32;
+                az2 = (2.0f32 * MJ_PI * (j as f32 + 1.0f32)) / nSlice as f32;
+
+                // compute triangle vertices
+                set_vertex_sphere(v1.as_mut_ptr(), n1.as_mut_ptr(), az1, el1, 0);
+                set_vertex_sphere(v2.as_mut_ptr(), n2.as_mut_ptr(), az2, el1, 0);
+                v3[0] = 0.0f32;
+                v3[1] = 0.0f32;
+                v3[2] = sign as f32;
+                n3[0] = 0.0f32;
+                n3[1] = 0.0f32;
+                n3[2] = sign as f32;
+
+                // make triangle
+                if sign > 0 {
+                    glNormal3fv(n1.as_ptr());
+                    glVertex3fv(v1.as_ptr());
+                    glNormal3fv(n2.as_ptr());
+                    glVertex3fv(v2.as_ptr());
+                    glNormal3fv(n3.as_ptr());
+                    glVertex3fv(v3.as_ptr());
+                } else {
+                    glNormal3fv(n3.as_ptr());
+                    glVertex3fv(v3.as_ptr());
+                    glNormal3fv(n2.as_ptr());
+                    glVertex3fv(v2.as_ptr());
+                    glNormal3fv(n1.as_ptr());
+                    glVertex3fv(v1.as_ptr());
+                }
+            }
+            sign += 2;
+        }
+        glEnd();
+
+        // the rest: use quads
+        glBegin(GL_QUADS);
+        sign = -1;
+        while sign <= 1 {
+            for i in 0..(nStack / 2 - 1) {
+                el1 = (0.5 * MJ_PI * sign as f32 * (i + 0) as f32) / (nStack / 2) as f32;
+                el2 = (0.5 * MJ_PI * sign as f32 * (i + 1) as f32) / (nStack / 2) as f32;
+
+                for j in 0..nSlice {
+                    az1 = (2.0f32 * MJ_PI * (j + 0) as f32) / nSlice as f32;
+                    az2 = (2.0f32 * MJ_PI * (j + 1) as f32) / nSlice as f32;
+
+                    // compute quad vertices
+                    set_vertex_sphere(v1.as_mut_ptr(), n1.as_mut_ptr(), az1, el1, 0);
+                    set_vertex_sphere(v2.as_mut_ptr(), n2.as_mut_ptr(), az2, el1, 0);
+                    set_vertex_sphere(v3.as_mut_ptr(), n3.as_mut_ptr(), az2, el2, 0);
+                    set_vertex_sphere(v4.as_mut_ptr(), n4.as_mut_ptr(), az1, el2, 0);
+
+                    // make quad
+                    if sign > 0 {
+                        glNormal3fv(n1.as_ptr());
+                        glVertex3fv(v1.as_ptr());
+                        glNormal3fv(n2.as_ptr());
+                        glVertex3fv(v2.as_ptr());
+                        glNormal3fv(n3.as_ptr());
+                        glVertex3fv(v3.as_ptr());
+                        glNormal3fv(n4.as_ptr());
+                        glVertex3fv(v4.as_ptr());
+                    } else {
+                        glNormal3fv(n4.as_ptr());
+                        glVertex3fv(v4.as_ptr());
+                        glNormal3fv(n3.as_ptr());
+                        glVertex3fv(v3.as_ptr());
+                        glNormal3fv(n2.as_ptr());
+                        glVertex3fv(v2.as_ptr());
+                        glNormal3fv(n1.as_ptr());
+                        glVertex3fv(v1.as_ptr());
+                    }
+                }
+            }
+            sign += 2;
+        }
+        glEnd();
+    }
 }
 
 /// C: setVertexDisk (render/classic/render_context.c:682)
@@ -330,7 +439,20 @@ pub fn debug_callback(source: GLenum, r#type: GLenum, id: GLuint, severity: GLen
 /// C: glDebugEnabled (render/classic/render_context.c:1518)
 #[allow(unused_variables, non_snake_case)]
 pub fn gl_debug_enabled() -> i32 {
-    todo ! ()
+    extern "C" {
+        fn getenv(name: *const i8) -> *mut i8;
+        fn strcmp(s1: *const i8, s2: *const i8) -> i32;
+    }
+
+    // SAFETY: getenv and strcmp are standard C library functions; string literals are null-terminated
+    unsafe {
+        let debug = getenv(b"MUJOCO_GL_DEBUG\0".as_ptr() as *const i8);
+        if !debug.is_null() && strcmp(debug, b"1\0".as_ptr() as *const i8) == 0 {
+            1
+        } else {
+            0
+        }
+    }
 }
 
 /// C: mjr_makeContext_offSize (render/classic/render_context.c:1525)

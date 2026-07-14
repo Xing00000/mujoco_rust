@@ -7,13 +7,32 @@ use crate::types::*;
 /// C: printInt (engine/engine_print.c:53)
 #[allow(unused_variables, non_snake_case)]
 pub fn print_int(fp: *mut FILE, name: *const i8, value: i32) {
-    todo!() // printInt
+    extern "C" {
+        fn fprintf(fp: *mut FILE, fmt: *const i8, ...) -> i32;
+    }
+
+    // SAFETY: fp is a valid FILE pointer, name is a valid C string (caller contract)
+    unsafe {
+        fprintf(fp, b"%-21s\0".as_ptr() as *const i8, name);
+        fprintf(fp, b" %d\0".as_ptr() as *const i8, value);
+        fprintf(fp, b"\n\0".as_ptr() as *const i8);
+    }
 }
 
 /// C: printStr (engine/engine_print.c:59)
 #[allow(unused_variables, non_snake_case)]
 pub fn print_str(fp: *mut FILE, name: *const i8, value: *const i8) {
-    todo!() // printStr
+    extern "C" {
+        fn fprintf(fp: *mut FILE, fmt: *const i8, ...) -> i32;
+    }
+
+    // SAFETY: fp is a valid FILE pointer, name/value are valid C strings (caller contract)
+    unsafe {
+        fprintf(fp, b"%-21s\0".as_ptr() as *const i8, name);
+        let empty = b"\0".as_ptr() as *const i8;
+        fprintf(fp, b"%s\0".as_ptr() as *const i8, if !value.is_null() { value } else { empty });
+        fprintf(fp, b"\n\0".as_ptr() as *const i8);
+    }
 }
 
 /// C: printNum (engine/engine_print.c:65)
@@ -24,7 +43,16 @@ pub fn print_str(fp: *mut FILE, name: *const i8, value: *const i8) {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn print_num(fp: *mut FILE, name: *const i8, value: f32, float_format: *const i8) {
-    todo!() // printNum
+    extern "C" {
+        fn fprintf(fp: *mut FILE, fmt: *const i8, ...) -> i32;
+    }
+
+    // SAFETY: fp is a valid FILE pointer, name/float_format are valid C strings (caller contract)
+    unsafe {
+        fprintf(fp, b"%-21s\0".as_ptr() as *const i8, name);
+        fprintf(fp, float_format, value as f64);
+        fprintf(fp, b"\n\0".as_ptr() as *const i8);
+    }
 }
 
 /// C: printArr (engine/engine_print.c:71)
@@ -35,7 +63,23 @@ pub fn print_num(fp: *mut FILE, name: *const i8, value: f32, float_format: *cons
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn print_arr(fp: *mut FILE, name: *const i8, data: *const f32, n: i32, float_format: *const i8) {
-    todo!() // printArr
+    extern "C" {
+        fn fprintf(fp: *mut FILE, fmt: *const i8, ...) -> i32;
+    }
+
+    if data.is_null() {
+        return;
+    }
+
+    // SAFETY: fp valid, data points to n floats, name/float_format are valid C strings
+    unsafe {
+        fprintf(fp, b"%-21s\0".as_ptr() as *const i8, name);
+        for i in 0..n as usize {
+            fprintf(fp, float_format, *data.add(i) as f64);
+            fprintf(fp, b" \0".as_ptr() as *const i8);
+        }
+        fprintf(fp, b"\n\0".as_ptr() as *const i8);
+    }
 }
 
 /// C: printArray2d (engine/engine_print.c:84)
@@ -46,7 +90,29 @@ pub fn print_arr(fp: *mut FILE, name: *const i8, data: *const f32, n: i32, float
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn print_array2d(str: *const i8, nr: i32, nc: i32, data: *const f64, fp: *mut FILE, float_format: *const i8) {
-    todo!() // printArray2d
+    extern "C" {
+        fn fprintf(fp: *mut FILE, fmt: *const i8, ...) -> i32;
+    }
+
+    if data.is_null() {
+        return;
+    }
+
+    // SAFETY: fp valid, data points to nr*nc doubles, str/float_format are valid C strings
+    unsafe {
+        if nr != 0 && nc != 0 {
+            fprintf(fp, b"%s\n\0".as_ptr() as *const i8, str);
+            for r in 0..nr {
+                fprintf(fp, b" \0".as_ptr() as *const i8);
+                for c in 0..nc {
+                    fprintf(fp, b" \0".as_ptr() as *const i8);
+                    fprintf(fp, float_format, *data.add((c + r * nc) as usize));
+                }
+                fprintf(fp, b"\n\0".as_ptr() as *const i8);
+            }
+            fprintf(fp, b"\n\0".as_ptr() as *const i8);
+        }
+    }
 }
 
 /// C: printArray2dInt (engine/engine_print.c:105)
@@ -119,7 +185,28 @@ pub fn print_vector(str: *const i8, data: *const f64, n: i32, fp: *mut FILE, flo
 /// C: memorySize (engine/engine_print.c:395)
 #[allow(unused_variables, non_snake_case)]
 pub fn memory_size(nbytes: usize) -> *const i8 {
-    todo!() // memorySize
+    thread_local! {
+        static MESSAGE: std::cell::RefCell<[u8; 32]> = std::cell::RefCell::new([0u8; 32]);
+    }
+    extern "C" {
+        fn snprintf(s: *mut i8, n: usize, fmt: *const i8, ...) -> i32;
+    }
+
+    let k: usize = 1024;
+
+    MESSAGE.with(|cell| {
+        let mut buf = cell.borrow_mut();
+        let ptr = buf.as_mut_ptr() as *mut i8;
+        // SAFETY: ptr points to 32-byte thread-local buffer, snprintf will not overflow
+        unsafe {
+            if nbytes < k {
+                snprintf(ptr, 32, b"%5zu bytes\0".as_ptr() as *const i8, nbytes);
+            } else {
+                snprintf(ptr, 32, b"%7.0f KB\0".as_ptr() as *const i8, nbytes as f64 / k as f64);
+            }
+        }
+        ptr as *const i8
+    })
 }
 
 /// C: sizeMesh (engine/engine_print.c:410)
