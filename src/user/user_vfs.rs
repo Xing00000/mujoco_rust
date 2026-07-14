@@ -1,5 +1,5 @@
 //! Port of: user/user_vfs.cc
-//! IR hash: e878892ca48fe222
+//! IR hash: 47ee20b2bff3660e
 //! CODEGEN: signatures locked. Only fill todo!() bodies.
 
 use crate::types::*;
@@ -34,10 +34,7 @@ pub fn file_modified(resource: *const mjResource, timestamp: *const i8) -> i32 {
 /// C: StripPathAndLower (user/user_vfs.cc:94)
 #[allow(unused_variables, non_snake_case)]
 pub fn strip_path_and_lower(path: string) -> std__string {
-    // NOTE: signature changed from previous IR version
-    // Previous params: (path : i32)
-    // Previous return: i32
-    todo!("re-translate: params renamed")
+    todo!() // StripPathAndLower
 }
 
 /// C: mj_defaultVFS (user/user_vfs.cc:355)
@@ -180,10 +177,7 @@ pub fn vfs_create_resource(self_ptr: *mut VFS, name: string_view, provider: *con
 /// Calls: StripPathAndLower, VFS::CreateResource, mjp_getResourceProvider
 #[allow(unused_variables, non_snake_case)]
 pub fn vfs_find_mount(self_ptr: *mut VFS, fullpath: *const std__string) -> *mut mjResource {
-    // NOTE: signature changed from previous IR version
-    // Previous params: (self_ptr : * mut VFS, fullpath : * const i32)
-    // Previous return: * mut mjResource
-    todo!("re-translate: params renamed")
+    todo!() // VFS::FindMount
 }
 
 /// C: VFS::MaybeSelfDestruct (user/user_vfs.h:124)

@@ -1,5 +1,5 @@
 //! Port of: engine/engine_print.c
-//! IR hash: e878892ca48fe222
+//! IR hash: 47ee20b2bff3660e
 //! CODEGEN: signatures locked. Only fill todo!() bodies.
 
 use crate::types::*;
@@ -7,19 +7,13 @@ use crate::types::*;
 /// C: printInt (engine/engine_print.c:53)
 #[allow(unused_variables, non_snake_case)]
 pub fn print_int(fp: *mut FILE, name: *const i8, value: i32) {
-    // NOTE: signature changed from previous IR version
-    // Previous params: (fp : * mut i32, name : * const i8, value : i32)
-    // Previous return: ()
-    todo!("re-translate: params renamed")
+    todo!() // printInt
 }
 
 /// C: printStr (engine/engine_print.c:59)
 #[allow(unused_variables, non_snake_case)]
 pub fn print_str(fp: *mut FILE, name: *const i8, value: *const i8) {
-    // NOTE: signature changed from previous IR version
-    // Previous params: (fp : * mut i32, name : * const i8, value : * const i8)
-    // Previous return: ()
-    todo!("re-translate: params renamed")
+    todo!() // printStr
 }
 
 /// C: printNum (engine/engine_print.c:65)
@@ -30,10 +24,7 @@ pub fn print_str(fp: *mut FILE, name: *const i8, value: *const i8) {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn print_num(fp: *mut FILE, name: *const i8, value: f32, float_format: *const i8) {
-    // NOTE: signature changed from previous IR version
-    // Previous params: (fp : * mut i32, name : * const i8, value : f32, float_format : * const i8)
-    // Previous return: ()
-    todo!("re-translate: params renamed")
+    todo!() // printNum
 }
 
 /// C: printArr (engine/engine_print.c:71)
@@ -44,10 +35,7 @@ pub fn print_num(fp: *mut FILE, name: *const i8, value: f32, float_format: *cons
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn print_arr(fp: *mut FILE, name: *const i8, data: *const f32, n: i32, float_format: *const i8) {
-    // NOTE: signature changed from previous IR version
-    // Previous params: (fp : * mut i32, name : * const i8, data : * const f32, n : i32, float_format : * const i8)
-    // Previous return: ()
-    todo!("re-translate: params renamed")
+    todo!() // printArr
 }
 
 /// C: printArray2d (engine/engine_print.c:84)
@@ -58,19 +46,13 @@ pub fn print_arr(fp: *mut FILE, name: *const i8, data: *const f32, n: i32, float
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn print_array2d(str: *const i8, nr: i32, nc: i32, data: *const f64, fp: *mut FILE, float_format: *const i8) {
-    // NOTE: signature changed from previous IR version
-    // Previous params: (str : * const i8, nr : i32, nc : i32, data : * const f64, fp : * mut i32, float_format : * const i8)
-    // Previous return: ()
-    todo!("re-translate: params renamed")
+    todo!() // printArray2d
 }
 
 /// C: printArray2dInt (engine/engine_print.c:105)
 #[allow(unused_variables, non_snake_case)]
 pub fn print_array2d_int(str: *const i8, nr: i32, nc: i32, data: *const i32, fp: *mut FILE) {
-    // NOTE: signature changed from previous IR version
-    // Previous params: (str : * const i8, nr : i32, nc : i32, data : * const i32, fp : * mut i32)
-    // Previous return: ()
-    todo!("re-translate: params renamed")
+    todo!() // printArray2dInt
 }
 
 /// C: printDelayBuffer (engine/engine_print.c:125)
@@ -81,10 +63,7 @@ pub fn print_array2d_int(str: *const i8, nr: i32, nc: i32, data: *const i32, fp:
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn print_delay_buffer(name: *const i8, buf: *const f64, nhistory: i32, dim: i32, fp: *mut FILE, float_format: *const i8) {
-    // NOTE: signature changed from previous IR version
-    // Previous params: (name : * const i8, buf : * const f64, nhistory : i32, dim : i32, fp : * mut i32, float_format : * const i8)
-    // Previous return: ()
-    todo!("re-translate: params renamed")
+    todo!() // printDelayBuffer
 }
 
 /// C: printSparse (engine/engine_print.c:170)
@@ -95,10 +74,7 @@ pub fn print_delay_buffer(name: *const i8, buf: *const f64, nhistory: i32, dim: 
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn print_sparse(str: *const i8, mat: *const f64, nr: i32, rownnz: *const i32, rowadr: *const i32, colind: *const i32, fp: *mut FILE, float_format: *const i8) {
-    // NOTE: signature changed from previous IR version
-    // Previous params: (str : * const i8, mat : * const f64, nr : i32, rownnz : * const i32, rowadr : * const i32, colind : * const i32, fp : * mut i32, float_format : * const i8)
-    // Previous return: ()
-    todo!("re-translate: params renamed")
+    todo!() // printSparse
 }
 
 /// C: printBlockArray (engine/engine_print.c:193)
@@ -109,10 +85,7 @@ pub fn print_sparse(str: *const i8, mat: *const f64, nr: i32, rownnz: *const i32
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn print_block_array(str: *const i8, data: *const f64, nc: i32, nisland: i32, island_nr: *const i32, island_nc: *const i32, island_r: *const i32, island_c: *const i32, map_r: *const i32, map_c: *const i32, fp: *mut FILE, float_format: *const i8) {
-    // NOTE: signature changed from previous IR version
-    // Previous params: (str : * const i8, data : * const f64, nc : i32, nisland : i32, island_nr : * const i32, island_nc : * const i32, island_r : * const i32, island_c : * const i32, map_r : * const i32, map_c : * const i32, fp : * mut i32, float_format : * const i8)
-    // Previous return: ()
-    todo!("re-translate: params renamed")
+    todo!() // printBlockArray
 }
 
 /// C: printInertia (engine/engine_print.c:246)
@@ -123,19 +96,13 @@ pub fn print_block_array(str: *const i8, data: *const f64, nc: i32, nisland: i32
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn print_inertia(str: *const i8, mat: *const f64, m: *const mjModel, fp: *mut FILE, float_format: *const i8) {
-    // NOTE: signature changed from previous IR version
-    // Previous params: (str : * const i8, mat : * const f64, m : * const mjModel, fp : * mut i32, float_format : * const i8)
-    // Previous return: ()
-    todo!("re-translate: params renamed")
+    todo!() // printInertia
 }
 
 /// C: mj_printBlockSparsity (engine/engine_print.c:319)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_print_block_sparsity(str: *const i8, nr: i32, nc: i32, nisland: i32, island_block_ncols: *const i32, island_col_offset: *const i32, entity_island: *const i32, map_row_to_entity: *const i32, map_col_to_entity: *const i32, rownnz: *const i32, rowadr: *const i32, colind: *const i32, rowsuper: *const i32, fp: *mut FILE) {
-    // NOTE: signature changed from previous IR version
-    // Previous params: (str : * const i8, nr : i32, nc : i32, nisland : i32, island_block_ncols : * const i32, island_col_offset : * const i32, entity_island : * const i32, map_row_to_entity : * const i32, map_col_to_entity : * const i32, rownnz : * const i32, rowadr : * const i32, colind : * const i32, rowsuper : * const i32, fp : * mut i32)
-    // Previous return: ()
-    todo!("re-translate: params renamed")
+    todo!() // mj_printBlockSparsity
 }
 
 /// C: printVector (engine/engine_print.c:377)
@@ -146,10 +113,7 @@ pub fn mj_print_block_sparsity(str: *const i8, nr: i32, nc: i32, nisland: i32, i
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn print_vector(str: *const i8, data: *const f64, n: i32, fp: *mut FILE, float_format: *const i8) {
-    // NOTE: signature changed from previous IR version
-    // Previous params: (str : * const i8, data : * const f64, n : i32, fp : * mut i32, float_format : * const i8)
-    // Previous return: ()
-    todo!("re-translate: params renamed")
+    todo!() // printVector
 }
 
 /// C: memorySize (engine/engine_print.c:395)
@@ -214,10 +178,7 @@ pub fn mj_print_data(m: *const mjModel, d: *const mjData, filename: *const i8) {
 /// C: mj_printSparsity (engine/engine_print.h:47)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_print_sparsity(str: *const i8, nr: i32, nc: i32, rowadr: *const i32, diag: *const i32, rownnz: *const i32, rowsuper: *const i32, colind: *const i32, fp: *mut FILE) {
-    // NOTE: signature changed from previous IR version
-    // Previous params: (str : * const i8, nr : i32, nc : i32, rowadr : * const i32, diag : * const i32, rownnz : * const i32, rowsuper : * const i32, colind : * const i32, fp : * mut i32)
-    // Previous return: ()
-    todo!("re-translate: params renamed")
+    todo!() // mj_printSparsity
 }
 
 /// C: mj_printScene (engine/engine_print.h:51)

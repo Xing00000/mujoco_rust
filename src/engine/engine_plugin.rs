@@ -1,5 +1,5 @@
 //! Port of: engine/engine_plugin.cc
-//! IR hash: e878892ca48fe222
+//! IR hash: 47ee20b2bff3660e
 //! CODEGEN: signatures locked. Only fill todo!() bodies.
 
 use crate::types::*;
@@ -20,10 +20,7 @@ pub fn getext(filename: string_view) -> std__string {
 /// Calls: strklen
 #[allow(unused_variables, non_snake_case)]
 pub fn copy_name(s: *const i8) -> *const () {
-    // NOTE: signature changed from previous IR version
-    // Previous params: (s : * const i8)
-    // Previous return: i32
-    todo!("re-translate: params renamed")
+    todo!() // CopyName
 }
 
 /// C: IsValidURISchemeFormat (engine/engine_plugin.cc:93)

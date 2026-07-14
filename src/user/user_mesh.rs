@@ -1,5 +1,5 @@
 //! Port of: user/user_mesh.cc
-//! IR hash: e878892ca48fe222
+//! IR hash: 47ee20b2bff3660e
 //! CODEGEN: signatures locked. Only fill todo!() bodies.
 
 use crate::types::*;
@@ -146,10 +146,7 @@ pub fn mesh_polygon_insert_face(self_ptr: *mut MeshPolygon, v1: i32, v2: i32, v3
 /// C: MeshPolygon::Paths (user/user_mesh.cc:2686)
 #[allow(unused_variables, non_snake_case)]
 pub fn mesh_polygon_paths(self_ptr: *mut MeshPolygon) -> *const () {
-    // NOTE: signature changed from previous IR version
-    // Previous params: (self_ptr : * mut MeshPolygon)
-    // Previous return: i32
-    todo!("re-translate: params renamed")
+    todo!() // MeshPolygon::Paths
 }
 
 /// C: MeshPolygon::Normal (user/user_mesh.cc:2687)
@@ -225,20 +222,14 @@ pub fn compute_basis(basis: *mut f64, x: *const f64, v: *const i32, faceL: *cons
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn compute_stiffness(stiffness: *const (), body_pos: *const (), v: *const i32, t: i32, E: f64, nu: f64, thickness: f64) {
-    // NOTE: signature changed from previous IR version
-    // Previous params: (stiffness : * mut i32, body_pos : * const i32, v : * const i32, t : i32, E : f64, nu : f64, thickness : f64)
-    // Previous return: ()
-    todo!("re-translate: params renamed")
+    todo!() // ComputeStiffness
 }
 
 /// C: CreateFlapStencil (user/user_mesh.cc:3605)
 /// Calls: mju_error
 #[allow(unused_variables, non_snake_case)]
 pub fn create_flap_stencil(flaps: *const (), simplex: *const (), edgeidx: *const ()) {
-    // NOTE: signature changed from previous IR version
-    // Previous params: (flaps : * mut i32, simplex : * const i32, edgeidx : * const i32)
-    // Previous return: ()
-    todo!("re-translate: params renamed")
+    todo!() // CreateFlapStencil
 }
 
 /// C: cot (user/user_mesh.cc:3657)
@@ -333,10 +324,7 @@ pub fn trace(tensor: *const Matrix) -> f64 {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn compute_linear_stiffness(K: *const (), pos: *const f64, E: f64, nu: f64, order: i32) {
-    // NOTE: signature changed from previous IR version
-    // Previous params: (K : * mut i32, pos : * const f64, E : f64, nu : f64, order : i32)
-    // Previous return: ()
-    todo!("re-translate: params renamed")
+    todo!() // ComputeLinearStiffness
 }
 
 /// C: ComputeLinearStiffness2D (user/user_mesh.cc:3914)
@@ -348,10 +336,7 @@ pub fn compute_linear_stiffness(K: *const (), pos: *const f64, E: f64, nu: f64, 
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn compute_linear_stiffness2d(K: *const (), pos: *const f64, E: f64, nu: f64, order: i32, thickness: f64, normal_axis: i32) {
-    // NOTE: signature changed from previous IR version
-    // Previous params: (K : * mut i32, pos : * const f64, E : f64, nu : f64, order : i32, thickness : f64, normal_axis : i32)
-    // Previous return: ()
-    todo!("re-translate: params renamed")
+    todo!() // ComputeLinearStiffness2D
 }
 
 /// C: ComputeWarpMode (user/user_mesh.cc:4007)
@@ -397,9 +382,6 @@ pub fn eigendecompose_stiffness(K_cell_data: *const f64, out: *mut f64, ndof: i3
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn compute_interp_bending(bending: *const (), nodexpos_local: *const (), order: i32, cellcount: *const i32, young: f64, poisson: f64, thickness: f64) {
-    // NOTE: signature changed from previous IR version
-    // Previous params: (bending : * mut i32, nodexpos_local : * const i32, order : i32, cellcount : * const i32, young : f64, poisson : f64, thickness : f64)
-    // Previous return: ()
-    todo!("re-translate: params renamed")
+    todo!() // ComputeInterpBending
 }
 

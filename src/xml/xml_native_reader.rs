@@ -1,5 +1,5 @@
 //! Port of: xml/xml_native_reader.cc
-//! IR hash: e878892ca48fe222
+//! IR hash: 47ee20b2bff3660e
 //! CODEGEN: signatures locked. Only fill todo!() bodies.
 
 use crate::types::*;
@@ -7,10 +7,7 @@ use crate::types::*;
 /// C: GetAttrPtr (xml/xml_native_reader.cc:59)
 #[allow(unused_variables, non_snake_case)]
 pub fn get_attr_ptr(val: *mut T) -> *const () {
-    // NOTE: signature changed from previous IR version
-    // Previous params: (val : * mut T)
-    // Previous return: i32
-    todo!("re-translate: params renamed")
+    todo!() // GetAttrPtr
 }
 
 /// C: Reader::txt (xml/xml_native_reader.cc:111)

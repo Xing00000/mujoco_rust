@@ -1,5 +1,5 @@
 //! Port of: user/user_cache.h
-//! IR hash: e878892ca48fe222
+//! IR hash: 47ee20b2bff3660e
 //! CODEGEN: signatures locked. Only fill todo!() bodies.
 
 use crate::types::*;
@@ -7,19 +7,13 @@ use crate::types::*;
 /// C: mjCAsset::Timestamp (user/user_cache.h:55)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_asset_timestamp(self_ptr: *mut mjCAsset) -> *const std__string {
-    // NOTE: signature changed from previous IR version
-    // Previous params: (self_ptr : * mut mjCAsset)
-    // Previous return: * const i32
-    todo!("re-translate: params renamed")
+    todo!() // mjCAsset::Timestamp
 }
 
 /// C: mjCAsset::Id (user/user_cache.h:56)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_asset_id(self_ptr: *mut mjCAsset) -> *const std__string {
-    // NOTE: signature changed from previous IR version
-    // Previous params: (self_ptr : * mut mjCAsset)
-    // Previous return: * const i32
-    todo!("re-translate: params renamed")
+    todo!() // mjCAsset::Id
 }
 
 /// C: mjCAsset::InsertNum (user/user_cache.h:57)
@@ -43,19 +37,13 @@ pub fn mj_c_asset_populate_data(self_ptr: *mut mjCAsset, r#fn: mjCDataFunc) -> b
 /// C: mjCAsset::AddReference (user/user_cache.h:69)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_asset_add_reference(self_ptr: *mut mjCAsset, xml_file: string) {
-    // NOTE: signature changed from previous IR version
-    // Previous params: (self_ptr : * mut mjCAsset, xml_file : i32)
-    // Previous return: ()
-    todo!("re-translate: params renamed")
+    todo!() // mjCAsset::AddReference
 }
 
 /// C: mjCAsset::RemoveReference (user/user_cache.h:70)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_asset_remove_reference(self_ptr: *mut mjCAsset, xml_file: *const std__string) {
-    // NOTE: signature changed from previous IR version
-    // Previous params: (self_ptr : * mut mjCAsset, xml_file : * const i32)
-    // Previous return: ()
-    todo!("re-translate: params renamed")
+    todo!() // mjCAsset::RemoveReference
 }
 
 /// C: mjCAsset::ReplaceData (user/user_cache.h:74)
@@ -92,10 +80,7 @@ pub fn mj_c_asset_set_insert_num(self_ptr: *mut mjCAsset, num: usize) {
 /// C: mjCAsset::SetTimestamp (user/user_cache.h:88)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_asset_set_timestamp(self_ptr: *mut mjCAsset, timestamp: string) {
-    // NOTE: signature changed from previous IR version
-    // Previous params: (self_ptr : * mut mjCAsset, timestamp : i32)
-    // Previous return: ()
-    todo!("re-translate: params renamed")
+    todo!() // mjCAsset::SetTimestamp
 }
 
 /// C: mjCAsset::BytesCount (user/user_cache.h:91)
@@ -113,10 +98,7 @@ pub fn mj_c_asset_data(self_ptr: *mut mjCAsset) -> *const () {
 /// C: mjCAsset::References (user/user_cache.h:95)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_asset_references(self_ptr: *mut mjCAsset) -> *const () {
-    // NOTE: signature changed from previous IR version
-    // Previous params: (self_ptr : * mut mjCAsset)
-    // Previous return: * const i32
-    todo!("re-translate: params renamed")
+    todo!() // mjCAsset::References
 }
 
 /// C: mjCCache::SetCapacity (user/user_cache.h:131)
@@ -130,60 +112,42 @@ pub fn mj_c_cache_set_capacity(self_ptr: *mut mjCCache, size: usize) {
 /// Calls: mjCAsset::Timestamp
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_cache_has_asset(self_ptr: *mut mjCCache, id: *const std__string) -> *const std__string {
-    // NOTE: signature changed from previous IR version
-    // Previous params: (self_ptr : * mut mjCCache, id : * const i32)
-    // Previous return: * const i32
-    todo!("re-translate: params renamed")
+    todo!() // mjCCache::HasAsset
 }
 
 /// C: mjCCache::Insert (user/user_cache.h:139)
 /// Calls: mjCAsset::AddReference, mjCAsset::BytesCount, mjCAsset::ReplaceData, mjCAsset::SetInsertNum, mjCAsset::SetTimestamp, mjCAsset::Timestamp
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_cache_insert(self_ptr: *mut mjCCache, modelname: *const std__string, id: *const std__string, resource: *const mjResource, data: *const (), size: usize) -> bool {
-    // NOTE: signature changed from previous IR version
-    // Previous params: (self_ptr : * mut mjCCache, modelname : * const i32, id : * const i32, resource : * const mjResource, data : * const (), size : usize)
-    // Previous return: bool
-    todo!("re-translate: params renamed")
+    todo!() // mjCCache::Insert
 }
 
 /// C: mjCCache::PopulateData (user/user_cache.h:143)
 /// Calls: mjCAsset::IncrementAccess, mjCAsset::PopulateData, mjCAsset::Timestamp, mju_isModifiedResource
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_cache_populate_data(self_ptr: *mut mjCCache, id: *const std__string, resource: *const mjResource, r#fn: mjCDataFunc) -> bool {
-    // NOTE: signature changed from previous IR version
-    // Previous params: (self_ptr : * mut mjCCache, id : * const i32, resource : * const mjResource, r#fn : mjCDataFunc)
-    // Previous return: bool
-    todo!("re-translate: params renamed")
+    todo!() // mjCCache::PopulateData
 }
 
 /// C: mjCCache::DeleteAsset (user/user_cache.h:146)
 /// Calls: mjCCache::Delete
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_cache_delete_asset(self_ptr: *mut mjCCache, id: *const std__string) {
-    // NOTE: signature changed from previous IR version
-    // Previous params: (self_ptr : * mut mjCCache, id : * const i32)
-    // Previous return: ()
-    todo!("re-translate: params renamed")
+    todo!() // mjCCache::DeleteAsset
 }
 
 /// C: mjCCache::RemoveModel (user/user_cache.h:150)
 /// Calls: mjCAsset::HasReferences, mjCAsset::RemoveReference, mjCCache::Delete
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_cache_remove_model(self_ptr: *mut mjCCache, filename: *const std__string) {
-    // NOTE: signature changed from previous IR version
-    // Previous params: (self_ptr : * mut mjCCache, filename : * const i32)
-    // Previous return: ()
-    todo!("re-translate: params renamed")
+    todo!() // mjCCache::RemoveModel
 }
 
 /// C: mjCCache::Reset (user/user_cache.h:153)
 /// Calls: mjCCache::Delete
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_cache_reset(self_ptr: *mut mjCCache, filename: *const std__string) {
-    // NOTE: signature changed from previous IR version
-    // Previous params: (self_ptr : * mut mjCCache)
-    // Previous return: ()
-    todo!("re-translate: params renamed")
+    todo!() // mjCCache::Reset
 }
 
 /// C: mjCCache::Capacity (user/user_cache.h:159)

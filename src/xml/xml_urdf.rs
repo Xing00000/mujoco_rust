@@ -1,5 +1,5 @@
 //! Port of: xml/xml_urdf.h
-//! IR hash: e878892ca48fe222
+//! IR hash: 47ee20b2bff3660e
 //! CODEGEN: signatures locked. Only fill todo!() bodies.
 
 use crate::types::*;
@@ -25,20 +25,14 @@ pub fn mj_xurdf_get_prefixed_name(self_ptr: *mut mjXURDF, name: *const std__stri
 /// C: mjXURDF::FindName (xml/xml_urdf.h:50)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_xurdf_find_name(self_ptr: *mut mjXURDF, name: string, list: *const ()) -> i32 {
-    // NOTE: signature changed from previous IR version
-    // Previous params: (self_ptr : * mut mjXURDF, name : string, list : * mut i32)
-    // Previous return: i32
-    todo!("re-translate: params renamed")
+    todo!() // mjXURDF::FindName
 }
 
 /// C: mjXURDF::AddName (xml/xml_urdf.h:51)
 /// Calls: mjXURDF::FindName
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_xurdf_add_name(self_ptr: *mut mjXURDF, name: string, list: *const ()) {
-    // NOTE: signature changed from previous IR version
-    // Previous params: (self_ptr : * mut mjXURDF, name : string, list : * mut i32)
-    // Previous return: ()
-    todo!("re-translate: params renamed")
+    todo!() // mjXURDF::AddName
 }
 
 /// C: mjXURDF::AddBody (xml/xml_urdf.h:52)

@@ -1,5 +1,5 @@
 //! Port of: user/user_flexcomp.cc
-//! IR hash: e878892ca48fe222
+//! IR hash: 47ee20b2bff3660e
 //! CODEGEN: signatures locked. Only fill todo!() bodies.
 
 use crate::types::*;
@@ -32,10 +32,7 @@ pub fn mat2lin(ix: i32, iy: i32, iz: i32, count: *const i32) -> i32 {
 /// Calls: mju_malloc
 #[allow(unused_variables, non_snake_case)]
 pub fn vec_to_array(vector: *const (), clear: bool) -> *mut T {
-    // NOTE: signature changed from previous IR version
-    // Previous params: (vector : * mut i32, clear : bool)
-    // Previous return: * mut T
-    todo!("re-translate: params renamed")
+    todo!() // VecToArray
 }
 
 /// C: findstring (user/user_flexcomp.cc:1426)

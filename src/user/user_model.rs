@@ -1,5 +1,5 @@
 //! Port of: user/user_model.cc
-//! IR hash: e878892ca48fe222
+//! IR hash: 47ee20b2bff3660e
 //! CODEGEN: signatures locked. Only fill todo!() bodies.
 
 use crate::types::*;
@@ -46,107 +46,74 @@ pub fn get_body_id_from_wrap(wrap: *const mjCWrap) -> i32 {
 /// C: resetlist (user/user_model.cc:304)
 #[allow(unused_variables, non_snake_case)]
 pub fn resetlist(list: *const ()) {
-    // NOTE: signature changed from previous IR version
-    // Previous params: (list : * mut i32)
-    // Previous return: ()
-    todo!("re-translate: params renamed")
+    todo!() // resetlist
 }
 
 /// C: IsPluginActive (user/user_model.cc:440)
 #[allow(unused_variables, non_snake_case)]
 pub fn is_plugin_active(plugin: *const mjpPlugin, active_plugins: *const ()) -> bool {
-    // NOTE: signature changed from previous IR version
-    // Previous params: (plugin : * const mjpPlugin, active_plugins : * const i32)
-    // Previous return: bool
-    todo!("re-translate: params renamed")
+    todo!() // IsPluginActive
 }
 
 /// C: mjCModel::DeleteAll (user/user_model.cc:545)
 /// Calls: mjCBase::Release
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_model_delete_all(self_ptr: *mut mjCModel, elements: *const ()) {
-    // NOTE: signature changed from previous IR version
-    // Previous params: (self_ptr : * mut mjCModel, elements : * mut i32)
-    // Previous return: ()
-    todo!("re-translate: params renamed")
+    todo!() // mjCModel::DeleteAll
 }
 
 /// C: deletefromlist (user/user_model.cc:715)
 /// Calls: FilePath::size
 #[allow(unused_variables, non_snake_case)]
 pub fn deletefromlist(list: *const (), element: *mut mjsElement) {
-    // NOTE: signature changed from previous IR version
-    // Previous params: (list : * mut i32, element : * mut mjsElement)
-    // Previous return: ()
-    todo!("re-translate: params renamed")
+    todo!() // deletefromlist
 }
 
 /// C: GetNext (user/user_model.cc:1411)
 /// Calls: FilePath::empty, FilePath::size
 #[allow(unused_variables, non_snake_case)]
 pub fn get_next(list: *const (), child: *const mjsElement) -> *mut mjsElement {
-    // NOTE: signature changed from previous IR version
-    // Previous params: (list : * const i32, child : * const mjsElement)
-    // Previous return: * mut mjsElement
-    todo!("re-translate: params renamed")
+    todo!() // GetNext
 }
 
 /// C: findobject (user/user_model.cc:1596)
 #[allow(unused_variables, non_snake_case)]
 pub fn findobject(name: string_view, list: *const (), ids: *const mjKeyMap) -> *mut T {
-    // NOTE: signature changed from previous IR version
-    // Previous params: (name : string_view, list : * const i32, ids : * const mjKeyMap)
-    // Previous return: * mut T
-    todo!("re-translate: params renamed")
+    todo!() // findobject
 }
 
 /// C: DeleteAllTextures (user/user_model.cc:1790)
 /// Calls: mjCMaterial::del_textures
 #[allow(unused_variables, non_snake_case)]
 pub fn delete_all_textures(list: *const ()) {
-    // NOTE: signature changed from previous IR version
-    // Previous params: (list : * mut i32)
-    // Previous return: ()
-    todo!("re-translate: params renamed")
+    todo!() // DeleteAllTextures
 }
 
 /// C: DeleteTexcoord (user/user_model.cc:1799)
 /// Calls: mjCMesh::Texcoord
 #[allow(unused_variables, non_snake_case)]
 pub fn delete_texcoord(list: *const ()) {
-    // NOTE: signature changed from previous IR version
-    // Previous params: (list : * mut i32)
-    // Previous return: ()
-    todo!("re-translate: params renamed")
+    todo!() // DeleteTexcoord
 }
 
 /// C: DeleteElements (user/user_model.cc:1810)
 #[allow(unused_variables, non_snake_case)]
 pub fn delete_elements(elements: *const (), discard: *const ()) {
-    // NOTE: signature changed from previous IR version
-    // Previous params: (elements : * mut i32, discard : * const i32)
-    // Previous return: ()
-    todo!("re-translate: params renamed")
+    todo!() // DeleteElements
 }
 
 /// C: mjCModel::Delete (user/user_model.cc:1848)
 /// Calls: DeleteElements
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_model_delete(self_ptr: *mut mjCModel, elements: *const (), discard: *const ()) {
-    // NOTE: signature changed from previous IR version
-    // Previous params: (self_ptr : * mut mjCModel, elements : * mut i32, discard : * const i32)
-    // Previous return: ()
-    todo!("re-translate: params renamed")
+    todo!() // mjCModel::Delete
 }
 
 /// C: getpathslength (user/user_model.cc:2128)
 /// Calls: FilePath::empty
 #[allow(unused_variables, non_snake_case)]
 pub fn getpathslength(list: *const ()) -> usize {
-    // NOTE: signature changed from previous IR version
-    // Previous params: (list : i32)
-    // Previous return: usize
-    todo!("re-translate: params renamed")
+    todo!() // getpathslength
 }
 
 /// C: LRfunc (user/user_model.cc:2459)
@@ -166,30 +133,21 @@ pub fn addtolist(input: *const std__string, adr: i32, output_adr_field: *mut i32
 /// Calls: FilePath::c_str, FilePath::empty, FilePath::size, addtolist, mj_hashString
 #[allow(unused_variables, non_snake_case)]
 pub fn namelist(list: *const (), adr: i32, name_adr: *mut i32, names: *mut i8, map: *mut i32) -> i32 {
-    // NOTE: signature changed from previous IR version
-    // Previous params: (list : * mut i32, adr : i32, name_adr : * mut i32, names : * mut i8, map : * mut i32)
-    // Previous return: i32
-    todo!("re-translate: params renamed")
+    todo!() // namelist
 }
 
 /// C: pathlist (user/user_model.cc:2702)
 /// Calls: FilePath::empty, FilePath::size, addtolist
 #[allow(unused_variables, non_snake_case)]
 pub fn pathlist(list: *const (), adr: i32, path_adr: *mut i32, paths: *mut i8) -> i32 {
-    // NOTE: signature changed from previous IR version
-    // Previous params: (list : * mut i32, adr : i32, path_adr : * mut i32, paths : * mut i8)
-    // Previous return: i32
-    todo!("re-translate: params renamed")
+    todo!() // pathlist
 }
 
 /// C: makelistid (user/user_model.cc:4311)
 /// Calls: FilePath::size
 #[allow(unused_variables, non_snake_case)]
 pub fn makelistid(dest: *const (), source: *const ()) {
-    // NOTE: signature changed from previous IR version
-    // Previous params: (dest : * mut i32, source : * mut i32)
-    // Previous return: ()
-    todo!("re-translate: params renamed")
+    todo!() // makelistid
 }
 
 /// C: changeframe (user/user_model.cc:4319)
@@ -222,10 +180,7 @@ pub fn compare_body_pair(el1: *mut mjCBodyPair, el2: *mut mjCBodyPair) -> i32 {
 /// Calls: FilePath::size
 #[allow(unused_variables, non_snake_case)]
 pub fn reassignid(list: *const ()) {
-    // NOTE: signature changed from previous IR version
-    // Previous params: (list : * mut i32)
-    // Previous return: ()
-    todo!("re-translate: params renamed")
+    todo!() // reassignid
 }
 
 /// C: compilerLogHandler (user/user_model.cc:4665)
@@ -475,10 +430,7 @@ pub fn mj_c_model_add_grouped_warning(self_ptr: *mut mjCModel, subject: *const s
 /// C: mjCModel::GetWarnings (user/user_model.h:256)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_model_get_warnings(self_ptr: *mut mjCModel) -> *const () {
-    // NOTE: signature changed from previous IR version
-    // Previous params: (self_ptr : * mut mjCModel)
-    // Previous return: * const i32
-    todo!("re-translate: params renamed")
+    todo!() // mjCModel::GetWarnings
 }
 
 /// C: mjCModel::ClearWarnings (user/user_model.h:260)
@@ -547,28 +499,19 @@ pub fn mj_c_model_activate_plugin(self_ptr: *mut mjCModel, plugin: *const mjpPlu
 /// C: mjCModel::FindAsset (user/user_model.h:282)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_model_find_asset(self_ptr: *mut mjCModel, name: string_view, list: *const ()) -> *mut mjCBase {
-    // NOTE: signature changed from previous IR version
-    // Previous params: (self_ptr : * mut mjCModel, name : string_view, list : * const i32)
-    // Previous return: * mut mjCBase
-    todo!("re-translate: params renamed")
+    todo!() // mjCModel::FindAsset
 }
 
 /// C: mjCModel::get_meshdir (user/user_model.h:285)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_model_get_meshdir(self_ptr: *mut mjCModel) -> std__string {
-    // NOTE: signature changed from previous IR version
-    // Previous params: (self_ptr : * mut mjCModel)
-    // Previous return: i32
-    todo!("re-translate: params renamed")
+    todo!() // mjCModel::get_meshdir
 }
 
 /// C: mjCModel::get_texturedir (user/user_model.h:286)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_model_get_texturedir(self_ptr: *mut mjCModel) -> std__string {
-    // NOTE: signature changed from previous IR version
-    // Previous params: (self_ptr : * mut mjCModel)
-    // Previous return: i32
-    todo!("re-translate: params renamed")
+    todo!() // mjCModel::get_texturedir
 }
 
 /// C: mjCModel::Default (user/user_model.h:288)
@@ -586,181 +529,121 @@ pub fn mj_c_model_num_defaults(self_ptr: *mut mjCModel) -> i32 {
 /// C: mjCModel::ActivePlugins (user/user_model.h:291)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_model_active_plugins(self_ptr: *mut mjCModel) -> *const () {
-    // NOTE: signature changed from previous IR version
-    // Previous params: (self_ptr : * mut mjCModel)
-    // Previous return: * const i32
-    todo!("re-translate: params renamed")
+    todo!() // mjCModel::ActivePlugins
 }
 
 /// C: mjCModel::Flexes (user/user_model.h:295)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_model_flexes(self_ptr: *mut mjCModel) -> *const () {
-    // NOTE: signature changed from previous IR version
-    // Previous params: (self_ptr : * mut mjCModel)
-    // Previous return: * const i32
-    todo!("re-translate: params renamed")
+    todo!() // mjCModel::Flexes
 }
 
 /// C: mjCModel::Meshes (user/user_model.h:296)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_model_meshes(self_ptr: *mut mjCModel) -> *const () {
-    // NOTE: signature changed from previous IR version
-    // Previous params: (self_ptr : * mut mjCModel)
-    // Previous return: * const i32
-    todo!("re-translate: params renamed")
+    todo!() // mjCModel::Meshes
 }
 
 /// C: mjCModel::Skins (user/user_model.h:297)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_model_skins(self_ptr: *mut mjCModel) -> *const () {
-    // NOTE: signature changed from previous IR version
-    // Previous params: (self_ptr : * mut mjCModel)
-    // Previous return: * const i32
-    todo!("re-translate: params renamed")
+    todo!() // mjCModel::Skins
 }
 
 /// C: mjCModel::HFields (user/user_model.h:298)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_model_h_fields(self_ptr: *mut mjCModel) -> *const () {
-    // NOTE: signature changed from previous IR version
-    // Previous params: (self_ptr : * mut mjCModel)
-    // Previous return: * const i32
-    todo!("re-translate: params renamed")
+    todo!() // mjCModel::HFields
 }
 
 /// C: mjCModel::Textures (user/user_model.h:299)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_model_textures(self_ptr: *mut mjCModel) -> *const () {
-    // NOTE: signature changed from previous IR version
-    // Previous params: (self_ptr : * mut mjCModel)
-    // Previous return: * const i32
-    todo!("re-translate: params renamed")
+    todo!() // mjCModel::Textures
 }
 
 /// C: mjCModel::Materials (user/user_model.h:300)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_model_materials(self_ptr: *mut mjCModel) -> *const () {
-    // NOTE: signature changed from previous IR version
-    // Previous params: (self_ptr : * mut mjCModel)
-    // Previous return: * const i32
-    todo!("re-translate: params renamed")
+    todo!() // mjCModel::Materials
 }
 
 /// C: mjCModel::Pairs (user/user_model.h:301)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_model_pairs(self_ptr: *mut mjCModel) -> *const () {
-    // NOTE: signature changed from previous IR version
-    // Previous params: (self_ptr : * mut mjCModel)
-    // Previous return: * const i32
-    todo!("re-translate: params renamed")
+    todo!() // mjCModel::Pairs
 }
 
 /// C: mjCModel::Excludes (user/user_model.h:302)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_model_excludes(self_ptr: *mut mjCModel) -> *const () {
-    // NOTE: signature changed from previous IR version
-    // Previous params: (self_ptr : * mut mjCModel)
-    // Previous return: * const i32
-    todo!("re-translate: params renamed")
+    todo!() // mjCModel::Excludes
 }
 
 /// C: mjCModel::Equalities (user/user_model.h:303)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_model_equalities(self_ptr: *mut mjCModel) -> *const () {
-    // NOTE: signature changed from previous IR version
-    // Previous params: (self_ptr : * mut mjCModel)
-    // Previous return: * const i32
-    todo!("re-translate: params renamed")
+    todo!() // mjCModel::Equalities
 }
 
 /// C: mjCModel::Tendons (user/user_model.h:304)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_model_tendons(self_ptr: *mut mjCModel) -> *const () {
-    // NOTE: signature changed from previous IR version
-    // Previous params: (self_ptr : * mut mjCModel)
-    // Previous return: * const i32
-    todo!("re-translate: params renamed")
+    todo!() // mjCModel::Tendons
 }
 
 /// C: mjCModel::Actuators (user/user_model.h:305)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_model_actuators(self_ptr: *mut mjCModel) -> *const () {
-    // NOTE: signature changed from previous IR version
-    // Previous params: (self_ptr : * mut mjCModel)
-    // Previous return: * const i32
-    todo!("re-translate: params renamed")
+    todo!() // mjCModel::Actuators
 }
 
 /// C: mjCModel::Sensors (user/user_model.h:306)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_model_sensors(self_ptr: *mut mjCModel) -> *const () {
-    // NOTE: signature changed from previous IR version
-    // Previous params: (self_ptr : * mut mjCModel)
-    // Previous return: * const i32
-    todo!("re-translate: params renamed")
+    todo!() // mjCModel::Sensors
 }
 
 /// C: mjCModel::Numerics (user/user_model.h:307)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_model_numerics(self_ptr: *mut mjCModel) -> *const () {
-    // NOTE: signature changed from previous IR version
-    // Previous params: (self_ptr : * mut mjCModel)
-    // Previous return: * const i32
-    todo!("re-translate: params renamed")
+    todo!() // mjCModel::Numerics
 }
 
 /// C: mjCModel::Texts (user/user_model.h:308)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_model_texts(self_ptr: *mut mjCModel) -> *const () {
-    // NOTE: signature changed from previous IR version
-    // Previous params: (self_ptr : * mut mjCModel)
-    // Previous return: * const i32
-    todo!("re-translate: params renamed")
+    todo!() // mjCModel::Texts
 }
 
 /// C: mjCModel::Tuples (user/user_model.h:309)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_model_tuples(self_ptr: *mut mjCModel) -> *const () {
-    // NOTE: signature changed from previous IR version
-    // Previous params: (self_ptr : * mut mjCModel)
-    // Previous return: * const i32
-    todo!("re-translate: params renamed")
+    todo!() // mjCModel::Tuples
 }
 
 /// C: mjCModel::Keys (user/user_model.h:310)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_model_keys(self_ptr: *mut mjCModel) -> *const () {
-    // NOTE: signature changed from previous IR version
-    // Previous params: (self_ptr : * mut mjCModel)
-    // Previous return: * const i32
-    todo!("re-translate: params renamed")
+    todo!() // mjCModel::Keys
 }
 
 /// C: mjCModel::Plugins (user/user_model.h:311)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_model_plugins(self_ptr: *mut mjCModel) -> *const () {
-    // NOTE: signature changed from previous IR version
-    // Previous params: (self_ptr : * mut mjCModel)
-    // Previous return: * const i32
-    todo!("re-translate: params renamed")
+    todo!() // mjCModel::Plugins
 }
 
 /// C: mjCModel::Bodies (user/user_model.h:312)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_model_bodies(self_ptr: *mut mjCModel) -> *const () {
-    // NOTE: signature changed from previous IR version
-    // Previous params: (self_ptr : * mut mjCModel)
-    // Previous return: * const i32
-    todo!("re-translate: params renamed")
+    todo!() // mjCModel::Bodies
 }
 
 /// C: mjCModel::Geoms (user/user_model.h:313)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_model_geoms(self_ptr: *mut mjCModel) -> *const () {
-    // NOTE: signature changed from previous IR version
-    // Previous params: (self_ptr : * mut mjCModel)
-    // Previous return: * const i32
-    todo!("re-translate: params renamed")
+    todo!() // mjCModel::Geoms
 }
 
 /// C: mjCModel::ResolvePlugin (user/user_model.h:316)
@@ -780,10 +663,7 @@ pub fn mj_c_model_clear(self_ptr: *mut mjCModel) {
 /// C: mjCModel::DeleteMaterial (user/user_model.h:324)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_model_delete_material(self_ptr: *mut mjCModel, list: *const (), name: string_view) {
-    // NOTE: signature changed from previous IR version
-    // Previous params: (self_ptr : * mut mjCModel, list : * mut i32, name : string_view)
-    // Previous return: ()
-    todo!("re-translate: params renamed")
+    todo!() // mjCModel::DeleteMaterial
 }
 
 /// C: mjCModel::SaveState (user/user_model.h:329)
@@ -1003,30 +883,21 @@ pub fn mj_c_model_remove_plugins(self_ptr: *mut mjCModel) {
 /// Calls: mjCModel::Signature
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_model_add_object(self_ptr: *mut mjCModel, list: *const (), r#type: string) -> *mut T {
-    // NOTE: signature changed from previous IR version
-    // Previous params: (self_ptr : * mut mjCModel, list : * mut i32, r#type : string)
-    // Previous return: * mut T
-    todo!("re-translate: params renamed")
+    todo!() // mjCModel::AddObject
 }
 
 /// C: mjCModel::AddObjectDefault (user/user_model.h:440)
 /// Calls: mjCModel::Signature
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_model_add_object_default(self_ptr: *mut mjCModel, list: *const (), r#type: string, def: *mut mjCDef) -> *mut T {
-    // NOTE: signature changed from previous IR version
-    // Previous params: (self_ptr : * mut mjCModel, list : * mut i32, r#type : string, def : * mut mjCDef)
-    // Previous return: * mut T
-    todo!("re-translate: params renamed")
+    todo!() // mjCModel::AddObjectDefault
 }
 
 /// C: mjCModel::CopyList (user/user_model.h:444)
 /// Calls: FilePath::empty, FilePath::size, mjCAsset::References, mjCMesh::Plugin, mjCModel::FindSpec, mjCModel::ProcessList_
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_model_copy_list(self_ptr: *mut mjCModel, dest: *const (), sources: *const ()) {
-    // NOTE: signature changed from previous IR version
-    // Previous params: (self_ptr : * mut mjCModel, dest : * mut i32, source : * const i32)
-    // Previous return: ()
-    todo!("re-translate: params renamed")
+    todo!() // mjCModel::CopyList
 }
 
 /// C: mjCModel::CopyExplicitPlugin (user/user_model.h:448)
@@ -1040,20 +911,14 @@ pub fn mj_c_model_copy_explicit_plugin(self_ptr: *mut mjCModel, obj: *mut T) {
 /// Calls: mjCBase::NameSpace
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_model_copy_plugin(self_ptr: *mut mjCModel, sources: *const (), list: *const ()) {
-    // NOTE: signature changed from previous IR version
-    // Previous params: (self_ptr : * mut mjCModel, source : * const i32, list : * const i32)
-    // Previous return: ()
-    todo!("re-translate: params renamed")
+    todo!() // mjCModel::CopyPlugin
 }
 
 /// C: mjCModel::RemoveFromList (user/user_model.h:455)
 /// Calls: FilePath::empty, FilePath::size, mjCAsset::References, mjCModel::ProcessList_
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_model_remove_from_list(self_ptr: *mut mjCModel, list: *const (), other: *const mjCModel) {
-    // NOTE: signature changed from previous IR version
-    // Previous params: (self_ptr : * mut mjCModel, list : * mut i32, other : * const mjCModel)
-    // Previous return: ()
-    todo!("re-translate: params renamed")
+    todo!() // mjCModel::RemoveFromList
 }
 
 /// C: mjCModel::CreateObjectLists (user/user_model.h:458)
@@ -1073,10 +938,7 @@ pub fn mj_c_model_process_lists(self_ptr: *mut mjCModel, checkrepeat: bool) {
 /// Calls: mjCModel::CheckRepeat, mju_type2Str
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_model_process_list(self_ptr: *mut mjCModel, ids: *mut mjListKeyMap, list: *const (), r#type: u32, checkrepeat: bool) {
-    // NOTE: signature changed from previous IR version
-    // Previous params: (self_ptr : * mut mjCModel, ids : * mut mjListKeyMap, list : * mut i32, r#type : u32, checkrepeat : bool)
-    // Previous return: ()
-    todo!("re-translate: params renamed")
+    todo!() // mjCModel::ProcessList_
 }
 
 /// C: mjCModel::ResetTreeLists (user/user_model.h:468)
@@ -1129,10 +991,7 @@ pub fn mj_c_model_check_body_mass_inertia(self_ptr: *mut mjCModel, body: *mut mj
 /// Calls: FilePath::empty
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_model_mark_plugin_instance(self_ptr: *mut mjCModel, instances: *const (), list: *const ()) {
-    // NOTE: signature changed from previous IR version
-    // Previous params: (self_ptr : * mut mjCModel, instances : * mut i32, list : * const i32)
-    // Previous return: ()
-    todo!("re-translate: params renamed")
+    todo!() // mjCModel::MarkPluginInstance
 }
 
 /// C: mjCModel::PrintTree (user/user_model.h:491)
@@ -1153,20 +1012,14 @@ pub fn mj_c_model_signature(self_ptr: *mut mjCModel) -> u64 {
 /// Calls: FilePath::size, changeframe
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_model_reassign_child(self_ptr: *mut mjCModel, dest: *const (), list: *const (), parent: *mut mjCBody, body: *mut mjCBody) {
-    // NOTE: signature changed from previous IR version
-    // Previous params: (self_ptr : * mut mjCModel, dest : * mut i32, list : * mut i32, parent : * mut mjCBody, body : * mut mjCBody)
-    // Previous return: ()
-    todo!("re-translate: params renamed")
+    todo!() // mjCModel::ReassignChild
 }
 
 /// C: mjCModel::ResolveReferences (user/user_model.h:502)
 /// Calls: mjCAsset::References
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_model_resolve_references(self_ptr: *mut mjCModel, list: *const (), body: *mut mjCBody) {
-    // NOTE: signature changed from previous IR version
-    // Previous params: (self_ptr : * mut mjCModel, list : * mut i32, body : * mut mjCBody)
-    // Previous return: ()
-    todo!("re-translate: params renamed")
+    todo!() // mjCModel::ResolveReferences
 }
 
 /// C: mjCModel::DeleteSubtreePlugin (user/user_model.h:505)

@@ -1,5 +1,5 @@
 //! Port of: xml/mjz/mjz_decoder.cc
-//! IR hash: e878892ca48fe222
+//! IR hash: 47ee20b2bff3660e
 //! CODEGEN: signatures locked. Only fill todo!() bodies.
 
 use crate::types::*;
@@ -25,10 +25,7 @@ pub fn zip_archive_provider_contains(self_ptr: *mut ZipArchiveProvider, name: st
 /// C: ZipArchiveProvider::Read (xml/mjz/mjz_decoder.cc:155)
 #[allow(unused_variables, non_snake_case)]
 pub fn zip_archive_provider_read(self_ptr: *mut ZipArchiveProvider, name: *const std__string) -> *const () {
-    // NOTE: signature changed from previous IR version
-    // Previous params: (self_ptr : * mut ZipArchiveProvider, name : * const std__string)
-    // Previous return: i32
-    todo!("re-translate: params renamed")
+    todo!() // ZipArchiveProvider::Read
 }
 
 /// C: ParseZipBuffer (xml/mjz/mjz_decoder.cc:198)

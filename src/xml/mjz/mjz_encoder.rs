@@ -1,5 +1,5 @@
 //! Port of: xml/mjz/mjz_encoder.cc
-//! IR hash: e878892ca48fe222
+//! IR hash: 47ee20b2bff3660e
 //! CODEGEN: signatures locked. Only fill todo!() bodies.
 
 use crate::types::*;
@@ -19,10 +19,7 @@ pub fn remove_leading_dot_dot(p: *const fs__path) -> std__string {
 /// C: ApplyRewrites (xml/mjz/mjz_encoder.cc:109)
 #[allow(unused_variables, non_snake_case)]
 pub fn apply_rewrites(xml: *mut std__string, rewrites: *const RewriteMap) {
-    // NOTE: signature changed from previous IR version
-    // Previous params: (xml : * mut std__string, rewrites : * const i32)
-    // Previous return: ()
-    todo!("re-translate: params renamed")
+    todo!() // ApplyRewrites
 }
 
 /// C: _mj_init_mjz_encoder (xml/mjz/mjz_encoder.cc:110)
@@ -36,10 +33,7 @@ pub fn mj_init_mjz_encoder() {
 /// Calls: RemoveLeadingDotDot, SanitizePath, mjs_asHField, mjs_asMesh, mjs_asSkin, mjs_asTexture, mjs_firstElement, mjs_getCompiler, mjs_getName, mjs_getOriginSpec, mjs_nextElement, mju_error
 #[allow(unused_variables, non_snake_case)]
 pub fn collect_assets(spec: *const mjSpec, xml_rewrites: *mut RewriteMap) -> *const () {
-    // NOTE: signature changed from previous IR version
-    // Previous params: (spec : * const mjSpec, xml_rewrites : * mut i32)
-    // Previous return: i32
-    todo!("re-translate: params renamed")
+    todo!() // CollectAssets
 }
 
 /// C: MjzEncode (xml/mjz/mjz_encoder.cc:309)

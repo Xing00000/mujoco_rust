@@ -1,5 +1,5 @@
 //! Port of: user/user_api.cc
-//! IR hash: e878892ca48fe222
+//! IR hash: 47ee20b2bff3660e
 //! CODEGEN: signatures locked. Only fill todo!() bodies.
 
 use crate::types::*;
@@ -846,66 +846,45 @@ pub fn mjs_set_name(element: *mut mjsElement, name: *const i8) -> i32 {
 /// C: mjs_setBuffer (user/user_api.h:379)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjs_set_buffer(dest: *mut mjByteVec, array: *const (), size: i32) {
-    // NOTE: signature changed from previous IR version
-    // Previous params: (dest : * mut i32, array : * const (), size : i32)
-    // Previous return: ()
-    todo!("re-translate: params renamed")
+    todo!() // mjs_setBuffer
 }
 
 /// C: mjs_setString (user/user_api.h:382)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjs_set_string(dest: *mut mjString, text: *const i8) {
-    // NOTE: signature changed from previous IR version
-    // Previous params: (dest : * mut i32, text : * const i8)
-    // Previous return: ()
-    todo!("re-translate: params renamed")
+    todo!() // mjs_setString
 }
 
 /// C: mjs_setStringVec (user/user_api.h:385)
 /// Calls: StringToVector
 #[allow(unused_variables, non_snake_case)]
 pub fn mjs_set_string_vec(dest: *mut mjStringVec, text: *const i8) {
-    // NOTE: signature changed from previous IR version
-    // Previous params: (dest : * mut i32, text : * const i8)
-    // Previous return: ()
-    todo!("re-translate: params renamed")
+    todo!() // mjs_setStringVec
 }
 
 /// C: mjs_setInStringVec (user/user_api.h:388)
 /// Calls: mju_error
 #[allow(unused_variables, non_snake_case)]
 pub fn mjs_set_in_string_vec(dest: *mut mjStringVec, i: i32, text: *const i8) -> mjtBool {
-    // NOTE: signature changed from previous IR version
-    // Previous params: (dest : * mut i32, i : i32, text : * const i8)
-    // Previous return: mjtBool
-    todo!("re-translate: params renamed")
+    todo!() // mjs_setInStringVec
 }
 
 /// C: mjs_appendString (user/user_api.h:391)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjs_append_string(dest: *mut mjStringVec, text: *const i8) {
-    // NOTE: signature changed from previous IR version
-    // Previous params: (dest : * mut i32, text : * const i8)
-    // Previous return: ()
-    todo!("re-translate: params renamed")
+    todo!() // mjs_appendString
 }
 
 /// C: mjs_setInt (user/user_api.h:394)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjs_set_int(dest: *mut mjIntVec, array: *const i32, size: i32) {
-    // NOTE: signature changed from previous IR version
-    // Previous params: (dest : * mut i32, array : * const i32, size : i32)
-    // Previous return: ()
-    todo!("re-translate: params renamed")
+    todo!() // mjs_setInt
 }
 
 /// C: mjs_appendIntVec (user/user_api.h:397)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjs_append_int_vec(dest: *mut mjIntVecVec, array: *const i32, size: i32) {
-    // NOTE: signature changed from previous IR version
-    // Previous params: (dest : * mut i32, array : * const i32, size : i32)
-    // Previous return: ()
-    todo!("re-translate: params renamed")
+    todo!() // mjs_appendIntVec
 }
 
 /// C: mjs_setFloat (user/user_api.h:400)
@@ -916,10 +895,7 @@ pub fn mjs_append_int_vec(dest: *mut mjIntVecVec, array: *const i32, size: i32) 
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjs_set_float(dest: *mut mjFloatVec, array: *const f32, size: i32) {
-    // NOTE: signature changed from previous IR version
-    // Previous params: (dest : * mut i32, array : * const f32, size : i32)
-    // Previous return: ()
-    todo!("re-translate: params renamed")
+    todo!() // mjs_setFloat
 }
 
 /// C: mjs_appendFloatVec (user/user_api.h:403)
@@ -930,10 +906,7 @@ pub fn mjs_set_float(dest: *mut mjFloatVec, array: *const f32, size: i32) {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjs_append_float_vec(dest: *mut mjFloatVecVec, array: *const f32, size: i32) {
-    // NOTE: signature changed from previous IR version
-    // Previous params: (dest : * mut i32, array : * const f32, size : i32)
-    // Previous return: ()
-    todo!("re-translate: params renamed")
+    todo!() // mjs_appendFloatVec
 }
 
 /// C: mjs_setDouble (user/user_api.h:406)
@@ -944,10 +917,7 @@ pub fn mjs_append_float_vec(dest: *mut mjFloatVecVec, array: *const f32, size: i
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjs_set_double(dest: *mut mjDoubleVec, array: *const f64, size: i32) {
-    // NOTE: signature changed from previous IR version
-    // Previous params: (dest : * mut i32, array : * const f64, size : i32)
-    // Previous return: ()
-    todo!("re-translate: params renamed")
+    todo!() // mjs_setDouble
 }
 
 /// C: mjs_setPluginAttributes (user/user_api.h:409)
@@ -959,19 +929,13 @@ pub fn mjs_set_plugin_attributes(plugin: *mut mjsPlugin, attributes: *mut ()) {
 /// C: mjs_getName (user/user_api.h:415)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjs_get_name(element: *mut mjsElement) -> *mut mjString {
-    // NOTE: signature changed from previous IR version
-    // Previous params: (element : * mut mjsElement)
-    // Previous return: * mut i32
-    todo!("re-translate: params renamed")
+    todo!() // mjs_getName
 }
 
 /// C: mjs_getString (user/user_api.h:418)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjs_get_string(source: *const mjString) -> *const i8 {
-    // NOTE: signature changed from previous IR version
-    // Previous params: (source : * const i32)
-    // Previous return: * const i8
-    todo!("re-translate: params renamed")
+    todo!() // mjs_getString
 }
 
 /// C: mjs_getDouble (user/user_api.h:421)
@@ -982,10 +946,7 @@ pub fn mjs_get_string(source: *const mjString) -> *const i8 {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjs_get_double(source: *const mjDoubleVec, size: *mut i32) -> *const f64 {
-    // NOTE: signature changed from previous IR version
-    // Previous params: (source : * const i32, size : * mut i32)
-    // Previous return: * const f64
-    todo!("re-translate: params renamed")
+    todo!() // mjs_getDouble
 }
 
 /// C: mjs_getWrapNum (user/user_api.h:424)

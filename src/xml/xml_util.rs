@@ -1,5 +1,5 @@
 //! Port of: xml/xml_util.cc
-//! IR hash: e878892ca48fe222
+//! IR hash: 47ee20b2bff3660e
 //! CODEGEN: signatures locked. Only fill todo!() bodies.
 
 use crate::types::*;
@@ -21,20 +21,14 @@ pub fn resolve_file_path(e: *mut XMLElement, filename: *const FilePath, dir: *co
 /// Calls: FilePath::IsAbs, FilePath::Str, mjXUtil::ReadAttrFile, mjXUtil::ReadAttrStr, mju_getXMLDependencies
 #[allow(unused_variables, non_snake_case)]
 pub fn accumulate_files(files: *const (), root: *mut tinyxml2__XMLElement, model_dir: *const FilePath) {
-    // NOTE: signature changed from previous IR version
-    // Previous params: (files : * mut i32, root : * mut tinyxml2__XMLElement, model_dir : * const FilePath)
-    // Previous return: ()
-    todo!("re-translate: params renamed")
+    todo!() // AccumulateFiles
 }
 
 /// C: mju_getXMLDependencies (xml/xml_util.cc:224)
 /// Calls: AccumulateFiles, mju_closeResource, mju_error, mju_getResourceDir, mju_openResource, mju_readResource
 #[allow(unused_variables, non_snake_case)]
 pub fn mju_get_xml_dependencies(filename: *const i8, dependencies: *mut mjStringVec) {
-    // NOTE: signature changed from previous IR version
-    // Previous params: (filename : * const i8, dependencies : * mut i32)
-    // Previous return: ()
-    todo!("re-translate: params renamed")
+    todo!() // mju_getXMLDependencies
 }
 
 /// C: printspace (xml/xml_util.cc:391)
@@ -161,10 +155,7 @@ pub fn mj_x_util_find_value(map: *const mjMap, mapsz: i32, value: i32) -> std__s
 /// Calls: mju_warning
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_x_util_read_attr_vec(elem: *mut tinyxml2__XMLElement, attr: *const i8, required: bool) -> *const () {
-    // NOTE: signature changed from previous IR version
-    // Previous params: (self_ptr : * mut mjXUtil, elem : * mut XMLElement, attr : * const i8, required : bool)
-    // Previous return: i32
-    todo!("re-translate: params renamed")
+    todo!() // mjXUtil::ReadAttrVec
 }
 
 /// C: mjXUtil::ReadAttrStr (xml/xml_util.h:106)
@@ -217,10 +208,7 @@ pub fn mj_x_util_read_quat(elem: *mut tinyxml2__XMLElement, attr: *const i8, dat
 /// Calls: mjXUtil::ReadAttrVec
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_x_util_read_vector(elem: *mut tinyxml2__XMLElement, attr: *const i8, vec: *const (), text: *mut std__string, required: bool) -> i32 {
-    // NOTE: signature changed from previous IR version
-    // Previous params: (self_ptr : * mut mjXUtil, elem : * mut XMLElement, attr : * const i8, vec : * mut i32, text : * mut std__string, required : bool)
-    // Previous return: i32
-    todo!("re-translate: params renamed")
+    todo!() // mjXUtil::ReadVector
 }
 
 /// C: mjXUtil::ReadAttrTxt (xml/xml_util.h:163)
@@ -240,10 +228,7 @@ pub fn mj_x_util_read_attr_int(elem: *mut tinyxml2__XMLElement, attr: *const i8,
 /// C: mjXUtil::Vector2String (xml/xml_util.h:171)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_x_util_vector2string(txt: *mut std__string, vec: *const (), ncol: i32) {
-    // NOTE: signature changed from previous IR version
-    // Previous params: (self_ptr : * mut mjXUtil, txt : * mut std__string, vec : * const i32, ncol : i32)
-    // Previous return: ()
-    todo!("re-translate: params renamed")
+    todo!() // mjXUtil::Vector2String
 }
 
 /// C: mjXUtil::FindSubElem (xml/xml_util.h:175)
@@ -277,10 +262,7 @@ pub fn mj_x_util_write_attr(elem: *mut tinyxml2__XMLElement, name: string, n: i3
 /// Calls: mjXUtil::WriteAttr
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_x_util_write_vector(elem: *mut tinyxml2__XMLElement, name: string, vec: *const ()) {
-    // NOTE: signature changed from previous IR version
-    // Previous params: (self_ptr : * mut mjXUtil, elem : * mut XMLElement, name : string, vec : * const i32)
-    // Previous return: ()
-    todo!("re-translate: params renamed")
+    todo!() // mjXUtil::WriteVector
 }
 
 /// C: mjXUtil::WriteAttrTxt (xml/xml_util.h:198)

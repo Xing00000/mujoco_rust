@@ -1,5 +1,5 @@
 //! Port of: user/user_objects.cc
-//! IR hash: e878892ca48fe222
+//! IR hash: 47ee20b2bff3660e
 //! CODEGEN: signatures locked. Only fill todo!() bodies.
 
 use crate::types::*;
@@ -32,10 +32,7 @@ pub fn png_image_is_srgb(self_ptr: *mut PNGImage) -> bool {
 /// C: PNGImage::MoveData (user/user_objects.cc:66)
 #[allow(unused_variables, non_snake_case)]
 pub fn png_image_move_data(self_ptr: *mut PNGImage) -> *mut *mut mjByteVec {
-    // NOTE: signature changed from previous IR version
-    // Previous params: (self_ptr : * mut PNGImage)
-    // Previous return: * mut * mut i32
-    todo!("re-translate: params renamed")
+    todo!() // PNGImage::MoveData
 }
 
 /// C: PNGImage::Size (user/user_objects.cc:69)
@@ -47,10 +44,7 @@ pub fn png_image_size(self_ptr: *mut PNGImage) -> std__size_t {
 /// C: MapFrame (user/user_objects.cc:139)
 #[allow(unused_variables, non_snake_case)]
 pub fn map_frame(parent: *const (), child: *const (), frame: *mut mjCFrame, parent_body: *mut mjCBody) {
-    // NOTE: signature changed from previous IR version
-    // Previous params: (parent : * mut i32, child : * mut i32, frame : * mut mjCFrame, parent_body : * mut mjCBody)
-    // Previous return: ()
-    todo!("re-translate: params renamed")
+    todo!() // MapFrame
 }
 
 /// C: checksize (user/user_objects.cc:153)
@@ -154,10 +148,7 @@ pub fn box_triangle(v: *const Triangle, aamm: *const f64) -> bool {
 /// C: mjCBody::GetList (user/user_objects.cc:2311)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_body_get_list(self_ptr: *mut mjCBody) -> *const () {
-    // NOTE: signature changed from previous IR version
-    // Previous params: (self_ptr : * mut mjCBody)
-    // Previous return: * const i32
-    todo!("re-translate: params renamed")
+    todo!() // mjCBody::GetList
 }
 
 /// C: GetNextBody (user/user_objects.cc:2380)
@@ -372,28 +363,19 @@ pub fn mj_c_bounding_volume_hierarchy_nbvh(self_ptr: *mut mjCBoundingVolumeHiera
 /// C: mjCBoundingVolumeHierarchy::Bvh (user/user_objects.h:187)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_bounding_volume_hierarchy_bvh(self_ptr: *mut mjCBoundingVolumeHierarchy) -> *const () {
-    // NOTE: signature changed from previous IR version
-    // Previous params: (self_ptr : * mut mjCBoundingVolumeHierarchy)
-    // Previous return: * const i32
-    todo!("re-translate: params renamed")
+    todo!() // mjCBoundingVolumeHierarchy::Bvh
 }
 
 /// C: mjCBoundingVolumeHierarchy::Child (user/user_objects.h:188)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_bounding_volume_hierarchy_child(self_ptr: *mut mjCBoundingVolumeHierarchy) -> *const () {
-    // NOTE: signature changed from previous IR version
-    // Previous params: (self_ptr : * mut mjCBoundingVolumeHierarchy)
-    // Previous return: * const i32
-    todo!("re-translate: params renamed")
+    todo!() // mjCBoundingVolumeHierarchy::Child
 }
 
 /// C: mjCBoundingVolumeHierarchy::Nodeid (user/user_objects.h:189)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_bounding_volume_hierarchy_nodeid(self_ptr: *mut mjCBoundingVolumeHierarchy) -> *const () {
-    // NOTE: signature changed from previous IR version
-    // Previous params: (self_ptr : * mut mjCBoundingVolumeHierarchy)
-    // Previous return: * const i32
-    todo!("re-translate: params renamed")
+    todo!() // mjCBoundingVolumeHierarchy::Nodeid
 }
 
 /// C: mjCBoundingVolumeHierarchy::Nodeidptr (user/user_objects.h:191)
@@ -405,10 +387,7 @@ pub fn mj_c_bounding_volume_hierarchy_nodeidptr(self_ptr: *mut mjCBoundingVolume
 /// C: mjCBoundingVolumeHierarchy::Level (user/user_objects.h:192)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_bounding_volume_hierarchy_level(self_ptr: *mut mjCBoundingVolumeHierarchy) -> *const () {
-    // NOTE: signature changed from previous IR version
-    // Previous params: (self_ptr : * mut mjCBoundingVolumeHierarchy)
-    // Previous return: * const i32
-    todo!("re-translate: params renamed")
+    todo!() // mjCBoundingVolumeHierarchy::Level
 }
 
 /// C: mjCBoundingVolumeHierarchy::Size (user/user_objects.h:193)
@@ -433,20 +412,14 @@ pub fn mj_c_bounding_volume_hierarchy_query_signed_distance(self_ptr: *mut mjCBo
 /// Calls: mjCBoundingVolume::Conaffinity, mjCBoundingVolume::Contype, mjCBoundingVolume::Pos, mjuu_rotVecQuat
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_bounding_volume_hierarchy_make(self_ptr: *mut mjCBoundingVolumeHierarchy, elements: *const ()) {
-    // NOTE: signature changed from previous IR version
-    // Previous params: (self_ptr : * mut mjCBoundingVolumeHierarchy, elements : * mut i32)
-    // Previous return: ()
-    todo!("re-translate: params renamed")
+    todo!() // mjCBoundingVolumeHierarchy::Make
 }
 
 /// C: mjCBoundingVolumeHierarchy::MakeBVH (user/user_objects.h:211)
 /// Calls: mjCBoundingVolume::AABB, mjCBoundingVolume::Id, mjCBoundingVolume::Pos, mjCBoundingVolume::Quat, mjCModel::AddWarning, mju_error, mjuu_rotVecQuat
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_bounding_volume_hierarchy_make_bvh(self_ptr: *mut mjCBoundingVolumeHierarchy, elements_begin: iterator, elements_end: iterator, lev: i32, model: *mut mjCModel, owner: *const mjCBase) -> i32 {
-    // NOTE: signature changed from previous IR version
-    // Previous params: (self_ptr : * mut mjCBoundingVolumeHierarchy, elements_begin : i32, elements_end : i32, lev : i32, model : * mut mjCModel, owner : * const mjCBase)
-    // Previous return: i32
-    todo!("re-translate: params renamed")
+    todo!() // mjCBoundingVolumeHierarchy::MakeBVH
 }
 
 /// C: mjCOctree::CreateOctree (user/user_objects.h:285)
@@ -521,10 +494,7 @@ pub fn mj_c_octree_vert(self_ptr: *mut mjCOctree, i: i32) -> *const f64 {
 /// C: mjCOctree::Hang (user/user_objects.h:294)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_octree_hang(self_ptr: *mut mjCOctree, i: i32) -> *const () {
-    // NOTE: signature changed from previous IR version
-    // Previous params: (self_ptr : * mut mjCOctree, i : i32)
-    // Previous return: * const i32
-    todo!("re-translate: params renamed")
+    todo!() // mjCOctree::Hang
 }
 
 /// C: mjCOctree::VertId (user/user_objects.h:295)
@@ -542,10 +512,7 @@ pub fn mj_c_octree_children(self_ptr: *mut mjCOctree, i: i32) -> *const () {
 /// C: mjCOctree::SetFace (user/user_objects.h:297)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_octree_set_face(self_ptr: *mut mjCOctree, vert: *const (), face: *const ()) {
-    // NOTE: signature changed from previous IR version
-    // Previous params: (self_ptr : * mut mjCOctree, vert : * const i32, face : * const i32)
-    // Previous return: ()
-    todo!("re-translate: params renamed")
+    todo!() // mjCOctree::SetFace
 }
 
 /// C: mjCOctree::Size (user/user_objects.h:298)
@@ -622,10 +589,7 @@ pub fn mj_c_octree_compute_sdf_coeffs(self_ptr: *mut mjCOctree, vert: *const f64
 /// Calls: mjuu_rotVecQuat
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_octree_make(self_ptr: *mut mjCOctree, elements: *const ()) {
-    // NOTE: signature changed from previous IR version
-    // Previous params: (self_ptr : * mut mjCOctree, elements : * mut i32)
-    // Previous return: ()
-    todo!("re-translate: params renamed")
+    todo!() // mjCOctree::Make
 }
 
 /// C: mjCOctree::MakeOctree (user/user_objects.h:326)
@@ -637,29 +601,20 @@ pub fn mj_c_octree_make(self_ptr: *mut mjCOctree, elements: *const ()) {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_octree_make_octree(self_ptr: *mut mjCOctree, elements: *const (), aamm: *const f64, vert_map: *const ()) {
-    // NOTE: signature changed from previous IR version
-    // Previous params: (self_ptr : * mut mjCOctree, elements : * const i32, aamm : * const f64, vert_map : * mut i32)
-    // Previous return: ()
-    todo!("re-translate: params renamed")
+    todo!() // mjCOctree::MakeOctree
 }
 
 /// C: mjCOctree::TaskToNode (user/user_objects.h:328)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_octree_task_to_node(self_ptr: *mut mjCOctree, task: *const OctreeTask, node: *mut OctNode, vert_map: *const ()) {
-    // NOTE: signature changed from previous IR version
-    // Previous params: (self_ptr : * mut mjCOctree, task : * const OctreeTask, node : * mut OctNode, vert_map : * mut i32)
-    // Previous return: ()
-    todo!("re-translate: params renamed")
+    todo!() // mjCOctree::TaskToNode
 }
 
 /// C: mjCOctree::Subdivide (user/user_objects.h:329)
 /// Calls: mjCOctree::TaskToNode
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_octree_subdivide(self_ptr: *mut mjCOctree, task: *const OctreeTask, vert_map: *const (), queue: *const (), colliding: *const ()) {
-    // NOTE: signature changed from previous IR version
-    // Previous params: (self_ptr : * mut mjCOctree, task : * const OctreeTask, vert_map : * mut i32, queue : * mut i32, colliding : * const i32)
-    // Previous return: ()
-    todo!("re-translate: params renamed")
+    todo!() // mjCOctree::Subdivide
 }
 
 /// C: mjCOctree::FindNeighbor (user/user_objects.h:332)
@@ -679,10 +634,7 @@ pub fn mj_c_octree_find_coarse_neighbor(self_ptr: *mut mjCOctree, node_idx: i32,
 /// Calls: mjCOctree::FindNeighbor, mjCOctree::Subdivide
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_octree_balance_octree(self_ptr: *mut mjCOctree, vert_map: *const ()) {
-    // NOTE: signature changed from previous IR version
-    // Previous params: (self_ptr : * mut mjCOctree, vert_map : * mut i32)
-    // Previous return: ()
-    todo!("re-translate: params renamed")
+    todo!() // mjCOctree::BalanceOctree
 }
 
 /// C: mjCOctree::MarkHangingNodes (user/user_objects.h:335)
@@ -892,10 +844,7 @@ pub fn mj_c_body_compute_bvh(self_ptr: *mut mjCBody) {
 /// C: mjCBody::get_userdata (user/user_objects.h:557)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_body_get_userdata(self_ptr: *mut mjCBody) -> *const () {
-    // NOTE: signature changed from previous IR version
-    // Previous params: (self_ptr : * mut mjCBody)
-    // Previous return: * const i32
-    todo!("re-translate: params renamed")
+    todo!() // mjCBody::get_userdata
 }
 
 /// C: mjCBody::NextChild (user/user_objects.h:563)
@@ -968,10 +917,7 @@ pub fn mj_c_body_reset_id(self_ptr: *mut mjCBody) {
 /// C: mjCBody::Bodies (user/user_objects.h:589)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_body_bodies(self_ptr: *mut mjCBody) -> *const () {
-    // NOTE: signature changed from previous IR version
-    // Previous params: (self_ptr : * mut mjCBody)
-    // Previous return: i32
-    todo!("re-translate: params renamed")
+    todo!() // mjCBody::Bodies
 }
 
 /// C: mjCBody::AccumulateInertia (user/user_objects.h:597)
@@ -1025,10 +971,7 @@ pub fn mj_c_body_copy_plugin(self_ptr: *mut mjCBody) {
 /// Calls: mjCFrame::IsAncestor
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_body_copy_list(self_ptr: *mut mjCBody, dst: *const (), src: *const (), fmap: *const (), pframe: *const mjCFrame) {
-    // NOTE: signature changed from previous IR version
-    // Previous params: (self_ptr : * mut mjCBody, dst : * mut i32, src : * const i32, fmap : * mut i32, pframe : * const mjCFrame)
-    // Previous return: ()
-    todo!("re-translate: params renamed")
+    todo!() // mjCBody::CopyList
 }
 
 /// C: mjCFrame::CopyFromSpec (user/user_objects.h:654)
@@ -1090,10 +1033,7 @@ pub fn mj_c_joint_get_parent(self_ptr: *mut mjCJoint) -> *mut mjCBody {
 /// C: mjCJoint::get_userdata (user/user_objects.h:711)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_joint_get_userdata(self_ptr: *mut mjCJoint) -> *const () {
-    // NOTE: signature changed from previous IR version
-    // Previous params: (self_ptr : * mut mjCJoint)
-    // Previous return: * const i32
-    todo!("re-translate: params renamed")
+    todo!() // mjCJoint::get_userdata
 }
 
 /// C: mjCJoint::get_range (user/user_objects.h:712)
@@ -1238,28 +1178,19 @@ pub fn mj_c_geom_get_added_mass_kappa(self_ptr: *mut mjCGeom, dx: f64, dy: f64, 
 /// C: mjCGeom::get_userdata (user/user_objects.h:797)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_geom_get_userdata(self_ptr: *mut mjCGeom) -> *const () {
-    // NOTE: signature changed from previous IR version
-    // Previous params: (self_ptr : * mut mjCGeom)
-    // Previous return: * const i32
-    todo!("re-translate: params renamed")
+    todo!() // mjCGeom::get_userdata
 }
 
 /// C: mjCGeom::get_hfieldname (user/user_objects.h:798)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_geom_get_hfieldname(self_ptr: *mut mjCGeom) -> *const std__string {
-    // NOTE: signature changed from previous IR version
-    // Previous params: (self_ptr : * mut mjCGeom)
-    // Previous return: * const i32
-    todo!("re-translate: params renamed")
+    todo!() // mjCGeom::get_hfieldname
 }
 
 /// C: mjCGeom::get_meshname (user/user_objects.h:799)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_geom_get_meshname(self_ptr: *mut mjCGeom) -> *const std__string {
-    // NOTE: signature changed from previous IR version
-    // Previous params: (self_ptr : * mut mjCGeom)
-    // Previous return: * const i32
-    todo!("re-translate: params renamed")
+    todo!() // mjCGeom::get_meshname
 }
 
 /// C: mjCGeom::get_material (user/user_objects.h:800)
@@ -1348,19 +1279,13 @@ pub fn mj_c_site_get_parent(self_ptr: *mut mjCSite) -> *mut mjCBody {
 /// C: mjCSite::get_userdata (user/user_objects.h:857)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_site_get_userdata(self_ptr: *mut mjCSite) -> *const () {
-    // NOTE: signature changed from previous IR version
-    // Previous params: (self_ptr : * mut mjCSite)
-    // Previous return: * const i32
-    todo!("re-translate: params renamed")
+    todo!() // mjCSite::get_userdata
 }
 
 /// C: mjCSite::get_material (user/user_objects.h:858)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_site_get_material(self_ptr: *mut mjCSite) -> *const std__string {
-    // NOTE: signature changed from previous IR version
-    // Previous params: (self_ptr : * mut mjCSite)
-    // Previous return: * const i32
-    todo!("re-translate: params renamed")
+    todo!() // mjCSite::get_material
 }
 
 /// C: mjCSite::del_material (user/user_objects.h:859)
@@ -1398,19 +1323,13 @@ pub fn mj_c_site_name_space(self_ptr: *mut mjCSite, m: *const mjCModel) {
 /// C: mjCCamera::get_targetbody (user/user_objects.h:899)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_camera_get_targetbody(self_ptr: *mut mjCCamera) -> *const std__string {
-    // NOTE: signature changed from previous IR version
-    // Previous params: (self_ptr : * mut mjCCamera)
-    // Previous return: * const i32
-    todo!("re-translate: params renamed")
+    todo!() // mjCCamera::get_targetbody
 }
 
 /// C: mjCCamera::get_userdata (user/user_objects.h:900)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_camera_get_userdata(self_ptr: *mut mjCCamera) -> *const () {
-    // NOTE: signature changed from previous IR version
-    // Previous params: (self_ptr : * mut mjCCamera)
-    // Previous return: * const i32
-    todo!("re-translate: params renamed")
+    todo!() // mjCCamera::get_userdata
 }
 
 /// C: mjCCamera::SetParent (user/user_objects.h:902)
@@ -1461,19 +1380,13 @@ pub fn mj_c_camera_resolve_references(self_ptr: *mut mjCCamera, m: *const mjCMod
 /// C: mjCLight::get_targetbody (user/user_objects.h:944)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_light_get_targetbody(self_ptr: *mut mjCLight) -> *const std__string {
-    // NOTE: signature changed from previous IR version
-    // Previous params: (self_ptr : * mut mjCLight)
-    // Previous return: * const i32
-    todo!("re-translate: params renamed")
+    todo!() // mjCLight::get_targetbody
 }
 
 /// C: mjCLight::get_texture (user/user_objects.h:945)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_light_get_texture(self_ptr: *mut mjCLight) -> *const std__string {
-    // NOTE: signature changed from previous IR version
-    // Previous params: (self_ptr : * mut mjCLight)
-    // Previous return: * const i32
-    todo!("re-translate: params renamed")
+    todo!() // mjCLight::get_texture
 }
 
 /// C: mjCLight::SetParent (user/user_objects.h:947)
@@ -1550,73 +1463,49 @@ pub fn mj_c_flex_name_space(self_ptr: *mut mjCFlex, m: *const mjCModel) {
 /// C: mjCFlex::get_material (user/user_objects.h:1038)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_flex_get_material(self_ptr: *mut mjCFlex) -> *const std__string {
-    // NOTE: signature changed from previous IR version
-    // Previous params: (self_ptr : * mut mjCFlex)
-    // Previous return: * const i32
-    todo!("re-translate: params renamed")
+    todo!() // mjCFlex::get_material
 }
 
 /// C: mjCFlex::get_vertbody (user/user_objects.h:1039)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_flex_get_vertbody(self_ptr: *mut mjCFlex) -> *const () {
-    // NOTE: signature changed from previous IR version
-    // Previous params: (self_ptr : * mut mjCFlex)
-    // Previous return: * const i32
-    todo!("re-translate: params renamed")
+    todo!() // mjCFlex::get_vertbody
 }
 
 /// C: mjCFlex::get_vert (user/user_objects.h:1040)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_flex_get_vert(self_ptr: *mut mjCFlex) -> *const () {
-    // NOTE: signature changed from previous IR version
-    // Previous params: (self_ptr : * mut mjCFlex)
-    // Previous return: * const i32
-    todo!("re-translate: params renamed")
+    todo!() // mjCFlex::get_vert
 }
 
 /// C: mjCFlex::get_elemaabb (user/user_objects.h:1041)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_flex_get_elemaabb(self_ptr: *mut mjCFlex) -> *const () {
-    // NOTE: signature changed from previous IR version
-    // Previous params: (self_ptr : * mut mjCFlex)
-    // Previous return: * const i32
-    todo!("re-translate: params renamed")
+    todo!() // mjCFlex::get_elemaabb
 }
 
 /// C: mjCFlex::get_elem (user/user_objects.h:1042)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_flex_get_elem(self_ptr: *mut mjCFlex) -> *const () {
-    // NOTE: signature changed from previous IR version
-    // Previous params: (self_ptr : * mut mjCFlex)
-    // Previous return: * const i32
-    todo!("re-translate: params renamed")
+    todo!() // mjCFlex::get_elem
 }
 
 /// C: mjCFlex::get_texcoord (user/user_objects.h:1043)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_flex_get_texcoord(self_ptr: *mut mjCFlex) -> *const () {
-    // NOTE: signature changed from previous IR version
-    // Previous params: (self_ptr : * mut mjCFlex)
-    // Previous return: * const i32
-    todo!("re-translate: params renamed")
+    todo!() // mjCFlex::get_texcoord
 }
 
 /// C: mjCFlex::get_elemtexcoord (user/user_objects.h:1044)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_flex_get_elemtexcoord(self_ptr: *mut mjCFlex) -> *const () {
-    // NOTE: signature changed from previous IR version
-    // Previous params: (self_ptr : * mut mjCFlex)
-    // Previous return: * const i32
-    todo!("re-translate: params renamed")
+    todo!() // mjCFlex::get_elemtexcoord
 }
 
 /// C: mjCFlex::get_nodebody (user/user_objects.h:1045)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_flex_get_nodebody(self_ptr: *mut mjCFlex) -> *const () {
-    // NOTE: signature changed from previous IR version
-    // Previous params: (self_ptr : * mut mjCFlex)
-    // Previous return: * const i32
-    todo!("re-translate: params renamed")
+    todo!() // mjCFlex::get_nodebody
 }
 
 /// C: mjCFlex::HasTexcoord (user/user_objects.h:1047)
@@ -1804,19 +1693,13 @@ pub fn mj_c_mesh_plugin(self_ptr: *mut mjCMesh) -> *const mjsPlugin {
 /// C: mjCMesh::ContentType (user/user_objects.h:1167)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_mesh_content_type(self_ptr: *mut mjCMesh) -> *const std__string {
-    // NOTE: signature changed from previous IR version
-    // Previous params: (self_ptr : * mut mjCMesh)
-    // Previous return: * const i32
-    todo!("re-translate: params renamed")
+    todo!() // mjCMesh::ContentType
 }
 
 /// C: mjCMesh::File (user/user_objects.h:1168)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_mesh_file(self_ptr: *mut mjCMesh) -> *const std__string {
-    // NOTE: signature changed from previous IR version
-    // Previous params: (self_ptr : * mut mjCMesh)
-    // Previous return: * const i32
-    todo!("re-translate: params renamed")
+    todo!() // mjCMesh::File
 }
 
 /// C: mjCMesh::Refpos (user/user_objects.h:1169)
@@ -1861,73 +1744,49 @@ pub fn mj_c_mesh_smooth_normal(self_ptr: *mut mjCMesh) -> bool {
 /// C: mjCMesh::Vert (user/user_objects.h:1173)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_mesh_vert(self_ptr: *mut mjCMesh) -> *const () {
-    // NOTE: signature changed from previous IR version
-    // Previous params: (self_ptr : * mut mjCMesh)
-    // Previous return: * const i32
-    todo!("re-translate: params renamed")
+    todo!() // mjCMesh::Vert
 }
 
 /// C: mjCMesh::UserVert (user/user_objects.h:1175)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_mesh_user_vert(self_ptr: *mut mjCMesh) -> *const () {
-    // NOTE: signature changed from previous IR version
-    // Previous params: (self_ptr : * mut mjCMesh)
-    // Previous return: * const i32
-    todo!("re-translate: params renamed")
+    todo!() // mjCMesh::UserVert
 }
 
 /// C: mjCMesh::UserNormal (user/user_objects.h:1176)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_mesh_user_normal(self_ptr: *mut mjCMesh) -> *const () {
-    // NOTE: signature changed from previous IR version
-    // Previous params: (self_ptr : * mut mjCMesh)
-    // Previous return: * const i32
-    todo!("re-translate: params renamed")
+    todo!() // mjCMesh::UserNormal
 }
 
 /// C: mjCMesh::Texcoord (user/user_objects.h:1177)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_mesh_texcoord(self_ptr: *mut mjCMesh) -> *const () {
-    // NOTE: signature changed from previous IR version
-    // Previous params: (self_ptr : * mut mjCMesh)
-    // Previous return: * const i32
-    todo!("re-translate: params renamed")
+    todo!() // mjCMesh::Texcoord
 }
 
 /// C: mjCMesh::FaceTexcoord (user/user_objects.h:1178)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_mesh_face_texcoord(self_ptr: *mut mjCMesh) -> *const () {
-    // NOTE: signature changed from previous IR version
-    // Previous params: (self_ptr : * mut mjCMesh)
-    // Previous return: * const i32
-    todo!("re-translate: params renamed")
+    todo!() // mjCMesh::FaceTexcoord
 }
 
 /// C: mjCMesh::UserTexcoord (user/user_objects.h:1179)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_mesh_user_texcoord(self_ptr: *mut mjCMesh) -> *const () {
-    // NOTE: signature changed from previous IR version
-    // Previous params: (self_ptr : * mut mjCMesh)
-    // Previous return: * const i32
-    todo!("re-translate: params renamed")
+    todo!() // mjCMesh::UserTexcoord
 }
 
 /// C: mjCMesh::Face (user/user_objects.h:1180)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_mesh_face(self_ptr: *mut mjCMesh) -> *const () {
-    // NOTE: signature changed from previous IR version
-    // Previous params: (self_ptr : * mut mjCMesh)
-    // Previous return: * const i32
-    todo!("re-translate: params renamed")
+    todo!() // mjCMesh::Face
 }
 
 /// C: mjCMesh::UserFace (user/user_objects.h:1181)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_mesh_user_face(self_ptr: *mut mjCMesh) -> *const () {
-    // NOTE: signature changed from previous IR version
-    // Previous params: (self_ptr : * mut mjCMesh)
-    // Previous return: * const i32
-    todo!("re-translate: params renamed")
+    todo!() // mjCMesh::UserFace
 }
 
 /// C: mjCMesh::Inertia (user/user_objects.h:1182)
@@ -1939,10 +1798,7 @@ pub fn mj_c_mesh_inertia(self_ptr: *mut mjCMesh) -> u32 {
 /// C: mjCMesh::Material (user/user_objects.h:1183)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_mesh_material(self_ptr: *mut mjCMesh) -> *const std__string {
-    // NOTE: signature changed from previous IR version
-    // Previous params: (self_ptr : * mut mjCMesh)
-    // Previous return: * const i32
-    todo!("re-translate: params renamed")
+    todo!() // mjCMesh::Material
 }
 
 /// C: mjCMesh::SetNeedHull (user/user_objects.h:1186)
@@ -2431,91 +2287,61 @@ pub fn mj_c_mesh_compute_surface_area(self_ptr: *mut mjCMesh, CoM: *mut f64, fac
 /// C: mjCSkin::File (user/user_objects.h:1364)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_skin_file(self_ptr: *mut mjCSkin) -> *const std__string {
-    // NOTE: signature changed from previous IR version
-    // Previous params: (self_ptr : * mut mjCSkin)
-    // Previous return: * const i32
-    todo!("re-translate: params renamed")
+    todo!() // mjCSkin::File
 }
 
 /// C: mjCSkin::get_material (user/user_objects.h:1365)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_skin_get_material(self_ptr: *mut mjCSkin) -> *const std__string {
-    // NOTE: signature changed from previous IR version
-    // Previous params: (self_ptr : * mut mjCSkin)
-    // Previous return: * const i32
-    todo!("re-translate: params renamed")
+    todo!() // mjCSkin::get_material
 }
 
 /// C: mjCSkin::get_vert (user/user_objects.h:1366)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_skin_get_vert(self_ptr: *mut mjCSkin) -> *const () {
-    // NOTE: signature changed from previous IR version
-    // Previous params: (self_ptr : * mut mjCSkin)
-    // Previous return: * const i32
-    todo!("re-translate: params renamed")
+    todo!() // mjCSkin::get_vert
 }
 
 /// C: mjCSkin::get_texcoord (user/user_objects.h:1367)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_skin_get_texcoord(self_ptr: *mut mjCSkin) -> *const () {
-    // NOTE: signature changed from previous IR version
-    // Previous params: (self_ptr : * mut mjCSkin)
-    // Previous return: * const i32
-    todo!("re-translate: params renamed")
+    todo!() // mjCSkin::get_texcoord
 }
 
 /// C: mjCSkin::get_face (user/user_objects.h:1368)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_skin_get_face(self_ptr: *mut mjCSkin) -> *const () {
-    // NOTE: signature changed from previous IR version
-    // Previous params: (self_ptr : * mut mjCSkin)
-    // Previous return: * const i32
-    todo!("re-translate: params renamed")
+    todo!() // mjCSkin::get_face
 }
 
 /// C: mjCSkin::get_bodyname (user/user_objects.h:1369)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_skin_get_bodyname(self_ptr: *mut mjCSkin) -> *const () {
-    // NOTE: signature changed from previous IR version
-    // Previous params: (self_ptr : * mut mjCSkin)
-    // Previous return: * const i32
-    todo!("re-translate: params renamed")
+    todo!() // mjCSkin::get_bodyname
 }
 
 /// C: mjCSkin::get_bindpos (user/user_objects.h:1370)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_skin_get_bindpos(self_ptr: *mut mjCSkin) -> *const () {
-    // NOTE: signature changed from previous IR version
-    // Previous params: (self_ptr : * mut mjCSkin)
-    // Previous return: * const i32
-    todo!("re-translate: params renamed")
+    todo!() // mjCSkin::get_bindpos
 }
 
 /// C: mjCSkin::get_bindquat (user/user_objects.h:1371)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_skin_get_bindquat(self_ptr: *mut mjCSkin) -> *const () {
-    // NOTE: signature changed from previous IR version
-    // Previous params: (self_ptr : * mut mjCSkin)
-    // Previous return: * const i32
-    todo!("re-translate: params renamed")
+    todo!() // mjCSkin::get_bindquat
 }
 
 /// C: mjCSkin::get_vertid (user/user_objects.h:1372)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_skin_get_vertid(self_ptr: *mut mjCSkin) -> *const () {
-    // NOTE: signature changed from previous IR version
-    // Previous params: (self_ptr : * mut mjCSkin)
-    // Previous return: * const i32
-    todo!("re-translate: params renamed")
+    todo!() // mjCSkin::get_vertid
 }
 
 /// C: mjCSkin::get_vertweight (user/user_objects.h:1373)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_skin_get_vertweight(self_ptr: *mut mjCSkin) -> *const () {
-    // NOTE: signature changed from previous IR version
-    // Previous params: (self_ptr : * mut mjCSkin)
-    // Previous return: * const i32
-    todo!("re-translate: params renamed")
+    todo!() // mjCSkin::get_vertweight
 }
 
 /// C: mjCSkin::del_material (user/user_objects.h:1374)
@@ -2588,19 +2414,13 @@ pub fn mj_ch_field_name_space(self_ptr: *mut mjCHField, m: *const mjCModel) {
 /// C: mjCHField::File (user/user_objects.h:1421)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_ch_field_file(self_ptr: *mut mjCHField) -> std__string {
-    // NOTE: signature changed from previous IR version
-    // Previous params: (self_ptr : * mut mjCHField)
-    // Previous return: i32
-    todo!("re-translate: params renamed")
+    todo!() // mjCHField::File
 }
 
 /// C: mjCHField::get_userdata (user/user_objects.h:1424)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_ch_field_get_userdata(self_ptr: *mut mjCHField) -> *const () {
-    // NOTE: signature changed from previous IR version
-    // Previous params: (self_ptr : * mut mjCHField)
-    // Previous return: * mut i32
-    todo!("re-translate: params renamed")
+    todo!() // mjCHField::get_userdata
 }
 
 /// C: mjCHField::Compile (user/user_objects.h:1427)
@@ -2660,28 +2480,19 @@ pub fn mj_c_texture_compile(self_ptr: *mut mjCTexture, vfs: *const mjVFS) {
 /// C: mjCTexture::File (user/user_objects.h:1471)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_texture_file(self_ptr: *mut mjCTexture) -> std__string {
-    // NOTE: signature changed from previous IR version
-    // Previous params: (self_ptr : * mut mjCTexture)
-    // Previous return: i32
-    todo!("re-translate: params renamed")
+    todo!() // mjCTexture::File
 }
 
 /// C: mjCTexture::get_content_type (user/user_objects.h:1472)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_texture_get_content_type(self_ptr: *mut mjCTexture) -> std__string {
-    // NOTE: signature changed from previous IR version
-    // Previous params: (self_ptr : * mut mjCTexture)
-    // Previous return: i32
-    todo!("re-translate: params renamed")
+    todo!() // mjCTexture::get_content_type
 }
 
 /// C: mjCTexture::get_cubefiles (user/user_objects.h:1473)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_texture_get_cubefiles(self_ptr: *mut mjCTexture) -> *const () {
-    // NOTE: signature changed from previous IR version
-    // Previous params: (self_ptr : * mut mjCTexture)
-    // Previous return: i32
-    todo!("re-translate: params renamed")
+    todo!() // mjCTexture::get_cubefiles
 }
 
 /// C: mjCTexture::GetCacheId (user/user_objects.h:1477)
@@ -2728,50 +2539,35 @@ pub fn mj_c_texture_load_cube_separate(self_ptr: *mut mjCTexture, vfs: *const mj
 /// C: mjCTexture::FlipIfNeeded (user/user_objects.h:1485)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_texture_flip_if_needed(self_ptr: *mut mjCTexture, image: *const (), w: u32, h: u32) {
-    // NOTE: signature changed from previous IR version
-    // Previous params: (self_ptr : * mut mjCTexture, image : * mut i32, w : u32, h : u32)
-    // Previous return: ()
-    todo!("re-translate: params renamed")
+    todo!() // mjCTexture::FlipIfNeeded
 }
 
 /// C: mjCTexture::LoadFlip (user/user_objects.h:1487)
 /// Calls: mjCBase::GetAssetContentType, mjCBase::LoadResource, mjCCache::Insert, mjCCache::PopulateData, mjCModel::FindSpec, mjCTexture::FlipIfNeeded, mjCTexture::GetCacheId, mjCTexture::LoadCustom, mjCTexture::LoadKTX, mjCTexture::LoadPNG, mj_getCache, mju_closeResource
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_texture_load_flip(self_ptr: *mut mjCTexture, filename: string, vfs: *const mjVFS, image: *const (), w: *mut u32, h: *mut u32, is_srgb: *mut bool) {
-    // NOTE: signature changed from previous IR version
-    // Previous params: (self_ptr : * mut mjCTexture, filename : string, vfs : * const mjVFS, image : * mut i32, w : * mut u32, h : * mut u32, is_srgb : * mut bool)
-    // Previous return: ()
-    todo!("re-translate: params renamed")
+    todo!() // mjCTexture::LoadFlip
 }
 
 /// C: mjCTexture::LoadPNG (user/user_objects.h:1491)
 /// Calls: PNGImage::Height, PNGImage::IsSRGB, PNGImage::Load, PNGImage::MoveData, PNGImage::Width
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_texture_load_png(self_ptr: *mut mjCTexture, resource: *mut mjResource, image: *const (), w: *mut u32, h: *mut u32, is_srgb: *mut bool) {
-    // NOTE: signature changed from previous IR version
-    // Previous params: (self_ptr : * mut mjCTexture, resource : * mut mjResource, image : * mut i32, w : * mut u32, h : * mut u32, is_srgb : * mut bool)
-    // Previous return: ()
-    todo!("re-translate: params renamed")
+    todo!() // mjCTexture::LoadPNG
 }
 
 /// C: mjCTexture::LoadKTX (user/user_objects.h:1493)
 /// Calls: mju_readResource
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_texture_load_ktx(self_ptr: *mut mjCTexture, resource: *mut mjResource, image: *const (), w: *mut u32, h: *mut u32, is_srgb: *mut bool) {
-    // NOTE: signature changed from previous IR version
-    // Previous params: (self_ptr : * mut mjCTexture, resource : * mut mjResource, image : * mut i32, w : * mut u32, h : * mut u32, is_srgb : * mut bool)
-    // Previous return: ()
-    todo!("re-translate: params renamed")
+    todo!() // mjCTexture::LoadKTX
 }
 
 /// C: mjCTexture::LoadCustom (user/user_objects.h:1495)
 /// Calls: mju_readResource
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_texture_load_custom(self_ptr: *mut mjCTexture, resource: *mut mjResource, image: *const (), w: *mut u32, h: *mut u32, is_srgb: *mut bool) {
-    // NOTE: signature changed from previous IR version
-    // Previous params: (self_ptr : * mut mjCTexture, resource : * mut mjResource, image : * mut i32, w : * mut u32, h : * mut u32, is_srgb : * mut bool)
-    // Previous return: ()
-    todo!("re-translate: params renamed")
+    todo!() // mjCTexture::LoadCustom
 }
 
 /// C: mjCMaterial::CopyFromSpec (user/user_objects.h:1526)
@@ -2796,10 +2592,7 @@ pub fn mj_c_material_name_space(self_ptr: *mut mjCMaterial, m: *const mjCModel) 
 /// C: mjCMaterial::get_texture (user/user_objects.h:1530)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_material_get_texture(self_ptr: *mut mjCMaterial, i: i32) -> *const std__string {
-    // NOTE: signature changed from previous IR version
-    // Previous params: (self_ptr : * mut mjCMaterial, i : i32)
-    // Previous return: * const i32
-    todo!("re-translate: params renamed")
+    todo!() // mjCMaterial::get_texture
 }
 
 /// C: mjCMaterial::del_textures (user/user_objects.h:1531)
@@ -2844,19 +2637,13 @@ pub fn mj_c_pair_name_space(self_ptr: *mut mjCPair, m: *const mjCModel) {
 /// C: mjCPair::get_geomname1 (user/user_objects.h:1570)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_pair_get_geomname1(self_ptr: *mut mjCPair) -> *const std__string {
-    // NOTE: signature changed from previous IR version
-    // Previous params: (self_ptr : * mut mjCPair)
-    // Previous return: * const i32
-    todo!("re-translate: params renamed")
+    todo!() // mjCPair::get_geomname1
 }
 
 /// C: mjCPair::get_geomname2 (user/user_objects.h:1571)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_pair_get_geomname2(self_ptr: *mut mjCPair) -> *const std__string {
-    // NOTE: signature changed from previous IR version
-    // Previous params: (self_ptr : * mut mjCPair)
-    // Previous return: * const i32
-    todo!("re-translate: params renamed")
+    todo!() // mjCPair::get_geomname2
 }
 
 /// C: mjCPair::GetSignature (user/user_objects.h:1573)
@@ -2900,19 +2687,13 @@ pub fn mj_c_body_pair_name_space(self_ptr: *mut mjCBodyPair, m: *const mjCModel)
 /// C: mjCBodyPair::get_bodyname1 (user/user_objects.h:1618)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_body_pair_get_bodyname1(self_ptr: *mut mjCBodyPair) -> std__string {
-    // NOTE: signature changed from previous IR version
-    // Previous params: (self_ptr : * mut mjCBodyPair)
-    // Previous return: i32
-    todo!("re-translate: params renamed")
+    todo!() // mjCBodyPair::get_bodyname1
 }
 
 /// C: mjCBodyPair::get_bodyname2 (user/user_objects.h:1619)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_body_pair_get_bodyname2(self_ptr: *mut mjCBodyPair) -> std__string {
-    // NOTE: signature changed from previous IR version
-    // Previous params: (self_ptr : * mut mjCBodyPair)
-    // Previous return: i32
-    todo!("re-translate: params renamed")
+    todo!() // mjCBodyPair::get_bodyname2
 }
 
 /// C: mjCBodyPair::GetSignature (user/user_objects.h:1621)
@@ -2964,19 +2745,13 @@ pub fn mj_c_equality_compile(self_ptr: *mut mjCEquality) {
 /// C: mjCTendon::set_material (user/user_objects.h:1697)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_tendon_set_material(self_ptr: *mut mjCTendon, _material: string) {
-    // NOTE: signature changed from previous IR version
-    // Previous params: (self_ptr : * mut mjCTendon, _material : i32)
-    // Previous return: ()
-    todo!("re-translate: params renamed")
+    todo!() // mjCTendon::set_material
 }
 
 /// C: mjCTendon::get_material (user/user_objects.h:1698)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_tendon_get_material(self_ptr: *mut mjCTendon) -> *const std__string {
-    // NOTE: signature changed from previous IR version
-    // Previous params: (self_ptr : * mut mjCTendon)
-    // Previous return: * const i32
-    todo!("re-translate: params renamed")
+    todo!() // mjCTendon::get_material
 }
 
 /// C: mjCTendon::del_material (user/user_objects.h:1699)
@@ -3034,10 +2809,7 @@ pub fn mj_c_tendon_get_wrap(self_ptr: *mut mjCTendon, i: i32) -> *const mjCWrap 
 /// C: mjCTendon::get_userdata (user/user_objects.h:1713)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_tendon_get_userdata(self_ptr: *mut mjCTendon) -> *const () {
-    // NOTE: signature changed from previous IR version
-    // Previous params: (self_ptr : * mut mjCTendon)
-    // Previous return: * const i32
-    todo!("re-translate: params renamed")
+    todo!() // mjCTendon::get_userdata
 }
 
 /// C: mjCTendon::get_range (user/user_objects.h:1714)
@@ -3159,37 +2931,25 @@ pub fn mj_c_plugin_compile(self_ptr: *mut mjCPlugin) {
 /// C: mjCActuator::get_userdata (user/user_objects.h:1843)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_actuator_get_userdata(self_ptr: *mut mjCActuator) -> *const () {
-    // NOTE: signature changed from previous IR version
-    // Previous params: (self_ptr : * mut mjCActuator)
-    // Previous return: * const i32
-    todo!("re-translate: params renamed")
+    todo!() // mjCActuator::get_userdata
 }
 
 /// C: mjCActuator::get_target (user/user_objects.h:1844)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_actuator_get_target(self_ptr: *mut mjCActuator) -> *const std__string {
-    // NOTE: signature changed from previous IR version
-    // Previous params: (self_ptr : * mut mjCActuator)
-    // Previous return: * const i32
-    todo!("re-translate: params renamed")
+    todo!() // mjCActuator::get_target
 }
 
 /// C: mjCActuator::get_slidersite (user/user_objects.h:1845)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_actuator_get_slidersite(self_ptr: *mut mjCActuator) -> *const std__string {
-    // NOTE: signature changed from previous IR version
-    // Previous params: (self_ptr : * mut mjCActuator)
-    // Previous return: * const i32
-    todo!("re-translate: params renamed")
+    todo!() // mjCActuator::get_slidersite
 }
 
 /// C: mjCActuator::get_refsite (user/user_objects.h:1846)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_actuator_get_refsite(self_ptr: *mut mjCActuator) -> *const std__string {
-    // NOTE: signature changed from previous IR version
-    // Previous params: (self_ptr : * mut mjCActuator)
-    // Previous return: * const i32
-    todo!("re-translate: params renamed")
+    todo!() // mjCActuator::get_refsite
 }
 
 /// C: mjCActuator::is_ctrllimited (user/user_objects.h:1848)
@@ -3216,10 +2976,7 @@ pub fn mj_c_actuator_is_actlimited(self_ptr: *mut mjCActuator) -> bool {
 /// C: mjCActuator::act (user/user_objects.h:1852)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_actuator_act(self_ptr: *mut mjCActuator, state_name: *const std__string) -> *const () {
-    // NOTE: signature changed from previous IR version
-    // Previous params: (self_ptr : * mut mjCActuator, state_name : * const std__string)
-    // Previous return: * mut i32
-    todo!("re-translate: params renamed")
+    todo!() // mjCActuator::act
 }
 
 /// C: mjCActuator::ctrl (user/user_objects.h:1853)
@@ -3282,28 +3039,19 @@ pub fn mj_c_actuator_forget_keyframes(self_ptr: *mut mjCActuator) {
 /// C: mjCSensor::get_userdata (user/user_objects.h:1901)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_sensor_get_userdata(self_ptr: *mut mjCSensor) -> *const () {
-    // NOTE: signature changed from previous IR version
-    // Previous params: (self_ptr : * mut mjCSensor)
-    // Previous return: * const i32
-    todo!("re-translate: params renamed")
+    todo!() // mjCSensor::get_userdata
 }
 
 /// C: mjCSensor::get_objname (user/user_objects.h:1902)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_sensor_get_objname(self_ptr: *mut mjCSensor) -> *const std__string {
-    // NOTE: signature changed from previous IR version
-    // Previous params: (self_ptr : * mut mjCSensor)
-    // Previous return: * const i32
-    todo!("re-translate: params renamed")
+    todo!() // mjCSensor::get_objname
 }
 
 /// C: mjCSensor::get_refname (user/user_objects.h:1903)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_sensor_get_refname(self_ptr: *mut mjCSensor) -> *const std__string {
-    // NOTE: signature changed from previous IR version
-    // Previous params: (self_ptr : * mut mjCSensor)
-    // Previous return: * const i32
-    todo!("re-translate: params renamed")
+    todo!() // mjCSensor::get_refname
 }
 
 /// C: mjCSensor::get_obj (user/user_objects.h:1905)

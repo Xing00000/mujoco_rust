@@ -1,5 +1,5 @@
 //! Port of: user/user_util.cc
-//! IR hash: e878892ca48fe222
+//! IR hash: 47ee20b2bff3660e
 //! CODEGEN: signatures locked. Only fill todo!() bodies.
 
 use crate::types::*;
@@ -929,19 +929,13 @@ pub fn file_path_is_abs(self_ptr: *mut FilePath) -> bool {
 /// C: FilePath::AbsPrefix (user/user_util.h:195)
 #[allow(unused_variables, non_snake_case)]
 pub fn file_path_abs_prefix(self_ptr: *mut FilePath) -> std__string {
-    // NOTE: signature changed from previous IR version
-    // Previous params: (self_ptr : * mut FilePath)
-    // Previous return: i32
-    todo!("re-translate: params renamed")
+    todo!() // FilePath::AbsPrefix
 }
 
 /// C: FilePath::Str (user/user_util.h:198)
 #[allow(unused_variables, non_snake_case)]
 pub fn file_path_str(self_ptr: *mut FilePath) -> *const std__string {
-    // NOTE: signature changed from previous IR version
-    // Previous params: (self_ptr : * mut FilePath)
-    // Previous return: * const i32
-    todo!("re-translate: params renamed")
+    todo!() // FilePath::Str
 }
 
 /// C: FilePath::StrLower (user/user_util.h:202)
@@ -1018,39 +1012,27 @@ pub fn file_path_combine(s1: *const std__string, s2: *const std__string) -> std_
 /// C: FilePath::FilePathFast (user/user_util.h:234)
 #[allow(unused_variables, non_snake_case)]
 pub fn file_path_file_path_fast(str: *const std__string) -> FilePath {
-    // NOTE: signature changed from previous IR version
-    // Previous params: (str : * const i32)
-    // Previous return: FilePath
-    todo!("re-translate: params renamed")
+    todo!() // FilePath::FilePathFast
 }
 
 /// C: FileToMemory (user/user_util.h:259)
 /// Calls: mju_warning
 #[allow(unused_variables, non_snake_case)]
 pub fn file_to_memory(filename: *const i8) -> *const () {
-    // NOTE: signature changed from previous IR version
-    // Previous params: (filename : * const i8)
-    // Previous return: i32
-    todo!("re-translate: params renamed")
+    todo!() // FileToMemory
 }
 
 /// C: VectorToString (user/user_util.h:262)
 #[allow(unused_variables, non_snake_case)]
 pub fn vector_to_string(v: *const ()) -> std__string {
-    // NOTE: signature changed from previous IR version
-    // Previous params: (v : * const i32)
-    // Previous return: std__string
-    todo!("re-translate: params renamed")
+    todo!() // VectorToString
 }
 
 /// C: StringToVector (user/user_util.h:265)
 /// Calls: IsNullOrSpace, SkipSpace
 #[allow(unused_variables, non_snake_case)]
 pub fn string_to_vector(cs: *mut i8) -> *const () {
-    // NOTE: signature changed from previous IR version
-    // Previous params: (cs : * mut i8)
-    // Previous return: i32
-    todo!("re-translate: params renamed")
+    todo!() // StringToVector
 }
 
 /// C: mjuu_strippath (user/user_util.h:273)
