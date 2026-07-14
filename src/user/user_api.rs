@@ -695,55 +695,172 @@ pub fn mjs_get_wrap_coef(wrap: *const mjsWrap) -> f64 {
 /// C: mjs_asBody (user/user_api.h:301)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjs_as_body(element: *mut mjsElement) -> *mut mjsBody {
-    todo!() // mjs_asBody
+    // SAFETY: element is a valid mjsElement pointer (caller contract).
+    // static_cast<mjCBody*>(element)->spec mirrors the C++ cast.
+    unsafe {
+        if element.is_null() {
+            return std::ptr::null_mut();
+        }
+        // elemtype is first 4 bytes of the [u8; 8] field (i32 in C)
+        let elemtype = *(element as *const i32);
+        if elemtype == 1 {
+            &mut (*(element as *mut crate::types::mjCBody)).spec as *mut crate::types::mjsBody
+        } else {
+            std::ptr::null_mut()
+        }
+    }
 }
 
 /// C: mjs_asGeom (user/user_api.h:304)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjs_as_geom(element: *mut mjsElement) -> *mut mjsGeom {
-    todo!() // mjs_asGeom
+    // SAFETY: element is a valid mjsElement pointer (caller contract).
+    // static_cast<mjCGeom*>(element)->spec mirrors the C++ cast.
+    unsafe {
+        if element.is_null() {
+            return std::ptr::null_mut();
+        }
+        // elemtype is first 4 bytes of the [u8; 8] field (i32 in C)
+        let elemtype = *(element as *const i32);
+        if elemtype == 5 {
+            &mut (*(element as *mut crate::types::mjCGeom)).spec as *mut crate::types::mjsGeom
+        } else {
+            std::ptr::null_mut()
+        }
+    }
 }
 
 /// C: mjs_asJoint (user/user_api.h:307)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjs_as_joint(element: *mut mjsElement) -> *mut mjsJoint {
-    todo!() // mjs_asJoint
+    // SAFETY: element is a valid mjsElement pointer (caller contract).
+    // static_cast<mjCJoint*>(element)->spec mirrors the C++ cast.
+    unsafe {
+        if element.is_null() {
+            return std::ptr::null_mut();
+        }
+        // elemtype is first 4 bytes of the [u8; 8] field (i32 in C)
+        let elemtype = *(element as *const i32);
+        if elemtype == 3 {
+            &mut (*(element as *mut crate::types::mjCJoint)).spec as *mut crate::types::mjsJoint
+        } else {
+            std::ptr::null_mut()
+        }
+    }
 }
 
 /// C: mjs_asSite (user/user_api.h:310)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjs_as_site(element: *mut mjsElement) -> *mut mjsSite {
-    todo!() // mjs_asSite
+    // SAFETY: element is a valid mjsElement pointer (caller contract).
+    // static_cast<mjCSite*>(element)->spec mirrors the C++ cast.
+    unsafe {
+        if element.is_null() {
+            return std::ptr::null_mut();
+        }
+        // elemtype is first 4 bytes of the [u8; 8] field (i32 in C)
+        let elemtype = *(element as *const i32);
+        if elemtype == 6 {
+            &mut (*(element as *mut crate::types::mjCSite)).spec as *mut crate::types::mjsSite
+        } else {
+            std::ptr::null_mut()
+        }
+    }
 }
 
 /// C: mjs_asCamera (user/user_api.h:313)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjs_as_camera(element: *mut mjsElement) -> *mut mjsCamera {
-    todo!() // mjs_asCamera
+    // SAFETY: element is a valid mjsElement pointer (caller contract).
+    // static_cast<mjCCamera*>(element)->spec mirrors the C++ cast.
+    unsafe {
+        if element.is_null() {
+            return std::ptr::null_mut();
+        }
+        // elemtype is first 4 bytes of the [u8; 8] field (i32 in C)
+        let elemtype = *(element as *const i32);
+        if elemtype == 7 {
+            &mut (*(element as *mut crate::types::mjCCamera)).spec as *mut crate::types::mjsCamera
+        } else {
+            std::ptr::null_mut()
+        }
+    }
 }
 
 /// C: mjs_asLight (user/user_api.h:316)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjs_as_light(element: *mut mjsElement) -> *mut mjsLight {
-    todo!() // mjs_asLight
+    // SAFETY: element is a valid mjsElement pointer (caller contract).
+    // static_cast<mjCLight*>(element)->spec mirrors the C++ cast.
+    unsafe {
+        if element.is_null() {
+            return std::ptr::null_mut();
+        }
+        // elemtype is first 4 bytes of the [u8; 8] field (i32 in C)
+        let elemtype = *(element as *const i32);
+        if elemtype == 8 {
+            &mut (*(element as *mut crate::types::mjCLight)).spec as *mut crate::types::mjsLight
+        } else {
+            std::ptr::null_mut()
+        }
+    }
 }
 
 /// C: mjs_asFrame (user/user_api.h:319)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjs_as_frame(element: *mut mjsElement) -> *mut mjsFrame {
-    todo!() // mjs_asFrame
+    // SAFETY: element is a valid mjsElement pointer (caller contract).
+    // static_cast<mjCFrame*>(element)->spec mirrors the C++ cast.
+    unsafe {
+        if element.is_null() {
+            return std::ptr::null_mut();
+        }
+        // elemtype is first 4 bytes of the [u8; 8] field (i32 in C)
+        let elemtype = *(element as *const i32);
+        if elemtype == 100 {
+            &mut (*(element as *mut crate::types::mjCFrame)).spec as *mut crate::types::mjsFrame
+        } else {
+            std::ptr::null_mut()
+        }
+    }
 }
 
 /// C: mjs_asActuator (user/user_api.h:322)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjs_as_actuator(element: *mut mjsElement) -> *mut mjsActuator {
-    todo!() // mjs_asActuator
+    // SAFETY: element is a valid mjsElement pointer (caller contract).
+    // static_cast<mjCActuator*>(element)->spec mirrors the C++ cast.
+    unsafe {
+        if element.is_null() {
+            return std::ptr::null_mut();
+        }
+        // elemtype is first 4 bytes of the [u8; 8] field (i32 in C)
+        let elemtype = *(element as *const i32);
+        if elemtype == 19 {
+            &mut (*(element as *mut crate::types::mjCActuator)).spec as *mut crate::types::mjsActuator
+        } else {
+            std::ptr::null_mut()
+        }
+    }
 }
 
 /// C: mjs_asSensor (user/user_api.h:325)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjs_as_sensor(element: *mut mjsElement) -> *mut mjsSensor {
-    todo!() // mjs_asSensor
+    // SAFETY: element is a valid mjsElement pointer (caller contract).
+    // static_cast<mjCSensor*>(element)->spec mirrors the C++ cast.
+    unsafe {
+        if element.is_null() {
+            return std::ptr::null_mut();
+        }
+        // elemtype is first 4 bytes of the [u8; 8] field (i32 in C)
+        let elemtype = *(element as *const i32);
+        if elemtype == 20 {
+            &mut (*(element as *mut crate::types::mjCSensor)).spec as *mut crate::types::mjsSensor
+        } else {
+            std::ptr::null_mut()
+        }
+    }
 }
 
 /// C: mjs_asFlex (user/user_api.h:328)
@@ -755,85 +872,267 @@ pub fn mjs_as_flex(element: *mut mjsElement) -> *mut mjsFlex {
 /// C: mjs_asPair (user/user_api.h:331)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjs_as_pair(element: *mut mjsElement) -> *mut mjsPair {
-    todo!() // mjs_asPair
+    // SAFETY: element is a valid mjsElement pointer (caller contract).
+    // static_cast<mjCPair*>(element)->spec mirrors the C++ cast.
+    unsafe {
+        if element.is_null() {
+            return std::ptr::null_mut();
+        }
+        // elemtype is first 4 bytes of the [u8; 8] field (i32 in C)
+        let elemtype = *(element as *const i32);
+        if elemtype == 15 {
+            &mut (*(element as *mut crate::types::mjCPair)).spec as *mut crate::types::mjsPair
+        } else {
+            std::ptr::null_mut()
+        }
+    }
 }
 
 /// C: mjs_asEquality (user/user_api.h:334)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjs_as_equality(element: *mut mjsElement) -> *mut mjsEquality {
-    todo!() // mjs_asEquality
+    // SAFETY: element is a valid mjsElement pointer (caller contract).
+    // static_cast<mjCEquality*>(element)->spec mirrors the C++ cast.
+    unsafe {
+        if element.is_null() {
+            return std::ptr::null_mut();
+        }
+        // elemtype is first 4 bytes of the [u8; 8] field (i32 in C)
+        let elemtype = *(element as *const i32);
+        if elemtype == 17 {
+            &mut (*(element as *mut crate::types::mjCEquality)).spec as *mut crate::types::mjsEquality
+        } else {
+            std::ptr::null_mut()
+        }
+    }
 }
 
 /// C: mjs_asExclude (user/user_api.h:337)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjs_as_exclude(element: *mut mjsElement) -> *mut mjsExclude {
-    todo!() // mjs_asExclude
+    // SAFETY: element is a valid mjsElement pointer (caller contract).
+    // static_cast<mjCExclude*>(element)->spec mirrors the C++ cast.
+    unsafe {
+        if element.is_null() {
+            return std::ptr::null_mut();
+        }
+        // elemtype is first 4 bytes of the [u8; 8] field (i32 in C)
+        let elemtype = *(element as *const i32);
+        if elemtype == 16 {
+            &mut (*(element as *mut crate::types::mjCBodyPair)).spec as *mut crate::types::mjsExclude
+        } else {
+            std::ptr::null_mut()
+        }
+    }
 }
 
 /// C: mjs_asTendon (user/user_api.h:340)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjs_as_tendon(element: *mut mjsElement) -> *mut mjsTendon {
-    todo!() // mjs_asTendon
+    // SAFETY: element is a valid mjsElement pointer (caller contract).
+    // static_cast<mjCTendon*>(element)->spec mirrors the C++ cast.
+    unsafe {
+        if element.is_null() {
+            return std::ptr::null_mut();
+        }
+        // elemtype is first 4 bytes of the [u8; 8] field (i32 in C)
+        let elemtype = *(element as *const i32);
+        if elemtype == 18 {
+            &mut (*(element as *mut crate::types::mjCTendon)).spec as *mut crate::types::mjsTendon
+        } else {
+            std::ptr::null_mut()
+        }
+    }
 }
 
 /// C: mjs_asNumeric (user/user_api.h:343)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjs_as_numeric(element: *mut mjsElement) -> *mut mjsNumeric {
-    todo!() // mjs_asNumeric
+    // SAFETY: element is a valid mjsElement pointer (caller contract).
+    // static_cast<mjCNumeric*>(element)->spec mirrors the C++ cast.
+    unsafe {
+        if element.is_null() {
+            return std::ptr::null_mut();
+        }
+        // elemtype is first 4 bytes of the [u8; 8] field (i32 in C)
+        let elemtype = *(element as *const i32);
+        if elemtype == 21 {
+            &mut (*(element as *mut crate::types::mjCNumeric)).spec as *mut crate::types::mjsNumeric
+        } else {
+            std::ptr::null_mut()
+        }
+    }
 }
 
 /// C: mjs_asText (user/user_api.h:346)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjs_as_text(element: *mut mjsElement) -> *mut mjsText {
-    todo!() // mjs_asText
+    // SAFETY: element is a valid mjsElement pointer (caller contract).
+    // static_cast<mjCText*>(element)->spec mirrors the C++ cast.
+    unsafe {
+        if element.is_null() {
+            return std::ptr::null_mut();
+        }
+        // elemtype is first 4 bytes of the [u8; 8] field (i32 in C)
+        let elemtype = *(element as *const i32);
+        if elemtype == 22 {
+            &mut (*(element as *mut crate::types::mjCText)).spec as *mut crate::types::mjsText
+        } else {
+            std::ptr::null_mut()
+        }
+    }
 }
 
 /// C: mjs_asTuple (user/user_api.h:349)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjs_as_tuple(element: *mut mjsElement) -> *mut mjsTuple {
-    todo!() // mjs_asTuple
+    // SAFETY: element is a valid mjsElement pointer (caller contract).
+    // static_cast<mjCTuple*>(element)->spec mirrors the C++ cast.
+    unsafe {
+        if element.is_null() {
+            return std::ptr::null_mut();
+        }
+        // elemtype is first 4 bytes of the [u8; 8] field (i32 in C)
+        let elemtype = *(element as *const i32);
+        if elemtype == 23 {
+            &mut (*(element as *mut crate::types::mjCTuple)).spec as *mut crate::types::mjsTuple
+        } else {
+            std::ptr::null_mut()
+        }
+    }
 }
 
 /// C: mjs_asKey (user/user_api.h:352)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjs_as_key(element: *mut mjsElement) -> *mut mjsKey {
-    todo!() // mjs_asKey
+    // SAFETY: element is a valid mjsElement pointer (caller contract).
+    // static_cast<mjCKey*>(element)->spec mirrors the C++ cast.
+    unsafe {
+        if element.is_null() {
+            return std::ptr::null_mut();
+        }
+        // elemtype is first 4 bytes of the [u8; 8] field (i32 in C)
+        let elemtype = *(element as *const i32);
+        if elemtype == 24 {
+            &mut (*(element as *mut crate::types::mjCKey)).spec as *mut crate::types::mjsKey
+        } else {
+            std::ptr::null_mut()
+        }
+    }
 }
 
 /// C: mjs_asMesh (user/user_api.h:355)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjs_as_mesh(element: *mut mjsElement) -> *mut mjsMesh {
-    todo!() // mjs_asMesh
+    // SAFETY: element is a valid mjsElement pointer (caller contract).
+    // static_cast<mjCMesh*>(element)->spec mirrors the C++ cast.
+    unsafe {
+        if element.is_null() {
+            return std::ptr::null_mut();
+        }
+        // elemtype is first 4 bytes of the [u8; 8] field (i32 in C)
+        let elemtype = *(element as *const i32);
+        if elemtype == 10 {
+            &mut (*(element as *mut crate::types::mjCMesh)).spec as *mut crate::types::mjsMesh
+        } else {
+            std::ptr::null_mut()
+        }
+    }
 }
 
 /// C: mjs_asHField (user/user_api.h:358)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjs_as_h_field(element: *mut mjsElement) -> *mut mjsHField {
-    todo!() // mjs_asHField
+    // SAFETY: element is a valid mjsElement pointer (caller contract).
+    // static_cast<mjCHField*>(element)->spec mirrors the C++ cast.
+    unsafe {
+        if element.is_null() {
+            return std::ptr::null_mut();
+        }
+        // elemtype is first 4 bytes of the [u8; 8] field (i32 in C)
+        let elemtype = *(element as *const i32);
+        if elemtype == 12 {
+            &mut (*(element as *mut crate::types::mjCHField)).spec as *mut crate::types::mjsHField
+        } else {
+            std::ptr::null_mut()
+        }
+    }
 }
 
 /// C: mjs_asSkin (user/user_api.h:361)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjs_as_skin(element: *mut mjsElement) -> *mut mjsSkin {
-    todo!() // mjs_asSkin
+    // SAFETY: element is a valid mjsElement pointer (caller contract).
+    // static_cast<mjCSkin*>(element)->spec mirrors the C++ cast.
+    unsafe {
+        if element.is_null() {
+            return std::ptr::null_mut();
+        }
+        // elemtype is first 4 bytes of the [u8; 8] field (i32 in C)
+        let elemtype = *(element as *const i32);
+        if elemtype == 11 {
+            &mut (*(element as *mut crate::types::mjCSkin)).spec as *mut crate::types::mjsSkin
+        } else {
+            std::ptr::null_mut()
+        }
+    }
 }
 
 /// C: mjs_asTexture (user/user_api.h:364)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjs_as_texture(element: *mut mjsElement) -> *mut mjsTexture {
-    todo!() // mjs_asTexture
+    // SAFETY: element is a valid mjsElement pointer (caller contract).
+    // static_cast<mjCTexture*>(element)->spec mirrors the C++ cast.
+    unsafe {
+        if element.is_null() {
+            return std::ptr::null_mut();
+        }
+        // elemtype is first 4 bytes of the [u8; 8] field (i32 in C)
+        let elemtype = *(element as *const i32);
+        if elemtype == 13 {
+            &mut (*(element as *mut crate::types::mjCTexture)).spec as *mut crate::types::mjsTexture
+        } else {
+            std::ptr::null_mut()
+        }
+    }
 }
 
 /// C: mjs_asMaterial (user/user_api.h:367)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjs_as_material(element: *mut mjsElement) -> *mut mjsMaterial {
-    todo!() // mjs_asMaterial
+    // SAFETY: element is a valid mjsElement pointer (caller contract).
+    // static_cast<mjCMaterial*>(element)->spec mirrors the C++ cast.
+    unsafe {
+        if element.is_null() {
+            return std::ptr::null_mut();
+        }
+        // elemtype is first 4 bytes of the [u8; 8] field (i32 in C)
+        let elemtype = *(element as *const i32);
+        if elemtype == 14 {
+            &mut (*(element as *mut crate::types::mjCMaterial)).spec as *mut crate::types::mjsMaterial
+        } else {
+            std::ptr::null_mut()
+        }
+    }
 }
 
 /// C: mjs_asPlugin (user/user_api.h:370)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjs_as_plugin(element: *mut mjsElement) -> *mut mjsPlugin {
-    todo!() // mjs_asPlugin
+    // SAFETY: element is a valid mjsElement pointer (caller contract).
+    // static_cast<mjCPlugin*>(element)->spec mirrors the C++ cast.
+    unsafe {
+        if element.is_null() {
+            return std::ptr::null_mut();
+        }
+        // elemtype is first 4 bytes of the [u8; 8] field (i32 in C)
+        let elemtype = *(element as *const i32);
+        if elemtype == 25 {
+            &mut (*(element as *mut crate::types::mjCPlugin)).spec as *mut crate::types::mjsPlugin
+        } else {
+            std::ptr::null_mut()
+        }
+    }
 }
 
 /// C: mjs_setName (user/user_api.h:376)
