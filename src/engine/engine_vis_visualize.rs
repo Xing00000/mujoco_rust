@@ -187,7 +187,17 @@ pub fn add_frame(scn: *mut mjvScene, objid: i32, pos: *const f64, rot: *const f6
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn get_frustum(zver: *mut f32, zhor: *mut f32, znear: f32, intrinsic: *const f32, sensorsize: *const f32) {
-    todo!() // getFrustum
+    // SAFETY: zver, zhor (if non-null) point to [2]; intrinsic points to [4]; sensorsize points to [2]
+    unsafe {
+        if !zhor.is_null() {
+            *zhor.add(0) = znear / *intrinsic.add(0) * (*sensorsize.add(0) / 2.0f32 - *intrinsic.add(2));
+            *zhor.add(1) = znear / *intrinsic.add(0) * (*sensorsize.add(0) / 2.0f32 + *intrinsic.add(2));
+        }
+        if !zver.is_null() {
+            *zver.add(0) = znear / *intrinsic.add(1) * (*sensorsize.add(1) / 2.0f32 - *intrinsic.add(3));
+            *zver.add(1) = znear / *intrinsic.add(1) * (*sensorsize.add(1) / 2.0f32 + *intrinsic.add(3));
+        }
+    }
 }
 
 /// C: addContactGeoms (engine/engine_vis_visualize.c:565)
@@ -714,6 +724,41 @@ pub fn mjv_catenary(x0: *const f64, x1: *const f64, gravity: *const f64, length:
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn hsv2rgb(RGB: *mut f32, H: f32, S: f32, V: f32) {
-    todo!() // hsv2rgb
+    // SAFETY: caller guarantees RGB points to at least 3 floats
+    unsafe {
+        let R: f32;
+        let G: f32;
+        let B: f32;
+
+        if S <= 0.0 {
+            R = V;
+            G = V;
+            B = V;
+        } else {
+            let hh: f32 = H * 6.0;
+            let i: i32 = hh as i32;
+            let ff: f32 = hh - i as f32;
+            let p: f32 = V * (1.0 - S);
+            let q: f32 = V * (1.0 - (S * ff));
+            let t: f32 = V * (1.0 - (S * (1.0 - ff)));
+            if i == 0 {
+                R = V;  G = t;  B = p;
+            } else if i == 1 {
+                R = q;  G = V;  B = p;
+            } else if i == 2 {
+                R = p;  G = V;  B = t;
+            } else if i == 3 {
+                R = p;  G = q;  B = V;
+            } else if i == 4 {
+                R = t;  G = p;  B = V;
+            } else {
+                R = V;  G = p;  B = q;
+            }
+        }
+
+        *RGB.add(0) = R;
+        *RGB.add(1) = G;
+        *RGB.add(2) = B;
+    }
 }
 

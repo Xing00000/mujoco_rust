@@ -25,7 +25,23 @@ pub fn cell_pos_and_jac(m: *const mjModel, d: *mut mjData, flex_id: i32, npc: i3
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn cell_strain_jacobian(npc: i32, cell_nnz: i32, dSdx_local: *const f64, cell_node_jac: *const f64, strain_jac: *mut f64) {
-    todo!() // cell_strain_jacobian
+    // SAFETY: caller guarantees valid pointers with sufficient lengths:
+    //   dSdx_local[3*npc], cell_node_jac[3*npc * cell_nnz], strain_jac[cell_nnz]
+    unsafe {
+        crate::engine::engine_util_blas::mju_zero(strain_jac, cell_nnz);
+        for n in 0..npc {
+            for c in 0..3 {
+                let w = *dSdx_local.add((3 * n + c) as usize);
+                if w == 0.0 {
+                    continue;
+                }
+                let row = (3 * n + c) as usize;
+                for k in 0..cell_nnz as usize {
+                    *strain_jac.add(k) += w * *cell_node_jac.add(row * cell_nnz as usize + k);
+                }
+            }
+        }
+    }
 }
 
 /// C: arenaAllocEfc (engine/engine_core_constraint.c:130)
@@ -125,7 +141,36 @@ pub fn getsolparam(m: *const mjModel, d: *const mjData, i: i32, solref: *mut f64
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn getposdim(m: *const mjModel, d: *const mjData, i: i32, pos: *mut f64, dim: *mut i32) {
-    todo!() // getposdim
+    // SAFETY: caller guarantees m, d are valid model/data pointers; pos, dim are writable
+    unsafe {
+        // get id of constraint-related object
+        let id = *(*d).efc_id.add(i as usize);
+
+        // set (dim, pos) for common case
+        *dim = 1;
+        *pos = *(*d).efc_pos.add(i as usize);
+
+        // change (dim, distance) for special cases
+        let efc_type = *(*d).efc_type.add(i as usize);
+
+        const MJCNSTR_CONTACT_ELLIPTIC: i32 = 7;
+        const MJCNSTR_CONTACT_PYRAMIDAL: i32 = 6;
+        const MJCNSTR_EQUALITY: i32 = 0;
+
+        if efc_type == MJCNSTR_CONTACT_ELLIPTIC {
+            *dim = (*(*d).contact.add(id as usize)).dim;
+        } else if efc_type == MJCNSTR_CONTACT_PYRAMIDAL {
+            *dim = 2 * ((*(*d).contact.add(id as usize)).dim - 1);
+        } else if efc_type == MJCNSTR_EQUALITY {
+            if *(*m).eq_type.add(id as usize) == mjtEq_mjEQ_WELD as i32 {
+                *dim = 6;
+                *pos = crate::engine::engine_util_blas::mju_norm((*d).efc_pos.add(i as usize), 6);
+            } else if *(*m).eq_type.add(id as usize) == mjtEq_mjEQ_CONNECT as i32 {
+                *dim = 3;
+                *pos = crate::engine::engine_util_blas::mju_norm((*d).efc_pos.add(i as usize), 3);
+            }
+        }
+    }
 }
 
 /// C: power (engine/engine_core_constraint.c:2089)
@@ -154,7 +199,56 @@ pub fn power(a: f64, b: f64) -> f64 {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn getimpedance(solimp: *const f64, pos: f64, margin: f64, imp: *mut f64, impP: *mut f64) {
-    todo!() // getimpedance
+    // SAFETY: solimp points to at least 5 f64; imp, impP are writable
+    unsafe {
+        const MJ_MINVAL: f64 = 1E-15;
+
+        // flat function
+        if *solimp.add(0) == *solimp.add(1) || *solimp.add(2) <= MJ_MINVAL {
+            *imp = 0.5 * (*solimp.add(0) + *solimp.add(1));
+            *impP = 0.0;
+            return;
+        }
+
+        // x = abs((pos-margin) / width)
+        let mut x = (pos - margin) / *solimp.add(2);
+        let mut sgn: f64 = 1.0;
+        if x < 0.0 {
+            x = -x;
+            sgn = -1.0;
+        }
+
+        // fully saturated
+        if x >= 1.0 || x <= 0.0 {
+            *imp = if x >= 1.0 { *solimp.add(1) } else { *solimp.add(0) };
+            *impP = 0.0;
+            return;
+        }
+
+        // linear
+        let y: f64;
+        let yP: f64;
+        if *solimp.add(4) == 1.0 {
+            y = x;
+            yP = 1.0;
+        }
+        // y(x) = a*x^p if x<=midpoint
+        else if x <= *solimp.add(3) {
+            let a = 1.0 / power(*solimp.add(3), *solimp.add(4) - 1.0);
+            y = a * power(x, *solimp.add(4));
+            yP = *solimp.add(4) * a * power(x, *solimp.add(4) - 1.0);
+        }
+        // y(x) = 1-b*(1-x)^p if x>midpoint
+        else {
+            let b = 1.0 / power(1.0 - *solimp.add(3), *solimp.add(4) - 1.0);
+            y = 1.0 - b * power(1.0 - x, *solimp.add(4));
+            yP = *solimp.add(4) * b * power(1.0 - x, *solimp.add(4) - 1.0);
+        }
+
+        // scale
+        *imp = *solimp.add(0) + y * (*solimp.add(1) - *solimp.add(0));
+        *impP = yP * sgn * (*solimp.add(1) - *solimp.add(0)) / *solimp.add(2);
+    }
 }
 
 /// C: mj_jacSumCount (engine/engine_core_constraint.c:2272)

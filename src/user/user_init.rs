@@ -256,25 +256,73 @@ pub fn mjs_default_mesh(mesh: *mut mjsMesh) {
 /// C: mjs_defaultHField (user/user_init.c:251)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjs_default_h_field(hfield: *mut mjsHField) {
-    todo!() // mjs_defaultHField
+    // SAFETY: caller guarantees hfield is a valid, aligned, writable pointer to mjsHField
+    unsafe {
+        std::ptr::write_bytes(hfield as *mut u8, 0, std::mem::size_of::<mjsHField>());
+    }
 }
 
 /// C: mjs_defaultSkin (user/user_init.c:257)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjs_default_skin(skin: *mut mjsSkin) {
-    todo!() // mjs_defaultSkin
+    // SAFETY: caller guarantees skin is a valid, aligned, writable pointer to mjsSkin
+    unsafe {
+        std::ptr::write_bytes(skin as *mut u8, 0, std::mem::size_of::<mjsSkin>());
+        (*skin).rgba[0] = 0.5;
+        (*skin).rgba[1] = 0.5;
+        (*skin).rgba[2] = 0.5;
+        (*skin).rgba[3] = 1.0;
+    }
 }
 
 /// C: mjs_defaultTexture (user/user_init.c:265)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjs_default_texture(texture: *mut mjsTexture) {
-    todo!() // mjs_defaultTexture
+    // SAFETY: caller guarantees texture is a valid, aligned, writable pointer to mjsTexture
+    unsafe {
+        std::ptr::write_bytes(texture as *mut u8, 0, std::mem::size_of::<mjsTexture>());
+        // type: mjTEXTURE_CUBE = 1
+        std::ptr::write((*texture).r#type.as_mut_ptr() as *mut i32, 1);
+        // colorspace: mjCOLORSPACE_AUTO = 0 (already zero from memset)
+        std::ptr::write((*texture).colorspace.as_mut_ptr() as *mut i32, 0);
+        (*texture).rgb1[0] = 0.8;
+        (*texture).rgb1[1] = 0.8;
+        (*texture).rgb1[2] = 0.8;
+        (*texture).rgb2[0] = 0.5;
+        (*texture).rgb2[1] = 0.5;
+        (*texture).rgb2[2] = 0.5;
+        (*texture).random = 0.01;
+        (*texture).gridsize[0] = 1;
+        (*texture).gridsize[1] = 1;
+        (*texture).nchannel = 3;
+        // gridlayout: 12 dots (C field is char[12], Rust field is [u8; 16] with padding)
+        let mut i = 0;
+        while i < 12 {
+            (*texture).gridlayout[i] = b'.';
+            i += 1;
+        }
+    }
 }
 
 /// C: mjs_defaultMaterial (user/user_init.c:280)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjs_default_material(material: *mut mjsMaterial) {
-    todo!() // mjs_defaultMaterial
+    // SAFETY: caller guarantees material is a valid, aligned, writable pointer to mjsMaterial
+    unsafe {
+        std::ptr::write_bytes(material as *mut u8, 0, std::mem::size_of::<mjsMaterial>());
+        (*material).texrepeat[0] = 1.0;
+        (*material).texrepeat[1] = 1.0;
+        (*material).specular = 0.5;
+        (*material).shininess = 0.5;
+        (*material).metallic = -1.0;
+        (*material).roughness = -1.0;
+        // rgba: [u8; 20] blob containing float[4] in first 16 bytes
+        let rgba_ptr = (*material).rgba.as_mut_ptr() as *mut f32;
+        *rgba_ptr.add(0) = 1.0;
+        *rgba_ptr.add(1) = 1.0;
+        *rgba_ptr.add(2) = 1.0;
+        *rgba_ptr.add(3) = 1.0;
+    }
 }
 
 /// C: mjs_defaultPair (user/user_init.c:292)
@@ -390,30 +438,45 @@ pub fn mjs_default_sensor(sensor: *mut mjsSensor) {
 /// C: mjs_defaultNumeric (user/user_init.c:364)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjs_default_numeric(numeric: *mut mjsNumeric) {
-    todo!() // mjs_defaultNumeric
+    // SAFETY: caller guarantees numeric is a valid, aligned, writable pointer to mjsNumeric
+    unsafe {
+        std::ptr::write_bytes(numeric as *mut u8, 0, std::mem::size_of::<mjsNumeric>());
+    }
 }
 
 /// C: mjs_defaultText (user/user_init.c:370)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjs_default_text(text: *mut mjsText) {
-    todo!() // mjs_defaultText
+    // SAFETY: caller guarantees text is a valid, aligned, writable pointer to mjsText
+    unsafe {
+        std::ptr::write_bytes(text as *mut u8, 0, std::mem::size_of::<mjsText>());
+    }
 }
 
 /// C: mjs_defaultTuple (user/user_init.c:376)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjs_default_tuple(tuple: *mut mjsTuple) {
-    todo!() // mjs_defaultTuple
+    // SAFETY: caller guarantees tuple is a valid, aligned, writable pointer to mjsTuple
+    unsafe {
+        std::ptr::write_bytes(tuple as *mut u8, 0, std::mem::size_of::<mjsTuple>());
+    }
 }
 
 /// C: mjs_defaultKey (user/user_init.c:382)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjs_default_key(key: *mut mjsKey) {
-    todo!() // mjs_defaultKey
+    // SAFETY: caller guarantees key is a valid, aligned, writable pointer to mjsKey
+    unsafe {
+        std::ptr::write_bytes(key as *mut u8, 0, std::mem::size_of::<mjsKey>());
+    }
 }
 
 /// C: mjs_defaultPlugin (user/user_init.c:388)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjs_default_plugin(plugin: *mut mjsPlugin) {
-    todo!() // mjs_defaultPlugin
+    // SAFETY: caller guarantees plugin is a valid, aligned, writable pointer to mjsPlugin
+    unsafe {
+        std::ptr::write_bytes(plugin as *mut u8, 0, std::mem::size_of::<mjsPlugin>());
+    }
 }
 

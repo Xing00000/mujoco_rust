@@ -745,7 +745,36 @@ pub fn epa_witness(pt: *const Polytope, face: *const Face, x1: *mut f64, x2: *mu
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn area4(a: *const f64, b: *const f64, c: *const f64, d: *const f64) -> f64 {
-    todo!() // area4
+    // SAFETY: a, b, c, d each point to [3] arrays
+    unsafe {
+        let ad: [f64; 3] = [
+            *d.add(0) - *a.add(0),
+            *d.add(1) - *a.add(1),
+            *d.add(2) - *a.add(2),
+        ];
+        let db: [f64; 3] = [
+            *b.add(0) - *d.add(0),
+            *b.add(1) - *d.add(1),
+            *b.add(2) - *d.add(2),
+        ];
+        let bc: [f64; 3] = [
+            *c.add(0) - *b.add(0),
+            *c.add(1) - *b.add(1),
+            *c.add(2) - *b.add(2),
+        ];
+        let ca: [f64; 3] = [
+            *a.add(0) - *c.add(0),
+            *a.add(1) - *c.add(1),
+            *a.add(2) - *c.add(2),
+        ];
+        let mut e: [f64; 3] = [0.0; 3];
+        let mut f: [f64; 3] = [0.0; 3];
+        let mut g: [f64; 3] = [0.0; 3];
+        cross3(e.as_mut_ptr(), ad.as_ptr(), db.as_ptr());
+        cross3(f.as_mut_ptr(), bc.as_ptr(), ca.as_ptr());
+        add3(g.as_mut_ptr(), e.as_ptr(), f.as_ptr());
+        0.5 * norm3(g.as_ptr())
+    }
 }
 
 /// C: next (engine/engine_collision_gjk.c:1520)
@@ -828,7 +857,18 @@ pub fn polygon_clip(status: *mut mjCCDStatus, face1: *const f64, nface1: i32, fa
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn globalcoord(res: *mut f64, mat: *const f64, pos: *const f64, l1: f64, l2: f64, l3: f64) {
-    todo!() // globalcoord
+    // SAFETY: res points to [3], mat points to [9], pos (if non-null) points to [3]
+    unsafe {
+        // perform mat * (l1, l2, l3) + pos
+        *res.add(0) = *mat.add(0) * l1 + *mat.add(1) * l2 + *mat.add(2) * l3;
+        *res.add(1) = *mat.add(3) * l1 + *mat.add(4) * l2 + *mat.add(5) * l3;
+        *res.add(2) = *mat.add(6) * l1 + *mat.add(7) * l2 + *mat.add(8) * l3;
+        if !pos.is_null() {
+            *res.add(0) += *pos.add(0);
+            *res.add(1) += *pos.add(1);
+            *res.add(2) += *pos.add(2);
+        }
+    }
 }
 
 /// C: intersect (engine/engine_collision_gjk.c:1759)

@@ -367,7 +367,56 @@ pub fn add_to_quadrant(B: *mut f64, D: *const f64, col_quad: i32, row_quad: i32)
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjd_added_mass_forces(B: *mut f64, local_vels: *const f64, fluid_density: f64, virtual_mass: *const f64, virtual_inertia: *const f64) {
-    todo!() // mjd_addedMassForces
+    // SAFETY: B points to 6x6 = 36 f64; local_vels points to [6];
+    //   virtual_mass, virtual_inertia point to [3]
+    unsafe {
+        let lin_vel: [f64; 3] = [
+            *local_vels.add(3),
+            *local_vels.add(4),
+            *local_vels.add(5),
+        ];
+        let ang_vel: [f64; 3] = [
+            *local_vels.add(0),
+            *local_vels.add(1),
+            *local_vels.add(2),
+        ];
+        let virtual_lin_mom: [f64; 3] = [
+            fluid_density * *virtual_mass.add(0) * lin_vel[0],
+            fluid_density * *virtual_mass.add(1) * lin_vel[1],
+            fluid_density * *virtual_mass.add(2) * lin_vel[2],
+        ];
+        let virtual_ang_mom: [f64; 3] = [
+            fluid_density * *virtual_inertia.add(0) * ang_vel[0],
+            fluid_density * *virtual_inertia.add(1) * ang_vel[1],
+            fluid_density * *virtual_inertia.add(2) * ang_vel[2],
+        ];
+        let mut Da: [f64; 9] = [0.0; 9];
+        let mut Db: [f64; 9] = [0.0; 9];
+
+        // force[:3] += cross(virtual_ang_mom, ang_vel)
+        mjd_cross(virtual_ang_mom.as_ptr(), ang_vel.as_ptr(), Da.as_mut_ptr(), Db.as_mut_ptr());
+        add_to_quadrant(B, Db.as_ptr(), 0, 0);
+        for i in 0..9_usize {
+            Da[i] *= fluid_density * *virtual_inertia.add(i % 3);
+        }
+        add_to_quadrant(B, Da.as_ptr(), 0, 0);
+
+        // force[:3] += cross(virtual_lin_mom, lin_vel)
+        mjd_cross(virtual_lin_mom.as_ptr(), lin_vel.as_ptr(), Da.as_mut_ptr(), Db.as_mut_ptr());
+        add_to_quadrant(B, Db.as_ptr(), 0, 1);
+        for i in 0..9_usize {
+            Da[i] *= fluid_density * *virtual_mass.add(i % 3);
+        }
+        add_to_quadrant(B, Da.as_ptr(), 0, 1);
+
+        // force[3:] += cross(virtual_lin_mom, ang_vel)
+        mjd_cross(virtual_lin_mom.as_ptr(), ang_vel.as_ptr(), Da.as_mut_ptr(), Db.as_mut_ptr());
+        add_to_quadrant(B, Db.as_ptr(), 1, 0);
+        for i in 0..9_usize {
+            Da[i] *= fluid_density * *virtual_mass.add(i % 3);
+        }
+        add_to_quadrant(B, Da.as_ptr(), 1, 1);
+    }
 }
 
 /// C: mjd_viscous_torque (engine/engine_derivative.c:1416)
