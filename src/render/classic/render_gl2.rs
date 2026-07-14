@@ -240,7 +240,43 @@ pub fn draw_overlay(font: i32, viewport: mjrRect, skip: i32, gridpos: i32, red: 
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn maketext(format: *const i8, txt: *mut i8, num: f32, txt_sz: i32) {
-    todo!() // maketext
+    extern "C" {
+        fn snprintf(s: *mut i8, n: usize, fmt: *const i8, ...) -> i32;
+        fn strlen(s: *const i8) -> usize;
+    }
+
+    // SAFETY: format is a valid C string, txt points to buffer of at least txt_sz bytes
+    unsafe {
+        // full text
+        snprintf(txt, txt_sz as usize, format, num as f64);
+
+        // locate trailing zeros
+        let mut i = strlen(txt) as i32;
+        while i > 0 && *txt.add((i - 1) as usize) == b'0' as i8 {
+            i -= 1;
+        }
+        if i <= 1 {
+            return;
+        }
+
+        // strip if preceding char is '.'
+        if *txt.add((i - 1) as usize) == b'.' as i8 {
+            *txt.add((i - 1) as usize) = 0;
+        }
+        // otherwise find earlier '.'
+        else {
+            // find regular preceding digits
+            let mut j = i - 1;
+            while j >= 0 && *txt.add(j as usize) >= b'0' as i8 && *txt.add(j as usize) <= b'9' as i8 {
+                j -= 1;
+            }
+
+            // '.' found: strip
+            if j >= 0 && *txt.add(j as usize) == b'.' as i8 {
+                *txt.add(i as usize) = 0;
+            }
+        }
+    }
 }
 
 /// C: textwidth (render/classic/render_gl2.c:787)
@@ -274,7 +310,47 @@ pub fn mjr_restore_buffer(con: *const mjrContext) {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjr_text_actual(font: i32, txt: *const i8, con: *const mjrContext, x: f32, y: f32, z: f32, r: f32, g: f32, b: f32) {
-    todo!() // mjr_textActual
+    const mjFONT_SHADOW: i32 = 0;
+    const mjFONT_BIG: i32 = 2;
+    const GL_UNSIGNED_BYTE: u32 = 0x1401;
+
+    extern "C" {
+        fn glListBase(base: u32);
+        fn glColor4f(r: f32, g: f32, b: f32, a: f32);
+        fn glRasterPos3f(x: f32, y: f32, z: f32);
+        fn glCallLists(n: i32, type_: u32, lists: *const i8);
+        fn strlen(s: *const i8) -> usize;
+    }
+
+    // SAFETY: con is a valid mjrContext pointer, txt is a valid C string (caller contract)
+    unsafe {
+        // return if font is not installed
+        if (*con).rangeFont == 0 {
+            return;
+        }
+
+        // shadow text
+        if font == mjFONT_SHADOW {
+            // blend shadow with black
+            glListBase((*con).baseFontShadow);
+            glColor4f(0.0, 0.0, 0.0, 0.5);
+            glRasterPos3f(x, y, z);
+            glCallLists(strlen(txt) as i32, GL_UNSIGNED_BYTE, txt);
+
+            // render text
+            glListBase((*con).baseFontNormal);
+            glColor4f(r, g, b, 1.0);
+            glRasterPos3f(x, y, z);
+            glCallLists(strlen(txt) as i32, GL_UNSIGNED_BYTE, txt);
+        }
+        // regular text (normal or big)
+        else {
+            glListBase(if font == mjFONT_BIG { (*con).baseFontBig } else { (*con).baseFontNormal });
+            glColor4f(r, g, b, 1.0);
+            glRasterPos3f(x, y, z);
+            glCallLists(strlen(txt) as i32, GL_UNSIGNED_BYTE, txt);
+        }
+    }
 }
 
 /// C: mjr_setBuffer (render/classic/render_gl2.h:35)

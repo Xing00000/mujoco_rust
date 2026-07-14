@@ -888,7 +888,19 @@ pub fn mj_collide_obb(aabb1: *const f64, aabb2: *const f64, xpos1: *const f64, x
 /// C: mj_isElemActive (engine/engine_collision_driver.h:45)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_is_elem_active(m: *const mjModel, f: i32, e: i32) -> i32 {
-    todo!() // mj_isElemActive
+    // SAFETY: m is a valid mjModel pointer; f is a valid flex index, e is a valid elem index
+    unsafe {
+        if *(*m).flex_dim.add(f as usize) < 3 {
+            1
+        } else {
+            let idx = *(*m).flex_elemadr.add(f as usize) + e;
+            if *(*m).flex_elemlayer.add(idx as usize) < *(*m).flex_activelayers.add(f as usize) {
+                1
+            } else {
+                0
+            }
+        }
+    }
 }
 
 /// C: mj_broadphase (engine/engine_collision_driver.h:48)

@@ -161,8 +161,25 @@ pub fn cam_project(sensordata: *mut f64, target_xpos: *const f64, cam_xpos: *con
 /// C: checkMatch (engine/engine_sensor.c:320)
 /// Calls: mjCMesh::tree
 #[allow(unused_variables, non_snake_case)]
-pub fn check_match(m: *const mjModel, body: i32, geom: i32, r#type: u32, id: i32) -> i32 {
-    todo!() // checkMatch
+pub fn check_match(m: *const mjModel, mut body: i32, geom: i32, r#type: u32, id: i32) -> i32 {
+    use crate::types::*;
+
+    if r#type == mjtObj_mjOBJ_UNKNOWN { return 1; }
+    if r#type == mjtObj_mjOBJ_SITE { return 1; }  // already passed site filter test
+    if r#type == mjtObj_mjOBJ_GEOM { return if id == geom { 1 } else { 0 }; }
+    if r#type == mjtObj_mjOBJ_BODY { return if id == body { 1 } else { 0 }; }
+    if r#type == mjtObj_mjOBJ_XBODY {
+        // SAFETY: m is a valid mjModel pointer, body_parentid valid (caller contract)
+        unsafe {
+            // traverse up the tree from body, return true if we land on id
+            while body > id {
+                body = *(*m).body_parentid.add(body as usize);
+            }
+        }
+        return if body == id { 1 } else { 0 };
+    }
+
+    0
 }
 
 /// C: matchContact (engine/engine_sensor.c:339)
@@ -193,7 +210,33 @@ pub fn copy_sensor_data(m: *const mjModel, d: *const mjData, data: *mut *mut f64
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn total_wrench(force: *mut f64, torque: *mut f64, point: *const f64, n: i32, wrench: *const f64, pos: *const f64, frame: *const f64) {
-    todo!() // total_wrench
+    use crate::engine::engine_util_blas::{mju_zero3, mju_add_to3, mju_sub3, mju_mul_mat_t_vec3};
+    use crate::engine::engine_util_spatial::mju_cross;
+
+    // SAFETY: all pointers are valid arrays with sizes guaranteed by caller contract
+    unsafe {
+        mju_zero3(force);
+        mju_zero3(torque);
+
+        for j in 0..n as usize {
+            // rotate force, torque from contact frame to global frame
+            let mut force_j: [f64; 3] = [0.0; 3];
+            let mut torque_j: [f64; 3] = [0.0; 3];
+            mju_mul_mat_t_vec3(force_j.as_mut_ptr(), frame.add(9 * j), wrench.add(6 * j));
+            mju_mul_mat_t_vec3(torque_j.as_mut_ptr(), frame.add(9 * j), wrench.add(6 * j + 3));
+
+            // add to total force, torque
+            mju_add_to3(force, force_j.as_ptr());
+            mju_add_to3(torque, torque_j.as_ptr());
+
+            // add induced moment: torque += (pos - point) x force
+            let mut diff: [f64; 3] = [0.0; 3];
+            mju_sub3(diff.as_mut_ptr(), pos.add(3 * j), point);
+            let mut induced_torque: [f64; 3] = [0.0; 3];
+            mju_cross(induced_torque.as_mut_ptr(), diff.as_ptr(), force_j.as_ptr());
+            mju_add_to3(torque, induced_torque.as_ptr());
+        }
+    }
 }
 
 /// C: fill_raydata (engine/engine_sensor.c:470)

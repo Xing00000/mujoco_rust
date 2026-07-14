@@ -72,14 +72,53 @@ pub fn mj_set_ptr_model(m: *mut mjModel) {
 /// Calls: SKIP
 #[allow(unused_variables, non_snake_case)]
 pub fn safe_add_to_buffer_size(offset: *mut isize, nbuffer: *mut usize, type_size: usize, nr: usize, nc: usize) -> usize {
-    todo!() // safeAddToBufferSize
+    // SAFETY: offset and nbuffer are valid pointers (caller contract)
+    unsafe {
+        // nc * nr
+        let product = match nc.checked_mul(nr) {
+            Some(v) => v,
+            None => return 0,
+        };
+
+        // product * type_size
+        let product = match product.checked_mul(type_size) {
+            Some(v) => v,
+            None => return 0,
+        };
+
+        // product + SKIP(*offset)
+        let skip_val = skip(*offset) as usize;
+        let to_add = match product.checked_add(skip_val) {
+            Some(v) => v,
+            None => return 0,
+        };
+
+        // *nbuffer + to_add
+        let new_nbuffer = match (*nbuffer).checked_add(to_add) {
+            Some(v) => v,
+            None => return 0,
+        };
+        *nbuffer = new_nbuffer;
+
+        // *offset + to_add
+        let new_offset = match (*offset).checked_add(to_add as isize) {
+            Some(v) => v,
+            None => return 0,
+        };
+        *offset = new_offset;
+
+        1
+    }
 }
 
 /// C: freeModelBuffers (engine/engine_io.c:221)
 /// Calls: mju_free
 #[allow(unused_variables, non_snake_case)]
 pub fn free_model_buffers(m: *mut mjModel) {
-    todo!() // freeModelBuffers
+    // SAFETY: m is a valid mjModel pointer (caller contract)
+    unsafe {
+        crate::engine::engine_util_errmem::mju_free((*m).buffer);
+    }
 }
 
 /// C: checkDBSparse (engine/engine_io.c:895)
@@ -134,13 +173,106 @@ pub fn mj_log_timing_diagnostics(d: *const mjData) {
 /// C: sensorSize (engine/engine_io.c:1685)
 #[allow(unused_variables, non_snake_case)]
 pub fn sensor_size(sensor_type: u32, sensor_dim: i32) -> i32 {
-    todo!() // sensorSize
+    use crate::types::*;
+
+    match sensor_type {
+        mjtSensor_mjSENS_TOUCH
+        | mjtSensor_mjSENS_RANGEFINDER
+        | mjtSensor_mjSENS_JOINTPOS
+        | mjtSensor_mjSENS_JOINTVEL
+        | mjtSensor_mjSENS_TENDONPOS
+        | mjtSensor_mjSENS_TENDONVEL
+        | mjtSensor_mjSENS_ACTUATORPOS
+        | mjtSensor_mjSENS_ACTUATORVEL
+        | mjtSensor_mjSENS_ACTUATORFRC
+        | mjtSensor_mjSENS_JOINTACTFRC
+        | mjtSensor_mjSENS_TENDONACTFRC
+        | mjtSensor_mjSENS_JOINTLIMITPOS
+        | mjtSensor_mjSENS_JOINTLIMITVEL
+        | mjtSensor_mjSENS_JOINTLIMITFRC
+        | mjtSensor_mjSENS_TENDONLIMITPOS
+        | mjtSensor_mjSENS_TENDONLIMITVEL
+        | mjtSensor_mjSENS_TENDONLIMITFRC
+        | mjtSensor_mjSENS_GEOMDIST
+        | mjtSensor_mjSENS_INSIDESITE
+        | mjtSensor_mjSENS_E_POTENTIAL
+        | mjtSensor_mjSENS_E_KINETIC
+        | mjtSensor_mjSENS_CLOCK => 1,
+
+        mjtSensor_mjSENS_CAMPROJECTION => 2,
+
+        mjtSensor_mjSENS_ACCELEROMETER
+        | mjtSensor_mjSENS_VELOCIMETER
+        | mjtSensor_mjSENS_GYRO
+        | mjtSensor_mjSENS_FORCE
+        | mjtSensor_mjSENS_TORQUE
+        | mjtSensor_mjSENS_MAGNETOMETER
+        | mjtSensor_mjSENS_BALLANGVEL
+        | mjtSensor_mjSENS_FRAMEPOS
+        | mjtSensor_mjSENS_FRAMEXAXIS
+        | mjtSensor_mjSENS_FRAMEYAXIS
+        | mjtSensor_mjSENS_FRAMEZAXIS
+        | mjtSensor_mjSENS_FRAMELINVEL
+        | mjtSensor_mjSENS_FRAMEANGVEL
+        | mjtSensor_mjSENS_FRAMELINACC
+        | mjtSensor_mjSENS_FRAMEANGACC
+        | mjtSensor_mjSENS_SUBTREECOM
+        | mjtSensor_mjSENS_SUBTREELINVEL
+        | mjtSensor_mjSENS_SUBTREEANGMOM
+        | mjtSensor_mjSENS_GEOMNORMAL => 3,
+
+        mjtSensor_mjSENS_GEOMFROMTO => 6,
+
+        mjtSensor_mjSENS_BALLQUAT
+        | mjtSensor_mjSENS_FRAMEQUAT => 4,
+
+        mjtSensor_mjSENS_CONTACT
+        | mjtSensor_mjSENS_TACTILE
+        | mjtSensor_mjSENS_USER => sensor_dim,
+
+        mjtSensor_mjSENS_PLUGIN => -1,
+
+        _ => -1,
+    }
 }
 
 /// C: numObjects (engine/engine_io.c:1759)
 #[allow(unused_variables, non_snake_case)]
 pub fn num_objects(m: *const mjModel, objtype: u32) -> i32 {
-    todo!() // numObjects
+    use crate::types::*;
+
+    // SAFETY: m is a valid mjModel pointer (caller contract)
+    unsafe {
+        match objtype {
+            mjtObj_mjOBJ_DEFAULT | mjtObj_mjOBJ_FRAME | mjtObj_mjOBJ_UNKNOWN | mjtObj_mjOBJ_MODEL => -1,
+            mjtObj_mjOBJ_BODY | mjtObj_mjOBJ_XBODY => (*m).nbody as i32,
+            mjtObj_mjOBJ_JOINT => (*m).njnt as i32,
+            mjtObj_mjOBJ_DOF => (*m).nv as i32,
+            mjtObj_mjOBJ_GEOM => (*m).ngeom as i32,
+            mjtObj_mjOBJ_SITE => (*m).nsite as i32,
+            mjtObj_mjOBJ_CAMERA => (*m).ncam as i32,
+            mjtObj_mjOBJ_LIGHT => (*m).nlight as i32,
+            mjtObj_mjOBJ_FLEX => (*m).nflex as i32,
+            mjtObj_mjOBJ_MESH => (*m).nmesh as i32,
+            mjtObj_mjOBJ_SKIN => (*m).nskin as i32,
+            mjtObj_mjOBJ_HFIELD => (*m).nhfield as i32,
+            mjtObj_mjOBJ_TEXTURE => (*m).ntex as i32,
+            mjtObj_mjOBJ_MATERIAL => (*m).nmat as i32,
+            mjtObj_mjOBJ_PAIR => (*m).npair as i32,
+            mjtObj_mjOBJ_EXCLUDE => (*m).nexclude as i32,
+            mjtObj_mjOBJ_EQUALITY => (*m).neq as i32,
+            mjtObj_mjOBJ_TENDON => (*m).ntendon as i32,
+            mjtObj_mjOBJ_ACTUATOR => (*m).nu as i32,
+            mjtObj_mjOBJ_SENSOR => (*m).nsensor as i32,
+            mjtObj_mjOBJ_NUMERIC => (*m).nnumeric as i32,
+            mjtObj_mjOBJ_TEXT => (*m).ntext as i32,
+            mjtObj_mjOBJ_TUPLE => (*m).ntuple as i32,
+            mjtObj_mjOBJ_KEY => (*m).nkey as i32,
+            mjtObj_mjOBJ_PLUGIN => (*m).nplugin as i32,
+            mjtObj_mjNOBJECT => -2,
+            _ => -2,
+        }
+    }
 }
 
 /// C: mj_makeModel (engine/engine_io.h:50)

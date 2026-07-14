@@ -245,7 +245,61 @@ pub fn print_sparse(str: *const i8, mat: *const f64, nr: i32, rownnz: *const i32
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn print_block_array(str: *const i8, data: *const f64, nc: i32, nisland: i32, island_nr: *const i32, island_nc: *const i32, island_r: *const i32, island_c: *const i32, map_r: *const i32, map_c: *const i32, fp: *mut FILE, float_format: *const i8) {
-    todo!() // printBlockArray
+    extern "C" {
+        fn fprintf(fp: *mut FILE, fmt: *const i8, ...) -> i32;
+        fn snprintf(s: *mut i8, n: usize, fmt: *const i8, ...) -> i32;
+    }
+
+    if data.is_null() || nisland == 0 {
+        return;
+    }
+
+    // SAFETY: all pointers are valid arrays with sizes guaranteed by caller contract
+    unsafe {
+        fprintf(fp, b"%s\n\0".as_ptr() as *const i8, str);
+
+        // determine the width of the float format
+        let mut dummy_buffer: [i8; 100] = [0; 100];
+        let format_width = snprintf(dummy_buffer.as_mut_ptr(), 100, float_format, 0.0f64);
+
+        for b in 0..nisland {
+            let bnr = *island_nr.add(b as usize);
+            let bnc = *island_nc.add(b as usize);
+            let r_start = *island_r.add(b as usize);
+            let c_start = *island_c.add(b as usize);
+
+            for r_block in 0..bnr {
+                fprintf(fp, b" \0".as_ptr() as *const i8);
+                // leading dots
+                for _c in 0..c_start {
+                    for _i in 0..format_width {
+                        fprintf(fp, b".\0".as_ptr() as *const i8);
+                    }
+                    fprintf(fp, b" \0".as_ptr() as *const i8);
+                }
+
+                let row = *map_r.add((r_start + r_block) as usize);
+
+                // block data
+                for c in 0..bnc {
+                    let col = *map_c.add((c_start + c) as usize);
+                    fprintf(fp, b" \0".as_ptr() as *const i8);
+                    fprintf(fp, float_format, *data.add((row * nc + col) as usize));
+                }
+
+                // trailing dots
+                for _c in (c_start + bnc)..nc {
+                    for _i in 0..format_width {
+                        fprintf(fp, b".\0".as_ptr() as *const i8);
+                    }
+                    fprintf(fp, b" \0".as_ptr() as *const i8);
+                }
+                fprintf(fp, b"\n\0".as_ptr() as *const i8);
+            }
+        }
+
+        fprintf(fp, b"\n\0".as_ptr() as *const i8);
+    }
 }
 
 /// C: printInertia (engine/engine_print.c:246)
@@ -256,7 +310,50 @@ pub fn print_block_array(str: *const i8, data: *const f64, nc: i32, nisland: i32
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn print_inertia(str: *const i8, mat: *const f64, m: *const mjModel, fp: *mut FILE, float_format: *const i8) {
-    todo!() // printInertia
+    extern "C" {
+        fn fprintf(fp: *mut FILE, fmt: *const i8, ...) -> i32;
+        fn snprintf(s: *mut i8, n: usize, fmt: *const i8, ...) -> i32;
+    }
+
+    // SAFETY: m is a valid mjModel pointer; mat points to nM f64 values (caller contract)
+    unsafe {
+        let nv = (*m).nv as i32;
+        if mat.is_null() || nv == 0 || nv > 300 {
+            return;
+        }
+
+        // get length of string produced by float_format
+        let mut test: [i8; 100] = [0; 100];
+        let len = snprintf(test.as_mut_ptr(), 100, float_format, 0.0f64);
+
+        fprintf(fp, b"%s\n\0".as_ptr() as *const i8, str);
+
+        for i in 0..nv {
+            fprintf(fp, b" \0".as_ptr() as *const i8);
+            let mut adr: i32 = if i == nv - 1 {
+                (*m).nM as i32 - 1
+            } else {
+                *(*m).dof_Madr.add((i + 1) as usize) - 1
+            };
+            for k in 0..=i {
+                let mut j = i;
+                while j != k && j >= 0 {
+                    j = *(*m).dof_parentid.add(j as usize);
+                }
+                if j == k {
+                    fprintf(fp, b" \0".as_ptr() as *const i8);
+                    fprintf(fp, float_format, *mat.add(adr as usize));
+                    adr -= 1;
+                } else {
+                    for _d in 0..(len + 1) {
+                        fprintf(fp, b" \0".as_ptr() as *const i8);
+                    }
+                }
+            }
+            fprintf(fp, b"\n\0".as_ptr() as *const i8);
+        }
+        fprintf(fp, b"\n\0".as_ptr() as *const i8);
+    }
 }
 
 /// C: mj_printBlockSparsity (engine/engine_print.c:319)
@@ -338,7 +435,24 @@ pub fn mj_print_block_sparsity(str: *const i8, nr: i32, nc: i32, nisland: i32, i
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn print_vector(str: *const i8, data: *const f64, n: i32, fp: *mut FILE, float_format: *const i8) {
-    todo!() // printVector
+    extern "C" {
+        fn fprintf(fp: *mut FILE, fmt: *const i8, ...) -> i32;
+    }
+
+    if data.is_null() || n == 0 {
+        return;
+    }
+
+    // SAFETY: fp valid, data points to n f64 values, str/float_format are valid C strings
+    unsafe {
+        fprintf(fp, b"%s\0".as_ptr() as *const i8, str);
+
+        for i in 0..n as usize {
+            fprintf(fp, b" \0".as_ptr() as *const i8);
+            fprintf(fp, float_format, *data.add(i));
+        }
+        fprintf(fp, b"\n\0".as_ptr() as *const i8);
+    }
 }
 
 /// C: memorySize (engine/engine_print.c:395)
@@ -371,19 +485,63 @@ pub fn memory_size(nbytes: usize) -> *const i8 {
 /// C: sizeMesh (engine/engine_print.c:410)
 #[allow(unused_variables, non_snake_case)]
 pub fn size_mesh(m: *const mjModel) -> usize {
-    todo!() // sizeMesh
+    // SAFETY: m is a valid mjModel pointer (caller contract)
+    unsafe {
+        let mut nbytes: usize = 0;
+        nbytes += std::mem::size_of::<f32>() * 3 * (*m).nmeshvert;      // mesh_vert
+        nbytes += std::mem::size_of::<f32>() * 3 * (*m).nmeshnormal;    // mesh_normal
+        nbytes += std::mem::size_of::<f32>() * 2 * (*m).nmeshtexcoord;  // mesh_texcoord
+        nbytes += std::mem::size_of::<i32>() * 3 * (*m).nmeshface;      // mesh_face
+        nbytes += std::mem::size_of::<i32>() * 3 * (*m).nmeshface;      // mesh_facenormal
+        nbytes += std::mem::size_of::<i32>() * 3 * (*m).nmeshface;      // mesh_facetexcoord
+        nbytes += std::mem::size_of::<i32>() * (*m).nmeshgraph;         // mesh_graph
+        nbytes += std::mem::size_of::<f64>() * 3 * (*m).nmeshpoly;      // mesh_polynormal
+        nbytes += std::mem::size_of::<i32>() * (*m).nmeshpoly;          // mesh_polyvertadr
+        nbytes += std::mem::size_of::<i32>() * (*m).nmeshpoly;          // mesh_polyvertnum
+        nbytes += std::mem::size_of::<i32>() * (*m).nmeshpolyvert;      // mesh_polyvert
+        nbytes += std::mem::size_of::<i32>() * (*m).nmeshvert;          // mesh_polymapadr
+        nbytes += std::mem::size_of::<i32>() * (*m).nmeshvert;          // mesh_polymapnum
+        nbytes += std::mem::size_of::<i32>() * (*m).nmeshpolymap;       // mesh_polymap
+        nbytes
+    }
 }
 
 /// C: sizeSkin (engine/engine_print.c:431)
 #[allow(unused_variables, non_snake_case)]
 pub fn size_skin(m: *const mjModel) -> usize {
-    todo!() // sizeSkin
+    // SAFETY: m is a valid mjModel pointer (caller contract)
+    unsafe {
+        let mut nbytes: usize = 0;
+        nbytes += std::mem::size_of::<f32>() * 3 * (*m).nskinvert;        // skin_vert
+        nbytes += std::mem::size_of::<f32>() * 2 * (*m).nskintexvert;     // skin_texcoord
+        nbytes += std::mem::size_of::<i32>() * 3 * (*m).nskinface;        // skin_face
+        nbytes += std::mem::size_of::<i32>() * (*m).nskinbone;            // skin_bonevertadr
+        nbytes += std::mem::size_of::<i32>() * (*m).nskinbone;            // skin_bonevertnum
+        nbytes += std::mem::size_of::<f32>() * 3 * (*m).nskinbone;        // skin_bonebindpos
+        nbytes += std::mem::size_of::<f32>() * 4 * (*m).nskinbone;        // skin_bonebindquat
+        nbytes += std::mem::size_of::<i32>() * (*m).nskinbone;            // skin_bonebodyid
+        nbytes += std::mem::size_of::<i32>() * (*m).nskinbonevert;        // skin_bonevertid
+        nbytes += std::mem::size_of::<f32>() * (*m).nskinbonevert;        // skin_bonevertweight
+        nbytes
+    }
 }
 
 /// C: sizeBVH (engine/engine_print.c:448)
 #[allow(unused_variables, non_snake_case)]
 pub fn size_bvh(m: *const mjModel) -> usize {
-    todo!() // sizeBVH
+    // SAFETY: m is a valid mjModel pointer (caller contract)
+    unsafe {
+        let mut nbytes: usize = 0;
+        nbytes += std::mem::size_of::<i32>() * (*m).nbvh;               // bvh_depth
+        nbytes += std::mem::size_of::<i32>() * 2 * (*m).nbvh;           // bvh_child
+        nbytes += std::mem::size_of::<i32>() * (*m).nbvh;               // bvh_nodeid
+        nbytes += std::mem::size_of::<f64>() * 6 * (*m).nbvhstatic;     // bvh_aabb
+        nbytes += std::mem::size_of::<i32>() * (*m).noct;               // oct_depth
+        nbytes += std::mem::size_of::<i32>() * 8 * (*m).noct;           // oct_child
+        nbytes += std::mem::size_of::<f64>() * 6 * (*m).noct;           // oct_aabb
+        nbytes += std::mem::size_of::<f64>() * 8 * (*m).noct;           // oct_coeff
+        nbytes
+    }
 }
 
 /// C: validateFloatFormat (engine/engine_print.c:463)
