@@ -20,45 +20,182 @@ pub fn mjs_default_orientation(orient: *mut mjsOrientation) {
 /// C: mjs_defaultBody (user/user_init.c:75)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjs_default_body(body: *mut mjsBody) {
-    todo!() // mjs_defaultBody
+    // SAFETY: caller guarantees body is a valid, aligned, writable pointer to mjsBody
+    unsafe {
+        std::ptr::write_bytes(body as *mut u8, 0, std::mem::size_of::<mjsBody>());
+
+        // body frame
+        (*body).quat[0] = 1.0;
+
+        // inertial frame
+        (*body).ipos[0] = f64::NAN;
+        (*body).iquat[0] = 1.0;
+        (*body).fullinertia[0] = f64::NAN;
+    }
 }
 
 /// C: mjs_defaultFrame (user/user_init.c:89)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjs_default_frame(frame: *mut mjsFrame) {
-    todo!() // mjs_defaultFrame
+    // SAFETY: caller guarantees frame is a valid, aligned, writable pointer to mjsFrame
+    unsafe {
+        std::ptr::write_bytes(frame as *mut u8, 0, std::mem::size_of::<mjsFrame>());
+        (*frame).quat[0] = 1.0;
+    }
 }
 
 /// C: mjs_defaultJoint (user/user_init.c:96)
 /// Calls: mj_defaultSolRefImp
 #[allow(unused_variables, non_snake_case)]
 pub fn mjs_default_joint(joint: *mut mjsJoint) {
-    todo!() // mjs_defaultJoint
+    // SAFETY: caller guarantees joint is a valid, aligned, writable pointer to mjsJoint
+    unsafe {
+        std::ptr::write_bytes(joint as *mut u8, 0, std::mem::size_of::<mjsJoint>());
+
+        // type field is [u8; 8] storing i32 in first 4 bytes
+        std::ptr::write((*joint).r#type.as_mut_ptr() as *mut i32, 3); // mjJNT_HINGE = 3
+        (*joint).axis[2] = 1.0;
+        (*joint).limited = 2; // mjLIMITED_AUTO
+        (*joint).actfrclimited = 2; // mjLIMITED_AUTO
+        (*joint).align = 2; // mjALIGNFREE_AUTO
+
+        crate::engine::engine_init::mj_default_sol_ref_imp(
+            (*joint).solref_limit.as_mut_ptr(),
+            (*joint).solimp_limit.as_mut_ptr(),
+        );
+        crate::engine::engine_init::mj_default_sol_ref_imp(
+            (*joint).solref_friction.as_mut_ptr(),
+            (*joint).solimp_friction.as_mut_ptr(),
+        );
+    }
 }
 
 /// C: mjs_defaultGeom (user/user_init.c:109)
 /// Calls: mj_defaultSolRefImp
 #[allow(unused_variables, non_snake_case)]
 pub fn mjs_default_geom(geom: *mut mjsGeom) {
-    todo!() // mjs_defaultGeom
+    // SAFETY: caller guarantees geom is a valid, aligned, writable pointer to mjsGeom
+    unsafe {
+        std::ptr::write_bytes(geom as *mut u8, 0, std::mem::size_of::<mjsGeom>());
+
+        // type: mjGEOM_SPHERE = 2
+        std::ptr::write((*geom).r#type.as_mut_ptr() as *mut i32, 2);
+
+        // frame
+        (*geom).quat[0] = 1.0;
+        (*geom).fromto[0] = f64::NAN;
+
+        // contact-related
+        (*geom).contype = 1;
+        (*geom).conaffinity = 1;
+        (*geom).condim = 3;
+        (*geom).friction[0] = 1.0;
+        (*geom).friction[1] = 0.005;
+        (*geom).friction[2] = 0.0001;
+        (*geom).solmix = 1.0;
+        crate::engine::engine_init::mj_default_sol_ref_imp(
+            (*geom).solref.as_mut_ptr(),
+            (*geom).solimp.as_mut_ptr(),
+        );
+
+        // inertia-related
+        (*geom).mass = f64::NAN;
+        (*geom).density = 1000.0; // water density (1000 Kg / m^3)
+        // typeinertia: mjINERTIA_VOLUME = 0 (already zero from memset)
+
+        // color
+        (*geom).rgba[0] = 0.5;
+        (*geom).rgba[1] = 0.5;
+        (*geom).rgba[2] = 0.5;
+        (*geom).rgba[3] = 1.0;
+
+        // fluid forces
+        (*geom).fluid_coefs[0] = 0.5;   // blunt drag
+        (*geom).fluid_coefs[1] = 0.25;  // slender drag
+        (*geom).fluid_coefs[2] = 1.5;   // angular drag
+        (*geom).fluid_coefs[3] = 1.0;   // kutta lift
+        (*geom).fluid_coefs[4] = 1.0;   // magnus lift
+
+        // other
+        (*geom).fitscale = 1.0;
+    }
 }
 
 /// C: mjs_defaultSite (user/user_init.c:151)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjs_default_site(site: *mut mjsSite) {
-    todo!() // mjs_defaultSite
+    // SAFETY: caller guarantees site is a valid, aligned, writable pointer to mjsSite
+    unsafe {
+        std::ptr::write_bytes(site as *mut u8, 0, std::mem::size_of::<mjsSite>());
+
+        // type: mjGEOM_SPHERE = 2
+        std::ptr::write((*site).r#type.as_mut_ptr() as *mut i32, 2);
+
+        // frame
+        (*site).quat[0] = 1.0;
+        (*site).size[0] = 0.005;
+        (*site).size[1] = 0.005;
+        (*site).size[2] = 0.005;
+        (*site).fromto[0] = f64::NAN;
+
+        // color: rgba is [u8; 20] blob containing float[4] in first 16 bytes
+        let rgba_ptr = (*site).rgba.as_mut_ptr() as *mut f32;
+        *rgba_ptr.add(0) = 0.5;
+        *rgba_ptr.add(1) = 0.5;
+        *rgba_ptr.add(2) = 0.5;
+        *rgba_ptr.add(3) = 1.0;
+    }
 }
 
 /// C: mjs_defaultCamera (user/user_init.c:169)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjs_default_camera(camera: *mut mjsCamera) {
-    todo!() // mjs_defaultCamera
+    // SAFETY: caller guarantees camera is a valid, aligned, writable pointer to mjsCamera
+    unsafe {
+        std::ptr::write_bytes(camera as *mut u8, 0, std::mem::size_of::<mjsCamera>());
+
+        // mode: mjCAMLIGHT_FIXED = 0 (already zero from memset)
+
+        // extrinsics
+        (*camera).quat[0] = 1.0;
+
+        // intrinsics
+        (*camera).fovy = 45.0;
+        (*camera).ipd = 0.068;
+        (*camera).resolution[0] = 1;
+        (*camera).resolution[1] = 1;
+        (*camera).output = 1; // mjCAMOUT_RGB = 1
+    }
 }
 
 /// C: mjs_defaultLight (user/user_init.c:187)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjs_default_light(light: *mut mjsLight) {
-    todo!() // mjs_defaultLight
+    // SAFETY: caller guarantees light is a valid, aligned, writable pointer to mjsLight
+    unsafe {
+        std::ptr::write_bytes(light as *mut u8, 0, std::mem::size_of::<mjsLight>());
+
+        // mode: mjCAMLIGHT_FIXED = 0 (already zero from memset)
+
+        // extrinsics
+        (*light).dir[2] = -1.0;
+
+        // intrinsics
+        (*light).castshadow = 1;
+        (*light).bulbradius = 0.02;
+        (*light).intensity = 0.0;
+        (*light).range = 10.0;
+        (*light).active = 1;
+        (*light).attenuation[0] = 1.0;
+        (*light).cutoff = 45.0;
+        (*light).exponent = 10.0;
+        (*light).diffuse[0] = 0.7;
+        (*light).diffuse[1] = 0.7;
+        (*light).diffuse[2] = 0.7;
+        (*light).specular[0] = 0.3;
+        (*light).specular[1] = 0.3;
+        (*light).specular[2] = 0.3;
+    }
 }
 
 /// C: mjs_defaultFlex (user/user_init.c:211)
@@ -122,7 +259,30 @@ pub fn mjs_default_tendon(tendon: *mut mjsTendon) {
 /// C: mjs_defaultActuator (user/user_init.c:329)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjs_default_actuator(actuator: *mut mjsActuator) {
-    todo!() // mjs_defaultActuator
+    // SAFETY: caller guarantees actuator is a valid, aligned, writable pointer to mjsActuator
+    unsafe {
+        std::ptr::write_bytes(actuator as *mut u8, 0, std::mem::size_of::<mjsActuator>());
+
+        // gain, bias
+        // gaintype: mjGAIN_FIXED = 0 (already zero from memset)
+        (*actuator).gainprm[0] = 1.0;
+        // biastype: mjBIAS_NONE = 0 (already zero from memset)
+
+        // activation state
+        // dyntype: mjDYN_NONE = 0 (already zero from memset)
+        (*actuator).dynprm[0] = 1.0;
+        (*actuator).actdim = -1;
+
+        // transmission
+        // trntype: mjTRN_UNDEFINED = 1000
+        std::ptr::write((*actuator).trntype.as_mut_ptr() as *mut i32, 1000);
+        (*actuator).gear[0] = 1.0;
+
+        // input/output clamping
+        (*actuator).ctrllimited = 2; // mjLIMITED_AUTO
+        (*actuator).forcelimited = 2; // mjLIMITED_AUTO
+        (*actuator).actlimited = 2; // mjLIMITED_AUTO
+    }
 }
 
 /// C: mjs_defaultSensor (user/user_init.c:354)
