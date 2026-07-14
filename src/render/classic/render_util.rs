@@ -92,7 +92,13 @@ pub fn mjr_mul_mat44(res: *mut f32, A: *const f32, B: *const f32) {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjr_getrow4(res: *mut f32, A: *const f32, r: i32) {
-    todo!() // mjr_getrow4
+    // SAFETY: res points to at least 4 floats, A points to a 4x4 column-major matrix (caller contract)
+    unsafe {
+        *res.add(0) = *A.add(r as usize);
+        *res.add(1) = *A.add(r as usize + 4);
+        *res.add(2) = *A.add(r as usize + 8);
+        *res.add(3) = *A.add(r as usize + 12);
+    }
 }
 
 /// C: mjr_crossVec (render/classic/render_util.h:41)
