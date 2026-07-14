@@ -12,7 +12,48 @@ use crate::types::*;
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn save_stats(m: *const mjModel, d: *mut mjData, island: i32, iter: i32, improvement: f64, gradient: f64, lineslope: f64, nactive: i32, nchange: i32, neval: i32, nupdate: i32) {
-    todo!() // saveStats
+    const MJ_NISLAND: i32 = 20;
+    const MJ_NSOLVER: i32 = 200;
+
+    // if island out of range, return
+    if island >= MJ_NISLAND {
+        return;
+    }
+
+    // if no islands, use first island
+    let island = if island < 0 { 0 } else { island };
+
+    // if iter out of range, return
+    if iter >= MJ_NSOLVER {
+        return;
+    }
+
+    // mjSolverStat layout: improvement(f64), gradient(f64), lineslope(f64),
+    //                       nactive(i32), nchange(i32), neval(i32), nupdate(i32)
+    // total = 40 bytes
+    const STAT_SIZE: usize = 40;
+
+    // SAFETY: d points to valid mjData; solver array has mjNISLAND*mjNSOLVER entries of 40 bytes each
+    unsafe {
+        let base = (*d).solver.as_mut_ptr();
+        let offset = (island as usize * MJ_NSOLVER as usize + iter as usize) * STAT_SIZE;
+        let stat = base.add(offset);
+
+        // write improvement (offset 0)
+        *(stat as *mut f64) = improvement;
+        // write gradient (offset 8)
+        *(stat.add(8) as *mut f64) = gradient;
+        // write lineslope (offset 16)
+        *(stat.add(16) as *mut f64) = lineslope;
+        // write nactive (offset 24)
+        *(stat.add(24) as *mut i32) = nactive;
+        // write nchange (offset 28)
+        *(stat.add(28) as *mut i32) = nchange;
+        // write neval (offset 32)
+        *(stat.add(32) as *mut i32) = neval;
+        // write nupdate (offset 36)
+        *(stat.add(36) as *mut i32) = nupdate;
+    }
 }
 
 /// C: dualFinish (engine/engine_solver.c:71)
@@ -153,7 +194,105 @@ pub fn shuffle_int(array: *mut i32, n: i32, rng: *mut pcg32_state) {
 /// Calls: mju_fillInt, mju_norm
 #[allow(unused_variables, non_snake_case)]
 pub fn dual_state(d: *const mjData, state: *mut i32, ne: i32, nf: i32, nefc: i32, efclist: *const i32) -> i32 {
-    todo!() // dualState
+    use crate::engine::engine_util_blas::mju_norm;
+    use crate::engine::engine_util_misc::mju_fill_int;
+
+    const mjCNSTRSTATE_SATISFIED: i32 = 0;
+    const mjCNSTRSTATE_QUADRATIC: i32 = 1;
+    const mjCNSTRSTATE_LINEARNEG: i32 = 2;
+    const mjCNSTRSTATE_LINEARPOS: i32 = 3;
+    const mjCNSTRSTATE_CONE: i32 = 4;
+    const mjCNSTR_CONTACT_ELLIPTIC: i32 = 7;
+
+    // SAFETY: d points to valid mjData; state, efclist have sufficient size per caller contract
+    unsafe {
+        let force = (*d).efc_force as *const f64;
+        let floss = (*d).efc_frictionloss as *const f64;
+
+        // equality and friction always active
+        let mut nactive: i32 = ne + nf;
+
+        // equality
+        let mut c: i32 = 0;
+        while c < ne {
+            let i = if !efclist.is_null() { *efclist.add(c as usize) } else { c };
+            *state.add(i as usize) = mjCNSTRSTATE_QUADRATIC;
+            c += 1;
+        }
+
+        // friction
+        c = ne;
+        while c < ne + nf {
+            let i = if !efclist.is_null() { *efclist.add(c as usize) } else { c };
+            if *force.add(i as usize) <= -*floss.add(i as usize) {
+                *state.add(i as usize) = mjCNSTRSTATE_LINEARPOS; // opposite of primal
+            } else if *force.add(i as usize) >= *floss.add(i as usize) {
+                *state.add(i as usize) = mjCNSTRSTATE_LINEARNEG;
+            } else {
+                *state.add(i as usize) = mjCNSTRSTATE_QUADRATIC;
+            }
+            c += 1;
+        }
+
+        // limit and contact
+        c = ne + nf;
+        while c < nefc {
+            let i = if !efclist.is_null() { *efclist.add(c as usize) } else { c };
+
+            // non-negative
+            if *(*d).efc_type.add(i as usize) != mjCNSTR_CONTACT_ELLIPTIC {
+                if *force.add(i as usize) <= 0.0 {
+                    *state.add(i as usize) = mjCNSTRSTATE_SATISFIED;
+                } else {
+                    *state.add(i as usize) = mjCNSTRSTATE_QUADRATIC;
+                    nactive += 1;
+                }
+            }
+            // elliptic
+            else {
+                // get contact dimensionality, friction, mu
+                let con: *const mjContact = (*d).contact.add(*(*d).efc_id.add(i as usize) as usize);
+                let dim: i32 = (*con).dim;
+                let mu: f64 = (*con).mu;
+                let mut f: [f64; 6] = [0.0; 6];
+
+                // f = map force to regular-cone space
+                f[0] = *force.add(i as usize) / mu;
+                for j in 1..dim {
+                    f[j as usize] = *force.add((i + j) as usize) / (*con).friction[(j - 1) as usize];
+                }
+
+                // N = normal, T = norm of tangent vector
+                let N: f64 = f[0];
+                let T: f64 = mju_norm(f.as_ptr().add(1), dim - 1);
+
+                // classify zone
+                let result: i32;
+                if mu * N >= T {
+                    // top zone
+                    result = mjCNSTRSTATE_SATISFIED;
+                } else if N + mu * T <= 0.0 {
+                    // bottom zone
+                    result = mjCNSTRSTATE_QUADRATIC;
+                    nactive += dim;
+                } else {
+                    // middle zone
+                    result = mjCNSTRSTATE_CONE;
+                    nactive += dim;
+                }
+
+                // replicate state in all cone dimensions
+                mju_fill_int(state.add(i as usize), result, dim);
+
+                // advance
+                c += dim - 1;
+            }
+
+            c += 1;
+        }
+
+        nactive
+    }
 }
 
 /// C: dualStateChange (engine/engine_solver.c:356)
