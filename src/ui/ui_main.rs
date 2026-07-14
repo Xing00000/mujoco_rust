@@ -18,7 +18,49 @@ pub fn scl(sz: i32, con: *const mjrContext) -> i32 {
 /// C: initOpenGL (ui/ui_main.c:207)
 #[allow(unused_variables, non_snake_case)]
 pub fn init_open_gl(r: *const mjrRect, con: *const mjrContext) {
-    todo!() // initOpenGL
+    const GL_NORMALIZE: u32 = 0x0BA1;
+    const GL_DEPTH_TEST: u32 = 0x0B71;
+    const GL_CULL_FACE: u32 = 0x0B44;
+    const GL_LIGHTING: u32 = 0x0B50;
+    const GL_COLOR_MATERIAL: u32 = 0x0B57;
+    const GL_BLEND: u32 = 0x0BE2;
+    const GL_SMOOTH: u32 = 0x1D01;
+    const GL_FRONT_AND_BACK: u32 = 0x0408;
+    const GL_FILL: u32 = 0x1B02;
+    const GL_PROJECTION: u32 = 0x1701;
+    const GL_MODELVIEW: u32 = 0x1700;
+
+    extern "C" {
+        fn glDisable(cap: u32);
+        fn glShadeModel(mode: u32);
+        fn glPolygonMode(face: u32, mode: u32);
+        fn glMatrixMode(mode: u32);
+        fn glLoadIdentity();
+        fn glOrtho(left: f64, right: f64, bottom: f64, top: f64, near: f64, far: f64);
+        fn glViewport(x: i32, y: i32, width: i32, height: i32);
+    }
+
+    // SAFETY: r is a valid mjrRect pointer; GL functions are linked from mujoco rendering context
+    unsafe {
+        glDisable(GL_NORMALIZE);
+        glDisable(GL_DEPTH_TEST);
+        glDisable(GL_CULL_FACE);
+        glDisable(GL_LIGHTING);
+        glDisable(GL_COLOR_MATERIAL);
+        glDisable(GL_BLEND);
+        glShadeModel(GL_SMOOTH);
+        glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+
+        // standard 2D projection, in framebuffer units
+        glMatrixMode(GL_PROJECTION);
+        glLoadIdentity();
+        glOrtho(0.0, (*r).width as f64, 0.0, (*r).height as f64, -1.0, 1.0);
+        glMatrixMode(GL_MODELVIEW);
+        glLoadIdentity();
+
+        // set viewport
+        glViewport((*r).left, (*r).bottom, (*r).width, (*r).height);
+    }
 }
 
 /// C: drawtext (ui/ui_main.c:251)
@@ -29,7 +71,34 @@ pub fn init_open_gl(r: *const mjrRect, con: *const mjrContext) {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn drawtext(txt: *const i8, x: i32, y: i32, maxwidth: i32, rgb: *const f32, con: *const mjrContext) {
-    todo!() // drawtext
+    extern "C" {
+        fn glListBase(base: u32);
+        fn glColor3fv(v: *const f32);
+        fn glRasterPos3i(x: i32, y: i32, z: i32);
+        fn glCallLists(n: i32, r#type: u32, lists: *const i8);
+    }
+    const GL_UNSIGNED_BYTE: u32 = 0x1401;
+
+    // SAFETY: txt is a valid C string; con is a valid mjrContext pointer; rgb is valid f32[3]
+    unsafe {
+        // determine string length that fits in maxwidth
+        let mut len: i32 = 0;
+        let mut width: i32 = 0;
+        while *txt.add(len as usize) != 0 {
+            width += (*con).charWidth[*txt.add(len as usize) as u8 as usize];
+            if width >= maxwidth {
+                break;
+            } else {
+                len += 1;
+            }
+        }
+
+        // draw normal text
+        glListBase((*con).baseFontNormal);
+        glColor3fv(rgb);
+        glRasterPos3i(x, y, 0);
+        glCallLists(len, GL_UNSIGNED_BYTE, txt);
+    }
 }
 
 /// C: drawtextrect (ui/ui_main.c:274)
@@ -102,7 +171,67 @@ pub fn roundcorner(rect: mjrRect, flg_skipbottom: i32, flg_separator: i32, ui: *
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn drawoval(rect: mjrRect, rgb: *const f32, rgbback: *const f32, con: *const mjrContext) {
-    todo!() // drawoval
+    const NDIVIDE: i32 = 15;
+    const GL_POLYGON: u32 = 0x0009;
+
+    extern "C" {
+        fn glColor3fv(v: *const f32);
+        fn glBegin(mode: u32);
+        fn glEnd();
+        fn glVertex2d(x: f64, y: f64);
+    }
+
+    // require horizontal
+    if rect.height > rect.width {
+        return;
+    }
+
+    // circle info
+    let radius: f64 = 0.5 * rect.height as f64;
+    let lcenter: [f64; 2] = [rect.left as f64 + radius, rect.bottom as f64 + radius];
+    let rcenter: [f64; 2] = [rect.left as f64 + rect.width as f64 - radius, rect.bottom as f64 + radius];
+
+    // SAFETY: rgb/rgbback are valid f32[3] pointers (caller contract); GL functions linked from mujoco
+    unsafe {
+        // filled
+        glColor3fv(rgb);
+        glBegin(GL_POLYGON);
+
+        // draw left half-circle
+        for i in 0..=NDIVIDE {
+            let angle: f64 = std::f64::consts::PI * (0.5 + i as f64 / NDIVIDE as f64);
+            glVertex2d(lcenter[0] + radius * f64::cos(angle), lcenter[1] + radius * f64::sin(angle));
+        }
+
+        // draw right half-circle
+        for i in 0..=NDIVIDE {
+            let angle: f64 = std::f64::consts::PI * (1.5 + i as f64 / NDIVIDE as f64);
+            glVertex2d(rcenter[0] + radius * f64::cos(angle), rcenter[1] + radius * f64::sin(angle));
+        }
+        glEnd();
+
+        // inside
+        if !rgbback.is_null() {
+            let margin: i32 = scl(2, con);
+            let radius_inner: f64 = radius - margin as f64;
+
+            glColor3fv(rgbback);
+            glBegin(GL_POLYGON);
+
+            // draw left half-circle
+            for i in 0..=NDIVIDE {
+                let angle: f64 = std::f64::consts::PI * (0.5 + i as f64 / NDIVIDE as f64);
+                glVertex2d(lcenter[0] + radius_inner * f64::cos(angle), lcenter[1] + radius_inner * f64::sin(angle));
+            }
+
+            // draw right half-circle
+            for i in 0..=NDIVIDE {
+                let angle: f64 = std::f64::consts::PI * (1.5 + i as f64 / NDIVIDE as f64);
+                glVertex2d(rcenter[0] + radius_inner * f64::cos(angle), rcenter[1] + radius_inner * f64::sin(angle));
+            }
+            glEnd();
+        }
+    }
 }
 
 /// C: drawsymbol (ui/ui_main.c:434)

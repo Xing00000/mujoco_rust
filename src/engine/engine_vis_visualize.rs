@@ -750,7 +750,97 @@ pub fn mjv_is_catenary(m: *const mjModel, d: *const mjData, i: i32, length: *mut
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjv_catenary(x0: *const f64, x1: *const f64, gravity: *const f64, length: f64, catenary: *mut f64, ncatenary: i32) -> i32 {
-    todo!() // mjv_catenary
+    use crate::engine::engine_util_blas::{
+        mju_dist3, mju_scl3, mju_normalize3, mju_sub3, mju_copy3,
+        mju_dot3, mju_sub_from3, mju_add_scl3, mju_add_to_scl3, mju_zero3,
+    };
+    const MJ_MINVAL: f64 = 1E-15_f64;
+
+    // SAFETY: x0, x1, gravity are valid f64[3]; catenary is a valid buffer for 3*ncatenary f64s
+    unsafe {
+        let dist: f64 = mju_dist3(x0, x1);
+
+        // tendon is stretched longer than length: draw straight line
+        if dist > length {
+            mju_copy3(catenary.add(0), x0);
+            mju_copy3(catenary.add(3), x1);
+            return 2;
+        }
+
+        // tendon is shorter than length
+        // normalized up vector
+        let mut up: [f64; 3] = [0.0; 3];
+        mju_scl3(up.as_mut_ptr(), gravity, -1.0);
+        mju_normalize3(up.as_mut_ptr());
+
+        // x0 to x1
+        let mut x01: [f64; 3] = [0.0; 3];
+        mju_sub3(x01.as_mut_ptr(), x1, x0);
+
+        // make across orthonormal to up, points from x0 to x1
+        let mut across: [f64; 3] = [0.0; 3];
+        mju_copy3(across.as_mut_ptr(), x01.as_ptr());
+        let mut tmp: [f64; 3] = [0.0; 3];
+        mju_scl3(tmp.as_mut_ptr(), up.as_ptr(), mju_dot3(up.as_ptr(), across.as_ptr()));
+        mju_sub_from3(across.as_mut_ptr(), tmp.as_ptr());
+        let norm: f64 = mju_normalize3(across.as_mut_ptr());
+
+        // if across is numerically tiny, just set to 0
+        if norm < MJ_MINVAL {
+            mju_zero3(across.as_mut_ptr());
+        }
+
+        // extents in the suspension plane
+        let h: f64 = mju_dot3(x01.as_ptr(), across.as_ptr());
+        let v: f64 = mju_dot3(x01.as_ptr(), up.as_ptr());
+
+        // near vertical tendon, use hanging bead approximation: 3 points
+        if length > 100.0 * h {
+            // solve for location of bead hanging on tendon
+            let d_up: f64 = -0.5 * (f64::sqrt(length * length - h * h) - v);
+            let d_across: f64 = h * d_up / (2.0 * d_up - v);
+
+            // start point
+            mju_copy3(catenary.add(0), x0);
+
+            // midpoint: bead location
+            mju_copy3(catenary.add(3), x0);
+            mju_add_to_scl3(catenary.add(3), up.as_ptr(), d_up);
+            mju_add_to_scl3(catenary.add(3), across.as_ptr(), d_across);
+
+            // end point
+            mju_copy3(catenary.add(6), x1);
+
+            return 3;
+        }
+
+        // compute full catenary: ncatenary points
+        // b*h: scaled catenary flatness
+        let bh: f64 = solve_catenary(v, h, length) * h;
+
+        // horizontal and vertical offsets
+        let h_offset: f64 = -0.5 * (f64::ln((length + v) / (length - v)) * bh - h);
+        let v_offset: f64 = -cosh_sinh(h_offset / bh, std::ptr::null_mut()) * bh;
+
+        // start point
+        mju_copy3(catenary.add(0), x0);
+
+        // hanging points
+        for i in 1..(ncatenary - 1) {
+            // linearly spaced horizontal offset
+            let horizontal: f64 = (i as f64) * h / (ncatenary as f64);
+            mju_add_scl3(catenary.add(3 * i as usize), x0, across.as_ptr(), horizontal);
+
+            // vertical offset, evaluate catenary values
+            let vertical: f64 = bh * cosh_sinh((horizontal - h_offset) / bh, std::ptr::null_mut()) + v_offset;
+            mju_add_to_scl3(catenary.add(3 * i as usize), up.as_ptr(), vertical);
+        }
+
+        // end point
+        mju_copy3(catenary.add(3 * (ncatenary - 1) as usize), x1);
+
+        return ncatenary;
+    }
 }
 
 /// C: hsv2rgb (engine/engine_vis_visualize.h:76)

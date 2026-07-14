@@ -55,7 +55,37 @@ pub fn mj_sleep_trees(m: *const mjModel, d: *mut mjData, tree: *const i32, n: i3
 /// C: mj_tendonSleepState (engine/engine_sleep.c:634)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_tendon_sleep_state(m: *const mjModel, d: *const mjData, i: i32) -> i32 {
-    todo!() // mj_tendonSleepState
+    const mjS_STATIC: i32 = -1;
+    const mjS_ASLEEP: i32 = 0;
+    const mjS_AWAKE: i32 = 1;
+
+    // SAFETY: m and d are valid model/data pointers; i is a valid tendon index
+    unsafe {
+        let treenum: i32 = *(*m).tendon_treenum.add(i as usize);
+
+        // no trees: tendon is static
+        if treenum == 0 {
+            return mjS_STATIC;
+        }
+
+        // single tree: awake if tree is awake, asleep otherwise
+        let id1: i32 = *(*m).tendon_treeid.add((2 * i) as usize);
+        if treenum == 1 {
+            return if *(*d).tree_awake.add(id1 as usize) != 0 { mjS_AWAKE } else { mjS_ASLEEP };
+        }
+
+        // two trees: asleep only if both are asleep
+        let id2: i32 = *(*m).tendon_treeid.add((2 * i + 1) as usize);
+        if treenum == 2 {
+            return if *(*d).tree_awake.add(id1 as usize) != 0 || *(*d).tree_awake.add(id2 as usize) != 0 {
+                mjS_AWAKE
+            } else {
+                mjS_ASLEEP
+            };
+        }
+
+        mjS_AWAKE
+    }
 }
 
 /// C: mj_actuatorSleepState (engine/engine_sleep.c:659)

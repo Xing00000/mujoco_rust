@@ -129,7 +129,91 @@ pub fn mj_instantiate_limit(m: *const mjModel, d: *mut mjData, count_only: i32, 
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn getsolparam(m: *const mjModel, d: *const mjData, i: i32, solref: *mut f64, solreffriction: *mut f64, solimp: *mut f64) {
-    todo!() // getsolparam
+    const mjNREF: i32 = 2;
+    const mjNIMP: i32 = 5;
+    const mjMINIMP: f64 = 1E-3;
+    const mjMAXIMP: f64 = 0.9999;
+    const mjDSBL_REFSAFE: i32 = 1 << 12;
+
+    const mjCNSTR_EQUALITY: i32 = 0;
+    const mjCNSTR_FRICTION_DOF: i32 = 1;
+    const mjCNSTR_FRICTION_TENDON: i32 = 2;
+    const mjCNSTR_LIMIT_JOINT: i32 = 3;
+    const mjCNSTR_LIMIT_TENDON: i32 = 4;
+    const mjCNSTR_CONTACT_FRICTIONLESS: i32 = 5;
+    const mjCNSTR_CONTACT_PYRAMIDAL: i32 = 6;
+    const mjCNSTR_CONTACT_ELLIPTIC: i32 = 7;
+
+    // SAFETY: m, d are valid model/data pointers; solref, solreffriction, solimp are valid output buffers
+    unsafe {
+        // get constraint id
+        let id: i32 = *(*d).efc_id.add(i as usize);
+
+        // clear solreffriction (applies only to contacts)
+        crate::engine::engine_util_blas::mju_zero(solreffriction, mjNREF);
+
+        // extract solver parameters from corresponding model element
+        let efc_type: i32 = *(*d).efc_type.add(i as usize);
+
+        match efc_type {
+            mjCNSTR_EQUALITY => {
+                crate::engine::engine_util_blas::mju_copy(solref, (*m).eq_solref.add((mjNREF as usize) * (id as usize)), mjNREF);
+                crate::engine::engine_util_blas::mju_copy(solimp, (*m).eq_solimp.add((mjNIMP as usize) * (id as usize)), mjNIMP);
+            }
+            mjCNSTR_LIMIT_JOINT => {
+                crate::engine::engine_util_blas::mju_copy(solref, (*m).jnt_solref.add((mjNREF as usize) * (id as usize)), mjNREF);
+                crate::engine::engine_util_blas::mju_copy(solimp, (*m).jnt_solimp.add((mjNIMP as usize) * (id as usize)), mjNIMP);
+            }
+            mjCNSTR_FRICTION_DOF => {
+                crate::engine::engine_util_blas::mju_copy(solref, (*m).dof_solref.add((mjNREF as usize) * (id as usize)), mjNREF);
+                crate::engine::engine_util_blas::mju_copy(solimp, (*m).dof_solimp.add((mjNIMP as usize) * (id as usize)), mjNIMP);
+            }
+            mjCNSTR_LIMIT_TENDON => {
+                crate::engine::engine_util_blas::mju_copy(solref, (*m).tendon_solref_lim.add((mjNREF as usize) * (id as usize)), mjNREF);
+                crate::engine::engine_util_blas::mju_copy(solimp, (*m).tendon_solimp_lim.add((mjNIMP as usize) * (id as usize)), mjNIMP);
+            }
+            mjCNSTR_FRICTION_TENDON => {
+                crate::engine::engine_util_blas::mju_copy(solref, (*m).tendon_solref_fri.add((mjNREF as usize) * (id as usize)), mjNREF);
+                crate::engine::engine_util_blas::mju_copy(solimp, (*m).tendon_solimp_fri.add((mjNIMP as usize) * (id as usize)), mjNIMP);
+            }
+            mjCNSTR_CONTACT_FRICTIONLESS | mjCNSTR_CONTACT_PYRAMIDAL | mjCNSTR_CONTACT_ELLIPTIC => {
+                let contact = (*d).contact.add(id as usize);
+                crate::engine::engine_util_blas::mju_copy(solref, (*contact).solref.as_ptr(), mjNREF);
+                crate::engine::engine_util_blas::mju_copy(solreffriction, (*contact).solreffriction.as_ptr(), mjNREF);
+                crate::engine::engine_util_blas::mju_copy(solimp, (*contact).solimp.as_ptr(), mjNIMP);
+            }
+            _ => {}
+        }
+
+        // check reference format: standard or direct, cannot be mixed
+        if (*solref.add(0) > 0.0) ^ (*solref.add(1) > 0.0) {
+            crate::engine::engine_util_errmem::mju_warning(b"mixed solref format, replacing with default\0".as_ptr() as *const i8);
+            crate::engine::engine_init::mj_default_sol_ref_imp(solref, std::ptr::null_mut());
+        }
+
+        // integrator safety: impose ref[0]>=2*timestep for standard format
+        if ((*m).opt.disableflags & mjDSBL_REFSAFE) == 0 && *solref.add(0) > 0.0 {
+            *solref.add(0) = crate::engine::engine_util_misc::mju_max(*solref.add(0), 2.0 * (*m).opt.timestep);
+        }
+
+        // check reference format: standard or direct, cannot be mixed
+        if (*solreffriction.add(0) > 0.0) ^ (*solreffriction.add(1) > 0.0) {
+            crate::engine::engine_util_errmem::mju_warning(b"solreffriction values should have the same sign, replacing with default\0".as_ptr() as *const i8);
+            crate::engine::engine_util_blas::mju_zero(solreffriction, mjNREF);
+        }
+
+        // integrator safety: impose ref[0]>=2*timestep for standard format
+        if ((*m).opt.disableflags & mjDSBL_REFSAFE) == 0 && *solreffriction.add(0) > 0.0 {
+            *solreffriction.add(0) = crate::engine::engine_util_misc::mju_max(*solreffriction.add(0), 2.0 * (*m).opt.timestep);
+        }
+
+        // enforce constraints on solimp
+        *solimp.add(0) = crate::engine::engine_util_misc::mju_min(mjMAXIMP, crate::engine::engine_util_misc::mju_max(mjMINIMP, *solimp.add(0)));
+        *solimp.add(1) = crate::engine::engine_util_misc::mju_min(mjMAXIMP, crate::engine::engine_util_misc::mju_max(mjMINIMP, *solimp.add(1)));
+        *solimp.add(2) = crate::engine::engine_util_misc::mju_max(0.0, *solimp.add(2));
+        *solimp.add(3) = crate::engine::engine_util_misc::mju_min(mjMAXIMP, crate::engine::engine_util_misc::mju_max(mjMINIMP, *solimp.add(3)));
+        *solimp.add(4) = crate::engine::engine_util_misc::mju_max(1.0, *solimp.add(4));
+    }
 }
 
 /// C: getposdim (engine/engine_core_constraint.c:2053)
@@ -400,7 +484,17 @@ pub fn mj_jdotv(m: *const mjModel, d: *mut mjData, result: *mut f64) {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_assign_ref(m: *const mjModel, target: *mut f64, source: *const f64) {
-    todo!() // mj_assignRef
+    const mjENBL_OVERRIDE: i32 = 1 << 0;
+    const mjNREF: i32 = 2;
+
+    // SAFETY: m is a valid mjModel pointer; target and source are valid f64 arrays of size mjNREF
+    unsafe {
+        if ((*m).opt.enableflags & mjENBL_OVERRIDE) != 0 {
+            crate::engine::engine_util_blas::mju_copy(target, (*m).opt.o_solref.as_ptr(), mjNREF);
+        } else {
+            crate::engine::engine_util_blas::mju_copy(target, source, mjNREF);
+        }
+    }
 }
 
 /// C: mj_assignImp (engine/engine_core_constraint.h:49)
@@ -412,7 +506,17 @@ pub fn mj_assign_ref(m: *const mjModel, target: *mut f64, source: *const f64) {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_assign_imp(m: *const mjModel, target: *mut f64, source: *const f64) {
-    todo!() // mj_assignImp
+    const mjENBL_OVERRIDE: i32 = 1 << 0;
+    const mjNIMP: i32 = 5;
+
+    // SAFETY: m is a valid mjModel pointer; target and source are valid f64 arrays of size mjNIMP
+    unsafe {
+        if ((*m).opt.enableflags & mjENBL_OVERRIDE) != 0 {
+            crate::engine::engine_util_blas::mju_copy(target, (*m).opt.o_solimp.as_ptr(), mjNIMP);
+        } else {
+            crate::engine::engine_util_blas::mju_copy(target, source, mjNIMP);
+        }
+    }
 }
 
 /// C: mj_assignFriction (engine/engine_core_constraint.h:52)
@@ -424,7 +528,21 @@ pub fn mj_assign_imp(m: *const mjModel, target: *mut f64, source: *const f64) {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_assign_friction(m: *const mjModel, target: *mut f64, source: *const f64) {
-    todo!() // mj_assignFriction
+    const mjENBL_OVERRIDE: i32 = 1 << 0;
+    const mjMINMU: f64 = 1E-5;
+
+    // SAFETY: m is a valid mjModel pointer; target and source are valid f64[5] arrays
+    unsafe {
+        if ((*m).opt.enableflags & mjENBL_OVERRIDE) != 0 {
+            for i in 0..5 {
+                *target.add(i) = crate::engine::engine_util_misc::mju_max(mjMINMU, (*m).opt.o_friction[i]);
+            }
+        } else {
+            for i in 0..5 {
+                *target.add(i) = crate::engine::engine_util_misc::mju_max(mjMINMU, *source.add(i));
+            }
+        }
+    }
 }
 
 /// C: mj_assignMargin (engine/engine_core_constraint.h:55)

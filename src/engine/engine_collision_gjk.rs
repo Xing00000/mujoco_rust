@@ -719,7 +719,15 @@ pub fn same_side(p0: *const f64, p1: *const f64, p2: *const f64, p3: *const f64)
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn test_tetra(p0: *const f64, p1: *const f64, p2: *const f64, p3: *const f64) -> i32 {
-    todo!() // testTetra
+    if same_side(p0, p1, p2, p3) != 0
+        && same_side(p1, p2, p3, p0) != 0
+        && same_side(p2, p3, p0, p1) != 0
+        && same_side(p3, p0, p1, p2) != 0
+    {
+        1
+    } else {
+        0
+    }
 }
 
 /// C: rotmat (engine/engine_collision_gjk.c:893)
@@ -766,7 +774,22 @@ pub fn tri_affine_coord(lambda: *mut f64, v1: *const f64, v2: *const f64, v3: *c
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn tri_point_intersect(v1: *const f64, v2: *const f64, v3: *const f64, p: *const f64) -> i32 {
-    todo!() // triPointIntersect
+    const MJ_MINVAL: f64 = 1E-15_f64;
+    let mut lambda: [f64; 3] = [0.0; 3];
+    tri_affine_coord(lambda.as_mut_ptr(), v1, v2, v3, p);
+    if lambda[0] < 0.0 || lambda[1] < 0.0 || lambda[2] < 0.0 {
+        return 0;
+    }
+    // SAFETY: v1, v2, v3, p are valid f64[3] pointers (caller contract from EPA/GJK)
+    unsafe {
+        let mut pr: [f64; 3] = [0.0; 3];
+        pr[0] = *v1.add(0) * lambda[0] + *v2.add(0) * lambda[1] + *v3.add(0) * lambda[2];
+        pr[1] = *v1.add(1) * lambda[0] + *v2.add(1) * lambda[1] + *v3.add(1) * lambda[2];
+        pr[2] = *v1.add(2) * lambda[0] + *v2.add(2) * lambda[1] + *v3.add(2) * lambda[2];
+        let mut diff: [f64; 3] = [0.0; 3];
+        sub3(diff.as_mut_ptr(), pr.as_ptr(), p);
+        if norm3(diff.as_ptr()) < MJ_MINVAL { 1 } else { 0 }
+    }
 }
 
 /// C: deleteFace (engine/engine_collision_gjk.c:1216)
