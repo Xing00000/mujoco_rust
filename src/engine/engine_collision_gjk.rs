@@ -1072,7 +1072,74 @@ pub fn horizon(pt: *mut Polytope, face: *mut Face) {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn epa_witness(pt: *const Polytope, face: *const Face, x1: *mut f64, x2: *mut f64) -> f64 {
-    todo!() // epaWitness
+    // Vertex: { vert[3]: f64, vert1[3]: f64, vert2[3]: f64, index1: i32, index2: i32 } = 80 bytes
+    const SIZEOF_VERTEX: usize = 80;
+
+    #[repr(C)]
+    struct FaceRepr {
+        verts: i32,
+        adj: [i32; 3],
+        v: [f64; 3],
+        dist2: f64,
+        index: i32,
+        _pad: i32,
+    }
+
+    #[repr(C)]
+    struct PolytopeRepr {
+        verts: *mut u8,
+        nverts: i32,
+        _pad0: i32,
+        faces: *mut u8,
+        nfaces: i32,
+        maxfaces: i32,
+        center: [f64; 3],
+        map: *mut *mut u8,
+        nmap: i32,
+        _pad1: i32,
+    }
+
+    // SAFETY: pt is a valid Polytope, face is a valid Face. Vertex layout is 80 bytes with
+    // vert at offset 0, vert1 at offset 24, vert2 at offset 48.
+    unsafe {
+        let p = pt as *const PolytopeRepr;
+        let f = face as *const FaceRepr;
+
+        let verts_packed = (*f).verts;
+        let verts = [
+            (verts_packed & 0x3FF) as usize,
+            ((verts_packed >> 10) & 0x3FF) as usize,
+            ((verts_packed >> 20) & 0x3FF) as usize,
+        ];
+
+        let verts_base = (*p).verts;
+        // vert field at offset 0
+        let v1_vert = verts_base.add(verts[0] * SIZEOF_VERTEX) as *const f64;
+        let v2_vert = verts_base.add(verts[1] * SIZEOF_VERTEX) as *const f64;
+        let v3_vert = verts_base.add(verts[2] * SIZEOF_VERTEX) as *const f64;
+
+        // vert1 field at offset 24 (3 * sizeof(f64))
+        let v1_vert1 = verts_base.add(verts[0] * SIZEOF_VERTEX + 24) as *const f64;
+        let v2_vert1 = verts_base.add(verts[1] * SIZEOF_VERTEX + 24) as *const f64;
+        let v3_vert1 = verts_base.add(verts[2] * SIZEOF_VERTEX + 24) as *const f64;
+
+        // vert2 field at offset 48 (6 * sizeof(f64))
+        let v1_vert2 = verts_base.add(verts[0] * SIZEOF_VERTEX + 48) as *const f64;
+        let v2_vert2 = verts_base.add(verts[1] * SIZEOF_VERTEX + 48) as *const f64;
+        let v3_vert2 = verts_base.add(verts[2] * SIZEOF_VERTEX + 48) as *const f64;
+
+        // compute affine coordinates for witness points on plane defined by face
+        let mut lambda: [f64; 3] = [0.0; 3];
+        tri_affine_coord(lambda.as_mut_ptr(), v1_vert, v2_vert, v3_vert, (*f).v.as_ptr());
+
+        // witness point on geom 1
+        lincomb(x1, lambda.as_ptr(), 3, v1_vert1, v2_vert1, v3_vert1, std::ptr::null());
+
+        // witness point on geom 2
+        lincomb(x2, lambda.as_ptr(), 3, v1_vert2, v2_vert2, v3_vert2, std::ptr::null());
+
+        -(*f).dist2.sqrt()
+    }
 }
 
 /// C: area4 (engine/engine_collision_gjk.c:1505)
@@ -1149,7 +1216,20 @@ pub fn polygon_quad(res: *mut *mut f64, polygon: *mut f64, nvert: i32) {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn plane_normal(res: *mut f64, v1: *const f64, v2: *const f64, n: *const f64) -> f64 {
-    todo!() // planeNormal
+    // SAFETY: res[3], v1[3], v2[3], n[3] are valid pointers from caller
+    unsafe {
+        let mut v3: [f64; 3] = [0.0; 3];
+        let mut diff1: [f64; 3] = [0.0; 3];
+        let mut diff2: [f64; 3] = [0.0; 3];
+        add3(v3.as_mut_ptr(), v1, n);
+        sub3(diff1.as_mut_ptr(), v2, v1);
+        sub3(diff2.as_mut_ptr(), v3.as_ptr(), v1);
+        cross3(res, diff1.as_ptr(), diff2.as_ptr());
+
+        // normalize isn't needed (cancelled out), but done to avoid asymmetric rounding later on
+        crate::engine::engine_util_blas::mju_normalize3(res);
+        dot3(res, v1)
+    }
 }
 
 /// C: halfspace (engine/engine_collision_gjk.c:1592)
@@ -1161,7 +1241,16 @@ pub fn plane_normal(res: *mut f64, v1: *const f64, v2: *const f64, n: *const f64
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn halfspace(a: *const f64, n: *const f64, p: *const f64) -> i32 {
-    todo!() // halfspace
+    const MJ_MINVAL: f64 = 1E-15_f64;
+    // SAFETY: a[3], n[3], p[3] are valid pointers from caller
+    unsafe {
+        let diff: [f64; 3] = [
+            *p.add(0) - *a.add(0),
+            *p.add(1) - *a.add(1),
+            *p.add(2) - *a.add(2),
+        ];
+        if dot3(diff.as_ptr(), n) > -MJ_MINVAL { 1 } else { 0 }
+    }
 }
 
 /// C: planeIntersect (engine/engine_collision_gjk.c:1599)
@@ -1173,7 +1262,23 @@ pub fn halfspace(a: *const f64, n: *const f64, p: *const f64) -> i32 {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn plane_intersect(res: *mut f64, pn: *const f64, pd: f64, a: *const f64, b: *const f64) -> f64 {
-    todo!() // planeIntersect
+    const MJ_MAX_LIMIT: f64 = f64::MAX;
+    // SAFETY: res[3], pn[3], a[3], b[3] are valid pointers from caller
+    unsafe {
+        let mut ab: [f64; 3] = [0.0; 3];
+        sub3(ab.as_mut_ptr(), b, a);
+        let temp = dot3(pn, ab.as_ptr());
+        if temp == 0.0 {
+            return MJ_MAX_LIMIT;  // parallel; no intersection
+        }
+        let t = (pd - dot3(pn, a)) / temp;
+        if t >= 0.0 && t <= 1.0 {
+            *res.add(0) = *a.add(0) + t * ab[0];
+            *res.add(1) = *a.add(1) + t * ab[1];
+            *res.add(2) = *a.add(2) + t * ab[2];
+        }
+        t
+    }
 }
 
 /// C: polygonClip (engine/engine_collision_gjk.c:1616)
@@ -1238,7 +1343,68 @@ pub fn mesh_normals(res: *mut f64, resind: *mut i32, dim: i32, obj: *mut mjCCDOb
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mesh_edge_normals(res: *mut f64, endverts: *mut f64, dim: i32, obj: *mut mjCCDObj, v1: *const f64, v2: *const f64, v1i: i32, v2i: i32) -> i32 {
-    todo!() // meshEdgeNormals
+    const MJ_MAX_POLYVERT: i32 = 150;
+
+    #[repr(C)]
+    struct MeshData {
+        nvert: i32,
+        mesh_polynum: i32,
+        vert: *const f32,
+        mpolymapadr: *const i32,
+        mpolymapnum: *const i32,
+        polymap: *const i32,
+        polyvertadr: *const i32,
+        polyvertnum: *const i32,
+        polyvert: *const i32,
+        polynormal: *const f64,
+        graph: *const i32,
+    }
+
+    // SAFETY: res, endverts, obj, v1[3], v2[3] are valid pointers from caller
+    unsafe {
+        let mat = (*obj).mat.as_ptr();
+        let pos = (*obj).pos.as_ptr();
+        let mesh_ptr = &(*obj).data as *const _ as *const MeshData;
+        let vert = (*mesh_ptr).vert;
+        let polyvert = (*mesh_ptr).polyvert;
+
+        // only one edge
+        if dim == 2 {
+            copy3(endverts, v2);
+            sub3(res, v2, v1);
+            crate::engine::engine_util_blas::mju_normalize3(res);
+            return 1;
+        }
+
+        if dim == 1 {
+            let v1_adr = *(*mesh_ptr).mpolymapadr.add(v1i as usize);
+            let mut v1_num = *(*mesh_ptr).mpolymapnum.add(v1i as usize);
+            if v1_num > MJ_MAX_POLYVERT {
+                v1_num = MJ_MAX_POLYVERT;
+            }
+
+            // loop through all faces with vertex v1
+            for i in 0..v1_num {
+                let idx = *(*mesh_ptr).polymap.add((v1_adr + i) as usize);
+                let adr = *(*mesh_ptr).polyvertadr.add(idx as usize);
+                let nvert = *(*mesh_ptr).polyvertnum.add(idx as usize);
+                // find previous vertex in polygon to form edge
+                for j in 0..nvert {
+                    if *polyvert.add((adr + j) as usize) == v1i {
+                        let k = if j == 0 { nvert - 1 } else { j - 1 };
+                        let v = vert.add(3 * *polyvert.add((adr + k) as usize) as usize);
+                        globalcoord(endverts.add(3 * i as usize), mat, pos,
+                                    *v.add(0) as f64, *v.add(1) as f64, *v.add(2) as f64);
+                        sub3(res.add(3 * i as usize), endverts.add(3 * i as usize), v1);
+                        crate::engine::engine_util_blas::mju_normalize3(res.add(3 * i as usize));
+                        break;
+                    }
+                }
+            }
+            return v1_num;
+        }
+        0
+    }
 }
 
 /// C: boxNormals2 (engine/engine_collision_gjk.c:1885)
@@ -1250,7 +1416,34 @@ pub fn mesh_edge_normals(res: *mut f64, endverts: *mut f64, dim: i32, obj: *mut 
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn box_normals2(res: *mut f64, resind: *mut i32, mat: *const f64, n: *const f64) -> i32 {
-    todo!() // boxNormals2
+    const MJ_FACE_TOL: f64 = 0.99999872;
+    // SAFETY: res[9], resind[3], mat[9], n[3] are valid pointers from caller
+    unsafe {
+        // list of box face normals
+        let normals: [f64; 18] = [
+            1.0, 0.0, 0.0,   -1.0,  0.0,  0.0,
+            0.0, 1.0, 0.0,    0.0, -1.0,  0.0,
+            0.0, 0.0, 1.0,    0.0,  0.0, -1.0,
+        ];
+
+        // get local coordinates of the normal (mat^T * n)
+        let mut local_n: [f64; 3] = [0.0; 3];
+        local_n[0] = *mat.add(0) * *n.add(0) + *mat.add(3) * *n.add(1) + *mat.add(6) * *n.add(2);
+        local_n[1] = *mat.add(1) * *n.add(0) + *mat.add(4) * *n.add(1) + *mat.add(7) * *n.add(2);
+        local_n[2] = *mat.add(2) * *n.add(0) + *mat.add(5) * *n.add(1) + *mat.add(8) * *n.add(2);
+        let len = dot3(local_n.as_ptr(), local_n.as_ptr()).sqrt();
+        scl3(local_n.as_mut_ptr(), local_n.as_ptr(), 1.0 / len);
+
+        // determine if there is a side close to the normal
+        for i in 0..6_i32 {
+            if dot3(local_n.as_ptr(), normals.as_ptr().add(3 * i as usize)) > MJ_FACE_TOL {
+                globalcoord(res, mat, std::ptr::null(), normals[3 * i as usize], normals[3 * i as usize + 1], normals[3 * i as usize + 2]);
+                *resind.add(0) = i;
+                return 1;
+            }
+        }
+        0
+    }
 }
 
 /// C: boxNormals (engine/engine_collision_gjk.c:1911)
@@ -1262,7 +1455,66 @@ pub fn box_normals2(res: *mut f64, resind: *mut i32, mat: *const f64, n: *const 
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn box_normals(res: *mut f64, resind: *mut i32, dim: i32, obj: *mut mjCCDObj, v1: i32, v2: i32, v3: i32, dir: *const f64) -> i32 {
-    todo!() // boxNormals
+    // SAFETY: res[9], resind[3], obj, dir are valid pointers from caller
+    unsafe {
+        let mat = (*obj).mat.as_ptr();
+        if dim == 3 {
+            let mut c: usize = 0;
+            let x = ((v1 & 1 != 0) && (v2 & 1 != 0) && (v3 & 1 != 0)) as i32
+                  - ((v1 & 1 == 0) && (v2 & 1 == 0) && (v3 & 1 == 0)) as i32;
+            let y = ((v1 & 2 != 0) && (v2 & 2 != 0) && (v3 & 2 != 0)) as i32
+                  - ((v1 & 2 == 0) && (v2 & 2 == 0) && (v3 & 2 == 0)) as i32;
+            let z = ((v1 & 4 != 0) && (v2 & 4 != 0) && (v3 & 4 != 0)) as i32
+                  - ((v1 & 4 == 0) && (v2 & 4 == 0) && (v3 & 4 == 0)) as i32;
+            globalcoord(res, mat, std::ptr::null(), x as f64, y as f64, z as f64);
+            let sgn = x + y + z;
+            if x != 0 { *resind.add(c) = 0; c += 1; }
+            if y != 0 { *resind.add(c) = 2; c += 1; }
+            if z != 0 { *resind.add(c) = 4; c += 1; }
+            if sgn == -1 { *resind.add(0) += 1; }
+            return if c == 1 { 1 } else { box_normals2(res, resind, mat, dir) };
+        }
+
+        if dim == 2 {
+            let mut c: usize = 0;
+            let x = ((v1 & 1 != 0) && (v2 & 1 != 0)) as i32
+                  - ((v1 & 1 == 0) && (v2 & 1 == 0)) as i32;
+            let y = ((v1 & 2 != 0) && (v2 & 2 != 0)) as i32
+                  - ((v1 & 2 == 0) && (v2 & 2 == 0)) as i32;
+            let z = ((v1 & 4 != 0) && (v2 & 4 != 0)) as i32
+                  - ((v1 & 4 == 0) && (v2 & 4 == 0)) as i32;
+            if x != 0 {
+                globalcoord(res, mat, std::ptr::null(), x as f64, 0.0, 0.0);
+                *resind.add(c) = if x > 0 { 0 } else { 1 };
+                c += 1;
+            }
+            if y != 0 {
+                globalcoord(res.add(3 * c), mat, std::ptr::null(), 0.0, y as f64, 0.0);
+                *resind.add(c) = if y > 0 { 2 } else { 3 };
+                c += 1;
+            }
+            if z != 0 {
+                globalcoord(res.add(3), mat, std::ptr::null(), 0.0, 0.0, z as f64);
+                *resind.add(c) = if z > 0 { 4 } else { 5 };
+                c += 1;
+            }
+            return if c == 2 { 2 } else { box_normals2(res, resind, mat, dir) };
+        }
+
+        if dim == 1 {
+            let x: f64 = if v1 & 1 != 0 { 1.0 } else { -1.0 };
+            let y: f64 = if v1 & 2 != 0 { 1.0 } else { -1.0 };
+            let z: f64 = if v1 & 4 != 0 { 1.0 } else { -1.0 };
+            globalcoord(res.add(0), mat, std::ptr::null(), x, 0.0, 0.0);
+            globalcoord(res.add(3), mat, std::ptr::null(), 0.0, y, 0.0);
+            globalcoord(res.add(6), mat, std::ptr::null(), 0.0, 0.0, z);
+            *resind.add(0) = if x > 0.0 { 0 } else { 1 };
+            *resind.add(1) = if y > 0.0 { 2 } else { 3 };
+            *resind.add(2) = if z > 0.0 { 4 } else { 5 };
+            return 3;
+        }
+        0
+    }
 }
 
 /// C: boxEdgeNormals (engine/engine_collision_gjk.c:1965)
@@ -1274,7 +1526,40 @@ pub fn box_normals(res: *mut f64, resind: *mut i32, dim: i32, obj: *mut mjCCDObj
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn box_edge_normals(res: *mut f64, endverts: *mut f64, dim: i32, obj: *mut mjCCDObj, v1: *const f64, v2: *const f64, v1i: i32, v2i: i32) -> i32 {
-    todo!() // boxEdgeNormals
+    // SAFETY: res[9], endverts[9], obj, v1[3], v2[3] are valid pointers from caller
+    unsafe {
+        let mat = (*obj).mat.as_ptr();
+        let pos = (*obj).pos.as_ptr();
+        let size = (*obj).size.as_ptr();
+
+        if dim == 2 {
+            copy3(endverts, v2);
+            sub3(res, v2, v1);
+            crate::engine::engine_util_blas::mju_normalize3(res);
+            return 1;
+        }
+
+        // return 3 adjacent vertices
+        if dim == 1 {
+            let x: f64 = if v1i & 1 != 0 { *size.add(0) } else { -*size.add(0) };
+            let y: f64 = if v1i & 2 != 0 { *size.add(1) } else { -*size.add(1) };
+            let z: f64 = if v1i & 4 != 0 { *size.add(2) } else { -*size.add(2) };
+
+            globalcoord(endverts, mat, pos, -x, y, z);
+            sub3(res, endverts, v1);
+            crate::engine::engine_util_blas::mju_normalize3(res);
+
+            globalcoord(endverts.add(3), mat, pos, x, -y, z);
+            sub3(res.add(3), endverts.add(3), v1);
+            crate::engine::engine_util_blas::mju_normalize3(res.add(3));
+
+            globalcoord(endverts.add(6), mat, pos, x, y, -z);
+            sub3(res.add(6), endverts.add(6), v1);
+            crate::engine::engine_util_blas::mju_normalize3(res.add(6));
+            return 3;
+        }
+        0
+    }
 }
 
 /// C: boxFace (engine/engine_collision_gjk.c:2002)
@@ -1286,7 +1571,59 @@ pub fn box_edge_normals(res: *mut f64, endverts: *mut f64, dim: i32, obj: *mut m
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn box_face(res: *mut f64, obj: *mut mjCCDObj, idx: i32) -> i32 {
-    todo!() // boxFace
+    // SAFETY: res[12], obj are valid pointers from caller
+    unsafe {
+        let mat = (*obj).mat.as_ptr();
+        let pos = (*obj).pos.as_ptr();
+        let size = (*obj).size.as_ptr();
+
+        // compute global coordinates of the box face and face normal
+        match idx {
+            0 => {  // right
+                globalcoord(res.add(0), mat, pos,  *size.add(0),  *size.add(1),  *size.add(2));
+                globalcoord(res.add(3), mat, pos,  *size.add(0),  *size.add(1), -*size.add(2));
+                globalcoord(res.add(6), mat, pos,  *size.add(0), -*size.add(1), -*size.add(2));
+                globalcoord(res.add(9), mat, pos,  *size.add(0), -*size.add(1),  *size.add(2));
+                4
+            }
+            1 => {  // left
+                globalcoord(res.add(0), mat, pos, -*size.add(0),  *size.add(1), -*size.add(2));
+                globalcoord(res.add(3), mat, pos, -*size.add(0),  *size.add(1),  *size.add(2));
+                globalcoord(res.add(6), mat, pos, -*size.add(0), -*size.add(1),  *size.add(2));
+                globalcoord(res.add(9), mat, pos, -*size.add(0), -*size.add(1), -*size.add(2));
+                4
+            }
+            2 => {  // top
+                globalcoord(res.add(0), mat, pos, -*size.add(0),  *size.add(1), -*size.add(2));
+                globalcoord(res.add(3), mat, pos,  *size.add(0),  *size.add(1), -*size.add(2));
+                globalcoord(res.add(6), mat, pos,  *size.add(0),  *size.add(1),  *size.add(2));
+                globalcoord(res.add(9), mat, pos, -*size.add(0),  *size.add(1),  *size.add(2));
+                4
+            }
+            3 => {  // bottom
+                globalcoord(res.add(0), mat, pos, -*size.add(0), -*size.add(1),  *size.add(2));
+                globalcoord(res.add(3), mat, pos,  *size.add(0), -*size.add(1),  *size.add(2));
+                globalcoord(res.add(6), mat, pos,  *size.add(0), -*size.add(1), -*size.add(2));
+                globalcoord(res.add(9), mat, pos, -*size.add(0), -*size.add(1), -*size.add(2));
+                4
+            }
+            4 => {  // front
+                globalcoord(res.add(0), mat, pos, -*size.add(0),  *size.add(1),  *size.add(2));
+                globalcoord(res.add(3), mat, pos,  *size.add(0),  *size.add(1),  *size.add(2));
+                globalcoord(res.add(6), mat, pos,  *size.add(0), -*size.add(1),  *size.add(2));
+                globalcoord(res.add(9), mat, pos, -*size.add(0), -*size.add(1),  *size.add(2));
+                4
+            }
+            5 => {  // back
+                globalcoord(res.add(0), mat, pos,  *size.add(0),  *size.add(1), -*size.add(2));
+                globalcoord(res.add(3), mat, pos, -*size.add(0),  *size.add(1), -*size.add(2));
+                globalcoord(res.add(6), mat, pos, -*size.add(0), -*size.add(1), -*size.add(2));
+                globalcoord(res.add(9), mat, pos,  *size.add(0), -*size.add(1), -*size.add(2));
+                4
+            }
+            _ => 0,
+        }
+    }
 }
 
 /// C: meshFace (engine/engine_collision_gjk.c:2052)
@@ -1298,7 +1635,45 @@ pub fn box_face(res: *mut f64, obj: *mut mjCCDObj, idx: i32) -> i32 {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mesh_face(res: *mut f64, obj: *mut mjCCDObj, idx: i32) -> i32 {
-    todo!() // meshFace
+    const MJ_MAX_POLYVERT: i32 = 150;
+
+    #[repr(C)]
+    struct MeshData {
+        nvert: i32,
+        mesh_polynum: i32,
+        vert: *const f32,
+        mpolymapadr: *const i32,
+        mpolymapnum: *const i32,
+        polymap: *const i32,
+        polyvertadr: *const i32,
+        polyvertnum: *const i32,
+        polyvert: *const i32,
+        polynormal: *const f64,
+        graph: *const i32,
+    }
+
+    // SAFETY: res points to enough space, obj is a valid mjCCDObj with mesh data
+    unsafe {
+        let mat = (*obj).mat.as_ptr();
+        let pos = (*obj).pos.as_ptr();
+
+        let mesh_ptr = &(*obj).data as *const _ as *const MeshData;
+        let adr = *(*mesh_ptr).polyvertadr.add(idx as usize);
+        let mut nvert = *(*mesh_ptr).polyvertnum.add(idx as usize);
+        if nvert > MJ_MAX_POLYVERT {
+            nvert = MJ_MAX_POLYVERT;
+        }
+        let vert = (*mesh_ptr).vert;
+        let polyvert = (*mesh_ptr).polyvert.add(adr as usize);
+
+        let mut j: i32 = 0;
+        for i in (0..nvert).rev() {
+            let v = vert.add(3 * *polyvert.add(i as usize) as usize);
+            globalcoord(res.add(3 * j as usize), mat, pos, *v.add(0) as f64, *v.add(1) as f64, *v.add(2) as f64);
+            j += 1;
+        }
+        nvert
+    }
 }
 
 /// C: alignedFaces (engine/engine_collision_gjk.c:2072)
