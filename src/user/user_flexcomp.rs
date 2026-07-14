@@ -1,5 +1,5 @@
 //! Port of: user/user_flexcomp.cc
-//! IR hash: 47ee20b2bff3660e
+//! IR hash: 9614bd3d92e7766b
 //! CODEGEN: signatures locked. Only fill todo!() bodies.
 
 use crate::types::*;
@@ -107,13 +107,49 @@ pub fn mj_c_flexcomp_load_gmsh22(self_ptr: *mut mjCFlexcomp, buffer: *mut i8, bi
 /// C: mjCFlexcomp::GridID (user/user_flexcomp.h:73)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_flexcomp_grid_id(self_ptr: *mut mjCFlexcomp, ix: i32, iy: i32) -> i32 {
-    todo!() // mjCFlexcomp::GridID
+    // SAFETY: self_ptr is a valid mjCFlexcomp pointer. count is [i32; 3] stored as [u8; 12].
+    unsafe {
+        let count = (*self_ptr).count.as_ptr() as *const i32;
+        ix * *count.add(1) + iy
+    }
 }
 
 /// C: mjCFlexcomp::BoxID (user/user_flexcomp.h:75)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_flexcomp_box_id(self_ptr: *mut mjCFlexcomp, ix: i32, iy: i32, iz: i32) -> i32 {
-    todo!() // mjCFlexcomp::BoxID
+    // SAFETY: self_ptr is a valid mjCFlexcomp pointer. count is [i32; 3] stored as [u8; 12].
+    unsafe {
+        let count = (*self_ptr).count.as_ptr() as *const i32;
+        let c0 = *count.add(0);
+        let c1 = *count.add(1);
+        let c2 = *count.add(2);
+
+        // side iz=0
+        if iz == 0 {
+            ix * c1 + iy + 1
+        }
+        // side iz=max
+        else if iz == c2 - 1 {
+            c0 * c1 + ix * c1 + iy + 1
+        }
+        // side iy=0
+        else if iy == 0 {
+            2 * c0 * c1 + ix * (c2 - 2) + iz - 1 + 1
+        }
+        // side iy=max
+        else if iy == c1 - 1 {
+            2 * c0 * c1 + c0 * (c2 - 2) + ix * (c2 - 2) + iz - 1 + 1
+        }
+        // side ix=0
+        else if ix == 0 {
+            2 * c0 * c1 + 2 * c0 * (c2 - 2) + (iy - 1) * (c2 - 2) + iz - 1 + 1
+        }
+        // side ix=max
+        else {
+            2 * c0 * c1 + 2 * c0 * (c2 - 2) + (c1 - 2) * (c2 - 2) +
+                (iy - 1) * (c2 - 2) + iz - 1 + 1
+        }
+    }
 }
 
 /// C: mjCFlexcomp::BoxProject (user/user_flexcomp.h:76)

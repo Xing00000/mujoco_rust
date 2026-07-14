@@ -1,5 +1,5 @@
 //! Port of: user/user_api.cc
-//! IR hash: 47ee20b2bff3660e
+//! IR hash: 9614bd3d92e7766b
 //! CODEGEN: signatures locked. Only fill todo!() bodies.
 
 use crate::types::*;
@@ -398,7 +398,17 @@ pub fn mjs_add_default(s: *mut mjSpec, classname: *const i8, parent: *const mjsD
 /// C: mjs_setToMotor (user/user_api.h:175)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjs_set_to_motor(actuator: *mut mjsActuator) -> *const i8 {
-    todo!() // mjs_setToMotor
+    // SAFETY: caller guarantees actuator is a valid pointer to mjsActuator.
+    unsafe {
+        // unit gain
+        (*actuator).gainprm[0] = 1.0;
+
+        // implied parameters
+        std::ptr::write((*actuator).dyntype.as_mut_ptr() as *mut i32, 0);   // mjDYN_NONE
+        std::ptr::write((*actuator).gaintype.as_mut_ptr() as *mut i32, 0);  // mjGAIN_FIXED
+        std::ptr::write((*actuator).biastype.as_mut_ptr() as *mut i32, 0);  // mjBIAS_NONE
+    }
+    b"\0".as_ptr() as *const i8
 }
 
 /// C: mjs_setToPosition (user/user_api.h:178)
@@ -409,7 +419,48 @@ pub fn mjs_set_to_motor(actuator: *mut mjsActuator) -> *const i8 {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjs_set_to_position(actuator: *mut mjsActuator, kp: f64, kv: *mut f64, dampratio: *mut f64, timeconst: *mut f64, inheritrange: f64) -> *const i8 {
-    todo!() // mjs_setToPosition
+    // SAFETY: caller guarantees actuator is valid. kv/dampratio/timeconst may be null.
+    unsafe {
+        (*actuator).gainprm[0] = kp;
+        (*actuator).biasprm[1] = -kp;
+
+        // set biasprm[2]; negative: regular damping, positive: dampratio
+        if !dampratio.is_null() && !kv.is_null() {
+            return b"kv and dampratio cannot both be defined\0".as_ptr() as *const i8;
+        }
+
+        if !kv.is_null() {
+            if *kv < 0.0 {
+                return b"kv cannot be negative\0".as_ptr() as *const i8;
+            }
+            (*actuator).biasprm[2] = -(*kv);
+        }
+        if !dampratio.is_null() {
+            if *dampratio < 0.0 {
+                return b"dampratio cannot be negative\0".as_ptr() as *const i8;
+            }
+            (*actuator).biasprm[2] = *dampratio;
+        }
+        if !timeconst.is_null() {
+            if *timeconst < 0.0 {
+                return b"timeconst cannot be negative\0".as_ptr() as *const i8;
+            }
+            (*actuator).dynprm[0] = *timeconst;
+            let dynval: i32 = if *timeconst == 0.0 { 0 } else { 3 }; // mjDYN_NONE : mjDYN_FILTEREXACT
+            std::ptr::write((*actuator).dyntype.as_mut_ptr() as *mut i32, dynval);
+        }
+        (*actuator).inheritrange = inheritrange;
+
+        if inheritrange > 0.0 {
+            if (*actuator).ctrlrange[0] != 0.0 || (*actuator).ctrlrange[1] != 0.0 {
+                return b"ctrlrange and inheritrange cannot both be defined\0".as_ptr() as *const i8;
+            }
+        }
+
+        std::ptr::write((*actuator).gaintype.as_mut_ptr() as *mut i32, 0);  // mjGAIN_FIXED
+        std::ptr::write((*actuator).biastype.as_mut_ptr() as *mut i32, 1);  // mjBIAS_AFFINE
+    }
+    b"\0".as_ptr() as *const i8
 }
 
 /// C: mjs_setToIntVelocity (user/user_api.h:182)
@@ -421,7 +472,23 @@ pub fn mjs_set_to_position(actuator: *mut mjsActuator, kp: f64, kv: *mut f64, da
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjs_set_to_int_velocity(actuator: *mut mjsActuator, kp: f64, kv: *mut f64, dampratio: *mut f64, timeconst: *mut f64, inheritrange: f64) -> *const i8 {
-    todo!() // mjs_setToIntVelocity
+    // SAFETY: caller guarantees actuator is valid. kv/dampratio/timeconst may be null.
+    unsafe {
+        let err = mjs_set_to_position(actuator, kp, kv, dampratio, timeconst, inheritrange);
+        // mjs_setToPosition returns "" on success, error string on failure
+        // but we ignore its return and always continue (matches C behavior)
+        let _ = err;
+
+        std::ptr::write((*actuator).dyntype.as_mut_ptr() as *mut i32, 1);  // mjDYN_INTEGRATOR
+        (*actuator).actlimited = 1;
+
+        if inheritrange > 0.0 {
+            if (*actuator).actrange[0] != 0.0 || (*actuator).actrange[1] != 0.0 {
+                return b"actrange and inheritrange cannot both be defined\0".as_ptr() as *const i8;
+            }
+        }
+    }
+    b"\0".as_ptr() as *const i8
 }
 
 /// C: mjs_setToVelocity (user/user_api.h:186)
@@ -433,7 +500,16 @@ pub fn mjs_set_to_int_velocity(actuator: *mut mjsActuator, kp: f64, kv: *mut f64
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjs_set_to_velocity(actuator: *mut mjsActuator, kv: f64) -> *const i8 {
-    todo!() // mjs_setToVelocity
+    // SAFETY: caller guarantees actuator is valid.
+    unsafe {
+        crate::user::user_util::mjuu_zerovec((*actuator).biasprm.as_mut_ptr(), 10);  // mjNBIAS
+        (*actuator).gainprm[0] = kv;
+        (*actuator).biasprm[2] = -kv;
+        std::ptr::write((*actuator).dyntype.as_mut_ptr() as *mut i32, 0);   // mjDYN_NONE
+        std::ptr::write((*actuator).gaintype.as_mut_ptr() as *mut i32, 0);  // mjGAIN_FIXED
+        std::ptr::write((*actuator).biastype.as_mut_ptr() as *mut i32, 1);  // mjBIAS_AFFINE
+    }
+    b"\0".as_ptr() as *const i8
 }
 
 /// C: mjs_setToDamper (user/user_api.h:189)
@@ -445,7 +521,23 @@ pub fn mjs_set_to_velocity(actuator: *mut mjsActuator, kv: f64) -> *const i8 {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjs_set_to_damper(actuator: *mut mjsActuator, kv: f64) -> *const i8 {
-    todo!() // mjs_setToDamper
+    // SAFETY: caller guarantees actuator is valid.
+    unsafe {
+        crate::user::user_util::mjuu_zerovec((*actuator).gainprm.as_mut_ptr(), 10);  // mjNGAIN
+        (*actuator).gainprm[2] = -kv;
+        (*actuator).ctrllimited = 1;
+        std::ptr::write((*actuator).dyntype.as_mut_ptr() as *mut i32, 0);   // mjDYN_NONE
+        std::ptr::write((*actuator).gaintype.as_mut_ptr() as *mut i32, 1);  // mjGAIN_AFFINE
+        std::ptr::write((*actuator).biastype.as_mut_ptr() as *mut i32, 0);  // mjBIAS_NONE
+
+        if kv < 0.0 {
+            return b"damping coefficient cannot be negative\0".as_ptr() as *const i8;
+        }
+        if (*actuator).ctrlrange[0] < 0.0 || (*actuator).ctrlrange[1] < 0.0 {
+            return b"damper control range cannot be negative\0".as_ptr() as *const i8;
+        }
+    }
+    b"\0".as_ptr() as *const i8
 }
 
 /// C: mjs_setToCylinder (user/user_api.h:192)
@@ -456,7 +548,19 @@ pub fn mjs_set_to_damper(actuator: *mut mjsActuator, kv: f64) -> *const i8 {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjs_set_to_cylinder(actuator: *mut mjsActuator, timeconst: f64, bias: f64, area: f64, diameter: f64) -> *const i8 {
-    todo!() // mjs_setToCylinder
+    // SAFETY: caller guarantees actuator is valid.
+    unsafe {
+        (*actuator).dynprm[0] = timeconst;
+        (*actuator).biasprm[0] = bias;
+        (*actuator).gainprm[0] = area;
+        if diameter >= 0.0 {
+            (*actuator).gainprm[0] = std::f64::consts::PI / 4.0 * diameter * diameter;
+        }
+        std::ptr::write((*actuator).dyntype.as_mut_ptr() as *mut i32, 2);   // mjDYN_FILTER
+        std::ptr::write((*actuator).gaintype.as_mut_ptr() as *mut i32, 0);  // mjGAIN_FIXED
+        std::ptr::write((*actuator).biastype.as_mut_ptr() as *mut i32, 1);  // mjBIAS_AFFINE
+    }
+    b"\0".as_ptr() as *const i8
 }
 
 /// C: mjs_setToMuscle (user/user_api.h:196)
@@ -467,7 +571,50 @@ pub fn mjs_set_to_cylinder(actuator: *mut mjsActuator, timeconst: f64, bias: f64
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjs_set_to_muscle(actuator: *mut mjsActuator, timeconst: *mut f64, tausmooth: f64, range: *mut f64, force: f64, scale: f64, lmin: f64, lmax: f64, vmax: f64, fpmax: f64, fvmax: f64) -> *const i8 {
-    todo!() // mjs_setToMuscle
+    // SAFETY: caller guarantees actuator is valid. timeconst and range are non-null arrays.
+    unsafe {
+        // set muscle defaults if same as global defaults
+        if (*actuator).dynprm[0] == 1.0 { (*actuator).dynprm[0] = 0.01; }    // tau act
+        if (*actuator).dynprm[1] == 0.0 { (*actuator).dynprm[1] = 0.04; }    // tau deact
+        if (*actuator).gainprm[0] == 1.0 { (*actuator).gainprm[0] = 0.75; }  // range[0]
+        if (*actuator).gainprm[1] == 0.0 { (*actuator).gainprm[1] = 1.05; }  // range[1]
+        if (*actuator).gainprm[2] == 0.0 { (*actuator).gainprm[2] = -1.0; }  // force
+        if (*actuator).gainprm[3] == 0.0 { (*actuator).gainprm[3] = 200.0; } // scale
+        if (*actuator).gainprm[4] == 0.0 { (*actuator).gainprm[4] = 0.5; }   // lmin
+        if (*actuator).gainprm[5] == 0.0 { (*actuator).gainprm[5] = 1.6; }   // lmax
+        if (*actuator).gainprm[6] == 0.0 { (*actuator).gainprm[6] = 1.5; }   // vmax
+        if (*actuator).gainprm[7] == 0.0 { (*actuator).gainprm[7] = 1.3; }   // fpmax
+        if (*actuator).gainprm[8] == 0.0 { (*actuator).gainprm[8] = 1.2; }   // fvmax
+
+        if tausmooth < 0.0 {
+            return b"muscle tausmooth cannot be negative\0".as_ptr() as *const i8;
+        }
+
+        (*actuator).dynprm[2] = tausmooth;
+        if *timeconst.add(0) >= 0.0 { (*actuator).dynprm[0] = *timeconst.add(0); }
+        if *timeconst.add(1) >= 0.0 { (*actuator).dynprm[1] = *timeconst.add(1); }
+        if *range.add(0) >= 0.0 { (*actuator).gainprm[0] = *range.add(0); }
+        if *range.add(1) >= 0.0 { (*actuator).gainprm[1] = *range.add(1); }
+        if force >= 0.0 { (*actuator).gainprm[2] = force; }
+        if scale >= 0.0 { (*actuator).gainprm[3] = scale; }
+        if lmin >= 0.0 { (*actuator).gainprm[4] = lmin; }
+        if lmax >= 0.0 { (*actuator).gainprm[5] = lmax; }
+        if vmax >= 0.0 { (*actuator).gainprm[6] = vmax; }
+        if fpmax >= 0.0 { (*actuator).gainprm[7] = fpmax; }
+        if fvmax >= 0.0 { (*actuator).gainprm[8] = fvmax; }
+
+        // biasprm = gainprm
+        let mut n: i32 = 0;
+        while n < 9 {
+            (*actuator).biasprm[n as usize] = (*actuator).gainprm[n as usize];
+            n += 1;
+        }
+
+        std::ptr::write((*actuator).dyntype.as_mut_ptr() as *mut i32, 4);   // mjDYN_MUSCLE
+        std::ptr::write((*actuator).gaintype.as_mut_ptr() as *mut i32, 2);  // mjGAIN_MUSCLE
+        std::ptr::write((*actuator).biastype.as_mut_ptr() as *mut i32, 2);  // mjBIAS_MUSCLE
+    }
+    b"\0".as_ptr() as *const i8
 }
 
 /// C: mjs_setToAdhesion (user/user_api.h:201)
@@ -478,7 +625,21 @@ pub fn mjs_set_to_muscle(actuator: *mut mjsActuator, timeconst: *mut f64, tausmo
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjs_set_to_adhesion(actuator: *mut mjsActuator, gain: f64) -> *const i8 {
-    todo!() // mjs_setToAdhesion
+    // SAFETY: caller guarantees actuator is valid.
+    unsafe {
+        (*actuator).gainprm[0] = gain;
+        (*actuator).ctrllimited = 1;
+        std::ptr::write((*actuator).gaintype.as_mut_ptr() as *mut i32, 0);  // mjGAIN_FIXED
+        std::ptr::write((*actuator).biastype.as_mut_ptr() as *mut i32, 0);  // mjBIAS_NONE
+
+        if gain < 0.0 {
+            return b"adhesion gain cannot be negative\0".as_ptr() as *const i8;
+        }
+        if (*actuator).ctrlrange[0] < 0.0 || (*actuator).ctrlrange[1] < 0.0 {
+            return b"adhesion control range cannot be negative\0".as_ptr() as *const i8;
+        }
+    }
+    b"\0".as_ptr() as *const i8
 }
 
 /// C: mjs_setToDCMotor (user/user_api.h:204)
@@ -487,7 +648,7 @@ pub fn mjs_set_to_adhesion(actuator: *mut mjsActuator, gain: f64) -> *const i8 {
 ///   2. No f64::mul_add() (FMA changes precision)
 ///   3. No algebraic simplification
 ///   4. No iter().sum()/product() (order undefined)
-#[allow(unused_variables, unused_assignments, non_snake_case)]
+#[allow(unused_variables, non_snake_case)]
 pub fn mjs_set_to_dc_motor(actuator: *mut mjsActuator, motorconst: *mut f64, resistance: f64, nominal: *mut f64, saturation: *mut f64, inductance: *mut f64, cogging: *mut f64, controller: *mut f64, thermal: *mut f64, lugre: *mut f64, input_mode: i32) -> *const i8 {
     // SAFETY: all pointer dereferences follow the C original's null-check pattern.
     // Caller guarantees actuator is valid; optional params are null-checked before access.
@@ -721,7 +882,13 @@ pub fn mjs_make_mesh(mesh: *mut mjsMesh, builtin: u32, params: *mut f64, nparams
 /// C: mjs_getSpec (user/user_api.h:233)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjs_get_spec(element: *const mjsElement) -> *mut mjSpec {
-    todo!() // mjs_getSpec
+    // SAFETY: element is a valid pointer to mjsElement within a mjCBase-derived object.
+    // Accesses mjCBase.model->spec, matching C++ static_cast<const mjCBase*>(element)->model->spec.
+    unsafe {
+        let base = element as *const mjCBase;
+        let model = (*base).model;
+        &mut (*model).spec as *mut mjSpec
+    }
 }
 
 /// C: mjs_getOriginSpec (user/user_api.h:237)
@@ -769,7 +936,25 @@ pub fn mjs_get_parent(element: *const mjsElement) -> *mut mjsBody {
 /// C: mjs_getFrame (user/user_api.h:255)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjs_get_frame(element: *const mjsElement) -> *mut mjsFrame {
-    todo!() // mjs_getFrame
+    // SAFETY: element is a valid mjsElement pointer embedded in a mjCBase-derived object.
+    // The cast mirrors C++ static_cast<const mjCBase*>(element).
+    unsafe {
+        let elemtype = *(element as *const i32);
+        match elemtype {
+            1 | 100 | 3 | 5 | 6 | 7 | 8 => {
+                // mjOBJ_BODY=1, mjOBJ_FRAME=100, mjOBJ_JOINT=3, mjOBJ_GEOM=5,
+                // mjOBJ_SITE=6, mjOBJ_CAMERA=7, mjOBJ_LIGHT=8
+                let base = element as *const mjCBase;
+                let frame = (*base).frame;
+                if frame.is_null() {
+                    std::ptr::null_mut()
+                } else {
+                    &mut (*frame).spec as *mut mjsFrame
+                }
+            }
+            _ => std::ptr::null_mut(),
+        }
+    }
 }
 
 /// C: mjs_findFrame (user/user_api.h:258)
@@ -802,7 +987,13 @@ pub fn mjs_get_spec_default(s: *const mjSpec) -> *mut mjsDefault {
 /// C: mjs_getId (user/user_api.h:270)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjs_get_id(element: *const mjsElement) -> i32 {
-    todo!() // mjs_getId
+    // SAFETY: element is a valid mjsElement pointer embedded in a mjCBase-derived object.
+    unsafe {
+        if element.is_null() {
+            return -1;
+        }
+        (*(element as *const mjCBase)).id
+    }
 }
 
 /// C: mjs_firstChild (user/user_api.h:276)
@@ -1420,7 +1611,17 @@ pub fn mjs_set_plugin_attributes(plugin: *mut mjsPlugin, attributes: *mut ()) {
 /// C: mjs_getName (user/user_api.h:415)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjs_get_name(element: *mut mjsElement) -> *mut mjString {
-    todo!() // mjs_getName
+    // SAFETY: element is a valid mjsElement pointer. Cast mirrors C++ static_cast.
+    unsafe {
+        let elemtype = *(element as *const i32);
+        if elemtype == 101 {
+            // mjOBJ_DEFAULT: cast to mjCDef, return &name
+            &mut (*(element as *mut mjCDef)).name as *mut std__string as *mut mjString
+        } else {
+            // all others: cast to mjCBase, return &name
+            &mut (*(element as *mut mjCBase)).name as *mut std__string as *mut mjString
+        }
+    }
 }
 
 /// C: mjs_getString (user/user_api.h:418)
@@ -1457,13 +1658,18 @@ pub fn mjs_get_wrap(tendonspec: *const mjsTendon, i: i32) -> *mut mjsWrap {
 /// C: mjs_getPluginAttributes (user/user_api.h:429)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjs_get_plugin_attributes(plugin: *const mjsPlugin) -> *const () {
-    todo!() // mjs_getPluginAttributes
+    // SAFETY: plugin is valid; plugin->element points to a mjCPlugin object.
+    // Returns &pluginC->config_attribs (pointer to the config_attribs field).
+    unsafe {
+        let pluginC = (*plugin).element as *const mjCPlugin;
+        &(*pluginC).config_attribs as *const _ as *const ()
+    }
 }
 
 /// C: mjs_isAuthored (user/user_api.h:435)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjs_is_authored(elem_ptr: *const (), field_ptr: *const ()) -> i32 {
-    todo!() // mjs_isAuthored
+    todo!("mjs_isAuthored requires X-macro field enumeration not available in Rust port")
 }
 
 /// C: mjs_setAuthored (user/user_api.h:438)
