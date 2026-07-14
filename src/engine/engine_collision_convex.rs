@@ -7,7 +7,13 @@ use crate::types::*;
 /// C: prism_firstdir (engine/engine_collision_convex.c:47)
 #[allow(unused_variables, non_snake_case)]
 pub fn prism_firstdir(o1: *const (), o2: *const (), vec: *mut ccd_vec3_t) {
-    todo!() // prism_firstdir
+    // SAFETY: caller guarantees vec points to valid ccd_vec3_t (holds 3 f64 = 24 bytes)
+    unsafe {
+        let v = vec as *mut f64;
+        *v.add(0) = 0.0;
+        *v.add(1) = 0.0;
+        *v.add(2) = 1.0;
+    }
 }
 
 /// C: _libccd_wrapper (engine/engine_collision_convex.c:52)
@@ -42,7 +48,12 @@ pub fn mjc_penetration(m: *const mjModel, d: *mut mjData, obj1: *mut mjCCDObj, o
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mul_mat_t_vec3(res: *mut f64, mat: *const f64, dir: *const f64) {
-    todo!() // mulMatTVec3
+    // SAFETY: caller guarantees res[3], mat[9], dir[3] are valid
+    unsafe {
+        *res.add(0) = *mat.add(0) * *dir.add(0) + *mat.add(3) * *dir.add(1) + *mat.add(6) * *dir.add(2);
+        *res.add(1) = *mat.add(1) * *dir.add(0) + *mat.add(4) * *dir.add(1) + *mat.add(7) * *dir.add(2);
+        *res.add(2) = *mat.add(2) * *dir.add(0) + *mat.add(5) * *dir.add(1) + *mat.add(8) * *dir.add(2);
+    }
 }
 
 /// C: localToGlobal (engine/engine_collision_convex.c:183)
@@ -279,7 +290,71 @@ pub fn mjc_ellipsoid_inside(nrm: *mut f64, pos: *const f64, size: *const f64) ->
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjc_ellipsoid_outside(nrm: *mut f64, pos: *const f64, size: *const f64) -> i32 {
-    todo!() // mjc_ellipsoidOutside
+    const MJ_MINVAL: f64 = 1E-15_f64;
+
+    // SAFETY: caller guarantees nrm[3], pos[3], size[3] are valid
+    unsafe {
+        // algorithm constants
+        let maxiter: i32 = 30;
+        let tolerance: f64 = 1e-6;
+
+        // precompute quantities
+        let S2: [f64; 3] = [
+            *size.add(0) * *size.add(0),
+            *size.add(1) * *size.add(1),
+            *size.add(2) * *size.add(2),
+        ];
+        let PS2: [f64; 3] = [
+            *pos.add(0) * *pos.add(0) * S2[0],
+            *pos.add(1) * *pos.add(1) * S2[1],
+            *pos.add(2) * *pos.add(2) * S2[2],
+        ];
+
+        // main iteration
+        let mut la: f64 = 0.0;
+        let mut iter: i32 = 0;
+        while iter < maxiter {
+            // precompute 1/(s^2+la)
+            let R: [f64; 3] = [
+                1.0 / (S2[0] + la),
+                1.0 / (S2[1] + la),
+                1.0 / (S2[2] + la),
+            ];
+
+            // value
+            let val = PS2[0] * R[0] * R[0] + PS2[1] * R[1] * R[1] + PS2[2] * R[2] * R[2] - 1.0;
+            if val < tolerance {
+                break;
+            }
+
+            // derivative
+            let deriv = -2.0
+                * (PS2[0] * R[0] * R[0] * R[0]
+                    + PS2[1] * R[1] * R[1] * R[1]
+                    + PS2[2] * R[2] * R[2] * R[2]);
+            if deriv > -MJ_MINVAL {
+                break;
+            }
+
+            // delta
+            let delta = -val / deriv;
+            if delta < tolerance {
+                break;
+            }
+
+            // update
+            la += delta;
+            iter += 1;
+        }
+
+        // compute normal given lambda
+        *nrm.add(0) = *pos.add(0) / (S2[0] + la);
+        *nrm.add(1) = *pos.add(1) / (S2[1] + la);
+        *nrm.add(2) = *pos.add(2) / (S2[2] + la);
+        crate::engine::engine_util_blas::mju_normalize3(nrm);
+
+        1
+    }
 }
 
 /// C: mjc_initCCDObj (engine/engine_collision_convex.h:94)

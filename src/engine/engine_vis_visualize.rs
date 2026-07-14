@@ -146,7 +146,48 @@ pub fn add_triangle(scn: *mut mjvScene, v0: *const f64, v1: *const f64, v2: *con
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn set_material(m: *const mjModel, geom: *mut mjvGeom, matid: i32, rgba: *const f32, flags: *const u8) {
-    todo!() // setMaterial
+    const mjVIS_TEXTURE: usize = 1;
+    const mjVIS_TRANSPARENT: usize = 18;
+    const mjCAT_DYNAMIC: i32 = 2;
+
+    // SAFETY: caller guarantees m, geom, rgba, flags are valid pointers
+    unsafe {
+        // set material properties if given
+        if matid >= 0 {
+            f2f(
+                (*geom).rgba.as_mut_ptr(),
+                (*m).mat_rgba.add(4 * matid as usize),
+                4,
+            );
+            (*geom).emission = *(*m).mat_emission.add(matid as usize);
+            (*geom).specular = *(*m).mat_specular.add(matid as usize);
+            (*geom).shininess = *(*m).mat_shininess.add(matid as usize);
+            (*geom).reflectance = *(*m).mat_reflectance.add(matid as usize);
+        }
+
+        // use rgba if different from default, or no material given
+        if *rgba.add(0) != 0.5f32
+            || *rgba.add(1) != 0.5f32
+            || *rgba.add(2) != 0.5f32
+            || *rgba.add(3) != 1.0f32
+            || matid < 0
+        {
+            f2f((*geom).rgba.as_mut_ptr(), rgba, 4);
+        }
+
+        // set texture
+        if *flags.add(mjVIS_TEXTURE) != 0 && matid >= 0 {
+            (*geom).matid = matid;
+        }
+
+        // scale alpha for dynamic geoms only
+        if *flags.add(mjVIS_TRANSPARENT) != 0 && (*geom).category == mjCAT_DYNAMIC {
+            // alpha is at offset 16 in map (5th float: stiffness, stiffnessrot, force, torque, alpha)
+            let map_ptr = (*m).vis.map.as_ptr() as *const f32;
+            let alpha = *map_ptr.add(4);
+            (*geom).rgba[3] *= alpha;
+        }
+    }
 }
 
 /// C: addConnector (engine/engine_vis_visualize.c:296)
@@ -164,7 +205,13 @@ pub fn add_connector(scn: *mut mjvScene, r#type: i32, width: f64, from: *const f
 /// C: markselected (engine/engine_vis_visualize.c:393)
 #[allow(unused_variables, non_snake_case)]
 pub fn markselected(vis: *const mjVisual, geom: *mut mjvGeom) {
-    todo!() // markselected
+    // SAFETY: caller guarantees vis and geom are valid pointers
+    // glow is at byte offset 28 in global (7th field: cameraid, orthographic, fovy, ipd, azimuth, elevation, linewidth, glow)
+    unsafe {
+        let global_ptr = (*vis).global.as_ptr();
+        let glow = *(global_ptr.add(28) as *const f32);
+        (*geom).emission += glow;
+    }
 }
 
 /// C: addFrame (engine/engine_vis_visualize.c:400)
@@ -501,7 +548,60 @@ pub fn add_normal(vertnorm: *mut f64, vertxpos: *const f64, i0: i32, i1: i32, i2
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn make_smooth(_face: *mut f32, _normal: *mut f32, radius: f64, flg_flat: u8, vertnorm: *const f64, vertxpos: *const f64, nface: i32, i0: i32, i1: i32, i2: i32) {
-    todo!() // makeSmooth
+    // SAFETY: caller guarantees _face, _normal have 9*(nface+1) elements;
+    //         vertnorm and vertxpos have at least 3*max(i0,i1,i2)+3 elements
+    unsafe {
+        let face = _face.add(9 * nface as usize);
+        let normal = _normal.add(9 * nface as usize);
+        let ind: [i32; 3] = [i0, i1, i2];
+        let sign: f64 = if radius > 0.0 { 1.0 } else { -1.0 };
+
+        // flat shading
+        if flg_flat != 0 {
+            // compute face normal
+            let v0 = vertxpos.add(3 * i0 as usize);
+            let v1 = vertxpos.add(3 * i1 as usize);
+            let v2 = vertxpos.add(3 * i2 as usize);
+            let v01: [f64; 3] = [
+                *v1.add(0) - *v0.add(0),
+                *v1.add(1) - *v0.add(1),
+                *v1.add(2) - *v0.add(2),
+            ];
+            let v02: [f64; 3] = [
+                *v2.add(0) - *v0.add(0),
+                *v2.add(1) - *v0.add(1),
+                *v2.add(2) - *v0.add(2),
+            ];
+            let mut nrm: [f64; 3] = [0.0; 3];
+            crate::engine::engine_util_spatial::mju_cross(nrm.as_mut_ptr(), v01.as_ptr(), v02.as_ptr());
+            crate::engine::engine_util_blas::mju_normalize3(nrm.as_mut_ptr());
+
+            // set all vertex normals equal to face normal
+            for k in 0..3 {
+                *normal.add(3 * k + 0) = (sign * nrm[0]) as f32;
+                *normal.add(3 * k + 1) = (sign * nrm[1]) as f32;
+                *normal.add(3 * k + 2) = (sign * nrm[2]) as f32;
+            }
+        }
+        // smooth shading
+        else {
+            for k in 0..3 {
+                *normal.add(3 * k + 0) = (sign * *vertnorm.add(3 * ind[k] as usize + 0)) as f32;
+                *normal.add(3 * k + 1) = (sign * *vertnorm.add(3 * ind[k] as usize + 1)) as f32;
+                *normal.add(3 * k + 2) = (sign * *vertnorm.add(3 * ind[k] as usize + 2)) as f32;
+            }
+        }
+
+        // set positions: vertices offset by radius*normal
+        for k in 0..3 {
+            *face.add(3 * k + 0) = (*vertxpos.add(3 * ind[k] as usize + 0)
+                + radius * *vertnorm.add(3 * ind[k] as usize + 0)) as f32;
+            *face.add(3 * k + 1) = (*vertxpos.add(3 * ind[k] as usize + 1)
+                + radius * *vertnorm.add(3 * ind[k] as usize + 1)) as f32;
+            *face.add(3 * k + 2) = (*vertxpos.add(3 * ind[k] as usize + 2)
+                + radius * *vertnorm.add(3 * ind[k] as usize + 2)) as f32;
+        }
+    }
 }
 
 /// C: makeSide (engine/engine_vis_visualize.c:3123)
@@ -513,7 +613,46 @@ pub fn make_smooth(_face: *mut f32, _normal: *mut f32, radius: f64, flg_flat: u8
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn make_side(_face: *mut f32, _normal: *mut f32, radius: f64, vertnorm: *const f64, vertxpos: *const f64, nface: i32, i0: i32, i1: i32) {
-    todo!() // makeSide
+    // SAFETY: caller guarantees _face, _normal have 9*(nface+1) elements;
+    //         vertnorm and vertxpos have at least 3*max(i0,i1)+3 elements
+    unsafe {
+        let face = _face.add(9 * nface as usize);
+        let normal = _normal.add(9 * nface as usize);
+
+        // compute normal
+        let v0 = vertxpos.add(3 * i0 as usize);
+        let v1 = vertxpos.add(3 * i1 as usize);
+        let v01: [f64; 3] = [
+            *v1.add(0) - *v0.add(0),
+            *v1.add(1) - *v0.add(1),
+            *v1.add(2) - *v0.add(2),
+        ];
+        let mut nrm: [f64; 3] = [0.0; 3];
+        crate::engine::engine_util_spatial::mju_cross(nrm.as_mut_ptr(), v01.as_ptr(), vertnorm.add(3 * i1 as usize));
+        if radius < 0.0 {
+            crate::engine::engine_util_blas::mju_scl3(nrm.as_mut_ptr(), nrm.as_ptr(), -1.0);
+        }
+        crate::engine::engine_util_blas::mju_normalize3(nrm.as_mut_ptr());
+
+        // set normals
+        for k in 0..3 {
+            *normal.add(3 * k + 0) = nrm[0] as f32;
+            *normal.add(3 * k + 1) = nrm[1] as f32;
+            *normal.add(3 * k + 2) = nrm[2] as f32;
+        }
+
+        // set positions
+        let ind: [i32; 3] = [i0, i1, i1];
+        for k in 0..3 {
+            let sign: f64 = if k == 1 { -1.0 } else { 1.0 };
+            *face.add(3 * k + 0) = (*vertxpos.add(3 * ind[k] as usize + 0)
+                + sign * radius * *vertnorm.add(3 * ind[k] as usize + 0)) as f32;
+            *face.add(3 * k + 1) = (*vertxpos.add(3 * ind[k] as usize + 1)
+                + sign * radius * *vertnorm.add(3 * ind[k] as usize + 1)) as f32;
+            *face.add(3 * k + 2) = (*vertxpos.add(3 * ind[k] as usize + 2)
+                + sign * radius * *vertnorm.add(3 * ind[k] as usize + 2)) as f32;
+        }
+    }
 }
 
 /// C: copyTex (engine/engine_vis_visualize.c:3159)

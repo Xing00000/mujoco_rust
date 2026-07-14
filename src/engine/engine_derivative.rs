@@ -425,7 +425,54 @@ pub fn add_jtbj_sparse(m: *const mjModel, d: *mut mjData, J: *const f64, B: *con
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjd_muscle_gain_vel(len: f64, vel: f64, lengthrange: *const f64, acc0: f64, prm: *const f64) -> f64 {
-    todo!() // mjd_muscleGain_vel
+    const MJ_MINVAL: f64 = 1E-15_f64;
+
+    // SAFETY: caller guarantees lengthrange[2], prm[9] are valid
+    unsafe {
+        // unpack parameters
+        let range0 = *prm.add(0);
+        let range1 = *prm.add(1);
+        let mut force = *prm.add(2);
+        let scale = *prm.add(3);
+        let lmin = *prm.add(4);
+        let lmax = *prm.add(5);
+        let vmax = *prm.add(6);
+        let fvmax = *prm.add(8);
+
+        // scale force if negative
+        if force < 0.0 {
+            force = scale / crate::engine::engine_util_misc::mju_max(MJ_MINVAL, acc0);
+        }
+
+        // optimum length
+        let L0 = (*lengthrange.add(1) - *lengthrange.add(0))
+            / crate::engine::engine_util_misc::mju_max(MJ_MINVAL, range1 - range0);
+
+        // normalized length and velocity
+        let L = range0 + (len - *lengthrange.add(0))
+            / crate::engine::engine_util_misc::mju_max(MJ_MINVAL, L0);
+        let V = vel / crate::engine::engine_util_misc::mju_max(MJ_MINVAL, L0 * vmax);
+
+        // length curve
+        let FL = crate::engine::engine_util_misc::mju_muscle_gain_length(L, lmin, lmax);
+
+        // velocity curve derivative
+        let dFV: f64;
+        let y = fvmax - 1.0;
+        if V <= -1.0 {
+            dFV = 0.0;
+        } else if V <= 0.0 {
+            dFV = 2.0 * V + 2.0;
+        } else if V <= y {
+            dFV = (-2.0 * V + 2.0 * y)
+                / crate::engine::engine_util_misc::mju_max(MJ_MINVAL, y);
+        } else {
+            dFV = 0.0;
+        }
+
+        // compute FVL and scale, make it negative
+        -force * FL * dFV / crate::engine::engine_util_misc::mju_max(MJ_MINVAL, L0 * vmax)
+    }
 }
 
 /// C: addJTBJ_mulSparse (engine/engine_derivative.c:832)
@@ -576,7 +623,77 @@ pub fn mjd_added_mass_forces(B: *mut f64, local_vels: *const f64, fluid_density:
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjd_viscous_torque(D: *mut f64, lvel: *const f64, fluid_density: f64, fluid_viscosity: f64, size: *const f64, slender_drag_coef: f64, ang_drag_coef: f64) {
-    todo!() // mjd_viscous_torque
+    const MJ_PI: f64 = 3.14159265358979323846_f64;
+    const MJ_MINVAL: f64 = 1E-15_f64;
+
+    // SAFETY: caller guarantees D[9], lvel[6], size[3] are valid
+    unsafe {
+        let d_max = crate::engine::engine_util_misc::mju_max(
+            crate::engine::engine_util_misc::mju_max(*size.add(0), *size.add(1)),
+            *size.add(2),
+        );
+        let d_min = crate::engine::engine_util_misc::mju_min(
+            crate::engine::engine_util_misc::mju_min(*size.add(0), *size.add(1)),
+            *size.add(2),
+        );
+        let d_mid = *size.add(0) + *size.add(1) + *size.add(2) - d_max - d_min;
+
+        // viscous force and torque in Stokes flow
+        let eq_sphere_D = 2.0 / 3.0 * (*size.add(0) + *size.add(1) + *size.add(2));
+        let lin_visc_torq_coef = MJ_PI * eq_sphere_D * eq_sphere_D * eq_sphere_D;
+
+        // moments of inertia used to compute angular quadratic drag
+        let I_max = 8.0 / 15.0 * MJ_PI * d_mid * (d_max * d_max) * (d_max * d_max);
+        let II: [f64; 3] = [
+            ellipsoid_max_moment(size, 0),
+            ellipsoid_max_moment(size, 1),
+            ellipsoid_max_moment(size, 2),
+        ];
+
+        let x = *lvel.add(0);
+        let y = *lvel.add(1);
+        let z = *lvel.add(2);
+
+        let mom_coef: [f64; 3] = [
+            ang_drag_coef * II[0] + slender_drag_coef * (I_max - II[0]),
+            ang_drag_coef * II[1] + slender_drag_coef * (I_max - II[1]),
+            ang_drag_coef * II[2] + slender_drag_coef * (I_max - II[2]),
+        ];
+
+        let mom_visc: [f64; 3] = [
+            x * mom_coef[0],
+            y * mom_coef[1],
+            z * mom_coef[2],
+        ];
+
+        let density = fluid_density
+            / crate::engine::engine_util_misc::mju_max(
+                MJ_MINVAL,
+                crate::engine::engine_util_blas::mju_norm3(mom_visc.as_ptr()),
+            );
+
+        // -density * [x, y, z] * mom_coef^2
+        let mom_sq: [f64; 3] = [
+            -density * x * mom_coef[0] * mom_coef[0],
+            -density * y * mom_coef[1] * mom_coef[1],
+            -density * z * mom_coef[2] * mom_coef[2],
+        ];
+        let lin_coef = fluid_viscosity * lin_visc_torq_coef;
+
+        // initialize
+        crate::engine::engine_util_blas::mju_zero(D, 9);
+
+        // set diagonal
+        let diag = x * mom_sq[0] + y * mom_sq[1] + z * mom_sq[2] - lin_coef;
+        *D.add(0) = diag;
+        *D.add(4) = diag;
+        *D.add(8) = diag;
+
+        // add outer product
+        crate::engine::engine_util_blas::mju_add_to_scl3(D, mom_sq.as_ptr(), x);
+        crate::engine::engine_util_blas::mju_add_to_scl3(D.add(3), mom_sq.as_ptr(), y);
+        crate::engine::engine_util_blas::mju_add_to_scl3(D.add(6), mom_sq.as_ptr(), z);
+    }
 }
 
 /// C: mjd_viscous_drag (engine/engine_derivative.c:1469)
@@ -588,7 +705,98 @@ pub fn mjd_viscous_torque(D: *mut f64, lvel: *const f64, fluid_density: f64, flu
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjd_viscous_drag(D: *mut f64, lvel: *const f64, fluid_density: f64, fluid_viscosity: f64, size: *const f64, blunt_drag_coef: f64, slender_drag_coef: f64) {
-    todo!() // mjd_viscous_drag
+    const MJ_PI: f64 = 3.14159265358979323846_f64;
+    const MJ_MINVAL: f64 = 1E-15_f64;
+
+    // SAFETY: caller guarantees D[9], lvel[6], size[3] are valid
+    unsafe {
+        let d_max = crate::engine::engine_util_misc::mju_max(
+            crate::engine::engine_util_misc::mju_max(*size.add(0), *size.add(1)),
+            *size.add(2),
+        );
+        let d_min = crate::engine::engine_util_misc::mju_min(
+            crate::engine::engine_util_misc::mju_min(*size.add(0), *size.add(1)),
+            *size.add(2),
+        );
+        let d_mid = *size.add(0) + *size.add(1) + *size.add(2) - d_max - d_min;
+
+        let eq_sphere_D = 2.0 / 3.0 * (*size.add(0) + *size.add(1) + *size.add(2));
+        let A_max = MJ_PI * d_max * d_mid;
+
+        let a = pow2(*size.add(1) * *size.add(2));
+        let b = pow2(*size.add(2) * *size.add(0));
+        let c = pow2(*size.add(0) * *size.add(1));
+        let aa = a * a;
+        let bb = b * b;
+        let cc = c * c;
+
+        let x = *lvel.add(3);
+        let y = *lvel.add(4);
+        let z = *lvel.add(5);
+        let xx = x * x;
+        let yy = y * y;
+        let zz = z * z;
+        let xy = x * y;
+        let yz = y * z;
+        let xz = x * z;
+
+        let proj_denom = aa * xx + bb * yy + cc * zz;
+        let proj_num = a * xx + b * yy + c * zz;
+        let dA_coef = MJ_PI
+            / crate::engine::engine_util_misc::mju_max(
+                MJ_MINVAL,
+                f64::sqrt(proj_num * proj_num * proj_num * proj_denom),
+            );
+
+        let A_proj = MJ_PI
+            * f64::sqrt(
+                proj_denom / crate::engine::engine_util_misc::mju_max(MJ_MINVAL, proj_num),
+            );
+
+        let norm = f64::sqrt(xx + yy + zz);
+        let inv_norm = 1.0 / crate::engine::engine_util_misc::mju_max(MJ_MINVAL, norm);
+
+        let lin_coef = fluid_viscosity * 3.0 * MJ_PI * eq_sphere_D;
+        let quad_coef = fluid_density
+            * (A_proj * blunt_drag_coef + slender_drag_coef * (A_max - A_proj));
+        let Aproj_coef = fluid_density * norm * (blunt_drag_coef - slender_drag_coef);
+
+        let dAproj_dv: [f64; 3] = [
+            Aproj_coef * dA_coef * a * x * (b * yy * (a - b) + c * zz * (a - c)),
+            Aproj_coef * dA_coef * b * y * (a * xx * (b - a) + c * zz * (b - c)),
+            Aproj_coef * dA_coef * c * z * (a * xx * (c - a) + b * yy * (c - b)),
+        ];
+
+        // outer product
+        *D.add(0) = xx;
+        *D.add(1) = xy;
+        *D.add(2) = xz;
+        *D.add(3) = xy;
+        *D.add(4) = yy;
+        *D.add(5) = yz;
+        *D.add(6) = xz;
+        *D.add(7) = yz;
+        *D.add(8) = zz;
+
+        // diag(D) += dot([x y z], [x y z])
+        let inner = xx + yy + zz;
+        *D.add(0) += inner;
+        *D.add(4) += inner;
+        *D.add(8) += inner;
+
+        // scale by -quad_coef*inv_norm
+        crate::engine::engine_util_blas::mju_scl(D, D as *const f64, -quad_coef * inv_norm, 9);
+
+        // D += outer_product(-[x y z], dAproj_dv)
+        crate::engine::engine_util_blas::mju_add_to_scl3(D.add(0), dAproj_dv.as_ptr(), -x);
+        crate::engine::engine_util_blas::mju_add_to_scl3(D.add(3), dAproj_dv.as_ptr(), -y);
+        crate::engine::engine_util_blas::mju_add_to_scl3(D.add(6), dAproj_dv.as_ptr(), -z);
+
+        // diag(D) -= lin_coef
+        *D.add(0) -= lin_coef;
+        *D.add(4) -= lin_coef;
+        *D.add(8) -= lin_coef;
+    }
 }
 
 /// C: mjd_kutta_lift (engine/engine_derivative.c:1536)
@@ -600,7 +808,80 @@ pub fn mjd_viscous_drag(D: *mut f64, lvel: *const f64, fluid_density: f64, fluid
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjd_kutta_lift(D: *mut f64, lvel: *const f64, fluid_density: f64, size: *const f64, kutta_lift_coef: f64) {
-    todo!() // mjd_kutta_lift
+    const MJ_PI: f64 = 3.14159265358979323846_f64;
+    const MJ_MINVAL: f64 = 1E-15_f64;
+
+    // SAFETY: caller guarantees D[9], lvel[6], size[3] are valid
+    unsafe {
+        let a = pow2(*size.add(1) * *size.add(2));
+        let b = pow2(*size.add(2) * *size.add(0));
+        let c = pow2(*size.add(0) * *size.add(1));
+        let aa = a * a;
+        let bb = b * b;
+        let cc = c * c;
+        let x = *lvel.add(3);
+        let y = *lvel.add(4);
+        let z = *lvel.add(5);
+        let xx = x * x;
+        let yy = y * y;
+        let zz = z * z;
+        let xy = x * y;
+        let yz = y * z;
+        let xz = x * z;
+
+        let proj_denom = aa * xx + bb * yy + cc * zz;
+        let proj_num = a * xx + b * yy + c * zz;
+        let norm2 = xx + yy + zz;
+        let df_denom = MJ_PI * kutta_lift_coef * fluid_density
+            / crate::engine::engine_util_misc::mju_max(
+                MJ_MINVAL,
+                f64::sqrt(proj_denom * proj_num * norm2),
+            );
+
+        let dfx_coef = yy * (a - b) + zz * (a - c);
+        let dfy_coef = xx * (b - a) + zz * (b - c);
+        let dfz_coef = xx * (c - a) + yy * (c - b);
+        let proj_term = proj_num
+            / crate::engine::engine_util_misc::mju_max(MJ_MINVAL, proj_denom);
+        let cos_term = proj_num
+            / crate::engine::engine_util_misc::mju_max(MJ_MINVAL, norm2);
+
+        *D.add(0) = a - a;
+        *D.add(1) = b - a;
+        *D.add(2) = c - a;
+        *D.add(3) = a - b;
+        *D.add(4) = b - b;
+        *D.add(5) = c - b;
+        *D.add(6) = a - c;
+        *D.add(7) = b - c;
+        *D.add(8) = c - c;
+        crate::engine::engine_util_blas::mju_scl(D, D as *const f64, 2.0 * proj_num, 9);
+
+        let inner_term: [f64; 3] = [
+            aa * proj_term - a + cos_term,
+            bb * proj_term - b + cos_term,
+            cc * proj_term - c + cos_term,
+        ];
+        crate::engine::engine_util_blas::mju_add_to_scl3(D.add(0), inner_term.as_ptr(), dfx_coef);
+        crate::engine::engine_util_blas::mju_add_to_scl3(D.add(3), inner_term.as_ptr(), dfy_coef);
+        crate::engine::engine_util_blas::mju_add_to_scl3(D.add(6), inner_term.as_ptr(), dfz_coef);
+
+        *D.add(0) *= xx;
+        *D.add(1) *= xy;
+        *D.add(2) *= xz;
+        *D.add(3) *= xy;
+        *D.add(4) *= yy;
+        *D.add(5) *= yz;
+        *D.add(6) *= xz;
+        *D.add(7) *= yz;
+        *D.add(8) *= zz;
+
+        *D.add(0) -= dfx_coef * proj_num;
+        *D.add(4) -= dfy_coef * proj_num;
+        *D.add(8) -= dfz_coef * proj_num;
+
+        crate::engine::engine_util_blas::mju_scl(D, D as *const f64, df_denom, 9);
+    }
 }
 
 /// C: mjd_magnus_force (engine/engine_derivative.c:1589)
@@ -612,7 +893,36 @@ pub fn mjd_kutta_lift(D: *mut f64, lvel: *const f64, fluid_density: f64, size: *
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjd_magnus_force(B: *mut f64, lvel: *const f64, fluid_density: f64, size: *const f64, magnus_lift_coef: f64) {
-    todo!() // mjd_magnus_force
+    const MJ_PI: f64 = 3.14159265358979323846_f64;
+
+    // SAFETY: caller guarantees B[36], lvel[6], size[3] are valid
+    unsafe {
+        let volume = 4.0 / 3.0 * MJ_PI * *size.add(0) * *size.add(1) * *size.add(2);
+
+        // magnus_coef = magnus_lift_coef * fluid_density * volume
+        let magnus_coef = magnus_lift_coef * fluid_density * volume;
+
+        let mut D_lin: [f64; 9] = [0.0; 9];
+        let mut D_ang: [f64; 9] = [0.0; 9];
+
+        // premultiply by magnus_coef
+        let lin_vel: [f64; 3] = [
+            magnus_coef * *lvel.add(3),
+            magnus_coef * *lvel.add(4),
+            magnus_coef * *lvel.add(5),
+        ];
+        let ang_vel: [f64; 3] = [
+            magnus_coef * *lvel.add(0),
+            magnus_coef * *lvel.add(1),
+            magnus_coef * *lvel.add(2),
+        ];
+
+        // force[3:] += magnus_coef * cross(ang_vel, lin_vel)
+        mjd_cross(ang_vel.as_ptr(), lin_vel.as_ptr(), D_ang.as_mut_ptr(), D_lin.as_mut_ptr());
+
+        add_to_quadrant(B, D_ang.as_ptr(), 1, 0);
+        add_to_quadrant(B, D_lin.as_ptr(), 1, 1);
+    }
 }
 
 /// C: mjd_ellipsoidFluid (engine/engine_derivative.c:1618)

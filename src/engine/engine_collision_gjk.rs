@@ -329,7 +329,13 @@ pub fn s1d(lambda: *mut f64, s1: *const f64, s2: *const f64) {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn gjk_support(v: *mut Vertex, obj1: *mut mjCCDObj, obj2: *mut mjCCDObj, x_k: *const f64, x_norm: f64) {
-    todo!() // gjkSupport
+    let mut dir: [f64; 3] = [0.0; 3];
+    let mut dir_neg: [f64; 3] = [0.0; 3];
+
+    // mjc_support requires a normalized direction
+    scl3(dir_neg.as_mut_ptr(), x_k, 1.0 / x_norm);
+    scl3(dir.as_mut_ptr(), dir_neg.as_ptr(), -1.0);
+    support(v, obj1, obj2, dir.as_ptr(), dir_neg.as_ptr());
 }
 
 /// C: lincomb (engine/engine_collision_gjk.c:70)
@@ -395,7 +401,82 @@ pub fn insert_vertex(pt: *mut Polytope, v: *const Vertex) -> i32 {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn attach_face(pt: *mut Polytope, v1: i32, v2: i32, v3: i32, adj1: i32, adj2: i32, adj3: i32) -> f64 {
-    todo!() // attachFace
+    // Polytope layout (C struct):
+    //   Vertex* verts;    offset 0
+    //   int nverts;       offset 8
+    //   Face* faces;      offset 16 (ptr aligned)
+    //   int nfaces;       offset 24
+    //   int maxfaces;     offset 28
+    //   mjtNum center[3]; offset 32
+    //   Face** map;       offset 56
+    //   int nmap;         offset 64
+    //
+    // Face layout (C struct, 56 bytes):
+    //   int verts;        offset 0
+    //   int adj[3];       offset 4
+    //   mjtNum v[3];      offset 16 (aligned to 8)
+    //   mjtNum dist2;     offset 40
+    //   int index;        offset 48
+    //
+    // Vertex layout (80 bytes):
+    //   mjtNum vert[3];   offset 0
+    //   mjtNum vert1[3];  offset 24
+    //   mjtNum vert2[3];  offset 48
+    //   int index1;       offset 72
+    //   int index2;       offset 76
+
+    const SIZEOF_FACE: usize = 56;
+    const SIZEOF_VERTEX: usize = 80;
+
+    // SAFETY: pt is a valid Polytope pointer. All field accesses follow the known C struct layout.
+    unsafe {
+        let pt_base = pt as *mut u8;
+        let verts_ptr = *(pt_base as *const *mut u8);                    // offset 0: Vertex*
+        let faces_ptr = *(pt_base.add(16) as *const *mut u8);           // offset 16: Face*
+        let nfaces_ptr = pt_base.add(24) as *mut i32;                    // offset 24: int nfaces
+        let center_ptr = pt_base.add(32) as *const f64;                  // offset 32: mjtNum center[3]
+
+        let nfaces = *nfaces_ptr;
+        *nfaces_ptr = nfaces + 1;
+
+        let face = faces_ptr.add(nfaces as usize * SIZEOF_FACE);
+
+        // face->verts = v1 + (v2 << 10) + (v3 << 20)
+        *(face as *mut i32) = v1 + (v2 << 10) + (v3 << 20);
+
+        // face->adj[0..3]
+        let adj_ptr = face.add(4) as *mut i32;
+        *adj_ptr.add(0) = adj1;
+        *adj_ptr.add(1) = adj2;
+        *adj_ptr.add(2) = adj3;
+
+        // compute witness point v: projectOriginPlane(face->v, verts[v3].vert, verts[v2].vert, verts[v1].vert)
+        let face_v = face.add(16) as *mut f64;
+        let v3_vert = verts_ptr.add(v3 as usize * SIZEOF_VERTEX) as *const f64;
+        let v2_vert = verts_ptr.add(v2 as usize * SIZEOF_VERTEX) as *const f64;
+        let v1_vert = verts_ptr.add(v1 as usize * SIZEOF_VERTEX) as *const f64;
+
+        let ret = project_origin_plane(face_v, v3_vert, v2_vert, v1_vert);
+        if ret != 0 {
+            return 0.0;
+        }
+
+        // ensure projection points outward from the polytope
+        let mut outward: [f64; 3] = [0.0; 3];
+        sub3(outward.as_mut_ptr(), v1_vert, center_ptr);
+        if dot3(face_v, outward.as_ptr()) < 0.0 {
+            scl3(face_v, face_v, -1.0);
+        }
+
+        // face->dist2 = dot3(face->v, face->v)
+        let dist2 = dot3(face_v, face_v);
+        *(face.add(40) as *mut f64) = dist2;
+
+        // face->index = -1
+        *(face.add(48) as *mut i32) = -1;
+
+        dist2
+    }
 }
 
 /// C: gjkIntersect (engine/engine_collision_gjk.c:119)
@@ -579,7 +660,27 @@ pub fn det3(v1: *const f64, v2: *const f64, v3: *const f64) -> f64 {
 /// C: discreteGeoms (engine/engine_collision_gjk.c:188)
 #[allow(unused_variables, non_snake_case)]
 pub fn discrete_geoms(obj1: *mut mjCCDObj, obj2: *mut mjCCDObj) -> i32 {
-    todo!() // discreteGeoms
+    const MJ_GEOM_MESH: i32 = 7;
+    const MJ_GEOM_BOX: i32 = 6;
+    const MJ_GEOM_HFIELD: i32 = 1;
+
+    // SAFETY: obj1 and obj2 are valid mjCCDObj pointers (caller contract)
+    unsafe {
+        // non-zero margin makes geoms smooth
+        if (*obj1).margin != 0.0 || (*obj2).margin != 0.0 {
+            return 0;
+        }
+
+        let g1 = (*obj1).geom_type;
+        let g2 = (*obj2).geom_type;
+        if (g1 == MJ_GEOM_MESH || g1 == MJ_GEOM_BOX || g1 == MJ_GEOM_HFIELD)
+            && (g2 == MJ_GEOM_MESH || g2 == MJ_GEOM_BOX || g2 == MJ_GEOM_HFIELD)
+        {
+            1
+        } else {
+            0
+        }
+    }
 }
 
 /// C: gjk (engine/engine_collision_gjk.c:200)
@@ -598,7 +699,57 @@ pub fn gjk(status: *mut mjCCDStatus, obj1: *mut mjCCDObj, obj2: *mut mjCCDObj) {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn support(v: *mut Vertex, obj1: *mut mjCCDObj, obj2: *mut mjCCDObj, dir: *const f64, dir_neg: *const f64) {
-    todo!() // support
+    // Vertex layout (80 bytes):
+    //   mjtNum vert[3];   offset 0
+    //   mjtNum vert1[3];  offset 24
+    //   mjtNum vert2[3];  offset 48
+    //   int index1;       offset 72
+    //   int index2;       offset 76
+
+    const VERT_OFFSET: usize = 0;
+    const VERT1_OFFSET: usize = 24;
+    const VERT2_OFFSET: usize = 48;
+    const INDEX1_OFFSET: usize = 72;
+    const INDEX2_OFFSET: usize = 76;
+
+    type SupportFn = unsafe extern "C" fn(*mut f64, *mut mjCCDObj, *const f64);
+
+    // SAFETY: v is a valid Vertex pointer, obj1/obj2 are valid mjCCDObj pointers,
+    //         dir and dir_neg are valid f64[3] pointers. Function pointers are valid.
+    unsafe {
+        let v_base = v as *mut u8;
+        let vert1 = v_base.add(VERT1_OFFSET) as *mut f64;
+        let vert2 = v_base.add(VERT2_OFFSET) as *mut f64;
+        let vert = v_base.add(VERT_OFFSET) as *mut f64;
+
+        // obj1->support(v->vert1, obj1, dir)
+        let support1: SupportFn = std::mem::transmute((*obj1).support.unwrap());
+        support1(vert1, obj1, dir);
+        if (*obj1).margin > 0.0 && (*obj1).geom >= 0 {
+            let margin = 0.5 * (*obj1).margin;
+            *vert1.add(0) += *dir.add(0) * margin;
+            *vert1.add(1) += *dir.add(1) * margin;
+            *vert1.add(2) += *dir.add(2) * margin;
+        }
+
+        // obj2->support(v->vert2, obj2, dir_neg)
+        let support2: SupportFn = std::mem::transmute((*obj2).support.unwrap());
+        support2(vert2, obj2, dir_neg);
+        if (*obj2).margin > 0.0 && (*obj2).geom >= 0 {
+            let margin = 0.5 * (*obj2).margin;
+            *vert2.add(0) += *dir_neg.add(0) * margin;
+            *vert2.add(1) += *dir_neg.add(1) * margin;
+            *vert2.add(2) += *dir_neg.add(2) * margin;
+        }
+
+        // v->vert = v->vert1 - v->vert2
+        sub3(vert, vert1, vert2);
+
+        // v->index1 = obj1->vertindex
+        *(v_base.add(INDEX1_OFFSET) as *mut i32) = (*obj1).vertindex;
+        // v->index2 = obj2->vertindex
+        *(v_base.add(INDEX2_OFFSET) as *mut i32) = (*obj2).vertindex;
+    }
 }
 
 /// C: gjkIntersectSupport (engine/engine_collision_gjk.c:396)
@@ -610,7 +761,13 @@ pub fn support(v: *mut Vertex, obj1: *mut mjCCDObj, obj2: *mut mjCCDObj, dir: *c
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn gjk_intersect_support(v: *mut Vertex, obj1: *mut mjCCDObj, obj2: *mut mjCCDObj, dir: *const f64) {
-    todo!() // gjkIntersectSupport
+    // SAFETY: dir is a valid f64[3] pointer (caller contract)
+    let dir_neg: [f64; 3] = unsafe {[
+        -*dir.add(0),
+        -*dir.add(1),
+        -*dir.add(2),
+    ]};
+    support(v, obj1, obj2, dir, dir_neg.as_ptr());
 }
 
 /// C: signedDistance (engine/engine_collision_gjk.c:404)
@@ -622,7 +779,26 @@ pub fn gjk_intersect_support(v: *mut Vertex, obj1: *mut mjCCDObj, obj2: *mut mjC
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn signed_distance(normal: *mut f64, v1: *const Vertex, v2: *const Vertex, v3: *const Vertex) -> f64 {
-    todo!() // signedDistance
+    // Vertex layout: vert[3] at offset 0
+    const MJ_MINVAL2: f64 = 1E-15_f64 * 1E-15_f64;
+    const MJ_MAXVAL2: f64 = 1E+10_f64 * 1E+10_f64;
+    const MJ_MAX_LIMIT: f64 = f64::MAX;
+
+    let v1_vert = v1 as *const f64;
+    let v2_vert = v2 as *const f64;
+    let v3_vert = v3 as *const f64;
+
+    let mut diff1: [f64; 3] = [0.0; 3];
+    let mut diff2: [f64; 3] = [0.0; 3];
+    sub3(diff1.as_mut_ptr(), v3_vert, v1_vert);
+    sub3(diff2.as_mut_ptr(), v2_vert, v1_vert);
+    cross3(normal, diff1.as_ptr(), diff2.as_ptr());
+    let norm2 = dot3(normal, normal);
+    if norm2 > MJ_MINVAL2 && norm2 < MJ_MAXVAL2 {
+        scl3(normal, normal, 1.0 / norm2.sqrt());
+        return dot3(normal, v1_vert);
+    }
+    MJ_MAX_LIMIT  // cannot recover normal (ignore face)
 }
 
 /// C: projectOriginPlane (engine/engine_collision_gjk.c:507)
@@ -716,7 +892,64 @@ pub fn same_sign2(a: f64, b: f64) -> i32 {
 /// C: replaceSimplex3 (engine/engine_collision_gjk.c:849)
 #[allow(unused_variables, non_snake_case)]
 pub fn replace_simplex3(pt: *mut Polytope, status: *mut mjCCDStatus, v1: i32, v2: i32, v3: i32) {
-    todo!() // replaceSimplex3
+    // Polytope layout:
+    //   Vertex* verts;   offset 0
+    //   int nverts;      offset 8
+    //   ...
+    //   int nfaces;      offset 24
+    //   int nmap;        offset 64
+    //
+    // mjCCDStatus layout:
+    //   ...
+    //   gjk_iterations:  i32,  offset 2440
+    //   epa_iterations:  i32,  offset 2444
+    //   epa_status:      i32,  offset 2448
+    //   (pad 4)
+    //   simplex[4]:      Vertex[4], offset 2456
+    //   nsimplex:        i32,  offset 2776
+    //
+    // Vertex: 80 bytes
+
+    const SIZEOF_VERTEX: usize = 80;
+    const STATUS_SIMPLEX_OFFSET: usize = 2456;
+    const STATUS_NSIMPLEX_OFFSET: usize = 2776;
+
+    // SAFETY: pt is a valid Polytope pointer, status is a valid mjCCDStatus pointer.
+    //         v1, v2, v3 are valid vertex indices in pt->verts.
+    unsafe {
+        let pt_base = pt as *mut u8;
+        let status_base = status as *mut u8;
+
+        let verts_ptr = *(pt_base as *const *const u8);  // Vertex* verts
+        let simplex_ptr = status_base.add(STATUS_SIMPLEX_OFFSET);
+
+        // status->nsimplex = 3
+        *(status_base.add(STATUS_NSIMPLEX_OFFSET) as *mut i32) = 3;
+
+        // status->simplex[0] = pt->verts[v1]
+        std::ptr::copy_nonoverlapping(
+            verts_ptr.add(v1 as usize * SIZEOF_VERTEX),
+            simplex_ptr as *mut u8,
+            SIZEOF_VERTEX,
+        );
+        // status->simplex[1] = pt->verts[v2]
+        std::ptr::copy_nonoverlapping(
+            verts_ptr.add(v2 as usize * SIZEOF_VERTEX),
+            simplex_ptr.add(SIZEOF_VERTEX) as *mut u8,
+            SIZEOF_VERTEX,
+        );
+        // status->simplex[2] = pt->verts[v3]
+        std::ptr::copy_nonoverlapping(
+            verts_ptr.add(v3 as usize * SIZEOF_VERTEX),
+            simplex_ptr.add(2 * SIZEOF_VERTEX) as *mut u8,
+            SIZEOF_VERTEX,
+        );
+
+        // reset polytope
+        *(pt_base.add(24) as *mut i32) = 0;  // pt->nfaces = 0
+        *(pt_base.add(8) as *mut i32) = 0;   // pt->nverts = 0
+        *(pt_base.add(64) as *mut i32) = 0;  // pt->nmap = 0
+    }
 }
 
 /// C: sameSide (engine/engine_collision_gjk.c:864)
@@ -728,7 +961,25 @@ pub fn replace_simplex3(pt: *mut Polytope, status: *mut mjCCDStatus, v1: i32, v2
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn same_side(p0: *const f64, p1: *const f64, p2: *const f64, p3: *const f64) -> i32 {
-    todo!() // sameSide
+    let mut diff1: [f64; 3] = [0.0; 3];
+    let mut diff2: [f64; 3] = [0.0; 3];
+    let mut diff3: [f64; 3] = [0.0; 3];
+    let mut diff4: [f64; 3] = [0.0; 3];
+    let mut n: [f64; 3] = [0.0; 3];
+
+    sub3(diff1.as_mut_ptr(), p1, p0);
+    sub3(diff2.as_mut_ptr(), p2, p0);
+    cross3(n.as_mut_ptr(), diff1.as_ptr(), diff2.as_ptr());
+
+    sub3(diff3.as_mut_ptr(), p3, p0);
+    let dot1 = dot3(n.as_ptr(), diff3.as_ptr());
+
+    scl3(diff4.as_mut_ptr(), p0, -1.0);
+    let dot2 = dot3(n.as_ptr(), diff4.as_ptr());
+
+    if dot1 > 0.0 && dot2 > 0.0 { return 1; }
+    if dot1 < 0.0 && dot2 < 0.0 { return 1; }
+    0
 }
 
 /// C: testTetra (engine/engine_collision_gjk.c:883)
@@ -760,7 +1011,24 @@ pub fn test_tetra(p0: *const f64, p1: *const f64, p2: *const f64, p3: *const f64
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn rotmat(R: *mut f64, axis: *const f64) {
-    todo!() // rotmat
+    // SAFETY: R is a valid f64[9] output pointer, axis is a valid f64[3] pointer.
+    unsafe {
+        let n = norm3(axis);
+        let u1 = *axis.add(0) / n;
+        let u2 = *axis.add(1) / n;
+        let u3 = *axis.add(2) / n;
+        let sin: f64 = 0.86602540378;  // sin(120 deg)
+        let cos: f64 = -0.5;           // cos(120 deg)
+        *R.add(0) = cos + u1 * u1 * (1.0 - cos);
+        *R.add(1) = u1 * u2 * (1.0 - cos) - u3 * sin;
+        *R.add(2) = u1 * u3 * (1.0 - cos) + u2 * sin;
+        *R.add(3) = u2 * u1 * (1.0 - cos) + u3 * sin;
+        *R.add(4) = cos + u2 * u2 * (1.0 - cos);
+        *R.add(5) = u2 * u3 * (1.0 - cos) - u1 * sin;
+        *R.add(6) = u1 * u3 * (1.0 - cos) - u2 * sin;
+        *R.add(7) = u2 * u3 * (1.0 - cos) + u1 * sin;
+        *R.add(8) = cos + u3 * u3 * (1.0 - cos);
+    }
 }
 
 /// C: rayTriangle (engine/engine_collision_gjk.c:911)
@@ -783,7 +1051,58 @@ pub fn ray_triangle(v1: *const f64, v2: *const f64, v3: *const f64, v4: *const f
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn tri_affine_coord(lambda: *mut f64, v1: *const f64, v2: *const f64, v3: *const f64, p: *const f64) {
-    todo!() // triAffineCoord
+    // SAFETY: lambda is a valid f64[3] output, v1/v2/v3/p are valid f64[3] pointers.
+    unsafe {
+        // compute minors as in S2D
+        let M_14: f64 = *v2.add(1) * *v3.add(2) - *v2.add(2) * *v3.add(1)
+                       - *v1.add(1) * *v3.add(2) + *v1.add(2) * *v3.add(1)
+                       + *v1.add(1) * *v2.add(2) - *v1.add(2) * *v2.add(1);
+        let M_24: f64 = *v2.add(0) * *v3.add(2) - *v2.add(2) * *v3.add(0)
+                       - *v1.add(0) * *v3.add(2) + *v1.add(2) * *v3.add(0)
+                       + *v1.add(0) * *v2.add(2) - *v1.add(2) * *v2.add(0);
+        let M_34: f64 = *v2.add(0) * *v3.add(1) - *v2.add(1) * *v3.add(0)
+                       - *v1.add(0) * *v3.add(1) + *v1.add(1) * *v3.add(0)
+                       + *v1.add(0) * *v2.add(1) - *v1.add(1) * *v2.add(0);
+
+        // exclude one of the axes with the largest projection
+        let mut M_max: f64 = 0.0;
+        let x: usize;
+        let y: usize;
+        let mu1: f64 = f64::abs(M_14);
+        let mu2: f64 = f64::abs(M_24);
+        let mu3: f64 = f64::abs(M_34);
+
+        if mu1 >= mu2 && mu1 >= mu3 {
+            M_max = M_14;
+            x = 1;
+            y = 2;
+        } else if mu2 >= mu3 {
+            M_max = M_24;
+            x = 0;
+            y = 2;
+        } else {
+            M_max = M_34;
+            x = 0;
+            y = 1;
+        }
+
+        // C31: signed area of (p, v2, v3)
+        let C31: f64 = *p.add(x) * *v2.add(y) + *p.add(y) * *v3.add(x) + *v2.add(x) * *v3.add(y)
+                     - *p.add(x) * *v3.add(y) - *p.add(y) * *v2.add(x) - *v3.add(x) * *v2.add(y);
+
+        // C32: signed area of (p, v1, v3)
+        let C32: f64 = *p.add(x) * *v3.add(y) + *p.add(y) * *v1.add(x) + *v3.add(x) * *v1.add(y)
+                     - *p.add(x) * *v1.add(y) - *p.add(y) * *v3.add(x) - *v1.add(x) * *v3.add(y);
+
+        // C33: signed area of (p, v1, v2)
+        let C33: f64 = *p.add(x) * *v1.add(y) + *p.add(y) * *v2.add(x) + *v1.add(x) * *v2.add(y)
+                     - *p.add(x) * *v2.add(y) - *p.add(y) * *v1.add(x) - *v2.add(x) * *v1.add(y);
+
+        // compute affine coordinates
+        *lambda.add(0) = C31 / M_max;
+        *lambda.add(1) = C32 / M_max;
+        *lambda.add(2) = C33 / M_max;
+    }
 }
 
 /// C: triPointIntersect (engine/engine_collision_gjk.c:1061)
@@ -816,13 +1135,54 @@ pub fn tri_point_intersect(v1: *const f64, v2: *const f64, v3: *const f64, p: *c
 /// C: deleteFace (engine/engine_collision_gjk.c:1216)
 #[allow(unused_variables, non_snake_case)]
 pub fn delete_face(pt: *mut Polytope, face: *mut Face) {
-    todo!() // deleteFace
+    // Polytope layout:
+    //   Face** map;  offset 56
+    //   int nmap;    offset 64
+    //
+    // Face layout (56 bytes):
+    //   int verts;   offset 0
+    //   int adj[3];  offset 4
+    //   mjtNum v[3]; offset 16
+    //   mjtNum dist2; offset 40
+    //   int index;   offset 48
+
+    // SAFETY: pt is a valid Polytope pointer, face is a valid Face in pt->faces (EPA invariant)
+    unsafe {
+        let pt_base = pt as *mut u8;
+        let map_ptr = *(pt_base.add(56) as *const *mut *mut u8);         // Face** map
+        let nmap_ptr = pt_base.add(64) as *mut i32;                       // int nmap
+
+        let face_base = face as *mut u8;
+        let face_index = *(face_base.add(48) as *const i32);             // face->index
+
+        if face_index >= 0 {
+            // pt->map[face->index] = pt->map[--pt->nmap]
+            let nmap = *nmap_ptr - 1;
+            *nmap_ptr = nmap;
+            let last_face = *map_ptr.add(nmap as usize);
+            *map_ptr.add(face_index as usize) = last_face;
+            // pt->map[face->index]->index = face->index
+            *(last_face.add(48) as *mut i32) = face_index;
+        }
+        // face->index = -2
+        *(face_base.add(48) as *mut i32) = -2;
+    }
 }
 
 /// C: maxFaces (engine/engine_collision_gjk.c:1226)
 #[allow(unused_variables, non_snake_case)]
 pub fn max_faces(pt: *mut Polytope) -> i32 {
-    todo!() // maxFaces
+    // Polytope layout:
+    //   int nfaces;   offset 24
+    //   int maxfaces; offset 28
+
+    // SAFETY: pt is a valid Polytope pointer (caller contract from EPA)
+    unsafe {
+        let pt_base = pt as *mut u8;
+        let maxfaces = *(pt_base.add(28) as *const i32);
+        let nfaces = *(pt_base.add(24) as *const i32);
+        maxfaces - nfaces
+    }
 }
 
 /// C: addEdge (engine/engine_collision_gjk.c:1263)
