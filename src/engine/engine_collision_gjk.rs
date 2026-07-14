@@ -20,7 +20,28 @@ pub fn align8(size: usize) -> usize {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn subdistance(lambda: *mut f64, n: i32, simplex: *const Vertex) {
-    todo!() // subdistance
+    // Vertex layout: { vert[3]: f64, vert1[3]: f64, vert2[3]: f64, index1: i32, index2: i32 }
+    // Total size: 3*3*8 + 2*4 = 80 bytes. vert is at offset 0.
+    const SIZEOF_VERTEX: usize = 80;
+
+    // SAFETY: lambda has at least 4 elements. simplex has at least 4 Vertex elements.
+    // Each Vertex's vert field is a f64[3] at offset 0.
+    unsafe {
+        std::ptr::write_bytes(lambda, 0, 4);
+
+        let base = simplex as *const u8;
+        let s1 = base as *const f64;
+        let s2 = base.add(SIZEOF_VERTEX) as *const f64;
+        let s3 = base.add(2 * SIZEOF_VERTEX) as *const f64;
+        let s4 = base.add(3 * SIZEOF_VERTEX) as *const f64;
+
+        match n {
+            4 => s3d(lambda, s1, s2, s3, s4),
+            3 => s2d(lambda, s1, s2, s3),
+            2 => s1d(lambda, s1, s2),
+            _ => *lambda.add(0) = 1.0,
+        }
+    }
 }
 
 /// C: S3D (engine/engine_collision_gjk.c:60)
@@ -1336,7 +1357,22 @@ pub fn aligned_face_edge(res: *mut i32, edge: *const f64, nedge: i32, face: *con
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn simplex_dim(v1i: *mut i32, v2i: *mut i32, v3i: *mut i32, v1: *mut *mut f64, v2: *mut *mut f64, v3: *mut *mut f64) -> i32 {
-    todo!() // simplexDim
+    // SAFETY: all pointers are valid and dereferenceable.
+    unsafe {
+        let val1 = *v1i;
+        let val2 = *v2i;
+        let val3 = *v3i;
+
+        if val1 != val2 {
+            return if val3 == val1 || val3 == val2 { 2 } else { 3 };
+        }
+        if val1 != val3 {
+            *v2i = *v3i;
+            *v2 = *v3;
+            return 2;
+        }
+        1
+    }
 }
 
 /// C: multicontact (engine/engine_collision_gjk.c:2122)
@@ -1355,7 +1391,39 @@ pub fn multicontact(pt: *mut Polytope, face: *mut Face, status: *mut mjCCDStatus
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn inflate(status: *mut mjCCDStatus, margin1: f64, margin2: f64) {
-    todo!() // inflate
+    use crate::engine::engine_util_blas::mju_normalize3;
+
+    // mjCCDStatus layout:
+    //   offset 0: dist (f64)
+    //   offset 8: x1[3*50] (f64 array)
+    //   offset 1208: x2[3*50] (f64 array)
+    const OFFSET_DIST: usize = 0;
+    const OFFSET_X1: usize = 8;
+    const OFFSET_X2: usize = 8 + 3 * 50 * 8; // 1208
+
+    // SAFETY: status points to valid mjCCDStatus with the layout above.
+    unsafe {
+        let base = status as *mut u8;
+        let dist_ptr = base.add(OFFSET_DIST) as *mut f64;
+        let x1 = base.add(OFFSET_X1) as *mut f64;
+        let x2 = base.add(OFFSET_X2) as *mut f64;
+
+        let mut n: [f64; 3] = [0.0; 3];
+        sub3(n.as_mut_ptr(), x2 as *const f64, x1 as *const f64);
+        mju_normalize3(n.as_mut_ptr());
+
+        if margin1 != 0.0 {
+            *x1.add(0) += margin1 * n[0];
+            *x1.add(1) += margin1 * n[1];
+            *x1.add(2) += margin1 * n[2];
+        }
+        if margin2 != 0.0 {
+            *x2.add(0) -= margin2 * n[0];
+            *x2.add(1) -= margin2 * n[1];
+            *x2.add(2) -= margin2 * n[2];
+        }
+        *dist_ptr -= margin1 + margin2;
+    }
 }
 
 /// C: mjc_ccdSize (engine/engine_collision_gjk.h:105)

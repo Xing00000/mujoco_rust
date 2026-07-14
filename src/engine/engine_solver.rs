@@ -180,14 +180,35 @@ pub fn cost_change(A: *const f64, force: *mut f64, oldforce: *const f64, res: *c
 /// C: pcg32_next (engine/engine_solver.c:247)
 #[allow(unused_variables, non_snake_case)]
 pub fn pcg32_next(rng: *mut pcg32_state) -> u32 {
-    todo!() // pcg32_next
+    // pcg32_state layout: { state: u64 (offset 0), inc: u64 (offset 8) }
+    // SAFETY: rng points to a valid pcg32_state with the layout above.
+    unsafe {
+        let state_ptr = rng as *mut u64;
+        let inc_ptr = (rng as *mut u64).add(1);
+
+        let oldstate: u64 = *state_ptr;
+        *state_ptr = oldstate.wrapping_mul(6364136223846793005u64).wrapping_add(*inc_ptr | 1);
+        let xorshifted: u32 = (((oldstate >> 18) ^ oldstate) >> 27) as u32;
+        let rot: u32 = (oldstate >> 59) as u32;
+        (xorshifted >> rot) | (xorshifted << ((rot.wrapping_neg()) & 31))
+    }
 }
 
 /// C: shuffle_int (engine/engine_solver.c:257)
 /// Calls: pcg32_next
 #[allow(unused_variables, non_snake_case)]
 pub fn shuffle_int(array: *mut i32, n: i32, rng: *mut pcg32_state) {
-    todo!() // shuffle_int
+    // SAFETY: array has at least n elements; rng is valid pcg32_state.
+    unsafe {
+        let mut i = n - 1;
+        while i > 0 {
+            let j = (pcg32_next(rng) % (i as u32 + 1)) as usize;
+            let temp = *array.add(i as usize);
+            *array.add(i as usize) = *array.add(j);
+            *array.add(j) = temp;
+            i -= 1;
+        }
+    }
 }
 
 /// C: dualState (engine/engine_solver.c:269)
@@ -299,7 +320,27 @@ pub fn dual_state(d: *const mjData, state: *mut i32, ne: i32, nf: i32, nefc: i32
 /// Calls: dualState
 #[allow(unused_variables, non_snake_case)]
 pub fn dual_state_change(d: *const mjData, state: *mut i32, oldstate: *mut i32, ne: i32, nf: i32, nefc: i32, efclist: *const i32, nchange: *mut i32) -> i32 {
-    todo!() // dualStateChange
+    // SAFETY: d is valid mjData pointer. state, oldstate have at least nefc elements.
+    // efclist (if non-null) has at least nefc elements.
+    unsafe {
+        // save old state
+        for c in 0..nefc {
+            let i = if !efclist.is_null() { *efclist.add(c as usize) } else { c };
+            *oldstate.add(c as usize) = *state.add(i as usize);
+        }
+
+        // update state
+        let nactive = dual_state(d, state, ne, nf, nefc, efclist);
+
+        // count state changes
+        *nchange = 0;
+        for c in 0..nefc {
+            let i = if !efclist.is_null() { *efclist.add(c as usize) } else { c };
+            *nchange += (*oldstate.add(c as usize) != *state.add(i as usize)) as i32;
+        }
+
+        nactive
+    }
 }
 
 /// C: projectEllipsoid (engine/engine_solver.c:383)
@@ -311,7 +352,25 @@ pub fn dual_state_change(d: *const mjData, state: *mut i32, oldstate: *mut i32, 
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn project_ellipsoid(friction: *mut f64, normal: f64, mu: *const f64, dim: i32, feasible: i32) {
-    todo!() // projectEllipsoid
+    use crate::engine::engine_util_misc::mju_max;
+    const MJ_MINVAL: f64 = 1E-15_f64;
+
+    // SAFETY: friction has at least dim-1 elements, mu has at least dim-1 elements.
+    unsafe {
+        let mut s: f64 = 0.0;
+        for j in 0..(dim - 1) {
+            s += *friction.add(j as usize) * *friction.add(j as usize)
+                / (*mu.add(j as usize) * *mu.add(j as usize));
+        }
+
+        let normal2: f64 = normal * normal;
+        if feasible == 0 || s > normal2 {
+            let scl: f64 = (normal2 / mju_max(MJ_MINVAL, s)).sqrt();
+            for j in 0..(dim - 1) {
+                *friction.add(j as usize) *= scl;
+            }
+        }
+    }
 }
 
 /// C: solveQCQP (engine/engine_solver.c:401)
@@ -335,7 +394,27 @@ pub fn solve_qcqp(force: *mut f64, i: i32, dim: i32, Ac: *mut f64, bc: *mut f64,
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn project_cone(force: *mut f64, mu: *const f64, dim: i32, r#type: i32) {
-    todo!() // projectCone
+    use crate::engine::engine_util_blas::mju_zero;
+    const MJ_CNSTR_CONTACT_ELLIPTIC: i32 = 7;
+
+    // SAFETY: force has at least dim elements; mu has at least dim-1 elements.
+    unsafe {
+        // elliptic cone: project onto friction ellipsoid
+        if r#type == MJ_CNSTR_CONTACT_ELLIPTIC {
+            // clamp normal force
+            if *force.add(0) < 0.0 {
+                mju_zero(force, dim);
+            } else {
+                project_ellipsoid(force.add(1), *force.add(0), mu, dim, 1);
+            }
+        }
+        // pyramidal or scalar: clamp to non-negative
+        else {
+            if *force.add(0) < 0.0 {
+                *force.add(0) = 0.0;
+            }
+        }
+    }
 }
 
 /// C: solPGS (engine/engine_solver.c:456)
@@ -709,7 +788,18 @@ pub fn primal_prepare(ctx: *mut mjPrimalContext) {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn friction_cost(x: f64, f: f64, Rf: f64, D: f64) -> f64 {
-    todo!() // frictionCost
+    // -bound < x < bound : quadratic
+    if -Rf < x && x < Rf {
+        0.5 * D * x * x
+    }
+    // x < -bound : linear negative
+    else if x <= -Rf {
+        f * (-0.5 * Rf - x)
+    }
+    // bound < x : linear positive
+    else {
+        f * (-0.5 * Rf + x)
+    }
 }
 
 /// C: frictionCostDif (engine/engine_solver.c:1506)
@@ -721,7 +811,26 @@ pub fn friction_cost(x: f64, f: f64, Rf: f64, D: f64) -> f64 {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn friction_cost_dif(start: f64, x: f64, f: f64, Rf: f64, D: f64) -> f64 {
-    todo!() // frictionCostDif
+    let state_start: i32 = if -Rf < start && start < Rf { 0 } else if start <= -Rf { -1 } else { 1 };
+    let state_x: i32 = if -Rf < x && x < Rf { 0 } else if x <= -Rf { -1 } else { 1 };
+
+    // both quadratic
+    if state_start == 0 && state_x == 0 {
+        return 0.5 * D * (x - start) * (x + start);
+    }
+
+    // both linear negative
+    if state_start == -1 && state_x == -1 {
+        return f * (start - x);
+    }
+
+    // both linear positive
+    if state_start == 1 && state_x == 1 {
+        return f * (x - start);
+    }
+
+    // otherwise different zones: compute absolute costs and subtract
+    friction_cost(x, f, Rf, D) - friction_cost(start, f, Rf, D)
 }
 
 /// C: ellipticCost (engine/engine_solver.c:1531)
@@ -732,7 +841,43 @@ pub fn friction_cost_dif(start: f64, x: f64, f: f64, Rf: f64, D: f64) -> f64 {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn elliptic_cost(quad: *const f64, alpha: f64, mu: f64, Dm: f64) -> f64 {
-    todo!() // ellipticCost
+    // SAFETY: quad has at least 8 elements (indices 0..7)
+    unsafe {
+        let U0: f64 = *quad.add(3);
+        let V0: f64 = *quad.add(4);
+        let UU: f64 = *quad.add(5);
+        let UV: f64 = *quad.add(6);
+        let VV: f64 = *quad.add(7);
+        let N: f64 = U0 + alpha * V0;
+        let Tsqr: f64 = UU + alpha * (2.0 * UV + alpha * VV);
+
+        // no tangential force : top or bottom zone
+        if Tsqr <= 0.0 {
+            // bottom zone: quadratic cost
+            if N < 0.0 {
+                return alpha * alpha * *quad.add(2) + alpha * *quad.add(1) + *quad.add(0);
+            }
+            // top zone: nothing to do
+        }
+        // otherwise regular processing
+        else {
+            let T: f64 = Tsqr.sqrt();
+            // N>=mu*T : top zone
+            if N >= mu * T {
+                // nothing to do
+            }
+            // mu*N+T<=0 : bottom zone
+            else if mu * N + T <= 0.0 {
+                return alpha * alpha * *quad.add(2) + alpha * *quad.add(1) + *quad.add(0);
+            }
+            // otherwise middle zone
+            else {
+                return 0.5 * Dm * (N - mu * T) * (N - mu * T);
+            }
+        }
+
+        0.0
+    }
 }
 
 /// C: ellipticCostDif (engine/engine_solver.c:1569)
@@ -744,7 +889,69 @@ pub fn elliptic_cost(quad: *const f64, alpha: f64, mu: f64, Dm: f64) -> f64 {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn elliptic_cost_dif(quad: *const f64, alpha: f64, mu: f64, Dm: f64) -> f64 {
-    todo!() // ellipticCostDif
+    // SAFETY: quad has at least 8 elements (indices 0..7)
+    unsafe {
+        let U0: f64 = *quad.add(3);
+        let V0: f64 = *quad.add(4);
+        let UU: f64 = *quad.add(5);
+        let UV: f64 = *quad.add(6);
+        let VV: f64 = *quad.add(7);
+
+        // determine zone and cost at alpha=0
+        let zone0: i32;
+        let mut T0: f64 = 0.0;
+        if UU <= 0.0 {
+            zone0 = if U0 < 0.0 { 2 } else { 1 };
+        } else {
+            T0 = UU.sqrt();
+            if U0 >= mu * T0 {
+                zone0 = 1; // top zone
+            } else if mu * U0 + T0 <= 0.0 {
+                zone0 = 2; // bottom zone
+            } else {
+                zone0 = 3; // middle zone
+            }
+        }
+
+        // determine zone and cost at alpha
+        let N: f64 = U0 + alpha * V0;
+        let Tsqr: f64 = UU + alpha * (2.0 * UV + alpha * VV);
+        let zone_alpha: i32;
+        let mut T: f64 = 0.0;
+
+        if Tsqr <= 0.0 {
+            zone_alpha = if N < 0.0 { 2 } else { 1 }; // bottom or top zone
+        } else {
+            T = Tsqr.sqrt();
+            if N >= mu * T {
+                zone_alpha = 1; // top zone
+            } else if mu * N + T <= 0.0 {
+                zone_alpha = 2; // bottom zone
+            } else {
+                zone_alpha = 3; // middle zone
+            }
+        }
+
+        // both top zone
+        if zone0 == 1 && zone_alpha == 1 {
+            return 0.0;
+        }
+
+        // both bottom zone
+        if zone0 == 2 && zone_alpha == 2 {
+            return alpha * alpha * *quad.add(2) + alpha * *quad.add(1);
+        }
+
+        // both middle zone
+        if zone0 == 3 && zone_alpha == 3 {
+            let diff_alpha: f64 = N - mu * T;
+            let diff0: f64 = U0 - mu * T0;
+            return 0.5 * Dm * (diff_alpha - diff0) * (diff_alpha + diff0);
+        }
+
+        // otherwise different zones: compute absolute costs and subtract
+        elliptic_cost(quad, alpha, mu, Dm) - elliptic_cost(quad, 0.0, mu, Dm)
+    }
 }
 
 /// C: PrimalEval (engine/engine_solver.c:1631)
