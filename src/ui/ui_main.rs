@@ -110,7 +110,24 @@ pub fn drawtext(txt: *const i8, x: i32, y: i32, maxwidth: i32, rgb: *const f32, 
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn drawtextrect(rect: mjrRect, txt: *const i8, rgb: *const f32, con: *const mjrContext) {
-    todo!() // drawtextrect
+    // SAFETY: txt is a valid C string; con is valid mjrContext pointer; rgb is valid f32[3] (caller contract)
+    unsafe {
+        // inline textwidth(txt, con, -1): sum all char widths
+        let mut tw: i32 = 0;
+        let mut i: usize = 0;
+        while *txt.add(i) != 0 {
+            tw += (*con).charWidth[*txt.add(i) as u8 as usize];
+            i += 1;
+        }
+
+        let dy = (rect.height - (*con).charHeight) / 2;
+        let mut dx = (rect.width - tw) / 2;
+        if dx < 0 {
+            dx = 0;
+        }
+
+        drawtext(txt, rect.left + dx, rect.bottom + dy, rect.width - dx, rgb, con);
+    }
 }
 
 /// C: drawrectangle (ui/ui_main.c:286)
@@ -238,7 +255,109 @@ pub fn drawoval(rect: mjrRect, rgb: *const f32, rgbback: *const f32, con: *const
 /// Calls: SCL, mju_round
 #[allow(unused_variables, non_snake_case)]
 pub fn drawsymbol(rect: mjrRect, flg_open: i32, r#type: i32, ui: *const mjUI, con: *const mjrContext) {
-    todo!() // drawsymbol
+    const GL_TRIANGLES: u32 = 0x0004;
+
+    extern "C" {
+        fn glColor3fv(v: *const f32);
+        fn glColor3f(r: f32, g: f32, b: f32);
+        fn glBegin(mode: u32);
+        fn glEnd();
+        fn glVertex2i(x: i32, y: i32);
+        fn glVertex2d(x: f64, y: f64);
+    }
+
+    // SAFETY: ui and con are valid pointers (caller contract); GL functions linked from mujoco
+    unsafe {
+        // access spacing.texthor (offset 36 in spacing byte array)
+        let spacing_ptr = (*ui).spacing.as_ptr() as *const i32;
+        let texthor: i32 = scl(*spacing_ptr.add(9), con);
+
+        // access color.sectsymbol (offset 108 in color byte array)
+        let color_ptr = (*ui).color.as_ptr();
+        let sectsymbol = color_ptr.add(108) as *const f32;
+
+        let cx = rect.left + rect.width - texthor;
+        let cy = rect.bottom + rect.height / 2;
+        let mut d = crate::engine::engine_util_misc::mju_round((*con).charHeight as f64 * 0.33);
+
+        // separator size
+        if r#type == 3 {
+            d = crate::engine::engine_util_misc::mju_round((*con).charHeight as f64 * 0.28);
+        }
+
+        // open
+        if flg_open != 0 {
+            glColor3fv(sectsymbol);
+            glBegin(GL_TRIANGLES);
+            glVertex2i(cx, cy + d);
+            glVertex2i(cx - 2 * d, cy + d);
+            glVertex2i(cx - d, cy - d);
+            glEnd();
+        } else {
+            // solid outside
+            glColor3fv(sectsymbol);
+            glBegin(GL_TRIANGLES);
+            glVertex2i(cx, cy - d);
+            glVertex2i(cx, cy + d);
+            glVertex2i(cx - 2 * d, cy);
+            glEnd();
+
+            // set color for inside
+            match r#type {
+                0 => {
+                    // section: secttitle at offset 24, secttitle2 at offset 36
+                    let secttitle = color_ptr.add(24) as *const f32;
+                    let secttitle2 = color_ptr.add(36) as *const f32;
+                    glColor3f(
+                        (*secttitle.add(0) + *secttitle2.add(0)) * 0.5,
+                        (*secttitle.add(1) + *secttitle2.add(1)) * 0.5,
+                        (*secttitle.add(2) + *secttitle2.add(2)) * 0.5,
+                    );
+                }
+                1 => {
+                    // section with unchecked box: secttitleuncheck at offset 48, secttitleuncheck2 at offset 60
+                    let a = color_ptr.add(48) as *const f32;
+                    let b = color_ptr.add(60) as *const f32;
+                    glColor3f(
+                        (*a.add(0) + *b.add(0)) * 0.5,
+                        (*a.add(1) + *b.add(1)) * 0.5,
+                        (*a.add(2) + *b.add(2)) * 0.5,
+                    );
+                }
+                2 => {
+                    // section with checked box: secttitlecheck at offset 72, secttitlecheck2 at offset 84
+                    let a = color_ptr.add(72) as *const f32;
+                    let b = color_ptr.add(84) as *const f32;
+                    glColor3f(
+                        (*a.add(0) + *b.add(0)) * 0.5,
+                        (*a.add(1) + *b.add(1)) * 0.5,
+                        (*a.add(2) + *b.add(2)) * 0.5,
+                    );
+                }
+                3 => {
+                    // separator: separator at offset 132, separator2 at offset 144
+                    let a = color_ptr.add(132) as *const f32;
+                    let b = color_ptr.add(144) as *const f32;
+                    glColor3f(
+                        (*a.add(0) + *b.add(0)) * 0.5,
+                        (*a.add(1) + *b.add(1)) * 0.5,
+                        (*a.add(2) + *b.add(2)) * 0.5,
+                    );
+                }
+                _ => {}
+            }
+
+            // draw inside
+            let margin: f64 = (*con).fontScale as f64 * 0.015;
+            let u: f64 = 0.5 * f64::sqrt(5.0) * margin;
+            let y: f64 = d as f64 - u - 0.5 * margin;
+            glBegin(GL_TRIANGLES);
+            glVertex2d(cx as f64 - margin, cy as f64 - y);
+            glVertex2d(cx as f64 - margin, cy as f64 + y);
+            glVertex2d(cx as f64 - 2.0 * d as f64 + 2.0 * u, cy as f64);
+            glEnd();
+        }
+    }
 }
 
 /// C: radioelement (ui/ui_main.c:516)
@@ -380,7 +499,20 @@ pub fn parseshortcut(text: *const i8, r#mod: *mut i32, key: *mut i32) {
 /// C: matchshortcut (ui/ui_main.c:1222)
 #[allow(unused_variables, non_snake_case)]
 pub fn matchshortcut(ins: *const mjuiState, r#mod: i32, key: i32) -> i32 {
-    todo!() // matchshortcut
+    // SAFETY: ins is a valid mjuiState pointer (caller contract)
+    unsafe {
+        // match key
+        if key == 0 || (*ins).key != key {
+            return 0;
+        }
+
+        // match modifier
+        if ((*ins).control != 0) as i32 + 2 * ((*ins).shift != 0) as i32 + 4 * ((*ins).alt != 0) as i32 != r#mod {
+            return 0;
+        }
+
+        1
+    }
 }
 
 /// C: setitemskip (ui/ui_main.c:1500)
