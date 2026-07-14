@@ -458,7 +458,34 @@ pub fn mju_rotate_frame(origin: *const f64, rot: *const f64, xmat: *mut f64, xpo
 /// C: maxContacts (engine/engine_collision_convex.c:831)
 #[allow(unused_variables, non_snake_case)]
 pub fn max_contacts(m: *const mjModel, obj1: *const mjCCDObj, obj2: *const mjCCDObj) -> i32 {
-    todo!() // maxContacts
+    const mjGEOM_BOX: i32 = 6;
+    const mjGEOM_MESH: i32 = 7;
+    const mjDSBL_MULTICCD: i32 = 1 << 19;
+
+    // SAFETY: m, obj1, obj2 are valid pointers (caller contract)
+    unsafe {
+        // single pass not supported for margins
+        if (*obj1).margin > 0.0 || (*obj2).margin > 0.0 {
+            return 1;
+        }
+
+        // can return 8 contacts for box-box collision in one pass
+        let type1: i32 = (*obj1).geom_type;
+        let type2: i32 = (*obj2).geom_type;
+        if type1 == mjGEOM_BOX && type2 == mjGEOM_BOX {
+            return 8;
+        }
+
+        // reduce mesh collisions to 4 contacts max
+        if type1 == mjGEOM_BOX || type1 == mjGEOM_MESH {
+            if type2 == mjGEOM_BOX || type2 == mjGEOM_MESH {
+                return if ((*m).opt.disableflags & mjDSBL_MULTICCD) != 0 { 1 } else { 4 };
+            }
+        }
+
+        // not supported for other geom types
+        1
+    }
 }
 
 /// C: addplanemesh (engine/engine_collision_convex.c:946)
