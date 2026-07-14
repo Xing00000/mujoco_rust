@@ -487,9 +487,188 @@ pub fn mjs_set_to_adhesion(actuator: *mut mjsActuator, gain: f64) -> *const i8 {
 ///   2. No f64::mul_add() (FMA changes precision)
 ///   3. No algebraic simplification
 ///   4. No iter().sum()/product() (order undefined)
-#[allow(unused_variables, non_snake_case)]
+#[allow(unused_variables, unused_assignments, non_snake_case)]
 pub fn mjs_set_to_dc_motor(actuator: *mut mjsActuator, motorconst: *mut f64, resistance: f64, nominal: *mut f64, saturation: *mut f64, inductance: *mut f64, cogging: *mut f64, controller: *mut f64, thermal: *mut f64, lugre: *mut f64, input_mode: i32) -> *const i8 {
-    todo!() // mjs_setToDCMotor
+    // SAFETY: all pointer dereferences follow the C original's null-check pattern.
+    // Caller guarantees actuator is valid; optional params are null-checked before access.
+    unsafe {
+        let mut R = resistance;
+        let Kt: f64 = if !motorconst.is_null() { *motorconst.add(0) } else { 0.0 };
+        let mut Ke: f64 = if !motorconst.is_null() { *motorconst.add(1) } else { 0.0 };
+        let vn: f64 = if !nominal.is_null() { *nominal.add(0) } else { 0.0 };
+        let tau0: f64 = if !nominal.is_null() { *nominal.add(1) } else { 0.0 };
+        let omega0: f64 = if !nominal.is_null() { *nominal.add(2) } else { 0.0 };
+
+        // derive Ke from nominal: omega0 = vn*Ke / (Ke^2 + R*B)
+        if vn > 0.0 && Ke <= 0.0 && omega0 > 0.0 {
+            // viscous damping (linear)
+            let B = (*actuator).damping[0];
+
+            if B > 0.0 && R > 0.0 {
+                // R known: solve quadratic Ke^2*omega0 - Ke*vn + R*B*omega0 = 0
+                let disc = vn * vn - 4.0 * R * B * omega0 * omega0;
+                Ke = if disc > 0.0 { (vn + f64::sqrt(disc)) / (2.0 * omega0) } else { vn / omega0 };
+            } else if B > 0.0 && tau0 > 0.0 {
+                // R from nominal (tau0 = Ke*vn/R, so R = Ke*vn/tau0)
+                let Ke_exact = vn / omega0 - vn * B / tau0;
+                Ke = if Ke_exact > 0.0 { Ke_exact } else { vn / omega0 };
+            } else {
+                // B = 0 or insufficient data for B-correction: omega0 = vn/Ke
+                Ke = vn / omega0;
+            }
+        }
+
+        // resolve effective motor constant K from [Kt, Ke]
+        let K: f64 = if Kt > 0.0 && Ke > 0.0 {
+            f64::sqrt(Kt * Ke)
+        } else if Kt > 0.0 {
+            Kt
+        } else {
+            Ke
+        };
+
+        // derive R from nominal: tau0 = K*vn/R
+        if R == 0.0 && vn > 0.0 && tau0 > 0.0 && K > 0.0 {
+            R = K * vn / tau0;
+        }
+
+        if K <= 0.0 {
+            return b"DC motor: motor constant K must be positive\0".as_ptr() as *const i8;
+        }
+        if R <= 0.0 {
+            return b"DC motor: resistance R must be positive\0".as_ptr() as *const i8;
+        }
+
+        // set types
+        std::ptr::write((*actuator).dyntype.as_mut_ptr() as *mut i32, mjtDyn_mjDYN_DCMOTOR as i32);
+        std::ptr::write((*actuator).gaintype.as_mut_ptr() as *mut i32, mjtGain_mjGAIN_DCMOTOR as i32);
+        std::ptr::write((*actuator).biastype.as_mut_ptr() as *mut i32, mjtBias_mjBIAS_DCMOTOR as i32);
+
+        // gainprm: [R, K, alpha, T0]
+        (*actuator).gainprm[0] = R;
+        (*actuator).gainprm[1] = K;
+
+        // controller parameters: gainprm[4:6] for kp, ki, kd
+        (*actuator).gainprm[4] = if !controller.is_null() { *controller.add(0) } else { 0.0 };
+        (*actuator).gainprm[5] = if !controller.is_null() { *controller.add(1) } else { 0.0 };
+        (*actuator).gainprm[6] = if !controller.is_null() { *controller.add(2) } else { 0.0 };
+
+        // controller parameters: dynprm[7,8] for slewmax, Imax
+        (*actuator).dynprm[7] = if !controller.is_null() { *controller.add(3) } else { 0.0 };
+        (*actuator).dynprm[8] = if !controller.is_null() { *controller.add(4) } else { 0.0 };
+
+        // controller parameters: gainprm[7] for v_max
+        if !controller.is_null() && *controller.add(5) > 0.0 {
+            (*actuator).gainprm[7] = *controller.add(5);
+        }
+
+        // saturation -> forcerange
+        if !saturation.is_null() && (*saturation.add(0) > 0.0 || *saturation.add(1) > 0.0) {
+            let mut tau_max = *saturation.add(0);
+            if tau_max == 0.0 && *saturation.add(1) > 0.0 {
+                tau_max = K * *saturation.add(1); // tau_max = K * i_max
+            }
+            (*actuator).forcerange[0] = -tau_max;
+            (*actuator).forcerange[1] = tau_max;
+            (*actuator).forcelimited = 1;
+        }
+
+        // saturation: [tau_max, i_max, (di/dt)_max]
+        if !saturation.is_null() && *saturation.add(2) > 0.0 {
+            (*actuator).dynprm[1] = *saturation.add(2);
+        }
+
+        // cogging: [amplitude, periodicity, phase] -> biasprm[0:3]
+        (*actuator).biasprm[0] = if !cogging.is_null() { *cogging.add(0) } else { 0.0 };
+        (*actuator).biasprm[1] = if !cogging.is_null() { *cogging.add(1) } else { 0.0 };
+        (*actuator).biasprm[2] = if !cogging.is_null() { *cogging.add(2) } else { 0.0 };
+
+        // count activation variables: slot order is slew, integral, temperature, bristle, current
+        let mut actdim: i32 = 0;
+
+        // inductance: [L, te]
+        if !inductance.is_null() && *inductance.add(0) < 0.0 {
+            return b"DC motor: inductance must be non-negative\0".as_ptr() as *const i8;
+        }
+        if !inductance.is_null() && *inductance.add(1) < 0.0 {
+            return b"DC motor: electrical time constant must be non-negative\0".as_ptr() as *const i8;
+        }
+        let te: f64 = if !inductance.is_null() && *inductance.add(0) > 0.0 {
+            *inductance.add(0) / R
+        } else if !inductance.is_null() {
+            *inductance.add(1)
+        } else {
+            0.0
+        };
+        (*actuator).dynprm[0] = te;
+        if te > 0.0 {
+            actdim += 1;
+        }
+
+        // controller states: slew rate limiting
+        if !controller.is_null() && *controller.add(3) > 0.0 {
+            actdim += 1;
+        }
+
+        // controller states: integral
+        if !controller.is_null() && *controller.add(1) > 0.0 {
+            actdim += 1;
+        }
+
+        // thermal -> temperature activation
+        if !thermal.is_null() && (*thermal.add(0) > 0.0 || *thermal.add(1) > 0.0 || *thermal.add(2) > 0.0) {
+            let mut RT = *thermal.add(0);    // thermal resistance
+            let mut C = *thermal.add(1);     // thermal capacitance
+            let mut tth = *thermal.add(2);   // thermal time constant
+            let alpha = *thermal.add(3);     // temperature coefficient
+            let T0 = *thermal.add(4);        // reference temperature
+            let Ta = *thermal.add(5);        // ambient temperature
+
+            if tth > 0.0 && RT > 0.0 && C == 0.0 {
+                C = tth / RT;
+            } else if tth > 0.0 && C > 0.0 && RT == 0.0 {
+                RT = tth / C;
+            } else if tth == 0.0 && RT > 0.0 && C > 0.0 {
+                tth = RT * C;
+            }
+
+            if RT <= 0.0 {
+                return b"DC motor: thermal resistance must be positive\0".as_ptr() as *const i8;
+            }
+            if C <= 0.0 {
+                return b"DC motor: thermal capacitance must be positive\0".as_ptr() as *const i8;
+            }
+
+            (*actuator).dynprm[2] = RT;
+            (*actuator).dynprm[3] = C;
+            (*actuator).dynprm[4] = Ta;
+            (*actuator).gainprm[2] = alpha;
+            (*actuator).gainprm[3] = T0;
+            actdim += 1;
+        }
+
+        // lugre: {stiffness, damping, coulomb, static, stribeck}
+        if !lugre.is_null() && *lugre.add(0) > 0.0 {
+            (*actuator).dynprm[5] = *lugre.add(0);    // stiffness -> sigma0
+            (*actuator).dynprm[6] = *lugre.add(1);    // damping   -> sigma1
+            (*actuator).biasprm[3] = *lugre.add(2);   // coulomb   -> tau_c
+            (*actuator).biasprm[4] = *lugre.add(3);   // static    -> tau_s
+            (*actuator).biasprm[5] = *lugre.add(4);   // stribeck  -> omega_s
+            actdim += 1;
+        }
+
+        // set input mode and activation dimension
+        (*actuator).gainprm[8] = input_mode as f64;
+        (*actuator).actdim = actdim;
+
+        // enforce actlimited = 0; homogeneous bounds are invalid across DC motor states
+        (*actuator).actlimited = 0;
+
+        // DC motor always uses actearly
+        (*actuator).actearly = 1;
+
+        b"\0".as_ptr() as *const i8
+    }
 }
 
 /// C: mjs_addMesh (user/user_api.h:213)
@@ -866,7 +1045,20 @@ pub fn mjs_as_sensor(element: *mut mjsElement) -> *mut mjsSensor {
 /// C: mjs_asFlex (user/user_api.h:328)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjs_as_flex(element: *mut mjsElement) -> *mut mjsFlex {
-    todo!() // mjs_asFlex
+    // SAFETY: element is a valid mjsElement pointer (caller contract).
+    // static_cast<mjCFlex*>(element)->spec mirrors the C++ cast.
+    unsafe {
+        if element.is_null() {
+            return std::ptr::null_mut();
+        }
+        // elemtype is first 4 bytes of the [u8; 8] field (i32 in C)
+        let elemtype = *(element as *const i32);
+        if elemtype == 9 { // mjOBJ_FLEX
+            &mut (*(element as *mut crate::types::mjCFlex)).spec as *mut crate::types::mjsFlex
+        } else {
+            std::ptr::null_mut()
+        }
+    }
 }
 
 /// C: mjs_asPair (user/user_api.h:331)
