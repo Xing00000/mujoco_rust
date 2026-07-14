@@ -1,5 +1,5 @@
 //! Port of: engine/engine_collision_gjk.c
-//! IR hash: 9614bd3d92e7766b
+//! IR hash: 8cbd078414266fa8
 //! CODEGEN: signatures locked. Only fill todo!() bodies.
 
 use crate::types::*;
@@ -723,7 +723,7 @@ pub fn support(v: *mut Vertex, obj1: *mut mjCCDObj, obj2: *mut mjCCDObj, dir: *c
         let vert = v_base.add(VERT_OFFSET) as *mut f64;
 
         // obj1->support(v->vert1, obj1, dir)
-        let support1: SupportFn = std::mem::transmute((*obj1).support.unwrap());
+        let support1: SupportFn = *(&(*obj1).support.unwrap() as *const _ as *const SupportFn);
         support1(vert1, obj1, dir);
         if (*obj1).margin > 0.0 && (*obj1).geom >= 0 {
             let margin = 0.5 * (*obj1).margin;
@@ -733,7 +733,7 @@ pub fn support(v: *mut Vertex, obj1: *mut mjCCDObj, obj2: *mut mjCCDObj, dir: *c
         }
 
         // obj2->support(v->vert2, obj2, dir_neg)
-        let support2: SupportFn = std::mem::transmute((*obj2).support.unwrap());
+        let support2: SupportFn = *(&(*obj2).support.unwrap() as *const _ as *const SupportFn);
         support2(vert2, obj2, dir_neg);
         if (*obj2).margin > 0.0 && (*obj2).geom >= 0 {
             let margin = 0.5 * (*obj2).margin;

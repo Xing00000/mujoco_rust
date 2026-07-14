@@ -1,5 +1,5 @@
 //! Port of: user/user_api.cc
-//! IR hash: 9614bd3d92e7766b
+//! IR hash: 8cbd078414266fa8
 //! CODEGEN: signatures locked. Only fill todo!() bodies.
 
 use crate::types::*;
@@ -1669,7 +1669,7 @@ pub fn mjs_get_plugin_attributes(plugin: *const mjsPlugin) -> *const () {
 /// C: mjs_isAuthored (user/user_api.h:435)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjs_is_authored(elem_ptr: *const (), field_ptr: *const ()) -> i32 {
-    todo!("mjs_isAuthored requires X-macro field enumeration not available in Rust port")
+    todo!() // mjs_isAuthored
 }
 
 /// C: mjs_setAuthored (user/user_api.h:438)

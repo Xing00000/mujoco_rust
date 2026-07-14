@@ -1,5 +1,5 @@
 //! Port of: engine/engine_sensor.c
-//! IR hash: 9614bd3d92e7766b
+//! IR hash: 8cbd078414266fa8
 //! CODEGEN: signatures locked. Only fill todo!() bodies.
 
 use crate::types::*;
@@ -161,25 +161,11 @@ pub fn cam_project(sensordata: *mut f64, target_xpos: *const f64, cam_xpos: *con
 /// C: checkMatch (engine/engine_sensor.c:320)
 /// Calls: mjCMesh::tree
 #[allow(unused_variables, non_snake_case)]
-pub fn check_match(m: *const mjModel, mut body: i32, geom: i32, r#type: u32, id: i32) -> i32 {
-    use crate::types::*;
-
-    if r#type == mjtObj_mjOBJ_UNKNOWN { return 1; }
-    if r#type == mjtObj_mjOBJ_SITE { return 1; }  // already passed site filter test
-    if r#type == mjtObj_mjOBJ_GEOM { return if id == geom { 1 } else { 0 }; }
-    if r#type == mjtObj_mjOBJ_BODY { return if id == body { 1 } else { 0 }; }
-    if r#type == mjtObj_mjOBJ_XBODY {
-        // SAFETY: m is a valid mjModel pointer, body_parentid valid (caller contract)
-        unsafe {
-            // traverse up the tree from body, return true if we land on id
-            while body > id {
-                body = *(*m).body_parentid.add(body as usize);
-            }
-        }
-        return if body == id { 1 } else { 0 };
-    }
-
-    0
+pub fn check_match(m: *const mjModel, body: i32, geom: i32, r#type: u32, id: i32) -> i32 {
+    // NOTE: signature changed from previous IR version
+    // Previous params: (m : * const mjModel, mut body : i32, geom : i32, r#type : u32, id : i32)
+    // Previous return: i32
+    todo!("re-translate: params renamed")
 }
 
 /// C: matchContact (engine/engine_sensor.c:339)

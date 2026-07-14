@@ -1,5 +1,5 @@
 //! Port of: render/classic/render_gl3.c
-//! IR hash: 9614bd3d92e7766b
+//! IR hash: 8cbd078414266fa8
 //! CODEGEN: signatures locked. Only fill todo!() bodies.
 
 use crate::types::*;
