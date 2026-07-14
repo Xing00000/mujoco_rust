@@ -88,7 +88,31 @@ pub fn mj_advance(m: *const mjModel, d: *mut mjData, act_dot: *const f64, qacc: 
 /// C: flex_has_implicit_stiffness (engine/engine_forward.c:1284)
 #[allow(unused_variables, non_snake_case)]
 pub fn flex_has_implicit_stiffness(m: *const mjModel) -> i32 {
-    todo!() // flex_has_implicit_stiffness
+    // SAFETY: m is a valid pointer to mjModel (caller contract)
+    unsafe {
+        for f in 0..(*m).nflex as isize {
+            if (*(*m).flex_rigid.offset(f))._data[0] != 0 {
+                continue;
+            }
+
+            // interpolated flex with stiffness
+            if *(*m).flex_interp.offset(f) != 0
+                && *(*m).flex_edgeequality.offset(f) != 3
+                && *(*m).flex_stiffness.offset(*(*m).flex_stiffnessadr.offset(f) as isize) != 0.0
+            {
+                return 1;
+            }
+
+            // standard flex with bending
+            if *(*m).flex_interp.offset(f) == 0
+                && *(*m).flex_dim.offset(f) == 2
+                && *(*m).flex_bendingadr.offset(f) >= 0
+            {
+                return 1;
+            }
+        }
+        0
+    }
 }
 
 /// C: flexInterp_cgsolve (engine/engine_forward.c:1311)

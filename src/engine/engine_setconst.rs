@@ -85,7 +85,19 @@ pub fn set0(m: *mut mjModel, d: *mut mjData) {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn update_box(xmin: *mut f64, xmax: *mut f64, pos: *mut f64, radius: f64) {
-    todo!() // updateBox
+    // SAFETY: xmin, xmax, pos each point to at least 3 f64 (caller contract)
+    unsafe {
+        for i in 0..3_usize {
+            let lo = *pos.add(i) - radius;
+            let hi = *pos.add(i) + radius;
+            if lo < *xmin.add(i) {
+                *xmin.add(i) = lo;
+            }
+            if hi > *xmax.add(i) {
+                *xmax.add(i) = hi;
+            }
+        }
+    }
 }
 
 /// C: setStat (engine/engine_setconst.c:1050)

@@ -185,7 +185,36 @@ pub fn filter_sphere(pos1: *const f64, pos2: *const f64, bound: f64) -> i32 {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_filter_sphere(m: *const mjModel, d: *mut mjData, g1: i32, g2: i32, margin: f64) -> i32 {
-    todo!() // mj_filterSphere
+    // SAFETY: caller guarantees m, d are valid; g1, g2 are valid geom indices
+    unsafe {
+        const mjGEOM_PLANE: i32 = 0;
+
+        // neither geom is a plane
+        if *(*m).geom_rbound.add(g1 as usize) > 0.0
+            && *(*m).geom_rbound.add(g2 as usize) > 0.0
+        {
+            return filter_sphere(
+                (*d).geom_xpos.add(3 * g1 as usize),
+                (*d).geom_xpos.add(3 * g2 as usize),
+                *(*m).geom_rbound.add(g1 as usize) + *(*m).geom_rbound.add(g2 as usize) + margin,
+            );
+        }
+
+        // one geom is a plane
+        if *(*m).geom_type.add(g1 as usize) == mjGEOM_PLANE
+            && *(*m).geom_rbound.add(g2 as usize) > 0.0
+            && plane_geom_dist(m, d, g1, g2) > margin + *(*m).geom_rbound.add(g2 as usize)
+        {
+            return 1;
+        }
+        if *(*m).geom_type.add(g2 as usize) == mjGEOM_PLANE
+            && *(*m).geom_rbound.add(g1 as usize) > 0.0
+            && plane_geom_dist(m, d, g2, g1) > margin + *(*m).geom_rbound.add(g1 as usize)
+        {
+            return 1;
+        }
+        0
+    }
 }
 
 /// C: filterBodyPair (engine/engine_collision_driver.c:288)
@@ -297,7 +326,46 @@ pub fn mj_collide_flex_internal(m: *const mjModel, d: *mut mjData, f: i32) {
 /// C: contactcompare (engine/engine_collision_driver.c:380)
 #[allow(unused_variables, non_snake_case)]
 pub fn contactcompare(c1: *const mjContact, c2: *const mjContact, context: *mut ()) -> i32 {
-    todo!() // contactcompare
+    // SAFETY: caller guarantees c1, c2 are valid mjContact pointers; context is a valid mjModel*
+    unsafe {
+        let m = context as *const mjModel;
+
+        // get colliding object ids
+        let mut con1_obj1 = if (*c1).geom[0] >= 0 { (*c1).geom[0] }
+            else if (*c1).elem[0] >= 0 { (*c1).elem[0] }
+            else { (*c1).vert[0] };
+        let mut con1_obj2 = if (*c1).geom[1] >= 0 { (*c1).geom[1] }
+            else if (*c1).elem[1] >= 0 { (*c1).elem[1] }
+            else { (*c1).vert[1] };
+        let mut con2_obj1 = if (*c2).geom[0] >= 0 { (*c2).geom[0] }
+            else if (*c2).elem[0] >= 0 { (*c2).elem[0] }
+            else { (*c2).vert[0] };
+        let mut con2_obj2 = if (*c2).geom[1] >= 0 { (*c2).geom[1] }
+            else if (*c2).elem[1] >= 0 { (*c2).elem[1] }
+            else { (*c2).vert[1] };
+
+        // for geom:geom, reproduce the order of contacts without mj_collideTree
+        if (*c1).geom[0] >= 0 && (*c1).geom[1] >= 0
+            && (*c2).geom[0] >= 0 && (*c2).geom[1] >= 0
+        {
+            if *(*m).geom_type.add(con1_obj1 as usize) > *(*m).geom_type.add(con1_obj2 as usize) {
+                let tmp = con1_obj1;
+                con1_obj1 = con1_obj2;
+                con1_obj2 = tmp;
+            }
+            if *(*m).geom_type.add(con2_obj1 as usize) > *(*m).geom_type.add(con2_obj2 as usize) {
+                let tmp = con2_obj1;
+                con2_obj1 = con2_obj2;
+                con2_obj2 = tmp;
+            }
+        }
+
+        if con1_obj1 < con2_obj1 { return -1; }
+        if con1_obj1 > con2_obj1 { return 1; }
+        if con1_obj2 < con2_obj2 { return -1; }
+        if con1_obj2 > con2_obj2 { return 1; }
+        0
+    }
 }
 
 /// C: contactSort (engine/engine_collision_driver.c:413)

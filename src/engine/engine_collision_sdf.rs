@@ -131,7 +131,18 @@ pub fn geom_gradient(gradient: *mut f64, m: *const mjModel, d: *const mjData, p:
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn map_pose(xpos1: *const f64, xquat1: *const f64, xpos2: *const f64, xquat2: *const f64, pos12: *mut f64, mat12: *mut f64) {
-    todo!() // mapPose
+    use crate::engine::engine_util_spatial::{mju_neg_pose, mju_mul_pose, mju_quat2mat};
+
+    // SAFETY: all pointers are valid arrays of appropriate size (caller contract)
+    unsafe {
+        let mut negpos: [f64; 3] = [0.0; 3];
+        let mut negquat: [f64; 4] = [0.0; 4];
+        let mut quat12: [f64; 4] = [0.0; 4];
+
+        mju_neg_pose(negpos.as_mut_ptr(), negquat.as_mut_ptr(), xpos2, xquat2);
+        mju_mul_pose(pos12, quat12.as_mut_ptr(), negpos.as_ptr(), negquat.as_ptr(), xpos1, xquat1);
+        mju_quat2mat(mat12, quat12.as_ptr());
+    }
 }
 
 /// C: isknown (engine/engine_collision_sdf.c:532)

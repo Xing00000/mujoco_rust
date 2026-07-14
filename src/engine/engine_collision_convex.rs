@@ -494,7 +494,12 @@ pub fn mjccd_support(obj: *const (), dir: *const ccd_vec3_t, vec: *mut ccd_vec3_
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjc_point_support(res: *mut f64, obj: *mut mjCCDObj, dir: *const f64) {
-    todo!() // mjc_pointSupport
+    // SAFETY: res points to 3 f64, obj is a valid mjCCDObj pointer (caller contract)
+    unsafe {
+        *res.add(0) = (*obj).pos[0];
+        *res.add(1) = (*obj).pos[1];
+        *res.add(2) = (*obj).pos[2];
+    }
 }
 
 /// C: mjc_lineSupport (engine/engine_collision_convex.h:109)

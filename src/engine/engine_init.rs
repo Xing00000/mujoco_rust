@@ -59,7 +59,20 @@ pub fn mj_default_visual(vis: *mut mjVisual) {
 /// C: mj_defaultLROpt (engine/engine_init.c:234)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_default_lr_opt(opt: *mut mjLROpt) {
-    todo!() // mj_defaultLROpt
+    // SAFETY: opt is a valid pointer to mjLROpt (caller contract)
+    unsafe {
+        (*opt).mode = 1; // mjLRMODE_MUSCLE
+        (*opt).useexisting = 1;
+        (*opt).uselimit = 0;
+
+        (*opt).accel = 20.0;
+        (*opt).maxforce = 0.0;
+        (*opt).timeconst = 1.0;
+        (*opt).timestep = 0.01;
+        (*opt).inttotal = 10.0;
+        (*opt).interval = 2.0;
+        (*opt).tolrange = 0.05;
+    }
 }
 
 /// C: mj_defaultStatistic (engine/engine_init.h:30)

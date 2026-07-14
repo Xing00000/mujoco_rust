@@ -54,7 +54,36 @@ pub fn area_sign(p1: *const f64, p2: *const f64, p3: *const f64) -> f64 {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn point_segment(res: *mut f64, p: *const f64, u: *const f64, v: *const f64) -> f64 {
-    todo!() // pointSegment
+    use crate::engine::engine_util_blas::{mju_dot, mju_add_scl};
+    use crate::engine::engine_util_misc::mju_max;
+
+    const MJ_MINVAL: f64 = 1E-15;
+
+    // SAFETY: res, p, u, v each point to at least 2 f64 (caller contract)
+    unsafe {
+        // make u the origin
+        let uv: [f64; 2] = [*v.add(0) - *u.add(0), *v.add(1) - *u.add(1)];
+        let up: [f64; 2] = [*p.add(0) - *u.add(0), *p.add(1) - *u.add(1)];
+
+        // project: find a s.t. uv is orthogonal to (up-a*uv)
+        let a = mju_dot(uv.as_ptr(), up.as_ptr(), 2)
+              / mju_max(MJ_MINVAL, mju_dot(uv.as_ptr(), uv.as_ptr(), 2));
+
+        // find nearest point to p, clamp to u or v if a is not in (0,1)
+        if a <= 0.0 {
+            *res.add(0) = *u.add(0);
+            *res.add(1) = *u.add(1);
+        } else if a >= 1.0 {
+            *res.add(0) = *v.add(0);
+            *res.add(1) = *v.add(1);
+        } else {
+            mju_add_scl(res, u, uv.as_ptr(), a, 2);
+        }
+
+        // compute distance
+        f64::sqrt((*res.add(0) - *p.add(0)) * (*res.add(0) - *p.add(0))
+                + (*res.add(1) - *p.add(1)) * (*res.add(1) - *p.add(1)))
+    }
 }
 
 /// C: mjraw_SphereCapsule (engine/engine_collision_primitive.h:28)

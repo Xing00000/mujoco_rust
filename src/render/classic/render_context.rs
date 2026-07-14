@@ -40,7 +40,16 @@ pub fn make_h_field(m: *const mjModel, con: *mut mjrContext) {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn set_vertex_sphere(v: *mut f32, n: *mut f32, az: f32, el: f32, sign: i32) {
-    todo!() // setVertexSphere
+    // SAFETY: caller guarantees v and n point to at least 3 f32 elements
+    unsafe {
+        *v.add(0) = az.cos() * el.cos();
+        *v.add(1) = az.sin() * el.cos();
+        *v.add(2) = sign as f32 + el.sin();
+
+        *n.add(0) = *v.add(0);
+        *n.add(1) = *v.add(1);
+        *n.add(2) = *v.add(2) - sign as f32;
+    }
 }
 
 /// C: halfSphere (render/classic/render_context.c:512)
@@ -65,7 +74,12 @@ pub fn sphere(nSlice: i32, nStack: i32) {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn set_vertex_disk(v: *mut f32, az: f32, r: f32, sign: i32) {
-    todo!() // setVertexDisk
+    // SAFETY: caller guarantees v points to at least 3 f32 elements
+    unsafe {
+        *v.add(0) = az.cos() * r;
+        *v.add(1) = az.sin() * r;
+        *v.add(2) = sign as f32;
+    }
 }
 
 /// C: disk (render/classic/render_context.c:690)

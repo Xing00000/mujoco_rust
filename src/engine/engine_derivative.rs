@@ -265,7 +265,37 @@ pub fn add_jtbj(m: *const mjModel, d: *mut mjData, J: *const f64, B: *const f64,
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn add_jtbj_sparse(m: *const mjModel, d: *mut mjData, J: *const f64, B: *const f64, n: i32, offset: i32, J_rownnz: *const i32, J_rowadr: *const i32, J_colind: *const i32) {
-    todo!() // addJTBJSparse
+    // SAFETY: caller guarantees m, d are valid pointers; J, B, J_rownnz, J_rowadr, J_colind
+    // point to valid arrays with proper sizes for the sparse computation.
+    unsafe {
+        for i in 0..n {
+            for j in 0..n {
+                if *B.add((i * n + j) as usize) == 0.0 {
+                    continue;
+                }
+
+                let nnz_i = *J_rownnz.add((offset + i) as usize);
+                let adr_i = *J_rowadr.add((offset + i) as usize);
+                let nnz_j = *J_rownnz.add((offset + j) as usize);
+                let adr_j = *J_rowadr.add((offset + j) as usize);
+
+                for k in 0..nnz_i {
+                    let ik = adr_i + k;
+                    let colik = *J_colind.add(ik as usize);
+
+                    crate::engine::engine_util_sparse::mju_add_to_scl_sparse_inc(
+                        (*d).qDeriv.add(*(*m).D_rowadr.add(colik as usize) as usize),
+                        J.add(adr_j as usize),
+                        *(*m).D_rownnz.add(colik as usize),
+                        (*m).D_colind.add(*(*m).D_rowadr.add(colik as usize) as usize),
+                        nnz_j,
+                        J_colind.add(adr_j as usize),
+                        *J.add(ik as usize) * *B.add((i * n + j) as usize),
+                    );
+                }
+            }
+        }
+    }
 }
 
 /// C: mjd_muscleGain_vel (engine/engine_derivative.c:781)

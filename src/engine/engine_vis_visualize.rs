@@ -412,7 +412,44 @@ pub fn add_constraint_geoms(m: *const mjModel, d: *mut mjData, vopt: *const mjvO
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn make_face(_face: *mut f32, _normal: *mut f32, radius: f64, vertxpos: *const f64, nface: i32, i0: i32, i1: i32, i2: i32) {
-    todo!() // makeFace
+    // SAFETY: caller guarantees _face, _normal have at least 9*(nface+1) elements,
+    // vertxpos has at least 3*(max(i0,i1,i2)+1) elements
+    unsafe {
+        let face = _face.add(9 * nface as usize);
+        let normal = _normal.add(9 * nface as usize);
+        let v0 = vertxpos.add(3 * i0 as usize);
+        let v1 = vertxpos.add(3 * i1 as usize);
+        let v2 = vertxpos.add(3 * i2 as usize);
+
+        // compute normal
+        let v01: [f64; 3] = [
+            *v1.add(0) - *v0.add(0),
+            *v1.add(1) - *v0.add(1),
+            *v1.add(2) - *v0.add(2),
+        ];
+        let v02: [f64; 3] = [
+            *v2.add(0) - *v0.add(0),
+            *v2.add(1) - *v0.add(1),
+            *v2.add(2) - *v0.add(2),
+        ];
+        let mut nrm: [f64; 3] = [0.0; 3];
+        crate::engine::engine_util_spatial::mju_cross(nrm.as_mut_ptr(), v01.as_ptr(), v02.as_ptr());
+        crate::engine::engine_util_blas::mju_normalize3(nrm.as_mut_ptr());
+
+        // set vertices: offset by radius*normal
+        let mut temp: [f64; 3] = [0.0; 3];
+        crate::engine::engine_util_blas::mju_add_scl3(temp.as_mut_ptr(), v0, nrm.as_ptr(), radius);
+        crate::engine::engine_util_misc::mju_n2f(face, temp.as_ptr(), 3);
+        crate::engine::engine_util_blas::mju_add_scl3(temp.as_mut_ptr(), v1, nrm.as_ptr(), radius);
+        crate::engine::engine_util_misc::mju_n2f(face.add(3), temp.as_ptr(), 3);
+        crate::engine::engine_util_blas::mju_add_scl3(temp.as_mut_ptr(), v2, nrm.as_ptr(), radius);
+        crate::engine::engine_util_misc::mju_n2f(face.add(6), temp.as_ptr(), 3);
+
+        // set normals
+        crate::engine::engine_util_misc::mju_n2f(normal, nrm.as_ptr(), 3);
+        crate::engine::engine_util_misc::mju_n2f(normal.add(3), nrm.as_ptr(), 3);
+        crate::engine::engine_util_misc::mju_n2f(normal.add(6), nrm.as_ptr(), 3);
+    }
 }
 
 /// C: addNormal (engine/engine_vis_visualize.c:3056)

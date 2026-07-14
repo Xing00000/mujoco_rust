@@ -32,7 +32,90 @@ pub fn subdistance(lambda: *mut f64, n: i32, simplex: *const Vertex) {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn s3d(lambda: *mut f64, s1: *const f64, s2: *const f64, s3: *const f64, s4: *const f64) {
-    todo!() // S3D
+    // SAFETY: caller guarantees lambda[4], s1[3], s2[3], s3[3], s4[3] are valid
+    unsafe {
+        // compute cofactors to find det(M)
+        let C41: f64 = -det3(s2, s3, s4);
+        let C42: f64 =  det3(s1, s3, s4);
+        let C43: f64 = -det3(s1, s2, s4);
+        let C44: f64 =  det3(s1, s2, s3);
+
+        let m_det: f64 = C41 + C42 + C43 + C44;
+
+        let comp1 = same_sign2(m_det, C41);
+        let comp2 = same_sign2(m_det, C42);
+        let comp3 = same_sign2(m_det, C43);
+        let comp4 = same_sign2(m_det, C44);
+
+        // if all signs are the same then the origin is inside the simplex
+        if comp1 != 0 && comp2 != 0 && comp3 != 0 && comp4 != 0 {
+            *lambda.add(0) = C41 / m_det;
+            *lambda.add(1) = C42 / m_det;
+            *lambda.add(2) = C43 / m_det;
+            *lambda.add(3) = C44 / m_det;
+            return;
+        }
+
+        // find the smallest distance, and use the corresponding barycentric coordinates
+        let mut dmin: f64 = f64::MAX;
+
+        if comp1 == 0 {
+            let mut lambda_2d: [f64; 3] = [0.0; 3];
+            let mut x: [f64; 3] = [0.0; 3];
+            s2d(lambda_2d.as_mut_ptr(), s2, s3, s4);
+            lincomb(x.as_mut_ptr(), lambda_2d.as_ptr(), 3, s2, s3, s4, std::ptr::null());
+            let d = dot3(x.as_ptr(), x.as_ptr());
+            *lambda.add(0) = 0.0;
+            *lambda.add(1) = lambda_2d[0];
+            *lambda.add(2) = lambda_2d[1];
+            *lambda.add(3) = lambda_2d[2];
+            dmin = d;
+        }
+
+        if comp2 == 0 {
+            let mut lambda_2d: [f64; 3] = [0.0; 3];
+            let mut x: [f64; 3] = [0.0; 3];
+            s2d(lambda_2d.as_mut_ptr(), s1, s3, s4);
+            lincomb(x.as_mut_ptr(), lambda_2d.as_ptr(), 3, s1, s3, s4, std::ptr::null());
+            let d = dot3(x.as_ptr(), x.as_ptr());
+            if d < dmin {
+                *lambda.add(0) = lambda_2d[0];
+                *lambda.add(1) = 0.0;
+                *lambda.add(2) = lambda_2d[1];
+                *lambda.add(3) = lambda_2d[2];
+                dmin = d;
+            }
+        }
+
+        if comp3 == 0 {
+            let mut lambda_2d: [f64; 3] = [0.0; 3];
+            let mut x: [f64; 3] = [0.0; 3];
+            s2d(lambda_2d.as_mut_ptr(), s1, s2, s4);
+            lincomb(x.as_mut_ptr(), lambda_2d.as_ptr(), 3, s1, s2, s4, std::ptr::null());
+            let d = dot3(x.as_ptr(), x.as_ptr());
+            if d < dmin {
+                *lambda.add(0) = lambda_2d[0];
+                *lambda.add(1) = lambda_2d[1];
+                *lambda.add(2) = 0.0;
+                *lambda.add(3) = lambda_2d[2];
+                dmin = d;
+            }
+        }
+
+        if comp4 == 0 {
+            let mut lambda_2d: [f64; 3] = [0.0; 3];
+            let mut x: [f64; 3] = [0.0; 3];
+            s2d(lambda_2d.as_mut_ptr(), s1, s2, s3);
+            lincomb(x.as_mut_ptr(), lambda_2d.as_ptr(), 3, s1, s2, s3, std::ptr::null());
+            let d = dot3(x.as_ptr(), x.as_ptr());
+            if d < dmin {
+                *lambda.add(0) = lambda_2d[0];
+                *lambda.add(1) = lambda_2d[1];
+                *lambda.add(2) = lambda_2d[2];
+                // lambda[3] stays unchanged (matches C behavior: no assignment for lambda[3])
+            }
+        }
+    }
 }
 
 /// C: S2D (engine/engine_collision_gjk.c:62)
