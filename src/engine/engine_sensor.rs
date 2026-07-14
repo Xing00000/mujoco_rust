@@ -162,10 +162,7 @@ pub fn cam_project(sensordata: *mut f64, target_xpos: *const f64, cam_xpos: *con
 /// Calls: mjCMesh::tree
 #[allow(unused_variables, non_snake_case)]
 pub fn check_match(m: *const mjModel, body: i32, geom: i32, r#type: u32, id: i32) -> i32 {
-    // NOTE: signature changed from previous IR version
-    // Previous params: (m : * const mjModel, mut body : i32, geom : i32, r#type : u32, id : i32)
-    // Previous return: i32
-    todo!("re-translate: params renamed")
+    todo!() // checkMatch
 }
 
 /// C: matchContact (engine/engine_sensor.c:339)
