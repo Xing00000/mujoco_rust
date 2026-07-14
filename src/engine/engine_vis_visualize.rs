@@ -548,7 +548,41 @@ pub fn catenary_residual(b: f64, intercept: f64, grad: *mut f64) -> f64 {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn solve_catenary(v: f64, h: f64, length: f64) -> f64 {
-    todo!() // solve_catenary
+    const TOLERANCE: f64 = 1e-9;
+
+    let intercept: f64 = catenary_intercept(v, h, length);
+
+    // initial guess using linear approximation to catenary_residual
+    let mut b: f64 = intercept / f64::sqrt(24.0);
+
+    // Newton steps to convergence (usually ~ 5 steps)
+    for _i in 0..50 {
+        // get value and gradient
+        let mut grad: f64 = 0.0;
+        let res: f64 = catenary_residual(b, intercept, &mut grad as *mut f64);
+
+        if f64::abs(res) < TOLERANCE {
+            break;
+        }
+
+        // Newton step
+        let mut step: f64 = -res / grad;
+
+        // backtracking line-search
+        for _j in 0..10 {
+            let new_res: f64 = catenary_residual(b + step, intercept, std::ptr::null_mut());
+            if f64::abs(new_res) < f64::abs(res) {
+                break;
+            } else {
+                step *= 0.5;
+            }
+        }
+
+        // take step
+        b += step;
+    }
+
+    b
 }
 
 /// C: mjv_connector (engine/engine_vis_visualize.h:29)

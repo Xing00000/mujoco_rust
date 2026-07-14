@@ -7,7 +7,25 @@ use crate::types::*;
 /// C: ContactInfoCompare (engine/engine_sensor.c:52)
 #[allow(unused_variables, non_snake_case)]
 pub fn contact_info_compare(a: *const ContactInfo, b: *const ContactInfo, context: *mut ()) -> i32 {
-    todo!() // ContactInfoCompare
+    // SAFETY: a and b point to valid ContactInfo structs with layout {criterion: f64, id: i32, flip: i32}
+    unsafe {
+        #[repr(C)]
+        struct ContactInfoRepr {
+            criterion: f64,
+            id: i32,
+            flip: i32,
+        }
+        let a = &*(a as *const ContactInfoRepr);
+        let b = &*(b as *const ContactInfoRepr);
+
+        if a.criterion < b.criterion { return -1; }
+        if a.criterion > b.criterion { return 1; }
+
+        if a.id < b.id { return -1; }
+        if a.id > b.id { return 1; }
+
+        0
+    }
 }
 
 /// C: ContactSelect (engine/engine_sensor.c:61)

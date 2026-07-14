@@ -341,7 +341,15 @@ pub fn mj_assign_friction(m: *const mjModel, target: *mut f64, source: *const f6
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_assign_margin(m: *const mjModel, source: f64) -> f64 {
-    todo!() // mj_assignMargin
+    // SAFETY: m is a valid pointer to mjModel (caller contract)
+    unsafe {
+        const mjENBL_OVERRIDE: i32 = 1 << 0;
+        if ((*m).opt.enableflags & mjENBL_OVERRIDE) != 0 {
+            (*m).opt.o_margin
+        } else {
+            source
+        }
+    }
 }
 
 /// C: mj_addContact (engine/engine_core_constraint.h:58)

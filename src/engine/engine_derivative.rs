@@ -324,7 +324,14 @@ pub fn pow2(val: f64) -> f64 {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn ellipsoid_max_moment(size: *const f64, dir: i32) -> f64 {
-    todo!() // ellipsoid_max_moment
+    // SAFETY: size points to array of 3 f64; dir is 0, 1, or 2 (caller contract)
+    unsafe {
+        const MJ_PI: f64 = 3.14159265358979323846_f64;
+        let d0 = *size.add(dir as usize);
+        let d1 = *size.add(((dir + 1) % 3) as usize);
+        let d2 = *size.add(((dir + 2) % 3) as usize);
+        8.0 / 15.0 * MJ_PI * d0 * pow2(pow2(crate::engine::engine_util_misc::mju_max(d1, d2)))
+    }
 }
 
 /// C: addToQuadrant (engine/engine_derivative.c:1354)

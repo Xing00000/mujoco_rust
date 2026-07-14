@@ -44,7 +44,136 @@ pub fn s3d(lambda: *mut f64, s1: *const f64, s2: *const f64, s3: *const f64, s4:
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn s2d(lambda: *mut f64, s1: *const f64, s2: *const f64, s3: *const f64) {
-    todo!() // S2D
+    // SAFETY: caller guarantees lambda[3], s1[3], s2[3], s3[3] are valid
+    unsafe {
+        // project origin onto affine hull of the simplex
+        let mut p_o: [f64; 3] = [0.0; 3];
+        if project_origin_plane(p_o.as_mut_ptr(), s1, s2, s3) != 0 {
+            s1d(lambda, s1, s2);
+            *lambda.add(2) = 0.0;
+            return;
+        }
+
+        // Minors M_i4 of the matrix M
+        let M_14: f64 = *s2.add(1) * *s3.add(2) - *s2.add(2) * *s3.add(1)
+                       - *s1.add(1) * *s3.add(2) + *s1.add(2) * *s3.add(1)
+                       + *s1.add(1) * *s2.add(2) - *s1.add(2) * *s2.add(1);
+        let M_24: f64 = *s2.add(0) * *s3.add(2) - *s2.add(2) * *s3.add(0)
+                       - *s1.add(0) * *s3.add(2) + *s1.add(2) * *s3.add(0)
+                       + *s1.add(0) * *s2.add(2) - *s1.add(2) * *s2.add(0);
+        let M_34: f64 = *s2.add(0) * *s3.add(1) - *s2.add(1) * *s3.add(0)
+                       - *s1.add(0) * *s3.add(1) + *s1.add(1) * *s3.add(0)
+                       + *s1.add(0) * *s2.add(1) - *s1.add(1) * *s2.add(0);
+
+        // exclude the axis with the largest projection of the simplex
+        let mut M_max: f64 = 0.0;
+        let mut s1_2D: [f64; 2] = [0.0; 2];
+        let mut s2_2D: [f64; 2] = [0.0; 2];
+        let mut s3_2D: [f64; 2] = [0.0; 2];
+        let mut p_o_2D: [f64; 2] = [0.0; 2];
+        let mu1: f64 = f64::abs(M_14);
+        let mu2: f64 = f64::abs(M_24);
+        let mu3: f64 = f64::abs(M_34);
+
+        if mu1 >= mu2 && mu1 >= mu3 {
+            M_max = M_14;
+            s1_2D[0] = *s1.add(1);
+            s1_2D[1] = *s1.add(2);
+            s2_2D[0] = *s2.add(1);
+            s2_2D[1] = *s2.add(2);
+            s3_2D[0] = *s3.add(1);
+            s3_2D[1] = *s3.add(2);
+            p_o_2D[0] = p_o[1];
+            p_o_2D[1] = p_o[2];
+        } else if mu2 >= mu3 {
+            M_max = M_24;
+            s1_2D[0] = *s1.add(0);
+            s1_2D[1] = *s1.add(2);
+            s2_2D[0] = *s2.add(0);
+            s2_2D[1] = *s2.add(2);
+            s3_2D[0] = *s3.add(0);
+            s3_2D[1] = *s3.add(2);
+            p_o_2D[0] = p_o[0];
+            p_o_2D[1] = p_o[2];
+        } else {
+            M_max = M_34;
+            s1_2D[0] = *s1.add(0);
+            s1_2D[1] = *s1.add(1);
+            s2_2D[0] = *s2.add(0);
+            s2_2D[1] = *s2.add(1);
+            s3_2D[0] = *s3.add(0);
+            s3_2D[1] = *s3.add(1);
+            p_o_2D[0] = p_o[0];
+            p_o_2D[1] = p_o[1];
+        }
+
+        // cofactors C3i
+        // C31: signed area of (p_o_2D, s2_2D, s3_2D)
+        let C31: f64 = p_o_2D[0] * s2_2D[1] + p_o_2D[1] * s3_2D[0] + s2_2D[0] * s3_2D[1]
+                     - p_o_2D[0] * s3_2D[1] - p_o_2D[1] * s2_2D[0] - s3_2D[0] * s2_2D[1];
+
+        // C32: signed area of (p_o_2D, s1_2D, s3_2D)
+        let C32: f64 = p_o_2D[0] * s3_2D[1] + p_o_2D[1] * s1_2D[0] + s3_2D[0] * s1_2D[1]
+                     - p_o_2D[0] * s1_2D[1] - p_o_2D[1] * s3_2D[0] - s1_2D[0] * s3_2D[1];
+
+        // C33: signed area of (p_o_2D, s1_2D, s2_2D)
+        let C33: f64 = p_o_2D[0] * s1_2D[1] + p_o_2D[1] * s2_2D[0] + s1_2D[0] * s2_2D[1]
+                     - p_o_2D[0] * s2_2D[1] - p_o_2D[1] * s1_2D[0] - s2_2D[0] * s1_2D[1];
+
+        let comp1: i32 = same_sign2(M_max, C31);
+        let comp2: i32 = same_sign2(M_max, C32);
+        let comp3: i32 = same_sign2(M_max, C33);
+
+        // all the same sign, p_o is inside the 2-simplex
+        if comp1 != 0 && comp2 != 0 && comp3 != 0 {
+            *lambda.add(0) = C31 / M_max;
+            *lambda.add(1) = C32 / M_max;
+            *lambda.add(2) = C33 / M_max;
+            return;
+        }
+
+        // find the smallest distance, and use the corresponding barycentric coordinates
+        let mut dmin: f64 = f64::MAX;
+
+        if comp1 == 0 {
+            let mut lambda_1d: [f64; 2] = [0.0; 2];
+            let mut x: [f64; 3] = [0.0; 3];
+            s1d(lambda_1d.as_mut_ptr(), s2, s3);
+            lincomb(x.as_mut_ptr(), lambda_1d.as_ptr(), 2, s2, s3, std::ptr::null(), std::ptr::null());
+            let d: f64 = dot3(x.as_ptr(), x.as_ptr());
+            *lambda.add(0) = 0.0;
+            *lambda.add(1) = lambda_1d[0];
+            *lambda.add(2) = lambda_1d[1];
+            dmin = d;
+        }
+
+        if comp2 == 0 {
+            let mut lambda_1d: [f64; 2] = [0.0; 2];
+            let mut x: [f64; 3] = [0.0; 3];
+            s1d(lambda_1d.as_mut_ptr(), s1, s3);
+            lincomb(x.as_mut_ptr(), lambda_1d.as_ptr(), 2, s1, s3, std::ptr::null(), std::ptr::null());
+            let d: f64 = dot3(x.as_ptr(), x.as_ptr());
+            if d < dmin {
+                *lambda.add(0) = lambda_1d[0];
+                *lambda.add(1) = 0.0;
+                *lambda.add(2) = lambda_1d[1];
+                dmin = d;
+            }
+        }
+
+        if comp3 == 0 {
+            let mut lambda_1d: [f64; 2] = [0.0; 2];
+            let mut x: [f64; 3] = [0.0; 3];
+            s1d(lambda_1d.as_mut_ptr(), s1, s2);
+            lincomb(x.as_mut_ptr(), lambda_1d.as_ptr(), 2, s1, s2, std::ptr::null(), std::ptr::null());
+            let d: f64 = dot3(x.as_ptr(), x.as_ptr());
+            if d < dmin {
+                *lambda.add(0) = lambda_1d[0];
+                *lambda.add(1) = lambda_1d[1];
+                *lambda.add(2) = 0.0;
+            }
+        }
+    }
 }
 
 /// C: S1D (engine/engine_collision_gjk.c:63)

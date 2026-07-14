@@ -13,7 +13,15 @@ use crate::types::*;
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn get_margin(m: *const mjModel, g1: i32, g2: i32, ipair: i32) -> f64 {
-    todo!() // getMargin
+    // SAFETY: m is a valid pointer to mjModel; g1, g2, ipair are valid indices (caller contract)
+    unsafe {
+        if ipair >= 0 {
+            return crate::engine::engine_core_constraint::mj_assign_margin(
+                m, *(*m).pair_margin.add(ipair as usize));
+        }
+        crate::engine::engine_core_constraint::mj_assign_margin(
+            m, *(*m).geom_margin.add(g1 as usize) + *(*m).geom_margin.add(g2 as usize))
+    }
 }
 
 /// C: getGap (engine/engine_collision_driver.c:170)
@@ -24,13 +32,22 @@ pub fn get_margin(m: *const mjModel, g1: i32, g2: i32, ipair: i32) -> f64 {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn get_gap(m: *const mjModel, g1: i32, g2: i32, ipair: i32) -> f64 {
-    todo!() // getGap
+    // SAFETY: m is a valid pointer to mjModel; g1, g2, ipair are valid indices (caller contract)
+    unsafe {
+        if ipair >= 0 {
+            return *(*m).pair_gap.add(ipair as usize);
+        }
+        *(*m).geom_gap.add(g1 as usize) + *(*m).geom_gap.add(g2 as usize)
+    }
 }
 
 /// C: resetArena (engine/engine_collision_driver.c:179)
 #[allow(unused_variables, non_snake_case)]
 pub fn reset_arena(d: *mut mjData) {
-    todo!() // resetArena
+    // SAFETY: d is a valid pointer to mjData (caller contract)
+    unsafe {
+        (*d).parena = (*d).ncon as usize * std::mem::size_of::<mjContact>();
+    }
 }
 
 /// C: alignArena (engine/engine_collision_driver.c:189)
@@ -55,13 +72,40 @@ pub fn align_arena(d: *mut mjData, alignment: usize) -> usize {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn plane_geom_dist(m: *const mjModel, d: *mut mjData, g1: i32, g2: i32) -> f64 {
-    todo!() // planeGeomDist
+    // SAFETY: m, d are valid pointers; g1, g2 are valid geom indices (caller contract)
+    unsafe {
+        let mat1 = (*d).geom_xmat.add(9 * g1 as usize);
+        let norm: [f64; 3] = [*mat1.add(2), *mat1.add(5), *mat1.add(8)];
+        let mut dif: [f64; 3] = [0.0; 3];
+
+        crate::engine::engine_util_blas::mju_sub3(
+            dif.as_mut_ptr(),
+            (*d).geom_xpos.add(3 * g2 as usize),
+            (*d).geom_xpos.add(3 * g1 as usize),
+        );
+        crate::engine::engine_util_blas::mju_dot3(dif.as_ptr(), norm.as_ptr())
+    }
 }
 
 /// C: hasPlane (engine/engine_collision_driver.c:210)
 #[allow(unused_variables, non_snake_case)]
 pub fn has_plane(m: *const mjModel, body: i32) -> i32 {
-    todo!() // hasPlane
+    // SAFETY: m is a valid pointer to mjModel; body is a valid body index (caller contract)
+    unsafe {
+        const mjGEOM_PLANE: i32 = 0;
+        let start = *(*m).body_geomadr.add(body as usize);
+        let end = start + *(*m).body_geomnum.add(body as usize);
+
+        let mut g = start;
+        while g < end {
+            if *(*m).geom_type.add(g as usize) == mjGEOM_PLANE {
+                return 1;
+            }
+            g += 1;
+        }
+
+        0
+    }
 }
 
 /// C: filterBitmask (engine/engine_collision_driver.c:227)
