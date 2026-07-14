@@ -131,7 +131,100 @@ pub fn flex_interp_cgsolve(m: *const mjModel, d: *mut mjData, qacc: *mut f64, qf
 /// Calls: mjCMesh::tree
 #[allow(unused_variables, non_snake_case)]
 pub fn midpoint_eligible(m: *const mjModel, d: *const mjData, jnt: i32) -> i32 {
-    todo!() // midpoint_eligible
+    // Constants from C enums
+    const MJ_JNT_FREE: i32 = 0;
+    const MJ_DSBL_ISLAND: i32 = 1 << 18;
+    const MJ_CNSTR_EQUALITY: i32 = 0;
+    const MJ_CNSTR_LIMIT_TENDON: i32 = 4;
+    const MJ_CNSTR_CONTACT_FRICTIONLESS: i32 = 5;
+    const MJ_CNSTR_CONTACT_PYRAMIDAL: i32 = 6;
+    const MJ_CNSTR_CONTACT_ELLIPTIC: i32 = 7;
+    const MJ_CNSTR_FRICTION_TENDON: i32 = 2;
+    const MJ_EQ_CONNECT: i32 = 0;
+    const MJ_EQ_WELD: i32 = 1;
+    const MJ_OBJ_SITE: i32 = 6;
+
+    // SAFETY: m, d are valid mjModel/mjData pointers (caller contract)
+    unsafe {
+        if *(*m).jnt_type.add(jnt as usize) != MJ_JNT_FREE as i32 {
+            return 0;
+        }
+
+        let body = *(*m).jnt_bodyid.add(jnt as usize);
+        let adr = *(*m).jnt_dofadr.add(jnt as usize);
+        let tree = *(*m).dof_treeid.add(adr as usize);
+
+        // must be standalone 6-DOF tree with no children
+        if *(*m).tree_dofnum.add(tree as usize) != 6
+            || *(*m).body_subtreemass.add(body as usize) != *(*m).body_mass.add(body as usize)
+        {
+            return 0;
+        }
+
+        // must be awake
+        if *(*d).tree_awake.add(tree as usize) == 0 {
+            return 0;
+        }
+
+        // must be unconstrained
+        if (*d).nefc != 0 {
+            // islands enabled: O(1) lookup
+            if ((*m).opt.disableflags & MJ_DSBL_ISLAND) == 0 {
+                if *(*d).dof_island.add(adr as usize) >= 0 {
+                    return 0;
+                }
+            } else {
+                // islands disabled: check if any constraint involves this tree
+                for c in 0..(*d).nefc {
+                    let etype = *(*d).efc_type.add(c as usize);
+                    let id = *(*d).efc_id.add(c as usize);
+
+                    // contact: check if either geom belongs to this body
+                    if etype == MJ_CNSTR_CONTACT_FRICTIONLESS
+                        || etype == MJ_CNSTR_CONTACT_PYRAMIDAL
+                        || etype == MJ_CNSTR_CONTACT_ELLIPTIC
+                    {
+                        let g1 = (*(*d).contact.add(id as usize)).geom[0];
+                        let g2 = (*(*d).contact.add(id as usize)).geom[1];
+                        if g1 >= 0 && *(*m).geom_bodyid.add(g1 as usize) == body {
+                            return 0;
+                        }
+                        if g2 >= 0 && *(*m).geom_bodyid.add(g2 as usize) == body {
+                            return 0;
+                        }
+                    }
+                    // connect or weld: check if either body is this body
+                    else if etype == MJ_CNSTR_EQUALITY
+                        && (*(*m).eq_type.add(id as usize) == MJ_EQ_CONNECT
+                            || *(*m).eq_type.add(id as usize) == MJ_EQ_WELD)
+                    {
+                        let mut b1 = *(*m).eq_obj1id.add(id as usize);
+                        let mut b2 = *(*m).eq_obj2id.add(id as usize);
+                        if *(*m).eq_objtype.add(id as usize) == MJ_OBJ_SITE {
+                            b1 = *(*m).site_bodyid.add(b1 as usize);
+                            b2 = *(*m).site_bodyid.add(b2 as usize);
+                        }
+                        if b1 == body || b2 == body {
+                            return 0;
+                        }
+                    }
+                    // tendon limit or friction: check first two trees
+                    else if etype == MJ_CNSTR_LIMIT_TENDON
+                        || etype == MJ_CNSTR_FRICTION_TENDON
+                    {
+                        if *(*m).tendon_treeid.add((2 * id) as usize) == tree
+                            || *(*m).tendon_treeid.add((2 * id + 1) as usize) == tree
+                        {
+                            return 0;
+                        }
+                    }
+                }
+            }
+        }
+
+        // otherwise eligible
+        1
+    }
 }
 
 /// C: midpoint_aligned (engine/engine_forward.c:1493)

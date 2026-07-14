@@ -53,7 +53,38 @@ pub fn drawtextrect(rect: mjrRect, txt: *const i8, rgb: *const f32, con: *const 
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn drawrectangle(rect: mjrRect, rgb: *const f32, rgbback: *const f32, con: *const mjrContext) {
-    todo!() // drawrectangle
+    const GL_QUADS: u32 = 0x0007;
+
+    extern "C" {
+        fn glColor3fv(v: *const f32);
+        fn glBegin(mode: u32);
+        fn glEnd();
+        fn glVertex2i(x: i32, y: i32);
+    }
+
+    // SAFETY: GL functions linked from mujoco; rgb/rgbback are valid f32[3] arrays (caller contract)
+    unsafe {
+        // outside
+        glColor3fv(rgb);
+        glBegin(GL_QUADS);
+        glVertex2i(rect.left, rect.bottom);
+        glVertex2i(rect.left + rect.width, rect.bottom);
+        glVertex2i(rect.left + rect.width, rect.bottom + rect.height);
+        glVertex2i(rect.left, rect.bottom + rect.height);
+        glEnd();
+
+        // inside
+        if !rgbback.is_null() {
+            let margin: i32 = scl(2, con);
+            glColor3fv(rgbback);
+            glBegin(GL_QUADS);
+            glVertex2i(rect.left + margin, rect.bottom + margin);
+            glVertex2i(rect.left + rect.width - margin, rect.bottom + margin);
+            glVertex2i(rect.left + rect.width - margin, rect.bottom + rect.height - margin);
+            glVertex2i(rect.left + margin, rect.bottom + rect.height - margin);
+            glEnd();
+        }
+    }
 }
 
 /// C: roundcorner (ui/ui_main.c:313)
@@ -145,7 +176,7 @@ pub fn scrollrect(rect: mjrRect, ui: *const mjUI, con: *const mjrContext, bar: *
 /// C: inside (ui/ui_main.c:716)
 #[allow(unused_variables, non_snake_case)]
 pub fn inside(x: i32, y: i32, r: mjrRect) -> i32 {
-    todo!() // inside
+    (x >= r.left && x <= r.left + r.width && y >= r.bottom && y <= r.bottom + r.height) as i32
 }
 
 /// C: insideoval (ui/ui_main.c:723)

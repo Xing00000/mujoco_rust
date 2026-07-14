@@ -784,27 +784,239 @@ pub fn max_faces(pt: *mut Polytope) -> i32 {
 /// C: addEdge (engine/engine_collision_gjk.c:1263)
 #[allow(unused_variables, non_snake_case)]
 pub fn add_edge(pt: *mut Polytope, index: i32, edge: i32) {
-    todo!() // addEdge
+    // SAFETY: pt is a valid Polytope pointer with horizon sub-struct (caller contract from EPA)
+    unsafe {
+        // Polytope.horizon is at a fixed offset; access fields via raw pointer arithmetic
+        // horizon.edges[horizon.nedges] = edge
+        // horizon.indices[horizon.nedges++] = index
+        //
+        // We cast to the C-layout Polytope and access horizon directly.
+        // The Polytope struct layout from C:
+        //   verts: *mut Vertex     (8 bytes)
+        //   nverts: i32            (4 bytes) + pad(4)
+        //   faces: *mut Face       (8 bytes)
+        //   nfaces: i32            (4 bytes)
+        //   maxfaces: i32          (4 bytes)
+        //   center: [f64; 3]       (24 bytes)
+        //   map: **Face            (8 bytes)
+        //   nmap: i32              (4 bytes) + pad(4)
+        //   horizon.indices: *mut i32 (8 bytes)
+        //   horizon.edges: *mut i32   (8 bytes)
+        //   horizon.nedges: i32       (4 bytes) + pad(4)
+        //   horizon.w: *const f64     (8 bytes)
+
+        #[repr(C)]
+        struct Horizon {
+            indices: *mut i32,
+            edges: *mut i32,
+            nedges: i32,
+            _pad: i32,
+            w: *const f64,
+        }
+
+        #[repr(C)]
+        struct PolytopeRepr {
+            verts: *mut u8,
+            nverts: i32,
+            _pad0: i32,
+            faces: *mut u8,
+            nfaces: i32,
+            maxfaces: i32,
+            center: [f64; 3],
+            map: *mut *mut u8,
+            nmap: i32,
+            _pad1: i32,
+            horizon: Horizon,
+        }
+
+        let p = pt as *mut PolytopeRepr;
+        let nedges = (*p).horizon.nedges;
+        *(*p).horizon.edges.add(nedges as usize) = edge;
+        *(*p).horizon.indices.add(nedges as usize) = index;
+        (*p).horizon.nedges = nedges + 1;
+    }
 }
 
 /// C: getEdge (engine/engine_collision_gjk.c:1270)
 #[allow(unused_variables, non_snake_case)]
 pub fn get_edge(face: *mut Face, vertex: i32) -> i32 {
-    todo!() // getEdge
+    #[repr(C)]
+    struct FaceRepr {
+        verts: i32,
+        adj: [i32; 3],
+        v: [f64; 3],
+        dist2: f64,
+        index: i32,
+        _pad: i32,
+    }
+
+    // SAFETY: face is a valid Face pointer in the polytope (EPA invariant)
+    unsafe {
+        let f = face as *mut FaceRepr;
+        let verts_packed = (*f).verts;
+        let verts = [
+            verts_packed & 0x3FF,
+            (verts_packed >> 10) & 0x3FF,
+            (verts_packed >> 20) & 0x3FF,
+        ];
+        if verts[0] == vertex { return 0; }
+        if verts[1] == vertex { return 1; }
+        2
+    }
 }
 
 /// C: horizonRec (engine/engine_collision_gjk.c:1279)
 /// Calls: addEdge, deleteFace, dot3, getEdge
 #[allow(unused_variables, non_snake_case)]
 pub fn horizon_rec(pt: *mut Polytope, face: *mut Face, e: i32) -> i32 {
-    todo!() // horizonRec
+    // Face layout (C struct):
+    //   int verts;        offset 0
+    //   int adj[3];       offset 4
+    //   mjtNum v[3];      offset 16 (aligned to 8)
+    //   mjtNum dist2;     offset 40
+    //   int index;        offset 48
+    // Total with padding: 56 bytes
+
+    #[repr(C)]
+    struct FaceRepr {
+        verts: i32,
+        adj: [i32; 3],
+        v: [f64; 3],
+        dist2: f64,
+        index: i32,
+        _pad: i32,
+    }
+
+    #[repr(C)]
+    struct Horizon {
+        indices: *mut i32,
+        edges: *mut i32,
+        nedges: i32,
+        _pad: i32,
+        w: *const f64,
+    }
+
+    #[repr(C)]
+    struct PolytopeRepr {
+        verts: *mut u8,
+        nverts: i32,
+        _pad0: i32,
+        faces: *mut u8,
+        nfaces: i32,
+        maxfaces: i32,
+        center: [f64; 3],
+        map: *mut *mut u8,
+        nmap: i32,
+        _pad1: i32,
+        horizon: Horizon,
+    }
+
+    // SAFETY: pt is a valid Polytope, face is a valid Face in pt->faces (EPA invariant)
+    unsafe {
+        let p = pt as *mut PolytopeRepr;
+        let f = face as *mut FaceRepr;
+        let w = (*p).horizon.w;
+
+        // dot3(face->v, pt->horizon.w) - face->dist2 > mjMINVAL
+        let dot = (*f).v[0] * *w.add(0) + (*f).v[1] * *w.add(1) + (*f).v[2] * *w.add(2);
+        if dot - (*f).dist2 > 1e-15_f64 {
+            let verts_packed = (*f).verts;
+            let verts = [
+                verts_packed & 0x3FF,
+                (verts_packed >> 10) & 0x3FF,
+                (verts_packed >> 20) & 0x3FF,
+            ];
+
+            delete_face(pt, face);
+
+            // recursively search the adjacent faces on the next two edges
+            for k in 1..3_i32 {
+                let i = ((e + k) % 3) as usize;
+                let adj_idx = (*f).adj[i];
+                let faces_base = (*p).faces as *mut FaceRepr;
+                let adj_face_ptr = faces_base.add(adj_idx as usize) as *mut Face;
+                let adj_face_repr = faces_base.add(adj_idx as usize);
+
+                if (*adj_face_repr).index > -2 {
+                    let adj_edge = get_edge(adj_face_ptr, verts[(i + 1) % 3]);
+                    if horizon_rec(pt, adj_face_ptr, adj_edge) == 0 {
+                        add_edge(pt, adj_idx, adj_edge);
+                    }
+                }
+            }
+            return 1;
+        }
+        0
+    }
 }
 
 /// C: horizon (engine/engine_collision_gjk.c:1303)
 /// Calls: addEdge, deleteFace, getEdge, horizonRec
 #[allow(unused_variables, non_snake_case)]
 pub fn horizon(pt: *mut Polytope, face: *mut Face) {
-    todo!() // horizon
+    #[repr(C)]
+    struct FaceRepr {
+        verts: i32,
+        adj: [i32; 3],
+        v: [f64; 3],
+        dist2: f64,
+        index: i32,
+        _pad: i32,
+    }
+
+    #[repr(C)]
+    struct PolytopeRepr {
+        verts: *mut u8,
+        nverts: i32,
+        _pad0: i32,
+        faces: *mut u8,
+        nfaces: i32,
+        maxfaces: i32,
+        center: [f64; 3],
+        map: *mut *mut u8,
+        nmap: i32,
+        _pad1: i32,
+    }
+
+    // SAFETY: pt is a valid Polytope, face is a valid Face in pt->faces (EPA invariant)
+    unsafe {
+        let p = pt as *mut PolytopeRepr;
+        let f = face as *mut FaceRepr;
+
+        delete_face(pt, face);
+
+        let verts_packed = (*f).verts;
+        let verts = [
+            verts_packed & 0x3FF,
+            (verts_packed >> 10) & 0x3FF,
+            (verts_packed >> 20) & 0x3FF,
+        ];
+
+        let faces_base = (*p).faces as *mut FaceRepr;
+
+        // first edge
+        let adj_face = faces_base.add((*f).adj[0] as usize) as *mut Face;
+        let adj_edge = get_edge(adj_face, verts[1]);
+        if horizon_rec(pt, adj_face, adj_edge) == 0 {
+            add_edge(pt, (*f).adj[0], adj_edge);
+        }
+
+        // second edge
+        let adj_face = faces_base.add((*f).adj[1] as usize) as *mut Face;
+        let adj_face_repr = faces_base.add((*f).adj[1] as usize);
+        let adj_edge = get_edge(adj_face, verts[2]);
+        if (*adj_face_repr).index > -2 && horizon_rec(pt, adj_face, adj_edge) == 0 {
+            add_edge(pt, (*f).adj[1], adj_edge);
+        }
+
+        // third edge
+        let adj_face = faces_base.add((*f).adj[2] as usize) as *mut Face;
+        let adj_face_repr = faces_base.add((*f).adj[2] as usize);
+        let adj_edge = get_edge(adj_face, verts[0]);
+        if (*adj_face_repr).index > -2 && horizon_rec(pt, adj_face, adj_edge) == 0 {
+            add_edge(pt, (*f).adj[2], adj_edge);
+        }
+    }
 }
 
 /// C: epaWitness (engine/engine_collision_gjk.c:1331)

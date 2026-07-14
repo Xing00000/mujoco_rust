@@ -174,7 +174,125 @@ pub fn mjd_mul_inert_vec_vel(D: *mut f64, i: *const f64) {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjd_com_vel_vel_dense(m: *const mjModel, d: *mut mjData, Dcvel: *mut f64, Dcdofdot: *mut f64) {
-    todo!() // mjd_comVel_vel_dense
+    use crate::engine::engine_util_blas::{mju_zero, mju_copy, mju_mul_mat_mat};
+
+    // SAFETY: m, d are valid model/data pointers; Dcvel is nbody*6*nv; Dcdofdot is nv*6*nv
+    unsafe {
+        let nv = (*m).nv as i32;
+        let nbody = (*m).nbody as i32;
+        let mut mat = [0.0f64; 36];
+
+        // clear Dcvel
+        mju_zero(Dcvel, nbody * 6 * nv);
+
+        // forward pass over bodies: accumulate Dcvel, set Dcdofdot
+        for i in 1..nbody {
+            // Dcvel = Dcvel_parent
+            let parent = *(*m).body_parentid.add(i as usize);
+            mju_copy(
+                Dcvel.add((i * 6 * nv) as usize),
+                Dcvel.add((parent * 6 * nv) as usize),
+                6 * nv,
+            );
+
+            // Dcvel += D(cdof * qvel),  Dcdofdot = D(cvel x cdof)
+            let dofadr = *(*m).body_dofadr.add(i as usize);
+            let dofnum = *(*m).body_dofnum.add(i as usize);
+            let mut j = dofadr;
+            while j < dofadr + dofnum {
+                let jnt_type = *(*m).jnt_type.add(*(*m).dof_jntid.add(j as usize) as usize) as u32;
+                match jnt_type {
+                    // mjJNT_FREE = 0
+                    0 => {
+                        // Dcdofdot = 0
+                        mju_zero(Dcdofdot.add((j * 6 * nv) as usize), 18 * nv);
+
+                        // Dcvel += cdof * (D qvel)
+                        for k in 0..6_i32 {
+                            *Dcvel.add((i * 6 * nv + k * nv + j + 0) as usize) +=
+                                *(*d).cdof.add(((j + 0) * 6 + k) as usize);
+                            *Dcvel.add((i * 6 * nv + k * nv + j + 1) as usize) +=
+                                *(*d).cdof.add(((j + 1) * 6 + k) as usize);
+                            *Dcvel.add((i * 6 * nv + k * nv + j + 2) as usize) +=
+                                *(*d).cdof.add(((j + 2) * 6 + k) as usize);
+                        }
+
+                        // continue with rotations
+                        j += 3;
+
+                        // FALLTHROUGH to mjJNT_BALL
+                        // Dcdofdot = D crossMotion(cvel, cdof)
+                        for k in 0..3_i32 {
+                            mjd_cross_motion_vel(mat.as_mut_ptr(), (*d).cdof.add(((j + k) * 6) as usize));
+                            mju_mul_mat_mat(
+                                Dcdofdot.add(((j + k) * 6 * nv) as usize),
+                                mat.as_ptr(),
+                                Dcvel.add((i * 6 * nv) as usize),
+                                6, 6, nv,
+                            );
+                        }
+
+                        // Dcvel += cdof * (D qvel)
+                        for k in 0..6_i32 {
+                            *Dcvel.add((i * 6 * nv + k * nv + j + 0) as usize) +=
+                                *(*d).cdof.add(((j + 0) * 6 + k) as usize);
+                            *Dcvel.add((i * 6 * nv + k * nv + j + 1) as usize) +=
+                                *(*d).cdof.add(((j + 1) * 6 + k) as usize);
+                            *Dcvel.add((i * 6 * nv + k * nv + j + 2) as usize) +=
+                                *(*d).cdof.add(((j + 2) * 6 + k) as usize);
+                        }
+
+                        // adjust for 3-dof joint
+                        j += 2;
+                    }
+                    // mjJNT_BALL = 1
+                    1 => {
+                        // Dcdofdot = D crossMotion(cvel, cdof)
+                        for k in 0..3_i32 {
+                            mjd_cross_motion_vel(mat.as_mut_ptr(), (*d).cdof.add(((j + k) * 6) as usize));
+                            mju_mul_mat_mat(
+                                Dcdofdot.add(((j + k) * 6 * nv) as usize),
+                                mat.as_ptr(),
+                                Dcvel.add((i * 6 * nv) as usize),
+                                6, 6, nv,
+                            );
+                        }
+
+                        // Dcvel += cdof * (D qvel)
+                        for k in 0..6_i32 {
+                            *Dcvel.add((i * 6 * nv + k * nv + j + 0) as usize) +=
+                                *(*d).cdof.add(((j + 0) * 6 + k) as usize);
+                            *Dcvel.add((i * 6 * nv + k * nv + j + 1) as usize) +=
+                                *(*d).cdof.add(((j + 1) * 6 + k) as usize);
+                            *Dcvel.add((i * 6 * nv + k * nv + j + 2) as usize) +=
+                                *(*d).cdof.add(((j + 2) * 6 + k) as usize);
+                        }
+
+                        // adjust for 3-dof joint
+                        j += 2;
+                    }
+                    // default (SLIDE, HINGE)
+                    _ => {
+                        // Dcdofdot = D crossMotion(cvel, cdof) * Dcvel
+                        mjd_cross_motion_vel(mat.as_mut_ptr(), (*d).cdof.add((j * 6) as usize));
+                        mju_mul_mat_mat(
+                            Dcdofdot.add((j * 6 * nv) as usize),
+                            mat.as_ptr(),
+                            Dcvel.add((i * 6 * nv) as usize),
+                            6, 6, nv,
+                        );
+
+                        // Dcvel += cdof * (D qvel)
+                        for k in 0..6_i32 {
+                            *Dcvel.add((i * 6 * nv + k * nv + j) as usize) +=
+                                *(*d).cdof.add((j * 6 + k) as usize);
+                        }
+                    }
+                }
+                j += 1;
+            }
+        }
+    }
 }
 
 /// C: copyFromParent (engine/engine_derivative.c:468)
