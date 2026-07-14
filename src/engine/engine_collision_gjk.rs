@@ -931,7 +931,19 @@ pub fn mesh_face(res: *mut f64, obj: *mut mjCCDObj, idx: i32) -> i32 {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn aligned_faces(res: *mut i32, v: *const f64, nv: i32, w: *const f64, nw: i32) -> i32 {
-    todo!() // alignedFaces
+    // SAFETY: caller guarantees res points to [2], v to [nv*3], w to [nw*3]
+    unsafe {
+        for i in 0..nv as usize {
+            for j in 0..nw as usize {
+                if dot3(v.add(3 * i), w.add(3 * j)) < -0.99999872 {
+                    *res.add(0) = i as i32;
+                    *res.add(1) = j as i32;
+                    return 1;
+                }
+            }
+        }
+        0
+    }
 }
 
 /// C: alignedFaceEdge (engine/engine_collision_gjk.c:2088)

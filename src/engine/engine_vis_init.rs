@@ -39,7 +39,16 @@ pub fn mjv_default_free_camera(m: *const mjModel, cam: *mut mjvCamera) {
 /// C: mjv_defaultCamera (engine/engine_vis_init.h:49)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjv_default_camera(cam: *mut mjvCamera) {
-    todo!() // mjv_defaultCamera
+    // SAFETY: caller guarantees cam is a valid, aligned, writable pointer to mjvCamera
+    unsafe {
+        std::ptr::write_bytes(cam as *mut u8, 0, std::mem::size_of::<mjvCamera>());
+        (*cam).r#type = 0; // mjCAMERA_FREE
+        (*cam).fixedcamid = -1;
+        (*cam).trackbodyid = -1;
+        (*cam).distance = 2.0;
+        (*cam).azimuth = 90.0;
+        (*cam).elevation = -45.0;
+    }
 }
 
 /// C: mjv_defaultPerturb (engine/engine_vis_init.h:52)

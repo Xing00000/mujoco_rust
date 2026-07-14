@@ -202,13 +202,55 @@ pub fn mjs_default_light(light: *mut mjsLight) {
 /// Calls: mj_defaultSolRefImp
 #[allow(unused_variables, non_snake_case)]
 pub fn mjs_default_flex(flex: *mut mjsFlex) {
-    todo!() // mjs_defaultFlex
+    // SAFETY: caller guarantees flex is a valid, aligned, writable pointer to mjsFlex
+    unsafe {
+        std::ptr::write_bytes(flex as *mut u8, 0, std::mem::size_of::<mjsFlex>());
+
+        // contact defaults
+        (*flex).contype = 1;
+        (*flex).conaffinity = 1;
+        (*flex).condim = 3;
+        (*flex).friction[0] = 1.0;
+        (*flex).friction[1] = 0.005;
+        (*flex).friction[2] = 0.0001;
+        (*flex).solmix = 1.0;
+        crate::engine::engine_init::mj_default_sol_ref_imp(
+            (*flex).solref.as_mut_ptr(),
+            (*flex).solimp.as_mut_ptr(),
+        );
+
+        // other defaults
+        (*flex).dim = 2;
+        (*flex).radius = 0.005;
+        (*flex).cellcount[0] = 1;
+        (*flex).cellcount[1] = 1;
+        (*flex).cellcount[2] = 1;
+        (*flex).internal = 0;
+        (*flex).selfcollide = 4; // mjFLEXSELF_AUTO
+        (*flex).activelayers = 1;
+        (*flex).rgba[0] = 0.5;
+        (*flex).rgba[1] = 0.5;
+        (*flex).rgba[2] = 0.5;
+        (*flex).rgba[3] = 1.0;
+        (*flex).thickness = -1.0;
+    }
 }
 
 /// C: mjs_defaultMesh (user/user_init.c:240)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjs_default_mesh(mesh: *mut mjsMesh) {
-    todo!() // mjs_defaultMesh
+    // SAFETY: caller guarantees mesh is a valid, aligned, writable pointer to mjsMesh
+    unsafe {
+        std::ptr::write_bytes(mesh as *mut u8, 0, std::mem::size_of::<mjsMesh>());
+        (*mesh).refquat[0] = 1.0;
+        (*mesh).scale[0] = 1.0;
+        (*mesh).scale[1] = 1.0;
+        (*mesh).scale[2] = 1.0;
+        (*mesh).maxhullvert = -1;
+        // inertia: mjMESH_INERTIA_LEGACY = 2, stored as i32 in [u8; 4]
+        std::ptr::write((*mesh).inertia.as_mut_ptr() as *mut i32, 2);
+        (*mesh).octree_maxdepth = 6;
+    }
 }
 
 /// C: mjs_defaultHField (user/user_init.c:251)
@@ -239,21 +281,65 @@ pub fn mjs_default_material(material: *mut mjsMaterial) {
 /// Calls: mj_defaultSolRefImp
 #[allow(unused_variables, non_snake_case)]
 pub fn mjs_default_pair(pair: *mut mjsPair) {
-    todo!() // mjs_defaultPair
+    // SAFETY: caller guarantees pair is a valid, aligned, writable pointer to mjsPair
+    unsafe {
+        std::ptr::write_bytes(pair as *mut u8, 0, std::mem::size_of::<mjsPair>());
+        (*pair).condim = 3;
+        crate::engine::engine_init::mj_default_sol_ref_imp(
+            (*pair).solref.as_mut_ptr(),
+            (*pair).solimp.as_mut_ptr(),
+        );
+        (*pair).friction[0] = 1.0;
+        (*pair).friction[1] = 1.0;
+        (*pair).friction[2] = 0.005;
+        (*pair).friction[3] = 0.0001;
+        (*pair).friction[4] = 0.0001;
+    }
 }
 
 /// C: mjs_defaultEquality (user/user_init.c:305)
 /// Calls: mj_defaultSolRefImp
 #[allow(unused_variables, non_snake_case)]
 pub fn mjs_default_equality(equality: *mut mjsEquality) {
-    todo!() // mjs_defaultEquality
+    // SAFETY: caller guarantees equality is a valid, aligned, writable pointer to mjsEquality
+    unsafe {
+        std::ptr::write_bytes(equality as *mut u8, 0, std::mem::size_of::<mjsEquality>());
+        // type: mjEQ_CONNECT = 0, stored as i32 in [u8; 8] (already zero from memset)
+        std::ptr::write((*equality).r#type.as_mut_ptr() as *mut i32, 0);
+        (*equality).active = 1;
+        crate::engine::engine_init::mj_default_sol_ref_imp(
+            (*equality).solref.as_mut_ptr(),
+            (*equality).solimp.as_mut_ptr(),
+        );
+        (*equality).data[1] = 1.0;
+        (*equality).data[10] = 1.0; // torque:force ratio
+    }
 }
 
 /// C: mjs_defaultTendon (user/user_init.c:316)
 /// Calls: mj_defaultSolRefImp
 #[allow(unused_variables, non_snake_case)]
 pub fn mjs_default_tendon(tendon: *mut mjsTendon) {
-    todo!() // mjs_defaultTendon
+    // SAFETY: caller guarantees tendon is a valid, aligned, writable pointer to mjsTendon
+    unsafe {
+        std::ptr::write_bytes(tendon as *mut u8, 0, std::mem::size_of::<mjsTendon>());
+        (*tendon).limited = 2; // mjLIMITED_AUTO
+        (*tendon).springlength[0] = -1.0;
+        (*tendon).springlength[1] = -1.0;
+        crate::engine::engine_init::mj_default_sol_ref_imp(
+            (*tendon).solref_limit.as_mut_ptr(),
+            (*tendon).solimp_limit.as_mut_ptr(),
+        );
+        crate::engine::engine_init::mj_default_sol_ref_imp(
+            (*tendon).solref_friction.as_mut_ptr(),
+            (*tendon).solimp_friction.as_mut_ptr(),
+        );
+        (*tendon).width = 0.003;
+        (*tendon).rgba[0] = 0.5;
+        (*tendon).rgba[1] = 0.5;
+        (*tendon).rgba[2] = 0.5;
+        (*tendon).rgba[3] = 1.0;
+    }
 }
 
 /// C: mjs_defaultActuator (user/user_init.c:329)
@@ -288,7 +374,17 @@ pub fn mjs_default_actuator(actuator: *mut mjsActuator) {
 /// C: mjs_defaultSensor (user/user_init.c:354)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjs_default_sensor(sensor: *mut mjsSensor) {
-    todo!() // mjs_defaultSensor
+    // SAFETY: caller guarantees sensor is a valid, aligned, writable pointer to mjsSensor
+    unsafe {
+        std::ptr::write_bytes(sensor as *mut u8, 0, std::mem::size_of::<mjsSensor>());
+
+        // type: mjSENS_TOUCH = 0, stored as i32 in [u8; 4] (already zero from memset)
+        std::ptr::write((*sensor).r#type.as_mut_ptr() as *mut i32, 0);
+        // datatype: mjDATATYPE_REAL = 0, stored as i32 in [u8; 4]
+        std::ptr::write((*sensor).datatype.as_mut_ptr() as *mut i32, 0);
+        // needstage: mjSTAGE_ACC = 3, stored as i32 in [u8; 4]
+        std::ptr::write((*sensor).needstage.as_mut_ptr() as *mut i32, 3);
+    }
 }
 
 /// C: mjs_defaultNumeric (user/user_init.c:364)
