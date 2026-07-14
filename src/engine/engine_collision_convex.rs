@@ -84,7 +84,15 @@ pub fn local_to_global(res: *mut f64, mat: *const f64, dir: *const f64, pos: *co
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjc_sphere_support(res: *mut f64, obj: *mut mjCCDObj, dir: *const f64) {
-    todo!() // mjc_sphereSupport
+    // SAFETY: res points to 3 f64, obj is a valid mjCCDObj pointer, dir points to 3 f64 (caller contract)
+    unsafe {
+        let pos = (*obj).pos.as_ptr();
+        let radius = (*obj).size[0];
+
+        *res.add(0) = radius * *dir.add(0) + *pos.add(0);
+        *res.add(1) = radius * *dir.add(1) + *pos.add(1);
+        *res.add(2) = radius * *dir.add(2) + *pos.add(2);
+    }
 }
 
 /// C: mjc_capsuleSupport (engine/engine_collision_convex.c:231)
@@ -96,7 +104,29 @@ pub fn mjc_sphere_support(res: *mut f64, obj: *mut mjCCDObj, dir: *const f64) {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjc_capsule_support(res: *mut f64, obj: *mut mjCCDObj, dir: *const f64) {
-    todo!() // mjc_capsuleSupport
+    // SAFETY: res points to 3 f64, obj is a valid mjCCDObj pointer, dir points to 3 f64 (caller contract)
+    unsafe {
+        let mat = (*obj).mat.as_ptr();
+        let pos = (*obj).pos.as_ptr();
+        let radius = (*obj).size[0];
+        let length = (*obj).size[1];
+
+        // rotate dir to geom local frame
+        let mut local_dir: [f64; 3] = [0.0; 3];
+        let mut local_supp: [f64; 3] = [0.0; 3];
+        mul_mat_t_vec3(local_dir.as_mut_ptr(), mat, dir);
+
+        // start with sphere
+        local_supp[0] = local_dir[0] * radius;
+        local_supp[1] = local_dir[1] * radius;
+        local_supp[2] = local_dir[2] * radius;
+
+        // add cylinder contribution
+        local_supp[2] += if local_dir[2] >= 0.0 { length } else { -length };
+
+        // transform result to global frame
+        local_to_global(res, mat, local_supp.as_ptr(), pos);
+    }
 }
 
 /// C: mjc_ellipsoidSupport (engine/engine_collision_convex.c:256)
@@ -108,7 +138,45 @@ pub fn mjc_capsule_support(res: *mut f64, obj: *mut mjCCDObj, dir: *const f64) {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjc_ellipsoid_support(res: *mut f64, obj: *mut mjCCDObj, dir: *const f64) {
-    todo!() // mjc_ellipsoidSupport
+    const MJ_MINVAL2: f64 = 1E-15_f64 * 1E-15_f64;
+
+    // SAFETY: res[3], obj valid, dir[3] valid (caller contract)
+    unsafe {
+        let mat = (*obj).mat.as_ptr();
+        let pos = (*obj).pos.as_ptr();
+        let size = (*obj).size.as_ptr();
+
+        // rotate dir to geom local frame
+        let mut local_dir: [f64; 3] = [0.0; 3];
+        let mut local_supp: [f64; 3] = [0.0; 3];
+        mul_mat_t_vec3(local_dir.as_mut_ptr(), mat, dir);
+
+        // find support point on unit sphere: scale dir by ellipsoid sizes
+        local_supp[0] = local_dir[0] * *size.add(0);
+        local_supp[1] = local_dir[1] * *size.add(1);
+        local_supp[2] = local_dir[2] * *size.add(2);
+
+        let norm2 = local_supp[0] * local_supp[0]
+            + local_supp[1] * local_supp[1]
+            + local_supp[2] * local_supp[2];
+
+        // too small to normalize
+        if norm2 < MJ_MINVAL2 {
+            *res.add(0) = *mat.add(0) * *size.add(0) + *pos.add(0);
+            *res.add(1) = *mat.add(3) * *size.add(0) + *pos.add(1);
+            *res.add(2) = *mat.add(6) * *size.add(0) + *pos.add(2);
+            return;
+        }
+
+        // normalize and transform to ellipsoid
+        let norm_inv = 1.0 / norm2.sqrt();
+        local_supp[0] *= norm_inv * *size.add(0);
+        local_supp[1] *= norm_inv * *size.add(1);
+        local_supp[2] *= norm_inv * *size.add(2);
+
+        // transform result to global frame
+        local_to_global(res, mat, local_supp.as_ptr(), pos);
+    }
 }
 
 /// C: mjc_cylinderSupport (engine/engine_collision_convex.c:293)
@@ -120,7 +188,31 @@ pub fn mjc_ellipsoid_support(res: *mut f64, obj: *mut mjCCDObj, dir: *const f64)
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjc_cylinder_support(res: *mut f64, obj: *mut mjCCDObj, dir: *const f64) {
-    todo!() // mjc_cylinderSupport
+    const MJ_MINVAL: f64 = 1E-15;
+    const MJ_MINVAL2: f64 = MJ_MINVAL * MJ_MINVAL;
+
+    // SAFETY: res points to 3 f64, obj is a valid mjCCDObj pointer, dir points to 3 f64 (caller contract)
+    unsafe {
+        let mat = (*obj).mat.as_ptr();
+        let pos = (*obj).pos.as_ptr();
+        let size = (*obj).size.as_ptr();
+
+        // rotate dir to geom local frame
+        let mut local_dir: [f64; 3] = [0.0; 3];
+        let mut local_supp: [f64; 3] = [0.0; 3];
+        mul_mat_t_vec3(local_dir.as_mut_ptr(), mat, dir);
+
+        let n2 = local_dir[0] * local_dir[0] + local_dir[1] * local_dir[1];
+        let scl = if n2 >= MJ_MINVAL2 { *size.add(0) / f64::sqrt(n2) } else { 0.0 };
+        local_supp[0] = scl * local_dir[0];
+        local_supp[1] = scl * local_dir[1];
+
+        // set result in Z direction
+        local_supp[2] = if local_dir[2] >= 0.0 { *size.add(1) } else { -*size.add(1) };
+
+        // transform result to global frame
+        local_to_global(res, mat, local_supp.as_ptr(), pos);
+    }
 }
 
 /// C: mjc_boxSupport (engine/engine_collision_convex.c:317)
@@ -132,7 +224,30 @@ pub fn mjc_cylinder_support(res: *mut f64, obj: *mut mjCCDObj, dir: *const f64) 
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjc_box_support(res: *mut f64, obj: *mut mjCCDObj, dir: *const f64) {
-    todo!() // mjc_boxSupport
+    // SAFETY: res points to 3 f64, obj is a valid mjCCDObj pointer, dir points to 3 f64 (caller contract)
+    unsafe {
+        let mat = (*obj).mat.as_ptr();
+        let pos = (*obj).pos.as_ptr();
+        let size = (*obj).size.as_ptr();
+
+        // rotate dir to geom local frame
+        let mut local_dir: [f64; 3] = [0.0; 3];
+        let mut local_supp: [f64; 3] = [0.0; 3];
+        mul_mat_t_vec3(local_dir.as_mut_ptr(), mat, dir);
+
+        // find support point in local frame
+        local_supp[0] = if local_dir[0] >= 0.0 { *size.add(0) } else { -*size.add(0) };
+        local_supp[1] = if local_dir[1] >= 0.0 { *size.add(1) } else { -*size.add(1) };
+        local_supp[2] = if local_dir[2] >= 0.0 { *size.add(2) } else { -*size.add(2) };
+
+        // mark the index of the corner of the box for fast lookup
+        (*obj).vertindex = (if local_supp[0] > 0.0 { 1 } else { 0 })
+            | (if local_supp[1] > 0.0 { 2 } else { 0 })
+            | (if local_supp[2] > 0.0 { 4 } else { 0 });
+
+        // transform support point to global frame
+        local_to_global(res, mat, local_supp.as_ptr(), pos);
+    }
 }
 
 /// C: dot3f (engine/engine_collision_convex.c:343)
@@ -158,7 +273,49 @@ pub fn dot3f(a: *const f64, b: *const f32) -> f64 {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjc_mesh_support(res: *mut f64, obj: *mut mjCCDObj, dir: *const f64) {
-    todo!() // mjc_meshSupport
+    // SAFETY: res[3], obj valid, dir[3] valid; data.mesh fields accessed via raw offsets (caller contract)
+    unsafe {
+        let mat = (*obj).mat.as_ptr();
+        let pos = (*obj).pos.as_ptr();
+
+        // access mesh union fields via raw pointer into the opaque data blob
+        let data_ptr = (*obj).data._data.as_ptr();
+        let nverts = *(data_ptr as *const i32);
+        let verts = *(data_ptr.add(8) as *const *const f32);
+
+        let mut local_dir: [f64; 3] = [0.0; 3];
+        mul_mat_t_vec3(local_dir.as_mut_ptr(), mat, dir);
+
+        let mut max: f64 = -f32::MAX as f64;
+        let mut imax: i32 = 0;
+
+        // use cached results from previous search
+        if (*obj).vertindex >= 0 {
+            imax = (*obj).vertindex;
+            max = dot3f(local_dir.as_ptr(), verts.add(3 * imax as usize));
+        }
+
+        // search all vertices, find maximum dot product
+        for i in 0..nverts {
+            let vdot = dot3f(local_dir.as_ptr(), verts.add(3 * i as usize));
+
+            // update max
+            if vdot > max {
+                max = vdot;
+                imax = i;
+            }
+        }
+
+        // record vertex index of maximum
+        (*obj).vertindex = imax;
+
+        local_dir[0] = *verts.add(3 * imax as usize + 0) as f64;
+        local_dir[1] = *verts.add(3 * imax as usize + 1) as f64;
+        local_dir[2] = *verts.add(3 * imax as usize + 2) as f64;
+
+        // transform result to global frame
+        local_to_global(res, mat, local_dir.as_ptr(), pos);
+    }
 }
 
 /// C: mjc_hillclimbSupport (engine/engine_collision_convex.c:391)
@@ -170,7 +327,60 @@ pub fn mjc_mesh_support(res: *mut f64, obj: *mut mjCCDObj, dir: *const f64) {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjc_hillclimb_support(res: *mut f64, obj: *mut mjCCDObj, dir: *const f64) {
-    todo!() // mjc_hillclimbSupport
+    // SAFETY: res[3], obj valid, dir[3] valid; data.mesh fields accessed via raw offsets (caller contract)
+    unsafe {
+        let mat = (*obj).mat.as_ptr();
+        let pos = (*obj).pos.as_ptr();
+
+        // access mesh union fields via raw pointer into the opaque data blob
+        let data_ptr = (*obj).data._data.as_ptr();
+        let verts = *(data_ptr.add(8) as *const *const f32);
+        let graph = *(data_ptr.add(72) as *const *const i32);
+
+        let numvert = *graph.add(0);
+        let vert_edgeadr = graph.add(2);
+        let vert_globalid = graph.add(2 + numvert as usize);
+        let edge_localid = graph.add(2 + 2 * numvert as usize);
+
+        // rotate dir to geom local frame
+        let mut local_dir: [f64; 3] = [0.0; 3];
+        mul_mat_t_vec3(local_dir.as_mut_ptr(), mat, dir);
+
+        let mut max: f64 = -f32::MAX as f64;
+        let mut prev: i32 = -1;
+        let mut imax: i32 = if (*obj).meshindex >= 0 { (*obj).meshindex } else { 0 };
+
+        // hillclimb until no change
+        while imax != prev {
+            prev = imax;
+            let mut i = *vert_edgeadr.add(imax as usize);
+            loop {
+                let subidx = *edge_localid.add(i as usize);
+                if subidx < 0 {
+                    break;
+                }
+                let vdot = dot3f(local_dir.as_ptr(), verts.add(3 * *vert_globalid.add(subidx as usize) as usize));
+                if vdot > max {
+                    max = vdot;
+                    imax = subidx;
+                }
+                i += 1;
+            }
+        }
+
+        // record vertex index of maximum (local id)
+        (*obj).meshindex = imax;
+
+        // get resulting support vertex
+        let global_id = *vert_globalid.add(imax as usize);
+        (*obj).vertindex = global_id;
+        local_dir[0] = *verts.add(3 * global_id as usize + 0) as f64;
+        local_dir[1] = *verts.add(3 * global_id as usize + 1) as f64;
+        local_dir[2] = *verts.add(3 * global_id as usize + 2) as f64;
+
+        // transform result to global frame
+        local_to_global(res, mat, local_dir.as_ptr(), pos);
+    }
 }
 
 /// C: mjc_prism_support (engine/engine_collision_convex.c:436)
@@ -200,7 +410,12 @@ pub fn mjc_flex_support(res: *mut f64, obj: *mut mjCCDObj, dir: *const f64) {
 /// C: mjc_setCCDObjFlex (engine/engine_collision_convex.c:790)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjc_set_ccd_obj_flex(obj: *mut mjCCDObj, flex: i32, elem: i32, vert: i32) {
-    todo!() // mjc_setCCDObjFlex
+    // SAFETY: obj is a valid mjCCDObj pointer (caller contract)
+    unsafe {
+        (*obj).flex = flex;
+        (*obj).elem = elem;
+        (*obj).vert = vert;
+    }
 }
 
 /// C: mjc_isDistinctContact (engine/engine_collision_convex.c:798)
@@ -212,7 +427,20 @@ pub fn mjc_set_ccd_obj_flex(obj: *mut mjCCDObj, flex: i32, elem: i32, vert: i32)
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjc_is_distinct_contact(con: *const mjPreContact, ncon: i32, tolerance: f64) -> i32 {
-    todo!() // mjc_isDistinctContact
+    // SAFETY: con points to array of ncon mjPreContact elements (caller contract)
+    unsafe {
+        let last_pos = (*con.add((ncon - 1) as usize)).pos.as_ptr();
+        for i in 0..(ncon - 1) as usize {
+            if crate::engine::engine_util_blas::mju_dist3(
+                (*con.add(i)).pos.as_ptr(),
+                last_pos,
+            ) <= tolerance
+            {
+                return 0;
+            }
+        }
+        1
+    }
 }
 
 /// C: mju_rotateFrame (engine/engine_collision_convex.c:810)

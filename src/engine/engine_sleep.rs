@@ -36,13 +36,60 @@ pub fn is_smaller(vec: *const f64, weight: *const f64, n: i32, tol: f64) -> i32 
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn tree_can_sleep(m: *const mjModel, d: *const mjData, i: i32, tol: f64) -> i32 {
-    todo!() // treeCanSleep
+    const mjSLEEP_NEVER: i32 = 3;
+    const mjSLEEP_AUTO_NEVER: i32 = 1;
+
+    // SAFETY: m, d are valid model/data pointers; i is a valid tree index (caller contract)
+    unsafe {
+        // check sleep policy
+        if *(*m).tree_sleep_policy.add(i as usize) == mjSLEEP_NEVER
+            || *(*m).tree_sleep_policy.add(i as usize) == mjSLEEP_AUTO_NEVER
+        {
+            return 0;
+        }
+
+        // check xfrc_applied
+        let mut adr = *(*m).tree_bodyadr.add(i as usize);
+        let mut num = *(*m).tree_bodynum.add(i as usize);
+        if crate::engine::engine_util_misc::mju_is_zero_byte(
+            (*d).xfrc_applied.add(6 * adr as usize) as *const u8,
+            6 * num * (core::mem::size_of::<f64>() as i32),
+        ) == 0
+        {
+            return 0;
+        }
+
+        // check qfrc_applied
+        adr = *(*m).tree_dofadr.add(i as usize);
+        num = *(*m).tree_dofnum.add(i as usize);
+        if crate::engine::engine_util_misc::mju_is_zero_byte(
+            (*d).qfrc_applied.add(adr as usize) as *const u8,
+            num * (core::mem::size_of::<f64>() as i32),
+        ) == 0
+        {
+            return 0;
+        }
+
+        // check qvel
+        if tol != 0.0 {
+            is_smaller((*d).qvel.add(adr as usize), (*m).dof_length.add(adr as usize), num, tol)
+        } else {
+            crate::engine::engine_util_misc::mju_is_zero_byte(
+                (*d).qvel.add(adr as usize) as *const u8,
+                num * (core::mem::size_of::<f64>() as i32),
+            )
+        }
+    }
 }
 
 /// C: plural (engine/engine_sleep.c:189)
 #[allow(unused_variables, non_snake_case)]
 pub fn plural(n: i32) -> *const i8 {
-    todo!() // plural
+    if n > 1 {
+        b"s\0".as_ptr() as *const i8
+    } else {
+        b"\0".as_ptr() as *const i8
+    }
 }
 
 /// C: mj_sleepTrees (engine/engine_sleep.c:522)

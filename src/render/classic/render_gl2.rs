@@ -33,7 +33,49 @@ pub fn flip_depth_if_required(depth: *mut f32, viewport: mjrRect, con: *const mj
 /// C: init2D (render/classic/render_gl2.c:407)
 #[allow(unused_variables, non_snake_case)]
 pub fn init2d() {
-    todo ! ()
+    const GL_NORMALIZE: u32 = 0x0BA1;
+    const GL_DEPTH_TEST: u32 = 0x0B71;
+    const GL_FLAT: u32 = 0x1D00;
+    const GL_CULL_FACE: u32 = 0x0B44;
+    const GL_LIGHTING: u32 = 0x0B50;
+    const GL_COLOR_MATERIAL: u32 = 0x0B57;
+    const GL_BLEND: u32 = 0x0BE2;
+    const GL_SRC_ALPHA: u32 = 0x0302;
+    const GL_ONE_MINUS_SRC_ALPHA: u32 = 0x0303;
+    const GL_FRONT_AND_BACK: u32 = 0x0408;
+    const GL_FILL: u32 = 0x1B02;
+    const GL_PROJECTION: u32 = 0x1701;
+    const GL_MODELVIEW: u32 = 0x1700;
+
+    extern "C" {
+        fn glDisable(cap: u32);
+        fn glShadeModel(mode: u32);
+        fn glBlendFunc(sfactor: u32, dfactor: u32);
+        fn glPolygonMode(face: u32, mode: u32);
+        fn glMatrixMode(mode: u32);
+        fn glLoadIdentity();
+        fn glOrtho(left: f64, right: f64, bottom: f64, top: f64, near: f64, far: f64);
+    }
+
+    // SAFETY: OpenGL state-setting calls. No pointers involved. Linked from mujoco C library.
+    unsafe {
+        glDisable(GL_NORMALIZE);
+        glDisable(GL_DEPTH_TEST);
+        glShadeModel(GL_FLAT);
+        glDisable(GL_CULL_FACE);
+        glDisable(GL_LIGHTING);
+        glDisable(GL_COLOR_MATERIAL);
+        glDisable(GL_BLEND);
+        glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+        glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+
+        // standard 2D projection
+        glMatrixMode(GL_PROJECTION);
+        glLoadIdentity();
+        glOrtho(0.0, 1.0, 0.0, 1.0, -1.0, 1.0);
+        glMatrixMode(GL_MODELVIEW);
+        glLoadIdentity();
+    }
 }
 
 /// C: draw_overlay (render/classic/render_gl2.c:476)
@@ -45,7 +87,149 @@ pub fn init2d() {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn draw_overlay(font: i32, viewport: mjrRect, skip: i32, gridpos: i32, red: f32, green: f32, blue: f32, overlay: *const i8, con: *const mjrContext) -> i32 {
-    todo!() // draw_overlay
+    const mjFONT_BIG: i32 = 2;
+    const mjMAXOVERLAY: i32 = 500;
+    const mjGRID_TOPLEFT: i32 = 0;
+    const mjGRID_TOPRIGHT: i32 = 1;
+    const mjGRID_BOTTOMLEFT: i32 = 2;
+    const mjGRID_BOTTOMRIGHT: i32 = 3;
+    const mjGRID_TOP: i32 = 4;
+    const mjGRID_BOTTOM: i32 = 5;
+    const mjGRID_LEFT: i32 = 6;
+    const mjGRID_RIGHT: i32 = 7;
+    const GL_PROJECTION: u32 = 0x1701;
+    const GL_MODELVIEW: u32 = 0x1700;
+    const GL_BLEND: u32 = 0x0BE2;
+    const GL_QUADS: u32 = 0x0007;
+
+    extern "C" {
+        fn glViewport(x: i32, y: i32, width: i32, height: i32);
+        fn glMatrixMode(mode: u32);
+        fn glLoadIdentity();
+        fn glOrtho(left: f64, right: f64, bottom: f64, top: f64, near: f64, far: f64);
+        fn glEnable(cap: u32);
+        fn glDisable(cap: u32);
+        fn glColor4d(r: f64, g: f64, b: f64, a: f64);
+        fn glBegin(mode: u32);
+        fn glEnd();
+        fn glNormal3d(nx: f64, ny: f64, nz: f64);
+        fn glVertex2d(x: f64, y: f64);
+        fn strlen(s: *const i8) -> usize;
+    }
+
+    // SAFETY: con, overlay are valid pointers; GL functions linked from mujoco (caller contract)
+    unsafe {
+        let flg_big: i32 = if font == mjFONT_BIG { 1 } else { 0 };
+        let PAD: i32 = 5;
+        let strlen_overlay = strlen(overlay) as i32;
+        let sz: i32 = if mjMAXOVERLAY < strlen_overlay { mjMAXOVERLAY } else { strlen_overlay };
+        let mut text: [i8; 500] = [0; 500];
+
+        // count rows and columns of text rectangle in pixels
+        let mut nr: i32 = if flg_big != 0 { (*con).charHeightBig } else { (*con).charHeight };
+        let mut ncthis: i32 = 0;
+        let mut nc: i32 = 0;
+        let mut i: i32 = 0;
+        while i < sz {
+            if *overlay.offset(i as isize) != b'\n' as i8 {
+                ncthis += if flg_big != 0 {
+                    (*con).charWidthBig[*overlay.offset(i as isize) as u8 as usize]
+                } else {
+                    (*con).charWidth[*overlay.offset(i as isize) as u8 as usize]
+                };
+                if ncthis > nc { nc = ncthis; }
+            } else {
+                nr += PAD + if flg_big != 0 { (*con).charHeightBig } else { (*con).charHeight };
+                ncthis = 0;
+            }
+            i += 1;
+        }
+
+        // viewport width and height
+        let W: i32 = PAD + nc + 8;
+        let H: i32 = PAD + nr;
+
+        // set viewport to specific grid position
+        match gridpos {
+            mjGRID_TOPLEFT => {
+                glViewport(viewport.left + skip + PAD,
+                           viewport.bottom + viewport.height - 1 - PAD - H, W, H);
+            }
+            mjGRID_TOPRIGHT => {
+                glViewport(viewport.left + viewport.width - skip - 1 - PAD - W,
+                           viewport.bottom + viewport.height - 1 - PAD - H, W, H);
+            }
+            mjGRID_BOTTOMLEFT => {
+                glViewport(viewport.left + skip + PAD,
+                           viewport.bottom + PAD, W, H);
+            }
+            mjGRID_BOTTOMRIGHT => {
+                glViewport(viewport.left + viewport.width - skip - 1 - PAD - W,
+                           viewport.bottom + PAD, W, H);
+            }
+            mjGRID_TOP => {
+                glViewport(viewport.left + (viewport.width - skip - W) / 2 - 1 - PAD,
+                           viewport.bottom + viewport.height - 1 - PAD - H, W, H);
+            }
+            mjGRID_BOTTOM => {
+                glViewport(viewport.left + (viewport.width - skip - W) / 2 - 1 - PAD,
+                           viewport.bottom + PAD, W, H);
+            }
+            mjGRID_LEFT => {
+                glViewport(viewport.left + skip + PAD,
+                           viewport.bottom + (viewport.height - H) / 2 - 1 - PAD, W, H);
+            }
+            mjGRID_RIGHT => {
+                glViewport(viewport.left + viewport.width - skip - 1 - PAD - W,
+                           viewport.bottom + (viewport.height - H) / 2 - 1 - PAD, W, H);
+            }
+            _ => {}
+        }
+
+        // set projection in pixels
+        glMatrixMode(GL_PROJECTION);
+        glLoadIdentity();
+        glOrtho(0.0, (W - 1) as f64, 0.0, (H - 1) as f64, -1.0, 1.0);
+        glMatrixMode(GL_MODELVIEW);
+        glLoadIdentity();
+
+        // blend with black background
+        glEnable(GL_BLEND);
+        glColor4d(0.0, 0.0, 0.0, 0.5);
+        glBegin(GL_QUADS);
+        glNormal3d(0.0, 0.0, 1.0);
+        glVertex2d(0.0, 0.0);
+        glVertex2d(0.0, H as f64);
+        glVertex2d(W as f64, H as f64);
+        glVertex2d(W as f64, 0.0);
+        glEnd();
+        glDisable(GL_BLEND);
+
+        // draw text line by line
+        nr = if flg_big != 0 { (*con).charHeightBig } else { (*con).charHeight };
+        let mut pos: i32 = 0;
+        i = 0;
+        while i < sz {
+            if *overlay.offset(i as isize) == b'\n' as i8 || i == sz - 1 {
+                if *overlay.offset(i as isize) == b'\n' as i8 {
+                    text[pos as usize] = 0;
+                } else {
+                    text[pos as usize] = *overlay.offset(i as isize);
+                    text[pos as usize + 1] = 0;
+                }
+                mjr_text_actual(font, text.as_ptr(), con, 3.0, (H - nr) as f32, 0.0, red, green, blue);
+
+                nr += PAD + if flg_big != 0 { (*con).charHeightBig } else { (*con).charHeight };
+                pos = 0;
+            } else {
+                text[pos as usize] = *overlay.offset(i as isize);
+                pos += 1;
+            }
+            i += 1;
+        }
+
+        W - 2
+    }
 }
 
 /// C: maketext (render/classic/render_gl2.c:749)
@@ -62,7 +246,18 @@ pub fn maketext(format: *const i8, txt: *mut i8, num: f32, txt_sz: i32) {
 /// C: textwidth (render/classic/render_gl2.c:787)
 #[allow(unused_variables, non_snake_case)]
 pub fn textwidth(con: *const mjrContext, text: *const i8) -> i32 {
-    todo!() // textwidth
+    // SAFETY: con is a valid mjrContext pointer; text is a valid null-terminated C string (caller contract)
+    unsafe {
+        let mut i: i32 = 0;
+        let mut width: i32 = 0;
+
+        while *text.offset(i as isize) != 0 {
+            width += (*con).charWidth[*text.offset(i as isize) as u8 as usize];
+            i += 1;
+        }
+
+        width
+    }
 }
 
 /// C: mjr_restoreBuffer (render/classic/render_gl2.h:27)

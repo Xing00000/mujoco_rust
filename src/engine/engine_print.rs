@@ -118,7 +118,29 @@ pub fn print_array2d(str: *const i8, nr: i32, nc: i32, data: *const f64, fp: *mu
 /// C: printArray2dInt (engine/engine_print.c:105)
 #[allow(unused_variables, non_snake_case)]
 pub fn print_array2d_int(str: *const i8, nr: i32, nc: i32, data: *const i32, fp: *mut FILE) {
-    todo!() // printArray2dInt
+    extern "C" {
+        fn fprintf(fp: *mut FILE, fmt: *const i8, ...) -> i32;
+    }
+
+    if data.is_null() {
+        return;
+    }
+
+    // SAFETY: fp valid, data points to nr*nc ints, str is a valid C string (caller contract)
+    unsafe {
+        if nr != 0 && nc != 0 {
+            fprintf(fp, b"%s\n\0".as_ptr() as *const i8, str);
+            for r in 0..nr {
+                fprintf(fp, b" \0".as_ptr() as *const i8);
+                for c in 0..nc {
+                    fprintf(fp, b" \0".as_ptr() as *const i8);
+                    fprintf(fp, b"%d\0".as_ptr() as *const i8, *data.add((c + r * nc) as usize));
+                }
+                fprintf(fp, b"\n\0".as_ptr() as *const i8);
+            }
+            fprintf(fp, b"\n\0".as_ptr() as *const i8);
+        }
+    }
 }
 
 /// C: printDelayBuffer (engine/engine_print.c:125)
@@ -129,7 +151,54 @@ pub fn print_array2d_int(str: *const i8, nr: i32, nc: i32, data: *const i32, fp:
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn print_delay_buffer(name: *const i8, buf: *const f64, nhistory: i32, dim: i32, fp: *mut FILE, float_format: *const i8) {
-    todo!() // printDelayBuffer
+    extern "C" {
+        fn fprintf(fp: *mut FILE, fmt: *const i8, ...) -> i32;
+    }
+
+    if buf.is_null() || nhistory <= 0 {
+        return;
+    }
+
+    // SAFETY: fp valid, buf points to (2 + nhistory + nhistory*dim) f64 values,
+    // name/float_format are valid C strings (caller contract)
+    unsafe {
+        fprintf(fp, b"  %s:\n\0".as_ptr() as *const i8, name);
+
+        // user value (first slot)
+        fprintf(fp, b"    phase  = \0".as_ptr() as *const i8);
+        fprintf(fp, float_format, *buf.add(0));
+        fprintf(fp, b"\n\0".as_ptr() as *const i8);
+
+        // cursor (second slot, stored as mjtNum but is an integer)
+        fprintf(fp, b"    cursor =  %d\n\0".as_ptr() as *const i8, *buf.add(1) as i32);
+
+        // timestamps
+        let times = buf.add(2);
+        fprintf(fp, b"    times  = \0".as_ptr() as *const i8);
+        for i in 0..nhistory as usize {
+            fprintf(fp, float_format, *times.add(i));
+        }
+        fprintf(fp, b"\n\0".as_ptr() as *const i8);
+
+        // values
+        let values = times.add(nhistory as usize);
+        if dim == 1 {
+            fprintf(fp, b"    values = \0".as_ptr() as *const i8);
+            for i in 0..nhistory as usize {
+                fprintf(fp, float_format, *values.add(i));
+            }
+            fprintf(fp, b"\n\0".as_ptr() as *const i8);
+        } else {
+            fprintf(fp, b"    values:\n\0".as_ptr() as *const i8);
+            for i in 0..nhistory as usize {
+                fprintf(fp, b"      [%d] =\0".as_ptr() as *const i8, i as i32);
+                for j in 0..dim as usize {
+                    fprintf(fp, float_format, *values.add(i * dim as usize + j));
+                }
+                fprintf(fp, b"\n\0".as_ptr() as *const i8);
+            }
+        }
+    }
 }
 
 /// C: printSparse (engine/engine_print.c:170)
@@ -140,7 +209,32 @@ pub fn print_delay_buffer(name: *const i8, buf: *const f64, nhistory: i32, dim: 
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn print_sparse(str: *const i8, mat: *const f64, nr: i32, rownnz: *const i32, rowadr: *const i32, colind: *const i32, fp: *mut FILE, float_format: *const i8) {
-    todo!() // printSparse
+    extern "C" {
+        fn fprintf(fp: *mut FILE, fmt: *const i8, ...) -> i32;
+    }
+
+    // if no data, or too many rows to be visually useful, return
+    if mat.is_null() || nr == 0 || nr > 300 {
+        return;
+    }
+
+    // SAFETY: fp valid, mat/rownnz/rowadr/colind are valid arrays, str/float_format valid C strings
+    unsafe {
+        fprintf(fp, b"%s\n\0".as_ptr() as *const i8, str);
+
+        for r in 0..nr {
+            fprintf(fp, b"  \0".as_ptr() as *const i8);
+            let adr_start = *rowadr.add(r as usize);
+            let adr_end = adr_start + *rownnz.add(r as usize);
+            for adr in adr_start..adr_end {
+                fprintf(fp, b"  \0".as_ptr() as *const i8);
+                fprintf(fp, b"%2d: \0".as_ptr() as *const i8, *colind.add(adr as usize));
+                fprintf(fp, float_format, *mat.add(adr as usize));
+            }
+            fprintf(fp, b"\n\0".as_ptr() as *const i8);
+        }
+        fprintf(fp, b"\n\0".as_ptr() as *const i8);
+    }
 }
 
 /// C: printBlockArray (engine/engine_print.c:193)
@@ -168,7 +262,72 @@ pub fn print_inertia(str: *const i8, mat: *const f64, m: *const mjModel, fp: *mu
 /// C: mj_printBlockSparsity (engine/engine_print.c:319)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_print_block_sparsity(str: *const i8, nr: i32, nc: i32, nisland: i32, island_block_ncols: *const i32, island_col_offset: *const i32, entity_island: *const i32, map_row_to_entity: *const i32, map_col_to_entity: *const i32, rownnz: *const i32, rowadr: *const i32, colind: *const i32, rowsuper: *const i32, fp: *mut FILE) {
-    todo!() // mj_printBlockSparsity
+    extern "C" {
+        fn fprintf(fp: *mut FILE, fmt: *const i8, ...) -> i32;
+    }
+
+    // if no rows / columns, or too many columns to be visually useful, return
+    if nr == 0 || nc == 0 || nc > 300 {
+        return;
+    }
+
+    // SAFETY: fp valid, all pointer arrays valid with appropriate sizes (caller contract)
+    unsafe {
+        fprintf(fp, b"%s\n\0".as_ptr() as *const i8, str);
+
+        for _c in 0..nc + 2 {
+            fprintf(fp, b"-\0".as_ptr() as *const i8);
+        }
+        fprintf(fp, b"\n\0".as_ptr() as *const i8);
+
+        for r in 0..nr {
+            fprintf(fp, b" \0".as_ptr() as *const i8);
+            let entity_r = *map_row_to_entity.add(r as usize);
+            let island = *entity_island.add(entity_r as usize);
+
+            // SHOULD NOT OCCUR
+            if island < 0 || island >= nisland {
+                for _c in 0..nc {
+                    fprintf(fp, b" \0".as_ptr() as *const i8);
+                }
+                fprintf(
+                    fp,
+                    b" | Error: invalid island %d for row %d (entity %d)\n\0".as_ptr() as *const i8,
+                    island, r, entity_r,
+                );
+                continue;
+            }
+
+            let c_start = *island_col_offset.add(island as usize);
+            let bnc = *island_block_ncols.add(island as usize);
+            let adr = *rowadr.add(entity_r as usize);
+            let nnz = *rownnz.add(entity_r as usize);
+            let nz_char: i8 = if island < 10 { b'0' as i8 + island as i8 } else { b'x' as i8 };
+
+            for c in 0..nc {
+                let mut nonzero: bool = false;
+                if c >= c_start && c < c_start + bnc {
+                    let target_col = *map_col_to_entity.add(c as usize);
+                    for i in 0..nnz {
+                        if *colind.add((adr + i) as usize) == target_col {
+                            nonzero = true;
+                            break;
+                        }
+                    }
+                }
+                fprintf(fp, b"%c\0".as_ptr() as *const i8, if nonzero { nz_char as i32 } else { b' ' as i32 });
+            }
+            fprintf(fp, b" |\0".as_ptr() as *const i8);
+            if !rowsuper.is_null() && *rowsuper.add(entity_r as usize) > 0 {
+                fprintf(fp, b" %d\0".as_ptr() as *const i8, *rowsuper.add(entity_r as usize));
+            }
+            fprintf(fp, b"\n\0".as_ptr() as *const i8);
+        }
+        for _c in 0..nc + 2 {
+            fprintf(fp, b"-\0".as_ptr() as *const i8);
+        }
+        fprintf(fp, b"\n\n\0".as_ptr() as *const i8);
+    }
 }
 
 /// C: printVector (engine/engine_print.c:377)
@@ -265,7 +424,53 @@ pub fn mj_print_data(m: *const mjModel, d: *const mjData, filename: *const i8) {
 /// C: mj_printSparsity (engine/engine_print.h:47)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_print_sparsity(str: *const i8, nr: i32, nc: i32, rowadr: *const i32, diag: *const i32, rownnz: *const i32, rowsuper: *const i32, colind: *const i32, fp: *mut FILE) {
-    todo!() // mj_printSparsity
+    extern "C" {
+        fn fprintf(fp: *mut FILE, fmt: *const i8, ...) -> i32;
+    }
+
+    // if no rows / columns, or too many columns to be visually useful, return
+    if nr == 0 || nc == 0 || nc > 300 {
+        return;
+    }
+
+    // SAFETY: fp valid, all pointer arrays are valid with appropriate sizes (caller contract)
+    unsafe {
+        fprintf(fp, b"%s\n\0".as_ptr() as *const i8, str);
+
+        for c in 0..nc + 2 {
+            fprintf(fp, b"-\0".as_ptr() as *const i8);
+        }
+        fprintf(fp, b"\n \0".as_ptr() as *const i8);
+
+        for r in 0..nr {
+            let adr = *rowadr.add(r as usize);
+            let mut nnz: i32 = 0;
+            for c in 0..nc {
+                if nnz < *rownnz.add(r as usize) && *colind.add((adr + nnz) as usize) == c {
+                    if !diag.is_null() && *diag.add(r as usize) == nnz {
+                        fprintf(fp, b"D\0".as_ptr() as *const i8);
+                    } else {
+                        fprintf(fp, b"x\0".as_ptr() as *const i8);
+                    }
+                    nnz += 1;
+                } else {
+                    fprintf(fp, b" \0".as_ptr() as *const i8);
+                }
+            }
+            fprintf(fp, b" |\0".as_ptr() as *const i8);
+            if !rowsuper.is_null() && *rowsuper.add(r as usize) > 0 {
+                fprintf(fp, b" %d\0".as_ptr() as *const i8, *rowsuper.add(r as usize));
+            }
+            fprintf(fp, b"\n\0".as_ptr() as *const i8);
+            if r < nr - 1 {
+                fprintf(fp, b" \0".as_ptr() as *const i8);
+            }
+        }
+        for c in 0..nc + 2 {
+            fprintf(fp, b"-\0".as_ptr() as *const i8);
+        }
+        fprintf(fp, b"\n\n\0".as_ptr() as *const i8);
+    }
 }
 
 /// C: mj_printScene (engine/engine_print.h:51)

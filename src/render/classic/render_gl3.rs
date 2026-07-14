@@ -43,7 +43,162 @@ pub fn is_reflective(geom: *const mjvGeom) -> i32 {
 /// Calls: mjr_setf4, mju_max
 #[allow(unused_variables, non_snake_case)]
 pub fn settexture(r#type: i32, state: i32, con: *const mjrContext, geom: *const mjvGeom) {
-    todo!() // settexture
+    const mjtexSHADOW: i32 = 0;
+    const mjtexSKYBOX: i32 = 1;
+    const mjtexREGULAR: i32 = 2;
+    const mjNTEXROLE: i32 = 10;
+    const mjTEXROLE_RGB: i32 = 1;
+    const mjTEXTURE_2D: i32 = 0;
+
+    const GL_TEXTURE0: u32 = 0x84C0;
+    const GL_TEXTURE1: u32 = 0x84C1;
+    const GL_TEXTURE_2D: u32 = 0x0DE1;
+    const GL_TEXTURE_CUBE_MAP: u32 = 0x8513;
+    const GL_TEXTURE_GEN_S: u32 = 0x0C60;
+    const GL_TEXTURE_GEN_T: u32 = 0x0C61;
+    const GL_TEXTURE_GEN_R: u32 = 0x0C62;
+    const GL_TEXTURE_GEN_Q: u32 = 0x0C63;
+    const GL_S: u32 = 0x2000;
+    const GL_T: u32 = 0x2001;
+    const GL_R: u32 = 0x2002;
+    const GL_OBJECT_PLANE: u32 = 0x2501;
+    const MJ_MINVAL: f32 = 1E-15_f32;
+
+    extern "C" {
+        fn glActiveTexture(texture: u32);
+        fn glEnable(cap: u32);
+        fn glDisable(cap: u32);
+        fn glBindTexture(target: u32, texture: u32);
+        fn glTexGenfv(coord: u32, pname: u32, params: *const f32);
+    }
+
+    // SAFETY: con and geom are valid pointers per caller contract. GL functions are
+    // linked from the mujoco C library.
+    unsafe {
+        let mut texid: i32 = -1;
+        if !geom.is_null() {
+            if (*geom).matid >= 0 {
+                texid = (*con).mat_texid[(mjNTEXROLE * (*geom).matid) as usize + mjTEXROLE_RGB as usize];
+            }
+        }
+
+        // shadow
+        if r#type == mjtexSHADOW {
+            if state != 0 {
+                glActiveTexture(GL_TEXTURE1);
+                glEnable(GL_TEXTURE_2D);
+                glEnable(GL_TEXTURE_GEN_S);
+                glEnable(GL_TEXTURE_GEN_T);
+                glEnable(GL_TEXTURE_GEN_R);
+                glEnable(GL_TEXTURE_GEN_Q);
+                glBindTexture(GL_TEXTURE_2D, (*con).shadowTex);
+            } else {
+                glActiveTexture(GL_TEXTURE1);
+                glDisable(GL_TEXTURE_2D);
+                glDisable(GL_TEXTURE_GEN_S);
+                glDisable(GL_TEXTURE_GEN_T);
+                glDisable(GL_TEXTURE_GEN_R);
+                glDisable(GL_TEXTURE_GEN_Q);
+            }
+        }
+        // explicit texture coordinates
+        else if r#type == mjtexREGULAR && (*geom).texcoord != 0 {
+            if state != 0 && texid >= 0 {
+                glActiveTexture(GL_TEXTURE0);
+                glEnable(GL_TEXTURE_2D);
+                glBindTexture(GL_TEXTURE_2D, (*con).texture[texid as usize]);
+            } else {
+                glActiveTexture(GL_TEXTURE0);
+                glDisable(GL_TEXTURE_2D);
+            }
+        }
+        // 2D
+        else if r#type == mjtexREGULAR && texid >= 0 && (*con).textureType[texid as usize] == mjTEXTURE_2D {
+            if state != 0 {
+                glActiveTexture(GL_TEXTURE0);
+                glEnable(GL_TEXTURE_2D);
+                glEnable(GL_TEXTURE_GEN_S);
+                glEnable(GL_TEXTURE_GEN_T);
+                glBindTexture(GL_TEXTURE_2D, (*con).texture[texid as usize]);
+
+                // determine scaling, adjust for pre-scaled geoms
+                let mut scl: [f32; 2] = [
+                    (*con).mat_texrepeat[(*geom).matid as usize * 2],
+                    (*con).mat_texrepeat[(*geom).matid as usize * 2 + 1],
+                ];
+                if (*geom).dataid >= 0 {
+                    if (*geom).size[0] > 0.0 {
+                        scl[0] = scl[0] / crate::engine::engine_util_misc::mju_max(MJ_MINVAL as f64, (*geom).size[0] as f64) as f32;
+                    }
+                    if (*geom).size[1] > 0.0 {
+                        scl[1] = scl[1] / crate::engine::engine_util_misc::mju_max(MJ_MINVAL as f64, (*geom).size[1] as f64) as f32;
+                    }
+                }
+
+                // uniform: repeat relative to spatial units rather than object
+                if (*con).mat_texuniform[(*geom).matid as usize] != 0 {
+                    if (*geom).size[0] > 0.0 {
+                        scl[0] = scl[0] * (*geom).size[0];
+                    }
+                    if (*geom).size[1] > 0.0 {
+                        scl[1] = scl[1] * (*geom).size[1];
+                    }
+                }
+
+                // set mapping
+                let mut plane: [f32; 4] = [0.0; 4];
+                crate::render::classic::render_util::mjr_setf4(plane.as_mut_ptr(), 0.5 * scl[0], 0.0, 0.0, -0.5);
+                glTexGenfv(GL_S, GL_OBJECT_PLANE, plane.as_ptr());
+                crate::render::classic::render_util::mjr_setf4(plane.as_mut_ptr(), 0.0, -0.5 * scl[1], 0.0, -0.5);
+                glTexGenfv(GL_T, GL_OBJECT_PLANE, plane.as_ptr());
+            } else {
+                glActiveTexture(GL_TEXTURE0);
+                glDisable(GL_TEXTURE_2D);
+                glDisable(GL_TEXTURE_GEN_S);
+                glDisable(GL_TEXTURE_GEN_T);
+            }
+        }
+        // cube or skybox
+        else {
+            if state != 0 && texid >= 0 {
+                glActiveTexture(GL_TEXTURE0);
+                glEnable(GL_TEXTURE_CUBE_MAP);
+                glEnable(GL_TEXTURE_GEN_S);
+                glEnable(GL_TEXTURE_GEN_T);
+                glEnable(GL_TEXTURE_GEN_R);
+                glBindTexture(GL_TEXTURE_CUBE_MAP, (*con).texture[texid as usize]);
+
+                let mut plane: [f32; 4] = [0.0; 4];
+                // set mapping: cube
+                if r#type == mjtexREGULAR {
+                    crate::render::classic::render_util::mjr_setf4(plane.as_mut_ptr(),
+                        if (*con).mat_texuniform[(*geom).matid as usize] != 0 { (*geom).size[0] } else { 1.0 }, 0.0, 0.0, 0.0);
+                    glTexGenfv(GL_S, GL_OBJECT_PLANE, plane.as_ptr());
+                    crate::render::classic::render_util::mjr_setf4(plane.as_mut_ptr(),
+                        0.0, if (*con).mat_texuniform[(*geom).matid as usize] != 0 { (*geom).size[1] } else { 1.0 }, 0.0, 0.0);
+                    glTexGenfv(GL_T, GL_OBJECT_PLANE, plane.as_ptr());
+                    crate::render::classic::render_util::mjr_setf4(plane.as_mut_ptr(),
+                        0.0, 0.0, if (*con).mat_texuniform[(*geom).matid as usize] != 0 { (*geom).size[2] } else { 1.0 }, 0.0);
+                    glTexGenfv(GL_R, GL_OBJECT_PLANE, plane.as_ptr());
+                }
+                // set mapping: skybox (rotate 90 deg around X)
+                else {
+                    crate::render::classic::render_util::mjr_setf4(plane.as_mut_ptr(), 1.0, 0.0, 0.0, 0.0);
+                    glTexGenfv(GL_S, GL_OBJECT_PLANE, plane.as_ptr());
+                    crate::render::classic::render_util::mjr_setf4(plane.as_mut_ptr(), 0.0, 0.0, 1.0, 0.0);
+                    glTexGenfv(GL_T, GL_OBJECT_PLANE, plane.as_ptr());
+                    crate::render::classic::render_util::mjr_setf4(plane.as_mut_ptr(), 0.0, -1.0, 0.0, 0.0);
+                    glTexGenfv(GL_R, GL_OBJECT_PLANE, plane.as_ptr());
+                }
+            } else {
+                glActiveTexture(GL_TEXTURE0);
+                glDisable(GL_TEXTURE_CUBE_MAP);
+                glDisable(GL_TEXTURE_GEN_S);
+                glDisable(GL_TEXTURE_GEN_T);
+                glDisable(GL_TEXTURE_GEN_R);
+            }
+        }
+    }
 }
 
 /// C: renderGeom (render/classic/render_gl3.c:217)
