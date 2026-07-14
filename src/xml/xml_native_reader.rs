@@ -65,7 +65,10 @@ pub fn mj_x_reader_set_model_file_dir(self_ptr: *mut mjXReader, modelfiledir: *c
 /// C: mjXReader::ModelFileDir (xml/xml_native_reader.h:38)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_x_reader_model_file_dir(self_ptr: *mut mjXReader) -> *const mujoco__user__FilePath {
-    todo!() // mjXReader::ModelFileDir
+    // SAFETY: self_ptr is a valid pointer to mjXReader (caller contract)
+    unsafe {
+        &(*self_ptr).modelfiledir_ as *const mujoco__user__FilePath
+    }
 }
 
 /// C: mjXReader::SetAssetDir (xml/xml_native_reader.h:41)
