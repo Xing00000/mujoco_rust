@@ -993,7 +993,69 @@ pub fn mjd_sub_quat(qa: *const f64, qb: *const f64, Da: *mut f64, Db: *mut f64) 
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjd_quat_integrate(vel: *const f64, scale: f64, Dquat: *mut f64, Dvel: *mut f64, Dscale: *mut f64) {
-    todo!() // mjd_quatIntegrate
+    // SAFETY: vel points to [3]; Dquat, Dvel, Dscale (if non-null) point to [9], [9], [3]
+    unsafe {
+        // scaled velocity
+        let s: [f64; 3] = [
+            scale * *vel.add(0),
+            scale * *vel.add(1),
+            scale * *vel.add(2),
+        ];
+
+        // 3 basis matrices
+        let eye: [f64; 9] = [
+            1.0, 0.0, 0.0,
+            0.0, 1.0, 0.0,
+            0.0, 0.0, 1.0,
+        ];
+        let cross: [f64; 9] = [
+             0.0,    s[2], -s[1],
+            -s[2],   0.0,   s[0],
+             s[1],  -s[0],  0.0,
+        ];
+        let outer: [f64; 9] = [
+            s[0]*s[0], s[0]*s[1], s[0]*s[2],
+            s[1]*s[0], s[1]*s[1], s[1]*s[2],
+            s[2]*s[0], s[2]*s[1], s[2]*s[2],
+        ];
+
+        // squared norm, norm of s
+        let xx = crate::engine::engine_util_blas::mju_dot3(s.as_ptr(), s.as_ptr());
+        let x = f64::sqrt(xx);
+
+        // 4 coefficients
+        let a = f64::cos(x);
+        let b: f64;
+        let c: f64;
+        let d: f64;
+
+        if f64::abs(x) > 1.0 / 32.0 {
+            b = f64::sin(x) / x;
+            c = (1.0 - a) / xx;
+            d = (1.0 - b) / xx;
+        } else {
+            b = 1.0 + xx / 6.0 * (xx / 20.0 * (1.0 - xx / 42.0) - 1.0);
+            c = (1.0 + xx / 12.0 * (xx / 30.0 * (1.0 - xx / 56.0) - 1.0)) / 2.0;
+            d = (1.0 + xx / 20.0 * (xx / 42.0 * (1.0 - xx / 72.0) - 1.0)) / 6.0;
+        }
+
+        // derivatives
+        let mut Dvel_: [f64; 9] = [0.0; 9];
+        for i in 0..9 {
+            if !Dquat.is_null() {
+                *Dquat.add(i) = a * eye[i] + b * cross[i] + c * outer[i];
+            }
+            if !Dvel.is_null() || !Dscale.is_null() {
+                Dvel_[i] = b * eye[i] + c * cross[i] + d * outer[i];
+            }
+        }
+        if !Dvel.is_null() {
+            crate::engine::engine_util_blas::mju_copy9(Dvel, Dvel_.as_ptr());
+        }
+        if !Dscale.is_null() {
+            crate::engine::engine_util_blas::mju_mul_mat_vec3(Dscale, Dvel_.as_ptr(), vel);
+        }
+    }
 }
 
 /// C: mjd_smooth_vel (engine/engine_derivative.h:35)
@@ -1056,6 +1118,59 @@ pub fn mjd_flex_interp_cache_krot(m: *const mjModel, d: *mut mjData, K_rot_out: 
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjd_flex_bend_mul(m: *const mjModel, d: *mut mjData, res: *mut f64, vec: *const f64, s1: f64, s2: f64) {
-    todo!() // mjd_flexBend_mul
+    // SAFETY: m, d are valid model/data pointers; res, vec are valid arrays (caller contract)
+    unsafe {
+        for f in 0..(*m).nflex as i32 {
+            // skip interp, rigid, or non-2D
+            if *(*m).flex_interp.add(f as usize) != 0 {
+                continue;
+            }
+            if (*(*m).flex_rigid.add(f as usize))._data[0] != 0 {
+                continue;
+            }
+            if *(*m).flex_dim.add(f as usize) != 2 {
+                continue;
+            }
+
+            let bendingadr = *(*m).flex_bendingadr.add(f as usize);
+            if bendingadr < 0 {
+                continue;
+            }
+
+            let scale = s1 + s2 * *(*m).flex_damping.add(f as usize);
+            if scale == 0.0 {
+                continue;
+            }
+
+            let b = (*m).flex_bending.add(bendingadr as usize);
+            let bodyid = (*m).flex_vertbodyid.add(*(*m).flex_vertadr.add(f as usize) as usize);
+            let edgenum = *(*m).flex_edgenum.add(f as usize);
+            let edgeadr = *(*m).flex_edgeadr.add(f as usize);
+
+            for e in 0..edgenum {
+                let edge = (*m).flex_edge.add(2 * (e + edgeadr) as usize);
+                let flap = (*m).flex_edgeflap.add(2 * (e + edgeadr) as usize);
+                let v: [i32; 4] = [*edge.add(0), *edge.add(1), *flap.add(0), *flap.add(1)];
+
+                // skip boundary edges (no second flap vertex)
+                if v[3] == -1 {
+                    continue;
+                }
+
+                // apply 4x4 bending stencil, coordinate-wise
+                for i in 0..4 {
+                    let dof_i = *(*m).body_dofadr.add(*bodyid.add(v[i] as usize) as usize);
+                    for x in 0..3 {
+                        let mut val: f64 = 0.0;
+                        for j in 0..4 {
+                            let dof_j = *(*m).body_dofadr.add(*bodyid.add(v[j] as usize) as usize);
+                            val += *b.add(17 * e as usize + 4 * i + j) * *vec.add((dof_j + x) as usize);
+                        }
+                        *res.add((dof_i + x) as usize) += scale * val;
+                    }
+                }
+            }
+        }
+    }
 }
 

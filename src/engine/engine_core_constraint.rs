@@ -482,7 +482,16 @@ pub fn mj_make_ar(m: *const mjModel, d: *mut mjData) {
 /// C: mj_isDual (engine/engine_core_constraint.h:31)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_is_dual(m: *const mjModel) -> i32 {
-    todo!() // mj_isDual
+    const MJ_SOL_PGS: i32 = 0;
+
+    // SAFETY: m is a valid mjModel pointer (caller contract)
+    unsafe {
+        if (*m).opt.solver == MJ_SOL_PGS || (*m).opt.noslip_iterations > 0 {
+            1
+        } else {
+            0
+        }
+    }
 }
 
 /// C: mj_mulJacVec (engine/engine_core_constraint.h:34)
@@ -506,7 +515,22 @@ pub fn mj_mul_jac_vec(m: *const mjModel, d: *const mjData, res: *mut f64, vec: *
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_mul_jac_t_vec(m: *const mjModel, d: *const mjData, res: *mut f64, vec: *const f64) {
-    todo!() // mj_mulJacTVec
+    // SAFETY: m, d are valid model/data pointers; res, vec are valid arrays (caller contract)
+    unsafe {
+        if (*d).nefc == 0 {
+            return;
+        }
+        if crate::engine::engine_core_util::mj_is_sparse(m) != 0 {
+            crate::engine::engine_util_sparse::mju_mul_mat_t_vec_sparse(
+                res, (*d).efc_J, vec, (*d).nefc, (*m).nv as i32,
+                (*d).efc_J_rownnz, (*d).efc_J_rowadr, (*d).efc_J_colind,
+            );
+        } else {
+            crate::engine::engine_util_blas::mju_mul_mat_t_vec(
+                res, (*d).efc_J, vec, (*d).nefc, (*m).nv as i32,
+            );
+        }
+    }
 }
 
 /// C: mj_Jdotv (engine/engine_core_constraint.h:40)
