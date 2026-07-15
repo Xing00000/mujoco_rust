@@ -121,7 +121,21 @@ pub fn mju_init_log_topics_from_env() {
 /// Calls: mju_initLogTopicsFromEnv
 #[allow(unused_variables, non_snake_case)]
 pub fn mju_get_log_config_ptr() -> *const mjLogConfig {
-    todo!() // mju_getLogConfigPtr
+    // SAFETY: Accesses file-scope statics env_checked and log_config via Mutex.
+    // Returns pointer to log_config's internal buffer (stable because LazyLock).
+    unsafe {
+        let mut env_guard = ENV_CHECKED.lock().unwrap();
+        let checked = std::ptr::read(env_guard.as_ptr() as *const u8);
+        if checked == 0 {
+            drop(env_guard);
+            mju_init_log_topics_from_env();
+            env_guard = ENV_CHECKED.lock().unwrap();
+            std::ptr::write(env_guard.as_mut_ptr() as *mut u8, 1);
+        }
+        drop(env_guard);
+        let log_guard = LOG_CONFIG.lock().unwrap();
+        log_guard.as_ptr() as *const mjLogConfig
+    }
 }
 
 /// C: mju_localTimeStr (engine/engine_util_errmem.c:195)
