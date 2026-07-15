@@ -25,17 +25,96 @@ pub fn mju_aligned_malloc(size: usize, align: usize) -> *mut () {
 /// C: mju_alignedFree (engine/engine_util_errmem.c:53)
 #[allow(unused_variables, non_snake_case)]
 pub fn mju_aligned_free(ptr: *mut ()) {
-    extern "C" { fn free(ptr: *mut std::ffi::c_void); }
-    // SAFETY: ptr was allocated by aligned_alloc (via mju_aligned_malloc). C free() is valid for it.
+    if ptr.is_null() {
+        return;
+    }
+    // SAFETY: ptr was allocated by std::alloc::alloc(Layout{size, align=64}) in mju_aligned_malloc.
+    // On POSIX, dealloc calls free() which looks up the real size from allocator metadata;
+    // the layout argument is advisory. We pass a valid layout matching the known alignment.
     unsafe {
-        free(ptr as *mut std::ffi::c_void);
+        std::alloc::dealloc(ptr as *mut u8, std::alloc::Layout::from_size_align_unchecked(64, 64));
     }
 }
 
 /// C: mju_initLogTopicsFromEnv (engine/engine_util_errmem.c:111)
 #[allow(unused_variables, non_snake_case)]
 pub fn mju_init_log_topics_from_env() {
-    todo ! ()
+    extern "C" {
+        fn getenv(name: *const i8) -> *const i8;
+        fn strcasecmp(s1: *const i8, s2: *const i8) -> i32;
+    }
+    const MJ_NTOPIC: usize = 3;
+    static TOPIC_NAMES: [&[u8]; 3] = [b"time_stp\0", b"time_cmp\0", b"sleep\0"];
+
+    // SAFETY: getenv is thread-safe for reads; we only read the returned pointer.
+    let env = unsafe { getenv(b"MUJOCO_LOG_TOPICS\0".as_ptr() as *const i8) };
+    if env.is_null() {
+        return;
+    }
+
+    // SAFETY: env points to a valid C string from the environment.
+    let mut buf = [0u8; 256];
+    unsafe {
+        let mut i = 0usize;
+        while i < 255 && *env.add(i) != 0 {
+            buf[i] = *env.add(i) as u8;
+            i += 1;
+        }
+        buf[i] = 0;
+    }
+
+    let mut token = 0usize;
+    loop {
+        if buf[token] == 0 {
+            break;
+        }
+        // skip leading spaces and commas
+        while buf[token] == b' ' || buf[token] == b',' {
+            token += 1;
+        }
+        if buf[token] == 0 {
+            break;
+        }
+
+        let mut end = token;
+        while buf[end] != 0 && buf[end] != b',' {
+            end += 1;
+        }
+        let trailing_comma = buf[end] == b',';
+
+        // trim trailing spaces
+        let mut t_end = end - 1;
+        while t_end > token && buf[t_end] == b' ' {
+            t_end -= 1;
+        }
+        buf[t_end + 1] = 0;
+
+        // compare against topic names
+        for i in 0..MJ_NTOPIC {
+            // SAFETY: both pointers are to null-terminated byte sequences in valid memory.
+            let cmp = unsafe {
+                strcasecmp(
+                    buf[token..].as_ptr() as *const i8,
+                    TOPIC_NAMES[i].as_ptr() as *const i8,
+                )
+            };
+            if cmp == 0 {
+                let mut guard = LOG_CONFIG.lock().unwrap();
+                // topics is at byte offset 1028 in mjLogConfig (after logto_console:1 + logto_file:1 + logfile:1026 = 1028, aligned to 4 → offset 1028)
+                let offset = 1028;
+                let mut topics = i32::from_ne_bytes([guard[offset], guard[offset+1], guard[offset+2], guard[offset+3]]);
+                topics |= 1 << i;
+                let bytes = topics.to_ne_bytes();
+                guard[offset] = bytes[0];
+                guard[offset+1] = bytes[1];
+                guard[offset+2] = bytes[2];
+                guard[offset+3] = bytes[3];
+                break;
+            }
+        }
+
+        token = if trailing_comma { end + 1 } else { end };
+    }
 }
 
 /// C: mju_getLogConfigPtr (engine/engine_util_errmem.c:145)
@@ -48,7 +127,29 @@ pub fn mju_get_log_config_ptr() -> *const mjLogConfig {
 /// C: mju_localTimeStr (engine/engine_util_errmem.c:195)
 #[allow(unused_variables, non_snake_case)]
 pub fn mju_local_time_str(buf: *mut i8, buf_sz: i32) {
-    todo!() // mju_localTimeStr
+    #[repr(C)]
+    struct Tm {
+        tm_sec: i32, tm_min: i32, tm_hour: i32, tm_mday: i32,
+        tm_mon: i32, tm_year: i32, tm_wday: i32, tm_yday: i32,
+        tm_isdst: i32,
+        tm_gmtoff: i64,
+        tm_zone: *const i8,
+    }
+    extern "C" {
+        fn time(tloc: *mut i64) -> i64;
+        fn localtime_r(timep: *const i64, result: *mut Tm) -> *mut Tm;
+        fn strftime(s: *mut i8, max: usize, format: *const i8, tm: *const Tm) -> usize;
+    }
+
+    let mut rawtime: i64 = 0;
+    let mut timeinfo = core::mem::MaybeUninit::<Tm>::uninit();
+
+    // SAFETY: POSIX time functions; rawtime/timeinfo are valid stack allocations.
+    unsafe {
+        time(&mut rawtime as *mut i64);
+        localtime_r(&rawtime as *const i64, timeinfo.as_mut_ptr());
+        strftime(buf, buf_sz as usize, b"%c\0".as_ptr() as *const i8, timeinfo.as_ptr());
+    }
 }
 
 /// C: mju_fprint_message (engine/engine_util_errmem.c:214)

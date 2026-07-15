@@ -124,7 +124,14 @@ pub fn mji_pow2(val: f64) -> f64 {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mji_ellipsoid_max_moment(size: *const f64, dir: i32) -> f64 {
-    todo!() // mji_ellipsoid_max_moment
+    // SAFETY: caller guarantees size points to 3 contiguous f64s
+    unsafe {
+        let d0 = *size.add(dir as usize);
+        let d1 = *size.add(((dir + 1) % 3) as usize);
+        let d2 = *size.add(((dir + 2) % 3) as usize);
+        8.0 / 15.0 * std::f64::consts::PI * d0
+            * mji_pow4(crate::engine::engine_util_misc::mju_max(d1, d2))
+    }
 }
 
 /// C: mj_passive (engine/engine_passive.h:29)

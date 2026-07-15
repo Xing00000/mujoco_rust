@@ -7,19 +7,67 @@ use crate::types::*;
 /// C: mjGlad_get_proc (render/classic/glad/glad.c:58)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_glad_get_proc(namez: *const i8) -> *mut () {
-    todo!() // mjGlad_get_proc
+    // SAFETY: Accesses module-level static mjGlad_libGL (pointer stored as [u8;8]).
+    // On macOS (__APPLE__): no mjGladGetProcAddressPtr, just dlsym on libGL handle.
+    unsafe {
+        extern "C" { fn dlsym(handle: *mut std::ffi::c_void, symbol: *const i8) -> *mut std::ffi::c_void; }
+
+        let lib_guard = MJGLAD_LIBGL.lock().unwrap();
+        let lib_gl: *mut std::ffi::c_void = std::ptr::read(lib_guard.as_ptr() as *const *mut std::ffi::c_void);
+        drop(lib_guard);
+
+        if lib_gl.is_null() {
+            return std::ptr::null_mut();
+        }
+        dlsym(lib_gl, namez) as *mut ()
+    }
 }
 
 /// C: mjGlad_open_gl (render/classic/glad/glad.c:230)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_glad_open_gl(get_proc_address: *mut ()) -> i32 {
-    todo!() // mjGlad_open_gl
+    // SAFETY: macOS version: tries dlopen on known OpenGL framework paths.
+    // Stores handle in mjGlad_libGL static.
+    unsafe {
+        extern "C" { fn dlopen(filename: *const i8, flags: i32) -> *mut std::ffi::c_void; }
+        const RTLD_NOW: i32 = 0x2;
+        const RTLD_GLOBAL: i32 = 0x8;
+
+        static NAMES: [&[u8]; 4] = [
+            b"../Frameworks/OpenGL.framework/OpenGL\0",
+            b"/Library/Frameworks/OpenGL.framework/OpenGL\0",
+            b"/System/Library/Frameworks/OpenGL.framework/OpenGL\0",
+            b"/System/Library/Frameworks/OpenGL.framework/Versions/Current/OpenGL\0",
+        ];
+
+        let mut index: u32 = 0;
+        while (index as usize) < NAMES.len() {
+            let handle = dlopen(NAMES[index as usize].as_ptr() as *const i8, RTLD_NOW | RTLD_GLOBAL);
+            if !handle.is_null() {
+                let mut lib_guard = MJGLAD_LIBGL.lock().unwrap();
+                std::ptr::write(lib_guard.as_mut_ptr() as *mut *mut std::ffi::c_void, handle);
+                return 1;
+            }
+            index += 1;
+        }
+        0
+    }
 }
 
 /// C: mjGlad_close_gl (render/classic/glad/glad.c:252)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_glad_close_gl() {
-    todo ! ()
+    // SAFETY: Closes the OpenGL framework handle and sets mjGlad_libGL to NULL.
+    unsafe {
+        extern "C" { fn dlclose(handle: *mut std::ffi::c_void) -> i32; }
+
+        let mut lib_guard = MJGLAD_LIBGL.lock().unwrap();
+        let lib_gl: *mut std::ffi::c_void = std::ptr::read(lib_guard.as_ptr() as *const *mut std::ffi::c_void);
+        if !lib_gl.is_null() {
+            dlclose(lib_gl);
+            std::ptr::write(lib_guard.as_mut_ptr() as *mut *mut std::ffi::c_void, std::ptr::null_mut());
+        }
+    }
 }
 
 /// C: mjGlad_get_exts (render/classic/glad/glad.c:294)
@@ -31,13 +79,97 @@ pub fn mj_glad_get_exts() -> i32 {
 /// C: mjGlad_free_exts (render/classic/glad/glad.c:328)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_glad_free_exts() {
-    todo ! ()
+    // SAFETY: Frees the extension string array allocated in mjGlad_get_exts.
+    // Reads mjGlad_exts_i (char**) and mjGlad_num_exts_i (int) from statics.
+    unsafe {
+        extern "C" { fn free(ptr: *mut std::ffi::c_void); }
+
+        let mut exts_guard = MJGLAD_EXTS_I.lock().unwrap();
+        let exts_i: *mut *mut i8 = std::ptr::read(exts_guard.as_ptr() as *const *mut *mut i8);
+
+        if !exts_i.is_null() {
+            let num_guard = MJGLAD_NUM_EXTS_I.lock().unwrap();
+            let num_exts_i: i32 = std::ptr::read(num_guard.as_ptr() as *const i32);
+            drop(num_guard);
+
+            let mut index: i32 = 0;
+            while index < num_exts_i {
+                free(*exts_i.offset(index as isize) as *mut std::ffi::c_void);
+                index += 1;
+            }
+            free(exts_i as *mut std::ffi::c_void);
+            std::ptr::write(exts_guard.as_mut_ptr() as *mut *mut *mut i8, std::ptr::null_mut());
+        }
+    }
 }
 
 /// C: mjGlad_has_ext (render/classic/glad/glad.c:339)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_glad_has_ext(ext: *const i8) -> i32 {
-    todo!() // mjGlad_has_ext
+    // SAFETY: Searches for an extension string in the loaded extensions list.
+    // On macOS (GL < 3 path): linear search in mjGlad_exts string.
+    // On GL >= 3 path: search in mjGlad_exts_i array.
+    unsafe {
+        extern "C" {
+            fn strstr(haystack: *const i8, needle: *const i8) -> *const i8;
+            fn strlen(s: *const i8) -> usize;
+            fn strcmp(s1: *const i8, s2: *const i8) -> i32;
+        }
+
+        let max_guard = MJGLAD_MAX_LOADED_MAJOR.lock().unwrap();
+        let max_loaded_major: i32 = std::ptr::read(max_guard.as_ptr() as *const i32);
+        drop(max_guard);
+
+        if max_loaded_major < 3 {
+            // Simple string search path
+            let exts_guard = MJGLAD_EXTS.lock().unwrap();
+            let extensions: *const i8 = std::ptr::read(exts_guard.as_ptr() as *const *const i8);
+            drop(exts_guard);
+
+            if extensions.is_null() || ext.is_null() {
+                return 0;
+            }
+
+            let ext_len = strlen(ext);
+            let mut search = extensions;
+            loop {
+                let loc = strstr(search, ext);
+                if loc.is_null() {
+                    return 0;
+                }
+                let terminator = loc.add(ext_len);
+                if (loc == search || *loc.sub(1) == b' ' as i8)
+                    && (*terminator == b' ' as i8 || *terminator == 0)
+                {
+                    return 1;
+                }
+                search = terminator;
+            }
+        } else {
+            // Array search path (GL >= 3)
+            let exts_guard = MJGLAD_EXTS_I.lock().unwrap();
+            let exts_i: *mut *mut i8 = std::ptr::read(exts_guard.as_ptr() as *const *mut *mut i8);
+            drop(exts_guard);
+
+            if exts_i.is_null() {
+                return 0;
+            }
+
+            let num_guard = MJGLAD_NUM_EXTS_I.lock().unwrap();
+            let num_exts_i: i32 = std::ptr::read(num_guard.as_ptr() as *const i32);
+            drop(num_guard);
+
+            let mut index: i32 = 0;
+            while index < num_exts_i {
+                let e = *exts_i.offset(index as isize);
+                if !e.is_null() && strcmp(e, ext) == 0 {
+                    return 1;
+                }
+                index += 1;
+            }
+        }
+        0
+    }
 }
 
 /// C: mjGlad_load_GL_VERSION_1_0 (render/classic/glad/glad.c:898)

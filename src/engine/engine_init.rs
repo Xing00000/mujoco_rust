@@ -46,7 +46,13 @@ pub fn mj_default_option(opt: *mut mjOption) {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn setf4(rgba: *mut f32, r: f32, g: f32, b: f32, a: f32) {
-    todo!() // setf4
+    // SAFETY: caller guarantees rgba points to at least 4 contiguous floats
+    unsafe {
+        *rgba.add(0) = r;
+        *rgba.add(1) = g;
+        *rgba.add(2) = b;
+        *rgba.add(3) = a;
+    }
 }
 
 /// C: mj_defaultVisual (engine/engine_init.c:133)

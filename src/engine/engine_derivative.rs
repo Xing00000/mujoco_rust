@@ -162,7 +162,40 @@ pub fn mjd_cross_force_frc(D: *mut f64, vel: *const f64) {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjd_mul_inert_vec_vel(D: *mut f64, i: *const f64) {
-    todo!() // mjd_mulInertVec_vel
+    // SAFETY: caller guarantees D points to 36 f64s, i points to 10 f64s
+    unsafe {
+        crate::engine::engine_util_blas::mju_zero(D, 36);
+
+        *D.add(0 + 0) = *i.add(0);
+        *D.add(0 + 1) = *i.add(3);
+        *D.add(0 + 2) = *i.add(4);
+        *D.add(0 + 4) = -*i.add(8);
+        *D.add(0 + 5) = *i.add(7);
+
+        *D.add(6 + 0) = *i.add(3);
+        *D.add(6 + 1) = *i.add(1);
+        *D.add(6 + 2) = *i.add(5);
+        *D.add(6 + 3) = *i.add(8);
+        *D.add(6 + 5) = -*i.add(6);
+
+        *D.add(12 + 0) = *i.add(4);
+        *D.add(12 + 1) = *i.add(5);
+        *D.add(12 + 2) = *i.add(2);
+        *D.add(12 + 3) = -*i.add(7);
+        *D.add(12 + 4) = *i.add(6);
+
+        *D.add(18 + 1) = *i.add(8);
+        *D.add(18 + 2) = -*i.add(7);
+        *D.add(18 + 3) = *i.add(9);
+
+        *D.add(24 + 2) = *i.add(6);
+        *D.add(24 + 0) = -*i.add(8);
+        *D.add(24 + 4) = *i.add(9);
+
+        *D.add(30 + 0) = *i.add(7);
+        *D.add(30 + 1) = -*i.add(6);
+        *D.add(30 + 5) = *i.add(9);
+    }
 }
 
 /// C: mjd_comVel_vel_dense (engine/engine_derivative.c:321)

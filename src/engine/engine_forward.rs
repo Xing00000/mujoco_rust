@@ -230,7 +230,15 @@ pub fn midpoint_eligible(m: *const mjModel, d: *const mjData, jnt: i32) -> i32 {
 /// C: midpoint_aligned (engine/engine_forward.c:1493)
 #[allow(unused_variables, non_snake_case)]
 pub fn midpoint_aligned(m: *const mjModel, jnt: i32) -> i32 {
-    todo!() // midpoint_aligned
+    // SAFETY: caller guarantees m is valid and jnt is within bounds
+    unsafe {
+        let body = *(*m).jnt_bodyid.add(jnt as usize);
+        let ipos = (*m).body_ipos;
+        let aligned = *ipos.add(3 * body as usize + 0) == 0.0
+            && *ipos.add(3 * body as usize + 1) == 0.0
+            && *ipos.add(3 * body as usize + 2) == 0.0;
+        aligned as i32
+    }
 }
 
 /// C: midpointNewton (engine/engine_forward.c:1515)

@@ -96,14 +96,60 @@ pub fn mj_add_constraint(m: *const mjModel, d: *mut mjData, jac: *const f64, pos
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_equality_anchors(m: *const mjModel, d: *const mjData, eq_id: i32, pos1: *mut f64, pos2: *mut f64, body1: *mut i32, body2: *mut i32) {
-    todo!() // mj_equalityAnchors
+    const mjNEQDATA: i32 = 11;
+
+    // SAFETY: caller guarantees m, d, pos1, pos2, body1, body2 are valid
+    unsafe {
+        let eq_type = *(*m).eq_type.add(eq_id as usize);
+        let obj1 = *(*m).eq_obj1id.add(eq_id as usize);
+        let obj2 = *(*m).eq_obj2id.add(eq_id as usize);
+
+        if *(*m).eq_objtype.add(eq_id as usize) == mjtObj_mjOBJ_BODY as i32 {
+            let data = (*m).eq_data.add((mjNEQDATA * eq_id) as usize);
+            if eq_type == mjtEq_mjEQ_CONNECT as i32 {
+                crate::engine::engine_util_blas::mju_mul_mat_vec3(
+                    pos1, (*d).xmat.add(9 * obj1 as usize), data);
+                crate::engine::engine_util_blas::mju_add_to3(
+                    pos1, (*d).xpos.add(3 * obj1 as usize));
+                crate::engine::engine_util_blas::mju_mul_mat_vec3(
+                    pos2, (*d).xmat.add(9 * obj2 as usize), data.add(3));
+                crate::engine::engine_util_blas::mju_add_to3(
+                    pos2, (*d).xpos.add(3 * obj2 as usize));
+            } else {
+                crate::engine::engine_util_blas::mju_mul_mat_vec3(
+                    pos1, (*d).xmat.add(9 * obj1 as usize), data.add(3));
+                crate::engine::engine_util_blas::mju_add_to3(
+                    pos1, (*d).xpos.add(3 * obj1 as usize));
+                crate::engine::engine_util_blas::mju_mul_mat_vec3(
+                    pos2, (*d).xmat.add(9 * obj2 as usize), data);
+                crate::engine::engine_util_blas::mju_add_to3(
+                    pos2, (*d).xpos.add(3 * obj2 as usize));
+            }
+            *body1 = obj1;
+            *body2 = obj2;
+        } else {
+            crate::engine::engine_util_blas::mju_copy3(
+                pos1, (*d).site_xpos.add(3 * obj1 as usize));
+            crate::engine::engine_util_blas::mju_copy3(
+                pos2, (*d).site_xpos.add(3 * obj2 as usize));
+            *body1 = *(*m).site_bodyid.add(obj1 as usize);
+            *body2 = *(*m).site_bodyid.add(obj2 as usize);
+        }
+    }
 }
 
 /// C: mj_addConstraintCount (engine/engine_core_constraint.c:1259)
 /// Calls: mj_isSparse
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_add_constraint_count(m: *const mjModel, size: i32, NV: i32) -> i32 {
-    todo!() // mj_addConstraintCount
+    // SAFETY: caller guarantees m is a valid mjModel pointer
+    unsafe {
+        if crate::engine::engine_core_util::mj_is_sparse(m) == 0 {
+            return if (*m).nv != 0 { size } else { 0 };
+        }
+        let max_nv = if 0 > NV { 0 } else { NV };
+        if max_nv != 0 { size } else { 0 }
+    }
 }
 
 /// C: mj_instantiateFriction (engine/engine_core_constraint.c:1270)
