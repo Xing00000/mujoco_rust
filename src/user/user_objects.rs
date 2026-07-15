@@ -2107,7 +2107,8 @@ pub fn mj_c_mesh_get_quat_ptr(self_ptr: *mut mjCMesh) -> *mut f64 {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_mesh_get_inertia_box_ptr(self_ptr: *mut mjCMesh) -> *mut f64 {
-    todo!() // mjCMesh::GetInertiaBoxPtr
+    // SAFETY: self_ptr is a valid pointer to mjCMesh, accessing boxsz_ field
+    unsafe { (*self_ptr).boxsz_.as_mut_ptr() }
 }
 
 /// C: mjCMesh::GetVolumeRef (user/user_objects.h:1226)
