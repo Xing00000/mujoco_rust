@@ -1137,14 +1137,20 @@ pub fn mj_c_joint_get_range(self_ptr: *mut mjCJoint) -> *const f64 {
 /// Calls: islimited
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_joint_is_limited(self_ptr: *mut mjCJoint) -> bool {
-    todo!() // mjCJoint::is_limited
+    // SAFETY: self_ptr is valid pointer to mjCJoint
+    unsafe {
+        islimited((*self_ptr).limited, (*self_ptr).range.as_ptr())
+    }
 }
 
 /// C: mjCJoint::is_actfrclimited (user/user_objects.h:715)
 /// Calls: islimited
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_joint_is_actfrclimited(self_ptr: *mut mjCJoint) -> bool {
-    todo!() // mjCJoint::is_actfrclimited
+    // SAFETY: self_ptr is valid pointer to mjCJoint
+    unsafe {
+        islimited((*self_ptr).actfrclimited, (*self_ptr).actfrcrange.as_ptr())
+    }
 }
 
 /// C: mjCJoint::nq (user/user_objects.h:719)
@@ -2096,7 +2102,8 @@ pub fn mj_c_mesh_get_pos_ptr(self_ptr: *mut mjCMesh) -> *mut f64 {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_mesh_get_quat_ptr(self_ptr: *mut mjCMesh) -> *mut f64 {
-    todo!() // mjCMesh::GetQuatPtr
+    // SAFETY: self_ptr is valid pointer to mjCMesh, accessing quat_ field
+    unsafe { (*self_ptr).quat_.as_mut_ptr() }
 }
 
 /// C: mjCMesh::GetInertiaBoxPtr (user/user_objects.h:1225)
@@ -2119,7 +2126,17 @@ pub fn mj_c_mesh_get_inertia_box_ptr(self_ptr: *mut mjCMesh) -> *mut f64 {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_mesh_get_volume_ref(self_ptr: *mut mjCMesh) -> f64 {
-    todo!() // mjCMesh::GetVolumeRef
+    // SAFETY: self_ptr is valid pointer to mjCMesh
+    unsafe {
+        // inertia field is [u8; 4] representing mjtMeshInertia enum
+        // mjMESH_INERTIA_SHELL = 3
+        let inertia_val = i32::from_ne_bytes((*self_ptr).inertia);
+        if inertia_val == 3 {
+            (*self_ptr).surface_
+        } else {
+            (*self_ptr).volume_
+        }
+    }
 }
 
 /// C: mjCMesh::FitGeom (user/user_objects.h:1227)
@@ -3152,14 +3169,20 @@ pub fn mj_c_tendon_set_model(self_ptr: *mut mjCTendon, _model: *mut mjCModel) {
 /// Calls: islimited
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_tendon_is_limited(self_ptr: *mut mjCTendon) -> bool {
-    todo!() // mjCTendon::is_limited
+    // SAFETY: self_ptr is valid pointer to mjCTendon
+    unsafe {
+        islimited((*self_ptr).limited, (*self_ptr).range.as_ptr())
+    }
 }
 
 /// C: mjCTendon::is_actfrclimited (user/user_objects.h:1723)
 /// Calls: islimited
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_tendon_is_actfrclimited(self_ptr: *mut mjCTendon) -> bool {
-    todo!() // mjCTendon::is_actfrclimited
+    // SAFETY: self_ptr is valid pointer to mjCTendon
+    unsafe {
+        islimited((*self_ptr).actfrclimited, (*self_ptr).actfrcrange.as_ptr())
+    }
 }
 
 /// C: mjCTendon::Compile (user/user_objects.h:1726)
@@ -3275,7 +3298,10 @@ pub fn mj_c_actuator_is_forcelimited(self_ptr: *mut mjCActuator) -> bool {
 /// Calls: islimited
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_actuator_is_actlimited(self_ptr: *mut mjCActuator) -> bool {
-    todo!() // mjCActuator::is_actlimited
+    // SAFETY: self_ptr is valid pointer to mjCActuator
+    unsafe {
+        islimited((*self_ptr).actlimited, (*self_ptr).actrange.as_ptr())
+    }
 }
 
 /// C: mjCActuator::act (user/user_objects.h:1852)
