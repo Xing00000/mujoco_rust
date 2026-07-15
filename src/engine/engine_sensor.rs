@@ -1,5 +1,5 @@
 //! Port of: engine/engine_sensor.c
-//! IR hash: 8cbd078414266fa8
+//! IR hash: d2209344472ae336
 //! CODEGEN: signatures locked. Only fill todo!() bodies.
 
 use crate::types::*;
@@ -231,7 +231,78 @@ pub fn total_wrench(force: *mut f64, torque: *mut f64, point: *const f64, n: i32
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn fill_raydata(ptr: *mut f64, dataspec: i32, dist: f64, origin: *const f64, direction: *const f64, normal: *const f64, cam_xpos: *const f64, cam_z: *const f64) -> *mut f64 {
-    todo!() // fill_raydata
+    use crate::engine::engine_util_blas::{mju_copy3, mju_zero3, mju_add_scl3, mju_sub3, mju_dot3};
+
+    const RAYDATA_DIST: i32 = 0;
+    const RAYDATA_DIR: i32 = 1;
+    const RAYDATA_ORIGIN: i32 = 2;
+    const RAYDATA_POINT: i32 = 3;
+    const RAYDATA_NORMAL: i32 = 4;
+    const RAYDATA_DEPTH: i32 = 5;
+
+    // SAFETY: caller guarantees all pointers are valid and ptr has sufficient space
+    unsafe {
+        let mut p = ptr;
+        let hit: i32 = if dist >= 0.0 { 1 } else { 0 };
+
+        if (dataspec & (1 << RAYDATA_DIST)) != 0 {
+            *p = dist;
+            p = p.add(1);
+        }
+        if (dataspec & (1 << RAYDATA_DIR)) != 0 {
+            if hit != 0 {
+                mju_copy3(p, direction);
+            } else {
+                mju_zero3(p);
+            }
+            p = p.add(3);
+        }
+        if (dataspec & (1 << RAYDATA_ORIGIN)) != 0 {
+            mju_copy3(p, origin);
+            p = p.add(3);
+        }
+
+        // compute point if needed for POINT or DEPTH fields
+        let mut point: [f64; 3] = [0.0, 0.0, 0.0];
+        if ((dataspec & (1 << RAYDATA_POINT)) != 0) || ((dataspec & (1 << RAYDATA_DEPTH)) != 0) {
+            if hit != 0 {
+                mju_add_scl3(point.as_mut_ptr(), origin, direction, dist);
+            }
+        }
+
+        if (dataspec & (1 << RAYDATA_POINT)) != 0 {
+            mju_copy3(p, point.as_ptr());
+            p = p.add(3);
+        }
+        if (dataspec & (1 << RAYDATA_NORMAL)) != 0 {
+            if hit != 0 {
+                mju_copy3(p, normal);
+            } else {
+                mju_zero3(p);
+            }
+            p = p.add(3);
+        }
+        if (dataspec & (1 << RAYDATA_DEPTH)) != 0 {
+            if hit != 0 {
+                if !cam_z.is_null() {
+                    // camera depth: project onto camera z-axis
+                    let mut delta: [f64; 3] = [0.0; 3];
+                    mju_sub3(delta.as_mut_ptr(), point.as_ptr(), cam_xpos);
+                    *p = -mju_dot3(delta.as_ptr(), cam_z);
+                    p = p.add(1);
+                } else {
+                    // site sensor: depth = dist
+                    *p = dist;
+                    p = p.add(1);
+                }
+            } else {
+                *p = -1.0;
+                p = p.add(1);
+            }
+        }
+
+        p
+    }
 }
 
 /// C: mj_computeSensorPos (engine/engine_sensor.c:525)
@@ -286,7 +357,29 @@ pub fn compute_or_read_sensor(m: *const mjModel, d: *mut mjData, i: i32, sensord
 /// Calls: apply_cutoff
 #[allow(unused_variables, non_snake_case)]
 pub fn compute_user_sensors(m: *const mjModel, d: *mut mjData, stage: u32) {
-    todo!() // compute_user_sensors
+    extern "C" {
+        static mut mjcb_sensor: Option<unsafe extern "C" fn(*const mjModel, *mut mjData, i32)>;
+    }
+
+    // SAFETY: accessing global callback pointer and model/data fields, matching C semantics
+    unsafe {
+        if let Some(cb) = mjcb_sensor {
+            cb(m, d, stage as i32);
+        }
+
+        // apply cutoff to user sensors
+        let nsensor = (*m).nsensor as i32;
+        let mut i: i32 = 0;
+        while i < nsensor {
+            if *(*m).sensor_type.add(i as usize) == mjtSensor_mjSENS_USER as i32
+                && *(*m).sensor_needstage.add(i as usize) == stage as i32
+            {
+                let adr = *(*m).sensor_adr.add(i as usize);
+                apply_cutoff(m, i, (*d).sensordata.add(adr as usize));
+            }
+            i += 1;
+        }
+    }
 }
 
 /// C: compute_plugin_sensors (engine/engine_sensor.c:1447)

@@ -1,5 +1,5 @@
 //! Port of: render/classic/render_context.c
-//! IR hash: 8cbd078414266fa8
+//! IR hash: d2209344472ae336
 //! CODEGEN: signatures locked. Only fill todo!() bodies.
 
 use crate::types::*;
@@ -366,7 +366,12 @@ pub fn cylinder(nSlice: i32, nStack: i32) {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn set_vertex_haze(v: *mut f32, az: f32, h: f32, r: f32) {
-    todo!() // setVertexHaze
+    // SAFETY: caller guarantees v points to at least 3 writable f32 elements
+    unsafe {
+        *v.add(0) = az.cos() * (1.0 - r * (1.0 - h));
+        *v.add(1) = az.sin() * (1.0 - r * (1.0 - h));
+        *v.add(2) = h;
+    }
 }
 
 /// C: haze (render/classic/render_context.c:898)

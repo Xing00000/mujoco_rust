@@ -1,5 +1,5 @@
 //! Port of: engine/engine_collision_sdf.c
-//! IR hash: 8cbd078414266fa8
+//! IR hash: d2209344472ae336
 //! CODEGEN: signatures locked. Only fill todo!() bodies.
 
 use crate::types::*;
@@ -95,7 +95,24 @@ pub fn oct_gradient(m: *const mjModel, grad: *mut f64, point: *const f64, meshid
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn radial_field3d(field: *mut f64, a: *const f64, x: *const f64, size: *const f64) {
-    todo!() // radialField3d
+    // SAFETY: caller guarantees field, a, x, size point to at least 3 valid f64 elements
+    unsafe {
+        *field.add(0) = -*size.add(0) / *a.add(0);
+        *field.add(1) = -*size.add(1) / *a.add(1);
+        *field.add(2) = -*size.add(2) / *a.add(2);
+        crate::engine::engine_util_blas::mju_normalize3(field);
+
+        // flip sign if necessary
+        if *x.add(0) < 0.0 {
+            *field.add(0) = -*field.add(0);
+        }
+        if *x.add(1) < 0.0 {
+            *field.add(1) = -*field.add(1);
+        }
+        if *x.add(2) < 0.0 {
+            *field.add(2) = -*field.add(2);
+        }
+    }
 }
 
 /// C: geomDistance (engine/engine_collision_sdf.c:218)

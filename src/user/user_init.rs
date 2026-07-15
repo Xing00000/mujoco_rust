@@ -1,5 +1,5 @@
 //! Port of: user/user_init.c
-//! IR hash: 8cbd078414266fa8
+//! IR hash: d2209344472ae336
 //! CODEGEN: signatures locked. Only fill todo!() bodies.
 
 use crate::types::*;
@@ -14,7 +14,10 @@ pub fn mjs_default_spec(spec: *mut mjSpec) {
 /// C: mjs_defaultOrientation (user/user_init.c:69)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjs_default_orientation(orient: *mut mjsOrientation) {
-    todo!() // mjs_defaultOrientation
+    // SAFETY: caller guarantees orient is a valid, aligned, writable pointer to mjsOrientation
+    unsafe {
+        std::ptr::write_bytes(orient as *mut u8, 0, std::mem::size_of::<mjsOrientation>());
+    }
 }
 
 /// C: mjs_defaultBody (user/user_init.c:75)

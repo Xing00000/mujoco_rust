@@ -1,5 +1,5 @@
 //! Port of: engine/engine_vis_init.h
-//! IR hash: 8cbd078414266fa8
+//! IR hash: d2209344472ae336
 //! CODEGEN: signatures locked. Only fill todo!() bodies.
 
 use crate::types::*;
@@ -7,7 +7,10 @@ use crate::types::*;
 /// C: mjv_defaultScene (engine/engine_vis_init.h:34)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjv_default_scene(scn: *mut mjvScene) {
-    todo!() // mjv_defaultScene
+    // SAFETY: caller guarantees scn is a valid, aligned, writable pointer to mjvScene
+    unsafe {
+        std::ptr::write_bytes(scn as *mut u8, 0, std::mem::size_of::<mjvScene>());
+    }
 }
 
 /// C: mjv_makeScene (engine/engine_vis_init.h:37)
@@ -27,7 +30,44 @@ pub fn mjv_free_scene(scn: *mut mjvScene) {
 /// C: mjv_defaultOption (engine/engine_vis_init.h:43)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjv_default_option(vopt: *mut mjvOption) {
-    todo!() // mjv_defaultOption
+    // Default flag values from mjVISSTRING[i][1][0]:
+    // "0100000011000010000000010110100" (indices 0..31)
+    const VIS_DEFAULTS: [u8; 31] = [
+        0, 1, 0, 0, 0, 0, 0, 1, 1, 0,
+        0, 0, 0, 1, 0, 0, 0, 0, 0, 0,
+        0, 0, 1, 1, 0, 1, 0, 1, 0, 0,
+        0,
+    ];
+    const NGROUP: usize = 6;
+    const NVISFLAG: usize = 31;
+
+    // SAFETY: caller guarantees vopt is a valid, aligned, writable pointer to mjvOption
+    unsafe {
+        (*vopt).label = 0; // mjLABEL_NONE
+        (*vopt).frame = 0; // mjFRAME_NONE
+
+        let mut i: usize = 0;
+        while i < NGROUP {
+            let state: u8 = if i < 3 { 1 } else { 0 };
+            (*vopt).geomgroup[i] = state;
+            (*vopt).sitegroup[i] = state;
+            (*vopt).jointgroup[i] = state;
+            (*vopt).tendongroup[i] = state;
+            (*vopt).actuatorgroup[i] = state;
+            (*vopt).flexgroup[i] = state;
+            (*vopt).skingroup[i] = state;
+            i += 1;
+        }
+
+        let mut i: usize = 0;
+        while i < NVISFLAG {
+            (*vopt).flags[i] = VIS_DEFAULTS[i];
+            i += 1;
+        }
+
+        (*vopt).bvh_depth = 1;
+        (*vopt).flex_layer = 0;
+    }
 }
 
 /// C: mjv_defaultFreeCamera (engine/engine_vis_init.h:46)
