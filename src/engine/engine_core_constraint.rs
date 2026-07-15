@@ -885,6 +885,15 @@ pub fn mj_constraint_update_impl(ne: i32, nf: i32, nefc: i32, D: *const f64, R: 
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_constraint_update(m: *const mjModel, d: *mut mjData, jar: *const f64, cost: *mut f64, flg_coneHessian: i32) {
-    todo!() // mj_constraintUpdate
+    // SAFETY: caller guarantees m, d, jar, cost are valid pointers with proper lifetimes
+    unsafe {
+        mj_constraint_update_impl(
+            (*d).ne, (*d).nf, (*d).nefc,
+            (*d).efc_D, (*d).efc_R, (*d).efc_frictionloss,
+            jar, (*d).efc_type, (*d).efc_id, (*d).contact,
+            (*d).efc_state, (*d).efc_force, cost, flg_coneHessian,
+        );
+        mj_mul_jac_t_vec(m, d as *const mjData, (*d).qfrc_constraint, (*d).efc_force);
+    }
 }
 
