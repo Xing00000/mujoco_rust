@@ -72,7 +72,13 @@ pub fn checklimited(obj: *const mjCBase, autolimits: bool, entity: *const i8, at
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn islimited(limited: i32, range: *const f64) -> bool {
-    todo!() // islimited
+    // SAFETY: caller guarantees range points to at least 2 contiguous f64 elements
+    unsafe {
+        if limited == 1 || (limited == 2 && *range.add(0) < *range.add(1)) {
+            return true;
+        }
+        false
+    }
 }
 
 /// C: pointBoxDistSq (user/user_objects.cc:635)
@@ -189,13 +195,60 @@ pub fn checker(rgb: *mut std__byte, RGB1: *const std__byte, RGB2: *const std__by
 /// C: sensorDatatype (user/user_objects.cc:7480)
 #[allow(unused_variables, non_snake_case)]
 pub fn sensor_datatype(r#type: u32) -> u32 {
-    todo!() // sensorDatatype
+    match r#type {
+        0 |  // mjSENS_TOUCH
+        38   // mjSENS_INSIDESITE
+            => 1,  // mjDATATYPE_POSITIVE
+
+        28 |  // mjSENS_FRAMEXAXIS
+        29 |  // mjSENS_FRAMEYAXIS
+        30 |  // mjSENS_FRAMEZAXIS
+        40    // mjSENS_GEOMNORMAL
+            => 2,  // mjDATATYPE_AXIS
+
+        18 |  // mjSENS_BALLQUAT
+        27    // mjSENS_FRAMEQUAT
+            => 3,  // mjDATATYPE_QUATERNION
+
+        _ => 0,  // mjDATATYPE_REAL
+    }
 }
 
 /// C: sensorNeedstage (user/user_objects.cc:7544)
 #[allow(unused_variables, non_snake_case)]
 pub fn sensor_needstage(r#type: u32) -> u32 {
-    todo!() // sensorNeedstage
+    match r#type {
+        0  |  // mjSENS_TOUCH
+        1  |  // mjSENS_ACCELEROMETER
+        4  |  // mjSENS_FORCE
+        5  |  // mjSENS_TORQUE
+        15 |  // mjSENS_ACTUATORFRC
+        16 |  // mjSENS_JOINTACTFRC
+        17 |  // mjSENS_TENDONACTFRC
+        22 |  // mjSENS_JOINTLIMITFRC
+        25 |  // mjSENS_TENDONLIMITFRC
+        33 |  // mjSENS_FRAMELINACC
+        34 |  // mjSENS_FRAMEANGACC
+        42 |  // mjSENS_CONTACT
+        46    // mjSENS_TACTILE
+            => 3,  // mjSTAGE_ACC
+
+        2  |  // mjSENS_VELOCIMETER
+        3  |  // mjSENS_GYRO
+        10 |  // mjSENS_JOINTVEL
+        12 |  // mjSENS_TENDONVEL
+        14 |  // mjSENS_ACTUATORVEL
+        19 |  // mjSENS_BALLANGVEL
+        21 |  // mjSENS_JOINTLIMITVEL
+        24 |  // mjSENS_TENDONLIMITVEL
+        31 |  // mjSENS_FRAMELINVEL
+        32 |  // mjSENS_FRAMEANGVEL
+        36 |  // mjSENS_SUBTREELINVEL
+        37    // mjSENS_SUBTREEANGMOM
+            => 2,  // mjSTAGE_VEL
+
+        _ => 1,  // mjSTAGE_POS
+    }
 }
 
 /// C: ResolveOrientation (user/user_objects.h:89)
@@ -831,7 +884,10 @@ pub fn mj_c_body_name_space(self_ptr: *mut mjCBody, m: *const mjCModel) {
 /// C: mjCBody::MakeInertialExplicit (user/user_objects.h:545)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_body_make_inertial_explicit(self_ptr: *mut mjCBody) {
-    todo!() // mjCBody::MakeInertialExplicit
+    // SAFETY: caller guarantees self_ptr is a valid pointer to mjCBody
+    unsafe {
+        (*self_ptr).spec.explicitinertial = 1;
+    }
 }
 
 /// C: mjCBody::ComputeBVH (user/user_objects.h:548)
@@ -950,7 +1006,18 @@ pub fn mj_c_body_copy_from_spec(self_ptr: *mut mjCBody) {
 /// C: mjCBody::PointToLocal (user/user_objects.h:616)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_body_point_to_local(self_ptr: *mut mjCBody) {
-    todo!() // mjCBody::PointToLocal
+    // SAFETY: caller guarantees self_ptr is a valid pointer to mjCBody.
+    // Offsets: mjsElement at +8, classname at +56, info at +80 (in _pad_0/mjCBase).
+    unsafe {
+        let base = self_ptr as *mut u8;
+        (*self_ptr).spec.element = base.add(8) as *mut mjsElement;
+        (*self_ptr).spec.childclass = base.add(56) as *mut mjString;
+        (*self_ptr).spec.userdata = std::ptr::addr_of_mut!((*self_ptr).spec_userdata_) as *mut mjDoubleVec;
+        (*self_ptr).spec.plugin.plugin_name = std::ptr::addr_of_mut!((*self_ptr).plugin_name) as *mut mjString;
+        (*self_ptr).spec.plugin.name = std::ptr::addr_of_mut!((*self_ptr).plugin_instance_name) as *mut mjString;
+        (*self_ptr).spec.info = base.add(80) as *mut mjString;
+        (*self_ptr).userdata = std::ptr::null_mut();
+    }
 }
 
 /// C: mjCBody::NameSpace_ (user/user_objects.h:617)
@@ -984,7 +1051,14 @@ pub fn mj_c_frame_copy_from_spec(self_ptr: *mut mjCFrame) {
 /// C: mjCFrame::PointToLocal (user/user_objects.h:655)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_frame_point_to_local(self_ptr: *mut mjCFrame) {
-    todo!() // mjCFrame::PointToLocal
+    // SAFETY: caller guarantees self_ptr is a valid pointer to mjCFrame.
+    // Offsets: mjsElement base at +8, classname at +56, info at +80 (within _pad_0/mjCBase).
+    unsafe {
+        let base = self_ptr as *mut u8;
+        (*self_ptr).spec.element = base.add(8) as *mut mjsElement;
+        (*self_ptr).spec.childclass = base.add(56) as *mut mjString;
+        (*self_ptr).spec.info = base.add(80) as *mut mjString;
+    }
 }
 
 /// C: mjCFrame::SetParent (user/user_objects.h:656)
@@ -1002,7 +1076,19 @@ pub fn mj_c_frame_get_parent(self_ptr: *mut mjCFrame) -> *mut mjCBody {
 /// C: mjCFrame::IsAncestor (user/user_objects.h:661)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_frame_is_ancestor(self_ptr: *mut mjCFrame, child: *const mjCFrame) -> bool {
-    todo!() // mjCFrame::IsAncestor
+    // SAFETY: caller guarantees self_ptr is valid; child may be null (checked below).
+    // The frame pointer is at offset 152 within the object (mjCBase::frame field inside _pad_0).
+    unsafe {
+        if child.is_null() {
+            return false;
+        }
+        if child as *const u8 == self_ptr as *const u8 {
+            return true;
+        }
+        // Access mjCBase::frame at offset 8 (vtable) + 144 (within _pad_0) = 152 from struct start
+        let child_frame = *((child as *const u8).add(152) as *const *mut mjCFrame);
+        mj_c_frame_is_ancestor(self_ptr, child_frame)
+    }
 }
 
 /// C: mjCFrame::Compile (user/user_objects.h:666)
@@ -1105,7 +1191,15 @@ pub fn mj_c_joint_compile(self_ptr: *mut mjCJoint) -> i32 {
 /// C: mjCJoint::PointToLocal (user/user_objects.h:727)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_joint_point_to_local(self_ptr: *mut mjCJoint) {
-    todo!() // mjCJoint::PointToLocal
+    // SAFETY: caller guarantees self_ptr is a valid pointer to mjCJoint.
+    // Offsets: mjsElement at +8, info at +80 (in _pad_0/mjCBase).
+    unsafe {
+        let base = self_ptr as *mut u8;
+        (*self_ptr).spec.element = base.add(8) as *mut mjsElement;
+        (*self_ptr).spec.userdata = std::ptr::addr_of_mut!((*self_ptr).spec_userdata_) as *mut mjDoubleVec;
+        (*self_ptr).spec.info = base.add(80) as *mut mjString;
+        (*self_ptr).userdata = std::ptr::null_mut();
+    }
 }
 
 /// C: mjCGeom::GetVolume (user/user_objects.h:783)
@@ -1241,7 +1335,23 @@ pub fn mj_c_geom_copy_from_spec(self_ptr: *mut mjCGeom) {
 /// C: mjCGeom::PointToLocal (user/user_objects.h:808)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_geom_point_to_local(self_ptr: *mut mjCGeom) {
-    todo!() // mjCGeom::PointToLocal
+    // SAFETY: caller guarantees self_ptr is a valid pointer to mjCGeom.
+    // Offsets: mjsElement at +8, info at +80 (in _pad_0/mjCBase).
+    unsafe {
+        let base = self_ptr as *mut u8;
+        (*self_ptr).spec.element = base.add(8) as *mut mjsElement;
+        (*self_ptr).spec.info = base.add(80) as *mut mjString;
+        (*self_ptr).spec.userdata = std::ptr::addr_of_mut!((*self_ptr).spec_userdata_) as *mut mjDoubleVec;
+        (*self_ptr).spec.material = std::ptr::addr_of_mut!((*self_ptr).spec_material_) as *mut mjString;
+        (*self_ptr).spec.meshname = std::ptr::addr_of_mut!((*self_ptr).spec_meshname_) as *mut mjString;
+        (*self_ptr).spec.hfieldname = std::ptr::addr_of_mut!((*self_ptr).spec_hfieldname_) as *mut mjString;
+        (*self_ptr).spec.plugin.plugin_name = std::ptr::addr_of_mut!((*self_ptr).plugin_name) as *mut mjString;
+        (*self_ptr).spec.plugin.name = std::ptr::addr_of_mut!((*self_ptr).plugin_instance_name) as *mut mjString;
+        (*self_ptr).userdata = std::ptr::null_mut();
+        (*self_ptr).hfieldname = std::ptr::null_mut();
+        (*self_ptr).meshname = std::ptr::null_mut();
+        (*self_ptr).material = std::ptr::null_mut();
+    }
 }
 
 /// C: mjCGeom::NameSpace (user/user_objects.h:809)
@@ -1310,7 +1420,17 @@ pub fn mj_c_site_copy_from_spec(self_ptr: *mut mjCSite) {
 /// C: mjCSite::PointToLocal (user/user_objects.h:864)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_site_point_to_local(self_ptr: *mut mjCSite) {
-    todo!() // mjCSite::PointToLocal
+    // SAFETY: caller guarantees self_ptr is a valid pointer to mjCSite.
+    // Offsets: mjsElement at +8, info at +80 (in _pad_0/mjCBase).
+    unsafe {
+        let base = self_ptr as *mut u8;
+        (*self_ptr).spec.element = base.add(8) as *mut mjsElement;
+        (*self_ptr).spec.info = base.add(80) as *mut mjString;
+        (*self_ptr).spec.material = std::ptr::addr_of_mut!((*self_ptr).spec_material_) as *mut mjString;
+        (*self_ptr).spec.userdata = std::ptr::addr_of_mut!((*self_ptr).spec_userdata_) as *mut mjDoubleVec;
+        (*self_ptr).userdata = std::ptr::null_mut();
+        (*self_ptr).material = std::ptr::null_mut();
+    }
 }
 
 /// C: mjCSite::NameSpace (user/user_objects.h:865)
@@ -1360,7 +1480,17 @@ pub fn mj_c_camera_copy_from_spec(self_ptr: *mut mjCCamera) {
 /// C: mjCCamera::PointToLocal (user/user_objects.h:908)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_camera_point_to_local(self_ptr: *mut mjCCamera) {
-    todo!() // mjCCamera::PointToLocal
+    // SAFETY: caller guarantees self_ptr is a valid pointer to mjCCamera.
+    // Offsets: mjsElement at +8, info at +80 (in _pad_0/mjCBase).
+    unsafe {
+        let base = self_ptr as *mut u8;
+        (*self_ptr).spec.element = base.add(8) as *mut mjsElement;
+        (*self_ptr).spec.userdata = std::ptr::addr_of_mut!((*self_ptr).spec_userdata_) as *mut mjDoubleVec;
+        (*self_ptr).spec.targetbody = std::ptr::addr_of_mut!((*self_ptr).spec_targetbody_) as *mut mjString;
+        (*self_ptr).spec.info = base.add(80) as *mut mjString;
+        (*self_ptr).userdata = std::ptr::null_mut();
+        (*self_ptr).targetbody = std::ptr::null_mut();
+    }
 }
 
 /// C: mjCCamera::NameSpace (user/user_objects.h:909)
@@ -1417,7 +1547,16 @@ pub fn mj_c_light_copy_from_spec(self_ptr: *mut mjCLight) {
 /// C: mjCLight::PointToLocal (user/user_objects.h:953)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_light_point_to_local(self_ptr: *mut mjCLight) {
-    todo!() // mjCLight::PointToLocal
+    // SAFETY: caller guarantees self_ptr is a valid pointer to mjCLight.
+    // Offsets: mjsElement at +8, info at +80 (in _pad_0/mjCBase).
+    unsafe {
+        let base = self_ptr as *mut u8;
+        (*self_ptr).spec.element = base.add(8) as *mut mjsElement;
+        (*self_ptr).spec.targetbody = std::ptr::addr_of_mut!((*self_ptr).spec_targetbody_) as *mut mjString;
+        (*self_ptr).spec.texture = std::ptr::addr_of_mut!((*self_ptr).spec_texture_) as *mut mjString;
+        (*self_ptr).spec.info = base.add(80) as *mut mjString;
+        (*self_ptr).targetbody = std::ptr::null_mut();
+    }
 }
 
 /// C: mjCLight::NameSpace (user/user_objects.h:954)
@@ -1443,7 +1582,29 @@ pub fn mj_c_flex_copy_from_spec(self_ptr: *mut mjCFlex) {
 /// C: mjCFlex::PointToLocal (user/user_objects.h:1033)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_flex_point_to_local(self_ptr: *mut mjCFlex) {
-    todo!() // mjCFlex::PointToLocal
+    // SAFETY: caller guarantees self_ptr is a valid pointer to mjCFlex.
+    // Offsets: mjsElement at +8, info at +80 (in _pad_0/mjCBase).
+    unsafe {
+        let base = self_ptr as *mut u8;
+        (*self_ptr).spec.element = base.add(8) as *mut mjsElement;
+        (*self_ptr).spec.material = std::ptr::addr_of_mut!((*self_ptr).spec_material_) as *mut mjString;
+        (*self_ptr).spec.vertbody = std::ptr::addr_of_mut!((*self_ptr).spec_vertbody_) as *mut mjStringVec;
+        (*self_ptr).spec.nodebody = std::ptr::addr_of_mut!((*self_ptr).spec_nodebody_) as *mut mjStringVec;
+        (*self_ptr).spec.vert = std::ptr::addr_of_mut!((*self_ptr).spec_vert_) as *mut mjDoubleVec;
+        (*self_ptr).spec.node = std::ptr::addr_of_mut!((*self_ptr).spec_node_) as *mut mjDoubleVec;
+        (*self_ptr).spec.texcoord = std::ptr::addr_of_mut!((*self_ptr).spec_texcoord_) as *mut mjFloatVec;
+        (*self_ptr).spec.elemtexcoord = std::ptr::addr_of_mut!((*self_ptr).spec_elemtexcoord_) as *mut mjIntVec;
+        (*self_ptr).spec.elem = std::ptr::addr_of_mut!((*self_ptr).spec_elem_) as *mut mjIntVec;
+        (*self_ptr).spec.info = base.add(80) as *mut mjString;
+        (*self_ptr).material = std::ptr::null_mut();
+        (*self_ptr).vertbody = std::ptr::null_mut();
+        (*self_ptr).nodebody = std::ptr::null_mut();
+        (*self_ptr).vert = std::ptr::null_mut();
+        (*self_ptr).node = std::ptr::null_mut();
+        (*self_ptr).texcoord = std::ptr::null_mut();
+        (*self_ptr).elemtexcoord = std::ptr::null_mut();
+        (*self_ptr).elem = std::ptr::null_mut();
+    }
 }
 
 /// C: mjCFlex::ResolveReferences (user/user_objects.h:1034)
@@ -1593,7 +1754,32 @@ pub fn mj_c_mesh_copy_from_spec(self_ptr: *mut mjCMesh) {
 /// C: mjCMesh::PointToLocal (user/user_objects.h:1152)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_mesh_point_to_local(self_ptr: *mut mjCMesh) {
-    todo!() // mjCMesh::PointToLocal
+    // SAFETY: caller guarantees self_ptr is a valid pointer to mjCMesh.
+    // Offsets: mjsElement at +8, info at +80 (in _pad_0/mjCBase).
+    unsafe {
+        let base = self_ptr as *mut u8;
+        (*self_ptr).spec.element = base.add(8) as *mut mjsElement;
+        (*self_ptr).spec.file = std::ptr::addr_of_mut!((*self_ptr).spec_file_) as *mut mjString;
+        (*self_ptr).spec.content_type = std::ptr::addr_of_mut!((*self_ptr).spec_content_type_) as *mut mjString;
+        (*self_ptr).spec.uservert = std::ptr::addr_of_mut!((*self_ptr).spec_vert_) as *mut mjFloatVec;
+        (*self_ptr).spec.usernormal = std::ptr::addr_of_mut!((*self_ptr).spec_normal_) as *mut mjFloatVec;
+        (*self_ptr).spec.userface = std::ptr::addr_of_mut!((*self_ptr).spec_face_) as *mut mjIntVec;
+        (*self_ptr).spec.userfacenormal = std::ptr::addr_of_mut!((*self_ptr).spec_facenormal_) as *mut mjIntVec;
+        (*self_ptr).spec.usertexcoord = std::ptr::addr_of_mut!((*self_ptr).spec_texcoord_) as *mut mjFloatVec;
+        (*self_ptr).spec.userfacetexcoord = std::ptr::addr_of_mut!((*self_ptr).spec_facetexcoord_) as *mut mjIntVec;
+        (*self_ptr).spec.material = std::ptr::addr_of_mut!((*self_ptr).spec_material_) as *mut mjString;
+        (*self_ptr).spec.plugin.plugin_name = std::ptr::addr_of_mut!((*self_ptr).plugin_name) as *mut mjString;
+        (*self_ptr).spec.plugin.name = std::ptr::addr_of_mut!((*self_ptr).plugin_instance_name) as *mut mjString;
+        (*self_ptr).spec.info = base.add(80) as *mut mjString;
+        (*self_ptr).file = std::ptr::null_mut();
+        (*self_ptr).content_type = std::ptr::null_mut();
+        (*self_ptr).uservert = std::ptr::null_mut();
+        (*self_ptr).usernormal = std::ptr::null_mut();
+        (*self_ptr).userface = std::ptr::null_mut();
+        (*self_ptr).userfacenormal = std::ptr::null_mut();
+        (*self_ptr).usertexcoord = std::ptr::null_mut();
+        (*self_ptr).userfacetexcoord = std::ptr::null_mut();
+    }
 }
 
 /// C: mjCMesh::NameSpace (user/user_objects.h:1153)
@@ -2360,7 +2546,33 @@ pub fn mj_c_skin_copy_from_spec(self_ptr: *mut mjCSkin) {
 /// C: mjCSkin::PointToLocal (user/user_objects.h:1377)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_skin_point_to_local(self_ptr: *mut mjCSkin) {
-    todo!() // mjCSkin::PointToLocal
+    // SAFETY: caller guarantees self_ptr is a valid pointer to mjCSkin.
+    // Offsets: mjsElement at +8, info at +80 (in _pad_0/mjCBase).
+    unsafe {
+        let base = self_ptr as *mut u8;
+        (*self_ptr).spec.element = base.add(8) as *mut mjsElement;
+        (*self_ptr).spec.file = std::ptr::addr_of_mut!((*self_ptr).spec_file_) as *mut mjString;
+        (*self_ptr).spec.material = std::ptr::addr_of_mut!((*self_ptr).spec_material_) as *mut mjString;
+        (*self_ptr).spec.vert = std::ptr::addr_of_mut!((*self_ptr).spec_vert_) as *mut mjFloatVec;
+        (*self_ptr).spec.texcoord = std::ptr::addr_of_mut!((*self_ptr).spec_texcoord_) as *mut mjFloatVec;
+        (*self_ptr).spec.face = std::ptr::addr_of_mut!((*self_ptr).spec_face_) as *mut mjIntVec;
+        (*self_ptr).spec.bodyname = std::ptr::addr_of_mut!((*self_ptr).spec_bodyname_) as *mut mjStringVec;
+        (*self_ptr).spec.bindpos = std::ptr::addr_of_mut!((*self_ptr).spec_bindpos_) as *mut mjFloatVec;
+        (*self_ptr).spec.bindquat = std::ptr::addr_of_mut!((*self_ptr).spec_bindquat_) as *mut mjFloatVec;
+        (*self_ptr).spec.vertid = std::ptr::addr_of_mut!((*self_ptr).spec_vertid_) as *mut mjIntVecVec;
+        (*self_ptr).spec.vertweight = std::ptr::addr_of_mut!((*self_ptr).spec_vertweight_) as *mut mjFloatVecVec;
+        (*self_ptr).spec.info = base.add(80) as *mut mjString;
+        (*self_ptr).file = std::ptr::null_mut();
+        (*self_ptr).material = std::ptr::null_mut();
+        (*self_ptr).vert = std::ptr::null_mut();
+        (*self_ptr).texcoord = std::ptr::null_mut();
+        (*self_ptr).face = std::ptr::null_mut();
+        (*self_ptr).bodyname = std::ptr::null_mut();
+        (*self_ptr).bindpos = std::ptr::null_mut();
+        (*self_ptr).bindquat = std::ptr::null_mut();
+        (*self_ptr).vertid = std::ptr::null_mut();
+        (*self_ptr).vertweight = std::ptr::null_mut();
+    }
 }
 
 /// C: mjCSkin::ResolveReferences (user/user_objects.h:1380)
@@ -2401,7 +2613,19 @@ pub fn mj_ch_field_copy_from_spec(self_ptr: *mut mjCHField) {
 /// C: mjCHField::PointToLocal (user/user_objects.h:1418)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_ch_field_point_to_local(self_ptr: *mut mjCHField) {
-    todo!() // mjCHField::PointToLocal
+    // SAFETY: caller guarantees self_ptr is a valid pointer to mjCHField.
+    // Offsets: mjsElement at +8, info at +80 (in _pad_0/mjCBase).
+    unsafe {
+        let base = self_ptr as *mut u8;
+        (*self_ptr).spec.element = base.add(8) as *mut mjsElement;
+        (*self_ptr).spec.file = std::ptr::addr_of_mut!((*self_ptr).spec_file_) as *mut mjString;
+        (*self_ptr).spec.content_type = std::ptr::addr_of_mut!((*self_ptr).spec_content_type_) as *mut mjString;
+        (*self_ptr).spec.userdata = std::ptr::addr_of_mut!((*self_ptr).spec_userdata_) as *mut mjFloatVec;
+        (*self_ptr).spec.info = base.add(80) as *mut mjString;
+        (*self_ptr).file = std::ptr::null_mut();
+        (*self_ptr).content_type = std::ptr::null_mut();
+        (*self_ptr).userdata = std::ptr::null_mut();
+    }
 }
 
 /// C: mjCHField::NameSpace (user/user_objects.h:1419)
@@ -2460,7 +2684,20 @@ pub fn mj_c_texture_copy_from_spec(self_ptr: *mut mjCTexture) {
 /// C: mjCTexture::PointToLocal (user/user_objects.h:1466)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_texture_point_to_local(self_ptr: *mut mjCTexture) {
-    todo!() // mjCTexture::PointToLocal
+    // SAFETY: caller guarantees self_ptr is a valid pointer to mjCTexture.
+    // Offsets: mjsElement at +8, info at +80 (in _pad_0/mjCBase).
+    unsafe {
+        let base = self_ptr as *mut u8;
+        (*self_ptr).spec.element = base.add(8) as *mut mjsElement;
+        (*self_ptr).spec.file = std::ptr::addr_of_mut!((*self_ptr).spec_file_) as *mut mjString;
+        (*self_ptr).spec.data = std::ptr::addr_of_mut!((*self_ptr).data_) as *mut mjByteVec;
+        (*self_ptr).spec.content_type = std::ptr::addr_of_mut!((*self_ptr).spec_content_type_) as *mut mjString;
+        (*self_ptr).spec.cubefiles = std::ptr::addr_of_mut!((*self_ptr).spec_cubefiles_) as *mut mjStringVec;
+        (*self_ptr).spec.info = base.add(80) as *mut mjString;
+        (*self_ptr).file = std::ptr::null_mut();
+        (*self_ptr).content_type = std::ptr::null_mut();
+        (*self_ptr).cubefiles = std::ptr::null_mut();
+    }
 }
 
 /// C: mjCTexture::NameSpace (user/user_objects.h:1467)
@@ -2579,7 +2816,15 @@ pub fn mj_c_material_copy_from_spec(self_ptr: *mut mjCMaterial) {
 /// C: mjCMaterial::PointToLocal (user/user_objects.h:1527)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_material_point_to_local(self_ptr: *mut mjCMaterial) {
-    todo!() // mjCMaterial::PointToLocal
+    // SAFETY: caller guarantees self_ptr is a valid pointer to mjCMaterial.
+    // Offsets: mjsElement at +8, info at +80 (in _pad_0/mjCBase).
+    unsafe {
+        let base = self_ptr as *mut u8;
+        (*self_ptr).spec.element = base.add(8) as *mut mjsElement;
+        (*self_ptr).spec.textures = std::ptr::addr_of_mut!((*self_ptr).spec_textures_) as *mut mjStringVec;
+        (*self_ptr).spec.info = base.add(80) as *mut mjString;
+        (*self_ptr).textures = std::ptr::null_mut();
+    }
 }
 
 /// C: mjCMaterial::NameSpace (user/user_objects.h:1528)
@@ -2617,7 +2862,17 @@ pub fn mj_c_pair_copy_from_spec(self_ptr: *mut mjCPair) {
 /// C: mjCPair::PointToLocal (user/user_objects.h:1566)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_pair_point_to_local(self_ptr: *mut mjCPair) {
-    todo!() // mjCPair::PointToLocal
+    // SAFETY: caller guarantees self_ptr is a valid pointer to mjCPair.
+    // Offsets: mjsElement at +8, info at +80 (in _pad_0/mjCBase).
+    unsafe {
+        let base = self_ptr as *mut u8;
+        (*self_ptr).spec.element = base.add(8) as *mut mjsElement;
+        (*self_ptr).spec.geomname1 = std::ptr::addr_of_mut!((*self_ptr).spec_geomname1_) as *mut mjString;
+        (*self_ptr).spec.geomname2 = std::ptr::addr_of_mut!((*self_ptr).spec_geomname2_) as *mut mjString;
+        (*self_ptr).spec.info = base.add(80) as *mut mjString;
+        (*self_ptr).geomname1 = std::ptr::null_mut();
+        (*self_ptr).geomname2 = std::ptr::null_mut();
+    }
 }
 
 /// C: mjCPair::ResolveReferences (user/user_objects.h:1567)
@@ -2668,7 +2923,23 @@ pub fn mj_c_body_pair_copy_from_spec(self_ptr: *mut mjCBodyPair) {
 /// C: mjCBodyPair::PointToLocal (user/user_objects.h:1614)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_body_pair_point_to_local(self_ptr: *mut mjCBodyPair) {
-    todo!() // mjCBodyPair::PointToLocal
+    // SAFETY: caller guarantees self_ptr is a valid pointer to mjCBodyPair.
+    // Offsets: mjsElement at +8, info at +80 (in _pad_0/mjCBase).
+    // mjsExclude layout: element(0), bodyname1(8), bodyname2(16), info(24) — all *mut pointers.
+    unsafe {
+        let base = self_ptr as *mut u8;
+        let spec_ptr = std::ptr::addr_of_mut!((*self_ptr).spec) as *mut u8;
+        // spec.element = self_ptr + 8 (mjsElement base)
+        *(spec_ptr.add(0) as *mut *mut mjsElement) = base.add(8) as *mut mjsElement;
+        // spec.bodyname1 = &spec_bodyname1_
+        *(spec_ptr.add(8) as *mut *mut mjString) = std::ptr::addr_of_mut!((*self_ptr).spec_bodyname1_) as *mut mjString;
+        // spec.bodyname2 = &spec_bodyname2_
+        *(spec_ptr.add(16) as *mut *mut mjString) = std::ptr::addr_of_mut!((*self_ptr).spec_bodyname2_) as *mut mjString;
+        // spec.info = &info (in mjCBase at offset 80)
+        *(spec_ptr.add(24) as *mut *mut mjString) = base.add(80) as *mut mjString;
+        (*self_ptr).bodyname1 = std::ptr::null_mut();
+        (*self_ptr).bodyname2 = std::ptr::null_mut();
+    }
 }
 
 /// C: mjCBodyPair::ResolveReferences (user/user_objects.h:1615)
@@ -2718,7 +2989,17 @@ pub fn mj_c_equality_copy_from_spec(self_ptr: *mut mjCEquality) {
 /// C: mjCEquality::PointToLocal (user/user_objects.h:1659)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_equality_point_to_local(self_ptr: *mut mjCEquality) {
-    todo!() // mjCEquality::PointToLocal
+    // SAFETY: caller guarantees self_ptr is a valid pointer to mjCEquality.
+    // Offsets: mjsElement at +8, info at +80 (in _pad_0/mjCBase).
+    unsafe {
+        let base = self_ptr as *mut u8;
+        (*self_ptr).spec.element = base.add(8) as *mut mjsElement;
+        (*self_ptr).spec.name1 = std::ptr::addr_of_mut!((*self_ptr).spec_name1_) as *mut mjString;
+        (*self_ptr).spec.name2 = std::ptr::addr_of_mut!((*self_ptr).spec_name2_) as *mut mjString;
+        (*self_ptr).spec.info = base.add(80) as *mut mjString;
+        (*self_ptr).name1 = std::ptr::null_mut();
+        (*self_ptr).name2 = std::ptr::null_mut();
+    }
 }
 
 /// C: mjCEquality::ResolveReferences (user/user_objects.h:1660)
@@ -2833,7 +3114,17 @@ pub fn mj_c_tendon_copy_from_spec(self_ptr: *mut mjCTendon) {
 /// C: mjCTendon::PointToLocal (user/user_objects.h:1717)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_tendon_point_to_local(self_ptr: *mut mjCTendon) {
-    todo!() // mjCTendon::PointToLocal
+    // SAFETY: caller guarantees self_ptr is a valid pointer to mjCTendon.
+    // Offsets: mjsElement at +8, info at +80 (in _pad_0/mjCBase).
+    unsafe {
+        let base = self_ptr as *mut u8;
+        (*self_ptr).spec.element = base.add(8) as *mut mjsElement;
+        (*self_ptr).spec.material = std::ptr::addr_of_mut!((*self_ptr).spec_material_) as *mut mjString;
+        (*self_ptr).spec.userdata = std::ptr::addr_of_mut!((*self_ptr).spec_userdata_) as *mut mjDoubleVec;
+        (*self_ptr).spec.info = base.add(80) as *mut mjString;
+        (*self_ptr).material = std::ptr::null_mut();
+        (*self_ptr).userdata = std::ptr::null_mut();
+    }
 }
 
 /// C: mjCTendon::ResolveReferences (user/user_objects.h:1718)
@@ -2886,7 +3177,13 @@ pub fn mj_c_wrap_copy_from_spec(self_ptr: *mut mjCWrap) {
 /// C: mjCWrap::PointToLocal (user/user_objects.h:1750)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_wrap_point_to_local(self_ptr: *mut mjCWrap) {
-    todo!() // mjCWrap::PointToLocal
+    // SAFETY: caller guarantees self_ptr is a valid pointer to mjCWrap.
+    // Offsets: mjsElement at +8, info at +80 (in _pad_0/mjCBase).
+    unsafe {
+        let base = self_ptr as *mut u8;
+        (*self_ptr).spec.element = base.add(8) as *mut mjsElement;
+        (*self_ptr).spec.info = base.add(80) as *mut mjString;
+    }
 }
 
 /// C: mjCWrap::ResolveReferences (user/user_objects.h:1751)
@@ -2918,7 +3215,14 @@ pub fn mj_c_wrap_compile(self_ptr: *mut mjCWrap) {
 /// C: mjCPlugin::PointToLocal (user/user_objects.h:1791)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_plugin_point_to_local(self_ptr: *mut mjCPlugin) {
-    todo!() // mjCPlugin::PointToLocal
+    // SAFETY: caller guarantees self_ptr is a valid pointer to mjCPlugin.
+    // Offsets: mjsElement at +8, name at +32, info at +80 (in _pad_0/mjCBase).
+    unsafe {
+        let base = self_ptr as *mut u8;
+        (*self_ptr).spec.element = base.add(8) as *mut mjsElement;
+        (*self_ptr).spec.name = base.add(32) as *mut mjString;
+        (*self_ptr).spec.info = base.add(80) as *mut mjString;
+    }
 }
 
 /// C: mjCPlugin::Compile (user/user_objects.h:1798)
@@ -3006,7 +3310,23 @@ pub fn mj_c_actuator_copy_from_spec(self_ptr: *mut mjCActuator) {
 /// C: mjCActuator::PointToLocal (user/user_objects.h:1858)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_actuator_point_to_local(self_ptr: *mut mjCActuator) {
-    todo!() // mjCActuator::PointToLocal
+    // SAFETY: caller guarantees self_ptr is a valid pointer to mjCActuator.
+    // Offsets: mjsElement at +8, info at +80 (in _pad_0/mjCBase).
+    unsafe {
+        let base = self_ptr as *mut u8;
+        (*self_ptr).spec.element = base.add(8) as *mut mjsElement;
+        (*self_ptr).spec.userdata = std::ptr::addr_of_mut!((*self_ptr).spec_userdata_) as *mut mjDoubleVec;
+        (*self_ptr).spec.target = std::ptr::addr_of_mut!((*self_ptr).spec_target_) as *mut mjString;
+        (*self_ptr).spec.refsite = std::ptr::addr_of_mut!((*self_ptr).spec_refsite_) as *mut mjString;
+        (*self_ptr).spec.slidersite = std::ptr::addr_of_mut!((*self_ptr).spec_slidersite_) as *mut mjString;
+        (*self_ptr).spec.plugin.plugin_name = std::ptr::addr_of_mut!((*self_ptr).plugin_name) as *mut mjString;
+        (*self_ptr).spec.plugin.name = std::ptr::addr_of_mut!((*self_ptr).plugin_instance_name) as *mut mjString;
+        (*self_ptr).spec.info = base.add(80) as *mut mjString;
+        (*self_ptr).userdata = std::ptr::null_mut();
+        (*self_ptr).target = std::ptr::null_mut();
+        (*self_ptr).refsite = std::ptr::null_mut();
+        (*self_ptr).slidersite = std::ptr::null_mut();
+    }
 }
 
 /// C: mjCActuator::ResolveReferences (user/user_objects.h:1859)
@@ -3082,7 +3402,21 @@ pub fn mj_c_sensor_copy_from_spec(self_ptr: *mut mjCSensor) {
 /// C: mjCSensor::PointToLocal (user/user_objects.h:1911)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_sensor_point_to_local(self_ptr: *mut mjCSensor) {
-    todo!() // mjCSensor::PointToLocal
+    // SAFETY: caller guarantees self_ptr is a valid pointer to mjCSensor.
+    // Offsets: mjsElement at +8, info at +80 (in _pad_0/mjCBase).
+    unsafe {
+        let base = self_ptr as *mut u8;
+        (*self_ptr).spec.element = base.add(8) as *mut mjsElement;
+        (*self_ptr).spec.userdata = std::ptr::addr_of_mut!((*self_ptr).spec_userdata_) as *mut mjDoubleVec;
+        (*self_ptr).spec.objname = std::ptr::addr_of_mut!((*self_ptr).spec_objname_) as *mut mjString;
+        (*self_ptr).spec.refname = std::ptr::addr_of_mut!((*self_ptr).spec_refname_) as *mut mjString;
+        (*self_ptr).spec.plugin.plugin_name = std::ptr::addr_of_mut!((*self_ptr).plugin_name) as *mut mjString;
+        (*self_ptr).spec.plugin.name = std::ptr::addr_of_mut!((*self_ptr).plugin_instance_name) as *mut mjString;
+        (*self_ptr).spec.info = base.add(80) as *mut mjString;
+        (*self_ptr).userdata = std::ptr::null_mut();
+        (*self_ptr).objname = std::ptr::null_mut();
+        (*self_ptr).refname = std::ptr::null_mut();
+    }
 }
 
 /// C: mjCSensor::ResolveReferences (user/user_objects.h:1912)
@@ -3108,7 +3442,15 @@ pub fn mj_c_sensor_copy_plugin(self_ptr: *mut mjCSensor) {
 /// C: mjCNumeric::PointToLocal (user/user_objects.h:1944)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_numeric_point_to_local(self_ptr: *mut mjCNumeric) {
-    todo!() // mjCNumeric::PointToLocal
+    // SAFETY: caller guarantees self_ptr is a valid pointer to mjCNumeric.
+    // Offsets: mjsElement at +8, info at +80 (in _pad_0/mjCBase).
+    unsafe {
+        let base = self_ptr as *mut u8;
+        (*self_ptr).spec.element = base.add(8) as *mut mjsElement;
+        (*self_ptr).spec.data = std::ptr::addr_of_mut!((*self_ptr).spec_data_) as *mut mjDoubleVec;
+        (*self_ptr).spec.info = base.add(80) as *mut mjString;
+        (*self_ptr).data = std::ptr::null_mut();
+    }
 }
 
 /// C: mjCNumeric::CopyFromSpec (user/user_objects.h:1945)
@@ -3127,7 +3469,15 @@ pub fn mj_c_numeric_compile(self_ptr: *mut mjCNumeric) {
 /// C: mjCText::PointToLocal (user/user_objects.h:1975)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_text_point_to_local(self_ptr: *mut mjCText) {
-    todo!() // mjCText::PointToLocal
+    // SAFETY: caller guarantees self_ptr is a valid pointer to mjCText.
+    // Offsets: mjsElement at +8, info at +80 (in _pad_0/mjCBase).
+    unsafe {
+        let base = self_ptr as *mut u8;
+        (*self_ptr).spec.element = base.add(8) as *mut mjsElement;
+        (*self_ptr).spec.data = std::ptr::addr_of_mut!((*self_ptr).spec_data_) as *mut mjString;
+        (*self_ptr).spec.info = base.add(80) as *mut mjString;
+        (*self_ptr).data = std::ptr::null_mut();
+    }
 }
 
 /// C: mjCText::CopyFromSpec (user/user_objects.h:1976)
@@ -3146,7 +3496,18 @@ pub fn mj_c_text_compile(self_ptr: *mut mjCText) {
 /// C: mjCTuple::PointToLocal (user/user_objects.h:2011)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_tuple_point_to_local(self_ptr: *mut mjCTuple) {
-    todo!() // mjCTuple::PointToLocal
+    // SAFETY: caller guarantees self_ptr is a valid pointer to mjCTuple.
+    // Offsets: mjsElement at +8, info at +80 (in _pad_0/mjCBase).
+    unsafe {
+        let base = self_ptr as *mut u8;
+        (*self_ptr).spec.element = base.add(8) as *mut mjsElement;
+        (*self_ptr).spec.objtype = std::ptr::addr_of_mut!((*self_ptr).spec_objtype_) as *mut mjIntVec;
+        (*self_ptr).spec.objname = std::ptr::addr_of_mut!((*self_ptr).spec_objname_) as *mut mjStringVec;
+        (*self_ptr).spec.objprm = std::ptr::addr_of_mut!((*self_ptr).spec_objprm_) as *mut mjDoubleVec;
+        (*self_ptr).spec.info = base.add(80) as *mut mjString;
+        (*self_ptr).objname = std::ptr::null_mut();
+        (*self_ptr).objprm = std::ptr::null_mut();
+    }
 }
 
 /// C: mjCTuple::CopyFromSpec (user/user_objects.h:2012)
@@ -3179,7 +3540,25 @@ pub fn mj_c_tuple_compile(self_ptr: *mut mjCTuple) {
 /// Calls: mjCActuator::act, mjCActuator::ctrl, mjCBody::mpos, mjCBody::mquat, mjCJoint::qpos, mjCJoint::qvel
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_key_point_to_local(self_ptr: *mut mjCKey) {
-    todo!() // mjCKey::PointToLocal
+    // SAFETY: caller guarantees self_ptr is a valid pointer to mjCKey.
+    // Offsets: mjsElement at +8, info at +80 (in _pad_0/mjCBase).
+    unsafe {
+        let base = self_ptr as *mut u8;
+        (*self_ptr).spec.element = base.add(8) as *mut mjsElement;
+        (*self_ptr).spec.qpos = std::ptr::addr_of_mut!((*self_ptr).spec_qpos_) as *mut mjDoubleVec;
+        (*self_ptr).spec.qvel = std::ptr::addr_of_mut!((*self_ptr).spec_qvel_) as *mut mjDoubleVec;
+        (*self_ptr).spec.act = std::ptr::addr_of_mut!((*self_ptr).spec_act_) as *mut mjDoubleVec;
+        (*self_ptr).spec.mpos = std::ptr::addr_of_mut!((*self_ptr).spec_mpos_) as *mut mjDoubleVec;
+        (*self_ptr).spec.mquat = std::ptr::addr_of_mut!((*self_ptr).spec_mquat_) as *mut mjDoubleVec;
+        (*self_ptr).spec.ctrl = std::ptr::addr_of_mut!((*self_ptr).spec_ctrl_) as *mut mjDoubleVec;
+        (*self_ptr).spec.info = base.add(80) as *mut mjString;
+        (*self_ptr).qpos = std::ptr::null_mut();
+        (*self_ptr).qvel = std::ptr::null_mut();
+        (*self_ptr).act = std::ptr::null_mut();
+        (*self_ptr).mpos = std::ptr::null_mut();
+        (*self_ptr).mquat = std::ptr::null_mut();
+        (*self_ptr).ctrl = std::ptr::null_mut();
+    }
 }
 
 /// C: mjCKey::CopyFromSpec (user/user_objects.h:2055)
@@ -3206,7 +3585,38 @@ pub fn mj_c_def_copy_without_children(self_ptr: *mut mjCDef, other: *const mjCDe
 /// Calls: mjCActuator::PointToLocal, mjCCamera::PointToLocal, mjCEquality::PointToLocal, mjCFlex::PointToLocal, mjCGeom::PointToLocal, mjCJoint::PointToLocal, mjCLight::PointToLocal, mjCMaterial::PointToLocal, mjCMesh::PointToLocal, mjCPair::PointToLocal, mjCSite::PointToLocal, mjCTendon::PointToLocal
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_def_point_to_local(self_ptr: *mut mjCDef) {
-    todo!() // mjCDef::PointToLocal
+    // SAFETY: caller guarantees self_ptr is a valid pointer to mjCDef.
+    // mjCDef starts with mjsElement directly (no vtable), so element is at offset 0.
+    unsafe {
+        // Call PointToLocal on each embedded sub-object
+        mj_c_joint_point_to_local(std::ptr::addr_of_mut!((*self_ptr).joint_));
+        mj_c_geom_point_to_local(std::ptr::addr_of_mut!((*self_ptr).geom_));
+        mj_c_site_point_to_local(std::ptr::addr_of_mut!((*self_ptr).site_));
+        mj_c_camera_point_to_local(std::ptr::addr_of_mut!((*self_ptr).camera_));
+        mj_c_light_point_to_local(std::ptr::addr_of_mut!((*self_ptr).light_));
+        mj_c_flex_point_to_local(std::ptr::addr_of_mut!((*self_ptr).flex_));
+        mj_c_mesh_point_to_local(std::ptr::addr_of_mut!((*self_ptr).mesh_));
+        mj_c_material_point_to_local(std::ptr::addr_of_mut!((*self_ptr).material_));
+        mj_c_pair_point_to_local(std::ptr::addr_of_mut!((*self_ptr).pair_));
+        mj_c_equality_point_to_local(std::ptr::addr_of_mut!((*self_ptr).equality_));
+        mj_c_tendon_point_to_local(std::ptr::addr_of_mut!((*self_ptr).tendon_));
+        mj_c_actuator_point_to_local(std::ptr::addr_of_mut!((*self_ptr).actuator_));
+
+        // Set spec pointer fields
+        (*self_ptr).spec.element = self_ptr as *mut mjsElement;
+        (*self_ptr).spec.joint = std::ptr::addr_of_mut!((*self_ptr).joint_.spec) as *mut mjsJoint;
+        (*self_ptr).spec.geom = std::ptr::addr_of_mut!((*self_ptr).geom_.spec) as *mut mjsGeom;
+        (*self_ptr).spec.site = std::ptr::addr_of_mut!((*self_ptr).site_.spec) as *mut mjsSite;
+        (*self_ptr).spec.camera = std::ptr::addr_of_mut!((*self_ptr).camera_.spec) as *mut mjsCamera;
+        (*self_ptr).spec.light = std::ptr::addr_of_mut!((*self_ptr).light_.spec) as *mut mjsLight;
+        (*self_ptr).spec.flex = std::ptr::addr_of_mut!((*self_ptr).flex_.spec) as *mut mjsFlex;
+        (*self_ptr).spec.mesh = std::ptr::addr_of_mut!((*self_ptr).mesh_.spec) as *mut mjsMesh;
+        (*self_ptr).spec.material = std::ptr::addr_of_mut!((*self_ptr).material_.spec) as *mut mjsMaterial;
+        (*self_ptr).spec.pair = std::ptr::addr_of_mut!((*self_ptr).pair_.spec) as *mut mjsPair;
+        (*self_ptr).spec.equality = std::ptr::addr_of_mut!((*self_ptr).equality_.spec) as *mut mjsEquality;
+        (*self_ptr).spec.tendon = std::ptr::addr_of_mut!((*self_ptr).tendon_.spec) as *mut mjsTendon;
+        (*self_ptr).spec.actuator = std::ptr::addr_of_mut!((*self_ptr).actuator_.spec) as *mut mjsActuator;
+    }
 }
 
 /// C: mjCDef::CopyFromSpec (user/user_objects.h:2078)
