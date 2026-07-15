@@ -24,7 +24,35 @@ pub fn mjv_make_scene(m: *const mjModel, scn: *mut mjvScene, maxgeom: i32) {
 /// Calls: mju_free, mjv_defaultScene
 #[allow(unused_variables, non_snake_case)]
 pub fn mjv_free_scene(scn: *mut mjvScene) {
-    todo!() // mjv_freeScene
+    // SAFETY: scn is a valid pointer to mjvScene allocated by mjv_makeScene (caller contract)
+    unsafe {
+        use crate::engine::engine_util_errmem::mju_free;
+
+        mju_free((*scn).geoms as *mut ());
+        mju_free((*scn).geomorder as *mut ());
+
+        mju_free((*scn).flexedgeadr as *mut ());
+        mju_free((*scn).flexedgenum as *mut ());
+        mju_free((*scn).flexvertadr as *mut ());
+        mju_free((*scn).flexvertnum as *mut ());
+        mju_free((*scn).flexfaceadr as *mut ());
+        mju_free((*scn).flexfacenum as *mut ());
+        mju_free((*scn).flexfaceused as *mut ());
+        mju_free((*scn).flexedge as *mut ());
+        mju_free((*scn).flexvert as *mut ());
+        mju_free((*scn).flexface as *mut ());
+        mju_free((*scn).flexnormal as *mut ());
+        mju_free((*scn).flextexcoord as *mut ());
+
+        mju_free((*scn).skinfacenum as *mut ());
+        mju_free((*scn).skinvertadr as *mut ());
+        mju_free((*scn).skinvertnum as *mut ());
+        mju_free((*scn).skinvert as *mut ());
+        mju_free((*scn).skinnormal as *mut ());
+
+        // clear data structure
+        mjv_default_scene(scn);
+    }
 }
 
 /// C: mjv_defaultOption (engine/engine_vis_init.h:43)
