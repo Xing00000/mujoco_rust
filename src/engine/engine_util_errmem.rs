@@ -212,7 +212,10 @@ pub fn mju_set_log_handler(handler: mjfLogHandler) -> mjfLogHandler {
 /// Calls: mju_getLogConfigPtr
 #[allow(unused_variables, non_snake_case)]
 pub fn mju_get_log_config() -> mjLogConfig {
-    todo ! ()
+    // SAFETY: mju_get_log_config_ptr returns a valid pointer to static log_config
+    unsafe {
+        *mju_get_log_config_ptr()
+    }
 }
 
 /// C: mju_setLogConfig (engine/engine_util_errmem.h:61)
@@ -368,7 +371,19 @@ pub fn mj_private_get_global_log_handler() -> mjfLogHandler {
 /// Calls: mju_getLogConfigPtr
 #[allow(unused_variables, non_snake_case)]
 pub fn mju_is_topic_enabled(topic: i32) -> mjtBool {
-    todo!() // mju_isTopicEnabled
+    // SAFETY: reads topics field from log_config via mju_get_log_config_ptr
+    unsafe {
+        if topic == 0 {
+            let mut result = mjtBool { _data: [0u8; 1] };
+            result._data[0] = 1;
+            return result;
+        }
+        let cfg = mju_get_log_config_ptr();
+        let enabled = ((*cfg).topics & (1 << (topic - 1))) != 0;
+        let mut result = mjtBool { _data: [0u8; 1] };
+        result._data[0] = enabled as u8;
+        result
+    }
 }
 
 /// C: BaseName (engine/engine_util_errmem.h:102)
