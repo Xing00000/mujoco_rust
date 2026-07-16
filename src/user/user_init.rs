@@ -8,7 +8,55 @@ use crate::types::*;
 /// Calls: mj_defaultLROpt, mj_defaultOption, mj_defaultVisual
 #[allow(unused_variables, non_snake_case)]
 pub fn mjs_default_spec(spec: *mut mjSpec) {
-    todo!() // mjs_defaultSpec
+    // SAFETY: spec is a valid writable pointer to mjSpec (caller contract)
+    unsafe {
+        // memset to zero
+        std::ptr::write_bytes(spec, 0, 1);
+
+        // default statistics
+        (*spec).stat.meaninertia = f64::NAN;
+        (*spec).stat.meanmass = f64::NAN;
+        (*spec).stat.meansize = f64::NAN;
+        (*spec).stat.extent = f64::NAN;
+        (*spec).stat.center[0] = f64::NAN;
+
+        // compiler settings
+        (*spec).compiler.autolimits = 1;
+        (*spec).compiler.settotalmass = -1.0;
+        (*spec).compiler.degree = 1;
+        (*spec).compiler.eulerseq[0] = b'x' as i8;
+        (*spec).compiler.eulerseq[1] = b'y' as i8;
+        (*spec).compiler.eulerseq[2] = b'z' as i8;
+        (*spec).compiler.usethread = 1;
+        (*spec).compiler.inertiafromgeom = 2; // mjINERTIAFROMGEOM_AUTO
+        (*spec).compiler.inertiagrouprange[1] = 5; // mjNGROUP - 1
+        (*spec).compiler.saveinertial = 0;
+        crate::engine::engine_init::mj_default_lr_opt(
+            &mut (*spec).compiler.LRopt as *mut _
+        );
+
+        // engine data
+        crate::engine::engine_init::mj_default_option(
+            &mut (*spec).option as *mut _
+        );
+        crate::engine::engine_init::mj_default_visual(
+            &mut (*spec).visual as *mut _
+        );
+        (*spec).memory = usize::MAX; // -1 as size_t
+        (*spec).njmax = -1;
+        (*spec).nconmax = -1;
+        (*spec).nstack = usize::MAX; // -1 as size_t
+
+        // user fields
+        (*spec).nuser_body = -1;
+        (*spec).nuser_jnt = -1;
+        (*spec).nuser_geom = -1;
+        (*spec).nuser_site = -1;
+        (*spec).nuser_cam = -1;
+        (*spec).nuser_tendon = -1;
+        (*spec).nuser_actuator = -1;
+        (*spec).nuser_sensor = -1;
+    }
 }
 
 /// C: mjs_defaultOrientation (user/user_init.c:69)
