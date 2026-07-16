@@ -136,7 +136,10 @@ pub fn query_signed_distance(bvh: *const f64, child: *const i32, nodeid: *const 
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn dot2(a: *const f64, b: *const f64) -> f64 {
-    todo!() // dot2
+    // SAFETY: a and b are valid pointers to at least 2 f64 elements
+    unsafe {
+        *a.offset(0) * *b.offset(0) + *a.offset(1) * *b.offset(1)
+    }
 }
 
 /// C: boxTriangle (user/user_objects.cc:929)
