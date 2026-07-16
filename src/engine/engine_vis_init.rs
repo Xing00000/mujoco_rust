@@ -101,7 +101,28 @@ pub fn mjv_default_option(vopt: *mut mjvOption) {
 /// C: mjv_defaultFreeCamera (engine/engine_vis_init.h:46)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjv_default_free_camera(m: *const mjModel, cam: *mut mjvCamera) {
-    todo!() // mjv_defaultFreeCamera
+    // SAFETY: caller guarantees m is a valid mjModel pointer, cam is a valid writable mjvCamera pointer
+    unsafe {
+        std::ptr::write_bytes(cam as *mut u8, 0, std::mem::size_of::<mjvCamera>());
+
+        (*cam).r#type = 0; // mjCAMERA_FREE
+        (*cam).fixedcamid = -1;
+        (*cam).trackbodyid = -1;
+        (*cam).lookat[0] = (*m).stat.center[0];
+        (*cam).lookat[1] = (*m).stat.center[1];
+        (*cam).lookat[2] = (*m).stat.center[2];
+        (*cam).distance = 1.5 * (*m).stat.extent;
+
+        // vis.global is [u8; 52]; azimuth is at offset 16 (float), elevation at 20, orthographic at 4 (int)
+        let global_ptr = (*m).vis.global.as_ptr();
+        let azimuth = *(global_ptr.add(16) as *const f32);
+        let elevation = *(global_ptr.add(20) as *const f32);
+        let orthographic = *(global_ptr.add(4) as *const i32);
+
+        (*cam).azimuth = azimuth as f64;
+        (*cam).elevation = elevation as f64;
+        (*cam).orthographic = orthographic;
+    }
 }
 
 /// C: mjv_defaultCamera (engine/engine_vis_init.h:49)
@@ -122,7 +143,15 @@ pub fn mjv_default_camera(cam: *mut mjvCamera) {
 /// C: mjv_defaultPerturb (engine/engine_vis_init.h:52)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjv_default_perturb(pert: *mut mjvPerturb) {
-    todo!() // mjv_defaultPerturb
+    // SAFETY: caller guarantees pert is a valid, aligned, writable pointer to mjvPerturb
+    unsafe {
+        std::ptr::write_bytes(pert as *mut u8, 0, std::mem::size_of::<mjvPerturb>());
+
+        (*pert).flexselect = -1;
+        (*pert).skinselect = -1;
+        (*pert).refquat[0] = 1.0;
+        (*pert).scale = 1.0;
+    }
 }
 
 /// C: mjv_defaultFigure (engine/engine_vis_init.h:55)
@@ -215,6 +244,40 @@ pub fn mjv_default_figure(fig: *mut mjvFigure) {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjv_rbound(geom: *const mjvGeom) -> f32 {
-    todo!() // mjv_rbound
+    const mjOBJ_GEOM: i32 = 5;
+    const mjGEOM_SPHERE: i32 = 2;
+    const mjGEOM_CAPSULE: i32 = 3;
+    const mjGEOM_CYLINDER: i32 = 5;
+    const mjGEOM_BOX: i32 = 6;
+
+    // SAFETY: caller guarantees geom is a valid pointer to mjvGeom
+    unsafe {
+        // model geom: return
+        if (*geom).objtype == mjOBJ_GEOM {
+            return (*geom).modelrbound;
+        }
+
+        // compute rbound according to type
+        let s = &(*geom).size;
+        match (*geom).r#type {
+            mjGEOM_SPHERE => s[0],
+
+            mjGEOM_CAPSULE => s[0] + s[2],
+
+            mjGEOM_CYLINDER => {
+                (s[0] * s[0] + s[2] * s[2]).sqrt()
+            }
+
+            mjGEOM_BOX => {
+                (s[0] * s[0] + s[1] * s[1] + s[2] * s[2]).sqrt()
+            }
+
+            _ => {
+                // not accurate for arrows, but they are not transparent
+                let max_s1_s2 = if s[1] > s[2] { s[1] } else { s[2] };
+                if s[0] > max_s1_s2 { s[0] } else { max_s1_s2 }
+            }
+        }
+    }
 }
 

@@ -176,7 +176,24 @@ pub fn mju_fprint_message(stream: *mut FILE, timestr: *const i8, msg: *const mjL
 /// C: mju_legacy_text (engine/engine_util_errmem.c:231)
 #[allow(unused_variables, non_snake_case)]
 pub fn mju_legacy_text(msg: *const mjLogMessage, buf: *mut i8, bufsz: i32) -> *const i8 {
-    todo!() // mju_legacy_text
+    extern "C" {
+        fn snprintf(buf: *mut i8, size: usize, fmt: *const i8, ...) -> i32;
+    }
+
+    // SAFETY: msg is a valid pointer to mjLogMessage, buf is a writable buffer of at least bufsz bytes
+    unsafe {
+        if !(*msg).func.is_null() {
+            snprintf(
+                buf,
+                bufsz as usize,
+                b"%s: %s\0".as_ptr() as *const i8,
+                (*msg).func,
+                (*msg).subject.as_ptr(),
+            );
+            return buf;
+        }
+        (*msg).subject.as_ptr()
+    }
 }
 
 /// C: mju_activeHandler (engine/engine_util_errmem.c:292)

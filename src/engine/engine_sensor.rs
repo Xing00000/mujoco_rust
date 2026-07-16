@@ -181,7 +181,68 @@ pub fn match_contact(m: *const mjModel, d: *const mjData, conid: i32, type1: u32
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn copy_sensor_data(m: *const mjModel, d: *const mjData, data: *mut *mut f64, id: i32, flg_flip: i32, nfound: i32) {
-    todo!() // copySensorData
+    use crate::engine::engine_util_blas::{mju_copy3, mju_scl3};
+    use crate::engine::engine_core_util::mj_contact_force;
+
+    const mjCONDATA_FOUND: usize = 0;
+    const mjCONDATA_FORCE: usize = 1;
+    const mjCONDATA_TORQUE: usize = 2;
+    const mjCONDATA_DIST: usize = 3;
+    const mjCONDATA_POS: usize = 4;
+    const mjCONDATA_NORMAL: usize = 5;
+    const mjCONDATA_TANGENT: usize = 6;
+
+    // SAFETY: all pointers valid per caller contract; data is array of mjNCONDATA (7) pointers
+    unsafe {
+        // found flag
+        if !(*data.add(mjCONDATA_FOUND)).is_null() {
+            *(*data.add(mjCONDATA_FOUND)) = nfound as f64;
+        }
+
+        // contact force and torque
+        if !(*data.add(mjCONDATA_FORCE)).is_null() || !(*data.add(mjCONDATA_TORQUE)).is_null() {
+            let mut forcetorque: [f64; 6] = [0.0; 6];
+            mj_contact_force(m, d, id, forcetorque.as_mut_ptr());
+            if !(*data.add(mjCONDATA_FORCE)).is_null() {
+                mju_copy3(*data.add(mjCONDATA_FORCE), forcetorque.as_ptr());
+                if flg_flip != 0 {
+                    *(*data.add(mjCONDATA_FORCE)).add(2) *= -1.0;
+                }
+            }
+            if !(*data.add(mjCONDATA_TORQUE)).is_null() {
+                mju_copy3(*data.add(mjCONDATA_TORQUE), forcetorque.as_ptr().add(3));
+                if flg_flip != 0 {
+                    *(*data.add(mjCONDATA_TORQUE)).add(2) *= -1.0;
+                }
+            }
+        }
+
+        // contact penetration distance
+        if !(*data.add(mjCONDATA_DIST)).is_null() {
+            *(*data.add(mjCONDATA_DIST)) = (*(*d).contact.add(id as usize)).dist;
+        }
+
+        // contact position
+        if !(*data.add(mjCONDATA_POS)).is_null() {
+            mju_copy3(*data.add(mjCONDATA_POS), (*(*d).contact.add(id as usize)).pos.as_ptr());
+        }
+
+        // contact normal
+        if !(*data.add(mjCONDATA_NORMAL)).is_null() {
+            mju_copy3(*data.add(mjCONDATA_NORMAL), (*(*d).contact.add(id as usize)).frame.as_ptr());
+            if flg_flip != 0 {
+                mju_scl3(*data.add(mjCONDATA_NORMAL), *data.add(mjCONDATA_NORMAL), -1.0);
+            }
+        }
+
+        // contact first tangent
+        if !(*data.add(mjCONDATA_TANGENT)).is_null() {
+            mju_copy3(*data.add(mjCONDATA_TANGENT), (*(*d).contact.add(id as usize)).frame.as_ptr().add(3));
+            if flg_flip != 0 {
+                mju_scl3(*data.add(mjCONDATA_TANGENT), *data.add(mjCONDATA_TANGENT), -1.0);
+            }
+        }
+    }
 }
 
 /// C: total_wrench (engine/engine_sensor.c:442)
