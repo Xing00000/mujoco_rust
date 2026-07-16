@@ -133,7 +133,51 @@ pub fn aux_s(omega: f64, m: f64) -> f64 {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn triangle(normal: *mut f64, center: *mut f64, v1: *const f64, v2: *const f64, v3: *const f64) -> f64 {
-    todo!() // triangle
+    const MJ_MINVAL: f64 = 1e-15;
+
+    // SAFETY: v1, v2, v3 are valid f64[3] pointers from mujoco mesh data
+    unsafe {
+        let mut normal_local: [f64; 3] = [0.0; 3];
+        let normal_ptr: *mut f64 = if !normal.is_null() { normal } else { normal_local.as_mut_ptr() };
+
+        // center
+        if !center.is_null() {
+            *center.offset(0) = (*v1.offset(0) + *v2.offset(0) + *v3.offset(0)) / 3.0;
+            *center.offset(1) = (*v1.offset(1) + *v2.offset(1) + *v3.offset(1)) / 3.0;
+            *center.offset(2) = (*v1.offset(2) + *v2.offset(2) + *v3.offset(2)) / 3.0;
+        }
+
+        // normal = (v2-v1) cross (v3-v1)
+        let mut b: [f64; 3] = [
+            *v2.offset(0) - *v1.offset(0),
+            *v2.offset(1) - *v1.offset(1),
+            *v2.offset(2) - *v1.offset(2),
+        ];
+        let mut c: [f64; 3] = [
+            *v3.offset(0) - *v1.offset(0),
+            *v3.offset(1) - *v1.offset(1),
+            *v3.offset(2) - *v1.offset(2),
+        ];
+        crate::user::user_util::mjuu_crossvec(normal_ptr, b.as_ptr(), c.as_ptr());
+
+        // get length
+        let len = f64::sqrt(crate::user::user_util::mjuu_dot3(normal_ptr, normal_ptr));
+
+        // ignore small faces
+        if len < MJ_MINVAL {
+            return 0.0;
+        }
+
+        // normalize
+        if !normal.is_null() {
+            *normal_ptr.offset(0) /= len;
+            *normal_ptr.offset(1) /= len;
+            *normal_ptr.offset(2) /= len;
+        }
+
+        // return area
+        0.5 * len
+    }
 }
 
 /// C: MeshPolygon::InsertFace (user/user_mesh.cc:2685)

@@ -3284,14 +3284,20 @@ pub fn mj_c_actuator_get_refsite(self_ptr: *mut mjCActuator) -> *const std__stri
 /// Calls: islimited
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_actuator_is_ctrllimited(self_ptr: *mut mjCActuator) -> bool {
-    todo!() // mjCActuator::is_ctrllimited
+    // SAFETY: self_ptr is valid pointer to mjCActuator
+    unsafe {
+        islimited((*self_ptr).ctrllimited, (*self_ptr).ctrlrange.as_ptr())
+    }
 }
 
 /// C: mjCActuator::is_forcelimited (user/user_objects.h:1849)
 /// Calls: islimited
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_actuator_is_forcelimited(self_ptr: *mut mjCActuator) -> bool {
-    todo!() // mjCActuator::is_forcelimited
+    // SAFETY: self_ptr is valid pointer to mjCActuator
+    unsafe {
+        islimited((*self_ptr).forcelimited, (*self_ptr).forcerange.as_ptr())
+    }
 }
 
 /// C: mjCActuator::is_actlimited (user/user_objects.h:1850)

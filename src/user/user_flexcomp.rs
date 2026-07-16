@@ -38,7 +38,38 @@ pub fn vec_to_array(vector: *const (), clear: bool) -> *mut T {
 /// C: findstring (user/user_flexcomp.cc:1426)
 #[allow(unused_variables, non_snake_case)]
 pub fn findstring(buffer: *const i8, buffer_sz: i32, str: *const i8) -> i32 {
-    todo!() // findstring
+    // SAFETY: buffer and str are valid C strings/buffers from mujoco
+    unsafe {
+        // manual strlen
+        let mut len: i32 = 0;
+        while *str.offset(len as isize) != 0 {
+            len += 1;
+        }
+
+        // scan buffer
+        let mut i: i32 = 0;
+        while i < buffer_sz - len {
+            // check for string at position i
+            let mut found = true;
+            let mut k: i32 = 0;
+            while k < len {
+                if *buffer.offset((i + k) as isize) != *str.offset(k as isize) {
+                    found = false;
+                    break;
+                }
+                k += 1;
+            }
+
+            // string found
+            if found {
+                return i;
+            }
+            i += 1;
+        }
+
+        // not found
+        -1
+    }
 }
 
 /// C: mjCFlexcomp::Make (user/user_flexcomp.h:57)
