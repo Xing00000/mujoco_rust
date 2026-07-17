@@ -3,6 +3,7 @@
 //! CODEGEN: signatures locked. Only fill todo!() bodies.
 
 use crate::types::*;
+use crate::render::classic::render_util::mjr_normalize_vec;
 
 /// C: listAllocate (render/classic/render_context.c:61)
 /// Calls: mju_error
@@ -296,7 +297,90 @@ pub fn set_vertex_disk(v: *mut f32, az: f32, r: f32, sign: i32) {
 /// Calls: setVertexDisk
 #[allow(unused_variables, non_snake_case)]
 pub fn disk(sign: i32, nSlice: i32, nStack: i32) {
-    todo!() // disk
+    const GL_TRIANGLES: u32 = 0x0004;
+    const GL_QUADS: u32 = 0x0007;
+    const MJ_PI: f32 = std::f32::consts::PI;
+
+    extern "C" {
+        fn glBegin(mode: u32);
+        fn glEnd();
+        fn glNormal3fv(v: *const f32);
+        fn glVertex3fv(v: *const f32);
+    }
+
+    let mut az1: f32;
+    let mut az2: f32;
+    let mut r1: f32;
+    let mut r2: f32;
+    let mut v1 = [0.0f32; 3];
+    let mut v2 = [0.0f32; 3];
+    let mut v3 = [0.0f32; 3];
+    let mut v4 = [0.0f32; 3];
+    let normal: [f32; 3] = [0.0, 0.0, if sign == 0 { -1.0f32 } else { sign as f32 }];
+
+    // SAFETY: GL functions linked from mujoco C library; all array pointers are stack-local
+    unsafe {
+        // pole: use triangles
+        glBegin(GL_TRIANGLES);
+        glNormal3fv(normal.as_ptr());
+        r1 = 1.0f32 / nStack as f32;
+        for j in 0..nSlice {
+            az1 = (2.0f32 * MJ_PI * (j as f32 + 0.0f32)) / nSlice as f32;
+            az2 = (2.0f32 * MJ_PI * (j as f32 + 1.0f32)) / nSlice as f32;
+
+            // compute triangle vertices
+            set_vertex_disk(v1.as_mut_ptr(), az1, r1, sign);
+            set_vertex_disk(v2.as_mut_ptr(), az2, r1, sign);
+            v3[0] = 0.0f32;
+            v3[1] = 0.0f32;
+            v3[2] = sign as f32;
+
+            // make triangle
+            if sign > 0 {
+                glVertex3fv(v1.as_ptr());
+                glVertex3fv(v2.as_ptr());
+                glVertex3fv(v3.as_ptr());
+            } else {
+                glVertex3fv(v3.as_ptr());
+                glVertex3fv(v2.as_ptr());
+                glVertex3fv(v1.as_ptr());
+            }
+        }
+        glEnd();
+
+        // the rest: use quads
+        glBegin(GL_QUADS);
+        glNormal3fv(normal.as_ptr());
+        for i in 0..(nStack - 1) {
+            r1 = (i + 1) as f32 / nStack as f32;
+            r2 = (i + 2) as f32 / nStack as f32;
+
+            for j in 0..nSlice {
+                az1 = (2.0f32 * MJ_PI * (j as f32 + 0.0f32)) / nSlice as f32;
+                az2 = (2.0f32 * MJ_PI * (j as f32 + 1.0f32)) / nSlice as f32;
+
+                // compute quad vertices
+                set_vertex_disk(v1.as_mut_ptr(), az1, r2, sign);
+                set_vertex_disk(v2.as_mut_ptr(), az2, r2, sign);
+                set_vertex_disk(v3.as_mut_ptr(), az2, r1, sign);
+                set_vertex_disk(v4.as_mut_ptr(), az1, r1, sign);
+
+                // make quad
+                if sign > 0 {
+                    glVertex3fv(v1.as_ptr());
+                    glVertex3fv(v2.as_ptr());
+                    glVertex3fv(v3.as_ptr());
+                    glVertex3fv(v4.as_ptr());
+                } else {
+                    glVertex3fv(v4.as_ptr());
+                    glVertex3fv(v3.as_ptr());
+                    glVertex3fv(v2.as_ptr());
+                    glVertex3fv(v1.as_ptr());
+                }
+            }
+        }
+        glEnd();
+    }
 }
 
 /// C: setVertexCone (render/classic/render_context.c:759)
@@ -327,7 +411,89 @@ pub fn set_vertex_cone(v: *mut f32, n: *mut f32, az: f32, r: f32) {
 /// Calls: mjr_normalizeVec, setVertexCone
 #[allow(unused_variables, non_snake_case)]
 pub fn cone(nSlice: i32, nStack: i32) {
-    todo!() // cone
+    const GL_TRIANGLES: u32 = 0x0004;
+    const GL_QUADS: u32 = 0x0007;
+    const MJ_PI: f32 = std::f32::consts::PI;
+
+    extern "C" {
+        fn glBegin(mode: u32);
+        fn glEnd();
+        fn glNormal3fv(v: *const f32);
+        fn glVertex3fv(v: *const f32);
+    }
+
+    let mut az1: f32;
+    let mut az2: f32;
+    let mut r1: f32;
+    let mut r2: f32;
+    let mut v1 = [0.0f32; 3];
+    let mut v2 = [0.0f32; 3];
+    let mut v3 = [0.0f32; 3];
+    let mut v4 = [0.0f32; 3];
+    let mut n1 = [0.0f32; 3];
+    let mut n2 = [0.0f32; 3];
+    let mut n3 = [0.0f32; 3];
+    let mut n4 = [0.0f32; 3];
+
+    // SAFETY: GL functions linked from mujoco C library; all array pointers are stack-local
+    unsafe {
+        // pole: use triangles
+        glBegin(GL_TRIANGLES);
+        r1 = 1.0f32 / nStack as f32;
+        for j in 0..nSlice {
+            az1 = (2.0f32 * MJ_PI * (j as f32 + 0.0f32)) / nSlice as f32;
+            az2 = (2.0f32 * MJ_PI * (j as f32 + 1.0f32)) / nSlice as f32;
+
+            // compute triangle vertices
+            set_vertex_cone(v1.as_mut_ptr(), n1.as_mut_ptr(), az1, r1);
+            set_vertex_cone(v2.as_mut_ptr(), n2.as_mut_ptr(), az2, r1);
+            v3[0] = 0.0f32;
+            v3[1] = 0.0f32;
+            v3[2] = 1.0f32;
+            n3[0] = n1[0] + n2[0];
+            n3[1] = n1[1] + n2[1];
+            n3[2] = n1[2] + n2[2];
+            mjr_normalize_vec(n3.as_mut_ptr());
+
+            // make triangle
+            glNormal3fv(n1.as_ptr());
+            glVertex3fv(v1.as_ptr());
+            glNormal3fv(n2.as_ptr());
+            glVertex3fv(v2.as_ptr());
+            glNormal3fv(n3.as_ptr());
+            glVertex3fv(v3.as_ptr());
+        }
+        glEnd();
+
+        // the rest: use quads
+        glBegin(GL_QUADS);
+        for i in 0..(nStack - 1) {
+            r1 = (i + 1) as f32 / nStack as f32;
+            r2 = (i + 2) as f32 / nStack as f32;
+
+            for j in 0..nSlice {
+                az1 = (2.0f32 * MJ_PI * (j as f32 + 0.0f32)) / nSlice as f32;
+                az2 = (2.0f32 * MJ_PI * (j as f32 + 1.0f32)) / nSlice as f32;
+
+                // compute quad vertices
+                set_vertex_cone(v1.as_mut_ptr(), n1.as_mut_ptr(), az1, r2);
+                set_vertex_cone(v2.as_mut_ptr(), n2.as_mut_ptr(), az2, r2);
+                set_vertex_cone(v3.as_mut_ptr(), n3.as_mut_ptr(), az2, r1);
+                set_vertex_cone(v4.as_mut_ptr(), n4.as_mut_ptr(), az1, r1);
+
+                // make quad
+                glNormal3fv(n1.as_ptr());
+                glVertex3fv(v1.as_ptr());
+                glNormal3fv(n2.as_ptr());
+                glVertex3fv(v2.as_ptr());
+                glNormal3fv(n3.as_ptr());
+                glVertex3fv(v3.as_ptr());
+                glNormal3fv(n4.as_ptr());
+                glVertex3fv(v4.as_ptr());
+            }
+        }
+        glEnd();
+    }
 }
 
 /// C: setVertexCylinder (render/classic/render_context.c:840)
@@ -355,7 +521,60 @@ pub fn set_vertex_cylinder(v: *mut f32, n: *mut f32, az: f32, h: f32) {
 /// Calls: setVertexCylinder
 #[allow(unused_variables, non_snake_case)]
 pub fn cylinder(nSlice: i32, nStack: i32) {
-    todo!() // cylinder
+    const GL_QUADS: u32 = 0x0007;
+    const MJ_PI: f32 = std::f32::consts::PI;
+
+    extern "C" {
+        fn glBegin(mode: u32);
+        fn glEnd();
+        fn glNormal3fv(v: *const f32);
+        fn glVertex3fv(v: *const f32);
+    }
+
+    let mut az1: f32;
+    let mut az2: f32;
+    let mut h1: f32;
+    let mut h2: f32;
+    let mut v1 = [0.0f32; 3];
+    let mut v2 = [0.0f32; 3];
+    let mut v3 = [0.0f32; 3];
+    let mut v4 = [0.0f32; 3];
+    let mut n1 = [0.0f32; 3];
+    let mut n2 = [0.0f32; 3];
+    let mut n3 = [0.0f32; 3];
+    let mut n4 = [0.0f32; 3];
+
+    // SAFETY: GL functions linked from mujoco C library; all array pointers are stack-local
+    unsafe {
+        // use quads everywhere
+        glBegin(GL_QUADS);
+        for i in 0..nStack {
+            h1 = 2.0f32 * (i as f32 + 0.0f32) / nStack as f32 - 1.0f32;
+            h2 = 2.0f32 * (i as f32 + 1.0f32) / nStack as f32 - 1.0f32;
+
+            for j in 0..nSlice {
+                az1 = (2.0f32 * MJ_PI * (j as f32 + 0.0f32)) / nSlice as f32;
+                az2 = (2.0f32 * MJ_PI * (j as f32 + 1.0f32)) / nSlice as f32;
+
+                // compute quad vertices
+                set_vertex_cylinder(v1.as_mut_ptr(), n1.as_mut_ptr(), az1, h1);
+                set_vertex_cylinder(v2.as_mut_ptr(), n2.as_mut_ptr(), az2, h1);
+                set_vertex_cylinder(v3.as_mut_ptr(), n3.as_mut_ptr(), az2, h2);
+                set_vertex_cylinder(v4.as_mut_ptr(), n4.as_mut_ptr(), az1, h2);
+
+                // make quad
+                glNormal3fv(n1.as_ptr());
+                glVertex3fv(v1.as_ptr());
+                glNormal3fv(n2.as_ptr());
+                glVertex3fv(v2.as_ptr());
+                glNormal3fv(n3.as_ptr());
+                glVertex3fv(v3.as_ptr());
+                glNormal3fv(n4.as_ptr());
+                glVertex3fv(v4.as_ptr());
+            }
+        }
+        glEnd();
+    }
 }
 
 /// C: setVertexHaze (render/classic/render_context.c:890)
@@ -383,7 +602,64 @@ pub fn set_vertex_haze(v: *mut f32, az: f32, h: f32, r: f32) {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn haze(nSlice: i32, r: f32, rgba: *const f32) {
-    todo!() // haze
+    const GL_QUADS: u32 = 0x0007;
+    const MJ_PI: f32 = std::f32::consts::PI;
+
+    extern "C" {
+        fn glBegin(mode: u32);
+        fn glEnd();
+        fn glNormal3f(nx: f32, ny: f32, nz: f32);
+        fn glVertex3fv(v: *const f32);
+        fn glColor4f(r: f32, g: f32, b: f32, a: f32);
+    }
+
+    // SAFETY: GL functions linked from mujoco C library; rgba is caller-guaranteed valid
+    unsafe {
+        // compute elevation h for transparency transition point
+        let alpha: f32 = (1.0f32).atan2(r);
+        let beta: f32 = (0.75f32 * MJ_PI) - alpha;
+        let h: f32 = (0.5f32).sqrt() * r * alpha.sin() / beta.sin();
+
+        // use quads everywhere
+        glBegin(GL_QUADS);
+
+        // normal not needed (always rendered with lighting off)
+        glNormal3f(0.0f32, 0.0f32, 1.0f32);
+
+        // stacks = 2
+        for i in 0..2_i32 {
+            let h1: f32 = if i == 0 { 0.0f32 } else { h };
+            let h2: f32 = if i == 0 { h } else { 1.0f32 };
+
+            for j in 0..nSlice {
+                let az1: f32 = (2.0f32 * MJ_PI * (j as f32 + 0.0f32)) / nSlice as f32;
+                let az2: f32 = (2.0f32 * MJ_PI * (j as f32 + 1.0f32)) / nSlice as f32;
+
+                // compute quad vertices
+                let mut v1 = [0.0f32; 3];
+                let mut v2 = [0.0f32; 3];
+                let mut v3 = [0.0f32; 3];
+                let mut v4 = [0.0f32; 3];
+                set_vertex_haze(v1.as_mut_ptr(), az1, h1, r);
+                set_vertex_haze(v2.as_mut_ptr(), az2, h1, r);
+                set_vertex_haze(v3.as_mut_ptr(), az2, h2, r);
+                set_vertex_haze(v4.as_mut_ptr(), az1, h2, r);
+
+                // colors at elevation h1 and h2
+                let c1: f32 = if i == 1 { 1.0f32 } else { 0.0f32 };
+                let c2: f32 = if i == 0 { 1.0f32 } else { 0.0f32 };
+
+                // make quad, with colors
+                glColor4f(*rgba.add(0), *rgba.add(1), *rgba.add(2), c1);
+                glVertex3fv(v1.as_ptr());
+                glVertex3fv(v2.as_ptr());
+                glColor4f(*rgba.add(0), *rgba.add(1), *rgba.add(2), c2);
+                glVertex3fv(v3.as_ptr());
+                glVertex3fv(v4.as_ptr());
+            }
+        }
+        glEnd();
+    }
 }
 
 /// C: makeBuiltin (render/classic/render_context.c:945)
