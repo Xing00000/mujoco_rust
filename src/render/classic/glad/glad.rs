@@ -257,7 +257,50 @@ pub fn mj_glad_load_gl_khr_debug(load: GLADloadproc) {
 /// Calls: mjGlad_free_exts, mjGlad_get_exts, mjGlad_has_ext
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_glad_find_extensions_gl() -> i32 {
-    todo ! ()
+    if mj_glad_get_exts() == 0 {
+        return 0;
+    }
+
+    // SAFETY: Writing i32 results from mj_glad_has_ext into the extension statics.
+    unsafe {
+        let val = mj_glad_has_ext(b"GL_ARB_clip_control\0".as_ptr() as *const i8);
+        let mut g = MJGLAD_GL_ARB_CLIP_CONTROL.lock().unwrap();
+        std::ptr::write(g.as_mut_ptr() as *mut i32, val);
+        drop(g);
+
+        let val = mj_glad_has_ext(b"GL_ARB_depth_buffer_float\0".as_ptr() as *const i8);
+        let mut g = MJGLAD_GL_ARB_DEPTH_BUFFER_FLOAT.lock().unwrap();
+        std::ptr::write(g.as_mut_ptr() as *mut i32, val);
+        drop(g);
+
+        let val = mj_glad_has_ext(b"GL_ARB_framebuffer_object\0".as_ptr() as *const i8);
+        let mut g = MJGLAD_GL_ARB_FRAMEBUFFER_OBJECT.lock().unwrap();
+        std::ptr::write(g.as_mut_ptr() as *mut i32, val);
+        drop(g);
+
+        let val = mj_glad_has_ext(b"GL_ARB_seamless_cube_map\0".as_ptr() as *const i8);
+        let mut g = MJGLAD_GL_ARB_SEAMLESS_CUBE_MAP.lock().unwrap();
+        std::ptr::write(g.as_mut_ptr() as *mut i32, val);
+        drop(g);
+
+        let val = mj_glad_has_ext(b"GL_ARB_vertex_buffer_object\0".as_ptr() as *const i8);
+        let mut g = MJGLAD_GL_ARB_VERTEX_BUFFER_OBJECT.lock().unwrap();
+        std::ptr::write(g.as_mut_ptr() as *mut i32, val);
+        drop(g);
+
+        let val = mj_glad_has_ext(b"GL_EXT_texture_sRGB\0".as_ptr() as *const i8);
+        let mut g = MJGLAD_GL_EXT_TEXTURE_SRGB.lock().unwrap();
+        std::ptr::write(g.as_mut_ptr() as *mut i32, val);
+        drop(g);
+
+        let val = mj_glad_has_ext(b"GL_KHR_debug\0".as_ptr() as *const i8);
+        let mut g = MJGLAD_GL_KHR_DEBUG.lock().unwrap();
+        std::ptr::write(g.as_mut_ptr() as *mut i32, val);
+        drop(g);
+    }
+
+    mj_glad_free_exts();
+    1
 }
 
 /// C: mjGlad_find_coreGL (render/classic/glad/glad.c:1447)
