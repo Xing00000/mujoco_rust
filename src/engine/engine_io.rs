@@ -324,7 +324,7 @@ pub fn mj_delete_model(m: *mut mjModel) {
 /// Calls: getnsize
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_size_model(m: *const mjModel) -> usize {
-    todo!() // mj_sizeModel
+    todo!("requires MJMODEL_POINTERS X-macro expansion (262 fields) - infrastructure codegen needed")
 }
 
 /// C: mj_validateReferences (engine/engine_io.h:87)

@@ -73,7 +73,15 @@ pub fn attach_frame_to_site(parent: *mut mjCSite, child: *const mjCFrame, prefix
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjs_get_timer(s: *mut mjSpec) -> *const f64 {
-    todo!() // mjs_getTimer
+    if s.is_null() {
+        return std::ptr::null();
+    }
+    // SAFETY: s is a valid mjSpec pointer (checked above).
+    // element points to the containing mjCModel (C++ static_cast pattern).
+    unsafe {
+        let model_c: *mut mjCModel = (*s).element as *mut mjCModel;
+        (*model_c).timer.as_ptr()
+    }
 }
 
 /// C: mjs_numWarnings (user/user_api.cc:535)

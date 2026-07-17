@@ -25,7 +25,10 @@ pub fn is_valid_element_or_node_header22(line: *const std__string) -> bool {
 /// C: mat2lin (user/user_flexcomp.cc:1103)
 #[allow(unused_variables, non_snake_case)]
 pub fn mat2lin(ix: i32, iy: i32, iz: i32, count: *const i32) -> i32 {
-    todo!() // mat2lin
+    // SAFETY: count points to an array of at least 3 ints (caller contract)
+    unsafe {
+        ix * *count.add(1) * *count.add(2) + iy * *count.add(2) + iz
+    }
 }
 
 /// C: VecToArray (user/user_flexcomp.cc:1308)
