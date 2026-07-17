@@ -288,6 +288,13 @@ pub fn mj_default_lr_opt(opt: *mut mjLROpt) {
 /// Calls: mju_zero3
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_default_statistic(stat: *mut mjStatistic) {
-    todo!() // mj_defaultStatistic
+    // SAFETY: stat is a valid mjStatistic pointer (caller contract).
+    unsafe {
+        crate::engine::engine_util_blas::mju_zero3((*stat).center.as_mut_ptr());
+        (*stat).extent = 2.0;
+        (*stat).meaninertia = 1.0;
+        (*stat).meanmass = 1.0;
+        (*stat).meansize = 0.2;
+    }
 }
 

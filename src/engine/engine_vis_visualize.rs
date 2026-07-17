@@ -792,7 +792,83 @@ pub fn mjv_connector(geom: *mut mjvGeom, r#type: i32, width: f64, from: *const f
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjv_init_geom(geom: *mut mjvGeom, r#type: i32, size: *const f64, pos: *const f64, mat: *const f64, rgba: *const f32) {
-    todo!() // mjv_initGeom
+    // SAFETY: geom is a valid mjvGeom pointer. size/pos/mat/rgba may be null.
+    unsafe {
+        (*geom).r#type = r#type;
+
+        // set size
+        if !size.is_null() {
+            match r#type as u32 {
+                mjtGeom_mjGEOM_SPHERE => {
+                    (*geom).size[0] = *size.add(0) as f32;
+                    (*geom).size[1] = *size.add(0) as f32;
+                    (*geom).size[2] = *size.add(0) as f32;
+                }
+                mjtGeom_mjGEOM_CAPSULE => {
+                    (*geom).size[0] = *size.add(0) as f32;
+                    (*geom).size[1] = *size.add(0) as f32;
+                    (*geom).size[2] = *size.add(1) as f32;
+                }
+                mjtGeom_mjGEOM_CYLINDER => {
+                    (*geom).size[0] = *size.add(0) as f32;
+                    (*geom).size[1] = *size.add(0) as f32;
+                    (*geom).size[2] = *size.add(1) as f32;
+                }
+                _ => {
+                    crate::engine::engine_util_misc::mju_n2f((*geom).size.as_mut_ptr(), size, 3);
+                }
+            }
+        } else {
+            (*geom).size[0] = 0.1_f32;
+            (*geom).size[1] = 0.1_f32;
+            (*geom).size[2] = 0.1_f32;
+        }
+
+        // set pos
+        if !pos.is_null() {
+            crate::engine::engine_util_misc::mju_n2f((*geom).pos.as_mut_ptr(), pos, 3);
+        } else {
+            (*geom).pos[0] = 0.0;
+            (*geom).pos[1] = 0.0;
+            (*geom).pos[2] = 0.0;
+        }
+
+        // set mat
+        if !mat.is_null() {
+            crate::engine::engine_util_misc::mju_n2f((*geom).mat.as_mut_ptr(), mat, 9);
+        } else {
+            (*geom).mat[0] = 1.0;
+            (*geom).mat[1] = 0.0;
+            (*geom).mat[2] = 0.0;
+            (*geom).mat[3] = 0.0;
+            (*geom).mat[4] = 1.0;
+            (*geom).mat[5] = 0.0;
+            (*geom).mat[6] = 0.0;
+            (*geom).mat[7] = 0.0;
+            (*geom).mat[8] = 1.0;
+        }
+
+        // set rgba
+        if !rgba.is_null() {
+            f2f((*geom).rgba.as_mut_ptr(), rgba, 4);
+        } else {
+            (*geom).rgba[0] = 0.5;
+            (*geom).rgba[1] = 0.5;
+            (*geom).rgba[2] = 0.5;
+            (*geom).rgba[3] = 1.0;
+        }
+
+        // set defaults
+        (*geom).dataid = -1;
+        (*geom).matid = -1;
+        (*geom).texcoord = 0;
+        (*geom).emission = 0.0;
+        (*geom).specular = 0.5;
+        (*geom).shininess = 0.5;
+        (*geom).reflectance = 0.0;
+        (*geom).label[0] = 0;
+        (*geom).modelrbound = 0.0;
+    }
 }
 
 /// C: mjv_updateScene (engine/engine_vis_visualize.h:37)
@@ -841,7 +917,145 @@ pub fn mjv_update_skin(m: *const mjModel, d: *const mjData, scn: *mut mjvScene) 
 /// Calls: mju_addTo3, mju_cross, mju_mulMatVec3, mju_mulQuat, mju_negQuat, mju_quat2Mat, mju_sub3
 #[allow(unused_variables, non_snake_case)]
 pub fn mjv_update_active_skin(m: *const mjModel, d: *const mjData, scn: *mut mjvScene, opt: *const mjvOption) {
-    todo!() // mjv_updateActiveSkin
+    // SAFETY: All pointers are valid (caller contract). Performs nested loops over skin data.
+    unsafe {
+        const MJ_NGROUP: i32 = 6;
+        const MJ_MINVAL_F64: f64 = 1E-15_f64;
+
+        for i in 0..(*m).nskin as i32 {
+            let vertadr = *(*m).skin_vertadr.add(i as usize);
+            let vertnum = *(*m).skin_vertnum.add(i as usize);
+            let faceadr = *(*m).skin_faceadr.add(i as usize);
+            let facenum = *(*m).skin_facenum.add(i as usize);
+
+            // clear positions and normals
+            std::ptr::write_bytes((*scn).skinvert.add(3 * vertadr as usize), 0, 3 * vertnum as usize);
+            std::ptr::write_bytes((*scn).skinnormal.add(3 * vertadr as usize), 0, 3 * vertnum as usize);
+
+            // update only if visible
+            let group = *(*m).skin_group.add(i as usize);
+            let clamped = if 0 > (if (MJ_NGROUP - 1) < group { MJ_NGROUP - 1 } else { group }) {
+                0
+            } else {
+                if (MJ_NGROUP - 1) < group { MJ_NGROUP - 1 } else { group }
+            };
+            if (*opt).skingroup[clamped as usize] != 0 {
+                // accumulate positions from all bones
+                let bone_end = *(*m).skin_boneadr.add(i as usize) + *(*m).skin_bonenum.add(i as usize);
+                for j in *(*m).skin_boneadr.add(i as usize)..bone_end {
+                    // get bind pose
+                    let mut bindpos: [f64; 3] = [
+                        *(*m).skin_bonebindpos.add(3 * j as usize) as f64,
+                        *(*m).skin_bonebindpos.add(3 * j as usize + 1) as f64,
+                        *(*m).skin_bonebindpos.add(3 * j as usize + 2) as f64,
+                    ];
+                    let mut bindquat: [f64; 4] = [
+                        *(*m).skin_bonebindquat.add(4 * j as usize) as f64,
+                        *(*m).skin_bonebindquat.add(4 * j as usize + 1) as f64,
+                        *(*m).skin_bonebindquat.add(4 * j as usize + 2) as f64,
+                        *(*m).skin_bonebindquat.add(4 * j as usize + 3) as f64,
+                    ];
+
+                    // compute rotation
+                    let bodyid = *(*m).skin_bonebodyid.add(j as usize);
+                    let mut quat: [f64; 4] = [0.0; 4];
+                    let mut quatneg: [f64; 4] = [0.0; 4];
+                    let mut rotate: [f64; 9] = [0.0; 9];
+                    crate::engine::engine_util_spatial::mju_neg_quat(quatneg.as_mut_ptr(), bindquat.as_ptr());
+                    crate::engine::engine_util_spatial::mju_mul_quat(quat.as_mut_ptr(), (*d).xquat.add(4 * bodyid as usize), quatneg.as_ptr());
+                    crate::engine::engine_util_spatial::mju_quat2mat(rotate.as_mut_ptr(), quat.as_ptr());
+
+                    // compute translation
+                    let mut translate: [f64; 3] = [0.0; 3];
+                    crate::engine::engine_util_blas::mju_mul_mat_vec3(translate.as_mut_ptr(), rotate.as_ptr(), bindpos.as_ptr());
+                    crate::engine::engine_util_blas::mju_sub3(translate.as_mut_ptr(), (*d).xpos.add(3 * bodyid as usize), translate.as_ptr());
+
+                    // process all bone vertices
+                    let vert_end = *(*m).skin_bonevertadr.add(j as usize) + *(*m).skin_bonevertnum.add(j as usize);
+                    for k in *(*m).skin_bonevertadr.add(j as usize)..vert_end {
+                        let vid = *(*m).skin_bonevertid.add(k as usize);
+                        let vweight = *(*m).skin_bonevertweight.add(k as usize);
+
+                        // get original position
+                        let pos: [f64; 3] = [
+                            *(*m).skin_vert.add(3 * (vertadr + vid) as usize) as f64,
+                            *(*m).skin_vert.add(3 * (vertadr + vid) as usize + 1) as f64,
+                            *(*m).skin_vert.add(3 * (vertadr + vid) as usize + 2) as f64,
+                        ];
+
+                        // transform
+                        let mut pos1: [f64; 3] = [0.0; 3];
+                        crate::engine::engine_util_blas::mju_mul_mat_vec3(pos1.as_mut_ptr(), rotate.as_ptr(), pos.as_ptr());
+                        crate::engine::engine_util_blas::mju_add_to3(pos1.as_mut_ptr(), translate.as_ptr());
+
+                        // accumulate position: float += float * (float)double
+                        // C: scn->skinvert[idx] += vweight*(float)pos1[k]
+                        let base = 3 * (vertadr + vid) as usize;
+                        *(*scn).skinvert.add(base) += vweight * (pos1[0] as f32);
+                        *(*scn).skinvert.add(base + 1) += vweight * (pos1[1] as f32);
+                        *(*scn).skinvert.add(base + 2) += vweight * (pos1[2] as f32);
+                    }
+                }
+
+                // compute vertex normals from face normals
+                for k in faceadr..(faceadr + facenum) {
+                    // get face vertex indices
+                    let vid: [i32; 3] = [
+                        *(*m).skin_face.add(3 * k as usize),
+                        *(*m).skin_face.add(3 * k as usize + 1),
+                        *(*m).skin_face.add(3 * k as usize + 2),
+                    ];
+
+                    // get triangle edges
+                    let mut vec01: [f64; 3] = [0.0; 3];
+                    let mut vec02: [f64; 3] = [0.0; 3];
+                    for r in 0..3_i32 {
+                        vec01[r as usize] = *(*scn).skinvert.add((3 * (vertadr + vid[1]) + r) as usize) as f64
+                            - *(*scn).skinvert.add((3 * (vertadr + vid[0]) + r) as usize) as f64;
+                        vec02[r as usize] = *(*scn).skinvert.add((3 * (vertadr + vid[2]) + r) as usize) as f64
+                            - *(*scn).skinvert.add((3 * (vertadr + vid[0]) + r) as usize) as f64;
+                    }
+
+                    // compute face normal
+                    let mut nrm: [f64; 3] = [0.0; 3];
+                    crate::engine::engine_util_spatial::mju_cross(nrm.as_mut_ptr(), vec01.as_ptr(), vec02.as_ptr());
+
+                    // add normal to each vertex with weight = area
+                    for r in 0..3_i32 {
+                        for t in 0..3_i32 {
+                            // C: float += double => (float)((double)float + double)
+                            let ptr = (*scn).skinnormal.add((3 * (vertadr + vid[r as usize]) + t) as usize);
+                            *ptr = (*ptr as f64 + nrm[t as usize]) as f32;
+                        }
+                    }
+                }
+
+                // normalize normals
+                for k in vertadr..(vertadr + vertnum) {
+                    let s = f32::sqrt(
+                        *(*scn).skinnormal.add(3 * k as usize) * *(*scn).skinnormal.add(3 * k as usize)
+                        + *(*scn).skinnormal.add(3 * k as usize + 1) * *(*scn).skinnormal.add(3 * k as usize + 1)
+                        + *(*scn).skinnormal.add(3 * k as usize + 2) * *(*scn).skinnormal.add(3 * k as usize + 2)
+                    );
+                    let scl: f32 = (1.0_f64 / (if MJ_MINVAL_F64 > s as f64 { MJ_MINVAL_F64 } else { s as f64 })) as f32;
+
+                    *(*scn).skinnormal.add(3 * k as usize) *= scl;
+                    *(*scn).skinnormal.add(3 * k as usize + 1) *= scl;
+                    *(*scn).skinnormal.add(3 * k as usize + 2) *= scl;
+                }
+
+                // inflate
+                if *(*m).skin_inflate.add(i as usize) != 0.0 {
+                    let inflate = *(*m).skin_inflate.add(i as usize);
+                    for k in vertadr..(vertadr + vertnum) {
+                        *(*scn).skinvert.add(3 * k as usize) += inflate * *(*scn).skinnormal.add(3 * k as usize);
+                        *(*scn).skinvert.add(3 * k as usize + 1) += inflate * *(*scn).skinnormal.add(3 * k as usize + 1);
+                        *(*scn).skinvert.add(3 * k as usize + 2) += inflate * *(*scn).skinnormal.add(3 * k as usize + 2);
+                    }
+                }
+            }
+        }
+    }
 }
 
 /// C: mjv_cameraFrame (engine/engine_vis_visualize.h:61)
@@ -877,7 +1091,69 @@ pub fn mjv_camera_frustum(zver: *mut f32, zhor: *mut f32, zclip: *mut f32, m: *c
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjv_is_catenary(m: *const mjModel, d: *const mjData, i: i32, length: *mut f64) -> i32 {
-    todo!() // mjv_isCatenary
+    // SAFETY: m, d are valid model/data pointers. i is valid tendon index.
+    // length is a valid output pointer.
+    unsafe {
+        const MJ_NPOLY: i32 = 2;
+        const MJ_MINVAL: f64 = 1E-15_f64;
+        const MJ_DSBL_GRAVITY: i32 = 1 << 7;
+        const MJ_TRN_TENDON: i32 = 3;
+
+        let has_stiffness: i32 = (*(*m).tendon_stiffness.add(i as usize) != 0.0
+            || crate::engine::engine_util_misc::mju_is_zero(
+                (*m).tendon_stiffnesspoly.add((MJ_NPOLY * i) as usize),
+                MJ_NPOLY,
+            ) == 0) as i32;
+
+        let limitedspring: i32 = (has_stiffness != 0
+            && *(*m).tendon_lengthspring.add(2 * i as usize) == 0.0
+            && *(*m).tendon_lengthspring.add(2 * i as usize + 1) > 0.0) as i32;
+
+        let ten_length: f64 = *(*d).ten_length.add(i as usize);
+        let lower: f64 = *(*m).tendon_range.add(2 * i as usize);
+        let upper: f64 = *(*m).tendon_range.add(2 * i as usize + 1);
+
+        let limitedconstraint: i32 = (has_stiffness == 0
+            && (*(*m).tendon_limited.add(i as usize))._data[0] == 1
+            && lower == 0.0
+            && ten_length < upper) as i32;
+
+        let has_damping: i32 = (*(*m).tendon_damping.add(i as usize) != 0.0
+            || crate::engine::engine_util_misc::mju_is_zero(
+                (*m).tendon_dampingpoly.add((MJ_NPOLY * i) as usize),
+                MJ_NPOLY,
+            ) == 0) as i32;
+
+        // mjDISABLED(mjDSBL_GRAVITY) = (m->opt.disableflags & mjDSBL_GRAVITY)
+        let mut draw_catenary: i32 = (((*m).opt.disableflags & MJ_DSBL_GRAVITY) == 0
+            && crate::engine::engine_util_blas::mju_norm3((*m).opt.gravity.as_ptr()) > MJ_MINVAL
+            && *(*m).tendon_num.add(i as usize) == 2
+            && (limitedspring != limitedconstraint)
+            && has_damping == 0
+            && *(*m).tendon_frictionloss.add(i as usize) == 0.0) as i32;
+
+        // no actuator
+        if draw_catenary != 0 {
+            for j in 0..(*m).nu as i32 {
+                if *(*m).actuator_trntype.add(j as usize) == MJ_TRN_TENDON
+                    && *(*m).actuator_trnid.add(2 * j as usize) == i
+                {
+                    draw_catenary = 0;
+                    break;
+                }
+            }
+        }
+
+        if draw_catenary != 0 {
+            if limitedconstraint != 0 {
+                *length = *(*m).tendon_range.add(2 * i as usize + 1);
+            } else {
+                *length = *(*m).tendon_lengthspring.add(2 * i as usize + 1);
+            }
+        }
+
+        draw_catenary
+    }
 }
 
 /// C: mjv_catenary (engine/engine_vis_visualize.h:72)

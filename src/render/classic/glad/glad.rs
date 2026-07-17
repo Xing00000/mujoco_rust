@@ -73,7 +73,25 @@ pub fn mj_glad_close_gl() {
 /// C: mjGlad_get_exts (render/classic/glad/glad.c:294)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_glad_get_exts() -> i32 {
-    todo ! ()
+    // SAFETY: Reads glGetString fn ptr from static, calls it with GL_EXTENSIONS,
+    // stores result in MJGLAD_EXTS static.
+    // _GLAD_IS_SOME_NEW_VERSION is not defined, so only the simple path applies.
+    unsafe {
+        const GL_EXTENSIONS: u32 = 0x1F03;
+
+        // Read glGetString function pointer
+        let gs_guard = MJGLAD_GLGETSTRING.lock().unwrap();
+        let gl_get_string: Option<unsafe extern "C" fn(u32) -> *const u8> =
+            std::ptr::read(gs_guard.as_ptr() as *const Option<unsafe extern "C" fn(u32) -> *const u8>);
+        drop(gs_guard);
+
+        if let Some(get_string) = gl_get_string {
+            let result = get_string(GL_EXTENSIONS);
+            let mut exts_guard = MJGLAD_EXTS.lock().unwrap();
+            std::ptr::write(exts_guard.as_mut_ptr() as *mut *const u8, result);
+        }
+    }
+    1
 }
 
 /// C: mjGlad_free_exts (render/classic/glad/glad.c:328)
@@ -245,7 +263,109 @@ pub fn mj_glad_find_extensions_gl() -> i32 {
 /// C: mjGlad_find_coreGL (render/classic/glad/glad.c:1447)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_glad_find_core_gl() {
-    todo ! ()
+    // SAFETY: Calls glGetString(GL_VERSION), parses version, sets statics.
+    unsafe {
+        extern "C" {
+            fn strlen(s: *const i8) -> usize;
+            fn strncmp(s1: *const i8, s2: *const i8, n: usize) -> i32;
+            fn sscanf(s: *const i8, fmt: *const i8, ...) -> i32;
+        }
+
+        const GL_VERSION: u32 = 0x1F02;
+
+        // Read glGetString function pointer
+        let gs_guard = MJGLAD_GLGETSTRING.lock().unwrap();
+        let gl_get_string: Option<unsafe extern "C" fn(u32) -> *const i8> =
+            std::ptr::read(gs_guard.as_ptr() as *const Option<unsafe extern "C" fn(u32) -> *const i8>);
+        drop(gs_guard);
+
+        let get_string = match gl_get_string {
+            Some(f) => f,
+            None => return,
+        };
+
+        let mut version: *const i8 = get_string(GL_VERSION);
+        if version.is_null() {
+            return;
+        }
+
+        let prefixes: [*const i8; 4] = [
+            b"OpenGL ES-CM \0".as_ptr() as *const i8,
+            b"OpenGL ES-CL \0".as_ptr() as *const i8,
+            b"OpenGL ES \0".as_ptr() as *const i8,
+            std::ptr::null(),
+        ];
+
+        let mut i: i32 = 0;
+        while !prefixes[i as usize].is_null() {
+            let length = strlen(prefixes[i as usize]);
+            if strncmp(version, prefixes[i as usize], length) == 0 {
+                version = version.add(length);
+                break;
+            }
+            i += 1;
+        }
+
+        let mut major: i32 = 0;
+        let mut minor: i32 = 0;
+        sscanf(version, b"%d.%d\0".as_ptr() as *const i8, &mut major as *mut i32, &mut minor as *mut i32);
+
+        // mjGLVersion.major = major; mjGLVersion.minor = minor;
+        let mut ver_guard = MJGLVERSION.lock().unwrap();
+        std::ptr::write(ver_guard.as_mut_ptr() as *mut i32, major);
+        std::ptr::write((ver_guard.as_mut_ptr() as *mut i32).add(1), minor);
+        drop(ver_guard);
+
+        // mjGlad_max_loaded_major = major; mjGlad_max_loaded_minor = minor;
+        let mut maj_guard = MJGLAD_MAX_LOADED_MAJOR.lock().unwrap();
+        std::ptr::write(maj_guard.as_mut_ptr() as *mut i32, major);
+        drop(maj_guard);
+        let mut min_guard = MJGLAD_MAX_LOADED_MINOR.lock().unwrap();
+        std::ptr::write(min_guard.as_mut_ptr() as *mut i32, minor);
+        drop(min_guard);
+
+        // Set version booleans
+        let v1_0: i32 = ((major == 1 && minor >= 0) || major > 1) as i32;
+        let v1_1: i32 = ((major == 1 && minor >= 1) || major > 1) as i32;
+        let v1_2: i32 = ((major == 1 && minor >= 2) || major > 1) as i32;
+        let v1_3: i32 = ((major == 1 && minor >= 3) || major > 1) as i32;
+        let v1_4: i32 = ((major == 1 && minor >= 4) || major > 1) as i32;
+        let v1_5: i32 = ((major == 1 && minor >= 5) || major > 1) as i32;
+
+        let mut g = MJGLAD_GL_VERSION_1_0.lock().unwrap();
+        std::ptr::write(g.as_mut_ptr() as *mut i32, v1_0);
+        drop(g);
+        let mut g = MJGLAD_GL_VERSION_1_1.lock().unwrap();
+        std::ptr::write(g.as_mut_ptr() as *mut i32, v1_1);
+        drop(g);
+        let mut g = MJGLAD_GL_VERSION_1_2.lock().unwrap();
+        std::ptr::write(g.as_mut_ptr() as *mut i32, v1_2);
+        drop(g);
+        let mut g = MJGLAD_GL_VERSION_1_3.lock().unwrap();
+        std::ptr::write(g.as_mut_ptr() as *mut i32, v1_3);
+        drop(g);
+        let mut g = MJGLAD_GL_VERSION_1_4.lock().unwrap();
+        std::ptr::write(g.as_mut_ptr() as *mut i32, v1_4);
+        drop(g);
+        let mut g = MJGLAD_GL_VERSION_1_5.lock().unwrap();
+        std::ptr::write(g.as_mut_ptr() as *mut i32, v1_5);
+        drop(g);
+
+        // Re-read mjGLVersion for the final check
+        let ver_guard = MJGLVERSION.lock().unwrap();
+        let gl_major: i32 = std::ptr::read(ver_guard.as_ptr() as *const i32);
+        let gl_minor: i32 = std::ptr::read((ver_guard.as_ptr() as *const i32).add(1));
+        drop(ver_guard);
+
+        if gl_major > 1 || (gl_major >= 1 && gl_minor >= 5) {
+            let mut maj_guard = MJGLAD_MAX_LOADED_MAJOR.lock().unwrap();
+            std::ptr::write(maj_guard.as_mut_ptr() as *mut i32, 1);
+            drop(maj_guard);
+            let mut min_guard = MJGLAD_MAX_LOADED_MINOR.lock().unwrap();
+            std::ptr::write(min_guard.as_mut_ptr() as *mut i32, 5);
+            drop(min_guard);
+        }
+    }
 }
 
 /// C: mjGladLoadGL (render/classic/glad/glad.h:115)

@@ -314,7 +314,10 @@ pub fn mj_load_model_buffer(buffer: *const (), buffer_sz: i32) -> *mut mjModel {
 /// Calls: freeModelBuffers, mju_free
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_delete_model(m: *mut mjModel) {
-    todo!() // mj_deleteModel
+    if !m.is_null() {
+        free_model_buffers(m);
+        crate::engine::engine_util_errmem::mju_free(m as *mut ());
+    }
 }
 
 /// C: mj_sizeModel (engine/engine_io.h:84)

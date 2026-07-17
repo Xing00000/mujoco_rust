@@ -1159,7 +1159,17 @@ pub fn mj_c_joint_is_actfrclimited(self_ptr: *mut mjCJoint) -> bool {
 /// C: mjCJoint::nq (user/user_objects.h:719)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_joint_nq(self_ptr: *mut mjCJoint) -> i32 {
-    todo!() // mjCJoint::nq
+    // SAFETY: self_ptr is a valid mjCJoint pointer (caller contract).
+    // spec.type is stored as [u8; 8], first 4 bytes encode mjtJoint (u32).
+    unsafe {
+        let joint_type: u32 = std::ptr::read((*self_ptr).spec.r#type.as_ptr() as *const u32);
+        match joint_type {
+            mjtJoint_mjJNT_FREE => 7,
+            mjtJoint_mjJNT_BALL => 4,
+            mjtJoint_mjJNT_SLIDE | mjtJoint_mjJNT_HINGE => 1,
+            _ => 1,
+        }
+    }
 }
 
 /// C: mjCJoint::nv (user/user_objects.h:720)
