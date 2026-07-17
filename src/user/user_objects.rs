@@ -2104,7 +2104,11 @@ pub fn mj_c_mesh_compile(self_ptr: *mut mjCMesh, vfs: *const mjVFS) {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_mesh_get_pos_ptr(self_ptr: *mut mjCMesh) -> *mut f64 {
-    todo!() // mjCMesh::GetPosPtr
+    // SAFETY: self_ptr is a valid mjCMesh pointer (caller contract).
+    // Returns pointer to the pos_ field (inline [f64; 3] array).
+    unsafe {
+        (*self_ptr).pos_.as_mut_ptr()
+    }
 }
 
 /// C: mjCMesh::GetQuatPtr (user/user_objects.h:1224)
