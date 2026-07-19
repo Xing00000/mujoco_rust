@@ -72,7 +72,135 @@ pub fn mj_elem_body_weight(m: *const mjModel, d: *const mjData, f: i32, e: i32, 
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_vert_body_weight(m: *const mjModel, d: *const mjData, f: i32, v: *mut i32, body: *mut i32, bweight: *mut f64, vweight: *const f64, nw: i32) -> i32 {
-    todo!() // mj_vertBodyWeight
+    // SAFETY: caller guarantees all pointers valid with proper sizes
+    unsafe {
+        if nw == 0 {
+            return 0;
+        }
+
+        // determine sign
+        let sign: f64 = if *vweight.add(0) < 0.0 { -1.0 } else { 1.0 };
+
+        // compute parametric coordinates using absolute weights
+        let mut coord: [f64; 3] = [0.0, 0.0, 0.0];
+        for i in 0..nw as usize {
+            crate::engine::engine_util_blas::mju_add_to_scl3(
+                coord.as_mut_ptr(),
+                (*m).flex_vert0.add(3 * *v.add(i) as usize),
+                (*vweight.add(i)).abs());
+        }
+
+        let interp = *(*m).flex_interp.add(f as usize);
+        let order = if interp < 0 { -interp } else { interp };
+        let npc = (order + 1) * (order + 1) * (order + 1);
+
+        // grid dimensions for shell mode
+        let mut nx: i32 = 0;
+        let mut ny: i32 = 0;
+        let mut nz: i32 = 0;
+        if interp < 0 {
+            nx = *(*m).flex_cellnum.add(3 * f as usize + 0) * order + 1;
+            ny = *(*m).flex_cellnum.add(3 * f as usize + 1) * order + 1;
+            nz = *(*m).flex_cellnum.add(3 * f as usize + 2) * order + 1;
+        }
+
+        // cell lookup
+        let mut local: [f64; 3] = [0.0; 3];
+        let mut nodeindices: [i32; 27] = [0; 27];
+        crate::engine::engine_util_misc::mju_cell_lookup(
+            coord.as_ptr(), (*m).flex_cellnum.add(3 * f as usize),
+            order, local.as_mut_ptr(), nodeindices.as_mut_ptr());
+
+        let nstart = *(*m).flex_nodeadr.add(f as usize);
+        let mut nb: i32 = 0;
+
+        if (*m).flex_nodebodyid.is_null() {
+            return 0;
+        }
+
+        if npc > 27 {
+            for j in 0..npc {
+                let w = crate::engine::engine_util_misc::mju_eval_basis(local.as_ptr(), j, order);
+                if w < 1e-5 {
+                    continue;
+                }
+                let idx = nodeindices[j as usize];
+
+                // shell mode
+                if interp < 0 {
+                    let k_idx = idx % nz;
+                    let rest = idx / nz;
+                    let j_idx = rest % ny;
+                    let i_idx = rest / ny;
+                    if i_idx > 0 && i_idx < nx - 1 && j_idx > 0 && j_idx < ny - 1 && k_idx > 0 && k_idx < nz - 1 {
+                        crate::engine::engine_util_misc::mju_shell_tfi_weights(
+                            nx, ny, nz, i_idx, j_idx, k_idx, sign * w,
+                            &mut nb, body, bweight, (*m).flex_nodebodyid, nstart);
+                        continue;
+                    }
+                }
+
+                // add node, check for duplicates
+                let b = *(*m).flex_nodebodyid.add((nstart + idx) as usize);
+                let mut found = false;
+                for k in 0..nb as usize {
+                    if *body.add(k) == b {
+                        if !bweight.is_null() { *bweight.add(k) += sign * w; }
+                        found = true;
+                        break;
+                    }
+                }
+                if !found {
+                    if !bweight.is_null() { *bweight.add(nb as usize) = sign * w; }
+                    *body.add(nb as usize) = b;
+                    nb += 1;
+                }
+            }
+        } else {
+            let mut basis: [f64; 27] = [0.0; 27];
+            crate::engine::engine_util_misc::mju_eval_basis_array(basis.as_mut_ptr(), local.as_ptr(), order);
+
+            for j in 0..npc {
+                let w = basis[j as usize];
+                if w < 1e-5 {
+                    continue;
+                }
+                let idx = nodeindices[j as usize];
+
+                // shell mode
+                if interp < 0 {
+                    let k_idx = idx % nz;
+                    let rest = idx / nz;
+                    let j_idx = rest % ny;
+                    let i_idx = rest / ny;
+                    if i_idx > 0 && i_idx < nx - 1 && j_idx > 0 && j_idx < ny - 1 && k_idx > 0 && k_idx < nz - 1 {
+                        crate::engine::engine_util_misc::mju_shell_tfi_weights(
+                            nx, ny, nz, i_idx, j_idx, k_idx, sign * w,
+                            &mut nb, body, bweight, (*m).flex_nodebodyid, nstart);
+                        continue;
+                    }
+                }
+
+                // add node, check for duplicates
+                let b = *(*m).flex_nodebodyid.add((nstart + idx) as usize);
+                let mut found = false;
+                for k in 0..nb as usize {
+                    if *body.add(k) == b {
+                        if !bweight.is_null() { *bweight.add(k) += sign * w; }
+                        found = true;
+                        break;
+                    }
+                }
+                if !found {
+                    if !bweight.is_null() { *bweight.add(nb as usize) = sign * w; }
+                    *body.add(nb as usize) = b;
+                    nb += 1;
+                }
+            }
+        }
+
+        nb
+    }
 }
 
 /// C: mj_addConstraint (engine/engine_core_constraint.c:414)
