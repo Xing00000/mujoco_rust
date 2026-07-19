@@ -1589,7 +1589,68 @@ pub fn next(polygon: *mut f64, nvert: i32, curr: *mut f64) -> *mut f64 {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn polygon_quad(res: *mut *mut f64, polygon: *mut f64, nvert: i32) {
-    todo!() // polygonQuad
+    // SAFETY: caller guarantees polygon[nvert*3], res[4] valid, nvert >= 4
+    unsafe {
+        let mut a = polygon;
+        let mut b = polygon.add(3);
+        let mut c = polygon.add(6);
+        let mut d = polygon.add(9);
+        *res.add(0) = a;
+        *res.add(1) = b;
+        *res.add(2) = c;
+        *res.add(3) = d;
+        let mut m = area4(a, b, c, d);
+        let end = polygon.add(3 * nvert as usize);
+
+        while a < end {
+            loop {
+                let m_next = area4(a, b, c, next(polygon, nvert, d));
+                if m_next <= m {
+                    break;
+                }
+                m = m_next;
+                d = next(polygon, nvert, d);
+                *res.add(0) = a;
+                *res.add(1) = b;
+                *res.add(2) = c;
+                *res.add(3) = d;
+                loop {
+                    let m_next2 = area4(a, b, next(polygon, nvert, c), d);
+                    if m_next2 <= m {
+                        break;
+                    }
+                    m = m_next2;
+                    c = next(polygon, nvert, c);
+                    *res.add(0) = a;
+                    *res.add(1) = b;
+                    *res.add(2) = c;
+                    *res.add(3) = d;
+                }
+                loop {
+                    let m_next3 = area4(a, next(polygon, nvert, b), c, d);
+                    if m_next3 <= m {
+                        break;
+                    }
+                    m = m_next3;
+                    b = next(polygon, nvert, b);
+                    *res.add(0) = a;
+                    *res.add(1) = b;
+                    *res.add(2) = c;
+                    *res.add(3) = d;
+                }
+            }
+            if b == a {
+                b = next(polygon, nvert, b);
+                if c == b {
+                    c = next(polygon, nvert, c);
+                    if d == c {
+                        d = next(polygon, nvert, d);
+                    }
+                }
+            }
+            a = a.add(3);
+        }
+    }
 }
 
 /// C: planeNormal (engine/engine_collision_gjk.c:1577)

@@ -90,7 +90,22 @@ pub fn clamped_diff(dx: *mut f64, x: *const f64, x_plus: *const f64, x_minus: *c
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn clamped_state_diff(m: *const mjModel, ds: *mut f64, s: *const f64, s_plus: *const f64, s_minus: *const f64, h: f64) {
-    todo!() // clampedStateDiff
+    // SAFETY: caller guarantees all pointers valid with proper sizes
+    unsafe {
+        if !s_plus.is_null() && s_minus.is_null() {
+            // forward differencing
+            state_diff(m, ds, s, s_plus, h);
+        } else if s_plus.is_null() && !s_minus.is_null() {
+            // backward differencing
+            state_diff(m, ds, s_minus, s, h);
+        } else if !s_plus.is_null() && !s_minus.is_null() {
+            // centered differencing
+            state_diff(m, ds, s_minus, s_plus, 2.0 * h);
+        } else {
+            // differencing failed, write zeros
+            crate::engine::engine_util_blas::mju_zero(ds, 2 * (*m).nv as i32 + (*m).na as i32);
+        }
+    }
 }
 
 /// C: inRange (engine/engine_derivative_fd.c:106)
