@@ -25,7 +25,7 @@ pub fn prism_firstdir(o1: *const (), o2: *const (), vec: *mut ccd_vec3_t) {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn libccd_wrapper(m: *const mjModel, obj1: *mut mjCCDObj, obj2: *mut mjCCDObj, con: *mut mjPreContact, margin: f64) -> i32 {
-    todo!() // _libccd_wrapper
+    todo!("requires libccd external library: ccd_t struct, CCD_INIT, ccdMPRPenetration, ccdVec3Eq not available in Rust port")
 }
 
 /// C: mjc_penetration (engine/engine_collision_convex.c:87)
@@ -497,7 +497,37 @@ pub fn max_contacts(m: *const mjModel, obj1: *const mjCCDObj, obj2: *const mjCCD
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn addplanemesh(con: *mut mjPreContact, vertex: *const f32, pos1: *const f64, normal1: *const f64, pos2: *const f64, mat2: *const f64, first: *const f64, rbound: f64) -> i32 {
-    todo!() // addplanemesh
+    const TOLPLANEMESH: f64 = 0.3;
+    // SAFETY: caller guarantees all pointers valid and arrays properly sized
+    unsafe {
+        // compute point in global coordinates
+        let mut pnt: [f64; 3] = [0.0; 3];
+        let v: [f64; 3] = [*vertex.add(0) as f64, *vertex.add(1) as f64, *vertex.add(2) as f64];
+        crate::engine::engine_util_blas::mju_mul_mat_vec3(pnt.as_mut_ptr(), mat2, v.as_ptr());
+        crate::engine::engine_util_blas::mju_add_to3(pnt.as_mut_ptr(), pos2);
+
+        // skip if too close to first contact
+        if crate::engine::engine_util_blas::mju_dist3(pnt.as_ptr(), first) < TOLPLANEMESH * rbound {
+            return 0;
+        }
+
+        // pnt-pos difference vector
+        let mut dif: [f64; 3] = [0.0; 3];
+        crate::engine::engine_inline::mji_sub3(dif.as_mut_ptr(), pnt.as_ptr(), pos1);
+
+        // set distance
+        (*con).dist = crate::engine::engine_util_blas::mju_dot3(normal1, dif.as_ptr());
+
+        // set position
+        crate::engine::engine_inline::mji_copy3((*con).pos.as_mut_ptr(), pnt.as_ptr());
+        crate::engine::engine_inline::mji_add_to_scl3((*con).pos.as_mut_ptr(), normal1, -0.5 * (*con).dist);
+
+        // set frame
+        crate::engine::engine_inline::mji_copy3((*con).normal.as_mut_ptr(), normal1);
+        crate::engine::engine_inline::mji_zero3((*con).tangent.as_mut_ptr());
+
+        1
+    }
 }
 
 /// C: addVert (engine/engine_collision_convex.c:1085)

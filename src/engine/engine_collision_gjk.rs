@@ -1570,7 +1570,14 @@ pub fn area4(a: *const f64, b: *const f64, c: *const f64, d: *const f64) -> f64 
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn next(polygon: *mut f64, nvert: i32, curr: *mut f64) -> *mut f64 {
-    todo!() // next
+    // SAFETY: caller guarantees polygon points to nvert*3 f64 array, curr is within bounds
+    unsafe {
+        if curr == polygon.add(3 * (nvert as usize - 1)) {
+            polygon
+        } else {
+            curr.add(3)
+        }
+    }
 }
 
 /// C: polygonQuad (engine/engine_collision_gjk.c:1529)
@@ -1697,7 +1704,22 @@ pub fn globalcoord(res: *mut f64, mat: *const f64, pos: *const f64, l1: f64, l2:
 /// Calls: GlobalTable::count
 #[allow(unused_variables, non_snake_case)]
 pub fn intersect(res: *mut i32, arr1: *const i32, arr2: *const i32, n: i32, m: i32) -> i32 {
-    todo!() // intersect
+    // SAFETY: caller guarantees arr1[n], arr2[m], res[2] are valid
+    unsafe {
+        let mut count: i32 = 0;
+        for i in 0..n as usize {
+            for j in 0..m as usize {
+                if *arr1.add(i) == *arr2.add(j) {
+                    *res.add(count as usize) = *arr1.add(i);
+                    count += 1;
+                    if count == 2 {
+                        return 2;
+                    }
+                }
+            }
+        }
+        count
+    }
 }
 
 /// C: meshNormals (engine/engine_collision_gjk.c:1774)
