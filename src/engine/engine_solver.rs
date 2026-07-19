@@ -148,7 +148,43 @@ pub fn extract_block(m: *const mjModel, d: *const mjData, Ac: *mut f64, start: i
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn residual(m: *const mjModel, d: *const mjData, res: *mut f64, i: i32, dim: i32, flg_subR: i32) {
-    todo!() // residual
+    // SAFETY: caller guarantees m, d, res valid; i+dim within bounds of efc arrays
+    unsafe {
+        let nefc = (*d).nefc;
+
+        // sparse
+        if crate::engine::engine_core_util::mj_is_sparse(m) != 0 {
+            for j in 0..dim {
+                let idx = (i + j) as usize;
+                *res.add(j as usize) = *(*d).efc_b.add(idx)
+                    + crate::engine::engine_util_sparse::mju_dot_sparse(
+                        (*d).efc_AR.add(*(*d).efc_AR_rowadr.add(idx) as usize),
+                        (*d).efc_force,
+                        *(*d).efc_AR_rownnz.add(idx),
+                        (*d).efc_AR_colind.add(*(*d).efc_AR_rowadr.add(idx) as usize),
+                    );
+            }
+        }
+        // dense
+        else {
+            for j in 0..dim {
+                let idx = (i + j) as usize;
+                *res.add(j as usize) = *(*d).efc_b.add(idx)
+                    + crate::engine::engine_util_blas::mju_dot(
+                        (*d).efc_AR.add(idx * nefc as usize),
+                        (*d).efc_force,
+                        nefc,
+                    );
+            }
+        }
+
+        if flg_subR != 0 {
+            for j in 0..dim {
+                let idx = (i + j) as usize;
+                *res.add(j as usize) -= *(*d).efc_R.add(idx) * *(*d).efc_force.add(idx);
+            }
+        }
+    }
 }
 
 /// C: costChange (engine/engine_solver.c:215)
