@@ -435,7 +435,23 @@ pub fn mj_solve_ld(x: *mut f64, qLD: *const f64, qLDiagInv: *const f64, nv: i32,
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_solve_m(m: *const mjModel, d: *mut mjData, x: *mut f64, y: *const f64, n: i32) {
-    todo!() // mj_solveM
+    // SAFETY: caller guarantees m, d are valid; x, y point to arrays of size n*m->nv
+    unsafe {
+        if x != y as *mut f64 {
+            crate::engine::engine_util_blas::mju_copy(x, y, n * (*m).nv as i32);
+        }
+        mj_solve_ld(
+            x,
+            (*d).qLD,
+            (*d).qLDiagInv,
+            (*m).nv as i32,
+            n,
+            (*m).M_rownnz,
+            (*m).M_rowadr,
+            (*m).M_colind,
+            std::ptr::null(),
+        );
+    }
 }
 
 /// C: mj_solveM2 (engine/engine_core_smooth.h:91)

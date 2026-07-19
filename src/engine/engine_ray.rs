@@ -61,7 +61,50 @@ pub fn latitude(vec: *const f64) -> f64 {
 /// C: ray_eliminate (engine/engine_ray.c:68)
 #[allow(unused_variables, non_snake_case)]
 pub fn ray_eliminate(m: *const mjModel, d: *const mjData, geomid: i32, geomgroup: *const u8, flg_static: bool, bodyexclude: i32) -> i32 {
-    todo!() // ray_eliminate
+    const MJ_NGROUP: i32 = 6;
+    // SAFETY: caller guarantees m, d are valid, geomid is a valid index into model arrays
+    unsafe {
+        let gid = geomid as usize;
+
+        // body exclusion
+        if *(*m).geom_bodyid.add(gid) == bodyexclude {
+            return 1;
+        }
+
+        // invisible geom exclusion
+        if *(*m).geom_matid.add(gid) < 0 && *(*m).geom_rgba.add(4 * gid + 3) == 0.0 {
+            return 1;
+        }
+
+        // invisible material exclusion
+        if *(*m).geom_matid.add(gid) >= 0
+            && *(*m).mat_rgba.add(4 * (*(*m).geom_matid.add(gid)) as usize + 3) == 0.0
+        {
+            return 1;
+        }
+
+        // static exclusion
+        if !flg_static && *(*m).body_weldid.add(*(*m).geom_bodyid.add(gid) as usize) == 0 {
+            return 1;
+        }
+
+        // no geomgroup inclusion
+        if geomgroup.is_null() {
+            return 0;
+        }
+
+        // group inclusion/exclusion
+        let group = *(*m).geom_group.add(gid);
+        let groupid = if 0 > (if (MJ_NGROUP - 1) < group { MJ_NGROUP - 1 } else { group }) {
+            0
+        } else if (MJ_NGROUP - 1) < group {
+            MJ_NGROUP - 1
+        } else {
+            group
+        };
+
+        (*geomgroup.add(groupid as usize) == 0) as i32
+    }
 }
 
 /// C: ray_quad (engine/engine_ray.c:103)

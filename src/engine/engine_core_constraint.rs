@@ -503,7 +503,28 @@ pub fn mj_is_dual(m: *const mjModel) -> i32 {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_mul_jac_vec(m: *const mjModel, d: *const mjData, res: *mut f64, vec: *const f64) {
-    todo!() // mj_mulJacVec
+    // SAFETY: caller guarantees m, d are valid; res, vec point to valid arrays
+    unsafe {
+        // exit if no constraints
+        if (*d).nefc == 0 {
+            return;
+        }
+
+        // sparse Jacobian
+        if crate::engine::engine_core_util::mj_is_sparse(m) != 0 {
+            crate::engine::engine_util_sparse::mju_mul_mat_vec_sparse(
+                res, (*d).efc_J, vec, (*d).nefc,
+                (*d).efc_J_rownnz, (*d).efc_J_rowadr,
+                (*d).efc_J_colind, (*d).efc_J_rowsuper,
+            );
+        }
+        // dense Jacobian
+        else {
+            crate::engine::engine_util_blas::mju_mul_mat_vec(
+                res, (*d).efc_J, vec, (*d).nefc, (*m).nv as i32,
+            );
+        }
+    }
 }
 
 /// C: mj_mulJacTVec (engine/engine_core_constraint.h:37)
