@@ -18,7 +18,7 @@ pub fn fastmod(a: usize, b: usize) -> usize {
 /// C: get_stack_info_from_data (engine/engine_memory.c:74)
 #[allow(unused_variables, non_snake_case)]
 pub fn get_stack_info_from_data(d: *const mjData) -> mjStackInfo {
-    todo!() // get_stack_info_from_data
+    todo!("mjStackInfo is opaque (zero-size) in codegen - cannot initialize fields: bottom, top, limit, stack_base")
 }
 
 /// C: stackallocinternal (engine/engine_memory.c:144)

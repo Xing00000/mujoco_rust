@@ -199,7 +199,7 @@ pub fn mju_legacy_text(msg: *const mjLogMessage, buf: *mut i8, bufsz: i32) -> *c
 /// C: mju_activeHandler (engine/engine_util_errmem.c:292)
 #[allow(unused_variables, non_snake_case)]
 pub fn mju_active_handler() -> mjfLogHandler {
-    todo ! ()
+    todo!("mjfLogHandler is opaque (zero-size) - cannot construct return value; needs TLS log handler resolution")
 }
 
 /// C: mju_malloc (engine/engine_util_errmem.h:43)
@@ -388,7 +388,14 @@ pub fn mj_private_get_global_log_handler() -> mjfLogHandler {
 /// Calls: mju_getLogConfigPtr
 #[allow(unused_variables, non_snake_case)]
 pub fn mju_is_topic_enabled(topic: i32) -> bool {
-    todo!() // mju_isTopicEnabled
+    if topic == 0 {
+        return true;
+    }
+    // SAFETY: mju_get_log_config_ptr returns a valid pointer to the static log config
+    unsafe {
+        let cfg = mju_get_log_config_ptr();
+        ((*cfg).topics & (1 << (topic - 1))) != 0
+    }
 }
 
 /// C: BaseName (engine/engine_util_errmem.h:102)

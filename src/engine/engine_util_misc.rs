@@ -12,7 +12,24 @@ use crate::types::*;
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn is_intersect(p1: *const f64, p2: *const f64, p3: *const f64, p4: *const f64) -> bool {
-    todo!() // is_intersect
+    const MJ_MINVAL: f64 = 1E-15_f64;
+    // SAFETY: caller guarantees p1..p4 point to arrays of at least 2 elements (2D points)
+    unsafe {
+        // compute determinant, check
+        let det = (*p4.add(1) - *p3.add(1)) * (*p2.add(0) - *p1.add(0))
+                - (*p4.add(0) - *p3.add(0)) * (*p2.add(1) - *p1.add(1));
+        if det.abs() < MJ_MINVAL {
+            return false;
+        }
+
+        // compute intersection point on each line
+        let a = ((*p4.add(0) - *p3.add(0)) * (*p1.add(1) - *p3.add(1))
+               - (*p4.add(1) - *p3.add(1)) * (*p1.add(0) - *p3.add(0))) / det;
+        let b = ((*p2.add(0) - *p1.add(0)) * (*p1.add(1) - *p3.add(1))
+               - (*p2.add(1) - *p1.add(1)) * (*p1.add(0) - *p3.add(0))) / det;
+
+        a >= 0.0 && a <= 1.0 && b >= 0.0 && b <= 1.0
+    }
 }
 
 /// C: length_circle (engine/engine_util_misc.c:55)
@@ -799,7 +816,7 @@ pub fn mj_lugre_stribeck(velocity: f64, F_C: f64, F_S: f64, v_S: f64) -> f64 {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_dcmotor_slots(dynprm: *const f64, gainprm: *const f64) -> mjDCMotorSlots {
-    todo!() // mj_dcmotorSlots
+    todo!("mjDCMotorSlots is opaque (zero-size) - cannot construct struct with fields: slew, integral, temperature, bristle, current, num_slots")
 }
 
 /// C: mju_geomSemiAxes (engine/engine_util_misc.h:71)

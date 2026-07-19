@@ -47,7 +47,24 @@ pub fn dcmotor_voltage(ctrl: f64, length: f64, velocity: f64, x_I: f64, gainprm:
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn clamp_vec(vec: *mut f64, range: *const f64, limited: *const bool, n: i32, index: *const i32) {
-    todo!() // clampVec
+    // SAFETY: caller guarantees vec, range, limited point to arrays of at least n elements,
+    // and index (if non-null) also has at least n elements. All pointers are valid.
+    unsafe {
+        for i in 0..n as usize {
+            let j = if !index.is_null() {
+                *index.add(i) as usize
+            } else {
+                i
+            };
+            if *limited.add(i) {
+                *vec.add(j) = crate::engine::engine_util_misc::mju_clip(
+                    *vec.add(j),
+                    *range.add(2 * i),
+                    *range.add(2 * i + 1),
+                );
+            }
+        }
+    }
 }
 
 /// C: warmstart (engine/engine_forward.c:786)

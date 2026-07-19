@@ -231,7 +231,27 @@ pub fn mesh_polygon_key(angles: *const (), v1: *const f64, v2: *const f64, v3: *
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn compute_volume(x: *const f64, v: *const i32) -> f64 {
-    todo!() // ComputeVolume
+    // SAFETY: caller guarantees x points to vertex array, v points to array of 3 vertex indices
+    unsafe {
+        let mut normal: [f64; 3] = [0.0; 3];
+        let v0 = *v.add(0) as usize;
+        let v1 = *v.add(1) as usize;
+        let v2 = *v.add(2) as usize;
+        let edge1: [f64; 3] = [
+            *x.add(3 * v1) - *x.add(3 * v0),
+            *x.add(3 * v1 + 1) - *x.add(3 * v0 + 1),
+            *x.add(3 * v1 + 2) - *x.add(3 * v0 + 2),
+        ];
+        let edge2: [f64; 3] = [
+            *x.add(3 * v2) - *x.add(3 * v0),
+            *x.add(3 * v2 + 1) - *x.add(3 * v0 + 1),
+            *x.add(3 * v2 + 2) - *x.add(3 * v0 + 2),
+        ];
+
+        crate::user::user_util::mjuu_crossvec(normal.as_mut_ptr(), edge1.as_ptr(), edge2.as_ptr());
+        let dot = crate::user::user_util::mjuu_dot3(normal.as_ptr(), normal.as_ptr());
+        dot.sqrt() / 2.0
+    }
 }
 
 /// C: MetricTensor (user/user_mesh.cc:3450)
@@ -255,7 +275,41 @@ pub fn metric_tensor(metric: *mut f64, idx: i32, mu: f64, la: f64, basis: *const
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn compute_basis(basis: *mut f64, x: *const f64, v: *const i32, faceL: *const i32, faceR: *const i32, volume: f64) {
-    todo!() // ComputeBasis
+    // SAFETY: caller guarantees all pointers are valid and arrays are properly sized.
+    // basis points to array of 9 f64; v points to vertex indices; faceL/faceR index into v.
+    unsafe {
+        let mut basisL: [f64; 3] = [0.0; 3];
+        let mut basisR: [f64; 3] = [0.0; 3];
+        let mut normal: [f64; 3] = [0.0; 3];
+
+        let xL0 = x.add(3 * (*v.add(*faceL.add(0) as usize) as usize));
+        let xL1 = x.add(3 * (*v.add(*faceL.add(1) as usize) as usize));
+        let xR0 = x.add(3 * (*v.add(*faceR.add(0) as usize) as usize));
+        let xR1 = x.add(3 * (*v.add(*faceR.add(1) as usize) as usize));
+
+        let edgesL: [f64; 3] = [
+            *xL0.add(0) - *xL1.add(0),
+            *xL0.add(1) - *xL1.add(1),
+            *xL0.add(2) - *xL1.add(2),
+        ];
+        let edgesR: [f64; 3] = [
+            *xR1.add(0) - *xR0.add(0),
+            *xR1.add(1) - *xR0.add(1),
+            *xR1.add(2) - *xR0.add(2),
+        ];
+
+        crate::user::user_util::mjuu_crossvec(normal.as_mut_ptr(), edgesR.as_ptr(), edgesL.as_ptr());
+        crate::user::user_util::mjuu_normvec(normal.as_mut_ptr(), 3);
+        crate::user::user_util::mjuu_crossvec(basisL.as_mut_ptr(), normal.as_ptr(), edgesL.as_ptr());
+        crate::user::user_util::mjuu_crossvec(basisR.as_mut_ptr(), edgesR.as_ptr(), normal.as_ptr());
+
+        for i in 0..3usize {
+            for j in 0..3usize {
+                *basis.add(3 * i + j) = (basisL[i] * basisR[j] +
+                                          basisR[i] * basisL[j]) / (8.0 * volume * volume);
+            }
+        }
+    }
 }
 
 /// C: ComputeStiffness (user/user_mesh.cc:3574)
@@ -285,7 +339,25 @@ pub fn create_flap_stencil(flaps: *const (), simplex: *const (), edgeidx: *const
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn cot(x: *const f64, v0: i32, v1: i32, v2: i32) -> f64 {
-    todo!() // cot
+    // SAFETY: caller guarantees x points to vertex array with valid indices v0, v1, v2
+    unsafe {
+        let mut normal: [f64; 3] = [0.0; 3];
+        let edge1: [f64; 3] = [
+            *x.add(3 * v1 as usize) - *x.add(3 * v0 as usize),
+            *x.add(3 * v1 as usize + 1) - *x.add(3 * v0 as usize + 1),
+            *x.add(3 * v1 as usize + 2) - *x.add(3 * v0 as usize + 2),
+        ];
+        let edge2: [f64; 3] = [
+            *x.add(3 * v2 as usize) - *x.add(3 * v0 as usize),
+            *x.add(3 * v2 as usize + 1) - *x.add(3 * v0 as usize + 1),
+            *x.add(3 * v2 as usize + 2) - *x.add(3 * v0 as usize + 2),
+        ];
+
+        crate::user::user_util::mjuu_crossvec(normal.as_mut_ptr(), edge1.as_ptr(), edge2.as_ptr());
+        let dot_e1e2 = crate::user::user_util::mjuu_dot3(edge1.as_ptr(), edge2.as_ptr());
+        let dot_nn = crate::user::user_util::mjuu_dot3(normal.as_ptr(), normal.as_ptr());
+        dot_e1e2 / dot_nn.sqrt()
+    }
 }
 
 /// C: ComputeBending (user/user_mesh.cc:3678)

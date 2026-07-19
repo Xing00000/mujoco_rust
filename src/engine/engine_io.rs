@@ -85,7 +85,20 @@ pub fn mj_set_ptr_data(m: *const mjModel, d: *mut mjData) {
 /// Calls: mjp_getPluginAtSlot, mju_free
 #[allow(unused_variables, non_snake_case)]
 pub fn free_data_buffers(d: *mut mjData) {
-    todo!() // freeDataBuffers
+    // SAFETY: caller guarantees d is a valid pointer to initialized mjData
+    unsafe {
+        // destroy plugin instances
+        for i in 0..(*d).nplugin {
+            let plugin = crate::engine::engine_plugin::mjp_get_plugin_at_slot(*(*d).plugin.add(i as usize));
+            if let Some(destroy_fn) = (*plugin).destroy {
+                // SAFETY: destroy is actually fn(*mut mjData, i32) but codegen typed it as fn()
+                let destroy: unsafe extern "C" fn(*mut mjData, i32) = std::mem::transmute(destroy_fn);
+                destroy(d, i);
+            }
+        }
+        crate::engine::engine_util_errmem::mju_free((*d).buffer);
+        crate::engine::engine_util_errmem::mju_free((*d).arena);
+    }
 }
 
 /// C: mj_copyDataVisual (engine/engine_io.c:1142)
