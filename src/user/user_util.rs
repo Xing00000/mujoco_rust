@@ -617,7 +617,14 @@ pub fn mjuu_frameaccum(pos: *mut f64, quat: *mut f64, childpos: *const f64, chil
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjuu_frameaccum_child(pos: *const f64, quat: *const f64, childpos: *mut f64, childquat: *mut f64) {
-    todo!() // mjuu_frameaccumChild
+    // SAFETY: caller guarantees pos[3], quat[4], childpos[3], childquat[4] valid
+    unsafe {
+        let mut p: [f64; 3] = [*pos.add(0), *pos.add(1), *pos.add(2)];
+        let mut q: [f64; 4] = [*quat.add(0), *quat.add(1), *quat.add(2), *quat.add(3)];
+        mjuu_frameaccum(p.as_mut_ptr(), q.as_mut_ptr(), childpos, childquat);
+        mjuu_copyvec(childpos as *mut crate::types::T1, p.as_ptr() as *const crate::types::T2, 3);
+        mjuu_copyvec(childquat as *mut crate::types::T1, q.as_ptr() as *const crate::types::T2, 4);
+    }
 }
 
 /// C: mjuu_frameaccuminv (user/user_util.h:140)

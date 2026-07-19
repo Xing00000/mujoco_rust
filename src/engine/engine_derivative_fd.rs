@@ -41,7 +41,19 @@ pub fn diff(dx: *mut f64, x1: *const f64, x2: *const f64, h: f64, n: i32) {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn state_diff(m: *const mjModel, ds: *mut f64, s1: *const f64, s2: *const f64, h: f64) {
-    todo!() // stateDiff
+    // SAFETY: caller guarantees m, ds, s1, s2 valid with sizes nq+nv+na
+    unsafe {
+        let nq = (*m).nq as i32;
+        let nv = (*m).nv as i32;
+        let na = (*m).na as i32;
+
+        if nq == nv {
+            diff(ds, s1, s2, h, nq + nv + na);
+        } else {
+            crate::engine::engine_support::mj_differentiate_pos(m, ds, h, s1, s2);
+            diff(ds.add(nv as usize), s1.add(nq as usize), s2.add(nq as usize), h, nv + na);
+        }
+    }
 }
 
 /// C: clampedDiff (engine/engine_derivative_fd.c:68)

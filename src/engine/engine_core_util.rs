@@ -256,7 +256,10 @@ pub fn mj_jac_body(m: *const mjModel, d: *const mjData, jacp: *mut f64, jacr: *m
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_jac_body_com(m: *const mjModel, d: *const mjData, jacp: *mut f64, jacr: *mut f64, body: i32) {
-    todo!() // mj_jacBodyCom
+    // SAFETY: caller guarantees m, d valid; xipos indexed by body
+    unsafe {
+        mj_jac(m, d, jacp, jacr, (*d).xipos.add(3 * body as usize), body);
+    }
 }
 
 /// C: mj_jacSubtreeCom (engine/engine_core_util.h:64)
@@ -280,7 +283,10 @@ pub fn mj_jac_subtree_com(m: *const mjModel, d: *mut mjData, jacp: *mut f64, bod
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_jac_geom(m: *const mjModel, d: *const mjData, jacp: *mut f64, jacr: *mut f64, geom: i32) {
-    todo!() // mj_jacGeom
+    // SAFETY: caller guarantees m, d valid; geom_xpos and geom_bodyid indexed by geom
+    unsafe {
+        mj_jac(m, d, jacp, jacr, (*d).geom_xpos.add(3 * geom as usize), *(*m).geom_bodyid.add(geom as usize));
+    }
 }
 
 /// C: mj_jacSite (engine/engine_core_util.h:71)
@@ -292,7 +298,10 @@ pub fn mj_jac_geom(m: *const mjModel, d: *const mjData, jacp: *mut f64, jacr: *m
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_jac_site(m: *const mjModel, d: *const mjData, jacp: *mut f64, jacr: *mut f64, site: i32) {
-    todo!() // mj_jacSite
+    // SAFETY: caller guarantees m, d valid; site_xpos and site_bodyid indexed by site
+    unsafe {
+        mj_jac(m, d, jacp, jacr, (*d).site_xpos.add(3 * site as usize), *(*m).site_bodyid.add(site as usize));
+    }
 }
 
 /// C: mj_jacPointAxis (engine/engine_core_util.h:75)
