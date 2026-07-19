@@ -480,7 +480,112 @@ pub fn filter_collision_pair(m: *const mjModel, d: *mut mjData, g1: i32, g2: i32
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn make_aamm(m: *const mjModel, d: *mut mjData, x_min: *mut f64, y_min: *mut f64, z_min: *mut f64, x_max: *mut f64, y_max: *mut f64, z_max: *mut f64, bf: i32, frame: *const f64) {
-    todo!() // makeAAMM
+    const MJ_ENBL_OVERRIDE: i32 = 1 << 0;
+    // SAFETY: caller guarantees m, d, frame valid; output pointers valid
+    unsafe {
+        let mut aamm: [f64; 6] = [0.0; 6];
+        let override_margin = if ((*m).opt.enableflags & MJ_ENBL_OVERRIDE) != 0 {
+            0.5 * (*m).opt.o_margin
+        } else {
+            0.0
+        };
+
+        // body
+        if (bf as i64) < (*m).nbody {
+            let body = bf as usize;
+            let body_geomnum = *(*m).body_geomnum.add(body);
+
+            for i in 0..body_geomnum as usize {
+                let geom = *(*m).body_geomadr.add(body) as usize + i;
+                let margin = if override_margin != 0.0 {
+                    override_margin
+                } else {
+                    *(*m).geom_margin.add(geom) + *(*m).geom_gap.add(geom)
+                };
+                let mut _aamm: [f64; 6] = [0.0; 6];
+
+                let aabb = (*m).geom_aabb.add(6 * geom);
+                let size = (*m).geom_aabb.add(6 * geom + 3);
+                let xpos = (*d).geom_xpos.add(3 * geom);
+                let xmat = (*d).geom_xmat.add(9 * geom);
+
+                // compute center in global coordinates
+                let mut pos: [f64; 3] = [0.0; 3];
+                crate::engine::engine_inline::mji_mul_mat_vec3(pos.as_mut_ptr(), xmat, aabb);
+                crate::engine::engine_util_blas::mju_add_to3(pos.as_mut_ptr(), xpos);
+
+                let mut axis: [f64; 9] = [0.0; 9];
+                crate::engine::engine_inline::mji_transpose3(axis.as_mut_ptr(), xmat);
+                let r_half = *(*m).geom_rbound.add(geom);
+
+                for j in 0..3usize {
+                    let frame_j = frame.add(3 * j);
+                    let aabb_cen = crate::engine::engine_util_blas::mju_dot3(pos.as_ptr(), frame_j);
+                    let aabb_half =
+                        (*size.add(0) * crate::engine::engine_util_blas::mju_dot3(axis.as_ptr().add(0), frame_j)).abs()
+                        + (*size.add(1) * crate::engine::engine_util_blas::mju_dot3(axis.as_ptr().add(3), frame_j)).abs()
+                        + (*size.add(2) * crate::engine::engine_util_blas::mju_dot3(axis.as_ptr().add(6), frame_j)).abs();
+                    let r_cen = crate::engine::engine_util_blas::mju_dot3(xpos, frame_j);
+                    _aamm[j + 0] = crate::engine::engine_util_misc::mju_max(r_cen - r_half, aabb_cen - aabb_half) - margin;
+                    _aamm[j + 3] = crate::engine::engine_util_misc::mju_min(r_cen + r_half, aabb_cen + aabb_half) + margin;
+                }
+
+                // update body aamm
+                if i == 0 {
+                    crate::engine::engine_util_blas::mju_copy(aamm.as_mut_ptr(), _aamm.as_ptr(), 6);
+                } else {
+                    for j in 0..3usize {
+                        aamm[j] = crate::engine::engine_util_misc::mju_min(aamm[j], _aamm[j]);
+                        aamm[j + 3] = crate::engine::engine_util_misc::mju_max(aamm[j + 3], _aamm[j + 3]);
+                    }
+                }
+            }
+        }
+        // flex
+        else {
+            let f = bf as usize - (*m).nbody as usize;
+            let flex_vertnum = *(*m).flex_vertnum.add(f);
+            let vbase = (*d).flexvert_xpos.add(3 * *(*m).flex_vertadr.add(f) as usize);
+
+            for i in 0..flex_vertnum as usize {
+                let mut v: [f64; 3] = [0.0; 3];
+                crate::engine::engine_util_blas::mju_mul_mat_vec(
+                    v.as_mut_ptr(), frame, vbase.add(3 * i), 3, 3);
+
+                if i == 0 {
+                    crate::engine::engine_util_blas::mju_copy3(aamm.as_mut_ptr(), v.as_ptr());
+                    crate::engine::engine_util_blas::mju_copy3(aamm.as_mut_ptr().add(3), v.as_ptr());
+                } else {
+                    for j in 0..3usize {
+                        aamm[j] = crate::engine::engine_util_misc::mju_min(aamm[j], v[j]);
+                        aamm[j + 3] = crate::engine::engine_util_misc::mju_max(aamm[j + 3], v[j]);
+                    }
+                }
+            }
+
+            // correct for flex radius and margin
+            let margin = if override_margin != 0.0 {
+                override_margin
+            } else {
+                *(*m).flex_margin.add(f) + *(*m).flex_gap.add(f)
+            };
+            let bound = *(*m).flex_radius.add(f) + margin;
+            aamm[0] -= bound;
+            aamm[1] -= bound;
+            aamm[2] -= bound;
+            aamm[3] += bound;
+            aamm[4] += bound;
+            aamm[5] += bound;
+        }
+
+        // assign outputs
+        *x_min = aamm[0];
+        *y_min = aamm[1];
+        *z_min = aamm[2];
+        *x_max = aamm[3];
+        *y_max = aamm[4];
+        *z_max = aamm[5];
+    }
 }
 
 /// C: add_pair (engine/engine_collision_driver.c:1315)
@@ -906,7 +1011,121 @@ pub fn mj_collision(m: *const mjModel, d: *mut mjData) {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_collide_obb(aabb1: *const f64, aabb2: *const f64, xpos1: *const f64, xmat1: *const f64, xpos2: *const f64, xmat2: *const f64, margin: f64, product: *mut f64, offset: *mut f64, initialize: *mut bool) -> i32 {
-    todo!() // mj_collideOBB
+    const MJ_MAXVAL: f64 = 1E10;
+    // SAFETY: caller guarantees all pointers valid with proper sizes
+    unsafe {
+        // get infinite dimensions (planes only)
+        let inf1: [bool; 3] = [
+            *aabb1.add(3) >= MJ_MAXVAL,
+            *aabb1.add(4) >= MJ_MAXVAL,
+            *aabb1.add(5) >= MJ_MAXVAL,
+        ];
+        let inf2: [bool; 3] = [
+            *aabb2.add(3) >= MJ_MAXVAL,
+            *aabb2.add(4) >= MJ_MAXVAL,
+            *aabb2.add(5) >= MJ_MAXVAL,
+        ];
+
+        // if a bounding box is infinite, there must be a collision
+        if (inf1[0] && inf1[1] && inf1[2]) || (inf2[0] && inf2[1] && inf2[2]) {
+            return 1;
+        }
+
+        let aabb: [*const f64; 2] = [aabb1, aabb2];
+        let xmat: [*const f64; 2] = [xmat1, xmat2];
+        let xpos: [*const f64; 2] = [xpos1, xpos2];
+        let mut xcenter: [[f64; 3]; 2] = [[0.0; 3]; 2];
+        let mut normal: [[[f64; 3]; 3]; 2] = [[[0.0; 3]; 3]; 2];
+        let mut proj: [f64; 2] = [0.0; 2];
+        let mut radius: [f64; 2] = [0.0; 2];
+        let infinite: [bool; 2] = [inf1[0] || inf1[1] || inf1[2], inf2[0] || inf2[1] || inf2[2]];
+
+        // compute centers in local coordinates
+        if product.is_null() {
+            for i in 0..2usize {
+                if !xmat[i].is_null() {
+                    crate::engine::engine_util_blas::mju_mul_mat_vec3(
+                        xcenter[i].as_mut_ptr(), xmat[i], aabb[i]);
+                } else {
+                    crate::engine::engine_util_blas::mju_copy3(xcenter[i].as_mut_ptr(), aabb[i]);
+                }
+                if !xpos[i].is_null() {
+                    crate::engine::engine_util_blas::mju_add_to3(xcenter[i].as_mut_ptr(), xpos[i]);
+                }
+            }
+        }
+
+        // compute normals in global coordinates
+        for i in 0..2usize {
+            for j in 0..3usize {
+                for k in 0..3usize {
+                    if !xmat[i].is_null() {
+                        normal[i][j][k] = *xmat[i].add(3 * k + j);
+                    } else {
+                        normal[i][j][k] = if j == k { 1.0 } else { 0.0 };
+                    }
+                }
+            }
+        }
+
+        // precompute dot products
+        if !product.is_null() && !offset.is_null() && *initialize {
+            for i in 0..2usize {
+                for j in 0..2usize {
+                    for k in 0..3usize {
+                        for l in 0..3usize {
+                            *product.add(18 * i + 9 * j + 3 * k + l) =
+                                crate::engine::engine_util_blas::mju_dot3(
+                                    normal[i][l].as_ptr(), normal[j][k].as_ptr());
+                        }
+                        *offset.add(6 * i + 3 * j + k) = if !xpos[i].is_null() {
+                            crate::engine::engine_util_blas::mju_dot3(xpos[i], normal[j][k].as_ptr())
+                        } else {
+                            0.0
+                        };
+                    }
+                }
+            }
+            *initialize = false;
+        }
+
+        // check intersections
+        for j in 0..2usize {
+            if infinite[1 - j] {
+                continue;
+            }
+            for k in 0..3usize {
+                for i in 0..2usize {
+                    if product.is_null() {
+                        proj[i] = crate::engine::engine_util_blas::mju_dot3(
+                            xcenter[i].as_ptr(), normal[j][k].as_ptr());
+                        radius[i] =
+                            (*aabb[i].add(3) * crate::engine::engine_util_blas::mju_dot3(
+                                normal[i][0].as_ptr(), normal[j][k].as_ptr())).abs()
+                            + (*aabb[i].add(4) * crate::engine::engine_util_blas::mju_dot3(
+                                normal[i][1].as_ptr(), normal[j][k].as_ptr())).abs()
+                            + (*aabb[i].add(5) * crate::engine::engine_util_blas::mju_dot3(
+                                normal[i][2].as_ptr(), normal[j][k].as_ptr())).abs();
+                    } else {
+                        let adr = 18 * i + 9 * j + 3 * k;
+                        proj[i] = *aabb[i].add(0) * *product.add(adr + 0)
+                                + *aabb[i].add(1) * *product.add(adr + 1)
+                                + *aabb[i].add(2) * *product.add(adr + 2)
+                                + *offset.add(6 * i + 3 * j + k);
+                        radius[i] = (*aabb[i].add(3) * *product.add(adr + 0)).abs()
+                                  + (*aabb[i].add(4) * *product.add(adr + 1)).abs()
+                                  + (*aabb[i].add(5) * *product.add(adr + 2)).abs();
+                    }
+                }
+
+                if radius[0] + radius[1] + margin < (proj[1] - proj[0]).abs() {
+                    return 0;
+                }
+            }
+        }
+
+        1
+    }
 }
 
 /// C: mj_isElemActive (engine/engine_collision_driver.h:45)
