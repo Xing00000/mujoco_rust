@@ -252,7 +252,61 @@ pub fn box_intersect(bvh: *const f64, offset: *const f64, rotation: *const f64, 
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn select_fps(candidate: *const f64, dist: *const f64, ncandidate: i32, selected_indices: *mut i32, max_select: i32) -> i32 {
-    todo!() // selectFPS
+    const MJ_MAXCONPAIR: i32 = 50;
+    const MJ_MAXVAL: f64 = 1E10;
+    // SAFETY: caller guarantees candidate[ncandidate*3], dist[ncandidate], selected_indices[max_select] valid
+    unsafe {
+        if ncandidate <= 0 {
+            return 0;
+        }
+
+        let mut selected: [bool; 50] = [false; 50];
+        let mut min_dist2: [f64; 50] = [MJ_MAXVAL; 50];
+
+        // start with deepest penetrating contact
+        let mut best: i32 = 0;
+        let mut bestval = -*dist.add(0);
+        for i in 1..ncandidate as usize {
+            if -*dist.add(i) > bestval {
+                bestval = -*dist.add(i);
+                best = i as i32;
+            }
+        }
+
+        // iteratively select contacts using FPS
+        let mut nselected: i32 = 0;
+        while nselected < max_select && nselected < MJ_MAXCONPAIR && best >= 0 {
+            selected[best as usize] = true;
+            *selected_indices.add(nselected as usize) = best;
+            nselected += 1;
+
+            let bestpos = candidate.add(3 * best as usize);
+
+            // find next farthest point
+            let mut nextbest: i32 = -1;
+            let mut nextbestdist: f64 = -1.0;
+            for i in 0..ncandidate as usize {
+                if selected[i] {
+                    continue;
+                }
+
+                let dx = *candidate.add(3 * i + 0) - *bestpos.add(0);
+                let dy = *candidate.add(3 * i + 1) - *bestpos.add(1);
+                let dz = *candidate.add(3 * i + 2) - *bestpos.add(2);
+                let d2 = dx * dx + dy * dy + dz * dz;
+                if d2 < min_dist2[i] {
+                    min_dist2[i] = d2;
+                }
+                if min_dist2[i] > nextbestdist {
+                    nextbestdist = min_dist2[i];
+                    nextbest = i as i32;
+                }
+            }
+            best = nextbest;
+        }
+
+        nselected
+    }
 }
 
 /// C: processSdfCorners (engine/engine_collision_sdf.c:808)
