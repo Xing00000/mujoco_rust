@@ -374,7 +374,53 @@ pub fn mj_object_acceleration(m: *const mjModel, d: *const mjData, objtype: i32,
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_local2global(d: *mut mjData, xpos: *mut f64, xmat: *mut f64, pos: *const f64, quat: *const f64, body: i32, sameframe: u8) {
-    todo!() // mj_local2Global
+    // mjtSameFrame enum values
+    const SAMEFRAME_NONE: u8 = 0;
+    const SAMEFRAME_BODY: u8 = 1;
+    const SAMEFRAME_INERTIA: u8 = 2;
+    const SAMEFRAME_BODYROT: u8 = 3;
+    const SAMEFRAME_INERTIAROT: u8 = 4;
+
+    // SAFETY: caller guarantees d is valid, xpos/xmat/pos/quat are valid arrays when non-null
+    unsafe {
+        let sf = sameframe;
+        let b = body as usize;
+
+        // position
+        if !xpos.is_null() && !pos.is_null() {
+            match sf {
+                SAMEFRAME_NONE | SAMEFRAME_BODYROT | SAMEFRAME_INERTIAROT => {
+                    crate::engine::engine_inline::mji_mul_mat_vec3(xpos, (*d).xmat.add(9 * b), pos);
+                    crate::engine::engine_inline::mji_add_to3(xpos, (*d).xpos.add(3 * b));
+                }
+                SAMEFRAME_BODY => {
+                    crate::engine::engine_inline::mji_copy3(xpos, (*d).xpos.add(3 * b));
+                }
+                SAMEFRAME_INERTIA => {
+                    crate::engine::engine_inline::mji_copy3(xpos, (*d).xipos.add(3 * b));
+                }
+                _ => {}
+            }
+        }
+
+        // orientation
+        if !xmat.is_null() && !quat.is_null() {
+            let mut tmp: [f64; 4] = [0.0; 4];
+            match sf {
+                SAMEFRAME_NONE => {
+                    crate::engine::engine_inline::mji_mul_quat(tmp.as_mut_ptr(), (*d).xquat.add(4 * b), quat);
+                    crate::engine::engine_util_spatial::mju_quat2mat(xmat, tmp.as_ptr());
+                }
+                SAMEFRAME_BODY | SAMEFRAME_BODYROT => {
+                    crate::engine::engine_inline::mji_copy9(xmat, (*d).xmat.add(9 * b));
+                }
+                SAMEFRAME_INERTIA | SAMEFRAME_INERTIAROT => {
+                    crate::engine::engine_inline::mji_copy9(xmat, (*d).ximat.add(9 * b));
+                }
+                _ => {}
+            }
+        }
+    }
 }
 
 /// C: mju_flexGatherState (engine/engine_core_util.h:133)
