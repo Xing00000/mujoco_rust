@@ -252,7 +252,135 @@ pub fn mj_com_pos(m: *const mjModel, d: *mut mjData) {
 /// Calls: mj_local2Global, mji_add3, mji_copy3, mji_copy9, mji_cross, mji_rotVecQuat, mji_sub3, mju_normalize3, mju_transpose
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_camlight(m: *const mjModel, d: *mut mjData) {
-    todo!() // mj_camlight
+    const MJ_ENBL_SLEEP: i32 = 1 << 4;
+    const MJ_S_AWAKE: i32 = 1;
+    const CAMLIGHT_FIXED: i32 = 0;
+    const CAMLIGHT_TRACK: i32 = 1;
+    const CAMLIGHT_TRACKCOM: i32 = 2;
+    const CAMLIGHT_TARGETBODY: i32 = 3;
+    const CAMLIGHT_TARGETBODYCOM: i32 = 4;
+
+    // SAFETY: caller guarantees m, d valid
+    unsafe {
+        let ncam = (*m).ncam as i32;
+        let nlight = (*m).nlight as i32;
+        let sleep_filter = ((*m).opt.enableflags & MJ_ENBL_SLEEP) != 0
+            && ((*d).nbody_awake as i64) < (*m).nbody;
+
+        // compute Cartesian positions and orientations of cameras
+        for i in 0..ncam as usize {
+            let id = *(*m).cam_bodyid.add(i);
+            let id1 = *(*m).cam_targetbodyid.add(i);
+
+            if sleep_filter && *(*d).body_awake.add(id as usize) != MJ_S_AWAKE {
+                if id1 < 0 || *(*d).body_awake.add(id1 as usize) != MJ_S_AWAKE {
+                    continue;
+                }
+            }
+
+            // default processing for fixed mode
+            crate::engine::engine_core_util::mj_local2global(
+                d, (*d).cam_xpos.add(3 * i), (*d).cam_xmat.add(9 * i),
+                (*m).cam_pos.add(3 * i), (*m).cam_quat.add(4 * i), id, 0);
+
+            let mode = *(*m).cam_mode.add(i);
+            match mode {
+                CAMLIGHT_FIXED => {}
+                CAMLIGHT_TRACK | CAMLIGHT_TRACKCOM => {
+                    crate::engine::engine_inline::mji_copy9(
+                        (*d).cam_xmat.add(9 * i), (*m).cam_mat0.add(9 * i));
+                    if mode == CAMLIGHT_TRACK {
+                        crate::engine::engine_inline::mji_add3(
+                            (*d).cam_xpos.add(3 * i), (*d).xpos.add(3 * id as usize),
+                            (*m).cam_pos0.add(3 * i));
+                    } else {
+                        crate::engine::engine_inline::mji_add3(
+                            (*d).cam_xpos.add(3 * i), (*d).subtree_com.add(3 * id as usize),
+                            (*m).cam_poscom0.add(3 * i));
+                    }
+                }
+                CAMLIGHT_TARGETBODY | CAMLIGHT_TARGETBODYCOM => {
+                    if id1 >= 0 {
+                        let mut pos: [f64; 3] = [0.0; 3];
+                        if mode == CAMLIGHT_TARGETBODY {
+                            crate::engine::engine_inline::mji_copy3(pos.as_mut_ptr(), (*d).xpos.add(3 * id1 as usize));
+                        } else {
+                            crate::engine::engine_inline::mji_copy3(pos.as_mut_ptr(), (*d).subtree_com.add(3 * id1 as usize));
+                        }
+
+                        let mut matT: [f64; 9] = [0.0; 9];
+                        crate::engine::engine_inline::mji_sub3(matT.as_mut_ptr().add(6), (*d).cam_xpos.add(3 * i), pos.as_ptr());
+                        crate::engine::engine_util_blas::mju_normalize3(matT.as_mut_ptr().add(6));
+
+                        matT[3] = 0.0;
+                        matT[4] = 0.0;
+                        matT[5] = 1.0;
+                        crate::engine::engine_inline::mji_cross(matT.as_mut_ptr(), matT.as_ptr().add(3), matT.as_ptr().add(6));
+                        crate::engine::engine_util_blas::mju_normalize3(matT.as_mut_ptr());
+
+                        crate::engine::engine_inline::mji_cross(matT.as_mut_ptr().add(3), matT.as_ptr().add(6), matT.as_ptr());
+                        crate::engine::engine_util_blas::mju_normalize3(matT.as_mut_ptr().add(3));
+
+                        crate::engine::engine_util_blas::mju_transpose((*d).cam_xmat.add(9 * i), matT.as_ptr(), 3, 3);
+                    }
+                }
+                _ => {}
+            }
+        }
+
+        // compute Cartesian positions and directions of lights
+        for i in 0..nlight as usize {
+            let id = *(*m).light_bodyid.add(i);
+            let id1 = *(*m).light_targetbodyid.add(i);
+
+            if sleep_filter && *(*d).body_awake.add(id as usize) != MJ_S_AWAKE {
+                if id1 < 0 || *(*d).body_awake.add(id1 as usize) != MJ_S_AWAKE {
+                    continue;
+                }
+            }
+
+            // default processing for fixed mode
+            crate::engine::engine_core_util::mj_local2global(
+                d, (*d).light_xpos.add(3 * i), std::ptr::null_mut(),
+                (*m).light_pos.add(3 * i), std::ptr::null(), id, 0);
+            crate::engine::engine_inline::mji_rot_vec_quat(
+                (*d).light_xdir.add(3 * i), (*m).light_dir.add(3 * i), (*d).xquat.add(4 * id as usize));
+
+            let mode = *(*m).light_mode.add(i);
+            match mode {
+                CAMLIGHT_FIXED => {}
+                CAMLIGHT_TRACK | CAMLIGHT_TRACKCOM => {
+                    crate::engine::engine_inline::mji_copy3(
+                        (*d).light_xdir.add(3 * i), (*m).light_dir0.add(3 * i));
+                    if mode == CAMLIGHT_TRACK {
+                        crate::engine::engine_inline::mji_add3(
+                            (*d).light_xpos.add(3 * i), (*d).xpos.add(3 * id as usize),
+                            (*m).light_pos0.add(3 * i));
+                    } else {
+                        crate::engine::engine_inline::mji_add3(
+                            (*d).light_xpos.add(3 * i), (*d).subtree_com.add(3 * id as usize),
+                            (*m).light_poscom0.add(3 * i));
+                    }
+                }
+                CAMLIGHT_TARGETBODY | CAMLIGHT_TARGETBODYCOM => {
+                    if id1 >= 0 {
+                        let mut lookat: [f64; 3] = [0.0; 3];
+                        if mode == CAMLIGHT_TARGETBODY {
+                            crate::engine::engine_inline::mji_copy3(lookat.as_mut_ptr(), (*d).xpos.add(3 * id1 as usize));
+                        } else {
+                            crate::engine::engine_inline::mji_copy3(lookat.as_mut_ptr(), (*d).subtree_com.add(3 * id1 as usize));
+                        }
+                        crate::engine::engine_inline::mji_sub3(
+                            (*d).light_xdir.add(3 * i), lookat.as_ptr(), (*d).light_xpos.add(3 * i));
+                    }
+                }
+                _ => {}
+            }
+
+            // normalize dir
+            crate::engine::engine_util_blas::mju_normalize3((*d).light_xdir.add(3 * i));
+        }
+    }
 }
 
 /// C: mj_flex (engine/engine_core_smooth.h:44)
