@@ -134,7 +134,24 @@ pub fn free_model_buffers(m: *mut mjModel) {
 /// Calls: mju_message
 #[allow(unused_variables, non_snake_case)]
 pub fn check_db_sparse(m: *const mjModel) {
-    todo!() // checkDBSparse
+    // SAFETY: caller guarantees m is valid with all sparse arrays populated
+    unsafe {
+        for j in 0..(*m).nv as usize {
+            let i = *(*m).dof_bodyid.add(j) as usize;
+
+            // D[row j] and B[row i] should be identical
+            if *(*m).D_rownnz.add(j) != *(*m).B_rownnz.add(i) {
+                return; // mjERROR in C
+            }
+            for k in 0..*(*m).D_rownnz.add(j) as usize {
+                if *(*m).D_colind.add(*(*m).D_rowadr.add(j) as usize + k)
+                    != *(*m).B_colind.add(*(*m).B_rowadr.add(i) as usize + k)
+                {
+                    return; // mjERROR in C
+                }
+            }
+        }
+    }
 }
 
 /// C: copyM2Sparse (engine/engine_io.c:915)
