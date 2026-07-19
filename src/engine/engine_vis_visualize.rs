@@ -22,7 +22,26 @@ pub fn f2f(dest: *mut f32, src: *const f32, n: i32) {
 /// Calls: mj_id2name, mju_type2Str
 #[allow(unused_variables, non_snake_case)]
 pub fn make_label(m: *const mjModel, r#type: u32, id: i32, label: *mut i8) {
-    todo!() // makeLabel
+    // SAFETY: caller guarantees m valid, label points to buffer of at least 100 bytes
+    unsafe {
+        extern "C" { fn snprintf(s: *mut i8, n: usize, fmt: *const i8, ...) -> i32; }
+        extern "C" { fn strncpy(dst: *mut i8, src: *const i8, n: usize) -> *mut i8; }
+
+        let typestr = crate::engine::engine_util_misc::mju_type2str(r#type as i32);
+        let namestr = crate::engine::engine_name::mj_id2name(m, r#type as i32, id);
+        let mut txt: [i8; 100] = [0; 100];
+
+        if !namestr.is_null() {
+            snprintf(txt.as_mut_ptr(), 100, b"%s\0".as_ptr() as *const i8, namestr);
+        } else if !typestr.is_null() {
+            snprintf(txt.as_mut_ptr(), 100, b"%s %d\0".as_ptr() as *const i8, typestr, id);
+        } else {
+            snprintf(txt.as_mut_ptr(), 100, b"%d\0".as_ptr() as *const i8, id);
+        }
+
+        strncpy(label, txt.as_ptr(), 100);
+        *label.add(99) = 0;
+    }
 }
 
 /// C: islandColor (engine/engine_vis_visualize.c:110)
