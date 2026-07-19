@@ -827,7 +827,133 @@ pub fn mj_diag_approx(m: *const mjModel, d: *mut mjData) {
 /// Calls: getimpedance, getposdim, getsolparam, mju_max
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_make_impedance(m: *const mjModel, d: *mut mjData) {
-    todo!() // mj_makeImpedance
+    const MJ_MINVAL: f64 = 1E-15;
+    const MJ_NREF: usize = 2;
+    const MJ_NIMP: usize = 5;
+    const MJ_CNSTR_FRICTION_DOF: i32 = 1;
+    const MJ_CNSTR_FRICTION_TENDON: i32 = 2;
+    const MJ_CNSTR_CONTACT_PYRAMIDAL: i32 = 6;
+    const MJ_CNSTR_CONTACT_ELLIPTIC: i32 = 7;
+
+    // SAFETY: caller guarantees m, d valid
+    unsafe {
+        let nefc = (*d).nefc;
+        let R = (*d).efc_R;
+        let KBIP = (*d).efc_KBIP;
+
+        // set efc_R, efc_KBIP
+        let mut i: i32 = 0;
+        while i < nefc {
+            let mut solref: [f64; MJ_NREF] = [0.0; MJ_NREF];
+            let mut solreffriction: [f64; MJ_NREF] = [0.0; MJ_NREF];
+            let mut solimp: [f64; MJ_NIMP] = [0.0; MJ_NIMP];
+            let mut pos: f64 = 0.0;
+            let mut dim: i32 = 0;
+            let mut imp: f64 = 0.0;
+            let mut impP: f64 = 0.0;
+
+            getsolparam(m, d, i, solref.as_mut_ptr(), solreffriction.as_mut_ptr(), solimp.as_mut_ptr());
+            getposdim(m, d, i, &mut pos, &mut dim);
+            getimpedance(solimp.as_ptr(), pos, *(*d).efc_margin.add(i as usize), &mut imp, &mut impP);
+
+            for j in 0..dim {
+                let idx = (i + j) as usize;
+                // R = (1-imp)/imp * diagApprox
+                *R.add(idx) = crate::engine::engine_util_misc::mju_max(
+                    MJ_MINVAL, (1.0 - imp) * *(*d).efc_diagA.add(idx) / imp);
+
+                let tp = *(*d).efc_type.add(idx);
+                let elliptic_friction = (tp == MJ_CNSTR_CONTACT_ELLIPTIC) && (j > 0);
+                let r = if elliptic_friction && (solreffriction[0] != 0.0 || solreffriction[1] != 0.0) {
+                    solreffriction.as_ptr()
+                } else {
+                    solref.as_ptr()
+                };
+
+                // friction: K = 0
+                if tp == MJ_CNSTR_FRICTION_DOF || tp == MJ_CNSTR_FRICTION_TENDON || elliptic_friction {
+                    *KBIP.add(4 * idx) = 0.0;
+                }
+                // standard: K = 1 / (d_width^2 * timeconst^2 * dampratio^2)
+                else if *r.add(0) > 0.0 {
+                    *KBIP.add(4 * idx) = 1.0 / crate::engine::engine_util_misc::mju_max(
+                        MJ_MINVAL, solimp[1] * solimp[1] * *r.add(0) * *r.add(0) * *r.add(1) * *r.add(1));
+                }
+                // direct: K = -solref[0] / d_width^2
+                else {
+                    *KBIP.add(4 * idx) = -*r.add(0) / crate::engine::engine_util_misc::mju_max(
+                        MJ_MINVAL, solimp[1] * solimp[1]);
+                }
+
+                // standard: B = 2 / (d_width*timeconst)
+                if *r.add(1) > 0.0 {
+                    *KBIP.add(4 * idx + 1) = 2.0 / crate::engine::engine_util_misc::mju_max(
+                        MJ_MINVAL, solimp[1] * *r.add(0));
+                }
+                // direct: B = -solref[1] / d_width
+                else {
+                    *KBIP.add(4 * idx + 1) = -*r.add(1) / crate::engine::engine_util_misc::mju_max(
+                        MJ_MINVAL, solimp[1]);
+                }
+
+                // I = imp, P = imp'
+                *KBIP.add(4 * idx + 2) = imp;
+                *KBIP.add(4 * idx + 3) = impP;
+            }
+
+            i += dim;
+        }
+
+        // frictional contacts: adjust R in friction dimensions
+        let mut i: i32 = (*d).ne + (*d).nf;
+        while i < nefc {
+            if *(*d).efc_type.add(i as usize) == MJ_CNSTR_CONTACT_PYRAMIDAL
+                || *(*d).efc_type.add(i as usize) == MJ_CNSTR_CONTACT_ELLIPTIC
+            {
+                let id = *(*d).efc_id.add(i as usize) as usize;
+                let dim = (*(*d).contact.add(id)).dim;
+                let friction = (*(*d).contact.add(id)).friction.as_ptr();
+
+                // set R[1] = R[0]/impratio
+                *R.add(i as usize + 1) = *R.add(i as usize)
+                    / crate::engine::engine_util_misc::mju_max(MJ_MINVAL, (*m).opt.impratio);
+
+                // set mu
+                (*(*d).contact.add(id)).mu = *friction.add(0)
+                    * (*R.add(i as usize + 1) / *R.add(i as usize)).sqrt();
+
+                // elliptic
+                if *(*d).efc_type.add(i as usize) == MJ_CNSTR_CONTACT_ELLIPTIC {
+                    for j in 1..(dim - 1) as usize {
+                        *R.add(i as usize + j + 1) = *R.add(i as usize + 1)
+                            * *friction.add(0) * *friction.add(0)
+                            / (*friction.add(j) * *friction.add(j));
+                    }
+                    i += dim;
+                }
+                // pyramidal
+                else {
+                    let Rpy = 2.0 * (*(*d).contact.add(id)).mu * (*(*d).contact.add(id)).mu * *R.add(i as usize);
+                    for j in 0..(2 * (dim - 1)) as usize {
+                        *R.add(i as usize + j) = Rpy;
+                    }
+                    i += 2 * (dim - 1);
+                }
+            } else {
+                i += 1;
+            }
+        }
+
+        // set D = 1 / R
+        for i in 0..nefc as usize {
+            *(*d).efc_D.add(i) = 1.0 / *R.add(i);
+        }
+
+        // adjust diagA
+        for i in 0..nefc as usize {
+            *(*d).efc_diagA.add(i) = *R.add(i) * *KBIP.add(4 * i + 2) / (1.0 - *KBIP.add(4 * i + 2));
+        }
+    }
 }
 
 /// C: mj_makeConstraint (engine/engine_core_constraint.h:87)
