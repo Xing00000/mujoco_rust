@@ -47,7 +47,51 @@ pub fn mj_set_ptr_model(m: *mut mjModel) {
 /// Calls: SKIP
 #[allow(unused_variables, non_snake_case)]
 pub fn safe_add_to_buffer_size(offset: *mut isize, nbuffer: *mut i64, type_size: usize, nr: i64, nc: i64) -> i64 {
-    todo!() // safeAddToBufferSize
+    // SAFETY: caller guarantees offset and nbuffer are valid pointers
+    unsafe {
+        if (type_size as i64) < 0 || nr < 0 || nc < 0 {
+            return 0;
+        }
+
+        // SKIP: compute alignment padding (align to 64 bytes)
+        let skip = {
+            let align: usize = 64;
+            (align - (*offset as usize % align)) % align
+        };
+
+        // nc * nr (overflow check)
+        let product = match (nc as usize).checked_mul(nr as usize) {
+            Some(v) => v,
+            None => return 0,
+        };
+
+        // product * type_size (overflow check)
+        let product = match product.checked_mul(type_size) {
+            Some(v) => v,
+            None => return 0,
+        };
+
+        // product + skip (overflow check)
+        let to_add = match product.checked_add(skip) {
+            Some(v) => v,
+            None => return 0,
+        };
+
+        // *nbuffer + to_add (overflow check)
+        let new_nbuffer = match (*nbuffer as usize).checked_add(to_add) {
+            Some(v) => v,
+            None => return 0,
+        };
+        *nbuffer = new_nbuffer as i64;
+
+        // *offset + to_add (overflow check)
+        if *offset > 0 && to_add > (isize::MAX as usize - *offset as usize) {
+            return 0;
+        }
+        *offset += to_add as isize;
+
+        1
+    }
 }
 
 /// C: freeModelBuffers (engine/engine_io.c:221)
