@@ -13,7 +13,14 @@ use crate::types::*;
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn get_state(m: *const mjModel, d: *const mjData, state: *mut f64, sensordata: *mut f64) {
-    todo!() // getState
+    const MJ_STATE_PHYSICS: i32 = 30;
+    // SAFETY: caller guarantees m, d, state valid; sensordata valid if non-null
+    unsafe {
+        crate::engine::engine_support::mj_get_state(m, d, state, MJ_STATE_PHYSICS);
+        if !sensordata.is_null() {
+            crate::engine::engine_util_blas::mju_copy(sensordata, (*d).sensordata, (*m).nsensordata as i32);
+        }
+    }
 }
 
 /// C: diff (engine/engine_derivative_fd.c:46)

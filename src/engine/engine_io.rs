@@ -20,14 +20,40 @@ pub fn getnptr() -> i32 {
 /// Calls: mju_message
 #[allow(unused_variables, non_snake_case)]
 pub fn bufwrite(src: *const (), num: i32, szbuf: i64, buf: *mut (), ptrbuf: *mut i64) {
-    todo!() // bufwrite
+    // SAFETY: caller guarantees src, buf, ptrbuf valid; num bytes available
+    unsafe {
+        if src.is_null() || buf.is_null() || ptrbuf.is_null() {
+            return; // mjERROR would be called in C
+        }
+        if *ptrbuf + num as i64 > szbuf {
+            return; // mjERROR would be called in C
+        }
+        std::ptr::copy_nonoverlapping(
+            src as *const u8,
+            (buf as *mut u8).add(*ptrbuf as usize),
+            num as usize);
+        *ptrbuf += num as i64;
+    }
 }
 
 /// C: bufread (engine/engine_io.c:114)
 /// Calls: mju_message
 #[allow(unused_variables, non_snake_case)]
 pub fn bufread(dest: *mut (), num: i32, szbuf: i64, buf: *const (), ptrbuf: *mut i64) {
-    todo!() // bufread
+    // SAFETY: caller guarantees dest, buf, ptrbuf valid; num bytes available
+    unsafe {
+        if dest.is_null() || buf.is_null() || ptrbuf.is_null() {
+            return; // mjERROR would be called in C
+        }
+        if *ptrbuf + num as i64 > szbuf {
+            return; // mjERROR would be called in C
+        }
+        std::ptr::copy_nonoverlapping(
+            (buf as *const u8).add(*ptrbuf as usize),
+            dest as *mut u8,
+            num as usize);
+        *ptrbuf += num as i64;
+    }
 }
 
 /// C: SKIP (engine/engine_io.c:132)
