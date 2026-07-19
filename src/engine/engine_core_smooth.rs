@@ -55,7 +55,146 @@ pub fn mj_kinematics(m: *const mjModel, d: *mut mjData) {
 /// Calls: mji_addTo3, mji_copy3, mji_scl3, mji_sub3, mju_dofCom, mju_inertCom, mju_scl3, mju_zero
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_com_pos(m: *const mjModel, d: *mut mjData) {
-    todo!() // mj_comPos
+    const MJ_ENBL_SLEEP: i32 = 1 << 4;
+    const MJ_MINVAL: f64 = 1E-15;
+    const MJ_JNT_FREE: i32 = 0;
+    const MJ_JNT_BALL: i32 = 1;
+    const MJ_JNT_SLIDE: i32 = 2;
+    const MJ_JNT_HINGE: i32 = 3;
+    const MJ_S_ASLEEP: i32 = 0;
+
+    // SAFETY: caller guarantees m, d are valid pointers to initialized model/data
+    unsafe {
+        let sleep_filter = ((*m).opt.enableflags & MJ_ENBL_SLEEP) != 0
+            && ((*d).nbody_awake as i64) < (*m).nbody;
+        let nbody = if sleep_filter { (*d).nbody_awake } else { (*m).nbody as i32 };
+        let nparent = if sleep_filter { (*d).nparent_awake } else { (*m).nbody as i32 };
+
+        // subtree_com: initialize with body moment
+        for b in 0..nbody {
+            let i = if sleep_filter { *(*d).body_awake_ind.add(b as usize) } else { b };
+            crate::engine::engine_inline::mji_scl3(
+                (*d).subtree_com.add(3 * i as usize),
+                (*d).xipos.add(3 * i as usize),
+                *(*m).body_mass.add(i as usize));
+        }
+
+        // subtree_com: accumulate to parent in backward pass
+        for b in (0..nparent).rev() {
+            let i = if sleep_filter { *(*d).parent_awake_ind.add(b as usize) } else { b };
+            if i == 0 { continue; }
+
+            let parent = *(*m).body_parentid.add(i as usize);
+            if sleep_filter && *(*d).body_awake.add(i as usize) == MJ_S_ASLEEP {
+                let mut child_moment: [f64; 3] = [0.0; 3];
+                crate::engine::engine_inline::mji_scl3(
+                    child_moment.as_mut_ptr(),
+                    (*d).subtree_com.add(3 * i as usize),
+                    *(*m).body_subtreemass.add(i as usize));
+                crate::engine::engine_inline::mji_add_to3(
+                    (*d).subtree_com.add(3 * parent as usize),
+                    child_moment.as_ptr());
+            } else {
+                crate::engine::engine_inline::mji_add_to3(
+                    (*d).subtree_com.add(3 * parent as usize),
+                    (*d).subtree_com.add(3 * i as usize));
+            }
+        }
+
+        // subtree_com: normalize
+        for b in 0..nbody {
+            let i = if sleep_filter { *(*d).body_awake_ind.add(b as usize) } else { b };
+            if *(*m).body_subtreemass.add(i as usize) < MJ_MINVAL {
+                crate::engine::engine_inline::mji_copy3(
+                    (*d).subtree_com.add(3 * i as usize),
+                    (*d).xipos.add(3 * i as usize));
+            } else {
+                crate::engine::engine_util_blas::mju_scl3(
+                    (*d).subtree_com.add(3 * i as usize),
+                    (*d).subtree_com.add(3 * i as usize),
+                    1.0 / *(*m).body_subtreemass.add(i as usize));
+            }
+        }
+
+        // zero out CoM frame inertia for the world body
+        crate::engine::engine_util_blas::mju_zero((*d).cinert, 10);
+
+        // map inertias to frame centered at subtree_com
+        for b in 1..nbody {
+            let i = if sleep_filter { *(*d).body_awake_ind.add(b as usize) } else { b };
+            let mut offset: [f64; 3] = [0.0; 3];
+            crate::engine::engine_inline::mji_sub3(
+                offset.as_mut_ptr(),
+                (*d).xipos.add(3 * i as usize),
+                (*d).subtree_com.add(3 * *(*m).body_rootid.add(i as usize) as usize));
+            crate::engine::engine_util_spatial::mju_inert_com(
+                (*d).cinert.add(10 * i as usize),
+                (*m).body_inertia.add(3 * i as usize),
+                (*d).ximat.add(9 * i as usize),
+                offset.as_ptr(),
+                *(*m).body_mass.add(i as usize));
+        }
+
+        // map motion dofs to global frame centered at subtree_com
+        for b in 1..nbody {
+            let i = if sleep_filter { *(*d).body_awake_ind.add(b as usize) } else { b };
+            let jntnum = *(*m).body_jntnum.add(i as usize);
+            if jntnum == 0 { continue; }
+
+            let start = *(*m).body_jntadr.add(i as usize);
+            let end = start + jntnum;
+            for j in start..end {
+                let da = (6 * *(*m).jnt_dofadr.add(j as usize)) as usize;
+
+                // compute com-anchor vector
+                let mut offset: [f64; 3] = [0.0; 3];
+                crate::engine::engine_inline::mji_sub3(
+                    offset.as_mut_ptr(),
+                    (*d).subtree_com.add(3 * *(*m).body_rootid.add(i as usize) as usize),
+                    (*d).xanchor.add(3 * j as usize));
+
+                let jnt_type = *(*m).jnt_type.add(j as usize);
+                match jnt_type {
+                    MJ_JNT_FREE => {
+                        // translation components
+                        crate::engine::engine_util_blas::mju_zero((*d).cdof.add(da), 18);
+                        *(*d).cdof.add(da + 3 + 7 * 0) = 1.0;
+                        *(*d).cdof.add(da + 3 + 7 * 1) = 1.0;
+                        *(*d).cdof.add(da + 3 + 7 * 2) = 1.0;
+
+                        // rotation components (fallthrough to ball)
+                        let mut axis: [f64; 3] = [0.0; 3];
+                        for k in 0..3usize {
+                            axis[0] = *(*d).xmat.add(9 * i as usize + k + 0);
+                            axis[1] = *(*d).xmat.add(9 * i as usize + k + 3);
+                            axis[2] = *(*d).xmat.add(9 * i as usize + k + 6);
+                            crate::engine::engine_util_spatial::mju_dof_com(
+                                (*d).cdof.add(da + 18 + 6 * k), axis.as_ptr(), offset.as_ptr());
+                        }
+                    }
+                    MJ_JNT_BALL => {
+                        let mut axis: [f64; 3] = [0.0; 3];
+                        for k in 0..3usize {
+                            axis[0] = *(*d).xmat.add(9 * i as usize + k + 0);
+                            axis[1] = *(*d).xmat.add(9 * i as usize + k + 3);
+                            axis[2] = *(*d).xmat.add(9 * i as usize + k + 6);
+                            crate::engine::engine_util_spatial::mju_dof_com(
+                                (*d).cdof.add(da + 6 * k), axis.as_ptr(), offset.as_ptr());
+                        }
+                    }
+                    MJ_JNT_SLIDE => {
+                        crate::engine::engine_util_spatial::mju_dof_com(
+                            (*d).cdof.add(da), (*d).xaxis.add(3 * j as usize), std::ptr::null());
+                    }
+                    MJ_JNT_HINGE => {
+                        crate::engine::engine_util_spatial::mju_dof_com(
+                            (*d).cdof.add(da), (*d).xaxis.add(3 * j as usize), offset.as_ptr());
+                    }
+                    _ => {}
+                }
+            }
+        }
+    }
 }
 
 /// C: mj_camlight (engine/engine_core_smooth.h:41)
