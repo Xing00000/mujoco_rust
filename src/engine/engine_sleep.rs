@@ -174,7 +174,41 @@ pub fn mj_update_sleep(m: *const mjModel, d: *mut mjData) {
 /// Calls: GlobalTable::count, next
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_sleep_cycle(tree_asleep: *const i32, ntree: i32, i: i32) -> i32 {
-    todo!() // mj_sleepCycle
+    // SAFETY: caller guarantees tree_asleep[ntree] is valid
+    unsafe {
+        if i < 0 || i >= ntree {
+            return -1;
+        }
+
+        let mut smallest = i;
+        let mut current = i;
+        let mut count = 0;
+
+        loop {
+            if count > ntree {
+                return -1;
+            }
+
+            let next = *tree_asleep.add(current as usize);
+
+            if next < 0 || next >= ntree {
+                return -1;
+            }
+
+            if next < smallest {
+                smallest = next;
+            }
+
+            current = next;
+            count += 1;
+
+            if current == i {
+                break;
+            }
+        }
+
+        smallest
+    }
 }
 
 /// C: mj_wakeIsland (engine/engine_sleep.h:37)
