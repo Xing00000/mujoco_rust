@@ -235,7 +235,46 @@ pub fn mj_differentiate_pos(m: *const mjModel, qvel: *mut f64, dt: f64, qpos1: *
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_integrate_pos_ind(m: *const mjModel, qpos: *mut f64, qvel: *const f64, dt: f64, index: *const i32, nbody: i32) {
-    todo!() // mj_integratePosInd
+    const MJ_JNT_FREE: i32 = 0;
+    const MJ_JNT_BALL: i32 = 1;
+    const MJ_JNT_HINGE: i32 = 3;
+    const MJ_JNT_SLIDE: i32 = 2;
+
+    // SAFETY: caller guarantees m, qpos, qvel valid; index valid if non-null
+    unsafe {
+        for b in 1..nbody {
+            let k = if !index.is_null() { *index.add(b as usize) } else { b };
+            let start = *(*m).body_jntadr.add(k as usize);
+            let end = start + *(*m).body_jntnum.add(k as usize);
+            for j in start..end {
+                let mut padr = *(*m).jnt_qposadr.add(j as usize) as usize;
+                let mut vadr = *(*m).jnt_dofadr.add(j as usize) as usize;
+                let jnt_type = *(*m).jnt_type.add(j as usize);
+
+                match jnt_type {
+                    MJ_JNT_FREE => {
+                        // position update
+                        for i in 0..3usize {
+                            *qpos.add(padr + i) += dt * *qvel.add(vadr + i);
+                        }
+                        padr += 3;
+                        vadr += 3;
+                        // fallthrough to ball quaternion update
+                        crate::engine::engine_util_spatial::mju_quat_integrate(
+                            qpos.add(padr), qvel.add(vadr), dt);
+                    }
+                    MJ_JNT_BALL => {
+                        crate::engine::engine_util_spatial::mju_quat_integrate(
+                            qpos.add(padr), qvel.add(vadr), dt);
+                    }
+                    MJ_JNT_HINGE | MJ_JNT_SLIDE => {
+                        *qpos.add(padr) += dt * *qvel.add(vadr);
+                    }
+                    _ => {}
+                }
+            }
+        }
+    }
 }
 
 /// C: mj_integratePos (engine/engine_support.h:102)

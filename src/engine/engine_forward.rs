@@ -356,7 +356,49 @@ pub fn midpoint_newton(inertia: *const f64, w: *const f64, tau: *const f64, h: f
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn midpoint(m: *const mjModel, d: *const mjData, qfrc: *const f64, free_jntid: *const i32, nfree: i32, qvel_old: *mut f64, qvel_new: *mut f64, dofadr: *mut i32) {
-    todo!() // midpoint
+    const MJ_DSBL_GRAVITY: i32 = 1 << 7;
+    // SAFETY: caller guarantees all pointers are valid and arrays are properly sized
+    unsafe {
+        for i in 0..nfree as usize {
+            let j = *free_jntid.add(i);
+            let body = *(*m).jnt_bodyid.add(j as usize);
+
+            // save DOF address
+            let adr = *(*m).jnt_dofadr.add(j as usize);
+            *dofadr.add(i) = adr;
+
+            // save old (current) velocity
+            crate::engine::engine_util_blas::mju_copy(
+                qvel_old.add(6 * i), (*d).qvel.add(adr as usize), 6);
+
+            // compute external force = qfrc + qfrc_bias
+            let mut qfrc_total: [f64; 6] = [0.0; 6];
+            crate::engine::engine_util_blas::mju_add(
+                qfrc_total.as_mut_ptr(), qfrc.add(adr as usize),
+                (*d).qfrc_bias.add(adr as usize), 6);
+
+            // gravity
+            let gravity: *const f64 = if ((*m).opt.disableflags & MJ_DSBL_GRAVITY) != 0 {
+                std::ptr::null()
+            } else {
+                (*m).opt.gravity.as_ptr()
+            };
+
+            // midpoint solver for free joint
+            mj_midpoint(
+                *(*m).body_mass.add(body as usize),
+                (*m).body_inertia.add(3 * body as usize),
+                (*m).body_ipos.add(3 * body as usize),
+                (*m).body_iquat.add(4 * body as usize),
+                (*d).xquat.add(4 * body as usize),
+                (*d).qvel.add(adr as usize),
+                qfrc_total.as_ptr(),
+                gravity,
+                (*m).opt.timestep,
+                qvel_new.add(6 * i),
+            );
+        }
+    }
 }
 
 /// C: mj_checkPos (engine/engine_forward.h:27)

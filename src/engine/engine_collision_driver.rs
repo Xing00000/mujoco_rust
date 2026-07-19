@@ -667,7 +667,31 @@ pub fn mj_contact_param(m: *const mjModel, condim: *mut i32, solref: *mut f64, s
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_set_contact(m: *const mjModel, con: *mut mjContact, condim: i32, includemargin: f64, solref: *const f64, solreffriction: *const f64, solimp: *const f64, friction: *const f64) {
-    todo!() // mj_setContact
+    // SAFETY: caller guarantees m, con are valid; array pointers are valid
+    unsafe {
+        // set parameters
+        (*con).dim = condim;
+        (*con).includemargin = includemargin;
+        crate::engine::engine_core_constraint::mj_assign_ref(m, (*con).solref.as_mut_ptr(), solref);
+        crate::engine::engine_core_constraint::mj_assign_ref(m, (*con).solreffriction.as_mut_ptr(), solreffriction);
+        crate::engine::engine_core_constraint::mj_assign_imp(m, (*con).solimp.as_mut_ptr(), solimp);
+        crate::engine::engine_core_constraint::mj_assign_friction(m, (*con).friction.as_mut_ptr(), friction);
+
+        // exclude in gap
+        (*con).exclude = ((*con).dist >= includemargin) as i32;
+
+        // complete frame
+        crate::engine::engine_util_spatial::mju_make_frame((*con).frame.as_mut_ptr());
+
+        // clear fields that are computed later
+        (*con).efc_address = -1;
+        (*con).mu = 0.0;
+        crate::engine::engine_util_blas::mju_zero((*con).H.as_mut_ptr(), 36);
+
+        // set deprecated fields
+        (*con).geom1 = (*con).geom[0];
+        (*con).geom2 = (*con).geom[1];
+    }
 }
 
 /// C: mj_makeCapsule (engine/engine_collision_driver.c:1816)
@@ -679,7 +703,32 @@ pub fn mj_set_contact(m: *const mjModel, con: *mut mjContact, condim: i32, inclu
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_make_capsule(m: *const mjModel, d: *mut mjData, f: i32, vid: *const i32, pos: *mut f64, mat: *mut f64, size: *mut f64) {
-    todo!() // mj_makeCapsule
+    // SAFETY: caller guarantees m, d valid; vid points to [2] array; pos[3], mat[9], size[2]
+    unsafe {
+        // get vertex positions
+        let v1 = (*d).flexvert_xpos.add(
+            3 * (*(*m).flex_vertadr.add(f as usize) + *vid.add(0)) as usize
+        );
+        let v2 = (*d).flexvert_xpos.add(
+            3 * (*(*m).flex_vertadr.add(f as usize) + *vid.add(1)) as usize
+        );
+
+        // construct capsule from vertices
+        let mut dif: [f64; 3] = [
+            *v1.add(0) - *v2.add(0),
+            *v1.add(1) - *v2.add(1),
+            *v1.add(2) - *v2.add(2),
+        ];
+        *size.add(0) = *(*m).flex_radius.add(f as usize);
+        *size.add(1) = 0.5 * crate::engine::engine_util_blas::mju_normalize3(dif.as_mut_ptr());
+
+        crate::engine::engine_util_blas::mju_add3(pos, v1, v2);
+        crate::engine::engine_util_blas::mju_scl3(pos, pos, 0.5);
+
+        let mut quat: [f64; 4] = [0.0; 4];
+        crate::engine::engine_util_spatial::mju_quat_z2vec(quat.as_mut_ptr(), dif.as_ptr());
+        crate::engine::engine_util_spatial::mju_quat2mat(mat, quat.as_ptr());
+    }
 }
 
 /// C: collisionTask (engine/engine_collision_driver.c:1849)

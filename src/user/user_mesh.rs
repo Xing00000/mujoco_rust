@@ -201,7 +201,10 @@ pub fn mesh_polygon_paths(self_ptr: *mut MeshPolygon) -> *const () {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mesh_polygon_normal(self_ptr: *mut MeshPolygon) -> *const f64 {
-    todo!() // MeshPolygon::Normal
+    // SAFETY: self_ptr is valid; normal_ is [u8; 24] representing double[3] at correct alignment
+    unsafe {
+        (*self_ptr).normal_.as_ptr() as *const f64
+    }
 }
 
 /// C: MeshPolygon::CombineIslands (user/user_mesh.cc:2698)

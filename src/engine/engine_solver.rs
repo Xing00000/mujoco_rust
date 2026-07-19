@@ -60,7 +60,15 @@ pub fn save_stats(m: *const mjModel, d: *mut mjData, island: i32, iter: i32, imp
 /// Calls: mj_mulJacTVec, mj_solveM, mju_addTo
 #[allow(unused_variables, non_snake_case)]
 pub fn dual_finish(m: *const mjModel, d: *mut mjData) {
-    todo!() // dualFinish
+    // SAFETY: caller guarantees m, d are valid pointers to initialized model/data
+    unsafe {
+        // map constraint force to joint space
+        crate::engine::engine_core_constraint::mj_mul_jac_t_vec(m, d, (*d).qfrc_constraint, (*d).efc_force);
+
+        // compute constrained acceleration in joint space
+        crate::engine::engine_core_smooth::mj_solve_m(m, d, (*d).qacc, (*d).qfrc_constraint, 1);
+        crate::engine::engine_util_blas::mju_add_to((*d).qacc, (*d).qacc_smooth, (*m).nv as i32);
+    }
 }
 
 /// C: ARdiaginv (engine/engine_solver.c:90)

@@ -228,7 +228,36 @@ pub fn mj_sleep(m: *const mjModel, d: *mut mjData) -> i32 {
 /// Calls: mjCActuator::act
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_flex_body(m: *const mjModel, con: *const mjContact, side: i32) -> i32 {
-    todo!() // mj_flexBody
+    // SAFETY: caller guarantees m, con are valid; side is 0 or 1
+    unsafe {
+        let f = (*con).flex[side as usize];
+
+        // flex vertex contact (non-interpolated)
+        if (*con).vert[side as usize] >= 0 && *(*m).flex_interp.add(f as usize) == 0 {
+            return *(*m).flex_vertbodyid.add(
+                (*(*m).flex_vertadr.add(f as usize) + (*con).vert[side as usize]) as usize
+            );
+        }
+
+        // flex element contact
+        if (*con).elem[side as usize] >= 0 {
+            if *(*m).flex_interp.add(f as usize) == 0 {
+                let dim = *(*m).flex_dim.add(f as usize);
+                let edata = (*m).flex_elem.add(
+                    (*(*m).flex_elemdataadr.add(f as usize)
+                     + (*con).elem[side as usize] * (dim + 1)) as usize
+                );
+                return *(*m).flex_vertbodyid.add(
+                    (*(*m).flex_vertadr.add(f as usize) + *edata) as usize
+                );
+            } else {
+                return *(*m).flex_nodebodyid.add(*(*m).flex_nodeadr.add(f as usize) as usize);
+            }
+        }
+
+        // flex vertex contact (interpolated): use first node
+        *(*m).flex_nodebodyid.add(*(*m).flex_nodeadr.add(f as usize) as usize)
+    }
 }
 
 /// C: mj_sleepState (engine/engine_sleep.h:59)
