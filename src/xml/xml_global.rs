@@ -28,7 +28,7 @@ pub fn get_global_model() -> *mut anonymous_namespace___GlobalModel {
 /// Calls: GetGlobalModel, GlobalModel::Set
 #[allow(unused_variables, non_snake_case)]
 pub fn set_global_xml_spec(spec: *mut mjSpec) {
-    todo!() // SetGlobalXmlSpec
+    todo!("requires GetGlobalModel().Set(spec) - C++ singleton method, not translatable without vtable/global state")
 }
 
 /// C: GetGlobalXmlSpec (xml/xml_global.h:25)

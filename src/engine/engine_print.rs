@@ -119,7 +119,32 @@ pub fn print_vector(str: *const i8, data: *const f64, n: i32, fp: *mut FILE, flo
 /// C: memorySize (engine/engine_print.c:395)
 #[allow(unused_variables, non_snake_case)]
 pub fn memory_size(nbytes: usize) -> *const i8 {
-    todo!() // memorySize
+    // SAFETY: thread-local buffer matching C's `static mjTHREADLOCAL char message[32]`
+    unsafe {
+        thread_local! {
+            static MESSAGE: std::cell::UnsafeCell<[u8; 32]> = std::cell::UnsafeCell::new([0u8; 32]);
+        }
+        MESSAGE.with(|msg| {
+            let buf = &mut *msg.get();
+            let k: usize = 1024;
+            if nbytes < k {
+                extern "C" { fn snprintf(s: *mut i8, n: usize, fmt: *const i8, ...) -> i32; }
+                snprintf(
+                    buf.as_mut_ptr() as *mut i8, 32,
+                    b"%5zu bytes\0".as_ptr() as *const i8,
+                    nbytes,
+                );
+            } else {
+                extern "C" { fn snprintf(s: *mut i8, n: usize, fmt: *const i8, ...) -> i32; }
+                snprintf(
+                    buf.as_mut_ptr() as *mut i8, 32,
+                    b"%7.0f KB\0".as_ptr() as *const i8,
+                    nbytes as f64 / k as f64,
+                );
+            }
+            buf.as_ptr() as *const i8
+        })
+    }
 }
 
 /// C: sizeMesh (engine/engine_print.c:410)

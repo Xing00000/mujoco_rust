@@ -521,7 +521,22 @@ pub fn mjuu_makenormal(normal: *mut f64, a: *const type_parameter_0_0, b: *const
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjuu_z2quat(quat: *mut f64, vec: *const f64) {
-    todo!() // mjuu_z2quat
+    // SAFETY: caller guarantees quat[4] and vec[3] are valid
+    unsafe {
+        let z: [f64; 3] = [0.0, 0.0, 1.0];
+        mjuu_crossvec(quat.add(1), z.as_ptr(), vec);
+        let s = mjuu_normvec(quat.add(1), 3);
+        if s < 1E-10 {
+            *quat.add(1) = 1.0;
+            *quat.add(2) = 0.0;
+            *quat.add(3) = 0.0;
+        }
+        let ang = f64::atan2(s, *vec.add(2));
+        *quat.add(0) = f64::cos(ang / 2.0);
+        *quat.add(1) *= f64::sin(ang / 2.0);
+        *quat.add(2) *= f64::sin(ang / 2.0);
+        *quat.add(3) *= f64::sin(ang / 2.0);
+    }
 }
 
 /// C: mjuu_frame2quat (user/user_util.h:125)
@@ -578,7 +593,19 @@ pub fn mjuu_frameinvert(newpos: *mut f64, newquat: *mut f64, oldpos: *const f64,
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjuu_frameaccum(pos: *mut f64, quat: *mut f64, childpos: *const f64, childquat: *const f64) {
-    todo!() // mjuu_frameaccum
+    // SAFETY: caller guarantees pos[3], quat[4], childpos[3], childquat[4] valid
+    unsafe {
+        let mut mat: [f64; 9] = [0.0; 9];
+        let mut vec: [f64; 3] = [0.0; 3];
+        let mut qtmp: [f64; 4] = [0.0; 4];
+        mjuu_quat2mat(mat.as_mut_ptr(), quat);
+        mjuu_mulvecmat(vec.as_mut_ptr(), childpos, mat.as_ptr());
+        *pos.add(0) += vec[0];
+        *pos.add(1) += vec[1];
+        *pos.add(2) += vec[2];
+        mjuu_mulquat(qtmp.as_mut_ptr(), quat, childquat);
+        mjuu_copyvec(quat as *mut crate::types::T1, qtmp.as_ptr() as *const crate::types::T2, 4);
+    }
 }
 
 /// C: mjuu_frameaccumChild (user/user_util.h:136)

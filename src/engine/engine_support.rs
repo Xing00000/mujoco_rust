@@ -223,7 +223,42 @@ pub fn mj_geom_distance(m: *const mjModel, d: *mut mjData, geom1: i32, geom2: i3
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_differentiate_pos(m: *const mjModel, qvel: *mut f64, dt: f64, qpos1: *const f64, qpos2: *const f64) {
-    todo!() // mj_differentiatePos
+    const MJ_JNT_FREE: i32 = 0;
+    const MJ_JNT_BALL: i32 = 1;
+    const MJ_JNT_HINGE: i32 = 3;
+    const MJ_JNT_SLIDE: i32 = 2;
+
+    // SAFETY: caller guarantees m, qvel, qpos1, qpos2 are valid
+    unsafe {
+        for j in 0..(*m).njnt as usize {
+            let mut padr = *(*m).jnt_qposadr.add(j) as usize;
+            let mut vadr = *(*m).jnt_dofadr.add(j) as usize;
+            let jnt_type = *(*m).jnt_type.add(j);
+
+            match jnt_type {
+                MJ_JNT_FREE => {
+                    for i in 0..3usize {
+                        *qvel.add(vadr + i) = (*qpos2.add(padr + i) - *qpos1.add(padr + i)) / dt;
+                    }
+                    vadr += 3;
+                    padr += 3;
+                    // fallthrough to ball
+                    crate::engine::engine_util_spatial::mju_sub_quat(
+                        qvel.add(vadr), qpos2.add(padr), qpos1.add(padr));
+                    crate::engine::engine_util_blas::mju_scl3(qvel.add(vadr), qvel.add(vadr), 1.0 / dt);
+                }
+                MJ_JNT_BALL => {
+                    crate::engine::engine_util_spatial::mju_sub_quat(
+                        qvel.add(vadr), qpos2.add(padr), qpos1.add(padr));
+                    crate::engine::engine_util_blas::mju_scl3(qvel.add(vadr), qvel.add(vadr), 1.0 / dt);
+                }
+                MJ_JNT_HINGE | MJ_JNT_SLIDE => {
+                    *qvel.add(vadr) = (*qpos2.add(padr) - *qpos1.add(padr)) / dt;
+                }
+                _ => {}
+            }
+        }
+    }
 }
 
 /// C: mj_integratePosInd (engine/engine_support.h:98)
