@@ -41,7 +41,58 @@ pub fn mj_kinematics1(m: *const mjModel, d: *mut mjData) {
 /// Calls: mj_local2Global
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_kinematics2(m: *const mjModel, d: *mut mjData) {
-    todo!() // mj_kinematics2
+    const MJ_ENBL_SLEEP: i32 = 1 << 4;
+    const MJ_S_AWAKE: i32 = 1;
+    // SAFETY: caller guarantees m, d are valid
+    unsafe {
+        let sleep_filter = ((*m).opt.enableflags & MJ_ENBL_SLEEP) != 0
+            && ((*d).nbody_awake as i64) < (*m).nbody;
+        let nbody = if sleep_filter { (*d).nbody_awake } else { (*m).nbody as i32 };
+
+        // compute/copy Cartesian positions and orientations of body inertial frames
+        for b in 1..nbody {
+            let i = if sleep_filter { *(*d).body_awake_ind.add(b as usize) } else { b };
+            crate::engine::engine_core_util::mj_local2global(
+                d, (*d).xipos.add(3 * i as usize), (*d).ximat.add(9 * i as usize),
+                (*m).body_ipos.add(3 * i as usize), (*m).body_iquat.add(4 * i as usize),
+                i, *(*m).body_sameframe.add(i as usize));
+        }
+
+        // compute/copy Cartesian positions and orientations of geoms
+        for b in 0..nbody {
+            let i = if sleep_filter { *(*d).body_awake_ind.add(b as usize) } else { b };
+
+            // skip geom in sleeping or static body
+            if sleep_filter && *(*d).body_awake.add(i as usize) != MJ_S_AWAKE {
+                continue;
+            }
+
+            let start = *(*m).body_geomadr.add(i as usize);
+            let end = start + *(*m).body_geomnum.add(i as usize);
+            for g in start..end {
+                crate::engine::engine_core_util::mj_local2global(
+                    d, (*d).geom_xpos.add(3 * g as usize), (*d).geom_xmat.add(9 * g as usize),
+                    (*m).geom_pos.add(3 * g as usize), (*m).geom_quat.add(4 * g as usize),
+                    *(*m).geom_bodyid.add(g as usize), *(*m).geom_sameframe.add(g as usize));
+            }
+        }
+
+        // compute/copy Cartesian positions and orientations of sites
+        let nsite = (*m).nsite as i32;
+        for i in 0..nsite {
+            let bodyid = *(*m).site_bodyid.add(i as usize);
+
+            // skip site in sleeping or static body
+            if sleep_filter && *(*d).body_awake.add(bodyid as usize) != MJ_S_AWAKE {
+                continue;
+            }
+
+            crate::engine::engine_core_util::mj_local2global(
+                d, (*d).site_xpos.add(3 * i as usize), (*d).site_xmat.add(9 * i as usize),
+                (*m).site_pos.add(3 * i as usize), (*m).site_quat.add(4 * i as usize),
+                bodyid, *(*m).site_sameframe.add(i as usize));
+        }
+    }
 }
 
 /// C: mj_kinematics (engine/engine_core_smooth.h:35)
