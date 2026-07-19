@@ -426,7 +426,32 @@ pub fn project_ellipsoid(friction: *mut f64, normal: f64, mu: *const f64, dim: i
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn solve_qcqp(force: *mut f64, i: i32, dim: i32, Ac: *mut f64, bc: *mut f64, mu: *const f64) {
-    todo!() // solveQCQP
+    // SAFETY: caller guarantees all pointers valid and arrays properly sized
+    unsafe {
+        let mut v: [f64; 6] = [0.0; 6];
+        let flg_active: i32;
+
+        // solve
+        if dim == 3 {
+            flg_active = crate::engine::engine_util_solve::mju_qcqp2(
+                v.as_mut_ptr(), Ac, bc, mu, *force.add(i as usize));
+        } else if dim == 4 {
+            flg_active = crate::engine::engine_util_solve::mju_qcqp3(
+                v.as_mut_ptr(), Ac, bc, mu, *force.add(i as usize));
+        } else {
+            // dim == 5
+            flg_active = crate::engine::engine_util_solve::mju_qcqp(
+                v.as_mut_ptr(), Ac, bc, mu, *force.add(i as usize), dim - 1);
+        }
+
+        // on constraint: put v on ellipsoid, in case QCQP is approximate
+        if flg_active != 0 {
+            project_ellipsoid(v.as_mut_ptr(), *force.add(i as usize), mu, dim, 0);
+        }
+
+        // assign
+        crate::engine::engine_util_blas::mju_copy(force.add(i as usize + 1), v.as_ptr(), dim - 1);
+    }
 }
 
 /// C: projectCone (engine/engine_solver.c:426)
@@ -1119,6 +1144,6 @@ pub fn mj_sol_newton_island(m: *const mjModel, d: *mut mjData, island: i32, maxi
 /// Calls: dualFinish
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_dual_finish(m: *const mjModel, d: *mut mjData) {
-    todo!() // mj_dualFinish
+    dual_finish(m, d);
 }
 
