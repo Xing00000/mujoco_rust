@@ -182,7 +182,57 @@ pub fn mj_body_chain(m: *const mjModel, body: i32, chain: *mut i32) -> i32 {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_jac(m: *const mjModel, d: *const mjData, jacp: *mut f64, jacr: *mut f64, point: *const f64, body: i32) {
-    todo!() // mj_jac
+    // SAFETY: caller guarantees m, d, point valid; jacp/jacr point to 3*nv arrays if non-null
+    unsafe {
+        let nv = (*m).nv as i32;
+        let mut offset: [f64; 3] = [0.0; 3];
+
+        // clear jacobians, compute offset if required
+        if !jacp.is_null() {
+            crate::engine::engine_util_blas::mju_zero(jacp, 3 * nv);
+            crate::engine::engine_util_blas::mju_sub3(
+                offset.as_mut_ptr(), point,
+                (*d).subtree_com.add(3 * *(*m).body_rootid.add(body as usize) as usize));
+        }
+        if !jacr.is_null() {
+            crate::engine::engine_util_blas::mju_zero(jacr, 3 * nv);
+        }
+
+        // skip fixed bodies
+        let body = *(*m).body_weldid.add(body as usize);
+
+        // no movable body found
+        if body == 0 {
+            return;
+        }
+
+        // get last dof that affects this body
+        let mut i = *(*m).body_dofadr.add(body as usize) + *(*m).body_dofnum.add(body as usize) - 1;
+
+        // backward pass over dof ancestor chain
+        while i >= 0 {
+            let cdof = (*d).cdof.add(6 * i as usize);
+
+            // construct rotation jacobian
+            if !jacr.is_null() {
+                *jacr.add((i + 0 * nv) as usize) = *cdof.add(0);
+                *jacr.add((i + 1 * nv) as usize) = *cdof.add(1);
+                *jacr.add((i + 2 * nv) as usize) = *cdof.add(2);
+            }
+
+            // construct translation jacobian (correct for rotation)
+            if !jacp.is_null() {
+                let mut tmp: [f64; 3] = [0.0; 3];
+                crate::engine::engine_inline::mji_cross(tmp.as_mut_ptr(), cdof, offset.as_ptr());
+                *jacp.add((i + 0 * nv) as usize) = *cdof.add(3) + tmp[0];
+                *jacp.add((i + 1 * nv) as usize) = *cdof.add(4) + tmp[1];
+                *jacp.add((i + 2 * nv) as usize) = *cdof.add(5) + tmp[2];
+            }
+
+            // advance to parent dof
+            i = *(*m).dof_parentid.add(i as usize);
+        }
+    }
 }
 
 /// C: mj_jacBody (engine/engine_core_util.h:56)
@@ -278,7 +328,59 @@ pub fn mj_jac_sparse(m: *const mjModel, d: *const mjData, jacp: *mut f64, jacr: 
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_jac_sparse_simple(m: *const mjModel, d: *const mjData, jacdifp: *mut f64, jacdifr: *mut f64, point: *const f64, body: i32, flg_second: i32, NV: i32, start: i32) {
-    todo!() // mj_jacSparseSimple
+    // SAFETY: caller guarantees all pointers valid with proper sizes
+    unsafe {
+        // compute point-com offset
+        let mut offset: [f64; 3] = [0.0; 3];
+        crate::engine::engine_util_blas::mju_sub3(
+            offset.as_mut_ptr(), point,
+            (*d).subtree_com.add(3 * *(*m).body_rootid.add(body as usize) as usize));
+
+        // skip fixed body
+        if *(*m).body_dofnum.add(body as usize) == 0 {
+            return;
+        }
+
+        // process dofs
+        let mut ci = start;
+        let end = *(*m).body_dofadr.add(body as usize) + *(*m).body_dofnum.add(body as usize);
+        let mut da = *(*m).body_dofadr.add(body as usize);
+        while da < end {
+            let cdof = (*d).cdof.add(6 * da as usize);
+
+            // construct rotation jacobian
+            if !jacdifr.is_null() {
+                if flg_second != 0 {
+                    *jacdifr.add((ci + 0 * NV) as usize) = *cdof.add(0);
+                    *jacdifr.add((ci + 1 * NV) as usize) = *cdof.add(1);
+                    *jacdifr.add((ci + 2 * NV) as usize) = *cdof.add(2);
+                } else {
+                    *jacdifr.add((ci + 0 * NV) as usize) = -*cdof.add(0);
+                    *jacdifr.add((ci + 1 * NV) as usize) = -*cdof.add(1);
+                    *jacdifr.add((ci + 2 * NV) as usize) = -*cdof.add(2);
+                }
+            }
+
+            // construct translation jacobian (correct for rotation)
+            if !jacdifp.is_null() {
+                let mut tmp: [f64; 3] = [0.0; 3];
+                crate::engine::engine_inline::mji_cross(tmp.as_mut_ptr(), cdof, offset.as_ptr());
+
+                if flg_second != 0 {
+                    *jacdifp.add((ci + 0 * NV) as usize) = *cdof.add(3) + tmp[0];
+                    *jacdifp.add((ci + 1 * NV) as usize) = *cdof.add(4) + tmp[1];
+                    *jacdifp.add((ci + 2 * NV) as usize) = *cdof.add(5) + tmp[2];
+                } else {
+                    *jacdifp.add((ci + 0 * NV) as usize) = -(*cdof.add(3) + tmp[0]);
+                    *jacdifp.add((ci + 1 * NV) as usize) = -(*cdof.add(4) + tmp[1]);
+                    *jacdifp.add((ci + 2 * NV) as usize) = -(*cdof.add(5) + tmp[2]);
+                }
+            }
+
+            ci += 1;
+            da += 1;
+        }
+    }
 }
 
 /// C: mj_jacDotSparse (engine/engine_core_util.h:90)
