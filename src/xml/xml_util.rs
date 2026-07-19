@@ -1,5 +1,5 @@
 //! Port of: xml/xml_util.cc
-//! IR hash: d2209344472ae336
+//! IR hash: adc2f24e872d94f7
 //! CODEGEN: signatures locked. Only fill todo!() bodies.
 
 use crate::types::*;
@@ -13,14 +13,14 @@ pub fn parse_inf_or_nan(s: *const std__string) -> *const () {
 /// C: ResolveFilePath (xml/xml_util.cc:79)
 /// Calls: FilePath::IsAbs, FilePath::c_str, mjXUtil::ReadAttrStr, mju_closeResource, mju_openResource
 #[allow(unused_variables, non_snake_case)]
-pub fn resolve_file_path(e: *mut XMLElement, filename: *const FilePath, dir: *const FilePath, vfs: *const mjVFS) -> FilePath {
+pub fn resolve_file_path(e: *mut anonymous_namespace___XMLElement, filename: *const anonymous_namespace___FilePath, dir: *const anonymous_namespace___FilePath, vfs: *const mjVFS) -> anonymous_namespace___FilePath {
     todo!() // ResolveFilePath
 }
 
 /// C: AccumulateFiles (xml/xml_util.cc:109)
 /// Calls: FilePath::IsAbs, FilePath::Str, mjXUtil::ReadAttrFile, mjXUtil::ReadAttrStr, mju_getXMLDependencies
 #[allow(unused_variables, non_snake_case)]
-pub fn accumulate_files(files: *const (), root: *mut tinyxml2__XMLElement, model_dir: *const FilePath) {
+pub fn accumulate_files(files: *const (), root: *mut tinyxml2__XMLElement, model_dir: *const anonymous_namespace___FilePath) {
     todo!() // AccumulateFiles
 }
 
@@ -141,7 +141,7 @@ pub fn mj_x_util_same_vector(vec1: *const T, vec2: *const T, n: i32) -> bool {
 
 /// C: mjXUtil::FindKey (xml/xml_util.h:94)
 #[allow(unused_variables, non_snake_case)]
-pub fn mj_x_util_find_key(map: *const mjMap, mapsz: i32, key: string) -> i32 {
+pub fn mj_x_util_find_key(map: *const mjMap, mapsz: i32, key: std__string) -> i32 {
     todo!() // mjXUtil::FindKey
 }
 
@@ -233,7 +233,7 @@ pub fn mj_x_util_vector2string(txt: *mut std__string, vec: *const (), ncol: i32)
 
 /// C: mjXUtil::FindSubElem (xml/xml_util.h:175)
 #[allow(unused_variables, non_snake_case)]
-pub fn mj_x_util_find_sub_elem(elem: *mut tinyxml2__XMLElement, name: string, required: bool) -> *mut tinyxml2__XMLElement {
+pub fn mj_x_util_find_sub_elem(elem: *mut tinyxml2__XMLElement, name: std__string, required: bool) -> *mut tinyxml2__XMLElement {
     todo!() // mjXUtil::FindSubElem
 }
 
@@ -254,40 +254,40 @@ pub fn mj_x_util_map_values(elem: *mut tinyxml2__XMLElement, attr: *const i8, da
 /// C: mjXUtil::WriteAttr (xml/xml_util.h:188)
 /// Calls: _mjPRIVATE__get_xml_precision, mjXUtil::WriteAttrTxt
 #[allow(unused_variables, non_snake_case)]
-pub fn mj_x_util_write_attr(elem: *mut tinyxml2__XMLElement, name: string, n: i32, data: *const T, def: *const T, trim: bool) {
+pub fn mj_x_util_write_attr(elem: *mut tinyxml2__XMLElement, name: std__string, n: i32, data: *const T, def: *const T, trim: bool) {
     todo!() // mjXUtil::WriteAttr
 }
 
 /// C: mjXUtil::WriteVector (xml/xml_util.h:192)
 /// Calls: mjXUtil::WriteAttr
 #[allow(unused_variables, non_snake_case)]
-pub fn mj_x_util_write_vector(elem: *mut tinyxml2__XMLElement, name: string, vec: *const ()) {
+pub fn mj_x_util_write_vector(elem: *mut tinyxml2__XMLElement, name: std__string, vec: *const ()) {
     todo!() // mjXUtil::WriteVector
 }
 
 /// C: mjXUtil::WriteAttrTxt (xml/xml_util.h:198)
 #[allow(unused_variables, non_snake_case)]
-pub fn mj_x_util_write_attr_txt(elem: *mut tinyxml2__XMLElement, name: string, value: string) {
+pub fn mj_x_util_write_attr_txt(elem: *mut tinyxml2__XMLElement, name: std__string, value: std__string) {
     todo!() // mjXUtil::WriteAttrTxt
 }
 
 /// C: mjXUtil::WriteAttrInt (xml/xml_util.h:201)
 #[allow(unused_variables, non_snake_case)]
-pub fn mj_x_util_write_attr_int(elem: *mut tinyxml2__XMLElement, name: string, data: i32, def: i32) {
+pub fn mj_x_util_write_attr_int(elem: *mut tinyxml2__XMLElement, name: std__string, data: i32, def: i32) {
     todo!() // mjXUtil::WriteAttrInt
 }
 
 /// C: mjXUtil::WriteAttrKey (xml/xml_util.h:204)
 /// Calls: mjXUtil::FindValue, mjXUtil::WriteAttrTxt
 #[allow(unused_variables, non_snake_case)]
-pub fn mj_x_util_write_attr_key(elem: *mut tinyxml2__XMLElement, name: string, map: *const mjMap, mapsz: i32, data: i32, def: i32) {
+pub fn mj_x_util_write_attr_key(elem: *mut tinyxml2__XMLElement, name: std__string, map: *const mjMap, mapsz: i32, data: i32, def: i32) {
     todo!() // mjXUtil::WriteAttrKey
 }
 
 /// C: mjXUtil::WriteAttrKeys (xml/xml_util.h:208)
 /// Calls: mjXUtil::FindValue, mjXUtil::WriteAttrTxt
 #[allow(unused_variables, non_snake_case)]
-pub fn mj_x_util_write_attr_keys(elem: *mut XMLElement, name: string, map: *const mjMap, mapsz: i32, data: *mut i32, ndata: i32, def: i32) {
+pub fn mj_x_util_write_attr_keys(elem: *mut XMLElement, name: std__string, map: *const mjMap, mapsz: i32, data: *mut i32, ndata: i32, def: i32) {
     todo!() // mjXUtil::WriteAttrKeys
 }
 

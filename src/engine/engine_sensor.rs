@@ -1,5 +1,5 @@
 //! Port of: engine/engine_sensor.c
-//! IR hash: d2209344472ae336
+//! IR hash: adc2f24e872d94f7
 //! CODEGEN: signatures locked. Only fill todo!() bodies.
 
 use crate::types::*;
@@ -418,13 +418,9 @@ pub fn compute_or_read_sensor(m: *const mjModel, d: *mut mjData, i: i32, sensord
 /// Calls: apply_cutoff
 #[allow(unused_variables, non_snake_case)]
 pub fn compute_user_sensors(m: *const mjModel, d: *mut mjData, stage: u32) {
-    extern "C" {
-        static mut mjcb_sensor: Option<unsafe extern "C" fn(*const mjModel, *mut mjData, i32)>;
-    }
-
     // SAFETY: accessing global callback pointer and model/data fields, matching C semantics
     unsafe {
-        if let Some(cb) = mjcb_sensor {
+        if let Some(cb) = crate::engine::engine_callback::mjcb_sensor {
             cb(m, d, stage as i32);
         }
 

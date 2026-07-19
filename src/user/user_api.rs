@@ -1,5 +1,5 @@
 //! Port of: user/user_api.cc
-//! IR hash: d2209344472ae336
+//! IR hash: adc2f24e872d94f7
 //! CODEGEN: signatures locked. Only fill todo!() bodies.
 
 use crate::types::*;
@@ -1555,7 +1555,7 @@ pub fn mjs_set_string_vec(dest: *mut mjStringVec, text: *const i8) {
 /// C: mjs_setInStringVec (user/user_api.h:388)
 /// Calls: mju_error
 #[allow(unused_variables, non_snake_case)]
-pub fn mjs_set_in_string_vec(dest: *mut mjStringVec, i: i32, text: *const i8) -> mjtBool {
+pub fn mjs_set_in_string_vec(dest: *mut mjStringVec, i: i32, text: *const i8) -> bool {
     todo!() // mjs_setInStringVec
 }
 

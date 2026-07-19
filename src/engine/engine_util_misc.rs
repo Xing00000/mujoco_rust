@@ -1,5 +1,5 @@
 //! Port of: engine/engine_util_misc.c
-//! IR hash: d2209344472ae336
+//! IR hash: adc2f24e872d94f7
 //! CODEGEN: signatures locked. Only fill todo!() bodies.
 
 use crate::types::*;
@@ -11,27 +11,8 @@ use crate::types::*;
 ///   3. No algebraic simplification
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
-pub fn is_intersect(p1: *const f64, p2: *const f64, p3: *const f64, p4: *const f64) -> mjtBool {
-    const MJ_MINVAL: f64 = 1E-15_f64;
-    // SAFETY: caller guarantees p1, p2, p3, p4 each point to at least 2 f64
-    unsafe {
-        let det = (*p4.add(1) - *p3.add(1)) * (*p2.add(0) - *p1.add(0))
-                - (*p4.add(0) - *p3.add(0)) * (*p2.add(1) - *p1.add(1));
-        if det.abs() < MJ_MINVAL {
-            return mjtBool { _data: [0] };
-        }
-
-        let a = ((*p4.add(0) - *p3.add(0)) * (*p1.add(1) - *p3.add(1))
-               - (*p4.add(1) - *p3.add(1)) * (*p1.add(0) - *p3.add(0))) / det;
-        let b = ((*p2.add(0) - *p1.add(0)) * (*p1.add(1) - *p3.add(1))
-               - (*p2.add(1) - *p1.add(1)) * (*p1.add(0) - *p3.add(0))) / det;
-
-        if a >= 0.0 && a <= 1.0 && b >= 0.0 && b <= 1.0 {
-            mjtBool { _data: [1] }
-        } else {
-            mjtBool { _data: [0] }
-        }
-    }
+pub fn is_intersect(p1: *const f64, p2: *const f64, p3: *const f64, p4: *const f64) -> bool {
+    todo!() // is_intersect
 }
 
 /// C: length_circle (engine/engine_util_misc.c:55)
@@ -139,7 +120,7 @@ pub fn wrap_circle(pnt: *mut f64, end: *const f64, side: *const f64, radius: f64
             }
 
             // penalize for intersection
-            if is_intersect(end, sol[i][0].as_ptr(), end.add(2), sol[i][1].as_ptr())._data[0] != 0 {
+            if is_intersect(end, sol[i][0].as_ptr(), end.add(2), sol[i][1].as_ptr()) {
                 good[i] = -10000.0;
             }
         }
@@ -152,7 +133,7 @@ pub fn wrap_circle(pnt: *mut f64, end: *const f64, side: *const f64, radius: f64
         *pnt.add(3) = sol[i][1][1];
 
         // check for intersection
-        if is_intersect(end, pnt, end.add(2), pnt.add(2))._data[0] != 0 {
+        if is_intersect(end, pnt, end.add(2), pnt.add(2)) {
             return -1.0;
         }
 

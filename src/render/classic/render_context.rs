@@ -1,14 +1,15 @@
 //! Port of: render/classic/render_context.c
-//! IR hash: d2209344472ae336
+//! IR hash: adc2f24e872d94f7
 //! CODEGEN: signatures locked. Only fill todo!() bodies.
 
 use crate::types::*;
-use crate::render::classic::render_util::mjr_normalize_vec;
+
+use crate :: render :: classic :: render_util :: mjr_normalize_vec ;
 
 /// C: listAllocate (render/classic/render_context.c:61)
 /// Calls: mju_error
 #[allow(unused_variables, non_snake_case)]
-pub fn list_allocate(base: *mut GLuint, range: *mut GLsizei, newrange: GLsizei) {
+pub fn list_allocate(base: *mut u32, range: *mut i32, newrange: i32) {
     todo!() // listAllocate
 }
 
@@ -713,7 +714,7 @@ pub fn make_skin(m: *const mjModel, con: *mut mjrContext) {
 
 /// C: debugCallback (render/classic/render_context.c:1504)
 #[allow(unused_variables, non_snake_case)]
-pub fn debug_callback(source: GLenum, r#type: GLenum, id: GLuint, severity: GLenum, length: GLsizei, message: *const GLchar, userParam: *const ()) {
+pub fn debug_callback(source: u32, r#type: u32, id: u32, severity: u32, length: i32, message: *const i8, userParam: *const ()) {
     todo!() // debugCallback
 }
 

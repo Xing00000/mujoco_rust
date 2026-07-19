@@ -1,5 +1,5 @@
 //! Port of: engine/engine_util_solve.c
-//! IR hash: d2209344472ae336
+//! IR hash: adc2f24e872d94f7
 //! CODEGEN: signatures locked. Only fill todo!() bodies.
 
 use crate::types::*;
@@ -560,45 +560,8 @@ pub fn mju_chol_solve_band(res: *mut f64, mat: *const f64, vec: *const f64, ntot
 ///   3. No algebraic simplification
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
-pub fn mju_band2dense(res: *mut f64, mat: *const f64, ntotal: i32, nband: i32, ndense: i32, flg_sym: mjtBool) {
-    // SAFETY: caller guarantees res[ntotal*ntotal] and mat are valid
-    unsafe {
-        let nsparse = ntotal - ndense;
-
-        // clear all
-        crate::engine::engine_util_blas::mju_zero(res, ntotal * ntotal);
-
-        // sparse part
-        for i in 0..nsparse {
-            // number of non-zeros left of (i,i)
-            let width = if i < nband - 1 { i } else { nband - 1 };
-
-            // copy data
-            crate::engine::engine_util_blas::mju_copy(
-                res.add((i * ntotal + i - width) as usize),
-                mat.add(((i + 1) * nband - (width + 1)) as usize),
-                width + 1,
-            );
-        }
-
-        // dense part
-        for i in nsparse..ntotal {
-            crate::engine::engine_util_blas::mju_copy(
-                res.add((i * ntotal) as usize),
-                mat.add((nsparse * nband + (i - nsparse) * ntotal) as usize),
-                i + 1,
-            );
-        }
-
-        // make symmetric
-        if flg_sym._data[0] != 0 {
-            for i in 0..ntotal as usize {
-                for j in (i + 1)..ntotal as usize {
-                    *res.add(i * ntotal as usize + j) = *res.add(j * ntotal as usize + i);
-                }
-            }
-        }
-    }
+pub fn mju_band2dense(res: *mut f64, mat: *const f64, ntotal: i32, nband: i32, ndense: i32, flg_sym: bool) {
+    todo!() // mju_band2Dense
 }
 
 /// C: mju_dense2Band (engine/engine_util_solve.h:88)
@@ -646,43 +609,8 @@ pub fn mju_dense2band(res: *mut f64, mat: *const f64, ntotal: i32, nband: i32, n
 ///   3. No algebraic simplification
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
-pub fn mju_band_mul_mat_vec(res: *mut f64, mat: *const f64, vec: *const f64, ntotal: i32, nband: i32, ndense: i32, nvec: i32, flg_sym: mjtBool) {
-    // SAFETY: caller guarantees all pointers valid for their dimensions
-    unsafe {
-        let nsparse = ntotal - ndense;
-
-        // handle multiple vectors
-        for j in 0..nvec {
-            let vec_j = vec.add((ntotal * j) as usize);
-            let res_j = res.add((ntotal * j) as usize);
-
-            // sparse part
-            for i in 0..nsparse {
-                let width = if i + 1 < nband { i + 1 } else { nband };
-                let adr = (i * nband + nband - width) as usize;
-                let offset = if i - nband + 1 > 0 { i - nband + 1 } else { 0 };
-                *res_j.add(i as usize) = crate::engine::engine_util_blas::mju_dot(
-                    mat.add(adr), vec_j.add(offset as usize), width);
-                if flg_sym._data[0] != 0 {
-                    // strict upper triangle
-                    crate::engine::engine_util_blas::mju_add_to_scl(
-                        res_j.add(offset as usize), mat.add(adr), *vec_j.add(i as usize), width - 1);
-                }
-            }
-
-            // dense part
-            for i in nsparse..ntotal {
-                let adr = (nsparse * nband + (i - nsparse) * ntotal) as usize;
-                *res_j.add(i as usize) = crate::engine::engine_util_blas::mju_dot(
-                    mat.add(adr), vec_j, i + 1);
-                if flg_sym._data[0] != 0 {
-                    // strict upper triangle
-                    crate::engine::engine_util_blas::mju_add_to_scl(
-                        res_j, mat.add(adr), *vec_j.add(i as usize), i);
-                }
-            }
-        }
-    }
+pub fn mju_band_mul_mat_vec(res: *mut f64, mat: *const f64, vec: *const f64, ntotal: i32, nband: i32, ndense: i32, nvec: i32, flg_sym: bool) {
+    todo!() // mju_bandMulMatVec
 }
 
 /// C: mju_bandDiag (engine/engine_util_solve.h:95)

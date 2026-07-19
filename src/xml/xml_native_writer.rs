@@ -1,5 +1,5 @@
 //! Port of: xml/xml_native_writer.cc
-//! IR hash: d2209344472ae336
+//! IR hash: adc2f24e872d94f7
 //! CODEGEN: signatures locked. Only fill todo!() bodies.
 
 use crate::types::*;
@@ -13,7 +13,7 @@ pub fn mj_xml_printer_print_space(self_ptr: *mut mj_XMLPrinter, depth: i32) {
 /// C: WriteDoc (xml/xml_native_writer.cc:68)
 /// Calls: mjCopyError
 #[allow(unused_variables, non_snake_case)]
-pub fn write_doc(doc: *mut XMLDocument, error: *mut i8, error_sz: usize) -> string {
+pub fn write_doc(doc: *mut anonymous_namespace___XMLDocument, error: *mut i8, error_sz: usize) -> anonymous_namespace___string {
     todo!() // WriteDoc
 }
 
@@ -27,7 +27,7 @@ pub fn mj_x_writer_set_model(self_ptr: *mut mjXWriter, _spec: *mut mjSpec, m: *c
 /// C: mjXWriter::Write (xml/xml_native_writer.h:35)
 /// Calls: WriteDoc, mjCModel::Default, mjCModel::GetWorld, mjCModel::IsCompiled, mjCopyError, mjXWriter::Actuator, mjXWriter::Asset, mjXWriter::Body, mjXWriter::Compiler, mjXWriter::Contact, mjXWriter::Custom, mjXWriter::Default, mjXWriter::Deformable, mjXWriter::Equality, mjXWriter::Extension, mjXWriter::InsertEnd, mjXWriter::Keyframe, mjXWriter::Option, mjXWriter::Sensor, mjXWriter::Size, mjXWriter::Statistic, mjXWriter::Tendon, mjXWriter::Visual, mjs_getString
 #[allow(unused_variables, non_snake_case)]
-pub fn mj_x_writer_write(self_ptr: *mut mjXWriter, error: *mut i8, error_sz: usize) -> std__string {
+pub fn mj_x_writer_write(self_ptr: *mut mjXWriter, error: *mut i8, error_sz: u64) -> std__string {
     todo!() // mjXWriter::Write
 }
 
@@ -152,7 +152,7 @@ pub fn mj_x_writer_keyframe(self_ptr: *mut mjXWriter, root: *mut tinyxml2__XMLEl
 /// C: mjXWriter::Body (xml/xml_native_writer.h:63)
 /// Calls: mjCBody::get_userdata, mjCModel::GetWorld, mjXUtil::WriteAttr, mjXUtil::WriteAttrKey, mjXUtil::WriteAttrTxt, mjXUtil::WriteVector, mjXWriter::InsertEnd, mjXWriter::OneCamera, mjXWriter::OneFrame, mjXWriter::OneGeom, mjXWriter::OneJoint, mjXWriter::OneLight, mjXWriter::OnePlugin, mjXWriter::OneSite
 #[allow(unused_variables, non_snake_case)]
-pub fn mj_x_writer_body(self_ptr: *mut mjXWriter, elem: *mut tinyxml2__XMLElement, body: *mut mjCBody, frame: *mut mjCFrame, childclass: string_view) {
+pub fn mj_x_writer_body(self_ptr: *mut mjXWriter, elem: *mut tinyxml2__XMLElement, body: *mut mjCBody, frame: *mut mjCFrame, childclass: std__string_view) {
     todo!() // mjXWriter::Body
 }
 
@@ -187,35 +187,35 @@ pub fn mj_x_writer_one_material(self_ptr: *mut mjXWriter, elem: *mut tinyxml2__X
 /// C: mjXWriter::OneJoint (xml/xml_native_writer.h:70)
 /// Calls: mjCDef::Joint, mjCJoint::get_userdata, mjXUtil::FindValue, mjXUtil::WriteAttr, mjXUtil::WriteAttrInt, mjXUtil::WriteAttrKey, mjXUtil::WriteAttrTxt, mjXUtil::WriteVector
 #[allow(unused_variables, non_snake_case)]
-pub fn mj_x_writer_one_joint(self_ptr: *mut mjXWriter, elem: *mut tinyxml2__XMLElement, pjoint: *const mjCJoint, def: *mut mjCDef, classname: string_view) {
+pub fn mj_x_writer_one_joint(self_ptr: *mut mjXWriter, elem: *mut tinyxml2__XMLElement, pjoint: *const mjCJoint, def: *mut mjCDef, classname: std__string_view) {
     todo!() // mjXWriter::OneJoint
 }
 
 /// C: mjXWriter::OneGeom (xml/xml_native_writer.h:72)
 /// Calls: mjCDef::Geom, mjCGeom::GetVolume, mjCGeom::get_hfieldname, mjCGeom::get_material, mjCGeom::get_meshname, mjCGeom::get_userdata, mjCMesh::GetPosPtr, mjCMesh::GetQuatPtr, mjXUtil::SameVector, mjXUtil::WriteAttr, mjXUtil::WriteAttrInt, mjXUtil::WriteAttrKey, mjXUtil::WriteAttrTxt, mjXUtil::WriteVector, mjXWriter::InsertEnd, mjXWriter::OnePlugin, mjuu_copyvec, mjuu_defined, mjuu_frameaccuminv
 #[allow(unused_variables, non_snake_case)]
-pub fn mj_x_writer_one_geom(self_ptr: *mut mjXWriter, elem: *mut tinyxml2__XMLElement, pgeom: *const mjCGeom, def: *mut mjCDef, classname: string_view) {
+pub fn mj_x_writer_one_geom(self_ptr: *mut mjXWriter, elem: *mut tinyxml2__XMLElement, pgeom: *const mjCGeom, def: *mut mjCDef, classname: std__string_view) {
     todo!() // mjXWriter::OneGeom
 }
 
 /// C: mjXWriter::OneSite (xml/xml_native_writer.h:74)
 /// Calls: mjCDef::Site, mjCSite::get_material, mjCSite::get_userdata, mjXUtil::WriteAttr, mjXUtil::WriteAttrInt, mjXUtil::WriteAttrKey, mjXUtil::WriteAttrTxt, mjXUtil::WriteVector
 #[allow(unused_variables, non_snake_case)]
-pub fn mj_x_writer_one_site(self_ptr: *mut mjXWriter, elem: *mut tinyxml2__XMLElement, psite: *const mjCSite, def: *mut mjCDef, classname: string_view) {
+pub fn mj_x_writer_one_site(self_ptr: *mut mjXWriter, elem: *mut tinyxml2__XMLElement, psite: *const mjCSite, def: *mut mjCDef, classname: std__string_view) {
     todo!() // mjXWriter::OneSite
 }
 
 /// C: mjXWriter::OneCamera (xml/xml_native_writer.h:76)
 /// Calls: mjCCamera::get_targetbody, mjCCamera::get_userdata, mjCDef::Camera, mjXUtil::WriteAttr, mjXUtil::WriteAttrKey, mjXUtil::WriteAttrKeys, mjXUtil::WriteAttrTxt, mjXUtil::WriteVector
 #[allow(unused_variables, non_snake_case)]
-pub fn mj_x_writer_one_camera(self_ptr: *mut mjXWriter, elem: *mut tinyxml2__XMLElement, pcamera: *const mjCCamera, def: *mut mjCDef, classname: string_view) {
+pub fn mj_x_writer_one_camera(self_ptr: *mut mjXWriter, elem: *mut tinyxml2__XMLElement, pcamera: *const mjCCamera, def: *mut mjCDef, classname: std__string_view) {
     todo!() // mjXWriter::OneCamera
 }
 
 /// C: mjXWriter::OneLight (xml/xml_native_writer.h:78)
 /// Calls: mjCDef::Light, mjCLight::get_targetbody, mjCLight::get_texture, mjXUtil::WriteAttr, mjXUtil::WriteAttrKey, mjXUtil::WriteAttrTxt
 #[allow(unused_variables, non_snake_case)]
-pub fn mj_x_writer_one_light(self_ptr: *mut mjXWriter, elem: *mut tinyxml2__XMLElement, plight: *const mjCLight, def: *mut mjCDef, classname: string_view) {
+pub fn mj_x_writer_one_light(self_ptr: *mut mjXWriter, elem: *mut tinyxml2__XMLElement, plight: *const mjCLight, def: *mut mjCDef, classname: std__string_view) {
     todo!() // mjXWriter::OneLight
 }
 

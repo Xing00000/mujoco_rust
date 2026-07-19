@@ -1,5 +1,5 @@
 //! Port of: user/user_init.c
-//! IR hash: d2209344472ae336
+//! IR hash: adc2f24e872d94f7
 //! CODEGEN: signatures locked. Only fill todo!() bodies.
 
 use crate::types::*;
@@ -42,10 +42,10 @@ pub fn mjs_default_spec(spec: *mut mjSpec) {
         crate::engine::engine_init::mj_default_visual(
             &mut (*spec).visual as *mut _
         );
-        (*spec).memory = usize::MAX; // -1 as size_t
+        (*spec).memory = -1; // -1 as size_t
         (*spec).njmax = -1;
         (*spec).nconmax = -1;
-        (*spec).nstack = usize::MAX; // -1 as size_t
+        (*spec).nstack = -1; // -1 as size_t
 
         // user fields
         (*spec).nuser_body = -1;

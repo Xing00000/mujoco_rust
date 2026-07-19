@@ -1,5 +1,5 @@
 //! Port of: engine/engine_collision_driver.c
-//! IR hash: d2209344472ae336
+//! IR hash: adc2f24e872d94f7
 //! CODEGEN: signatures locked. Only fill todo!() bodies.
 
 use crate::types::*;
@@ -233,14 +233,14 @@ pub fn filter_body_pair(weldbody1: i32, weldparent1: i32, asleep1: i32, weldbody
 pub fn can_collide(m: *const mjModel, bf: i32) -> i32 {
     // SAFETY: caller guarantees m is a valid pointer to mjModel with valid array fields
     unsafe {
-        if (bf as usize) < (*m).nbody {
+        if (bf as usize) < (*m).nbody as usize {
             if *(*m).body_contype.add(bf as usize) != 0 || *(*m).body_conaffinity.add(bf as usize) != 0 {
                 1
             } else {
                 0
             }
         } else {
-            let f = bf as usize - (*m).nbody;
+            let f = bf as usize - (*m).nbody as usize;
             if *(*m).flex_contype.add(f) != 0 || *(*m).flex_conaffinity.add(f) != 0 {
                 1
             } else {
@@ -256,7 +256,7 @@ pub fn can_collide(m: *const mjModel, bf: i32) -> i32 {
 pub fn can_collide2(m: *const mjModel, bf1: i32, bf2: i32) -> i32 {
     // SAFETY: caller guarantees m is a valid pointer to mjModel with valid array fields
     unsafe {
-        let nbody = (*m).nbody;
+        let nbody = (*m).nbody as usize;
         let contype1: i32;
         let conaffinity1: i32;
         let contype2: i32;
@@ -425,10 +425,7 @@ pub fn filter_collision_pair(m: *const mjModel, d: *mut mjData, g1: i32, g2: i32
         }
 
         if ipair < 0 {
-            extern "C" {
-                static mut mjcb_contactfilter: Option<unsafe extern "C" fn(*const mjModel, *mut mjData, i32, i32) -> i32>;
-            }
-            if let Some(filter_fn) = mjcb_contactfilter {
+            if let Some(filter_fn) = crate::engine::engine_callback::mjcb_contactfilter {
                 if filter_fn(m, d, g1, g2) != 0 {
                     return 0;
                 }
@@ -859,136 +856,8 @@ pub fn mj_collision(m: *const mjModel, d: *mut mjData) {
 ///   3. No algebraic simplification
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
-pub fn mj_collide_obb(aabb1: *const f64, aabb2: *const f64, xpos1: *const f64, xmat1: *const f64, xpos2: *const f64, xmat2: *const f64, margin: f64, product: *mut f64, offset: *mut f64, initialize: *mut mjtBool) -> i32 {
-    const MJ_MAXVAL: f64 = 1E10;
-
-    // SAFETY: all pointers are valid arrays of sufficient size (caller contract)
-    unsafe {
-        // get infinite dimensions (planes only)
-        let inf1: [u8; 3] = [
-            (*aabb1.add(3) >= MJ_MAXVAL) as u8,
-            (*aabb1.add(4) >= MJ_MAXVAL) as u8,
-            (*aabb1.add(5) >= MJ_MAXVAL) as u8,
-        ];
-        let inf2: [u8; 3] = [
-            (*aabb2.add(3) >= MJ_MAXVAL) as u8,
-            (*aabb2.add(4) >= MJ_MAXVAL) as u8,
-            (*aabb2.add(5) >= MJ_MAXVAL) as u8,
-        ];
-
-        // if a bounding box is infinite, there must be a collision
-        if (inf1[0] != 0 && inf1[1] != 0 && inf1[2] != 0)
-            || (inf2[0] != 0 && inf2[1] != 0 && inf2[2] != 0)
-        {
-            return 1;
-        }
-
-        let aabb: [*const f64; 2] = [aabb1, aabb2];
-        let xmat: [*const f64; 2] = [xmat1, xmat2];
-        let xpos: [*const f64; 2] = [xpos1, xpos2];
-        let mut xcenter: [[f64; 3]; 2] = [[0.0; 3]; 2];
-        let mut normal: [[[f64; 3]; 3]; 2] = [[[0.0; 3]; 3]; 2];
-        let mut proj: [f64; 2] = [0.0; 2];
-        let mut radius: [f64; 2] = [0.0; 2];
-        let infinite: [u8; 2] = [
-            (inf1[0] != 0 || inf1[1] != 0 || inf1[2] != 0) as u8,
-            (inf2[0] != 0 || inf2[1] != 0 || inf2[2] != 0) as u8,
-        ];
-
-        // compute centers in local coordinates
-        if product.is_null() {
-            for i in 0..2_usize {
-                if !xmat[i].is_null() {
-                    crate::engine::engine_util_blas::mju_mul_mat_vec3(
-                        xcenter[i].as_mut_ptr(),
-                        xmat[i],
-                        aabb[i],
-                    );
-                } else {
-                    crate::engine::engine_util_blas::mju_copy3(xcenter[i].as_mut_ptr(), aabb[i]);
-                }
-
-                if !xpos[i].is_null() {
-                    crate::engine::engine_util_blas::mju_add_to3(xcenter[i].as_mut_ptr(), xpos[i]);
-                }
-            }
-        }
-
-        // compute normals in global coordinates
-        for i in 0..2_usize {
-            for j in 0..3_usize {
-                for k in 0..3_usize {
-                    if !xmat[i].is_null() {
-                        normal[i][j][k] = *xmat[i].add(3 * k + j);
-                    } else {
-                        normal[i][j][k] = if j == k { 1.0 } else { 0.0 };
-                    }
-                }
-            }
-        }
-
-        // precompute dot products
-        if !product.is_null() && !offset.is_null() && (*initialize)._data[0] != 0 {
-            for i in 0..2_usize {
-                for j in 0..2_usize {
-                    for k in 0..3_usize {
-                        for l in 0..3_usize {
-                            *product.add(18 * i + 9 * j + 3 * k + l) =
-                                crate::engine::engine_util_blas::mju_dot3(
-                                    normal[i][l].as_ptr(),
-                                    normal[j][k].as_ptr(),
-                                );
-                        }
-                        *offset.add(6 * i + 3 * j + k) = if !xpos[i].is_null() {
-                            crate::engine::engine_util_blas::mju_dot3(xpos[i], normal[j][k].as_ptr())
-                        } else {
-                            0.0
-                        };
-                    }
-                }
-            }
-            *initialize = mjtBool { _data: [0] };
-        }
-
-        // check intersections
-        for j in 0..2_usize {
-            if infinite[1 - j] != 0 {
-                continue; // skip test against an infinite body
-            }
-            for k in 0..3_usize {
-                for i in 0..2_usize {
-                    if product.is_null() {
-                        proj[i] = crate::engine::engine_util_blas::mju_dot3(
-                            xcenter[i].as_ptr(),
-                            normal[j][k].as_ptr(),
-                        );
-                        radius[i] =
-                            (*aabb[i].add(3) * crate::engine::engine_util_blas::mju_dot3(
-                                normal[i][0].as_ptr(), normal[j][k].as_ptr())).abs()
-                            + (*aabb[i].add(4) * crate::engine::engine_util_blas::mju_dot3(
-                                normal[i][1].as_ptr(), normal[j][k].as_ptr())).abs()
-                            + (*aabb[i].add(5) * crate::engine::engine_util_blas::mju_dot3(
-                                normal[i][2].as_ptr(), normal[j][k].as_ptr())).abs();
-                    } else {
-                        let adr: usize = 18 * i + 9 * j + 3 * k;
-                        proj[i] = *aabb[i].add(0) * *product.add(adr + 0)
-                            + *aabb[i].add(1) * *product.add(adr + 1)
-                            + *aabb[i].add(2) * *product.add(adr + 2)
-                            + *offset.add(6 * i + 3 * j + k);
-                        radius[i] = (*aabb[i].add(3) * *product.add(adr + 0)).abs()
-                            + (*aabb[i].add(4) * *product.add(adr + 1)).abs()
-                            + (*aabb[i].add(5) * *product.add(adr + 2)).abs();
-                    }
-                }
-
-                if radius[0] + radius[1] + margin < (proj[1] - proj[0]).abs() {
-                    return 0;
-                }
-            }
-        }
-
-        1
-    }
+pub fn mj_collide_obb(aabb1: *const f64, aabb2: *const f64, xpos1: *const f64, xmat1: *const f64, xpos2: *const f64, xmat2: *const f64, margin: f64, product: *mut f64, offset: *mut f64, initialize: *mut bool) -> i32 {
+    todo!() // mj_collideOBB
 }
 
 /// C: mj_isElemActive (engine/engine_collision_driver.h:45)

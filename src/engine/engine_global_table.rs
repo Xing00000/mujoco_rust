@@ -1,12 +1,12 @@
 //! Port of: engine/engine_global_table.h
-//! IR hash: d2209344472ae336
+//! IR hash: adc2f24e872d94f7
 //! CODEGEN: signatures locked. Only fill todo!() bodies.
 
 use crate::types::*;
 
 /// C: CaseInsensitiveEqual (engine/engine_global_table.h:32)
 #[allow(unused_variables, non_snake_case)]
-pub fn case_insensitive_equal(s1: string_view, s2: string_view) -> bool {
+pub fn case_insensitive_equal(s1: std__string_view, s2: std__string_view) -> bool {
     todo!() // CaseInsensitiveEqual
 }
 
@@ -31,7 +31,7 @@ pub fn global_table_count(self_ptr: *mut GlobalTable) -> i32 {
 /// C: GlobalTable::LockExclusively (engine/engine_global_table.h:114)
 /// Calls: GlobalTable::mutex
 #[allow(unused_variables, non_snake_case)]
-pub fn global_table_lock_exclusively(self_ptr: *mut GlobalTable) -> ReentrantWriteLock {
+pub fn global_table_lock_exclusively(self_ptr: *mut GlobalTable) -> mujoco__ReentrantWriteLock {
     todo!() // GlobalTable::LockExclusively
 }
 
@@ -52,7 +52,7 @@ pub fn global_table_get_at_slot_unsafe(self_ptr: *mut GlobalTable, slot: i32, ns
 /// C: GlobalTable::GetByKeyUnsafe (engine/engine_global_table.h:213)
 /// Calls: CaseInsensitiveEqual, GlobalTable::ObjectKey
 #[allow(unused_variables, non_snake_case)]
-pub fn global_table_get_by_key_unsafe(self_ptr: *mut GlobalTable, key: string_view, slot: *mut i32, nslot: i32) -> *const T {
+pub fn global_table_get_by_key_unsafe(self_ptr: *mut GlobalTable, key: std__string_view, slot: *mut i32, nslot: i32) -> *const T {
     todo!() // GlobalTable::GetByKeyUnsafe
 }
 
@@ -66,13 +66,13 @@ pub fn global_table_get_at_slot(self_ptr: *mut GlobalTable, slot: i32) -> *const
 /// C: GlobalTable::GetByKey (engine/engine_global_table.h:254)
 /// Calls: GlobalTable::GetByKeyUnsafe, GlobalTable::count
 #[allow(unused_variables, non_snake_case)]
-pub fn global_table_get_by_key(self_ptr: *mut GlobalTable, key: string_view, slot: *mut i32) -> *const T {
+pub fn global_table_get_by_key(self_ptr: *mut GlobalTable, key: std__string_view, slot: *mut i32) -> *const T {
     todo!() // GlobalTable::GetByKey
 }
 
 /// C: GlobalTable::mutex (engine/engine_global_table.h:265)
 #[allow(unused_variables, non_snake_case)]
-pub fn global_table_mutex(self_ptr: *mut GlobalTable) -> *mut Mutex {
+pub fn global_table_mutex(self_ptr: *mut GlobalTable) -> *mut mujoco__Mutex {
     todo!() // GlobalTable::mutex
 }
 

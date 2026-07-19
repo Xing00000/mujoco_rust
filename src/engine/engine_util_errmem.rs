@@ -1,5 +1,5 @@
 //! Port of: engine/engine_util_errmem.c
-//! IR hash: d2209344472ae336
+//! IR hash: adc2f24e872d94f7
 //! CODEGEN: signatures locked. Only fill todo!() bodies.
 
 use crate::types::*;
@@ -315,7 +315,7 @@ pub fn mju_error(msg: *const i8) {
 /// C: mju_error_v (engine/engine_util_errmem.h:75)
 /// Calls: mju_message
 #[allow(unused_variables, non_snake_case)]
-pub fn mju_error_v(msg: *const i8, args: va_list) {
+pub fn mju_error_v(msg: *const i8, args: *mut i8) {
     todo!() // mju_error_v
 }
 
@@ -387,20 +387,8 @@ pub fn mj_private_get_global_log_handler() -> mjfLogHandler {
 /// C: mju_isTopicEnabled (engine/engine_util_errmem.h:99)
 /// Calls: mju_getLogConfigPtr
 #[allow(unused_variables, non_snake_case)]
-pub fn mju_is_topic_enabled(topic: i32) -> mjtBool {
-    // SAFETY: reads topics field from log_config via mju_get_log_config_ptr
-    unsafe {
-        if topic == 0 {
-            let mut result = mjtBool { _data: [0u8; 1] };
-            result._data[0] = 1;
-            return result;
-        }
-        let cfg = mju_get_log_config_ptr();
-        let enabled = ((*cfg).topics & (1 << (topic - 1))) != 0;
-        let mut result = mjtBool { _data: [0u8; 1] };
-        result._data[0] = enabled as u8;
-        result
-    }
+pub fn mju_is_topic_enabled(topic: i32) -> bool {
+    todo!() // mju_isTopicEnabled
 }
 
 /// C: BaseName (engine/engine_util_errmem.h:102)

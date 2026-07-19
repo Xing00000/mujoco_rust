@@ -1,5 +1,5 @@
 //! Port of: engine/engine_derivative_fd.c
-//! IR hash: d2209344472ae336
+//! IR hash: adc2f24e872d94f7
 //! CODEGEN: signatures locked. Only fill todo!() bodies.
 
 use crate::types::*;
@@ -119,7 +119,7 @@ pub fn inverse_skip(m: *const mjModel, d: *mut mjData, stage: u32, skipsensor: i
 ///   3. No algebraic simplification
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
-pub fn mjd_step_fd(m: *const mjModel, d: *mut mjData, eps: f64, flg_centered: mjtBool, DyDq: *mut f64, DyDv: *mut f64, DyDa: *mut f64, DyDu: *mut f64, DsDq: *mut f64, DsDv: *mut f64, DsDa: *mut f64, DsDu: *mut f64) {
+pub fn mjd_step_fd(m: *const mjModel, d: *mut mjData, eps: f64, flg_centered: bool, DyDq: *mut f64, DyDv: *mut f64, DyDa: *mut f64, DyDu: *mut f64, DsDq: *mut f64, DsDv: *mut f64, DsDa: *mut f64, DsDu: *mut f64) {
     todo!() // mjd_stepFD
 }
 
@@ -162,7 +162,7 @@ pub fn mj_step_skip(m: *const mjModel, d: *mut mjData, skipstage: i32, skipsenso
 ///   3. No algebraic simplification
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
-pub fn mjd_transition_fd(m: *const mjModel, d: *mut mjData, eps: f64, centered: mjtBool, A: *mut f64, B: *mut f64, C: *mut f64, D: *mut f64) {
+pub fn mjd_transition_fd(m: *const mjModel, d: *mut mjData, eps: f64, centered: bool, A: *mut f64, B: *mut f64, C: *mut f64, D: *mut f64) {
     todo!() // mjd_transitionFD
 }
 
@@ -174,7 +174,7 @@ pub fn mjd_transition_fd(m: *const mjModel, d: *mut mjData, eps: f64, centered: 
 ///   3. No algebraic simplification
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
-pub fn mjd_inverse_fd(m: *const mjModel, d: *mut mjData, eps: f64, flg_actuation: mjtBool, DfDq: *mut f64, DfDv: *mut f64, DfDa: *mut f64, DsDq: *mut f64, DsDv: *mut f64, DsDa: *mut f64, DmDq: *mut f64) {
+pub fn mjd_inverse_fd(m: *const mjModel, d: *mut mjData, eps: f64, flg_actuation: bool, DfDq: *mut f64, DfDv: *mut f64, DfDa: *mut f64, DsDq: *mut f64, DsDv: *mut f64, DsDa: *mut f64, DmDq: *mut f64) {
     todo!() // mjd_inverseFD
 }
 

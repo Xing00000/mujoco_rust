@@ -1,5 +1,5 @@
 //! Port of: engine/engine_derivative.c
-//! IR hash: d2209344472ae336
+//! IR hash: adc2f24e872d94f7
 //! CODEGEN: signatures locked. Only fill todo!() bodies.
 
 use crate::types::*;
@@ -1125,7 +1125,7 @@ pub fn mjd_flex_bend_mul(m: *const mjModel, d: *mut mjData, res: *mut f64, vec: 
             if *(*m).flex_interp.add(f as usize) != 0 {
                 continue;
             }
-            if (*(*m).flex_rigid.add(f as usize))._data[0] != 0 {
+            if *(*m).flex_rigid.add(f as usize) {
                 continue;
             }
             if *(*m).flex_dim.add(f as usize) != 2 {

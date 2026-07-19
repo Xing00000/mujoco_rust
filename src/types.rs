@@ -28,11 +28,6 @@ pub struct DynArray_char__20 { _opaque: [u8; 0] }
 #[derive(Clone, Copy)]
 pub struct DynArray_const_char____10_Ref { _opaque: [u8; 0] }
 
-/// Opaque C struct: ErrorMessage (unsized, pointer-only)
-#[repr(C)]
-#[derive(Clone, Copy)]
-pub struct ErrorMessage { _opaque: [u8; 0] }
-
 /// Opaque C struct: Face (unsized, pointer-only)
 #[repr(C)]
 #[derive(Clone, Copy)]
@@ -42,26 +37,6 @@ pub struct Face { _opaque: [u8; 0] }
 #[repr(C)]
 #[derive(Clone, Copy)]
 pub struct GLADloadproc { _opaque: [u8; 0] }
-
-/// Opaque C struct: GLchar (unsized, pointer-only)
-#[repr(C)]
-#[derive(Clone, Copy)]
-pub struct GLchar { _opaque: [u8; 0] }
-
-/// Opaque C struct: GLenum (unsized, pointer-only)
-#[repr(C)]
-#[derive(Clone, Copy)]
-pub struct GLenum { _opaque: [u8; 0] }
-
-/// Opaque C struct: GLsizei (unsized, pointer-only)
-#[repr(C)]
-#[derive(Clone, Copy)]
-pub struct GLsizei { _opaque: [u8; 0] }
-
-/// Opaque C struct: GLuint (unsized, pointer-only)
-#[repr(C)]
-#[derive(Clone, Copy)]
-pub struct GLuint { _opaque: [u8; 0] }
 
 /// Opaque C struct: Matrix (unsized, pointer-only)
 #[repr(C)]
@@ -82,16 +57,6 @@ pub struct Mutex { _opaque: [u8; 0] }
 #[repr(C)]
 #[derive(Clone, Copy)]
 pub struct Polytope { _opaque: [u8; 0] }
-
-/// Opaque C struct: ResourcePtr (unsized, pointer-only)
-#[repr(C)]
-#[derive(Clone, Copy)]
-pub struct ResourcePtr { _opaque: [u8; 0] }
-
-/// Opaque C struct: RewriteMap (unsized, pointer-only)
-#[repr(C)]
-#[derive(Clone, Copy)]
-pub struct RewriteMap { _opaque: [u8; 0] }
 
 /// Opaque C struct: T (unsized, pointer-only)
 #[repr(C)]
@@ -122,6 +87,49 @@ pub struct Triangle { _opaque: [u8; 0] }
 #[repr(C)]
 #[derive(Clone, Copy)]
 pub struct Vertex { _opaque: [u8; 0] }
+
+/// Opaque C struct: XMLElement_Ref (unsized, pointer-only)
+#[repr(C)]
+#[derive(Clone, Copy)]
+pub struct XMLElement_Ref { _opaque: [u8; 0] }
+
+/// Opaque C struct: anonymous_namespace___FilePath (unsized, pointer-only)
+#[repr(C)]
+#[derive(Clone, Copy)]
+pub struct anonymous_namespace___FilePath { _opaque: [u8; 0] }
+pub type FilePath = anonymous_namespace___FilePath;
+
+/// Opaque C struct: anonymous_namespace___GlobalModel (unsized, pointer-only)
+#[repr(C)]
+#[derive(Clone, Copy)]
+pub struct anonymous_namespace___GlobalModel { _opaque: [u8; 0] }
+pub type GlobalModel = anonymous_namespace___GlobalModel;
+
+/// Opaque C struct: anonymous_namespace___PNGImage (unsized, pointer-only)
+#[repr(C)]
+#[derive(Clone, Copy)]
+pub struct anonymous_namespace___PNGImage { _opaque: [u8; 0] }
+pub type PNGImage = anonymous_namespace___PNGImage;
+
+/// Opaque C struct: anonymous_namespace___RewriteMap (unsized, pointer-only)
+#[repr(C)]
+#[derive(Clone, Copy)]
+pub struct anonymous_namespace___RewriteMap { _opaque: [u8; 0] }
+
+/// Opaque C struct: anonymous_namespace___XMLDocument (unsized, pointer-only)
+#[repr(C)]
+#[derive(Clone, Copy)]
+pub struct anonymous_namespace___XMLDocument { _opaque: [u8; 0] }
+
+/// Opaque C struct: anonymous_namespace___XMLElement (unsized, pointer-only)
+#[repr(C)]
+#[derive(Clone, Copy)]
+pub struct anonymous_namespace___XMLElement { _opaque: [u8; 0] }
+
+/// Opaque C struct: anonymous_namespace___string (unsized, pointer-only)
+#[repr(C)]
+#[derive(Clone, Copy)]
+pub struct anonymous_namespace___string { _opaque: [u8; 0] }
 
 /// Opaque C struct: bool_1 (unsized, pointer-only)
 #[repr(C)]
@@ -158,30 +166,25 @@ pub struct double_4 { _opaque: [u8; 0] }
 #[derive(Clone, Copy)]
 pub struct float_4 { _opaque: [u8; 0] }
 
-/// Sized opaque C struct: fpos_t (8 bytes, align 8)
-#[repr(C, align(8))]
-#[derive(Clone, Copy)]
-pub struct fpos_t { pub _data: [u8; 8] }
-
 /// Opaque C struct: int_3 (unsized, pointer-only)
 #[repr(C)]
 #[derive(Clone, Copy)]
 pub struct int_3 { _opaque: [u8; 0] }
 
-/// Opaque C struct: iterator (unsized, pointer-only)
-#[repr(C)]
+/// Sized opaque C struct: libcpp_mutex_t (64 bytes, align 8)
+#[repr(C, align(8))]
 #[derive(Clone, Copy)]
-pub struct iterator { _opaque: [u8; 0] }
+pub struct libcpp_mutex_t { pub _data: [u8; 64] }
 
 /// Opaque C struct: locale_t (unsized, pointer-only)
 #[repr(C)]
 #[derive(Clone, Copy)]
 pub struct locale_t { _opaque: [u8; 0] }
 
-/// Sized opaque C struct: mjByteVec (24 bytes, align 8)
-#[repr(C, align(8))]
+/// Opaque C struct: mjByteVec (unsized, pointer-only)
+#[repr(C)]
 #[derive(Clone, Copy)]
-pub struct mjByteVec { pub _data: [u8; 24] }
+pub struct mjByteVec { _opaque: [u8; 0] }
 
 /// Opaque C struct: mjCCDConfig (unsized, pointer-only)
 #[repr(C)]
@@ -363,11 +366,6 @@ pub struct mjsAuthored { pub _data: [u8; 72] }
 #[derive(Clone, Copy)]
 pub struct mjsExclude { pub _data: [u8; 32] }
 
-/// Sized opaque C struct: mjtBool (1 bytes, align 8)
-#[repr(C, align(8))]
-#[derive(Clone, Copy)]
-pub struct mjtBool { pub _data: [u8; 1] }
-
 /// Opaque C struct: mjtCompShape_3 (unsized, pointer-only)
 #[repr(C)]
 #[derive(Clone, Copy)]
@@ -403,10 +401,26 @@ pub struct mjuiThemeColor { pub _data: [u8; 336] }
 #[derive(Clone, Copy)]
 pub struct mjuiThemeSpacing { pub _data: [u8; 52] }
 
-/// Sized opaque C struct: mujoco__user__FilePath (24 bytes, align 8)
-#[repr(C, align(8))]
+/// Opaque C struct: mujoco__GlobalTable__ErrorMessage (unsized, pointer-only)
+#[repr(C)]
 #[derive(Clone, Copy)]
-pub struct mujoco__user__FilePath { pub _data: [u8; 24] }
+pub struct mujoco__GlobalTable__ErrorMessage { _opaque: [u8; 0] }
+
+/// Opaque C struct: mujoco__Mutex (unsized, pointer-only)
+#[repr(C)]
+#[derive(Clone, Copy)]
+pub struct mujoco__Mutex { _opaque: [u8; 0] }
+
+/// Opaque C struct: mujoco___anonymous_namespace___Resolver (unsized, pointer-only)
+#[repr(C)]
+#[derive(Clone, Copy)]
+pub struct mujoco___anonymous_namespace___Resolver { _opaque: [u8; 0] }
+pub type Resolver = mujoco___anonymous_namespace___Resolver;
+
+/// Opaque C struct: mujoco__user__VFS__ResourcePtr (unsized, pointer-only)
+#[repr(C)]
+#[derive(Clone, Copy)]
+pub struct mujoco__user__VFS__ResourcePtr { _opaque: [u8; 0] }
 
 /// Opaque C struct: mz_zip_archive (unsized, pointer-only)
 #[repr(C)]
@@ -423,40 +437,20 @@ pub struct pcg32_state { _opaque: [u8; 0] }
 #[derive(Clone, Copy)]
 pub struct std__atomic_int { _opaque: [u8; 0] }
 
-/// Opaque C struct: std__byte (unsized, pointer-only)
-#[repr(C)]
-#[derive(Clone, Copy)]
-pub struct std__byte { _opaque: [u8; 0] }
-
 /// Opaque C struct: std__condition_variable (unsized, pointer-only)
 #[repr(C)]
 #[derive(Clone, Copy)]
 pub struct std__condition_variable { _opaque: [u8; 0] }
-
-/// Opaque C struct: std__exception_ptr (unsized, pointer-only)
-#[repr(C)]
-#[derive(Clone, Copy)]
-pub struct std__exception_ptr { _opaque: [u8; 0] }
 
 /// Opaque C struct: std__map_std__string__std__vector_mjsMesh_Ref (unsized, pointer-only)
 #[repr(C)]
 #[derive(Clone, Copy)]
 pub struct std__map_std__string__std__vector_mjsMesh_Ref { _opaque: [u8; 0] }
 
-/// Sized opaque C struct: std__mutex (64 bytes, align 8)
-#[repr(C, align(8))]
-#[derive(Clone, Copy)]
-pub struct std__mutex { pub _data: [u8; 64] }
-
 /// Opaque C struct: std__queue_std__function_void (unsized, pointer-only)
 #[repr(C)]
 #[derive(Clone, Copy)]
 pub struct std__queue_std__function_void { _opaque: [u8; 0] }
-
-/// Sized opaque C struct: std__size_t (8 bytes, align 8)
-#[repr(C, align(8))]
-#[derive(Clone, Copy)]
-pub struct std__size_t { pub _data: [u8; 8] }
 
 /// Sized opaque C struct: std__string (24 bytes, align 8)
 #[repr(C, align(8))]
@@ -472,11 +466,6 @@ pub struct std__string_view { _opaque: [u8; 0] }
 #[repr(C)]
 #[derive(Clone, Copy)]
 pub struct std__stringstream { _opaque: [u8; 0] }
-
-/// Opaque C struct: std__uint64_t (unsized, pointer-only)
-#[repr(C)]
-#[derive(Clone, Copy)]
-pub struct std__uint64_t { _opaque: [u8; 0] }
 
 /// Opaque C struct: std__unordered_map_mjtCompKind__std__vector_mjCDef (unsized, pointer-only)
 #[repr(C)]
@@ -508,20 +497,10 @@ pub struct std__vector_std__thread { _opaque: [u8; 0] }
 #[derive(Clone, Copy)]
 pub struct std__vector_std__uint8_t { _opaque: [u8; 0] }
 
-/// Opaque C struct: string (unsized, pointer-only)
-#[repr(C)]
-#[derive(Clone, Copy)]
-pub struct string { _opaque: [u8; 0] }
-
 /// Sized opaque C struct: string_type (24 bytes, align 8)
 #[repr(C, align(8))]
 #[derive(Clone, Copy)]
 pub struct string_type { pub _data: [u8; 24] }
-
-/// Opaque C struct: string_view (unsized, pointer-only)
-#[repr(C)]
-#[derive(Clone, Copy)]
-pub struct string_view { _opaque: [u8; 0] }
 
 /// Opaque C struct: struct___sFILEX (unsized, pointer-only)
 #[repr(C)]
@@ -568,11 +547,6 @@ pub struct struct__unnamed_at__Users_xing_Desktop_projects_c2rust_bitexact_proje
 #[derive(Clone, Copy)]
 pub struct struct_mjpResourceProvider { _opaque: [u8; 0] }
 
-/// Opaque C struct: tinyxml2__XMLElement (unsized, pointer-only)
-#[repr(C)]
-#[derive(Clone, Copy)]
-pub struct tinyxml2__XMLElement { _opaque: [u8; 0] }
-
 /// Opaque C struct: type_parameter_0_0 (unsized, pointer-only)
 #[repr(C)]
 #[derive(Clone, Copy)]
@@ -588,21 +562,15 @@ pub struct union__unnamed_at__Users_xing_Desktop_projects_c2rust_bitexact_projec
 #[derive(Clone, Copy)]
 pub struct unsigned_char_64 { _opaque: [u8; 0] }
 
-/// Opaque C struct: va_list (unsized, pointer-only)
-#[repr(C)]
-#[derive(Clone, Copy)]
-pub struct va_list { _opaque: [u8; 0] }
-
 /// Opaque C struct: void_____T____const_char (unsized, pointer-only)
 #[repr(C)]
 #[derive(Clone, Copy)]
 pub struct void_____T____const_char { _opaque: [u8; 0] }
 
-/// C enum: ElementClosingType
-pub type ElementClosingType = u32;
-pub const ElementClosingType_OPEN: ElementClosingType = 0;
-pub const ElementClosingType_CLOSED: ElementClosingType = 1;
-pub const ElementClosingType_CLOSING: ElementClosingType = 2;
+/// Opaque C struct: xlocale (unsized, pointer-only)
+#[repr(C)]
+#[derive(Clone, Copy)]
+pub struct xlocale { _opaque: [u8; 0] }
 
 /// C enum: LodePNGColorType
 pub type LodePNGColorType = u32;
@@ -612,46 +580,6 @@ pub const LodePNGColorType_LCT_PALETTE: LodePNGColorType = 3;
 pub const LodePNGColorType_LCT_GREY_ALPHA: LodePNGColorType = 4;
 pub const LodePNGColorType_LCT_RGBA: LodePNGColorType = 6;
 pub const LodePNGColorType_LCT_MAX_OCTET_VALUE: LodePNGColorType = 255;
-
-/// C enum: Status
-pub type Status = i32;
-pub const Status_kSuccess: Status = 0;
-pub const Status_kFailedToLoad: Status = -1;
-pub const Status_kFailedToRead: Status = -1;
-pub const Status_kNotFound: Status = -1;
-pub const Status_kRepeatedName: Status = 2;
-pub const Status_kInvalidVfs: Status = -1;
-pub const Status_kInvalidResource: Status = -1;
-pub const Status_kInvalidResourceProvider: Status = -1;
-
-/// C enum: Whitespace
-pub type Whitespace = u32;
-pub const Whitespace_PRESERVE_WHITESPACE: Whitespace = 0;
-pub const Whitespace_COLLAPSE_WHITESPACE: Whitespace = 1;
-pub const Whitespace_PEDANTIC_WHITESPACE: Whitespace = 2;
-
-/// C enum: XMLError
-pub type XMLError = u32;
-pub const XMLError_XML_SUCCESS: XMLError = 0;
-pub const XMLError_XML_NO_ATTRIBUTE: XMLError = 1;
-pub const XMLError_XML_WRONG_ATTRIBUTE_TYPE: XMLError = 2;
-pub const XMLError_XML_ERROR_FILE_NOT_FOUND: XMLError = 3;
-pub const XMLError_XML_ERROR_FILE_COULD_NOT_BE_OPENED: XMLError = 4;
-pub const XMLError_XML_ERROR_FILE_READ_ERROR: XMLError = 5;
-pub const XMLError_XML_ERROR_PARSING_ELEMENT: XMLError = 6;
-pub const XMLError_XML_ERROR_PARSING_ATTRIBUTE: XMLError = 7;
-pub const XMLError_XML_ERROR_PARSING_TEXT: XMLError = 8;
-pub const XMLError_XML_ERROR_PARSING_CDATA: XMLError = 9;
-pub const XMLError_XML_ERROR_PARSING_COMMENT: XMLError = 10;
-pub const XMLError_XML_ERROR_PARSING_DECLARATION: XMLError = 11;
-pub const XMLError_XML_ERROR_PARSING_UNKNOWN: XMLError = 12;
-pub const XMLError_XML_ERROR_EMPTY_DOCUMENT: XMLError = 13;
-pub const XMLError_XML_ERROR_MISMATCHED_ELEMENT: XMLError = 14;
-pub const XMLError_XML_ERROR_PARSING: XMLError = 15;
-pub const XMLError_XML_CAN_NOT_CONVERT_TEXT: XMLError = 16;
-pub const XMLError_XML_NO_TEXT_NODE: XMLError = 17;
-pub const XMLError_XML_ELEMENT_DEPTH_EXCEEDED: XMLError = 18;
-pub const XMLError_XML_ERROR_COUNT: XMLError = 19;
 
 /// C enum: mjtBias
 pub type mjtBias = u32;
@@ -951,6 +879,55 @@ pub const mjtWrap_mjWRAP_SITE: mjtWrap = 3;
 pub const mjtWrap_mjWRAP_SPHERE: mjtWrap = 4;
 pub const mjtWrap_mjWRAP_CYLINDER: mjtWrap = 5;
 
+/// C enum: mujoco::user::VFS::Status
+pub type mujoco_user_VFS_Status = i32;
+pub const mujoco_user_VFS_Status_kSuccess: mujoco_user_VFS_Status = 0;
+pub const mujoco_user_VFS_Status_kFailedToLoad: mujoco_user_VFS_Status = -1;
+pub const mujoco_user_VFS_Status_kFailedToRead: mujoco_user_VFS_Status = -1;
+pub const mujoco_user_VFS_Status_kNotFound: mujoco_user_VFS_Status = -1;
+pub const mujoco_user_VFS_Status_kRepeatedName: mujoco_user_VFS_Status = 2;
+pub const mujoco_user_VFS_Status_kInvalidVfs: mujoco_user_VFS_Status = -1;
+pub const mujoco_user_VFS_Status_kInvalidResource: mujoco_user_VFS_Status = -1;
+pub const mujoco_user_VFS_Status_kInvalidResourceProvider: mujoco_user_VFS_Status = -1;
+
+/// C enum: std::byte
+pub type std_byte = u8;
+
+/// C enum: tinyxml2::Whitespace
+pub type tinyxml2_Whitespace = u32;
+pub const tinyxml2_Whitespace_PRESERVE_WHITESPACE: tinyxml2_Whitespace = 0;
+pub const tinyxml2_Whitespace_COLLAPSE_WHITESPACE: tinyxml2_Whitespace = 1;
+pub const tinyxml2_Whitespace_PEDANTIC_WHITESPACE: tinyxml2_Whitespace = 2;
+
+/// C enum: tinyxml2::XMLElement::ElementClosingType
+pub type tinyxml2_XMLElement_ElementClosingType = u32;
+pub const tinyxml2_XMLElement_ElementClosingType_OPEN: tinyxml2_XMLElement_ElementClosingType = 0;
+pub const tinyxml2_XMLElement_ElementClosingType_CLOSED: tinyxml2_XMLElement_ElementClosingType = 1;
+pub const tinyxml2_XMLElement_ElementClosingType_CLOSING: tinyxml2_XMLElement_ElementClosingType = 2;
+
+/// C enum: tinyxml2::XMLError
+pub type tinyxml2_XMLError = u32;
+pub const tinyxml2_XMLError_XML_SUCCESS: tinyxml2_XMLError = 0;
+pub const tinyxml2_XMLError_XML_NO_ATTRIBUTE: tinyxml2_XMLError = 1;
+pub const tinyxml2_XMLError_XML_WRONG_ATTRIBUTE_TYPE: tinyxml2_XMLError = 2;
+pub const tinyxml2_XMLError_XML_ERROR_FILE_NOT_FOUND: tinyxml2_XMLError = 3;
+pub const tinyxml2_XMLError_XML_ERROR_FILE_COULD_NOT_BE_OPENED: tinyxml2_XMLError = 4;
+pub const tinyxml2_XMLError_XML_ERROR_FILE_READ_ERROR: tinyxml2_XMLError = 5;
+pub const tinyxml2_XMLError_XML_ERROR_PARSING_ELEMENT: tinyxml2_XMLError = 6;
+pub const tinyxml2_XMLError_XML_ERROR_PARSING_ATTRIBUTE: tinyxml2_XMLError = 7;
+pub const tinyxml2_XMLError_XML_ERROR_PARSING_TEXT: tinyxml2_XMLError = 8;
+pub const tinyxml2_XMLError_XML_ERROR_PARSING_CDATA: tinyxml2_XMLError = 9;
+pub const tinyxml2_XMLError_XML_ERROR_PARSING_COMMENT: tinyxml2_XMLError = 10;
+pub const tinyxml2_XMLError_XML_ERROR_PARSING_DECLARATION: tinyxml2_XMLError = 11;
+pub const tinyxml2_XMLError_XML_ERROR_PARSING_UNKNOWN: tinyxml2_XMLError = 12;
+pub const tinyxml2_XMLError_XML_ERROR_EMPTY_DOCUMENT: tinyxml2_XMLError = 13;
+pub const tinyxml2_XMLError_XML_ERROR_MISMATCHED_ELEMENT: tinyxml2_XMLError = 14;
+pub const tinyxml2_XMLError_XML_ERROR_PARSING: tinyxml2_XMLError = 15;
+pub const tinyxml2_XMLError_XML_CAN_NOT_CONVERT_TEXT: tinyxml2_XMLError = 16;
+pub const tinyxml2_XMLError_XML_NO_TEXT_NODE: tinyxml2_XMLError = 17;
+pub const tinyxml2_XMLError_XML_ELEMENT_DEPTH_EXCEEDED: tinyxml2_XMLError = 18;
+pub const tinyxml2_XMLError_XML_ERROR_COUNT: tinyxml2_XMLError = 19;
+
 /// C struct: BufferProvider (120 bytes, align 8)
 #[repr(C, align(8))]
 #[derive(Clone, Copy)]
@@ -965,7 +942,7 @@ pub struct BufferProvider {
     pub data: *mut (),
     pub path_: mujoco__user__FilePath,
     pub contents_: [u8; 24],
-    pub hash_: [u8; 8],
+    pub hash_: u64,
 }
 const _: () = assert!(std::mem::size_of::<BufferProvider>() == 120);
 
@@ -995,26 +972,9 @@ pub struct FILE {
     pub _lb: struct___sbuf,
     pub _blksize: i32,
     pub _pad_2: [u8; 4],
-    pub _offset: fpos_t,
+    pub _offset: i64,
 }
 const _: () = assert!(std::mem::size_of::<FILE>() == 152);
-
-/// C struct: FilePath (24 bytes, align 8)
-#[repr(C, align(8))]
-#[derive(Clone, Copy)]
-pub struct FilePath {
-    pub path_: std__string,
-}
-const _: () = assert!(std::mem::size_of::<FilePath>() == 24);
-
-/// C struct: GlobalModel (16 bytes, align 8)
-#[repr(C, align(8))]
-#[derive(Clone, Copy)]
-pub struct GlobalModel {
-    pub mutex_: *mut std__mutex,
-    pub spec_: *mut mjSpec,
-}
-const _: () = assert!(std::mem::size_of::<GlobalModel>() == 16);
 
 /// C struct: GlobalTable (2560 bytes, align 256)
 #[repr(C, align(256))]
@@ -1034,7 +994,7 @@ pub struct LocaleOverride {
 }
 const _: () = assert!(std::mem::size_of::<LocaleOverride>() == 8);
 
-/// C struct: MemPool (8 bytes, align 8)
+/// C struct: tinyxml2::MemPool (8 bytes, align 8)
 #[repr(C, align(8))]
 #[derive(Clone, Copy)]
 pub struct MemPool {
@@ -1085,54 +1045,17 @@ pub struct OctreeTask {
 }
 const _: () = assert!(std::mem::size_of::<OctreeTask>() == 40);
 
-/// C struct: PNGImage (40 bytes, align 8)
-#[repr(C, align(8))]
-#[derive(Clone, Copy)]
-pub struct PNGImage {
-    pub width_: i32,
-    pub height_: i32,
-    pub is_srgb_: bool,
-    pub _pad_0: [u8; 3],
-    pub color_type_: [u8; 4],
-    pub data_: mjByteVec,
-}
-const _: () = assert!(std::mem::size_of::<PNGImage>() == 40);
-
 /// C struct: Reader (40 bytes, align 8)
 #[repr(C, align(8))]
 #[derive(Clone, Copy)]
 pub struct Reader {
-    pub xml_node_: *mut XMLElement,
+    pub xml_node_: [u8; 8],
     pub elem_: *const (),
     pub text_: std__string,
 }
 const _: () = assert!(std::mem::size_of::<Reader>() == 40);
 
-/// C struct: ReentrantWriteLock (8 bytes, align 8)
-#[repr(C, align(8))]
-#[derive(Clone, Copy)]
-pub struct ReentrantWriteLock {
-    pub mutex_: *mut Mutex,
-}
-const _: () = assert!(std::mem::size_of::<ReentrantWriteLock>() == 8);
-
-/// C struct: Resolver (96 bytes, align 8)
-#[repr(C, align(8))]
-#[derive(Clone, Copy)]
-pub struct Resolver {
-    pub mode: [u8; 8],
-    pub parent: *mut mjSpec,
-    pub child: *const mjSpec,
-    pub errs: *const (),
-    pub _pad_0: [u8; 16],
-    pub warnings: *const (),
-    pub _pad_1: [u8; 16],
-    pub ops: *const (),
-    pub _pad_2: [u8; 16],
-}
-const _: () = assert!(std::mem::size_of::<Resolver>() == 96);
-
-/// C struct: StrPair (24 bytes, align 8)
+/// C struct: tinyxml2::StrPair (24 bytes, align 8)
 #[repr(C, align(8))]
 #[derive(Clone, Copy)]
 pub struct StrPair {
@@ -1152,7 +1075,7 @@ pub struct ThreadPool {
     pub cv_in_: [u8; 48],
     pub cv_ext_: [u8; 48],
     pub queue_: [u8; 48],
-    pub ctr_: [u8; 8],
+    pub ctr_: u64,
 }
 const _: () = assert!(std::mem::size_of::<ThreadPool>() == 240);
 
@@ -1172,24 +1095,7 @@ pub struct ThreadPoolContext {
 }
 const _: () = assert!(std::mem::size_of::<ThreadPoolContext>() == 128);
 
-/// C struct: VFS (792 bytes, align 8)
-#[repr(C, align(8))]
-#[derive(Clone, Copy)]
-pub struct VFS {
-    pub wrapped_vfs_: mjVFS,
-    pub mutex_: std__mutex,
-    pub open_resources_: *const (),
-    pub _pad_0: [u8; 32],
-    pub mounts_: *const (),
-    pub _pad_1: [u8; 32],
-    pub default_mount_: mjResource,
-    pub default_provider_: mjpResourceProvider,
-    pub destructor_: *const (),
-    pub _pad_2: [u8; 24],
-}
-const _: () = assert!(std::mem::size_of::<VFS>() == 792);
-
-/// C struct: XMLAttribute (80 bytes, align 8)
+/// C struct: tinyxml2::XMLAttribute (80 bytes, align 8)
 #[repr(C, align(8))]
 #[derive(Clone, Copy)]
 pub struct XMLAttribute {
@@ -1203,7 +1109,7 @@ pub struct XMLAttribute {
 }
 const _: () = assert!(std::mem::size_of::<XMLAttribute>() == 80);
 
-/// C struct: XMLDocument (880 bytes, align 8)
+/// C struct: tinyxml2::XMLDocument (880 bytes, align 8)
 #[repr(C, align(8))]
 #[derive(Clone, Copy)]
 pub struct XMLDocument {
@@ -1243,7 +1149,7 @@ pub struct XMLDocument {
 }
 const _: () = assert!(std::mem::size_of::<XMLDocument>() == 880);
 
-/// C struct: XMLElement (120 bytes, align 8)
+/// C struct: tinyxml2::XMLElement (120 bytes, align 8)
 #[repr(C, align(8))]
 #[derive(Clone, Copy)]
 pub struct XMLElement {
@@ -1264,7 +1170,7 @@ pub struct XMLElement {
 }
 const _: () = assert!(std::mem::size_of::<XMLElement>() == 120);
 
-/// C struct: XMLNode (104 bytes, align 8)
+/// C struct: tinyxml2::XMLNode (104 bytes, align 8)
 #[repr(C, align(8))]
 #[derive(Clone, Copy)]
 pub struct XMLNode {
@@ -1312,14 +1218,6 @@ pub struct ccd_vec3_t {
     pub v: [u8; 24],
 }
 const _: () = assert!(std::mem::size_of::<ccd_vec3_t>() == 24);
-
-/// C struct: fs::path (24 bytes, align 8)
-#[repr(C, align(8))]
-#[derive(Clone, Copy)]
-pub struct fs__path {
-    pub __pn_: string_type,
-}
-const _: () = assert!(std::mem::size_of::<fs__path>() == 24);
 
 /// C struct: mjCActuator (1688 bytes, align 8)
 #[repr(C, align(8))]
@@ -1394,9 +1292,9 @@ const _: () = assert!(std::mem::size_of::<mjCActuator>() == 1688);
 pub struct mjCAsset {
     pub id_: std__string,
     pub timestamp_: std__string,
-    pub insert_num_: std__size_t,
-    pub access_count_: std__size_t,
-    pub size_: std__size_t,
+    pub insert_num_: u64,
+    pub access_count_: u64,
+    pub size_: u64,
     pub data_: *const (),
     pub _pad_0: [u8; 8],
     pub references_: *const (),
@@ -1588,9 +1486,9 @@ const _: () = assert!(std::mem::size_of::<mjCCDObj>() == 376);
 #[derive(Clone, Copy)]
 pub struct mjCCache {
     pub mutex_: std__mutex,
-    pub insert_num_: std__size_t,
-    pub size_: std__size_t,
-    pub capacity_: std__size_t,
+    pub insert_num_: u64,
+    pub size_: u64,
+    pub capacity_: u64,
     pub lookup_: *const (),
     pub _pad_0: [u8; 32],
     pub entries_: *const (),
@@ -2308,80 +2206,80 @@ pub struct mjCModel {
     pub suffix: std__string,
     pub compiled: bool,
     pub _pad_1: [u8; 7],
-    pub nbody: usize,
-    pub njnt: usize,
-    pub ngeom: usize,
-    pub nsite: usize,
-    pub ncam: usize,
-    pub nlight: usize,
-    pub nflex: usize,
-    pub nmesh: usize,
-    pub nskin: usize,
-    pub nhfield: usize,
-    pub ntex: usize,
-    pub nmat: usize,
-    pub npair: usize,
-    pub nexclude: usize,
-    pub neq: usize,
-    pub ntendon: usize,
-    pub nJten: usize,
-    pub nsensor: usize,
-    pub nnumeric: usize,
-    pub ntext: usize,
-    pub ntuple: usize,
-    pub nmocap: usize,
-    pub nplugin: usize,
-    pub nq: usize,
-    pub nv: usize,
-    pub nu: usize,
-    pub na: usize,
-    pub ntree: usize,
-    pub nbvh: usize,
-    pub nbvhstatic: usize,
-    pub nbvhdynamic: usize,
-    pub noct: usize,
-    pub nflexnode: usize,
-    pub nflexvert: usize,
-    pub nflexedge: usize,
-    pub nflexelem: usize,
-    pub nflexelemdata: usize,
-    pub nflexstiffness: usize,
-    pub nflexbending: usize,
-    pub nflexelemedge: usize,
-    pub nflexshelldata: usize,
-    pub nflexevpair: usize,
-    pub nflextexcoord: usize,
-    pub nJfe: usize,
-    pub nJfv: usize,
-    pub nmeshvert: usize,
-    pub nmeshnormal: usize,
-    pub nmeshtexcoord: usize,
-    pub nmeshface: usize,
-    pub nmeshpoly: usize,
-    pub nmeshgraph: usize,
-    pub nmeshpolyvert: usize,
-    pub nmeshpolymap: usize,
-    pub nskinvert: usize,
-    pub nskintexvert: usize,
-    pub nskinface: usize,
-    pub nskinbone: usize,
-    pub nskinbonevert: usize,
-    pub nhfielddata: usize,
-    pub ntexdata: usize,
-    pub nwrap: usize,
-    pub nsensordata: usize,
-    pub nhistory: usize,
-    pub nnumericdata: usize,
-    pub ntextdata: usize,
-    pub ntupledata: usize,
-    pub npluginattr: usize,
-    pub nnames: usize,
-    pub npaths: usize,
-    pub nM: usize,
-    pub nB: usize,
-    pub nC: usize,
-    pub nD: usize,
-    pub nJmom: usize,
+    pub nbody: i64,
+    pub njnt: i64,
+    pub ngeom: i64,
+    pub nsite: i64,
+    pub ncam: i64,
+    pub nlight: i64,
+    pub nflex: i64,
+    pub nmesh: i64,
+    pub nskin: i64,
+    pub nhfield: i64,
+    pub ntex: i64,
+    pub nmat: i64,
+    pub npair: i64,
+    pub nexclude: i64,
+    pub neq: i64,
+    pub ntendon: i64,
+    pub nJten: i64,
+    pub nsensor: i64,
+    pub nnumeric: i64,
+    pub ntext: i64,
+    pub ntuple: i64,
+    pub nmocap: i64,
+    pub nplugin: i64,
+    pub nq: i64,
+    pub nv: i64,
+    pub nu: i64,
+    pub na: i64,
+    pub ntree: i64,
+    pub nbvh: i64,
+    pub nbvhstatic: i64,
+    pub nbvhdynamic: i64,
+    pub noct: i64,
+    pub nflexnode: i64,
+    pub nflexvert: i64,
+    pub nflexedge: i64,
+    pub nflexelem: i64,
+    pub nflexelemdata: i64,
+    pub nflexstiffness: i64,
+    pub nflexbending: i64,
+    pub nflexelemedge: i64,
+    pub nflexshelldata: i64,
+    pub nflexevpair: i64,
+    pub nflextexcoord: i64,
+    pub nJfe: i64,
+    pub nJfv: i64,
+    pub nmeshvert: i64,
+    pub nmeshnormal: i64,
+    pub nmeshtexcoord: i64,
+    pub nmeshface: i64,
+    pub nmeshpoly: i64,
+    pub nmeshgraph: i64,
+    pub nmeshpolyvert: i64,
+    pub nmeshpolymap: i64,
+    pub nskinvert: i64,
+    pub nskintexvert: i64,
+    pub nskinface: i64,
+    pub nskinbone: i64,
+    pub nskinbonevert: i64,
+    pub nhfielddata: i64,
+    pub ntexdata: i64,
+    pub nwrap: i64,
+    pub nsensordata: i64,
+    pub nhistory: i64,
+    pub nnumericdata: i64,
+    pub ntextdata: i64,
+    pub ntupledata: i64,
+    pub npluginattr: i64,
+    pub nnames: i64,
+    pub npaths: i64,
+    pub nM: i64,
+    pub nB: i64,
+    pub nC: i64,
+    pub nD: i64,
+    pub nJmom: i64,
     pub meaninertia_auto: f64,
     pub meanmass_auto: f64,
     pub meansize_auto: f64,
@@ -2409,7 +2307,7 @@ pub struct mjCModel {
     pub option: mjOption,
     pub visual: mjVisual,
     pub stat: mjStatistic,
-    pub memory: usize,
+    pub memory: i64,
     pub nemax: i32,
     pub nuserdata: i32,
     pub nuser_body: i32,
@@ -2424,7 +2322,7 @@ pub struct mjCModel {
     pub njmax: i32,
     pub nconmax: i32,
     pub _pad_6: [u8; 4],
-    pub nstack: usize,
+    pub nstack: i64,
     pub comment: *mut mjString,
     pub modelfiledir: *mut mjString,
     pub hasImplicitPluginElem: u8,
@@ -2930,17 +2828,18 @@ const _: () = assert!(std::mem::size_of::<mjContact>() == 576);
 #[repr(C, align(8))]
 #[derive(Clone, Copy)]
 pub struct mjData {
-    pub narena: usize,
-    pub nbuffer: usize,
+    pub narena: i64,
+    pub nbuffer: i64,
     pub nplugin: i32,
     pub _pad_0: [u8; 4],
     pub pstack: usize,
     pub pbase: usize,
     pub parena: usize,
     pub threadpool: usize,
-    pub threadlock: mjtBool,
-    pub maxuse_stack: usize,
-    pub maxuse_arena: usize,
+    pub threadlock: bool,
+    pub _pad_1: [u8; 7],
+    pub maxuse_stack: i64,
+    pub maxuse_arena: i64,
     pub maxuse_con: i32,
     pub maxuse_efc: i32,
     pub solver: [u8; 160000],
@@ -2963,10 +2862,11 @@ pub struct mjData {
     pub nbody_awake: i32,
     pub nparent_awake: i32,
     pub nv_awake: i32,
-    pub flg_energypos: [u8; 1],
-    pub flg_energyvel: [u8; 1],
-    pub flg_subtreevel: [u8; 1],
-    pub flg_rnepost: [u8; 5],
+    pub flg_energypos: bool,
+    pub flg_energyvel: bool,
+    pub flg_subtreevel: bool,
+    pub flg_rnepost: bool,
+    pub _pad_2: [u8; 4],
     pub time: f64,
     pub energy: [f64; 2],
     pub buffer: *mut (),
@@ -2980,7 +2880,7 @@ pub struct mjData {
     pub ctrl: *mut f64,
     pub qfrc_applied: *mut f64,
     pub xfrc_applied: *mut f64,
-    pub eq_active: *mut mjtBool,
+    pub eq_active: *mut bool,
     pub mocap_pos: *mut f64,
     pub mocap_quat: *mut f64,
     pub qacc: *mut f64,
@@ -3031,7 +2931,7 @@ pub struct mjData {
     pub M: *mut f64,
     pub qLD: *mut f64,
     pub qLDiagInv: *mut f64,
-    pub bvh_active: *mut mjtBool,
+    pub bvh_active: *mut bool,
     pub tree_awake: *mut i32,
     pub body_awake: *mut i32,
     pub body_awake_ind: *mut i32,
@@ -3147,8 +3047,8 @@ const _: () = assert!(std::mem::size_of::<mjLROpt>() == 72);
 #[repr(C, align(4))]
 #[derive(Clone, Copy)]
 pub struct mjLogConfig {
-    pub logto_console: [u8; 1],
-    pub logto_file: [u8; 1],
+    pub logto_console: bool,
+    pub logto_file: bool,
     pub logfile: [u8; 1026],
     pub topics: i32,
 }
@@ -3165,7 +3065,8 @@ pub struct mjLogMessage {
     pub func: *const i8,
     pub file: *const i8,
     pub line: i32,
-    pub timestamp: [u8; 4],
+    pub timestamp: bool,
+    pub _pad_0: [u8; 3],
 }
 const _: () = assert!(std::mem::size_of::<mjLogMessage>() == 1064);
 
@@ -3183,98 +3084,98 @@ const _: () = assert!(std::mem::size_of::<mjMap>() == 16);
 #[repr(C, align(8))]
 #[derive(Clone, Copy)]
 pub struct mjModel {
-    pub nq: usize,
-    pub nv: usize,
-    pub nu: usize,
-    pub na: usize,
-    pub nbody: usize,
-    pub nbvh: usize,
-    pub nbvhstatic: usize,
-    pub nbvhdynamic: usize,
-    pub noct: usize,
-    pub njnt: usize,
-    pub ntree: usize,
-    pub nM: usize,
-    pub nB: usize,
-    pub nC: usize,
-    pub nD: usize,
-    pub ngeom: usize,
-    pub nsite: usize,
-    pub ncam: usize,
-    pub nlight: usize,
-    pub nflex: usize,
-    pub nflexnode: usize,
-    pub nflexvert: usize,
-    pub nflexedge: usize,
-    pub nflexelem: usize,
-    pub nflexelemdata: usize,
-    pub nflexstiffness: usize,
-    pub nflexbending: usize,
-    pub nflexelemedge: usize,
-    pub nflexshelldata: usize,
-    pub nflexevpair: usize,
-    pub nflextexcoord: usize,
-    pub nJfe: usize,
-    pub nJfv: usize,
-    pub nmesh: usize,
-    pub nmeshvert: usize,
-    pub nmeshnormal: usize,
-    pub nmeshtexcoord: usize,
-    pub nmeshface: usize,
-    pub nmeshgraph: usize,
-    pub nmeshpoly: usize,
-    pub nmeshpolyvert: usize,
-    pub nmeshpolymap: usize,
-    pub nskin: usize,
-    pub nskinvert: usize,
-    pub nskintexvert: usize,
-    pub nskinface: usize,
-    pub nskinbone: usize,
-    pub nskinbonevert: usize,
-    pub nhfield: usize,
-    pub nhfielddata: usize,
-    pub ntex: usize,
-    pub ntexdata: usize,
-    pub nmat: usize,
-    pub npair: usize,
-    pub nexclude: usize,
-    pub neq: usize,
-    pub ntendon: usize,
-    pub nJten: usize,
-    pub nwrap: usize,
-    pub nsensor: usize,
-    pub nnumeric: usize,
-    pub nnumericdata: usize,
-    pub ntext: usize,
-    pub ntextdata: usize,
-    pub ntuple: usize,
-    pub ntupledata: usize,
-    pub nkey: usize,
-    pub nmocap: usize,
-    pub nplugin: usize,
-    pub npluginattr: usize,
-    pub nuser_body: usize,
-    pub nuser_jnt: usize,
-    pub nuser_geom: usize,
-    pub nuser_site: usize,
-    pub nuser_cam: usize,
-    pub nuser_tendon: usize,
-    pub nuser_actuator: usize,
-    pub nuser_sensor: usize,
-    pub nnames: usize,
-    pub npaths: usize,
-    pub nnames_map: usize,
-    pub nJmom: usize,
-    pub ngravcomp: usize,
-    pub nemax: usize,
-    pub njmax: usize,
-    pub nconmax: usize,
-    pub nuserdata: usize,
-    pub nsensordata: usize,
-    pub npluginstate: usize,
-    pub nhistory: usize,
-    pub narena: usize,
-    pub nbuffer: usize,
+    pub nq: i64,
+    pub nv: i64,
+    pub nu: i64,
+    pub na: i64,
+    pub nbody: i64,
+    pub nbvh: i64,
+    pub nbvhstatic: i64,
+    pub nbvhdynamic: i64,
+    pub noct: i64,
+    pub njnt: i64,
+    pub ntree: i64,
+    pub nM: i64,
+    pub nB: i64,
+    pub nC: i64,
+    pub nD: i64,
+    pub ngeom: i64,
+    pub nsite: i64,
+    pub ncam: i64,
+    pub nlight: i64,
+    pub nflex: i64,
+    pub nflexnode: i64,
+    pub nflexvert: i64,
+    pub nflexedge: i64,
+    pub nflexelem: i64,
+    pub nflexelemdata: i64,
+    pub nflexstiffness: i64,
+    pub nflexbending: i64,
+    pub nflexelemedge: i64,
+    pub nflexshelldata: i64,
+    pub nflexevpair: i64,
+    pub nflextexcoord: i64,
+    pub nJfe: i64,
+    pub nJfv: i64,
+    pub nmesh: i64,
+    pub nmeshvert: i64,
+    pub nmeshnormal: i64,
+    pub nmeshtexcoord: i64,
+    pub nmeshface: i64,
+    pub nmeshgraph: i64,
+    pub nmeshpoly: i64,
+    pub nmeshpolyvert: i64,
+    pub nmeshpolymap: i64,
+    pub nskin: i64,
+    pub nskinvert: i64,
+    pub nskintexvert: i64,
+    pub nskinface: i64,
+    pub nskinbone: i64,
+    pub nskinbonevert: i64,
+    pub nhfield: i64,
+    pub nhfielddata: i64,
+    pub ntex: i64,
+    pub ntexdata: i64,
+    pub nmat: i64,
+    pub npair: i64,
+    pub nexclude: i64,
+    pub neq: i64,
+    pub ntendon: i64,
+    pub nJten: i64,
+    pub nwrap: i64,
+    pub nsensor: i64,
+    pub nnumeric: i64,
+    pub nnumericdata: i64,
+    pub ntext: i64,
+    pub ntextdata: i64,
+    pub ntuple: i64,
+    pub ntupledata: i64,
+    pub nkey: i64,
+    pub nmocap: i64,
+    pub nplugin: i64,
+    pub npluginattr: i64,
+    pub nuser_body: i64,
+    pub nuser_jnt: i64,
+    pub nuser_geom: i64,
+    pub nuser_site: i64,
+    pub nuser_cam: i64,
+    pub nuser_tendon: i64,
+    pub nuser_actuator: i64,
+    pub nuser_sensor: i64,
+    pub nnames: i64,
+    pub npaths: i64,
+    pub nnames_map: i64,
+    pub nJmom: i64,
+    pub ngravcomp: i64,
+    pub nemax: i64,
+    pub njmax: i64,
+    pub nconmax: i64,
+    pub nuserdata: i64,
+    pub nsensordata: i64,
+    pub npluginstate: i64,
+    pub nhistory: i64,
+    pub narena: i64,
+    pub nbuffer: i64,
     pub opt: mjOption,
     pub vis: mjVisual,
     pub stat: mjStatistic,
@@ -3324,9 +3225,9 @@ pub struct mjModel {
     pub jnt_bodyid: *mut i32,
     pub jnt_actuatorid: *mut i32,
     pub jnt_group: *mut i32,
-    pub jnt_limited: *mut mjtBool,
-    pub jnt_actfrclimited: *mut mjtBool,
-    pub jnt_actgravcomp: *mut mjtBool,
+    pub jnt_limited: *mut bool,
+    pub jnt_actfrclimited: *mut bool,
+    pub jnt_actgravcomp: *mut bool,
     pub jnt_solref: *mut f64,
     pub jnt_solimp: *mut f64,
     pub jnt_pos: *mut f64,
@@ -3413,11 +3314,11 @@ pub struct mjModel {
     pub light_targetbodyid: *mut i32,
     pub light_type: *mut i32,
     pub light_texid: *mut i32,
-    pub light_castshadow: *mut mjtBool,
+    pub light_castshadow: *mut bool,
     pub light_bulbradius: *mut f32,
     pub light_intensity: *mut f32,
     pub light_range: *mut f32,
-    pub light_active: *mut mjtBool,
+    pub light_active: *mut bool,
     pub light_pos: *mut f64,
     pub light_dir: *mut f64,
     pub light_poscom0: *mut f64,
@@ -3439,7 +3340,7 @@ pub struct mjModel {
     pub flex_friction: *mut f64,
     pub flex_margin: *mut f64,
     pub flex_gap: *mut f64,
-    pub flex_internal: *mut mjtBool,
+    pub flex_internal: *mut bool,
     pub flex_selfcollide: *mut i32,
     pub flex_activelayers: *mut i32,
     pub flex_passive: *mut i32,
@@ -3493,10 +3394,10 @@ pub struct mjModel {
     pub flex_edgestiffness: *mut f64,
     pub flex_edgedamping: *mut f64,
     pub flex_edgeequality: *mut i32,
-    pub flex_rigid: *mut mjtBool,
-    pub flexedge_rigid: *mut mjtBool,
-    pub flex_centered: *mut mjtBool,
-    pub flex_flatskin: *mut mjtBool,
+    pub flex_rigid: *mut bool,
+    pub flexedge_rigid: *mut bool,
+    pub flex_centered: *mut bool,
+    pub flex_flatskin: *mut bool,
     pub flex_bvhadr: *mut i32,
     pub flex_bvhnum: *mut i32,
     pub flexedge_J_rownnz: *mut i32,
@@ -3573,11 +3474,11 @@ pub struct mjModel {
     pub tex_height: *mut i32,
     pub tex_width: *mut i32,
     pub tex_nchannel: *mut i32,
-    pub tex_adr: *mut usize,
+    pub tex_adr: *mut i64,
     pub tex_data: *mut u8,
     pub tex_pathadr: *mut i32,
     pub mat_texid: *mut i32,
-    pub mat_texuniform: *mut mjtBool,
+    pub mat_texuniform: *mut bool,
     pub mat_texrepeat: *mut f32,
     pub mat_emission: *mut f32,
     pub mat_specular: *mut f32,
@@ -3601,7 +3502,7 @@ pub struct mjModel {
     pub eq_obj1id: *mut i32,
     pub eq_obj2id: *mut i32,
     pub eq_objtype: *mut i32,
-    pub eq_active0: *mut mjtBool,
+    pub eq_active0: *mut bool,
     pub eq_solref: *mut f64,
     pub eq_solimp: *mut f64,
     pub eq_data: *mut f64,
@@ -3615,8 +3516,8 @@ pub struct mjModel {
     pub ten_J_rownnz: *mut i32,
     pub ten_J_rowadr: *mut i32,
     pub ten_J_colind: *mut i32,
-    pub tendon_limited: *mut mjtBool,
-    pub tendon_actfrclimited: *mut mjtBool,
+    pub tendon_limited: *mut bool,
+    pub tendon_actfrclimited: *mut bool,
     pub tendon_width: *mut f64,
     pub tendon_solref_lim: *mut f64,
     pub tendon_solimp_lim: *mut f64,
@@ -3653,13 +3554,13 @@ pub struct mjModel {
     pub actuator_history: *mut i32,
     pub actuator_historyadr: *mut i32,
     pub actuator_delay: *mut f64,
-    pub actuator_ctrllimited: *mut mjtBool,
-    pub actuator_forcelimited: *mut mjtBool,
-    pub actuator_actlimited: *mut mjtBool,
+    pub actuator_ctrllimited: *mut bool,
+    pub actuator_forcelimited: *mut bool,
+    pub actuator_actlimited: *mut bool,
     pub actuator_dynprm: *mut f64,
     pub actuator_gainprm: *mut f64,
     pub actuator_biasprm: *mut f64,
-    pub actuator_actearly: *mut mjtBool,
+    pub actuator_actearly: *mut bool,
     pub actuator_ctrlrange: *mut f64,
     pub actuator_forcerange: *mut f64,
     pub actuator_actrange: *mut f64,
@@ -3849,7 +3750,7 @@ pub struct mjSpec {
     pub option: mjOption,
     pub visual: mjVisual,
     pub stat: mjStatistic,
-    pub memory: usize,
+    pub memory: i64,
     pub nemax: i32,
     pub nuserdata: i32,
     pub nuser_body: i32,
@@ -3864,7 +3765,7 @@ pub struct mjSpec {
     pub njmax: i32,
     pub nconmax: i32,
     pub _pad_1: [u8; 4],
-    pub nstack: usize,
+    pub nstack: i64,
     pub comment: *mut mjString,
     pub modelfiledir: *mut mjString,
     pub hasImplicitPluginElem: u8,
@@ -5127,6 +5028,85 @@ pub struct mjvScene {
     pub _pad_2: [u8; 4],
 }
 const _: () = assert!(std::mem::size_of::<mjvScene>() == 11184);
+
+/// C struct: mujoco::ReentrantWriteLock (8 bytes, align 8)
+#[repr(C, align(8))]
+#[derive(Clone, Copy)]
+pub struct mujoco__ReentrantWriteLock {
+    pub mutex_: *mut Mutex,
+}
+const _: () = assert!(std::mem::size_of::<mujoco__ReentrantWriteLock>() == 8);
+
+/// C struct: mujoco::user::FilePath (24 bytes, align 8)
+#[repr(C, align(8))]
+#[derive(Clone, Copy)]
+pub struct mujoco__user__FilePath {
+    pub path_: std__string,
+}
+const _: () = assert!(std::mem::size_of::<mujoco__user__FilePath>() == 24);
+
+/// C struct: mujoco::user::VFS (792 bytes, align 8)
+#[repr(C, align(8))]
+#[derive(Clone, Copy)]
+pub struct mujoco__user__VFS {
+    pub wrapped_vfs_: mjVFS,
+    pub mutex_: std__mutex,
+    pub open_resources_: *const (),
+    pub _pad_0: [u8; 32],
+    pub mounts_: *const (),
+    pub _pad_1: [u8; 32],
+    pub default_mount_: mjResource,
+    pub default_provider_: mjpResourceProvider,
+    pub destructor_: *const (),
+    pub _pad_2: [u8; 24],
+}
+const _: () = assert!(std::mem::size_of::<mujoco__user__VFS>() == 792);
+pub type VFS = mujoco__user__VFS;
+
+/// C struct: std::exception_ptr (8 bytes, align 8)
+#[repr(C, align(8))]
+#[derive(Clone, Copy)]
+pub struct std__exception_ptr {
+    pub __ptr_: *mut (),
+}
+const _: () = assert!(std::mem::size_of::<std__exception_ptr>() == 8);
+
+/// C struct: std::filesystem::path (24 bytes, align 8)
+#[repr(C, align(8))]
+#[derive(Clone, Copy)]
+pub struct std__filesystem__path {
+    pub __pn_: string_type,
+}
+const _: () = assert!(std::mem::size_of::<std__filesystem__path>() == 24);
+
+/// C struct: std::mutex (64 bytes, align 8)
+#[repr(C, align(8))]
+#[derive(Clone, Copy)]
+pub struct std__mutex {
+    pub __m_: libcpp_mutex_t,
+}
+const _: () = assert!(std::mem::size_of::<std__mutex>() == 64);
+
+/// C struct: tinyxml2::XMLElement (120 bytes, align 8)
+#[repr(C, align(8))]
+#[derive(Clone, Copy)]
+pub struct tinyxml2__XMLElement {
+    pub _vtable: *mut (),
+    pub _document: *mut XMLDocument,
+    pub _parent: *mut XMLNode,
+    pub _value: StrPair,
+    pub _parseLineNum: i32,
+    pub _pad_0: [u8; 4],
+    pub _firstChild: *mut XMLNode,
+    pub _lastChild: *mut XMLNode,
+    pub _prev: *mut XMLNode,
+    pub _next: *mut XMLNode,
+    pub _userData: *mut (),
+    pub _memPool: *mut MemPool,
+    pub _closingType: [u8; 8],
+    pub _rootAttribute: *mut XMLAttribute,
+}
+const _: () = assert!(std::mem::size_of::<tinyxml2__XMLElement>() == 120);
 
 // ═══════════════════════════════════════════════════════════
 // Static variables (class statics / file-scope globals)

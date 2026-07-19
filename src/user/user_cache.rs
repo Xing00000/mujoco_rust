@@ -1,5 +1,5 @@
 //! Port of: user/user_cache.h
-//! IR hash: d2209344472ae336
+//! IR hash: adc2f24e872d94f7
 //! CODEGEN: signatures locked. Only fill todo!() bodies.
 
 use crate::types::*;
@@ -18,13 +18,13 @@ pub fn mj_c_asset_id(self_ptr: *mut mjCAsset) -> *const std__string {
 
 /// C: mjCAsset::InsertNum (user/user_cache.h:57)
 #[allow(unused_variables, non_snake_case)]
-pub fn mj_c_asset_insert_num(self_ptr: *mut mjCAsset) -> std__size_t {
+pub fn mj_c_asset_insert_num(self_ptr: *mut mjCAsset) -> u64 {
     todo!() // mjCAsset::InsertNum
 }
 
 /// C: mjCAsset::AccessCount (user/user_cache.h:58)
 #[allow(unused_variables, non_snake_case)]
-pub fn mj_c_asset_access_count(self_ptr: *mut mjCAsset) -> std__size_t {
+pub fn mj_c_asset_access_count(self_ptr: *mut mjCAsset) -> u64 {
     todo!() // mjCAsset::AccessCount
 }
 
@@ -36,7 +36,7 @@ pub fn mj_c_asset_populate_data(self_ptr: *mut mjCAsset, r#fn: mjCDataFunc) -> b
 
 /// C: mjCAsset::AddReference (user/user_cache.h:69)
 #[allow(unused_variables, non_snake_case)]
-pub fn mj_c_asset_add_reference(self_ptr: *mut mjCAsset, xml_file: string) {
+pub fn mj_c_asset_add_reference(self_ptr: *mut mjCAsset, xml_file: std__string) {
     todo!() // mjCAsset::AddReference
 }
 
@@ -73,19 +73,19 @@ pub fn mj_c_asset_copy(other: *const mjCAsset) -> mjCAsset {
 
 /// C: mjCAsset::SetInsertNum (user/user_cache.h:87)
 #[allow(unused_variables, non_snake_case)]
-pub fn mj_c_asset_set_insert_num(self_ptr: *mut mjCAsset, num: usize) {
+pub fn mj_c_asset_set_insert_num(self_ptr: *mut mjCAsset, num: u64) {
     todo!() // mjCAsset::SetInsertNum
 }
 
 /// C: mjCAsset::SetTimestamp (user/user_cache.h:88)
 #[allow(unused_variables, non_snake_case)]
-pub fn mj_c_asset_set_timestamp(self_ptr: *mut mjCAsset, timestamp: string) {
+pub fn mj_c_asset_set_timestamp(self_ptr: *mut mjCAsset, timestamp: std__string) {
     todo!() // mjCAsset::SetTimestamp
 }
 
 /// C: mjCAsset::BytesCount (user/user_cache.h:91)
 #[allow(unused_variables, non_snake_case)]
-pub fn mj_c_asset_bytes_count(self_ptr: *mut mjCAsset) -> std__size_t {
+pub fn mj_c_asset_bytes_count(self_ptr: *mut mjCAsset) -> u64 {
     todo!() // mjCAsset::BytesCount
 }
 
@@ -104,7 +104,7 @@ pub fn mj_c_asset_references(self_ptr: *mut mjCAsset) -> *const () {
 /// C: mjCCache::SetCapacity (user/user_cache.h:131)
 /// Calls: mjCCache::Trim
 #[allow(unused_variables, non_snake_case)]
-pub fn mj_c_cache_set_capacity(self_ptr: *mut mjCCache, size: usize) {
+pub fn mj_c_cache_set_capacity(self_ptr: *mut mjCCache, size: u64) {
     todo!() // mjCCache::SetCapacity
 }
 
@@ -118,7 +118,7 @@ pub fn mj_c_cache_has_asset(self_ptr: *mut mjCCache, id: *const std__string) -> 
 /// C: mjCCache::Insert (user/user_cache.h:139)
 /// Calls: mjCAsset::AddReference, mjCAsset::BytesCount, mjCAsset::ReplaceData, mjCAsset::SetInsertNum, mjCAsset::SetTimestamp, mjCAsset::Timestamp
 #[allow(unused_variables, non_snake_case)]
-pub fn mj_c_cache_insert(self_ptr: *mut mjCCache, modelname: *const std__string, id: *const std__string, resource: *const mjResource, data: *const (), size: usize) -> bool {
+pub fn mj_c_cache_insert(self_ptr: *mut mjCCache, modelname: *const std__string, id: *const std__string, resource: *const mjResource, data: *const (), size: u64) -> bool {
     todo!() // mjCCache::Insert
 }
 
@@ -152,13 +152,13 @@ pub fn mj_c_cache_reset(self_ptr: *mut mjCCache, filename: *const std__string) {
 
 /// C: mjCCache::Capacity (user/user_cache.h:159)
 #[allow(unused_variables, non_snake_case)]
-pub fn mj_c_cache_capacity(self_ptr: *mut mjCCache) -> std__size_t {
+pub fn mj_c_cache_capacity(self_ptr: *mut mjCCache) -> u64 {
     todo!() // mjCCache::Capacity
 }
 
 /// C: mjCCache::Size (user/user_cache.h:160)
 #[allow(unused_variables, non_snake_case)]
-pub fn mj_c_cache_size(self_ptr: *mut mjCCache) -> std__size_t {
+pub fn mj_c_cache_size(self_ptr: *mut mjCCache) -> u64 {
     todo!() // mjCCache::Size
 }
 

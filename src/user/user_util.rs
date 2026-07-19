@@ -1,5 +1,5 @@
 //! Port of: user/user_util.cc
-//! IR hash: d2209344472ae336
+//! IR hash: adc2f24e872d94f7
 //! CODEGEN: signatures locked. Only fill todo!() bodies.
 
 use crate::types::*;
@@ -31,7 +31,7 @@ pub fn mjuu_axis_angle2quat(res: *mut f64, axis: *const f64, angle: f64) {
 
 /// C: mjuu_isValidContentType (user/user_util.cc:973)
 #[allow(unused_variables, non_snake_case)]
-pub fn mjuu_is_valid_content_type(text: string_view) -> bool {
+pub fn mjuu_is_valid_content_type(text: std__string_view) -> bool {
     todo!() // mjuu_isValidContentType
 }
 
@@ -922,70 +922,70 @@ pub fn mjuu_full_inertia(quat: *mut f64, inertia: *mut f64, fullinertia: *const 
 /// C: FilePath::IsAbs (user/user_util.h:191)
 /// Calls: FilePath::AbsPrefix
 #[allow(unused_variables, non_snake_case)]
-pub fn file_path_is_abs(self_ptr: *mut FilePath) -> bool {
+pub fn file_path_is_abs(self_ptr: *mut mujoco__user__FilePath) -> bool {
     todo!() // FilePath::IsAbs
 }
 
 /// C: FilePath::AbsPrefix (user/user_util.h:195)
 #[allow(unused_variables, non_snake_case)]
-pub fn file_path_abs_prefix(self_ptr: *mut FilePath) -> std__string {
+pub fn file_path_abs_prefix(self_ptr: *mut mujoco__user__FilePath) -> std__string {
     todo!() // FilePath::AbsPrefix
 }
 
 /// C: FilePath::Str (user/user_util.h:198)
 #[allow(unused_variables, non_snake_case)]
-pub fn file_path_str(self_ptr: *mut FilePath) -> *const std__string {
+pub fn file_path_str(self_ptr: *mut mujoco__user__FilePath) -> *const std__string {
     todo!() // FilePath::Str
 }
 
 /// C: FilePath::StrLower (user/user_util.h:202)
 #[allow(unused_variables, non_snake_case)]
-pub fn file_path_str_lower(self_ptr: *mut FilePath) -> std__string {
+pub fn file_path_str_lower(self_ptr: *mut mujoco__user__FilePath) -> std__string {
     todo!() // FilePath::StrLower
 }
 
 /// C: FilePath::Ext (user/user_util.h:205)
 #[allow(unused_variables, non_snake_case)]
-pub fn file_path_ext(self_ptr: *mut FilePath) -> std__string {
+pub fn file_path_ext(self_ptr: *mut mujoco__user__FilePath) -> std__string {
     todo!() // FilePath::Ext
 }
 
 /// C: FilePath::StripExt (user/user_util.h:211)
 /// Calls: FilePath::FilePathFast
 #[allow(unused_variables, non_snake_case)]
-pub fn file_path_strip_ext(self_ptr: *mut FilePath) -> FilePath {
+pub fn file_path_strip_ext(self_ptr: *mut mujoco__user__FilePath) -> mujoco__user__FilePath {
     todo!() // FilePath::StripExt
 }
 
 /// C: FilePath::StripPath (user/user_util.h:214)
 /// Calls: FilePath::FilePathFast
 #[allow(unused_variables, non_snake_case)]
-pub fn file_path_strip_path(self_ptr: *mut FilePath) -> FilePath {
+pub fn file_path_strip_path(self_ptr: *mut mujoco__user__FilePath) -> mujoco__user__FilePath {
     todo!() // FilePath::StripPath
 }
 
 /// C: FilePath::Lower (user/user_util.h:217)
 /// Calls: FilePath::FilePathFast, FilePath::StrLower
 #[allow(unused_variables, non_snake_case)]
-pub fn file_path_lower(self_ptr: *mut FilePath) -> FilePath {
+pub fn file_path_lower(self_ptr: *mut mujoco__user__FilePath) -> mujoco__user__FilePath {
     todo!() // FilePath::Lower
 }
 
 /// C: FilePath::size (user/user_util.h:220)
 #[allow(unused_variables, non_snake_case)]
-pub fn file_path_size(self_ptr: *mut FilePath) -> std__size_t {
+pub fn file_path_size(self_ptr: *mut mujoco__user__FilePath) -> u64 {
     todo!() // FilePath::size
 }
 
 /// C: FilePath::c_str (user/user_util.h:221)
 #[allow(unused_variables, non_snake_case)]
-pub fn file_path_c_str(self_ptr: *mut FilePath) -> *const i8 {
+pub fn file_path_c_str(self_ptr: *mut mujoco__user__FilePath) -> *const i8 {
     todo!() // FilePath::c_str
 }
 
 /// C: FilePath::empty (user/user_util.h:222)
 #[allow(unused_variables, non_snake_case)]
-pub fn file_path_empty(self_ptr: *mut FilePath) -> bool {
+pub fn file_path_empty(self_ptr: *mut mujoco__user__FilePath) -> bool {
     todo!() // FilePath::empty
 }
 
@@ -1011,7 +1011,7 @@ pub fn file_path_combine(s1: *const std__string, s2: *const std__string) -> std_
 
 /// C: FilePath::FilePathFast (user/user_util.h:234)
 #[allow(unused_variables, non_snake_case)]
-pub fn file_path_file_path_fast(str: *const std__string) -> FilePath {
+pub fn file_path_file_path_fast(str: *const std__string) -> mujoco__user__FilePath {
     todo!() // FilePath::FilePathFast
 }
 
@@ -1037,26 +1037,26 @@ pub fn string_to_vector(cs: *mut i8) -> *const () {
 
 /// C: mjuu_strippath (user/user_util.h:273)
 #[allow(unused_variables, non_snake_case)]
-pub fn mjuu_strippath(filename: string) -> std__string {
+pub fn mjuu_strippath(filename: std__string) -> std__string {
     todo!() // mjuu_strippath
 }
 
 /// C: mjuu_stripext (user/user_util.h:276)
 #[allow(unused_variables, non_snake_case)]
-pub fn mjuu_stripext(filename: string) -> std__string {
+pub fn mjuu_stripext(filename: std__string) -> std__string {
     todo!() // mjuu_stripext
 }
 
 /// C: mjuu_getext (user/user_util.h:279)
 #[allow(unused_variables, non_snake_case)]
-pub fn mjuu_getext(filename: string_view) -> std__string {
+pub fn mjuu_getext(filename: std__string_view) -> std__string {
     todo!() // mjuu_getext
 }
 
 /// C: mjuu_isabspath (user/user_util.h:282)
 /// Calls: mjp_getResourceProvider
 #[allow(unused_variables, non_snake_case)]
-pub fn mjuu_isabspath(path: string) -> bool {
+pub fn mjuu_isabspath(path: std__string) -> bool {
     todo!() // mjuu_isabspath
 }
 
@@ -1070,21 +1070,21 @@ pub fn mjuu_combine_paths(path1: *const std__string, path2: *const std__string) 
 /// C: mjuu_parseContentTypeAttrType (user/user_util.h:290)
 /// Calls: mjuu_isValidContentType
 #[allow(unused_variables, non_snake_case)]
-pub fn mjuu_parse_content_type_attr_type(text: string_view) -> *const () {
+pub fn mjuu_parse_content_type_attr_type(text: std__string_view) -> *const () {
     todo!() // mjuu_parseContentTypeAttrType
 }
 
 /// C: mjuu_parseContentTypeAttrSubtype (user/user_util.h:293)
 /// Calls: mjuu_isValidContentType
 #[allow(unused_variables, non_snake_case)]
-pub fn mjuu_parse_content_type_attr_subtype(text: string_view) -> *const () {
+pub fn mjuu_parse_content_type_attr_subtype(text: std__string_view) -> *const () {
     todo!() // mjuu_parseContentTypeAttrSubtype
 }
 
 /// C: mjuu_extToContentType (user/user_util.h:296)
 /// Calls: mjuu_getext
 #[allow(unused_variables, non_snake_case)]
-pub fn mjuu_ext_to_content_type(filename: string_view) -> std__string {
+pub fn mjuu_ext_to_content_type(filename: std__string_view) -> std__string {
     todo!() // mjuu_extToContentType
 }
 

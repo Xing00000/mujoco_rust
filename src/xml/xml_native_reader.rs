@@ -1,5 +1,5 @@
 //! Port of: xml/xml_native_reader.cc
-//! IR hash: d2209344472ae336
+//! IR hash: adc2f24e872d94f7
 //! CODEGEN: signatures locked. Only fill todo!() bodies.
 
 use crate::types::*;
@@ -19,7 +19,7 @@ pub fn reader_txt(self_ptr: *mut Reader, attr: *const i8, target: *mut T, set_fu
 
 /// C: Reader::set_node (xml/xml_native_reader.cc:121)
 #[allow(unused_variables, non_snake_case)]
-pub fn reader_set_node(self_ptr: *mut Reader, node: *mut XMLElement) {
+pub fn reader_set_node(self_ptr: *mut Reader, node: *mut anonymous_namespace___XMLElement) {
     todo!() // Reader::set_node
 }
 
@@ -32,7 +32,7 @@ pub fn read_plugin_configs(elem: *mut tinyxml2__XMLElement, p: *mut mjsPlugin) {
 
 /// C: UpdateString (xml/xml_native_reader.cc:155)
 #[allow(unused_variables, non_snake_case)]
-pub fn update_string(psuffix: *mut string, count: i32, i: i32) {
+pub fn update_string(psuffix: *mut anonymous_namespace___string, count: i32, i: i32) {
     todo!() // UpdateString
 }
 
@@ -65,10 +65,8 @@ pub fn mj_x_reader_set_model_file_dir(self_ptr: *mut mjXReader, modelfiledir: *c
 /// C: mjXReader::ModelFileDir (xml/xml_native_reader.h:38)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_x_reader_model_file_dir(self_ptr: *mut mjXReader) -> *const mujoco__user__FilePath {
-    // SAFETY: self_ptr is a valid pointer to mjXReader (caller contract)
-    unsafe {
-        &(*self_ptr).modelfiledir_ as *const mujoco__user__FilePath
-    }
+    // MACHINE-PROVEN: Clang AST direct field access
+    unsafe { core::ptr::addr_of!((*self_ptr).modelfiledir_).cast::<mujoco__user__FilePath>() }
 }
 
 /// C: mjXReader::SetAssetDir (xml/xml_native_reader.h:41)

@@ -1,5 +1,5 @@
 //! Port of: user/user_vfs.cc
-//! IR hash: d2209344472ae336
+//! IR hash: adc2f24e872d94f7
 //! CODEGEN: signatures locked. Only fill todo!() bodies.
 
 use crate::types::*;
@@ -33,7 +33,7 @@ pub fn file_modified(resource: *const mjResource, timestamp: *const i8) -> i32 {
 
 /// C: StripPathAndLower (user/user_vfs.cc:94)
 #[allow(unused_variables, non_snake_case)]
-pub fn strip_path_and_lower(path: string) -> std__string {
+pub fn strip_path_and_lower(path: std__string) -> std__string {
     todo!() // StripPathAndLower
 }
 
@@ -110,79 +110,79 @@ pub fn mj_contains_file_vfs(vfs: *mut mjVFS, directory: *const i8, filename: *co
 /// C: VFS::Open (user/user_vfs.h:75)
 /// Calls: FilePath::Str, VFS::CreateResource, VFS::FindMount, VFS::MaybeSelfDestruct
 #[allow(unused_variables, non_snake_case)]
-pub fn vfs_open(self_ptr: *mut VFS, dir: *const i8, name: *const i8) -> *mut mjResource {
+pub fn vfs_open(self_ptr: *mut mujoco__user__VFS, dir: *const i8, name: *const i8) -> *mut mjResource {
     todo!() // VFS::Open
 }
 
 /// C: VFS::Read (user/user_vfs.h:80)
 #[allow(unused_variables, non_snake_case)]
-pub fn vfs_read(self_ptr: *mut VFS, resource: *mut mjResource, buffer: *const *mut ()) -> i32 {
+pub fn vfs_read(self_ptr: *mut mujoco__user__VFS, resource: *mut mjResource, buffer: *const *mut ()) -> i32 {
     todo!() // VFS::Read
 }
 
 /// C: VFS::Close (user/user_vfs.h:84)
 /// Calls: VFS::MaybeSelfDestruct
 #[allow(unused_variables, non_snake_case)]
-pub fn vfs_close(self_ptr: *mut VFS, resource: *mut mjResource) -> i32 {
+pub fn vfs_close(self_ptr: *mut mujoco__user__VFS, resource: *mut mjResource) -> i32 {
     todo!() // VFS::Close
 }
 
 /// C: VFS::Mount (user/user_vfs.h:88)
 /// Calls: FilePath::Str, FilePath::c_str, VFS::CreateResource
 #[allow(unused_variables, non_snake_case)]
-pub fn vfs_mount(self_ptr: *mut VFS, path: *const FilePath, provider: *const mjpResourceProvider) -> i32 {
+pub fn vfs_mount(self_ptr: *mut mujoco__user__VFS, path: *const mujoco__user__FilePath, provider: *const mjpResourceProvider) -> i32 {
     todo!() // VFS::Mount
 }
 
 /// C: VFS::Unmount (user/user_vfs.h:91)
 /// Calls: FilePath::Str
 #[allow(unused_variables, non_snake_case)]
-pub fn vfs_unmount(self_ptr: *mut VFS, path: *const FilePath) -> i32 {
+pub fn vfs_unmount(self_ptr: *mut mujoco__user__VFS, path: *const mujoco__user__FilePath) -> i32 {
     todo!() // VFS::Unmount
 }
 
 /// C: VFS::ContainsBuffer (user/user_vfs.h:94)
 #[allow(unused_variables, non_snake_case)]
-pub fn vfs_contains_buffer(self_ptr: *mut VFS, name: *const i8) -> bool {
+pub fn vfs_contains_buffer(self_ptr: *mut mujoco__user__VFS, name: *const i8) -> bool {
     todo!() // VFS::ContainsBuffer
 }
 
 /// C: VFS::ContainsFile (user/user_vfs.h:97)
 /// Calls: FilePath::Lower, FilePath::Str, FilePath::StripPath
 #[allow(unused_variables, non_snake_case)]
-pub fn vfs_contains_file(self_ptr: *mut VFS, directory: *const i8, filename: *const i8) -> bool {
+pub fn vfs_contains_file(self_ptr: *mut mujoco__user__VFS, directory: *const i8, filename: *const i8) -> bool {
     todo!() // VFS::ContainsFile
 }
 
 /// C: VFS::SetToSelfDestruct (user/user_vfs.h:105)
 #[allow(unused_variables, non_snake_case)]
-pub fn vfs_set_to_self_destruct(self_ptr: *mut VFS, destructor: *const ()) {
+pub fn vfs_set_to_self_destruct(self_ptr: *mut mujoco__user__VFS, destructor: *const ()) {
     todo!() // VFS::SetToSelfDestruct
 }
 
 /// C: VFS::Upcast (user/user_vfs.h:108)
 #[allow(unused_variables, non_snake_case)]
-pub fn vfs_upcast(vfs: *mut mjVFS) -> *mut VFS {
+pub fn vfs_upcast(vfs: *mut mjVFS) -> *mut mujoco__user__VFS {
     todo!() // VFS::Upcast
 }
 
 /// C: VFS::CreateResource (user/user_vfs.h:113)
 /// Calls: mju_warning
 #[allow(unused_variables, non_snake_case)]
-pub fn vfs_create_resource(self_ptr: *mut VFS, name: string_view, provider: *const mjpResourceProvider) -> ResourcePtr {
+pub fn vfs_create_resource(self_ptr: *mut mujoco__user__VFS, name: std__string_view, provider: *const mjpResourceProvider) -> mujoco__user__VFS__ResourcePtr {
     todo!() // VFS::CreateResource
 }
 
 /// C: VFS::FindMount (user/user_vfs.h:119)
 /// Calls: StripPathAndLower, VFS::CreateResource, mjp_getResourceProvider
 #[allow(unused_variables, non_snake_case)]
-pub fn vfs_find_mount(self_ptr: *mut VFS, fullpath: *const std__string) -> *mut mjResource {
+pub fn vfs_find_mount(self_ptr: *mut mujoco__user__VFS, fullpath: *const std__string) -> *mut mjResource {
     todo!() // VFS::FindMount
 }
 
 /// C: VFS::MaybeSelfDestruct (user/user_vfs.h:124)
 #[allow(unused_variables, non_snake_case)]
-pub fn vfs_maybe_self_destruct(self_ptr: *mut VFS) {
+pub fn vfs_maybe_self_destruct(self_ptr: *mut mujoco__user__VFS) {
     todo!() // VFS::MaybeSelfDestruct
 }
 

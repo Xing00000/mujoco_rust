@@ -1,5 +1,5 @@
 //! Port of: engine/engine_collision_sdf.c
-//! IR hash: d2209344472ae336
+//! IR hash: adc2f24e872d94f7
 //! CODEGEN: signatures locked. Only fill todo!() bodies.
 
 use crate::types::*;
@@ -270,7 +270,7 @@ pub fn process_sdf_corners(corners: *const f64, m: *const mjModel, d: *const mjD
 /// C: processOneFace (engine/engine_collision_sdf.c:866)
 /// Calls: mju_addTo3, mju_mulMatVec3, processSdfCorners
 #[allow(unused_variables, non_snake_case)]
-pub fn process_one_face(faceid: i32, bvh_active: *mut mjtBool, node: i32, ctx: *mut MeshSDFContext) {
+pub fn process_one_face(faceid: i32, bvh_active: *mut bool, node: i32, ctx: *mut MeshSDFContext) {
     todo!() // processOneFace
 }
 
@@ -282,7 +282,7 @@ pub fn process_one_face(faceid: i32, bvh_active: *mut mjtBool, node: i32, ctx: *
 ///   3. No algebraic simplification
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
-pub fn traverse_bvh(bvh: *const f64, nodeid: *const i32, child: *const i32, bvh_active: *mut mjtBool, offset: *const f64, rotation: *const f64, m: *const mjModel, d: *const mjData, sdf: *const mjSDF, callback: BVHLeafCallback, ctx: *mut ()) {
+pub fn traverse_bvh(bvh: *const f64, nodeid: *const i32, child: *const i32, bvh_active: *mut bool, offset: *const f64, rotation: *const f64, m: *const mjModel, d: *const mjData, sdf: *const mjSDF, callback: BVHLeafCallback, ctx: *mut ()) {
     todo!() // traverseBVH
 }
 

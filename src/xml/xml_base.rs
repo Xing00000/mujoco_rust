@@ -1,5 +1,5 @@
 //! Port of: xml/xml_base.h
-//! IR hash: d2209344472ae336
+//! IR hash: adc2f24e872d94f7
 //! CODEGEN: signatures locked. Only fill todo!() bodies.
 
 use crate::types::*;
@@ -12,7 +12,7 @@ pub fn mj_x_base_parse(self_ptr: *mut mjXBase, root: *mut tinyxml2__XMLElement, 
 
 /// C: mjXBase::Write (xml/xml_base.h:103)
 #[allow(unused_variables, non_snake_case)]
-pub fn mj_x_base_write(self_ptr: *mut mjXBase, error: *mut i8, error_sz: usize) -> std__string {
+pub fn mj_x_base_write(self_ptr: *mut mjXBase, error: *mut i8, error_sz: u64) -> std__string {
     todo!() // mjXBase::Write
 }
 

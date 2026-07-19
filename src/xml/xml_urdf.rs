@@ -1,5 +1,5 @@
 //! Port of: xml/xml_urdf.h
-//! IR hash: d2209344472ae336
+//! IR hash: adc2f24e872d94f7
 //! CODEGEN: signatures locked. Only fill todo!() bodies.
 
 use crate::types::*;
@@ -24,21 +24,21 @@ pub fn mj_xurdf_get_prefixed_name(self_ptr: *mut mjXURDF, name: *const std__stri
 
 /// C: mjXURDF::FindName (xml/xml_urdf.h:50)
 #[allow(unused_variables, non_snake_case)]
-pub fn mj_xurdf_find_name(self_ptr: *mut mjXURDF, name: string, list: *const ()) -> i32 {
+pub fn mj_xurdf_find_name(self_ptr: *mut mjXURDF, name: std__string, list: *const ()) -> i32 {
     todo!() // mjXURDF::FindName
 }
 
 /// C: mjXURDF::AddName (xml/xml_urdf.h:51)
 /// Calls: mjXURDF::FindName
 #[allow(unused_variables, non_snake_case)]
-pub fn mj_xurdf_add_name(self_ptr: *mut mjXURDF, name: string, list: *const ()) {
+pub fn mj_xurdf_add_name(self_ptr: *mut mjXURDF, name: std__string, list: *const ()) {
     todo!() // mjXURDF::AddName
 }
 
 /// C: mjXURDF::AddBody (xml/xml_urdf.h:52)
 /// Calls: mjXURDF::AddName
 #[allow(unused_variables, non_snake_case)]
-pub fn mj_xurdf_add_body(self_ptr: *mut mjXURDF, name: string) {
+pub fn mj_xurdf_add_body(self_ptr: *mut mjXURDF, name: std__string) {
     todo!() // mjXURDF::AddBody
 }
 

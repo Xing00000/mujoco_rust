@@ -1,5 +1,5 @@
 //! Port of: engine/engine_vis_visualize.c
-//! IR hash: d2209344472ae336
+//! IR hash: adc2f24e872d94f7
 //! CODEGEN: signatures locked. Only fill todo!() bodies.
 
 use crate::types::*;
@@ -1114,7 +1114,7 @@ pub fn mjv_is_catenary(m: *const mjModel, d: *const mjData, i: i32, length: *mut
         let upper: f64 = *(*m).tendon_range.add(2 * i as usize + 1);
 
         let limitedconstraint: i32 = (has_stiffness == 0
-            && (*(*m).tendon_limited.add(i as usize))._data[0] == 1
+            && *(*m).tendon_limited.add(i as usize)
             && lower == 0.0
             && ten_length < upper) as i32;
 

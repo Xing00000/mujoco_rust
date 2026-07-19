@@ -1,12 +1,12 @@
 //! Port of: cc/array_safety.h
-//! IR hash: d2209344472ae336
+//! IR hash: adc2f24e872d94f7
 //! CODEGEN: signatures locked. Only fill todo!() bodies.
 
 use crate::types::*;
 
 /// C: sizeof_arr (cc/array_safety.h:39)
 #[allow(unused_variables, non_snake_case)]
-pub fn sizeof_arr(arr: [T; 0]) -> std__size_t {
+pub fn sizeof_arr(arr: [T; 0]) -> u64 {
     todo!() // sizeof_arr
 }
 
@@ -18,7 +18,7 @@ pub fn strcmp_arr(lhs: [char; 0], rhs: [char; 0]) -> i32 {
 
 /// C: strlen_arr (cc/array_safety.h:52)
 #[allow(unused_variables, non_snake_case)]
-pub fn strlen_arr(str: [char; 0]) -> std__size_t {
+pub fn strlen_arr(str: [char; 0]) -> u64 {
     todo!() // strlen_arr
 }
 

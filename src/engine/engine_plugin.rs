@@ -1,5 +1,5 @@
 //! Port of: engine/engine_plugin.cc
-//! IR hash: d2209344472ae336
+//! IR hash: adc2f24e872d94f7
 //! CODEGEN: signatures locked. Only fill todo!() bodies.
 
 use crate::types::*;
@@ -12,7 +12,7 @@ pub fn strklen(s: *const i8) -> i32 {
 
 /// C: getext (engine/engine_plugin.cc:68)
 #[allow(unused_variables, non_snake_case)]
-pub fn getext(filename: string_view) -> std__string {
+pub fn getext(filename: std__string_view) -> std__string {
     todo!() // getext
 }
 
@@ -57,7 +57,7 @@ pub fn global_table_object_equal(arg0: *const mjpPlugin, arg1: *const mjpPlugin)
 /// C: GlobalTable::CopyObject (engine/engine_plugin.cc:182)
 /// Calls: CopyName, strklen
 #[allow(unused_variables, non_snake_case)]
-pub fn global_table_copy_object(dst: *mut mjpPlugin, src: *const mjpPlugin, err: *mut ErrorMessage) -> bool {
+pub fn global_table_copy_object(dst: *mut mjpPlugin, src: *const mjpPlugin, err: *mut mujoco__GlobalTable__ErrorMessage) -> bool {
     todo!() // GlobalTable::CopyObject
 }
 
@@ -115,7 +115,7 @@ pub fn mjp_get_plugin(name: *const i8, slot: *mut i32) -> *const mjpPlugin {
     unsafe {
         crate::engine::engine_global_table::global_table_get_by_key(
             crate::engine::engine_global_table::global_table_get_singleton() as *mut GlobalTable,
-            *(name as *const string_view),
+            *(name as *const std__string_view),
             slot,
         ) as *const mjpPlugin
     }
@@ -232,7 +232,7 @@ pub fn mjp_get_plugin_unsafe(name: *const i8, slot: *mut i32, nslot: i32) -> *co
     unsafe {
         crate::engine::engine_global_table::global_table_get_by_key_unsafe(
             crate::engine::engine_global_table::global_table_get_singleton() as *mut GlobalTable,
-            *(name as *const string_view),
+            *(name as *const std__string_view),
             slot,
             nslot,
         ) as *const mjpPlugin

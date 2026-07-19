@@ -1,5 +1,5 @@
 //! Port of: xml/xml_global.cc
-//! IR hash: d2209344472ae336
+//! IR hash: adc2f24e872d94f7
 //! CODEGEN: signatures locked. Only fill todo!() bodies.
 
 use crate::types::*;
@@ -7,20 +7,20 @@ use crate::types::*;
 /// C: GlobalModel::Set (xml/xml_global.cc:32)
 /// Calls: GetGlobalModel, mj_deleteSpec
 #[allow(unused_variables, non_snake_case)]
-pub fn global_model_set(self_ptr: *mut GlobalModel, spec: *mut mjSpec) {
+pub fn global_model_set(self_ptr: *mut anonymous_namespace___GlobalModel, spec: *mut mjSpec) {
     todo!() // GlobalModel::Set
 }
 
 /// C: GlobalModel::ToXML (xml/xml_global.cc:35)
 /// Calls: WriteXML, mjCopyError
 #[allow(unused_variables, non_snake_case)]
-pub fn global_model_to_xml(self_ptr: *mut GlobalModel, m: *const mjModel, error: *mut i8, error_sz: i32) -> std__string {
+pub fn global_model_to_xml(self_ptr: *mut anonymous_namespace___GlobalModel, m: *const mjModel, error: *mut i8, error_sz: i32) -> std__string {
     todo!() // GlobalModel::ToXML
 }
 
 /// C: GetGlobalModel (xml/xml_global.cc:53)
 #[allow(unused_variables, non_snake_case)]
-pub fn get_global_model() -> *mut GlobalModel {
+pub fn get_global_model() -> *mut anonymous_namespace___GlobalModel {
     todo!() // GetGlobalModel
 }
 

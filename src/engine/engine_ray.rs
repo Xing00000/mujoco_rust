@@ -1,5 +1,5 @@
 //! Port of: engine/engine_ray.c
-//! IR hash: d2209344472ae336
+//! IR hash: adc2f24e872d94f7
 //! CODEGEN: signatures locked. Only fill todo!() bodies.
 
 use crate::types::*;
@@ -60,50 +60,8 @@ pub fn latitude(vec: *const f64) -> f64 {
 
 /// C: ray_eliminate (engine/engine_ray.c:68)
 #[allow(unused_variables, non_snake_case)]
-pub fn ray_eliminate(m: *const mjModel, d: *const mjData, geomid: i32, geomgroup: *const u8, flg_static: mjtBool, bodyexclude: i32) -> i32 {
-    // SAFETY: m points to valid mjModel, geomid is within bounds (caller contract)
-    unsafe {
-        let m = &*m;
-        let gid = geomid as usize;
-
-        // body exclusion
-        if *m.geom_bodyid.add(gid) == bodyexclude {
-            return 1;
-        }
-
-        // invisible geom exclusion
-        if *m.geom_matid.add(gid) < 0 && *m.geom_rgba.add(4 * gid + 3) == 0.0 {
-            return 1;
-        }
-
-        // invisible material exclusion
-        if *m.geom_matid.add(gid) >= 0
-            && *m.mat_rgba.add(4 * (*m.geom_matid.add(gid) as usize) + 3) == 0.0
-        {
-            return 1;
-        }
-
-        // static exclusion
-        if flg_static._data[0] == 0
-            && *m.body_weldid.add(*m.geom_bodyid.add(gid) as usize) == 0
-        {
-            return 1;
-        }
-
-        // no geomgroup inclusion
-        if geomgroup.is_null() {
-            return 0;
-        }
-
-        // group inclusion/exclusion (mjNGROUP = 6)
-        let raw_group = *m.geom_group.add(gid);
-        let groupid = if 5 < (if 0 > raw_group { 0 } else { raw_group }) {
-            5
-        } else {
-            if 0 > raw_group { 0 } else { raw_group }
-        } as usize;
-        (*geomgroup.add(groupid) == 0) as i32
-    }
+pub fn ray_eliminate(m: *const mjModel, d: *const mjData, geomid: i32, geomgroup: *const u8, flg_static: bool, bodyexclude: i32) -> i32 {
+    todo!() // ray_eliminate
 }
 
 /// C: ray_quad (engine/engine_ray.c:103)
@@ -673,7 +631,7 @@ pub fn mju_single_ray(m: *const mjModel, d: *mut mjData, pnt: *const f64, vec: *
 ///   3. No algebraic simplification
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
-pub fn mju_multi_ray_prepare(m: *const mjModel, d: *const mjData, pnt: *const f64, ray_xmat: *const f64, geomgroup: *const u8, flg_static: mjtBool, bodyexclude: i32, cutoff: f64, geom_ba: *mut f64, geom_eliminate: *mut i32) {
+pub fn mju_multi_ray_prepare(m: *const mjModel, d: *const mjData, pnt: *const f64, ray_xmat: *const f64, geomgroup: *const u8, flg_static: bool, bodyexclude: i32, cutoff: f64, geom_ba: *mut f64, geom_eliminate: *mut i32) {
     todo!() // mju_multiRayPrepare
 }
 
@@ -685,7 +643,7 @@ pub fn mju_multi_ray_prepare(m: *const mjModel, d: *const mjData, pnt: *const f6
 ///   3. No algebraic simplification
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
-pub fn mj_multi_ray(m: *const mjModel, d: *mut mjData, pnt: *const f64, vec: *const f64, geomgroup: *const u8, flg_static: mjtBool, bodyexclude: i32, geomid: *mut i32, dist: *mut f64, normal: *mut f64, nray: i32, cutoff: f64) {
+pub fn mj_multi_ray(m: *const mjModel, d: *mut mjData, pnt: *const f64, vec: *const f64, geomgroup: *const u8, flg_static: bool, bodyexclude: i32, geomid: *mut i32, dist: *mut f64, normal: *mut f64, nray: i32, cutoff: f64) {
     todo!() // mj_multiRay
 }
 
@@ -697,7 +655,7 @@ pub fn mj_multi_ray(m: *const mjModel, d: *mut mjData, pnt: *const f64, vec: *co
 ///   3. No algebraic simplification
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
-pub fn mj_ray(m: *const mjModel, d: *const mjData, pnt: *const f64, vec: *const f64, geomgroup: *const u8, flg_static: mjtBool, bodyexclude: i32, geomid: *mut i32, normal: *mut f64) -> f64 {
+pub fn mj_ray(m: *const mjModel, d: *const mjData, pnt: *const f64, vec: *const f64, geomgroup: *const u8, flg_static: bool, bodyexclude: i32, geomid: *mut i32, normal: *mut f64) -> f64 {
     todo!() // mj_ray
 }
 
@@ -855,7 +813,7 @@ pub fn mju_ray_geom(pos: *const f64, mat: *const f64, size: *const f64, pnt: *co
 ///   3. No algebraic simplification
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
-pub fn mj_ray_flex(m: *const mjModel, d: *const mjData, flex_layer: i32, flg_vert: mjtBool, flg_edge: mjtBool, flg_face: mjtBool, flg_skin: mjtBool, flexid: i32, pnt: *const f64, vec: *const f64, vertid: *mut i32, normal: *mut f64) -> f64 {
+pub fn mj_ray_flex(m: *const mjModel, d: *const mjData, flex_layer: i32, flg_vert: bool, flg_edge: bool, flg_face: bool, flg_skin: bool, flexid: i32, pnt: *const f64, vec: *const f64, vertid: *mut i32, normal: *mut f64) -> f64 {
     todo!() // mj_rayFlex
 }
 

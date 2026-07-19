@@ -1,5 +1,5 @@
 //! Port of: xml/mjz/mjz_decoder.cc
-//! IR hash: d2209344472ae336
+//! IR hash: adc2f24e872d94f7
 //! CODEGEN: signatures locked. Only fill todo!() bodies.
 
 use crate::types::*;
@@ -18,7 +18,7 @@ pub fn zip_archive_provider_get_root_model_path(self_ptr: *mut ZipArchiveProvide
 
 /// C: ZipArchiveProvider::Contains (xml/mjz/mjz_decoder.cc:142)
 #[allow(unused_variables, non_snake_case)]
-pub fn zip_archive_provider_contains(self_ptr: *mut ZipArchiveProvider, name: string_view) -> bool {
+pub fn zip_archive_provider_contains(self_ptr: *mut ZipArchiveProvider, name: std__string_view) -> bool {
     todo!() // ZipArchiveProvider::Contains
 }
 

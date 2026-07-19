@@ -1,5 +1,5 @@
 //! Port of: user/user_objects.cc
-//! IR hash: d2209344472ae336
+//! IR hash: adc2f24e872d94f7
 //! CODEGEN: signatures locked. Only fill todo!() bodies.
 
 use crate::types::*;
@@ -7,37 +7,37 @@ use crate::types::*;
 /// C: PNGImage::Load (user/user_objects.cc:58)
 /// Calls: mju_readResource
 #[allow(unused_variables, non_snake_case)]
-pub fn png_image_load(obj: *const mjCBase, resource: *mut mjResource, color_type: u32) -> PNGImage {
+pub fn png_image_load(obj: *const mjCBase, resource: *mut mjResource, color_type: u32) -> anonymous_namespace___PNGImage {
     todo!() // PNGImage::Load
 }
 
 /// C: PNGImage::Width (user/user_objects.cc:60)
 #[allow(unused_variables, non_snake_case)]
-pub fn png_image_width(self_ptr: *mut PNGImage) -> i32 {
+pub fn png_image_width(self_ptr: *mut anonymous_namespace___PNGImage) -> i32 {
     todo!() // PNGImage::Width
 }
 
 /// C: PNGImage::Height (user/user_objects.cc:61)
 #[allow(unused_variables, non_snake_case)]
-pub fn png_image_height(self_ptr: *mut PNGImage) -> i32 {
+pub fn png_image_height(self_ptr: *mut anonymous_namespace___PNGImage) -> i32 {
     todo!() // PNGImage::Height
 }
 
 /// C: PNGImage::IsSRGB (user/user_objects.cc:62)
 #[allow(unused_variables, non_snake_case)]
-pub fn png_image_is_srgb(self_ptr: *mut PNGImage) -> bool {
+pub fn png_image_is_srgb(self_ptr: *mut anonymous_namespace___PNGImage) -> bool {
     todo!() // PNGImage::IsSRGB
 }
 
 /// C: PNGImage::MoveData (user/user_objects.cc:66)
 #[allow(unused_variables, non_snake_case)]
-pub fn png_image_move_data(self_ptr: *mut PNGImage) -> *mut *mut mjByteVec {
+pub fn png_image_move_data(self_ptr: *mut anonymous_namespace___PNGImage) -> *mut *mut mjByteVec {
     todo!() // PNGImage::MoveData
 }
 
 /// C: PNGImage::Size (user/user_objects.cc:69)
 #[allow(unused_variables, non_snake_case)]
-pub fn png_image_size(self_ptr: *mut PNGImage) -> std__size_t {
+pub fn png_image_size(self_ptr: *mut anonymous_namespace___PNGImage) -> u64 {
     todo!() // PNGImage::Size
 }
 
@@ -174,7 +174,7 @@ pub fn get_next_body(body: *const mjCBody, child: *const mjsElement, found: *mut
 ///   3. No algebraic simplification
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
-pub fn randomdot(rgb: *mut std__byte, markrgb: *const f64, width: i32, height: i32, probability: f64) {
+pub fn randomdot(rgb: *mut u8, markrgb: *const f64, width: i32, height: i32, probability: f64) {
     todo!() // randomdot
 }
 
@@ -185,13 +185,13 @@ pub fn randomdot(rgb: *mut std__byte, markrgb: *const f64, width: i32, height: i
 ///   3. No algebraic simplification
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
-pub fn interp(rgb: *mut std__byte, rgb1: *const f64, rgb2: *const f64, pos: f64) {
+pub fn interp(rgb: *mut u8, rgb1: *const f64, rgb2: *const f64, pos: f64) {
     todo!() // interp
 }
 
 /// C: checker (user/user_objects.cc:5012)
 #[allow(unused_variables, non_snake_case)]
-pub fn checker(rgb: *mut std__byte, RGB1: *const std__byte, RGB2: *const std__byte, width: i32, height: i32) {
+pub fn checker(rgb: *mut u8, RGB1: *const u8, RGB2: *const u8, width: i32, height: i32) {
     todo!() // checker
 }
 
@@ -269,13 +269,15 @@ pub fn resolve_orientation(quat: *mut f64, degree: bool, sequence: *const i8, or
 /// C: mjCBoundingVolume::Contype (user/user_objects.h:122)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_bounding_volume_contype(self_ptr: *mut mjCBoundingVolume) -> i32 {
-    todo!() // mjCBoundingVolume::Contype
+    // MACHINE-PROVEN: Clang AST direct field access
+    unsafe { (*self_ptr).contype_ }
 }
 
 /// C: mjCBoundingVolume::Conaffinity (user/user_objects.h:123)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_bounding_volume_conaffinity(self_ptr: *mut mjCBoundingVolume) -> i32 {
-    todo!() // mjCBoundingVolume::Conaffinity
+    // MACHINE-PROVEN: Clang AST direct field access
+    unsafe { (*self_ptr).conaffinity_ }
 }
 
 /// C: mjCBoundingVolume::AABB (user/user_objects.h:124)
@@ -320,13 +322,15 @@ pub fn mj_c_bounding_volume_id(self_ptr: *mut mjCBoundingVolume) -> *const i32 {
 /// C: mjCBoundingVolume::SetContype (user/user_objects.h:131)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_bounding_volume_set_contype(self_ptr: *mut mjCBoundingVolume, val: i32) {
-    todo!() // mjCBoundingVolume::SetContype
+    // MACHINE-PROVEN: Clang AST direct field access
+    unsafe { (*self_ptr).contype_ = val; }
 }
 
 /// C: mjCBoundingVolume::SetConaffinity (user/user_objects.h:132)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_bounding_volume_set_conaffinity(self_ptr: *mut mjCBoundingVolume, val: i32) {
-    todo!() // mjCBoundingVolume::SetConaffinity
+    // MACHINE-PROVEN: Clang AST direct field access
+    unsafe { (*self_ptr).conaffinity_ = val; }
 }
 
 /// C: mjCBoundingVolume::SetAABB (user/user_objects.h:133)
@@ -365,7 +369,8 @@ pub fn mj_c_bounding_volume_set_quat(self_ptr: *mut mjCBoundingVolume, quat: *co
 /// C: mjCBoundingVolume::SetId (user/user_objects.h:139)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_bounding_volume_set_id(self_ptr: *mut mjCBoundingVolume, id: *const i32) {
-    todo!() // mjCBoundingVolume::SetId
+    // MACHINE-PROVEN: Clang AST direct field access
+    unsafe { (*self_ptr).id_ = id; }
 }
 
 /// C: mjCBoundingVolumeHierarchy::CreateBVH (user/user_objects.h:174)
@@ -413,7 +418,8 @@ pub fn mj_c_bounding_volume_hierarchy_add_bounding_volume(self_ptr: *mut mjCBoun
 /// C: mjCBoundingVolumeHierarchy::Nbvh (user/user_objects.h:186)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_bounding_volume_hierarchy_nbvh(self_ptr: *mut mjCBoundingVolumeHierarchy) -> i32 {
-    todo!() // mjCBoundingVolumeHierarchy::Nbvh
+    // MACHINE-PROVEN: Clang AST direct field access
+    unsafe { (*self_ptr).nbvh_ }
 }
 
 /// C: mjCBoundingVolumeHierarchy::Bvh (user/user_objects.h:187)
@@ -474,7 +480,7 @@ pub fn mj_c_bounding_volume_hierarchy_make(self_ptr: *mut mjCBoundingVolumeHiera
 /// C: mjCBoundingVolumeHierarchy::MakeBVH (user/user_objects.h:211)
 /// Calls: mjCBoundingVolume::AABB, mjCBoundingVolume::Id, mjCBoundingVolume::Pos, mjCBoundingVolume::Quat, mjCModel::AddWarning, mju_error, mjuu_rotVecQuat
 #[allow(unused_variables, non_snake_case)]
-pub fn mj_c_bounding_volume_hierarchy_make_bvh(self_ptr: *mut mjCBoundingVolumeHierarchy, elements_begin: iterator, elements_end: iterator, lev: i32, model: *mut mjCModel, owner: *const mjCBase) -> i32 {
+pub fn mj_c_bounding_volume_hierarchy_make_bvh(self_ptr: *mut mjCBoundingVolumeHierarchy, elements_begin: *const (), elements_end: *const (), lev: i32, model: *mut mjCModel, owner: *const mjCBase) -> i32 {
     todo!() // mjCBoundingVolumeHierarchy::MakeBVH
 }
 
@@ -493,13 +499,15 @@ pub fn mj_c_octree_create_octree(self_ptr: *mut mjCOctree, aamm: *const f64) {
 /// C: mjCOctree::NumNodes (user/user_objects.h:287)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_octree_num_nodes(self_ptr: *mut mjCOctree) -> i32 {
-    todo!() // mjCOctree::NumNodes
+    // MACHINE-PROVEN: Clang AST direct field access
+    unsafe { (*self_ptr).nnode_ }
 }
 
 /// C: mjCOctree::NumVerts (user/user_objects.h:288)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_octree_num_verts(self_ptr: *mut mjCOctree) -> i32 {
-    todo!() // mjCOctree::NumVerts
+    // MACHINE-PROVEN: Clang AST direct field access
+    unsafe { (*self_ptr).nvert_ }
 }
 
 /// C: mjCOctree::CopyLevel (user/user_objects.h:289)
@@ -608,25 +616,29 @@ pub fn mj_c_octree_coeff(self_ptr: *mut mjCOctree, n: i32, v: i32) -> f64 {
 /// C: mjCOctree::SetMaxDepth (user/user_objects.h:313)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_octree_set_max_depth(self_ptr: *mut mjCOctree, depth: i32) {
-    todo!() // mjCOctree::SetMaxDepth
+    // MACHINE-PROVEN: Clang AST direct field access
+    unsafe { (*self_ptr).max_depth_ = depth; }
 }
 
 /// C: mjCOctree::MaxDepth (user/user_objects.h:314)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_octree_max_depth(self_ptr: *mut mjCOctree) -> i32 {
-    todo!() // mjCOctree::MaxDepth
+    // MACHINE-PROVEN: Clang AST direct field access
+    unsafe { (*self_ptr).max_depth_ }
 }
 
 /// C: mjCOctree::SetSmoothingIterations (user/user_objects.h:317)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_octree_set_smoothing_iterations(self_ptr: *mut mjCOctree, iterations: i32) {
-    todo!() // mjCOctree::SetSmoothingIterations
+    // MACHINE-PROVEN: Clang AST direct field access
+    unsafe { (*self_ptr).smoothing_iterations_ = iterations; }
 }
 
 /// C: mjCOctree::SmoothingIterations (user/user_objects.h:318)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_octree_smoothing_iterations(self_ptr: *mut mjCOctree) -> i32 {
-    todo!() // mjCOctree::SmoothingIterations
+    // MACHINE-PROVEN: Clang AST direct field access
+    unsafe { (*self_ptr).smoothing_iterations_ }
 }
 
 /// C: mjCOctree::ComputeSdfCoeffs (user/user_objects.h:321)
@@ -710,7 +722,7 @@ pub fn mj_c_base_load_resource(modelfiledir: *const std__string, filename: *cons
 /// C: mjCBase::GetAssetContentType (user/user_objects.h:363)
 /// Calls: mjuu_extToContentType, mjuu_parseContentTypeAttrSubtype, mjuu_parseContentTypeAttrType
 #[allow(unused_variables, non_snake_case)]
-pub fn mj_c_base_get_asset_content_type(resource_name: string_view, raw_text: string_view) -> std__string {
+pub fn mj_c_base_get_asset_content_type(resource_name: std__string_view, raw_text: std__string_view) -> std__string {
     todo!() // mjCBase::GetAssetContentType
 }
 
@@ -773,7 +785,8 @@ pub fn mj_c_base_add_ref(self_ptr: *mut mjCBase) {
 /// C: mjCBase::GetRef (user/user_objects.h:403)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_base_get_ref(self_ptr: *mut mjCBase) -> i32 {
-    todo!() // mjCBase::GetRef
+    // MACHINE-PROVEN: Clang AST direct field access
+    unsafe { (*self_ptr).refcount }
 }
 
 /// C: mjCBase::Release (user/user_objects.h:404)
@@ -785,19 +798,19 @@ pub fn mj_c_base_release(self_ptr: *mut mjCBase) {
 
 /// C: mjCBase::SetUserValue (user/user_objects.h:411)
 #[allow(unused_variables, non_snake_case)]
-pub fn mj_c_base_set_user_value(self_ptr: *mut mjCBase, key: string_view, data: *const (), cleanup: Option<unsafe extern "C" fn()>) {
+pub fn mj_c_base_set_user_value(self_ptr: *mut mjCBase, key: std__string_view, data: *const (), cleanup: Option<unsafe extern "C" fn()>) {
     todo!() // mjCBase::SetUserValue
 }
 
 /// C: mjCBase::GetUserValue (user/user_objects.h:413)
 #[allow(unused_variables, non_snake_case)]
-pub fn mj_c_base_get_user_value(self_ptr: *mut mjCBase, key: string_view) -> *const () {
+pub fn mj_c_base_get_user_value(self_ptr: *mut mjCBase, key: std__string_view) -> *const () {
     todo!() // mjCBase::GetUserValue
 }
 
 /// C: mjCBase::DeleteUserValue (user/user_objects.h:414)
 #[allow(unused_variables, non_snake_case)]
-pub fn mj_c_base_delete_user_value(self_ptr: *mut mjCBase, key: string_view) {
+pub fn mj_c_base_delete_user_value(self_ptr: *mut mjCBase, key: std__string_view) {
     todo!() // mjCBase::DeleteUserValue
 }
 
@@ -951,13 +964,15 @@ pub fn mj_c_body_mquat(self_ptr: *mut mjCBody, state_name: *const std__string) -
 /// C: mjCBody::SetParent (user/user_objects.h:579)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_body_set_parent(self_ptr: *mut mjCBody, _body: *mut mjCBody) {
-    todo!() // mjCBody::SetParent
+    // MACHINE-PROVEN: Clang AST direct field access
+    unsafe { (*self_ptr).parent = _body; }
 }
 
 /// C: mjCBody::GetParent (user/user_objects.h:580)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_body_get_parent(self_ptr: *mut mjCBody) -> *mut mjCBody {
-    todo!() // mjCBody::GetParent
+    // MACHINE-PROVEN: Clang AST direct field access
+    unsafe { (*self_ptr).parent }
 }
 
 /// C: mjCBody::SetModel (user/user_objects.h:583)
@@ -1067,13 +1082,15 @@ pub fn mj_c_frame_point_to_local(self_ptr: *mut mjCFrame) {
 /// C: mjCFrame::SetParent (user/user_objects.h:656)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_frame_set_parent(self_ptr: *mut mjCFrame, _body: *mut mjCBody) {
-    todo!() // mjCFrame::SetParent
+    // MACHINE-PROVEN: Clang AST direct field access
+    unsafe { (*self_ptr).body = _body; }
 }
 
 /// C: mjCFrame::GetParent (user/user_objects.h:657)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_frame_get_parent(self_ptr: *mut mjCFrame) -> *mut mjCBody {
-    todo!() // mjCFrame::GetParent
+    // MACHINE-PROVEN: Clang AST direct field access
+    unsafe { (*self_ptr).body }
 }
 
 /// C: mjCFrame::IsAncestor (user/user_objects.h:661)
@@ -1110,13 +1127,15 @@ pub fn mj_c_joint_copy_from_spec(self_ptr: *mut mjCJoint) {
 /// C: mjCJoint::SetParent (user/user_objects.h:707)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_joint_set_parent(self_ptr: *mut mjCJoint, _body: *mut mjCBody) {
-    todo!() // mjCJoint::SetParent
+    // MACHINE-PROVEN: Clang AST direct field access
+    unsafe { (*self_ptr).body = _body; }
 }
 
 /// C: mjCJoint::GetParent (user/user_objects.h:708)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_joint_get_parent(self_ptr: *mut mjCJoint) -> *mut mjCBody {
-    todo!() // mjCJoint::GetParent
+    // MACHINE-PROVEN: Clang AST direct field access
+    unsafe { (*self_ptr).body }
 }
 
 /// C: mjCJoint::get_userdata (user/user_objects.h:711)
@@ -1133,7 +1152,8 @@ pub fn mj_c_joint_get_userdata(self_ptr: *mut mjCJoint) -> *const () {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_joint_get_range(self_ptr: *mut mjCJoint) -> *const f64 {
-    todo!() // mjCJoint::get_range
+    // MACHINE-PROVEN: Clang AST direct field access
+    unsafe { core::ptr::addr_of!((*self_ptr).range).cast::<f64>() }
 }
 
 /// C: mjCJoint::is_limited (user/user_objects.h:714)
@@ -1253,7 +1273,8 @@ pub fn mj_c_geom_set_inertia(self_ptr: *mut mjCGeom) {
 /// C: mjCGeom::IsVisual (user/user_objects.h:785)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_geom_is_visual(self_ptr: *mut mjCGeom) -> bool {
-    todo!() // mjCGeom::IsVisual
+    // MACHINE-PROVEN: Clang AST direct field access
+    unsafe { (*self_ptr).visual_ }
 }
 
 /// C: mjCGeom::SetNotVisual (user/user_objects.h:786)
@@ -1265,13 +1286,15 @@ pub fn mj_c_geom_set_not_visual(self_ptr: *mut mjCGeom) {
 /// C: mjCGeom::SetParent (user/user_objects.h:787)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_geom_set_parent(self_ptr: *mut mjCGeom, _body: *mut mjCBody) {
-    todo!() // mjCGeom::SetParent
+    // MACHINE-PROVEN: Clang AST direct field access
+    unsafe { (*self_ptr).body = _body; }
 }
 
 /// C: mjCGeom::GetParent (user/user_objects.h:788)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_geom_get_parent(self_ptr: *mut mjCGeom) -> *mut mjCBody {
-    todo!() // mjCGeom::GetParent
+    // MACHINE-PROVEN: Clang AST direct field access
+    unsafe { (*self_ptr).body }
 }
 
 /// C: mjCGeom::Type (user/user_objects.h:789)
@@ -1400,19 +1423,22 @@ pub fn mj_c_geom_copy_plugin(self_ptr: *mut mjCGeom) {
 /// C: mjCSite::Body (user/user_objects.h:849)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_site_body(self_ptr: *mut mjCSite) -> *mut mjCBody {
-    todo!() // mjCSite::Body
+    // MACHINE-PROVEN: Clang AST direct field access
+    unsafe { (*self_ptr).body }
 }
 
 /// C: mjCSite::SetParent (user/user_objects.h:850)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_site_set_parent(self_ptr: *mut mjCSite, _body: *mut mjCBody) {
-    todo!() // mjCSite::SetParent
+    // MACHINE-PROVEN: Clang AST direct field access
+    unsafe { (*self_ptr).body = _body; }
 }
 
 /// C: mjCSite::GetParent (user/user_objects.h:851)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_site_get_parent(self_ptr: *mut mjCSite) -> *mut mjCBody {
-    todo!() // mjCSite::GetParent
+    // MACHINE-PROVEN: Clang AST direct field access
+    unsafe { (*self_ptr).body }
 }
 
 /// C: mjCSite::get_userdata (user/user_objects.h:857)
@@ -1484,13 +1510,15 @@ pub fn mj_c_camera_get_userdata(self_ptr: *mut mjCCamera) -> *const () {
 /// C: mjCCamera::SetParent (user/user_objects.h:902)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_camera_set_parent(self_ptr: *mut mjCCamera, _body: *mut mjCBody) {
-    todo!() // mjCCamera::SetParent
+    // MACHINE-PROVEN: Clang AST direct field access
+    unsafe { (*self_ptr).body = _body; }
 }
 
 /// C: mjCCamera::GetParent (user/user_objects.h:903)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_camera_get_parent(self_ptr: *mut mjCCamera) -> *mut mjCBody {
-    todo!() // mjCCamera::GetParent
+    // MACHINE-PROVEN: Clang AST direct field access
+    unsafe { (*self_ptr).body }
 }
 
 /// C: mjCCamera::Compile (user/user_objects.h:906)
@@ -1551,13 +1579,15 @@ pub fn mj_c_light_get_texture(self_ptr: *mut mjCLight) -> *const std__string {
 /// C: mjCLight::SetParent (user/user_objects.h:947)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_light_set_parent(self_ptr: *mut mjCLight, _body: *mut mjCBody) {
-    todo!() // mjCLight::SetParent
+    // MACHINE-PROVEN: Clang AST direct field access
+    unsafe { (*self_ptr).body = _body; }
 }
 
 /// C: mjCLight::GetParent (user/user_objects.h:948)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_light_get_parent(self_ptr: *mut mjCLight) -> *mut mjCBody {
-    todo!() // mjCLight::GetParent
+    // MACHINE-PROVEN: Clang AST direct field access
+    unsafe { (*self_ptr).body }
 }
 
 /// C: mjCLight::Compile (user/user_objects.h:951)
@@ -1902,7 +1932,8 @@ pub fn mj_c_mesh_make_cone(self_ptr: *mut mjCMesh, nedge: i32, radius: f64) {
 /// C: mjCMesh::Plugin (user/user_objects.h:1166)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_mesh_plugin(self_ptr: *mut mjCMesh) -> *const mjsPlugin {
-    todo!() // mjCMesh::Plugin
+    // MACHINE-PROVEN: Clang AST direct field access
+    unsafe { core::ptr::addr_of!((*self_ptr).plugin).cast::<mjsPlugin>() }
 }
 
 /// C: mjCMesh::ContentType (user/user_objects.h:1167)
@@ -1925,7 +1956,8 @@ pub fn mj_c_mesh_file(self_ptr: *mut mjCMesh) -> *const std__string {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_mesh_refpos(self_ptr: *mut mjCMesh) -> *const f64 {
-    todo!() // mjCMesh::Refpos
+    // MACHINE-PROVEN: Clang AST direct field access
+    unsafe { core::ptr::addr_of!((*self_ptr).refpos).cast::<f64>() }
 }
 
 /// C: mjCMesh::Refquat (user/user_objects.h:1170)
@@ -1936,7 +1968,8 @@ pub fn mj_c_mesh_refpos(self_ptr: *mut mjCMesh) -> *const f64 {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_mesh_refquat(self_ptr: *mut mjCMesh) -> *const f64 {
-    todo!() // mjCMesh::Refquat
+    // MACHINE-PROVEN: Clang AST direct field access
+    unsafe { core::ptr::addr_of!((*self_ptr).refquat).cast::<f64>() }
 }
 
 /// C: mjCMesh::Scale (user/user_objects.h:1171)
@@ -1947,7 +1980,8 @@ pub fn mj_c_mesh_refquat(self_ptr: *mut mjCMesh) -> *const f64 {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_mesh_scale(self_ptr: *mut mjCMesh) -> *const f64 {
-    todo!() // mjCMesh::Scale
+    // MACHINE-PROVEN: Clang AST direct field access
+    unsafe { core::ptr::addr_of!((*self_ptr).scale).cast::<f64>() }
 }
 
 /// C: mjCMesh::SmoothNormal (user/user_objects.h:1172)
@@ -2019,7 +2053,8 @@ pub fn mj_c_mesh_material(self_ptr: *mut mjCMesh) -> *const std__string {
 /// C: mjCMesh::SetNeedHull (user/user_objects.h:1186)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_mesh_set_need_hull(self_ptr: *mut mjCMesh, needhull: bool) {
-    todo!() // mjCMesh::SetNeedHull
+    // MACHINE-PROVEN: Clang AST direct field access
+    unsafe { (*self_ptr).needhull_ = needhull; }
 }
 
 /// C: mjCMesh::aamm (user/user_objects.h:1189)
@@ -2030,7 +2065,8 @@ pub fn mj_c_mesh_set_need_hull(self_ptr: *mut mjCMesh, needhull: bool) {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_mesh_aamm(self_ptr: *mut mjCMesh) -> *const f64 {
-    todo!() // mjCMesh::aamm
+    // MACHINE-PROVEN: Clang AST direct field access
+    unsafe { core::ptr::addr_of!((*self_ptr).aamm_).cast::<f64>() }
 }
 
 /// C: mjCMesh::nvert (user/user_objects.h:1192)
@@ -2078,7 +2114,8 @@ pub fn mj_c_mesh_npolygonmap(self_ptr: *mut mjCMesh) -> i32 {
 /// C: mjCMesh::szgraph (user/user_objects.h:1213)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_mesh_szgraph(self_ptr: *mut mjCMesh) -> i32 {
-    todo!() // mjCMesh::szgraph
+    // MACHINE-PROVEN: Clang AST direct field access
+    unsafe { (*self_ptr).szgraph_ }
 }
 
 /// C: mjCMesh::tree (user/user_objects.h:1216)
@@ -2096,7 +2133,8 @@ pub fn mj_c_mesh_octree(self_ptr: *mut mjCMesh) -> *const mjCOctree {
 /// C: mjCMesh::mutable_octree (user/user_objects.h:1220)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_mesh_mutable_octree(self_ptr: *mut mjCMesh) -> *mut mjCOctree {
-    todo!() // mjCMesh::mutable_octree
+    // MACHINE-PROVEN: Clang AST direct field access
+    unsafe { core::ptr::addr_of_mut!((*self_ptr).octree_).cast::<mjCOctree>() }
 }
 
 /// C: mjCMesh::Compile (user/user_objects.h:1222)
@@ -2114,11 +2152,8 @@ pub fn mj_c_mesh_compile(self_ptr: *mut mjCMesh, vfs: *const mjVFS) {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_mesh_get_pos_ptr(self_ptr: *mut mjCMesh) -> *mut f64 {
-    // SAFETY: self_ptr is a valid mjCMesh pointer (caller contract).
-    // Returns pointer to the pos_ field (inline [f64; 3] array).
-    unsafe {
-        (*self_ptr).pos_.as_mut_ptr()
-    }
+    // MACHINE-PROVEN: Clang AST direct field access
+    unsafe { core::ptr::addr_of_mut!((*self_ptr).pos_).cast::<f64>() }
 }
 
 /// C: mjCMesh::GetQuatPtr (user/user_objects.h:1224)
@@ -2129,8 +2164,8 @@ pub fn mj_c_mesh_get_pos_ptr(self_ptr: *mut mjCMesh) -> *mut f64 {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_mesh_get_quat_ptr(self_ptr: *mut mjCMesh) -> *mut f64 {
-    // SAFETY: self_ptr is valid pointer to mjCMesh, accessing quat_ field
-    unsafe { (*self_ptr).quat_.as_mut_ptr() }
+    // MACHINE-PROVEN: Clang AST direct field access
+    unsafe { core::ptr::addr_of_mut!((*self_ptr).quat_).cast::<f64>() }
 }
 
 /// C: mjCMesh::GetInertiaBoxPtr (user/user_objects.h:1225)
@@ -2141,8 +2176,8 @@ pub fn mj_c_mesh_get_quat_ptr(self_ptr: *mut mjCMesh) -> *mut f64 {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_mesh_get_inertia_box_ptr(self_ptr: *mut mjCMesh) -> *mut f64 {
-    // SAFETY: self_ptr is a valid pointer to mjCMesh, accessing boxsz_ field
-    unsafe { (*self_ptr).boxsz_.as_mut_ptr() }
+    // MACHINE-PROVEN: Clang AST direct field access
+    unsafe { core::ptr::addr_of_mut!((*self_ptr).boxsz_).cast::<f64>() }
 }
 
 /// C: mjCMesh::GetVolumeRef (user/user_objects.h:1226)
@@ -2193,7 +2228,8 @@ pub fn mj_c_mesh_del_texcoord(self_ptr: *mut mjCMesh) {
 /// C: mjCMesh::IsVisual (user/user_objects.h:1230)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_mesh_is_visual(self_ptr: *mut mjCMesh) -> bool {
-    todo!() // mjCMesh::IsVisual
+    // MACHINE-PROVEN: Clang AST direct field access
+    unsafe { (*self_ptr).visual_ }
 }
 
 /// C: mjCMesh::SetNotVisual (user/user_objects.h:1231)
@@ -2304,7 +2340,7 @@ pub fn mj_c_mesh_load_from_resource(self_ptr: *mut mjCMesh, resource: *mut mjRes
 /// C: mjCMesh::IsMSH (user/user_objects.h:1258)
 /// Calls: mjCBase::GetAssetContentType
 #[allow(unused_variables, non_snake_case)]
-pub fn mj_c_mesh_is_msh(filename: string_view, ct: string_view) -> bool {
+pub fn mj_c_mesh_is_msh(filename: std__string_view, ct: std__string_view) -> bool {
     todo!() // mjCMesh::IsMSH
 }
 
@@ -2800,14 +2836,14 @@ pub fn mj_c_texture_builtin_cube(self_ptr: *mut mjCTexture) {
 /// C: mjCTexture::Load2D (user/user_objects.h:1480)
 /// Calls: mjCTexture::LoadFlip
 #[allow(unused_variables, non_snake_case)]
-pub fn mj_c_texture_load2d(self_ptr: *mut mjCTexture, filename: string, vfs: *const mjVFS) {
+pub fn mj_c_texture_load2d(self_ptr: *mut mjCTexture, filename: std__string, vfs: *const mjVFS) {
     todo!() // mjCTexture::Load2D
 }
 
 /// C: mjCTexture::LoadCubeSingle (user/user_objects.h:1481)
 /// Calls: mjCTexture::LoadFlip
 #[allow(unused_variables, non_snake_case)]
-pub fn mj_c_texture_load_cube_single(self_ptr: *mut mjCTexture, filename: string, vfs: *const mjVFS) {
+pub fn mj_c_texture_load_cube_single(self_ptr: *mut mjCTexture, filename: std__string, vfs: *const mjVFS) {
     todo!() // mjCTexture::LoadCubeSingle
 }
 
@@ -2827,7 +2863,7 @@ pub fn mj_c_texture_flip_if_needed(self_ptr: *mut mjCTexture, image: *const (), 
 /// C: mjCTexture::LoadFlip (user/user_objects.h:1487)
 /// Calls: mjCBase::GetAssetContentType, mjCBase::LoadResource, mjCCache::Insert, mjCCache::PopulateData, mjCModel::FindSpec, mjCTexture::FlipIfNeeded, mjCTexture::GetCacheId, mjCTexture::LoadCustom, mjCTexture::LoadKTX, mjCTexture::LoadPNG, mj_getCache, mju_closeResource
 #[allow(unused_variables, non_snake_case)]
-pub fn mj_c_texture_load_flip(self_ptr: *mut mjCTexture, filename: string, vfs: *const mjVFS, image: *const (), w: *mut u32, h: *mut u32, is_srgb: *mut bool) {
+pub fn mj_c_texture_load_flip(self_ptr: *mut mjCTexture, filename: std__string, vfs: *const mjVFS, image: *const (), w: *mut u32, h: *mut u32, is_srgb: *mut bool) {
     todo!() // mjCTexture::LoadFlip
 }
 
@@ -2949,7 +2985,8 @@ pub fn mj_c_pair_get_geomname2(self_ptr: *mut mjCPair) -> *const std__string {
 /// C: mjCPair::GetSignature (user/user_objects.h:1573)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_pair_get_signature(self_ptr: *mut mjCPair) -> i32 {
-    todo!() // mjCPair::GetSignature
+    // MACHINE-PROVEN: Clang AST direct field access
+    unsafe { (*self_ptr).signature }
 }
 
 /// C: mjCPair::Compile (user/user_objects.h:1578)
@@ -3015,7 +3052,8 @@ pub fn mj_c_body_pair_get_bodyname2(self_ptr: *mut mjCBodyPair) -> std__string {
 /// C: mjCBodyPair::GetSignature (user/user_objects.h:1621)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_body_pair_get_signature(self_ptr: *mut mjCBodyPair) -> i32 {
-    todo!() // mjCBodyPair::GetSignature
+    // MACHINE-PROVEN: Clang AST direct field access
+    unsafe { (*self_ptr).signature }
 }
 
 /// C: mjCBodyPair::Compile (user/user_objects.h:1626)
@@ -3070,7 +3108,7 @@ pub fn mj_c_equality_compile(self_ptr: *mut mjCEquality) {
 
 /// C: mjCTendon::set_material (user/user_objects.h:1697)
 #[allow(unused_variables, non_snake_case)]
-pub fn mj_c_tendon_set_material(self_ptr: *mut mjCTendon, _material: string) {
+pub fn mj_c_tendon_set_material(self_ptr: *mut mjCTendon, _material: std__string) {
     todo!() // mjCTendon::set_material
 }
 
@@ -3088,13 +3126,13 @@ pub fn mj_c_tendon_del_material(self_ptr: *mut mjCTendon) {
 
 /// C: mjCTendon::WrapSite (user/user_objects.h:1702)
 #[allow(unused_variables, non_snake_case)]
-pub fn mj_c_tendon_wrap_site(self_ptr: *mut mjCTendon, wrapname: string, wrapinfo: string_view) {
+pub fn mj_c_tendon_wrap_site(self_ptr: *mut mjCTendon, wrapname: std__string, wrapinfo: std__string_view) {
     todo!() // mjCTendon::WrapSite
 }
 
 /// C: mjCTendon::WrapGeom (user/user_objects.h:1703)
 #[allow(unused_variables, non_snake_case)]
-pub fn mj_c_tendon_wrap_geom(self_ptr: *mut mjCTendon, wrapname: string, side: string, wrapinfo: string_view) {
+pub fn mj_c_tendon_wrap_geom(self_ptr: *mut mjCTendon, wrapname: std__string, side: std__string, wrapinfo: std__string_view) {
     todo!() // mjCTendon::WrapGeom
 }
 
@@ -3105,7 +3143,7 @@ pub fn mj_c_tendon_wrap_geom(self_ptr: *mut mjCTendon, wrapname: string, side: s
 ///   3. No algebraic simplification
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
-pub fn mj_c_tendon_wrap_joint(self_ptr: *mut mjCTendon, wrapname: string, coef: f64, wrapinfo: string_view) {
+pub fn mj_c_tendon_wrap_joint(self_ptr: *mut mjCTendon, wrapname: std__string, coef: f64, wrapinfo: std__string_view) {
     todo!() // mjCTendon::WrapJoint
 }
 
@@ -3116,7 +3154,7 @@ pub fn mj_c_tendon_wrap_joint(self_ptr: *mut mjCTendon, wrapname: string, coef: 
 ///   3. No algebraic simplification
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
-pub fn mj_c_tendon_wrap_pulley(self_ptr: *mut mjCTendon, divisor: f64, wrapinfo: string_view) {
+pub fn mj_c_tendon_wrap_pulley(self_ptr: *mut mjCTendon, divisor: f64, wrapinfo: std__string_view) {
     todo!() // mjCTendon::WrapPulley
 }
 
@@ -3702,72 +3740,84 @@ pub fn mj_c_def_compile(self_ptr: *mut mjCDef, model: *const mjCModel) {
 /// C: mjCDef::Joint (user/user_objects.h:2084)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_def_joint(self_ptr: *mut mjCDef) -> *mut mjCJoint {
-    todo!() // mjCDef::Joint
+    // MACHINE-PROVEN: Clang AST direct field access
+    unsafe { core::ptr::addr_of_mut!((*self_ptr).joint_).cast::<mjCJoint>() }
 }
 
 /// C: mjCDef::Geom (user/user_objects.h:2085)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_def_geom(self_ptr: *mut mjCDef) -> *mut mjCGeom {
-    todo!() // mjCDef::Geom
+    // MACHINE-PROVEN: Clang AST direct field access
+    unsafe { core::ptr::addr_of_mut!((*self_ptr).geom_).cast::<mjCGeom>() }
 }
 
 /// C: mjCDef::Site (user/user_objects.h:2086)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_def_site(self_ptr: *mut mjCDef) -> *mut mjCSite {
-    todo!() // mjCDef::Site
+    // MACHINE-PROVEN: Clang AST direct field access
+    unsafe { core::ptr::addr_of_mut!((*self_ptr).site_).cast::<mjCSite>() }
 }
 
 /// C: mjCDef::Camera (user/user_objects.h:2087)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_def_camera(self_ptr: *mut mjCDef) -> *mut mjCCamera {
-    todo!() // mjCDef::Camera
+    // MACHINE-PROVEN: Clang AST direct field access
+    unsafe { core::ptr::addr_of_mut!((*self_ptr).camera_).cast::<mjCCamera>() }
 }
 
 /// C: mjCDef::Light (user/user_objects.h:2088)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_def_light(self_ptr: *mut mjCDef) -> *mut mjCLight {
-    todo!() // mjCDef::Light
+    // MACHINE-PROVEN: Clang AST direct field access
+    unsafe { core::ptr::addr_of_mut!((*self_ptr).light_).cast::<mjCLight>() }
 }
 
 /// C: mjCDef::Flex (user/user_objects.h:2089)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_def_flex(self_ptr: *mut mjCDef) -> *mut mjCFlex {
-    todo!() // mjCDef::Flex
+    // MACHINE-PROVEN: Clang AST direct field access
+    unsafe { core::ptr::addr_of_mut!((*self_ptr).flex_).cast::<mjCFlex>() }
 }
 
 /// C: mjCDef::Mesh (user/user_objects.h:2090)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_def_mesh(self_ptr: *mut mjCDef) -> *mut mjCMesh {
-    todo!() // mjCDef::Mesh
+    // MACHINE-PROVEN: Clang AST direct field access
+    unsafe { core::ptr::addr_of_mut!((*self_ptr).mesh_).cast::<mjCMesh>() }
 }
 
 /// C: mjCDef::Material (user/user_objects.h:2091)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_def_material(self_ptr: *mut mjCDef) -> *mut mjCMaterial {
-    todo!() // mjCDef::Material
+    // MACHINE-PROVEN: Clang AST direct field access
+    unsafe { core::ptr::addr_of_mut!((*self_ptr).material_).cast::<mjCMaterial>() }
 }
 
 /// C: mjCDef::Pair (user/user_objects.h:2092)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_def_pair(self_ptr: *mut mjCDef) -> *mut mjCPair {
-    todo!() // mjCDef::Pair
+    // MACHINE-PROVEN: Clang AST direct field access
+    unsafe { core::ptr::addr_of_mut!((*self_ptr).pair_).cast::<mjCPair>() }
 }
 
 /// C: mjCDef::Equality (user/user_objects.h:2093)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_def_equality(self_ptr: *mut mjCDef) -> *mut mjCEquality {
-    todo!() // mjCDef::Equality
+    // MACHINE-PROVEN: Clang AST direct field access
+    unsafe { core::ptr::addr_of_mut!((*self_ptr).equality_).cast::<mjCEquality>() }
 }
 
 /// C: mjCDef::Tendon (user/user_objects.h:2094)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_def_tendon(self_ptr: *mut mjCDef) -> *mut mjCTendon {
-    todo!() // mjCDef::Tendon
+    // MACHINE-PROVEN: Clang AST direct field access
+    unsafe { core::ptr::addr_of_mut!((*self_ptr).tendon_).cast::<mjCTendon>() }
 }
 
 /// C: mjCDef::Actuator (user/user_objects.h:2095)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_def_actuator(self_ptr: *mut mjCDef) -> *mut mjCActuator {
-    todo!() // mjCDef::Actuator
+    // MACHINE-PROVEN: Clang AST direct field access
+    unsafe { core::ptr::addr_of_mut!((*self_ptr).actuator_).cast::<mjCActuator>() }
 }
 

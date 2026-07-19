@@ -1,5 +1,5 @@
 //! Port of: user/user_threadpool.h
-//! IR hash: d2209344472ae336
+//! IR hash: adc2f24e872d94f7
 //! CODEGEN: signatures locked. Only fill todo!() bodies.
 
 use crate::types::*;
@@ -24,7 +24,7 @@ pub fn thread_pool_schedule(self_ptr: *mut ThreadPool, task: *const ()) {
 
 /// C: ThreadPool::GetCount (user/user_threadpool.h:49)
 #[allow(unused_variables, non_snake_case)]
-pub fn thread_pool_get_count(self_ptr: *mut ThreadPool) -> std__uint64_t {
+pub fn thread_pool_get_count(self_ptr: *mut ThreadPool) -> u64 {
     todo!() // ThreadPool::GetCount
 }
 

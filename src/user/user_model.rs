@@ -1,5 +1,5 @@
 //! Port of: user/user_model.cc
-//! IR hash: d2209344472ae336
+//! IR hash: adc2f24e872d94f7
 //! CODEGEN: signatures locked. Only fill todo!() bodies.
 
 use crate::types::*;
@@ -78,7 +78,7 @@ pub fn get_next(list: *const (), child: *const mjsElement) -> *mut mjsElement {
 
 /// C: findobject (user/user_model.cc:1596)
 #[allow(unused_variables, non_snake_case)]
-pub fn findobject(name: string_view, list: *const (), ids: *const mjKeyMap) -> *mut T {
+pub fn findobject(name: std__string_view, list: *const (), ids: *const mjKeyMap) -> *mut T {
     todo!() // findobject
 }
 
@@ -193,14 +193,14 @@ pub fn compiler_log_handler(msg: *const mjLogMessage) {
 /// C: CompileMesh (user/user_model.cc:4770)
 /// Calls: _mjPRIVATE_setTlsLogHandler, mjCMesh::Compile
 #[allow(unused_variables, non_snake_case)]
-pub fn compile_mesh(mesh: *mut mjCMesh, vfs: *const mjVFS, exception: *mut std__exception_ptr, exception_mutex: *mut std__mutex, warningtext: *mut string) {
+pub fn compile_mesh(mesh: *mut mjCMesh, vfs: *const mjVFS, exception: *mut std__exception_ptr, exception_mutex: *mut std__mutex, warningtext: *mut std__string) {
     todo!() // CompileMesh
 }
 
 /// C: CompileTexture (user/user_model.cc:4790)
 /// Calls: _mjPRIVATE_setTlsLogHandler, mjCTexture::Compile
 #[allow(unused_variables, non_snake_case)]
-pub fn compile_texture(texture: *mut mjCTexture, vfs: *const mjVFS, exception: *mut std__exception_ptr, exception_mutex: *mut std__mutex, warningtext: *mut string) {
+pub fn compile_texture(texture: *mut mjCTexture, vfs: *const mjVFS, exception: *mut std__exception_ptr, exception_mutex: *mut std__mutex, warningtext: *mut std__string) {
     todo!() // CompileTexture
 }
 
@@ -398,13 +398,15 @@ pub fn mj_c_model_next_object(self_ptr: *mut mjCModel, object: *const mjsElement
 /// C: mjCModel::IsCompiled (user/user_model.h:249)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_model_is_compiled(self_ptr: *mut mjCModel) -> bool {
-    todo!() // mjCModel::IsCompiled
+    // MACHINE-PROVEN: Clang AST direct field access
+    unsafe { (*self_ptr).compiled }
 }
 
 /// C: mjCModel::GetError (user/user_model.h:250)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_model_get_error(self_ptr: *mut mjCModel) -> *const mjCError {
-    todo!() // mjCModel::GetError
+    // MACHINE-PROVEN: Clang AST direct field access
+    unsafe { core::ptr::addr_of!((*self_ptr).errInfo).cast::<mjCError>() }
 }
 
 /// C: mjCModel::SetError (user/user_model.h:251)
@@ -416,7 +418,7 @@ pub fn mj_c_model_set_error(self_ptr: *mut mjCModel, error: *const mjCError) {
 /// C: mjCModel::AddWarning (user/user_model.h:252)
 /// Calls: mju_warning
 #[allow(unused_variables, non_snake_case)]
-pub fn mj_c_model_add_warning(self_ptr: *mut mjCModel, msg: string, obj: *const mjCBase) {
+pub fn mj_c_model_add_warning(self_ptr: *mut mjCModel, msg: std__string, obj: *const mjCBase) {
     todo!() // mjCModel::AddWarning
 }
 
@@ -466,27 +468,27 @@ pub fn mj_c_model_find_default(self_ptr: *mut mjCModel, name: *const std__string
 /// C: mjCModel::AddDefault (user/user_model.h:273)
 /// Calls: mjCDef::CopyFromSpec, mjCDef::CopyWithoutChildren
 #[allow(unused_variables, non_snake_case)]
-pub fn mj_c_model_add_default(self_ptr: *mut mjCModel, name: string, parent: *mut mjCDef) -> *mut mjCDef {
+pub fn mj_c_model_add_default(self_ptr: *mut mjCModel, name: std__string, parent: *mut mjCDef) -> *mut mjCDef {
     todo!() // mjCModel::AddDefault
 }
 
 /// C: mjCModel::FindObject (user/user_model.h:274)
 /// Calls: findobject
 #[allow(unused_variables, non_snake_case)]
-pub fn mj_c_model_find_object(self_ptr: *mut mjCModel, r#type: u32, name: string) -> *mut mjCBase {
+pub fn mj_c_model_find_object(self_ptr: *mut mjCModel, r#type: u32, name: std__string) -> *mut mjCBase {
     todo!() // mjCModel::FindObject
 }
 
 /// C: mjCModel::FindTree (user/user_model.h:275)
 #[allow(unused_variables, non_snake_case)]
-pub fn mj_c_model_find_tree(self_ptr: *mut mjCModel, body: *mut mjCBody, r#type: u32, name: string) -> *mut mjCBase {
+pub fn mj_c_model_find_tree(self_ptr: *mut mjCModel, body: *mut mjCBody, r#type: u32, name: std__string) -> *mut mjCBase {
     todo!() // mjCModel::FindTree
 }
 
 /// C: mjCModel::FindSpec (user/user_model.h:276)
 /// Calls: mjs_getString
 #[allow(unused_variables, non_snake_case)]
-pub fn mj_c_model_find_spec(self_ptr: *mut mjCModel, name: string) -> *mut mjSpec {
+pub fn mj_c_model_find_spec(self_ptr: *mut mjCModel, name: std__string) -> *mut mjSpec {
     todo!() // mjCModel::FindSpec
 }
 
@@ -498,7 +500,7 @@ pub fn mj_c_model_activate_plugin(self_ptr: *mut mjCModel, plugin: *const mjpPlu
 
 /// C: mjCModel::FindAsset (user/user_model.h:282)
 #[allow(unused_variables, non_snake_case)]
-pub fn mj_c_model_find_asset(self_ptr: *mut mjCModel, name: string_view, list: *const ()) -> *mut mjCBase {
+pub fn mj_c_model_find_asset(self_ptr: *mut mjCModel, name: std__string_view, list: *const ()) -> *mut mjCBase {
     todo!() // mjCModel::FindAsset
 }
 
@@ -662,7 +664,7 @@ pub fn mj_c_model_clear(self_ptr: *mut mjCModel) {
 
 /// C: mjCModel::DeleteMaterial (user/user_model.h:324)
 #[allow(unused_variables, non_snake_case)]
-pub fn mj_c_model_delete_material(self_ptr: *mut mjCModel, list: *const (), name: string_view) {
+pub fn mj_c_model_delete_material(self_ptr: *mut mjCModel, list: *const (), name: std__string_view) {
     todo!() // mjCModel::DeleteMaterial
 }
 
@@ -702,7 +704,8 @@ pub fn mj_c_model_store_keyframes(self_ptr: *mut mjCModel, dest: *mut mjCModel) 
 /// C: mjCModel::SetDeepCopy (user/user_model.h:347)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_model_set_deep_copy(self_ptr: *mut mjCModel, deepcopy: bool) {
-    todo!() // mjCModel::SetDeepCopy
+    // MACHINE-PROVEN: Clang AST direct field access
+    unsafe { (*self_ptr).deepcopy_ = deepcopy; }
 }
 
 /// C: mjCModel::SetAttached (user/user_model.h:350)
@@ -714,7 +717,8 @@ pub fn mj_c_model_set_attached(self_ptr: *mut mjCModel, deepcopy: bool) {
 /// C: mjCModel::IsAttached (user/user_model.h:353)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_model_is_attached(self_ptr: *mut mjCModel) -> bool {
-    todo!() // mjCModel::IsAttached
+    // MACHINE-PROVEN: Clang AST direct field access
+    unsafe { (*self_ptr).attached_ }
 }
 
 /// C: mjCModel::CheckRepeat (user/user_model.h:356)
@@ -733,7 +737,8 @@ pub fn mj_c_model_add_ref(self_ptr: *mut mjCModel) {
 /// C: mjCModel::GetRef (user/user_model.h:360)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_model_get_ref(self_ptr: *mut mjCModel) -> i32 {
-    todo!() // mjCModel::GetRef
+    // MACHINE-PROVEN: Clang AST direct field access
+    unsafe { (*self_ptr).refcount }
 }
 
 /// C: mjCModel::Release (user/user_model.h:361)
@@ -882,14 +887,14 @@ pub fn mj_c_model_remove_plugins(self_ptr: *mut mjCModel) {
 /// C: mjCModel::AddObject (user/user_model.h:437)
 /// Calls: mjCModel::Signature
 #[allow(unused_variables, non_snake_case)]
-pub fn mj_c_model_add_object(self_ptr: *mut mjCModel, list: *const (), r#type: string) -> *mut T {
+pub fn mj_c_model_add_object(self_ptr: *mut mjCModel, list: *const (), r#type: std__string) -> *mut T {
     todo!() // mjCModel::AddObject
 }
 
 /// C: mjCModel::AddObjectDefault (user/user_model.h:440)
 /// Calls: mjCModel::Signature
 #[allow(unused_variables, non_snake_case)]
-pub fn mj_c_model_add_object_default(self_ptr: *mut mjCModel, list: *const (), r#type: string, def: *mut mjCDef) -> *mut T {
+pub fn mj_c_model_add_object_default(self_ptr: *mut mjCModel, list: *const (), r#type: std__string, def: *mut mjCDef) -> *mut T {
     todo!() // mjCModel::AddObjectDefault
 }
 
