@@ -391,7 +391,89 @@ pub fn mjraw_sphere_triangle(con: *mut mjPreContact, margin: f64, s: *const f64,
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjraw_box_triangle(con: *mut mjPreContact, margin: f64, pos: *const f64, mat: *const f64, size: *const f64, t1: *const f64, t2: *const f64, t3: *const f64, rt: f64) -> i32 {
-    todo!() // mjraw_BoxTriangle
+    const MJ_MAXCONPAIR: i32 = 50;
+    // SAFETY: caller guarantees all pointers valid and arrays properly sized
+    unsafe {
+        let mut cnt: i32 = 0;
+        let vert: [*const f64; 3] = [t1, t2, t3];
+
+        // check triangle vertices against box faces
+        for i in 0..3usize {
+            let mut diff: [f64; 3] = [0.0; 3];
+            let mut local: [f64; 3] = [0.0; 3];
+            crate::engine::engine_util_blas::mju_sub3(diff.as_mut_ptr(), vert[i], pos);
+            crate::engine::engine_util_blas::mju_mul_mat_t_vec3(local.as_mut_ptr(), mat, diff.as_ptr());
+
+            // find max penetration / closest face
+            let mut maxaxis: usize = 0;
+            let mut maxval = local[0].abs() - *size.add(0);
+            for j in 1..3usize {
+                let val = local[j].abs() - *size.add(j);
+                if val > maxval {
+                    maxval = val;
+                    maxaxis = j;
+                }
+            }
+
+            if maxval - rt > margin {
+                continue;
+            }
+
+            // check if within other dimensions
+            let mut inside = true;
+            for j in 0..3usize {
+                if local[j].abs() > *size.add(j) + margin + rt {
+                    inside = false;
+                    break;
+                }
+            }
+            if !inside {
+                continue;
+            }
+
+            // create contact
+            if cnt < MJ_MAXCONPAIR {
+                let mut nrm_local: [f64; 3] = [0.0, 0.0, 0.0];
+                nrm_local[maxaxis] = if local[maxaxis] > 0.0 { 1.0 } else { -1.0 };
+
+                crate::engine::engine_util_blas::mju_mul_mat_vec3(
+                    (*con.add(cnt as usize)).normal.as_mut_ptr(), mat, nrm_local.as_ptr());
+
+                (*con.add(cnt as usize)).dist = maxval - rt;
+
+                let offset = rt + (*con.add(cnt as usize)).dist * 0.5;
+                crate::engine::engine_inline::mji_add_scl3(
+                    (*con.add(cnt as usize)).pos.as_mut_ptr(), vert[i],
+                    (*con.add(cnt as usize)).normal.as_ptr(), -offset);
+
+                crate::engine::engine_util_blas::mju_zero3((*con.add(cnt as usize)).tangent.as_mut_ptr());
+
+                cnt += 1;
+            }
+        }
+
+        // check box corners against triangle
+        for i in 0..8usize {
+            if cnt >= MJ_MAXCONPAIR {
+                break;
+            }
+
+            let mut vec: [f64; 3] = [0.0; 3];
+            vec[0] = if i & 1 != 0 { *size.add(0) } else { -*size.add(0) };
+            vec[1] = if i & 2 != 0 { *size.add(1) } else { -*size.add(1) };
+            vec[2] = if i & 4 != 0 { *size.add(2) } else { -*size.add(2) };
+
+            let mut corner: [f64; 3] = [0.0; 3];
+            crate::engine::engine_util_blas::mju_mul_mat_vec3(corner.as_mut_ptr(), mat, vec.as_ptr());
+            crate::engine::engine_util_blas::mju_add_to3(corner.as_mut_ptr(), pos);
+
+            if mjraw_sphere_triangle(con.add(cnt as usize), margin, corner.as_ptr(), 0.0, t1, t2, t3, rt) != 0 {
+                cnt += 1;
+            }
+        }
+
+        cnt
+    }
 }
 
 /// C: mjraw_CapsuleTriangle (engine/engine_collision_primitive.h:42)
@@ -403,7 +485,73 @@ pub fn mjraw_box_triangle(con: *mut mjPreContact, margin: f64, pos: *const f64, 
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjraw_capsule_triangle(con: *mut mjPreContact, margin: f64, pos: *const f64, mat: *const f64, size: *const f64, t1: *const f64, t2: *const f64, t3: *const f64, rt: f64) -> i32 {
-    todo!() // mjraw_CapsuleTriangle
+    const MJ_MAXCONPAIR: i32 = 50;
+    const MJ_MINVAL: f64 = 1E-15;
+    // SAFETY: caller guarantees all pointers valid and arrays properly sized
+    unsafe {
+        let mut cnt: i32 = 0;
+        let radius = *size.add(0);
+        let len = *size.add(1);
+        let axis: [f64; 3] = [*mat.add(2), *mat.add(5), *mat.add(8)];
+        let mut p1: [f64; 3] = [0.0; 3];
+        let mut p2: [f64; 3] = [0.0; 3];
+
+        // capsule endpoints
+        crate::engine::engine_util_blas::mju_add_scl3(p1.as_mut_ptr(), pos, axis.as_ptr(), -len);
+        crate::engine::engine_util_blas::mju_add_scl3(p2.as_mut_ptr(), pos, axis.as_ptr(), len);
+
+        // Check endpoints against triangle
+        cnt += mjraw_sphere_triangle(con.add(cnt as usize), margin, p1.as_ptr(), radius, t1, t2, t3, rt);
+        if cnt >= MJ_MAXCONPAIR { return cnt; }
+        cnt += mjraw_sphere_triangle(con.add(cnt as usize), margin, p2.as_ptr(), radius, t1, t2, t3, rt);
+        if cnt >= MJ_MAXCONPAIR { return cnt; }
+
+        // Check triangle vertices against capsule axis
+        let vert: [*const f64; 3] = [t1, t2, t3];
+        for i in 0..3usize {
+            // point-segment distance
+            let mut vec: [f64; 3] = [0.0; 3];
+            let mut ab: [f64; 3] = [0.0; 3];
+            crate::engine::engine_util_blas::mju_sub3(vec.as_mut_ptr(), vert[i], p1.as_ptr());
+            crate::engine::engine_util_blas::mju_sub3(ab.as_mut_ptr(), p2.as_ptr(), p1.as_ptr());
+            let t = crate::engine::engine_util_blas::mju_dot3(vec.as_ptr(), ab.as_ptr()) / (4.0 * len * len);
+
+            // clamp t to [0, 1] segment (only process interior)
+            if t <= MJ_MINVAL || t >= 1.0 - MJ_MINVAL {
+                continue;
+            }
+
+            // closest point on segment
+            let mut closest: [f64; 3] = [0.0; 3];
+            crate::engine::engine_inline::mji_add_scl3(closest.as_mut_ptr(), p1.as_ptr(), ab.as_ptr(), t);
+
+            // distance vector
+            crate::engine::engine_util_blas::mju_sub3(vec.as_mut_ptr(), vert[i], closest.as_ptr());
+            let dist = crate::engine::engine_util_blas::mju_normalize3(vec.as_mut_ptr());
+
+            if dist > radius + rt + margin {
+                continue;
+            }
+
+            // set contact
+            (*con.add(cnt as usize)).dist = dist - radius - rt;
+            crate::engine::engine_inline::mji_copy3((*con.add(cnt as usize)).normal.as_mut_ptr(), vec.as_ptr());
+            crate::engine::engine_util_blas::mju_zero3((*con.add(cnt as usize)).tangent.as_mut_ptr());
+
+            // position: midway between surfaces
+            crate::engine::engine_inline::mji_add3((*con.add(cnt as usize)).pos.as_mut_ptr(), closest.as_ptr(), vert[i]);
+            crate::engine::engine_inline::mji_add_to_scl3((*con.add(cnt as usize)).pos.as_mut_ptr(), vec.as_ptr(), radius - rt);
+            crate::engine::engine_util_blas::mju_scl3(
+                (*con.add(cnt as usize)).pos.as_mut_ptr(),
+                (*con.add(cnt as usize)).pos.as_ptr(),
+                0.5);
+
+            cnt += 1;
+            if cnt >= MJ_MAXCONPAIR { return cnt; }
+        }
+
+        cnt
+    }
 }
 
 /// C: mjc_PlaneSphere (engine/engine_collision_primitive.h:47)
