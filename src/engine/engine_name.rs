@@ -184,6 +184,20 @@ pub fn mj_name2id(m: *const mjModel, r#type: i32, name: *const i8) -> i32 {
 /// Calls: _getnumadr
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_id2name(m: *const mjModel, r#type: i32, id: i32) -> *const i8 {
-    todo!() // mj_id2name
+    // SAFETY: caller guarantees m is valid
+    unsafe {
+        let mut mapadr: i32 = 0;
+        let mut adr: *mut i32 = std::ptr::null_mut();
+
+        // get number of objects and name addresses
+        let num = getnumadr(m, r#type as u32, &mut adr, &mut mapadr);
+
+        // id is in [0, num) and the found name is not the empty string
+        if id >= 0 && id < num && *(*m).names.add(*adr.add(id as usize) as usize) != 0 {
+            return (*m).names.add(*adr.add(id as usize) as usize);
+        }
+
+        std::ptr::null()
+    }
 }
 
