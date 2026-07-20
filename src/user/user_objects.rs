@@ -389,7 +389,19 @@ pub fn mj_c_bounding_volume_hierarchy_create_bvh(self_ptr: *mut mjCBoundingVolum
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_bounding_volume_hierarchy_set(self_ptr: *mut mjCBoundingVolumeHierarchy, ipos_element: *mut f64, iquat_element: *mut f64) {
-    todo!() // mjCBoundingVolumeHierarchy::Set
+    // SAFETY: self_ptr, ipos_element, iquat_element are valid pointers
+    unsafe {
+        crate::user::user_util::mjuu_copyvec(
+            (*self_ptr).ipos_.as_mut_ptr() as *mut T1,
+            ipos_element as *const T2,
+            3,
+        );
+        crate::user::user_util::mjuu_copyvec(
+            (*self_ptr).iquat_.as_mut_ptr() as *mut T1,
+            iquat_element as *const T2,
+            4,
+        );
+    }
 }
 
 /// C: mjCBoundingVolumeHierarchy::AllocateBoundingVolumes (user/user_objects.h:176)
