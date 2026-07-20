@@ -225,7 +225,18 @@ pub fn mj_c_model_copy_from_spec(self_ptr: *mut mjCModel) {
 /// C: mjCModel::PointToLocal (user/user_model.h:192)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_model_point_to_local(self_ptr: *mut mjCModel) {
-    todo!() // mjCModel::PointToLocal
+    // SAFETY: self_ptr is a valid pointer to mjCModel
+    unsafe {
+        (*self_ptr).spec.element = self_ptr as *mut mjsElement;
+        (*self_ptr).spec.comment = &mut (*self_ptr).spec_comment_ as *mut std__string as *mut mjString;
+        (*self_ptr).spec.modelfiledir = &mut (*self_ptr).spec_modelfiledir_ as *mut std__string as *mut mjString;
+        (*self_ptr).spec.modelname = &mut (*self_ptr).spec_modelname_ as *mut std__string as *mut mjString;
+        (*self_ptr).spec.compiler.meshdir = &mut (*self_ptr).meshdir_ as *mut std__string as *mut mjString;
+        (*self_ptr).spec.compiler.texturedir = &mut (*self_ptr).texturedir_ as *mut std__string as *mut mjString;
+        (*self_ptr).comment = std::ptr::null_mut();
+        (*self_ptr).modelfiledir = std::ptr::null_mut();
+        (*self_ptr).modelname = std::ptr::null_mut();
+    }
 }
 
 /// C: mjCModel::Compile (user/user_model.h:203)
