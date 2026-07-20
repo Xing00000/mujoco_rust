@@ -1301,7 +1301,11 @@ pub fn mj_c_geom_get_parent(self_ptr: *mut mjCGeom) -> *mut mjCBody {
 /// C: mjCGeom::Type (user/user_objects.h:789)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_geom_type(self_ptr: *mut mjCGeom) -> u32 {
-    todo!() // mjCGeom::Type
+    // SAFETY: self_ptr is a valid pointer; type field stores mjtGeom (u32) in first 4 bytes
+    unsafe {
+        let type_bytes = &(*self_ptr).r#type;
+        u32::from_ne_bytes([type_bytes[0], type_bytes[1], type_bytes[2], type_bytes[3]])
+    }
 }
 
 /// C: mjCGeom::SetFluidCoefs (user/user_objects.h:792)
@@ -2042,7 +2046,11 @@ pub fn mj_c_mesh_user_face(self_ptr: *mut mjCMesh) -> *const () {
 /// C: mjCMesh::Inertia (user/user_objects.h:1182)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_mesh_inertia(self_ptr: *mut mjCMesh) -> u32 {
-    todo!() // mjCMesh::Inertia
+    // SAFETY: self_ptr is valid; inertia field stores mjtMeshInertia (u32) as [u8; 4]
+    unsafe {
+        let bytes = &(*self_ptr).inertia;
+        u32::from_ne_bytes([bytes[0], bytes[1], bytes[2], bytes[3]])
+    }
 }
 
 /// C: mjCMesh::Material (user/user_objects.h:1183)
@@ -2236,7 +2244,8 @@ pub fn mj_c_mesh_is_visual(self_ptr: *mut mjCMesh) -> bool {
 /// C: mjCMesh::SetNotVisual (user/user_objects.h:1231)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_mesh_set_not_visual(self_ptr: *mut mjCMesh) {
-    todo!() // mjCMesh::SetNotVisual
+    // SAFETY: self_ptr is a valid pointer to mjCMesh provided by the caller
+    unsafe { (*self_ptr).visual_ = false; }
 }
 
 /// C: mjCMesh::CopyVert (user/user_objects.h:1233)
