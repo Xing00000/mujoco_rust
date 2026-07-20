@@ -159,7 +159,13 @@ pub fn makelistid(dest: *const (), source: *const ()) {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn changeframe(childpos: *mut f64, childquat: *mut f64, bodypos: *const f64, bodyquat: *const f64) {
-    todo!() // changeframe
+    let mut pos: [f64; 3] = [0.0; 3];
+    let mut quat: [f64; 4] = [0.0; 4];
+    crate::user::user_util::mjuu_copyvec(pos.as_mut_ptr() as *mut T1, bodypos as *const T2, 3);
+    crate::user::user_util::mjuu_copyvec(quat.as_mut_ptr() as *mut T1, bodyquat as *const T2, 4);
+    crate::user::user_util::mjuu_frameaccum(pos.as_mut_ptr(), quat.as_mut_ptr(), childpos, childquat);
+    crate::user::user_util::mjuu_copyvec(childpos as *mut T1, pos.as_ptr() as *const T2, 3);
+    crate::user::user_util::mjuu_copyvec(childquat as *mut T1, quat.as_ptr() as *const T2, 4);
 }
 
 /// C: comparePair (user/user_model.cc:4565)
@@ -412,7 +418,13 @@ pub fn mj_c_model_get_error(self_ptr: *mut mjCModel) -> *const mjCError {
 /// C: mjCModel::SetError (user/user_model.h:251)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_model_set_error(self_ptr: *mut mjCModel, error: *const mjCError) {
-    todo!() // mjCModel::SetError
+    // SAFETY: self_ptr and error are valid pointers provided by the caller.
+    // errInfo is the raw byte storage for mjCError within mjCModel.
+    unsafe {
+        let dst = &mut (*self_ptr).errInfo as *mut [u8; 504] as *mut u8;
+        let src = error as *const u8;
+        std::ptr::copy_nonoverlapping(src, dst, std::mem::size_of::<mjCError>());
+    }
 }
 
 /// C: mjCModel::AddWarning (user/user_model.h:252)

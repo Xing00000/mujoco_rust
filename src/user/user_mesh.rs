@@ -99,7 +99,31 @@ pub fn spherical_to_cartesian(aer: *const f64, xyz: *mut f32) {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn tangent_frame(aer: *const f64, mat: *mut f32) {
-    todo!() // TangentFrame
+    // SAFETY: aer points to 3 doubles, mat points to 9 floats
+    unsafe {
+        let a = *aer.add(0);
+        let e = *aer.add(1);
+        let r = *aer.add(2);
+
+        let mut ta: [f64; 3] = [
+            r * e.cos() * a.cos(),
+            0.0,
+            r * e.cos() * a.sin(),
+        ];
+        let mut te: [f64; 3] = [
+            -r * e.sin() * a.sin(),
+            r * e.cos(),
+            r * e.sin() * a.cos(),
+        ];
+        let mut n: [f64; 3] = [0.0; 3];
+
+        crate::user::user_util::mjuu_normvec(ta.as_mut_ptr(), 3);
+        crate::user::user_util::mjuu_normvec(te.as_mut_ptr(), 3);
+        crate::user::user_util::mjuu_copyvec(mat.add(3) as *mut T1, ta.as_ptr() as *const T2, 3);
+        crate::user::user_util::mjuu_copyvec(mat.add(6) as *mut T1, te.as_ptr() as *const T2, 3);
+        crate::user::user_util::mjuu_crossvec(n.as_mut_ptr(), te.as_ptr(), ta.as_ptr());
+        crate::user::user_util::mjuu_copyvec(mat as *mut T1, n.as_ptr() as *const T2, 3);
+    }
 }
 
 /// C: aux_c (user/user_mesh.cc:145)

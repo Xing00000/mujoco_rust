@@ -161,8 +161,22 @@ pub fn cam_project(sensordata: *mut f64, target_xpos: *const f64, cam_xpos: *con
 /// C: checkMatch (engine/engine_sensor.c:320)
 /// Calls: mjCMesh::tree
 #[allow(unused_variables, non_snake_case)]
-pub fn check_match(m: *const mjModel, body: i32, geom: i32, r#type: u32, id: i32) -> i32 {
-    todo!() // checkMatch
+pub fn check_match(m: *const mjModel, mut body: i32, geom: i32, r#type: u32, id: i32) -> i32 {
+    if r#type == mjtObj_mjOBJ_UNKNOWN { return 1; }
+    if r#type == mjtObj_mjOBJ_SITE { return 1; }
+    if r#type == mjtObj_mjOBJ_GEOM { return (id == geom) as i32; }
+    if r#type == mjtObj_mjOBJ_BODY { return (id == body) as i32; }
+    if r#type == mjtObj_mjOBJ_XBODY {
+        // SAFETY: m is a valid pointer to mjModel; body_parentid is a valid array
+        unsafe {
+            while body > id {
+                body = *(*m).body_parentid.add(body as usize);
+            }
+        }
+        return (body == id) as i32;
+    }
+
+    0
 }
 
 /// C: matchContact (engine/engine_sensor.c:339)

@@ -1280,7 +1280,8 @@ pub fn mj_c_geom_is_visual(self_ptr: *mut mjCGeom) -> bool {
 /// C: mjCGeom::SetNotVisual (user/user_objects.h:786)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_geom_set_not_visual(self_ptr: *mut mjCGeom) {
-    todo!() // mjCGeom::SetNotVisual
+    // SAFETY: self_ptr is a valid pointer to mjCGeom provided by the caller
+    unsafe { (*self_ptr).visual_ = false; }
 }
 
 /// C: mjCGeom::SetParent (user/user_objects.h:787)
