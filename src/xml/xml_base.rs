@@ -19,7 +19,8 @@ pub fn mj_x_base_write(self_ptr: *mut mjXBase, error: *mut i8, error_sz: u64) ->
 /// C: mjXBase::SetModel (xml/xml_base.h:108)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_x_base_set_model(self_ptr: *mut mjXBase, arg0: *mut mjSpec, arg1: *const mjModel) {
-    todo!() // mjXBase::SetModel
+    // SAFETY: self_ptr is valid; sets the spec pointer
+    unsafe { (*self_ptr).spec = arg0; }
 }
 
 /// C: mjXBase::ReadAlternative (xml/xml_base.h:111)
