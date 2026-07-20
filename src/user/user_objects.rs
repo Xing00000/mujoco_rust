@@ -1488,7 +1488,78 @@ pub fn mj_c_geom_get_r_bound(self_ptr: *mut mjCGeom) -> f64 {
 /// Calls: mjCMesh::aamm, mjuu_copyvec, mjuu_setvec
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_geom_compute_aabb(self_ptr: *mut mjCGeom) {
-    todo!() // mjCGeom::ComputeAABB
+    const MJ_MAXVAL: f64 = 1E+10;
+
+    // SAFETY: self_ptr is valid; hfield/mesh pointers valid when non-null
+    unsafe {
+        let geom_type = u32::from_ne_bytes([
+            (*self_ptr).r#type[0], (*self_ptr).r#type[1],
+            (*self_ptr).r#type[2], (*self_ptr).r#type[3],
+        ]);
+        let size = &(*self_ptr).size;
+
+        let mut aamm: [f64; 6] = [0.0; 6];
+
+        if geom_type == mjtGeom_mjGEOM_HFIELD {
+            let hf_size = &(*(*self_ptr).hfield).size;
+            aamm[0] = -hf_size[0];
+            aamm[1] = -hf_size[1];
+            aamm[2] = -hf_size[3];
+            aamm[3] = hf_size[0];
+            aamm[4] = hf_size[1];
+            aamm[5] = hf_size[2];
+        } else if geom_type == mjtGeom_mjGEOM_SPHERE {
+            aamm[3] = size[0];
+            aamm[4] = size[0];
+            aamm[5] = size[0];
+            aamm[0] = -aamm[3];
+            aamm[1] = -aamm[4];
+            aamm[2] = -aamm[5];
+        } else if geom_type == mjtGeom_mjGEOM_CAPSULE {
+            aamm[3] = size[0];
+            aamm[4] = size[0];
+            aamm[5] = size[0] + size[1];
+            aamm[0] = -aamm[3];
+            aamm[1] = -aamm[4];
+            aamm[2] = -aamm[5];
+        } else if geom_type == mjtGeom_mjGEOM_CYLINDER {
+            aamm[3] = size[0];
+            aamm[4] = size[0];
+            aamm[5] = size[1];
+            aamm[0] = -aamm[3];
+            aamm[1] = -aamm[4];
+            aamm[2] = -aamm[5];
+        } else if geom_type == mjtGeom_mjGEOM_MESH || geom_type == mjtGeom_mjGEOM_SDF {
+            let mesh_aamm = mj_c_mesh_aamm((*self_ptr).mesh);
+            crate::user::user_util::mjuu_copyvec(aamm.as_mut_ptr() as *mut T1, mesh_aamm as *const T2, 6);
+        } else if geom_type == mjtGeom_mjGEOM_PLANE {
+            aamm[0] = -MJ_MAXVAL;
+            aamm[1] = -MJ_MAXVAL;
+            aamm[2] = -MJ_MAXVAL;
+            aamm[3] = MJ_MAXVAL;
+            aamm[4] = MJ_MAXVAL;
+            aamm[5] = 0.0;
+        } else {
+            crate::user::user_util::mjuu_copyvec(aamm.as_mut_ptr().add(3) as *mut T1, size.as_ptr() as *const T2, 3);
+            aamm[0] = -size[0];
+            aamm[1] = -size[1];
+            aamm[2] = -size[2];
+        }
+
+        // convert aamm to aabb (center, size) format
+        let pos: [f64; 3] = [
+            (aamm[3] + aamm[0]) / 2.0,
+            (aamm[4] + aamm[1]) / 2.0,
+            (aamm[5] + aamm[2]) / 2.0,
+        ];
+        let sz: [f64; 3] = [
+            (aamm[3] - aamm[0]) / 2.0,
+            (aamm[4] - aamm[1]) / 2.0,
+            (aamm[5] - aamm[2]) / 2.0,
+        ];
+        crate::user::user_util::mjuu_copyvec((*self_ptr).aabb.as_mut_ptr() as *mut T1, pos.as_ptr() as *const T2, 3);
+        crate::user::user_util::mjuu_copyvec((*self_ptr).aabb.as_mut_ptr().add(3) as *mut T1, sz.as_ptr() as *const T2, 3);
+    }
 }
 
 /// C: mjCGeom::CopyFromSpec (user/user_objects.h:807)
