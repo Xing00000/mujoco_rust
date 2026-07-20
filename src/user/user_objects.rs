@@ -1992,7 +1992,8 @@ pub fn mj_c_mesh_scale(self_ptr: *mut mjCMesh) -> *const f64 {
 /// C: mjCMesh::SmoothNormal (user/user_objects.h:1172)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_mesh_smooth_normal(self_ptr: *mut mjCMesh) -> bool {
-    todo!() // mjCMesh::SmoothNormal
+    // SAFETY: self_ptr is a valid pointer to mjCMesh
+    unsafe { (*self_ptr).smoothnormal != 0 }
 }
 
 /// C: mjCMesh::Vert (user/user_objects.h:1173)
