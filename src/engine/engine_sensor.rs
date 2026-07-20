@@ -183,7 +183,66 @@ pub fn check_match(m: *const mjModel, mut body: i32, geom: i32, r#type: u32, id:
 /// Calls: checkMatch, mj_flexBody, mju_insideGeom
 #[allow(unused_variables, non_snake_case)]
 pub fn match_contact(m: *const mjModel, d: *const mjData, conid: i32, type1: u32, id1: i32, type2: u32, id2: i32) -> i32 {
-    todo!() // matchContact
+    // SAFETY: m, d are valid model/data pointers; array accesses are within model bounds
+    unsafe {
+        // no criterion: quick match
+        if type1 == mjtObj_mjOBJ_UNKNOWN && type2 == mjtObj_mjOBJ_UNKNOWN {
+            return 1;
+        }
+
+        // site filter
+        if type1 == mjtObj_mjOBJ_SITE {
+            if crate::engine::engine_util_misc::mju_inside_geom(
+                (*d).site_xpos.add(3 * id1 as usize),
+                (*d).site_xmat.add(9 * id1 as usize),
+                (*m).site_size.add(3 * id1 as usize),
+                *(*m).site_type.add(id1 as usize) as u32,
+                (*d).contact.add(conid as usize).as_ref().unwrap().pos.as_ptr(),
+            ) == 0 {
+                return 0;
+            }
+        }
+
+        // get geom, body ids
+        let contact = &*(*d).contact.add(conid as usize);
+        let geom1 = contact.geom[0];
+        let geom2 = contact.geom[1];
+        let body1 = if geom1 >= 0 {
+            *(*m).geom_bodyid.add(geom1 as usize)
+        } else {
+            crate::engine::engine_sleep::mj_flex_body(m, contact as *const mjContact, 0)
+        };
+        let body2 = if geom2 >= 0 {
+            *(*m).geom_bodyid.add(geom2 as usize)
+        } else {
+            crate::engine::engine_sleep::mj_flex_body(m, contact as *const mjContact, 1)
+        };
+
+        // check match of sensor objects with contact objects
+        let match11 = check_match(m, body1, geom1, type1, id1);
+        let match12 = check_match(m, body2, geom2, type1, id1);
+        let match21 = check_match(m, body1, geom1, type2, id2);
+        let match22 = check_match(m, body2, geom2, type2, id2);
+
+        // if a sensor object is specified, it must be involved in the contact
+        if match11 == 0 && match12 == 0 { return 0; }
+        if match21 == 0 && match22 == 0 { return 0; }
+
+        // determine direction
+        if type1 != mjtObj_mjOBJ_UNKNOWN && type2 != mjtObj_mjOBJ_UNKNOWN {
+            let order_regular = (match11 != 0 && match22 != 0) as i32;
+            let order_reverse = (match12 != 0 && match21 != 0) as i32;
+            if order_regular != 0 && order_reverse == 0 { return 1; }
+            if order_reverse != 0 && order_regular == 0 { return -1; }
+            if order_regular != 0 && order_reverse != 0 { return 1; }
+        } else if type1 != mjtObj_mjOBJ_UNKNOWN {
+            return if match11 != 0 { 1 } else { -1 };
+        } else if type2 != mjtObj_mjOBJ_UNKNOWN {
+            return if match22 != 0 { 1 } else { -1 };
+        }
+
+        0
+    }
 }
 
 /// C: copySensorData (engine/engine_sensor.c:398)

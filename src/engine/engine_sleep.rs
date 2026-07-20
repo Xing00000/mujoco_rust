@@ -254,7 +254,7 @@ pub fn mj_update_sleep_init(m: *const mjModel, d: *mut mjData, flg_staticawake: 
 /// Calls: mj_updateSleepInit
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_update_sleep(m: *const mjModel, d: *mut mjData) {
-    todo!() // mj_updateSleep
+    mj_update_sleep_init(m, d, 0);
 }
 
 /// C: mj_sleepCycle (engine/engine_sleep.h:34)

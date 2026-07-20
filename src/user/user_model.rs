@@ -723,7 +723,8 @@ pub fn mj_c_model_set_deep_copy(self_ptr: *mut mjCModel, deepcopy: bool) {
 /// C: mjCModel::SetAttached (user/user_model.h:350)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_model_set_attached(self_ptr: *mut mjCModel, deepcopy: bool) {
-    todo!() // mjCModel::SetAttached
+    // SAFETY: self_ptr is a valid pointer to mjCModel
+    unsafe { (*self_ptr).attached_ |= !deepcopy; }
 }
 
 /// C: mjCModel::IsAttached (user/user_model.h:353)
@@ -743,7 +744,8 @@ pub fn mj_c_model_check_repeat(self_ptr: *mut mjCModel, r#type: u32) {
 /// C: mjCModel::AddRef (user/user_model.h:359)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_model_add_ref(self_ptr: *mut mjCModel) {
-    todo!() // mjCModel::AddRef
+    // SAFETY: self_ptr is a valid pointer to mjCModel
+    unsafe { (*self_ptr).refcount += 1; }
 }
 
 /// C: mjCModel::GetRef (user/user_model.h:360)

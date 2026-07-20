@@ -161,7 +161,14 @@ pub fn mjs_is_warning(s: *mut mjSpec) -> i32 {
 /// Calls: mjCModel::Release
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_delete_spec(s: *mut mjSpec) {
-    todo!() // mj_deleteSpec
+    if s.is_null() {
+        return;
+    }
+    // SAFETY: s is a valid non-null pointer; element points to mjCModel
+    unsafe {
+        let model = (*s).element as *mut mjCModel;
+        crate::user::user_model::mj_c_model_release(model);
+    }
 }
 
 /// C: mjs_addSpec (user/user_api.h:61)
