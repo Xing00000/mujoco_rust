@@ -1,5 +1,5 @@
 //! Port of: engine/engine_io.c
-//! IR hash: adc2f24e872d94f7
+//! IR hash: 73a9f665ec0ecfc0
 //! CODEGEN: signatures locked. Only fill todo!() bodies.
 
 use crate::types::*;
@@ -158,7 +158,52 @@ pub fn check_db_sparse(m: *const mjModel) {
 /// Calls: mju_copyInt, mju_message
 #[allow(unused_variables, non_snake_case)]
 pub fn copy_m2sparse(nv: i32, dof_Madr: *const i32, dof_simplenum: *const i32, dof_parentid: *const i32, rownnz: *const i32, rowadr: *const i32, src: *const i32, dst: *mut i32, reduced: i32, upper: i32, remaining: *mut i32) {
-    todo!() // copyM2Sparse
+    // SAFETY: all pointers are valid arrays of appropriate sizes (caller contract)
+    unsafe {
+        // init remaining
+        crate::engine::engine_util_misc::mju_copy_int(remaining, rownnz, nv);
+
+        // copy data
+        let mut i = nv - 1;
+        while i >= 0 {
+            // init at diagonal
+            let mut adr = *dof_Madr.add(i as usize);
+            *remaining.add(i as usize) -= 1;
+            *dst.add((*rowadr.add(i as usize) + *remaining.add(i as usize)) as usize) =
+                *src.add(adr as usize);
+            adr += 1;
+
+            // process below diagonal unless reduced and dof is simple
+            if !(reduced != 0 && *dof_simplenum.add(i as usize) != 0) {
+                let mut j = i;
+                loop {
+                    j = *dof_parentid.add(j as usize);
+                    if j < 0 { break; }
+                    *remaining.add(i as usize) -= 1;
+                    *dst.add((*rowadr.add(i as usize) + *remaining.add(i as usize)) as usize) =
+                        *src.add(adr as usize);
+
+                    // add upper triangle if requested
+                    if upper != 0 {
+                        *remaining.add(j as usize) -= 1;
+                        *dst.add((*rowadr.add(j as usize) + *remaining.add(j as usize)) as usize) =
+                            *src.add(adr as usize);
+                    }
+
+                    adr += 1;
+                }
+            }
+            i -= 1;
+        }
+
+        // check that none remaining
+        for i in 0..nv as usize {
+            if *remaining.add(i) != 0 {
+                crate::engine::engine_util_errmem::mju_error(
+                    b"unassigned index\0".as_ptr() as *const i8);
+            }
+        }
+    }
 }
 
 /// C: mj_setPtrData (engine/engine_io.c:989)

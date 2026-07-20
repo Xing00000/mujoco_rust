@@ -1,5 +1,5 @@
 //! Port of: engine/engine_print.c
-//! IR hash: adc2f24e872d94f7
+//! IR hash: 73a9f665ec0ecfc0
 //! CODEGEN: signatures locked. Only fill todo!() bodies.
 
 use crate::types::*;
@@ -46,13 +46,53 @@ pub fn print_arr(fp: *mut FILE, name: *const i8, data: *const f32, n: i32, float
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn print_array2d(str: *const i8, nr: i32, nc: i32, data: *const f64, fp: *mut FILE, float_format: *const i8) {
-    todo!() // printArray2d
+    extern "C" {
+        fn fprintf(stream: *mut FILE, fmt: *const i8, ...) -> i32;
+    }
+    if data.is_null() {
+        return;
+    }
+    // SAFETY: str, data, fp, float_format are valid (caller contract)
+    unsafe {
+        if nr != 0 && nc != 0 {
+            fprintf(fp, b"%s\n\0".as_ptr() as *const i8, str);
+            for r in 0..nr as usize {
+                fprintf(fp, b" \0".as_ptr() as *const i8);
+                for c in 0..nc as usize {
+                    fprintf(fp, b" \0".as_ptr() as *const i8);
+                    fprintf(fp, float_format, *data.add(c + r * nc as usize));
+                }
+                fprintf(fp, b"\n\0".as_ptr() as *const i8);
+            }
+            fprintf(fp, b"\n\0".as_ptr() as *const i8);
+        }
+    }
 }
 
 /// C: printArray2dInt (engine/engine_print.c:105)
 #[allow(unused_variables, non_snake_case)]
 pub fn print_array2d_int(str: *const i8, nr: i32, nc: i32, data: *const i32, fp: *mut FILE) {
-    todo!() // printArray2dInt
+    extern "C" {
+        fn fprintf(stream: *mut FILE, fmt: *const i8, ...) -> i32;
+    }
+    if data.is_null() {
+        return;
+    }
+    // SAFETY: str, data, fp are valid (caller contract)
+    unsafe {
+        if nr != 0 && nc != 0 {
+            fprintf(fp, b"%s\n\0".as_ptr() as *const i8, str);
+            for r in 0..nr as usize {
+                fprintf(fp, b" \0".as_ptr() as *const i8);
+                for c in 0..nc as usize {
+                    fprintf(fp, b" \0".as_ptr() as *const i8);
+                    fprintf(fp, b"%d\0".as_ptr() as *const i8, *data.add(c + r * nc as usize));
+                }
+                fprintf(fp, b"\n\0".as_ptr() as *const i8);
+            }
+            fprintf(fp, b"\n\0".as_ptr() as *const i8);
+        }
+    }
 }
 
 /// C: printDelayBuffer (engine/engine_print.c:125)

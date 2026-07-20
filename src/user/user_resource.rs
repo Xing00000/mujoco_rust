@@ -1,5 +1,5 @@
 //! Port of: user/user_resource.cc
-//! IR hash: adc2f24e872d94f7
+//! IR hash: 73a9f665ec0ecfc0
 //! CODEGEN: signatures locked. Only fill todo!() bodies.
 
 use crate::types::*;
@@ -28,7 +28,7 @@ pub fn mju_read_resource(resource: *mut mjResource, buffer: *const *mut ()) -> i
 /// C: mju_getResourceDir (user/user_resource.cc:82)
 #[allow(unused_variables, non_snake_case)]
 pub fn mju_get_resource_dir(resource: *mut mjResource, dir: *const *mut i8, ndir: *mut i32) {
-    todo!("struct_mjpResourceProvider is opaque - cannot access provider->prefix field")
+    todo!() // mju_getResourceDir
 }
 
 /// C: mju_isModifiedResource (user/user_resource.cc:105)

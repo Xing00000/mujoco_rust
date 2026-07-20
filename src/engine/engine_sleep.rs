@@ -1,5 +1,5 @@
 //! Port of: engine/engine_sleep.c
-//! IR hash: adc2f24e872d94f7
+//! IR hash: 73a9f665ec0ecfc0
 //! CODEGEN: signatures locked. Only fill todo!() bodies.
 
 use crate::types::*;
@@ -96,7 +96,60 @@ pub fn plural(n: i32) -> *const i8 {
 /// Calls: mju_isTopicEnabled, mju_message, mju_strncpy, mju_zero, plural
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_sleep_trees(m: *const mjModel, d: *mut mjData, tree: *const i32, n: i32) {
-    todo!() // mj_sleepTrees
+    extern "C" {
+        fn snprintf(buf: *mut i8, size: usize, fmt: *const i8, ...) -> i32;
+    }
+    // SAFETY: m, d, tree are valid pointers (caller contract)
+    unsafe {
+        for i in 0..n as usize {
+            // create cycle
+            let current = *tree.add(i);
+            let next = if i == (n as usize - 1) { *tree.add(0) } else { *tree.add(i + 1) };
+            if *(*d).tree_asleep.add(current as usize) == -1 {
+                *(*d).tree_asleep.add(current as usize) = next;
+            } else if *(*d).tree_asleep.add(current as usize) >= 0 {
+                crate::engine::engine_util_errmem::mju_error(
+                    b"trying to sleep tree %d which is already asleep\0".as_ptr() as *const i8);
+            } else {
+                crate::engine::engine_util_errmem::mju_error(
+                    b"trying to sleep tree %d which is not ready to sleep\0".as_ptr() as *const i8);
+            }
+
+            // set tree velocity and acceleration to zero
+            let adr = *(*m).tree_dofadr.add(current as usize);
+            let num = *(*m).tree_dofnum.add(current as usize);
+            crate::engine::engine_util_blas::mju_zero((*d).qvel.add(adr as usize), num);
+            crate::engine::engine_util_blas::mju_zero((*d).qacc.add(adr as usize), num);
+        }
+
+        // debug tracing
+        if crate::engine::engine_util_errmem::mju_is_topic_enabled(3) {
+            // mjTOPIC_SLEEP = 3 (mjLOG_INFO topics are 1-indexed after compile)
+            let mut buf = [0i8; 1024];
+            let mut pos = snprintf(buf.as_mut_ptr(), 1024,
+                b"t=%6.2g, slept tree%s \0".as_ptr() as *const i8,
+                (*d).time, if n == 1 { b"\0".as_ptr() } else { b"s\0".as_ptr() } as *const i8);
+            for i in 0..n as usize {
+                pos += snprintf(buf.as_mut_ptr().add(pos as usize), (1024 - pos as usize),
+                    b"%d%s\0".as_ptr() as *const i8,
+                    *tree.add(i),
+                    if i == (n as usize - 1) { b"\0".as_ptr() } else { b" \0".as_ptr() } as *const i8);
+            }
+            let mut msg = mjLogMessage {
+                level: 0, // mjLOG_INFO/DEBUG
+                topic: 3,
+                subject: [0i8; 1024],
+                body: std::ptr::null(),
+                func: std::ptr::null(),
+                file: std::ptr::null(),
+                line: 0,
+                timestamp: false,
+                _pad_0: [0; 3],
+            };
+            crate::engine::engine_util_misc::mju_strncpy(msg.subject.as_mut_ptr(), buf.as_ptr(), 1024);
+            crate::engine::engine_util_errmem::mju_message(&msg);
+        }
+    }
 }
 
 /// C: mj_tendonSleepState (engine/engine_sleep.c:634)

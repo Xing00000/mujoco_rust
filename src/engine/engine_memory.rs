@@ -1,5 +1,5 @@
 //! Port of: engine/engine_memory.c
-//! IR hash: adc2f24e872d94f7
+//! IR hash: 73a9f665ec0ecfc0
 //! CODEGEN: signatures locked. Only fill todo!() bodies.
 
 use crate::types::*;
@@ -18,7 +18,15 @@ pub fn fastmod(a: usize, b: usize) -> usize {
 /// C: get_stack_info_from_data (engine/engine_memory.c:74)
 #[allow(unused_variables, non_snake_case)]
 pub fn get_stack_info_from_data(d: *const mjData) -> mjStackInfo {
-    todo!("mjStackInfo is opaque (zero-size) in codegen - cannot initialize fields: bottom, top, limit, stack_base")
+    // SAFETY: d is a valid pointer to mjData (caller contract)
+    unsafe {
+        mjStackInfo {
+            bottom: (*d).arena as usize + (*d).narena as usize,
+            top: (*d).arena as usize + (*d).narena as usize - (*d).pstack as usize,
+            limit: (*d).arena as usize + (*d).parena as usize,
+            stack_base: (*d).pbase,
+        }
+    }
 }
 
 /// C: stackallocinternal (engine/engine_memory.c:144)

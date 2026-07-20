@@ -1,5 +1,5 @@
 //! Port of: engine/engine_collision_convex.c
-//! IR hash: adc2f24e872d94f7
+//! IR hash: 73a9f665ec0ecfc0
 //! CODEGEN: signatures locked. Only fill todo!() bodies.
 
 use crate::types::*;
@@ -25,7 +25,7 @@ pub fn prism_firstdir(o1: *const (), o2: *const (), vec: *mut ccd_vec3_t) {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn libccd_wrapper(m: *const mjModel, obj1: *mut mjCCDObj, obj2: *mut mjCCDObj, con: *mut mjPreContact, margin: f64) -> i32 {
-    todo!("requires libccd external library: ccd_t struct, CCD_INIT, ccdMPRPenetration, ccdVec3Eq not available in Rust port")
+    todo!() // _libccd_wrapper
 }
 
 /// C: mjc_penetration (engine/engine_collision_convex.c:87)

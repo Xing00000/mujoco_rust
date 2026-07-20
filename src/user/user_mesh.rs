@@ -1,5 +1,5 @@
 //! Port of: user/user_mesh.cc
-//! IR hash: adc2f24e872d94f7
+//! IR hash: 73a9f665ec0ecfc0
 //! CODEGEN: signatures locked. Only fill todo!() bodies.
 
 use crate::types::*;
@@ -420,7 +420,24 @@ pub fn quadrature_gauss_legendre(points: *mut f64, weights: *mut f64, order: i32
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn phi(s: f64, i: i32, order: i32) -> f64 {
-    todo!() // phi
+    if order == 1 {
+        if i == 0 { 1.0 - s } else { s }
+    } else if order == 2 {
+        match i {
+            0 => 2.0 * s * s - 3.0 * s + 1.0,
+            1 => 4.0 * (s - s * s),
+            2 => 2.0 * s * s - s,
+            _ => {
+                crate::engine::engine_util_errmem::mju_error(
+                    b"invalid index %d\0".as_ptr() as *const i8);
+                0.0
+            }
+        }
+    } else {
+        crate::engine::engine_util_errmem::mju_error(
+            b"Order must be 1 or 2.\0".as_ptr() as *const i8);
+        0.0
+    }
 }
 
 /// C: dphi (user/user_mesh.cc:3774)
@@ -432,7 +449,24 @@ pub fn phi(s: f64, i: i32, order: i32) -> f64 {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn dphi(s: f64, i: i32, order: i32) -> f64 {
-    todo!() // dphi
+    if order == 1 {
+        if i == 0 { -1.0 } else { 1.0 }
+    } else if order == 2 {
+        match i {
+            0 => 4.0 * s - 3.0,
+            1 => 4.0 * (1.0 - 2.0 * s),
+            2 => 4.0 * s - 1.0,
+            _ => {
+                crate::engine::engine_util_errmem::mju_error(
+                    b"invalid index %d, must be 0, 1, or 2\0".as_ptr() as *const i8);
+                0.0
+            }
+        }
+    } else {
+        crate::engine::engine_util_errmem::mju_error(
+            b"Order must be 1 or 2.\0".as_ptr() as *const i8);
+        0.0
+    }
 }
 
 /// C: sym (user/user_mesh.cc:3798)

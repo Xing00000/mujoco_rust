@@ -1,5 +1,5 @@
 //! Port of: user/user_util.cc
-//! IR hash: adc2f24e872d94f7
+//! IR hash: 73a9f665ec0ecfc0
 //! CODEGEN: signatures locked. Only fill todo!() bodies.
 
 use crate::types::*;
@@ -481,7 +481,16 @@ pub fn mjuu_localpos(pl: *mut f64, pg: *const f64, pos: *const f64, quat: *const
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjuu_localquat(local: *mut f64, child: *const f64, parent: *const f64) {
-    todo!() // mjuu_localquat
+    // SAFETY: local[4], child[4], parent[4] are valid arrays (caller contract)
+    unsafe {
+        let pneg: [f64; 4] = [
+            *parent.add(0),
+            -*parent.add(1),
+            -*parent.add(2),
+            -*parent.add(3),
+        ];
+        mjuu_mulquat(local, pneg.as_ptr(), child);
+    }
 }
 
 /// C: mjuu_crossvec (user/user_util.h:115)

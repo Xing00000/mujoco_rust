@@ -1,5 +1,5 @@
 //! Port of: xml/xml_native_reader.cc
-//! IR hash: adc2f24e872d94f7
+//! IR hash: 73a9f665ec0ecfc0
 //! CODEGEN: signatures locked. Only fill todo!() bodies.
 
 use crate::types::*;

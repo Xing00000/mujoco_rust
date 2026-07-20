@@ -1,5 +1,5 @@
 //! Port of: engine/engine_collision_gjk.c
-//! IR hash: adc2f24e872d94f7
+//! IR hash: 73a9f665ec0ecfc0
 //! CODEGEN: signatures locked. Only fill todo!() bodies.
 
 use crate::types::*;
@@ -1792,7 +1792,95 @@ pub fn intersect(res: *mut i32, arr1: *const i32, arr2: *const i32, n: i32, m: i
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mesh_normals(res: *mut f64, resind: *mut i32, dim: i32, obj: *mut mjCCDObj, v1: i32, v2: i32, v3: i32) -> i32 {
-    todo!() // meshNormals
+    const MJ_MAX_POLYVERT: i32 = 150;
+
+    #[repr(C)]
+    struct MeshData {
+        nvert: i32,
+        mesh_polynum: i32,
+        vert: *const f32,
+        mpolymapadr: *const i32,
+        mpolymapnum: *const i32,
+        polymap: *const i32,
+        polyvertadr: *const i32,
+        polyvertnum: *const i32,
+        polyvert: *const i32,
+        polynormal: *const f64,
+        graph: *const i32,
+    }
+
+    // SAFETY: res[3*n], resind[n], obj are valid pointers from caller contract
+    unsafe {
+        let mesh_ptr = &(*obj).data as *const _ as *const MeshData;
+        let polymap = (*mesh_ptr).polymap;
+        let polynormal = (*mesh_ptr).polynormal;
+        let mat = (*obj).mat.as_ptr();
+
+        if dim == 3 {
+            let v1_adr = *(*mesh_ptr).mpolymapadr.add(v1 as usize);
+            let v1_num = *(*mesh_ptr).mpolymapnum.add(v1 as usize);
+
+            let v2_adr = *(*mesh_ptr).mpolymapadr.add(v2 as usize);
+            let v2_num = *(*mesh_ptr).mpolymapnum.add(v2 as usize);
+
+            let v3_adr = *(*mesh_ptr).mpolymapadr.add(v3 as usize);
+            let v3_num = *(*mesh_ptr).mpolymapnum.add(v3 as usize);
+
+            let mut edgeset = [0i32; 2];
+            let mut faceset = [0i32; 2];
+            let n = intersect(edgeset.as_mut_ptr(), polymap.add(v1_adr as usize),
+                              polymap.add(v2_adr as usize), v1_num, v2_num);
+            if n == 0 { return 0; }
+            let n = intersect(faceset.as_mut_ptr(), edgeset.as_ptr(),
+                              polymap.add(v3_adr as usize), n, v3_num);
+            if n == 0 { return 0; }
+
+            // three vertices on mesh define a unique face
+            let normal = polynormal.add(3 * faceset[0] as usize);
+            globalcoord(res, mat, std::ptr::null(), *normal.add(0), *normal.add(1), *normal.add(2));
+            *resind.add(0) = faceset[0];
+            return 1;
+        }
+
+        if dim == 2 {
+            let v1_adr = *(*mesh_ptr).mpolymapadr.add(v1 as usize);
+            let v1_num = *(*mesh_ptr).mpolymapnum.add(v1 as usize);
+
+            let v2_adr = *(*mesh_ptr).mpolymapadr.add(v2 as usize);
+            let v2_num = *(*mesh_ptr).mpolymapnum.add(v2 as usize);
+
+            // up to two faces as vertices on mesh define an edge
+            let mut edgeset = [0i32; 2];
+            let n = intersect(edgeset.as_mut_ptr(), polymap.add(v1_adr as usize),
+                              polymap.add(v2_adr as usize), v1_num, v2_num);
+            if n == 0 { return 0; }
+            for i in 0..n as usize {
+                let normal = polynormal.add(3 * edgeset[i] as usize);
+                globalcoord(res.add(3 * i), mat, std::ptr::null(),
+                            *normal.add(0), *normal.add(1), *normal.add(2));
+                *resind.add(i) = edgeset[i];
+            }
+            return n;
+        }
+
+        if dim == 1 {
+            let v1_adr = *(*mesh_ptr).mpolymapadr.add(v1 as usize);
+            let mut v1_num = *(*mesh_ptr).mpolymapnum.add(v1 as usize);
+
+            // cap number of possible faces intersecting at a vertex
+            if v1_num > MJ_MAX_POLYVERT { v1_num = MJ_MAX_POLYVERT; }
+            for i in 0..v1_num as usize {
+                let index = *polymap.add(v1_adr as usize + i);
+                let normal = polynormal.add(3 * index as usize);
+                globalcoord(res.add(3 * i), mat, std::ptr::null(),
+                            *normal.add(0), *normal.add(1), *normal.add(2));
+                *resind.add(i) = index;
+            }
+            return v1_num;
+        }
+
+        0
+    }
 }
 
 /// C: meshEdgeNormals (engine/engine_collision_gjk.c:1840)

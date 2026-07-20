@@ -1,5 +1,5 @@
 //! Port of: engine/engine_util_solve.c
-//! IR hash: adc2f24e872d94f7
+//! IR hash: 73a9f665ec0ecfc0
 //! CODEGEN: signatures locked. Only fill todo!() bodies.
 
 use crate::types::*;
@@ -610,7 +610,43 @@ pub fn mju_dense2band(res: *mut f64, mat: *const f64, ntotal: i32, nband: i32, n
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mju_band_mul_mat_vec(res: *mut f64, mat: *const f64, vec: *const f64, ntotal: i32, nband: i32, ndense: i32, nvec: i32, flg_sym: bool) {
-    todo!() // mju_bandMulMatVec
+    // SAFETY: all pointers are valid arrays of appropriate sizes (caller contract)
+    unsafe {
+        let nsparse = ntotal - ndense;
+
+        // handle multiple vectors
+        for j in 0..nvec as usize {
+            let vec_j = vec.add(ntotal as usize * j);
+            let res_j = res.add(ntotal as usize * j);
+
+            // sparse part
+            for i in 0..nsparse as usize {
+                let width = if (i as i32 + 1) < nband { i as i32 + 1 } else { nband };
+                let adr = i as i32 * nband + nband - width;
+                let offset = if (i as i32 - nband + 1) > 0 { i as i32 - nband + 1 } else { 0 };
+                // lower triangle
+                *res_j.add(i) = crate::engine::engine_util_blas::mju_dot(
+                    mat.add(adr as usize), vec_j.add(offset as usize), width);
+                if flg_sym {
+                    // strict upper triangle
+                    crate::engine::engine_util_blas::mju_add_to_scl(
+                        res_j.add(offset as usize), mat.add(adr as usize), *vec_j.add(i), width - 1);
+                }
+            }
+
+            // dense part
+            for i in nsparse as usize..ntotal as usize {
+                let adr = nsparse as usize * nband as usize + (i - nsparse as usize) * ntotal as usize;
+                *res_j.add(i) = crate::engine::engine_util_blas::mju_dot(
+                    mat.add(adr), vec_j, i as i32 + 1);
+                if flg_sym {
+                    // strict upper triangle
+                    crate::engine::engine_util_blas::mju_add_to_scl(
+                        res_j, mat.add(adr), *vec_j.add(i), i as i32);
+                }
+            }
+        }
+    }
 }
 
 /// C: mju_bandDiag (engine/engine_util_solve.h:95)

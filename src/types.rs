@@ -53,10 +53,10 @@ pub struct MeshSDFContext { _opaque: [u8; 0] }
 #[derive(Clone, Copy)]
 pub struct Mutex { _opaque: [u8; 0] }
 
-/// Opaque C struct: Polytope (unsized, pointer-only)
-#[repr(C)]
+/// Sized opaque C struct: Polytope (104 bytes, align 8)
+#[repr(C, align(8))]
 #[derive(Clone, Copy)]
-pub struct Polytope { _opaque: [u8; 0] }
+pub struct Polytope { pub _data: [u8; 104] }
 
 /// Opaque C struct: T (unsized, pointer-only)
 #[repr(C)]
@@ -97,19 +97,16 @@ pub struct XMLElement_Ref { _opaque: [u8; 0] }
 #[repr(C)]
 #[derive(Clone, Copy)]
 pub struct anonymous_namespace___FilePath { _opaque: [u8; 0] }
-pub type FilePath = anonymous_namespace___FilePath;
 
 /// Opaque C struct: anonymous_namespace___GlobalModel (unsized, pointer-only)
 #[repr(C)]
 #[derive(Clone, Copy)]
 pub struct anonymous_namespace___GlobalModel { _opaque: [u8; 0] }
-pub type GlobalModel = anonymous_namespace___GlobalModel;
 
 /// Opaque C struct: anonymous_namespace___PNGImage (unsized, pointer-only)
 #[repr(C)]
 #[derive(Clone, Copy)]
 pub struct anonymous_namespace___PNGImage { _opaque: [u8; 0] }
-pub type PNGImage = anonymous_namespace___PNGImage;
 
 /// Opaque C struct: anonymous_namespace___RewriteMap (unsized, pointer-only)
 #[repr(C)]
@@ -206,11 +203,6 @@ pub struct mjCDataFunc { _opaque: [u8; 0] }
 #[derive(Clone, Copy)]
 pub struct mjCDef_1 { _opaque: [u8; 0] }
 
-/// Opaque C struct: mjDCMotorSlots (unsized, pointer-only)
-#[repr(C)]
-#[derive(Clone, Copy)]
-pub struct mjDCMotorSlots { _opaque: [u8; 0] }
-
 /// Opaque C struct: mjDoubleVec (unsized, pointer-only)
 #[repr(C)]
 #[derive(Clone, Copy)]
@@ -246,20 +238,15 @@ pub struct mjKeyMap { _opaque: [u8; 0] }
 #[derive(Clone, Copy)]
 pub struct mjListKeyMap { pub _data: [u8; 624] }
 
-/// Opaque C struct: mjPrimalContext (unsized, pointer-only)
-#[repr(C)]
+/// Sized opaque C struct: mjPrimalContext (576 bytes, align 8)
+#[repr(C, align(8))]
 #[derive(Clone, Copy)]
-pub struct mjPrimalContext { _opaque: [u8; 0] }
+pub struct mjPrimalContext { pub _data: [u8; 576] }
 
 /// Opaque C struct: mjSolverStat (unsized, pointer-only)
 #[repr(C)]
 #[derive(Clone, Copy)]
 pub struct mjSolverStat { _opaque: [u8; 0] }
-
-/// Opaque C struct: mjStackInfo (unsized, pointer-only)
-#[repr(C)]
-#[derive(Clone, Copy)]
-pub struct mjStackInfo { _opaque: [u8; 0] }
 
 /// Opaque C struct: mjString (unsized, pointer-only)
 #[repr(C)]
@@ -321,10 +308,10 @@ pub struct mjfEncode { pub _data: [u8; 8] }
 #[derive(Clone, Copy)]
 pub struct mjfItemEnable { pub _data: [u8; 8] }
 
-/// Opaque C struct: mjfLogHandler (unsized, pointer-only)
-#[repr(C)]
+/// Sized opaque C struct: mjfLogHandler (8 bytes, align 8)
+#[repr(C, align(8))]
 #[derive(Clone, Copy)]
-pub struct mjfLogHandler { _opaque: [u8; 0] }
+pub struct mjfLogHandler { pub _data: [u8; 8] }
 
 /// Sized opaque C struct: mjfMountResource (8 bytes, align 8)
 #[repr(C, align(8))]
@@ -415,7 +402,6 @@ pub struct mujoco__Mutex { _opaque: [u8; 0] }
 #[repr(C)]
 #[derive(Clone, Copy)]
 pub struct mujoco___anonymous_namespace___Resolver { _opaque: [u8; 0] }
-pub type Resolver = mujoco___anonymous_namespace___Resolver;
 
 /// Opaque C struct: mujoco__user__VFS__ResourcePtr (unsized, pointer-only)
 #[repr(C)]
@@ -2824,6 +2810,19 @@ pub struct mjContact {
 }
 const _: () = assert!(std::mem::size_of::<mjContact>() == 576);
 
+/// C struct: mjDCMotorSlots (24 bytes, align 4)
+#[repr(C, align(4))]
+#[derive(Clone, Copy)]
+pub struct mjDCMotorSlots {
+    pub slew: i32,
+    pub integral: i32,
+    pub temperature: i32,
+    pub bristle: i32,
+    pub current: i32,
+    pub num_slots: i32,
+}
+const _: () = assert!(std::mem::size_of::<mjDCMotorSlots>() == 24);
+
 /// C struct: mjData (161872 bytes, align 8)
 #[repr(C, align(8))]
 #[derive(Clone, Copy)]
@@ -3773,6 +3772,17 @@ pub struct mjSpec {
     pub authored: mjsAuthored,
 }
 const _: () = assert!(std::mem::size_of::<mjSpec>() == 1352);
+
+/// C struct: mjStackInfo (32 bytes, align 8)
+#[repr(C, align(8))]
+#[derive(Clone, Copy)]
+pub struct mjStackInfo {
+    pub bottom: usize,
+    pub top: usize,
+    pub limit: usize,
+    pub stack_base: usize,
+}
+const _: () = assert!(std::mem::size_of::<mjStackInfo>() == 32);
 
 /// C struct: mjStatistic (56 bytes, align 8)
 #[repr(C, align(8))]
@@ -5061,7 +5071,6 @@ pub struct mujoco__user__VFS {
     pub _pad_2: [u8; 24],
 }
 const _: () = assert!(std::mem::size_of::<mujoco__user__VFS>() == 792);
-pub type VFS = mujoco__user__VFS;
 
 /// C struct: std::exception_ptr (8 bytes, align 8)
 #[repr(C, align(8))]
@@ -7158,3 +7167,14 @@ pub static MJ_C_MODEL_DELETE: std::sync::LazyLock<std::sync::Mutex<Option<unsafe
 /// C static (override): mjCModel::DeleteAll
 pub static MJ_C_MODEL_DELETE_ALL: std::sync::LazyLock<std::sync::Mutex<Option<unsafe extern "C" fn()>>> = std::sync::LazyLock::new(|| std::sync::Mutex::new(None));
 
+
+/// Compatibility: size_type (older codegen emitted as sized opaque)
+#[repr(C)]
+#[derive(Clone, Copy)]
+pub struct size_type { pub _data: [u8; 8] }
+/// Compatibility: Mat44 = float[4][4] (OpenGL 4x4 matrix)
+#[repr(C, align(4))]
+#[derive(Clone, Copy)]
+pub struct Mat44 { pub _data: [u8; 64] }
+/// Compatibility: Mat44Arg = Mat44 (pass-by-value alias)
+pub type Mat44Arg = Mat44;

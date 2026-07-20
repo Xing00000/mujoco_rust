@@ -1,5 +1,5 @@
 //! Port of: xml/xml_global.cc
-//! IR hash: adc2f24e872d94f7
+//! IR hash: 73a9f665ec0ecfc0
 //! CODEGEN: signatures locked. Only fill todo!() bodies.
 
 use crate::types::*;
@@ -28,7 +28,7 @@ pub fn get_global_model() -> *mut anonymous_namespace___GlobalModel {
 /// Calls: GetGlobalModel, GlobalModel::Set
 #[allow(unused_variables, non_snake_case)]
 pub fn set_global_xml_spec(spec: *mut mjSpec) {
-    todo!("requires GetGlobalModel().Set(spec) - C++ singleton method, not translatable without vtable/global state")
+    todo!() // SetGlobalXmlSpec
 }
 
 /// C: GetGlobalXmlSpec (xml/xml_global.h:25)

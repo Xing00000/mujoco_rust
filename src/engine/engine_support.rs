@@ -1,5 +1,5 @@
 //! Port of: engine/engine_support.c
-//! IR hash: adc2f24e872d94f7
+//! IR hash: 73a9f665ec0ecfc0
 //! CODEGEN: signatures locked. Only fill todo!() bodies.
 
 use crate::types::*;
@@ -8,7 +8,30 @@ use crate::types::*;
 /// Calls: mju_message
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_state_elem_size(m: *const mjModel, sig: u32) -> i32 {
-    todo!() // mj_stateElemSize
+    // SAFETY: m is a valid mjModel pointer (caller contract)
+    unsafe {
+        match sig {
+            mjtState_mjSTATE_TIME => 1,
+            mjtState_mjSTATE_QPOS => (*m).nq as i32,
+            mjtState_mjSTATE_QVEL => (*m).nv as i32,
+            mjtState_mjSTATE_ACT => (*m).na as i32,
+            mjtState_mjSTATE_HISTORY => (*m).nhistory as i32,
+            mjtState_mjSTATE_WARMSTART => (*m).nv as i32,
+            mjtState_mjSTATE_CTRL => (*m).nu as i32,
+            mjtState_mjSTATE_QFRC_APPLIED => (*m).nv as i32,
+            mjtState_mjSTATE_XFRC_APPLIED => (6 * (*m).nbody) as i32,
+            mjtState_mjSTATE_EQ_ACTIVE => (*m).neq as i32,
+            mjtState_mjSTATE_MOCAP_POS => (3 * (*m).nmocap) as i32,
+            mjtState_mjSTATE_MOCAP_QUAT => (4 * (*m).nmocap) as i32,
+            mjtState_mjSTATE_USERDATA => (*m).nuserdata as i32,
+            mjtState_mjSTATE_PLUGIN => (*m).npluginstate as i32,
+            _ => {
+                crate::engine::engine_util_errmem::mju_error(
+                    b"invalid state element %u\0".as_ptr() as *const i8);
+                0
+            }
+        }
+    }
 }
 
 /// C: mj_stateElemPtr (engine/engine_support.c:162)
@@ -20,7 +43,29 @@ pub fn mj_state_elem_size(m: *const mjModel, sig: u32) -> i32 {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_state_elem_ptr(m: *const mjModel, d: *mut mjData, sig: u32) -> *mut f64 {
-    todo!() // mj_stateElemPtr
+    // SAFETY: m, d are valid pointers (caller contract)
+    unsafe {
+        match sig {
+            mjtState_mjSTATE_TIME => &mut (*d).time as *mut f64,
+            mjtState_mjSTATE_QPOS => (*d).qpos,
+            mjtState_mjSTATE_QVEL => (*d).qvel,
+            mjtState_mjSTATE_ACT => (*d).act,
+            mjtState_mjSTATE_HISTORY => (*d).history,
+            mjtState_mjSTATE_WARMSTART => (*d).qacc_warmstart,
+            mjtState_mjSTATE_CTRL => (*d).ctrl,
+            mjtState_mjSTATE_QFRC_APPLIED => (*d).qfrc_applied,
+            mjtState_mjSTATE_XFRC_APPLIED => (*d).xfrc_applied,
+            mjtState_mjSTATE_MOCAP_POS => (*d).mocap_pos,
+            mjtState_mjSTATE_MOCAP_QUAT => (*d).mocap_quat,
+            mjtState_mjSTATE_USERDATA => (*d).userdata,
+            mjtState_mjSTATE_PLUGIN => (*d).plugin_state,
+            _ => {
+                crate::engine::engine_util_errmem::mju_error(
+                    b"invalid state element %u\0".as_ptr() as *const i8);
+                std::ptr::null_mut()
+            }
+        }
+    }
 }
 
 /// C: mj_stateElemConstPtr (engine/engine_support.c:184)
@@ -32,7 +77,8 @@ pub fn mj_state_elem_ptr(m: *const mjModel, d: *mut mjData, sig: u32) -> *mut f6
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_state_elem_const_ptr(m: *const mjModel, d: *const mjData, sig: u32) -> *const f64 {
-    todo!() // mj_stateElemConstPtr
+    // SAFETY: discards const qualifier from d, same as C implementation
+    mj_state_elem_ptr(m, d as *mut mjData, sig) as *const f64
 }
 
 /// C: mj_geomDistanceCCD (engine/engine_support.c:519)
@@ -175,7 +221,22 @@ pub fn mj_mul_m2(m: *const mjModel, d: *const mjData, res: *mut f64, vec: *const
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_add_m(m: *const mjModel, d: *mut mjData, dst: *mut f64, rownnz: *mut i32, rowadr: *mut i32, colind: *mut i32) {
-    todo!() // mj_addM
+    // SAFETY: m, d, dst are valid pointers (caller contract)
+    unsafe {
+        let nv = (*m).nv as i32;
+
+        // sparse
+        if !rownnz.is_null() && !rowadr.is_null() && !colind.is_null() {
+            crate::engine::engine_util_sparse::mju_add_to_mat_sparse(
+                dst, rownnz, rowadr, colind, nv,
+                (*d).M, (*m).M_rownnz, (*m).M_rowadr, (*m).M_colind);
+        }
+        // dense
+        else {
+            crate::engine::engine_util_sparse::mju_add_to_sym_sparse(
+                dst, (*d).M, nv, (*m).M_rownnz, (*m).M_rowadr, (*m).M_colind, 0);
+        }
+    }
 }
 
 /// C: mj_applyFT (engine/engine_support.h:79)
@@ -321,7 +382,10 @@ pub fn mj_integrate_pos_ind(m: *const mjModel, qpos: *mut f64, qvel: *const f64,
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_integrate_pos(m: *const mjModel, qpos: *mut f64, qvel: *const f64, dt: f64) {
-    todo!() // mj_integratePos
+    // SAFETY: m is a valid mjModel pointer (caller contract)
+    unsafe {
+        mj_integrate_pos_ind(m, qpos, qvel, dt, std::ptr::null(), (*m).nbody as i32);
+    }
 }
 
 /// C: mj_normalizeQuat (engine/engine_support.h:105)

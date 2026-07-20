@@ -1,5 +1,5 @@
 //! Port of: engine/engine_sensor.c
-//! IR hash: adc2f24e872d94f7
+//! IR hash: 73a9f665ec0ecfc0
 //! CODEGEN: signatures locked. Only fill todo!() bodies.
 
 use crate::types::*;
@@ -95,7 +95,35 @@ pub fn apply_cutoff(m: *const mjModel, i: i32, data: *mut f64) {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn get_xpos_xmat(d: *const mjData, r#type: u32, id: i32, sensor_id: i32, xpos: *mut *mut f64, xmat: *mut *mut f64) {
-    todo!() // get_xpos_xmat
+    // SAFETY: d is a valid mjData pointer, xpos/xmat are valid output pointers (caller contract)
+    unsafe {
+        match r#type {
+            mjtObj_mjOBJ_XBODY => {
+                *xpos = (*d).xpos.add(3 * id as usize);
+                *xmat = (*d).xmat.add(9 * id as usize);
+            }
+            mjtObj_mjOBJ_BODY => {
+                *xpos = (*d).xipos.add(3 * id as usize);
+                *xmat = (*d).ximat.add(9 * id as usize);
+            }
+            mjtObj_mjOBJ_GEOM => {
+                *xpos = (*d).geom_xpos.add(3 * id as usize);
+                *xmat = (*d).geom_xmat.add(9 * id as usize);
+            }
+            mjtObj_mjOBJ_SITE => {
+                *xpos = (*d).site_xpos.add(3 * id as usize);
+                *xmat = (*d).site_xmat.add(9 * id as usize);
+            }
+            mjtObj_mjOBJ_CAMERA => {
+                *xpos = (*d).cam_xpos.add(3 * id as usize);
+                *xmat = (*d).cam_xmat.add(9 * id as usize);
+            }
+            _ => {
+                crate::engine::engine_util_errmem::mju_error(
+                    b"invalid object type in sensor %d\0".as_ptr() as *const i8);
+            }
+        }
+    }
 }
 
 /// C: get_xquat (engine/engine_sensor.c:257)
@@ -107,7 +135,40 @@ pub fn get_xpos_xmat(d: *const mjData, r#type: u32, id: i32, sensor_id: i32, xpo
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn get_xquat(m: *const mjModel, d: *const mjData, r#type: u32, id: i32, sensor_id: i32, quat: *mut f64) {
-    todo!() // get_xquat
+    // SAFETY: m, d are valid pointers; quat points to 4 f64 (caller contract)
+    unsafe {
+        match r#type {
+            mjtObj_mjOBJ_XBODY => {
+                crate::engine::engine_util_blas::mju_copy4(quat, (*d).xquat.add(4 * id as usize));
+            }
+            mjtObj_mjOBJ_BODY => {
+                crate::engine::engine_util_spatial::mju_mul_quat(
+                    quat, (*d).xquat.add(4 * id as usize), (*m).body_iquat.add(4 * id as usize));
+            }
+            mjtObj_mjOBJ_GEOM => {
+                crate::engine::engine_util_spatial::mju_mul_quat(
+                    quat,
+                    (*d).xquat.add(4 * *(*m).geom_bodyid.add(id as usize) as usize),
+                    (*m).geom_quat.add(4 * id as usize));
+            }
+            mjtObj_mjOBJ_SITE => {
+                crate::engine::engine_util_spatial::mju_mul_quat(
+                    quat,
+                    (*d).xquat.add(4 * *(*m).site_bodyid.add(id as usize) as usize),
+                    (*m).site_quat.add(4 * id as usize));
+            }
+            mjtObj_mjOBJ_CAMERA => {
+                crate::engine::engine_util_spatial::mju_mul_quat(
+                    quat,
+                    (*d).xquat.add(4 * *(*m).cam_bodyid.add(id as usize) as usize),
+                    (*m).cam_quat.add(4 * id as usize));
+            }
+            _ => {
+                crate::engine::engine_util_errmem::mju_error(
+                    b"invalid object type in sensor %d\0".as_ptr() as *const i8);
+            }
+        }
+    }
 }
 
 /// C: cam_project (engine/engine_sensor.c:281)
@@ -161,22 +222,8 @@ pub fn cam_project(sensordata: *mut f64, target_xpos: *const f64, cam_xpos: *con
 /// C: checkMatch (engine/engine_sensor.c:320)
 /// Calls: mjCMesh::tree
 #[allow(unused_variables, non_snake_case)]
-pub fn check_match(m: *const mjModel, mut body: i32, geom: i32, r#type: u32, id: i32) -> i32 {
-    if r#type == mjtObj_mjOBJ_UNKNOWN { return 1; }
-    if r#type == mjtObj_mjOBJ_SITE { return 1; }
-    if r#type == mjtObj_mjOBJ_GEOM { return (id == geom) as i32; }
-    if r#type == mjtObj_mjOBJ_BODY { return (id == body) as i32; }
-    if r#type == mjtObj_mjOBJ_XBODY {
-        // SAFETY: m is a valid pointer to mjModel; body_parentid is a valid array
-        unsafe {
-            while body > id {
-                body = *(*m).body_parentid.add(body as usize);
-            }
-        }
-        return (body == id) as i32;
-    }
-
-    0
+pub fn check_match(m: *const mjModel, body: i32, geom: i32, r#type: u32, id: i32) -> i32 {
+    todo!() // checkMatch
 }
 
 /// C: matchContact (engine/engine_sensor.c:339)

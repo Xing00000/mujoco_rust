@@ -1,5 +1,5 @@
 //! Port of: engine/engine_core_constraint.c
-//! IR hash: adc2f24e872d94f7
+//! IR hash: 73a9f665ec0ecfc0
 //! CODEGEN: signatures locked. Only fill todo!() bodies.
 
 use crate::types::*;
@@ -546,7 +546,51 @@ pub fn compute_y_precount(Y_rownnz: *mut i32, Y_rowadr: *mut i32, nefc: i32, nv:
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn compute_y_fill(Y: *mut f64, Y_colind: *mut i32, Y_rownnz: *const i32, Y_rowadr: *const i32, nefc: i32, J: *const f64, J_rownnz: *const i32, J_rowadr: *const i32, J_colind: *const i32, dof_parentid: *const i32) {
-    todo!() // computeY_fill
+    // SAFETY: all pointers are valid sparse matrix arrays (caller contract)
+    unsafe {
+        for r in 0..nefc as usize {
+            // init row
+            let end = *Y_rowadr.add(r) + *Y_rownnz.add(r);
+            let adrJ = *J_rowadr.add(r);
+            let mut remainJ = *J_rownnz.add(r);
+            let mut nnzY: i32 = 0;
+
+            // complete chain in reverse
+            loop {
+                // get previous dof in src and dst
+                let prev_src = if remainJ > 0 {
+                    *J_colind.add((adrJ + remainJ - 1) as usize)
+                } else { -1 };
+                let prev_dst = if nnzY > 0 {
+                    *dof_parentid.add(*Y_colind.add((end - nnzY) as usize) as usize)
+                } else { -1 };
+
+                // both finished: break
+                if prev_src < 0 && prev_dst < 0 {
+                    break;
+                }
+                // add src
+                else if prev_src >= prev_dst {
+                    nnzY += 1;
+                    remainJ -= 1;
+                    *Y_colind.add((end - nnzY) as usize) = prev_src;
+                    *Y.add((end - nnzY) as usize) = *J.add((adrJ + remainJ) as usize);
+                }
+                // add dst
+                else {
+                    nnzY += 1;
+                    *Y_colind.add((end - nnzY) as usize) = prev_dst;
+                    *Y.add((end - nnzY) as usize) = 0.0;
+                }
+            }
+
+            // compare with Y_rownnz: SHOULD NOT OCCUR
+            if nnzY != *Y_rownnz.add(r) {
+                crate::engine::engine_util_errmem::mju_error(
+                    b"pre and post-count of Y_rownnz are not equal on row %d\0".as_ptr() as *const i8);
+            }
+        }
+    }
 }
 
 /// C: computeY_backsub (engine/engine_core_constraint.c:2781)

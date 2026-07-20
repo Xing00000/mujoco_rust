@@ -1,5 +1,5 @@
 //! Port of: engine/engine_vis_interact.c
-//! IR hash: adc2f24e872d94f7
+//! IR hash: 73a9f665ec0ecfc0
 //! CODEGEN: signatures locked. Only fill todo!() bodies.
 
 use crate::types::*;
@@ -13,7 +13,41 @@ use crate::types::*;
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn convert2d(res: *mut f64, action: i32, dx: f64, dy: f64, forward: *const f64) {
-    todo!() // convert2D
+    // mjtMouse enum: ROTATE_V=1, ROTATE_H=2, MOVE_V=3, MOVE_H=4, ZOOM=5, MOVE_V_REL=6, MOVE_H_REL=7
+    let mut vec = [0.0f64; 3];
+
+    match action {
+        1 => { // mjMOUSE_ROTATE_V
+            vec[0] = dy;
+            vec[1] = 0.0;
+            vec[2] = dx;
+        }
+        2 => { // mjMOUSE_ROTATE_H
+            vec[0] = dy;
+            vec[1] = dx;
+            vec[2] = 0.0;
+        }
+        3 | 6 => { // mjMOUSE_MOVE_V | mjMOUSE_MOVE_V_REL
+            vec[0] = dx;
+            vec[1] = 0.0;
+            vec[2] = -dy;
+        }
+        4 | 7 => { // mjMOUSE_MOVE_H | mjMOUSE_MOVE_H_REL
+            vec[0] = dx;
+            vec[1] = -dy;
+            vec[2] = 0.0;
+        }
+        5 => { // mjMOUSE_ZOOM
+            // no-op
+        }
+        _ => {
+            crate::engine::engine_util_errmem::mju_error(
+                b"unexpected mouse action %d in convert2D\0".as_ptr() as *const i8);
+        }
+    }
+
+    // call 3D converter
+    mjv_align_to_camera(res, vec.as_ptr(), forward);
 }
 
 /// C: mjv_room2model (engine/engine_vis_interact.h:28)

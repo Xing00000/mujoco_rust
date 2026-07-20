@@ -1,5 +1,5 @@
 //! Port of: engine/engine_util_misc.c
-//! IR hash: adc2f24e872d94f7
+//! IR hash: 73a9f665ec0ecfc0
 //! CODEGEN: signatures locked. Only fill todo!() bodies.
 
 use crate::types::*;
@@ -816,7 +816,24 @@ pub fn mj_lugre_stribeck(velocity: f64, F_C: f64, F_S: f64, v_S: f64) -> f64 {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_dcmotor_slots(dynprm: *const f64, gainprm: *const f64) -> mjDCMotorSlots {
-    todo!("mjDCMotorSlots is opaque (zero-size) - cannot construct struct with fields: slew, integral, temperature, bristle, current, num_slots")
+    // SAFETY: dynprm and gainprm point to valid parameter arrays (caller contract)
+    unsafe {
+        let mut s = mjDCMotorSlots {
+            slew: -1,
+            integral: -1,
+            temperature: -1,
+            bristle: -1,
+            current: -1,
+            num_slots: 0,
+        };
+        if *dynprm.add(7) > 0.0 { s.slew = s.num_slots; s.num_slots += 1; }        // slew rate limiting
+        if *gainprm.add(5) > 0.0 { s.integral = s.num_slots; s.num_slots += 1; }    // PI integral
+        if *dynprm.add(2) > 0.0 { s.temperature = s.num_slots; s.num_slots += 1; }  // thermal model
+        if *dynprm.add(5) > 0.0 { s.bristle = s.num_slots; s.num_slots += 1; }      // LuGre bristle
+        if *dynprm.add(0) > 0.0 { s.current = s.num_slots; s.num_slots += 1; }      // current filter
+
+        s
+    }
 }
 
 /// C: mju_geomSemiAxes (engine/engine_util_misc.h:71)

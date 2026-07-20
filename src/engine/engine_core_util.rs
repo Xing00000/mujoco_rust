@@ -1,5 +1,5 @@
 //! Port of: engine/engine_core_util.h
-//! IR hash: adc2f24e872d94f7
+//! IR hash: 73a9f665ec0ecfc0
 //! CODEGEN: signatures locked. Only fill todo!() bodies.
 
 use crate::types::*;
@@ -244,7 +244,10 @@ pub fn mj_jac(m: *const mjModel, d: *const mjData, jacp: *mut f64, jacr: *mut f6
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_jac_body(m: *const mjModel, d: *const mjData, jacp: *mut f64, jacr: *mut f64, body: i32) {
-    todo!() // mj_jacBody
+    // SAFETY: d->xpos is a valid pointer to body positions (caller contract)
+    unsafe {
+        mj_jac(m, d, jacp, jacr, (*d).xpos.add(3 * body as usize), body);
+    }
 }
 
 /// C: mj_jacBodyCom (engine/engine_core_util.h:60)
@@ -723,6 +726,32 @@ pub fn mj_actuator_armature(m: *const mjModel, r#type: u32, id: i32) -> f64 {
 /// Calls: mju_message, mju_warning, mju_warningText
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_warning(d: *mut mjData, warning: i32, info: i32) {
-    todo!() // mj_warning
+    const MJ_NWARNING: i32 = 7;
+    // SAFETY: d is a valid pointer to mjData (caller contract)
+    unsafe {
+        // check type
+        if warning < 0 || warning >= MJ_NWARNING {
+            crate::engine::engine_util_errmem::mju_error(
+                b"invalid warning type %d\0".as_ptr() as *const i8);
+            return;
+        }
+
+        // d->warning is [u8; 56] = mjWarningStat[7], each 8 bytes: {lastinfo: i32, number: i32}
+        let warn_ptr = (*d).warning.as_mut_ptr().add(warning as usize * 8);
+        let lastinfo_ptr = warn_ptr as *mut i32;
+        let number_ptr = (warn_ptr.add(4)) as *mut i32;
+
+        // save info (override previous)
+        *lastinfo_ptr = info;
+
+        // print message only the first time this warning is encountered
+        if *number_ptr == 0 {
+            crate::engine::engine_util_errmem::mju_warning(
+                crate::engine::engine_util_misc::mju_warning_text(warning, info as usize));
+        }
+
+        // increase counter
+        *number_ptr += 1;
+    }
 }
 

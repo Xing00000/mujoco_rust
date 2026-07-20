@@ -1,5 +1,5 @@
 //! Port of: user/user_api.cc
-//! IR hash: adc2f24e872d94f7
+//! IR hash: 73a9f665ec0ecfc0
 //! CODEGEN: signatures locked. Only fill todo!() bodies.
 
 use crate::types::*;
@@ -1757,7 +1757,79 @@ pub fn mjs_delete_user_value(element: *mut mjsElement, key: *const i8) {
 /// Calls: mjCMesh::nvert, mjCSensor::get_obj, mju_condataSize, mju_raydataSize
 #[allow(unused_variables, non_snake_case)]
 pub fn mjs_sensor_dim(sensor: *const mjsSensor) -> i32 {
-    todo!() // mjs_sensorDim
+    // SAFETY: sensor is a valid pointer to mjsSensor (caller contract)
+    unsafe {
+        let sensor_type = u32::from_ne_bytes((*sensor).r#type);
+
+        match sensor_type {
+            mjtSensor_mjSENS_TOUCH |
+            mjtSensor_mjSENS_JOINTPOS |
+            mjtSensor_mjSENS_JOINTVEL |
+            mjtSensor_mjSENS_TENDONPOS |
+            mjtSensor_mjSENS_TENDONVEL |
+            mjtSensor_mjSENS_ACTUATORPOS |
+            mjtSensor_mjSENS_ACTUATORVEL |
+            mjtSensor_mjSENS_ACTUATORFRC |
+            mjtSensor_mjSENS_JOINTACTFRC |
+            mjtSensor_mjSENS_TENDONACTFRC |
+            mjtSensor_mjSENS_JOINTLIMITPOS |
+            mjtSensor_mjSENS_JOINTLIMITVEL |
+            mjtSensor_mjSENS_JOINTLIMITFRC |
+            mjtSensor_mjSENS_TENDONLIMITPOS |
+            mjtSensor_mjSENS_TENDONLIMITVEL |
+            mjtSensor_mjSENS_TENDONLIMITFRC |
+            mjtSensor_mjSENS_GEOMDIST |
+            mjtSensor_mjSENS_INSIDESITE |
+            mjtSensor_mjSENS_E_POTENTIAL |
+            mjtSensor_mjSENS_E_KINETIC |
+            mjtSensor_mjSENS_CLOCK => 1,
+
+            mjtSensor_mjSENS_CAMPROJECTION => 2,
+
+            mjtSensor_mjSENS_ACCELEROMETER |
+            mjtSensor_mjSENS_VELOCIMETER |
+            mjtSensor_mjSENS_GYRO |
+            mjtSensor_mjSENS_FORCE |
+            mjtSensor_mjSENS_TORQUE |
+            mjtSensor_mjSENS_MAGNETOMETER |
+            mjtSensor_mjSENS_BALLANGVEL |
+            mjtSensor_mjSENS_FRAMEPOS |
+            mjtSensor_mjSENS_FRAMEXAXIS |
+            mjtSensor_mjSENS_FRAMEYAXIS |
+            mjtSensor_mjSENS_FRAMEZAXIS |
+            mjtSensor_mjSENS_FRAMELINVEL |
+            mjtSensor_mjSENS_FRAMEANGVEL |
+            mjtSensor_mjSENS_FRAMELINACC |
+            mjtSensor_mjSENS_FRAMEANGACC |
+            mjtSensor_mjSENS_SUBTREECOM |
+            mjtSensor_mjSENS_SUBTREELINVEL |
+            mjtSensor_mjSENS_SUBTREEANGMOM |
+            mjtSensor_mjSENS_GEOMNORMAL => 3,
+
+            mjtSensor_mjSENS_GEOMFROMTO => 6,
+
+            mjtSensor_mjSENS_BALLQUAT |
+            mjtSensor_mjSENS_FRAMEQUAT => 4,
+
+            mjtSensor_mjSENS_CONTACT => {
+                (*sensor).intprm[2] * crate::engine::engine_support::mju_condata_size((*sensor).intprm[0])
+            }
+
+            mjtSensor_mjSENS_TACTILE => {
+                todo!("requires C++ virtual call: mjCSensor::get_obj() -> mjCMesh::nvert()")
+            }
+
+            mjtSensor_mjSENS_RANGEFINDER => {
+                todo!("requires C++ virtual call: mjCSensor::get_obj() + mjCCamera resolution access")
+            }
+
+            mjtSensor_mjSENS_USER => (*sensor).dim,
+
+            mjtSensor_mjSENS_PLUGIN => 0,  // to be filled in by plugin
+
+            _ => -1,
+        }
+    }
 }
 
 /// C: mj_getCacheCapacity (user/user_api.h:551)

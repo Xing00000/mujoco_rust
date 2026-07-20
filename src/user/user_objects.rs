@@ -1,5 +1,5 @@
 //! Port of: user/user_objects.cc
-//! IR hash: adc2f24e872d94f7
+//! IR hash: 73a9f665ec0ecfc0
 //! CODEGEN: signatures locked. Only fill todo!() bodies.
 
 use crate::types::*;
@@ -1171,7 +1171,30 @@ pub fn mj_c_body_copy_list(self_ptr: *mut mjCBody, dst: *const (), src: *const (
 /// Calls: mjuu_copyvec
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_frame_copy_from_spec(self_ptr: *mut mjCFrame) {
-    todo!() // mjCFrame::CopyFromSpec
+    // SAFETY: self_ptr is a valid pointer to mjCFrame (caller contract).
+    // Copies spec into the mjsFrame sub-object portion, then deep-copies pos and quat arrays.
+    unsafe {
+        // *static_cast<mjsFrame*>(this) = spec
+        (*self_ptr).element = (*self_ptr).spec.element;
+        (*self_ptr).childclass = (*self_ptr).spec.childclass;
+        (*self_ptr).pos = (*self_ptr).spec.pos;
+        (*self_ptr).quat = (*self_ptr).spec.quat;
+        (*self_ptr).alt = (*self_ptr).spec.alt;
+        (*self_ptr).info = (*self_ptr).spec.info;
+
+        // mjuu_copyvec(pos, spec.pos, 3)
+        crate::user::user_util::mjuu_copyvec(
+            (*self_ptr).pos.as_mut_ptr() as *mut T1,
+            (*self_ptr).spec.pos.as_ptr() as *const T2,
+            3,
+        );
+        // mjuu_copyvec(quat, spec.quat, 4)
+        crate::user::user_util::mjuu_copyvec(
+            (*self_ptr).quat.as_mut_ptr() as *mut T1,
+            (*self_ptr).spec.quat.as_ptr() as *const T2,
+            4,
+        );
+    }
 }
 
 /// C: mjCFrame::PointToLocal (user/user_objects.h:655)
@@ -3450,7 +3473,13 @@ pub fn mj_c_tendon_compile(self_ptr: *mut mjCTendon) {
 /// C: mjCWrap::CopyFromSpec (user/user_objects.h:1749)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_wrap_copy_from_spec(self_ptr: *mut mjCWrap) {
-    todo!() // mjCWrap::CopyFromSpec
+    // SAFETY: self_ptr is a valid pointer to mjCWrap (caller contract).
+    // Copies spec fields into the mjsWrap sub-object portion of the struct.
+    unsafe {
+        (*self_ptr).element = (*self_ptr).spec.element;
+        (*self_ptr).r#type = (*self_ptr).spec.r#type;
+        (*self_ptr).info = (*self_ptr).spec.info;
+    }
 }
 
 /// C: mjCWrap::PointToLocal (user/user_objects.h:1750)
@@ -3488,7 +3517,7 @@ pub fn mj_c_wrap_type(self_ptr: *mut mjCWrap) -> u32 {
 /// Calls: mjCWrap::CopyFromSpec
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_wrap_compile(self_ptr: *mut mjCWrap) {
-    todo!() // mjCWrap::Compile
+    mj_c_wrap_copy_from_spec(self_ptr);
 }
 
 /// C: mjCPlugin::PointToLocal (user/user_objects.h:1791)

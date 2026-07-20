@@ -1,5 +1,5 @@
 //! Port of: engine/engine_util_errmem.c
-//! IR hash: adc2f24e872d94f7
+//! IR hash: 73a9f665ec0ecfc0
 //! CODEGEN: signatures locked. Only fill todo!() bodies.
 
 use crate::types::*;
@@ -199,14 +199,48 @@ pub fn mju_legacy_text(msg: *const mjLogMessage, buf: *mut i8, bufsz: i32) -> *c
 /// C: mju_activeHandler (engine/engine_util_errmem.c:292)
 #[allow(unused_variables, non_snake_case)]
 pub fn mju_active_handler() -> mjfLogHandler {
-    todo!("mjfLogHandler is opaque (zero-size) - cannot construct return value; needs TLS log handler resolution")
+    todo!() // mju_activeHandler
 }
 
 /// C: mju_malloc (engine/engine_util_errmem.h:43)
 /// Calls: mju_alignedMalloc, mju_error
 #[allow(unused_variables, non_snake_case)]
 pub fn mju_malloc(size: usize) -> *mut () {
-    todo!() // mju_malloc
+    type MallocFn = unsafe extern "C" fn(usize) -> *mut ();
+
+    // SAFETY: reading function pointer from global storage (set via mju_clearHandlers)
+    unsafe {
+        let mut ptr: *mut () = std::ptr::null_mut();
+
+        // check mju_user_malloc
+        let user_malloc_ptr: usize;
+        {
+            let guard = MJU_USER_MALLOC.lock().unwrap();
+            user_malloc_ptr = usize::from_ne_bytes([
+                guard[0], guard[1], guard[2], guard[3],
+                guard[4], guard[5], guard[6], guard[7],
+            ]);
+        }
+
+        if user_malloc_ptr != 0 {
+            let user_malloc: MallocFn = *(&user_malloc_ptr as *const usize as *const MallocFn);
+            ptr = user_malloc(size);
+        } else {
+            let mut aligned_size = size;
+            if aligned_size > 0 && (aligned_size % 64) != 0 {
+                aligned_size += 64 - (aligned_size % 64);
+            }
+            if aligned_size > 0 {
+                ptr = mju_aligned_malloc(aligned_size, 64);
+            }
+        }
+
+        if ptr.is_null() && size > 0 {
+            mju_error(b"Could not allocate memory\0".as_ptr() as *const i8);
+        }
+
+        ptr
+    }
 }
 
 /// C: mju_free (engine/engine_util_errmem.h:46)
@@ -309,35 +343,165 @@ pub fn mju_clear_handlers() {
 /// Calls: mju_error_v
 #[allow(unused_variables, non_snake_case)]
 pub fn mju_error(msg: *const i8) {
-    todo!() // mju_error
+    // C: mju_error is variadic, but Rust signature takes only msg (no va_args).
+    // Construct mjLogMessage with level=ERROR and subject=msg, then dispatch.
+    extern "C" {
+        fn snprintf(buf: *mut i8, size: usize, fmt: *const i8, ...) -> i32;
+    }
+    // SAFETY: msg is a valid C string (caller contract)
+    unsafe {
+        let mut m = mjLogMessage {
+            level: 2, // mjLOG_ERROR
+            topic: 0,
+            subject: [0i8; 1024],
+            body: std::ptr::null(),
+            func: std::ptr::null(),
+            file: std::ptr::null(),
+            line: 0,
+            timestamp: false,
+            _pad_0: [0; 3],
+        };
+        snprintf(m.subject.as_mut_ptr(), 1024, b"%s\0".as_ptr() as *const i8, msg);
+        mju_message(&m);
+    }
 }
 
 /// C: mju_error_v (engine/engine_util_errmem.h:75)
 /// Calls: mju_message
 #[allow(unused_variables, non_snake_case)]
 pub fn mju_error_v(msg: *const i8, args: *mut i8) {
-    todo!() // mju_error_v
+    extern "C" {
+        fn vsnprintf(buf: *mut i8, size: usize, fmt: *const i8, args: *mut i8) -> i32;
+    }
+    // SAFETY: msg is a valid C format string, args is a valid va_list pointer
+    unsafe {
+        let mut m = mjLogMessage {
+            level: 2, // mjLOG_ERROR
+            topic: 0,
+            subject: [0i8; 1024],
+            body: std::ptr::null(),
+            func: std::ptr::null(),
+            file: std::ptr::null(),
+            line: 0,
+            timestamp: false,
+            _pad_0: [0; 3],
+        };
+        vsnprintf(m.subject.as_mut_ptr(), 1024, msg, args);
+        mju_message(&m);
+    }
 }
 
 /// C: mju_warning (engine/engine_util_errmem.h:78)
 /// Calls: mju_message
 #[allow(unused_variables, non_snake_case)]
 pub fn mju_warning(msg: *const i8) {
-    todo!() // mju_warning
+    // C: mju_warning is variadic, but Rust signature takes only msg.
+    extern "C" {
+        fn snprintf(buf: *mut i8, size: usize, fmt: *const i8, ...) -> i32;
+    }
+    // SAFETY: msg is a valid C string (caller contract)
+    unsafe {
+        let mut m = mjLogMessage {
+            level: 1, // mjLOG_WARNING
+            topic: 0,
+            subject: [0i8; 1024],
+            body: std::ptr::null(),
+            func: std::ptr::null(),
+            file: std::ptr::null(),
+            line: 0,
+            timestamp: false,
+            _pad_0: [0; 3],
+        };
+        snprintf(m.subject.as_mut_ptr(), 1024, b"%s\0".as_ptr() as *const i8, msg);
+        mju_message(&m);
+    }
 }
 
 /// C: mju_info (engine/engine_util_errmem.h:81)
 /// Calls: mju_message
 #[allow(unused_variables, non_snake_case)]
 pub fn mju_info(topic: i32, msg: *const i8) {
-    todo!() // mju_info
+    // C: mju_info is variadic, but Rust signature takes only topic + msg.
+    extern "C" {
+        fn snprintf(buf: *mut i8, size: usize, fmt: *const i8, ...) -> i32;
+    }
+    // SAFETY: msg is a valid C string (caller contract)
+    unsafe {
+        let mut m = mjLogMessage {
+            level: 0, // mjLOG_INFO
+            topic: topic,
+            subject: [0i8; 1024],
+            body: std::ptr::null(),
+            func: std::ptr::null(),
+            file: std::ptr::null(),
+            line: 0,
+            timestamp: false,
+            _pad_0: [0; 3],
+        };
+        snprintf(m.subject.as_mut_ptr(), 1024, b"%s\0".as_ptr() as *const i8, msg);
+        mju_message(&m);
+    }
 }
 
 /// C: mju_message (engine/engine_util_errmem.h:84)
 /// Calls: mju_activeHandler
 #[allow(unused_variables, non_snake_case)]
 pub fn mju_message(msg: *const mjLogMessage) {
-    todo!() // mju_message
+    // C: mju_activeHandler dispatches TLS > global log handler
+    // mjfLogHandler is void(*)(const mjLogMessage*) = 8-byte fn pointer
+    // TLS handler stored in _MJPRIVATE_TLS_LOG_HANDLER, global in GLOBAL_LOG_HANDLER
+    type LogHandlerFn = unsafe extern "C" fn(*const mjLogMessage);
+
+    // thread_local recursion guard (C: static mjTHREADLOCAL bool in_log)
+    thread_local! {
+        static IN_LOG: std::cell::Cell<bool> = const { std::cell::Cell::new(false) };
+    }
+
+    // SAFETY: msg is a valid pointer to mjLogMessage (caller contract)
+    unsafe {
+        // recursion guard
+        let in_log = IN_LOG.with(|c| c.get());
+        if in_log {
+            return;
+        }
+
+        // resolve active handler: TLS > global
+        let handler_ptr: usize;
+        {
+            let tls_guard = _MJPRIVATE_TLS_LOG_HANDLER.lock().unwrap();
+            let tls_val = usize::from_ne_bytes([
+                tls_guard[0], tls_guard[1], tls_guard[2], tls_guard[3],
+                tls_guard[4], tls_guard[5], tls_guard[6], tls_guard[7],
+            ]);
+            if tls_val != 0 {
+                handler_ptr = tls_val;
+            } else {
+                drop(tls_guard);
+                let global_guard = GLOBAL_LOG_HANDLER.lock().unwrap();
+                handler_ptr = usize::from_ne_bytes([
+                    global_guard[0], global_guard[1], global_guard[2], global_guard[3],
+                    global_guard[4], global_guard[5], global_guard[6], global_guard[7],
+                ]);
+            }
+        }
+
+        if handler_ptr == 0 {
+            return;
+        }
+
+        // SAFETY: handler_ptr is a valid function pointer set via mju_setLogHandler
+        let handler: LogHandlerFn = *(&handler_ptr as *const usize as *const LogHandlerFn);
+
+        // error handlers may not return (longjmp); don't set in_log around them
+        if (*msg).level != 2 {
+            // not mjLOG_ERROR
+            IN_LOG.with(|c| c.set(true));
+            handler(msg);
+            IN_LOG.with(|c| c.set(false));
+        } else {
+            handler(msg);
+        }
+    }
 }
 
 /// C: mju_writeLog (engine/engine_util_errmem.h:87)
