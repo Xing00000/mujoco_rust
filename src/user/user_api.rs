@@ -1715,7 +1715,7 @@ pub fn mjs_set_frame(dest: *mut mjsElement, frame: *mut mjsFrame) -> i32 {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjs_resolve_orientation(quat: *mut f64, degree: u8, sequence: *const i8, orientation: *const mjsOrientation) -> *const i8 {
-    todo!() // mjs_resolveOrientation
+    crate::user::user_objects::resolve_orientation(quat, degree != 0, sequence, orientation)
 }
 
 /// C: mjs_bodyToFrame (user/user_api.h:451)
