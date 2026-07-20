@@ -263,7 +263,103 @@ pub fn sensor_needstage(r#type: u32) -> u32 {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn resolve_orientation(quat: *mut f64, degree: bool, sequence: *const i8, orient: *const mjsOrientation) -> *const i8 {
-    todo!() // ResolveOrientation
+    const MJ_PI: f64 = 3.14159265358979323846;
+    const MJ_EPS: f64 = 1E-14;
+
+    let mut axisangle: [f64; 4] = [0.0; 4];
+    let mut xyaxes: [f64; 6] = [0.0; 6];
+    let mut zaxis: [f64; 3] = [0.0; 3];
+    let mut euler: [f64; 3] = [0.0; 3];
+
+    // SAFETY: orient is a valid pointer; all helper functions handle raw pointers correctly
+    unsafe {
+        crate::user::user_util::mjuu_copyvec(axisangle.as_mut_ptr() as *mut T1, (*orient).axisangle.as_ptr() as *const T2, 4);
+        crate::user::user_util::mjuu_copyvec(xyaxes.as_mut_ptr() as *mut T1, (*orient).xyaxes.as_ptr() as *const T2, 6);
+        crate::user::user_util::mjuu_copyvec(zaxis.as_mut_ptr() as *mut T1, (*orient).zaxis.as_ptr() as *const T2, 3);
+        crate::user::user_util::mjuu_copyvec(euler.as_mut_ptr() as *mut T1, (*orient).euler.as_ptr() as *const T2, 3);
+
+        let orient_type = u32::from_ne_bytes([(*orient).r#type[0], (*orient).r#type[1], (*orient).r#type[2], (*orient).r#type[3]]);
+
+        // set quat using axisangle
+        if orient_type == mjtOrientation_mjORIENTATION_AXISANGLE {
+            if degree {
+                axisangle[3] = axisangle[3] / 180.0 * MJ_PI;
+            }
+            if crate::user::user_util::mjuu_normvec(axisangle.as_mut_ptr(), 3) < MJ_EPS {
+                return b"axisangle too small\0".as_ptr() as *const i8;
+            }
+            let ang2 = axisangle[3] / 2.0;
+            *quat.add(0) = ang2.cos();
+            *quat.add(1) = ang2.sin() * axisangle[0];
+            *quat.add(2) = ang2.sin() * axisangle[1];
+            *quat.add(3) = ang2.sin() * axisangle[2];
+        }
+
+        // set quat using xyaxes
+        if orient_type == mjtOrientation_mjORIENTATION_XYAXES {
+            if crate::user::user_util::mjuu_normvec(xyaxes.as_mut_ptr(), 3) < MJ_EPS {
+                return b"xaxis too small\0".as_ptr() as *const i8;
+            }
+            let d = crate::user::user_util::mjuu_dot3(xyaxes.as_ptr(), xyaxes.as_ptr().add(3));
+            xyaxes[3] -= xyaxes[0] * d;
+            xyaxes[4] -= xyaxes[1] * d;
+            xyaxes[5] -= xyaxes[2] * d;
+            if crate::user::user_util::mjuu_normvec(xyaxes.as_mut_ptr().add(3), 3) < MJ_EPS {
+                return b"yaxis too small\0".as_ptr() as *const i8;
+            }
+            let mut z: [f64; 3] = [0.0; 3];
+            crate::user::user_util::mjuu_crossvec(z.as_mut_ptr(), xyaxes.as_ptr(), xyaxes.as_ptr().add(3));
+            if crate::user::user_util::mjuu_normvec(z.as_mut_ptr(), 3) < MJ_EPS {
+                return b"cross(xaxis, yaxis) too small\0".as_ptr() as *const i8;
+            }
+            crate::user::user_util::mjuu_frame2quat(quat, xyaxes.as_ptr(), xyaxes.as_ptr().add(3), z.as_ptr());
+        }
+
+        // set quat using zaxis
+        if orient_type == mjtOrientation_mjORIENTATION_ZAXIS {
+            if crate::user::user_util::mjuu_normvec(zaxis.as_mut_ptr(), 3) < MJ_EPS {
+                return b"zaxis too small\0".as_ptr() as *const i8;
+            }
+            crate::user::user_util::mjuu_z2quat(quat, zaxis.as_ptr());
+        }
+
+        // handle euler
+        if orient_type == mjtOrientation_mjORIENTATION_EULER {
+            if degree {
+                for i in 0..3 {
+                    euler[i] = euler[i] / 180.0 * MJ_PI;
+                }
+            }
+            crate::user::user_util::mjuu_setvec(quat, 1.0, 0.0, 0.0, 0.0);
+
+            for i in 0..3i32 {
+                let mut tmp: [f64; 4] = [0.0; 4];
+                let mut qrot: [f64; 4] = [(euler[i as usize] / 2.0).cos(), 0.0, 0.0, 0.0];
+                let sa = (euler[i as usize] / 2.0).sin();
+                let seq_char = *sequence.add(i as usize);
+
+                if seq_char == b'x' as i8 || seq_char == b'X' as i8 {
+                    qrot[1] = sa;
+                } else if seq_char == b'y' as i8 || seq_char == b'Y' as i8 {
+                    qrot[2] = sa;
+                } else if seq_char == b'z' as i8 || seq_char == b'Z' as i8 {
+                    qrot[3] = sa;
+                } else {
+                    return b"euler sequence can only contain x, y, z, X, Y, Z\0".as_ptr() as *const i8;
+                }
+
+                if seq_char == b'x' as i8 || seq_char == b'y' as i8 || seq_char == b'z' as i8 {
+                    crate::user::user_util::mjuu_mulquat(tmp.as_mut_ptr(), quat as *const f64, qrot.as_ptr());
+                } else {
+                    crate::user::user_util::mjuu_mulquat(tmp.as_mut_ptr(), qrot.as_ptr(), quat as *const f64);
+                }
+                crate::user::user_util::mjuu_copyvec(quat as *mut T1, tmp.as_ptr() as *const T2, 4);
+            }
+            crate::user::user_util::mjuu_normvec(quat, 4);
+        }
+    }
+
+    std::ptr::null()
 }
 
 /// C: mjCBoundingVolume::Contype (user/user_objects.h:122)
