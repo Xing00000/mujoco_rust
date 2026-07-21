@@ -148,7 +148,31 @@ pub fn find_oct(w: *mut f64, dw: *mut [f64; 3], oct_aabb: *const f64, oct_child:
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn oct_distance(m: *const mjModel, p: *const f64, meshid: i32) -> f64 {
-    todo!() // oct_distance
+    // SAFETY: m is valid mjModel, p is valid f64[3] (caller contract)
+    unsafe {
+        let octadr = *(*m).mesh_octadr.add(meshid as usize);
+        let oct_child = (*m).oct_child.add(8 * octadr as usize);
+        let oct_aabb = (*m).oct_aabb.add(6 * octadr as usize);
+        let oct_coeff = (*m).oct_coeff.add(8 * octadr as usize);
+
+        if octadr == -1 {
+            crate::engine::engine_util_errmem::mju_error(
+                b"Octree not found in mesh %d\0".as_ptr() as *const i8);
+            return 0.0;
+        }
+
+        let mut w: [f64; 8] = [0.0; 8];
+        let mut point: [f64; 3] = [*p.add(0), *p.add(1), *p.add(2)];
+        let box_dist = box_projection(point.as_mut_ptr(), oct_aabb);
+        let node = find_oct(w.as_mut_ptr(), std::ptr::null_mut(), oct_aabb, oct_child, point.as_ptr());
+
+        let mut sdf: f64 = 0.0;
+        for i in 0..8 {
+            sdf += w[i] * *oct_coeff.add(8 * node as usize + i);
+        }
+
+        if box_dist > 0.0 { sdf + box_dist } else { sdf }
+    }
 }
 
 /// C: oct_gradient (engine/engine_collision_sdf.c:162)
