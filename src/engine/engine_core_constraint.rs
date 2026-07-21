@@ -988,7 +988,28 @@ pub fn mj_assign_margin(m: *const mjModel, source: f64) -> f64 {
 /// Calls: mj_arenaAllocByte, mj_clearEfc, mj_warning
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_add_contact(m: *const mjModel, d: *mut mjData, con: *const mjContact) -> i32 {
-    todo!() // mj_addContact
+    const SIZEOF_MJCONTACT: usize = 576;
+    const ALIGNOF_MJCONTACT: usize = 8;
+
+    // SAFETY: m, d, con are valid pointers (caller contract)
+    unsafe {
+        // move arena pointer back to end of existing contact array, invalidate efc_ arrays
+        (*d).parena = (*d).ncon as usize * SIZEOF_MJCONTACT;
+        crate::engine::engine_memory::mj_clear_efc(d);
+
+        // copy contact
+        let dst = crate::engine::engine_memory::mj_arena_alloc_byte(
+            d, SIZEOF_MJCONTACT, ALIGNOF_MJCONTACT) as *mut mjContact;
+        if dst.is_null() {
+            crate::engine::engine_core_util::mj_warning(d, 1, (*d).ncon);  // mjWARN_CONTACTFULL=1
+            return 1;
+        }
+        *dst = *con;
+
+        // increase counter
+        (*d).ncon += 1;
+        0
+    }
 }
 
 /// C: mj_instantiateEquality (engine/engine_core_constraint.h:63)
