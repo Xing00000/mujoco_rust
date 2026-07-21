@@ -445,7 +445,74 @@ pub fn mj_actuator_disabled(m: *const mjModel, i: i32) -> i32 {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_next_activation(m: *const mjModel, d: *const mjData, actuator_id: i32, act_adr: i32, act_dot: f64) -> f64 {
-    todo!() // mj_nextActivation
+    const MJNDYN: i32 = 10;
+    const MJNGAIN: i32 = 10;
+    const MJNBIAS: i32 = 10;
+    const MJMINVAL: f64 = 1e-15;
+    const MJDYN_FILTEREXACT: i32 = 3;
+    const MJDYN_DCMOTOR: i32 = 5;
+
+    // SAFETY: m, d are valid pointers; actuator_id and act_adr within bounds (caller contract)
+    unsafe {
+        let mut act = *(*d).act.add(act_adr as usize);
+        let dyntype = *(*m).actuator_dyntype.add(actuator_id as usize);
+
+        if dyntype == MJDYN_FILTEREXACT {
+            // exact filter: act(h) = act(0) + act_dot * tau * (1 - exp(-h/tau))
+            let tau_raw = *(*m).actuator_dynprm.add((actuator_id * MJNDYN) as usize);
+            let tau = if tau_raw > MJMINVAL { tau_raw } else { MJMINVAL };
+            act = act + act_dot * tau * (1.0 - (-(*m).opt.timestep / tau).exp());
+        } else if dyntype == MJDYN_DCMOTOR {
+            let dynprm = (*m).actuator_dynprm.add((actuator_id * MJNDYN) as usize);
+            let gainprm = (*m).actuator_gainprm.add((actuator_id * MJNGAIN) as usize);
+            let slots = crate::engine::engine_util_misc::mj_dcmotor_slots(dynprm, gainprm);
+
+            let offset = act_adr - *(*m).actuator_actadr.add(actuator_id as usize);
+
+            if offset == slots.current {
+                // current filter: exact integration
+                let te_raw = *dynprm.add(0);
+                let te = if te_raw > MJMINVAL { te_raw } else { MJMINVAL };
+                act = act + act_dot * te * (1.0 - (-(*m).opt.timestep / te).exp());
+            } else if offset == slots.bristle {
+                // LuGre bristle: ZOH exact integration
+                let biasprm = (*m).actuator_biasprm.add((MJNBIAS * actuator_id) as usize);
+                let F_C = *biasprm.add(3);
+                let F_S = *biasprm.add(4);
+                let v_S = *biasprm.add(5);
+                let sigma0 = *dynprm.add(5);
+                let velocity = *(*d).actuator_velocity.add(actuator_id as usize);
+                let g = crate::engine::engine_util_misc::mj_lugre_stribeck(velocity, F_C, F_S, v_S);
+
+                let a = -sigma0 * velocity.abs() / (if g > MJMINVAL { g } else { MJMINVAL });
+                let h = (*m).opt.timestep;
+                let exp_ah = (a * h).exp();
+                let int_h = if a.abs() > MJMINVAL { (exp_ah - 1.0) / a } else { h };
+                act = exp_ah * act + int_h * velocity;
+            } else if offset == slots.integral {
+                // integral: Euler with anti-windup clamp
+                act = act + act_dot * (*m).opt.timestep;
+                let Imax = *dynprm.add(8);
+                if Imax > 0.0 {
+                    act = crate::engine::engine_util_misc::mju_clip(act, -Imax, Imax);
+                }
+            } else {
+                // temperature and slew: Euler
+                act = act + act_dot * (*m).opt.timestep;
+            }
+        } else {
+            // default: Euler integration
+            act = act + act_dot * (*m).opt.timestep;
+        }
+
+        // clamp to actrange unless DC motor
+        if dyntype != MJDYN_DCMOTOR && *(*m).actuator_actlimited.add(actuator_id as usize) {
+            let actrange = (*m).actuator_actrange.add(2 * actuator_id as usize);
+            act = crate::engine::engine_util_misc::mju_clip(act, *actrange.add(0), *actrange.add(1));
+        }
+
+        act
+    }
 }
 
 /// C: mj_getTotalmass (engine/engine_support.h:115)
