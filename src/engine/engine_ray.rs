@@ -610,7 +610,140 @@ pub fn mju_ray_slab(aabb: *const f64, xpos: *const f64, xmat: *const f64, pnt: *
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mju_ray_tree(m: *const mjModel, d: *const mjData, id: i32, pnt: *const f64, vec: *const f64, normal: *mut f64) -> f64 {
-    todo!() // mju_rayTree
+    const MJ_MAXTREEDEPTH: usize = 256;
+
+    // SAFETY: m, d, pnt, vec are valid. normal may be null. id indexes valid geom.
+    unsafe {
+        // clear normal if given
+        if !normal.is_null() {
+            crate::engine::engine_util_blas::mju_zero3(normal);
+        }
+
+        let meshid = *(*m).geom_dataid.add(id as usize);
+        let bvhadr = *(*m).mesh_bvhadr.add(meshid as usize);
+        let faceid = (*m).bvh_nodeid.add(bvhadr as usize);
+        let bvh = (*m).bvh_aabb.add(6 * bvhadr as usize);
+        let child = (*m).bvh_child.add(2 * bvhadr as usize);
+
+        if meshid == -1 {
+            crate::engine::engine_util_errmem::mju_error(
+                b"mesh id of geom %d is -1\0".as_ptr() as *const i8,
+            );
+        }
+
+        // initialize stack
+        let mut stack: [i32; MJ_MAXTREEDEPTH] = [0; MJ_MAXTREEDEPTH];
+        let mut nstack: i32 = 0;
+        stack[0] = 0;
+        nstack = 1;
+
+        // map to local frame
+        let mut lpnt: [f64; 3] = [0.0; 3];
+        let mut lvec: [f64; 3] = [0.0; 3];
+        ray_map(
+            (*d).geom_xpos.add(3 * id as usize),
+            (*d).geom_xmat.add(9 * id as usize),
+            pnt, vec, lpnt.as_mut_ptr(), lvec.as_mut_ptr(),
+        );
+
+        // construct basis vectors of normal plane
+        let mut b0: [f64; 3] = [1.0, 1.0, 1.0];
+        let mut b1: [f64; 3] = [0.0; 3];
+        if lvec[0].abs() >= lvec[1].abs() && lvec[0].abs() >= lvec[2].abs() {
+            b0[0] = 0.0;
+        } else if lvec[1].abs() >= lvec[2].abs() {
+            b0[1] = 0.0;
+        } else {
+            b0[2] = 0.0;
+        }
+        let dot_lvec_b0 = crate::engine::engine_util_blas::mju_dot3(lvec.as_ptr(), b0.as_ptr());
+        let dot_lvec_lvec = crate::engine::engine_util_blas::mju_dot3(lvec.as_ptr(), lvec.as_ptr());
+        crate::engine::engine_util_blas::mju_add_scl3(
+            b1.as_mut_ptr(), b0.as_ptr(), lvec.as_ptr(), -dot_lvec_b0 / dot_lvec_lvec,
+        );
+        crate::engine::engine_util_blas::mju_normalize3(b1.as_mut_ptr());
+        crate::engine::engine_util_spatial::mju_cross(b0.as_mut_ptr(), b1.as_ptr(), lvec.as_ptr());
+        crate::engine::engine_util_blas::mju_normalize3(b0.as_mut_ptr());
+
+        // init solution
+        let mut x: f64 = -1.0;
+        let mut normal_local: [f64; 3] = [0.0; 3];
+
+        while nstack > 0 {
+            // pop from stack
+            nstack -= 1;
+            let node = stack[nstack as usize];
+
+            // intersection test
+            let intersect = mju_ray_slab(
+                bvh.add(6 * node as usize),
+                (*d).geom_xpos.add(3 * id as usize),
+                (*d).geom_xmat.add(9 * id as usize),
+                pnt, vec,
+            );
+
+            // if no intersection, skip
+            if intersect == 0 {
+                continue;
+            }
+
+            // node is a leaf
+            if *faceid.add(node as usize) != -1 {
+                let face = *faceid.add(node as usize) + *(*m).mesh_faceadr.add(meshid as usize);
+
+                // get float vertices
+                let vf0 = (*m).mesh_vert.add(3 * (*(*m).mesh_face.add(3 * face as usize) + *(*m).mesh_vertadr.add(meshid as usize)) as usize);
+                let vf1 = (*m).mesh_vert.add(3 * (*(*m).mesh_face.add((3 * face + 1) as usize) + *(*m).mesh_vertadr.add(meshid as usize)) as usize);
+                let vf2 = (*m).mesh_vert.add(3 * (*(*m).mesh_face.add((3 * face + 2) as usize) + *(*m).mesh_vertadr.add(meshid as usize)) as usize);
+
+                // convert to mjtNum
+                let mut v: [[f64; 3]; 3] = [[0.0; 3]; 3];
+                for i in 0..3usize {
+                    for j in 0..3usize {
+                        v[i][j] = *(*m).mesh_vert.add((3 * (*(*m).mesh_face.add((3 * face as usize + i) as usize) + *(*m).mesh_vertadr.add(meshid as usize)) as usize + j) as usize) as f64;
+                    }
+                }
+
+                // solve
+                let sol = ray_triangle(
+                    v.as_mut_ptr() as *mut [f64; 3],
+                    lpnt.as_ptr(), lvec.as_ptr(), b0.as_ptr(), b1.as_ptr(),
+                    if !normal.is_null() { normal_local.as_mut_ptr() } else { std::ptr::null_mut() },
+                );
+
+                // update
+                if sol >= 0.0 && (x < 0.0 || sol < x) {
+                    x = sol;
+                    if !normal.is_null() {
+                        crate::engine::engine_util_blas::mju_copy3(normal, normal_local.as_ptr());
+                    }
+                }
+                continue;
+            }
+
+            // add children to the stack
+            for i in 0..2i32 {
+                if *child.add((2 * node + i) as usize) != -1 {
+                    if nstack >= MJ_MAXTREEDEPTH as i32 {
+                        crate::engine::engine_util_errmem::mju_error(
+                            b"BVH stack depth exceeded in geom %d.\0".as_ptr() as *const i8,
+                        );
+                    }
+                    stack[nstack as usize] = *child.add((2 * node + i) as usize);
+                    nstack += 1;
+                }
+            }
+        }
+
+        // rotate normal to global frame
+        if !normal.is_null() && x >= 0.0 {
+            crate::engine::engine_util_blas::mju_mul_mat_vec3(
+                normal, (*d).geom_xmat.add(9 * id as usize), normal as *const f64,
+            );
+        }
+
+        x
+    }
 }
 
 /// C: mj_raySdf (engine/engine_ray.c:885)
@@ -765,7 +898,115 @@ pub fn mju_single_ray(m: *const mjModel, d: *mut mjData, pnt: *const f64, vec: *
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mju_multi_ray_prepare(m: *const mjModel, d: *const mjData, pnt: *const f64, ray_xmat: *const f64, geomgroup: *const u8, flg_static: bool, bodyexclude: i32, cutoff: f64, geom_ba: *mut f64, geom_eliminate: *mut i32) {
-    todo!() // mju_multiRayPrepare
+    const MJ_MAXVAL: f64 = 1e10;
+    const MJ_PI: f64 = std::f64::consts::PI;
+    const MJ_MINVAL: f64 = 1e-15;
+
+    // SAFETY: m, d, pnt valid. geom_ba and geom_eliminate have at least ngeom elements.
+    unsafe {
+        if !ray_xmat.is_null() {
+            crate::engine::engine_util_errmem::mju_error(
+                b"ray_xmat is currently unused, should be NULL\0".as_ptr() as *const i8,
+            );
+        }
+
+        // compute eliminate flag for all geoms
+        for geomid in 0..(*m).ngeom as i32 {
+            *geom_eliminate.add(geomid as usize) = ray_eliminate(m, d, geomid, geomgroup, flg_static, bodyexclude);
+        }
+
+        for b in 0..(*m).nbody as i32 {
+            // skip precomputation if no bounding volume is available
+            if *(*m).body_bvhadr.add(b as usize) == -1 {
+                continue;
+            }
+
+            // loop over child geoms, compute bounding angles
+            for i in 0..*(*m).body_geomnum.add(b as usize) {
+                let g = i + *(*m).body_geomadr.add(b as usize);
+                let mut AABB: [f64; 4] = [MJ_MAXVAL, MJ_MAXVAL, -MJ_MAXVAL, -MJ_MAXVAL];
+                let aabb = (*m).geom_aabb.add(6 * g as usize);
+                let xpos = (*d).geom_xpos.add(3 * g as usize);
+                let xmat = (*d).geom_xmat.add(9 * g as usize);
+
+                // skip if eliminated by flags
+                if *geom_eliminate.add(g as usize) != 0 {
+                    continue;
+                }
+
+                // add to geom_eliminate if distance of bounding sphere is above cutoff
+                if crate::engine::engine_util_blas::mju_dist3((*d).geom_xpos.add(3 * g as usize), pnt)
+                    > cutoff + *(*m).geom_rbound.add(g as usize) {
+                    *geom_eliminate.add(g as usize) = 1;
+                    continue;
+                }
+
+                if point_in_box(aabb, xpos, xmat, pnt) != 0 {
+                    *geom_ba.add(4 * g as usize + 0) = -MJ_PI;
+                    *geom_ba.add(4 * g as usize + 1) = 0.0;
+                    *geom_ba.add(4 * g as usize + 2) = MJ_PI;
+                    *geom_ba.add(4 * g as usize + 3) = MJ_PI;
+                    continue;
+                }
+
+                // loop over box vertices, compute spherical aperture
+                for v in 0..8i32 {
+                    let mut vert: [f64; 3] = [0.0; 3];
+                    let mut bx: [f64; 3] = [0.0; 3];
+                    vert[0] = if v & 1 != 0 { *aabb.add(0) + *aabb.add(3) } else { *aabb.add(0) - *aabb.add(3) };
+                    vert[1] = if v & 2 != 0 { *aabb.add(1) + *aabb.add(4) } else { *aabb.add(1) - *aabb.add(4) };
+                    vert[2] = if v & 4 != 0 { *aabb.add(2) + *aabb.add(5) } else { *aabb.add(2) - *aabb.add(5) };
+
+                    // rotate to the world frame
+                    crate::engine::engine_util_blas::mju_mul_mat_vec3(bx.as_mut_ptr(), xmat, vert.as_ptr());
+                    crate::engine::engine_util_blas::mju_add_to3(bx.as_mut_ptr(), xpos);
+
+                    // spherical coordinates
+                    crate::engine::engine_util_blas::mju_sub3(vert.as_mut_ptr(), bx.as_ptr(), pnt);
+                    let azimuth = longitude(vert.as_ptr());
+                    let elevation = latitude(vert.as_ptr());
+
+                    // update bounds
+                    AABB[0] = crate::engine::engine_util_misc::mju_min(AABB[0], azimuth);
+                    AABB[1] = crate::engine::engine_util_misc::mju_min(AABB[1], elevation);
+                    AABB[2] = crate::engine::engine_util_misc::mju_max(AABB[2], azimuth);
+                    AABB[3] = crate::engine::engine_util_misc::mju_max(AABB[3], elevation);
+                }
+
+                // add distance-dependent angular margin to account for edge/face curvature
+                let max_half = crate::engine::engine_util_misc::mju_max(
+                    *aabb.add(3),
+                    crate::engine::engine_util_misc::mju_max(*aabb.add(4), *aabb.add(5)),
+                );
+                let dist = crate::engine::engine_util_blas::mju_dist3(pnt, xpos);
+                if dist > MJ_MINVAL {
+                    let margin = max_half.atan2(dist);
+                    AABB[0] -= margin;
+                    AABB[1] -= margin;
+                    AABB[2] += margin;
+                    AABB[3] += margin;
+                }
+
+                // azimuth crosses discontinuity, fall back to no angular culling
+                if AABB[2] - AABB[0] > MJ_PI {
+                    AABB[0] = -MJ_PI;
+                    AABB[1] = 0.0;
+                    AABB[2] = MJ_PI;
+                    AABB[3] = MJ_PI;
+                }
+
+                // elevation overflow, fall back to no angular culling
+                if AABB[3] - AABB[1] > MJ_PI {
+                    AABB[0] = -MJ_PI;
+                    AABB[1] = 0.0;
+                    AABB[2] = MJ_PI;
+                    AABB[3] = MJ_PI;
+                }
+
+                crate::engine::engine_util_blas::mju_copy(geom_ba.add(4 * g as usize), AABB.as_ptr(), 4);
+            }
+        }
+    }
 }
 
 /// C: mj_multiRay (engine/engine_ray.h:34)

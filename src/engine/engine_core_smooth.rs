@@ -420,7 +420,101 @@ pub fn mj_transmission(m: *const mjModel, d: *mut mjData) {
 /// Calls: mj_actuatorArmature, mji_dot6, mju_addTo, mju_copy, mju_copyRows, mju_mulInertVec, mju_zero, mju_zeroSparse
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_crb(m: *const mjModel, d: *mut mjData) {
-    todo!() // mj_crb
+    const MJ_ENBL_SLEEP: i32 = 1 << 4;
+    const MJ_OBJ_JOINT: u32 = 3;
+
+    // SAFETY: m and d are valid pointers (caller contract). All field accesses are within bounds.
+    unsafe {
+        // outputs
+        let crb = (*d).crb;
+        let M = (*d).M;
+
+        // inputs
+        let cinert = (*d).cinert;
+        let cdof = (*d).cdof;
+        let dof_M0 = (*m).dof_M0;
+        let dof_armature = (*m).dof_armature;
+        let body_awake_ind = (*d).body_awake_ind;
+        let parent_awake_ind = (*d).parent_awake_ind;
+        let dof_awake_ind = (*d).dof_awake_ind;
+        let rownnz = (*m).M_rownnz;
+        let rowadr = (*m).M_rowadr;
+        let body_parentid = (*m).body_parentid;
+        let dof_parentid = (*m).dof_parentid;
+        let dof_simplenum = (*m).dof_simplenum;
+        let dof_bodyid = (*m).dof_bodyid;
+
+        // sleep filtering
+        let sleep_filter = ((*m).opt.enableflags & MJ_ENBL_SLEEP) != 0 && (*d).nv_awake < (*m).nv as i32;
+        let nbody = if sleep_filter { (*d).nbody_awake } else { (*m).nbody as i32 };
+        let nparent = if sleep_filter { (*d).nparent_awake } else { (*m).nbody as i32 };
+        let nv = if sleep_filter { (*d).nv_awake } else { (*m).nv as i32 };
+
+        // crb = cinert
+        if !sleep_filter {
+            crate::engine::engine_util_blas::mju_copy(crb, cinert as *const f64, 10 * nbody);
+        } else {
+            crate::engine::engine_util_blas::mju_copy_rows(crb, cinert as *const f64, body_awake_ind, nbody, 10);
+        }
+
+        // backward pass over bodies, accumulate composite inertias
+        let mut b = nparent - 1;
+        while b >= 0 {
+            let i = if sleep_filter { *parent_awake_ind.add(b as usize) } else { b };
+            if *body_parentid.add(i as usize) > 0 {
+                crate::engine::engine_util_blas::mju_add_to(
+                    crb.add(10 * *body_parentid.add(i as usize) as usize),
+                    crb.add(10 * i as usize) as *const f64,
+                    10,
+                );
+            }
+            b -= 1;
+        }
+
+        // clear M
+        if !sleep_filter {
+            crate::engine::engine_util_blas::mju_zero(M, (*m).nC as i32);
+        } else {
+            crate::engine::engine_util_sparse::mju_zero_sparse(M, rownnz, rowadr, dof_awake_ind, nv);
+        }
+
+        // dense forward pass over dofs
+        for v in 0..nv {
+            let i = if sleep_filter { *dof_awake_ind.add(v as usize) } else { v };
+
+            // simple dof: fixed diagonal inertia
+            let adr = *rowadr.add(i as usize);
+            if *dof_simplenum.add(i as usize) != 0 {
+                *M.add(adr as usize) = *dof_M0.add(i as usize);
+                continue;
+            }
+
+            // init M(i,i) with armature inertia
+            let mut Madr_ij = adr + *rownnz.add(i as usize) - 1;
+            *M.add(Madr_ij as usize) = *dof_armature.add(i as usize)
+                + crate::engine::engine_core_util::mj_actuator_armature(m, MJ_OBJ_JOINT, *(*m).dof_jntid.add(i as usize));
+
+            // precompute buf = crb_body_i * cdof_i
+            let mut buf: [f64; 6] = [0.0; 6];
+            crate::engine::engine_util_spatial::mju_mul_inert_vec(
+                buf.as_mut_ptr(),
+                crb.add(10 * *dof_bodyid.add(i as usize) as usize) as *const f64,
+                cdof.add(6 * i as usize) as *const f64,
+            );
+
+            // sparse backward pass over ancestors
+            let mut j = i;
+            while j >= 0 {
+                // M(i,j) += cdof_j * (crb_body_i * cdof_i)
+                *M.add(Madr_ij as usize) += crate::engine::engine_inline::mji_dot6(
+                    cdof.add(6 * j as usize) as *const f64,
+                    buf.as_ptr(),
+                );
+                Madr_ij -= 1;
+                j = *dof_parentid.add(j as usize);
+            }
+        }
+    }
 }
 
 /// C: mj_tendonArmature (engine/engine_core_smooth.h:62)

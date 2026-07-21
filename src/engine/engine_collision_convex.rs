@@ -25,7 +25,7 @@ pub fn prism_firstdir(o1: *const (), o2: *const (), vec: *mut ccd_vec3_t) {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn libccd_wrapper(m: *const mjModel, obj1: *mut mjCCDObj, obj2: *mut mjCCDObj, con: *mut mjPreContact, margin: f64) -> i32 {
-    todo!() // _libccd_wrapper
+    todo!("requires libccd library bindings: ccd_t, CCD_INIT, ccdMPRPenetration, ccdVec3Eq, ccd_vec3_origin not available in Rust")
 }
 
 /// C: mjc_penetration (engine/engine_collision_convex.c:87)

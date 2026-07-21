@@ -50,7 +50,60 @@ pub fn clear_island(d: *mut mjData, parena: usize) {
 /// Calls: clearIsland, mj_arenaAllocByte, mj_warning
 #[allow(unused_variables, non_snake_case)]
 pub fn arena_alloc_island(m: *const mjModel, d: *mut mjData) -> i32 {
-    todo!() // arenaAllocIsland
+    // SAFETY: m and d are valid pointers (caller contract). Arena allocation uses
+    // mj_arenaAllocByte which returns null on failure.
+    unsafe {
+        let parena_old = (*d).parena;
+
+        // Macro: allocate each island arena pointer, bail on failure
+        macro_rules! arena_alloc_field {
+            ($field:ident, $ty:ty, $nr:expr) => {
+                (*d).$field = crate::engine::engine_memory::mj_arena_alloc_byte(
+                    d,
+                    std::mem::size_of::<$ty>() * ($nr as usize),
+                    std::mem::align_of::<$ty>(),
+                ) as *mut $ty;
+                if (*d).$field.is_null() {
+                    crate::engine::engine_core_util::mj_warning(d, 1, (*d).narena as i32);
+                    clear_island(d, parena_old);
+                    return 0;
+                }
+            };
+        }
+
+        // MJDATA_ARENA_POINTERS_ISLAND expansion
+        arena_alloc_field!(tree_island,        i32, (*m).ntree);
+        arena_alloc_field!(island_ntree,       i32, (*d).nisland);
+        arena_alloc_field!(island_itreeadr,    i32, (*d).nisland);
+        arena_alloc_field!(map_itree2tree,     i32, (*m).ntree);
+        arena_alloc_field!(dof_island,         i32, (*m).nv);
+        arena_alloc_field!(island_nv,          i32, (*d).nisland);
+        arena_alloc_field!(island_idofadr,     i32, (*d).nisland);
+        arena_alloc_field!(island_dofadr,      i32, (*d).nisland);
+        arena_alloc_field!(map_dof2idof,       i32, (*m).nv);
+        arena_alloc_field!(map_idof2dof,       i32, (*m).nv);
+        arena_alloc_field!(ifrc_smooth,        f64, (*d).nidof);
+        arena_alloc_field!(iacc_smooth,        f64, (*d).nidof);
+        arena_alloc_field!(iacc,               f64, (*d).nidof);
+        arena_alloc_field!(efc_island,         i32, (*d).nefc);
+        arena_alloc_field!(island_ne,          i32, (*d).nisland);
+        arena_alloc_field!(island_nf,          i32, (*d).nisland);
+        arena_alloc_field!(island_nefc,        i32, (*d).nisland);
+        arena_alloc_field!(island_iefcadr,     i32, (*d).nisland);
+        arena_alloc_field!(map_efc2iefc,       i32, (*d).nefc);
+        arena_alloc_field!(map_iefc2efc,       i32, (*d).nefc);
+        arena_alloc_field!(iefc_type,          i32, (*d).nefc);
+        arena_alloc_field!(iefc_id,            i32, (*d).nefc);
+        arena_alloc_field!(iefc_frictionloss,  f64, (*d).nefc);
+        arena_alloc_field!(iefc_D,             f64, (*d).nefc);
+        arena_alloc_field!(iefc_R,             f64, (*d).nefc);
+        arena_alloc_field!(iefc_aref,          f64, (*d).nefc);
+        arena_alloc_field!(iefc_state,         i32, (*d).nefc);
+        arena_alloc_field!(iefc_force,         f64, (*d).nefc);
+        arena_alloc_field!(ifrc_constraint,    f64, (*d).nidof);
+
+        1
+    }
 }
 
 /// C: treeNext (engine/engine_island.c:149)

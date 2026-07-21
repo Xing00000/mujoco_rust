@@ -707,14 +707,271 @@ pub fn primal_allocate(m: *const mjModel, d: *mut mjData, ctx: *mut mjPrimalCont
 /// Calls: mj_constraintUpdate_impl, mju_mulMatTVec, mju_mulMatVecSparse
 #[allow(unused_variables, non_snake_case)]
 pub fn primal_update_constraint(ctx: *mut mjPrimalContext, flg_HessianCone: i32) {
-    todo!() // PrimalUpdateConstraint
+    #[repr(C)]
+    #[allow(non_snake_case)]
+    struct PrimalCtx {
+        is_sparse: i32,
+        is_elliptic: i32,
+        island: i32,
+        nv: i32,
+        ne: i32,
+        nf: i32,
+        nefc: i32,
+        nJ: i32,
+        contact: *mut mjContact,
+        qfrc_smooth: *const f64,
+        qacc_smooth: *const f64,
+        qfrc_constraint: *mut f64,
+        qacc: *mut f64,
+        M_rownnz: *mut i32,
+        M_rowadr: *mut i32,
+        M_colind: *mut i32,
+        M: *mut f64,
+        qLD: *mut f64,
+        qLDiagInv: *mut f64,
+        efc_D: *const f64,
+        efc_R: *const f64,
+        efc_frictionloss: *const f64,
+        efc_aref: *const f64,
+        efc_id: *const i32,
+        efc_type: *const i32,
+        efc_force: *mut f64,
+        efc_state: *mut i32,
+        J_rownnz: *mut i32,
+        J_rowadr: *mut i32,
+        J_rowsuper: *mut i32,
+        J_colind: *mut i32,
+        J: *mut f64,
+        JT_rownnz: *mut i32,
+        JT_rowadr: *mut i32,
+        JT_rowsuper: *mut i32,
+        JT_colind: *mut i32,
+        JT: *mut f64,
+        Jaref: *mut f64,
+        Jv: *mut f64,
+        Ma: *mut f64,
+        Mv: *mut f64,
+        grad: *mut f64,
+        Mgrad: *mut f64,
+        search: *mut f64,
+        quad: *mut f64,
+        oldstate: *mut i32,
+        gradold: *mut f64,
+        Mgradold: *mut f64,
+        graddif: *mut f64,
+        Mgraddif: *mut f64,
+        D_newton: *mut f64,
+        cholupd: *mut f64,
+        LTJ: *mut f64,
+        H_rowadr: *mut i32,
+        H_rownnz: *mut i32,
+        HT_rownnz: *mut i32,
+        HT_rowadr: *mut i32,
+        L_rownnz: *mut i32,
+        L_rowadr: *mut i32,
+        LT_rownnz: *mut i32,
+        LT_rowadr: *mut i32,
+        nH: i32,
+        _pad0: i32,
+        H_colind: *mut i32,
+        HT_colind: *mut i32,
+        H: *mut f64,
+        nL: i32,
+        _pad1: i32,
+        L_colind: *mut i32,
+        LT_colind: *mut i32,
+        LT_map: *mut i32,
+        L: *mut f64,
+        Lcone: *mut f64,
+        cost: f64,
+        quadGauss: [f64; 3],
+        scale: f64,
+        nactive: i32,
+        ncone: i32,
+        nupdate: i32,
+        LSiter: i32,
+        LSresult: i32,
+        _pad2: i32,
+        LSslope: f64,
+    }
+
+    const MJ_CNSTRSTATE_SATISFIED: i32 = 0;
+    const MJ_CNSTRSTATE_CONE: i32 = 6;
+
+    // SAFETY: ctx is a valid mjPrimalContext with the layout of PrimalCtx.
+    unsafe {
+        let c = ctx as *mut PrimalCtx;
+        let nefc = (*c).nefc;
+        let nv = (*c).nv;
+
+        // update constraints
+        crate::engine::engine_core_constraint::mj_constraint_update_impl(
+            (*c).ne, (*c).nf, (*c).nefc, (*c).efc_D, (*c).efc_R,
+            (*c).efc_frictionloss, (*c).Jaref, (*c).efc_type, (*c).efc_id,
+            (*c).contact, (*c).efc_state, (*c).efc_force,
+            &mut (*c).cost as *mut f64, flg_HessianCone,
+        );
+
+        // compute qfrc_constraint (dense or sparse)
+        if (*c).is_sparse == 0 {
+            crate::engine::engine_util_blas::mju_mul_mat_t_vec(
+                (*c).qfrc_constraint, (*c).J, (*c).efc_force, nefc, nv,
+            );
+        } else {
+            crate::engine::engine_util_sparse::mju_mul_mat_vec_sparse(
+                (*c).qfrc_constraint, (*c).JT, (*c).efc_force, nv,
+                (*c).JT_rownnz, (*c).JT_rowadr, (*c).JT_colind, (*c).JT_rowsuper,
+            );
+        }
+
+        // count active and cone
+        (*c).nactive = 0;
+        (*c).ncone = 0;
+        for i in 0..nefc {
+            (*c).nactive += (*(*c).efc_state.add(i as usize) != MJ_CNSTRSTATE_SATISFIED) as i32;
+            (*c).ncone += (*(*c).efc_state.add(i as usize) == MJ_CNSTRSTATE_CONE) as i32;
+        }
+
+        // add Gauss cost, set in quadratic[0]
+        let mut Gauss: f64 = 0.0;
+        for i in 0..nv {
+            Gauss += 0.5 * (*(*c).Ma.add(i as usize) - *(*c).qfrc_smooth.add(i as usize))
+                        * (*(*c).qacc.add(i as usize) - *(*c).qacc_smooth.add(i as usize));
+        }
+
+        (*c).quadGauss[0] = Gauss;
+        (*c).cost += Gauss;
+    }
 }
 
 /// C: PrimalUpdateGradient (engine/engine_solver.c:1380)
 /// Calls: mj_solveLD, mju_cholSolve, mju_cholSolveSparse, mju_copy
 #[allow(unused_variables, non_snake_case)]
 pub fn primal_update_gradient(ctx: *mut mjPrimalContext, flg_Newton: i32) {
-    todo!() // PrimalUpdateGradient
+    #[repr(C)]
+    #[allow(non_snake_case)]
+    struct PrimalCtx {
+        is_sparse: i32,
+        is_elliptic: i32,
+        island: i32,
+        nv: i32,
+        ne: i32,
+        nf: i32,
+        nefc: i32,
+        nJ: i32,
+        contact: *mut mjContact,
+        qfrc_smooth: *const f64,
+        qacc_smooth: *const f64,
+        qfrc_constraint: *mut f64,
+        qacc: *mut f64,
+        M_rownnz: *mut i32,
+        M_rowadr: *mut i32,
+        M_colind: *mut i32,
+        M: *mut f64,
+        qLD: *mut f64,
+        qLDiagInv: *mut f64,
+        efc_D: *const f64,
+        efc_R: *const f64,
+        efc_frictionloss: *const f64,
+        efc_aref: *const f64,
+        efc_id: *const i32,
+        efc_type: *const i32,
+        efc_force: *mut f64,
+        efc_state: *mut i32,
+        J_rownnz: *mut i32,
+        J_rowadr: *mut i32,
+        J_rowsuper: *mut i32,
+        J_colind: *mut i32,
+        J: *mut f64,
+        JT_rownnz: *mut i32,
+        JT_rowadr: *mut i32,
+        JT_rowsuper: *mut i32,
+        JT_colind: *mut i32,
+        JT: *mut f64,
+        Jaref: *mut f64,
+        Jv: *mut f64,
+        Ma: *mut f64,
+        Mv: *mut f64,
+        grad: *mut f64,
+        Mgrad: *mut f64,
+        search: *mut f64,
+        quad: *mut f64,
+        oldstate: *mut i32,
+        gradold: *mut f64,
+        Mgradold: *mut f64,
+        graddif: *mut f64,
+        Mgraddif: *mut f64,
+        D_newton: *mut f64,
+        cholupd: *mut f64,
+        LTJ: *mut f64,
+        H_rowadr: *mut i32,
+        H_rownnz: *mut i32,
+        HT_rownnz: *mut i32,
+        HT_rowadr: *mut i32,
+        L_rownnz: *mut i32,
+        L_rowadr: *mut i32,
+        LT_rownnz: *mut i32,
+        LT_rowadr: *mut i32,
+        nH: i32,
+        _pad0: i32,
+        H_colind: *mut i32,
+        HT_colind: *mut i32,
+        H: *mut f64,
+        nL: i32,
+        _pad1: i32,
+        L_colind: *mut i32,
+        LT_colind: *mut i32,
+        LT_map: *mut i32,
+        L: *mut f64,
+        Lcone: *mut f64,
+        cost: f64,
+        quadGauss: [f64; 3],
+        scale: f64,
+        nactive: i32,
+        ncone: i32,
+        nupdate: i32,
+        LSiter: i32,
+        LSresult: i32,
+        _pad2: i32,
+        LSslope: f64,
+    }
+
+    // SAFETY: ctx is a valid mjPrimalContext with the layout of PrimalCtx.
+    unsafe {
+        let c = ctx as *mut PrimalCtx;
+        let nv = (*c).nv;
+
+        // grad = M*qacc - qfrc_smooth - qfrc_constraint
+        for i in 0..nv {
+            *(*c).grad.add(i as usize) = *(*c).Ma.add(i as usize)
+                - *(*c).qfrc_smooth.add(i as usize)
+                - *(*c).qfrc_constraint.add(i as usize);
+        }
+
+        // Newton: Mgrad = H \ grad
+        if flg_Newton != 0 {
+            if (*c).is_sparse != 0 {
+                let L_ptr = if (*c).ncone != 0 { (*c).Lcone } else { (*c).L };
+                crate::engine::engine_util_solve::mju_chol_solve_sparse(
+                    (*c).Mgrad, L_ptr, (*c).grad, nv,
+                    (*c).L_rownnz, (*c).L_rowadr, (*c).L_colind,
+                );
+            } else {
+                let L_ptr = if (*c).ncone != 0 { (*c).Lcone } else { (*c).L };
+                crate::engine::engine_util_solve::mju_chol_solve(
+                    (*c).Mgrad, L_ptr, (*c).grad, nv,
+                );
+            }
+        }
+        // CG: Mgrad = M \ grad
+        else {
+            crate::engine::engine_util_blas::mju_copy((*c).Mgrad, (*c).grad, nv);
+            crate::engine::engine_core_smooth::mj_solve_ld(
+                (*c).Mgrad, (*c).qLD, (*c).qLDiagInv, nv, 1,
+                (*c).M_rownnz, (*c).M_rowadr, (*c).M_colind, std::ptr::null(),
+            );
+        }
+    }
 }
 
 /// C: PrimalPrepare (engine/engine_solver.c:1408)
@@ -1080,7 +1337,249 @@ pub fn elliptic_cost_dif(quad: *const f64, alpha: f64, mu: f64, Dm: f64) -> f64 
 /// Calls: ellipticCostDif, frictionCostDif, mju_warning
 #[allow(unused_variables, non_snake_case)]
 pub fn primal_eval(ctx: *mut mjPrimalContext, p: *mut mjPrimalPnt) {
-    todo!() // PrimalEval
+    #[repr(C)]
+    #[allow(non_snake_case)]
+    struct PrimalCtx {
+        is_sparse: i32,
+        is_elliptic: i32,
+        island: i32,
+        nv: i32,
+        ne: i32,
+        nf: i32,
+        nefc: i32,
+        nJ: i32,
+        contact: *mut mjContact,
+        qfrc_smooth: *const f64,
+        qacc_smooth: *const f64,
+        qfrc_constraint: *mut f64,
+        qacc: *mut f64,
+        M_rownnz: *mut i32,
+        M_rowadr: *mut i32,
+        M_colind: *mut i32,
+        M: *mut f64,
+        qLD: *mut f64,
+        qLDiagInv: *mut f64,
+        efc_D: *const f64,
+        efc_R: *const f64,
+        efc_frictionloss: *const f64,
+        efc_aref: *const f64,
+        efc_id: *const i32,
+        efc_type: *const i32,
+        efc_force: *mut f64,
+        efc_state: *mut i32,
+        J_rownnz: *mut i32,
+        J_rowadr: *mut i32,
+        J_rowsuper: *mut i32,
+        J_colind: *mut i32,
+        J: *mut f64,
+        JT_rownnz: *mut i32,
+        JT_rowadr: *mut i32,
+        JT_rowsuper: *mut i32,
+        JT_colind: *mut i32,
+        JT: *mut f64,
+        Jaref: *mut f64,
+        Jv: *mut f64,
+        Ma: *mut f64,
+        Mv: *mut f64,
+        grad: *mut f64,
+        Mgrad: *mut f64,
+        search: *mut f64,
+        quad: *mut f64,
+        oldstate: *mut i32,
+        gradold: *mut f64,
+        Mgradold: *mut f64,
+        graddif: *mut f64,
+        Mgraddif: *mut f64,
+        D_newton: *mut f64,
+        cholupd: *mut f64,
+        LTJ: *mut f64,
+        H_rowadr: *mut i32,
+        H_rownnz: *mut i32,
+        HT_rownnz: *mut i32,
+        HT_rowadr: *mut i32,
+        L_rownnz: *mut i32,
+        L_rowadr: *mut i32,
+        LT_rownnz: *mut i32,
+        LT_rowadr: *mut i32,
+        nH: i32,
+        _pad0: i32,
+        H_colind: *mut i32,
+        HT_colind: *mut i32,
+        H: *mut f64,
+        nL: i32,
+        _pad1: i32,
+        L_colind: *mut i32,
+        LT_colind: *mut i32,
+        LT_map: *mut i32,
+        L: *mut f64,
+        Lcone: *mut f64,
+        cost: f64,
+        quadGauss: [f64; 3],
+        scale: f64,
+        nactive: i32,
+        ncone: i32,
+        nupdate: i32,
+        LSiter: i32,
+        LSresult: i32,
+        _pad2: i32,
+        LSslope: f64,
+    }
+
+    const MJ_CNSTR_CONTACT_ELLIPTIC: i32 = 7;
+    const MJMINVAL: f64 = 1e-15;
+
+    // SAFETY: ctx is a valid mjPrimalContext with the layout of PrimalCtx.
+    // p is a valid mjPrimalPnt pointer.
+    unsafe {
+        let c = ctx as *mut PrimalCtx;
+        let ne = (*c).ne;
+        let nf = (*c).nf;
+        let nefc = (*c).nefc;
+
+        // clear result
+        let mut cost: f64 = 0.0;
+        let alpha: f64 = (*p).alpha;
+        let mut deriv: [f64; 2] = [0.0, 0.0];
+
+        // init quad with Gauss, shifted: drop quadGauss[0]
+        let mut quadTotal: [f64; 3] = [0.0, (*c).quadGauss[1], (*c).quadGauss[2]];
+
+        // process constraints
+        let mut i: i32 = 0;
+        while i < nefc {
+            // equality: shifted quad (skip quad[0])
+            if i < ne {
+                quadTotal[1] += *(*c).quad.add((3 * i + 1) as usize);
+                quadTotal[2] += *(*c).quad.add((3 * i + 2) as usize);
+                i += 1;
+                continue;
+            }
+
+            // friction: compute cost(alpha) - cost(0) directly
+            if i < ne + nf {
+                let start = *(*c).Jaref.add(i as usize);
+                let dir = *(*c).Jv.add(i as usize);
+                let x = start + alpha * dir;
+                let f = *(*c).efc_frictionloss.add(i as usize);
+                let D = *(*c).efc_D.add(i as usize);
+                let Rf = *(*c).efc_R.add(i as usize) * f;
+
+                // cost delta
+                cost += friction_cost_dif(start, x, f, Rf, D);
+
+                // -bound < x < bound : quadratic
+                if -Rf < x && x < Rf {
+                    deriv[0] += D * x * dir;
+                    deriv[1] += D * dir * dir;
+                }
+                // x < -bound : linear negative
+                else if x <= -Rf {
+                    deriv[0] += -f * dir;
+                }
+                // bound < x : linear positive
+                else {
+                    deriv[0] += f * dir;
+                }
+                i += 1;
+                continue;
+            }
+
+            // limit and contact
+            if *(*c).efc_type.add(i as usize) == MJ_CNSTR_CONTACT_ELLIPTIC {
+                // extract contact info
+                let con = (*c).contact.add(*(*c).efc_id.add(i as usize) as usize);
+                let quad_ptr = (*c).quad.add((3 * i) as usize);
+                let dim = (*con).dim;
+                let mu = (*con).mu;
+
+                // unpack quad
+                let U0 = *quad_ptr.add(3);
+                let V0 = *quad_ptr.add(4);
+                let UU = *quad_ptr.add(5);
+                let UV = *quad_ptr.add(6);
+                let VV = *quad_ptr.add(7);
+                let Dm = *quad_ptr.add(8);
+
+                // shifted cost
+                cost += elliptic_cost_dif(quad_ptr, alpha, mu, Dm);
+
+                // compute N, Tsqr for derivatives
+                let N = U0 + alpha * V0;
+                let Tsqr = UU + alpha * (2.0 * UV + alpha * VV);
+
+                // no tangential force : top or bottom zone
+                if Tsqr <= 0.0 {
+                    // bottom zone: quadratic derivatives
+                    if N < 0.0 {
+                        deriv[0] += 2.0 * alpha * *quad_ptr.add(2) + *quad_ptr.add(1);
+                        deriv[1] += 2.0 * *quad_ptr.add(2);
+                    }
+                    // top zone: nothing to do
+                }
+                // otherwise regular processing
+                else {
+                    // tangential force
+                    let T = Tsqr.sqrt();
+
+                    // N>=mu*T : top zone
+                    if N >= mu * T {
+                        // nothing to do
+                    }
+                    // mu*N+T<=0 : bottom zone
+                    else if mu * N + T <= 0.0 {
+                        deriv[0] += 2.0 * alpha * *quad_ptr.add(2) + *quad_ptr.add(1);
+                        deriv[1] += 2.0 * *quad_ptr.add(2);
+                    }
+                    // otherwise middle zone
+                    else {
+                        let N1 = V0;
+                        let T1 = (UV + alpha * VV) / T;
+                        let T2 = VV / T - (UV + alpha * VV) * T1 / (T * T);
+                        deriv[0] += Dm * (N - mu * T) * (N1 - mu * T1);
+                        deriv[1] += Dm * ((N1 - mu * T1) * (N1 - mu * T1) + (N - mu * T) * (-mu * T2));
+                    }
+                }
+
+                // advance to next constraint
+                i += dim;
+            } else {
+                // inequality: search point
+                let start = *(*c).Jaref.add(i as usize);
+                let x = start + alpha * *(*c).Jv.add(i as usize);
+                let cost0 = if start < 0.0 { *(*c).quad.add((3 * i) as usize) } else { 0.0 };
+
+                // active
+                if x < 0.0 {
+                    // shifted quad: add quad[1], quad[2] and (quad[0] - cost0)
+                    quadTotal[0] += *(*c).quad.add((3 * i) as usize) - cost0;
+                    quadTotal[1] += *(*c).quad.add((3 * i + 1) as usize);
+                    quadTotal[2] += *(*c).quad.add((3 * i + 2) as usize);
+                } else {
+                    cost -= cost0;
+                }
+                i += 1;
+            }
+        }
+
+        // add total quadratic (quadTotal[0] contains only shifted residuals)
+        cost += alpha * alpha * quadTotal[2] + alpha * quadTotal[1] + quadTotal[0];
+        deriv[0] += 2.0 * alpha * quadTotal[2] + quadTotal[1];
+        deriv[1] += 2.0 * quadTotal[2];
+
+        // check for convexity; SHOULD NOT OCCUR
+        if deriv[1] <= 0.0 {
+            crate::engine::engine_util_errmem::mju_warning(
+                b"Linesearch objective is not convex\0".as_ptr() as *const i8,
+            );
+            deriv[1] = MJMINVAL;
+        }
+
+        // assign and count
+        (*p).cost = cost;
+        (*p).deriv[0] = deriv[0];
+        (*p).deriv[1] = deriv[1];
+        (*c).LSiter += 1;
+    }
 }
 
 /// C: updateBracket (engine/engine_solver.c:1782)

@@ -48,7 +48,52 @@ pub fn cell_strain_jacobian(npc: i32, cell_nnz: i32, dSdx_local: *const f64, cel
 /// Calls: mj_arenaAllocByte, mj_clearEfc, mj_warning
 #[allow(unused_variables, non_snake_case)]
 pub fn arena_alloc_efc(m: *const mjModel, d: *mut mjData) -> i32 {
-    todo!() // arenaAllocEfc
+    // SAFETY: m and d are valid pointers (caller contract).
+    unsafe {
+        // move arena pointer to end of contact array
+        (*d).parena = (*d).ncon as usize * std::mem::size_of::<mjContact>();
+
+        // Macro: allocate each solver arena pointer, bail on failure
+        macro_rules! arena_alloc_field {
+            ($field:ident, $ty:ty, $nr:expr) => {
+                (*d).$field = crate::engine::engine_memory::mj_arena_alloc_byte(
+                    d,
+                    std::mem::size_of::<$ty>() * ($nr as usize),
+                    std::mem::align_of::<$ty>(),
+                ) as *mut $ty;
+                if (*d).$field.is_null() {
+                    crate::engine::engine_core_util::mj_warning(d, 1, (*d).narena as i32);
+                    crate::engine::engine_memory::mj_clear_efc(d);
+                    (*d).parena = (*d).ncon as usize * std::mem::size_of::<mjContact>();
+                    return 0;
+                }
+            };
+        }
+
+        // MJDATA_ARENA_POINTERS_SOLVER expansion (X and XNV both expand the same)
+        arena_alloc_field!(efc_type,          i32, (*d).nefc);
+        arena_alloc_field!(efc_id,            i32, (*d).nefc);
+        arena_alloc_field!(efc_J_rownnz,      i32, (*d).nefc);
+        arena_alloc_field!(efc_J_rowadr,      i32, (*d).nefc);
+        arena_alloc_field!(efc_J_rowsuper,    i32, (*d).nefc);
+        arena_alloc_field!(efc_J_colind,      i32, (*d).nJ);
+        arena_alloc_field!(efc_J,             f64, (*d).nJ);
+        arena_alloc_field!(efc_pos,           f64, (*d).nefc);
+        arena_alloc_field!(efc_margin,        f64, (*d).nefc);
+        arena_alloc_field!(efc_frictionloss,  f64, (*d).nefc);
+        arena_alloc_field!(efc_diagA,         f64, (*d).nefc);
+        arena_alloc_field!(efc_KBIP,          f64, (*d).nefc * 4);
+        arena_alloc_field!(efc_D,             f64, (*d).nefc);
+        arena_alloc_field!(efc_R,             f64, (*d).nefc);
+        arena_alloc_field!(tendon_efcadr,     i32, (*m).ntendon);
+        arena_alloc_field!(efc_vel,           f64, (*d).nefc);
+        arena_alloc_field!(efc_aref,          f64, (*d).nefc);
+        arena_alloc_field!(efc_b,             f64, (*d).nefc);
+        arena_alloc_field!(efc_state,         i32, (*d).nefc);
+        arena_alloc_field!(efc_force,         f64, (*d).nefc);
+
+        1
+    }
 }
 
 /// C: mj_elemBodyWeight (engine/engine_core_constraint.c:223)

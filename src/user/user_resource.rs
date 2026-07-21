@@ -15,14 +15,30 @@ pub fn mju_open_resource(dir: *const i8, name: *const i8, vfs: *const mjVFS, err
 /// Calls: VFS::Close, VFS::Upcast
 #[allow(unused_variables, non_snake_case)]
 pub fn mju_close_resource(resource: *mut mjResource) {
-    todo!() // mju_closeResource
+    // SAFETY: resource is a valid pointer (caller contract); vfs field checked before deref
+    unsafe {
+        if !resource.is_null() && !(*resource).vfs.is_null() {
+            // VFS::Upcast(resource->vfs)->Close(resource)
+            // The C++ code calls through a VFS vtable. This requires C++ vtable dispatch
+            // which is not available in pure Rust translation.
+            todo!("requires C++ VFS vtable dispatch: VFS::Upcast(resource->vfs)->Close(resource)")
+        }
+    }
 }
 
 /// C: mju_readResource (user/user_resource.cc:75)
 /// Calls: VFS::Read, VFS::Upcast
 #[allow(unused_variables, non_snake_case)]
 pub fn mju_read_resource(resource: *mut mjResource, buffer: *const *mut ()) -> i32 {
-    todo!() // mju_readResource
+    // SAFETY: resource is a valid pointer (caller contract); vfs field checked before deref
+    unsafe {
+        if !resource.is_null() && !(*resource).vfs.is_null() {
+            // VFS::Upcast(resource->vfs)->Read(resource, buffer)
+            // The C++ code calls through a VFS vtable. This requires C++ vtable dispatch.
+            todo!("requires C++ VFS vtable dispatch: VFS::Upcast(resource->vfs)->Read(resource, buffer)")
+        }
+        -1 // default (error reading bytes)
+    }
 }
 
 /// C: mju_getResourceDir (user/user_resource.cc:82)

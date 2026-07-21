@@ -290,7 +290,58 @@ pub fn compute_volume(x: *const f64, v: *const i32) -> f64 {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn metric_tensor(metric: *mut f64, idx: i32, mu: f64, la: f64, basis: *const [f64; 9]) {
-    todo!() // MetricTensor
+    // Template instantiation: Stencil3D with kNumEdges = 6
+    const NUM_EDGES: usize = 6;
+
+    // SAFETY: metric points to array with at least 21*(idx+1) elements,
+    // basis points to array of NUM_EDGES [f64; 9] arrays.
+    unsafe {
+        let mut trE: [f64; NUM_EDGES] = [0.0; NUM_EDGES];
+        let mut trEE: [f64; NUM_EDGES * NUM_EDGES] = [0.0; NUM_EDGES * NUM_EDGES];
+        let mut k: [f64; NUM_EDGES * NUM_EDGES] = [0.0; NUM_EDGES * NUM_EDGES];
+
+        // compute first invariant i.e. trace(strain)
+        for e in 0..NUM_EDGES {
+            for i in 0..3usize {
+                trE[e] += (*basis.add(e))[4 * i];
+            }
+        }
+
+        // compute second invariant i.e. trace(strain^2)
+        for ed1 in 0..NUM_EDGES {
+            for ed2 in 0..NUM_EDGES {
+                for i in 0..3usize {
+                    for j in 0..3usize {
+                        trEE[NUM_EDGES * ed1 + ed2] +=
+                            (*basis.add(ed1))[3 * i + j] * (*basis.add(ed2))[3 * j + i];
+                    }
+                }
+            }
+        }
+
+        // assembly of strain metric tensor
+        for ed1 in 0..NUM_EDGES {
+            for ed2 in 0..NUM_EDGES {
+                k[NUM_EDGES * ed1 + ed2] = mu * trEE[NUM_EDGES * ed1 + ed2] +
+                                           la * trE[ed2] * trE[ed1];
+            }
+        }
+
+        // copy to triangular representation
+        let mut id: i32 = 0;
+        for ed1 in 0..NUM_EDGES {
+            for ed2 in ed1..NUM_EDGES {
+                *metric.add((21 * idx + id) as usize) = k[NUM_EDGES * ed1 + ed2];
+                id += 1;
+            }
+        }
+
+        if id != (NUM_EDGES * (NUM_EDGES + 1) / 2) as i32 {
+            crate::engine::engine_util_errmem::mju_error(
+                b"incorrect stiffness matrix size\0".as_ptr() as *const i8,
+            );
+        }
+    }
 }
 
 /// C: ComputeBasis (user/user_mesh.cc:3503)

@@ -39,7 +39,167 @@ pub fn contact_select(arr: *mut ContactInfo, buf: *mut ContactInfo, n: i32, k: i
 /// Calls: mjc_distance, mjc_getSDF, mju_addTo3, mju_dot3, mju_max, mju_min, mju_mulMatTVec3, mju_mulMatVec3, mju_quat2Mat, mju_rotVecQuat, mju_sub3, mju_transformSpatial
 #[allow(unused_variables, non_snake_case)]
 pub fn tactile_taxel_batch(m: *const mjModel, d: *mut mjData, args: *mut ()) -> *mut () {
-    todo!() // tactile_taxel_batch
+    // Local struct matching C mjTactileTaskArgs
+    #[repr(C)]
+    struct TactileTaskArgs {
+        sensor_id: i32,
+        mesh_id: i32,
+        geom_id: i32,
+        parent_weld: i32,
+        ncontact: i32,
+        nchannel: i32,
+        contact_geom_ids: *mut i32,
+        start_taxel: i32,
+        end_taxel: i32,
+        forcesT: *mut f64,
+    }
+
+    // SAFETY: m, d are valid. args points to a valid mjTactileTaskArgs struct (caller contract).
+    unsafe {
+        let t = args as *mut TactileTaskArgs;
+        let mesh_id = (*t).mesh_id;
+        let geom_id = (*t).geom_id;
+        let parent_weld = (*t).parent_weld;
+        let ncon = *(*m).mesh_vertnum.add(mesh_id as usize);
+
+        let geom_pos = (*d).geom_xpos.add(3 * geom_id as usize);
+        let geom_mat = (*d).geom_xmat.add(9 * geom_id as usize);
+        let mesh_vert = (*m).mesh_vert.add(3 * *(*m).mesh_vertadr.add(mesh_id as usize) as usize);
+        let mesh_normal = (*m).mesh_normal.add(3 * *(*m).mesh_normaladr.add(mesh_id as usize) as usize);
+
+        let has_frame = (*(*m).mesh_normalnum.add(mesh_id as usize) == 3 * *(*m).mesh_vertnum.add(mesh_id as usize)) as i32;
+        let normal_stride = if has_frame != 0 { 9 } else { 3 };
+
+        // process taxels in [start_taxel, end_taxel)
+        for j in (*t).start_taxel..(*t).end_taxel {
+            let mut pos: [f64; 3] = [
+                *mesh_vert.add((3 * j) as usize) as f64,
+                *mesh_vert.add((3 * j + 1) as usize) as f64,
+                *mesh_vert.add((3 * j + 2) as usize) as f64,
+            ];
+
+            let mut xpos: [f64; 3] = [0.0; 3];
+            crate::engine::engine_util_blas::mju_mul_mat_vec3(xpos.as_mut_ptr(), geom_mat, pos.as_ptr());
+            crate::engine::engine_util_blas::mju_add_to3(xpos.as_mut_ptr(), geom_pos);
+
+            // iterate over colliding geoms
+            for g in 0..(*t).ncontact {
+                let geom = *(*t).contact_geom_ids.add(g as usize);
+                let body = *(*m).geom_bodyid.add(geom as usize);
+
+                // set up SDF for this contact geom
+                let mut sdf_instance: [i32; 2] = [-1, -1];
+                let mut geomtype: [u32; 2] = [8, 4]; // mjGEOM_SDF=8, mjGEOM_SPHERE=4
+                let mut sdf_ptr: [*const mjpPlugin; 2] = [std::ptr::null(), std::ptr::null()];
+                let geom_type_val = *(*m).geom_type.add(geom as usize) as u32;
+
+                if geom_type_val == 8 { // mjGEOM_SDF
+                    sdf_instance[0] = *(*m).geom_plugin.add(geom as usize);
+                    sdf_ptr[0] = crate::engine::engine_collision_sdf::mjc_get_sdf(m, geom);
+                } else if geom_type_val == 7 { // mjGEOM_MESH
+                    sdf_instance[0] = *(*m).geom_dataid.add(geom as usize);
+                    geomtype[0] = geom_type_val;
+                } else {
+                    sdf_instance[0] = geom;
+                    geomtype[0] = geom_type_val;
+                }
+
+                // skip mesh geoms not having an octree
+                if geomtype[0] == 7 &&
+                   *(*m).mesh_octadr.add(*(*m).geom_dataid.add(geom as usize) as usize) == -1 {
+                    continue;
+                }
+
+                let mut geom_sdf = mjSDF {
+                    id: sdf_instance.as_mut_ptr(),
+                    r#type: [0u8; 8], // mjSDFTYPE_SINGLE
+                    plugin: sdf_ptr.as_ptr() as *const *mut mjpPlugin,
+                    geomtype: geomtype.as_mut_ptr(),
+                    relpos: std::ptr::null_mut(),
+                    relmat: std::ptr::null_mut(),
+                };
+
+                // position in other geom frame
+                let mut tmp: [f64; 3] = [0.0; 3];
+                let mut lpos: [f64; 3] = [0.0; 3];
+                crate::engine::engine_util_blas::mju_sub3(tmp.as_mut_ptr(), xpos.as_ptr(), (*d).geom_xpos.add(3 * geom as usize));
+                crate::engine::engine_util_blas::mju_mul_mat_t_vec3(lpos.as_mut_ptr(), (*d).geom_xmat.add(9 * geom as usize), tmp.as_ptr());
+
+                // SDF plugins are in the original mesh frame
+                if !sdf_ptr[0].is_null() {
+                    let mut mesh_mat: [f64; 9] = [0.0; 9];
+                    crate::engine::engine_util_spatial::mju_quat2mat(mesh_mat.as_mut_ptr(), (*m).mesh_quat.add(4 * *(*m).geom_dataid.add(geom as usize) as usize));
+                    crate::engine::engine_util_blas::mju_mul_mat_vec3(lpos.as_mut_ptr(), mesh_mat.as_ptr(), lpos.as_ptr());
+                    crate::engine::engine_util_blas::mju_add_to3(lpos.as_mut_ptr(), (*m).mesh_pos.add(3 * *(*m).geom_dataid.add(geom as usize) as usize));
+                }
+
+                // compute distance
+                let depth = crate::engine::engine_util_misc::mju_min(
+                    crate::engine::engine_collision_sdf::mjc_distance(m, d as *const mjData, &geom_sdf, lpos.as_ptr()),
+                    0.0,
+                );
+                if depth == 0.0 {
+                    continue;
+                }
+
+                // get velocity in global frame
+                let mut vel_sensor: [f64; 6] = [0.0; 6];
+                let mut vel_other: [f64; 6] = [0.0; 6];
+                let mut vel_rel: [f64; 3] = [0.0; 3];
+                crate::engine::engine_util_spatial::mju_transform_spatial(
+                    vel_sensor.as_mut_ptr(), (*d).cvel.add(6 * parent_weld as usize), 0,
+                    xpos.as_ptr(),
+                    (*d).subtree_com.add(3 * *(*m).body_rootid.add(parent_weld as usize) as usize),
+                    std::ptr::null_mut(),
+                );
+                crate::engine::engine_util_spatial::mju_transform_spatial(
+                    vel_other.as_mut_ptr(), (*d).cvel.add(6 * body as usize), 0,
+                    (*d).geom_xpos.add(3 * geom as usize),
+                    (*d).subtree_com.add(3 * *(*m).body_rootid.add(body as usize) as usize),
+                    std::ptr::null_mut(),
+                );
+                crate::engine::engine_util_blas::mju_sub3(vel_rel.as_mut_ptr(), vel_sensor.as_ptr().add(3), vel_other.as_ptr().add(3));
+
+                // get normal
+                let mut normal: [f64; 3] = [
+                    *mesh_normal.add((normal_stride * j) as usize) as f64,
+                    *mesh_normal.add((normal_stride * j + 1) as usize) as f64,
+                    *mesh_normal.add((normal_stride * j + 2) as usize) as f64,
+                ];
+                crate::engine::engine_util_spatial::mju_rot_vec_quat(
+                    normal.as_mut_ptr(), normal.as_ptr(), (*m).mesh_quat.add(4 * mesh_id as usize),
+                );
+
+                // take max penetration depth (SDF distance is negative; negate for positive output)
+                let cur = *(*t).forcesT.add((0 * ncon as i32 + j) as usize);
+                *(*t).forcesT.add((0 * ncon as i32 + j) as usize) = crate::engine::engine_util_misc::mju_max(cur, -depth);
+
+                if has_frame != 0 {
+                    let mut tang1: [f64; 3] = [
+                        *mesh_normal.add((normal_stride * j + 3) as usize) as f64,
+                        *mesh_normal.add((normal_stride * j + 4) as usize) as f64,
+                        *mesh_normal.add((normal_stride * j + 5) as usize) as f64,
+                    ];
+                    let mut tang2: [f64; 3] = [
+                        *mesh_normal.add((normal_stride * j + 6) as usize) as f64,
+                        *mesh_normal.add((normal_stride * j + 7) as usize) as f64,
+                        *mesh_normal.add((normal_stride * j + 8) as usize) as f64,
+                    ];
+                    crate::engine::engine_util_spatial::mju_rot_vec_quat(
+                        tang1.as_mut_ptr(), tang1.as_ptr(), (*m).mesh_quat.add(4 * mesh_id as usize),
+                    );
+                    crate::engine::engine_util_spatial::mju_rot_vec_quat(
+                        tang2.as_mut_ptr(), tang2.as_ptr(), (*m).mesh_quat.add(4 * mesh_id as usize),
+                    );
+                    *(*t).forcesT.add((1 * ncon as i32 + j) as usize) +=
+                        (crate::engine::engine_util_blas::mju_dot3(vel_rel.as_ptr(), tang1.as_ptr())).abs();
+                    *(*t).forcesT.add((2 * ncon as i32 + j) as usize) +=
+                        (crate::engine::engine_util_blas::mju_dot3(vel_rel.as_ptr(), tang2.as_ptr())).abs();
+                }
+            }
+        }
+        std::ptr::null_mut()
+    }
 }
 
 /// C: tactileTask (engine/engine_sensor.c:191)
