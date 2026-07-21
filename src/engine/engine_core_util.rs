@@ -536,7 +536,64 @@ pub fn mj_angmom_mat(m: *const mjModel, d: *mut mjData, mat: *mut f64, body: i32
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_object_velocity(m: *const mjModel, d: *const mjData, objtype: i32, objid: i32, res: *mut f64, flg_local: i32) {
-    todo!() // mj_objectVelocity
+    // SAFETY: m, d, res are valid pointers; objtype/objid within bounds (caller contract)
+    unsafe {
+        let mut bodyid: i32 = 0;
+        let mut pos: *const f64 = std::ptr::null();
+        let mut rot: *const f64 = std::ptr::null();
+
+        // body-inertial
+        if objtype == 1 {  // mjOBJ_BODY
+            bodyid = objid;
+            pos = (*d).xipos.add(3 * objid as usize);
+            rot = if flg_local != 0 { (*d).ximat.add(9 * objid as usize) } else { std::ptr::null() };
+        }
+        // body-regular
+        else if objtype == 2 {  // mjOBJ_XBODY
+            bodyid = objid;
+            pos = (*d).xpos.add(3 * objid as usize);
+            rot = if flg_local != 0 { (*d).xmat.add(9 * objid as usize) } else { std::ptr::null() };
+        }
+        // geom
+        else if objtype == 5 {  // mjOBJ_GEOM
+            bodyid = *(*m).geom_bodyid.add(objid as usize);
+            pos = (*d).geom_xpos.add(3 * objid as usize);
+            rot = if flg_local != 0 { (*d).geom_xmat.add(9 * objid as usize) } else { std::ptr::null() };
+        }
+        // site
+        else if objtype == 6 {  // mjOBJ_SITE
+            bodyid = *(*m).site_bodyid.add(objid as usize);
+            pos = (*d).site_xpos.add(3 * objid as usize);
+            rot = if flg_local != 0 { (*d).site_xmat.add(9 * objid as usize) } else { std::ptr::null() };
+        }
+        // camera
+        else if objtype == 7 {  // mjOBJ_CAMERA
+            bodyid = *(*m).cam_bodyid.add(objid as usize);
+            pos = (*d).cam_xpos.add(3 * objid as usize);
+            rot = if flg_local != 0 { (*d).cam_xmat.add(9 * objid as usize) } else { std::ptr::null() };
+        }
+        // invalid
+        else {
+            crate::engine::engine_util_errmem::mju_error(
+                b"invalid object type %d\0".as_ptr() as *const i8);
+        }
+
+        // static body: quick return
+        if *(*m).body_weldid.add(bodyid as usize) == 0 {
+            crate::engine::engine_util_blas::mju_zero(res, 6);
+            return;
+        }
+
+        // transform velocity
+        crate::engine::engine_util_spatial::mju_transform_spatial(
+            res,
+            (*d).cvel.add(6 * bodyid as usize),
+            0,
+            pos,
+            (*d).subtree_com.add(3 * (*(*m).body_rootid.add(bodyid as usize)) as usize),
+            rot,
+        );
+    }
 }
 
 /// C: mj_objectAcceleration (engine/engine_core_util.h:121)
@@ -719,7 +776,58 @@ pub fn mj_actuator_damping(m: *const mjModel, r#type: u32, id: i32, poly: *mut f
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_actuator_armature(m: *const mjModel, r#type: u32, id: i32) -> f64 {
-    todo!() // mj_actuatorArmature
+    // SAFETY: m is valid mjModel pointer; id within bounds (caller contract)
+    unsafe {
+        if r#type != 18 && r#type != 3 {  // mjOBJ_TENDON=18, mjOBJ_JOINT=3
+            crate::engine::engine_util_errmem::mju_error(
+                b"only joint and tendon objects can inherit armature from actuators\0".as_ptr() as *const i8);
+            return 0.0;
+        }
+
+        // get actuator id
+        let actuatorid = if r#type == 3 {
+            *(*m).jnt_actuatorid.add(id as usize)
+        } else {
+            *(*m).tendon_actuatorid.add(id as usize)
+        };
+
+        // no actuator contribution
+        if actuatorid == -1 {
+            return 0.0;
+        }
+
+        let mut armature: f64 = 0.0;
+
+        // single actuator contributes armature
+        if actuatorid >= 0 {
+            let gear = *(*m).actuator_gear.add(6 * actuatorid as usize);
+            let gear2 = gear * gear;
+            armature = *(*m).actuator_armature.add(actuatorid as usize) * gear2;
+        }
+        // scan all actuators
+        else {
+            let nu = (*m).nu as i32;
+            for k in 0..nu {
+                if *(*m).actuator_trnid.add(2 * k as usize) != id {
+                    continue;
+                }
+                if r#type == 3 &&  // mjOBJ_JOINT
+                   *(*m).actuator_trntype.add(k as usize) != 0 &&  // mjTRN_JOINT
+                   *(*m).actuator_trntype.add(k as usize) != 1 {   // mjTRN_JOINTINPARENT
+                    continue;
+                }
+                if r#type == 18 &&  // mjOBJ_TENDON
+                   *(*m).actuator_trntype.add(k as usize) != 3 {   // mjTRN_TENDON
+                    continue;
+                }
+                let gear = *(*m).actuator_gear.add(6 * k as usize);
+                let gear2 = gear * gear;
+                armature += *(*m).actuator_armature.add(k as usize) * gear2;
+            }
+        }
+
+        armature
+    }
 }
 
 /// C: mj_warning (engine/engine_core_util.h:148)

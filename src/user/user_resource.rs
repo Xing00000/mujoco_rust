@@ -28,7 +28,42 @@ pub fn mju_read_resource(resource: *mut mjResource, buffer: *const *mut ()) -> i
 /// C: mju_getResourceDir (user/user_resource.cc:82)
 #[allow(unused_variables, non_snake_case)]
 pub fn mju_get_resource_dir(resource: *mut mjResource, dir: *const *mut i8, ndir: *mut i32) {
-    todo!() // mju_getResourceDir
+    // SAFETY: resource, dir, ndir are valid pointers (caller contract)
+    unsafe {
+        *(dir as *mut *const i8) = std::ptr::null();
+        *ndir = 0;
+
+        if resource.is_null() {
+            return;
+        }
+        let name = (*resource).name;
+        if name.is_null() {
+            return;
+        }
+
+        // ensure prefix is included even if there is no separator
+        let mut prefix_len: i32 = 0;
+        let provider = (*resource).provider as *const mjpResourceProvider;
+        if !provider.is_null() && !(*provider).prefix.is_null() {
+            // SAFETY: prefix is a valid C string — compute strlen manually
+            let mut len: i32 = 0;
+            while *(*provider).prefix.add(len as usize) != 0 {
+                len += 1;
+            }
+            prefix_len = len + 1;
+        }
+
+        *(dir as *mut *const i8) = name as *const i8;
+        *ndir = prefix_len;
+        let mut i = prefix_len;
+        while *name.add(i as usize) != 0 {
+            let ch = *name.add(i as usize);
+            if ch == b'/' as i8 || ch == b'\\' as i8 {
+                *ndir = i + 1;
+            }
+            i += 1;
+        }
+    }
 }
 
 /// C: mju_isModifiedResource (user/user_resource.cc:105)

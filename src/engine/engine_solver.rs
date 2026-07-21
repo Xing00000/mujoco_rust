@@ -136,7 +136,60 @@ pub fn a_rdiaginv(m: *const mjModel, d: *const mjData, res: *mut f64, nefc: i32,
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn extract_block(m: *const mjModel, d: *const mjData, Ac: *mut f64, start: i32, n: i32, flg_subR: i32) {
-    todo!() // extractBlock
+    // SAFETY: m, d, Ac are valid pointers; start+n within efc bounds (caller contract)
+    unsafe {
+        let nefc = (*d).nefc;
+        let AR = (*d).efc_AR;
+
+        // sparse
+        if crate::engine::engine_core_util::mj_is_sparse(m) != 0 {
+            let rownnz = (*d).efc_AR_rownnz;
+            let rowadr = (*d).efc_AR_rowadr;
+            let colind = (*d).efc_AR_colind;
+
+            // find starting k: same for all rows
+            let mut k: i32 = 0;
+            while k < *rownnz.add(start as usize) {
+                if *colind.add((*rowadr.add(start as usize) + k) as usize) == start {
+                    break;
+                }
+                k += 1;
+            }
+
+            // SHOULD NOT OCCUR
+            if k >= *rownnz.add(start as usize) {
+                crate::engine::engine_util_errmem::mju_error(
+                    b"internal error\0".as_ptr() as *const i8);
+            }
+
+            // copy rows
+            for j in 0..n {
+                crate::engine::engine_util_blas::mju_copy(
+                    Ac.add((j * n) as usize),
+                    AR.add((*rowadr.add((start + j) as usize) + k) as usize),
+                    n);
+            }
+        }
+        // dense
+        else {
+            for j in 0..n {
+                crate::engine::engine_util_blas::mju_copy(
+                    Ac.add((j * n) as usize),
+                    AR.add((start + (start + j) * nefc) as usize),
+                    n);
+            }
+        }
+
+        // subtract R from diagonal, clamp to 1e-10
+        if flg_subR != 0 {
+            let R = (*d).efc_R;
+            for j in 0..n {
+                let idx = (j * (n + 1)) as usize;
+                *Ac.add(idx) -= *R.add((start + j) as usize);
+                *Ac.add(idx) = if *Ac.add(idx) > 1e-10 { *Ac.add(idx) } else { 1e-10 };
+            }
+        }
+    }
 }
 
 /// C: residual (engine/engine_solver.c:186)
