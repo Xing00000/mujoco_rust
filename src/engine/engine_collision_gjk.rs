@@ -383,7 +383,45 @@ pub fn lincomb(res: *mut f64, coef: *const f64, n: i32, v1: *const f64, v2: *con
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn epa_support(pt: *mut Polytope, obj1: *mut mjCCDObj, obj2: *mut mjCCDObj, d: *const f64, dnorm: f64) -> i32 {
-    todo!() // epaSupport
+    // Polytope layout (104 bytes):
+    //   Vertex* verts;     offset 0
+    //   int nverts;        offset 8
+    const VERTS_OFFSET: usize = 0;
+    const NVERTS_OFFSET: usize = 8;
+    const SIZEOF_VERTEX: usize = 80;
+
+    // SAFETY: pt is a valid Polytope pointer, obj1/obj2 are valid mjCCDObj pointers,
+    //         d is a valid f64[3] pointer
+    unsafe {
+        let pt_base = pt as *mut u8;
+
+        let mut dir: [f64; 3] = [1.0, 0.0, 0.0];
+        let mut dir_neg: [f64; 3] = [-1.0, 0.0, 0.0];
+
+        // mjc_support assumes a normalized direction
+        if dnorm > 1e-14 {
+            dir[0] = *d.add(0) / dnorm;
+            dir[1] = *d.add(1) / dnorm;
+            dir[2] = *d.add(2) / dnorm;
+            dir_neg[0] = -dir[0];
+            dir_neg[1] = -dir[1];
+            dir_neg[2] = -dir[2];
+        }
+
+        // n = pt->nverts++
+        let nverts_ptr = pt_base.add(NVERTS_OFFSET) as *mut i32;
+        let n = *nverts_ptr;
+        *nverts_ptr = n + 1;
+
+        // Vertex* v = pt->verts + n
+        let verts_ptr = *(pt_base.add(VERTS_OFFSET) as *const *mut u8);
+        let v = verts_ptr.add(n as usize * SIZEOF_VERTEX) as *mut Vertex;
+
+        // support(v, obj1, obj2, dir, dir_neg)
+        support(v, obj1, obj2, dir.as_ptr(), dir_neg.as_ptr());
+
+        n
+    }
 }
 
 /// C: insertVertex (engine/engine_collision_gjk.c:112)

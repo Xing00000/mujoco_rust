@@ -199,7 +199,23 @@ pub fn mju_legacy_text(msg: *const mjLogMessage, buf: *mut i8, bufsz: i32) -> *c
 /// C: mju_activeHandler (engine/engine_util_errmem.c:292)
 #[allow(unused_variables, non_snake_case)]
 pub fn mju_active_handler() -> mjfLogHandler {
-    todo!() // mju_activeHandler
+    use crate::types::{_MJPRIVATE_TLS_LOG_HANDLER, GLOBAL_LOG_HANDLER};
+
+    // SAFETY: reading function pointer bytes from mutex-protected storage
+    let tls_guard = _MJPRIVATE_TLS_LOG_HANDLER.lock().unwrap();
+    let tls_val = usize::from_ne_bytes([
+        tls_guard[0], tls_guard[1], tls_guard[2], tls_guard[3],
+        tls_guard[4], tls_guard[5], tls_guard[6], tls_guard[7],
+    ]);
+    if tls_val != 0 {
+        let result = mjfLogHandler { _data: *tls_guard };
+        drop(tls_guard);
+        return result;
+    }
+    drop(tls_guard);
+
+    let global_guard = GLOBAL_LOG_HANDLER.lock().unwrap();
+    mjfLogHandler { _data: *global_guard }
 }
 
 /// C: mju_malloc (engine/engine_util_errmem.h:43)
@@ -539,7 +555,12 @@ pub fn mju_write_log(r#type: *const i8, msg: *const i8) {
 /// C: _mjPRIVATE_setTlsLogHandler (engine/engine_util_errmem.h:93)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_private_set_tls_log_handler(handler: mjfLogHandler) -> mjfLogHandler {
-    todo!() // _mjPRIVATE_setTlsLogHandler
+    use crate::types::_MJPRIVATE_TLS_LOG_HANDLER;
+
+    let mut guard = _MJPRIVATE_TLS_LOG_HANDLER.lock().unwrap();
+    let prev = mjfLogHandler { _data: *guard };
+    *guard = handler._data;
+    prev
 }
 
 /// C: _mjPRIVATE_getGlobalLogHandler (engine/engine_util_errmem.h:96)

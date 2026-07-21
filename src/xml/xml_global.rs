@@ -28,7 +28,9 @@ pub fn get_global_model() -> *mut anonymous_namespace___GlobalModel {
 /// Calls: GetGlobalModel, GlobalModel::Set
 #[allow(unused_variables, non_snake_case)]
 pub fn set_global_xml_spec(spec: *mut mjSpec) {
-    todo!() // SetGlobalXmlSpec
+    // SAFETY: get_global_model returns a valid pointer to static GlobalModel singleton
+    let model_ptr = get_global_model();
+    global_model_set(model_ptr, spec);
 }
 
 /// C: GetGlobalXmlSpec (xml/xml_global.h:25)

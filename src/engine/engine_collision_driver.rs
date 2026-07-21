@@ -386,7 +386,30 @@ pub fn filter_flex_contacts(d: *mut mjData, ncon_before: i32) {
 /// Calls: mj_arenaAllocByte, mju_message
 #[allow(unused_variables, non_snake_case)]
 pub fn push_pair_arena(m: *const mjModel, d: *mut mjData, g1: i32, g2: i32, ipair: i32) {
-    todo!() // pushPairArena
+    // mjcPair layout: { g1: i32, g2: i32, ipair: i32 } = 12 bytes, align 4
+    const SIZEOF_MJCPAIR: usize = 12;
+    const ALIGNOF_MJCPAIR: usize = 4;
+
+    // SAFETY: m is a valid mjModel, d is a valid mjData (caller contract)
+    unsafe {
+        // allocate geom pair on the arena
+        let pair = crate::engine::engine_memory::mj_arena_alloc_byte(
+            d, SIZEOF_MJCPAIR, ALIGNOF_MJCPAIR) as *mut i32;
+        if pair.is_null() {
+            crate::engine::engine_util_errmem::mju_error(
+                b"arena too small to allocate geom pair\0".as_ptr() as *const i8);
+        }
+
+        // swap if g1/g2 both valid and geom_type[g1] > geom_type[g2]
+        if g1 >= 0 && g2 >= 0 && *(*m).geom_type.add(g1 as usize) > *(*m).geom_type.add(g2 as usize) {
+            *pair.add(0) = g2;        // pair->g1
+            *pair.add(1) = g1;        // pair->g2
+        } else {
+            *pair.add(0) = g1;        // pair->g1
+            *pair.add(1) = g2;        // pair->g2
+        }
+        *pair.add(2) = ipair;         // pair->ipair
+    }
 }
 
 /// C: filterCollisionPair (engine/engine_collision_driver.c:508)

@@ -59,7 +59,84 @@ pub fn box_projection(point: *mut f64, r#box: *const f64) -> f64 {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn find_oct(w: *mut f64, dw: *mut [f64; 3], oct_aabb: *const f64, oct_child: *const i32, p: *const f64) -> i32 {
-    todo!() // findOct
+    // SAFETY: oct_aabb, oct_child are valid arrays from mjModel.mesh_octaabb/octchild,
+    //         p is a valid f64[3] pointer, w and dw may be null (optional outputs)
+    unsafe {
+        let mut stack: i32 = 0;
+        let eps: f64 = 1e-8;
+        let mut niter: i32 = 100;
+
+        while niter > 0 {
+            niter -= 1;
+            let node = stack;
+
+            if node == -1 {
+                crate::engine::engine_util_errmem::mju_error(
+                    b"Invalid node number\0".as_ptr() as *const i8);
+                return -1;
+            }
+
+            let mut vmin: [f64; 3] = [0.0; 3];
+            let mut vmax: [f64; 3] = [0.0; 3];
+            for j in 0..3 {
+                vmin[j] = *oct_aabb.add(6 * node as usize + j) - *oct_aabb.add(6 * node as usize + 3 + j);
+                vmax[j] = *oct_aabb.add(6 * node as usize + j) + *oct_aabb.add(6 * node as usize + 3 + j);
+            }
+
+            // check if point is inside aabb
+            if *p.add(0) + eps < vmin[0] || *p.add(0) - eps > vmax[0] ||
+               *p.add(1) + eps < vmin[1] || *p.add(1) - eps > vmax[1] ||
+               *p.add(2) + eps < vmin[2] || *p.add(2) - eps > vmax[2] {
+                continue;
+            }
+
+            let coord: [f64; 3] = [
+                (*p.add(0) - vmin[0]) / (vmax[0] - vmin[0]),
+                (*p.add(1) - vmin[1]) / (vmax[1] - vmin[1]),
+                (*p.add(2) - vmin[2]) / (vmax[2] - vmin[2]),
+            ];
+
+            // check if leaf node (all children == -1)
+            let mut is_leaf = true;
+            for j in 0..8 {
+                if *oct_child.add(8 * node as usize + j) != -1 {
+                    is_leaf = false;
+                    break;
+                }
+            }
+
+            if is_leaf {
+                for j in 0..8_usize {
+                    let cx = if j & 1 != 0 { coord[0] } else { 1.0 - coord[0] };
+                    let cy = if j & 2 != 0 { coord[1] } else { 1.0 - coord[1] };
+                    let cz = if j & 4 != 0 { coord[2] } else { 1.0 - coord[2] };
+
+                    if !w.is_null() {
+                        *w.add(j) = cx * cy * cz;
+                    }
+                    if !dw.is_null() {
+                        let dx = if j & 1 != 0 { 1.0 } else { -1.0 };
+                        let dy = if j & 2 != 0 { 1.0 } else { -1.0 };
+                        let dz = if j & 4 != 0 { 1.0 } else { -1.0 };
+                        (*dw.add(j))[0] = dx * cy * cz;
+                        (*dw.add(j))[1] = cx * dy * cz;
+                        (*dw.add(j))[2] = cx * cy * dz;
+                    }
+                }
+                return node;
+            }
+
+            // compute which child to visit
+            let x = if coord[0] < 0.5 { 0 } else { 1 };
+            let y = if coord[1] < 0.5 { 0 } else { 1 };
+            let z = if coord[2] < 0.5 { 0 } else { 1 };
+            stack = *oct_child.add(8 * node as usize + 4 * z + 2 * y + x);
+        }
+
+        crate::engine::engine_util_errmem::mju_error(
+            b"Node not found\0".as_ptr() as *const i8);
+        -1
+    }
 }
 
 /// C: oct_distance (engine/engine_collision_sdf.c:138)
@@ -358,7 +435,22 @@ pub fn flex_elem_callback(elem_idx: i32, node: i32, ctx: *mut ()) -> i32 {
 /// Calls: mjp_getPluginAtSlotUnsafe, mjp_pluginCount, mju_message
 #[allow(unused_variables, non_snake_case)]
 pub fn mjc_get_sdf(m: *const mjModel, id: i32) -> *const mjpPlugin {
-    todo!() // mjc_getSDF
+    // SAFETY: m is a valid mjModel pointer, id is a valid geom index
+    unsafe {
+        let instance = *(*m).geom_plugin.add(id as usize);
+        let nslot = crate::engine::engine_plugin::mjp_plugin_count();
+        let slot = *(*m).plugin.add(instance as usize);
+        let sdf = crate::engine::engine_plugin::mjp_get_plugin_at_slot_unsafe(slot, nslot);
+        if sdf.is_null() {
+            crate::engine::engine_util_errmem::mju_error(
+                b"invalid plugin slot: %d\0".as_ptr() as *const i8);
+        }
+        if (*sdf).capabilityflags & (1 << 3) == 0 {  // mjPLUGIN_SDF = 1<<3
+            crate::engine::engine_util_errmem::mju_error(
+                b"Plugin is not a signed distance field at slot %d\0".as_ptr() as *const i8);
+        }
+        sdf
+    }
 }
 
 /// C: mjc_distance (engine/engine_collision_sdf.h:32)

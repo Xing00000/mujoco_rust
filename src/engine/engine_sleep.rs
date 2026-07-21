@@ -360,7 +360,58 @@ pub fn mj_sleep_cycle(tree_asleep: *const i32, ntree: i32, i: i32) -> i32 {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_wake_island(tree_asleep: *mut i32, ntree: i32, i: i32, wakeval: i32, reason: *const i8, time: f64) -> i32 {
-    todo!() // mj_wakeIsland
+    // SAFETY: tree_asleep is a valid array of ntree elements (caller contract)
+    unsafe {
+        let mut nwoke: i32 = 0;
+
+        // i is invalid; SHOULD NOT OCCUR
+        if i < 0 || i >= ntree {
+            crate::engine::engine_util_errmem::mju_error(
+                b"invalid tree %d\0".as_ptr() as *const i8);
+            return nwoke;
+        }
+
+        // tree i already awake: set to wakeval if larger than current value
+        let asleep_val = *tree_asleep.add(i as usize);
+        if asleep_val < 0 {
+            if wakeval < asleep_val {
+                *tree_asleep.add(i as usize) = wakeval;
+            }
+            return nwoke;
+        }
+
+        // tree i asleep: wake up tree and its island cycle
+        let mut current = i;
+        loop {
+            // get the index of the next tree in the cycle
+            let next = *tree_asleep.add(current as usize);
+
+            // next is invalid; SHOULD NOT OCCUR
+            if next < 0 || next >= ntree {
+                crate::engine::engine_util_errmem::mju_error(
+                    b"invalid sleep state index %d when waking tree %d\0".as_ptr() as *const i8);
+                return 0;
+            }
+
+            // wake the current tree, increment and advance to next
+            *tree_asleep.add(current as usize) = wakeval;
+            nwoke += 1;
+            current = next;
+
+            if current == i || nwoke >= ntree {
+                break;
+            }
+        }
+
+        // did not come back to tree i, not a cycle; SHOULD NOT OCCUR
+        if current != i {
+            crate::engine::engine_util_errmem::mju_error(
+                b"tree %d is not in a cycle\0".as_ptr() as *const i8);
+            return 0;
+        }
+
+        nwoke
+    }
 }
 
 /// C: mj_wake (engine/engine_sleep.h:41)
