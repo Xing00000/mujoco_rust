@@ -631,7 +631,35 @@ pub fn mju_cam_intrinsics(m: *const mjModel, camid: i32, fx: *mut f64, fy: *mut 
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_read_ctrl(m: *const mjModel, d: *const mjData, id: i32, time: f64, interp: i32) -> f64 {
-    todo!() // mj_readCtrl
+    // SAFETY: m, d are valid model/data pointers; id validated below (caller contract)
+    unsafe {
+        // validate actuator id
+        if id < 0 || id >= (*m).nu as i32 {
+            crate::engine::engine_util_errmem::mju_error(
+                b"invalid actuator id %d\0".as_ptr() as *const i8);
+            return 0.0;
+        }
+
+        // no delay: return current ctrl value
+        let nsample = *(*m).actuator_history.add(2 * id as usize);
+        if nsample == 0 {
+            return *(*d).ctrl.add(id as usize);
+        }
+
+        // resolve interpolation order
+        let mut interp = interp;
+        if interp < 0 {
+            interp = *(*m).actuator_history.add(2 * id as usize + 1);
+        }
+
+        // get buffer pointer and read from history buffer
+        let delay = *(*m).actuator_delay.add(id as usize);
+        let buf = (*d).history.add(*(*m).actuator_historyadr.add(id as usize) as usize);
+        let mut res: f64 = 0.0;
+        let ptr = crate::engine::engine_util_misc::mju_history_read(
+            buf, nsample, 1, &mut res, time - delay, interp);
+        if !ptr.is_null() { *ptr } else { res }
+    }
 }
 
 /// C: mj_readSensor (engine/engine_support.h:147)
