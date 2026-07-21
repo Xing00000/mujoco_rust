@@ -830,7 +830,59 @@ pub fn solve_catenary(v: f64, h: f64, length: f64) -> f64 {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjv_connector(geom: *mut mjvGeom, r#type: i32, width: f64, from: *const f64, to: *const f64) {
-    todo!() // mjv_connector
+    const MJGEOM_CAPSULE: i32 = 3;
+    const MJGEOM_CYLINDER: i32 = 5;
+    const MJGEOM_ARROW: i32 = 100;
+    const MJGEOM_ARROW1: i32 = 101;
+    const MJGEOM_ARROW2: i32 = 102;
+    const MJGEOM_LINE: i32 = 103;
+
+    // SAFETY: geom, from, to are valid pointers (caller contract)
+    unsafe {
+        let mut quat: [f64; 4] = [0.0; 4];
+        let mut mat: [f64; 9] = [0.0; 9];
+        let dif: [f64; 3] = [
+            *to.add(0) - *from.add(0),
+            *to.add(1) - *from.add(1),
+            *to.add(2) - *from.add(2),
+        ];
+
+        // require connector-compatible type
+        if r#type != MJGEOM_CAPSULE && r#type != MJGEOM_CYLINDER &&
+           r#type != MJGEOM_ARROW && r#type != MJGEOM_ARROW1 && r#type != MJGEOM_ARROW2 &&
+           r#type != MJGEOM_LINE {
+            crate::engine::engine_util_errmem::mju_error(
+                b"invalid geom type %d for connector\0".as_ptr() as *const i8);
+        }
+
+        // assign type
+        (*geom).r#type = r#type;
+
+        // compute size for XYZ scaling
+        let norm = crate::engine::engine_util_blas::mju_norm3(dif.as_ptr());
+        (*geom).size[0] = width as f32;
+        (*geom).size[1] = width as f32;
+        (*geom).size[2] = norm as f32;
+
+        // cylinder and capsule are centered, size[2] is half-length
+        if r#type == MJGEOM_CAPSULE || r#type == MJGEOM_CYLINDER {
+            (*geom).pos[0] = (0.5 * (*from.add(0) + *to.add(0))) as f32;
+            (*geom).pos[1] = (0.5 * (*from.add(1) + *to.add(1))) as f32;
+            (*geom).pos[2] = (0.5 * (*from.add(2) + *to.add(2))) as f32;
+            (*geom).size[2] *= 0.5;
+        }
+        // arrow is not centered
+        else {
+            (*geom).pos[0] = *from.add(0) as f32;
+            (*geom).pos[1] = *from.add(1) as f32;
+            (*geom).pos[2] = *from.add(2) as f32;
+        }
+
+        // set mat to minimal rotation aligning b-a with z axis
+        crate::engine::engine_util_spatial::mju_quat_z2vec(quat.as_mut_ptr(), dif.as_ptr());
+        crate::engine::engine_util_spatial::mju_quat2mat(mat.as_mut_ptr(), quat.as_ptr());
+        crate::engine::engine_util_misc::mju_n2f((*geom).mat.as_mut_ptr(), mat.as_ptr(), 9);
+    }
 }
 
 /// C: mjv_initGeom (engine/engine_vis_visualize.h:33)
