@@ -257,7 +257,119 @@ pub fn mj_vert_body_weight(m: *const mjModel, d: *const mjData, f: i32, v: *mut 
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_add_constraint(m: *const mjModel, d: *mut mjData, jac: *const f64, pos: *const f64, margin: *const f64, frictionloss: f64, size: i32, r#type: i32, id: i32, NV: i32, chain: *const i32) {
-    todo!() // mj_addConstraint
+    // mjCNSTR: EQUALITY=0, FRICTION_DOF=1, FRICTION_TENDON=2, LIMIT_JOINT=3, LIMIT_TENDON=4,
+    //          CONTACT_FRICTIONLESS=5, CONTACT_PYRAMIDAL=6, CONTACT_ELLIPTIC=7
+    // SAFETY: m, d, jac are valid; pos/margin/chain may be null (caller contract)
+    unsafe {
+        let nv = (*m).nv as i32;
+        let nefc = (*d).nefc;
+        let nnz = (*d).efc_J_rownnz;
+        let adr = (*d).efc_J_rowadr;
+        let ind = (*d).efc_J_colind;
+        let J = (*d).efc_J;
+
+        // init empty guard for constraints other than contact
+        let mut empty: i32;
+        if r#type == 5 || r#type == 6 || r#type == 7 {
+            empty = 0;  // contact types
+        } else {
+            empty = 1;
+        }
+
+        // dense: copy entire Jacobian
+        if crate::engine::engine_core_util::mj_is_sparse(m) == 0 {
+            // make sure jac is not empty
+            if empty != 0 {
+                for i in 0..(size * nv) {
+                    if *jac.add(i as usize) != 0.0 {
+                        empty = 0;
+                        break;
+                    }
+                }
+            }
+
+            // copy if not empty
+            if empty == 0 {
+                crate::engine::engine_util_blas::mju_copy(
+                    J.add((nefc * nv) as usize), jac, size * nv);
+            }
+        }
+        // sparse: copy chain
+        else {
+            // clamp NV
+            let NV = if NV > 0 { NV } else { 0 };
+
+            if NV != 0 {
+                empty = 0;
+            } else if empty != 0 {
+                // all rows empty, return early
+                return;
+            }
+
+            // chain required in sparse mode
+            if NV != 0 && chain.is_null() {
+                crate::engine::engine_util_errmem::mju_error(
+                    b"called with dense arguments\0".as_ptr() as *const i8);
+            }
+
+            // process size elements
+            for i in 0..size {
+                // set row address
+                *adr.add((nefc + i) as usize) = if nefc + i > 0 {
+                    *adr.add((nefc + i - 1) as usize) + *nnz.add((nefc + i - 1) as usize)
+                } else { 0 };
+
+                // set row descriptor
+                *nnz.add((nefc + i) as usize) = NV;
+
+                // copy if not empty
+                if NV != 0 {
+                    crate::engine::engine_util_misc::mju_copy_int(
+                        ind.add(*adr.add((nefc + i) as usize) as usize), chain, NV);
+                    crate::engine::engine_util_blas::mju_copy(
+                        J.add(*adr.add((nefc + i) as usize) as usize), jac.add((i * NV) as usize), NV);
+                }
+            }
+
+            // set J row supernodes
+            // cross-boundary: does previous row have same pattern?
+            if nefc > 0 && NV == *nnz.add((nefc - 1) as usize) &&
+               (NV == 0 || crate::engine::engine_util_sparse::mju_compare(
+                   ind.add(*adr.add(nefc as usize) as usize),
+                   ind.add(*adr.add((nefc - 1) as usize) as usize), NV) != 0) {
+                *(*d).efc_J_rowsuper.add((nefc - 1) as usize) = 1;
+            }
+
+            // within-constraint: consecutive rows share same pattern
+            crate::engine::engine_util_misc::mju_fill_int(
+                (*d).efc_J_rowsuper.add(nefc as usize), 1, size - 1);
+            *(*d).efc_J_rowsuper.add((nefc + size - 1) as usize) = 0;
+        }
+
+        // all rows empty: skip constraint
+        if empty != 0 {
+            return;
+        }
+
+        // set constraint pos, margin, frictionloss, type, id
+        for i in 0..size {
+            *(*d).efc_pos.add((nefc + i) as usize) = if !pos.is_null() { *pos.add(i as usize) } else { 0.0 };
+            *(*d).efc_margin.add((nefc + i) as usize) = if !margin.is_null() { *margin.add(i as usize) } else { 0.0 };
+            *(*d).efc_frictionloss.add((nefc + i) as usize) = frictionloss;
+            *(*d).efc_type.add((nefc + i) as usize) = r#type;
+            *(*d).efc_id.add((nefc + i) as usize) = id;
+        }
+
+        // increase counters
+        (*d).nefc += size;
+        if r#type == 0 {  // mjCNSTR_EQUALITY
+            (*d).ne += size;
+        } else if r#type == 1 || r#type == 2 {  // FRICTION_DOF or FRICTION_TENDON
+            (*d).nf += size;
+        } else if r#type == 3 || r#type == 4 {  // LIMIT_JOINT or LIMIT_TENDON
+            (*d).nl += size;
+        }
+    }
 }
 
 /// C: mj_equalityAnchors (engine/engine_core_constraint.c:561)

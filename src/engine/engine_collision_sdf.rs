@@ -560,7 +560,43 @@ pub fn isknown(points: *const f64, x: *const f64, cnt: i32) -> i32 {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn add_pre_contact(points: *mut f64, con: *mut mjPreContact, x: *const f64, pos2: *const f64, quat2: *const f64, dist: f64, cnt: i32, m: *const mjModel, s: *const mjSDF, d: *const mjData, flipNormal: i32) -> i32 {
-    todo!() // addPreContact
+    const MJMINVAL: f64 = 1e-15;
+
+    // SAFETY: all pointers valid (caller contract)
+    unsafe {
+        // check if there is a collision
+        if dist > 0.0 || isknown(points, x, cnt) != 0 {
+            return cnt;
+        }
+        crate::engine::engine_util_blas::mju_copy3(points.add(3 * cnt as usize), x);
+
+        // compute normal in local coordinates
+        let mut norm: [f64; 3] = [0.0; 3];
+        let mut vec: [f64; 3] = [0.0; 3];
+        mjc_gradient(m, d, s, norm.as_mut_ptr(), x);
+
+        // validate normal
+        let norm_len = crate::engine::engine_util_blas::mju_normalize3(norm.as_mut_ptr());
+        if norm_len < MJMINVAL {
+            return cnt;  // degenerate gradient
+        }
+
+        // normal direction
+        if flipNormal == 0 {
+            crate::engine::engine_util_blas::mju_scl3(norm.as_mut_ptr(), norm.as_ptr(), -1.0);
+        }
+
+        // construct contact
+        (*con).dist = dist;
+        crate::engine::engine_util_spatial::mju_rot_vec_quat((*con).normal.as_mut_ptr(), norm.as_ptr(), quat2);
+        crate::engine::engine_util_blas::mju_scl3(vec.as_mut_ptr(), (*con).normal.as_ptr(), -0.5 * dist);
+        crate::engine::engine_util_spatial::mju_rot_vec_quat((*con).pos.as_mut_ptr(), x, quat2);
+        crate::engine::engine_util_blas::mju_zero3((*con).tangent.as_mut_ptr());
+        crate::engine::engine_util_blas::mju_add_to3((*con).pos.as_mut_ptr(), pos2);
+        crate::engine::engine_util_blas::mju_add_to3((*con).pos.as_mut_ptr(), vec.as_ptr());
+
+        cnt + 1
+    }
 }
 
 /// C: stepFrankWolfe (engine/engine_collision_sdf.c:585)
@@ -608,7 +644,17 @@ pub fn triangle_intersect(triangle: *const f64, m: *const mjModel, sdf: *const m
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn box_intersect(bvh: *const f64, offset: *const f64, rotation: *const f64, m: *const mjModel, s: *const mjSDF, d: *const mjData) -> i32 {
-    todo!() // boxIntersect
+    // SAFETY: bvh is f64[6] (center[3]+halfsize[3]), offset is f64[3], rotation is f64[9] (caller contract)
+    unsafe {
+        let mut candidate: [f64; 3] = [0.0; 3];
+        let r = crate::engine::engine_util_blas::mju_norm3(bvh.add(3));
+
+        crate::engine::engine_util_blas::mju_mul_mat_vec3(candidate.as_mut_ptr(), rotation, bvh);
+        crate::engine::engine_util_blas::mju_add_to3(candidate.as_mut_ptr(), offset);
+
+        // check if inside bounding box
+        (mjc_distance(m, d, s, candidate.as_ptr()) < r) as i32
+    }
 }
 
 /// C: selectFPS (engine/engine_collision_sdf.c:752)
