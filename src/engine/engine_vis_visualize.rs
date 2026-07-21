@@ -780,7 +780,59 @@ pub fn add_rangefinder_geoms(m: *const mjModel, d: *mut mjData, vopt: *const mjv
 /// Calls: addConnector, mju_add3, mju_isZero, mju_norm3, mju_scl3
 #[allow(unused_variables, non_snake_case)]
 pub fn add_external_perturb_geoms(m: *const mjModel, d: *mut mjData, vopt: *const mjvOption, scn: *mut mjvScene) {
-    todo!() // addExternalPerturbGeoms
+    const MJ_VIS_PERTFORCE: usize = 12;
+    const MJ_GEOM_ARROW: i32 = 100;
+    const MJ_CAT_DECOR: i32 = 4;
+    const MJ_OBJ_UNKNOWN: i32 = 0;
+    const MJMINVAL: f64 = 1e-15;
+
+    // SAFETY: m, d, vopt, scn are valid pointers (caller contract).
+    unsafe {
+        if (*vopt).flags[MJ_VIS_PERTFORCE] == 0 {
+            return;
+        }
+
+        let scl = (*m).stat.meansize as f32;
+
+        // vis.scale.forcewidth is index 0 in the scale float array
+        let scale_floats = (*m).vis.scale.as_ptr() as *const f32;
+        let forcewidth = *scale_floats.add(0);
+
+        // vis.map.force is index 2 in the map float array
+        let map_floats = (*m).vis.map.as_ptr() as *const f32;
+        let map_force = *map_floats.add(2);
+
+        // vis.rgba.force is index 2 in the rgba float array (each entry is 4 floats)
+        let rgba_floats = (*m).vis.rgba._data.as_ptr() as *const f32;
+        let force_rgba = rgba_floats.add(2 * 4);
+
+        for i in 1..(*m).nbody as i32 {
+            if crate::engine::engine_util_misc::mju_is_zero((*d).xfrc_applied.add(6 * i as usize), 6) != 0 {
+                continue;
+            }
+
+            // force perturbation
+            let xfrc: *const f64 = (*d).xfrc_applied.add(6 * i as usize);
+            if crate::engine::engine_util_blas::mju_norm3(xfrc) <= MJMINVAL {
+                continue;
+            }
+
+            let from: *const f64 = (*d).xipos.add(3 * i as usize);
+
+            // map force to spatial vector in world frame
+            let mut vec: [f64; 3] = [0.0; 3];
+            crate::engine::engine_util_blas::mju_scl3(
+                vec.as_mut_ptr(), xfrc, map_force as f64 / (*m).stat.meanmass,
+            );
+            let mut to: [f64; 3] = [0.0; 3];
+            crate::engine::engine_util_blas::mju_add3(to.as_mut_ptr(), from, vec.as_ptr());
+
+            add_connector(
+                scn, MJ_GEOM_ARROW, (forcewidth * scl) as f64,
+                from, to.as_ptr(), force_rgba, i, MJ_CAT_DECOR, MJ_OBJ_UNKNOWN,
+            );
+        }
+    }
 }
 
 /// C: addConstraintGeoms (engine/engine_vis_visualize.c:2760)
