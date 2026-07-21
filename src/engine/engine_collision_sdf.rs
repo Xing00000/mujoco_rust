@@ -753,7 +753,49 @@ pub fn mjc_get_sdf(m: *const mjModel, id: i32) -> *const mjpPlugin {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjc_distance(m: *const mjModel, d: *const mjData, s: *const mjSDF, x: *const f64) -> f64 {
-    todo!() // mjc_distance
+    // mjSDFTYPE: SINGLE=0, INTERSECTION=1, MIDSURFACE=2, COLLISION=3
+    // mjSDF.type is stored as [u8; 8] — first 4 bytes are the i32 enum value
+    // SAFETY: s is a valid mjSDF pointer, x is f64[3] (caller contract)
+    unsafe {
+        let mut y: [f64; 3] = [0.0; 3];
+        let sdf_type = *((*s).r#type.as_ptr() as *const i32);
+
+        match sdf_type {
+            0 => {  // SINGLE
+                geom_distance(m, d, *(*s).plugin.add(0), *(*s).id.add(0), x, *(*s).geomtype.add(0))
+            }
+
+            1 => {  // INTERSECTION
+                crate::engine::engine_util_blas::mju_mul_mat_vec3(y.as_mut_ptr(), (*s).relmat, x);
+                crate::engine::engine_util_blas::mju_add_to3(y.as_mut_ptr(), (*s).relpos);
+                let d0 = geom_distance(m, d, *(*s).plugin.add(0), *(*s).id.add(0), x, *(*s).geomtype.add(0));
+                let d1 = geom_distance(m, d, *(*s).plugin.add(1), *(*s).id.add(1), y.as_ptr(), *(*s).geomtype.add(1));
+                if d0 > d1 { d0 } else { d1 }
+            }
+
+            2 => {  // MIDSURFACE
+                crate::engine::engine_util_blas::mju_mul_mat_vec3(y.as_mut_ptr(), (*s).relmat, x);
+                crate::engine::engine_util_blas::mju_add_to3(y.as_mut_ptr(), (*s).relpos);
+                geom_distance(m, d, *(*s).plugin.add(0), *(*s).id.add(0), x, *(*s).geomtype.add(0)) -
+                geom_distance(m, d, *(*s).plugin.add(1), *(*s).id.add(1), y.as_ptr(), *(*s).geomtype.add(1))
+            }
+
+            3 => {  // COLLISION
+                crate::engine::engine_util_blas::mju_mul_mat_vec3(y.as_mut_ptr(), (*s).relmat, x);
+                crate::engine::engine_util_blas::mju_add_to3(y.as_mut_ptr(), (*s).relpos);
+                let a = geom_distance(m, d, *(*s).plugin.add(0), *(*s).id.add(0), x, *(*s).geomtype.add(0));
+                let b = geom_distance(m, d, *(*s).plugin.add(1), *(*s).id.add(1), y.as_ptr(), *(*s).geomtype.add(1));
+                let max_ab = if a > b { a } else { b };
+                a + b + max_ab.abs()
+            }
+
+            _ => {
+                crate::engine::engine_util_errmem::mju_error(
+                    b"SDF type not available\0".as_ptr() as *const i8);
+                0.0
+            }
+        }
+    }
 }
 
 /// C: mjc_gradient (engine/engine_collision_sdf.h:35)
@@ -765,7 +807,66 @@ pub fn mjc_distance(m: *const mjModel, d: *const mjData, s: *const mjSDF, x: *co
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjc_gradient(m: *const mjModel, d: *const mjData, s: *const mjSDF, gradient: *mut f64, x: *const f64) {
-    todo!() // mjc_gradient
+    // SAFETY: s is valid mjSDF, gradient is f64[3], x is f64[3] (caller contract)
+    unsafe {
+        let mut y: [f64; 3] = [0.0; 3];
+        let mut grad1: [f64; 3] = [0.0; 3];
+        let mut grad2: [f64; 3] = [0.0; 3];
+        let sdf_type = *((*s).r#type.as_ptr() as *const i32);
+
+        match sdf_type {
+            1 => {  // INTERSECTION
+                crate::engine::engine_util_blas::mju_mul_mat_vec3(y.as_mut_ptr(), (*s).relmat, x);
+                crate::engine::engine_util_blas::mju_add_to3(y.as_mut_ptr(), (*s).relpos);
+                let d0 = geom_distance(m, d, *(*s).plugin.add(0), *(*s).id.add(0), x, *(*s).geomtype.add(0));
+                let d1 = geom_distance(m, d, *(*s).plugin.add(1), *(*s).id.add(1), y.as_ptr(), *(*s).geomtype.add(1));
+                let i = if d0 > d1 { 0 } else { 1 };
+                let point_i = if i == 0 { x } else { y.as_ptr() };
+                geom_gradient(gradient, m, d, *(*s).plugin.add(i), *(*s).id.add(i), point_i, *(*s).geomtype.add(i));
+                if i == 1 {
+                    crate::engine::engine_util_blas::mju_mul_mat_t_vec3(gradient, (*s).relmat, gradient as *const f64);
+                }
+            }
+
+            2 => {  // MIDSURFACE
+                crate::engine::engine_util_blas::mju_mul_mat_vec3(y.as_mut_ptr(), (*s).relmat, x);
+                crate::engine::engine_util_blas::mju_add_to3(y.as_mut_ptr(), (*s).relpos);
+                geom_gradient(grad1.as_mut_ptr(), m, d, *(*s).plugin.add(0), *(*s).id.add(0), x, *(*s).geomtype.add(0));
+                crate::engine::engine_util_blas::mju_normalize3(grad1.as_mut_ptr());
+                geom_gradient(grad2.as_mut_ptr(), m, d, *(*s).plugin.add(1), *(*s).id.add(1), y.as_ptr(), *(*s).geomtype.add(1));
+                crate::engine::engine_util_blas::mju_mul_mat_t_vec3(grad2.as_mut_ptr(), (*s).relmat, grad2.as_ptr());
+                crate::engine::engine_util_blas::mju_normalize3(grad2.as_mut_ptr());
+                crate::engine::engine_util_blas::mju_sub3(gradient, grad1.as_ptr(), grad2.as_ptr());
+                crate::engine::engine_util_blas::mju_normalize3(gradient);
+            }
+
+            3 => {  // COLLISION
+                crate::engine::engine_util_blas::mju_mul_mat_vec3(y.as_mut_ptr(), (*s).relmat, x);
+                crate::engine::engine_util_blas::mju_add_to3(y.as_mut_ptr(), (*s).relpos);
+                let a = geom_distance(m, d, *(*s).plugin.add(0), *(*s).id.add(0), x, *(*s).geomtype.add(0));
+                let b = geom_distance(m, d, *(*s).plugin.add(1), *(*s).id.add(1), y.as_ptr(), *(*s).geomtype.add(1));
+                geom_gradient(grad1.as_mut_ptr(), m, d, *(*s).plugin.add(0), *(*s).id.add(0), x, *(*s).geomtype.add(0));
+                geom_gradient(grad2.as_mut_ptr(), m, d, *(*s).plugin.add(1), *(*s).id.add(1), y.as_ptr(), *(*s).geomtype.add(1));
+                crate::engine::engine_util_blas::mju_mul_mat_t_vec3(grad2.as_mut_ptr(), (*s).relmat, grad2.as_ptr());
+                *gradient.add(0) = grad1[0] + grad2[0];
+                *gradient.add(1) = grad1[1] + grad2[1];
+                *gradient.add(2) = grad1[2] + grad2[2];
+                let max_ab = if a > b { a } else { b };
+                let scl = if max_ab > 0.0 { 1.0 } else { -1.0 };
+                let extra = if a > b { grad1.as_ptr() } else { grad2.as_ptr() };
+                crate::engine::engine_util_blas::mju_add_to_scl3(gradient, extra, scl);
+            }
+
+            0 => {  // SINGLE
+                geom_gradient(gradient, m, d, *(*s).plugin.add(0), *(*s).id.add(0), x, *(*s).geomtype.add(0));
+            }
+
+            _ => {
+                crate::engine::engine_util_errmem::mju_error(
+                    b"SDF type not available\0".as_ptr() as *const i8);
+            }
+        }
+    }
 }
 
 /// C: mjc_HFieldSDF (engine/engine_collision_sdf.h:39)
