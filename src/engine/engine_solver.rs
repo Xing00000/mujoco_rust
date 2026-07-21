@@ -1586,7 +1586,32 @@ pub fn primal_eval(ctx: *mut mjPrimalContext, p: *mut mjPrimalPnt) {
 /// Calls: PrimalEval
 #[allow(unused_variables, non_snake_case)]
 pub fn update_bracket(ctx: *mut mjPrimalContext, p: *mut mjPrimalPnt, candidates: *const mjPrimalPnt, pnext: *mut mjPrimalPnt) -> i32 {
-    todo!() // updateBracket
+    // SAFETY: ctx is valid mjPrimalContext, p/pnext are valid mjPrimalPnt pointers,
+    // candidates points to array of 3 mjPrimalPnt.
+    unsafe {
+        let mut flag: i32 = 0;
+        for i in 0..3 {
+            let cand = &*candidates.add(i);
+            // negative deriv
+            if (*p).deriv[0] < 0.0 && cand.deriv[0] < 0.0 && (*p).deriv[0] < cand.deriv[0] {
+                *p = *cand;
+                flag = 1;
+            }
+            // positive deriv
+            else if (*p).deriv[0] > 0.0 && cand.deriv[0] > 0.0 && (*p).deriv[0] > cand.deriv[0] {
+                *p = *cand;
+                flag = 2;
+            }
+        }
+
+        // compute next point if updated
+        if flag != 0 {
+            (*pnext).alpha = (*p).alpha - (*p).deriv[0] / (*p).deriv[1];
+            primal_eval(ctx, pnext);
+        }
+
+        flag
+    }
 }
 
 /// C: PrimalSearch (engine/engine_solver.c:1812)

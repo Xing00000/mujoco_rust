@@ -1042,7 +1042,224 @@ pub fn mj_ray(m: *const mjModel, d: *const mjData, pnt: *const f64, vec: *const 
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_ray_hfield(m: *const mjModel, d: *const mjData, geomid: i32, pnt: *const f64, vec: *const f64, normal: *mut f64) -> f64 {
-    todo!() // mj_rayHfield
+    // SAFETY: m, d, pnt, vec valid. normal may be null. geomid indexes a valid hfield geom.
+    unsafe {
+        // clear normal if given
+        if !normal.is_null() {
+            crate::engine::engine_util_blas::mju_zero3(normal);
+        }
+
+        // check geom type
+        if *(*m).geom_type.add(geomid as usize) as u32 != 5 { // mjGEOM_HFIELD = 5
+            crate::engine::engine_util_errmem::mju_error(
+                b"geom with hfield type expected\0".as_ptr() as *const i8,
+            );
+        }
+
+        // hfield id and dimensions
+        let hid = *(*m).geom_dataid.add(geomid as usize);
+        let nrow = *(*m).hfield_nrow.add(hid as usize);
+        let ncol = *(*m).hfield_ncol.add(hid as usize);
+        let size = (*m).hfield_size.add(4 * hid as usize);
+        let data = (*m).hfield_data.add(*(*m).hfield_adr.add(hid as usize) as usize);
+
+        // compute size and pos of base box
+        let base_size: [f64; 3] = [*size.add(0), *size.add(1), *size.add(3) * 0.5];
+        let xmat = (*d).geom_xmat.add(9 * geomid as usize);
+        let xpos = (*d).geom_xpos.add(3 * geomid as usize);
+        let base_pos: [f64; 3] = [
+            *xpos.add(0) - *xmat.add(2) * *size.add(3) * 0.5,
+            *xpos.add(1) - *xmat.add(5) * *size.add(3) * 0.5,
+            *xpos.add(2) - *xmat.add(8) * *size.add(3) * 0.5,
+        ];
+
+        // compute size and pos of top box
+        let top_size: [f64; 3] = [*size.add(0), *size.add(1), *size.add(2) * 0.5];
+        let top_pos: [f64; 3] = [
+            *xpos.add(0) + *xmat.add(2) * *size.add(2) * 0.5,
+            *xpos.add(1) + *xmat.add(5) * *size.add(2) * 0.5,
+            *xpos.add(2) + *xmat.add(8) * *size.add(2) * 0.5,
+        ];
+
+        // init: intersection with base box
+        let mut normal_base: [f64; 3] = [0.0; 3];
+        let mut x: f64 = ray_box(
+            base_pos.as_ptr(), xmat, base_size.as_ptr(), pnt, vec,
+            std::ptr::null_mut(),
+            if !normal.is_null() { normal_base.as_mut_ptr() } else { std::ptr::null_mut() },
+        );
+
+        // check top box: done if no intersection
+        let mut all: [f64; 6] = [0.0; 6];
+        let top_intersect = ray_box(
+            top_pos.as_ptr(), xmat, top_size.as_ptr(), pnt, vec,
+            all.as_mut_ptr(), std::ptr::null_mut(),
+        );
+        if top_intersect < 0.0 {
+            if !normal.is_null() && x >= 0.0 {
+                crate::engine::engine_util_blas::mju_copy3(normal, normal_base.as_ptr());
+            }
+            return x;
+        }
+
+        // map to local frame
+        let mut lpnt: [f64; 3] = [0.0; 3];
+        let mut lvec: [f64; 3] = [0.0; 3];
+        ray_map(xpos, xmat, pnt, vec, lpnt.as_mut_ptr(), lvec.as_mut_ptr());
+
+        // construct basis vectors of normal plane
+        let mut b0: [f64; 3] = [1.0, 1.0, 1.0];
+        let mut b1: [f64; 3] = [0.0; 3];
+        if lvec[0].abs() >= lvec[1].abs() && lvec[0].abs() >= lvec[2].abs() {
+            b0[0] = 0.0;
+        } else if lvec[1].abs() >= lvec[2].abs() {
+            b0[1] = 0.0;
+        } else {
+            b0[2] = 0.0;
+        }
+        let dot_lvec_b0 = crate::engine::engine_util_blas::mju_dot3(lvec.as_ptr(), b0.as_ptr());
+        let dot_lvec_lvec = crate::engine::engine_util_blas::mju_dot3(lvec.as_ptr(), lvec.as_ptr());
+        crate::engine::engine_util_blas::mju_add_scl3(
+            b1.as_mut_ptr(), b0.as_ptr(), lvec.as_ptr(), -dot_lvec_b0 / dot_lvec_lvec,
+        );
+        crate::engine::engine_util_blas::mju_normalize3(b1.as_mut_ptr());
+        crate::engine::engine_util_spatial::mju_cross(b0.as_mut_ptr(), b1.as_ptr(), lvec.as_ptr());
+        crate::engine::engine_util_blas::mju_normalize3(b0.as_mut_ptr());
+
+        // find ray segment intersecting top box
+        let mut seg: [f64; 2] = [0.0, top_intersect];
+        for i in 0..6 {
+            if all[i] > seg[1] {
+                seg[0] = top_intersect;
+                seg[1] = all[i];
+            }
+        }
+
+        // project segment endpoints in horizontal plane, discretize
+        let dx = (2.0 * *size.add(0)) / (ncol - 1) as f64;
+        let dy = (2.0 * *size.add(1)) / (nrow - 1) as f64;
+        let mut SX: [f64; 2] = [0.0; 2];
+        let mut SY: [f64; 2] = [0.0; 2];
+        for i in 0..2 {
+            SX[i] = (lpnt[0] + seg[i] * lvec[0] + *size.add(0)) / dx;
+            SY[i] = (lpnt[1] + seg[i] * lvec[1] + *size.add(1)) / dy;
+        }
+
+        // compute ranges, with +1 padding
+        let sx_min = if SX[0] < SX[1] { SX[0] } else { SX[1] };
+        let sx_max = if SX[0] > SX[1] { SX[0] } else { SX[1] };
+        let sy_min = if SY[0] < SY[1] { SY[0] } else { SY[1] };
+        let sy_max = if SY[0] > SY[1] { SY[0] } else { SY[1] };
+        let cmin = if 0 > (sx_min.floor() as i32 - 1) { 0 } else { sx_min.floor() as i32 - 1 };
+        let cmax = if ncol - 1 < (sx_max.ceil() as i32 + 1) { ncol - 1 } else { sx_max.ceil() as i32 + 1 };
+        let rmin = if 0 > (sy_min.floor() as i32 - 1) { 0 } else { sy_min.floor() as i32 - 1 };
+        let rmax = if nrow - 1 < (sy_max.ceil() as i32 + 1) { nrow - 1 } else { sy_max.ceil() as i32 + 1 };
+
+        // local normal
+        let mut normal_local: [f64; 3] = [0.0; 3];
+        if !normal.is_null() && x >= 0.0 {
+            crate::engine::engine_util_blas::mju_mul_mat_t_vec3(
+                normal_local.as_mut_ptr(), xmat, normal_base.as_ptr(),
+            );
+        }
+
+        // check triangles within bounds
+        let mut r = rmin;
+        while r < rmax {
+            let mut c = cmin;
+            while c < cmax {
+                let mut normal_tri: [f64; 3] = [0.0; 3];
+
+                // first triangle
+                let mut va: [[f64; 3]; 3] = [
+                    [dx * c as f64 - *size.add(0), dy * r as f64 - *size.add(1), *data.add((r * ncol + c) as usize) as f64 * *size.add(2)],
+                    [dx * (c + 1) as f64 - *size.add(0), dy * r as f64 - *size.add(1), *data.add((r * ncol + (c + 1)) as usize) as f64 * *size.add(2)],
+                    [dx * (c + 1) as f64 - *size.add(0), dy * (r + 1) as f64 - *size.add(1), *data.add(((r + 1) * ncol + (c + 1)) as usize) as f64 * *size.add(2)],
+                ];
+                let sol = ray_triangle(
+                    va.as_mut_ptr() as *mut [f64; 3], lpnt.as_ptr(), lvec.as_ptr(),
+                    b0.as_ptr(), b1.as_ptr(),
+                    if !normal.is_null() { normal_tri.as_mut_ptr() } else { std::ptr::null_mut() },
+                );
+                if sol >= 0.0 && (x < 0.0 || sol < x) {
+                    x = sol;
+                    if !normal.is_null() {
+                        crate::engine::engine_util_blas::mju_copy3(normal_local.as_mut_ptr(), normal_tri.as_ptr());
+                    }
+                }
+
+                // second triangle
+                let mut vb: [[f64; 3]; 3] = [
+                    [dx * c as f64 - *size.add(0), dy * r as f64 - *size.add(1), *data.add((r * ncol + c) as usize) as f64 * *size.add(2)],
+                    [dx * (c + 1) as f64 - *size.add(0), dy * (r + 1) as f64 - *size.add(1), *data.add(((r + 1) * ncol + (c + 1)) as usize) as f64 * *size.add(2)],
+                    [dx * c as f64 - *size.add(0), dy * (r + 1) as f64 - *size.add(1), *data.add(((r + 1) * ncol + c) as usize) as f64 * *size.add(2)],
+                ];
+                let sol2 = ray_triangle(
+                    vb.as_mut_ptr() as *mut [f64; 3], lpnt.as_ptr(), lvec.as_ptr(),
+                    b0.as_ptr(), b1.as_ptr(),
+                    if !normal.is_null() { normal_tri.as_mut_ptr() } else { std::ptr::null_mut() },
+                );
+                if sol2 >= 0.0 && (x < 0.0 || sol2 < x) {
+                    x = sol2;
+                    if !normal.is_null() {
+                        crate::engine::engine_util_blas::mju_copy3(normal_local.as_mut_ptr(), normal_tri.as_ptr());
+                    }
+                }
+
+                c += 1;
+            }
+            r += 1;
+        }
+
+        // check viable sides of top box
+        for i in 0..4i32 {
+            if all[i as usize] >= 0.0 && (all[i as usize] < x || x < 0.0) {
+                // normalized height of intersection point
+                let z = (lpnt[2] + all[i as usize] * lvec[2]) / *size.add(2);
+
+                let y: f64;
+                let y0: f64;
+                let z0: f64;
+                let z1: f64;
+
+                // side normal to x-axis
+                if i < 2 {
+                    y = (lpnt[1] + all[i as usize] * lvec[1] + *size.add(1)) / dy;
+                    y0 = 0.0f64.max(((nrow - 2) as f64).min(y.floor()));
+                    z0 = *data.add((crate::engine::engine_util_misc::mju_round(y0) * ncol + if i == 1 { ncol - 1 } else { 0 }) as usize) as f64;
+                    z1 = *data.add((crate::engine::engine_util_misc::mju_round(y0 + 1.0) * ncol + if i == 1 { ncol - 1 } else { 0 }) as usize) as f64;
+                }
+                // side normal to y-axis
+                else {
+                    y = (lpnt[0] + all[i as usize] * lvec[0] + *size.add(0)) / dx;
+                    y0 = 0.0f64.max(((ncol - 2) as f64).min(y.floor()));
+                    z0 = *data.add((crate::engine::engine_util_misc::mju_round(y0) + if i == 3 { (nrow - 1) * ncol } else { 0 }) as usize) as f64;
+                    z1 = *data.add((crate::engine::engine_util_misc::mju_round(y0 + 1.0) + if i == 3 { (nrow - 1) * ncol } else { 0 }) as usize) as f64;
+                }
+
+                // check if point is below line segment
+                if z < z0 * (y0 + 1.0 - y) + z1 * (y - y0) {
+                    x = all[i as usize];
+
+                    // compute normal
+                    if !normal.is_null() {
+                        crate::engine::engine_util_blas::mju_zero3(normal_local.as_mut_ptr());
+                        if i == 0 { normal_local[0] = -1.0; }
+                        else if i == 1 { normal_local[0] = 1.0; }
+                        else if i == 2 { normal_local[1] = -1.0; }
+                        else if i == 3 { normal_local[1] = 1.0; }
+                    }
+                }
+            }
+        }
+
+        // rotate normal to global frame
+        if !normal.is_null() && x >= 0.0 {
+            crate::engine::engine_util_blas::mju_mul_mat_vec3(normal, xmat, normal_local.as_ptr());
+        }
+
+        x
+    }
 }
 
 /// C: ray_triangle (engine/engine_ray.h:51)
@@ -1139,7 +1356,32 @@ pub fn ray_triangle(v: *mut [f64; 3], lpnt: *const f64, lvec: *const f64, b0: *c
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_ray_mesh(m: *const mjModel, d: *const mjData, geomid: i32, pnt: *const f64, vec: *const f64, normal: *mut f64) -> f64 {
-    todo!() // mj_rayMesh
+    // SAFETY: m, d, pnt, vec valid. normal may be null. geomid indexes a valid geom.
+    unsafe {
+        // clear normal if given
+        if !normal.is_null() {
+            crate::engine::engine_util_blas::mju_zero3(normal);
+        }
+
+        // check geom type
+        if *(*m).geom_type.add(geomid as usize) as u32 != 7 { // mjGEOM_MESH = 7
+            crate::engine::engine_util_errmem::mju_error(
+                b"geom with mesh type expected\0".as_ptr() as *const i8,
+            );
+        }
+
+        // bounding box test
+        if ray_box(
+            (*d).geom_xpos.add(3 * geomid as usize),
+            (*d).geom_xmat.add(9 * geomid as usize),
+            (*m).geom_size.add(3 * geomid as usize),
+            pnt, vec, std::ptr::null_mut(), std::ptr::null_mut(),
+        ) < 0.0 {
+            return -1.0;
+        }
+
+        mju_ray_tree(m, d, geomid, pnt, vec, normal)
+    }
 }
 
 /// C: mju_rayGeom (engine/engine_ray.h:59)
