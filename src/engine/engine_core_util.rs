@@ -810,7 +810,64 @@ pub fn mj_local2global(d: *mut mjData, xpos: *mut f64, xmat: *mut f64, pos: *con
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mju_flex_gather_state(m: *const mjModel, d: *const mjData, f: i32, xpos: *mut f64, vel: *mut f64) {
-    todo!() // mju_flexGatherState
+    // SAFETY: m, d, xpos are valid; vel may be null (caller contract)
+    unsafe {
+        let nodenum = *(*m).flex_nodenum.add(f as usize);
+        let nstart = *(*m).flex_nodeadr.add(f as usize);
+        let bodyid = (*m).flex_nodebodyid.add(nstart as usize);
+
+        // compute positions and velocities
+        for i in 0..nodenum {
+            let bid = *bodyid.add(i as usize);
+            if *(*m).flex_centered.add(f as usize) ||
+               (*(*m).flex_node.add(3 * (i + nstart) as usize + 0) == 0.0 &&
+                *(*m).flex_node.add(3 * (i + nstart) as usize + 1) == 0.0 &&
+                *(*m).flex_node.add(3 * (i + nstart) as usize + 2) == 0.0) {
+                crate::engine::engine_util_blas::mju_copy3(
+                    xpos.add(3 * i as usize), (*d).xpos.add(3 * bid as usize));
+            } else {
+                crate::engine::engine_util_blas::mju_mul_mat_vec3(
+                    xpos.add(3 * i as usize),
+                    (*d).xmat.add(9 * bid as usize),
+                    (*m).flex_node.add(3 * (i + nstart) as usize));
+                crate::engine::engine_util_blas::mju_add_to3(
+                    xpos.add(3 * i as usize), (*d).xpos.add(3 * bid as usize));
+            }
+
+            if !vel.is_null() {
+                let mut body_vel: [f64; 6] = [0.0; 6];
+                mj_object_velocity(m, d, 1, bid, body_vel.as_mut_ptr(), 0);  // mjOBJ_BODY=1
+
+                // linear velocity at CoM
+                crate::engine::engine_util_blas::mju_copy3(vel.add(3 * i as usize), body_vel.as_ptr().add(3));
+
+                // add omega x (xpos - xipos)
+                let mut r: [f64; 3] = [0.0; 3];
+                let mut cross: [f64; 3] = [0.0; 3];
+                crate::engine::engine_util_blas::mju_sub3(
+                    r.as_mut_ptr(), xpos.add(3 * i as usize), (*d).xipos.add(3 * bid as usize));
+                crate::engine::engine_util_spatial::mju_cross(cross.as_mut_ptr(), body_vel.as_ptr(), r.as_ptr());
+                crate::engine::engine_util_blas::mju_add_to3(vel.add(3 * i as usize), cross.as_ptr());
+            }
+        }
+
+        // shell mode: reconstruct interior via TFI
+        let interp = *(*m).flex_interp.add(f as usize);
+        if interp < 0 {
+            let order = -interp;
+            let cx = *(*m).flex_cellnum.add(3 * f as usize + 0);
+            let cy = *(*m).flex_cellnum.add(3 * f as usize + 1);
+            let cz = *(*m).flex_cellnum.add(3 * f as usize + 2);
+            let nx_g = cx * order + 1;
+            let ny_g = cy * order + 1;
+            let nz_g = cz * order + 1;
+
+            crate::engine::engine_util_misc::mju_shell_track_interior(xpos, nx_g, ny_g, nz_g);
+            if !vel.is_null() {
+                crate::engine::engine_util_misc::mju_shell_track_interior(vel, nx_g, ny_g, nz_g);
+            }
+        }
+    }
 }
 
 /// C: mj_contactForce (engine/engine_core_util.h:136)
