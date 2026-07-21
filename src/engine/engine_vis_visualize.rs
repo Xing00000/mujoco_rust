@@ -577,7 +577,47 @@ pub fn add_selection_point_geoms(m: *const mjModel, d: *mut mjData, vopt: *const
 /// Calls: acquireGeom, bodycategory, makeLabel, mju_n2f, releaseGeom
 #[allow(unused_variables, non_snake_case)]
 pub fn add_body_label_geoms(m: *const mjModel, d: *mut mjData, vopt: *const mjvOption, pert: *const mjvPerturb, catmask: i32, scn: *mut mjvScene) {
-    todo!() // addBodyLabelGeoms
+    const MJ_VIS_INERTIA: usize = 10;
+    const MJ_LABEL_SELECTION: i32 = 12;
+    const MJ_LABEL_BODY: i32 = 1;
+    const MJ_CAT_DECOR: i32 = 4;
+    const MJ_OBJ_UNKNOWN: i32 = 0;
+    const MJ_GEOM_LABEL: i32 = 107;
+    const MJ_OBJ_BODY: u32 = 1;
+
+    // SAFETY: m, d, vopt, pert, scn are valid pointers (caller contract).
+    unsafe {
+        if (*vopt).flags[MJ_VIS_INERTIA] != 0 {
+            return;
+        }
+        if (*vopt).label != MJ_LABEL_SELECTION && (*vopt).label != MJ_LABEL_BODY {
+            return;
+        }
+
+        for i in 1..(*m).nbody as i32 {
+            if (*vopt).label == MJ_LABEL_SELECTION && (*pert).select != i {
+                continue;
+            }
+            if bodycategory(m, i) & !catmask != 0 {
+                continue;
+            }
+
+            let mut thisgeom = acquire_geom(scn, i, MJ_CAT_DECOR, MJ_OBJ_UNKNOWN);
+            if thisgeom.is_null() {
+                return;
+            }
+
+            (*thisgeom).r#type = MJ_GEOM_LABEL;
+            crate::engine::engine_util_misc::mju_n2f(
+                (*thisgeom).pos.as_mut_ptr(), (*d).xpos.add(3 * i as usize), 3,
+            );
+            crate::engine::engine_util_misc::mju_n2f(
+                (*thisgeom).mat.as_mut_ptr(), (*d).xmat.add(9 * i as usize), 9,
+            );
+            make_label(m, MJ_OBJ_BODY, i, (*thisgeom).label.as_mut_ptr());
+            release_geom(&mut thisgeom, scn);
+        }
+    }
 }
 
 /// C: addJointGeoms (engine/engine_vis_visualize.c:1994)
