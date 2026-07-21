@@ -414,14 +414,100 @@ pub fn add_slider_crank_geoms(m: *const mjModel, d: *mut mjData, vopt: *const mj
 /// Calls: addFrame, bodycategory
 #[allow(unused_variables, non_snake_case)]
 pub fn add_geom_frame_geoms(m: *const mjModel, d: *mut mjData, vopt: *const mjvOption, catmask: i32, scn: *mut mjvScene) {
-    todo!() // addGeomFrameGeoms
+    const MJ_FRAME_GEOM: i32 = 2;
+    const MJ_NGROUP: usize = 6;
+
+    // SAFETY: m, d, vopt, scn are valid pointers (caller contract).
+    unsafe {
+        if (*vopt).frame != MJ_FRAME_GEOM {
+            return;
+        }
+
+        let scl = (*m).stat.meansize as f32;
+
+        // Access vis.scale as a float array. framelength is index 12, framewidth is index 13.
+        let scale_floats = (*m).vis.scale.as_ptr() as *const f32;
+        let framelength = *scale_floats.add(12);
+        let framewidth = *scale_floats.add(13);
+
+        for i in 0..(*m).ngeom as i32 {
+            if bodycategory(m, *(*m).geom_bodyid.add(i as usize)) & catmask == 0 {
+                continue;
+            }
+
+            let group = *(*m).geom_group.add(i as usize) as usize;
+            let clamped_group = if group < MJ_NGROUP { group } else { MJ_NGROUP - 1 };
+            if (*vopt).geomgroup[clamped_group] == 0 {
+                continue;
+            }
+
+            // base element is invisible; don't show decors
+            let matid = *(*m).geom_matid.add(i as usize);
+            let rgba: *const f32 = if matid >= 0 {
+                (*m).mat_rgba.add(4 * matid as usize)
+            } else {
+                (*m).geom_rgba.add(4 * i as usize)
+            };
+            if *rgba.add(3) == 0.0 {
+                continue;
+            }
+
+            // construct geom frame
+            let width = framewidth * scl;
+            let length = framelength * scl;
+            add_frame(scn, i, (*d).geom_xpos.add(3 * i as usize), (*d).geom_xmat.add(9 * i as usize), length, width);
+        }
+    }
 }
 
 /// C: addSiteFrameGeoms (engine/engine_vis_visualize.c:1364)
 /// Calls: addFrame, bodycategory
 #[allow(unused_variables, non_snake_case)]
 pub fn add_site_frame_geoms(m: *const mjModel, d: *mut mjData, vopt: *const mjvOption, catmask: i32, scn: *mut mjvScene) {
-    todo!() // addSiteFrameGeoms
+    const MJ_FRAME_SITE: i32 = 3;
+    const MJ_NGROUP: usize = 6;
+
+    // SAFETY: m, d, vopt, scn are valid pointers (caller contract).
+    unsafe {
+        if (*vopt).frame != MJ_FRAME_SITE {
+            return;
+        }
+
+        let scl = (*m).stat.meansize as f32;
+
+        // Access vis.scale as a float array. framelength is index 12, framewidth is index 13.
+        let scale_floats = (*m).vis.scale.as_ptr() as *const f32;
+        let framelength = *scale_floats.add(12);
+        let framewidth = *scale_floats.add(13);
+
+        for i in 0..(*m).nsite as i32 {
+            if bodycategory(m, *(*m).site_bodyid.add(i as usize)) & catmask == 0 {
+                continue;
+            }
+
+            let group = *(*m).site_group.add(i as usize) as usize;
+            let clamped_group = if group < MJ_NGROUP { group } else { MJ_NGROUP - 1 };
+            if (*vopt).sitegroup[clamped_group] == 0 {
+                continue;
+            }
+
+            // base element is invisible; don't show decors
+            let matid = *(*m).site_matid.add(i as usize);
+            let rgba: *const f32 = if matid >= 0 {
+                (*m).mat_rgba.add(4 * matid as usize)
+            } else {
+                (*m).site_rgba.add(4 * i as usize)
+            };
+            if *rgba.add(3) == 0.0 {
+                continue;
+            }
+
+            // construct site frame
+            let width = framewidth * scl;
+            let length = framelength * scl;
+            add_frame(scn, i, (*d).site_xpos.add(3 * i as usize), (*d).site_xmat.add(9 * i as usize), length, width);
+        }
+    }
 }
 
 /// C: addBodyBvhGeoms (engine/engine_vis_visualize.c:1394)
