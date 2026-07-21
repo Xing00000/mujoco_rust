@@ -764,7 +764,65 @@ pub fn tendon_limit(m: *const mjModel, ten_length: *const f64, i: i32) -> i32 {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_actuator_damping(m: *const mjModel, r#type: u32, id: i32, poly: *mut f64) -> f64 {
-    todo!() // mj_actuatorDamping
+    const MJNPOLY: i32 = 2;
+
+    // SAFETY: m is valid mjModel pointer; id within bounds (caller contract)
+    unsafe {
+        if r#type != 18 && r#type != 3 {  // mjOBJ_TENDON=18, mjOBJ_JOINT=3
+            crate::engine::engine_util_errmem::mju_error(
+                b"only joint and tendon objects can inherit damping from actuators\0".as_ptr() as *const i8);
+            return 0.0;
+        }
+
+        // get actuator id
+        let actuatorid = if r#type == 3 {
+            *(*m).jnt_actuatorid.add(id as usize)
+        } else {
+            *(*m).tendon_actuatorid.add(id as usize)
+        };
+
+        if actuatorid == -1 {
+            return 0.0;
+        }
+
+        let mut damping: f64 = 0.0;
+
+        // single actuator contributes damping
+        if actuatorid >= 0 {
+            let gear = *(*m).actuator_gear.add(6 * actuatorid as usize);
+            let gear2 = gear * gear;
+            damping = *(*m).actuator_damping.add(actuatorid as usize) * gear2;
+            for k in 0..MJNPOLY {
+                *poly.add(k as usize) += *(*m).actuator_dampingpoly.add((MJNPOLY * actuatorid + k) as usize) * gear2;
+            }
+        }
+        // scan all actuators
+        else {
+            let nu = (*m).nu as i32;
+            for k in 0..nu {
+                if *(*m).actuator_trnid.add(2 * k as usize) != id {
+                    continue;
+                }
+                if r#type == 3 &&  // mjOBJ_JOINT
+                   *(*m).actuator_trntype.add(k as usize) != 0 &&  // mjTRN_JOINT
+                   *(*m).actuator_trntype.add(k as usize) != 1 {   // mjTRN_JOINTINPARENT
+                    continue;
+                }
+                if r#type == 18 &&  // mjOBJ_TENDON
+                   *(*m).actuator_trntype.add(k as usize) != 3 {   // mjTRN_TENDON
+                    continue;
+                }
+                let gear = *(*m).actuator_gear.add(6 * k as usize);
+                let gear2 = gear * gear;
+                damping += *(*m).actuator_damping.add(k as usize) * gear2;
+                for j in 0..MJNPOLY {
+                    *poly.add(j as usize) += *(*m).actuator_dampingpoly.add((MJNPOLY * k + j) as usize) * gear2;
+                }
+            }
+        }
+
+        damping
+    }
 }
 
 /// C: mj_actuatorArmature (engine/engine_core_util.h:145)

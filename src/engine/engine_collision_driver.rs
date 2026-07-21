@@ -783,7 +783,100 @@ pub fn bfsort(arr: *mut i32, buf: *mut i32, n: i32, context: *mut ()) {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_contact_param(m: *const mjModel, condim: *mut i32, solref: *mut f64, solimp: *mut f64, friction: *mut f64, g1: i32, g2: i32, f1: i32, f2: i32) {
-    todo!() // mj_contactParam
+    const MJNREF: i32 = 2;
+    const MJNIMP: i32 = 5;
+    const MJMINVAL: f64 = 1e-15;
+
+    // SAFETY: m is valid mjModel, all out pointers are valid (caller contract)
+    unsafe {
+        let mut fri: [f64; 3] = [0.0; 3];
+
+        // get parameters from geom1 or flex1
+        let priority1 = if f1 < 0 { *(*m).geom_priority.add(g1 as usize) } else { *(*m).flex_priority.add(f1 as usize) };
+        let condim1 = if f1 < 0 { *(*m).geom_condim.add(g1 as usize) } else { *(*m).flex_condim.add(f1 as usize) };
+        let solmix1 = if f1 < 0 { *(*m).geom_solmix.add(g1 as usize) } else { *(*m).flex_solmix.add(f1 as usize) };
+        let solref1 = if f1 < 0 { (*m).geom_solref.add((g1 * MJNREF) as usize) } else { (*m).flex_solref.add((f1 * MJNREF) as usize) };
+        let solimp1 = if f1 < 0 { (*m).geom_solimp.add((g1 * MJNIMP) as usize) } else { (*m).flex_solimp.add((f1 * MJNIMP) as usize) };
+        let friction1 = if f1 < 0 { (*m).geom_friction.add((g1 * 3) as usize) } else { (*m).flex_friction.add((f1 * 3) as usize) };
+
+        // get parameters from geom2 or flex2
+        let priority2 = if f2 < 0 { *(*m).geom_priority.add(g2 as usize) } else { *(*m).flex_priority.add(f2 as usize) };
+        let condim2 = if f2 < 0 { *(*m).geom_condim.add(g2 as usize) } else { *(*m).flex_condim.add(f2 as usize) };
+        let solmix2 = if f2 < 0 { *(*m).geom_solmix.add(g2 as usize) } else { *(*m).flex_solmix.add(f2 as usize) };
+        let solref2 = if f2 < 0 { (*m).geom_solref.add((g2 * MJNREF) as usize) } else { (*m).flex_solref.add((f2 * MJNREF) as usize) };
+        let solimp2 = if f2 < 0 { (*m).geom_solimp.add((g2 * MJNIMP) as usize) } else { (*m).flex_solimp.add((f2 * MJNIMP) as usize) };
+        let friction2 = if f2 < 0 { (*m).geom_friction.add((g2 * 3) as usize) } else { (*m).flex_friction.add((f2 * 3) as usize) };
+
+        // different priority: copy from higher
+        if priority1 > priority2 {
+            *condim = condim1;
+            crate::engine::engine_util_blas::mju_copy(solref, solref1, MJNREF);
+            crate::engine::engine_util_blas::mju_copy(solimp, solimp1, MJNIMP);
+            crate::engine::engine_util_blas::mju_copy(fri.as_mut_ptr(), friction1, 3);
+        } else if priority1 < priority2 {
+            *condim = condim2;
+            crate::engine::engine_util_blas::mju_copy(solref, solref2, MJNREF);
+            crate::engine::engine_util_blas::mju_copy(solimp, solimp2, MJNIMP);
+            crate::engine::engine_util_blas::mju_copy(fri.as_mut_ptr(), friction2, 3);
+        }
+        // same priority
+        else {
+            // condim: max
+            *condim = if condim1 > condim2 { condim1 } else { condim2 };
+
+            // compute solver mix factor
+            let mix: f64;
+            if solmix1 >= MJMINVAL && solmix2 >= MJMINVAL {
+                mix = solmix1 / (solmix1 + solmix2);
+            } else if solmix1 < MJMINVAL && solmix2 < MJMINVAL {
+                mix = 0.5;
+            } else if solmix1 < MJMINVAL {
+                mix = 0.0;
+            } else {
+                mix = 1.0;
+            }
+
+            // reference standard: mix
+            if *solref1.add(0) > 0.0 && *solref2.add(0) > 0.0 {
+                for i in 0..MJNREF {
+                    *solref.add(i as usize) = mix * *solref1.add(i as usize) + (1.0 - mix) * *solref2.add(i as usize);
+                }
+            }
+            // reference direct: min
+            else {
+                for i in 0..MJNREF {
+                    let v1 = *solref1.add(i as usize);
+                    let v2 = *solref2.add(i as usize);
+                    *solref.add(i as usize) = if v1 < v2 { v1 } else { v2 };
+                }
+            }
+
+            // impedance: mix
+            for i in 0..MJNIMP {
+                *solimp.add(i as usize) = mix * *solimp1.add(i as usize) + (1.0 - mix) * *solimp2.add(i as usize);
+            }
+
+            // friction: max
+            for i in 0..3_i32 {
+                let v1 = *friction1.add(i as usize);
+                let v2 = *friction2.add(i as usize);
+                fri[i as usize] = if v1 > v2 { v1 } else { v2 };
+            }
+        }
+
+        // unpack 5D friction
+        *friction.add(0) = fri[0];
+        *friction.add(1) = fri[0];
+        *friction.add(2) = fri[1];
+        *friction.add(3) = fri[2];
+        *friction.add(4) = fri[2];
+
+        // SHOULD NOT OCCUR
+        if *condim > 6 || *condim < 1 {
+            crate::engine::engine_util_errmem::mju_error(
+                b"Invalid condim value: %d\0".as_ptr() as *const i8);
+        }
+    }
 }
 
 /// C: mj_setContact (engine/engine_collision_driver.c:1786)

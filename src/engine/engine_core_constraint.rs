@@ -60,7 +60,52 @@ pub fn arena_alloc_efc(m: *const mjModel, d: *mut mjData) -> i32 {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_elem_body_weight(m: *const mjModel, d: *const mjData, f: i32, e: i32, v: i32, point: *const f64, body: *mut i32, weight: *mut f64) -> i32 {
-    todo!() // mj_elemBodyWeight
+    const MJMINVAL: f64 = 1e-15;
+
+    // SAFETY: m, d, point, body, weight are valid pointers (caller contract)
+    unsafe {
+        // get flex info
+        let dim = *(*m).flex_dim.add(f as usize);
+        let edata = (*m).flex_elem.add((*(*m).flex_elemdataadr.add(f as usize) + e * (dim + 1)) as usize);
+        let vert = (*d).flexvert_xpos.add(3 * (*(*m).flex_vertadr.add(f as usize)) as usize);
+
+        // compute inverse distances, save body ids, find vertex v
+        let mut vid: i32 = -1;
+        for i in 0..=dim {
+            let ei = *edata.add(i as usize);
+            let dist = crate::engine::engine_util_blas::mju_dist3(point, vert.add(3 * ei as usize));
+            let denom = if dist > MJMINVAL { dist } else { MJMINVAL };
+            *weight.add(i as usize) = 1.0 / denom;
+            *body.add(i as usize) = *(*m).flex_vertadr.add(f as usize) + ei;
+
+            // check if element vertex matches v
+            if ei == v {
+                vid = i;
+            }
+        }
+
+        // v found in e: skip and shift remaining
+        let mut dim_out = dim;
+        if vid >= 0 {
+            let mut j = vid;
+            while j < dim_out {
+                *weight.add(j as usize) = *weight.add((j + 1) as usize);
+                *body.add(j as usize) = *body.add((j + 1) as usize);
+                j += 1;
+            }
+            dim_out -= 1;
+        }
+
+        // normalize weights
+        let sum = crate::engine::engine_util_blas::mju_sum(weight, dim_out + 1);
+        if sum < MJMINVAL {
+            crate::engine::engine_util_errmem::mju_error(
+                b"element body weight sum < mjMINVAL\0".as_ptr() as *const i8);
+        }
+        crate::engine::engine_util_blas::mju_scl(weight, weight, 1.0 / sum, dim_out + 1);
+
+        dim_out + 1
+    }
 }
 
 /// C: mj_vertBodyWeight (engine/engine_core_constraint.c:265)
