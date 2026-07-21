@@ -598,7 +598,49 @@ pub fn add_actuator_geoms(m: *const mjModel, d: *mut mjData, vopt: *const mjvOpt
 /// Calls: acquireGeom, mju_n2f, releaseGeom
 #[allow(unused_variables, non_snake_case)]
 pub fn add_island_label_geoms(m: *const mjModel, d: *mut mjData, vopt: *const mjvOption, scn: *mut mjvScene) {
-    todo!() // addIslandLabelGeoms
+    const MJ_LABEL_ISLAND: i32 = 15;
+    const MJ_CAT_DECOR: i32 = 4;
+    const MJ_OBJ_UNKNOWN: i32 = 0;
+    const MJ_GEOM_LABEL: i32 = 107;
+
+    // SAFETY: m, d, vopt, scn are valid pointers (caller contract).
+    unsafe {
+        if (*vopt).label != MJ_LABEL_ISLAND || (*d).nisland == 0 {
+            return;
+        }
+
+        extern "C" { fn snprintf(s: *mut i8, n: usize, fmt: *const i8, ...) -> i32; }
+
+        for i in 1..(*m).nbody as i32 {
+            let weld_id = *(*m).body_weldid.add(i as usize);
+            if *(*m).body_dofnum.add(weld_id as usize) == 0 {
+                continue;
+            }
+            let islandid = *(*d).dof_island.add(*(*m).body_dofadr.add(weld_id as usize) as usize);
+            if islandid <= -1 {
+                continue;
+            }
+
+            let mut thisgeom = acquire_geom(scn, i, MJ_CAT_DECOR, MJ_OBJ_UNKNOWN);
+            if thisgeom.is_null() {
+                return;
+            }
+
+            (*thisgeom).r#type = MJ_GEOM_LABEL;
+            crate::engine::engine_util_misc::mju_n2f(
+                (*thisgeom).pos.as_mut_ptr(), (*d).xipos.add(3 * i as usize), 3,
+            );
+            crate::engine::engine_util_misc::mju_n2f(
+                (*thisgeom).mat.as_mut_ptr(), (*d).ximat.add(9 * i as usize), 9,
+            );
+            snprintf(
+                (*thisgeom).label.as_mut_ptr(), 100,
+                b"%d\0".as_ptr() as *const i8, islandid,
+            );
+
+            release_geom(&mut thisgeom, scn);
+        }
+    }
 }
 
 /// C: addCameraGeoms (engine/engine_vis_visualize.c:2313)
