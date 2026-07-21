@@ -328,7 +328,77 @@ pub fn mj_jac_point_axis(m: *const mjModel, d: *mut mjData, jacPoint: *mut f64, 
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_jac_sparse(m: *const mjModel, d: *const mjData, jacp: *mut f64, jacr: *mut f64, point: *const f64, body: i32, NV: i32, chain: *const i32, flg_skipcommon: i32) {
-    todo!() // mj_jacSparse
+    // SAFETY: m, d, point, chain are valid pointers; jacp/jacr may be null (caller contract)
+    unsafe {
+        // clear jacobians
+        if !jacp.is_null() {
+            crate::engine::engine_util_blas::mju_zero(jacp, 3 * NV);
+        }
+        if !jacr.is_null() {
+            crate::engine::engine_util_blas::mju_zero(jacr, 3 * NV);
+        }
+
+        // compute point-com offset
+        let mut offset: [f64; 3] = [0.0; 3];
+        crate::engine::engine_util_blas::mju_sub3(
+            offset.as_mut_ptr(),
+            point,
+            (*d).subtree_com.add(3 * (*(*m).body_rootid.add(body as usize)) as usize),
+        );
+
+        // skip fixed bodies
+        let body = *(*m).body_weldid.add(body as usize);
+
+        // no movable body found
+        if body == 0 {
+            return;
+        }
+
+        // get last dof that affects this body
+        let mut da = *(*m).body_dofadr.add(body as usize) + *(*m).body_dofnum.add(body as usize) - 1;
+
+        // start at end of chain
+        let mut ci = NV - 1;
+
+        // backward pass over dof ancestor chain
+        while da >= 0 {
+            // find chain index for this dof
+            while ci >= 0 && *chain.add(ci as usize) > da {
+                ci -= 1;
+            }
+
+            // dof not in chain
+            if ci < 0 || *chain.add(ci as usize) != da {
+                if flg_skipcommon != 0 {
+                    da = *(*m).dof_parentid.add(da as usize);
+                    continue;
+                }
+                crate::engine::engine_util_errmem::mju_error(
+                    b"dof index %d not found in chain\0".as_ptr() as *const i8);
+            }
+
+            let cdof = (*d).cdof.add(6 * da as usize);
+
+            // rotation jacobian
+            if !jacr.is_null() {
+                *jacr.add(ci as usize + 0 * NV as usize) = *cdof.add(0);
+                *jacr.add(ci as usize + 1 * NV as usize) = *cdof.add(1);
+                *jacr.add(ci as usize + 2 * NV as usize) = *cdof.add(2);
+            }
+
+            // translation jacobian (correct for rotation)
+            if !jacp.is_null() {
+                let mut tmp: [f64; 3] = [0.0; 3];
+                crate::engine::engine_inline::mji_cross(tmp.as_mut_ptr(), cdof, offset.as_ptr());
+                *jacp.add(ci as usize + 0 * NV as usize) = *cdof.add(3) + tmp[0];
+                *jacp.add(ci as usize + 1 * NV as usize) = *cdof.add(4) + tmp[1];
+                *jacp.add(ci as usize + 2 * NV as usize) = *cdof.add(5) + tmp[2];
+            }
+
+            // advance to parent dof
+            da = *(*m).dof_parentid.add(da as usize);
+        }
+    }
 }
 
 /// C: mj_jacSparseSimple (engine/engine_core_util.h:85)
