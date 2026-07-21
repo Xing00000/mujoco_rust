@@ -184,7 +184,31 @@ pub fn release_geom(geom: *mut *mut mjvGeom, scn: *mut mjvScene) {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn add_triangle(scn: *mut mjvScene, v0: *const f64, v1: *const f64, v2: *const f64, rgba: *const f32, objid: i32, category: i32, objtype: i32) {
-    todo!() // addTriangle
+    // SAFETY: scn, v0, v1, v2, rgba are valid pointers (caller contract)
+    unsafe {
+        let mut thisgeom = acquire_geom(scn, objid, category, objtype);
+        if thisgeom.is_null() {
+            return;
+        }
+        let e1: [f64; 3] = [*v1.add(0) - *v0.add(0), *v1.add(1) - *v0.add(1), *v1.add(2) - *v0.add(2)];
+        let e2: [f64; 3] = [*v2.add(0) - *v0.add(0), *v2.add(1) - *v0.add(1), *v2.add(2) - *v0.add(2)];
+        let mut normal: [f64; 3] = [0.0; 3];
+        crate::engine::engine_util_spatial::mju_cross(normal.as_mut_ptr(), e1.as_ptr(), e2.as_ptr());
+        let mut e1_m = e1;
+        let mut e2_m = e2;
+        let lengths: [f64; 3] = [
+            crate::engine::engine_util_blas::mju_normalize3(e1_m.as_mut_ptr()),
+            crate::engine::engine_util_blas::mju_normalize3(e2_m.as_mut_ptr()),
+            crate::engine::engine_util_blas::mju_normalize3(normal.as_mut_ptr()),
+        ];
+        let xmat: [f64; 9] = [
+            e1_m[0], e2_m[0], normal[0],
+            e1_m[1], e2_m[1], normal[1],
+            e1_m[2], e2_m[2], normal[2],
+        ];
+        mjv_init_geom(thisgeom, 108, lengths.as_ptr(), v0, xmat.as_ptr(), rgba);  // mjGEOM_TRIANGLE=108
+        release_geom(&mut thisgeom, scn);
+    }
 }
 
 /// C: setMaterial (engine/engine_vis_visualize.c:225)
@@ -249,7 +273,18 @@ pub fn set_material(m: *const mjModel, geom: *mut mjvGeom, matid: i32, rgba: *co
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn add_connector(scn: *mut mjvScene, r#type: i32, width: f64, from: *const f64, to: *const f64, rgba: *const f32, objid: i32, category: i32, objtype: i32) {
-    todo!() // addConnector
+    // SAFETY: scn, from, to valid; rgba may be null (caller contract)
+    unsafe {
+        let mut thisgeom = acquire_geom(scn, objid, category, objtype);
+        if thisgeom.is_null() {
+            return;
+        }
+        mjv_connector(thisgeom, r#type, width, from, to);
+        if !rgba.is_null() {
+            f2f((*thisgeom).rgba.as_mut_ptr(), rgba, 4);
+        }
+        release_geom(&mut thisgeom, scn);
+    }
 }
 
 /// C: markselected (engine/engine_vis_visualize.c:393)
@@ -273,7 +308,36 @@ pub fn markselected(vis: *const mjVisual, geom: *mut mjvGeom) {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn add_frame(scn: *mut mjvScene, objid: i32, pos: *const f64, rot: *const f64, length: f32, width: f32) {
-    todo!() // addFrame
+    const MJCAT_DECOR: i32 = 4;
+    const MJOBJ_UNKNOWN: i32 = 0;
+    const MJGEOM_CYLINDER: i32 = 5;
+
+    // SAFETY: scn, pos, rot are valid pointers (caller contract)
+    unsafe {
+        // draw separate geoms for each axis
+        for j in 0..3_i32 {
+            let mut axis: [f64; 3] = [0.0; 3];
+            axis[j as usize] = length as f64;
+
+            let mut vec: [f64; 3] = [0.0; 3];
+            crate::engine::engine_util_blas::mju_mul_mat_vec3(vec.as_mut_ptr(), rot, axis.as_ptr());
+
+            let mut to: [f64; 3] = [0.0; 3];
+            crate::engine::engine_util_blas::mju_add3(to.as_mut_ptr(), pos, vec.as_ptr());
+
+            let mut thisgeom = acquire_geom(scn, objid, MJCAT_DECOR, MJOBJ_UNKNOWN);
+            if thisgeom.is_null() {
+                return;
+            }
+
+            mjv_connector(thisgeom, MJGEOM_CYLINDER, width as f64, pos, to.as_ptr());
+            for k in 0..3_usize {
+                (*thisgeom).rgba[k] = if j as usize == k { 0.9 } else { 0.0 };
+            }
+            (*thisgeom).rgba[3] = 1.0;
+            release_geom(&mut thisgeom, scn);
+        }
+    }
 }
 
 /// C: getFrustum (engine/engine_vis_visualize.c:434)
