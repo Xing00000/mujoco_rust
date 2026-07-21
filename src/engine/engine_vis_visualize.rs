@@ -134,14 +134,45 @@ pub fn bodycategory(m: *const mjModel, bodyid: i32) -> i32 {
 /// Calls: mju_warning, mjv_initGeom
 #[allow(unused_variables, non_snake_case)]
 pub fn acquire_geom(scn: *mut mjvScene, objid: i32, category: i32, objtype: i32) -> *mut mjvGeom {
-    todo!() // acquireGeom
+    // SAFETY: scn is a valid mjvScene pointer (caller contract)
+    unsafe {
+        // check for overflow
+        if (*scn).ngeom >= (*scn).maxgeom {
+            if (*scn).status == 0 {
+                crate::engine::engine_util_errmem::mju_warning(
+                    b"Pre-allocated visual geom buffer is full. Increase maxgeom above %d.\0".as_ptr() as *const i8);
+                (*scn).status = 1;
+            }
+            return std::ptr::null_mut();
+        }
+
+        let thisgeom = (*scn).geoms.add((*scn).ngeom as usize);
+        // SAFETY: thisgeom points to valid mjvGeom in the geoms array
+        std::ptr::write_bytes(thisgeom as *mut u8, 0, std::mem::size_of::<mjvGeom>());
+        mjv_init_geom(thisgeom, 1001, std::ptr::null(), std::ptr::null(), std::ptr::null(), std::ptr::null());  // mjGEOM_NONE=1001
+        (*thisgeom).objtype = objtype;
+        (*thisgeom).objid = objid;
+        (*thisgeom).category = category;
+        (*thisgeom).segid = (*scn).ngeom;
+        thisgeom
+    }
 }
 
 /// C: releaseGeom (engine/engine_vis_visualize.c:192)
 /// Calls: mju_error
 #[allow(unused_variables, non_snake_case)]
 pub fn release_geom(geom: *mut *mut mjvGeom, scn: *mut mjvScene) {
-    todo!() // releaseGeom
+    // SAFETY: geom is a valid pointer-to-pointer, scn is valid (caller contract)
+    unsafe {
+        // check geom being released was most recently acquired
+        if *geom != (*scn).geoms.add((*scn).ngeom as usize) {
+            crate::engine::engine_util_errmem::mju_error(
+                b"Unexpected geom pointer; did you call acquireGeom?\0".as_ptr() as *const i8);
+        }
+
+        (*scn).ngeom += 1;
+        *geom = std::ptr::null_mut();
+    }
 }
 
 /// C: addTriangle (engine/engine_vis_visualize.c:204)

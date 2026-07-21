@@ -225,7 +225,104 @@ pub fn radial_field3d(field: *mut f64, a: *const f64, x: *const f64, size: *cons
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn geom_distance(m: *const mjModel, d: *const mjData, p: *const mjpPlugin, i: i32, x: *const f64, r#type: u32) -> f64 {
-    todo!() // geomDistance
+    // SAFETY: m, d, x are valid pointers; i is valid geom index (caller contract)
+    unsafe {
+        let size = (*m).geom_size.add(3 * i as usize);
+
+        match r#type {
+            0 => {  // mjGEOM_PLANE
+                *x.add(2)
+            }
+
+            2 => {  // mjGEOM_SPHERE
+                crate::engine::engine_util_blas::mju_norm3(x) - *size.add(0)
+            }
+
+            6 => {  // mjGEOM_BOX
+                let mut a: [f64; 3] = [0.0; 3];
+                let mut b: [f64; 3] = [0.0; 3];
+                a[0] = (*x.add(0)).abs() - *size.add(0);
+                a[1] = (*x.add(1)).abs() - *size.add(1);
+                a[2] = (*x.add(2)).abs() - *size.add(2);
+                if a[0] >= 0.0 || a[1] >= 0.0 || a[2] >= 0.0 {
+                    b[0] = if a[0] > 0.0 { a[0] } else { 0.0 };
+                    b[1] = if a[1] > 0.0 { a[1] } else { 0.0 };
+                    b[2] = if a[2] > 0.0 { a[2] } else { 0.0 };
+                    let max_a = if a[0] > a[1] { if a[0] > a[2] { a[0] } else { a[2] } } else { if a[1] > a[2] { a[1] } else { a[2] } };
+                    let min_part = if max_a < 0.0 { max_a } else { 0.0 };
+                    return crate::engine::engine_util_blas::mju_norm3(b.as_ptr()) + min_part;
+                }
+                radial_field3d(b.as_mut_ptr(), a.as_ptr(), x, size);
+                let mut t: [f64; 3] = [0.0; 3];
+                t[0] = -a[0] / b[0].abs();
+                t[1] = -a[1] / b[1].abs();
+                t[2] = -a[2] / b[2].abs();
+                let min_t = if t[0] < t[1] { if t[0] < t[2] { t[0] } else { t[2] } } else { if t[1] < t[2] { t[1] } else { t[2] } };
+                -min_t * crate::engine::engine_util_blas::mju_norm3(b.as_ptr())
+            }
+
+            3 => {  // mjGEOM_CAPSULE
+                let mut a: [f64; 3] = [0.0; 3];
+                a[0] = *x.add(0);
+                a[1] = *x.add(1);
+                let clamped = crate::engine::engine_util_misc::mju_clip(*x.add(2), -*size.add(1), *size.add(1));
+                a[2] = *x.add(2) - clamped;
+                crate::engine::engine_util_blas::mju_norm3(a.as_ptr()) - *size.add(0)
+            }
+
+            4 => {  // mjGEOM_ELLIPSOID
+                let mut a: [f64; 3] = [0.0; 3];
+                let mut b: [f64; 3] = [0.0; 3];
+                a[0] = *x.add(0) / *size.add(0);
+                a[1] = *x.add(1) / *size.add(1);
+                a[2] = *x.add(2) / *size.add(2);
+                b[0] = a[0] / *size.add(0);
+                b[1] = a[1] / *size.add(1);
+                b[2] = a[2] / *size.add(2);
+                let k0 = crate::engine::engine_util_blas::mju_norm3(a.as_ptr());
+                let k1 = crate::engine::engine_util_blas::mju_norm3(b.as_ptr());
+                k0 * (k0 - 1.0) / k1
+            }
+
+            5 => {  // mjGEOM_CYLINDER
+                let mut a: [f64; 2] = [0.0; 2];
+                let mut b: [f64; 2] = [0.0; 2];
+                a[0] = ((*x.add(0)) * (*x.add(0)) + (*x.add(1)) * (*x.add(1))).sqrt() - *size.add(0);
+                a[1] = (*x.add(2)).abs() - *size.add(1);
+                b[0] = if a[0] > 0.0 { a[0] } else { 0.0 };
+                b[1] = if a[1] > 0.0 { a[1] } else { 0.0 };
+                let max_a = if a[0] > a[1] { a[0] } else { a[1] };
+                let min_part = if max_a < 0.0 { max_a } else { 0.0 };
+                min_part + crate::engine::engine_util_blas::mju_norm(b.as_ptr(), 2)
+            }
+
+            8 => {  // mjGEOM_SDF
+                if !p.is_null() {
+                    // SAFETY: p->sdf_distance is a valid function pointer
+                    let sdf_dist: unsafe extern "C" fn(*const f64, *const mjData, i32) -> f64 =
+                        std::mem::transmute((*p).sdf_distance);
+                    sdf_dist(x, d, i)
+                } else {
+                    oct_distance(m, x, i)
+                }
+            }
+
+            7 => {  // mjGEOM_MESH
+                if *(*m).mesh_octadr.add(i as usize) == -1 {
+                    crate::engine::engine_util_errmem::mju_error(
+                        b"sdf queries require needsdf=\"true\" on mesh %d\0".as_ptr() as *const i8);
+                    return 0.0;
+                }
+                oct_distance(m, x, i)
+            }
+
+            _ => {
+                crate::engine::engine_util_errmem::mju_error(
+                    b"sdf collisions not available for geom type %d\0".as_ptr() as *const i8);
+                0.0
+            }
+        }
+    }
 }
 
 /// C: geomGradient (engine/engine_collision_sdf.c:295)
