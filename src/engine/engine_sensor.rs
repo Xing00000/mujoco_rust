@@ -223,7 +223,22 @@ pub fn cam_project(sensordata: *mut f64, target_xpos: *const f64, cam_xpos: *con
 /// Calls: mjCMesh::tree
 #[allow(unused_variables, non_snake_case)]
 pub fn check_match(m: *const mjModel, body: i32, geom: i32, r#type: u32, id: i32) -> i32 {
-    todo!() // checkMatch
+    // SAFETY: m is valid mjModel pointer (caller contract)
+    unsafe {
+        if r#type == 0 { return 1; }     // mjOBJ_UNKNOWN
+        if r#type == 6 { return 1; }     // mjOBJ_SITE — already passed site filter
+        if r#type == 5 { return (id == geom) as i32; }  // mjOBJ_GEOM
+        if r#type == 1 { return (id == body) as i32; }  // mjOBJ_BODY
+        if r#type == 2 {  // mjOBJ_XBODY
+            // traverse up the tree from body, return true if we land on id
+            let mut b = body;
+            while b > id {
+                b = *(*m).body_parentid.add(b as usize);
+            }
+            return (b == id) as i32;
+        }
+        0
+    }
 }
 
 /// C: matchContact (engine/engine_sensor.c:339)
