@@ -578,7 +578,81 @@ pub fn mj_wake_equality(m: *const mjModel, d: *mut mjData) -> i32 {
 /// Calls: mj_sleepTrees, mju_message, treeCanSleep
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_sleep(m: *const mjModel, d: *mut mjData) -> i32 {
-    todo!() // mj_sleep
+    const MJENBL_SLEEP: i32 = 1 << 4;
+    const MJ_MINAWAKE: i32 = 10;
+
+    // SAFETY: m, d are valid model/data pointers (caller contract)
+    unsafe {
+        let ntree = (*m).ntree as i32;
+        let nisland = (*d).nisland;
+        let mut nslept: i32 = 0;
+
+        // sleep disabled
+        if (*m).opt.enableflags & MJENBL_SLEEP == 0 {
+            return nslept;
+        }
+
+        // have constraints but no island structure: can't sleep
+        if (*d).nefc != 0 && nisland == 0 {
+            return nslept;
+        }
+
+        // sweep over awake trees, increment tree_asleep if under tolerance
+        for i in 0..ntree {
+            // skip sleeping tree
+            if *(*d).tree_asleep.add(i as usize) >= 0 {
+                continue;
+            }
+
+            // increment if can sleep, otherwise wake up
+            if tree_can_sleep(m, d as *const mjData, i, (*m).opt.sleep_tolerance) != 0 {
+                if *(*d).tree_asleep.add(i as usize) < -1 {
+                    *(*d).tree_asleep.add(i as usize) += 1;
+                }
+            } else {
+                *(*d).tree_asleep.add(i as usize) = -(1 + MJ_MINAWAKE);
+            }
+        }
+
+        // sweep over islands, put to sleep if all trees under tolerance
+        for i in 0..nisland {
+            let mut can_sleep: i32 = 1;
+            let start = *(*d).island_itreeadr.add(i as usize);
+            let end = start + *(*d).island_ntree.add(i as usize);
+            for j in start..end {
+                let ta = *(*d).tree_asleep.add(*(*d).map_itree2tree.add(j as usize) as usize);
+                if ta < -1 {
+                    can_sleep = 0;
+                    break;
+                } else if ta >= 0 {
+                    crate::engine::engine_util_errmem::mju_error(
+                        b"found sleeping tree %d in island %d\0".as_ptr() as *const i8);
+                }
+            }
+
+            // put island to sleep
+            if can_sleep != 0 {
+                let tree = (*d).map_itree2tree.add(start as usize);
+                let n = *(*d).island_ntree.add(i as usize);
+                mj_sleep_trees(m, d, tree, n);
+                nslept += n;
+            }
+        }
+
+        // sleep unconstrained trees
+        let start = if nisland > 0 {
+            *(*d).island_itreeadr.add((nisland - 1) as usize) + *(*d).island_ntree.add((nisland - 1) as usize)
+        } else { 0 };
+        for j in start..ntree {
+            let i = if nisland > 0 { *(*d).map_itree2tree.add(j as usize) } else { j };
+            if *(*d).tree_asleep.add(i as usize) == -1 {
+                mj_sleep_trees(m, d, &i as *const i32, 1);
+                nslept += 1;
+            }
+        }
+
+        nslept
+    }
 }
 
 /// C: mj_flexBody (engine/engine_sleep.h:56)
