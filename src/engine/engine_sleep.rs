@@ -571,7 +571,134 @@ pub fn mj_wake_tendon(m: *const mjModel, d: *mut mjData) -> i32 {
 /// Calls: mj_sleepCycle, mj_wakeIsland, mju_message
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_wake_equality(m: *const mjModel, d: *mut mjData) -> i32 {
-    todo!() // mj_wakeEquality
+    const MJENBL_SLEEP: i32 = 1 << 4;
+    const K_AWAKE: i32 = -(1 + 10);  // -(1+mjMINAWAKE)
+    // mjEQ: CONNECT=0, WELD=1, JOINT=2, TENDON=3, FLEX=4, FLEXVERT=5, FLEXSTRAIN=6
+    // mjOBJ_BODY=1, mjOBJ_SITE=6
+    // mjS_STATIC=-1, mjS_ASLEEP=0, mjS_AWAKE=1
+
+    // SAFETY: m, d are valid model/data pointers (caller contract)
+    unsafe {
+        let neq = (*m).neq as i32;
+        let mut nwoke: i32 = 0;
+
+        if (*m).opt.enableflags & MJENBL_SLEEP == 0 {
+            return nwoke;
+        }
+
+        // sweep over equalities
+        for i in 0..neq {
+            // skip inactive
+            if !*(*d).eq_active.add(i as usize) {
+                continue;
+            }
+
+            let eqtype = *(*m).eq_type.add(i as usize);
+            let id1 = *(*m).eq_obj1id.add(i as usize);
+            let id2 = *(*m).eq_obj2id.add(i as usize);
+            let mut tree1: i32;
+            let mut tree2: i32;
+
+            match eqtype {
+                0 | 1 => {  // mjEQ_CONNECT, mjEQ_WELD
+                    if *(*m).eq_objtype.add(i as usize) == 6 {  // mjOBJ_SITE
+                        tree1 = *(*m).body_treeid.add(*(*m).site_bodyid.add(id1 as usize) as usize);
+                        tree2 = *(*m).body_treeid.add(*(*m).site_bodyid.add(id2 as usize) as usize);
+                    } else {
+                        tree1 = *(*m).body_treeid.add(id1 as usize);
+                        tree2 = *(*m).body_treeid.add(id2 as usize);
+                    }
+                }
+                2 => {  // mjEQ_JOINT
+                    tree1 = if id1 >= 0 { *(*m).body_treeid.add(*(*m).jnt_bodyid.add(id1 as usize) as usize) } else { -1 };
+                    tree2 = if id2 >= 0 { *(*m).body_treeid.add(*(*m).jnt_bodyid.add(id2 as usize) as usize) } else { -1 };
+                }
+                3 => {  // mjEQ_TENDON
+                    crate::engine::engine_util_errmem::mju_error(
+                        b"tendon equality does not yet support sleeping\0".as_ptr() as *const i8);
+                    continue;
+                }
+                4 | 5 | 6 => {  // mjEQ_FLEX, FLEXVERT, FLEXSTRAIN
+                    let f = id1;
+                    let (num, adr, bodyid);
+                    if *(*m).flex_interp.add(f as usize) != 0 {
+                        num = *(*m).flex_nodenum.add(f as usize);
+                        adr = *(*m).flex_nodeadr.add(f as usize);
+                        bodyid = (*m).flex_nodebodyid;
+                    } else {
+                        num = *(*m).flex_vertnum.add(f as usize);
+                        adr = *(*m).flex_vertadr.add(f as usize);
+                        bodyid = (*m).flex_vertbodyid;
+                    }
+
+                    // find first awake tree
+                    let mut awake_tree: i32 = -1;
+                    for j in 0..num {
+                        let treeid = *(*m).body_treeid.add(*bodyid.add((adr + j) as usize) as usize);
+                        if treeid >= 0 && *(*d).tree_awake.add(treeid as usize) != 0 {
+                            awake_tree = treeid;
+                            break;
+                        }
+                    }
+
+                    // wake sleeping island
+                    if awake_tree >= 0 {
+                        let wakeval = *(*d).tree_asleep.add(awake_tree as usize);
+                        for j in 0..num {
+                            let treeid = *(*m).body_treeid.add(*bodyid.add((adr + j) as usize) as usize);
+                            if treeid >= 0 && *(*d).tree_awake.add(treeid as usize) == 0 {
+                                nwoke += mj_wake_island((*d).tree_asleep, (*m).ntree as i32, treeid, wakeval,
+                                    b"flex equality\0".as_ptr() as *const i8, (*d).time);
+                                break;
+                            }
+                        }
+                    }
+                    continue;
+                }
+                _ => { continue; }
+            }
+
+            // get sleep state
+            let s1 = if tree1 >= 0 { *(*d).tree_awake.add(tree1 as usize) as i32 } else { -1 };  // mjS_STATIC=-1
+            let s2 = if tree2 >= 0 { *(*d).tree_awake.add(tree2 as usize) as i32 } else { -1 };
+
+            // neither is asleep, nothing to do
+            if s1 != 0 && s2 != 0 {
+                continue;
+            }
+
+            // one is static, nothing to do
+            if s1 == -1 || s2 == -1 {
+                continue;
+            }
+
+            // equality within same tree, nothing to do
+            if tree1 == tree2 {
+                continue;
+            }
+
+            // both asleep, wake if in different islands
+            if s1 == 0 && s2 == 0 {
+                let cycle1 = mj_sleep_cycle((*d).tree_asleep, (*m).ntree as i32, tree1);
+                let cycle2 = mj_sleep_cycle((*d).tree_asleep, (*m).ntree as i32, tree2);
+                if cycle1 != cycle2 {
+                    let nwoke1 = mj_wake_island((*d).tree_asleep, (*m).ntree as i32, tree1, K_AWAKE,
+                        b"equality\0".as_ptr() as *const i8, (*d).time);
+                    let nwoke2 = mj_wake_island((*d).tree_asleep, (*m).ntree as i32, tree2, K_AWAKE,
+                        b"equality\0".as_ptr() as *const i8, (*d).time);
+                    nwoke += nwoke1 + nwoke2;
+                }
+                continue;
+            }
+
+            // one asleep and one awake, wake sleeping tree
+            let sleeping_tree = if s1 == 0 { tree1 } else { tree2 };
+            nwoke += mj_wake_island((*d).tree_asleep, (*m).ntree as i32, sleeping_tree, K_AWAKE,
+                b"equality\0".as_ptr() as *const i8, (*d).time);
+        }
+
+        nwoke
+    }
 }
 
 /// C: mj_sleep (engine/engine_sleep.h:53)
