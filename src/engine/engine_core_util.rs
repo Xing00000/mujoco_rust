@@ -740,7 +740,69 @@ pub fn mj_object_velocity(m: *const mjModel, d: *const mjData, objtype: i32, obj
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_object_acceleration(m: *const mjModel, d: *const mjData, objtype: i32, objid: i32, res: *mut f64, flg_local: i32) {
-    todo!() // mj_objectAcceleration
+    // SAFETY: m, d, res are valid pointers; objtype/objid within bounds (caller contract)
+    unsafe {
+        let mut bodyid: i32 = 0;
+        let mut pos: *const f64 = std::ptr::null();
+        let mut rot: *const f64 = std::ptr::null();
+
+        if objtype == 1 {  // mjOBJ_BODY
+            bodyid = objid;
+            pos = (*d).xipos.add(3 * objid as usize);
+            rot = if flg_local != 0 { (*d).ximat.add(9 * objid as usize) } else { std::ptr::null() };
+        } else if objtype == 2 {  // mjOBJ_XBODY
+            bodyid = objid;
+            pos = (*d).xpos.add(3 * objid as usize);
+            rot = if flg_local != 0 { (*d).xmat.add(9 * objid as usize) } else { std::ptr::null() };
+        } else if objtype == 5 {  // mjOBJ_GEOM
+            bodyid = *(*m).geom_bodyid.add(objid as usize);
+            pos = (*d).geom_xpos.add(3 * objid as usize);
+            rot = if flg_local != 0 { (*d).geom_xmat.add(9 * objid as usize) } else { std::ptr::null() };
+        } else if objtype == 6 {  // mjOBJ_SITE
+            bodyid = *(*m).site_bodyid.add(objid as usize);
+            pos = (*d).site_xpos.add(3 * objid as usize);
+            rot = if flg_local != 0 { (*d).site_xmat.add(9 * objid as usize) } else { std::ptr::null() };
+        } else if objtype == 7 {  // mjOBJ_CAMERA
+            bodyid = *(*m).cam_bodyid.add(objid as usize);
+            pos = (*d).cam_xpos.add(3 * objid as usize);
+            rot = if flg_local != 0 { (*d).cam_xmat.add(9 * objid as usize) } else { std::ptr::null() };
+        } else {
+            crate::engine::engine_util_errmem::mju_error(
+                b"invalid object type %d\0".as_ptr() as *const i8);
+        }
+
+        // static body: quick return
+        if *(*m).body_weldid.add(bodyid as usize) == 0 {
+            crate::engine::engine_util_blas::mju_zero(res, 6);
+            return;
+        }
+
+        // transform com-based acceleration to local frame
+        crate::engine::engine_util_spatial::mju_transform_spatial(
+            res,
+            (*d).cacc.add(6 * bodyid as usize),
+            0,
+            pos,
+            (*d).subtree_com.add(3 * (*(*m).body_rootid.add(bodyid as usize)) as usize),
+            rot,
+        );
+
+        // transform com-based velocity to local frame
+        let mut vel: [f64; 6] = [0.0; 6];
+        crate::engine::engine_util_spatial::mju_transform_spatial(
+            vel.as_mut_ptr(),
+            (*d).cvel.add(6 * bodyid as usize),
+            0,
+            pos,
+            (*d).subtree_com.add(3 * (*(*m).body_rootid.add(bodyid as usize)) as usize),
+            rot,
+        );
+
+        // add Coriolis correction: acc_tran += vel_rot x vel_tran
+        let mut correction: [f64; 3] = [0.0; 3];
+        crate::engine::engine_inline::mji_cross(correction.as_mut_ptr(), vel.as_ptr(), vel.as_ptr().add(3));
+        crate::engine::engine_inline::mji_add_to3(res.add(3), correction.as_ptr());
+    }
 }
 
 /// C: mj_local2Global (engine/engine_core_util.h:125)
