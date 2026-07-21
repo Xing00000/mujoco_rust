@@ -418,21 +418,153 @@ pub fn mj_wake_island(tree_asleep: *mut i32, ntree: i32, i: i32, wakeval: i32, r
 /// Calls: mj_wakeIsland, mju_fillInt, treeCanSleep
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_wake(m: *const mjModel, d: *mut mjData) -> i32 {
-    todo!() // mj_wake
+    const K_AWAKE: i32 = -(1 + 10);  // -(1+mjMINAWAKE)
+    const MJENBL_SLEEP: i32 = 1 << 4;
+
+    // SAFETY: m, d are valid model/data pointers (caller contract)
+    unsafe {
+        let ntree = (*m).ntree as i32;
+        let mut nwoke: i32 = 0;
+
+        // sleep disabled
+        if (*m).opt.enableflags & MJENBL_SLEEP == 0 {
+            // sleep disabled but some trees still asleep: wake all
+            if (*d).ntree_awake < ntree {
+                crate::engine::engine_util_misc::mju_fill_int((*d).tree_asleep, K_AWAKE, ntree);
+            }
+            return ntree - (*d).ntree_awake;
+        }
+
+        // sweep over trees, wake if required
+        for i in 0..ntree {
+            let asleep = *(*d).tree_asleep.add(i as usize) >= 0;
+
+            // awake: nothing to do
+            if !asleep {
+                continue;
+            }
+
+            // if qpos mismatch or cannot sleep: wake up
+            if *(*d).tree_awake.add(i as usize) != 0 || tree_can_sleep(m, d as *const mjData, i, 0.0) == 0 {
+                nwoke += mj_wake_island((*d).tree_asleep, ntree, i, K_AWAKE,
+                    b"perturbation\0".as_ptr() as *const i8, (*d).time);
+            }
+        }
+
+        nwoke
+    }
 }
 
 /// C: mj_wakeCollision (engine/engine_sleep.h:44)
 /// Calls: mj_flexBody, mj_wakeIsland, mju_message
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_wake_collision(m: *const mjModel, d: *mut mjData) -> i32 {
-    todo!() // mj_wakeCollision
+    const MJENBL_SLEEP: i32 = 1 << 4;
+
+    // SAFETY: m, d are valid model/data pointers (caller contract)
+    unsafe {
+        let ntree = (*m).ntree as i32;
+        let ncon = (*d).ncon;
+        let mut nwoke: i32 = 0;
+
+        if (*m).opt.enableflags & MJENBL_SLEEP == 0 {
+            return nwoke;
+        }
+
+        // sweep over contacts, wake trees if required
+        for i in 0..ncon {
+            let con = (*d).contact.add(i as usize);
+
+            // resolve body on each side
+            let b1 = if (*con).geom[0] >= 0 {
+                *(*m).geom_bodyid.add((*con).geom[0] as usize)
+            } else {
+                mj_flex_body(m, con, 0)
+            };
+            let b2 = if (*con).geom[1] >= 0 {
+                *(*m).geom_bodyid.add((*con).geom[1] as usize)
+            } else {
+                mj_flex_body(m, con, 1)
+            };
+
+            let tree1 = *(*m).body_treeid.add(b1 as usize);
+            let tree2 = *(*m).body_treeid.add(b2 as usize);
+
+            // contact with static body, nothing to do
+            if tree1 < 0 || tree2 < 0 {
+                continue;
+            }
+
+            let awake1 = *(*d).tree_awake.add(tree1 as usize);
+            let awake2 = *(*d).tree_awake.add(tree2 as usize);
+
+            // both trees awake, nothing to do
+            if awake1 != 0 && awake2 != 0 {
+                continue;
+            }
+
+            // both trees asleep; SHOULD NOT OCCUR
+            if awake1 == 0 && awake2 == 0 {
+                crate::engine::engine_util_errmem::mju_error(
+                    b"contact between sleeping bodies %d and %d\0".as_ptr() as *const i8);
+            }
+
+            // wake sleeping tree
+            let sleeping_tree = if awake1 != 0 { tree2 } else { tree1 };
+            let wakeval = if awake1 != 0 {
+                *(*d).tree_asleep.add(tree1 as usize)
+            } else {
+                *(*d).tree_asleep.add(tree2 as usize)
+            };
+            nwoke += mj_wake_island((*d).tree_asleep, ntree, sleeping_tree, wakeval,
+                b"contact\0".as_ptr() as *const i8, (*d).time);
+        }
+
+        nwoke
+    }
 }
 
 /// C: mj_wakeTendon (engine/engine_sleep.h:47)
 /// Calls: mj_wakeIsland, tendonLimit
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_wake_tendon(m: *const mjModel, d: *mut mjData) -> i32 {
-    todo!() // mj_wakeTendon
+    const MJENBL_SLEEP: i32 = 1 << 4;
+
+    // SAFETY: m, d are valid model/data pointers (caller contract)
+    unsafe {
+        let ntendon = (*m).ntendon as i32;
+        let mut nwoke: i32 = 0;
+
+        if (*m).opt.enableflags & MJENBL_SLEEP == 0 {
+            return nwoke;
+        }
+
+        // sweep over tendons, wake trees if required
+        for i in 0..ntendon {
+            if *(*m).tendon_treenum.add(i as usize) != 2 ||
+               crate::engine::engine_core_util::tendon_limit(m, (*d).ten_length, i) == 0 {
+                continue;
+            }
+
+            let tree1 = *(*m).tendon_treeid.add(2 * i as usize);
+            let tree2 = *(*m).tendon_treeid.add(2 * i as usize + 1);
+            let awake1 = *(*d).tree_awake.add(tree1 as usize);
+            let awake2 = *(*d).tree_awake.add(tree2 as usize);
+
+            if awake1 != awake2 {
+                let sleeping_tree = if awake1 != 0 { tree2 } else { tree1 };
+                let wakeval = if awake1 != 0 {
+                    *(*d).tree_asleep.add(tree1 as usize)
+                } else {
+                    *(*d).tree_asleep.add(tree2 as usize)
+                };
+                nwoke += mj_wake_island((*d).tree_asleep, (*m).ntree as i32, sleeping_tree, wakeval,
+                    b"tendon constraint\0".as_ptr() as *const i8, (*d).time);
+            }
+        }
+
+        nwoke
+    }
 }
 
 /// C: mj_wakeEquality (engine/engine_sleep.h:50)
