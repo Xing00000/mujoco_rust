@@ -1623,7 +1623,263 @@ pub fn update_bracket(ctx: *mut mjPrimalContext, p: *mut mjPrimalPnt, candidates
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn primal_search(ctx: *mut mjPrimalContext, tolerance: f64, ls_iterations: f64, improvement: *mut f64) -> f64 {
-    todo!() // PrimalSearch
+    const MJMINVAL: f64 = 1e-15;
+
+    #[repr(C)]
+    #[allow(non_snake_case)]
+    struct PrimalCtx {
+        is_sparse: i32,
+        is_elliptic: i32,
+        island: i32,
+        nv: i32,
+        ne: i32,
+        nf: i32,
+        nefc: i32,
+        nJ: i32,
+        contact: *mut mjContact,
+        qfrc_smooth: *const f64,
+        qacc_smooth: *const f64,
+        qfrc_constraint: *mut f64,
+        qacc: *mut f64,
+        M_rownnz: *mut i32,
+        M_rowadr: *mut i32,
+        M_colind: *mut i32,
+        M: *mut f64,
+        qLD: *mut f64,
+        qLDiagInv: *mut f64,
+        efc_D: *const f64,
+        efc_R: *const f64,
+        efc_frictionloss: *const f64,
+        efc_aref: *const f64,
+        efc_id: *const i32,
+        efc_type: *const i32,
+        efc_force: *mut f64,
+        efc_state: *mut i32,
+        J_rownnz: *mut i32,
+        J_rowadr: *mut i32,
+        J_rowsuper: *mut i32,
+        J_colind: *mut i32,
+        J: *mut f64,
+        JT_rownnz: *mut i32,
+        JT_rowadr: *mut i32,
+        JT_rowsuper: *mut i32,
+        JT_colind: *mut i32,
+        JT: *mut f64,
+        Jaref: *mut f64,
+        Jv: *mut f64,
+        Ma: *mut f64,
+        Mv: *mut f64,
+        grad: *mut f64,
+        Mgrad: *mut f64,
+        search: *mut f64,
+        quad: *mut f64,
+        oldstate: *mut i32,
+        gradold: *mut f64,
+        Mgradold: *mut f64,
+        graddif: *mut f64,
+        Mgraddif: *mut f64,
+        D_newton: *mut f64,
+        cholupd: *mut f64,
+        LTJ: *mut f64,
+        H_rowadr: *mut i32,
+        H_rownnz: *mut i32,
+        HT_rownnz: *mut i32,
+        HT_rowadr: *mut i32,
+        L_rownnz: *mut i32,
+        L_rowadr: *mut i32,
+        LT_rownnz: *mut i32,
+        LT_rowadr: *mut i32,
+        nH: i32,
+        _pad0: i32,
+        H_colind: *mut i32,
+        HT_colind: *mut i32,
+        H: *mut f64,
+        nL: i32,
+        _pad1: i32,
+        L_colind: *mut i32,
+        LT_colind: *mut i32,
+        LT_map: *mut i32,
+        L: *mut f64,
+        Lcone: *mut f64,
+        cost: f64,
+        quadGauss: [f64; 3],
+        scale: f64,
+        nactive: i32,
+        ncone: i32,
+        nupdate: i32,
+        LSiter: i32,
+        LSresult: i32,
+        _pad2: i32,
+        LSslope: f64,
+    }
+
+    // SAFETY: ctx is valid mjPrimalContext, improvement is valid pointer.
+    unsafe {
+        let c = ctx as *mut PrimalCtx;
+        let nv = (*c).nv;
+        let nefc = (*c).nefc;
+
+        // clear results
+        (*c).LSiter = 0;
+        (*c).LSresult = 0;
+        (*c).LSslope = 1.0;
+        *improvement = 0.0;
+
+        // save search vector length, check
+        let snorm = crate::engine::engine_util_blas::mju_norm((*c).search as *const f64, nv);
+        if snorm < MJMINVAL {
+            (*c).LSresult = 1;
+            return 0.0;
+        }
+
+        // compute scaled gradtol and slope scaling
+        let gtol = tolerance * snorm / (*c).scale;
+        let slopescl = (*c).scale / snorm;
+
+        // compute Mv = M * v
+        crate::engine::engine_util_sparse::mju_mul_sym_vec_sparse(
+            (*c).Mv, (*c).M as *const f64, (*c).search as *const f64, nv,
+            (*c).M_rownnz as *const i32, (*c).M_rowadr as *const i32, (*c).M_colind as *const i32,
+        );
+
+        // compute Jv = J * search (dense or sparse)
+        if (*c).is_sparse == 0 {
+            crate::engine::engine_util_blas::mju_mul_mat_vec(
+                (*c).Jv, (*c).J as *const f64, (*c).search as *const f64, nefc, nv,
+            );
+        } else {
+            crate::engine::engine_util_sparse::mju_mul_mat_vec_sparse(
+                (*c).Jv, (*c).J as *const f64, (*c).search as *const f64, nefc,
+                (*c).J_rownnz as *const i32, (*c).J_rowadr as *const i32,
+                (*c).J_colind as *const i32, (*c).J_rowsuper as *const i32,
+            );
+        }
+
+        // prepare quadratics and cones
+        primal_prepare(ctx);
+
+        // init at alpha = 0, save
+        let mut p0 = mjPrimalPnt { alpha: 0.0, cost: 0.0, deriv: [0.0; 2] };
+        primal_eval(ctx, &mut p0 as *mut mjPrimalPnt);
+
+        // always attempt one Newton step
+        let mut p1 = mjPrimalPnt { alpha: p0.alpha - p0.deriv[0] / p0.deriv[1], cost: 0.0, deriv: [0.0; 2] };
+        primal_eval(ctx, &mut p1 as *mut mjPrimalPnt);
+
+        // check for initial convergence
+        if p1.deriv[0].abs() < gtol {
+            if p1.alpha == 0.0 {
+                (*c).LSresult = 2;
+            } else {
+                (*c).LSresult = 0;
+            }
+            (*c).LSslope = p1.deriv[0].abs() * slopescl;
+            *improvement = -p1.cost;
+            return p1.alpha;
+        }
+
+        // save direction
+        let dir: i32 = if p1.deriv[0] < 0.0 { 1 } else { -1 };
+
+        // one-sided search
+        let mut p2 = p0;
+        let mut p2update: i32 = 1;
+        while p1.deriv[0] * dir as f64 <= -gtol && (*c).LSiter < ls_iterations as i32 {
+            p2 = p1;
+            p2update = 1;
+
+            // move to Newton point w.r.t current
+            p1.alpha -= p1.deriv[0] / p1.deriv[1];
+            primal_eval(ctx, &mut p1 as *mut mjPrimalPnt);
+
+            // check for convergence
+            if p1.deriv[0].abs() < gtol {
+                (*c).LSslope = p1.deriv[0].abs() * slopescl;
+                *improvement = -p1.cost;
+                return p1.alpha;
+            }
+        }
+
+        // check for failure to bracket
+        if (*c).LSiter >= ls_iterations as i32 {
+            (*c).LSresult = 3;
+            (*c).LSslope = p1.deriv[0].abs() * slopescl;
+            *improvement = -p1.cost;
+            return p1.alpha;
+        }
+
+        // check for p2 update
+        if p2update == 0 {
+            (*c).LSresult = 6;
+            (*c).LSslope = p1.deriv[0].abs() * slopescl;
+            *improvement = -p1.cost;
+            return p1.alpha;
+        }
+
+        // compute next-points for bracket
+        let mut p2next = p1;
+        let mut p1next = mjPrimalPnt { alpha: p1.alpha - p1.deriv[0] / p1.deriv[1], cost: 0.0, deriv: [0.0; 2] };
+        primal_eval(ctx, &mut p1next as *mut mjPrimalPnt);
+
+        // bracketed search
+        while (*c).LSiter < ls_iterations as i32 {
+            // evaluate at midpoint
+            let mut pmid = mjPrimalPnt { alpha: 0.5 * (p1.alpha + p2.alpha), cost: 0.0, deriv: [0.0; 2] };
+            primal_eval(ctx, &mut pmid as *mut mjPrimalPnt);
+
+            // make list of candidates
+            let mut candidates: [mjPrimalPnt; 3] = [p1next, p2next, pmid];
+
+            // check candidates for convergence
+            let mut bestcost: f64 = 0.0;
+            let mut bestind: i32 = -1;
+            for i in 0..3 {
+                if candidates[i].deriv[0].abs() < gtol
+                    && (bestind == -1 || candidates[i].cost < bestcost)
+                {
+                    bestcost = candidates[i].cost;
+                    bestind = i as i32;
+                }
+            }
+            if bestind >= 0 {
+                (*c).LSslope = candidates[bestind as usize].deriv[0].abs() * slopescl;
+                *improvement = -candidates[bestind as usize].cost;
+                return candidates[bestind as usize].alpha;
+            }
+
+            // update brackets
+            let b1 = update_bracket(ctx, &mut p1 as *mut mjPrimalPnt, candidates.as_ptr(), &mut p1next as *mut mjPrimalPnt);
+            let b2 = update_bracket(ctx, &mut p2 as *mut mjPrimalPnt, candidates.as_ptr(), &mut p2next as *mut mjPrimalPnt);
+
+            // no update possible: numerical accuracy reached, use midpoint
+            if b1 == 0 && b2 == 0 {
+                if pmid.cost < 0.0 {
+                    (*c).LSresult = 0;
+                } else {
+                    (*c).LSresult = 7;
+                }
+                (*c).LSslope = pmid.deriv[0].abs() * slopescl;
+                *improvement = -pmid.cost;
+                return pmid.alpha;
+            }
+        }
+
+        // choose bracket with best cost
+        if p1.cost <= p2.cost && p1.cost < 0.0 {
+            (*c).LSresult = 4;
+            (*c).LSslope = p1.deriv[0].abs() * slopescl;
+            *improvement = -p1.cost;
+            return p1.alpha;
+        } else if p2.cost <= p1.cost && p2.cost < 0.0 {
+            (*c).LSresult = 4;
+            (*c).LSslope = p2.deriv[0].abs() * slopescl;
+            *improvement = -p2.cost;
+            return p2.alpha;
+        } else {
+            (*c).LSresult = 5;
+            return 0.0;
+        }
+    }
 }
 
 /// C: MakeHessian (engine/engine_solver.c:2010)
