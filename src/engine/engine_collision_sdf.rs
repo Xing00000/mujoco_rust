@@ -184,7 +184,47 @@ pub fn oct_distance(m: *const mjModel, p: *const f64, meshid: i32) -> f64 {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn oct_gradient(m: *const mjModel, grad: *mut f64, point: *const f64, meshid: i32) {
-    todo!() // oct_gradient
+    // SAFETY: m is valid, grad is f64[3], point is f64[3] (caller contract)
+    unsafe {
+        crate::engine::engine_util_blas::mju_zero3(grad);
+        let mut p: [f64; 3] = [*point.add(0), *point.add(1), *point.add(2)];
+
+        let octadr = *(*m).mesh_octadr.add(meshid as usize);
+        let oct_child = (*m).oct_child.add(8 * octadr as usize);
+        let oct_aabb = (*m).oct_aabb.add(6 * octadr as usize);
+        let oct_coeff = (*m).oct_coeff.add(8 * octadr as usize);
+
+        if octadr == -1 {
+            crate::engine::engine_util_errmem::mju_error(
+                b"Octree not found in mesh %d\0".as_ptr() as *const i8);
+        }
+
+        // analytic in the interior
+        if box_projection(p.as_mut_ptr(), oct_aabb) <= 0.0 {
+            let mut dw: [[f64; 3]; 8] = [[0.0; 3]; 8];
+            let node = find_oct(std::ptr::null_mut(), dw.as_mut_ptr(), oct_aabb, oct_child, p.as_ptr());
+            for j in 0..8 {
+                *grad.add(0) += dw[j][0] * *oct_coeff.add(8 * node as usize + j);
+                *grad.add(1) += dw[j][1] * *oct_coeff.add(8 * node as usize + j);
+                *grad.add(2) += dw[j][2] * *oct_coeff.add(8 * node as usize + j);
+            }
+            return;
+        }
+
+        // finite difference in the exterior
+        let eps: f64 = 1e-8;
+        let dist0 = oct_distance(m, point, meshid);
+        let pointX: [f64; 3] = [*point.add(0) + eps, *point.add(1), *point.add(2)];
+        let distX = oct_distance(m, pointX.as_ptr(), meshid);
+        let pointY: [f64; 3] = [*point.add(0), *point.add(1) + eps, *point.add(2)];
+        let distY = oct_distance(m, pointY.as_ptr(), meshid);
+        let pointZ: [f64; 3] = [*point.add(0), *point.add(1), *point.add(2) + eps];
+        let distZ = oct_distance(m, pointZ.as_ptr(), meshid);
+
+        *grad.add(0) = (distX - dist0) / eps;
+        *grad.add(1) = (distY - dist0) / eps;
+        *grad.add(2) = (distZ - dist0) / eps;
+    }
 }
 
 /// C: radialField3d (engine/engine_collision_sdf.c:205)
@@ -334,7 +374,137 @@ pub fn geom_distance(m: *const mjModel, d: *const mjData, p: *const mjpPlugin, i
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn geom_gradient(gradient: *mut f64, m: *const mjModel, d: *const mjData, p: *const mjpPlugin, i: i32, x: *const f64, r#type: u32) {
-    todo!() // geomGradient
+    // SAFETY: gradient is f64[3], m/d/x valid pointers (caller contract)
+    unsafe {
+        let size = (*m).geom_size.add(3 * i as usize);
+
+        match r#type {
+            0 => {  // mjGEOM_PLANE
+                crate::engine::engine_util_blas::mju_zero3(gradient);
+                *gradient.add(2) = 1.0;
+            }
+
+            2 => {  // mjGEOM_SPHERE
+                crate::engine::engine_util_blas::mju_copy3(gradient, x);
+                let c = crate::engine::engine_util_blas::mju_norm3(x);
+                *gradient.add(0) *= 1.0 / c;
+                *gradient.add(1) *= 1.0 / c;
+                *gradient.add(2) *= 1.0 / c;
+            }
+
+            6 => {  // mjGEOM_BOX
+                crate::engine::engine_util_blas::mju_zero3(gradient);
+                let mut a: [f64; 3] = [0.0; 3];
+                a[0] = (*x.add(0)).abs() - *size.add(0);
+                a[1] = (*x.add(1)).abs() - *size.add(1);
+                a[2] = (*x.add(2)).abs() - *size.add(2);
+                let k = if a[0] > a[1] { 0 } else { 1 };
+                let l = if a[2] > a[k] { 2 } else { k };
+                if a[l] < 0.0 {
+                    radial_field3d(gradient, a.as_ptr(), x, size);
+                } else {
+                    let mut b: [f64; 3] = [0.0; 3];
+                    b[0] = if a[0] > 0.0 { a[0] } else { 0.0 };
+                    b[1] = if a[1] > 0.0 { a[1] } else { 0.0 };
+                    b[2] = if a[2] > 0.0 { a[2] } else { 0.0 };
+                    let c = crate::engine::engine_util_blas::mju_norm3(b.as_ptr());
+                    *gradient.add(0) = if a[0] > 0.0 { b[0] / c * *x.add(0) / (*x.add(0)).abs() } else { 0.0 };
+                    *gradient.add(1) = if a[1] > 0.0 { b[1] / c * *x.add(1) / (*x.add(1)).abs() } else { 0.0 };
+                    *gradient.add(2) = if a[2] > 0.0 { b[2] / c * *x.add(2) / (*x.add(2)).abs() } else { 0.0 };
+                }
+            }
+
+            3 => {  // mjGEOM_CAPSULE
+                let mut a: [f64; 3] = [0.0; 3];
+                a[0] = *x.add(0);
+                a[1] = *x.add(1);
+                a[2] = *x.add(2) - crate::engine::engine_util_misc::mju_clip(*x.add(2), -*size.add(1), *size.add(1));
+                let c = crate::engine::engine_util_blas::mju_norm3(a.as_ptr());
+                *gradient.add(0) = a[0] / c;
+                *gradient.add(1) = a[1] / c;
+                *gradient.add(2) = a[2] / c;
+            }
+
+            4 => {  // mjGEOM_ELLIPSOID
+                let mut a: [f64; 3] = [0.0; 3];
+                let mut b: [f64; 3] = [0.0; 3];
+                a[0] = *x.add(0) / *size.add(0);
+                a[1] = *x.add(1) / *size.add(1);
+                a[2] = *x.add(2) / *size.add(2);
+                b[0] = a[0] / *size.add(0);
+                b[1] = a[1] / *size.add(1);
+                b[2] = a[2] / *size.add(2);
+                let k0 = crate::engine::engine_util_blas::mju_norm3(a.as_ptr());
+                let k1 = crate::engine::engine_util_blas::mju_norm3(b.as_ptr());
+                let inv_k0 = 1.0 / k0;
+                let inv_k1 = 1.0 / k1;
+                let gk0: [f64; 3] = [b[0] * inv_k0, b[1] * inv_k0, b[2] * inv_k0];
+                let gk1: [f64; 3] = [
+                    b[0] * inv_k1 / (*size.add(0) * *size.add(0)),
+                    b[1] * inv_k1 / (*size.add(1) * *size.add(1)),
+                    b[2] * inv_k1 / (*size.add(2) * *size.add(2)),
+                ];
+                let df_dk0 = (2.0 * k0 - 1.0) * inv_k1;
+                let df_dk1 = k0 * (k0 - 1.0) * inv_k1 * inv_k1;
+                *gradient.add(0) = gk0[0] * df_dk0 - gk1[0] * df_dk1;
+                *gradient.add(1) = gk0[1] * df_dk0 - gk1[1] * df_dk1;
+                *gradient.add(2) = gk0[2] * df_dk0 - gk1[2] * df_dk1;
+                crate::engine::engine_util_blas::mju_normalize3(gradient);
+            }
+
+            5 => {  // mjGEOM_CYLINDER
+                let c = ((*x.add(0)) * (*x.add(0)) + (*x.add(1)) * (*x.add(1))).sqrt();
+                let e = (*x.add(2)).abs();
+                let mut a: [f64; 2] = [c - *size.add(0), e - *size.add(1)];
+                let max_val = 1.0 / 1.7976931348623157e308_f64;  // 1/mjMAXVAL
+                let grada: [f64; 3] = [
+                    *x.add(0) / if c > max_val { c } else { max_val },
+                    *x.add(1) / if c > max_val { c } else { max_val },
+                    *x.add(2) / if e > max_val { e } else { max_val },
+                ];
+                let j = if a[0] > a[1] { 0 } else { 1 };
+                if a[j] < 0.0 {
+                    *gradient.add(0) = if j == 0 { grada[0] } else { 0.0 };
+                    *gradient.add(1) = if j == 0 { grada[1] } else { 0.0 };
+                    *gradient.add(2) = if j == 1 { grada[2] } else { 0.0 };
+                } else {
+                    let mut b: [f64; 2] = [0.0; 2];
+                    b[0] = if a[0] > 0.0 { a[0] } else { 0.0 };
+                    b[1] = if a[1] > 0.0 { a[1] } else { 0.0 };
+                    let bnorm_raw = (b[0] * b[0] + b[1] * b[1]).sqrt();
+                    let bnorm = if bnorm_raw > max_val { bnorm_raw } else { max_val };
+                    *gradient.add(0) = grada[0] * b[0] / bnorm;
+                    *gradient.add(1) = grada[1] * b[0] / bnorm;
+                    *gradient.add(2) = grada[2] * b[1] / bnorm;
+                }
+            }
+
+            8 => {  // mjGEOM_SDF
+                if !p.is_null() {
+                    // SAFETY: p->sdf_gradient is a valid function pointer
+                    let sdf_grad: unsafe extern "C" fn(*mut f64, *const f64, *const mjData, i32) =
+                        std::mem::transmute((*p).sdf_gradient);
+                    sdf_grad(gradient, x, d, i);
+                } else {
+                    oct_gradient(m, gradient, x, i);
+                }
+            }
+
+            7 => {  // mjGEOM_MESH
+                if *(*m).mesh_octadr.add(i as usize) == -1 {
+                    crate::engine::engine_util_errmem::mju_error(
+                        b"sdf queries require needsdf=\"true\" on mesh %d\0".as_ptr() as *const i8);
+                    return;
+                }
+                oct_gradient(m, gradient, x, i);
+            }
+
+            _ => {
+                crate::engine::engine_util_errmem::mju_error(
+                    b"sdf collisions not available for geom type %d\0".as_ptr() as *const i8);
+            }
+        }
+    }
 }
 
 /// C: mapPose (engine/engine_collision_sdf.c:519)
