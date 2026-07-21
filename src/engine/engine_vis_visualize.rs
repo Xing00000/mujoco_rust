@@ -661,14 +661,112 @@ pub fn add_light_geoms(m: *const mjModel, d: *mut mjData, vopt: *const mjvOption
 /// Calls: acquireGeom, f2f, mju_n2f, releaseGeom
 #[allow(unused_variables, non_snake_case)]
 pub fn add_center_of_mass_geoms(m: *const mjModel, d: *mut mjData, vopt: *const mjvOption, scn: *mut mjvScene) {
-    todo!() // addCenterOfMassGeoms
+    const MJ_VIS_COM: usize = 20;
+    const MJ_CAT_DECOR: i32 = 4;
+    const MJ_OBJ_UNKNOWN: i32 = 0;
+    const MJ_GEOM_SPHERE: i32 = 4;
+    static IDENTITY: [f64; 9] = [1.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 1.0];
+
+    // SAFETY: m, d, vopt, scn are valid pointers (caller contract).
+    unsafe {
+        if (*vopt).flags[MJ_VIS_COM] == 0 {
+            return;
+        }
+
+        let scl = (*m).stat.meansize as f32;
+
+        // vis.scale.com is index 4 in the scale float array
+        let scale_floats = (*m).vis.scale.as_ptr() as *const f32;
+        let com_scale = *scale_floats.add(4);
+
+        // vis.rgba.com is index 8 in the rgba float array (each entry is 4 floats)
+        let rgba_floats = (*m).vis.rgba._data.as_ptr() as *const f32;
+        let com_rgba = rgba_floats.add(8 * 4);
+
+        for i in 1..(*m).nbody as i32 {
+            if *(*m).body_rootid.add(i as usize) == i {
+                let mut thisgeom = acquire_geom(scn, i, MJ_CAT_DECOR, MJ_OBJ_UNKNOWN);
+                if thisgeom.is_null() {
+                    return;
+                }
+
+                (*thisgeom).r#type = MJ_GEOM_SPHERE;
+                let sz = scl * com_scale;
+                (*thisgeom).size[0] = sz;
+                (*thisgeom).size[1] = sz;
+                (*thisgeom).size[2] = sz;
+                crate::engine::engine_util_misc::mju_n2f(
+                    (*thisgeom).pos.as_mut_ptr(), (*d).subtree_com.add(3 * i as usize), 3,
+                );
+                crate::engine::engine_util_misc::mju_n2f(
+                    (*thisgeom).mat.as_mut_ptr(), IDENTITY.as_ptr(), 9,
+                );
+                f2f((*thisgeom).rgba.as_mut_ptr(), com_rgba, 4);
+                release_geom(&mut thisgeom, scn);
+            }
+        }
+    }
 }
 
 /// C: addAutoConnectGeoms (engine/engine_vis_visualize.c:2535)
 /// Calls: addConnector
 #[allow(unused_variables, non_snake_case)]
 pub fn add_auto_connect_geoms(m: *const mjModel, d: *mut mjData, vopt: *const mjvOption, scn: *mut mjvScene) {
-    todo!() // addAutoConnectGeoms
+    const MJ_VIS_AUTOCONNECT: usize = 19;
+    const MJ_GEOM_CAPSULE: i32 = 3;
+    const MJ_CAT_DECOR: i32 = 4;
+    const MJ_OBJ_UNKNOWN: i32 = 0;
+
+    // SAFETY: m, d, vopt, scn are valid pointers (caller contract).
+    unsafe {
+        if (*vopt).flags[MJ_VIS_AUTOCONNECT] == 0 {
+            return;
+        }
+
+        let scl = (*m).stat.meansize as f32;
+
+        // vis.scale.connect is index 3 in the scale float array
+        let scale_floats = (*m).vis.scale.as_ptr() as *const f32;
+        let connect_scale = *scale_floats.add(3);
+
+        // vis.rgba.connect is index 12 in the rgba float array (each entry is 4 floats)
+        let rgba_floats = (*m).vis.rgba._data.as_ptr() as *const f32;
+        let connect_rgba = rgba_floats.add(12 * 4);
+
+        for i in 1..(*m).nbody as i32 {
+            // do not connect to world
+            if *(*m).body_parentid.add(i as usize) == 0 {
+                continue;
+            }
+
+            // start at body com, connect joint centers in reverse order
+            let mut cur: *const f64 = (*d).xipos.add(3 * i as usize);
+            if *(*m).body_jntnum.add(i as usize) != 0 {
+                let jntadr = *(*m).body_jntadr.add(i as usize);
+                let jntnum = *(*m).body_jntnum.add(i as usize);
+                let mut j = jntadr + jntnum - 1;
+                while j >= jntadr {
+                    let nxt: *const f64 = (*d).xanchor.add(3 * j as usize);
+
+                    // construct geom
+                    add_connector(
+                        scn, MJ_GEOM_CAPSULE, (scl * connect_scale) as f64,
+                        cur, nxt, connect_rgba, i, MJ_CAT_DECOR, MJ_OBJ_UNKNOWN,
+                    );
+
+                    cur = nxt;
+                    j -= 1;
+                }
+            }
+
+            // connect first joint (or com) to parent com
+            let first: *const f64 = (*d).xipos.add(3 * *(*m).body_parentid.add(i as usize) as usize);
+            add_connector(
+                scn, MJ_GEOM_CAPSULE, (scl * connect_scale) as f64,
+                cur, first, connect_rgba, i, MJ_CAT_DECOR, MJ_OBJ_UNKNOWN,
+            );
+        }
+    }
 }
 
 /// C: addRangefinderGeoms (engine/engine_vis_visualize.c:2570)
