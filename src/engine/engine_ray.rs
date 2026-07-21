@@ -622,7 +622,97 @@ pub fn mju_ray_tree(m: *const mjModel, d: *const mjData, id: i32, pnt: *const f6
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_ray_sdf(m: *const mjModel, d: *const mjData, g: i32, pnt: *const f64, vec: *const f64, normal: *mut f64) -> f64 {
-    todo!() // mj_raySdf
+    // SAFETY: m, d, pnt, vec valid; normal may be null (caller contract)
+    unsafe {
+        if !normal.is_null() {
+            crate::engine::engine_util_blas::mju_zero3(normal);
+        }
+
+        let mut distance_total: f64 = 0.0;
+        let k_min_dist: f64 = 1e-7;
+
+        // exclude using bounding box
+        if ray_box((*d).geom_xpos.add(3 * g as usize), (*d).geom_xmat.add(9 * g as usize),
+                   (*m).geom_size.add(3 * g as usize), pnt, vec,
+                   std::ptr::null_mut(), std::ptr::null_mut()) < 0.0 {
+            return -1.0;
+        }
+
+        // get sdf plugin
+        let mut instance = *(*m).geom_plugin.add(g as usize);
+        let sdf_ptr: *const mjpPlugin = if instance != -1 {
+            crate::engine::engine_collision_sdf::mjc_get_sdf(m, g)
+        } else {
+            std::ptr::null()
+        };
+        if instance == -1 {
+            instance = *(*m).geom_dataid.add(g as usize);
+        }
+        let mut geomtype: u32 = 8;  // mjGEOM_SDF
+
+        // construct sdf struct on stack (48 bytes, zero-init)
+        let mut sdf_buf = [0u8; 48];
+        let sdf = &mut *(sdf_buf.as_mut_ptr() as *mut mjSDF);
+        sdf.id = &mut instance as *mut i32;
+        // type field: write 0 (mjSDFTYPE_SINGLE) as i32 at offset 0 of the [u8;8]
+        *(sdf.r#type.as_mut_ptr() as *mut i32) = 0;
+        sdf.plugin = &sdf_ptr as *const *const mjpPlugin as *const *mut mjpPlugin;
+        sdf.geomtype = &mut geomtype as *mut u32;
+
+        // reset counter
+        if !sdf_ptr.is_null() {
+            let reset_fn: unsafe extern "C" fn(*const mjModel, *mut f64, *mut (), i32) =
+                std::mem::transmute((*sdf_ptr).reset);
+            reset_fn(m, std::ptr::null_mut(),
+                     *(*d).plugin_data.add(instance as usize) as *mut (),
+                     instance);
+        }
+
+        // map to local frame
+        let mut lpnt: [f64; 3] = [0.0; 3];
+        let mut lvec: [f64; 3] = [0.0; 3];
+        ray_map((*d).geom_xpos.add(3 * g as usize), (*d).geom_xmat.add(9 * g as usize),
+                pnt, vec, lpnt.as_mut_ptr(), lvec.as_mut_ptr());
+
+        // unit direction
+        crate::engine::engine_util_blas::mju_normalize3(lvec.as_mut_ptr());
+
+        // ray marching
+        let mut p: [f64; 3] = [0.0; 3];
+        for _iter in 0..40 {
+            crate::engine::engine_util_blas::mju_add_scl3(
+                p.as_mut_ptr(), lpnt.as_ptr(), lvec.as_ptr(), distance_total);
+            let distance = crate::engine::engine_collision_sdf::mjc_distance(
+                m, d, sdf as *const mjSDF, p.as_ptr()).abs();
+            distance_total += distance;
+            if distance < k_min_dist {
+                if !normal.is_null() {
+                    crate::engine::engine_util_blas::mju_add_scl3(
+                        p.as_mut_ptr(), lpnt.as_ptr(), lvec.as_ptr(), distance_total);
+                    crate::engine::engine_collision_sdf::mjc_gradient(
+                        m, d, sdf as *const mjSDF, normal, p.as_ptr());
+                    crate::engine::engine_util_blas::mju_normalize3(normal);
+                    crate::engine::engine_util_blas::mju_mul_mat_vec3(
+                        normal, (*d).geom_xmat.add(9 * g as usize), normal as *const f64);
+                }
+                return distance_total;
+            }
+            if distance > 1e6 {
+                break;
+            }
+        }
+
+        // reset counter
+        if !sdf_ptr.is_null() {
+            let reset_fn: unsafe extern "C" fn(*const mjModel, *mut f64, *mut (), i32) =
+                std::mem::transmute((*sdf_ptr).reset);
+            reset_fn(m, std::ptr::null_mut(),
+                     *(*d).plugin_data.add(instance as usize) as *mut (),
+                     instance);
+        }
+
+        -1.0
+    }
 }
 
 /// C: point_in_box (engine/engine_ray.c:1283)
