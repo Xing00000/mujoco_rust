@@ -738,7 +738,34 @@ pub fn mj_read_ctrl(m: *const mjModel, d: *const mjData, id: i32, time: f64, int
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_read_sensor(m: *const mjModel, d: *const mjData, id: i32, time: f64, result: *mut f64, interp: i32) -> *const f64 {
-    todo!() // mj_readSensor
+    // SAFETY: m, d are valid; result may be null for non-history case (caller contract)
+    unsafe {
+        // validate sensor id
+        if id < 0 || id >= (*m).nsensor as i32 {
+            crate::engine::engine_util_errmem::mju_error(
+                b"invalid sensor id %d\0".as_ptr() as *const i8);
+            return std::ptr::null();
+        }
+
+        // no history: return current sensor value
+        let nsample = *(*m).sensor_history.add(2 * id as usize);
+        if nsample == 0 {
+            return (*d).sensordata.add(*(*m).sensor_adr.add(id as usize) as usize);
+        }
+
+        // resolve interpolation order
+        let mut interp = interp;
+        if interp < 0 {
+            interp = *(*m).sensor_history.add(2 * id as usize + 1);
+        }
+
+        // get buffer pointer and read from history buffer
+        let dim = *(*m).sensor_dim.add(id as usize);
+        let delay = *(*m).sensor_delay.add(id as usize);
+        let buf = (*d).history.add(*(*m).sensor_historyadr.add(id as usize) as usize);
+        crate::engine::engine_util_misc::mju_history_read(
+            buf, nsample, dim, result, time - delay, interp)
+    }
 }
 
 /// C: mj_initCtrlHistory (engine/engine_support.h:152)
