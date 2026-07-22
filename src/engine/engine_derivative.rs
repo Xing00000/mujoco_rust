@@ -1072,7 +1072,141 @@ pub fn mjd_magnus_force(B: *mut f64, lvel: *const f64, fluid_density: f64, size:
 /// Calls: addJTBJ, addJTBJSparse, addToQuadrant, mj_bodyChain, mj_freeStack, mj_isSparse, mj_jacGeom, mj_jacSparse, mj_markStack, mj_objectVelocity, mj_stackAllocInfo, mjd_addedMassForces, mjd_kutta_lift, mjd_magnus_force, mjd_viscous_drag, mjd_viscous_torque, mju_copy, mju_copy3, mju_geomSemiAxes, mju_mulMatTMat, mju_subFrom3, mju_symmetrize, mju_transformSpatial, mju_zero, readFluidGeomInteraction
 #[allow(unused_variables, non_snake_case)]
 pub fn mjd_ellipsoid_fluid(m: *const mjModel, d: *mut mjData, bodyid: i32) {
-    todo!() // mjd_ellipsoidFluid
+    const mjNFLUID: i32 = 12;
+    const mjOBJ_GEOM: i32 = 5;
+    const mjINT_IMPLICITFAST: i32 = 3;
+
+    // SAFETY: m, d are valid pointers (caller contract).
+    unsafe {
+        crate::engine::engine_memory::mj_mark_stack(d);
+
+        let nv = (*m).nv as i32;
+        let mut nnz: i32 = nv;
+        let mut rownnz: [i32; 6] = [0; 6];
+        let mut rowadr: [i32; 6] = [0; 6];
+        let J: *mut f64 = crate::engine::engine_memory::mj_stack_alloc_num(d, (6 * nv) as usize);
+        let tmp: *mut f64 = crate::engine::engine_memory::mj_stack_alloc_num(d, (3 * nv) as usize);
+        let colind: *mut i32 = crate::engine::engine_memory::mj_stack_alloc_int(d, (6 * nv) as usize);
+        let colind_compressed: *mut i32 = crate::engine::engine_memory::mj_stack_alloc_int(d, (6 * nv) as usize);
+
+        let mut lvel: [f64; 6] = [0.0; 6];
+        let mut wind: [f64; 6] = [0.0; 6];
+        let mut lwind: [f64; 6] = [0.0; 6];
+        let mut geom_interaction_coef: f64 = 0.0;
+        let mut magnus_lift_coef: f64 = 0.0;
+        let mut kutta_lift_coef: f64 = 0.0;
+        let mut semiaxes: [f64; 3] = [0.0; 3];
+        let mut virtual_mass: [f64; 3] = [0.0; 3];
+        let mut virtual_inertia: [f64; 3] = [0.0; 3];
+        let mut blunt_drag_coef: f64 = 0.0;
+        let mut slender_drag_coef: f64 = 0.0;
+        let mut ang_drag_coef: f64 = 0.0;
+
+        if crate::engine::engine_core_util::mj_is_sparse(m) != 0 {
+            // get sparse body Jacobian structure
+            nnz = crate::engine::engine_core_util::mj_body_chain(m, bodyid, colind);
+
+            // prepare rownnz, rowadr, colind for all 6 rows
+            for i in 0..6i32 {
+                rownnz[i as usize] = nnz;
+                rowadr[i as usize] = if i == 0 { 0 } else { rowadr[(i - 1) as usize] + nnz };
+                for k in 0..nnz {
+                    *colind_compressed.add((i * nnz + k) as usize) = *colind.add(k as usize);
+                }
+            }
+        }
+
+        for j in 0..*(*m).body_geomnum.add(bodyid as usize) {
+            let geomid = *(*m).body_geomadr.add(bodyid as usize) + j;
+
+            crate::engine::engine_util_misc::mju_geom_semi_axes(
+                semiaxes.as_mut_ptr(),
+                (*m).geom_size.add((3 * geomid) as usize),
+                *(*m).geom_type.add(geomid as usize) as u32);
+
+            crate::engine::engine_passive::read_fluid_geom_interaction(
+                (*m).geom_fluid.add((mjNFLUID * geomid) as usize),
+                &mut geom_interaction_coef,
+                &mut blunt_drag_coef, &mut slender_drag_coef, &mut ang_drag_coef,
+                &mut kutta_lift_coef, &mut magnus_lift_coef,
+                virtual_mass.as_mut_ptr(), virtual_inertia.as_mut_ptr());
+
+            // scales all forces
+            if geom_interaction_coef == 0.0 {
+                continue;
+            }
+
+            // map from CoM-centered to local body-centered 6D velocity
+            crate::engine::engine_core_util::mj_object_velocity(
+                m, d as *const crate::types::mjData, mjOBJ_GEOM, geomid, lvel.as_mut_ptr(), 1);
+
+            // compute wind in local coordinates
+            crate::engine::engine_util_blas::mju_zero(wind.as_mut_ptr(), 6);
+            crate::engine::engine_util_blas::mju_copy3(wind.as_mut_ptr().add(3), (*m).opt.wind.as_ptr());
+            crate::engine::engine_util_spatial::mju_transform_spatial(
+                lwind.as_mut_ptr(), wind.as_ptr(), 0,
+                (*d).geom_xpos.add((3 * geomid) as usize),
+                (*d).subtree_com.add((3 * *(*m).body_rootid.add(bodyid as usize)) as usize),
+                (*d).geom_xmat.add((9 * geomid) as usize));
+
+            // subtract translational component from geom velocity
+            crate::engine::engine_util_blas::mju_sub_from3(lvel.as_mut_ptr().add(3), lwind.as_ptr().add(3));
+
+            // get geom global Jacobian: rotation then translation
+            if crate::engine::engine_core_util::mj_is_sparse(m) != 0 {
+                crate::engine::engine_core_util::mj_jac_sparse(
+                    m, d as *const crate::types::mjData,
+                    J.add((3 * nnz) as usize), J,
+                    (*d).geom_xpos.add((3 * geomid) as usize),
+                    *(*m).geom_bodyid.add(geomid as usize), nnz, colind as *const i32, 0);
+            } else {
+                crate::engine::engine_core_util::mj_jac_geom(
+                    m, d as *const crate::types::mjData,
+                    J.add((3 * nv) as usize), J, geomid);
+            }
+
+            // rotate (compressed) Jacobian to local frame
+            crate::engine::engine_util_blas::mju_mul_mat_t_mat(
+                tmp, (*d).geom_xmat.add((9 * geomid) as usize), J, 3, 3, nnz);
+            crate::engine::engine_util_blas::mju_copy(J, tmp as *const f64, 3 * nnz);
+            crate::engine::engine_util_blas::mju_mul_mat_t_mat(
+                tmp, (*d).geom_xmat.add((9 * geomid) as usize), J.add((3 * nnz) as usize), 3, 3, nnz);
+            crate::engine::engine_util_blas::mju_copy(J.add((3 * nnz) as usize), tmp as *const f64, 3 * nnz);
+
+            let mut B: [f64; 36] = [0.0; 36];
+            let mut D: [f64; 9] = [0.0; 9];
+            crate::engine::engine_util_blas::mju_zero(B.as_mut_ptr(), 36);
+            mjd_magnus_force(B.as_mut_ptr(), lvel.as_ptr(), (*m).opt.density, semiaxes.as_ptr(), magnus_lift_coef);
+
+            mjd_kutta_lift(D.as_mut_ptr(), lvel.as_ptr(), (*m).opt.density, semiaxes.as_ptr(), kutta_lift_coef);
+            add_to_quadrant(B.as_mut_ptr(), D.as_ptr(), 1, 1);
+
+            mjd_viscous_drag(D.as_mut_ptr(), lvel.as_ptr(), (*m).opt.density, (*m).opt.viscosity,
+                            semiaxes.as_ptr(), blunt_drag_coef, slender_drag_coef);
+            add_to_quadrant(B.as_mut_ptr(), D.as_ptr(), 1, 1);
+
+            mjd_viscous_torque(D.as_mut_ptr(), lvel.as_ptr(), (*m).opt.density, (*m).opt.viscosity,
+                              semiaxes.as_ptr(), slender_drag_coef, ang_drag_coef);
+            add_to_quadrant(B.as_mut_ptr(), D.as_ptr(), 0, 0);
+
+            mjd_added_mass_forces(B.as_mut_ptr(), lvel.as_ptr(), (*m).opt.density,
+                                 virtual_mass.as_ptr(), virtual_inertia.as_ptr());
+
+            // make B symmetric if integrator is IMPLICITFAST
+            if (*m).opt.integrator == mjINT_IMPLICITFAST {
+                crate::engine::engine_util_blas::mju_symmetrize(B.as_mut_ptr(), B.as_ptr(), 6);
+            }
+
+            if crate::engine::engine_core_util::mj_is_sparse(m) != 0 {
+                add_jtbj_sparse(m, d, J as *const f64, B.as_ptr(), 6, 0,
+                    rownnz.as_ptr(), rowadr.as_ptr(), colind_compressed as *const i32);
+            } else {
+                add_jtbj(m, d, J as *const f64, B.as_ptr(), 6);
+            }
+        }
+
+        crate::engine::engine_memory::mj_free_stack(d);
+    }
 }
 
 /// C: mjd_inertiaBoxFluid (engine/engine_derivative.c:1724)
