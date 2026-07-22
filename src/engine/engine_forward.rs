@@ -1293,7 +1293,517 @@ pub fn mj_fwd_velocity(m: *const mjModel, d: *mut mjData) {
 /// Calls: clampVec, dcmotorVoltage, mj_actuatorDisabled, mj_dcmotorSlots, mj_freeStack, mj_lugreStribeck, mj_markStack, mj_nextActivation, mj_readCtrl, mj_sleepState, mj_stackAllocInfo, mj_warning, mjp_getPluginAtSlotUnsafe, mjp_pluginCount, mju_addTo, mju_clip, mju_isBad, mju_max, mju_message, mju_min, mju_mulMatTVecSparse, mju_muscleBias, mju_muscleDynamics, mju_muscleGain, mju_norm3, mju_zero
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_fwd_actuation(m: *const mjModel, d: *mut mjData) {
-    todo!() // mj_fwdActuation
+    const MJNDYN: i32 = 10;
+    const MJNGAIN: i32 = 10;
+    const MJNBIAS: i32 = 10;
+    const MJMINVAL: f64 = 1e-15;
+    const MJDSBL_ACTUATION: i32 = 1 << 11;
+    const MJDSBL_CLAMPCTRL: i32 = 1 << 8;
+    const MJDSBL_GRAVITY: i32 = 1 << 7;
+    const MJENBL_SLEEP: i32 = 1 << 4;
+    const MJOBJ_ACTUATOR: i32 = 19;
+    const MJS_ASLEEP: i32 = 0;
+    const MJDYN_INTEGRATOR: i32 = 0;
+    const MJDYN_FILTER: i32 = 1;
+    const MJDYN_FILTEREXACT: i32 = 2;
+    const MJDYN_MUSCLE: i32 = 3;
+    const MJDYN_DCMOTOR: i32 = 4;
+    const MJGAIN_FIXED: i32 = 0;
+    const MJGAIN_AFFINE: i32 = 1;
+    const MJGAIN_MUSCLE: i32 = 2;
+    const MJGAIN_DCMOTOR: i32 = 3;
+    const MJBIAS_NONE: i32 = 0;
+    const MJBIAS_AFFINE: i32 = 1;
+    const MJBIAS_MUSCLE: i32 = 2;
+    const MJBIAS_DCMOTOR: i32 = 3;
+    const MJTRN_TENDON: i32 = 3;
+    const MJWARN_BADCTRL: i32 = 6;
+    const MJPLUGIN_ACTUATOR: i32 = 1;
+
+    // SAFETY: m, d are valid pointers (caller contract).
+    unsafe {
+        let nv = (*m).nv as i32;
+        let nu = (*m).nu as i32;
+        let ntendon = (*m).ntendon as i32;
+        let force = (*d).actuator_force;
+
+        // clear actuator_force
+        crate::engine::engine_util_blas::mju_zero(force, nu);
+
+        let sleep_filter = ((*m).opt.enableflags & MJENBL_SLEEP) != 0;
+
+        // disabled or no actuation: return
+        if nu == 0 || ((*m).opt.disableflags & MJDSBL_ACTUATION) != 0 {
+            crate::engine::engine_util_blas::mju_zero((*d).qfrc_actuator, nv);
+            return;
+        }
+
+        // any tendon transmission targets with force limits
+        let mut tendon_frclimited: i32 = 0;
+
+        // local copy of ctrl
+        crate::engine::engine_memory::mj_mark_stack(d);
+        let ctrl = crate::engine::engine_memory::mj_stack_alloc_num(d, nu as usize);
+
+        // read from ctrl or history buffer for delayed actuators
+        for i in 0..nu {
+            let interp = *(*m).actuator_history.add(2 * i as usize + 1);
+            if *(*m).actuator_delay.add(i as usize) != 0.0 {
+                *ctrl.add(i as usize) = crate::engine::engine_support::mj_read_ctrl(
+                    m, d as *const mjData, i, (*d).time, interp,
+                );
+            } else {
+                *ctrl.add(i as usize) = *(*d).ctrl.add(i as usize);
+            }
+        }
+
+        // clamp local copy
+        if ((*m).opt.disableflags & MJDSBL_CLAMPCTRL) == 0 {
+            clamp_vec(
+                ctrl, (*m).actuator_ctrlrange, (*m).actuator_ctrllimited,
+                nu, std::ptr::null(),
+            );
+        }
+
+        // check controls, set all to 0 if any are bad
+        for i in 0..nu {
+            if crate::engine::engine_util_misc::mju_is_bad(*ctrl.add(i as usize)) != 0 {
+                crate::engine::engine_core_util::mj_warning(d, MJWARN_BADCTRL, i);
+                crate::engine::engine_util_blas::mju_zero(ctrl, nu);
+                break;
+            }
+        }
+
+        // act_dot for stateful actuators
+        for i in 0..nu {
+            if sleep_filter
+                && crate::engine::engine_sleep::mj_sleep_state(
+                    m, d as *const mjData, MJOBJ_ACTUATOR as u32, i,
+                ) == MJS_ASLEEP
+            {
+                continue;
+            }
+
+            let act_first = *(*m).actuator_actadr.add(i as usize);
+            if act_first < 0 {
+                continue;
+            }
+
+            let actnum = *(*m).actuator_actnum.add(i as usize);
+            if actnum != 0 {
+                crate::engine::engine_util_blas::mju_zero(
+                    (*d).act_dot.add(act_first as usize), actnum,
+                );
+            }
+
+            let dynprm = (*m).actuator_dynprm.add((i * MJNDYN) as usize);
+            let dyntype = *(*m).actuator_dyntype.add(i as usize);
+            let act_last = act_first + actnum - 1;
+
+            if dyntype == MJDYN_INTEGRATOR {
+                *(*d).act_dot.add(act_last as usize) = *ctrl.add(i as usize);
+            } else if dyntype == MJDYN_FILTER || dyntype == MJDYN_FILTEREXACT {
+                let tau = crate::engine::engine_util_misc::mju_max(MJMINVAL, *dynprm.add(0));
+                *(*d).act_dot.add(act_last as usize) =
+                    (*ctrl.add(i as usize) - *(*d).act.add(act_last as usize)) / tau;
+            } else if dyntype == MJDYN_MUSCLE {
+                *(*d).act_dot.add(act_last as usize) =
+                    crate::engine::engine_util_misc::mju_muscle_dynamics(
+                        *ctrl.add(i as usize), *(*d).act.add(act_last as usize), dynprm,
+                    );
+            } else if dyntype == MJDYN_DCMOTOR {
+                let gainprm = (*m).actuator_gainprm.add((MJNGAIN * i) as usize);
+                let slots = crate::engine::engine_util_misc::mj_dcmotor_slots(dynprm, gainprm);
+
+                let mut adr = act_first;
+                let velocity = *(*d).actuator_velocity.add(i as usize);
+                let R = *gainprm.add(0);
+                let K = *gainprm.add(1);
+                let ki = *gainprm.add(5);
+                let te = *dynprm.add(0);
+
+                // slew rate limiting
+                let slew_s = *dynprm.add(7);
+                if slew_s > 0.0 {
+                    let u_prev = *(*d).act.add(adr as usize);
+                    let slew = slew_s * (*m).opt.timestep;
+                    let u_eff = crate::engine::engine_util_misc::mju_clip(
+                        *ctrl.add(i as usize), u_prev - slew, u_prev + slew,
+                    );
+                    *(*d).act_dot.add(adr as usize) = (u_eff - u_prev) / (*m).opt.timestep;
+                    *ctrl.add(i as usize) = u_eff;
+                    adr += 1;
+                }
+
+                // integral state
+                let mut x_I: f64 = 0.0;
+                if ki > 0.0 {
+                    x_I = *(*d).act.add(adr as usize);
+                    let input_mode = *gainprm.add(8) as i32;
+                    let Imax = *dynprm.add(8);
+                    let mut act_dot_val = *ctrl.add(i as usize);
+
+                    // position mode
+                    if input_mode == 1 {
+                        act_dot_val = *ctrl.add(i as usize) - *(*d).actuator_length.add(i as usize);
+                    }
+
+                    // clamp act_dot based on integral state
+                    if Imax > 0.0 {
+                        if x_I >= Imax {
+                            act_dot_val = crate::engine::engine_util_misc::mju_min(act_dot_val, 0.0);
+                        } else if x_I <= -Imax {
+                            act_dot_val = crate::engine::engine_util_misc::mju_max(act_dot_val, 0.0);
+                        }
+                    }
+                    *(*d).act_dot.add(adr as usize) = act_dot_val;
+                    adr += 1;
+                }
+
+                // compute physical voltage
+                let V = dcmotor_voltage(
+                    *ctrl.add(i as usize), *(*d).actuator_length.add(i as usize),
+                    velocity, x_I, gainprm,
+                );
+
+                // temperature
+                let RT = *dynprm.add(2);
+                if RT > 0.0 {
+                    let C = *dynprm.add(3);
+                    let Ta = *dynprm.add(4);
+                    let alpha = *gainprm.add(2);
+                    let T0 = *gainprm.add(3);
+                    let T = *(*d).act.add(adr as usize);
+                    let R_adj = R * (1.0 + alpha * (T + Ta - T0));
+
+                    let current = if te > 0.0 {
+                        *(*d).act.add(act_last as usize)
+                    } else {
+                        (V - K * velocity) / R_adj
+                    };
+                    *(*d).act_dot.add(adr as usize) =
+                        (R_adj * current * current - T / RT) / C;
+                    adr += 1;
+                }
+
+                // LuGre bristle state
+                let sigma0 = *dynprm.add(5);
+                if sigma0 > 0.0 {
+                    let biasprm = (*m).actuator_biasprm.add((MJNBIAS * i) as usize);
+                    let F_C = *biasprm.add(3);
+                    let F_S = *biasprm.add(4);
+                    let v_S = *biasprm.add(5);
+                    let z = *(*d).act.add(adr as usize);
+                    let g = crate::engine::engine_util_misc::mj_lugre_stribeck(
+                        velocity, F_C, F_S, v_S,
+                    );
+                    let a = -sigma0 * velocity.abs()
+                        / crate::engine::engine_util_misc::mju_max(MJMINVAL, g);
+                    *(*d).act_dot.add(adr as usize) = a * z + velocity;
+                    adr += 1;
+                }
+
+                // current state
+                if te > 0.0 {
+                    let dimax = *dynprm.add(1);
+                    let mut i_dot = (V / R - K / R * velocity
+                        - *(*d).act.add(act_last as usize))
+                        / te;
+                    if dimax > 0.0 {
+                        i_dot = crate::engine::engine_util_misc::mju_clip(i_dot, -dimax, dimax);
+                    }
+                    *(*d).act_dot.add(act_last as usize) = i_dot;
+                }
+            }
+            // user dynamics: skip (requires callback mjcb_act_dyn which is an opaque fn pointer)
+        }
+
+        // get act_dot from actuator plugins
+        if (*m).nplugin > 0 {
+            let nslot = crate::engine::engine_plugin::mjp_plugin_count();
+            for i in 0..(*m).nplugin as i32 {
+                let slot = *(*m).plugin.add(i as usize);
+                let plugin = crate::engine::engine_plugin::mjp_get_plugin_at_slot_unsafe(slot, nslot);
+                if !plugin.is_null() && ((*plugin).capabilityflags & MJPLUGIN_ACTUATOR) != 0 {
+                    if let Some(act_dot_fn) = (*plugin).actuator_act_dot {
+                        let f: unsafe extern "C" fn(*const mjModel, *mut mjData, i32) =
+                            std::mem::transmute(act_dot_fn);
+                        f(m, d, i);
+                    }
+                }
+            }
+        }
+
+        // force = gain .* [ctrl/act] + bias
+        let mut gain: f64;
+        let mut bias: f64;
+        for i in 0..nu {
+            // skip if sleeping
+            if sleep_filter
+                && crate::engine::engine_sleep::mj_sleep_state(
+                    m, d as *const mjData, MJOBJ_ACTUATOR as u32, i,
+                ) == MJS_ASLEEP
+            {
+                continue;
+            }
+
+            // skip if disabled
+            if crate::engine::engine_support::mj_actuator_disabled(m, i) != 0 {
+                continue;
+            }
+
+            // skip actuator plugins
+            if *(*m).actuator_plugin.add(i as usize) >= 0 {
+                continue;
+            }
+
+            // check for tendon transmission with force limits
+            if ntendon != 0 && tendon_frclimited == 0
+                && *(*m).actuator_trntype.add(i as usize) == MJTRN_TENDON
+            {
+                tendon_frclimited =
+                    *(*m).tendon_actfrclimited.add(*(*m).actuator_trnid.add(2 * i as usize) as usize) as i32;
+            }
+
+            // extract info
+            let dynprm = (*m).actuator_dynprm.add((MJNDYN * i) as usize);
+            let gainprm = (*m).actuator_gainprm.add((MJNGAIN * i) as usize);
+            let gaintype = *(*m).actuator_gaintype.add(i as usize);
+            let actnum = *(*m).actuator_actnum.add(i as usize);
+
+            // handle according to gain type
+            if gaintype == MJGAIN_FIXED {
+                gain = *gainprm.add(0);
+            } else if gaintype == MJGAIN_AFFINE {
+                gain = *gainprm.add(0)
+                    + *gainprm.add(1) * *(*d).actuator_length.add(i as usize)
+                    + *gainprm.add(2) * *(*d).actuator_velocity.add(i as usize);
+            } else if gaintype == MJGAIN_MUSCLE {
+                gain = crate::engine::engine_util_misc::mju_muscle_gain(
+                    *(*d).actuator_length.add(i as usize),
+                    *(*d).actuator_velocity.add(i as usize),
+                    (*m).actuator_lengthrange.add(2 * i as usize),
+                    *(*m).actuator_acc0.add(i as usize),
+                    gainprm,
+                );
+            } else if gaintype == MJGAIN_DCMOTOR {
+                let mut R_val = *gainprm.add(0);
+                let K_val = *gainprm.add(1);
+                let slots = crate::engine::engine_util_misc::mj_dcmotor_slots(dynprm, gainprm);
+
+                let adr = *(*m).actuator_actadr.add(i as usize);
+
+                // adjust R for temperature if enabled
+                if slots.temperature >= 0 {
+                    let T = *(*d).act.add((adr + slots.temperature) as usize);
+                    let alpha = *gainprm.add(2);
+                    let T0 = *gainprm.add(3);
+                    let Ta = *dynprm.add(4);
+                    R_val *= 1.0 + alpha * (T + Ta - T0);
+                }
+
+                gain = if *dynprm.add(0) > 0.0 {
+                    K_val
+                } else {
+                    K_val / crate::engine::engine_util_misc::mju_max(MJMINVAL, R_val)
+                };
+
+                // controller: compute voltage, override ctrl[i]
+                if (*gainprm.add(8) as i32) > 0 {
+                    let x_I = if slots.integral >= 0 {
+                        *(*d).act.add((adr + slots.integral) as usize)
+                    } else {
+                        0.0
+                    };
+                    *ctrl.add(i as usize) = dcmotor_voltage(
+                        *ctrl.add(i as usize), *(*d).actuator_length.add(i as usize),
+                        *(*d).actuator_velocity.add(i as usize), x_I, gainprm,
+                    );
+                }
+            } else {
+                // user gain: default to 1
+                gain = 1.0;
+            }
+
+            // set force = gain .* [ctrl/act]
+            let dcmotor_no_current =
+                gaintype == MJGAIN_DCMOTOR && *dynprm.add(0) <= 0.0;
+            if actnum == 0 || dcmotor_no_current {
+                *force.add(i as usize) = gain * *ctrl.add(i as usize);
+            } else {
+                let act_adr = *(*m).actuator_actadr.add(i as usize) + actnum - 1;
+                let act_val: f64;
+                if *(*m).actuator_actearly.add(i as usize) {
+                    act_val = crate::engine::engine_support::mj_next_activation(
+                        m, d as *const mjData, i, act_adr, *(*d).act_dot.add(act_adr as usize),
+                    );
+                } else {
+                    act_val = *(*d).act.add(act_adr as usize);
+                }
+                *force.add(i as usize) = gain * act_val;
+            }
+
+            // extract bias info
+            let biasprm = (*m).actuator_biasprm.add((MJNBIAS * i) as usize);
+            let biastype = *(*m).actuator_biastype.add(i as usize);
+
+            if biastype == MJBIAS_NONE {
+                bias = 0.0;
+            } else if biastype == MJBIAS_AFFINE {
+                bias = *biasprm.add(0)
+                    + *biasprm.add(1) * *(*d).actuator_length.add(i as usize)
+                    + *biasprm.add(2) * *(*d).actuator_velocity.add(i as usize);
+            } else if biastype == MJBIAS_MUSCLE {
+                bias = crate::engine::engine_util_misc::mju_muscle_bias(
+                    *(*d).actuator_length.add(i as usize),
+                    (*m).actuator_lengthrange.add(2 * i as usize),
+                    *(*m).actuator_acc0.add(i as usize),
+                    biasprm,
+                );
+            } else if biastype == MJBIAS_DCMOTOR {
+                bias = 0.0;
+                let te = *(*m).actuator_dynprm.add((MJNDYN * i) as usize);
+                if te <= 0.0 {
+                    let K_val = *gainprm.add(1);
+                    bias -= gain * K_val * *(*d).actuator_velocity.add(i as usize);
+                }
+            } else {
+                bias = 0.0;
+            }
+
+            // add bias
+            *force.add(i as usize) += bias;
+        }
+
+        // handle actuator plugins (compute)
+        if (*m).nplugin > 0 {
+            let nslot = crate::engine::engine_plugin::mjp_plugin_count();
+            for i in 0..(*m).nplugin as i32 {
+                let slot = *(*m).plugin.add(i as usize);
+                let plugin = crate::engine::engine_plugin::mjp_get_plugin_at_slot_unsafe(slot, nslot);
+                if !plugin.is_null() && ((*plugin).capabilityflags & MJPLUGIN_ACTUATOR) != 0 {
+                    if let Some(compute_fn) = (*plugin).compute {
+                        let f: unsafe extern "C" fn(*const mjModel, *mut mjData, i32, i32) =
+                            std::mem::transmute(compute_fn);
+                        f(m, d, i, MJPLUGIN_ACTUATOR);
+                    }
+                }
+            }
+        }
+
+        // clamp tendon total actuator force
+        if tendon_frclimited != 0 {
+            let tendon_total_force =
+                crate::engine::engine_memory::mj_stack_alloc_num(d, ntendon as usize);
+            crate::engine::engine_util_blas::mju_zero(tendon_total_force, ntendon);
+            for i in 0..nu {
+                if *(*m).actuator_trntype.add(i as usize) == MJTRN_TENDON {
+                    let tendon_id = *(*m).actuator_trnid.add(2 * i as usize);
+                    if *(*m).tendon_actfrclimited.add(tendon_id as usize) {
+                        *tendon_total_force.add(tendon_id as usize) += *force.add(i as usize);
+                    }
+                }
+            }
+
+            // scale tendon actuator forces if limited and outside range
+            for i in 0..nu {
+                if *(*m).actuator_trntype.add(i as usize) != MJTRN_TENDON {
+                    continue;
+                }
+                let tendon_id = *(*m).actuator_trnid.add(2 * i as usize);
+                let tendon_force = *tendon_total_force.add(tendon_id as usize);
+                if *(*m).tendon_actfrclimited.add(tendon_id as usize) && tendon_force != 0.0 {
+                    let range = (*m).tendon_actfrcrange.add(2 * tendon_id as usize);
+                    if tendon_force < *range.add(0) {
+                        *force.add(i as usize) *= *range.add(0) / tendon_force;
+                    } else if tendon_force > *range.add(1) {
+                        *force.add(i as usize) *= *range.add(1) / tendon_force;
+                    }
+                }
+            }
+        }
+
+        // clamp actuator_force
+        clamp_vec(force, (*m).actuator_forcerange, (*m).actuator_forcelimited, nu, std::ptr::null());
+
+        // add DC motor mechanical forces
+        for i in 0..nu {
+            if *(*m).actuator_biastype.add(i as usize) != MJBIAS_DCMOTOR {
+                continue;
+            }
+            if sleep_filter
+                && crate::engine::engine_sleep::mj_sleep_state(
+                    m, d as *const mjData, MJOBJ_ACTUATOR as u32, i,
+                ) == MJS_ASLEEP
+            {
+                continue;
+            }
+            if crate::engine::engine_support::mj_actuator_disabled(m, i) != 0
+                || *(*m).actuator_plugin.add(i as usize) >= 0
+            {
+                continue;
+            }
+
+            let biasprm = (*m).actuator_biasprm.add((MJNBIAS * i) as usize);
+            let dynprm = (*m).actuator_dynprm.add((MJNDYN * i) as usize);
+
+            // cogging torque
+            let A = *biasprm.add(0);
+            if A != 0.0 {
+                let Np = *biasprm.add(1);
+                let phi = *biasprm.add(2);
+                *force.add(i as usize) +=
+                    A * (Np * *(*d).actuator_length.add(i as usize) + phi).sin();
+            }
+
+            // LuGre friction
+            let sigma0 = *dynprm.add(5);
+            if sigma0 > 0.0 {
+                let sigma1 = *dynprm.add(6);
+                let gainprm = (*m).actuator_gainprm.add((MJNGAIN * i) as usize);
+                let slots = crate::engine::engine_util_misc::mj_dcmotor_slots(dynprm, gainprm);
+                let adr = *(*m).actuator_actadr.add(i as usize) + slots.bristle;
+                let z = *(*d).act.add(adr as usize);
+                let z_dot = *(*d).act_dot.add(adr as usize);
+                *force.add(i as usize) -= sigma0 * z + sigma1 * z_dot;
+            }
+        }
+
+        // qfrc_actuator = moment' * force
+        crate::engine::engine_util_sparse::mju_mul_mat_t_vec_sparse(
+            (*d).qfrc_actuator, (*d).actuator_moment, force, nu, nv,
+            (*d).moment_rownnz, (*d).moment_rowadr, (*d).moment_colind,
+        );
+
+        // actuator-level gravity compensation
+        if (*m).ngravcomp > 0
+            && ((*m).opt.disableflags & MJDSBL_GRAVITY) == 0
+            && crate::engine::engine_util_blas::mju_norm3((*m).opt.gravity.as_ptr()) > MJMINVAL
+        {
+            let jnt_dofnum: [i32; 4] = [6, 3, 1, 1];
+            let njnt = (*m).njnt as i32;
+            for i in 0..njnt {
+                if !*(*m).jnt_actgravcomp.add(i as usize) {
+                    continue;
+                }
+                let dofnum = jnt_dofnum[*(*m).jnt_type.add(i as usize) as usize];
+                let dofadr = *(*m).jnt_dofadr.add(i as usize);
+                crate::engine::engine_util_blas::mju_add_to(
+                    (*d).qfrc_actuator.add(dofadr as usize),
+                    (*d).qfrc_gravcomp.add(dofadr as usize),
+                    dofnum,
+                );
+            }
+        }
+
+        // clamp qfrc_actuator to joint-level actuator force limits
+        clamp_vec(
+            (*d).qfrc_actuator, (*m).jnt_actfrcrange,
+            (*m).jnt_actfrclimited, (*m).njnt as i32, (*m).jnt_dofadr,
+        );
+
+        crate::engine::engine_memory::mj_free_stack(d);
+    }
 }
 
 /// C: mj_fwdAcceleration (engine/engine_forward.h:90)
