@@ -8,7 +8,130 @@ use crate::types::*;
 /// Calls: mj_actuatorDamping, mj_freeStack, mj_markStack, mj_mulM, mj_solveM, mj_stackAllocInfo, mjd_smooth_vel, mjd_xPolyForce, mju_addScl, mju_addToScl, mju_copy, mju_gather, mju_gatherMasked, mju_isZero, mju_message, mju_mulMatVecSparse, mju_mulSymVecSparse
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_discrete_acc(m: *const mjModel, d: *mut mjData) {
-    todo!() // mj_discreteAcc
+    const MJ_INT_EULER: i32 = 0;
+    const MJ_INT_RK4: i32 = 1;
+    const MJ_INT_IMPLICIT: i32 = 2;
+    const MJ_INT_IMPLICITFAST: i32 = 3;
+    const MJ_DSBL_EULERDAMP: i32 = 1 << 15;
+    const MJ_NPOLY: i32 = 2;
+    const MJ_OBJ_JOINT: u32 = 3;
+
+    // SAFETY: m, d are valid pointers (caller contract)
+    unsafe {
+        let nv = (*m).nv as i32;
+        let nC = (*m).nC as i32;
+        let nD = (*m).nD as i32;
+        let qacc = (*d).qacc;
+
+        crate::engine::engine_memory::mj_mark_stack(d);
+        let qfrc = crate::engine::engine_memory::mj_stack_alloc_num(d, nv as usize);
+
+        // use selected integrator
+        match (*m).opt.integrator {
+            MJ_INT_RK4 => {
+                // not supported by RK4
+                crate::engine::engine_util_errmem::mju_error(
+                    b"discrete inverse dynamics is not supported by RK4 integrator\0".as_ptr() as *const i8,
+                );
+                crate::engine::engine_memory::mj_free_stack(d);
+                return;
+            }
+
+            MJ_INT_EULER => {
+                // check for dof damping if disable flag is not set
+                let mut dof_damping = 0;
+                if ((*m).opt.disableflags & MJ_DSBL_EULERDAMP) == 0 {
+                    for i in 0..nv {
+                        if *(*m).dof_damping.add(i as usize) > 0.0
+                            || crate::engine::engine_util_misc::mju_is_zero(
+                                (*m).dof_dampingpoly.add((MJ_NPOLY * i) as usize), MJ_NPOLY) == 0
+                            || *(*m).jnt_actuatorid.add(*(*m).dof_jntid.add(i as usize) as usize) != -1
+                        {
+                            dof_damping = 1;
+                            break;
+                        }
+                    }
+                }
+
+                // if disabled or no dof damping, nothing to do
+                if dof_damping == 0 {
+                    crate::engine::engine_memory::mj_free_stack(d);
+                    return;
+                }
+
+                // set qfrc = (M + h*diag(B)) * qacc
+                crate::engine::engine_support::mj_mul_m(m, d as *const crate::types::mjData, qfrc, qacc);
+                for i in 0..nv {
+                    let v = *(*d).qvel.add(i as usize);
+                    let mut poly: [f64; 2] = [0.0; 2];
+                    crate::engine::engine_util_blas::mju_copy(
+                        poly.as_mut_ptr(), (*m).dof_dampingpoly.add((MJ_NPOLY * i) as usize), MJ_NPOLY,
+                    );
+                    let damping = *(*m).dof_damping.add(i as usize)
+                        + crate::engine::engine_core_util::mj_actuator_damping(
+                            m, MJ_OBJ_JOINT, *(*m).dof_jntid.add(i as usize), poly.as_mut_ptr(),
+                        );
+                    let damp_deriv = crate::engine::engine_util_misc::mjd_x_poly_force(
+                        damping, poly.as_ptr(), v, MJ_NPOLY, 1,
+                    );
+                    *qfrc.add(i as usize) += (*m).opt.timestep * damp_deriv * *qacc.add(i as usize);
+                }
+            }
+
+            MJ_INT_IMPLICIT => {
+                // compute qDeriv
+                crate::engine::engine_derivative::mjd_smooth_vel(m, d, 1);
+
+                // gather qLU <- qM (lower to full)
+                crate::engine::engine_util_misc::mju_gather_masked(
+                    (*d).qLU, (*d).M, (*m).mapM2D, nD,
+                );
+
+                // set qLU = qM - dt*qDeriv
+                crate::engine::engine_util_blas::mju_add_to_scl(
+                    (*d).qLU, (*d).qDeriv, -(*m).opt.timestep, nD,
+                );
+
+                // set qfrc = qLU * qacc
+                crate::engine::engine_util_sparse::mju_mul_mat_vec_sparse(
+                    qfrc, (*d).qLU, qacc, nv,
+                    (*m).D_rownnz, (*m).D_rowadr, (*m).D_colind, std::ptr::null(),
+                );
+            }
+
+            MJ_INT_IMPLICITFAST => {
+                // compute analytical derivative qDeriv; skip rne derivative
+                crate::engine::engine_derivative::mjd_smooth_vel(m, d, 0);
+
+                // save mass matrix
+                let Msave = crate::engine::engine_memory::mj_stack_alloc_num(d, nC as usize);
+                crate::engine::engine_util_blas::mju_copy(Msave, (*d).M, nC);
+
+                // modified mass matrix: gather qH <- qDeriv (full to lower)
+                crate::engine::engine_util_misc::mju_gather(
+                    (*d).qH, (*d).qDeriv, (*m).mapD2M, nC,
+                );
+
+                // set qH = M - dt*qDeriv
+                crate::engine::engine_util_blas::mju_add_scl(
+                    (*d).qH, (*d).M, (*d).qH, -(*m).opt.timestep, nC,
+                );
+
+                // set qfrc = (M - dt*qDeriv) * qacc
+                crate::engine::engine_util_sparse::mju_mul_sym_vec_sparse(
+                    qfrc, (*d).qH, qacc, nv,
+                    (*m).M_rownnz, (*m).M_rowadr, (*m).M_colind,
+                );
+            }
+
+            _ => {}
+        }
+
+        // solve for qacc: qfrc = M * qacc
+        crate::engine::engine_core_smooth::mj_solve_m(m, d, qacc, qfrc, 1);
+
+        crate::engine::engine_memory::mj_free_stack(d);
+    }
 }
 
 /// C: mj_inverse (engine/engine_inverse.h:27)
