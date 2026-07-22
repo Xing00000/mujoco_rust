@@ -682,7 +682,135 @@ pub fn mj_compute_sensor_pos(m: *const mjModel, d: *mut mjData, i: i32, sensorda
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_compute_sensor_vel(m: *const mjModel, d: *mut mjData, i: i32, sensordata: *mut f64) {
-    todo!() // mj_computeSensorVel
+    // Sensor type enum values
+    const mjSENS_VELOCIMETER: i32 = 2;
+    const mjSENS_GYRO: i32 = 3;
+    const mjSENS_JOINTVEL: i32 = 10;
+    const mjSENS_TENDONVEL: i32 = 12;
+    const mjSENS_ACTUATORVEL: i32 = 14;
+    const mjSENS_BALLANGVEL: i32 = 19;
+    const mjSENS_JOINTLIMITVEL: i32 = 21;
+    const mjSENS_TENDONLIMITVEL: i32 = 24;
+    const mjSENS_FRAMELINVEL: i32 = 31;
+    const mjSENS_FRAMEANGVEL: i32 = 32;
+    const mjSENS_SUBTREELINVEL: i32 = 36;
+    const mjSENS_SUBTREEANGMOM: i32 = 37;
+    const mjCNSTR_LIMIT_JOINT: i32 = 3;
+    const mjCNSTR_LIMIT_TENDON: i32 = 4;
+    const mjOBJ_SITE: i32 = 6;
+
+    // SAFETY: m, d are valid pointers. sensordata is writable output buffer (caller contract).
+    unsafe {
+        let ne = (*d).ne;
+        let nf = (*d).nf;
+        let nefc = (*d).nefc;
+        let sensor_type = *(*m).sensor_type.add(i as usize);
+        let objtype = *(*m).sensor_objtype.add(i as usize);
+        let objid = *(*m).sensor_objid.add(i as usize);
+        let refid = *(*m).sensor_refid.add(i as usize);
+        let reftype = *(*m).sensor_reftype.add(i as usize);
+
+        let mut xvel: [f64; 6] = [0.0; 6];
+
+        // call mj_subtreeVel for sensors that need it
+        if !(*d).flg_subtreevel
+            && (sensor_type == mjSENS_SUBTREELINVEL || sensor_type == mjSENS_SUBTREEANGMOM)
+        {
+            crate::engine::engine_core_smooth::mj_subtree_vel(m, d);
+        }
+
+        // process according to type
+        if sensor_type == mjSENS_VELOCIMETER {
+            crate::engine::engine_core_util::mj_object_velocity(
+                m, d as *const crate::types::mjData, mjOBJ_SITE, objid, xvel.as_mut_ptr(), 1);
+            crate::engine::engine_util_blas::mju_copy3(sensordata, xvel.as_ptr().add(3));
+        } else if sensor_type == mjSENS_GYRO {
+            crate::engine::engine_core_util::mj_object_velocity(
+                m, d as *const crate::types::mjData, mjOBJ_SITE, objid, xvel.as_mut_ptr(), 1);
+            crate::engine::engine_util_blas::mju_copy3(sensordata, xvel.as_ptr());
+        } else if sensor_type == mjSENS_JOINTVEL {
+            *sensordata = *(*d).qvel.add(*(*m).jnt_dofadr.add(objid as usize) as usize);
+        } else if sensor_type == mjSENS_TENDONVEL {
+            *sensordata = *(*d).ten_velocity.add(objid as usize);
+        } else if sensor_type == mjSENS_ACTUATORVEL {
+            *sensordata = *(*d).actuator_velocity.add(objid as usize);
+        } else if sensor_type == mjSENS_BALLANGVEL {
+            crate::engine::engine_util_blas::mju_copy3(
+                sensordata, (*d).qvel.add(*(*m).jnt_dofadr.add(objid as usize) as usize));
+        } else if sensor_type == mjSENS_JOINTLIMITVEL {
+            *sensordata = 0.0;
+            for j in (ne + nf)..nefc {
+                if *(*d).efc_type.add(j as usize) == mjCNSTR_LIMIT_JOINT
+                    && *(*d).efc_id.add(j as usize) == objid
+                {
+                    *sensordata = *(*d).efc_vel.add(j as usize);
+                    break;
+                }
+            }
+        } else if sensor_type == mjSENS_TENDONLIMITVEL {
+            *sensordata = 0.0;
+            for j in (ne + nf)..nefc {
+                if *(*d).efc_type.add(j as usize) == mjCNSTR_LIMIT_TENDON
+                    && *(*d).efc_id.add(j as usize) == objid
+                {
+                    *sensordata = *(*d).efc_vel.add(j as usize);
+                    break;
+                }
+            }
+        } else if sensor_type == mjSENS_FRAMELINVEL || sensor_type == mjSENS_FRAMEANGVEL {
+            // xvel = 6D object velocity, in global frame
+            crate::engine::engine_core_util::mj_object_velocity(
+                m, d as *const crate::types::mjData, objtype, objid, xvel.as_mut_ptr(), 0);
+
+            if refid > -1 {
+                let mut xpos: *mut f64 = std::ptr::null_mut();
+                let mut xmat: *mut f64 = std::ptr::null_mut();
+                let mut xpos_ref: *mut f64 = std::ptr::null_mut();
+                let mut xmat_ref: *mut f64 = std::ptr::null_mut();
+                let mut xvel_ref: [f64; 6] = [0.0; 6];
+                let mut rel_vel: [f64; 6] = [0.0; 6];
+                let mut cross: [f64; 3] = [0.0; 3];
+                let mut rvec: [f64; 3] = [0.0; 3];
+
+                // get positions and orientations
+                get_xpos_xmat(d as *const crate::types::mjData, objtype as u32, objid, i,
+                    &mut xpos as *mut *mut f64, &mut xmat as *mut *mut f64);
+                get_xpos_xmat(d as *const crate::types::mjData, reftype as u32, refid, i,
+                    &mut xpos_ref as *mut *mut f64, &mut xmat_ref as *mut *mut f64);
+                crate::engine::engine_core_util::mj_object_velocity(
+                    m, d as *const crate::types::mjData, reftype, refid, xvel_ref.as_mut_ptr(), 0);
+
+                // subtract velocities
+                crate::engine::engine_util_blas::mju_sub(
+                    rel_vel.as_mut_ptr(), xvel.as_ptr(), xvel_ref.as_ptr(), 6);
+
+                // linear velocity: add correction due to rotating reference frame
+                crate::engine::engine_util_blas::mju_sub3(rvec.as_mut_ptr(), xpos as *const f64, xpos_ref as *const f64);
+                crate::engine::engine_util_spatial::mju_cross(cross.as_mut_ptr(), rvec.as_ptr(), xvel_ref.as_ptr());
+                crate::engine::engine_util_blas::mju_add_to3(rel_vel.as_mut_ptr().add(3), cross.as_ptr());
+
+                // project into reference frame
+                crate::engine::engine_util_blas::mju_mul_mat_t_vec3(xvel.as_mut_ptr(), xmat_ref as *const f64, rel_vel.as_ptr());
+                crate::engine::engine_util_blas::mju_mul_mat_t_vec3(xvel.as_mut_ptr().add(3), xmat_ref as *const f64, rel_vel.as_ptr().add(3));
+            }
+
+            // copy linear or angular component
+            if sensor_type == mjSENS_FRAMELINVEL {
+                crate::engine::engine_util_blas::mju_copy3(sensordata, xvel.as_ptr().add(3));
+            } else {
+                crate::engine::engine_util_blas::mju_copy3(sensordata, xvel.as_ptr());
+            }
+        } else if sensor_type == mjSENS_SUBTREELINVEL {
+            crate::engine::engine_util_blas::mju_copy3(
+                sensordata, (*d).subtree_linvel.add((3 * objid) as usize) as *const f64);
+        } else if sensor_type == mjSENS_SUBTREEANGMOM {
+            crate::engine::engine_util_blas::mju_copy3(
+                sensordata, (*d).subtree_angmom.add((3 * objid) as usize) as *const f64);
+        } else {
+            crate::engine::engine_util_errmem::mju_error(
+                b"invalid type in VEL stage\0".as_ptr() as *const i8);
+        }
+    }
 }
 
 /// C: mj_computeSensorAcc (engine/engine_sensor.c:958)
