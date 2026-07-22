@@ -840,7 +840,78 @@ pub fn sa_pcmp(obj1: *mut mjtSAP, obj2: *mut mjtSAP, context: *mut ()) -> i32 {
 /// Calls: SAPcmp
 #[allow(unused_variables, non_snake_case)]
 pub fn sa_psort(arr: *mut mjtSAP, buf: *mut mjtSAP, n: i32, context: *mut ()) {
-    todo!() // SAPsort
+    const RUN_SIZE: i32 = 32;
+
+    // SAFETY: arr and buf point to valid arrays of at least n mjtSAP elements (caller contract).
+    unsafe {
+        // SAPcmp: compare by value field
+        #[inline(always)]
+        unsafe fn sap_cmp(a: *const mjtSAP, b: *const mjtSAP) -> i32 {
+            if (*a).value < (*b).value { -1 }
+            else if (*a).value == (*b).value { 0 }
+            else { 1 }
+        }
+
+        // insertion sort on sub-array [start, end)
+        for start in (0..n).step_by(RUN_SIZE as usize) {
+            let end = if start + RUN_SIZE < n { start + RUN_SIZE } else { n };
+            for j in (start + 1)..end {
+                let tmp = *arr.add(j as usize);
+                let mut k = j - 1;
+                while k >= start && sap_cmp(arr.add(k as usize), &tmp) > 0 {
+                    *arr.add((k + 1) as usize) = *arr.add(k as usize);
+                    k -= 1;
+                }
+                *arr.add((k + 1) as usize) = tmp;
+            }
+        }
+
+        // merge passes
+        let mut src: *mut mjtSAP = arr;
+        let mut dest: *mut mjtSAP = buf;
+        let mut len: i32 = RUN_SIZE;
+        while len < n {
+            let mut start = 0i32;
+            while start < n {
+                let mid = start + len;
+                let end = if start + 2 * len < n { start + 2 * len } else { n };
+                if mid < end {
+                    // merge [start, mid) and [mid, end)
+                    let mut i = start;
+                    let mut j = mid;
+                    let mut k = start;
+                    while i < mid && j < end {
+                        if sap_cmp(src.add(i as usize), src.add(j as usize)) <= 0 {
+                            *dest.add(k as usize) = *src.add(i as usize);
+                            i += 1;
+                        } else {
+                            *dest.add(k as usize) = *src.add(j as usize);
+                            j += 1;
+                        }
+                        k += 1;
+                    }
+                    if i < mid {
+                        std::ptr::copy_nonoverlapping(src.add(i as usize), dest.add(k as usize), (mid - i) as usize);
+                    } else if j < end {
+                        std::ptr::copy_nonoverlapping(src.add(j as usize), dest.add(k as usize), (end - j) as usize);
+                    }
+                } else {
+                    std::ptr::copy_nonoverlapping(src.add(start as usize), dest.add(start as usize), (end - start) as usize);
+                }
+                start += 2 * len;
+            }
+            // swap src and dest
+            let tmp = src;
+            src = dest;
+            dest = tmp;
+            len *= 2;
+        }
+
+        // if result ended up in buf, copy back to arr
+        if src != arr {
+            std::ptr::copy_nonoverlapping(src, arr, n as usize);
+        }
+    }
 }
 
 /// C: mj_SAP (engine/engine_collision_driver.c:1400)
@@ -852,7 +923,105 @@ pub fn sa_psort(arr: *mut mjtSAP, buf: *mut mjtSAP, n: i32, context: *mut ()) {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_sap(d: *mut mjData, aamm: *const f64, n: i32, axis_x: i32, pair: *mut i32, maxpair: i32) -> i32 {
-    todo!() // mj_SAP
+    // SAFETY: d is valid for stack alloc. aamm has 6*n elements. pair has maxpair capacity.
+    unsafe {
+        // check inputs
+        if n >= 0x10000 || axis_x < 0 || axis_x > 2 || maxpair < 1 {
+            return -1;
+        }
+
+        // allocate sort buffer (mjtSAP = 8 bytes, align 4)
+        crate::engine::engine_memory::mj_mark_stack(d);
+        let sortbuf: *mut mjtSAP = crate::engine::engine_memory::mj_stack_alloc_byte(
+            d, (2 * n as usize) * std::mem::size_of::<mjtSAP>(), std::mem::align_of::<mjtSAP>()) as *mut mjtSAP;
+        let activebuf: *mut mjtSAP = crate::engine::engine_memory::mj_stack_alloc_byte(
+            d, (2 * n as usize) * std::mem::size_of::<mjtSAP>(), std::mem::align_of::<mjtSAP>()) as *mut mjtSAP;
+
+        // get AAMM pointers for primary "x" axis
+        let x_min: *const f64 = aamm.add((n * (axis_x + 0)) as usize);
+        let x_max: *const f64 = aamm.add((n * (axis_x + 3)) as usize);
+
+        // init sortbuf with specified axis
+        for i in 0..n {
+            (*sortbuf.add((2 * i) as usize)).id_ismax = i;
+            (*sortbuf.add((2 * i) as usize)).value = *x_min.add(i as usize) as f32;
+            (*sortbuf.add((2 * i + 1) as usize)).id_ismax = i + 0x10000;
+            (*sortbuf.add((2 * i + 1) as usize)).value = *x_max.add(i as usize) as f32;
+        }
+
+        // sort along specified axis
+        let buf: *mut mjtSAP = crate::engine::engine_memory::mj_stack_alloc_byte(
+            d, (2 * n as usize) * std::mem::size_of::<mjtSAP>(), std::mem::align_of::<mjtSAP>()) as *mut mjtSAP;
+        sa_psort(sortbuf, buf, 2 * n, std::ptr::null_mut());
+
+        // define the other two axes
+        let (axis_y, axis_z) = if axis_x == 0 {
+            (1i32, 2i32)
+        } else if axis_x == 1 {
+            (0i32, 2i32)
+        } else {
+            (0i32, 1i32)
+        };
+
+        // get AAMM pointers to secondary "y, z" axes
+        let y_min: *const f64 = aamm.add((n * (axis_y + 0)) as usize);
+        let y_max: *const f64 = aamm.add((n * (axis_y + 3)) as usize);
+        let z_min: *const f64 = aamm.add((n * (axis_z + 0)) as usize);
+        let z_max: *const f64 = aamm.add((n * (axis_z + 3)) as usize);
+
+        // sweep and prune
+        let mut cnt: i32 = 0; // size of active list
+        let mut npair: i32 = 0; // number of pairs added
+        for i in 0..(2 * n) {
+            // min value: collide with all in list, add
+            if ((*sortbuf.add(i as usize)).id_ismax & 0x10000) == 0 {
+                for j in 0..cnt {
+                    let id1 = (*activebuf.add(j as usize)).id_ismax;
+                    let id2 = (*sortbuf.add(i as usize)).id_ismax;
+
+                    // use the other two axes to prune if possible
+                    if *y_min.add(id1 as usize) > *y_max.add(id2 as usize)
+                        || *y_min.add(id2 as usize) > *y_max.add(id1 as usize)
+                        || *z_min.add(id1 as usize) > *z_max.add(id2 as usize)
+                        || *z_min.add(id2 as usize) > *z_max.add(id1 as usize)
+                    {
+                        continue;
+                    }
+
+                    // add pair, check buffer size
+                    *pair.add(npair as usize) = (id1 << 16) + id2;
+                    npair += 1;
+                    if npair >= maxpair {
+                        crate::engine::engine_memory::mj_free_stack(d);
+                        return maxpair;
+                    }
+                }
+
+                // add to list
+                *activebuf.add(cnt as usize) = *sortbuf.add(i as usize);
+                cnt += 1;
+            }
+            // max value: remove corresponding min value from list
+            else {
+                let toremove = (*sortbuf.add(i as usize)).id_ismax & 0xFFFF;
+                for j in 0..cnt {
+                    if (*activebuf.add(j as usize)).id_ismax == toremove {
+                        if j < cnt - 1 {
+                            std::ptr::copy(
+                                activebuf.add((j + 1) as usize),
+                                activebuf.add(j as usize),
+                                (cnt - 1 - j) as usize);
+                        }
+                        cnt -= 1;
+                        break;
+                    }
+                }
+            }
+        }
+
+        crate::engine::engine_memory::mj_free_stack(d);
+        npair
+    }
 }
 
 /// C: updateCov (engine/engine_collision_driver.c:1497)

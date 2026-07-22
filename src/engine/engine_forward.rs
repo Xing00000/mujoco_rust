@@ -197,7 +197,145 @@ pub fn solve_island_task(m: *const mjModel, d: *mut mjData, arg: *mut (), thread
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_advance(m: *const mjModel, d: *mut mjData, act_dot: *const f64, qacc: *const f64, qvel: *const f64) {
-    todo!() // mj_advance
+    const mjDSBL_ACTUATION: i32 = 1 << 11;
+    const mjENBL_SLEEP: i32 = 1 << 4;
+    const mjSTAGE_POS: i32 = 1;
+
+    // SAFETY: m, d are valid pointers (caller contract). All array accesses within bounds.
+    unsafe {
+        let nu = (*m).nu as i32;
+        let nsensor = (*m).nsensor as i32;
+
+        // advance history buffers
+        if (*m).nhistory > 0 {
+            // advance ctrl history buffers
+            for i in 0..nu {
+                let nsample = *(*m).actuator_history.add((2 * i) as usize);
+                if nsample == 0 {
+                    continue;
+                }
+
+                // get history buffer pointer and insert ctrl at current time
+                let buf: *mut f64 = (*d).history.add(*(*m).actuator_historyadr.add(i as usize) as usize);
+                let slot = crate::engine::engine_util_misc::mju_history_insert(
+                    buf, nsample, 1, (*d).time);
+                *slot = *(*d).ctrl.add(i as usize);
+            }
+
+            // advance sensor history buffers
+            for i in 0..nsensor {
+                let nsample = *(*m).sensor_history.add((2 * i) as usize);
+                if nsample == 0 {
+                    continue;
+                }
+
+                // get history buffer parameters
+                let dim = *(*m).sensor_dim.add(i as usize);
+                let buf: *mut f64 = (*d).history.add(*(*m).sensor_historyadr.add(i as usize) as usize);
+                let delay = *(*m).sensor_delay.add(i as usize);
+                let interval = *(*m).sensor_interval.add((2 * i) as usize);
+
+                if interval > 0.0 {
+                    // interval mode: if condition is satisfied, compute; otherwise copy
+                    let time_prev = *buf; // first slot stores previous sensor tick
+                    if time_prev + interval <= (*d).time {
+                        *buf += interval; // advance by exact interval
+                        let slot = crate::engine::engine_util_misc::mju_history_insert(
+                            buf, nsample, dim, (*d).time);
+                        if delay > 0.0 {
+                            crate::engine::engine_sensor::mj_compute_sensor(m, d, i, slot);
+                        } else {
+                            crate::engine::engine_util_blas::mju_copy(
+                                slot, (*d).sensordata.add(*(*m).sensor_adr.add(i as usize) as usize) as *const f64, dim);
+                        }
+                    }
+                } else if delay > 0.0 {
+                    // delay-only mode: always compute and insert
+                    let slot = crate::engine::engine_util_misc::mju_history_insert(
+                        buf, nsample, dim, (*d).time);
+                    crate::engine::engine_sensor::mj_compute_sensor(m, d, i, slot);
+                } else {
+                    // history-only mode: copy from sensordata
+                    let slot = crate::engine::engine_util_misc::mju_history_insert(
+                        buf, nsample, dim, (*d).time);
+                    crate::engine::engine_util_blas::mju_copy(
+                        slot, (*d).sensordata.add(*(*m).sensor_adr.add(i as usize) as usize) as *const f64, dim);
+                }
+            }
+        }
+
+        // advance activations
+        if (*m).na > 0 && ((*m).opt.disableflags & mjDSBL_ACTUATION) == 0 {
+            for i in 0..nu {
+                let actadr = *(*m).actuator_actadr.add(i as usize);
+                let actadr_end = actadr + *(*m).actuator_actnum.add(i as usize);
+                for j in actadr..actadr_end {
+                    let dot_val = if crate::engine::engine_support::mj_actuator_disabled(m, i) != 0 {
+                        0.0
+                    } else {
+                        *act_dot.add(j as usize)
+                    };
+                    *(*d).act.add(j as usize) = crate::engine::engine_support::mj_next_activation(
+                        m, d as *const crate::types::mjData, i, j, dot_val);
+                }
+            }
+        }
+
+        // put islands to sleep according to velocity tolerance
+        if crate::engine::engine_sleep::mj_sleep(m, d) != 0 {
+            // if any trees put to sleep, recompute all velocity-dependent quantities
+            mj_forward_skip(m, d, mjSTAGE_POS, 0);
+
+            // update sleep indices
+            crate::engine::engine_sleep::mj_update_sleep(m, d);
+        }
+
+        // advance velocities
+        let sleep_filter = (((*m).opt.enableflags & mjENBL_SLEEP) != 0)
+            && ((*d).ntree_awake < (*m).ntree as i32);
+        if sleep_filter {
+            crate::engine::engine_util_blas::mju_add_to_scl_ind(
+                (*d).qvel, qacc, (*d).dof_awake_ind as *const i32,
+                (*m).opt.timestep, (*d).nv_awake);
+        } else {
+            crate::engine::engine_util_blas::mju_add_to_scl(
+                (*d).qvel, qacc, (*m).opt.timestep, (*m).nv as i32);
+        }
+
+        // advance positions with qvel if given, d->qvel otherwise (semi-implicit)
+        let index: *const i32 = if sleep_filter { (*d).body_awake_ind as *const i32 } else { std::ptr::null() };
+        let nbody = if sleep_filter { (*d).nbody_awake } else { (*m).nbody as i32 };
+        crate::engine::engine_support::mj_integrate_pos_ind(
+            m, (*d).qpos,
+            if !qvel.is_null() { qvel } else { (*d).qvel as *const f64 },
+            (*m).opt.timestep, index, nbody);
+
+        // advance time
+        (*d).time += (*m).opt.timestep;
+
+        // advance plugin states
+        if (*m).nplugin > 0 {
+            let nslot = crate::engine::engine_plugin::mjp_plugin_count();
+            for i in 0..(*m).nplugin as i32 {
+                let slot = *(*m).plugin.add(i as usize);
+                let plugin = crate::engine::engine_plugin::mjp_get_plugin_at_slot_unsafe(slot, nslot);
+                if plugin.is_null() {
+                    crate::engine::engine_util_errmem::mju_error(
+                        b"invalid plugin slot: %d\0".as_ptr() as *const i8);
+                }
+                if let Some(advance_fn) = (*plugin).advance {
+                    // SAFETY: plugin->advance has signature (m, d, i) per mujoco API
+                    let f: unsafe extern "C" fn(*const crate::types::mjModel, *mut crate::types::mjData, i32) =
+                        std::mem::transmute(advance_fn);
+                    f(m, d, i);
+                }
+            }
+        }
+
+        // save qacc for next step warmstart
+        crate::engine::engine_util_blas::mju_copy(
+            (*d).qacc_warmstart, (*d).qacc as *const f64, (*m).nv as i32);
+    }
 }
 
 /// C: flex_has_implicit_stiffness (engine/engine_forward.c:1284)
