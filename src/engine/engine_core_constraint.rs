@@ -575,7 +575,7 @@ pub fn mj_instantiate_friction(m: *const mjModel, d: *mut mjData, count_only: i3
 
             // sleeping tree: skip
             if sleep_filter && crate::engine::engine_sleep::mj_sleep_state(
-                m, d as *const crate::types::mjData, 14 /*mjOBJ_DOF*/, i) == 3 /*mjS_ASLEEP*/ {
+                m, d as *const crate::types::mjData, 4 /*mjOBJ_DOF*/, i) == 0 /*mjS_ASLEEP*/ {
                 continue;
             }
 
@@ -661,7 +661,7 @@ pub fn mj_instantiate_limit(m: *const mjModel, d: *mut mjData, count_only: i32, 
     const mjJNT_HINGE: i32 = 3;
     const mjCNSTR_LIMIT_JOINT: i32 = 3;
     const mjCNSTR_LIMIT_TENDON: i32 = 4;
-    const mjS_ASLEEP: i32 = 3;
+    const mjS_ASLEEP: i32 = 0;
 
     // SAFETY: All pointers are valid (caller contract). d is valid for stack alloc.
     unsafe {

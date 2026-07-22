@@ -968,7 +968,159 @@ pub fn mj_sensor_acc(m: *const mjModel, d: *mut mjData) {
 /// Calls: mj_sleepState, mju_copy4, mju_dot3, mju_isZero, mju_norm3, mju_normalize4, mju_polyPotential, mju_sub3, mju_subQuat
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_energy_pos(m: *const mjModel, d: *mut mjData) {
-    todo!() // mj_energyPos
+    const mjDSBL_GRAVITY: i32 = 1 << 7;
+    const mjDSBL_SPRING: i32 = 1 << 5;
+    const mjENBL_SLEEP: i32 = 1 << 4;
+    const mjJNT_FREE: i32 = 0;
+    const mjJNT_BALL: i32 = 1;
+    const mjJNT_SLIDE: i32 = 2;
+    const mjJNT_HINGE: i32 = 3;
+    const mjS_AWAKE: i32 = 1;
+    const mjNPOLY: i32 = 2;
+    const mjOBJ_TENDON: u32 = 18;
+
+    // SAFETY: m, d are valid pointers (caller contract).
+    unsafe {
+        let mut dif: [f64; 3] = [0.0; 3];
+        let mut quat: [f64; 4] = [0.0; 4];
+
+        // init potential energy: -sum_i body(i).mass * mju_dot(body(i).pos, gravity)
+        (*d).energy[0] = 0.0;
+        if ((*m).opt.disableflags & mjDSBL_GRAVITY) == 0 {
+            for i in 1..(*m).nbody as i32 {
+                (*d).energy[0] -= *(*m).body_mass.add(i as usize)
+                    * crate::engine::engine_util_blas::mju_dot3(
+                        (*m).opt.gravity.as_ptr(),
+                        (*d).xipos.add((3 * i) as usize));
+            }
+        }
+
+        let sleep_filter = (((*m).opt.enableflags & mjENBL_SLEEP) != 0)
+            && ((*d).nbody_awake < (*m).nbody as i32);
+
+        // add joint-level springs
+        if ((*m).opt.disableflags & mjDSBL_SPRING) == 0 {
+            let nbody = (*m).nbody as i32;
+            for b in 1..nbody {
+                if sleep_filter && *(*d).body_awake.add(b as usize) != mjS_AWAKE {
+                    continue;
+                }
+
+                let jnt_start = *(*m).body_jntadr.add(b as usize);
+                let jnt_end = jnt_start + *(*m).body_jntnum.add(b as usize);
+                for j in jnt_start..jnt_end {
+                    let stiffness = *(*m).jnt_stiffness.add(j as usize);
+                    let poly: *const f64 = (*m).jnt_stiffnesspoly.add((mjNPOLY * j) as usize);
+                    if stiffness == 0.0
+                        && crate::engine::engine_util_misc::mju_is_zero(poly, mjNPOLY) != 0
+                    {
+                        continue;
+                    }
+                    let mut padr = *(*m).jnt_qposadr.add(j as usize);
+
+                    let jnt_type = *(*m).jnt_type.add(j as usize);
+
+                    if jnt_type == mjJNT_FREE {
+                        crate::engine::engine_util_blas::mju_sub3(
+                            dif.as_mut_ptr(),
+                            (*d).qpos.add(padr as usize),
+                            (*m).qpos_spring.add(padr as usize));
+                        let x = crate::engine::engine_util_blas::mju_norm3(dif.as_ptr());
+                        (*d).energy[0] += crate::engine::engine_util_misc::mju_poly_potential(
+                            stiffness, poly, x, mjNPOLY, 0);
+                        padr += 3;
+                        // fallthrough to BALL case
+                        crate::engine::engine_util_blas::mju_copy4(
+                            quat.as_mut_ptr(), (*d).qpos.add(padr as usize));
+                        crate::engine::engine_util_blas::mju_normalize4(quat.as_mut_ptr());
+                        crate::engine::engine_util_spatial::mju_sub_quat(
+                            dif.as_mut_ptr(),
+                            (*d).qpos.add(padr as usize),
+                            (*m).qpos_spring.add(padr as usize));
+                        let x = crate::engine::engine_util_blas::mju_norm3(dif.as_ptr());
+                        (*d).energy[0] += crate::engine::engine_util_misc::mju_poly_potential(
+                            stiffness, poly, x, mjNPOLY, 0);
+                    } else if jnt_type == mjJNT_BALL {
+                        crate::engine::engine_util_blas::mju_copy4(
+                            quat.as_mut_ptr(), (*d).qpos.add(padr as usize));
+                        crate::engine::engine_util_blas::mju_normalize4(quat.as_mut_ptr());
+                        crate::engine::engine_util_spatial::mju_sub_quat(
+                            dif.as_mut_ptr(),
+                            (*d).qpos.add(padr as usize),
+                            (*m).qpos_spring.add(padr as usize));
+                        let x = crate::engine::engine_util_blas::mju_norm3(dif.as_ptr());
+                        (*d).energy[0] += crate::engine::engine_util_misc::mju_poly_potential(
+                            stiffness, poly, x, mjNPOLY, 0);
+                    } else if jnt_type == mjJNT_SLIDE || jnt_type == mjJNT_HINGE {
+                        let x = *(*d).qpos.add(padr as usize)
+                            - *(*m).qpos_spring.add(padr as usize);
+                        (*d).energy[0] += crate::engine::engine_util_misc::mju_poly_potential(
+                            stiffness, poly, x, mjNPOLY, 0);
+                    }
+                }
+            }
+        }
+
+        // add tendon-level springs
+        if ((*m).opt.disableflags & mjDSBL_SPRING) == 0 {
+            for i in 0..(*m).ntendon as i32 {
+                // skip sleeping or static tendon
+                if sleep_filter
+                    && crate::engine::engine_sleep::mj_sleep_state(
+                        m, d as *const crate::types::mjData, mjOBJ_TENDON, i)
+                        != mjS_AWAKE
+                {
+                    continue;
+                }
+
+                let stiffness = *(*m).tendon_stiffness.add(i as usize);
+                let poly: *const f64 = (*m).tendon_stiffnesspoly.add((mjNPOLY * i) as usize);
+                let length = *(*d).ten_length.add(i as usize);
+
+                // compute spring displacement x
+                let lower = *(*m).tendon_lengthspring.add((2 * i) as usize);
+                let upper = *(*m).tendon_lengthspring.add((2 * i + 1) as usize);
+                let x = if length > upper {
+                    length - upper
+                } else if length < lower {
+                    length - lower
+                } else {
+                    0.0
+                };
+
+                // add potential energy
+                (*d).energy[0] += crate::engine::engine_util_misc::mju_poly_potential(
+                    stiffness, poly, x, mjNPOLY, 0);
+            }
+        }
+
+        // add flex-level springs for dim=1
+        if ((*m).opt.disableflags & mjDSBL_SPRING) == 0 {
+            for i in 0..(*m).nflex as i32 {
+                let stiffness = *(*m).flex_edgestiffness.add(i as usize);
+                if *(*m).flex_rigid.add(i as usize)
+                    || stiffness == 0.0
+                    || *(*m).flex_dim.add(i as usize) > 1
+                {
+                    continue;
+                }
+
+                // process non-rigid edges of this flex
+                let flex_edgeadr = *(*m).flex_edgeadr.add(i as usize);
+                let flex_edgenum = *(*m).flex_edgenum.add(i as usize);
+                for e in flex_edgeadr..(flex_edgeadr + flex_edgenum) {
+                    if !*(*m).flexedge_rigid.add(e as usize) {
+                        let displacement = *(*m).flexedge_length0.add(e as usize)
+                            - *(*d).flexedge_length.add(e as usize);
+                        (*d).energy[0] += 0.5 * stiffness * displacement * displacement;
+                    }
+                }
+            }
+        }
+
+        // mark as computed
+        (*d).flg_energypos = true;
+    }
 }
 
 /// C: mj_energyVel (engine/engine_sensor.h:47)
