@@ -71,7 +71,101 @@ pub fn clamp_vec(vec: *mut f64, range: *const f64, limited: *const bool, n: i32,
 /// Calls: mj_constraintUpdate, mj_freeStack, mj_isSparse, mj_markStack, mj_mulJacVec, mj_mulM, mj_stackAllocInfo, mju_copy, mju_dot, mju_mulMatVec, mju_mulMatVecSparse, mju_subFrom, mju_zero
 #[allow(unused_variables, non_snake_case)]
 pub fn warmstart(m: *const mjModel, d: *mut mjData) {
-    todo!() // warmstart
+    const mjDSBL_WARMSTART: i32 = 1 << 9;
+    const mjSOL_PGS: i32 = 0;
+
+    // SAFETY: m, d are valid pointers (caller contract).
+    unsafe {
+        let nv = (*m).nv as i32;
+        let nefc = (*d).nefc;
+
+        // warmstart with best of (qacc_warmstart, qacc_smooth)
+        if ((*m).opt.disableflags & mjDSBL_WARMSTART) == 0 {
+            crate::engine::engine_memory::mj_mark_stack(d);
+            let jar: *mut f64 = crate::engine::engine_memory::mj_stack_alloc_num(d, nefc as usize);
+
+            // start with qacc = qacc_warmstart
+            crate::engine::engine_util_blas::mju_copy(
+                (*d).qacc, (*d).qacc_warmstart as *const f64, nv);
+
+            // compute jar(qacc_warmstart)
+            crate::engine::engine_core_constraint::mj_mul_jac_vec(
+                m, d as *const crate::types::mjData, jar, (*d).qacc_warmstart as *const f64);
+            crate::engine::engine_util_blas::mju_sub_from(jar, (*d).efc_aref as *const f64, nefc);
+
+            // update constraints, save cost(qacc_warmstart)
+            let mut cost_warmstart: f64 = 0.0;
+            crate::engine::engine_core_constraint::mj_constraint_update(
+                m, d, jar as *const f64, &mut cost_warmstart as *mut f64, 0);
+
+            // PGS
+            if (*m).opt.solver == mjSOL_PGS {
+                // cost(force_warmstart)
+                let mut PGS_warmstart: f64 = crate::engine::engine_util_blas::mju_dot(
+                    (*d).efc_force as *const f64, (*d).efc_b as *const f64, nefc);
+                let ARf: *mut f64 = crate::engine::engine_memory::mj_stack_alloc_num(d, nefc as usize);
+                if crate::engine::engine_core_util::mj_is_sparse(m) != 0 {
+                    crate::engine::engine_util_sparse::mju_mul_mat_vec_sparse(
+                        ARf, (*d).efc_AR as *const f64, (*d).efc_force as *const f64,
+                        nefc, (*d).efc_AR_rownnz as *const i32,
+                        (*d).efc_AR_rowadr as *const i32,
+                        (*d).efc_AR_colind as *const i32, std::ptr::null());
+                } else {
+                    crate::engine::engine_util_blas::mju_mul_mat_vec(
+                        ARf, (*d).efc_AR as *const f64, (*d).efc_force as *const f64,
+                        nefc, nefc);
+                }
+                PGS_warmstart += 0.5 * crate::engine::engine_util_blas::mju_dot(
+                    (*d).efc_force as *const f64, ARf as *const f64, nefc);
+
+                // use zero if better
+                if PGS_warmstart > 0.0 {
+                    crate::engine::engine_util_blas::mju_zero((*d).efc_force, nefc);
+                    crate::engine::engine_util_blas::mju_zero((*d).qfrc_constraint, nv);
+                }
+            }
+            // non-PGS
+            else {
+                // add Gauss to cost(qacc_warmstart)
+                let Ma: *mut f64 = crate::engine::engine_memory::mj_stack_alloc_num(d, nv as usize);
+                crate::engine::engine_support::mj_mul_m(
+                    m, d as *const crate::types::mjData, Ma, (*d).qacc_warmstart as *const f64);
+                for i in 0..nv {
+                    cost_warmstart += 0.5
+                        * (*Ma.add(i as usize) - *(*d).qfrc_smooth.add(i as usize))
+                        * (*(*d).qacc_warmstart.add(i as usize) - *(*d).qacc_smooth.add(i as usize));
+                }
+
+                // cost(qacc_smooth)
+                let mut cost_smooth: f64 = 0.0;
+                crate::engine::engine_core_constraint::mj_constraint_update(
+                    m, d, (*d).efc_b as *const f64, &mut cost_smooth as *mut f64, 0);
+
+                // use qacc_smooth if better
+                if cost_warmstart > cost_smooth {
+                    crate::engine::engine_util_blas::mju_copy(
+                        (*d).qacc, (*d).qacc_smooth as *const f64, nv);
+                }
+            }
+
+            // have island structure: unconstrained qacc = qacc_smooth
+            if (*d).nisland > 0 {
+                // loop over unconstrained dofs in map_idof2dof[nidof, nv)
+                for i in (*d).nidof..nv {
+                    let dof = *(*d).map_idof2dof.add(i as usize);
+                    *(*d).qacc.add(dof as usize) = *(*d).qacc_smooth.add(dof as usize);
+                }
+            }
+
+            crate::engine::engine_memory::mj_free_stack(d);
+        }
+        // coldstart with qacc = qacc_smooth, efc_force = 0
+        else {
+            crate::engine::engine_util_blas::mju_copy(
+                (*d).qacc, (*d).qacc_smooth as *const f64, nv);
+            crate::engine::engine_util_blas::mju_zero((*d).efc_force, nefc);
+        }
+    }
 }
 
 /// C: solveIslandTask (engine/engine_forward.c:866)
