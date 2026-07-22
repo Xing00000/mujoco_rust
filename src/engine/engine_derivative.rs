@@ -424,7 +424,124 @@ pub fn add_to_parent(m: *const mjModel, d: *mut mjData, mat: *mut f64, n: i32) {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjd_com_vel_vel(m: *const mjModel, d: *mut mjData, Dcvel: *mut f64, Dcdofdot: *mut f64) {
-    todo!() // mjd_comVel_vel
+    const mjENBL_SLEEP: i32 = 1 << 4;
+    const mjJNT_FREE: i32 = 0;
+    const mjJNT_BALL: i32 = 1;
+    const mjJNT_HINGE: i32 = 3;
+    const mjJNT_SLIDE: i32 = 2;
+
+    // SAFETY: m, d, Dcvel, Dcdofdot are valid pointers (caller contract).
+    unsafe {
+        let nv = (*m).nv as i32;
+        let nM = (*m).nM as i32;
+        let sleep_filter = (((*m).opt.enableflags & mjENBL_SLEEP) != 0)
+            && ((*d).nbody_awake < (*m).nbody as i32);
+        let nbody = if sleep_filter { (*d).nbody_awake } else { (*m).nbody as i32 };
+        let Badr: *const i32 = (*m).B_rowadr;
+        let Dadr: *const i32 = (*m).D_rowadr;
+        let mut mat: [f64; 36] = [0.0; 36];
+        let mut matT: [f64; 36] = [0.0; 36];
+
+        // forward pass over bodies: accumulate Dcvel, set Dcdofdot
+        for b in 1..nbody {
+            let i = if sleep_filter { *(*d).body_awake_ind.add(b as usize) } else { b };
+
+            // Dcvel = Dcvel_parent
+            copy_from_parent(m, d, Dcvel, i);
+
+            // process all dofs of this body
+            let doflast = *(*m).body_dofadr.add(i as usize) + *(*m).body_dofnum.add(i as usize);
+            let mut j = *(*m).body_dofadr.add(i as usize);
+            while j < doflast {
+                // number of dof ancestors of dof j
+                let Jadr = (if j < nv - 1 { *(*m).dof_Madr.add((j + 1) as usize) } else { nM })
+                    - (*(*m).dof_Madr.add(j as usize) + 1);
+
+                let jnt_type = *(*m).jnt_type.add(*(*m).dof_jntid.add(j as usize) as usize);
+
+                if jnt_type == mjJNT_FREE {
+                    // Dcvel += cdof * D(qvel)
+                    crate::engine::engine_util_blas::mju_add_to(
+                        Dcvel.add((6 * (*Badr.add(i as usize) + Jadr + 0)) as usize),
+                        (*d).cdof.add((6 * (j + 0)) as usize), 6);
+                    crate::engine::engine_util_blas::mju_add_to(
+                        Dcvel.add((6 * (*Badr.add(i as usize) + Jadr + 1)) as usize),
+                        (*d).cdof.add((6 * (j + 1)) as usize), 6);
+                    crate::engine::engine_util_blas::mju_add_to(
+                        Dcvel.add((6 * (*Badr.add(i as usize) + Jadr + 2)) as usize),
+                        (*d).cdof.add((6 * (j + 2)) as usize), 6);
+
+                    // continue with rotations (fallthrough to BALL)
+                    j += 3;
+                    let Jadr2 = Jadr + 3;
+
+                    // Dcdofdot = Dcvel * D crossMotion(cvel, cdof)
+                    for dj in 0..3i32 {
+                        mjd_cross_motion_vel(mat.as_mut_ptr(), (*d).cdof.add((6 * (j + dj)) as usize));
+                        crate::engine::engine_util_blas::mju_transpose(matT.as_mut_ptr(), mat.as_ptr(), 6, 6);
+                        crate::engine::engine_util_blas::mju_mul_mat_mat(
+                            Dcdofdot.add((6 * *Dadr.add((j + dj) as usize)) as usize),
+                            Dcvel.add((6 * *Badr.add(i as usize)) as usize),
+                            matT.as_ptr(), Jadr2 + dj, 6, 6);
+                    }
+
+                    // Dcvel += cdof * (D qvel)
+                    crate::engine::engine_util_blas::mju_add_to(
+                        Dcvel.add((6 * (*Badr.add(i as usize) + Jadr2 + 0)) as usize),
+                        (*d).cdof.add((6 * (j + 0)) as usize), 6);
+                    crate::engine::engine_util_blas::mju_add_to(
+                        Dcvel.add((6 * (*Badr.add(i as usize) + Jadr2 + 1)) as usize),
+                        (*d).cdof.add((6 * (j + 1)) as usize), 6);
+                    crate::engine::engine_util_blas::mju_add_to(
+                        Dcvel.add((6 * (*Badr.add(i as usize) + Jadr2 + 2)) as usize),
+                        (*d).cdof.add((6 * (j + 2)) as usize), 6);
+
+                    // adjust for 3-dof joint
+                    j += 2;
+                } else if jnt_type == mjJNT_BALL {
+                    // Dcdofdot = Dcvel * D crossMotion(cvel, cdof)
+                    for dj in 0..3i32 {
+                        mjd_cross_motion_vel(mat.as_mut_ptr(), (*d).cdof.add((6 * (j + dj)) as usize));
+                        crate::engine::engine_util_blas::mju_transpose(matT.as_mut_ptr(), mat.as_ptr(), 6, 6);
+                        crate::engine::engine_util_blas::mju_mul_mat_mat(
+                            Dcdofdot.add((6 * *Dadr.add((j + dj) as usize)) as usize),
+                            Dcvel.add((6 * *Badr.add(i as usize)) as usize),
+                            matT.as_ptr(), Jadr + dj, 6, 6);
+                    }
+
+                    // Dcvel += cdof * (D qvel)
+                    crate::engine::engine_util_blas::mju_add_to(
+                        Dcvel.add((6 * (*Badr.add(i as usize) + Jadr + 0)) as usize),
+                        (*d).cdof.add((6 * (j + 0)) as usize), 6);
+                    crate::engine::engine_util_blas::mju_add_to(
+                        Dcvel.add((6 * (*Badr.add(i as usize) + Jadr + 1)) as usize),
+                        (*d).cdof.add((6 * (j + 1)) as usize), 6);
+                    crate::engine::engine_util_blas::mju_add_to(
+                        Dcvel.add((6 * (*Badr.add(i as usize) + Jadr + 2)) as usize),
+                        (*d).cdof.add((6 * (j + 2)) as usize), 6);
+
+                    // adjust for 3-dof joint
+                    j += 2;
+                } else {
+                    // HINGE or SLIDE
+                    // Dcdofdot = D crossMotion(cvel, cdof) * Dcvel
+                    mjd_cross_motion_vel(mat.as_mut_ptr(), (*d).cdof.add((6 * j) as usize));
+                    crate::engine::engine_util_blas::mju_transpose(matT.as_mut_ptr(), mat.as_ptr(), 6, 6);
+                    crate::engine::engine_util_blas::mju_mul_mat_mat(
+                        Dcdofdot.add((6 * *Dadr.add(j as usize)) as usize),
+                        Dcvel.add((6 * *Badr.add(i as usize)) as usize),
+                        matT.as_ptr(), Jadr, 6, 6);
+
+                    // Dcvel += cdof * (D qvel)
+                    crate::engine::engine_util_blas::mju_add_to(
+                        Dcvel.add((6 * (*Badr.add(i as usize) + Jadr)) as usize),
+                        (*d).cdof.add((6 * j) as usize), 6);
+                }
+
+                j += 1;
+            }
+        }
+    }
 }
 
 /// C: mjd_rne_vel (engine/engine_derivative.c:596)
@@ -1694,7 +1811,137 @@ pub fn mjd_actuator_vel(m: *const mjModel, d: *mut mjData) {
 /// Calls: addJTBJSparse, mj_actuatorDamping, mjd_ellipsoidFluid, mjd_inertiaBoxFluid, mjd_xPolyForce, mju_copy
 #[allow(unused_variables, non_snake_case)]
 pub fn mjd_passive_vel(m: *const mjModel, d: *mut mjData) {
-    todo!() // mjd_passive_vel
+    const mjDSBL_SPRING: i32 = 1 << 5;
+    const mjDSBL_DAMPER: i32 = 1 << 6;
+    const mjENBL_SLEEP: i32 = 1 << 4;
+    const MJ_MINVAL: f64 = 1e-15;
+    const mjNFLUID: i32 = 12;
+    const mjNPOLY: i32 = 2;
+    const mjOBJ_JOINT: u32 = 3;
+    const mjOBJ_TENDON: u32 = 18;
+
+    // SAFETY: m, d are valid pointers (caller contract).
+    unsafe {
+        // all disabled: nothing to add
+        if ((*m).opt.disableflags & mjDSBL_SPRING) != 0
+            && ((*m).opt.disableflags & mjDSBL_DAMPER) != 0
+        {
+            return;
+        }
+
+        let sleep_filter = (((*m).opt.enableflags & mjENBL_SLEEP) != 0)
+            && ((*d).ntree_awake < (*m).ntree as i32);
+        let nbody = if sleep_filter { (*d).nbody_awake } else { (*m).nbody as i32 };
+
+        // fluid drag model
+        if (*m).opt.viscosity > 0.0 || (*m).opt.density > 0.0 {
+            for b in 0..nbody {
+                let i = if sleep_filter { *(*d).body_awake_ind.add(b as usize) } else { b };
+
+                if *(*m).body_mass.add(i as usize) < MJ_MINVAL {
+                    continue;
+                }
+
+                let mut use_ellipsoid_model: i32 = 0;
+                let mut j = 0i32;
+                while j < *(*m).body_geomnum.add(i as usize) && use_ellipsoid_model == 0 {
+                    let geomid = *(*m).body_geomadr.add(i as usize) + j;
+                    use_ellipsoid_model += if *(*m).geom_fluid.add((mjNFLUID * geomid) as usize) > 0.0 { 1 } else { 0 };
+                    j += 1;
+                }
+                if use_ellipsoid_model != 0 {
+                    mjd_ellipsoid_fluid(m, d, i);
+                } else {
+                    mjd_inertia_box_fluid(m, d, i);
+                }
+            }
+        }
+
+        // disabled: nothing to add
+        if ((*m).opt.disableflags & mjDSBL_DAMPER) != 0 {
+            return;
+        }
+
+        // dof damping
+        let nv = (*m).nv as i32;
+        let nv_awake = if sleep_filter { (*d).nv_awake } else { nv };
+        for j in 0..nv_awake {
+            let i = if sleep_filter { *(*d).dof_awake_ind.add(j as usize) } else { j };
+            let v = *(*d).qvel.add(i as usize);
+            let mut poly: [f64; 2] = [0.0; 2]; // mjNPOLY = 2
+            crate::engine::engine_util_blas::mju_copy(
+                poly.as_mut_ptr(), (*m).dof_dampingpoly.add((mjNPOLY * i) as usize), mjNPOLY);
+            let damping = *(*m).dof_damping.add(i as usize)
+                + crate::engine::engine_core_util::mj_actuator_damping(
+                    m, mjOBJ_JOINT, *(*m).dof_jntid.add(i as usize), poly.as_mut_ptr());
+            let adr = *(*m).D_rowadr.add(i as usize) + *(*m).D_diag.add(i as usize);
+            *(*d).qDeriv.add(adr as usize) -= crate::engine::engine_util_misc::mjd_x_poly_force(
+                damping, poly.as_ptr(), v, mjNPOLY, 1);
+        }
+
+        // flex edge damping
+        for f in 0..(*m).nflex as i32 {
+            let B = -*(*m).flex_edgedamping.add(f as usize);
+            if *(*m).flex_rigid.add(f as usize) || B == 0.0 {
+                continue;
+            }
+
+            let flex_edgeadr = *(*m).flex_edgeadr.add(f as usize);
+            let flex_edgenum = *(*m).flex_edgenum.add(f as usize);
+
+            // process non-rigid edges of this flex
+            for e in flex_edgeadr..(flex_edgeadr + flex_edgenum) {
+                if *(*m).flexedge_rigid.add(e as usize) {
+                    continue;
+                }
+
+                // always sparse
+                add_jtbj_sparse(m, d, (*d).flexedge_J as *const f64, &B, 1, e,
+                    (*m).flexedge_J_rownnz as *const i32,
+                    (*m).flexedge_J_rowadr as *const i32,
+                    (*m).flexedge_J_colind as *const i32);
+            }
+        }
+
+        // tendon damping
+        let ntendon = (*m).ntendon as i32;
+        for i in 0..ntendon {
+            // skip tendon in sleeping trees
+            if sleep_filter {
+                let treenum = *(*m).tendon_treenum.add(i as usize);
+                let id1 = *(*m).tendon_treeid.add((2 * i) as usize);
+                if treenum == 1 && *(*d).tree_awake.add(id1 as usize) == 0 {
+                    continue;
+                }
+                let id2 = *(*m).tendon_treeid.add((2 * i + 1) as usize);
+                if treenum == 2 && *(*d).tree_awake.add(id1 as usize) == 0
+                    && *(*d).tree_awake.add(id2 as usize) == 0
+                {
+                    continue;
+                }
+            }
+
+            let v = *(*d).ten_velocity.add(i as usize);
+            let mut poly: [f64; 2] = [0.0; 2];
+            crate::engine::engine_util_blas::mju_copy(
+                poly.as_mut_ptr(), (*m).tendon_dampingpoly.add((mjNPOLY * i) as usize), mjNPOLY);
+            let damping = *(*m).tendon_damping.add(i as usize)
+                + crate::engine::engine_core_util::mj_actuator_damping(
+                    m, mjOBJ_TENDON, i, poly.as_mut_ptr());
+            let B = -crate::engine::engine_util_misc::mjd_x_poly_force(
+                damping, poly.as_ptr(), v, mjNPOLY, 1);
+
+            if B == 0.0 {
+                continue;
+            }
+
+            // add sparse
+            add_jtbj_sparse(m, d, (*d).ten_J as *const f64, &B, 1, i,
+                (*m).ten_J_rownnz as *const i32,
+                (*m).ten_J_rowadr as *const i32,
+                (*m).ten_J_colind as *const i32);
+        }
+    }
 }
 
 /// C: mjd_rne_vel_dense (engine/engine_derivative.h:44)
