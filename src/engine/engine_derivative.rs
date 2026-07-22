@@ -1213,7 +1213,189 @@ pub fn mjd_ellipsoid_fluid(m: *const mjModel, d: *mut mjData, bodyid: i32) {
 /// Calls: addJTBJ, addJTBJSparse, mj_bodyChain, mj_freeStack, mj_isSparse, mj_jacBodyCom, mj_jacSparse, mj_markStack, mj_objectVelocity, mj_stackAllocInfo, mju_copy, mju_copy3, mju_max, mju_mulMatTMat, mju_subFrom3, mju_transformSpatial, mju_zero
 #[allow(unused_variables, non_snake_case)]
 pub fn mjd_inertia_box_fluid(m: *const mjModel, d: *mut mjData, i: i32) {
-    todo!() // mjd_inertiaBoxFluid
+    const MJ_MINVAL: f64 = 1e-15;
+    const MJ_PI: f64 = std::f64::consts::PI;
+    const mjOBJ_BODY: i32 = 1;
+
+    // SAFETY: m, d are valid pointers (caller contract).
+    unsafe {
+        crate::engine::engine_memory::mj_mark_stack(d);
+
+        let nv = (*m).nv as i32;
+        let mut rownnz: [i32; 6] = [0; 6];
+        let mut rowadr: [i32; 6] = [0; 6];
+        let J: *mut f64 = crate::engine::engine_memory::mj_stack_alloc_num(d, (6 * nv) as usize);
+        let tmp: *mut f64 = crate::engine::engine_memory::mj_stack_alloc_num(d, (3 * nv) as usize);
+        let colind: *mut i32 = crate::engine::engine_memory::mj_stack_alloc_int(d, (6 * nv) as usize);
+
+        let mut lvel: [f64; 6] = [0.0; 6];
+        let mut wind: [f64; 6] = [0.0; 6];
+        let mut lwind: [f64; 6] = [0.0; 6];
+        let mut box_: [f64; 3] = [0.0; 3];
+        let inertia: *const f64 = (*m).body_inertia.add((3 * i) as usize);
+
+        // equivalent inertia box
+        box_[0] = (crate::engine::engine_util_misc::mju_max(MJ_MINVAL,
+            *inertia.add(1) + *inertia.add(2) - *inertia.add(0))
+            / *(*m).body_mass.add(i as usize) * 6.0).sqrt();
+        box_[1] = (crate::engine::engine_util_misc::mju_max(MJ_MINVAL,
+            *inertia.add(0) + *inertia.add(2) - *inertia.add(1))
+            / *(*m).body_mass.add(i as usize) * 6.0).sqrt();
+        box_[2] = (crate::engine::engine_util_misc::mju_max(MJ_MINVAL,
+            *inertia.add(0) + *inertia.add(1) - *inertia.add(2))
+            / *(*m).body_mass.add(i as usize) * 6.0).sqrt();
+
+        // map from CoM-centered to local body-centered 6D velocity
+        crate::engine::engine_core_util::mj_object_velocity(
+            m, d as *const crate::types::mjData, mjOBJ_BODY, i, lvel.as_mut_ptr(), 1);
+
+        // compute wind in local coordinates
+        crate::engine::engine_util_blas::mju_zero(wind.as_mut_ptr(), 6);
+        crate::engine::engine_util_blas::mju_copy3(wind.as_mut_ptr().add(3), (*m).opt.wind.as_ptr());
+        crate::engine::engine_util_spatial::mju_transform_spatial(
+            lwind.as_mut_ptr(), wind.as_ptr(), 0,
+            (*d).xipos.add((3 * i) as usize),
+            (*d).subtree_com.add((3 * *(*m).body_rootid.add(i as usize)) as usize),
+            (*d).ximat.add((9 * i) as usize));
+
+        // subtract translational component from body velocity
+        crate::engine::engine_util_blas::mju_sub_from3(lvel.as_mut_ptr().add(3), lwind.as_ptr().add(3));
+
+        // init with dense
+        let mut nnz: i32 = nv;
+
+        // sparse Jacobian
+        if crate::engine::engine_core_util::mj_is_sparse(m) != 0 {
+            // get sparse body Jacobian structure
+            nnz = crate::engine::engine_core_util::mj_body_chain(m, i, colind);
+
+            // get sparse jacBodyCom
+            crate::engine::engine_core_util::mj_jac_sparse(
+                m, d as *const crate::types::mjData,
+                J.add((3 * nnz) as usize), J,
+                (*d).xipos.add((3 * i) as usize), i, nnz, colind as *const i32, 0);
+
+            // prepare rownnz, rowadr, colind for all 6 rows
+            rownnz[0] = nnz;
+            rowadr[0] = 0;
+            for j in 1..6i32 {
+                rownnz[j as usize] = nnz;
+                rowadr[j as usize] = rowadr[(j - 1) as usize] + nnz;
+                for k in 0..nnz {
+                    *colind.add((j * nnz + k) as usize) = *colind.add(k as usize);
+                }
+            }
+        }
+        // dense Jacobian
+        else {
+            crate::engine::engine_core_util::mj_jac_body_com(
+                m, d as *const crate::types::mjData,
+                J.add((3 * nv) as usize), J, i);
+        }
+
+        // rotate (compressed) Jacobian to local frame
+        crate::engine::engine_util_blas::mju_mul_mat_t_mat(
+            tmp, (*d).ximat.add((9 * i) as usize), J, 3, 3, nnz);
+        crate::engine::engine_util_blas::mju_copy(J, tmp as *const f64, 3 * nnz);
+        crate::engine::engine_util_blas::mju_mul_mat_t_mat(
+            tmp, (*d).ximat.add((9 * i) as usize), J.add((3 * nnz) as usize), 3, 3, nnz);
+        crate::engine::engine_util_blas::mju_copy(J.add((3 * nnz) as usize), tmp as *const f64, 3 * nnz);
+
+        // add viscous force and torque
+        if (*m).opt.viscosity > 0.0 {
+            // diameter of sphere approximation
+            let diam = (box_[0] + box_[1] + box_[2]) / 3.0;
+
+            // rotational viscous force
+            let mut B: f64 = -MJ_PI * diam * diam * diam * (*m).opt.viscosity;
+            for j in 0..3i32 {
+                if crate::engine::engine_core_util::mj_is_sparse(m) != 0 {
+                    add_jtbj_sparse(m, d, J as *const f64, &B, 1, j,
+                        rownnz.as_ptr(), rowadr.as_ptr(), colind as *const i32);
+                } else {
+                    add_jtbj(m, d, J.add((j * nv) as usize) as *const f64, &B, 1);
+                }
+            }
+
+            // translational viscous force
+            B = -3.0 * MJ_PI * diam * (*m).opt.viscosity;
+            for j in 0..3i32 {
+                if crate::engine::engine_core_util::mj_is_sparse(m) != 0 {
+                    add_jtbj_sparse(m, d, J as *const f64, &B, 1, 3 + j,
+                        rownnz.as_ptr(), rowadr.as_ptr(), colind as *const i32);
+                } else {
+                    add_jtbj(m, d, J.add(((3 + j) * nv) as usize) as *const f64, &B, 1);
+                }
+            }
+        }
+
+        // add lift and drag force and torque
+        if (*m).opt.density > 0.0 {
+            let mut B: f64;
+
+            // lfrc[0] drag
+            B = -(*m).opt.density * box_[0]
+                * (box_[1] * box_[1] * box_[1] * box_[1] + box_[2] * box_[2] * box_[2] * box_[2])
+                * 2.0 * lvel[0].abs() / 64.0;
+            if crate::engine::engine_core_util::mj_is_sparse(m) != 0 {
+                add_jtbj_sparse(m, d, J as *const f64, &B, 1, 0,
+                    rownnz.as_ptr(), rowadr.as_ptr(), colind as *const i32);
+            } else {
+                add_jtbj(m, d, J as *const f64, &B, 1);
+            }
+
+            // lfrc[1] drag
+            B = -(*m).opt.density * box_[1]
+                * (box_[0] * box_[0] * box_[0] * box_[0] + box_[2] * box_[2] * box_[2] * box_[2])
+                * 2.0 * lvel[1].abs() / 64.0;
+            if crate::engine::engine_core_util::mj_is_sparse(m) != 0 {
+                add_jtbj_sparse(m, d, J as *const f64, &B, 1, 1,
+                    rownnz.as_ptr(), rowadr.as_ptr(), colind as *const i32);
+            } else {
+                add_jtbj(m, d, J.add(nv as usize) as *const f64, &B, 1);
+            }
+
+            // lfrc[2] drag
+            B = -(*m).opt.density * box_[2]
+                * (box_[0] * box_[0] * box_[0] * box_[0] + box_[1] * box_[1] * box_[1] * box_[1])
+                * 2.0 * lvel[2].abs() / 64.0;
+            if crate::engine::engine_core_util::mj_is_sparse(m) != 0 {
+                add_jtbj_sparse(m, d, J as *const f64, &B, 1, 2,
+                    rownnz.as_ptr(), rowadr.as_ptr(), colind as *const i32);
+            } else {
+                add_jtbj(m, d, J.add((2 * nv) as usize) as *const f64, &B, 1);
+            }
+
+            // lfrc[3] drag
+            B = -0.5 * (*m).opt.density * box_[1] * box_[2] * 2.0 * lvel[3].abs();
+            if crate::engine::engine_core_util::mj_is_sparse(m) != 0 {
+                add_jtbj_sparse(m, d, J as *const f64, &B, 1, 3,
+                    rownnz.as_ptr(), rowadr.as_ptr(), colind as *const i32);
+            } else {
+                add_jtbj(m, d, J.add((3 * nv) as usize) as *const f64, &B, 1);
+            }
+
+            // lfrc[4] drag
+            B = -0.5 * (*m).opt.density * box_[0] * box_[2] * 2.0 * lvel[4].abs();
+            if crate::engine::engine_core_util::mj_is_sparse(m) != 0 {
+                add_jtbj_sparse(m, d, J as *const f64, &B, 1, 4,
+                    rownnz.as_ptr(), rowadr.as_ptr(), colind as *const i32);
+            } else {
+                add_jtbj(m, d, J.add((4 * nv) as usize) as *const f64, &B, 1);
+            }
+
+            // lfrc[5] drag
+            B = -0.5 * (*m).opt.density * box_[0] * box_[1] * 2.0 * lvel[5].abs();
+            if crate::engine::engine_core_util::mj_is_sparse(m) != 0 {
+                add_jtbj_sparse(m, d, J as *const f64, &B, 1, 5,
+                    rownnz.as_ptr(), rowadr.as_ptr(), colind as *const i32);
+            } else {
+                add_jtbj(m, d, J.add((5 * nv) as usize) as *const f64, &B, 1);
+            }
+        }
+
+        crate::engine::engine_memory::mj_free_stack(d);
+    }
 }
 
 /// C: mjd_subQuat (engine/engine_derivative.h:27)
