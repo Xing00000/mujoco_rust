@@ -1087,7 +1087,302 @@ pub fn mj_contact_jacobian(m: *const mjModel, d: *mut mjData, con: *const mjCont
 /// Calls: mj_elemBodyWeight, mj_vertBodyWeight, mju_flexGatherCellState, mju_flexGatherFaceState, mju_message
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_diag_approx(m: *const mjModel, d: *mut mjData) {
-    todo!() // mj_diagApprox
+    const MJCNSTR_EQUALITY: i32 = 0;
+    const MJCNSTR_FRICTION_DOF: i32 = 1;
+    const MJCNSTR_FRICTION_TENDON: i32 = 2;
+    const MJCNSTR_LIMIT_JOINT: i32 = 3;
+    const MJCNSTR_LIMIT_TENDON: i32 = 4;
+    const MJCNSTR_CONTACT_FRICTIONLESS: i32 = 5;
+    const MJCNSTR_CONTACT_PYRAMIDAL: i32 = 6;
+    const MJCNSTR_CONTACT_ELLIPTIC: i32 = 7;
+
+    const MJEQ_CONNECT: i32 = 0;
+    const MJEQ_WELD: i32 = 1;
+    const MJEQ_JOINT: i32 = 2;
+    const MJEQ_TENDON: i32 = 3;
+    const MJEQ_FLEX: i32 = 4;
+    const MJEQ_FLEXVERT: i32 = 5;
+    const MJEQ_FLEXSTRAIN: i32 = 6;
+
+    const MJNEQDATA: i32 = 11;
+
+    // SAFETY: m, d are valid pointers (caller contract). All array accesses are within
+    // model-allocated bounds guaranteed by mujoco's constraint construction.
+    unsafe {
+        let nefc = (*d).nefc;
+        let dA = (*d).efc_diagA;
+        let mut weldcnt: i32 = 0;
+
+        // loop over all constraints, compute approximate inverse inertia
+        let mut i: i32 = 0;
+        while i < nefc {
+            // get constraint id
+            let id = *(*d).efc_id.add(i as usize);
+
+            // process according to constraint type
+            let efc_type = *(*d).efc_type.add(i as usize);
+            if efc_type == MJCNSTR_EQUALITY {
+                // process according to equality-constraint type
+                let eq_type = *(*m).eq_type.add(id as usize);
+                if eq_type == MJEQ_CONNECT {
+                    let mut b1 = *(*m).eq_obj1id.add(id as usize);
+                    let mut b2 = *(*m).eq_obj2id.add(id as usize);
+
+                    // get body ids if using site semantics
+                    if *(*m).eq_objtype.add(id as usize) == 6 { // mjOBJ_SITE
+                        b1 = *(*m).site_bodyid.add(b1 as usize);
+                        b2 = *(*m).site_bodyid.add(b2 as usize);
+                    }
+
+                    // body translation
+                    *dA.add(i as usize) = *(*m).body_invweight0.add(2 * b1 as usize)
+                        + *(*m).body_invweight0.add(2 * b2 as usize);
+                } else if eq_type == MJEQ_WELD {
+                    let mut b1 = *(*m).eq_obj1id.add(id as usize);
+                    let mut b2 = *(*m).eq_obj2id.add(id as usize);
+
+                    // get body ids if using site semantics
+                    if *(*m).eq_objtype.add(id as usize) == 6 { // mjOBJ_SITE
+                        b1 = *(*m).site_bodyid.add(b1 as usize);
+                        b2 = *(*m).site_bodyid.add(b2 as usize);
+                    }
+
+                    // body translation or rotation depending on weldcnt
+                    let offset = if weldcnt > 2 { 1 } else { 0 };
+                    *dA.add(i as usize) = *(*m).body_invweight0.add((2 * b1 + offset) as usize)
+                        + *(*m).body_invweight0.add((2 * b2 + offset) as usize);
+                    weldcnt = (weldcnt + 1) % 6;
+                } else if eq_type == MJEQ_JOINT || eq_type == MJEQ_TENDON {
+                    // object 1 contribution
+                    if eq_type == MJEQ_JOINT {
+                        *dA.add(i as usize) = *(*m).dof_invweight0.add(
+                            *(*m).jnt_dofadr.add(*(*m).eq_obj1id.add(id as usize) as usize) as usize);
+                    } else {
+                        *dA.add(i as usize) = *(*m).tendon_invweight0.add(
+                            *(*m).eq_obj1id.add(id as usize) as usize);
+                    }
+
+                    // add object 2 contribution if present
+                    if *(*m).eq_obj2id.add(id as usize) >= 0 {
+                        if eq_type == MJEQ_JOINT {
+                            *dA.add(i as usize) += *(*m).dof_invweight0.add(
+                                *(*m).jnt_dofadr.add(*(*m).eq_obj2id.add(id as usize) as usize) as usize);
+                        } else {
+                            *dA.add(i as usize) += *(*m).tendon_invweight0.add(
+                                *(*m).eq_obj2id.add(id as usize) as usize);
+                        }
+                    }
+                } else if eq_type == MJEQ_FLEX {
+                    // process all non-rigid edges for this flex
+                    let f = *(*m).eq_obj1id.add(id as usize);
+                    let flex_edgeadr = *(*m).flex_edgeadr.add(f as usize);
+                    let flex_edgenum = *(*m).flex_edgenum.add(f as usize);
+                    for e in flex_edgeadr..(flex_edgeadr + flex_edgenum) {
+                        if !*(*m).flexedge_rigid.add(e as usize) {
+                            *dA.add(i as usize) = *(*m).flexedge_invweight0.add(e as usize);
+                            i += 1;
+                        }
+                    }
+                    // adjust constraint counter
+                    i -= 1;
+                } else if eq_type == MJEQ_FLEXVERT {
+                    // process all vertices for this flex
+                    let f = *(*m).eq_obj1id.add(id as usize);
+                    let vertadr = *(*m).flex_vertadr.add(f as usize);
+                    let vertnum = *(*m).flex_vertnum.add(f as usize);
+                    for v in vertadr..(vertadr + vertnum) {
+                        let bodyid = *(*m).flex_vertbodyid.add(v as usize);
+                        *dA.add(i as usize) = *(*m).body_invweight0.add(2 * bodyid as usize);
+                        i += 1;
+                        *dA.add(i as usize) = *(*m).body_invweight0.add(2 * bodyid as usize);
+                        i += 1;
+                    }
+                    // adjust constraint counter
+                    i -= 1;
+                } else if eq_type == MJEQ_FLEXSTRAIN {
+                    // strain constraints: use avg inv weight of element's nodes
+                    let flex_id = *(*m).eq_obj1id.add(id as usize);
+                    let nstart = *(*m).flex_nodeadr.add(flex_id as usize);
+                    let interp = *(*m).flex_interp.add(flex_id as usize);
+                    let order = if interp < 0 { -interp } else { interp };
+                    let is_shell = interp < 0;
+
+                    let cx = *(*m).flex_cellnum.add(3 * flex_id as usize);
+                    let cy = *(*m).flex_cellnum.add(3 * flex_id as usize + 1);
+                    let cz = *(*m).flex_cellnum.add(3 * flex_id as usize + 2);
+
+                    // nodes per element
+                    let npe: i32;
+                    let elem_idx: i32;
+                    if is_shell {
+                        npe = (order + 1) * (order + 1);
+                        elem_idx = *(*m).eq_data.add(MJNEQDATA as usize * id as usize) as i32;
+                    } else {
+                        npe = (order + 1) * (order + 1) * (order + 1);
+                        let ci_cell = *(*m).eq_data.add(MJNEQDATA as usize * id as usize) as i32;
+                        let cj_cell = *(*m).eq_data.add(MJNEQDATA as usize * id as usize + 1) as i32;
+                        let ck_cell = *(*m).eq_data.add(MJNEQDATA as usize * id as usize + 2) as i32;
+                        elem_idx = ci_cell * cy * cz + cj_cell * cz + ck_cell;
+                    }
+
+                    // read neig from flex_stiffness
+                    let ndof_elem = 3 * npe;
+                    let k_elem = (*m).flex_stiffness.add(
+                        (*(*m).flex_stiffnessadr.add(flex_id as usize)
+                            + elem_idx * ndof_elem * ndof_elem) as usize);
+                    let nconstraint = *k_elem as i32;
+
+                    // get element node indices
+                    let mut gindices: [i32; 125] = [0; 125];
+                    if is_shell {
+                        crate::engine::engine_util_misc::mju_flex_gather_face_state(
+                            order, cx, cy, cz, elem_idx,
+                            std::ptr::null(), std::ptr::null(), std::ptr::null(),
+                            std::ptr::null_mut(), std::ptr::null_mut(), std::ptr::null_mut(),
+                            gindices.as_mut_ptr(), std::ptr::null_mut(),
+                        );
+                    } else {
+                        let ci_cell = *(*m).eq_data.add(MJNEQDATA as usize * id as usize) as i32;
+                        let cj_cell = *(*m).eq_data.add(MJNEQDATA as usize * id as usize + 1) as i32;
+                        let ck_cell = *(*m).eq_data.add(MJNEQDATA as usize * id as usize + 2) as i32;
+                        crate::engine::engine_util_misc::mju_flex_gather_cell_state(
+                            order, cy, cz, ci_cell, cj_cell, ck_cell,
+                            std::ptr::null(), std::ptr::null(), std::ptr::null(),
+                            std::ptr::null_mut(), std::ptr::null_mut(), std::ptr::null_mut(),
+                            gindices.as_mut_ptr(), std::ptr::null_mut(),
+                        );
+                    }
+
+                    let mut avg_invweight: f64 = 0.0;
+                    for n in 0..npe {
+                        let bodyid = *(*m).flex_nodebodyid.add(
+                            (nstart + gindices[n as usize]) as usize);
+                        avg_invweight += *(*m).body_invweight0.add(2 * bodyid as usize);
+                    }
+                    avg_invweight /= npe as f64;
+                    for _c in 0..nconstraint {
+                        *dA.add(i as usize) = avg_invweight;
+                        i += 1;
+                    }
+                    // adjust constraint counter
+                    i -= 1;
+                } else {
+                    crate::engine::engine_util_errmem::mju_error(
+                        b"unknown constraint type\0".as_ptr() as *const i8);
+                }
+            } else if efc_type == MJCNSTR_FRICTION_DOF {
+                *dA.add(i as usize) = *(*m).dof_invweight0.add(id as usize);
+            } else if efc_type == MJCNSTR_LIMIT_JOINT {
+                *dA.add(i as usize) = *(*m).dof_invweight0.add(
+                    *(*m).jnt_dofadr.add(id as usize) as usize);
+            } else if efc_type == MJCNSTR_FRICTION_TENDON || efc_type == MJCNSTR_LIMIT_TENDON {
+                *dA.add(i as usize) = *(*m).tendon_invweight0.add(id as usize);
+            } else if efc_type == MJCNSTR_CONTACT_FRICTIONLESS
+                || efc_type == MJCNSTR_CONTACT_PYRAMIDAL
+                || efc_type == MJCNSTR_CONTACT_ELLIPTIC
+            {
+                // get contact info
+                let con = (*d).contact.add(id as usize);
+                let dim = (*con).dim;
+
+                // add the average translation and rotation components from both sides
+                let mut tran: f64 = 0.0;
+                let mut rot: f64 = 0.0;
+                for side in 0..2i32 {
+                    // get bodies and weights
+                    let mut nb: i32 = 0;
+                    let mut bid: [i32; 729] = [0; 729];
+                    let mut bweight: [f64; 729] = [0.0; 729];
+
+                    // geom
+                    if (*con).geom[side as usize] >= 0 {
+                        bid[0] = *(*m).geom_bodyid.add((*con).geom[side as usize] as usize);
+                        bweight[0] = 1.0;
+                        nb = 1;
+                    }
+                    // flex
+                    else {
+                        let mut nw: i32 = 0;
+                        let mut vid: [i32; 4] = [0; 4];
+                        let mut vweight: [f64; 4] = [0.0; 4];
+
+                        // vert
+                        if (*con).vert[side as usize] >= 0 {
+                            vid[0] = *(*m).flex_vertadr.add((*con).flex[side as usize] as usize)
+                                + (*con).vert[side as usize];
+                            vweight[0] = 1.0;
+                            nw = 1;
+                        }
+                        // elem
+                        else {
+                            nw = mj_elem_body_weight(
+                                m, d as *const mjData,
+                                (*con).flex[side as usize],
+                                (*con).elem[side as usize],
+                                (*con).vert[(1 - side) as usize],
+                                (*con).pos.as_ptr(),
+                                vid.as_mut_ptr(),
+                                vweight.as_mut_ptr(),
+                            );
+                        }
+
+                        // convert vertex ids and weights to body ids and weights
+                        if *(*m).flex_interp.add((*con).flex[side as usize] as usize) == 0 {
+                            for k in 0..nw {
+                                bid[k as usize] = *(*m).flex_vertbodyid.add(vid[k as usize] as usize);
+                                bweight[k as usize] = vweight[k as usize];
+                                nb += 1;
+                            }
+                        } else {
+                            nb += mj_vert_body_weight(
+                                m, d as *const mjData,
+                                (*con).flex[side as usize],
+                                vid.as_mut_ptr(),
+                                bid.as_mut_ptr().add(nb as usize),
+                                bweight.as_mut_ptr().add(nb as usize),
+                                vweight.as_ptr(),
+                                nw,
+                            );
+                        }
+                    }
+
+                    // add weighted average over bodies
+                    for k in 0..nb {
+                        tran += *(*m).body_invweight0.add(2 * bid[k as usize] as usize)
+                            * bweight[k as usize];
+                        rot += *(*m).body_invweight0.add((2 * bid[k as usize] + 1) as usize)
+                            * bweight[k as usize];
+                    }
+                }
+
+                // set frictionless
+                if efc_type == MJCNSTR_CONTACT_FRICTIONLESS {
+                    *dA.add(i as usize) = tran;
+                }
+                // set elliptical
+                else if efc_type == MJCNSTR_CONTACT_ELLIPTIC {
+                    for j in 0..dim {
+                        *dA.add((i + j) as usize) = if j < 3 { tran } else { rot };
+                    }
+                    // processed dim elements in one i-loop iteration; advance counter
+                    i += dim - 1;
+                }
+                // set pyramidal
+                else {
+                    for j in 0..(dim - 1) {
+                        let fri = (*con).friction[j as usize];
+                        let val = tran + fri * fri * (if j < 2 { tran } else { rot });
+                        *dA.add((i + 2 * j) as usize) = val;
+                        *dA.add((i + 2 * j + 1) as usize) = val;
+                    }
+                    // processed 2*dim-2 elements in one i-loop iteration; advance counter
+                    i += 2 * dim - 3;
+                }
+            }
+
+            i += 1;
+        }
+    }
 }
 
 /// C: mj_makeImpedance (engine/engine_core_constraint.h:81)

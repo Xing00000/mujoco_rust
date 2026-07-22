@@ -97,7 +97,32 @@ pub fn mj_geom_distance_ccd(m: *const mjModel, d: *mut mjData, g1: i32, g2: i32,
 /// Calls: mj_stateElemSize, mju_message
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_state_size(m: *const mjModel, sig: i32) -> i32 {
-    todo!() // mj_stateSize
+    const MJ_NSTATE: i32 = 14;
+
+    // SAFETY: m is a valid pointer (caller contract).
+    unsafe {
+        if sig < 0 {
+            crate::engine::engine_util_errmem::mju_error(
+                b"invalid state signature < 0\0".as_ptr() as *const i8);
+            return 0;
+        }
+
+        if sig >= (1 << MJ_NSTATE) {
+            crate::engine::engine_util_errmem::mju_error(
+                b"invalid state signature >= 2^mjNSTATE\0".as_ptr() as *const i8);
+            return 0;
+        }
+
+        let mut size: i32 = 0;
+        for i in 0..MJ_NSTATE {
+            let element: u32 = 1 << i;
+            if (element as i32 & sig) != 0 {
+                size += mj_state_elem_size(m, element);
+            }
+        }
+
+        size
+    }
 }
 
 /// C: mj_getState (engine/engine_support.h:44)
@@ -109,7 +134,46 @@ pub fn mj_state_size(m: *const mjModel, sig: i32) -> i32 {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_get_state(m: *const mjModel, d: *const mjData, state: *mut f64, sig: i32) {
-    todo!() // mj_getState
+    const MJ_NSTATE: i32 = 14;
+    const MJ_STATE_EQ_ACTIVE: u32 = 1 << 9;
+
+    // SAFETY: m, d, state are valid pointers (caller contract).
+    unsafe {
+        if sig < 0 {
+            crate::engine::engine_util_errmem::mju_error(
+                b"invalid state signature < 0\0".as_ptr() as *const i8);
+            return;
+        }
+
+        if sig >= (1 << MJ_NSTATE) {
+            crate::engine::engine_util_errmem::mju_error(
+                b"invalid state signature >= 2^mjNSTATE\0".as_ptr() as *const i8);
+            return;
+        }
+
+        let mut adr: i32 = 0;
+        for i in 0..MJ_NSTATE {
+            let element: u32 = 1 << i;
+            if (element as i32 & sig) != 0 {
+                let size = mj_state_elem_size(m, element);
+
+                // special handling of eq_active (mjtBool)
+                if element == MJ_STATE_EQ_ACTIVE {
+                    let neq = (*m).neq as i32;
+                    for j in 0..neq {
+                        *state.add(adr as usize) = if *(*d).eq_active.add(j as usize) { 1.0 } else { 0.0 };
+                        adr += 1;
+                    }
+                }
+                // regular state components (mjtNum)
+                else {
+                    let ptr = mj_state_elem_const_ptr(m, d, element);
+                    crate::engine::engine_util_blas::mju_copy(state.add(adr as usize), ptr, size);
+                    adr += size;
+                }
+            }
+        }
+    }
 }
 
 /// C: mj_extractState (engine/engine_support.h:47)
@@ -121,7 +185,43 @@ pub fn mj_get_state(m: *const mjModel, d: *const mjData, state: *mut f64, sig: i
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_extract_state(m: *const mjModel, src: *const f64, srcsig: i32, dst: *mut f64, dstsig: i32) {
-    todo!() // mj_extractState
+    const MJ_NSTATE: i32 = 14;
+
+    // SAFETY: m, src, dst are valid pointers (caller contract).
+    unsafe {
+        if srcsig < 0 {
+            crate::engine::engine_util_errmem::mju_error(
+                b"invalid srcsig < 0\0".as_ptr() as *const i8);
+            return;
+        }
+
+        if srcsig >= (1 << MJ_NSTATE) {
+            crate::engine::engine_util_errmem::mju_error(
+                b"invalid srcsig >= 2^mjNSTATE\0".as_ptr() as *const i8);
+            return;
+        }
+
+        if (srcsig & dstsig) != dstsig {
+            crate::engine::engine_util_errmem::mju_error(
+                b"dstsig is not a subset of srcsig\0".as_ptr() as *const i8);
+            return;
+        }
+
+        let mut src_off: i32 = 0;
+        let mut dst_off: i32 = 0;
+        for i in 0..MJ_NSTATE {
+            let element: u32 = 1 << i;
+            if (element as i32 & srcsig) != 0 {
+                let size = mj_state_elem_size(m, element);
+                if (element as i32 & dstsig) != 0 {
+                    crate::engine::engine_util_blas::mju_copy(
+                        dst.add(dst_off as usize), src.add(src_off as usize), size);
+                    dst_off += size;
+                }
+                src_off += size;
+            }
+        }
+    }
 }
 
 /// C: mj_setState (engine/engine_support.h:51)
@@ -133,21 +233,131 @@ pub fn mj_extract_state(m: *const mjModel, src: *const f64, srcsig: i32, dst: *m
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_set_state(m: *const mjModel, d: *mut mjData, state: *const f64, sig: i32) {
-    todo!() // mj_setState
+    const MJ_NSTATE: i32 = 14;
+    const MJ_STATE_EQ_ACTIVE: u32 = 1 << 9;
+
+    // SAFETY: m, d, state are valid pointers (caller contract).
+    unsafe {
+        if sig < 0 {
+            crate::engine::engine_util_errmem::mju_error(
+                b"invalid state signature < 0\0".as_ptr() as *const i8);
+            return;
+        }
+
+        if sig >= (1 << MJ_NSTATE) {
+            crate::engine::engine_util_errmem::mju_error(
+                b"invalid state signature >= 2^mjNSTATE\0".as_ptr() as *const i8);
+            return;
+        }
+
+        let mut adr: i32 = 0;
+        for i in 0..MJ_NSTATE {
+            let element: u32 = 1 << i;
+            if (element as i32 & sig) != 0 {
+                let size = mj_state_elem_size(m, element);
+
+                // special handling of eq_active (mjtBool)
+                if element == MJ_STATE_EQ_ACTIVE {
+                    let neq = (*m).neq as i32;
+                    for j in 0..neq {
+                        *(*d).eq_active.add(j as usize) = *state.add(adr as usize) != 0.0;
+                        adr += 1;
+                    }
+                }
+                // regular state components (mjtNum)
+                else {
+                    let ptr = mj_state_elem_ptr(m, d, element);
+                    crate::engine::engine_util_blas::mju_copy(ptr, state.add(adr as usize), size);
+                    adr += size;
+                }
+            }
+        }
+    }
 }
 
 /// C: mj_copyState (engine/engine_support.h:54)
 /// Calls: mj_stateElemConstPtr, mj_stateElemPtr, mj_stateElemSize, mju_copy, mju_message
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_copy_state(m: *const mjModel, src: *const mjData, dst: *mut mjData, sig: i32) {
-    todo!() // mj_copyState
+    const MJ_NSTATE: i32 = 14;
+    const MJ_STATE_EQ_ACTIVE: u32 = 1 << 9;
+
+    // SAFETY: m, src, dst are valid pointers (caller contract).
+    unsafe {
+        if sig < 0 {
+            crate::engine::engine_util_errmem::mju_error(
+                b"invalid state signature < 0\0".as_ptr() as *const i8);
+            return;
+        }
+
+        if sig >= (1 << MJ_NSTATE) {
+            crate::engine::engine_util_errmem::mju_error(
+                b"invalid state signature >= 2^mjNSTATE\0".as_ptr() as *const i8);
+            return;
+        }
+
+        for i in 0..MJ_NSTATE {
+            let element: u32 = 1 << i;
+            if (element as i32 & sig) != 0 {
+                let size = mj_state_elem_size(m, element);
+
+                // special handling of eq_active (mjtBool)
+                if element == MJ_STATE_EQ_ACTIVE {
+                    let neq = (*m).neq as i32;
+                    for j in 0..neq {
+                        *(*dst).eq_active.add(j as usize) = *(*src).eq_active.add(j as usize);
+                    }
+                }
+                // regular state components (mjtNum)
+                else {
+                    let dst_ptr = mj_state_elem_ptr(m, dst, element);
+                    let src_ptr = mj_state_elem_const_ptr(m, src, element);
+                    crate::engine::engine_util_blas::mju_copy(dst_ptr, src_ptr, size);
+                }
+            }
+        }
+    }
 }
 
 /// C: mj_setKeyframe (engine/engine_support.h:57)
 /// Calls: mju_copy, mju_message
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_set_keyframe(m: *mut mjModel, d: *const mjData, k: i32) {
-    todo!() // mj_setKeyframe
+    // SAFETY: m, d are valid pointers (caller contract).
+    unsafe {
+        // check keyframe index
+        if k as i64 >= (*m).nkey {
+            crate::engine::engine_util_errmem::mju_error(
+                b"keyframe index too large\0".as_ptr() as *const i8);
+            return;
+        }
+        if k < 0 {
+            crate::engine::engine_util_errmem::mju_error(
+                b"keyframe index cannot be negative\0".as_ptr() as *const i8);
+            return;
+        }
+
+        let nq = (*m).nq as i32;
+        let nv = (*m).nv as i32;
+        let na = (*m).na as i32;
+        let nu = (*m).nu as i32;
+        let nmocap = (*m).nmocap as i32;
+
+        // copy state to model keyframe
+        *(*m).key_time.add(k as usize) = (*d).time;
+        crate::engine::engine_util_blas::mju_copy(
+            (*m).key_qpos.add((k as i64 * (*m).nq) as usize), (*d).qpos, nq);
+        crate::engine::engine_util_blas::mju_copy(
+            (*m).key_qvel.add((k as i64 * (*m).nv) as usize), (*d).qvel, nv);
+        crate::engine::engine_util_blas::mju_copy(
+            (*m).key_act.add((k as i64 * (*m).na) as usize), (*d).act, na);
+        crate::engine::engine_util_blas::mju_copy(
+            (*m).key_mpos.add((k as i64 * 3 * (*m).nmocap) as usize), (*d).mocap_pos, 3 * nmocap);
+        crate::engine::engine_util_blas::mju_copy(
+            (*m).key_mquat.add((k as i64 * 4 * (*m).nmocap) as usize), (*d).mocap_quat, 4 * nmocap);
+        crate::engine::engine_util_blas::mju_copy(
+            (*m).key_ctrl.add((k as i64 * (*m).nu) as usize), (*d).ctrl, nu);
+    }
 }
 
 /// C: mj_fullM (engine/engine_support.h:62)
@@ -209,7 +419,36 @@ pub fn mj_mul_m(m: *const mjModel, d: *const mjData, res: *mut f64, vec: *const 
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_mul_m2(m: *const mjModel, d: *const mjData, res: *mut f64, vec: *const f64) {
-    todo!() // mj_mulM2
+    // SAFETY: m, d, res, vec are valid pointers (caller contract). Arrays are nv-sized.
+    unsafe {
+        let nv = (*m).nv as i32;
+        let qLD = (*d).qLD;
+
+        crate::engine::engine_util_blas::mju_zero(res, nv);
+
+        // res = L * vec
+        for i in 0..nv {
+            // diagonal
+            *res.add(i as usize) = *vec.add(i as usize);
+
+            // non-simple: add off-diagonals
+            if *(*m).dof_simplenum.add(i as usize) == 0 {
+                let adr = *(*m).M_rowadr.add(i as usize);
+                *res.add(i as usize) += crate::engine::engine_util_sparse::mju_dot_sparse(
+                    qLD.add(adr as usize),
+                    vec,
+                    *(*m).M_rownnz.add(i as usize) - 1,
+                    (*m).M_colind.add(adr as usize),
+                );
+            }
+        }
+
+        // res *= sqrt(D)
+        for i in 0..nv {
+            let diag = *(*m).M_rowadr.add(i as usize) + *(*m).M_rownnz.add(i as usize) - 1;
+            *res.add(i as usize) *= f64::sqrt(*qLD.add(diag as usize));
+        }
+    }
 }
 
 /// C: mj_addM (engine/engine_support.h:72)
@@ -248,7 +487,72 @@ pub fn mj_add_m(m: *const mjModel, d: *mut mjData, dst: *mut f64, rownnz: *mut i
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_apply_ft(m: *const mjModel, d: *mut mjData, force: *const f64, torque: *const f64, point: *const f64, body: i32, qfrc_target: *mut f64) {
-    todo!() // mj_applyFT
+    // SAFETY: m, d are valid pointers. force, torque may be null.
+    // point[3] valid. body is a valid body index. qfrc_target[nv] valid.
+    unsafe {
+        let nv = (*m).nv as i32;
+
+        // allocate local variables
+        crate::engine::engine_memory::mj_mark_stack(d);
+        let jacp: *mut f64 = if !force.is_null() {
+            crate::engine::engine_memory::mj_stack_alloc_num(d, (3 * nv) as usize)
+        } else {
+            std::ptr::null_mut()
+        };
+        let jacr: *mut f64 = if !torque.is_null() {
+            crate::engine::engine_memory::mj_stack_alloc_num(d, (3 * nv) as usize)
+        } else {
+            std::ptr::null_mut()
+        };
+        let qforce: *mut f64 = crate::engine::engine_memory::mj_stack_alloc_num(d, nv as usize);
+
+        // make sure body is in range
+        if body < 0 || body >= (*m).nbody as i32 {
+            crate::engine::engine_util_errmem::mju_error(
+                b"invalid body\0".as_ptr() as *const i8);
+        }
+
+        // sparse case
+        if crate::engine::engine_core_util::mj_is_sparse(m) != 0 {
+            // construct chain and sparse Jacobians
+            let chain: *mut i32 = crate::engine::engine_memory::mj_stack_alloc_int(d, nv as usize);
+            let NV = crate::engine::engine_core_util::mj_body_chain(m, body, chain);
+            crate::engine::engine_core_util::mj_jac_sparse(
+                m, d as *const mjData, jacp, jacr, point, body, NV, chain, 0);
+
+            // compute J'*f and accumulate
+            if !force.is_null() {
+                crate::engine::engine_util_blas::mju_mul_mat_t_vec(qforce, jacp, force, 3, NV);
+                for i in 0..NV {
+                    *qfrc_target.add(*chain.add(i as usize) as usize) += *qforce.add(i as usize);
+                }
+            }
+            if !torque.is_null() {
+                crate::engine::engine_util_blas::mju_mul_mat_t_vec(qforce, jacr, torque, 3, NV);
+                for i in 0..NV {
+                    *qfrc_target.add(*chain.add(i as usize) as usize) += *qforce.add(i as usize);
+                }
+            }
+        }
+        // dense case
+        else {
+            // compute Jacobians
+            crate::engine::engine_core_util::mj_jac(
+                m, d as *const mjData, jacp, jacr, point, body);
+
+            // compute J'*f and accumulate
+            if !force.is_null() {
+                crate::engine::engine_util_blas::mju_mul_mat_t_vec(qforce, jacp, force, 3, nv);
+                crate::engine::engine_util_blas::mju_add_to(qfrc_target, qforce, nv);
+            }
+            if !torque.is_null() {
+                crate::engine::engine_util_blas::mju_mul_mat_t_vec(qforce, jacr, torque, 3, nv);
+                crate::engine::engine_util_blas::mju_add_to(qfrc_target, qforce, nv);
+            }
+        }
+
+        crate::engine::engine_memory::mj_free_stack(d);
+    }
 }
 
 /// C: mj_xfrcAccumulate (engine/engine_support.h:84)
@@ -260,7 +564,33 @@ pub fn mj_apply_ft(m: *const mjModel, d: *mut mjData, force: *const f64, torque:
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_xfrc_accumulate(m: *const mjModel, d: *mut mjData, qfrc: *mut f64) {
-    todo!() // mj_xfrcAccumulate
+    // SAFETY: m, d, qfrc are valid pointers (caller contract).
+    unsafe {
+        let nbody = (*m).nbody as i32;
+        let xfrc = (*d).xfrc_applied;
+
+        // quick return if identically zero (efficient memcmp implementation)
+        if crate::engine::engine_util_misc::mju_is_zero_byte(
+            xfrc.add(6) as *const u8,
+            (6 * (nbody - 1) as usize * std::mem::size_of::<f64>()) as i32,
+        ) != 0 {
+            return;
+        }
+
+        // some non-zero wrenches, apply them
+        for i in 1..nbody {
+            if crate::engine::engine_util_misc::mju_is_zero(xfrc.add(6 * i as usize), 6) == 0 {
+                mj_apply_ft(
+                    m, d,
+                    xfrc.add(6 * i as usize),
+                    xfrc.add(6 * i as usize + 3),
+                    (*d).xipos.add(3 * i as usize),
+                    i,
+                    qfrc,
+                );
+            }
+        }
+    }
 }
 
 /// C: mj_geomDistance (engine/engine_support.h:90)
@@ -777,7 +1107,35 @@ pub fn mj_read_sensor(m: *const mjModel, d: *const mjData, id: i32, time: f64, r
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_init_ctrl_history(m: *const mjModel, d: *mut mjData, id: i32, times: *const f64, values: *const f64) {
-    todo!() // mj_initCtrlHistory
+    // SAFETY: m, d are valid pointers (caller contract). times and values may be null.
+    unsafe {
+        // validate actuator id
+        if id < 0 || id as i64 >= (*m).nu {
+            crate::engine::engine_util_errmem::mju_error(
+                b"invalid actuator id\0".as_ptr() as *const i8);
+            return;
+        }
+
+        // check that actuator has a history buffer
+        let nsample = *(*m).actuator_history.add(2 * id as usize);
+        if nsample == 0 {
+            crate::engine::engine_util_errmem::mju_error(
+                b"actuator has no history buffer\0".as_ptr() as *const i8);
+            return;
+        }
+
+        // get buffer pointer
+        let buf = (*d).history.add(*(*m).actuator_historyadr.add(id as usize) as usize);
+
+        // if times is NULL, use existing buffer times
+        let buf_times: *const f64 = if !times.is_null() { times } else { buf.add(2) };
+
+        // get existing user value (preserve it)
+        let user = *buf.add(0);
+
+        // initialize history buffer
+        crate::engine::engine_util_misc::mju_history_init(buf, nsample, 1, buf_times, values, user);
+    }
 }
 
 /// C: mj_initSensorHistory (engine/engine_support.h:158)
@@ -789,6 +1147,32 @@ pub fn mj_init_ctrl_history(m: *const mjModel, d: *mut mjData, id: i32, times: *
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_init_sensor_history(m: *const mjModel, d: *mut mjData, id: i32, times: *const f64, values: *const f64, phase: f64) {
-    todo!() // mj_initSensorHistory
+    // SAFETY: m, d are valid pointers (caller contract). times and values may be null.
+    unsafe {
+        // validate sensor id
+        if id < 0 || id as i64 >= (*m).nsensor {
+            crate::engine::engine_util_errmem::mju_error(
+                b"invalid sensor id\0".as_ptr() as *const i8);
+            return;
+        }
+
+        // check that sensor has a history buffer
+        let nsample = *(*m).sensor_history.add(2 * id as usize);
+        if nsample == 0 {
+            crate::engine::engine_util_errmem::mju_error(
+                b"sensor has no history buffer\0".as_ptr() as *const i8);
+            return;
+        }
+
+        // get buffer pointer and dimension
+        let buf = (*d).history.add(*(*m).sensor_historyadr.add(id as usize) as usize);
+        let dim = *(*m).sensor_dim.add(id as usize);
+
+        // if times is NULL, use existing buffer times
+        let buf_times: *const f64 = if !times.is_null() { times } else { buf.add(2) as *const f64 };
+
+        // initialize history buffer with provided phase
+        crate::engine::engine_util_misc::mju_history_init(buf, nsample, dim, buf_times, values, phase);
+    }
 }
 

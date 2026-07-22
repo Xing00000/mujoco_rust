@@ -561,7 +561,44 @@ pub fn mju_chol_solve_band(res: *mut f64, mat: *const f64, vec: *const f64, ntot
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mju_band2dense(res: *mut f64, mat: *const f64, ntotal: i32, nband: i32, ndense: i32, flg_sym: bool) {
-    todo!() // mju_band2Dense
+    // SAFETY: res, mat are valid pointers (caller contract).
+    unsafe {
+        let nsparse = ntotal - ndense;
+
+        // clear all
+        crate::engine::engine_util_blas::mju_zero(res, ntotal * ntotal);
+
+        // sparse part
+        for i in 0..nsparse {
+            // number of non-zeros left of (i,i)
+            let width = if i < nband - 1 { i } else { nband - 1 };
+
+            // copy data
+            crate::engine::engine_util_blas::mju_copy(
+                res.add((i * ntotal + i - width) as usize),
+                mat.add(((i + 1) * nband - (width + 1)) as usize),
+                width + 1,
+            );
+        }
+
+        // dense part
+        for i in nsparse..ntotal {
+            crate::engine::engine_util_blas::mju_copy(
+                res.add((i * ntotal) as usize),
+                mat.add((nsparse * nband + (i - nsparse) * ntotal) as usize),
+                i + 1,
+            );
+        }
+
+        // make symmetric
+        if flg_sym {
+            for i in 0..ntotal {
+                for j in (i + 1)..ntotal {
+                    *res.add((i * ntotal + j) as usize) = *res.add((j * ntotal + i) as usize);
+                }
+            }
+        }
+    }
 }
 
 /// C: mju_dense2Band (engine/engine_util_solve.h:88)

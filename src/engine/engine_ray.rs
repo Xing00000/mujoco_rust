@@ -886,7 +886,124 @@ pub fn point_in_box(aabb: *const f64, xpos: *const f64, xmat: *const f64, pnt: *
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mju_single_ray(m: *const mjModel, d: *mut mjData, pnt: *const f64, vec: *const f64, ray_eliminate: *mut i32, geom_ba: *mut f64, geomid: *mut i32, normal: *mut f64) -> f64 {
-    todo!() // mju_singleRay
+    const MJ_PI: f64 = std::f64::consts::PI;
+    const MJGEOM_MESH: i32 = 7;
+    const MJGEOM_HFIELD: i32 = 5;
+    const MJGEOM_SDF: i32 = 8;
+
+    // SAFETY: m, d, pnt, vec are valid pointers (caller contract).
+    // ray_eliminate and geom_ba have ngeom elements. geomid and normal may be null.
+    unsafe {
+        let mut dist: f64;
+        let mut newdist: f64;
+        let mut normal_local: [f64; 3] = [0.0; 3];
+        let p_normal: *mut f64 = if !normal.is_null() {
+            normal_local.as_mut_ptr()
+        } else {
+            std::ptr::null_mut()
+        };
+
+        // clear result
+        dist = -1.0;
+        if !geomid.is_null() {
+            *geomid = -1;
+        }
+        if !normal.is_null() {
+            crate::engine::engine_util_blas::mju_zero3(normal);
+        }
+
+        // get ray spherical coordinates
+        let azimuth = longitude(vec);
+        let elevation = latitude(vec);
+
+        // loop over bodies not eliminated by bodyexclude
+        for b in 0..(*m).nbody {
+            // exclude body using bounding sphere test
+            if *(*m).body_bvhadr.add(b as usize) != -1 {
+                let pos = (*m).bvh_aabb.add(6 * *(*m).body_bvhadr.add(b as usize) as usize);
+                let mut center: [f64; 3] = [0.0; 3];
+                let size = pos.add(3);
+                let ssz = *size.add(0) * *size.add(0)
+                    + *size.add(1) * *size.add(1)
+                    + *size.add(2) * *size.add(2);
+                crate::engine::engine_util_blas::mju_add3(
+                    center.as_mut_ptr(),
+                    pos,
+                    (*d).xipos.add(3 * b as usize),
+                );
+                if ray_sphere(center.as_ptr(), std::ptr::null(), ssz, pnt, vec, std::ptr::null_mut()) < 0.0 {
+                    continue;
+                }
+            }
+
+            // loop over geoms if bounding sphere test fails
+            for g in 0..*(*m).body_geomnum.add(b as usize) {
+                let i = *(*m).body_geomadr.add(b as usize) + g;
+                if *ray_eliminate.add(i as usize) != 0 {
+                    continue;
+                }
+
+                // exclude geom using bounding angles
+                if *(*m).body_bvhadr.add(b as usize) != -1 {
+                    let az_min = *geom_ba.add(4 * i as usize + 0);
+                    let az_max = *geom_ba.add(4 * i as usize + 2);
+                    let el_min = *geom_ba.add(4 * i as usize + 1);
+                    let el_max = *geom_ba.add(4 * i as usize + 3);
+
+                    // check elevation
+                    if elevation < el_min || elevation > el_max {
+                        continue;
+                    }
+
+                    // check azimuth with wraparound
+                    let az_center = (az_min + az_max) * 0.5;
+                    let az_half_width = (az_max - az_min) * 0.5;
+                    let mut az_diff = azimuth - az_center;
+                    if az_diff > MJ_PI {
+                        az_diff -= 2.0 * MJ_PI;
+                    } else if az_diff < -MJ_PI {
+                        az_diff += 2.0 * MJ_PI;
+                    }
+                    if az_diff.abs() > az_half_width {
+                        continue;
+                    }
+                }
+
+                // dispatch to type-specific ray function
+                let geom_type = *(*m).geom_type.add(i as usize) as i32;
+                if geom_type == MJGEOM_MESH {
+                    newdist = mj_ray_mesh(m, d as *const mjData, i, pnt, vec, p_normal);
+                } else if geom_type == MJGEOM_HFIELD {
+                    newdist = mj_ray_hfield(m, d as *const mjData, i, pnt, vec, p_normal);
+                } else if geom_type == MJGEOM_SDF {
+                    newdist = mj_ray_sdf(m, d as *const mjData, i, pnt, vec, p_normal);
+                } else {
+                    newdist = mju_ray_geom(
+                        (*d).geom_xpos.add(3 * i as usize),
+                        (*d).geom_xmat.add(9 * i as usize),
+                        (*m).geom_size.add(3 * i as usize),
+                        pnt,
+                        vec,
+                        geom_type,
+                        p_normal,
+                    );
+                }
+
+                // update if closer intersection found
+                if newdist >= 0.0 && (newdist < dist || dist < 0.0) {
+                    dist = newdist;
+                    if !geomid.is_null() {
+                        *geomid = i;
+                    }
+                    if !normal.is_null() {
+                        crate::engine::engine_util_blas::mju_copy3(normal, normal_local.as_ptr());
+                    }
+                }
+            }
+        }
+
+        dist
+    }
 }
 
 /// C: mju_multiRayPrepare (engine/engine_ray.h:26)
@@ -1030,7 +1147,77 @@ pub fn mj_multi_ray(m: *const mjModel, d: *mut mjData, pnt: *const f64, vec: *co
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_ray(m: *const mjModel, d: *const mjData, pnt: *const f64, vec: *const f64, geomgroup: *const u8, flg_static: bool, bodyexclude: i32, geomid: *mut i32, normal: *mut f64) -> f64 {
-    todo!() // mj_ray
+    const MJMINVAL: f64 = 1e-15;
+    const MJGEOM_MESH: i32 = 7;
+    const MJGEOM_HFIELD: i32 = 5;
+    const MJGEOM_SDF: i32 = 8;
+
+    // SAFETY: m, d, pnt, vec are valid pointers (caller contract).
+    // geomid and normal may be null. geomgroup may be null.
+    unsafe {
+        let ngeom = (*m).ngeom;
+        let mut dist: f64;
+        let mut newdist: f64;
+        let mut normal_local: [f64; 3] = [0.0; 3];
+        let p_normal: *mut f64 = if !normal.is_null() {
+            normal_local.as_mut_ptr()
+        } else {
+            std::ptr::null_mut()
+        };
+
+        // check vector length
+        if crate::engine::engine_util_blas::mju_norm3(vec) < MJMINVAL {
+            crate::engine::engine_util_errmem::mju_error(
+                b"vector length is too small\0".as_ptr() as *const i8,
+            );
+        }
+
+        // clear result
+        dist = -1.0;
+        if !geomid.is_null() {
+            *geomid = -1;
+        }
+        if !normal.is_null() {
+            crate::engine::engine_util_blas::mju_zero3(normal);
+        }
+
+        // loop over geoms not eliminated by mask and bodyexclude
+        for i in 0..ngeom as i32 {
+            if ray_eliminate(m, d, i, geomgroup, flg_static, bodyexclude) == 0 {
+                let geom_type = *(*m).geom_type.add(i as usize) as i32;
+                if geom_type == MJGEOM_MESH {
+                    newdist = mj_ray_mesh(m, d, i, pnt, vec, p_normal);
+                } else if geom_type == MJGEOM_HFIELD {
+                    newdist = mj_ray_hfield(m, d, i, pnt, vec, p_normal);
+                } else if geom_type == MJGEOM_SDF {
+                    newdist = mj_ray_sdf(m, d, i, pnt, vec, p_normal);
+                } else {
+                    newdist = mju_ray_geom(
+                        (*d).geom_xpos.add(3 * i as usize),
+                        (*d).geom_xmat.add(9 * i as usize),
+                        (*m).geom_size.add(3 * i as usize),
+                        pnt,
+                        vec,
+                        geom_type,
+                        p_normal,
+                    );
+                }
+
+                // update if closer intersection found
+                if newdist >= 0.0 && (newdist < dist || dist < 0.0) {
+                    dist = newdist;
+                    if !geomid.is_null() {
+                        *geomid = i;
+                    }
+                    if !normal.is_null() {
+                        crate::engine::engine_util_blas::mju_copy3(normal, normal_local.as_ptr());
+                    }
+                }
+            }
+        }
+
+        dist
+    }
 }
 
 /// C: mj_rayHfield (engine/engine_ray.h:47)

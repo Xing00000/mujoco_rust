@@ -274,7 +274,34 @@ pub fn mj_jac_body_com(m: *const mjModel, d: *const mjData, jacp: *mut f64, jacr
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_jac_subtree_com(m: *const mjModel, d: *mut mjData, jacp: *mut f64, body: i32) {
-    todo!() // mj_jacSubtreeCom
+    // SAFETY: m, d, jacp are valid pointers (caller contract).
+    unsafe {
+        let nv = (*m).nv as i32;
+        crate::engine::engine_memory::mj_mark_stack(d);
+        let jacp_b = crate::engine::engine_memory::mj_stack_alloc_num(d, (3 * nv) as usize);
+
+        // clear output
+        crate::engine::engine_util_blas::mju_zero(jacp, 3 * nv);
+
+        // forward pass starting from body
+        for b in body..(*m).nbody as i32 {
+            // end of body subtree, break from the loop
+            if b > body && *(*m).body_parentid.add(b as usize) < body {
+                break;
+            }
+
+            // b is in the body subtree, add mass-weighted Jacobian into jacp
+            mj_jac(m, d as *const mjData, jacp_b, std::ptr::null_mut(), (*d).xipos.add(3 * b as usize), b);
+            crate::engine::engine_util_blas::mju_add_to_scl(
+                jacp, jacp_b, *(*m).body_mass.add(b as usize), 3 * nv);
+        }
+
+        // normalize by subtree mass
+        crate::engine::engine_util_blas::mju_scl(
+            jacp, jacp, 1.0 / *(*m).body_subtreemass.add(body as usize), 3 * nv);
+
+        crate::engine::engine_memory::mj_free_stack(d);
+    }
 }
 
 /// C: mj_jacGeom (engine/engine_core_util.h:67)
@@ -316,7 +343,37 @@ pub fn mj_jac_site(m: *const mjModel, d: *const mjData, jacp: *mut f64, jacr: *m
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_jac_point_axis(m: *const mjModel, d: *mut mjData, jacPoint: *mut f64, jacAxis: *mut f64, point: *const f64, axis: *const f64, body: i32) {
-    todo!() // mj_jacPointAxis
+    // SAFETY: m, d are valid pointers (caller contract). jacPoint, jacAxis may be null.
+    unsafe {
+        let nv = (*m).nv as i32;
+
+        // get full Jacobian of point
+        crate::engine::engine_memory::mj_mark_stack(d);
+        let jacp: *mut f64 = if !jacPoint.is_null() {
+            jacPoint
+        } else {
+            crate::engine::engine_memory::mj_stack_alloc_num(d, (3 * nv) as usize)
+        };
+        let jacr: *mut f64 = crate::engine::engine_memory::mj_stack_alloc_num(d, (3 * nv) as usize);
+        mj_jac(m, d as *const mjData, jacp, jacr, point, body);
+
+        // jacAxis_col = cross(jacr_col, axis)
+        if !jacAxis.is_null() {
+            for i in 0..nv {
+                *jacAxis.add(i as usize) =
+                    *jacr.add((nv + i) as usize) * *axis.add(2)
+                    - *jacr.add((2 * nv + i) as usize) * *axis.add(1);
+                *jacAxis.add((nv + i) as usize) =
+                    *jacr.add((2 * nv + i) as usize) * *axis.add(0)
+                    - *jacr.add(i as usize) * *axis.add(2);
+                *jacAxis.add((2 * nv + i) as usize) =
+                    *jacr.add(i as usize) * *axis.add(1)
+                    - *jacr.add((nv + i) as usize) * *axis.add(0);
+            }
+        }
+
+        crate::engine::engine_memory::mj_free_stack(d);
+    }
 }
 
 /// C: mj_jacSparse (engine/engine_core_util.h:80)
@@ -736,7 +793,79 @@ pub fn mj_jac_dot(m: *const mjModel, d: *const mjData, jacp: *mut f64, jacr: *mu
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_angmom_mat(m: *const mjModel, d: *mut mjData, mat: *mut f64, body: i32) {
-    todo!() // mj_angmomMat
+    // SAFETY: m, d, mat are valid pointers (caller contract).
+    unsafe {
+        let nv = (*m).nv as i32;
+        crate::engine::engine_memory::mj_mark_stack(d);
+
+        // stack allocations
+        let jacp = crate::engine::engine_memory::mj_stack_alloc_num(d, (3 * nv) as usize);
+        let jacr = crate::engine::engine_memory::mj_stack_alloc_num(d, (3 * nv) as usize);
+        let term1 = crate::engine::engine_memory::mj_stack_alloc_num(d, (3 * nv) as usize);
+        let term2 = crate::engine::engine_memory::mj_stack_alloc_num(d, (3 * nv) as usize);
+
+        // clear output
+        crate::engine::engine_util_blas::mju_zero(mat, 3 * nv);
+
+        // save the location of the subtree COM
+        let mut subtree_com: [f64; 3] = [0.0; 3];
+        crate::engine::engine_util_blas::mju_copy3(
+            subtree_com.as_mut_ptr(), (*d).subtree_com.add(3 * body as usize));
+
+        for b in body..(*m).nbody as i32 {
+            // end of body subtree, break from the loop
+            if b > body && *(*m).body_parentid.add(b as usize) < body {
+                break;
+            }
+
+            // linear and angular velocity Jacobian of the body COM (inertial frame)
+            mj_jac_body_com(m, d as *const mjData, jacp, jacr, b);
+
+            // orientation of the COM (inertial) frame of b-th body
+            let mut ximat: [f64; 9] = [0.0; 9];
+            crate::engine::engine_inline::mji_copy9(ximat.as_mut_ptr(), (*d).ximat.add(9 * b as usize));
+
+            // save the inertia matrix of b-th body
+            let mut inertia: [f64; 9] = [0.0; 9];
+            inertia[0] = *(*m).body_inertia.add(3 * b as usize);
+            inertia[4] = *(*m).body_inertia.add(3 * b as usize + 1);
+            inertia[8] = *(*m).body_inertia.add(3 * b as usize + 2);
+
+            // term1 = body angular momentum about self COM in world frame
+            let mut tmp1: [f64; 9] = [0.0; 9];
+            let mut tmp2: [f64; 9] = [0.0; 9];
+            crate::engine::engine_inline::mji_mul_mat_mat3(
+                tmp1.as_mut_ptr(), ximat.as_ptr(), inertia.as_ptr());
+            crate::engine::engine_util_blas::mju_mul_mat_mat_t3(
+                tmp2.as_mut_ptr(), tmp1.as_ptr(), ximat.as_ptr());
+            crate::engine::engine_util_blas::mju_mul_mat_mat(
+                term1, tmp2.as_ptr(), jacr, 3, 3, nv);
+
+            // location of body COM w.r.t subtree COM
+            let mut com: [f64; 3] = [0.0; 3];
+            crate::engine::engine_inline::mji_sub3(
+                com.as_mut_ptr(), (*d).xipos.add(3 * b as usize), subtree_com.as_ptr());
+
+            // skew symmetric matrix representing body_com vector
+            let com_mat: [f64; 9] = [
+                0.0, -com[2], com[1],
+                com[2], 0.0, -com[0],
+                -com[1], com[0], 0.0,
+            ];
+
+            // term2 = moment of linear momentum
+            crate::engine::engine_util_blas::mju_mul_mat_mat(
+                term2, com_mat.as_ptr(), jacp, 3, 3, nv);
+            crate::engine::engine_util_blas::mju_scl(
+                term2, term2, *(*m).body_mass.add(b as usize), 3 * nv);
+
+            // mat += term1 + term2
+            crate::engine::engine_util_blas::mju_add_to(mat, term1, 3 * nv);
+            crate::engine::engine_util_blas::mju_add_to(mat, term2, 3 * nv);
+        }
+
+        crate::engine::engine_memory::mj_free_stack(d);
+    }
 }
 
 /// C: mj_objectVelocity (engine/engine_core_util.h:117)

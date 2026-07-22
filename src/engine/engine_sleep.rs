@@ -192,21 +192,148 @@ pub fn mj_tendon_sleep_state(m: *const mjModel, d: *const mjData, i: i32) -> i32
 /// Calls: mj_sleepState, mj_tendonSleepState
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_actuator_sleep_state(m: *const mjModel, d: *const mjData, i: i32) -> i32 {
-    todo!() // mj_actuatorSleepState
+    const MJ_TRN_JOINT: i32 = 0;
+    const MJ_TRN_JOINTINPARENT: i32 = 1;
+    const MJ_TRN_SLIDERCRANK: i32 = 2;
+    const MJ_TRN_TENDON: i32 = 3;
+    const MJ_TRN_SITE: i32 = 4;
+    const MJ_TRN_BODY: i32 = 5;
+    const MJ_OBJ_JOINT: u32 = 3;
+    const MJ_OBJ_SITE: u32 = 6;
+    const MJ_OBJ_BODY: u32 = 1;
+    const MJ_OBJ_TENDON: u32 = 18;
+    const MJ_S_AWAKE: i32 = 1;
+    const MJ_S_ASLEEP: i32 = 0;
+
+    // SAFETY: m, d are valid pointers (caller contract).
+    unsafe {
+        let trnid = *(*m).actuator_trnid.add(i as usize * 2);
+        let trntype = *(*m).actuator_trntype.add(i as usize);
+
+        if trntype == MJ_TRN_JOINT || trntype == MJ_TRN_JOINTINPARENT {
+            return mj_sleep_state(m, d, MJ_OBJ_JOINT, trnid);
+        }
+        if trntype == MJ_TRN_SLIDERCRANK {
+            let s1 = mj_sleep_state(m, d, MJ_OBJ_SITE, trnid);
+            let s2 = mj_sleep_state(m, d, MJ_OBJ_SITE, *(*m).actuator_trnid.add(i as usize * 2 + 1));
+            return if s1 == MJ_S_AWAKE || s2 == MJ_S_AWAKE { MJ_S_AWAKE } else { MJ_S_ASLEEP };
+        }
+        if trntype == MJ_TRN_TENDON {
+            return mj_tendon_sleep_state(m, d, trnid);
+        }
+        if trntype == MJ_TRN_SITE {
+            return mj_sleep_state(m, d, MJ_OBJ_SITE, trnid);
+        }
+        if trntype == MJ_TRN_BODY {
+            return mj_sleep_state(m, d, MJ_OBJ_BODY, trnid);
+        }
+
+        MJ_S_AWAKE
+    }
 }
 
 /// C: mj_equalitySleepState (engine/engine_sleep.c:691)
 /// Calls: mj_sleepState
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_equality_sleep_state(m: *const mjModel, d: *const mjData, i: i32) -> i32 {
-    todo!() // mj_equalitySleepState
+    const MJ_EQ_CONNECT: i32 = 0;
+    const MJ_EQ_WELD: i32 = 1;
+    const MJ_EQ_JOINT: i32 = 2;
+    const MJ_EQ_TENDON: i32 = 3;
+    const MJ_EQ_FLEX: i32 = 4;
+    const MJ_EQ_FLEXVERT: i32 = 5;
+    const MJ_EQ_FLEXSTRAIN: i32 = 6;
+    const MJ_OBJ_JOINT: u32 = 3;
+    const MJ_OBJ_TENDON: u32 = 18;
+    const MJ_OBJ_FLEX: u32 = 9;
+    const MJ_S_AWAKE: i32 = 1;
+    const MJ_S_ASLEEP: i32 = 0;
+    const MJ_S_STATIC: i32 = -1;
+
+    // SAFETY: m, d are valid pointers (caller contract).
+    unsafe {
+        let eqtype = *(*m).eq_type.add(i as usize);
+
+        let objtype: u32 = if eqtype == MJ_EQ_CONNECT || eqtype == MJ_EQ_WELD {
+            *(*m).eq_objtype.add(i as usize) as u32
+        } else if eqtype == MJ_EQ_JOINT {
+            MJ_OBJ_JOINT
+        } else if eqtype == MJ_EQ_TENDON {
+            MJ_OBJ_TENDON
+        } else if eqtype == MJ_EQ_FLEX || eqtype == MJ_EQ_FLEXVERT || eqtype == MJ_EQ_FLEXSTRAIN {
+            MJ_OBJ_FLEX
+        } else {
+            return MJ_S_AWAKE;
+        };
+
+        let id1 = *(*m).eq_obj1id.add(i as usize);
+        let id2 = *(*m).eq_obj2id.add(i as usize);
+        let s1 = if id1 >= 0 { mj_sleep_state(m, d, objtype, id1) } else { MJ_S_STATIC };
+        let s2 = if id2 >= 0 { mj_sleep_state(m, d, objtype, id2) } else { MJ_S_STATIC };
+
+        // return ASLEEP if both objects are asleep or static, AWAKE otherwise
+        let neither_awake = s1 != MJ_S_AWAKE && s2 != MJ_S_AWAKE;
+        if neither_awake { MJ_S_ASLEEP } else { MJ_S_AWAKE }
+    }
 }
 
 /// C: mj_sensorSleepState (engine/engine_sleep.c:727)
 /// Calls: mj_sleepState
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_sensor_sleep_state(m: *const mjModel, d: *const mjData, i: i32) -> i32 {
-    todo!() // mj_sensorSleepState
+    const MJ_SENS_USER: i32 = 48;
+    const MJ_SENS_PLUGIN: i32 = 47;
+    const MJ_SENS_CONTACT: i32 = 44;
+    const MJ_SENS_RANGEFINDER: i32 = 8;
+    const MJ_OBJ_SITE: u32 = 6;
+    const MJ_OBJ_UNKNOWN: u32 = 0;
+    const MJ_S_AWAKE: i32 = 1;
+    const MJ_S_ASLEEP: i32 = 0;
+
+    // SAFETY: m, d are valid pointers (caller contract).
+    unsafe {
+        let sensor_type = *(*m).sensor_type.add(i as usize);
+        let objtype = *(*m).sensor_objtype.add(i as usize) as u32;
+        let reftype = *(*m).sensor_reftype.add(i as usize) as u32;
+
+        // special handling for specific sensor types
+        if sensor_type == MJ_SENS_USER || sensor_type == MJ_SENS_PLUGIN {
+            return MJ_S_AWAKE;
+        }
+        if sensor_type == MJ_SENS_CONTACT {
+            if objtype == MJ_OBJ_SITE || reftype == MJ_OBJ_SITE {
+                return MJ_S_AWAKE;
+            }
+        }
+        if sensor_type == MJ_SENS_RANGEFINDER {
+            return MJ_S_AWAKE;
+        }
+
+        // get sleep state of the primary and reference objects
+        let s_obj = mj_sleep_state(m, d, objtype, *(*m).sensor_objid.add(i as usize));
+        let s_ref = mj_sleep_state(m, d, reftype, *(*m).sensor_refid.add(i as usize));
+
+        // if both are UNKNOWN, return AWAKE
+        if objtype == MJ_OBJ_UNKNOWN && reftype == MJ_OBJ_UNKNOWN {
+            return MJ_S_AWAKE;
+        }
+
+        // if one is UNKNOWN, return the other's sleep state
+        if objtype == MJ_OBJ_UNKNOWN {
+            return if s_ref == MJ_S_ASLEEP { MJ_S_ASLEEP } else { MJ_S_AWAKE };
+        }
+        if reftype == MJ_OBJ_UNKNOWN {
+            return if s_obj == MJ_S_ASLEEP { MJ_S_ASLEEP } else { MJ_S_AWAKE };
+        }
+
+        // if either object is awake, return AWAKE
+        if s_obj == MJ_S_AWAKE || s_ref == MJ_S_AWAKE {
+            return MJ_S_AWAKE;
+        }
+
+        // otherwise return ASLEEP
+        MJ_S_ASLEEP
+    }
 }
 
 /// C: mj_updateSleepInit (engine/engine_sleep.h:28)
@@ -822,6 +949,88 @@ pub fn mj_flex_body(m: *const mjModel, con: *const mjContact, side: i32) -> i32 
 /// Calls: mj_actuatorSleepState, mj_equalitySleepState, mj_sensorSleepState, mj_tendonSleepState, mju_message, mju_type2Str
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_sleep_state(m: *const mjModel, d: *const mjData, r#type: u32, i: i32) -> i32 {
-    todo!() // mj_sleepState
+    const MJ_OBJ_UNKNOWN: u32 = 0;
+    const MJ_OBJ_BODY: u32 = 1;
+    const MJ_OBJ_XBODY: u32 = 2;
+    const MJ_OBJ_JOINT: u32 = 3;
+    const MJ_OBJ_DOF: u32 = 4;
+    const MJ_OBJ_GEOM: u32 = 5;
+    const MJ_OBJ_SITE: u32 = 6;
+    const MJ_OBJ_CAMERA: u32 = 7;
+    const MJ_OBJ_LIGHT: u32 = 8;
+    const MJ_OBJ_FLEX: u32 = 9;
+    const MJ_OBJ_EQUALITY: u32 = 17;
+    const MJ_OBJ_TENDON: u32 = 18;
+    const MJ_OBJ_ACTUATOR: u32 = 19;
+    const MJ_OBJ_SENSOR: u32 = 20;
+    const MJ_S_STATIC: i32 = -1;
+    const MJ_S_AWAKE: i32 = 1;
+
+    // SAFETY: m, d are valid pointers (caller contract).
+    unsafe {
+        if r#type == MJ_OBJ_BODY || r#type == MJ_OBJ_XBODY {
+            return *(*d).body_awake.add(i as usize);
+        }
+        if r#type == MJ_OBJ_JOINT {
+            return *(*d).body_awake.add(*(*m).jnt_bodyid.add(i as usize) as usize);
+        }
+        if r#type == MJ_OBJ_SITE {
+            return *(*d).body_awake.add(*(*m).site_bodyid.add(i as usize) as usize);
+        }
+        if r#type == MJ_OBJ_DOF {
+            return *(*d).body_awake.add(*(*m).dof_bodyid.add(i as usize) as usize);
+        }
+        if r#type == MJ_OBJ_GEOM {
+            return *(*d).body_awake.add(*(*m).geom_bodyid.add(i as usize) as usize);
+        }
+        if r#type == MJ_OBJ_CAMERA {
+            return *(*d).body_awake.add(*(*m).cam_bodyid.add(i as usize) as usize);
+        }
+        if r#type == MJ_OBJ_LIGHT {
+            return *(*d).body_awake.add(*(*m).light_bodyid.add(i as usize) as usize);
+        }
+        if r#type == MJ_OBJ_EQUALITY {
+            return mj_equality_sleep_state(m, d, i);
+        }
+        if r#type == MJ_OBJ_TENDON {
+            return mj_tendon_sleep_state(m, d, i);
+        }
+        if r#type == MJ_OBJ_ACTUATOR {
+            return mj_actuator_sleep_state(m, d, i);
+        }
+        if r#type == MJ_OBJ_SENSOR {
+            return mj_sensor_sleep_state(m, d, i);
+        }
+        if r#type == MJ_OBJ_FLEX {
+            // all dynamic bodies share sleep state: find and check the first one
+            let num: i32;
+            let adr: i32;
+            let bodyid: *const i32;
+            if *(*m).flex_interp.add(i as usize) != 0 {
+                num = *(*m).flex_nodenum.add(i as usize);
+                adr = *(*m).flex_nodeadr.add(i as usize);
+                bodyid = (*m).flex_nodebodyid;
+            } else {
+                num = *(*m).flex_vertnum.add(i as usize);
+                adr = *(*m).flex_vertadr.add(i as usize);
+                bodyid = (*m).flex_vertbodyid;
+            }
+            for j in 0..num {
+                let b = *bodyid.add((adr + j) as usize);
+                if *(*m).body_treeid.add(b as usize) >= 0 {
+                    return *(*d).body_awake.add(b as usize);
+                }
+            }
+            return MJ_S_STATIC;
+        }
+        if r#type == MJ_OBJ_UNKNOWN {
+            return MJ_S_AWAKE;
+        }
+
+        // unsupported type
+        crate::engine::engine_util_errmem::mju_error(
+            b"unsupported object type in mj_sleepState\0".as_ptr() as *const i8);
+        MJ_S_AWAKE
+    }
 }
 

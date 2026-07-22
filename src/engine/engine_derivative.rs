@@ -373,7 +373,46 @@ pub fn copy_from_parent(m: *const mjModel, d: *mut mjData, mat: *mut f64, n: i32
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn add_to_parent(m: *const mjModel, d: *mut mjData, mat: *mut f64, n: i32) {
-    todo!() // addToParent
+    // SAFETY: m is a valid mjModel pointer (caller contract); all array accesses
+    // are within model-allocated bounds guaranteed by mujoco's data layout.
+    unsafe {
+        // return if this is world or parent is world
+        if n == 0 || *(*m).body_weldid.add(*(*m).body_parentid.add(n as usize) as usize) == 0 {
+            return;
+        }
+
+        // find matching nonzeros
+        let np = *(*m).body_parentid.add(n as usize);
+        let mut i: i32 = 0;
+        let mut ip: i32 = 0;
+        while i < *(*m).B_rownnz.add(n as usize) && ip < *(*m).B_rownnz.add(np as usize) {
+            let col_n = *(*m).B_colind.add((*(*m).B_rowadr.add(n as usize) + i) as usize);
+            let col_np = *(*m).B_colind.add((*(*m).B_rowadr.add(np as usize) + ip) as usize);
+
+            // columns match
+            if col_n == col_np {
+                crate::engine::engine_util_blas::mju_add_to(
+                    mat.add(6 * (*(*m).B_rowadr.add(np as usize) + ip) as usize),
+                    mat.add(6 * (*(*m).B_rowadr.add(n as usize) + i) as usize),
+                    6,
+                );
+
+                // advance both
+                i += 1;
+                ip += 1;
+            }
+            // mismatch columns: advance parent
+            else if col_n > col_np {
+                ip += 1;
+            }
+            // child nonzeroes must be subset of parent; SHOULD NOT OCCUR
+            else {
+                crate::engine::engine_util_errmem::mju_error(
+                    b"child nonzeroes must be subset of parent\0".as_ptr() as *const i8,
+                );
+            }
+        }
+    }
 }
 
 /// C: mjd_comVel_vel (engine/engine_derivative.c:524)
@@ -404,7 +443,45 @@ pub fn mjd_rne_vel(m: *const mjModel, d: *mut mjData) {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn add_jtbj(m: *const mjModel, d: *mut mjData, J: *const f64, B: *const f64, n: i32) {
-    todo!() // addJTBJ
+    // SAFETY: m, d, J, B are valid pointers (caller contract). nv-sized arrays.
+    unsafe {
+        let nv = (*m).nv as i32;
+
+        // allocate dense row
+        crate::engine::engine_memory::mj_mark_stack(d);
+        let row: *mut f64 = crate::engine::engine_memory::mj_stack_alloc_num(d, nv as usize);
+
+        // process non-zero elements of B
+        for i in 0..n {
+            for j in 0..n {
+                if *B.add((i * n + j) as usize) == 0.0 {
+                    continue;
+                }
+                // process non-zero elements of J(i,:)
+                for k in 0..nv {
+                    if *J.add((i * nv + k) as usize) != 0.0 {
+                        // row = J(i,k)*B(i,j)*J(j,:)
+                        crate::engine::engine_util_blas::mju_scl(
+                            row,
+                            J.add((j * nv) as usize),
+                            *J.add((i * nv + k) as usize) * *B.add((i * n + j) as usize),
+                            nv,
+                        );
+
+                        // add row to qDeriv(k,:)
+                        let rownnz_k = *(*m).D_rownnz.add(k as usize);
+                        for s in 0..rownnz_k {
+                            let adr = *(*m).D_rowadr.add(k as usize) + s;
+                            *(*d).qDeriv.add(adr as usize) +=
+                                *row.add(*(*m).D_colind.add(adr as usize) as usize);
+                        }
+                    }
+                }
+            }
+        }
+
+        crate::engine::engine_memory::mj_free_stack(d);
+    }
 }
 
 /// C: addJTBJSparse (engine/engine_derivative.c:746)
@@ -517,7 +594,40 @@ pub fn mjd_muscle_gain_vel(len: f64, vel: f64, lengthrange: *const f64, acc0: f6
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn add_jtbj_mul_sparse(m: *const mjModel, d: *mut mjData, res: *mut f64, vec: *const f64, J_rownnz: *const i32, J_rowadr: *const i32, J_colind: *const i32, J: *const f64, B: *const f64, n: i32) {
-    todo!() // addJTBJ_mulSparse
+    // SAFETY: all pointers are valid (caller contract).
+    unsafe {
+        // allocate temp vectors
+        crate::engine::engine_memory::mj_mark_stack(d);
+        let Jv = crate::engine::engine_memory::mj_stack_alloc_num(d, n as usize);
+        let BJv = crate::engine::engine_memory::mj_stack_alloc_num(d, n as usize);
+
+        // Jv = J*vec (Sparse Matrix-Vector Multiplication)
+        crate::engine::engine_util_blas::mju_zero(Jv, n);
+        for i in 0..n {
+            let nnz = *J_rownnz.add(i as usize);
+            let adr = *J_rowadr.add(i as usize);
+            for k in 0..nnz {
+                *Jv.add(i as usize) +=
+                    *J.add((adr + k) as usize) * *vec.add(*J_colind.add((adr + k) as usize) as usize);
+            }
+        }
+
+        // BJv = B*Jv (Dense Matrix-Vector Multiplication)
+        crate::engine::engine_util_blas::mju_mul_mat_vec(BJv, B, Jv, n, n);
+
+        // res += J'*BJv (Sparse Transpose Matrix-Vector Multiplication)
+        for i in 0..n {
+            let nnz = *J_rownnz.add(i as usize);
+            let adr = *J_rowadr.add(i as usize);
+            let val = *BJv.add(i as usize);
+            for k in 0..nnz {
+                *res.add(*J_colind.add((adr + k) as usize) as usize) +=
+                    *J.add((adr + k) as usize) * val;
+            }
+        }
+
+        crate::engine::engine_memory::mj_free_stack(d);
+    }
 }
 
 /// C: mjd_flexInterp_kernel (engine/engine_derivative.c:872)
@@ -981,7 +1091,58 @@ pub fn mjd_inertia_box_fluid(m: *const mjModel, d: *mut mjData, i: i32) {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjd_sub_quat(qa: *const f64, qb: *const f64, Da: *mut f64, Db: *mut f64) {
-    todo!() // mjd_subQuat
+    // SAFETY: qa[4], qb[4] are valid. Da and Db may be null (checked before use).
+    unsafe {
+        // no outputs, quick return
+        if Da.is_null() && Db.is_null() {
+            return;
+        }
+
+        // compute axis-angle quaternion difference
+        let mut axis: [f64; 3] = [0.0; 3];
+        crate::engine::engine_util_spatial::mju_sub_quat(axis.as_mut_ptr(), qa, qb);
+
+        // normalize axis, get half-angle
+        let half_angle = 0.5 * crate::engine::engine_util_blas::mju_normalize3(axis.as_mut_ptr());
+
+        // identity
+        let mut Da_tmp: [f64; 9] = [
+            1.0, 0.0, 0.0,
+            0.0, 1.0, 0.0,
+            0.0, 0.0, 1.0,
+        ];
+
+        // add term linear in cross product matrix K
+        let K: [f64; 9] = [
+            0.0, -axis[2], axis[1],
+            axis[2], 0.0, -axis[0],
+            -axis[1], axis[0], 0.0,
+        ];
+        crate::engine::engine_util_blas::mju_add_to_scl(
+            Da_tmp.as_mut_ptr(), K.as_ptr(), half_angle, 9);
+
+        // add term linear in K * K
+        let mut KK: [f64; 9] = [0.0; 9];
+        crate::engine::engine_util_blas::mju_mul_mat_mat3(
+            KK.as_mut_ptr(), K.as_ptr(), K.as_ptr());
+        let coef = 1.0 - (if half_angle < 6e-8 {
+            1.0
+        } else {
+            half_angle / f64::tan(half_angle)
+        });
+        crate::engine::engine_util_blas::mju_add_to_scl(
+            Da_tmp.as_mut_ptr(), KK.as_ptr(), coef, 9);
+
+        if !Da.is_null() {
+            crate::engine::engine_util_blas::mju_copy9(Da, Da_tmp.as_ptr());
+        }
+
+        if !Db.is_null() {
+            // Db = -Da^T
+            crate::engine::engine_util_blas::mju_transpose(Db, Da_tmp.as_ptr(), 3, 3);
+            crate::engine::engine_util_blas::mju_scl(Db, Db, -1.0, 9);
+        }
+    }
 }
 
 /// C: mjd_quatIntegrate (engine/engine_derivative.h:30)

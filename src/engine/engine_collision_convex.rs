@@ -452,7 +452,26 @@ pub fn mjc_is_distinct_contact(con: *const mjPreContact, ncon: i32, tolerance: f
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mju_rotate_frame(origin: *const f64, rot: *const f64, xmat: *mut f64, xpos: *mut f64) {
-    todo!() // mju_rotateFrame
+    // SAFETY: origin[3], rot[9], xmat[9], xpos[3] are valid (caller contract).
+    unsafe {
+        let mut mat: [f64; 9] = [0.0; 9];
+        let mut vec: [f64; 3] = [0.0; 3];
+        let mut rel: [f64; 3] = [0.0; 3];
+
+        // rotate frame: xmat = rot*xmat
+        crate::engine::engine_util_blas::mju_mul_mat_mat3(mat.as_mut_ptr(), rot, xmat);
+        crate::engine::engine_util_blas::mju_copy(xmat, mat.as_ptr(), 9);
+
+        // vector to rotation origin: rel = origin - xpos
+        crate::engine::engine_inline::mji_sub3(rel.as_mut_ptr(), origin, xpos);
+
+        // displacement of origin due to rotation: vec = rot*rel - rel
+        crate::engine::engine_util_blas::mju_mul_mat_vec3(vec.as_mut_ptr(), rot, rel.as_ptr());
+        crate::engine::engine_util_blas::mju_sub_from3(vec.as_mut_ptr(), rel.as_ptr());
+
+        // correct xpos by subtracting displacement: xpos = xpos - vec
+        crate::engine::engine_inline::mji_sub_from3(xpos, vec.as_ptr());
+    }
 }
 
 /// C: maxContacts (engine/engine_collision_convex.c:831)

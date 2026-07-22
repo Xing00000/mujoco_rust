@@ -608,7 +608,40 @@ pub fn add_pre_contact(points: *mut f64, con: *mut mjPreContact, x: *const f64, 
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn step_frank_wolfe(x: *mut f64, corners: *const f64, ncorners: i32, m: *const mjModel, sdf: *const mjSDF, d: *const mjData) -> f64 {
-    todo!() // stepFrankWolfe
+    const MJ_MAXVAL: f64 = 1e10;
+
+    // SAFETY: x[3], corners[3*ncorners], m, sdf, d are valid (caller contract).
+    unsafe {
+        for step in 0..(*m).opt.sdf_iterations {
+            let mut best: f64 = MJ_MAXVAL;
+            let mut s: [f64; 3] = [0.0; 3];
+            let mut grad: [f64; 3] = [0.0; 3];
+
+            // evaluate gradient
+            mjc_gradient(m, d, sdf, grad.as_mut_ptr(), x);
+
+            // evaluate all corners
+            for i in 0..ncorners {
+                let fun = crate::engine::engine_util_blas::mju_dot3(
+                    corners.add(3 * i as usize), grad.as_ptr());
+
+                // save argmin
+                if fun < best {
+                    best = fun;
+                    crate::engine::engine_util_blas::mju_copy3(
+                        s.as_mut_ptr(), corners.add(3 * i as usize));
+                }
+            }
+
+            // update collision point
+            crate::engine::engine_util_blas::mju_sub_from3(s.as_mut_ptr(), x);
+            crate::engine::engine_util_blas::mju_add_to_scl3(
+                x, s.as_ptr(), 2.0 / (step as f64 + 2.0));
+        }
+
+        // compute distance
+        mjc_distance(m, d, sdf, x)
+    }
 }
 
 /// C: stepGradient (engine/engine_collision_sdf.c:615)
@@ -620,7 +653,57 @@ pub fn step_frank_wolfe(x: *mut f64, corners: *const f64, ncorners: i32, m: *con
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn step_gradient(x: *mut f64, m: *const mjModel, s: *const mjSDF, d: *const mjData, niter: i32) -> f64 {
-    todo!() // stepGradient
+    const MJ_MAXVAL: f64 = 1e10;
+
+    // SAFETY: x[3], m, s, d are valid pointers (caller contract).
+    unsafe {
+        let c: f64 = 0.1;       // reduction factor for the target decrease
+        let rho: f64 = 0.5;     // reduction factor for alpha
+        let amin: f64 = 1e-4;   // minimum value for alpha
+        let mut dist: f64 = MJ_MAXVAL;
+
+        for _step in 0..niter {
+            let mut grad: [f64; 3] = [0.0; 3];
+            let mut alpha: f64 = 2.0;
+
+            // evaluate gradient
+            mjc_gradient(m, d, s, grad.as_mut_ptr(), x);
+
+            // sanity check
+            if grad[0].is_nan() || grad[0] > MJ_MAXVAL || grad[0] < -MJ_MAXVAL
+                || grad[1].is_nan() || grad[1] > MJ_MAXVAL || grad[1] < -MJ_MAXVAL
+                || grad[2].is_nan() || grad[2] > MJ_MAXVAL || grad[2] < -MJ_MAXVAL
+            {
+                return MJ_MAXVAL;
+            }
+
+            // save current solution
+            let x0: [f64; 3] = [*x.add(0), *x.add(1), *x.add(2)];
+
+            // evaluate distance
+            let dist0 = mjc_distance(m, d, s, x0.as_ptr());
+            let mut wolfe = -c * alpha * crate::engine::engine_util_blas::mju_dot3(
+                grad.as_ptr(), grad.as_ptr());
+
+            // backtracking line search
+            loop {
+                alpha *= rho;
+                wolfe *= rho;
+                crate::engine::engine_util_blas::mju_add_scl3(x, x0.as_ptr(), grad.as_ptr(), -alpha);
+                dist = mjc_distance(m, d, s, x);
+                if !(alpha > amin && dist - dist0 > wolfe) {
+                    break;
+                }
+            }
+
+            // if no improvement, early stop
+            if dist0 < dist {
+                return dist;
+            }
+        }
+
+        dist
+    }
 }
 
 /// C: triangleIntersect (engine/engine_collision_sdf.c:665)

@@ -78,7 +78,20 @@ pub fn warmstart(m: *const mjModel, d: *mut mjData) {
 /// Calls: mj_solCG_island, mj_solNewton_island, mj_solPGS_island
 #[allow(unused_variables, non_snake_case)]
 pub fn solve_island_task(m: *const mjModel, d: *mut mjData, arg: *mut (), thread_id: i32, island: i32) {
-    todo!() // solveIslandTask
+    const MJ_SOL_PGS: i32 = 0;
+    const MJ_SOL_CG: i32 = 1;
+    const MJ_SOL_NEWTON: i32 = 2;
+
+    // SAFETY: m, d are valid pointers (caller contract).
+    unsafe {
+        if (*m).opt.solver == MJ_SOL_NEWTON {
+            crate::engine::engine_solver::mj_sol_newton_island(m, d, island, (*m).opt.iterations);
+        } else if (*m).opt.solver == MJ_SOL_CG {
+            crate::engine::engine_solver::mj_sol_cg_island(m, d, island, (*m).opt.iterations);
+        } else {
+            crate::engine::engine_solver::mj_sol_pgs_island(m, d, island, (*m).opt.iterations);
+        }
+    }
 }
 
 /// C: mj_advance (engine/engine_forward.c:981)
@@ -405,56 +418,262 @@ pub fn midpoint(m: *const mjModel, d: *const mjData, qfrc: *const f64, free_jnti
 /// Calls: mj_resetData, mj_warning, mju_isBad
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_check_pos(m: *const mjModel, d: *mut mjData) {
-    todo!() // mj_checkPos
+    const MJ_DSBL_AUTORESET: i32 = 1 << 16;
+    const MJ_WARN_BADQPOS: i32 = 3;
+
+    // SAFETY: m, d are valid pointers (caller contract).
+    unsafe {
+        let nq = (*m).nq as i32;
+        let qpos = (*d).qpos;
+        for i in 0..nq {
+            if crate::engine::engine_util_misc::mju_is_bad(*qpos.add(i as usize)) != 0 {
+                crate::engine::engine_core_util::mj_warning(d, MJ_WARN_BADQPOS, i);
+                if ((*m).opt.disableflags & MJ_DSBL_AUTORESET) == 0 {
+                    crate::engine::engine_io::mj_reset_data(m, d);
+                }
+                let warn_ptr = (*d).warning.as_mut_ptr() as *mut i32;
+                *warn_ptr.add(MJ_WARN_BADQPOS as usize * 2 + 1) += 1; // number
+                *warn_ptr.add(MJ_WARN_BADQPOS as usize * 2) = i;      // lastinfo
+                return;
+            }
+        }
+    }
 }
 
 /// C: mj_checkVel (engine/engine_forward.h:28)
 /// Calls: mj_resetData, mj_warning, mju_isBad
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_check_vel(m: *const mjModel, d: *mut mjData) {
-    todo!() // mj_checkVel
+    const MJ_ENBL_SLEEP: i32 = 1 << 4;
+    const MJ_DSBL_AUTORESET: i32 = 1 << 16;
+    const MJ_WARN_BADQVEL: i32 = 4;
+
+    // SAFETY: m, d are valid pointers (caller contract).
+    unsafe {
+        let sleep_filter = ((*m).opt.enableflags & MJ_ENBL_SLEEP) != 0
+            && (*d).nv_awake < (*m).nv as i32;
+        let nv = if sleep_filter { (*d).nv_awake } else { (*m).nv as i32 };
+
+        for j in 0..nv {
+            let i = if sleep_filter { *(*d).dof_awake_ind.add(j as usize) } else { j };
+
+            if crate::engine::engine_util_misc::mju_is_bad(*(*d).qvel.add(i as usize)) != 0 {
+                crate::engine::engine_core_util::mj_warning(d, MJ_WARN_BADQVEL, i);
+                if ((*m).opt.disableflags & MJ_DSBL_AUTORESET) == 0 {
+                    crate::engine::engine_io::mj_reset_data(m, d);
+                }
+                let warn_ptr = (*d).warning.as_mut_ptr() as *mut i32;
+                *warn_ptr.add(MJ_WARN_BADQVEL as usize * 2 + 1) += 1;
+                *warn_ptr.add(MJ_WARN_BADQVEL as usize * 2) = i;
+                return;
+            }
+        }
+    }
 }
 
 /// C: mj_checkAcc (engine/engine_forward.h:29)
 /// Calls: mj_forward, mj_resetData, mj_warning, mju_isBad
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_check_acc(m: *const mjModel, d: *mut mjData) {
-    todo!() // mj_checkAcc
+    const MJ_ENBL_SLEEP: i32 = 1 << 4;
+    const MJ_DSBL_AUTORESET: i32 = 1 << 16;
+    const MJ_WARN_BADQACC: i32 = 5;
+
+    // SAFETY: m, d are valid pointers (caller contract).
+    unsafe {
+        let sleep_filter = ((*m).opt.enableflags & MJ_ENBL_SLEEP) != 0
+            && (*d).nv_awake < (*m).nv as i32;
+        let nv = if sleep_filter { (*d).nv_awake } else { (*m).nv as i32 };
+
+        for j in 0..nv {
+            let i = if sleep_filter { *(*d).dof_awake_ind.add(j as usize) } else { j };
+
+            if crate::engine::engine_util_misc::mju_is_bad(*(*d).qacc.add(i as usize)) != 0 {
+                crate::engine::engine_core_util::mj_warning(d, MJ_WARN_BADQACC, i);
+                if ((*m).opt.disableflags & MJ_DSBL_AUTORESET) == 0 {
+                    crate::engine::engine_io::mj_reset_data(m, d);
+                }
+                let warn_ptr = (*d).warning.as_mut_ptr() as *mut i32;
+                *warn_ptr.add(MJ_WARN_BADQACC as usize * 2 + 1) += 1;
+                *warn_ptr.add(MJ_WARN_BADQACC as usize * 2) = i;
+                if ((*m).opt.disableflags & MJ_DSBL_AUTORESET) == 0 {
+                    mj_forward(m, d);
+                }
+                return;
+            }
+        }
+    }
 }
 
 /// C: mj_step (engine/engine_forward.h:35)
 /// Calls: mj_Euler, mj_RungeKutta, mj_checkAcc, mj_checkPos, mj_checkVel, mj_compareFwdInv, mj_forward, mj_implicit, mju_message
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_step(m: *const mjModel, d: *mut mjData) {
-    todo!() // mj_step
+    const MJ_ENBL_FWDINV: i32 = 1 << 2;
+    const MJ_INT_EULER: i32 = 0;
+    const MJ_INT_RK4: i32 = 1;
+    const MJ_INT_IMPLICIT: i32 = 2;
+    const MJ_INT_IMPLICITFAST: i32 = 3;
+
+    // SAFETY: m, d are valid pointers (caller contract).
+    unsafe {
+        // common to all integrators
+        mj_check_pos(m, d);
+        mj_check_vel(m, d);
+        mj_forward(m, d);
+        mj_check_acc(m, d);
+
+        // compare forward and inverse solutions if enabled
+        if ((*m).opt.enableflags & MJ_ENBL_FWDINV) != 0 {
+            crate::engine::engine_inverse::mj_compare_fwd_inv(m, d);
+        }
+
+        // use selected integrator
+        let integrator = (*m).opt.integrator;
+        if integrator == MJ_INT_EULER {
+            mj_euler(m, d);
+        } else if integrator == MJ_INT_RK4 {
+            mj_runge_kutta(m, d, 4);
+        } else if integrator == MJ_INT_IMPLICIT || integrator == MJ_INT_IMPLICITFAST {
+            mj_implicit(m, d);
+        } else {
+            crate::engine::engine_util_errmem::mju_error(
+                b"invalid integrator\0".as_ptr() as *const i8);
+        }
+    }
 }
 
 /// C: mj_step1 (engine/engine_forward.h:38)
 /// Calls: mj_checkPos, mj_checkVel, mj_energyPos, mj_energyVel, mj_fwdPosition, mj_fwdVelocity, mj_sensorPos, mj_sensorVel
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_step1(m: *const mjModel, d: *mut mjData) {
-    todo!() // mj_step1
+    const MJ_ENBL_ENERGY: i32 = 1 << 1;
+
+    // SAFETY: m, d are valid pointers (caller contract).
+    unsafe {
+        mj_check_pos(m, d);
+        mj_check_vel(m, d);
+        mj_fwd_position(m, d);
+        crate::engine::engine_sensor::mj_sensor_pos(m, d);
+
+        if !(*d).flg_energypos {
+            if ((*m).opt.enableflags & MJ_ENBL_ENERGY) != 0 {
+                crate::engine::engine_sensor::mj_energy_pos(m, d);
+            } else {
+                (*d).energy[0] = 0.0;
+                (*d).energy[1] = 0.0;
+            }
+        }
+
+        mj_fwd_velocity(m, d);
+        crate::engine::engine_sensor::mj_sensor_vel(m, d);
+        if ((*m).opt.enableflags & MJ_ENBL_ENERGY) != 0 && !(*d).flg_energyvel {
+            crate::engine::engine_sensor::mj_energy_vel(m, d);
+        }
+
+        if let Some(cb) = crate::engine::engine_callback::mjcb_control {
+            cb(m, d);
+        }
+    }
 }
 
 /// C: mj_step2 (engine/engine_forward.h:41)
 /// Calls: mj_Euler, mj_checkAcc, mj_compareFwdInv, mj_fwdAcceleration, mj_fwdActuation, mj_fwdConstraint, mj_implicit, mj_sensorAcc
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_step2(m: *const mjModel, d: *mut mjData) {
-    todo!() // mj_step2
+    const MJ_ENBL_FWDINV: i32 = 1 << 2;
+    const MJ_INT_IMPLICIT: i32 = 2;
+    const MJ_INT_IMPLICITFAST: i32 = 3;
+
+    // SAFETY: m, d are valid pointers (caller contract).
+    unsafe {
+        mj_fwd_actuation(m, d);
+        mj_fwd_acceleration(m, d);
+        mj_fwd_constraint(m, d);
+        (*d).flg_rnepost = false; // clear flag for lazy evaluation
+        crate::engine::engine_sensor::mj_sensor_acc(m, d);
+        mj_check_acc(m, d);
+
+        // compare forward and inverse solutions if enabled
+        if ((*m).opt.enableflags & MJ_ENBL_FWDINV) != 0 {
+            crate::engine::engine_inverse::mj_compare_fwd_inv(m, d);
+        }
+
+        // integrate with Euler or implicit; RK4 defaults to Euler
+        if (*m).opt.integrator == MJ_INT_IMPLICIT || (*m).opt.integrator == MJ_INT_IMPLICITFAST {
+            mj_implicit(m, d);
+        } else {
+            mj_euler(m, d);
+        }
+    }
 }
 
 /// C: mj_forward (engine/engine_forward.h:44)
 /// Calls: mj_forwardSkip
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_forward(m: *const mjModel, d: *mut mjData) {
-    todo!() // mj_forward
+    mj_forward_skip(m, d, 0, 0); // mjSTAGE_NONE = 0
 }
 
 /// C: mj_forwardSkip (engine/engine_forward.h:47)
 /// Calls: mj_energyPos, mj_energyVel, mj_fwdAcceleration, mj_fwdActuation, mj_fwdConstraint, mj_fwdPosition, mj_fwdVelocity, mj_sensorAcc, mj_sensorPos, mj_sensorVel
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_forward_skip(m: *const mjModel, d: *mut mjData, skipstage: i32, skipsensor: i32) {
-    todo!() // mj_forwardSkip
+    const MJ_STAGE_POS: i32 = 1;
+    const MJ_STAGE_VEL: i32 = 2;
+    const MJ_ENBL_ENERGY: i32 = 1 << 1;
+    const MJ_DSBL_ACTUATION: i32 = 1 << 11;
+
+    // SAFETY: m, d are valid pointers (caller contract).
+    unsafe {
+        // position-dependent
+        if skipstage < MJ_STAGE_POS {
+            mj_fwd_position(m, d);
+
+            if skipsensor == 0 {
+                crate::engine::engine_sensor::mj_sensor_pos(m, d);
+            }
+
+            if !(*d).flg_energypos {
+                if ((*m).opt.enableflags & MJ_ENBL_ENERGY) != 0 {
+                    crate::engine::engine_sensor::mj_energy_pos(m, d);
+                } else {
+                    (*d).energy[0] = 0.0;
+                    (*d).energy[1] = 0.0;
+                }
+            }
+        }
+
+        // velocity-dependent
+        if skipstage < MJ_STAGE_VEL {
+            mj_fwd_velocity(m, d);
+
+            if skipsensor == 0 {
+                crate::engine::engine_sensor::mj_sensor_vel(m, d);
+            }
+
+            if ((*m).opt.enableflags & MJ_ENBL_ENERGY) != 0 && !(*d).flg_energyvel {
+                crate::engine::engine_sensor::mj_energy_vel(m, d);
+            }
+        }
+
+        // acceleration-dependent
+        if crate::engine::engine_callback::mjcb_control.is_some()
+            && ((*m).opt.disableflags & MJ_DSBL_ACTUATION) == 0
+        {
+            if let Some(cb) = crate::engine::engine_callback::mjcb_control {
+                cb(m, d);
+            }
+        }
+
+        mj_fwd_actuation(m, d);
+        mj_fwd_acceleration(m, d);
+        mj_fwd_constraint(m, d);
+        if skipsensor == 0 {
+            (*d).flg_rnepost = false;
+            crate::engine::engine_sensor::mj_sensor_acc(m, d);
+        }
+    }
 }
 
 /// C: mj_RungeKutta (engine/engine_forward.h:53)
@@ -468,21 +687,117 @@ pub fn mj_runge_kutta(m: *const mjModel, d: *mut mjData, N: i32) {
 /// Calls: mj_EulerSkip
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_euler(m: *const mjModel, d: *mut mjData) {
-    todo!() // mj_Euler
+    mj_euler_skip(m, d, 0);
 }
 
 /// C: mj_EulerSkip (engine/engine_forward.h:59)
 /// Calls: mj_actuatorDamping, mj_advance, mj_factorI, mj_freeStack, mj_markStack, mj_solveLD, mj_stackAllocInfo, mjd_xPolyForce, mju_add, mju_addInd, mju_copy, mju_copyInd, mju_copySparse, mju_isZero
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_euler_skip(m: *const mjModel, d: *mut mjData, skipfactor: i32) {
-    todo!() // mj_EulerSkip
+    const MJ_ENBL_SLEEP: i32 = 1 << 4;
+    const MJ_DSBL_EULERDAMP: i32 = 1 << 15;
+    const MJ_DSBL_DAMPER: i32 = 1 << 6;
+    const MJ_OBJ_JOINT: u32 = 3;
+    const MJ_NPOLY: i32 = 2;
+
+    // SAFETY: m, d are valid pointers (caller contract).
+    unsafe {
+        crate::engine::engine_memory::mj_mark_stack(d);
+        let qfrc = crate::engine::engine_memory::mj_stack_alloc_num(d, (*m).nv as usize);
+        let qacc = crate::engine::engine_memory::mj_stack_alloc_num(d, (*m).nv as usize);
+
+        // sleep filtering
+        let sleep_filter = ((*m).opt.enableflags & MJ_ENBL_SLEEP) != 0
+            && (*d).nv_awake < (*m).nv as i32;
+        let nv = if sleep_filter { (*d).nv_awake } else { (*m).nv as i32 };
+        let dof_awake_ind: *const i32 = if sleep_filter { (*d).dof_awake_ind } else { std::ptr::null() };
+
+        // check for dof damping if disable flag is not set
+        let mut dof_damping: i32 = 0;
+        if ((*m).opt.disableflags & MJ_DSBL_EULERDAMP) == 0
+            && ((*m).opt.disableflags & MJ_DSBL_DAMPER) == 0
+        {
+            for v in 0..nv {
+                let i = if sleep_filter { *dof_awake_ind.add(v as usize) } else { v };
+                if *(*m).dof_damping.add(i as usize) > 0.0
+                    || crate::engine::engine_util_misc::mju_is_zero(
+                        (*m).dof_dampingpoly.add((MJ_NPOLY * i) as usize), MJ_NPOLY) == 0
+                    || *(*m).jnt_actuatorid.add(*(*m).dof_jntid.add(i as usize) as usize) != -1
+                {
+                    dof_damping = 1;
+                    break;
+                }
+            }
+        }
+
+        // no damping or disabled: explicit velocity integration
+        if dof_damping == 0 {
+            if sleep_filter {
+                crate::engine::engine_util_blas::mju_copy_ind(qacc, (*d).qacc, dof_awake_ind, nv);
+            } else {
+                crate::engine::engine_util_blas::mju_copy(qacc, (*d).qacc, nv);
+            }
+        }
+        // damping: integrate implicitly
+        else {
+            if skipfactor == 0 {
+                // qH = M
+                if sleep_filter {
+                    crate::engine::engine_util_sparse::mju_copy_sparse(
+                        (*d).qH, (*d).M, (*m).M_rownnz, (*m).M_rowadr, dof_awake_ind, (*d).nv_awake);
+                } else {
+                    crate::engine::engine_util_blas::mju_copy((*d).qH, (*d).M, (*m).nC as i32);
+                }
+
+                // qH += h*diag(B)
+                for v in 0..nv {
+                    let i = if sleep_filter { *dof_awake_ind.add(v as usize) } else { v };
+                    let qv = *(*d).qvel.add(i as usize);
+                    let mut poly: [f64; 2] = [0.0; 2];
+                    crate::engine::engine_util_blas::mju_copy(
+                        poly.as_mut_ptr(), (*m).dof_dampingpoly.add((MJ_NPOLY * i) as usize), MJ_NPOLY);
+                    let damping = *(*m).dof_damping.add(i as usize)
+                        + crate::engine::engine_core_util::mj_actuator_damping(
+                            m, MJ_OBJ_JOINT, *(*m).dof_jntid.add(i as usize), poly.as_mut_ptr());
+                    let damp_deriv = crate::engine::engine_util_misc::mjd_x_poly_force(
+                        damping, poly.as_ptr(), qv, MJ_NPOLY, 1);
+                    let diag_idx = *(*m).M_rowadr.add(i as usize) + *(*m).M_rownnz.add(i as usize) - 1;
+                    *(*d).qH.add(diag_idx as usize) += (*m).opt.timestep * damp_deriv;
+                }
+
+                // factorize in-place
+                crate::engine::engine_core_smooth::mj_factor_i(
+                    (*d).qH, (*d).qHDiagInv, nv,
+                    (*m).M_rownnz, (*m).M_rowadr, (*m).M_colind, dof_awake_ind);
+            }
+
+            // solve
+            if sleep_filter {
+                crate::engine::engine_util_blas::mju_add_ind(
+                    qfrc, (*d).qfrc_smooth, (*d).qfrc_constraint, dof_awake_ind, nv);
+                crate::engine::engine_util_blas::mju_copy_ind(qacc, qfrc, dof_awake_ind, nv);
+            } else {
+                crate::engine::engine_util_blas::mju_add(
+                    qfrc, (*d).qfrc_smooth, (*d).qfrc_constraint, nv);
+                crate::engine::engine_util_blas::mju_copy(qacc, qfrc, nv);
+            }
+            crate::engine::engine_core_smooth::mj_solve_ld(
+                qacc, (*d).qH, (*d).qHDiagInv, nv, 1,
+                (*m).M_rownnz, (*m).M_rowadr, (*m).M_colind, dof_awake_ind);
+        }
+
+        // advance state and time
+        mj_advance(m, d, (*d).act_dot, qacc, std::ptr::null());
+
+        crate::engine::engine_memory::mj_free_stack(d);
+    }
 }
 
 /// C: mj_implicit (engine/engine_forward.h:62)
 /// Calls: mj_implicitSkip
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_implicit(m: *const mjModel, d: *mut mjData) {
-    todo!() // mj_implicit
+    mj_implicit_skip(m, d, 0);
 }
 
 /// C: mj_implicitSkip (engine/engine_forward.h:65)
@@ -634,21 +949,112 @@ pub fn mj_midpoint(mass: f64, inertia: *const f64, ipos: *const f64, iquat: *con
 /// Calls: mj_camlight, mj_comPos, mj_flex, mj_kinematics, mj_tendon, mj_updateSleep, mj_wakeTendon
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_fwd_kinematics(m: *const mjModel, d: *mut mjData) {
-    todo!() // mj_fwdKinematics
+    // SAFETY: m, d are valid pointers (caller contract).
+    unsafe {
+        crate::engine::engine_core_smooth::mj_kinematics(m, d);
+        crate::engine::engine_core_smooth::mj_com_pos(m, d);
+        crate::engine::engine_core_smooth::mj_camlight(m, d);
+        crate::engine::engine_core_smooth::mj_flex(m, d);
+        crate::engine::engine_core_smooth::mj_tendon(m, d);
+        if crate::engine::engine_sleep::mj_wake_tendon(m, d) != 0 {
+            crate::engine::engine_sleep::mj_update_sleep(m, d);
+        }
+    }
 }
 
 /// C: mj_fwdPosition (engine/engine_forward.h:81)
 /// Calls: mj_collision, mj_factorM, mj_fwdKinematics, mj_island, mj_makeConstraint, mj_makeM, mj_projectConstraint, mj_transmission, mj_updateSleep, mj_wakeCollision, mj_wakeEquality
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_fwd_position(m: *const mjModel, d: *mut mjData) {
-    todo!() // mj_fwdPosition
+    // SAFETY: m, d are valid pointers (caller contract).
+    unsafe {
+        // clear position-dependent flags for lazy evaluation
+        (*d).flg_energypos = false;
+
+        mj_fwd_kinematics(m, d);
+
+        // inertia
+        crate::engine::engine_core_smooth::mj_make_m(m, d);
+        crate::engine::engine_core_smooth::mj_factor_m(m, d);
+
+        // collision
+        crate::engine::engine_collision_driver::mj_collision(m, d);
+
+        if crate::engine::engine_sleep::mj_wake_collision(m, d) != 0 {
+            crate::engine::engine_sleep::mj_update_sleep(m, d);
+            crate::engine::engine_collision_driver::mj_collision(m, d);
+        }
+
+        if crate::engine::engine_sleep::mj_wake_equality(m, d) != 0 {
+            crate::engine::engine_sleep::mj_update_sleep(m, d);
+        }
+
+        crate::engine::engine_core_constraint::mj_make_constraint(m, d);
+        crate::engine::engine_island::mj_island(m, d);
+
+        crate::engine::engine_core_constraint::mj_project_constraint(m, d);
+
+        crate::engine::engine_core_smooth::mj_transmission(m, d);
+    }
 }
 
 /// C: mj_fwdVelocity (engine/engine_forward.h:84)
 /// Calls: mj_comVel, mj_passive, mj_referenceConstraint, mj_rne, mj_tendonBias, mju_mulMatVecSparse, mju_zero
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_fwd_velocity(m: *const mjModel, d: *mut mjData) {
-    todo!() // mj_fwdVelocity
+    const MJ_DSBL_ACTUATION: i32 = 1 << 11;
+
+    // SAFETY: m, d are valid pointers (caller contract).
+    unsafe {
+        // clear velocity-dependent flags for lazy evaluation
+        (*d).flg_subtreevel = false;
+        (*d).flg_energyvel = false;
+
+        // flexedge velocity: skip interp and rigid flexes
+        crate::engine::engine_util_blas::mju_zero((*d).flexedge_velocity, (*m).nflexedge as i32);
+        for f in 0..(*m).nflex as i32 {
+            if *(*m).flex_rigid.add(f as usize) || *(*m).flex_interp.add(f as usize) != 0 {
+                continue;
+            }
+            let adr = *(*m).flex_edgeadr.add(f as usize);
+            let num = *(*m).flex_edgenum.add(f as usize);
+            crate::engine::engine_util_sparse::mju_mul_mat_vec_sparse(
+                (*d).flexedge_velocity.add(adr as usize),
+                (*d).flexedge_J,
+                (*d).qvel,
+                num,
+                (*m).flexedge_J_rownnz.add(adr as usize),
+                (*m).flexedge_J_rowadr.add(adr as usize),
+                (*m).flexedge_J_colind,
+                std::ptr::null(),
+            );
+        }
+
+        // tendon velocity: always sparse
+        crate::engine::engine_util_sparse::mju_mul_mat_vec_sparse(
+            (*d).ten_velocity, (*d).ten_J, (*d).qvel, (*m).ntendon as i32,
+            (*m).ten_J_rownnz, (*m).ten_J_rowadr, (*m).ten_J_colind, std::ptr::null());
+
+        // actuator velocity: always sparse
+        if ((*m).opt.disableflags & MJ_DSBL_ACTUATION) == 0 {
+            crate::engine::engine_util_sparse::mju_mul_mat_vec_sparse(
+                (*d).actuator_velocity, (*d).actuator_moment, (*d).qvel, (*m).nu as i32,
+                (*d).moment_rownnz, (*d).moment_rowadr, (*d).moment_colind, std::ptr::null());
+        } else {
+            crate::engine::engine_util_blas::mju_zero((*d).actuator_velocity, (*m).nu as i32);
+        }
+
+        // com-based velocities, passive forces, constraint references
+        crate::engine::engine_core_smooth::mj_com_vel(m, d);
+        crate::engine::engine_passive::mj_passive(m, d);
+        crate::engine::engine_core_constraint::mj_reference_constraint(m, d);
+
+        // compute qfrc_bias with abbreviated RNE (without acceleration)
+        crate::engine::engine_core_smooth::mj_rne(m, d, 0, (*d).qfrc_bias);
+
+        // add bias force due to tendon armature
+        crate::engine::engine_core_smooth::mj_tendon_bias(m, d, (*d).qfrc_bias);
+    }
 }
 
 /// C: mj_fwdActuation (engine/engine_forward.h:87)
@@ -662,7 +1068,52 @@ pub fn mj_fwd_actuation(m: *const mjModel, d: *mut mjData) {
 /// Calls: mj_solveLD, mj_xfrcAccumulate, mju_addTo, mju_addToInd, mju_copy, mju_copyInd, mju_sub, mju_subInd
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_fwd_acceleration(m: *const mjModel, d: *mut mjData) {
-    todo!() // mj_fwdAcceleration
+    const MJ_ENBL_SLEEP: i32 = 1 << 4;
+
+    // SAFETY: m, d are valid pointers (caller contract).
+    unsafe {
+        let sleep_filter = ((*m).opt.enableflags & MJ_ENBL_SLEEP) != 0
+            && (*d).nv_awake < (*m).nv as i32;
+        let nv: i32;
+        let index: *const i32;
+
+        // qfrc_smooth = qfrc_passive - qfrc_bias + qfrc_applied + qfrc_actuator
+        if !sleep_filter {
+            nv = (*m).nv as i32;
+            index = std::ptr::null();
+            crate::engine::engine_util_blas::mju_sub(
+                (*d).qfrc_smooth, (*d).qfrc_passive, (*d).qfrc_bias, nv);
+            crate::engine::engine_util_blas::mju_add_to(
+                (*d).qfrc_smooth, (*d).qfrc_applied, nv);
+            crate::engine::engine_util_blas::mju_add_to(
+                (*d).qfrc_smooth, (*d).qfrc_actuator, nv);
+        } else {
+            nv = (*d).nv_awake;
+            index = (*d).dof_awake_ind;
+            crate::engine::engine_util_blas::mju_sub_ind(
+                (*d).qfrc_smooth, (*d).qfrc_passive, (*d).qfrc_bias, index, nv);
+            crate::engine::engine_util_blas::mju_add_to_ind(
+                (*d).qfrc_smooth, (*d).qfrc_applied, index, nv);
+            crate::engine::engine_util_blas::mju_add_to_ind(
+                (*d).qfrc_smooth, (*d).qfrc_actuator, index, nv);
+        }
+
+        // qfrc_smooth += project(xfrc_applied)
+        crate::engine::engine_support::mj_xfrc_accumulate(m, d, (*d).qfrc_smooth);
+
+        // copy for in-place solve: qacc_smooth = qfrc_smooth
+        if !sleep_filter {
+            crate::engine::engine_util_blas::mju_copy((*d).qacc_smooth, (*d).qfrc_smooth, nv);
+        } else {
+            crate::engine::engine_util_blas::mju_copy_ind(
+                (*d).qacc_smooth, (*d).qfrc_smooth, index, nv);
+        }
+
+        // qacc_smooth = M \ qfrc_smooth
+        crate::engine::engine_core_smooth::mj_solve_ld(
+            (*d).qacc_smooth, (*d).qLD, (*d).qLDiagInv, nv, 1,
+            (*m).M_rownnz, (*m).M_rowadr, (*m).M_colind, index);
+    }
 }
 
 /// C: mj_fwdConstraint (engine/engine_forward.h:93)

@@ -8,7 +8,59 @@ use crate::types::*;
 /// Calls: mj_freeStack, mj_markStack, mj_stackAllocInfo, mju_max, mju_min, mju_zeroInt
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_update_dynamic_bvh(m: *const mjModel, d: *mut mjData, bvhadr: i32, bvhnum: i32) {
-    todo!() // mj_updateDynamicBVH
+    // SAFETY: m, d are valid pointers (caller contract).
+    unsafe {
+        crate::engine::engine_memory::mj_mark_stack(d);
+        let modified = crate::engine::engine_memory::mj_stack_alloc_int(d, bvhnum as usize);
+        crate::engine::engine_util_misc::mju_zero_int(modified, bvhnum);
+
+        // mark leafs as modified
+        for i in 0..bvhnum {
+            if *(*m).bvh_nodeid.add((bvhadr + i) as usize) >= 0 {
+                *modified.add(i as usize) = 1;
+            }
+        }
+
+        // update non-leafs in backward pass (parents come before children)
+        for i in (0..bvhnum).rev() {
+            if *(*m).bvh_nodeid.add((bvhadr + i) as usize) < 0 {
+                let child1 = *(*m).bvh_child.add(2 * (bvhadr + i) as usize);
+                let child2 = *(*m).bvh_child.add(2 * (bvhadr + i) as usize + 1);
+
+                // update if either child is modified
+                if *modified.add(child1 as usize) != 0 || *modified.add(child2 as usize) != 0 {
+                    let nbvhstatic = (*m).nbvhstatic as i32;
+                    let aabb = (*d).bvh_aabb_dyn.add(6 * (bvhadr - nbvhstatic + i) as usize);
+                    let aabb1 = (*d).bvh_aabb_dyn.add(6 * (bvhadr - nbvhstatic + child1) as usize);
+                    let aabb2 = (*d).bvh_aabb_dyn.add(6 * (bvhadr - nbvhstatic + child2) as usize);
+
+                    // compute new (min, max)
+                    let mut xmin: [f64; 3] = [0.0; 3];
+                    let mut xmax: [f64; 3] = [0.0; 3];
+                    for k in 0..3usize {
+                        xmin[k] = crate::engine::engine_util_misc::mju_min(
+                            *aabb1.add(k) - *aabb1.add(k + 3),
+                            *aabb2.add(k) - *aabb2.add(k + 3),
+                        );
+                        xmax[k] = crate::engine::engine_util_misc::mju_max(
+                            *aabb1.add(k) + *aabb1.add(k + 3),
+                            *aabb2.add(k) + *aabb2.add(k + 3),
+                        );
+                    }
+
+                    // convert to (center, size)
+                    for k in 0..3usize {
+                        *aabb.add(k) = 0.5 * (xmax[k] + xmin[k]);
+                        *aabb.add(k + 3) = 0.5 * (xmax[k] - xmin[k]);
+                    }
+
+                    *modified.add(i as usize) = 1;
+                }
+            }
+        }
+
+        crate::engine::engine_memory::mj_free_stack(d);
+    }
 }
 
 /// C: mju_mulMatMat322 (engine/engine_core_smooth.c:537)
@@ -521,14 +573,78 @@ pub fn mj_crb(m: *const mjModel, d: *mut mjData) {
 /// Calls: mj_actuatorArmature, mj_sleepState, mju_addToSclSparseInc
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_tendon_armature(m: *const mjModel, d: *mut mjData) {
-    todo!() // mj_tendonArmature
+    const MJ_ENBL_SLEEP: i32 = 1 << 4;
+    const MJ_OBJ_TENDON: u32 = 18;
+    const MJ_S_ASLEEP: i32 = 0;
+
+    // SAFETY: m, d are valid pointers (caller contract).
+    unsafe {
+        let nv = (*m).nv as i32;
+        let ntendon = (*m).ntendon as i32;
+        let M_rownnz = (*m).M_rownnz;
+        let M_rowadr = (*m).M_rowadr;
+        let M_colind = (*m).M_colind;
+
+        // sleep filtering
+        let sleep_filter = ((*m).opt.enableflags & MJ_ENBL_SLEEP) != 0
+            && (*d).nv_awake < nv;
+
+        for k in 0..ntendon {
+            // skip sleeping tendon
+            if sleep_filter
+                && crate::engine::engine_sleep::mj_sleep_state(
+                    m, d as *const mjData, MJ_OBJ_TENDON, k) == MJ_S_ASLEEP
+            {
+                continue;
+            }
+
+            let armature = *(*m).tendon_armature.add(k as usize)
+                + crate::engine::engine_core_util::mj_actuator_armature(m, MJ_OBJ_TENDON, k);
+            if armature == 0.0 {
+                continue;
+            }
+
+            // get sparse info for tendon k
+            let J_rowadr = *(*m).ten_J_rowadr.add(k as usize);
+            let J_rownnz = *(*m).ten_J_rownnz.add(k as usize);
+            let J_colind = (*m).ten_J_colind.add(J_rowadr as usize);
+            let ten_J = (*d).ten_J.add(J_rowadr as usize);
+
+            // M += armature * ten_J' * ten_J
+            for j in 0..J_rownnz {
+                let ten_J_i = *ten_J.add(j as usize);
+                if ten_J_i == 0.0 {
+                    continue;
+                }
+
+                // M[i,:] += armature * ten_J[i] * ten_J
+                let i = *J_colind.add(j as usize);
+                let M_adr = *M_rowadr.add(i as usize);
+                crate::engine::engine_util_sparse::mju_add_to_scl_sparse_inc(
+                    (*d).M.add(M_adr as usize),
+                    ten_J,
+                    *M_rownnz.add(i as usize),
+                    M_colind.add(M_adr as usize),
+                    J_rownnz,
+                    J_colind,
+                    armature * ten_J_i,
+                );
+            }
+        }
+    }
 }
 
 /// C: mj_makeM (engine/engine_core_smooth.h:65)
 /// Calls: mj_crb, mj_tendonArmature, mju_scatter
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_make_m(m: *const mjModel, d: *mut mjData) {
-    todo!() // mj_makeM
+    // SAFETY: m, d are valid pointers (caller contract).
+    unsafe {
+        mj_crb(m, d);
+        mj_tendon_armature(m, d);
+        crate::engine::engine_util_misc::mju_scatter(
+            (*d).qM, (*d).M, (*m).mapM2M, (*m).nC as i32);
+    }
 }
 
 /// C: mj_factorI_legacy (engine/engine_core_smooth.h:68)
@@ -540,7 +656,68 @@ pub fn mj_make_m(m: *const mjModel, d: *mut mjData) {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_factor_i_legacy(m: *const mjModel, d: *mut mjData, M: *const f64, qLD: *mut f64, qLDiagInv: *mut f64) {
-    todo!() // mj_factorI_legacy
+    const MJMINVAL: f64 = 1e-15;
+    const MJ_WARN_INERTIA: i32 = 0;
+
+    // SAFETY: m, d, M, qLD, qLDiagInv are valid pointers (caller contract).
+    unsafe {
+        let dof_Madr = (*m).dof_Madr;
+        let dof_parentid = (*m).dof_parentid;
+        let nv = (*m).nv as i32;
+
+        // copy M into LD
+        crate::engine::engine_util_blas::mju_copy(qLD, M, (*m).nM as i32);
+
+        // dense backward loop over dofs (regular only, simple diagonal already copied)
+        for k in (0..nv).rev() {
+            // get address of M(k,k)
+            let Madr_kk = *dof_Madr.add(k as usize);
+
+            // check for small/negative numbers on diagonal
+            if *qLD.add(Madr_kk as usize) < MJMINVAL {
+                crate::engine::engine_core_util::mj_warning(d, MJ_WARN_INERTIA, k);
+                *qLD.add(Madr_kk as usize) = MJMINVAL;
+            }
+
+            // skip the rest if simple
+            if *(*m).dof_simplenum.add(k as usize) != 0 {
+                continue;
+            }
+
+            // sparse backward loop over ancestors of k (excluding k)
+            let mut Madr_ki = Madr_kk + 1;
+            let mut i = *dof_parentid.add(k as usize);
+            while i >= 0 {
+                let tmp = *qLD.add(Madr_ki as usize) / *qLD.add(Madr_kk as usize);
+
+                // get number of ancestors of i (including i)
+                let cnt: i32 = if i < nv - 1 {
+                    *dof_Madr.add((i + 1) as usize) - *dof_Madr.add(i as usize)
+                } else {
+                    (*m).nM as i32 - *dof_Madr.add((i + 1) as usize)
+                };
+
+                // M(i,j) -= M(k,j) * tmp
+                crate::engine::engine_util_blas::mju_add_to_scl(
+                    qLD.add(*dof_Madr.add(i as usize) as usize),
+                    qLD.add(Madr_ki as usize),
+                    -tmp,
+                    cnt,
+                );
+
+                *qLD.add(Madr_ki as usize) = tmp;
+
+                // advance to i's parent
+                i = *dof_parentid.add(i as usize);
+                Madr_ki += 1;
+            }
+        }
+
+        // compute 1/diag(D)
+        for i in 0..nv {
+            *qLDiagInv.add(i as usize) = 1.0 / *qLD.add(*dof_Madr.add(i as usize) as usize);
+        }
+    }
 }
 
 /// C: mj_factorI (engine/engine_core_smooth.h:72)
@@ -929,14 +1106,235 @@ pub fn mj_solve_m2(m: *const mjModel, d: *mut mjData, x: *mut f64, y: *const f64
 /// Calls: mji_copy6, mji_crossMotion, mju_addTo, mju_copy, mju_mulDofVec, mju_zero
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_com_vel(m: *const mjModel, d: *mut mjData) {
-    todo!() // mj_comVel
+    const MJ_ENBL_SLEEP: i32 = 1 << 4;
+    const MJ_JNT_FREE: i32 = 0;
+    const MJ_JNT_BALL: i32 = 1;
+
+    // SAFETY: m, d are valid pointers (caller contract).
+    unsafe {
+        let sleep_filter = ((*m).opt.enableflags & MJ_ENBL_SLEEP) != 0
+            && ((*d).nbody_awake as i64) < (*m).nbody;
+        let nbody = if sleep_filter { (*d).nbody_awake as i32 } else { (*m).nbody as i32 };
+
+        // set world vel to 0
+        crate::engine::engine_util_blas::mju_zero((*d).cvel, 6);
+
+        // forward pass over bodies
+        for b in 1..nbody {
+            let i = if sleep_filter { *(*d).body_awake_ind.add(b as usize) } else { b };
+
+            // cvel = cvel_parent
+            let mut cvel: [f64; 6] = [0.0; 6];
+            crate::engine::engine_inline::mji_copy6(
+                cvel.as_mut_ptr(),
+                (*d).cvel.add(6 * *(*m).body_parentid.add(i as usize) as usize),
+            );
+
+            // cvel = cvel_parent + cdof * qvel, cdofdot = cvel x cdof
+            let dofnum = *(*m).body_dofnum.add(i as usize);
+            let bda = *(*m).body_dofadr.add(i as usize);
+            let mut cdofdot: [f64; 36] = [0.0; 36];
+            let mut j: i32 = 0;
+            while j < dofnum {
+                let mut tmp: [f64; 6] = [0.0; 6];
+                let jnt_type = *(*m).jnt_type.add(*(*m).dof_jntid.add((bda + j) as usize) as usize);
+
+                if jnt_type == MJ_JNT_FREE {
+                    // cdofdot = 0
+                    crate::engine::engine_util_blas::mju_zero(cdofdot.as_mut_ptr(), 18);
+
+                    // update velocity
+                    crate::engine::engine_util_spatial::mju_mul_dof_vec(
+                        tmp.as_mut_ptr(), (*d).cdof.add(6 * bda as usize), (*d).qvel.add(bda as usize), 3);
+                    crate::engine::engine_util_blas::mju_add_to(cvel.as_mut_ptr(), tmp.as_ptr(), 6);
+
+                    // continue with rotations
+                    j += 3;
+                    // fallthrough to BALL case
+                    crate::engine::engine_inline::mji_cross_motion(
+                        cdofdot.as_mut_ptr().add(6 * j as usize),
+                        cvel.as_ptr(),
+                        (*d).cdof.add(6 * (bda + j) as usize),
+                    );
+                    crate::engine::engine_inline::mji_cross_motion(
+                        cdofdot.as_mut_ptr().add(6 * (j + 1) as usize),
+                        cvel.as_ptr(),
+                        (*d).cdof.add(6 * (bda + j + 1) as usize),
+                    );
+                    crate::engine::engine_inline::mji_cross_motion(
+                        cdofdot.as_mut_ptr().add(6 * (j + 2) as usize),
+                        cvel.as_ptr(),
+                        (*d).cdof.add(6 * (bda + j + 2) as usize),
+                    );
+
+                    // update velocity
+                    crate::engine::engine_util_spatial::mju_mul_dof_vec(
+                        tmp.as_mut_ptr(), (*d).cdof.add(6 * (bda + j) as usize),
+                        (*d).qvel.add((bda + j) as usize), 3);
+                    crate::engine::engine_util_blas::mju_add_to(cvel.as_mut_ptr(), tmp.as_ptr(), 6);
+                    j += 2;
+                } else if jnt_type == MJ_JNT_BALL {
+                    // compute all 3 cdofdots using parent velocity
+                    crate::engine::engine_inline::mji_cross_motion(
+                        cdofdot.as_mut_ptr().add(6 * j as usize),
+                        cvel.as_ptr(),
+                        (*d).cdof.add(6 * (bda + j) as usize),
+                    );
+                    crate::engine::engine_inline::mji_cross_motion(
+                        cdofdot.as_mut_ptr().add(6 * (j + 1) as usize),
+                        cvel.as_ptr(),
+                        (*d).cdof.add(6 * (bda + j + 1) as usize),
+                    );
+                    crate::engine::engine_inline::mji_cross_motion(
+                        cdofdot.as_mut_ptr().add(6 * (j + 2) as usize),
+                        cvel.as_ptr(),
+                        (*d).cdof.add(6 * (bda + j + 2) as usize),
+                    );
+
+                    // update velocity
+                    crate::engine::engine_util_spatial::mju_mul_dof_vec(
+                        tmp.as_mut_ptr(), (*d).cdof.add(6 * (bda + j) as usize),
+                        (*d).qvel.add((bda + j) as usize), 3);
+                    crate::engine::engine_util_blas::mju_add_to(cvel.as_mut_ptr(), tmp.as_ptr(), 6);
+                    j += 2;
+                } else {
+                    // default (hinge/slide)
+                    crate::engine::engine_inline::mji_cross_motion(
+                        cdofdot.as_mut_ptr().add(6 * j as usize),
+                        cvel.as_ptr(),
+                        (*d).cdof.add(6 * (bda + j) as usize),
+                    );
+
+                    // update velocity
+                    crate::engine::engine_util_spatial::mju_mul_dof_vec(
+                        tmp.as_mut_ptr(), (*d).cdof.add(6 * (bda + j) as usize),
+                        (*d).qvel.add((bda + j) as usize), 1);
+                    crate::engine::engine_util_blas::mju_add_to(cvel.as_mut_ptr(), tmp.as_ptr(), 6);
+                }
+
+                j += 1;
+            }
+
+            // assign cvel, cdofdot
+            crate::engine::engine_inline::mji_copy6((*d).cvel.add(6 * i as usize), cvel.as_ptr());
+            crate::engine::engine_util_blas::mju_copy(
+                (*d).cdof_dot.add(6 * bda as usize), cdofdot.as_ptr(), 6 * dofnum);
+        }
+    }
 }
 
 /// C: mj_subtreeVel (engine/engine_core_smooth.h:101)
 /// Calls: mj_freeStack, mj_markStack, mj_objectVelocity, mj_stackAllocInfo, mji_addTo3, mji_cross, mji_mulMatVec3, mju_max, mju_mulMatTVec3, mju_scl3, mju_sub3
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_subtree_vel(m: *const mjModel, d: *mut mjData) {
-    todo!() // mj_subtreeVel
+    const MJ_ENBL_SLEEP: i32 = 1 << 4;
+    const MJ_OBJ_BODY: i32 = 1;
+    const MJMINVAL: f64 = 1e-15;
+
+    // SAFETY: m, d are valid pointers (caller contract).
+    unsafe {
+        let sleep_filter = ((*m).opt.enableflags & MJ_ENBL_SLEEP) != 0
+            && ((*d).nbody_awake as i64) < (*m).nbody;
+        let nbody = if sleep_filter { (*d).nbody_awake } else { (*m).nbody as i32 };
+
+        crate::engine::engine_memory::mj_mark_stack(d);
+        let body_vel = crate::engine::engine_memory::mj_stack_alloc_num(d, (6 * (*m).nbody) as usize);
+
+        // bodywise quantities
+        for b in 0..nbody {
+            let i = if sleep_filter { *(*d).body_awake_ind.add(b as usize) } else { b };
+
+            // compute and save body velocity
+            crate::engine::engine_core_util::mj_object_velocity(
+                m, d as *const mjData, MJ_OBJ_BODY, i, body_vel.add(6 * i as usize), 0);
+
+            // body linear momentum
+            crate::engine::engine_util_blas::mju_scl3(
+                (*d).subtree_linvel.add(3 * i as usize),
+                body_vel.add(6 * i as usize + 3),
+                *(*m).body_mass.add(i as usize),
+            );
+
+            // body angular momentum
+            let mut dv: [f64; 3] = [0.0; 3];
+            crate::engine::engine_util_blas::mju_mul_mat_t_vec3(
+                dv.as_mut_ptr(), (*d).ximat.add(9 * i as usize), body_vel.add(6 * i as usize));
+            dv[0] *= *(*m).body_inertia.add(3 * i as usize);
+            dv[1] *= *(*m).body_inertia.add(3 * i as usize + 1);
+            dv[2] *= *(*m).body_inertia.add(3 * i as usize + 2);
+            crate::engine::engine_inline::mji_mul_mat_vec3(
+                (*d).subtree_angmom.add(3 * i as usize), (*d).ximat.add(9 * i as usize), dv.as_ptr());
+        }
+
+        // subtree linear velocity
+        for b in (0..nbody).rev() {
+            let i = if sleep_filter { *(*d).body_awake_ind.add(b as usize) } else { b };
+
+            // non-world: add linear momentum to parent
+            if i != 0 {
+                crate::engine::engine_inline::mji_add_to3(
+                    (*d).subtree_linvel.add(3 * *(*m).body_parentid.add(i as usize) as usize),
+                    (*d).subtree_linvel.add(3 * i as usize),
+                );
+            }
+
+            // convert linear momentum to linear velocity
+            let inv_mass = 1.0 / crate::engine::engine_util_misc::mju_max(
+                MJMINVAL, *(*m).body_subtreemass.add(i as usize));
+            crate::engine::engine_util_blas::mju_scl3(
+                (*d).subtree_linvel.add(3 * i as usize),
+                (*d).subtree_linvel.add(3 * i as usize),
+                inv_mass,
+            );
+        }
+
+        // subtree angular momentum
+        for b in (1..nbody).rev() {
+            let i = if sleep_filter { *(*d).body_awake_ind.add(b as usize) } else { b };
+            let parent = *(*m).body_parentid.add(i as usize);
+
+            // momentum wrt body i
+            let mut dx: [f64; 3] = [0.0; 3];
+            let mut dv: [f64; 3] = [0.0; 3];
+            let mut dp: [f64; 3] = [0.0; 3];
+            let mut dL: [f64; 3] = [0.0; 3];
+            crate::engine::engine_util_blas::mju_sub3(
+                dx.as_mut_ptr(), (*d).xipos.add(3 * i as usize), (*d).subtree_com.add(3 * i as usize));
+            crate::engine::engine_util_blas::mju_sub3(
+                dv.as_mut_ptr(), body_vel.add(6 * i as usize + 3), (*d).subtree_linvel.add(3 * i as usize));
+            crate::engine::engine_util_blas::mju_scl3(
+                dp.as_mut_ptr(), dv.as_ptr(), *(*m).body_mass.add(i as usize));
+            crate::engine::engine_inline::mji_cross(dL.as_mut_ptr(), dx.as_ptr(), dp.as_ptr());
+
+            // add to subtree i
+            crate::engine::engine_inline::mji_add_to3(
+                (*d).subtree_angmom.add(3 * i as usize), dL.as_ptr());
+
+            // add to parent
+            crate::engine::engine_inline::mji_add_to3(
+                (*d).subtree_angmom.add(3 * parent as usize),
+                (*d).subtree_angmom.add(3 * i as usize),
+            );
+
+            // momentum wrt parent
+            crate::engine::engine_util_blas::mju_sub3(
+                dx.as_mut_ptr(), (*d).subtree_com.add(3 * i as usize), (*d).subtree_com.add(3 * parent as usize));
+            crate::engine::engine_util_blas::mju_sub3(
+                dv.as_mut_ptr(), (*d).subtree_linvel.add(3 * i as usize), (*d).subtree_linvel.add(3 * parent as usize));
+            crate::engine::engine_util_blas::mju_scl3(
+                dv.as_mut_ptr(), dv.as_ptr(), *(*m).body_subtreemass.add(i as usize));
+            crate::engine::engine_inline::mji_cross(dL.as_mut_ptr(), dx.as_ptr(), dv.as_ptr());
+
+            // add to parent
+            crate::engine::engine_inline::mji_add_to3(
+                (*d).subtree_angmom.add(3 * parent as usize), dL.as_ptr());
+        }
+
+        crate::engine::engine_memory::mj_free_stack(d);
+
+        // mark as computed
+        (*d).flg_subtreevel = true;
+    }
 }
 
 /// C: mj_rne (engine/engine_core_smooth.h:107)
@@ -948,14 +1346,462 @@ pub fn mj_subtree_vel(m: *const mjModel, d: *mut mjData) {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_rne(m: *const mjModel, d: *mut mjData, flg_acc: i32, result: *mut f64) {
-    todo!() // mj_rne
+    const MJ_ENBL_SLEEP: i32 = 1 << 4;
+    const MJ_DSBL_GRAVITY: i32 = 1 << 7;
+
+    // SAFETY: m, d, result are valid pointers (caller contract).
+    unsafe {
+        let sleep_filter = ((*m).opt.enableflags & MJ_ENBL_SLEEP) != 0
+            && ((*d).nbody_awake as i64) < (*m).nbody;
+        let nbody = if sleep_filter { (*d).nbody_awake } else { (*m).nbody as i32 };
+        let nparent = if sleep_filter { (*d).nparent_awake } else { (*m).nbody as i32 };
+        let nv = if sleep_filter { (*d).nv_awake } else { (*m).nv as i32 };
+
+        crate::engine::engine_memory::mj_mark_stack(d);
+        let loc_cacc = crate::engine::engine_memory::mj_stack_alloc_num(d, ((*m).nbody * 6) as usize);
+        let loc_cfrc_body = crate::engine::engine_memory::mj_stack_alloc_num(d, ((*m).nbody * 6) as usize);
+
+        // set world acceleration to -gravity
+        crate::engine::engine_util_blas::mju_zero(loc_cacc, 6);
+        if ((*m).opt.disableflags & MJ_DSBL_GRAVITY) == 0 {
+            crate::engine::engine_util_blas::mju_scl3(
+                loc_cacc.add(3), (*m).opt.gravity.as_ptr(), -1.0);
+        }
+
+        // forward pass over bodies: accumulate cacc, set cfrc_body
+        for b in 1..nbody {
+            let i = if sleep_filter { *(*d).body_awake_ind.add(b as usize) } else { b };
+
+            // get body's first dof address
+            let bda = *(*m).body_dofadr.add(i as usize);
+
+            // cacc = cacc_parent + cdofdot * qvel
+            let mut tmp: [f64; 6] = [0.0; 6];
+            crate::engine::engine_util_spatial::mju_mul_dof_vec(
+                tmp.as_mut_ptr(),
+                (*d).cdof_dot.add(6 * bda as usize),
+                (*d).qvel.add(bda as usize),
+                *(*m).body_dofnum.add(i as usize),
+            );
+            crate::engine::engine_util_blas::mju_add(
+                loc_cacc.add(6 * i as usize),
+                loc_cacc.add(6 * *(*m).body_parentid.add(i as usize) as usize),
+                tmp.as_ptr(),
+                6,
+            );
+
+            // cacc += cdof * qacc
+            if flg_acc != 0 {
+                crate::engine::engine_util_spatial::mju_mul_dof_vec(
+                    tmp.as_mut_ptr(),
+                    (*d).cdof.add(6 * bda as usize),
+                    (*d).qacc.add(bda as usize),
+                    *(*m).body_dofnum.add(i as usize),
+                );
+                crate::engine::engine_util_blas::mju_add_to(
+                    loc_cacc.add(6 * i as usize), tmp.as_ptr(), 6);
+            }
+
+            // cfrc_body = cinert * cacc + cvel x (cinert * cvel)
+            crate::engine::engine_util_spatial::mju_mul_inert_vec(
+                loc_cfrc_body.add(6 * i as usize),
+                (*d).cinert.add(10 * i as usize),
+                loc_cacc.add(6 * i as usize),
+            );
+            crate::engine::engine_util_spatial::mju_mul_inert_vec(
+                tmp.as_mut_ptr(),
+                (*d).cinert.add(10 * i as usize),
+                (*d).cvel.add(6 * i as usize),
+            );
+            let mut tmp1: [f64; 6] = [0.0; 6];
+            crate::engine::engine_inline::mji_cross_force(
+                tmp1.as_mut_ptr(), (*d).cvel.add(6 * i as usize), tmp.as_ptr());
+            crate::engine::engine_util_blas::mju_add_to(
+                loc_cfrc_body.add(6 * i as usize), tmp1.as_ptr(), 6);
+        }
+
+        // clear world cfrc_body
+        crate::engine::engine_util_blas::mju_zero(loc_cfrc_body, 6);
+
+        // backward pass over bodies: accumulate cfrc_body from children
+        for b in (1..nparent).rev() {
+            let i = if sleep_filter { *(*d).parent_awake_ind.add(b as usize) } else { b };
+            let j = *(*m).body_parentid.add(i as usize);
+            if j != 0 {
+                crate::engine::engine_util_blas::mju_add_to(
+                    loc_cfrc_body.add(6 * j as usize),
+                    loc_cfrc_body.add(6 * i as usize),
+                    6,
+                );
+            }
+        }
+
+        // result = cdof * cfrc_body
+        for v in 0..nv {
+            let i = if sleep_filter { *(*d).dof_awake_ind.add(v as usize) } else { v };
+            *result.add(i as usize) = crate::engine::engine_inline::mji_dot6(
+                (*d).cdof.add(6 * i as usize),
+                loc_cfrc_body.add(6 * *(*m).dof_bodyid.add(i as usize) as usize),
+            );
+        }
+
+        crate::engine::engine_memory::mj_free_stack(d);
+    }
 }
 
 /// C: mj_rnePostConstraint (engine/engine_core_smooth.h:110)
 /// Calls: mj_contactForce, mj_local2Global, mji_copy3, mji_crossForce, mju_add, mju_addTo, mju_isZero, mju_message, mju_mulDofVec, mju_mulInertVec, mju_mulMatTVec3, mju_scl3, mju_sub, mju_subFrom, mju_transformSpatial, mju_zero, mju_zero3
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_rne_post_constraint(m: *const mjModel, d: *mut mjData) {
-    todo!() // mj_rnePostConstraint
+    const MJ_DSBL_GRAVITY: i32 = 1 << 7;
+    const MJCNSTR_EQUALITY: i32 = 0;
+    const MJEQ_CONNECT: i32 = 0;
+    const MJEQ_WELD: i32 = 1;
+    const MJEQ_JOINT: i32 = 2;
+    const MJEQ_TENDON: i32 = 3;
+    const MJEQ_FLEX: i32 = 4;
+    const MJEQ_FLEXVERT: i32 = 5;
+    const MJEQ_FLEXSTRAIN: i32 = 6;
+    const MJNEQDATA: i32 = 11;
+    const MJOBJ_BODY: i32 = 1;
+
+    // SAFETY: m, d are valid pointers (caller contract). All array accesses are within
+    // model-allocated bounds guaranteed by mujoco's constraint construction.
+    unsafe {
+        let nbody = (*m).nbody;
+        let mut cfrc_com: [f64; 6] = [0.0; 6];
+        let mut cfrc: [f64; 6] = [0.0; 6];
+        let mut lfrc: [f64; 6] = [0.0; 6];
+
+        // clear cacc, set world acceleration to -gravity
+        crate::engine::engine_util_blas::mju_zero((*d).cacc, 6);
+        if ((*m).opt.disableflags & MJ_DSBL_GRAVITY) == 0 {
+            crate::engine::engine_util_blas::mju_scl3(
+                (*d).cacc.add(3),
+                (*m).opt.gravity.as_ptr(),
+                -1.0,
+            );
+        }
+
+        // cfrc_ext = perturb
+        crate::engine::engine_util_blas::mju_zero((*d).cfrc_ext, 6 * nbody as i32);
+        for i in 1..nbody {
+            if crate::engine::engine_util_misc::mju_is_zero((*d).xfrc_applied.add(6 * i as usize), 6) == 0 {
+                // rearrange as torque:force
+                crate::engine::engine_inline::mji_copy3(
+                    cfrc.as_mut_ptr(),
+                    (*d).xfrc_applied.add(6 * i as usize + 3),
+                );
+                crate::engine::engine_inline::mji_copy3(
+                    cfrc.as_mut_ptr().add(3),
+                    (*d).xfrc_applied.add(6 * i as usize),
+                );
+
+                // map force from application point to com; both world-oriented
+                crate::engine::engine_util_spatial::mju_transform_spatial(
+                    cfrc_com.as_mut_ptr(),
+                    cfrc.as_ptr(),
+                    1,
+                    (*d).subtree_com.add(3 * *(*m).body_rootid.add(i as usize) as usize),
+                    (*d).xipos.add(3 * i as usize),
+                    std::ptr::null(),
+                );
+
+                // accumulate
+                crate::engine::engine_util_blas::mju_add_to(
+                    (*d).cfrc_ext.add(6 * i as usize),
+                    cfrc_com.as_ptr(),
+                    6,
+                );
+            }
+        }
+
+        // cfrc_ext += contacts
+        let ncon = (*d).ncon;
+        for i in 0..ncon {
+            // get contact pointer
+            let con = (*d).contact.add(i as usize);
+
+            // skip excluded contacts
+            if (*con).efc_address < 0 {
+                continue;
+            }
+
+            // skip contact involving flex
+            if (*con).geom[0] < 0 || (*con).geom[1] < 0 {
+                continue;
+            }
+
+            // tmp = contact-local force:torque vector
+            crate::engine::engine_core_util::mj_contact_force(
+                m, d as *const mjData, i, lfrc.as_mut_ptr());
+
+            // cfrc = world-oriented torque:force vector (swap in the process)
+            crate::engine::engine_util_blas::mju_mul_mat_t_vec3(
+                cfrc.as_mut_ptr(),
+                (*con).frame.as_ptr(),
+                lfrc.as_ptr().add(3),
+            );
+            crate::engine::engine_util_blas::mju_mul_mat_t_vec3(
+                cfrc.as_mut_ptr().add(3),
+                (*con).frame.as_ptr(),
+                lfrc.as_ptr(),
+            );
+
+            // body 1
+            let k = *(*m).geom_bodyid.add((*con).geom[0] as usize);
+            if k != 0 {
+                // tmp = subtree CoM-based torque_force vector
+                crate::engine::engine_util_spatial::mju_transform_spatial(
+                    cfrc_com.as_mut_ptr(),
+                    cfrc.as_ptr(),
+                    1,
+                    (*d).subtree_com.add(3 * *(*m).body_rootid.add(k as usize) as usize),
+                    (*con).pos.as_ptr(),
+                    std::ptr::null(),
+                );
+
+                // apply (opposite for body 1)
+                crate::engine::engine_util_blas::mju_sub_from(
+                    (*d).cfrc_ext.add(6 * k as usize),
+                    cfrc_com.as_ptr(),
+                    6,
+                );
+            }
+
+            // body 2
+            let k = *(*m).geom_bodyid.add((*con).geom[1] as usize);
+            if k != 0 {
+                // tmp = subtree CoM-based torque_force vector
+                crate::engine::engine_util_spatial::mju_transform_spatial(
+                    cfrc_com.as_mut_ptr(),
+                    cfrc.as_ptr(),
+                    1,
+                    (*d).subtree_com.add(3 * *(*m).body_rootid.add(k as usize) as usize),
+                    (*con).pos.as_ptr(),
+                    std::ptr::null(),
+                );
+
+                // apply
+                crate::engine::engine_util_blas::mju_add_to(
+                    (*d).cfrc_ext.add(6 * k as usize),
+                    cfrc_com.as_ptr(),
+                    6,
+                );
+            }
+        }
+
+        // cfrc_ext += connect, weld, flex constraints
+        let mut i: i32 = 0;
+        let ne = (*d).ne;
+        while i < ne {
+            if *(*d).efc_type.add(i as usize) != MJCNSTR_EQUALITY {
+                crate::engine::engine_util_errmem::mju_error(
+                    b"row of efc is not an equality constraint\0".as_ptr() as *const i8);
+            }
+
+            let id = *(*d).efc_id.add(i as usize);
+            let eq_data = (*m).eq_data.add(MJNEQDATA as usize * id as usize);
+            let mut pos: [f64; 3] = [0.0; 3];
+
+            let eq_type = *(*m).eq_type.add(id as usize);
+            if eq_type == MJEQ_CONNECT || eq_type == MJEQ_WELD {
+                // cfrc = world-oriented torque:force vector
+                crate::engine::engine_inline::mji_copy3(
+                    cfrc.as_mut_ptr().add(3),
+                    (*d).efc_force.add(i as usize),
+                );
+                if eq_type == MJEQ_WELD {
+                    crate::engine::engine_inline::mji_copy3(
+                        cfrc.as_mut_ptr(),
+                        (*d).efc_force.add((i + 3) as usize),
+                    );
+                } else {
+                    crate::engine::engine_util_blas::mju_zero3(cfrc.as_mut_ptr());
+                }
+
+                let body_semantic = *(*m).eq_objtype.add(id as usize) == MJOBJ_BODY;
+
+                // body 1
+                let obj1 = *(*m).eq_obj1id.add(id as usize);
+                let k = if body_semantic { obj1 } else { *(*m).site_bodyid.add(obj1 as usize) };
+                if k != 0 {
+                    let offset: *const f64 = if body_semantic {
+                        eq_data.add(3 * (if eq_type == MJEQ_WELD { 1 } else { 0 }) as usize)
+                    } else {
+                        (*m).site_pos.add(3 * obj1 as usize)
+                    };
+
+                    // transform point on body1: local -> global
+                    crate::engine::engine_core_util::mj_local2global(
+                        d, pos.as_mut_ptr(), std::ptr::null_mut(),
+                        offset, std::ptr::null(), k, 0);
+
+                    // tmp = subtree CoM-based torque_force vector
+                    crate::engine::engine_util_spatial::mju_transform_spatial(
+                        cfrc_com.as_mut_ptr(),
+                        cfrc.as_ptr(),
+                        1,
+                        (*d).subtree_com.add(3 * *(*m).body_rootid.add(k as usize) as usize),
+                        pos.as_ptr(),
+                        std::ptr::null(),
+                    );
+
+                    // apply (opposite for body 1)
+                    crate::engine::engine_util_blas::mju_add_to(
+                        (*d).cfrc_ext.add(6 * k as usize),
+                        cfrc_com.as_ptr(),
+                        6,
+                    );
+                }
+
+                // body 2
+                let obj2 = *(*m).eq_obj2id.add(id as usize);
+                let k = if body_semantic { obj2 } else { *(*m).site_bodyid.add(obj2 as usize) };
+                if k != 0 {
+                    let offset: *const f64 = if body_semantic {
+                        eq_data.add(3 * (if eq_type == MJEQ_CONNECT { 1 } else { 0 }) as usize)
+                    } else {
+                        (*m).site_pos.add(3 * obj2 as usize)
+                    };
+
+                    // transform point on body2: local -> global
+                    crate::engine::engine_core_util::mj_local2global(
+                        d, pos.as_mut_ptr(), std::ptr::null_mut(),
+                        offset, std::ptr::null(), k, 0);
+
+                    // tmp = subtree CoM-based torque_force vector
+                    crate::engine::engine_util_spatial::mju_transform_spatial(
+                        cfrc_com.as_mut_ptr(),
+                        cfrc.as_ptr(),
+                        1,
+                        (*d).subtree_com.add(3 * *(*m).body_rootid.add(k as usize) as usize),
+                        pos.as_ptr(),
+                        std::ptr::null(),
+                    );
+
+                    // apply
+                    crate::engine::engine_util_blas::mju_sub_from(
+                        (*d).cfrc_ext.add(6 * k as usize),
+                        cfrc_com.as_ptr(),
+                        6,
+                    );
+                }
+
+                // increment rows
+                i += if eq_type == MJEQ_WELD { 6 } else { 3 };
+            } else if eq_type == MJEQ_JOINT || eq_type == MJEQ_TENDON {
+                // increment 1 row
+                i += 1;
+            } else if eq_type == MJEQ_FLEX {
+                // increment with number of non-rigid edges
+                let k = *(*m).eq_obj1id.add(id as usize);
+                let flex_edgeadr = *(*m).flex_edgeadr.add(k as usize);
+                let flex_edgenum = *(*m).flex_edgenum.add(k as usize);
+                for e in flex_edgeadr..(flex_edgeadr + flex_edgenum) {
+                    if !*(*m).flexedge_rigid.add(e as usize) {
+                        i += 1;
+                    }
+                }
+            } else if eq_type == MJEQ_FLEXVERT {
+                let k = *(*m).eq_obj1id.add(id as usize);
+                i += 2 * *(*m).flex_vertnum.add(k as usize);
+            } else if eq_type == MJEQ_FLEXSTRAIN {
+                let k = *(*m).eq_obj1id.add(id as usize);
+                let interp_k = *(*m).flex_interp.add(k as usize);
+                let order = if interp_k < 0 { -interp_k } else { interp_k };
+                let nodenum = *(*m).flex_nodenum.add(k as usize);
+                if order != 0 && nodenum != 0 {
+                    let nquad = order + 1;
+                    let ngauss = nquad * nquad * nquad;
+                    let ncells = *(*m).flex_cellnum.add(3 * k as usize)
+                        * *(*m).flex_cellnum.add(3 * k as usize + 1)
+                        * *(*m).flex_cellnum.add(3 * k as usize + 2);
+                    i += ncells * (if order == 1 { 2 + 3 * ngauss } else { 6 * ngauss });
+                }
+            } else {
+                crate::engine::engine_util_errmem::mju_error(
+                    b"unknown constraint type\0".as_ptr() as *const i8);
+            }
+        }
+
+        // forward pass over bodies: compute cacc, cfrc_int
+        let mut cacc: [f64; 6] = [0.0; 6];
+        let mut cfrc_body: [f64; 6] = [0.0; 6];
+        let mut cfrc_corr: [f64; 6] = [0.0; 6];
+        crate::engine::engine_util_blas::mju_zero((*d).cfrc_int, 6);
+        for j in 1..nbody {
+            // get body's first dof address
+            let bda = *(*m).body_dofadr.add(j as usize);
+
+            // cacc = cacc_parent + cdofdot * qvel + cdof * qacc
+            crate::engine::engine_util_spatial::mju_mul_dof_vec(
+                cacc.as_mut_ptr(),
+                (*d).cdof_dot.add(6 * bda as usize),
+                (*d).qvel.add(bda as usize),
+                *(*m).body_dofnum.add(j as usize),
+            );
+            crate::engine::engine_util_blas::mju_add(
+                (*d).cacc.add(6 * j as usize),
+                (*d).cacc.add(6 * *(*m).body_parentid.add(j as usize) as usize),
+                cacc.as_ptr(),
+                6,
+            );
+            crate::engine::engine_util_spatial::mju_mul_dof_vec(
+                cacc.as_mut_ptr(),
+                (*d).cdof.add(6 * bda as usize),
+                (*d).qacc.add(bda as usize),
+                *(*m).body_dofnum.add(j as usize),
+            );
+            crate::engine::engine_util_blas::mju_add_to(
+                (*d).cacc.add(6 * j as usize),
+                cacc.as_ptr(),
+                6,
+            );
+
+            // cfrc_body = cinert * cacc + cvel x (cinert * cvel)
+            crate::engine::engine_util_spatial::mju_mul_inert_vec(
+                cfrc_body.as_mut_ptr(),
+                (*d).cinert.add(10 * j as usize),
+                (*d).cacc.add(6 * j as usize),
+            );
+            crate::engine::engine_util_spatial::mju_mul_inert_vec(
+                cfrc_corr.as_mut_ptr(),
+                (*d).cinert.add(10 * j as usize),
+                (*d).cvel.add(6 * j as usize),
+            );
+            crate::engine::engine_inline::mji_cross_force(
+                cfrc.as_mut_ptr(),
+                (*d).cvel.add(6 * j as usize),
+                cfrc_corr.as_ptr(),
+            );
+            crate::engine::engine_util_blas::mju_add_to(
+                cfrc_body.as_mut_ptr(),
+                cfrc.as_ptr(),
+                6,
+            );
+
+            // set cfrc_int = cfrc_body - cfrc_ext
+            crate::engine::engine_util_blas::mju_sub(
+                (*d).cfrc_int.add(6 * j as usize),
+                cfrc_body.as_ptr(),
+                (*d).cfrc_ext.add(6 * j as usize),
+                6,
+            );
+        }
+
+        // backward pass over bodies: accumulate cfrc_int from children
+        for j in (1..nbody).rev() {
+            crate::engine::engine_util_blas::mju_add_to(
+                (*d).cfrc_int.add(6 * *(*m).body_parentid.add(j as usize) as usize),
+                (*d).cfrc_int.add(6 * j as usize),
+                6,
+            );
+        }
+
+        // mark as computed
+        (*d).flg_rnepost = true;
+    }
 }
 
 /// C: mj_tendonBias (engine/engine_core_smooth.h:116)
@@ -967,6 +1813,52 @@ pub fn mj_rne_post_constraint(m: *const mjModel, d: *mut mjData) {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_tendon_bias(m: *const mjModel, d: *mut mjData, qfrc: *mut f64) {
-    todo!() // mj_tendonBias
+    const MJ_ENBL_SLEEP: i32 = 1 << 4;
+    const MJ_OBJ_TENDON: u32 = 18;
+    const MJ_S_ASLEEP: i32 = 0;
+
+    // SAFETY: m, d, qfrc are valid pointers (caller contract).
+    unsafe {
+        let sleep_filter = ((*m).opt.enableflags & MJ_ENBL_SLEEP) != 0
+            && (*d).ntree_awake < (*m).ntree as i32;
+        let ntendon = (*m).ntendon as i32;
+
+        // add bias term due to tendon armature
+        for i in 0..ntendon {
+            // skip sleeping tendon
+            if sleep_filter
+                && crate::engine::engine_sleep::mj_sleep_state(
+                    m, d as *const mjData, MJ_OBJ_TENDON, i) == MJ_S_ASLEEP
+            {
+                continue;
+            }
+
+            let armature = *(*m).tendon_armature.add(i as usize)
+                + crate::engine::engine_core_util::mj_actuator_armature(m, MJ_OBJ_TENDON, i);
+
+            // no armature: skip
+            if armature == 0.0 {
+                continue;
+            }
+
+            // get d/dt(tendon Jacobian) dotted with qvel for tendon i
+            let dot = mj_tendon_dot(m, d, i, (*d).qvel);
+
+            // add bias term: qfrc += ten_J * armature * dot(ten_Jdot, qvel)
+            let coef = armature * dot;
+
+            if coef != 0.0 {
+                // sparse
+                let nnz = *(*m).ten_J_rownnz.add(i as usize);
+                let adr = *(*m).ten_J_rowadr.add(i as usize);
+                let colind = (*m).ten_J_colind.add(adr as usize);
+                let ten_J = (*d).ten_J.add(adr as usize);
+                for j in 0..nnz {
+                    *qfrc.add(*colind.add(j as usize) as usize) +=
+                        coef * *ten_J.add(j as usize);
+                }
+            }
+        }
+    }
 }
 

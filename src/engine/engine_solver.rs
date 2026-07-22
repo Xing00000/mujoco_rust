@@ -1921,56 +1921,76 @@ pub fn mj_sol_primal(m: *const mjModel, d: *mut mjData, island: i32, maxiter: i3
 /// Calls: solPGS
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_sol_pgs(m: *const mjModel, d: *mut mjData, maxiter: i32) {
-    todo!() // mj_solPGS
+    // SAFETY: m, d are valid pointers (caller contract).
+    unsafe {
+        sol_pgs(m, d, -1, (*d).ne, (*d).nf, (*d).nefc, std::ptr::null(), maxiter);
+    }
 }
 
 /// C: mj_solNoSlip (engine/engine_solver.h:27)
 /// Calls: solNoSlip
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_sol_no_slip(m: *const mjModel, d: *mut mjData, maxiter: i32) {
-    todo!() // mj_solNoSlip
+    // SAFETY: m, d are valid pointers (caller contract).
+    unsafe {
+        sol_no_slip(m, d, -1, (*d).ne, (*d).nf, (*d).nefc, std::ptr::null(), maxiter);
+    }
 }
 
 /// C: mj_solCG (engine/engine_solver.h:30)
 /// Calls: mj_solPrimal
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_sol_cg(m: *const mjModel, d: *mut mjData, maxiter: i32) {
-    todo!() // mj_solCG
+    mj_sol_primal(m, d, -1, maxiter, 0);
 }
 
 /// C: mj_solNewton (engine/engine_solver.h:33)
 /// Calls: mj_solPrimal
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_sol_newton(m: *const mjModel, d: *mut mjData, maxiter: i32) {
-    todo!() // mj_solNewton
+    mj_sol_primal(m, d, -1, maxiter, 1);
 }
 
 /// C: mj_solPGS_island (engine/engine_solver.h:39)
 /// Calls: solPGS
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_sol_pgs_island(m: *const mjModel, d: *mut mjData, island: i32, maxiter: i32) {
-    todo!() // mj_solPGS_island
+    // SAFETY: m, d are valid pointers (caller contract).
+    unsafe {
+        let ne = *(*d).island_ne.add(island as usize);
+        let nf = *(*d).island_nf.add(island as usize);
+        let nefc = *(*d).island_nefc.add(island as usize);
+        let iefcadr = *(*d).island_iefcadr.add(island as usize);
+        sol_pgs(m, d, island, ne, nf, nefc, (*d).map_iefc2efc.add(iefcadr as usize), maxiter);
+    }
 }
 
 /// C: mj_solNoSlip_island (engine/engine_solver.h:42)
 /// Calls: solNoSlip
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_sol_no_slip_island(m: *const mjModel, d: *mut mjData, island: i32, maxiter: i32) {
-    todo!() // mj_solNoSlip_island
+    // SAFETY: m, d are valid pointers (caller contract).
+    unsafe {
+        let ne = *(*d).island_ne.add(island as usize);
+        let nf = *(*d).island_nf.add(island as usize);
+        let nefc = *(*d).island_nefc.add(island as usize);
+        let iefcadr = *(*d).island_iefcadr.add(island as usize);
+        sol_no_slip(m, d, island, ne, nf, nefc, (*d).map_iefc2efc.add(iefcadr as usize), maxiter);
+    }
 }
 
 /// C: mj_solCG_island (engine/engine_solver.h:45)
 /// Calls: mj_solPrimal
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_sol_cg_island(m: *const mjModel, d: *mut mjData, island: i32, maxiter: i32) {
-    todo!() // mj_solCG_island
+    mj_sol_primal(m, d, island, maxiter, 0);
 }
 
 /// C: mj_solNewton_island (engine/engine_solver.h:48)
 /// Calls: mj_solPrimal
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_sol_newton_island(m: *const mjModel, d: *mut mjData, island: i32, maxiter: i32) {
-    todo!() // mj_solNewton_island
+    mj_sol_primal(m, d, island, maxiter, 1);
 }
 
 /// C: mj_dualFinish (engine/engine_solver.h:51)

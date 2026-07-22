@@ -13,7 +13,34 @@ use crate::types::*;
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjraw_plane_sphere(con: *mut mjPreContact, margin: f64, pos1: *const f64, mat1: *const f64, size1: *const f64, pos2: *const f64, mat2: *const f64, size2: *const f64) -> i32 {
-    todo!() // mjraw_PlaneSphere
+    // SAFETY: all pointers are valid and arrays are properly sized (caller contract).
+    unsafe {
+        // set normal
+        (*con).normal[0] = *mat1.add(2);
+        (*con).normal[1] = *mat1.add(5);
+        (*con).normal[2] = *mat1.add(8);
+
+        // compute distance, return if too large
+        let tmp: [f64; 3] = [
+            *pos2.add(0) - *pos1.add(0),
+            *pos2.add(1) - *pos1.add(1),
+            *pos2.add(2) - *pos1.add(2),
+        ];
+        let cdist = crate::engine::engine_util_blas::mju_dot3(tmp.as_ptr(), (*con).normal.as_ptr());
+        if cdist > margin + *size2.add(0) {
+            return 0;
+        }
+
+        // depth and position
+        (*con).dist = cdist - *size2.add(0);
+        let mut scl_tmp: [f64; 3] = [0.0; 3];
+        crate::engine::engine_inline::mji_scl3(
+            scl_tmp.as_mut_ptr(), (*con).normal.as_ptr(), -(*con).dist / 2.0 - *size2.add(0));
+        crate::engine::engine_inline::mji_add3(
+            (*con).pos.as_mut_ptr(), pos2, scl_tmp.as_ptr());
+        crate::engine::engine_inline::mji_zero3((*con).tangent.as_mut_ptr());
+        1
+    }
 }
 
 /// C: mjraw_SphereSphere (engine/engine_collision_primitive.c:262)
@@ -858,7 +885,16 @@ pub fn mjraw_capsule_triangle(con: *mut mjPreContact, margin: f64, pos: *const f
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjc_plane_sphere(m: *const mjModel, d: *mut mjData, con: *mut mjPreContact, g1: i32, g2: i32, margin: f64) -> i32 {
-    todo!() // mjc_PlaneSphere
+    // SAFETY: m, d, con are valid pointers (caller contract). g1, g2 are valid geom indices.
+    unsafe {
+        let pos1 = (*d).geom_xpos.add(3 * g1 as usize);
+        let pos2 = (*d).geom_xpos.add(3 * g2 as usize);
+        let mat1 = (*d).geom_xmat.add(9 * g1 as usize);
+        let mat2 = (*d).geom_xmat.add(9 * g2 as usize);
+        let size1 = (*m).geom_size.add(3 * g1 as usize);
+        let size2 = (*m).geom_size.add(3 * g2 as usize);
+        mjraw_plane_sphere(con, margin, pos1, mat1, size1, pos2, mat2, size2)
+    }
 }
 
 /// C: mjc_PlaneCapsule (engine/engine_collision_primitive.h:49)
@@ -870,7 +906,42 @@ pub fn mjc_plane_sphere(m: *const mjModel, d: *mut mjData, con: *mut mjPreContac
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjc_plane_capsule(m: *const mjModel, d: *mut mjData, con: *mut mjPreContact, g1: i32, g2: i32, margin: f64) -> i32 {
-    todo!() // mjc_PlaneCapsule
+    // SAFETY: m, d, con are valid pointers (caller contract). g1, g2 are valid geom indices.
+    unsafe {
+        let pos1 = (*d).geom_xpos.add(3 * g1 as usize);
+        let pos2 = (*d).geom_xpos.add(3 * g2 as usize);
+        let mat1 = (*d).geom_xmat.add(9 * g1 as usize);
+        let mat2 = (*d).geom_xmat.add(9 * g2 as usize);
+        let size1 = (*m).geom_size.add(3 * g1 as usize);
+        let size2 = (*m).geom_size.add(3 * g2 as usize);
+
+        // get capsule axis, segment = scaled axis
+        let axis: [f64; 3] = [*mat2.add(2), *mat2.add(5), *mat2.add(8)];
+        let segment: [f64; 3] = [
+            *size2.add(1) * axis[0],
+            *size2.add(1) * axis[1],
+            *size2.add(1) * axis[2],
+        ];
+
+        // get point 1, do sphere-plane test
+        let mut endpoint: [f64; 3] = [0.0; 3];
+        crate::engine::engine_util_blas::mju_add3(endpoint.as_mut_ptr(), pos2, segment.as_ptr());
+        let n1 = mjraw_plane_sphere(con, margin, pos1, mat1, size1, endpoint.as_ptr(), mat2, size2);
+
+        // get point 2, do sphere-plane test
+        crate::engine::engine_util_blas::mju_sub3(endpoint.as_mut_ptr(), pos2, segment.as_ptr());
+        let n2 = mjraw_plane_sphere(con.add(n1 as usize), margin, pos1, mat1, size1, endpoint.as_ptr(), mat2, size2);
+
+        // align contact frames with capsule axis
+        if n1 != 0 {
+            crate::engine::engine_inline::mji_copy3((*con).tangent.as_mut_ptr(), axis.as_ptr());
+        }
+        if n2 != 0 {
+            crate::engine::engine_inline::mji_copy3((*con.add(n1 as usize)).tangent.as_mut_ptr(), axis.as_ptr());
+        }
+
+        n1 + n2
+    }
 }
 
 /// C: mjc_PlaneCylinder (engine/engine_collision_primitive.h:51)
@@ -882,7 +953,144 @@ pub fn mjc_plane_capsule(m: *const mjModel, d: *mut mjData, con: *mut mjPreConta
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjc_plane_cylinder(m: *const mjModel, d: *mut mjData, con: *mut mjPreContact, g1: i32, g2: i32, margin: f64) -> i32 {
-    todo!() // mjc_PlaneCylinder
+    const MJMINVAL: f64 = 1e-15;
+
+    // SAFETY: m, d, con are valid pointers (caller contract). g1, g2 are valid geom indices.
+    unsafe {
+        let pos1 = (*d).geom_xpos.add(3 * g1 as usize);
+        let pos2 = (*d).geom_xpos.add(3 * g2 as usize);
+        let mat1 = (*d).geom_xmat.add(9 * g1 as usize);
+        let mat2 = (*d).geom_xmat.add(9 * g2 as usize);
+        let size2 = (*m).geom_size.add(3 * g2 as usize);
+
+        let normal: [f64; 3] = [*mat1.add(2), *mat1.add(5), *mat1.add(8)];
+        let mut axis: [f64; 3] = [*mat2.add(2), *mat2.add(5), *mat2.add(8)];
+
+        // project, make sure axis points towards plane
+        let mut prjaxis = crate::engine::engine_util_blas::mju_dot3(normal.as_ptr(), axis.as_ptr());
+        if prjaxis > 0.0 {
+            crate::engine::engine_util_blas::mju_scl3(axis.as_mut_ptr(), axis.as_ptr(), -1.0);
+            prjaxis = -prjaxis;
+        }
+
+        // compute normal distance to cylinder center
+        let mut vec: [f64; 3] = [
+            *pos2.add(0) - *pos1.add(0),
+            *pos2.add(1) - *pos1.add(1),
+            *pos2.add(2) - *pos1.add(2),
+        ];
+        let dist0 = crate::engine::engine_util_blas::mju_dot3(vec.as_ptr(), normal.as_ptr());
+
+        // remove component of -normal along axis, compute length
+        crate::engine::engine_inline::mji_scl3(vec.as_mut_ptr(), axis.as_ptr(), prjaxis);
+        crate::engine::engine_inline::mji_sub_from3(vec.as_mut_ptr(), normal.as_ptr());
+        let len_sqr = crate::engine::engine_util_blas::mju_dot3(vec.as_ptr(), vec.as_ptr());
+
+        // general configuration: normalize vector, scale by radius
+        if len_sqr >= MJMINVAL * MJMINVAL {
+            let scl = *size2.add(0) / f64::sqrt(len_sqr);
+            vec[0] *= scl;
+            vec[1] *= scl;
+            vec[2] *= scl;
+        }
+        // disk parallel to plane: pick x-axis of cylinder, scale by radius
+        else {
+            vec[0] = *mat2.add(0) * *size2.add(0);
+            vec[1] = *mat2.add(3) * *size2.add(0);
+            vec[2] = *mat2.add(6) * *size2.add(0);
+        }
+
+        // project vector on normal
+        let prjvec = crate::engine::engine_util_blas::mju_dot3(vec.as_ptr(), normal.as_ptr());
+
+        // scale axis by half-length
+        crate::engine::engine_util_blas::mju_scl3(axis.as_mut_ptr(), axis.as_ptr(), *size2.add(1));
+        let prjaxis_scaled = prjaxis * *size2.add(1);
+
+        // check first point, construct contact
+        let mut cnt: i32 = 0;
+        if dist0 + prjaxis_scaled + prjvec <= margin {
+            (*con.add(cnt as usize)).dist = dist0 + prjaxis_scaled + prjvec;
+            crate::engine::engine_inline::mji_add3(
+                (*con.add(cnt as usize)).pos.as_mut_ptr(), pos2, vec.as_ptr());
+            crate::engine::engine_inline::mji_add_to3(
+                (*con.add(cnt as usize)).pos.as_mut_ptr(), axis.as_ptr());
+            crate::engine::engine_inline::mji_add_to_scl3(
+                (*con.add(cnt as usize)).pos.as_mut_ptr(), normal.as_ptr(),
+                -(*con.add(cnt as usize)).dist * 0.5);
+            crate::engine::engine_inline::mji_copy3(
+                (*con.add(cnt as usize)).normal.as_mut_ptr(), normal.as_ptr());
+            crate::engine::engine_inline::mji_zero3(
+                (*con.add(cnt as usize)).tangent.as_mut_ptr());
+            cnt += 1;
+        } else {
+            return 0; // nearest point is above margin: no contacts
+        }
+
+        // check second point, construct contact
+        if dist0 - prjaxis_scaled + prjvec <= margin {
+            (*con.add(cnt as usize)).dist = dist0 - prjaxis_scaled + prjvec;
+            crate::engine::engine_inline::mji_add3(
+                (*con.add(cnt as usize)).pos.as_mut_ptr(), pos2, vec.as_ptr());
+            crate::engine::engine_inline::mji_sub_from3(
+                (*con.add(cnt as usize)).pos.as_mut_ptr(), axis.as_ptr());
+            crate::engine::engine_inline::mji_add_to_scl3(
+                (*con.add(cnt as usize)).pos.as_mut_ptr(), normal.as_ptr(),
+                -(*con.add(cnt as usize)).dist * 0.5);
+            crate::engine::engine_inline::mji_copy3(
+                (*con.add(cnt as usize)).normal.as_mut_ptr(), normal.as_ptr());
+            crate::engine::engine_inline::mji_zero3(
+                (*con.add(cnt as usize)).tangent.as_mut_ptr());
+            cnt += 1;
+        }
+
+        // try to add triangle points on side closer to plane
+        let prjvec1 = -prjvec * 0.5;
+        if dist0 + prjaxis_scaled + prjvec1 <= margin {
+            // compute sideways vector: vec1
+            let mut vec1: [f64; 3] = [0.0; 3];
+            crate::engine::engine_inline::mji_cross(vec1.as_mut_ptr(), vec.as_ptr(), axis.as_ptr());
+            crate::engine::engine_util_blas::mju_normalize3(vec1.as_mut_ptr());
+            crate::engine::engine_util_blas::mju_scl3(
+                vec1.as_mut_ptr(), vec1.as_ptr(), *size2.add(0) * f64::sqrt(3.0) / 2.0);
+
+            // add point A
+            (*con.add(cnt as usize)).dist = dist0 + prjaxis_scaled + prjvec1;
+            crate::engine::engine_inline::mji_add3(
+                (*con.add(cnt as usize)).pos.as_mut_ptr(), pos2, vec1.as_ptr());
+            crate::engine::engine_inline::mji_add_to3(
+                (*con.add(cnt as usize)).pos.as_mut_ptr(), axis.as_ptr());
+            crate::engine::engine_inline::mji_add_to_scl3(
+                (*con.add(cnt as usize)).pos.as_mut_ptr(), vec.as_ptr(), -0.5);
+            crate::engine::engine_inline::mji_add_to_scl3(
+                (*con.add(cnt as usize)).pos.as_mut_ptr(), normal.as_ptr(),
+                -(*con.add(cnt as usize)).dist * 0.5);
+            crate::engine::engine_inline::mji_copy3(
+                (*con.add(cnt as usize)).normal.as_mut_ptr(), normal.as_ptr());
+            crate::engine::engine_inline::mji_zero3(
+                (*con.add(cnt as usize)).tangent.as_mut_ptr());
+            cnt += 1;
+
+            // add point B
+            (*con.add(cnt as usize)).dist = dist0 + prjaxis_scaled + prjvec1;
+            crate::engine::engine_inline::mji_sub3(
+                (*con.add(cnt as usize)).pos.as_mut_ptr(), pos2, vec1.as_ptr());
+            crate::engine::engine_inline::mji_add_to3(
+                (*con.add(cnt as usize)).pos.as_mut_ptr(), axis.as_ptr());
+            crate::engine::engine_inline::mji_add_to_scl3(
+                (*con.add(cnt as usize)).pos.as_mut_ptr(), vec.as_ptr(), -0.5);
+            crate::engine::engine_inline::mji_add_to_scl3(
+                (*con.add(cnt as usize)).pos.as_mut_ptr(), normal.as_ptr(),
+                -(*con.add(cnt as usize)).dist * 0.5);
+            crate::engine::engine_inline::mji_copy3(
+                (*con.add(cnt as usize)).normal.as_mut_ptr(), normal.as_ptr());
+            crate::engine::engine_inline::mji_zero3(
+                (*con.add(cnt as usize)).tangent.as_mut_ptr());
+            cnt += 1;
+        }
+
+        cnt
+    }
 }
 
 /// C: mjc_PlaneBox (engine/engine_collision_primitive.h:53)
@@ -894,7 +1102,64 @@ pub fn mjc_plane_cylinder(m: *const mjModel, d: *mut mjData, con: *mut mjPreCont
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjc_plane_box(m: *const mjModel, d: *mut mjData, con: *mut mjPreContact, g1: i32, g2: i32, margin: f64) -> i32 {
-    todo!() // mjc_PlaneBox
+    // SAFETY: m, d, con are valid pointers (caller contract). g1, g2 are valid geom indices.
+    unsafe {
+        let pos1 = (*d).geom_xpos.add(3 * g1 as usize);
+        let pos2 = (*d).geom_xpos.add(3 * g2 as usize);
+        let mat1 = (*d).geom_xmat.add(9 * g1 as usize);
+        let mat2 = (*d).geom_xmat.add(9 * g2 as usize);
+        let size2 = (*m).geom_size.add(3 * g2 as usize);
+
+        // get normal, difference between centers, normal distance
+        let norm: [f64; 3] = [*mat1.add(2), *mat1.add(5), *mat1.add(8)];
+        let dif: [f64; 3] = [
+            *pos2.add(0) - *pos1.add(0),
+            *pos2.add(1) - *pos1.add(1),
+            *pos2.add(2) - *pos1.add(2),
+        ];
+        let dist = crate::engine::engine_util_blas::mju_dot3(dif.as_ptr(), norm.as_ptr());
+
+        // test all corners, pick bottom 4
+        let mut cnt: i32 = 0;
+        for i in 0..8i32 {
+            // get corner in local coordinates
+            let mut vec: [f64; 3] = [0.0; 3];
+            vec[0] = if (i & 1) != 0 { *size2.add(0) } else { -*size2.add(0) };
+            vec[1] = if (i & 2) != 0 { *size2.add(1) } else { -*size2.add(1) };
+            vec[2] = if (i & 4) != 0 { *size2.add(2) } else { -*size2.add(2) };
+
+            // get corner in global coordinates relative to box center
+            let mut corner: [f64; 3] = [0.0; 3];
+            crate::engine::engine_util_blas::mju_mul_mat_vec3(
+                corner.as_mut_ptr(), mat2, vec.as_ptr());
+
+            // compute distance to plane, skip if too far or pointing up
+            let ldist = crate::engine::engine_util_blas::mju_dot3(norm.as_ptr(), corner.as_ptr());
+            if dist + ldist > margin || ldist > 0.0 {
+                continue;
+            }
+
+            // construct contact
+            (*con.add(cnt as usize)).dist = dist + ldist;
+            crate::engine::engine_inline::mji_copy3(
+                (*con.add(cnt as usize)).normal.as_mut_ptr(), norm.as_ptr());
+            crate::engine::engine_inline::mji_add_to3(corner.as_mut_ptr(), pos2);
+            crate::engine::engine_inline::mji_scl3(
+                vec.as_mut_ptr(), norm.as_ptr(), -(*con.add(cnt as usize)).dist / 2.0);
+            crate::engine::engine_inline::mji_add3(
+                (*con.add(cnt as usize)).pos.as_mut_ptr(), corner.as_ptr(), vec.as_ptr());
+            crate::engine::engine_inline::mji_zero3(
+                (*con.add(cnt as usize)).tangent.as_mut_ptr());
+
+            // count; max is 4
+            cnt += 1;
+            if cnt >= 4 {
+                return 4;
+            }
+        }
+
+        cnt
+    }
 }
 
 /// C: mjc_SphereSphere (engine/engine_collision_primitive.h:57)
@@ -906,7 +1171,16 @@ pub fn mjc_plane_box(m: *const mjModel, d: *mut mjData, con: *mut mjPreContact, 
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjc_sphere_sphere(m: *const mjModel, d: *mut mjData, con: *mut mjPreContact, g1: i32, g2: i32, margin: f64) -> i32 {
-    todo!() // mjc_SphereSphere
+    // SAFETY: m, d, con are valid pointers (caller contract). g1, g2 are valid geom indices.
+    unsafe {
+        let pos1 = (*d).geom_xpos.add(3 * g1 as usize);
+        let mat1 = (*d).geom_xmat.add(9 * g1 as usize);
+        let size1 = (*m).geom_size.add(3 * g1 as usize);
+        let pos2 = (*d).geom_xpos.add(3 * g2 as usize);
+        let mat2 = (*d).geom_xmat.add(9 * g2 as usize);
+        let size2 = (*m).geom_size.add(3 * g2 as usize);
+        mjraw_sphere_sphere(con, margin, pos1, mat1, size1, pos2, mat2, size2)
+    }
 }
 
 /// C: mjc_SphereCapsule (engine/engine_collision_primitive.h:59)
@@ -918,7 +1192,16 @@ pub fn mjc_sphere_sphere(m: *const mjModel, d: *mut mjData, con: *mut mjPreConta
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjc_sphere_capsule(m: *const mjModel, d: *mut mjData, con: *mut mjPreContact, g1: i32, g2: i32, margin: f64) -> i32 {
-    todo!() // mjc_SphereCapsule
+    // SAFETY: m, d, con are valid pointers (caller contract). g1, g2 are valid geom indices.
+    unsafe {
+        let pos1 = (*d).geom_xpos.add(3 * g1 as usize);
+        let pos2 = (*d).geom_xpos.add(3 * g2 as usize);
+        let mat1 = (*d).geom_xmat.add(9 * g1 as usize);
+        let mat2 = (*d).geom_xmat.add(9 * g2 as usize);
+        let size1 = (*m).geom_size.add(3 * g1 as usize);
+        let size2 = (*m).geom_size.add(3 * g2 as usize);
+        mjraw_sphere_capsule(con, margin, pos1, mat1, size1, pos2, mat2, size2)
+    }
 }
 
 /// C: mjc_SphereCylinder (engine/engine_collision_primitive.h:61)
@@ -930,7 +1213,97 @@ pub fn mjc_sphere_capsule(m: *const mjModel, d: *mut mjData, con: *mut mjPreCont
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjc_sphere_cylinder(m: *const mjModel, d: *mut mjData, con: *mut mjPreContact, g1: i32, g2: i32, margin: f64) -> i32 {
-    todo!() // mjc_SphereCylinder
+    // SAFETY: m, d, con are valid pointers (caller contract). g1, g2 are valid geom indices.
+    unsafe {
+        let pos1 = (*d).geom_xpos.add(3 * g1 as usize);
+        let pos2 = (*d).geom_xpos.add(3 * g2 as usize);
+        let mat1 = (*d).geom_xmat.add(9 * g1 as usize);
+        let mat2 = (*d).geom_xmat.add(9 * g2 as usize);
+        let size1 = (*m).geom_size.add(3 * g1 as usize);
+        let size2 = (*m).geom_size.add(3 * g2 as usize);
+
+        // get cylinder sizes and axis
+        let radius = *size2.add(0);
+        let height = *size2.add(1);
+        let axis: [f64; 3] = [*mat2.add(2), *mat2.add(5), *mat2.add(8)];
+
+        // find sphere projection onto cylinder axis and plane
+        let vec: [f64; 3] = [
+            *pos1.add(0) - *pos2.add(0),
+            *pos1.add(1) - *pos2.add(1),
+            *pos1.add(2) - *pos2.add(2),
+        ];
+        let x = crate::engine::engine_util_blas::mju_dot3(axis.as_ptr(), vec.as_ptr());
+        let mut a_proj: [f64; 3] = [0.0; 3];
+        let mut p_proj: [f64; 3] = [0.0; 3];
+        crate::engine::engine_inline::mji_scl3(a_proj.as_mut_ptr(), axis.as_ptr(), x);
+        crate::engine::engine_inline::mji_sub3(p_proj.as_mut_ptr(), vec.as_ptr(), a_proj.as_ptr());
+        let p_proj_sqr = crate::engine::engine_util_blas::mju_dot3(p_proj.as_ptr(), p_proj.as_ptr());
+
+        // get collision type
+        let mut collide_side: i32 = if x.abs() < height { 1 } else { 0 };
+        let mut collide_cap: i32 = if p_proj_sqr < radius * radius { 1 } else { 0 };
+        if collide_side != 0 && collide_cap != 0 {
+            // deep penetration
+            let dist_cap = height - x.abs();
+            let dist_radius = radius - f64::sqrt(p_proj_sqr);
+            if dist_cap < dist_radius {
+                collide_side = 0;
+            } else {
+                collide_cap = 0;
+            }
+        }
+
+        // side collision: use sphere-sphere
+        if collide_side != 0 {
+            crate::engine::engine_inline::mji_add_to3(a_proj.as_mut_ptr(), pos2);
+            return mjraw_sphere_sphere(con, margin, pos1, mat1, size1, a_proj.as_ptr(), mat2, size2);
+        }
+
+        // cap collision: use plane-sphere
+        if collide_cap != 0 {
+            let flipmat: [f64; 9] = [
+                -*mat2.add(0), *mat2.add(1), -*mat2.add(2),
+                -*mat2.add(3), *mat2.add(4), -*mat2.add(5),
+                -*mat2.add(6), *mat2.add(7), -*mat2.add(8),
+            ];
+            let mat_cap: *const f64;
+            let mut pos_cap: [f64; 3] = [0.0; 3];
+            if x > 0.0 {
+                // top cap
+                crate::engine::engine_util_blas::mju_add_scl3(
+                    pos_cap.as_mut_ptr(), pos2, axis.as_ptr(), height);
+                mat_cap = mat2;
+            } else {
+                // bottom cap
+                crate::engine::engine_util_blas::mju_add_scl3(
+                    pos_cap.as_mut_ptr(), pos2, axis.as_ptr(), -height);
+                mat_cap = flipmat.as_ptr();
+            }
+            let ncon = mjraw_plane_sphere(
+                con, margin, pos_cap.as_ptr(), mat_cap, size2, pos1, mat1, size1);
+            if ncon != 0 {
+                // flip direction normal
+                crate::engine::engine_util_blas::mju_scl3(
+                    (*con).normal.as_mut_ptr(), (*con).normal.as_ptr(), -1.0);
+            }
+            return ncon;
+        }
+
+        // otherwise corner collision: use sphere-sphere
+        crate::engine::engine_util_blas::mju_scl3(
+            p_proj.as_mut_ptr(), p_proj.as_ptr(),
+            *size2.add(0) / f64::sqrt(p_proj_sqr));
+        let mut corner: [f64; 3] = [0.0; 3];
+        crate::engine::engine_inline::mji_scl3(
+            corner.as_mut_ptr(), axis.as_ptr(), if x > 0.0 { height } else { -height });
+        crate::engine::engine_inline::mji_add_to3(corner.as_mut_ptr(), p_proj.as_ptr());
+        crate::engine::engine_inline::mji_add_to3(corner.as_mut_ptr(), pos2);
+
+        // sphere-sphere with point sphere at the corner
+        let size_zero: [f64; 1] = [0.0];
+        mjraw_sphere_sphere(con, margin, pos1, mat1, size1, corner.as_ptr(), mat2, size_zero.as_ptr())
+    }
 }
 
 /// C: mjc_CapsuleCapsule (engine/engine_collision_primitive.h:63)
@@ -942,7 +1315,16 @@ pub fn mjc_sphere_cylinder(m: *const mjModel, d: *mut mjData, con: *mut mjPreCon
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjc_capsule_capsule(m: *const mjModel, d: *mut mjData, con: *mut mjPreContact, g1: i32, g2: i32, margin: f64) -> i32 {
-    todo!() // mjc_CapsuleCapsule
+    // SAFETY: m, d, con are valid pointers (caller contract). g1, g2 are valid geom indices.
+    unsafe {
+        let pos1 = (*d).geom_xpos.add(3 * g1 as usize);
+        let pos2 = (*d).geom_xpos.add(3 * g2 as usize);
+        let mat1 = (*d).geom_xmat.add(9 * g1 as usize);
+        let mat2 = (*d).geom_xmat.add(9 * g2 as usize);
+        let size1 = (*m).geom_size.add(3 * g1 as usize);
+        let size2 = (*m).geom_size.add(3 * g2 as usize);
+        mjraw_capsule_capsule(con, margin, pos1, mat1, size1, pos2, mat2, size2)
+    }
 }
 
 /// C: mjc_CapsuleBox (engine/engine_collision_primitive.h:67)
@@ -954,7 +1336,16 @@ pub fn mjc_capsule_capsule(m: *const mjModel, d: *mut mjData, con: *mut mjPreCon
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjc_capsule_box(m: *const mjModel, d: *mut mjData, con: *mut mjPreContact, g1: i32, g2: i32, margin: f64) -> i32 {
-    todo!() // mjc_CapsuleBox
+    // SAFETY: m, d, con are valid pointers (caller contract). g1, g2 are valid geom indices.
+    unsafe {
+        let pos1 = (*d).geom_xpos.add(3 * g1 as usize);
+        let pos2 = (*d).geom_xpos.add(3 * g2 as usize);
+        let mat1 = (*d).geom_xmat.add(9 * g1 as usize);
+        let mat2 = (*d).geom_xmat.add(9 * g2 as usize);
+        let size1 = (*m).geom_size.add(3 * g1 as usize);
+        let size2 = (*m).geom_size.add(3 * g2 as usize);
+        mjraw_capsule_box(con, margin, pos1, mat1, size1, pos2, mat2, size2)
+    }
 }
 
 /// C: mjc_SphereBox (engine/engine_collision_primitive.h:69)
@@ -966,7 +1357,17 @@ pub fn mjc_capsule_box(m: *const mjModel, d: *mut mjData, con: *mut mjPreContact
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjc_sphere_box(m: *const mjModel, d: *mut mjData, con: *mut mjPreContact, g1: i32, g2: i32, margin: f64) -> i32 {
-    todo!() // mjc_SphereBox
+    // SAFETY: m, d, con are valid pointers (caller contract). g1, g2 are valid geom indices.
+    unsafe {
+        let pos1 = (*d).geom_xpos.add(3 * g1 as usize);
+        let mat1 = (*d).geom_xmat.add(9 * g1 as usize);
+        let size1 = (*m).geom_size.add(3 * g1 as usize);
+        let pos2 = (*d).geom_xpos.add(3 * g2 as usize);
+        let mat2 = (*d).geom_xmat.add(9 * g2 as usize);
+        let size2 = (*m).geom_size.add(3 * g2 as usize);
+        crate::engine::engine_collision_box::mjraw_sphere_box(
+            con, margin, pos1, mat1, size1, pos2, mat2, size2)
+    }
 }
 
 /// C: mjc_BoxBox (engine/engine_collision_primitive.h:71)

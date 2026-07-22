@@ -1020,7 +1020,7 @@ pub fn mj_make_capsule(m: *const mjModel, d: *mut mjData, f: i32, vid: *const i3
 /// Calls: getGap, getMargin, mjc_setCCDBuffer, mju_message
 #[allow(unused_variables, non_snake_case)]
 pub fn collision_task(m: *const mjModel, d: *mut mjData, arg: *mut (), thread_id: i32, idx: i32) {
-    todo!() // collisionTask
+    todo!("requires mjContactArg struct definition and mjCOLLISIONFUNC function pointer table access not available in codegen")
 }
 
 /// C: planeVertex (engine/engine_collision_driver.c:2129)

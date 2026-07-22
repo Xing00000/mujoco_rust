@@ -372,14 +372,230 @@ pub fn add_contact_geoms(m: *const mjModel, d: *mut mjData, vopt: *const mjvOpti
 /// Calls: acquireGeom, islandColor, makeLabel, markselected, mj_sleepCycle, mjv_initGeom, releaseGeom, setMaterial
 #[allow(unused_variables, non_snake_case)]
 pub fn add_flex_geoms(m: *const mjModel, d: *mut mjData, vopt: *const mjvOption, pert: *const mjvPerturb, catmask: i32, scn: *mut mjvScene) {
-    todo!() // addFlexGeoms
+    const MJ_CAT_DYNAMIC: i32 = 2;
+    const MJ_VIS_FLEXVERT: usize = 24;
+    const MJ_VIS_FLEXEDGE: usize = 25;
+    const MJ_VIS_FLEXFACE: usize = 26;
+    const MJ_VIS_FLEXSKIN: usize = 27;
+    const MJ_VIS_ISLAND: usize = 15;
+    const MJ_OBJ_FLEX: i32 = 9;
+    const MJ_GEOM_FLEX: i32 = 105;
+    const MJ_LABEL_FLEX: i32 = 10;
+    const MJ_NGROUP: i32 = 6;
+    const MJ_ENBL_SLEEP: i32 = 1 << 4;
+
+    // SAFETY: m, d, vopt, pert, scn are valid pointers (caller contract).
+    unsafe {
+        let category = MJ_CAT_DYNAMIC;
+        if (category & catmask) == 0 {
+            return;
+        }
+        if (*vopt).flags[MJ_VIS_FLEXVERT] == 0
+            && (*vopt).flags[MJ_VIS_FLEXEDGE] == 0
+            && (*vopt).flags[MJ_VIS_FLEXFACE] == 0
+            && (*vopt).flags[MJ_VIS_FLEXSKIN] == 0
+        {
+            return;
+        }
+
+        for i in 0..(*m).nflex as i32 {
+            let group = *(*m).flex_group.add(i as usize);
+            let clamped = if 0 > (if (MJ_NGROUP - 1) < group { MJ_NGROUP - 1 } else { group }) {
+                0
+            } else {
+                if (MJ_NGROUP - 1) < group { MJ_NGROUP - 1 } else { group }
+            };
+            if (*vopt).flexgroup[clamped as usize] == 0 {
+                continue;
+            }
+
+            let mut thisgeom = acquire_geom(scn, i, category, MJ_OBJ_FLEX);
+            if thisgeom.is_null() {
+                return;
+            }
+
+            // construct geom, pos = first vertex
+            mjv_init_geom(
+                thisgeom,
+                MJ_GEOM_FLEX,
+                std::ptr::null(),
+                (*d).flexvert_xpos.add(3 * *(*m).flex_vertadr.add(i as usize) as usize),
+                std::ptr::null(),
+                std::ptr::null(),
+            );
+            (*thisgeom).size[0] = *(*m).flex_radius.add(i as usize) as f32;
+            set_material(
+                m,
+                thisgeom,
+                *(*m).flex_matid.add(i as usize),
+                (*m).flex_rgba.add(4 * i as usize),
+                (*vopt).flags.as_ptr(),
+            );
+
+            // override if visualizing islands
+            if (*vopt).flags[MJ_VIS_ISLAND] != 0 {
+                // find first dynamic body in flex
+                let mut bodyid: i32 = -1;
+                if *(*m).flex_interp.add(i as usize) != 0 {
+                    let nodeadr = *(*m).flex_nodeadr.add(i as usize);
+                    let mut j = 0;
+                    while j < *(*m).flex_nodenum.add(i as usize) && bodyid < 0 {
+                        let b = *(*m).flex_nodebodyid.add((nodeadr + j) as usize);
+                        if *(*m).body_treeid.add(b as usize) >= 0 {
+                            bodyid = b;
+                        }
+                        j += 1;
+                    }
+                } else {
+                    let vertadr = *(*m).flex_vertadr.add(i as usize);
+                    let mut j = 0;
+                    while j < *(*m).flex_vertnum.add(i as usize) && bodyid < 0 {
+                        let b = *(*m).flex_vertbodyid.add((vertadr + j) as usize);
+                        if *(*m).body_treeid.add(b as usize) >= 0 {
+                            bodyid = b;
+                        }
+                        j += 1;
+                    }
+                }
+
+                if bodyid >= 0 {
+                    // strip material
+                    (*thisgeom).matid = -1;
+
+                    let weld_id = *(*m).body_weldid.add(bodyid as usize);
+                    let dof = *(*m).body_dofadr.add(weld_id as usize);
+                    let island = if (*d).nisland != 0 { *(*d).dof_island.add(dof as usize) } else { -1 };
+                    let mut h = if island >= 0 { *(*d).island_dofadr.add(island as usize) } else { -1 };
+                    let awake = *(*d).body_awake.add(bodyid as usize);
+
+                    // if sleep is enabled, color by first tree dof
+                    if h == -1 && ((*m).opt.enableflags & MJ_ENBL_SLEEP) != 0 {
+                        let mut tree = *(*m).dof_treeid.add(dof as usize);
+                        if awake == 0 {
+                            tree = crate::engine::engine_sleep::mj_sleep_cycle(
+                                (*d).tree_asleep, (*m).ntree as i32, tree);
+                        }
+                        h = *(*m).tree_dofadr.add(tree as usize);
+                    }
+
+                    island_color((*thisgeom).rgba.as_mut_ptr(), h, awake);
+                }
+            }
+
+            // set texcoord
+            if *(*m).flex_texcoordadr.add(i as usize) >= 0 {
+                (*thisgeom).texcoord = 1;
+            } else {
+                (*thisgeom).matid = -1;
+            }
+
+            // glow flex if selected
+            if (*pert).flexselect == i {
+                markselected(
+                    &(*m).vis as *const _ as *const mjVisual,
+                    thisgeom,
+                );
+            }
+
+            // skip if alpha is 0
+            if (*thisgeom).rgba[3] == 0.0 {
+                continue;
+            }
+
+            // label
+            if (*vopt).label == MJ_LABEL_FLEX {
+                make_label(m, MJ_OBJ_FLEX as u32, i, (*thisgeom).label.as_mut_ptr());
+            }
+
+            release_geom(&mut thisgeom, scn);
+        }
+    }
 }
 
 /// C: addSkinGeoms (engine/engine_vis_visualize.c:841)
 /// Calls: acquireGeom, makeLabel, markselected, mjv_initGeom, releaseGeom, setMaterial
 #[allow(unused_variables, non_snake_case)]
 pub fn add_skin_geoms(m: *const mjModel, d: *mut mjData, vopt: *const mjvOption, pert: *const mjvPerturb, catmask: i32, scn: *mut mjvScene) {
-    todo!() // addSkinGeoms
+    const MJ_CAT_DYNAMIC: i32 = 2;
+    const MJ_VIS_SKIN: usize = 23;
+    const MJ_OBJ_SKIN: i32 = 11;
+    const MJ_GEOM_SKIN: i32 = 106;
+    const MJ_LABEL_SKIN: i32 = 11;
+    const MJ_NGROUP: i32 = 6;
+
+    // SAFETY: m, d, vopt, pert, scn are valid pointers (caller contract).
+    unsafe {
+        let category = MJ_CAT_DYNAMIC;
+        if (category & catmask) == 0 {
+            return;
+        }
+        if (*vopt).flags[MJ_VIS_SKIN] == 0 {
+            return;
+        }
+
+        for i in 0..(*m).nskin as i32 {
+            let group = *(*m).skin_group.add(i as usize);
+            let clamped = if 0 > (if (MJ_NGROUP - 1) < group { MJ_NGROUP - 1 } else { group }) {
+                0
+            } else {
+                if (MJ_NGROUP - 1) < group { MJ_NGROUP - 1 } else { group }
+            };
+            if (*vopt).skingroup[clamped as usize] == 0 {
+                continue;
+            }
+
+            let mut thisgeom = acquire_geom(scn, i, category, MJ_OBJ_SKIN);
+            if thisgeom.is_null() {
+                return;
+            }
+
+            // construct geom, pos = first bone
+            let bone_body = *(*m).skin_bonebodyid.add(
+                *(*m).skin_boneadr.add(i as usize) as usize);
+            mjv_init_geom(
+                thisgeom,
+                MJ_GEOM_SKIN,
+                std::ptr::null(),
+                (*d).xpos.add(3 * bone_body as usize),
+                std::ptr::null(),
+                std::ptr::null(),
+            );
+
+            // set material properties
+            set_material(
+                m,
+                thisgeom,
+                *(*m).skin_matid.add(i as usize),
+                (*m).skin_rgba.add(4 * i as usize),
+                (*vopt).flags.as_ptr(),
+            );
+
+            // glow skin if selected
+            if (*pert).skinselect == i {
+                markselected(
+                    &(*m).vis as *const _ as *const mjVisual,
+                    thisgeom,
+                );
+            }
+
+            // set texcoord
+            if *(*m).skin_texcoordadr.add(i as usize) >= 0 {
+                (*thisgeom).texcoord = 1;
+            }
+
+            // skip if alpha is 0
+            if (*thisgeom).rgba[3] == 0.0 {
+                continue;
+            }
+
+            // label
+            if (*vopt).label == MJ_LABEL_SKIN {
+                make_label(m, MJ_OBJ_SKIN as u32, i, (*thisgeom).label.as_mut_ptr());
+            }
+
+            release_geom(&mut thisgeom, scn);
+        }
+    }
 }
 
 /// C: addGeomGeoms (engine/engine_vis_visualize.c:892)
@@ -393,21 +609,352 @@ pub fn add_geom_geoms(m: *const mjModel, d: *mut mjData, vopt: *const mjvOption,
 /// Calls: acquireGeom, bodycategory, makeLabel, markselected, mjv_initGeom, releaseGeom, setMaterial
 #[allow(unused_variables, non_snake_case)]
 pub fn add_site_geoms(m: *const mjModel, d: *mut mjData, vopt: *const mjvOption, pert: *const mjvPerturb, catmask: i32, scn: *mut mjvScene) {
-    todo!() // addSiteGeoms
+    const MJ_OBJ_SITE: i32 = 6;
+    const MJ_LABEL_SITE: i32 = 4;
+    const MJ_NGROUP: i32 = 6;
+
+    // SAFETY: m, d, vopt, pert, scn are valid pointers (caller contract).
+    unsafe {
+        for i in 0..(*m).nsite as i32 {
+            // skip if category is masked
+            let category = bodycategory(m, *(*m).site_bodyid.add(i as usize));
+            if (category & catmask) == 0 {
+                continue;
+            }
+
+            // skip if group disabled
+            let group = *(*m).site_group.add(i as usize);
+            let clamped = if 0 > (if (MJ_NGROUP - 1) < group { MJ_NGROUP - 1 } else { group }) {
+                0
+            } else {
+                if (MJ_NGROUP - 1) < group { MJ_NGROUP - 1 } else { group }
+            };
+            if (*vopt).sitegroup[clamped as usize] == 0 {
+                continue;
+            }
+
+            let mut thisgeom = acquire_geom(scn, i, category, MJ_OBJ_SITE);
+            if thisgeom.is_null() {
+                return;
+            }
+
+            // construct geom
+            mjv_init_geom(
+                thisgeom,
+                *(*m).site_type.add(i as usize),
+                (*m).site_size.add(3 * i as usize),
+                (*d).site_xpos.add(3 * i as usize),
+                (*d).site_xmat.add(9 * i as usize),
+                std::ptr::null(),
+            );
+
+            // set material if given
+            set_material(
+                m,
+                thisgeom,
+                *(*m).site_matid.add(i as usize),
+                (*m).site_rgba.add(4 * i as usize),
+                (*vopt).flags.as_ptr(),
+            );
+
+            // skip if alpha is 0
+            if (*thisgeom).rgba[3] == 0.0 {
+                continue;
+            }
+
+            // glow
+            if (*pert).select > 0 && (*pert).select == *(*m).site_bodyid.add(i as usize) {
+                markselected(
+                    &(*m).vis as *const _ as *const mjVisual,
+                    thisgeom,
+                );
+            }
+
+            // label
+            if (*vopt).label == MJ_LABEL_SITE {
+                make_label(m, MJ_OBJ_SITE as u32, i, (*thisgeom).label.as_mut_ptr());
+            }
+
+            release_geom(&mut thisgeom, scn);
+        }
+    }
 }
 
 /// C: addSpatialTendonGeoms (engine/engine_vis_visualize.c:1141)
 /// Calls: acquireGeom, f2f, islandColor, makeLabel, mju_copy3, mjv_catenary, mjv_connector, mjv_isCatenary, releaseGeom, setMaterial
 #[allow(unused_variables, non_snake_case)]
 pub fn add_spatial_tendon_geoms(m: *const mjModel, d: *mut mjData, vopt: *const mjvOption, catmask: i32, scn: *mut mjvScene) {
-    todo!() // addSpatialTendonGeoms
+    const MJ_CAT_DYNAMIC: i32 = 2;
+    const MJ_VIS_TENDON: usize = 7;
+    const MJ_VIS_ISLAND: usize = 15;
+    const MJ_OBJ_TENDON: i32 = 18;
+    const MJ_GEOM_CAPSULE: i32 = 3;
+    const MJ_CNSTR_LIMIT_TENDON: i32 = 4;
+    const MJ_LABEL_TENDON: i32 = 7;
+    const MJ_NGROUP: i32 = 6;
+
+    // SAFETY: m, d, vopt, scn are valid pointers (caller contract).
+    unsafe {
+        let category = MJ_CAT_DYNAMIC;
+        if (category & catmask) == 0 {
+            return;
+        }
+        if (*vopt).flags[MJ_VIS_TENDON] == 0 {
+            return;
+        }
+
+        let rgba_floats = (*m).vis.rgba._data.as_ptr() as *const f32;
+        let constraint_rgba = rgba_floats.add(19 * 4);
+
+        for i in 0..(*m).ntendon as i32 {
+            let group = *(*m).tendon_group.add(i as usize);
+            let clamped = if 0 > (if (MJ_NGROUP - 1) < group { MJ_NGROUP - 1 } else { group }) {
+                0
+            } else {
+                if (MJ_NGROUP - 1) < group { MJ_NGROUP - 1 } else { group }
+            };
+            if (*vopt).tendongroup[clamped as usize] == 0 {
+                continue;
+            }
+
+            let mut length: f64 = 0.0;
+            let draw_catenary = mjv_is_catenary(m, d as *const mjData, i, &mut length);
+
+            // conditions not met: draw straight lines
+            if draw_catenary == 0 {
+                let wrapadr = *(*d).ten_wrapadr.add(i as usize);
+                let wrapnum = *(*d).ten_wrapnum.add(i as usize);
+                for j in wrapadr..(wrapadr + wrapnum - 1) {
+                    if *(*d).wrap_obj.add(j as usize) != -2
+                        && *(*d).wrap_obj.add((j + 1) as usize) != -2
+                    {
+                        let mut thisgeom = acquire_geom(scn, i, category, MJ_OBJ_TENDON);
+                        if thisgeom.is_null() {
+                            return;
+                        }
+
+                        // determine width
+                        let width: f64 = if *(*d).wrap_obj.add(j as usize) >= 0
+                            && *(*d).wrap_obj.add((j + 1) as usize) >= 0
+                        {
+                            0.5 * *(*m).tendon_width.add(i as usize)
+                        } else {
+                            *(*m).tendon_width.add(i as usize)
+                        };
+
+                        // construct geom
+                        mjv_connector(
+                            thisgeom, MJ_GEOM_CAPSULE, width,
+                            (*d).wrap_xpos.add(3 * j as usize),
+                            (*d).wrap_xpos.add(3 * (j + 1) as usize),
+                        );
+
+                        // set material properties
+                        let tendon_matid = *(*m).tendon_matid.add(i as usize);
+                        let mut rgba: [f32; 4] = [0.0; 4];
+                        f2f(rgba.as_mut_ptr(), (*m).tendon_rgba.add(4 * i as usize), 4);
+
+                        // if tendon has no material and color is default gray, re-color using limit impedance
+                        if tendon_matid == -1 && rgba[0] == 0.5 && rgba[1] == 0.5
+                            && rgba[2] == 0.5 && rgba[3] == 1.0
+                        {
+                            let mut imp: f64 = 0.0;
+                            let efc_start = (*d).ne + (*d).nf;
+                            let efc_end = efc_start + (*d).nl;
+                            for k in efc_start..efc_end {
+                                if *(*d).efc_type.add(k as usize) == MJ_CNSTR_LIMIT_TENDON
+                                    && *(*d).efc_id.add(k as usize) == i
+                                {
+                                    imp = *(*d).efc_KBIP.add(4 * k as usize + 2);
+                                }
+                            }
+
+                            rgba[0] = (1.0 - imp as f32) * rgba[0] + imp as f32 * *constraint_rgba.add(0);
+                            rgba[1] = (1.0 - imp as f32) * rgba[1] + imp as f32 * *constraint_rgba.add(1);
+                            rgba[2] = (1.0 - imp as f32) * rgba[2] + imp as f32 * *constraint_rgba.add(2);
+                        }
+
+                        set_material(m, thisgeom, tendon_matid, rgba.as_ptr(), (*vopt).flags.as_ptr());
+
+                        // override if visualizing islands
+                        if (*vopt).flags[MJ_VIS_ISLAND] != 0 {
+                            (*thisgeom).matid = -1;
+                            let mut h: i32 = -1;
+                            if (*d).nisland != 0 && *(*d).tendon_efcadr.add(i as usize) >= 0 {
+                                h = *(*d).island_dofadr.add(
+                                    *(*d).efc_island.add(*(*d).tendon_efcadr.add(i as usize) as usize) as usize);
+                            }
+                            island_color((*thisgeom).rgba.as_mut_ptr(), h, 1);
+                        }
+
+                        // label: only the first segment
+                        if (*vopt).label == MJ_LABEL_TENDON && j == wrapadr {
+                            make_label(m, MJ_OBJ_TENDON as u32, i, (*thisgeom).label.as_mut_ptr());
+                        }
+
+                        release_geom(&mut thisgeom, scn);
+                    }
+                }
+            }
+            // special case: catenary
+            else {
+                // two hanging points
+                let mut x0: [f64; 3] = [0.0; 3];
+                let mut x1: [f64; 3] = [0.0; 3];
+                let wrapadr = *(*d).ten_wrapadr.add(i as usize);
+                crate::engine::engine_util_blas::mju_copy3(
+                    x0.as_mut_ptr(), (*d).wrap_xpos.add(3 * wrapadr as usize));
+                crate::engine::engine_util_blas::mju_copy3(
+                    x1.as_mut_ptr(), (*d).wrap_xpos.add(3 * (wrapadr + 1) as usize));
+
+                // get number of points along catenary path (capped at 100)
+                let quality_ints = (*m).vis.quality.as_ptr() as *const i32;
+                let numslices = *quality_ints.add(2);
+                let ncatenary = if numslices + 1 < 100 { numslices + 1 } else { 100 };
+                let mut catenary: [f64; 300] = [0.0; 300];
+
+                // points along catenary path
+                let npoints = mjv_catenary(
+                    x0.as_ptr(), x1.as_ptr(),
+                    (*m).opt.gravity.as_ptr(),
+                    length, catenary.as_mut_ptr(), ncatenary);
+
+                // draw npoints-1 segments
+                for j in 0..(npoints - 1) {
+                    let mut thisgeom = acquire_geom(scn, i, category, MJ_OBJ_TENDON);
+                    if thisgeom.is_null() {
+                        return;
+                    }
+
+                    // construct geom
+                    mjv_connector(
+                        thisgeom, MJ_GEOM_CAPSULE,
+                        *(*m).tendon_width.add(i as usize),
+                        catenary.as_ptr().add(3 * j as usize),
+                        catenary.as_ptr().add(3 * (j + 1) as usize),
+                    );
+
+                    // set material if given
+                    set_material(m, thisgeom, *(*m).tendon_matid.add(i as usize),
+                        (*m).tendon_rgba.add(4 * i as usize), (*vopt).flags.as_ptr());
+
+                    // label: only the first segment
+                    if (*vopt).label == MJ_LABEL_TENDON && (npoints / 2) != 0 {
+                        make_label(m, MJ_OBJ_TENDON as u32, i, (*thisgeom).label.as_mut_ptr());
+                    }
+
+                    release_geom(&mut thisgeom, scn);
+                }
+            }
+        }
+    }
 }
 
 /// C: addSliderCrankGeoms (engine/engine_vis_visualize.c:1266)
 /// Calls: acquireGeom, f2f, makeLabel, mju_addTo3, mju_dot3, mju_scl3, mju_sub, mjv_connector, releaseGeom
 #[allow(unused_variables, non_snake_case)]
 pub fn add_slider_crank_geoms(m: *const mjModel, d: *mut mjData, vopt: *const mjvOption, catmask: i32, scn: *mut mjvScene) {
-    todo!() // addSliderCrankGeoms
+    const MJ_CAT_DYNAMIC: i32 = 2;
+    const MJ_TRN_SLIDERCRANK: i32 = 2;
+    const MJ_OBJ_ACTUATOR: i32 = 19;
+    const MJ_GEOM_CYLINDER: i32 = 5;
+    const MJ_GEOM_CAPSULE: i32 = 3;
+    const MJ_LABEL_ACTUATOR: i32 = 8;
+
+    // SAFETY: m, d, vopt, scn are valid pointers (caller contract).
+    unsafe {
+        let category = MJ_CAT_DYNAMIC;
+        if (category & catmask) == 0 {
+            return;
+        }
+
+        let scl = (*m).stat.meansize as f32;
+        let scale_floats = (*m).vis.scale.as_ptr() as *const f32;
+        let slidercrank_scale = *scale_floats.add(15);
+
+        let rgba_floats = (*m).vis.rgba._data.as_ptr() as *const f32;
+        let slidercrank_rgba = rgba_floats.add(20 * 4);
+        let crankbroken_rgba = rgba_floats.add(21 * 4);
+
+        for i in 0..(*m).nu as i32 {
+            if *(*m).actuator_trntype.add(i as usize) != MJ_TRN_SLIDERCRANK {
+                continue;
+            }
+
+            // get data
+            let j = *(*m).actuator_trnid.add(2 * i as usize);      // crank
+            let k = *(*m).actuator_trnid.add(2 * i as usize + 1);  // slider
+            let rod = *(*m).actuator_cranklength.add(i as usize);
+            let mut axis: [f64; 3] = [0.0; 3];
+            axis[0] = *(*d).site_xmat.add(9 * k as usize + 2);
+            axis[1] = *(*d).site_xmat.add(9 * k as usize + 5);
+            axis[2] = *(*d).site_xmat.add(9 * k as usize + 8);
+
+            // compute crank length
+            let mut vec: [f64; 3] = [0.0; 3];
+            crate::engine::engine_util_blas::mju_sub(
+                vec.as_mut_ptr(),
+                (*d).site_xpos.add(3 * j as usize),
+                (*d).site_xpos.add(3 * k as usize),
+                3,
+            );
+            let mut len = crate::engine::engine_util_blas::mju_dot3(vec.as_ptr(), axis.as_ptr());
+            let mut det = len * len + rod * rod
+                - crate::engine::engine_util_blas::mju_dot3(vec.as_ptr(), vec.as_ptr());
+            let mut broken: u8 = 0;
+            if det < 0.0 {
+                det = 0.0;
+                broken = 1;
+            }
+            len = len - f64::sqrt(det);
+
+            // compute slider endpoint
+            let mut end: [f64; 3] = [0.0; 3];
+            crate::engine::engine_util_blas::mju_scl3(end.as_mut_ptr(), axis.as_ptr(), len);
+            crate::engine::engine_util_blas::mju_add_to3(
+                end.as_mut_ptr(),
+                (*d).site_xpos.add(3 * k as usize),
+            );
+
+            // render slider
+            let mut thisgeom = acquire_geom(scn, i, category, MJ_OBJ_ACTUATOR);
+            if thisgeom.is_null() {
+                return;
+            }
+
+            mjv_connector(
+                thisgeom,
+                MJ_GEOM_CYLINDER,
+                scl as f64 * slidercrank_scale as f64,
+                (*d).site_xpos.add(3 * k as usize),
+                end.as_ptr(),
+            );
+            f2f((*thisgeom).rgba.as_mut_ptr(), slidercrank_rgba, 4);
+            if (*vopt).label == MJ_LABEL_ACTUATOR {
+                make_label(m, MJ_OBJ_ACTUATOR as u32, i, (*thisgeom).label.as_mut_ptr());
+            }
+            release_geom(&mut thisgeom, scn);
+
+            thisgeom = acquire_geom(scn, i, category, MJ_OBJ_ACTUATOR);
+            if thisgeom.is_null() {
+                return;
+            }
+
+            mjv_connector(
+                thisgeom,
+                MJ_GEOM_CAPSULE,
+                scl as f64 * slidercrank_scale as f64 / 2.0,
+                end.as_ptr(),
+                (*d).site_xpos.add(3 * j as usize),
+            );
+            if broken != 0 {
+                f2f((*thisgeom).rgba.as_mut_ptr(), crankbroken_rgba, 4);
+            } else {
+                f2f((*thisgeom).rgba.as_mut_ptr(), slidercrank_rgba, 4);
+            }
+            release_geom(&mut thisgeom, scn);
+        }
+    }
 }
 
 /// C: addGeomFrameGeoms (engine/engine_vis_visualize.c:1334)
@@ -514,7 +1061,88 @@ pub fn add_site_frame_geoms(m: *const mjModel, d: *mut mjData, vopt: *const mjvO
 /// Calls: acquireGeom, mju_addTo3, mju_mulMatVec3, mjv_initGeom, releaseGeom
 #[allow(unused_variables, non_snake_case)]
 pub fn add_body_bvh_geoms(m: *const mjModel, d: *mut mjData, vopt: *const mjvOption, scn: *mut mjvScene) {
-    todo!() // addBodyBvhGeoms
+    const MJ_VIS_BODYBVH: usize = 28;
+    const MJ_CAT_DECOR: i32 = 4;
+    const MJ_OBJ_UNKNOWN: i32 = 0;
+    const MJ_GEOM_LINEBOX: i32 = 104;
+
+    // SAFETY: m, d, vopt, scn are valid pointers (caller contract).
+    unsafe {
+        if (*vopt).flags[MJ_VIS_BODYBVH] == 0 {
+            return;
+        }
+
+        for i in 0..(*m).nbvhstatic as i32 {
+            let isleaf = *(*m).bvh_child.add(2 * i as usize) == -1
+                && *(*m).bvh_child.add(2 * i as usize + 1) == -1;
+            if *(*m).bvh_depth.add(i as usize) != (*vopt).bvh_depth {
+                if !isleaf || *(*m).bvh_depth.add(i as usize) > (*vopt).bvh_depth {
+                    continue;
+                }
+            }
+
+            // find body number
+            let mut bodyid: i32 = 0;
+            let geomid = *(*m).bvh_nodeid.add(i as usize);
+            while i >= *(*m).body_bvhadr.add(bodyid as usize) + *(*m).body_bvhnum.add(bodyid as usize) {
+                bodyid += 1;
+                if bodyid >= (*m).nbody as i32 {
+                    break;
+                }
+            }
+
+            // stop after body bvh are finished
+            if bodyid >= (*m).nbody as i32 {
+                break;
+            }
+
+            // get xpos, xmat, size
+            let xpos: *const f64 = if isleaf {
+                (*d).geom_xpos.add(3 * geomid as usize)
+            } else {
+                (*d).xipos.add(3 * bodyid as usize)
+            };
+            let xmat: *const f64 = if isleaf {
+                (*d).geom_xmat.add(9 * geomid as usize)
+            } else {
+                (*d).ximat.add(9 * bodyid as usize)
+            };
+            let size: *const f64 = if isleaf {
+                (*m).geom_aabb.add(6 * geomid as usize + 3)
+            } else {
+                (*m).bvh_aabb.add(6 * i as usize + 3)
+            };
+
+            // offset xpos with aabb center (not always at frame origin)
+            let center: *const f64 = if isleaf {
+                (*m).geom_aabb.add(6 * geomid as usize)
+            } else {
+                (*m).bvh_aabb.add(6 * i as usize)
+            };
+            let mut pos: [f64; 3] = [0.0; 3];
+            crate::engine::engine_util_blas::mju_mul_mat_vec3(pos.as_mut_ptr(), xmat, center);
+            crate::engine::engine_util_blas::mju_add_to3(pos.as_mut_ptr(), xpos);
+
+            // set box color
+            // vis.rgba: bv is index 22, bvactive is index 23
+            let rgba_floats = (*m).vis.rgba._data.as_ptr() as *const f32;
+            let mut rgba: *const f32 = rgba_floats.add(22 * 4);
+
+            // vis.global.bvactive is at byte offset 48 (i32 at index 12 in global)
+            let global_ints = (*m).vis.global.as_ptr() as *const i32;
+            if *global_ints.add(12) != 0 && *(*d).bvh_active.add(i as usize) {
+                rgba = rgba_floats.add(23 * 4);
+            }
+
+            let mut thisgeom = acquire_geom(scn, i, MJ_CAT_DECOR, MJ_OBJ_UNKNOWN);
+            if thisgeom.is_null() {
+                return;
+            }
+
+            mjv_init_geom(thisgeom, MJ_GEOM_LINEBOX, size, pos.as_ptr(), xmat, rgba);
+            release_geom(&mut thisgeom, scn);
+        }
+    }
 }
 
 /// C: addFlexBvhGeoms (engine/engine_vis_visualize.c:1449)
@@ -528,49 +1156,583 @@ pub fn add_flex_bvh_geoms(m: *const mjModel, d: *mut mjData, vopt: *const mjvOpt
 /// Calls: acquireGeom, mju_addTo3, mju_mulMatVec3, mjv_initGeom, releaseGeom
 #[allow(unused_variables, non_snake_case)]
 pub fn add_mesh_bvh_geoms(m: *const mjModel, d: *mut mjData, vopt: *const mjvOption, scn: *mut mjvScene) {
-    todo!() // addMeshBvhGeoms
+    const MJ_VIS_MESHBVH: usize = 29;
+    const MJ_CAT_DECOR: i32 = 4;
+    const MJ_OBJ_UNKNOWN: i32 = 0;
+    const MJ_GEOM_LINEBOX: i32 = 104;
+    const MJ_GEOM_SDF: i32 = 8;
+
+    // SAFETY: m, d, vopt, scn are valid pointers (caller contract).
+    unsafe {
+        if (*vopt).flags[MJ_VIS_MESHBVH] == 0 {
+            return;
+        }
+
+        let rgba_floats = (*m).vis.rgba._data.as_ptr() as *const f32;
+        let bv_rgba = rgba_floats.add(22 * 4);
+        let bvactive_rgba = rgba_floats.add(23 * 4);
+        let global_ints = (*m).vis.global.as_ptr() as *const i32;
+        let bvactive_flag = *global_ints.add(12) != 0;
+
+        for geomid in 0..(*m).ngeom as i32 {
+            let meshid = *(*m).geom_dataid.add(geomid as usize);
+            // skip if not a mesh or if there is an octree
+            if meshid == -1 || *(*m).geom_type.add(geomid as usize) as i32 == MJ_GEOM_SDF
+                || *(*m).mesh_octadr.add(meshid as usize) >= 0
+            {
+                continue;
+            }
+
+            for b in 0..*(*m).mesh_bvhnum.add(meshid as usize) {
+                let i = b + *(*m).mesh_bvhadr.add(meshid as usize);
+                let isleaf = *(*m).bvh_child.add(2 * i as usize) == -1
+                    && *(*m).bvh_child.add(2 * i as usize + 1) == -1;
+                if *(*m).bvh_depth.add(i as usize) != (*vopt).bvh_depth {
+                    if !isleaf || *(*m).bvh_depth.add(i as usize) > (*vopt).bvh_depth {
+                        continue;
+                    }
+                }
+
+                // box color
+                let mut rgba: *const f32 = bv_rgba;
+                if bvactive_flag {
+                    if *(*d).bvh_active.add(i as usize) {
+                        rgba = bvactive_rgba;
+                    } else {
+                        continue;
+                    }
+                }
+
+                // get xpos, xmat, size
+                let xpos = (*d).geom_xpos.add(3 * geomid as usize);
+                let xmat = (*d).geom_xmat.add(9 * geomid as usize);
+                let size = (*m).bvh_aabb.add(6 * i as usize + 3);
+
+                // offset xpos with aabb center
+                let center = (*m).bvh_aabb.add(6 * i as usize);
+                let mut pos: [f64; 3] = [0.0; 3];
+                crate::engine::engine_util_blas::mju_mul_mat_vec3(pos.as_mut_ptr(), xmat, center);
+                crate::engine::engine_util_blas::mju_add_to3(pos.as_mut_ptr(), xpos);
+
+                let mut thisgeom = acquire_geom(scn, i, MJ_CAT_DECOR, MJ_OBJ_UNKNOWN);
+                if thisgeom.is_null() {
+                    return;
+                }
+                mjv_init_geom(thisgeom, MJ_GEOM_LINEBOX, size, pos.as_ptr(), xmat, rgba);
+                release_geom(&mut thisgeom, scn);
+            }
+        }
+    }
 }
 
 /// C: addMeshOctreeGeoms (engine/engine_vis_visualize.c:1634)
 /// Calls: acquireGeom, mju_addTo3, mju_mulMatVec3, mjv_initGeom, releaseGeom
 #[allow(unused_variables, non_snake_case)]
 pub fn add_mesh_octree_geoms(m: *const mjModel, d: *mut mjData, vopt: *const mjvOption, scn: *mut mjvScene) {
-    todo!() // addMeshOctreeGeoms
+    const MJ_VIS_MESHBVH: usize = 29;
+    const MJ_CAT_DECOR: i32 = 4;
+    const MJ_OBJ_UNKNOWN: i32 = 0;
+    const MJ_GEOM_LINEBOX: i32 = 104;
+    const MJ_GEOM_HFIELD: i32 = 1;
+
+    // SAFETY: m, d, vopt, scn are valid pointers (caller contract).
+    unsafe {
+        if (*vopt).flags[MJ_VIS_MESHBVH] == 0 {
+            return;
+        }
+
+        let rgba_floats = (*m).vis.rgba._data.as_ptr() as *const f32;
+        let bv_rgba = rgba_floats.add(22 * 4);
+
+        for geomid in 0..(*m).ngeom as i32 {
+            let meshid = *(*m).geom_dataid.add(geomid as usize);
+            if meshid == -1 || *(*m).geom_type.add(geomid as usize) as i32 == MJ_GEOM_HFIELD
+                || *(*m).mesh_octadr.add(meshid as usize) == -1
+            {
+                continue;
+            }
+
+            for b in 0..*(*m).mesh_octnum.add(meshid as usize) {
+                let i = b + *(*m).mesh_octadr.add(meshid as usize);
+                if *(*m).oct_depth.add(i as usize) != (*vopt).bvh_depth {
+                    continue;
+                }
+
+                let mut thisgeom = acquire_geom(scn, i, MJ_CAT_DECOR, MJ_OBJ_UNKNOWN);
+                if thisgeom.is_null() {
+                    return;
+                }
+
+                let rgba: *const f32 = bv_rgba;
+                let xpos = (*d).geom_xpos.add(3 * geomid as usize);
+                let xmat = (*d).geom_xmat.add(9 * geomid as usize);
+                let size = (*m).oct_aabb.add(6 * i as usize + 3);
+
+                // offset xpos with aabb center
+                let center = (*m).oct_aabb.add(6 * i as usize);
+                let mut pos: [f64; 3] = [0.0; 3];
+                crate::engine::engine_util_blas::mju_mul_mat_vec3(pos.as_mut_ptr(), xmat, center);
+                crate::engine::engine_util_blas::mju_add_to3(pos.as_mut_ptr(), xpos);
+
+                mjv_init_geom(thisgeom, MJ_GEOM_LINEBOX, size, pos.as_ptr(), xmat, rgba);
+                release_geom(&mut thisgeom, scn);
+            }
+        }
+    }
 }
 
 /// C: addTactileSensorGeoms (engine/engine_vis_visualize.c:1673)
 /// Calls: addTriangle, mju_addTo3, mju_mat2Quat, mju_max, mju_mulMatVec3
 #[allow(unused_variables, non_snake_case)]
 pub fn add_tactile_sensor_geoms(m: *const mjModel, d: *mut mjData, vopt: *const mjvOption, scn: *mut mjvScene) {
-    todo!() // addTactileSensorGeoms
+    const MJ_VIS_CONTACTPOINT: usize = 14;
+    const MJ_SENS_TACTILE: i32 = 46;
+    const MJ_CAT_DECOR: i32 = 4;
+    const MJ_OBJ_SENSOR: i32 = 20;
+    const MJMINVAL: f64 = 1e-15;
+
+    // SAFETY: m, d, vopt, scn are valid pointers (caller contract).
+    unsafe {
+        if (*vopt).flags[MJ_VIS_CONTACTPOINT] == 0 {
+            return;
+        }
+
+        for id in 0..(*m).nsensor as i32 {
+            if *(*m).sensor_type.add(id as usize) != MJ_SENS_TACTILE {
+                continue;
+            }
+
+            // get mesh id and geom frame
+            let mesh_id = *(*m).sensor_objid.add(id as usize);
+            let geom_id = *(*m).sensor_refid.add(id as usize);
+            let geom_pos = (*d).geom_xpos.add(3 * geom_id as usize);
+            let geom_mat = (*d).geom_xmat.add(9 * geom_id as usize);
+
+            // get sensor data
+            let sensordata = (*d).sensordata.add(*(*m).sensor_adr.add(id as usize) as usize);
+            let vertnum = *(*m).mesh_vertnum.add(mesh_id as usize);
+            let nchannel = *(*m).sensor_dim.add(id as usize) / vertnum;
+
+            // get maximum absolute normal force
+            let mut maxval: f64 = 0.0;
+            for j in 0..vertnum {
+                let v = (*sensordata.add(j as usize)).abs();
+                if v > maxval {
+                    maxval = v;
+                }
+            }
+
+            // if no normal force readings, quick return
+            if maxval == 0.0 || *(*m).geom_rbound.add(geom_id as usize) < MJMINVAL {
+                continue;
+            }
+
+            // draw geoms
+            let mesh_vert = (*m).mesh_vert.add(3 * *(*m).mesh_vertadr.add(mesh_id as usize) as usize);
+            let face = (*m).mesh_face.add(3 * *(*m).mesh_faceadr.add(mesh_id as usize) as usize);
+            let facenum = *(*m).mesh_facenum.add(mesh_id as usize);
+
+            for i in 0..facenum {
+                // triangle in global frame
+                let mut pos: [[f64; 3]; 3] = [[0.0; 3]; 3];
+                for j in 0..3usize {
+                    let vi = *face.add(3 * i as usize + j);
+                    let mut v: [f64; 3] = [
+                        *mesh_vert.add(3 * vi as usize) as f64,
+                        *mesh_vert.add(3 * vi as usize + 1) as f64,
+                        *mesh_vert.add(3 * vi as usize + 2) as f64,
+                    ];
+                    crate::engine::engine_util_blas::mju_mul_mat_vec3(
+                        pos[j].as_mut_ptr(), geom_mat, v.as_ptr());
+                    crate::engine::engine_util_blas::mju_add_to3(
+                        pos[j].as_mut_ptr(), geom_pos);
+                }
+
+                // color
+                let mut rgba: [f32; 4] = [0.0, 0.0, 0.0, 1.0];
+                let mut nval: [f64; 3] = [0.0; 3];
+                let min_nc = if nchannel < 3 { nchannel } else { 3 };
+                for r in 0..min_nc {
+                    for j in 0..3i32 {
+                        let val = *sensordata.add(
+                            (r * vertnum + *face.add(3 * i as usize + j as usize)) as usize);
+                        rgba[r as usize] += (val.abs() / maxval) as f32;
+                        if val != 0.0 {
+                            nval[r as usize] += 1.0;
+                        }
+                    }
+                    if nval[r as usize] != 0.0 {
+                        rgba[r as usize] /= nval[r as usize] as f32;
+                    }
+                }
+
+                if rgba[0] == 0.0 && rgba[1] == 0.0 && rgba[2] == 0.0 {
+                    rgba[3] = 0.1;
+                }
+
+                // draw triangles
+                add_triangle(
+                    scn,
+                    pos[0].as_ptr(), pos[1].as_ptr(), pos[2].as_ptr(),
+                    rgba.as_ptr(), id, MJ_CAT_DECOR, MJ_OBJ_SENSOR,
+                );
+            }
+        }
+    }
 }
 
 /// C: addInertiaGeoms (engine/engine_vis_visualize.c:1745)
 /// Calls: acquireGeom, bodycategory, makeLabel, markselected, mju_max, mjv_initGeom, releaseGeom
 #[allow(unused_variables, non_snake_case)]
 pub fn add_inertia_geoms(m: *const mjModel, d: *mut mjData, vopt: *const mjvOption, pert: *const mjvPerturb, catmask: i32, scn: *mut mjvScene) {
-    todo!() // addInertiaGeoms
+    const MJ_VIS_INERTIA: usize = 10;
+    const MJ_VIS_SCLINERTIA: usize = 11;
+    const MJ_CAT_DECOR: i32 = 4;
+    const MJ_OBJ_BODY: i32 = 1;
+    const MJ_GEOM_ELLIPSOID: i32 = 4;
+    const MJ_GEOM_BOX: i32 = 6;
+    const MJ_LABEL_BODY: i32 = 1;
+    const MJ_LABEL_SELECTION: i32 = 12;
+    const MJMINVAL: f64 = 1e-15;
+    const MJ_PI: f64 = std::f64::consts::PI;
+
+    // SAFETY: m, d, vopt, pert, scn are valid pointers (caller contract).
+    unsafe {
+        if (*vopt).flags[MJ_VIS_INERTIA] == 0 {
+            return;
+        }
+
+        // vis.global.ellipsoidinertia is at byte offset 44 (i32 at index 11 in global)
+        let global_ints = (*m).vis.global.as_ptr() as *const i32;
+        let ellipsoid = *global_ints.add(11) == 1;
+
+        for i in 1..(*m).nbody as i32 {
+            if *(*m).body_mass.add(i as usize) <= MJMINVAL {
+                continue;
+            }
+            if (bodycategory(m, i) & catmask) == 0 {
+                continue;
+            }
+
+            let mut thisgeom = acquire_geom(scn, i, MJ_CAT_DECOR, MJ_OBJ_BODY);
+            if thisgeom.is_null() {
+                return;
+            }
+
+            let Ixx = *(*m).body_inertia.add(3 * i as usize);
+            let Iyy = *(*m).body_inertia.add(3 * i as usize + 1);
+            let Izz = *(*m).body_inertia.add(3 * i as usize + 2);
+            let mass = *(*m).body_mass.add(i as usize);
+            let scale_inertia: f64 = if ellipsoid { f64::sqrt(5.0) } else { f64::sqrt(3.0) };
+
+            let mut sz: [f64; 3] = [0.0; 3];
+            sz[0] = f64::sqrt((Iyy + Izz - Ixx) / (2.0 * mass)) * scale_inertia;
+            sz[1] = f64::sqrt((Ixx + Izz - Iyy) / (2.0 * mass)) * scale_inertia;
+            sz[2] = f64::sqrt((Ixx + Iyy - Izz) / (2.0 * mass)) * scale_inertia;
+
+            // scale with mass if enabled
+            if (*vopt).flags[MJ_VIS_SCLINERTIA] != 0 {
+                // density = mass / volume
+                let scale_volume: f64 = if ellipsoid { 4.0 / 3.0 * MJ_PI } else { 8.0 };
+                let volume = scale_volume * sz[0] * sz[1] * sz[2];
+                let density = mass / crate::engine::engine_util_misc::mju_max(MJMINVAL, volume);
+
+                // scale = root3(density)
+                let scale = f64::powf(density * 0.001, 1.0 / 3.0);
+
+                // scale sizes
+                sz[0] *= scale;
+                sz[1] *= scale;
+                sz[2] *= scale;
+            }
+
+            // construct geom
+            let geom_type = if ellipsoid { MJ_GEOM_ELLIPSOID } else { MJ_GEOM_BOX };
+            // vis.rgba.inertia is index 3 in the rgba float array (each entry is 4 floats)
+            let rgba_floats = (*m).vis.rgba._data.as_ptr() as *const f32;
+            let inertia_rgba = rgba_floats.add(3 * 4);
+            mjv_init_geom(
+                thisgeom,
+                geom_type,
+                sz.as_ptr(),
+                (*d).xipos.add(3 * i as usize),
+                (*d).ximat.add(9 * i as usize),
+                inertia_rgba,
+            );
+
+            // glow
+            if (*pert).select == i {
+                markselected(
+                    &(*m).vis as *const _ as *const mjVisual,
+                    thisgeom,
+                );
+            }
+
+            // label
+            if (*vopt).label == MJ_LABEL_BODY
+                || ((*vopt).label == MJ_LABEL_SELECTION && (*pert).select == i)
+            {
+                make_label(m, MJ_OBJ_BODY as u32, i, (*thisgeom).label.as_mut_ptr());
+            }
+
+            release_geom(&mut thisgeom, scn);
+        }
+    }
 }
 
 /// C: addPerturbGeoms (engine/engine_vis_visualize.c:1811)
 /// Calls: acquireGeom, f2f, mixcolor, mju_addTo3, mju_copy3, mju_mulMatVec3, mju_quat2Mat, mjv_connector, mjv_initGeom, releaseGeom
 #[allow(unused_variables, non_snake_case)]
 pub fn add_perturb_geoms(m: *const mjModel, d: *mut mjData, vopt: *const mjvOption, pert: *const mjvPerturb, scn: *mut mjvScene) {
-    todo!() // addPerturbGeoms
+    const MJ_VIS_PERTOBJ: usize = 13;
+    const MJ_CAT_DECOR: i32 = 4;
+    const MJ_OBJ_UNKNOWN: i32 = 0;
+    const MJ_GEOM_CAPSULE: i32 = 3;
+    const MJ_GEOM_SPHERE: i32 = 2;
+    const MJ_GEOM_LINEBOX: i32 = 104;
+    const MJ_PERT_TRANSLATE: i32 = 1;
+    const MJ_PERT_ROTATE: i32 = 2;
+
+    // SAFETY: m, d, vopt, pert, scn are valid pointers (caller contract).
+    unsafe {
+        if (*vopt).flags[MJ_VIS_PERTOBJ] == 0 {
+            return;
+        }
+        if (*pert).select <= 0 {
+            return;
+        }
+
+        let scl = (*m).stat.meansize as f32;
+        let scale_floats = (*m).vis.scale.as_ptr() as *const f32;
+        let constraint_scale = *scale_floats.add(14); // constraint is index 14
+
+        // vis.rgba: constraint is index 19, inertia is index 3
+        let rgba_floats = (*m).vis.rgba._data.as_ptr() as *const f32;
+        let constraint_rgba = rgba_floats.add(19 * 4);
+        let inertia_rgba = rgba_floats.add(3 * 4);
+
+        if ((*pert).active | (*pert).active2) & MJ_PERT_TRANSLATE != 0 {
+            let mut thisgeom = acquire_geom(scn, (*pert).select, MJ_CAT_DECOR, MJ_OBJ_UNKNOWN);
+            if thisgeom.is_null() {
+                return;
+            }
+
+            // compute selection point in world coordinates
+            let mut selpos: [f64; 3] = [0.0; 3];
+            crate::engine::engine_util_blas::mju_mul_mat_vec3(
+                selpos.as_mut_ptr(),
+                (*d).xmat.add(9 * (*pert).select as usize),
+                (*pert).localpos.as_ptr(),
+            );
+            crate::engine::engine_util_blas::mju_add_to3(
+                selpos.as_mut_ptr(),
+                (*d).xpos.add(3 * (*pert).select as usize),
+            );
+
+            // construct geom
+            let width = scl as f64 * constraint_scale as f64;
+            mjv_connector(thisgeom, MJ_GEOM_CAPSULE, width, selpos.as_ptr(), (*pert).refselpos.as_ptr());
+
+            // prepare color
+            let mut rgba: [f32; 4] = [0.0; 4];
+            mixcolor(
+                rgba.as_mut_ptr(),
+                constraint_rgba,
+                (if ((*pert).active & MJ_PERT_TRANSLATE) > 0 { 1 } else { 0 }),
+                (if ((*pert).active2 & MJ_PERT_TRANSLATE) > 0 { 1 } else { 0 }),
+            );
+            f2f((*thisgeom).rgba.as_mut_ptr(), rgba.as_ptr(), 4);
+            release_geom(&mut thisgeom, scn);
+
+            // add small sphere at end-effector
+            thisgeom = acquire_geom(scn, (*pert).select, MJ_CAT_DECOR, MJ_OBJ_UNKNOWN);
+            if thisgeom.is_null() {
+                return;
+            }
+
+            let mut sz: [f64; 3] = [0.0; 3];
+            sz[0] = 2.0 * width;
+            sz[1] = sz[0];
+            sz[2] = sz[0];
+
+            let mut mat: [f64; 9] = [0.0; 9];
+            crate::engine::engine_util_spatial::mju_quat2mat(mat.as_mut_ptr(), (*pert).refquat.as_ptr());
+            mjv_init_geom(
+                thisgeom,
+                MJ_GEOM_SPHERE,
+                sz.as_ptr(),
+                (*pert).refselpos.as_ptr(),
+                mat.as_ptr(),
+                rgba.as_ptr(),
+            );
+            release_geom(&mut thisgeom, scn);
+        }
+
+        if ((*pert).active | (*pert).active2) & MJ_PERT_ROTATE != 0 {
+            let mut thisgeom = acquire_geom(scn, (*pert).select, MJ_CAT_DECOR, MJ_OBJ_UNKNOWN);
+            if thisgeom.is_null() {
+                return;
+            }
+
+            // prepare color, use inertia color
+            let mut rgba: [f32; 4] = [0.0; 4];
+            mixcolor(
+                rgba.as_mut_ptr(),
+                inertia_rgba,
+                (if ((*pert).active & MJ_PERT_ROTATE) > 0 { 1 } else { 0 }),
+                (if ((*pert).active2 & MJ_PERT_ROTATE) > 0 { 1 } else { 0 }),
+            );
+
+            // construct geom: if body has a collision aabb, use that
+            let mut pos: [f64; 3] = [0.0; 3];
+            let mut sz: [f64; 3] = [0.0; 3];
+            if *(*m).body_bvhnum.add((*pert).select as usize) != 0 {
+                let aabb = (*m).bvh_aabb.add(6 * *(*m).body_bvhadr.add((*pert).select as usize) as usize);
+                crate::engine::engine_util_blas::mju_copy3(sz.as_mut_ptr(), aabb.add(3));
+                crate::engine::engine_util_blas::mju_mul_mat_vec3(
+                    pos.as_mut_ptr(),
+                    (*d).ximat.add(9 * (*pert).select as usize),
+                    aabb,
+                );
+            }
+            // otherwise box of size meansize
+            else {
+                sz[0] = scl as f64;
+                sz[1] = scl as f64;
+                sz[2] = scl as f64;
+            }
+
+            let mut mat: [f64; 9] = [0.0; 9];
+            crate::engine::engine_util_spatial::mju_quat2mat(mat.as_mut_ptr(), (*pert).refquat.as_ptr());
+            crate::engine::engine_util_blas::mju_add_to3(
+                pos.as_mut_ptr(),
+                (*d).xipos.add(3 * (*pert).select as usize),
+            );
+            mjv_init_geom(thisgeom, MJ_GEOM_LINEBOX, sz.as_ptr(), pos.as_ptr(), mat.as_ptr(), rgba.as_ptr());
+            release_geom(&mut thisgeom, scn);
+        }
+    }
 }
 
 /// C: addWorldBodyFrameGeoms (engine/engine_vis_visualize.c:1900)
 /// Calls: addFrame, bodycategory
 #[allow(unused_variables, non_snake_case)]
 pub fn add_world_body_frame_geoms(m: *const mjModel, d: *mut mjData, vopt: *const mjvOption, catmask: i32, scn: *mut mjvScene) {
-    todo!() // addWorldBodyFrameGeoms
+    const MJ_FRAME_BODY: i32 = 1;
+    const MJ_FRAME_WORLD: i32 = 7;
+    const MJ_VIS_INERTIA: usize = 10;
+
+    // SAFETY: m, d, vopt, scn are valid pointers (caller contract).
+    unsafe {
+        let scl = (*m).stat.meansize as f32;
+        let scale_floats = (*m).vis.scale.as_ptr() as *const f32;
+        let framelength = *scale_floats.add(12);
+        let framewidth = *scale_floats.add(13);
+
+        let start = if (*vopt).frame == MJ_FRAME_WORLD { 0 } else { 1 };
+        let end = if (*vopt).frame == MJ_FRAME_BODY { (*m).nbody as i32 } else { 1 };
+
+        for i in start..end {
+            // skip if body is static and static bodies are masked
+            if i > 0 && (bodycategory(m, i) & !catmask) != 0 {
+                continue;
+            }
+
+            // set length(1) and width(0) of the axis cylinders
+            let sz_length: f32;
+            let sz_width: f32;
+            if i == 0 {
+                sz_length = framelength * scl * 2.0;
+                sz_width = framewidth * scl * 2.0;
+            } else {
+                sz_length = framelength * scl;
+                sz_width = framewidth * scl;
+            }
+
+            let xmat: *const f64 = if (*vopt).flags[MJ_VIS_INERTIA] != 0 {
+                (*d).ximat.add(9 * i as usize)
+            } else {
+                (*d).xmat.add(9 * i as usize)
+            };
+            let xpos: *const f64 = if (*vopt).flags[MJ_VIS_INERTIA] != 0 {
+                (*d).xipos.add(3 * i as usize)
+            } else {
+                (*d).xpos.add(3 * i as usize)
+            };
+            add_frame(scn, i, xpos, xmat, sz_length, sz_width);
+        }
+    }
 }
 
 /// C: addSelectionPointGeoms (engine/engine_vis_visualize.c:1928)
 /// Calls: acquireGeom, f2f, mju_addTo3, mju_mulMatVec3, mju_n2f, releaseGeom
 #[allow(unused_variables, non_snake_case)]
 pub fn add_selection_point_geoms(m: *const mjModel, d: *mut mjData, vopt: *const mjvOption, pert: *const mjvPerturb, scn: *mut mjvScene) {
-    todo!() // addSelectionPointGeoms
+    const MJ_VIS_SELECT: usize = 21;
+    const MJ_CAT_DECOR: i32 = 4;
+    const MJ_OBJ_UNKNOWN: i32 = 0;
+    const MJ_GEOM_SPHERE: i32 = 2;
+    const MJ_LABEL_SELPNT: i32 = 13;
+
+    // SAFETY: m, d, vopt, pert, scn are valid pointers (caller contract).
+    unsafe {
+        if (*pert).select <= 0 {
+            return;
+        }
+        if (*vopt).flags[MJ_VIS_SELECT] == 0 {
+            return;
+        }
+
+        let scl = (*m).stat.meansize as f32;
+        let scale_floats = (*m).vis.scale.as_ptr() as *const f32;
+        let selectpoint_scale = *scale_floats.add(7); // selectpoint is index 7
+
+        // compute selection point in world coordinates
+        let mut selpos: [f64; 3] = [0.0; 3];
+        crate::engine::engine_util_blas::mju_mul_mat_vec3(
+            selpos.as_mut_ptr(),
+            (*d).xmat.add(9 * (*pert).select as usize),
+            (*pert).localpos.as_ptr(),
+        );
+        crate::engine::engine_util_blas::mju_add_to3(
+            selpos.as_mut_ptr(),
+            (*d).xpos.add(3 * (*pert).select as usize),
+        );
+
+        let mut thisgeom = acquire_geom(scn, (*pert).select, MJ_CAT_DECOR, MJ_OBJ_UNKNOWN);
+        if thisgeom.is_null() {
+            return;
+        }
+
+        (*thisgeom).r#type = MJ_GEOM_SPHERE;
+        let sz = scl * selectpoint_scale;
+        (*thisgeom).size[0] = sz;
+        (*thisgeom).size[1] = sz;
+        (*thisgeom).size[2] = sz;
+        crate::engine::engine_util_misc::mju_n2f(
+            (*thisgeom).pos.as_mut_ptr(), selpos.as_ptr(), 3);
+
+        static IDENTITY: [f64; 9] = [1.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 1.0];
+        crate::engine::engine_util_misc::mju_n2f(
+            (*thisgeom).mat.as_mut_ptr(), IDENTITY.as_ptr(), 9);
+
+        // vis.rgba.selectpoint is index 11 in the rgba float array (each entry is 4 floats)
+        let rgba_floats = (*m).vis.rgba._data.as_ptr() as *const f32;
+        let selectpoint_rgba = rgba_floats.add(11 * 4);
+        f2f((*thisgeom).rgba.as_mut_ptr(), selectpoint_rgba, 4);
+
+        if (*vopt).label == MJ_LABEL_SELPNT {
+            extern "C" { fn snprintf(s: *mut i8, n: usize, fmt: *const i8, ...) -> i32; }
+            snprintf(
+                (*thisgeom).label.as_mut_ptr(), 100,
+                b"%.3f %.3f %.3f (local %.3f %.3f %.3f)\0".as_ptr() as *const i8,
+                selpos[0], selpos[1], selpos[2],
+                (*pert).localpos[0], (*pert).localpos[1], (*pert).localpos[2],
+            );
+        }
+
+        release_geom(&mut thisgeom, scn);
+    }
 }
 
 /// C: addBodyLabelGeoms (engine/engine_vis_visualize.c:1964)
@@ -624,7 +1786,121 @@ pub fn add_body_label_geoms(m: *const mjModel, d: *mut mjData, vopt: *const mjvO
 /// Calls: acquireGeom, f2f, makeLabel, mju_addScl3, mju_message, mju_n2f, mjv_connector, releaseGeom
 #[allow(unused_variables, non_snake_case)]
 pub fn add_joint_geoms(m: *const mjModel, d: *mut mjData, vopt: *const mjvOption, scn: *mut mjvScene) {
-    todo!() // addJointGeoms
+    const MJ_VIS_JOINT: usize = 2;
+    const MJ_CAT_DECOR: i32 = 4;
+    const MJ_OBJ_JOINT: i32 = 3;
+    const MJ_GEOM_BOX: i32 = 6;
+    const MJ_GEOM_SPHERE: i32 = 2;
+    const MJ_GEOM_ARROW: i32 = 100;
+    const MJ_GEOM_ARROW1: i32 = 101;
+    const MJ_JNT_FREE: i32 = 0;
+    const MJ_JNT_BALL: i32 = 1;
+    const MJ_JNT_SLIDE: i32 = 2;
+    const MJ_JNT_HINGE: i32 = 3;
+    const MJ_CNSTR_LIMIT_JOINT: i32 = 3;
+    const MJ_LABEL_JOINT: i32 = 2;
+    const MJ_NGROUP: i32 = 6;
+
+    // SAFETY: m, d, vopt, scn are valid pointers (caller contract).
+    unsafe {
+        if (*vopt).flags[MJ_VIS_JOINT] == 0 {
+            return;
+        }
+
+        let scl = (*m).stat.meansize as f32;
+        let scale_floats = (*m).vis.scale.as_ptr() as *const f32;
+        let jointlength = *scale_floats.add(8);
+        let jointwidth = *scale_floats.add(9);
+
+        // rgba: joint = index 4, constraint = index 19
+        let rgba_floats = (*m).vis.rgba._data.as_ptr() as *const f32;
+        let joint_rgba = rgba_floats.add(4 * 4);
+        let constraint_rgba = rgba_floats.add(19 * 4);
+
+        for i in 0..(*m).njnt as i32 {
+            let group = *(*m).jnt_group.add(i as usize);
+            let clamped = if 0 > (if (MJ_NGROUP - 1) < group { MJ_NGROUP - 1 } else { group }) {
+                0
+            } else {
+                if (MJ_NGROUP - 1) < group { MJ_NGROUP - 1 } else { group }
+            };
+            if (*vopt).jointgroup[clamped as usize] == 0 {
+                continue;
+            }
+
+            let mut thisgeom = acquire_geom(scn, i, MJ_CAT_DECOR, MJ_OBJ_JOINT);
+            if thisgeom.is_null() {
+                return;
+            }
+
+            // set sz = {width, length} of the connectors
+            let sz_length = jointlength * scl;
+            let sz_width = jointwidth * scl;
+
+            // set type, size, pos, mat depending on joint type
+            let j = *(*m).jnt_bodyid.add(i as usize);
+            let jnt_type = *(*m).jnt_type.add(i as usize);
+
+            if jnt_type == MJ_JNT_FREE {
+                (*thisgeom).r#type = MJ_GEOM_BOX;
+                let s = 0.3 * sz_length;
+                (*thisgeom).size[0] = s;
+                (*thisgeom).size[1] = s;
+                (*thisgeom).size[2] = s;
+                crate::engine::engine_util_misc::mju_n2f(
+                    (*thisgeom).pos.as_mut_ptr(), (*d).xanchor.add(3 * i as usize), 3);
+                crate::engine::engine_util_misc::mju_n2f(
+                    (*thisgeom).mat.as_mut_ptr(), (*d).xmat.add(9 * j as usize), 9);
+            } else if jnt_type == MJ_JNT_BALL {
+                (*thisgeom).r#type = MJ_GEOM_SPHERE;
+                let s = 0.3 * sz_length;
+                (*thisgeom).size[0] = s;
+                (*thisgeom).size[1] = s;
+                (*thisgeom).size[2] = s;
+                crate::engine::engine_util_misc::mju_n2f(
+                    (*thisgeom).pos.as_mut_ptr(), (*d).xanchor.add(3 * i as usize), 3);
+                crate::engine::engine_util_misc::mju_n2f(
+                    (*thisgeom).mat.as_mut_ptr(), (*d).xmat.add(9 * j as usize), 9);
+            } else if jnt_type == MJ_JNT_SLIDE || jnt_type == MJ_JNT_HINGE {
+                let from = (*d).xanchor.add(3 * i as usize);
+                let mut to: [f64; 3] = [0.0; 3];
+                crate::engine::engine_util_blas::mju_add_scl3(
+                    to.as_mut_ptr(), from, (*d).xaxis.add(3 * i as usize), sz_length as f64);
+                let geom_type = if jnt_type == MJ_JNT_SLIDE { MJ_GEOM_ARROW } else { MJ_GEOM_ARROW1 };
+                mjv_connector(thisgeom, geom_type, sz_width as f64, from, to.as_ptr());
+            } else {
+                crate::engine::engine_util_errmem::mju_error(
+                    b"unknown joint type\0".as_ptr() as *const i8);
+            }
+
+            // loop over limit constraints, get impedance if this joint is limited
+            let mut imp: f64 = 0.0;
+            let efc_start = (*d).ne + (*d).nf;
+            let efc_end = efc_start + (*d).nl;
+            for k in efc_start..efc_end {
+                if *(*d).efc_type.add(k as usize) == MJ_CNSTR_LIMIT_JOINT
+                    && *(*d).efc_id.add(k as usize) == i
+                {
+                    imp = *(*d).efc_KBIP.add(4 * k as usize + 2);
+                }
+            }
+
+            // use impedance to mix joint and constraint colors
+            let mut rgba: [f32; 4] = [0.0; 4];
+            rgba[0] = (1.0 - imp as f32) * *joint_rgba.add(0) + imp as f32 * *constraint_rgba.add(0);
+            rgba[1] = (1.0 - imp as f32) * *joint_rgba.add(1) + imp as f32 * *constraint_rgba.add(1);
+            rgba[2] = (1.0 - imp as f32) * *joint_rgba.add(2) + imp as f32 * *constraint_rgba.add(2);
+            rgba[3] = 1.0;
+            f2f((*thisgeom).rgba.as_mut_ptr(), rgba.as_ptr(), 4);
+
+            // label
+            if (*vopt).label == MJ_LABEL_JOINT {
+                make_label(m, MJ_OBJ_JOINT as u32, i, (*thisgeom).label.as_mut_ptr());
+            }
+
+            release_geom(&mut thisgeom, scn);
+        }
+    }
 }
 
 /// C: addActuatorGeoms (engine/engine_vis_visualize.c:2074)
@@ -694,7 +1970,77 @@ pub fn add_camera_geoms(m: *const mjModel, d: *mut mjData, vopt: *const mjvOptio
 /// Calls: acquireGeom, addFrame, f2f, makeLabel, mju_addScl3, mju_n2f, mju_quat2Mat, mju_quatZ2Vec, releaseGeom
 #[allow(unused_variables, non_snake_case)]
 pub fn add_light_geoms(m: *const mjModel, d: *mut mjData, vopt: *const mjvOption, scn: *mut mjvScene) {
-    todo!() // addLightGeoms
+    const MJ_VIS_LIGHT: usize = 6;
+    const MJ_CAT_DECOR: i32 = 4;
+    const MJ_OBJ_LIGHT: i32 = 8;
+    const MJ_GEOM_CYLINDER: i32 = 5;
+    const MJ_FRAME_LIGHT: i32 = 5;
+    const MJ_LABEL_LIGHT: i32 = 6;
+
+    // SAFETY: m, d, vopt, scn are valid pointers (caller contract).
+    unsafe {
+        if (*vopt).flags[MJ_VIS_LIGHT] == 0 {
+            return;
+        }
+
+        let scl = (*m).stat.meansize as f32;
+        let scale_floats = (*m).vis.scale.as_ptr() as *const f32;
+        let light_scale = *scale_floats.add(6);
+        let framelength = *scale_floats.add(12);
+        let framewidth = *scale_floats.add(13);
+
+        let rgba_floats = (*m).vis.rgba._data.as_ptr() as *const f32;
+        let light_rgba = rgba_floats.add(10 * 4);
+
+        for i in 0..(*m).nlight as i32 {
+            // make light frame
+            let mut quat: [f64; 4] = [0.0; 4];
+            crate::engine::engine_util_spatial::mju_quat_z2vec(
+                quat.as_mut_ptr(), (*d).light_xdir.add(3 * i as usize));
+
+            let mut mat: [f64; 9] = [0.0; 9];
+            crate::engine::engine_util_spatial::mju_quat2mat(mat.as_mut_ptr(), quat.as_ptr());
+
+            // make light position: offset backward, to avoid casting shadow
+            let mut vec: [f64; 3] = [0.0; 3];
+            crate::engine::engine_util_blas::mju_add_scl3(
+                vec.as_mut_ptr(),
+                (*d).light_xpos.add(3 * i as usize),
+                (*d).light_xdir.add(3 * i as usize),
+                -(scl as f64) * light_scale as f64 - 0.0001,
+            );
+
+            let mut thisgeom = acquire_geom(scn, i, MJ_CAT_DECOR, MJ_OBJ_LIGHT);
+            if thisgeom.is_null() {
+                return;
+            }
+
+            // construct geom
+            (*thisgeom).r#type = MJ_GEOM_CYLINDER;
+            (*thisgeom).size[0] = scl * light_scale * 0.8;
+            (*thisgeom).size[1] = scl * light_scale * 0.8;
+            (*thisgeom).size[2] = scl * light_scale * 1.0;
+            crate::engine::engine_util_misc::mju_n2f(
+                (*thisgeom).pos.as_mut_ptr(), vec.as_ptr(), 3);
+            crate::engine::engine_util_misc::mju_n2f(
+                (*thisgeom).mat.as_mut_ptr(), mat.as_ptr(), 9);
+            f2f((*thisgeom).rgba.as_mut_ptr(), light_rgba, 4);
+
+            // label
+            if (*vopt).label == MJ_LABEL_LIGHT {
+                make_label(m, MJ_OBJ_LIGHT as u32, i, (*thisgeom).label.as_mut_ptr());
+            }
+
+            release_geom(&mut thisgeom, scn);
+
+            if (*vopt).frame != MJ_FRAME_LIGHT {
+                continue;
+            }
+            let width = framewidth * scl;
+            let length = framelength * scl;
+            add_frame(scn, i, (*d).light_xpos.add(3 * i as usize), mat.as_ptr(), length, width);
+        }
+    }
 }
 
 /// C: addCenterOfMassGeoms (engine/engine_vis_visualize.c:2509)
@@ -1551,7 +2897,66 @@ pub fn mjv_update_active_skin(m: *const mjModel, d: *const mjData, scn: *mut mjv
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjv_camera_frame(headpos: *mut f64, forward: *mut f64, up: *mut f64, right: *mut f64, d: *const mjData, cam: *const mjvCamera) {
-    todo!() // mjv_cameraFrame
+    const MJ_CAMERA_FREE: i32 = 0;
+    const MJ_CAMERA_TRACKING: i32 = 1;
+    const MJ_CAMERA_FIXED: i32 = 2;
+    const MJ_PI: f64 = std::f64::consts::PI;
+
+    // SAFETY: d, cam are valid pointers (caller contract). headpos/forward/up/right may be null.
+    unsafe {
+        let cam_type = (*cam).r#type;
+
+        if cam_type == MJ_CAMERA_FREE || cam_type == MJ_CAMERA_TRACKING {
+            let ca = f64::cos((*cam).azimuth / 180.0 * MJ_PI);
+            let sa = f64::sin((*cam).azimuth / 180.0 * MJ_PI);
+            let ce = f64::cos((*cam).elevation / 180.0 * MJ_PI);
+            let se = f64::sin((*cam).elevation / 180.0 * MJ_PI);
+            if !forward.is_null() {
+                *forward.add(0) = ce * ca;
+                *forward.add(1) = ce * sa;
+                *forward.add(2) = se;
+            }
+            if !up.is_null() {
+                *up.add(0) = -se * ca;
+                *up.add(1) = -se * sa;
+                *up.add(2) = ce;
+            }
+            if !right.is_null() {
+                *right.add(0) = sa;
+                *right.add(1) = -ca;
+                *right.add(2) = 0.0;
+            }
+            if !headpos.is_null() {
+                crate::engine::engine_util_blas::mju_add_scl3(
+                    headpos, (*cam).lookat.as_ptr(), forward, -(*cam).distance);
+            }
+        } else if cam_type == MJ_CAMERA_FIXED {
+            let cid = (*cam).fixedcamid;
+            let mat = (*d).cam_xmat.add(9 * cid as usize);
+            if !forward.is_null() {
+                *forward.add(0) = -*mat.add(2);
+                *forward.add(1) = -*mat.add(5);
+                *forward.add(2) = -*mat.add(8);
+            }
+            if !up.is_null() {
+                *up.add(0) = *mat.add(1);
+                *up.add(1) = *mat.add(4);
+                *up.add(2) = *mat.add(7);
+            }
+            if !right.is_null() {
+                *right.add(0) = *mat.add(0);
+                *right.add(1) = *mat.add(3);
+                *right.add(2) = *mat.add(6);
+            }
+            if !headpos.is_null() {
+                crate::engine::engine_util_blas::mju_copy3(
+                    headpos, (*d).cam_xpos.add(3 * cid as usize));
+            }
+        } else {
+            crate::engine::engine_util_errmem::mju_error(
+                b"unknown camera type\0".as_ptr() as *const i8);
+        }
+    }
 }
 
 /// C: mjv_cameraFrustum (engine/engine_vis_visualize.h:65)
@@ -1563,7 +2968,79 @@ pub fn mjv_camera_frame(headpos: *mut f64, forward: *mut f64, up: *mut f64, righ
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjv_camera_frustum(zver: *mut f32, zhor: *mut f32, zclip: *mut f32, m: *const mjModel, cam: *const mjvCamera) {
-    todo!() // mjv_cameraFrustum
+    const MJ_CAMERA_FREE: i32 = 0;
+    const MJ_CAMERA_TRACKING: i32 = 1;
+    const MJ_CAMERA_FIXED: i32 = 2;
+    const MJ_PROJ_ORTHOGRAPHIC: i32 = 1;
+    const MJ_PI: f64 = std::f64::consts::PI;
+
+    // SAFETY: m, cam are valid pointers. zver, zhor, zclip may be null.
+    unsafe {
+        let mut fovy: f64;
+        let mut orthographic: i32 = 0;
+        let mut intrinsic: *const f32 = std::ptr::null();
+        let mut sensorsize: *const f32 = std::ptr::null();
+
+        let cam_type = (*cam).r#type;
+        if cam_type == MJ_CAMERA_FREE || cam_type == MJ_CAMERA_TRACKING {
+            // vis.global: orthographic at byte 4 (i32), fovy at byte 8 (f32)
+            let global_ints = (*m).vis.global.as_ptr() as *const i32;
+            orthographic = *global_ints.add(1);
+            let global_floats = (*m).vis.global.as_ptr().add(8) as *const f32;
+            fovy = *global_floats as f64;
+        } else if cam_type == MJ_CAMERA_FIXED {
+            let cid = (*cam).fixedcamid;
+            if cid < 0 || cid as i64 >= (*m).ncam {
+                crate::engine::engine_util_errmem::mju_error(
+                    b"fixed camera id is outside valid range\0".as_ptr() as *const i8);
+                return;
+            }
+            orthographic = if *(*m).cam_projection.add(cid as usize) == MJ_PROJ_ORTHOGRAPHIC { 1 } else { 0 };
+            fovy = *(*m).cam_fovy.add(cid as usize);
+
+            // if positive sensorsize, get sensorsize and intrinsic
+            if *(*m).cam_sensorsize.add(2 * cid as usize + 1) != 0.0 {
+                sensorsize = (*m).cam_sensorsize.add(2 * cid as usize);
+                intrinsic = (*m).cam_intrinsic.add(4 * cid as usize);
+            }
+        } else {
+            crate::engine::engine_util_errmem::mju_error(
+                b"unknown camera type\0".as_ptr() as *const i8);
+            return;
+        }
+
+        // vis.map: znear at index 7, zfar at index 8
+        let map_floats = (*m).vis.map.as_ptr() as *const f32;
+        let znear = *map_floats.add(7) * (*m).stat.extent as f32;
+
+        if orthographic != 0 {
+            if !zver.is_null() {
+                *zver.add(0) = fovy as f32 / 2.0;
+                *zver.add(1) = fovy as f32 / 2.0;
+            }
+            if !zhor.is_null() {
+                *zhor.add(0) = 0.0;
+                *zhor.add(1) = 0.0;
+            }
+        } else if !intrinsic.is_null() {
+            get_frustum(zver, zhor, znear, intrinsic, sensorsize);
+        } else {
+            if !zver.is_null() {
+                let half = znear * f64::tan(fovy * MJ_PI / 360.0) as f32;
+                *zver.add(0) = half;
+                *zver.add(1) = half;
+            }
+            if !zhor.is_null() {
+                *zhor.add(0) = 0.0;
+                *zhor.add(1) = 0.0;
+            }
+        }
+
+        if !zclip.is_null() {
+            *zclip.add(0) = znear;
+            *zclip.add(1) = *map_floats.add(8) * (*m).stat.extent as f32;
+        }
+    }
 }
 
 /// C: mjv_isCatenary (engine/engine_vis_visualize.h:69)

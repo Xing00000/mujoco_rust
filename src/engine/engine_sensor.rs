@@ -750,28 +750,218 @@ pub fn compute_plugin_sensors(m: *const mjModel, d: *mut mjData, stage: u32) {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_compute_sensor(m: *const mjModel, d: *mut mjData, i: i32, sensordata: *mut f64) {
-    todo!() // mj_computeSensor
+    const MJ_STAGE_POS: i32 = 1;
+    const MJ_STAGE_VEL: i32 = 2;
+    const MJ_STAGE_ACC: i32 = 3;
+
+    // SAFETY: m, d, sensordata are valid pointers (caller contract).
+    unsafe {
+        let stage = *(*m).sensor_needstage.add(i as usize);
+        if stage == MJ_STAGE_POS {
+            mj_compute_sensor_pos(m, d, i, sensordata);
+        } else if stage == MJ_STAGE_VEL {
+            mj_compute_sensor_vel(m, d, i, sensordata);
+        } else if stage == MJ_STAGE_ACC {
+            mj_compute_sensor_acc(m, d, i, sensordata);
+        } else {
+            crate::engine::engine_util_errmem::mju_error(
+                b"invalid sensor stage\0".as_ptr() as *const i8);
+        }
+
+        // apply cutoff
+        apply_cutoff(m, i, sensordata);
+    }
 }
 
 /// C: mj_sensorPos (engine/engine_sensor.h:32)
 /// Calls: compute_or_read_sensor, compute_plugin_sensors, compute_user_sensors, mj_sleepState, mju_zero
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_sensor_pos(m: *const mjModel, d: *mut mjData) {
-    todo!() // mj_sensorPos
+    const MJ_DSBL_SENSOR: i32 = 1 << 13;
+    const MJ_ENBL_SLEEP: i32 = 1 << 4;
+    const MJ_OBJ_SENSOR: u32 = 20;
+    const MJ_S_ASLEEP: i32 = 0;
+    const MJ_STAGE_POS: i32 = 1;
+    const MJ_SENS_PLUGIN: i32 = 47;
+    const MJ_SENS_USER: i32 = 48;
+
+    // SAFETY: m, d are valid pointers (caller contract).
+    unsafe {
+        let nsensor = (*m).nsensor as i32;
+
+        // disabled sensors: return
+        if ((*m).opt.disableflags & MJ_DSBL_SENSOR) != 0 {
+            return;
+        }
+
+        // sleep filtering
+        let sleep_filter = ((*m).opt.enableflags & MJ_ENBL_SLEEP) != 0
+            && ((*d).nbody_awake as i64) < (*m).nbody;
+
+        let mut nusersensor: i32 = 0;
+
+        // process sensors matching stage
+        for i in 0..nsensor {
+            let sensor_type = *(*m).sensor_type.add(i as usize);
+
+            // skip sleeping sensor
+            if sleep_filter
+                && crate::engine::engine_sleep::mj_sleep_state(
+                    m, d as *const mjData, MJ_OBJ_SENSOR, i) == MJ_S_ASLEEP
+            {
+                continue;
+            }
+
+            // skip sensor plugins
+            if sensor_type == MJ_SENS_PLUGIN {
+                continue;
+            }
+
+            if *(*m).sensor_needstage.add(i as usize) == MJ_STAGE_POS {
+                let adr = *(*m).sensor_adr.add(i as usize);
+                let sensordata = (*d).sensordata.add(adr as usize);
+
+                if sensor_type == MJ_SENS_USER {
+                    // clear result, compute later
+                    crate::engine::engine_util_blas::mju_zero(
+                        sensordata, *(*m).sensor_dim.add(i as usize));
+                    nusersensor += 1;
+                } else {
+                    compute_or_read_sensor(m, d, i, sensordata);
+                }
+            }
+        }
+
+        // fill in user sensors if detected
+        if nusersensor != 0 {
+            compute_user_sensors(m, d, MJ_STAGE_POS as u32);
+        }
+
+        // compute plugin sensor values
+        compute_plugin_sensors(m, d, MJ_STAGE_POS as u32);
+    }
 }
 
 /// C: mj_sensorVel (engine/engine_sensor.h:35)
 /// Calls: compute_or_read_sensor, compute_plugin_sensors, compute_user_sensors, mj_sleepState, mj_subtreeVel, mju_zero
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_sensor_vel(m: *const mjModel, d: *mut mjData) {
-    todo!() // mj_sensorVel
+    const MJ_DSBL_SENSOR: i32 = 1 << 13;
+    const MJ_ENBL_SLEEP: i32 = 1 << 4;
+    const MJ_OBJ_SENSOR: u32 = 20;
+    const MJ_S_ASLEEP: i32 = 0;
+    const MJ_STAGE_VEL: i32 = 2;
+    const MJ_SENS_PLUGIN: i32 = 47;
+    const MJ_SENS_USER: i32 = 48;
+
+    // SAFETY: m, d are valid pointers (caller contract).
+    unsafe {
+        let nsensor = (*m).nsensor as i32;
+
+        if ((*m).opt.disableflags & MJ_DSBL_SENSOR) != 0 {
+            return;
+        }
+
+        let sleep_filter = ((*m).opt.enableflags & MJ_ENBL_SLEEP) != 0
+            && ((*d).nbody_awake as i64) < (*m).nbody;
+
+        let mut nusersensor: i32 = 0;
+
+        for i in 0..nsensor {
+            let sensor_type = *(*m).sensor_type.add(i as usize);
+
+            if sleep_filter
+                && crate::engine::engine_sleep::mj_sleep_state(
+                    m, d as *const mjData, MJ_OBJ_SENSOR, i) == MJ_S_ASLEEP
+            {
+                continue;
+            }
+
+            if sensor_type == MJ_SENS_PLUGIN {
+                continue;
+            }
+
+            if *(*m).sensor_needstage.add(i as usize) == MJ_STAGE_VEL {
+                let adr = *(*m).sensor_adr.add(i as usize);
+                let sensordata = (*d).sensordata.add(adr as usize);
+
+                if sensor_type == MJ_SENS_USER {
+                    crate::engine::engine_util_blas::mju_zero(
+                        sensordata, *(*m).sensor_dim.add(i as usize));
+                    nusersensor += 1;
+                } else {
+                    compute_or_read_sensor(m, d, i, sensordata);
+                }
+            }
+        }
+
+        if nusersensor != 0 {
+            compute_user_sensors(m, d, MJ_STAGE_VEL as u32);
+        }
+
+        compute_plugin_sensors(m, d, MJ_STAGE_VEL as u32);
+    }
 }
 
 /// C: mj_sensorAcc (engine/engine_sensor.h:38)
 /// Calls: compute_or_read_sensor, compute_plugin_sensors, compute_user_sensors, mj_rnePostConstraint, mj_sleepState, mju_zero
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_sensor_acc(m: *const mjModel, d: *mut mjData) {
-    todo!() // mj_sensorAcc
+    const MJ_DSBL_SENSOR: i32 = 1 << 13;
+    const MJ_ENBL_SLEEP: i32 = 1 << 4;
+    const MJ_OBJ_SENSOR: u32 = 20;
+    const MJ_S_ASLEEP: i32 = 0;
+    const MJ_STAGE_ACC: i32 = 3;
+    const MJ_SENS_PLUGIN: i32 = 47;
+    const MJ_SENS_USER: i32 = 48;
+
+    // SAFETY: m, d are valid pointers (caller contract).
+    unsafe {
+        let nsensor = (*m).nsensor as i32;
+
+        if ((*m).opt.disableflags & MJ_DSBL_SENSOR) != 0 {
+            return;
+        }
+
+        let sleep_filter = ((*m).opt.enableflags & MJ_ENBL_SLEEP) != 0
+            && ((*d).nbody_awake as i64) < (*m).nbody;
+
+        let mut nusersensor: i32 = 0;
+
+        for i in 0..nsensor {
+            let sensor_type = *(*m).sensor_type.add(i as usize);
+
+            if sleep_filter
+                && crate::engine::engine_sleep::mj_sleep_state(
+                    m, d as *const mjData, MJ_OBJ_SENSOR, i) == MJ_S_ASLEEP
+            {
+                continue;
+            }
+
+            if sensor_type == MJ_SENS_PLUGIN {
+                continue;
+            }
+
+            if *(*m).sensor_needstage.add(i as usize) == MJ_STAGE_ACC {
+                let adr = *(*m).sensor_adr.add(i as usize);
+                let sensordata = (*d).sensordata.add(adr as usize);
+
+                if sensor_type == MJ_SENS_USER {
+                    crate::engine::engine_util_blas::mju_zero(
+                        sensordata, *(*m).sensor_dim.add(i as usize));
+                    nusersensor += 1;
+                } else {
+                    compute_or_read_sensor(m, d, i, sensordata);
+                }
+            }
+        }
+
+        if nusersensor != 0 {
+            compute_user_sensors(m, d, MJ_STAGE_ACC as u32);
+        }
+
+        compute_plugin_sensors(m, d, MJ_STAGE_ACC as u32);
+    }
 }
 
 /// C: mj_energyPos (engine/engine_sensor.h:44)
@@ -785,6 +975,20 @@ pub fn mj_energy_pos(m: *const mjModel, d: *mut mjData) {
 /// Calls: mj_freeStack, mj_markStack, mj_mulM, mj_stackAllocInfo, mju_dot
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_energy_vel(m: *const mjModel, d: *mut mjData) {
-    todo!() // mj_energyVel
+    // SAFETY: m, d are valid pointers (caller contract).
+    unsafe {
+        crate::engine::engine_memory::mj_mark_stack(d);
+        let vec = crate::engine::engine_memory::mj_stack_alloc_num(d, (*m).nv as usize);
+
+        // kinetic energy: 0.5 * qvel' * M * qvel
+        crate::engine::engine_support::mj_mul_m(m, d as *const mjData, vec, (*d).qvel);
+        (*d).energy[1] = 0.5 * crate::engine::engine_util_blas::mju_dot(
+            vec, (*d).qvel, (*m).nv as i32);
+
+        crate::engine::engine_memory::mj_free_stack(d);
+
+        // mark as computed
+        (*d).flg_energyvel = true;
+    }
 }
 
