@@ -804,7 +804,156 @@ pub fn mju_sqr_mat_td_sparse_symbolic(res_rownnz: *mut i32, res_rowadr: *mut i32
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mju_sqr_mat_td_sparse_numeric(res: *mut f64, nc: i32, res_rownnz: *const i32, res_rowadr: *const i32, res_colind: *const i32, res_diagind: *const i32, mat: *const f64, rownnz: *const i32, rowadr: *const i32, colind: *const i32, matT: *const f64, rownnzT: *const i32, rowadrT: *const i32, colindT: *const i32, rowsuperT: *const i32, diag: *const f64, d: *mut mjData) {
-    todo!() // mju_sqrMatTDSparseNumeric
+    const MJ_MAX_SUPER: i32 = 8;
+
+    // SAFETY: All pointers are valid arrays (caller contract). d is valid for stack alloc.
+    unsafe {
+        crate::engine::engine_memory::mj_mark_stack(d);
+
+        // dense accumulator for current result row (or batch of rows)
+        let buffer: *mut f64 = crate::engine::engine_memory::mj_stack_alloc_num(d, (nc * MJ_MAX_SUPER) as usize);
+        crate::engine::engine_util_blas::mju_zero(buffer, nc * MJ_MAX_SUPER);
+
+        // process result rows
+        let mut r = 0i32;
+        while r < nc {
+            // determine supernode size
+            let mut ns: i32 = 1;
+            if !rowsuperT.is_null() {
+                ns = *rowsuperT.add(r as usize) + 1;
+                if ns > MJ_MAX_SUPER {
+                    ns = MJ_MAX_SUPER;
+                }
+            }
+
+            // single row
+            if ns == 1 {
+                let nnzT_r = *rownnzT.add(r as usize);
+                let adr_r = *rowadrT.add(r as usize);
+
+                // accumulate: res[r, :] = sum over k in M'[r, :] of diag[k] * M'[r, k] * M[k, :]
+                for i in 0..nnzT_r {
+                    let k = *colindT.add((adr_r + i) as usize);
+                    let valT = *matT.add((adr_r + i) as usize);
+                    let scale = if !diag.is_null() { *diag.add(k as usize) * valT } else { valT };
+                    if scale == 0.0 {
+                        continue;
+                    }
+
+                    let adr_k = *rowadr.add(k as usize);
+                    let nnz_k = *rownnz.add(k as usize);
+                    let ind_k = colind.add(adr_k as usize);
+                    let val_k = mat.add(adr_k as usize);
+
+                    for j in 0..nnz_k {
+                        let c = *ind_k.add(j as usize);
+                        if c > r {
+                            break;
+                        }
+                        *buffer.add(c as usize) += scale * *val_k.add(j as usize);
+                    }
+                }
+
+                // scatter from dense buffer to sparse result
+                let res_adr = *res_rowadr.add(r as usize);
+                let res_nnz = *res_rownnz.add(r as usize);
+                let res_ind = res_colind.add(res_adr as usize);
+                let res_val = res.add(res_adr as usize);
+
+                for j in 0..res_nnz {
+                    let c = *res_ind.add(j as usize);
+                    *res_val.add(j as usize) = *buffer.add(c as usize);
+                    *buffer.add(c as usize) = 0.0;
+                }
+            }
+            // supernode: ns > 1 rows share the same sparsity pattern
+            else {
+                let nnzT_r = *rownnzT.add(r as usize);
+                let adr_r = *rowadrT.add(r as usize);
+
+                // accumulate for ns rows
+                for i in 0..nnzT_r {
+                    let k = *colindT.add((adr_r + i) as usize);
+
+                    // compute scale for all rows
+                    let mut scale = [0.0f64; 8]; // mjMAXSUPER = 8
+                    if !diag.is_null() {
+                        let dk = *diag.add(k as usize);
+                        if dk == 0.0 {
+                            continue;
+                        }
+                        for s in 0..ns {
+                            scale[s as usize] = dk * *matT.add((*rowadrT.add((r + s) as usize) + i) as usize);
+                        }
+                    } else {
+                        for s in 0..ns {
+                            scale[s as usize] = *matT.add((*rowadrT.add((r + s) as usize) + i) as usize);
+                        }
+                    }
+
+                    let adr_k = *rowadr.add(k as usize);
+                    let nnz_k = *rownnz.add(k as usize);
+                    let ind_k = colind.add(adr_k as usize);
+                    let val_k = mat.add(adr_k as usize);
+
+                    for j in 0..nnz_k {
+                        let c = *ind_k.add(j as usize);
+                        if c > r + ns - 1 {
+                            break;
+                        }
+                        let v = *val_k.add(j as usize);
+
+                        for s in 0..ns {
+                            if c <= r + s {
+                                *buffer.add((s * nc + c) as usize) += scale[s as usize] * v;
+                            }
+                        }
+                    }
+                }
+
+                // scatter
+                for s in 0..ns {
+                    let row = r + s;
+                    let res_adr = *res_rowadr.add(row as usize);
+                    let res_nnz = *res_rownnz.add(row as usize);
+                    let res_ind = res_colind.add(res_adr as usize);
+                    let res_val = res.add(res_adr as usize);
+                    for j in 0..res_nnz {
+                        let c = *res_ind.add(j as usize);
+                        *res_val.add(j as usize) = *buffer.add((s * nc + c) as usize);
+                        *buffer.add((s * nc + c) as usize) = 0.0;
+                    }
+                }
+            }
+
+            r += ns;
+        }
+
+        // fill upper triangle: mirror values from lower triangle
+        if !res_diagind.is_null() {
+            // initialize write positions after diagonal
+            let upper_pos: *mut i32 = crate::engine::engine_memory::mj_stack_alloc_int(d, nc as usize);
+            for r2 in 0..nc {
+                *upper_pos.add(r2 as usize) = *res_diagind.add(r2 as usize) + 1;
+            }
+
+            // for each (r, c) with c < r, write r to row c
+            for r2 in 0..nc {
+                let adr = *res_rowadr.add(r2 as usize);
+                let lower_nnz = *res_diagind.add(r2 as usize) - adr + 1;
+                for j in 0..lower_nnz {
+                    let c = *res_colind.add((adr + j) as usize);
+                    if c < r2 {
+                        let pos = *upper_pos.add(c as usize);
+                        *res.add(pos as usize) = *res.add((adr + j) as usize);
+                        *upper_pos.add(c as usize) = pos + 1;
+                    }
+                }
+            }
+        }
+
+        crate::engine::engine_memory::mj_free_stack(d);
+    }
 }
 
 /// C: mju_sqrMatTDUncompressedInit (engine/engine_util_sparse.h:163)

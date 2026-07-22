@@ -255,7 +255,100 @@ pub fn mju_chol_factor_sparse(mat: *mut f64, n: i32, mindiag: f64, rownnz: *mut 
 /// Calls: mj_freeStack, mj_markStack, mj_stackAllocInfo
 #[allow(unused_variables, non_snake_case)]
 pub fn mju_chol_factor_symbolic(L_colind: *mut i32, L_rownnz: *mut i32, L_rowadr: *mut i32, LT_colind: *mut i32, LT_rownnz: *mut i32, LT_rowadr: *mut i32, LT_map: *mut i32, rownnz: *const i32, rowadr: *const i32, colind: *const i32, n: i32, d: *mut mjData) -> i32 {
-    todo!() // mju_cholFactorSymbolic
+    // SAFETY: All pointers are valid arrays of at least n elements (caller contract).
+    // d is a valid mjData pointer for stack allocation.
+    unsafe {
+        crate::engine::engine_memory::mj_mark_stack(d);
+        let parent: *mut i32 = crate::engine::engine_memory::mj_stack_alloc_int(d, n as usize);
+        let flag: *mut i32 = crate::engine::engine_memory::mj_stack_alloc_int(d, n as usize);
+        let mut cursor: *mut i32 = std::ptr::null_mut();
+        let mut LT_write: *mut i32 = std::ptr::null_mut();
+
+        // filling phase: initialize write positions
+        if !L_colind.is_null() {
+            cursor = crate::engine::engine_memory::mj_stack_alloc_int(d, n as usize);
+            LT_write = crate::engine::engine_memory::mj_stack_alloc_int(d, n as usize);
+            for r in 0..n {
+                *cursor.add(r as usize) = *L_rowadr.add(r as usize) + *L_rownnz.add(r as usize) - 2;
+                *LT_write.add(r as usize) = *LT_rowadr.add(r as usize);
+            }
+        }
+
+        // loop over rows in reverse order
+        for r in (0..n).rev() {
+            *parent.add(r as usize) = -1;
+            *flag.add(r as usize) = r;
+
+            if L_colind.is_null() {
+                // counting phase: start with 1 for diagonal
+                *L_rownnz.add(r as usize) = 1;
+                *LT_rownnz.add(r as usize) = 1;
+            } else {
+                // filling phase: write diagonals
+                let diag_idx = *L_rowadr.add(r as usize) + *L_rownnz.add(r as usize) - 1;
+                *L_colind.add(diag_idx as usize) = r;
+                let write_idx = *LT_write.add(r as usize);
+                *LT_colind.add(write_idx as usize) = r;
+                *LT_map.add(write_idx as usize) = diag_idx;
+                *LT_write.add(r as usize) += 1;
+            }
+
+            // loop over non-zero columns of upper triangle
+            let start = *rowadr.add(r as usize);
+            let end = start + *rownnz.add(r as usize);
+            for c in start..end {
+                let mut i = *colind.add(c as usize);
+
+                // skip lower triangle
+                if i <= r {
+                    continue;
+                }
+
+                // traverse from i to ancestor, stop when row is flagged
+                while *flag.add(i as usize) != r {
+                    // if not yet set, set parent to current row
+                    if *parent.add(i as usize) == -1 {
+                        *parent.add(i as usize) = r;
+                    }
+
+                    if L_colind.is_null() {
+                        // counting phase: increment non-zeros
+                        *L_rownnz.add(i as usize) += 1;
+                        *LT_rownnz.add(r as usize) += 1;
+                    } else {
+                        // filling phase: write L[i, r] and LT[r, i]
+                        let L_idx = *cursor.add(i as usize);
+                        *cursor.add(i as usize) -= 1;
+                        *L_colind.add(L_idx as usize) = r;
+                        *LT_colind.add(*LT_write.add(r as usize) as usize) = i;
+                        *LT_map.add(*LT_write.add(r as usize) as usize) = L_idx;
+                        *LT_write.add(r as usize) += 1;
+                    }
+
+                    // flag row i, advance to parent
+                    *flag.add(i as usize) = r;
+                    i = *parent.add(i as usize);
+                }
+            }
+        }
+
+        crate::engine::engine_memory::mj_free_stack(d);
+
+        // counting phase: compute row addresses, add up total non-zeros
+        let mut nnz: i32 = 0;
+        if L_colind.is_null() {
+            nnz = *L_rownnz.add(0);
+            *L_rowadr.add(0) = 0;
+            *LT_rowadr.add(0) = 0;
+            for r in 1..n {
+                *L_rowadr.add(r as usize) = *L_rowadr.add((r - 1) as usize) + *L_rownnz.add((r - 1) as usize);
+                *LT_rowadr.add(r as usize) = *LT_rowadr.add((r - 1) as usize) + *LT_rownnz.add((r - 1) as usize);
+                nnz += *L_rownnz.add(r as usize);
+            }
+        }
+
+        nnz
+    }
 }
 
 /// C: mju_cholFactorNumeric (engine/engine_util_solve.h:53)
@@ -267,7 +360,71 @@ pub fn mju_chol_factor_symbolic(L_colind: *mut i32, L_rownnz: *mut i32, L_rowadr
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mju_chol_factor_numeric(L: *mut f64, n: i32, mindiag: f64, L_rownnz: *const i32, L_rowadr: *const i32, L_colind: *const i32, LT_rownnz: *const i32, LT_rowadr: *const i32, LT_colind: *const i32, LT_map: *const i32, H: *const f64, H_rownnz: *const i32, H_rowadr: *const i32, H_colind: *const i32, d: *mut mjData) -> i32 {
-    todo!() // mju_cholFactorNumeric
+    // SAFETY: All pointers are valid arrays (caller contract). d is valid for stack alloc.
+    unsafe {
+        let mut rank: i32 = n;
+
+        // single-row dense accumulator
+        crate::engine::engine_memory::mj_mark_stack(d);
+        let dense: *mut f64 = crate::engine::engine_memory::mj_stack_alloc_num(d, n as usize);
+        crate::engine::engine_util_blas::mju_zero(dense, n);
+
+        // backpass over rows
+        for r in (0..n).rev() {
+            // scatter H[r, 0:r] into dense
+            crate::engine::engine_util_misc::mju_scatter(
+                dense,
+                H.add(*H_rowadr.add(r as usize) as usize),
+                H_colind.add(*H_rowadr.add(r as usize) as usize),
+                *H_rownnz.add(r as usize),
+            );
+
+            // accumulate updates from rows c > r where L[c,r] != 0
+            let LT_adr = *LT_rowadr.add(r as usize);
+            let LT_nnz = *LT_rownnz.add(r as usize);
+            for k in 1..LT_nnz {
+                let c = *LT_colind.add((LT_adr + k) as usize);
+                let L_cr_idx = *LT_map.add((LT_adr + k) as usize);
+                let L_cr = *L.add(L_cr_idx as usize);
+                let c_adr = *L_rowadr.add(c as usize);
+                let num_cols = L_cr_idx - c_adr + 1;
+                let colptr = L_colind.add(c_adr as usize);
+                let Lptr = L.add(c_adr as usize) as *const f64;
+                for i in 0..num_cols {
+                    *dense.add(*colptr.add(i as usize) as usize) -= L_cr * *Lptr.add(i as usize);
+                }
+            }
+
+            // factor row r diagonal, handle rank-deficient case
+            let mut diag = *dense.add(r as usize);
+            if diag < mindiag {
+                diag = mindiag;
+                rank -= 1;
+            }
+
+            // scale off-diagonals
+            let L_rr = diag.sqrt();
+            let L_rr_inv = 1.0 / L_rr;
+            let L_adr = *L_rowadr.add(r as usize);
+            let L_nnz = *L_rownnz.add(r as usize);
+            let colptr = L_colind.add(L_adr as usize);
+            let Lptr = L.add(L_adr as usize);
+            for i in 0..(L_nnz - 1) {
+                *Lptr.add(i as usize) = *dense.add(*colptr.add(i as usize) as usize) * L_rr_inv;
+            }
+
+            // store diagonal
+            *L.add((L_adr + L_nnz - 1) as usize) = L_rr;
+
+            // clear dense workspace
+            for i in 0..L_nnz {
+                *dense.add(*colptr.add(i as usize) as usize) = 0.0;
+            }
+        }
+
+        crate::engine::engine_memory::mj_free_stack(d);
+        rank
+    }
 }
 
 /// C: mju_cholSolveSparse (engine/engine_util_solve.h:61)
@@ -327,7 +484,69 @@ pub fn mju_chol_solve_sparse(res: *mut f64, mat: *const f64, vec: *const f64, n:
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mju_chol_update_sparse(mat: *mut f64, x: *const f64, n: i32, flg_plus: i32, rownnz: *const i32, rowadr: *const i32, colind: *const i32, x_nnz: i32, x_ind: *const i32, d: *mut mjData) -> i32 {
-    todo!() // mju_cholUpdateSparse
+    const MJ_MINVAL: f64 = 1e-15;
+
+    // SAFETY: All pointers are valid arrays (caller contract). d is valid for stack alloc.
+    unsafe {
+        // early return if x is empty
+        if x_nnz == 0 {
+            return n;
+        }
+
+        // get starting row: last non-zero entry in x
+        let start = *x_ind.add((x_nnz - 1) as usize);
+
+        // allocate dense accumulator for x
+        crate::engine::engine_memory::mj_mark_stack(d);
+        let dense: *mut f64 = crate::engine::engine_memory::mj_stack_alloc_num(d, (start + 1) as usize);
+        crate::engine::engine_util_blas::mju_zero(dense, start + 1);
+
+        // scatter x into dense
+        crate::engine::engine_util_misc::mju_scatter(dense, x, x_ind, x_nnz);
+
+        // backpass over rows from start down to 0
+        let mut rank: i32 = n;
+        for row in (0..=start).rev() {
+            // skip if zero
+            if *dense.add(row as usize) == 0.0 {
+                continue;
+            }
+
+            // get rownnz (excluding diagonal), rowadr
+            let nnz = *rownnz.add(row as usize) - 1;
+            let adr = *rowadr.add(row as usize);
+
+            // update diagonal, handle rank-deficient case
+            let diag = *mat.add((adr + nnz) as usize);
+            let x_row = *dense.add(row as usize);
+            let mut tmp = diag * diag + if flg_plus != 0 { x_row * x_row } else { -(x_row * x_row) };
+            if tmp < MJ_MINVAL {
+                tmp = MJ_MINVAL;
+                rank -= 1;
+            }
+            let r = tmp.sqrt();
+            *mat.add((adr + nnz) as usize) = r;
+
+            // compute Givens rotation parameters
+            let c = diag / r;
+            let s = -x_row / r;
+            let s_signed = if flg_plus != 0 { -s } else { s };
+
+            // update row
+            for i in 0..nnz {
+                let j = *colind.add((adr + i) as usize);
+                let dense_j = *dense.add(j as usize);
+                let mat_val = *mat.add((adr + i) as usize);
+
+                // update mat and dense using the Givens rotation
+                *mat.add((adr + i) as usize) = c * mat_val + s_signed * dense_j;
+                *dense.add(j as usize) = s * mat_val + c * dense_j;
+            }
+        }
+
+        crate::engine::engine_memory::mj_free_stack(d);
+        rank
+    }
 }
 
 /// C: mju_cholFactorBand (engine/engine_util_solve.h:76)

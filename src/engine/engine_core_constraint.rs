@@ -13,7 +13,60 @@ use crate::types::*;
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn cell_pos_and_jac(m: *const mjModel, d: *mut mjData, flex_id: i32, npc: i32, gindices: *const i32, nv: i32, xpos_c: *const f64, cell_chain: *mut i32, cell_nnz: *mut i32) -> *mut f64 {
-    todo!() // cell_pos_and_jac
+    // SAFETY: All pointers are valid arrays (caller contract). d is valid for stack alloc.
+    unsafe {
+        let nstart = (*m).flex_nodeadr.add(flex_id as usize);
+        let bodyid = (*m).flex_nodebodyid.add(*nstart as usize);
+
+        // build per-cell sparse chain: union of bodyChain for npc nodes
+        *cell_nnz = 0;
+        let dof_used: *mut i32 = crate::engine::engine_memory::mj_stack_alloc_int(d, nv as usize);
+        let temp_chain: *mut i32 = crate::engine::engine_memory::mj_stack_alloc_int(d, nv as usize);
+        crate::engine::engine_util_misc::mju_zero_int(dof_used, nv);
+        for n in 0..npc {
+            let temp_nnz = crate::engine::engine_core_util::mj_body_chain(
+                m, *bodyid.add(*gindices.add(n as usize) as usize), temp_chain);
+            for k in 0..temp_nnz {
+                *dof_used.add(*temp_chain.add(k as usize) as usize) = 1;
+            }
+        }
+        for q in 0..nv {
+            if *dof_used.add(q as usize) != 0 {
+                *cell_chain.add(*cell_nnz as usize) = q;
+                *cell_nnz += 1;
+            }
+        }
+
+        // build per-cell node Jacobians: 3*npc x cell_nnz
+        let cell_node_jac: *mut f64 = crate::engine::engine_memory::mj_stack_alloc_num(
+            d, (3 * npc * *cell_nnz) as usize);
+        crate::engine::engine_util_blas::mju_zero(cell_node_jac, 3 * npc * *cell_nnz);
+        let chain_col: *mut i32 = crate::engine::engine_memory::mj_stack_alloc_int(d, nv as usize);
+        let blk_jac: *mut f64 = crate::engine::engine_memory::mj_stack_alloc_num(d, (3 * nv) as usize);
+        for n in 0..npc {
+            let body = *bodyid.add(*gindices.add(n as usize) as usize);
+            let chain_n = crate::engine::engine_core_util::mj_body_chain(m, body, chain_col);
+            crate::engine::engine_util_blas::mju_zero(blk_jac, 3 * chain_n);
+            crate::engine::engine_core_util::mj_jac_sparse(
+                m, d as *const crate::types::mjData, blk_jac, std::ptr::null_mut(),
+                xpos_c.add((3 * n) as usize), body, chain_n, chain_col as *const i32, 0);
+            // map node's sparse chain into cell_chain indexing
+            for r in 0..3i32 {
+                for k in 0..chain_n {
+                    // find chain_col[k] in cell_chain via linear scan (chain is short)
+                    for cc in 0..*cell_nnz {
+                        if *cell_chain.add(cc as usize) == *chain_col.add(k as usize) {
+                            *cell_node_jac.add(((3 * n + r) * *cell_nnz + cc) as usize) =
+                                *blk_jac.add((r * chain_n + k) as usize);
+                            break;
+                        }
+                    }
+                }
+            }
+        }
+
+        cell_node_jac
+    }
 }
 
 /// C: cell_strain_jacobian (engine/engine_core_constraint.c:111)
@@ -486,14 +539,341 @@ pub fn mj_add_constraint_count(m: *const mjModel, size: i32, NV: i32) -> i32 {
 /// Calls: mj_addConstraint, mj_addConstraintCount, mj_freeStack, mj_isSparse, mj_markStack, mj_sleepState, mj_stackAllocInfo, mju_sparse2dense, mju_zero
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_instantiate_friction(m: *const mjModel, d: *mut mjData, count_only: i32, nnz: *mut i32) -> i32 {
-    todo!() // mj_instantiateFriction
+    const mjDSBL_FRICTIONLOSS: i32 = 1 << 2;
+    const mjENBL_SLEEP: i32 = 1 << 4;
+    const mjCNSTR_FRICTION_DOF: i32 = 1;
+    const mjCNSTR_FRICTION_TENDON: i32 = 2;
+
+    // SAFETY: All pointers are valid (caller contract). d is valid for stack alloc.
+    unsafe {
+        let nv = (*m).nv as i32;
+        let issparse = crate::engine::engine_core_util::mj_is_sparse(m);
+        let mut nf: i32 = 0;
+        let mut jac: *mut f64 = std::ptr::null_mut();
+
+        // disabled: return
+        if ((*m).opt.disableflags & mjDSBL_FRICTIONLOSS) != 0 {
+            return 0;
+        }
+
+        // sleep filtering
+        let sleep_filter = (((*m).opt.enableflags & mjENBL_SLEEP) != 0)
+            && (*d).ntree_awake < (*m).ntree as i32;
+
+        if count_only == 0 {
+            crate::engine::engine_memory::mj_mark_stack(d);
+            // allocate Jacobian
+            jac = crate::engine::engine_memory::mj_stack_alloc_num(d, nv as usize);
+        }
+
+        // find frictional DOFs
+        for i in 0..nv {
+            // no friction loss: skip
+            if *(*m).dof_frictionloss.add(i as usize) == 0.0 {
+                continue;
+            }
+
+            // sleeping tree: skip
+            if sleep_filter && crate::engine::engine_sleep::mj_sleep_state(
+                m, d as *const crate::types::mjData, 14 /*mjOBJ_DOF*/, i) == 3 /*mjS_ASLEEP*/ {
+                continue;
+            }
+
+            if count_only != 0 {
+                nf += mj_add_constraint_count(m, 1, 1);
+                if !nnz.is_null() {
+                    *nnz += 1;
+                }
+            } else {
+                // prepare Jacobian: sparse or dense
+                if issparse != 0 {
+                    *jac.add(0) = 1.0;
+                } else {
+                    crate::engine::engine_util_blas::mju_zero(jac, nv);
+                    *jac.add(i as usize) = 1.0;
+                }
+
+                // add constraint
+                mj_add_constraint(m, d, jac as *const f64, std::ptr::null(),
+                    std::ptr::null(), *(*m).dof_frictionloss.add(i as usize),
+                    1, mjCNSTR_FRICTION_DOF, i,
+                    if issparse != 0 { 1 } else { 0 },
+                    if issparse != 0 { &i as *const i32 }
+                    else { std::ptr::null() });
+            }
+        }
+
+        // find frictional tendons
+        for i in 0..(*m).ntendon as i32 {
+            if *(*m).tendon_frictionloss.add(i as usize) > 0.0 {
+                if count_only != 0 {
+                    nf += mj_add_constraint_count(m, 1, *(*m).ten_J_rownnz.add(i as usize));
+                    if !nnz.is_null() {
+                        *nnz += *(*m).ten_J_rownnz.add(i as usize);
+                    }
+                } else {
+                    let efcadr = (*d).nefc;
+                    // add constraint
+                    if issparse != 0 {
+                        mj_add_constraint(m, d,
+                            (*d).ten_J.add(*(*m).ten_J_rowadr.add(i as usize) as usize) as *const f64,
+                            std::ptr::null(), std::ptr::null(),
+                            *(*m).tendon_frictionloss.add(i as usize),
+                            1, mjCNSTR_FRICTION_TENDON, i,
+                            *(*m).ten_J_rownnz.add(i as usize),
+                            (*m).ten_J_colind.add(*(*m).ten_J_rowadr.add(i as usize) as usize) as *const i32);
+                    } else {
+                        crate::engine::engine_util_sparse::mju_sparse2dense(
+                            jac, (*d).ten_J as *const f64, 1, nv,
+                            ((*m).ten_J_rownnz as *const i32).add(i as usize),
+                            ((*m).ten_J_rowadr as *const i32).add(i as usize),
+                            (*m).ten_J_colind as *const i32);
+                        mj_add_constraint(m, d, jac as *const f64,
+                            std::ptr::null(), std::ptr::null(),
+                            *(*m).tendon_frictionloss.add(i as usize),
+                            1, mjCNSTR_FRICTION_TENDON, i, 0, std::ptr::null());
+                    }
+                    // set tendon_efcadr
+                    if *(*d).tendon_efcadr.add(i as usize) == -1 {
+                        *(*d).tendon_efcadr.add(i as usize) = efcadr;
+                    }
+                }
+            }
+        }
+
+        if count_only == 0 {
+            crate::engine::engine_memory::mj_free_stack(d);
+        }
+
+        nf
+    }
 }
 
 /// C: mj_instantiateLimit (engine/engine_core_constraint.c:1360)
 /// Calls: mj_addConstraint, mj_addConstraintCount, mj_freeStack, mj_isSparse, mj_markStack, mj_sleepState, mj_stackAllocInfo, mju_max, mju_normalize3, mju_normalize4, mju_quat2Vel, mju_scl, mju_scl3, mju_sparse2dense, mju_zero
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_instantiate_limit(m: *const mjModel, d: *mut mjData, count_only: i32, nnz: *mut i32) -> i32 {
-    todo!() // mj_instantiateLimit
+    const mjDSBL_LIMIT: i32 = 1 << 3;
+    const mjENBL_SLEEP: i32 = 1 << 4;
+    const mjJNT_FREE: i32 = 0;
+    const mjJNT_BALL: i32 = 1;
+    const mjJNT_SLIDE: i32 = 2;
+    const mjJNT_HINGE: i32 = 3;
+    const mjCNSTR_LIMIT_JOINT: i32 = 3;
+    const mjCNSTR_LIMIT_TENDON: i32 = 4;
+    const mjS_ASLEEP: i32 = 3;
+
+    // SAFETY: All pointers are valid (caller contract). d is valid for stack alloc.
+    unsafe {
+        let nv = (*m).nv as i32;
+        let issparse = crate::engine::engine_core_util::mj_is_sparse(m);
+        let mut nl: i32 = 0;
+        let mut jac: *mut f64 = std::ptr::null_mut();
+
+        // disabled: return
+        if ((*m).opt.disableflags & mjDSBL_LIMIT) != 0 {
+            return 0;
+        }
+
+        // sleep filtering
+        let sleep_filter = (((*m).opt.enableflags & mjENBL_SLEEP) != 0)
+            && (*d).ntree_awake < (*m).ntree as i32;
+
+        if count_only == 0 {
+            crate::engine::engine_memory::mj_mark_stack(d);
+            jac = crate::engine::engine_memory::mj_stack_alloc_num(d, nv as usize);
+        }
+
+        // find joint limits
+        for i in 0..(*m).njnt as i32 {
+            // no limit: skip
+            if !*(*m).jnt_limited.add(i as usize) {
+                continue;
+            }
+
+            // sleeping tree: skip
+            if sleep_filter && crate::engine::engine_sleep::mj_sleep_state(
+                m, d as *const crate::types::mjData, 3 /*mjOBJ_JOINT*/, i) == mjS_ASLEEP {
+                continue;
+            }
+
+            // get margin
+            let margin = *(*m).jnt_margin.add(i as usize);
+
+            // HINGE or SLIDE joint
+            if *(*m).jnt_type.add(i as usize) == mjJNT_SLIDE
+                || *(*m).jnt_type.add(i as usize) == mjJNT_HINGE
+            {
+                // get joint value
+                let value = *(*d).qpos.add(*(*m).jnt_qposadr.add(i as usize) as usize);
+
+                // process lower and upper limits
+                let mut side: i32 = -1;
+                while side <= 1 {
+                    // compute distance (negative: penetration)
+                    let mut dist = (side as f64)
+                        * (*(*m).jnt_range.add((2 * i + (side + 1) / 2) as usize) - value);
+
+                    // detect joint limit
+                    if dist < margin {
+                        if count_only != 0 {
+                            nl += mj_add_constraint_count(m, 1, 1);
+                            if !nnz.is_null() {
+                                *nnz += 1;
+                            }
+                        } else {
+                            // prepare Jacobian: sparse or dense
+                            if issparse != 0 {
+                                *jac.add(0) = -(side as f64);
+                            } else {
+                                crate::engine::engine_util_blas::mju_zero(jac, nv);
+                                *jac.add(*(*m).jnt_dofadr.add(i as usize) as usize) = -(side as f64);
+                            }
+
+                            // add constraint
+                            mj_add_constraint(m, d, jac as *const f64,
+                                &dist as *const f64, &margin as *const f64, 0.0,
+                                1, mjCNSTR_LIMIT_JOINT, i,
+                                if issparse != 0 { 1 } else { 0 },
+                                if issparse != 0 { (*m).jnt_dofadr.add(i as usize) as *const i32 }
+                                else { std::ptr::null() });
+                        }
+                    }
+                    side += 2;
+                }
+            }
+            // BALL joint
+            else if *(*m).jnt_type.add(i as usize) == mjJNT_BALL {
+                // convert joint quaternion to axis-angle
+                let adr = *(*m).jnt_qposadr.add(i as usize) as usize;
+                let mut quat: [f64; 4] = [
+                    *(*d).qpos.add(adr),
+                    *(*d).qpos.add(adr + 1),
+                    *(*d).qpos.add(adr + 2),
+                    *(*d).qpos.add(adr + 3),
+                ];
+                crate::engine::engine_util_blas::mju_normalize4(quat.as_mut_ptr());
+                let mut angleAxis: [f64; 3] = [0.0; 3];
+                crate::engine::engine_util_spatial::mju_quat2vel(
+                    angleAxis.as_mut_ptr(), quat.as_ptr(), 1.0);
+
+                // get rotation angle, normalize
+                let value = crate::engine::engine_util_blas::mju_normalize3(angleAxis.as_mut_ptr());
+
+                // compute distance, using max of range (negative: penetration)
+                let mut dist = crate::engine::engine_util_misc::mju_max(
+                    *(*m).jnt_range.add((2 * i as i32) as usize),
+                    *(*m).jnt_range.add((2 * i as i32 + 1) as usize)) - value;
+
+                // detect joint limit
+                if dist < margin {
+                    if count_only != 0 {
+                        nl += mj_add_constraint_count(m, 1, 3);
+                        if !nnz.is_null() {
+                            *nnz += 3;
+                        }
+                    }
+                    // sparse
+                    else if issparse != 0 {
+                        // prepare dof index array
+                        let chain_arr: [i32; 3] = [
+                            *(*m).jnt_dofadr.add(i as usize),
+                            *(*m).jnt_dofadr.add(i as usize) + 1,
+                            *(*m).jnt_dofadr.add(i as usize) + 2,
+                        ];
+
+                        // prepare Jacobian
+                        crate::engine::engine_util_blas::mju_scl3(
+                            jac, angleAxis.as_ptr(), -1.0);
+
+                        // add constraint
+                        mj_add_constraint(m, d, jac as *const f64,
+                            &dist as *const f64, &margin as *const f64, 0.0,
+                            1, mjCNSTR_LIMIT_JOINT, i, 3, chain_arr.as_ptr());
+                    }
+                    // dense
+                    else {
+                        // prepare Jacobian
+                        crate::engine::engine_util_blas::mju_zero(jac, nv);
+                        crate::engine::engine_util_blas::mju_scl3(
+                            jac.add(*(*m).jnt_dofadr.add(i as usize) as usize),
+                            angleAxis.as_ptr(), -1.0);
+
+                        // add constraint
+                        mj_add_constraint(m, d, jac as *const f64,
+                            &dist as *const f64, &margin as *const f64, 0.0,
+                            1, mjCNSTR_LIMIT_JOINT, i, 0, std::ptr::null());
+                    }
+                }
+            }
+        }
+
+        // find tendon limits
+        for i in 0..(*m).ntendon as i32 {
+            if !*(*m).tendon_limited.add(i as usize) {
+                continue;
+            }
+
+            // get value = length, margin
+            let value = *(*d).ten_length.add(i as usize);
+            let margin = *(*m).tendon_margin.add(i as usize);
+
+            // process lower and upper limits
+            let mut side: i32 = -1;
+            while side <= 1 {
+                // compute distance (negative: penetration)
+                let mut dist = (side as f64)
+                    * (*(*m).tendon_range.add((2 * i + (side + 1) / 2) as usize) - value);
+
+                // detect tendon limit
+                if dist < margin {
+                    if count_only != 0 {
+                        nl += mj_add_constraint_count(m, 1, *(*m).ten_J_rownnz.add(i as usize));
+                        if !nnz.is_null() {
+                            *nnz += *(*m).ten_J_rownnz.add(i as usize);
+                        }
+                    } else {
+                        // prepare Jacobian
+                        let efcadr = (*d).nefc;
+                        if issparse != 0 {
+                            crate::engine::engine_util_blas::mju_scl(
+                                jac,
+                                (*d).ten_J.add(*(*m).ten_J_rowadr.add(i as usize) as usize) as *const f64,
+                                -(side as f64),
+                                *(*m).ten_J_rownnz.add(i as usize));
+                            mj_add_constraint(m, d, jac as *const f64,
+                                &dist as *const f64, &margin as *const f64, 0.0,
+                                1, mjCNSTR_LIMIT_TENDON, i,
+                                *(*m).ten_J_rownnz.add(i as usize),
+                                (*m).ten_J_colind.add(*(*m).ten_J_rowadr.add(i as usize) as usize) as *const i32);
+                        } else {
+                            crate::engine::engine_util_sparse::mju_sparse2dense(
+                                jac, (*d).ten_J as *const f64, 1, nv,
+                                ((*m).ten_J_rownnz as *const i32).add(i as usize),
+                                ((*m).ten_J_rowadr as *const i32).add(i as usize),
+                                (*m).ten_J_colind as *const i32);
+                            crate::engine::engine_util_blas::mju_scl(
+                                jac, jac as *const f64, -(side as f64), nv);
+                            mj_add_constraint(m, d, jac as *const f64,
+                                &dist as *const f64, &margin as *const f64, 0.0,
+                                1, mjCNSTR_LIMIT_TENDON, i, 0, std::ptr::null());
+                        }
+                        // set tendon_efcadr
+                        if *(*d).tendon_efcadr.add(i as usize) == -1 {
+                            *(*d).tendon_efcadr.add(i as usize) = efcadr;
+                        }
+                    }
+                }
+                side += 2;
+            }
+        }
+
+        if count_only == 0 {
+            crate::engine::engine_memory::mj_free_stack(d);
+        }
+
+        nl
+    }
 }
 
 /// C: getsolparam (engine/engine_core_constraint.c:1978)
@@ -715,7 +1095,38 @@ pub fn getimpedance(solimp: *const f64, pos: f64, margin: f64, imp: *mut f64, im
 /// Calls: mj_bodyChain, mj_freeStack, mj_markStack, mj_stackAllocInfo, mju_addChains, mju_copyInt
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_jac_sum_count(m: *const mjModel, d: *mut mjData, chain: *mut i32, n: i32, body: *const i32) -> i32 {
-    todo!() // mj_jacSumCount
+    // SAFETY: All pointers are valid arrays (caller contract). d is valid for stack alloc.
+    unsafe {
+        let nv = (*m).nv as i32;
+        let mut NV: i32;
+
+        crate::engine::engine_memory::mj_mark_stack(d);
+        let bodychain: *mut i32 = crate::engine::engine_memory::mj_stack_alloc_int(d, nv as usize);
+        let tempchain: *mut i32 = crate::engine::engine_memory::mj_stack_alloc_int(d, nv as usize);
+
+        // set first
+        NV = crate::engine::engine_core_util::mj_body_chain(m, *body.add(0), chain);
+
+        // accumulate remaining
+        for i in 1..n {
+            // get body chain
+            let bodyNV = crate::engine::engine_core_util::mj_body_chain(
+                m, *body.add(i as usize), bodychain);
+            if bodyNV == 0 {
+                continue;
+            }
+
+            // accumulate chains
+            NV = crate::engine::engine_util_sparse::mju_add_chains(
+                tempchain, nv, NV, bodyNV, chain as *const i32, bodychain as *const i32);
+            if NV != 0 {
+                crate::engine::engine_util_misc::mju_copy_int(chain, tempchain as *const i32, NV);
+            }
+        }
+
+        crate::engine::engine_memory::mj_free_stack(d);
+        NV
+    }
 }
 
 /// C: mj_ne (engine/engine_core_constraint.c:2303)

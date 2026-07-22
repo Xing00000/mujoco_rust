@@ -54,7 +54,21 @@ pub fn markstackinternal(d: *mut mjData, stack_info: *mut mjStackInfo) {
 /// Calls: mj_freeStack
 #[allow(unused_variables, non_snake_case)]
 pub fn freestackinternal(stack_info: *mut mjStackInfo) {
-    todo!() // freestackinternal
+    // SAFETY: stack_info is a valid pointer to mjStackInfo (caller contract).
+    // stack_base holds a pointer-as-usize to an mjStackFrame allocated on the stack.
+    unsafe {
+        if (*stack_info).stack_base == 0 {
+            return;
+        }
+
+        // mjStackFrame layout: { pbase: usize, pstack: usize, pc: *mut () }
+        // We only need pbase and pstack (first two fields).
+        let s = (*stack_info).stack_base as *const usize;
+
+        // restore pbase and pstack
+        (*stack_info).stack_base = *s;           // s->pbase
+        (*stack_info).top = *s.add(1);           // s->pstack
+    }
 }
 
 /// C: mj_arenaAllocByte (engine/engine_memory.h:35)

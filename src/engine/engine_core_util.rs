@@ -697,7 +697,87 @@ pub fn mj_jac_dif_pair(m: *const mjModel, d: *const mjData, chain: *mut i32, b1:
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_jac_sum(m: *const mjModel, d: *mut mjData, chain: *mut i32, n: i32, body: *const i32, weight: *const f64, point: *const f64, jac: *mut f64, flg_rot: i32) -> i32 {
-    todo!() // mj_jacSum
+    // SAFETY: All pointers are valid (caller contract). d is valid for stack alloc.
+    unsafe {
+        let nv = (*m).nv as i32;
+        let mut NV: i32;
+        let jacp: *mut f64 = jac;
+
+        crate::engine::engine_memory::mj_mark_stack(d);
+        let jtmp: *mut f64 = crate::engine::engine_memory::mj_stack_alloc_num(
+            d, (if flg_rot != 0 { 6 * nv } else { 3 * nv }) as usize);
+        let jp: *mut f64 = jtmp;
+
+        // sparse
+        if mj_is_sparse(m) != 0 {
+            let buf: *mut f64 = crate::engine::engine_memory::mj_stack_alloc_num(
+                d, (if flg_rot != 0 { 6 * nv } else { 3 * nv }) as usize);
+            let buf_ind: *mut i32 = crate::engine::engine_memory::mj_stack_alloc_int(d, nv as usize);
+            let bodychain: *mut i32 = crate::engine::engine_memory::mj_stack_alloc_int(d, nv as usize);
+
+            // set first
+            NV = mj_body_chain(m, *body.add(0), chain);
+            if NV != 0 {
+                // get Jacobian
+                let jacr: *mut f64 = if flg_rot != 0 { jac.add((3 * NV) as usize) } else { std::ptr::null_mut() };
+                if *(*m).body_simple.add(*body.add(0) as usize) != 0 {
+                    mj_jac_sparse_simple(m, d as *const mjData, jacp, jacr, point, *body.add(0), 1, NV, 0);
+                } else {
+                    mj_jac_sparse(m, d as *const mjData, jacp, jacr, point, *body.add(0), NV, chain as *const i32, 0);
+                }
+
+                // apply weight
+                crate::engine::engine_util_blas::mju_scl(
+                    jac, jac as *const f64, *weight.add(0),
+                    if flg_rot != 0 { 6 * NV } else { 3 * NV });
+            }
+
+            // accumulate remaining
+            for i in 1..n {
+                // get body chain and Jacobian
+                let bodyNV = mj_body_chain(m, *body.add(i as usize), bodychain);
+                if bodyNV == 0 {
+                    continue;
+                }
+                let jr: *mut f64 = if flg_rot != 0 { jtmp.add((3 * bodyNV) as usize) } else { std::ptr::null_mut() };
+                if *(*m).body_simple.add(*body.add(i as usize) as usize) != 0 {
+                    mj_jac_sparse_simple(m, d as *const mjData, jp, jr, point, *body.add(i as usize), 1, bodyNV, 0);
+                } else {
+                    mj_jac_sparse(m, d as *const mjData, jp, jr, point, *body.add(i as usize), bodyNV, bodychain as *const i32, 0);
+                }
+
+                // combine sparse matrices
+                NV = crate::engine::engine_util_sparse::mju_add_to_sparse_mat(
+                    jac, jtmp as *const f64, nv, if flg_rot != 0 { 6 } else { 3 },
+                    *weight.add(i as usize), NV, bodyNV,
+                    chain, bodychain as *const i32, buf, buf_ind);
+            }
+        }
+        // dense
+        else {
+            let jacr: *mut f64 = if flg_rot != 0 { jac.add((3 * nv) as usize) } else { std::ptr::null_mut() };
+            let jr: *mut f64 = if flg_rot != 0 { jtmp.add((3 * nv) as usize) } else { std::ptr::null_mut() };
+
+            // set first
+            mj_jac(m, d as *const mjData, jacp, jacr, point, *body.add(0));
+            crate::engine::engine_util_blas::mju_scl(
+                jac, jac as *const f64, *weight.add(0),
+                if flg_rot != 0 { 6 * nv } else { 3 * nv });
+
+            // accumulate remaining
+            for i in 1..n {
+                mj_jac(m, d as *const mjData, jp, jr, point, *body.add(i as usize));
+                crate::engine::engine_util_blas::mju_add_to_scl(
+                    jac, jtmp as *const f64, *weight.add(i as usize),
+                    if flg_rot != 0 { 6 * nv } else { 3 * nv });
+            }
+
+            NV = nv;
+        }
+
+        crate::engine::engine_memory::mj_free_stack(d);
+        NV
+    }
 }
 
 /// C: mj_jacDot (engine/engine_core_util.h:107)
