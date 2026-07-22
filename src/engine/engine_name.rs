@@ -177,7 +177,46 @@ pub fn mj_hash_string(s: *const i8, n: u64) -> u64 {
 /// Calls: _getnumadr, mj_hashString
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_name2id(m: *const mjModel, r#type: i32, name: *const i8) -> i32 {
-    todo!() // mj_name2id
+    const MJ_LOAD_MULTIPLE: i32 = 2;
+
+    // SAFETY: m is a valid mjModel pointer, name is a valid C string (caller contract).
+    unsafe {
+        let mut mapadr: i32 = 0;
+        let mut adr: *mut i32 = std::ptr::null_mut();
+
+        // get number of objects and name addresses
+        let num = MJ_LOAD_MULTIPLE * getnumadr(m, r#type as u32, &mut adr, &mut mapadr);
+
+        // search
+        if num != 0 {
+            let hash = mj_hash_string(name, num as u64);
+            let mut i = hash;
+
+            loop {
+                let j = *(*m).names_map.add((mapadr as u64 + i) as usize);
+                if j < 0 {
+                    return -1;
+                }
+
+                extern "C" { fn strncmp(s1: *const i8, s2: *const i8, n: usize) -> i32; }
+                if strncmp(
+                    name,
+                    (*m).names.add(*adr.add(j as usize) as usize),
+                    ((*m).nnames as i32 - *adr.add(j as usize)) as usize) == 0
+                {
+                    return j;
+                }
+                i += 1;
+                if i == num as u64 {
+                    i = 0;
+                }
+                if i == hash {
+                    break;
+                }
+            }
+        }
+        -1
+    }
 }
 
 /// C: mj_id2name (engine/engine_name.h:36)
