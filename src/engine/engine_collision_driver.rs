@@ -1573,7 +1573,190 @@ pub fn mj_is_elem_active(m: *const mjModel, f: i32, e: i32) -> i32 {
 /// Calls: add_pair, bfsort, canCollide, filterBodyPair, hasPlane, makeAAMM, mj_SAP, mj_freeStack, mj_markStack, mj_sleepState, mj_stackAllocInfo, mju_addTo3, mju_eig3, mju_message, mju_scl, mju_scl3, mju_zero, mju_zero3, updateCov
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_broadphase(m: *const mjModel, d: *mut mjData, bfpair: *mut i32, maxpair: i32) -> i32 {
-    todo!() // mj_broadphase
+    const mjDSBL_FILTERPARENT: i32 = 1 << 10;
+    const mjENBL_SLEEP: i32 = 1 << 4;
+    const mjS_ASLEEP: i32 = 0;
+    const mjS_AWAKE: i32 = 1;
+    const mjOBJ_FLEX: u32 = 9;
+
+    // SAFETY: m, d, bfpair are valid pointers (caller contract).
+    unsafe {
+        let mut npair: i32 = 0;
+        let nbody = (*m).nbody as i32;
+        let ngeom = (*m).ngeom as i32;
+        let nvert = (*m).nflexvert as i32;
+        let nflex = (*m).nflex as i32;
+        let nbodyflex = nbody + nflex;
+        let dsbl_filterparent = if ((*m).opt.disableflags & mjDSBL_FILTERPARENT) != 0 { 1 } else { 0 };
+        let sleep_filter = (((*m).opt.enableflags & mjENBL_SLEEP) != 0)
+            && ((*d).nbody_awake < nbody);
+        let mut cov: [f64; 9] = [0.0; 9];
+        let mut cen: [f64; 3] = [0.0; 3];
+        let mut eigval: [f64; 3] = [0.0; 3];
+        let mut frame: [f64; 9] = [0.0; 9];
+        let mut quat: [f64; 4] = [0.0; 4];
+
+        // init with pairs involving always-colliding bodies
+        for b1 in 0..nbody {
+            // cannot collide
+            if can_collide(m, b1) == 0 {
+                continue;
+            }
+
+            // b1 is world body with geoms, or world-welded body with plane
+            if (b1 == 0 && *(*m).body_geomnum.add(b1 as usize) > 0)
+                || (*(*m).body_weldid.add(b1 as usize) == 0 && has_plane(m, b1) != 0)
+            {
+                // add b1:b2 pairs that are not welded together
+                for b2 in 0..nbody {
+                    if can_collide(m, b2) == 0 {
+                        continue;
+                    }
+
+                    let weld2 = *(*m).body_weldid.add(b2 as usize);
+                    let parent_weld2 = *(*m).body_weldid.add(*(*m).body_parentid.add(weld2 as usize) as usize);
+                    let asleep2 = if sleep_filter { if *(*d).body_awake.add(b2 as usize) == mjS_ASLEEP { 1 } else { 0 } } else { 0 };
+                    if filter_body_pair(0, 0, 1, weld2, parent_weld2, asleep2, dsbl_filterparent) != 0 {
+                        continue;
+                    }
+
+                    add_pair(m, b1, b2, &mut npair as *mut i32, bfpair, maxpair);
+                }
+
+                // add body:flex pairs, skip if flex asleep
+                for f in 0..nflex {
+                    if sleep_filter && crate::engine::engine_sleep::mj_sleep_state(
+                        m, d as *const crate::types::mjData, mjOBJ_FLEX, f) == mjS_ASLEEP {
+                        continue;
+                    }
+                    add_pair(m, b1, nbody + f, &mut npair as *mut i32, bfpair, maxpair);
+                }
+            }
+        }
+
+        // find center of non-world geoms and flex vertices; return if none
+        let mut cnt: i32 = 0;
+        crate::engine::engine_util_blas::mju_zero3(cen.as_mut_ptr());
+        for i in 0..ngeom {
+            if *(*m).geom_bodyid.add(i as usize) != 0 {
+                crate::engine::engine_util_blas::mju_add_to3(cen.as_mut_ptr(), (*d).geom_xpos.add((3 * i) as usize));
+                cnt += 1;
+            }
+        }
+        for i in 0..nvert {
+            if *(*m).flex_vertbodyid.add(i as usize) != 0 {
+                crate::engine::engine_util_blas::mju_add_to3(cen.as_mut_ptr(), (*d).flexvert_xpos.add((3 * i) as usize));
+                cnt += 1;
+            }
+        }
+        if cnt == 0 {
+            return npair;
+        }
+        crate::engine::engine_util_blas::mju_scl3(cen.as_mut_ptr(), cen.as_ptr(), 1.0 / cnt as f64);
+
+        // compute covariance
+        crate::engine::engine_util_blas::mju_zero(cov.as_mut_ptr(), 9);
+        for i in 0..ngeom {
+            if *(*m).geom_bodyid.add(i as usize) != 0 {
+                update_cov(cov.as_mut_ptr(), (*d).geom_xpos.add((3 * i) as usize), cen.as_ptr());
+            }
+        }
+        for i in 0..nvert {
+            if *(*m).flex_vertbodyid.add(i as usize) != 0 {
+                update_cov(cov.as_mut_ptr(), (*d).flexvert_xpos.add((3 * i) as usize), cen.as_ptr());
+            }
+        }
+        crate::engine::engine_util_blas::mju_scl(cov.as_mut_ptr(), cov.as_ptr(), 1.0 / cnt as f64, 9);
+
+        // construct covariance-aligned 3D frame
+        crate::engine::engine_util_solve::mju_eig3(
+            eigval.as_mut_ptr(), frame.as_mut_ptr(), quat.as_mut_ptr(), cov.as_ptr());
+
+        // allocate collidable bodyflex ids, construct list
+        crate::engine::engine_memory::mj_mark_stack(d);
+        let bfid: *mut i32 = crate::engine::engine_memory::mj_stack_alloc_int(d, nbodyflex as usize);
+        let mut ncollide: i32 = 0;
+        for i in 1..nbodyflex {
+            if can_collide(m, i) != 0 {
+                *bfid.add(ncollide as usize) = i;
+                ncollide += 1;
+            }
+        }
+
+        if ncollide > 1 {
+            // allocate and construct AAMMs for collidable only
+            let aamm: *mut f64 = crate::engine::engine_memory::mj_stack_alloc_num(d, (6 * ncollide) as usize);
+            for i in 0..ncollide {
+                make_aamm(m, d,
+                    aamm.add((0 * ncollide + i) as usize),
+                    aamm.add((1 * ncollide + i) as usize),
+                    aamm.add((2 * ncollide + i) as usize),
+                    aamm.add((3 * ncollide + i) as usize),
+                    aamm.add((4 * ncollide + i) as usize),
+                    aamm.add((5 * ncollide + i) as usize),
+                    *bfid.add(i as usize), frame.as_ptr());
+            }
+
+            // call SAP
+            let maxsappair = ncollide * (ncollide - 1) / 2;
+            let sappair: *mut i32 = crate::engine::engine_memory::mj_stack_alloc_int(d, maxsappair as usize);
+            let nsappair = mj_sap(d, aamm as *const f64, ncollide, 0, sappair, maxsappair);
+            if nsappair < 0 {
+                crate::engine::engine_util_errmem::mju_error(
+                    b"SAP failed\0".as_ptr() as *const i8);
+            }
+
+            // filter SAP pairs, convert to bodyflex pairs
+            for i in 0..nsappair {
+                let bf1 = *bfid.add((*sappair.add(i as usize) >> 16) as usize);
+                let bf2 = *bfid.add((*sappair.add(i as usize) & 0xFFFF) as usize);
+
+                // body pair: prune based on sleep filter and weld filter
+                if bf1 < nbody && bf2 < nbody {
+                    let asleep1 = if sleep_filter { if *(*d).body_awake.add(bf1 as usize) == mjS_ASLEEP { 1 } else { 0 } } else { 0 };
+                    let asleep2 = if sleep_filter { if *(*d).body_awake.add(bf2 as usize) == mjS_ASLEEP { 1 } else { 0 } } else { 0 };
+                    let weld1 = *(*m).body_weldid.add(bf1 as usize);
+                    let weld2 = *(*m).body_weldid.add(bf2 as usize);
+                    let parent_weld1 = *(*m).body_weldid.add(*(*m).body_parentid.add(weld1 as usize) as usize);
+                    let parent_weld2 = *(*m).body_weldid.add(*(*m).body_parentid.add(weld2 as usize) as usize);
+
+                    if filter_body_pair(weld1, parent_weld1, asleep1,
+                                       weld2, parent_weld2, asleep2,
+                                       dsbl_filterparent) != 0 {
+                        continue;
+                    }
+                }
+                // flex pair: skip if neither side is dynamically awake
+                else if sleep_filter {
+                    let awake1 = if bf1 >= nbody {
+                        if crate::engine::engine_sleep::mj_sleep_state(m, d as *const crate::types::mjData, mjOBJ_FLEX, bf1 - nbody) == mjS_AWAKE { 1 } else { 0 }
+                    } else {
+                        if *(*d).body_awake.add(bf1 as usize) == mjS_AWAKE && *(*m).body_treeid.add(bf1 as usize) >= 0 { 1 } else { 0 }
+                    };
+                    let awake2 = if bf2 >= nbody {
+                        if crate::engine::engine_sleep::mj_sleep_state(m, d as *const crate::types::mjData, mjOBJ_FLEX, bf2 - nbody) == mjS_AWAKE { 1 } else { 0 }
+                    } else {
+                        if *(*d).body_awake.add(bf2 as usize) == mjS_AWAKE && *(*m).body_treeid.add(bf2 as usize) >= 0 { 1 } else { 0 }
+                    };
+                    if awake1 == 0 && awake2 == 0 {
+                        continue;
+                    }
+                }
+
+                // add bodyflex pair if there is room in buffer
+                add_pair(m, bf1, bf2, &mut npair as *mut i32, bfpair, maxpair);
+            }
+        }
+
+        // sort bodyflex pairs by signature
+        if npair > 1 {
+            let buf: *mut i32 = crate::engine::engine_memory::mj_stack_alloc_int(d, npair as usize);
+            bfsort(bfpair, buf, npair, std::ptr::null_mut());
+        }
+
+        crate::engine::engine_memory::mj_free_stack(d);
+        npair
+    }
 }
 
 /// C: mj_collideFlexSAP (engine/engine_collision_driver.h:51)

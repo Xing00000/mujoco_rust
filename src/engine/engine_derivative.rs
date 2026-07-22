@@ -1230,7 +1230,148 @@ pub fn mjd_smooth_vel(m: *const mjModel, d: *mut mjData, flg_bias: i32) {
 /// Calls: addJTBJSparse, mj_actuatorDisabled, mj_nextActivation, mj_sleepState, mjd_muscleGain_vel, mju_max
 #[allow(unused_variables, non_snake_case)]
 pub fn mjd_actuator_vel(m: *const mjModel, d: *mut mjData) {
-    todo!() // mjd_actuator_vel
+    const mjENBL_SLEEP: i32 = 1 << 4;
+    const mjDSBL_ACTUATION: i32 = 1 << 11;
+    const mjS_ASLEEP: i32 = 0;
+    const mjOBJ_ACTUATOR: u32 = 19;
+    const mjBIAS_AFFINE: i32 = 1;
+    const mjBIAS_DCMOTOR: i32 = 3;
+    const mjGAIN_AFFINE: i32 = 1;
+    const mjGAIN_MUSCLE: i32 = 2;
+    const mjGAIN_DCMOTOR: i32 = 3;
+    const mjDYN_NONE: i32 = 0;
+    const mjNDYN: i32 = 10;
+    const mjNGAIN: i32 = 10;
+    const mjNBIAS: i32 = 10;
+    const MJ_MINVAL: f64 = 1e-15;
+
+    // SAFETY: m, d are valid pointers (caller contract).
+    unsafe {
+        let nu = (*m).nu as i32;
+        let sleep_filter = (((*m).opt.enableflags & mjENBL_SLEEP) != 0)
+            && ((*d).ntree_awake < (*m).ntree as i32);
+
+        // disabled: nothing to add
+        if ((*m).opt.disableflags & mjDSBL_ACTUATION) != 0 {
+            return;
+        }
+
+        // process actuators
+        for i in 0..nu {
+            // skip if disabled
+            if crate::engine::engine_support::mj_actuator_disabled(m, i) != 0 {
+                continue;
+            }
+
+            // skip if sleeping
+            if sleep_filter && crate::engine::engine_sleep::mj_sleep_state(
+                m, d as *const crate::types::mjData, mjOBJ_ACTUATOR, i) == mjS_ASLEEP {
+                continue;
+            }
+
+            // skip if force is clamped by forcerange
+            if *(*m).actuator_forcelimited.add(i as usize) {
+                let force = *(*d).actuator_force.add(i as usize);
+                let range = (*m).actuator_forcerange.add((2 * i) as usize);
+                if force <= *range.add(0) || force >= *range.add(1) {
+                    continue;
+                }
+            }
+
+            let mut bias_vel: f64 = 0.0;
+            let mut gain_vel: f64 = 0.0;
+
+            // affine bias
+            if *(*m).actuator_biastype.add(i as usize) == mjBIAS_AFFINE {
+                bias_vel = *(*m).actuator_biasprm.add((mjNBIAS * i + 2) as usize);
+            }
+            // DC motor bias (back-EMF)
+            else if *(*m).actuator_biastype.add(i as usize) == mjBIAS_DCMOTOR {
+                let dynprm = (*m).actuator_dynprm.add((mjNDYN * i) as usize);
+                let gainprm = (*m).actuator_gainprm.add((mjNGAIN * i) as usize);
+                if *dynprm.add(0) <= 0.0 {
+                    let R = crate::engine::engine_util_misc::mju_max(MJ_MINVAL, *gainprm.add(0));
+                    let K = *gainprm.add(1);
+                    bias_vel -= K * K / R;
+                }
+            }
+
+            // affine gain
+            if *(*m).actuator_gaintype.add(i as usize) == mjGAIN_AFFINE {
+                gain_vel = *(*m).actuator_gainprm.add((mjNGAIN * i + 2) as usize);
+            }
+            // muscle gain
+            else if *(*m).actuator_gaintype.add(i as usize) == mjGAIN_MUSCLE {
+                gain_vel = mjd_muscle_gain_vel(
+                    *(*d).actuator_length.add(i as usize),
+                    *(*d).actuator_velocity.add(i as usize),
+                    (*m).actuator_lengthrange.add((2 * i) as usize),
+                    *(*m).actuator_acc0.add(i as usize),
+                    (*m).actuator_gainprm.add((mjNGAIN * i) as usize));
+            }
+            // DC motor controller damping and LuGre micro-damping
+            else if *(*m).actuator_gaintype.add(i as usize) == mjGAIN_DCMOTOR {
+                let dynprm = (*m).actuator_dynprm.add((mjNDYN * i) as usize);
+                let gainprm = (*m).actuator_gainprm.add((mjNGAIN * i) as usize);
+                let te = *dynprm.add(0);
+
+                // controller velocity derivative: dV/dω
+                let input_mode = *gainprm.add(8) as i32;
+                let mut dVdw: f64 = 0.0;
+                if input_mode == 1 { dVdw = -*gainprm.add(6); }       // position: -kd
+                else if input_mode == 2 { dVdw = -*gainprm.add(4); }   // velocity: -kp
+
+                if te > 0.0 {
+                    // stateful current with actearly
+                    let R = crate::engine::engine_util_misc::mju_max(MJ_MINVAL, *gainprm.add(0));
+                    let K = *gainprm.add(1);
+                    let s = 1.0 - (-(*m).opt.timestep / te).exp();
+                    bias_vel += K * (dVdw - K) * s / R;
+                } else if dVdw != 0.0 {
+                    // stateless: controller terms only
+                    let R = crate::engine::engine_util_misc::mju_max(MJ_MINVAL, *gainprm.add(0));
+                    let K = *gainprm.add(1);
+                    bias_vel += K * dVdw / R;
+                }
+
+                // LuGre: sigma1
+                let sigma1 = *dynprm.add(6);
+                if sigma1 > 0.0 {
+                    bias_vel -= sigma1;
+                }
+            }
+
+            // force = gain .* [ctrl/act]
+            if gain_vel != 0.0 {
+                if *(*m).actuator_dyntype.add(i as usize) == mjDYN_NONE {
+                    bias_vel += gain_vel * *(*d).ctrl.add(i as usize);
+                } else {
+                    let act_adr = *(*m).actuator_actadr.add(i as usize)
+                        + *(*m).actuator_actnum.add(i as usize) - 1;
+                    let mut act = *(*d).act.add(act_adr as usize);
+
+                    // use next activation if actearly is set
+                    if *(*m).actuator_actearly.add(i as usize) {
+                        act = crate::engine::engine_support::mj_next_activation(
+                            m, d as *const crate::types::mjData, i, act_adr,
+                            *(*d).act_dot.add(act_adr as usize));
+                    }
+
+                    bias_vel += gain_vel * act;
+                }
+            }
+
+            // add
+            if bias_vel != 0.0 {
+                add_jtbj_sparse(m, d,
+                    (*d).actuator_moment as *const f64,
+                    &bias_vel as *const f64, 1, i,
+                    (*d).moment_rownnz as *const i32,
+                    (*d).moment_rowadr as *const i32,
+                    (*d).moment_colind as *const i32);
+            }
+        }
+    }
 }
 
 /// C: mjd_passive_vel (engine/engine_derivative.h:41)
