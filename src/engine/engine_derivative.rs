@@ -548,7 +548,165 @@ pub fn mjd_com_vel_vel(m: *const mjModel, d: *mut mjData, Dcvel: *mut f64, Dcdof
 /// Calls: addToParent, copyFromParent, mj_freeStack, mj_markStack, mj_stackAllocInfo, mjd_comVel_vel, mjd_crossForce_frc, mjd_crossForce_vel, mjd_mulInertVec_vel, mju_addTo, mju_addToScl, mju_mulInertVec, mju_mulMatMat, mju_mulMatVec, mju_subFrom, mju_transpose, mju_zero
 #[allow(unused_variables, non_snake_case)]
 pub fn mjd_rne_vel(m: *const mjModel, d: *mut mjData) {
-    todo!() // mjd_rne_vel
+    const MJ_ENBL_SLEEP: i32 = 1 << 4;
+
+    // SAFETY: m, d are valid pointers (caller contract). All array accesses bounded by model dims.
+    unsafe {
+        let nM = (*m).nM as i32;
+        let mnv = (*m).nv as i32;
+        let sleep_filter = (((*m).opt.enableflags & MJ_ENBL_SLEEP) != 0)
+            && (*d).nbody_awake < (*m).nbody as i32;
+        let nbody = if sleep_filter { (*d).nbody_awake } else { (*m).nbody as i32 };
+        let nparent = if sleep_filter { (*d).nparent_awake } else { (*m).nbody as i32 };
+        let nv = if sleep_filter { (*d).nv_awake } else { mnv };
+
+        let Badr = (*m).B_rowadr;
+        let Dadr = (*m).D_rowadr;
+        let Bnnz = (*m).B_rownnz;
+
+        let mut mat: [f64; 36] = [0.0; 36];
+        let mut mat1: [f64; 36] = [0.0; 36];
+        let mut mat2: [f64; 36] = [0.0; 36];
+        let mut dmul: [f64; 36] = [0.0; 36];
+        let mut tmp: [f64; 6] = [0.0; 6];
+
+        crate::engine::engine_memory::mj_mark_stack(d);
+        let Dcdofdot = crate::engine::engine_memory::mj_stack_alloc_num(d, (6 * (*m).nD) as usize);
+        let Dcvel = crate::engine::engine_memory::mj_stack_alloc_num(d, (6 * (*m).nB) as usize);
+        let Dcacc = crate::engine::engine_memory::mj_stack_alloc_num(d, (6 * (*m).nB) as usize);
+        let Dcfrcbody = crate::engine::engine_memory::mj_stack_alloc_num(d, (6 * (*m).nB) as usize);
+        let row = crate::engine::engine_memory::mj_stack_alloc_num(d, mnv as usize);
+
+        // clear
+        if !sleep_filter {
+            crate::engine::engine_util_blas::mju_zero(Dcdofdot, (6 * (*m).nD) as i32);
+            crate::engine::engine_util_blas::mju_zero(Dcvel, (6 * (*m).nB) as i32);
+            crate::engine::engine_util_blas::mju_zero(Dcacc, (6 * (*m).nB) as i32);
+            crate::engine::engine_util_blas::mju_zero(Dcfrcbody, (6 * (*m).nB) as i32);
+        } else {
+            for i in 0..nv {
+                let dof = *(*d).dof_awake_ind.add(i as usize);
+                crate::engine::engine_util_blas::mju_zero(
+                    Dcdofdot.add((6 * *(*m).D_rowadr.add(dof as usize)) as usize),
+                    6 * *(*m).D_rownnz.add(dof as usize),
+                );
+            }
+            for i in 0..nbody {
+                let body = *(*d).body_awake_ind.add(i as usize);
+                let adr = 6 * *(*m).B_rowadr.add(body as usize);
+                let nnz = 6 * *(*m).B_rownnz.add(body as usize);
+                crate::engine::engine_util_blas::mju_zero(Dcvel.add(adr as usize), nnz);
+                crate::engine::engine_util_blas::mju_zero(Dcacc.add(adr as usize), nnz);
+                crate::engine::engine_util_blas::mju_zero(Dcfrcbody.add(adr as usize), nnz);
+            }
+        }
+
+        // compute Dcvel and Dcdofdot
+        mjd_com_vel_vel(m, d, Dcvel, Dcdofdot);
+
+        // forward pass over bodies: accumulate Dcacc, set Dcfrcbody
+        for b in 1..nbody {
+            let i = if sleep_filter { *(*d).body_awake_ind.add(b as usize) } else { b };
+
+            // Dcacc = Dcacc_parent
+            copy_from_parent(m, d, Dcacc, i);
+
+            // process all dofs of this body
+            let doflast = *(*m).body_dofadr.add(i as usize) + *(*m).body_dofnum.add(i as usize);
+            let mut j = *(*m).body_dofadr.add(i as usize);
+            while j < doflast {
+                // number of dof ancestors of dof j
+                let Jadr = (if j < mnv - 1 {
+                    *(*m).dof_Madr.add((j + 1) as usize)
+                } else {
+                    nM
+                }) - (*(*m).dof_Madr.add(j as usize) + 1);
+
+                // Dcacc += cdofdot * (D qvel)
+                crate::engine::engine_util_blas::mju_add_to(
+                    Dcacc.add((6 * (*Badr.add(i as usize) + Jadr)) as usize),
+                    (*d).cdof_dot.add((6 * j) as usize),
+                    6,
+                );
+
+                // Dcacc += (D cdofdot) * qvel
+                crate::engine::engine_util_blas::mju_add_to_scl(
+                    Dcacc.add((6 * *Badr.add(i as usize)) as usize),
+                    Dcdofdot.add((6 * *Dadr.add(j as usize)) as usize),
+                    *(*d).qvel.add(j as usize),
+                    6 * *Bnnz.add(i as usize),
+                );
+                j += 1;
+            }
+
+            // Dcfrcbody = D(cinert * cacc + cvel x (cinert * cvel))
+            // Dcfrcbody = (D mul / D cacc) * Dcacc
+            mjd_mul_inert_vec_vel(dmul.as_mut_ptr(), (*d).cinert.add((10 * i) as usize));
+            crate::engine::engine_util_blas::mju_transpose(mat1.as_mut_ptr(), dmul.as_mut_ptr(), 6, 6);
+            crate::engine::engine_util_blas::mju_mul_mat_mat(
+                Dcfrcbody.add((6 * *Badr.add(i as usize)) as usize),
+                Dcacc.add((6 * *Badr.add(i as usize)) as usize),
+                mat1.as_mut_ptr(),
+                *Bnnz.add(i as usize), 6, 6,
+            );
+
+            // mat = (D cross / D cvel) + (D cross / D mul) * (D mul / D cvel)
+            crate::engine::engine_util_spatial::mju_mul_inert_vec(
+                tmp.as_mut_ptr(), (*d).cinert.add((10 * i) as usize), (*d).cvel.add((i * 6) as usize),
+            );
+            mjd_cross_force_vel(mat.as_mut_ptr(), tmp.as_ptr());
+            mjd_cross_force_frc(mat1.as_mut_ptr(), (*d).cvel.add((i * 6) as usize));
+            crate::engine::engine_util_blas::mju_mul_mat_mat(
+                mat2.as_mut_ptr(), mat1.as_mut_ptr(), dmul.as_mut_ptr(), 6, 6, 6,
+            );
+            crate::engine::engine_util_blas::mju_add_to(mat.as_mut_ptr(), mat2.as_ptr(), 36);
+
+            // Dcfrcbody += mat * Dcvel  (use worldbody as temp)
+            crate::engine::engine_util_blas::mju_transpose(mat1.as_mut_ptr(), mat.as_mut_ptr(), 6, 6);
+            crate::engine::engine_util_blas::mju_mul_mat_mat(
+                Dcfrcbody,
+                Dcvel.add((6 * *Badr.add(i as usize)) as usize),
+                mat1.as_mut_ptr(),
+                *Bnnz.add(i as usize), 6, 6,
+            );
+            crate::engine::engine_util_blas::mju_add_to(
+                Dcfrcbody.add((6 * *Badr.add(i as usize)) as usize),
+                Dcfrcbody,
+                6 * *Bnnz.add(i as usize),
+            );
+        }
+
+        // clear worldbody Dcfrcbody
+        crate::engine::engine_util_blas::mju_zero(Dcfrcbody, 6 * *Bnnz.add(0));
+
+        // backward pass over bodies: accumulate Dcfrcbody
+        for b in (1..nparent).rev() {
+            let i = if sleep_filter { *(*d).parent_awake_ind.add(b as usize) } else { b };
+            add_to_parent(m, d, Dcfrcbody, i);
+        }
+
+        // process all dofs, update qDeriv
+        for v in 0..nv {
+            let j = if sleep_filter { *(*d).dof_awake_ind.add(v as usize) } else { v };
+
+            // get body index
+            let i = *(*m).dof_bodyid.add(j as usize);
+
+            // qDeriv -= D(cdof * cfrc_body)
+            crate::engine::engine_util_blas::mju_mul_mat_vec(
+                row, Dcfrcbody.add((6 * *Badr.add(i as usize)) as usize),
+                (*d).cdof.add((6 * j) as usize),
+                *Bnnz.add(i as usize), 6,
+            );
+            crate::engine::engine_util_blas::mju_sub_from(
+                (*d).qDeriv.add(*Dadr.add(j as usize) as usize),
+                row,
+                *Bnnz.add(i as usize),
+            );
+        }
+
+        crate::engine::engine_memory::mj_free_stack(d);
+    }
 }
 
 /// C: addJTBJ (engine/engine_derivative.c:711)
