@@ -123,7 +123,57 @@ pub fn set_spring(m: *mut mjModel, d: *mut mjData) {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn eval_act(m: *const mjModel, d: *mut mjData, index: i32, side: i32, opt: *const mjLROpt) -> f64 {
-    todo!() // evalAct
+    const MJMINVAL: f64 = 1e-15;
+
+    // SAFETY: m, d, opt are valid pointers (caller contract from pipeline)
+    unsafe {
+        let nv = (*m).nv as i32;
+
+        // reduce velocity
+        let timeconst = if 0.01_f64 > (*opt).timeconst { 0.01_f64 } else { (*opt).timeconst };
+        let scl = (-(*m).opt.timestep / timeconst).exp();
+        crate::engine::engine_util_blas::mju_scl((*d).qvel, (*d).qvel, scl, nv);
+
+        // step1: compute inertia and actuator moments
+        crate::engine::engine_forward::mj_step1(m, d);
+
+        // dense actuator_moment row
+        crate::engine::engine_memory::mj_mark_stack(d);
+        let moment = crate::engine::engine_memory::mj_stack_alloc_num(d, nv as usize);
+        crate::engine::engine_util_sparse::mju_sparse2dense(
+            moment, (*d).actuator_moment, 1, nv,
+            (*d).moment_rownnz.add(index as usize),
+            (*d).moment_rowadr.add(index as usize),
+            (*d).moment_colind,
+        );
+
+        // set force to generate desired acceleration
+        crate::engine::engine_core_smooth::mj_solve_m(m, d, (*d).qfrc_applied, moment, 1);
+        let nrm = crate::engine::engine_util_blas::mju_norm((*d).qfrc_applied, nv);
+        let denom = if MJMINVAL > nrm { MJMINVAL } else { nrm };
+        crate::engine::engine_util_blas::mju_scl(
+            (*d).qfrc_applied, moment,
+            (2 * side - 1) as f64 * (*opt).accel / denom, nv,
+        );
+
+        // impose maxforce
+        let nrm = crate::engine::engine_util_blas::mju_norm((*d).qfrc_applied, nv);
+        if (*opt).maxforce > 0.0 && nrm > (*opt).maxforce {
+            let denom = if MJMINVAL > nrm { MJMINVAL } else { nrm };
+            crate::engine::engine_util_blas::mju_scl(
+                (*d).qfrc_applied, (*d).qfrc_applied,
+                (*opt).maxforce / denom, nv,
+            );
+        }
+
+        // step2: apply force
+        crate::engine::engine_forward::mj_step2(m, d);
+
+        crate::engine::engine_memory::mj_free_stack(d);
+
+        // return actuator length
+        *(*d).actuator_length.add(index as usize)
+    }
 }
 
 /// C: mj_setConst (engine/engine_setconst.h:27)

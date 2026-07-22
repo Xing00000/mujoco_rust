@@ -1893,7 +1893,189 @@ pub fn make_hessian(d: *mut mjData, ctx: *mut mjPrimalContext) {
 /// Calls: mju_addToScl, mju_cholFactor, mju_cholUpdate, mju_cholUpdateSparse, mju_copy, mju_zero
 #[allow(unused_variables, non_snake_case)]
 pub fn hessian_cone(d: *mut mjData, ctx: *mut mjPrimalContext) {
-    todo!() // HessianCone
+    const MJMINVAL: f64 = 1e-15;
+    const MJ_CNSTRSTATE_CONE: i32 = 4;
+
+    #[repr(C)]
+    #[allow(non_snake_case, dead_code)]
+    struct PrimalCtx {
+        is_sparse: i32,
+        is_elliptic: i32,
+        island: i32,
+        nv: i32,
+        ne: i32,
+        nf: i32,
+        nefc: i32,
+        nJ: i32,
+        contact: *mut mjContact,
+        qfrc_smooth: *const f64,
+        qacc_smooth: *const f64,
+        qfrc_constraint: *mut f64,
+        qacc: *mut f64,
+        M_rownnz: *mut i32,
+        M_rowadr: *mut i32,
+        M_colind: *mut i32,
+        M: *mut f64,
+        qLD: *mut f64,
+        qLDiagInv: *mut f64,
+        efc_D: *const f64,
+        efc_R: *const f64,
+        efc_frictionloss: *const f64,
+        efc_aref: *const f64,
+        efc_id: *const i32,
+        efc_type: *const i32,
+        efc_force: *mut f64,
+        efc_state: *mut i32,
+        J_rownnz: *mut i32,
+        J_rowadr: *mut i32,
+        J_rowsuper: *mut i32,
+        J_colind: *mut i32,
+        J: *mut f64,
+        JT_rownnz: *mut i32,
+        JT_rowadr: *mut i32,
+        JT_rowsuper: *mut i32,
+        JT_colind: *mut i32,
+        JT: *mut f64,
+        Jaref: *mut f64,
+        D: *mut f64,
+        Jv: *mut f64,
+        Ma: *mut f64,
+        Mv: *mut f64,
+        grad: *mut f64,
+        Mgrad: *mut f64,
+        search: *mut f64,
+        quad: *mut f64,
+        oldstate: *mut i32,
+        gradold: *mut f64,
+        Mgradold: *mut f64,
+        graddif: *mut f64,
+        Mgraddif: *mut f64,
+        D_newton: *mut f64,
+        cholupd: *mut f64,
+        LTJ: *mut f64,
+        H_rowadr: *mut i32,
+        H_rownnz: *mut i32,
+        HT_rownnz: *mut i32,
+        HT_rowadr: *mut i32,
+        L_rownnz: *mut i32,
+        L_rowadr: *mut i32,
+        LT_rownnz: *mut i32,
+        LT_rowadr: *mut i32,
+        nH: i32,
+        _pad0: i32,
+        H_colind: *mut i32,
+        HT_colind: *mut i32,
+        H: *mut f64,
+        nL: i32,
+        _pad1: i32,
+        L_colind: *mut i32,
+        LT_colind: *mut i32,
+        LT_map: *mut i32,
+        L: *mut f64,
+        Lcone: *mut f64,
+        cost: f64,
+        quadGauss: [f64; 3],
+        scale: f64,
+        nactive: i32,
+        ncone: i32,
+        nupdate: i32,
+        LSiter: i32,
+        LSresult: i32,
+        _pad2: i32,
+        LSslope: f64,
+    }
+
+    // SAFETY: ctx is a valid mjPrimalContext with the layout of PrimalCtx (caller contract)
+    unsafe {
+        let c = ctx as *mut PrimalCtx;
+        let nv = (*c).nv;
+        let nefc = (*c).nefc;
+        let LTJ = (*c).LTJ;
+        let mut local: [f64; 36] = [0.0; 36];
+
+        // start with Lcone = L
+        crate::engine::engine_util_blas::mju_copy((*c).Lcone, (*c).L, (*c).nL);
+
+        // add contributions
+        let mut i = 0;
+        while i < nefc {
+            if *(*c).efc_state.add(i as usize) == MJ_CNSTRSTATE_CONE {
+                let con = (*c).contact.add(*(*c).efc_id.add(i as usize) as usize);
+                let dim = (*con).dim;
+
+                // Cholesky of local Hessian
+                crate::engine::engine_util_blas::mju_copy(
+                    local.as_mut_ptr(), (*con).H.as_ptr(), dim * dim,
+                );
+                crate::engine::engine_util_solve::mju_chol_factor(
+                    local.as_mut_ptr(), dim, MJMINVAL,
+                );
+
+                // sparse
+                if (*c).is_sparse != 0 {
+                    // get nnz for row i (same for all rows in contact)
+                    let nnz = *(*c).J_rownnz.add(i as usize);
+
+                    // compute LTJ = L'*J for this contact
+                    crate::engine::engine_util_blas::mju_zero(LTJ, dim * nnz);
+                    for r in 0..dim {
+                        for cc in 0..=r {
+                            // SAFETY: J_rowadr[i+r] gives valid offset into J array
+                            crate::engine::engine_util_blas::mju_add_to_scl(
+                                LTJ.add((cc * nnz) as usize),
+                                (*c).J.add(*(*c).J_rowadr.add((i + r) as usize) as usize),
+                                local[(r * dim + cc) as usize],
+                                nnz,
+                            );
+                        }
+                    }
+
+                    // update
+                    for r in 0..dim {
+                        crate::engine::engine_util_solve::mju_chol_update_sparse(
+                            (*c).Lcone,
+                            LTJ.add((r * nnz) as usize),
+                            nv, 1,
+                            (*c).L_rownnz, (*c).L_rowadr, (*c).L_colind,
+                            nnz,
+                            (*c).J_colind.add(*(*c).J_rowadr.add((i + r) as usize) as usize),
+                            d,
+                        );
+                    }
+                } else {
+                    // dense: compute LTJ = L'*J for this contact row
+                    crate::engine::engine_util_blas::mju_zero(LTJ, dim * nv);
+                    for r in 0..dim {
+                        for cc in 0..=r {
+                            // SAFETY: J is nefc*nv dense, row (i+r) is valid
+                            crate::engine::engine_util_blas::mju_add_to_scl(
+                                LTJ.add((cc * nv) as usize),
+                                (*c).J.add(((i + r) * nv) as usize),
+                                local[(r * dim + cc) as usize],
+                                nv,
+                            );
+                        }
+                    }
+
+                    // update
+                    for r in 0..dim {
+                        crate::engine::engine_util_solve::mju_chol_update(
+                            (*c).Lcone,
+                            LTJ.add((r * nv) as usize),
+                            nv, 1,
+                        );
+                    }
+                }
+
+                // count updates
+                (*c).nupdate += dim;
+
+                // advance to next constraint
+                i += dim - 1;
+            }
+            i += 1;
+        }
+    }
 }
 
 /// C: FactorizeHessian (engine/engine_solver.c:2102)
