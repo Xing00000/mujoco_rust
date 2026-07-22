@@ -1814,7 +1814,33 @@ pub fn mjd_quat_integrate(vel: *const f64, scale: f64, Dquat: *mut f64, Dvel: *m
 /// Calls: mjd_actuator_vel, mjd_passive_vel, mjd_rne_vel, mju_zero, mju_zeroSparse
 #[allow(unused_variables, non_snake_case)]
 pub fn mjd_smooth_vel(m: *const mjModel, d: *mut mjData, flg_bias: i32) {
-    todo!() // mjd_smooth_vel
+    const MJ_ENBL_SLEEP: i32 = 1 << 4;
+
+    // SAFETY: m, d are valid pointers (caller contract)
+    unsafe {
+        let sleep_filter = (((*m).opt.enableflags & MJ_ENBL_SLEEP) != 0)
+            && ((*d).nv_awake < (*m).nv as i32);
+
+        // clear qDeriv
+        if !sleep_filter {
+            crate::engine::engine_util_blas::mju_zero((*d).qDeriv, (*m).nD as i32);
+        } else {
+            crate::engine::engine_util_sparse::mju_zero_sparse(
+                (*d).qDeriv, (*m).D_rownnz, (*m).D_rowadr, (*d).dof_awake_ind, (*d).nv_awake,
+            );
+        }
+
+        // qDeriv += d qfrc_actuator / d qvel
+        mjd_actuator_vel(m, d);
+
+        // qDeriv += d qfrc_passive / d qvel
+        mjd_passive_vel(m, d);
+
+        // qDeriv -= d qfrc_bias / d qvel; optional
+        if flg_bias != 0 {
+            mjd_rne_vel(m, d);
+        }
+    }
 }
 
 /// C: mjd_actuator_vel (engine/engine_derivative.h:38)
