@@ -550,7 +550,223 @@ pub fn sol_pgs(m: *const mjModel, d: *mut mjData, island: i32, ne: i32, nf: i32,
 /// Calls: ARdiaginv, costChange, dualState, dualStateChange, extractBlock, mj_freeStack, mj_markStack, mj_stackAllocInfo, mju_copy, mju_dot, mju_zero, residual, saveStats, solveQCQP
 #[allow(unused_variables, non_snake_case)]
 pub fn sol_no_slip(m: *const mjModel, d: *mut mjData, island: i32, ne: i32, nf: i32, nefc: i32, efclist: *const i32, maxiter: i32) {
-    todo!() // solNoSlip
+    const MJMINVAL: f64 = 1e-15;
+    const MJ_CNSTR_CONTACT_PYRAMIDAL: i32 = 6;
+    const MJ_CNSTR_CONTACT_ELLIPTIC: i32 = 7;
+    const MJ_NISLAND: i32 = 20;
+
+    // SAFETY: m, d are valid pointers (caller contract). efclist may be NULL.
+    unsafe {
+        let floss = (*d).efc_frictionloss;
+        let force = (*d).efc_force;
+
+        crate::engine::engine_memory::mj_mark_stack(d);
+        let ARinv = crate::engine::engine_memory::mj_stack_alloc_num(d, nefc as usize);
+        let oldstate = crate::engine::engine_memory::mj_stack_alloc_int(d, nefc as usize);
+
+        let island_stat = if 0 > island { 0 } else { island };
+        let nv_val = (*m).nv as i32;
+        let scale = 1.0 / ((*m).stat.meaninertia * (if 1 > nv_val { 1 } else { nv_val }) as f64);
+
+        // precompute inverse diagonal of A
+        a_rdiaginv(m, d as *const mjData, ARinv, nefc, efclist, 1);
+
+        // initial constraint state
+        dual_state(d as *const mjData, (*d).efc_state, ne, nf, nefc, efclist);
+
+        let mut iter = 0;
+        while iter < maxiter {
+            let mut improvement: f64 = 0.0;
+
+            // correct for cost change at iter 0
+            if iter == 0 {
+                for c in 0..nefc {
+                    let i = if !efclist.is_null() { *efclist.add(c as usize) } else { c };
+                    improvement += 0.5 * *force.add(i as usize) * *force.add(i as usize)
+                        * *(*d).efc_R.add(i as usize);
+                }
+            }
+
+            // perform one sweep: dry friction
+            for c in ne..(ne + nf) {
+                let i = if !efclist.is_null() { *efclist.add(c as usize) } else { c };
+
+                // compute residual, save old
+                let mut res: [f64; 5] = [0.0; 5];
+                residual(m, d as *const mjData, res.as_mut_ptr(), i, 1, 1);
+                let oldforce_val = *force.add(i as usize);
+
+                // unconstrained minimum
+                *force.add(i as usize) -= res[0] * *ARinv.add(c as usize);
+
+                // impose interval constraints
+                if *force.add(i as usize) < -*floss.add(i as usize) {
+                    *force.add(i as usize) = -*floss.add(i as usize);
+                } else if *force.add(i as usize) > *floss.add(i as usize) {
+                    *force.add(i as usize) = *floss.add(i as usize);
+                }
+
+                // add to improvement
+                let delta_val = *force.add(i as usize) - oldforce_val;
+                improvement -= 0.5 * delta_val * delta_val / *ARinv.add(c as usize)
+                    + delta_val * res[0];
+            }
+
+            // perform one sweep: contact friction
+            let mut c = ne + nf;
+            while c < nefc {
+                let i = if !efclist.is_null() { *efclist.add(c as usize) } else { c };
+
+                // pyramidal contact
+                if *(*d).efc_type.add(i as usize) == MJ_CNSTR_CONTACT_PYRAMIDAL {
+                    let con = (*d).contact.add(*(*d).efc_id.add(i as usize) as usize);
+                    let dim = (*con).dim;
+                    let mu = (*con).friction.as_ptr();
+
+                    // loop over pairs of opposing pyramid edges
+                    let mut j = i;
+                    while j < i + 2 * (dim - 1) {
+                        // compute residual, save old
+                        let mut res: [f64; 5] = [0.0; 5];
+                        residual(m, d as *const mjData, res.as_mut_ptr(), j, 2, 1);
+                        let mut oldforce: [f64; 5] = [0.0; 5];
+                        crate::engine::engine_util_blas::mju_copy(
+                            oldforce.as_mut_ptr(), force.add(j as usize), 2,
+                        );
+
+                        // Ac = AR-submatrix
+                        let mut Ac: [f64; 25] = [0.0; 25];
+                        extract_block(m, d as *const mjData, Ac.as_mut_ptr(), j, 2, 1);
+
+                        // bc = b-subvector + Ac,rest * f_rest
+                        let mut bc: [f64; 5] = [0.0; 5];
+                        crate::engine::engine_util_blas::mju_copy(bc.as_mut_ptr(), res.as_ptr(), 2);
+                        for k in 0..2 {
+                            bc[k as usize] -= crate::engine::engine_util_blas::mju_dot(
+                                Ac.as_ptr().add((k * 2) as usize),
+                                oldforce.as_ptr(), 2,
+                            );
+                        }
+
+                        // f0 = mid+y, f1 = mid-y
+                        let mid = 0.5 * (*force.add(j as usize) + *force.add((j + 1) as usize));
+                        let mut y = 0.5 * (*force.add(j as usize) - *force.add((j + 1) as usize));
+
+                        // K1 = A00 + A11 - 2*A01, K0 = mid*A00 - mid*A11 + b0 - b1
+                        let K1 = Ac[0] + Ac[3] - Ac[1] - Ac[2];
+                        let K0 = mid * (Ac[0] - Ac[3]) + bc[0] - bc[1];
+
+                        // guard against Ac==0
+                        if K1 < MJMINVAL {
+                            *force.add(j as usize) = mid;
+                            *force.add((j + 1) as usize) = mid;
+                        } else {
+                            // unconstrained minimum
+                            y = -K0 / K1;
+
+                            // clamp and assign
+                            if y < -mid {
+                                *force.add(j as usize) = 0.0;
+                                *force.add((j + 1) as usize) = 2.0 * mid;
+                            } else if y > mid {
+                                *force.add(j as usize) = 2.0 * mid;
+                                *force.add((j + 1) as usize) = 0.0;
+                            } else {
+                                *force.add(j as usize) = mid + y;
+                                *force.add((j + 1) as usize) = mid - y;
+                            }
+                        }
+
+                        // accumulate improvement
+                        improvement -= cost_change(
+                            Ac.as_ptr(), force.add(j as usize), oldforce.as_ptr(), res.as_ptr(), 2,
+                        );
+
+                        j += 2;
+                    }
+
+                    // skip the rest of this contact
+                    c += 2 * (dim - 1) - 1;
+                }
+                // elliptic contact
+                else if *(*d).efc_type.add(i as usize) == MJ_CNSTR_CONTACT_ELLIPTIC {
+                    let con = (*d).contact.add(*(*d).efc_id.add(i as usize) as usize);
+                    let dim = (*con).dim;
+                    let mu = (*con).friction.as_ptr();
+
+                    // compute residual, save old
+                    let mut res: [f64; 5] = [0.0; 5];
+                    residual(m, d as *const mjData, res.as_mut_ptr(), i + 1, dim - 1, 1);
+                    let mut oldforce: [f64; 5] = [0.0; 5];
+                    crate::engine::engine_util_blas::mju_copy(
+                        oldforce.as_mut_ptr(), force.add((i + 1) as usize), dim - 1,
+                    );
+
+                    // Ac = AR-submatrix
+                    let mut Ac: [f64; 25] = [0.0; 25];
+                    extract_block(m, d as *const mjData, Ac.as_mut_ptr(), i + 1, dim - 1, 1);
+
+                    // bc = b-subvector + Ac,rest * f_rest
+                    let mut bc: [f64; 5] = [0.0; 5];
+                    crate::engine::engine_util_blas::mju_copy(bc.as_mut_ptr(), res.as_ptr(), dim - 1);
+                    for jj in 0..(dim - 1) {
+                        bc[jj as usize] -= crate::engine::engine_util_blas::mju_dot(
+                            Ac.as_ptr().add((jj * (dim - 1)) as usize),
+                            oldforce.as_ptr(), dim - 1,
+                        );
+                    }
+
+                    // guard for f_normal==0
+                    if *force.add(i as usize) < MJMINVAL {
+                        crate::engine::engine_util_blas::mju_zero(
+                            force.add((i + 1) as usize), dim - 1,
+                        );
+                    } else {
+                        // QCQP
+                        solve_qcqp(force, i, dim, Ac.as_mut_ptr(), bc.as_mut_ptr(), mu);
+                    }
+
+                    // accumulate improvement
+                    improvement -= cost_change(
+                        Ac.as_ptr(), force.add((i + 1) as usize), oldforce.as_ptr(), res.as_ptr(), dim - 1,
+                    );
+
+                    // skip the rest of this contact
+                    c += dim - 1;
+                }
+                c += 1;
+            }
+
+            // update constraint state
+            let mut nchange: i32 = 0;
+            let nactive = dual_state_change(
+                d as *const mjData, (*d).efc_state, oldstate, ne, nf, nefc, efclist, &mut nchange,
+            );
+
+            // scale improvement, save stats
+            improvement *= scale;
+
+            // save noslip stats
+            if island_stat < MJ_NISLAND {
+                let stats_iter = iter + (*d).solver_niter[island_stat as usize];
+                save_stats(m, d, island_stat, stats_iter, improvement, 0.0, 0.0, nactive, nchange, 0, 0);
+            }
+
+            iter += 1;
+
+            // terminate
+            if improvement < (*m).opt.noslip_tolerance {
+                break;
+            }
+        }
+
+        // update solver iterations
+        if island_stat < MJ_NISLAND {
+            (*d).solver_niter[island_stat as usize] += iter;
+        }
+
+        crate::engine::engine_memory::mj_free_stack(d);
+    }
 }
 
 /// C: PrimalPointers (engine/engine_solver.c:1087)
