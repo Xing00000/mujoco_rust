@@ -543,7 +543,307 @@ pub fn project_cone(force: *mut f64, mu: *const f64, dim: i32, r#type: i32) {
 /// Calls: ARdiaginv, costChange, dualState, dualStateChange, extractBlock, mj_freeStack, mj_isSparse, mj_markStack, mj_stackAllocInfo, mju_clip, mju_copy, mju_dot, mju_gather, mju_mulMatVec, mju_zero, pcg32_next, projectCone, residual, saveStats, shuffle_int, solveQCQP
 #[allow(unused_variables, non_snake_case)]
 pub fn sol_pgs(m: *const mjModel, d: *mut mjData, island: i32, ne: i32, nf: i32, nefc: i32, efclist: *const i32, maxiter: i32) {
-    todo!() // solPGS
+    const MJMINVAL: f64 = 1e-15;
+    const MJ_CNSTR_CONTACT_ELLIPTIC: i32 = 7;
+    const MJ_NISLAND: i32 = 20;
+
+    // SAFETY: m, d are valid pointers (caller contract). efclist may be NULL.
+    unsafe {
+        let floss = (*d).efc_frictionloss;
+        let force = (*d).efc_force;
+
+        crate::engine::engine_memory::mj_mark_stack(d);
+        let ARinv = crate::engine::engine_memory::mj_stack_alloc_num(d, nefc as usize);
+        let oldstate_mem = crate::engine::engine_memory::mj_stack_alloc_int(d, (2 * nefc) as usize);
+        let blockstart = oldstate_mem.add(nefc as usize);
+
+        // Nesterov momentum
+        let nesterov: i32 = {
+            let lock = crate::types::MJ_NESTEROV_MOMENTUM.lock().unwrap();
+            i32::from_ne_bytes(*lock)
+        };
+        let mut force_prev: *mut f64 = std::ptr::null_mut();
+        let mut force_momentum: *mut f64 = std::ptr::null_mut();
+        if nesterov != 0 {
+            force_prev = crate::engine::engine_memory::mj_stack_alloc_num(d, nefc as usize);
+            force_momentum = crate::engine::engine_memory::mj_stack_alloc_num(d, nefc as usize);
+            crate::engine::engine_util_misc::mju_gather(force_prev, force, efclist, nefc);
+        }
+
+        let island_stat = if 0 > island { 0 } else { island };
+        let nv_val = (*m).nv as i32;
+        let scale: f64 = 1.0 / ((*m).stat.meaninertia * (if 1 > nv_val { 1 } else { nv_val }) as f64);
+
+        // precompute inverse diagonal of AR
+        a_rdiaginv(m, d as *const mjData, ARinv, nefc, efclist, 0);
+
+        // initial constraint state
+        dual_state(d as *const mjData, (*d).efc_state, ne, nf, nefc, efclist);
+
+        // build block-index array: one entry per constraint block
+        let mut nblocks: i32 = 0;
+        let mut c = 0;
+        while c < nefc {
+            *blockstart.add(nblocks as usize) = c;
+            nblocks += 1;
+            let i = if !efclist.is_null() { *efclist.add(c as usize) } else { c };
+            if *(*d).efc_type.add(i as usize) == MJ_CNSTR_CONTACT_ELLIPTIC {
+                c += (*(*d).contact.add(*(*d).efc_id.add(i as usize) as usize)).dim;
+            } else {
+                c += 1;
+            }
+        }
+
+        // seed PCG32 RNG with a fixed seed (16 bytes: state=u64, inc=u64)
+        let mut rng_data: [u64; 2] = [0, 1];
+        let rng = rng_data.as_mut_ptr() as *mut pcg32_state;
+        pcg32_next(rng);
+
+        // main iteration
+        let mut iter = 0;
+        let mut nesterov_k: i32 = 0;
+        while iter < maxiter {
+            // Nesterov momentum extrapolation
+            if nesterov != 0 {
+                let mut beta: f64 = 0.0;
+                if iter > 0 {
+                    beta = (nesterov_k - 1) as f64 / (nesterov_k + 2) as f64;
+                }
+
+                if beta > 0.0 {
+                    for c in 0..nefc {
+                        let i = if !efclist.is_null() { *efclist.add(c as usize) } else { c };
+                        let f_save = *force.add(i as usize);
+                        *force.add(i as usize) += beta * (*force.add(i as usize) - *force_prev.add(c as usize));
+                        *force_prev.add(c as usize) = f_save;
+                    }
+
+                    // friction loss: project onto bounds
+                    for c in ne..(ne + nf) {
+                        let i = if !efclist.is_null() { *efclist.add(c as usize) } else { c };
+                        *force.add(i as usize) = crate::engine::engine_util_misc::mju_clip(
+                            *force.add(i as usize), -*floss.add(i as usize), *floss.add(i as usize),
+                        );
+                    }
+
+                    // contact force: project onto friction cone
+                    let mut c = ne + nf;
+                    while c < nefc {
+                        let i = if !efclist.is_null() { *efclist.add(c as usize) } else { c };
+                        let mut dim = 1;
+                        let typ = *(*d).efc_type.add(i as usize);
+                        let mut mu: *const f64 = std::ptr::null();
+
+                        if typ == MJ_CNSTR_CONTACT_ELLIPTIC {
+                            dim = (*(*d).contact.add(*(*d).efc_id.add(i as usize) as usize)).dim;
+                            mu = (*(*d).contact.add(*(*d).efc_id.add(i as usize) as usize)).friction.as_ptr();
+                        }
+
+                        project_cone(force.add(i as usize), mu, dim, typ);
+                        c += dim;
+                    }
+                } else {
+                    // iter == 0 or beta <= 0: just save current force
+                    crate::engine::engine_util_misc::mju_gather(force_prev, force, efclist, nefc);
+                }
+
+                // save extrapolated point for gradient restart check
+                crate::engine::engine_util_misc::mju_gather(force_momentum, force, efclist, nefc);
+            }
+
+            // clear improvement
+            let mut improvement: f64 = 0.0;
+
+            // shuffle constraint visitation order
+            shuffle_int(blockstart, nblocks, rng);
+
+            // perform one sweep over constraint blocks
+            for bi in 0..nblocks {
+                let c = *blockstart.add(bi as usize);
+                let i = if !efclist.is_null() { *efclist.add(c as usize) } else { c };
+
+                // get constraint dimensionality
+                let dim: i32;
+                if *(*d).efc_type.add(i as usize) == MJ_CNSTR_CONTACT_ELLIPTIC {
+                    dim = (*(*d).contact.add(*(*d).efc_id.add(i as usize) as usize)).dim;
+                } else {
+                    dim = 1;
+                }
+
+                // compute residual for this constraint
+                let mut res: [f64; 6] = [0.0; 6];
+                residual(m, d as *const mjData, res.as_mut_ptr(), i, dim, 0);
+
+                // save old force
+                let mut oldforce: [f64; 6] = [0.0; 6];
+                crate::engine::engine_util_blas::mju_copy(oldforce.as_mut_ptr(), force.add(i as usize), dim);
+
+                // allocate AR submatrix
+                let mut Athis: [f64; 36] = [0.0; 36];
+
+                // simple constraint
+                if *(*d).efc_type.add(i as usize) != MJ_CNSTR_CONTACT_ELLIPTIC {
+                    // unconstrained minimum
+                    *force.add(i as usize) -= res[0] * *ARinv.add(c as usize);
+
+                    // impose interval and inequality constraints
+                    if c >= ne && c < ne + nf {
+                        if *force.add(i as usize) < -*floss.add(i as usize) {
+                            *force.add(i as usize) = -*floss.add(i as usize);
+                        } else if *force.add(i as usize) > *floss.add(i as usize) {
+                            *force.add(i as usize) = *floss.add(i as usize);
+                        }
+                    } else if c >= ne + nf {
+                        if *force.add(i as usize) < 0.0 {
+                            *force.add(i as usize) = 0.0;
+                        }
+                    }
+                }
+                // elliptic cone constraint
+                else {
+                    let mu = (*(*d).contact.add(*(*d).efc_id.add(i as usize) as usize)).friction.as_mut_ptr();
+
+                    // Athis = AR(this,this)
+                    extract_block(m, d as *const mjData, Athis.as_mut_ptr(), i, dim, 0);
+
+                    // normal force too small: normal update
+                    if *force.add(i as usize) < MJMINVAL {
+                        // unconstrained minimum
+                        *force.add(i as usize) -= res[0] * *ARinv.add(c as usize);
+
+                        // clamp
+                        if *force.add(i as usize) < 0.0 {
+                            *force.add(i as usize) = 0.0;
+                        }
+
+                        // clear friction
+                        crate::engine::engine_util_blas::mju_zero(force.add(i as usize + 1), dim - 1);
+                    }
+                    // ray update
+                    else {
+                        // v = ray
+                        let mut v: [f64; 6] = [0.0; 6];
+                        crate::engine::engine_util_blas::mju_copy(v.as_mut_ptr(), force.add(i as usize), dim);
+
+                        // denom = v' * AR(this,this) * v
+                        let mut v1: [f64; 6] = [0.0; 6];
+                        crate::engine::engine_util_blas::mju_mul_mat_vec(
+                            v1.as_mut_ptr(), Athis.as_ptr(), v.as_ptr(), dim, dim,
+                        );
+                        let denom = crate::engine::engine_util_blas::mju_dot(v.as_ptr(), v1.as_ptr(), dim);
+
+                        // avoid division by 0
+                        if denom >= MJMINVAL {
+                            // x = v' * res / denom
+                            let mut x = -crate::engine::engine_util_blas::mju_dot(v.as_ptr(), res.as_ptr(), dim) / denom;
+
+                            // make sure normal is non-negative
+                            if *force.add(i as usize) + x * v[0] < 0.0 {
+                                x = -v[0] / *force.add(i as usize);
+                            }
+
+                            // add x*v to f
+                            for j in 0..dim {
+                                *force.add((i + j) as usize) += x * v[j as usize];
+                            }
+                        }
+                    }
+
+                    // friction update, keep normal fixed
+                    let mut bc: [f64; 5] = [0.0; 5];
+                    let mut Ac: [f64; 25] = [0.0; 25];
+                    crate::engine::engine_util_blas::mju_copy(bc.as_mut_ptr(), res.as_ptr().add(1), dim - 1);
+                    for j in 0..(dim - 1) {
+                        crate::engine::engine_util_blas::mju_copy(
+                            Ac.as_mut_ptr().add((j * (dim - 1)) as usize),
+                            Athis.as_ptr().add(((j + 1) * dim + 1) as usize),
+                            dim - 1,
+                        );
+                        bc[j as usize] -= crate::engine::engine_util_blas::mju_dot(
+                            Ac.as_ptr().add((j * (dim - 1)) as usize),
+                            oldforce.as_ptr().add(1),
+                            dim - 1,
+                        );
+                        bc[j as usize] += *Athis.as_ptr().add(((j + 1) * dim) as usize)
+                            * (*force.add(i as usize) - oldforce[0]);
+                    }
+
+                    // guard for f_normal==0
+                    if *force.add(i as usize) < MJMINVAL {
+                        crate::engine::engine_util_blas::mju_zero(force.add(i as usize + 1), dim - 1);
+                    }
+                    // QCQP
+                    else {
+                        solve_qcqp(force, i, dim, Ac.as_mut_ptr(), bc.as_mut_ptr(), mu);
+                    }
+                }
+
+                // accumulate improvement
+                if dim == 1 {
+                    Athis[0] = 1.0 / *ARinv.add(c as usize);
+                }
+                improvement -= cost_change(
+                    Athis.as_ptr(), force.add(i as usize), oldforce.as_ptr(), res.as_ptr(), dim,
+                );
+            }
+
+            // update constraint state
+            let mut nchange: i32 = 0;
+            let nactive = dual_state_change(
+                d as *const mjData, (*d).efc_state, oldstate_mem, ne, nf, nefc, efclist, &mut nchange,
+            );
+
+            // scale improvement, save stats
+            improvement *= scale;
+            save_stats(m, d, island_stat, iter, improvement, 0.0, 0.0, nactive, nchange, 0, 0);
+
+            // Nesterov gradient restart
+            if nesterov != 0 {
+                let mut restart: i32 = 0;
+                if iter > 0 {
+                    let mut dot_corr_extr: f64 = 0.0;
+                    for c in 0..nefc {
+                        let i = if !efclist.is_null() { *efclist.add(c as usize) } else { c };
+                        let correction = *force.add(i as usize) - *force_momentum.add(c as usize);
+                        let extrapolation = *force_momentum.add(c as usize) - *force_prev.add(c as usize);
+                        dot_corr_extr += correction * extrapolation;
+                    }
+                    restart = (dot_corr_extr < 0.0) as i32;
+                }
+
+                if restart != 0 {
+                    nesterov_k = 0;
+                } else {
+                    nesterov_k += 1;
+                }
+            }
+
+            // increment iteration count
+            iter += 1;
+
+            // terminate
+            if improvement < (*m).opt.tolerance {
+                break;
+            }
+        }
+
+        // finalize statistics
+        if island_stat < MJ_NISLAND {
+            (*d).solver_niter[island_stat as usize] += iter;
+
+            if crate::engine::engine_core_util::mj_is_sparse(m) != 0 {
+                (*d).solver_nnz[island_stat as usize] = 0;
+                for c in 0..nefc {
+                    (*d).solver_nnz[island_stat as usize] +=
+                        *(*d).efc_AR_rownnz.add((if !efclist.is_null() { *efclist.add(c as usize) } else { c }) as usize);
+                }
+            } else {
+                (*d).solver_nnz[island_stat as usize] = nefc * nefc;
+            }
+        }
+
+        crate::engine::engine_memory::mj_free_stack(d);
+    }
 }
 
 /// C: solNoSlip (engine/engine_solver.c:766)
@@ -916,7 +1216,286 @@ pub fn primal_pointers(m: *const mjModel, d: *const mjData, ctx: *mut mjPrimalCo
 /// Calls: mj_stackAllocInfo, mju_block, mju_blockSparse, mju_gather, mju_superSparse, mju_transposeSparse
 #[allow(unused_variables, non_snake_case)]
 pub fn primal_allocate(m: *const mjModel, d: *mut mjData, ctx: *mut mjPrimalContext, flg_Newton: i32) {
-    todo!() // PrimalAllocate
+    #[repr(C)]
+    #[allow(non_snake_case)]
+    struct PrimalCtx {
+        is_sparse: i32,
+        is_elliptic: i32,
+        island: i32,
+        nv: i32,
+        ne: i32,
+        nf: i32,
+        nefc: i32,
+        nJ: i32,
+        contact: *mut mjContact,
+        qfrc_smooth: *const f64,
+        qacc_smooth: *const f64,
+        qfrc_constraint: *mut f64,
+        qacc: *mut f64,
+        M_rownnz: *mut i32,
+        M_rowadr: *mut i32,
+        M_colind: *mut i32,
+        M: *mut f64,
+        qLD: *mut f64,
+        qLDiagInv: *mut f64,
+        efc_D: *const f64,
+        efc_R: *const f64,
+        efc_frictionloss: *const f64,
+        efc_aref: *const f64,
+        efc_id: *const i32,
+        efc_type: *const i32,
+        efc_force: *mut f64,
+        efc_state: *mut i32,
+        J_rownnz: *mut i32,
+        J_rowadr: *mut i32,
+        J_rowsuper: *mut i32,
+        J_colind: *mut i32,
+        J: *mut f64,
+        JT_rownnz: *mut i32,
+        JT_rowadr: *mut i32,
+        JT_rowsuper: *mut i32,
+        JT_colind: *mut i32,
+        JT: *mut f64,
+        Jaref: *mut f64,
+        Jv: *mut f64,
+        Ma: *mut f64,
+        Mv: *mut f64,
+        grad: *mut f64,
+        Mgrad: *mut f64,
+        search: *mut f64,
+        quad: *mut f64,
+        oldstate: *mut i32,
+        gradold: *mut f64,
+        Mgradold: *mut f64,
+        graddif: *mut f64,
+        Mgraddif: *mut f64,
+        D_newton: *mut f64,
+        cholupd: *mut f64,
+        LTJ: *mut f64,
+        H_rowadr: *mut i32,
+        H_rownnz: *mut i32,
+        HT_rownnz: *mut i32,
+        HT_rowadr: *mut i32,
+        L_rownnz: *mut i32,
+        L_rowadr: *mut i32,
+        LT_rownnz: *mut i32,
+        LT_rowadr: *mut i32,
+        nH: i32,
+        _pad0: i32,
+        H_colind: *mut i32,
+        HT_colind: *mut i32,
+        H: *mut f64,
+        nL: i32,
+        _pad1: i32,
+        L_colind: *mut i32,
+        LT_colind: *mut i32,
+        LT_map: *mut i32,
+        L: *mut f64,
+        Lcone: *mut f64,
+        cost: f64,
+        quadGauss: [f64; 3],
+        scale: f64,
+        nactive: i32,
+        ncone: i32,
+        nupdate: i32,
+        LSiter: i32,
+        LSresult: i32,
+        _pad2: i32,
+        LSslope: f64,
+    }
+
+    // SAFETY: m, d, ctx are valid pointers (caller contract).
+    // ctx points to a mjPrimalContext with the same layout as PrimalCtx.
+    // mj_{mark/free}Stack is handled by calling function.
+    unsafe {
+        let c = ctx as *mut PrimalCtx;
+
+        // local sizes and flags
+        let nv = (*c).nv;
+        let nefc = (*c).nefc;
+        let is_sparse = (*c).is_sparse;
+        let is_elliptic = (*c).is_elliptic;
+        let mut nJ: i32 = if is_sparse != 0 { (*d).nJ } else { 0 };
+
+        // compute island matrix sizes if needed
+        let mut nC: i32 = 0;
+        if (*c).island >= 0 {
+            let island = (*c).island;
+            let idofadr = *(*d).island_idofadr.add(island as usize);
+            for i in 0..nv {
+                let dof = *(*d).map_idof2dof.add((idofadr + i) as usize);
+                nC += *(*m).M_rownnz.add(dof as usize);
+            }
+
+            if is_sparse != 0 {
+                nJ = 0;
+                let iefcadr = *(*d).island_iefcadr.add(island as usize);
+                for i in 0..nefc {
+                    let efc = *(*d).map_iefc2efc.add((iefcadr + i) as usize);
+                    nJ += *(*d).efc_J_rownnz.add(efc as usize);
+                }
+            } else {
+                nJ = nefc * nv;
+            }
+            (*c).nJ = nJ;
+        }
+
+        // compute mjtNum block size
+        let mut nNum: usize = (5 * nefc + 5 * nv) as usize;
+        if is_sparse != 0 {
+            nNum += nJ as usize;
+        }
+        if flg_Newton != 0 {
+            nNum += (nefc + nv) as usize;
+            if is_elliptic != 0 {
+                nNum += (6 * nv) as usize;
+            }
+            if is_sparse == 0 {
+                nNum += (nv * nv) as usize;
+                if is_elliptic != 0 {
+                    nNum += (nv * nv) as usize;
+                }
+            }
+        } else {
+            nNum += (4 * nv) as usize;
+        }
+        if (*c).island >= 0 {
+            nNum += (2 * nC + nv + nJ) as usize;
+        }
+
+        // compute int block size
+        let mut nInt: usize = nefc as usize;
+        if is_sparse != 0 {
+            nInt += (3 * nv + nJ) as usize;
+            if flg_Newton != 0 {
+                nInt += (8 * nv) as usize;
+            }
+        }
+        if (*c).island >= 0 {
+            nInt += (2 * nv + nC) as usize;
+            if is_sparse != 0 {
+                nInt += (3 * nefc + nJ) as usize;
+            }
+        }
+
+        // allocate mjtNum and int blocks
+        let mut numblock = crate::engine::engine_memory::mj_stack_alloc_num(d, nNum);
+        let mut intblock = crate::engine::engine_memory::mj_stack_alloc_int(d, nInt);
+
+        // populate island matrices if needed
+        if (*c).island >= 0 {
+            let island = (*c).island;
+            let idofadr = *(*d).island_idofadr.add(island as usize);
+            let iefcadr = *(*d).island_iefcadr.add(island as usize);
+
+            (*c).M_rownnz = intblock; intblock = intblock.add(nv as usize);
+            (*c).M_rowadr = intblock; intblock = intblock.add(nv as usize);
+            (*c).M_colind = intblock; intblock = intblock.add(nC as usize);
+
+            (*c).M = numblock; numblock = numblock.add(nC as usize);
+            (*c).qLD = numblock; numblock = numblock.add(nC as usize);
+            (*c).qLDiagInv = numblock; numblock = numblock.add(nv as usize);
+
+            // SAFETY: all pointers are valid stack-allocated regions
+            crate::engine::engine_util_sparse::mju_block_sparse(
+                (*c).qLD, (*c).M_rownnz, (*c).M_rowadr, (*c).M_colind,
+                (*d).qLD, (*m).M_rownnz, (*m).M_rowadr, (*m).M_colind,
+                nv, (*d).map_idof2dof.add(idofadr as usize), (*d).map_dof2idof,
+                *(*d).island_idofadr.add(island as usize), 0, (*c).M, (*d).M,
+            );
+            crate::engine::engine_util_misc::mju_gather(
+                (*c).qLDiagInv, (*d).qLDiagInv, (*d).map_idof2dof.add(idofadr as usize), nv,
+            );
+
+            (*c).J = numblock; numblock = numblock.add(nJ as usize);
+            if is_sparse == 0 {
+                crate::engine::engine_util_sparse::mju_block(
+                    (*c).J, (*d).efc_J, (*m).nv as i32, nv, nefc,
+                    (*d).map_iefc2efc.add(iefcadr as usize),
+                    (*d).map_idof2dof.add(idofadr as usize),
+                );
+            } else {
+                (*c).J_rownnz = intblock; intblock = intblock.add(nefc as usize);
+                (*c).J_rowadr = intblock; intblock = intblock.add(nefc as usize);
+                (*c).J_rowsuper = intblock; intblock = intblock.add(nefc as usize);
+                (*c).J_colind = intblock; intblock = intblock.add(nJ as usize);
+
+                crate::engine::engine_util_sparse::mju_block_sparse(
+                    (*c).J, (*c).J_rownnz, (*c).J_rowadr, (*c).J_colind,
+                    (*d).efc_J, (*d).efc_J_rownnz, (*d).efc_J_rowadr, (*d).efc_J_colind,
+                    nefc, (*d).map_iefc2efc.add(iefcadr as usize), (*d).map_dof2idof,
+                    *(*d).island_idofadr.add(island as usize), 0,
+                    std::ptr::null_mut(), std::ptr::null_mut(),
+                );
+
+                crate::engine::engine_util_sparse::mju_super_sparse(
+                    nefc, (*c).J_rowsuper, (*c).J_rownnz, (*c).J_rowadr, (*c).J_colind,
+                );
+            }
+        }
+
+        // carve mjtNum block
+        (*c).Jaref  = numblock; numblock = numblock.add(nefc as usize);
+        (*c).Jv     = numblock; numblock = numblock.add(nefc as usize);
+        (*c).Ma     = numblock; numblock = numblock.add(nv as usize);
+        (*c).Mv     = numblock; numblock = numblock.add(nv as usize);
+        (*c).grad   = numblock; numblock = numblock.add(nv as usize);
+        (*c).Mgrad  = numblock; numblock = numblock.add(nv as usize);
+        (*c).search = numblock; numblock = numblock.add(nv as usize);
+        (*c).quad   = numblock; numblock = numblock.add((3 * nefc) as usize);
+        if is_sparse != 0 {
+            (*c).JT = numblock; numblock = numblock.add(nJ as usize);
+        }
+        if flg_Newton != 0 {
+            (*c).D_newton = numblock; numblock = numblock.add(nefc as usize);
+            (*c).cholupd  = numblock; numblock = numblock.add(nv as usize);
+            if is_elliptic != 0 {
+                (*c).LTJ = numblock; numblock = numblock.add((6 * nv) as usize);
+            }
+            if is_sparse == 0 {
+                (*c).nL = nv * nv;
+                (*c).L = numblock; numblock = numblock.add((*c).nL as usize);
+                (*c).Lcone = if is_elliptic != 0 { numblock } else { std::ptr::null_mut() };
+                if is_elliptic != 0 {
+                    numblock = numblock.add((*c).nL as usize);
+                }
+            }
+        } else {
+            (*c).gradold  = numblock; numblock = numblock.add(nv as usize);
+            (*c).Mgradold = numblock; numblock = numblock.add(nv as usize);
+            (*c).graddif  = numblock; numblock = numblock.add(nv as usize);
+            (*c).Mgraddif = numblock; numblock = numblock.add(nv as usize);
+        }
+
+        // carve int block
+        (*c).oldstate = intblock; intblock = intblock.add(nefc as usize);
+        if is_sparse != 0 {
+            (*c).JT_rownnz   = intblock; intblock = intblock.add(nv as usize);
+            (*c).JT_rowadr   = intblock; intblock = intblock.add(nv as usize);
+            (*c).JT_rowsuper = intblock; intblock = intblock.add(nv as usize);
+            (*c).JT_colind   = intblock; intblock = intblock.add(nJ as usize);
+        }
+        if flg_Newton != 0 && is_sparse != 0 {
+            (*c).H_rowadr  = intblock; intblock = intblock.add(nv as usize);
+            (*c).H_rownnz  = intblock; intblock = intblock.add(nv as usize);
+            (*c).HT_rownnz = intblock; intblock = intblock.add(nv as usize);
+            (*c).HT_rowadr = intblock; intblock = intblock.add(nv as usize);
+            (*c).L_rownnz  = intblock; intblock = intblock.add(nv as usize);
+            (*c).L_rowadr  = intblock; intblock = intblock.add(nv as usize);
+            (*c).LT_rownnz = intblock; intblock = intblock.add(nv as usize);
+            (*c).LT_rowadr = intblock; intblock = intblock.add(nv as usize);
+        }
+
+        // sparse: compute Jacobian transpose
+        if is_sparse != 0 {
+            let offset = *(*c).J_rowadr.add(0);
+            crate::engine::engine_util_sparse::mju_transpose_sparse(
+                (*c).JT, (*c).J.add(offset as usize), nefc, nv,
+                (*c).JT_rownnz, (*c).JT_rowadr, (*c).JT_colind, (*c).JT_rowsuper,
+                (*c).J_rownnz, (*c).J_rowadr, (*c).J_colind.add(offset as usize),
+            );
+        }
+    }
 }
 
 /// C: PrimalUpdateConstraint (engine/engine_solver.c:1343)
