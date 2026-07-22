@@ -443,7 +443,81 @@ pub fn contact_sort(arr: *mut mjContact, buf: *mut mjContact, n: i32, context: *
 /// Calls: mj_freeStack, mj_markStack, mj_stackAllocInfo, resetArena
 #[allow(unused_variables, non_snake_case)]
 pub fn filter_flex_contacts(d: *mut mjData, ncon_before: i32) {
-    todo!() // filterFlexContacts
+    const MJ_MAX_CON_PAIR: i32 = 50;
+    const MJ_MAX_VAL: f64 = 1e10;
+
+    // SAFETY: d is a valid mjData pointer with contact array (caller contract).
+    unsafe {
+        let n = (*d).ncon - ncon_before;
+        if n <= MJ_MAX_CON_PAIR {
+            return;
+        }
+
+        let contacts: *mut crate::types::mjContact = (*d).contact.add(ncon_before as usize);
+
+        crate::engine::engine_memory::mj_mark_stack(d);
+        let selected: *mut u8 = crate::engine::engine_memory::mj_stack_alloc_byte(d, n as usize, 1) as *mut u8;
+        let min_dist: *mut f64 = crate::engine::engine_memory::mj_stack_alloc_num(d, n as usize);
+        std::ptr::write_bytes(selected, 0, n as usize);
+
+        for i in 0..n {
+            *min_dist.add(i as usize) = MJ_MAX_VAL;
+        }
+
+        // start with the deepest penetrating contact
+        let mut nselected: i32 = 0;
+        let mut best: i32 = 0;
+        let mut bestdist: f64 = -(*contacts.add(0)).dist;
+        for i in 1..n {
+            if -(*contacts.add(i as usize)).dist > bestdist {
+                bestdist = -(*contacts.add(i as usize)).dist;
+                best = i;
+            }
+        }
+
+        while nselected < MJ_MAX_CON_PAIR && best >= 0 {
+            *selected.add(best as usize) = 1;
+            let bestpos: *const f64 = (*contacts.add(best as usize)).pos.as_ptr();
+
+            let mut nextbest: i32 = -1;
+            let mut nextbestdist: f64 = -1.0;
+            for i in 0..n {
+                if *selected.add(i as usize) != 0 {
+                    continue;
+                }
+
+                let dx = (*contacts.add(i as usize)).pos[0] - *bestpos.add(0);
+                let dy = (*contacts.add(i as usize)).pos[1] - *bestpos.add(1);
+                let dz = (*contacts.add(i as usize)).pos[2] - *bestpos.add(2);
+                let d2 = dx * dx + dy * dy + dz * dz;
+                if d2 < *min_dist.add(i as usize) {
+                    *min_dist.add(i as usize) = d2;
+                }
+                if *min_dist.add(i as usize) > nextbestdist {
+                    nextbestdist = *min_dist.add(i as usize);
+                    nextbest = i;
+                }
+            }
+
+            if nselected < MJ_MAX_CON_PAIR - 1 {
+                let temp = *contacts.add(nselected as usize);
+                *contacts.add(nselected as usize) = *contacts.add(best as usize);
+                *contacts.add(best as usize) = temp;
+
+                if nextbest == nselected {
+                    nextbest = best;
+                }
+            }
+
+            nselected += 1;
+            best = nextbest;
+        }
+
+        crate::engine::engine_memory::mj_free_stack(d);
+
+        (*d).ncon = ncon_before + nselected;
+        reset_arena(d);
+    }
 }
 
 /// C: pushPairArena (engine/engine_collision_driver.c:489)

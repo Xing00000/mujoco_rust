@@ -1135,7 +1135,45 @@ pub fn mju_multi_ray_prepare(m: *const mjModel, d: *const mjData, pnt: *const f6
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_multi_ray(m: *const mjModel, d: *mut mjData, pnt: *const f64, vec: *const f64, geomgroup: *const u8, flg_static: bool, bodyexclude: i32, geomid: *mut i32, dist: *mut f64, normal: *mut f64, nray: i32, cutoff: f64) {
-    todo!() // mj_multiRay
+    const MJ_MINVAL: f64 = 1e-15;
+
+    // SAFETY: All pointers are valid arrays (caller contract). d is valid for stack alloc.
+    unsafe {
+        crate::engine::engine_memory::mj_mark_stack(d);
+
+        // allocate source
+        let geom_ba: *mut f64 = crate::engine::engine_memory::mj_stack_alloc_num(
+            d, (4 * (*m).ngeom) as usize);
+        let geom_eliminate: *mut i32 = crate::engine::engine_memory::mj_stack_alloc_int(
+            d, (*m).ngeom as usize);
+
+        // initialize source
+        mju_multi_ray_prepare(m, d as *const crate::types::mjData, pnt,
+            std::ptr::null(), geomgroup, flg_static, bodyexclude,
+            cutoff, geom_ba, geom_eliminate);
+
+        // loop over rays
+        for i in 0..nray {
+            if crate::engine::engine_util_blas::mju_dot3(
+                vec.add((3 * i) as usize), vec.add((3 * i) as usize)) < MJ_MINVAL
+            {
+                *dist.add(i as usize) = -1.0;
+            } else {
+                let p_geomid: *mut i32 = if !geomid.is_null() {
+                    geomid.add(i as usize)
+                } else {
+                    std::ptr::null_mut()
+                };
+                *dist.add(i as usize) = mju_single_ray(
+                    m, d, pnt, vec.add((3 * i) as usize),
+                    geom_eliminate, geom_ba, p_geomid,
+                    if !normal.is_null() { normal.add((3 * i) as usize) }
+                    else { std::ptr::null_mut() });
+            }
+        }
+
+        crate::engine::engine_memory::mj_free_stack(d);
+    }
 }
 
 /// C: mj_ray (engine/engine_ray.h:42)
