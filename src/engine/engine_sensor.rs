@@ -866,7 +866,67 @@ pub fn compute_user_sensors(m: *const mjModel, d: *mut mjData, stage: u32) {
 /// Calls: apply_cutoff, mj_rnePostConstraint, mj_subtreeVel, mjp_getPluginAtSlotUnsafe, mjp_pluginCount, mju_message
 #[allow(unused_variables, non_snake_case)]
 pub fn compute_plugin_sensors(m: *const mjModel, d: *mut mjData, stage: u32) {
-    todo!() // compute_plugin_sensors
+    const mjPLUGIN_SENSOR: i32 = 1 << 1;
+    const mjSTAGE_NONE: u32 = 0;
+    const mjSTAGE_POS: u32 = 1;
+    const mjSTAGE_VEL: u32 = 2;
+    const mjSTAGE_ACC: u32 = 3;
+    const mjSENS_PLUGIN: i32 = 47;
+
+    // SAFETY: m, d are valid pointers (caller contract).
+    unsafe {
+        if (*m).nplugin == 0 {
+            return;
+        }
+
+        let nslot = crate::engine::engine_plugin::mjp_plugin_count();
+        for i in 0..(*m).nplugin as i32 {
+            let slot = *(*m).plugin.add(i as usize);
+            let plugin = crate::engine::engine_plugin::mjp_get_plugin_at_slot_unsafe(slot, nslot);
+            if plugin.is_null() {
+                crate::engine::engine_util_errmem::mju_error(
+                    b"invalid plugin slot: %d\0".as_ptr() as *const i8);
+            }
+
+            // check if plugin is a sensor plugin matching this stage
+            if ((*plugin).capabilityflags & mjPLUGIN_SENSOR) == 0 {
+                continue;
+            }
+            // match if needstage equals stage, OR stage is POS and needstage is NONE
+            let matches_stage = ((*plugin).needstage as u32 == stage)
+                || (stage == mjSTAGE_POS && (*plugin).needstage as u32 == mjSTAGE_NONE);
+            if !matches_stage {
+                continue;
+            }
+
+            if (*plugin).compute.is_none() {
+                crate::engine::engine_util_errmem::mju_error(
+                    b"`compute` is a null function pointer for plugin at slot %d\0".as_ptr() as *const i8);
+            }
+
+            // call stage-specific preparation if needed
+            if stage == mjSTAGE_VEL && !(*d).flg_subtreevel {
+                crate::engine::engine_core_smooth::mj_subtree_vel(m, d);
+            } else if stage == mjSTAGE_ACC && !(*d).flg_rnepost {
+                crate::engine::engine_core_smooth::mj_rne_post_constraint(m, d);
+            }
+
+            // SAFETY: plugin->compute has signature (m, d, plugin_id, capability) per mujoco API
+            let compute_fn: unsafe extern "C" fn(*const crate::types::mjModel, *mut crate::types::mjData, i32, i32) =
+                std::mem::transmute((*plugin).compute.unwrap());
+            compute_fn(m, d, i, mjPLUGIN_SENSOR);
+
+            // apply cutoff to all sensors attached to this plugin
+            for j in 0..(*m).nsensor as i32 {
+                if *(*m).sensor_type.add(j as usize) == mjSENS_PLUGIN
+                    && *(*m).sensor_plugin.add(j as usize) == i
+                    && *(*m).sensor_needstage.add(j as usize) as u32 == stage
+                {
+                    apply_cutoff(m, j, (*d).sensordata.add(*(*m).sensor_adr.add(j as usize) as usize));
+                }
+            }
+        }
+    }
 }
 
 /// C: mj_computeSensor (engine/engine_sensor.h:29)
