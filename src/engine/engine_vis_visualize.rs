@@ -602,7 +602,227 @@ pub fn add_skin_geoms(m: *const mjModel, d: *mut mjData, vopt: *const mjvOption,
 /// Calls: acquireGeom, bodycategory, islandColor, makeLabel, markselected, mj_sleepCycle, mju_addToScl3, mju_copy3, mju_dot3, mju_n2f, mju_round, mju_transpose, mjv_initGeom, releaseGeom, setMaterial
 #[allow(unused_variables, non_snake_case)]
 pub fn add_geom_geoms(m: *const mjModel, d: *mut mjData, vopt: *const mjvOption, pert: *const mjvPerturb, catmask: i32, scn: *mut mjvScene) {
-    todo!() // addGeomGeoms
+    const MJOBJ_GEOM: i32 = 5;
+    const MJGEOM_PLANE: i32 = 0;
+    const MJGEOM_MESH: i32 = 7;
+    const MJGEOM_SDF: i32 = 8;
+    const MJNGROUP: i32 = 6;
+    const MJLABEL_GEOM: i32 = 6;
+    const MJVIS_ISLAND: usize = 25;
+    const MJVIS_CONVEXHULL: usize = 14;
+    const MJENBL_SLEEP: i32 = 1 << 4;
+    const MJMAXPLANEGRID: i32 = 200;
+
+    // SAFETY: m, d, vopt, pert, scn are valid pointers (caller contract).
+    unsafe {
+        let objtype: i32 = MJOBJ_GEOM;
+        let mut planeid: i32 = -1;
+
+        for i in 0..(*m).ngeom as i32 {
+            // count planes
+            if *(*m).geom_type.add(i as usize) == MJGEOM_PLANE {
+                planeid += 1;
+            }
+
+            // skip if category is masked
+            let category = bodycategory(m, *(*m).geom_bodyid.add(i as usize));
+            if (category & catmask) == 0 {
+                continue;
+            }
+
+            // skip if group is disabled
+            let group_idx = {
+                let g = *(*m).geom_group.add(i as usize);
+                let clamped = if g < 0 { 0 } else if g > MJNGROUP - 1 { MJNGROUP - 1 } else { g };
+                clamped as usize
+            };
+            if (*vopt).geomgroup[group_idx] == 0 {
+                continue;
+            }
+
+            let mut thisgeom = acquire_geom(scn, i, category, objtype);
+            if thisgeom.is_null() {
+                return;
+            }
+
+            // construct geom
+            mjv_init_geom(
+                thisgeom,
+                *(*m).geom_type.add(i as usize),
+                (*m).geom_size.add(3 * i as usize),
+                (*d).geom_xpos.add(3 * i as usize),
+                (*d).geom_xmat.add(9 * i as usize),
+                std::ptr::null(),
+            );
+            (*thisgeom).dataid = *(*m).geom_dataid.add(i as usize);
+
+            // copy rbound
+            (*thisgeom).modelrbound = *(*m).geom_rbound.add(i as usize) as f32;
+
+            // set material properties
+            let rgba = (*m).geom_rgba.add(4 * i as usize);
+            let geom_matid = *(*m).geom_matid.add(i as usize);
+            set_material(m, thisgeom, geom_matid, rgba, (*vopt).flags.as_ptr());
+
+            // override if visualizing islands
+            if *(*vopt).flags.as_ptr().add(MJVIS_ISLAND) != 0 {
+                let weld_id = *(*m).body_weldid.add(*(*m).geom_bodyid.add(i as usize) as usize);
+                if *(*m).body_dofnum.add(weld_id as usize) != 0 {
+                    // strip materials off moving geom
+                    (*thisgeom).matid = -1;
+
+                    // set hue using first island dof
+                    let dof = *(*m).body_dofadr.add(weld_id as usize);
+                    let island = if (*d).nisland != 0 {
+                        *(*d).dof_island.add(dof as usize)
+                    } else {
+                        -1
+                    };
+                    let mut h = if island >= 0 {
+                        *(*d).island_dofadr.add(island as usize)
+                    } else {
+                        -1
+                    };
+                    let awake = *(*d).body_awake.add(*(*m).geom_bodyid.add(i as usize) as usize);
+
+                    // if sleep is enabled, color by first tree dof
+                    if h == -1 && ((*m).opt.enableflags & MJENBL_SLEEP) != 0 {
+                        let mut tree = *(*m).dof_treeid.add(dof as usize);
+                        if awake == 0 {
+                            tree = crate::engine::engine_sleep::mj_sleep_cycle(
+                                (*d).tree_asleep, (*m).ntree as i32, tree,
+                            );
+                        }
+                        h = *(*m).tree_dofadr.add(tree as usize);
+                    }
+
+                    island_color((*thisgeom).rgba.as_mut_ptr(), h, awake);
+                }
+            }
+
+            // set texcoord
+            if (*(*m).geom_type.add(i as usize) == MJGEOM_MESH
+                || *(*m).geom_type.add(i as usize) == MJGEOM_SDF)
+                && *(*m).geom_dataid.add(i as usize) >= 0
+                && *(*m).mesh_texcoordadr.add(*(*m).geom_dataid.add(i as usize) as usize) >= 0
+            {
+                (*thisgeom).texcoord = 1;
+            }
+
+            // skip if alpha is 0
+            if (*thisgeom).rgba[3] == 0.0 {
+                continue;
+            }
+
+            // glow geoms of selected body
+            if (*pert).select > 0
+                && (*pert).select == *(*m).geom_bodyid.add(i as usize)
+            {
+                markselected(&(*m).vis as *const _ as *const mjVisual, thisgeom);
+            }
+
+            // vopt->label
+            if (*vopt).label == MJLABEL_GEOM {
+                make_label(m, MJOBJ_GEOM as u32, i, (*thisgeom).label.as_mut_ptr());
+            }
+
+            // mesh: 2*i is original, 2*i+1 is convex hull
+            if *(*m).geom_type.add(i as usize) == MJGEOM_MESH
+                || *(*m).geom_type.add(i as usize) == MJGEOM_SDF
+            {
+                (*thisgeom).dataid *= 2;
+                if *(*m).mesh_graphadr.add(*(*m).geom_dataid.add(i as usize) as usize) >= 0
+                    && *(*vopt).flags.as_ptr().add(MJVIS_CONVEXHULL) != 0
+                    && (*(*m).geom_contype.add(i as usize) != 0
+                        || *(*m).geom_conaffinity.add(i as usize) != 0)
+                {
+                    (*thisgeom).dataid += 1;
+                }
+            }
+            // plane
+            else if *(*m).geom_type.add(i as usize) == MJGEOM_PLANE {
+                (*thisgeom).dataid = planeid;
+
+                // save initial pos
+                let mut tmp: [f64; 9] = [0.0; 9];
+                crate::engine::engine_util_blas::mju_copy3(
+                    tmp.as_mut_ptr(),
+                    (*d).geom_xpos.add(3 * i as usize),
+                );
+
+                // re-center infinite plane
+                if *(*m).geom_size.add(3 * i as usize) <= 0.0
+                    || *(*m).geom_size.add(3 * i as usize + 1) <= 0.0
+                {
+                    // vec = headpos - geompos
+                    let mut vec: [f64; 3] = [0.0; 3];
+                    for j in 0..3 {
+                        vec[j] = 0.5
+                            * ((*scn).camera[0].pos[j] as f64
+                                + (*scn).camera[1].pos[j] as f64)
+                            - *(*d).geom_xpos.add(3 * i as usize + j);
+                    }
+
+                    // construct axes
+                    let mut ax: [f64; 9] = [0.0; 9];
+                    crate::engine::engine_util_blas::mju_transpose(
+                        ax.as_mut_ptr(),
+                        (*d).geom_xmat.add(9 * i as usize),
+                        3,
+                        3,
+                    );
+
+                    // loop over (x,y)
+                    for k in 0..2usize {
+                        if *(*m).geom_size.add(3 * i as usize + k) <= 0.0 {
+                            // compute zfar: offset 32 in vis.map (13 floats: zfar is at index 8)
+                            let map_ptr = (*m).vis.map.as_ptr() as *const f32;
+                            let zfar = *map_ptr.add(8) as f64 * (*m).stat.extent;
+
+                            // get size increment
+                            let sX: f64;
+                            let matid = *(*m).geom_matid.add(i as usize);
+                            if matid >= 0
+                                && *(*m).mat_texrepeat.add(2 * matid as usize + k) > 0.0
+                            {
+                                sX = 2.0
+                                    / *(*m).mat_texrepeat.add(2 * matid as usize + k) as f64;
+                            } else {
+                                sX = 2.1 * zfar / (MJMAXPLANEGRID - 2) as f64;
+                            }
+
+                            // project on frame, round to integer increment of size
+                            let dX_raw = crate::engine::engine_util_blas::mju_dot3(
+                                vec.as_ptr(),
+                                ax.as_ptr().add(3 * k),
+                            );
+                            let dX = 2.0
+                                * sX
+                                * crate::engine::engine_util_misc::mju_round(
+                                    0.5 * dX_raw / sX,
+                                ) as f64;
+
+                            // translate
+                            crate::engine::engine_util_blas::mju_add_to_scl3(
+                                tmp.as_mut_ptr(),
+                                ax.as_ptr().add(3 * k),
+                                dX,
+                            );
+                        }
+                    }
+                }
+
+                // set final pos
+                crate::engine::engine_util_misc::mju_n2f(
+                    (*thisgeom).pos.as_mut_ptr(),
+                    tmp.as_ptr(),
+                    3,
+                );
+            }
+
+            release_geom(&mut thisgeom, scn);
+        }
+    }
 }
 
 /// C: addSiteGeoms (engine/engine_vis_visualize.c:1041)
