@@ -1140,7 +1140,179 @@ pub fn mj_ne(m: *const mjModel, d: *mut mjData, nnz: *mut i32) -> i32 {
 /// Calls: mj_elemBodyWeight, mj_flexBody, mj_freeStack, mj_isPyramidal, mj_isSparse, mj_jacDifPair, mj_jacSumCount, mj_markStack, mj_stackAllocInfo, mj_vertBodyWeight, mju_message
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_nc(m: *const mjModel, d: *mut mjData, nnz: *mut i32) -> i32 {
-    todo!() // mj_nc
+    const MJDSBL_CONTACT: i32 = 1 << 4;
+    const MJENBL_SLEEP: i32 = 1 << 4;
+    const MJS_ASLEEP: i32 = 0;
+
+    // SAFETY: m, d are valid pointers (caller contract). nnz may be NULL.
+    unsafe {
+        let mut nnzc: i32 = 0;
+        let mut nc: i32 = 0;
+        let ispyramid = crate::engine::engine_core_util::mj_is_pyramidal(m);
+        let ncon = (*d).ncon;
+
+        if ((*m).opt.disableflags & MJDSBL_CONTACT) != 0 || ncon == 0 {
+            return 0;
+        }
+
+        let sleep_filter = (((*m).opt.enableflags & MJENBL_SLEEP) != 0)
+            && (*d).ntree_awake < (*m).ntree as i32;
+
+        crate::engine::engine_memory::mj_mark_stack(d);
+        let chain = crate::engine::engine_memory::mj_stack_alloc_int(d, (*m).nv as usize);
+
+        for i in 0..ncon {
+            let con = (*d).contact.add(i as usize);
+
+            // skip if passive
+            if ((*con).flex[0] > -1 && *(*m).flex_passive.add((*con).flex[0] as usize) != 0)
+                || ((*con).flex[1] > -1 && *(*m).flex_passive.add((*con).flex[1] as usize) != 0)
+            {
+                (*con).efc_address = -1;
+                (*con).exclude = 4;
+            }
+
+            // skip if excluded
+            if (*con).exclude != 0 {
+                continue;
+            }
+
+            // check for contact with sleeping tree
+            if sleep_filter {
+                let g1 = (*con).geom[0];
+                let g2 = (*con).geom[1];
+                if g1 >= 0 && g2 >= 0 {
+                    let b1 = *(*m).body_weldid.add(*(*m).geom_bodyid.add(g1 as usize) as usize);
+                    let b2 = *(*m).body_weldid.add(*(*m).geom_bodyid.add(g2 as usize) as usize);
+                    let asleep1 = (*(*d).body_awake.add(b1 as usize) == MJS_ASLEEP) as i32;
+                    let asleep2 = (*(*d).body_awake.add(b2 as usize) == MJS_ASLEEP) as i32;
+                    if asleep1 != 0 || asleep2 != 0 {
+                        panic!("contact involves sleeping geom");
+                    }
+                }
+
+                for side in 0..2 {
+                    if (*con).geom[side] >= 0 {
+                        continue;
+                    }
+                    let b = crate::engine::engine_sleep::mj_flex_body(m, con, side as i32);
+                    if *(*d).body_awake.add(*(*m).body_weldid.add(b as usize) as usize) == MJS_ASLEEP {
+                        panic!("contact involves sleeping flex");
+                    }
+                }
+            }
+
+            // compute NV only if nnz requested
+            let mut NV: i32 = 0;
+            if !nnz.is_null() {
+                // single body on each side
+                if ((*con).geom[0] >= 0
+                    || ((*con).vert[0] >= 0 && *(*m).flex_interp.add((*con).flex[0] as usize) == 0))
+                    && ((*con).geom[1] >= 0
+                        || ((*con).vert[1] >= 0 && *(*m).flex_interp.add((*con).flex[1] as usize) == 0))
+                {
+                    let mut bid: [i32; 2] = [0; 2];
+                    for side in 0..2 {
+                        bid[side] = if (*con).geom[side] >= 0 {
+                            *(*m).geom_bodyid.add((*con).geom[side] as usize)
+                        } else {
+                            *(*m).flex_vertbodyid.add(
+                                (*(*m).flex_vertadr.add((*con).flex[side] as usize)
+                                    + (*con).vert[side]) as usize,
+                            )
+                        };
+                    }
+                    NV = crate::engine::engine_core_util::mj_jac_dif_pair(
+                        m, std::ptr::null(), chain, bid[0], bid[1],
+                        std::ptr::null(), std::ptr::null(),
+                        std::ptr::null_mut(), std::ptr::null_mut(), std::ptr::null_mut(),
+                        std::ptr::null_mut(), std::ptr::null_mut(), std::ptr::null_mut(),
+                        crate::engine::engine_core_util::mj_is_sparse(m), 1,
+                    );
+                } else {
+                    // general case: flex elements involved
+                    let mut nb: i32 = 0;
+                    let mut bid: [i32; 729] = [0; 729];
+                    for side in 0..2 {
+                        if (*con).geom[side] >= 0 {
+                            bid[nb as usize] = *(*m).geom_bodyid.add((*con).geom[side] as usize);
+                            nb += 1;
+                        } else {
+                            let mut nw: i32 = 0;
+                            let mut vid: [i32; 4] = [0; 4];
+                            let mut vweight: [f64; 4] = [0.0; 4];
+
+                            if (*con).vert[side] >= 0 {
+                                vid[nw as usize] = *(*m).flex_vertadr.add((*con).flex[side] as usize)
+                                    + (*con).vert[side];
+                                vweight[0] = 1.0;
+                                nw += 1;
+                            } else {
+                                let f = (*con).flex[side];
+                                let fdim = *(*m).flex_dim.add(f as usize);
+                                let edata = (*m).flex_elem.add(
+                                    (*(*m).flex_elemdataadr.add(f as usize)
+                                        + (*con).elem[side] * (fdim + 1)) as usize,
+                                );
+                                for k in 0..=fdim {
+                                    vid[nw as usize] =
+                                        *(*m).flex_vertadr.add(f as usize) + *edata.add(k as usize);
+                                    nw += 1;
+                                }
+
+                                if *(*m).flex_interp.add(f as usize) != 0 {
+                                    nw = mj_elem_body_weight(
+                                        m, d as *const mjData, (*con).flex[side],
+                                        (*con).elem[side], (*con).vert[1 - side],
+                                        (*con).pos.as_ptr(), vid.as_mut_ptr(), vweight.as_mut_ptr(),
+                                    );
+                                }
+                            }
+
+                            if *(*m).flex_interp.add((*con).flex[side] as usize) == 0 {
+                                for k in 0..nw {
+                                    bid[nb as usize] =
+                                        *(*m).flex_vertbodyid.add(vid[k as usize] as usize);
+                                    nb += 1;
+                                }
+                            } else {
+                                nb += mj_vert_body_weight(
+                                    m, d as *const mjData, (*con).flex[side],
+                                    vid.as_mut_ptr(), bid.as_mut_ptr().add(nb as usize),
+                                    std::ptr::null_mut(), vweight.as_ptr(), nw,
+                                );
+                            }
+                        }
+                    }
+
+                    NV = mj_jac_sum_count(m, d, chain, nb, bid.as_ptr());
+                }
+                if NV == 0 {
+                    continue;
+                }
+            }
+
+            // count according to friction type
+            let dim = (*con).dim;
+            if dim == 1 {
+                nc += 1;
+                nnzc += NV;
+            } else if ispyramid != 0 {
+                nc += 2 * (dim - 1);
+                nnzc += 2 * (dim - 1) * NV;
+            } else {
+                nc += dim;
+                nnzc += dim * NV;
+            }
+        }
+
+        if !nnz.is_null() {
+            *nnz += nnzc;
+        }
+
+        crate::engine::engine_memory::mj_free_stack(d);
+        nc
+    }
 }
 
 /// C: computeY_precount (engine/engine_core_constraint.c:2688)
