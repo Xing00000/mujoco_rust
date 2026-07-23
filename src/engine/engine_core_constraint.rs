@@ -2461,10 +2461,205 @@ pub fn mj_instantiate_equality(m: *const mjModel, d: *mut mjData) {
 
                 size = 1;
             } else if eq_type == mjEQ_FLEXSTRAIN {
-                // Complex flex strain constraints — each represents a single element
-                // This case involves eigenmode decomposition and corotational frame computation
-                // which requires many helper functions and complex nested logic.
-                todo!("mjEQ_FLEXSTRAIN: complex eigenmode-based strain constraint with corotational frame — requires extended stack allocation and element-level computation")
+                // each constraint represents a single element (3D cell or 2D face)
+                let f = id[0];
+                let nodenum = *(*m).flex_nodenum.add(f as usize);
+                let interp = *(*m).flex_interp.add(f as usize);
+                let order = if interp < 0 { -interp } else { interp };
+                let shell_mode = interp < 0;
+
+                // skip if not interpolated (order == 0 or no nodes)
+                if order == 0 || nodenum == 0 {
+                    // size stays 0 — skip
+                } else {
+                    let cx = *(*m).flex_cellnum.add(3 * f as usize);
+                    let cy = *(*m).flex_cellnum.add(3 * f as usize + 1);
+                    let cz = *(*m).flex_cellnum.add(3 * f as usize + 2);
+                    let nstart = *(*m).flex_nodeadr.add(f as usize);
+                    let bodyid = (*m).flex_nodebodyid.offset(nstart as isize);
+
+                    // nodes per element and element index
+                    let npe: i32;
+                    let elem_idx: i32;
+                    if shell_mode {
+                        npe = (order + 1) * (order + 1);
+                        elem_idx = *data.offset(0) as i32;
+                    } else {
+                        npe = (order + 1) * (order + 1) * (order + 1);
+                        let ci = *data.offset(0) as i32;
+                        let cj = *data.offset(1) as i32;
+                        let ck = *data.offset(2) as i32;
+                        elem_idx = ci * cy * cz + cj * cz + ck;
+                    }
+
+                    crate::engine::engine_memory::mj_mark_stack(d);
+
+                    // get element node indices
+                    let mut gindices: [i32; 125] = [0; 125];
+                    if shell_mode {
+                        crate::engine::engine_util_misc::mju_flex_gather_face_state(
+                            order, cx, cy, cz, elem_idx,
+                            std::ptr::null(), std::ptr::null(), std::ptr::null(),
+                            std::ptr::null_mut(), std::ptr::null_mut(), std::ptr::null_mut(),
+                            gindices.as_mut_ptr(), std::ptr::null_mut());
+                    } else {
+                        let ci = *data.offset(0) as i32;
+                        let cj = *data.offset(1) as i32;
+                        let ck = *data.offset(2) as i32;
+                        crate::engine::engine_util_misc::mju_flex_gather_cell_state(
+                            order, cy, cz, ci, cj, ck,
+                            std::ptr::null(), std::ptr::null(), std::ptr::null(),
+                            std::ptr::null_mut(), std::ptr::null_mut(), std::ptr::null_mut(),
+                            gindices.as_mut_ptr(), std::ptr::null_mut());
+                    }
+
+                    // compute positions only for element nodes
+                    let xpos_e = crate::engine::engine_memory::mj_stack_alloc_num(d, (3 * npe) as usize);
+                    let refpos_e = crate::engine::engine_memory::mj_stack_alloc_num(d, (3 * npe) as usize);
+                    for n in 0..npe {
+                        let gn = gindices[n as usize];
+                        if *(*m).flex_centered.add(f as usize)
+                            || (*(*m).flex_node.add(3 * (gn + nstart) as usize) == 0.0
+                                && *(*m).flex_node.add(3 * (gn + nstart) as usize + 1) == 0.0
+                                && *(*m).flex_node.add(3 * (gn + nstart) as usize + 2) == 0.0)
+                        {
+                            crate::engine::engine_util_blas::mju_copy3(
+                                xpos_e.offset(3 * n as isize),
+                                (*d).xpos.offset(3 * *bodyid.add(gn as usize) as isize));
+                        } else {
+                            crate::engine::engine_util_blas::mju_mul_mat_vec3(
+                                xpos_e.offset(3 * n as isize),
+                                (*d).xmat.offset(9 * *bodyid.add(gn as usize) as isize),
+                                (*m).flex_node.offset(3 * (gn + nstart) as isize));
+                            crate::engine::engine_util_blas::mju_add_to3(
+                                xpos_e.offset(3 * n as isize),
+                                (*d).xpos.offset(3 * *bodyid.add(gn as usize) as isize));
+                        }
+                        crate::engine::engine_util_blas::mju_copy3(
+                            refpos_e.offset(3 * n as isize),
+                            (*m).flex_node0.offset(3 * (gn + nstart) as isize));
+                    }
+
+                    // compute corotational quaternion
+                    let mut elem_quat: [f64; 4] = [1.0, 0.0, 0.0, 0.0];
+                    if shell_mode {
+                        // determine face normal axis from elem_idx
+                        let face_sizes: [i32; 6] = [cy*cz, cy*cz, cx*cz, cx*cz, cx*cy, cx*cy];
+                        let face_normals: [i32; 6] = [0, 0, 1, 1, 2, 2];
+                        let mut cumul: i32 = 0;
+                        let mut normal_axis: i32 = 0;
+                        for ff in 0..6 {
+                            if elem_idx < cumul + face_sizes[ff] {
+                                normal_axis = face_normals[ff];
+                                break;
+                            }
+                            cumul += face_sizes[ff];
+                        }
+                        let na0 = (normal_axis + 1) % 3;
+                        let na1 = (normal_axis + 2) % 3;
+
+                        // compute corotational rotation from 2D deformation gradient
+                        let p: [f64; 2] = [0.5, 0.5];
+                        crate::engine::engine_util_misc::mju_flex_interp_rotation2d(
+                            order, xpos_e, npe, na0, na1, normal_axis,
+                            p.as_ptr(), elem_quat.as_mut_ptr());
+                    } else {
+                        let center: [f64; 3] = [0.5, 0.5, 0.5];
+                        let mut mat: [f64; 9] = [0.0; 9];
+                        crate::engine::engine_util_misc::mju_def_gradient(
+                            mat.as_mut_ptr(), center.as_ptr(), xpos_e, order);
+                        crate::engine::engine_util_spatial::mju_mat2rot(
+                            elem_quat.as_mut_ptr(), mat.as_ptr());
+                        crate::engine::engine_util_spatial::mju_neg_quat(
+                            elem_quat.as_mut_ptr(), elem_quat.as_ptr());
+                    }
+
+                    // build per-element sparse chain and node Jacobians
+                    let elem_chain = crate::engine::engine_memory::mj_stack_alloc_int(d, nv as usize);
+                    let mut elem_nnz: i32 = 0;
+                    let elem_node_jac = cell_pos_and_jac(
+                        m, d, f, npe, gindices.as_ptr(), nv, xpos_e, elem_chain, &mut elem_nnz);
+
+                    let strain_jac = crate::engine::engine_memory::mj_stack_alloc_num(d, elem_nnz as usize);
+                    let dSdx_local = crate::engine::engine_memory::mj_stack_alloc_num(d, (3 * npe) as usize);
+
+                    // for dense mode: allocate and zero a dense Jacobian buffer once
+                    let dense_jac = if issparse == 0 {
+                        let dj = crate::engine::engine_memory::mj_stack_alloc_num(d, nv as usize);
+                        crate::engine::engine_util_blas::mju_zero(dj, nv);
+                        dj
+                    } else {
+                        std::ptr::null_mut()
+                    };
+
+                    // read eigenmode data from flex_stiffness
+                    let ndof_elem = 3 * npe;
+                    let stiffnessadr = *(*m).flex_stiffnessadr.add(f as usize);
+                    let mut neig: i32 = 0;
+                    let mut k_elem: *const f64 = std::ptr::null();
+                    if stiffnessadr >= 0 {
+                        k_elem = (*m).flex_stiffness.offset(stiffnessadr as isize)
+                            .offset((elem_idx as isize) * (ndof_elem as isize) * (ndof_elem as isize));
+                        neig = *k_elem as i32;
+                    }
+
+                    // compute displacement in corotational frame
+                    let displ_e = crate::engine::engine_memory::mj_stack_alloc_num(d, ndof_elem as usize);
+                    for n in 0..npe {
+                        let mut xrot: [f64; 3] = [0.0; 3];
+                        crate::engine::engine_util_spatial::mju_rot_vec_quat(
+                            xrot.as_mut_ptr(), xpos_e.offset(3 * n as isize), elem_quat.as_ptr());
+                        *displ_e.offset(3 * n as isize) = xrot[0] - *refpos_e.offset(3 * n as isize);
+                        *displ_e.offset((3 * n + 1) as isize) = xrot[1] - *refpos_e.offset((3 * n + 1) as isize);
+                        *displ_e.offset((3 * n + 2) as isize) = xrot[2] - *refpos_e.offset((3 * n + 2) as isize);
+                    }
+
+                    // compute inverse quaternion for rotating eigenvectors to world frame
+                    let mut elem_quat_inv: [f64; 4] = [0.0; 4];
+                    crate::engine::engine_util_spatial::mju_neg_quat(
+                        elem_quat_inv.as_mut_ptr(), elem_quat.as_ptr());
+
+                    // loop over eigenmodes
+                    for eig in 0..neig {
+                        let eigvec = k_elem.offset(1 + (eig as isize) * (ndof_elem as isize));
+
+                        // constraint residual: dot product of eigenvector with displacement
+                        let mut residual: f64 = 0.0;
+                        for j in 0..ndof_elem {
+                            residual += *eigvec.offset(j as isize) * *displ_e.offset(j as isize);
+                        }
+                        cpos[0] = residual;
+
+                        // rotate eigenvector to world frame for Jacobian
+                        for n in 0..npe {
+                            crate::engine::engine_util_spatial::mju_rot_vec_quat(
+                                dSdx_local.offset(3 * n as isize),
+                                eigvec.offset(3 * n as isize),
+                                elem_quat_inv.as_ptr());
+                        }
+
+                        // contract with elem_node_jac to get sparse Jacobian
+                        cell_strain_jacobian(npe, elem_nnz, dSdx_local, elem_node_jac, strain_jac);
+
+                        if issparse != 0 {
+                            mj_add_constraint(m, d, strain_jac, cpos.as_ptr(), std::ptr::null(), 0.0,
+                                1, mjCNSTR_EQUALITY, i, elem_nnz, elem_chain);
+                        } else {
+                            for k in 0..elem_nnz {
+                                *dense_jac.add(*elem_chain.add(k as usize) as usize)
+                                    = *strain_jac.add(k as usize);
+                            }
+                            mj_add_constraint(m, d, dense_jac, cpos.as_ptr(), std::ptr::null(), 0.0,
+                                1, mjCNSTR_EQUALITY, i, 0, std::ptr::null());
+                            for k in 0..elem_nnz {
+                                *dense_jac.add(*elem_chain.add(k as usize) as usize) = 0.0;
+                            }
+                        }
+                    }
+
+                    crate::engine::engine_memory::mj_free_stack(d);
+                }
+                // size stays 0 — constraints added in the loop
             } else if eq_type == mjEQ_FLEX {
                 // edge constraint mode: add one constraint per non-rigid edge
                 let flex_edgeadr = *(*m).flex_edgeadr.add(id[0] as usize);
