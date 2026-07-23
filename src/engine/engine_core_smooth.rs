@@ -458,7 +458,191 @@ pub fn mj_tendon(m: *const mjModel, d: *mut mjData) {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_tendon_dot(m: *const mjModel, d: *mut mjData, id: i32, vec: *const f64) -> f64 {
-    todo!() // mj_tendonDot
+    const MJWRAP_JOINT: i32 = 1;
+    const MJWRAP_PULLEY: i32 = 2;
+    const MJWRAP_SPHERE: i32 = 4;
+    const MJWRAP_CYLINDER: i32 = 5;
+    const MJWRAP_NONE: i32 = 0;
+    const MJOBJ_SITE: i32 = 6;
+    const MJMINVAL: f64 = 1e-15;
+
+    // SAFETY: m, d, vec are valid pointers (caller contract).
+    unsafe {
+        let nv = (*m).nv as i32;
+        let mut res: f64 = 0.0;
+
+        // tendon id is invalid: return
+        if id < 0 || id >= (*m).ntendon as i32 {
+            return 0.0;
+        }
+
+        // fixed tendon has zero Jdot: return
+        let adr = *(*m).tendon_adr.add(id as usize);
+        if *(*m).wrap_type.add(adr as usize) == MJWRAP_JOINT {
+            return 0.0;
+        }
+
+        // allocate stack arrays
+        crate::engine::engine_memory::mj_mark_stack(d);
+        let issparse = crate::engine::engine_core_util::mj_is_sparse(m);
+        let chain = if issparse != 0 {
+            crate::engine::engine_memory::mj_stack_alloc_int(d, nv as usize)
+        } else {
+            std::ptr::null_mut()
+        };
+        let jac1 = crate::engine::engine_memory::mj_stack_alloc_num(d, (3 * nv) as usize);
+        let jac2 = crate::engine::engine_memory::mj_stack_alloc_num(d, (3 * nv) as usize);
+        let jacdif = crate::engine::engine_memory::mj_stack_alloc_num(d, (3 * nv) as usize);
+        let tmp = crate::engine::engine_memory::mj_stack_alloc_num(d, nv as usize);
+
+        // process spatial tendon
+        let mut divisor: f64 = 1.0;
+        let mut j: i32 = 0;
+        let num = *(*m).tendon_num.add(id as usize);
+        while j < num - 1 {
+            // get 1st and 2nd object
+            let type0 = *(*m).wrap_type.add((adr + j) as usize);
+            let type1 = *(*m).wrap_type.add((adr + j + 1) as usize);
+            let id0 = *(*m).wrap_objid.add((adr + j) as usize);
+            let id1 = *(*m).wrap_objid.add((adr + j + 1) as usize);
+
+            // pulley
+            if type0 == MJWRAP_PULLEY || type1 == MJWRAP_PULLEY {
+                if type0 == MJWRAP_PULLEY {
+                    divisor = *(*m).wrap_prm.add((adr + j) as usize);
+                }
+                j += 1;
+                continue;
+            }
+
+            // init sequence; assume it starts with site
+            let mut wpnt: [f64; 6] = [0.0; 6];
+            crate::engine::engine_inline::mji_copy3(
+                wpnt.as_mut_ptr(), (*d).site_xpos.add(3 * id0 as usize));
+            let mut vel: [f64; 6] = [0.0; 6];
+            crate::engine::engine_core_util::mj_object_velocity(
+                m, d as *const mjData, MJOBJ_SITE, id0, vel.as_mut_ptr(), 0);
+            let mut wvel: [f64; 6] = [vel[3], vel[4], vel[5], 0.0, 0.0, 0.0];
+            let mut wbody: [i32; 2] = [0; 2];
+            wbody[0] = *(*m).site_bodyid.add(id0 as usize);
+
+            // second object is geom: not supported (matches C: mjERROR)
+            let wraptype: i32;
+            if type1 == MJWRAP_SPHERE || type1 == MJWRAP_CYLINDER {
+                crate::engine::engine_memory::mj_free_stack(d);
+                panic!("geom wrapping not supported in mj_tendonDot");
+            } else {
+                wraptype = MJWRAP_NONE;
+            }
+
+            // complete sequence
+            wbody[1] = *(*m).site_bodyid.add(id1 as usize);
+            crate::engine::engine_inline::mji_copy3(
+                wpnt.as_mut_ptr().add(3), (*d).site_xpos.add(3 * id1 as usize));
+            crate::engine::engine_core_util::mj_object_velocity(
+                m, d as *const mjData, MJOBJ_SITE, id1, vel.as_mut_ptr(), 0);
+            crate::engine::engine_inline::mji_copy3(wvel.as_mut_ptr().add(3), vel.as_ptr().add(3));
+
+            // accumulate moments if consecutive points are in different bodies
+            if wbody[0] != wbody[1] {
+                // dpnt = 3D position difference, normalize
+                let mut dpnt: [f64; 3] = [0.0; 3];
+                crate::engine::engine_util_blas::mju_sub3(
+                    dpnt.as_mut_ptr(), wpnt.as_ptr().add(3), wpnt.as_ptr());
+                let norm = crate::engine::engine_util_blas::mju_normalize3(dpnt.as_mut_ptr());
+
+                // dvel = d / dt (dpnt)
+                let mut dvel: [f64; 3] = [0.0; 3];
+                crate::engine::engine_util_blas::mju_sub3(
+                    dvel.as_mut_ptr(), wvel.as_ptr().add(3), wvel.as_ptr());
+                let dot = crate::engine::engine_util_blas::mju_dot3(
+                    dpnt.as_ptr(), dvel.as_ptr());
+                crate::engine::engine_util_blas::mju_add_to_scl3(
+                    dvel.as_mut_ptr(), dpnt.as_ptr(), -dot);
+                let scale = if norm > MJMINVAL { 1.0 / norm } else { 0.0 };
+                crate::engine::engine_util_blas::mju_scl3(
+                    dvel.as_mut_ptr(), dvel.as_ptr(), scale);
+
+                if issparse != 0 {
+                    // construct merged chain
+                    let NV = crate::engine::engine_core_util::mj_merge_chain(
+                        m, chain, wbody[0], wbody[1], 0);
+
+                    if NV > 0 {
+                        // get endpoint JacobianDots, subtract
+                        crate::engine::engine_core_util::mj_jac_dot_sparse(
+                            m, d as *const mjData, jac1, std::ptr::null_mut(),
+                            wpnt.as_ptr(), wbody[0], NV, chain);
+                        crate::engine::engine_core_util::mj_jac_dot_sparse(
+                            m, d as *const mjData, jac2, std::ptr::null_mut(),
+                            wpnt.as_ptr().add(3), wbody[1], NV, chain);
+                        crate::engine::engine_util_blas::mju_sub(
+                            jacdif, jac2, jac1, 3 * NV);
+
+                        // chain rule, first term
+                        crate::engine::engine_util_blas::mju_mul_mat_t_vec(
+                            tmp, jacdif, dpnt.as_ptr(), 3, NV);
+                        for k in 0..NV {
+                            res += (*tmp.add(k as usize) / divisor)
+                                * *vec.add(*chain.add(k as usize) as usize);
+                        }
+
+                        // get endpoint Jacobians, subtract
+                        crate::engine::engine_core_util::mj_jac_sparse(
+                            m, d as *const mjData, jac1, std::ptr::null_mut(),
+                            wpnt.as_ptr(), wbody[0], NV, chain, 0);
+                        crate::engine::engine_core_util::mj_jac_sparse(
+                            m, d as *const mjData, jac2, std::ptr::null_mut(),
+                            wpnt.as_ptr().add(3), wbody[1], NV, chain, 0);
+                        crate::engine::engine_util_blas::mju_sub(
+                            jacdif, jac2, jac1, 3 * NV);
+
+                        // chain rule, second term
+                        crate::engine::engine_util_blas::mju_mul_mat_t_vec(
+                            tmp, jacdif, dvel.as_ptr(), 3, NV);
+                        for k in 0..NV {
+                            res += (*tmp.add(k as usize) / divisor)
+                                * *vec.add(*chain.add(k as usize) as usize);
+                        }
+                    }
+                } else {
+                    // dense: get endpoint JacobianDots, subtract
+                    crate::engine::engine_core_util::mj_jac_dot(
+                        m, d as *const mjData, jac1, std::ptr::null_mut(),
+                        wpnt.as_ptr(), wbody[0]);
+                    crate::engine::engine_core_util::mj_jac_dot(
+                        m, d as *const mjData, jac2, std::ptr::null_mut(),
+                        wpnt.as_ptr().add(3), wbody[1]);
+                    crate::engine::engine_util_blas::mju_sub(jacdif, jac2, jac1, 3 * nv);
+
+                    // chain rule, first term
+                    crate::engine::engine_util_blas::mju_mul_mat_t_vec(
+                        tmp, jacdif, dpnt.as_ptr(), 3, nv);
+                    res += crate::engine::engine_util_blas::mju_dot(tmp, vec, nv) / divisor;
+
+                    // get endpoint Jacobians, subtract
+                    crate::engine::engine_core_util::mj_jac(
+                        m, d as *const mjData, jac1, std::ptr::null_mut(),
+                        wpnt.as_ptr(), wbody[0]);
+                    crate::engine::engine_core_util::mj_jac(
+                        m, d as *const mjData, jac2, std::ptr::null_mut(),
+                        wpnt.as_ptr().add(3), wbody[1]);
+                    crate::engine::engine_util_blas::mju_sub(jacdif, jac2, jac1, 3 * nv);
+
+                    // chain rule, second term
+                    crate::engine::engine_util_blas::mju_mul_mat_t_vec(
+                        tmp, jacdif, dvel.as_ptr(), 3, nv);
+                    res += crate::engine::engine_util_blas::mju_dot(tmp, vec, nv) / divisor;
+                }
+            }
+
+            // advance
+            j += if wraptype != MJWRAP_NONE { 2 } else { 1 };
+        }
+
+        crate::engine::engine_memory::mj_free_stack(d);
+        res
+    }
 }
 
 /// C: mj_transmission (engine/engine_core_smooth.h:53)
