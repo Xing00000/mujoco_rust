@@ -914,7 +914,286 @@ pub fn add_jtbj_mul_sparse(m: *const mjModel, d: *mut mjData, res: *mut f64, vec
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjd_flex_interp_kernel(m: *const mjModel, d: *mut mjData, res: *mut f64, vec: *const f64, s1: f64, s2: f64, K_rot_cache: *const f64, K_rot_out: *mut f64) {
-    todo!() // mjd_flexInterp_kernel
+    // SAFETY: m, d are valid pointers. All array accesses bounded by model dimensions.
+    unsafe {
+        let nv = (*m).nv as i32;
+
+        // compute upper bounds across all interpolated flexes
+        let mut max_nodenum: i32 = 0;
+        let mut max_npe: i32 = 0;
+        for f in 0..(*m).nflex as i32 {
+            if *(*m).flex_interp.add(f as usize) == 0 { continue; }
+            if *(*m).flex_rigid.add(f as usize) { continue; }
+            let mut order = *(*m).flex_interp.add(f as usize);
+            let shell_mode = order < 0;
+            if order < 0 { order = -order; }
+            let npe = if shell_mode {
+                (order + 1) * (order + 1)
+            } else {
+                (order + 1) * (order + 1) * (order + 1)
+            };
+            if npe > max_npe { max_npe = npe; }
+            if *(*m).flex_nodenum.add(f as usize) > max_nodenum {
+                max_nodenum = *(*m).flex_nodenum.add(f as usize);
+            }
+        }
+
+        // nothing to do
+        if max_npe == 0 {
+            return;
+        }
+
+        let max_dim_c = 3 * max_npe;
+
+        // single unconditional markStack
+        crate::engine::engine_memory::mj_mark_stack(d);
+
+        // per-flex node positions (upper bound)
+        let xpos = crate::engine::engine_memory::mj_stack_alloc_num(d, (3 * max_nodenum) as usize);
+
+        // per-element arrays (upper bound)
+        let xpos_c = crate::engine::engine_memory::mj_stack_alloc_num(d, (3 * max_npe) as usize);
+        let K_rot_cell = crate::engine::engine_memory::mj_stack_alloc_num(d, (max_dim_c * max_dim_c) as usize);
+
+        // sparse Jacobian for one cell (upper bound)
+        let J_rownnz = crate::engine::engine_memory::mj_stack_alloc_int(d, max_dim_c as usize);
+        let J_rowadr = crate::engine::engine_memory::mj_stack_alloc_int(d, max_dim_c as usize);
+        let J_val = crate::engine::engine_memory::mj_stack_alloc_num(d, (max_dim_c * nv) as usize);
+        let J_colind = crate::engine::engine_memory::mj_stack_alloc_int(d, (max_dim_c * nv) as usize);
+
+        // temp allocations for chain
+        let chain_colind = crate::engine::engine_memory::mj_stack_alloc_int(d, nv as usize);
+        let blk_jac = crate::engine::engine_memory::mj_stack_alloc_num(d, (3 * nv) as usize);
+
+        // loop over flexes
+        for f in 0..(*m).nflex as i32 {
+            // only process flex_interp
+            if *(*m).flex_interp.add(f as usize) == 0 {
+                continue;
+            }
+
+            // get stiffness
+            let stiffnessadr = *(*m).flex_stiffnessadr.add(f as usize);
+            if stiffnessadr < 0 {
+                continue;
+            }
+            let K = (*m).flex_stiffness.offset(stiffnessadr as isize);
+
+            // skip if rigid or no stiffness
+            if *(*m).flex_rigid.add(f as usize) || *K == 0.0 {
+                continue;
+            }
+
+            // skip if strain constraints present
+            if *(*m).flex_edgeequality.add(f as usize) == 3 {
+                continue;
+            }
+
+            // compute scale
+            let damping = *(*m).flex_damping.add(f as usize);
+            let scale = s1 + s2 * damping;
+
+            // skip if scale is zero
+            if scale == 0.0 {
+                continue;
+            }
+
+            let mut order = *(*m).flex_interp.add(f as usize);
+            let shell_mode = order < 0;
+            if order < 0 { order = -order; }
+
+            let cx = *(*m).flex_cellnum.add(3 * f as usize);
+            let cy = *(*m).flex_cellnum.add(3 * f as usize + 1);
+            let cz = *(*m).flex_cellnum.add(3 * f as usize + 2);
+
+            let bodyid = (*m).flex_nodebodyid.offset(*(*m).flex_nodeadr.add(f as usize) as isize);
+
+            // determine element type
+            let npe: i32;
+            let nelem_fe: i32;
+            if shell_mode {
+                npe = (order + 1) * (order + 1);
+                nelem_fe = 2 * (cy * cz + cx * cz + cx * cy);
+            } else {
+                npe = (order + 1) * (order + 1) * (order + 1);
+                nelem_fe = cx * cy * cz;
+            }
+            let dim_e = 3 * npe;
+
+            // gather raw node positions (unrotated)
+            crate::engine::engine_core_util::mju_flex_gather_state(
+                m, d as *const crate::types::mjData, f, xpos, std::ptr::null_mut());
+
+            // check if centered fast path applies
+            let mut use_fast_path: i32 = if *(*m).flex_centered.add(f as usize) { 1 } else { 0 };
+            if use_fast_path != 0 {
+                let nodenum_f = *(*m).flex_nodenum.add(f as usize);
+                for n in 0..nodenum_f {
+                    if *(*m).body_simple.add(*bodyid.add(n as usize) as usize) != 2 {
+                        use_fast_path = 0;
+                        break;
+                    }
+                }
+            }
+
+            // loop over finite elements
+            for fe in 0..nelem_fe {
+                // get element stiffness
+                let k_elem = K.offset((fe as isize) * (3 * npe as isize) * (3 * npe as isize));
+
+                // skip empty elements
+                if *k_elem == 0.0 {
+                    continue;
+                }
+
+                // use cached K_rot or compute from scratch
+                let mut gindices: [i32; 125] = [0; 125];
+                let krot_adr = stiffnessadr + fe * dim_e * dim_e;
+                if !K_rot_cache.is_null() {
+                    // read K_rot from cache and apply scale
+                    for ii in 0..(dim_e * dim_e) {
+                        *K_rot_cell.add(ii as usize) = scale * *K_rot_cache.add(krot_adr as usize + ii as usize);
+                    }
+
+                    // recompute gindices
+                    if shell_mode {
+                        crate::engine::engine_util_misc::mju_flex_gather_face_state(
+                            order, cx, cy, cz, fe,
+                            std::ptr::null(), std::ptr::null(), std::ptr::null(),
+                            std::ptr::null_mut(), std::ptr::null_mut(), std::ptr::null_mut(),
+                            gindices.as_mut_ptr(), std::ptr::null_mut());
+                    } else {
+                        let ci = fe / (cy * cz);
+                        let cj = (fe / cz) % cy;
+                        let ck = fe % cz;
+                        crate::engine::engine_util_misc::mju_flex_gather_cell_state(
+                            order, cy, cz, ci, cj, ck,
+                            std::ptr::null(), std::ptr::null(), std::ptr::null(),
+                            std::ptr::null_mut(), std::ptr::null_mut(), std::ptr::null_mut(),
+                            gindices.as_mut_ptr(), std::ptr::null_mut());
+                    }
+                } else {
+                    // gather element-local node positions and rotation
+                    let mut quat: [f64; 4] = [0.0; 4];
+                    if shell_mode {
+                        crate::engine::engine_util_misc::mju_flex_gather_face_state(
+                            order, cx, cy, cz, fe, xpos, std::ptr::null(), std::ptr::null(),
+                            xpos_c, std::ptr::null_mut(), std::ptr::null_mut(),
+                            gindices.as_mut_ptr(), quat.as_mut_ptr());
+                    } else {
+                        let ci = fe / (cy * cz);
+                        let cj = (fe / cz) % cy;
+                        let ck = fe % cz;
+                        crate::engine::engine_util_misc::mju_flex_gather_cell_state(
+                            order, cy, cz, ci, cj, ck, xpos, std::ptr::null(), std::ptr::null(),
+                            xpos_c, std::ptr::null_mut(), std::ptr::null_mut(),
+                            gindices.as_mut_ptr(), quat.as_mut_ptr());
+                    }
+
+                    // R = R_global2local, RT = R_local2global
+                    let mut R: [f64; 9] = [0.0; 9];
+                    let mut RT: [f64; 9] = [0.0; 9];
+                    crate::engine::engine_util_spatial::mju_quat2mat(R.as_mut_ptr(), quat.as_ptr());
+                    crate::engine::engine_util_blas::mju_transpose(RT.as_mut_ptr(), R.as_ptr(), 3, 3);
+
+                    // compute K_rot = RT * K_elem * R (block-wise)
+                    crate::engine::engine_util_blas::mju_zero(K_rot_cell, dim_e * dim_e);
+                    for a in 0..npe {
+                        for b in 0..npe {
+                            let mut blk: [f64; 9] = [0.0; 9];
+                            let mut tmp: [f64; 9] = [0.0; 9];
+
+                            // get K_elem(a,b) 3x3 block
+                            let adr_cell = (3 * a) * (3 * npe) + 3 * b;
+                            for r in 0..3_i32 {
+                                for c in 0..3_i32 {
+                                    blk[(3 * r + c) as usize] = *k_elem.add(
+                                        (adr_cell + r * (3 * npe) + c) as usize);
+                                }
+                            }
+
+                            // tmp = K * R
+                            crate::engine::engine_util_blas::mju_mul_mat_mat3(
+                                tmp.as_mut_ptr(), blk.as_ptr(), R.as_ptr());
+                            // blk = RT * tmp = RT * K * R
+                            crate::engine::engine_util_blas::mju_mul_mat_mat3(
+                                blk.as_mut_ptr(), RT.as_ptr(), tmp.as_ptr());
+
+                            // store in K_rot_cell at (a, b)
+                            let adr_out = (3 * a) * dim_e + 3 * b;
+                            for r in 0..3_i32 {
+                                for c in 0..3_i32 {
+                                    *K_rot_cell.add((adr_out + r * dim_e + c) as usize) =
+                                        scale * blk[(3 * r + c) as usize];
+                                }
+                            }
+                        }
+                    }
+
+                    // optionally store unscaled K_rot to output cache
+                    if !K_rot_out.is_null() {
+                        for ii in 0..(dim_e * dim_e) {
+                            *K_rot_out.add(krot_adr as usize + ii as usize) =
+                                *K_rot_cell.add(ii as usize) / scale;
+                        }
+                    }
+                }
+
+                // skip Jacobian construction when only caching (res == NULL)
+                if res.is_null() {
+                    continue;
+                }
+
+                // fast path: centered flex with 3 translational DOFs per body
+                if use_fast_path != 0 {
+                    for a in 0..npe {
+                        let dof_a = *(*m).body_dofadr.add(*bodyid.add(gindices[a as usize] as usize) as usize);
+                        for b in 0..npe {
+                            let dof_b = *(*m).body_dofadr.add(*bodyid.add(gindices[b as usize] as usize) as usize);
+                            let adr = (3 * a) * dim_e + 3 * b;
+                            for r in 0..3_i32 {
+                                let mut val: f64 = 0.0;
+                                for c in 0..3_i32 {
+                                    val += *K_rot_cell.add((adr + r * dim_e + c) as usize)
+                                        * *vec.add((dof_b + c) as usize);
+                                }
+                                *res.add((dof_a + r) as usize) += val;
+                            }
+                        }
+                    }
+                } else {
+                    // general path: construct sparse Jacobian for this element's nodes
+                    let mut current_adr: i32 = 0;
+                    for n in 0..npe {
+                        let bid = *bodyid.add(gindices[n as usize] as usize);
+                        let chain_nnz = crate::engine::engine_core_util::mj_body_chain(m, bid, chain_colind);
+                        crate::engine::engine_core_util::mj_jac_sparse(
+                            m, d as *const crate::types::mjData, blk_jac, std::ptr::null_mut(),
+                            xpos.offset(3 * gindices[n as usize] as isize), bid,
+                            chain_nnz, chain_colind, 0);
+
+                        for r in 0..3_i32 {
+                            let row_idx = 3 * n + r;
+                            *J_rownnz.add(row_idx as usize) = chain_nnz;
+                            *J_rowadr.add(row_idx as usize) = current_adr;
+
+                            for idx in 0..chain_nnz {
+                                *J_colind.add(current_adr as usize) = *chain_colind.add(idx as usize);
+                                *J_val.add(current_adr as usize) = *blk_jac.add((r * chain_nnz + idx) as usize);
+                                current_adr += 1;
+                            }
+                        }
+                    }
+
+                    // res += J'*K_rot*J*vec
+                    add_jtbj_mul_sparse(m, d, res, vec, J_rownnz, J_rowadr, J_colind,
+                                        J_val, K_rot_cell, dim_e);
+                }
+            }
+        }
+
+        crate::engine::engine_memory::mj_free_stack(d);
+    }
 }
 
 /// C: pow2 (engine/engine_derivative.c:1339)
