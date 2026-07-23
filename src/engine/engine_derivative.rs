@@ -2423,7 +2423,9 @@ pub fn mjd_rne_vel_dense(m: *const mjModel, d: *mut mjData) {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjd_flex_interp_mul(m: *const mjModel, d: *mut mjData, res: *mut f64, vec: *const f64, s1: f64, s2: f64, K_rot_cache: *const f64) {
-    todo!() // mjd_flexInterp_mul
+    // C: mjd_flexInterp_kernel(m, d, res, vec, s1, s2, K_rot_cache, NULL)
+    let K_rot_out: *mut f64 = 0 as *mut f64;
+    mjd_flex_interp_kernel(m, d, res, vec, s1, s2, K_rot_cache, K_rot_out);
 }
 
 /// C: mjd_flexInterp_cacheKrot (engine/engine_derivative.h:52)
@@ -2435,7 +2437,12 @@ pub fn mjd_flex_interp_mul(m: *const mjModel, d: *mut mjData, res: *mut f64, vec
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjd_flex_interp_cache_krot(m: *const mjModel, d: *mut mjData, K_rot_out: *mut f64) {
-    todo!() // mjd_flexInterp_cacheKrot
+    // C: mjd_flexInterp_kernel(m, d, NULL, NULL, 1, 0, NULL, K_rot_out)
+    // use s1=1, s2=0 so scale=1 and K_rot_out gets unscaled values
+    let no_res: *mut f64 = 0 as *mut f64;
+    let no_vec: *const f64 = 0 as *const f64;
+    let no_cache: *const f64 = 0 as *const f64;
+    mjd_flex_interp_kernel(m, d, no_res, no_vec, 1.0, 0.0, no_cache, K_rot_out);
 }
 
 /// C: mjd_flexBend_mul (engine/engine_derivative.h:56)
