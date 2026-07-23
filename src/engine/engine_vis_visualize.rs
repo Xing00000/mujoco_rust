@@ -2433,7 +2433,216 @@ pub fn add_island_label_geoms(m: *const mjModel, d: *mut mjData, vopt: *const mj
 /// Calls: acquireGeom, addConnector, addFrame, addTriangle, f2f, getFrustum, makeLabel, mju_addScl3, mju_addToScl3, mju_n2f, releaseGeom
 #[allow(unused_variables, non_snake_case)]
 pub fn add_camera_geoms(m: *const mjModel, d: *mut mjData, vopt: *const mjvOption, scn: *mut mjvScene) {
-    todo!() // addCameraGeoms
+    const MJVIS_CAMERA: usize = 3;
+    const MJCAT_DECOR: i32 = 4;
+    const MJOBJ_CAMERA: i32 = 7;
+    const MJGEOM_BOX: i32 = 6;
+    const MJGEOM_CYLINDER: i32 = 5;
+    const MJGEOM_LINE: i32 = 103;
+    const MJLABEL_CAMERA: i32 = 5;
+    const MJFRAME_CAMERA: i32 = 4;
+    const MJPROJ_ORTHOGRAPHIC: i32 = 1;
+    const MJPI: f64 = std::f64::consts::PI;
+
+    // SAFETY: m, d, vopt, scn are valid pointers (caller contract).
+    unsafe {
+        if *(*vopt).flags.as_ptr().add(MJVIS_CAMERA) == 0 {
+            return;
+        }
+
+        let scl = (*m).stat.meansize as f32;
+        let scale_ptr = (*m).vis.scale.as_ptr() as *const f32;
+        let rgba_ptr = (*m).vis.rgba._data.as_ptr() as *const f32;
+        let map_ptr = (*m).vis.map.as_ptr() as *const f32;
+
+        for i in 0..(*m).ncam as i32 {
+            // copy camera rgba (index 36 in rgba)
+            let mut cam_rgba: [f32; 4] = [0.0; 4];
+            f2f(cam_rgba.as_mut_ptr(), rgba_ptr.add(36), 4);
+
+            // draw frustum if resolution larger than (1, 1)
+            if *(*m).cam_resolution.add(2 * i as usize) > 1
+                || *(*m).cam_resolution.add(2 * i as usize + 1) > 1
+            {
+                cam_rgba[3] = 0.3;
+
+                // frustum rgba (index 88)
+                let rgba_frustum = rgba_ptr.add(88);
+                let mut vnear: [[f64; 3]; 4] = [[0.0; 3]; 4];
+                let mut vfar: [[f64; 3]; 4] = [[0.0; 3]; 4];
+                let mut center: [f64; 3] = [0.0; 3];
+                // vis.map: index 7 = znear
+                let znear = *map_ptr.add(7) as f64 * (*m).stat.extent;
+                // vis.scale: index 16 = frustum
+                let mut zfar = *scale_ptr.add(16) as f64 * scl as f64;
+                let mut zver: [f32; 2] = [0.0; 2];
+                let mut zhor: [f32; 2] = [0.0; 2];
+                let orthographic = *(*m).cam_projection.add(i as usize) == MJPROJ_ORTHOGRAPHIC;
+
+                // get frustum
+                if orthographic {
+                    let aspect = *(*m).cam_resolution.add(2 * i as usize) as f32
+                        / *(*m).cam_resolution.add(2 * i as usize + 1) as f32;
+                    let fovy = *(*m).cam_fovy.add(i as usize) as f32;
+                    zver[0] = fovy / 2.0;
+                    zver[1] = fovy / 2.0;
+                    zhor[0] = fovy * aspect / 2.0;
+                    zhor[1] = fovy * aspect / 2.0;
+                } else if *(*m).cam_sensorsize.add(2 * i as usize) != 0.0
+                    && *(*m).cam_sensorsize.add(2 * i as usize + 1) != 0.0
+                {
+                    get_frustum(
+                        zver.as_mut_ptr(), zhor.as_mut_ptr(), znear as f32,
+                        (*m).cam_intrinsic.add(4 * i as usize),
+                        (*m).cam_sensorsize.add(2 * i as usize),
+                    );
+                } else {
+                    let aspect = *(*m).cam_resolution.add(2 * i as usize) as f32
+                        / *(*m).cam_resolution.add(2 * i as usize + 1) as f32;
+                    let fovy = *(*m).cam_fovy.add(i as usize);
+                    let tan_val = (fovy * MJPI / 360.0).tan();
+                    zver[0] = (znear * tan_val) as f32;
+                    zver[1] = zver[0];
+                    zhor[0] = zver[0] * aspect;
+                    zhor[1] = zhor[0];
+                }
+
+                // frustum frame
+                let cam_xpos = (*d).cam_xpos.add(3 * i as usize);
+                let cam_xmat = (*d).cam_xmat.add(9 * i as usize);
+                let x: [f64; 3] = [*cam_xmat.add(0), *cam_xmat.add(3), *cam_xmat.add(6)];
+                let y: [f64; 3] = [*cam_xmat.add(1), *cam_xmat.add(4), *cam_xmat.add(7)];
+                let z: [f64; 3] = [*cam_xmat.add(2), *cam_xmat.add(5), *cam_xmat.add(8)];
+
+                // vertices of the near plane
+                crate::engine::engine_util_blas::mju_add_scl3(
+                    center.as_mut_ptr(), cam_xpos, z.as_ptr(), -znear);
+                crate::engine::engine_util_blas::mju_add_scl3(
+                    vnear[0].as_mut_ptr(), center.as_ptr(), x.as_ptr(), -(zhor[0] as f64));
+                crate::engine::engine_util_blas::mju_add_scl3(
+                    vnear[1].as_mut_ptr(), center.as_ptr(), x.as_ptr(), zhor[1] as f64);
+                crate::engine::engine_util_blas::mju_add_scl3(
+                    vnear[2].as_mut_ptr(), center.as_ptr(), x.as_ptr(), zhor[1] as f64);
+                crate::engine::engine_util_blas::mju_add_scl3(
+                    vnear[3].as_mut_ptr(), center.as_ptr(), x.as_ptr(), -(zhor[0] as f64));
+                crate::engine::engine_util_blas::mju_add_to_scl3(
+                    vnear[0].as_mut_ptr(), y.as_ptr(), -(zver[0] as f64));
+                crate::engine::engine_util_blas::mju_add_to_scl3(
+                    vnear[1].as_mut_ptr(), y.as_ptr(), -(zver[0] as f64));
+                crate::engine::engine_util_blas::mju_add_to_scl3(
+                    vnear[2].as_mut_ptr(), y.as_ptr(), zver[1] as f64);
+                crate::engine::engine_util_blas::mju_add_to_scl3(
+                    vnear[3].as_mut_ptr(), y.as_ptr(), zver[1] as f64);
+
+                // vertices of the far plane
+                if !orthographic {
+                    zhor[0] *= (zfar / znear) as f32;
+                    zhor[1] *= (zfar / znear) as f32;
+                    zver[0] *= (zfar / znear) as f32;
+                    zver[1] *= (zfar / znear) as f32;
+                } else {
+                    zfar = (zhor[0] as f64 + zver[0] as f64) / 2.0;
+                }
+                crate::engine::engine_util_blas::mju_add_scl3(
+                    center.as_mut_ptr(), cam_xpos, z.as_ptr(), -zfar);
+                crate::engine::engine_util_blas::mju_add_scl3(
+                    vfar[0].as_mut_ptr(), center.as_ptr(), x.as_ptr(), -(zhor[0] as f64));
+                crate::engine::engine_util_blas::mju_add_scl3(
+                    vfar[1].as_mut_ptr(), center.as_ptr(), x.as_ptr(), zhor[1] as f64);
+                crate::engine::engine_util_blas::mju_add_scl3(
+                    vfar[2].as_mut_ptr(), center.as_ptr(), x.as_ptr(), zhor[1] as f64);
+                crate::engine::engine_util_blas::mju_add_scl3(
+                    vfar[3].as_mut_ptr(), center.as_ptr(), x.as_ptr(), -(zhor[0] as f64));
+                crate::engine::engine_util_blas::mju_add_to_scl3(
+                    vfar[0].as_mut_ptr(), y.as_ptr(), -(zver[0] as f64));
+                crate::engine::engine_util_blas::mju_add_to_scl3(
+                    vfar[1].as_mut_ptr(), y.as_ptr(), -(zver[0] as f64));
+                crate::engine::engine_util_blas::mju_add_to_scl3(
+                    vfar[2].as_mut_ptr(), y.as_ptr(), zver[1] as f64);
+                crate::engine::engine_util_blas::mju_add_to_scl3(
+                    vfar[3].as_mut_ptr(), y.as_ptr(), zver[1] as f64);
+
+                // triangulation and wireframe
+                for e in 0..4i32 {
+                    let e1 = ((e + 1) % 4) as usize;
+                    add_triangle(
+                        scn, vnear[e as usize].as_ptr(), vfar[e as usize].as_ptr(),
+                        vnear[e1].as_ptr(), rgba_frustum, i, MJCAT_DECOR, MJOBJ_CAMERA);
+                    add_triangle(
+                        scn, vfar[e as usize].as_ptr(), vfar[e1].as_ptr(),
+                        vnear[e1].as_ptr(), rgba_frustum, i, MJCAT_DECOR, MJOBJ_CAMERA);
+                    add_connector(
+                        scn, MJGEOM_LINE, 3.0, vnear[e as usize].as_ptr(),
+                        vnear[e1].as_ptr(), rgba_frustum, i, MJCAT_DECOR, MJOBJ_CAMERA);
+                    add_connector(
+                        scn, MJGEOM_LINE, 3.0, vfar[e as usize].as_ptr(),
+                        vfar[e1].as_ptr(), rgba_frustum, i, MJCAT_DECOR, MJOBJ_CAMERA);
+                    add_connector(
+                        scn, MJGEOM_LINE, 3.0, vnear[e as usize].as_ptr(),
+                        vfar[e as usize].as_ptr(), rgba_frustum, i, MJCAT_DECOR, MJOBJ_CAMERA);
+                }
+            }
+
+            let mut thisgeom = acquire_geom(scn, i, MJCAT_DECOR, MJOBJ_CAMERA);
+            if thisgeom.is_null() {
+                return;
+            }
+
+            // construct geom: camera body
+            // vis.scale: index 5 = camera
+            let cam_scale = *scale_ptr.add(5);
+            (*thisgeom).r#type = MJGEOM_BOX;
+            (*thisgeom).size[0] = scl * cam_scale * 1.0;
+            (*thisgeom).size[1] = scl * cam_scale * 0.8;
+            (*thisgeom).size[2] = scl * cam_scale * 0.4;
+            crate::engine::engine_util_misc::mju_n2f(
+                (*thisgeom).pos.as_mut_ptr(), (*d).cam_xpos.add(3 * i as usize), 3);
+            crate::engine::engine_util_misc::mju_n2f(
+                (*thisgeom).mat.as_mut_ptr(), (*d).cam_xmat.add(9 * i as usize), 9);
+            f2f((*thisgeom).rgba.as_mut_ptr(), cam_rgba.as_ptr(), 4);
+
+            if (*vopt).label == MJLABEL_CAMERA {
+                make_label(m, MJOBJ_CAMERA as u32, i, (*thisgeom).label.as_mut_ptr());
+            }
+
+            release_geom(&mut thisgeom, scn);
+
+            thisgeom = acquire_geom(scn, i, MJCAT_DECOR, MJOBJ_CAMERA);
+            if thisgeom.is_null() {
+                return;
+            }
+
+            // construct geom: lens
+            let cam_xpos_i = (*d).cam_xpos.add(3 * i as usize);
+            let cam_xmat_i = (*d).cam_xmat.add(9 * i as usize);
+            (*thisgeom).pos[0] = (*cam_xpos_i.add(0)
+                - scl as f64 * cam_scale as f64 * 0.6 * *cam_xmat_i.add(2)) as f32;
+            (*thisgeom).pos[1] = (*cam_xpos_i.add(1)
+                - scl as f64 * cam_scale as f64 * 0.6 * *cam_xmat_i.add(5)) as f32;
+            (*thisgeom).pos[2] = (*cam_xpos_i.add(2)
+                - scl as f64 * cam_scale as f64 * 0.6 * *cam_xmat_i.add(8)) as f32;
+            (*thisgeom).r#type = MJGEOM_CYLINDER;
+            (*thisgeom).size[0] = scl * cam_scale * 0.4;
+            (*thisgeom).size[1] = scl * cam_scale * 0.4;
+            (*thisgeom).size[2] = scl * cam_scale * 0.3;
+            crate::engine::engine_util_misc::mju_n2f(
+                (*thisgeom).mat.as_mut_ptr(), cam_xmat_i, 9);
+            f2f((*thisgeom).rgba.as_mut_ptr(), cam_rgba.as_ptr(), 4);
+            for k in 0..3 {
+                (*thisgeom).rgba[k] *= 0.5;
+            }
+
+            release_geom(&mut thisgeom, scn);
+
+            if (*vopt).frame != MJFRAME_CAMERA {
+                continue;
+            }
+            // vis.scale: index 13 = framewidth, index 12 = framelength
+            let width = *scale_ptr.add(13) as f64 * scl as f64;
+            let length = *scale_ptr.add(12) as f64 * scl as f64;
+            add_frame(scn, i, cam_xpos_i, cam_xmat_i, length as f32, width as f32);
+        }
+    }
 }
 
 /// C: addLightGeoms (engine/engine_vis_visualize.c:2460)
