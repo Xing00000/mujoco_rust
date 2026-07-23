@@ -1133,7 +1133,272 @@ pub fn mj_jac_sum_count(m: *const mjModel, d: *mut mjData, chain: *mut i32, n: i
 /// Calls: mj_addConstraintCount, mj_freeStack, mj_jacDifPair, mj_jacSumCount, mj_markStack, mj_sleepState, mj_stackAllocInfo, mju_combineSparseCount, mju_copyInt, mju_flexGatherCellState, mju_flexGatherFaceState, mju_message
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_ne(m: *const mjModel, d: *mut mjData, nnz: *mut i32) -> i32 {
-    todo!() // mj_ne
+    const MJDSBL_EQUALITY: i32 = 1 << 1;
+    const MJENBL_SLEEP: i32 = 1 << 4;
+    const MJS_ASLEEP: i32 = 0;
+    const MJOBJ_EQUALITY: i32 = 17;
+    const MJOBJ_SITE: i32 = 6;
+    const MJEQ_CONNECT: i32 = 0;
+    const MJEQ_WELD: i32 = 1;
+    const MJEQ_JOINT: i32 = 2;
+    const MJEQ_TENDON: i32 = 3;
+    const MJEQ_FLEX: i32 = 4;
+    const MJEQ_FLEXVERT: i32 = 5;
+    const MJEQ_FLEXSTRAIN: i32 = 6;
+    const MJNEQDATA: i32 = 11;
+
+    // SAFETY: m, d are valid pointers (caller contract). nnz may be NULL.
+    unsafe {
+        let mut ne: i32 = 0;
+        let mut nnze: i32 = 0;
+        let nv = (*m).nv as i32;
+        let neq = (*m).neq as i32;
+        let issparse = (!nnz.is_null()) as i32;
+
+        if ((*m).opt.disableflags & MJDSBL_EQUALITY) != 0 || (*m).nemax == 0 {
+            return 0;
+        }
+
+        let sleep_filter = (((*m).opt.enableflags & MJENBL_SLEEP) != 0)
+            && (*d).ntree_awake < (*m).ntree as i32;
+
+        crate::engine::engine_memory::mj_mark_stack(d);
+
+        let chain = if !nnz.is_null() {
+            crate::engine::engine_memory::mj_stack_alloc_int(d, nv as usize)
+        } else {
+            std::ptr::null_mut()
+        };
+        let chain2 = if !nnz.is_null() {
+            crate::engine::engine_memory::mj_stack_alloc_int(d, nv as usize)
+        } else {
+            std::ptr::null_mut()
+        };
+        let cell_bodies = if !nnz.is_null() {
+            crate::engine::engine_memory::mj_stack_alloc_int(d, 125)
+        } else {
+            std::ptr::null_mut()
+        };
+
+        for i in 0..neq {
+            // skip inactive
+            if !*(*d).eq_active.add(i as usize) {
+                continue;
+            }
+
+            // skip sleeping
+            if sleep_filter
+                && crate::engine::engine_sleep::mj_sleep_state(
+                    m, d as *const mjData, MJOBJ_EQUALITY as u32, i,
+                ) == MJS_ASLEEP
+            {
+                continue;
+            }
+
+            let mut id: [i32; 2] = [
+                *(*m).eq_obj1id.add(i as usize),
+                *(*m).eq_obj2id.add(i as usize),
+            ];
+            let mut size: i32 = 0;
+            let mut NV: i32 = 0;
+            let mut NV2: i32 = 0;
+
+            let eq_type = *(*m).eq_type.add(i as usize);
+
+            if eq_type == MJEQ_CONNECT {
+                size = 3;
+                if !nnz.is_null() {
+                    if *(*m).eq_objtype.add(i as usize) == MJOBJ_SITE {
+                        id[0] = *(*m).site_bodyid.add(id[0] as usize);
+                        id[1] = *(*m).site_bodyid.add(id[1] as usize);
+                    }
+                    NV = crate::engine::engine_core_util::mj_jac_dif_pair(
+                        m, std::ptr::null(), chain, id[1], id[0],
+                        std::ptr::null(), std::ptr::null(),
+                        std::ptr::null_mut(), std::ptr::null_mut(), std::ptr::null_mut(),
+                        std::ptr::null_mut(), std::ptr::null_mut(), std::ptr::null_mut(),
+                        issparse, 0,
+                    );
+                }
+            } else if eq_type == MJEQ_WELD {
+                size = 6;
+                if !nnz.is_null() {
+                    if *(*m).eq_objtype.add(i as usize) == MJOBJ_SITE {
+                        id[0] = *(*m).site_bodyid.add(id[0] as usize);
+                        id[1] = *(*m).site_bodyid.add(id[1] as usize);
+                    }
+                    NV = crate::engine::engine_core_util::mj_jac_dif_pair(
+                        m, std::ptr::null(), chain, id[1], id[0],
+                        std::ptr::null(), std::ptr::null(),
+                        std::ptr::null_mut(), std::ptr::null_mut(), std::ptr::null_mut(),
+                        std::ptr::null_mut(), std::ptr::null_mut(), std::ptr::null_mut(),
+                        issparse, 0,
+                    );
+                }
+            } else if eq_type == MJEQ_JOINT || eq_type == MJEQ_TENDON {
+                size = 1;
+                if !nnz.is_null() {
+                    let n_objs = 1 + (id[1] >= 0) as i32;
+                    for j in 0..n_objs {
+                        if eq_type == MJEQ_JOINT {
+                            if j == 0 {
+                                NV = 1;
+                                *chain.add(0) = *(*m).jnt_dofadr.add(id[j as usize] as usize);
+                            } else {
+                                NV2 = 1;
+                                *chain2.add(0) = *(*m).jnt_dofadr.add(id[j as usize] as usize);
+                            }
+                        } else {
+                            if j == 0 {
+                                NV = *(*m).ten_J_rownnz.add(id[j as usize] as usize);
+                                crate::engine::engine_util_misc::mju_copy_int(
+                                    chain,
+                                    (*m).ten_J_colind.add(
+                                        *(*m).ten_J_rowadr.add(id[j as usize] as usize) as usize,
+                                    ),
+                                    NV,
+                                );
+                            } else {
+                                NV2 = *(*m).ten_J_rownnz.add(id[j as usize] as usize);
+                                crate::engine::engine_util_misc::mju_copy_int(
+                                    chain2,
+                                    (*m).ten_J_colind.add(
+                                        *(*m).ten_J_rowadr.add(id[j as usize] as usize) as usize,
+                                    ),
+                                    NV2,
+                                );
+                            }
+                        }
+                    }
+                    if id[1] >= 0 {
+                        NV = crate::engine::engine_util_sparse::mju_combine_sparse_count(
+                            NV, NV2, chain, chain2,
+                        );
+                    }
+                }
+            } else if eq_type == MJEQ_FLEX {
+                let flex_edgeadr = *(*m).flex_edgeadr.add(id[0] as usize);
+                let flex_edgenum = *(*m).flex_edgenum.add(id[0] as usize);
+                size = flex_edgenum;
+
+                for e in flex_edgeadr..(flex_edgeadr + flex_edgenum) {
+                    if *(*m).flexedge_rigid.add(e as usize) {
+                        size -= 1;
+                        continue;
+                    }
+                    if !nnz.is_null() {
+                        let b1 = *(*m).flex_vertbodyid.add(
+                            (*(*m).flex_vertadr.add(id[0] as usize)
+                                + *(*m).flex_edge.add(2 * e as usize)) as usize,
+                        );
+                        let b2 = *(*m).flex_vertbodyid.add(
+                            (*(*m).flex_vertadr.add(id[0] as usize)
+                                + *(*m).flex_edge.add(2 * e as usize + 1)) as usize,
+                        );
+                        NV += crate::engine::engine_core_util::mj_jac_dif_pair(
+                            m, std::ptr::null(), chain, b1, b2,
+                            std::ptr::null(), std::ptr::null(),
+                            std::ptr::null_mut(), std::ptr::null_mut(), std::ptr::null_mut(),
+                            std::ptr::null_mut(), std::ptr::null_mut(), std::ptr::null_mut(),
+                            issparse, 0,
+                        );
+                    }
+                }
+            } else if eq_type == MJEQ_FLEXVERT {
+                let flex_vertadr = *(*m).flex_vertadr.add(id[0] as usize);
+                let flex_vertnum = *(*m).flex_vertnum.add(id[0] as usize);
+                size = 2 * flex_vertnum;
+                if !nnz.is_null() {
+                    for v in flex_vertadr..(flex_vertadr + flex_vertnum) {
+                        NV += *(*m).flexvert_J_rownnz.add(2 * v as usize);
+                        NV += *(*m).flexvert_J_rownnz.add(2 * v as usize + 1);
+                    }
+                }
+            } else if eq_type == MJEQ_FLEXSTRAIN {
+                let f = id[0];
+                let interp = *(*m).flex_interp.add(f as usize);
+                let mut order = if interp < 0 { -interp } else { interp };
+                let is_shell = interp < 0;
+                if order == 0 || *(*m).flex_nodenum.add(f as usize) == 0 {
+                    // size stays 0, skip accumulation below
+                    ne += mj_add_constraint_count(m, 0, 0);
+                    continue;
+                }
+
+                let cx = *(*m).flex_cellnum.add(3 * f as usize);
+                let cy = *(*m).flex_cellnum.add(3 * f as usize + 1);
+                let cz = *(*m).flex_cellnum.add(3 * f as usize + 2);
+
+                let npe: i32;
+                let elem_idx: i32;
+                if is_shell {
+                    npe = (order + 1) * (order + 1);
+                    elem_idx = *(*m).eq_data.add((MJNEQDATA * i) as usize) as i32;
+                } else {
+                    npe = (order + 1) * (order + 1) * (order + 1);
+                    let ci_cell = *(*m).eq_data.add((MJNEQDATA * i) as usize) as i32;
+                    let cj_cell = *(*m).eq_data.add((MJNEQDATA * i + 1) as usize) as i32;
+                    let ck_cell = *(*m).eq_data.add((MJNEQDATA * i + 2) as usize) as i32;
+                    elem_idx = ci_cell * cy * cz + cj_cell * cz + ck_cell;
+                }
+
+                let ndof_elem = 3 * npe;
+                size = 0;
+                if *(*m).flex_stiffnessadr.add(f as usize) >= 0 {
+                    let k_elem = (*m).flex_stiffness.add(
+                        (*(*m).flex_stiffnessadr.add(f as usize)
+                            + elem_idx * ndof_elem * ndof_elem) as usize,
+                    );
+                    size = *k_elem as i32;
+                }
+
+                if !nnz.is_null() {
+                    let mut gindices: [i32; 125] = [0; 125];
+                    if is_shell {
+                        crate::engine::engine_util_misc::mju_flex_gather_face_state(
+                            order, cx, cy, cz, elem_idx,
+                            std::ptr::null(), std::ptr::null(), std::ptr::null(),
+                            std::ptr::null_mut(), std::ptr::null_mut(), std::ptr::null_mut(),
+                            gindices.as_mut_ptr(), std::ptr::null_mut(),
+                        );
+                    } else {
+                        let ci_cell = *(*m).eq_data.add((MJNEQDATA * i) as usize) as i32;
+                        let cj_cell = *(*m).eq_data.add((MJNEQDATA * i + 1) as usize) as i32;
+                        let ck_cell = *(*m).eq_data.add((MJNEQDATA * i + 2) as usize) as i32;
+                        crate::engine::engine_util_misc::mju_flex_gather_cell_state(
+                            order, cy, cz, ci_cell, cj_cell, ck_cell,
+                            std::ptr::null(), std::ptr::null(), std::ptr::null(),
+                            std::ptr::null_mut(), std::ptr::null_mut(), std::ptr::null_mut(),
+                            gindices.as_mut_ptr(), std::ptr::null_mut(),
+                        );
+                    }
+                    let nstart = *(*m).flex_nodeadr.add(f as usize);
+                    for n in 0..npe {
+                        *cell_bodies.add(n as usize) =
+                            *(*m).flex_nodebodyid.add((nstart + gindices[n as usize]) as usize);
+                    }
+                    NV = mj_jac_sum_count(m, d, chain, npe, cell_bodies);
+                    NV = size * NV;
+                }
+            } else {
+                panic!("unknown constraint type");
+            }
+
+            ne += mj_add_constraint_count(m, size, NV);
+            if eq_type == MJEQ_FLEX || eq_type == MJEQ_FLEXVERT || eq_type == MJEQ_FLEXSTRAIN {
+                nnze += NV;
+            } else {
+                nnze += size * NV;
+            }
+        }
+
+        if !nnz.is_null() {
+            *nnz += nnze;
+        }
+
+        crate::engine::engine_memory::mj_free_stack(d);
+        ne
+    }
 }
 
 /// C: mj_nc (engine/engine_core_constraint.c:2536)
