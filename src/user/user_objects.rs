@@ -1,5 +1,5 @@
 //! Port of: user/user_objects.cc
-//! IR hash: bd605ac8158c32d6
+//! IR hash: 3fb6da908ad9d71c
 //! CODEGEN: signatures locked. Only fill todo!() bodies.
 
 use crate::types::*;
@@ -1183,7 +1183,7 @@ pub fn mj_c_frame_copy_from_spec(self_ptr: *mut mjCFrame) {
         (*self_ptr).pos = (*self_ptr).spec.pos;
         (*self_ptr).quat = (*self_ptr).spec.quat;
         (*self_ptr).alt = (*self_ptr).spec.alt;
-        (*self_ptr).info = (*self_ptr).spec.info;
+        (*self_ptr).info_1 = (*self_ptr).spec.info;
 
         // mjuu_copyvec(pos, spec.pos, 3)
         crate::user::user_util::mjuu_copyvec(
@@ -3201,8 +3201,7 @@ pub fn mj_c_pair_get_geomname2(self_ptr: *mut mjCPair) -> *const std__string {
 /// C: mjCPair::GetSignature (user/user_objects.h:1573)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_pair_get_signature(self_ptr: *mut mjCPair) -> i32 {
-    // MACHINE-PROVEN: Clang AST direct field access
-    unsafe { (*self_ptr).signature }
+    todo!() // mjCPair::GetSignature
 }
 
 /// C: mjCPair::Compile (user/user_objects.h:1578)
@@ -3268,8 +3267,7 @@ pub fn mj_c_body_pair_get_bodyname2(self_ptr: *mut mjCBodyPair) -> std__string {
 /// C: mjCBodyPair::GetSignature (user/user_objects.h:1621)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_body_pair_get_signature(self_ptr: *mut mjCBodyPair) -> i32 {
-    // MACHINE-PROVEN: Clang AST direct field access
-    unsafe { (*self_ptr).signature }
+    todo!() // mjCBodyPair::GetSignature
 }
 
 /// C: mjCBodyPair::Compile (user/user_objects.h:1626)
@@ -3481,7 +3479,7 @@ pub fn mj_c_wrap_copy_from_spec(self_ptr: *mut mjCWrap) {
     unsafe {
         (*self_ptr).element = (*self_ptr).spec.element;
         (*self_ptr).r#type = (*self_ptr).spec.r#type;
-        (*self_ptr).info = (*self_ptr).spec.info;
+        (*self_ptr).info_1 = (*self_ptr).spec.info;
     }
 }
 

@@ -1,5 +1,5 @@
 //! Port of: cc/array_safety.h
-//! IR hash: bd605ac8158c32d6
+//! IR hash: 3fb6da908ad9d71c
 //! CODEGEN: signatures locked. Only fill todo!() bodies.
 
 use crate::types::*;
