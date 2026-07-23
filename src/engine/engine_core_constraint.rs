@@ -1785,7 +1785,266 @@ pub fn mj_mul_jac_t_vec(m: *const mjModel, d: *const mjData, res: *mut f64, vec:
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_jdotv(m: *const mjModel, d: *mut mjData, result: *mut f64) {
-    todo!() // mj_Jdotv
+    const mjNEQDATA: i32 = 11;
+
+    // SAFETY: m, d, result are valid pointers (caller contract)
+    unsafe {
+        let nv = (*m).nv as i32;
+        let ne = (*d).ne;
+
+        // nothing to do
+        if ne == 0 || nv == 0 {
+            return;
+        }
+
+        let issparse = crate::engine::engine_core_util::mj_is_sparse(m);
+
+        crate::engine::engine_memory::mj_mark_stack(d);
+
+        // allocate scratch for jacDot matrices (translational and rotational)
+        let chain: *mut i32 = if issparse != 0 {
+            crate::engine::engine_memory::mj_stack_alloc_int(d, nv as usize)
+        } else {
+            std::ptr::null_mut()
+        };
+        let mut jacdot1: *mut f64 = std::ptr::null_mut();
+        let mut jacdot2: *mut f64 = std::ptr::null_mut();
+        let mut jacrdot1: *mut f64 = std::ptr::null_mut();
+        let mut jacrdot2: *mut f64 = std::ptr::null_mut();
+
+        // iterate over equality constraint efc rows
+        let mut row: i32 = 0;
+        while row < ne {
+            let eq_id = *(*d).efc_id.add(row as usize);
+            let eq_type = *(*m).eq_type.add(eq_id as usize);
+
+            // connect or weld: compute Jdot*v for translational part
+            if eq_type == mjtEq_mjEQ_CONNECT as i32 || eq_type == mjtEq_mjEQ_WELD as i32 {
+                let data = (*m).eq_data.add((mjNEQDATA * eq_id) as usize);
+
+                // allocate translational scratch on first connect or weld
+                if jacdot1.is_null() {
+                    jacdot1 = crate::engine::engine_memory::mj_stack_alloc_num(d, (3 * nv) as usize);
+                    jacdot2 = crate::engine::engine_memory::mj_stack_alloc_num(d, (3 * nv) as usize);
+                }
+
+                // allocate rotational scratch on first weld
+                if eq_type == mjtEq_mjEQ_WELD as i32 && jacrdot1.is_null() {
+                    jacrdot1 = crate::engine::engine_memory::mj_stack_alloc_num(d, (3 * nv) as usize);
+                    jacrdot2 = crate::engine::engine_memory::mj_stack_alloc_num(d, (3 * nv) as usize);
+                }
+
+                // compute global anchor points and body ids
+                let obj1 = *(*m).eq_obj1id.add(eq_id as usize);
+                let obj2 = *(*m).eq_obj2id.add(eq_id as usize);
+                let mut pos1 = [0.0f64; 3];
+                let mut pos2 = [0.0f64; 3];
+                let mut body1: i32 = 0;
+                let mut body2: i32 = 0;
+                mj_equality_anchors(m, d as *const mjData, eq_id, pos1.as_mut_ptr(), pos2.as_mut_ptr(), &mut body1, &mut body2);
+
+                // compute jacDot*v for each body point
+                let mut jdv1 = [0.0f64; 3];
+                let mut jdv2 = [0.0f64; 3];
+                let mut jrdv1 = [0.0f64; 3];
+                let mut jrdv2 = [0.0f64; 3];
+
+                if issparse != 0 {
+                    // get merged chain for the two bodies
+                    let NV = crate::engine::engine_core_util::mj_merge_chain(
+                        m, chain, body1, body2, 0);
+
+                    if NV > 0 {
+                        // sparse: translational and rotational
+                        let jacr1 = if eq_type == mjtEq_mjEQ_WELD as i32 { jacrdot1 } else { std::ptr::null_mut() };
+                        let jacr2 = if eq_type == mjtEq_mjEQ_WELD as i32 { jacrdot2 } else { std::ptr::null_mut() };
+                        crate::engine::engine_core_util::mj_jac_dot_sparse(
+                            m, d as *const mjData, jacdot1, jacr1, pos1.as_ptr(), body1, NV, chain);
+                        crate::engine::engine_core_util::mj_jac_dot_sparse(
+                            m, d as *const mjData, jacdot2, jacr2, pos2.as_ptr(), body2, NV, chain);
+
+                        // translational jdv = jacDot * qvel
+                        crate::engine::engine_util_sparse::mju_dot_sparse_x3(
+                            jdv1.as_mut_ptr(), jdv1.as_mut_ptr().add(1), jdv1.as_mut_ptr().add(2),
+                            jacdot1, jacdot1.add(NV as usize), jacdot1.add(2 * NV as usize),
+                            (*d).qvel, NV, chain);
+                        crate::engine::engine_util_sparse::mju_dot_sparse_x3(
+                            jdv2.as_mut_ptr(), jdv2.as_mut_ptr().add(1), jdv2.as_mut_ptr().add(2),
+                            jacdot2, jacdot2.add(NV as usize), jacdot2.add(2 * NV as usize),
+                            (*d).qvel, NV, chain);
+
+                        // rotational jdv for welds
+                        if eq_type == mjtEq_mjEQ_WELD as i32 {
+                            crate::engine::engine_util_sparse::mju_dot_sparse_x3(
+                                jrdv1.as_mut_ptr(), jrdv1.as_mut_ptr().add(1), jrdv1.as_mut_ptr().add(2),
+                                jacrdot1, jacrdot1.add(NV as usize), jacrdot1.add(2 * NV as usize),
+                                (*d).qvel, NV, chain);
+                            crate::engine::engine_util_sparse::mju_dot_sparse_x3(
+                                jrdv2.as_mut_ptr(), jrdv2.as_mut_ptr().add(1), jrdv2.as_mut_ptr().add(2),
+                                jacrdot2, jacrdot2.add(NV as usize), jacrdot2.add(2 * NV as usize),
+                                (*d).qvel, NV, chain);
+                        }
+                    } else {
+                        jdv1 = [0.0; 3];
+                        jdv2 = [0.0; 3];
+                    }
+                } else {
+                    // dense: translational and rotational
+                    let jacr1 = if eq_type == mjtEq_mjEQ_WELD as i32 { jacrdot1 } else { std::ptr::null_mut() };
+                    let jacr2 = if eq_type == mjtEq_mjEQ_WELD as i32 { jacrdot2 } else { std::ptr::null_mut() };
+                    crate::engine::engine_core_util::mj_jac_dot(
+                        m, d as *const mjData, jacdot1, jacr1, pos1.as_ptr(), body1);
+                    crate::engine::engine_core_util::mj_jac_dot(
+                        m, d as *const mjData, jacdot2, jacr2, pos2.as_ptr(), body2);
+
+                    // translational jdv = jacDot * qvel
+                    crate::engine::engine_util_blas::mju_mul_mat_vec(
+                        jdv1.as_mut_ptr(), jacdot1, (*d).qvel, 3, nv);
+                    crate::engine::engine_util_blas::mju_mul_mat_vec(
+                        jdv2.as_mut_ptr(), jacdot2, (*d).qvel, 3, nv);
+
+                    // rotational jdv for welds
+                    if eq_type == mjtEq_mjEQ_WELD as i32 {
+                        crate::engine::engine_util_blas::mju_mul_mat_vec(
+                            jrdv1.as_mut_ptr(), jacrdot1, (*d).qvel, 3, nv);
+                        crate::engine::engine_util_blas::mju_mul_mat_vec(
+                            jrdv2.as_mut_ptr(), jacrdot2, (*d).qvel, 3, nv);
+                    }
+                }
+
+                // subtract translational Jdot*v
+                *result.add(row as usize) -= jdv1[0] - jdv2[0];
+                *result.add(row as usize + 1) -= jdv1[1] - jdv2[1];
+                *result.add(row as usize + 2) -= jdv1[2] - jdv2[2];
+
+                // advance past translational rows
+                row += 3;
+
+                // weld: compute rotational Jdot*v
+                if eq_type == mjtEq_mjEQ_WELD as i32 {
+                    let torquescale = *data.add(10);
+
+                    // get body quaternions and relpose, following mj_instantiateEquality
+                    let mut q0r = [0.0f64; 4];
+                    let mut negq1 = [0.0f64; 4];
+                    if *(*m).eq_objtype.add(eq_id as usize) == mjtObj_mjOBJ_BODY as i32 {
+                        let relpose = data.add(6);
+                        crate::engine::engine_util_spatial::mju_mul_quat(
+                            q0r.as_mut_ptr(), (*d).xquat.add(4 * body1 as usize), relpose);
+                        crate::engine::engine_util_spatial::mju_neg_quat(
+                            negq1.as_mut_ptr(), (*d).xquat.add(4 * body2 as usize));
+                    } else {
+                        crate::engine::engine_util_spatial::mju_mul_quat(
+                            q0r.as_mut_ptr(), (*d).xquat.add(4 * body1 as usize),
+                            (*m).site_quat.add(4 * obj1 as usize));
+                        let mut qsite1 = [0.0f64; 4];
+                        crate::engine::engine_util_spatial::mju_mul_quat(
+                            qsite1.as_mut_ptr(), (*d).xquat.add(4 * body2 as usize),
+                            (*m).site_quat.add(4 * obj2 as usize));
+                        crate::engine::engine_util_spatial::mju_neg_quat(
+                            negq1.as_mut_ptr(), qsite1.as_ptr());
+                    }
+
+                    // angular velocities from cvel (first 3 components are angular)
+                    let omega1 = (*d).cvel.add(6 * body1 as usize);
+                    let omega2 = (*d).cvel.add(6 * body2 as usize);
+
+                    // relative angular velocity: domega = omega1 - omega2
+                    let mut domega = [0.0f64; 3];
+                    crate::engine::engine_util_blas::mju_sub3(
+                        domega.as_mut_ptr(), omega1, omega2);
+
+                    // quaternion derivatives: qdot = 0.5 * q * (0, omega)
+                    let mut qdot0 = [0.0f64; 4];
+                    if *(*m).eq_objtype.add(eq_id as usize) == mjtObj_mjOBJ_BODY as i32 {
+                        crate::engine::engine_util_spatial::mju_deriv_quat(
+                            qdot0.as_mut_ptr(), (*d).xquat.add(4 * body1 as usize), omega1);
+                    } else {
+                        let mut qfull0 = [0.0f64; 4];
+                        crate::engine::engine_util_spatial::mju_mul_quat(
+                            qfull0.as_mut_ptr(), (*d).xquat.add(4 * body1 as usize),
+                            (*m).site_quat.add(4 * obj1 as usize));
+                        crate::engine::engine_util_spatial::mju_deriv_quat(
+                            qdot0.as_mut_ptr(), qfull0.as_ptr(), omega1);
+                    }
+
+                    // qdot0r: d/dt(q0 * relpose) = qdot0 * relpose
+                    let mut qdot0r = [0.0f64; 4];
+                    if *(*m).eq_objtype.add(eq_id as usize) == mjtObj_mjOBJ_BODY as i32 {
+                        crate::engine::engine_util_spatial::mju_mul_quat(
+                            qdot0r.as_mut_ptr(), qdot0.as_ptr(), data.add(6));
+                    } else {
+                        crate::engine::engine_util_blas::mju_copy4(
+                            qdot0r.as_mut_ptr(), qdot0.as_ptr());
+                    }
+
+                    // neg(qdot1): d/dt(neg(q1)) = neg(qdot1)
+                    let mut negqdot1 = [0.0f64; 4];
+                    if *(*m).eq_objtype.add(eq_id as usize) == mjtObj_mjOBJ_BODY as i32 {
+                        let mut qdot1 = [0.0f64; 4];
+                        crate::engine::engine_util_spatial::mju_deriv_quat(
+                            qdot1.as_mut_ptr(), (*d).xquat.add(4 * body2 as usize), omega2);
+                        crate::engine::engine_util_spatial::mju_neg_quat(
+                            negqdot1.as_mut_ptr(), qdot1.as_ptr());
+                    } else {
+                        let mut qfull1 = [0.0f64; 4];
+                        let mut qdot1 = [0.0f64; 4];
+                        crate::engine::engine_util_spatial::mju_mul_quat(
+                            qfull1.as_mut_ptr(), (*d).xquat.add(4 * body2 as usize),
+                            (*m).site_quat.add(4 * obj2 as usize));
+                        crate::engine::engine_util_spatial::mju_deriv_quat(
+                            qdot1.as_mut_ptr(), qfull1.as_ptr(), omega2);
+                        crate::engine::engine_util_spatial::mju_neg_quat(
+                            negqdot1.as_mut_ptr(), qdot1.as_ptr());
+                    }
+
+                    // djrdv = Jrdot0*v - Jrdot1*v (rotational jacDot difference * v)
+                    let mut djrdv = [0.0f64; 3];
+                    crate::engine::engine_util_blas::mju_sub3(
+                        djrdv.as_mut_ptr(), jrdv1.as_ptr(), jrdv2.as_ptr());
+
+                    // term1: neg(qdot1) * domega * q0r
+                    let mut t1a = [0.0f64; 4];
+                    let mut t1 = [0.0f64; 4];
+                    crate::engine::engine_util_spatial::mju_mul_quat_axis(
+                        t1a.as_mut_ptr(), negqdot1.as_ptr(), domega.as_ptr());
+                    crate::engine::engine_util_spatial::mju_mul_quat(
+                        t1.as_mut_ptr(), t1a.as_ptr(), q0r.as_ptr());
+
+                    // term2: neg(q1) * djrdv * q0r
+                    let mut t2a = [0.0f64; 4];
+                    let mut t2 = [0.0f64; 4];
+                    crate::engine::engine_util_spatial::mju_mul_quat_axis(
+                        t2a.as_mut_ptr(), negq1.as_ptr(), djrdv.as_ptr());
+                    crate::engine::engine_util_spatial::mju_mul_quat(
+                        t2.as_mut_ptr(), t2a.as_ptr(), q0r.as_ptr());
+
+                    // term3: neg(q1) * domega * qdot0r
+                    let mut t3a = [0.0f64; 4];
+                    let mut t3 = [0.0f64; 4];
+                    crate::engine::engine_util_spatial::mju_mul_quat_axis(
+                        t3a.as_mut_ptr(), negq1.as_ptr(), domega.as_ptr());
+                    crate::engine::engine_util_spatial::mju_mul_quat(
+                        t3.as_mut_ptr(), t3a.as_ptr(), qdot0r.as_ptr());
+
+                    // combine: 0.5 * (term1 + term2 + term3), take vector part, scale
+                    *result.add(row as usize) -= 0.5 * (t1[1] + t2[1] + t3[1]) * torquescale;
+                    *result.add(row as usize + 1) -= 0.5 * (t1[2] + t2[2] + t3[2]) * torquescale;
+                    *result.add(row as usize + 2) -= 0.5 * (t1[3] + t2[3] + t3[3]) * torquescale;
+
+                    row += 3;
+                }
+            }
+            // other types: advance past all rows with this efc_id
+            else {
+                while row < ne && *(*d).efc_id.add(row as usize) == eq_id {
+                    row += 1;
+                }
+            }
+        }
+
+        crate::engine::engine_memory::mj_free_stack(d);
+    }
 }
 
 /// C: mj_assignRef (engine/engine_core_constraint.h:46)
