@@ -1,5 +1,5 @@
 //! Port of: engine/engine_io.c
-//! IR hash: 73a9f665ec0ecfc0
+//! IR hash: bd605ac8158c32d6
 //! CODEGEN: signatures locked. Only fill todo!() bodies.
 
 use crate::types::*;
@@ -251,7 +251,7 @@ pub fn reset_data(m: *const mjModel, d: *mut mjData, debug_value: u8) {
 /// Calls: mju_message
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_log_timing_diagnostics(d: *const mjData) {
-    todo!("requires raw timer struct access (mjTimerStat[15] as [u8;240]) and mjTIMERSTRING global array — diagnostic logging only, not physics-critical")
+    todo!() // mj_logTimingDiagnostics
 }
 
 /// C: sensorSize (engine/engine_io.c:1685)

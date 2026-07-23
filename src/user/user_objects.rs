@@ -1,5 +1,5 @@
 //! Port of: user/user_objects.cc
-//! IR hash: 73a9f665ec0ecfc0
+//! IR hash: bd605ac8158c32d6
 //! CODEGEN: signatures locked. Only fill todo!() bodies.
 
 use crate::types::*;
@@ -14,19 +14,22 @@ pub fn png_image_load(obj: *const mjCBase, resource: *mut mjResource, color_type
 /// C: PNGImage::Width (user/user_objects.cc:60)
 #[allow(unused_variables, non_snake_case)]
 pub fn png_image_width(self_ptr: *mut anonymous_namespace___PNGImage) -> i32 {
-    todo!() // PNGImage::Width
+    // MACHINE-PROVEN: Clang AST direct field access
+    unsafe { (*self_ptr).width_ }
 }
 
 /// C: PNGImage::Height (user/user_objects.cc:61)
 #[allow(unused_variables, non_snake_case)]
 pub fn png_image_height(self_ptr: *mut anonymous_namespace___PNGImage) -> i32 {
-    todo!() // PNGImage::Height
+    // MACHINE-PROVEN: Clang AST direct field access
+    unsafe { (*self_ptr).height_ }
 }
 
 /// C: PNGImage::IsSRGB (user/user_objects.cc:62)
 #[allow(unused_variables, non_snake_case)]
 pub fn png_image_is_srgb(self_ptr: *mut anonymous_namespace___PNGImage) -> bool {
-    todo!() // PNGImage::IsSRGB
+    // MACHINE-PROVEN: Clang AST direct field access
+    unsafe { (*self_ptr).is_srgb_ }
 }
 
 /// C: PNGImage::MoveData (user/user_objects.cc:66)
@@ -875,7 +878,7 @@ pub fn mj_c_base_get_parent(self_ptr: *mut mjCBase) -> *mut mjCBase {
 /// Calls: mjCModel::FindSpec
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_base_find_compiler(self_ptr: *mut mjCBase, compiler: *const mjsCompiler) -> *mut mjsCompiler {
-    todo!("requires C++ class member access: model->FindSpec(compiler) uses mjCModel vtable dispatch")
+    todo!() // mjCBase::FindCompiler
 }
 
 /// C: mjCBase::ForgetKeyframes (user/user_objects.h:396)
@@ -1157,7 +1160,7 @@ pub fn mj_c_body_name_space_1(self_ptr: *mut mjCBody, m: *const mjCModel, propag
 /// Calls: mjCModel::CopyExplicitPlugin
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_body_copy_plugin(self_ptr: *mut mjCBody) {
-    todo!("requires C++ class member access: model->CopyExplicitPlugin(this)")
+    todo!() // mjCBody::CopyPlugin
 }
 
 /// C: mjCBody::CopyList (user/user_objects.h:622)
@@ -1624,7 +1627,7 @@ pub fn mj_c_geom_name_space(self_ptr: *mut mjCGeom, m: *const mjCModel) {
 /// Calls: mjCModel::CopyExplicitPlugin
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_geom_copy_plugin(self_ptr: *mut mjCGeom) {
-    todo!("requires C++ class member access: model->CopyExplicitPlugin(this)")
+    todo!() // mjCGeom::CopyPlugin
 }
 
 /// C: mjCSite::Body (user/user_objects.h:849)
@@ -2683,7 +2686,7 @@ pub fn mj_c_mesh_check_initial_mesh(self_ptr: *mut mjCMesh) {
 /// Calls: mjCModel::CopyExplicitPlugin
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_mesh_copy_plugin(self_ptr: *mut mjCMesh) {
-    todo!("requires C++ class member access: model->CopyExplicitPlugin(this)")
+    todo!() // mjCMesh::CopyPlugin
 }
 
 /// C: mjCMesh::Rotate (user/user_objects.h:1291)
@@ -3664,7 +3667,7 @@ pub fn mj_c_actuator_name_space(self_ptr: *mut mjCActuator, m: *const mjCModel) 
 /// Calls: mjCModel::CopyExplicitPlugin
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_actuator_copy_plugin(self_ptr: *mut mjCActuator) {
-    todo!("requires C++ class member access: model->CopyExplicitPlugin(this)")
+    todo!() // mjCActuator::CopyPlugin
 }
 
 /// C: mjCActuator::ForgetKeyframes (user/user_objects.h:1864)
@@ -3753,7 +3756,7 @@ pub fn mj_c_sensor_name_space(self_ptr: *mut mjCSensor, m: *const mjCModel) {
 /// Calls: mjCModel::CopyExplicitPlugin
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_sensor_copy_plugin(self_ptr: *mut mjCSensor) {
-    todo!("requires C++ class member access: model->CopyExplicitPlugin(this)")
+    todo!() // mjCSensor::CopyPlugin
 }
 
 /// C: mjCNumeric::PointToLocal (user/user_objects.h:1944)

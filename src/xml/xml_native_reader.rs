@@ -1,5 +1,5 @@
 //! Port of: xml/xml_native_reader.cc
-//! IR hash: 73a9f665ec0ecfc0
+//! IR hash: bd605ac8158c32d6
 //! CODEGEN: signatures locked. Only fill todo!() bodies.
 
 use crate::types::*;
@@ -328,7 +328,7 @@ pub fn mj_x_reader_get_class(self_ptr: *mut mjXReader, section: *mut tinyxml2__X
 /// C: mjXReader::AssetDir (xml/xml_native_reader.h:94)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_x_reader_asset_dir(self_ptr: *mut mjXReader) -> mujoco__user__FilePath {
-    todo!("requires C++ class member access: modelfiledir_ + assetdir_ (std::string concat)")
+    todo!() // mjXReader::AssetDir
 }
 
 /// C: mjXReader::MeshDir (xml/xml_native_reader.h:95)

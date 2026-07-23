@@ -1,5 +1,5 @@
 //! Port of: xml/xml_base.h
-//! IR hash: 73a9f665ec0ecfc0
+//! IR hash: bd605ac8158c32d6
 //! CODEGEN: signatures locked. Only fill todo!() bodies.
 
 use crate::types::*;
@@ -7,9 +7,7 @@ use crate::types::*;
 /// C: mjXBase::Parse (xml/xml_base.h:100)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_x_base_parse(self_ptr: *mut mjXBase, root: *mut tinyxml2__XMLElement, vfs: *const mjVFS) {
-    // Base class implementation is empty (virtual void Parse(...) {})
-    // Derived classes override this via vtable dispatch which is not available in pure Rust.
-    todo!("requires C++ vtable dispatch: mjXBase::Parse is virtual, derived classes override")
+    todo!() // mjXBase::Parse
 }
 
 /// C: mjXBase::Write (xml/xml_base.h:103)

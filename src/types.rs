@@ -93,40 +93,15 @@ pub struct Vertex { _opaque: [u8; 0] }
 #[derive(Clone, Copy)]
 pub struct XMLElement_Ref { _opaque: [u8; 0] }
 
-/// Opaque C struct: anonymous_namespace___FilePath (unsized, pointer-only)
-#[repr(C)]
-#[derive(Clone, Copy)]
-pub struct anonymous_namespace___FilePath { _opaque: [u8; 0] }
-
-/// Opaque C struct: anonymous_namespace___GlobalModel (unsized, pointer-only)
-#[repr(C)]
-#[derive(Clone, Copy)]
-pub struct anonymous_namespace___GlobalModel { _opaque: [u8; 0] }
-
-/// Opaque C struct: anonymous_namespace___PNGImage (unsized, pointer-only)
-#[repr(C)]
-#[derive(Clone, Copy)]
-pub struct anonymous_namespace___PNGImage { _opaque: [u8; 0] }
-
 /// Opaque C struct: anonymous_namespace___RewriteMap (unsized, pointer-only)
 #[repr(C)]
 #[derive(Clone, Copy)]
 pub struct anonymous_namespace___RewriteMap { _opaque: [u8; 0] }
 
-/// Opaque C struct: anonymous_namespace___XMLDocument (unsized, pointer-only)
-#[repr(C)]
+/// Sized opaque C struct: anonymous_namespace___string (24 bytes, align 8)
+#[repr(C, align(8))]
 #[derive(Clone, Copy)]
-pub struct anonymous_namespace___XMLDocument { _opaque: [u8; 0] }
-
-/// Opaque C struct: anonymous_namespace___XMLElement (unsized, pointer-only)
-#[repr(C)]
-#[derive(Clone, Copy)]
-pub struct anonymous_namespace___XMLElement { _opaque: [u8; 0] }
-
-/// Opaque C struct: anonymous_namespace___string (unsized, pointer-only)
-#[repr(C)]
-#[derive(Clone, Copy)]
-pub struct anonymous_namespace___string { _opaque: [u8; 0] }
+pub struct anonymous_namespace___string { pub _data: [u8; 24] }
 
 /// Opaque C struct: bool_1 (unsized, pointer-only)
 #[repr(C)]
@@ -178,10 +153,10 @@ pub struct libcpp_mutex_t { pub _data: [u8; 64] }
 #[derive(Clone, Copy)]
 pub struct locale_t { _opaque: [u8; 0] }
 
-/// Opaque C struct: mjByteVec (unsized, pointer-only)
-#[repr(C)]
+/// Sized opaque C struct: mjByteVec (24 bytes, align 8)
+#[repr(C, align(8))]
 #[derive(Clone, Copy)]
-pub struct mjByteVec { _opaque: [u8; 0] }
+pub struct mjByteVec { pub _data: [u8; 24] }
 
 /// Opaque C struct: mjCCDConfig (unsized, pointer-only)
 #[repr(C)]
@@ -397,11 +372,6 @@ pub struct mujoco__GlobalTable__ErrorMessage { _opaque: [u8; 0] }
 #[repr(C)]
 #[derive(Clone, Copy)]
 pub struct mujoco__Mutex { _opaque: [u8; 0] }
-
-/// Opaque C struct: mujoco___anonymous_namespace___Resolver (unsized, pointer-only)
-#[repr(C)]
-#[derive(Clone, Copy)]
-pub struct mujoco___anonymous_namespace___Resolver { _opaque: [u8; 0] }
 
 /// Opaque C struct: mujoco__user__VFS__ResourcePtr (unsized, pointer-only)
 #[repr(C)]
@@ -1196,6 +1166,97 @@ pub struct ZipArchiveProvider {
     pub mutex_: std__mutex,
 }
 const _: () = assert!(std::mem::size_of::<ZipArchiveProvider>() == 352);
+
+/// C struct: mujoco::user::FilePath (24 bytes, align 8)
+#[repr(C, align(8))]
+#[derive(Clone, Copy)]
+pub struct anonymous_namespace___FilePath {
+    pub path_: std__string,
+}
+const _: () = assert!(std::mem::size_of::<anonymous_namespace___FilePath>() == 24);
+
+/// C struct: GlobalModel (16 bytes, align 8)
+#[repr(C, align(8))]
+#[derive(Clone, Copy)]
+pub struct anonymous_namespace___GlobalModel {
+    pub mutex_: *mut std__mutex,
+    pub spec_: *mut mjSpec,
+}
+const _: () = assert!(std::mem::size_of::<anonymous_namespace___GlobalModel>() == 16);
+
+/// C struct: PNGImage (40 bytes, align 8)
+#[repr(C, align(8))]
+#[derive(Clone, Copy)]
+pub struct anonymous_namespace___PNGImage {
+    pub width_: i32,
+    pub height_: i32,
+    pub is_srgb_: bool,
+    pub _pad_0: [u8; 3],
+    pub color_type_: [u8; 4],
+    pub data_: mjByteVec,
+}
+const _: () = assert!(std::mem::size_of::<anonymous_namespace___PNGImage>() == 40);
+
+/// C struct: tinyxml2::XMLDocument (880 bytes, align 8)
+#[repr(C, align(8))]
+#[derive(Clone, Copy)]
+pub struct anonymous_namespace___XMLDocument {
+    pub _vtable: *mut (),
+    pub _document: *mut XMLDocument,
+    pub _parent: *mut XMLNode,
+    pub _value: StrPair,
+    pub _parseLineNum: i32,
+    pub _pad_0: [u8; 4],
+    pub _firstChild: *mut XMLNode,
+    pub _lastChild: *mut XMLNode,
+    pub _prev: *mut XMLNode,
+    pub _next: *mut XMLNode,
+    pub _userData: *mut (),
+    pub _memPool: *mut MemPool,
+    pub _writeBOM: bool,
+    pub _processEntities: bool,
+    pub _pad_1: [u8; 2],
+    pub _errorID: [u8; 4],
+    pub _whitespaceMode: [u8; 8],
+    pub _errorStr: StrPair,
+    pub _errorLineNum: i32,
+    pub _pad_2: [u8; 4],
+    pub _charBuffer: *mut i8,
+    pub _parseCurLineNum: i32,
+    pub _parsingDepth: i32,
+    pub _unlinked: *const (),
+    pub _pad_3: [u8; 96],
+    pub _elementPool: *const (),
+    pub _pad_4: [u8; 144],
+    pub _attributePool: *const (),
+    pub _pad_5: [u8; 144],
+    pub _textPool: *const (),
+    pub _pad_6: [u8; 144],
+    pub _commentPool: *const (),
+    pub _pad_7: [u8; 144],
+}
+const _: () = assert!(std::mem::size_of::<anonymous_namespace___XMLDocument>() == 880);
+
+/// C struct: tinyxml2::XMLElement (120 bytes, align 8)
+#[repr(C, align(8))]
+#[derive(Clone, Copy)]
+pub struct anonymous_namespace___XMLElement {
+    pub _vtable: *mut (),
+    pub _document: *mut XMLDocument,
+    pub _parent: *mut XMLNode,
+    pub _value: StrPair,
+    pub _parseLineNum: i32,
+    pub _pad_0: [u8; 4],
+    pub _firstChild: *mut XMLNode,
+    pub _lastChild: *mut XMLNode,
+    pub _prev: *mut XMLNode,
+    pub _next: *mut XMLNode,
+    pub _userData: *mut (),
+    pub _memPool: *mut MemPool,
+    pub _closingType: [u8; 8],
+    pub _rootAttribute: *mut XMLAttribute,
+}
+const _: () = assert!(std::mem::size_of::<anonymous_namespace___XMLElement>() == 120);
 
 /// C struct: ccd_vec3_t (24 bytes, align 8)
 #[repr(C, align(8))]
@@ -5046,6 +5107,22 @@ pub struct mujoco__ReentrantWriteLock {
     pub mutex_: *mut Mutex,
 }
 const _: () = assert!(std::mem::size_of::<mujoco__ReentrantWriteLock>() == 8);
+
+/// C struct: mujoco::Resolver (96 bytes, align 8)
+#[repr(C, align(8))]
+#[derive(Clone, Copy)]
+pub struct mujoco___anonymous_namespace___Resolver {
+    pub mode: [u8; 8],
+    pub parent: *mut mjSpec,
+    pub child: *const mjSpec,
+    pub errs: *const (),
+    pub _pad_0: [u8; 16],
+    pub warnings: *const (),
+    pub _pad_1: [u8; 16],
+    pub ops: *const (),
+    pub _pad_2: [u8; 16],
+}
+const _: () = assert!(std::mem::size_of::<mujoco___anonymous_namespace___Resolver>() == 96);
 
 /// C struct: mujoco::user::FilePath (24 bytes, align 8)
 #[repr(C, align(8))]

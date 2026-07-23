@@ -1,5 +1,5 @@
 //! Port of: render/classic/glad/glad.c
-//! IR hash: 73a9f665ec0ecfc0
+//! IR hash: bd605ac8158c32d6
 //! CODEGEN: signatures locked. Only fill todo!() bodies.
 
 use crate::types::*;
