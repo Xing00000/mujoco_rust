@@ -3405,7 +3405,119 @@ pub fn mj_make_impedance(m: *const mjModel, d: *mut mjData) {
 /// Calls: arenaAllocEfc, mj_diagApprox, mj_instantiateContact, mj_instantiateEquality, mj_instantiateFriction, mj_instantiateLimit, mj_isSparse, mj_makeImpedance, mj_nc, mj_ne, mju_fillInt, mju_message
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_make_constraint(m: *const mjModel, d: *mut mjData) {
-    todo!() // mj_makeConstraint
+    const mjDSBL_CONSTRAINT: i32 = 1 << 0;
+
+    // SAFETY: m, d are valid pointers (caller contract).
+    unsafe {
+        // clear sizes
+        (*d).ne = 0;
+        (*d).nf = 0;
+        (*d).nl = 0;
+        (*d).nefc = 0;
+        (*d).nJ = 0;
+        (*d).nA = 0;
+        (*d).nY = 0;
+
+        // disabled: return
+        if ((*m).opt.disableflags & mjDSBL_CONSTRAINT) != 0 {
+            return;
+        }
+
+        // precount sizes for constraint Jacobian matrices
+        let nnz: *mut i32 = if crate::engine::engine_core_util::mj_is_sparse(m) != 0 {
+            &mut (*d).nJ
+        } else {
+            std::ptr::null_mut()
+        };
+        let ne_allocated = mj_ne(m, d, nnz);
+        let nf_allocated = mj_instantiate_friction(m, d, 1, nnz);
+        let nl_allocated = mj_instantiate_limit(m, d, 1, nnz);
+        let nc_allocated = mj_nc(m, d, nnz);
+        let nefc_allocated = ne_allocated + nf_allocated + nl_allocated + nc_allocated;
+        if crate::engine::engine_core_util::mj_is_sparse(m) == 0 {
+            (*d).nJ = nefc_allocated * (*m).nv as i32;
+        }
+        (*d).nefc = nefc_allocated;
+
+        // allocate efc arrays on arena
+        if arena_alloc_efc(m, d) == 0 {
+            return;
+        }
+
+        // clear tendon_efcadr
+        crate::engine::engine_util_misc::mju_fill_int(
+            (*d).tendon_efcadr, -1, (*m).ntendon as i32);
+
+        // reset nefc for the instantiation functions
+        (*d).nefc = 0;
+        mj_instantiate_equality(m, d);
+        mj_instantiate_friction(m, d, 0, std::ptr::null_mut());
+        mj_instantiate_limit(m, d, 0, std::ptr::null_mut());
+        mj_instantiate_contact(m, d);
+
+        // check sparse allocation
+        let issparse = crate::engine::engine_core_util::mj_is_sparse(m);
+        if issparse != 0 {
+            if (*d).ne != ne_allocated {
+                crate::engine::engine_util_errmem::mju_error(
+                    b"ne mis-allocation\0".as_ptr() as *const i8);
+            }
+            if (*d).nf != nf_allocated {
+                crate::engine::engine_util_errmem::mju_error(
+                    b"nf mis-allocation\0".as_ptr() as *const i8);
+            }
+            if (*d).nl != nl_allocated {
+                crate::engine::engine_util_errmem::mju_error(
+                    b"nl mis-allocation\0".as_ptr() as *const i8);
+            }
+            if (*d).nefc != nefc_allocated {
+                crate::engine::engine_util_errmem::mju_error(
+                    b"nefc mis-allocation\0".as_ptr() as *const i8);
+            }
+            if (*d).nefc > 0 {
+                let nJ = *(*d).efc_J_rownnz.add(((*d).nefc - 1) as usize)
+                    + *(*d).efc_J_rowadr.add(((*d).nefc - 1) as usize);
+                if (*d).nJ != nJ {
+                    crate::engine::engine_util_errmem::mju_error(
+                        b"constraint Jacobian mis-allocation\0".as_ptr() as *const i8);
+                }
+            }
+        } else if (*d).nefc > nefc_allocated {
+            crate::engine::engine_util_errmem::mju_error(
+                b"nefc under-allocation\0".as_ptr() as *const i8);
+        }
+
+        // collect memory use statistics
+        if (*d).ncon > (*d).maxuse_con {
+            (*d).maxuse_con = (*d).ncon;
+        }
+        if (*d).nefc > (*d).maxuse_efc {
+            (*d).maxuse_efc = (*d).nefc;
+        }
+
+        // no constraints: return
+        if (*d).nefc == 0 {
+            return;
+        }
+
+        // accumulate J row supernodes (reverse cumsum of 0/1 flags)
+        if issparse != 0 && (*d).nefc > 0 {
+            let mut r = (*d).nefc - 2;
+            while r >= 0 {
+                if *(*d).efc_J_rowsuper.add(r as usize) != 0 {
+                    *(*d).efc_J_rowsuper.add(r as usize) +=
+                        *(*d).efc_J_rowsuper.add((r + 1) as usize);
+                }
+                r -= 1;
+            }
+        }
+
+        // compute diagApprox
+        mj_diag_approx(m, d);
+
+        // compute KBIP, D, R, adjust diagA
+        mj_make_impedance(m, d);
+    }
 }
 
 /// C: mj_projectConstraint (engine/engine_core_constraint.h:90)
