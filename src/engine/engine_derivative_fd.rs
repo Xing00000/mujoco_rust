@@ -142,7 +142,15 @@ pub fn in_range(x1: f64, x2: f64, range: *const f64) -> i32 {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn inverse_skip(m: *const mjModel, d: *mut mjData, stage: u32, skipsensor: i32, flg_actuation: i32, force: *mut f64) {
-    todo!() // inverseSkip
+    // SAFETY: m, d, force are valid pointers (caller contract).
+    unsafe {
+        crate::engine::engine_inverse::mj_inverse_skip(m, d, stage as i32, skipsensor);
+        crate::engine::engine_util_blas::mju_copy(force, (*d).qfrc_inverse, (*m).nv as i32);
+        if flg_actuation != 0 {
+            crate::engine::engine_forward::mj_fwd_actuation(m, d);
+            crate::engine::engine_util_blas::mju_sub_from(force, (*d).qfrc_actuator, (*m).nv as i32);
+        }
+    }
 }
 
 /// C: mjd_stepFD (engine/engine_derivative_fd.c:295)
