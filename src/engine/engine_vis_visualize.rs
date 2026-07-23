@@ -365,7 +365,257 @@ pub fn get_frustum(zver: *mut f32, zhor: *mut f32, znear: f32, intrinsic: *const
 /// Calls: acquireGeom, addFrame, f2f, islandColor, mj_contactForce, mj_id2name, mju_add3, mju_copy, mju_mulMatVec, mju_n2f, mju_norm3, mju_scl3, mju_transpose, mju_zero3, mjv_connector, releaseGeom
 #[allow(unused_variables, non_snake_case)]
 pub fn add_contact_geoms(m: *const mjModel, d: *mut mjData, vopt: *const mjvOption, scn: *mut mjvScene, catmask: i32) {
-    todo!() // addContactGeoms
+    const MJVIS_CONTACTPOINT: usize = 14;
+    const MJVIS_CONTACTFORCE: usize = 16;
+    const MJVIS_CONTACTSPLIT: usize = 17;
+    const MJVIS_ISLAND: usize = 15;
+    const MJFRAME_CONTACT: i32 = 6;
+    const MJLABEL_CONTACTPOINT: i32 = 14;
+    const MJLABEL_CONTACTFORCE: i32 = 15;
+    const MJOBJ_UNKNOWN: i32 = 0;
+    const MJOBJ_GEOM: i32 = 5;
+    const MJOBJ_FLEX: i32 = 9;
+    const MJCAT_DECOR: i32 = 4;
+    const MJGEOM_CYLINDER: i32 = 5;
+    const MJGEOM_ARROW: i32 = 100;
+    const MJGEOM_ARROW2: i32 = 101;
+    const MJMINVAL: f64 = 1e-15;
+
+    // SAFETY: m, d, vopt, scn are valid pointers (caller contract).
+    unsafe {
+        extern "C" { fn snprintf(s: *mut i8, n: usize, fmt: *const i8, ...) -> i32; }
+
+        if *(*vopt).flags.as_ptr().add(MJVIS_CONTACTPOINT) == 0
+            && *(*vopt).flags.as_ptr().add(MJVIS_CONTACTFORCE) == 0
+            && (*vopt).frame != MJFRAME_CONTACT
+        {
+            return;
+        }
+
+        let objtype: i32 = MJOBJ_UNKNOWN;
+        let category: i32 = MJCAT_DECOR;
+        let mut mat: [f64; 9] = [0.0; 9];
+        let mut tmp: [f64; 9] = [0.0; 9];
+        let mut vec: [f64; 3] = [0.0; 3];
+        let mut frc: [f64; 3] = [0.0; 3];
+        let mut confrc: [f64; 6] = [0.0; 6];
+        let scl = (*m).stat.meansize;
+        let scale_ptr = (*m).vis.scale.as_ptr() as *const f32;
+        let rgba_ptr = (*m).vis.rgba._data.as_ptr() as *const f32;
+        let map_ptr = (*m).vis.map.as_ptr() as *const f32;
+
+        for i in 0..(*d).ncon {
+            let con = (*d).contact.add(i as usize);
+
+            // mat = contact rotation matrix (normal along z)
+            crate::engine::engine_util_blas::mju_copy(
+                tmp.as_mut_ptr(), (*con).frame.as_ptr().add(3), 6);
+            crate::engine::engine_util_blas::mju_copy(
+                tmp.as_mut_ptr().add(6), (*con).frame.as_ptr(), 3);
+            crate::engine::engine_util_blas::mju_transpose(
+                mat.as_mut_ptr(), tmp.as_ptr(), 3, 3);
+
+            // contact point
+            if *(*vopt).flags.as_ptr().add(MJVIS_CONTACTPOINT) != 0 {
+                let mut thisgeom = acquire_geom(scn, i, category, objtype);
+                if thisgeom.is_null() {
+                    return;
+                }
+
+                (*thisgeom).r#type = MJGEOM_CYLINDER;
+                // vis.scale: index 1 = contactwidth, index 2 = contactheight
+                let contactwidth = *scale_ptr.add(1) as f64 * scl;
+                let contactheight = *scale_ptr.add(2) as f64 * scl;
+                (*thisgeom).size[0] = contactwidth as f32;
+                (*thisgeom).size[1] = contactwidth as f32;
+                let halfheight = contactheight as f32;
+                let halfdepth = -(*con).dist as f32 / 2.0;
+                (*thisgeom).size[2] = if halfheight > halfdepth { halfheight } else { halfdepth };
+                crate::engine::engine_util_misc::mju_n2f(
+                    (*thisgeom).pos.as_mut_ptr(), (*con).pos.as_ptr(), 3);
+                crate::engine::engine_util_misc::mju_n2f(
+                    (*thisgeom).mat.as_mut_ptr(), mat.as_ptr(), 9);
+
+                let efc_adr = (*(*d).contact.add(i as usize)).efc_address;
+
+                // override colors if visualizing islands
+                if *(*vopt).flags.as_ptr().add(MJVIS_ISLAND) != 0 && efc_adr >= 0 {
+                    let h = if (*d).nisland > 0 {
+                        *(*d).island_dofadr.add(*(*d).efc_island.add(efc_adr as usize) as usize)
+                    } else {
+                        -1
+                    };
+                    island_color((*thisgeom).rgba.as_mut_ptr(), h, 1);
+                } else {
+                    if efc_adr >= 0 {
+                        // rgba index 52 = contactpoint
+                        f2f((*thisgeom).rgba.as_mut_ptr(), rgba_ptr.add(52), 4);
+                    } else {
+                        // rgba index 68 = contactgap
+                        f2f((*thisgeom).rgba.as_mut_ptr(), rgba_ptr.add(68), 4);
+                    }
+                }
+
+                // label contacting geom names or ids
+                if (*vopt).label == MJLABEL_CONTACTPOINT {
+                    let mut contactlabel: [[i8; 48]; 2] = [[0; 48]; 2];
+                    for k in 0..2 {
+                        if (*con).geom[k] >= 0 {
+                            let geomname = crate::engine::engine_name::mj_id2name(
+                                m, MJOBJ_GEOM, (*con).geom[k]);
+                            if !geomname.is_null() {
+                                snprintf(contactlabel[k].as_mut_ptr(), 48,
+                                    b"%s\0".as_ptr() as *const i8, geomname);
+                            } else {
+                                snprintf(contactlabel[k].as_mut_ptr(), 48,
+                                    b"g%d\0".as_ptr() as *const i8, (*con).geom[k]);
+                            }
+                        } else {
+                            let flexname = crate::engine::engine_name::mj_id2name(
+                                m, MJOBJ_FLEX, (*con).flex[k]);
+                            if !flexname.is_null() {
+                                if (*con).elem[k] >= 0 {
+                                    snprintf(contactlabel[k].as_mut_ptr(), 48,
+                                        b"%s.e%d\0".as_ptr() as *const i8,
+                                        flexname, (*con).elem[k]);
+                                } else {
+                                    snprintf(contactlabel[k].as_mut_ptr(), 48,
+                                        b"%s.v%d\0".as_ptr() as *const i8,
+                                        flexname, (*con).vert[k]);
+                                }
+                            } else {
+                                if (*con).elem[k] >= 0 {
+                                    snprintf(contactlabel[k].as_mut_ptr(), 48,
+                                        b"f%d.e%d\0".as_ptr() as *const i8,
+                                        (*con).flex[k], (*con).elem[k]);
+                                } else {
+                                    snprintf(contactlabel[k].as_mut_ptr(), 48,
+                                        b"f%d.v%d\0".as_ptr() as *const i8,
+                                        (*con).flex[k], (*con).vert[k]);
+                                }
+                            }
+                        }
+                    }
+                    snprintf((*thisgeom).label.as_mut_ptr(), 100,
+                        b"%s | %s\0".as_ptr() as *const i8,
+                        contactlabel[0].as_ptr(), contactlabel[1].as_ptr());
+                }
+
+                release_geom(&mut thisgeom, scn);
+            }
+
+            // mat = contact frame rotation matrix (normal along x)
+            crate::engine::engine_util_blas::mju_transpose(
+                mat.as_mut_ptr(), (*con).frame.as_ptr(), 3, 3);
+
+            // contact frame
+            if (*vopt).frame == MJFRAME_CONTACT {
+                // vis.scale: index 12 = framelength, index 13 = framewidth
+                let framelength = (*scale_ptr.add(12) as f64 * scl / 2.0) as f32;
+                let framewidth = (*scale_ptr.add(13) as f64 * scl / 2.0) as f32;
+                add_frame(scn, i, (*con).pos.as_ptr(), mat.as_ptr(), framelength, framewidth);
+            }
+
+            // nothing else to do for excluded contacts
+            if (*(*d).contact.add(i as usize)).efc_address < 0 {
+                continue;
+            }
+
+            // get contact force:torque in contact frame
+            crate::engine::engine_core_util::mj_contact_force(
+                m, d as *const mjData, i, confrc.as_mut_ptr());
+
+            // contact force
+            if *(*vopt).flags.as_ptr().add(MJVIS_CONTACTFORCE) != 0 {
+                // get force, fill zeros if only normal
+                crate::engine::engine_util_blas::mju_zero3(frc.as_mut_ptr());
+                let dim_min = if 3 < (*con).dim { 3 } else { (*con).dim };
+                crate::engine::engine_util_blas::mju_copy(
+                    frc.as_mut_ptr(), confrc.as_ptr(), dim_min);
+                if crate::engine::engine_util_blas::mju_norm3(frc.as_ptr()) < MJMINVAL {
+                    continue;
+                }
+
+                // render combined or split
+                let split: u8 = (*(*vopt).flags.as_ptr().add(MJVIS_CONTACTSPLIT) != 0
+                    && (*con).dim > 1) as u8;
+                let j_start = if split != 0 { 1 } else { 0 };
+                let j_end = if split != 0 { 3 } else { 1 };
+                for j in j_start..j_end {
+                    // set vec to combined, normal or friction force, in world frame
+                    if j == 0 {
+                        // combined
+                        crate::engine::engine_util_blas::mju_mul_mat_vec(
+                            vec.as_mut_ptr(), mat.as_ptr(), frc.as_ptr(), 3, 3);
+                    } else if j == 1 {
+                        // normal
+                        vec[0] = mat[0] * frc[0];
+                        vec[1] = mat[3] * frc[0];
+                        vec[2] = mat[6] * frc[0];
+                    } else {
+                        // friction
+                        vec[0] = mat[1] * frc[1] + mat[2] * frc[2];
+                        vec[1] = mat[4] * frc[1] + mat[5] * frc[2];
+                        vec[2] = mat[7] * frc[1] + mat[8] * frc[2];
+                    }
+
+                    // scale vector: vis.map index 2 = force
+                    let force_scale = *map_ptr.add(2) as f64 / (*m).stat.meanmass;
+                    crate::engine::engine_util_blas::mju_scl3(
+                        vec.as_mut_ptr(), vec.as_ptr(), force_scale);
+
+                    // get bodyflex ids
+                    let mut bf: [i32; 2] = [0; 2];
+                    for k in 0..2 {
+                        bf[k] = if (*con).geom[k] >= 0 {
+                            *(*m).geom_bodyid.add((*con).geom[k] as usize)
+                        } else {
+                            (*m).nbody as i32 + (*con).flex[k]
+                        };
+                    }
+
+                    // make sure arrow points towards bodyflex with higher id
+                    if bf[0] > bf[1] {
+                        crate::engine::engine_util_blas::mju_scl3(
+                            vec.as_mut_ptr(), vec.as_ptr(), -1.0);
+                    }
+
+                    // one-directional arrow for friction and world, symmetric otherwise
+                    let mut thisgeom = acquire_geom(scn, i, category, objtype);
+                    if thisgeom.is_null() {
+                        return;
+                    }
+
+                    let from = (*con).pos.as_ptr();
+                    let mut to: [f64; 3] = [0.0; 3];
+                    crate::engine::engine_util_blas::mju_add3(
+                        to.as_mut_ptr(), from, vec.as_ptr());
+
+                    let arrow_type = if bf[0] > 0 && bf[1] > 0 && split == 0 {
+                        MJGEOM_ARROW2
+                    } else {
+                        MJGEOM_ARROW
+                    };
+                    // vis.scale: index 0 = forcewidth
+                    let forcewidth = *scale_ptr.add(0) as f64 * scl;
+                    mjv_connector(thisgeom, arrow_type, forcewidth, from, to.as_ptr());
+
+                    // rgba index 60 = contactfriction, index 56 = contactforce
+                    let color = if j == 2 { rgba_ptr.add(60) } else { rgba_ptr.add(56) };
+                    f2f((*thisgeom).rgba.as_mut_ptr(), color, 4);
+
+                    if (*vopt).label == MJLABEL_CONTACTFORCE
+                        && j == (if split != 0 { 1 } else { 0 })
+                    {
+                        let norm_val = crate::engine::engine_util_blas::mju_norm3(frc.as_ptr());
+                        snprintf((*thisgeom).label.as_mut_ptr(), 100,
+                            b"%-.3g\0".as_ptr() as *const i8, norm_val);
+                    }
+                    release_geom(&mut thisgeom, scn);
+                }
+            }
+        }
+    }
 }
 
 /// C: addFlexGeoms (engine/engine_vis_visualize.c:748)
