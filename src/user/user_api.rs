@@ -147,7 +147,7 @@ pub fn mj_copy_spec(s: *const mjSpec) -> *mut mjSpec {
 /// Calls: mjCModel::GetError, mju_error
 #[allow(unused_variables, non_snake_case)]
 pub fn mjs_get_error(s: *mut mjSpec) -> *const i8 {
-    todo!() // mjs_getError
+    todo!("requires C++ class dispatch: static_cast<mjCModel*>(s->element)->GetError().message")
 }
 
 /// C: mjs_isWarning (user/user_api.h:55)
@@ -273,7 +273,7 @@ pub fn mjs_delete(s: *mut mjSpec, element: *mut mjsElement) -> i32 {
 /// Calls: mjCModel::AddActuator
 #[allow(unused_variables, non_snake_case)]
 pub fn mjs_add_actuator(s: *mut mjSpec, def: *const mjsDefault) -> *mut mjsActuator {
-    todo!() // mjs_addActuator
+    todo!("requires C++ class dispatch: static_cast<mjCModel*>(s->element)->AddActuator(def)")
 }
 
 /// C: mjs_addSensor (user/user_api.h:116)
@@ -313,14 +313,14 @@ pub fn mjs_add_pair(s: *mut mjSpec, def: *const mjsDefault) -> *mut mjsPair {
 /// Calls: mjCModel::AddExclude
 #[allow(unused_variables, non_snake_case)]
 pub fn mjs_add_exclude(s: *mut mjSpec) -> *mut mjsExclude {
-    todo!() // mjs_addExclude
+    todo!("requires C++ class dispatch: static_cast<mjCModel*>(s->element)->AddExclude()")
 }
 
 /// C: mjs_addEquality (user/user_api.h:136)
 /// Calls: mjCModel::AddEquality
 #[allow(unused_variables, non_snake_case)]
 pub fn mjs_add_equality(s: *mut mjSpec, def: *const mjsDefault) -> *mut mjsEquality {
-    todo!() // mjs_addEquality
+    todo!("requires C++ class dispatch: static_cast<mjCModel*>(s->element)->AddEquality(def)")
 }
 
 /// C: mjs_addTendon (user/user_api.h:139)
@@ -379,7 +379,7 @@ pub fn mjs_add_numeric(s: *mut mjSpec) -> *mut mjsNumeric {
 /// Calls: mjCModel::AddText
 #[allow(unused_variables, non_snake_case)]
 pub fn mjs_add_text(s: *mut mjSpec) -> *mut mjsText {
-    todo!() // mjs_addText
+    todo!("requires C++ class dispatch: static_cast<mjCModel*>(s->element)->AddText()")
 }
 
 /// C: mjs_addTuple (user/user_api.h:160)
@@ -400,7 +400,7 @@ pub fn mjs_add_key(s: *mut mjSpec) -> *mut mjsKey {
 /// Calls: mjCModel::AddPlugin
 #[allow(unused_variables, non_snake_case)]
 pub fn mjs_add_plugin(s: *mut mjSpec) -> *mut mjsPlugin {
-    todo!() // mjs_addPlugin
+    todo!("requires C++ class dispatch: static_cast<mjCModel*>(s->element)->AddPlugin()")
 }
 
 /// C: mjs_addDefault (user/user_api.h:169)
@@ -858,14 +858,14 @@ pub fn mjs_add_mesh(s: *mut mjSpec, def: *const mjsDefault) -> *mut mjsMesh {
 /// Calls: mjCModel::AddHField
 #[allow(unused_variables, non_snake_case)]
 pub fn mjs_add_h_field(s: *mut mjSpec) -> *mut mjsHField {
-    todo!() // mjs_addHField
+    todo!("requires C++ class dispatch: static_cast<mjCModel*>(s->element)->AddHField()")
 }
 
 /// C: mjs_addSkin (user/user_api.h:219)
 /// Calls: mjCModel::AddSkin
 #[allow(unused_variables, non_snake_case)]
 pub fn mjs_add_skin(s: *mut mjSpec) -> *mut mjsSkin {
-    todo!() // mjs_addSkin
+    todo!("requires C++ class dispatch: static_cast<mjCModel*>(s->element)->AddSkin()")
 }
 
 /// C: mjs_addTexture (user/user_api.h:222)
@@ -996,7 +996,7 @@ pub fn mjs_find_default(s: *const mjSpec, classname: *const i8) -> *mut mjsDefau
 /// Calls: mjCModel::Default
 #[allow(unused_variables, non_snake_case)]
 pub fn mjs_get_spec_default(s: *const mjSpec) -> *mut mjsDefault {
-    todo!() // mjs_getSpecDefault
+    todo!("requires C++ class dispatch: static_cast<mjCModel*>(s->element)->Default()")
 }
 
 /// C: mjs_getId (user/user_api.h:270)
@@ -1029,7 +1029,7 @@ pub fn mjs_next_child(body: *const mjsBody, child: *const mjsElement, recurse: i
 /// Calls: mjCModel::NextObject
 #[allow(unused_variables, non_snake_case)]
 pub fn mjs_first_element(s: *const mjSpec, r#type: u32) -> *mut mjsElement {
-    todo!() // mjs_firstElement
+    todo!("requires C++ class dispatch: static_cast<mjCModel*>(s->element)->NextObject(NULL, type)")
 }
 
 /// C: mjs_nextElement (user/user_api.h:286)

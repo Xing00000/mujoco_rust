@@ -875,7 +875,7 @@ pub fn mj_c_base_get_parent(self_ptr: *mut mjCBase) -> *mut mjCBase {
 /// Calls: mjCModel::FindSpec
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_base_find_compiler(self_ptr: *mut mjCBase, compiler: *const mjsCompiler) -> *mut mjsCompiler {
-    todo!() // mjCBase::FindCompiler
+    todo!("requires C++ class member access: model->FindSpec(compiler) uses mjCModel vtable dispatch")
 }
 
 /// C: mjCBase::ForgetKeyframes (user/user_objects.h:396)
@@ -1157,7 +1157,7 @@ pub fn mj_c_body_name_space_1(self_ptr: *mut mjCBody, m: *const mjCModel, propag
 /// Calls: mjCModel::CopyExplicitPlugin
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_body_copy_plugin(self_ptr: *mut mjCBody) {
-    todo!() // mjCBody::CopyPlugin
+    todo!("requires C++ class member access: model->CopyExplicitPlugin(this)")
 }
 
 /// C: mjCBody::CopyList (user/user_objects.h:622)
@@ -1624,7 +1624,7 @@ pub fn mj_c_geom_name_space(self_ptr: *mut mjCGeom, m: *const mjCModel) {
 /// Calls: mjCModel::CopyExplicitPlugin
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_geom_copy_plugin(self_ptr: *mut mjCGeom) {
-    todo!() // mjCGeom::CopyPlugin
+    todo!("requires C++ class member access: model->CopyExplicitPlugin(this)")
 }
 
 /// C: mjCSite::Body (user/user_objects.h:849)
@@ -2683,7 +2683,7 @@ pub fn mj_c_mesh_check_initial_mesh(self_ptr: *mut mjCMesh) {
 /// Calls: mjCModel::CopyExplicitPlugin
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_mesh_copy_plugin(self_ptr: *mut mjCMesh) {
-    todo!() // mjCMesh::CopyPlugin
+    todo!("requires C++ class member access: model->CopyExplicitPlugin(this)")
 }
 
 /// C: mjCMesh::Rotate (user/user_objects.h:1291)
@@ -3664,7 +3664,7 @@ pub fn mj_c_actuator_name_space(self_ptr: *mut mjCActuator, m: *const mjCModel) 
 /// Calls: mjCModel::CopyExplicitPlugin
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_actuator_copy_plugin(self_ptr: *mut mjCActuator) {
-    todo!() // mjCActuator::CopyPlugin
+    todo!("requires C++ class member access: model->CopyExplicitPlugin(this)")
 }
 
 /// C: mjCActuator::ForgetKeyframes (user/user_objects.h:1864)
@@ -3753,7 +3753,7 @@ pub fn mj_c_sensor_name_space(self_ptr: *mut mjCSensor, m: *const mjCModel) {
 /// Calls: mjCModel::CopyExplicitPlugin
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_sensor_copy_plugin(self_ptr: *mut mjCSensor) {
-    todo!() // mjCSensor::CopyPlugin
+    todo!("requires C++ class member access: model->CopyExplicitPlugin(this)")
 }
 
 /// C: mjCNumeric::PointToLocal (user/user_objects.h:1944)
