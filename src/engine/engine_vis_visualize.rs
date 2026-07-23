@@ -2445,7 +2445,98 @@ pub fn add_external_perturb_geoms(m: *const mjModel, d: *mut mjData, vopt: *cons
 /// Calls: acquireGeom, makeLabel, mju_addTo3, mju_copy3, mju_mulMatVec3, mjv_initGeom, releaseGeom
 #[allow(unused_variables, non_snake_case)]
 pub fn add_constraint_geoms(m: *const mjModel, d: *mut mjData, vopt: *const mjvOption, scn: *mut mjvScene) {
-    todo!() // addConstraintGeoms
+    const MJVIS_CONSTRAINT: usize = 9;
+    const MJEQ_CONNECT: i32 = 0;
+    const MJEQ_WELD: i32 = 1;
+    const MJOBJ_SITE: i32 = 6;
+    const MJNEQDATA: i32 = 11;
+    const MJCAT_DECOR: i32 = 4;
+    const MJOBJ_EQUALITY: i32 = 17;
+    const MJGEOM_SPHERE: i32 = 3;
+    const MJLABEL_CONSTRAINT: i32 = 9;
+
+    // SAFETY: m, d, vopt, scn are valid pointers (caller contract).
+    unsafe {
+        if *(*vopt).flags.as_ptr().add(MJVIS_CONSTRAINT) == 0 {
+            return;
+        }
+
+        let scl = (*m).stat.meansize as f32;
+
+        for i in 0..(*m).neq as i32 {
+            let is_weld = (*(*m).eq_type.add(i as usize) == MJEQ_WELD) as i32;
+            let is_connect = (*(*m).eq_type.add(i as usize) == MJEQ_CONNECT) as i32;
+            if *(*d).eq_active.add(i as usize) && (is_connect != 0 || is_weld != 0) {
+                let mut vec: [f64; 3] = [0.0; 3];
+                let mut end: [f64; 3] = [0.0; 3];
+                let xmat_j: *const f64;
+                let xmat_k: *const f64;
+                let j = *(*m).eq_obj1id.add(i as usize);
+                let k = *(*m).eq_obj2id.add(i as usize);
+
+                if *(*m).eq_objtype.add(i as usize) == MJOBJ_SITE {
+                    crate::engine::engine_util_blas::mju_copy3(
+                        vec.as_mut_ptr(), (*d).site_xpos.add(3 * j as usize));
+                    crate::engine::engine_util_blas::mju_copy3(
+                        end.as_mut_ptr(), (*d).site_xpos.add(3 * k as usize));
+                    xmat_j = (*d).site_xmat.add(9 * j as usize);
+                    xmat_k = (*d).site_xmat.add(9 * k as usize);
+                } else {
+                    crate::engine::engine_util_blas::mju_mul_mat_vec3(
+                        vec.as_mut_ptr(),
+                        (*d).xmat.add(9 * j as usize),
+                        (*m).eq_data.add((MJNEQDATA * i + 3 * is_weld) as usize),
+                    );
+                    crate::engine::engine_util_blas::mju_add_to3(
+                        vec.as_mut_ptr(), (*d).xpos.add(3 * j as usize));
+                    crate::engine::engine_util_blas::mju_mul_mat_vec3(
+                        end.as_mut_ptr(),
+                        (*d).xmat.add(9 * k as usize),
+                        (*m).eq_data.add((MJNEQDATA * i + 3 * is_connect) as usize),
+                    );
+                    crate::engine::engine_util_blas::mju_add_to3(
+                        end.as_mut_ptr(), (*d).xpos.add(3 * k as usize));
+                    xmat_j = (*d).xmat.add(9 * j as usize);
+                    xmat_k = (*d).xmat.add(9 * k as usize);
+                }
+
+                // construct geom: size
+                let mut sz: [f64; 3] = [0.0; 3];
+                // vis.scale: index 14 = constraint
+                let scale_ptr = (*m).vis.scale.as_ptr() as *const f32;
+                sz[0] = (scl * *scale_ptr.add(14)) as f64;
+
+                // vis.rgba: connect at index 48, constraint at index 76
+                let rgba_ptr = (*m).vis.rgba._data.as_ptr() as *const f32;
+
+                let mut thisgeom = acquire_geom(scn, i, MJCAT_DECOR, MJOBJ_EQUALITY);
+                if thisgeom.is_null() {
+                    return;
+                }
+                mjv_init_geom(
+                    thisgeom, MJGEOM_SPHERE, sz.as_ptr(), vec.as_ptr(),
+                    xmat_j, rgba_ptr.add(48),
+                );
+                if (*vopt).label == MJLABEL_CONSTRAINT {
+                    make_label(m, MJOBJ_EQUALITY as u32, i, (*thisgeom).label.as_mut_ptr());
+                }
+                release_geom(&mut thisgeom, scn);
+
+                thisgeom = acquire_geom(scn, i, MJCAT_DECOR, MJOBJ_EQUALITY);
+                if thisgeom.is_null() {
+                    return;
+                }
+                mjv_init_geom(
+                    thisgeom, MJGEOM_SPHERE, sz.as_ptr(), end.as_ptr(),
+                    xmat_k, rgba_ptr.add(76),
+                );
+                if (*vopt).label == MJLABEL_CONSTRAINT {
+                    make_label(m, MJOBJ_EQUALITY as u32, i, (*thisgeom).label.as_mut_ptr());
+                }
+                release_geom(&mut thisgeom, scn);
+            }
+        }
+    }
 }
 
 /// C: makeFace (engine/engine_vis_visualize.c:3024)
