@@ -2377,7 +2377,249 @@ pub fn add_joint_geoms(m: *const mjModel, d: *mut mjData, vopt: *const mjvOption
 /// Calls: acquireGeom, f2f, makeLabel, mj_actuatorDisabled, mju_addScl3, mju_clip, mju_scl3, mjv_connector, mjv_initGeom, releaseGeom, setMaterial
 #[allow(unused_variables, non_snake_case)]
 pub fn add_actuator_geoms(m: *const mjModel, d: *mut mjData, vopt: *const mjvOption, scn: *mut mjvScene) {
-    todo!() // addActuatorGeoms
+    const MJVIS_ACTUATOR: usize = 4;
+    const MJVIS_ACTIVATION: usize = 5;
+    const MJCAT_DECOR: i32 = 4;
+    const MJOBJ_ACTUATOR: i32 = 19;
+    const MJLABEL_ACTUATOR: i32 = 8;
+    const MJTRN_JOINT: i32 = 0;
+    const MJTRN_JOINTINPARENT: i32 = 1;
+    const MJTRN_SITE: i32 = 4;
+    const MJTRN_TENDON: i32 = 3;
+    const MJTRN_BODY: i32 = 5;
+    const MJJNT_FREE: i32 = 0;
+    const MJJNT_BALL: i32 = 1;
+    const MJJNT_SLIDE: i32 = 2;
+    const MJJNT_HINGE: i32 = 3;
+    const MJGEOM_PLANE: i32 = 0;
+    const MJGEOM_HFIELD: i32 = 1;
+    const MJGEOM_SPHERE: i32 = 2;
+    const MJGEOM_CAPSULE: i32 = 3;
+    const MJGEOM_BOX: i32 = 6;
+    const MJGEOM_MESH: i32 = 7;
+    const MJGEOM_SDF: i32 = 8;
+    const MJGEOM_ARROW: i32 = 100;
+    const MJGEOM_ARROW1: i32 = 101;
+    const MJMINVAL: f64 = 1e-15;
+    const MJNGROUP: i32 = 6;
+
+    // SAFETY: m, d, vopt, scn are valid pointers (caller contract).
+    unsafe {
+        if *(*vopt).flags.as_ptr().add(MJVIS_ACTUATOR) == 0 {
+            return;
+        }
+
+        let scl = (*m).stat.meansize as f32;
+        let scale_ptr = (*m).vis.scale.as_ptr() as *const f32;
+        let rgba_ptr = (*m).vis.rgba._data.as_ptr() as *const f32;
+        let map_ptr = (*m).vis.map.as_ptr() as *const f32;
+
+        for i in 0..(*m).nu as i32 {
+            let group = *(*m).actuator_group.add(i as usize);
+            let clamped_group = if group < 0 { 0 } else if group > MJNGROUP - 1 { MJNGROUP - 1 } else { group };
+            if (*vopt).actuatorgroup[clamped_group as usize] == 0 {
+                continue;
+            }
+            if crate::engine::engine_support::mj_actuator_disabled(m, i) != 0 {
+                continue;
+            }
+
+            // determine extended range
+            let mut rng: [f64; 3] = [-1.0, 0.0, 1.0];
+            let mut rmin: f64 = -1.0;
+            let mut rmax: f64 = 1.0;
+            let mut act: f64 = 0.0;
+            if *(*m).actuator_ctrllimited.add(i as usize) {
+                rmin = *(*m).actuator_ctrlrange.add(2 * i as usize);
+                rmax = *(*m).actuator_ctrlrange.add(2 * i as usize + 1);
+            } else if *(*vopt).flags.as_ptr().add(MJVIS_ACTIVATION) != 0
+                && *(*m).actuator_actlimited.add(i as usize)
+            {
+                rmin = *(*m).actuator_actrange.add(2 * i as usize);
+                rmax = *(*m).actuator_actrange.add(2 * i as usize + 1);
+            }
+            if rmin >= 0.0 {
+                rng[0] = -1.0; rng[1] = rmin; rng[2] = rmax;
+            } else if rmax <= 0.0 {
+                rng[0] = rmin; rng[1] = rmax; rng[2] = 1.0;
+            } else {
+                rng[0] = rmin; rng[1] = 0.0; rng[2] = rmax;
+            }
+
+            if rng[1] - rng[0] < MJMINVAL {
+                rng[0] = rng[1] - MJMINVAL;
+            }
+            if rng[2] - rng[1] < MJMINVAL {
+                rng[2] = rng[1] + MJMINVAL;
+            }
+
+            // clamp act to extended range
+            if *(*vopt).flags.as_ptr().add(MJVIS_ACTIVATION) != 0
+                && *(*m).actuator_dyntype.add(i as usize) != 0
+            {
+                let act_idx = *(*m).actuator_actadr.add(i as usize)
+                    + *(*m).actuator_actnum.add(i as usize) - 1;
+                act = crate::engine::engine_util_misc::mju_clip(
+                    *(*d).act.add(act_idx as usize), rng[0], rng[2]);
+            } else {
+                act = crate::engine::engine_util_misc::mju_clip(
+                    *(*d).ctrl.add(i as usize), rng[0], rng[2]);
+            }
+
+            // compute interpolants
+            let amin: f32;
+            let amean: f32;
+            let amax: f32;
+            if act <= rng[1] {
+                let denom = if MJMINVAL > (rng[1] - rng[0]) { MJMINVAL } else { rng[1] - rng[0] };
+                amin = ((rng[1] - act) / denom) as f32;
+                amean = 1.0 - amin;
+                amax = 0.0;
+            } else {
+                let denom = if MJMINVAL > (rng[2] - rng[1]) { MJMINVAL } else { rng[2] - rng[1] };
+                amax = ((act - rng[1]) / denom) as f32;
+                amean = 1.0 - amax;
+                amin = 0.0;
+            }
+
+            // interpolated color: vis.rgba actuatornegative=24, actuator=20, actuatorpositive=28
+            let mut rgba: [f32; 4] = [0.0; 4];
+            for j in 0..4 {
+                rgba[j] = amin * *rgba_ptr.add(24 + j)
+                    + amean * *rgba_ptr.add(20 + j)
+                    + amax * *rgba_ptr.add(28 + j);
+            }
+
+            // get transmission object id
+            let j = *(*m).actuator_trnid.add(2 * i as usize);
+            let trntype = *(*m).actuator_trntype.add(i as usize);
+
+            // slide and hinge joint actuators, or site
+            if trntype == MJTRN_JOINT || trntype == MJTRN_JOINTINPARENT || trntype == MJTRN_SITE {
+                let mut thisgeom = acquire_geom(scn, i, MJCAT_DECOR, MJOBJ_ACTUATOR);
+                if thisgeom.is_null() {
+                    return;
+                }
+
+                let mut sz: [f64; 3] = [0.0; 3];
+                if trntype == MJTRN_SITE {
+                    crate::engine::engine_util_blas::mju_scl3(
+                        sz.as_mut_ptr(), (*m).site_size.add(3 * j as usize), 1.05);
+                    mjv_init_geom(
+                        thisgeom, *(*m).site_type.add(j as usize), sz.as_ptr(),
+                        (*d).site_xpos.add(3 * j as usize),
+                        (*d).site_xmat.add(9 * j as usize),
+                        (*thisgeom).rgba.as_ptr());
+                } else if *(*m).jnt_type.add(j as usize) == MJJNT_HINGE
+                    || *(*m).jnt_type.add(j as usize) == MJJNT_SLIDE
+                {
+                    // vis.scale: index 10 = actuatorlength, 11 = actuatorwidth
+                    sz[1] = *scale_ptr.add(10) as f64 * scl as f64;
+                    sz[0] = *scale_ptr.add(11) as f64 * scl as f64;
+
+                    let from = (*d).xanchor.add(3 * j as usize);
+                    let mut to: [f64; 3] = [0.0; 3];
+                    crate::engine::engine_util_blas::mju_add_scl3(
+                        to.as_mut_ptr(), from, (*d).xaxis.add(3 * j as usize), sz[1]);
+                    let arrow_type = if *(*m).jnt_type.add(j as usize) == MJJNT_SLIDE {
+                        MJGEOM_ARROW
+                    } else {
+                        MJGEOM_ARROW1
+                    };
+                    mjv_connector(thisgeom, arrow_type, sz[0], from, to.as_ptr());
+                } else if *(*m).jnt_type.add(j as usize) == MJJNT_BALL
+                    || *(*m).jnt_type.add(j as usize) == MJJNT_FREE
+                {
+                    // vis.scale: index 8 = jointlength
+                    sz[0] = *scale_ptr.add(8) as f64 * scl as f64 * 0.33;
+                    sz[1] = sz[0];
+                    sz[2] = sz[0];
+                    let geom_type = if *(*m).jnt_type.add(j as usize) == MJJNT_BALL {
+                        MJGEOM_SPHERE
+                    } else {
+                        MJGEOM_BOX
+                    };
+                    mjv_init_geom(
+                        thisgeom, geom_type, sz.as_ptr(),
+                        (*d).xanchor.add(3 * j as usize),
+                        (*d).xmat.add(9 * *(*m).jnt_bodyid.add(j as usize) as usize),
+                        (*thisgeom).rgba.as_ptr());
+                }
+
+                f2f((*thisgeom).rgba.as_mut_ptr(), rgba.as_ptr(), 4);
+                if (*vopt).label == MJLABEL_ACTUATOR {
+                    make_label(m, MJOBJ_ACTUATOR as u32, i, (*thisgeom).label.as_mut_ptr());
+                }
+                release_geom(&mut thisgeom, scn);
+            }
+            // body actuators
+            else if trntype == MJTRN_BODY {
+                let geomnum = *(*m).body_geomnum.add(j as usize);
+                let geomadr = *(*m).body_geomadr.add(j as usize);
+                for k in geomadr..(geomadr + geomnum) {
+                    let geomtype = *(*m).geom_type.add(k as usize);
+                    if geomtype != MJGEOM_PLANE && geomtype != MJGEOM_HFIELD
+                        && geomtype != MJGEOM_MESH && geomtype != MJGEOM_SDF
+                    {
+                        let mut thisgeom = acquire_geom(scn, i, MJCAT_DECOR, MJOBJ_ACTUATOR);
+                        if thisgeom.is_null() {
+                            return;
+                        }
+                        let mut sz: [f64; 3] = [0.0; 3];
+                        crate::engine::engine_util_blas::mju_scl3(
+                            sz.as_mut_ptr(), (*m).geom_size.add(3 * k as usize), 1.05);
+                        mjv_init_geom(
+                            thisgeom, *(*m).geom_type.add(k as usize), sz.as_ptr(),
+                            (*d).geom_xpos.add(3 * k as usize),
+                            (*d).geom_xmat.add(9 * k as usize),
+                            (*thisgeom).rgba.as_ptr());
+                        f2f((*thisgeom).rgba.as_mut_ptr(), rgba.as_ptr(), 4);
+                        release_geom(&mut thisgeom, scn);
+                    }
+                }
+            }
+            // spatial tendon actuators
+            else if trntype == MJTRN_TENDON && *(*d).ten_wrapnum.add(j as usize) != 0 {
+                let wrapadr = *(*d).ten_wrapadr.add(j as usize);
+                let wrapnum = *(*d).ten_wrapnum.add(j as usize);
+                for k in wrapadr..(wrapadr + wrapnum - 1) {
+                    if *(*d).wrap_obj.add(k as usize) != -2
+                        && *(*d).wrap_obj.add((k + 1) as usize) != -2
+                    {
+                        let mut thisgeom = acquire_geom(scn, i, MJCAT_DECOR, MJOBJ_ACTUATOR);
+                        if thisgeom.is_null() {
+                            return;
+                        }
+
+                        let mut width: f64;
+                        if *(*d).wrap_obj.add(k as usize) >= 0
+                            && *(*d).wrap_obj.add((k + 1) as usize) >= 0
+                        {
+                            width = 0.5 * *(*m).tendon_width.add(j as usize);
+                        } else {
+                            width = *(*m).tendon_width.add(j as usize);
+                        }
+                        // vis.map: index 12 = actuatortendon
+                        width *= *map_ptr.add(12) as f64;
+
+                        mjv_connector(
+                            thisgeom, MJGEOM_CAPSULE, width,
+                            (*d).wrap_xpos.add(3 * k as usize),
+                            (*d).wrap_xpos.add(3 * (k + 1) as usize));
+                        set_material(
+                            m, thisgeom, *(*m).tendon_matid.add(j as usize),
+                            (*m).tendon_rgba.add(4 * j as usize), (*vopt).flags.as_ptr());
+                        f2f((*thisgeom).rgba.as_mut_ptr(), rgba.as_ptr(), 4);
+
+                        if (*vopt).label == MJLABEL_ACTUATOR && k == wrapadr {
+                            make_label(m, MJOBJ_ACTUATOR as u32, i, (*thisgeom).label.as_mut_ptr());
+                        }
+                        release_geom(&mut thisgeom, scn);
+                    }
+                }
+            }
+        }
+    }
 }
 
 /// C: addIslandLabelGeoms (engine/engine_vis_visualize.c:2283)
