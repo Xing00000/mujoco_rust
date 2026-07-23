@@ -1928,7 +1928,95 @@ pub fn mj_instantiate_contact(m: *const mjModel, d: *mut mjData) {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_contact_jacobian(m: *const mjModel, d: *mut mjData, con: *const mjContact, dim: i32, jac: *mut f64, jacdif: *mut f64, jacdifp: *mut f64, jacdifr: *mut f64, jac1p: *mut f64, jac2p: *mut f64, jac1r: *mut f64, jac2r: *mut f64, chain: *mut i32) -> i32 {
-    todo!() // mj_contactJacobian
+    // SAFETY: m, d, con are valid pointers (caller contract).
+    unsafe {
+        // special case: single body on each side
+        if ((*con).geom[0] >= 0
+            || ((*con).vert[0] >= 0 && *(*m).flex_interp.add((*con).flex[0] as usize) == 0))
+            && ((*con).geom[1] >= 0
+                || ((*con).vert[1] >= 0 && *(*m).flex_interp.add((*con).flex[1] as usize) == 0))
+        {
+            let mut bid: [i32; 2] = [0; 2];
+            for side in 0..2 {
+                bid[side] = if (*con).geom[side] >= 0 {
+                    *(*m).geom_bodyid.add((*con).geom[side] as usize)
+                } else {
+                    *(*m).flex_vertbodyid.add(
+                        (*(*m).flex_vertadr.add((*con).flex[side] as usize)
+                            + (*con).vert[side]) as usize,
+                    )
+                };
+            }
+            if dim > 3 {
+                return crate::engine::engine_core_util::mj_jac_dif_pair(
+                    m, d as *const mjData, chain, bid[0], bid[1],
+                    (*con).pos.as_ptr(), (*con).pos.as_ptr(),
+                    jac1p, jac2p, jacdifp, jac1r, jac2r, jacdifr,
+                    crate::engine::engine_core_util::mj_is_sparse(m), 1,
+                );
+            } else {
+                return crate::engine::engine_core_util::mj_jac_dif_pair(
+                    m, d as *const mjData, chain, bid[0], bid[1],
+                    (*con).pos.as_ptr(), (*con).pos.as_ptr(),
+                    jac1p, jac2p, jacdifp,
+                    std::ptr::null_mut(), std::ptr::null_mut(), std::ptr::null_mut(),
+                    crate::engine::engine_core_util::mj_is_sparse(m), 1,
+                );
+            }
+        }
+
+        // general case: flex elements involved
+        let mut nb: i32 = 0;
+        let mut bid: [i32; 729] = [0; 729];
+        let mut bweight: [f64; 729] = [0.0; 729];
+        for side in 0..2i32 {
+            if (*con).geom[side as usize] >= 0 {
+                bid[nb as usize] = *(*m).geom_bodyid.add((*con).geom[side as usize] as usize);
+                bweight[nb as usize] = if side != 0 { 1.0 } else { -1.0 };
+                nb += 1;
+            } else {
+                let mut nw: i32 = 0;
+                let mut vid: [i32; 4] = [0; 4];
+                let mut vweight: [f64; 4] = [0.0; 4];
+
+                if (*con).vert[side as usize] >= 0 {
+                    vid[0] = *(*m).flex_vertadr.add((*con).flex[side as usize] as usize)
+                        + (*con).vert[side as usize];
+                    vweight[0] = if side != 0 { 1.0 } else { -1.0 };
+                    nw = 1;
+                } else {
+                    nw = mj_elem_body_weight(
+                        m, d as *const mjData, (*con).flex[side as usize],
+                        (*con).elem[side as usize], (*con).vert[(1 - side) as usize],
+                        (*con).pos.as_ptr(), vid.as_mut_ptr(), vweight.as_mut_ptr(),
+                    );
+                    if side == 0 {
+                        crate::engine::engine_util_blas::mju_scl(
+                            vweight.as_mut_ptr(), vweight.as_ptr(), -1.0, nw);
+                    }
+                }
+
+                if *(*m).flex_interp.add((*con).flex[side as usize] as usize) == 0 {
+                    for k in 0..nw {
+                        bid[nb as usize] = *(*m).flex_vertbodyid.add(vid[k as usize] as usize);
+                        bweight[nb as usize] = vweight[k as usize];
+                        nb += 1;
+                    }
+                } else {
+                    nb += mj_vert_body_weight(
+                        m, d as *const mjData, (*con).flex[side as usize],
+                        vid.as_mut_ptr(), bid.as_mut_ptr().add(nb as usize),
+                        bweight.as_mut_ptr().add(nb as usize), vweight.as_ptr(), nw,
+                    );
+                }
+            }
+        }
+
+        crate::engine::engine_core_util::mj_jac_sum(
+            m, d, chain, nb, bid.as_ptr(), bweight.as_ptr(),
+            (*con).pos.as_ptr(), jacdif, (dim > 3) as i32,
+        )
+    }
 }
 
 /// C: mj_diagApprox (engine/engine_core_constraint.h:78)
