@@ -3738,7 +3738,102 @@ pub fn mjv_make_lights(m: *const mjModel, d: *const mjData, scn: *mut mjvScene) 
 /// Calls: mju_copy3, mju_message, mjv_cameraFrame, mjv_cameraFrustum
 #[allow(unused_variables, non_snake_case)]
 pub fn mjv_update_camera(m: *const mjModel, d: *const mjData, cam: *mut mjvCamera, scn: *mut mjvScene) {
-    todo!() // mjv_updateCamera
+    const MJ_CAMERA_FREE: i32 = 0;
+    const MJ_CAMERA_TRACKING: i32 = 1;
+    const MJ_CAMERA_FIXED: i32 = 2;
+    const MJ_CAMERA_USER: i32 = 3;
+
+    // SAFETY: m, d, cam, scn are valid pointers (caller contract)
+    unsafe {
+        // return if nothing to do
+        if m.is_null() || cam.is_null() || (*cam).r#type == MJ_CAMERA_USER {
+            return;
+        }
+
+        // move lookat for tracking
+        if (*cam).r#type == MJ_CAMERA_TRACKING {
+            let bid = (*cam).trackbodyid;
+            if bid < 0 || bid as i64 >= (*m).nbody {
+                crate::engine::engine_util_errmem::mju_error(
+                    b"track body id is outside valid range\0".as_ptr() as *const i8);
+                return;
+            }
+            crate::engine::engine_util_blas::mju_copy3(
+                (*cam).lookat.as_mut_ptr(), (*d).subtree_com.add(3 * bid as usize));
+        }
+
+        // get camera frame
+        let mut headpos = [0.0f64; 3];
+        let mut forward = [0.0f64; 3];
+        let mut up = [0.0f64; 3];
+        let mut right = [0.0f64; 3];
+        mjv_camera_frame(
+            headpos.as_mut_ptr(), forward.as_mut_ptr(),
+            up.as_mut_ptr(), right.as_mut_ptr(), d, cam);
+
+        // get camera frustum
+        let mut zver = [0.0f32; 2];
+        let mut zhor = [0.0f32; 2];
+        let mut zclip = [0.0f32; 2];
+        mjv_camera_frustum(
+            zver.as_mut_ptr(), zhor.as_mut_ptr(), zclip.as_mut_ptr(), m, cam);
+
+        // get ipd, orthographic
+        let mut orthographic: i32 = 0;
+        let ipd: f64;
+
+        // read vis.global fields: orthographic at offset 4, ipd at offset 12
+        let global_bytes = &(*m).vis.global;
+        let global_orthographic = i32::from_ne_bytes([global_bytes[4], global_bytes[5], global_bytes[6], global_bytes[7]]);
+        let global_ipd = f32::from_ne_bytes([global_bytes[12], global_bytes[13], global_bytes[14], global_bytes[15]]) as f64;
+
+        match (*cam).r#type {
+            MJ_CAMERA_FREE | MJ_CAMERA_TRACKING => {
+                ipd = global_ipd;
+                orthographic = global_orthographic;
+            }
+            MJ_CAMERA_FIXED => {
+                let cid = (*cam).fixedcamid;
+                if cid < 0 || cid as i64 >= (*m).ncam {
+                    crate::engine::engine_util_errmem::mju_error(
+                        b"fixed camera id is outside valid range\0".as_ptr() as *const i8);
+                    return;
+                }
+                ipd = *(*m).cam_ipd.add(cid as usize);
+                orthographic = if *(*m).cam_projection.add(cid as usize) == mjtProjection_mjPROJ_ORTHOGRAPHIC as i32 { 1 } else { 0 };
+            }
+            _ => {
+                crate::engine::engine_util_errmem::mju_error(
+                    b"unknown camera type\0".as_ptr() as *const i8);
+                return;
+            }
+        }
+
+        // compute GL cameras
+        for view in 0..2usize {
+            // set frame
+            for i in 0..3usize {
+                let sign = if view != 0 { 1.0 } else { -1.0 };
+                (*scn).camera[view].pos[i] = (headpos[i] + sign * ipd * 0.5 * right[i]) as f32;
+                (*scn).camera[view].forward[i] = forward[i] as f32;
+                (*scn).camera[view].up[i] = up[i] as f32;
+            }
+
+            // set orthographic
+            (*scn).camera[view].orthographic = orthographic;
+
+            // set symmetric frustum
+            (*scn).camera[view].frustum_top = zver[0];
+            (*scn).camera[view].frustum_bottom = -zver[1];
+            (*scn).camera[view].frustum_center = (zhor[1] - zhor[0]) / 2.0;
+            (*scn).camera[view].frustum_width = (zhor[1] + zhor[0]) / 2.0;
+            (*scn).camera[view].frustum_near = zclip[0];
+            (*scn).camera[view].frustum_far = zclip[1];
+        }
+
+        // disable model transformation
+        (*scn).enabletransform = 0;
+    }
 }
 
 /// C: mjv_updateActiveFlex (engine/engine_vis_visualize.h:51)
