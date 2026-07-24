@@ -717,6 +717,61 @@ pub fn mjv_select(m: *const mjModel, d: *const mjData, vopt: *const mjvOption, a
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjv_flex_body_id(m: *const mjModel, d: *const mjData, flexid: i32, vertid: i32, flexpnt: *mut f64) -> i32 {
-    todo!() // mjv_flexBodyId
+    // SAFETY: m, d, flexpnt are valid pointers; flexid, vertid are in bounds (caller contract)
+    unsafe {
+        let mut flexbodyid: i32 = -1;
+        let fi = flexid as usize;
+        let vi = vertid as usize;
+
+        if *(*m).flex_interp.add(fi) != 0 {
+            let coord = (*m).flex_vert0.add(3 * (*(*m).flex_vertadr.add(fi) as usize + vi));
+            let mut order = *(*m).flex_interp.add(fi);
+            if order < 0 { order = -order; }
+            let npc = (order + 1) * (order + 1) * (order + 1);
+
+            // cell lookup: get local coords and node indices
+            let mut loc = [0.0f64; 3];
+            let mut nodeindices = [0i32; 27]; // max npc for quadratic: 3^3 = 27
+            crate::engine::engine_util_misc::mju_cell_lookup(
+                coord, (*m).flex_cellnum.add(3 * fi), order,
+                loc.as_mut_ptr(), nodeindices.as_mut_ptr());
+
+            // find node with largest weight in this cell
+            let nstart = *(*m).flex_nodeadr.add(fi) as usize;
+            let mut nodeid: i32 = -1;
+            let mut w: f64 = 0.0;
+            let shell_mode = *(*m).flex_interp.add(fi) < 0;
+            for j in 0..npc as usize {
+                let ww = crate::engine::engine_util_misc::mju_eval_basis(
+                    loc.as_ptr(), j as i32, order);
+                let nid = nodeindices[j] as usize;
+                // skip interior nodes in shell mode (they map to worldbody)
+                if shell_mode && *(*m).body_dofnum.add(*(*m).flex_nodebodyid.add(nstart + nid) as usize) == 0 {
+                    continue;
+                }
+                if ww > w {
+                    w = ww;
+                    nodeid = nid as i32;
+                }
+            }
+            flexbodyid = *(*m).flex_nodebodyid.add(nstart + nodeid as usize);
+            if *(*m).flex_centered.add(fi) {
+                crate::engine::engine_util_blas::mju_copy3(
+                    flexpnt, (*d).xpos.add(3 * flexbodyid as usize));
+            } else {
+                crate::engine::engine_util_blas::mju_mul_mat_vec3(
+                    flexpnt,
+                    (*d).xmat.add(9 * flexbodyid as usize),
+                    (*m).flex_node.add(3 * (nstart + nodeid as usize)));
+                crate::engine::engine_util_blas::mju_add_to3(
+                    flexpnt, (*d).xpos.add(3 * flexbodyid as usize));
+            }
+        } else {
+            flexbodyid = *(*m).flex_vertbodyid.add(*(*m).flex_vertadr.add(fi) as usize + vi);
+            crate::engine::engine_util_blas::mju_copy3(
+                flexpnt, (*d).flexvert_xpos.add(3 * (*(*m).flex_vertadr.add(fi) as usize + vi)));
+        }
+        flexbodyid
+    }
 }
 

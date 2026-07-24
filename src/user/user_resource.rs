@@ -85,7 +85,7 @@ pub fn mju_get_resource_dir(resource: *mut mjResource, dir: *const *mut i8, ndir
 /// C: mju_isModifiedResource (user/user_resource.cc:105)
 #[allow(unused_variables, non_snake_case)]
 pub fn mju_is_modified_resource(resource: *const mjResource, timestamp: *const i8) -> i32 {
-    todo!() // mju_isModifiedResource
+    todo!("mju_isModifiedResource accesses resource->provider->modified which is through an opaque struct_mjpResourceProvider type. Cannot translate without typed provider struct.")
 }
 
 /// C: mju_decodeResource (user/user_resource.cc:112)

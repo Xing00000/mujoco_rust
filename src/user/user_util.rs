@@ -645,7 +645,22 @@ pub fn mjuu_frameaccum_child(pos: *const f64, quat: *const f64, childpos: *mut f
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjuu_frameaccuminv(pos: *mut f64, quat: *mut f64, childpos: *const f64, childquat: *const f64) {
-    todo!() // mjuu_frameaccuminv
+    // SAFETY: pos[3], quat[4], childpos[3], childquat[4] are valid arrays (caller contract)
+    unsafe {
+        let mut mat = [0.0f64; 9];
+        let mut vec = [0.0f64; 3];
+        let mut qtmp = [0.0f64; 4];
+        let qneg = [*childquat.add(0), -*childquat.add(1), -*childquat.add(2), -*childquat.add(3)];
+
+        mjuu_mulquat(qtmp.as_mut_ptr(), quat, qneg.as_ptr());
+        // copy qtmp -> quat (4 doubles)
+        std::ptr::copy_nonoverlapping(qtmp.as_ptr(), quat, 4);
+        mjuu_quat2mat(mat.as_mut_ptr(), quat);
+        mjuu_mulvecmat(vec.as_mut_ptr(), childpos, mat.as_ptr());
+        *pos.add(0) -= vec[0];
+        *pos.add(1) -= vec[1];
+        *pos.add(2) -= vec[2];
+    }
 }
 
 /// C: mjuu_globalinertia (user/user_util.h:144)

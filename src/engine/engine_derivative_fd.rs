@@ -174,7 +174,70 @@ pub fn mjd_step_fd(m: *const mjModel, d: *mut mjData, eps: f64, flg_centered: bo
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjd_smooth_vel_fd(m: *const mjModel, d: *mut mjData, eps: f64) {
-    todo!() // mjd_smooth_velFD
+    // SAFETY: m and d are valid pointers with all arrays allocated (caller contract)
+    unsafe {
+        let nv = (*m).nv as i32;
+
+        crate::engine::engine_memory::mj_mark_stack(d);
+        let plus = crate::engine::engine_memory::mj_stack_alloc_num(d, nv as usize);
+        let minus = crate::engine::engine_memory::mj_stack_alloc_num(d, nv as usize);
+        let fd = crate::engine::engine_memory::mj_stack_alloc_num(d, nv as usize);
+        let cnt = crate::engine::engine_memory::mj_stack_alloc_int(d, nv as usize);
+
+        // clear row counters
+        crate::engine::engine_util_misc::mju_zero_int(cnt, nv);
+
+        // loop over dofs
+        for i in 0..nv as usize {
+            // save qvel[i]
+            let saveqvel = *(*d).qvel.add(i);
+
+            // eval at qvel[i]+eps
+            *(*d).qvel.add(i) = saveqvel + eps;
+            crate::engine::engine_forward::mj_fwd_velocity(m, d);
+            crate::engine::engine_forward::mj_fwd_actuation(m, d);
+            crate::engine::engine_util_blas::mju_add(plus, (*d).qfrc_actuator, (*d).qfrc_passive, nv);
+            crate::engine::engine_util_blas::mju_sub_from(plus, (*d).qfrc_bias, nv);
+
+            // eval at qvel[i]-eps
+            *(*d).qvel.add(i) = saveqvel - eps;
+            crate::engine::engine_forward::mj_fwd_velocity(m, d);
+            crate::engine::engine_forward::mj_fwd_actuation(m, d);
+            crate::engine::engine_util_blas::mju_add(minus, (*d).qfrc_actuator, (*d).qfrc_passive, nv);
+            crate::engine::engine_util_blas::mju_sub_from(minus, (*d).qfrc_bias, nv);
+
+            // restore qvel[i]
+            *(*d).qvel.add(i) = saveqvel;
+
+            // finite difference result in fd
+            crate::engine::engine_util_blas::mju_sub(fd, plus, minus, nv);
+            crate::engine::engine_util_blas::mju_scl(fd, fd, 0.5 / eps, nv);
+
+            // copy to sparse qDeriv
+            for j in 0..nv as usize {
+                if *cnt.add(j) < *(*m).D_rownnz.add(j)
+                    && *(*m).D_colind.add((*(*m).D_rowadr.add(j) + *cnt.add(j)) as usize) == i as i32
+                {
+                    *(*d).qDeriv.add((*(*m).D_rowadr.add(j) + *cnt.add(j)) as usize) = *fd.add(j);
+                    *cnt.add(j) += 1;
+                }
+            }
+        }
+
+        // make sure final row counters equal rownnz
+        for i in 0..nv as usize {
+            if *cnt.add(i) != *(*m).D_rownnz.add(i) {
+                crate::engine::engine_util_errmem::mju_error(
+                    b"error in constructing FD sparse derivative\0".as_ptr() as *const i8);
+            }
+        }
+
+        // restore
+        crate::engine::engine_forward::mj_fwd_velocity(m, d);
+        crate::engine::engine_forward::mj_fwd_actuation(m, d);
+
+        crate::engine::engine_memory::mj_free_stack(d);
+    }
 }
 
 /// C: mjd_passive_velFD (engine/engine_derivative_fd.h:30)

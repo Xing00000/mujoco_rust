@@ -170,7 +170,49 @@ pub fn mju_local_time_str(buf: *mut i8, buf_sz: i32) {
 /// Calls: BaseName
 #[allow(unused_variables, non_snake_case)]
 pub fn mju_fprint_message(stream: *mut FILE, timestr: *const i8, msg: *const mjLogMessage) {
-    todo!() // mju_fprint_message
+    const MJ_LOG_DEBUG: i32 = 0;
+    const MJ_LOG_INFO: i32 = 1;
+    const MJ_LOG_WARNING: i32 = 2;
+    const MJ_LOG_ERROR: i32 = 3;
+
+    extern "C" {
+        fn fprintf(stream: *mut FILE, fmt: *const i8, ...) -> i32;
+    }
+
+    // SAFETY: stream, timestr, msg are valid pointers (caller contract)
+    unsafe {
+        let level = (*msg).level;
+        let type_str = if level == MJ_LOG_ERROR {
+            b"ERROR\0".as_ptr() as *const i8
+        } else if level == MJ_LOG_WARNING {
+            b"WARNING\0".as_ptr() as *const i8
+        } else if level == MJ_LOG_INFO {
+            b"INFO\0".as_ptr() as *const i8
+        } else {
+            b"DEBUG\0".as_ptr() as *const i8
+        };
+
+        fprintf(stream, b"%s\0".as_ptr() as *const i8, type_str);
+        if !(*msg).func.is_null() {
+            fprintf(stream, b" %s\0".as_ptr() as *const i8, (*msg).func);
+        }
+        if !(*msg).file.is_null() && (*msg).line != 0 {
+            fprintf(stream, b" (%s:%d)\0".as_ptr() as *const i8,
+                    base_name((*msg).file), (*msg).line);
+        }
+        if *timestr != 0 {
+            fprintf(stream, b" %s\0".as_ptr() as *const i8, timestr);
+        }
+        fprintf(stream, b": %s\n\0".as_ptr() as *const i8, (*msg).subject.as_ptr());
+        if !(*msg).body.is_null() {
+            fprintf(stream, b"%s\n\0".as_ptr() as *const i8, (*msg).body);
+        }
+
+        // add blank line after message except for DEBUG, for compactness
+        if level != MJ_LOG_DEBUG {
+            fprintf(stream, b"\n\0".as_ptr() as *const i8);
+        }
+    }
 }
 
 /// C: mju_legacy_text (engine/engine_util_errmem.c:231)
@@ -272,7 +314,24 @@ pub fn mju_free(ptr: *mut ()) {
 /// C: mju_setLogHandler (engine/engine_util_errmem.h:57)
 #[allow(unused_variables, non_snake_case)]
 pub fn mju_set_log_handler(handler: mjfLogHandler) -> mjfLogHandler {
-    todo!() // mju_setLogHandler
+    use crate::types::GLOBAL_LOG_HANDLER;
+
+    // SAFETY: reading and writing function pointer bytes from mutex-protected storage
+    let mut global_guard = GLOBAL_LOG_HANDLER.lock().unwrap();
+    let prev = mjfLogHandler { _data: *global_guard };
+
+    // check if handler is null (all zeros = null function pointer)
+    let handler_val = usize::from_ne_bytes(handler._data);
+    if handler_val != 0 {
+        *global_guard = handler._data;
+    } else {
+        // set to mju_defaultLogHandler — store the fn pointer
+        let default_fn: unsafe fn(*const mjLogMessage) = mju_default_log_handler;
+        let ptr_bytes = (default_fn as usize).to_ne_bytes();
+        *global_guard = ptr_bytes;
+    }
+
+    prev
 }
 
 /// C: mju_getLogConfig (engine/engine_util_errmem.h:60)
