@@ -1655,7 +1655,230 @@ pub fn mju_ray_geom(pos: *const f64, mat: *const f64, size: *const f64, pnt: *co
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_ray_flex(m: *const mjModel, d: *const mjData, flex_layer: i32, flg_vert: bool, flg_edge: bool, flg_face: bool, flg_skin: bool, flexid: i32, pnt: *const f64, vec: *const f64, vertid: *mut i32, normal: *mut f64) -> f64 {
-    todo!() // mj_rayFlex
+    const MJ_GEOM_CAPSULE: i32 = 3;
+    const MJ_GEOM_SPHERE: i32 = 2;
+
+    // SAFETY: all pointers are valid; flexid is in bounds (caller contract)
+    unsafe {
+        let fi = flexid as usize;
+        let dim = *(*m).flex_dim.add(fi);
+
+        // clear normal if given
+        if !normal.is_null() {
+            crate::engine::engine_util_blas::mju_zero3(normal);
+        }
+
+        // compute bounding box
+        let mut box_: [[f64; 2]; 3] = [[0.0; 2]; 3];
+        let vert = (*d).flexvert_xpos.add(3 * *(*m).flex_vertadr.add(fi) as usize);
+        let nvert = *(*m).flex_vertnum.add(fi);
+        for i in 0..nvert as usize {
+            for j in 0..3usize {
+                if box_[j][0] > *vert.add(3 * i + j) || i == 0 {
+                    box_[j][0] = *vert.add(3 * i + j);
+                }
+                if box_[j][1] < *vert.add(3 * i + j) || i == 0 {
+                    box_[j][1] = *vert.add(3 * i + j);
+                }
+            }
+        }
+
+        // adjust box for radius
+        let radius = *(*m).flex_radius.add(fi);
+        for j in 0..3usize {
+            box_[j][0] -= radius;
+            box_[j][1] += radius;
+        }
+
+        // construct box geom
+        let mut pos = [0.0f64; 3];
+        let mut size = [0.0f64; 3];
+        let mut mat = [1.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 1.0f64];
+        for j in 0..3usize {
+            pos[j] = 0.5 * (box_[j][0] + box_[j][1]);
+            size[j] = 0.5 * (box_[j][1] - box_[j][0]);
+        }
+
+        // apply bounding-box filter
+        if ray_box(pos.as_ptr(), mat.as_ptr(), size.as_ptr(), pnt, vec,
+                   std::ptr::null_mut(), std::ptr::null_mut()) < 0.0 {
+            return -1.0;
+        }
+
+        // construct basis vectors of normal plane
+        let mut b0 = [1.0f64, 1.0, 1.0];
+        let mut b1 = [0.0f64; 3];
+        if (*vec.add(0)).abs() >= (*vec.add(1)).abs() && (*vec.add(0)).abs() >= (*vec.add(2)).abs() {
+            b0[0] = 0.0;
+        } else if (*vec.add(1)).abs() >= (*vec.add(2)).abs() {
+            b0[1] = 0.0;
+        } else {
+            b0[2] = 0.0;
+        }
+        let dot_vec_b0 = crate::engine::engine_util_blas::mju_dot3(vec, b0.as_ptr());
+        let dot_vec_vec = crate::engine::engine_util_blas::mju_dot3(vec, vec);
+        crate::engine::engine_util_blas::mju_add_to_scl3(b1.as_mut_ptr(), b0.as_ptr(), 1.0);
+        // b1 = b0 + vec * (-dot_vec_b0/dot_vec_vec)
+        b1[0] = b0[0] + *vec.add(0) * (-dot_vec_b0 / dot_vec_vec);
+        b1[1] = b0[1] + *vec.add(1) * (-dot_vec_b0 / dot_vec_vec);
+        b1[2] = b0[2] + *vec.add(2) * (-dot_vec_b0 / dot_vec_vec);
+        crate::engine::engine_util_blas::mju_normalize3(b1.as_mut_ptr());
+        crate::engine::engine_util_spatial::mju_cross(b0.as_mut_ptr(), b1.as_ptr(), vec);
+        crate::engine::engine_util_blas::mju_normalize3(b0.as_mut_ptr());
+
+        // init solution
+        let mut x: f64 = -1.0;
+        let mut normal_local = [0.0f64; 3];
+
+        // check edges if rendered, or if skin
+        if flg_edge || (dim > 1 && flg_skin) {
+            let edge_end = *(*m).flex_edgeadr.add(fi) + *(*m).flex_edgenum.add(fi);
+            let mut e = *(*m).flex_edgeadr.add(fi);
+            while e < edge_end {
+                // get vertices for this edge
+                let v1 = (*d).flexvert_xpos.add(3 * (*(*m).flex_vertadr.add(fi) + *(*m).flex_edge.add(2 * e as usize)) as usize);
+                let v2 = (*d).flexvert_xpos.add(3 * (*(*m).flex_vertadr.add(fi) + *(*m).flex_edge.add(2 * e as usize + 1)) as usize);
+
+                // construct capsule geom
+                crate::engine::engine_util_blas::mju_add3(pos.as_mut_ptr(), v1, v2);
+                crate::engine::engine_util_blas::mju_scl3(pos.as_mut_ptr(), pos.as_ptr(), 0.5);
+                let dif = [*v2.add(0) - *v1.add(0), *v2.add(1) - *v1.add(1), *v2.add(2) - *v1.add(2)];
+                size[0] = radius;
+                let mut dif_mut = dif;
+                size[1] = 0.5 * crate::engine::engine_util_blas::mju_normalize3(dif_mut.as_mut_ptr());
+                let mut quat = [0.0f64; 4];
+                crate::engine::engine_util_spatial::mju_quat_z2vec(quat.as_mut_ptr(), dif_mut.as_ptr());
+                crate::engine::engine_util_spatial::mju_quat2mat(mat.as_mut_ptr(), quat.as_ptr());
+
+                // intersect ray with capsule
+                let sol = mju_ray_geom(pos.as_ptr(), mat.as_ptr(), size.as_ptr(), pnt, vec,
+                    MJ_GEOM_CAPSULE, if !normal.is_null() { normal_local.as_mut_ptr() } else { std::ptr::null_mut() });
+
+                // update
+                if sol >= 0.0 && (x < 0.0 || sol < x) {
+                    x = sol;
+                    if !normal.is_null() { crate::engine::engine_util_blas::mju_copy3(normal, normal_local.as_ptr()); }
+
+                    // find nearest vertex
+                    if !vertid.is_null() {
+                        let mut intersect = [0.0f64; 3];
+                        crate::engine::engine_util_blas::mju_add_to_scl3(intersect.as_mut_ptr(), pnt, 1.0);
+                        intersect[0] = *pnt.add(0) + *vec.add(0) * sol;
+                        intersect[1] = *pnt.add(1) + *vec.add(1) * sol;
+                        intersect[2] = *pnt.add(2) + *vec.add(2) * sol;
+                        if crate::engine::engine_util_blas::mju_dist3(v1, intersect.as_ptr())
+                            < crate::engine::engine_util_blas::mju_dist3(v2, intersect.as_ptr()) {
+                            *vertid = *(*m).flex_edge.add(2 * e as usize);
+                        } else {
+                            *vertid = *(*m).flex_edge.add(2 * e as usize + 1);
+                        }
+                    }
+                }
+                e += 1;
+            }
+        }
+        // check vertices if rendered (and edges not checked)
+        else if flg_vert && !(dim > 1 && flg_skin) {
+            for v in 0..nvert as usize {
+                let vpos = (*d).flexvert_xpos.add(3 * (*(*m).flex_vertadr.add(fi) as usize + v));
+                size[0] = radius;
+
+                let sol = mju_ray_geom(vpos, std::ptr::null(), size.as_ptr(), pnt, vec,
+                    MJ_GEOM_SPHERE, if !normal.is_null() { normal_local.as_mut_ptr() } else { std::ptr::null_mut() });
+
+                if sol >= 0.0 && (x < 0.0 || sol < x) {
+                    x = sol;
+                    if !normal.is_null() { crate::engine::engine_util_blas::mju_copy3(normal, normal_local.as_ptr()); }
+                    if !vertid.is_null() { *vertid = v as i32; }
+                }
+            }
+        }
+
+        // check faces if rendered
+        if dim > 1 && (flg_face || flg_skin) {
+            for e in 0..*(*m).flex_elemnum.add(fi) as usize {
+                // skip if 3D element is not visible
+                let elayer = *(*m).flex_elemlayer.add(*(*m).flex_elemadr.add(fi) as usize + e);
+                if dim == 3 && ((flg_skin && elayer > 0) || (!flg_skin && elayer != flex_layer)) {
+                    continue;
+                }
+
+                // get element data
+                let edata = (*m).flex_elem.add(*(*m).flex_elemdataadr.add(fi) as usize + e * (dim as usize + 1));
+                let vadr = *(*m).flex_vertadr.add(fi) as usize;
+                let v1 = (*d).flexvert_xpos.add(3 * (vadr + *edata.add(0) as usize));
+                let v2 = (*d).flexvert_xpos.add(3 * (vadr + *edata.add(1) as usize));
+                let v3 = (*d).flexvert_xpos.add(3 * (vadr + *edata.add(2) as usize));
+
+                let nfaces = if dim == 2 { 1 } else { 4 };
+
+                // for 3D, also get v4
+                let v4 = if dim == 3 {
+                    (*d).flexvert_xpos.add(3 * (vadr + *edata.add(3) as usize))
+                } else {
+                    std::ptr::null_mut()
+                };
+
+                // vertex pointer arrays for each face
+                let vptr: [[*const f64; 3]; 4] = [
+                    [v1, v2, v3],
+                    [v1, v2, v4],
+                    [v1, v3, v4],
+                    [v2, v3, v4],
+                ];
+                let vid: [[i32; 3]; 4] = [
+                    [0, 1, 2],
+                    [0, 1, 3],
+                    [0, 2, 3],
+                    [1, 2, 3],
+                ];
+
+                for i in 0..nfaces {
+                    // copy vertices into triangle representation
+                    let mut v_tri: [[f64; 3]; 3] = [[0.0; 3]; 3];
+                    for j in 0..3usize {
+                        crate::engine::engine_util_blas::mju_copy3(
+                            v_tri[j].as_mut_ptr(), vptr[i][j]);
+                    }
+
+                    // intersect ray with triangle
+                    let sol = ray_triangle(
+                        v_tri.as_mut_ptr(), pnt, vec, b0.as_ptr(), b1.as_ptr(),
+                        if !normal.is_null() { normal_local.as_mut_ptr() } else { std::ptr::null_mut() });
+
+                    // update
+                    if sol >= 0.0 && (x < 0.0 || sol < x) {
+                        x = sol;
+                        if !normal.is_null() { crate::engine::engine_util_blas::mju_copy3(normal, normal_local.as_ptr()); }
+
+                        if !vertid.is_null() {
+                            // construct intersection point
+                            let intersect = [
+                                *pnt.add(0) + *vec.add(0) * sol,
+                                *pnt.add(1) + *vec.add(1) * sol,
+                                *pnt.add(2) + *vec.add(2) * sol,
+                            ];
+                            // find nearest vertex
+                            let dist = [
+                                crate::engine::engine_util_blas::mju_dist3(v_tri[0].as_ptr(), intersect.as_ptr()),
+                                crate::engine::engine_util_blas::mju_dist3(v_tri[1].as_ptr(), intersect.as_ptr()),
+                                crate::engine::engine_util_blas::mju_dist3(v_tri[2].as_ptr(), intersect.as_ptr()),
+                            ];
+                            if dist[0] <= dist[1] && dist[0] <= dist[2] {
+                                *vertid = *edata.add(vid[i][0] as usize);
+                            } else if dist[1] <= dist[2] {
+                                *vertid = *edata.add(vid[i][1] as usize);
+                            } else {
+                                *vertid = *edata.add(vid[i][2] as usize);
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        x
+    }
 }
 
 /// C: mju_raySkin (engine/engine_ray.h:70)
