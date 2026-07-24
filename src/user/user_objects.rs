@@ -3201,7 +3201,8 @@ pub fn mj_c_pair_get_geomname2(self_ptr: *mut mjCPair) -> *const std__string {
 /// C: mjCPair::GetSignature (user/user_objects.h:1573)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_pair_get_signature(self_ptr: *mut mjCPair) -> i32 {
-    todo!() // mjCPair::GetSignature
+    // SAFETY: self_ptr is a valid pointer to mjCPair, caller guarantees lifetime.
+    unsafe { (*self_ptr).signature_1 }
 }
 
 /// C: mjCPair::Compile (user/user_objects.h:1578)

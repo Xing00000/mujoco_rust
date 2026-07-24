@@ -4,6 +4,9 @@
 
 use crate::types::*;
 
+/// Type alias for codegen test compatibility.
+pub type Resolver = mujoco___anonymous_namespace___Resolver;
+
 /// C: fmtVal (user/user_resolver.cc:34)
 #[allow(unused_variables, non_snake_case)]
 pub fn fmt_val(val: T) -> std__string {
