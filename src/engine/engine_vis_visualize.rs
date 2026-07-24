@@ -3731,7 +3731,102 @@ pub fn mjv_add_geoms(m: *const mjModel, d: *mut mjData, opt: *const mjvOption, p
 /// Calls: f2f, mju_n2f, mjv_cameraInModel
 #[allow(unused_variables, non_snake_case)]
 pub fn mjv_make_lights(m: *const mjModel, d: *const mjData, scn: *mut mjvScene) {
-    todo!() // mjv_makeLights
+    const MJ_MAX_LIGHT: i32 = 100;
+    const MJ_LIGHT_DIRECTIONAL: i32 = 1;
+    const MJ_LIGHT_SPOT: i32 = 0;
+
+    // SAFETY: m, d, scn are valid pointers (caller contract)
+    unsafe {
+        // clear counter
+        (*scn).nlight = 0;
+
+        // vis.headlight layout: ambient[3](f32) at 0, diffuse[3](f32) at 12,
+        // specular[3](f32) at 24, active(i32) at 36
+        let hl_data = &(*m).vis.headlight._data;
+        let hl_active = i32::from_ne_bytes([hl_data[36], hl_data[37], hl_data[38], hl_data[39]]);
+
+        // headlight
+        if hl_active != 0 {
+            let thislight = &mut (*scn).lights[0];
+
+            // set default properties
+            *thislight = std::ptr::read_volatile(&mjvLight {
+                id: -1,
+                pos: [0.0; 3],
+                dir: [0.0; 3],
+                r#type: MJ_LIGHT_DIRECTIONAL,
+                texid: -1,
+                attenuation: [0.0; 3],
+                cutoff: 0.0,
+                exponent: 0.0,
+                ambient: [0.0; 3],
+                diffuse: [0.0; 3],
+                specular: [0.0; 3],
+                headlight: 1,
+                castshadow: 0,
+                _pad_0: [0; 2],
+                bulbradius: 0.02,
+                intensity: 0.0,
+                range: 10.0,
+            });
+
+            // compute head position and gaze direction in model space
+            let mut hpos = [0.0f64; 3];
+            let mut hfwd = [0.0f64; 3];
+            crate::engine::engine_vis_interact::mjv_camera_in_model(
+                hpos.as_mut_ptr(), hfwd.as_mut_ptr(), std::ptr::null_mut(), scn);
+            crate::engine::engine_util_misc::mju_n2f(thislight.pos.as_mut_ptr(), hpos.as_ptr(), 3);
+            crate::engine::engine_util_misc::mju_n2f(thislight.dir.as_mut_ptr(), hfwd.as_ptr(), 3);
+
+            // copy colors from headlight sub-struct
+            let hl_ambient = hl_data.as_ptr() as *const f32;
+            let hl_diffuse = hl_data.as_ptr().add(12) as *const f32;
+            let hl_specular = hl_data.as_ptr().add(24) as *const f32;
+            f2f(thislight.ambient.as_mut_ptr(), hl_ambient, 3);
+            f2f(thislight.diffuse.as_mut_ptr(), hl_diffuse, 3);
+            f2f(thislight.specular.as_mut_ptr(), hl_specular, 3);
+
+            // advance counter
+            (*scn).nlight += 1;
+        }
+
+        // remaining lights
+        let mut i = 0;
+        while i < (*m).nlight as usize && (*scn).nlight < MJ_MAX_LIGHT {
+            if *(*m).light_active.add(i) {
+                let idx = (*scn).nlight as usize;
+                let thislight = &mut (*scn).lights[idx];
+
+                // zero out and set properties
+                std::ptr::write_bytes(thislight as *mut mjvLight, 0, 1);
+                thislight.id = i as i32;
+                thislight.r#type = *(*m).light_type.add(i);
+                thislight.texid = *(*m).light_texid.add(i);
+                thislight.castshadow = if *(*m).light_castshadow.add(i) { 1 } else { 0 };
+                thislight.bulbradius = *(*m).light_bulbradius.add(i);
+                thislight.intensity = *(*m).light_intensity.add(i);
+                thislight.range = *(*m).light_range.add(i);
+                if thislight.r#type == MJ_LIGHT_SPOT {
+                    f2f(thislight.attenuation.as_mut_ptr(), (*m).light_attenuation.add(3 * i), 3);
+                    thislight.exponent = *(*m).light_exponent.add(i);
+                    thislight.cutoff = *(*m).light_cutoff.add(i);
+                }
+
+                // copy colors
+                f2f(thislight.ambient.as_mut_ptr(), (*m).light_ambient.add(3 * i), 3);
+                f2f(thislight.diffuse.as_mut_ptr(), (*m).light_diffuse.add(3 * i), 3);
+                f2f(thislight.specular.as_mut_ptr(), (*m).light_specular.add(3 * i), 3);
+
+                // copy position and direction
+                crate::engine::engine_util_misc::mju_n2f(thislight.pos.as_mut_ptr(), (*d).light_xpos.add(3 * i), 3);
+                crate::engine::engine_util_misc::mju_n2f(thislight.dir.as_mut_ptr(), (*d).light_xdir.add(3 * i), 3);
+
+                // advance counter
+                (*scn).nlight += 1;
+            }
+            i += 1;
+        }
+    }
 }
 
 /// C: mjv_updateCamera (engine/engine_vis_visualize.h:48)
