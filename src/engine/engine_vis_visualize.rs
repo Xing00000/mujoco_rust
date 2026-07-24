@@ -3935,7 +3935,152 @@ pub fn mjv_update_camera(m: *const mjModel, d: *const mjData, cam: *mut mjvCamer
 /// Calls: addNormal, copyTex, makeFace, makeSide, makeSmooth, mj_freeStack, mj_markStack, mj_stackAllocInfo, mju_error, mju_normalize3, mju_zero
 #[allow(unused_variables, non_snake_case)]
 pub fn mjv_update_active_flex(m: *const mjModel, d: *mut mjData, scn: *mut mjvScene, opt: *const mjvOption) {
-    todo!() // mjv_updateActiveFlex
+    // mjVIS_FLEXVERT=24, mjVIS_FLEXEDGE=25, mjVIS_FLEXFACE=26, mjVIS_FLEXSKIN=27
+    const MJ_VIS_FLEXVERT: usize = 24;
+    const MJ_VIS_FLEXEDGE: usize = 25;
+    const MJ_VIS_FLEXFACE: usize = 26;
+    const MJ_VIS_FLEXSKIN: usize = 27;
+
+    // SAFETY: m, d, scn, opt are valid pointers (caller contract)
+    unsafe {
+        // save flex visualization flags in scene
+        (*scn).flexvertopt = (*opt).flags[MJ_VIS_FLEXVERT];
+        (*scn).flexedgeopt = (*opt).flags[MJ_VIS_FLEXEDGE];
+        (*scn).flexfaceopt = (*opt).flags[MJ_VIS_FLEXFACE];
+        (*scn).flexskinopt = (*opt).flags[MJ_VIS_FLEXSKIN];
+
+        // convert vertex positions from mjtNum to float
+        for v in 0..(3 * (*m).nflexvert) as usize {
+            *(*scn).flexvert.add(v) = *(*d).flexvert_xpos.add(v) as f32;
+        }
+
+        // construct faces
+        for f in 0..(*m).nflex as usize {
+            let dim = *(*m).flex_dim.add(f);
+            let radius = *(*m).flex_radius.add(f);
+            let flg_flat = *(*m).flex_flatskin.add(f) as u8;
+            let vertxpos = (*d).flexvert_xpos.add(3 * *(*m).flex_vertadr.add(f) as usize);
+            let face = (*scn).flexface.add(9 * *(*scn).flexfaceadr.add(f) as usize);
+            let normal = (*scn).flexnormal.add(9 * *(*scn).flexfaceadr.add(f) as usize);
+            let texdst = if *(*m).flex_texcoordadr.add(f) >= 0 {
+                (*scn).flextexcoord.add(6 * *(*scn).flexfaceadr.add(f) as usize)
+            } else {
+                std::ptr::null_mut()
+            };
+            let texsrc = if *(*m).flex_texcoordadr.add(f) >= 0 {
+                (*m).flex_texcoord.add(2 * *(*m).flex_texcoordadr.add(f) as usize)
+            } else {
+                std::ptr::null()
+            };
+
+            // 1D, or face and skin disabled: no faces
+            if dim == 1 || ((*opt).flags[MJ_VIS_FLEXFACE] == 0 && (*opt).flags[MJ_VIS_FLEXSKIN] == 0) {
+                *(*scn).flexfaceused.add(f) = 0;
+            }
+            // 2D or 3D face: faces from elements, flat normals, texture
+            else if (*opt).flags[MJ_VIS_FLEXSKIN] == 0 {
+                let mut nface: i32 = 0;
+                for e in 0..*(*m).flex_elemnum.add(f) as usize {
+                    // in 3D, show only elements in selected layer
+                    if dim == 2 || *(*m).flex_elemlayer.add(*(*m).flex_elemadr.add(f) as usize + e) == (*opt).flex_layer {
+                        let edata = (*m).flex_elem.add(*(*m).flex_elemdataadr.add(f) as usize + e * (dim as usize + 1));
+                        let tdata = (*m).flex_elemtexcoord.add(*(*m).flex_elemdataadr.add(f) as usize + e * (dim as usize + 1));
+
+                        if dim == 2 {
+                            make_face(face, normal, radius, vertxpos, nface, *edata.add(0), *edata.add(1), *edata.add(2));
+                            copy_tex(texdst, texsrc, nface, *tdata.add(0), *tdata.add(1), *tdata.add(2));
+                            nface += 1;
+                            make_face(face, normal, radius, vertxpos, nface, *edata.add(0), *edata.add(2), *edata.add(1));
+                            copy_tex(texdst, texsrc, nface, *tdata.add(0), *tdata.add(2), *tdata.add(1));
+                            nface += 1;
+                        } else {
+                            make_face(face, normal, radius, vertxpos, nface, *edata.add(0), *edata.add(1), *edata.add(2));
+                            copy_tex(texdst, texsrc, nface, *tdata.add(0), *tdata.add(1), *tdata.add(2));
+                            nface += 1;
+                            make_face(face, normal, radius, vertxpos, nface, *edata.add(0), *edata.add(2), *edata.add(3));
+                            copy_tex(texdst, texsrc, nface, *tdata.add(0), *tdata.add(2), *tdata.add(3));
+                            nface += 1;
+                            make_face(face, normal, radius, vertxpos, nface, *edata.add(0), *edata.add(3), *edata.add(1));
+                            copy_tex(texdst, texsrc, nface, *tdata.add(0), *tdata.add(3), *tdata.add(1));
+                            nface += 1;
+                            make_face(face, normal, radius, vertxpos, nface, *edata.add(1), *edata.add(3), *edata.add(2));
+                            copy_tex(texdst, texsrc, nface, *tdata.add(1), *tdata.add(3), *tdata.add(2));
+                            nface += 1;
+                        }
+                    }
+                }
+                *(*scn).flexfaceused.add(f) = nface;
+            }
+            // 2D or 3D skin: faces from elements/shells, smooth normals, texture
+            else {
+                crate::engine::engine_memory::mj_mark_stack(d);
+                let vertnorm = crate::engine::engine_memory::mj_stack_alloc_num(d, 3 * *(*m).flex_vertnum.add(f) as usize);
+                crate::engine::engine_util_blas::mju_zero(vertnorm, 3 * *(*m).flex_vertnum.add(f));
+
+                // add vertex normals
+                if dim == 2 {
+                    for e in 0..*(*m).flex_elemnum.add(f) as usize {
+                        let edata = (*m).flex_elem.add(*(*m).flex_elemdataadr.add(f) as usize + e * (dim as usize + 1));
+                        add_normal(vertnorm, vertxpos, *edata.add(0), *edata.add(1), *edata.add(2));
+                    }
+                } else {
+                    for s in 0..*(*m).flex_shellnum.add(f) as usize {
+                        let sdata = (*m).flex_shell.add(*(*m).flex_shelldataadr.add(f) as usize + s * dim as usize);
+                        add_normal(vertnorm, vertxpos, *sdata.add(0), *sdata.add(1), *sdata.add(2));
+                    }
+                }
+
+                // normalize vertex normals
+                for i in 0..*(*m).flex_vertnum.add(f) as usize {
+                    crate::engine::engine_util_blas::mju_normalize3(vertnorm.add(3 * i));
+                }
+
+                // create faces with smooth normals
+                let mut nface: i32 = 0;
+                if dim == 2 {
+                    for e in 0..*(*m).flex_elemnum.add(f) as usize {
+                        let edata = (*m).flex_elem.add(*(*m).flex_elemdataadr.add(f) as usize + e * (dim as usize + 1));
+                        let tdata = (*m).flex_elemtexcoord.add(*(*m).flex_elemdataadr.add(f) as usize + e * (dim as usize + 1));
+                        make_smooth(face, normal, radius, flg_flat, vertnorm, vertxpos, nface, *edata.add(0), *edata.add(1), *edata.add(2));
+                        copy_tex(texdst, texsrc, nface, *tdata.add(0), *tdata.add(1), *tdata.add(2));
+                        nface += 1;
+                        make_smooth(face, normal, -radius, flg_flat, vertnorm, vertxpos, nface, *edata.add(0), *edata.add(2), *edata.add(1));
+                        copy_tex(texdst, texsrc, nface, *tdata.add(0), *tdata.add(2), *tdata.add(1));
+                        nface += 1;
+                    }
+                } else {
+                    for s in 0..*(*m).flex_shellnum.add(f) as usize {
+                        let sdata = (*m).flex_shell.add(*(*m).flex_shelldataadr.add(f) as usize + s * dim as usize);
+                        make_smooth(face, normal, radius, flg_flat, vertnorm, vertxpos, nface, *sdata.add(0), *sdata.add(1), *sdata.add(2));
+                        copy_tex(texdst, texsrc, nface, *sdata.add(0), *sdata.add(1), *sdata.add(2));
+                        nface += 1;
+                    }
+                }
+
+                // 2D: close sides using shell fragments
+                if dim == 2 {
+                    for s in 0..*(*m).flex_shellnum.add(f) as usize {
+                        let sdata = (*m).flex_shell.add(*(*m).flex_shelldataadr.add(f) as usize + s * dim as usize);
+                        make_side(face, normal, radius, vertnorm, vertxpos, nface, *sdata.add(0), *sdata.add(1));
+                        copy_tex(texdst, texsrc, nface, *sdata.add(0), *sdata.add(1), *sdata.add(1));
+                        nface += 1;
+                        make_side(face, normal, -radius, vertnorm, vertxpos, nface, *sdata.add(1), *sdata.add(0));
+                        copy_tex(texdst, texsrc, nface, *sdata.add(1), *sdata.add(0), *sdata.add(0));
+                        nface += 1;
+                    }
+                }
+
+                *(*scn).flexfaceused.add(f) = nface;
+                crate::engine::engine_memory::mj_free_stack(d);
+            }
+
+            // check face count, SHOULD NOT OCCUR
+            if *(*scn).flexfaceused.add(f) > *(*scn).flexfacenum.add(f) {
+                crate::engine::engine_util_errmem::mju_error(
+                    b"too many flex faces in mjv_updateActiveFlex\0".as_ptr() as *const i8);
+            }
+        }
+    }
 }
 
 /// C: mjv_updateSkin (engine/engine_vis_visualize.h:54)
