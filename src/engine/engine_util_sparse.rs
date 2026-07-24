@@ -766,7 +766,204 @@ pub fn mju_super_sparse(nr: i32, rowsuper: *mut i32, rownnz: *const i32, rowadr:
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mju_sqr_mat_td_sparse(res: *mut f64, mat: *const f64, matT: *const f64, diag: *const f64, nr: i32, nc: i32, res_rownnz: *mut i32, res_rowadr: *const i32, res_colind: *mut i32, rownnz: *const i32, rowadr: *const i32, colind: *const i32, rowsuper: *const i32, rownnzT: *const i32, rowadrT: *const i32, colindT: *const i32, rowsuperT: *const i32, d: *mut mjData, diagind: *mut i32) {
-    todo!() // mju_sqrMatTDSparse
+    const MJ_MAX_SUPER: usize = 8;
+
+    // SAFETY: all pointers are valid arrays of appropriate sizes (caller contract)
+    unsafe {
+        crate::engine::engine_memory::mj_mark_stack(d);
+
+        // reinterpret transposed matrices as compressed sparse column
+        let mat_csc = matT;
+        let colnnz = rownnzT;
+        let coladr = rowadrT;
+        let rowind = colindT;
+        let colsuper = rowsuperT;
+        let matT_csc = mat;
+        let colnnzT = rownnz;
+        let coladrT = rowadr;
+        let rowindT = colind;
+
+        // marker[i] = 1 if row i is set in current column
+        let marker = crate::engine::engine_memory::mj_stack_alloc_int(d, nc as usize);
+        crate::engine::engine_util_misc::mju_zero_int(marker, nc);
+
+        // dense buffer (column-major) containing up to mjMAXSUPER columns
+        let buffer = crate::engine::engine_memory::mj_stack_alloc_num(d, nc as usize * MJ_MAX_SUPER);
+
+        // dense index vector of the current column (unsorted)
+        let buffer_idx = crate::engine::engine_memory::mj_stack_alloc_int(d, nc as usize);
+
+        // rowstart[i]: address of first row in column mat'[:, i] with index > current column
+        let rowstart = crate::engine::engine_memory::mj_stack_alloc_int(d, nr as usize);
+        crate::engine::engine_util_misc::mju_zero_int(rowstart, nr);
+
+        // clear res_rownnz
+        crate::engine::engine_util_misc::mju_zero_int(res_rownnz, nc);
+
+        // construct res[lower+diagonal], by column
+        let mut c: i32 = 0;
+        while c < nc {
+            let mut buffer_nnz: i32 = 0;
+
+            // prepare column c of mat
+            let nnz = *colnnz.add(c as usize);
+            let adr = *coladr.add(c as usize);
+            let ind = rowind.add(adr as usize);
+
+            // val: array of ns > 0 column pointers with identical pattern to c
+            let mut val: [*const f64; 8] = [std::ptr::null(); 8];
+
+            // first column is c
+            let mut ns: i32 = 1;
+            val[0] = mat_csc.add(adr as usize);
+
+            // add c's supernodes, if any
+            if !colsuper.is_null() {
+                let cs = *colsuper.add(c as usize);
+                if cs != 0 {
+                    let extra = if cs < MJ_MAX_SUPER as i32 - 1 { cs } else { MJ_MAX_SUPER as i32 - 1 };
+                    ns += extra;
+                    for s in 1..ns as usize {
+                        val[s] = mat_csc.add(*coladr.add(c as usize + s) as usize);
+                    }
+                }
+            }
+
+            // diagonal special-case: dense dot product of column c
+            let mut diag_c = [0.0f64; 8];
+            if !diag.is_null() {
+                for s in 0..ns as usize {
+                    let mut ds: f64 = 0.0;
+                    for k in 0..nnz as usize {
+                        ds += (*val[s].add(k) * *val[s].add(k)) * *diag.add(*ind.add(k) as usize);
+                    }
+                    diag_c[s] = ds;
+                }
+            } else {
+                for s in 0..ns as usize {
+                    diag_c[s] = crate::engine::engine_util_blas::mju_dot(val[s], val[s], nnz);
+                }
+            }
+
+            // in the strict lower triangle, compute
+            // res[:, c] = mat' * mat[:, c]
+            for i in 0..nnz as usize {
+                // prepare column r of mat'
+                let r = *ind.add(i) as usize;
+                let adrT_r = *coladrT.add(r) as usize;
+                let nnzT_r = *colnnzT.add(r);
+                let indT = rowindT.add(adrT_r);
+                let valT = matT_csc.add(adrT_r);
+
+                // get v[s] = diag[r] * mat[r, c + s]
+                let mut v = [0.0f64; 8];
+                if !diag.is_null() {
+                    let diag_r = *diag.add(r);
+                    for s in 0..ns as usize {
+                        v[s] = diag_r * *val[s].add(i);
+                    }
+                } else {
+                    for s in 0..ns as usize {
+                        v[s] = *val[s].add(i);
+                    }
+                }
+
+                // gather to dense buffer columns
+                let mut k = *rowstart.add(r);
+                while k < nnzT_r {
+                    let j = *indT.add(k as usize) as usize;
+
+                    // if j is not in the strict lower triangle, increment rowstart
+                    if j <= c as usize {
+                        *rowstart.add(r) += 1;
+                        k += 1;
+                        continue;
+                    }
+
+                    // first nonzero in row j: mark and set value
+                    if *marker.add(j) == 0 {
+                        *marker.add(j) = 1;
+                        *buffer_idx.add(buffer_nnz as usize) = j as i32;
+                        buffer_nnz += 1;
+
+                        let vk = *valT.add(k as usize);
+                        for s in 0..ns as usize {
+                            *buffer.add(s * nc as usize + j) = vk * v[s];
+                        }
+                    }
+                    // otherwise existing nonzero: add to value
+                    else {
+                        let vk = *valT.add(k as usize);
+                        for s in 0..ns as usize {
+                            *buffer.add(s * nc as usize + j) += vk * v[s];
+                        }
+                    }
+                    k += 1;
+                }
+            }
+
+            // scatter to res from dense buffer
+            for i in 0..buffer_nnz as usize {
+                let j = *buffer_idx.add(i) as usize;
+                *marker.add(j) = 0;
+                let adr_j = (*res_rowadr.add(j) + *res_rownnz.add(j)) as usize;
+
+                // truncate row to strict lower triangle
+                let lower = j as i32 - c;
+                let nm = if ns < lower { ns } else { lower };
+
+                // increment nonzeros
+                *res_rownnz.add(j) += nm;
+
+                // write value
+                for s in 0..nm as usize {
+                    *res.add(adr_j + s) = *buffer.add(s * nc as usize + j);
+                }
+
+                // write index
+                for s in 0..nm as usize {
+                    *res_colind.add(adr_j + s) = c + s as i32;
+                }
+            }
+
+            // write diagonal value
+            for s in 0..ns as usize {
+                let cs_idx = c as usize + s;
+                let adr_s = (*res_rowadr.add(cs_idx) + *res_rownnz.add(cs_idx)) as usize;
+                *res_rownnz.add(cs_idx) += 1;
+                *res_colind.add(adr_s) = cs_idx as i32;
+                *res.add(adr_s) = diag_c[s];
+            }
+
+            // supernode: skip ahead if ns > 1
+            c += ns;
+        }
+
+        // upper triangle requested: save diagonal indices and fill
+        if !diagind.is_null() {
+            // save diagonal indices
+            for i in 0..nc as usize {
+                *diagind.add(i) = *res_rowadr.add(i) + *res_rownnz.add(i) - 1;
+            }
+
+            // fill upper triangle
+            for i in 0..nc as usize {
+                let start = *res_rowadr.add(i) as usize;
+                let end = start + *res_rownnz.add(i) as usize - 1;
+                let mut j = start;
+                while j < end {
+                    let col_j = *res_colind.add(j) as usize;
+                    let adr = (*res_rowadr.add(col_j) + *res_rownnz.add(col_j)) as usize;
+                    *res_rownnz.add(col_j) += 1;
+                    *res.add(adr) = *res.add(j);
+                    *res_colind.add(adr) = i as i32;
+                    j += 1;
+                }
+            }
+        }
+
+        crate::engine::engine_memory::mj_free_stack(d);
+    }
 }
 
 /// C: mju_sqrMatTDSparse_row (engine/engine_util_sparse.h:129)
@@ -778,7 +975,152 @@ pub fn mju_sqr_mat_td_sparse(res: *mut f64, mat: *const f64, matT: *const f64, d
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mju_sqr_mat_td_sparse_row(res: *mut f64, mat: *const f64, matT: *const f64, diag: *const f64, nr: i32, nc: i32, res_rownnz: *mut i32, res_rowadr: *const i32, res_colind: *mut i32, rownnz: *const i32, rowadr: *const i32, colind: *const i32, rowsuper: *const i32, rownnzT: *const i32, rowadrT: *const i32, colindT: *const i32, rowsuperT: *const i32, d: *mut mjData, diagind: *mut i32) {
-    todo!() // mju_sqrMatTDSparse_row
+    // SAFETY: all pointers are valid arrays of appropriate sizes (caller contract)
+    unsafe {
+        crate::engine::engine_memory::mj_mark_stack(d);
+
+        // a dense row buffer that stores the current row in the resulting matrix
+        let buffer = crate::engine::engine_memory::mj_stack_alloc_num(d, nc as usize);
+
+        // markers for currently set columns in the dense row buffer
+        let markers = crate::engine::engine_memory::mj_stack_alloc_int(d, nc as usize);
+
+        for i in 0..nc as usize {
+            let rowadr_i = *res_rowadr.add(i);
+            let cols = res_colind.add(rowadr_i as usize);
+
+            *res_rownnz.add(i) = 0;
+            *buffer.add(i) = 0.0;
+            *markers.add(i) = 0;
+
+            // if rowsuper, use the previous row sparsity structure
+            if !rowsuperT.is_null() && i > 0 && *rowsuperT.add(i - 1) != 0 {
+                *res_rownnz.add(i) = *res_rownnz.add(i - 1);
+                crate::engine::engine_util_misc::mju_copy_int(
+                    cols, res_colind.add(*res_rowadr.add(i - 1) as usize), *res_rownnz.add(i));
+            }
+
+            // iterate through each row of M'
+            let adrT = *rowadrT.add(i);
+            let end_r = adrT + *rownnzT.add(i);
+            let mut r = adrT;
+            while r < end_r {
+                let t = *colindT.add(r as usize);
+                let adr = *rowadr.add(t as usize);
+                let end_c = adr + *rownnz.add(t as usize);
+                let mut c = adr;
+                while c < end_c {
+                    let cc = *colind.add(c as usize) as usize;
+
+                    // ignore upper triangle
+                    if cc > i {
+                        break;
+                    }
+
+                    // add value to buffer
+                    if !diag.is_null() {
+                        *buffer.add(cc) += *matT.add(r as usize) * *diag.add(t as usize) * *mat.add(c as usize);
+                    } else {
+                        *buffer.add(cc) += *matT.add(r as usize) * *mat.add(c as usize);
+                    }
+
+                    // only need to insert nnz if not marked
+                    if *markers.add(cc) == 0 {
+                        *markers.add(cc) = 1;
+
+                        // since i is the rightmost column, it can be inserted at the end
+                        if cc == i {
+                            let nnz = *res_rownnz.add(i);
+                            *cols.add(nnz as usize) = cc as i32;
+                            *res_rownnz.add(i) = nnz + 1;
+                            c += 1;
+                            continue;
+                        }
+
+                        // insert col in order via binary search
+                        let mut l: i32 = 0;
+                        let mut h: i32 = *res_rownnz.add(i);
+                        while l < h {
+                            let m = (l + h) >> 1;
+                            if *cols.add(m as usize) < cc as i32 {
+                                l = m + 1;
+                            } else {
+                                h = m;
+                            }
+                        }
+
+                        // cc is the rightmost column so far
+                        if l == *res_rownnz.add(i) {
+                            *cols.add(l as usize) = cc as i32;
+                            *res_rownnz.add(i) += 1;
+                            c += 1;
+                            continue;
+                        }
+
+                        // move the cols to the right
+                        h = *res_rownnz.add(i);
+                        while l < h {
+                            *cols.add(h as usize) = *cols.add((h - 1) as usize);
+                            h -= 1;
+                        }
+
+                        // insert
+                        *cols.add(l as usize) = cc as i32;
+                        *res_rownnz.add(i) += 1;
+                    }
+                    c += 1;
+                }
+                r += 1;
+            }
+
+            let end_r = *res_rownnz.add(i);
+
+            // rowsuperT: reuse sparsity, copy into res
+            if !rowsuperT.is_null() && *rowsuperT.add(i) != 0 {
+                for r in 0..end_r as usize {
+                    let c = *cols.add(r) as usize;
+                    *res.add(rowadr_i as usize + r) = *buffer.add(c);
+                    *buffer.add(c) = 0.0;
+                }
+            }
+            // clear out buffers, sparsity cannot be reused
+            else {
+                for r in 0..end_r as usize {
+                    let c = *cols.add(r) as usize;
+                    let adr = rowadr_i as usize + r;
+                    *res.add(adr) = *buffer.add(c);
+                    *res_colind.add(adr) = c as i32;
+                    *buffer.add(c) = 0.0;
+                    *markers.add(c) = 0;
+                }
+            }
+        }
+
+        // diagonal indices requested: fill upper triangle
+        if !diagind.is_null() {
+            // save diagonal indices
+            for i in 0..nc as usize {
+                *diagind.add(i) = *res_rowadr.add(i) + *res_rownnz.add(i) - 1;
+            }
+
+            // fill upper triangle
+            for i in 0..nc as usize {
+                let start = *res_rowadr.add(i) as usize;
+                let end = start + *res_rownnz.add(i) as usize - 1;
+                let mut j = start;
+                while j < end {
+                    let col_j = *res_colind.add(j) as usize;
+                    let adr = (*res_rowadr.add(col_j) + *res_rownnz.add(col_j)) as usize;
+                    *res_rownnz.add(col_j) += 1;
+                    *res.add(adr) = *res.add(j);
+                    *res_colind.add(adr) = i as i32;
+                    j += 1;
+                }
+            }
+        }
+
+        crate::engine::engine_memory::mj_free_stack(d);
+    }
 }
 
 /// C: mju_sqrMatTDSparseCount (engine/engine_util_sparse.h:139)
