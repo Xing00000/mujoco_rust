@@ -17,7 +17,178 @@ pub fn mjv_default_scene(scn: *mut mjvScene) {
 /// Calls: mju_copyInt, mju_error, mju_malloc, mju_message, mjv_freeScene
 #[allow(unused_variables, non_snake_case)]
 pub fn mjv_make_scene(m: *const mjModel, scn: *mut mjvScene, maxgeom: i32) {
-    todo!() // mjv_makeScene
+    const MJ_NRNDFLAG: usize = 11;
+    // Default render flags: Shadow=1, Wireframe=0, Reflection=1, Additive=0,
+    // Skybox=1, Fog=0, Haze=1, Depth=0, Segment=0, IdColor=0, CullFace=1
+    const RND_DEFAULTS: [u8; 11] = [1, 0, 1, 0, 1, 0, 1, 0, 0, 0, 1];
+
+    // SAFETY: m (if non-null) and scn are valid pointers (caller contract)
+    unsafe {
+        // free previous
+        mjv_free_scene(scn);
+
+        // allocate geom buffers
+        if maxgeom > 0 {
+            (*scn).maxgeom = maxgeom;
+            (*scn).geoms = crate::engine::engine_util_errmem::mju_malloc(
+                maxgeom as usize * std::mem::size_of::<mjvGeom>()) as *mut mjvGeom;
+            (*scn).geomorder = crate::engine::engine_util_errmem::mju_malloc(
+                maxgeom as usize * std::mem::size_of::<i32>()) as *mut i32;
+
+            if (*scn).geoms.is_null() || (*scn).geomorder.is_null() {
+                crate::engine::engine_util_errmem::mju_error(
+                    b"could not allocate geom buffers\0".as_ptr() as *const i8);
+                return;
+            }
+        }
+
+        // set default OpenGL options
+        for i in 0..MJ_NRNDFLAG {
+            (*scn).flags[i] = RND_DEFAULTS[i];
+        }
+
+        // set default model transformation
+        (*scn).scale = 1.0;
+        (*scn).rotate[0] = 1.0;
+
+        // set number of flexes
+        (*scn).nflex = if !m.is_null() { (*m).nflex as i32 } else { 0 };
+
+        // allocate flex data
+        if (*scn).nflex > 0 {
+            let nflex = (*scn).nflex;
+            let sz_int = std::mem::size_of::<i32>();
+            let sz_float = std::mem::size_of::<f32>();
+
+            // allocate fixed
+            (*scn).flexedgeadr = crate::engine::engine_util_errmem::mju_malloc(nflex as usize * sz_int) as *mut i32;
+            (*scn).flexedgenum = crate::engine::engine_util_errmem::mju_malloc(nflex as usize * sz_int) as *mut i32;
+            (*scn).flexvertadr = crate::engine::engine_util_errmem::mju_malloc(nflex as usize * sz_int) as *mut i32;
+            (*scn).flexvertnum = crate::engine::engine_util_errmem::mju_malloc(nflex as usize * sz_int) as *mut i32;
+            (*scn).flexfaceadr = crate::engine::engine_util_errmem::mju_malloc(nflex as usize * sz_int) as *mut i32;
+            (*scn).flexfacenum = crate::engine::engine_util_errmem::mju_malloc(nflex as usize * sz_int) as *mut i32;
+            (*scn).flexfaceused = crate::engine::engine_util_errmem::mju_malloc(nflex as usize * sz_int) as *mut i32;
+            (*scn).flexedge = crate::engine::engine_util_errmem::mju_malloc(2 * (*m).nflexedge as usize * sz_int) as *mut i32;
+            (*scn).flexvert = crate::engine::engine_util_errmem::mju_malloc(3 * (*m).nflexvert as usize * sz_float) as *mut f32;
+
+            // count max number of flex faces
+            let mut nface: i32 = 0;
+            for f in 0..nflex as usize {
+                let dim = *(*m).flex_dim.add(f);
+
+                if dim == 0 || dim == 1 {
+                    *(*scn).flexfacenum.add(f) = 0;
+                } else if dim == 2 {
+                    *(*scn).flexfacenum.add(f) = 2 * *(*m).flex_shellnum.add(f) + 2 * *(*m).flex_elemnum.add(f);
+                } else {
+                    // 3D: max(fragments, 4*maxlayer)
+                    let mut maxlayer: i32 = 0;
+                    let mut layer: i32 = 0;
+                    let mut nlayer: i32 = 1;
+                    while nlayer > 0 {
+                        nlayer = 0;
+                        for e in 0..*(*m).flex_elemnum.add(f) as usize {
+                            if *(*m).flex_elemlayer.add(*(*m).flex_elemadr.add(f) as usize + e) == layer {
+                                nlayer += 1;
+                            }
+                        }
+                        if nlayer > maxlayer { maxlayer = nlayer; }
+                        layer += 1;
+                    }
+                    let shell = *(*m).flex_shellnum.add(f);
+                    let four_max = 4 * maxlayer;
+                    *(*scn).flexfacenum.add(f) = if shell > four_max { shell } else { four_max };
+                }
+
+                nface += *(*scn).flexfacenum.add(f);
+            }
+
+            // allocate face-related
+            if nface > 0 {
+                (*scn).flexface = crate::engine::engine_util_errmem::mju_malloc(9 * nface as usize * sz_float) as *mut f32;
+                (*scn).flexnormal = crate::engine::engine_util_errmem::mju_malloc(9 * nface as usize * sz_float) as *mut f32;
+                (*scn).flextexcoord = crate::engine::engine_util_errmem::mju_malloc(6 * nface as usize * sz_float) as *mut f32;
+            } else {
+                (*scn).flexface = std::ptr::null_mut();
+                (*scn).flexnormal = std::ptr::null_mut();
+                (*scn).flextexcoord = std::ptr::null_mut();
+            }
+
+            // check allocation
+            if (*scn).flexedgeadr.is_null() || (*scn).flexedgenum.is_null()
+                || (*scn).flexfaceadr.is_null() || (*scn).flexfacenum.is_null()
+                || (*scn).flexfaceused.is_null() || (*scn).flexvertadr.is_null()
+                || (*scn).flexvertnum.is_null() || (*scn).flexedge.is_null()
+                || (*scn).flexvert.is_null()
+                || (nface > 0 && (*scn).flexface.is_null())
+                || (nface > 0 && (*scn).flexnormal.is_null())
+                || (nface > 0 && (*scn).flextexcoord.is_null())
+            {
+                crate::engine::engine_util_errmem::mju_error(
+                    b"Could not allocate flex buffers\0".as_ptr() as *const i8);
+                return;
+            }
+
+            // copy constant edge and vertex data
+            std::ptr::copy_nonoverlapping(
+                (*m).flex_edgeadr as *const u8,
+                (*scn).flexedgeadr as *mut u8,
+                nflex as usize * sz_int);
+            std::ptr::copy_nonoverlapping(
+                (*m).flex_edgenum as *const u8,
+                (*scn).flexedgenum as *mut u8,
+                nflex as usize * sz_int);
+            std::ptr::copy_nonoverlapping(
+                (*m).flex_vertadr as *const u8,
+                (*scn).flexvertadr as *mut u8,
+                nflex as usize * sz_int);
+            std::ptr::copy_nonoverlapping(
+                (*m).flex_vertnum as *const u8,
+                (*scn).flexvertnum as *mut u8,
+                nflex as usize * sz_int);
+            std::ptr::copy_nonoverlapping(
+                (*m).flex_edge as *const u8,
+                (*scn).flexedge as *mut u8,
+                2 * (*m).nflexedge as usize * sz_int);
+
+            // compute flexfaceadr
+            for f in 0..nflex as usize {
+                *(*scn).flexfaceadr.add(f) = if f == 0 { 0 } else {
+                    *(*scn).flexfaceadr.add(f - 1) + *(*scn).flexfacenum.add(f - 1)
+                };
+            }
+        }
+
+        // set number of skins
+        (*scn).nskin = if !m.is_null() { (*m).nskin as i32 } else { 0 };
+
+        // allocate skin data
+        if (*scn).nskin > 0 {
+            let nskin = (*m).nskin as i32;
+            let sz_int = std::mem::size_of::<i32>();
+            let sz_float = std::mem::size_of::<f32>();
+
+            (*scn).skinfacenum = crate::engine::engine_util_errmem::mju_malloc(nskin as usize * sz_int) as *mut i32;
+            (*scn).skinvertadr = crate::engine::engine_util_errmem::mju_malloc(nskin as usize * sz_int) as *mut i32;
+            (*scn).skinvertnum = crate::engine::engine_util_errmem::mju_malloc(nskin as usize * sz_int) as *mut i32;
+            (*scn).skinvert = crate::engine::engine_util_errmem::mju_malloc(3 * (*m).nskinvert as usize * sz_float) as *mut f32;
+            (*scn).skinnormal = crate::engine::engine_util_errmem::mju_malloc(3 * (*m).nskinvert as usize * sz_float) as *mut f32;
+
+            if (*scn).skinfacenum.is_null() || (*scn).skinvertadr.is_null()
+                || (*scn).skinvertnum.is_null() || (*scn).skinvert.is_null()
+                || (*scn).skinnormal.is_null()
+            {
+                crate::engine::engine_util_errmem::mju_error(
+                    b"could not allocate skin buffers\0".as_ptr() as *const i8);
+                return;
+            }
+
+            // copy constant data
+            crate::engine::engine_util_misc::mju_copy_int((*scn).skinfacenum, (*m).skin_facenum, nskin);
+            crate::engine::engine_util_misc::mju_copy_int((*scn).skinvertadr, (*m).skin_vertadr, nskin);
+            crate::engine::engine_util_misc::mju_copy_int((*scn).skinvertnum, (*m).skin_vertnum, nskin);
+        }
+    }
 }
 
 /// C: mjv_freeScene (engine/engine_vis_init.h:40)
