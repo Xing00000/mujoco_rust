@@ -8,7 +8,87 @@ use crate::types::*;
 /// Calls: mju_fprint_message, mju_getLogConfigPtr, mju_isTopicEnabled, mju_legacy_text, mju_localTimeStr
 #[allow(unused_variables, non_snake_case)]
 pub fn mju_default_log_handler(msg: *const mjLogMessage) {
-    todo!() // mju_defaultLogHandler
+    const MJ_LOG_DEBUG: i32 = 0;
+    const MJ_LOG_INFO: i32 = 1;
+    const MJ_LOG_WARNING: i32 = 2;
+    const MJ_LOG_ERROR: i32 = 3;
+
+    extern "C" {
+        fn fopen(filename: *const i8, mode: *const i8) -> *mut FILE;
+        fn fclose(stream: *mut FILE) -> i32;
+        fn exit(status: i32) -> !;
+        static stderr: *mut FILE;
+        static stdout: *mut FILE;
+    }
+    const EXIT_FAILURE: i32 = 1;
+
+    // SAFETY: msg is a valid pointer (caller contract)
+    unsafe {
+        let cfg = mju_get_log_config_ptr();
+
+        // topic filtering for INFO/DEBUG
+        if ((*msg).level == MJ_LOG_INFO || (*msg).level == MJ_LOG_DEBUG)
+            && !mju_is_topic_enabled((*msg).topic)
+        {
+            return;
+        }
+
+        // legacy error handler compat
+        if (*msg).level == MJ_LOG_ERROR {
+            let guard = crate::types::MJU_USER_ERROR.lock().unwrap();
+            let ptr_val = usize::from_ne_bytes(*guard);
+            if ptr_val != 0 {
+                let handler: unsafe extern "C" fn(*const i8) = std::mem::transmute(ptr_val);
+                let mut buf = [0i8; 2048];
+                let text = mju_legacy_text(msg, buf.as_mut_ptr(), 2048);
+                drop(guard);
+                handler(text);
+                return;
+            }
+            drop(guard);
+        }
+
+        // legacy warning handler compat
+        if (*msg).level == MJ_LOG_WARNING {
+            let guard = crate::types::MJU_USER_WARNING.lock().unwrap();
+            let ptr_val = usize::from_ne_bytes(*guard);
+            if ptr_val != 0 {
+                let handler: unsafe extern "C" fn(*const i8) = std::mem::transmute(ptr_val);
+                let mut buf = [0i8; 2048];
+                let text = mju_legacy_text(msg, buf.as_mut_ptr(), 2048);
+                drop(guard);
+                handler(text);
+                return;
+            }
+            drop(guard);
+        }
+
+        let mut timestr = [0i8; 64];
+        if (*msg).timestamp || ((*cfg).logto_file && (*cfg).logfile[0] != 0) {
+            mju_local_time_str(timestr.as_mut_ptr(), 64);
+        }
+
+        // file output
+        if (*cfg).logto_file && (*cfg).logfile[0] != 0 {
+            let fp = fopen((*cfg).logfile.as_ptr() as *const i8, b"a+t\0".as_ptr() as *const i8);
+            if !fp.is_null() {
+                mju_fprint_message(fp, timestr.as_ptr(), msg);
+                fclose(fp);
+            }
+        }
+
+        // console output
+        if (*cfg).logto_console {
+            let stream = if (*msg).level >= MJ_LOG_WARNING { stderr } else { stdout };
+            let ts = if (*msg).timestamp { timestr.as_ptr() } else { b"\0".as_ptr() as *const i8 };
+            mju_fprint_message(stream, ts, msg);
+        }
+
+        // exit on error
+        if (*msg).level == MJ_LOG_ERROR {
+            exit(EXIT_FAILURE);
+        }
+    }
 }
 
 /// C: mju_alignedMalloc (engine/engine_util_errmem.c:44)

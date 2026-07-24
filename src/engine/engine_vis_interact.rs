@@ -611,7 +611,76 @@ pub fn mjv_move_model(m: *const mjModel, action: i32, reldx: f64, reldy: f64, ro
 /// Calls: mj_freeStack, mj_jac, mj_markStack, mj_solveM2, mj_stackAllocInfo, mju_addTo3, mju_copy3, mju_dot, mju_dot3, mju_max, mju_mulMatVec3, mju_mulQuat, mju_sub3, mjv_cameraInModel, mjv_frustumHeight
 #[allow(unused_variables, non_snake_case)]
 pub fn mjv_init_perturb(m: *const mjModel, d: *mut mjData, scn: *const mjvScene, pert: *mut mjvPerturb) {
-    todo!() // mjv_initPerturb
+    const MJ_MINVAL: f64 = 1e-15;
+
+    // SAFETY: m, d, scn, pert are valid pointers (caller contract)
+    unsafe {
+        crate::engine::engine_memory::mj_mark_stack(d);
+
+        let nv = (*m).nv as i32;
+        let sel = (*pert).select;
+        let mut headpos = [0.0f64; 3];
+        let mut forward = [0.0f64; 3];
+        let mut dif = [0.0f64; 3];
+
+        let jac = crate::engine::engine_memory::mj_stack_alloc_num(d, (3 * nv) as usize);
+        let jacM2 = crate::engine::engine_memory::mj_stack_alloc_num(d, (3 * nv) as usize);
+        let sqrtInvD = crate::engine::engine_memory::mj_stack_alloc_num(d, nv as usize);
+
+        // invalid selected body: return
+        if sel <= 0 || sel as i64 >= (*m).nbody {
+            crate::engine::engine_memory::mj_free_stack(d);
+            return;
+        }
+
+        // compute selection point in world coordinates
+        let mut selpos = [0.0f64; 3];
+        crate::engine::engine_util_blas::mju_mul_mat_vec3(
+            selpos.as_mut_ptr(), (*d).xmat.add(9 * sel as usize), (*pert).localpos.as_ptr());
+        crate::engine::engine_util_blas::mju_add_to3(
+            selpos.as_mut_ptr(), (*d).xpos.add(3 * sel as usize));
+
+        // compute average spatial inertia at selection point
+        for i in 0..nv as usize {
+            *sqrtInvD.add(i) = (*(*d).qLDiagInv.add(i)).sqrt();
+        }
+        crate::engine::engine_core_util::mj_jac(m, d as *const mjData, jac, std::ptr::null_mut(), selpos.as_ptr(), sel);
+        crate::engine::engine_core_smooth::mj_solve_m2(m, d, jacM2, jac, sqrtInvD, 3);
+        let invmass = crate::engine::engine_util_blas::mju_dot(jacM2, jacM2, nv)
+            + crate::engine::engine_util_blas::mju_dot(jacM2.add(nv as usize), jacM2.add(nv as usize), nv)
+            + crate::engine::engine_util_blas::mju_dot(jacM2.add(2 * nv as usize), jacM2.add(2 * nv as usize), nv);
+        (*pert).localmass = if invmass == 0.0 { 1.0 } else { 3.0 / crate::engine::engine_util_misc::mju_max(invmass, MJ_MINVAL) };
+
+        // scale localmass with flex average number of edges per vertex
+        if (*pert).flexselect >= 0 && !*(*m).flex_rigid.add((*pert).flexselect as usize) {
+            (*pert).localmass *= (2.0 * *(*m).flex_edgenum.add((*pert).flexselect as usize) as f64)
+                / *(*m).flex_vertnum.add((*pert).flexselect as usize) as f64;
+        }
+
+        // copy
+        crate::engine::engine_util_blas::mju_copy3(
+            (*pert).refpos.as_mut_ptr(), (*d).xipos.add(3 * sel as usize));
+        crate::engine::engine_util_spatial::mju_mul_quat(
+            (*pert).refquat.as_mut_ptr(), (*d).xquat.add(4 * sel as usize), (*m).body_iquat.add(4 * sel as usize));
+        crate::engine::engine_util_blas::mju_copy3(
+            (*pert).refselpos.as_mut_ptr(), selpos.as_ptr());
+
+        // get camera info
+        mjv_camera_in_model(headpos.as_mut_ptr(), forward.as_mut_ptr(), std::ptr::null_mut(), scn);
+
+        // compute scaling
+        crate::engine::engine_util_blas::mju_sub3(
+            dif.as_mut_ptr(), (*pert).refselpos.as_ptr(), headpos.as_ptr());
+        (*pert).scale = mjv_frustum_height(scn) * crate::engine::engine_util_blas::mju_dot3(
+            dif.as_ptr(), forward.as_ptr());
+
+        // multiply by mystery coefficient
+        if (*scn).camera[0].orthographic != 0 {
+            (*pert).scale *= 0.15;
+        }
+
+        crate::engine::engine_memory::mj_free_stack(d);
+    }
 }
 
 /// C: mjv_applyPerturbPose (engine/engine_vis_interact.h:66)
