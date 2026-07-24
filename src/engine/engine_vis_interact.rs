@@ -687,7 +687,75 @@ pub fn mjv_init_perturb(m: *const mjModel, d: *mut mjData, scn: *const mjvScene,
 /// Calls: mju_copy3, mju_copy4, mju_mulPose, mju_negPose
 #[allow(unused_variables, non_snake_case)]
 pub fn mjv_apply_perturb_pose(m: *const mjModel, d: *mut mjData, pert: *const mjvPerturb, flg_paused: i32) {
-    todo!() // mjv_applyPerturbPose
+    // SAFETY: m, d, pert are valid pointers (caller contract)
+    unsafe {
+        let sel = (*pert).select;
+        let mut pos1 = [0.0f64; 3];
+        let mut quat1 = [0.0f64; 4];
+        let mut pos2 = [0.0f64; 3];
+        let mut quat2 = [0.0f64; 4];
+        let mut refpos = [0.0f64; 3];
+        let mut refquat = [0.0f64; 4];
+
+        // exit if nothing to do
+        if sel <= 0 || sel as i64 >= (*m).nbody || ((*pert).active | (*pert).active2) == 0 {
+            return;
+        }
+
+        // get rootid above selected body
+        let rootid = *(*m).body_rootid.add(sel as usize) as usize;
+
+        // transform refpos,refquat from I-frame to X-frame of body[sel]
+        crate::engine::engine_util_spatial::mju_neg_pose(
+            pos1.as_mut_ptr(), quat1.as_mut_ptr(),
+            (*m).body_ipos.add(3 * sel as usize), (*m).body_iquat.add(4 * sel as usize));
+        crate::engine::engine_util_spatial::mju_mul_pose(
+            refpos.as_mut_ptr(), refquat.as_mut_ptr(),
+            (*pert).refpos.as_ptr(), (*pert).refquat.as_ptr(),
+            pos1.as_ptr(), quat1.as_ptr());
+
+        // mocap body
+        if *(*m).body_mocapid.add(sel as usize) >= 0 {
+            let mid = *(*m).body_mocapid.add(sel as usize) as usize;
+            crate::engine::engine_util_blas::mju_copy3(
+                (*d).mocap_pos.add(3 * mid), refpos.as_ptr());
+            crate::engine::engine_util_blas::mju_copy4(
+                (*d).mocap_quat.add(4 * mid), refquat.as_ptr());
+        }
+        // floating body, paused
+        else if flg_paused != 0
+            && *(*m).body_jntnum.add(sel as usize) == 1
+            && *(*m).jnt_type.add(*(*m).body_jntadr.add(sel as usize) as usize) == mjtJoint_mjJNT_FREE as i32
+        {
+            let qadr = *(*m).jnt_qposadr.add(*(*m).body_jntadr.add(sel as usize) as usize) as usize;
+            crate::engine::engine_util_blas::mju_copy3((*d).qpos.add(qadr), refpos.as_ptr());
+            crate::engine::engine_util_blas::mju_copy4((*d).qpos.add(qadr + 3), refquat.as_ptr());
+        }
+        // child of floating body, paused
+        else if flg_paused != 0
+            && *(*m).body_jntnum.add(rootid) == 1
+            && *(*m).jnt_type.add(*(*m).body_jntadr.add(rootid) as usize) == mjtJoint_mjJNT_FREE as i32
+        {
+            // get pointers to root
+            let qadr = *(*m).jnt_qposadr.add(*(*m).body_jntadr.add(rootid) as usize) as usize;
+            let Rpos = (*d).qpos.add(qadr);
+            let Rquat = (*d).qpos.add(qadr + 3);
+
+            // get pointers to child
+            let Cpos = (*d).xpos.add(3 * sel as usize);
+            let Cquat = (*d).xquat.add(4 * sel as usize);
+
+            // set root <- ref*neg(child)*root
+            crate::engine::engine_util_spatial::mju_neg_pose(
+                pos1.as_mut_ptr(), quat1.as_mut_ptr(), Cpos, Cquat);  // neg(child)
+            crate::engine::engine_util_spatial::mju_mul_pose(
+                pos2.as_mut_ptr(), quat2.as_mut_ptr(),
+                pos1.as_ptr(), quat1.as_ptr(), Rpos, Rquat);          // neg(child)*root
+            crate::engine::engine_util_spatial::mju_mul_pose(
+                Rpos, Rquat,
+                refpos.as_ptr(), refquat.as_ptr(), pos2.as_ptr(), quat2.as_ptr());  // ref*neg(child)*root
+        }
+    }
 }
 
 /// C: mjv_applyPerturbForce (engine/engine_vis_interact.h:70)
