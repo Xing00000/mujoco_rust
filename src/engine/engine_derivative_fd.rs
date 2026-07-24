@@ -186,7 +186,52 @@ pub fn mjd_smooth_vel_fd(m: *const mjModel, d: *mut mjData, eps: f64) {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjd_passive_vel_fd(m: *const mjModel, d: *mut mjData, eps: f64) {
-    todo!() // mjd_passive_velFD
+    // SAFETY: m and d are valid pointers with all arrays allocated (caller contract)
+    unsafe {
+        let nv = (*m).nv as i32;
+
+        crate::engine::engine_memory::mj_mark_stack(d);
+        let qfrc_passive = crate::engine::engine_memory::mj_stack_alloc_num(d, nv as usize);
+        let fd = crate::engine::engine_memory::mj_stack_alloc_num(d, nv as usize);
+        let cnt = crate::engine::engine_memory::mj_stack_alloc_int(d, nv as usize);
+
+        // clear row counters
+        crate::engine::engine_util_misc::mju_zero_int(cnt, nv);
+
+        // save qfrc_passive, assume mj_fwdVelocity was called
+        crate::engine::engine_util_blas::mju_copy(qfrc_passive, (*d).qfrc_passive, nv);
+
+        // loop over dofs
+        for i in 0..nv as usize {
+            // save qvel[i]
+            let saveqvel = *(*d).qvel.add(i);
+
+            // eval at qvel[i]+eps
+            *(*d).qvel.add(i) = saveqvel + eps;
+            crate::engine::engine_forward::mj_fwd_velocity(m, d);
+
+            // restore qvel[i]
+            *(*d).qvel.add(i) = saveqvel;
+
+            // finite difference result in fd
+            crate::engine::engine_util_blas::mju_sub(fd, (*d).qfrc_passive, qfrc_passive, nv);
+            crate::engine::engine_util_blas::mju_scl(fd, fd, 1.0 / eps, nv);
+
+            // copy to i-th column of qDeriv
+            for j in 0..nv as usize {
+                let adr = (*(*m).D_rowadr.add(j) + *cnt.add(j)) as usize;
+                if (*cnt.add(j) < *(*m).D_rownnz.add(j)) && (*(*m).D_colind.add(adr) == i as i32) {
+                    *(*d).qDeriv.add(adr) = *fd.add(j);
+                    *cnt.add(j) += 1;
+                }
+            }
+        }
+
+        // restore
+        crate::engine::engine_forward::mj_fwd_velocity(m, d);
+
+        crate::engine::engine_memory::mj_free_stack(d);
+    }
 }
 
 /// C: mj_stepSkip (engine/engine_derivative_fd.h:33)
@@ -217,6 +262,142 @@ pub fn mjd_transition_fd(m: *const mjModel, d: *mut mjData, eps: f64, centered: 
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjd_inverse_fd(m: *const mjModel, d: *mut mjData, eps: f64, flg_actuation: bool, DfDq: *mut f64, DfDv: *mut f64, DfDa: *mut f64, DsDq: *mut f64, DsDv: *mut f64, DsDa: *mut f64, DmDq: *mut f64) {
-    todo!() // mjd_inverseFD
+    const MJ_INT_RK4: i32 = 1;
+
+    // SAFETY: m and d are valid pointers with all arrays allocated (caller contract)
+    unsafe {
+        let nq = (*m).nq as i32;
+        let nv = (*m).nv as i32;
+        let nM = (*m).nM as i32;
+        let ns = (*m).nsensordata as i32;
+
+        if (*m).opt.integrator == MJ_INT_RK4 {
+            crate::engine::engine_util_errmem::mju_error(
+                b"RK4 integrator is not supported\0".as_ptr() as *const i8);
+            return;
+        }
+
+        if (*m).opt.noslip_iterations != 0 {
+            crate::engine::engine_util_errmem::mju_error(
+                b"noslip solver is not supported\0".as_ptr() as *const i8);
+            return;
+        }
+
+        // skip sensor computations if no sensor Jacobians requested
+        let skipsensor = if DsDq.is_null() && DsDv.is_null() && DsDa.is_null() { 1 } else { 0 };
+
+        // local vectors
+        crate::engine::engine_memory::mj_mark_stack(d);
+        let pos = crate::engine::engine_memory::mj_stack_alloc_num(d, nq as usize);
+        let force = crate::engine::engine_memory::mj_stack_alloc_num(d, nv as usize);
+        let force_plus = crate::engine::engine_memory::mj_stack_alloc_num(d, nv as usize);
+        let sensor: *mut f64 = if skipsensor == 0 {
+            crate::engine::engine_memory::mj_stack_alloc_num(d, ns as usize)
+        } else {
+            std::ptr::null_mut()
+        };
+        let mass: *mut f64 = if !DmDq.is_null() {
+            crate::engine::engine_memory::mj_stack_alloc_num(d, nM as usize)
+        } else {
+            std::ptr::null_mut()
+        };
+
+        // save current positions
+        crate::engine::engine_util_blas::mju_copy(pos, (*d).qpos, nq);
+
+        // center point outputs
+        let flg_act_int = if flg_actuation { 1 } else { 0 };
+        inverse_skip(m, d, mjtStage_mjSTAGE_NONE, skipsensor, flg_act_int, force);
+        if !sensor.is_null() {
+            crate::engine::engine_util_blas::mju_copy(sensor, (*d).sensordata, ns);
+        }
+        if !mass.is_null() {
+            crate::engine::engine_util_blas::mju_copy(mass, (*d).qM, nM);
+        }
+
+        // acceleration: skip = mjSTAGE_VEL
+        if !DfDa.is_null() || !DsDa.is_null() {
+            for i in 0..nv as usize {
+                // nudge acceleration
+                let tmp = *(*d).qacc.add(i);
+                *(*d).qacc.add(i) += eps;
+
+                // inverse dynamics, get force output
+                inverse_skip(m, d, mjtStage_mjSTAGE_VEL, skipsensor, flg_act_int, force_plus);
+
+                // restore
+                *(*d).qacc.add(i) = tmp;
+
+                // row of force Jacobian
+                if !DfDa.is_null() {
+                    diff(DfDa.add(i * nv as usize), force, force_plus, eps, nv);
+                }
+
+                // row of sensor Jacobian
+                if !DsDa.is_null() {
+                    diff(DsDa.add(i * ns as usize), sensor, (*d).sensordata, eps, ns);
+                }
+            }
+        }
+
+        // velocity: skip = mjSTAGE_POS
+        if !DfDv.is_null() || !DsDv.is_null() {
+            for i in 0..nv as usize {
+                // nudge velocity
+                let tmp = *(*d).qvel.add(i);
+                *(*d).qvel.add(i) += eps;
+
+                // inverse dynamics, get force output
+                inverse_skip(m, d, mjtStage_mjSTAGE_POS, skipsensor, flg_act_int, force_plus);
+
+                // restore
+                *(*d).qvel.add(i) = tmp;
+
+                // row of force Jacobian
+                if !DfDv.is_null() {
+                    diff(DfDv.add(i * nv as usize), force, force_plus, eps, nv);
+                }
+
+                // row of sensor Jacobian
+                if !DsDv.is_null() {
+                    diff(DsDv.add(i * ns as usize), sensor, (*d).sensordata, eps, ns);
+                }
+            }
+        }
+
+        // position: skip = mjSTAGE_NONE
+        if !DfDq.is_null() || !DsDq.is_null() || !DmDq.is_null() {
+            let dpos = crate::engine::engine_memory::mj_stack_alloc_num(d, nv as usize);
+            for i in 0..nv as usize {
+                // nudge
+                crate::engine::engine_util_blas::mju_zero(dpos, nv);
+                *dpos.add(i) = 1.0;
+                crate::engine::engine_support::mj_integrate_pos(m, (*d).qpos, dpos, eps);
+
+                // inverse dynamics, get force output
+                inverse_skip(m, d, mjtStage_mjSTAGE_NONE, skipsensor, flg_act_int, force_plus);
+
+                // restore
+                crate::engine::engine_util_blas::mju_copy((*d).qpos, pos, nq);
+
+                // row of force Jacobian
+                if !DfDq.is_null() {
+                    diff(DfDq.add(i * nv as usize), force, force_plus, eps, nv);
+                }
+
+                // row of sensor Jacobian
+                if !DsDq.is_null() {
+                    diff(DsDq.add(i * ns as usize), sensor, (*d).sensordata, eps, ns);
+                }
+
+                // row of inertia Jacobian
+                if !DmDq.is_null() {
+                    diff(DmDq.add(i * nM as usize), mass, (*d).qM, eps, nM);
+                }
+            }
+        }
+
+        crate::engine::engine_memory::mj_free_stack(d);
+    }
 }
 

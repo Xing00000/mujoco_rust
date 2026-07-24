@@ -66,7 +66,7 @@ pub fn skip(offset: isize) -> u32 {
 /// Calls: SKIP, mju_message
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_set_ptr_model(m: *mut mjModel) {
-    todo!() // mj_setPtrModel
+    todo!("mj_setPtrModel depends on MJMODEL_POINTERS X-macro expansion which enumerates all pointer fields in mjModel. Cannot translate without codegen support for the field list.")
 }
 
 /// C: safeAddToBufferSize (engine/engine_io.c:173)
@@ -210,7 +210,7 @@ pub fn copy_m2sparse(nv: i32, dof_Madr: *const i32, dof_simplenum: *const i32, d
 /// Calls: SKIP, mju_message
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_set_ptr_data(m: *const mjModel, d: *mut mjData) {
-    todo!() // mj_setPtrData
+    todo!("mj_setPtrData depends on MJDATA_POINTERS and MJDATA_ARENA_POINTERS X-macro expansion. Cannot translate without codegen support for the field list.")
 }
 
 /// C: freeDataBuffers (engine/engine_io.c:1036)
@@ -251,7 +251,151 @@ pub fn reset_data(m: *const mjModel, d: *mut mjData, debug_value: u8) {
 /// Calls: mju_message
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_log_timing_diagnostics(d: *const mjData) {
-    todo!() // mj_logTimingDiagnostics
+    // Timer enum constants
+    const MJTIMER_STEP: usize = 0;
+    const MJTIMER_POSITION: usize = 3;
+    const MJTIMER_ADVANCE: usize = 7;
+    const MJTIMER_POS_KINEMATICS: usize = 8;
+    const MJTIMER_POS_PROJECT: usize = 12;
+    const MJTIMER_POS_COLLISION: usize = 10;
+    const MJTIMER_COL_BROAD: usize = 13;
+    const MJTIMER_COL_NARROW: usize = 14;
+
+    // mjTimerStat layout: { duration: f64, number: i32, _pad: [u8; 4] } = 16 bytes
+    const TIMER_STAT_SIZE: usize = 16;
+
+    extern "C" {
+        fn snprintf(s: *mut i8, n: usize, fmt: *const i8, ...) -> i32;
+    }
+
+    // SAFETY: d is a valid mjData pointer (caller contract)
+    // timer is [u8; 240] representing 15 mjTimerStat structs
+    unsafe {
+        let timer_base = (*d).timer.as_ptr();
+
+        // helper: get duration (f64 at offset 0) from timer[i]
+        let get_duration = |idx: usize| -> f64 {
+            let ptr = timer_base.add(idx * TIMER_STAT_SIZE) as *const f64;
+            *ptr
+        };
+        // helper: get number (i32 at offset 8) from timer[i]
+        let get_number = |idx: usize| -> i32 {
+            let ptr = timer_base.add(idx * TIMER_STAT_SIZE + 8) as *const i32;
+            *ptr
+        };
+
+        let nstep = get_number(MJTIMER_STEP);
+        if nstep <= 0 {
+            return;
+        }
+
+        let tstep = get_duration(MJTIMER_STEP) / nstep as f64;
+        if tstep <= 0.0 {
+            return;
+        }
+
+        let mut buf = [0i8; 2048];
+        let mut pos: usize = 0;
+        let mut components: f64 = 0.0;
+
+        let timer_names: [&[u8]; 15] = [
+            b"step\0", b"forward\0", b"inverse\0",
+            b"fwdPosition\0", b"fwdVelocity\0", b"fwdActuation\0",
+            b"fwdConstraint\0", b"advance\0",
+            b"pos_kinematics\0", b"pos_inertia\0", b"pos_collision\0",
+            b"pos_make\0", b"pos_project\0",
+            b"col_broad\0", b"col_narrow\0",
+        ];
+
+        for i in MJTIMER_POSITION..=MJTIMER_ADVANCE {
+            if get_number(i) > 0 {
+                let istep = get_duration(i) / get_number(i) as f64;
+                components += istep;
+                let written = snprintf(
+                    buf.as_mut_ptr().add(pos),
+                    2048 - pos,
+                    b"%s  %-15s %8.1f  (%5.1f%%)\0".as_ptr() as *const i8,
+                    if pos > 0 { b"\n\0".as_ptr() } else { b"\0".as_ptr() },
+                    timer_names[i].as_ptr(),
+                    istep * 1000.0,
+                    100.0 * istep / tstep);
+                if written > 0 { pos += written as usize; }
+
+                // position sub-breakdown
+                if i == MJTIMER_POSITION {
+                    for p in MJTIMER_POS_KINEMATICS..=MJTIMER_POS_PROJECT {
+                        if get_number(p) > 0 {
+                            let pstep = get_duration(p) / get_number(p) as f64;
+                            let written = snprintf(
+                                buf.as_mut_ptr().add(pos),
+                                2048 - pos,
+                                b"\n    %-13s %8.1f  (%5.1f%%)\0".as_ptr() as *const i8,
+                                timer_names[p].as_ptr().add(4),
+                                pstep * 1000.0,
+                                100.0 * pstep / tstep);
+                            if written > 0 { pos += written as usize; }
+
+                            // collision sub-breakdown
+                            if p == MJTIMER_POS_COLLISION {
+                                for c in MJTIMER_COL_BROAD..=MJTIMER_COL_NARROW {
+                                    if get_number(c) > 0 {
+                                        let cstep = get_duration(c) / get_number(c) as f64;
+                                        let written = snprintf(
+                                            buf.as_mut_ptr().add(pos),
+                                            2048 - pos,
+                                            b"\n      %-11s %8.1f  (%5.1f%%)\0".as_ptr() as *const i8,
+                                            timer_names[c].as_ptr().add(4),
+                                            cstep * 1000.0,
+                                            100.0 * cstep / tstep);
+                                        if written > 0 { pos += written as usize; }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        let other = tstep - components;
+        let written = snprintf(
+            buf.as_mut_ptr().add(pos),
+            2048 - pos,
+            b"%s  %-15s %8.1f  (%5.1f%%)\0".as_ptr() as *const i8,
+            if pos > 0 { b"\n\0".as_ptr() } else { b"\0".as_ptr() },
+            b"other\0".as_ptr(),
+            other * 1000.0,
+            100.0 * other / tstep);
+        if written > 0 { pos += written as usize; }
+
+        let written = snprintf(
+            buf.as_mut_ptr().add(pos),
+            2048 - pos,
+            b"%s  %-15s %8.1f\0".as_ptr() as *const i8,
+            if pos > 0 { b"\n\0".as_ptr() } else { b"\0".as_ptr() },
+            b"total\0".as_ptr(),
+            tstep * 1000.0);
+        if written > 0 { pos += written as usize; }
+
+        // emit log message
+        let mut msg = mjLogMessage {
+            level: 0,  // mjLOG_INFO
+            topic: 1,  // mjTOPIC_TIME_STP
+            subject: [0i8; 1024],
+            body: buf.as_ptr(),
+            func: std::ptr::null(),
+            file: std::ptr::null(),
+            line: 0,
+            timestamp: false,
+            _pad_0: [0u8; 3],
+        };
+        snprintf(
+            msg.subject.as_mut_ptr(),
+            std::mem::size_of_val(&msg.subject),
+            b"average time per step (%d steps, units: \xc2\xb5s)\0".as_ptr() as *const i8,
+            nstep);
+        crate::engine::engine_util_errmem::mju_message(&msg);
+    }
 }
 
 /// C: sensorSize (engine/engine_io.c:1685)
@@ -384,7 +528,7 @@ pub fn mjv_copy_model(dest: *mut mjModel, src: *const mjModel) {
 /// Calls: bufwrite, getnptr, getnsize, mj_version, mju_warning
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_save_model(m: *const mjModel, filename: *const i8, buffer: *mut (), buffer_sz: i32) {
-    todo!() // mj_saveModel
+    todo!("mj_saveModel depends on MJMODEL_POINTERS and MJMODEL_SIZES X-macro expansion to serialize all fields. Cannot translate without codegen support for the field list.")
 }
 
 /// C: mj_loadModelBuffer (engine/engine_io.h:78)
@@ -408,35 +552,245 @@ pub fn mj_delete_model(m: *mut mjModel) {
 /// Calls: getnsize
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_size_model(m: *const mjModel) -> i64 {
-    todo!() // mj_sizeModel
+    todo!("mj_sizeModel depends on MJMODEL_POINTERS X-macro expansion to sum all array sizes. Cannot translate without codegen support for the field list.")
 }
 
 /// C: mj_validateReferences (engine/engine_io.h:87)
 /// Calls: mjp_getPluginAtSlot, mju_message, numObjects, sensorSize
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_validate_references(m: *const mjModel) -> *const i8 {
-    todo!() // mj_validateReferences
+    todo!("mj_validateReferences depends on MJMODEL_REFERENCES X-macro expansion which enumerates ~100 reference fields for bounds checking. Cannot translate without codegen support for the field list.")
 }
 
 /// C: mj_makeDofDofSparse (engine/engine_io.h:90)
 /// Calls: mju_copyInt, mju_message, mju_zeroInt
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_make_dof_dof_sparse(nv: i32, nC: i32, nD: i32, nM: i32, dof_parentid: *const i32, dof_simplenum: *const i32, rownnz: *mut i32, rowadr: *mut i32, diag: *mut i32, colind: *mut i32, reduced: i32, upper: i32, remaining: *mut i32) {
-    todo!() // mj_makeDofDofSparse
+    // SAFETY: all pointer args are valid arrays of appropriate sizes (caller contract)
+    unsafe {
+        // no dofs, nothing to do
+        if nv == 0 {
+            return;
+        }
+
+        // compute rownnz
+        crate::engine::engine_util_misc::mju_zero_int(rownnz, nv);
+        let mut i = nv - 1;
+        while i >= 0 {
+            // init at diagonal
+            let mut j = i;
+            *rownnz.add(i as usize) += 1;
+
+            // process below diagonal unless reduced and dof is simple
+            if !(reduced != 0 && *dof_simplenum.add(i as usize) != 0) {
+                loop {
+                    j = *dof_parentid.add(j as usize);
+                    if j < 0 { break; }
+                    // both reduced and non-reduced have lower triangle
+                    *rownnz.add(i as usize) += 1;
+                    // add upper triangle if requested
+                    if upper != 0 {
+                        *rownnz.add(j as usize) += 1;
+                    }
+                }
+            }
+            i -= 1;
+        }
+
+        // accumulate rowadr
+        *rowadr.add(0) = 0;
+        for i in 1..nv as usize {
+            *rowadr.add(i) = *rowadr.add(i - 1) + *rownnz.add(i - 1);
+        }
+
+        // populate colind
+        crate::engine::engine_util_misc::mju_copy_int(remaining, rownnz, nv);
+        let mut i = nv - 1;
+        while i >= 0 {
+            // init at diagonal
+            *remaining.add(i as usize) -= 1;
+            *colind.add((*rowadr.add(i as usize) + *remaining.add(i as usize)) as usize) = i;
+
+            // process below diagonal unless reduced and dof is simple
+            if !(reduced != 0 && *dof_simplenum.add(i as usize) != 0) {
+                let mut j = i;
+                loop {
+                    j = *dof_parentid.add(j as usize);
+                    if j < 0 { break; }
+                    *remaining.add(i as usize) -= 1;
+                    *colind.add((*rowadr.add(i as usize) + *remaining.add(i as usize)) as usize) = j;
+
+                    // add upper triangle if requested
+                    if upper != 0 {
+                        *remaining.add(j as usize) -= 1;
+                        *colind.add((*rowadr.add(j as usize) + *remaining.add(j as usize)) as usize) = i;
+                    }
+                }
+            }
+            i -= 1;
+        }
+
+        // check for remaining; SHOULD NOT OCCUR
+        for i in 0..nv as usize {
+            if *remaining.add(i) != 0 {
+                crate::engine::engine_util_errmem::mju_error(
+                    b"unexpected remaining\0".as_ptr() as *const i8);
+            }
+        }
+
+        // check total nnz; SHOULD NOT OCCUR
+        let expected_nnz = if upper != 0 { nD } else if reduced != 0 { nC } else { nM };
+        if *rowadr.add((nv - 1) as usize) + *rownnz.add((nv - 1) as usize) != expected_nnz {
+            crate::engine::engine_util_errmem::mju_error(
+                b"sum of rownnz different from expected\0".as_ptr() as *const i8);
+        }
+
+        // find diagonal indices
+        if !diag.is_null() {
+            for i in 0..nv as usize {
+                let adr = *rowadr.add(i);
+                let mut j = 0;
+                while *colind.add((adr + j) as usize) < i as i32 && j < *rownnz.add(i) {
+                    j += 1;
+                }
+                if *colind.add((adr + j) as usize) != i as i32 {
+                    crate::engine::engine_util_errmem::mju_error(
+                        b"diagonal index not found\0".as_ptr() as *const i8);
+                }
+                *diag.add(i) = j;
+            }
+        }
+    }
 }
 
 /// C: mj_makeBSparse (engine/engine_io.h:96)
 /// Calls: mju_insertionSortInt, mju_message, mju_zeroInt
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_make_b_sparse(nv: i32, nbody: i32, nB: i32, body_dofnum: *const i32, body_parentid: *const i32, body_dofadr: *const i32, B_rownnz: *mut i32, B_rowadr: *mut i32, B_colind: *mut i32, count: *mut i32) {
-    todo!() // mj_makeBSparse
+    // SAFETY: all pointer args are valid arrays of appropriate sizes (caller contract)
+    unsafe {
+        // set rownnz to subtree dofs counts, including self
+        crate::engine::engine_util_misc::mju_zero_int(B_rownnz, nbody);
+        let mut i = nbody - 1;
+        while i > 0 {
+            *B_rownnz.add(i as usize) += *body_dofnum.add(i as usize);
+            *B_rownnz.add(*body_parentid.add(i as usize) as usize) += *B_rownnz.add(i as usize);
+            i -= 1;
+        }
+
+        // check if rownnz[0] != nv; SHOULD NOT OCCUR
+        if *B_rownnz.add(0) != nv {
+            crate::engine::engine_util_errmem::mju_error(
+                b"rownnz[0] different from nv\0".as_ptr() as *const i8);
+        }
+
+        // add dofs in ancestors bodies
+        for i in 0..nbody as usize {
+            let mut j = *body_parentid.add(i) as usize;
+            while j > 0 {
+                *B_rownnz.add(i) += *body_dofnum.add(j);
+                j = *body_parentid.add(j) as usize;
+            }
+        }
+
+        // compute rowadr
+        *B_rowadr.add(0) = 0;
+        for i in 1..nbody as usize {
+            *B_rowadr.add(i) = *B_rowadr.add(i - 1) + *B_rownnz.add(i - 1);
+        }
+
+        // check if total nnz != nB; SHOULD NOT OCCUR
+        if nB != *B_rowadr.add((nbody - 1) as usize) + *B_rownnz.add((nbody - 1) as usize) {
+            crate::engine::engine_util_errmem::mju_error(
+                b"sum of rownnz different from nB\0".as_ptr() as *const i8);
+        }
+
+        // clear incremental row counts
+        crate::engine::engine_util_misc::mju_zero_int(count, nbody);
+
+        // add subtree dofs to colind
+        let mut i = nbody - 1;
+        while i > 0 {
+            // add this body's dofs to subtree
+            for n in 0..*body_dofnum.add(i as usize) {
+                *B_colind.add((*B_rowadr.add(i as usize) + *count.add(i as usize)) as usize) =
+                    *body_dofadr.add(i as usize) + n;
+                *count.add(i as usize) += 1;
+            }
+
+            // add body subtree to parent
+            let par = *body_parentid.add(i as usize);
+            for n in 0..*count.add(i as usize) {
+                *B_colind.add((*B_rowadr.add(par as usize) + *count.add(par as usize)) as usize) =
+                    *B_colind.add((*B_rowadr.add(i as usize) + n) as usize);
+                *count.add(par as usize) += 1;
+            }
+            i -= 1;
+        }
+
+        // add all ancestor dofs
+        for i in 0..nbody as usize {
+            let mut par = *body_parentid.add(i) as usize;
+            while par > 0 {
+                // add ancestor body dofs
+                for n in 0..*body_dofnum.add(par) {
+                    *B_colind.add((*B_rowadr.add(i) + *count.add(i)) as usize) =
+                        *body_dofadr.add(par) + n;
+                    *count.add(i) += 1;
+                }
+                // advance to parent
+                par = *body_parentid.add(par) as usize;
+            }
+        }
+
+        // process all bodies
+        for i in 0..nbody as usize {
+            // make sure cnt = rownnz; SHOULD NOT OCCUR
+            if *B_rownnz.add(i) != *count.add(i) {
+                crate::engine::engine_util_errmem::mju_error(
+                    b"cnt different from rownnz\0".as_ptr() as *const i8);
+            }
+
+            // sort colind in each row
+            if *count.add(i) > 1 {
+                crate::engine::engine_util_misc::mju_insertion_sort_int(
+                    B_colind.add(*B_rowadr.add(i) as usize) as *mut i32,
+                    *count.add(i));
+            }
+        }
+    }
 }
 
 /// C: mj_makeDofDofMaps (engine/engine_io.h:102)
 /// Calls: copyM2Sparse, mju_fillInt, mju_lower2SymMap, mju_message, mju_sparseMap
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_make_dof_dof_maps(nv: i32, nM: i32, nC: i32, nD: i32, dof_Madr: *const i32, dof_simplenum: *const i32, dof_parentid: *const i32, D_rownnz: *const i32, D_rowadr: *const i32, D_colind: *const i32, M_rownnz: *const i32, M_rowadr: *const i32, M_colind: *const i32, mapM2D: *mut i32, mapD2M: *mut i32, mapM2M: *mut i32, M: *mut i32, scratch: *mut i32) {
-    todo!() // mj_makeDofDofMaps
+    // SAFETY: all pointer args are valid arrays of appropriate sizes (caller contract)
+    unsafe {
+        // make mapM2D: M -> D (lower to symmetric)
+        crate::engine::engine_util_misc::mju_lower2sym_map(
+            mapM2D, nv, D_rowadr, D_rownnz, D_colind, M_rowadr, M_rownnz, M_colind, scratch);
+
+        // make mapD2M: D -> M (symmetric to lower)
+        crate::engine::engine_util_misc::mju_sparse_map(
+            mapD2M, nv, M_rowadr, M_rownnz, M_colind, D_rowadr, D_rownnz, D_colind);
+
+        // make mapM2M
+        for i in 0..nM as usize {
+            *M.add(i) = i as i32;
+        }
+        crate::engine::engine_util_misc::mju_fill_int(mapM2M, -1, nC);
+        copy_m2sparse(nv, dof_Madr, dof_simplenum, dof_parentid, M_rownnz,
+                      M_rowadr, M, mapM2M, /*reduced=*/1, /*upper=*/0, scratch);
+
+        // check that all indices are filled in
+        for i in 0..nC as usize {
+            if *mapM2M.add(i) < 0 {
+                crate::engine::engine_util_errmem::mju_error(
+                    b"unassigned index in mapM2M\0".as_ptr() as *const i8);
+            }
+        }
+    }
 }
 
 /// C: mj_makeData (engine/engine_io.h:113)
@@ -492,7 +846,28 @@ pub fn mj_reset_data_keyframe(m: *const mjModel, d: *mut mjData, key: i32) {
 /// Calls: mjp_getPluginAtSlot, mju_free, mju_message
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_init_plugin(m: *const mjModel, d: *mut mjData) {
-    todo!() // mj_initPlugin
+    // SAFETY: m and d are valid pointers; plugin arrays are allocated (caller contract)
+    unsafe {
+        (*d).nplugin = (*m).nplugin as i32;
+        for i in 0..(*m).nplugin as usize {
+            *(*d).plugin.add(i) = *(*m).plugin.add(i);
+            let plugin = crate::engine::engine_plugin::mjp_get_plugin_at_slot(
+                *(*m).plugin.add(i));
+            if let Some(init_fn) = (*plugin).init {
+                // SAFETY: init is actually fn(*const mjModel, *mut mjData, i32) -> i32
+                let init: unsafe extern "C" fn(*const mjModel, *mut mjData, i32) -> i32 =
+                    std::mem::transmute(init_fn);
+                if init(m, d, i as i32) < 0 {
+                    crate::engine::engine_util_errmem::mju_free((*d).buffer);
+                    crate::engine::engine_util_errmem::mju_free((*d).arena);
+                    crate::engine::engine_util_errmem::mju_free(d as *mut ());
+                    crate::engine::engine_util_errmem::mju_error(
+                        b"plugin->init failed for plugin id %d\0".as_ptr() as *const i8);
+                    return;
+                }
+            }
+        }
+    }
 }
 
 /// C: mj_deleteData (engine/engine_io.h:138)

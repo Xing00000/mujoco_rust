@@ -912,7 +912,119 @@ pub fn mj_forward_skip(m: *const mjModel, d: *mut mjData, skipstage: i32, skipse
 /// Calls: mj_advance, mj_forwardSkip, mj_freeStack, mj_integratePos, mj_markStack, mj_stackAllocInfo, mju_addToScl, mju_copy, mju_message, mju_zero
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_runge_kutta(m: *const mjModel, d: *mut mjData, N: i32) {
-    todo!() // mj_RungeKutta
+    // RK4 tableau
+    const RK4_A: [f64; 9] = [
+        0.5, 0.0, 0.0,
+        0.0, 0.5, 0.0,
+        0.0, 0.0, 1.0,
+    ];
+    const RK4_B: [f64; 4] = [
+        1.0/6.0, 1.0/3.0, 1.0/3.0, 1.0/6.0,
+    ];
+
+    // SAFETY: m and d are valid pointers with all arrays allocated (caller contract)
+    unsafe {
+        let nv = (*m).nv as i32;
+        let nq = (*m).nq as i32;
+        let na = (*m).na as i32;
+        let h = (*m).opt.timestep;
+        let time = (*d).time;
+
+        // check order
+        if N != 4 {
+            crate::engine::engine_util_errmem::mju_error(
+                b"supported RK orders: N=4\0".as_ptr() as *const i8);
+            return;
+        }
+        let A = RK4_A.as_ptr();
+        let B = RK4_B.as_ptr();
+
+        // allocate space for intermediate solutions
+        crate::engine::engine_memory::mj_mark_stack(d);
+        let dX = crate::engine::engine_memory::mj_stack_alloc_num(d, (2 * nv + na) as usize);
+        let mut X: [*mut f64; 10] = [std::ptr::null_mut(); 10];
+        let mut F: [*mut f64; 10] = [std::ptr::null_mut(); 10];
+        for i in 0..N as usize {
+            X[i] = crate::engine::engine_memory::mj_stack_alloc_num(d, (nq + nv + na) as usize);
+            F[i] = crate::engine::engine_memory::mj_stack_alloc_num(d, (nv + na) as usize);
+        }
+
+        // precompute C and T; C,T,A have size (N-1)
+        let mut C = [0.0f64; 9];
+        let mut T = [0.0f64; 9];
+        for i in 1..N as usize {
+            // C(i) = sum_j A(i,j)
+            C[i - 1] = 0.0;
+            for j in 0..i {
+                C[i - 1] += *A.add((i - 1) * (N as usize - 1) + j);
+            }
+            // compute T
+            T[i - 1] = (*d).time + C[i - 1] * h;
+        }
+
+        // init X[0], F[0]; mj_forward() was already called
+        crate::engine::engine_util_blas::mju_copy(X[0], (*d).qpos, nq);
+        crate::engine::engine_util_blas::mju_copy(X[0].add(nq as usize), (*d).qvel, nv);
+        crate::engine::engine_util_blas::mju_copy(F[0], (*d).qacc, nv);
+        if na > 0 {
+            crate::engine::engine_util_blas::mju_copy(X[0].add((nq + nv) as usize), (*d).act, na);
+            crate::engine::engine_util_blas::mju_copy(F[0].add(nv as usize), (*d).act_dot, na);
+        }
+
+        // compute the remaining X[i], F[i]
+        for i in 1..N as usize {
+            // compute dX
+            crate::engine::engine_util_blas::mju_zero(dX, 2 * nv + na);
+            for j in 0..i {
+                let a_val = *A.add((i - 1) * (N as usize - 1) + j);
+                crate::engine::engine_util_blas::mju_add_to_scl(
+                    dX, X[j].add(nq as usize), a_val, nv);
+                crate::engine::engine_util_blas::mju_add_to_scl(
+                    dX.add(nv as usize), F[j], a_val, nv + na);
+            }
+
+            // compute X[i] = X[0] '+' dX
+            crate::engine::engine_util_blas::mju_copy(X[i], X[0], nq + nv + na);
+            crate::engine::engine_support::mj_integrate_pos(m, X[i], dX, h);
+            crate::engine::engine_util_blas::mju_add_to_scl(
+                X[i].add(nq as usize), dX.add(nv as usize), h, nv + na);
+
+            // set X[i], T[i-1] in mjData
+            crate::engine::engine_util_blas::mju_copy((*d).qpos, X[i], nq);
+            crate::engine::engine_util_blas::mju_copy((*d).qvel, X[i].add(nq as usize), nv);
+            if na > 0 {
+                crate::engine::engine_util_blas::mju_copy((*d).act, X[i].add((nq + nv) as usize), na);
+            }
+            (*d).time = T[i - 1];
+
+            // evaluate F[i]
+            mj_forward_skip(m, d, mjtStage_mjSTAGE_NONE as i32, 1);
+            crate::engine::engine_util_blas::mju_copy(F[i], (*d).qacc, nv);
+            if na > 0 {
+                crate::engine::engine_util_blas::mju_copy(F[i].add(nv as usize), (*d).act_dot, na);
+            }
+        }
+
+        // compute dX for final update (using B instead of A)
+        crate::engine::engine_util_blas::mju_zero(dX, 2 * nv + na);
+        for j in 0..N as usize {
+            crate::engine::engine_util_blas::mju_add_to_scl(
+                dX, X[j].add(nq as usize), *B.add(j), nv);
+            crate::engine::engine_util_blas::mju_add_to_scl(
+                dX.add(nv as usize), F[j], *B.add(j), nv + na);
+        }
+
+        // reset state and time
+        (*d).time = time;
+        crate::engine::engine_util_blas::mju_copy((*d).qpos, X[0], nq);
+        crate::engine::engine_util_blas::mju_copy((*d).qvel, X[0].add(nq as usize), nv);
+        crate::engine::engine_util_blas::mju_copy((*d).act, X[0].add((nq + nv) as usize), na);
+
+        // advance state and time
+        mj_advance(m, d, dX.add((2 * nv) as usize), dX.add(nv as usize), dX);
+
+        crate::engine::engine_memory::mj_free_stack(d);
+    }
 }
 
 /// C: mj_Euler (engine/engine_forward.h:56)

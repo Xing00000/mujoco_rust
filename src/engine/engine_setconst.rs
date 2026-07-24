@@ -8,7 +8,44 @@ use crate::types::*;
 /// Calls: mj_actuatorArmature, mju_addTo, mju_copy, mju_dot, mju_mulInertVec
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_set_m0(m: *mut mjModel, d: *mut mjData) {
-    todo!() // mj_setM0
+    // SAFETY: m and d are valid pointers with all arrays allocated (caller contract)
+    unsafe {
+        let mut buf = [0.0f64; 6];
+        let crb = (*d).crb;
+        let last_body = (*m).nbody as i32 - 1;
+        let nv = (*m).nv as i32;
+
+        // copy cinert into crb
+        crate::engine::engine_util_blas::mju_copy(crb, (*d).cinert, 10 * (*m).nbody as i32);
+
+        // backward pass over bodies, accumulate composite inertias
+        let mut i = last_body;
+        while i > 0 {
+            if *(*m).body_parentid.add(i as usize) > 0 {
+                crate::engine::engine_util_blas::mju_add_to(
+                    crb.add(10 * *(*m).body_parentid.add(i as usize) as usize),
+                    crb.add(10 * i as usize),
+                    10);
+            }
+            i -= 1;
+        }
+
+        for i in 0..nv as usize {
+            // precompute buf = crb_body_i * cdof_i
+            crate::engine::engine_util_spatial::mju_mul_inert_vec(
+                buf.as_mut_ptr(),
+                crb.add(10 * *(*m).dof_bodyid.add(i) as usize),
+                (*d).cdof.add(6 * i));
+
+            // dof_M0(i) = armature inertia + cdof_i * (crb_body_i * cdof_i)
+            let armature = *(*m).dof_armature.add(i)
+                + crate::engine::engine_core_util::mj_actuator_armature(
+                    m, mjtObj_mjOBJ_JOINT, *(*m).dof_jntid.add(i));
+            *(*m).dof_M0.add(i) = armature
+                + crate::engine::engine_util_blas::mju_dot(
+                    (*d).cdof.add(6 * i), buf.as_ptr(), 6);
+        }
+    }
 }
 
 /// C: GetWrapBodyTreeId (engine/engine_setconst.c:64)
@@ -281,7 +318,65 @@ pub fn make_flex_sparse(m: *mut mjModel, d: *mut mjData) {
 /// Calls: mju_copy3, mju_cross, mju_mulMatTVec3, mju_normalize3, mju_quat2Mat, mju_quatZ2Vec, mju_sub3, mju_warning
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_align_flex(m: *mut mjModel, d: *mut mjData) {
-    todo!() // mj_alignFlex
+    const MJ_MINVAL: f64 = 1e-15;
+
+    // SAFETY: m and d are valid pointers with all flex arrays allocated (caller contract)
+    unsafe {
+        for f in 0..(*m).nflex as usize {
+            // only for 2D flexes with vertex equality constraints
+            if *(*m).flex_dim.add(f) == 2 && *(*m).flex_edgeequality.add(f) == 2 {
+                // get element data
+                let t_adr = *(*m).flex_elemdataadr.add(f) as usize;
+                let vbase = *(*m).flex_vertadr.add(f) as usize;
+                let t0 = *(*m).flex_elem.add(t_adr) as usize;
+                let t1 = *(*m).flex_elem.add(t_adr + 1) as usize;
+                let t2 = *(*m).flex_elem.add(t_adr + 2) as usize;
+
+                // compute normal from first element
+                let mut edge1 = [0.0f64; 3];
+                let mut edge2 = [0.0f64; 3];
+                let mut normal = [0.0f64; 3];
+                crate::engine::engine_util_blas::mju_sub3(
+                    edge1.as_mut_ptr(),
+                    (*m).flex_vert0.add(3 * (vbase + t1)),
+                    (*m).flex_vert0.add(3 * (vbase + t0)));
+                crate::engine::engine_util_blas::mju_sub3(
+                    edge2.as_mut_ptr(),
+                    (*m).flex_vert0.add(3 * (vbase + t2)),
+                    (*m).flex_vert0.add(3 * (vbase + t0)));
+                crate::engine::engine_util_spatial::mju_cross(
+                    normal.as_mut_ptr(), edge1.as_ptr(), edge2.as_ptr());
+                crate::engine::engine_util_blas::mju_normalize3(normal.as_mut_ptr());
+
+                // compute rotation to Z
+                let mut quat = [0.0f64; 4];
+                let mut mat = [0.0f64; 9];
+                crate::engine::engine_util_spatial::mju_quat_z2vec(
+                    quat.as_mut_ptr(), normal.as_ptr());
+                crate::engine::engine_util_spatial::mju_quat2mat(
+                    mat.as_mut_ptr(), quat.as_ptr());
+
+                // rotate all vertices of this flex
+                let nvert = *(*m).flex_vertnum.add(f);
+                for v in 0..nvert as usize {
+                    let vert = (*m).flex_vert0.add(3 * (vbase + v));
+                    let mut res = [0.0f64; 3];
+
+                    crate::engine::engine_util_blas::mju_mul_mat_t_vec3(
+                        res.as_mut_ptr(), mat.as_ptr(), vert);
+                    crate::engine::engine_util_blas::mju_copy3(vert, res.as_ptr());
+
+                    // check planarity (warning if not planar)
+                    let z_ref = *(*m).flex_vert0.add(3 * (vbase + t0) + 2);
+                    if (*vert.add(2) - z_ref).abs() > 100.0 * MJ_MINVAL {
+                        // static warned flag — only warn once (simplified: always warn)
+                        crate::engine::engine_util_errmem::mju_warning(
+                            b"flex %d is not planar\0".as_ptr() as *const i8);
+                    }
+                }
+            }
+        }
+    }
 }
 
 /// C: set0 (engine/engine_setconst.c:695)
@@ -318,7 +413,187 @@ pub fn update_box(xmin: *mut f64, xmax: *mut f64, pos: *mut f64, radius: f64) {
 /// Calls: mj_freeStack, mj_markStack, mj_stackAllocInfo, mju_add3, mju_dist3, mju_max, mju_scl3, mju_zero, updateBox
 #[allow(unused_variables, non_snake_case)]
 pub fn set_stat(m: *mut mjModel, d: *mut mjData) {
-    todo!() // setStat
+    // SAFETY: m and d are valid pointers with all arrays allocated (caller contract)
+    unsafe {
+        let mut xmin = [1e10f64; 3];
+        let mut xmax = [-1e10f64; 3];
+        let mut rbound: f64;
+        crate::engine::engine_memory::mj_mark_stack(d);
+
+        // approximate length associated with each body
+        let body = crate::engine::engine_memory::mj_stack_alloc_num(d, (*m).nbody as usize);
+
+        // compute bounding box of bodies, joint centers, geoms and sites
+        for i in 1..(*m).nbody as usize {
+            update_box(xmin.as_mut_ptr(), xmax.as_mut_ptr(), (*d).xpos.add(3 * i), 0.0);
+            update_box(xmin.as_mut_ptr(), xmax.as_mut_ptr(), (*d).xipos.add(3 * i), 0.0);
+        }
+        for i in 0..(*m).njnt as usize {
+            update_box(xmin.as_mut_ptr(), xmax.as_mut_ptr(), (*d).xanchor.add(3 * i), 0.0);
+        }
+        for i in 0..(*m).nsite as usize {
+            update_box(xmin.as_mut_ptr(), xmax.as_mut_ptr(), (*d).site_xpos.add(3 * i), 0.0);
+        }
+        for i in 0..(*m).ngeom as usize {
+            // set rbound: regular geom rbound, or 0.1 of plane or hfield max size
+            rbound = 0.0;
+            if *(*m).geom_rbound.add(i) > 0.0 {
+                rbound = *(*m).geom_rbound.add(i);
+            } else if *(*m).geom_type.add(i) == mjtGeom_mjGEOM_PLANE as i32 {
+                // finite in at least one direction
+                if *(*m).geom_size.add(3 * i) != 0.0 || *(*m).geom_size.add(3 * i + 1) != 0.0 {
+                    rbound = crate::engine::engine_util_misc::mju_max(
+                        *(*m).geom_size.add(3 * i),
+                        *(*m).geom_size.add(3 * i + 1)) * 0.1;
+                } else {
+                    // infinite in both directions
+                    rbound = 0.01;
+                }
+            } else if *(*m).geom_type.add(i) == mjtGeom_mjGEOM_HFIELD as i32 {
+                let j = *(*m).geom_dataid.add(i) as usize;
+                rbound = crate::engine::engine_util_misc::mju_max(
+                    *(*m).hfield_size.add(4 * j),
+                    crate::engine::engine_util_misc::mju_max(
+                        *(*m).hfield_size.add(4 * j + 1),
+                        crate::engine::engine_util_misc::mju_max(
+                            *(*m).hfield_size.add(4 * j + 2),
+                            *(*m).hfield_size.add(4 * j + 3)))) * 0.1;
+            }
+
+            update_box(xmin.as_mut_ptr(), xmax.as_mut_ptr(), (*d).geom_xpos.add(3 * i), rbound);
+        }
+
+        // compute center
+        crate::engine::engine_util_blas::mju_add3(
+            (*m).stat.center.as_mut_ptr(), xmin.as_ptr(), xmax.as_ptr());
+        crate::engine::engine_util_blas::mju_scl3(
+            (*m).stat.center.as_mut_ptr(), (*m).stat.center.as_ptr(), 0.5);
+
+        // compute bounding box size
+        if xmax[0] > xmin[0] {
+            (*m).stat.extent = crate::engine::engine_util_misc::mju_max(
+                1e-5,
+                crate::engine::engine_util_misc::mju_max(
+                    xmax[0] - xmin[0],
+                    crate::engine::engine_util_misc::mju_max(
+                        xmax[1] - xmin[1], xmax[2] - xmin[2])));
+        }
+
+        // set body size to max com-joint distance
+        crate::engine::engine_util_blas::mju_zero(body, (*m).nbody as i32);
+        for i in 0..(*m).njnt as usize {
+            // handle this body
+            let id = *(*m).jnt_bodyid.add(i) as usize;
+            *body.add(id) = crate::engine::engine_util_misc::mju_max(
+                *body.add(id),
+                crate::engine::engine_util_blas::mju_dist3(
+                    (*d).xipos.add(3 * id), (*d).xanchor.add(3 * i)));
+
+            // handle parent body
+            let id = *(*m).body_parentid.add(id) as usize;
+            *body.add(id) = crate::engine::engine_util_misc::mju_max(
+                *body.add(id),
+                crate::engine::engine_util_blas::mju_dist3(
+                    (*d).xipos.add(3 * id), (*d).xanchor.add(3 * i)));
+        }
+        *body.add(0) = 0.0;
+
+        // set body size to max of old value, and geom rbound + com-geom dist
+        for i in 1..(*m).nbody as usize {
+            let gadr = *(*m).body_geomadr.add(i) as usize;
+            let gnum = *(*m).body_geomnum.add(i) as usize;
+            for id in gadr..gadr + gnum {
+                if *(*m).geom_rbound.add(id) > 0.0 {
+                    *body.add(i) = crate::engine::engine_util_misc::mju_max(
+                        *body.add(i),
+                        *(*m).geom_rbound.add(id) + crate::engine::engine_util_blas::mju_dist3(
+                            (*d).xipos.add(3 * i), (*d).geom_xpos.add(3 * id)));
+                }
+            }
+        }
+
+        // adjust body size for flex edges involving body
+        for f in 0..(*m).nflex as usize {
+            if *(*m).flex_interp.add(f) != 0 {
+                let nadr = *(*m).flex_nodeadr.add(f) as usize;
+                let nnum = *(*m).flex_nodenum.add(f) as usize;
+                for v1 in nadr..nadr + nnum {
+                    for v2 in nadr..nadr + nnum {
+                        let edge = crate::engine::engine_util_blas::mju_dist3(
+                            (*d).xpos.add(3 * *(*m).flex_nodebodyid.add(v1) as usize),
+                            (*d).xpos.add(3 * *(*m).flex_nodebodyid.add(v2) as usize));
+                        let bid = *(*m).flex_nodebodyid.add(v1) as usize;
+                        *body.add(bid) = crate::engine::engine_util_misc::mju_max(
+                            *body.add(bid), edge);
+                    }
+                }
+                continue;
+            }
+            let eadr = *(*m).flex_edgeadr.add(f) as usize;
+            let enm = *(*m).flex_edgenum.add(f) as usize;
+            for e in eadr..eadr + enm {
+                let vadr = *(*m).flex_vertadr.add(f) as usize;
+                let b1 = *(*m).flex_vertbodyid.add(vadr + *(*m).flex_edge.add(2 * e) as usize) as usize;
+                let b2 = *(*m).flex_vertbodyid.add(vadr + *(*m).flex_edge.add(2 * e + 1) as usize) as usize;
+
+                *body.add(b1) = crate::engine::engine_util_misc::mju_max(
+                    *body.add(b1), *(*m).flexedge_length0.add(e));
+                *body.add(b2) = crate::engine::engine_util_misc::mju_max(
+                    *body.add(b2), *(*m).flexedge_length0.add(e));
+            }
+        }
+
+        // compute meansize, make sure all sizes are above min
+        if (*m).nbody > 1 {
+            (*m).stat.meansize = 0.0;
+            for i in 1..(*m).nbody as usize {
+                *body.add(i) = crate::engine::engine_util_misc::mju_max(*body.add(i), 1e-5);
+                (*m).stat.meansize += *body.add(i) / ((*m).nbody - 1) as f64;
+            }
+        }
+
+        // inherit dof length from parent body
+        for i in 0..(*m).nv as usize {
+            // default to linear dof, already has length units
+            *(*m).dof_length.add(i) = 1.0;
+
+            // if rotational dof, inherit from body
+            let jnt = *(*m).dof_jntid.add(i) as usize;
+            let jtype = *(*m).jnt_type.add(jnt);
+            let offset = i as i32 - *(*m).jnt_dofadr.add(jnt);
+            if jtype == mjtJoint_mjJNT_BALL as i32
+                || jtype == mjtJoint_mjJNT_HINGE as i32
+                || (jtype == mjtJoint_mjJNT_FREE as i32 && offset >= 3)
+            {
+                *(*m).dof_length.add(i) = *body.add(*(*m).dof_bodyid.add(i) as usize);
+            }
+        }
+
+        // fix extent if too small compared to meanbody
+        (*m).stat.extent = crate::engine::engine_util_misc::mju_max(
+            (*m).stat.extent, 2.0 * (*m).stat.meansize);
+
+        // compute meanmass
+        if (*m).nbody > 1 {
+            (*m).stat.meanmass = 0.0;
+            for i in 1..(*m).nbody as usize {
+                (*m).stat.meanmass += *(*m).body_mass.add(i);
+            }
+            (*m).stat.meanmass /= ((*m).nbody - 1) as f64;
+        }
+
+        // compute meaninertia
+        if (*m).nv > 0 {
+            (*m).stat.meaninertia = 0.0;
+            for i in 0..(*m).nv as usize {
+                (*m).stat.meaninertia += *(*d).M.add(
+                    (*(*m).M_rowadr.add(i) + *(*m).M_rownnz.add(i) - 1) as usize);
+            }
+            (*m).stat.meaninertia /= (*m).nv as f64;
+        }
+
+        crate::engine::engine_memory::mj_free_stack(d);
+    }
 }
 
 /// C: setSpring (engine/engine_setconst.c:1198)

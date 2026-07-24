@@ -25,7 +25,7 @@ pub fn prism_firstdir(o1: *const (), o2: *const (), vec: *mut ccd_vec3_t) {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn libccd_wrapper(m: *const mjModel, obj1: *mut mjCCDObj, obj2: *mut mjCCDObj, con: *mut mjPreContact, margin: f64) -> i32 {
-    todo!() // _libccd_wrapper
+    todo!("_libccd_wrapper depends on opaque ccd_t struct, CCD_INIT macro, and ccdMPRPenetration from external libccd library. Cannot translate without typed CCD bindings.")
 }
 
 /// C: mjc_penetration (engine/engine_collision_convex.c:87)
@@ -392,7 +392,7 @@ pub fn mjc_hillclimb_support(res: *mut f64, obj: *mut mjCCDObj, dir: *const f64)
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjc_prism_support(res: *mut f64, obj: *mut mjCCDObj, dir: *const f64) {
-    todo!() // mjc_prism_support
+    todo!("mjc_prism_support accesses obj->data.hfield.prism which is inside an opaque 160-byte union. Cannot translate without typed union member layout.")
 }
 
 /// C: mjc_flexSupport (engine/engine_collision_convex.c:458)
@@ -404,7 +404,7 @@ pub fn mjc_prism_support(res: *mut f64, obj: *mut mjCCDObj, dir: *const f64) {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjc_flex_support(res: *mut f64, obj: *mut mjCCDObj, dir: *const f64) {
-    todo!() // mjc_flexSupport
+    todo!("mjc_flexSupport accesses obj->data.flex.* which is inside an opaque 160-byte union. Cannot translate without typed union member layout.")
 }
 
 /// C: mjc_setCCDObjFlex (engine/engine_collision_convex.c:790)
@@ -847,7 +847,7 @@ pub fn mjc_init_ccd_obj(obj: *mut mjCCDObj, m: *const mjModel, d: *const mjData,
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjc_center(res: *mut f64, obj: *const mjCCDObj) {
-    todo!() // mjc_center
+    todo!("mjc_center accesses obj->data.hfield.prism and obj->data.flex.* which are inside an opaque 160-byte union. Cannot translate without typed union member layout.")
 }
 
 /// C: mjccd_center (engine/engine_collision_convex.h:100)

@@ -1379,6 +1379,78 @@ pub fn mjc_sphere_box(m: *const mjModel, d: *mut mjData, con: *mut mjPreContact,
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjc_box_box(m: *const mjModel, d: *mut mjData, con: *mut mjPreContact, g1: i32, g2: i32, margin: f64) -> i32 {
-    todo!() // mjc_BoxBox
+    const MJ_MAXCONPAIR: usize = 50;
+
+    // SAFETY: m, d, con are valid pointers; g1, g2 are valid geom indices (caller contract)
+    unsafe {
+        let mut tmp = [mjPreContact { dist: 0.0, pos: [0.0; 3], normal: [0.0; 3], tangent: [0.0; 3] }; 50];
+        let num = crate::engine::engine_collision_box::boxbox(
+            m, d as *const mjData, tmp.as_mut_ptr(), g1, g2, margin);
+
+        // -1: bad, 0: good
+        let mut dupe = [0i32; 50];
+
+        // get box info
+        let pos1 = (*d).geom_xpos.add(3 * g1 as usize);
+        let mat1 = (*d).geom_xmat.add(9 * g1 as usize);
+        let size1 = (*m).geom_size.add(3 * g1 as usize);
+        let pos2 = (*d).geom_xpos.add(3 * g2 as usize);
+        let mat2 = (*d).geom_xmat.add(9 * g2 as usize);
+        let size2 = (*m).geom_size.add(3 * g2 as usize);
+
+        // find bad: contacts outside one of the boxes
+        for i in 0..num as usize {
+            // box sizes with margin
+            let sz1 = [*size1.add(0) + margin, *size1.add(1) + margin, *size1.add(2) + margin];
+            let sz2 = [*size2.add(0) + margin, *size2.add(1) + margin, *size2.add(2) + margin];
+
+            // relative distance from surface (1%) outside of which box-box contacts are removed
+            let k_remove_ratio: f64 = 1.01;
+
+            // is the contact outside: 1, inside: -1, within the removal width: 0
+            let out1 = crate::engine::engine_util_misc::mju_outside_box(
+                tmp[i].pos.as_ptr(), pos1, mat1, sz1.as_ptr(), k_remove_ratio);
+            let out2 = crate::engine::engine_util_misc::mju_outside_box(
+                tmp[i].pos.as_ptr(), pos2, mat2, sz2.as_ptr(), k_remove_ratio);
+
+            // mark as bad if outside one box and not inside the other box
+            if (out1 == 1 && out2 != -1) || (out2 == 1 && out1 != -1) {
+                dupe[i] = -1;
+            }
+        }
+
+        // find duplicates
+        for i in 0..(num - 1).max(0) as usize {
+            if dupe[i] == -1 {
+                continue;
+            }
+            for j in (i + 1)..num as usize {
+                if dupe[j] == -1 {
+                    continue;
+                }
+                if tmp[i].pos[0] == tmp[j].pos[0]
+                    && tmp[i].pos[1] == tmp[j].pos[1]
+                    && tmp[i].pos[2] == tmp[j].pos[2]
+                {
+                    dupe[i] = -1;
+                    break;
+                }
+            }
+        }
+
+        // consolidate good
+        let mut ncon = 0i32;
+        for j in 0..num as usize {
+            if dupe[j] == 0 {
+                *con.add(ncon as usize) = tmp[j];
+                ncon += 1;
+                if ncon >= 8 {
+                    break;
+                }
+            }
+        }
+
+        ncon
+    }
 }
 
