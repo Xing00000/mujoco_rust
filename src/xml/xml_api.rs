@@ -22,7 +22,7 @@ pub fn mj_save_last_xml(filename: *const i8, m: *const mjModel, error: *mut i8, 
 /// Calls: SetGlobalXmlSpec
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_free_last_xml() {
-    todo!() // mj_freeLastXML
+    crate::xml::xml_global::set_global_xml_spec(std::ptr::null_mut());
 }
 
 /// C: mj_printSchema (xml/xml_api.h:40)

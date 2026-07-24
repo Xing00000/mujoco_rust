@@ -7,13 +7,29 @@ use crate::types::*;
 /// C: printInt (engine/engine_print.c:53)
 #[allow(unused_variables, non_snake_case)]
 pub fn print_int(fp: *mut FILE, name: *const i8, value: i32) {
-    todo!() // printInt
+    extern "C" {
+        fn fprintf(stream: *mut FILE, fmt: *const i8, ...) -> i32;
+    }
+    // SAFETY: fp, name are valid pointers (caller contract)
+    unsafe {
+        fprintf(fp, b"%-21s\0".as_ptr() as *const i8, name);
+        fprintf(fp, b" %d\0".as_ptr() as *const i8, value);
+        fprintf(fp, b"\n\0".as_ptr() as *const i8);
+    }
 }
 
 /// C: printStr (engine/engine_print.c:59)
 #[allow(unused_variables, non_snake_case)]
 pub fn print_str(fp: *mut FILE, name: *const i8, value: *const i8) {
-    todo!() // printStr
+    extern "C" {
+        fn fprintf(stream: *mut FILE, fmt: *const i8, ...) -> i32;
+    }
+    // SAFETY: fp, name, value are valid pointers (caller contract)
+    unsafe {
+        fprintf(fp, b"%-21s\0".as_ptr() as *const i8, name);
+        fprintf(fp, b"%s\0".as_ptr() as *const i8, if value.is_null() { b"\0".as_ptr() as *const i8 } else { value });
+        fprintf(fp, b"\n\0".as_ptr() as *const i8);
+    }
 }
 
 /// C: printNum (engine/engine_print.c:65)
@@ -24,7 +40,15 @@ pub fn print_str(fp: *mut FILE, name: *const i8, value: *const i8) {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn print_num(fp: *mut FILE, name: *const i8, value: f32, float_format: *const i8) {
-    todo!() // printNum
+    extern "C" {
+        fn fprintf(stream: *mut FILE, fmt: *const i8, ...) -> i32;
+    }
+    // SAFETY: fp, name, float_format are valid pointers (caller contract)
+    unsafe {
+        fprintf(fp, b"%-21s\0".as_ptr() as *const i8, name);
+        fprintf(fp, float_format, value as f64);
+        fprintf(fp, b"\n\0".as_ptr() as *const i8);
+    }
 }
 
 /// C: printArr (engine/engine_print.c:71)
@@ -35,7 +59,21 @@ pub fn print_num(fp: *mut FILE, name: *const i8, value: f32, float_format: *cons
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn print_arr(fp: *mut FILE, name: *const i8, data: *const f32, n: i32, float_format: *const i8) {
-    todo!() // printArr
+    extern "C" {
+        fn fprintf(stream: *mut FILE, fmt: *const i8, ...) -> i32;
+    }
+    if data.is_null() {
+        return;
+    }
+    // SAFETY: fp, name, data, float_format are valid pointers (caller contract)
+    unsafe {
+        fprintf(fp, b"%-21s\0".as_ptr() as *const i8, name);
+        for i in 0..n as usize {
+            fprintf(fp, float_format, *data.add(i) as f64);
+            fprintf(fp, b" \0".as_ptr() as *const i8);
+        }
+        fprintf(fp, b"\n\0".as_ptr() as *const i8);
+    }
 }
 
 /// C: printArray2d (engine/engine_print.c:84)
@@ -468,7 +506,21 @@ pub fn size_mesh(m: *const mjModel) -> usize {
 /// C: sizeSkin (engine/engine_print.c:431)
 #[allow(unused_variables, non_snake_case)]
 pub fn size_skin(m: *const mjModel) -> usize {
-    todo!() // sizeSkin
+    // SAFETY: m is a valid mjModel pointer (caller contract)
+    unsafe {
+        let mut nbytes: usize = 0;
+        nbytes += std::mem::size_of::<f32>() * 3 * (*m).nskinvert as usize;       // skin_vert
+        nbytes += std::mem::size_of::<f32>() * 2 * (*m).nskintexvert as usize;    // skin_texcoord
+        nbytes += std::mem::size_of::<i32>() * 3 * (*m).nskinface as usize;       // skin_face
+        nbytes += std::mem::size_of::<i32>() * (*m).nskinbone as usize;           // skin_bonevertadr
+        nbytes += std::mem::size_of::<i32>() * (*m).nskinbone as usize;           // skin_bonevertnum
+        nbytes += std::mem::size_of::<f32>() * 3 * (*m).nskinbone as usize;       // skin_bonebindpos
+        nbytes += std::mem::size_of::<f32>() * 4 * (*m).nskinbone as usize;       // skin_bonebindquat
+        nbytes += std::mem::size_of::<i32>() * (*m).nskinbone as usize;           // skin_bonebodyid
+        nbytes += std::mem::size_of::<i32>() * (*m).nskinbonevert as usize;       // skin_bonevertid
+        nbytes += std::mem::size_of::<f32>() * (*m).nskinbonevert as usize;       // skin_bonevertweight
+        nbytes
+    }
 }
 
 /// C: sizeBVH (engine/engine_print.c:448)
