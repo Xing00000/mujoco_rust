@@ -762,7 +762,105 @@ pub fn mjv_apply_perturb_pose(m: *const mjModel, d: *mut mjData, pert: *const mj
 /// Calls: mj_objectVelocity, mju_addTo3, mju_addToScl3, mju_copy3, mju_cross, mju_dot3, mju_max, mju_mulMatVec3, mju_mulQuat, mju_negQuat, mju_normalize3, mju_quat2Vel, mju_scl3, mju_sub3
 #[allow(unused_variables, non_snake_case)]
 pub fn mjv_apply_perturb_force(m: *const mjModel, d: *mut mjData, pert: *const mjvPerturb) {
-    todo!() // mjv_applyPerturbForce
+    const MJ_MINVAL: f64 = 1e-15;
+    const MJ_PERT_TRANSLATE: i32 = 1;
+    const MJ_PERT_ROTATE: i32 = 2;
+
+    // SAFETY: m, d, pert are valid pointers (caller contract)
+    unsafe {
+        let sel = (*pert).select;
+
+        // exit if nothing to do
+        if sel < 0 || sel as i64 >= (*m).nbody || ((*pert).active | (*pert).active2) == 0 {
+            return;
+        }
+
+        // pointers to body xfrc_applied, force and torque
+        let force = (*d).xfrc_applied.add(6 * sel as usize);
+        let torque = (*d).xfrc_applied.add(6 * sel as usize + 3);
+
+        // pointers to global selbody velocity, linear and rotational
+        let mut bvel = [0.0f64; 6];
+        crate::engine::engine_core_util::mj_object_velocity(
+            m, d as *const mjData, mjtObj_mjOBJ_BODY as i32, sel, bvel.as_mut_ptr(), 0);
+        let body_linvel = bvel.as_ptr().add(3);
+        let body_rotvel = bvel.as_ptr();
+
+        // body rotational inertia
+        let invweight = *(*m).body_invweight0.add(2 * sel as usize + 1);
+        let inertia = if invweight != 0.0 {
+            1.0 / crate::engine::engine_util_misc::mju_max(MJ_MINVAL, invweight)
+        } else {
+            1.0
+        };
+
+        // read stiffness and stiffnessrot from vis.map (f32 at offset 0 and 4)
+        let map_bytes = &(*m).vis.map;
+        let stiffness_map = f32::from_ne_bytes([map_bytes[0], map_bytes[1], map_bytes[2], map_bytes[3]]) as f64;
+        let stiffnessrot_map = f32::from_ne_bytes([map_bytes[4], map_bytes[5], map_bytes[6], map_bytes[7]]) as f64;
+
+        if (((*pert).active | (*pert).active2) & MJ_PERT_TRANSLATE) != 0 {
+            let stiffness = stiffness_map;
+
+            // compute selection point in world coordinates
+            let mut selpos = [0.0f64; 3];
+            crate::engine::engine_util_blas::mju_mul_mat_vec3(
+                selpos.as_mut_ptr(), (*d).xmat.add(9 * sel as usize), (*pert).localpos.as_ptr());
+            crate::engine::engine_util_blas::mju_add_to3(
+                selpos.as_mut_ptr(), (*d).xpos.add(3 * sel as usize));
+
+            // displacement of selection point from reference point
+            let mut diff = [0.0f64; 3];
+            crate::engine::engine_util_blas::mju_sub3(
+                diff.as_mut_ptr(), selpos.as_ptr(), (*pert).refselpos.as_ptr());
+
+            // spring perturbation force
+            crate::engine::engine_util_blas::mju_copy3(force, diff.as_ptr());
+            crate::engine::engine_util_blas::mju_scl3(force, force, -stiffness * (*pert).localmass);
+
+            // moment arm w.r.t body com
+            let mut moment_arm = [0.0f64; 3];
+            crate::engine::engine_util_blas::mju_sub3(
+                moment_arm.as_mut_ptr(), selpos.as_ptr(), (*d).xipos.add(3 * sel as usize));
+
+            // translational velocity of selection point
+            let mut svel = [0.0f64; 3];
+            crate::engine::engine_util_spatial::mju_cross(
+                svel.as_mut_ptr(), body_rotvel, moment_arm.as_ptr());
+            crate::engine::engine_util_blas::mju_add_to3(svel.as_mut_ptr(), body_linvel);
+
+            // add critical damping force of selection point
+            crate::engine::engine_util_blas::mju_add_to_scl3(
+                force, svel.as_ptr(), -stiffness.sqrt() * (*pert).localmass);
+
+            // torque on body com due to force
+            crate::engine::engine_util_spatial::mju_cross(torque, moment_arm.as_ptr(), force);
+
+            // add critically damped torsional torque along displacement axis
+            let stiffnessrot = stiffnessrot_map;
+            crate::engine::engine_util_blas::mju_normalize3(diff.as_mut_ptr());
+            crate::engine::engine_util_blas::mju_add_to_scl3(
+                torque, diff.as_ptr(),
+                -stiffnessrot.sqrt() * inertia * crate::engine::engine_util_blas::mju_dot3(
+                    diff.as_ptr(), body_rotvel));
+        }
+
+        if (((*pert).active | (*pert).active2) & MJ_PERT_ROTATE) != 0 {
+            // spring perturbation torque, with critical damping
+            let stiffnessrot = stiffnessrot_map;
+            let mut xiquat = [0.0f64; 4];
+            let mut difquat = [0.0f64; 4];
+            crate::engine::engine_util_spatial::mju_mul_quat(
+                xiquat.as_mut_ptr(), (*d).xquat.add(4 * sel as usize), (*m).body_iquat.add(4 * sel as usize));
+            crate::engine::engine_util_spatial::mju_neg_quat(xiquat.as_mut_ptr(), xiquat.as_ptr());
+            crate::engine::engine_util_spatial::mju_mul_quat(
+                difquat.as_mut_ptr(), (*pert).refquat.as_ptr(), xiquat.as_ptr());
+            crate::engine::engine_util_spatial::mju_quat2vel(
+                torque, difquat.as_ptr(), 1.0 / (stiffnessrot * inertia));
+            crate::engine::engine_util_blas::mju_add_to_scl3(
+                torque, body_rotvel, -stiffnessrot.sqrt() * inertia);
+        }
+    }
 }
 
 /// C: mjv_averageCamera (engine/engine_vis_interact.h:73)
