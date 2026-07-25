@@ -7625,7 +7625,797 @@ pub fn mj_size_model(m: *const mjModel) -> i64 {
 /// Calls: mjp_getPluginAtSlot, mju_message, numObjects, sensorSize
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_validate_references(m: *const mjModel) -> *const i8 {
-    todo!("mj_validateReferences depends on MJMODEL_REFERENCES X-macro expansion which enumerates ~100 reference fields for bounds checking. Cannot translate without codegen support for the field list.")
+    // SAFETY: m is a valid mjModel pointer (caller contract)
+    unsafe {
+        // MJMODEL_REFERENCES expansion (92 entries): bounds check all reference fields
+        for i in 0..(*m).nbody as usize {
+            let adrsmin = *(*m).body_parentid.add(i);
+            if adrsmin + 1 > (*m).nbody as i32 || adrsmin < -1 {
+                return b"Invalid model: body_parentid out of bounds.\0".as_ptr() as *const i8;
+            }
+        }
+        for i in 0..(*m).nbody as usize {
+            let adrsmin = *(*m).body_rootid.add(i);
+            if adrsmin + 1 > (*m).nbody as i32 || adrsmin < -1 {
+                return b"Invalid model: body_rootid out of bounds.\0".as_ptr() as *const i8;
+            }
+        }
+        for i in 0..(*m).nbody as usize {
+            let adrsmin = *(*m).body_weldid.add(i);
+            if adrsmin + 1 > (*m).nbody as i32 || adrsmin < -1 {
+                return b"Invalid model: body_weldid out of bounds.\0".as_ptr() as *const i8;
+            }
+        }
+        for i in 0..(*m).nbody as usize {
+            let adrsmin = *(*m).body_mocapid.add(i);
+            if adrsmin + 1 > (*m).nmocap as i32 || adrsmin < -1 {
+                return b"Invalid model: body_mocapid out of bounds.\0".as_ptr() as *const i8;
+            }
+        }
+        { // body_jntadr with body_jntnum
+            let nums: *const i32 = (*m).body_jntnum;
+            for i in 0..(*m).nbody as usize {
+                let adrsmin = *(*m).body_jntadr.add(i);
+                let num = *nums.add(i);
+                if num < 0 { return b"Invalid model: body_jntnum is negative.\0".as_ptr() as *const i8; }
+                if num > 2147483647 { return b"Invalid model: body_jntnum is too large.\0".as_ptr() as *const i8; }
+                let adrsmax = adrsmin + num;
+                if adrsmax > (*m).njnt as i32 || adrsmin < -1 {
+                    return b"Invalid model: body_jntadr out of bounds.\0".as_ptr() as *const i8;
+                }
+            }
+        }
+        { // body_dofadr with body_dofnum
+            let nums: *const i32 = (*m).body_dofnum;
+            for i in 0..(*m).nbody as usize {
+                let adrsmin = *(*m).body_dofadr.add(i);
+                let num = *nums.add(i);
+                if num < 0 { return b"Invalid model: body_dofnum is negative.\0".as_ptr() as *const i8; }
+                if num > 2147483647 { return b"Invalid model: body_dofnum is too large.\0".as_ptr() as *const i8; }
+                let adrsmax = adrsmin + num;
+                if adrsmax > (*m).nv as i32 || adrsmin < -1 {
+                    return b"Invalid model: body_dofadr out of bounds.\0".as_ptr() as *const i8;
+                }
+            }
+        }
+        { // body_geomadr with body_geomnum
+            let nums: *const i32 = (*m).body_geomnum;
+            for i in 0..(*m).nbody as usize {
+                let adrsmin = *(*m).body_geomadr.add(i);
+                let num = *nums.add(i);
+                if num < 0 { return b"Invalid model: body_geomnum is negative.\0".as_ptr() as *const i8; }
+                if num > 2147483647 { return b"Invalid model: body_geomnum is too large.\0".as_ptr() as *const i8; }
+                let adrsmax = adrsmin + num;
+                if adrsmax > (*m).ngeom as i32 || adrsmin < -1 {
+                    return b"Invalid model: body_geomadr out of bounds.\0".as_ptr() as *const i8;
+                }
+            }
+        }
+        { // body_bvhadr with body_bvhnum
+            let nums: *const i32 = (*m).body_bvhnum;
+            for i in 0..(*m).nbody as usize {
+                let adrsmin = *(*m).body_bvhadr.add(i);
+                let num = *nums.add(i);
+                if num < 0 { return b"Invalid model: body_bvhnum is negative.\0".as_ptr() as *const i8; }
+                if num > 2147483647 { return b"Invalid model: body_bvhnum is too large.\0".as_ptr() as *const i8; }
+                let adrsmax = adrsmin + num;
+                if adrsmax > (*m).nbvh as i32 || adrsmin < -1 {
+                    return b"Invalid model: body_bvhadr out of bounds.\0".as_ptr() as *const i8;
+                }
+            }
+        }
+        for i in 0..(*m).nbody as usize {
+            let adrsmin = *(*m).body_plugin.add(i);
+            if adrsmin + 1 > (*m).nplugin as i32 || adrsmin < -1 {
+                return b"Invalid model: body_plugin out of bounds.\0".as_ptr() as *const i8;
+            }
+        }
+        for i in 0..(*m).njnt as usize {
+            let adrsmin = *(*m).jnt_qposadr.add(i);
+            if adrsmin + 1 > (*m).nq as i32 || adrsmin < -1 {
+                return b"Invalid model: jnt_qposadr out of bounds.\0".as_ptr() as *const i8;
+            }
+        }
+        for i in 0..(*m).njnt as usize {
+            let adrsmin = *(*m).jnt_dofadr.add(i);
+            if adrsmin + 1 > (*m).nv as i32 || adrsmin < -1 {
+                return b"Invalid model: jnt_dofadr out of bounds.\0".as_ptr() as *const i8;
+            }
+        }
+        for i in 0..(*m).njnt as usize {
+            let adrsmin = *(*m).jnt_bodyid.add(i);
+            if adrsmin + 1 > (*m).nbody as i32 || adrsmin < -1 {
+                return b"Invalid model: jnt_bodyid out of bounds.\0".as_ptr() as *const i8;
+            }
+        }
+        for i in 0..(*m).nv as usize {
+            let adrsmin = *(*m).dof_bodyid.add(i);
+            if adrsmin + 1 > (*m).nbody as i32 || adrsmin < -1 {
+                return b"Invalid model: dof_bodyid out of bounds.\0".as_ptr() as *const i8;
+            }
+        }
+        for i in 0..(*m).nv as usize {
+            let adrsmin = *(*m).dof_jntid.add(i);
+            if adrsmin + 1 > (*m).njnt as i32 || adrsmin < -1 {
+                return b"Invalid model: dof_jntid out of bounds.\0".as_ptr() as *const i8;
+            }
+        }
+        for i in 0..(*m).nv as usize {
+            let adrsmin = *(*m).dof_parentid.add(i);
+            if adrsmin + 1 > (*m).nv as i32 || adrsmin < -1 {
+                return b"Invalid model: dof_parentid out of bounds.\0".as_ptr() as *const i8;
+            }
+        }
+        for i in 0..(*m).nv as usize {
+            let adrsmin = *(*m).dof_Madr.add(i);
+            if adrsmin + 1 > (*m).nM as i32 || adrsmin < -1 {
+                return b"Invalid model: dof_Madr out of bounds.\0".as_ptr() as *const i8;
+            }
+        }
+        { // tree_bodyadr with tree_bodynum
+            let nums: *const i32 = (*m).tree_bodynum;
+            for i in 0..(*m).ntree as usize {
+                let adrsmin = *(*m).tree_bodyadr.add(i);
+                let num = *nums.add(i);
+                if num < 0 { return b"Invalid model: tree_bodynum is negative.\0".as_ptr() as *const i8; }
+                if num > 2147483647 { return b"Invalid model: tree_bodynum is too large.\0".as_ptr() as *const i8; }
+                let adrsmax = adrsmin + num;
+                if adrsmax > (*m).nbody as i32 || adrsmin < -1 {
+                    return b"Invalid model: tree_bodyadr out of bounds.\0".as_ptr() as *const i8;
+                }
+            }
+        }
+        { // tree_dofadr with tree_dofnum
+            let nums: *const i32 = (*m).tree_dofnum;
+            for i in 0..(*m).ntree as usize {
+                let adrsmin = *(*m).tree_dofadr.add(i);
+                let num = *nums.add(i);
+                if num < 0 { return b"Invalid model: tree_dofnum is negative.\0".as_ptr() as *const i8; }
+                if num > 2147483647 { return b"Invalid model: tree_dofnum is too large.\0".as_ptr() as *const i8; }
+                let adrsmax = adrsmin + num;
+                if adrsmax > (*m).nv as i32 || adrsmin < -1 {
+                    return b"Invalid model: tree_dofadr out of bounds.\0".as_ptr() as *const i8;
+                }
+            }
+        }
+        for i in 0..(*m).ngeom as usize {
+            let adrsmin = *(*m).geom_bodyid.add(i);
+            if adrsmin + 1 > (*m).nbody as i32 || adrsmin < -1 {
+                return b"Invalid model: geom_bodyid out of bounds.\0".as_ptr() as *const i8;
+            }
+        }
+        for i in 0..(*m).ngeom as usize {
+            let adrsmin = *(*m).geom_matid.add(i);
+            if adrsmin + 1 > (*m).nmat as i32 || adrsmin < -1 {
+                return b"Invalid model: geom_matid out of bounds.\0".as_ptr() as *const i8;
+            }
+        }
+        for i in 0..(*m).nsite as usize {
+            let adrsmin = *(*m).site_bodyid.add(i);
+            if adrsmin + 1 > (*m).nbody as i32 || adrsmin < -1 {
+                return b"Invalid model: site_bodyid out of bounds.\0".as_ptr() as *const i8;
+            }
+        }
+        for i in 0..(*m).nsite as usize {
+            let adrsmin = *(*m).site_matid.add(i);
+            if adrsmin + 1 > (*m).nmat as i32 || adrsmin < -1 {
+                return b"Invalid model: site_matid out of bounds.\0".as_ptr() as *const i8;
+            }
+        }
+        for i in 0..(*m).ncam as usize {
+            let adrsmin = *(*m).cam_bodyid.add(i);
+            if adrsmin + 1 > (*m).nbody as i32 || adrsmin < -1 {
+                return b"Invalid model: cam_bodyid out of bounds.\0".as_ptr() as *const i8;
+            }
+        }
+        for i in 0..(*m).ncam as usize {
+            let adrsmin = *(*m).cam_targetbodyid.add(i);
+            if adrsmin + 1 > (*m).nbody as i32 || adrsmin < -1 {
+                return b"Invalid model: cam_targetbodyid out of bounds.\0".as_ptr() as *const i8;
+            }
+        }
+        for i in 0..(*m).nlight as usize {
+            let adrsmin = *(*m).light_bodyid.add(i);
+            if adrsmin + 1 > (*m).nbody as i32 || adrsmin < -1 {
+                return b"Invalid model: light_bodyid out of bounds.\0".as_ptr() as *const i8;
+            }
+        }
+        for i in 0..(*m).nlight as usize {
+            let adrsmin = *(*m).light_targetbodyid.add(i);
+            if adrsmin + 1 > (*m).nbody as i32 || adrsmin < -1 {
+                return b"Invalid model: light_targetbodyid out of bounds.\0".as_ptr() as *const i8;
+            }
+        }
+        { // mesh_vertadr with mesh_vertnum
+            let nums: *const i32 = (*m).mesh_vertnum;
+            for i in 0..(*m).nmesh as usize {
+                let adrsmin = *(*m).mesh_vertadr.add(i);
+                let num = *nums.add(i);
+                if num < 0 { return b"Invalid model: mesh_vertnum is negative.\0".as_ptr() as *const i8; }
+                if num > 2147483647 { return b"Invalid model: mesh_vertnum is too large.\0".as_ptr() as *const i8; }
+                let adrsmax = adrsmin + num;
+                if adrsmax > (*m).nmeshvert as i32 || adrsmin < -1 {
+                    return b"Invalid model: mesh_vertadr out of bounds.\0".as_ptr() as *const i8;
+                }
+            }
+        }
+        { // mesh_normaladr with mesh_normalnum
+            let nums: *const i32 = (*m).mesh_normalnum;
+            for i in 0..(*m).nmesh as usize {
+                let adrsmin = *(*m).mesh_normaladr.add(i);
+                let num = *nums.add(i);
+                if num < 0 { return b"Invalid model: mesh_normalnum is negative.\0".as_ptr() as *const i8; }
+                if num > 2147483647 { return b"Invalid model: mesh_normalnum is too large.\0".as_ptr() as *const i8; }
+                let adrsmax = adrsmin + num;
+                if adrsmax > (*m).nmeshnormal as i32 || adrsmin < -1 {
+                    return b"Invalid model: mesh_normaladr out of bounds.\0".as_ptr() as *const i8;
+                }
+            }
+        }
+        { // mesh_texcoordadr with mesh_texcoordnum
+            let nums: *const i32 = (*m).mesh_texcoordnum;
+            for i in 0..(*m).nmesh as usize {
+                let adrsmin = *(*m).mesh_texcoordadr.add(i);
+                let num = *nums.add(i);
+                if num < 0 { return b"Invalid model: mesh_texcoordnum is negative.\0".as_ptr() as *const i8; }
+                if num > 2147483647 { return b"Invalid model: mesh_texcoordnum is too large.\0".as_ptr() as *const i8; }
+                let adrsmax = adrsmin + num;
+                if adrsmax > (*m).nmeshtexcoord as i32 || adrsmin < -1 {
+                    return b"Invalid model: mesh_texcoordadr out of bounds.\0".as_ptr() as *const i8;
+                }
+            }
+        }
+        { // mesh_faceadr with mesh_facenum
+            let nums: *const i32 = (*m).mesh_facenum;
+            for i in 0..(*m).nmesh as usize {
+                let adrsmin = *(*m).mesh_faceadr.add(i);
+                let num = *nums.add(i);
+                if num < 0 { return b"Invalid model: mesh_facenum is negative.\0".as_ptr() as *const i8; }
+                if num > 2147483647 { return b"Invalid model: mesh_facenum is too large.\0".as_ptr() as *const i8; }
+                let adrsmax = adrsmin + num;
+                if adrsmax > (*m).nmeshface as i32 || adrsmin < -1 {
+                    return b"Invalid model: mesh_faceadr out of bounds.\0".as_ptr() as *const i8;
+                }
+            }
+        }
+        { // mesh_bvhadr with mesh_bvhnum
+            let nums: *const i32 = (*m).mesh_bvhnum;
+            for i in 0..(*m).nmesh as usize {
+                let adrsmin = *(*m).mesh_bvhadr.add(i);
+                let num = *nums.add(i);
+                if num < 0 { return b"Invalid model: mesh_bvhnum is negative.\0".as_ptr() as *const i8; }
+                if num > 2147483647 { return b"Invalid model: mesh_bvhnum is too large.\0".as_ptr() as *const i8; }
+                let adrsmax = adrsmin + num;
+                if adrsmax > (*m).nbvh as i32 || adrsmin < -1 {
+                    return b"Invalid model: mesh_bvhadr out of bounds.\0".as_ptr() as *const i8;
+                }
+            }
+        }
+        for i in 0..(*m).nmesh as usize {
+            let adrsmin = *(*m).mesh_graphadr.add(i);
+            if adrsmin + 1 > (*m).nmeshgraph as i32 || adrsmin < -1 {
+                return b"Invalid model: mesh_graphadr out of bounds.\0".as_ptr() as *const i8;
+            }
+        }
+        { // mesh_polyadr with mesh_polynum
+            let nums: *const i32 = (*m).mesh_polynum;
+            for i in 0..(*m).nmesh as usize {
+                let adrsmin = *(*m).mesh_polyadr.add(i);
+                let num = *nums.add(i);
+                if num < 0 { return b"Invalid model: mesh_polynum is negative.\0".as_ptr() as *const i8; }
+                if num > 2147483647 { return b"Invalid model: mesh_polynum is too large.\0".as_ptr() as *const i8; }
+                let adrsmax = adrsmin + num;
+                if adrsmax > (*m).nmeshpoly as i32 || adrsmin < -1 {
+                    return b"Invalid model: mesh_polyadr out of bounds.\0".as_ptr() as *const i8;
+                }
+            }
+        }
+        { // mesh_polyvertadr with mesh_polyvertnum
+            let nums: *const i32 = (*m).mesh_polyvertnum;
+            for i in 0..(*m).nmeshpoly as usize {
+                let adrsmin = *(*m).mesh_polyvertadr.add(i);
+                let num = *nums.add(i);
+                if num < 0 { return b"Invalid model: mesh_polyvertnum is negative.\0".as_ptr() as *const i8; }
+                if num > 2147483647 { return b"Invalid model: mesh_polyvertnum is too large.\0".as_ptr() as *const i8; }
+                let adrsmax = adrsmin + num;
+                if adrsmax > (*m).nmeshpolyvert as i32 || adrsmin < -1 {
+                    return b"Invalid model: mesh_polyvertadr out of bounds.\0".as_ptr() as *const i8;
+                }
+            }
+        }
+        { // mesh_polymapadr with mesh_polymapnum
+            let nums: *const i32 = (*m).mesh_polymapnum;
+            for i in 0..(*m).nmeshvert as usize {
+                let adrsmin = *(*m).mesh_polymapadr.add(i);
+                let num = *nums.add(i);
+                if num < 0 { return b"Invalid model: mesh_polymapnum is negative.\0".as_ptr() as *const i8; }
+                if num > 2147483647 { return b"Invalid model: mesh_polymapnum is too large.\0".as_ptr() as *const i8; }
+                let adrsmax = adrsmin + num;
+                if adrsmax > (*m).nmeshpolymap as i32 || adrsmin < -1 {
+                    return b"Invalid model: mesh_polymapadr out of bounds.\0".as_ptr() as *const i8;
+                }
+            }
+        }
+        { // flex_vertadr with flex_vertnum
+            let nums: *const i32 = (*m).flex_vertnum;
+            for i in 0..(*m).nflex as usize {
+                let adrsmin = *(*m).flex_vertadr.add(i);
+                let num = *nums.add(i);
+                if num < 0 { return b"Invalid model: flex_vertnum is negative.\0".as_ptr() as *const i8; }
+                if num > 2147483647 { return b"Invalid model: flex_vertnum is too large.\0".as_ptr() as *const i8; }
+                let adrsmax = adrsmin + num;
+                if adrsmax > (*m).nflexvert as i32 || adrsmin < -1 {
+                    return b"Invalid model: flex_vertadr out of bounds.\0".as_ptr() as *const i8;
+                }
+            }
+        }
+        { // flex_edgeadr with flex_edgenum
+            let nums: *const i32 = (*m).flex_edgenum;
+            for i in 0..(*m).nflex as usize {
+                let adrsmin = *(*m).flex_edgeadr.add(i);
+                let num = *nums.add(i);
+                if num < 0 { return b"Invalid model: flex_edgenum is negative.\0".as_ptr() as *const i8; }
+                if num > 2147483647 { return b"Invalid model: flex_edgenum is too large.\0".as_ptr() as *const i8; }
+                let adrsmax = adrsmin + num;
+                if adrsmax > (*m).nflexedge as i32 || adrsmin < -1 {
+                    return b"Invalid model: flex_edgeadr out of bounds.\0".as_ptr() as *const i8;
+                }
+            }
+        }
+        { // flex_elemadr with flex_elemnum
+            let nums: *const i32 = (*m).flex_elemnum;
+            for i in 0..(*m).nflex as usize {
+                let adrsmin = *(*m).flex_elemadr.add(i);
+                let num = *nums.add(i);
+                if num < 0 { return b"Invalid model: flex_elemnum is negative.\0".as_ptr() as *const i8; }
+                if num > 2147483647 { return b"Invalid model: flex_elemnum is too large.\0".as_ptr() as *const i8; }
+                let adrsmax = adrsmin + num;
+                if adrsmax > (*m).nflexelem as i32 || adrsmin < -1 {
+                    return b"Invalid model: flex_elemadr out of bounds.\0".as_ptr() as *const i8;
+                }
+            }
+        }
+        { // flex_evpairadr with flex_evpairnum
+            let nums: *const i32 = (*m).flex_evpairnum;
+            for i in 0..(*m).nflex as usize {
+                let adrsmin = *(*m).flex_evpairadr.add(i);
+                let num = *nums.add(i);
+                if num < 0 { return b"Invalid model: flex_evpairnum is negative.\0".as_ptr() as *const i8; }
+                if num > 2147483647 { return b"Invalid model: flex_evpairnum is too large.\0".as_ptr() as *const i8; }
+                let adrsmax = adrsmin + num;
+                if adrsmax > (*m).nflexevpair as i32 || adrsmin < -1 {
+                    return b"Invalid model: flex_evpairadr out of bounds.\0".as_ptr() as *const i8;
+                }
+            }
+        }
+        for i in 0..(*m).nflex as usize {
+            let adrsmin = *(*m).flex_texcoordadr.add(i);
+            if adrsmin + 1 > (*m).nflextexcoord as i32 || adrsmin < -1 {
+                return b"Invalid model: flex_texcoordadr out of bounds.\0".as_ptr() as *const i8;
+            }
+        }
+        for i in 0..(*m).nflex as usize {
+            let adrsmin = *(*m).flex_elemdataadr.add(i);
+            if adrsmin + 1 > (*m).nflexelemdata as i32 || adrsmin < -1 {
+                return b"Invalid model: flex_elemdataadr out of bounds.\0".as_ptr() as *const i8;
+            }
+        }
+        for i in 0..(*m).nflex as usize {
+            let adrsmin = *(*m).flex_elemedgeadr.add(i);
+            if adrsmin + 1 > (*m).nflexelemedge as i32 || adrsmin < -1 {
+                return b"Invalid model: flex_elemedgeadr out of bounds.\0".as_ptr() as *const i8;
+            }
+        }
+        for i in 0..(*m).nflex as usize {
+            let adrsmin = *(*m).flex_shelldataadr.add(i);
+            if adrsmin + 1 > (*m).nflexshelldata as i32 || adrsmin < -1 {
+                return b"Invalid model: flex_shelldataadr out of bounds.\0".as_ptr() as *const i8;
+            }
+        }
+        for i in 0..(*m).nflexelemdata as usize {
+            let adrsmin = *(*m).flex_elem.add(i);
+            if adrsmin + 1 > (*m).nflexvert as i32 || adrsmin < -1 {
+                return b"Invalid model: flex_elem out of bounds.\0".as_ptr() as *const i8;
+            }
+        }
+        for i in 0..(*m).nflexelemedge as usize {
+            let adrsmin = *(*m).flex_elemedge.add(i);
+            if adrsmin + 1 > (*m).nflexedge as i32 || adrsmin < -1 {
+                return b"Invalid model: flex_elemedge out of bounds.\0".as_ptr() as *const i8;
+            }
+        }
+        for i in 0..(*m).nflexshelldata as usize {
+            let adrsmin = *(*m).flex_shell.add(i);
+            if adrsmin + 1 > (*m).nflexvert as i32 || adrsmin < -1 {
+                return b"Invalid model: flex_shell out of bounds.\0".as_ptr() as *const i8;
+            }
+        }
+        { // flex_bvhadr with flex_bvhnum
+            let nums: *const i32 = (*m).flex_bvhnum;
+            for i in 0..(*m).nflex as usize {
+                let adrsmin = *(*m).flex_bvhadr.add(i);
+                let num = *nums.add(i);
+                if num < 0 { return b"Invalid model: flex_bvhnum is negative.\0".as_ptr() as *const i8; }
+                if num > 2147483647 { return b"Invalid model: flex_bvhnum is too large.\0".as_ptr() as *const i8; }
+                let adrsmax = adrsmin + num;
+                if adrsmax > (*m).nbvh as i32 || adrsmin < -1 {
+                    return b"Invalid model: flex_bvhadr out of bounds.\0".as_ptr() as *const i8;
+                }
+            }
+        }
+        for i in 0..(*m).nskin as usize {
+            let adrsmin = *(*m).skin_matid.add(i);
+            if adrsmin + 1 > (*m).nmat as i32 || adrsmin < -1 {
+                return b"Invalid model: skin_matid out of bounds.\0".as_ptr() as *const i8;
+            }
+        }
+        { // skin_vertadr with skin_vertnum
+            let nums: *const i32 = (*m).skin_vertnum;
+            for i in 0..(*m).nskin as usize {
+                let adrsmin = *(*m).skin_vertadr.add(i);
+                let num = *nums.add(i);
+                if num < 0 { return b"Invalid model: skin_vertnum is negative.\0".as_ptr() as *const i8; }
+                if num > 2147483647 { return b"Invalid model: skin_vertnum is too large.\0".as_ptr() as *const i8; }
+                let adrsmax = adrsmin + num;
+                if adrsmax > (*m).nskinvert as i32 || adrsmin < -1 {
+                    return b"Invalid model: skin_vertadr out of bounds.\0".as_ptr() as *const i8;
+                }
+            }
+        }
+        for i in 0..(*m).nskin as usize {
+            let adrsmin = *(*m).skin_texcoordadr.add(i);
+            if adrsmin + 1 > (*m).nskintexvert as i32 || adrsmin < -1 {
+                return b"Invalid model: skin_texcoordadr out of bounds.\0".as_ptr() as *const i8;
+            }
+        }
+        { // skin_faceadr with skin_facenum
+            let nums: *const i32 = (*m).skin_facenum;
+            for i in 0..(*m).nskin as usize {
+                let adrsmin = *(*m).skin_faceadr.add(i);
+                let num = *nums.add(i);
+                if num < 0 { return b"Invalid model: skin_facenum is negative.\0".as_ptr() as *const i8; }
+                if num > 2147483647 { return b"Invalid model: skin_facenum is too large.\0".as_ptr() as *const i8; }
+                let adrsmax = adrsmin + num;
+                if adrsmax > (*m).nskinface as i32 || adrsmin < -1 {
+                    return b"Invalid model: skin_faceadr out of bounds.\0".as_ptr() as *const i8;
+                }
+            }
+        }
+        { // skin_boneadr with skin_bonenum
+            let nums: *const i32 = (*m).skin_bonenum;
+            for i in 0..(*m).nskin as usize {
+                let adrsmin = *(*m).skin_boneadr.add(i);
+                let num = *nums.add(i);
+                if num < 0 { return b"Invalid model: skin_bonenum is negative.\0".as_ptr() as *const i8; }
+                if num > 2147483647 { return b"Invalid model: skin_bonenum is too large.\0".as_ptr() as *const i8; }
+                let adrsmax = adrsmin + num;
+                if adrsmax > (*m).nskinbone as i32 || adrsmin < -1 {
+                    return b"Invalid model: skin_boneadr out of bounds.\0".as_ptr() as *const i8;
+                }
+            }
+        }
+        { // skin_bonevertadr with skin_bonevertnum
+            let nums: *const i32 = (*m).skin_bonevertnum;
+            for i in 0..(*m).nskinbone as usize {
+                let adrsmin = *(*m).skin_bonevertadr.add(i);
+                let num = *nums.add(i);
+                if num < 0 { return b"Invalid model: skin_bonevertnum is negative.\0".as_ptr() as *const i8; }
+                if num > 2147483647 { return b"Invalid model: skin_bonevertnum is too large.\0".as_ptr() as *const i8; }
+                let adrsmax = adrsmin + num;
+                if adrsmax > (*m).nskinbonevert as i32 || adrsmin < -1 {
+                    return b"Invalid model: skin_bonevertadr out of bounds.\0".as_ptr() as *const i8;
+                }
+            }
+        }
+        for i in 0..(*m).nskinbone as usize {
+            let adrsmin = *(*m).skin_bonebodyid.add(i);
+            if adrsmin + 1 > (*m).nbody as i32 || adrsmin < -1 {
+                return b"Invalid model: skin_bonebodyid out of bounds.\0".as_ptr() as *const i8;
+            }
+        }
+        for i in 0..(*m).nskinbonevert as usize {
+            let adrsmin = *(*m).skin_bonevertid.add(i);
+            if adrsmin + 1 > (*m).nskinvert as i32 || adrsmin < -1 {
+                return b"Invalid model: skin_bonevertid out of bounds.\0".as_ptr() as *const i8;
+            }
+        }
+        for i in 0..(*m).npair as usize {
+            let adrsmin = *(*m).pair_geom1.add(i);
+            if adrsmin + 1 > (*m).ngeom as i32 || adrsmin < -1 {
+                return b"Invalid model: pair_geom1 out of bounds.\0".as_ptr() as *const i8;
+            }
+        }
+        for i in 0..(*m).npair as usize {
+            let adrsmin = *(*m).pair_geom2.add(i);
+            if adrsmin + 1 > (*m).ngeom as i32 || adrsmin < -1 {
+                return b"Invalid model: pair_geom2 out of bounds.\0".as_ptr() as *const i8;
+            }
+        }
+        for i in 0..(*m).nu as usize {
+            let adrsmin = *(*m).actuator_plugin.add(i);
+            if adrsmin + 1 > (*m).nplugin as i32 || adrsmin < -1 {
+                return b"Invalid model: actuator_plugin out of bounds.\0".as_ptr() as *const i8;
+            }
+        }
+        { // actuator_actadr with actuator_actnum
+            let nums: *const i32 = (*m).actuator_actnum;
+            for i in 0..(*m).nu as usize {
+                let adrsmin = *(*m).actuator_actadr.add(i);
+                let num = *nums.add(i);
+                if num < 0 { return b"Invalid model: actuator_actnum is negative.\0".as_ptr() as *const i8; }
+                if num > 2147483647 { return b"Invalid model: actuator_actnum is too large.\0".as_ptr() as *const i8; }
+                let adrsmax = adrsmin + num;
+                if adrsmax > (*m).na as i32 || adrsmin < -1 {
+                    return b"Invalid model: actuator_actadr out of bounds.\0".as_ptr() as *const i8;
+                }
+            }
+        }
+        for i in 0..(*m).nsensor as usize {
+            let adrsmin = *(*m).sensor_plugin.add(i);
+            if adrsmin + 1 > (*m).nplugin as i32 || adrsmin < -1 {
+                return b"Invalid model: sensor_plugin out of bounds.\0".as_ptr() as *const i8;
+            }
+        }
+        { // plugin_stateadr with plugin_statenum
+            let nums: *const i32 = (*m).plugin_statenum;
+            for i in 0..(*m).nplugin as usize {
+                let adrsmin = *(*m).plugin_stateadr.add(i);
+                let num = *nums.add(i);
+                if num < 0 { return b"Invalid model: plugin_statenum is negative.\0".as_ptr() as *const i8; }
+                if num > 2147483647 { return b"Invalid model: plugin_statenum is too large.\0".as_ptr() as *const i8; }
+                let adrsmax = adrsmin + num;
+                if adrsmax > (*m).npluginstate as i32 || adrsmin < -1 {
+                    return b"Invalid model: plugin_stateadr out of bounds.\0".as_ptr() as *const i8;
+                }
+            }
+        }
+        for i in 0..(*m).nplugin as usize {
+            let adrsmin = *(*m).plugin_attradr.add(i);
+            if adrsmin + 1 > (*m).npluginattr as i32 || adrsmin < -1 {
+                return b"Invalid model: plugin_attradr out of bounds.\0".as_ptr() as *const i8;
+            }
+        }
+        { // tendon_adr with tendon_num
+            let nums: *const i32 = (*m).tendon_num;
+            for i in 0..(*m).ntendon as usize {
+                let adrsmin = *(*m).tendon_adr.add(i);
+                let num = *nums.add(i);
+                if num < 0 { return b"Invalid model: tendon_num is negative.\0".as_ptr() as *const i8; }
+                if num > 2147483647 { return b"Invalid model: tendon_num is too large.\0".as_ptr() as *const i8; }
+                let adrsmax = adrsmin + num;
+                if adrsmax > (*m).nwrap as i32 || adrsmin < -1 {
+                    return b"Invalid model: tendon_adr out of bounds.\0".as_ptr() as *const i8;
+                }
+            }
+        }
+        for i in 0..(*m).ntendon as usize {
+            let adrsmin = *(*m).tendon_matid.add(i);
+            if adrsmin + 1 > (*m).nmat as i32 || adrsmin < -1 {
+                return b"Invalid model: tendon_matid out of bounds.\0".as_ptr() as *const i8;
+            }
+        }
+        { // numeric_adr with numeric_size
+            let nums: *const i32 = (*m).numeric_size;
+            for i in 0..(*m).nnumeric as usize {
+                let adrsmin = *(*m).numeric_adr.add(i);
+                let num = *nums.add(i);
+                if num < 0 { return b"Invalid model: numeric_size is negative.\0".as_ptr() as *const i8; }
+                if num > 2147483647 { return b"Invalid model: numeric_size is too large.\0".as_ptr() as *const i8; }
+                let adrsmax = adrsmin + num;
+                if adrsmax > (*m).nnumericdata as i32 || adrsmin < -1 {
+                    return b"Invalid model: numeric_adr out of bounds.\0".as_ptr() as *const i8;
+                }
+            }
+        }
+        { // text_adr with text_size
+            let nums: *const i32 = (*m).text_size;
+            for i in 0..(*m).ntext as usize {
+                let adrsmin = *(*m).text_adr.add(i);
+                let num = *nums.add(i);
+                if num < 0 { return b"Invalid model: text_size is negative.\0".as_ptr() as *const i8; }
+                if num > 2147483647 { return b"Invalid model: text_size is too large.\0".as_ptr() as *const i8; }
+                let adrsmax = adrsmin + num;
+                if adrsmax > (*m).ntextdata as i32 || adrsmin < -1 {
+                    return b"Invalid model: text_adr out of bounds.\0".as_ptr() as *const i8;
+                }
+            }
+        }
+        { // tuple_adr with tuple_size
+            let nums: *const i32 = (*m).tuple_size;
+            for i in 0..(*m).ntuple as usize {
+                let adrsmin = *(*m).tuple_adr.add(i);
+                let num = *nums.add(i);
+                if num < 0 { return b"Invalid model: tuple_size is negative.\0".as_ptr() as *const i8; }
+                if num > 2147483647 { return b"Invalid model: tuple_size is too large.\0".as_ptr() as *const i8; }
+                let adrsmax = adrsmin + num;
+                if adrsmax > (*m).ntupledata as i32 || adrsmin < -1 {
+                    return b"Invalid model: tuple_adr out of bounds.\0".as_ptr() as *const i8;
+                }
+            }
+        }
+        for i in 0..(*m).nbody as usize {
+            let adrsmin = *(*m).name_bodyadr.add(i);
+            if adrsmin + 1 > (*m).nnames as i32 || adrsmin < -1 {
+                return b"Invalid model: name_bodyadr out of bounds.\0".as_ptr() as *const i8;
+            }
+        }
+        for i in 0..(*m).njnt as usize {
+            let adrsmin = *(*m).name_jntadr.add(i);
+            if adrsmin + 1 > (*m).nnames as i32 || adrsmin < -1 {
+                return b"Invalid model: name_jntadr out of bounds.\0".as_ptr() as *const i8;
+            }
+        }
+        for i in 0..(*m).ngeom as usize {
+            let adrsmin = *(*m).name_geomadr.add(i);
+            if adrsmin + 1 > (*m).nnames as i32 || adrsmin < -1 {
+                return b"Invalid model: name_geomadr out of bounds.\0".as_ptr() as *const i8;
+            }
+        }
+        for i in 0..(*m).nsite as usize {
+            let adrsmin = *(*m).name_siteadr.add(i);
+            if adrsmin + 1 > (*m).nnames as i32 || adrsmin < -1 {
+                return b"Invalid model: name_siteadr out of bounds.\0".as_ptr() as *const i8;
+            }
+        }
+        for i in 0..(*m).ncam as usize {
+            let adrsmin = *(*m).name_camadr.add(i);
+            if adrsmin + 1 > (*m).nnames as i32 || adrsmin < -1 {
+                return b"Invalid model: name_camadr out of bounds.\0".as_ptr() as *const i8;
+            }
+        }
+        for i in 0..(*m).nlight as usize {
+            let adrsmin = *(*m).name_lightadr.add(i);
+            if adrsmin + 1 > (*m).nnames as i32 || adrsmin < -1 {
+                return b"Invalid model: name_lightadr out of bounds.\0".as_ptr() as *const i8;
+            }
+        }
+        for i in 0..(*m).nmesh as usize {
+            let adrsmin = *(*m).name_meshadr.add(i);
+            if adrsmin + 1 > (*m).nnames as i32 || adrsmin < -1 {
+                return b"Invalid model: name_meshadr out of bounds.\0".as_ptr() as *const i8;
+            }
+        }
+        for i in 0..(*m).nskin as usize {
+            let adrsmin = *(*m).name_skinadr.add(i);
+            if adrsmin + 1 > (*m).nnames as i32 || adrsmin < -1 {
+                return b"Invalid model: name_skinadr out of bounds.\0".as_ptr() as *const i8;
+            }
+        }
+        for i in 0..(*m).nhfield as usize {
+            let adrsmin = *(*m).name_hfieldadr.add(i);
+            if adrsmin + 1 > (*m).nnames as i32 || adrsmin < -1 {
+                return b"Invalid model: name_hfieldadr out of bounds.\0".as_ptr() as *const i8;
+            }
+        }
+        for i in 0..(*m).ntex as usize {
+            let adrsmin = *(*m).name_texadr.add(i);
+            if adrsmin + 1 > (*m).nnames as i32 || adrsmin < -1 {
+                return b"Invalid model: name_texadr out of bounds.\0".as_ptr() as *const i8;
+            }
+        }
+        for i in 0..(*m).nmat as usize {
+            let adrsmin = *(*m).name_matadr.add(i);
+            if adrsmin + 1 > (*m).nnames as i32 || adrsmin < -1 {
+                return b"Invalid model: name_matadr out of bounds.\0".as_ptr() as *const i8;
+            }
+        }
+        for i in 0..(*m).npair as usize {
+            let adrsmin = *(*m).name_pairadr.add(i);
+            if adrsmin + 1 > (*m).nnames as i32 || adrsmin < -1 {
+                return b"Invalid model: name_pairadr out of bounds.\0".as_ptr() as *const i8;
+            }
+        }
+        for i in 0..(*m).nexclude as usize {
+            let adrsmin = *(*m).name_excludeadr.add(i);
+            if adrsmin + 1 > (*m).nnames as i32 || adrsmin < -1 {
+                return b"Invalid model: name_excludeadr out of bounds.\0".as_ptr() as *const i8;
+            }
+        }
+        for i in 0..(*m).neq as usize {
+            let adrsmin = *(*m).name_eqadr.add(i);
+            if adrsmin + 1 > (*m).nnames as i32 || adrsmin < -1 {
+                return b"Invalid model: name_eqadr out of bounds.\0".as_ptr() as *const i8;
+            }
+        }
+        for i in 0..(*m).ntendon as usize {
+            let adrsmin = *(*m).name_tendonadr.add(i);
+            if adrsmin + 1 > (*m).nnames as i32 || adrsmin < -1 {
+                return b"Invalid model: name_tendonadr out of bounds.\0".as_ptr() as *const i8;
+            }
+        }
+        for i in 0..(*m).nu as usize {
+            let adrsmin = *(*m).name_actuatoradr.add(i);
+            if adrsmin + 1 > (*m).nnames as i32 || adrsmin < -1 {
+                return b"Invalid model: name_actuatoradr out of bounds.\0".as_ptr() as *const i8;
+            }
+        }
+        for i in 0..(*m).nsensor as usize {
+            let adrsmin = *(*m).name_sensoradr.add(i);
+            if adrsmin + 1 > (*m).nnames as i32 || adrsmin < -1 {
+                return b"Invalid model: name_sensoradr out of bounds.\0".as_ptr() as *const i8;
+            }
+        }
+        for i in 0..(*m).nnumeric as usize {
+            let adrsmin = *(*m).name_numericadr.add(i);
+            if adrsmin + 1 > (*m).nnames as i32 || adrsmin < -1 {
+                return b"Invalid model: name_numericadr out of bounds.\0".as_ptr() as *const i8;
+            }
+        }
+        for i in 0..(*m).ntext as usize {
+            let adrsmin = *(*m).name_textadr.add(i);
+            if adrsmin + 1 > (*m).nnames as i32 || adrsmin < -1 {
+                return b"Invalid model: name_textadr out of bounds.\0".as_ptr() as *const i8;
+            }
+        }
+        for i in 0..(*m).ntuple as usize {
+            let adrsmin = *(*m).name_tupleadr.add(i);
+            if adrsmin + 1 > (*m).nnames as i32 || adrsmin < -1 {
+                return b"Invalid model: name_tupleadr out of bounds.\0".as_ptr() as *const i8;
+            }
+        }
+        for i in 0..(*m).nkey as usize {
+            let adrsmin = *(*m).name_keyadr.add(i);
+            if adrsmin + 1 > (*m).nnames as i32 || adrsmin < -1 {
+                return b"Invalid model: name_keyadr out of bounds.\0".as_ptr() as *const i8;
+            }
+        }
+        for i in 0..(*m).nhfield as usize {
+            let adrsmin = *(*m).hfield_pathadr.add(i);
+            if adrsmin + 1 > (*m).npaths as i32 || adrsmin < -1 {
+                return b"Invalid model: hfield_pathadr out of bounds.\0".as_ptr() as *const i8;
+            }
+        }
+        for i in 0..(*m).nmesh as usize {
+            let adrsmin = *(*m).mesh_pathadr.add(i);
+            if adrsmin + 1 > (*m).npaths as i32 || adrsmin < -1 {
+                return b"Invalid model: mesh_pathadr out of bounds.\0".as_ptr() as *const i8;
+            }
+        }
+        for i in 0..(*m).nskin as usize {
+            let adrsmin = *(*m).skin_pathadr.add(i);
+            if adrsmin + 1 > (*m).npaths as i32 || adrsmin < -1 {
+                return b"Invalid model: skin_pathadr out of bounds.\0".as_ptr() as *const i8;
+            }
+        }
+        for i in 0..(*m).ntex as usize {
+            let adrsmin = *(*m).tex_pathadr.add(i);
+            if adrsmin + 1 > (*m).npaths as i32 || adrsmin < -1 {
+                return b"Invalid model: tex_pathadr out of bounds.\0".as_ptr() as *const i8;
+            }
+        }
+
+        // Special logic: body_parentid
+        for i in 1..(*m).nbody as usize {
+            if *(*m).body_parentid.add(i) >= i as i32 {
+                return b"Invalid model: bad body_parentid.\0".as_ptr() as *const i8;
+            }
+        }
+        for i in 0..(*m).nbody as usize {
+            if *(*m).body_rootid.add(i) > i as i32 {
+                return b"Invalid model: bad body_rootid.\0".as_ptr() as *const i8;
+            }
+            if *(*m).body_weldid.add(i) > i as i32 {
+                return b"Invalid model: bad body_weldid.\0".as_ptr() as *const i8;
+            }
+        }
+        for i in 0..(*m).njnt as usize {
+            if *(*m).jnt_type.add(i) >= 4 || *(*m).jnt_type.add(i) < 0 {
+                return b"Invalid model: jnt_type out of bounds.\0".as_ptr() as *const i8;
+            }
+        }
+        for i in 0..(*m).nv as usize {
+            if *(*m).dof_parentid.add(i) >= i as i32 {
+                return b"Invalid model: bad dof_parentid.\0".as_ptr() as *const i8;
+            }
+        }
+        for i in 0..(*m).ngeom as usize {
+            if *(*m).geom_condim.add(i) > 6 || *(*m).geom_condim.add(i) < 0 {
+                return b"Invalid model: geom_condim out of bounds.\0".as_ptr() as *const i8;
+            }
+        }
+
+        std::ptr::null()
+    }
 }
 
 /// C: mj_makeDofDofSparse (engine/engine_io.h:90)
