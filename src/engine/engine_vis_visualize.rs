@@ -3230,7 +3230,209 @@ pub fn add_auto_connect_geoms(m: *const mjModel, d: *mut mjData, vopt: *const mj
 /// Calls: acquireGeom, addConnector, f2f, mju_addScl3, mju_camIntrinsics, mju_camPixelRay, mju_copy3, mju_isZero, mju_n2f, mju_raydataSize, releaseGeom
 #[allow(unused_variables, non_snake_case)]
 pub fn add_rangefinder_geoms(m: *const mjModel, d: *mut mjData, vopt: *const mjvOption, scn: *mut mjvScene) {
-    todo!() // addRangefinderGeoms
+    const MJ_VIS_RANGEFINDER: usize = 8;
+    const MJ_NSENS: usize = 3;
+    const MJ_NRAYDATA: usize = 6;
+    const MJ_RAYDATA_SIZE: [i32; 6] = [1, 3, 3, 3, 3, 1];
+    const MJ_RAYDATA_DIST: usize = 0;
+    const MJ_RAYDATA_POINT: usize = 3;
+    const MJ_RAYDATA_NORMAL: usize = 4;
+    const MJ_SENS_RANGEFINDER: i32 = 7;
+    const MJ_SENS_GEOMFROMTO: i32 = 41;
+    const MJ_OBJ_SITE: i32 = 6;
+    const MJ_OBJ_CAMERA: i32 = 7;
+    const MJ_OBJ_SENSOR: i32 = 20;
+    const MJ_CAT_DECOR: i32 = 4;
+    const MJ_GEOM_LINE: i32 = 103;
+    const MJ_GEOM_SPHERE: i32 = 2;
+    const MJ_GEOM_ARROW1: i32 = 101;
+    static IDENTITY: [f64; 9] = [1.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 1.0];
+
+    // SAFETY: m, d, vopt, scn are valid pointers (caller contract)
+    unsafe {
+        if (*vopt).flags[MJ_VIS_RANGEFINDER] == 0 {
+            return;
+        }
+
+        let scl = (*m).stat.meansize as f32;
+        // vis.scale struct: framelength at offset 48 (index 12), framewidth at offset 52 (index 13)
+        let scale_data = &(*m).vis.scale;
+        let framelength_f32 = f32::from_ne_bytes([scale_data[48], scale_data[49], scale_data[50], scale_data[51]]);
+        let framewidth_f32 = f32::from_ne_bytes([scale_data[52], scale_data[53], scale_data[54], scale_data[55]]);
+        let framewidth: f64 = (framewidth_f32 * scl) as f64;
+        let framelength: f64 = (framelength_f32 * scl) as f64;
+
+        // vis.rgba.rangefinder at offset 18*16 = 288 (float[4])
+        let rgba_data = &(*m).vis.rgba._data;
+        let rgba_rangefinder = rgba_data.as_ptr().add(288) as *const f32;
+
+        for i in 0..(*m).nsensor as usize {
+            if *(*m).sensor_type.add(i) == MJ_SENS_RANGEFINDER {
+                let objid = *(*m).sensor_objid.add(i) as usize;
+                let adr = *(*m).sensor_adr.add(i) as usize;
+
+                // get dataspec and compute field offsets
+                let dataspec = *(*m).sensor_intprm.add(i * MJ_NSENS);
+                let size = crate::engine::engine_support::mju_raydata_size(dataspec);
+                let mut offset = [0i32; 6];
+                let mut increment: i32 = 0;
+                for j in 0..MJ_NRAYDATA {
+                    offset[j] = increment;
+                    if (dataspec & (1 << j)) != 0 {
+                        increment += MJ_RAYDATA_SIZE[j];
+                    }
+                }
+
+                // site-attached rangefinder
+                if *(*m).sensor_objtype.add(i) == MJ_OBJ_SITE {
+                    let ptr = (*d).sensordata.add(adr);
+
+                    // get distance (if present)
+                    let mut dist: f64 = -1.0;
+                    if (dataspec & (1 << MJ_RAYDATA_DIST)) != 0 {
+                        dist = *ptr.add(offset[MJ_RAYDATA_DIST] as usize);
+                    }
+
+                    // get point and draw line if dist is valid
+                    let mut point = [0.0f64; 3];
+                    if dist >= 0.0 {
+                        let origin = (*d).site_xpos.add(3 * objid);
+                        point[0] = *origin.add(0) + *(*d).site_xmat.add(9 * objid + 2) * dist;
+                        point[1] = *origin.add(1) + *(*d).site_xmat.add(9 * objid + 5) * dist;
+                        point[2] = *origin.add(2) + *(*d).site_xmat.add(9 * objid + 8) * dist;
+                        add_connector(scn, MJ_GEOM_LINE, 3.0, origin, point.as_ptr(),
+                                      rgba_rangefinder, i as i32, MJ_CAT_DECOR, MJ_OBJ_SENSOR);
+                    }
+
+                    // draw point if present and non-zero
+                    if (dataspec & (1 << MJ_RAYDATA_POINT)) != 0 {
+                        let point_data = ptr.add(offset[MJ_RAYDATA_POINT] as usize);
+                        if *point_data.add(0) != 0.0 || *point_data.add(1) != 0.0 || *point_data.add(2) != 0.0 {
+                            crate::engine::engine_util_blas::mju_copy3(point.as_mut_ptr(), point_data);
+                            let thisgeom = acquire_geom(scn, i as i32, MJ_CAT_DECOR, MJ_OBJ_SENSOR);
+                            if !thisgeom.is_null() {
+                                (*thisgeom).r#type = MJ_GEOM_SPHERE;
+                                (*thisgeom).size[0] = 1.5 * framewidth_f32 * scl;
+                                (*thisgeom).size[1] = (*thisgeom).size[0];
+                                (*thisgeom).size[2] = (*thisgeom).size[0];
+                                crate::engine::engine_util_misc::mju_n2f((*thisgeom).pos.as_mut_ptr(), point.as_ptr(), 3);
+                                crate::engine::engine_util_misc::mju_n2f((*thisgeom).mat.as_mut_ptr(), IDENTITY.as_ptr(), 9);
+                                f2f((*thisgeom).rgba.as_mut_ptr(), rgba_rangefinder, 4);
+                                let mut gp = thisgeom;
+                                release_geom(&mut gp, scn);
+                            }
+                        }
+                    }
+
+                    // draw normal if present and point is valid
+                    let valid_point = dist >= 0.0 || point[0] != 0.0 || point[1] != 0.0 || point[2] != 0.0;
+                    if valid_point && (dataspec & (1 << MJ_RAYDATA_NORMAL)) != 0 {
+                        let normal_ptr = ptr.add(offset[MJ_RAYDATA_NORMAL] as usize);
+                        let mut to = [0.0f64; 3];
+                        crate::engine::engine_util_blas::mju_add_to_scl3(to.as_mut_ptr(), point.as_ptr(), 1.0);
+                        to[0] = point[0] + *normal_ptr.add(0) * 2.0 * framelength;
+                        to[1] = point[1] + *normal_ptr.add(1) * 2.0 * framelength;
+                        to[2] = point[2] + *normal_ptr.add(2) * 2.0 * framelength;
+                        add_connector(scn, MJ_GEOM_ARROW1, framewidth, point.as_ptr(), to.as_ptr(),
+                                      rgba_rangefinder, i as i32, MJ_CAT_DECOR, MJ_OBJ_SENSOR);
+                    }
+                }
+                // camera-attached rangefinder
+                else if *(*m).sensor_objtype.add(i) == MJ_OBJ_CAMERA {
+                    let width = *(*m).cam_resolution.add(2 * objid);
+                    let height = *(*m).cam_resolution.add(2 * objid + 1);
+                    let cam_xpos = (*d).cam_xpos.add(3 * objid);
+                    let cam_xmat = (*d).cam_xmat.add(9 * objid);
+                    let projection = *(*m).cam_projection.add(objid);
+
+                    // compute focal length in pixels
+                    let mut fx: f64 = 0.0;
+                    let mut fy: f64 = 0.0;
+                    let mut cx: f64 = 0.0;
+                    let mut cy: f64 = 0.0;
+                    let mut ortho_extent: f64 = 0.0;
+                    crate::engine::engine_support::mju_cam_intrinsics(
+                        m, objid as i32, &mut fx, &mut fy, &mut cx, &mut cy, &mut ortho_extent);
+
+                    // draw for each pixel
+                    for row in 0..height {
+                        for col in 0..width {
+                            let idx = (row * width + col) as usize;
+                            let ptr = (*d).sensordata.add(adr + idx * size as usize);
+
+                            // get distance
+                            let mut dist: f64 = -1.0;
+                            if (dataspec & (1 << MJ_RAYDATA_DIST)) != 0 {
+                                dist = *ptr.add(offset[MJ_RAYDATA_DIST] as usize);
+                            }
+
+                            // compute ray origin and direction
+                            let mut origin = [0.0f64; 3];
+                            let mut direction = [0.0f64; 3];
+                            crate::engine::engine_util_misc::mju_cam_pixel_ray(
+                                origin.as_mut_ptr(), direction.as_mut_ptr(),
+                                cam_xpos, cam_xmat, col, row, fx, fy, cx, cy, projection, ortho_extent);
+
+                            // get point and draw line
+                            let mut point = [0.0f64; 3];
+                            if dist >= 0.0 {
+                                crate::engine::engine_util_blas::mju_add_to_scl3(point.as_mut_ptr(), origin.as_ptr(), 1.0);
+                                point[0] = origin[0] + direction[0] * dist;
+                                point[1] = origin[1] + direction[1] * dist;
+                                point[2] = origin[2] + direction[2] * dist;
+                                add_connector(scn, MJ_GEOM_LINE, 3.0, origin.as_ptr(), point.as_ptr(),
+                                              rgba_rangefinder, i as i32, MJ_CAT_DECOR, MJ_OBJ_SENSOR);
+                            }
+
+                            // draw point if present
+                            if (dataspec & (1 << MJ_RAYDATA_POINT)) != 0 {
+                                let point_data = ptr.add(offset[MJ_RAYDATA_POINT] as usize);
+                                if *point_data.add(0) != 0.0 || *point_data.add(1) != 0.0 || *point_data.add(2) != 0.0 {
+                                    crate::engine::engine_util_blas::mju_copy3(point.as_mut_ptr(), point_data);
+                                    let thisgeom = acquire_geom(scn, i as i32, MJ_CAT_DECOR, MJ_OBJ_SENSOR);
+                                    if !thisgeom.is_null() {
+                                        (*thisgeom).r#type = MJ_GEOM_SPHERE;
+                                        (*thisgeom).size[0] = 1.3 * framewidth_f32 * scl;
+                                        (*thisgeom).size[1] = (*thisgeom).size[0];
+                                        (*thisgeom).size[2] = (*thisgeom).size[0];
+                                        crate::engine::engine_util_misc::mju_n2f((*thisgeom).pos.as_mut_ptr(), point.as_ptr(), 3);
+                                        crate::engine::engine_util_misc::mju_n2f((*thisgeom).mat.as_mut_ptr(), IDENTITY.as_ptr(), 9);
+                                        f2f((*thisgeom).rgba.as_mut_ptr(), rgba_rangefinder, 4);
+                                        let mut gp = thisgeom;
+                                        release_geom(&mut gp, scn);
+                                    }
+                                }
+                            }
+
+                            // draw normal
+                            let valid_point = dist >= 0.0 || point[0] != 0.0 || point[1] != 0.0 || point[2] != 0.0;
+                            if valid_point && (dataspec & (1 << MJ_RAYDATA_NORMAL)) != 0 {
+                                let normal_ptr = ptr.add(offset[MJ_RAYDATA_NORMAL] as usize);
+                                let mut to = [0.0f64; 3];
+                                to[0] = point[0] + *normal_ptr.add(0) * 2.0 * framelength;
+                                to[1] = point[1] + *normal_ptr.add(1) * 2.0 * framelength;
+                                to[2] = point[2] + *normal_ptr.add(2) * 2.0 * framelength;
+                                add_connector(scn, MJ_GEOM_ARROW1, framewidth, point.as_ptr(), to.as_ptr(),
+                                              rgba_rangefinder, i as i32, MJ_CAT_DECOR, MJ_OBJ_SENSOR);
+                            }
+                        }
+                    }
+                }
+            } else if *(*m).sensor_type.add(i) == MJ_SENS_GEOMFROMTO {
+                // sensor data
+                let fromto = (*d).sensordata.add(*(*m).sensor_adr.add(i) as usize);
+
+                // null output: nothing to render
+                if crate::engine::engine_util_misc::mju_is_zero(fromto, 6) != 0 {
+                    continue;
+                }
+
+                // make ray
+                add_connector(scn, MJ_GEOM_LINE, 3.0, fromto, fromto.add(3),
+                              rgba_rangefinder, i as i32, MJ_CAT_DECOR, MJ_OBJ_SENSOR);
+            }
+        }
+    }
 }
 
 /// C: addExternalPerturbGeoms (engine/engine_vis_visualize.c:2729)
