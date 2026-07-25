@@ -1619,7 +1619,157 @@ pub fn add_body_bvh_geoms(m: *const mjModel, d: *mut mjData, vopt: *const mjvOpt
 /// Calls: acquireGeom, mj_stackAllocInfo, mju_addTo3, mju_copy3, mju_mulMatVec3, mjv_connector, mjv_initGeom, releaseGeom
 #[allow(unused_variables, non_snake_case)]
 pub fn add_flex_bvh_geoms(m: *const mjModel, d: *mut mjData, vopt: *const mjvOption, scn: *mut mjvScene) {
-    todo!() // addFlexBvhGeoms
+    const MJ_VIS_MESHBVH: usize = 29;
+    const MJ_NGROUP: usize = 6;
+    const MJ_CAT_DECOR: i32 = 4;
+    const MJ_OBJ_UNKNOWN: i32 = 0;
+    const MJ_GEOM_LINEBOX: i32 = 104;
+    const MJ_GEOM_LINE: i32 = 103;
+
+    // SAFETY: m, d, vopt, scn are valid pointers (caller contract)
+    unsafe {
+        if (*vopt).flags[MJ_VIS_MESHBVH] == 0 {
+            return;
+        }
+
+        // vis.rgba offsets: bv at 23*16=368, bvactive at 24*16=384 (each is float[4])
+        let rgba_data = &(*m).vis.rgba._data;
+        let rgba_bv = rgba_data.as_ptr().add(368) as *const f32;
+        let rgba_bvactive = rgba_data.as_ptr().add(384) as *const f32;
+
+        // vis.global.bvactive at offset 48 (i32)
+        let global_data = &(*m).vis.global;
+        let global_bvactive = i32::from_ne_bytes([global_data[48], global_data[49], global_data[50], global_data[51]]);
+
+        for f in 0..(*m).nflex as usize {
+            if *(*m).flex_bvhnum.add(f) != 0 {
+                let grp = *(*m).flex_group.add(f);
+                let grp_idx = if grp < 0 { 0 } else if grp >= MJ_NGROUP as i32 { MJ_NGROUP - 1 } else { grp as usize };
+                if (*vopt).flexgroup[grp_idx] != 0 {
+                    let bvhadr = *(*m).flex_bvhadr.add(f);
+                    let bvhnum = *(*m).flex_bvhnum.add(f);
+                    for i in bvhadr..bvhadr + bvhnum {
+                        let iu = i as usize;
+                        let isleaf = *(*m).bvh_child.add(2 * iu) == -1 && *(*m).bvh_child.add(2 * iu + 1) == -1;
+                        if *(*m).bvh_depth.add(iu) != (*vopt).bvh_depth {
+                            if !isleaf || *(*m).bvh_depth.add(iu) > (*vopt).bvh_depth {
+                                continue;
+                            }
+                        }
+
+                        // get box data
+                        let aabb = (*d).bvh_aabb_dyn.add(6 * (iu - (*m).nbvhstatic as usize));
+
+                        // set box color
+                        let mut rgba: *const f32 = rgba_bv;
+                        if global_bvactive != 0 && *(*d).bvh_active.add(iu) {
+                            rgba = rgba_bvactive;
+                        }
+
+                        let thisgeom = acquire_geom(scn, i, MJ_CAT_DECOR, MJ_OBJ_UNKNOWN);
+                        if thisgeom.is_null() {
+                            return;
+                        }
+                        mjv_init_geom(thisgeom, MJ_GEOM_LINEBOX, aabb.add(3), aabb, std::ptr::null(), rgba);
+                        let mut geom_ptr = thisgeom;
+                        release_geom(&mut geom_ptr, scn);
+                    }
+                }
+            }
+
+            if *(*m).flex_interp.add(f) == 0 {
+                continue;
+            }
+
+            // control points box
+            crate::engine::engine_memory::mj_mark_stack(d);
+            let xpos = crate::engine::engine_memory::mj_stack_alloc_num(d, 3 * *(*m).flex_nodenum.add(f) as usize);
+            let nstart = *(*m).flex_nodeadr.add(f) as usize;
+            let bodyid = (*m).flex_nodebodyid.add(nstart);
+
+            if *(*m).flex_centered.add(f) {
+                for i in 0..*(*m).flex_nodenum.add(f) as usize {
+                    crate::engine::engine_util_blas::mju_copy3(
+                        xpos.add(3 * i), (*d).xpos.add(3 * *bodyid.add(i) as usize));
+                }
+            } else {
+                for i in 0..*(*m).flex_nodenum.add(f) as usize {
+                    crate::engine::engine_util_blas::mju_mul_mat_vec3(
+                        xpos.add(3 * i), (*d).xmat.add(9 * *bodyid.add(i) as usize),
+                        (*m).flex_node.add(3 * (i + nstart)));
+                    crate::engine::engine_util_blas::mju_add_to3(
+                        xpos.add(3 * i), (*d).xpos.add(3 * *bodyid.add(i) as usize));
+                }
+            }
+
+            let cx = *(*m).flex_cellnum.add(3 * f) as i32;
+            let cy = *(*m).flex_cellnum.add(3 * f + 1) as i32;
+            let cz = *(*m).flex_cellnum.add(3 * f + 2) as i32;
+            let mut order = *(*m).flex_interp.add(f);
+            if order < 0 { order = -order; }
+            let nx = cx * order + 1;
+            let ny = cy * order + 1;
+            let nz = cz * order + 1;
+
+            let shell_mode = *(*m).flex_interp.add(f) < 0;
+
+            for i in 0..nx {
+                for j in 0..ny {
+                    for k in 0..nz {
+                        let n0 = (i * ny * nz + j * nz + k) as usize;
+
+                        // skip if pinned
+                        if *(*m).body_jntnum.add(*bodyid.add(n0) as usize) == 0 {
+                            continue;
+                        }
+
+                        // shell mode: skip interior
+                        let is_boundary = i == 0 || i == nx - 1 || j == 0 || j == ny - 1 || k == 0 || k == nz - 1;
+                        if shell_mode && !is_boundary {
+                            continue;
+                        }
+
+                        let offset = 3 * n0;
+                        let offset1 = 3 * ((i + 1) * ny * nz + j * nz + k) as usize;
+                        let offset2 = 3 * (i * ny * nz + (j + 1) * nz + k) as usize;
+                        let offset3 = 3 * (i * ny * nz + j * nz + (k + 1)) as usize;
+
+                        // edge along i
+                        if i < nx - 1 && *(*m).body_jntnum.add(*bodyid.add(((i + 1) * ny * nz + j * nz + k) as usize) as usize) > 0 {
+                            let nb_boundary = (i + 1) == 0 || (i + 1) == nx - 1 || j == 0 || j == ny - 1 || k == 0 || k == nz - 1;
+                            if !shell_mode || nb_boundary {
+                                let thisgeom = acquire_geom(scn, i, MJ_CAT_DECOR, MJ_OBJ_UNKNOWN);
+                                if thisgeom.is_null() { crate::engine::engine_memory::mj_free_stack(d); return; }
+                                mjv_connector(thisgeom, MJ_GEOM_LINE, 3.0, xpos.add(offset), xpos.add(offset1));
+                                let mut gp = thisgeom; release_geom(&mut gp, scn);
+                            }
+                        }
+                        // edge along j
+                        if j < ny - 1 && *(*m).body_jntnum.add(*bodyid.add((i * ny * nz + (j + 1) * nz + k) as usize) as usize) > 0 {
+                            let nb_boundary = i == 0 || i == nx - 1 || (j + 1) == 0 || (j + 1) == ny - 1 || k == 0 || k == nz - 1;
+                            if !shell_mode || nb_boundary {
+                                let thisgeom = acquire_geom(scn, i, MJ_CAT_DECOR, MJ_OBJ_UNKNOWN);
+                                if thisgeom.is_null() { crate::engine::engine_memory::mj_free_stack(d); return; }
+                                mjv_connector(thisgeom, MJ_GEOM_LINE, 3.0, xpos.add(offset), xpos.add(offset2));
+                                let mut gp = thisgeom; release_geom(&mut gp, scn);
+                            }
+                        }
+                        // edge along k
+                        if k < nz - 1 && *(*m).body_jntnum.add(*bodyid.add((i * ny * nz + j * nz + (k + 1)) as usize) as usize) > 0 {
+                            let nb_boundary = i == 0 || i == nx - 1 || j == 0 || j == ny - 1 || (k + 1) == 0 || (k + 1) == nz - 1;
+                            if !shell_mode || nb_boundary {
+                                let thisgeom = acquire_geom(scn, i, MJ_CAT_DECOR, MJ_OBJ_UNKNOWN);
+                                if thisgeom.is_null() { crate::engine::engine_memory::mj_free_stack(d); return; }
+                                mjv_connector(thisgeom, MJ_GEOM_LINE, 3.0, xpos.add(offset), xpos.add(offset3));
+                                let mut gp = thisgeom; release_geom(&mut gp, scn);
+                            }
+                        }
+                    }
+                }
+            }
+            crate::engine::engine_memory::mj_free_stack(d);
+        }
+    }
 }
 
 /// C: addMeshBvhGeoms (engine/engine_vis_visualize.c:1581)
