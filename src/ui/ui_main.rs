@@ -1,5 +1,5 @@
 //! Port of: ui/ui_main.c
-//! IR hash: 27e6fdf33868fa8b
+//! IR hash: 73393814548a07d1
 //! CODEGEN: signatures locked. Only fill todo!() bodies.
 
 use crate::types::*;
@@ -1249,8 +1249,8 @@ pub fn mjui_theme_spacing(ind: i32) -> mjuiThemeSpacing {
 
     // SAFETY: mjuiThemeSpacing is repr(C) with _data: [u8; 52], we construct it from known integer values
     unsafe {
-        let mut result = mjuiThemeSpacing { _data: [0u8; 52] };
-        let ptr = result._data.as_mut_ptr() as *mut i32;
+        let mut result: mjuiThemeSpacing = std::mem::zeroed();
+        let ptr = &mut result as *mut mjuiThemeSpacing as *mut i32;
         if ind == 0 {
             *ptr.add(0) = 270;   // total
             *ptr.add(1) = 15;    // scroll
@@ -1292,8 +1292,8 @@ pub fn mjui_theme_color(ind: i32) -> mjuiThemeColor {
 
     // SAFETY: mjuiThemeColor is repr(C) with _data: [u8; 336], we construct from known float values
     unsafe {
-        let mut result = mjuiThemeColor { _data: [0u8; 336] };
-        let ptr = result._data.as_mut_ptr() as *mut f32;
+        let mut result: mjuiThemeColor = std::mem::zeroed();
+        let ptr = &mut result as *mut mjuiThemeColor as *mut f32;
 
         // Helper: write rgb at index
         macro_rules! set_rgb {

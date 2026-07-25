@@ -1,5 +1,5 @@
 //! Port of: engine/engine_collision_sdf.c
-//! IR hash: 27e6fdf33868fa8b
+//! IR hash: 73393814548a07d1
 //! CODEGEN: signatures locked. Only fill todo!() bodies.
 
 use crate::types::*;
@@ -1033,7 +1033,178 @@ pub fn mjc_mesh_sdf(m: *const mjModel, d: *mut mjData, con: *mut mjPreContact, g
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjc_sdf(m: *const mjModel, d: *mut mjData, con: *mut mjPreContact, g1: i32, g2: i32, margin: f64) -> i32 {
-    todo!() // mjc_SDF
+    // SAFETY: m, d, con are valid pointers from caller. g1, g2 are valid geom indices.
+    unsafe {
+        let pos1  = (*d).geom_xpos.add(3 * g1 as usize);
+        let mat1  = (*d).geom_xmat.add(9 * g1 as usize);
+        let pos2  = (*d).geom_xpos.add(3 * g2 as usize);
+        let mat2  = (*d).geom_xmat.add(9 * g2 as usize);
+        let size1 = (*m).geom_aabb.add(6 * g1 as usize);
+        let size2 = (*m).geom_aabb.add(6 * g2 as usize);
+
+        let mut cnt: i32 = 0;
+        let mut x: [f64; 3] = [0.0; 3];
+        let mut y: [f64; 3] = [0.0; 3];
+        let mut dist2: f64;
+        let mut vec1: [f64; 3] = [0.0; 3];
+        let mut vec2: [f64; 3] = [0.0; 3];
+        let mjMAXVAL: f64 = 1E+10;
+        let mut aabb1: [f64; 6] = [mjMAXVAL, mjMAXVAL, mjMAXVAL, -mjMAXVAL, -mjMAXVAL, -mjMAXVAL];
+        let mut aabb2: [f64; 6] = [mjMAXVAL, mjMAXVAL, mjMAXVAL, -mjMAXVAL, -mjMAXVAL, -mjMAXVAL];
+        let mut aabb:  [f64; 6] = [mjMAXVAL, mjMAXVAL, mjMAXVAL, -mjMAXVAL, -mjMAXVAL, -mjMAXVAL];
+
+        // second geom must be an SDF
+        if *(*m).geom_type.add(g2 as usize) != mjtGeom_mjGEOM_SDF as i32 {
+            panic!("geom is not an SDF");
+        }
+
+        // compute transformations from/to g1 to/from g2
+        let mut quat1: [f64; 4] = [0.0; 4];
+        let mut quat2: [f64; 4] = [0.0; 4];
+        let mut offset21: [f64; 3] = [0.0; 3];
+        let mut rotation21: [f64; 9] = [0.0; 9];
+        let mut rotation12: [f64; 9] = [0.0; 9];
+        let mut offset12: [f64; 3] = [0.0; 3];
+        let mut offset2: [f64; 3] = [0.0; 3];
+        let mut rotation2: [f64; 9] = [0.0; 9];
+
+        crate::engine::engine_util_spatial::mju_mat2quat(quat1.as_mut_ptr(), mat1);
+        crate::engine::engine_util_spatial::mju_mat2quat(quat2.as_mut_ptr(), mat2);
+        map_pose(pos1, quat1.as_ptr(), pos1, quat1.as_ptr(), offset2.as_mut_ptr(), rotation2.as_mut_ptr());
+        map_pose(pos2, quat2.as_ptr(), pos1, quat1.as_ptr(), offset21.as_mut_ptr(), rotation21.as_mut_ptr());
+        map_pose(pos1, quat1.as_ptr(), pos2, quat2.as_ptr(), offset12.as_mut_ptr(), rotation12.as_mut_ptr());
+
+        // axis-aligned bounding boxes in g1 frame
+        for i in 0..8i32 {
+            vec1[0] = if i & 1 != 0 { *size1.add(0) + *size1.add(3) } else { *size1.add(0) - *size1.add(3) };
+            vec1[1] = if i & 2 != 0 { *size1.add(1) + *size1.add(4) } else { *size1.add(1) - *size1.add(4) };
+            vec1[2] = if i & 4 != 0 { *size1.add(2) + *size1.add(5) } else { *size1.add(2) - *size1.add(5) };
+
+            vec2[0] = if i & 1 != 0 { *size2.add(0) + *size2.add(3) } else { *size2.add(0) - *size2.add(3) };
+            vec2[1] = if i & 2 != 0 { *size2.add(1) + *size2.add(4) } else { *size2.add(1) - *size2.add(4) };
+            vec2[2] = if i & 4 != 0 { *size2.add(2) + *size2.add(5) } else { *size2.add(2) - *size2.add(5) };
+
+            crate::engine::engine_util_blas::mju_mul_mat_vec3(vec2.as_mut_ptr(), rotation21.as_ptr(), vec2.as_ptr());
+            crate::engine::engine_util_blas::mju_add_to3(vec2.as_mut_ptr(), offset21.as_ptr());
+
+            for k in 0..3 {
+                aabb1[0 + k] = crate::engine::engine_util_misc::mju_min(aabb1[0 + k], vec1[k]);
+                aabb1[3 + k] = crate::engine::engine_util_misc::mju_max(aabb1[3 + k], vec1[k]);
+                aabb2[0 + k] = crate::engine::engine_util_misc::mju_min(aabb2[0 + k], vec2[k]);
+                aabb2[3 + k] = crate::engine::engine_util_misc::mju_max(aabb2[3 + k], vec2[k]);
+            }
+        }
+
+        // intersection of aabbs
+        for k in 0..3 {
+            aabb[0 + k] = crate::engine::engine_util_misc::mju_max(aabb1[0 + k], aabb2[0 + k]);
+            aabb[3 + k] = crate::engine::engine_util_misc::mju_min(aabb1[3 + k], aabb2[3 + k]);
+        }
+
+        // no intersection if max < min
+        if aabb[3] < aabb[0] || aabb[4] < aabb[1] || aabb[5] < aabb[2] {
+            return cnt;
+        }
+
+        // create sdf pointers
+        let mut instance: [i32; 2] = [0; 2];
+        let mut sdf_ptr: [*const mjpPlugin; 2] = [std::ptr::null(); 2];
+        let mut geomtypes: [u32; 2] = [
+            *(*m).geom_type.add(g2 as usize) as u32,
+            *(*m).geom_type.add(g1 as usize) as u32,
+        ];
+
+        instance[0] = *(*m).geom_plugin.add(g2 as usize);
+        sdf_ptr[0] = if instance[0] == -1 { std::ptr::null() } else { mjc_get_sdf(m, g2) };
+
+        // get sdf plugins
+        if *(*m).geom_type.add(g1 as usize) == mjtGeom_mjGEOM_SDF as i32 {
+            instance[1] = *(*m).geom_plugin.add(g1 as usize);
+            sdf_ptr[1] = if instance[1] == -1 { std::ptr::null() } else { mjc_get_sdf(m, g1) };
+        } else {
+            instance[1] = g1;
+            sdf_ptr[1] = std::ptr::null();
+        }
+
+        // reset visualization count
+        if !sdf_ptr[0].is_null() {
+            if let Some(reset_fn) = (*sdf_ptr[0]).reset {
+                reset_fn(
+                    m,
+                    std::ptr::null_mut(),
+                    *(*d).plugin_data.add(instance[0] as usize) as *mut (),
+                    instance[0],
+                );
+            }
+        }
+
+        // copy into sdf
+        let mut sdf: mjSDF = std::mem::zeroed();
+        instance[0] = if instance[0] == -1 { *(*m).geom_dataid.add(g2 as usize) } else { instance[0] };
+        instance[1] = if instance[1] == -1 { *(*m).geom_dataid.add(g1 as usize) } else { instance[1] };
+        sdf.id = instance.as_mut_ptr();
+        sdf.relpos = offset21.as_mut_ptr();
+        sdf.relmat = rotation21.as_mut_ptr();
+        sdf.plugin = sdf_ptr.as_ptr() as *const *mut mjpPlugin;
+        sdf.geomtype = geomtypes.as_mut_ptr();
+
+        // minimize sdf intersection
+        let mut contacts: [f64; 3 * 50] = [0.0; 3 * 50]; // mjMAXCONPAIR = 50
+
+        let mut i: i32 = 0;
+        let mut j: i32 = 0;
+        while i < (*m).opt.sdf_initpoints {
+            x[0] = aabb[0] + (aabb[3] - aabb[0]) * crate::engine::engine_util_misc::mju_halton(j, 2);
+            x[1] = aabb[1] + (aabb[4] - aabb[1]) * crate::engine::engine_util_misc::mju_halton(j, 3);
+            x[2] = aabb[2] + (aabb[5] - aabb[2]) * crate::engine::engine_util_misc::mju_halton(j, 5);
+
+            crate::engine::engine_util_blas::mju_mul_mat_vec3(y.as_mut_ptr(), rotation2.as_ptr(), x.as_ptr());
+            crate::engine::engine_util_blas::mju_add_to3(y.as_mut_ptr(), offset2.as_ptr());
+
+            crate::engine::engine_util_blas::mju_mul_mat_vec3(x.as_mut_ptr(), rotation12.as_ptr(), y.as_ptr());
+            crate::engine::engine_util_blas::mju_add_to3(x.as_mut_ptr(), offset12.as_ptr());
+
+            j += 1;
+            i += 1;
+
+            // start counters
+            if !sdf_ptr[0].is_null() {
+                if let Some(compute_fn) = (*sdf_ptr[0]).compute {
+                    compute_fn(m, d, instance[0], mjPLUGIN_SDF as i32);
+                }
+            }
+
+            // gradient descent
+            // write mjSDFTYPE_COLLISION=3 into sdf.type (stored as [u8; 8])
+            (sdf.r#type.as_mut_ptr() as *mut u32).write(mjtSDFType_mjSDFTYPE_COLLISION);
+            dist2 = step_gradient(x.as_mut_ptr(), m, &sdf as *const mjSDF, d, (*m).opt.sdf_iterations);
+
+            (sdf.r#type.as_mut_ptr() as *mut u32).write(mjtSDFType_mjSDFTYPE_INTERSECTION);
+            dist2 = step_gradient(x.as_mut_ptr(), m, &sdf as *const mjSDF, d, 1);
+
+            (sdf.r#type.as_mut_ptr() as *mut u32).write(mjtSDFType_mjSDFTYPE_MIDSURFACE);
+            cnt = add_pre_contact(
+                contacts.as_mut_ptr(),
+                con.add(cnt as usize),
+                x.as_ptr(),
+                pos2,
+                quat2.as_ptr(),
+                dist2,
+                cnt,
+                m,
+                &sdf as *const mjSDF,
+                d as *const mjData,
+                0,
+            );
+
+            // SHOULD NOT OCCUR
+            if cnt > 50 { // mjMAXCONPAIR
+                panic!("too many contact points");
+            }
+        }
+
+        cnt
+    }
 }
 
 /// C: mjc_FlexSDF (engine/engine_collision_sdf.h:48)

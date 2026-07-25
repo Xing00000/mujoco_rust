@@ -1,5 +1,5 @@
 //! Port of: engine/engine_collision_driver.c
-//! IR hash: 27e6fdf33868fa8b
+//! IR hash: 73393814548a07d1
 //! CODEGEN: signatures locked. Only fill todo!() bodies.
 
 use crate::types::*;
@@ -616,19 +616,8 @@ pub fn filter_collision_pair(m: *const mjModel, d: *mut mjData, g1: i32, g2: i32
 
         // check if mjCOLLISIONFUNC[type1][type2] != NULL
         let guard = crate::types::MJCOLLISIONFUNC.lock().unwrap();
-        let idx = (type1 as usize) * 9 + (type2 as usize);
-        let ptr_bytes: [u8; 8] = [
-            guard[idx * 8],
-            guard[idx * 8 + 1],
-            guard[idx * 8 + 2],
-            guard[idx * 8 + 3],
-            guard[idx * 8 + 4],
-            guard[idx * 8 + 5],
-            guard[idx * 8 + 6],
-            guard[idx * 8 + 7],
-        ];
-        let fptr = usize::from_ne_bytes(ptr_bytes);
-        if fptr != 0 { 1 } else { 0 }
+        let func = guard[type1 as usize][type2 as usize];
+        if func.is_some() { 1 } else { 0 }
     }
 }
 
@@ -1263,7 +1252,84 @@ pub fn mj_make_capsule(m: *const mjModel, d: *mut mjData, f: i32, vid: *const i3
 /// Calls: getGap, getMargin, mjc_setCCDBuffer, mju_message
 #[allow(unused_variables, non_snake_case)]
 pub fn collision_task(m: *const mjModel, d: *mut mjData, arg: *mut (), thread_id: i32, idx: i32) {
-    todo!() // collisionTask
+    // mjContactArg is a file-local C struct (engine_collision_driver.c:1837-1846):
+    // typedef struct {
+    //   mjPreContact* conbuffer;
+    //   int* nconbuffer;
+    //   char* epabuffer;
+    //   int ccd_size;
+    //   const int* pairbuffer;
+    //   int npair;
+    //   int chunksize;
+    //   int maxcon;
+    // } mjContactArg;
+    #[repr(C)]
+    struct MjContactArg {
+        conbuffer: *mut mjPreContact,
+        nconbuffer: *mut i32,
+        epabuffer: *mut i8,
+        ccd_size: i32,
+        pairbuffer: *const i32,
+        npair: i32,
+        chunksize: i32,
+        maxcon: i32,
+    }
+
+    // SAFETY: arg is a valid pointer to MjContactArg, passed from mj_narrowphase.
+    // m, d are valid model/data pointers. thread_id < nthread.
+    unsafe {
+        let conargs = arg as *mut MjContactArg;
+        let conbuffer = (*conargs).conbuffer;
+        let epabuffer = (*conargs).epabuffer;
+        let chunksize = (*conargs).chunksize;
+        let globalidx = chunksize * idx;
+        let pair = (*conargs).pairbuffer.add(4 * globalidx as usize);
+        let ncon = (*conargs).nconbuffer.add((chunksize * idx) as usize);
+
+        let npair = (*conargs).npair;
+        let n = if chunksize < npair - globalidx { chunksize } else { npair - globalidx };
+
+        // Set CCD buffer for this thread (stored as bytes in CCD_BUFFER)
+        let epa_ptr = epabuffer.add((thread_id * (*conargs).ccd_size) as usize) as *mut ();
+        crate::engine::engine_collision_convex::mjc_set_ccd_buffer(epa_ptr);
+
+        let guard = crate::types::MJCOLLISIONFUNC.lock().unwrap();
+
+        for i in 0..n {
+            let g1 = *pair.add((4 * i) as usize);
+            let g2 = *pair.add((4 * i + 1) as usize);
+            let ipair = *pair.add((4 * i + 2) as usize);
+            let conpos = *pair.add((4 * i + 3) as usize);
+
+            let t1 = *(*m).geom_type.add(g1 as usize);
+            let t2 = *(*m).geom_type.add(g2 as usize);
+            let collision_func = guard[t1 as usize][t2 as usize];
+            let margin = get_margin(m, g1, g2, ipair);
+            let gap = get_gap(m, g1, g2, ipair);
+
+            if let Some(f) = collision_func {
+                *ncon.add(i as usize) = f(m, d, conbuffer.add(conpos as usize), g1, g2, margin + gap);
+            } else {
+                *ncon.add(i as usize) = 0;
+            }
+
+            // SHOULD NOT OCCUR
+            let expected_max = (if (globalidx + i + 1) < npair {
+                *pair.add((4 * (i + 1) + 3) as usize)
+            } else {
+                (*conargs).maxcon
+            }) - conpos;
+            if *ncon.add(i as usize) > expected_max {
+                crate::engine::engine_util_errmem::mju_error(
+                    b"collision function returned too many contacts\0".as_ptr() as *const i8,
+                );
+            }
+        }
+
+        // drop the guard before calling set_ccd_buffer(NULL)
+        drop(guard);
+        crate::engine::engine_collision_convex::mjc_set_ccd_buffer(std::ptr::null_mut());
+    }
 }
 
 /// C: planeVertex (engine/engine_collision_driver.c:2129)

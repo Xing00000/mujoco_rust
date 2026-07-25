@@ -1,5 +1,5 @@
 //! Port of: engine/engine_collision_convex.c
-//! IR hash: 27e6fdf33868fa8b
+//! IR hash: 73393814548a07d1
 //! CODEGEN: signatures locked. Only fill todo!() bodies.
 
 use crate::types::*;
@@ -25,7 +25,39 @@ pub fn prism_firstdir(o1: *const (), o2: *const (), vec: *mut ccd_vec3_t) {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn libccd_wrapper(m: *const mjModel, obj1: *mut mjCCDObj, obj2: *mut mjCCDObj, con: *mut mjPreContact, margin: f64) -> i32 {
-    todo!() // _libccd_wrapper
+    // _libccd_wrapper calls libccd's ccdMPRPenetration which is a C library function.
+    // libccd (ccd_t, ccdMPRPenetration, ccdVec3Eq, ccd_vec3_origin, ccdFirstDirDefault)
+    // must be declared via FFI.
+    //
+    // C source (engine/engine_collision_convex.c:52-88):
+    //   ccd_t ccd;
+    //   CCD_INIT(&ccd);
+    //   ccd.mpr_tolerance = m->opt.ccd_tolerance;
+    //   ccd.epa_tolerance = m->opt.ccd_tolerance;
+    //   ccd.max_iterations = m->opt.ccd_iterations;
+    //   ccd.support1 = mjccd_support;
+    //   ccd.support2 = mjccd_support;
+    //   ccd.center1 = mjccd_center;
+    //   ccd.center2 = mjccd_center;
+    //   if (obj1->geom_type == mjGEOM_HFIELD || obj2->geom_type == mjGEOM_HFIELD)
+    //     ccd.first_dir = prism_firstdir;
+    //   else
+    //     ccd.first_dir = ccdFirstDirDefault;
+    //   ccd_real_t ccd_depth; ccd_vec3_t ccd_dir, ccd_pos;
+    //   int ret = ccdMPRPenetration(obj1, obj2, &ccd, &ccd_depth, &ccd_dir, &ccd_pos);
+    //   if (ret == 0) {
+    //     if (ccdVec3Eq(&ccd_dir, ccd_vec3_origin)) return 0;
+    //     con[0].dist = margin - ccd_depth;
+    //     mji_copy3(con[0].normal, ccd_dir.v);
+    //     mji_copy3(con[0].pos, ccd_pos.v);
+    //     mji_zero3(con[0].tangent);
+    //     return 1;
+    //   }
+    //   return 0;
+    //
+    // BLOCKED: requires FFI to libccd (ccd_t struct, ccdMPRPenetration, ccdVec3Eq,
+    // ccd_vec3_origin, ccdFirstDirDefault). Add to bridges/libccd_bridge.c (R6 task).
+    todo!("libccd_wrapper: requires libccd FFI bridge (ccdMPRPenetration, ccd_t struct)")
 }
 
 /// C: mjc_penetration (engine/engine_collision_convex.c:87)
@@ -794,7 +826,7 @@ pub fn mjc_init_ccd_obj(obj: *mut mjCCDObj, m: *const mjModel, d: *const mjData,
     unsafe {
         (*obj).geom = g;
         (*obj).margin = margin;
-        (*obj).center = Some(std::mem::transmute::<_, unsafe extern "C" fn()>(mjc_center as usize));
+        (*obj).center = Some(unsafe { std::mem::transmute(mjc_center as *const ()) });
         (*obj).vertindex = -1;
         (*obj).meshindex = -1;
         (*obj).flex = -1;
@@ -832,7 +864,7 @@ pub fn mjc_init_ccd_obj(obj: *mut mjCCDObj, m: *const mjModel, d: *const mjData,
 
             match (*obj).geom_type {
                 mjGEOM_ELLIPSOID => {
-                    (*obj).support = Some(std::mem::transmute::<_, unsafe extern "C" fn()>(mjc_ellipsoid_support as usize));
+                    (*obj).support = Some(unsafe { std::mem::transmute(mjc_ellipsoid_support as *const ()) });
                 }
                 mjGEOM_MESH | mjGEOM_SDF => {
                     let dataid = *(*m).geom_dataid.add(g as usize) as usize;
@@ -844,10 +876,10 @@ pub fn mjc_init_ccd_obj(obj: *mut mjCCDObj, m: *const mjModel, d: *const mjData,
 
                     if graphadr < 0 || *(*m).mesh_vertnum.add(dataid) < mjMESH_HILLCLIMB_MIN {
                         (*mesh_ptr).graph = std::ptr::null();
-                        (*obj).support = Some(std::mem::transmute::<_, unsafe extern "C" fn()>(mjc_mesh_support as usize));
+                        (*obj).support = Some(unsafe { std::mem::transmute(mjc_mesh_support as *const ()) });
                     } else {
                         (*mesh_ptr).graph = (*m).mesh_graph.add(graphadr as usize);
-                        (*obj).support = Some(std::mem::transmute::<_, unsafe extern "C" fn()>(mjc_hillclimb_support as usize));
+                        (*obj).support = Some(unsafe { std::mem::transmute(mjc_hillclimb_support as *const ()) });
                     }
 
                     (*mesh_ptr).vert = (*m).mesh_vert.add(3 * vertadr as usize);
@@ -862,20 +894,20 @@ pub fn mjc_init_ccd_obj(obj: *mut mjCCDObj, m: *const mjModel, d: *const mjData,
                     (*mesh_ptr).mesh_polynum = *(*m).mesh_polynum.add(dataid);
                 }
                 mjGEOM_SPHERE => {
-                    (*obj).support = Some(std::mem::transmute::<_, unsafe extern "C" fn()>(mjc_sphere_support as usize));
+                    (*obj).support = Some(unsafe { std::mem::transmute(mjc_sphere_support as *const ()) });
                 }
                 mjGEOM_CAPSULE => {
-                    (*obj).support = Some(std::mem::transmute::<_, unsafe extern "C" fn()>(mjc_capsule_support as usize));
+                    (*obj).support = Some(unsafe { std::mem::transmute(mjc_capsule_support as *const ()) });
                 }
                 mjGEOM_CYLINDER => {
-                    (*obj).support = Some(std::mem::transmute::<_, unsafe extern "C" fn()>(mjc_cylinder_support as usize));
+                    (*obj).support = Some(unsafe { std::mem::transmute(mjc_cylinder_support as *const ()) });
                 }
                 mjGEOM_BOX => {
-                    (*obj).support = Some(std::mem::transmute::<_, unsafe extern "C" fn()>(mjc_box_support as usize));
+                    (*obj).support = Some(unsafe { std::mem::transmute(mjc_box_support as *const ()) });
                 }
                 mjGEOM_HFIELD => {
-                    (*obj).center = Some(std::mem::transmute::<_, unsafe extern "C" fn()>(mjc_center as usize));
-                    (*obj).support = Some(std::mem::transmute::<_, unsafe extern "C" fn()>(mjc_prism_support as usize));
+                    (*obj).center = Some(unsafe { std::mem::transmute(mjc_center as *const ()) });
+                    (*obj).support = Some(unsafe { std::mem::transmute(mjc_prism_support as *const ()) });
                     let hid = *(*m).geom_dataid.add(g as usize) as usize;
 
                     let hfield_ptr = &mut (*obj).data as *mut _ as *mut HfieldData;
@@ -900,7 +932,7 @@ pub fn mjc_init_ccd_obj(obj: *mut mjCCDObj, m: *const mjModel, d: *const mjData,
 
             let flex_ptr = &mut (*obj).data as *mut _ as *mut FlexData;
             (*flex_ptr).dim = (*m).flex_dim;
-            (*obj).support = Some(std::mem::transmute::<_, unsafe extern "C" fn()>(mjc_flex_support as usize));
+            (*obj).support = Some(unsafe { std::mem::transmute(mjc_flex_support as *const ()) });
             (*flex_ptr).aabb = (*d).flexelem_aabb;
             (*flex_ptr).elemadr = (*m).flex_elemadr;
             (*flex_ptr).vert_xpos = (*d).flexvert_xpos;

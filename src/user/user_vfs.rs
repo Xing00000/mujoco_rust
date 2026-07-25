@@ -1,5 +1,5 @@
 //! Port of: user/user_vfs.cc
-//! IR hash: 27e6fdf33868fa8b
+//! IR hash: 73393814548a07d1
 //! CODEGEN: signatures locked. Only fill todo!() bodies.
 
 use crate::types::*;
@@ -76,14 +76,38 @@ pub fn buffer_provider_mount(vfs: *mut mjVFS, args: Args) -> i32 {
 /// Calls: BufferProvider::Mount
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_add_file_vfs(vfs: *mut mjVFS, directory: *const i8, filename: *const i8) -> i32 {
-    todo!() // mj_addFileVFS
+    // C++ source (user/user_vfs.cc:496-500):
+    //   return BufferProvider::Mount(vfs, directory, filename);
+    //
+    // BufferProvider::Mount is a C++ static method that:
+    //   1. Opens the file at (directory + "/" + filename)
+    //   2. Copies its contents into a BufferProvider
+    //   3. Mounts the provider at the given path in vfs
+    //
+    // BLOCKED: requires C++ bridge (BufferProvider::Mount is C++ with std::vector/std::string).
+    // Implement via bridges/vfs_bridge.cc:
+    //   extern "C" int mj_addFileVFS_bridge(mjVFS* vfs, const char* dir, const char* fname) {
+    //     return BufferProvider::Mount(vfs, dir, fname);
+    //   }
+    todo!("mj_addFileVFS: requires C++ bridge for BufferProvider::Mount")
 }
 
 /// C: mj_addBufferVFS (user/user_vfs.cc:503)
 /// Calls: BufferProvider::Mount
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_add_buffer_vfs(vfs: *mut mjVFS, name: *const i8, buffer: *const (), nbuffer: i32) -> i32 {
-    todo!() // mj_addBufferVFS
+    // C++ source (user/user_vfs.cc:503-506):
+    //   return BufferProvider::Mount(vfs, name, buffer, nbuffer);
+    //
+    // BufferProvider::Mount copies the buffer into a BufferProvider and mounts it.
+    //
+    // BLOCKED: requires C++ bridge (BufferProvider::Mount overload taking void* buffer).
+    // Implement via bridges/vfs_bridge.cc:
+    //   extern "C" int mj_addBufferVFS_bridge(mjVFS* vfs, const char* name,
+    //                                          const void* buf, int nbuf) {
+    //     return BufferProvider::Mount(vfs, name, buf, nbuf);
+    //   }
+    todo!("mj_addBufferVFS: requires C++ bridge for BufferProvider::Mount")
 }
 
 /// C: mj_deleteFileVFS (user/user_vfs.cc:508)
