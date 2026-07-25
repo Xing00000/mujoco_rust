@@ -2282,7 +2282,3147 @@ pub fn num_objects(m: *const mjModel, objtype: u32) -> i32 {
 /// Calls: freeModelBuffers, mj_defaultOption, mj_defaultStatistic, mj_defaultVisual, mj_setPtrModel, mju_free, mju_malloc, mju_message, mju_warning, safeAddToBufferSize
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_make_model(dest: *mut *mut mjModel, nq: i64, nv: i64, nu: i64, na: i64, nbody: i64, nbvh: i64, nbvhstatic: i64, nbvhdynamic: i64, noct: i64, njnt: i64, ntree: i64, nM: i64, nB: i64, nC: i64, nD: i64, ngeom: i64, nsite: i64, ncam: i64, nlight: i64, nflex: i64, nflexnode: i64, nflexvert: i64, nflexedge: i64, nflexelem: i64, nflexelemdata: i64, nflexstiffness: i64, nflexbending: i64, nflexelemedge: i64, nflexshelldata: i64, nflexevpair: i64, nflextexcoord: i64, nJfe: i64, nJfv: i64, nmesh: i64, nmeshvert: i64, nmeshnormal: i64, nmeshtexcoord: i64, nmeshface: i64, nmeshgraph: i64, nmeshpoly: i64, nmeshpolyvert: i64, nmeshpolymap: i64, nskin: i64, nskinvert: i64, nskintexvert: i64, nskinface: i64, nskinbone: i64, nskinbonevert: i64, nhfield: i64, nhfielddata: i64, ntex: i64, ntexdata: i64, nmat: i64, npair: i64, nexclude: i64, neq: i64, ntendon: i64, nJten: i64, nwrap: i64, nsensor: i64, nnumeric: i64, nnumericdata: i64, ntext: i64, ntextdata: i64, ntuple: i64, ntupledata: i64, nkey: i64, nmocap: i64, nplugin: i64, npluginattr: i64, nuser_body: i64, nuser_jnt: i64, nuser_geom: i64, nuser_site: i64, nuser_cam: i64, nuser_tendon: i64, nuser_actuator: i64, nuser_sensor: i64, nnames: i64, npaths: i64) {
-    todo!() // mj_makeModel
+    const MJ_LOAD_MULTIPLE: i64 = 2;
+
+    // SAFETY: dest is valid (caller contract)
+    unsafe {
+        let mut offset: isize = 0;
+        let allocate: i32 = if (*dest).is_null() { 1 } else { 0 };
+        let m: *mut mjModel;
+
+        // CHECK SIZE PARAMETERS
+        if nq < 0 {
+            crate::engine::engine_util_errmem::mju_warning(b"Invalid model: nq is negative. ".as_ptr() as *const i8);
+            return;
+        }
+        if nq >= 2147483647 {
+            crate::engine::engine_util_errmem::mju_warning(b"Invalid model: nq is too large. ".as_ptr() as *const i8);
+            return;
+        }
+        if nv < 0 {
+            crate::engine::engine_util_errmem::mju_warning(b"Invalid model: nv is negative. ".as_ptr() as *const i8);
+            return;
+        }
+        if nv >= 2147483647 {
+            crate::engine::engine_util_errmem::mju_warning(b"Invalid model: nv is too large. ".as_ptr() as *const i8);
+            return;
+        }
+        if nu < 0 {
+            crate::engine::engine_util_errmem::mju_warning(b"Invalid model: nu is negative. ".as_ptr() as *const i8);
+            return;
+        }
+        if nu >= 2147483647 {
+            crate::engine::engine_util_errmem::mju_warning(b"Invalid model: nu is too large. ".as_ptr() as *const i8);
+            return;
+        }
+        if na < 0 {
+            crate::engine::engine_util_errmem::mju_warning(b"Invalid model: na is negative. ".as_ptr() as *const i8);
+            return;
+        }
+        if na >= 2147483647 {
+            crate::engine::engine_util_errmem::mju_warning(b"Invalid model: na is too large. ".as_ptr() as *const i8);
+            return;
+        }
+        if nbody < 0 {
+            crate::engine::engine_util_errmem::mju_warning(b"Invalid model: nbody is negative. ".as_ptr() as *const i8);
+            return;
+        }
+        if nbody >= 2147483647 {
+            crate::engine::engine_util_errmem::mju_warning(b"Invalid model: nbody is too large. ".as_ptr() as *const i8);
+            return;
+        }
+        if nbvh < 0 {
+            crate::engine::engine_util_errmem::mju_warning(b"Invalid model: nbvh is negative. ".as_ptr() as *const i8);
+            return;
+        }
+        if nbvh >= 2147483647 {
+            crate::engine::engine_util_errmem::mju_warning(b"Invalid model: nbvh is too large. ".as_ptr() as *const i8);
+            return;
+        }
+        if nbvhstatic < 0 {
+            crate::engine::engine_util_errmem::mju_warning(b"Invalid model: nbvhstatic is negative. ".as_ptr() as *const i8);
+            return;
+        }
+        if nbvhstatic >= 2147483647 {
+            crate::engine::engine_util_errmem::mju_warning(b"Invalid model: nbvhstatic is too large. ".as_ptr() as *const i8);
+            return;
+        }
+        if nbvhdynamic < 0 {
+            crate::engine::engine_util_errmem::mju_warning(b"Invalid model: nbvhdynamic is negative. ".as_ptr() as *const i8);
+            return;
+        }
+        if nbvhdynamic >= 2147483647 {
+            crate::engine::engine_util_errmem::mju_warning(b"Invalid model: nbvhdynamic is too large. ".as_ptr() as *const i8);
+            return;
+        }
+        if noct < 0 {
+            crate::engine::engine_util_errmem::mju_warning(b"Invalid model: noct is negative. ".as_ptr() as *const i8);
+            return;
+        }
+        if noct >= 2147483647 {
+            crate::engine::engine_util_errmem::mju_warning(b"Invalid model: noct is too large. ".as_ptr() as *const i8);
+            return;
+        }
+        if njnt < 0 {
+            crate::engine::engine_util_errmem::mju_warning(b"Invalid model: njnt is negative. ".as_ptr() as *const i8);
+            return;
+        }
+        if njnt >= 2147483647 {
+            crate::engine::engine_util_errmem::mju_warning(b"Invalid model: njnt is too large. ".as_ptr() as *const i8);
+            return;
+        }
+        if ntree < 0 {
+            crate::engine::engine_util_errmem::mju_warning(b"Invalid model: ntree is negative. ".as_ptr() as *const i8);
+            return;
+        }
+        if ntree >= 2147483647 {
+            crate::engine::engine_util_errmem::mju_warning(b"Invalid model: ntree is too large. ".as_ptr() as *const i8);
+            return;
+        }
+        if nM < 0 {
+            crate::engine::engine_util_errmem::mju_warning(b"Invalid model: nM is negative. ".as_ptr() as *const i8);
+            return;
+        }
+        if nM >= 2147483647 {
+            crate::engine::engine_util_errmem::mju_warning(b"Invalid model: nM is too large. ".as_ptr() as *const i8);
+            return;
+        }
+        if nB < 0 {
+            crate::engine::engine_util_errmem::mju_warning(b"Invalid model: nB is negative. ".as_ptr() as *const i8);
+            return;
+        }
+        if nB >= 2147483647 {
+            crate::engine::engine_util_errmem::mju_warning(b"Invalid model: nB is too large. ".as_ptr() as *const i8);
+            return;
+        }
+        if nC < 0 {
+            crate::engine::engine_util_errmem::mju_warning(b"Invalid model: nC is negative. ".as_ptr() as *const i8);
+            return;
+        }
+        if nC >= 2147483647 {
+            crate::engine::engine_util_errmem::mju_warning(b"Invalid model: nC is too large. ".as_ptr() as *const i8);
+            return;
+        }
+        if nD < 0 {
+            crate::engine::engine_util_errmem::mju_warning(b"Invalid model: nD is negative. ".as_ptr() as *const i8);
+            return;
+        }
+        if nD >= 2147483647 {
+            crate::engine::engine_util_errmem::mju_warning(b"Invalid model: nD is too large. ".as_ptr() as *const i8);
+            return;
+        }
+        if ngeom < 0 {
+            crate::engine::engine_util_errmem::mju_warning(b"Invalid model: ngeom is negative. ".as_ptr() as *const i8);
+            return;
+        }
+        if ngeom >= 2147483647 {
+            crate::engine::engine_util_errmem::mju_warning(b"Invalid model: ngeom is too large. ".as_ptr() as *const i8);
+            return;
+        }
+        if nsite < 0 {
+            crate::engine::engine_util_errmem::mju_warning(b"Invalid model: nsite is negative. ".as_ptr() as *const i8);
+            return;
+        }
+        if nsite >= 2147483647 {
+            crate::engine::engine_util_errmem::mju_warning(b"Invalid model: nsite is too large. ".as_ptr() as *const i8);
+            return;
+        }
+        if ncam < 0 {
+            crate::engine::engine_util_errmem::mju_warning(b"Invalid model: ncam is negative. ".as_ptr() as *const i8);
+            return;
+        }
+        if ncam >= 2147483647 {
+            crate::engine::engine_util_errmem::mju_warning(b"Invalid model: ncam is too large. ".as_ptr() as *const i8);
+            return;
+        }
+        if nlight < 0 {
+            crate::engine::engine_util_errmem::mju_warning(b"Invalid model: nlight is negative. ".as_ptr() as *const i8);
+            return;
+        }
+        if nlight >= 2147483647 {
+            crate::engine::engine_util_errmem::mju_warning(b"Invalid model: nlight is too large. ".as_ptr() as *const i8);
+            return;
+        }
+        if nflex < 0 {
+            crate::engine::engine_util_errmem::mju_warning(b"Invalid model: nflex is negative. ".as_ptr() as *const i8);
+            return;
+        }
+        if nflex >= 2147483647 {
+            crate::engine::engine_util_errmem::mju_warning(b"Invalid model: nflex is too large. ".as_ptr() as *const i8);
+            return;
+        }
+        if nflexnode < 0 {
+            crate::engine::engine_util_errmem::mju_warning(b"Invalid model: nflexnode is negative. ".as_ptr() as *const i8);
+            return;
+        }
+        if nflexnode >= 2147483647 {
+            crate::engine::engine_util_errmem::mju_warning(b"Invalid model: nflexnode is too large. ".as_ptr() as *const i8);
+            return;
+        }
+        if nflexvert < 0 {
+            crate::engine::engine_util_errmem::mju_warning(b"Invalid model: nflexvert is negative. ".as_ptr() as *const i8);
+            return;
+        }
+        if nflexvert >= 2147483647 {
+            crate::engine::engine_util_errmem::mju_warning(b"Invalid model: nflexvert is too large. ".as_ptr() as *const i8);
+            return;
+        }
+        if nflexedge < 0 {
+            crate::engine::engine_util_errmem::mju_warning(b"Invalid model: nflexedge is negative. ".as_ptr() as *const i8);
+            return;
+        }
+        if nflexedge >= 2147483647 {
+            crate::engine::engine_util_errmem::mju_warning(b"Invalid model: nflexedge is too large. ".as_ptr() as *const i8);
+            return;
+        }
+        if nflexelem < 0 {
+            crate::engine::engine_util_errmem::mju_warning(b"Invalid model: nflexelem is negative. ".as_ptr() as *const i8);
+            return;
+        }
+        if nflexelem >= 2147483647 {
+            crate::engine::engine_util_errmem::mju_warning(b"Invalid model: nflexelem is too large. ".as_ptr() as *const i8);
+            return;
+        }
+        if nflexelemdata < 0 {
+            crate::engine::engine_util_errmem::mju_warning(b"Invalid model: nflexelemdata is negative. ".as_ptr() as *const i8);
+            return;
+        }
+        if nflexelemdata >= 2147483647 {
+            crate::engine::engine_util_errmem::mju_warning(b"Invalid model: nflexelemdata is too large. ".as_ptr() as *const i8);
+            return;
+        }
+        if nflexstiffness < 0 {
+            crate::engine::engine_util_errmem::mju_warning(b"Invalid model: nflexstiffness is negative. ".as_ptr() as *const i8);
+            return;
+        }
+        if nflexstiffness >= 2147483647 {
+            crate::engine::engine_util_errmem::mju_warning(b"Invalid model: nflexstiffness is too large. ".as_ptr() as *const i8);
+            return;
+        }
+        if nflexbending < 0 {
+            crate::engine::engine_util_errmem::mju_warning(b"Invalid model: nflexbending is negative. ".as_ptr() as *const i8);
+            return;
+        }
+        if nflexbending >= 2147483647 {
+            crate::engine::engine_util_errmem::mju_warning(b"Invalid model: nflexbending is too large. ".as_ptr() as *const i8);
+            return;
+        }
+        if nflexelemedge < 0 {
+            crate::engine::engine_util_errmem::mju_warning(b"Invalid model: nflexelemedge is negative. ".as_ptr() as *const i8);
+            return;
+        }
+        if nflexelemedge >= 2147483647 {
+            crate::engine::engine_util_errmem::mju_warning(b"Invalid model: nflexelemedge is too large. ".as_ptr() as *const i8);
+            return;
+        }
+        if nflexshelldata < 0 {
+            crate::engine::engine_util_errmem::mju_warning(b"Invalid model: nflexshelldata is negative. ".as_ptr() as *const i8);
+            return;
+        }
+        if nflexshelldata >= 2147483647 {
+            crate::engine::engine_util_errmem::mju_warning(b"Invalid model: nflexshelldata is too large. ".as_ptr() as *const i8);
+            return;
+        }
+        if nflexevpair < 0 {
+            crate::engine::engine_util_errmem::mju_warning(b"Invalid model: nflexevpair is negative. ".as_ptr() as *const i8);
+            return;
+        }
+        if nflexevpair >= 2147483647 {
+            crate::engine::engine_util_errmem::mju_warning(b"Invalid model: nflexevpair is too large. ".as_ptr() as *const i8);
+            return;
+        }
+        if nflextexcoord < 0 {
+            crate::engine::engine_util_errmem::mju_warning(b"Invalid model: nflextexcoord is negative. ".as_ptr() as *const i8);
+            return;
+        }
+        if nflextexcoord >= 2147483647 {
+            crate::engine::engine_util_errmem::mju_warning(b"Invalid model: nflextexcoord is too large. ".as_ptr() as *const i8);
+            return;
+        }
+        if nJfe < 0 {
+            crate::engine::engine_util_errmem::mju_warning(b"Invalid model: nJfe is negative. ".as_ptr() as *const i8);
+            return;
+        }
+        if nJfe >= 2147483647 {
+            crate::engine::engine_util_errmem::mju_warning(b"Invalid model: nJfe is too large. ".as_ptr() as *const i8);
+            return;
+        }
+        if nJfv < 0 {
+            crate::engine::engine_util_errmem::mju_warning(b"Invalid model: nJfv is negative. ".as_ptr() as *const i8);
+            return;
+        }
+        if nJfv >= 2147483647 {
+            crate::engine::engine_util_errmem::mju_warning(b"Invalid model: nJfv is too large. ".as_ptr() as *const i8);
+            return;
+        }
+        if nmesh < 0 {
+            crate::engine::engine_util_errmem::mju_warning(b"Invalid model: nmesh is negative. ".as_ptr() as *const i8);
+            return;
+        }
+        if nmesh >= 2147483647 {
+            crate::engine::engine_util_errmem::mju_warning(b"Invalid model: nmesh is too large. ".as_ptr() as *const i8);
+            return;
+        }
+        if nmeshvert < 0 {
+            crate::engine::engine_util_errmem::mju_warning(b"Invalid model: nmeshvert is negative. ".as_ptr() as *const i8);
+            return;
+        }
+        if nmeshvert >= 2147483647 {
+            crate::engine::engine_util_errmem::mju_warning(b"Invalid model: nmeshvert is too large. ".as_ptr() as *const i8);
+            return;
+        }
+        if nmeshnormal < 0 {
+            crate::engine::engine_util_errmem::mju_warning(b"Invalid model: nmeshnormal is negative. ".as_ptr() as *const i8);
+            return;
+        }
+        if nmeshnormal >= 2147483647 {
+            crate::engine::engine_util_errmem::mju_warning(b"Invalid model: nmeshnormal is too large. ".as_ptr() as *const i8);
+            return;
+        }
+        if nmeshtexcoord < 0 {
+            crate::engine::engine_util_errmem::mju_warning(b"Invalid model: nmeshtexcoord is negative. ".as_ptr() as *const i8);
+            return;
+        }
+        if nmeshtexcoord >= 2147483647 {
+            crate::engine::engine_util_errmem::mju_warning(b"Invalid model: nmeshtexcoord is too large. ".as_ptr() as *const i8);
+            return;
+        }
+        if nmeshface < 0 {
+            crate::engine::engine_util_errmem::mju_warning(b"Invalid model: nmeshface is negative. ".as_ptr() as *const i8);
+            return;
+        }
+        if nmeshface >= 2147483647 {
+            crate::engine::engine_util_errmem::mju_warning(b"Invalid model: nmeshface is too large. ".as_ptr() as *const i8);
+            return;
+        }
+        if nmeshgraph < 0 {
+            crate::engine::engine_util_errmem::mju_warning(b"Invalid model: nmeshgraph is negative. ".as_ptr() as *const i8);
+            return;
+        }
+        if nmeshgraph >= 2147483647 {
+            crate::engine::engine_util_errmem::mju_warning(b"Invalid model: nmeshgraph is too large. ".as_ptr() as *const i8);
+            return;
+        }
+        if nmeshpoly < 0 {
+            crate::engine::engine_util_errmem::mju_warning(b"Invalid model: nmeshpoly is negative. ".as_ptr() as *const i8);
+            return;
+        }
+        if nmeshpoly >= 2147483647 {
+            crate::engine::engine_util_errmem::mju_warning(b"Invalid model: nmeshpoly is too large. ".as_ptr() as *const i8);
+            return;
+        }
+        if nmeshpolyvert < 0 {
+            crate::engine::engine_util_errmem::mju_warning(b"Invalid model: nmeshpolyvert is negative. ".as_ptr() as *const i8);
+            return;
+        }
+        if nmeshpolyvert >= 2147483647 {
+            crate::engine::engine_util_errmem::mju_warning(b"Invalid model: nmeshpolyvert is too large. ".as_ptr() as *const i8);
+            return;
+        }
+        if nmeshpolymap < 0 {
+            crate::engine::engine_util_errmem::mju_warning(b"Invalid model: nmeshpolymap is negative. ".as_ptr() as *const i8);
+            return;
+        }
+        if nmeshpolymap >= 2147483647 {
+            crate::engine::engine_util_errmem::mju_warning(b"Invalid model: nmeshpolymap is too large. ".as_ptr() as *const i8);
+            return;
+        }
+        if nskin < 0 {
+            crate::engine::engine_util_errmem::mju_warning(b"Invalid model: nskin is negative. ".as_ptr() as *const i8);
+            return;
+        }
+        if nskin >= 2147483647 {
+            crate::engine::engine_util_errmem::mju_warning(b"Invalid model: nskin is too large. ".as_ptr() as *const i8);
+            return;
+        }
+        if nskinvert < 0 {
+            crate::engine::engine_util_errmem::mju_warning(b"Invalid model: nskinvert is negative. ".as_ptr() as *const i8);
+            return;
+        }
+        if nskinvert >= 2147483647 {
+            crate::engine::engine_util_errmem::mju_warning(b"Invalid model: nskinvert is too large. ".as_ptr() as *const i8);
+            return;
+        }
+        if nskintexvert < 0 {
+            crate::engine::engine_util_errmem::mju_warning(b"Invalid model: nskintexvert is negative. ".as_ptr() as *const i8);
+            return;
+        }
+        if nskintexvert >= 2147483647 {
+            crate::engine::engine_util_errmem::mju_warning(b"Invalid model: nskintexvert is too large. ".as_ptr() as *const i8);
+            return;
+        }
+        if nskinface < 0 {
+            crate::engine::engine_util_errmem::mju_warning(b"Invalid model: nskinface is negative. ".as_ptr() as *const i8);
+            return;
+        }
+        if nskinface >= 2147483647 {
+            crate::engine::engine_util_errmem::mju_warning(b"Invalid model: nskinface is too large. ".as_ptr() as *const i8);
+            return;
+        }
+        if nskinbone < 0 {
+            crate::engine::engine_util_errmem::mju_warning(b"Invalid model: nskinbone is negative. ".as_ptr() as *const i8);
+            return;
+        }
+        if nskinbone >= 2147483647 {
+            crate::engine::engine_util_errmem::mju_warning(b"Invalid model: nskinbone is too large. ".as_ptr() as *const i8);
+            return;
+        }
+        if nskinbonevert < 0 {
+            crate::engine::engine_util_errmem::mju_warning(b"Invalid model: nskinbonevert is negative. ".as_ptr() as *const i8);
+            return;
+        }
+        if nskinbonevert >= 2147483647 {
+            crate::engine::engine_util_errmem::mju_warning(b"Invalid model: nskinbonevert is too large. ".as_ptr() as *const i8);
+            return;
+        }
+        if nhfield < 0 {
+            crate::engine::engine_util_errmem::mju_warning(b"Invalid model: nhfield is negative. ".as_ptr() as *const i8);
+            return;
+        }
+        if nhfield >= 2147483647 {
+            crate::engine::engine_util_errmem::mju_warning(b"Invalid model: nhfield is too large. ".as_ptr() as *const i8);
+            return;
+        }
+        if nhfielddata < 0 {
+            crate::engine::engine_util_errmem::mju_warning(b"Invalid model: nhfielddata is negative. ".as_ptr() as *const i8);
+            return;
+        }
+        if nhfielddata >= 2147483647 {
+            crate::engine::engine_util_errmem::mju_warning(b"Invalid model: nhfielddata is too large. ".as_ptr() as *const i8);
+            return;
+        }
+        if ntex < 0 {
+            crate::engine::engine_util_errmem::mju_warning(b"Invalid model: ntex is negative. ".as_ptr() as *const i8);
+            return;
+        }
+        if ntex >= 2147483647 {
+            crate::engine::engine_util_errmem::mju_warning(b"Invalid model: ntex is too large. ".as_ptr() as *const i8);
+            return;
+        }
+        if ntexdata < 0 {
+            crate::engine::engine_util_errmem::mju_warning(b"Invalid model: ntexdata is negative. ".as_ptr() as *const i8);
+            return;
+        }
+        if nmat < 0 {
+            crate::engine::engine_util_errmem::mju_warning(b"Invalid model: nmat is negative. ".as_ptr() as *const i8);
+            return;
+        }
+        if nmat >= 2147483647 {
+            crate::engine::engine_util_errmem::mju_warning(b"Invalid model: nmat is too large. ".as_ptr() as *const i8);
+            return;
+        }
+        if npair < 0 {
+            crate::engine::engine_util_errmem::mju_warning(b"Invalid model: npair is negative. ".as_ptr() as *const i8);
+            return;
+        }
+        if npair >= 2147483647 {
+            crate::engine::engine_util_errmem::mju_warning(b"Invalid model: npair is too large. ".as_ptr() as *const i8);
+            return;
+        }
+        if nexclude < 0 {
+            crate::engine::engine_util_errmem::mju_warning(b"Invalid model: nexclude is negative. ".as_ptr() as *const i8);
+            return;
+        }
+        if nexclude >= 2147483647 {
+            crate::engine::engine_util_errmem::mju_warning(b"Invalid model: nexclude is too large. ".as_ptr() as *const i8);
+            return;
+        }
+        if neq < 0 {
+            crate::engine::engine_util_errmem::mju_warning(b"Invalid model: neq is negative. ".as_ptr() as *const i8);
+            return;
+        }
+        if neq >= 2147483647 {
+            crate::engine::engine_util_errmem::mju_warning(b"Invalid model: neq is too large. ".as_ptr() as *const i8);
+            return;
+        }
+        if ntendon < 0 {
+            crate::engine::engine_util_errmem::mju_warning(b"Invalid model: ntendon is negative. ".as_ptr() as *const i8);
+            return;
+        }
+        if ntendon >= 2147483647 {
+            crate::engine::engine_util_errmem::mju_warning(b"Invalid model: ntendon is too large. ".as_ptr() as *const i8);
+            return;
+        }
+        if nJten < 0 {
+            crate::engine::engine_util_errmem::mju_warning(b"Invalid model: nJten is negative. ".as_ptr() as *const i8);
+            return;
+        }
+        if nJten >= 2147483647 {
+            crate::engine::engine_util_errmem::mju_warning(b"Invalid model: nJten is too large. ".as_ptr() as *const i8);
+            return;
+        }
+        if nwrap < 0 {
+            crate::engine::engine_util_errmem::mju_warning(b"Invalid model: nwrap is negative. ".as_ptr() as *const i8);
+            return;
+        }
+        if nwrap >= 2147483647 {
+            crate::engine::engine_util_errmem::mju_warning(b"Invalid model: nwrap is too large. ".as_ptr() as *const i8);
+            return;
+        }
+        if nsensor < 0 {
+            crate::engine::engine_util_errmem::mju_warning(b"Invalid model: nsensor is negative. ".as_ptr() as *const i8);
+            return;
+        }
+        if nsensor >= 2147483647 {
+            crate::engine::engine_util_errmem::mju_warning(b"Invalid model: nsensor is too large. ".as_ptr() as *const i8);
+            return;
+        }
+        if nnumeric < 0 {
+            crate::engine::engine_util_errmem::mju_warning(b"Invalid model: nnumeric is negative. ".as_ptr() as *const i8);
+            return;
+        }
+        if nnumeric >= 2147483647 {
+            crate::engine::engine_util_errmem::mju_warning(b"Invalid model: nnumeric is too large. ".as_ptr() as *const i8);
+            return;
+        }
+        if nnumericdata < 0 {
+            crate::engine::engine_util_errmem::mju_warning(b"Invalid model: nnumericdata is negative. ".as_ptr() as *const i8);
+            return;
+        }
+        if nnumericdata >= 2147483647 {
+            crate::engine::engine_util_errmem::mju_warning(b"Invalid model: nnumericdata is too large. ".as_ptr() as *const i8);
+            return;
+        }
+        if ntext < 0 {
+            crate::engine::engine_util_errmem::mju_warning(b"Invalid model: ntext is negative. ".as_ptr() as *const i8);
+            return;
+        }
+        if ntext >= 2147483647 {
+            crate::engine::engine_util_errmem::mju_warning(b"Invalid model: ntext is too large. ".as_ptr() as *const i8);
+            return;
+        }
+        if ntextdata < 0 {
+            crate::engine::engine_util_errmem::mju_warning(b"Invalid model: ntextdata is negative. ".as_ptr() as *const i8);
+            return;
+        }
+        if ntuple < 0 {
+            crate::engine::engine_util_errmem::mju_warning(b"Invalid model: ntuple is negative. ".as_ptr() as *const i8);
+            return;
+        }
+        if ntuple >= 2147483647 {
+            crate::engine::engine_util_errmem::mju_warning(b"Invalid model: ntuple is too large. ".as_ptr() as *const i8);
+            return;
+        }
+        if ntupledata < 0 {
+            crate::engine::engine_util_errmem::mju_warning(b"Invalid model: ntupledata is negative. ".as_ptr() as *const i8);
+            return;
+        }
+        if ntupledata >= 2147483647 {
+            crate::engine::engine_util_errmem::mju_warning(b"Invalid model: ntupledata is too large. ".as_ptr() as *const i8);
+            return;
+        }
+        if nkey < 0 {
+            crate::engine::engine_util_errmem::mju_warning(b"Invalid model: nkey is negative. ".as_ptr() as *const i8);
+            return;
+        }
+        if nkey >= 2147483647 {
+            crate::engine::engine_util_errmem::mju_warning(b"Invalid model: nkey is too large. ".as_ptr() as *const i8);
+            return;
+        }
+        if nmocap < 0 {
+            crate::engine::engine_util_errmem::mju_warning(b"Invalid model: nmocap is negative. ".as_ptr() as *const i8);
+            return;
+        }
+        if nmocap >= 2147483647 {
+            crate::engine::engine_util_errmem::mju_warning(b"Invalid model: nmocap is too large. ".as_ptr() as *const i8);
+            return;
+        }
+        if nplugin < 0 {
+            crate::engine::engine_util_errmem::mju_warning(b"Invalid model: nplugin is negative. ".as_ptr() as *const i8);
+            return;
+        }
+        if nplugin >= 2147483647 {
+            crate::engine::engine_util_errmem::mju_warning(b"Invalid model: nplugin is too large. ".as_ptr() as *const i8);
+            return;
+        }
+        if npluginattr < 0 {
+            crate::engine::engine_util_errmem::mju_warning(b"Invalid model: npluginattr is negative. ".as_ptr() as *const i8);
+            return;
+        }
+        if npluginattr >= 2147483647 {
+            crate::engine::engine_util_errmem::mju_warning(b"Invalid model: npluginattr is too large. ".as_ptr() as *const i8);
+            return;
+        }
+        if nuser_body < 0 {
+            crate::engine::engine_util_errmem::mju_warning(b"Invalid model: nuser_body is negative. ".as_ptr() as *const i8);
+            return;
+        }
+        if nuser_body >= 2147483647 {
+            crate::engine::engine_util_errmem::mju_warning(b"Invalid model: nuser_body is too large. ".as_ptr() as *const i8);
+            return;
+        }
+        if nuser_jnt < 0 {
+            crate::engine::engine_util_errmem::mju_warning(b"Invalid model: nuser_jnt is negative. ".as_ptr() as *const i8);
+            return;
+        }
+        if nuser_jnt >= 2147483647 {
+            crate::engine::engine_util_errmem::mju_warning(b"Invalid model: nuser_jnt is too large. ".as_ptr() as *const i8);
+            return;
+        }
+        if nuser_geom < 0 {
+            crate::engine::engine_util_errmem::mju_warning(b"Invalid model: nuser_geom is negative. ".as_ptr() as *const i8);
+            return;
+        }
+        if nuser_geom >= 2147483647 {
+            crate::engine::engine_util_errmem::mju_warning(b"Invalid model: nuser_geom is too large. ".as_ptr() as *const i8);
+            return;
+        }
+        if nuser_site < 0 {
+            crate::engine::engine_util_errmem::mju_warning(b"Invalid model: nuser_site is negative. ".as_ptr() as *const i8);
+            return;
+        }
+        if nuser_site >= 2147483647 {
+            crate::engine::engine_util_errmem::mju_warning(b"Invalid model: nuser_site is too large. ".as_ptr() as *const i8);
+            return;
+        }
+        if nuser_cam < 0 {
+            crate::engine::engine_util_errmem::mju_warning(b"Invalid model: nuser_cam is negative. ".as_ptr() as *const i8);
+            return;
+        }
+        if nuser_cam >= 2147483647 {
+            crate::engine::engine_util_errmem::mju_warning(b"Invalid model: nuser_cam is too large. ".as_ptr() as *const i8);
+            return;
+        }
+        if nuser_tendon < 0 {
+            crate::engine::engine_util_errmem::mju_warning(b"Invalid model: nuser_tendon is negative. ".as_ptr() as *const i8);
+            return;
+        }
+        if nuser_tendon >= 2147483647 {
+            crate::engine::engine_util_errmem::mju_warning(b"Invalid model: nuser_tendon is too large. ".as_ptr() as *const i8);
+            return;
+        }
+        if nuser_actuator < 0 {
+            crate::engine::engine_util_errmem::mju_warning(b"Invalid model: nuser_actuator is negative. ".as_ptr() as *const i8);
+            return;
+        }
+        if nuser_actuator >= 2147483647 {
+            crate::engine::engine_util_errmem::mju_warning(b"Invalid model: nuser_actuator is too large. ".as_ptr() as *const i8);
+            return;
+        }
+        if nuser_sensor < 0 {
+            crate::engine::engine_util_errmem::mju_warning(b"Invalid model: nuser_sensor is negative. ".as_ptr() as *const i8);
+            return;
+        }
+        if nuser_sensor >= 2147483647 {
+            crate::engine::engine_util_errmem::mju_warning(b"Invalid model: nuser_sensor is too large. ".as_ptr() as *const i8);
+            return;
+        }
+        if nnames < 0 {
+            crate::engine::engine_util_errmem::mju_warning(b"Invalid model: nnames is negative. ".as_ptr() as *const i8);
+            return;
+        }
+        if nnames >= 2147483647 {
+            crate::engine::engine_util_errmem::mju_warning(b"Invalid model: nnames is too large. ".as_ptr() as *const i8);
+            return;
+        }
+        if npaths < 0 {
+            crate::engine::engine_util_errmem::mju_warning(b"Invalid model: npaths is negative. ".as_ptr() as *const i8);
+            return;
+        }
+        if npaths >= 2147483647 {
+            crate::engine::engine_util_errmem::mju_warning(b"Invalid model: npaths is too large. ".as_ptr() as *const i8);
+            return;
+        }
+
+        // nbody should always be positive
+        if nbody == 0 {
+            crate::engine::engine_util_errmem::mju_warning(
+                b"Invalid model: nbody == 0\0".as_ptr() as *const i8);
+            return;
+        }
+
+        // allocate mjModel
+        if allocate == 0 {
+            m = *dest;
+            free_model_buffers(m);
+        } else {
+            m = crate::engine::engine_util_errmem::mju_malloc(
+                std::mem::size_of::<mjModel>()) as *mut mjModel;
+        }
+
+        if m.is_null() {
+            crate::engine::engine_util_errmem::mju_error(
+                b"could not allocate mjModel\0".as_ptr() as *const i8);
+            return;
+        }
+        std::ptr::write_bytes(m as *mut u8, 0, std::mem::size_of::<mjModel>());
+
+        // set size parameters
+        (*m).nq = nq;
+        (*m).nv = nv;
+        (*m).nu = nu;
+        (*m).na = na;
+        (*m).nbody = nbody;
+        (*m).nbvh = nbvh;
+        (*m).nbvhstatic = nbvhstatic;
+        (*m).nbvhdynamic = nbvhdynamic;
+        (*m).noct = noct;
+        (*m).njnt = njnt;
+        (*m).ntree = ntree;
+        (*m).nM = nM;
+        (*m).nB = nB;
+        (*m).nC = nC;
+        (*m).nD = nD;
+        (*m).ngeom = ngeom;
+        (*m).nsite = nsite;
+        (*m).ncam = ncam;
+        (*m).nlight = nlight;
+        (*m).nflex = nflex;
+        (*m).nflexnode = nflexnode;
+        (*m).nflexvert = nflexvert;
+        (*m).nflexedge = nflexedge;
+        (*m).nflexelem = nflexelem;
+        (*m).nflexelemdata = nflexelemdata;
+        (*m).nflexstiffness = nflexstiffness;
+        (*m).nflexbending = nflexbending;
+        (*m).nflexelemedge = nflexelemedge;
+        (*m).nflexshelldata = nflexshelldata;
+        (*m).nflexevpair = nflexevpair;
+        (*m).nflextexcoord = nflextexcoord;
+        (*m).nJfe = nJfe;
+        (*m).nJfv = nJfv;
+        (*m).nmesh = nmesh;
+        (*m).nmeshvert = nmeshvert;
+        (*m).nmeshnormal = nmeshnormal;
+        (*m).nmeshtexcoord = nmeshtexcoord;
+        (*m).nmeshface = nmeshface;
+        (*m).nmeshgraph = nmeshgraph;
+        (*m).nmeshpoly = nmeshpoly;
+        (*m).nmeshpolyvert = nmeshpolyvert;
+        (*m).nmeshpolymap = nmeshpolymap;
+        (*m).nskin = nskin;
+        (*m).nskinvert = nskinvert;
+        (*m).nskintexvert = nskintexvert;
+        (*m).nskinface = nskinface;
+        (*m).nskinbone = nskinbone;
+        (*m).nskinbonevert = nskinbonevert;
+        (*m).nhfield = nhfield;
+        (*m).nhfielddata = nhfielddata;
+        (*m).ntex = ntex;
+        (*m).ntexdata = ntexdata;
+        (*m).nmat = nmat;
+        (*m).npair = npair;
+        (*m).nexclude = nexclude;
+        (*m).neq = neq;
+        (*m).ntendon = ntendon;
+        (*m).nJten = nJten;
+        (*m).nwrap = nwrap;
+        (*m).nsensor = nsensor;
+        (*m).nnumeric = nnumeric;
+        (*m).nnumericdata = nnumericdata;
+        (*m).ntext = ntext;
+        (*m).ntextdata = ntextdata;
+        (*m).ntuple = ntuple;
+        (*m).ntupledata = ntupledata;
+        (*m).nkey = nkey;
+        (*m).nmocap = nmocap;
+        (*m).nplugin = nplugin;
+        (*m).npluginattr = npluginattr;
+        (*m).nuser_body = nuser_body;
+        (*m).nuser_jnt = nuser_jnt;
+        (*m).nuser_geom = nuser_geom;
+        (*m).nuser_site = nuser_site;
+        (*m).nuser_cam = nuser_cam;
+        (*m).nuser_tendon = nuser_tendon;
+        (*m).nuser_actuator = nuser_actuator;
+        (*m).nuser_sensor = nuser_sensor;
+        (*m).nnames = nnames;
+        (*m).npaths = npaths;
+
+        // compute nnames_map
+        let nnames_map_val: i64 = nbody + njnt + ngeom + nsite + ncam + nlight + nflex + nmesh + nskin +
+                    nhfield + ntex + nmat + npair + nexclude + neq + ntendon + nu + nsensor +
+                    nnumeric + ntext + ntuple + nkey + nplugin;
+        if nnames_map_val >= i32::MAX as i64 / MJ_LOAD_MULTIPLE {
+            if allocate != 0 { crate::engine::engine_util_errmem::mju_free(m as *mut ()); }
+            crate::engine::engine_util_errmem::mju_warning(
+                b"Invalid model: size of nnames_map is larger than INT_MAX\0".as_ptr() as *const i8);
+            return;
+        }
+        (*m).nnames_map = MJ_LOAD_MULTIPLE * nnames_map_val;
+        (*m).npaths = npaths;
+
+        // compute buffer size (MJMODEL_POINTERS expansion)
+        (*m).nbuffer = 0;
+        if safe_add_to_buffer_size(&mut offset, &mut (*m).nbuffer, 8, (*m).nq, 1_i64) == 0 {
+            if allocate != 0 { crate::engine::engine_util_errmem::mju_free(m as *mut ()); }
+            crate::engine::engine_util_errmem::mju_warning(b"Invalid model: qpos0 too large. ".as_ptr() as *const i8);
+            return;
+        }
+        if safe_add_to_buffer_size(&mut offset, &mut (*m).nbuffer, 8, (*m).nq, 1_i64) == 0 {
+            if allocate != 0 { crate::engine::engine_util_errmem::mju_free(m as *mut ()); }
+            crate::engine::engine_util_errmem::mju_warning(b"Invalid model: qpos_spring too large. ".as_ptr() as *const i8);
+            return;
+        }
+        if safe_add_to_buffer_size(&mut offset, &mut (*m).nbuffer, 4, (*m).nbody, 1_i64) == 0 {
+            if allocate != 0 { crate::engine::engine_util_errmem::mju_free(m as *mut ()); }
+            crate::engine::engine_util_errmem::mju_warning(b"Invalid model: body_parentid too large. ".as_ptr() as *const i8);
+            return;
+        }
+        if safe_add_to_buffer_size(&mut offset, &mut (*m).nbuffer, 4, (*m).nbody, 1_i64) == 0 {
+            if allocate != 0 { crate::engine::engine_util_errmem::mju_free(m as *mut ()); }
+            crate::engine::engine_util_errmem::mju_warning(b"Invalid model: body_rootid too large. ".as_ptr() as *const i8);
+            return;
+        }
+        if safe_add_to_buffer_size(&mut offset, &mut (*m).nbuffer, 4, (*m).nbody, 1_i64) == 0 {
+            if allocate != 0 { crate::engine::engine_util_errmem::mju_free(m as *mut ()); }
+            crate::engine::engine_util_errmem::mju_warning(b"Invalid model: body_weldid too large. ".as_ptr() as *const i8);
+            return;
+        }
+        if safe_add_to_buffer_size(&mut offset, &mut (*m).nbuffer, 4, (*m).nbody, 1_i64) == 0 {
+            if allocate != 0 { crate::engine::engine_util_errmem::mju_free(m as *mut ()); }
+            crate::engine::engine_util_errmem::mju_warning(b"Invalid model: body_mocapid too large. ".as_ptr() as *const i8);
+            return;
+        }
+        if safe_add_to_buffer_size(&mut offset, &mut (*m).nbuffer, 4, (*m).nbody, 1_i64) == 0 {
+            if allocate != 0 { crate::engine::engine_util_errmem::mju_free(m as *mut ()); }
+            crate::engine::engine_util_errmem::mju_warning(b"Invalid model: body_jntnum too large. ".as_ptr() as *const i8);
+            return;
+        }
+        if safe_add_to_buffer_size(&mut offset, &mut (*m).nbuffer, 4, (*m).nbody, 1_i64) == 0 {
+            if allocate != 0 { crate::engine::engine_util_errmem::mju_free(m as *mut ()); }
+            crate::engine::engine_util_errmem::mju_warning(b"Invalid model: body_jntadr too large. ".as_ptr() as *const i8);
+            return;
+        }
+        if safe_add_to_buffer_size(&mut offset, &mut (*m).nbuffer, 4, (*m).nbody, 1_i64) == 0 {
+            if allocate != 0 { crate::engine::engine_util_errmem::mju_free(m as *mut ()); }
+            crate::engine::engine_util_errmem::mju_warning(b"Invalid model: body_dofnum too large. ".as_ptr() as *const i8);
+            return;
+        }
+        if safe_add_to_buffer_size(&mut offset, &mut (*m).nbuffer, 4, (*m).nbody, 1_i64) == 0 {
+            if allocate != 0 { crate::engine::engine_util_errmem::mju_free(m as *mut ()); }
+            crate::engine::engine_util_errmem::mju_warning(b"Invalid model: body_dofadr too large. ".as_ptr() as *const i8);
+            return;
+        }
+        if safe_add_to_buffer_size(&mut offset, &mut (*m).nbuffer, 4, (*m).nbody, 1_i64) == 0 {
+            if allocate != 0 { crate::engine::engine_util_errmem::mju_free(m as *mut ()); }
+            crate::engine::engine_util_errmem::mju_warning(b"Invalid model: body_treeid too large. ".as_ptr() as *const i8);
+            return;
+        }
+        if safe_add_to_buffer_size(&mut offset, &mut (*m).nbuffer, 4, (*m).nbody, 1_i64) == 0 {
+            if allocate != 0 { crate::engine::engine_util_errmem::mju_free(m as *mut ()); }
+            crate::engine::engine_util_errmem::mju_warning(b"Invalid model: body_geomnum too large. ".as_ptr() as *const i8);
+            return;
+        }
+        if safe_add_to_buffer_size(&mut offset, &mut (*m).nbuffer, 4, (*m).nbody, 1_i64) == 0 {
+            if allocate != 0 { crate::engine::engine_util_errmem::mju_free(m as *mut ()); }
+            crate::engine::engine_util_errmem::mju_warning(b"Invalid model: body_geomadr too large. ".as_ptr() as *const i8);
+            return;
+        }
+        if safe_add_to_buffer_size(&mut offset, &mut (*m).nbuffer, 1, (*m).nbody, 1_i64) == 0 {
+            if allocate != 0 { crate::engine::engine_util_errmem::mju_free(m as *mut ()); }
+            crate::engine::engine_util_errmem::mju_warning(b"Invalid model: body_simple too large. ".as_ptr() as *const i8);
+            return;
+        }
+        if safe_add_to_buffer_size(&mut offset, &mut (*m).nbuffer, 1, (*m).nbody, 1_i64) == 0 {
+            if allocate != 0 { crate::engine::engine_util_errmem::mju_free(m as *mut ()); }
+            crate::engine::engine_util_errmem::mju_warning(b"Invalid model: body_sameframe too large. ".as_ptr() as *const i8);
+            return;
+        }
+        if safe_add_to_buffer_size(&mut offset, &mut (*m).nbuffer, 8, (*m).nbody, 3_i64) == 0 {
+            if allocate != 0 { crate::engine::engine_util_errmem::mju_free(m as *mut ()); }
+            crate::engine::engine_util_errmem::mju_warning(b"Invalid model: body_pos too large. ".as_ptr() as *const i8);
+            return;
+        }
+        if safe_add_to_buffer_size(&mut offset, &mut (*m).nbuffer, 8, (*m).nbody, 4_i64) == 0 {
+            if allocate != 0 { crate::engine::engine_util_errmem::mju_free(m as *mut ()); }
+            crate::engine::engine_util_errmem::mju_warning(b"Invalid model: body_quat too large. ".as_ptr() as *const i8);
+            return;
+        }
+        if safe_add_to_buffer_size(&mut offset, &mut (*m).nbuffer, 8, (*m).nbody, 3_i64) == 0 {
+            if allocate != 0 { crate::engine::engine_util_errmem::mju_free(m as *mut ()); }
+            crate::engine::engine_util_errmem::mju_warning(b"Invalid model: body_ipos too large. ".as_ptr() as *const i8);
+            return;
+        }
+        if safe_add_to_buffer_size(&mut offset, &mut (*m).nbuffer, 8, (*m).nbody, 4_i64) == 0 {
+            if allocate != 0 { crate::engine::engine_util_errmem::mju_free(m as *mut ()); }
+            crate::engine::engine_util_errmem::mju_warning(b"Invalid model: body_iquat too large. ".as_ptr() as *const i8);
+            return;
+        }
+        if safe_add_to_buffer_size(&mut offset, &mut (*m).nbuffer, 8, (*m).nbody, 1_i64) == 0 {
+            if allocate != 0 { crate::engine::engine_util_errmem::mju_free(m as *mut ()); }
+            crate::engine::engine_util_errmem::mju_warning(b"Invalid model: body_mass too large. ".as_ptr() as *const i8);
+            return;
+        }
+        if safe_add_to_buffer_size(&mut offset, &mut (*m).nbuffer, 8, (*m).nbody, 1_i64) == 0 {
+            if allocate != 0 { crate::engine::engine_util_errmem::mju_free(m as *mut ()); }
+            crate::engine::engine_util_errmem::mju_warning(b"Invalid model: body_subtreemass too large. ".as_ptr() as *const i8);
+            return;
+        }
+        if safe_add_to_buffer_size(&mut offset, &mut (*m).nbuffer, 8, (*m).nbody, 3_i64) == 0 {
+            if allocate != 0 { crate::engine::engine_util_errmem::mju_free(m as *mut ()); }
+            crate::engine::engine_util_errmem::mju_warning(b"Invalid model: body_inertia too large. ".as_ptr() as *const i8);
+            return;
+        }
+        if safe_add_to_buffer_size(&mut offset, &mut (*m).nbuffer, 8, (*m).nbody, 2_i64) == 0 {
+            if allocate != 0 { crate::engine::engine_util_errmem::mju_free(m as *mut ()); }
+            crate::engine::engine_util_errmem::mju_warning(b"Invalid model: body_invweight0 too large. ".as_ptr() as *const i8);
+            return;
+        }
+        if safe_add_to_buffer_size(&mut offset, &mut (*m).nbuffer, 8, (*m).nbody, 1_i64) == 0 {
+            if allocate != 0 { crate::engine::engine_util_errmem::mju_free(m as *mut ()); }
+            crate::engine::engine_util_errmem::mju_warning(b"Invalid model: body_gravcomp too large. ".as_ptr() as *const i8);
+            return;
+        }
+        if safe_add_to_buffer_size(&mut offset, &mut (*m).nbuffer, 8, (*m).nbody, 1_i64) == 0 {
+            if allocate != 0 { crate::engine::engine_util_errmem::mju_free(m as *mut ()); }
+            crate::engine::engine_util_errmem::mju_warning(b"Invalid model: body_margin too large. ".as_ptr() as *const i8);
+            return;
+        }
+        if safe_add_to_buffer_size(&mut offset, &mut (*m).nbuffer, 8, (*m).nbody, (*m).nuser_body) == 0 {
+            if allocate != 0 { crate::engine::engine_util_errmem::mju_free(m as *mut ()); }
+            crate::engine::engine_util_errmem::mju_warning(b"Invalid model: body_user too large. ".as_ptr() as *const i8);
+            return;
+        }
+        if safe_add_to_buffer_size(&mut offset, &mut (*m).nbuffer, 4, (*m).nbody, 1_i64) == 0 {
+            if allocate != 0 { crate::engine::engine_util_errmem::mju_free(m as *mut ()); }
+            crate::engine::engine_util_errmem::mju_warning(b"Invalid model: body_plugin too large. ".as_ptr() as *const i8);
+            return;
+        }
+        if safe_add_to_buffer_size(&mut offset, &mut (*m).nbuffer, 4, (*m).nbody, 1_i64) == 0 {
+            if allocate != 0 { crate::engine::engine_util_errmem::mju_free(m as *mut ()); }
+            crate::engine::engine_util_errmem::mju_warning(b"Invalid model: body_contype too large. ".as_ptr() as *const i8);
+            return;
+        }
+        if safe_add_to_buffer_size(&mut offset, &mut (*m).nbuffer, 4, (*m).nbody, 1_i64) == 0 {
+            if allocate != 0 { crate::engine::engine_util_errmem::mju_free(m as *mut ()); }
+            crate::engine::engine_util_errmem::mju_warning(b"Invalid model: body_conaffinity too large. ".as_ptr() as *const i8);
+            return;
+        }
+        if safe_add_to_buffer_size(&mut offset, &mut (*m).nbuffer, 4, (*m).nbody, 1_i64) == 0 {
+            if allocate != 0 { crate::engine::engine_util_errmem::mju_free(m as *mut ()); }
+            crate::engine::engine_util_errmem::mju_warning(b"Invalid model: body_bvhadr too large. ".as_ptr() as *const i8);
+            return;
+        }
+        if safe_add_to_buffer_size(&mut offset, &mut (*m).nbuffer, 4, (*m).nbody, 1_i64) == 0 {
+            if allocate != 0 { crate::engine::engine_util_errmem::mju_free(m as *mut ()); }
+            crate::engine::engine_util_errmem::mju_warning(b"Invalid model: body_bvhnum too large. ".as_ptr() as *const i8);
+            return;
+        }
+        if safe_add_to_buffer_size(&mut offset, &mut (*m).nbuffer, 4, (*m).nbvh, 1_i64) == 0 {
+            if allocate != 0 { crate::engine::engine_util_errmem::mju_free(m as *mut ()); }
+            crate::engine::engine_util_errmem::mju_warning(b"Invalid model: bvh_depth too large. ".as_ptr() as *const i8);
+            return;
+        }
+        if safe_add_to_buffer_size(&mut offset, &mut (*m).nbuffer, 4, (*m).nbvh, 2_i64) == 0 {
+            if allocate != 0 { crate::engine::engine_util_errmem::mju_free(m as *mut ()); }
+            crate::engine::engine_util_errmem::mju_warning(b"Invalid model: bvh_child too large. ".as_ptr() as *const i8);
+            return;
+        }
+        if safe_add_to_buffer_size(&mut offset, &mut (*m).nbuffer, 4, (*m).nbvh, 1_i64) == 0 {
+            if allocate != 0 { crate::engine::engine_util_errmem::mju_free(m as *mut ()); }
+            crate::engine::engine_util_errmem::mju_warning(b"Invalid model: bvh_nodeid too large. ".as_ptr() as *const i8);
+            return;
+        }
+        if safe_add_to_buffer_size(&mut offset, &mut (*m).nbuffer, 8, (*m).nbvhstatic, 6_i64) == 0 {
+            if allocate != 0 { crate::engine::engine_util_errmem::mju_free(m as *mut ()); }
+            crate::engine::engine_util_errmem::mju_warning(b"Invalid model: bvh_aabb too large. ".as_ptr() as *const i8);
+            return;
+        }
+        if safe_add_to_buffer_size(&mut offset, &mut (*m).nbuffer, 4, (*m).noct, 1_i64) == 0 {
+            if allocate != 0 { crate::engine::engine_util_errmem::mju_free(m as *mut ()); }
+            crate::engine::engine_util_errmem::mju_warning(b"Invalid model: oct_depth too large. ".as_ptr() as *const i8);
+            return;
+        }
+        if safe_add_to_buffer_size(&mut offset, &mut (*m).nbuffer, 4, (*m).noct, 8_i64) == 0 {
+            if allocate != 0 { crate::engine::engine_util_errmem::mju_free(m as *mut ()); }
+            crate::engine::engine_util_errmem::mju_warning(b"Invalid model: oct_child too large. ".as_ptr() as *const i8);
+            return;
+        }
+        if safe_add_to_buffer_size(&mut offset, &mut (*m).nbuffer, 8, (*m).noct, 6_i64) == 0 {
+            if allocate != 0 { crate::engine::engine_util_errmem::mju_free(m as *mut ()); }
+            crate::engine::engine_util_errmem::mju_warning(b"Invalid model: oct_aabb too large. ".as_ptr() as *const i8);
+            return;
+        }
+        if safe_add_to_buffer_size(&mut offset, &mut (*m).nbuffer, 8, (*m).noct, 8_i64) == 0 {
+            if allocate != 0 { crate::engine::engine_util_errmem::mju_free(m as *mut ()); }
+            crate::engine::engine_util_errmem::mju_warning(b"Invalid model: oct_coeff too large. ".as_ptr() as *const i8);
+            return;
+        }
+        if safe_add_to_buffer_size(&mut offset, &mut (*m).nbuffer, 4, (*m).njnt, 1_i64) == 0 {
+            if allocate != 0 { crate::engine::engine_util_errmem::mju_free(m as *mut ()); }
+            crate::engine::engine_util_errmem::mju_warning(b"Invalid model: jnt_type too large. ".as_ptr() as *const i8);
+            return;
+        }
+        if safe_add_to_buffer_size(&mut offset, &mut (*m).nbuffer, 4, (*m).njnt, 1_i64) == 0 {
+            if allocate != 0 { crate::engine::engine_util_errmem::mju_free(m as *mut ()); }
+            crate::engine::engine_util_errmem::mju_warning(b"Invalid model: jnt_qposadr too large. ".as_ptr() as *const i8);
+            return;
+        }
+        if safe_add_to_buffer_size(&mut offset, &mut (*m).nbuffer, 4, (*m).njnt, 1_i64) == 0 {
+            if allocate != 0 { crate::engine::engine_util_errmem::mju_free(m as *mut ()); }
+            crate::engine::engine_util_errmem::mju_warning(b"Invalid model: jnt_dofadr too large. ".as_ptr() as *const i8);
+            return;
+        }
+        if safe_add_to_buffer_size(&mut offset, &mut (*m).nbuffer, 4, (*m).njnt, 1_i64) == 0 {
+            if allocate != 0 { crate::engine::engine_util_errmem::mju_free(m as *mut ()); }
+            crate::engine::engine_util_errmem::mju_warning(b"Invalid model: jnt_bodyid too large. ".as_ptr() as *const i8);
+            return;
+        }
+        if safe_add_to_buffer_size(&mut offset, &mut (*m).nbuffer, 4, (*m).njnt, 1_i64) == 0 {
+            if allocate != 0 { crate::engine::engine_util_errmem::mju_free(m as *mut ()); }
+            crate::engine::engine_util_errmem::mju_warning(b"Invalid model: jnt_actuatorid too large. ".as_ptr() as *const i8);
+            return;
+        }
+        if safe_add_to_buffer_size(&mut offset, &mut (*m).nbuffer, 4, (*m).njnt, 1_i64) == 0 {
+            if allocate != 0 { crate::engine::engine_util_errmem::mju_free(m as *mut ()); }
+            crate::engine::engine_util_errmem::mju_warning(b"Invalid model: jnt_group too large. ".as_ptr() as *const i8);
+            return;
+        }
+        if safe_add_to_buffer_size(&mut offset, &mut (*m).nbuffer, 1, (*m).njnt, 1_i64) == 0 {
+            if allocate != 0 { crate::engine::engine_util_errmem::mju_free(m as *mut ()); }
+            crate::engine::engine_util_errmem::mju_warning(b"Invalid model: jnt_limited too large. ".as_ptr() as *const i8);
+            return;
+        }
+        if safe_add_to_buffer_size(&mut offset, &mut (*m).nbuffer, 1, (*m).njnt, 1_i64) == 0 {
+            if allocate != 0 { crate::engine::engine_util_errmem::mju_free(m as *mut ()); }
+            crate::engine::engine_util_errmem::mju_warning(b"Invalid model: jnt_actfrclimited too large. ".as_ptr() as *const i8);
+            return;
+        }
+        if safe_add_to_buffer_size(&mut offset, &mut (*m).nbuffer, 1, (*m).njnt, 1_i64) == 0 {
+            if allocate != 0 { crate::engine::engine_util_errmem::mju_free(m as *mut ()); }
+            crate::engine::engine_util_errmem::mju_warning(b"Invalid model: jnt_actgravcomp too large. ".as_ptr() as *const i8);
+            return;
+        }
+        if safe_add_to_buffer_size(&mut offset, &mut (*m).nbuffer, 8, (*m).njnt, 2_i64) == 0 {
+            if allocate != 0 { crate::engine::engine_util_errmem::mju_free(m as *mut ()); }
+            crate::engine::engine_util_errmem::mju_warning(b"Invalid model: jnt_solref too large. ".as_ptr() as *const i8);
+            return;
+        }
+        if safe_add_to_buffer_size(&mut offset, &mut (*m).nbuffer, 8, (*m).njnt, 5_i64) == 0 {
+            if allocate != 0 { crate::engine::engine_util_errmem::mju_free(m as *mut ()); }
+            crate::engine::engine_util_errmem::mju_warning(b"Invalid model: jnt_solimp too large. ".as_ptr() as *const i8);
+            return;
+        }
+        if safe_add_to_buffer_size(&mut offset, &mut (*m).nbuffer, 8, (*m).njnt, 3_i64) == 0 {
+            if allocate != 0 { crate::engine::engine_util_errmem::mju_free(m as *mut ()); }
+            crate::engine::engine_util_errmem::mju_warning(b"Invalid model: jnt_pos too large. ".as_ptr() as *const i8);
+            return;
+        }
+        if safe_add_to_buffer_size(&mut offset, &mut (*m).nbuffer, 8, (*m).njnt, 3_i64) == 0 {
+            if allocate != 0 { crate::engine::engine_util_errmem::mju_free(m as *mut ()); }
+            crate::engine::engine_util_errmem::mju_warning(b"Invalid model: jnt_axis too large. ".as_ptr() as *const i8);
+            return;
+        }
+        if safe_add_to_buffer_size(&mut offset, &mut (*m).nbuffer, 8, (*m).njnt, 1_i64) == 0 {
+            if allocate != 0 { crate::engine::engine_util_errmem::mju_free(m as *mut ()); }
+            crate::engine::engine_util_errmem::mju_warning(b"Invalid model: jnt_stiffness too large. ".as_ptr() as *const i8);
+            return;
+        }
+        if safe_add_to_buffer_size(&mut offset, &mut (*m).nbuffer, 8, (*m).njnt, 2_i64) == 0 {
+            if allocate != 0 { crate::engine::engine_util_errmem::mju_free(m as *mut ()); }
+            crate::engine::engine_util_errmem::mju_warning(b"Invalid model: jnt_stiffnesspoly too large. ".as_ptr() as *const i8);
+            return;
+        }
+        if safe_add_to_buffer_size(&mut offset, &mut (*m).nbuffer, 8, (*m).njnt, 2_i64) == 0 {
+            if allocate != 0 { crate::engine::engine_util_errmem::mju_free(m as *mut ()); }
+            crate::engine::engine_util_errmem::mju_warning(b"Invalid model: jnt_range too large. ".as_ptr() as *const i8);
+            return;
+        }
+        if safe_add_to_buffer_size(&mut offset, &mut (*m).nbuffer, 8, (*m).njnt, 2_i64) == 0 {
+            if allocate != 0 { crate::engine::engine_util_errmem::mju_free(m as *mut ()); }
+            crate::engine::engine_util_errmem::mju_warning(b"Invalid model: jnt_actfrcrange too large. ".as_ptr() as *const i8);
+            return;
+        }
+        if safe_add_to_buffer_size(&mut offset, &mut (*m).nbuffer, 8, (*m).njnt, 1_i64) == 0 {
+            if allocate != 0 { crate::engine::engine_util_errmem::mju_free(m as *mut ()); }
+            crate::engine::engine_util_errmem::mju_warning(b"Invalid model: jnt_margin too large. ".as_ptr() as *const i8);
+            return;
+        }
+        if safe_add_to_buffer_size(&mut offset, &mut (*m).nbuffer, 8, (*m).njnt, (*m).nuser_jnt) == 0 {
+            if allocate != 0 { crate::engine::engine_util_errmem::mju_free(m as *mut ()); }
+            crate::engine::engine_util_errmem::mju_warning(b"Invalid model: jnt_user too large. ".as_ptr() as *const i8);
+            return;
+        }
+        if safe_add_to_buffer_size(&mut offset, &mut (*m).nbuffer, 4, (*m).nv, 1_i64) == 0 {
+            if allocate != 0 { crate::engine::engine_util_errmem::mju_free(m as *mut ()); }
+            crate::engine::engine_util_errmem::mju_warning(b"Invalid model: dof_bodyid too large. ".as_ptr() as *const i8);
+            return;
+        }
+        if safe_add_to_buffer_size(&mut offset, &mut (*m).nbuffer, 4, (*m).nv, 1_i64) == 0 {
+            if allocate != 0 { crate::engine::engine_util_errmem::mju_free(m as *mut ()); }
+            crate::engine::engine_util_errmem::mju_warning(b"Invalid model: dof_jntid too large. ".as_ptr() as *const i8);
+            return;
+        }
+        if safe_add_to_buffer_size(&mut offset, &mut (*m).nbuffer, 4, (*m).nv, 1_i64) == 0 {
+            if allocate != 0 { crate::engine::engine_util_errmem::mju_free(m as *mut ()); }
+            crate::engine::engine_util_errmem::mju_warning(b"Invalid model: dof_parentid too large. ".as_ptr() as *const i8);
+            return;
+        }
+        if safe_add_to_buffer_size(&mut offset, &mut (*m).nbuffer, 4, (*m).nv, 1_i64) == 0 {
+            if allocate != 0 { crate::engine::engine_util_errmem::mju_free(m as *mut ()); }
+            crate::engine::engine_util_errmem::mju_warning(b"Invalid model: dof_treeid too large. ".as_ptr() as *const i8);
+            return;
+        }
+        if safe_add_to_buffer_size(&mut offset, &mut (*m).nbuffer, 4, (*m).nv, 1_i64) == 0 {
+            if allocate != 0 { crate::engine::engine_util_errmem::mju_free(m as *mut ()); }
+            crate::engine::engine_util_errmem::mju_warning(b"Invalid model: dof_Madr too large. ".as_ptr() as *const i8);
+            return;
+        }
+        if safe_add_to_buffer_size(&mut offset, &mut (*m).nbuffer, 4, (*m).nv, 1_i64) == 0 {
+            if allocate != 0 { crate::engine::engine_util_errmem::mju_free(m as *mut ()); }
+            crate::engine::engine_util_errmem::mju_warning(b"Invalid model: dof_simplenum too large. ".as_ptr() as *const i8);
+            return;
+        }
+        if safe_add_to_buffer_size(&mut offset, &mut (*m).nbuffer, 8, (*m).nv, 2_i64) == 0 {
+            if allocate != 0 { crate::engine::engine_util_errmem::mju_free(m as *mut ()); }
+            crate::engine::engine_util_errmem::mju_warning(b"Invalid model: dof_solref too large. ".as_ptr() as *const i8);
+            return;
+        }
+        if safe_add_to_buffer_size(&mut offset, &mut (*m).nbuffer, 8, (*m).nv, 5_i64) == 0 {
+            if allocate != 0 { crate::engine::engine_util_errmem::mju_free(m as *mut ()); }
+            crate::engine::engine_util_errmem::mju_warning(b"Invalid model: dof_solimp too large. ".as_ptr() as *const i8);
+            return;
+        }
+        if safe_add_to_buffer_size(&mut offset, &mut (*m).nbuffer, 8, (*m).nv, 1_i64) == 0 {
+            if allocate != 0 { crate::engine::engine_util_errmem::mju_free(m as *mut ()); }
+            crate::engine::engine_util_errmem::mju_warning(b"Invalid model: dof_frictionloss too large. ".as_ptr() as *const i8);
+            return;
+        }
+        if safe_add_to_buffer_size(&mut offset, &mut (*m).nbuffer, 8, (*m).nv, 1_i64) == 0 {
+            if allocate != 0 { crate::engine::engine_util_errmem::mju_free(m as *mut ()); }
+            crate::engine::engine_util_errmem::mju_warning(b"Invalid model: dof_armature too large. ".as_ptr() as *const i8);
+            return;
+        }
+        if safe_add_to_buffer_size(&mut offset, &mut (*m).nbuffer, 8, (*m).nv, 1_i64) == 0 {
+            if allocate != 0 { crate::engine::engine_util_errmem::mju_free(m as *mut ()); }
+            crate::engine::engine_util_errmem::mju_warning(b"Invalid model: dof_damping too large. ".as_ptr() as *const i8);
+            return;
+        }
+        if safe_add_to_buffer_size(&mut offset, &mut (*m).nbuffer, 8, (*m).nv, 2_i64) == 0 {
+            if allocate != 0 { crate::engine::engine_util_errmem::mju_free(m as *mut ()); }
+            crate::engine::engine_util_errmem::mju_warning(b"Invalid model: dof_dampingpoly too large. ".as_ptr() as *const i8);
+            return;
+        }
+        if safe_add_to_buffer_size(&mut offset, &mut (*m).nbuffer, 8, (*m).nv, 1_i64) == 0 {
+            if allocate != 0 { crate::engine::engine_util_errmem::mju_free(m as *mut ()); }
+            crate::engine::engine_util_errmem::mju_warning(b"Invalid model: dof_invweight0 too large. ".as_ptr() as *const i8);
+            return;
+        }
+        if safe_add_to_buffer_size(&mut offset, &mut (*m).nbuffer, 8, (*m).nv, 1_i64) == 0 {
+            if allocate != 0 { crate::engine::engine_util_errmem::mju_free(m as *mut ()); }
+            crate::engine::engine_util_errmem::mju_warning(b"Invalid model: dof_M0 too large. ".as_ptr() as *const i8);
+            return;
+        }
+        if safe_add_to_buffer_size(&mut offset, &mut (*m).nbuffer, 8, (*m).nv, 1_i64) == 0 {
+            if allocate != 0 { crate::engine::engine_util_errmem::mju_free(m as *mut ()); }
+            crate::engine::engine_util_errmem::mju_warning(b"Invalid model: dof_length too large. ".as_ptr() as *const i8);
+            return;
+        }
+        if safe_add_to_buffer_size(&mut offset, &mut (*m).nbuffer, 4, (*m).ntree, 1_i64) == 0 {
+            if allocate != 0 { crate::engine::engine_util_errmem::mju_free(m as *mut ()); }
+            crate::engine::engine_util_errmem::mju_warning(b"Invalid model: tree_bodyadr too large. ".as_ptr() as *const i8);
+            return;
+        }
+        if safe_add_to_buffer_size(&mut offset, &mut (*m).nbuffer, 4, (*m).ntree, 1_i64) == 0 {
+            if allocate != 0 { crate::engine::engine_util_errmem::mju_free(m as *mut ()); }
+            crate::engine::engine_util_errmem::mju_warning(b"Invalid model: tree_bodynum too large. ".as_ptr() as *const i8);
+            return;
+        }
+        if safe_add_to_buffer_size(&mut offset, &mut (*m).nbuffer, 4, (*m).ntree, 1_i64) == 0 {
+            if allocate != 0 { crate::engine::engine_util_errmem::mju_free(m as *mut ()); }
+            crate::engine::engine_util_errmem::mju_warning(b"Invalid model: tree_dofadr too large. ".as_ptr() as *const i8);
+            return;
+        }
+        if safe_add_to_buffer_size(&mut offset, &mut (*m).nbuffer, 4, (*m).ntree, 1_i64) == 0 {
+            if allocate != 0 { crate::engine::engine_util_errmem::mju_free(m as *mut ()); }
+            crate::engine::engine_util_errmem::mju_warning(b"Invalid model: tree_dofnum too large. ".as_ptr() as *const i8);
+            return;
+        }
+        if safe_add_to_buffer_size(&mut offset, &mut (*m).nbuffer, 4, (*m).ntree, 1_i64) == 0 {
+            if allocate != 0 { crate::engine::engine_util_errmem::mju_free(m as *mut ()); }
+            crate::engine::engine_util_errmem::mju_warning(b"Invalid model: tree_sleep_policy too large. ".as_ptr() as *const i8);
+            return;
+        }
+        if safe_add_to_buffer_size(&mut offset, &mut (*m).nbuffer, 4, (*m).ngeom, 1_i64) == 0 {
+            if allocate != 0 { crate::engine::engine_util_errmem::mju_free(m as *mut ()); }
+            crate::engine::engine_util_errmem::mju_warning(b"Invalid model: geom_type too large. ".as_ptr() as *const i8);
+            return;
+        }
+        if safe_add_to_buffer_size(&mut offset, &mut (*m).nbuffer, 4, (*m).ngeom, 1_i64) == 0 {
+            if allocate != 0 { crate::engine::engine_util_errmem::mju_free(m as *mut ()); }
+            crate::engine::engine_util_errmem::mju_warning(b"Invalid model: geom_contype too large. ".as_ptr() as *const i8);
+            return;
+        }
+        if safe_add_to_buffer_size(&mut offset, &mut (*m).nbuffer, 4, (*m).ngeom, 1_i64) == 0 {
+            if allocate != 0 { crate::engine::engine_util_errmem::mju_free(m as *mut ()); }
+            crate::engine::engine_util_errmem::mju_warning(b"Invalid model: geom_conaffinity too large. ".as_ptr() as *const i8);
+            return;
+        }
+        if safe_add_to_buffer_size(&mut offset, &mut (*m).nbuffer, 4, (*m).ngeom, 1_i64) == 0 {
+            if allocate != 0 { crate::engine::engine_util_errmem::mju_free(m as *mut ()); }
+            crate::engine::engine_util_errmem::mju_warning(b"Invalid model: geom_condim too large. ".as_ptr() as *const i8);
+            return;
+        }
+        if safe_add_to_buffer_size(&mut offset, &mut (*m).nbuffer, 4, (*m).ngeom, 1_i64) == 0 {
+            if allocate != 0 { crate::engine::engine_util_errmem::mju_free(m as *mut ()); }
+            crate::engine::engine_util_errmem::mju_warning(b"Invalid model: geom_bodyid too large. ".as_ptr() as *const i8);
+            return;
+        }
+        if safe_add_to_buffer_size(&mut offset, &mut (*m).nbuffer, 4, (*m).ngeom, 1_i64) == 0 {
+            if allocate != 0 { crate::engine::engine_util_errmem::mju_free(m as *mut ()); }
+            crate::engine::engine_util_errmem::mju_warning(b"Invalid model: geom_dataid too large. ".as_ptr() as *const i8);
+            return;
+        }
+        if safe_add_to_buffer_size(&mut offset, &mut (*m).nbuffer, 4, (*m).ngeom, 1_i64) == 0 {
+            if allocate != 0 { crate::engine::engine_util_errmem::mju_free(m as *mut ()); }
+            crate::engine::engine_util_errmem::mju_warning(b"Invalid model: geom_matid too large. ".as_ptr() as *const i8);
+            return;
+        }
+        if safe_add_to_buffer_size(&mut offset, &mut (*m).nbuffer, 4, (*m).ngeom, 1_i64) == 0 {
+            if allocate != 0 { crate::engine::engine_util_errmem::mju_free(m as *mut ()); }
+            crate::engine::engine_util_errmem::mju_warning(b"Invalid model: geom_group too large. ".as_ptr() as *const i8);
+            return;
+        }
+        if safe_add_to_buffer_size(&mut offset, &mut (*m).nbuffer, 4, (*m).ngeom, 1_i64) == 0 {
+            if allocate != 0 { crate::engine::engine_util_errmem::mju_free(m as *mut ()); }
+            crate::engine::engine_util_errmem::mju_warning(b"Invalid model: geom_priority too large. ".as_ptr() as *const i8);
+            return;
+        }
+        if safe_add_to_buffer_size(&mut offset, &mut (*m).nbuffer, 4, (*m).ngeom, 1_i64) == 0 {
+            if allocate != 0 { crate::engine::engine_util_errmem::mju_free(m as *mut ()); }
+            crate::engine::engine_util_errmem::mju_warning(b"Invalid model: geom_plugin too large. ".as_ptr() as *const i8);
+            return;
+        }
+        if safe_add_to_buffer_size(&mut offset, &mut (*m).nbuffer, 1, (*m).ngeom, 1_i64) == 0 {
+            if allocate != 0 { crate::engine::engine_util_errmem::mju_free(m as *mut ()); }
+            crate::engine::engine_util_errmem::mju_warning(b"Invalid model: geom_sameframe too large. ".as_ptr() as *const i8);
+            return;
+        }
+        if safe_add_to_buffer_size(&mut offset, &mut (*m).nbuffer, 8, (*m).ngeom, 1_i64) == 0 {
+            if allocate != 0 { crate::engine::engine_util_errmem::mju_free(m as *mut ()); }
+            crate::engine::engine_util_errmem::mju_warning(b"Invalid model: geom_solmix too large. ".as_ptr() as *const i8);
+            return;
+        }
+        if safe_add_to_buffer_size(&mut offset, &mut (*m).nbuffer, 8, (*m).ngeom, 2_i64) == 0 {
+            if allocate != 0 { crate::engine::engine_util_errmem::mju_free(m as *mut ()); }
+            crate::engine::engine_util_errmem::mju_warning(b"Invalid model: geom_solref too large. ".as_ptr() as *const i8);
+            return;
+        }
+        if safe_add_to_buffer_size(&mut offset, &mut (*m).nbuffer, 8, (*m).ngeom, 5_i64) == 0 {
+            if allocate != 0 { crate::engine::engine_util_errmem::mju_free(m as *mut ()); }
+            crate::engine::engine_util_errmem::mju_warning(b"Invalid model: geom_solimp too large. ".as_ptr() as *const i8);
+            return;
+        }
+        if safe_add_to_buffer_size(&mut offset, &mut (*m).nbuffer, 8, (*m).ngeom, 3_i64) == 0 {
+            if allocate != 0 { crate::engine::engine_util_errmem::mju_free(m as *mut ()); }
+            crate::engine::engine_util_errmem::mju_warning(b"Invalid model: geom_size too large. ".as_ptr() as *const i8);
+            return;
+        }
+        if safe_add_to_buffer_size(&mut offset, &mut (*m).nbuffer, 8, (*m).ngeom, 6_i64) == 0 {
+            if allocate != 0 { crate::engine::engine_util_errmem::mju_free(m as *mut ()); }
+            crate::engine::engine_util_errmem::mju_warning(b"Invalid model: geom_aabb too large. ".as_ptr() as *const i8);
+            return;
+        }
+        if safe_add_to_buffer_size(&mut offset, &mut (*m).nbuffer, 8, (*m).ngeom, 1_i64) == 0 {
+            if allocate != 0 { crate::engine::engine_util_errmem::mju_free(m as *mut ()); }
+            crate::engine::engine_util_errmem::mju_warning(b"Invalid model: geom_rbound too large. ".as_ptr() as *const i8);
+            return;
+        }
+        if safe_add_to_buffer_size(&mut offset, &mut (*m).nbuffer, 8, (*m).ngeom, 3_i64) == 0 {
+            if allocate != 0 { crate::engine::engine_util_errmem::mju_free(m as *mut ()); }
+            crate::engine::engine_util_errmem::mju_warning(b"Invalid model: geom_pos too large. ".as_ptr() as *const i8);
+            return;
+        }
+        if safe_add_to_buffer_size(&mut offset, &mut (*m).nbuffer, 8, (*m).ngeom, 4_i64) == 0 {
+            if allocate != 0 { crate::engine::engine_util_errmem::mju_free(m as *mut ()); }
+            crate::engine::engine_util_errmem::mju_warning(b"Invalid model: geom_quat too large. ".as_ptr() as *const i8);
+            return;
+        }
+        if safe_add_to_buffer_size(&mut offset, &mut (*m).nbuffer, 8, (*m).ngeom, 3_i64) == 0 {
+            if allocate != 0 { crate::engine::engine_util_errmem::mju_free(m as *mut ()); }
+            crate::engine::engine_util_errmem::mju_warning(b"Invalid model: geom_friction too large. ".as_ptr() as *const i8);
+            return;
+        }
+        if safe_add_to_buffer_size(&mut offset, &mut (*m).nbuffer, 8, (*m).ngeom, 1_i64) == 0 {
+            if allocate != 0 { crate::engine::engine_util_errmem::mju_free(m as *mut ()); }
+            crate::engine::engine_util_errmem::mju_warning(b"Invalid model: geom_margin too large. ".as_ptr() as *const i8);
+            return;
+        }
+        if safe_add_to_buffer_size(&mut offset, &mut (*m).nbuffer, 8, (*m).ngeom, 1_i64) == 0 {
+            if allocate != 0 { crate::engine::engine_util_errmem::mju_free(m as *mut ()); }
+            crate::engine::engine_util_errmem::mju_warning(b"Invalid model: geom_gap too large. ".as_ptr() as *const i8);
+            return;
+        }
+        if safe_add_to_buffer_size(&mut offset, &mut (*m).nbuffer, 8, (*m).ngeom, 12_i64) == 0 {
+            if allocate != 0 { crate::engine::engine_util_errmem::mju_free(m as *mut ()); }
+            crate::engine::engine_util_errmem::mju_warning(b"Invalid model: geom_fluid too large. ".as_ptr() as *const i8);
+            return;
+        }
+        if safe_add_to_buffer_size(&mut offset, &mut (*m).nbuffer, 8, (*m).ngeom, (*m).nuser_geom) == 0 {
+            if allocate != 0 { crate::engine::engine_util_errmem::mju_free(m as *mut ()); }
+            crate::engine::engine_util_errmem::mju_warning(b"Invalid model: geom_user too large. ".as_ptr() as *const i8);
+            return;
+        }
+        if safe_add_to_buffer_size(&mut offset, &mut (*m).nbuffer, 4, (*m).ngeom, 4_i64) == 0 {
+            if allocate != 0 { crate::engine::engine_util_errmem::mju_free(m as *mut ()); }
+            crate::engine::engine_util_errmem::mju_warning(b"Invalid model: geom_rgba too large. ".as_ptr() as *const i8);
+            return;
+        }
+        if safe_add_to_buffer_size(&mut offset, &mut (*m).nbuffer, 4, (*m).nsite, 1_i64) == 0 {
+            if allocate != 0 { crate::engine::engine_util_errmem::mju_free(m as *mut ()); }
+            crate::engine::engine_util_errmem::mju_warning(b"Invalid model: site_type too large. ".as_ptr() as *const i8);
+            return;
+        }
+        if safe_add_to_buffer_size(&mut offset, &mut (*m).nbuffer, 4, (*m).nsite, 1_i64) == 0 {
+            if allocate != 0 { crate::engine::engine_util_errmem::mju_free(m as *mut ()); }
+            crate::engine::engine_util_errmem::mju_warning(b"Invalid model: site_bodyid too large. ".as_ptr() as *const i8);
+            return;
+        }
+        if safe_add_to_buffer_size(&mut offset, &mut (*m).nbuffer, 4, (*m).nsite, 1_i64) == 0 {
+            if allocate != 0 { crate::engine::engine_util_errmem::mju_free(m as *mut ()); }
+            crate::engine::engine_util_errmem::mju_warning(b"Invalid model: site_matid too large. ".as_ptr() as *const i8);
+            return;
+        }
+        if safe_add_to_buffer_size(&mut offset, &mut (*m).nbuffer, 4, (*m).nsite, 1_i64) == 0 {
+            if allocate != 0 { crate::engine::engine_util_errmem::mju_free(m as *mut ()); }
+            crate::engine::engine_util_errmem::mju_warning(b"Invalid model: site_group too large. ".as_ptr() as *const i8);
+            return;
+        }
+        if safe_add_to_buffer_size(&mut offset, &mut (*m).nbuffer, 1, (*m).nsite, 1_i64) == 0 {
+            if allocate != 0 { crate::engine::engine_util_errmem::mju_free(m as *mut ()); }
+            crate::engine::engine_util_errmem::mju_warning(b"Invalid model: site_sameframe too large. ".as_ptr() as *const i8);
+            return;
+        }
+        if safe_add_to_buffer_size(&mut offset, &mut (*m).nbuffer, 8, (*m).nsite, 3_i64) == 0 {
+            if allocate != 0 { crate::engine::engine_util_errmem::mju_free(m as *mut ()); }
+            crate::engine::engine_util_errmem::mju_warning(b"Invalid model: site_size too large. ".as_ptr() as *const i8);
+            return;
+        }
+        if safe_add_to_buffer_size(&mut offset, &mut (*m).nbuffer, 8, (*m).nsite, 3_i64) == 0 {
+            if allocate != 0 { crate::engine::engine_util_errmem::mju_free(m as *mut ()); }
+            crate::engine::engine_util_errmem::mju_warning(b"Invalid model: site_pos too large. ".as_ptr() as *const i8);
+            return;
+        }
+        if safe_add_to_buffer_size(&mut offset, &mut (*m).nbuffer, 8, (*m).nsite, 4_i64) == 0 {
+            if allocate != 0 { crate::engine::engine_util_errmem::mju_free(m as *mut ()); }
+            crate::engine::engine_util_errmem::mju_warning(b"Invalid model: site_quat too large. ".as_ptr() as *const i8);
+            return;
+        }
+        if safe_add_to_buffer_size(&mut offset, &mut (*m).nbuffer, 8, (*m).nsite, (*m).nuser_site) == 0 {
+            if allocate != 0 { crate::engine::engine_util_errmem::mju_free(m as *mut ()); }
+            crate::engine::engine_util_errmem::mju_warning(b"Invalid model: site_user too large. ".as_ptr() as *const i8);
+            return;
+        }
+        if safe_add_to_buffer_size(&mut offset, &mut (*m).nbuffer, 4, (*m).nsite, 4_i64) == 0 {
+            if allocate != 0 { crate::engine::engine_util_errmem::mju_free(m as *mut ()); }
+            crate::engine::engine_util_errmem::mju_warning(b"Invalid model: site_rgba too large. ".as_ptr() as *const i8);
+            return;
+        }
+        if safe_add_to_buffer_size(&mut offset, &mut (*m).nbuffer, 4, (*m).ncam, 1_i64) == 0 {
+            if allocate != 0 { crate::engine::engine_util_errmem::mju_free(m as *mut ()); }
+            crate::engine::engine_util_errmem::mju_warning(b"Invalid model: cam_mode too large. ".as_ptr() as *const i8);
+            return;
+        }
+        if safe_add_to_buffer_size(&mut offset, &mut (*m).nbuffer, 4, (*m).ncam, 1_i64) == 0 {
+            if allocate != 0 { crate::engine::engine_util_errmem::mju_free(m as *mut ()); }
+            crate::engine::engine_util_errmem::mju_warning(b"Invalid model: cam_bodyid too large. ".as_ptr() as *const i8);
+            return;
+        }
+        if safe_add_to_buffer_size(&mut offset, &mut (*m).nbuffer, 4, (*m).ncam, 1_i64) == 0 {
+            if allocate != 0 { crate::engine::engine_util_errmem::mju_free(m as *mut ()); }
+            crate::engine::engine_util_errmem::mju_warning(b"Invalid model: cam_targetbodyid too large. ".as_ptr() as *const i8);
+            return;
+        }
+        if safe_add_to_buffer_size(&mut offset, &mut (*m).nbuffer, 8, (*m).ncam, 3_i64) == 0 {
+            if allocate != 0 { crate::engine::engine_util_errmem::mju_free(m as *mut ()); }
+            crate::engine::engine_util_errmem::mju_warning(b"Invalid model: cam_pos too large. ".as_ptr() as *const i8);
+            return;
+        }
+        if safe_add_to_buffer_size(&mut offset, &mut (*m).nbuffer, 8, (*m).ncam, 4_i64) == 0 {
+            if allocate != 0 { crate::engine::engine_util_errmem::mju_free(m as *mut ()); }
+            crate::engine::engine_util_errmem::mju_warning(b"Invalid model: cam_quat too large. ".as_ptr() as *const i8);
+            return;
+        }
+        if safe_add_to_buffer_size(&mut offset, &mut (*m).nbuffer, 8, (*m).ncam, 3_i64) == 0 {
+            if allocate != 0 { crate::engine::engine_util_errmem::mju_free(m as *mut ()); }
+            crate::engine::engine_util_errmem::mju_warning(b"Invalid model: cam_poscom0 too large. ".as_ptr() as *const i8);
+            return;
+        }
+        if safe_add_to_buffer_size(&mut offset, &mut (*m).nbuffer, 8, (*m).ncam, 3_i64) == 0 {
+            if allocate != 0 { crate::engine::engine_util_errmem::mju_free(m as *mut ()); }
+            crate::engine::engine_util_errmem::mju_warning(b"Invalid model: cam_pos0 too large. ".as_ptr() as *const i8);
+            return;
+        }
+        if safe_add_to_buffer_size(&mut offset, &mut (*m).nbuffer, 8, (*m).ncam, 9_i64) == 0 {
+            if allocate != 0 { crate::engine::engine_util_errmem::mju_free(m as *mut ()); }
+            crate::engine::engine_util_errmem::mju_warning(b"Invalid model: cam_mat0 too large. ".as_ptr() as *const i8);
+            return;
+        }
+        if safe_add_to_buffer_size(&mut offset, &mut (*m).nbuffer, 4, (*m).ncam, 1_i64) == 0 {
+            if allocate != 0 { crate::engine::engine_util_errmem::mju_free(m as *mut ()); }
+            crate::engine::engine_util_errmem::mju_warning(b"Invalid model: cam_projection too large. ".as_ptr() as *const i8);
+            return;
+        }
+        if safe_add_to_buffer_size(&mut offset, &mut (*m).nbuffer, 8, (*m).ncam, 1_i64) == 0 {
+            if allocate != 0 { crate::engine::engine_util_errmem::mju_free(m as *mut ()); }
+            crate::engine::engine_util_errmem::mju_warning(b"Invalid model: cam_fovy too large. ".as_ptr() as *const i8);
+            return;
+        }
+        if safe_add_to_buffer_size(&mut offset, &mut (*m).nbuffer, 8, (*m).ncam, 1_i64) == 0 {
+            if allocate != 0 { crate::engine::engine_util_errmem::mju_free(m as *mut ()); }
+            crate::engine::engine_util_errmem::mju_warning(b"Invalid model: cam_ipd too large. ".as_ptr() as *const i8);
+            return;
+        }
+        if safe_add_to_buffer_size(&mut offset, &mut (*m).nbuffer, 4, (*m).ncam, 2_i64) == 0 {
+            if allocate != 0 { crate::engine::engine_util_errmem::mju_free(m as *mut ()); }
+            crate::engine::engine_util_errmem::mju_warning(b"Invalid model: cam_resolution too large. ".as_ptr() as *const i8);
+            return;
+        }
+        if safe_add_to_buffer_size(&mut offset, &mut (*m).nbuffer, 4, (*m).ncam, 1_i64) == 0 {
+            if allocate != 0 { crate::engine::engine_util_errmem::mju_free(m as *mut ()); }
+            crate::engine::engine_util_errmem::mju_warning(b"Invalid model: cam_output too large. ".as_ptr() as *const i8);
+            return;
+        }
+        if safe_add_to_buffer_size(&mut offset, &mut (*m).nbuffer, 4, (*m).ncam, 2_i64) == 0 {
+            if allocate != 0 { crate::engine::engine_util_errmem::mju_free(m as *mut ()); }
+            crate::engine::engine_util_errmem::mju_warning(b"Invalid model: cam_sensorsize too large. ".as_ptr() as *const i8);
+            return;
+        }
+        if safe_add_to_buffer_size(&mut offset, &mut (*m).nbuffer, 4, (*m).ncam, 4_i64) == 0 {
+            if allocate != 0 { crate::engine::engine_util_errmem::mju_free(m as *mut ()); }
+            crate::engine::engine_util_errmem::mju_warning(b"Invalid model: cam_intrinsic too large. ".as_ptr() as *const i8);
+            return;
+        }
+        if safe_add_to_buffer_size(&mut offset, &mut (*m).nbuffer, 8, (*m).ncam, (*m).nuser_cam) == 0 {
+            if allocate != 0 { crate::engine::engine_util_errmem::mju_free(m as *mut ()); }
+            crate::engine::engine_util_errmem::mju_warning(b"Invalid model: cam_user too large. ".as_ptr() as *const i8);
+            return;
+        }
+        if safe_add_to_buffer_size(&mut offset, &mut (*m).nbuffer, 4, (*m).nlight, 1_i64) == 0 {
+            if allocate != 0 { crate::engine::engine_util_errmem::mju_free(m as *mut ()); }
+            crate::engine::engine_util_errmem::mju_warning(b"Invalid model: light_mode too large. ".as_ptr() as *const i8);
+            return;
+        }
+        if safe_add_to_buffer_size(&mut offset, &mut (*m).nbuffer, 4, (*m).nlight, 1_i64) == 0 {
+            if allocate != 0 { crate::engine::engine_util_errmem::mju_free(m as *mut ()); }
+            crate::engine::engine_util_errmem::mju_warning(b"Invalid model: light_bodyid too large. ".as_ptr() as *const i8);
+            return;
+        }
+        if safe_add_to_buffer_size(&mut offset, &mut (*m).nbuffer, 4, (*m).nlight, 1_i64) == 0 {
+            if allocate != 0 { crate::engine::engine_util_errmem::mju_free(m as *mut ()); }
+            crate::engine::engine_util_errmem::mju_warning(b"Invalid model: light_targetbodyid too large. ".as_ptr() as *const i8);
+            return;
+        }
+        if safe_add_to_buffer_size(&mut offset, &mut (*m).nbuffer, 4, (*m).nlight, 1_i64) == 0 {
+            if allocate != 0 { crate::engine::engine_util_errmem::mju_free(m as *mut ()); }
+            crate::engine::engine_util_errmem::mju_warning(b"Invalid model: light_type too large. ".as_ptr() as *const i8);
+            return;
+        }
+        if safe_add_to_buffer_size(&mut offset, &mut (*m).nbuffer, 4, (*m).nlight, 1_i64) == 0 {
+            if allocate != 0 { crate::engine::engine_util_errmem::mju_free(m as *mut ()); }
+            crate::engine::engine_util_errmem::mju_warning(b"Invalid model: light_texid too large. ".as_ptr() as *const i8);
+            return;
+        }
+        if safe_add_to_buffer_size(&mut offset, &mut (*m).nbuffer, 1, (*m).nlight, 1_i64) == 0 {
+            if allocate != 0 { crate::engine::engine_util_errmem::mju_free(m as *mut ()); }
+            crate::engine::engine_util_errmem::mju_warning(b"Invalid model: light_castshadow too large. ".as_ptr() as *const i8);
+            return;
+        }
+        if safe_add_to_buffer_size(&mut offset, &mut (*m).nbuffer, 4, (*m).nlight, 1_i64) == 0 {
+            if allocate != 0 { crate::engine::engine_util_errmem::mju_free(m as *mut ()); }
+            crate::engine::engine_util_errmem::mju_warning(b"Invalid model: light_bulbradius too large. ".as_ptr() as *const i8);
+            return;
+        }
+        if safe_add_to_buffer_size(&mut offset, &mut (*m).nbuffer, 4, (*m).nlight, 1_i64) == 0 {
+            if allocate != 0 { crate::engine::engine_util_errmem::mju_free(m as *mut ()); }
+            crate::engine::engine_util_errmem::mju_warning(b"Invalid model: light_intensity too large. ".as_ptr() as *const i8);
+            return;
+        }
+        if safe_add_to_buffer_size(&mut offset, &mut (*m).nbuffer, 4, (*m).nlight, 1_i64) == 0 {
+            if allocate != 0 { crate::engine::engine_util_errmem::mju_free(m as *mut ()); }
+            crate::engine::engine_util_errmem::mju_warning(b"Invalid model: light_range too large. ".as_ptr() as *const i8);
+            return;
+        }
+        if safe_add_to_buffer_size(&mut offset, &mut (*m).nbuffer, 1, (*m).nlight, 1_i64) == 0 {
+            if allocate != 0 { crate::engine::engine_util_errmem::mju_free(m as *mut ()); }
+            crate::engine::engine_util_errmem::mju_warning(b"Invalid model: light_active too large. ".as_ptr() as *const i8);
+            return;
+        }
+        if safe_add_to_buffer_size(&mut offset, &mut (*m).nbuffer, 8, (*m).nlight, 3_i64) == 0 {
+            if allocate != 0 { crate::engine::engine_util_errmem::mju_free(m as *mut ()); }
+            crate::engine::engine_util_errmem::mju_warning(b"Invalid model: light_pos too large. ".as_ptr() as *const i8);
+            return;
+        }
+        if safe_add_to_buffer_size(&mut offset, &mut (*m).nbuffer, 8, (*m).nlight, 3_i64) == 0 {
+            if allocate != 0 { crate::engine::engine_util_errmem::mju_free(m as *mut ()); }
+            crate::engine::engine_util_errmem::mju_warning(b"Invalid model: light_dir too large. ".as_ptr() as *const i8);
+            return;
+        }
+        if safe_add_to_buffer_size(&mut offset, &mut (*m).nbuffer, 8, (*m).nlight, 3_i64) == 0 {
+            if allocate != 0 { crate::engine::engine_util_errmem::mju_free(m as *mut ()); }
+            crate::engine::engine_util_errmem::mju_warning(b"Invalid model: light_poscom0 too large. ".as_ptr() as *const i8);
+            return;
+        }
+        if safe_add_to_buffer_size(&mut offset, &mut (*m).nbuffer, 8, (*m).nlight, 3_i64) == 0 {
+            if allocate != 0 { crate::engine::engine_util_errmem::mju_free(m as *mut ()); }
+            crate::engine::engine_util_errmem::mju_warning(b"Invalid model: light_pos0 too large. ".as_ptr() as *const i8);
+            return;
+        }
+        if safe_add_to_buffer_size(&mut offset, &mut (*m).nbuffer, 8, (*m).nlight, 3_i64) == 0 {
+            if allocate != 0 { crate::engine::engine_util_errmem::mju_free(m as *mut ()); }
+            crate::engine::engine_util_errmem::mju_warning(b"Invalid model: light_dir0 too large. ".as_ptr() as *const i8);
+            return;
+        }
+        if safe_add_to_buffer_size(&mut offset, &mut (*m).nbuffer, 4, (*m).nlight, 3_i64) == 0 {
+            if allocate != 0 { crate::engine::engine_util_errmem::mju_free(m as *mut ()); }
+            crate::engine::engine_util_errmem::mju_warning(b"Invalid model: light_attenuation too large. ".as_ptr() as *const i8);
+            return;
+        }
+        if safe_add_to_buffer_size(&mut offset, &mut (*m).nbuffer, 4, (*m).nlight, 1_i64) == 0 {
+            if allocate != 0 { crate::engine::engine_util_errmem::mju_free(m as *mut ()); }
+            crate::engine::engine_util_errmem::mju_warning(b"Invalid model: light_cutoff too large. ".as_ptr() as *const i8);
+            return;
+        }
+        if safe_add_to_buffer_size(&mut offset, &mut (*m).nbuffer, 4, (*m).nlight, 1_i64) == 0 {
+            if allocate != 0 { crate::engine::engine_util_errmem::mju_free(m as *mut ()); }
+            crate::engine::engine_util_errmem::mju_warning(b"Invalid model: light_exponent too large. ".as_ptr() as *const i8);
+            return;
+        }
+        if safe_add_to_buffer_size(&mut offset, &mut (*m).nbuffer, 4, (*m).nlight, 3_i64) == 0 {
+            if allocate != 0 { crate::engine::engine_util_errmem::mju_free(m as *mut ()); }
+            crate::engine::engine_util_errmem::mju_warning(b"Invalid model: light_ambient too large. ".as_ptr() as *const i8);
+            return;
+        }
+        if safe_add_to_buffer_size(&mut offset, &mut (*m).nbuffer, 4, (*m).nlight, 3_i64) == 0 {
+            if allocate != 0 { crate::engine::engine_util_errmem::mju_free(m as *mut ()); }
+            crate::engine::engine_util_errmem::mju_warning(b"Invalid model: light_diffuse too large. ".as_ptr() as *const i8);
+            return;
+        }
+        if safe_add_to_buffer_size(&mut offset, &mut (*m).nbuffer, 4, (*m).nlight, 3_i64) == 0 {
+            if allocate != 0 { crate::engine::engine_util_errmem::mju_free(m as *mut ()); }
+            crate::engine::engine_util_errmem::mju_warning(b"Invalid model: light_specular too large. ".as_ptr() as *const i8);
+            return;
+        }
+        if safe_add_to_buffer_size(&mut offset, &mut (*m).nbuffer, 4, (*m).nflex, 1_i64) == 0 {
+            if allocate != 0 { crate::engine::engine_util_errmem::mju_free(m as *mut ()); }
+            crate::engine::engine_util_errmem::mju_warning(b"Invalid model: flex_contype too large. ".as_ptr() as *const i8);
+            return;
+        }
+        if safe_add_to_buffer_size(&mut offset, &mut (*m).nbuffer, 4, (*m).nflex, 1_i64) == 0 {
+            if allocate != 0 { crate::engine::engine_util_errmem::mju_free(m as *mut ()); }
+            crate::engine::engine_util_errmem::mju_warning(b"Invalid model: flex_conaffinity too large. ".as_ptr() as *const i8);
+            return;
+        }
+        if safe_add_to_buffer_size(&mut offset, &mut (*m).nbuffer, 4, (*m).nflex, 1_i64) == 0 {
+            if allocate != 0 { crate::engine::engine_util_errmem::mju_free(m as *mut ()); }
+            crate::engine::engine_util_errmem::mju_warning(b"Invalid model: flex_condim too large. ".as_ptr() as *const i8);
+            return;
+        }
+        if safe_add_to_buffer_size(&mut offset, &mut (*m).nbuffer, 4, (*m).nflex, 1_i64) == 0 {
+            if allocate != 0 { crate::engine::engine_util_errmem::mju_free(m as *mut ()); }
+            crate::engine::engine_util_errmem::mju_warning(b"Invalid model: flex_priority too large. ".as_ptr() as *const i8);
+            return;
+        }
+        if safe_add_to_buffer_size(&mut offset, &mut (*m).nbuffer, 8, (*m).nflex, 1_i64) == 0 {
+            if allocate != 0 { crate::engine::engine_util_errmem::mju_free(m as *mut ()); }
+            crate::engine::engine_util_errmem::mju_warning(b"Invalid model: flex_solmix too large. ".as_ptr() as *const i8);
+            return;
+        }
+        if safe_add_to_buffer_size(&mut offset, &mut (*m).nbuffer, 8, (*m).nflex, 2_i64) == 0 {
+            if allocate != 0 { crate::engine::engine_util_errmem::mju_free(m as *mut ()); }
+            crate::engine::engine_util_errmem::mju_warning(b"Invalid model: flex_solref too large. ".as_ptr() as *const i8);
+            return;
+        }
+        if safe_add_to_buffer_size(&mut offset, &mut (*m).nbuffer, 8, (*m).nflex, 5_i64) == 0 {
+            if allocate != 0 { crate::engine::engine_util_errmem::mju_free(m as *mut ()); }
+            crate::engine::engine_util_errmem::mju_warning(b"Invalid model: flex_solimp too large. ".as_ptr() as *const i8);
+            return;
+        }
+        if safe_add_to_buffer_size(&mut offset, &mut (*m).nbuffer, 8, (*m).nflex, 3_i64) == 0 {
+            if allocate != 0 { crate::engine::engine_util_errmem::mju_free(m as *mut ()); }
+            crate::engine::engine_util_errmem::mju_warning(b"Invalid model: flex_friction too large. ".as_ptr() as *const i8);
+            return;
+        }
+        if safe_add_to_buffer_size(&mut offset, &mut (*m).nbuffer, 8, (*m).nflex, 1_i64) == 0 {
+            if allocate != 0 { crate::engine::engine_util_errmem::mju_free(m as *mut ()); }
+            crate::engine::engine_util_errmem::mju_warning(b"Invalid model: flex_margin too large. ".as_ptr() as *const i8);
+            return;
+        }
+        if safe_add_to_buffer_size(&mut offset, &mut (*m).nbuffer, 8, (*m).nflex, 1_i64) == 0 {
+            if allocate != 0 { crate::engine::engine_util_errmem::mju_free(m as *mut ()); }
+            crate::engine::engine_util_errmem::mju_warning(b"Invalid model: flex_gap too large. ".as_ptr() as *const i8);
+            return;
+        }
+        if safe_add_to_buffer_size(&mut offset, &mut (*m).nbuffer, 1, (*m).nflex, 1_i64) == 0 {
+            if allocate != 0 { crate::engine::engine_util_errmem::mju_free(m as *mut ()); }
+            crate::engine::engine_util_errmem::mju_warning(b"Invalid model: flex_internal too large. ".as_ptr() as *const i8);
+            return;
+        }
+        if safe_add_to_buffer_size(&mut offset, &mut (*m).nbuffer, 4, (*m).nflex, 1_i64) == 0 {
+            if allocate != 0 { crate::engine::engine_util_errmem::mju_free(m as *mut ()); }
+            crate::engine::engine_util_errmem::mju_warning(b"Invalid model: flex_selfcollide too large. ".as_ptr() as *const i8);
+            return;
+        }
+        if safe_add_to_buffer_size(&mut offset, &mut (*m).nbuffer, 4, (*m).nflex, 1_i64) == 0 {
+            if allocate != 0 { crate::engine::engine_util_errmem::mju_free(m as *mut ()); }
+            crate::engine::engine_util_errmem::mju_warning(b"Invalid model: flex_activelayers too large. ".as_ptr() as *const i8);
+            return;
+        }
+        if safe_add_to_buffer_size(&mut offset, &mut (*m).nbuffer, 4, (*m).nflex, 1_i64) == 0 {
+            if allocate != 0 { crate::engine::engine_util_errmem::mju_free(m as *mut ()); }
+            crate::engine::engine_util_errmem::mju_warning(b"Invalid model: flex_passive too large. ".as_ptr() as *const i8);
+            return;
+        }
+        if safe_add_to_buffer_size(&mut offset, &mut (*m).nbuffer, 4, (*m).nflex, 1_i64) == 0 {
+            if allocate != 0 { crate::engine::engine_util_errmem::mju_free(m as *mut ()); }
+            crate::engine::engine_util_errmem::mju_warning(b"Invalid model: flex_dim too large. ".as_ptr() as *const i8);
+            return;
+        }
+        if safe_add_to_buffer_size(&mut offset, &mut (*m).nbuffer, 4, (*m).nflex, 1_i64) == 0 {
+            if allocate != 0 { crate::engine::engine_util_errmem::mju_free(m as *mut ()); }
+            crate::engine::engine_util_errmem::mju_warning(b"Invalid model: flex_matid too large. ".as_ptr() as *const i8);
+            return;
+        }
+        if safe_add_to_buffer_size(&mut offset, &mut (*m).nbuffer, 4, (*m).nflex, 1_i64) == 0 {
+            if allocate != 0 { crate::engine::engine_util_errmem::mju_free(m as *mut ()); }
+            crate::engine::engine_util_errmem::mju_warning(b"Invalid model: flex_group too large. ".as_ptr() as *const i8);
+            return;
+        }
+        if safe_add_to_buffer_size(&mut offset, &mut (*m).nbuffer, 4, (*m).nflex, 1_i64) == 0 {
+            if allocate != 0 { crate::engine::engine_util_errmem::mju_free(m as *mut ()); }
+            crate::engine::engine_util_errmem::mju_warning(b"Invalid model: flex_interp too large. ".as_ptr() as *const i8);
+            return;
+        }
+        if safe_add_to_buffer_size(&mut offset, &mut (*m).nbuffer, 4, (*m).nflex, 3_i64) == 0 {
+            if allocate != 0 { crate::engine::engine_util_errmem::mju_free(m as *mut ()); }
+            crate::engine::engine_util_errmem::mju_warning(b"Invalid model: flex_cellnum too large. ".as_ptr() as *const i8);
+            return;
+        }
+        if safe_add_to_buffer_size(&mut offset, &mut (*m).nbuffer, 4, (*m).nflex, 1_i64) == 0 {
+            if allocate != 0 { crate::engine::engine_util_errmem::mju_free(m as *mut ()); }
+            crate::engine::engine_util_errmem::mju_warning(b"Invalid model: flex_nodeadr too large. ".as_ptr() as *const i8);
+            return;
+        }
+        if safe_add_to_buffer_size(&mut offset, &mut (*m).nbuffer, 4, (*m).nflex, 1_i64) == 0 {
+            if allocate != 0 { crate::engine::engine_util_errmem::mju_free(m as *mut ()); }
+            crate::engine::engine_util_errmem::mju_warning(b"Invalid model: flex_nodenum too large. ".as_ptr() as *const i8);
+            return;
+        }
+        if safe_add_to_buffer_size(&mut offset, &mut (*m).nbuffer, 4, (*m).nflex, 1_i64) == 0 {
+            if allocate != 0 { crate::engine::engine_util_errmem::mju_free(m as *mut ()); }
+            crate::engine::engine_util_errmem::mju_warning(b"Invalid model: flex_vertadr too large. ".as_ptr() as *const i8);
+            return;
+        }
+        if safe_add_to_buffer_size(&mut offset, &mut (*m).nbuffer, 4, (*m).nflex, 1_i64) == 0 {
+            if allocate != 0 { crate::engine::engine_util_errmem::mju_free(m as *mut ()); }
+            crate::engine::engine_util_errmem::mju_warning(b"Invalid model: flex_vertnum too large. ".as_ptr() as *const i8);
+            return;
+        }
+        if safe_add_to_buffer_size(&mut offset, &mut (*m).nbuffer, 4, (*m).nflex, 1_i64) == 0 {
+            if allocate != 0 { crate::engine::engine_util_errmem::mju_free(m as *mut ()); }
+            crate::engine::engine_util_errmem::mju_warning(b"Invalid model: flex_edgeadr too large. ".as_ptr() as *const i8);
+            return;
+        }
+        if safe_add_to_buffer_size(&mut offset, &mut (*m).nbuffer, 4, (*m).nflex, 1_i64) == 0 {
+            if allocate != 0 { crate::engine::engine_util_errmem::mju_free(m as *mut ()); }
+            crate::engine::engine_util_errmem::mju_warning(b"Invalid model: flex_edgenum too large. ".as_ptr() as *const i8);
+            return;
+        }
+        if safe_add_to_buffer_size(&mut offset, &mut (*m).nbuffer, 4, (*m).nflex, 1_i64) == 0 {
+            if allocate != 0 { crate::engine::engine_util_errmem::mju_free(m as *mut ()); }
+            crate::engine::engine_util_errmem::mju_warning(b"Invalid model: flex_elemadr too large. ".as_ptr() as *const i8);
+            return;
+        }
+        if safe_add_to_buffer_size(&mut offset, &mut (*m).nbuffer, 4, (*m).nflex, 1_i64) == 0 {
+            if allocate != 0 { crate::engine::engine_util_errmem::mju_free(m as *mut ()); }
+            crate::engine::engine_util_errmem::mju_warning(b"Invalid model: flex_elemnum too large. ".as_ptr() as *const i8);
+            return;
+        }
+        if safe_add_to_buffer_size(&mut offset, &mut (*m).nbuffer, 4, (*m).nflex, 1_i64) == 0 {
+            if allocate != 0 { crate::engine::engine_util_errmem::mju_free(m as *mut ()); }
+            crate::engine::engine_util_errmem::mju_warning(b"Invalid model: flex_elemdataadr too large. ".as_ptr() as *const i8);
+            return;
+        }
+        if safe_add_to_buffer_size(&mut offset, &mut (*m).nbuffer, 4, (*m).nflex, 1_i64) == 0 {
+            if allocate != 0 { crate::engine::engine_util_errmem::mju_free(m as *mut ()); }
+            crate::engine::engine_util_errmem::mju_warning(b"Invalid model: flex_stiffnessadr too large. ".as_ptr() as *const i8);
+            return;
+        }
+        if safe_add_to_buffer_size(&mut offset, &mut (*m).nbuffer, 4, (*m).nflex, 1_i64) == 0 {
+            if allocate != 0 { crate::engine::engine_util_errmem::mju_free(m as *mut ()); }
+            crate::engine::engine_util_errmem::mju_warning(b"Invalid model: flex_elemedgeadr too large. ".as_ptr() as *const i8);
+            return;
+        }
+        if safe_add_to_buffer_size(&mut offset, &mut (*m).nbuffer, 4, (*m).nflex, 1_i64) == 0 {
+            if allocate != 0 { crate::engine::engine_util_errmem::mju_free(m as *mut ()); }
+            crate::engine::engine_util_errmem::mju_warning(b"Invalid model: flex_bendingadr too large. ".as_ptr() as *const i8);
+            return;
+        }
+        if safe_add_to_buffer_size(&mut offset, &mut (*m).nbuffer, 4, (*m).nflex, 1_i64) == 0 {
+            if allocate != 0 { crate::engine::engine_util_errmem::mju_free(m as *mut ()); }
+            crate::engine::engine_util_errmem::mju_warning(b"Invalid model: flex_shellnum too large. ".as_ptr() as *const i8);
+            return;
+        }
+        if safe_add_to_buffer_size(&mut offset, &mut (*m).nbuffer, 4, (*m).nflex, 1_i64) == 0 {
+            if allocate != 0 { crate::engine::engine_util_errmem::mju_free(m as *mut ()); }
+            crate::engine::engine_util_errmem::mju_warning(b"Invalid model: flex_shelldataadr too large. ".as_ptr() as *const i8);
+            return;
+        }
+        if safe_add_to_buffer_size(&mut offset, &mut (*m).nbuffer, 4, (*m).nflex, 1_i64) == 0 {
+            if allocate != 0 { crate::engine::engine_util_errmem::mju_free(m as *mut ()); }
+            crate::engine::engine_util_errmem::mju_warning(b"Invalid model: flex_evpairadr too large. ".as_ptr() as *const i8);
+            return;
+        }
+        if safe_add_to_buffer_size(&mut offset, &mut (*m).nbuffer, 4, (*m).nflex, 1_i64) == 0 {
+            if allocate != 0 { crate::engine::engine_util_errmem::mju_free(m as *mut ()); }
+            crate::engine::engine_util_errmem::mju_warning(b"Invalid model: flex_evpairnum too large. ".as_ptr() as *const i8);
+            return;
+        }
+        if safe_add_to_buffer_size(&mut offset, &mut (*m).nbuffer, 4, (*m).nflex, 1_i64) == 0 {
+            if allocate != 0 { crate::engine::engine_util_errmem::mju_free(m as *mut ()); }
+            crate::engine::engine_util_errmem::mju_warning(b"Invalid model: flex_texcoordadr too large. ".as_ptr() as *const i8);
+            return;
+        }
+        if safe_add_to_buffer_size(&mut offset, &mut (*m).nbuffer, 4, (*m).nflexnode, 1_i64) == 0 {
+            if allocate != 0 { crate::engine::engine_util_errmem::mju_free(m as *mut ()); }
+            crate::engine::engine_util_errmem::mju_warning(b"Invalid model: flex_nodebodyid too large. ".as_ptr() as *const i8);
+            return;
+        }
+        if safe_add_to_buffer_size(&mut offset, &mut (*m).nbuffer, 4, (*m).nflexvert, 1_i64) == 0 {
+            if allocate != 0 { crate::engine::engine_util_errmem::mju_free(m as *mut ()); }
+            crate::engine::engine_util_errmem::mju_warning(b"Invalid model: flex_vertbodyid too large. ".as_ptr() as *const i8);
+            return;
+        }
+        if safe_add_to_buffer_size(&mut offset, &mut (*m).nbuffer, 4, (*m).nflexvert, 1_i64) == 0 {
+            if allocate != 0 { crate::engine::engine_util_errmem::mju_free(m as *mut ()); }
+            crate::engine::engine_util_errmem::mju_warning(b"Invalid model: flex_vertedgeadr too large. ".as_ptr() as *const i8);
+            return;
+        }
+        if safe_add_to_buffer_size(&mut offset, &mut (*m).nbuffer, 4, (*m).nflexvert, 1_i64) == 0 {
+            if allocate != 0 { crate::engine::engine_util_errmem::mju_free(m as *mut ()); }
+            crate::engine::engine_util_errmem::mju_warning(b"Invalid model: flex_vertedgenum too large. ".as_ptr() as *const i8);
+            return;
+        }
+        if safe_add_to_buffer_size(&mut offset, &mut (*m).nbuffer, 4, (*m).nflexedge, 2_i64) == 0 {
+            if allocate != 0 { crate::engine::engine_util_errmem::mju_free(m as *mut ()); }
+            crate::engine::engine_util_errmem::mju_warning(b"Invalid model: flex_vertedge too large. ".as_ptr() as *const i8);
+            return;
+        }
+        if safe_add_to_buffer_size(&mut offset, &mut (*m).nbuffer, 4, (*m).nflexedge, 2_i64) == 0 {
+            if allocate != 0 { crate::engine::engine_util_errmem::mju_free(m as *mut ()); }
+            crate::engine::engine_util_errmem::mju_warning(b"Invalid model: flex_edge too large. ".as_ptr() as *const i8);
+            return;
+        }
+        if safe_add_to_buffer_size(&mut offset, &mut (*m).nbuffer, 4, (*m).nflexedge, 2_i64) == 0 {
+            if allocate != 0 { crate::engine::engine_util_errmem::mju_free(m as *mut ()); }
+            crate::engine::engine_util_errmem::mju_warning(b"Invalid model: flex_edgeflap too large. ".as_ptr() as *const i8);
+            return;
+        }
+        if safe_add_to_buffer_size(&mut offset, &mut (*m).nbuffer, 4, (*m).nflexelemdata, 1_i64) == 0 {
+            if allocate != 0 { crate::engine::engine_util_errmem::mju_free(m as *mut ()); }
+            crate::engine::engine_util_errmem::mju_warning(b"Invalid model: flex_elem too large. ".as_ptr() as *const i8);
+            return;
+        }
+        if safe_add_to_buffer_size(&mut offset, &mut (*m).nbuffer, 4, (*m).nflexelemdata, 1_i64) == 0 {
+            if allocate != 0 { crate::engine::engine_util_errmem::mju_free(m as *mut ()); }
+            crate::engine::engine_util_errmem::mju_warning(b"Invalid model: flex_elemtexcoord too large. ".as_ptr() as *const i8);
+            return;
+        }
+        if safe_add_to_buffer_size(&mut offset, &mut (*m).nbuffer, 4, (*m).nflexelemedge, 1_i64) == 0 {
+            if allocate != 0 { crate::engine::engine_util_errmem::mju_free(m as *mut ()); }
+            crate::engine::engine_util_errmem::mju_warning(b"Invalid model: flex_elemedge too large. ".as_ptr() as *const i8);
+            return;
+        }
+        if safe_add_to_buffer_size(&mut offset, &mut (*m).nbuffer, 4, (*m).nflexelem, 1_i64) == 0 {
+            if allocate != 0 { crate::engine::engine_util_errmem::mju_free(m as *mut ()); }
+            crate::engine::engine_util_errmem::mju_warning(b"Invalid model: flex_elemlayer too large. ".as_ptr() as *const i8);
+            return;
+        }
+        if safe_add_to_buffer_size(&mut offset, &mut (*m).nbuffer, 4, (*m).nflexshelldata, 1_i64) == 0 {
+            if allocate != 0 { crate::engine::engine_util_errmem::mju_free(m as *mut ()); }
+            crate::engine::engine_util_errmem::mju_warning(b"Invalid model: flex_shell too large. ".as_ptr() as *const i8);
+            return;
+        }
+        if safe_add_to_buffer_size(&mut offset, &mut (*m).nbuffer, 4, (*m).nflexevpair, 2_i64) == 0 {
+            if allocate != 0 { crate::engine::engine_util_errmem::mju_free(m as *mut ()); }
+            crate::engine::engine_util_errmem::mju_warning(b"Invalid model: flex_evpair too large. ".as_ptr() as *const i8);
+            return;
+        }
+        if safe_add_to_buffer_size(&mut offset, &mut (*m).nbuffer, 8, (*m).nflexvert, 3_i64) == 0 {
+            if allocate != 0 { crate::engine::engine_util_errmem::mju_free(m as *mut ()); }
+            crate::engine::engine_util_errmem::mju_warning(b"Invalid model: flex_vert too large. ".as_ptr() as *const i8);
+            return;
+        }
+        if safe_add_to_buffer_size(&mut offset, &mut (*m).nbuffer, 8, (*m).nflexvert, 3_i64) == 0 {
+            if allocate != 0 { crate::engine::engine_util_errmem::mju_free(m as *mut ()); }
+            crate::engine::engine_util_errmem::mju_warning(b"Invalid model: flex_vert0 too large. ".as_ptr() as *const i8);
+            return;
+        }
+        if safe_add_to_buffer_size(&mut offset, &mut (*m).nbuffer, 8, (*m).nflexvert, 4_i64) == 0 {
+            if allocate != 0 { crate::engine::engine_util_errmem::mju_free(m as *mut ()); }
+            crate::engine::engine_util_errmem::mju_warning(b"Invalid model: flex_vertmetric too large. ".as_ptr() as *const i8);
+            return;
+        }
+        if safe_add_to_buffer_size(&mut offset, &mut (*m).nbuffer, 8, (*m).nflexnode, 3_i64) == 0 {
+            if allocate != 0 { crate::engine::engine_util_errmem::mju_free(m as *mut ()); }
+            crate::engine::engine_util_errmem::mju_warning(b"Invalid model: flex_node too large. ".as_ptr() as *const i8);
+            return;
+        }
+        if safe_add_to_buffer_size(&mut offset, &mut (*m).nbuffer, 8, (*m).nflexnode, 3_i64) == 0 {
+            if allocate != 0 { crate::engine::engine_util_errmem::mju_free(m as *mut ()); }
+            crate::engine::engine_util_errmem::mju_warning(b"Invalid model: flex_node0 too large. ".as_ptr() as *const i8);
+            return;
+        }
+        if safe_add_to_buffer_size(&mut offset, &mut (*m).nbuffer, 8, (*m).nflexedge, 1_i64) == 0 {
+            if allocate != 0 { crate::engine::engine_util_errmem::mju_free(m as *mut ()); }
+            crate::engine::engine_util_errmem::mju_warning(b"Invalid model: flexedge_length0 too large. ".as_ptr() as *const i8);
+            return;
+        }
+        if safe_add_to_buffer_size(&mut offset, &mut (*m).nbuffer, 8, (*m).nflexedge, 1_i64) == 0 {
+            if allocate != 0 { crate::engine::engine_util_errmem::mju_free(m as *mut ()); }
+            crate::engine::engine_util_errmem::mju_warning(b"Invalid model: flexedge_invweight0 too large. ".as_ptr() as *const i8);
+            return;
+        }
+        if safe_add_to_buffer_size(&mut offset, &mut (*m).nbuffer, 8, (*m).nflex, 1_i64) == 0 {
+            if allocate != 0 { crate::engine::engine_util_errmem::mju_free(m as *mut ()); }
+            crate::engine::engine_util_errmem::mju_warning(b"Invalid model: flex_radius too large. ".as_ptr() as *const i8);
+            return;
+        }
+        if safe_add_to_buffer_size(&mut offset, &mut (*m).nbuffer, 8, (*m).nflex, 3_i64) == 0 {
+            if allocate != 0 { crate::engine::engine_util_errmem::mju_free(m as *mut ()); }
+            crate::engine::engine_util_errmem::mju_warning(b"Invalid model: flex_size too large. ".as_ptr() as *const i8);
+            return;
+        }
+        if safe_add_to_buffer_size(&mut offset, &mut (*m).nbuffer, 8, (*m).nflexstiffness, 1_i64) == 0 {
+            if allocate != 0 { crate::engine::engine_util_errmem::mju_free(m as *mut ()); }
+            crate::engine::engine_util_errmem::mju_warning(b"Invalid model: flex_stiffness too large. ".as_ptr() as *const i8);
+            return;
+        }
+        if safe_add_to_buffer_size(&mut offset, &mut (*m).nbuffer, 8, (*m).nflexbending, 1_i64) == 0 {
+            if allocate != 0 { crate::engine::engine_util_errmem::mju_free(m as *mut ()); }
+            crate::engine::engine_util_errmem::mju_warning(b"Invalid model: flex_bending too large. ".as_ptr() as *const i8);
+            return;
+        }
+        if safe_add_to_buffer_size(&mut offset, &mut (*m).nbuffer, 8, (*m).nflex, 1_i64) == 0 {
+            if allocate != 0 { crate::engine::engine_util_errmem::mju_free(m as *mut ()); }
+            crate::engine::engine_util_errmem::mju_warning(b"Invalid model: flex_damping too large. ".as_ptr() as *const i8);
+            return;
+        }
+        if safe_add_to_buffer_size(&mut offset, &mut (*m).nbuffer, 8, (*m).nflex, 1_i64) == 0 {
+            if allocate != 0 { crate::engine::engine_util_errmem::mju_free(m as *mut ()); }
+            crate::engine::engine_util_errmem::mju_warning(b"Invalid model: flex_edgestiffness too large. ".as_ptr() as *const i8);
+            return;
+        }
+        if safe_add_to_buffer_size(&mut offset, &mut (*m).nbuffer, 8, (*m).nflex, 1_i64) == 0 {
+            if allocate != 0 { crate::engine::engine_util_errmem::mju_free(m as *mut ()); }
+            crate::engine::engine_util_errmem::mju_warning(b"Invalid model: flex_edgedamping too large. ".as_ptr() as *const i8);
+            return;
+        }
+        if safe_add_to_buffer_size(&mut offset, &mut (*m).nbuffer, 4, (*m).nflex, 1_i64) == 0 {
+            if allocate != 0 { crate::engine::engine_util_errmem::mju_free(m as *mut ()); }
+            crate::engine::engine_util_errmem::mju_warning(b"Invalid model: flex_edgeequality too large. ".as_ptr() as *const i8);
+            return;
+        }
+        if safe_add_to_buffer_size(&mut offset, &mut (*m).nbuffer, 1, (*m).nflex, 1_i64) == 0 {
+            if allocate != 0 { crate::engine::engine_util_errmem::mju_free(m as *mut ()); }
+            crate::engine::engine_util_errmem::mju_warning(b"Invalid model: flex_rigid too large. ".as_ptr() as *const i8);
+            return;
+        }
+        if safe_add_to_buffer_size(&mut offset, &mut (*m).nbuffer, 1, (*m).nflexedge, 1_i64) == 0 {
+            if allocate != 0 { crate::engine::engine_util_errmem::mju_free(m as *mut ()); }
+            crate::engine::engine_util_errmem::mju_warning(b"Invalid model: flexedge_rigid too large. ".as_ptr() as *const i8);
+            return;
+        }
+        if safe_add_to_buffer_size(&mut offset, &mut (*m).nbuffer, 1, (*m).nflex, 1_i64) == 0 {
+            if allocate != 0 { crate::engine::engine_util_errmem::mju_free(m as *mut ()); }
+            crate::engine::engine_util_errmem::mju_warning(b"Invalid model: flex_centered too large. ".as_ptr() as *const i8);
+            return;
+        }
+        if safe_add_to_buffer_size(&mut offset, &mut (*m).nbuffer, 1, (*m).nflex, 1_i64) == 0 {
+            if allocate != 0 { crate::engine::engine_util_errmem::mju_free(m as *mut ()); }
+            crate::engine::engine_util_errmem::mju_warning(b"Invalid model: flex_flatskin too large. ".as_ptr() as *const i8);
+            return;
+        }
+        if safe_add_to_buffer_size(&mut offset, &mut (*m).nbuffer, 4, (*m).nflex, 1_i64) == 0 {
+            if allocate != 0 { crate::engine::engine_util_errmem::mju_free(m as *mut ()); }
+            crate::engine::engine_util_errmem::mju_warning(b"Invalid model: flex_bvhadr too large. ".as_ptr() as *const i8);
+            return;
+        }
+        if safe_add_to_buffer_size(&mut offset, &mut (*m).nbuffer, 4, (*m).nflex, 1_i64) == 0 {
+            if allocate != 0 { crate::engine::engine_util_errmem::mju_free(m as *mut ()); }
+            crate::engine::engine_util_errmem::mju_warning(b"Invalid model: flex_bvhnum too large. ".as_ptr() as *const i8);
+            return;
+        }
+        if safe_add_to_buffer_size(&mut offset, &mut (*m).nbuffer, 4, (*m).nflexedge, 1_i64) == 0 {
+            if allocate != 0 { crate::engine::engine_util_errmem::mju_free(m as *mut ()); }
+            crate::engine::engine_util_errmem::mju_warning(b"Invalid model: flexedge_J_rownnz too large. ".as_ptr() as *const i8);
+            return;
+        }
+        if safe_add_to_buffer_size(&mut offset, &mut (*m).nbuffer, 4, (*m).nflexedge, 1_i64) == 0 {
+            if allocate != 0 { crate::engine::engine_util_errmem::mju_free(m as *mut ()); }
+            crate::engine::engine_util_errmem::mju_warning(b"Invalid model: flexedge_J_rowadr too large. ".as_ptr() as *const i8);
+            return;
+        }
+        if safe_add_to_buffer_size(&mut offset, &mut (*m).nbuffer, 4, (*m).nJfe, 1_i64) == 0 {
+            if allocate != 0 { crate::engine::engine_util_errmem::mju_free(m as *mut ()); }
+            crate::engine::engine_util_errmem::mju_warning(b"Invalid model: flexedge_J_colind too large. ".as_ptr() as *const i8);
+            return;
+        }
+        if safe_add_to_buffer_size(&mut offset, &mut (*m).nbuffer, 4, (*m).nflexvert, 2_i64) == 0 {
+            if allocate != 0 { crate::engine::engine_util_errmem::mju_free(m as *mut ()); }
+            crate::engine::engine_util_errmem::mju_warning(b"Invalid model: flexvert_J_rownnz too large. ".as_ptr() as *const i8);
+            return;
+        }
+        if safe_add_to_buffer_size(&mut offset, &mut (*m).nbuffer, 4, (*m).nflexvert, 2_i64) == 0 {
+            if allocate != 0 { crate::engine::engine_util_errmem::mju_free(m as *mut ()); }
+            crate::engine::engine_util_errmem::mju_warning(b"Invalid model: flexvert_J_rowadr too large. ".as_ptr() as *const i8);
+            return;
+        }
+        if safe_add_to_buffer_size(&mut offset, &mut (*m).nbuffer, 4, (*m).nJfv, 2_i64) == 0 {
+            if allocate != 0 { crate::engine::engine_util_errmem::mju_free(m as *mut ()); }
+            crate::engine::engine_util_errmem::mju_warning(b"Invalid model: flexvert_J_colind too large. ".as_ptr() as *const i8);
+            return;
+        }
+        if safe_add_to_buffer_size(&mut offset, &mut (*m).nbuffer, 4, (*m).nflex, 4_i64) == 0 {
+            if allocate != 0 { crate::engine::engine_util_errmem::mju_free(m as *mut ()); }
+            crate::engine::engine_util_errmem::mju_warning(b"Invalid model: flex_rgba too large. ".as_ptr() as *const i8);
+            return;
+        }
+        if safe_add_to_buffer_size(&mut offset, &mut (*m).nbuffer, 4, (*m).nflextexcoord, 2_i64) == 0 {
+            if allocate != 0 { crate::engine::engine_util_errmem::mju_free(m as *mut ()); }
+            crate::engine::engine_util_errmem::mju_warning(b"Invalid model: flex_texcoord too large. ".as_ptr() as *const i8);
+            return;
+        }
+        if safe_add_to_buffer_size(&mut offset, &mut (*m).nbuffer, 4, (*m).nmesh, 1_i64) == 0 {
+            if allocate != 0 { crate::engine::engine_util_errmem::mju_free(m as *mut ()); }
+            crate::engine::engine_util_errmem::mju_warning(b"Invalid model: mesh_vertadr too large. ".as_ptr() as *const i8);
+            return;
+        }
+        if safe_add_to_buffer_size(&mut offset, &mut (*m).nbuffer, 4, (*m).nmesh, 1_i64) == 0 {
+            if allocate != 0 { crate::engine::engine_util_errmem::mju_free(m as *mut ()); }
+            crate::engine::engine_util_errmem::mju_warning(b"Invalid model: mesh_vertnum too large. ".as_ptr() as *const i8);
+            return;
+        }
+        if safe_add_to_buffer_size(&mut offset, &mut (*m).nbuffer, 4, (*m).nmesh, 1_i64) == 0 {
+            if allocate != 0 { crate::engine::engine_util_errmem::mju_free(m as *mut ()); }
+            crate::engine::engine_util_errmem::mju_warning(b"Invalid model: mesh_faceadr too large. ".as_ptr() as *const i8);
+            return;
+        }
+        if safe_add_to_buffer_size(&mut offset, &mut (*m).nbuffer, 4, (*m).nmesh, 1_i64) == 0 {
+            if allocate != 0 { crate::engine::engine_util_errmem::mju_free(m as *mut ()); }
+            crate::engine::engine_util_errmem::mju_warning(b"Invalid model: mesh_facenum too large. ".as_ptr() as *const i8);
+            return;
+        }
+        if safe_add_to_buffer_size(&mut offset, &mut (*m).nbuffer, 4, (*m).nmesh, 1_i64) == 0 {
+            if allocate != 0 { crate::engine::engine_util_errmem::mju_free(m as *mut ()); }
+            crate::engine::engine_util_errmem::mju_warning(b"Invalid model: mesh_bvhadr too large. ".as_ptr() as *const i8);
+            return;
+        }
+        if safe_add_to_buffer_size(&mut offset, &mut (*m).nbuffer, 4, (*m).nmesh, 1_i64) == 0 {
+            if allocate != 0 { crate::engine::engine_util_errmem::mju_free(m as *mut ()); }
+            crate::engine::engine_util_errmem::mju_warning(b"Invalid model: mesh_bvhnum too large. ".as_ptr() as *const i8);
+            return;
+        }
+        if safe_add_to_buffer_size(&mut offset, &mut (*m).nbuffer, 4, (*m).nmesh, 1_i64) == 0 {
+            if allocate != 0 { crate::engine::engine_util_errmem::mju_free(m as *mut ()); }
+            crate::engine::engine_util_errmem::mju_warning(b"Invalid model: mesh_octadr too large. ".as_ptr() as *const i8);
+            return;
+        }
+        if safe_add_to_buffer_size(&mut offset, &mut (*m).nbuffer, 4, (*m).nmesh, 1_i64) == 0 {
+            if allocate != 0 { crate::engine::engine_util_errmem::mju_free(m as *mut ()); }
+            crate::engine::engine_util_errmem::mju_warning(b"Invalid model: mesh_octnum too large. ".as_ptr() as *const i8);
+            return;
+        }
+        if safe_add_to_buffer_size(&mut offset, &mut (*m).nbuffer, 4, (*m).nmesh, 1_i64) == 0 {
+            if allocate != 0 { crate::engine::engine_util_errmem::mju_free(m as *mut ()); }
+            crate::engine::engine_util_errmem::mju_warning(b"Invalid model: mesh_normaladr too large. ".as_ptr() as *const i8);
+            return;
+        }
+        if safe_add_to_buffer_size(&mut offset, &mut (*m).nbuffer, 4, (*m).nmesh, 1_i64) == 0 {
+            if allocate != 0 { crate::engine::engine_util_errmem::mju_free(m as *mut ()); }
+            crate::engine::engine_util_errmem::mju_warning(b"Invalid model: mesh_normalnum too large. ".as_ptr() as *const i8);
+            return;
+        }
+        if safe_add_to_buffer_size(&mut offset, &mut (*m).nbuffer, 4, (*m).nmesh, 1_i64) == 0 {
+            if allocate != 0 { crate::engine::engine_util_errmem::mju_free(m as *mut ()); }
+            crate::engine::engine_util_errmem::mju_warning(b"Invalid model: mesh_texcoordadr too large. ".as_ptr() as *const i8);
+            return;
+        }
+        if safe_add_to_buffer_size(&mut offset, &mut (*m).nbuffer, 4, (*m).nmesh, 1_i64) == 0 {
+            if allocate != 0 { crate::engine::engine_util_errmem::mju_free(m as *mut ()); }
+            crate::engine::engine_util_errmem::mju_warning(b"Invalid model: mesh_texcoordnum too large. ".as_ptr() as *const i8);
+            return;
+        }
+        if safe_add_to_buffer_size(&mut offset, &mut (*m).nbuffer, 4, (*m).nmesh, 1_i64) == 0 {
+            if allocate != 0 { crate::engine::engine_util_errmem::mju_free(m as *mut ()); }
+            crate::engine::engine_util_errmem::mju_warning(b"Invalid model: mesh_graphadr too large. ".as_ptr() as *const i8);
+            return;
+        }
+        if safe_add_to_buffer_size(&mut offset, &mut (*m).nbuffer, 4, (*m).nmeshvert, 3_i64) == 0 {
+            if allocate != 0 { crate::engine::engine_util_errmem::mju_free(m as *mut ()); }
+            crate::engine::engine_util_errmem::mju_warning(b"Invalid model: mesh_vert too large. ".as_ptr() as *const i8);
+            return;
+        }
+        if safe_add_to_buffer_size(&mut offset, &mut (*m).nbuffer, 4, (*m).nmeshnormal, 3_i64) == 0 {
+            if allocate != 0 { crate::engine::engine_util_errmem::mju_free(m as *mut ()); }
+            crate::engine::engine_util_errmem::mju_warning(b"Invalid model: mesh_normal too large. ".as_ptr() as *const i8);
+            return;
+        }
+        if safe_add_to_buffer_size(&mut offset, &mut (*m).nbuffer, 4, (*m).nmeshtexcoord, 2_i64) == 0 {
+            if allocate != 0 { crate::engine::engine_util_errmem::mju_free(m as *mut ()); }
+            crate::engine::engine_util_errmem::mju_warning(b"Invalid model: mesh_texcoord too large. ".as_ptr() as *const i8);
+            return;
+        }
+        if safe_add_to_buffer_size(&mut offset, &mut (*m).nbuffer, 4, (*m).nmeshface, 3_i64) == 0 {
+            if allocate != 0 { crate::engine::engine_util_errmem::mju_free(m as *mut ()); }
+            crate::engine::engine_util_errmem::mju_warning(b"Invalid model: mesh_face too large. ".as_ptr() as *const i8);
+            return;
+        }
+        if safe_add_to_buffer_size(&mut offset, &mut (*m).nbuffer, 4, (*m).nmeshface, 3_i64) == 0 {
+            if allocate != 0 { crate::engine::engine_util_errmem::mju_free(m as *mut ()); }
+            crate::engine::engine_util_errmem::mju_warning(b"Invalid model: mesh_facenormal too large. ".as_ptr() as *const i8);
+            return;
+        }
+        if safe_add_to_buffer_size(&mut offset, &mut (*m).nbuffer, 4, (*m).nmeshface, 3_i64) == 0 {
+            if allocate != 0 { crate::engine::engine_util_errmem::mju_free(m as *mut ()); }
+            crate::engine::engine_util_errmem::mju_warning(b"Invalid model: mesh_facetexcoord too large. ".as_ptr() as *const i8);
+            return;
+        }
+        if safe_add_to_buffer_size(&mut offset, &mut (*m).nbuffer, 4, (*m).nmeshgraph, 1_i64) == 0 {
+            if allocate != 0 { crate::engine::engine_util_errmem::mju_free(m as *mut ()); }
+            crate::engine::engine_util_errmem::mju_warning(b"Invalid model: mesh_graph too large. ".as_ptr() as *const i8);
+            return;
+        }
+        if safe_add_to_buffer_size(&mut offset, &mut (*m).nbuffer, 8, (*m).nmesh, 3_i64) == 0 {
+            if allocate != 0 { crate::engine::engine_util_errmem::mju_free(m as *mut ()); }
+            crate::engine::engine_util_errmem::mju_warning(b"Invalid model: mesh_scale too large. ".as_ptr() as *const i8);
+            return;
+        }
+        if safe_add_to_buffer_size(&mut offset, &mut (*m).nbuffer, 8, (*m).nmesh, 3_i64) == 0 {
+            if allocate != 0 { crate::engine::engine_util_errmem::mju_free(m as *mut ()); }
+            crate::engine::engine_util_errmem::mju_warning(b"Invalid model: mesh_pos too large. ".as_ptr() as *const i8);
+            return;
+        }
+        if safe_add_to_buffer_size(&mut offset, &mut (*m).nbuffer, 8, (*m).nmesh, 4_i64) == 0 {
+            if allocate != 0 { crate::engine::engine_util_errmem::mju_free(m as *mut ()); }
+            crate::engine::engine_util_errmem::mju_warning(b"Invalid model: mesh_quat too large. ".as_ptr() as *const i8);
+            return;
+        }
+        if safe_add_to_buffer_size(&mut offset, &mut (*m).nbuffer, 4, (*m).nmesh, 1_i64) == 0 {
+            if allocate != 0 { crate::engine::engine_util_errmem::mju_free(m as *mut ()); }
+            crate::engine::engine_util_errmem::mju_warning(b"Invalid model: mesh_pathadr too large. ".as_ptr() as *const i8);
+            return;
+        }
+        if safe_add_to_buffer_size(&mut offset, &mut (*m).nbuffer, 4, (*m).nmesh, 1_i64) == 0 {
+            if allocate != 0 { crate::engine::engine_util_errmem::mju_free(m as *mut ()); }
+            crate::engine::engine_util_errmem::mju_warning(b"Invalid model: mesh_polynum too large. ".as_ptr() as *const i8);
+            return;
+        }
+        if safe_add_to_buffer_size(&mut offset, &mut (*m).nbuffer, 4, (*m).nmesh, 1_i64) == 0 {
+            if allocate != 0 { crate::engine::engine_util_errmem::mju_free(m as *mut ()); }
+            crate::engine::engine_util_errmem::mju_warning(b"Invalid model: mesh_polyadr too large. ".as_ptr() as *const i8);
+            return;
+        }
+        if safe_add_to_buffer_size(&mut offset, &mut (*m).nbuffer, 8, (*m).nmeshpoly, 3_i64) == 0 {
+            if allocate != 0 { crate::engine::engine_util_errmem::mju_free(m as *mut ()); }
+            crate::engine::engine_util_errmem::mju_warning(b"Invalid model: mesh_polynormal too large. ".as_ptr() as *const i8);
+            return;
+        }
+        if safe_add_to_buffer_size(&mut offset, &mut (*m).nbuffer, 4, (*m).nmeshpoly, 1_i64) == 0 {
+            if allocate != 0 { crate::engine::engine_util_errmem::mju_free(m as *mut ()); }
+            crate::engine::engine_util_errmem::mju_warning(b"Invalid model: mesh_polyvertadr too large. ".as_ptr() as *const i8);
+            return;
+        }
+        if safe_add_to_buffer_size(&mut offset, &mut (*m).nbuffer, 4, (*m).nmeshpoly, 1_i64) == 0 {
+            if allocate != 0 { crate::engine::engine_util_errmem::mju_free(m as *mut ()); }
+            crate::engine::engine_util_errmem::mju_warning(b"Invalid model: mesh_polyvertnum too large. ".as_ptr() as *const i8);
+            return;
+        }
+        if safe_add_to_buffer_size(&mut offset, &mut (*m).nbuffer, 4, (*m).nmeshpolyvert, 1_i64) == 0 {
+            if allocate != 0 { crate::engine::engine_util_errmem::mju_free(m as *mut ()); }
+            crate::engine::engine_util_errmem::mju_warning(b"Invalid model: mesh_polyvert too large. ".as_ptr() as *const i8);
+            return;
+        }
+        if safe_add_to_buffer_size(&mut offset, &mut (*m).nbuffer, 4, (*m).nmeshvert, 1_i64) == 0 {
+            if allocate != 0 { crate::engine::engine_util_errmem::mju_free(m as *mut ()); }
+            crate::engine::engine_util_errmem::mju_warning(b"Invalid model: mesh_polymapadr too large. ".as_ptr() as *const i8);
+            return;
+        }
+        if safe_add_to_buffer_size(&mut offset, &mut (*m).nbuffer, 4, (*m).nmeshvert, 1_i64) == 0 {
+            if allocate != 0 { crate::engine::engine_util_errmem::mju_free(m as *mut ()); }
+            crate::engine::engine_util_errmem::mju_warning(b"Invalid model: mesh_polymapnum too large. ".as_ptr() as *const i8);
+            return;
+        }
+        if safe_add_to_buffer_size(&mut offset, &mut (*m).nbuffer, 4, (*m).nmeshpolymap, 1_i64) == 0 {
+            if allocate != 0 { crate::engine::engine_util_errmem::mju_free(m as *mut ()); }
+            crate::engine::engine_util_errmem::mju_warning(b"Invalid model: mesh_polymap too large. ".as_ptr() as *const i8);
+            return;
+        }
+        if safe_add_to_buffer_size(&mut offset, &mut (*m).nbuffer, 4, (*m).nskin, 1_i64) == 0 {
+            if allocate != 0 { crate::engine::engine_util_errmem::mju_free(m as *mut ()); }
+            crate::engine::engine_util_errmem::mju_warning(b"Invalid model: skin_matid too large. ".as_ptr() as *const i8);
+            return;
+        }
+        if safe_add_to_buffer_size(&mut offset, &mut (*m).nbuffer, 4, (*m).nskin, 1_i64) == 0 {
+            if allocate != 0 { crate::engine::engine_util_errmem::mju_free(m as *mut ()); }
+            crate::engine::engine_util_errmem::mju_warning(b"Invalid model: skin_group too large. ".as_ptr() as *const i8);
+            return;
+        }
+        if safe_add_to_buffer_size(&mut offset, &mut (*m).nbuffer, 4, (*m).nskin, 4_i64) == 0 {
+            if allocate != 0 { crate::engine::engine_util_errmem::mju_free(m as *mut ()); }
+            crate::engine::engine_util_errmem::mju_warning(b"Invalid model: skin_rgba too large. ".as_ptr() as *const i8);
+            return;
+        }
+        if safe_add_to_buffer_size(&mut offset, &mut (*m).nbuffer, 4, (*m).nskin, 1_i64) == 0 {
+            if allocate != 0 { crate::engine::engine_util_errmem::mju_free(m as *mut ()); }
+            crate::engine::engine_util_errmem::mju_warning(b"Invalid model: skin_inflate too large. ".as_ptr() as *const i8);
+            return;
+        }
+        if safe_add_to_buffer_size(&mut offset, &mut (*m).nbuffer, 4, (*m).nskin, 1_i64) == 0 {
+            if allocate != 0 { crate::engine::engine_util_errmem::mju_free(m as *mut ()); }
+            crate::engine::engine_util_errmem::mju_warning(b"Invalid model: skin_vertadr too large. ".as_ptr() as *const i8);
+            return;
+        }
+        if safe_add_to_buffer_size(&mut offset, &mut (*m).nbuffer, 4, (*m).nskin, 1_i64) == 0 {
+            if allocate != 0 { crate::engine::engine_util_errmem::mju_free(m as *mut ()); }
+            crate::engine::engine_util_errmem::mju_warning(b"Invalid model: skin_vertnum too large. ".as_ptr() as *const i8);
+            return;
+        }
+        if safe_add_to_buffer_size(&mut offset, &mut (*m).nbuffer, 4, (*m).nskin, 1_i64) == 0 {
+            if allocate != 0 { crate::engine::engine_util_errmem::mju_free(m as *mut ()); }
+            crate::engine::engine_util_errmem::mju_warning(b"Invalid model: skin_texcoordadr too large. ".as_ptr() as *const i8);
+            return;
+        }
+        if safe_add_to_buffer_size(&mut offset, &mut (*m).nbuffer, 4, (*m).nskin, 1_i64) == 0 {
+            if allocate != 0 { crate::engine::engine_util_errmem::mju_free(m as *mut ()); }
+            crate::engine::engine_util_errmem::mju_warning(b"Invalid model: skin_faceadr too large. ".as_ptr() as *const i8);
+            return;
+        }
+        if safe_add_to_buffer_size(&mut offset, &mut (*m).nbuffer, 4, (*m).nskin, 1_i64) == 0 {
+            if allocate != 0 { crate::engine::engine_util_errmem::mju_free(m as *mut ()); }
+            crate::engine::engine_util_errmem::mju_warning(b"Invalid model: skin_facenum too large. ".as_ptr() as *const i8);
+            return;
+        }
+        if safe_add_to_buffer_size(&mut offset, &mut (*m).nbuffer, 4, (*m).nskin, 1_i64) == 0 {
+            if allocate != 0 { crate::engine::engine_util_errmem::mju_free(m as *mut ()); }
+            crate::engine::engine_util_errmem::mju_warning(b"Invalid model: skin_boneadr too large. ".as_ptr() as *const i8);
+            return;
+        }
+        if safe_add_to_buffer_size(&mut offset, &mut (*m).nbuffer, 4, (*m).nskin, 1_i64) == 0 {
+            if allocate != 0 { crate::engine::engine_util_errmem::mju_free(m as *mut ()); }
+            crate::engine::engine_util_errmem::mju_warning(b"Invalid model: skin_bonenum too large. ".as_ptr() as *const i8);
+            return;
+        }
+        if safe_add_to_buffer_size(&mut offset, &mut (*m).nbuffer, 4, (*m).nskinvert, 3_i64) == 0 {
+            if allocate != 0 { crate::engine::engine_util_errmem::mju_free(m as *mut ()); }
+            crate::engine::engine_util_errmem::mju_warning(b"Invalid model: skin_vert too large. ".as_ptr() as *const i8);
+            return;
+        }
+        if safe_add_to_buffer_size(&mut offset, &mut (*m).nbuffer, 4, (*m).nskintexvert, 2_i64) == 0 {
+            if allocate != 0 { crate::engine::engine_util_errmem::mju_free(m as *mut ()); }
+            crate::engine::engine_util_errmem::mju_warning(b"Invalid model: skin_texcoord too large. ".as_ptr() as *const i8);
+            return;
+        }
+        if safe_add_to_buffer_size(&mut offset, &mut (*m).nbuffer, 4, (*m).nskinface, 3_i64) == 0 {
+            if allocate != 0 { crate::engine::engine_util_errmem::mju_free(m as *mut ()); }
+            crate::engine::engine_util_errmem::mju_warning(b"Invalid model: skin_face too large. ".as_ptr() as *const i8);
+            return;
+        }
+        if safe_add_to_buffer_size(&mut offset, &mut (*m).nbuffer, 4, (*m).nskinbone, 1_i64) == 0 {
+            if allocate != 0 { crate::engine::engine_util_errmem::mju_free(m as *mut ()); }
+            crate::engine::engine_util_errmem::mju_warning(b"Invalid model: skin_bonevertadr too large. ".as_ptr() as *const i8);
+            return;
+        }
+        if safe_add_to_buffer_size(&mut offset, &mut (*m).nbuffer, 4, (*m).nskinbone, 1_i64) == 0 {
+            if allocate != 0 { crate::engine::engine_util_errmem::mju_free(m as *mut ()); }
+            crate::engine::engine_util_errmem::mju_warning(b"Invalid model: skin_bonevertnum too large. ".as_ptr() as *const i8);
+            return;
+        }
+        if safe_add_to_buffer_size(&mut offset, &mut (*m).nbuffer, 4, (*m).nskinbone, 3_i64) == 0 {
+            if allocate != 0 { crate::engine::engine_util_errmem::mju_free(m as *mut ()); }
+            crate::engine::engine_util_errmem::mju_warning(b"Invalid model: skin_bonebindpos too large. ".as_ptr() as *const i8);
+            return;
+        }
+        if safe_add_to_buffer_size(&mut offset, &mut (*m).nbuffer, 4, (*m).nskinbone, 4_i64) == 0 {
+            if allocate != 0 { crate::engine::engine_util_errmem::mju_free(m as *mut ()); }
+            crate::engine::engine_util_errmem::mju_warning(b"Invalid model: skin_bonebindquat too large. ".as_ptr() as *const i8);
+            return;
+        }
+        if safe_add_to_buffer_size(&mut offset, &mut (*m).nbuffer, 4, (*m).nskinbone, 1_i64) == 0 {
+            if allocate != 0 { crate::engine::engine_util_errmem::mju_free(m as *mut ()); }
+            crate::engine::engine_util_errmem::mju_warning(b"Invalid model: skin_bonebodyid too large. ".as_ptr() as *const i8);
+            return;
+        }
+        if safe_add_to_buffer_size(&mut offset, &mut (*m).nbuffer, 4, (*m).nskinbonevert, 1_i64) == 0 {
+            if allocate != 0 { crate::engine::engine_util_errmem::mju_free(m as *mut ()); }
+            crate::engine::engine_util_errmem::mju_warning(b"Invalid model: skin_bonevertid too large. ".as_ptr() as *const i8);
+            return;
+        }
+        if safe_add_to_buffer_size(&mut offset, &mut (*m).nbuffer, 4, (*m).nskinbonevert, 1_i64) == 0 {
+            if allocate != 0 { crate::engine::engine_util_errmem::mju_free(m as *mut ()); }
+            crate::engine::engine_util_errmem::mju_warning(b"Invalid model: skin_bonevertweight too large. ".as_ptr() as *const i8);
+            return;
+        }
+        if safe_add_to_buffer_size(&mut offset, &mut (*m).nbuffer, 4, (*m).nskin, 1_i64) == 0 {
+            if allocate != 0 { crate::engine::engine_util_errmem::mju_free(m as *mut ()); }
+            crate::engine::engine_util_errmem::mju_warning(b"Invalid model: skin_pathadr too large. ".as_ptr() as *const i8);
+            return;
+        }
+        if safe_add_to_buffer_size(&mut offset, &mut (*m).nbuffer, 8, (*m).nhfield, 4_i64) == 0 {
+            if allocate != 0 { crate::engine::engine_util_errmem::mju_free(m as *mut ()); }
+            crate::engine::engine_util_errmem::mju_warning(b"Invalid model: hfield_size too large. ".as_ptr() as *const i8);
+            return;
+        }
+        if safe_add_to_buffer_size(&mut offset, &mut (*m).nbuffer, 4, (*m).nhfield, 1_i64) == 0 {
+            if allocate != 0 { crate::engine::engine_util_errmem::mju_free(m as *mut ()); }
+            crate::engine::engine_util_errmem::mju_warning(b"Invalid model: hfield_nrow too large. ".as_ptr() as *const i8);
+            return;
+        }
+        if safe_add_to_buffer_size(&mut offset, &mut (*m).nbuffer, 4, (*m).nhfield, 1_i64) == 0 {
+            if allocate != 0 { crate::engine::engine_util_errmem::mju_free(m as *mut ()); }
+            crate::engine::engine_util_errmem::mju_warning(b"Invalid model: hfield_ncol too large. ".as_ptr() as *const i8);
+            return;
+        }
+        if safe_add_to_buffer_size(&mut offset, &mut (*m).nbuffer, 4, (*m).nhfield, 1_i64) == 0 {
+            if allocate != 0 { crate::engine::engine_util_errmem::mju_free(m as *mut ()); }
+            crate::engine::engine_util_errmem::mju_warning(b"Invalid model: hfield_adr too large. ".as_ptr() as *const i8);
+            return;
+        }
+        if safe_add_to_buffer_size(&mut offset, &mut (*m).nbuffer, 4, (*m).nhfielddata, 1_i64) == 0 {
+            if allocate != 0 { crate::engine::engine_util_errmem::mju_free(m as *mut ()); }
+            crate::engine::engine_util_errmem::mju_warning(b"Invalid model: hfield_data too large. ".as_ptr() as *const i8);
+            return;
+        }
+        if safe_add_to_buffer_size(&mut offset, &mut (*m).nbuffer, 4, (*m).nhfield, 1_i64) == 0 {
+            if allocate != 0 { crate::engine::engine_util_errmem::mju_free(m as *mut ()); }
+            crate::engine::engine_util_errmem::mju_warning(b"Invalid model: hfield_pathadr too large. ".as_ptr() as *const i8);
+            return;
+        }
+        if safe_add_to_buffer_size(&mut offset, &mut (*m).nbuffer, 4, (*m).ntex, 1_i64) == 0 {
+            if allocate != 0 { crate::engine::engine_util_errmem::mju_free(m as *mut ()); }
+            crate::engine::engine_util_errmem::mju_warning(b"Invalid model: tex_type too large. ".as_ptr() as *const i8);
+            return;
+        }
+        if safe_add_to_buffer_size(&mut offset, &mut (*m).nbuffer, 4, (*m).ntex, 1_i64) == 0 {
+            if allocate != 0 { crate::engine::engine_util_errmem::mju_free(m as *mut ()); }
+            crate::engine::engine_util_errmem::mju_warning(b"Invalid model: tex_colorspace too large. ".as_ptr() as *const i8);
+            return;
+        }
+        if safe_add_to_buffer_size(&mut offset, &mut (*m).nbuffer, 4, (*m).ntex, 1_i64) == 0 {
+            if allocate != 0 { crate::engine::engine_util_errmem::mju_free(m as *mut ()); }
+            crate::engine::engine_util_errmem::mju_warning(b"Invalid model: tex_height too large. ".as_ptr() as *const i8);
+            return;
+        }
+        if safe_add_to_buffer_size(&mut offset, &mut (*m).nbuffer, 4, (*m).ntex, 1_i64) == 0 {
+            if allocate != 0 { crate::engine::engine_util_errmem::mju_free(m as *mut ()); }
+            crate::engine::engine_util_errmem::mju_warning(b"Invalid model: tex_width too large. ".as_ptr() as *const i8);
+            return;
+        }
+        if safe_add_to_buffer_size(&mut offset, &mut (*m).nbuffer, 4, (*m).ntex, 1_i64) == 0 {
+            if allocate != 0 { crate::engine::engine_util_errmem::mju_free(m as *mut ()); }
+            crate::engine::engine_util_errmem::mju_warning(b"Invalid model: tex_nchannel too large. ".as_ptr() as *const i8);
+            return;
+        }
+        if safe_add_to_buffer_size(&mut offset, &mut (*m).nbuffer, 8, (*m).ntex, 1_i64) == 0 {
+            if allocate != 0 { crate::engine::engine_util_errmem::mju_free(m as *mut ()); }
+            crate::engine::engine_util_errmem::mju_warning(b"Invalid model: tex_adr too large. ".as_ptr() as *const i8);
+            return;
+        }
+        if safe_add_to_buffer_size(&mut offset, &mut (*m).nbuffer, 1, (*m).ntexdata, 1_i64) == 0 {
+            if allocate != 0 { crate::engine::engine_util_errmem::mju_free(m as *mut ()); }
+            crate::engine::engine_util_errmem::mju_warning(b"Invalid model: tex_data too large. ".as_ptr() as *const i8);
+            return;
+        }
+        if safe_add_to_buffer_size(&mut offset, &mut (*m).nbuffer, 4, (*m).ntex, 1_i64) == 0 {
+            if allocate != 0 { crate::engine::engine_util_errmem::mju_free(m as *mut ()); }
+            crate::engine::engine_util_errmem::mju_warning(b"Invalid model: tex_pathadr too large. ".as_ptr() as *const i8);
+            return;
+        }
+        if safe_add_to_buffer_size(&mut offset, &mut (*m).nbuffer, 4, (*m).nmat, 10_i64) == 0 {
+            if allocate != 0 { crate::engine::engine_util_errmem::mju_free(m as *mut ()); }
+            crate::engine::engine_util_errmem::mju_warning(b"Invalid model: mat_texid too large. ".as_ptr() as *const i8);
+            return;
+        }
+        if safe_add_to_buffer_size(&mut offset, &mut (*m).nbuffer, 1, (*m).nmat, 1_i64) == 0 {
+            if allocate != 0 { crate::engine::engine_util_errmem::mju_free(m as *mut ()); }
+            crate::engine::engine_util_errmem::mju_warning(b"Invalid model: mat_texuniform too large. ".as_ptr() as *const i8);
+            return;
+        }
+        if safe_add_to_buffer_size(&mut offset, &mut (*m).nbuffer, 4, (*m).nmat, 2_i64) == 0 {
+            if allocate != 0 { crate::engine::engine_util_errmem::mju_free(m as *mut ()); }
+            crate::engine::engine_util_errmem::mju_warning(b"Invalid model: mat_texrepeat too large. ".as_ptr() as *const i8);
+            return;
+        }
+        if safe_add_to_buffer_size(&mut offset, &mut (*m).nbuffer, 4, (*m).nmat, 1_i64) == 0 {
+            if allocate != 0 { crate::engine::engine_util_errmem::mju_free(m as *mut ()); }
+            crate::engine::engine_util_errmem::mju_warning(b"Invalid model: mat_emission too large. ".as_ptr() as *const i8);
+            return;
+        }
+        if safe_add_to_buffer_size(&mut offset, &mut (*m).nbuffer, 4, (*m).nmat, 1_i64) == 0 {
+            if allocate != 0 { crate::engine::engine_util_errmem::mju_free(m as *mut ()); }
+            crate::engine::engine_util_errmem::mju_warning(b"Invalid model: mat_specular too large. ".as_ptr() as *const i8);
+            return;
+        }
+        if safe_add_to_buffer_size(&mut offset, &mut (*m).nbuffer, 4, (*m).nmat, 1_i64) == 0 {
+            if allocate != 0 { crate::engine::engine_util_errmem::mju_free(m as *mut ()); }
+            crate::engine::engine_util_errmem::mju_warning(b"Invalid model: mat_shininess too large. ".as_ptr() as *const i8);
+            return;
+        }
+        if safe_add_to_buffer_size(&mut offset, &mut (*m).nbuffer, 4, (*m).nmat, 1_i64) == 0 {
+            if allocate != 0 { crate::engine::engine_util_errmem::mju_free(m as *mut ()); }
+            crate::engine::engine_util_errmem::mju_warning(b"Invalid model: mat_reflectance too large. ".as_ptr() as *const i8);
+            return;
+        }
+        if safe_add_to_buffer_size(&mut offset, &mut (*m).nbuffer, 4, (*m).nmat, 1_i64) == 0 {
+            if allocate != 0 { crate::engine::engine_util_errmem::mju_free(m as *mut ()); }
+            crate::engine::engine_util_errmem::mju_warning(b"Invalid model: mat_metallic too large. ".as_ptr() as *const i8);
+            return;
+        }
+        if safe_add_to_buffer_size(&mut offset, &mut (*m).nbuffer, 4, (*m).nmat, 1_i64) == 0 {
+            if allocate != 0 { crate::engine::engine_util_errmem::mju_free(m as *mut ()); }
+            crate::engine::engine_util_errmem::mju_warning(b"Invalid model: mat_roughness too large. ".as_ptr() as *const i8);
+            return;
+        }
+        if safe_add_to_buffer_size(&mut offset, &mut (*m).nbuffer, 4, (*m).nmat, 4_i64) == 0 {
+            if allocate != 0 { crate::engine::engine_util_errmem::mju_free(m as *mut ()); }
+            crate::engine::engine_util_errmem::mju_warning(b"Invalid model: mat_rgba too large. ".as_ptr() as *const i8);
+            return;
+        }
+        if safe_add_to_buffer_size(&mut offset, &mut (*m).nbuffer, 4, (*m).npair, 1_i64) == 0 {
+            if allocate != 0 { crate::engine::engine_util_errmem::mju_free(m as *mut ()); }
+            crate::engine::engine_util_errmem::mju_warning(b"Invalid model: pair_dim too large. ".as_ptr() as *const i8);
+            return;
+        }
+        if safe_add_to_buffer_size(&mut offset, &mut (*m).nbuffer, 4, (*m).npair, 1_i64) == 0 {
+            if allocate != 0 { crate::engine::engine_util_errmem::mju_free(m as *mut ()); }
+            crate::engine::engine_util_errmem::mju_warning(b"Invalid model: pair_geom1 too large. ".as_ptr() as *const i8);
+            return;
+        }
+        if safe_add_to_buffer_size(&mut offset, &mut (*m).nbuffer, 4, (*m).npair, 1_i64) == 0 {
+            if allocate != 0 { crate::engine::engine_util_errmem::mju_free(m as *mut ()); }
+            crate::engine::engine_util_errmem::mju_warning(b"Invalid model: pair_geom2 too large. ".as_ptr() as *const i8);
+            return;
+        }
+        if safe_add_to_buffer_size(&mut offset, &mut (*m).nbuffer, 4, (*m).npair, 1_i64) == 0 {
+            if allocate != 0 { crate::engine::engine_util_errmem::mju_free(m as *mut ()); }
+            crate::engine::engine_util_errmem::mju_warning(b"Invalid model: pair_signature too large. ".as_ptr() as *const i8);
+            return;
+        }
+        if safe_add_to_buffer_size(&mut offset, &mut (*m).nbuffer, 8, (*m).npair, 2_i64) == 0 {
+            if allocate != 0 { crate::engine::engine_util_errmem::mju_free(m as *mut ()); }
+            crate::engine::engine_util_errmem::mju_warning(b"Invalid model: pair_solref too large. ".as_ptr() as *const i8);
+            return;
+        }
+        if safe_add_to_buffer_size(&mut offset, &mut (*m).nbuffer, 8, (*m).npair, 2_i64) == 0 {
+            if allocate != 0 { crate::engine::engine_util_errmem::mju_free(m as *mut ()); }
+            crate::engine::engine_util_errmem::mju_warning(b"Invalid model: pair_solreffriction too large. ".as_ptr() as *const i8);
+            return;
+        }
+        if safe_add_to_buffer_size(&mut offset, &mut (*m).nbuffer, 8, (*m).npair, 5_i64) == 0 {
+            if allocate != 0 { crate::engine::engine_util_errmem::mju_free(m as *mut ()); }
+            crate::engine::engine_util_errmem::mju_warning(b"Invalid model: pair_solimp too large. ".as_ptr() as *const i8);
+            return;
+        }
+        if safe_add_to_buffer_size(&mut offset, &mut (*m).nbuffer, 8, (*m).npair, 1_i64) == 0 {
+            if allocate != 0 { crate::engine::engine_util_errmem::mju_free(m as *mut ()); }
+            crate::engine::engine_util_errmem::mju_warning(b"Invalid model: pair_margin too large. ".as_ptr() as *const i8);
+            return;
+        }
+        if safe_add_to_buffer_size(&mut offset, &mut (*m).nbuffer, 8, (*m).npair, 1_i64) == 0 {
+            if allocate != 0 { crate::engine::engine_util_errmem::mju_free(m as *mut ()); }
+            crate::engine::engine_util_errmem::mju_warning(b"Invalid model: pair_gap too large. ".as_ptr() as *const i8);
+            return;
+        }
+        if safe_add_to_buffer_size(&mut offset, &mut (*m).nbuffer, 8, (*m).npair, 5_i64) == 0 {
+            if allocate != 0 { crate::engine::engine_util_errmem::mju_free(m as *mut ()); }
+            crate::engine::engine_util_errmem::mju_warning(b"Invalid model: pair_friction too large. ".as_ptr() as *const i8);
+            return;
+        }
+        if safe_add_to_buffer_size(&mut offset, &mut (*m).nbuffer, 4, (*m).nexclude, 1_i64) == 0 {
+            if allocate != 0 { crate::engine::engine_util_errmem::mju_free(m as *mut ()); }
+            crate::engine::engine_util_errmem::mju_warning(b"Invalid model: exclude_signature too large. ".as_ptr() as *const i8);
+            return;
+        }
+        if safe_add_to_buffer_size(&mut offset, &mut (*m).nbuffer, 4, (*m).neq, 1_i64) == 0 {
+            if allocate != 0 { crate::engine::engine_util_errmem::mju_free(m as *mut ()); }
+            crate::engine::engine_util_errmem::mju_warning(b"Invalid model: eq_type too large. ".as_ptr() as *const i8);
+            return;
+        }
+        if safe_add_to_buffer_size(&mut offset, &mut (*m).nbuffer, 4, (*m).neq, 1_i64) == 0 {
+            if allocate != 0 { crate::engine::engine_util_errmem::mju_free(m as *mut ()); }
+            crate::engine::engine_util_errmem::mju_warning(b"Invalid model: eq_obj1id too large. ".as_ptr() as *const i8);
+            return;
+        }
+        if safe_add_to_buffer_size(&mut offset, &mut (*m).nbuffer, 4, (*m).neq, 1_i64) == 0 {
+            if allocate != 0 { crate::engine::engine_util_errmem::mju_free(m as *mut ()); }
+            crate::engine::engine_util_errmem::mju_warning(b"Invalid model: eq_obj2id too large. ".as_ptr() as *const i8);
+            return;
+        }
+        if safe_add_to_buffer_size(&mut offset, &mut (*m).nbuffer, 4, (*m).neq, 1_i64) == 0 {
+            if allocate != 0 { crate::engine::engine_util_errmem::mju_free(m as *mut ()); }
+            crate::engine::engine_util_errmem::mju_warning(b"Invalid model: eq_objtype too large. ".as_ptr() as *const i8);
+            return;
+        }
+        if safe_add_to_buffer_size(&mut offset, &mut (*m).nbuffer, 1, (*m).neq, 1_i64) == 0 {
+            if allocate != 0 { crate::engine::engine_util_errmem::mju_free(m as *mut ()); }
+            crate::engine::engine_util_errmem::mju_warning(b"Invalid model: eq_active0 too large. ".as_ptr() as *const i8);
+            return;
+        }
+        if safe_add_to_buffer_size(&mut offset, &mut (*m).nbuffer, 8, (*m).neq, 2_i64) == 0 {
+            if allocate != 0 { crate::engine::engine_util_errmem::mju_free(m as *mut ()); }
+            crate::engine::engine_util_errmem::mju_warning(b"Invalid model: eq_solref too large. ".as_ptr() as *const i8);
+            return;
+        }
+        if safe_add_to_buffer_size(&mut offset, &mut (*m).nbuffer, 8, (*m).neq, 5_i64) == 0 {
+            if allocate != 0 { crate::engine::engine_util_errmem::mju_free(m as *mut ()); }
+            crate::engine::engine_util_errmem::mju_warning(b"Invalid model: eq_solimp too large. ".as_ptr() as *const i8);
+            return;
+        }
+        if safe_add_to_buffer_size(&mut offset, &mut (*m).nbuffer, 8, (*m).neq, 11_i64) == 0 {
+            if allocate != 0 { crate::engine::engine_util_errmem::mju_free(m as *mut ()); }
+            crate::engine::engine_util_errmem::mju_warning(b"Invalid model: eq_data too large. ".as_ptr() as *const i8);
+            return;
+        }
+        if safe_add_to_buffer_size(&mut offset, &mut (*m).nbuffer, 4, (*m).ntendon, 1_i64) == 0 {
+            if allocate != 0 { crate::engine::engine_util_errmem::mju_free(m as *mut ()); }
+            crate::engine::engine_util_errmem::mju_warning(b"Invalid model: tendon_adr too large. ".as_ptr() as *const i8);
+            return;
+        }
+        if safe_add_to_buffer_size(&mut offset, &mut (*m).nbuffer, 4, (*m).ntendon, 1_i64) == 0 {
+            if allocate != 0 { crate::engine::engine_util_errmem::mju_free(m as *mut ()); }
+            crate::engine::engine_util_errmem::mju_warning(b"Invalid model: tendon_num too large. ".as_ptr() as *const i8);
+            return;
+        }
+        if safe_add_to_buffer_size(&mut offset, &mut (*m).nbuffer, 4, (*m).ntendon, 1_i64) == 0 {
+            if allocate != 0 { crate::engine::engine_util_errmem::mju_free(m as *mut ()); }
+            crate::engine::engine_util_errmem::mju_warning(b"Invalid model: tendon_matid too large. ".as_ptr() as *const i8);
+            return;
+        }
+        if safe_add_to_buffer_size(&mut offset, &mut (*m).nbuffer, 4, (*m).ntendon, 1_i64) == 0 {
+            if allocate != 0 { crate::engine::engine_util_errmem::mju_free(m as *mut ()); }
+            crate::engine::engine_util_errmem::mju_warning(b"Invalid model: tendon_actuatorid too large. ".as_ptr() as *const i8);
+            return;
+        }
+        if safe_add_to_buffer_size(&mut offset, &mut (*m).nbuffer, 4, (*m).ntendon, 1_i64) == 0 {
+            if allocate != 0 { crate::engine::engine_util_errmem::mju_free(m as *mut ()); }
+            crate::engine::engine_util_errmem::mju_warning(b"Invalid model: tendon_group too large. ".as_ptr() as *const i8);
+            return;
+        }
+        if safe_add_to_buffer_size(&mut offset, &mut (*m).nbuffer, 4, (*m).ntendon, 1_i64) == 0 {
+            if allocate != 0 { crate::engine::engine_util_errmem::mju_free(m as *mut ()); }
+            crate::engine::engine_util_errmem::mju_warning(b"Invalid model: tendon_treenum too large. ".as_ptr() as *const i8);
+            return;
+        }
+        if safe_add_to_buffer_size(&mut offset, &mut (*m).nbuffer, 4, (*m).ntendon, 2_i64) == 0 {
+            if allocate != 0 { crate::engine::engine_util_errmem::mju_free(m as *mut ()); }
+            crate::engine::engine_util_errmem::mju_warning(b"Invalid model: tendon_treeid too large. ".as_ptr() as *const i8);
+            return;
+        }
+        if safe_add_to_buffer_size(&mut offset, &mut (*m).nbuffer, 4, (*m).ntendon, 1_i64) == 0 {
+            if allocate != 0 { crate::engine::engine_util_errmem::mju_free(m as *mut ()); }
+            crate::engine::engine_util_errmem::mju_warning(b"Invalid model: ten_J_rownnz too large. ".as_ptr() as *const i8);
+            return;
+        }
+        if safe_add_to_buffer_size(&mut offset, &mut (*m).nbuffer, 4, (*m).ntendon, 1_i64) == 0 {
+            if allocate != 0 { crate::engine::engine_util_errmem::mju_free(m as *mut ()); }
+            crate::engine::engine_util_errmem::mju_warning(b"Invalid model: ten_J_rowadr too large. ".as_ptr() as *const i8);
+            return;
+        }
+        if safe_add_to_buffer_size(&mut offset, &mut (*m).nbuffer, 4, (*m).nJten, 1_i64) == 0 {
+            if allocate != 0 { crate::engine::engine_util_errmem::mju_free(m as *mut ()); }
+            crate::engine::engine_util_errmem::mju_warning(b"Invalid model: ten_J_colind too large. ".as_ptr() as *const i8);
+            return;
+        }
+        if safe_add_to_buffer_size(&mut offset, &mut (*m).nbuffer, 1, (*m).ntendon, 1_i64) == 0 {
+            if allocate != 0 { crate::engine::engine_util_errmem::mju_free(m as *mut ()); }
+            crate::engine::engine_util_errmem::mju_warning(b"Invalid model: tendon_limited too large. ".as_ptr() as *const i8);
+            return;
+        }
+        if safe_add_to_buffer_size(&mut offset, &mut (*m).nbuffer, 1, (*m).ntendon, 1_i64) == 0 {
+            if allocate != 0 { crate::engine::engine_util_errmem::mju_free(m as *mut ()); }
+            crate::engine::engine_util_errmem::mju_warning(b"Invalid model: tendon_actfrclimited too large. ".as_ptr() as *const i8);
+            return;
+        }
+        if safe_add_to_buffer_size(&mut offset, &mut (*m).nbuffer, 8, (*m).ntendon, 1_i64) == 0 {
+            if allocate != 0 { crate::engine::engine_util_errmem::mju_free(m as *mut ()); }
+            crate::engine::engine_util_errmem::mju_warning(b"Invalid model: tendon_width too large. ".as_ptr() as *const i8);
+            return;
+        }
+        if safe_add_to_buffer_size(&mut offset, &mut (*m).nbuffer, 8, (*m).ntendon, 2_i64) == 0 {
+            if allocate != 0 { crate::engine::engine_util_errmem::mju_free(m as *mut ()); }
+            crate::engine::engine_util_errmem::mju_warning(b"Invalid model: tendon_solref_lim too large. ".as_ptr() as *const i8);
+            return;
+        }
+        if safe_add_to_buffer_size(&mut offset, &mut (*m).nbuffer, 8, (*m).ntendon, 5_i64) == 0 {
+            if allocate != 0 { crate::engine::engine_util_errmem::mju_free(m as *mut ()); }
+            crate::engine::engine_util_errmem::mju_warning(b"Invalid model: tendon_solimp_lim too large. ".as_ptr() as *const i8);
+            return;
+        }
+        if safe_add_to_buffer_size(&mut offset, &mut (*m).nbuffer, 8, (*m).ntendon, 2_i64) == 0 {
+            if allocate != 0 { crate::engine::engine_util_errmem::mju_free(m as *mut ()); }
+            crate::engine::engine_util_errmem::mju_warning(b"Invalid model: tendon_solref_fri too large. ".as_ptr() as *const i8);
+            return;
+        }
+        if safe_add_to_buffer_size(&mut offset, &mut (*m).nbuffer, 8, (*m).ntendon, 5_i64) == 0 {
+            if allocate != 0 { crate::engine::engine_util_errmem::mju_free(m as *mut ()); }
+            crate::engine::engine_util_errmem::mju_warning(b"Invalid model: tendon_solimp_fri too large. ".as_ptr() as *const i8);
+            return;
+        }
+        if safe_add_to_buffer_size(&mut offset, &mut (*m).nbuffer, 8, (*m).ntendon, 2_i64) == 0 {
+            if allocate != 0 { crate::engine::engine_util_errmem::mju_free(m as *mut ()); }
+            crate::engine::engine_util_errmem::mju_warning(b"Invalid model: tendon_range too large. ".as_ptr() as *const i8);
+            return;
+        }
+        if safe_add_to_buffer_size(&mut offset, &mut (*m).nbuffer, 8, (*m).ntendon, 2_i64) == 0 {
+            if allocate != 0 { crate::engine::engine_util_errmem::mju_free(m as *mut ()); }
+            crate::engine::engine_util_errmem::mju_warning(b"Invalid model: tendon_actfrcrange too large. ".as_ptr() as *const i8);
+            return;
+        }
+        if safe_add_to_buffer_size(&mut offset, &mut (*m).nbuffer, 8, (*m).ntendon, 1_i64) == 0 {
+            if allocate != 0 { crate::engine::engine_util_errmem::mju_free(m as *mut ()); }
+            crate::engine::engine_util_errmem::mju_warning(b"Invalid model: tendon_margin too large. ".as_ptr() as *const i8);
+            return;
+        }
+        if safe_add_to_buffer_size(&mut offset, &mut (*m).nbuffer, 8, (*m).ntendon, 1_i64) == 0 {
+            if allocate != 0 { crate::engine::engine_util_errmem::mju_free(m as *mut ()); }
+            crate::engine::engine_util_errmem::mju_warning(b"Invalid model: tendon_stiffness too large. ".as_ptr() as *const i8);
+            return;
+        }
+        if safe_add_to_buffer_size(&mut offset, &mut (*m).nbuffer, 8, (*m).ntendon, 2_i64) == 0 {
+            if allocate != 0 { crate::engine::engine_util_errmem::mju_free(m as *mut ()); }
+            crate::engine::engine_util_errmem::mju_warning(b"Invalid model: tendon_stiffnesspoly too large. ".as_ptr() as *const i8);
+            return;
+        }
+        if safe_add_to_buffer_size(&mut offset, &mut (*m).nbuffer, 8, (*m).ntendon, 1_i64) == 0 {
+            if allocate != 0 { crate::engine::engine_util_errmem::mju_free(m as *mut ()); }
+            crate::engine::engine_util_errmem::mju_warning(b"Invalid model: tendon_damping too large. ".as_ptr() as *const i8);
+            return;
+        }
+        if safe_add_to_buffer_size(&mut offset, &mut (*m).nbuffer, 8, (*m).ntendon, 2_i64) == 0 {
+            if allocate != 0 { crate::engine::engine_util_errmem::mju_free(m as *mut ()); }
+            crate::engine::engine_util_errmem::mju_warning(b"Invalid model: tendon_dampingpoly too large. ".as_ptr() as *const i8);
+            return;
+        }
+        if safe_add_to_buffer_size(&mut offset, &mut (*m).nbuffer, 8, (*m).ntendon, 1_i64) == 0 {
+            if allocate != 0 { crate::engine::engine_util_errmem::mju_free(m as *mut ()); }
+            crate::engine::engine_util_errmem::mju_warning(b"Invalid model: tendon_armature too large. ".as_ptr() as *const i8);
+            return;
+        }
+        if safe_add_to_buffer_size(&mut offset, &mut (*m).nbuffer, 8, (*m).ntendon, 1_i64) == 0 {
+            if allocate != 0 { crate::engine::engine_util_errmem::mju_free(m as *mut ()); }
+            crate::engine::engine_util_errmem::mju_warning(b"Invalid model: tendon_frictionloss too large. ".as_ptr() as *const i8);
+            return;
+        }
+        if safe_add_to_buffer_size(&mut offset, &mut (*m).nbuffer, 8, (*m).ntendon, 2_i64) == 0 {
+            if allocate != 0 { crate::engine::engine_util_errmem::mju_free(m as *mut ()); }
+            crate::engine::engine_util_errmem::mju_warning(b"Invalid model: tendon_lengthspring too large. ".as_ptr() as *const i8);
+            return;
+        }
+        if safe_add_to_buffer_size(&mut offset, &mut (*m).nbuffer, 8, (*m).ntendon, 1_i64) == 0 {
+            if allocate != 0 { crate::engine::engine_util_errmem::mju_free(m as *mut ()); }
+            crate::engine::engine_util_errmem::mju_warning(b"Invalid model: tendon_length0 too large. ".as_ptr() as *const i8);
+            return;
+        }
+        if safe_add_to_buffer_size(&mut offset, &mut (*m).nbuffer, 8, (*m).ntendon, 1_i64) == 0 {
+            if allocate != 0 { crate::engine::engine_util_errmem::mju_free(m as *mut ()); }
+            crate::engine::engine_util_errmem::mju_warning(b"Invalid model: tendon_invweight0 too large. ".as_ptr() as *const i8);
+            return;
+        }
+        if safe_add_to_buffer_size(&mut offset, &mut (*m).nbuffer, 8, (*m).ntendon, (*m).nuser_tendon) == 0 {
+            if allocate != 0 { crate::engine::engine_util_errmem::mju_free(m as *mut ()); }
+            crate::engine::engine_util_errmem::mju_warning(b"Invalid model: tendon_user too large. ".as_ptr() as *const i8);
+            return;
+        }
+        if safe_add_to_buffer_size(&mut offset, &mut (*m).nbuffer, 4, (*m).ntendon, 4_i64) == 0 {
+            if allocate != 0 { crate::engine::engine_util_errmem::mju_free(m as *mut ()); }
+            crate::engine::engine_util_errmem::mju_warning(b"Invalid model: tendon_rgba too large. ".as_ptr() as *const i8);
+            return;
+        }
+        if safe_add_to_buffer_size(&mut offset, &mut (*m).nbuffer, 4, (*m).nwrap, 1_i64) == 0 {
+            if allocate != 0 { crate::engine::engine_util_errmem::mju_free(m as *mut ()); }
+            crate::engine::engine_util_errmem::mju_warning(b"Invalid model: wrap_type too large. ".as_ptr() as *const i8);
+            return;
+        }
+        if safe_add_to_buffer_size(&mut offset, &mut (*m).nbuffer, 4, (*m).nwrap, 1_i64) == 0 {
+            if allocate != 0 { crate::engine::engine_util_errmem::mju_free(m as *mut ()); }
+            crate::engine::engine_util_errmem::mju_warning(b"Invalid model: wrap_objid too large. ".as_ptr() as *const i8);
+            return;
+        }
+        if safe_add_to_buffer_size(&mut offset, &mut (*m).nbuffer, 8, (*m).nwrap, 1_i64) == 0 {
+            if allocate != 0 { crate::engine::engine_util_errmem::mju_free(m as *mut ()); }
+            crate::engine::engine_util_errmem::mju_warning(b"Invalid model: wrap_prm too large. ".as_ptr() as *const i8);
+            return;
+        }
+        if safe_add_to_buffer_size(&mut offset, &mut (*m).nbuffer, 4, (*m).nu, 1_i64) == 0 {
+            if allocate != 0 { crate::engine::engine_util_errmem::mju_free(m as *mut ()); }
+            crate::engine::engine_util_errmem::mju_warning(b"Invalid model: actuator_trntype too large. ".as_ptr() as *const i8);
+            return;
+        }
+        if safe_add_to_buffer_size(&mut offset, &mut (*m).nbuffer, 4, (*m).nu, 1_i64) == 0 {
+            if allocate != 0 { crate::engine::engine_util_errmem::mju_free(m as *mut ()); }
+            crate::engine::engine_util_errmem::mju_warning(b"Invalid model: actuator_dyntype too large. ".as_ptr() as *const i8);
+            return;
+        }
+        if safe_add_to_buffer_size(&mut offset, &mut (*m).nbuffer, 4, (*m).nu, 1_i64) == 0 {
+            if allocate != 0 { crate::engine::engine_util_errmem::mju_free(m as *mut ()); }
+            crate::engine::engine_util_errmem::mju_warning(b"Invalid model: actuator_gaintype too large. ".as_ptr() as *const i8);
+            return;
+        }
+        if safe_add_to_buffer_size(&mut offset, &mut (*m).nbuffer, 4, (*m).nu, 1_i64) == 0 {
+            if allocate != 0 { crate::engine::engine_util_errmem::mju_free(m as *mut ()); }
+            crate::engine::engine_util_errmem::mju_warning(b"Invalid model: actuator_biastype too large. ".as_ptr() as *const i8);
+            return;
+        }
+        if safe_add_to_buffer_size(&mut offset, &mut (*m).nbuffer, 4, (*m).nu, 2_i64) == 0 {
+            if allocate != 0 { crate::engine::engine_util_errmem::mju_free(m as *mut ()); }
+            crate::engine::engine_util_errmem::mju_warning(b"Invalid model: actuator_trnid too large. ".as_ptr() as *const i8);
+            return;
+        }
+        if safe_add_to_buffer_size(&mut offset, &mut (*m).nbuffer, 8, (*m).nu, 1_i64) == 0 {
+            if allocate != 0 { crate::engine::engine_util_errmem::mju_free(m as *mut ()); }
+            crate::engine::engine_util_errmem::mju_warning(b"Invalid model: actuator_damping too large. ".as_ptr() as *const i8);
+            return;
+        }
+        if safe_add_to_buffer_size(&mut offset, &mut (*m).nbuffer, 8, (*m).nu, 2_i64) == 0 {
+            if allocate != 0 { crate::engine::engine_util_errmem::mju_free(m as *mut ()); }
+            crate::engine::engine_util_errmem::mju_warning(b"Invalid model: actuator_dampingpoly too large. ".as_ptr() as *const i8);
+            return;
+        }
+        if safe_add_to_buffer_size(&mut offset, &mut (*m).nbuffer, 8, (*m).nu, 1_i64) == 0 {
+            if allocate != 0 { crate::engine::engine_util_errmem::mju_free(m as *mut ()); }
+            crate::engine::engine_util_errmem::mju_warning(b"Invalid model: actuator_armature too large. ".as_ptr() as *const i8);
+            return;
+        }
+        if safe_add_to_buffer_size(&mut offset, &mut (*m).nbuffer, 4, (*m).nu, 1_i64) == 0 {
+            if allocate != 0 { crate::engine::engine_util_errmem::mju_free(m as *mut ()); }
+            crate::engine::engine_util_errmem::mju_warning(b"Invalid model: actuator_actadr too large. ".as_ptr() as *const i8);
+            return;
+        }
+        if safe_add_to_buffer_size(&mut offset, &mut (*m).nbuffer, 4, (*m).nu, 1_i64) == 0 {
+            if allocate != 0 { crate::engine::engine_util_errmem::mju_free(m as *mut ()); }
+            crate::engine::engine_util_errmem::mju_warning(b"Invalid model: actuator_actnum too large. ".as_ptr() as *const i8);
+            return;
+        }
+        if safe_add_to_buffer_size(&mut offset, &mut (*m).nbuffer, 4, (*m).nu, 1_i64) == 0 {
+            if allocate != 0 { crate::engine::engine_util_errmem::mju_free(m as *mut ()); }
+            crate::engine::engine_util_errmem::mju_warning(b"Invalid model: actuator_group too large. ".as_ptr() as *const i8);
+            return;
+        }
+        if safe_add_to_buffer_size(&mut offset, &mut (*m).nbuffer, 4, (*m).nu, 2_i64) == 0 {
+            if allocate != 0 { crate::engine::engine_util_errmem::mju_free(m as *mut ()); }
+            crate::engine::engine_util_errmem::mju_warning(b"Invalid model: actuator_history too large. ".as_ptr() as *const i8);
+            return;
+        }
+        if safe_add_to_buffer_size(&mut offset, &mut (*m).nbuffer, 4, (*m).nu, 1_i64) == 0 {
+            if allocate != 0 { crate::engine::engine_util_errmem::mju_free(m as *mut ()); }
+            crate::engine::engine_util_errmem::mju_warning(b"Invalid model: actuator_historyadr too large. ".as_ptr() as *const i8);
+            return;
+        }
+        if safe_add_to_buffer_size(&mut offset, &mut (*m).nbuffer, 8, (*m).nu, 1_i64) == 0 {
+            if allocate != 0 { crate::engine::engine_util_errmem::mju_free(m as *mut ()); }
+            crate::engine::engine_util_errmem::mju_warning(b"Invalid model: actuator_delay too large. ".as_ptr() as *const i8);
+            return;
+        }
+        if safe_add_to_buffer_size(&mut offset, &mut (*m).nbuffer, 1, (*m).nu, 1_i64) == 0 {
+            if allocate != 0 { crate::engine::engine_util_errmem::mju_free(m as *mut ()); }
+            crate::engine::engine_util_errmem::mju_warning(b"Invalid model: actuator_ctrllimited too large. ".as_ptr() as *const i8);
+            return;
+        }
+        if safe_add_to_buffer_size(&mut offset, &mut (*m).nbuffer, 1, (*m).nu, 1_i64) == 0 {
+            if allocate != 0 { crate::engine::engine_util_errmem::mju_free(m as *mut ()); }
+            crate::engine::engine_util_errmem::mju_warning(b"Invalid model: actuator_forcelimited too large. ".as_ptr() as *const i8);
+            return;
+        }
+        if safe_add_to_buffer_size(&mut offset, &mut (*m).nbuffer, 1, (*m).nu, 1_i64) == 0 {
+            if allocate != 0 { crate::engine::engine_util_errmem::mju_free(m as *mut ()); }
+            crate::engine::engine_util_errmem::mju_warning(b"Invalid model: actuator_actlimited too large. ".as_ptr() as *const i8);
+            return;
+        }
+        if safe_add_to_buffer_size(&mut offset, &mut (*m).nbuffer, 8, (*m).nu, 10_i64) == 0 {
+            if allocate != 0 { crate::engine::engine_util_errmem::mju_free(m as *mut ()); }
+            crate::engine::engine_util_errmem::mju_warning(b"Invalid model: actuator_dynprm too large. ".as_ptr() as *const i8);
+            return;
+        }
+        if safe_add_to_buffer_size(&mut offset, &mut (*m).nbuffer, 8, (*m).nu, 10_i64) == 0 {
+            if allocate != 0 { crate::engine::engine_util_errmem::mju_free(m as *mut ()); }
+            crate::engine::engine_util_errmem::mju_warning(b"Invalid model: actuator_gainprm too large. ".as_ptr() as *const i8);
+            return;
+        }
+        if safe_add_to_buffer_size(&mut offset, &mut (*m).nbuffer, 8, (*m).nu, 10_i64) == 0 {
+            if allocate != 0 { crate::engine::engine_util_errmem::mju_free(m as *mut ()); }
+            crate::engine::engine_util_errmem::mju_warning(b"Invalid model: actuator_biasprm too large. ".as_ptr() as *const i8);
+            return;
+        }
+        if safe_add_to_buffer_size(&mut offset, &mut (*m).nbuffer, 1, (*m).nu, 1_i64) == 0 {
+            if allocate != 0 { crate::engine::engine_util_errmem::mju_free(m as *mut ()); }
+            crate::engine::engine_util_errmem::mju_warning(b"Invalid model: actuator_actearly too large. ".as_ptr() as *const i8);
+            return;
+        }
+        if safe_add_to_buffer_size(&mut offset, &mut (*m).nbuffer, 8, (*m).nu, 2_i64) == 0 {
+            if allocate != 0 { crate::engine::engine_util_errmem::mju_free(m as *mut ()); }
+            crate::engine::engine_util_errmem::mju_warning(b"Invalid model: actuator_ctrlrange too large. ".as_ptr() as *const i8);
+            return;
+        }
+        if safe_add_to_buffer_size(&mut offset, &mut (*m).nbuffer, 8, (*m).nu, 2_i64) == 0 {
+            if allocate != 0 { crate::engine::engine_util_errmem::mju_free(m as *mut ()); }
+            crate::engine::engine_util_errmem::mju_warning(b"Invalid model: actuator_forcerange too large. ".as_ptr() as *const i8);
+            return;
+        }
+        if safe_add_to_buffer_size(&mut offset, &mut (*m).nbuffer, 8, (*m).nu, 2_i64) == 0 {
+            if allocate != 0 { crate::engine::engine_util_errmem::mju_free(m as *mut ()); }
+            crate::engine::engine_util_errmem::mju_warning(b"Invalid model: actuator_actrange too large. ".as_ptr() as *const i8);
+            return;
+        }
+        if safe_add_to_buffer_size(&mut offset, &mut (*m).nbuffer, 8, (*m).nu, 6_i64) == 0 {
+            if allocate != 0 { crate::engine::engine_util_errmem::mju_free(m as *mut ()); }
+            crate::engine::engine_util_errmem::mju_warning(b"Invalid model: actuator_gear too large. ".as_ptr() as *const i8);
+            return;
+        }
+        if safe_add_to_buffer_size(&mut offset, &mut (*m).nbuffer, 8, (*m).nu, 1_i64) == 0 {
+            if allocate != 0 { crate::engine::engine_util_errmem::mju_free(m as *mut ()); }
+            crate::engine::engine_util_errmem::mju_warning(b"Invalid model: actuator_cranklength too large. ".as_ptr() as *const i8);
+            return;
+        }
+        if safe_add_to_buffer_size(&mut offset, &mut (*m).nbuffer, 8, (*m).nu, 1_i64) == 0 {
+            if allocate != 0 { crate::engine::engine_util_errmem::mju_free(m as *mut ()); }
+            crate::engine::engine_util_errmem::mju_warning(b"Invalid model: actuator_acc0 too large. ".as_ptr() as *const i8);
+            return;
+        }
+        if safe_add_to_buffer_size(&mut offset, &mut (*m).nbuffer, 8, (*m).nu, 1_i64) == 0 {
+            if allocate != 0 { crate::engine::engine_util_errmem::mju_free(m as *mut ()); }
+            crate::engine::engine_util_errmem::mju_warning(b"Invalid model: actuator_length0 too large. ".as_ptr() as *const i8);
+            return;
+        }
+        if safe_add_to_buffer_size(&mut offset, &mut (*m).nbuffer, 8, (*m).nu, 2_i64) == 0 {
+            if allocate != 0 { crate::engine::engine_util_errmem::mju_free(m as *mut ()); }
+            crate::engine::engine_util_errmem::mju_warning(b"Invalid model: actuator_lengthrange too large. ".as_ptr() as *const i8);
+            return;
+        }
+        if safe_add_to_buffer_size(&mut offset, &mut (*m).nbuffer, 8, (*m).nu, (*m).nuser_actuator) == 0 {
+            if allocate != 0 { crate::engine::engine_util_errmem::mju_free(m as *mut ()); }
+            crate::engine::engine_util_errmem::mju_warning(b"Invalid model: actuator_user too large. ".as_ptr() as *const i8);
+            return;
+        }
+        if safe_add_to_buffer_size(&mut offset, &mut (*m).nbuffer, 4, (*m).nu, 1_i64) == 0 {
+            if allocate != 0 { crate::engine::engine_util_errmem::mju_free(m as *mut ()); }
+            crate::engine::engine_util_errmem::mju_warning(b"Invalid model: actuator_plugin too large. ".as_ptr() as *const i8);
+            return;
+        }
+        if safe_add_to_buffer_size(&mut offset, &mut (*m).nbuffer, 4, (*m).nsensor, 1_i64) == 0 {
+            if allocate != 0 { crate::engine::engine_util_errmem::mju_free(m as *mut ()); }
+            crate::engine::engine_util_errmem::mju_warning(b"Invalid model: sensor_type too large. ".as_ptr() as *const i8);
+            return;
+        }
+        if safe_add_to_buffer_size(&mut offset, &mut (*m).nbuffer, 4, (*m).nsensor, 1_i64) == 0 {
+            if allocate != 0 { crate::engine::engine_util_errmem::mju_free(m as *mut ()); }
+            crate::engine::engine_util_errmem::mju_warning(b"Invalid model: sensor_datatype too large. ".as_ptr() as *const i8);
+            return;
+        }
+        if safe_add_to_buffer_size(&mut offset, &mut (*m).nbuffer, 4, (*m).nsensor, 1_i64) == 0 {
+            if allocate != 0 { crate::engine::engine_util_errmem::mju_free(m as *mut ()); }
+            crate::engine::engine_util_errmem::mju_warning(b"Invalid model: sensor_needstage too large. ".as_ptr() as *const i8);
+            return;
+        }
+        if safe_add_to_buffer_size(&mut offset, &mut (*m).nbuffer, 4, (*m).nsensor, 1_i64) == 0 {
+            if allocate != 0 { crate::engine::engine_util_errmem::mju_free(m as *mut ()); }
+            crate::engine::engine_util_errmem::mju_warning(b"Invalid model: sensor_objtype too large. ".as_ptr() as *const i8);
+            return;
+        }
+        if safe_add_to_buffer_size(&mut offset, &mut (*m).nbuffer, 4, (*m).nsensor, 1_i64) == 0 {
+            if allocate != 0 { crate::engine::engine_util_errmem::mju_free(m as *mut ()); }
+            crate::engine::engine_util_errmem::mju_warning(b"Invalid model: sensor_objid too large. ".as_ptr() as *const i8);
+            return;
+        }
+        if safe_add_to_buffer_size(&mut offset, &mut (*m).nbuffer, 4, (*m).nsensor, 1_i64) == 0 {
+            if allocate != 0 { crate::engine::engine_util_errmem::mju_free(m as *mut ()); }
+            crate::engine::engine_util_errmem::mju_warning(b"Invalid model: sensor_reftype too large. ".as_ptr() as *const i8);
+            return;
+        }
+        if safe_add_to_buffer_size(&mut offset, &mut (*m).nbuffer, 4, (*m).nsensor, 1_i64) == 0 {
+            if allocate != 0 { crate::engine::engine_util_errmem::mju_free(m as *mut ()); }
+            crate::engine::engine_util_errmem::mju_warning(b"Invalid model: sensor_refid too large. ".as_ptr() as *const i8);
+            return;
+        }
+        if safe_add_to_buffer_size(&mut offset, &mut (*m).nbuffer, 4, (*m).nsensor, 3_i64) == 0 {
+            if allocate != 0 { crate::engine::engine_util_errmem::mju_free(m as *mut ()); }
+            crate::engine::engine_util_errmem::mju_warning(b"Invalid model: sensor_intprm too large. ".as_ptr() as *const i8);
+            return;
+        }
+        if safe_add_to_buffer_size(&mut offset, &mut (*m).nbuffer, 4, (*m).nsensor, 1_i64) == 0 {
+            if allocate != 0 { crate::engine::engine_util_errmem::mju_free(m as *mut ()); }
+            crate::engine::engine_util_errmem::mju_warning(b"Invalid model: sensor_dim too large. ".as_ptr() as *const i8);
+            return;
+        }
+        if safe_add_to_buffer_size(&mut offset, &mut (*m).nbuffer, 4, (*m).nsensor, 1_i64) == 0 {
+            if allocate != 0 { crate::engine::engine_util_errmem::mju_free(m as *mut ()); }
+            crate::engine::engine_util_errmem::mju_warning(b"Invalid model: sensor_adr too large. ".as_ptr() as *const i8);
+            return;
+        }
+        if safe_add_to_buffer_size(&mut offset, &mut (*m).nbuffer, 8, (*m).nsensor, 1_i64) == 0 {
+            if allocate != 0 { crate::engine::engine_util_errmem::mju_free(m as *mut ()); }
+            crate::engine::engine_util_errmem::mju_warning(b"Invalid model: sensor_cutoff too large. ".as_ptr() as *const i8);
+            return;
+        }
+        if safe_add_to_buffer_size(&mut offset, &mut (*m).nbuffer, 8, (*m).nsensor, 1_i64) == 0 {
+            if allocate != 0 { crate::engine::engine_util_errmem::mju_free(m as *mut ()); }
+            crate::engine::engine_util_errmem::mju_warning(b"Invalid model: sensor_noise too large. ".as_ptr() as *const i8);
+            return;
+        }
+        if safe_add_to_buffer_size(&mut offset, &mut (*m).nbuffer, 4, (*m).nsensor, 2_i64) == 0 {
+            if allocate != 0 { crate::engine::engine_util_errmem::mju_free(m as *mut ()); }
+            crate::engine::engine_util_errmem::mju_warning(b"Invalid model: sensor_history too large. ".as_ptr() as *const i8);
+            return;
+        }
+        if safe_add_to_buffer_size(&mut offset, &mut (*m).nbuffer, 4, (*m).nsensor, 1_i64) == 0 {
+            if allocate != 0 { crate::engine::engine_util_errmem::mju_free(m as *mut ()); }
+            crate::engine::engine_util_errmem::mju_warning(b"Invalid model: sensor_historyadr too large. ".as_ptr() as *const i8);
+            return;
+        }
+        if safe_add_to_buffer_size(&mut offset, &mut (*m).nbuffer, 8, (*m).nsensor, 1_i64) == 0 {
+            if allocate != 0 { crate::engine::engine_util_errmem::mju_free(m as *mut ()); }
+            crate::engine::engine_util_errmem::mju_warning(b"Invalid model: sensor_delay too large. ".as_ptr() as *const i8);
+            return;
+        }
+        if safe_add_to_buffer_size(&mut offset, &mut (*m).nbuffer, 8, (*m).nsensor, 2_i64) == 0 {
+            if allocate != 0 { crate::engine::engine_util_errmem::mju_free(m as *mut ()); }
+            crate::engine::engine_util_errmem::mju_warning(b"Invalid model: sensor_interval too large. ".as_ptr() as *const i8);
+            return;
+        }
+        if safe_add_to_buffer_size(&mut offset, &mut (*m).nbuffer, 8, (*m).nsensor, (*m).nuser_sensor) == 0 {
+            if allocate != 0 { crate::engine::engine_util_errmem::mju_free(m as *mut ()); }
+            crate::engine::engine_util_errmem::mju_warning(b"Invalid model: sensor_user too large. ".as_ptr() as *const i8);
+            return;
+        }
+        if safe_add_to_buffer_size(&mut offset, &mut (*m).nbuffer, 4, (*m).nsensor, 1_i64) == 0 {
+            if allocate != 0 { crate::engine::engine_util_errmem::mju_free(m as *mut ()); }
+            crate::engine::engine_util_errmem::mju_warning(b"Invalid model: sensor_plugin too large. ".as_ptr() as *const i8);
+            return;
+        }
+        if safe_add_to_buffer_size(&mut offset, &mut (*m).nbuffer, 4, (*m).nplugin, 1_i64) == 0 {
+            if allocate != 0 { crate::engine::engine_util_errmem::mju_free(m as *mut ()); }
+            crate::engine::engine_util_errmem::mju_warning(b"Invalid model: plugin too large. ".as_ptr() as *const i8);
+            return;
+        }
+        if safe_add_to_buffer_size(&mut offset, &mut (*m).nbuffer, 4, (*m).nplugin, 1_i64) == 0 {
+            if allocate != 0 { crate::engine::engine_util_errmem::mju_free(m as *mut ()); }
+            crate::engine::engine_util_errmem::mju_warning(b"Invalid model: plugin_stateadr too large. ".as_ptr() as *const i8);
+            return;
+        }
+        if safe_add_to_buffer_size(&mut offset, &mut (*m).nbuffer, 4, (*m).nplugin, 1_i64) == 0 {
+            if allocate != 0 { crate::engine::engine_util_errmem::mju_free(m as *mut ()); }
+            crate::engine::engine_util_errmem::mju_warning(b"Invalid model: plugin_statenum too large. ".as_ptr() as *const i8);
+            return;
+        }
+        if safe_add_to_buffer_size(&mut offset, &mut (*m).nbuffer, 1, (*m).npluginattr, 1_i64) == 0 {
+            if allocate != 0 { crate::engine::engine_util_errmem::mju_free(m as *mut ()); }
+            crate::engine::engine_util_errmem::mju_warning(b"Invalid model: plugin_attr too large. ".as_ptr() as *const i8);
+            return;
+        }
+        if safe_add_to_buffer_size(&mut offset, &mut (*m).nbuffer, 4, (*m).nplugin, 1_i64) == 0 {
+            if allocate != 0 { crate::engine::engine_util_errmem::mju_free(m as *mut ()); }
+            crate::engine::engine_util_errmem::mju_warning(b"Invalid model: plugin_attradr too large. ".as_ptr() as *const i8);
+            return;
+        }
+        if safe_add_to_buffer_size(&mut offset, &mut (*m).nbuffer, 4, (*m).nnumeric, 1_i64) == 0 {
+            if allocate != 0 { crate::engine::engine_util_errmem::mju_free(m as *mut ()); }
+            crate::engine::engine_util_errmem::mju_warning(b"Invalid model: numeric_adr too large. ".as_ptr() as *const i8);
+            return;
+        }
+        if safe_add_to_buffer_size(&mut offset, &mut (*m).nbuffer, 4, (*m).nnumeric, 1_i64) == 0 {
+            if allocate != 0 { crate::engine::engine_util_errmem::mju_free(m as *mut ()); }
+            crate::engine::engine_util_errmem::mju_warning(b"Invalid model: numeric_size too large. ".as_ptr() as *const i8);
+            return;
+        }
+        if safe_add_to_buffer_size(&mut offset, &mut (*m).nbuffer, 8, (*m).nnumericdata, 1_i64) == 0 {
+            if allocate != 0 { crate::engine::engine_util_errmem::mju_free(m as *mut ()); }
+            crate::engine::engine_util_errmem::mju_warning(b"Invalid model: numeric_data too large. ".as_ptr() as *const i8);
+            return;
+        }
+        if safe_add_to_buffer_size(&mut offset, &mut (*m).nbuffer, 4, (*m).ntext, 1_i64) == 0 {
+            if allocate != 0 { crate::engine::engine_util_errmem::mju_free(m as *mut ()); }
+            crate::engine::engine_util_errmem::mju_warning(b"Invalid model: text_adr too large. ".as_ptr() as *const i8);
+            return;
+        }
+        if safe_add_to_buffer_size(&mut offset, &mut (*m).nbuffer, 4, (*m).ntext, 1_i64) == 0 {
+            if allocate != 0 { crate::engine::engine_util_errmem::mju_free(m as *mut ()); }
+            crate::engine::engine_util_errmem::mju_warning(b"Invalid model: text_size too large. ".as_ptr() as *const i8);
+            return;
+        }
+        if safe_add_to_buffer_size(&mut offset, &mut (*m).nbuffer, 1, (*m).ntextdata, 1_i64) == 0 {
+            if allocate != 0 { crate::engine::engine_util_errmem::mju_free(m as *mut ()); }
+            crate::engine::engine_util_errmem::mju_warning(b"Invalid model: text_data too large. ".as_ptr() as *const i8);
+            return;
+        }
+        if safe_add_to_buffer_size(&mut offset, &mut (*m).nbuffer, 4, (*m).ntuple, 1_i64) == 0 {
+            if allocate != 0 { crate::engine::engine_util_errmem::mju_free(m as *mut ()); }
+            crate::engine::engine_util_errmem::mju_warning(b"Invalid model: tuple_adr too large. ".as_ptr() as *const i8);
+            return;
+        }
+        if safe_add_to_buffer_size(&mut offset, &mut (*m).nbuffer, 4, (*m).ntuple, 1_i64) == 0 {
+            if allocate != 0 { crate::engine::engine_util_errmem::mju_free(m as *mut ()); }
+            crate::engine::engine_util_errmem::mju_warning(b"Invalid model: tuple_size too large. ".as_ptr() as *const i8);
+            return;
+        }
+        if safe_add_to_buffer_size(&mut offset, &mut (*m).nbuffer, 4, (*m).ntupledata, 1_i64) == 0 {
+            if allocate != 0 { crate::engine::engine_util_errmem::mju_free(m as *mut ()); }
+            crate::engine::engine_util_errmem::mju_warning(b"Invalid model: tuple_objtype too large. ".as_ptr() as *const i8);
+            return;
+        }
+        if safe_add_to_buffer_size(&mut offset, &mut (*m).nbuffer, 4, (*m).ntupledata, 1_i64) == 0 {
+            if allocate != 0 { crate::engine::engine_util_errmem::mju_free(m as *mut ()); }
+            crate::engine::engine_util_errmem::mju_warning(b"Invalid model: tuple_objid too large. ".as_ptr() as *const i8);
+            return;
+        }
+        if safe_add_to_buffer_size(&mut offset, &mut (*m).nbuffer, 8, (*m).ntupledata, 1_i64) == 0 {
+            if allocate != 0 { crate::engine::engine_util_errmem::mju_free(m as *mut ()); }
+            crate::engine::engine_util_errmem::mju_warning(b"Invalid model: tuple_objprm too large. ".as_ptr() as *const i8);
+            return;
+        }
+        if safe_add_to_buffer_size(&mut offset, &mut (*m).nbuffer, 8, (*m).nkey, 1_i64) == 0 {
+            if allocate != 0 { crate::engine::engine_util_errmem::mju_free(m as *mut ()); }
+            crate::engine::engine_util_errmem::mju_warning(b"Invalid model: key_time too large. ".as_ptr() as *const i8);
+            return;
+        }
+        if safe_add_to_buffer_size(&mut offset, &mut (*m).nbuffer, 8, (*m).nkey, (*m).nq) == 0 {
+            if allocate != 0 { crate::engine::engine_util_errmem::mju_free(m as *mut ()); }
+            crate::engine::engine_util_errmem::mju_warning(b"Invalid model: key_qpos too large. ".as_ptr() as *const i8);
+            return;
+        }
+        if safe_add_to_buffer_size(&mut offset, &mut (*m).nbuffer, 8, (*m).nkey, (*m).nv) == 0 {
+            if allocate != 0 { crate::engine::engine_util_errmem::mju_free(m as *mut ()); }
+            crate::engine::engine_util_errmem::mju_warning(b"Invalid model: key_qvel too large. ".as_ptr() as *const i8);
+            return;
+        }
+        if safe_add_to_buffer_size(&mut offset, &mut (*m).nbuffer, 8, (*m).nkey, (*m).na) == 0 {
+            if allocate != 0 { crate::engine::engine_util_errmem::mju_free(m as *mut ()); }
+            crate::engine::engine_util_errmem::mju_warning(b"Invalid model: key_act too large. ".as_ptr() as *const i8);
+            return;
+        }
+        if safe_add_to_buffer_size(&mut offset, &mut (*m).nbuffer, 8, (*m).nkey, (*m).nmocap * 3) == 0 {
+            if allocate != 0 { crate::engine::engine_util_errmem::mju_free(m as *mut ()); }
+            crate::engine::engine_util_errmem::mju_warning(b"Invalid model: key_mpos too large. ".as_ptr() as *const i8);
+            return;
+        }
+        if safe_add_to_buffer_size(&mut offset, &mut (*m).nbuffer, 8, (*m).nkey, (*m).nmocap * 4) == 0 {
+            if allocate != 0 { crate::engine::engine_util_errmem::mju_free(m as *mut ()); }
+            crate::engine::engine_util_errmem::mju_warning(b"Invalid model: key_mquat too large. ".as_ptr() as *const i8);
+            return;
+        }
+        if safe_add_to_buffer_size(&mut offset, &mut (*m).nbuffer, 8, (*m).nkey, (*m).nu) == 0 {
+            if allocate != 0 { crate::engine::engine_util_errmem::mju_free(m as *mut ()); }
+            crate::engine::engine_util_errmem::mju_warning(b"Invalid model: key_ctrl too large. ".as_ptr() as *const i8);
+            return;
+        }
+        if safe_add_to_buffer_size(&mut offset, &mut (*m).nbuffer, 4, (*m).nbody, 1_i64) == 0 {
+            if allocate != 0 { crate::engine::engine_util_errmem::mju_free(m as *mut ()); }
+            crate::engine::engine_util_errmem::mju_warning(b"Invalid model: name_bodyadr too large. ".as_ptr() as *const i8);
+            return;
+        }
+        if safe_add_to_buffer_size(&mut offset, &mut (*m).nbuffer, 4, (*m).njnt, 1_i64) == 0 {
+            if allocate != 0 { crate::engine::engine_util_errmem::mju_free(m as *mut ()); }
+            crate::engine::engine_util_errmem::mju_warning(b"Invalid model: name_jntadr too large. ".as_ptr() as *const i8);
+            return;
+        }
+        if safe_add_to_buffer_size(&mut offset, &mut (*m).nbuffer, 4, (*m).ngeom, 1_i64) == 0 {
+            if allocate != 0 { crate::engine::engine_util_errmem::mju_free(m as *mut ()); }
+            crate::engine::engine_util_errmem::mju_warning(b"Invalid model: name_geomadr too large. ".as_ptr() as *const i8);
+            return;
+        }
+        if safe_add_to_buffer_size(&mut offset, &mut (*m).nbuffer, 4, (*m).nsite, 1_i64) == 0 {
+            if allocate != 0 { crate::engine::engine_util_errmem::mju_free(m as *mut ()); }
+            crate::engine::engine_util_errmem::mju_warning(b"Invalid model: name_siteadr too large. ".as_ptr() as *const i8);
+            return;
+        }
+        if safe_add_to_buffer_size(&mut offset, &mut (*m).nbuffer, 4, (*m).ncam, 1_i64) == 0 {
+            if allocate != 0 { crate::engine::engine_util_errmem::mju_free(m as *mut ()); }
+            crate::engine::engine_util_errmem::mju_warning(b"Invalid model: name_camadr too large. ".as_ptr() as *const i8);
+            return;
+        }
+        if safe_add_to_buffer_size(&mut offset, &mut (*m).nbuffer, 4, (*m).nlight, 1_i64) == 0 {
+            if allocate != 0 { crate::engine::engine_util_errmem::mju_free(m as *mut ()); }
+            crate::engine::engine_util_errmem::mju_warning(b"Invalid model: name_lightadr too large. ".as_ptr() as *const i8);
+            return;
+        }
+        if safe_add_to_buffer_size(&mut offset, &mut (*m).nbuffer, 4, (*m).nflex, 1_i64) == 0 {
+            if allocate != 0 { crate::engine::engine_util_errmem::mju_free(m as *mut ()); }
+            crate::engine::engine_util_errmem::mju_warning(b"Invalid model: name_flexadr too large. ".as_ptr() as *const i8);
+            return;
+        }
+        if safe_add_to_buffer_size(&mut offset, &mut (*m).nbuffer, 4, (*m).nmesh, 1_i64) == 0 {
+            if allocate != 0 { crate::engine::engine_util_errmem::mju_free(m as *mut ()); }
+            crate::engine::engine_util_errmem::mju_warning(b"Invalid model: name_meshadr too large. ".as_ptr() as *const i8);
+            return;
+        }
+        if safe_add_to_buffer_size(&mut offset, &mut (*m).nbuffer, 4, (*m).nskin, 1_i64) == 0 {
+            if allocate != 0 { crate::engine::engine_util_errmem::mju_free(m as *mut ()); }
+            crate::engine::engine_util_errmem::mju_warning(b"Invalid model: name_skinadr too large. ".as_ptr() as *const i8);
+            return;
+        }
+        if safe_add_to_buffer_size(&mut offset, &mut (*m).nbuffer, 4, (*m).nhfield, 1_i64) == 0 {
+            if allocate != 0 { crate::engine::engine_util_errmem::mju_free(m as *mut ()); }
+            crate::engine::engine_util_errmem::mju_warning(b"Invalid model: name_hfieldadr too large. ".as_ptr() as *const i8);
+            return;
+        }
+        if safe_add_to_buffer_size(&mut offset, &mut (*m).nbuffer, 4, (*m).ntex, 1_i64) == 0 {
+            if allocate != 0 { crate::engine::engine_util_errmem::mju_free(m as *mut ()); }
+            crate::engine::engine_util_errmem::mju_warning(b"Invalid model: name_texadr too large. ".as_ptr() as *const i8);
+            return;
+        }
+        if safe_add_to_buffer_size(&mut offset, &mut (*m).nbuffer, 4, (*m).nmat, 1_i64) == 0 {
+            if allocate != 0 { crate::engine::engine_util_errmem::mju_free(m as *mut ()); }
+            crate::engine::engine_util_errmem::mju_warning(b"Invalid model: name_matadr too large. ".as_ptr() as *const i8);
+            return;
+        }
+        if safe_add_to_buffer_size(&mut offset, &mut (*m).nbuffer, 4, (*m).npair, 1_i64) == 0 {
+            if allocate != 0 { crate::engine::engine_util_errmem::mju_free(m as *mut ()); }
+            crate::engine::engine_util_errmem::mju_warning(b"Invalid model: name_pairadr too large. ".as_ptr() as *const i8);
+            return;
+        }
+        if safe_add_to_buffer_size(&mut offset, &mut (*m).nbuffer, 4, (*m).nexclude, 1_i64) == 0 {
+            if allocate != 0 { crate::engine::engine_util_errmem::mju_free(m as *mut ()); }
+            crate::engine::engine_util_errmem::mju_warning(b"Invalid model: name_excludeadr too large. ".as_ptr() as *const i8);
+            return;
+        }
+        if safe_add_to_buffer_size(&mut offset, &mut (*m).nbuffer, 4, (*m).neq, 1_i64) == 0 {
+            if allocate != 0 { crate::engine::engine_util_errmem::mju_free(m as *mut ()); }
+            crate::engine::engine_util_errmem::mju_warning(b"Invalid model: name_eqadr too large. ".as_ptr() as *const i8);
+            return;
+        }
+        if safe_add_to_buffer_size(&mut offset, &mut (*m).nbuffer, 4, (*m).ntendon, 1_i64) == 0 {
+            if allocate != 0 { crate::engine::engine_util_errmem::mju_free(m as *mut ()); }
+            crate::engine::engine_util_errmem::mju_warning(b"Invalid model: name_tendonadr too large. ".as_ptr() as *const i8);
+            return;
+        }
+        if safe_add_to_buffer_size(&mut offset, &mut (*m).nbuffer, 4, (*m).nu, 1_i64) == 0 {
+            if allocate != 0 { crate::engine::engine_util_errmem::mju_free(m as *mut ()); }
+            crate::engine::engine_util_errmem::mju_warning(b"Invalid model: name_actuatoradr too large. ".as_ptr() as *const i8);
+            return;
+        }
+        if safe_add_to_buffer_size(&mut offset, &mut (*m).nbuffer, 4, (*m).nsensor, 1_i64) == 0 {
+            if allocate != 0 { crate::engine::engine_util_errmem::mju_free(m as *mut ()); }
+            crate::engine::engine_util_errmem::mju_warning(b"Invalid model: name_sensoradr too large. ".as_ptr() as *const i8);
+            return;
+        }
+        if safe_add_to_buffer_size(&mut offset, &mut (*m).nbuffer, 4, (*m).nnumeric, 1_i64) == 0 {
+            if allocate != 0 { crate::engine::engine_util_errmem::mju_free(m as *mut ()); }
+            crate::engine::engine_util_errmem::mju_warning(b"Invalid model: name_numericadr too large. ".as_ptr() as *const i8);
+            return;
+        }
+        if safe_add_to_buffer_size(&mut offset, &mut (*m).nbuffer, 4, (*m).ntext, 1_i64) == 0 {
+            if allocate != 0 { crate::engine::engine_util_errmem::mju_free(m as *mut ()); }
+            crate::engine::engine_util_errmem::mju_warning(b"Invalid model: name_textadr too large. ".as_ptr() as *const i8);
+            return;
+        }
+        if safe_add_to_buffer_size(&mut offset, &mut (*m).nbuffer, 4, (*m).ntuple, 1_i64) == 0 {
+            if allocate != 0 { crate::engine::engine_util_errmem::mju_free(m as *mut ()); }
+            crate::engine::engine_util_errmem::mju_warning(b"Invalid model: name_tupleadr too large. ".as_ptr() as *const i8);
+            return;
+        }
+        if safe_add_to_buffer_size(&mut offset, &mut (*m).nbuffer, 4, (*m).nkey, 1_i64) == 0 {
+            if allocate != 0 { crate::engine::engine_util_errmem::mju_free(m as *mut ()); }
+            crate::engine::engine_util_errmem::mju_warning(b"Invalid model: name_keyadr too large. ".as_ptr() as *const i8);
+            return;
+        }
+        if safe_add_to_buffer_size(&mut offset, &mut (*m).nbuffer, 4, (*m).nplugin, 1_i64) == 0 {
+            if allocate != 0 { crate::engine::engine_util_errmem::mju_free(m as *mut ()); }
+            crate::engine::engine_util_errmem::mju_warning(b"Invalid model: name_pluginadr too large. ".as_ptr() as *const i8);
+            return;
+        }
+        if safe_add_to_buffer_size(&mut offset, &mut (*m).nbuffer, 1, (*m).nnames, 1_i64) == 0 {
+            if allocate != 0 { crate::engine::engine_util_errmem::mju_free(m as *mut ()); }
+            crate::engine::engine_util_errmem::mju_warning(b"Invalid model: names too large. ".as_ptr() as *const i8);
+            return;
+        }
+        if safe_add_to_buffer_size(&mut offset, &mut (*m).nbuffer, 4, (*m).nnames_map, 1_i64) == 0 {
+            if allocate != 0 { crate::engine::engine_util_errmem::mju_free(m as *mut ()); }
+            crate::engine::engine_util_errmem::mju_warning(b"Invalid model: names_map too large. ".as_ptr() as *const i8);
+            return;
+        }
+        if safe_add_to_buffer_size(&mut offset, &mut (*m).nbuffer, 1, (*m).npaths, 1_i64) == 0 {
+            if allocate != 0 { crate::engine::engine_util_errmem::mju_free(m as *mut ()); }
+            crate::engine::engine_util_errmem::mju_warning(b"Invalid model: paths too large. ".as_ptr() as *const i8);
+            return;
+        }
+        if safe_add_to_buffer_size(&mut offset, &mut (*m).nbuffer, 4, (*m).nbody, 1_i64) == 0 {
+            if allocate != 0 { crate::engine::engine_util_errmem::mju_free(m as *mut ()); }
+            crate::engine::engine_util_errmem::mju_warning(b"Invalid model: B_rownnz too large. ".as_ptr() as *const i8);
+            return;
+        }
+        if safe_add_to_buffer_size(&mut offset, &mut (*m).nbuffer, 4, (*m).nbody, 1_i64) == 0 {
+            if allocate != 0 { crate::engine::engine_util_errmem::mju_free(m as *mut ()); }
+            crate::engine::engine_util_errmem::mju_warning(b"Invalid model: B_rowadr too large. ".as_ptr() as *const i8);
+            return;
+        }
+        if safe_add_to_buffer_size(&mut offset, &mut (*m).nbuffer, 4, (*m).nB, 1_i64) == 0 {
+            if allocate != 0 { crate::engine::engine_util_errmem::mju_free(m as *mut ()); }
+            crate::engine::engine_util_errmem::mju_warning(b"Invalid model: B_colind too large. ".as_ptr() as *const i8);
+            return;
+        }
+        if safe_add_to_buffer_size(&mut offset, &mut (*m).nbuffer, 4, (*m).nv, 1_i64) == 0 {
+            if allocate != 0 { crate::engine::engine_util_errmem::mju_free(m as *mut ()); }
+            crate::engine::engine_util_errmem::mju_warning(b"Invalid model: M_rownnz too large. ".as_ptr() as *const i8);
+            return;
+        }
+        if safe_add_to_buffer_size(&mut offset, &mut (*m).nbuffer, 4, (*m).nv, 1_i64) == 0 {
+            if allocate != 0 { crate::engine::engine_util_errmem::mju_free(m as *mut ()); }
+            crate::engine::engine_util_errmem::mju_warning(b"Invalid model: M_rowadr too large. ".as_ptr() as *const i8);
+            return;
+        }
+        if safe_add_to_buffer_size(&mut offset, &mut (*m).nbuffer, 4, (*m).nC, 1_i64) == 0 {
+            if allocate != 0 { crate::engine::engine_util_errmem::mju_free(m as *mut ()); }
+            crate::engine::engine_util_errmem::mju_warning(b"Invalid model: M_colind too large. ".as_ptr() as *const i8);
+            return;
+        }
+        if safe_add_to_buffer_size(&mut offset, &mut (*m).nbuffer, 4, (*m).nC, 1_i64) == 0 {
+            if allocate != 0 { crate::engine::engine_util_errmem::mju_free(m as *mut ()); }
+            crate::engine::engine_util_errmem::mju_warning(b"Invalid model: mapM2M too large. ".as_ptr() as *const i8);
+            return;
+        }
+        if safe_add_to_buffer_size(&mut offset, &mut (*m).nbuffer, 4, (*m).nv, 1_i64) == 0 {
+            if allocate != 0 { crate::engine::engine_util_errmem::mju_free(m as *mut ()); }
+            crate::engine::engine_util_errmem::mju_warning(b"Invalid model: D_rownnz too large. ".as_ptr() as *const i8);
+            return;
+        }
+        if safe_add_to_buffer_size(&mut offset, &mut (*m).nbuffer, 4, (*m).nv, 1_i64) == 0 {
+            if allocate != 0 { crate::engine::engine_util_errmem::mju_free(m as *mut ()); }
+            crate::engine::engine_util_errmem::mju_warning(b"Invalid model: D_rowadr too large. ".as_ptr() as *const i8);
+            return;
+        }
+        if safe_add_to_buffer_size(&mut offset, &mut (*m).nbuffer, 4, (*m).nv, 1_i64) == 0 {
+            if allocate != 0 { crate::engine::engine_util_errmem::mju_free(m as *mut ()); }
+            crate::engine::engine_util_errmem::mju_warning(b"Invalid model: D_diag too large. ".as_ptr() as *const i8);
+            return;
+        }
+        if safe_add_to_buffer_size(&mut offset, &mut (*m).nbuffer, 4, (*m).nD, 1_i64) == 0 {
+            if allocate != 0 { crate::engine::engine_util_errmem::mju_free(m as *mut ()); }
+            crate::engine::engine_util_errmem::mju_warning(b"Invalid model: D_colind too large. ".as_ptr() as *const i8);
+            return;
+        }
+        if safe_add_to_buffer_size(&mut offset, &mut (*m).nbuffer, 4, (*m).nD, 1_i64) == 0 {
+            if allocate != 0 { crate::engine::engine_util_errmem::mju_free(m as *mut ()); }
+            crate::engine::engine_util_errmem::mju_warning(b"Invalid model: mapM2D too large. ".as_ptr() as *const i8);
+            return;
+        }
+        if safe_add_to_buffer_size(&mut offset, &mut (*m).nbuffer, 4, (*m).nC, 1_i64) == 0 {
+            if allocate != 0 { crate::engine::engine_util_errmem::mju_free(m as *mut ()); }
+            crate::engine::engine_util_errmem::mju_warning(b"Invalid model: mapD2M too large. ".as_ptr() as *const i8);
+            return;
+        }
+
+        // allocate buffer
+        (*m).buffer = crate::engine::engine_util_errmem::mju_malloc((*m).nbuffer as usize);
+        if (*m).buffer.is_null() {
+            if allocate != 0 { crate::engine::engine_util_errmem::mju_free(m as *mut ()); }
+            crate::engine::engine_util_errmem::mju_error(
+                b"could not allocate mjModel buffer\0".as_ptr() as *const i8);
+            return;
+        }
+
+        // clear buffer and set pointers
+        std::ptr::write_bytes((*m).buffer as *mut u8, 0, (*m).nbuffer as usize);
+        mj_set_ptr_model(m);
+
+        // set default options
+        crate::engine::engine_init::mj_default_option(&mut (*m).opt);
+        crate::engine::engine_init::mj_default_visual(&mut (*m).vis);
+        crate::engine::engine_init::mj_default_statistic(&mut (*m).stat);
+
+        // copy pointer if allocated here
+        if allocate != 0 {
+            *dest = m;
+        }
+    }
 }
 
 /// C: mj_copyModel (engine/engine_io.h:69)
