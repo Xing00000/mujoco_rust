@@ -936,7 +936,7 @@ pub fn mj_print_formatted_data(m: *const mjModel, d: *const mjData, filename: *c
 /// Calls: mj_printFormattedData
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_print_data(m: *const mjModel, d: *const mjData, filename: *const i8) {
-    todo!() // mj_printData
+    mj_print_formatted_data(m, d, filename, b"% -9.2g\0".as_ptr() as *const i8);
 }
 
 /// C: mj_printSparsity (engine/engine_print.h:47)
@@ -993,7 +993,7 @@ pub fn mj_print_sparsity(str: *const i8, nr: i32, nc: i32, rowadr: *const i32, d
 /// Calls: mj_printFormattedScene
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_print_scene(s: *const mjvScene, filename: *const i8) {
-    todo!() // mj_printScene
+    mj_print_formatted_scene(s, filename, b"% -9.2g\0".as_ptr() as *const i8);
 }
 
 /// C: mj_printFormattedScene (engine/engine_print.h:55)
