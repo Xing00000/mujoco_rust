@@ -4069,7 +4069,58 @@ pub fn mjv_init_geom(geom: *mut mjvGeom, r#type: i32, size: *const f64, pos: *co
 /// Calls: mjp_getPluginAtSlotUnsafe, mjp_pluginCount, mju_message, mjv_addGeoms, mjv_makeLights, mjv_updateActiveFlex, mjv_updateActiveSkin, mjv_updateCamera
 #[allow(unused_variables, non_snake_case)]
 pub fn mjv_update_scene(m: *const mjModel, d: *mut mjData, opt: *const mjvOption, pert: *const mjvPerturb, cam: *mut mjvCamera, catmask: i32, scn: *mut mjvScene) {
-    todo!() // mjv_updateScene
+    const MJ_VIS_FLEXVERT: usize = 24;
+    const MJ_VIS_FLEXEDGE: usize = 25;
+    const MJ_VIS_FLEXFACE: usize = 26;
+    const MJ_VIS_FLEXSKIN: usize = 27;
+    const MJ_VIS_SKIN: usize = 23;
+
+    // SAFETY: m, d, opt, cam, scn are valid pointers; pert may be null (caller contract)
+    unsafe {
+        // clear geoms
+        (*scn).ngeom = 0;
+
+        // trigger plugin visualization hooks
+        if (*m).nplugin > 0 {
+            let nslot = crate::engine::engine_plugin::mjp_plugin_count();
+            for i in 0..(*m).nplugin as usize {
+                let slot = *(*m).plugin.add(i);
+                let plugin = crate::engine::engine_plugin::mjp_get_plugin_at_slot_unsafe(slot, nslot);
+                if plugin.is_null() {
+                    crate::engine::engine_util_errmem::mju_error(
+                        b"invalid plugin slot: %d\0".as_ptr() as *const i8);
+                    return;
+                }
+                if let Some(visualize_fn) = (*plugin).visualize {
+                    // SAFETY: visualize is fn(*const mjModel, *mut mjData, *const mjvOption, *mut mjvScene, i32)
+                    let vis: unsafe extern "C" fn(*const mjModel, *mut mjData, *const mjvOption, *mut mjvScene, i32) =
+                        std::mem::transmute(visualize_fn);
+                    vis(m, d, opt, scn, i as i32);
+                }
+            }
+        }
+
+        // add all categories
+        mjv_add_geoms(m, d, opt, pert, catmask, scn);
+
+        // update camera
+        mjv_update_camera(m, d as *const mjData, cam, scn);
+
+        // add lights
+        mjv_make_lights(m, d as *const mjData, scn);
+
+        // update flexes
+        if (*opt).flags[MJ_VIS_FLEXVERT] != 0 || (*opt).flags[MJ_VIS_FLEXEDGE] != 0
+            || (*opt).flags[MJ_VIS_FLEXFACE] != 0 || (*opt).flags[MJ_VIS_FLEXSKIN] != 0
+        {
+            mjv_update_active_flex(m, d, scn, opt);
+        }
+
+        // update skins
+        if (*opt).flags[MJ_VIS_SKIN] != 0 {
+            mjv_update_active_skin(m, d as *const mjData, scn, opt);
+        }
+    }
 }
 
 /// C: mjv_addGeoms (engine/engine_vis_visualize.h:41)
