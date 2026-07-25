@@ -1243,190 +1243,113 @@ pub fn shortcuthelp(r: mjrRect, modifier: i32, shortcut: i32, ui: *const mjUI, c
 /// C: mjui_themeSpacing (ui/ui_main.h:26)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjui_theme_spacing(ind: i32) -> mjuiThemeSpacing {
-    // mjuiThemeSpacing is 52 bytes = 13 × i32 fields
-    // themeSpacing0 (tight): 270, 15, 120, 8, 6, 6, 4, 4, 4, 8, 4, 30, 4
-    // themeSpacing1 (wide):  310, 15, 120, 10, 10, 10, 7, 7, 7, 10, 5, 30, 4
-
-    // SAFETY: mjuiThemeSpacing is repr(C) with _data: [u8; 52], we construct it from known integer values
-    unsafe {
-        let mut result: mjuiThemeSpacing = std::mem::zeroed();
-        let ptr = &mut result as *mut mjuiThemeSpacing as *mut i32;
-        if ind == 0 {
-            *ptr.add(0) = 270;   // total
-            *ptr.add(1) = 15;    // scroll
-            *ptr.add(2) = 120;   // label
-            *ptr.add(3) = 8;     // section
-            *ptr.add(4) = 6;     // cornersect
-            *ptr.add(5) = 6;     // cornersep
-            *ptr.add(6) = 4;     // itemside
-            *ptr.add(7) = 4;     // itemmid
-            *ptr.add(8) = 4;     // itemver
-            *ptr.add(9) = 8;     // texthor
-            *ptr.add(10) = 4;    // textver
-            *ptr.add(11) = 30;   // linescroll
-            *ptr.add(12) = 4;    // samples
-        } else {
-            *ptr.add(0) = 310;   // total
-            *ptr.add(1) = 15;    // scroll
-            *ptr.add(2) = 120;   // label
-            *ptr.add(3) = 10;    // section
-            *ptr.add(4) = 10;    // cornersect
-            *ptr.add(5) = 10;    // cornersep
-            *ptr.add(6) = 7;     // itemside
-            *ptr.add(7) = 7;     // itemmid
-            *ptr.add(8) = 7;     // itemver
-            *ptr.add(9) = 10;    // texthor
-            *ptr.add(10) = 5;    // textver
-            *ptr.add(11) = 30;   // linescroll
-            *ptr.add(12) = 4;    // samples
+    // C: if (ind == 0) return themeSpacing0; else return themeSpacing1;
+    // Named field init — exact values from ui_main.c:29-62
+    if ind == 0 {
+        mjuiThemeSpacing {
+            total:      270,
+            scroll:     15,
+            label:      120,
+            section:    8,
+            cornersect: 6,
+            cornersep:  6,
+            itemside:   4,
+            itemmid:    4,
+            itemver:    4,
+            texthor:    8,
+            textver:    4,
+            linescroll: 30,
+            samples:    4,
         }
-        result
+    } else {
+        mjuiThemeSpacing {
+            total:      310,
+            scroll:     15,
+            label:      120,
+            section:    10,
+            cornersect: 10,
+            cornersep:  10,
+            itemside:   7,
+            itemmid:    7,
+            itemver:    7,
+            texthor:    10,
+            textver:    5,
+            linescroll: 30,
+            samples:    4,
+        }
     }
 }
 
 /// C: mjui_themeColor (ui/ui_main.h:29)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjui_theme_color(ind: i32) -> mjuiThemeColor {
-    // mjuiThemeColor is 336 bytes = 28 fields × 3 floats (RGB) × 4 bytes/float
-    // Each color is float[3], 28 entries total
-
-    // SAFETY: mjuiThemeColor is repr(C) with _data: [u8; 336], we construct from known float values
-    unsafe {
-        let mut result: mjuiThemeColor = std::mem::zeroed();
-        let ptr = &mut result as *mut mjuiThemeColor as *mut f32;
-
-        // Helper: write rgb at index
-        macro_rules! set_rgb {
-            ($idx:expr, $r:expr, $g:expr, $b:expr) => {
-                *ptr.add($idx * 3 + 0) = $r;
-                *ptr.add($idx * 3 + 1) = $g;
-                *ptr.add($idx * 3 + 2) = $b;
-            };
-        }
-
-        if ind == 0 {
-            // themeColor0: default
-            set_rgb!(0,  0.25, 0.25, 0.25);   // master
-            set_rgb!(1,  0.12, 0.12, 0.12);   // thumb
-            set_rgb!(2,  0.6,  0.2,  0.2);    // secttitle
-            set_rgb!(3,  0.1,  0.1,  0.1);    // secttitle2
-            set_rgb!(4,  0.45, 0.17, 0.17);   // secttitleuncheck
-            set_rgb!(5,  0.45, 0.17, 0.17);   // secttitleuncheck2
-            set_rgb!(6,  0.45, 0.17, 0.17);   // secttitlecheck
-            set_rgb!(7,  0.45, 0.17, 0.17);   // secttitlecheck2
-            set_rgb!(8,  1.0,  1.0,  1.0);    // sectfont
-            set_rgb!(9,  0.7,  0.7,  0.7);    // sectsymbol
-            set_rgb!(10, 0.1,  0.1,  0.1);    // sectpane
-            set_rgb!(11, 0.25, 0.25, 0.25);   // separator
-            set_rgb!(12, 0.1,  0.1,  0.1);    // separator2
-            set_rgb!(13, 0.0,  0.0,  1.0);    // shortcut
-            set_rgb!(14, 1.0,  1.0,  1.0);    // fontactive
-            set_rgb!(15, 0.5,  0.5,  0.5);    // fontinactive
-            set_rgb!(16, 0.3,  0.3,  0.3);    // decorinactive
-            set_rgb!(17, 0.4,  0.4,  0.4);    // decorinactive2
-            set_rgb!(18, 0.6,  0.4,  0.4);    // button
-            set_rgb!(19, 0.4,  0.4,  0.7);    // check
-            set_rgb!(20, 0.4,  0.6,  0.4);    // radio
-            set_rgb!(21, 0.4,  0.6,  0.6);    // select
-            set_rgb!(22, 0.2,  0.3,  0.3);    // select2
-            set_rgb!(23, 0.3,  0.2,  0.3);    // slider
-            set_rgb!(24, 0.6,  0.4,  0.6);    // slider2
-            set_rgb!(25, 0.6,  0.6,  0.4);    // edit
-            set_rgb!(26, 0.7,  0.0,  0.0);    // edit2
-            set_rgb!(27, 0.9,  0.9,  0.9);    // cursor
-        } else if ind == 1 {
-            // themeColor1: orange
-            set_rgb!(0,  0.2,  0.2,  0.2);    // master
-            set_rgb!(1,  0.12, 0.12, 0.12);   // thumb
-            set_rgb!(2,  0.3,  0.3,  0.3);    // secttitle
-            set_rgb!(3,  0.15, 0.15, 0.15);   // secttitle2
-            set_rgb!(4,  0.25, 0.25, 0.25);   // secttitleuncheck
-            set_rgb!(5,  0.25, 0.25, 0.25);   // secttitleuncheck2
-            set_rgb!(6,  0.25, 0.25, 0.25);   // secttitlecheck
-            set_rgb!(7,  0.25, 0.25, 0.25);   // secttitlecheck2
-            set_rgb!(8,  0.8,  0.8,  0.8);    // sectfont
-            set_rgb!(9,  0.7,  0.7,  0.7);    // sectsymbol
-            set_rgb!(10, 0.15, 0.15, 0.15);   // sectpane
-            set_rgb!(11, 0.2,  0.2,  0.2);    // separator
-            set_rgb!(12, 0.15, 0.15, 0.15);   // separator2
-            set_rgb!(13, 0.0,  0.0,  1.0);    // shortcut
-            set_rgb!(14, 0.9,  0.9,  0.9);    // fontactive
-            set_rgb!(15, 0.5,  0.5,  0.5);    // fontinactive
-            set_rgb!(16, 0.2,  0.2,  0.2);    // decorinactive
-            set_rgb!(17, 0.25, 0.25, 0.25);   // decorinactive2
-            set_rgb!(18, 0.6,  0.4,  0.2);    // button
-            set_rgb!(19, 0.6,  0.4,  0.2);    // check
-            set_rgb!(20, 0.6,  0.4,  0.2);    // radio
-            set_rgb!(21, 0.6,  0.4,  0.2);    // select
-            set_rgb!(22, 0.3,  0.2,  0.1);    // select2
-            set_rgb!(23, 0.2,  0.2,  0.2);    // slider
-            set_rgb!(24, 0.6,  0.4,  0.2);    // slider2
-            set_rgb!(25, 0.6,  0.4,  0.2);    // edit
-            set_rgb!(26, 0.7,  0.0,  0.0);    // edit2
-            set_rgb!(27, 0.9,  0.9,  0.9);    // cursor
-        } else if ind == 2 {
-            // themeColor2: white
-            set_rgb!(0,  0.9,  0.9,  0.9);    // master
-            set_rgb!(1,  0.7,  0.7,  0.7);    // thumb
-            set_rgb!(2,  0.8,  0.8,  0.8);    // secttitle
-            set_rgb!(3,  1.0,  1.0,  1.0);    // secttitle2
-            set_rgb!(4,  0.95, 0.95, 0.95);   // secttitleuncheck
-            set_rgb!(5,  0.95, 0.95, 0.95);   // secttitleuncheck2
-            set_rgb!(6,  0.95, 0.95, 0.95);   // secttitlecheck
-            set_rgb!(7,  0.95, 0.95, 0.95);   // secttitlecheck2
-            set_rgb!(8,  0.0,  0.0,  0.8);    // sectfont
-            set_rgb!(9,  0.0,  0.0,  0.8);    // sectsymbol
-            set_rgb!(10, 1.0,  1.0,  1.0);    // sectpane
-            set_rgb!(11, 0.9,  0.9,  0.9);    // separator
-            set_rgb!(12, 1.0,  1.0,  1.0);    // separator2
-            set_rgb!(13, 0.0,  1.0,  1.0);    // shortcut
-            set_rgb!(14, 0.0,  0.0,  0.0);    // fontactive
-            set_rgb!(15, 0.7,  0.7,  0.7);    // fontinactive
-            set_rgb!(16, 0.95, 0.95, 0.95);   // decorinactive
-            set_rgb!(17, 0.9,  0.9,  0.9);    // decorinactive2
-            set_rgb!(18, 0.8,  0.8,  0.8);    // button
-            set_rgb!(19, 0.8,  0.8,  0.8);    // check
-            set_rgb!(20, 0.8,  0.8,  0.8);    // radio
-            set_rgb!(21, 0.8,  0.8,  0.8);    // select
-            set_rgb!(22, 0.9,  0.9,  0.9);    // select2
-            set_rgb!(23, 0.95, 0.95, 0.95);   // slider
-            set_rgb!(24, 0.8,  0.8,  0.8);    // slider2
-            set_rgb!(25, 0.8,  0.8,  0.8);    // edit
-            set_rgb!(26, 1.0,  0.3,  0.3);    // edit2
-            set_rgb!(27, 0.2,  0.2,  0.2);    // cursor
-        } else {
-            // themeColor3: black
-            set_rgb!(0,  0.15, 0.15, 0.15);   // master
-            set_rgb!(1,  0.3,  0.3,  0.3);    // thumb
-            set_rgb!(2,  0.25, 0.25, 0.25);   // secttitle
-            set_rgb!(3,  0.0,  0.0,  0.0);    // secttitle2
-            set_rgb!(4,  0.2,  0.2,  0.2);    // secttitleuncheck
-            set_rgb!(5,  0.2,  0.2,  0.2);    // secttitleuncheck2
-            set_rgb!(6,  0.2,  0.2,  0.2);    // secttitlecheck
-            set_rgb!(7,  0.2,  0.2,  0.2);    // secttitlecheck2
-            set_rgb!(8,  1.0,  0.3,  0.3);    // sectfont
-            set_rgb!(9,  1.0,  0.3,  0.3);    // sectsymbol
-            set_rgb!(10, 0.0,  0.0,  0.0);    // sectpane
-            set_rgb!(11, 0.15, 0.15, 0.15);   // separator
-            set_rgb!(12, 0.0,  0.0,  0.0);    // separator2
-            set_rgb!(13, 0.0,  0.0,  1.0);    // shortcut
-            set_rgb!(14, 1.0,  1.0,  1.0);    // fontactive
-            set_rgb!(15, 0.4,  0.4,  0.4);    // fontinactive
-            set_rgb!(16, 0.1,  0.1,  0.1);    // decorinactive
-            set_rgb!(17, 0.15, 0.15, 0.15);   // decorinactive2
-            set_rgb!(18, 0.3,  0.3,  0.3);    // button
-            set_rgb!(19, 0.3,  0.3,  0.3);    // check
-            set_rgb!(20, 0.3,  0.3,  0.3);    // radio
-            set_rgb!(21, 0.3,  0.3,  0.3);    // select
-            set_rgb!(22, 0.15, 0.15, 0.15);   // select2
-            set_rgb!(23, 0.15, 0.15, 0.15);   // slider
-            set_rgb!(24, 0.3,  0.3,  0.3);    // slider2
-            set_rgb!(25, 0.3,  0.3,  0.3);    // edit
-            set_rgb!(26, 0.8,  0.2,  0.2);    // edit2
-            set_rgb!(27, 0.8,  0.8,  0.8);    // cursor
-        }
-
-        result
+    // C: if (ind == 0) return themeColor0; ... else return themeColor3;
+    // Values from ui_main.c:65-196. Named field init — no unsafe, no zeroed().
+    match ind {
+        0 => mjuiThemeColor {
+            master: [0.25, 0.25, 0.25], thumb: [0.12, 0.12, 0.12],
+            secttitle: [0.6, 0.2, 0.2], secttitle2: [0.1, 0.1, 0.1],
+            secttitleuncheck: [0.45, 0.17, 0.17], secttitleuncheck2: [0.45, 0.17, 0.17],
+            secttitlecheck: [0.45, 0.17, 0.17], secttitlecheck2: [0.45, 0.17, 0.17],
+            sectfont: [1.0, 1.0, 1.0], sectsymbol: [0.7, 0.7, 0.7],
+            sectpane: [0.1, 0.1, 0.1], separator: [0.25, 0.25, 0.25],
+            separator2: [0.1, 0.1, 0.1], shortcut: [0.0, 0.0, 1.0],
+            fontactive: [1.0, 1.0, 1.0], fontinactive: [0.5, 0.5, 0.5],
+            decorinactive: [0.3, 0.3, 0.3], decorinactive2: [0.4, 0.4, 0.4],
+            button: [0.6, 0.4, 0.4], check: [0.4, 0.4, 0.7],
+            radio: [0.4, 0.6, 0.4], select: [0.4, 0.6, 0.6],
+            select2: [0.2, 0.3, 0.3], slider: [0.3, 0.2, 0.3],
+            slider2: [0.6, 0.4, 0.6], edit: [0.6, 0.6, 0.4],
+            edit2: [0.7, 0.0, 0.0], cursor: [0.9, 0.9, 0.9],
+        },
+        1 => mjuiThemeColor {
+            master: [0.2, 0.2, 0.2], thumb: [0.12, 0.12, 0.12],
+            secttitle: [0.3, 0.3, 0.3], secttitle2: [0.15, 0.15, 0.15],
+            secttitleuncheck: [0.25, 0.25, 0.25], secttitleuncheck2: [0.25, 0.25, 0.25],
+            secttitlecheck: [0.25, 0.25, 0.25], secttitlecheck2: [0.25, 0.25, 0.25],
+            sectfont: [0.8, 0.8, 0.8], sectsymbol: [0.7, 0.7, 0.7],
+            sectpane: [0.15, 0.15, 0.15], separator: [0.2, 0.2, 0.2],
+            separator2: [0.15, 0.15, 0.15], shortcut: [0.0, 0.0, 1.0],
+            fontactive: [0.9, 0.9, 0.9], fontinactive: [0.5, 0.5, 0.5],
+            decorinactive: [0.2, 0.2, 0.2], decorinactive2: [0.25, 0.25, 0.25],
+            button: [0.6, 0.4, 0.2], check: [0.6, 0.4, 0.2],
+            radio: [0.6, 0.4, 0.2], select: [0.6, 0.4, 0.2],
+            select2: [0.3, 0.2, 0.1], slider: [0.2, 0.2, 0.2],
+            slider2: [0.6, 0.4, 0.2], edit: [0.6, 0.4, 0.2],
+            edit2: [0.7, 0.0, 0.0], cursor: [0.9, 0.9, 0.9],
+        },
+        2 => mjuiThemeColor {
+            master: [0.9, 0.9, 0.9], thumb: [0.7, 0.7, 0.7],
+            secttitle: [0.8, 0.8, 0.8], secttitle2: [1.0, 1.0, 1.0],
+            secttitleuncheck: [0.95, 0.95, 0.95], secttitleuncheck2: [0.95, 0.95, 0.95],
+            secttitlecheck: [0.95, 0.95, 0.95], secttitlecheck2: [0.95, 0.95, 0.95],
+            sectfont: [0.0, 0.0, 0.8], sectsymbol: [0.0, 0.0, 0.8],
+            sectpane: [1.0, 1.0, 1.0], separator: [0.9, 0.9, 0.9],
+            separator2: [1.0, 1.0, 1.0], shortcut: [0.0, 1.0, 1.0],
+            fontactive: [0.0, 0.0, 0.0], fontinactive: [0.7, 0.7, 0.7],
+            decorinactive: [0.95, 0.95, 0.95], decorinactive2: [0.9, 0.9, 0.9],
+            button: [0.8, 0.8, 0.8], check: [0.8, 0.8, 0.8],
+            radio: [0.8, 0.8, 0.8], select: [0.8, 0.8, 0.8],
+            select2: [0.9, 0.9, 0.9], slider: [0.95, 0.95, 0.95],
+            slider2: [0.8, 0.8, 0.8], edit: [0.8, 0.8, 0.8],
+            edit2: [1.0, 0.3, 0.3], cursor: [0.2, 0.2, 0.2],
+        },
+        _ => mjuiThemeColor {
+            master: [0.15, 0.15, 0.15], thumb: [0.3, 0.3, 0.3],
+            secttitle: [0.25, 0.25, 0.25], secttitle2: [0.0, 0.0, 0.0],
+            secttitleuncheck: [0.2, 0.2, 0.2], secttitleuncheck2: [0.2, 0.2, 0.2],
+            secttitlecheck: [0.2, 0.2, 0.2], secttitlecheck2: [0.2, 0.2, 0.2],
+            sectfont: [1.0, 0.3, 0.3], sectsymbol: [1.0, 0.3, 0.3],
+            sectpane: [0.0, 0.0, 0.0], separator: [0.15, 0.15, 0.15],
+            separator2: [0.0, 0.0, 0.0], shortcut: [0.0, 0.0, 1.0],
+            fontactive: [1.0, 1.0, 1.0], fontinactive: [0.4, 0.4, 0.4],
+            decorinactive: [0.1, 0.1, 0.1], decorinactive2: [0.15, 0.15, 0.15],
+            button: [0.3, 0.3, 0.3], check: [0.3, 0.3, 0.3],
+            radio: [0.3, 0.3, 0.3], select: [0.3, 0.3, 0.3],
+            select2: [0.15, 0.15, 0.15], slider: [0.15, 0.15, 0.15],
+            slider2: [0.3, 0.3, 0.3], edit: [0.3, 0.3, 0.3],
+            edit2: [0.8, 0.2, 0.2], cursor: [0.8, 0.8, 0.8],
+        },
     }
 }
 

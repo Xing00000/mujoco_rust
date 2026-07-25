@@ -25,39 +25,117 @@ pub fn prism_firstdir(o1: *const (), o2: *const (), vec: *mut ccd_vec3_t) {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn libccd_wrapper(m: *const mjModel, obj1: *mut mjCCDObj, obj2: *mut mjCCDObj, con: *mut mjPreContact, margin: f64) -> i32 {
-    // _libccd_wrapper calls libccd's ccdMPRPenetration which is a C library function.
-    // libccd (ccd_t, ccdMPRPenetration, ccdVec3Eq, ccd_vec3_origin, ccdFirstDirDefault)
-    // must be declared via FFI.
-    //
     // C source (engine/engine_collision_convex.c:52-88):
-    //   ccd_t ccd;
-    //   CCD_INIT(&ccd);
-    //   ccd.mpr_tolerance = m->opt.ccd_tolerance;
-    //   ccd.epa_tolerance = m->opt.ccd_tolerance;
-    //   ccd.max_iterations = m->opt.ccd_iterations;
-    //   ccd.support1 = mjccd_support;
-    //   ccd.support2 = mjccd_support;
-    //   ccd.center1 = mjccd_center;
-    //   ccd.center2 = mjccd_center;
-    //   if (obj1->geom_type == mjGEOM_HFIELD || obj2->geom_type == mjGEOM_HFIELD)
-    //     ccd.first_dir = prism_firstdir;
-    //   else
-    //     ccd.first_dir = ccdFirstDirDefault;
-    //   ccd_real_t ccd_depth; ccd_vec3_t ccd_dir, ccd_pos;
-    //   int ret = ccdMPRPenetration(obj1, obj2, &ccd, &ccd_depth, &ccd_dir, &ccd_pos);
-    //   if (ret == 0) {
-    //     if (ccdVec3Eq(&ccd_dir, ccd_vec3_origin)) return 0;
-    //     con[0].dist = margin - ccd_depth;
-    //     mji_copy3(con[0].normal, ccd_dir.v);
-    //     mji_copy3(con[0].pos, ccd_pos.v);
-    //     mji_zero3(con[0].tangent);
-    //     return 1;
-    //   }
-    //   return 0;
+    // Calls ccdMPRPenetration via our C bridge which handles ccd_t setup.
     //
-    // BLOCKED: requires FFI to libccd (ccd_t struct, ccdMPRPenetration, ccdVec3Eq,
-    // ccd_vec3_origin, ccdFirstDirDefault). Add to bridges/libccd_bridge.c (R6 task).
-    todo!("libccd_wrapper: requires libccd FFI bridge (ccdMPRPenetration, ccd_t struct)")
+    // Rust trampolines adapt mjccd_support/mjccd_center to the bridge's
+    // double[3] callback ABI.
+
+    // Bridge callback trampolines: adapt ccd_vec3_t (double[3]) ↔ ccd_vec3_t
+    // The bridge passes dir/vec as *const double[3] / *mut double[3] (same layout).
+    unsafe extern "C" fn support_trampoline(obj: *const core::ffi::c_void,
+                                             dir: *const f64, vec: *mut f64) {
+        // SAFETY: bridge guarantees dir and vec point to 3 f64 each.
+        // We reconstruct a ccd_vec3_t on the stack for the existing Rust impl.
+        let mut ccd_dir = crate::types::ccd_vec3_t { v: [0u8; 24] };
+        let mut ccd_vec = crate::types::ccd_vec3_t { v: [0u8; 24] };
+        (ccd_dir.v.as_mut_ptr() as *mut f64).copy_from_nonoverlapping(dir, 3);
+        crate::engine::engine_collision_convex::mjccd_support(
+            obj as *const (),
+            &ccd_dir as *const crate::types::ccd_vec3_t,
+            &mut ccd_vec as *mut crate::types::ccd_vec3_t,
+        );
+        (vec as *mut f64).copy_from_nonoverlapping(
+            ccd_vec.v.as_ptr() as *const f64, 3);
+    }
+
+    unsafe extern "C" fn center_trampoline(obj: *const core::ffi::c_void,
+                                            center: *mut f64) {
+        // SAFETY: bridge guarantees center points to 3 f64.
+        let mut ccd_center = crate::types::ccd_vec3_t { v: [0u8; 24] };
+        crate::engine::engine_collision_convex::mjccd_center(
+            obj as *const (),
+            &mut ccd_center as *mut crate::types::ccd_vec3_t,
+        );
+        (center as *mut f64).copy_from_nonoverlapping(
+            ccd_center.v.as_ptr() as *const f64, 3);
+    }
+
+    // SAFETY: m, obj1, obj2, con are valid pointers from caller.
+    unsafe {
+        // use_prism_dir = 1 if either geom is hfield
+        let use_prism = ((*obj1).geom_type == mjtGeom_mjGEOM_HFIELD as i32
+            || (*obj2).geom_type == mjtGeom_mjGEOM_HFIELD as i32) as i32;
+
+        // FFI call to libccd_bridge
+        extern "C" {
+            fn c2rust_ccd_mpr_penetration(
+                obj1: *const core::ffi::c_void,
+                obj2: *const core::ffi::c_void,
+                mpr_tolerance: f64,
+                epa_tolerance: f64,
+                max_iterations: u64,
+                support1: unsafe extern "C" fn(*const core::ffi::c_void, *const f64, *mut f64),
+                support2: unsafe extern "C" fn(*const core::ffi::c_void, *const f64, *mut f64),
+                center1: unsafe extern "C" fn(*const core::ffi::c_void, *mut f64),
+                center2: unsafe extern "C" fn(*const core::ffi::c_void, *mut f64),
+                use_prism_dir: i32,
+                result: *mut CcdResult,
+            );
+        }
+
+        #[repr(C)]
+        struct CcdResult {
+            status: i32,
+            dir_is_origin: i32,
+            depth: f64,
+            dir: [f64; 3],
+            pos: [f64; 3],
+        }
+
+        let mut result = CcdResult {
+            status: -1,
+            dir_is_origin: 0,
+            depth: 0.0,
+            dir: [0.0; 3],
+            pos: [0.0; 3],
+        };
+
+        c2rust_ccd_mpr_penetration(
+            obj1 as *const core::ffi::c_void,
+            obj2 as *const core::ffi::c_void,
+            (*m).opt.ccd_tolerance,
+            (*m).opt.ccd_tolerance,
+            (*m).opt.ccd_iterations as u64,
+            support_trampoline,
+            support_trampoline,
+            center_trampoline,
+            center_trampoline,
+            use_prism,
+            &mut result as *mut CcdResult,
+        );
+
+        if result.status != 0 {
+            return 0;
+        }
+        if result.dir_is_origin != 0 {
+            return 0;
+        }
+
+        // Fill contact — exact C order
+        (*con).dist = margin - result.depth;
+        (*con).normal[0] = result.dir[0];
+        (*con).normal[1] = result.dir[1];
+        (*con).normal[2] = result.dir[2];
+        (*con).pos[0] = result.pos[0];
+        (*con).pos[1] = result.pos[1];
+        (*con).pos[2] = result.pos[2];
+        (*con).tangent[0] = 0.0;
+        (*con).tangent[1] = 0.0;
+        (*con).tangent[2] = 0.0;
+
+        1
+    }
 }
 
 /// C: mjc_penetration (engine/engine_collision_convex.c:87)

@@ -73,41 +73,38 @@ pub fn buffer_provider_mount(vfs: *mut mjVFS, args: Args) -> i32 {
 }
 
 /// C: mj_addFileVFS (user/user_vfs.cc:496)
-/// Calls: BufferProvider::Mount
+/// Calls: BufferProvider::Mount (via C++ bridge)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_add_file_vfs(vfs: *mut mjVFS, directory: *const i8, filename: *const i8) -> i32 {
-    // C++ source (user/user_vfs.cc:496-500):
-    //   return BufferProvider::Mount(vfs, directory, filename);
-    //
-    // BufferProvider::Mount is a C++ static method that:
-    //   1. Opens the file at (directory + "/" + filename)
-    //   2. Copies its contents into a BufferProvider
-    //   3. Mounts the provider at the given path in vfs
-    //
-    // BLOCKED: requires C++ bridge (BufferProvider::Mount is C++ with std::vector/std::string).
-    // Implement via bridges/vfs_bridge.cc:
-    //   extern "C" int mj_addFileVFS_bridge(mjVFS* vfs, const char* dir, const char* fname) {
-    //     return BufferProvider::Mount(vfs, dir, fname);
-    //   }
-    todo!("mj_addFileVFS: requires C++ bridge for BufferProvider::Mount")
+    // C source: return BufferProvider::Mount(vfs, directory, filename);
+    // Delegated to bridges/user_vfs_bridge.cc which links against libmujoco.
+    extern "C" {
+        fn c2rust_mj_addFileVFS_bridge(
+            vfs: *mut mjVFS,
+            directory: *const i8,
+            filename: *const i8,
+        ) -> i32;
+    }
+    // SAFETY: vfs, directory, filename are caller-owned pointers with correct lifetimes.
+    unsafe { c2rust_mj_addFileVFS_bridge(vfs, directory, filename) }
 }
 
 /// C: mj_addBufferVFS (user/user_vfs.cc:503)
-/// Calls: BufferProvider::Mount
+/// Calls: BufferProvider::Mount (via C++ bridge)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_add_buffer_vfs(vfs: *mut mjVFS, name: *const i8, buffer: *const (), nbuffer: i32) -> i32 {
-    // C++ source (user/user_vfs.cc:503-506):
-    //   return BufferProvider::Mount(vfs, name, buffer, nbuffer);
-    //
-    // BufferProvider::Mount copies the buffer into a BufferProvider and mounts it.
-    //
-    // BLOCKED: requires C++ bridge (BufferProvider::Mount overload taking void* buffer).
-    // Implement via bridges/vfs_bridge.cc:
-    //   extern "C" int mj_addBufferVFS_bridge(mjVFS* vfs, const char* name,
-    //                                          const void* buf, int nbuf) {
-    //     return BufferProvider::Mount(vfs, name, buf, nbuf);
-    //   }
-    todo!("mj_addBufferVFS: requires C++ bridge for BufferProvider::Mount")
+    // C source: return BufferProvider::Mount(vfs, name, buffer, nbuffer);
+    // Delegated to bridges/user_vfs_bridge.cc which links against libmujoco.
+    extern "C" {
+        fn c2rust_mj_addBufferVFS_bridge(
+            vfs: *mut mjVFS,
+            name: *const i8,
+            buffer: *const core::ffi::c_void,
+            nbuffer: i32,
+        ) -> i32;
+    }
+    // SAFETY: vfs, name, buffer are caller-owned; buffer content is copied by C++.
+    unsafe { c2rust_mj_addBufferVFS_bridge(vfs, name, buffer as *const core::ffi::c_void, nbuffer) }
 }
 
 /// C: mj_deleteFileVFS (user/user_vfs.cc:508)
