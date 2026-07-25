@@ -3107,6 +3107,126 @@ pub const LodePNGColorType_LCT_GREY_ALPHA: LodePNGColorType = 4;
 pub const LodePNGColorType_LCT_RGBA: LodePNGColorType = 6;
 pub const LodePNGColorType_LCT_MAX_OCTET_VALUE: LodePNGColorType = 255;
 
+/// C enum: LodePNGFilterStrategy
+pub type LodePNGFilterStrategy = u32;
+pub const LodePNGFilterStrategy_LFS_ZERO: LodePNGFilterStrategy = 0;
+pub const LodePNGFilterStrategy_LFS_ONE: LodePNGFilterStrategy = 1;
+pub const LodePNGFilterStrategy_LFS_TWO: LodePNGFilterStrategy = 2;
+pub const LodePNGFilterStrategy_LFS_THREE: LodePNGFilterStrategy = 3;
+pub const LodePNGFilterStrategy_LFS_FOUR: LodePNGFilterStrategy = 4;
+pub const LodePNGFilterStrategy_LFS_MINSUM: LodePNGFilterStrategy = 5;
+pub const LodePNGFilterStrategy_LFS_ENTROPY: LodePNGFilterStrategy = 6;
+pub const LodePNGFilterStrategy_LFS_BRUTE_FORCE: LodePNGFilterStrategy = 7;
+pub const LodePNGFilterStrategy_LFS_PREDEFINED: LodePNGFilterStrategy = 8;
+
+/// C enum: _mjtCompKind
+pub type _mjtCompKind = u32;
+pub const _mjtCompKind_mjCOMPKIND_JOINT: _mjtCompKind = 0;
+pub const _mjtCompKind_mjNCOMPKINDS: _mjtCompKind = 1;
+
+/// C enum: _mjtCompShape
+pub type _mjtCompShape = i32;
+pub const _mjtCompShape_mjCOMPSHAPE_INVALID: _mjtCompShape = -1;
+pub const _mjtCompShape_mjCOMPSHAPE_LINE: _mjtCompShape = 0;
+pub const _mjtCompShape_mjCOMPSHAPE_COS: _mjtCompShape = 1;
+pub const _mjtCompShape_mjCOMPSHAPE_SIN: _mjtCompShape = 2;
+pub const _mjtCompShape_mjCOMPSHAPE_ZERO: _mjtCompShape = 3;
+pub const _mjtCompShape_mjNCOMPSHAPES: _mjtCompShape = 4;
+
+/// C enum: _mjtCompType
+pub type _mjtCompType = u32;
+pub const _mjtCompType_mjCOMPTYPE_PARTICLE: _mjtCompType = 0;
+pub const _mjtCompType_mjCOMPTYPE_GRID: _mjtCompType = 1;
+pub const _mjtCompType_mjCOMPTYPE_CABLE: _mjtCompType = 2;
+pub const _mjtCompType_mjCOMPTYPE_ROPE: _mjtCompType = 3;
+pub const _mjtCompType_mjCOMPTYPE_LOOP: _mjtCompType = 4;
+pub const _mjtCompType_mjCOMPTYPE_CLOTH: _mjtCompType = 5;
+pub const _mjtCompType_mjNCOMPTYPES: _mjtCompType = 6;
+
+/// C enum: _mjtDof
+pub type _mjtDof = u32;
+pub const _mjtDof_mjFCOMPDOF_FULL: _mjtDof = 0;
+pub const _mjtDof_mjFCOMPDOF_RADIAL: _mjtDof = 1;
+pub const _mjtDof_mjFCOMPDOF_TRILINEAR: _mjtDof = 2;
+pub const _mjtDof_mjFCOMPDOF_QUADRATIC: _mjtDof = 3;
+pub const _mjtDof_mjFCOMPDOF_2D: _mjtDof = 4;
+pub const _mjtDof_mjNFCOMPDOFS: _mjtDof = 5;
+
+/// C enum: _mjtFcompType
+pub type _mjtFcompType = u32;
+pub const _mjtFcompType_mjFCOMPTYPE_GRID: _mjtFcompType = 0;
+pub const _mjtFcompType_mjFCOMPTYPE_BOX: _mjtFcompType = 1;
+pub const _mjtFcompType_mjFCOMPTYPE_CYLINDER: _mjtFcompType = 2;
+pub const _mjtFcompType_mjFCOMPTYPE_ELLIPSOID: _mjtFcompType = 3;
+pub const _mjtFcompType_mjFCOMPTYPE_SQUARE: _mjtFcompType = 4;
+pub const _mjtFcompType_mjFCOMPTYPE_DISC: _mjtFcompType = 5;
+pub const _mjtFcompType_mjFCOMPTYPE_CIRCLE: _mjtFcompType = 6;
+pub const _mjtFcompType_mjFCOMPTYPE_MESH: _mjtFcompType = 7;
+pub const _mjtFcompType_mjFCOMPTYPE_GMSH: _mjtFcompType = 8;
+pub const _mjtFcompType_mjFCOMPTYPE_DIRECT: _mjtFcompType = 9;
+pub const _mjtFcompType_mjNFCOMPTYPES: _mjtFcompType = 10;
+
+/// C enum: mjrIndexType_
+pub type mjrIndexType_ = u32;
+pub const mjrIndexType__mjINDEX_TYPE_U16: mjrIndexType_ = 0;
+pub const mjrIndexType__mjINDEX_TYPE_U32: mjrIndexType_ = 1;
+pub const mjINDEX_TYPE_U16: mjrIndexType_ = 0;
+pub const mjINDEX_TYPE_U32: mjrIndexType_ = 1;
+
+/// C enum: mjrMeshPrimitiveType_
+pub type mjrMeshPrimitiveType_ = u32;
+pub const mjrMeshPrimitiveType__mjMESH_PRIMITIVE_TYPE_TRIANGLES: mjrMeshPrimitiveType_ = 0;
+pub const mjrMeshPrimitiveType__mjMESH_PRIMITIVE_TYPE_LINES: mjrMeshPrimitiveType_ = 1;
+pub const mjMESH_PRIMITIVE_TYPE_TRIANGLES: mjrMeshPrimitiveType_ = 0;
+pub const mjMESH_PRIMITIVE_TYPE_LINES: mjrMeshPrimitiveType_ = 1;
+
+/// C enum: mjrPixelFormat_
+pub type mjrPixelFormat_ = u32;
+pub const mjrPixelFormat__mjPIXEL_FORMAT_UNKNOWN: mjrPixelFormat_ = 0;
+pub const mjrPixelFormat__mjPIXEL_FORMAT_R8: mjrPixelFormat_ = 1;
+pub const mjrPixelFormat__mjPIXEL_FORMAT_RGB8: mjrPixelFormat_ = 2;
+pub const mjrPixelFormat__mjPIXEL_FORMAT_RGBA8: mjrPixelFormat_ = 3;
+pub const mjrPixelFormat__mjPIXEL_FORMAT_R32F: mjrPixelFormat_ = 4;
+pub const mjrPixelFormat__mjPIXEL_FORMAT_DEPTH32F: mjrPixelFormat_ = 5;
+pub const mjrPixelFormat__mjPIXEL_FORMAT_KTX: mjrPixelFormat_ = 6;
+pub const mjPIXEL_FORMAT_UNKNOWN: mjrPixelFormat_ = 0;
+pub const mjPIXEL_FORMAT_R8: mjrPixelFormat_ = 1;
+pub const mjPIXEL_FORMAT_RGB8: mjrPixelFormat_ = 2;
+pub const mjPIXEL_FORMAT_RGBA8: mjrPixelFormat_ = 3;
+pub const mjPIXEL_FORMAT_R32F: mjrPixelFormat_ = 4;
+pub const mjPIXEL_FORMAT_DEPTH32F: mjrPixelFormat_ = 5;
+pub const mjPIXEL_FORMAT_KTX: mjrPixelFormat_ = 6;
+
+/// C enum: mjrVertexAttributeType_
+pub type mjrVertexAttributeType_ = u32;
+pub const mjrVertexAttributeType__mjVERTEX_ATTRIBUTE_TYPE_FLOAT2: mjrVertexAttributeType_ = 0;
+pub const mjrVertexAttributeType__mjVERTEX_ATTRIBUTE_TYPE_FLOAT3: mjrVertexAttributeType_ = 1;
+pub const mjrVertexAttributeType__mjVERTEX_ATTRIBUTE_TYPE_FLOAT4: mjrVertexAttributeType_ = 2;
+pub const mjrVertexAttributeType__mjVERTEX_ATTRIBUTE_TYPE_UBYTE4: mjrVertexAttributeType_ = 3;
+pub const mjVERTEX_ATTRIBUTE_TYPE_FLOAT2: mjrVertexAttributeType_ = 0;
+pub const mjVERTEX_ATTRIBUTE_TYPE_FLOAT3: mjrVertexAttributeType_ = 1;
+pub const mjVERTEX_ATTRIBUTE_TYPE_FLOAT4: mjrVertexAttributeType_ = 2;
+pub const mjVERTEX_ATTRIBUTE_TYPE_UBYTE4: mjrVertexAttributeType_ = 3;
+
+/// C enum: mjrVertexAttributeUsage_
+pub type mjrVertexAttributeUsage_ = u32;
+pub const mjrVertexAttributeUsage__mjVERTEX_ATTRIBUTE_USAGE_POSITION: mjrVertexAttributeUsage_ = 0;
+pub const mjrVertexAttributeUsage__mjVERTEX_ATTRIBUTE_USAGE_NORMAL: mjrVertexAttributeUsage_ = 1;
+pub const mjrVertexAttributeUsage__mjVERTEX_ATTRIBUTE_USAGE_TANGENTS: mjrVertexAttributeUsage_ = 2;
+pub const mjrVertexAttributeUsage__mjVERTEX_ATTRIBUTE_USAGE_UV: mjrVertexAttributeUsage_ = 3;
+pub const mjrVertexAttributeUsage__mjVERTEX_ATTRIBUTE_USAGE_COLOR: mjrVertexAttributeUsage_ = 4;
+pub const mjVERTEX_ATTRIBUTE_USAGE_POSITION: mjrVertexAttributeUsage_ = 0;
+pub const mjVERTEX_ATTRIBUTE_USAGE_NORMAL: mjrVertexAttributeUsage_ = 1;
+pub const mjVERTEX_ATTRIBUTE_USAGE_TANGENTS: mjrVertexAttributeUsage_ = 2;
+pub const mjVERTEX_ATTRIBUTE_USAGE_UV: mjrVertexAttributeUsage_ = 3;
+pub const mjVERTEX_ATTRIBUTE_USAGE_COLOR: mjrVertexAttributeUsage_ = 4;
+
+/// C enum: mjtAlignFree
+pub type mjtAlignFree = u32;
+pub const mjtAlignFree_mjALIGNFREE_FALSE: mjtAlignFree = 0;
+pub const mjtAlignFree_mjALIGNFREE_TRUE: mjtAlignFree = 1;
+pub const mjtAlignFree_mjALIGNFREE_AUTO: mjtAlignFree = 2;
+
 /// C enum: mjtBias
 pub type mjtBias = u32;
 pub const mjtBias_mjBIAS_NONE: mjtBias = 0;
@@ -3114,6 +3234,33 @@ pub const mjtBias_mjBIAS_AFFINE: mjtBias = 1;
 pub const mjtBias_mjBIAS_MUSCLE: mjtBias = 2;
 pub const mjtBias_mjBIAS_DCMOTOR: mjtBias = 3;
 pub const mjtBias_mjBIAS_USER: mjtBias = 4;
+
+/// C enum: mjtBuiltin
+pub type mjtBuiltin = u32;
+pub const mjtBuiltin_mjBUILTIN_NONE: mjtBuiltin = 0;
+pub const mjtBuiltin_mjBUILTIN_GRADIENT: mjtBuiltin = 1;
+pub const mjtBuiltin_mjBUILTIN_CHECKER: mjtBuiltin = 2;
+pub const mjtBuiltin_mjBUILTIN_FLAT: mjtBuiltin = 3;
+
+/// C enum: mjtButton
+pub type mjtButton = u32;
+pub const mjtButton_mjBUTTON_NONE: mjtButton = 0;
+pub const mjtButton_mjBUTTON_LEFT: mjtButton = 1;
+pub const mjtButton_mjBUTTON_RIGHT: mjtButton = 2;
+pub const mjtButton_mjBUTTON_MIDDLE: mjtButton = 3;
+
+/// C enum: mjtCTimer
+pub type mjtCTimer = u32;
+pub const mjtCTimer_mjCTIMER_TOTAL: mjtCTimer = 0;
+pub const mjtCTimer_mjCTIMER_ASSETS: mjtCTimer = 1;
+pub const mjtCTimer_mjCTIMER_TEXTURE: mjtCTimer = 2;
+pub const mjtCTimer_mjCTIMER_MESH_LOAD: mjtCTimer = 3;
+pub const mjtCTimer_mjCTIMER_MESH_HULL: mjtCTimer = 4;
+pub const mjtCTimer_mjCTIMER_MESH_POLYGON: mjtCTimer = 5;
+pub const mjtCTimer_mjCTIMER_MESH_INERTIA: mjtCTimer = 6;
+pub const mjtCTimer_mjCTIMER_MESH_BVH: mjtCTimer = 7;
+pub const mjtCTimer_mjCTIMER_MESH_OCTREE: mjtCTimer = 8;
+pub const mjtCTimer_mjNCTIMER: mjtCTimer = 9;
 
 /// C enum: mjtCamLight
 pub type mjtCamLight = u32;
@@ -3123,11 +3270,58 @@ pub const mjtCamLight_mjCAMLIGHT_TRACKCOM: mjtCamLight = 2;
 pub const mjtCamLight_mjCAMLIGHT_TARGETBODY: mjtCamLight = 3;
 pub const mjtCamLight_mjCAMLIGHT_TARGETBODYCOM: mjtCamLight = 4;
 
+/// C enum: mjtCamOutBit
+pub type mjtCamOutBit = u32;
+pub const mjtCamOutBit_mjCAMOUT_RGB: mjtCamOutBit = 1;
+pub const mjtCamOutBit_mjCAMOUT_DEPTH: mjtCamOutBit = 2;
+pub const mjtCamOutBit_mjCAMOUT_DIST: mjtCamOutBit = 4;
+pub const mjtCamOutBit_mjCAMOUT_NORMAL: mjtCamOutBit = 8;
+pub const mjtCamOutBit_mjCAMOUT_SEG: mjtCamOutBit = 16;
+pub const mjtCamOutBit_mjNCAMOUT: mjtCamOutBit = 5;
+
+/// C enum: mjtCamera_
+pub type mjtCamera_ = u32;
+pub const mjtCamera__mjCAMERA_FREE: mjtCamera_ = 0;
+pub const mjtCamera__mjCAMERA_TRACKING: mjtCamera_ = 1;
+pub const mjtCamera__mjCAMERA_FIXED: mjtCamera_ = 2;
+pub const mjtCamera__mjCAMERA_USER: mjtCamera_ = 3;
+pub const mjCAMERA_FREE: mjtCamera_ = 0;
+pub const mjCAMERA_TRACKING: mjtCamera_ = 1;
+pub const mjCAMERA_FIXED: mjtCamera_ = 2;
+pub const mjCAMERA_USER: mjtCamera_ = 3;
+
+/// C enum: mjtCatBit_
+pub type mjtCatBit_ = u32;
+pub const mjtCatBit__mjCAT_STATIC: mjtCatBit_ = 1;
+pub const mjtCatBit__mjCAT_DYNAMIC: mjtCatBit_ = 2;
+pub const mjtCatBit__mjCAT_DECOR: mjtCatBit_ = 4;
+pub const mjtCatBit__mjCAT_ALL: mjtCatBit_ = 7;
+pub const mjCAT_STATIC: mjtCatBit_ = 1;
+pub const mjCAT_DYNAMIC: mjtCatBit_ = 2;
+pub const mjCAT_DECOR: mjtCatBit_ = 4;
+pub const mjCAT_ALL: mjtCatBit_ = 7;
+
 /// C enum: mjtColorSpace
 pub type mjtColorSpace = u32;
 pub const mjtColorSpace_mjCOLORSPACE_AUTO: mjtColorSpace = 0;
 pub const mjtColorSpace_mjCOLORSPACE_LINEAR: mjtColorSpace = 1;
 pub const mjtColorSpace_mjCOLORSPACE_SRGB: mjtColorSpace = 2;
+
+/// C enum: mjtConDataField
+pub type mjtConDataField = u32;
+pub const mjtConDataField_mjCONDATA_FOUND: mjtConDataField = 0;
+pub const mjtConDataField_mjCONDATA_FORCE: mjtConDataField = 1;
+pub const mjtConDataField_mjCONDATA_TORQUE: mjtConDataField = 2;
+pub const mjtConDataField_mjCONDATA_DIST: mjtConDataField = 3;
+pub const mjtConDataField_mjCONDATA_POS: mjtConDataField = 4;
+pub const mjtConDataField_mjCONDATA_NORMAL: mjtConDataField = 5;
+pub const mjtConDataField_mjCONDATA_TANGENT: mjtConDataField = 6;
+pub const mjtConDataField_mjNCONDATA: mjtConDataField = 7;
+
+/// C enum: mjtCone
+pub type mjtCone = u32;
+pub const mjtCone_mjCONE_PYRAMIDAL: mjtCone = 0;
+pub const mjtCone_mjCONE_ELLIPTIC: mjtCone = 1;
 
 /// C enum: mjtConflict
 pub type mjtConflict = u32;
@@ -3135,12 +3329,62 @@ pub const mjtConflict_mjCONFLICT_WARNING: mjtConflict = 0;
 pub const mjtConflict_mjCONFLICT_MERGE: mjtConflict = 1;
 pub const mjtConflict_mjCONFLICT_ERROR: mjtConflict = 2;
 
+/// C enum: mjtConstraint
+pub type mjtConstraint = u32;
+pub const mjtConstraint_mjCNSTR_EQUALITY: mjtConstraint = 0;
+pub const mjtConstraint_mjCNSTR_FRICTION_DOF: mjtConstraint = 1;
+pub const mjtConstraint_mjCNSTR_FRICTION_TENDON: mjtConstraint = 2;
+pub const mjtConstraint_mjCNSTR_LIMIT_JOINT: mjtConstraint = 3;
+pub const mjtConstraint_mjCNSTR_LIMIT_TENDON: mjtConstraint = 4;
+pub const mjtConstraint_mjCNSTR_CONTACT_FRICTIONLESS: mjtConstraint = 5;
+pub const mjtConstraint_mjCNSTR_CONTACT_PYRAMIDAL: mjtConstraint = 6;
+pub const mjtConstraint_mjCNSTR_CONTACT_ELLIPTIC: mjtConstraint = 7;
+
+/// C enum: mjtConstraintState
+pub type mjtConstraintState = u32;
+pub const mjtConstraintState_mjCNSTRSTATE_SATISFIED: mjtConstraintState = 0;
+pub const mjtConstraintState_mjCNSTRSTATE_QUADRATIC: mjtConstraintState = 1;
+pub const mjtConstraintState_mjCNSTRSTATE_LINEARNEG: mjtConstraintState = 2;
+pub const mjtConstraintState_mjCNSTRSTATE_LINEARPOS: mjtConstraintState = 3;
+pub const mjtConstraintState_mjCNSTRSTATE_CONE: mjtConstraintState = 4;
+
 /// C enum: mjtDataType
 pub type mjtDataType = u32;
 pub const mjtDataType_mjDATATYPE_REAL: mjtDataType = 0;
 pub const mjtDataType_mjDATATYPE_POSITIVE: mjtDataType = 1;
 pub const mjtDataType_mjDATATYPE_AXIS: mjtDataType = 2;
 pub const mjtDataType_mjDATATYPE_QUATERNION: mjtDataType = 3;
+
+/// C enum: mjtDepthMap_
+pub type mjtDepthMap_ = u32;
+pub const mjtDepthMap__mjDEPTH_ZERONEAR: mjtDepthMap_ = 0;
+pub const mjtDepthMap__mjDEPTH_ZEROFAR: mjtDepthMap_ = 1;
+pub const mjDEPTH_ZERONEAR: mjtDepthMap_ = 0;
+pub const mjDEPTH_ZEROFAR: mjtDepthMap_ = 1;
+
+/// C enum: mjtDisableBit
+pub type mjtDisableBit = u32;
+pub const mjtDisableBit_mjDSBL_CONSTRAINT: mjtDisableBit = 1;
+pub const mjtDisableBit_mjDSBL_EQUALITY: mjtDisableBit = 2;
+pub const mjtDisableBit_mjDSBL_FRICTIONLOSS: mjtDisableBit = 4;
+pub const mjtDisableBit_mjDSBL_LIMIT: mjtDisableBit = 8;
+pub const mjtDisableBit_mjDSBL_CONTACT: mjtDisableBit = 16;
+pub const mjtDisableBit_mjDSBL_SPRING: mjtDisableBit = 32;
+pub const mjtDisableBit_mjDSBL_DAMPER: mjtDisableBit = 64;
+pub const mjtDisableBit_mjDSBL_GRAVITY: mjtDisableBit = 128;
+pub const mjtDisableBit_mjDSBL_CLAMPCTRL: mjtDisableBit = 256;
+pub const mjtDisableBit_mjDSBL_WARMSTART: mjtDisableBit = 512;
+pub const mjtDisableBit_mjDSBL_FILTERPARENT: mjtDisableBit = 1024;
+pub const mjtDisableBit_mjDSBL_ACTUATION: mjtDisableBit = 2048;
+pub const mjtDisableBit_mjDSBL_REFSAFE: mjtDisableBit = 4096;
+pub const mjtDisableBit_mjDSBL_SENSOR: mjtDisableBit = 8192;
+pub const mjtDisableBit_mjDSBL_MIDPHASE: mjtDisableBit = 16384;
+pub const mjtDisableBit_mjDSBL_EULERDAMP: mjtDisableBit = 32768;
+pub const mjtDisableBit_mjDSBL_AUTORESET: mjtDisableBit = 65536;
+pub const mjtDisableBit_mjDSBL_NATIVECCD: mjtDisableBit = 131072;
+pub const mjtDisableBit_mjDSBL_ISLAND: mjtDisableBit = 262144;
+pub const mjtDisableBit_mjDSBL_MULTICCD: mjtDisableBit = 524288;
+pub const mjtDisableBit_mjNDISABLE: mjtDisableBit = 20;
 
 /// C enum: mjtDyn
 pub type mjtDyn = u32;
@@ -3152,6 +3396,16 @@ pub const mjtDyn_mjDYN_MUSCLE: mjtDyn = 4;
 pub const mjtDyn_mjDYN_DCMOTOR: mjtDyn = 5;
 pub const mjtDyn_mjDYN_USER: mjtDyn = 6;
 
+/// C enum: mjtEnableBit
+pub type mjtEnableBit = u32;
+pub const mjtEnableBit_mjENBL_OVERRIDE: mjtEnableBit = 1;
+pub const mjtEnableBit_mjENBL_ENERGY: mjtEnableBit = 2;
+pub const mjtEnableBit_mjENBL_FWDINV: mjtEnableBit = 4;
+pub const mjtEnableBit_mjENBL_INVDISCRETE: mjtEnableBit = 8;
+pub const mjtEnableBit_mjENBL_SLEEP: mjtEnableBit = 16;
+pub const mjtEnableBit_mjENBL_DIAGEXACT: mjtEnableBit = 32;
+pub const mjtEnableBit_mjNENABLE: mjtEnableBit = 6;
+
 /// C enum: mjtEq
 pub type mjtEq = u32;
 pub const mjtEq_mjEQ_CONNECT: mjtEq = 0;
@@ -3162,6 +3416,78 @@ pub const mjtEq_mjEQ_FLEX: mjtEq = 4;
 pub const mjtEq_mjEQ_FLEXVERT: mjtEq = 5;
 pub const mjtEq_mjEQ_FLEXSTRAIN: mjtEq = 6;
 pub const mjtEq_mjEQ_DISTANCE: mjtEq = 7;
+
+/// C enum: mjtEvent
+pub type mjtEvent = u32;
+pub const mjtEvent_mjEVENT_NONE: mjtEvent = 0;
+pub const mjtEvent_mjEVENT_MOVE: mjtEvent = 1;
+pub const mjtEvent_mjEVENT_PRESS: mjtEvent = 2;
+pub const mjtEvent_mjEVENT_RELEASE: mjtEvent = 3;
+pub const mjtEvent_mjEVENT_SCROLL: mjtEvent = 4;
+pub const mjtEvent_mjEVENT_KEY: mjtEvent = 5;
+pub const mjtEvent_mjEVENT_RESIZE: mjtEvent = 6;
+pub const mjtEvent_mjEVENT_REDRAW: mjtEvent = 7;
+pub const mjtEvent_mjEVENT_FILESDROP: mjtEvent = 8;
+
+/// C enum: mjtFlexSelf
+pub type mjtFlexSelf = u32;
+pub const mjtFlexSelf_mjFLEXSELF_NONE: mjtFlexSelf = 0;
+pub const mjtFlexSelf_mjFLEXSELF_NARROW: mjtFlexSelf = 1;
+pub const mjtFlexSelf_mjFLEXSELF_BVH: mjtFlexSelf = 2;
+pub const mjtFlexSelf_mjFLEXSELF_SAP: mjtFlexSelf = 3;
+pub const mjtFlexSelf_mjFLEXSELF_AUTO: mjtFlexSelf = 4;
+
+/// C enum: mjtFontScale_
+pub type mjtFontScale_ = u32;
+pub const mjtFontScale__mjFONTSCALE_50: mjtFontScale_ = 50;
+pub const mjtFontScale__mjFONTSCALE_100: mjtFontScale_ = 100;
+pub const mjtFontScale__mjFONTSCALE_150: mjtFontScale_ = 150;
+pub const mjtFontScale__mjFONTSCALE_200: mjtFontScale_ = 200;
+pub const mjtFontScale__mjFONTSCALE_250: mjtFontScale_ = 250;
+pub const mjtFontScale__mjFONTSCALE_300: mjtFontScale_ = 300;
+pub const mjFONTSCALE_50: mjtFontScale_ = 50;
+pub const mjFONTSCALE_100: mjtFontScale_ = 100;
+pub const mjFONTSCALE_150: mjtFontScale_ = 150;
+pub const mjFONTSCALE_200: mjtFontScale_ = 200;
+pub const mjFONTSCALE_250: mjtFontScale_ = 250;
+pub const mjFONTSCALE_300: mjtFontScale_ = 300;
+
+/// C enum: mjtFont_
+pub type mjtFont_ = u32;
+pub const mjtFont__mjFONT_NORMAL: mjtFont_ = 0;
+pub const mjtFont__mjFONT_SHADOW: mjtFont_ = 1;
+pub const mjtFont__mjFONT_BIG: mjtFont_ = 2;
+pub const mjFONT_NORMAL: mjtFont_ = 0;
+pub const mjFONT_SHADOW: mjtFont_ = 1;
+pub const mjFONT_BIG: mjtFont_ = 2;
+
+/// C enum: mjtFrame_
+pub type mjtFrame_ = u32;
+pub const mjtFrame__mjFRAME_NONE: mjtFrame_ = 0;
+pub const mjtFrame__mjFRAME_BODY: mjtFrame_ = 1;
+pub const mjtFrame__mjFRAME_GEOM: mjtFrame_ = 2;
+pub const mjtFrame__mjFRAME_SITE: mjtFrame_ = 3;
+pub const mjtFrame__mjFRAME_CAMERA: mjtFrame_ = 4;
+pub const mjtFrame__mjFRAME_LIGHT: mjtFrame_ = 5;
+pub const mjtFrame__mjFRAME_CONTACT: mjtFrame_ = 6;
+pub const mjtFrame__mjFRAME_WORLD: mjtFrame_ = 7;
+pub const mjtFrame__mjNFRAME: mjtFrame_ = 8;
+pub const mjFRAME_NONE: mjtFrame_ = 0;
+pub const mjFRAME_BODY: mjtFrame_ = 1;
+pub const mjFRAME_GEOM: mjtFrame_ = 2;
+pub const mjFRAME_SITE: mjtFrame_ = 3;
+pub const mjFRAME_CAMERA: mjtFrame_ = 4;
+pub const mjFRAME_LIGHT: mjtFrame_ = 5;
+pub const mjFRAME_CONTACT: mjtFrame_ = 6;
+pub const mjFRAME_WORLD: mjtFrame_ = 7;
+pub const mjNFRAME: mjtFrame_ = 8;
+
+/// C enum: mjtFramebuffer_
+pub type mjtFramebuffer_ = u32;
+pub const mjtFramebuffer__mjFB_WINDOW: mjtFramebuffer_ = 0;
+pub const mjtFramebuffer__mjFB_OFFSCREEN: mjtFramebuffer_ = 1;
+pub const mjFB_WINDOW: mjtFramebuffer_ = 0;
+pub const mjFB_OFFSCREEN: mjtFramebuffer_ = 1;
 
 /// C enum: mjtGain
 pub type mjtGain = u32;
@@ -3199,6 +3525,64 @@ pub type mjtGeomInertia = u32;
 pub const mjtGeomInertia_mjINERTIA_VOLUME: mjtGeomInertia = 0;
 pub const mjtGeomInertia_mjINERTIA_SHELL: mjtGeomInertia = 1;
 
+/// C enum: mjtGridPos_
+pub type mjtGridPos_ = u32;
+pub const mjtGridPos__mjGRID_TOPLEFT: mjtGridPos_ = 0;
+pub const mjtGridPos__mjGRID_TOPRIGHT: mjtGridPos_ = 1;
+pub const mjtGridPos__mjGRID_BOTTOMLEFT: mjtGridPos_ = 2;
+pub const mjtGridPos__mjGRID_BOTTOMRIGHT: mjtGridPos_ = 3;
+pub const mjtGridPos__mjGRID_TOP: mjtGridPos_ = 4;
+pub const mjtGridPos__mjGRID_BOTTOM: mjtGridPos_ = 5;
+pub const mjtGridPos__mjGRID_LEFT: mjtGridPos_ = 6;
+pub const mjtGridPos__mjGRID_RIGHT: mjtGridPos_ = 7;
+pub const mjGRID_TOPLEFT: mjtGridPos_ = 0;
+pub const mjGRID_TOPRIGHT: mjtGridPos_ = 1;
+pub const mjGRID_BOTTOMLEFT: mjtGridPos_ = 2;
+pub const mjGRID_BOTTOMRIGHT: mjtGridPos_ = 3;
+pub const mjGRID_TOP: mjtGridPos_ = 4;
+pub const mjGRID_BOTTOM: mjtGridPos_ = 5;
+pub const mjGRID_LEFT: mjtGridPos_ = 6;
+pub const mjGRID_RIGHT: mjtGridPos_ = 7;
+
+/// C enum: mjtInertiaFromGeom
+pub type mjtInertiaFromGeom = u32;
+pub const mjtInertiaFromGeom_mjINERTIAFROMGEOM_FALSE: mjtInertiaFromGeom = 0;
+pub const mjtInertiaFromGeom_mjINERTIAFROMGEOM_TRUE: mjtInertiaFromGeom = 1;
+pub const mjtInertiaFromGeom_mjINERTIAFROMGEOM_AUTO: mjtInertiaFromGeom = 2;
+
+/// C enum: mjtIntegrator
+pub type mjtIntegrator = u32;
+pub const mjtIntegrator_mjINT_EULER: mjtIntegrator = 0;
+pub const mjtIntegrator_mjINT_RK4: mjtIntegrator = 1;
+pub const mjtIntegrator_mjINT_IMPLICIT: mjtIntegrator = 2;
+pub const mjtIntegrator_mjINT_IMPLICITFAST: mjtIntegrator = 3;
+
+/// C enum: mjtItem
+pub type mjtItem = i32;
+pub const mjtItem_mjITEM_END: mjtItem = -2;
+pub const mjtItem_mjITEM_SECTION: mjtItem = -1;
+pub const mjtItem_mjITEM_SEPARATOR: mjtItem = 0;
+pub const mjtItem_mjITEM_STATIC: mjtItem = 1;
+pub const mjtItem_mjITEM_BUTTON: mjtItem = 2;
+pub const mjtItem_mjITEM_CHECKINT: mjtItem = 3;
+pub const mjtItem_mjITEM_CHECKBYTE: mjtItem = 4;
+pub const mjtItem_mjITEM_RADIO: mjtItem = 5;
+pub const mjtItem_mjITEM_RADIOLINE: mjtItem = 6;
+pub const mjtItem_mjITEM_SELECT: mjtItem = 7;
+pub const mjtItem_mjITEM_SLIDERINT: mjtItem = 8;
+pub const mjtItem_mjITEM_SLIDERNUM: mjtItem = 9;
+pub const mjtItem_mjITEM_EDITINT: mjtItem = 10;
+pub const mjtItem_mjITEM_EDITNUM: mjtItem = 11;
+pub const mjtItem_mjITEM_EDITFLOAT: mjtItem = 12;
+pub const mjtItem_mjITEM_EDITTXT: mjtItem = 13;
+pub const mjtItem_mjNITEM: mjtItem = 14;
+
+/// C enum: mjtJacobian
+pub type mjtJacobian = u32;
+pub const mjtJacobian_mjJAC_DENSE: mjtJacobian = 0;
+pub const mjtJacobian_mjJAC_SPARSE: mjtJacobian = 1;
+pub const mjtJacobian_mjJAC_AUTO: mjtJacobian = 2;
+
 /// C enum: mjtJoint
 pub type mjtJoint = u32;
 pub const mjtJoint_mjJNT_FREE: mjtJoint = 0;
@@ -3206,12 +3590,86 @@ pub const mjtJoint_mjJNT_BALL: mjtJoint = 1;
 pub const mjtJoint_mjJNT_SLIDE: mjtJoint = 2;
 pub const mjtJoint_mjJNT_HINGE: mjtJoint = 3;
 
+/// C enum: mjtLRMode
+pub type mjtLRMode = u32;
+pub const mjtLRMode_mjLRMODE_NONE: mjtLRMode = 0;
+pub const mjtLRMode_mjLRMODE_MUSCLE: mjtLRMode = 1;
+pub const mjtLRMode_mjLRMODE_MUSCLEUSER: mjtLRMode = 2;
+pub const mjtLRMode_mjLRMODE_ALL: mjtLRMode = 3;
+
+/// C enum: mjtLabel_
+pub type mjtLabel_ = u32;
+pub const mjtLabel__mjLABEL_NONE: mjtLabel_ = 0;
+pub const mjtLabel__mjLABEL_BODY: mjtLabel_ = 1;
+pub const mjtLabel__mjLABEL_JOINT: mjtLabel_ = 2;
+pub const mjtLabel__mjLABEL_GEOM: mjtLabel_ = 3;
+pub const mjtLabel__mjLABEL_SITE: mjtLabel_ = 4;
+pub const mjtLabel__mjLABEL_CAMERA: mjtLabel_ = 5;
+pub const mjtLabel__mjLABEL_LIGHT: mjtLabel_ = 6;
+pub const mjtLabel__mjLABEL_TENDON: mjtLabel_ = 7;
+pub const mjtLabel__mjLABEL_ACTUATOR: mjtLabel_ = 8;
+pub const mjtLabel__mjLABEL_CONSTRAINT: mjtLabel_ = 9;
+pub const mjtLabel__mjLABEL_FLEX: mjtLabel_ = 10;
+pub const mjtLabel__mjLABEL_SKIN: mjtLabel_ = 11;
+pub const mjtLabel__mjLABEL_SELECTION: mjtLabel_ = 12;
+pub const mjtLabel__mjLABEL_SELPNT: mjtLabel_ = 13;
+pub const mjtLabel__mjLABEL_CONTACTPOINT: mjtLabel_ = 14;
+pub const mjtLabel__mjLABEL_CONTACTFORCE: mjtLabel_ = 15;
+pub const mjtLabel__mjLABEL_ISLAND: mjtLabel_ = 16;
+pub const mjtLabel__mjNLABEL: mjtLabel_ = 17;
+pub const mjLABEL_NONE: mjtLabel_ = 0;
+pub const mjLABEL_BODY: mjtLabel_ = 1;
+pub const mjLABEL_JOINT: mjtLabel_ = 2;
+pub const mjLABEL_GEOM: mjtLabel_ = 3;
+pub const mjLABEL_SITE: mjtLabel_ = 4;
+pub const mjLABEL_CAMERA: mjtLabel_ = 5;
+pub const mjLABEL_LIGHT: mjtLabel_ = 6;
+pub const mjLABEL_TENDON: mjtLabel_ = 7;
+pub const mjLABEL_ACTUATOR: mjtLabel_ = 8;
+pub const mjLABEL_CONSTRAINT: mjtLabel_ = 9;
+pub const mjLABEL_FLEX: mjtLabel_ = 10;
+pub const mjLABEL_SKIN: mjtLabel_ = 11;
+pub const mjLABEL_SELECTION: mjtLabel_ = 12;
+pub const mjLABEL_SELPNT: mjtLabel_ = 13;
+pub const mjLABEL_CONTACTPOINT: mjtLabel_ = 14;
+pub const mjLABEL_CONTACTFORCE: mjtLabel_ = 15;
+pub const mjLABEL_ISLAND: mjtLabel_ = 16;
+pub const mjNLABEL: mjtLabel_ = 17;
+
 /// C enum: mjtLightType
 pub type mjtLightType = u32;
 pub const mjtLightType_mjLIGHT_SPOT: mjtLightType = 0;
 pub const mjtLightType_mjLIGHT_DIRECTIONAL: mjtLightType = 1;
 pub const mjtLightType_mjLIGHT_POINT: mjtLightType = 2;
 pub const mjtLightType_mjLIGHT_IMAGE: mjtLightType = 3;
+
+/// C enum: mjtLimited
+pub type mjtLimited = u32;
+pub const mjtLimited_mjLIMITED_FALSE: mjtLimited = 0;
+pub const mjtLimited_mjLIMITED_TRUE: mjtLimited = 1;
+pub const mjtLimited_mjLIMITED_AUTO: mjtLimited = 2;
+
+/// C enum: mjtLogLevel
+pub type mjtLogLevel = u32;
+pub const mjtLogLevel_mjLOG_DEBUG: mjtLogLevel = 0;
+pub const mjtLogLevel_mjLOG_INFO: mjtLogLevel = 1;
+pub const mjtLogLevel_mjLOG_WARNING: mjtLogLevel = 2;
+pub const mjtLogLevel_mjLOG_ERROR: mjtLogLevel = 3;
+
+/// C enum: mjtLogTopic
+pub type mjtLogTopic = u32;
+pub const mjtLogTopic_mjTOPIC_NONE: mjtLogTopic = 0;
+pub const mjtLogTopic_mjTOPIC_TIME_STP: mjtLogTopic = 1;
+pub const mjtLogTopic_mjTOPIC_TIME_CMP: mjtLogTopic = 2;
+pub const mjtLogTopic_mjTOPIC_SLEEP: mjtLogTopic = 3;
+pub const mjtLogTopic_mjNTOPIC: mjtLogTopic = 3;
+
+/// C enum: mjtMark
+pub type mjtMark = u32;
+pub const mjtMark_mjMARK_NONE: mjtMark = 0;
+pub const mjtMark_mjMARK_EDGE: mjtMark = 1;
+pub const mjtMark_mjMARK_CROSS: mjtMark = 2;
+pub const mjtMark_mjMARK_RANDOM: mjtMark = 3;
 
 /// C enum: mjtMeshBuiltin
 pub type mjtMeshBuiltin = u32;
@@ -3230,6 +3688,25 @@ pub const mjtMeshInertia_mjMESH_INERTIA_CONVEX: mjtMeshInertia = 0;
 pub const mjtMeshInertia_mjMESH_INERTIA_EXACT: mjtMeshInertia = 1;
 pub const mjtMeshInertia_mjMESH_INERTIA_LEGACY: mjtMeshInertia = 2;
 pub const mjtMeshInertia_mjMESH_INERTIA_SHELL: mjtMeshInertia = 3;
+
+/// C enum: mjtMouse_
+pub type mjtMouse_ = u32;
+pub const mjtMouse__mjMOUSE_NONE: mjtMouse_ = 0;
+pub const mjtMouse__mjMOUSE_ROTATE_V: mjtMouse_ = 1;
+pub const mjtMouse__mjMOUSE_ROTATE_H: mjtMouse_ = 2;
+pub const mjtMouse__mjMOUSE_MOVE_V: mjtMouse_ = 3;
+pub const mjtMouse__mjMOUSE_MOVE_H: mjtMouse_ = 4;
+pub const mjtMouse__mjMOUSE_ZOOM: mjtMouse_ = 5;
+pub const mjtMouse__mjMOUSE_MOVE_V_REL: mjtMouse_ = 6;
+pub const mjtMouse__mjMOUSE_MOVE_H_REL: mjtMouse_ = 7;
+pub const mjMOUSE_NONE: mjtMouse_ = 0;
+pub const mjMOUSE_ROTATE_V: mjtMouse_ = 1;
+pub const mjMOUSE_ROTATE_H: mjtMouse_ = 2;
+pub const mjMOUSE_MOVE_V: mjtMouse_ = 3;
+pub const mjMOUSE_MOVE_H: mjtMouse_ = 4;
+pub const mjMOUSE_ZOOM: mjtMouse_ = 5;
+pub const mjMOUSE_MOVE_V_REL: mjtMouse_ = 6;
+pub const mjMOUSE_MOVE_H_REL: mjtMouse_ = 7;
 
 /// C enum: mjtObj
 pub type mjtObj = u32;
@@ -3272,10 +3749,65 @@ pub const mjtOrientation_mjORIENTATION_XYAXES: mjtOrientation = 2;
 pub const mjtOrientation_mjORIENTATION_ZAXIS: mjtOrientation = 3;
 pub const mjtOrientation_mjORIENTATION_EULER: mjtOrientation = 4;
 
+/// C enum: mjtPertBit_
+pub type mjtPertBit_ = u32;
+pub const mjtPertBit__mjPERT_TRANSLATE: mjtPertBit_ = 1;
+pub const mjtPertBit__mjPERT_ROTATE: mjtPertBit_ = 2;
+pub const mjPERT_TRANSLATE: mjtPertBit_ = 1;
+pub const mjPERT_ROTATE: mjtPertBit_ = 2;
+
+/// C enum: mjtPluginCapabilityBit_
+pub type mjtPluginCapabilityBit_ = u32;
+pub const mjtPluginCapabilityBit__mjPLUGIN_ACTUATOR: mjtPluginCapabilityBit_ = 1;
+pub const mjtPluginCapabilityBit__mjPLUGIN_SENSOR: mjtPluginCapabilityBit_ = 2;
+pub const mjtPluginCapabilityBit__mjPLUGIN_PASSIVE: mjtPluginCapabilityBit_ = 4;
+pub const mjtPluginCapabilityBit__mjPLUGIN_SDF: mjtPluginCapabilityBit_ = 8;
+pub const mjPLUGIN_ACTUATOR: mjtPluginCapabilityBit_ = 1;
+pub const mjPLUGIN_SENSOR: mjtPluginCapabilityBit_ = 2;
+pub const mjPLUGIN_PASSIVE: mjtPluginCapabilityBit_ = 4;
+pub const mjPLUGIN_SDF: mjtPluginCapabilityBit_ = 8;
+
 /// C enum: mjtProjection
 pub type mjtProjection = u32;
 pub const mjtProjection_mjPROJ_PERSPECTIVE: mjtProjection = 0;
 pub const mjtProjection_mjPROJ_ORTHOGRAPHIC: mjtProjection = 1;
+
+/// C enum: mjtRayDataField
+pub type mjtRayDataField = u32;
+pub const mjtRayDataField_mjRAYDATA_DIST: mjtRayDataField = 0;
+pub const mjtRayDataField_mjRAYDATA_DIR: mjtRayDataField = 1;
+pub const mjtRayDataField_mjRAYDATA_ORIGIN: mjtRayDataField = 2;
+pub const mjtRayDataField_mjRAYDATA_POINT: mjtRayDataField = 3;
+pub const mjtRayDataField_mjRAYDATA_NORMAL: mjtRayDataField = 4;
+pub const mjtRayDataField_mjRAYDATA_DEPTH: mjtRayDataField = 5;
+pub const mjtRayDataField_mjNRAYDATA: mjtRayDataField = 6;
+
+/// C enum: mjtRndFlag_
+pub type mjtRndFlag_ = u32;
+pub const mjtRndFlag__mjRND_SHADOW: mjtRndFlag_ = 0;
+pub const mjtRndFlag__mjRND_WIREFRAME: mjtRndFlag_ = 1;
+pub const mjtRndFlag__mjRND_REFLECTION: mjtRndFlag_ = 2;
+pub const mjtRndFlag__mjRND_ADDITIVE: mjtRndFlag_ = 3;
+pub const mjtRndFlag__mjRND_SKYBOX: mjtRndFlag_ = 4;
+pub const mjtRndFlag__mjRND_FOG: mjtRndFlag_ = 5;
+pub const mjtRndFlag__mjRND_HAZE: mjtRndFlag_ = 6;
+pub const mjtRndFlag__mjRND_DEPTH: mjtRndFlag_ = 7;
+pub const mjtRndFlag__mjRND_SEGMENT: mjtRndFlag_ = 8;
+pub const mjtRndFlag__mjRND_IDCOLOR: mjtRndFlag_ = 9;
+pub const mjtRndFlag__mjRND_CULL_FACE: mjtRndFlag_ = 10;
+pub const mjtRndFlag__mjNRNDFLAG: mjtRndFlag_ = 11;
+pub const mjRND_SHADOW: mjtRndFlag_ = 0;
+pub const mjRND_WIREFRAME: mjtRndFlag_ = 1;
+pub const mjRND_REFLECTION: mjtRndFlag_ = 2;
+pub const mjRND_ADDITIVE: mjtRndFlag_ = 3;
+pub const mjRND_SKYBOX: mjtRndFlag_ = 4;
+pub const mjRND_FOG: mjtRndFlag_ = 5;
+pub const mjRND_HAZE: mjtRndFlag_ = 6;
+pub const mjRND_DEPTH: mjtRndFlag_ = 7;
+pub const mjRND_SEGMENT: mjtRndFlag_ = 8;
+pub const mjRND_IDCOLOR: mjtRndFlag_ = 9;
+pub const mjRND_CULL_FACE: mjtRndFlag_ = 10;
+pub const mjNRNDFLAG: mjtRndFlag_ = 11;
 
 /// C enum: mjtSDFType
 pub type mjtSDFType = u32;
@@ -3283,6 +3815,20 @@ pub const mjtSDFType_mjSDFTYPE_SINGLE: mjtSDFType = 0;
 pub const mjtSDFType_mjSDFTYPE_INTERSECTION: mjtSDFType = 1;
 pub const mjtSDFType_mjSDFTYPE_MIDSURFACE: mjtSDFType = 2;
 pub const mjtSDFType_mjSDFTYPE_COLLISION: mjtSDFType = 3;
+
+/// C enum: mjtSameFrame
+pub type mjtSameFrame = u32;
+pub const mjtSameFrame_mjSAMEFRAME_NONE: mjtSameFrame = 0;
+pub const mjtSameFrame_mjSAMEFRAME_BODY: mjtSameFrame = 1;
+pub const mjtSameFrame_mjSAMEFRAME_INERTIA: mjtSameFrame = 2;
+pub const mjtSameFrame_mjSAMEFRAME_BODYROT: mjtSameFrame = 3;
+pub const mjtSameFrame_mjSAMEFRAME_INERTIAROT: mjtSameFrame = 4;
+
+/// C enum: mjtSection
+pub type mjtSection = u32;
+pub const mjtSection_mjSECT_CLOSED: mjtSection = 0;
+pub const mjtSection_mjSECT_OPEN: mjtSection = 1;
+pub const mjtSection_mjSECT_FIXED: mjtSection = 2;
 
 /// C enum: mjtSensor
 pub type mjtSensor = u32;
@@ -3351,6 +3897,12 @@ pub const mjtSleepState_mjS_STATIC: mjtSleepState = -1;
 pub const mjtSleepState_mjS_ASLEEP: mjtSleepState = 0;
 pub const mjtSleepState_mjS_AWAKE: mjtSleepState = 1;
 
+/// C enum: mjtSolver
+pub type mjtSolver = u32;
+pub const mjtSolver_mjSOL_PGS: mjtSolver = 0;
+pub const mjtSolver_mjSOL_CG: mjtSolver = 1;
+pub const mjtSolver_mjSOL_NEWTON: mjtSolver = 2;
+
 /// C enum: mjtStage
 pub type mjtStage = u32;
 pub const mjtStage_mjSTAGE_NONE: mjtStage = 0;
@@ -3380,11 +3932,64 @@ pub const mjtState_mjSTATE_FULLPHYSICS: mjtState = 8223;
 pub const mjtState_mjSTATE_USER: mjtState = 8128;
 pub const mjtState_mjSTATE_INTEGRATION: mjtState = 16383;
 
+/// C enum: mjtStatusBoxQP
+pub type mjtStatusBoxQP = i32;
+pub const mjtStatusBoxQP_mjBOXQP_NOT_SPD: mjtStatusBoxQP = -1;
+pub const mjtStatusBoxQP_mjBOXQP_NO_DESCENT: mjtStatusBoxQP = 0;
+pub const mjtStatusBoxQP_mjBOXQP_MAX_ITER: mjtStatusBoxQP = 1;
+pub const mjtStatusBoxQP_mjBOXQP_MAX_LS_ITER: mjtStatusBoxQP = 2;
+pub const mjtStatusBoxQP_mjBOXQP_TOL_GRAD: mjtStatusBoxQP = 3;
+pub const mjtStatusBoxQP_mjBOXQP_UNBOUNDED: mjtStatusBoxQP = 4;
+pub const mjtStatusBoxQP_mjBOXQP_ALL_CLAMPED: mjtStatusBoxQP = 5;
+pub const mjtStatusBoxQP_mjNBOXQP: mjtStatusBoxQP = 7;
+
+/// C enum: mjtStereo_
+pub type mjtStereo_ = u32;
+pub const mjtStereo__mjSTEREO_NONE: mjtStereo_ = 0;
+pub const mjtStereo__mjSTEREO_QUADBUFFERED: mjtStereo_ = 1;
+pub const mjtStereo__mjSTEREO_SIDEBYSIDE: mjtStereo_ = 2;
+pub const mjSTEREO_NONE: mjtStereo_ = 0;
+pub const mjSTEREO_QUADBUFFERED: mjtStereo_ = 1;
+pub const mjSTEREO_SIDEBYSIDE: mjtStereo_ = 2;
+
 /// C enum: mjtTexture
 pub type mjtTexture = u32;
 pub const mjtTexture_mjTEXTURE_2D: mjtTexture = 0;
 pub const mjtTexture_mjTEXTURE_CUBE: mjtTexture = 1;
 pub const mjtTexture_mjTEXTURE_SKYBOX: mjtTexture = 2;
+
+/// C enum: mjtTextureRole
+pub type mjtTextureRole = u32;
+pub const mjtTextureRole_mjTEXROLE_USER: mjtTextureRole = 0;
+pub const mjtTextureRole_mjTEXROLE_RGB: mjtTextureRole = 1;
+pub const mjtTextureRole_mjTEXROLE_OCCLUSION: mjtTextureRole = 2;
+pub const mjtTextureRole_mjTEXROLE_ROUGHNESS: mjtTextureRole = 3;
+pub const mjtTextureRole_mjTEXROLE_METALLIC: mjtTextureRole = 4;
+pub const mjtTextureRole_mjTEXROLE_NORMAL: mjtTextureRole = 5;
+pub const mjtTextureRole_mjTEXROLE_OPACITY: mjtTextureRole = 6;
+pub const mjtTextureRole_mjTEXROLE_EMISSIVE: mjtTextureRole = 7;
+pub const mjtTextureRole_mjTEXROLE_RGBA: mjtTextureRole = 8;
+pub const mjtTextureRole_mjTEXROLE_ORM: mjtTextureRole = 9;
+pub const mjtTextureRole_mjNTEXROLE: mjtTextureRole = 10;
+
+/// C enum: mjtTimer
+pub type mjtTimer = u32;
+pub const mjtTimer_mjTIMER_STEP: mjtTimer = 0;
+pub const mjtTimer_mjTIMER_FORWARD: mjtTimer = 1;
+pub const mjtTimer_mjTIMER_INVERSE: mjtTimer = 2;
+pub const mjtTimer_mjTIMER_POSITION: mjtTimer = 3;
+pub const mjtTimer_mjTIMER_VELOCITY: mjtTimer = 4;
+pub const mjtTimer_mjTIMER_ACTUATION: mjtTimer = 5;
+pub const mjtTimer_mjTIMER_CONSTRAINT: mjtTimer = 6;
+pub const mjtTimer_mjTIMER_ADVANCE: mjtTimer = 7;
+pub const mjtTimer_mjTIMER_POS_KINEMATICS: mjtTimer = 8;
+pub const mjtTimer_mjTIMER_POS_INERTIA: mjtTimer = 9;
+pub const mjtTimer_mjTIMER_POS_COLLISION: mjtTimer = 10;
+pub const mjtTimer_mjTIMER_POS_MAKE: mjtTimer = 11;
+pub const mjtTimer_mjTIMER_POS_PROJECT: mjtTimer = 12;
+pub const mjtTimer_mjTIMER_COL_BROAD: mjtTimer = 13;
+pub const mjtTimer_mjTIMER_COL_NARROW: mjtTimer = 14;
+pub const mjtTimer_mjNTIMER: mjtTimer = 15;
 
 /// C enum: mjtTrn
 pub type mjtTrn = u32;
@@ -3396,6 +4001,84 @@ pub const mjtTrn_mjTRN_SITE: mjtTrn = 4;
 pub const mjtTrn_mjTRN_BODY: mjtTrn = 5;
 pub const mjtTrn_mjTRN_UNDEFINED: mjtTrn = 1000;
 
+/// C enum: mjtVisFlag_
+pub type mjtVisFlag_ = u32;
+pub const mjtVisFlag__mjVIS_CONVEXHULL: mjtVisFlag_ = 0;
+pub const mjtVisFlag__mjVIS_TEXTURE: mjtVisFlag_ = 1;
+pub const mjtVisFlag__mjVIS_JOINT: mjtVisFlag_ = 2;
+pub const mjtVisFlag__mjVIS_CAMERA: mjtVisFlag_ = 3;
+pub const mjtVisFlag__mjVIS_ACTUATOR: mjtVisFlag_ = 4;
+pub const mjtVisFlag__mjVIS_ACTIVATION: mjtVisFlag_ = 5;
+pub const mjtVisFlag__mjVIS_LIGHT: mjtVisFlag_ = 6;
+pub const mjtVisFlag__mjVIS_TENDON: mjtVisFlag_ = 7;
+pub const mjtVisFlag__mjVIS_RANGEFINDER: mjtVisFlag_ = 8;
+pub const mjtVisFlag__mjVIS_CONSTRAINT: mjtVisFlag_ = 9;
+pub const mjtVisFlag__mjVIS_INERTIA: mjtVisFlag_ = 10;
+pub const mjtVisFlag__mjVIS_SCLINERTIA: mjtVisFlag_ = 11;
+pub const mjtVisFlag__mjVIS_PERTFORCE: mjtVisFlag_ = 12;
+pub const mjtVisFlag__mjVIS_PERTOBJ: mjtVisFlag_ = 13;
+pub const mjtVisFlag__mjVIS_CONTACTPOINT: mjtVisFlag_ = 14;
+pub const mjtVisFlag__mjVIS_ISLAND: mjtVisFlag_ = 15;
+pub const mjtVisFlag__mjVIS_CONTACTFORCE: mjtVisFlag_ = 16;
+pub const mjtVisFlag__mjVIS_CONTACTSPLIT: mjtVisFlag_ = 17;
+pub const mjtVisFlag__mjVIS_TRANSPARENT: mjtVisFlag_ = 18;
+pub const mjtVisFlag__mjVIS_AUTOCONNECT: mjtVisFlag_ = 19;
+pub const mjtVisFlag__mjVIS_COM: mjtVisFlag_ = 20;
+pub const mjtVisFlag__mjVIS_SELECT: mjtVisFlag_ = 21;
+pub const mjtVisFlag__mjVIS_STATIC: mjtVisFlag_ = 22;
+pub const mjtVisFlag__mjVIS_SKIN: mjtVisFlag_ = 23;
+pub const mjtVisFlag__mjVIS_FLEXVERT: mjtVisFlag_ = 24;
+pub const mjtVisFlag__mjVIS_FLEXEDGE: mjtVisFlag_ = 25;
+pub const mjtVisFlag__mjVIS_FLEXFACE: mjtVisFlag_ = 26;
+pub const mjtVisFlag__mjVIS_FLEXSKIN: mjtVisFlag_ = 27;
+pub const mjtVisFlag__mjVIS_BODYBVH: mjtVisFlag_ = 28;
+pub const mjtVisFlag__mjVIS_MESHBVH: mjtVisFlag_ = 29;
+pub const mjtVisFlag__mjVIS_SDFITER: mjtVisFlag_ = 30;
+pub const mjtVisFlag__mjNVISFLAG: mjtVisFlag_ = 31;
+pub const mjVIS_CONVEXHULL: mjtVisFlag_ = 0;
+pub const mjVIS_TEXTURE: mjtVisFlag_ = 1;
+pub const mjVIS_JOINT: mjtVisFlag_ = 2;
+pub const mjVIS_CAMERA: mjtVisFlag_ = 3;
+pub const mjVIS_ACTUATOR: mjtVisFlag_ = 4;
+pub const mjVIS_ACTIVATION: mjtVisFlag_ = 5;
+pub const mjVIS_LIGHT: mjtVisFlag_ = 6;
+pub const mjVIS_TENDON: mjtVisFlag_ = 7;
+pub const mjVIS_RANGEFINDER: mjtVisFlag_ = 8;
+pub const mjVIS_CONSTRAINT: mjtVisFlag_ = 9;
+pub const mjVIS_INERTIA: mjtVisFlag_ = 10;
+pub const mjVIS_SCLINERTIA: mjtVisFlag_ = 11;
+pub const mjVIS_PERTFORCE: mjtVisFlag_ = 12;
+pub const mjVIS_PERTOBJ: mjtVisFlag_ = 13;
+pub const mjVIS_CONTACTPOINT: mjtVisFlag_ = 14;
+pub const mjVIS_ISLAND: mjtVisFlag_ = 15;
+pub const mjVIS_CONTACTFORCE: mjtVisFlag_ = 16;
+pub const mjVIS_CONTACTSPLIT: mjtVisFlag_ = 17;
+pub const mjVIS_TRANSPARENT: mjtVisFlag_ = 18;
+pub const mjVIS_AUTOCONNECT: mjtVisFlag_ = 19;
+pub const mjVIS_COM: mjtVisFlag_ = 20;
+pub const mjVIS_SELECT: mjtVisFlag_ = 21;
+pub const mjVIS_STATIC: mjtVisFlag_ = 22;
+pub const mjVIS_SKIN: mjtVisFlag_ = 23;
+pub const mjVIS_FLEXVERT: mjtVisFlag_ = 24;
+pub const mjVIS_FLEXEDGE: mjtVisFlag_ = 25;
+pub const mjVIS_FLEXFACE: mjtVisFlag_ = 26;
+pub const mjVIS_FLEXSKIN: mjtVisFlag_ = 27;
+pub const mjVIS_BODYBVH: mjtVisFlag_ = 28;
+pub const mjVIS_MESHBVH: mjtVisFlag_ = 29;
+pub const mjVIS_SDFITER: mjtVisFlag_ = 30;
+pub const mjNVISFLAG: mjtVisFlag_ = 31;
+
+/// C enum: mjtWarning
+pub type mjtWarning = u32;
+pub const mjtWarning_mjWARN_INERTIA: mjtWarning = 0;
+pub const mjtWarning_mjWARN_CONTACTFULL: mjtWarning = 1;
+pub const mjtWarning_mjWARN_CNSTRFULL: mjtWarning = 2;
+pub const mjtWarning_mjWARN_BADQPOS: mjtWarning = 3;
+pub const mjtWarning_mjWARN_BADQVEL: mjtWarning = 4;
+pub const mjtWarning_mjWARN_BADQACC: mjtWarning = 5;
+pub const mjtWarning_mjWARN_BADCTRL: mjtWarning = 6;
+pub const mjtWarning_mjNWARNING: mjtWarning = 7;
+
 /// C enum: mjtWrap
 pub type mjtWrap = u32;
 pub const mjtWrap_mjWRAP_NONE: mjtWrap = 0;
@@ -3404,6 +4087,12 @@ pub const mjtWrap_mjWRAP_PULLEY: mjtWrap = 2;
 pub const mjtWrap_mjWRAP_SITE: mjtWrap = 3;
 pub const mjtWrap_mjWRAP_SPHERE: mjtWrap = 4;
 pub const mjtWrap_mjWRAP_CYLINDER: mjtWrap = 5;
+
+/// C enum: mujoco::ResolveMerge
+pub type mujoco_ResolveMerge = u32;
+pub const mujoco_ResolveMerge_kMergeMin: mujoco_ResolveMerge = 0;
+pub const mujoco_ResolveMerge_kMergeMax: mujoco_ResolveMerge = 1;
+pub const mujoco_ResolveMerge_kMergeError: mujoco_ResolveMerge = 2;
 
 /// C enum: mujoco::user::VFS::Status
 pub type mujoco_user_VFS_Status = i32;
@@ -3416,8 +4105,273 @@ pub const mujoco_user_VFS_Status_kInvalidVfs: mujoco_user_VFS_Status = -1;
 pub const mujoco_user_VFS_Status_kInvalidResource: mujoco_user_VFS_Status = -1;
 pub const mujoco_user_VFS_Status_kInvalidResourceProvider: mujoco_user_VFS_Status = -1;
 
+/// C enum: qh_statistics
+pub type qh_statistics = u32;
+pub const qh_statistics_Zacoplanar: qh_statistics = 0;
+pub const qh_statistics_Wacoplanarmax: qh_statistics = 1;
+pub const qh_statistics_Wacoplanartot: qh_statistics = 2;
+pub const qh_statistics_Zangle: qh_statistics = 3;
+pub const qh_statistics_Wangle: qh_statistics = 4;
+pub const qh_statistics_Wanglemax: qh_statistics = 5;
+pub const qh_statistics_Wanglemin: qh_statistics = 6;
+pub const qh_statistics_Zangletests: qh_statistics = 7;
+pub const qh_statistics_Wareatot: qh_statistics = 8;
+pub const qh_statistics_Wareamax: qh_statistics = 9;
+pub const qh_statistics_Wareamin: qh_statistics = 10;
+pub const qh_statistics_Zavoidold: qh_statistics = 11;
+pub const qh_statistics_Wavoidoldmax: qh_statistics = 12;
+pub const qh_statistics_Wavoidoldtot: qh_statistics = 13;
+pub const qh_statistics_Zback0: qh_statistics = 14;
+pub const qh_statistics_Zbestcentrum: qh_statistics = 15;
+pub const qh_statistics_Zbestdist: qh_statistics = 16;
+pub const qh_statistics_Zbestlower: qh_statistics = 17;
+pub const qh_statistics_Zbestlowerall: qh_statistics = 18;
+pub const qh_statistics_Zbestloweralln: qh_statistics = 19;
+pub const qh_statistics_Zbestlowerv: qh_statistics = 20;
+pub const qh_statistics_Zcentrumtests: qh_statistics = 21;
+pub const qh_statistics_Zcheckpart: qh_statistics = 22;
+pub const qh_statistics_Zcomputefurthest: qh_statistics = 23;
+pub const qh_statistics_Zconcave: qh_statistics = 24;
+pub const qh_statistics_Wconcavemax: qh_statistics = 25;
+pub const qh_statistics_Wconcavetot: qh_statistics = 26;
+pub const qh_statistics_Zconcavecoplanar: qh_statistics = 27;
+pub const qh_statistics_Wconcavecoplanarmax: qh_statistics = 28;
+pub const qh_statistics_Wconcavecoplanartot: qh_statistics = 29;
+pub const qh_statistics_Zconcavecoplanarridge: qh_statistics = 30;
+pub const qh_statistics_Zconcaveridge: qh_statistics = 31;
+pub const qh_statistics_Zconcaveridges: qh_statistics = 32;
+pub const qh_statistics_Zcoplanar: qh_statistics = 33;
+pub const qh_statistics_Wcoplanarmax: qh_statistics = 34;
+pub const qh_statistics_Wcoplanartot: qh_statistics = 35;
+pub const qh_statistics_Zcoplanarangle: qh_statistics = 36;
+pub const qh_statistics_Zcoplanarcentrum: qh_statistics = 37;
+pub const qh_statistics_Zcoplanarhorizon: qh_statistics = 38;
+pub const qh_statistics_Zcoplanarinside: qh_statistics = 39;
+pub const qh_statistics_Zcoplanarpart: qh_statistics = 40;
+pub const qh_statistics_Zcoplanarridges: qh_statistics = 41;
+pub const qh_statistics_Wcpu: qh_statistics = 42;
+pub const qh_statistics_Zcyclefacetmax: qh_statistics = 43;
+pub const qh_statistics_Zcyclefacettot: qh_statistics = 44;
+pub const qh_statistics_Zcyclehorizon: qh_statistics = 45;
+pub const qh_statistics_Zcyclevertex: qh_statistics = 46;
+pub const qh_statistics_Zdegen: qh_statistics = 47;
+pub const qh_statistics_Wdegenmax: qh_statistics = 48;
+pub const qh_statistics_Wdegentot: qh_statistics = 49;
+pub const qh_statistics_Zdegenvertex: qh_statistics = 50;
+pub const qh_statistics_Zdelfacetdup: qh_statistics = 51;
+pub const qh_statistics_Zdelridge: qh_statistics = 52;
+pub const qh_statistics_Zdelvertextot: qh_statistics = 53;
+pub const qh_statistics_Zdelvertexmax: qh_statistics = 54;
+pub const qh_statistics_Zdetfacetarea: qh_statistics = 55;
+pub const qh_statistics_Zdetsimplex: qh_statistics = 56;
+pub const qh_statistics_Zdistcheck: qh_statistics = 57;
+pub const qh_statistics_Zdistconvex: qh_statistics = 58;
+pub const qh_statistics_Zdistgood: qh_statistics = 59;
+pub const qh_statistics_Zdistio: qh_statistics = 60;
+pub const qh_statistics_Zdistplane: qh_statistics = 61;
+pub const qh_statistics_Zdiststat: qh_statistics = 62;
+pub const qh_statistics_Zdistvertex: qh_statistics = 63;
+pub const qh_statistics_Zdistzero: qh_statistics = 64;
+pub const qh_statistics_Zdoc1: qh_statistics = 65;
+pub const qh_statistics_Zdoc2: qh_statistics = 66;
+pub const qh_statistics_Zdoc3: qh_statistics = 67;
+pub const qh_statistics_Zdoc4: qh_statistics = 68;
+pub const qh_statistics_Zdoc5: qh_statistics = 69;
+pub const qh_statistics_Zdoc6: qh_statistics = 70;
+pub const qh_statistics_Zdoc7: qh_statistics = 71;
+pub const qh_statistics_Zdoc8: qh_statistics = 72;
+pub const qh_statistics_Zdoc9: qh_statistics = 73;
+pub const qh_statistics_Zdoc10: qh_statistics = 74;
+pub const qh_statistics_Zdoc11: qh_statistics = 75;
+pub const qh_statistics_Zdoc12: qh_statistics = 76;
+pub const qh_statistics_Zdropdegen: qh_statistics = 77;
+pub const qh_statistics_Zdropneighbor: qh_statistics = 78;
+pub const qh_statistics_Zdupflip: qh_statistics = 79;
+pub const qh_statistics_Zduplicate: qh_statistics = 80;
+pub const qh_statistics_Wduplicatemax: qh_statistics = 81;
+pub const qh_statistics_Wduplicatetot: qh_statistics = 82;
+pub const qh_statistics_Zdupsame: qh_statistics = 83;
+pub const qh_statistics_Zflipped: qh_statistics = 84;
+pub const qh_statistics_Wflippedmax: qh_statistics = 85;
+pub const qh_statistics_Wflippedtot: qh_statistics = 86;
+pub const qh_statistics_Zflippedfacets: qh_statistics = 87;
+pub const qh_statistics_Zflipridge: qh_statistics = 88;
+pub const qh_statistics_Zflipridge2: qh_statistics = 89;
+pub const qh_statistics_Zfindbest: qh_statistics = 90;
+pub const qh_statistics_Zfindbestmax: qh_statistics = 91;
+pub const qh_statistics_Zfindbesttot: qh_statistics = 92;
+pub const qh_statistics_Zfindcoplanar: qh_statistics = 93;
+pub const qh_statistics_Zfindfail: qh_statistics = 94;
+pub const qh_statistics_Zfindhorizon: qh_statistics = 95;
+pub const qh_statistics_Zfindhorizonmax: qh_statistics = 96;
+pub const qh_statistics_Zfindhorizontot: qh_statistics = 97;
+pub const qh_statistics_Zfindjump: qh_statistics = 98;
+pub const qh_statistics_Zfindnew: qh_statistics = 99;
+pub const qh_statistics_Zfindnewmax: qh_statistics = 100;
+pub const qh_statistics_Zfindnewtot: qh_statistics = 101;
+pub const qh_statistics_Zfindnewjump: qh_statistics = 102;
+pub const qh_statistics_Zfindnewsharp: qh_statistics = 103;
+pub const qh_statistics_Zgauss0: qh_statistics = 104;
+pub const qh_statistics_Zgoodfacet: qh_statistics = 105;
+pub const qh_statistics_Zhashlookup: qh_statistics = 106;
+pub const qh_statistics_Zhashridge: qh_statistics = 107;
+pub const qh_statistics_Zhashridgetest: qh_statistics = 108;
+pub const qh_statistics_Zhashtests: qh_statistics = 109;
+pub const qh_statistics_Zinsidevisible: qh_statistics = 110;
+pub const qh_statistics_Zintersect: qh_statistics = 111;
+pub const qh_statistics_Zintersectfail: qh_statistics = 112;
+pub const qh_statistics_Zintersectmax: qh_statistics = 113;
+pub const qh_statistics_Zintersectnum: qh_statistics = 114;
+pub const qh_statistics_Zintersecttot: qh_statistics = 115;
+pub const qh_statistics_Zmaxneighbors: qh_statistics = 116;
+pub const qh_statistics_Wmaxout: qh_statistics = 117;
+pub const qh_statistics_Wmaxoutside: qh_statistics = 118;
+pub const qh_statistics_Zmaxridges: qh_statistics = 119;
+pub const qh_statistics_Zmaxvertex: qh_statistics = 120;
+pub const qh_statistics_Zmaxvertices: qh_statistics = 121;
+pub const qh_statistics_Zmaxvneighbors: qh_statistics = 122;
+pub const qh_statistics_Zmemfacets: qh_statistics = 123;
+pub const qh_statistics_Zmempoints: qh_statistics = 124;
+pub const qh_statistics_Zmemridges: qh_statistics = 125;
+pub const qh_statistics_Zmemvertices: qh_statistics = 126;
+pub const qh_statistics_Zmergeflipdup: qh_statistics = 127;
+pub const qh_statistics_Zmergehorizon: qh_statistics = 128;
+pub const qh_statistics_Zmergeinittot: qh_statistics = 129;
+pub const qh_statistics_Zmergeinitmax: qh_statistics = 130;
+pub const qh_statistics_Zmergeinittot2: qh_statistics = 131;
+pub const qh_statistics_Zmergeintocoplanar: qh_statistics = 132;
+pub const qh_statistics_Zmergeintohorizon: qh_statistics = 133;
+pub const qh_statistics_Zmergenew: qh_statistics = 134;
+pub const qh_statistics_Zmergesettot: qh_statistics = 135;
+pub const qh_statistics_Zmergesetmax: qh_statistics = 136;
+pub const qh_statistics_Zmergesettot2: qh_statistics = 137;
+pub const qh_statistics_Zmergesimplex: qh_statistics = 138;
+pub const qh_statistics_Zmergevertex: qh_statistics = 139;
+pub const qh_statistics_Wmindenom: qh_statistics = 140;
+pub const qh_statistics_Wminvertex: qh_statistics = 141;
+pub const qh_statistics_Zminnorm: qh_statistics = 142;
+pub const qh_statistics_Zmultiridge: qh_statistics = 143;
+pub const qh_statistics_Znearlysingular: qh_statistics = 144;
+pub const qh_statistics_Zredundant: qh_statistics = 145;
+pub const qh_statistics_Wnewbalance: qh_statistics = 146;
+pub const qh_statistics_Wnewbalance2: qh_statistics = 147;
+pub const qh_statistics_Znewbesthorizon: qh_statistics = 148;
+pub const qh_statistics_Znewfacettot: qh_statistics = 149;
+pub const qh_statistics_Znewfacetmax: qh_statistics = 150;
+pub const qh_statistics_Znewvertex: qh_statistics = 151;
+pub const qh_statistics_Wnewvertex: qh_statistics = 152;
+pub const qh_statistics_Wnewvertexmax: qh_statistics = 153;
+pub const qh_statistics_Znewvertexridge: qh_statistics = 154;
+pub const qh_statistics_Znoarea: qh_statistics = 155;
+pub const qh_statistics_Znonsimplicial: qh_statistics = 156;
+pub const qh_statistics_Znowsimplicial: qh_statistics = 157;
+pub const qh_statistics_Znotgood: qh_statistics = 158;
+pub const qh_statistics_Znotgoodnew: qh_statistics = 159;
+pub const qh_statistics_Znotmax: qh_statistics = 160;
+pub const qh_statistics_Znumfacets: qh_statistics = 161;
+pub const qh_statistics_Znummergemax: qh_statistics = 162;
+pub const qh_statistics_Znummergetot: qh_statistics = 163;
+pub const qh_statistics_Znumneighbors: qh_statistics = 164;
+pub const qh_statistics_Znumridges: qh_statistics = 165;
+pub const qh_statistics_Znumvertices: qh_statistics = 166;
+pub const qh_statistics_Znumvisibility: qh_statistics = 167;
+pub const qh_statistics_Znumvneighbors: qh_statistics = 168;
+pub const qh_statistics_Zonehorizon: qh_statistics = 169;
+pub const qh_statistics_Zpartangle: qh_statistics = 170;
+pub const qh_statistics_Zpartcoplanar: qh_statistics = 171;
+pub const qh_statistics_Zpartcorner: qh_statistics = 172;
+pub const qh_statistics_Zparthidden: qh_statistics = 173;
+pub const qh_statistics_Zpartinside: qh_statistics = 174;
+pub const qh_statistics_Zpartition: qh_statistics = 175;
+pub const qh_statistics_Zpartitionall: qh_statistics = 176;
+pub const qh_statistics_Zpartnear: qh_statistics = 177;
+pub const qh_statistics_Zparttwisted: qh_statistics = 178;
+pub const qh_statistics_Zpbalance: qh_statistics = 179;
+pub const qh_statistics_Wpbalance: qh_statistics = 180;
+pub const qh_statistics_Wpbalance2: qh_statistics = 181;
+pub const qh_statistics_Zpinchduplicate: qh_statistics = 182;
+pub const qh_statistics_Zpinchedapex: qh_statistics = 183;
+pub const qh_statistics_Zpinchedvertex: qh_statistics = 184;
+pub const qh_statistics_Zpostfacets: qh_statistics = 185;
+pub const qh_statistics_Zpremergetot: qh_statistics = 186;
+pub const qh_statistics_Zprocessed: qh_statistics = 187;
+pub const qh_statistics_Zremvertex: qh_statistics = 188;
+pub const qh_statistics_Zremvertexdel: qh_statistics = 189;
+pub const qh_statistics_Zredundantmerge: qh_statistics = 190;
+pub const qh_statistics_Zrenameall: qh_statistics = 191;
+pub const qh_statistics_Zrenamepinch: qh_statistics = 192;
+pub const qh_statistics_Zrenameshare: qh_statistics = 193;
+pub const qh_statistics_Zretry: qh_statistics = 194;
+pub const qh_statistics_Wretrymax: qh_statistics = 195;
+pub const qh_statistics_Zretryadd: qh_statistics = 196;
+pub const qh_statistics_Zretryaddmax: qh_statistics = 197;
+pub const qh_statistics_Zretryaddtot: qh_statistics = 198;
+pub const qh_statistics_Zridge: qh_statistics = 199;
+pub const qh_statistics_Wridge: qh_statistics = 200;
+pub const qh_statistics_Wridgemax: qh_statistics = 201;
+pub const qh_statistics_Zridge0: qh_statistics = 202;
+pub const qh_statistics_Wridge0: qh_statistics = 203;
+pub const qh_statistics_Wridge0max: qh_statistics = 204;
+pub const qh_statistics_Zridgemid: qh_statistics = 205;
+pub const qh_statistics_Wridgemid: qh_statistics = 206;
+pub const qh_statistics_Wridgemidmax: qh_statistics = 207;
+pub const qh_statistics_Zridgeok: qh_statistics = 208;
+pub const qh_statistics_Wridgeok: qh_statistics = 209;
+pub const qh_statistics_Wridgeokmax: qh_statistics = 210;
+pub const qh_statistics_Zsearchpoints: qh_statistics = 211;
+pub const qh_statistics_Zsetplane: qh_statistics = 212;
+pub const qh_statistics_Ztestvneighbor: qh_statistics = 213;
+pub const qh_statistics_Ztotcheck: qh_statistics = 214;
+pub const qh_statistics_Ztothorizon: qh_statistics = 215;
+pub const qh_statistics_Ztotmerge: qh_statistics = 216;
+pub const qh_statistics_Ztotpartcoplanar: qh_statistics = 217;
+pub const qh_statistics_Ztotpartition: qh_statistics = 218;
+pub const qh_statistics_Ztotridges: qh_statistics = 219;
+pub const qh_statistics_Ztotvertices: qh_statistics = 220;
+pub const qh_statistics_Ztotvisible: qh_statistics = 221;
+pub const qh_statistics_Ztricoplanar: qh_statistics = 222;
+pub const qh_statistics_Ztricoplanarmax: qh_statistics = 223;
+pub const qh_statistics_Ztricoplanartot: qh_statistics = 224;
+pub const qh_statistics_Ztridegen: qh_statistics = 225;
+pub const qh_statistics_Ztrimirror: qh_statistics = 226;
+pub const qh_statistics_Ztrinull: qh_statistics = 227;
+pub const qh_statistics_Ztwisted: qh_statistics = 228;
+pub const qh_statistics_Wtwistedtot: qh_statistics = 229;
+pub const qh_statistics_Wtwistedmax: qh_statistics = 230;
+pub const qh_statistics_Ztwistedridge: qh_statistics = 231;
+pub const qh_statistics_Zvertextests: qh_statistics = 232;
+pub const qh_statistics_Wvertexmax: qh_statistics = 233;
+pub const qh_statistics_Wvertexmin: qh_statistics = 234;
+pub const qh_statistics_Zvertexridge: qh_statistics = 235;
+pub const qh_statistics_Zvertexridgetot: qh_statistics = 236;
+pub const qh_statistics_Zvertexridgemax: qh_statistics = 237;
+pub const qh_statistics_Zvertices: qh_statistics = 238;
+pub const qh_statistics_Zvisfacettot: qh_statistics = 239;
+pub const qh_statistics_Zvisfacetmax: qh_statistics = 240;
+pub const qh_statistics_Zvisit: qh_statistics = 241;
+pub const qh_statistics_Zvisit2max: qh_statistics = 242;
+pub const qh_statistics_Zvisvertextot: qh_statistics = 243;
+pub const qh_statistics_Zvisvertexmax: qh_statistics = 244;
+pub const qh_statistics_Zvvisit: qh_statistics = 245;
+pub const qh_statistics_Zvvisit2max: qh_statistics = 246;
+pub const qh_statistics_Zwidefacet: qh_statistics = 247;
+pub const qh_statistics_Zwidevertices: qh_statistics = 248;
+pub const qh_statistics_ZEND: qh_statistics = 249;
+
 /// C enum: std::byte
 pub type std_byte = u8;
+
+/// C enum: tinyxml2::StrPair::Mode
+pub type tinyxml2_StrPair_Mode = u32;
+pub const tinyxml2_StrPair_Mode_NEEDS_ENTITY_PROCESSING: tinyxml2_StrPair_Mode = 1;
+pub const tinyxml2_StrPair_Mode_NEEDS_NEWLINE_NORMALIZATION: tinyxml2_StrPair_Mode = 2;
+pub const tinyxml2_StrPair_Mode_NEEDS_WHITESPACE_COLLAPSING: tinyxml2_StrPair_Mode = 4;
+pub const tinyxml2_StrPair_Mode_TEXT_ELEMENT: tinyxml2_StrPair_Mode = 3;
+pub const tinyxml2_StrPair_Mode_TEXT_ELEMENT_LEAVE_ENTITIES: tinyxml2_StrPair_Mode = 2;
+pub const tinyxml2_StrPair_Mode_ATTRIBUTE_NAME: tinyxml2_StrPair_Mode = 0;
+pub const tinyxml2_StrPair_Mode_ATTRIBUTE_VALUE: tinyxml2_StrPair_Mode = 3;
+pub const tinyxml2_StrPair_Mode_ATTRIBUTE_VALUE_LEAVE_ENTITIES: tinyxml2_StrPair_Mode = 2;
+pub const tinyxml2_StrPair_Mode_COMMENT: tinyxml2_StrPair_Mode = 2;
 
 /// C enum: tinyxml2::Whitespace
 pub type tinyxml2_Whitespace = u32;
@@ -3454,6 +4408,24 @@ pub const tinyxml2_XMLError_XML_NO_TEXT_NODE: tinyxml2_XMLError = 17;
 pub const tinyxml2_XMLError_XML_ELEMENT_DEPTH_EXCEEDED: tinyxml2_XMLError = 18;
 pub const tinyxml2_XMLError_XML_ERROR_COUNT: tinyxml2_XMLError = 19;
 
+/// C enum: tinyxml2::XMLPrinter::EscapeAposCharsInAttributes
+pub type tinyxml2_XMLPrinter_EscapeAposCharsInAttributes = u32;
+pub const tinyxml2_XMLPrinter_EscapeAposCharsInAttributes_ESCAPE_APOS_CHARS_IN_ATTRIBUTES: tinyxml2_XMLPrinter_EscapeAposCharsInAttributes = 0;
+pub const tinyxml2_XMLPrinter_EscapeAposCharsInAttributes_DONT_ESCAPE_APOS_CHARS_IN_ATTRIBUTES: tinyxml2_XMLPrinter_EscapeAposCharsInAttributes = 1;
+
+/// C enum: ztypes
+pub type ztypes = u32;
+pub const ztypes_zdoc: ztypes = 0;
+pub const ztypes_zinc: ztypes = 1;
+pub const ztypes_zadd: ztypes = 2;
+pub const ztypes_zmax: ztypes = 3;
+pub const ztypes_zmin: ztypes = 4;
+pub const ztypes_ZTYPEreal: ztypes = 5;
+pub const ztypes_wadd: ztypes = 6;
+pub const ztypes_wmax: ztypes = 7;
+pub const ztypes_wmin: ztypes = 8;
+pub const ztypes_ZTYPEend: ztypes = 9;
+
 /// C struct: BufferProvider (120 bytes, align 8)
 #[repr(C, align(8))]
 #[derive(Clone, Copy)]
@@ -3466,7 +4438,7 @@ pub struct BufferProvider {
     pub unmount: mjfUnmountResource,
     pub modified: mjfResourceModified,
     pub data: *mut (),
-    pub path_: mujoco__user__FilePath,
+    pub path_: anonymous_namespace___FilePath,
     pub contents_: [u8; 24],
     pub hash_: u64,
 }

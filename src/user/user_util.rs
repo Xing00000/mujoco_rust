@@ -1,5 +1,5 @@
 //! Port of: user/user_util.cc
-//! IR hash: 190f29be1f1f223b
+//! IR hash: 27e6fdf33868fa8b
 //! CODEGEN: signatures locked. Only fill todo!() bodies.
 
 use crate::types::*;
@@ -980,70 +980,70 @@ pub fn mjuu_full_inertia(quat: *mut f64, inertia: *mut f64, fullinertia: *const 
 /// C: FilePath::IsAbs (user/user_util.h:191)
 /// Calls: FilePath::AbsPrefix
 #[allow(unused_variables, non_snake_case)]
-pub fn file_path_is_abs(self_ptr: *mut mujoco__user__FilePath) -> bool {
+pub fn file_path_is_abs(self_ptr: *mut anonymous_namespace___FilePath) -> bool {
     todo!() // FilePath::IsAbs
 }
 
 /// C: FilePath::AbsPrefix (user/user_util.h:195)
 #[allow(unused_variables, non_snake_case)]
-pub fn file_path_abs_prefix(self_ptr: *mut mujoco__user__FilePath) -> std__string {
+pub fn file_path_abs_prefix(self_ptr: *mut anonymous_namespace___FilePath) -> std__string {
     todo!() // FilePath::AbsPrefix
 }
 
 /// C: FilePath::Str (user/user_util.h:198)
 #[allow(unused_variables, non_snake_case)]
-pub fn file_path_str(self_ptr: *mut mujoco__user__FilePath) -> *const std__string {
+pub fn file_path_str(self_ptr: *mut anonymous_namespace___FilePath) -> *const std__string {
     todo!() // FilePath::Str
 }
 
 /// C: FilePath::StrLower (user/user_util.h:202)
 #[allow(unused_variables, non_snake_case)]
-pub fn file_path_str_lower(self_ptr: *mut mujoco__user__FilePath) -> std__string {
+pub fn file_path_str_lower(self_ptr: *mut anonymous_namespace___FilePath) -> std__string {
     todo!() // FilePath::StrLower
 }
 
 /// C: FilePath::Ext (user/user_util.h:205)
 #[allow(unused_variables, non_snake_case)]
-pub fn file_path_ext(self_ptr: *mut mujoco__user__FilePath) -> std__string {
+pub fn file_path_ext(self_ptr: *mut anonymous_namespace___FilePath) -> std__string {
     todo!() // FilePath::Ext
 }
 
 /// C: FilePath::StripExt (user/user_util.h:211)
 /// Calls: FilePath::FilePathFast
 #[allow(unused_variables, non_snake_case)]
-pub fn file_path_strip_ext(self_ptr: *mut mujoco__user__FilePath) -> mujoco__user__FilePath {
+pub fn file_path_strip_ext(self_ptr: *mut anonymous_namespace___FilePath) -> mujoco__user__FilePath {
     todo!() // FilePath::StripExt
 }
 
 /// C: FilePath::StripPath (user/user_util.h:214)
 /// Calls: FilePath::FilePathFast
 #[allow(unused_variables, non_snake_case)]
-pub fn file_path_strip_path(self_ptr: *mut mujoco__user__FilePath) -> mujoco__user__FilePath {
+pub fn file_path_strip_path(self_ptr: *mut anonymous_namespace___FilePath) -> mujoco__user__FilePath {
     todo!() // FilePath::StripPath
 }
 
 /// C: FilePath::Lower (user/user_util.h:217)
 /// Calls: FilePath::FilePathFast, FilePath::StrLower
 #[allow(unused_variables, non_snake_case)]
-pub fn file_path_lower(self_ptr: *mut mujoco__user__FilePath) -> mujoco__user__FilePath {
+pub fn file_path_lower(self_ptr: *mut anonymous_namespace___FilePath) -> mujoco__user__FilePath {
     todo!() // FilePath::Lower
 }
 
 /// C: FilePath::size (user/user_util.h:220)
 #[allow(unused_variables, non_snake_case)]
-pub fn file_path_size(self_ptr: *mut mujoco__user__FilePath) -> u64 {
+pub fn file_path_size(self_ptr: *mut anonymous_namespace___FilePath) -> u64 {
     todo!() // FilePath::size
 }
 
 /// C: FilePath::c_str (user/user_util.h:221)
 #[allow(unused_variables, non_snake_case)]
-pub fn file_path_c_str(self_ptr: *mut mujoco__user__FilePath) -> *const i8 {
+pub fn file_path_c_str(self_ptr: *mut anonymous_namespace___FilePath) -> *const i8 {
     todo!() // FilePath::c_str
 }
 
 /// C: FilePath::empty (user/user_util.h:222)
 #[allow(unused_variables, non_snake_case)]
-pub fn file_path_empty(self_ptr: *mut mujoco__user__FilePath) -> bool {
+pub fn file_path_empty(self_ptr: *mut anonymous_namespace___FilePath) -> bool {
     todo!() // FilePath::empty
 }
 
