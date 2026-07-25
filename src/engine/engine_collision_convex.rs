@@ -973,14 +973,214 @@ pub fn mjc_center(res: *mut f64, obj: *const mjCCDObj) {
 /// Calls: mjc_center
 #[allow(unused_variables, non_snake_case)]
 pub fn mjccd_center(obj: *const (), center: *mut ccd_vec3_t) {
-    todo!() // mjccd_center
+    // SAFETY: obj is actually a *const mjCCDObj. center.v is [u8;24] but represents [f64;3].
+    unsafe {
+        let v_ptr = (*center).v.as_mut_ptr() as *mut f64;
+        mjc_center(v_ptr, obj as *const mjCCDObj);
+    }
 }
 
 /// C: mjccd_support (engine/engine_collision_convex.h:103)
 /// Calls: mjc_prism_support, mji_addScl3, mji_addTo3, mji_addToScl3, mji_copy3, mji_scl3, mju_dot3, mju_message, mju_mulMatTVec3, mju_mulMatVec3, mju_normalize3, mju_sign, mju_warning, mju_zero3
 #[allow(unused_variables, non_snake_case)]
 pub fn mjccd_support(obj: *const (), dir: *const ccd_vec3_t, vec: *mut ccd_vec3_t) {
-    todo!() // mjccd_support
+    // SAFETY: obj is actually *mut mjCCDObj. dir.v and vec.v are [u8;24] representing [f64;3].
+    // All pointer arithmetic follows the C original exactly.
+    unsafe {
+        let obj = obj as *mut mjCCDObj;
+        let res: *mut f64 = (*vec).v.as_mut_ptr() as *mut f64;
+        let dir: *const f64 = (*dir).v.as_ptr() as *const f64;
+        let g = (*obj).geom;
+
+        const MJ_MINVAL: f64 = 1E-15;
+        const MJ_GEOM_HFIELD: i32 = 1;
+        const MJ_GEOM_SPHERE: i32 = 2;
+        const MJ_GEOM_CAPSULE: i32 = 3;
+        const MJ_GEOM_ELLIPSOID: i32 = 4;
+        const MJ_GEOM_CYLINDER: i32 = 5;
+        const MJ_GEOM_BOX: i32 = 6;
+        const MJ_GEOM_MESH: i32 = 7;
+        const MJ_GEOM_SDF: i32 = 8;
+
+        // flex support (g < 0)
+        if g < 0 {
+            let f = (*obj).flex;
+            let data_ptr = (*obj).data._data.as_ptr();
+            let flex_elem = *(data_ptr.add(0) as *const *const i32);
+            let flex_dim = *(data_ptr.add(8) as *const *const i32);
+            let flex_elemdataadr = *(data_ptr.add(32) as *const *const i32);
+            let flex_vert_xpos = *(data_ptr.add(40) as *const *const f64);
+            let flex_vertadr = *(data_ptr.add(48) as *const *const i32);
+            let flex_xradius = *(data_ptr.add(56) as *const *const f64);
+            let dim = *flex_dim.add(f as usize);
+
+            // flex element
+            if (*obj).elem >= 0 {
+                let e = (*obj).elem;
+                let edata = flex_elem.add(
+                    *flex_elemdataadr.add(f as usize) as usize + (e * (dim + 1)) as usize);
+                let vert = flex_vert_xpos.add(3 * *flex_vertadr.add(f as usize) as usize);
+
+                crate::engine::engine_inline::mji_copy3(res, vert.add(3 * *edata.add(0) as usize));
+                let mut best = crate::engine::engine_util_blas::mju_dot3(res, dir);
+                for i in 1..=dim {
+                    let dot = crate::engine::engine_util_blas::mju_dot3(
+                        vert.add(3 * *edata.add(i as usize) as usize), dir);
+                    if dot > best {
+                        best = dot;
+                        crate::engine::engine_inline::mji_copy3(
+                            res, vert.add(3 * *edata.add(i as usize) as usize));
+                    }
+                }
+                crate::engine::engine_inline::mji_add_to_scl3(
+                    res, dir, *flex_xradius.add(f as usize) + 0.5 * (*obj).margin);
+                return;
+            }
+            // flex vertex
+            else {
+                let vert = flex_vert_xpos.add(
+                    3 * (*flex_vertadr.add(f as usize) + (*obj).vert) as usize);
+                crate::engine::engine_inline::mji_add_scl3(
+                    res, vert, dir, *flex_xradius.add(f as usize) + 0.5 * (*obj).margin);
+                return;
+            }
+        }
+
+        let size = (*obj).size.as_ptr();
+        let mut local_dir: [f64; 3] = [0.0; 3];
+
+        // rotate dir to geom local frame
+        crate::engine::engine_util_blas::mju_mul_mat_t_vec3(
+            local_dir.as_mut_ptr(), (*obj).mat.as_ptr(), dir);
+
+        // compute result according to geom type
+        match (*obj).geom_type {
+            MJ_GEOM_SPHERE => {
+                crate::engine::engine_inline::mji_scl3(res, local_dir.as_ptr(), *size.add(0));
+            }
+
+            MJ_GEOM_CAPSULE => {
+                crate::engine::engine_inline::mji_scl3(res, local_dir.as_ptr(), *size.add(0));
+                *res.add(2) += crate::engine::engine_util_misc::mju_sign(local_dir[2]) * *size.add(1);
+            }
+
+            MJ_GEOM_ELLIPSOID => {
+                for i in 0..3_usize {
+                    *res.add(i) = local_dir[i] * *size.add(i);
+                }
+                crate::engine::engine_util_blas::mju_normalize3(res);
+                for i in 0..3_usize {
+                    *res.add(i) *= *size.add(i);
+                }
+            }
+
+            MJ_GEOM_CYLINDER => {
+                let tmp = f64::sqrt(local_dir[0] * local_dir[0] + local_dir[1] * local_dir[1]);
+                if tmp > MJ_MINVAL {
+                    *res.add(0) = local_dir[0] / tmp * *size.add(0);
+                    *res.add(1) = local_dir[1] / tmp * *size.add(0);
+                } else {
+                    *res.add(0) = 0.0;
+                    *res.add(1) = 0.0;
+                }
+                *res.add(2) = crate::engine::engine_util_misc::mju_sign(local_dir[2]) * *size.add(1);
+            }
+
+            MJ_GEOM_BOX => {
+                for i in 0..3_usize {
+                    *res.add(i) = crate::engine::engine_util_misc::mju_sign(local_dir[i]) * *size.add(i);
+                }
+            }
+
+            MJ_GEOM_MESH | MJ_GEOM_SDF => {
+                let data_ptr = (*obj).data._data.as_ptr();
+                let vertdata = *(data_ptr.add(8) as *const *const f32);
+                let mut tmp: f64 = -1E+10;
+                let mut ibest: i32 = -1;
+
+                // check if graph is available (offset 72 in mesh union = graph pointer)
+                let graph = *(data_ptr.add(72) as *const *const i32);
+
+                if graph.is_null() {
+                    // no graph: exhaustive search
+                    let nvert = *(data_ptr as *const i32);
+                    for i in 0..nvert {
+                        let vdot = local_dir[0] * *vertdata.add(3 * i as usize + 0) as f64
+                                 + local_dir[1] * *vertdata.add(3 * i as usize + 1) as f64
+                                 + local_dir[2] * *vertdata.add(3 * i as usize + 2) as f64;
+                        if vdot > tmp {
+                            tmp = vdot;
+                            ibest = i;
+                        }
+                    }
+                    (*obj).meshindex = ibest;
+                } else {
+                    // hill-climb using graph
+                    let numvert = *graph.add(0);
+                    let vert_edgeadr = graph.add(2);
+                    let vert_globalid = graph.add(2 + numvert as usize);
+                    let edge_localid = graph.add(2 + 2 * numvert as usize);
+
+                    ibest = if (*obj).meshindex < 0 { 0 } else { (*obj).meshindex };
+                    tmp = local_dir[0] * *vertdata.add(3 * *vert_globalid.add(ibest as usize) as usize + 0) as f64
+                        + local_dir[1] * *vertdata.add(3 * *vert_globalid.add(ibest as usize) as usize + 1) as f64
+                        + local_dir[2] * *vertdata.add(3 * *vert_globalid.add(ibest as usize) as usize + 2) as f64;
+
+                    let mut change: i32 = 1;
+                    while change != 0 {
+                        change = 0;
+                        let mut i = *vert_edgeadr.add(ibest as usize);
+                        loop {
+                            let locid = *edge_localid.add(i as usize);
+                            if locid < 0 { break; }
+                            let vdot = local_dir[0] * *vertdata.add(3 * *vert_globalid.add(locid as usize) as usize) as f64
+                                     + local_dir[1] * *vertdata.add(3 * *vert_globalid.add(locid as usize) as usize + 1) as f64
+                                     + local_dir[2] * *vertdata.add(3 * *vert_globalid.add(locid as usize) as usize + 2) as f64;
+                            if vdot > tmp {
+                                tmp = vdot;
+                                ibest = locid;
+                                change = 1;
+                            }
+                            i += 1;
+                        }
+                    }
+                    (*obj).meshindex = ibest;
+                    ibest = *vert_globalid.add(ibest as usize);
+                }
+
+                if ibest < 0 {
+                    crate::engine::engine_util_errmem::mju_warning(
+                        b"mesh_support could not find support vertex\0".as_ptr() as *const i8);
+                    crate::engine::engine_util_blas::mju_zero3(res);
+                } else {
+                    for i in 0..3_usize {
+                        *res.add(i) = *vertdata.add(3 * ibest as usize + i) as f64;
+                    }
+                }
+            }
+
+            MJ_GEOM_HFIELD => {
+                mjc_prism_support(res, obj, dir);
+                return;
+            }
+
+            _ => {
+                crate::engine::engine_util_errmem::mju_warning(
+                    b"ccd support function is undefined for geom type\0".as_ptr() as *const i8);
+            }
+        }
+
+        // add local_dir*margin/2 to result
+        for i in 0..3_usize {
+            *res.add(i) += local_dir[i] * (*obj).margin / 2.0;
+        }
+
+        // rotate result to global frame
+        crate::engine::engine_util_blas::mju_mul_mat_vec3(res, (*obj).mat.as_ptr(), res);
+
+        // add geom position
+        crate::engine::engine_inline::mji_add_to3(res, (*obj).pos.as_ptr());
+    }
 }
 
 /// C: mjc_pointSupport (engine/engine_collision_convex.h:106)
