@@ -53,6 +53,2531 @@ pub struct MeshSDFContext { _opaque: [u8; 0] }
 #[derive(Clone, Copy)]
 pub struct Mutex { _opaque: [u8; 0] }
 
+/// Opaque C struct: PFNGLACCUMPROC (unsized, pointer-only)
+#[repr(C)]
+#[derive(Clone, Copy)]
+pub struct PFNGLACCUMPROC { _opaque: [u8; 0] }
+
+/// Opaque C struct: PFNGLACTIVETEXTUREPROC (unsized, pointer-only)
+#[repr(C)]
+#[derive(Clone, Copy)]
+pub struct PFNGLACTIVETEXTUREPROC { _opaque: [u8; 0] }
+
+/// Opaque C struct: PFNGLALPHAFUNCPROC (unsized, pointer-only)
+#[repr(C)]
+#[derive(Clone, Copy)]
+pub struct PFNGLALPHAFUNCPROC { _opaque: [u8; 0] }
+
+/// Opaque C struct: PFNGLARETEXTURESRESIDENTPROC (unsized, pointer-only)
+#[repr(C)]
+#[derive(Clone, Copy)]
+pub struct PFNGLARETEXTURESRESIDENTPROC { _opaque: [u8; 0] }
+
+/// Opaque C struct: PFNGLARRAYELEMENTPROC (unsized, pointer-only)
+#[repr(C)]
+#[derive(Clone, Copy)]
+pub struct PFNGLARRAYELEMENTPROC { _opaque: [u8; 0] }
+
+/// Opaque C struct: PFNGLBEGINPROC (unsized, pointer-only)
+#[repr(C)]
+#[derive(Clone, Copy)]
+pub struct PFNGLBEGINPROC { _opaque: [u8; 0] }
+
+/// Opaque C struct: PFNGLBEGINQUERYPROC (unsized, pointer-only)
+#[repr(C)]
+#[derive(Clone, Copy)]
+pub struct PFNGLBEGINQUERYPROC { _opaque: [u8; 0] }
+
+/// Opaque C struct: PFNGLBINDBUFFERARBPROC (unsized, pointer-only)
+#[repr(C)]
+#[derive(Clone, Copy)]
+pub struct PFNGLBINDBUFFERARBPROC { _opaque: [u8; 0] }
+
+/// Opaque C struct: PFNGLBINDBUFFERPROC (unsized, pointer-only)
+#[repr(C)]
+#[derive(Clone, Copy)]
+pub struct PFNGLBINDBUFFERPROC { _opaque: [u8; 0] }
+
+/// Opaque C struct: PFNGLBINDFRAMEBUFFERPROC (unsized, pointer-only)
+#[repr(C)]
+#[derive(Clone, Copy)]
+pub struct PFNGLBINDFRAMEBUFFERPROC { _opaque: [u8; 0] }
+
+/// Opaque C struct: PFNGLBINDRENDERBUFFERPROC (unsized, pointer-only)
+#[repr(C)]
+#[derive(Clone, Copy)]
+pub struct PFNGLBINDRENDERBUFFERPROC { _opaque: [u8; 0] }
+
+/// Opaque C struct: PFNGLBINDTEXTUREPROC (unsized, pointer-only)
+#[repr(C)]
+#[derive(Clone, Copy)]
+pub struct PFNGLBINDTEXTUREPROC { _opaque: [u8; 0] }
+
+/// Opaque C struct: PFNGLBITMAPPROC (unsized, pointer-only)
+#[repr(C)]
+#[derive(Clone, Copy)]
+pub struct PFNGLBITMAPPROC { _opaque: [u8; 0] }
+
+/// Opaque C struct: PFNGLBLENDCOLORPROC (unsized, pointer-only)
+#[repr(C)]
+#[derive(Clone, Copy)]
+pub struct PFNGLBLENDCOLORPROC { _opaque: [u8; 0] }
+
+/// Opaque C struct: PFNGLBLENDEQUATIONPROC (unsized, pointer-only)
+#[repr(C)]
+#[derive(Clone, Copy)]
+pub struct PFNGLBLENDEQUATIONPROC { _opaque: [u8; 0] }
+
+/// Opaque C struct: PFNGLBLENDFUNCPROC (unsized, pointer-only)
+#[repr(C)]
+#[derive(Clone, Copy)]
+pub struct PFNGLBLENDFUNCPROC { _opaque: [u8; 0] }
+
+/// Opaque C struct: PFNGLBLENDFUNCSEPARATEPROC (unsized, pointer-only)
+#[repr(C)]
+#[derive(Clone, Copy)]
+pub struct PFNGLBLENDFUNCSEPARATEPROC { _opaque: [u8; 0] }
+
+/// Opaque C struct: PFNGLBLITFRAMEBUFFERPROC (unsized, pointer-only)
+#[repr(C)]
+#[derive(Clone, Copy)]
+pub struct PFNGLBLITFRAMEBUFFERPROC { _opaque: [u8; 0] }
+
+/// Opaque C struct: PFNGLBUFFERDATAARBPROC (unsized, pointer-only)
+#[repr(C)]
+#[derive(Clone, Copy)]
+pub struct PFNGLBUFFERDATAARBPROC { _opaque: [u8; 0] }
+
+/// Opaque C struct: PFNGLBUFFERDATAPROC (unsized, pointer-only)
+#[repr(C)]
+#[derive(Clone, Copy)]
+pub struct PFNGLBUFFERDATAPROC { _opaque: [u8; 0] }
+
+/// Opaque C struct: PFNGLBUFFERSUBDATAARBPROC (unsized, pointer-only)
+#[repr(C)]
+#[derive(Clone, Copy)]
+pub struct PFNGLBUFFERSUBDATAARBPROC { _opaque: [u8; 0] }
+
+/// Opaque C struct: PFNGLBUFFERSUBDATAPROC (unsized, pointer-only)
+#[repr(C)]
+#[derive(Clone, Copy)]
+pub struct PFNGLBUFFERSUBDATAPROC { _opaque: [u8; 0] }
+
+/// Opaque C struct: PFNGLCALLLISTPROC (unsized, pointer-only)
+#[repr(C)]
+#[derive(Clone, Copy)]
+pub struct PFNGLCALLLISTPROC { _opaque: [u8; 0] }
+
+/// Opaque C struct: PFNGLCALLLISTSPROC (unsized, pointer-only)
+#[repr(C)]
+#[derive(Clone, Copy)]
+pub struct PFNGLCALLLISTSPROC { _opaque: [u8; 0] }
+
+/// Opaque C struct: PFNGLCHECKFRAMEBUFFERSTATUSPROC (unsized, pointer-only)
+#[repr(C)]
+#[derive(Clone, Copy)]
+pub struct PFNGLCHECKFRAMEBUFFERSTATUSPROC { _opaque: [u8; 0] }
+
+/// Opaque C struct: PFNGLCLEARACCUMPROC (unsized, pointer-only)
+#[repr(C)]
+#[derive(Clone, Copy)]
+pub struct PFNGLCLEARACCUMPROC { _opaque: [u8; 0] }
+
+/// Opaque C struct: PFNGLCLEARCOLORPROC (unsized, pointer-only)
+#[repr(C)]
+#[derive(Clone, Copy)]
+pub struct PFNGLCLEARCOLORPROC { _opaque: [u8; 0] }
+
+/// Opaque C struct: PFNGLCLEARDEPTHPROC (unsized, pointer-only)
+#[repr(C)]
+#[derive(Clone, Copy)]
+pub struct PFNGLCLEARDEPTHPROC { _opaque: [u8; 0] }
+
+/// Opaque C struct: PFNGLCLEARINDEXPROC (unsized, pointer-only)
+#[repr(C)]
+#[derive(Clone, Copy)]
+pub struct PFNGLCLEARINDEXPROC { _opaque: [u8; 0] }
+
+/// Opaque C struct: PFNGLCLEARPROC (unsized, pointer-only)
+#[repr(C)]
+#[derive(Clone, Copy)]
+pub struct PFNGLCLEARPROC { _opaque: [u8; 0] }
+
+/// Opaque C struct: PFNGLCLEARSTENCILPROC (unsized, pointer-only)
+#[repr(C)]
+#[derive(Clone, Copy)]
+pub struct PFNGLCLEARSTENCILPROC { _opaque: [u8; 0] }
+
+/// Opaque C struct: PFNGLCLIENTACTIVETEXTUREPROC (unsized, pointer-only)
+#[repr(C)]
+#[derive(Clone, Copy)]
+pub struct PFNGLCLIENTACTIVETEXTUREPROC { _opaque: [u8; 0] }
+
+/// Opaque C struct: PFNGLCLIPCONTROLPROC (unsized, pointer-only)
+#[repr(C)]
+#[derive(Clone, Copy)]
+pub struct PFNGLCLIPCONTROLPROC { _opaque: [u8; 0] }
+
+/// Opaque C struct: PFNGLCLIPPLANEPROC (unsized, pointer-only)
+#[repr(C)]
+#[derive(Clone, Copy)]
+pub struct PFNGLCLIPPLANEPROC { _opaque: [u8; 0] }
+
+/// Opaque C struct: PFNGLCOLOR3BPROC (unsized, pointer-only)
+#[repr(C)]
+#[derive(Clone, Copy)]
+pub struct PFNGLCOLOR3BPROC { _opaque: [u8; 0] }
+
+/// Opaque C struct: PFNGLCOLOR3BVPROC (unsized, pointer-only)
+#[repr(C)]
+#[derive(Clone, Copy)]
+pub struct PFNGLCOLOR3BVPROC { _opaque: [u8; 0] }
+
+/// Opaque C struct: PFNGLCOLOR3DPROC (unsized, pointer-only)
+#[repr(C)]
+#[derive(Clone, Copy)]
+pub struct PFNGLCOLOR3DPROC { _opaque: [u8; 0] }
+
+/// Opaque C struct: PFNGLCOLOR3DVPROC (unsized, pointer-only)
+#[repr(C)]
+#[derive(Clone, Copy)]
+pub struct PFNGLCOLOR3DVPROC { _opaque: [u8; 0] }
+
+/// Opaque C struct: PFNGLCOLOR3FPROC (unsized, pointer-only)
+#[repr(C)]
+#[derive(Clone, Copy)]
+pub struct PFNGLCOLOR3FPROC { _opaque: [u8; 0] }
+
+/// Opaque C struct: PFNGLCOLOR3FVPROC (unsized, pointer-only)
+#[repr(C)]
+#[derive(Clone, Copy)]
+pub struct PFNGLCOLOR3FVPROC { _opaque: [u8; 0] }
+
+/// Opaque C struct: PFNGLCOLOR3IPROC (unsized, pointer-only)
+#[repr(C)]
+#[derive(Clone, Copy)]
+pub struct PFNGLCOLOR3IPROC { _opaque: [u8; 0] }
+
+/// Opaque C struct: PFNGLCOLOR3IVPROC (unsized, pointer-only)
+#[repr(C)]
+#[derive(Clone, Copy)]
+pub struct PFNGLCOLOR3IVPROC { _opaque: [u8; 0] }
+
+/// Opaque C struct: PFNGLCOLOR3SPROC (unsized, pointer-only)
+#[repr(C)]
+#[derive(Clone, Copy)]
+pub struct PFNGLCOLOR3SPROC { _opaque: [u8; 0] }
+
+/// Opaque C struct: PFNGLCOLOR3SVPROC (unsized, pointer-only)
+#[repr(C)]
+#[derive(Clone, Copy)]
+pub struct PFNGLCOLOR3SVPROC { _opaque: [u8; 0] }
+
+/// Opaque C struct: PFNGLCOLOR3UBPROC (unsized, pointer-only)
+#[repr(C)]
+#[derive(Clone, Copy)]
+pub struct PFNGLCOLOR3UBPROC { _opaque: [u8; 0] }
+
+/// Opaque C struct: PFNGLCOLOR3UBVPROC (unsized, pointer-only)
+#[repr(C)]
+#[derive(Clone, Copy)]
+pub struct PFNGLCOLOR3UBVPROC { _opaque: [u8; 0] }
+
+/// Opaque C struct: PFNGLCOLOR3UIPROC (unsized, pointer-only)
+#[repr(C)]
+#[derive(Clone, Copy)]
+pub struct PFNGLCOLOR3UIPROC { _opaque: [u8; 0] }
+
+/// Opaque C struct: PFNGLCOLOR3UIVPROC (unsized, pointer-only)
+#[repr(C)]
+#[derive(Clone, Copy)]
+pub struct PFNGLCOLOR3UIVPROC { _opaque: [u8; 0] }
+
+/// Opaque C struct: PFNGLCOLOR3USPROC (unsized, pointer-only)
+#[repr(C)]
+#[derive(Clone, Copy)]
+pub struct PFNGLCOLOR3USPROC { _opaque: [u8; 0] }
+
+/// Opaque C struct: PFNGLCOLOR3USVPROC (unsized, pointer-only)
+#[repr(C)]
+#[derive(Clone, Copy)]
+pub struct PFNGLCOLOR3USVPROC { _opaque: [u8; 0] }
+
+/// Opaque C struct: PFNGLCOLOR4BPROC (unsized, pointer-only)
+#[repr(C)]
+#[derive(Clone, Copy)]
+pub struct PFNGLCOLOR4BPROC { _opaque: [u8; 0] }
+
+/// Opaque C struct: PFNGLCOLOR4BVPROC (unsized, pointer-only)
+#[repr(C)]
+#[derive(Clone, Copy)]
+pub struct PFNGLCOLOR4BVPROC { _opaque: [u8; 0] }
+
+/// Opaque C struct: PFNGLCOLOR4DPROC (unsized, pointer-only)
+#[repr(C)]
+#[derive(Clone, Copy)]
+pub struct PFNGLCOLOR4DPROC { _opaque: [u8; 0] }
+
+/// Opaque C struct: PFNGLCOLOR4DVPROC (unsized, pointer-only)
+#[repr(C)]
+#[derive(Clone, Copy)]
+pub struct PFNGLCOLOR4DVPROC { _opaque: [u8; 0] }
+
+/// Opaque C struct: PFNGLCOLOR4FPROC (unsized, pointer-only)
+#[repr(C)]
+#[derive(Clone, Copy)]
+pub struct PFNGLCOLOR4FPROC { _opaque: [u8; 0] }
+
+/// Opaque C struct: PFNGLCOLOR4FVPROC (unsized, pointer-only)
+#[repr(C)]
+#[derive(Clone, Copy)]
+pub struct PFNGLCOLOR4FVPROC { _opaque: [u8; 0] }
+
+/// Opaque C struct: PFNGLCOLOR4IPROC (unsized, pointer-only)
+#[repr(C)]
+#[derive(Clone, Copy)]
+pub struct PFNGLCOLOR4IPROC { _opaque: [u8; 0] }
+
+/// Opaque C struct: PFNGLCOLOR4IVPROC (unsized, pointer-only)
+#[repr(C)]
+#[derive(Clone, Copy)]
+pub struct PFNGLCOLOR4IVPROC { _opaque: [u8; 0] }
+
+/// Opaque C struct: PFNGLCOLOR4SPROC (unsized, pointer-only)
+#[repr(C)]
+#[derive(Clone, Copy)]
+pub struct PFNGLCOLOR4SPROC { _opaque: [u8; 0] }
+
+/// Opaque C struct: PFNGLCOLOR4SVPROC (unsized, pointer-only)
+#[repr(C)]
+#[derive(Clone, Copy)]
+pub struct PFNGLCOLOR4SVPROC { _opaque: [u8; 0] }
+
+/// Opaque C struct: PFNGLCOLOR4UBPROC (unsized, pointer-only)
+#[repr(C)]
+#[derive(Clone, Copy)]
+pub struct PFNGLCOLOR4UBPROC { _opaque: [u8; 0] }
+
+/// Opaque C struct: PFNGLCOLOR4UBVPROC (unsized, pointer-only)
+#[repr(C)]
+#[derive(Clone, Copy)]
+pub struct PFNGLCOLOR4UBVPROC { _opaque: [u8; 0] }
+
+/// Opaque C struct: PFNGLCOLOR4UIPROC (unsized, pointer-only)
+#[repr(C)]
+#[derive(Clone, Copy)]
+pub struct PFNGLCOLOR4UIPROC { _opaque: [u8; 0] }
+
+/// Opaque C struct: PFNGLCOLOR4UIVPROC (unsized, pointer-only)
+#[repr(C)]
+#[derive(Clone, Copy)]
+pub struct PFNGLCOLOR4UIVPROC { _opaque: [u8; 0] }
+
+/// Opaque C struct: PFNGLCOLOR4USPROC (unsized, pointer-only)
+#[repr(C)]
+#[derive(Clone, Copy)]
+pub struct PFNGLCOLOR4USPROC { _opaque: [u8; 0] }
+
+/// Opaque C struct: PFNGLCOLOR4USVPROC (unsized, pointer-only)
+#[repr(C)]
+#[derive(Clone, Copy)]
+pub struct PFNGLCOLOR4USVPROC { _opaque: [u8; 0] }
+
+/// Opaque C struct: PFNGLCOLORMASKPROC (unsized, pointer-only)
+#[repr(C)]
+#[derive(Clone, Copy)]
+pub struct PFNGLCOLORMASKPROC { _opaque: [u8; 0] }
+
+/// Opaque C struct: PFNGLCOLORMATERIALPROC (unsized, pointer-only)
+#[repr(C)]
+#[derive(Clone, Copy)]
+pub struct PFNGLCOLORMATERIALPROC { _opaque: [u8; 0] }
+
+/// Opaque C struct: PFNGLCOLORPOINTERPROC (unsized, pointer-only)
+#[repr(C)]
+#[derive(Clone, Copy)]
+pub struct PFNGLCOLORPOINTERPROC { _opaque: [u8; 0] }
+
+/// Opaque C struct: PFNGLCOMPRESSEDTEXIMAGE1DPROC (unsized, pointer-only)
+#[repr(C)]
+#[derive(Clone, Copy)]
+pub struct PFNGLCOMPRESSEDTEXIMAGE1DPROC { _opaque: [u8; 0] }
+
+/// Opaque C struct: PFNGLCOMPRESSEDTEXIMAGE2DPROC (unsized, pointer-only)
+#[repr(C)]
+#[derive(Clone, Copy)]
+pub struct PFNGLCOMPRESSEDTEXIMAGE2DPROC { _opaque: [u8; 0] }
+
+/// Opaque C struct: PFNGLCOMPRESSEDTEXIMAGE3DPROC (unsized, pointer-only)
+#[repr(C)]
+#[derive(Clone, Copy)]
+pub struct PFNGLCOMPRESSEDTEXIMAGE3DPROC { _opaque: [u8; 0] }
+
+/// Opaque C struct: PFNGLCOMPRESSEDTEXSUBIMAGE1DPROC (unsized, pointer-only)
+#[repr(C)]
+#[derive(Clone, Copy)]
+pub struct PFNGLCOMPRESSEDTEXSUBIMAGE1DPROC { _opaque: [u8; 0] }
+
+/// Opaque C struct: PFNGLCOMPRESSEDTEXSUBIMAGE2DPROC (unsized, pointer-only)
+#[repr(C)]
+#[derive(Clone, Copy)]
+pub struct PFNGLCOMPRESSEDTEXSUBIMAGE2DPROC { _opaque: [u8; 0] }
+
+/// Opaque C struct: PFNGLCOMPRESSEDTEXSUBIMAGE3DPROC (unsized, pointer-only)
+#[repr(C)]
+#[derive(Clone, Copy)]
+pub struct PFNGLCOMPRESSEDTEXSUBIMAGE3DPROC { _opaque: [u8; 0] }
+
+/// Opaque C struct: PFNGLCOPYPIXELSPROC (unsized, pointer-only)
+#[repr(C)]
+#[derive(Clone, Copy)]
+pub struct PFNGLCOPYPIXELSPROC { _opaque: [u8; 0] }
+
+/// Opaque C struct: PFNGLCOPYTEXIMAGE1DPROC (unsized, pointer-only)
+#[repr(C)]
+#[derive(Clone, Copy)]
+pub struct PFNGLCOPYTEXIMAGE1DPROC { _opaque: [u8; 0] }
+
+/// Opaque C struct: PFNGLCOPYTEXIMAGE2DPROC (unsized, pointer-only)
+#[repr(C)]
+#[derive(Clone, Copy)]
+pub struct PFNGLCOPYTEXIMAGE2DPROC { _opaque: [u8; 0] }
+
+/// Opaque C struct: PFNGLCOPYTEXSUBIMAGE1DPROC (unsized, pointer-only)
+#[repr(C)]
+#[derive(Clone, Copy)]
+pub struct PFNGLCOPYTEXSUBIMAGE1DPROC { _opaque: [u8; 0] }
+
+/// Opaque C struct: PFNGLCOPYTEXSUBIMAGE2DPROC (unsized, pointer-only)
+#[repr(C)]
+#[derive(Clone, Copy)]
+pub struct PFNGLCOPYTEXSUBIMAGE2DPROC { _opaque: [u8; 0] }
+
+/// Opaque C struct: PFNGLCOPYTEXSUBIMAGE3DPROC (unsized, pointer-only)
+#[repr(C)]
+#[derive(Clone, Copy)]
+pub struct PFNGLCOPYTEXSUBIMAGE3DPROC { _opaque: [u8; 0] }
+
+/// Opaque C struct: PFNGLCULLFACEPROC (unsized, pointer-only)
+#[repr(C)]
+#[derive(Clone, Copy)]
+pub struct PFNGLCULLFACEPROC { _opaque: [u8; 0] }
+
+/// Opaque C struct: PFNGLDEBUGMESSAGECALLBACKKHRPROC (unsized, pointer-only)
+#[repr(C)]
+#[derive(Clone, Copy)]
+pub struct PFNGLDEBUGMESSAGECALLBACKKHRPROC { _opaque: [u8; 0] }
+
+/// Opaque C struct: PFNGLDEBUGMESSAGECALLBACKPROC (unsized, pointer-only)
+#[repr(C)]
+#[derive(Clone, Copy)]
+pub struct PFNGLDEBUGMESSAGECALLBACKPROC { _opaque: [u8; 0] }
+
+/// Opaque C struct: PFNGLDEBUGMESSAGECONTROLKHRPROC (unsized, pointer-only)
+#[repr(C)]
+#[derive(Clone, Copy)]
+pub struct PFNGLDEBUGMESSAGECONTROLKHRPROC { _opaque: [u8; 0] }
+
+/// Opaque C struct: PFNGLDEBUGMESSAGECONTROLPROC (unsized, pointer-only)
+#[repr(C)]
+#[derive(Clone, Copy)]
+pub struct PFNGLDEBUGMESSAGECONTROLPROC { _opaque: [u8; 0] }
+
+/// Opaque C struct: PFNGLDEBUGMESSAGEINSERTKHRPROC (unsized, pointer-only)
+#[repr(C)]
+#[derive(Clone, Copy)]
+pub struct PFNGLDEBUGMESSAGEINSERTKHRPROC { _opaque: [u8; 0] }
+
+/// Opaque C struct: PFNGLDEBUGMESSAGEINSERTPROC (unsized, pointer-only)
+#[repr(C)]
+#[derive(Clone, Copy)]
+pub struct PFNGLDEBUGMESSAGEINSERTPROC { _opaque: [u8; 0] }
+
+/// Opaque C struct: PFNGLDELETEBUFFERSARBPROC (unsized, pointer-only)
+#[repr(C)]
+#[derive(Clone, Copy)]
+pub struct PFNGLDELETEBUFFERSARBPROC { _opaque: [u8; 0] }
+
+/// Opaque C struct: PFNGLDELETEBUFFERSPROC (unsized, pointer-only)
+#[repr(C)]
+#[derive(Clone, Copy)]
+pub struct PFNGLDELETEBUFFERSPROC { _opaque: [u8; 0] }
+
+/// Opaque C struct: PFNGLDELETEFRAMEBUFFERSPROC (unsized, pointer-only)
+#[repr(C)]
+#[derive(Clone, Copy)]
+pub struct PFNGLDELETEFRAMEBUFFERSPROC { _opaque: [u8; 0] }
+
+/// Opaque C struct: PFNGLDELETELISTSPROC (unsized, pointer-only)
+#[repr(C)]
+#[derive(Clone, Copy)]
+pub struct PFNGLDELETELISTSPROC { _opaque: [u8; 0] }
+
+/// Opaque C struct: PFNGLDELETEQUERIESPROC (unsized, pointer-only)
+#[repr(C)]
+#[derive(Clone, Copy)]
+pub struct PFNGLDELETEQUERIESPROC { _opaque: [u8; 0] }
+
+/// Opaque C struct: PFNGLDELETERENDERBUFFERSPROC (unsized, pointer-only)
+#[repr(C)]
+#[derive(Clone, Copy)]
+pub struct PFNGLDELETERENDERBUFFERSPROC { _opaque: [u8; 0] }
+
+/// Opaque C struct: PFNGLDELETETEXTURESPROC (unsized, pointer-only)
+#[repr(C)]
+#[derive(Clone, Copy)]
+pub struct PFNGLDELETETEXTURESPROC { _opaque: [u8; 0] }
+
+/// Opaque C struct: PFNGLDEPTHFUNCPROC (unsized, pointer-only)
+#[repr(C)]
+#[derive(Clone, Copy)]
+pub struct PFNGLDEPTHFUNCPROC { _opaque: [u8; 0] }
+
+/// Opaque C struct: PFNGLDEPTHMASKPROC (unsized, pointer-only)
+#[repr(C)]
+#[derive(Clone, Copy)]
+pub struct PFNGLDEPTHMASKPROC { _opaque: [u8; 0] }
+
+/// Opaque C struct: PFNGLDEPTHRANGEPROC (unsized, pointer-only)
+#[repr(C)]
+#[derive(Clone, Copy)]
+pub struct PFNGLDEPTHRANGEPROC { _opaque: [u8; 0] }
+
+/// Opaque C struct: PFNGLDISABLECLIENTSTATEPROC (unsized, pointer-only)
+#[repr(C)]
+#[derive(Clone, Copy)]
+pub struct PFNGLDISABLECLIENTSTATEPROC { _opaque: [u8; 0] }
+
+/// Opaque C struct: PFNGLDISABLEPROC (unsized, pointer-only)
+#[repr(C)]
+#[derive(Clone, Copy)]
+pub struct PFNGLDISABLEPROC { _opaque: [u8; 0] }
+
+/// Opaque C struct: PFNGLDRAWARRAYSPROC (unsized, pointer-only)
+#[repr(C)]
+#[derive(Clone, Copy)]
+pub struct PFNGLDRAWARRAYSPROC { _opaque: [u8; 0] }
+
+/// Opaque C struct: PFNGLDRAWBUFFERPROC (unsized, pointer-only)
+#[repr(C)]
+#[derive(Clone, Copy)]
+pub struct PFNGLDRAWBUFFERPROC { _opaque: [u8; 0] }
+
+/// Opaque C struct: PFNGLDRAWELEMENTSPROC (unsized, pointer-only)
+#[repr(C)]
+#[derive(Clone, Copy)]
+pub struct PFNGLDRAWELEMENTSPROC { _opaque: [u8; 0] }
+
+/// Opaque C struct: PFNGLDRAWPIXELSPROC (unsized, pointer-only)
+#[repr(C)]
+#[derive(Clone, Copy)]
+pub struct PFNGLDRAWPIXELSPROC { _opaque: [u8; 0] }
+
+/// Opaque C struct: PFNGLDRAWRANGEELEMENTSPROC (unsized, pointer-only)
+#[repr(C)]
+#[derive(Clone, Copy)]
+pub struct PFNGLDRAWRANGEELEMENTSPROC { _opaque: [u8; 0] }
+
+/// Opaque C struct: PFNGLEDGEFLAGPOINTERPROC (unsized, pointer-only)
+#[repr(C)]
+#[derive(Clone, Copy)]
+pub struct PFNGLEDGEFLAGPOINTERPROC { _opaque: [u8; 0] }
+
+/// Opaque C struct: PFNGLEDGEFLAGPROC (unsized, pointer-only)
+#[repr(C)]
+#[derive(Clone, Copy)]
+pub struct PFNGLEDGEFLAGPROC { _opaque: [u8; 0] }
+
+/// Opaque C struct: PFNGLEDGEFLAGVPROC (unsized, pointer-only)
+#[repr(C)]
+#[derive(Clone, Copy)]
+pub struct PFNGLEDGEFLAGVPROC { _opaque: [u8; 0] }
+
+/// Opaque C struct: PFNGLENABLECLIENTSTATEPROC (unsized, pointer-only)
+#[repr(C)]
+#[derive(Clone, Copy)]
+pub struct PFNGLENABLECLIENTSTATEPROC { _opaque: [u8; 0] }
+
+/// Opaque C struct: PFNGLENABLEPROC (unsized, pointer-only)
+#[repr(C)]
+#[derive(Clone, Copy)]
+pub struct PFNGLENABLEPROC { _opaque: [u8; 0] }
+
+/// Opaque C struct: PFNGLENDLISTPROC (unsized, pointer-only)
+#[repr(C)]
+#[derive(Clone, Copy)]
+pub struct PFNGLENDLISTPROC { _opaque: [u8; 0] }
+
+/// Opaque C struct: PFNGLENDPROC (unsized, pointer-only)
+#[repr(C)]
+#[derive(Clone, Copy)]
+pub struct PFNGLENDPROC { _opaque: [u8; 0] }
+
+/// Opaque C struct: PFNGLENDQUERYPROC (unsized, pointer-only)
+#[repr(C)]
+#[derive(Clone, Copy)]
+pub struct PFNGLENDQUERYPROC { _opaque: [u8; 0] }
+
+/// Opaque C struct: PFNGLEVALCOORD1DPROC (unsized, pointer-only)
+#[repr(C)]
+#[derive(Clone, Copy)]
+pub struct PFNGLEVALCOORD1DPROC { _opaque: [u8; 0] }
+
+/// Opaque C struct: PFNGLEVALCOORD1DVPROC (unsized, pointer-only)
+#[repr(C)]
+#[derive(Clone, Copy)]
+pub struct PFNGLEVALCOORD1DVPROC { _opaque: [u8; 0] }
+
+/// Opaque C struct: PFNGLEVALCOORD1FPROC (unsized, pointer-only)
+#[repr(C)]
+#[derive(Clone, Copy)]
+pub struct PFNGLEVALCOORD1FPROC { _opaque: [u8; 0] }
+
+/// Opaque C struct: PFNGLEVALCOORD1FVPROC (unsized, pointer-only)
+#[repr(C)]
+#[derive(Clone, Copy)]
+pub struct PFNGLEVALCOORD1FVPROC { _opaque: [u8; 0] }
+
+/// Opaque C struct: PFNGLEVALCOORD2DPROC (unsized, pointer-only)
+#[repr(C)]
+#[derive(Clone, Copy)]
+pub struct PFNGLEVALCOORD2DPROC { _opaque: [u8; 0] }
+
+/// Opaque C struct: PFNGLEVALCOORD2DVPROC (unsized, pointer-only)
+#[repr(C)]
+#[derive(Clone, Copy)]
+pub struct PFNGLEVALCOORD2DVPROC { _opaque: [u8; 0] }
+
+/// Opaque C struct: PFNGLEVALCOORD2FPROC (unsized, pointer-only)
+#[repr(C)]
+#[derive(Clone, Copy)]
+pub struct PFNGLEVALCOORD2FPROC { _opaque: [u8; 0] }
+
+/// Opaque C struct: PFNGLEVALCOORD2FVPROC (unsized, pointer-only)
+#[repr(C)]
+#[derive(Clone, Copy)]
+pub struct PFNGLEVALCOORD2FVPROC { _opaque: [u8; 0] }
+
+/// Opaque C struct: PFNGLEVALMESH1PROC (unsized, pointer-only)
+#[repr(C)]
+#[derive(Clone, Copy)]
+pub struct PFNGLEVALMESH1PROC { _opaque: [u8; 0] }
+
+/// Opaque C struct: PFNGLEVALMESH2PROC (unsized, pointer-only)
+#[repr(C)]
+#[derive(Clone, Copy)]
+pub struct PFNGLEVALMESH2PROC { _opaque: [u8; 0] }
+
+/// Opaque C struct: PFNGLEVALPOINT1PROC (unsized, pointer-only)
+#[repr(C)]
+#[derive(Clone, Copy)]
+pub struct PFNGLEVALPOINT1PROC { _opaque: [u8; 0] }
+
+/// Opaque C struct: PFNGLEVALPOINT2PROC (unsized, pointer-only)
+#[repr(C)]
+#[derive(Clone, Copy)]
+pub struct PFNGLEVALPOINT2PROC { _opaque: [u8; 0] }
+
+/// Opaque C struct: PFNGLFEEDBACKBUFFERPROC (unsized, pointer-only)
+#[repr(C)]
+#[derive(Clone, Copy)]
+pub struct PFNGLFEEDBACKBUFFERPROC { _opaque: [u8; 0] }
+
+/// Opaque C struct: PFNGLFINISHPROC (unsized, pointer-only)
+#[repr(C)]
+#[derive(Clone, Copy)]
+pub struct PFNGLFINISHPROC { _opaque: [u8; 0] }
+
+/// Opaque C struct: PFNGLFLUSHPROC (unsized, pointer-only)
+#[repr(C)]
+#[derive(Clone, Copy)]
+pub struct PFNGLFLUSHPROC { _opaque: [u8; 0] }
+
+/// Opaque C struct: PFNGLFOGCOORDDPROC (unsized, pointer-only)
+#[repr(C)]
+#[derive(Clone, Copy)]
+pub struct PFNGLFOGCOORDDPROC { _opaque: [u8; 0] }
+
+/// Opaque C struct: PFNGLFOGCOORDDVPROC (unsized, pointer-only)
+#[repr(C)]
+#[derive(Clone, Copy)]
+pub struct PFNGLFOGCOORDDVPROC { _opaque: [u8; 0] }
+
+/// Opaque C struct: PFNGLFOGCOORDFPROC (unsized, pointer-only)
+#[repr(C)]
+#[derive(Clone, Copy)]
+pub struct PFNGLFOGCOORDFPROC { _opaque: [u8; 0] }
+
+/// Opaque C struct: PFNGLFOGCOORDFVPROC (unsized, pointer-only)
+#[repr(C)]
+#[derive(Clone, Copy)]
+pub struct PFNGLFOGCOORDFVPROC { _opaque: [u8; 0] }
+
+/// Opaque C struct: PFNGLFOGCOORDPOINTERPROC (unsized, pointer-only)
+#[repr(C)]
+#[derive(Clone, Copy)]
+pub struct PFNGLFOGCOORDPOINTERPROC { _opaque: [u8; 0] }
+
+/// Opaque C struct: PFNGLFOGFPROC (unsized, pointer-only)
+#[repr(C)]
+#[derive(Clone, Copy)]
+pub struct PFNGLFOGFPROC { _opaque: [u8; 0] }
+
+/// Opaque C struct: PFNGLFOGFVPROC (unsized, pointer-only)
+#[repr(C)]
+#[derive(Clone, Copy)]
+pub struct PFNGLFOGFVPROC { _opaque: [u8; 0] }
+
+/// Opaque C struct: PFNGLFOGIPROC (unsized, pointer-only)
+#[repr(C)]
+#[derive(Clone, Copy)]
+pub struct PFNGLFOGIPROC { _opaque: [u8; 0] }
+
+/// Opaque C struct: PFNGLFOGIVPROC (unsized, pointer-only)
+#[repr(C)]
+#[derive(Clone, Copy)]
+pub struct PFNGLFOGIVPROC { _opaque: [u8; 0] }
+
+/// Opaque C struct: PFNGLFRAMEBUFFERRENDERBUFFERPROC (unsized, pointer-only)
+#[repr(C)]
+#[derive(Clone, Copy)]
+pub struct PFNGLFRAMEBUFFERRENDERBUFFERPROC { _opaque: [u8; 0] }
+
+/// Opaque C struct: PFNGLFRAMEBUFFERTEXTURE1DPROC (unsized, pointer-only)
+#[repr(C)]
+#[derive(Clone, Copy)]
+pub struct PFNGLFRAMEBUFFERTEXTURE1DPROC { _opaque: [u8; 0] }
+
+/// Opaque C struct: PFNGLFRAMEBUFFERTEXTURE2DPROC (unsized, pointer-only)
+#[repr(C)]
+#[derive(Clone, Copy)]
+pub struct PFNGLFRAMEBUFFERTEXTURE2DPROC { _opaque: [u8; 0] }
+
+/// Opaque C struct: PFNGLFRAMEBUFFERTEXTURE3DPROC (unsized, pointer-only)
+#[repr(C)]
+#[derive(Clone, Copy)]
+pub struct PFNGLFRAMEBUFFERTEXTURE3DPROC { _opaque: [u8; 0] }
+
+/// Opaque C struct: PFNGLFRAMEBUFFERTEXTURELAYERPROC (unsized, pointer-only)
+#[repr(C)]
+#[derive(Clone, Copy)]
+pub struct PFNGLFRAMEBUFFERTEXTURELAYERPROC { _opaque: [u8; 0] }
+
+/// Opaque C struct: PFNGLFRONTFACEPROC (unsized, pointer-only)
+#[repr(C)]
+#[derive(Clone, Copy)]
+pub struct PFNGLFRONTFACEPROC { _opaque: [u8; 0] }
+
+/// Opaque C struct: PFNGLFRUSTUMPROC (unsized, pointer-only)
+#[repr(C)]
+#[derive(Clone, Copy)]
+pub struct PFNGLFRUSTUMPROC { _opaque: [u8; 0] }
+
+/// Opaque C struct: PFNGLGENBUFFERSARBPROC (unsized, pointer-only)
+#[repr(C)]
+#[derive(Clone, Copy)]
+pub struct PFNGLGENBUFFERSARBPROC { _opaque: [u8; 0] }
+
+/// Opaque C struct: PFNGLGENBUFFERSPROC (unsized, pointer-only)
+#[repr(C)]
+#[derive(Clone, Copy)]
+pub struct PFNGLGENBUFFERSPROC { _opaque: [u8; 0] }
+
+/// Opaque C struct: PFNGLGENERATEMIPMAPPROC (unsized, pointer-only)
+#[repr(C)]
+#[derive(Clone, Copy)]
+pub struct PFNGLGENERATEMIPMAPPROC { _opaque: [u8; 0] }
+
+/// Opaque C struct: PFNGLGENFRAMEBUFFERSPROC (unsized, pointer-only)
+#[repr(C)]
+#[derive(Clone, Copy)]
+pub struct PFNGLGENFRAMEBUFFERSPROC { _opaque: [u8; 0] }
+
+/// Opaque C struct: PFNGLGENLISTSPROC (unsized, pointer-only)
+#[repr(C)]
+#[derive(Clone, Copy)]
+pub struct PFNGLGENLISTSPROC { _opaque: [u8; 0] }
+
+/// Opaque C struct: PFNGLGENQUERIESPROC (unsized, pointer-only)
+#[repr(C)]
+#[derive(Clone, Copy)]
+pub struct PFNGLGENQUERIESPROC { _opaque: [u8; 0] }
+
+/// Opaque C struct: PFNGLGENRENDERBUFFERSPROC (unsized, pointer-only)
+#[repr(C)]
+#[derive(Clone, Copy)]
+pub struct PFNGLGENRENDERBUFFERSPROC { _opaque: [u8; 0] }
+
+/// Opaque C struct: PFNGLGENTEXTURESPROC (unsized, pointer-only)
+#[repr(C)]
+#[derive(Clone, Copy)]
+pub struct PFNGLGENTEXTURESPROC { _opaque: [u8; 0] }
+
+/// Opaque C struct: PFNGLGETBOOLEANVPROC (unsized, pointer-only)
+#[repr(C)]
+#[derive(Clone, Copy)]
+pub struct PFNGLGETBOOLEANVPROC { _opaque: [u8; 0] }
+
+/// Opaque C struct: PFNGLGETBUFFERPARAMETERIVARBPROC (unsized, pointer-only)
+#[repr(C)]
+#[derive(Clone, Copy)]
+pub struct PFNGLGETBUFFERPARAMETERIVARBPROC { _opaque: [u8; 0] }
+
+/// Opaque C struct: PFNGLGETBUFFERPARAMETERIVPROC (unsized, pointer-only)
+#[repr(C)]
+#[derive(Clone, Copy)]
+pub struct PFNGLGETBUFFERPARAMETERIVPROC { _opaque: [u8; 0] }
+
+/// Opaque C struct: PFNGLGETBUFFERPOINTERVARBPROC (unsized, pointer-only)
+#[repr(C)]
+#[derive(Clone, Copy)]
+pub struct PFNGLGETBUFFERPOINTERVARBPROC { _opaque: [u8; 0] }
+
+/// Opaque C struct: PFNGLGETBUFFERPOINTERVPROC (unsized, pointer-only)
+#[repr(C)]
+#[derive(Clone, Copy)]
+pub struct PFNGLGETBUFFERPOINTERVPROC { _opaque: [u8; 0] }
+
+/// Opaque C struct: PFNGLGETBUFFERSUBDATAARBPROC (unsized, pointer-only)
+#[repr(C)]
+#[derive(Clone, Copy)]
+pub struct PFNGLGETBUFFERSUBDATAARBPROC { _opaque: [u8; 0] }
+
+/// Opaque C struct: PFNGLGETBUFFERSUBDATAPROC (unsized, pointer-only)
+#[repr(C)]
+#[derive(Clone, Copy)]
+pub struct PFNGLGETBUFFERSUBDATAPROC { _opaque: [u8; 0] }
+
+/// Opaque C struct: PFNGLGETCLIPPLANEPROC (unsized, pointer-only)
+#[repr(C)]
+#[derive(Clone, Copy)]
+pub struct PFNGLGETCLIPPLANEPROC { _opaque: [u8; 0] }
+
+/// Opaque C struct: PFNGLGETCOMPRESSEDTEXIMAGEPROC (unsized, pointer-only)
+#[repr(C)]
+#[derive(Clone, Copy)]
+pub struct PFNGLGETCOMPRESSEDTEXIMAGEPROC { _opaque: [u8; 0] }
+
+/// Opaque C struct: PFNGLGETDEBUGMESSAGELOGKHRPROC (unsized, pointer-only)
+#[repr(C)]
+#[derive(Clone, Copy)]
+pub struct PFNGLGETDEBUGMESSAGELOGKHRPROC { _opaque: [u8; 0] }
+
+/// Opaque C struct: PFNGLGETDEBUGMESSAGELOGPROC (unsized, pointer-only)
+#[repr(C)]
+#[derive(Clone, Copy)]
+pub struct PFNGLGETDEBUGMESSAGELOGPROC { _opaque: [u8; 0] }
+
+/// Opaque C struct: PFNGLGETDOUBLEVPROC (unsized, pointer-only)
+#[repr(C)]
+#[derive(Clone, Copy)]
+pub struct PFNGLGETDOUBLEVPROC { _opaque: [u8; 0] }
+
+/// Opaque C struct: PFNGLGETERRORPROC (unsized, pointer-only)
+#[repr(C)]
+#[derive(Clone, Copy)]
+pub struct PFNGLGETERRORPROC { _opaque: [u8; 0] }
+
+/// Opaque C struct: PFNGLGETFLOATVPROC (unsized, pointer-only)
+#[repr(C)]
+#[derive(Clone, Copy)]
+pub struct PFNGLGETFLOATVPROC { _opaque: [u8; 0] }
+
+/// Opaque C struct: PFNGLGETFRAMEBUFFERATTACHMENTPARAMETERIVPROC (unsized, pointer-only)
+#[repr(C)]
+#[derive(Clone, Copy)]
+pub struct PFNGLGETFRAMEBUFFERATTACHMENTPARAMETERIVPROC { _opaque: [u8; 0] }
+
+/// Opaque C struct: PFNGLGETINTEGERVPROC (unsized, pointer-only)
+#[repr(C)]
+#[derive(Clone, Copy)]
+pub struct PFNGLGETINTEGERVPROC { _opaque: [u8; 0] }
+
+/// Opaque C struct: PFNGLGETLIGHTFVPROC (unsized, pointer-only)
+#[repr(C)]
+#[derive(Clone, Copy)]
+pub struct PFNGLGETLIGHTFVPROC { _opaque: [u8; 0] }
+
+/// Opaque C struct: PFNGLGETLIGHTIVPROC (unsized, pointer-only)
+#[repr(C)]
+#[derive(Clone, Copy)]
+pub struct PFNGLGETLIGHTIVPROC { _opaque: [u8; 0] }
+
+/// Opaque C struct: PFNGLGETMAPDVPROC (unsized, pointer-only)
+#[repr(C)]
+#[derive(Clone, Copy)]
+pub struct PFNGLGETMAPDVPROC { _opaque: [u8; 0] }
+
+/// Opaque C struct: PFNGLGETMAPFVPROC (unsized, pointer-only)
+#[repr(C)]
+#[derive(Clone, Copy)]
+pub struct PFNGLGETMAPFVPROC { _opaque: [u8; 0] }
+
+/// Opaque C struct: PFNGLGETMAPIVPROC (unsized, pointer-only)
+#[repr(C)]
+#[derive(Clone, Copy)]
+pub struct PFNGLGETMAPIVPROC { _opaque: [u8; 0] }
+
+/// Opaque C struct: PFNGLGETMATERIALFVPROC (unsized, pointer-only)
+#[repr(C)]
+#[derive(Clone, Copy)]
+pub struct PFNGLGETMATERIALFVPROC { _opaque: [u8; 0] }
+
+/// Opaque C struct: PFNGLGETMATERIALIVPROC (unsized, pointer-only)
+#[repr(C)]
+#[derive(Clone, Copy)]
+pub struct PFNGLGETMATERIALIVPROC { _opaque: [u8; 0] }
+
+/// Opaque C struct: PFNGLGETOBJECTLABELKHRPROC (unsized, pointer-only)
+#[repr(C)]
+#[derive(Clone, Copy)]
+pub struct PFNGLGETOBJECTLABELKHRPROC { _opaque: [u8; 0] }
+
+/// Opaque C struct: PFNGLGETOBJECTLABELPROC (unsized, pointer-only)
+#[repr(C)]
+#[derive(Clone, Copy)]
+pub struct PFNGLGETOBJECTLABELPROC { _opaque: [u8; 0] }
+
+/// Opaque C struct: PFNGLGETOBJECTPTRLABELKHRPROC (unsized, pointer-only)
+#[repr(C)]
+#[derive(Clone, Copy)]
+pub struct PFNGLGETOBJECTPTRLABELKHRPROC { _opaque: [u8; 0] }
+
+/// Opaque C struct: PFNGLGETOBJECTPTRLABELPROC (unsized, pointer-only)
+#[repr(C)]
+#[derive(Clone, Copy)]
+pub struct PFNGLGETOBJECTPTRLABELPROC { _opaque: [u8; 0] }
+
+/// Opaque C struct: PFNGLGETPIXELMAPFVPROC (unsized, pointer-only)
+#[repr(C)]
+#[derive(Clone, Copy)]
+pub struct PFNGLGETPIXELMAPFVPROC { _opaque: [u8; 0] }
+
+/// Opaque C struct: PFNGLGETPIXELMAPUIVPROC (unsized, pointer-only)
+#[repr(C)]
+#[derive(Clone, Copy)]
+pub struct PFNGLGETPIXELMAPUIVPROC { _opaque: [u8; 0] }
+
+/// Opaque C struct: PFNGLGETPIXELMAPUSVPROC (unsized, pointer-only)
+#[repr(C)]
+#[derive(Clone, Copy)]
+pub struct PFNGLGETPIXELMAPUSVPROC { _opaque: [u8; 0] }
+
+/// Opaque C struct: PFNGLGETPOINTERVKHRPROC (unsized, pointer-only)
+#[repr(C)]
+#[derive(Clone, Copy)]
+pub struct PFNGLGETPOINTERVKHRPROC { _opaque: [u8; 0] }
+
+/// Opaque C struct: PFNGLGETPOINTERVPROC (unsized, pointer-only)
+#[repr(C)]
+#[derive(Clone, Copy)]
+pub struct PFNGLGETPOINTERVPROC { _opaque: [u8; 0] }
+
+/// Opaque C struct: PFNGLGETPOLYGONSTIPPLEPROC (unsized, pointer-only)
+#[repr(C)]
+#[derive(Clone, Copy)]
+pub struct PFNGLGETPOLYGONSTIPPLEPROC { _opaque: [u8; 0] }
+
+/// Opaque C struct: PFNGLGETQUERYIVPROC (unsized, pointer-only)
+#[repr(C)]
+#[derive(Clone, Copy)]
+pub struct PFNGLGETQUERYIVPROC { _opaque: [u8; 0] }
+
+/// Opaque C struct: PFNGLGETQUERYOBJECTIVPROC (unsized, pointer-only)
+#[repr(C)]
+#[derive(Clone, Copy)]
+pub struct PFNGLGETQUERYOBJECTIVPROC { _opaque: [u8; 0] }
+
+/// Opaque C struct: PFNGLGETQUERYOBJECTUIVPROC (unsized, pointer-only)
+#[repr(C)]
+#[derive(Clone, Copy)]
+pub struct PFNGLGETQUERYOBJECTUIVPROC { _opaque: [u8; 0] }
+
+/// Opaque C struct: PFNGLGETRENDERBUFFERPARAMETERIVPROC (unsized, pointer-only)
+#[repr(C)]
+#[derive(Clone, Copy)]
+pub struct PFNGLGETRENDERBUFFERPARAMETERIVPROC { _opaque: [u8; 0] }
+
+/// Opaque C struct: PFNGLGETSTRINGPROC (unsized, pointer-only)
+#[repr(C)]
+#[derive(Clone, Copy)]
+pub struct PFNGLGETSTRINGPROC { _opaque: [u8; 0] }
+
+/// Opaque C struct: PFNGLGETTEXENVFVPROC (unsized, pointer-only)
+#[repr(C)]
+#[derive(Clone, Copy)]
+pub struct PFNGLGETTEXENVFVPROC { _opaque: [u8; 0] }
+
+/// Opaque C struct: PFNGLGETTEXENVIVPROC (unsized, pointer-only)
+#[repr(C)]
+#[derive(Clone, Copy)]
+pub struct PFNGLGETTEXENVIVPROC { _opaque: [u8; 0] }
+
+/// Opaque C struct: PFNGLGETTEXGENDVPROC (unsized, pointer-only)
+#[repr(C)]
+#[derive(Clone, Copy)]
+pub struct PFNGLGETTEXGENDVPROC { _opaque: [u8; 0] }
+
+/// Opaque C struct: PFNGLGETTEXGENFVPROC (unsized, pointer-only)
+#[repr(C)]
+#[derive(Clone, Copy)]
+pub struct PFNGLGETTEXGENFVPROC { _opaque: [u8; 0] }
+
+/// Opaque C struct: PFNGLGETTEXGENIVPROC (unsized, pointer-only)
+#[repr(C)]
+#[derive(Clone, Copy)]
+pub struct PFNGLGETTEXGENIVPROC { _opaque: [u8; 0] }
+
+/// Opaque C struct: PFNGLGETTEXIMAGEPROC (unsized, pointer-only)
+#[repr(C)]
+#[derive(Clone, Copy)]
+pub struct PFNGLGETTEXIMAGEPROC { _opaque: [u8; 0] }
+
+/// Opaque C struct: PFNGLGETTEXLEVELPARAMETERFVPROC (unsized, pointer-only)
+#[repr(C)]
+#[derive(Clone, Copy)]
+pub struct PFNGLGETTEXLEVELPARAMETERFVPROC { _opaque: [u8; 0] }
+
+/// Opaque C struct: PFNGLGETTEXLEVELPARAMETERIVPROC (unsized, pointer-only)
+#[repr(C)]
+#[derive(Clone, Copy)]
+pub struct PFNGLGETTEXLEVELPARAMETERIVPROC { _opaque: [u8; 0] }
+
+/// Opaque C struct: PFNGLGETTEXPARAMETERFVPROC (unsized, pointer-only)
+#[repr(C)]
+#[derive(Clone, Copy)]
+pub struct PFNGLGETTEXPARAMETERFVPROC { _opaque: [u8; 0] }
+
+/// Opaque C struct: PFNGLGETTEXPARAMETERIVPROC (unsized, pointer-only)
+#[repr(C)]
+#[derive(Clone, Copy)]
+pub struct PFNGLGETTEXPARAMETERIVPROC { _opaque: [u8; 0] }
+
+/// Opaque C struct: PFNGLHINTPROC (unsized, pointer-only)
+#[repr(C)]
+#[derive(Clone, Copy)]
+pub struct PFNGLHINTPROC { _opaque: [u8; 0] }
+
+/// Opaque C struct: PFNGLINDEXDPROC (unsized, pointer-only)
+#[repr(C)]
+#[derive(Clone, Copy)]
+pub struct PFNGLINDEXDPROC { _opaque: [u8; 0] }
+
+/// Opaque C struct: PFNGLINDEXDVPROC (unsized, pointer-only)
+#[repr(C)]
+#[derive(Clone, Copy)]
+pub struct PFNGLINDEXDVPROC { _opaque: [u8; 0] }
+
+/// Opaque C struct: PFNGLINDEXFPROC (unsized, pointer-only)
+#[repr(C)]
+#[derive(Clone, Copy)]
+pub struct PFNGLINDEXFPROC { _opaque: [u8; 0] }
+
+/// Opaque C struct: PFNGLINDEXFVPROC (unsized, pointer-only)
+#[repr(C)]
+#[derive(Clone, Copy)]
+pub struct PFNGLINDEXFVPROC { _opaque: [u8; 0] }
+
+/// Opaque C struct: PFNGLINDEXIPROC (unsized, pointer-only)
+#[repr(C)]
+#[derive(Clone, Copy)]
+pub struct PFNGLINDEXIPROC { _opaque: [u8; 0] }
+
+/// Opaque C struct: PFNGLINDEXIVPROC (unsized, pointer-only)
+#[repr(C)]
+#[derive(Clone, Copy)]
+pub struct PFNGLINDEXIVPROC { _opaque: [u8; 0] }
+
+/// Opaque C struct: PFNGLINDEXMASKPROC (unsized, pointer-only)
+#[repr(C)]
+#[derive(Clone, Copy)]
+pub struct PFNGLINDEXMASKPROC { _opaque: [u8; 0] }
+
+/// Opaque C struct: PFNGLINDEXPOINTERPROC (unsized, pointer-only)
+#[repr(C)]
+#[derive(Clone, Copy)]
+pub struct PFNGLINDEXPOINTERPROC { _opaque: [u8; 0] }
+
+/// Opaque C struct: PFNGLINDEXSPROC (unsized, pointer-only)
+#[repr(C)]
+#[derive(Clone, Copy)]
+pub struct PFNGLINDEXSPROC { _opaque: [u8; 0] }
+
+/// Opaque C struct: PFNGLINDEXSVPROC (unsized, pointer-only)
+#[repr(C)]
+#[derive(Clone, Copy)]
+pub struct PFNGLINDEXSVPROC { _opaque: [u8; 0] }
+
+/// Opaque C struct: PFNGLINDEXUBPROC (unsized, pointer-only)
+#[repr(C)]
+#[derive(Clone, Copy)]
+pub struct PFNGLINDEXUBPROC { _opaque: [u8; 0] }
+
+/// Opaque C struct: PFNGLINDEXUBVPROC (unsized, pointer-only)
+#[repr(C)]
+#[derive(Clone, Copy)]
+pub struct PFNGLINDEXUBVPROC { _opaque: [u8; 0] }
+
+/// Opaque C struct: PFNGLINITNAMESPROC (unsized, pointer-only)
+#[repr(C)]
+#[derive(Clone, Copy)]
+pub struct PFNGLINITNAMESPROC { _opaque: [u8; 0] }
+
+/// Opaque C struct: PFNGLINTERLEAVEDARRAYSPROC (unsized, pointer-only)
+#[repr(C)]
+#[derive(Clone, Copy)]
+pub struct PFNGLINTERLEAVEDARRAYSPROC { _opaque: [u8; 0] }
+
+/// Opaque C struct: PFNGLISBUFFERARBPROC (unsized, pointer-only)
+#[repr(C)]
+#[derive(Clone, Copy)]
+pub struct PFNGLISBUFFERARBPROC { _opaque: [u8; 0] }
+
+/// Opaque C struct: PFNGLISBUFFERPROC (unsized, pointer-only)
+#[repr(C)]
+#[derive(Clone, Copy)]
+pub struct PFNGLISBUFFERPROC { _opaque: [u8; 0] }
+
+/// Opaque C struct: PFNGLISENABLEDPROC (unsized, pointer-only)
+#[repr(C)]
+#[derive(Clone, Copy)]
+pub struct PFNGLISENABLEDPROC { _opaque: [u8; 0] }
+
+/// Opaque C struct: PFNGLISFRAMEBUFFERPROC (unsized, pointer-only)
+#[repr(C)]
+#[derive(Clone, Copy)]
+pub struct PFNGLISFRAMEBUFFERPROC { _opaque: [u8; 0] }
+
+/// Opaque C struct: PFNGLISLISTPROC (unsized, pointer-only)
+#[repr(C)]
+#[derive(Clone, Copy)]
+pub struct PFNGLISLISTPROC { _opaque: [u8; 0] }
+
+/// Opaque C struct: PFNGLISQUERYPROC (unsized, pointer-only)
+#[repr(C)]
+#[derive(Clone, Copy)]
+pub struct PFNGLISQUERYPROC { _opaque: [u8; 0] }
+
+/// Opaque C struct: PFNGLISRENDERBUFFERPROC (unsized, pointer-only)
+#[repr(C)]
+#[derive(Clone, Copy)]
+pub struct PFNGLISRENDERBUFFERPROC { _opaque: [u8; 0] }
+
+/// Opaque C struct: PFNGLISTEXTUREPROC (unsized, pointer-only)
+#[repr(C)]
+#[derive(Clone, Copy)]
+pub struct PFNGLISTEXTUREPROC { _opaque: [u8; 0] }
+
+/// Opaque C struct: PFNGLLIGHTFPROC (unsized, pointer-only)
+#[repr(C)]
+#[derive(Clone, Copy)]
+pub struct PFNGLLIGHTFPROC { _opaque: [u8; 0] }
+
+/// Opaque C struct: PFNGLLIGHTFVPROC (unsized, pointer-only)
+#[repr(C)]
+#[derive(Clone, Copy)]
+pub struct PFNGLLIGHTFVPROC { _opaque: [u8; 0] }
+
+/// Opaque C struct: PFNGLLIGHTIPROC (unsized, pointer-only)
+#[repr(C)]
+#[derive(Clone, Copy)]
+pub struct PFNGLLIGHTIPROC { _opaque: [u8; 0] }
+
+/// Opaque C struct: PFNGLLIGHTIVPROC (unsized, pointer-only)
+#[repr(C)]
+#[derive(Clone, Copy)]
+pub struct PFNGLLIGHTIVPROC { _opaque: [u8; 0] }
+
+/// Opaque C struct: PFNGLLIGHTMODELFPROC (unsized, pointer-only)
+#[repr(C)]
+#[derive(Clone, Copy)]
+pub struct PFNGLLIGHTMODELFPROC { _opaque: [u8; 0] }
+
+/// Opaque C struct: PFNGLLIGHTMODELFVPROC (unsized, pointer-only)
+#[repr(C)]
+#[derive(Clone, Copy)]
+pub struct PFNGLLIGHTMODELFVPROC { _opaque: [u8; 0] }
+
+/// Opaque C struct: PFNGLLIGHTMODELIPROC (unsized, pointer-only)
+#[repr(C)]
+#[derive(Clone, Copy)]
+pub struct PFNGLLIGHTMODELIPROC { _opaque: [u8; 0] }
+
+/// Opaque C struct: PFNGLLIGHTMODELIVPROC (unsized, pointer-only)
+#[repr(C)]
+#[derive(Clone, Copy)]
+pub struct PFNGLLIGHTMODELIVPROC { _opaque: [u8; 0] }
+
+/// Opaque C struct: PFNGLLINESTIPPLEPROC (unsized, pointer-only)
+#[repr(C)]
+#[derive(Clone, Copy)]
+pub struct PFNGLLINESTIPPLEPROC { _opaque: [u8; 0] }
+
+/// Opaque C struct: PFNGLLINEWIDTHPROC (unsized, pointer-only)
+#[repr(C)]
+#[derive(Clone, Copy)]
+pub struct PFNGLLINEWIDTHPROC { _opaque: [u8; 0] }
+
+/// Opaque C struct: PFNGLLISTBASEPROC (unsized, pointer-only)
+#[repr(C)]
+#[derive(Clone, Copy)]
+pub struct PFNGLLISTBASEPROC { _opaque: [u8; 0] }
+
+/// Opaque C struct: PFNGLLOADIDENTITYPROC (unsized, pointer-only)
+#[repr(C)]
+#[derive(Clone, Copy)]
+pub struct PFNGLLOADIDENTITYPROC { _opaque: [u8; 0] }
+
+/// Opaque C struct: PFNGLLOADMATRIXDPROC (unsized, pointer-only)
+#[repr(C)]
+#[derive(Clone, Copy)]
+pub struct PFNGLLOADMATRIXDPROC { _opaque: [u8; 0] }
+
+/// Opaque C struct: PFNGLLOADMATRIXFPROC (unsized, pointer-only)
+#[repr(C)]
+#[derive(Clone, Copy)]
+pub struct PFNGLLOADMATRIXFPROC { _opaque: [u8; 0] }
+
+/// Opaque C struct: PFNGLLOADNAMEPROC (unsized, pointer-only)
+#[repr(C)]
+#[derive(Clone, Copy)]
+pub struct PFNGLLOADNAMEPROC { _opaque: [u8; 0] }
+
+/// Opaque C struct: PFNGLLOADTRANSPOSEMATRIXDPROC (unsized, pointer-only)
+#[repr(C)]
+#[derive(Clone, Copy)]
+pub struct PFNGLLOADTRANSPOSEMATRIXDPROC { _opaque: [u8; 0] }
+
+/// Opaque C struct: PFNGLLOADTRANSPOSEMATRIXFPROC (unsized, pointer-only)
+#[repr(C)]
+#[derive(Clone, Copy)]
+pub struct PFNGLLOADTRANSPOSEMATRIXFPROC { _opaque: [u8; 0] }
+
+/// Opaque C struct: PFNGLLOGICOPPROC (unsized, pointer-only)
+#[repr(C)]
+#[derive(Clone, Copy)]
+pub struct PFNGLLOGICOPPROC { _opaque: [u8; 0] }
+
+/// Opaque C struct: PFNGLMAP1DPROC (unsized, pointer-only)
+#[repr(C)]
+#[derive(Clone, Copy)]
+pub struct PFNGLMAP1DPROC { _opaque: [u8; 0] }
+
+/// Opaque C struct: PFNGLMAP1FPROC (unsized, pointer-only)
+#[repr(C)]
+#[derive(Clone, Copy)]
+pub struct PFNGLMAP1FPROC { _opaque: [u8; 0] }
+
+/// Opaque C struct: PFNGLMAP2DPROC (unsized, pointer-only)
+#[repr(C)]
+#[derive(Clone, Copy)]
+pub struct PFNGLMAP2DPROC { _opaque: [u8; 0] }
+
+/// Opaque C struct: PFNGLMAP2FPROC (unsized, pointer-only)
+#[repr(C)]
+#[derive(Clone, Copy)]
+pub struct PFNGLMAP2FPROC { _opaque: [u8; 0] }
+
+/// Opaque C struct: PFNGLMAPBUFFERARBPROC (unsized, pointer-only)
+#[repr(C)]
+#[derive(Clone, Copy)]
+pub struct PFNGLMAPBUFFERARBPROC { _opaque: [u8; 0] }
+
+/// Opaque C struct: PFNGLMAPBUFFERPROC (unsized, pointer-only)
+#[repr(C)]
+#[derive(Clone, Copy)]
+pub struct PFNGLMAPBUFFERPROC { _opaque: [u8; 0] }
+
+/// Opaque C struct: PFNGLMAPGRID1DPROC (unsized, pointer-only)
+#[repr(C)]
+#[derive(Clone, Copy)]
+pub struct PFNGLMAPGRID1DPROC { _opaque: [u8; 0] }
+
+/// Opaque C struct: PFNGLMAPGRID1FPROC (unsized, pointer-only)
+#[repr(C)]
+#[derive(Clone, Copy)]
+pub struct PFNGLMAPGRID1FPROC { _opaque: [u8; 0] }
+
+/// Opaque C struct: PFNGLMAPGRID2DPROC (unsized, pointer-only)
+#[repr(C)]
+#[derive(Clone, Copy)]
+pub struct PFNGLMAPGRID2DPROC { _opaque: [u8; 0] }
+
+/// Opaque C struct: PFNGLMAPGRID2FPROC (unsized, pointer-only)
+#[repr(C)]
+#[derive(Clone, Copy)]
+pub struct PFNGLMAPGRID2FPROC { _opaque: [u8; 0] }
+
+/// Opaque C struct: PFNGLMATERIALFPROC (unsized, pointer-only)
+#[repr(C)]
+#[derive(Clone, Copy)]
+pub struct PFNGLMATERIALFPROC { _opaque: [u8; 0] }
+
+/// Opaque C struct: PFNGLMATERIALFVPROC (unsized, pointer-only)
+#[repr(C)]
+#[derive(Clone, Copy)]
+pub struct PFNGLMATERIALFVPROC { _opaque: [u8; 0] }
+
+/// Opaque C struct: PFNGLMATERIALIPROC (unsized, pointer-only)
+#[repr(C)]
+#[derive(Clone, Copy)]
+pub struct PFNGLMATERIALIPROC { _opaque: [u8; 0] }
+
+/// Opaque C struct: PFNGLMATERIALIVPROC (unsized, pointer-only)
+#[repr(C)]
+#[derive(Clone, Copy)]
+pub struct PFNGLMATERIALIVPROC { _opaque: [u8; 0] }
+
+/// Opaque C struct: PFNGLMATRIXMODEPROC (unsized, pointer-only)
+#[repr(C)]
+#[derive(Clone, Copy)]
+pub struct PFNGLMATRIXMODEPROC { _opaque: [u8; 0] }
+
+/// Opaque C struct: PFNGLMULTIDRAWARRAYSPROC (unsized, pointer-only)
+#[repr(C)]
+#[derive(Clone, Copy)]
+pub struct PFNGLMULTIDRAWARRAYSPROC { _opaque: [u8; 0] }
+
+/// Opaque C struct: PFNGLMULTIDRAWELEMENTSPROC (unsized, pointer-only)
+#[repr(C)]
+#[derive(Clone, Copy)]
+pub struct PFNGLMULTIDRAWELEMENTSPROC { _opaque: [u8; 0] }
+
+/// Opaque C struct: PFNGLMULTITEXCOORD1DPROC (unsized, pointer-only)
+#[repr(C)]
+#[derive(Clone, Copy)]
+pub struct PFNGLMULTITEXCOORD1DPROC { _opaque: [u8; 0] }
+
+/// Opaque C struct: PFNGLMULTITEXCOORD1DVPROC (unsized, pointer-only)
+#[repr(C)]
+#[derive(Clone, Copy)]
+pub struct PFNGLMULTITEXCOORD1DVPROC { _opaque: [u8; 0] }
+
+/// Opaque C struct: PFNGLMULTITEXCOORD1FPROC (unsized, pointer-only)
+#[repr(C)]
+#[derive(Clone, Copy)]
+pub struct PFNGLMULTITEXCOORD1FPROC { _opaque: [u8; 0] }
+
+/// Opaque C struct: PFNGLMULTITEXCOORD1FVPROC (unsized, pointer-only)
+#[repr(C)]
+#[derive(Clone, Copy)]
+pub struct PFNGLMULTITEXCOORD1FVPROC { _opaque: [u8; 0] }
+
+/// Opaque C struct: PFNGLMULTITEXCOORD1IPROC (unsized, pointer-only)
+#[repr(C)]
+#[derive(Clone, Copy)]
+pub struct PFNGLMULTITEXCOORD1IPROC { _opaque: [u8; 0] }
+
+/// Opaque C struct: PFNGLMULTITEXCOORD1IVPROC (unsized, pointer-only)
+#[repr(C)]
+#[derive(Clone, Copy)]
+pub struct PFNGLMULTITEXCOORD1IVPROC { _opaque: [u8; 0] }
+
+/// Opaque C struct: PFNGLMULTITEXCOORD1SPROC (unsized, pointer-only)
+#[repr(C)]
+#[derive(Clone, Copy)]
+pub struct PFNGLMULTITEXCOORD1SPROC { _opaque: [u8; 0] }
+
+/// Opaque C struct: PFNGLMULTITEXCOORD1SVPROC (unsized, pointer-only)
+#[repr(C)]
+#[derive(Clone, Copy)]
+pub struct PFNGLMULTITEXCOORD1SVPROC { _opaque: [u8; 0] }
+
+/// Opaque C struct: PFNGLMULTITEXCOORD2DPROC (unsized, pointer-only)
+#[repr(C)]
+#[derive(Clone, Copy)]
+pub struct PFNGLMULTITEXCOORD2DPROC { _opaque: [u8; 0] }
+
+/// Opaque C struct: PFNGLMULTITEXCOORD2DVPROC (unsized, pointer-only)
+#[repr(C)]
+#[derive(Clone, Copy)]
+pub struct PFNGLMULTITEXCOORD2DVPROC { _opaque: [u8; 0] }
+
+/// Opaque C struct: PFNGLMULTITEXCOORD2FPROC (unsized, pointer-only)
+#[repr(C)]
+#[derive(Clone, Copy)]
+pub struct PFNGLMULTITEXCOORD2FPROC { _opaque: [u8; 0] }
+
+/// Opaque C struct: PFNGLMULTITEXCOORD2FVPROC (unsized, pointer-only)
+#[repr(C)]
+#[derive(Clone, Copy)]
+pub struct PFNGLMULTITEXCOORD2FVPROC { _opaque: [u8; 0] }
+
+/// Opaque C struct: PFNGLMULTITEXCOORD2IPROC (unsized, pointer-only)
+#[repr(C)]
+#[derive(Clone, Copy)]
+pub struct PFNGLMULTITEXCOORD2IPROC { _opaque: [u8; 0] }
+
+/// Opaque C struct: PFNGLMULTITEXCOORD2IVPROC (unsized, pointer-only)
+#[repr(C)]
+#[derive(Clone, Copy)]
+pub struct PFNGLMULTITEXCOORD2IVPROC { _opaque: [u8; 0] }
+
+/// Opaque C struct: PFNGLMULTITEXCOORD2SPROC (unsized, pointer-only)
+#[repr(C)]
+#[derive(Clone, Copy)]
+pub struct PFNGLMULTITEXCOORD2SPROC { _opaque: [u8; 0] }
+
+/// Opaque C struct: PFNGLMULTITEXCOORD2SVPROC (unsized, pointer-only)
+#[repr(C)]
+#[derive(Clone, Copy)]
+pub struct PFNGLMULTITEXCOORD2SVPROC { _opaque: [u8; 0] }
+
+/// Opaque C struct: PFNGLMULTITEXCOORD3DPROC (unsized, pointer-only)
+#[repr(C)]
+#[derive(Clone, Copy)]
+pub struct PFNGLMULTITEXCOORD3DPROC { _opaque: [u8; 0] }
+
+/// Opaque C struct: PFNGLMULTITEXCOORD3DVPROC (unsized, pointer-only)
+#[repr(C)]
+#[derive(Clone, Copy)]
+pub struct PFNGLMULTITEXCOORD3DVPROC { _opaque: [u8; 0] }
+
+/// Opaque C struct: PFNGLMULTITEXCOORD3FPROC (unsized, pointer-only)
+#[repr(C)]
+#[derive(Clone, Copy)]
+pub struct PFNGLMULTITEXCOORD3FPROC { _opaque: [u8; 0] }
+
+/// Opaque C struct: PFNGLMULTITEXCOORD3FVPROC (unsized, pointer-only)
+#[repr(C)]
+#[derive(Clone, Copy)]
+pub struct PFNGLMULTITEXCOORD3FVPROC { _opaque: [u8; 0] }
+
+/// Opaque C struct: PFNGLMULTITEXCOORD3IPROC (unsized, pointer-only)
+#[repr(C)]
+#[derive(Clone, Copy)]
+pub struct PFNGLMULTITEXCOORD3IPROC { _opaque: [u8; 0] }
+
+/// Opaque C struct: PFNGLMULTITEXCOORD3IVPROC (unsized, pointer-only)
+#[repr(C)]
+#[derive(Clone, Copy)]
+pub struct PFNGLMULTITEXCOORD3IVPROC { _opaque: [u8; 0] }
+
+/// Opaque C struct: PFNGLMULTITEXCOORD3SPROC (unsized, pointer-only)
+#[repr(C)]
+#[derive(Clone, Copy)]
+pub struct PFNGLMULTITEXCOORD3SPROC { _opaque: [u8; 0] }
+
+/// Opaque C struct: PFNGLMULTITEXCOORD3SVPROC (unsized, pointer-only)
+#[repr(C)]
+#[derive(Clone, Copy)]
+pub struct PFNGLMULTITEXCOORD3SVPROC { _opaque: [u8; 0] }
+
+/// Opaque C struct: PFNGLMULTITEXCOORD4DPROC (unsized, pointer-only)
+#[repr(C)]
+#[derive(Clone, Copy)]
+pub struct PFNGLMULTITEXCOORD4DPROC { _opaque: [u8; 0] }
+
+/// Opaque C struct: PFNGLMULTITEXCOORD4DVPROC (unsized, pointer-only)
+#[repr(C)]
+#[derive(Clone, Copy)]
+pub struct PFNGLMULTITEXCOORD4DVPROC { _opaque: [u8; 0] }
+
+/// Opaque C struct: PFNGLMULTITEXCOORD4FPROC (unsized, pointer-only)
+#[repr(C)]
+#[derive(Clone, Copy)]
+pub struct PFNGLMULTITEXCOORD4FPROC { _opaque: [u8; 0] }
+
+/// Opaque C struct: PFNGLMULTITEXCOORD4FVPROC (unsized, pointer-only)
+#[repr(C)]
+#[derive(Clone, Copy)]
+pub struct PFNGLMULTITEXCOORD4FVPROC { _opaque: [u8; 0] }
+
+/// Opaque C struct: PFNGLMULTITEXCOORD4IPROC (unsized, pointer-only)
+#[repr(C)]
+#[derive(Clone, Copy)]
+pub struct PFNGLMULTITEXCOORD4IPROC { _opaque: [u8; 0] }
+
+/// Opaque C struct: PFNGLMULTITEXCOORD4IVPROC (unsized, pointer-only)
+#[repr(C)]
+#[derive(Clone, Copy)]
+pub struct PFNGLMULTITEXCOORD4IVPROC { _opaque: [u8; 0] }
+
+/// Opaque C struct: PFNGLMULTITEXCOORD4SPROC (unsized, pointer-only)
+#[repr(C)]
+#[derive(Clone, Copy)]
+pub struct PFNGLMULTITEXCOORD4SPROC { _opaque: [u8; 0] }
+
+/// Opaque C struct: PFNGLMULTITEXCOORD4SVPROC (unsized, pointer-only)
+#[repr(C)]
+#[derive(Clone, Copy)]
+pub struct PFNGLMULTITEXCOORD4SVPROC { _opaque: [u8; 0] }
+
+/// Opaque C struct: PFNGLMULTMATRIXDPROC (unsized, pointer-only)
+#[repr(C)]
+#[derive(Clone, Copy)]
+pub struct PFNGLMULTMATRIXDPROC { _opaque: [u8; 0] }
+
+/// Opaque C struct: PFNGLMULTMATRIXFPROC (unsized, pointer-only)
+#[repr(C)]
+#[derive(Clone, Copy)]
+pub struct PFNGLMULTMATRIXFPROC { _opaque: [u8; 0] }
+
+/// Opaque C struct: PFNGLMULTTRANSPOSEMATRIXDPROC (unsized, pointer-only)
+#[repr(C)]
+#[derive(Clone, Copy)]
+pub struct PFNGLMULTTRANSPOSEMATRIXDPROC { _opaque: [u8; 0] }
+
+/// Opaque C struct: PFNGLMULTTRANSPOSEMATRIXFPROC (unsized, pointer-only)
+#[repr(C)]
+#[derive(Clone, Copy)]
+pub struct PFNGLMULTTRANSPOSEMATRIXFPROC { _opaque: [u8; 0] }
+
+/// Opaque C struct: PFNGLNEWLISTPROC (unsized, pointer-only)
+#[repr(C)]
+#[derive(Clone, Copy)]
+pub struct PFNGLNEWLISTPROC { _opaque: [u8; 0] }
+
+/// Opaque C struct: PFNGLNORMAL3BPROC (unsized, pointer-only)
+#[repr(C)]
+#[derive(Clone, Copy)]
+pub struct PFNGLNORMAL3BPROC { _opaque: [u8; 0] }
+
+/// Opaque C struct: PFNGLNORMAL3BVPROC (unsized, pointer-only)
+#[repr(C)]
+#[derive(Clone, Copy)]
+pub struct PFNGLNORMAL3BVPROC { _opaque: [u8; 0] }
+
+/// Opaque C struct: PFNGLNORMAL3DPROC (unsized, pointer-only)
+#[repr(C)]
+#[derive(Clone, Copy)]
+pub struct PFNGLNORMAL3DPROC { _opaque: [u8; 0] }
+
+/// Opaque C struct: PFNGLNORMAL3DVPROC (unsized, pointer-only)
+#[repr(C)]
+#[derive(Clone, Copy)]
+pub struct PFNGLNORMAL3DVPROC { _opaque: [u8; 0] }
+
+/// Opaque C struct: PFNGLNORMAL3FPROC (unsized, pointer-only)
+#[repr(C)]
+#[derive(Clone, Copy)]
+pub struct PFNGLNORMAL3FPROC { _opaque: [u8; 0] }
+
+/// Opaque C struct: PFNGLNORMAL3FVPROC (unsized, pointer-only)
+#[repr(C)]
+#[derive(Clone, Copy)]
+pub struct PFNGLNORMAL3FVPROC { _opaque: [u8; 0] }
+
+/// Opaque C struct: PFNGLNORMAL3IPROC (unsized, pointer-only)
+#[repr(C)]
+#[derive(Clone, Copy)]
+pub struct PFNGLNORMAL3IPROC { _opaque: [u8; 0] }
+
+/// Opaque C struct: PFNGLNORMAL3IVPROC (unsized, pointer-only)
+#[repr(C)]
+#[derive(Clone, Copy)]
+pub struct PFNGLNORMAL3IVPROC { _opaque: [u8; 0] }
+
+/// Opaque C struct: PFNGLNORMAL3SPROC (unsized, pointer-only)
+#[repr(C)]
+#[derive(Clone, Copy)]
+pub struct PFNGLNORMAL3SPROC { _opaque: [u8; 0] }
+
+/// Opaque C struct: PFNGLNORMAL3SVPROC (unsized, pointer-only)
+#[repr(C)]
+#[derive(Clone, Copy)]
+pub struct PFNGLNORMAL3SVPROC { _opaque: [u8; 0] }
+
+/// Opaque C struct: PFNGLNORMALPOINTERPROC (unsized, pointer-only)
+#[repr(C)]
+#[derive(Clone, Copy)]
+pub struct PFNGLNORMALPOINTERPROC { _opaque: [u8; 0] }
+
+/// Opaque C struct: PFNGLOBJECTLABELKHRPROC (unsized, pointer-only)
+#[repr(C)]
+#[derive(Clone, Copy)]
+pub struct PFNGLOBJECTLABELKHRPROC { _opaque: [u8; 0] }
+
+/// Opaque C struct: PFNGLOBJECTLABELPROC (unsized, pointer-only)
+#[repr(C)]
+#[derive(Clone, Copy)]
+pub struct PFNGLOBJECTLABELPROC { _opaque: [u8; 0] }
+
+/// Opaque C struct: PFNGLOBJECTPTRLABELKHRPROC (unsized, pointer-only)
+#[repr(C)]
+#[derive(Clone, Copy)]
+pub struct PFNGLOBJECTPTRLABELKHRPROC { _opaque: [u8; 0] }
+
+/// Opaque C struct: PFNGLOBJECTPTRLABELPROC (unsized, pointer-only)
+#[repr(C)]
+#[derive(Clone, Copy)]
+pub struct PFNGLOBJECTPTRLABELPROC { _opaque: [u8; 0] }
+
+/// Opaque C struct: PFNGLORTHOPROC (unsized, pointer-only)
+#[repr(C)]
+#[derive(Clone, Copy)]
+pub struct PFNGLORTHOPROC { _opaque: [u8; 0] }
+
+/// Opaque C struct: PFNGLPASSTHROUGHPROC (unsized, pointer-only)
+#[repr(C)]
+#[derive(Clone, Copy)]
+pub struct PFNGLPASSTHROUGHPROC { _opaque: [u8; 0] }
+
+/// Opaque C struct: PFNGLPIXELMAPFVPROC (unsized, pointer-only)
+#[repr(C)]
+#[derive(Clone, Copy)]
+pub struct PFNGLPIXELMAPFVPROC { _opaque: [u8; 0] }
+
+/// Opaque C struct: PFNGLPIXELMAPUIVPROC (unsized, pointer-only)
+#[repr(C)]
+#[derive(Clone, Copy)]
+pub struct PFNGLPIXELMAPUIVPROC { _opaque: [u8; 0] }
+
+/// Opaque C struct: PFNGLPIXELMAPUSVPROC (unsized, pointer-only)
+#[repr(C)]
+#[derive(Clone, Copy)]
+pub struct PFNGLPIXELMAPUSVPROC { _opaque: [u8; 0] }
+
+/// Opaque C struct: PFNGLPIXELSTOREFPROC (unsized, pointer-only)
+#[repr(C)]
+#[derive(Clone, Copy)]
+pub struct PFNGLPIXELSTOREFPROC { _opaque: [u8; 0] }
+
+/// Opaque C struct: PFNGLPIXELSTOREIPROC (unsized, pointer-only)
+#[repr(C)]
+#[derive(Clone, Copy)]
+pub struct PFNGLPIXELSTOREIPROC { _opaque: [u8; 0] }
+
+/// Opaque C struct: PFNGLPIXELTRANSFERFPROC (unsized, pointer-only)
+#[repr(C)]
+#[derive(Clone, Copy)]
+pub struct PFNGLPIXELTRANSFERFPROC { _opaque: [u8; 0] }
+
+/// Opaque C struct: PFNGLPIXELTRANSFERIPROC (unsized, pointer-only)
+#[repr(C)]
+#[derive(Clone, Copy)]
+pub struct PFNGLPIXELTRANSFERIPROC { _opaque: [u8; 0] }
+
+/// Opaque C struct: PFNGLPIXELZOOMPROC (unsized, pointer-only)
+#[repr(C)]
+#[derive(Clone, Copy)]
+pub struct PFNGLPIXELZOOMPROC { _opaque: [u8; 0] }
+
+/// Opaque C struct: PFNGLPOINTPARAMETERFPROC (unsized, pointer-only)
+#[repr(C)]
+#[derive(Clone, Copy)]
+pub struct PFNGLPOINTPARAMETERFPROC { _opaque: [u8; 0] }
+
+/// Opaque C struct: PFNGLPOINTPARAMETERFVPROC (unsized, pointer-only)
+#[repr(C)]
+#[derive(Clone, Copy)]
+pub struct PFNGLPOINTPARAMETERFVPROC { _opaque: [u8; 0] }
+
+/// Opaque C struct: PFNGLPOINTPARAMETERIPROC (unsized, pointer-only)
+#[repr(C)]
+#[derive(Clone, Copy)]
+pub struct PFNGLPOINTPARAMETERIPROC { _opaque: [u8; 0] }
+
+/// Opaque C struct: PFNGLPOINTPARAMETERIVPROC (unsized, pointer-only)
+#[repr(C)]
+#[derive(Clone, Copy)]
+pub struct PFNGLPOINTPARAMETERIVPROC { _opaque: [u8; 0] }
+
+/// Opaque C struct: PFNGLPOINTSIZEPROC (unsized, pointer-only)
+#[repr(C)]
+#[derive(Clone, Copy)]
+pub struct PFNGLPOINTSIZEPROC { _opaque: [u8; 0] }
+
+/// Opaque C struct: PFNGLPOLYGONMODEPROC (unsized, pointer-only)
+#[repr(C)]
+#[derive(Clone, Copy)]
+pub struct PFNGLPOLYGONMODEPROC { _opaque: [u8; 0] }
+
+/// Opaque C struct: PFNGLPOLYGONOFFSETPROC (unsized, pointer-only)
+#[repr(C)]
+#[derive(Clone, Copy)]
+pub struct PFNGLPOLYGONOFFSETPROC { _opaque: [u8; 0] }
+
+/// Opaque C struct: PFNGLPOLYGONSTIPPLEPROC (unsized, pointer-only)
+#[repr(C)]
+#[derive(Clone, Copy)]
+pub struct PFNGLPOLYGONSTIPPLEPROC { _opaque: [u8; 0] }
+
+/// Opaque C struct: PFNGLPOPATTRIBPROC (unsized, pointer-only)
+#[repr(C)]
+#[derive(Clone, Copy)]
+pub struct PFNGLPOPATTRIBPROC { _opaque: [u8; 0] }
+
+/// Opaque C struct: PFNGLPOPCLIENTATTRIBPROC (unsized, pointer-only)
+#[repr(C)]
+#[derive(Clone, Copy)]
+pub struct PFNGLPOPCLIENTATTRIBPROC { _opaque: [u8; 0] }
+
+/// Opaque C struct: PFNGLPOPDEBUGGROUPKHRPROC (unsized, pointer-only)
+#[repr(C)]
+#[derive(Clone, Copy)]
+pub struct PFNGLPOPDEBUGGROUPKHRPROC { _opaque: [u8; 0] }
+
+/// Opaque C struct: PFNGLPOPDEBUGGROUPPROC (unsized, pointer-only)
+#[repr(C)]
+#[derive(Clone, Copy)]
+pub struct PFNGLPOPDEBUGGROUPPROC { _opaque: [u8; 0] }
+
+/// Opaque C struct: PFNGLPOPMATRIXPROC (unsized, pointer-only)
+#[repr(C)]
+#[derive(Clone, Copy)]
+pub struct PFNGLPOPMATRIXPROC { _opaque: [u8; 0] }
+
+/// Opaque C struct: PFNGLPOPNAMEPROC (unsized, pointer-only)
+#[repr(C)]
+#[derive(Clone, Copy)]
+pub struct PFNGLPOPNAMEPROC { _opaque: [u8; 0] }
+
+/// Opaque C struct: PFNGLPRIORITIZETEXTURESPROC (unsized, pointer-only)
+#[repr(C)]
+#[derive(Clone, Copy)]
+pub struct PFNGLPRIORITIZETEXTURESPROC { _opaque: [u8; 0] }
+
+/// Opaque C struct: PFNGLPUSHATTRIBPROC (unsized, pointer-only)
+#[repr(C)]
+#[derive(Clone, Copy)]
+pub struct PFNGLPUSHATTRIBPROC { _opaque: [u8; 0] }
+
+/// Opaque C struct: PFNGLPUSHCLIENTATTRIBPROC (unsized, pointer-only)
+#[repr(C)]
+#[derive(Clone, Copy)]
+pub struct PFNGLPUSHCLIENTATTRIBPROC { _opaque: [u8; 0] }
+
+/// Opaque C struct: PFNGLPUSHDEBUGGROUPKHRPROC (unsized, pointer-only)
+#[repr(C)]
+#[derive(Clone, Copy)]
+pub struct PFNGLPUSHDEBUGGROUPKHRPROC { _opaque: [u8; 0] }
+
+/// Opaque C struct: PFNGLPUSHDEBUGGROUPPROC (unsized, pointer-only)
+#[repr(C)]
+#[derive(Clone, Copy)]
+pub struct PFNGLPUSHDEBUGGROUPPROC { _opaque: [u8; 0] }
+
+/// Opaque C struct: PFNGLPUSHMATRIXPROC (unsized, pointer-only)
+#[repr(C)]
+#[derive(Clone, Copy)]
+pub struct PFNGLPUSHMATRIXPROC { _opaque: [u8; 0] }
+
+/// Opaque C struct: PFNGLPUSHNAMEPROC (unsized, pointer-only)
+#[repr(C)]
+#[derive(Clone, Copy)]
+pub struct PFNGLPUSHNAMEPROC { _opaque: [u8; 0] }
+
+/// Opaque C struct: PFNGLRASTERPOS2DPROC (unsized, pointer-only)
+#[repr(C)]
+#[derive(Clone, Copy)]
+pub struct PFNGLRASTERPOS2DPROC { _opaque: [u8; 0] }
+
+/// Opaque C struct: PFNGLRASTERPOS2DVPROC (unsized, pointer-only)
+#[repr(C)]
+#[derive(Clone, Copy)]
+pub struct PFNGLRASTERPOS2DVPROC { _opaque: [u8; 0] }
+
+/// Opaque C struct: PFNGLRASTERPOS2FPROC (unsized, pointer-only)
+#[repr(C)]
+#[derive(Clone, Copy)]
+pub struct PFNGLRASTERPOS2FPROC { _opaque: [u8; 0] }
+
+/// Opaque C struct: PFNGLRASTERPOS2FVPROC (unsized, pointer-only)
+#[repr(C)]
+#[derive(Clone, Copy)]
+pub struct PFNGLRASTERPOS2FVPROC { _opaque: [u8; 0] }
+
+/// Opaque C struct: PFNGLRASTERPOS2IPROC (unsized, pointer-only)
+#[repr(C)]
+#[derive(Clone, Copy)]
+pub struct PFNGLRASTERPOS2IPROC { _opaque: [u8; 0] }
+
+/// Opaque C struct: PFNGLRASTERPOS2IVPROC (unsized, pointer-only)
+#[repr(C)]
+#[derive(Clone, Copy)]
+pub struct PFNGLRASTERPOS2IVPROC { _opaque: [u8; 0] }
+
+/// Opaque C struct: PFNGLRASTERPOS2SPROC (unsized, pointer-only)
+#[repr(C)]
+#[derive(Clone, Copy)]
+pub struct PFNGLRASTERPOS2SPROC { _opaque: [u8; 0] }
+
+/// Opaque C struct: PFNGLRASTERPOS2SVPROC (unsized, pointer-only)
+#[repr(C)]
+#[derive(Clone, Copy)]
+pub struct PFNGLRASTERPOS2SVPROC { _opaque: [u8; 0] }
+
+/// Opaque C struct: PFNGLRASTERPOS3DPROC (unsized, pointer-only)
+#[repr(C)]
+#[derive(Clone, Copy)]
+pub struct PFNGLRASTERPOS3DPROC { _opaque: [u8; 0] }
+
+/// Opaque C struct: PFNGLRASTERPOS3DVPROC (unsized, pointer-only)
+#[repr(C)]
+#[derive(Clone, Copy)]
+pub struct PFNGLRASTERPOS3DVPROC { _opaque: [u8; 0] }
+
+/// Opaque C struct: PFNGLRASTERPOS3FPROC (unsized, pointer-only)
+#[repr(C)]
+#[derive(Clone, Copy)]
+pub struct PFNGLRASTERPOS3FPROC { _opaque: [u8; 0] }
+
+/// Opaque C struct: PFNGLRASTERPOS3FVPROC (unsized, pointer-only)
+#[repr(C)]
+#[derive(Clone, Copy)]
+pub struct PFNGLRASTERPOS3FVPROC { _opaque: [u8; 0] }
+
+/// Opaque C struct: PFNGLRASTERPOS3IPROC (unsized, pointer-only)
+#[repr(C)]
+#[derive(Clone, Copy)]
+pub struct PFNGLRASTERPOS3IPROC { _opaque: [u8; 0] }
+
+/// Opaque C struct: PFNGLRASTERPOS3IVPROC (unsized, pointer-only)
+#[repr(C)]
+#[derive(Clone, Copy)]
+pub struct PFNGLRASTERPOS3IVPROC { _opaque: [u8; 0] }
+
+/// Opaque C struct: PFNGLRASTERPOS3SPROC (unsized, pointer-only)
+#[repr(C)]
+#[derive(Clone, Copy)]
+pub struct PFNGLRASTERPOS3SPROC { _opaque: [u8; 0] }
+
+/// Opaque C struct: PFNGLRASTERPOS3SVPROC (unsized, pointer-only)
+#[repr(C)]
+#[derive(Clone, Copy)]
+pub struct PFNGLRASTERPOS3SVPROC { _opaque: [u8; 0] }
+
+/// Opaque C struct: PFNGLRASTERPOS4DPROC (unsized, pointer-only)
+#[repr(C)]
+#[derive(Clone, Copy)]
+pub struct PFNGLRASTERPOS4DPROC { _opaque: [u8; 0] }
+
+/// Opaque C struct: PFNGLRASTERPOS4DVPROC (unsized, pointer-only)
+#[repr(C)]
+#[derive(Clone, Copy)]
+pub struct PFNGLRASTERPOS4DVPROC { _opaque: [u8; 0] }
+
+/// Opaque C struct: PFNGLRASTERPOS4FPROC (unsized, pointer-only)
+#[repr(C)]
+#[derive(Clone, Copy)]
+pub struct PFNGLRASTERPOS4FPROC { _opaque: [u8; 0] }
+
+/// Opaque C struct: PFNGLRASTERPOS4FVPROC (unsized, pointer-only)
+#[repr(C)]
+#[derive(Clone, Copy)]
+pub struct PFNGLRASTERPOS4FVPROC { _opaque: [u8; 0] }
+
+/// Opaque C struct: PFNGLRASTERPOS4IPROC (unsized, pointer-only)
+#[repr(C)]
+#[derive(Clone, Copy)]
+pub struct PFNGLRASTERPOS4IPROC { _opaque: [u8; 0] }
+
+/// Opaque C struct: PFNGLRASTERPOS4IVPROC (unsized, pointer-only)
+#[repr(C)]
+#[derive(Clone, Copy)]
+pub struct PFNGLRASTERPOS4IVPROC { _opaque: [u8; 0] }
+
+/// Opaque C struct: PFNGLRASTERPOS4SPROC (unsized, pointer-only)
+#[repr(C)]
+#[derive(Clone, Copy)]
+pub struct PFNGLRASTERPOS4SPROC { _opaque: [u8; 0] }
+
+/// Opaque C struct: PFNGLRASTERPOS4SVPROC (unsized, pointer-only)
+#[repr(C)]
+#[derive(Clone, Copy)]
+pub struct PFNGLRASTERPOS4SVPROC { _opaque: [u8; 0] }
+
+/// Opaque C struct: PFNGLREADBUFFERPROC (unsized, pointer-only)
+#[repr(C)]
+#[derive(Clone, Copy)]
+pub struct PFNGLREADBUFFERPROC { _opaque: [u8; 0] }
+
+/// Opaque C struct: PFNGLREADPIXELSPROC (unsized, pointer-only)
+#[repr(C)]
+#[derive(Clone, Copy)]
+pub struct PFNGLREADPIXELSPROC { _opaque: [u8; 0] }
+
+/// Opaque C struct: PFNGLRECTDPROC (unsized, pointer-only)
+#[repr(C)]
+#[derive(Clone, Copy)]
+pub struct PFNGLRECTDPROC { _opaque: [u8; 0] }
+
+/// Opaque C struct: PFNGLRECTDVPROC (unsized, pointer-only)
+#[repr(C)]
+#[derive(Clone, Copy)]
+pub struct PFNGLRECTDVPROC { _opaque: [u8; 0] }
+
+/// Opaque C struct: PFNGLRECTFPROC (unsized, pointer-only)
+#[repr(C)]
+#[derive(Clone, Copy)]
+pub struct PFNGLRECTFPROC { _opaque: [u8; 0] }
+
+/// Opaque C struct: PFNGLRECTFVPROC (unsized, pointer-only)
+#[repr(C)]
+#[derive(Clone, Copy)]
+pub struct PFNGLRECTFVPROC { _opaque: [u8; 0] }
+
+/// Opaque C struct: PFNGLRECTIPROC (unsized, pointer-only)
+#[repr(C)]
+#[derive(Clone, Copy)]
+pub struct PFNGLRECTIPROC { _opaque: [u8; 0] }
+
+/// Opaque C struct: PFNGLRECTIVPROC (unsized, pointer-only)
+#[repr(C)]
+#[derive(Clone, Copy)]
+pub struct PFNGLRECTIVPROC { _opaque: [u8; 0] }
+
+/// Opaque C struct: PFNGLRECTSPROC (unsized, pointer-only)
+#[repr(C)]
+#[derive(Clone, Copy)]
+pub struct PFNGLRECTSPROC { _opaque: [u8; 0] }
+
+/// Opaque C struct: PFNGLRECTSVPROC (unsized, pointer-only)
+#[repr(C)]
+#[derive(Clone, Copy)]
+pub struct PFNGLRECTSVPROC { _opaque: [u8; 0] }
+
+/// Opaque C struct: PFNGLRENDERBUFFERSTORAGEMULTISAMPLEPROC (unsized, pointer-only)
+#[repr(C)]
+#[derive(Clone, Copy)]
+pub struct PFNGLRENDERBUFFERSTORAGEMULTISAMPLEPROC { _opaque: [u8; 0] }
+
+/// Opaque C struct: PFNGLRENDERBUFFERSTORAGEPROC (unsized, pointer-only)
+#[repr(C)]
+#[derive(Clone, Copy)]
+pub struct PFNGLRENDERBUFFERSTORAGEPROC { _opaque: [u8; 0] }
+
+/// Opaque C struct: PFNGLRENDERMODEPROC (unsized, pointer-only)
+#[repr(C)]
+#[derive(Clone, Copy)]
+pub struct PFNGLRENDERMODEPROC { _opaque: [u8; 0] }
+
+/// Opaque C struct: PFNGLROTATEDPROC (unsized, pointer-only)
+#[repr(C)]
+#[derive(Clone, Copy)]
+pub struct PFNGLROTATEDPROC { _opaque: [u8; 0] }
+
+/// Opaque C struct: PFNGLROTATEFPROC (unsized, pointer-only)
+#[repr(C)]
+#[derive(Clone, Copy)]
+pub struct PFNGLROTATEFPROC { _opaque: [u8; 0] }
+
+/// Opaque C struct: PFNGLSAMPLECOVERAGEPROC (unsized, pointer-only)
+#[repr(C)]
+#[derive(Clone, Copy)]
+pub struct PFNGLSAMPLECOVERAGEPROC { _opaque: [u8; 0] }
+
+/// Opaque C struct: PFNGLSCALEDPROC (unsized, pointer-only)
+#[repr(C)]
+#[derive(Clone, Copy)]
+pub struct PFNGLSCALEDPROC { _opaque: [u8; 0] }
+
+/// Opaque C struct: PFNGLSCALEFPROC (unsized, pointer-only)
+#[repr(C)]
+#[derive(Clone, Copy)]
+pub struct PFNGLSCALEFPROC { _opaque: [u8; 0] }
+
+/// Opaque C struct: PFNGLSCISSORPROC (unsized, pointer-only)
+#[repr(C)]
+#[derive(Clone, Copy)]
+pub struct PFNGLSCISSORPROC { _opaque: [u8; 0] }
+
+/// Opaque C struct: PFNGLSECONDARYCOLOR3BPROC (unsized, pointer-only)
+#[repr(C)]
+#[derive(Clone, Copy)]
+pub struct PFNGLSECONDARYCOLOR3BPROC { _opaque: [u8; 0] }
+
+/// Opaque C struct: PFNGLSECONDARYCOLOR3BVPROC (unsized, pointer-only)
+#[repr(C)]
+#[derive(Clone, Copy)]
+pub struct PFNGLSECONDARYCOLOR3BVPROC { _opaque: [u8; 0] }
+
+/// Opaque C struct: PFNGLSECONDARYCOLOR3DPROC (unsized, pointer-only)
+#[repr(C)]
+#[derive(Clone, Copy)]
+pub struct PFNGLSECONDARYCOLOR3DPROC { _opaque: [u8; 0] }
+
+/// Opaque C struct: PFNGLSECONDARYCOLOR3DVPROC (unsized, pointer-only)
+#[repr(C)]
+#[derive(Clone, Copy)]
+pub struct PFNGLSECONDARYCOLOR3DVPROC { _opaque: [u8; 0] }
+
+/// Opaque C struct: PFNGLSECONDARYCOLOR3FPROC (unsized, pointer-only)
+#[repr(C)]
+#[derive(Clone, Copy)]
+pub struct PFNGLSECONDARYCOLOR3FPROC { _opaque: [u8; 0] }
+
+/// Opaque C struct: PFNGLSECONDARYCOLOR3FVPROC (unsized, pointer-only)
+#[repr(C)]
+#[derive(Clone, Copy)]
+pub struct PFNGLSECONDARYCOLOR3FVPROC { _opaque: [u8; 0] }
+
+/// Opaque C struct: PFNGLSECONDARYCOLOR3IPROC (unsized, pointer-only)
+#[repr(C)]
+#[derive(Clone, Copy)]
+pub struct PFNGLSECONDARYCOLOR3IPROC { _opaque: [u8; 0] }
+
+/// Opaque C struct: PFNGLSECONDARYCOLOR3IVPROC (unsized, pointer-only)
+#[repr(C)]
+#[derive(Clone, Copy)]
+pub struct PFNGLSECONDARYCOLOR3IVPROC { _opaque: [u8; 0] }
+
+/// Opaque C struct: PFNGLSECONDARYCOLOR3SPROC (unsized, pointer-only)
+#[repr(C)]
+#[derive(Clone, Copy)]
+pub struct PFNGLSECONDARYCOLOR3SPROC { _opaque: [u8; 0] }
+
+/// Opaque C struct: PFNGLSECONDARYCOLOR3SVPROC (unsized, pointer-only)
+#[repr(C)]
+#[derive(Clone, Copy)]
+pub struct PFNGLSECONDARYCOLOR3SVPROC { _opaque: [u8; 0] }
+
+/// Opaque C struct: PFNGLSECONDARYCOLOR3UBPROC (unsized, pointer-only)
+#[repr(C)]
+#[derive(Clone, Copy)]
+pub struct PFNGLSECONDARYCOLOR3UBPROC { _opaque: [u8; 0] }
+
+/// Opaque C struct: PFNGLSECONDARYCOLOR3UBVPROC (unsized, pointer-only)
+#[repr(C)]
+#[derive(Clone, Copy)]
+pub struct PFNGLSECONDARYCOLOR3UBVPROC { _opaque: [u8; 0] }
+
+/// Opaque C struct: PFNGLSECONDARYCOLOR3UIPROC (unsized, pointer-only)
+#[repr(C)]
+#[derive(Clone, Copy)]
+pub struct PFNGLSECONDARYCOLOR3UIPROC { _opaque: [u8; 0] }
+
+/// Opaque C struct: PFNGLSECONDARYCOLOR3UIVPROC (unsized, pointer-only)
+#[repr(C)]
+#[derive(Clone, Copy)]
+pub struct PFNGLSECONDARYCOLOR3UIVPROC { _opaque: [u8; 0] }
+
+/// Opaque C struct: PFNGLSECONDARYCOLOR3USPROC (unsized, pointer-only)
+#[repr(C)]
+#[derive(Clone, Copy)]
+pub struct PFNGLSECONDARYCOLOR3USPROC { _opaque: [u8; 0] }
+
+/// Opaque C struct: PFNGLSECONDARYCOLOR3USVPROC (unsized, pointer-only)
+#[repr(C)]
+#[derive(Clone, Copy)]
+pub struct PFNGLSECONDARYCOLOR3USVPROC { _opaque: [u8; 0] }
+
+/// Opaque C struct: PFNGLSECONDARYCOLORPOINTERPROC (unsized, pointer-only)
+#[repr(C)]
+#[derive(Clone, Copy)]
+pub struct PFNGLSECONDARYCOLORPOINTERPROC { _opaque: [u8; 0] }
+
+/// Opaque C struct: PFNGLSELECTBUFFERPROC (unsized, pointer-only)
+#[repr(C)]
+#[derive(Clone, Copy)]
+pub struct PFNGLSELECTBUFFERPROC { _opaque: [u8; 0] }
+
+/// Opaque C struct: PFNGLSHADEMODELPROC (unsized, pointer-only)
+#[repr(C)]
+#[derive(Clone, Copy)]
+pub struct PFNGLSHADEMODELPROC { _opaque: [u8; 0] }
+
+/// Opaque C struct: PFNGLSTENCILFUNCPROC (unsized, pointer-only)
+#[repr(C)]
+#[derive(Clone, Copy)]
+pub struct PFNGLSTENCILFUNCPROC { _opaque: [u8; 0] }
+
+/// Opaque C struct: PFNGLSTENCILMASKPROC (unsized, pointer-only)
+#[repr(C)]
+#[derive(Clone, Copy)]
+pub struct PFNGLSTENCILMASKPROC { _opaque: [u8; 0] }
+
+/// Opaque C struct: PFNGLSTENCILOPPROC (unsized, pointer-only)
+#[repr(C)]
+#[derive(Clone, Copy)]
+pub struct PFNGLSTENCILOPPROC { _opaque: [u8; 0] }
+
+/// Opaque C struct: PFNGLTEXCOORD1DPROC (unsized, pointer-only)
+#[repr(C)]
+#[derive(Clone, Copy)]
+pub struct PFNGLTEXCOORD1DPROC { _opaque: [u8; 0] }
+
+/// Opaque C struct: PFNGLTEXCOORD1DVPROC (unsized, pointer-only)
+#[repr(C)]
+#[derive(Clone, Copy)]
+pub struct PFNGLTEXCOORD1DVPROC { _opaque: [u8; 0] }
+
+/// Opaque C struct: PFNGLTEXCOORD1FPROC (unsized, pointer-only)
+#[repr(C)]
+#[derive(Clone, Copy)]
+pub struct PFNGLTEXCOORD1FPROC { _opaque: [u8; 0] }
+
+/// Opaque C struct: PFNGLTEXCOORD1FVPROC (unsized, pointer-only)
+#[repr(C)]
+#[derive(Clone, Copy)]
+pub struct PFNGLTEXCOORD1FVPROC { _opaque: [u8; 0] }
+
+/// Opaque C struct: PFNGLTEXCOORD1IPROC (unsized, pointer-only)
+#[repr(C)]
+#[derive(Clone, Copy)]
+pub struct PFNGLTEXCOORD1IPROC { _opaque: [u8; 0] }
+
+/// Opaque C struct: PFNGLTEXCOORD1IVPROC (unsized, pointer-only)
+#[repr(C)]
+#[derive(Clone, Copy)]
+pub struct PFNGLTEXCOORD1IVPROC { _opaque: [u8; 0] }
+
+/// Opaque C struct: PFNGLTEXCOORD1SPROC (unsized, pointer-only)
+#[repr(C)]
+#[derive(Clone, Copy)]
+pub struct PFNGLTEXCOORD1SPROC { _opaque: [u8; 0] }
+
+/// Opaque C struct: PFNGLTEXCOORD1SVPROC (unsized, pointer-only)
+#[repr(C)]
+#[derive(Clone, Copy)]
+pub struct PFNGLTEXCOORD1SVPROC { _opaque: [u8; 0] }
+
+/// Opaque C struct: PFNGLTEXCOORD2DPROC (unsized, pointer-only)
+#[repr(C)]
+#[derive(Clone, Copy)]
+pub struct PFNGLTEXCOORD2DPROC { _opaque: [u8; 0] }
+
+/// Opaque C struct: PFNGLTEXCOORD2DVPROC (unsized, pointer-only)
+#[repr(C)]
+#[derive(Clone, Copy)]
+pub struct PFNGLTEXCOORD2DVPROC { _opaque: [u8; 0] }
+
+/// Opaque C struct: PFNGLTEXCOORD2FPROC (unsized, pointer-only)
+#[repr(C)]
+#[derive(Clone, Copy)]
+pub struct PFNGLTEXCOORD2FPROC { _opaque: [u8; 0] }
+
+/// Opaque C struct: PFNGLTEXCOORD2FVPROC (unsized, pointer-only)
+#[repr(C)]
+#[derive(Clone, Copy)]
+pub struct PFNGLTEXCOORD2FVPROC { _opaque: [u8; 0] }
+
+/// Opaque C struct: PFNGLTEXCOORD2IPROC (unsized, pointer-only)
+#[repr(C)]
+#[derive(Clone, Copy)]
+pub struct PFNGLTEXCOORD2IPROC { _opaque: [u8; 0] }
+
+/// Opaque C struct: PFNGLTEXCOORD2IVPROC (unsized, pointer-only)
+#[repr(C)]
+#[derive(Clone, Copy)]
+pub struct PFNGLTEXCOORD2IVPROC { _opaque: [u8; 0] }
+
+/// Opaque C struct: PFNGLTEXCOORD2SPROC (unsized, pointer-only)
+#[repr(C)]
+#[derive(Clone, Copy)]
+pub struct PFNGLTEXCOORD2SPROC { _opaque: [u8; 0] }
+
+/// Opaque C struct: PFNGLTEXCOORD2SVPROC (unsized, pointer-only)
+#[repr(C)]
+#[derive(Clone, Copy)]
+pub struct PFNGLTEXCOORD2SVPROC { _opaque: [u8; 0] }
+
+/// Opaque C struct: PFNGLTEXCOORD3DPROC (unsized, pointer-only)
+#[repr(C)]
+#[derive(Clone, Copy)]
+pub struct PFNGLTEXCOORD3DPROC { _opaque: [u8; 0] }
+
+/// Opaque C struct: PFNGLTEXCOORD3DVPROC (unsized, pointer-only)
+#[repr(C)]
+#[derive(Clone, Copy)]
+pub struct PFNGLTEXCOORD3DVPROC { _opaque: [u8; 0] }
+
+/// Opaque C struct: PFNGLTEXCOORD3FPROC (unsized, pointer-only)
+#[repr(C)]
+#[derive(Clone, Copy)]
+pub struct PFNGLTEXCOORD3FPROC { _opaque: [u8; 0] }
+
+/// Opaque C struct: PFNGLTEXCOORD3FVPROC (unsized, pointer-only)
+#[repr(C)]
+#[derive(Clone, Copy)]
+pub struct PFNGLTEXCOORD3FVPROC { _opaque: [u8; 0] }
+
+/// Opaque C struct: PFNGLTEXCOORD3IPROC (unsized, pointer-only)
+#[repr(C)]
+#[derive(Clone, Copy)]
+pub struct PFNGLTEXCOORD3IPROC { _opaque: [u8; 0] }
+
+/// Opaque C struct: PFNGLTEXCOORD3IVPROC (unsized, pointer-only)
+#[repr(C)]
+#[derive(Clone, Copy)]
+pub struct PFNGLTEXCOORD3IVPROC { _opaque: [u8; 0] }
+
+/// Opaque C struct: PFNGLTEXCOORD3SPROC (unsized, pointer-only)
+#[repr(C)]
+#[derive(Clone, Copy)]
+pub struct PFNGLTEXCOORD3SPROC { _opaque: [u8; 0] }
+
+/// Opaque C struct: PFNGLTEXCOORD3SVPROC (unsized, pointer-only)
+#[repr(C)]
+#[derive(Clone, Copy)]
+pub struct PFNGLTEXCOORD3SVPROC { _opaque: [u8; 0] }
+
+/// Opaque C struct: PFNGLTEXCOORD4DPROC (unsized, pointer-only)
+#[repr(C)]
+#[derive(Clone, Copy)]
+pub struct PFNGLTEXCOORD4DPROC { _opaque: [u8; 0] }
+
+/// Opaque C struct: PFNGLTEXCOORD4DVPROC (unsized, pointer-only)
+#[repr(C)]
+#[derive(Clone, Copy)]
+pub struct PFNGLTEXCOORD4DVPROC { _opaque: [u8; 0] }
+
+/// Opaque C struct: PFNGLTEXCOORD4FPROC (unsized, pointer-only)
+#[repr(C)]
+#[derive(Clone, Copy)]
+pub struct PFNGLTEXCOORD4FPROC { _opaque: [u8; 0] }
+
+/// Opaque C struct: PFNGLTEXCOORD4FVPROC (unsized, pointer-only)
+#[repr(C)]
+#[derive(Clone, Copy)]
+pub struct PFNGLTEXCOORD4FVPROC { _opaque: [u8; 0] }
+
+/// Opaque C struct: PFNGLTEXCOORD4IPROC (unsized, pointer-only)
+#[repr(C)]
+#[derive(Clone, Copy)]
+pub struct PFNGLTEXCOORD4IPROC { _opaque: [u8; 0] }
+
+/// Opaque C struct: PFNGLTEXCOORD4IVPROC (unsized, pointer-only)
+#[repr(C)]
+#[derive(Clone, Copy)]
+pub struct PFNGLTEXCOORD4IVPROC { _opaque: [u8; 0] }
+
+/// Opaque C struct: PFNGLTEXCOORD4SPROC (unsized, pointer-only)
+#[repr(C)]
+#[derive(Clone, Copy)]
+pub struct PFNGLTEXCOORD4SPROC { _opaque: [u8; 0] }
+
+/// Opaque C struct: PFNGLTEXCOORD4SVPROC (unsized, pointer-only)
+#[repr(C)]
+#[derive(Clone, Copy)]
+pub struct PFNGLTEXCOORD4SVPROC { _opaque: [u8; 0] }
+
+/// Opaque C struct: PFNGLTEXCOORDPOINTERPROC (unsized, pointer-only)
+#[repr(C)]
+#[derive(Clone, Copy)]
+pub struct PFNGLTEXCOORDPOINTERPROC { _opaque: [u8; 0] }
+
+/// Opaque C struct: PFNGLTEXENVFPROC (unsized, pointer-only)
+#[repr(C)]
+#[derive(Clone, Copy)]
+pub struct PFNGLTEXENVFPROC { _opaque: [u8; 0] }
+
+/// Opaque C struct: PFNGLTEXENVFVPROC (unsized, pointer-only)
+#[repr(C)]
+#[derive(Clone, Copy)]
+pub struct PFNGLTEXENVFVPROC { _opaque: [u8; 0] }
+
+/// Opaque C struct: PFNGLTEXENVIPROC (unsized, pointer-only)
+#[repr(C)]
+#[derive(Clone, Copy)]
+pub struct PFNGLTEXENVIPROC { _opaque: [u8; 0] }
+
+/// Opaque C struct: PFNGLTEXENVIVPROC (unsized, pointer-only)
+#[repr(C)]
+#[derive(Clone, Copy)]
+pub struct PFNGLTEXENVIVPROC { _opaque: [u8; 0] }
+
+/// Opaque C struct: PFNGLTEXGENDPROC (unsized, pointer-only)
+#[repr(C)]
+#[derive(Clone, Copy)]
+pub struct PFNGLTEXGENDPROC { _opaque: [u8; 0] }
+
+/// Opaque C struct: PFNGLTEXGENDVPROC (unsized, pointer-only)
+#[repr(C)]
+#[derive(Clone, Copy)]
+pub struct PFNGLTEXGENDVPROC { _opaque: [u8; 0] }
+
+/// Opaque C struct: PFNGLTEXGENFPROC (unsized, pointer-only)
+#[repr(C)]
+#[derive(Clone, Copy)]
+pub struct PFNGLTEXGENFPROC { _opaque: [u8; 0] }
+
+/// Opaque C struct: PFNGLTEXGENFVPROC (unsized, pointer-only)
+#[repr(C)]
+#[derive(Clone, Copy)]
+pub struct PFNGLTEXGENFVPROC { _opaque: [u8; 0] }
+
+/// Opaque C struct: PFNGLTEXGENIPROC (unsized, pointer-only)
+#[repr(C)]
+#[derive(Clone, Copy)]
+pub struct PFNGLTEXGENIPROC { _opaque: [u8; 0] }
+
+/// Opaque C struct: PFNGLTEXGENIVPROC (unsized, pointer-only)
+#[repr(C)]
+#[derive(Clone, Copy)]
+pub struct PFNGLTEXGENIVPROC { _opaque: [u8; 0] }
+
+/// Opaque C struct: PFNGLTEXIMAGE1DPROC (unsized, pointer-only)
+#[repr(C)]
+#[derive(Clone, Copy)]
+pub struct PFNGLTEXIMAGE1DPROC { _opaque: [u8; 0] }
+
+/// Opaque C struct: PFNGLTEXIMAGE2DPROC (unsized, pointer-only)
+#[repr(C)]
+#[derive(Clone, Copy)]
+pub struct PFNGLTEXIMAGE2DPROC { _opaque: [u8; 0] }
+
+/// Opaque C struct: PFNGLTEXIMAGE3DPROC (unsized, pointer-only)
+#[repr(C)]
+#[derive(Clone, Copy)]
+pub struct PFNGLTEXIMAGE3DPROC { _opaque: [u8; 0] }
+
+/// Opaque C struct: PFNGLTEXPARAMETERFPROC (unsized, pointer-only)
+#[repr(C)]
+#[derive(Clone, Copy)]
+pub struct PFNGLTEXPARAMETERFPROC { _opaque: [u8; 0] }
+
+/// Opaque C struct: PFNGLTEXPARAMETERFVPROC (unsized, pointer-only)
+#[repr(C)]
+#[derive(Clone, Copy)]
+pub struct PFNGLTEXPARAMETERFVPROC { _opaque: [u8; 0] }
+
+/// Opaque C struct: PFNGLTEXPARAMETERIPROC (unsized, pointer-only)
+#[repr(C)]
+#[derive(Clone, Copy)]
+pub struct PFNGLTEXPARAMETERIPROC { _opaque: [u8; 0] }
+
+/// Opaque C struct: PFNGLTEXPARAMETERIVPROC (unsized, pointer-only)
+#[repr(C)]
+#[derive(Clone, Copy)]
+pub struct PFNGLTEXPARAMETERIVPROC { _opaque: [u8; 0] }
+
+/// Opaque C struct: PFNGLTEXSUBIMAGE1DPROC (unsized, pointer-only)
+#[repr(C)]
+#[derive(Clone, Copy)]
+pub struct PFNGLTEXSUBIMAGE1DPROC { _opaque: [u8; 0] }
+
+/// Opaque C struct: PFNGLTEXSUBIMAGE2DPROC (unsized, pointer-only)
+#[repr(C)]
+#[derive(Clone, Copy)]
+pub struct PFNGLTEXSUBIMAGE2DPROC { _opaque: [u8; 0] }
+
+/// Opaque C struct: PFNGLTEXSUBIMAGE3DPROC (unsized, pointer-only)
+#[repr(C)]
+#[derive(Clone, Copy)]
+pub struct PFNGLTEXSUBIMAGE3DPROC { _opaque: [u8; 0] }
+
+/// Opaque C struct: PFNGLTRANSLATEDPROC (unsized, pointer-only)
+#[repr(C)]
+#[derive(Clone, Copy)]
+pub struct PFNGLTRANSLATEDPROC { _opaque: [u8; 0] }
+
+/// Opaque C struct: PFNGLTRANSLATEFPROC (unsized, pointer-only)
+#[repr(C)]
+#[derive(Clone, Copy)]
+pub struct PFNGLTRANSLATEFPROC { _opaque: [u8; 0] }
+
+/// Opaque C struct: PFNGLUNMAPBUFFERARBPROC (unsized, pointer-only)
+#[repr(C)]
+#[derive(Clone, Copy)]
+pub struct PFNGLUNMAPBUFFERARBPROC { _opaque: [u8; 0] }
+
+/// Opaque C struct: PFNGLUNMAPBUFFERPROC (unsized, pointer-only)
+#[repr(C)]
+#[derive(Clone, Copy)]
+pub struct PFNGLUNMAPBUFFERPROC { _opaque: [u8; 0] }
+
+/// Opaque C struct: PFNGLVERTEX2DPROC (unsized, pointer-only)
+#[repr(C)]
+#[derive(Clone, Copy)]
+pub struct PFNGLVERTEX2DPROC { _opaque: [u8; 0] }
+
+/// Opaque C struct: PFNGLVERTEX2DVPROC (unsized, pointer-only)
+#[repr(C)]
+#[derive(Clone, Copy)]
+pub struct PFNGLVERTEX2DVPROC { _opaque: [u8; 0] }
+
+/// Opaque C struct: PFNGLVERTEX2FPROC (unsized, pointer-only)
+#[repr(C)]
+#[derive(Clone, Copy)]
+pub struct PFNGLVERTEX2FPROC { _opaque: [u8; 0] }
+
+/// Opaque C struct: PFNGLVERTEX2FVPROC (unsized, pointer-only)
+#[repr(C)]
+#[derive(Clone, Copy)]
+pub struct PFNGLVERTEX2FVPROC { _opaque: [u8; 0] }
+
+/// Opaque C struct: PFNGLVERTEX2IPROC (unsized, pointer-only)
+#[repr(C)]
+#[derive(Clone, Copy)]
+pub struct PFNGLVERTEX2IPROC { _opaque: [u8; 0] }
+
+/// Opaque C struct: PFNGLVERTEX2IVPROC (unsized, pointer-only)
+#[repr(C)]
+#[derive(Clone, Copy)]
+pub struct PFNGLVERTEX2IVPROC { _opaque: [u8; 0] }
+
+/// Opaque C struct: PFNGLVERTEX2SPROC (unsized, pointer-only)
+#[repr(C)]
+#[derive(Clone, Copy)]
+pub struct PFNGLVERTEX2SPROC { _opaque: [u8; 0] }
+
+/// Opaque C struct: PFNGLVERTEX2SVPROC (unsized, pointer-only)
+#[repr(C)]
+#[derive(Clone, Copy)]
+pub struct PFNGLVERTEX2SVPROC { _opaque: [u8; 0] }
+
+/// Opaque C struct: PFNGLVERTEX3DPROC (unsized, pointer-only)
+#[repr(C)]
+#[derive(Clone, Copy)]
+pub struct PFNGLVERTEX3DPROC { _opaque: [u8; 0] }
+
+/// Opaque C struct: PFNGLVERTEX3DVPROC (unsized, pointer-only)
+#[repr(C)]
+#[derive(Clone, Copy)]
+pub struct PFNGLVERTEX3DVPROC { _opaque: [u8; 0] }
+
+/// Opaque C struct: PFNGLVERTEX3FPROC (unsized, pointer-only)
+#[repr(C)]
+#[derive(Clone, Copy)]
+pub struct PFNGLVERTEX3FPROC { _opaque: [u8; 0] }
+
+/// Opaque C struct: PFNGLVERTEX3FVPROC (unsized, pointer-only)
+#[repr(C)]
+#[derive(Clone, Copy)]
+pub struct PFNGLVERTEX3FVPROC { _opaque: [u8; 0] }
+
+/// Opaque C struct: PFNGLVERTEX3IPROC (unsized, pointer-only)
+#[repr(C)]
+#[derive(Clone, Copy)]
+pub struct PFNGLVERTEX3IPROC { _opaque: [u8; 0] }
+
+/// Opaque C struct: PFNGLVERTEX3IVPROC (unsized, pointer-only)
+#[repr(C)]
+#[derive(Clone, Copy)]
+pub struct PFNGLVERTEX3IVPROC { _opaque: [u8; 0] }
+
+/// Opaque C struct: PFNGLVERTEX3SPROC (unsized, pointer-only)
+#[repr(C)]
+#[derive(Clone, Copy)]
+pub struct PFNGLVERTEX3SPROC { _opaque: [u8; 0] }
+
+/// Opaque C struct: PFNGLVERTEX3SVPROC (unsized, pointer-only)
+#[repr(C)]
+#[derive(Clone, Copy)]
+pub struct PFNGLVERTEX3SVPROC { _opaque: [u8; 0] }
+
+/// Opaque C struct: PFNGLVERTEX4DPROC (unsized, pointer-only)
+#[repr(C)]
+#[derive(Clone, Copy)]
+pub struct PFNGLVERTEX4DPROC { _opaque: [u8; 0] }
+
+/// Opaque C struct: PFNGLVERTEX4DVPROC (unsized, pointer-only)
+#[repr(C)]
+#[derive(Clone, Copy)]
+pub struct PFNGLVERTEX4DVPROC { _opaque: [u8; 0] }
+
+/// Opaque C struct: PFNGLVERTEX4FPROC (unsized, pointer-only)
+#[repr(C)]
+#[derive(Clone, Copy)]
+pub struct PFNGLVERTEX4FPROC { _opaque: [u8; 0] }
+
+/// Opaque C struct: PFNGLVERTEX4FVPROC (unsized, pointer-only)
+#[repr(C)]
+#[derive(Clone, Copy)]
+pub struct PFNGLVERTEX4FVPROC { _opaque: [u8; 0] }
+
+/// Opaque C struct: PFNGLVERTEX4IPROC (unsized, pointer-only)
+#[repr(C)]
+#[derive(Clone, Copy)]
+pub struct PFNGLVERTEX4IPROC { _opaque: [u8; 0] }
+
+/// Opaque C struct: PFNGLVERTEX4IVPROC (unsized, pointer-only)
+#[repr(C)]
+#[derive(Clone, Copy)]
+pub struct PFNGLVERTEX4IVPROC { _opaque: [u8; 0] }
+
+/// Opaque C struct: PFNGLVERTEX4SPROC (unsized, pointer-only)
+#[repr(C)]
+#[derive(Clone, Copy)]
+pub struct PFNGLVERTEX4SPROC { _opaque: [u8; 0] }
+
+/// Opaque C struct: PFNGLVERTEX4SVPROC (unsized, pointer-only)
+#[repr(C)]
+#[derive(Clone, Copy)]
+pub struct PFNGLVERTEX4SVPROC { _opaque: [u8; 0] }
+
+/// Opaque C struct: PFNGLVERTEXPOINTERPROC (unsized, pointer-only)
+#[repr(C)]
+#[derive(Clone, Copy)]
+pub struct PFNGLVERTEXPOINTERPROC { _opaque: [u8; 0] }
+
+/// Opaque C struct: PFNGLVIEWPORTPROC (unsized, pointer-only)
+#[repr(C)]
+#[derive(Clone, Copy)]
+pub struct PFNGLVIEWPORTPROC { _opaque: [u8; 0] }
+
+/// Opaque C struct: PFNGLWINDOWPOS2DPROC (unsized, pointer-only)
+#[repr(C)]
+#[derive(Clone, Copy)]
+pub struct PFNGLWINDOWPOS2DPROC { _opaque: [u8; 0] }
+
+/// Opaque C struct: PFNGLWINDOWPOS2DVPROC (unsized, pointer-only)
+#[repr(C)]
+#[derive(Clone, Copy)]
+pub struct PFNGLWINDOWPOS2DVPROC { _opaque: [u8; 0] }
+
+/// Opaque C struct: PFNGLWINDOWPOS2FPROC (unsized, pointer-only)
+#[repr(C)]
+#[derive(Clone, Copy)]
+pub struct PFNGLWINDOWPOS2FPROC { _opaque: [u8; 0] }
+
+/// Opaque C struct: PFNGLWINDOWPOS2FVPROC (unsized, pointer-only)
+#[repr(C)]
+#[derive(Clone, Copy)]
+pub struct PFNGLWINDOWPOS2FVPROC { _opaque: [u8; 0] }
+
+/// Opaque C struct: PFNGLWINDOWPOS2IPROC (unsized, pointer-only)
+#[repr(C)]
+#[derive(Clone, Copy)]
+pub struct PFNGLWINDOWPOS2IPROC { _opaque: [u8; 0] }
+
+/// Opaque C struct: PFNGLWINDOWPOS2IVPROC (unsized, pointer-only)
+#[repr(C)]
+#[derive(Clone, Copy)]
+pub struct PFNGLWINDOWPOS2IVPROC { _opaque: [u8; 0] }
+
+/// Opaque C struct: PFNGLWINDOWPOS2SPROC (unsized, pointer-only)
+#[repr(C)]
+#[derive(Clone, Copy)]
+pub struct PFNGLWINDOWPOS2SPROC { _opaque: [u8; 0] }
+
+/// Opaque C struct: PFNGLWINDOWPOS2SVPROC (unsized, pointer-only)
+#[repr(C)]
+#[derive(Clone, Copy)]
+pub struct PFNGLWINDOWPOS2SVPROC { _opaque: [u8; 0] }
+
+/// Opaque C struct: PFNGLWINDOWPOS3DPROC (unsized, pointer-only)
+#[repr(C)]
+#[derive(Clone, Copy)]
+pub struct PFNGLWINDOWPOS3DPROC { _opaque: [u8; 0] }
+
+/// Opaque C struct: PFNGLWINDOWPOS3DVPROC (unsized, pointer-only)
+#[repr(C)]
+#[derive(Clone, Copy)]
+pub struct PFNGLWINDOWPOS3DVPROC { _opaque: [u8; 0] }
+
+/// Opaque C struct: PFNGLWINDOWPOS3FPROC (unsized, pointer-only)
+#[repr(C)]
+#[derive(Clone, Copy)]
+pub struct PFNGLWINDOWPOS3FPROC { _opaque: [u8; 0] }
+
+/// Opaque C struct: PFNGLWINDOWPOS3FVPROC (unsized, pointer-only)
+#[repr(C)]
+#[derive(Clone, Copy)]
+pub struct PFNGLWINDOWPOS3FVPROC { _opaque: [u8; 0] }
+
+/// Opaque C struct: PFNGLWINDOWPOS3IPROC (unsized, pointer-only)
+#[repr(C)]
+#[derive(Clone, Copy)]
+pub struct PFNGLWINDOWPOS3IPROC { _opaque: [u8; 0] }
+
+/// Opaque C struct: PFNGLWINDOWPOS3IVPROC (unsized, pointer-only)
+#[repr(C)]
+#[derive(Clone, Copy)]
+pub struct PFNGLWINDOWPOS3IVPROC { _opaque: [u8; 0] }
+
+/// Opaque C struct: PFNGLWINDOWPOS3SPROC (unsized, pointer-only)
+#[repr(C)]
+#[derive(Clone, Copy)]
+pub struct PFNGLWINDOWPOS3SPROC { _opaque: [u8; 0] }
+
+/// Opaque C struct: PFNGLWINDOWPOS3SVPROC (unsized, pointer-only)
+#[repr(C)]
+#[derive(Clone, Copy)]
+pub struct PFNGLWINDOWPOS3SVPROC { _opaque: [u8; 0] }
+
 /// Sized opaque C struct: Polytope (104 bytes, align 8)
 #[repr(C, align(8))]
 #[derive(Clone, Copy)]
@@ -258,6 +2783,11 @@ pub struct mjWarningStat { _opaque: [u8; 0] }
 #[derive(Clone, Copy)]
 pub struct mjcPair { _opaque: [u8; 0] }
 
+/// Opaque C struct: mjfAct (unsized, pointer-only)
+#[repr(C)]
+#[derive(Clone, Copy)]
+pub struct mjfAct { _opaque: [u8; 0] }
+
 /// Sized opaque C struct: mjfCanDecode (8 bytes, align 8)
 #[repr(C, align(8))]
 #[derive(Clone, Copy)]
@@ -268,6 +2798,16 @@ pub struct mjfCanDecode { pub _data: [u8; 8] }
 #[derive(Clone, Copy)]
 pub struct mjfCloseResource { pub _data: [u8; 8] }
 
+/// Opaque C struct: mjfCollision (unsized, pointer-only)
+#[repr(C)]
+#[derive(Clone, Copy)]
+pub struct mjfCollision { _opaque: [u8; 0] }
+
+/// Opaque C struct: mjfConFilt (unsized, pointer-only)
+#[repr(C)]
+#[derive(Clone, Copy)]
+pub struct mjfConFilt { _opaque: [u8; 0] }
+
 /// Sized opaque C struct: mjfDecode (8 bytes, align 8)
 #[repr(C, align(8))]
 #[derive(Clone, Copy)]
@@ -277,6 +2817,11 @@ pub struct mjfDecode { pub _data: [u8; 8] }
 #[repr(C, align(8))]
 #[derive(Clone, Copy)]
 pub struct mjfEncode { pub _data: [u8; 8] }
+
+/// Opaque C struct: mjfGeneric (unsized, pointer-only)
+#[repr(C)]
+#[derive(Clone, Copy)]
+pub struct mjfGeneric { _opaque: [u8; 0] }
 
 /// Sized opaque C struct: mjfItemEnable (8 bytes, align 8)
 #[repr(C, align(8))]
@@ -312,6 +2857,16 @@ pub struct mjfReadResource { pub _data: [u8; 8] }
 #[repr(C, align(8))]
 #[derive(Clone, Copy)]
 pub struct mjfResourceModified { pub _data: [u8; 8] }
+
+/// Opaque C struct: mjfSensor (unsized, pointer-only)
+#[repr(C)]
+#[derive(Clone, Copy)]
+pub struct mjfSensor { _opaque: [u8; 0] }
+
+/// Opaque C struct: mjfTime (unsized, pointer-only)
+#[repr(C)]
+#[derive(Clone, Copy)]
+pub struct mjfTime { _opaque: [u8; 0] }
 
 /// Sized opaque C struct: mjfUnmountResource (8 bytes, align 8)
 #[repr(C, align(8))]
@@ -353,15 +2908,15 @@ pub struct mjtFcompType { _opaque: [u8; 0] }
 #[derive(Clone, Copy)]
 pub struct mjuiItem____anonymous_union_at__Users_xing_Desktop_projects_c2rust_bitexact_projects_mujoco_include_mujoco_mjui_h_256_3 { pub _data: [u8; 1408] }
 
-/// Sized opaque C struct: mjuiThemeColor (336 bytes, align 8)
-#[repr(C, align(8))]
+/// Opaque C struct: mjuiThemeColor (unsized, pointer-only)
+#[repr(C)]
 #[derive(Clone, Copy)]
-pub struct mjuiThemeColor { pub _data: [u8; 336] }
+pub struct mjuiThemeColor { _opaque: [u8; 0] }
 
-/// Sized opaque C struct: mjuiThemeSpacing (52 bytes, align 8)
-#[repr(C, align(8))]
+/// Opaque C struct: mjuiThemeSpacing (unsized, pointer-only)
+#[repr(C)]
 #[derive(Clone, Copy)]
-pub struct mjuiThemeSpacing { pub _data: [u8; 52] }
+pub struct mjuiThemeSpacing { _opaque: [u8; 0] }
 
 /// Opaque C struct: mujoco__GlobalTable__ErrorMessage (unsized, pointer-only)
 #[repr(C)]
@@ -397,6 +2952,11 @@ pub struct std__atomic_int { _opaque: [u8; 0] }
 #[repr(C)]
 #[derive(Clone, Copy)]
 pub struct std__condition_variable { _opaque: [u8; 0] }
+
+/// Opaque C struct: std__jmp_buf (unsized, pointer-only)
+#[repr(C)]
+#[derive(Clone, Copy)]
+pub struct std__jmp_buf { _opaque: [u8; 0] }
 
 /// Opaque C struct: std__map_std__string__std__vector_mjsMesh_Ref (unsized, pointer-only)
 #[repr(C)]
@@ -468,6 +3028,11 @@ pub struct struct___sFILEX { _opaque: [u8; 0] }
 #[derive(Clone, Copy)]
 pub struct struct___sbuf { pub _data: [u8; 16] }
 
+/// Opaque C struct: struct__mjCCDObj (unsized, pointer-only)
+#[repr(C)]
+#[derive(Clone, Copy)]
+pub struct struct__mjCCDObj { _opaque: [u8; 0] }
+
 /// Sized opaque C struct: struct__unnamed_at__Users_xing_Desktop_projects_c2rust_bitexact_projects_mujoco_include_mujoco_mjmodel_h_132_3 (52 bytes, align 8)
 #[repr(C, align(8))]
 #[derive(Clone, Copy)]
@@ -497,6 +3062,11 @@ pub struct struct__unnamed_at__Users_xing_Desktop_projects_c2rust_bitexact_proje
 #[repr(C, align(8))]
 #[derive(Clone, Copy)]
 pub struct struct__unnamed_at__Users_xing_Desktop_projects_c2rust_bitexact_projects_mujoco_include_mujoco_mjmodel_h_199_3 { pub _data: [u8; 400] }
+
+/// Opaque C struct: struct_gladGLversionStruct (unsized, pointer-only)
+#[repr(C)]
+#[derive(Clone, Copy)]
+pub struct struct_gladGLversionStruct { _opaque: [u8; 0] }
 
 /// Opaque C struct: struct_mjpResourceProvider (unsized, pointer-only)
 #[repr(C)]
@@ -1569,8 +4139,8 @@ pub struct mjCCDObj {
     pub margin: f64,
     pub rotate: [f64; 4],
     pub data: union__unnamed_at__Users_xing_Desktop_projects_c2rust_bitexact_projects_mujoco_src_engine_engine_collision_convex_h_52_3,
-    pub center: Option<unsafe extern "C" fn()>,
-    pub support: Option<unsafe extern "C" fn()>,
+    pub center: Option<unsafe extern "C" fn(*mut f64, *const struct__mjCCDObj)>,
+    pub support: Option<unsafe extern "C" fn(*mut f64, *mut struct__mjCCDObj, *const f64)>,
 }
 const _: () = assert!(std::mem::size_of::<mjCCDObj>() == 376);
 
@@ -4423,21 +6993,21 @@ pub struct mjpPlugin {
     pub attributes: *const char__const,
     pub capabilityflags: i32,
     pub needstage: i32,
-    pub nstate: Option<unsafe extern "C" fn()>,
-    pub nsensordata: Option<unsafe extern "C" fn()>,
-    pub init: Option<unsafe extern "C" fn()>,
-    pub destroy: Option<unsafe extern "C" fn()>,
-    pub copy: Option<unsafe extern "C" fn()>,
-    pub reset: Option<unsafe extern "C" fn()>,
-    pub compute: Option<unsafe extern "C" fn()>,
-    pub advance: Option<unsafe extern "C" fn()>,
-    pub visualize: Option<unsafe extern "C" fn()>,
-    pub actuator_act_dot: Option<unsafe extern "C" fn()>,
-    pub sdf_distance: Option<unsafe extern "C" fn()>,
-    pub sdf_gradient: Option<unsafe extern "C" fn()>,
-    pub sdf_staticdistance: Option<unsafe extern "C" fn()>,
-    pub sdf_attribute: Option<unsafe extern "C" fn()>,
-    pub sdf_aabb: Option<unsafe extern "C" fn()>,
+    pub nstate: Option<unsafe extern "C" fn(*const mjModel, i32) -> i32>,
+    pub nsensordata: Option<unsafe extern "C" fn(*const mjModel, i32, i32) -> i32>,
+    pub init: Option<unsafe extern "C" fn(*const mjModel, *mut mjData, i32) -> i32>,
+    pub destroy: Option<unsafe extern "C" fn(*mut mjData, i32)>,
+    pub copy: Option<unsafe extern "C" fn(*mut mjData, *const mjModel, *const mjData, i32)>,
+    pub reset: Option<unsafe extern "C" fn(*const mjModel, *mut f64, *mut (), i32)>,
+    pub compute: Option<unsafe extern "C" fn(*const mjModel, *mut mjData, i32, i32)>,
+    pub advance: Option<unsafe extern "C" fn(*const mjModel, *mut mjData, i32)>,
+    pub visualize: Option<unsafe extern "C" fn(*const mjModel, *mut mjData, *const mjvOption, *mut mjvScene, i32)>,
+    pub actuator_act_dot: Option<unsafe extern "C" fn(*const mjModel, *mut mjData, i32)>,
+    pub sdf_distance: Option<unsafe extern "C" fn(*const f64, *const mjData, i32) -> f64>,
+    pub sdf_gradient: Option<unsafe extern "C" fn(*mut f64, *const f64, *const mjData, i32)>,
+    pub sdf_staticdistance: Option<unsafe extern "C" fn(*const f64, *const f64) -> f64>,
+    pub sdf_attribute: Option<unsafe extern "C" fn(*mut f64, *const *mut i8, *const *mut i8)>,
+    pub sdf_aabb: Option<unsafe extern "C" fn(*mut f64, *const f64)>,
 }
 const _: () = assert!(std::mem::size_of::<mjpPlugin>() == 152);
 
@@ -5299,7 +7869,7 @@ pub struct mjvFigure {
     pub panergba: [f32; 4],
     pub legendrgba: [f32; 4],
     pub textrgb: [f32; 3],
-    pub linergb: [[f32; 100]; 3],
+    pub linergb: [[f32; 3]; 100],
     pub range: [[f32; 2]; 2],
     pub xformat: [i8; 20],
     pub yformat: [i8; 20],
@@ -5313,7 +7883,7 @@ pub struct mjvFigure {
     pub highlightid: i32,
     pub selection: f32,
     pub linepnt: [i32; 100],
-    pub linedata: [[f32; 100]; 2002],
+    pub linedata: [[f32; 2002]; 100],
     pub xaxispixel: [i32; 2],
     pub yaxispixel: [i32; 2],
     pub xaxisdata: [f32; 2],
@@ -5576,2044 +8146,2044 @@ const _: () = assert!(std::mem::size_of::<tinyxml2__XMLElement>() == 120);
 // ═══════════════════════════════════════════════════════════
 
 /// C static: ID (const int)
-pub static ID: std::sync::LazyLock<std::sync::Mutex<[u8; 4]>> = std::sync::LazyLock::new(|| std::sync::Mutex::new([0u8; 4]));
+pub static ID: std::sync::LazyLock<std::sync::Mutex<i32>> = std::sync::LazyLock::new(|| std::sync::Mutex::new(0));
 
 /// C static: IDENTITY (const mjtNum[9])
-pub static IDENTITY: std::sync::LazyLock<std::sync::Mutex<[u8; 72]>> = std::sync::LazyLock::new(|| std::sync::Mutex::new([0u8; 72]));
+pub static IDENTITY: std::sync::LazyLock<std::sync::Mutex<[f64; 9]>> = std::sync::LazyLock::new(|| std::sync::Mutex::new(unsafe { std::mem::zeroed() }));
 
 /// C static: MAX_ARRAY_SIZE (const int)
-pub static MAX_ARRAY_SIZE: std::sync::LazyLock<std::sync::Mutex<[u8; 4]>> = std::sync::LazyLock::new(|| std::sync::Mutex::new([0u8; 4]));
+pub static MAX_ARRAY_SIZE: std::sync::LazyLock<std::sync::Mutex<i32>> = std::sync::LazyLock::new(|| std::sync::Mutex::new(0));
 
 /// C static: RK4_A (const mjtNum[9])
-pub static RK4_A: std::sync::LazyLock<std::sync::Mutex<[u8; 72]>> = std::sync::LazyLock::new(|| std::sync::Mutex::new([0u8; 72]));
+pub static RK4_A: std::sync::LazyLock<std::sync::Mutex<[f64; 9]>> = std::sync::LazyLock::new(|| std::sync::Mutex::new(unsafe { std::mem::zeroed() }));
 
 /// C static: RK4_B (const mjtNum[4])
-pub static RK4_B: std::sync::LazyLock<std::sync::Mutex<[u8; 32]>> = std::sync::LazyLock::new(|| std::sync::Mutex::new([0u8; 32]));
+pub static RK4_B: std::sync::LazyLock<std::sync::Mutex<[f64; 4]>> = std::sync::LazyLock::new(|| std::sync::Mutex::new(unsafe { std::mem::zeroed() }));
 
 /// C static: Stencil2D::edge (const int[3][2])
-pub static STENCIL2D_EDGE: std::sync::LazyLock<std::sync::Mutex<[u8; 24]>> = std::sync::LazyLock::new(|| std::sync::Mutex::new([0u8; 24]));
+pub static STENCIL2D_EDGE: std::sync::LazyLock<std::sync::Mutex<[[i32; 2]; 3]>> = std::sync::LazyLock::new(|| std::sync::Mutex::new(unsafe { std::mem::zeroed() }));
 
 /// C static: Stencil2D::edge2face (const int[3][2])
-pub static STENCIL2D_EDGE2FACE: std::sync::LazyLock<std::sync::Mutex<[u8; 24]>> = std::sync::LazyLock::new(|| std::sync::Mutex::new([0u8; 24]));
+pub static STENCIL2D_EDGE2FACE: std::sync::LazyLock<std::sync::Mutex<[[i32; 2]; 3]>> = std::sync::LazyLock::new(|| std::sync::Mutex::new(unsafe { std::mem::zeroed() }));
 
 /// C static: Stencil2D::face (const int[3][2])
-pub static STENCIL2D_FACE: std::sync::LazyLock<std::sync::Mutex<[u8; 24]>> = std::sync::LazyLock::new(|| std::sync::Mutex::new([0u8; 24]));
+pub static STENCIL2D_FACE: std::sync::LazyLock<std::sync::Mutex<[[i32; 2]; 3]>> = std::sync::LazyLock::new(|| std::sync::Mutex::new(unsafe { std::mem::zeroed() }));
 
 /// C static: Stencil2D::kNumEdges (const int)
-pub static STENCIL2D_KNUMEDGES: std::sync::LazyLock<std::sync::Mutex<[u8; 4]>> = std::sync::LazyLock::new(|| std::sync::Mutex::new([0u8; 4]));
+pub static STENCIL2D_KNUMEDGES: std::sync::LazyLock<std::sync::Mutex<i32>> = std::sync::LazyLock::new(|| std::sync::Mutex::new(0));
 
 /// C static: Stencil2D::kNumFaces (const int)
-pub static STENCIL2D_KNUMFACES: std::sync::LazyLock<std::sync::Mutex<[u8; 4]>> = std::sync::LazyLock::new(|| std::sync::Mutex::new([0u8; 4]));
+pub static STENCIL2D_KNUMFACES: std::sync::LazyLock<std::sync::Mutex<i32>> = std::sync::LazyLock::new(|| std::sync::Mutex::new(0));
 
 /// C static: Stencil2D::kNumVerts (const int)
-pub static STENCIL2D_KNUMVERTS: std::sync::LazyLock<std::sync::Mutex<[u8; 4]>> = std::sync::LazyLock::new(|| std::sync::Mutex::new([0u8; 4]));
+pub static STENCIL2D_KNUMVERTS: std::sync::LazyLock<std::sync::Mutex<i32>> = std::sync::LazyLock::new(|| std::sync::Mutex::new(0));
 
 /// C static: Stencil3D::edge (const int[6][2])
-pub static STENCIL3D_EDGE: std::sync::LazyLock<std::sync::Mutex<[u8; 48]>> = std::sync::LazyLock::new(|| std::sync::Mutex::new([0u8; 48]));
+pub static STENCIL3D_EDGE: std::sync::LazyLock<std::sync::Mutex<[[i32; 2]; 6]>> = std::sync::LazyLock::new(|| std::sync::Mutex::new(unsafe { std::mem::zeroed() }));
 
 /// C static: Stencil3D::edge2face (const int[6][2])
-pub static STENCIL3D_EDGE2FACE: std::sync::LazyLock<std::sync::Mutex<[u8; 48]>> = std::sync::LazyLock::new(|| std::sync::Mutex::new([0u8; 48]));
+pub static STENCIL3D_EDGE2FACE: std::sync::LazyLock<std::sync::Mutex<[[i32; 2]; 6]>> = std::sync::LazyLock::new(|| std::sync::Mutex::new(unsafe { std::mem::zeroed() }));
 
 /// C static: Stencil3D::face (const int[4][3])
-pub static STENCIL3D_FACE: std::sync::LazyLock<std::sync::Mutex<[u8; 48]>> = std::sync::LazyLock::new(|| std::sync::Mutex::new([0u8; 48]));
+pub static STENCIL3D_FACE: std::sync::LazyLock<std::sync::Mutex<[[i32; 3]; 4]>> = std::sync::LazyLock::new(|| std::sync::Mutex::new(unsafe { std::mem::zeroed() }));
 
 /// C static: Stencil3D::kNumEdges (const int)
-pub static STENCIL3D_KNUMEDGES: std::sync::LazyLock<std::sync::Mutex<[u8; 4]>> = std::sync::LazyLock::new(|| std::sync::Mutex::new([0u8; 4]));
+pub static STENCIL3D_KNUMEDGES: std::sync::LazyLock<std::sync::Mutex<i32>> = std::sync::LazyLock::new(|| std::sync::Mutex::new(0));
 
 /// C static: Stencil3D::kNumFaces (const int)
-pub static STENCIL3D_KNUMFACES: std::sync::LazyLock<std::sync::Mutex<[u8; 4]>> = std::sync::LazyLock::new(|| std::sync::Mutex::new([0u8; 4]));
+pub static STENCIL3D_KNUMFACES: std::sync::LazyLock<std::sync::Mutex<i32>> = std::sync::LazyLock::new(|| std::sync::Mutex::new(0));
 
 /// C static: Stencil3D::kNumVerts (const int)
-pub static STENCIL3D_KNUMVERTS: std::sync::LazyLock<std::sync::Mutex<[u8; 4]>> = std::sync::LazyLock::new(|| std::sync::Mutex::new([0u8; 4]));
+pub static STENCIL3D_KNUMVERTS: std::sync::LazyLock<std::sync::Mutex<i32>> = std::sync::LazyLock::new(|| std::sync::Mutex::new(0));
 
 /// C static: StencilFlap::kNumVerts (const int)
-pub static STENCILFLAP_KNUMVERTS: std::sync::LazyLock<std::sync::Mutex<[u8; 4]>> = std::sync::LazyLock::new(|| std::sync::Mutex::new([0u8; 4]));
+pub static STENCILFLAP_KNUMVERTS: std::sync::LazyLock<std::sync::Mutex<i32>> = std::sync::LazyLock::new(|| std::sync::Mutex::new(0));
 
 /// C static: TableBlock::kBlockSize (const int)
-pub static TABLEBLOCK_KBLOCKSIZE: std::sync::LazyLock<std::sync::Mutex<[u8; 4]>> = std::sync::LazyLock::new(|| std::sync::Mutex::new([0u8; 4]));
+pub static TABLEBLOCK_KBLOCKSIZE: std::sync::LazyLock<std::sync::Mutex<i32>> = std::sync::LazyLock::new(|| std::sync::Mutex::new(0));
 
 /// C static: ThreadPool::worker_id_ (int)
-pub static THREADPOOL_WORKER_ID_: std::sync::LazyLock<std::sync::Mutex<[u8; 4]>> = std::sync::LazyLock::new(|| std::sync::Mutex::new([0u8; 4]));
+pub static THREADPOOL_WORKER_ID_: std::sync::LazyLock<std::sync::Mutex<i32>> = std::sync::LazyLock::new(|| std::sync::Mutex::new(0));
 
 /// C static: _linergb (const float[8][3])
-pub static _LINERGB: std::sync::LazyLock<std::sync::Mutex<[u8; 96]>> = std::sync::LazyLock::new(|| std::sync::Mutex::new([0u8; 96]));
+pub static _LINERGB: std::sync::LazyLock<std::sync::Mutex<[[f32; 3]; 8]>> = std::sync::LazyLock::new(|| std::sync::Mutex::new(unsafe { std::mem::zeroed() }));
 
 /// C static: _mjPRIVATE_tls_log_handler (mjfLogHandler)
-pub static _MJPRIVATE_TLS_LOG_HANDLER: std::sync::LazyLock<std::sync::Mutex<[u8; 8]>> = std::sync::LazyLock::new(|| std::sync::Mutex::new([0u8; 8]));
+pub static _MJPRIVATE_TLS_LOG_HANDLER: std::sync::LazyLock<std::sync::Mutex<mjfLogHandler>> = std::sync::LazyLock::new(|| std::sync::Mutex::new(unsafe { std::mem::zeroed() }));
 
 /// C static: bias_sz (const int)
-pub static BIAS_SZ: std::sync::LazyLock<std::sync::Mutex<[u8; 4]>> = std::sync::LazyLock::new(|| std::sync::Mutex::new([0u8; 4]));
+pub static BIAS_SZ: std::sync::LazyLock<std::sync::Mutex<i32>> = std::sync::LazyLock::new(|| std::sync::Mutex::new(0));
 
 /// C static: bodysleep_sz (const int)
-pub static BODYSLEEP_SZ: std::sync::LazyLock<std::sync::Mutex<[u8; 4]>> = std::sync::LazyLock::new(|| std::sync::Mutex::new([0u8; 4]));
+pub static BODYSLEEP_SZ: std::sync::LazyLock<std::sync::Mutex<i32>> = std::sync::LazyLock::new(|| std::sync::Mutex::new(0));
 
 /// C static: builtin_sz (const int)
-pub static BUILTIN_SZ: std::sync::LazyLock<std::sync::Mutex<[u8; 4]>> = std::sync::LazyLock::new(|| std::sync::Mutex::new([0u8; 4]));
+pub static BUILTIN_SZ: std::sync::LazyLock<std::sync::Mutex<i32>> = std::sync::LazyLock::new(|| std::sync::Mutex::new(0));
 
 /// C static: camlight_sz (const int)
-pub static CAMLIGHT_SZ: std::sync::LazyLock<std::sync::Mutex<[u8; 4]>> = std::sync::LazyLock::new(|| std::sync::Mutex::new([0u8; 4]));
+pub static CAMLIGHT_SZ: std::sync::LazyLock<std::sync::Mutex<i32>> = std::sync::LazyLock::new(|| std::sync::Mutex::new(0));
 
 /// C static: camout_sz (const int)
-pub static CAMOUT_SZ: std::sync::LazyLock<std::sync::Mutex<[u8; 4]>> = std::sync::LazyLock::new(|| std::sync::Mutex::new([0u8; 4]));
+pub static CAMOUT_SZ: std::sync::LazyLock<std::sync::Mutex<i32>> = std::sync::LazyLock::new(|| std::sync::Mutex::new(0));
 
 /// C static: ccd_buffer (void *)
-pub static CCD_BUFFER: std::sync::LazyLock<std::sync::Mutex<[u8; 8]>> = std::sync::LazyLock::new(|| std::sync::Mutex::new([0u8; 8]));
+pub static CCD_BUFFER: std::sync::LazyLock<std::sync::Mutex<*mut ()>> = std::sync::LazyLock::new(|| std::sync::Mutex::new(std::ptr::null_mut()));
 
 /// C static: collision_sz (const int)
-pub static COLLISION_SZ: std::sync::LazyLock<std::sync::Mutex<[u8; 4]>> = std::sync::LazyLock::new(|| std::sync::Mutex::new([0u8; 4]));
+pub static COLLISION_SZ: std::sync::LazyLock<std::sync::Mutex<i32>> = std::sync::LazyLock::new(|| std::sync::Mutex::new(0));
 
 /// C static: colorspace_sz (const int)
-pub static COLORSPACE_SZ: std::sync::LazyLock<std::sync::Mutex<[u8; 4]>> = std::sync::LazyLock::new(|| std::sync::Mutex::new([0u8; 4]));
+pub static COLORSPACE_SZ: std::sync::LazyLock<std::sync::Mutex<i32>> = std::sync::LazyLock::new(|| std::sync::Mutex::new(0));
 
 /// C static: comp_map (const mjMap[6])
-pub static COMP_MAP: std::sync::LazyLock<std::sync::Mutex<[u8; 96]>> = std::sync::LazyLock::new(|| std::sync::Mutex::new([0u8; 96]));
+pub static COMP_MAP: std::sync::LazyLock<std::sync::Mutex<[mjMap; 6]>> = std::sync::LazyLock::new(|| std::sync::Mutex::new(unsafe { std::mem::zeroed() }));
 
 /// C static: cone_sz (const int)
-pub static CONE_SZ: std::sync::LazyLock<std::sync::Mutex<[u8; 4]>> = std::sync::LazyLock::new(|| std::sync::Mutex::new([0u8; 4]));
+pub static CONE_SZ: std::sync::LazyLock<std::sync::Mutex<i32>> = std::sync::LazyLock::new(|| std::sync::Mutex::new(0));
 
 /// C static: conflict_sz (const int)
-pub static CONFLICT_SZ: std::sync::LazyLock<std::sync::Mutex<[u8; 4]>> = std::sync::LazyLock::new(|| std::sync::Mutex::new([0u8; 4]));
+pub static CONFLICT_SZ: std::sync::LazyLock<std::sync::Mutex<i32>> = std::sync::LazyLock::new(|| std::sync::Mutex::new(0));
 
 /// C static: coordinate_map (const mjMap[2])
-pub static COORDINATE_MAP: std::sync::LazyLock<std::sync::Mutex<[u8; 32]>> = std::sync::LazyLock::new(|| std::sync::Mutex::new([0u8; 32]));
+pub static COORDINATE_MAP: std::sync::LazyLock<std::sync::Mutex<[mjMap; 2]>> = std::sync::LazyLock::new(|| std::sync::Mutex::new(unsafe { std::mem::zeroed() }));
 
 /// C static: datatype_sz (const int)
-pub static DATATYPE_SZ: std::sync::LazyLock<std::sync::Mutex<[u8; 4]>> = std::sync::LazyLock::new(|| std::sync::Mutex::new([0u8; 4]));
+pub static DATATYPE_SZ: std::sync::LazyLock<std::sync::Mutex<i32>> = std::sync::LazyLock::new(|| std::sync::Mutex::new(0));
 
 /// C static: dcmotorinput_map (const mjMap[3])
-pub static DCMOTORINPUT_MAP: std::sync::LazyLock<std::sync::Mutex<[u8; 48]>> = std::sync::LazyLock::new(|| std::sync::Mutex::new([0u8; 48]));
+pub static DCMOTORINPUT_MAP: std::sync::LazyLock<std::sync::Mutex<[mjMap; 3]>> = std::sync::LazyLock::new(|| std::sync::Mutex::new(unsafe { std::mem::zeroed() }));
 
 /// C static: dcmotorinput_sz (const int)
-pub static DCMOTORINPUT_SZ: std::sync::LazyLock<std::sync::Mutex<[u8; 4]>> = std::sync::LazyLock::new(|| std::sync::Mutex::new([0u8; 4]));
+pub static DCMOTORINPUT_SZ: std::sync::LazyLock<std::sync::Mutex<i32>> = std::sync::LazyLock::new(|| std::sync::Mutex::new(0));
 
 /// C static: dyn_sz (const int)
-pub static DYN_SZ: std::sync::LazyLock<std::sync::Mutex<[u8; 4]>> = std::sync::LazyLock::new(|| std::sync::Mutex::new([0u8; 4]));
+pub static DYN_SZ: std::sync::LazyLock<std::sync::Mutex<i32>> = std::sync::LazyLock::new(|| std::sync::Mutex::new(0));
 
 /// C static: edge (const int[3][2])
-pub static EDGE: std::sync::LazyLock<std::sync::Mutex<[u8; 24]>> = std::sync::LazyLock::new(|| std::sync::Mutex::new([0u8; 24]));
+pub static EDGE: std::sync::LazyLock<std::sync::Mutex<[[i32; 2]; 3]>> = std::sync::LazyLock::new(|| std::sync::Mutex::new(unsafe { std::mem::zeroed() }));
 
 /// C static: edges (const int[2][6][2])
-pub static EDGES: std::sync::LazyLock<std::sync::Mutex<[u8; 96]>> = std::sync::LazyLock::new(|| std::sync::Mutex::new([0u8; 96]));
+pub static EDGES: std::sync::LazyLock<std::sync::Mutex<[[[i32; 2]; 6]; 2]>> = std::sync::LazyLock::new(|| std::sync::Mutex::new(unsafe { std::mem::zeroed() }));
 
 /// C static: eigEPS (const mjtNum)
-pub static EIGEPS: std::sync::LazyLock<std::sync::Mutex<[u8; 8]>> = std::sync::LazyLock::new(|| std::sync::Mutex::new([0u8; 8]));
+pub static EIGEPS: std::sync::LazyLock<std::sync::Mutex<f64>> = std::sync::LazyLock::new(|| std::sync::Mutex::new(0.0));
 
 /// C static: eledge (const int[3][6][2])
-pub static ELEDGE: std::sync::LazyLock<std::sync::Mutex<[u8; 144]>> = std::sync::LazyLock::new(|| std::sync::Mutex::new([0u8; 144]));
+pub static ELEDGE: std::sync::LazyLock<std::sync::Mutex<[[[i32; 2]; 6]; 3]>> = std::sync::LazyLock::new(|| std::sync::Mutex::new(unsafe { std::mem::zeroed() }));
 
 /// C static: env_checked (mjtBool)
-pub static ENV_CHECKED: std::sync::LazyLock<std::sync::Mutex<[u8; 1]>> = std::sync::LazyLock::new(|| std::sync::Mutex::new([0u8; 1]));
+pub static ENV_CHECKED: std::sync::LazyLock<std::sync::Mutex<bool>> = std::sync::LazyLock::new(|| std::sync::Mutex::new(unsafe { std::mem::zeroed() }));
 
 /// C static: equality_sz (const int)
-pub static EQUALITY_SZ: std::sync::LazyLock<std::sync::Mutex<[u8; 4]>> = std::sync::LazyLock::new(|| std::sync::Mutex::new([0u8; 4]));
+pub static EQUALITY_SZ: std::sync::LazyLock<std::sync::Mutex<i32>> = std::sync::LazyLock::new(|| std::sync::Mutex::new(0));
 
 /// C static: error_jmp_buf (std::jmp_buf)
 pub static ERROR_JMP_BUF: std::sync::LazyLock<std::sync::Mutex<[u8; 192]>> = std::sync::LazyLock::new(|| std::sync::Mutex::new([0u8; 192]));
 
 /// C static: errortext (char[500])
-pub static ERRORTEXT: std::sync::LazyLock<std::sync::Mutex<[u8; 500]>> = std::sync::LazyLock::new(|| std::sync::Mutex::new([0u8; 500]));
+pub static ERRORTEXT: std::sync::LazyLock<std::sync::Mutex<[i8; 500]>> = std::sync::LazyLock::new(|| std::sync::Mutex::new(unsafe { std::mem::zeroed() }));
 
 /// C static: fcomp_map (const mjMap[10])
-pub static FCOMP_MAP: std::sync::LazyLock<std::sync::Mutex<[u8; 160]>> = std::sync::LazyLock::new(|| std::sync::Mutex::new([0u8; 160]));
+pub static FCOMP_MAP: std::sync::LazyLock<std::sync::Mutex<[mjMap; 10]>> = std::sync::LazyLock::new(|| std::sync::Mutex::new(unsafe { std::mem::zeroed() }));
 
 /// C static: fdof_map (const mjMap[5])
-pub static FDOF_MAP: std::sync::LazyLock<std::sync::Mutex<[u8; 80]>> = std::sync::LazyLock::new(|| std::sync::Mutex::new([0u8; 80]));
+pub static FDOF_MAP: std::sync::LazyLock<std::sync::Mutex<[mjMap; 5]>> = std::sync::LazyLock::new(|| std::sync::Mutex::new(unsafe { std::mem::zeroed() }));
 
 /// C static: flexeq_map (const mjMap[4])
-pub static FLEXEQ_MAP: std::sync::LazyLock<std::sync::Mutex<[u8; 64]>> = std::sync::LazyLock::new(|| std::sync::Mutex::new([0u8; 64]));
+pub static FLEXEQ_MAP: std::sync::LazyLock<std::sync::Mutex<[mjMap; 4]>> = std::sync::LazyLock::new(|| std::sync::Mutex::new(unsafe { std::mem::zeroed() }));
 
 /// C static: font_back100 (const unsigned char[2662])
-pub static FONT_BACK100: std::sync::LazyLock<std::sync::Mutex<[u8; 2662]>> = std::sync::LazyLock::new(|| std::sync::Mutex::new([0u8; 2662]));
+pub static FONT_BACK100: std::sync::LazyLock<std::sync::Mutex<[u8; 2662]>> = std::sync::LazyLock::new(|| std::sync::Mutex::new(unsafe { std::mem::zeroed() }));
 
 /// C static: font_back150 (const unsigned char[5102])
-pub static FONT_BACK150: std::sync::LazyLock<std::sync::Mutex<[u8; 5102]>> = std::sync::LazyLock::new(|| std::sync::Mutex::new([0u8; 5102]));
+pub static FONT_BACK150: std::sync::LazyLock<std::sync::Mutex<[u8; 5102]>> = std::sync::LazyLock::new(|| std::sync::Mutex::new(unsafe { std::mem::zeroed() }));
 
 /// C static: font_back200 (const unsigned char[8056])
-pub static FONT_BACK200: std::sync::LazyLock<std::sync::Mutex<[u8; 8056]>> = std::sync::LazyLock::new(|| std::sync::Mutex::new([0u8; 8056]));
+pub static FONT_BACK200: std::sync::LazyLock<std::sync::Mutex<[u8; 8056]>> = std::sync::LazyLock::new(|| std::sync::Mutex::new(unsafe { std::mem::zeroed() }));
 
 /// C static: font_back250 (const unsigned char[12616])
-pub static FONT_BACK250: std::sync::LazyLock<std::sync::Mutex<[u8; 12616]>> = std::sync::LazyLock::new(|| std::sync::Mutex::new([0u8; 12616]));
+pub static FONT_BACK250: std::sync::LazyLock<std::sync::Mutex<[u8; 12616]>> = std::sync::LazyLock::new(|| std::sync::Mutex::new(unsafe { std::mem::zeroed() }));
 
 /// C static: font_back300 (const unsigned char[16378])
-pub static FONT_BACK300: std::sync::LazyLock<std::sync::Mutex<[u8; 16378]>> = std::sync::LazyLock::new(|| std::sync::Mutex::new([0u8; 16378]));
+pub static FONT_BACK300: std::sync::LazyLock<std::sync::Mutex<[u8; 16378]>> = std::sync::LazyLock::new(|| std::sync::Mutex::new(unsafe { std::mem::zeroed() }));
 
 /// C static: font_back50 (const unsigned char[1375])
-pub static FONT_BACK50: std::sync::LazyLock<std::sync::Mutex<[u8; 1375]>> = std::sync::LazyLock::new(|| std::sync::Mutex::new([0u8; 1375]));
+pub static FONT_BACK50: std::sync::LazyLock<std::sync::Mutex<[u8; 1375]>> = std::sync::LazyLock::new(|| std::sync::Mutex::new(unsafe { std::mem::zeroed() }));
 
 /// C static: font_big100 (const unsigned char[8056])
-pub static FONT_BIG100: std::sync::LazyLock<std::sync::Mutex<[u8; 8056]>> = std::sync::LazyLock::new(|| std::sync::Mutex::new([0u8; 8056]));
+pub static FONT_BIG100: std::sync::LazyLock<std::sync::Mutex<[u8; 8056]>> = std::sync::LazyLock::new(|| std::sync::Mutex::new(unsafe { std::mem::zeroed() }));
 
 /// C static: font_big150 (const unsigned char[16378])
-pub static FONT_BIG150: std::sync::LazyLock<std::sync::Mutex<[u8; 16378]>> = std::sync::LazyLock::new(|| std::sync::Mutex::new([0u8; 16378]));
+pub static FONT_BIG150: std::sync::LazyLock<std::sync::Mutex<[u8; 16378]>> = std::sync::LazyLock::new(|| std::sync::Mutex::new(unsafe { std::mem::zeroed() }));
 
 /// C static: font_big200 (const unsigned char[26982])
-pub static FONT_BIG200: std::sync::LazyLock<std::sync::Mutex<[u8; 26982]>> = std::sync::LazyLock::new(|| std::sync::Mutex::new([0u8; 26982]));
+pub static FONT_BIG200: std::sync::LazyLock<std::sync::Mutex<[u8; 26982]>> = std::sync::LazyLock::new(|| std::sync::Mutex::new(unsafe { std::mem::zeroed() }));
 
 /// C static: font_big250 (const unsigned char[42205])
-pub static FONT_BIG250: std::sync::LazyLock<std::sync::Mutex<[u8; 42205]>> = std::sync::LazyLock::new(|| std::sync::Mutex::new([0u8; 42205]));
+pub static FONT_BIG250: std::sync::LazyLock<std::sync::Mutex<[u8; 42205]>> = std::sync::LazyLock::new(|| std::sync::Mutex::new(unsafe { std::mem::zeroed() }));
 
 /// C static: font_big300 (const unsigned char[59010])
-pub static FONT_BIG300: std::sync::LazyLock<std::sync::Mutex<[u8; 59010]>> = std::sync::LazyLock::new(|| std::sync::Mutex::new([0u8; 59010]));
+pub static FONT_BIG300: std::sync::LazyLock<std::sync::Mutex<[u8; 59010]>> = std::sync::LazyLock::new(|| std::sync::Mutex::new(unsafe { std::mem::zeroed() }));
 
 /// C static: font_big50 (const unsigned char[2662])
-pub static FONT_BIG50: std::sync::LazyLock<std::sync::Mutex<[u8; 2662]>> = std::sync::LazyLock::new(|| std::sync::Mutex::new([0u8; 2662]));
+pub static FONT_BIG50: std::sync::LazyLock<std::sync::Mutex<[u8; 2662]>> = std::sync::LazyLock::new(|| std::sync::Mutex::new(unsafe { std::mem::zeroed() }));
 
 /// C static: font_normal100 (const unsigned char[2662])
-pub static FONT_NORMAL100: std::sync::LazyLock<std::sync::Mutex<[u8; 2662]>> = std::sync::LazyLock::new(|| std::sync::Mutex::new([0u8; 2662]));
+pub static FONT_NORMAL100: std::sync::LazyLock<std::sync::Mutex<[u8; 2662]>> = std::sync::LazyLock::new(|| std::sync::Mutex::new(unsafe { std::mem::zeroed() }));
 
 /// C static: font_normal150 (const unsigned char[5102])
-pub static FONT_NORMAL150: std::sync::LazyLock<std::sync::Mutex<[u8; 5102]>> = std::sync::LazyLock::new(|| std::sync::Mutex::new([0u8; 5102]));
+pub static FONT_NORMAL150: std::sync::LazyLock<std::sync::Mutex<[u8; 5102]>> = std::sync::LazyLock::new(|| std::sync::Mutex::new(unsafe { std::mem::zeroed() }));
 
 /// C static: font_normal200 (const unsigned char[8056])
-pub static FONT_NORMAL200: std::sync::LazyLock<std::sync::Mutex<[u8; 8056]>> = std::sync::LazyLock::new(|| std::sync::Mutex::new([0u8; 8056]));
+pub static FONT_NORMAL200: std::sync::LazyLock<std::sync::Mutex<[u8; 8056]>> = std::sync::LazyLock::new(|| std::sync::Mutex::new(unsafe { std::mem::zeroed() }));
 
 /// C static: font_normal250 (const unsigned char[12616])
-pub static FONT_NORMAL250: std::sync::LazyLock<std::sync::Mutex<[u8; 12616]>> = std::sync::LazyLock::new(|| std::sync::Mutex::new([0u8; 12616]));
+pub static FONT_NORMAL250: std::sync::LazyLock<std::sync::Mutex<[u8; 12616]>> = std::sync::LazyLock::new(|| std::sync::Mutex::new(unsafe { std::mem::zeroed() }));
 
 /// C static: font_normal300 (const unsigned char[16378])
-pub static FONT_NORMAL300: std::sync::LazyLock<std::sync::Mutex<[u8; 16378]>> = std::sync::LazyLock::new(|| std::sync::Mutex::new([0u8; 16378]));
+pub static FONT_NORMAL300: std::sync::LazyLock<std::sync::Mutex<[u8; 16378]>> = std::sync::LazyLock::new(|| std::sync::Mutex::new(unsafe { std::mem::zeroed() }));
 
 /// C static: font_normal50 (const unsigned char[1375])
-pub static FONT_NORMAL50: std::sync::LazyLock<std::sync::Mutex<[u8; 1375]>> = std::sync::LazyLock::new(|| std::sync::Mutex::new([0u8; 1375]));
+pub static FONT_NORMAL50: std::sync::LazyLock<std::sync::Mutex<[u8; 1375]>> = std::sync::LazyLock::new(|| std::sync::Mutex::new(unsafe { std::mem::zeroed() }));
 
 /// C static: gain_sz (const int)
-pub static GAIN_SZ: std::sync::LazyLock<std::sync::Mutex<[u8; 4]>> = std::sync::LazyLock::new(|| std::sync::Mutex::new([0u8; 4]));
+pub static GAIN_SZ: std::sync::LazyLock<std::sync::Mutex<i32>> = std::sync::LazyLock::new(|| std::sync::Mutex::new(0));
 
 /// C static: global_log_handler (mjfLogHandler)
-pub static GLOBAL_LOG_HANDLER: std::sync::LazyLock<std::sync::Mutex<[u8; 8]>> = std::sync::LazyLock::new(|| std::sync::Mutex::new([0u8; 8]));
+pub static GLOBAL_LOG_HANDLER: std::sync::LazyLock<std::sync::Mutex<mjfLogHandler>> = std::sync::LazyLock::new(|| std::sync::Mutex::new(unsafe { std::mem::zeroed() }));
 
 /// C static: in_log (bool)
-pub static IN_LOG: std::sync::LazyLock<std::sync::Mutex<[u8; 1]>> = std::sync::LazyLock::new(|| std::sync::Mutex::new([0u8; 1]));
+pub static IN_LOG: std::sync::LazyLock<std::sync::Mutex<bool>> = std::sync::LazyLock::new(|| std::sync::Mutex::new(unsafe { std::mem::zeroed() }));
 
 /// C static: integrator_sz (const int)
-pub static INTEGRATOR_SZ: std::sync::LazyLock<std::sync::Mutex<[u8; 4]>> = std::sync::LazyLock::new(|| std::sync::Mutex::new([0u8; 4]));
+pub static INTEGRATOR_SZ: std::sync::LazyLock<std::sync::Mutex<i32>> = std::sync::LazyLock::new(|| std::sync::Mutex::new(0));
 
 /// C static: interp_sz (const int)
-pub static INTERP_SZ: std::sync::LazyLock<std::sync::Mutex<[u8; 4]>> = std::sync::LazyLock::new(|| std::sync::Mutex::new([0u8; 4]));
+pub static INTERP_SZ: std::sync::LazyLock<std::sync::Mutex<i32>> = std::sync::LazyLock::new(|| std::sync::Mutex::new(0));
 
 /// C static: jac_sz (const int)
-pub static JAC_SZ: std::sync::LazyLock<std::sync::Mutex<[u8; 4]>> = std::sync::LazyLock::new(|| std::sync::Mutex::new([0u8; 4]));
+pub static JAC_SZ: std::sync::LazyLock<std::sync::Mutex<i32>> = std::sync::LazyLock::new(|| std::sync::Mutex::new(0));
 
 /// C static: jkind_map (const mjMap[1])
-pub static JKIND_MAP: std::sync::LazyLock<std::sync::Mutex<[u8; 16]>> = std::sync::LazyLock::new(|| std::sync::Mutex::new([0u8; 16]));
+pub static JKIND_MAP: std::sync::LazyLock<std::sync::Mutex<[mjMap; 1]>> = std::sync::LazyLock::new(|| std::sync::Mutex::new(unsafe { std::mem::zeroed() }));
 
 /// C static: joint_sz (const int)
-pub static JOINT_SZ: std::sync::LazyLock<std::sync::Mutex<[u8; 4]>> = std::sync::LazyLock::new(|| std::sync::Mutex::new([0u8; 4]));
+pub static JOINT_SZ: std::sync::LazyLock<std::sync::Mutex<i32>> = std::sync::LazyLock::new(|| std::sync::Mutex::new(0));
 
 /// C static: kAwake (int)
-pub static KAWAKE: std::sync::LazyLock<std::sync::Mutex<[u8; 4]>> = std::sync::LazyLock::new(|| std::sync::Mutex::new([0u8; 4]));
+pub static KAWAKE: std::sync::LazyLock<std::sync::Mutex<i32>> = std::sync::LazyLock::new(|| std::sync::Mutex::new(0));
 
 /// C static: kCacheLineBytes (const int)
-pub static KCACHELINEBYTES: std::sync::LazyLock<std::sync::Mutex<[u8; 4]>> = std::sync::LazyLock::new(|| std::sync::Mutex::new([0u8; 4]));
+pub static KCACHELINEBYTES: std::sync::LazyLock<std::sync::Mutex<i32>> = std::sync::LazyLock::new(|| std::sync::Mutex::new(0));
 
 /// C static: kContactStiffness (const mjtNum)
-pub static KCONTACTSTIFFNESS: std::sync::LazyLock<std::sync::Mutex<[u8; 8]>> = std::sync::LazyLock::new(|| std::sync::Mutex::new([0u8; 8]));
+pub static KCONTACTSTIFFNESS: std::sync::LazyLock<std::sync::Mutex<f64>> = std::sync::LazyLock::new(|| std::sync::Mutex::new(0.0));
 
 /// C static: kEigEPS (const double)
-pub static KEIGEPS: std::sync::LazyLock<std::sync::Mutex<[u8; 8]>> = std::sync::LazyLock::new(|| std::sync::Mutex::new([0u8; 8]));
+pub static KEIGEPS: std::sync::LazyLock<std::sync::Mutex<f64>> = std::sync::LazyLock::new(|| std::sync::Mutex::new(0.0));
 
 /// C static: kErrorBufferSize (const int)
-pub static KERRORBUFFERSIZE: std::sync::LazyLock<std::sync::Mutex<[u8; 4]>> = std::sync::LazyLock::new(|| std::sync::Mutex::new([0u8; 4]));
+pub static KERRORBUFFERSIZE: std::sync::LazyLock<std::sync::Mutex<i32>> = std::sync::LazyLock::new(|| std::sync::Mutex::new(0));
 
 /// C static: kFrameEps (const double)
-pub static KFRAMEEPS: std::sync::LazyLock<std::sync::Mutex<[u8; 8]>> = std::sync::LazyLock::new(|| std::sync::Mutex::new([0u8; 8]));
+pub static KFRAMEEPS: std::sync::LazyLock<std::sync::Mutex<f64>> = std::sync::LazyLock::new(|| std::sync::Mutex::new(0.0));
 
 /// C static: kGlobalCacheSize (const std::size_t)
-pub static KGLOBALCACHESIZE: std::sync::LazyLock<std::sync::Mutex<[u8; 8]>> = std::sync::LazyLock::new(|| std::sync::Mutex::new([0u8; 8]));
+pub static KGLOBALCACHESIZE: std::sync::LazyLock<std::sync::Mutex<u64>> = std::sync::LazyLock::new(|| std::sync::Mutex::new(0));
 
 /// C static: kMaxAttributes (const int)
-pub static KMAXATTRIBUTES: std::sync::LazyLock<std::sync::Mutex<[u8; 4]>> = std::sync::LazyLock::new(|| std::sync::Mutex::new([0u8; 4]));
+pub static KMAXATTRIBUTES: std::sync::LazyLock<std::sync::Mutex<i32>> = std::sync::LazyLock::new(|| std::sync::Mutex::new(0));
 
 /// C static: kMaxNameLength (const int)
-pub static KMAXNAMELENGTH: std::sync::LazyLock<std::sync::Mutex<[u8; 4]>> = std::sync::LazyLock::new(|| std::sync::Mutex::new([0u8; 4]));
+pub static KMAXNAMELENGTH: std::sync::LazyLock<std::sync::Mutex<i32>> = std::sync::LazyLock::new(|| std::sync::Mutex::new(0));
 
 /// C static: kNumEdges (const int)
-pub static KNUMEDGES: std::sync::LazyLock<std::sync::Mutex<[u8; 4]>> = std::sync::LazyLock::new(|| std::sync::Mutex::new([0u8; 4]));
+pub static KNUMEDGES: std::sync::LazyLock<std::sync::Mutex<i32>> = std::sync::LazyLock::new(|| std::sync::Mutex::new(0));
 
 /// C static: kNumVerts (const int)
-pub static KNUMVERTS: std::sync::LazyLock<std::sync::Mutex<[u8; 4]>> = std::sync::LazyLock::new(|| std::sync::Mutex::new([0u8; 4]));
+pub static KNUMVERTS: std::sync::LazyLock<std::sync::Mutex<i32>> = std::sync::LazyLock::new(|| std::sync::Mutex::new(0));
 
 /// C static: lighttype_sz (const int)
-pub static LIGHTTYPE_SZ: std::sync::LazyLock<std::sync::Mutex<[u8; 4]>> = std::sync::LazyLock::new(|| std::sync::Mutex::new([0u8; 4]));
+pub static LIGHTTYPE_SZ: std::sync::LazyLock<std::sync::Mutex<i32>> = std::sync::LazyLock::new(|| std::sync::Mutex::new(0));
 
 /// C static: local_warningtext_ptr (std::string *)
 pub static LOCAL_WARNINGTEXT_PTR: std::sync::LazyLock<std::sync::Mutex<[u8; 8]>> = std::sync::LazyLock::new(|| std::sync::Mutex::new([0u8; 8]));
 
 /// C static: log_config (mjLogConfig)
-pub static LOG_CONFIG: std::sync::LazyLock<std::sync::Mutex<[u8; 1032]>> = std::sync::LazyLock::new(|| std::sync::Mutex::new([0u8; 1032]));
+pub static LOG_CONFIG: std::sync::LazyLock<std::sync::Mutex<mjLogConfig>> = std::sync::LazyLock::new(|| std::sync::Mutex::new(unsafe { std::mem::zeroed() }));
 
 /// C static: lrmode_map (const mjMap[4])
-pub static LRMODE_MAP: std::sync::LazyLock<std::sync::Mutex<[u8; 64]>> = std::sync::LazyLock::new(|| std::sync::Mutex::new([0u8; 64]));
+pub static LRMODE_MAP: std::sync::LazyLock<std::sync::Mutex<[mjMap; 4]>> = std::sync::LazyLock::new(|| std::sync::Mutex::new(unsafe { std::mem::zeroed() }));
 
 /// C static: lrmode_sz (const int)
-pub static LRMODE_SZ: std::sync::LazyLock<std::sync::Mutex<[u8; 4]>> = std::sync::LazyLock::new(|| std::sync::Mutex::new([0u8; 4]));
+pub static LRMODE_SZ: std::sync::LazyLock<std::sync::Mutex<i32>> = std::sync::LazyLock::new(|| std::sync::Mutex::new(0));
 
 /// C static: mark_sz (const int)
-pub static MARK_SZ: std::sync::LazyLock<std::sync::Mutex<[u8; 4]>> = std::sync::LazyLock::new(|| std::sync::Mutex::new([0u8; 4]));
+pub static MARK_SZ: std::sync::LazyLock<std::sync::Mutex<i32>> = std::sync::LazyLock::new(|| std::sync::Mutex::new(0));
 
 /// C static: maxplanemesh (const int)
-pub static MAXPLANEMESH: std::sync::LazyLock<std::sync::Mutex<[u8; 4]>> = std::sync::LazyLock::new(|| std::sync::Mutex::new([0u8; 4]));
+pub static MAXPLANEMESH: std::sync::LazyLock<std::sync::Mutex<i32>> = std::sync::LazyLock::new(|| std::sync::Mutex::new(0));
 
 /// C static: meshbuiltin_map (const mjMap[8])
-pub static MESHBUILTIN_MAP: std::sync::LazyLock<std::sync::Mutex<[u8; 128]>> = std::sync::LazyLock::new(|| std::sync::Mutex::new([0u8; 128]));
+pub static MESHBUILTIN_MAP: std::sync::LazyLock<std::sync::Mutex<[mjMap; 8]>> = std::sync::LazyLock::new(|| std::sync::Mutex::new(unsafe { std::mem::zeroed() }));
 
 /// C static: meshbuiltin_sz (const int)
-pub static MESHBUILTIN_SZ: std::sync::LazyLock<std::sync::Mutex<[u8; 4]>> = std::sync::LazyLock::new(|| std::sync::Mutex::new([0u8; 4]));
+pub static MESHBUILTIN_SZ: std::sync::LazyLock<std::sync::Mutex<i32>> = std::sync::LazyLock::new(|| std::sync::Mutex::new(0));
 
 /// C static: mjCFlex::kNumEdges (const int[3])
-pub static MJCFLEX_KNUMEDGES: std::sync::LazyLock<std::sync::Mutex<[u8; 12]>> = std::sync::LazyLock::new(|| std::sync::Mutex::new([0u8; 12]));
+pub static MJCFLEX_KNUMEDGES: std::sync::LazyLock<std::sync::Mutex<[i32; 3]>> = std::sync::LazyLock::new(|| std::sync::Mutex::new(unsafe { std::mem::zeroed() }));
 
 /// C static: mjCOLLISIONFUNC (mjfCollision[9][9])
-pub static MJCOLLISIONFUNC: std::sync::LazyLock<std::sync::Mutex<[u8; 648]>> = std::sync::LazyLock::new(|| std::sync::Mutex::new([0u8; 648]));
+pub static MJCOLLISIONFUNC: std::sync::LazyLock<std::sync::Mutex<[[mjfCollision; 9]; 9]>> = std::sync::LazyLock::new(|| std::sync::Mutex::new(unsafe { std::mem::zeroed() }));
 
 /// C static: mjCONDATA_SIZE (const int[7])
-pub static MJCONDATA_SIZE: std::sync::LazyLock<std::sync::Mutex<[u8; 28]>> = std::sync::LazyLock::new(|| std::sync::Mutex::new([0u8; 28]));
+pub static MJCONDATA_SIZE: std::sync::LazyLock<std::sync::Mutex<[i32; 7]>> = std::sync::LazyLock::new(|| std::sync::Mutex::new(unsafe { std::mem::zeroed() }));
 
 /// C static: mjDISABLESTRING (const char *[20])
-pub static MJDISABLESTRING: std::sync::LazyLock<std::sync::Mutex<[u8; 160]>> = std::sync::LazyLock::new(|| std::sync::Mutex::new([0u8; 160]));
+pub static MJDISABLESTRING: std::sync::LazyLock<std::sync::Mutex<[*const i8; 20]>> = std::sync::LazyLock::new(|| std::sync::Mutex::new(unsafe { std::mem::zeroed() }));
 
 /// C static: mjENABLESTRING (const char *[6])
-pub static MJENABLESTRING: std::sync::LazyLock<std::sync::Mutex<[u8; 48]>> = std::sync::LazyLock::new(|| std::sync::Mutex::new([0u8; 48]));
+pub static MJENABLESTRING: std::sync::LazyLock<std::sync::Mutex<[*const i8; 6]>> = std::sync::LazyLock::new(|| std::sync::Mutex::new(unsafe { std::mem::zeroed() }));
 
 /// C static: mjEPS (const double)
-pub static MJEPS: std::sync::LazyLock<std::sync::Mutex<[u8; 8]>> = std::sync::LazyLock::new(|| std::sync::Mutex::new([0u8; 8]));
+pub static MJEPS: std::sync::LazyLock<std::sync::Mutex<f64>> = std::sync::LazyLock::new(|| std::sync::Mutex::new(0.0));
 
 /// C static: mjFRAMESTRING (const char *[8])
-pub static MJFRAMESTRING: std::sync::LazyLock<std::sync::Mutex<[u8; 64]>> = std::sync::LazyLock::new(|| std::sync::Mutex::new([0u8; 64]));
+pub static MJFRAMESTRING: std::sync::LazyLock<std::sync::Mutex<[*const i8; 8]>> = std::sync::LazyLock::new(|| std::sync::Mutex::new(unsafe { std::mem::zeroed() }));
 
 /// C static: mjGEOMINFO (const int[9])
-pub static MJGEOMINFO: std::sync::LazyLock<std::sync::Mutex<[u8; 36]>> = std::sync::LazyLock::new(|| std::sync::Mutex::new([0u8; 36]));
+pub static MJGEOMINFO: std::sync::LazyLock<std::sync::Mutex<[i32; 9]>> = std::sync::LazyLock::new(|| std::sync::Mutex::new(unsafe { std::mem::zeroed() }));
 
 /// C static: mjGLAD_GL_ARB_clip_control (int)
-pub static MJGLAD_GL_ARB_CLIP_CONTROL: std::sync::LazyLock<std::sync::Mutex<[u8; 4]>> = std::sync::LazyLock::new(|| std::sync::Mutex::new([0u8; 4]));
+pub static MJGLAD_GL_ARB_CLIP_CONTROL: std::sync::LazyLock<std::sync::Mutex<i32>> = std::sync::LazyLock::new(|| std::sync::Mutex::new(0));
 
 /// C static: mjGLAD_GL_ARB_depth_buffer_float (int)
-pub static MJGLAD_GL_ARB_DEPTH_BUFFER_FLOAT: std::sync::LazyLock<std::sync::Mutex<[u8; 4]>> = std::sync::LazyLock::new(|| std::sync::Mutex::new([0u8; 4]));
+pub static MJGLAD_GL_ARB_DEPTH_BUFFER_FLOAT: std::sync::LazyLock<std::sync::Mutex<i32>> = std::sync::LazyLock::new(|| std::sync::Mutex::new(0));
 
 /// C static: mjGLAD_GL_ARB_framebuffer_object (int)
-pub static MJGLAD_GL_ARB_FRAMEBUFFER_OBJECT: std::sync::LazyLock<std::sync::Mutex<[u8; 4]>> = std::sync::LazyLock::new(|| std::sync::Mutex::new([0u8; 4]));
+pub static MJGLAD_GL_ARB_FRAMEBUFFER_OBJECT: std::sync::LazyLock<std::sync::Mutex<i32>> = std::sync::LazyLock::new(|| std::sync::Mutex::new(0));
 
 /// C static: mjGLAD_GL_ARB_seamless_cube_map (int)
-pub static MJGLAD_GL_ARB_SEAMLESS_CUBE_MAP: std::sync::LazyLock<std::sync::Mutex<[u8; 4]>> = std::sync::LazyLock::new(|| std::sync::Mutex::new([0u8; 4]));
+pub static MJGLAD_GL_ARB_SEAMLESS_CUBE_MAP: std::sync::LazyLock<std::sync::Mutex<i32>> = std::sync::LazyLock::new(|| std::sync::Mutex::new(0));
 
 /// C static: mjGLAD_GL_ARB_vertex_buffer_object (int)
-pub static MJGLAD_GL_ARB_VERTEX_BUFFER_OBJECT: std::sync::LazyLock<std::sync::Mutex<[u8; 4]>> = std::sync::LazyLock::new(|| std::sync::Mutex::new([0u8; 4]));
+pub static MJGLAD_GL_ARB_VERTEX_BUFFER_OBJECT: std::sync::LazyLock<std::sync::Mutex<i32>> = std::sync::LazyLock::new(|| std::sync::Mutex::new(0));
 
 /// C static: mjGLAD_GL_EXT_texture_sRGB (int)
-pub static MJGLAD_GL_EXT_TEXTURE_SRGB: std::sync::LazyLock<std::sync::Mutex<[u8; 4]>> = std::sync::LazyLock::new(|| std::sync::Mutex::new([0u8; 4]));
+pub static MJGLAD_GL_EXT_TEXTURE_SRGB: std::sync::LazyLock<std::sync::Mutex<i32>> = std::sync::LazyLock::new(|| std::sync::Mutex::new(0));
 
 /// C static: mjGLAD_GL_KHR_debug (int)
-pub static MJGLAD_GL_KHR_DEBUG: std::sync::LazyLock<std::sync::Mutex<[u8; 4]>> = std::sync::LazyLock::new(|| std::sync::Mutex::new([0u8; 4]));
+pub static MJGLAD_GL_KHR_DEBUG: std::sync::LazyLock<std::sync::Mutex<i32>> = std::sync::LazyLock::new(|| std::sync::Mutex::new(0));
 
 /// C static: mjGLAD_GL_VERSION_1_0 (int)
-pub static MJGLAD_GL_VERSION_1_0: std::sync::LazyLock<std::sync::Mutex<[u8; 4]>> = std::sync::LazyLock::new(|| std::sync::Mutex::new([0u8; 4]));
+pub static MJGLAD_GL_VERSION_1_0: std::sync::LazyLock<std::sync::Mutex<i32>> = std::sync::LazyLock::new(|| std::sync::Mutex::new(0));
 
 /// C static: mjGLAD_GL_VERSION_1_1 (int)
-pub static MJGLAD_GL_VERSION_1_1: std::sync::LazyLock<std::sync::Mutex<[u8; 4]>> = std::sync::LazyLock::new(|| std::sync::Mutex::new([0u8; 4]));
+pub static MJGLAD_GL_VERSION_1_1: std::sync::LazyLock<std::sync::Mutex<i32>> = std::sync::LazyLock::new(|| std::sync::Mutex::new(0));
 
 /// C static: mjGLAD_GL_VERSION_1_2 (int)
-pub static MJGLAD_GL_VERSION_1_2: std::sync::LazyLock<std::sync::Mutex<[u8; 4]>> = std::sync::LazyLock::new(|| std::sync::Mutex::new([0u8; 4]));
+pub static MJGLAD_GL_VERSION_1_2: std::sync::LazyLock<std::sync::Mutex<i32>> = std::sync::LazyLock::new(|| std::sync::Mutex::new(0));
 
 /// C static: mjGLAD_GL_VERSION_1_3 (int)
-pub static MJGLAD_GL_VERSION_1_3: std::sync::LazyLock<std::sync::Mutex<[u8; 4]>> = std::sync::LazyLock::new(|| std::sync::Mutex::new([0u8; 4]));
+pub static MJGLAD_GL_VERSION_1_3: std::sync::LazyLock<std::sync::Mutex<i32>> = std::sync::LazyLock::new(|| std::sync::Mutex::new(0));
 
 /// C static: mjGLAD_GL_VERSION_1_4 (int)
-pub static MJGLAD_GL_VERSION_1_4: std::sync::LazyLock<std::sync::Mutex<[u8; 4]>> = std::sync::LazyLock::new(|| std::sync::Mutex::new([0u8; 4]));
+pub static MJGLAD_GL_VERSION_1_4: std::sync::LazyLock<std::sync::Mutex<i32>> = std::sync::LazyLock::new(|| std::sync::Mutex::new(0));
 
 /// C static: mjGLAD_GL_VERSION_1_5 (int)
-pub static MJGLAD_GL_VERSION_1_5: std::sync::LazyLock<std::sync::Mutex<[u8; 4]>> = std::sync::LazyLock::new(|| std::sync::Mutex::new([0u8; 4]));
+pub static MJGLAD_GL_VERSION_1_5: std::sync::LazyLock<std::sync::Mutex<i32>> = std::sync::LazyLock::new(|| std::sync::Mutex::new(0));
 
 /// C static: mjGLVersion (struct gladGLversionStruct)
-pub static MJGLVERSION: std::sync::LazyLock<std::sync::Mutex<[u8; 8]>> = std::sync::LazyLock::new(|| std::sync::Mutex::new([0u8; 8]));
+pub static MJGLVERSION: std::sync::LazyLock<std::sync::Mutex<struct_gladGLversionStruct>> = std::sync::LazyLock::new(|| std::sync::Mutex::new(unsafe { std::mem::zeroed() }));
 
 /// C static: mjGlad_exts (const char *)
-pub static MJGLAD_EXTS: std::sync::LazyLock<std::sync::Mutex<[u8; 8]>> = std::sync::LazyLock::new(|| std::sync::Mutex::new([0u8; 8]));
+pub static MJGLAD_EXTS: std::sync::LazyLock<std::sync::Mutex<*const i8>> = std::sync::LazyLock::new(|| std::sync::Mutex::new(std::ptr::null_mut()));
 
 /// C static: mjGlad_exts_i (char **)
-pub static MJGLAD_EXTS_I: std::sync::LazyLock<std::sync::Mutex<[u8; 8]>> = std::sync::LazyLock::new(|| std::sync::Mutex::new([0u8; 8]));
+pub static MJGLAD_EXTS_I: std::sync::LazyLock<std::sync::Mutex<*mut *mut i8>> = std::sync::LazyLock::new(|| std::sync::Mutex::new(std::ptr::null_mut()));
 
 /// C static: mjGlad_glAccum (PFNGLACCUMPROC)
-pub static MJGLAD_GLACCUM: std::sync::LazyLock<std::sync::Mutex<[u8; 8]>> = std::sync::LazyLock::new(|| std::sync::Mutex::new([0u8; 8]));
+pub static MJGLAD_GLACCUM: std::sync::LazyLock<std::sync::Mutex<PFNGLACCUMPROC>> = std::sync::LazyLock::new(|| std::sync::Mutex::new(unsafe { std::mem::zeroed() }));
 
 /// C static: mjGlad_glActiveTexture (PFNGLACTIVETEXTUREPROC)
-pub static MJGLAD_GLACTIVETEXTURE: std::sync::LazyLock<std::sync::Mutex<[u8; 8]>> = std::sync::LazyLock::new(|| std::sync::Mutex::new([0u8; 8]));
+pub static MJGLAD_GLACTIVETEXTURE: std::sync::LazyLock<std::sync::Mutex<PFNGLACTIVETEXTUREPROC>> = std::sync::LazyLock::new(|| std::sync::Mutex::new(unsafe { std::mem::zeroed() }));
 
 /// C static: mjGlad_glAlphaFunc (PFNGLALPHAFUNCPROC)
-pub static MJGLAD_GLALPHAFUNC: std::sync::LazyLock<std::sync::Mutex<[u8; 8]>> = std::sync::LazyLock::new(|| std::sync::Mutex::new([0u8; 8]));
+pub static MJGLAD_GLALPHAFUNC: std::sync::LazyLock<std::sync::Mutex<PFNGLALPHAFUNCPROC>> = std::sync::LazyLock::new(|| std::sync::Mutex::new(unsafe { std::mem::zeroed() }));
 
 /// C static: mjGlad_glAreTexturesResident (PFNGLARETEXTURESRESIDENTPROC)
-pub static MJGLAD_GLARETEXTURESRESIDENT: std::sync::LazyLock<std::sync::Mutex<[u8; 8]>> = std::sync::LazyLock::new(|| std::sync::Mutex::new([0u8; 8]));
+pub static MJGLAD_GLARETEXTURESRESIDENT: std::sync::LazyLock<std::sync::Mutex<PFNGLARETEXTURESRESIDENTPROC>> = std::sync::LazyLock::new(|| std::sync::Mutex::new(unsafe { std::mem::zeroed() }));
 
 /// C static: mjGlad_glArrayElement (PFNGLARRAYELEMENTPROC)
-pub static MJGLAD_GLARRAYELEMENT: std::sync::LazyLock<std::sync::Mutex<[u8; 8]>> = std::sync::LazyLock::new(|| std::sync::Mutex::new([0u8; 8]));
+pub static MJGLAD_GLARRAYELEMENT: std::sync::LazyLock<std::sync::Mutex<PFNGLARRAYELEMENTPROC>> = std::sync::LazyLock::new(|| std::sync::Mutex::new(unsafe { std::mem::zeroed() }));
 
 /// C static: mjGlad_glBegin (PFNGLBEGINPROC)
-pub static MJGLAD_GLBEGIN: std::sync::LazyLock<std::sync::Mutex<[u8; 8]>> = std::sync::LazyLock::new(|| std::sync::Mutex::new([0u8; 8]));
+pub static MJGLAD_GLBEGIN: std::sync::LazyLock<std::sync::Mutex<PFNGLBEGINPROC>> = std::sync::LazyLock::new(|| std::sync::Mutex::new(unsafe { std::mem::zeroed() }));
 
 /// C static: mjGlad_glBeginQuery (PFNGLBEGINQUERYPROC)
-pub static MJGLAD_GLBEGINQUERY: std::sync::LazyLock<std::sync::Mutex<[u8; 8]>> = std::sync::LazyLock::new(|| std::sync::Mutex::new([0u8; 8]));
+pub static MJGLAD_GLBEGINQUERY: std::sync::LazyLock<std::sync::Mutex<PFNGLBEGINQUERYPROC>> = std::sync::LazyLock::new(|| std::sync::Mutex::new(unsafe { std::mem::zeroed() }));
 
 /// C static: mjGlad_glBindBuffer (PFNGLBINDBUFFERPROC)
-pub static MJGLAD_GLBINDBUFFER: std::sync::LazyLock<std::sync::Mutex<[u8; 8]>> = std::sync::LazyLock::new(|| std::sync::Mutex::new([0u8; 8]));
+pub static MJGLAD_GLBINDBUFFER: std::sync::LazyLock<std::sync::Mutex<PFNGLBINDBUFFERPROC>> = std::sync::LazyLock::new(|| std::sync::Mutex::new(unsafe { std::mem::zeroed() }));
 
 /// C static: mjGlad_glBindBufferARB (PFNGLBINDBUFFERARBPROC)
-pub static MJGLAD_GLBINDBUFFERARB: std::sync::LazyLock<std::sync::Mutex<[u8; 8]>> = std::sync::LazyLock::new(|| std::sync::Mutex::new([0u8; 8]));
+pub static MJGLAD_GLBINDBUFFERARB: std::sync::LazyLock<std::sync::Mutex<PFNGLBINDBUFFERARBPROC>> = std::sync::LazyLock::new(|| std::sync::Mutex::new(unsafe { std::mem::zeroed() }));
 
 /// C static: mjGlad_glBindFramebuffer (PFNGLBINDFRAMEBUFFERPROC)
-pub static MJGLAD_GLBINDFRAMEBUFFER: std::sync::LazyLock<std::sync::Mutex<[u8; 8]>> = std::sync::LazyLock::new(|| std::sync::Mutex::new([0u8; 8]));
+pub static MJGLAD_GLBINDFRAMEBUFFER: std::sync::LazyLock<std::sync::Mutex<PFNGLBINDFRAMEBUFFERPROC>> = std::sync::LazyLock::new(|| std::sync::Mutex::new(unsafe { std::mem::zeroed() }));
 
 /// C static: mjGlad_glBindRenderbuffer (PFNGLBINDRENDERBUFFERPROC)
-pub static MJGLAD_GLBINDRENDERBUFFER: std::sync::LazyLock<std::sync::Mutex<[u8; 8]>> = std::sync::LazyLock::new(|| std::sync::Mutex::new([0u8; 8]));
+pub static MJGLAD_GLBINDRENDERBUFFER: std::sync::LazyLock<std::sync::Mutex<PFNGLBINDRENDERBUFFERPROC>> = std::sync::LazyLock::new(|| std::sync::Mutex::new(unsafe { std::mem::zeroed() }));
 
 /// C static: mjGlad_glBindTexture (PFNGLBINDTEXTUREPROC)
-pub static MJGLAD_GLBINDTEXTURE: std::sync::LazyLock<std::sync::Mutex<[u8; 8]>> = std::sync::LazyLock::new(|| std::sync::Mutex::new([0u8; 8]));
+pub static MJGLAD_GLBINDTEXTURE: std::sync::LazyLock<std::sync::Mutex<PFNGLBINDTEXTUREPROC>> = std::sync::LazyLock::new(|| std::sync::Mutex::new(unsafe { std::mem::zeroed() }));
 
 /// C static: mjGlad_glBitmap (PFNGLBITMAPPROC)
-pub static MJGLAD_GLBITMAP: std::sync::LazyLock<std::sync::Mutex<[u8; 8]>> = std::sync::LazyLock::new(|| std::sync::Mutex::new([0u8; 8]));
+pub static MJGLAD_GLBITMAP: std::sync::LazyLock<std::sync::Mutex<PFNGLBITMAPPROC>> = std::sync::LazyLock::new(|| std::sync::Mutex::new(unsafe { std::mem::zeroed() }));
 
 /// C static: mjGlad_glBlendColor (PFNGLBLENDCOLORPROC)
-pub static MJGLAD_GLBLENDCOLOR: std::sync::LazyLock<std::sync::Mutex<[u8; 8]>> = std::sync::LazyLock::new(|| std::sync::Mutex::new([0u8; 8]));
+pub static MJGLAD_GLBLENDCOLOR: std::sync::LazyLock<std::sync::Mutex<PFNGLBLENDCOLORPROC>> = std::sync::LazyLock::new(|| std::sync::Mutex::new(unsafe { std::mem::zeroed() }));
 
 /// C static: mjGlad_glBlendEquation (PFNGLBLENDEQUATIONPROC)
-pub static MJGLAD_GLBLENDEQUATION: std::sync::LazyLock<std::sync::Mutex<[u8; 8]>> = std::sync::LazyLock::new(|| std::sync::Mutex::new([0u8; 8]));
+pub static MJGLAD_GLBLENDEQUATION: std::sync::LazyLock<std::sync::Mutex<PFNGLBLENDEQUATIONPROC>> = std::sync::LazyLock::new(|| std::sync::Mutex::new(unsafe { std::mem::zeroed() }));
 
 /// C static: mjGlad_glBlendFunc (PFNGLBLENDFUNCPROC)
-pub static MJGLAD_GLBLENDFUNC: std::sync::LazyLock<std::sync::Mutex<[u8; 8]>> = std::sync::LazyLock::new(|| std::sync::Mutex::new([0u8; 8]));
+pub static MJGLAD_GLBLENDFUNC: std::sync::LazyLock<std::sync::Mutex<PFNGLBLENDFUNCPROC>> = std::sync::LazyLock::new(|| std::sync::Mutex::new(unsafe { std::mem::zeroed() }));
 
 /// C static: mjGlad_glBlendFuncSeparate (PFNGLBLENDFUNCSEPARATEPROC)
-pub static MJGLAD_GLBLENDFUNCSEPARATE: std::sync::LazyLock<std::sync::Mutex<[u8; 8]>> = std::sync::LazyLock::new(|| std::sync::Mutex::new([0u8; 8]));
+pub static MJGLAD_GLBLENDFUNCSEPARATE: std::sync::LazyLock<std::sync::Mutex<PFNGLBLENDFUNCSEPARATEPROC>> = std::sync::LazyLock::new(|| std::sync::Mutex::new(unsafe { std::mem::zeroed() }));
 
 /// C static: mjGlad_glBlitFramebuffer (PFNGLBLITFRAMEBUFFERPROC)
-pub static MJGLAD_GLBLITFRAMEBUFFER: std::sync::LazyLock<std::sync::Mutex<[u8; 8]>> = std::sync::LazyLock::new(|| std::sync::Mutex::new([0u8; 8]));
+pub static MJGLAD_GLBLITFRAMEBUFFER: std::sync::LazyLock<std::sync::Mutex<PFNGLBLITFRAMEBUFFERPROC>> = std::sync::LazyLock::new(|| std::sync::Mutex::new(unsafe { std::mem::zeroed() }));
 
 /// C static: mjGlad_glBufferData (PFNGLBUFFERDATAPROC)
-pub static MJGLAD_GLBUFFERDATA: std::sync::LazyLock<std::sync::Mutex<[u8; 8]>> = std::sync::LazyLock::new(|| std::sync::Mutex::new([0u8; 8]));
+pub static MJGLAD_GLBUFFERDATA: std::sync::LazyLock<std::sync::Mutex<PFNGLBUFFERDATAPROC>> = std::sync::LazyLock::new(|| std::sync::Mutex::new(unsafe { std::mem::zeroed() }));
 
 /// C static: mjGlad_glBufferDataARB (PFNGLBUFFERDATAARBPROC)
-pub static MJGLAD_GLBUFFERDATAARB: std::sync::LazyLock<std::sync::Mutex<[u8; 8]>> = std::sync::LazyLock::new(|| std::sync::Mutex::new([0u8; 8]));
+pub static MJGLAD_GLBUFFERDATAARB: std::sync::LazyLock<std::sync::Mutex<PFNGLBUFFERDATAARBPROC>> = std::sync::LazyLock::new(|| std::sync::Mutex::new(unsafe { std::mem::zeroed() }));
 
 /// C static: mjGlad_glBufferSubData (PFNGLBUFFERSUBDATAPROC)
-pub static MJGLAD_GLBUFFERSUBDATA: std::sync::LazyLock<std::sync::Mutex<[u8; 8]>> = std::sync::LazyLock::new(|| std::sync::Mutex::new([0u8; 8]));
+pub static MJGLAD_GLBUFFERSUBDATA: std::sync::LazyLock<std::sync::Mutex<PFNGLBUFFERSUBDATAPROC>> = std::sync::LazyLock::new(|| std::sync::Mutex::new(unsafe { std::mem::zeroed() }));
 
 /// C static: mjGlad_glBufferSubDataARB (PFNGLBUFFERSUBDATAARBPROC)
-pub static MJGLAD_GLBUFFERSUBDATAARB: std::sync::LazyLock<std::sync::Mutex<[u8; 8]>> = std::sync::LazyLock::new(|| std::sync::Mutex::new([0u8; 8]));
+pub static MJGLAD_GLBUFFERSUBDATAARB: std::sync::LazyLock<std::sync::Mutex<PFNGLBUFFERSUBDATAARBPROC>> = std::sync::LazyLock::new(|| std::sync::Mutex::new(unsafe { std::mem::zeroed() }));
 
 /// C static: mjGlad_glCallList (PFNGLCALLLISTPROC)
-pub static MJGLAD_GLCALLLIST: std::sync::LazyLock<std::sync::Mutex<[u8; 8]>> = std::sync::LazyLock::new(|| std::sync::Mutex::new([0u8; 8]));
+pub static MJGLAD_GLCALLLIST: std::sync::LazyLock<std::sync::Mutex<PFNGLCALLLISTPROC>> = std::sync::LazyLock::new(|| std::sync::Mutex::new(unsafe { std::mem::zeroed() }));
 
 /// C static: mjGlad_glCallLists (PFNGLCALLLISTSPROC)
-pub static MJGLAD_GLCALLLISTS: std::sync::LazyLock<std::sync::Mutex<[u8; 8]>> = std::sync::LazyLock::new(|| std::sync::Mutex::new([0u8; 8]));
+pub static MJGLAD_GLCALLLISTS: std::sync::LazyLock<std::sync::Mutex<PFNGLCALLLISTSPROC>> = std::sync::LazyLock::new(|| std::sync::Mutex::new(unsafe { std::mem::zeroed() }));
 
 /// C static: mjGlad_glCheckFramebufferStatus (PFNGLCHECKFRAMEBUFFERSTATUSPROC)
-pub static MJGLAD_GLCHECKFRAMEBUFFERSTATUS: std::sync::LazyLock<std::sync::Mutex<[u8; 8]>> = std::sync::LazyLock::new(|| std::sync::Mutex::new([0u8; 8]));
+pub static MJGLAD_GLCHECKFRAMEBUFFERSTATUS: std::sync::LazyLock<std::sync::Mutex<PFNGLCHECKFRAMEBUFFERSTATUSPROC>> = std::sync::LazyLock::new(|| std::sync::Mutex::new(unsafe { std::mem::zeroed() }));
 
 /// C static: mjGlad_glClear (PFNGLCLEARPROC)
-pub static MJGLAD_GLCLEAR: std::sync::LazyLock<std::sync::Mutex<[u8; 8]>> = std::sync::LazyLock::new(|| std::sync::Mutex::new([0u8; 8]));
+pub static MJGLAD_GLCLEAR: std::sync::LazyLock<std::sync::Mutex<PFNGLCLEARPROC>> = std::sync::LazyLock::new(|| std::sync::Mutex::new(unsafe { std::mem::zeroed() }));
 
 /// C static: mjGlad_glClearAccum (PFNGLCLEARACCUMPROC)
-pub static MJGLAD_GLCLEARACCUM: std::sync::LazyLock<std::sync::Mutex<[u8; 8]>> = std::sync::LazyLock::new(|| std::sync::Mutex::new([0u8; 8]));
+pub static MJGLAD_GLCLEARACCUM: std::sync::LazyLock<std::sync::Mutex<PFNGLCLEARACCUMPROC>> = std::sync::LazyLock::new(|| std::sync::Mutex::new(unsafe { std::mem::zeroed() }));
 
 /// C static: mjGlad_glClearColor (PFNGLCLEARCOLORPROC)
-pub static MJGLAD_GLCLEARCOLOR: std::sync::LazyLock<std::sync::Mutex<[u8; 8]>> = std::sync::LazyLock::new(|| std::sync::Mutex::new([0u8; 8]));
+pub static MJGLAD_GLCLEARCOLOR: std::sync::LazyLock<std::sync::Mutex<PFNGLCLEARCOLORPROC>> = std::sync::LazyLock::new(|| std::sync::Mutex::new(unsafe { std::mem::zeroed() }));
 
 /// C static: mjGlad_glClearDepth (PFNGLCLEARDEPTHPROC)
-pub static MJGLAD_GLCLEARDEPTH: std::sync::LazyLock<std::sync::Mutex<[u8; 8]>> = std::sync::LazyLock::new(|| std::sync::Mutex::new([0u8; 8]));
+pub static MJGLAD_GLCLEARDEPTH: std::sync::LazyLock<std::sync::Mutex<PFNGLCLEARDEPTHPROC>> = std::sync::LazyLock::new(|| std::sync::Mutex::new(unsafe { std::mem::zeroed() }));
 
 /// C static: mjGlad_glClearIndex (PFNGLCLEARINDEXPROC)
-pub static MJGLAD_GLCLEARINDEX: std::sync::LazyLock<std::sync::Mutex<[u8; 8]>> = std::sync::LazyLock::new(|| std::sync::Mutex::new([0u8; 8]));
+pub static MJGLAD_GLCLEARINDEX: std::sync::LazyLock<std::sync::Mutex<PFNGLCLEARINDEXPROC>> = std::sync::LazyLock::new(|| std::sync::Mutex::new(unsafe { std::mem::zeroed() }));
 
 /// C static: mjGlad_glClearStencil (PFNGLCLEARSTENCILPROC)
-pub static MJGLAD_GLCLEARSTENCIL: std::sync::LazyLock<std::sync::Mutex<[u8; 8]>> = std::sync::LazyLock::new(|| std::sync::Mutex::new([0u8; 8]));
+pub static MJGLAD_GLCLEARSTENCIL: std::sync::LazyLock<std::sync::Mutex<PFNGLCLEARSTENCILPROC>> = std::sync::LazyLock::new(|| std::sync::Mutex::new(unsafe { std::mem::zeroed() }));
 
 /// C static: mjGlad_glClientActiveTexture (PFNGLCLIENTACTIVETEXTUREPROC)
-pub static MJGLAD_GLCLIENTACTIVETEXTURE: std::sync::LazyLock<std::sync::Mutex<[u8; 8]>> = std::sync::LazyLock::new(|| std::sync::Mutex::new([0u8; 8]));
+pub static MJGLAD_GLCLIENTACTIVETEXTURE: std::sync::LazyLock<std::sync::Mutex<PFNGLCLIENTACTIVETEXTUREPROC>> = std::sync::LazyLock::new(|| std::sync::Mutex::new(unsafe { std::mem::zeroed() }));
 
 /// C static: mjGlad_glClipControl (PFNGLCLIPCONTROLPROC)
-pub static MJGLAD_GLCLIPCONTROL: std::sync::LazyLock<std::sync::Mutex<[u8; 8]>> = std::sync::LazyLock::new(|| std::sync::Mutex::new([0u8; 8]));
+pub static MJGLAD_GLCLIPCONTROL: std::sync::LazyLock<std::sync::Mutex<PFNGLCLIPCONTROLPROC>> = std::sync::LazyLock::new(|| std::sync::Mutex::new(unsafe { std::mem::zeroed() }));
 
 /// C static: mjGlad_glClipPlane (PFNGLCLIPPLANEPROC)
-pub static MJGLAD_GLCLIPPLANE: std::sync::LazyLock<std::sync::Mutex<[u8; 8]>> = std::sync::LazyLock::new(|| std::sync::Mutex::new([0u8; 8]));
+pub static MJGLAD_GLCLIPPLANE: std::sync::LazyLock<std::sync::Mutex<PFNGLCLIPPLANEPROC>> = std::sync::LazyLock::new(|| std::sync::Mutex::new(unsafe { std::mem::zeroed() }));
 
 /// C static: mjGlad_glColor3b (PFNGLCOLOR3BPROC)
-pub static MJGLAD_GLCOLOR3B: std::sync::LazyLock<std::sync::Mutex<[u8; 8]>> = std::sync::LazyLock::new(|| std::sync::Mutex::new([0u8; 8]));
+pub static MJGLAD_GLCOLOR3B: std::sync::LazyLock<std::sync::Mutex<PFNGLCOLOR3BPROC>> = std::sync::LazyLock::new(|| std::sync::Mutex::new(unsafe { std::mem::zeroed() }));
 
 /// C static: mjGlad_glColor3bv (PFNGLCOLOR3BVPROC)
-pub static MJGLAD_GLCOLOR3BV: std::sync::LazyLock<std::sync::Mutex<[u8; 8]>> = std::sync::LazyLock::new(|| std::sync::Mutex::new([0u8; 8]));
+pub static MJGLAD_GLCOLOR3BV: std::sync::LazyLock<std::sync::Mutex<PFNGLCOLOR3BVPROC>> = std::sync::LazyLock::new(|| std::sync::Mutex::new(unsafe { std::mem::zeroed() }));
 
 /// C static: mjGlad_glColor3d (PFNGLCOLOR3DPROC)
-pub static MJGLAD_GLCOLOR3D: std::sync::LazyLock<std::sync::Mutex<[u8; 8]>> = std::sync::LazyLock::new(|| std::sync::Mutex::new([0u8; 8]));
+pub static MJGLAD_GLCOLOR3D: std::sync::LazyLock<std::sync::Mutex<PFNGLCOLOR3DPROC>> = std::sync::LazyLock::new(|| std::sync::Mutex::new(unsafe { std::mem::zeroed() }));
 
 /// C static: mjGlad_glColor3dv (PFNGLCOLOR3DVPROC)
-pub static MJGLAD_GLCOLOR3DV: std::sync::LazyLock<std::sync::Mutex<[u8; 8]>> = std::sync::LazyLock::new(|| std::sync::Mutex::new([0u8; 8]));
+pub static MJGLAD_GLCOLOR3DV: std::sync::LazyLock<std::sync::Mutex<PFNGLCOLOR3DVPROC>> = std::sync::LazyLock::new(|| std::sync::Mutex::new(unsafe { std::mem::zeroed() }));
 
 /// C static: mjGlad_glColor3f (PFNGLCOLOR3FPROC)
-pub static MJGLAD_GLCOLOR3F: std::sync::LazyLock<std::sync::Mutex<[u8; 8]>> = std::sync::LazyLock::new(|| std::sync::Mutex::new([0u8; 8]));
+pub static MJGLAD_GLCOLOR3F: std::sync::LazyLock<std::sync::Mutex<PFNGLCOLOR3FPROC>> = std::sync::LazyLock::new(|| std::sync::Mutex::new(unsafe { std::mem::zeroed() }));
 
 /// C static: mjGlad_glColor3fv (PFNGLCOLOR3FVPROC)
-pub static MJGLAD_GLCOLOR3FV: std::sync::LazyLock<std::sync::Mutex<[u8; 8]>> = std::sync::LazyLock::new(|| std::sync::Mutex::new([0u8; 8]));
+pub static MJGLAD_GLCOLOR3FV: std::sync::LazyLock<std::sync::Mutex<PFNGLCOLOR3FVPROC>> = std::sync::LazyLock::new(|| std::sync::Mutex::new(unsafe { std::mem::zeroed() }));
 
 /// C static: mjGlad_glColor3i (PFNGLCOLOR3IPROC)
-pub static MJGLAD_GLCOLOR3I: std::sync::LazyLock<std::sync::Mutex<[u8; 8]>> = std::sync::LazyLock::new(|| std::sync::Mutex::new([0u8; 8]));
+pub static MJGLAD_GLCOLOR3I: std::sync::LazyLock<std::sync::Mutex<PFNGLCOLOR3IPROC>> = std::sync::LazyLock::new(|| std::sync::Mutex::new(unsafe { std::mem::zeroed() }));
 
 /// C static: mjGlad_glColor3iv (PFNGLCOLOR3IVPROC)
-pub static MJGLAD_GLCOLOR3IV: std::sync::LazyLock<std::sync::Mutex<[u8; 8]>> = std::sync::LazyLock::new(|| std::sync::Mutex::new([0u8; 8]));
+pub static MJGLAD_GLCOLOR3IV: std::sync::LazyLock<std::sync::Mutex<PFNGLCOLOR3IVPROC>> = std::sync::LazyLock::new(|| std::sync::Mutex::new(unsafe { std::mem::zeroed() }));
 
 /// C static: mjGlad_glColor3s (PFNGLCOLOR3SPROC)
-pub static MJGLAD_GLCOLOR3S: std::sync::LazyLock<std::sync::Mutex<[u8; 8]>> = std::sync::LazyLock::new(|| std::sync::Mutex::new([0u8; 8]));
+pub static MJGLAD_GLCOLOR3S: std::sync::LazyLock<std::sync::Mutex<PFNGLCOLOR3SPROC>> = std::sync::LazyLock::new(|| std::sync::Mutex::new(unsafe { std::mem::zeroed() }));
 
 /// C static: mjGlad_glColor3sv (PFNGLCOLOR3SVPROC)
-pub static MJGLAD_GLCOLOR3SV: std::sync::LazyLock<std::sync::Mutex<[u8; 8]>> = std::sync::LazyLock::new(|| std::sync::Mutex::new([0u8; 8]));
+pub static MJGLAD_GLCOLOR3SV: std::sync::LazyLock<std::sync::Mutex<PFNGLCOLOR3SVPROC>> = std::sync::LazyLock::new(|| std::sync::Mutex::new(unsafe { std::mem::zeroed() }));
 
 /// C static: mjGlad_glColor3ub (PFNGLCOLOR3UBPROC)
-pub static MJGLAD_GLCOLOR3UB: std::sync::LazyLock<std::sync::Mutex<[u8; 8]>> = std::sync::LazyLock::new(|| std::sync::Mutex::new([0u8; 8]));
+pub static MJGLAD_GLCOLOR3UB: std::sync::LazyLock<std::sync::Mutex<PFNGLCOLOR3UBPROC>> = std::sync::LazyLock::new(|| std::sync::Mutex::new(unsafe { std::mem::zeroed() }));
 
 /// C static: mjGlad_glColor3ubv (PFNGLCOLOR3UBVPROC)
-pub static MJGLAD_GLCOLOR3UBV: std::sync::LazyLock<std::sync::Mutex<[u8; 8]>> = std::sync::LazyLock::new(|| std::sync::Mutex::new([0u8; 8]));
+pub static MJGLAD_GLCOLOR3UBV: std::sync::LazyLock<std::sync::Mutex<PFNGLCOLOR3UBVPROC>> = std::sync::LazyLock::new(|| std::sync::Mutex::new(unsafe { std::mem::zeroed() }));
 
 /// C static: mjGlad_glColor3ui (PFNGLCOLOR3UIPROC)
-pub static MJGLAD_GLCOLOR3UI: std::sync::LazyLock<std::sync::Mutex<[u8; 8]>> = std::sync::LazyLock::new(|| std::sync::Mutex::new([0u8; 8]));
+pub static MJGLAD_GLCOLOR3UI: std::sync::LazyLock<std::sync::Mutex<PFNGLCOLOR3UIPROC>> = std::sync::LazyLock::new(|| std::sync::Mutex::new(unsafe { std::mem::zeroed() }));
 
 /// C static: mjGlad_glColor3uiv (PFNGLCOLOR3UIVPROC)
-pub static MJGLAD_GLCOLOR3UIV: std::sync::LazyLock<std::sync::Mutex<[u8; 8]>> = std::sync::LazyLock::new(|| std::sync::Mutex::new([0u8; 8]));
+pub static MJGLAD_GLCOLOR3UIV: std::sync::LazyLock<std::sync::Mutex<PFNGLCOLOR3UIVPROC>> = std::sync::LazyLock::new(|| std::sync::Mutex::new(unsafe { std::mem::zeroed() }));
 
 /// C static: mjGlad_glColor3us (PFNGLCOLOR3USPROC)
-pub static MJGLAD_GLCOLOR3US: std::sync::LazyLock<std::sync::Mutex<[u8; 8]>> = std::sync::LazyLock::new(|| std::sync::Mutex::new([0u8; 8]));
+pub static MJGLAD_GLCOLOR3US: std::sync::LazyLock<std::sync::Mutex<PFNGLCOLOR3USPROC>> = std::sync::LazyLock::new(|| std::sync::Mutex::new(unsafe { std::mem::zeroed() }));
 
 /// C static: mjGlad_glColor3usv (PFNGLCOLOR3USVPROC)
-pub static MJGLAD_GLCOLOR3USV: std::sync::LazyLock<std::sync::Mutex<[u8; 8]>> = std::sync::LazyLock::new(|| std::sync::Mutex::new([0u8; 8]));
+pub static MJGLAD_GLCOLOR3USV: std::sync::LazyLock<std::sync::Mutex<PFNGLCOLOR3USVPROC>> = std::sync::LazyLock::new(|| std::sync::Mutex::new(unsafe { std::mem::zeroed() }));
 
 /// C static: mjGlad_glColor4b (PFNGLCOLOR4BPROC)
-pub static MJGLAD_GLCOLOR4B: std::sync::LazyLock<std::sync::Mutex<[u8; 8]>> = std::sync::LazyLock::new(|| std::sync::Mutex::new([0u8; 8]));
+pub static MJGLAD_GLCOLOR4B: std::sync::LazyLock<std::sync::Mutex<PFNGLCOLOR4BPROC>> = std::sync::LazyLock::new(|| std::sync::Mutex::new(unsafe { std::mem::zeroed() }));
 
 /// C static: mjGlad_glColor4bv (PFNGLCOLOR4BVPROC)
-pub static MJGLAD_GLCOLOR4BV: std::sync::LazyLock<std::sync::Mutex<[u8; 8]>> = std::sync::LazyLock::new(|| std::sync::Mutex::new([0u8; 8]));
+pub static MJGLAD_GLCOLOR4BV: std::sync::LazyLock<std::sync::Mutex<PFNGLCOLOR4BVPROC>> = std::sync::LazyLock::new(|| std::sync::Mutex::new(unsafe { std::mem::zeroed() }));
 
 /// C static: mjGlad_glColor4d (PFNGLCOLOR4DPROC)
-pub static MJGLAD_GLCOLOR4D: std::sync::LazyLock<std::sync::Mutex<[u8; 8]>> = std::sync::LazyLock::new(|| std::sync::Mutex::new([0u8; 8]));
+pub static MJGLAD_GLCOLOR4D: std::sync::LazyLock<std::sync::Mutex<PFNGLCOLOR4DPROC>> = std::sync::LazyLock::new(|| std::sync::Mutex::new(unsafe { std::mem::zeroed() }));
 
 /// C static: mjGlad_glColor4dv (PFNGLCOLOR4DVPROC)
-pub static MJGLAD_GLCOLOR4DV: std::sync::LazyLock<std::sync::Mutex<[u8; 8]>> = std::sync::LazyLock::new(|| std::sync::Mutex::new([0u8; 8]));
+pub static MJGLAD_GLCOLOR4DV: std::sync::LazyLock<std::sync::Mutex<PFNGLCOLOR4DVPROC>> = std::sync::LazyLock::new(|| std::sync::Mutex::new(unsafe { std::mem::zeroed() }));
 
 /// C static: mjGlad_glColor4f (PFNGLCOLOR4FPROC)
-pub static MJGLAD_GLCOLOR4F: std::sync::LazyLock<std::sync::Mutex<[u8; 8]>> = std::sync::LazyLock::new(|| std::sync::Mutex::new([0u8; 8]));
+pub static MJGLAD_GLCOLOR4F: std::sync::LazyLock<std::sync::Mutex<PFNGLCOLOR4FPROC>> = std::sync::LazyLock::new(|| std::sync::Mutex::new(unsafe { std::mem::zeroed() }));
 
 /// C static: mjGlad_glColor4fv (PFNGLCOLOR4FVPROC)
-pub static MJGLAD_GLCOLOR4FV: std::sync::LazyLock<std::sync::Mutex<[u8; 8]>> = std::sync::LazyLock::new(|| std::sync::Mutex::new([0u8; 8]));
+pub static MJGLAD_GLCOLOR4FV: std::sync::LazyLock<std::sync::Mutex<PFNGLCOLOR4FVPROC>> = std::sync::LazyLock::new(|| std::sync::Mutex::new(unsafe { std::mem::zeroed() }));
 
 /// C static: mjGlad_glColor4i (PFNGLCOLOR4IPROC)
-pub static MJGLAD_GLCOLOR4I: std::sync::LazyLock<std::sync::Mutex<[u8; 8]>> = std::sync::LazyLock::new(|| std::sync::Mutex::new([0u8; 8]));
+pub static MJGLAD_GLCOLOR4I: std::sync::LazyLock<std::sync::Mutex<PFNGLCOLOR4IPROC>> = std::sync::LazyLock::new(|| std::sync::Mutex::new(unsafe { std::mem::zeroed() }));
 
 /// C static: mjGlad_glColor4iv (PFNGLCOLOR4IVPROC)
-pub static MJGLAD_GLCOLOR4IV: std::sync::LazyLock<std::sync::Mutex<[u8; 8]>> = std::sync::LazyLock::new(|| std::sync::Mutex::new([0u8; 8]));
+pub static MJGLAD_GLCOLOR4IV: std::sync::LazyLock<std::sync::Mutex<PFNGLCOLOR4IVPROC>> = std::sync::LazyLock::new(|| std::sync::Mutex::new(unsafe { std::mem::zeroed() }));
 
 /// C static: mjGlad_glColor4s (PFNGLCOLOR4SPROC)
-pub static MJGLAD_GLCOLOR4S: std::sync::LazyLock<std::sync::Mutex<[u8; 8]>> = std::sync::LazyLock::new(|| std::sync::Mutex::new([0u8; 8]));
+pub static MJGLAD_GLCOLOR4S: std::sync::LazyLock<std::sync::Mutex<PFNGLCOLOR4SPROC>> = std::sync::LazyLock::new(|| std::sync::Mutex::new(unsafe { std::mem::zeroed() }));
 
 /// C static: mjGlad_glColor4sv (PFNGLCOLOR4SVPROC)
-pub static MJGLAD_GLCOLOR4SV: std::sync::LazyLock<std::sync::Mutex<[u8; 8]>> = std::sync::LazyLock::new(|| std::sync::Mutex::new([0u8; 8]));
+pub static MJGLAD_GLCOLOR4SV: std::sync::LazyLock<std::sync::Mutex<PFNGLCOLOR4SVPROC>> = std::sync::LazyLock::new(|| std::sync::Mutex::new(unsafe { std::mem::zeroed() }));
 
 /// C static: mjGlad_glColor4ub (PFNGLCOLOR4UBPROC)
-pub static MJGLAD_GLCOLOR4UB: std::sync::LazyLock<std::sync::Mutex<[u8; 8]>> = std::sync::LazyLock::new(|| std::sync::Mutex::new([0u8; 8]));
+pub static MJGLAD_GLCOLOR4UB: std::sync::LazyLock<std::sync::Mutex<PFNGLCOLOR4UBPROC>> = std::sync::LazyLock::new(|| std::sync::Mutex::new(unsafe { std::mem::zeroed() }));
 
 /// C static: mjGlad_glColor4ubv (PFNGLCOLOR4UBVPROC)
-pub static MJGLAD_GLCOLOR4UBV: std::sync::LazyLock<std::sync::Mutex<[u8; 8]>> = std::sync::LazyLock::new(|| std::sync::Mutex::new([0u8; 8]));
+pub static MJGLAD_GLCOLOR4UBV: std::sync::LazyLock<std::sync::Mutex<PFNGLCOLOR4UBVPROC>> = std::sync::LazyLock::new(|| std::sync::Mutex::new(unsafe { std::mem::zeroed() }));
 
 /// C static: mjGlad_glColor4ui (PFNGLCOLOR4UIPROC)
-pub static MJGLAD_GLCOLOR4UI: std::sync::LazyLock<std::sync::Mutex<[u8; 8]>> = std::sync::LazyLock::new(|| std::sync::Mutex::new([0u8; 8]));
+pub static MJGLAD_GLCOLOR4UI: std::sync::LazyLock<std::sync::Mutex<PFNGLCOLOR4UIPROC>> = std::sync::LazyLock::new(|| std::sync::Mutex::new(unsafe { std::mem::zeroed() }));
 
 /// C static: mjGlad_glColor4uiv (PFNGLCOLOR4UIVPROC)
-pub static MJGLAD_GLCOLOR4UIV: std::sync::LazyLock<std::sync::Mutex<[u8; 8]>> = std::sync::LazyLock::new(|| std::sync::Mutex::new([0u8; 8]));
+pub static MJGLAD_GLCOLOR4UIV: std::sync::LazyLock<std::sync::Mutex<PFNGLCOLOR4UIVPROC>> = std::sync::LazyLock::new(|| std::sync::Mutex::new(unsafe { std::mem::zeroed() }));
 
 /// C static: mjGlad_glColor4us (PFNGLCOLOR4USPROC)
-pub static MJGLAD_GLCOLOR4US: std::sync::LazyLock<std::sync::Mutex<[u8; 8]>> = std::sync::LazyLock::new(|| std::sync::Mutex::new([0u8; 8]));
+pub static MJGLAD_GLCOLOR4US: std::sync::LazyLock<std::sync::Mutex<PFNGLCOLOR4USPROC>> = std::sync::LazyLock::new(|| std::sync::Mutex::new(unsafe { std::mem::zeroed() }));
 
 /// C static: mjGlad_glColor4usv (PFNGLCOLOR4USVPROC)
-pub static MJGLAD_GLCOLOR4USV: std::sync::LazyLock<std::sync::Mutex<[u8; 8]>> = std::sync::LazyLock::new(|| std::sync::Mutex::new([0u8; 8]));
+pub static MJGLAD_GLCOLOR4USV: std::sync::LazyLock<std::sync::Mutex<PFNGLCOLOR4USVPROC>> = std::sync::LazyLock::new(|| std::sync::Mutex::new(unsafe { std::mem::zeroed() }));
 
 /// C static: mjGlad_glColorMask (PFNGLCOLORMASKPROC)
-pub static MJGLAD_GLCOLORMASK: std::sync::LazyLock<std::sync::Mutex<[u8; 8]>> = std::sync::LazyLock::new(|| std::sync::Mutex::new([0u8; 8]));
+pub static MJGLAD_GLCOLORMASK: std::sync::LazyLock<std::sync::Mutex<PFNGLCOLORMASKPROC>> = std::sync::LazyLock::new(|| std::sync::Mutex::new(unsafe { std::mem::zeroed() }));
 
 /// C static: mjGlad_glColorMaterial (PFNGLCOLORMATERIALPROC)
-pub static MJGLAD_GLCOLORMATERIAL: std::sync::LazyLock<std::sync::Mutex<[u8; 8]>> = std::sync::LazyLock::new(|| std::sync::Mutex::new([0u8; 8]));
+pub static MJGLAD_GLCOLORMATERIAL: std::sync::LazyLock<std::sync::Mutex<PFNGLCOLORMATERIALPROC>> = std::sync::LazyLock::new(|| std::sync::Mutex::new(unsafe { std::mem::zeroed() }));
 
 /// C static: mjGlad_glColorPointer (PFNGLCOLORPOINTERPROC)
-pub static MJGLAD_GLCOLORPOINTER: std::sync::LazyLock<std::sync::Mutex<[u8; 8]>> = std::sync::LazyLock::new(|| std::sync::Mutex::new([0u8; 8]));
+pub static MJGLAD_GLCOLORPOINTER: std::sync::LazyLock<std::sync::Mutex<PFNGLCOLORPOINTERPROC>> = std::sync::LazyLock::new(|| std::sync::Mutex::new(unsafe { std::mem::zeroed() }));
 
 /// C static: mjGlad_glCompressedTexImage1D (PFNGLCOMPRESSEDTEXIMAGE1DPROC)
-pub static MJGLAD_GLCOMPRESSEDTEXIMAGE1D: std::sync::LazyLock<std::sync::Mutex<[u8; 8]>> = std::sync::LazyLock::new(|| std::sync::Mutex::new([0u8; 8]));
+pub static MJGLAD_GLCOMPRESSEDTEXIMAGE1D: std::sync::LazyLock<std::sync::Mutex<PFNGLCOMPRESSEDTEXIMAGE1DPROC>> = std::sync::LazyLock::new(|| std::sync::Mutex::new(unsafe { std::mem::zeroed() }));
 
 /// C static: mjGlad_glCompressedTexImage2D (PFNGLCOMPRESSEDTEXIMAGE2DPROC)
-pub static MJGLAD_GLCOMPRESSEDTEXIMAGE2D: std::sync::LazyLock<std::sync::Mutex<[u8; 8]>> = std::sync::LazyLock::new(|| std::sync::Mutex::new([0u8; 8]));
+pub static MJGLAD_GLCOMPRESSEDTEXIMAGE2D: std::sync::LazyLock<std::sync::Mutex<PFNGLCOMPRESSEDTEXIMAGE2DPROC>> = std::sync::LazyLock::new(|| std::sync::Mutex::new(unsafe { std::mem::zeroed() }));
 
 /// C static: mjGlad_glCompressedTexImage3D (PFNGLCOMPRESSEDTEXIMAGE3DPROC)
-pub static MJGLAD_GLCOMPRESSEDTEXIMAGE3D: std::sync::LazyLock<std::sync::Mutex<[u8; 8]>> = std::sync::LazyLock::new(|| std::sync::Mutex::new([0u8; 8]));
+pub static MJGLAD_GLCOMPRESSEDTEXIMAGE3D: std::sync::LazyLock<std::sync::Mutex<PFNGLCOMPRESSEDTEXIMAGE3DPROC>> = std::sync::LazyLock::new(|| std::sync::Mutex::new(unsafe { std::mem::zeroed() }));
 
 /// C static: mjGlad_glCompressedTexSubImage1D (PFNGLCOMPRESSEDTEXSUBIMAGE1DPROC)
-pub static MJGLAD_GLCOMPRESSEDTEXSUBIMAGE1D: std::sync::LazyLock<std::sync::Mutex<[u8; 8]>> = std::sync::LazyLock::new(|| std::sync::Mutex::new([0u8; 8]));
+pub static MJGLAD_GLCOMPRESSEDTEXSUBIMAGE1D: std::sync::LazyLock<std::sync::Mutex<PFNGLCOMPRESSEDTEXSUBIMAGE1DPROC>> = std::sync::LazyLock::new(|| std::sync::Mutex::new(unsafe { std::mem::zeroed() }));
 
 /// C static: mjGlad_glCompressedTexSubImage2D (PFNGLCOMPRESSEDTEXSUBIMAGE2DPROC)
-pub static MJGLAD_GLCOMPRESSEDTEXSUBIMAGE2D: std::sync::LazyLock<std::sync::Mutex<[u8; 8]>> = std::sync::LazyLock::new(|| std::sync::Mutex::new([0u8; 8]));
+pub static MJGLAD_GLCOMPRESSEDTEXSUBIMAGE2D: std::sync::LazyLock<std::sync::Mutex<PFNGLCOMPRESSEDTEXSUBIMAGE2DPROC>> = std::sync::LazyLock::new(|| std::sync::Mutex::new(unsafe { std::mem::zeroed() }));
 
 /// C static: mjGlad_glCompressedTexSubImage3D (PFNGLCOMPRESSEDTEXSUBIMAGE3DPROC)
-pub static MJGLAD_GLCOMPRESSEDTEXSUBIMAGE3D: std::sync::LazyLock<std::sync::Mutex<[u8; 8]>> = std::sync::LazyLock::new(|| std::sync::Mutex::new([0u8; 8]));
+pub static MJGLAD_GLCOMPRESSEDTEXSUBIMAGE3D: std::sync::LazyLock<std::sync::Mutex<PFNGLCOMPRESSEDTEXSUBIMAGE3DPROC>> = std::sync::LazyLock::new(|| std::sync::Mutex::new(unsafe { std::mem::zeroed() }));
 
 /// C static: mjGlad_glCopyPixels (PFNGLCOPYPIXELSPROC)
-pub static MJGLAD_GLCOPYPIXELS: std::sync::LazyLock<std::sync::Mutex<[u8; 8]>> = std::sync::LazyLock::new(|| std::sync::Mutex::new([0u8; 8]));
+pub static MJGLAD_GLCOPYPIXELS: std::sync::LazyLock<std::sync::Mutex<PFNGLCOPYPIXELSPROC>> = std::sync::LazyLock::new(|| std::sync::Mutex::new(unsafe { std::mem::zeroed() }));
 
 /// C static: mjGlad_glCopyTexImage1D (PFNGLCOPYTEXIMAGE1DPROC)
-pub static MJGLAD_GLCOPYTEXIMAGE1D: std::sync::LazyLock<std::sync::Mutex<[u8; 8]>> = std::sync::LazyLock::new(|| std::sync::Mutex::new([0u8; 8]));
+pub static MJGLAD_GLCOPYTEXIMAGE1D: std::sync::LazyLock<std::sync::Mutex<PFNGLCOPYTEXIMAGE1DPROC>> = std::sync::LazyLock::new(|| std::sync::Mutex::new(unsafe { std::mem::zeroed() }));
 
 /// C static: mjGlad_glCopyTexImage2D (PFNGLCOPYTEXIMAGE2DPROC)
-pub static MJGLAD_GLCOPYTEXIMAGE2D: std::sync::LazyLock<std::sync::Mutex<[u8; 8]>> = std::sync::LazyLock::new(|| std::sync::Mutex::new([0u8; 8]));
+pub static MJGLAD_GLCOPYTEXIMAGE2D: std::sync::LazyLock<std::sync::Mutex<PFNGLCOPYTEXIMAGE2DPROC>> = std::sync::LazyLock::new(|| std::sync::Mutex::new(unsafe { std::mem::zeroed() }));
 
 /// C static: mjGlad_glCopyTexSubImage1D (PFNGLCOPYTEXSUBIMAGE1DPROC)
-pub static MJGLAD_GLCOPYTEXSUBIMAGE1D: std::sync::LazyLock<std::sync::Mutex<[u8; 8]>> = std::sync::LazyLock::new(|| std::sync::Mutex::new([0u8; 8]));
+pub static MJGLAD_GLCOPYTEXSUBIMAGE1D: std::sync::LazyLock<std::sync::Mutex<PFNGLCOPYTEXSUBIMAGE1DPROC>> = std::sync::LazyLock::new(|| std::sync::Mutex::new(unsafe { std::mem::zeroed() }));
 
 /// C static: mjGlad_glCopyTexSubImage2D (PFNGLCOPYTEXSUBIMAGE2DPROC)
-pub static MJGLAD_GLCOPYTEXSUBIMAGE2D: std::sync::LazyLock<std::sync::Mutex<[u8; 8]>> = std::sync::LazyLock::new(|| std::sync::Mutex::new([0u8; 8]));
+pub static MJGLAD_GLCOPYTEXSUBIMAGE2D: std::sync::LazyLock<std::sync::Mutex<PFNGLCOPYTEXSUBIMAGE2DPROC>> = std::sync::LazyLock::new(|| std::sync::Mutex::new(unsafe { std::mem::zeroed() }));
 
 /// C static: mjGlad_glCopyTexSubImage3D (PFNGLCOPYTEXSUBIMAGE3DPROC)
-pub static MJGLAD_GLCOPYTEXSUBIMAGE3D: std::sync::LazyLock<std::sync::Mutex<[u8; 8]>> = std::sync::LazyLock::new(|| std::sync::Mutex::new([0u8; 8]));
+pub static MJGLAD_GLCOPYTEXSUBIMAGE3D: std::sync::LazyLock<std::sync::Mutex<PFNGLCOPYTEXSUBIMAGE3DPROC>> = std::sync::LazyLock::new(|| std::sync::Mutex::new(unsafe { std::mem::zeroed() }));
 
 /// C static: mjGlad_glCullFace (PFNGLCULLFACEPROC)
-pub static MJGLAD_GLCULLFACE: std::sync::LazyLock<std::sync::Mutex<[u8; 8]>> = std::sync::LazyLock::new(|| std::sync::Mutex::new([0u8; 8]));
+pub static MJGLAD_GLCULLFACE: std::sync::LazyLock<std::sync::Mutex<PFNGLCULLFACEPROC>> = std::sync::LazyLock::new(|| std::sync::Mutex::new(unsafe { std::mem::zeroed() }));
 
 /// C static: mjGlad_glDebugMessageCallback (PFNGLDEBUGMESSAGECALLBACKPROC)
-pub static MJGLAD_GLDEBUGMESSAGECALLBACK: std::sync::LazyLock<std::sync::Mutex<[u8; 8]>> = std::sync::LazyLock::new(|| std::sync::Mutex::new([0u8; 8]));
+pub static MJGLAD_GLDEBUGMESSAGECALLBACK: std::sync::LazyLock<std::sync::Mutex<PFNGLDEBUGMESSAGECALLBACKPROC>> = std::sync::LazyLock::new(|| std::sync::Mutex::new(unsafe { std::mem::zeroed() }));
 
 /// C static: mjGlad_glDebugMessageCallbackKHR (PFNGLDEBUGMESSAGECALLBACKKHRPROC)
-pub static MJGLAD_GLDEBUGMESSAGECALLBACKKHR: std::sync::LazyLock<std::sync::Mutex<[u8; 8]>> = std::sync::LazyLock::new(|| std::sync::Mutex::new([0u8; 8]));
+pub static MJGLAD_GLDEBUGMESSAGECALLBACKKHR: std::sync::LazyLock<std::sync::Mutex<PFNGLDEBUGMESSAGECALLBACKKHRPROC>> = std::sync::LazyLock::new(|| std::sync::Mutex::new(unsafe { std::mem::zeroed() }));
 
 /// C static: mjGlad_glDebugMessageControl (PFNGLDEBUGMESSAGECONTROLPROC)
-pub static MJGLAD_GLDEBUGMESSAGECONTROL: std::sync::LazyLock<std::sync::Mutex<[u8; 8]>> = std::sync::LazyLock::new(|| std::sync::Mutex::new([0u8; 8]));
+pub static MJGLAD_GLDEBUGMESSAGECONTROL: std::sync::LazyLock<std::sync::Mutex<PFNGLDEBUGMESSAGECONTROLPROC>> = std::sync::LazyLock::new(|| std::sync::Mutex::new(unsafe { std::mem::zeroed() }));
 
 /// C static: mjGlad_glDebugMessageControlKHR (PFNGLDEBUGMESSAGECONTROLKHRPROC)
-pub static MJGLAD_GLDEBUGMESSAGECONTROLKHR: std::sync::LazyLock<std::sync::Mutex<[u8; 8]>> = std::sync::LazyLock::new(|| std::sync::Mutex::new([0u8; 8]));
+pub static MJGLAD_GLDEBUGMESSAGECONTROLKHR: std::sync::LazyLock<std::sync::Mutex<PFNGLDEBUGMESSAGECONTROLKHRPROC>> = std::sync::LazyLock::new(|| std::sync::Mutex::new(unsafe { std::mem::zeroed() }));
 
 /// C static: mjGlad_glDebugMessageInsert (PFNGLDEBUGMESSAGEINSERTPROC)
-pub static MJGLAD_GLDEBUGMESSAGEINSERT: std::sync::LazyLock<std::sync::Mutex<[u8; 8]>> = std::sync::LazyLock::new(|| std::sync::Mutex::new([0u8; 8]));
+pub static MJGLAD_GLDEBUGMESSAGEINSERT: std::sync::LazyLock<std::sync::Mutex<PFNGLDEBUGMESSAGEINSERTPROC>> = std::sync::LazyLock::new(|| std::sync::Mutex::new(unsafe { std::mem::zeroed() }));
 
 /// C static: mjGlad_glDebugMessageInsertKHR (PFNGLDEBUGMESSAGEINSERTKHRPROC)
-pub static MJGLAD_GLDEBUGMESSAGEINSERTKHR: std::sync::LazyLock<std::sync::Mutex<[u8; 8]>> = std::sync::LazyLock::new(|| std::sync::Mutex::new([0u8; 8]));
+pub static MJGLAD_GLDEBUGMESSAGEINSERTKHR: std::sync::LazyLock<std::sync::Mutex<PFNGLDEBUGMESSAGEINSERTKHRPROC>> = std::sync::LazyLock::new(|| std::sync::Mutex::new(unsafe { std::mem::zeroed() }));
 
 /// C static: mjGlad_glDeleteBuffers (PFNGLDELETEBUFFERSPROC)
-pub static MJGLAD_GLDELETEBUFFERS: std::sync::LazyLock<std::sync::Mutex<[u8; 8]>> = std::sync::LazyLock::new(|| std::sync::Mutex::new([0u8; 8]));
+pub static MJGLAD_GLDELETEBUFFERS: std::sync::LazyLock<std::sync::Mutex<PFNGLDELETEBUFFERSPROC>> = std::sync::LazyLock::new(|| std::sync::Mutex::new(unsafe { std::mem::zeroed() }));
 
 /// C static: mjGlad_glDeleteBuffersARB (PFNGLDELETEBUFFERSARBPROC)
-pub static MJGLAD_GLDELETEBUFFERSARB: std::sync::LazyLock<std::sync::Mutex<[u8; 8]>> = std::sync::LazyLock::new(|| std::sync::Mutex::new([0u8; 8]));
+pub static MJGLAD_GLDELETEBUFFERSARB: std::sync::LazyLock<std::sync::Mutex<PFNGLDELETEBUFFERSARBPROC>> = std::sync::LazyLock::new(|| std::sync::Mutex::new(unsafe { std::mem::zeroed() }));
 
 /// C static: mjGlad_glDeleteFramebuffers (PFNGLDELETEFRAMEBUFFERSPROC)
-pub static MJGLAD_GLDELETEFRAMEBUFFERS: std::sync::LazyLock<std::sync::Mutex<[u8; 8]>> = std::sync::LazyLock::new(|| std::sync::Mutex::new([0u8; 8]));
+pub static MJGLAD_GLDELETEFRAMEBUFFERS: std::sync::LazyLock<std::sync::Mutex<PFNGLDELETEFRAMEBUFFERSPROC>> = std::sync::LazyLock::new(|| std::sync::Mutex::new(unsafe { std::mem::zeroed() }));
 
 /// C static: mjGlad_glDeleteLists (PFNGLDELETELISTSPROC)
-pub static MJGLAD_GLDELETELISTS: std::sync::LazyLock<std::sync::Mutex<[u8; 8]>> = std::sync::LazyLock::new(|| std::sync::Mutex::new([0u8; 8]));
+pub static MJGLAD_GLDELETELISTS: std::sync::LazyLock<std::sync::Mutex<PFNGLDELETELISTSPROC>> = std::sync::LazyLock::new(|| std::sync::Mutex::new(unsafe { std::mem::zeroed() }));
 
 /// C static: mjGlad_glDeleteQueries (PFNGLDELETEQUERIESPROC)
-pub static MJGLAD_GLDELETEQUERIES: std::sync::LazyLock<std::sync::Mutex<[u8; 8]>> = std::sync::LazyLock::new(|| std::sync::Mutex::new([0u8; 8]));
+pub static MJGLAD_GLDELETEQUERIES: std::sync::LazyLock<std::sync::Mutex<PFNGLDELETEQUERIESPROC>> = std::sync::LazyLock::new(|| std::sync::Mutex::new(unsafe { std::mem::zeroed() }));
 
 /// C static: mjGlad_glDeleteRenderbuffers (PFNGLDELETERENDERBUFFERSPROC)
-pub static MJGLAD_GLDELETERENDERBUFFERS: std::sync::LazyLock<std::sync::Mutex<[u8; 8]>> = std::sync::LazyLock::new(|| std::sync::Mutex::new([0u8; 8]));
+pub static MJGLAD_GLDELETERENDERBUFFERS: std::sync::LazyLock<std::sync::Mutex<PFNGLDELETERENDERBUFFERSPROC>> = std::sync::LazyLock::new(|| std::sync::Mutex::new(unsafe { std::mem::zeroed() }));
 
 /// C static: mjGlad_glDeleteTextures (PFNGLDELETETEXTURESPROC)
-pub static MJGLAD_GLDELETETEXTURES: std::sync::LazyLock<std::sync::Mutex<[u8; 8]>> = std::sync::LazyLock::new(|| std::sync::Mutex::new([0u8; 8]));
+pub static MJGLAD_GLDELETETEXTURES: std::sync::LazyLock<std::sync::Mutex<PFNGLDELETETEXTURESPROC>> = std::sync::LazyLock::new(|| std::sync::Mutex::new(unsafe { std::mem::zeroed() }));
 
 /// C static: mjGlad_glDepthFunc (PFNGLDEPTHFUNCPROC)
-pub static MJGLAD_GLDEPTHFUNC: std::sync::LazyLock<std::sync::Mutex<[u8; 8]>> = std::sync::LazyLock::new(|| std::sync::Mutex::new([0u8; 8]));
+pub static MJGLAD_GLDEPTHFUNC: std::sync::LazyLock<std::sync::Mutex<PFNGLDEPTHFUNCPROC>> = std::sync::LazyLock::new(|| std::sync::Mutex::new(unsafe { std::mem::zeroed() }));
 
 /// C static: mjGlad_glDepthMask (PFNGLDEPTHMASKPROC)
-pub static MJGLAD_GLDEPTHMASK: std::sync::LazyLock<std::sync::Mutex<[u8; 8]>> = std::sync::LazyLock::new(|| std::sync::Mutex::new([0u8; 8]));
+pub static MJGLAD_GLDEPTHMASK: std::sync::LazyLock<std::sync::Mutex<PFNGLDEPTHMASKPROC>> = std::sync::LazyLock::new(|| std::sync::Mutex::new(unsafe { std::mem::zeroed() }));
 
 /// C static: mjGlad_glDepthRange (PFNGLDEPTHRANGEPROC)
-pub static MJGLAD_GLDEPTHRANGE: std::sync::LazyLock<std::sync::Mutex<[u8; 8]>> = std::sync::LazyLock::new(|| std::sync::Mutex::new([0u8; 8]));
+pub static MJGLAD_GLDEPTHRANGE: std::sync::LazyLock<std::sync::Mutex<PFNGLDEPTHRANGEPROC>> = std::sync::LazyLock::new(|| std::sync::Mutex::new(unsafe { std::mem::zeroed() }));
 
 /// C static: mjGlad_glDisable (PFNGLDISABLEPROC)
-pub static MJGLAD_GLDISABLE: std::sync::LazyLock<std::sync::Mutex<[u8; 8]>> = std::sync::LazyLock::new(|| std::sync::Mutex::new([0u8; 8]));
+pub static MJGLAD_GLDISABLE: std::sync::LazyLock<std::sync::Mutex<PFNGLDISABLEPROC>> = std::sync::LazyLock::new(|| std::sync::Mutex::new(unsafe { std::mem::zeroed() }));
 
 /// C static: mjGlad_glDisableClientState (PFNGLDISABLECLIENTSTATEPROC)
-pub static MJGLAD_GLDISABLECLIENTSTATE: std::sync::LazyLock<std::sync::Mutex<[u8; 8]>> = std::sync::LazyLock::new(|| std::sync::Mutex::new([0u8; 8]));
+pub static MJGLAD_GLDISABLECLIENTSTATE: std::sync::LazyLock<std::sync::Mutex<PFNGLDISABLECLIENTSTATEPROC>> = std::sync::LazyLock::new(|| std::sync::Mutex::new(unsafe { std::mem::zeroed() }));
 
 /// C static: mjGlad_glDrawArrays (PFNGLDRAWARRAYSPROC)
-pub static MJGLAD_GLDRAWARRAYS: std::sync::LazyLock<std::sync::Mutex<[u8; 8]>> = std::sync::LazyLock::new(|| std::sync::Mutex::new([0u8; 8]));
+pub static MJGLAD_GLDRAWARRAYS: std::sync::LazyLock<std::sync::Mutex<PFNGLDRAWARRAYSPROC>> = std::sync::LazyLock::new(|| std::sync::Mutex::new(unsafe { std::mem::zeroed() }));
 
 /// C static: mjGlad_glDrawBuffer (PFNGLDRAWBUFFERPROC)
-pub static MJGLAD_GLDRAWBUFFER: std::sync::LazyLock<std::sync::Mutex<[u8; 8]>> = std::sync::LazyLock::new(|| std::sync::Mutex::new([0u8; 8]));
+pub static MJGLAD_GLDRAWBUFFER: std::sync::LazyLock<std::sync::Mutex<PFNGLDRAWBUFFERPROC>> = std::sync::LazyLock::new(|| std::sync::Mutex::new(unsafe { std::mem::zeroed() }));
 
 /// C static: mjGlad_glDrawElements (PFNGLDRAWELEMENTSPROC)
-pub static MJGLAD_GLDRAWELEMENTS: std::sync::LazyLock<std::sync::Mutex<[u8; 8]>> = std::sync::LazyLock::new(|| std::sync::Mutex::new([0u8; 8]));
+pub static MJGLAD_GLDRAWELEMENTS: std::sync::LazyLock<std::sync::Mutex<PFNGLDRAWELEMENTSPROC>> = std::sync::LazyLock::new(|| std::sync::Mutex::new(unsafe { std::mem::zeroed() }));
 
 /// C static: mjGlad_glDrawPixels (PFNGLDRAWPIXELSPROC)
-pub static MJGLAD_GLDRAWPIXELS: std::sync::LazyLock<std::sync::Mutex<[u8; 8]>> = std::sync::LazyLock::new(|| std::sync::Mutex::new([0u8; 8]));
+pub static MJGLAD_GLDRAWPIXELS: std::sync::LazyLock<std::sync::Mutex<PFNGLDRAWPIXELSPROC>> = std::sync::LazyLock::new(|| std::sync::Mutex::new(unsafe { std::mem::zeroed() }));
 
 /// C static: mjGlad_glDrawRangeElements (PFNGLDRAWRANGEELEMENTSPROC)
-pub static MJGLAD_GLDRAWRANGEELEMENTS: std::sync::LazyLock<std::sync::Mutex<[u8; 8]>> = std::sync::LazyLock::new(|| std::sync::Mutex::new([0u8; 8]));
+pub static MJGLAD_GLDRAWRANGEELEMENTS: std::sync::LazyLock<std::sync::Mutex<PFNGLDRAWRANGEELEMENTSPROC>> = std::sync::LazyLock::new(|| std::sync::Mutex::new(unsafe { std::mem::zeroed() }));
 
 /// C static: mjGlad_glEdgeFlag (PFNGLEDGEFLAGPROC)
-pub static MJGLAD_GLEDGEFLAG: std::sync::LazyLock<std::sync::Mutex<[u8; 8]>> = std::sync::LazyLock::new(|| std::sync::Mutex::new([0u8; 8]));
+pub static MJGLAD_GLEDGEFLAG: std::sync::LazyLock<std::sync::Mutex<PFNGLEDGEFLAGPROC>> = std::sync::LazyLock::new(|| std::sync::Mutex::new(unsafe { std::mem::zeroed() }));
 
 /// C static: mjGlad_glEdgeFlagPointer (PFNGLEDGEFLAGPOINTERPROC)
-pub static MJGLAD_GLEDGEFLAGPOINTER: std::sync::LazyLock<std::sync::Mutex<[u8; 8]>> = std::sync::LazyLock::new(|| std::sync::Mutex::new([0u8; 8]));
+pub static MJGLAD_GLEDGEFLAGPOINTER: std::sync::LazyLock<std::sync::Mutex<PFNGLEDGEFLAGPOINTERPROC>> = std::sync::LazyLock::new(|| std::sync::Mutex::new(unsafe { std::mem::zeroed() }));
 
 /// C static: mjGlad_glEdgeFlagv (PFNGLEDGEFLAGVPROC)
-pub static MJGLAD_GLEDGEFLAGV: std::sync::LazyLock<std::sync::Mutex<[u8; 8]>> = std::sync::LazyLock::new(|| std::sync::Mutex::new([0u8; 8]));
+pub static MJGLAD_GLEDGEFLAGV: std::sync::LazyLock<std::sync::Mutex<PFNGLEDGEFLAGVPROC>> = std::sync::LazyLock::new(|| std::sync::Mutex::new(unsafe { std::mem::zeroed() }));
 
 /// C static: mjGlad_glEnable (PFNGLENABLEPROC)
-pub static MJGLAD_GLENABLE: std::sync::LazyLock<std::sync::Mutex<[u8; 8]>> = std::sync::LazyLock::new(|| std::sync::Mutex::new([0u8; 8]));
+pub static MJGLAD_GLENABLE: std::sync::LazyLock<std::sync::Mutex<PFNGLENABLEPROC>> = std::sync::LazyLock::new(|| std::sync::Mutex::new(unsafe { std::mem::zeroed() }));
 
 /// C static: mjGlad_glEnableClientState (PFNGLENABLECLIENTSTATEPROC)
-pub static MJGLAD_GLENABLECLIENTSTATE: std::sync::LazyLock<std::sync::Mutex<[u8; 8]>> = std::sync::LazyLock::new(|| std::sync::Mutex::new([0u8; 8]));
+pub static MJGLAD_GLENABLECLIENTSTATE: std::sync::LazyLock<std::sync::Mutex<PFNGLENABLECLIENTSTATEPROC>> = std::sync::LazyLock::new(|| std::sync::Mutex::new(unsafe { std::mem::zeroed() }));
 
 /// C static: mjGlad_glEnd (PFNGLENDPROC)
-pub static MJGLAD_GLEND: std::sync::LazyLock<std::sync::Mutex<[u8; 8]>> = std::sync::LazyLock::new(|| std::sync::Mutex::new([0u8; 8]));
+pub static MJGLAD_GLEND: std::sync::LazyLock<std::sync::Mutex<PFNGLENDPROC>> = std::sync::LazyLock::new(|| std::sync::Mutex::new(unsafe { std::mem::zeroed() }));
 
 /// C static: mjGlad_glEndList (PFNGLENDLISTPROC)
-pub static MJGLAD_GLENDLIST: std::sync::LazyLock<std::sync::Mutex<[u8; 8]>> = std::sync::LazyLock::new(|| std::sync::Mutex::new([0u8; 8]));
+pub static MJGLAD_GLENDLIST: std::sync::LazyLock<std::sync::Mutex<PFNGLENDLISTPROC>> = std::sync::LazyLock::new(|| std::sync::Mutex::new(unsafe { std::mem::zeroed() }));
 
 /// C static: mjGlad_glEndQuery (PFNGLENDQUERYPROC)
-pub static MJGLAD_GLENDQUERY: std::sync::LazyLock<std::sync::Mutex<[u8; 8]>> = std::sync::LazyLock::new(|| std::sync::Mutex::new([0u8; 8]));
+pub static MJGLAD_GLENDQUERY: std::sync::LazyLock<std::sync::Mutex<PFNGLENDQUERYPROC>> = std::sync::LazyLock::new(|| std::sync::Mutex::new(unsafe { std::mem::zeroed() }));
 
 /// C static: mjGlad_glEvalCoord1d (PFNGLEVALCOORD1DPROC)
-pub static MJGLAD_GLEVALCOORD1D: std::sync::LazyLock<std::sync::Mutex<[u8; 8]>> = std::sync::LazyLock::new(|| std::sync::Mutex::new([0u8; 8]));
+pub static MJGLAD_GLEVALCOORD1D: std::sync::LazyLock<std::sync::Mutex<PFNGLEVALCOORD1DPROC>> = std::sync::LazyLock::new(|| std::sync::Mutex::new(unsafe { std::mem::zeroed() }));
 
 /// C static: mjGlad_glEvalCoord1dv (PFNGLEVALCOORD1DVPROC)
-pub static MJGLAD_GLEVALCOORD1DV: std::sync::LazyLock<std::sync::Mutex<[u8; 8]>> = std::sync::LazyLock::new(|| std::sync::Mutex::new([0u8; 8]));
+pub static MJGLAD_GLEVALCOORD1DV: std::sync::LazyLock<std::sync::Mutex<PFNGLEVALCOORD1DVPROC>> = std::sync::LazyLock::new(|| std::sync::Mutex::new(unsafe { std::mem::zeroed() }));
 
 /// C static: mjGlad_glEvalCoord1f (PFNGLEVALCOORD1FPROC)
-pub static MJGLAD_GLEVALCOORD1F: std::sync::LazyLock<std::sync::Mutex<[u8; 8]>> = std::sync::LazyLock::new(|| std::sync::Mutex::new([0u8; 8]));
+pub static MJGLAD_GLEVALCOORD1F: std::sync::LazyLock<std::sync::Mutex<PFNGLEVALCOORD1FPROC>> = std::sync::LazyLock::new(|| std::sync::Mutex::new(unsafe { std::mem::zeroed() }));
 
 /// C static: mjGlad_glEvalCoord1fv (PFNGLEVALCOORD1FVPROC)
-pub static MJGLAD_GLEVALCOORD1FV: std::sync::LazyLock<std::sync::Mutex<[u8; 8]>> = std::sync::LazyLock::new(|| std::sync::Mutex::new([0u8; 8]));
+pub static MJGLAD_GLEVALCOORD1FV: std::sync::LazyLock<std::sync::Mutex<PFNGLEVALCOORD1FVPROC>> = std::sync::LazyLock::new(|| std::sync::Mutex::new(unsafe { std::mem::zeroed() }));
 
 /// C static: mjGlad_glEvalCoord2d (PFNGLEVALCOORD2DPROC)
-pub static MJGLAD_GLEVALCOORD2D: std::sync::LazyLock<std::sync::Mutex<[u8; 8]>> = std::sync::LazyLock::new(|| std::sync::Mutex::new([0u8; 8]));
+pub static MJGLAD_GLEVALCOORD2D: std::sync::LazyLock<std::sync::Mutex<PFNGLEVALCOORD2DPROC>> = std::sync::LazyLock::new(|| std::sync::Mutex::new(unsafe { std::mem::zeroed() }));
 
 /// C static: mjGlad_glEvalCoord2dv (PFNGLEVALCOORD2DVPROC)
-pub static MJGLAD_GLEVALCOORD2DV: std::sync::LazyLock<std::sync::Mutex<[u8; 8]>> = std::sync::LazyLock::new(|| std::sync::Mutex::new([0u8; 8]));
+pub static MJGLAD_GLEVALCOORD2DV: std::sync::LazyLock<std::sync::Mutex<PFNGLEVALCOORD2DVPROC>> = std::sync::LazyLock::new(|| std::sync::Mutex::new(unsafe { std::mem::zeroed() }));
 
 /// C static: mjGlad_glEvalCoord2f (PFNGLEVALCOORD2FPROC)
-pub static MJGLAD_GLEVALCOORD2F: std::sync::LazyLock<std::sync::Mutex<[u8; 8]>> = std::sync::LazyLock::new(|| std::sync::Mutex::new([0u8; 8]));
+pub static MJGLAD_GLEVALCOORD2F: std::sync::LazyLock<std::sync::Mutex<PFNGLEVALCOORD2FPROC>> = std::sync::LazyLock::new(|| std::sync::Mutex::new(unsafe { std::mem::zeroed() }));
 
 /// C static: mjGlad_glEvalCoord2fv (PFNGLEVALCOORD2FVPROC)
-pub static MJGLAD_GLEVALCOORD2FV: std::sync::LazyLock<std::sync::Mutex<[u8; 8]>> = std::sync::LazyLock::new(|| std::sync::Mutex::new([0u8; 8]));
+pub static MJGLAD_GLEVALCOORD2FV: std::sync::LazyLock<std::sync::Mutex<PFNGLEVALCOORD2FVPROC>> = std::sync::LazyLock::new(|| std::sync::Mutex::new(unsafe { std::mem::zeroed() }));
 
 /// C static: mjGlad_glEvalMesh1 (PFNGLEVALMESH1PROC)
-pub static MJGLAD_GLEVALMESH1: std::sync::LazyLock<std::sync::Mutex<[u8; 8]>> = std::sync::LazyLock::new(|| std::sync::Mutex::new([0u8; 8]));
+pub static MJGLAD_GLEVALMESH1: std::sync::LazyLock<std::sync::Mutex<PFNGLEVALMESH1PROC>> = std::sync::LazyLock::new(|| std::sync::Mutex::new(unsafe { std::mem::zeroed() }));
 
 /// C static: mjGlad_glEvalMesh2 (PFNGLEVALMESH2PROC)
-pub static MJGLAD_GLEVALMESH2: std::sync::LazyLock<std::sync::Mutex<[u8; 8]>> = std::sync::LazyLock::new(|| std::sync::Mutex::new([0u8; 8]));
+pub static MJGLAD_GLEVALMESH2: std::sync::LazyLock<std::sync::Mutex<PFNGLEVALMESH2PROC>> = std::sync::LazyLock::new(|| std::sync::Mutex::new(unsafe { std::mem::zeroed() }));
 
 /// C static: mjGlad_glEvalPoint1 (PFNGLEVALPOINT1PROC)
-pub static MJGLAD_GLEVALPOINT1: std::sync::LazyLock<std::sync::Mutex<[u8; 8]>> = std::sync::LazyLock::new(|| std::sync::Mutex::new([0u8; 8]));
+pub static MJGLAD_GLEVALPOINT1: std::sync::LazyLock<std::sync::Mutex<PFNGLEVALPOINT1PROC>> = std::sync::LazyLock::new(|| std::sync::Mutex::new(unsafe { std::mem::zeroed() }));
 
 /// C static: mjGlad_glEvalPoint2 (PFNGLEVALPOINT2PROC)
-pub static MJGLAD_GLEVALPOINT2: std::sync::LazyLock<std::sync::Mutex<[u8; 8]>> = std::sync::LazyLock::new(|| std::sync::Mutex::new([0u8; 8]));
+pub static MJGLAD_GLEVALPOINT2: std::sync::LazyLock<std::sync::Mutex<PFNGLEVALPOINT2PROC>> = std::sync::LazyLock::new(|| std::sync::Mutex::new(unsafe { std::mem::zeroed() }));
 
 /// C static: mjGlad_glFeedbackBuffer (PFNGLFEEDBACKBUFFERPROC)
-pub static MJGLAD_GLFEEDBACKBUFFER: std::sync::LazyLock<std::sync::Mutex<[u8; 8]>> = std::sync::LazyLock::new(|| std::sync::Mutex::new([0u8; 8]));
+pub static MJGLAD_GLFEEDBACKBUFFER: std::sync::LazyLock<std::sync::Mutex<PFNGLFEEDBACKBUFFERPROC>> = std::sync::LazyLock::new(|| std::sync::Mutex::new(unsafe { std::mem::zeroed() }));
 
 /// C static: mjGlad_glFinish (PFNGLFINISHPROC)
-pub static MJGLAD_GLFINISH: std::sync::LazyLock<std::sync::Mutex<[u8; 8]>> = std::sync::LazyLock::new(|| std::sync::Mutex::new([0u8; 8]));
+pub static MJGLAD_GLFINISH: std::sync::LazyLock<std::sync::Mutex<PFNGLFINISHPROC>> = std::sync::LazyLock::new(|| std::sync::Mutex::new(unsafe { std::mem::zeroed() }));
 
 /// C static: mjGlad_glFlush (PFNGLFLUSHPROC)
-pub static MJGLAD_GLFLUSH: std::sync::LazyLock<std::sync::Mutex<[u8; 8]>> = std::sync::LazyLock::new(|| std::sync::Mutex::new([0u8; 8]));
+pub static MJGLAD_GLFLUSH: std::sync::LazyLock<std::sync::Mutex<PFNGLFLUSHPROC>> = std::sync::LazyLock::new(|| std::sync::Mutex::new(unsafe { std::mem::zeroed() }));
 
 /// C static: mjGlad_glFogCoordPointer (PFNGLFOGCOORDPOINTERPROC)
-pub static MJGLAD_GLFOGCOORDPOINTER: std::sync::LazyLock<std::sync::Mutex<[u8; 8]>> = std::sync::LazyLock::new(|| std::sync::Mutex::new([0u8; 8]));
+pub static MJGLAD_GLFOGCOORDPOINTER: std::sync::LazyLock<std::sync::Mutex<PFNGLFOGCOORDPOINTERPROC>> = std::sync::LazyLock::new(|| std::sync::Mutex::new(unsafe { std::mem::zeroed() }));
 
 /// C static: mjGlad_glFogCoordd (PFNGLFOGCOORDDPROC)
-pub static MJGLAD_GLFOGCOORDD: std::sync::LazyLock<std::sync::Mutex<[u8; 8]>> = std::sync::LazyLock::new(|| std::sync::Mutex::new([0u8; 8]));
+pub static MJGLAD_GLFOGCOORDD: std::sync::LazyLock<std::sync::Mutex<PFNGLFOGCOORDDPROC>> = std::sync::LazyLock::new(|| std::sync::Mutex::new(unsafe { std::mem::zeroed() }));
 
 /// C static: mjGlad_glFogCoorddv (PFNGLFOGCOORDDVPROC)
-pub static MJGLAD_GLFOGCOORDDV: std::sync::LazyLock<std::sync::Mutex<[u8; 8]>> = std::sync::LazyLock::new(|| std::sync::Mutex::new([0u8; 8]));
+pub static MJGLAD_GLFOGCOORDDV: std::sync::LazyLock<std::sync::Mutex<PFNGLFOGCOORDDVPROC>> = std::sync::LazyLock::new(|| std::sync::Mutex::new(unsafe { std::mem::zeroed() }));
 
 /// C static: mjGlad_glFogCoordf (PFNGLFOGCOORDFPROC)
-pub static MJGLAD_GLFOGCOORDF: std::sync::LazyLock<std::sync::Mutex<[u8; 8]>> = std::sync::LazyLock::new(|| std::sync::Mutex::new([0u8; 8]));
+pub static MJGLAD_GLFOGCOORDF: std::sync::LazyLock<std::sync::Mutex<PFNGLFOGCOORDFPROC>> = std::sync::LazyLock::new(|| std::sync::Mutex::new(unsafe { std::mem::zeroed() }));
 
 /// C static: mjGlad_glFogCoordfv (PFNGLFOGCOORDFVPROC)
-pub static MJGLAD_GLFOGCOORDFV: std::sync::LazyLock<std::sync::Mutex<[u8; 8]>> = std::sync::LazyLock::new(|| std::sync::Mutex::new([0u8; 8]));
+pub static MJGLAD_GLFOGCOORDFV: std::sync::LazyLock<std::sync::Mutex<PFNGLFOGCOORDFVPROC>> = std::sync::LazyLock::new(|| std::sync::Mutex::new(unsafe { std::mem::zeroed() }));
 
 /// C static: mjGlad_glFogf (PFNGLFOGFPROC)
-pub static MJGLAD_GLFOGF: std::sync::LazyLock<std::sync::Mutex<[u8; 8]>> = std::sync::LazyLock::new(|| std::sync::Mutex::new([0u8; 8]));
+pub static MJGLAD_GLFOGF: std::sync::LazyLock<std::sync::Mutex<PFNGLFOGFPROC>> = std::sync::LazyLock::new(|| std::sync::Mutex::new(unsafe { std::mem::zeroed() }));
 
 /// C static: mjGlad_glFogfv (PFNGLFOGFVPROC)
-pub static MJGLAD_GLFOGFV: std::sync::LazyLock<std::sync::Mutex<[u8; 8]>> = std::sync::LazyLock::new(|| std::sync::Mutex::new([0u8; 8]));
+pub static MJGLAD_GLFOGFV: std::sync::LazyLock<std::sync::Mutex<PFNGLFOGFVPROC>> = std::sync::LazyLock::new(|| std::sync::Mutex::new(unsafe { std::mem::zeroed() }));
 
 /// C static: mjGlad_glFogi (PFNGLFOGIPROC)
-pub static MJGLAD_GLFOGI: std::sync::LazyLock<std::sync::Mutex<[u8; 8]>> = std::sync::LazyLock::new(|| std::sync::Mutex::new([0u8; 8]));
+pub static MJGLAD_GLFOGI: std::sync::LazyLock<std::sync::Mutex<PFNGLFOGIPROC>> = std::sync::LazyLock::new(|| std::sync::Mutex::new(unsafe { std::mem::zeroed() }));
 
 /// C static: mjGlad_glFogiv (PFNGLFOGIVPROC)
-pub static MJGLAD_GLFOGIV: std::sync::LazyLock<std::sync::Mutex<[u8; 8]>> = std::sync::LazyLock::new(|| std::sync::Mutex::new([0u8; 8]));
+pub static MJGLAD_GLFOGIV: std::sync::LazyLock<std::sync::Mutex<PFNGLFOGIVPROC>> = std::sync::LazyLock::new(|| std::sync::Mutex::new(unsafe { std::mem::zeroed() }));
 
 /// C static: mjGlad_glFramebufferRenderbuffer (PFNGLFRAMEBUFFERRENDERBUFFERPROC)
-pub static MJGLAD_GLFRAMEBUFFERRENDERBUFFER: std::sync::LazyLock<std::sync::Mutex<[u8; 8]>> = std::sync::LazyLock::new(|| std::sync::Mutex::new([0u8; 8]));
+pub static MJGLAD_GLFRAMEBUFFERRENDERBUFFER: std::sync::LazyLock<std::sync::Mutex<PFNGLFRAMEBUFFERRENDERBUFFERPROC>> = std::sync::LazyLock::new(|| std::sync::Mutex::new(unsafe { std::mem::zeroed() }));
 
 /// C static: mjGlad_glFramebufferTexture1D (PFNGLFRAMEBUFFERTEXTURE1DPROC)
-pub static MJGLAD_GLFRAMEBUFFERTEXTURE1D: std::sync::LazyLock<std::sync::Mutex<[u8; 8]>> = std::sync::LazyLock::new(|| std::sync::Mutex::new([0u8; 8]));
+pub static MJGLAD_GLFRAMEBUFFERTEXTURE1D: std::sync::LazyLock<std::sync::Mutex<PFNGLFRAMEBUFFERTEXTURE1DPROC>> = std::sync::LazyLock::new(|| std::sync::Mutex::new(unsafe { std::mem::zeroed() }));
 
 /// C static: mjGlad_glFramebufferTexture2D (PFNGLFRAMEBUFFERTEXTURE2DPROC)
-pub static MJGLAD_GLFRAMEBUFFERTEXTURE2D: std::sync::LazyLock<std::sync::Mutex<[u8; 8]>> = std::sync::LazyLock::new(|| std::sync::Mutex::new([0u8; 8]));
+pub static MJGLAD_GLFRAMEBUFFERTEXTURE2D: std::sync::LazyLock<std::sync::Mutex<PFNGLFRAMEBUFFERTEXTURE2DPROC>> = std::sync::LazyLock::new(|| std::sync::Mutex::new(unsafe { std::mem::zeroed() }));
 
 /// C static: mjGlad_glFramebufferTexture3D (PFNGLFRAMEBUFFERTEXTURE3DPROC)
-pub static MJGLAD_GLFRAMEBUFFERTEXTURE3D: std::sync::LazyLock<std::sync::Mutex<[u8; 8]>> = std::sync::LazyLock::new(|| std::sync::Mutex::new([0u8; 8]));
+pub static MJGLAD_GLFRAMEBUFFERTEXTURE3D: std::sync::LazyLock<std::sync::Mutex<PFNGLFRAMEBUFFERTEXTURE3DPROC>> = std::sync::LazyLock::new(|| std::sync::Mutex::new(unsafe { std::mem::zeroed() }));
 
 /// C static: mjGlad_glFramebufferTextureLayer (PFNGLFRAMEBUFFERTEXTURELAYERPROC)
-pub static MJGLAD_GLFRAMEBUFFERTEXTURELAYER: std::sync::LazyLock<std::sync::Mutex<[u8; 8]>> = std::sync::LazyLock::new(|| std::sync::Mutex::new([0u8; 8]));
+pub static MJGLAD_GLFRAMEBUFFERTEXTURELAYER: std::sync::LazyLock<std::sync::Mutex<PFNGLFRAMEBUFFERTEXTURELAYERPROC>> = std::sync::LazyLock::new(|| std::sync::Mutex::new(unsafe { std::mem::zeroed() }));
 
 /// C static: mjGlad_glFrontFace (PFNGLFRONTFACEPROC)
-pub static MJGLAD_GLFRONTFACE: std::sync::LazyLock<std::sync::Mutex<[u8; 8]>> = std::sync::LazyLock::new(|| std::sync::Mutex::new([0u8; 8]));
+pub static MJGLAD_GLFRONTFACE: std::sync::LazyLock<std::sync::Mutex<PFNGLFRONTFACEPROC>> = std::sync::LazyLock::new(|| std::sync::Mutex::new(unsafe { std::mem::zeroed() }));
 
 /// C static: mjGlad_glFrustum (PFNGLFRUSTUMPROC)
-pub static MJGLAD_GLFRUSTUM: std::sync::LazyLock<std::sync::Mutex<[u8; 8]>> = std::sync::LazyLock::new(|| std::sync::Mutex::new([0u8; 8]));
+pub static MJGLAD_GLFRUSTUM: std::sync::LazyLock<std::sync::Mutex<PFNGLFRUSTUMPROC>> = std::sync::LazyLock::new(|| std::sync::Mutex::new(unsafe { std::mem::zeroed() }));
 
 /// C static: mjGlad_glGenBuffers (PFNGLGENBUFFERSPROC)
-pub static MJGLAD_GLGENBUFFERS: std::sync::LazyLock<std::sync::Mutex<[u8; 8]>> = std::sync::LazyLock::new(|| std::sync::Mutex::new([0u8; 8]));
+pub static MJGLAD_GLGENBUFFERS: std::sync::LazyLock<std::sync::Mutex<PFNGLGENBUFFERSPROC>> = std::sync::LazyLock::new(|| std::sync::Mutex::new(unsafe { std::mem::zeroed() }));
 
 /// C static: mjGlad_glGenBuffersARB (PFNGLGENBUFFERSARBPROC)
-pub static MJGLAD_GLGENBUFFERSARB: std::sync::LazyLock<std::sync::Mutex<[u8; 8]>> = std::sync::LazyLock::new(|| std::sync::Mutex::new([0u8; 8]));
+pub static MJGLAD_GLGENBUFFERSARB: std::sync::LazyLock<std::sync::Mutex<PFNGLGENBUFFERSARBPROC>> = std::sync::LazyLock::new(|| std::sync::Mutex::new(unsafe { std::mem::zeroed() }));
 
 /// C static: mjGlad_glGenFramebuffers (PFNGLGENFRAMEBUFFERSPROC)
-pub static MJGLAD_GLGENFRAMEBUFFERS: std::sync::LazyLock<std::sync::Mutex<[u8; 8]>> = std::sync::LazyLock::new(|| std::sync::Mutex::new([0u8; 8]));
+pub static MJGLAD_GLGENFRAMEBUFFERS: std::sync::LazyLock<std::sync::Mutex<PFNGLGENFRAMEBUFFERSPROC>> = std::sync::LazyLock::new(|| std::sync::Mutex::new(unsafe { std::mem::zeroed() }));
 
 /// C static: mjGlad_glGenLists (PFNGLGENLISTSPROC)
-pub static MJGLAD_GLGENLISTS: std::sync::LazyLock<std::sync::Mutex<[u8; 8]>> = std::sync::LazyLock::new(|| std::sync::Mutex::new([0u8; 8]));
+pub static MJGLAD_GLGENLISTS: std::sync::LazyLock<std::sync::Mutex<PFNGLGENLISTSPROC>> = std::sync::LazyLock::new(|| std::sync::Mutex::new(unsafe { std::mem::zeroed() }));
 
 /// C static: mjGlad_glGenQueries (PFNGLGENQUERIESPROC)
-pub static MJGLAD_GLGENQUERIES: std::sync::LazyLock<std::sync::Mutex<[u8; 8]>> = std::sync::LazyLock::new(|| std::sync::Mutex::new([0u8; 8]));
+pub static MJGLAD_GLGENQUERIES: std::sync::LazyLock<std::sync::Mutex<PFNGLGENQUERIESPROC>> = std::sync::LazyLock::new(|| std::sync::Mutex::new(unsafe { std::mem::zeroed() }));
 
 /// C static: mjGlad_glGenRenderbuffers (PFNGLGENRENDERBUFFERSPROC)
-pub static MJGLAD_GLGENRENDERBUFFERS: std::sync::LazyLock<std::sync::Mutex<[u8; 8]>> = std::sync::LazyLock::new(|| std::sync::Mutex::new([0u8; 8]));
+pub static MJGLAD_GLGENRENDERBUFFERS: std::sync::LazyLock<std::sync::Mutex<PFNGLGENRENDERBUFFERSPROC>> = std::sync::LazyLock::new(|| std::sync::Mutex::new(unsafe { std::mem::zeroed() }));
 
 /// C static: mjGlad_glGenTextures (PFNGLGENTEXTURESPROC)
-pub static MJGLAD_GLGENTEXTURES: std::sync::LazyLock<std::sync::Mutex<[u8; 8]>> = std::sync::LazyLock::new(|| std::sync::Mutex::new([0u8; 8]));
+pub static MJGLAD_GLGENTEXTURES: std::sync::LazyLock<std::sync::Mutex<PFNGLGENTEXTURESPROC>> = std::sync::LazyLock::new(|| std::sync::Mutex::new(unsafe { std::mem::zeroed() }));
 
 /// C static: mjGlad_glGenerateMipmap (PFNGLGENERATEMIPMAPPROC)
-pub static MJGLAD_GLGENERATEMIPMAP: std::sync::LazyLock<std::sync::Mutex<[u8; 8]>> = std::sync::LazyLock::new(|| std::sync::Mutex::new([0u8; 8]));
+pub static MJGLAD_GLGENERATEMIPMAP: std::sync::LazyLock<std::sync::Mutex<PFNGLGENERATEMIPMAPPROC>> = std::sync::LazyLock::new(|| std::sync::Mutex::new(unsafe { std::mem::zeroed() }));
 
 /// C static: mjGlad_glGetBooleanv (PFNGLGETBOOLEANVPROC)
-pub static MJGLAD_GLGETBOOLEANV: std::sync::LazyLock<std::sync::Mutex<[u8; 8]>> = std::sync::LazyLock::new(|| std::sync::Mutex::new([0u8; 8]));
+pub static MJGLAD_GLGETBOOLEANV: std::sync::LazyLock<std::sync::Mutex<PFNGLGETBOOLEANVPROC>> = std::sync::LazyLock::new(|| std::sync::Mutex::new(unsafe { std::mem::zeroed() }));
 
 /// C static: mjGlad_glGetBufferParameteriv (PFNGLGETBUFFERPARAMETERIVPROC)
-pub static MJGLAD_GLGETBUFFERPARAMETERIV: std::sync::LazyLock<std::sync::Mutex<[u8; 8]>> = std::sync::LazyLock::new(|| std::sync::Mutex::new([0u8; 8]));
+pub static MJGLAD_GLGETBUFFERPARAMETERIV: std::sync::LazyLock<std::sync::Mutex<PFNGLGETBUFFERPARAMETERIVPROC>> = std::sync::LazyLock::new(|| std::sync::Mutex::new(unsafe { std::mem::zeroed() }));
 
 /// C static: mjGlad_glGetBufferParameterivARB (PFNGLGETBUFFERPARAMETERIVARBPROC)
-pub static MJGLAD_GLGETBUFFERPARAMETERIVARB: std::sync::LazyLock<std::sync::Mutex<[u8; 8]>> = std::sync::LazyLock::new(|| std::sync::Mutex::new([0u8; 8]));
+pub static MJGLAD_GLGETBUFFERPARAMETERIVARB: std::sync::LazyLock<std::sync::Mutex<PFNGLGETBUFFERPARAMETERIVARBPROC>> = std::sync::LazyLock::new(|| std::sync::Mutex::new(unsafe { std::mem::zeroed() }));
 
 /// C static: mjGlad_glGetBufferPointerv (PFNGLGETBUFFERPOINTERVPROC)
-pub static MJGLAD_GLGETBUFFERPOINTERV: std::sync::LazyLock<std::sync::Mutex<[u8; 8]>> = std::sync::LazyLock::new(|| std::sync::Mutex::new([0u8; 8]));
+pub static MJGLAD_GLGETBUFFERPOINTERV: std::sync::LazyLock<std::sync::Mutex<PFNGLGETBUFFERPOINTERVPROC>> = std::sync::LazyLock::new(|| std::sync::Mutex::new(unsafe { std::mem::zeroed() }));
 
 /// C static: mjGlad_glGetBufferPointervARB (PFNGLGETBUFFERPOINTERVARBPROC)
-pub static MJGLAD_GLGETBUFFERPOINTERVARB: std::sync::LazyLock<std::sync::Mutex<[u8; 8]>> = std::sync::LazyLock::new(|| std::sync::Mutex::new([0u8; 8]));
+pub static MJGLAD_GLGETBUFFERPOINTERVARB: std::sync::LazyLock<std::sync::Mutex<PFNGLGETBUFFERPOINTERVARBPROC>> = std::sync::LazyLock::new(|| std::sync::Mutex::new(unsafe { std::mem::zeroed() }));
 
 /// C static: mjGlad_glGetBufferSubData (PFNGLGETBUFFERSUBDATAPROC)
-pub static MJGLAD_GLGETBUFFERSUBDATA: std::sync::LazyLock<std::sync::Mutex<[u8; 8]>> = std::sync::LazyLock::new(|| std::sync::Mutex::new([0u8; 8]));
+pub static MJGLAD_GLGETBUFFERSUBDATA: std::sync::LazyLock<std::sync::Mutex<PFNGLGETBUFFERSUBDATAPROC>> = std::sync::LazyLock::new(|| std::sync::Mutex::new(unsafe { std::mem::zeroed() }));
 
 /// C static: mjGlad_glGetBufferSubDataARB (PFNGLGETBUFFERSUBDATAARBPROC)
-pub static MJGLAD_GLGETBUFFERSUBDATAARB: std::sync::LazyLock<std::sync::Mutex<[u8; 8]>> = std::sync::LazyLock::new(|| std::sync::Mutex::new([0u8; 8]));
+pub static MJGLAD_GLGETBUFFERSUBDATAARB: std::sync::LazyLock<std::sync::Mutex<PFNGLGETBUFFERSUBDATAARBPROC>> = std::sync::LazyLock::new(|| std::sync::Mutex::new(unsafe { std::mem::zeroed() }));
 
 /// C static: mjGlad_glGetClipPlane (PFNGLGETCLIPPLANEPROC)
-pub static MJGLAD_GLGETCLIPPLANE: std::sync::LazyLock<std::sync::Mutex<[u8; 8]>> = std::sync::LazyLock::new(|| std::sync::Mutex::new([0u8; 8]));
+pub static MJGLAD_GLGETCLIPPLANE: std::sync::LazyLock<std::sync::Mutex<PFNGLGETCLIPPLANEPROC>> = std::sync::LazyLock::new(|| std::sync::Mutex::new(unsafe { std::mem::zeroed() }));
 
 /// C static: mjGlad_glGetCompressedTexImage (PFNGLGETCOMPRESSEDTEXIMAGEPROC)
-pub static MJGLAD_GLGETCOMPRESSEDTEXIMAGE: std::sync::LazyLock<std::sync::Mutex<[u8; 8]>> = std::sync::LazyLock::new(|| std::sync::Mutex::new([0u8; 8]));
+pub static MJGLAD_GLGETCOMPRESSEDTEXIMAGE: std::sync::LazyLock<std::sync::Mutex<PFNGLGETCOMPRESSEDTEXIMAGEPROC>> = std::sync::LazyLock::new(|| std::sync::Mutex::new(unsafe { std::mem::zeroed() }));
 
 /// C static: mjGlad_glGetDebugMessageLog (PFNGLGETDEBUGMESSAGELOGPROC)
-pub static MJGLAD_GLGETDEBUGMESSAGELOG: std::sync::LazyLock<std::sync::Mutex<[u8; 8]>> = std::sync::LazyLock::new(|| std::sync::Mutex::new([0u8; 8]));
+pub static MJGLAD_GLGETDEBUGMESSAGELOG: std::sync::LazyLock<std::sync::Mutex<PFNGLGETDEBUGMESSAGELOGPROC>> = std::sync::LazyLock::new(|| std::sync::Mutex::new(unsafe { std::mem::zeroed() }));
 
 /// C static: mjGlad_glGetDebugMessageLogKHR (PFNGLGETDEBUGMESSAGELOGKHRPROC)
-pub static MJGLAD_GLGETDEBUGMESSAGELOGKHR: std::sync::LazyLock<std::sync::Mutex<[u8; 8]>> = std::sync::LazyLock::new(|| std::sync::Mutex::new([0u8; 8]));
+pub static MJGLAD_GLGETDEBUGMESSAGELOGKHR: std::sync::LazyLock<std::sync::Mutex<PFNGLGETDEBUGMESSAGELOGKHRPROC>> = std::sync::LazyLock::new(|| std::sync::Mutex::new(unsafe { std::mem::zeroed() }));
 
 /// C static: mjGlad_glGetDoublev (PFNGLGETDOUBLEVPROC)
-pub static MJGLAD_GLGETDOUBLEV: std::sync::LazyLock<std::sync::Mutex<[u8; 8]>> = std::sync::LazyLock::new(|| std::sync::Mutex::new([0u8; 8]));
+pub static MJGLAD_GLGETDOUBLEV: std::sync::LazyLock<std::sync::Mutex<PFNGLGETDOUBLEVPROC>> = std::sync::LazyLock::new(|| std::sync::Mutex::new(unsafe { std::mem::zeroed() }));
 
 /// C static: mjGlad_glGetError (PFNGLGETERRORPROC)
-pub static MJGLAD_GLGETERROR: std::sync::LazyLock<std::sync::Mutex<[u8; 8]>> = std::sync::LazyLock::new(|| std::sync::Mutex::new([0u8; 8]));
+pub static MJGLAD_GLGETERROR: std::sync::LazyLock<std::sync::Mutex<PFNGLGETERRORPROC>> = std::sync::LazyLock::new(|| std::sync::Mutex::new(unsafe { std::mem::zeroed() }));
 
 /// C static: mjGlad_glGetFloatv (PFNGLGETFLOATVPROC)
-pub static MJGLAD_GLGETFLOATV: std::sync::LazyLock<std::sync::Mutex<[u8; 8]>> = std::sync::LazyLock::new(|| std::sync::Mutex::new([0u8; 8]));
+pub static MJGLAD_GLGETFLOATV: std::sync::LazyLock<std::sync::Mutex<PFNGLGETFLOATVPROC>> = std::sync::LazyLock::new(|| std::sync::Mutex::new(unsafe { std::mem::zeroed() }));
 
 /// C static: mjGlad_glGetFramebufferAttachmentParameteriv (PFNGLGETFRAMEBUFFERATTACHMENTPARAMETERIVPROC)
-pub static MJGLAD_GLGETFRAMEBUFFERATTACHMENTPARAMETERIV: std::sync::LazyLock<std::sync::Mutex<[u8; 8]>> = std::sync::LazyLock::new(|| std::sync::Mutex::new([0u8; 8]));
+pub static MJGLAD_GLGETFRAMEBUFFERATTACHMENTPARAMETERIV: std::sync::LazyLock<std::sync::Mutex<PFNGLGETFRAMEBUFFERATTACHMENTPARAMETERIVPROC>> = std::sync::LazyLock::new(|| std::sync::Mutex::new(unsafe { std::mem::zeroed() }));
 
 /// C static: mjGlad_glGetIntegerv (PFNGLGETINTEGERVPROC)
-pub static MJGLAD_GLGETINTEGERV: std::sync::LazyLock<std::sync::Mutex<[u8; 8]>> = std::sync::LazyLock::new(|| std::sync::Mutex::new([0u8; 8]));
+pub static MJGLAD_GLGETINTEGERV: std::sync::LazyLock<std::sync::Mutex<PFNGLGETINTEGERVPROC>> = std::sync::LazyLock::new(|| std::sync::Mutex::new(unsafe { std::mem::zeroed() }));
 
 /// C static: mjGlad_glGetLightfv (PFNGLGETLIGHTFVPROC)
-pub static MJGLAD_GLGETLIGHTFV: std::sync::LazyLock<std::sync::Mutex<[u8; 8]>> = std::sync::LazyLock::new(|| std::sync::Mutex::new([0u8; 8]));
+pub static MJGLAD_GLGETLIGHTFV: std::sync::LazyLock<std::sync::Mutex<PFNGLGETLIGHTFVPROC>> = std::sync::LazyLock::new(|| std::sync::Mutex::new(unsafe { std::mem::zeroed() }));
 
 /// C static: mjGlad_glGetLightiv (PFNGLGETLIGHTIVPROC)
-pub static MJGLAD_GLGETLIGHTIV: std::sync::LazyLock<std::sync::Mutex<[u8; 8]>> = std::sync::LazyLock::new(|| std::sync::Mutex::new([0u8; 8]));
+pub static MJGLAD_GLGETLIGHTIV: std::sync::LazyLock<std::sync::Mutex<PFNGLGETLIGHTIVPROC>> = std::sync::LazyLock::new(|| std::sync::Mutex::new(unsafe { std::mem::zeroed() }));
 
 /// C static: mjGlad_glGetMapdv (PFNGLGETMAPDVPROC)
-pub static MJGLAD_GLGETMAPDV: std::sync::LazyLock<std::sync::Mutex<[u8; 8]>> = std::sync::LazyLock::new(|| std::sync::Mutex::new([0u8; 8]));
+pub static MJGLAD_GLGETMAPDV: std::sync::LazyLock<std::sync::Mutex<PFNGLGETMAPDVPROC>> = std::sync::LazyLock::new(|| std::sync::Mutex::new(unsafe { std::mem::zeroed() }));
 
 /// C static: mjGlad_glGetMapfv (PFNGLGETMAPFVPROC)
-pub static MJGLAD_GLGETMAPFV: std::sync::LazyLock<std::sync::Mutex<[u8; 8]>> = std::sync::LazyLock::new(|| std::sync::Mutex::new([0u8; 8]));
+pub static MJGLAD_GLGETMAPFV: std::sync::LazyLock<std::sync::Mutex<PFNGLGETMAPFVPROC>> = std::sync::LazyLock::new(|| std::sync::Mutex::new(unsafe { std::mem::zeroed() }));
 
 /// C static: mjGlad_glGetMapiv (PFNGLGETMAPIVPROC)
-pub static MJGLAD_GLGETMAPIV: std::sync::LazyLock<std::sync::Mutex<[u8; 8]>> = std::sync::LazyLock::new(|| std::sync::Mutex::new([0u8; 8]));
+pub static MJGLAD_GLGETMAPIV: std::sync::LazyLock<std::sync::Mutex<PFNGLGETMAPIVPROC>> = std::sync::LazyLock::new(|| std::sync::Mutex::new(unsafe { std::mem::zeroed() }));
 
 /// C static: mjGlad_glGetMaterialfv (PFNGLGETMATERIALFVPROC)
-pub static MJGLAD_GLGETMATERIALFV: std::sync::LazyLock<std::sync::Mutex<[u8; 8]>> = std::sync::LazyLock::new(|| std::sync::Mutex::new([0u8; 8]));
+pub static MJGLAD_GLGETMATERIALFV: std::sync::LazyLock<std::sync::Mutex<PFNGLGETMATERIALFVPROC>> = std::sync::LazyLock::new(|| std::sync::Mutex::new(unsafe { std::mem::zeroed() }));
 
 /// C static: mjGlad_glGetMaterialiv (PFNGLGETMATERIALIVPROC)
-pub static MJGLAD_GLGETMATERIALIV: std::sync::LazyLock<std::sync::Mutex<[u8; 8]>> = std::sync::LazyLock::new(|| std::sync::Mutex::new([0u8; 8]));
+pub static MJGLAD_GLGETMATERIALIV: std::sync::LazyLock<std::sync::Mutex<PFNGLGETMATERIALIVPROC>> = std::sync::LazyLock::new(|| std::sync::Mutex::new(unsafe { std::mem::zeroed() }));
 
 /// C static: mjGlad_glGetObjectLabel (PFNGLGETOBJECTLABELPROC)
-pub static MJGLAD_GLGETOBJECTLABEL: std::sync::LazyLock<std::sync::Mutex<[u8; 8]>> = std::sync::LazyLock::new(|| std::sync::Mutex::new([0u8; 8]));
+pub static MJGLAD_GLGETOBJECTLABEL: std::sync::LazyLock<std::sync::Mutex<PFNGLGETOBJECTLABELPROC>> = std::sync::LazyLock::new(|| std::sync::Mutex::new(unsafe { std::mem::zeroed() }));
 
 /// C static: mjGlad_glGetObjectLabelKHR (PFNGLGETOBJECTLABELKHRPROC)
-pub static MJGLAD_GLGETOBJECTLABELKHR: std::sync::LazyLock<std::sync::Mutex<[u8; 8]>> = std::sync::LazyLock::new(|| std::sync::Mutex::new([0u8; 8]));
+pub static MJGLAD_GLGETOBJECTLABELKHR: std::sync::LazyLock<std::sync::Mutex<PFNGLGETOBJECTLABELKHRPROC>> = std::sync::LazyLock::new(|| std::sync::Mutex::new(unsafe { std::mem::zeroed() }));
 
 /// C static: mjGlad_glGetObjectPtrLabel (PFNGLGETOBJECTPTRLABELPROC)
-pub static MJGLAD_GLGETOBJECTPTRLABEL: std::sync::LazyLock<std::sync::Mutex<[u8; 8]>> = std::sync::LazyLock::new(|| std::sync::Mutex::new([0u8; 8]));
+pub static MJGLAD_GLGETOBJECTPTRLABEL: std::sync::LazyLock<std::sync::Mutex<PFNGLGETOBJECTPTRLABELPROC>> = std::sync::LazyLock::new(|| std::sync::Mutex::new(unsafe { std::mem::zeroed() }));
 
 /// C static: mjGlad_glGetObjectPtrLabelKHR (PFNGLGETOBJECTPTRLABELKHRPROC)
-pub static MJGLAD_GLGETOBJECTPTRLABELKHR: std::sync::LazyLock<std::sync::Mutex<[u8; 8]>> = std::sync::LazyLock::new(|| std::sync::Mutex::new([0u8; 8]));
+pub static MJGLAD_GLGETOBJECTPTRLABELKHR: std::sync::LazyLock<std::sync::Mutex<PFNGLGETOBJECTPTRLABELKHRPROC>> = std::sync::LazyLock::new(|| std::sync::Mutex::new(unsafe { std::mem::zeroed() }));
 
 /// C static: mjGlad_glGetPixelMapfv (PFNGLGETPIXELMAPFVPROC)
-pub static MJGLAD_GLGETPIXELMAPFV: std::sync::LazyLock<std::sync::Mutex<[u8; 8]>> = std::sync::LazyLock::new(|| std::sync::Mutex::new([0u8; 8]));
+pub static MJGLAD_GLGETPIXELMAPFV: std::sync::LazyLock<std::sync::Mutex<PFNGLGETPIXELMAPFVPROC>> = std::sync::LazyLock::new(|| std::sync::Mutex::new(unsafe { std::mem::zeroed() }));
 
 /// C static: mjGlad_glGetPixelMapuiv (PFNGLGETPIXELMAPUIVPROC)
-pub static MJGLAD_GLGETPIXELMAPUIV: std::sync::LazyLock<std::sync::Mutex<[u8; 8]>> = std::sync::LazyLock::new(|| std::sync::Mutex::new([0u8; 8]));
+pub static MJGLAD_GLGETPIXELMAPUIV: std::sync::LazyLock<std::sync::Mutex<PFNGLGETPIXELMAPUIVPROC>> = std::sync::LazyLock::new(|| std::sync::Mutex::new(unsafe { std::mem::zeroed() }));
 
 /// C static: mjGlad_glGetPixelMapusv (PFNGLGETPIXELMAPUSVPROC)
-pub static MJGLAD_GLGETPIXELMAPUSV: std::sync::LazyLock<std::sync::Mutex<[u8; 8]>> = std::sync::LazyLock::new(|| std::sync::Mutex::new([0u8; 8]));
+pub static MJGLAD_GLGETPIXELMAPUSV: std::sync::LazyLock<std::sync::Mutex<PFNGLGETPIXELMAPUSVPROC>> = std::sync::LazyLock::new(|| std::sync::Mutex::new(unsafe { std::mem::zeroed() }));
 
 /// C static: mjGlad_glGetPointerv (PFNGLGETPOINTERVPROC)
-pub static MJGLAD_GLGETPOINTERV: std::sync::LazyLock<std::sync::Mutex<[u8; 8]>> = std::sync::LazyLock::new(|| std::sync::Mutex::new([0u8; 8]));
+pub static MJGLAD_GLGETPOINTERV: std::sync::LazyLock<std::sync::Mutex<PFNGLGETPOINTERVPROC>> = std::sync::LazyLock::new(|| std::sync::Mutex::new(unsafe { std::mem::zeroed() }));
 
 /// C static: mjGlad_glGetPointervKHR (PFNGLGETPOINTERVKHRPROC)
-pub static MJGLAD_GLGETPOINTERVKHR: std::sync::LazyLock<std::sync::Mutex<[u8; 8]>> = std::sync::LazyLock::new(|| std::sync::Mutex::new([0u8; 8]));
+pub static MJGLAD_GLGETPOINTERVKHR: std::sync::LazyLock<std::sync::Mutex<PFNGLGETPOINTERVKHRPROC>> = std::sync::LazyLock::new(|| std::sync::Mutex::new(unsafe { std::mem::zeroed() }));
 
 /// C static: mjGlad_glGetPolygonStipple (PFNGLGETPOLYGONSTIPPLEPROC)
-pub static MJGLAD_GLGETPOLYGONSTIPPLE: std::sync::LazyLock<std::sync::Mutex<[u8; 8]>> = std::sync::LazyLock::new(|| std::sync::Mutex::new([0u8; 8]));
+pub static MJGLAD_GLGETPOLYGONSTIPPLE: std::sync::LazyLock<std::sync::Mutex<PFNGLGETPOLYGONSTIPPLEPROC>> = std::sync::LazyLock::new(|| std::sync::Mutex::new(unsafe { std::mem::zeroed() }));
 
 /// C static: mjGlad_glGetQueryObjectiv (PFNGLGETQUERYOBJECTIVPROC)
-pub static MJGLAD_GLGETQUERYOBJECTIV: std::sync::LazyLock<std::sync::Mutex<[u8; 8]>> = std::sync::LazyLock::new(|| std::sync::Mutex::new([0u8; 8]));
+pub static MJGLAD_GLGETQUERYOBJECTIV: std::sync::LazyLock<std::sync::Mutex<PFNGLGETQUERYOBJECTIVPROC>> = std::sync::LazyLock::new(|| std::sync::Mutex::new(unsafe { std::mem::zeroed() }));
 
 /// C static: mjGlad_glGetQueryObjectuiv (PFNGLGETQUERYOBJECTUIVPROC)
-pub static MJGLAD_GLGETQUERYOBJECTUIV: std::sync::LazyLock<std::sync::Mutex<[u8; 8]>> = std::sync::LazyLock::new(|| std::sync::Mutex::new([0u8; 8]));
+pub static MJGLAD_GLGETQUERYOBJECTUIV: std::sync::LazyLock<std::sync::Mutex<PFNGLGETQUERYOBJECTUIVPROC>> = std::sync::LazyLock::new(|| std::sync::Mutex::new(unsafe { std::mem::zeroed() }));
 
 /// C static: mjGlad_glGetQueryiv (PFNGLGETQUERYIVPROC)
-pub static MJGLAD_GLGETQUERYIV: std::sync::LazyLock<std::sync::Mutex<[u8; 8]>> = std::sync::LazyLock::new(|| std::sync::Mutex::new([0u8; 8]));
+pub static MJGLAD_GLGETQUERYIV: std::sync::LazyLock<std::sync::Mutex<PFNGLGETQUERYIVPROC>> = std::sync::LazyLock::new(|| std::sync::Mutex::new(unsafe { std::mem::zeroed() }));
 
 /// C static: mjGlad_glGetRenderbufferParameteriv (PFNGLGETRENDERBUFFERPARAMETERIVPROC)
-pub static MJGLAD_GLGETRENDERBUFFERPARAMETERIV: std::sync::LazyLock<std::sync::Mutex<[u8; 8]>> = std::sync::LazyLock::new(|| std::sync::Mutex::new([0u8; 8]));
+pub static MJGLAD_GLGETRENDERBUFFERPARAMETERIV: std::sync::LazyLock<std::sync::Mutex<PFNGLGETRENDERBUFFERPARAMETERIVPROC>> = std::sync::LazyLock::new(|| std::sync::Mutex::new(unsafe { std::mem::zeroed() }));
 
 /// C static: mjGlad_glGetString (PFNGLGETSTRINGPROC)
-pub static MJGLAD_GLGETSTRING: std::sync::LazyLock<std::sync::Mutex<[u8; 8]>> = std::sync::LazyLock::new(|| std::sync::Mutex::new([0u8; 8]));
+pub static MJGLAD_GLGETSTRING: std::sync::LazyLock<std::sync::Mutex<PFNGLGETSTRINGPROC>> = std::sync::LazyLock::new(|| std::sync::Mutex::new(unsafe { std::mem::zeroed() }));
 
 /// C static: mjGlad_glGetTexEnvfv (PFNGLGETTEXENVFVPROC)
-pub static MJGLAD_GLGETTEXENVFV: std::sync::LazyLock<std::sync::Mutex<[u8; 8]>> = std::sync::LazyLock::new(|| std::sync::Mutex::new([0u8; 8]));
+pub static MJGLAD_GLGETTEXENVFV: std::sync::LazyLock<std::sync::Mutex<PFNGLGETTEXENVFVPROC>> = std::sync::LazyLock::new(|| std::sync::Mutex::new(unsafe { std::mem::zeroed() }));
 
 /// C static: mjGlad_glGetTexEnviv (PFNGLGETTEXENVIVPROC)
-pub static MJGLAD_GLGETTEXENVIV: std::sync::LazyLock<std::sync::Mutex<[u8; 8]>> = std::sync::LazyLock::new(|| std::sync::Mutex::new([0u8; 8]));
+pub static MJGLAD_GLGETTEXENVIV: std::sync::LazyLock<std::sync::Mutex<PFNGLGETTEXENVIVPROC>> = std::sync::LazyLock::new(|| std::sync::Mutex::new(unsafe { std::mem::zeroed() }));
 
 /// C static: mjGlad_glGetTexGendv (PFNGLGETTEXGENDVPROC)
-pub static MJGLAD_GLGETTEXGENDV: std::sync::LazyLock<std::sync::Mutex<[u8; 8]>> = std::sync::LazyLock::new(|| std::sync::Mutex::new([0u8; 8]));
+pub static MJGLAD_GLGETTEXGENDV: std::sync::LazyLock<std::sync::Mutex<PFNGLGETTEXGENDVPROC>> = std::sync::LazyLock::new(|| std::sync::Mutex::new(unsafe { std::mem::zeroed() }));
 
 /// C static: mjGlad_glGetTexGenfv (PFNGLGETTEXGENFVPROC)
-pub static MJGLAD_GLGETTEXGENFV: std::sync::LazyLock<std::sync::Mutex<[u8; 8]>> = std::sync::LazyLock::new(|| std::sync::Mutex::new([0u8; 8]));
+pub static MJGLAD_GLGETTEXGENFV: std::sync::LazyLock<std::sync::Mutex<PFNGLGETTEXGENFVPROC>> = std::sync::LazyLock::new(|| std::sync::Mutex::new(unsafe { std::mem::zeroed() }));
 
 /// C static: mjGlad_glGetTexGeniv (PFNGLGETTEXGENIVPROC)
-pub static MJGLAD_GLGETTEXGENIV: std::sync::LazyLock<std::sync::Mutex<[u8; 8]>> = std::sync::LazyLock::new(|| std::sync::Mutex::new([0u8; 8]));
+pub static MJGLAD_GLGETTEXGENIV: std::sync::LazyLock<std::sync::Mutex<PFNGLGETTEXGENIVPROC>> = std::sync::LazyLock::new(|| std::sync::Mutex::new(unsafe { std::mem::zeroed() }));
 
 /// C static: mjGlad_glGetTexImage (PFNGLGETTEXIMAGEPROC)
-pub static MJGLAD_GLGETTEXIMAGE: std::sync::LazyLock<std::sync::Mutex<[u8; 8]>> = std::sync::LazyLock::new(|| std::sync::Mutex::new([0u8; 8]));
+pub static MJGLAD_GLGETTEXIMAGE: std::sync::LazyLock<std::sync::Mutex<PFNGLGETTEXIMAGEPROC>> = std::sync::LazyLock::new(|| std::sync::Mutex::new(unsafe { std::mem::zeroed() }));
 
 /// C static: mjGlad_glGetTexLevelParameterfv (PFNGLGETTEXLEVELPARAMETERFVPROC)
-pub static MJGLAD_GLGETTEXLEVELPARAMETERFV: std::sync::LazyLock<std::sync::Mutex<[u8; 8]>> = std::sync::LazyLock::new(|| std::sync::Mutex::new([0u8; 8]));
+pub static MJGLAD_GLGETTEXLEVELPARAMETERFV: std::sync::LazyLock<std::sync::Mutex<PFNGLGETTEXLEVELPARAMETERFVPROC>> = std::sync::LazyLock::new(|| std::sync::Mutex::new(unsafe { std::mem::zeroed() }));
 
 /// C static: mjGlad_glGetTexLevelParameteriv (PFNGLGETTEXLEVELPARAMETERIVPROC)
-pub static MJGLAD_GLGETTEXLEVELPARAMETERIV: std::sync::LazyLock<std::sync::Mutex<[u8; 8]>> = std::sync::LazyLock::new(|| std::sync::Mutex::new([0u8; 8]));
+pub static MJGLAD_GLGETTEXLEVELPARAMETERIV: std::sync::LazyLock<std::sync::Mutex<PFNGLGETTEXLEVELPARAMETERIVPROC>> = std::sync::LazyLock::new(|| std::sync::Mutex::new(unsafe { std::mem::zeroed() }));
 
 /// C static: mjGlad_glGetTexParameterfv (PFNGLGETTEXPARAMETERFVPROC)
-pub static MJGLAD_GLGETTEXPARAMETERFV: std::sync::LazyLock<std::sync::Mutex<[u8; 8]>> = std::sync::LazyLock::new(|| std::sync::Mutex::new([0u8; 8]));
+pub static MJGLAD_GLGETTEXPARAMETERFV: std::sync::LazyLock<std::sync::Mutex<PFNGLGETTEXPARAMETERFVPROC>> = std::sync::LazyLock::new(|| std::sync::Mutex::new(unsafe { std::mem::zeroed() }));
 
 /// C static: mjGlad_glGetTexParameteriv (PFNGLGETTEXPARAMETERIVPROC)
-pub static MJGLAD_GLGETTEXPARAMETERIV: std::sync::LazyLock<std::sync::Mutex<[u8; 8]>> = std::sync::LazyLock::new(|| std::sync::Mutex::new([0u8; 8]));
+pub static MJGLAD_GLGETTEXPARAMETERIV: std::sync::LazyLock<std::sync::Mutex<PFNGLGETTEXPARAMETERIVPROC>> = std::sync::LazyLock::new(|| std::sync::Mutex::new(unsafe { std::mem::zeroed() }));
 
 /// C static: mjGlad_glHint (PFNGLHINTPROC)
-pub static MJGLAD_GLHINT: std::sync::LazyLock<std::sync::Mutex<[u8; 8]>> = std::sync::LazyLock::new(|| std::sync::Mutex::new([0u8; 8]));
+pub static MJGLAD_GLHINT: std::sync::LazyLock<std::sync::Mutex<PFNGLHINTPROC>> = std::sync::LazyLock::new(|| std::sync::Mutex::new(unsafe { std::mem::zeroed() }));
 
 /// C static: mjGlad_glIndexMask (PFNGLINDEXMASKPROC)
-pub static MJGLAD_GLINDEXMASK: std::sync::LazyLock<std::sync::Mutex<[u8; 8]>> = std::sync::LazyLock::new(|| std::sync::Mutex::new([0u8; 8]));
+pub static MJGLAD_GLINDEXMASK: std::sync::LazyLock<std::sync::Mutex<PFNGLINDEXMASKPROC>> = std::sync::LazyLock::new(|| std::sync::Mutex::new(unsafe { std::mem::zeroed() }));
 
 /// C static: mjGlad_glIndexPointer (PFNGLINDEXPOINTERPROC)
-pub static MJGLAD_GLINDEXPOINTER: std::sync::LazyLock<std::sync::Mutex<[u8; 8]>> = std::sync::LazyLock::new(|| std::sync::Mutex::new([0u8; 8]));
+pub static MJGLAD_GLINDEXPOINTER: std::sync::LazyLock<std::sync::Mutex<PFNGLINDEXPOINTERPROC>> = std::sync::LazyLock::new(|| std::sync::Mutex::new(unsafe { std::mem::zeroed() }));
 
 /// C static: mjGlad_glIndexd (PFNGLINDEXDPROC)
-pub static MJGLAD_GLINDEXD: std::sync::LazyLock<std::sync::Mutex<[u8; 8]>> = std::sync::LazyLock::new(|| std::sync::Mutex::new([0u8; 8]));
+pub static MJGLAD_GLINDEXD: std::sync::LazyLock<std::sync::Mutex<PFNGLINDEXDPROC>> = std::sync::LazyLock::new(|| std::sync::Mutex::new(unsafe { std::mem::zeroed() }));
 
 /// C static: mjGlad_glIndexdv (PFNGLINDEXDVPROC)
-pub static MJGLAD_GLINDEXDV: std::sync::LazyLock<std::sync::Mutex<[u8; 8]>> = std::sync::LazyLock::new(|| std::sync::Mutex::new([0u8; 8]));
+pub static MJGLAD_GLINDEXDV: std::sync::LazyLock<std::sync::Mutex<PFNGLINDEXDVPROC>> = std::sync::LazyLock::new(|| std::sync::Mutex::new(unsafe { std::mem::zeroed() }));
 
 /// C static: mjGlad_glIndexf (PFNGLINDEXFPROC)
-pub static MJGLAD_GLINDEXF: std::sync::LazyLock<std::sync::Mutex<[u8; 8]>> = std::sync::LazyLock::new(|| std::sync::Mutex::new([0u8; 8]));
+pub static MJGLAD_GLINDEXF: std::sync::LazyLock<std::sync::Mutex<PFNGLINDEXFPROC>> = std::sync::LazyLock::new(|| std::sync::Mutex::new(unsafe { std::mem::zeroed() }));
 
 /// C static: mjGlad_glIndexfv (PFNGLINDEXFVPROC)
-pub static MJGLAD_GLINDEXFV: std::sync::LazyLock<std::sync::Mutex<[u8; 8]>> = std::sync::LazyLock::new(|| std::sync::Mutex::new([0u8; 8]));
+pub static MJGLAD_GLINDEXFV: std::sync::LazyLock<std::sync::Mutex<PFNGLINDEXFVPROC>> = std::sync::LazyLock::new(|| std::sync::Mutex::new(unsafe { std::mem::zeroed() }));
 
 /// C static: mjGlad_glIndexi (PFNGLINDEXIPROC)
-pub static MJGLAD_GLINDEXI: std::sync::LazyLock<std::sync::Mutex<[u8; 8]>> = std::sync::LazyLock::new(|| std::sync::Mutex::new([0u8; 8]));
+pub static MJGLAD_GLINDEXI: std::sync::LazyLock<std::sync::Mutex<PFNGLINDEXIPROC>> = std::sync::LazyLock::new(|| std::sync::Mutex::new(unsafe { std::mem::zeroed() }));
 
 /// C static: mjGlad_glIndexiv (PFNGLINDEXIVPROC)
-pub static MJGLAD_GLINDEXIV: std::sync::LazyLock<std::sync::Mutex<[u8; 8]>> = std::sync::LazyLock::new(|| std::sync::Mutex::new([0u8; 8]));
+pub static MJGLAD_GLINDEXIV: std::sync::LazyLock<std::sync::Mutex<PFNGLINDEXIVPROC>> = std::sync::LazyLock::new(|| std::sync::Mutex::new(unsafe { std::mem::zeroed() }));
 
 /// C static: mjGlad_glIndexs (PFNGLINDEXSPROC)
-pub static MJGLAD_GLINDEXS: std::sync::LazyLock<std::sync::Mutex<[u8; 8]>> = std::sync::LazyLock::new(|| std::sync::Mutex::new([0u8; 8]));
+pub static MJGLAD_GLINDEXS: std::sync::LazyLock<std::sync::Mutex<PFNGLINDEXSPROC>> = std::sync::LazyLock::new(|| std::sync::Mutex::new(unsafe { std::mem::zeroed() }));
 
 /// C static: mjGlad_glIndexsv (PFNGLINDEXSVPROC)
-pub static MJGLAD_GLINDEXSV: std::sync::LazyLock<std::sync::Mutex<[u8; 8]>> = std::sync::LazyLock::new(|| std::sync::Mutex::new([0u8; 8]));
+pub static MJGLAD_GLINDEXSV: std::sync::LazyLock<std::sync::Mutex<PFNGLINDEXSVPROC>> = std::sync::LazyLock::new(|| std::sync::Mutex::new(unsafe { std::mem::zeroed() }));
 
 /// C static: mjGlad_glIndexub (PFNGLINDEXUBPROC)
-pub static MJGLAD_GLINDEXUB: std::sync::LazyLock<std::sync::Mutex<[u8; 8]>> = std::sync::LazyLock::new(|| std::sync::Mutex::new([0u8; 8]));
+pub static MJGLAD_GLINDEXUB: std::sync::LazyLock<std::sync::Mutex<PFNGLINDEXUBPROC>> = std::sync::LazyLock::new(|| std::sync::Mutex::new(unsafe { std::mem::zeroed() }));
 
 /// C static: mjGlad_glIndexubv (PFNGLINDEXUBVPROC)
-pub static MJGLAD_GLINDEXUBV: std::sync::LazyLock<std::sync::Mutex<[u8; 8]>> = std::sync::LazyLock::new(|| std::sync::Mutex::new([0u8; 8]));
+pub static MJGLAD_GLINDEXUBV: std::sync::LazyLock<std::sync::Mutex<PFNGLINDEXUBVPROC>> = std::sync::LazyLock::new(|| std::sync::Mutex::new(unsafe { std::mem::zeroed() }));
 
 /// C static: mjGlad_glInitNames (PFNGLINITNAMESPROC)
-pub static MJGLAD_GLINITNAMES: std::sync::LazyLock<std::sync::Mutex<[u8; 8]>> = std::sync::LazyLock::new(|| std::sync::Mutex::new([0u8; 8]));
+pub static MJGLAD_GLINITNAMES: std::sync::LazyLock<std::sync::Mutex<PFNGLINITNAMESPROC>> = std::sync::LazyLock::new(|| std::sync::Mutex::new(unsafe { std::mem::zeroed() }));
 
 /// C static: mjGlad_glInterleavedArrays (PFNGLINTERLEAVEDARRAYSPROC)
-pub static MJGLAD_GLINTERLEAVEDARRAYS: std::sync::LazyLock<std::sync::Mutex<[u8; 8]>> = std::sync::LazyLock::new(|| std::sync::Mutex::new([0u8; 8]));
+pub static MJGLAD_GLINTERLEAVEDARRAYS: std::sync::LazyLock<std::sync::Mutex<PFNGLINTERLEAVEDARRAYSPROC>> = std::sync::LazyLock::new(|| std::sync::Mutex::new(unsafe { std::mem::zeroed() }));
 
 /// C static: mjGlad_glIsBuffer (PFNGLISBUFFERPROC)
-pub static MJGLAD_GLISBUFFER: std::sync::LazyLock<std::sync::Mutex<[u8; 8]>> = std::sync::LazyLock::new(|| std::sync::Mutex::new([0u8; 8]));
+pub static MJGLAD_GLISBUFFER: std::sync::LazyLock<std::sync::Mutex<PFNGLISBUFFERPROC>> = std::sync::LazyLock::new(|| std::sync::Mutex::new(unsafe { std::mem::zeroed() }));
 
 /// C static: mjGlad_glIsBufferARB (PFNGLISBUFFERARBPROC)
-pub static MJGLAD_GLISBUFFERARB: std::sync::LazyLock<std::sync::Mutex<[u8; 8]>> = std::sync::LazyLock::new(|| std::sync::Mutex::new([0u8; 8]));
+pub static MJGLAD_GLISBUFFERARB: std::sync::LazyLock<std::sync::Mutex<PFNGLISBUFFERARBPROC>> = std::sync::LazyLock::new(|| std::sync::Mutex::new(unsafe { std::mem::zeroed() }));
 
 /// C static: mjGlad_glIsEnabled (PFNGLISENABLEDPROC)
-pub static MJGLAD_GLISENABLED: std::sync::LazyLock<std::sync::Mutex<[u8; 8]>> = std::sync::LazyLock::new(|| std::sync::Mutex::new([0u8; 8]));
+pub static MJGLAD_GLISENABLED: std::sync::LazyLock<std::sync::Mutex<PFNGLISENABLEDPROC>> = std::sync::LazyLock::new(|| std::sync::Mutex::new(unsafe { std::mem::zeroed() }));
 
 /// C static: mjGlad_glIsFramebuffer (PFNGLISFRAMEBUFFERPROC)
-pub static MJGLAD_GLISFRAMEBUFFER: std::sync::LazyLock<std::sync::Mutex<[u8; 8]>> = std::sync::LazyLock::new(|| std::sync::Mutex::new([0u8; 8]));
+pub static MJGLAD_GLISFRAMEBUFFER: std::sync::LazyLock<std::sync::Mutex<PFNGLISFRAMEBUFFERPROC>> = std::sync::LazyLock::new(|| std::sync::Mutex::new(unsafe { std::mem::zeroed() }));
 
 /// C static: mjGlad_glIsList (PFNGLISLISTPROC)
-pub static MJGLAD_GLISLIST: std::sync::LazyLock<std::sync::Mutex<[u8; 8]>> = std::sync::LazyLock::new(|| std::sync::Mutex::new([0u8; 8]));
+pub static MJGLAD_GLISLIST: std::sync::LazyLock<std::sync::Mutex<PFNGLISLISTPROC>> = std::sync::LazyLock::new(|| std::sync::Mutex::new(unsafe { std::mem::zeroed() }));
 
 /// C static: mjGlad_glIsQuery (PFNGLISQUERYPROC)
-pub static MJGLAD_GLISQUERY: std::sync::LazyLock<std::sync::Mutex<[u8; 8]>> = std::sync::LazyLock::new(|| std::sync::Mutex::new([0u8; 8]));
+pub static MJGLAD_GLISQUERY: std::sync::LazyLock<std::sync::Mutex<PFNGLISQUERYPROC>> = std::sync::LazyLock::new(|| std::sync::Mutex::new(unsafe { std::mem::zeroed() }));
 
 /// C static: mjGlad_glIsRenderbuffer (PFNGLISRENDERBUFFERPROC)
-pub static MJGLAD_GLISRENDERBUFFER: std::sync::LazyLock<std::sync::Mutex<[u8; 8]>> = std::sync::LazyLock::new(|| std::sync::Mutex::new([0u8; 8]));
+pub static MJGLAD_GLISRENDERBUFFER: std::sync::LazyLock<std::sync::Mutex<PFNGLISRENDERBUFFERPROC>> = std::sync::LazyLock::new(|| std::sync::Mutex::new(unsafe { std::mem::zeroed() }));
 
 /// C static: mjGlad_glIsTexture (PFNGLISTEXTUREPROC)
-pub static MJGLAD_GLISTEXTURE: std::sync::LazyLock<std::sync::Mutex<[u8; 8]>> = std::sync::LazyLock::new(|| std::sync::Mutex::new([0u8; 8]));
+pub static MJGLAD_GLISTEXTURE: std::sync::LazyLock<std::sync::Mutex<PFNGLISTEXTUREPROC>> = std::sync::LazyLock::new(|| std::sync::Mutex::new(unsafe { std::mem::zeroed() }));
 
 /// C static: mjGlad_glLightModelf (PFNGLLIGHTMODELFPROC)
-pub static MJGLAD_GLLIGHTMODELF: std::sync::LazyLock<std::sync::Mutex<[u8; 8]>> = std::sync::LazyLock::new(|| std::sync::Mutex::new([0u8; 8]));
+pub static MJGLAD_GLLIGHTMODELF: std::sync::LazyLock<std::sync::Mutex<PFNGLLIGHTMODELFPROC>> = std::sync::LazyLock::new(|| std::sync::Mutex::new(unsafe { std::mem::zeroed() }));
 
 /// C static: mjGlad_glLightModelfv (PFNGLLIGHTMODELFVPROC)
-pub static MJGLAD_GLLIGHTMODELFV: std::sync::LazyLock<std::sync::Mutex<[u8; 8]>> = std::sync::LazyLock::new(|| std::sync::Mutex::new([0u8; 8]));
+pub static MJGLAD_GLLIGHTMODELFV: std::sync::LazyLock<std::sync::Mutex<PFNGLLIGHTMODELFVPROC>> = std::sync::LazyLock::new(|| std::sync::Mutex::new(unsafe { std::mem::zeroed() }));
 
 /// C static: mjGlad_glLightModeli (PFNGLLIGHTMODELIPROC)
-pub static MJGLAD_GLLIGHTMODELI: std::sync::LazyLock<std::sync::Mutex<[u8; 8]>> = std::sync::LazyLock::new(|| std::sync::Mutex::new([0u8; 8]));
+pub static MJGLAD_GLLIGHTMODELI: std::sync::LazyLock<std::sync::Mutex<PFNGLLIGHTMODELIPROC>> = std::sync::LazyLock::new(|| std::sync::Mutex::new(unsafe { std::mem::zeroed() }));
 
 /// C static: mjGlad_glLightModeliv (PFNGLLIGHTMODELIVPROC)
-pub static MJGLAD_GLLIGHTMODELIV: std::sync::LazyLock<std::sync::Mutex<[u8; 8]>> = std::sync::LazyLock::new(|| std::sync::Mutex::new([0u8; 8]));
+pub static MJGLAD_GLLIGHTMODELIV: std::sync::LazyLock<std::sync::Mutex<PFNGLLIGHTMODELIVPROC>> = std::sync::LazyLock::new(|| std::sync::Mutex::new(unsafe { std::mem::zeroed() }));
 
 /// C static: mjGlad_glLightf (PFNGLLIGHTFPROC)
-pub static MJGLAD_GLLIGHTF: std::sync::LazyLock<std::sync::Mutex<[u8; 8]>> = std::sync::LazyLock::new(|| std::sync::Mutex::new([0u8; 8]));
+pub static MJGLAD_GLLIGHTF: std::sync::LazyLock<std::sync::Mutex<PFNGLLIGHTFPROC>> = std::sync::LazyLock::new(|| std::sync::Mutex::new(unsafe { std::mem::zeroed() }));
 
 /// C static: mjGlad_glLightfv (PFNGLLIGHTFVPROC)
-pub static MJGLAD_GLLIGHTFV: std::sync::LazyLock<std::sync::Mutex<[u8; 8]>> = std::sync::LazyLock::new(|| std::sync::Mutex::new([0u8; 8]));
+pub static MJGLAD_GLLIGHTFV: std::sync::LazyLock<std::sync::Mutex<PFNGLLIGHTFVPROC>> = std::sync::LazyLock::new(|| std::sync::Mutex::new(unsafe { std::mem::zeroed() }));
 
 /// C static: mjGlad_glLighti (PFNGLLIGHTIPROC)
-pub static MJGLAD_GLLIGHTI: std::sync::LazyLock<std::sync::Mutex<[u8; 8]>> = std::sync::LazyLock::new(|| std::sync::Mutex::new([0u8; 8]));
+pub static MJGLAD_GLLIGHTI: std::sync::LazyLock<std::sync::Mutex<PFNGLLIGHTIPROC>> = std::sync::LazyLock::new(|| std::sync::Mutex::new(unsafe { std::mem::zeroed() }));
 
 /// C static: mjGlad_glLightiv (PFNGLLIGHTIVPROC)
-pub static MJGLAD_GLLIGHTIV: std::sync::LazyLock<std::sync::Mutex<[u8; 8]>> = std::sync::LazyLock::new(|| std::sync::Mutex::new([0u8; 8]));
+pub static MJGLAD_GLLIGHTIV: std::sync::LazyLock<std::sync::Mutex<PFNGLLIGHTIVPROC>> = std::sync::LazyLock::new(|| std::sync::Mutex::new(unsafe { std::mem::zeroed() }));
 
 /// C static: mjGlad_glLineStipple (PFNGLLINESTIPPLEPROC)
-pub static MJGLAD_GLLINESTIPPLE: std::sync::LazyLock<std::sync::Mutex<[u8; 8]>> = std::sync::LazyLock::new(|| std::sync::Mutex::new([0u8; 8]));
+pub static MJGLAD_GLLINESTIPPLE: std::sync::LazyLock<std::sync::Mutex<PFNGLLINESTIPPLEPROC>> = std::sync::LazyLock::new(|| std::sync::Mutex::new(unsafe { std::mem::zeroed() }));
 
 /// C static: mjGlad_glLineWidth (PFNGLLINEWIDTHPROC)
-pub static MJGLAD_GLLINEWIDTH: std::sync::LazyLock<std::sync::Mutex<[u8; 8]>> = std::sync::LazyLock::new(|| std::sync::Mutex::new([0u8; 8]));
+pub static MJGLAD_GLLINEWIDTH: std::sync::LazyLock<std::sync::Mutex<PFNGLLINEWIDTHPROC>> = std::sync::LazyLock::new(|| std::sync::Mutex::new(unsafe { std::mem::zeroed() }));
 
 /// C static: mjGlad_glListBase (PFNGLLISTBASEPROC)
-pub static MJGLAD_GLLISTBASE: std::sync::LazyLock<std::sync::Mutex<[u8; 8]>> = std::sync::LazyLock::new(|| std::sync::Mutex::new([0u8; 8]));
+pub static MJGLAD_GLLISTBASE: std::sync::LazyLock<std::sync::Mutex<PFNGLLISTBASEPROC>> = std::sync::LazyLock::new(|| std::sync::Mutex::new(unsafe { std::mem::zeroed() }));
 
 /// C static: mjGlad_glLoadIdentity (PFNGLLOADIDENTITYPROC)
-pub static MJGLAD_GLLOADIDENTITY: std::sync::LazyLock<std::sync::Mutex<[u8; 8]>> = std::sync::LazyLock::new(|| std::sync::Mutex::new([0u8; 8]));
+pub static MJGLAD_GLLOADIDENTITY: std::sync::LazyLock<std::sync::Mutex<PFNGLLOADIDENTITYPROC>> = std::sync::LazyLock::new(|| std::sync::Mutex::new(unsafe { std::mem::zeroed() }));
 
 /// C static: mjGlad_glLoadMatrixd (PFNGLLOADMATRIXDPROC)
-pub static MJGLAD_GLLOADMATRIXD: std::sync::LazyLock<std::sync::Mutex<[u8; 8]>> = std::sync::LazyLock::new(|| std::sync::Mutex::new([0u8; 8]));
+pub static MJGLAD_GLLOADMATRIXD: std::sync::LazyLock<std::sync::Mutex<PFNGLLOADMATRIXDPROC>> = std::sync::LazyLock::new(|| std::sync::Mutex::new(unsafe { std::mem::zeroed() }));
 
 /// C static: mjGlad_glLoadMatrixf (PFNGLLOADMATRIXFPROC)
-pub static MJGLAD_GLLOADMATRIXF: std::sync::LazyLock<std::sync::Mutex<[u8; 8]>> = std::sync::LazyLock::new(|| std::sync::Mutex::new([0u8; 8]));
+pub static MJGLAD_GLLOADMATRIXF: std::sync::LazyLock<std::sync::Mutex<PFNGLLOADMATRIXFPROC>> = std::sync::LazyLock::new(|| std::sync::Mutex::new(unsafe { std::mem::zeroed() }));
 
 /// C static: mjGlad_glLoadName (PFNGLLOADNAMEPROC)
-pub static MJGLAD_GLLOADNAME: std::sync::LazyLock<std::sync::Mutex<[u8; 8]>> = std::sync::LazyLock::new(|| std::sync::Mutex::new([0u8; 8]));
+pub static MJGLAD_GLLOADNAME: std::sync::LazyLock<std::sync::Mutex<PFNGLLOADNAMEPROC>> = std::sync::LazyLock::new(|| std::sync::Mutex::new(unsafe { std::mem::zeroed() }));
 
 /// C static: mjGlad_glLoadTransposeMatrixd (PFNGLLOADTRANSPOSEMATRIXDPROC)
-pub static MJGLAD_GLLOADTRANSPOSEMATRIXD: std::sync::LazyLock<std::sync::Mutex<[u8; 8]>> = std::sync::LazyLock::new(|| std::sync::Mutex::new([0u8; 8]));
+pub static MJGLAD_GLLOADTRANSPOSEMATRIXD: std::sync::LazyLock<std::sync::Mutex<PFNGLLOADTRANSPOSEMATRIXDPROC>> = std::sync::LazyLock::new(|| std::sync::Mutex::new(unsafe { std::mem::zeroed() }));
 
 /// C static: mjGlad_glLoadTransposeMatrixf (PFNGLLOADTRANSPOSEMATRIXFPROC)
-pub static MJGLAD_GLLOADTRANSPOSEMATRIXF: std::sync::LazyLock<std::sync::Mutex<[u8; 8]>> = std::sync::LazyLock::new(|| std::sync::Mutex::new([0u8; 8]));
+pub static MJGLAD_GLLOADTRANSPOSEMATRIXF: std::sync::LazyLock<std::sync::Mutex<PFNGLLOADTRANSPOSEMATRIXFPROC>> = std::sync::LazyLock::new(|| std::sync::Mutex::new(unsafe { std::mem::zeroed() }));
 
 /// C static: mjGlad_glLogicOp (PFNGLLOGICOPPROC)
-pub static MJGLAD_GLLOGICOP: std::sync::LazyLock<std::sync::Mutex<[u8; 8]>> = std::sync::LazyLock::new(|| std::sync::Mutex::new([0u8; 8]));
+pub static MJGLAD_GLLOGICOP: std::sync::LazyLock<std::sync::Mutex<PFNGLLOGICOPPROC>> = std::sync::LazyLock::new(|| std::sync::Mutex::new(unsafe { std::mem::zeroed() }));
 
 /// C static: mjGlad_glMap1d (PFNGLMAP1DPROC)
-pub static MJGLAD_GLMAP1D: std::sync::LazyLock<std::sync::Mutex<[u8; 8]>> = std::sync::LazyLock::new(|| std::sync::Mutex::new([0u8; 8]));
+pub static MJGLAD_GLMAP1D: std::sync::LazyLock<std::sync::Mutex<PFNGLMAP1DPROC>> = std::sync::LazyLock::new(|| std::sync::Mutex::new(unsafe { std::mem::zeroed() }));
 
 /// C static: mjGlad_glMap1f (PFNGLMAP1FPROC)
-pub static MJGLAD_GLMAP1F: std::sync::LazyLock<std::sync::Mutex<[u8; 8]>> = std::sync::LazyLock::new(|| std::sync::Mutex::new([0u8; 8]));
+pub static MJGLAD_GLMAP1F: std::sync::LazyLock<std::sync::Mutex<PFNGLMAP1FPROC>> = std::sync::LazyLock::new(|| std::sync::Mutex::new(unsafe { std::mem::zeroed() }));
 
 /// C static: mjGlad_glMap2d (PFNGLMAP2DPROC)
-pub static MJGLAD_GLMAP2D: std::sync::LazyLock<std::sync::Mutex<[u8; 8]>> = std::sync::LazyLock::new(|| std::sync::Mutex::new([0u8; 8]));
+pub static MJGLAD_GLMAP2D: std::sync::LazyLock<std::sync::Mutex<PFNGLMAP2DPROC>> = std::sync::LazyLock::new(|| std::sync::Mutex::new(unsafe { std::mem::zeroed() }));
 
 /// C static: mjGlad_glMap2f (PFNGLMAP2FPROC)
-pub static MJGLAD_GLMAP2F: std::sync::LazyLock<std::sync::Mutex<[u8; 8]>> = std::sync::LazyLock::new(|| std::sync::Mutex::new([0u8; 8]));
+pub static MJGLAD_GLMAP2F: std::sync::LazyLock<std::sync::Mutex<PFNGLMAP2FPROC>> = std::sync::LazyLock::new(|| std::sync::Mutex::new(unsafe { std::mem::zeroed() }));
 
 /// C static: mjGlad_glMapBuffer (PFNGLMAPBUFFERPROC)
-pub static MJGLAD_GLMAPBUFFER: std::sync::LazyLock<std::sync::Mutex<[u8; 8]>> = std::sync::LazyLock::new(|| std::sync::Mutex::new([0u8; 8]));
+pub static MJGLAD_GLMAPBUFFER: std::sync::LazyLock<std::sync::Mutex<PFNGLMAPBUFFERPROC>> = std::sync::LazyLock::new(|| std::sync::Mutex::new(unsafe { std::mem::zeroed() }));
 
 /// C static: mjGlad_glMapBufferARB (PFNGLMAPBUFFERARBPROC)
-pub static MJGLAD_GLMAPBUFFERARB: std::sync::LazyLock<std::sync::Mutex<[u8; 8]>> = std::sync::LazyLock::new(|| std::sync::Mutex::new([0u8; 8]));
+pub static MJGLAD_GLMAPBUFFERARB: std::sync::LazyLock<std::sync::Mutex<PFNGLMAPBUFFERARBPROC>> = std::sync::LazyLock::new(|| std::sync::Mutex::new(unsafe { std::mem::zeroed() }));
 
 /// C static: mjGlad_glMapGrid1d (PFNGLMAPGRID1DPROC)
-pub static MJGLAD_GLMAPGRID1D: std::sync::LazyLock<std::sync::Mutex<[u8; 8]>> = std::sync::LazyLock::new(|| std::sync::Mutex::new([0u8; 8]));
+pub static MJGLAD_GLMAPGRID1D: std::sync::LazyLock<std::sync::Mutex<PFNGLMAPGRID1DPROC>> = std::sync::LazyLock::new(|| std::sync::Mutex::new(unsafe { std::mem::zeroed() }));
 
 /// C static: mjGlad_glMapGrid1f (PFNGLMAPGRID1FPROC)
-pub static MJGLAD_GLMAPGRID1F: std::sync::LazyLock<std::sync::Mutex<[u8; 8]>> = std::sync::LazyLock::new(|| std::sync::Mutex::new([0u8; 8]));
+pub static MJGLAD_GLMAPGRID1F: std::sync::LazyLock<std::sync::Mutex<PFNGLMAPGRID1FPROC>> = std::sync::LazyLock::new(|| std::sync::Mutex::new(unsafe { std::mem::zeroed() }));
 
 /// C static: mjGlad_glMapGrid2d (PFNGLMAPGRID2DPROC)
-pub static MJGLAD_GLMAPGRID2D: std::sync::LazyLock<std::sync::Mutex<[u8; 8]>> = std::sync::LazyLock::new(|| std::sync::Mutex::new([0u8; 8]));
+pub static MJGLAD_GLMAPGRID2D: std::sync::LazyLock<std::sync::Mutex<PFNGLMAPGRID2DPROC>> = std::sync::LazyLock::new(|| std::sync::Mutex::new(unsafe { std::mem::zeroed() }));
 
 /// C static: mjGlad_glMapGrid2f (PFNGLMAPGRID2FPROC)
-pub static MJGLAD_GLMAPGRID2F: std::sync::LazyLock<std::sync::Mutex<[u8; 8]>> = std::sync::LazyLock::new(|| std::sync::Mutex::new([0u8; 8]));
+pub static MJGLAD_GLMAPGRID2F: std::sync::LazyLock<std::sync::Mutex<PFNGLMAPGRID2FPROC>> = std::sync::LazyLock::new(|| std::sync::Mutex::new(unsafe { std::mem::zeroed() }));
 
 /// C static: mjGlad_glMaterialf (PFNGLMATERIALFPROC)
-pub static MJGLAD_GLMATERIALF: std::sync::LazyLock<std::sync::Mutex<[u8; 8]>> = std::sync::LazyLock::new(|| std::sync::Mutex::new([0u8; 8]));
+pub static MJGLAD_GLMATERIALF: std::sync::LazyLock<std::sync::Mutex<PFNGLMATERIALFPROC>> = std::sync::LazyLock::new(|| std::sync::Mutex::new(unsafe { std::mem::zeroed() }));
 
 /// C static: mjGlad_glMaterialfv (PFNGLMATERIALFVPROC)
-pub static MJGLAD_GLMATERIALFV: std::sync::LazyLock<std::sync::Mutex<[u8; 8]>> = std::sync::LazyLock::new(|| std::sync::Mutex::new([0u8; 8]));
+pub static MJGLAD_GLMATERIALFV: std::sync::LazyLock<std::sync::Mutex<PFNGLMATERIALFVPROC>> = std::sync::LazyLock::new(|| std::sync::Mutex::new(unsafe { std::mem::zeroed() }));
 
 /// C static: mjGlad_glMateriali (PFNGLMATERIALIPROC)
-pub static MJGLAD_GLMATERIALI: std::sync::LazyLock<std::sync::Mutex<[u8; 8]>> = std::sync::LazyLock::new(|| std::sync::Mutex::new([0u8; 8]));
+pub static MJGLAD_GLMATERIALI: std::sync::LazyLock<std::sync::Mutex<PFNGLMATERIALIPROC>> = std::sync::LazyLock::new(|| std::sync::Mutex::new(unsafe { std::mem::zeroed() }));
 
 /// C static: mjGlad_glMaterialiv (PFNGLMATERIALIVPROC)
-pub static MJGLAD_GLMATERIALIV: std::sync::LazyLock<std::sync::Mutex<[u8; 8]>> = std::sync::LazyLock::new(|| std::sync::Mutex::new([0u8; 8]));
+pub static MJGLAD_GLMATERIALIV: std::sync::LazyLock<std::sync::Mutex<PFNGLMATERIALIVPROC>> = std::sync::LazyLock::new(|| std::sync::Mutex::new(unsafe { std::mem::zeroed() }));
 
 /// C static: mjGlad_glMatrixMode (PFNGLMATRIXMODEPROC)
-pub static MJGLAD_GLMATRIXMODE: std::sync::LazyLock<std::sync::Mutex<[u8; 8]>> = std::sync::LazyLock::new(|| std::sync::Mutex::new([0u8; 8]));
+pub static MJGLAD_GLMATRIXMODE: std::sync::LazyLock<std::sync::Mutex<PFNGLMATRIXMODEPROC>> = std::sync::LazyLock::new(|| std::sync::Mutex::new(unsafe { std::mem::zeroed() }));
 
 /// C static: mjGlad_glMultMatrixd (PFNGLMULTMATRIXDPROC)
-pub static MJGLAD_GLMULTMATRIXD: std::sync::LazyLock<std::sync::Mutex<[u8; 8]>> = std::sync::LazyLock::new(|| std::sync::Mutex::new([0u8; 8]));
+pub static MJGLAD_GLMULTMATRIXD: std::sync::LazyLock<std::sync::Mutex<PFNGLMULTMATRIXDPROC>> = std::sync::LazyLock::new(|| std::sync::Mutex::new(unsafe { std::mem::zeroed() }));
 
 /// C static: mjGlad_glMultMatrixf (PFNGLMULTMATRIXFPROC)
-pub static MJGLAD_GLMULTMATRIXF: std::sync::LazyLock<std::sync::Mutex<[u8; 8]>> = std::sync::LazyLock::new(|| std::sync::Mutex::new([0u8; 8]));
+pub static MJGLAD_GLMULTMATRIXF: std::sync::LazyLock<std::sync::Mutex<PFNGLMULTMATRIXFPROC>> = std::sync::LazyLock::new(|| std::sync::Mutex::new(unsafe { std::mem::zeroed() }));
 
 /// C static: mjGlad_glMultTransposeMatrixd (PFNGLMULTTRANSPOSEMATRIXDPROC)
-pub static MJGLAD_GLMULTTRANSPOSEMATRIXD: std::sync::LazyLock<std::sync::Mutex<[u8; 8]>> = std::sync::LazyLock::new(|| std::sync::Mutex::new([0u8; 8]));
+pub static MJGLAD_GLMULTTRANSPOSEMATRIXD: std::sync::LazyLock<std::sync::Mutex<PFNGLMULTTRANSPOSEMATRIXDPROC>> = std::sync::LazyLock::new(|| std::sync::Mutex::new(unsafe { std::mem::zeroed() }));
 
 /// C static: mjGlad_glMultTransposeMatrixf (PFNGLMULTTRANSPOSEMATRIXFPROC)
-pub static MJGLAD_GLMULTTRANSPOSEMATRIXF: std::sync::LazyLock<std::sync::Mutex<[u8; 8]>> = std::sync::LazyLock::new(|| std::sync::Mutex::new([0u8; 8]));
+pub static MJGLAD_GLMULTTRANSPOSEMATRIXF: std::sync::LazyLock<std::sync::Mutex<PFNGLMULTTRANSPOSEMATRIXFPROC>> = std::sync::LazyLock::new(|| std::sync::Mutex::new(unsafe { std::mem::zeroed() }));
 
 /// C static: mjGlad_glMultiDrawArrays (PFNGLMULTIDRAWARRAYSPROC)
-pub static MJGLAD_GLMULTIDRAWARRAYS: std::sync::LazyLock<std::sync::Mutex<[u8; 8]>> = std::sync::LazyLock::new(|| std::sync::Mutex::new([0u8; 8]));
+pub static MJGLAD_GLMULTIDRAWARRAYS: std::sync::LazyLock<std::sync::Mutex<PFNGLMULTIDRAWARRAYSPROC>> = std::sync::LazyLock::new(|| std::sync::Mutex::new(unsafe { std::mem::zeroed() }));
 
 /// C static: mjGlad_glMultiDrawElements (PFNGLMULTIDRAWELEMENTSPROC)
-pub static MJGLAD_GLMULTIDRAWELEMENTS: std::sync::LazyLock<std::sync::Mutex<[u8; 8]>> = std::sync::LazyLock::new(|| std::sync::Mutex::new([0u8; 8]));
+pub static MJGLAD_GLMULTIDRAWELEMENTS: std::sync::LazyLock<std::sync::Mutex<PFNGLMULTIDRAWELEMENTSPROC>> = std::sync::LazyLock::new(|| std::sync::Mutex::new(unsafe { std::mem::zeroed() }));
 
 /// C static: mjGlad_glMultiTexCoord1d (PFNGLMULTITEXCOORD1DPROC)
-pub static MJGLAD_GLMULTITEXCOORD1D: std::sync::LazyLock<std::sync::Mutex<[u8; 8]>> = std::sync::LazyLock::new(|| std::sync::Mutex::new([0u8; 8]));
+pub static MJGLAD_GLMULTITEXCOORD1D: std::sync::LazyLock<std::sync::Mutex<PFNGLMULTITEXCOORD1DPROC>> = std::sync::LazyLock::new(|| std::sync::Mutex::new(unsafe { std::mem::zeroed() }));
 
 /// C static: mjGlad_glMultiTexCoord1dv (PFNGLMULTITEXCOORD1DVPROC)
-pub static MJGLAD_GLMULTITEXCOORD1DV: std::sync::LazyLock<std::sync::Mutex<[u8; 8]>> = std::sync::LazyLock::new(|| std::sync::Mutex::new([0u8; 8]));
+pub static MJGLAD_GLMULTITEXCOORD1DV: std::sync::LazyLock<std::sync::Mutex<PFNGLMULTITEXCOORD1DVPROC>> = std::sync::LazyLock::new(|| std::sync::Mutex::new(unsafe { std::mem::zeroed() }));
 
 /// C static: mjGlad_glMultiTexCoord1f (PFNGLMULTITEXCOORD1FPROC)
-pub static MJGLAD_GLMULTITEXCOORD1F: std::sync::LazyLock<std::sync::Mutex<[u8; 8]>> = std::sync::LazyLock::new(|| std::sync::Mutex::new([0u8; 8]));
+pub static MJGLAD_GLMULTITEXCOORD1F: std::sync::LazyLock<std::sync::Mutex<PFNGLMULTITEXCOORD1FPROC>> = std::sync::LazyLock::new(|| std::sync::Mutex::new(unsafe { std::mem::zeroed() }));
 
 /// C static: mjGlad_glMultiTexCoord1fv (PFNGLMULTITEXCOORD1FVPROC)
-pub static MJGLAD_GLMULTITEXCOORD1FV: std::sync::LazyLock<std::sync::Mutex<[u8; 8]>> = std::sync::LazyLock::new(|| std::sync::Mutex::new([0u8; 8]));
+pub static MJGLAD_GLMULTITEXCOORD1FV: std::sync::LazyLock<std::sync::Mutex<PFNGLMULTITEXCOORD1FVPROC>> = std::sync::LazyLock::new(|| std::sync::Mutex::new(unsafe { std::mem::zeroed() }));
 
 /// C static: mjGlad_glMultiTexCoord1i (PFNGLMULTITEXCOORD1IPROC)
-pub static MJGLAD_GLMULTITEXCOORD1I: std::sync::LazyLock<std::sync::Mutex<[u8; 8]>> = std::sync::LazyLock::new(|| std::sync::Mutex::new([0u8; 8]));
+pub static MJGLAD_GLMULTITEXCOORD1I: std::sync::LazyLock<std::sync::Mutex<PFNGLMULTITEXCOORD1IPROC>> = std::sync::LazyLock::new(|| std::sync::Mutex::new(unsafe { std::mem::zeroed() }));
 
 /// C static: mjGlad_glMultiTexCoord1iv (PFNGLMULTITEXCOORD1IVPROC)
-pub static MJGLAD_GLMULTITEXCOORD1IV: std::sync::LazyLock<std::sync::Mutex<[u8; 8]>> = std::sync::LazyLock::new(|| std::sync::Mutex::new([0u8; 8]));
+pub static MJGLAD_GLMULTITEXCOORD1IV: std::sync::LazyLock<std::sync::Mutex<PFNGLMULTITEXCOORD1IVPROC>> = std::sync::LazyLock::new(|| std::sync::Mutex::new(unsafe { std::mem::zeroed() }));
 
 /// C static: mjGlad_glMultiTexCoord1s (PFNGLMULTITEXCOORD1SPROC)
-pub static MJGLAD_GLMULTITEXCOORD1S: std::sync::LazyLock<std::sync::Mutex<[u8; 8]>> = std::sync::LazyLock::new(|| std::sync::Mutex::new([0u8; 8]));
+pub static MJGLAD_GLMULTITEXCOORD1S: std::sync::LazyLock<std::sync::Mutex<PFNGLMULTITEXCOORD1SPROC>> = std::sync::LazyLock::new(|| std::sync::Mutex::new(unsafe { std::mem::zeroed() }));
 
 /// C static: mjGlad_glMultiTexCoord1sv (PFNGLMULTITEXCOORD1SVPROC)
-pub static MJGLAD_GLMULTITEXCOORD1SV: std::sync::LazyLock<std::sync::Mutex<[u8; 8]>> = std::sync::LazyLock::new(|| std::sync::Mutex::new([0u8; 8]));
+pub static MJGLAD_GLMULTITEXCOORD1SV: std::sync::LazyLock<std::sync::Mutex<PFNGLMULTITEXCOORD1SVPROC>> = std::sync::LazyLock::new(|| std::sync::Mutex::new(unsafe { std::mem::zeroed() }));
 
 /// C static: mjGlad_glMultiTexCoord2d (PFNGLMULTITEXCOORD2DPROC)
-pub static MJGLAD_GLMULTITEXCOORD2D: std::sync::LazyLock<std::sync::Mutex<[u8; 8]>> = std::sync::LazyLock::new(|| std::sync::Mutex::new([0u8; 8]));
+pub static MJGLAD_GLMULTITEXCOORD2D: std::sync::LazyLock<std::sync::Mutex<PFNGLMULTITEXCOORD2DPROC>> = std::sync::LazyLock::new(|| std::sync::Mutex::new(unsafe { std::mem::zeroed() }));
 
 /// C static: mjGlad_glMultiTexCoord2dv (PFNGLMULTITEXCOORD2DVPROC)
-pub static MJGLAD_GLMULTITEXCOORD2DV: std::sync::LazyLock<std::sync::Mutex<[u8; 8]>> = std::sync::LazyLock::new(|| std::sync::Mutex::new([0u8; 8]));
+pub static MJGLAD_GLMULTITEXCOORD2DV: std::sync::LazyLock<std::sync::Mutex<PFNGLMULTITEXCOORD2DVPROC>> = std::sync::LazyLock::new(|| std::sync::Mutex::new(unsafe { std::mem::zeroed() }));
 
 /// C static: mjGlad_glMultiTexCoord2f (PFNGLMULTITEXCOORD2FPROC)
-pub static MJGLAD_GLMULTITEXCOORD2F: std::sync::LazyLock<std::sync::Mutex<[u8; 8]>> = std::sync::LazyLock::new(|| std::sync::Mutex::new([0u8; 8]));
+pub static MJGLAD_GLMULTITEXCOORD2F: std::sync::LazyLock<std::sync::Mutex<PFNGLMULTITEXCOORD2FPROC>> = std::sync::LazyLock::new(|| std::sync::Mutex::new(unsafe { std::mem::zeroed() }));
 
 /// C static: mjGlad_glMultiTexCoord2fv (PFNGLMULTITEXCOORD2FVPROC)
-pub static MJGLAD_GLMULTITEXCOORD2FV: std::sync::LazyLock<std::sync::Mutex<[u8; 8]>> = std::sync::LazyLock::new(|| std::sync::Mutex::new([0u8; 8]));
+pub static MJGLAD_GLMULTITEXCOORD2FV: std::sync::LazyLock<std::sync::Mutex<PFNGLMULTITEXCOORD2FVPROC>> = std::sync::LazyLock::new(|| std::sync::Mutex::new(unsafe { std::mem::zeroed() }));
 
 /// C static: mjGlad_glMultiTexCoord2i (PFNGLMULTITEXCOORD2IPROC)
-pub static MJGLAD_GLMULTITEXCOORD2I: std::sync::LazyLock<std::sync::Mutex<[u8; 8]>> = std::sync::LazyLock::new(|| std::sync::Mutex::new([0u8; 8]));
+pub static MJGLAD_GLMULTITEXCOORD2I: std::sync::LazyLock<std::sync::Mutex<PFNGLMULTITEXCOORD2IPROC>> = std::sync::LazyLock::new(|| std::sync::Mutex::new(unsafe { std::mem::zeroed() }));
 
 /// C static: mjGlad_glMultiTexCoord2iv (PFNGLMULTITEXCOORD2IVPROC)
-pub static MJGLAD_GLMULTITEXCOORD2IV: std::sync::LazyLock<std::sync::Mutex<[u8; 8]>> = std::sync::LazyLock::new(|| std::sync::Mutex::new([0u8; 8]));
+pub static MJGLAD_GLMULTITEXCOORD2IV: std::sync::LazyLock<std::sync::Mutex<PFNGLMULTITEXCOORD2IVPROC>> = std::sync::LazyLock::new(|| std::sync::Mutex::new(unsafe { std::mem::zeroed() }));
 
 /// C static: mjGlad_glMultiTexCoord2s (PFNGLMULTITEXCOORD2SPROC)
-pub static MJGLAD_GLMULTITEXCOORD2S: std::sync::LazyLock<std::sync::Mutex<[u8; 8]>> = std::sync::LazyLock::new(|| std::sync::Mutex::new([0u8; 8]));
+pub static MJGLAD_GLMULTITEXCOORD2S: std::sync::LazyLock<std::sync::Mutex<PFNGLMULTITEXCOORD2SPROC>> = std::sync::LazyLock::new(|| std::sync::Mutex::new(unsafe { std::mem::zeroed() }));
 
 /// C static: mjGlad_glMultiTexCoord2sv (PFNGLMULTITEXCOORD2SVPROC)
-pub static MJGLAD_GLMULTITEXCOORD2SV: std::sync::LazyLock<std::sync::Mutex<[u8; 8]>> = std::sync::LazyLock::new(|| std::sync::Mutex::new([0u8; 8]));
+pub static MJGLAD_GLMULTITEXCOORD2SV: std::sync::LazyLock<std::sync::Mutex<PFNGLMULTITEXCOORD2SVPROC>> = std::sync::LazyLock::new(|| std::sync::Mutex::new(unsafe { std::mem::zeroed() }));
 
 /// C static: mjGlad_glMultiTexCoord3d (PFNGLMULTITEXCOORD3DPROC)
-pub static MJGLAD_GLMULTITEXCOORD3D: std::sync::LazyLock<std::sync::Mutex<[u8; 8]>> = std::sync::LazyLock::new(|| std::sync::Mutex::new([0u8; 8]));
+pub static MJGLAD_GLMULTITEXCOORD3D: std::sync::LazyLock<std::sync::Mutex<PFNGLMULTITEXCOORD3DPROC>> = std::sync::LazyLock::new(|| std::sync::Mutex::new(unsafe { std::mem::zeroed() }));
 
 /// C static: mjGlad_glMultiTexCoord3dv (PFNGLMULTITEXCOORD3DVPROC)
-pub static MJGLAD_GLMULTITEXCOORD3DV: std::sync::LazyLock<std::sync::Mutex<[u8; 8]>> = std::sync::LazyLock::new(|| std::sync::Mutex::new([0u8; 8]));
+pub static MJGLAD_GLMULTITEXCOORD3DV: std::sync::LazyLock<std::sync::Mutex<PFNGLMULTITEXCOORD3DVPROC>> = std::sync::LazyLock::new(|| std::sync::Mutex::new(unsafe { std::mem::zeroed() }));
 
 /// C static: mjGlad_glMultiTexCoord3f (PFNGLMULTITEXCOORD3FPROC)
-pub static MJGLAD_GLMULTITEXCOORD3F: std::sync::LazyLock<std::sync::Mutex<[u8; 8]>> = std::sync::LazyLock::new(|| std::sync::Mutex::new([0u8; 8]));
+pub static MJGLAD_GLMULTITEXCOORD3F: std::sync::LazyLock<std::sync::Mutex<PFNGLMULTITEXCOORD3FPROC>> = std::sync::LazyLock::new(|| std::sync::Mutex::new(unsafe { std::mem::zeroed() }));
 
 /// C static: mjGlad_glMultiTexCoord3fv (PFNGLMULTITEXCOORD3FVPROC)
-pub static MJGLAD_GLMULTITEXCOORD3FV: std::sync::LazyLock<std::sync::Mutex<[u8; 8]>> = std::sync::LazyLock::new(|| std::sync::Mutex::new([0u8; 8]));
+pub static MJGLAD_GLMULTITEXCOORD3FV: std::sync::LazyLock<std::sync::Mutex<PFNGLMULTITEXCOORD3FVPROC>> = std::sync::LazyLock::new(|| std::sync::Mutex::new(unsafe { std::mem::zeroed() }));
 
 /// C static: mjGlad_glMultiTexCoord3i (PFNGLMULTITEXCOORD3IPROC)
-pub static MJGLAD_GLMULTITEXCOORD3I: std::sync::LazyLock<std::sync::Mutex<[u8; 8]>> = std::sync::LazyLock::new(|| std::sync::Mutex::new([0u8; 8]));
+pub static MJGLAD_GLMULTITEXCOORD3I: std::sync::LazyLock<std::sync::Mutex<PFNGLMULTITEXCOORD3IPROC>> = std::sync::LazyLock::new(|| std::sync::Mutex::new(unsafe { std::mem::zeroed() }));
 
 /// C static: mjGlad_glMultiTexCoord3iv (PFNGLMULTITEXCOORD3IVPROC)
-pub static MJGLAD_GLMULTITEXCOORD3IV: std::sync::LazyLock<std::sync::Mutex<[u8; 8]>> = std::sync::LazyLock::new(|| std::sync::Mutex::new([0u8; 8]));
+pub static MJGLAD_GLMULTITEXCOORD3IV: std::sync::LazyLock<std::sync::Mutex<PFNGLMULTITEXCOORD3IVPROC>> = std::sync::LazyLock::new(|| std::sync::Mutex::new(unsafe { std::mem::zeroed() }));
 
 /// C static: mjGlad_glMultiTexCoord3s (PFNGLMULTITEXCOORD3SPROC)
-pub static MJGLAD_GLMULTITEXCOORD3S: std::sync::LazyLock<std::sync::Mutex<[u8; 8]>> = std::sync::LazyLock::new(|| std::sync::Mutex::new([0u8; 8]));
+pub static MJGLAD_GLMULTITEXCOORD3S: std::sync::LazyLock<std::sync::Mutex<PFNGLMULTITEXCOORD3SPROC>> = std::sync::LazyLock::new(|| std::sync::Mutex::new(unsafe { std::mem::zeroed() }));
 
 /// C static: mjGlad_glMultiTexCoord3sv (PFNGLMULTITEXCOORD3SVPROC)
-pub static MJGLAD_GLMULTITEXCOORD3SV: std::sync::LazyLock<std::sync::Mutex<[u8; 8]>> = std::sync::LazyLock::new(|| std::sync::Mutex::new([0u8; 8]));
+pub static MJGLAD_GLMULTITEXCOORD3SV: std::sync::LazyLock<std::sync::Mutex<PFNGLMULTITEXCOORD3SVPROC>> = std::sync::LazyLock::new(|| std::sync::Mutex::new(unsafe { std::mem::zeroed() }));
 
 /// C static: mjGlad_glMultiTexCoord4d (PFNGLMULTITEXCOORD4DPROC)
-pub static MJGLAD_GLMULTITEXCOORD4D: std::sync::LazyLock<std::sync::Mutex<[u8; 8]>> = std::sync::LazyLock::new(|| std::sync::Mutex::new([0u8; 8]));
+pub static MJGLAD_GLMULTITEXCOORD4D: std::sync::LazyLock<std::sync::Mutex<PFNGLMULTITEXCOORD4DPROC>> = std::sync::LazyLock::new(|| std::sync::Mutex::new(unsafe { std::mem::zeroed() }));
 
 /// C static: mjGlad_glMultiTexCoord4dv (PFNGLMULTITEXCOORD4DVPROC)
-pub static MJGLAD_GLMULTITEXCOORD4DV: std::sync::LazyLock<std::sync::Mutex<[u8; 8]>> = std::sync::LazyLock::new(|| std::sync::Mutex::new([0u8; 8]));
+pub static MJGLAD_GLMULTITEXCOORD4DV: std::sync::LazyLock<std::sync::Mutex<PFNGLMULTITEXCOORD4DVPROC>> = std::sync::LazyLock::new(|| std::sync::Mutex::new(unsafe { std::mem::zeroed() }));
 
 /// C static: mjGlad_glMultiTexCoord4f (PFNGLMULTITEXCOORD4FPROC)
-pub static MJGLAD_GLMULTITEXCOORD4F: std::sync::LazyLock<std::sync::Mutex<[u8; 8]>> = std::sync::LazyLock::new(|| std::sync::Mutex::new([0u8; 8]));
+pub static MJGLAD_GLMULTITEXCOORD4F: std::sync::LazyLock<std::sync::Mutex<PFNGLMULTITEXCOORD4FPROC>> = std::sync::LazyLock::new(|| std::sync::Mutex::new(unsafe { std::mem::zeroed() }));
 
 /// C static: mjGlad_glMultiTexCoord4fv (PFNGLMULTITEXCOORD4FVPROC)
-pub static MJGLAD_GLMULTITEXCOORD4FV: std::sync::LazyLock<std::sync::Mutex<[u8; 8]>> = std::sync::LazyLock::new(|| std::sync::Mutex::new([0u8; 8]));
+pub static MJGLAD_GLMULTITEXCOORD4FV: std::sync::LazyLock<std::sync::Mutex<PFNGLMULTITEXCOORD4FVPROC>> = std::sync::LazyLock::new(|| std::sync::Mutex::new(unsafe { std::mem::zeroed() }));
 
 /// C static: mjGlad_glMultiTexCoord4i (PFNGLMULTITEXCOORD4IPROC)
-pub static MJGLAD_GLMULTITEXCOORD4I: std::sync::LazyLock<std::sync::Mutex<[u8; 8]>> = std::sync::LazyLock::new(|| std::sync::Mutex::new([0u8; 8]));
+pub static MJGLAD_GLMULTITEXCOORD4I: std::sync::LazyLock<std::sync::Mutex<PFNGLMULTITEXCOORD4IPROC>> = std::sync::LazyLock::new(|| std::sync::Mutex::new(unsafe { std::mem::zeroed() }));
 
 /// C static: mjGlad_glMultiTexCoord4iv (PFNGLMULTITEXCOORD4IVPROC)
-pub static MJGLAD_GLMULTITEXCOORD4IV: std::sync::LazyLock<std::sync::Mutex<[u8; 8]>> = std::sync::LazyLock::new(|| std::sync::Mutex::new([0u8; 8]));
+pub static MJGLAD_GLMULTITEXCOORD4IV: std::sync::LazyLock<std::sync::Mutex<PFNGLMULTITEXCOORD4IVPROC>> = std::sync::LazyLock::new(|| std::sync::Mutex::new(unsafe { std::mem::zeroed() }));
 
 /// C static: mjGlad_glMultiTexCoord4s (PFNGLMULTITEXCOORD4SPROC)
-pub static MJGLAD_GLMULTITEXCOORD4S: std::sync::LazyLock<std::sync::Mutex<[u8; 8]>> = std::sync::LazyLock::new(|| std::sync::Mutex::new([0u8; 8]));
+pub static MJGLAD_GLMULTITEXCOORD4S: std::sync::LazyLock<std::sync::Mutex<PFNGLMULTITEXCOORD4SPROC>> = std::sync::LazyLock::new(|| std::sync::Mutex::new(unsafe { std::mem::zeroed() }));
 
 /// C static: mjGlad_glMultiTexCoord4sv (PFNGLMULTITEXCOORD4SVPROC)
-pub static MJGLAD_GLMULTITEXCOORD4SV: std::sync::LazyLock<std::sync::Mutex<[u8; 8]>> = std::sync::LazyLock::new(|| std::sync::Mutex::new([0u8; 8]));
+pub static MJGLAD_GLMULTITEXCOORD4SV: std::sync::LazyLock<std::sync::Mutex<PFNGLMULTITEXCOORD4SVPROC>> = std::sync::LazyLock::new(|| std::sync::Mutex::new(unsafe { std::mem::zeroed() }));
 
 /// C static: mjGlad_glNewList (PFNGLNEWLISTPROC)
-pub static MJGLAD_GLNEWLIST: std::sync::LazyLock<std::sync::Mutex<[u8; 8]>> = std::sync::LazyLock::new(|| std::sync::Mutex::new([0u8; 8]));
+pub static MJGLAD_GLNEWLIST: std::sync::LazyLock<std::sync::Mutex<PFNGLNEWLISTPROC>> = std::sync::LazyLock::new(|| std::sync::Mutex::new(unsafe { std::mem::zeroed() }));
 
 /// C static: mjGlad_glNormal3b (PFNGLNORMAL3BPROC)
-pub static MJGLAD_GLNORMAL3B: std::sync::LazyLock<std::sync::Mutex<[u8; 8]>> = std::sync::LazyLock::new(|| std::sync::Mutex::new([0u8; 8]));
+pub static MJGLAD_GLNORMAL3B: std::sync::LazyLock<std::sync::Mutex<PFNGLNORMAL3BPROC>> = std::sync::LazyLock::new(|| std::sync::Mutex::new(unsafe { std::mem::zeroed() }));
 
 /// C static: mjGlad_glNormal3bv (PFNGLNORMAL3BVPROC)
-pub static MJGLAD_GLNORMAL3BV: std::sync::LazyLock<std::sync::Mutex<[u8; 8]>> = std::sync::LazyLock::new(|| std::sync::Mutex::new([0u8; 8]));
+pub static MJGLAD_GLNORMAL3BV: std::sync::LazyLock<std::sync::Mutex<PFNGLNORMAL3BVPROC>> = std::sync::LazyLock::new(|| std::sync::Mutex::new(unsafe { std::mem::zeroed() }));
 
 /// C static: mjGlad_glNormal3d (PFNGLNORMAL3DPROC)
-pub static MJGLAD_GLNORMAL3D: std::sync::LazyLock<std::sync::Mutex<[u8; 8]>> = std::sync::LazyLock::new(|| std::sync::Mutex::new([0u8; 8]));
+pub static MJGLAD_GLNORMAL3D: std::sync::LazyLock<std::sync::Mutex<PFNGLNORMAL3DPROC>> = std::sync::LazyLock::new(|| std::sync::Mutex::new(unsafe { std::mem::zeroed() }));
 
 /// C static: mjGlad_glNormal3dv (PFNGLNORMAL3DVPROC)
-pub static MJGLAD_GLNORMAL3DV: std::sync::LazyLock<std::sync::Mutex<[u8; 8]>> = std::sync::LazyLock::new(|| std::sync::Mutex::new([0u8; 8]));
+pub static MJGLAD_GLNORMAL3DV: std::sync::LazyLock<std::sync::Mutex<PFNGLNORMAL3DVPROC>> = std::sync::LazyLock::new(|| std::sync::Mutex::new(unsafe { std::mem::zeroed() }));
 
 /// C static: mjGlad_glNormal3f (PFNGLNORMAL3FPROC)
-pub static MJGLAD_GLNORMAL3F: std::sync::LazyLock<std::sync::Mutex<[u8; 8]>> = std::sync::LazyLock::new(|| std::sync::Mutex::new([0u8; 8]));
+pub static MJGLAD_GLNORMAL3F: std::sync::LazyLock<std::sync::Mutex<PFNGLNORMAL3FPROC>> = std::sync::LazyLock::new(|| std::sync::Mutex::new(unsafe { std::mem::zeroed() }));
 
 /// C static: mjGlad_glNormal3fv (PFNGLNORMAL3FVPROC)
-pub static MJGLAD_GLNORMAL3FV: std::sync::LazyLock<std::sync::Mutex<[u8; 8]>> = std::sync::LazyLock::new(|| std::sync::Mutex::new([0u8; 8]));
+pub static MJGLAD_GLNORMAL3FV: std::sync::LazyLock<std::sync::Mutex<PFNGLNORMAL3FVPROC>> = std::sync::LazyLock::new(|| std::sync::Mutex::new(unsafe { std::mem::zeroed() }));
 
 /// C static: mjGlad_glNormal3i (PFNGLNORMAL3IPROC)
-pub static MJGLAD_GLNORMAL3I: std::sync::LazyLock<std::sync::Mutex<[u8; 8]>> = std::sync::LazyLock::new(|| std::sync::Mutex::new([0u8; 8]));
+pub static MJGLAD_GLNORMAL3I: std::sync::LazyLock<std::sync::Mutex<PFNGLNORMAL3IPROC>> = std::sync::LazyLock::new(|| std::sync::Mutex::new(unsafe { std::mem::zeroed() }));
 
 /// C static: mjGlad_glNormal3iv (PFNGLNORMAL3IVPROC)
-pub static MJGLAD_GLNORMAL3IV: std::sync::LazyLock<std::sync::Mutex<[u8; 8]>> = std::sync::LazyLock::new(|| std::sync::Mutex::new([0u8; 8]));
+pub static MJGLAD_GLNORMAL3IV: std::sync::LazyLock<std::sync::Mutex<PFNGLNORMAL3IVPROC>> = std::sync::LazyLock::new(|| std::sync::Mutex::new(unsafe { std::mem::zeroed() }));
 
 /// C static: mjGlad_glNormal3s (PFNGLNORMAL3SPROC)
-pub static MJGLAD_GLNORMAL3S: std::sync::LazyLock<std::sync::Mutex<[u8; 8]>> = std::sync::LazyLock::new(|| std::sync::Mutex::new([0u8; 8]));
+pub static MJGLAD_GLNORMAL3S: std::sync::LazyLock<std::sync::Mutex<PFNGLNORMAL3SPROC>> = std::sync::LazyLock::new(|| std::sync::Mutex::new(unsafe { std::mem::zeroed() }));
 
 /// C static: mjGlad_glNormal3sv (PFNGLNORMAL3SVPROC)
-pub static MJGLAD_GLNORMAL3SV: std::sync::LazyLock<std::sync::Mutex<[u8; 8]>> = std::sync::LazyLock::new(|| std::sync::Mutex::new([0u8; 8]));
+pub static MJGLAD_GLNORMAL3SV: std::sync::LazyLock<std::sync::Mutex<PFNGLNORMAL3SVPROC>> = std::sync::LazyLock::new(|| std::sync::Mutex::new(unsafe { std::mem::zeroed() }));
 
 /// C static: mjGlad_glNormalPointer (PFNGLNORMALPOINTERPROC)
-pub static MJGLAD_GLNORMALPOINTER: std::sync::LazyLock<std::sync::Mutex<[u8; 8]>> = std::sync::LazyLock::new(|| std::sync::Mutex::new([0u8; 8]));
+pub static MJGLAD_GLNORMALPOINTER: std::sync::LazyLock<std::sync::Mutex<PFNGLNORMALPOINTERPROC>> = std::sync::LazyLock::new(|| std::sync::Mutex::new(unsafe { std::mem::zeroed() }));
 
 /// C static: mjGlad_glObjectLabel (PFNGLOBJECTLABELPROC)
-pub static MJGLAD_GLOBJECTLABEL: std::sync::LazyLock<std::sync::Mutex<[u8; 8]>> = std::sync::LazyLock::new(|| std::sync::Mutex::new([0u8; 8]));
+pub static MJGLAD_GLOBJECTLABEL: std::sync::LazyLock<std::sync::Mutex<PFNGLOBJECTLABELPROC>> = std::sync::LazyLock::new(|| std::sync::Mutex::new(unsafe { std::mem::zeroed() }));
 
 /// C static: mjGlad_glObjectLabelKHR (PFNGLOBJECTLABELKHRPROC)
-pub static MJGLAD_GLOBJECTLABELKHR: std::sync::LazyLock<std::sync::Mutex<[u8; 8]>> = std::sync::LazyLock::new(|| std::sync::Mutex::new([0u8; 8]));
+pub static MJGLAD_GLOBJECTLABELKHR: std::sync::LazyLock<std::sync::Mutex<PFNGLOBJECTLABELKHRPROC>> = std::sync::LazyLock::new(|| std::sync::Mutex::new(unsafe { std::mem::zeroed() }));
 
 /// C static: mjGlad_glObjectPtrLabel (PFNGLOBJECTPTRLABELPROC)
-pub static MJGLAD_GLOBJECTPTRLABEL: std::sync::LazyLock<std::sync::Mutex<[u8; 8]>> = std::sync::LazyLock::new(|| std::sync::Mutex::new([0u8; 8]));
+pub static MJGLAD_GLOBJECTPTRLABEL: std::sync::LazyLock<std::sync::Mutex<PFNGLOBJECTPTRLABELPROC>> = std::sync::LazyLock::new(|| std::sync::Mutex::new(unsafe { std::mem::zeroed() }));
 
 /// C static: mjGlad_glObjectPtrLabelKHR (PFNGLOBJECTPTRLABELKHRPROC)
-pub static MJGLAD_GLOBJECTPTRLABELKHR: std::sync::LazyLock<std::sync::Mutex<[u8; 8]>> = std::sync::LazyLock::new(|| std::sync::Mutex::new([0u8; 8]));
+pub static MJGLAD_GLOBJECTPTRLABELKHR: std::sync::LazyLock<std::sync::Mutex<PFNGLOBJECTPTRLABELKHRPROC>> = std::sync::LazyLock::new(|| std::sync::Mutex::new(unsafe { std::mem::zeroed() }));
 
 /// C static: mjGlad_glOrtho (PFNGLORTHOPROC)
-pub static MJGLAD_GLORTHO: std::sync::LazyLock<std::sync::Mutex<[u8; 8]>> = std::sync::LazyLock::new(|| std::sync::Mutex::new([0u8; 8]));
+pub static MJGLAD_GLORTHO: std::sync::LazyLock<std::sync::Mutex<PFNGLORTHOPROC>> = std::sync::LazyLock::new(|| std::sync::Mutex::new(unsafe { std::mem::zeroed() }));
 
 /// C static: mjGlad_glPassThrough (PFNGLPASSTHROUGHPROC)
-pub static MJGLAD_GLPASSTHROUGH: std::sync::LazyLock<std::sync::Mutex<[u8; 8]>> = std::sync::LazyLock::new(|| std::sync::Mutex::new([0u8; 8]));
+pub static MJGLAD_GLPASSTHROUGH: std::sync::LazyLock<std::sync::Mutex<PFNGLPASSTHROUGHPROC>> = std::sync::LazyLock::new(|| std::sync::Mutex::new(unsafe { std::mem::zeroed() }));
 
 /// C static: mjGlad_glPixelMapfv (PFNGLPIXELMAPFVPROC)
-pub static MJGLAD_GLPIXELMAPFV: std::sync::LazyLock<std::sync::Mutex<[u8; 8]>> = std::sync::LazyLock::new(|| std::sync::Mutex::new([0u8; 8]));
+pub static MJGLAD_GLPIXELMAPFV: std::sync::LazyLock<std::sync::Mutex<PFNGLPIXELMAPFVPROC>> = std::sync::LazyLock::new(|| std::sync::Mutex::new(unsafe { std::mem::zeroed() }));
 
 /// C static: mjGlad_glPixelMapuiv (PFNGLPIXELMAPUIVPROC)
-pub static MJGLAD_GLPIXELMAPUIV: std::sync::LazyLock<std::sync::Mutex<[u8; 8]>> = std::sync::LazyLock::new(|| std::sync::Mutex::new([0u8; 8]));
+pub static MJGLAD_GLPIXELMAPUIV: std::sync::LazyLock<std::sync::Mutex<PFNGLPIXELMAPUIVPROC>> = std::sync::LazyLock::new(|| std::sync::Mutex::new(unsafe { std::mem::zeroed() }));
 
 /// C static: mjGlad_glPixelMapusv (PFNGLPIXELMAPUSVPROC)
-pub static MJGLAD_GLPIXELMAPUSV: std::sync::LazyLock<std::sync::Mutex<[u8; 8]>> = std::sync::LazyLock::new(|| std::sync::Mutex::new([0u8; 8]));
+pub static MJGLAD_GLPIXELMAPUSV: std::sync::LazyLock<std::sync::Mutex<PFNGLPIXELMAPUSVPROC>> = std::sync::LazyLock::new(|| std::sync::Mutex::new(unsafe { std::mem::zeroed() }));
 
 /// C static: mjGlad_glPixelStoref (PFNGLPIXELSTOREFPROC)
-pub static MJGLAD_GLPIXELSTOREF: std::sync::LazyLock<std::sync::Mutex<[u8; 8]>> = std::sync::LazyLock::new(|| std::sync::Mutex::new([0u8; 8]));
+pub static MJGLAD_GLPIXELSTOREF: std::sync::LazyLock<std::sync::Mutex<PFNGLPIXELSTOREFPROC>> = std::sync::LazyLock::new(|| std::sync::Mutex::new(unsafe { std::mem::zeroed() }));
 
 /// C static: mjGlad_glPixelStorei (PFNGLPIXELSTOREIPROC)
-pub static MJGLAD_GLPIXELSTOREI: std::sync::LazyLock<std::sync::Mutex<[u8; 8]>> = std::sync::LazyLock::new(|| std::sync::Mutex::new([0u8; 8]));
+pub static MJGLAD_GLPIXELSTOREI: std::sync::LazyLock<std::sync::Mutex<PFNGLPIXELSTOREIPROC>> = std::sync::LazyLock::new(|| std::sync::Mutex::new(unsafe { std::mem::zeroed() }));
 
 /// C static: mjGlad_glPixelTransferf (PFNGLPIXELTRANSFERFPROC)
-pub static MJGLAD_GLPIXELTRANSFERF: std::sync::LazyLock<std::sync::Mutex<[u8; 8]>> = std::sync::LazyLock::new(|| std::sync::Mutex::new([0u8; 8]));
+pub static MJGLAD_GLPIXELTRANSFERF: std::sync::LazyLock<std::sync::Mutex<PFNGLPIXELTRANSFERFPROC>> = std::sync::LazyLock::new(|| std::sync::Mutex::new(unsafe { std::mem::zeroed() }));
 
 /// C static: mjGlad_glPixelTransferi (PFNGLPIXELTRANSFERIPROC)
-pub static MJGLAD_GLPIXELTRANSFERI: std::sync::LazyLock<std::sync::Mutex<[u8; 8]>> = std::sync::LazyLock::new(|| std::sync::Mutex::new([0u8; 8]));
+pub static MJGLAD_GLPIXELTRANSFERI: std::sync::LazyLock<std::sync::Mutex<PFNGLPIXELTRANSFERIPROC>> = std::sync::LazyLock::new(|| std::sync::Mutex::new(unsafe { std::mem::zeroed() }));
 
 /// C static: mjGlad_glPixelZoom (PFNGLPIXELZOOMPROC)
-pub static MJGLAD_GLPIXELZOOM: std::sync::LazyLock<std::sync::Mutex<[u8; 8]>> = std::sync::LazyLock::new(|| std::sync::Mutex::new([0u8; 8]));
+pub static MJGLAD_GLPIXELZOOM: std::sync::LazyLock<std::sync::Mutex<PFNGLPIXELZOOMPROC>> = std::sync::LazyLock::new(|| std::sync::Mutex::new(unsafe { std::mem::zeroed() }));
 
 /// C static: mjGlad_glPointParameterf (PFNGLPOINTPARAMETERFPROC)
-pub static MJGLAD_GLPOINTPARAMETERF: std::sync::LazyLock<std::sync::Mutex<[u8; 8]>> = std::sync::LazyLock::new(|| std::sync::Mutex::new([0u8; 8]));
+pub static MJGLAD_GLPOINTPARAMETERF: std::sync::LazyLock<std::sync::Mutex<PFNGLPOINTPARAMETERFPROC>> = std::sync::LazyLock::new(|| std::sync::Mutex::new(unsafe { std::mem::zeroed() }));
 
 /// C static: mjGlad_glPointParameterfv (PFNGLPOINTPARAMETERFVPROC)
-pub static MJGLAD_GLPOINTPARAMETERFV: std::sync::LazyLock<std::sync::Mutex<[u8; 8]>> = std::sync::LazyLock::new(|| std::sync::Mutex::new([0u8; 8]));
+pub static MJGLAD_GLPOINTPARAMETERFV: std::sync::LazyLock<std::sync::Mutex<PFNGLPOINTPARAMETERFVPROC>> = std::sync::LazyLock::new(|| std::sync::Mutex::new(unsafe { std::mem::zeroed() }));
 
 /// C static: mjGlad_glPointParameteri (PFNGLPOINTPARAMETERIPROC)
-pub static MJGLAD_GLPOINTPARAMETERI: std::sync::LazyLock<std::sync::Mutex<[u8; 8]>> = std::sync::LazyLock::new(|| std::sync::Mutex::new([0u8; 8]));
+pub static MJGLAD_GLPOINTPARAMETERI: std::sync::LazyLock<std::sync::Mutex<PFNGLPOINTPARAMETERIPROC>> = std::sync::LazyLock::new(|| std::sync::Mutex::new(unsafe { std::mem::zeroed() }));
 
 /// C static: mjGlad_glPointParameteriv (PFNGLPOINTPARAMETERIVPROC)
-pub static MJGLAD_GLPOINTPARAMETERIV: std::sync::LazyLock<std::sync::Mutex<[u8; 8]>> = std::sync::LazyLock::new(|| std::sync::Mutex::new([0u8; 8]));
+pub static MJGLAD_GLPOINTPARAMETERIV: std::sync::LazyLock<std::sync::Mutex<PFNGLPOINTPARAMETERIVPROC>> = std::sync::LazyLock::new(|| std::sync::Mutex::new(unsafe { std::mem::zeroed() }));
 
 /// C static: mjGlad_glPointSize (PFNGLPOINTSIZEPROC)
-pub static MJGLAD_GLPOINTSIZE: std::sync::LazyLock<std::sync::Mutex<[u8; 8]>> = std::sync::LazyLock::new(|| std::sync::Mutex::new([0u8; 8]));
+pub static MJGLAD_GLPOINTSIZE: std::sync::LazyLock<std::sync::Mutex<PFNGLPOINTSIZEPROC>> = std::sync::LazyLock::new(|| std::sync::Mutex::new(unsafe { std::mem::zeroed() }));
 
 /// C static: mjGlad_glPolygonMode (PFNGLPOLYGONMODEPROC)
-pub static MJGLAD_GLPOLYGONMODE: std::sync::LazyLock<std::sync::Mutex<[u8; 8]>> = std::sync::LazyLock::new(|| std::sync::Mutex::new([0u8; 8]));
+pub static MJGLAD_GLPOLYGONMODE: std::sync::LazyLock<std::sync::Mutex<PFNGLPOLYGONMODEPROC>> = std::sync::LazyLock::new(|| std::sync::Mutex::new(unsafe { std::mem::zeroed() }));
 
 /// C static: mjGlad_glPolygonOffset (PFNGLPOLYGONOFFSETPROC)
-pub static MJGLAD_GLPOLYGONOFFSET: std::sync::LazyLock<std::sync::Mutex<[u8; 8]>> = std::sync::LazyLock::new(|| std::sync::Mutex::new([0u8; 8]));
+pub static MJGLAD_GLPOLYGONOFFSET: std::sync::LazyLock<std::sync::Mutex<PFNGLPOLYGONOFFSETPROC>> = std::sync::LazyLock::new(|| std::sync::Mutex::new(unsafe { std::mem::zeroed() }));
 
 /// C static: mjGlad_glPolygonStipple (PFNGLPOLYGONSTIPPLEPROC)
-pub static MJGLAD_GLPOLYGONSTIPPLE: std::sync::LazyLock<std::sync::Mutex<[u8; 8]>> = std::sync::LazyLock::new(|| std::sync::Mutex::new([0u8; 8]));
+pub static MJGLAD_GLPOLYGONSTIPPLE: std::sync::LazyLock<std::sync::Mutex<PFNGLPOLYGONSTIPPLEPROC>> = std::sync::LazyLock::new(|| std::sync::Mutex::new(unsafe { std::mem::zeroed() }));
 
 /// C static: mjGlad_glPopAttrib (PFNGLPOPATTRIBPROC)
-pub static MJGLAD_GLPOPATTRIB: std::sync::LazyLock<std::sync::Mutex<[u8; 8]>> = std::sync::LazyLock::new(|| std::sync::Mutex::new([0u8; 8]));
+pub static MJGLAD_GLPOPATTRIB: std::sync::LazyLock<std::sync::Mutex<PFNGLPOPATTRIBPROC>> = std::sync::LazyLock::new(|| std::sync::Mutex::new(unsafe { std::mem::zeroed() }));
 
 /// C static: mjGlad_glPopClientAttrib (PFNGLPOPCLIENTATTRIBPROC)
-pub static MJGLAD_GLPOPCLIENTATTRIB: std::sync::LazyLock<std::sync::Mutex<[u8; 8]>> = std::sync::LazyLock::new(|| std::sync::Mutex::new([0u8; 8]));
+pub static MJGLAD_GLPOPCLIENTATTRIB: std::sync::LazyLock<std::sync::Mutex<PFNGLPOPCLIENTATTRIBPROC>> = std::sync::LazyLock::new(|| std::sync::Mutex::new(unsafe { std::mem::zeroed() }));
 
 /// C static: mjGlad_glPopDebugGroup (PFNGLPOPDEBUGGROUPPROC)
-pub static MJGLAD_GLPOPDEBUGGROUP: std::sync::LazyLock<std::sync::Mutex<[u8; 8]>> = std::sync::LazyLock::new(|| std::sync::Mutex::new([0u8; 8]));
+pub static MJGLAD_GLPOPDEBUGGROUP: std::sync::LazyLock<std::sync::Mutex<PFNGLPOPDEBUGGROUPPROC>> = std::sync::LazyLock::new(|| std::sync::Mutex::new(unsafe { std::mem::zeroed() }));
 
 /// C static: mjGlad_glPopDebugGroupKHR (PFNGLPOPDEBUGGROUPKHRPROC)
-pub static MJGLAD_GLPOPDEBUGGROUPKHR: std::sync::LazyLock<std::sync::Mutex<[u8; 8]>> = std::sync::LazyLock::new(|| std::sync::Mutex::new([0u8; 8]));
+pub static MJGLAD_GLPOPDEBUGGROUPKHR: std::sync::LazyLock<std::sync::Mutex<PFNGLPOPDEBUGGROUPKHRPROC>> = std::sync::LazyLock::new(|| std::sync::Mutex::new(unsafe { std::mem::zeroed() }));
 
 /// C static: mjGlad_glPopMatrix (PFNGLPOPMATRIXPROC)
-pub static MJGLAD_GLPOPMATRIX: std::sync::LazyLock<std::sync::Mutex<[u8; 8]>> = std::sync::LazyLock::new(|| std::sync::Mutex::new([0u8; 8]));
+pub static MJGLAD_GLPOPMATRIX: std::sync::LazyLock<std::sync::Mutex<PFNGLPOPMATRIXPROC>> = std::sync::LazyLock::new(|| std::sync::Mutex::new(unsafe { std::mem::zeroed() }));
 
 /// C static: mjGlad_glPopName (PFNGLPOPNAMEPROC)
-pub static MJGLAD_GLPOPNAME: std::sync::LazyLock<std::sync::Mutex<[u8; 8]>> = std::sync::LazyLock::new(|| std::sync::Mutex::new([0u8; 8]));
+pub static MJGLAD_GLPOPNAME: std::sync::LazyLock<std::sync::Mutex<PFNGLPOPNAMEPROC>> = std::sync::LazyLock::new(|| std::sync::Mutex::new(unsafe { std::mem::zeroed() }));
 
 /// C static: mjGlad_glPrioritizeTextures (PFNGLPRIORITIZETEXTURESPROC)
-pub static MJGLAD_GLPRIORITIZETEXTURES: std::sync::LazyLock<std::sync::Mutex<[u8; 8]>> = std::sync::LazyLock::new(|| std::sync::Mutex::new([0u8; 8]));
+pub static MJGLAD_GLPRIORITIZETEXTURES: std::sync::LazyLock<std::sync::Mutex<PFNGLPRIORITIZETEXTURESPROC>> = std::sync::LazyLock::new(|| std::sync::Mutex::new(unsafe { std::mem::zeroed() }));
 
 /// C static: mjGlad_glPushAttrib (PFNGLPUSHATTRIBPROC)
-pub static MJGLAD_GLPUSHATTRIB: std::sync::LazyLock<std::sync::Mutex<[u8; 8]>> = std::sync::LazyLock::new(|| std::sync::Mutex::new([0u8; 8]));
+pub static MJGLAD_GLPUSHATTRIB: std::sync::LazyLock<std::sync::Mutex<PFNGLPUSHATTRIBPROC>> = std::sync::LazyLock::new(|| std::sync::Mutex::new(unsafe { std::mem::zeroed() }));
 
 /// C static: mjGlad_glPushClientAttrib (PFNGLPUSHCLIENTATTRIBPROC)
-pub static MJGLAD_GLPUSHCLIENTATTRIB: std::sync::LazyLock<std::sync::Mutex<[u8; 8]>> = std::sync::LazyLock::new(|| std::sync::Mutex::new([0u8; 8]));
+pub static MJGLAD_GLPUSHCLIENTATTRIB: std::sync::LazyLock<std::sync::Mutex<PFNGLPUSHCLIENTATTRIBPROC>> = std::sync::LazyLock::new(|| std::sync::Mutex::new(unsafe { std::mem::zeroed() }));
 
 /// C static: mjGlad_glPushDebugGroup (PFNGLPUSHDEBUGGROUPPROC)
-pub static MJGLAD_GLPUSHDEBUGGROUP: std::sync::LazyLock<std::sync::Mutex<[u8; 8]>> = std::sync::LazyLock::new(|| std::sync::Mutex::new([0u8; 8]));
+pub static MJGLAD_GLPUSHDEBUGGROUP: std::sync::LazyLock<std::sync::Mutex<PFNGLPUSHDEBUGGROUPPROC>> = std::sync::LazyLock::new(|| std::sync::Mutex::new(unsafe { std::mem::zeroed() }));
 
 /// C static: mjGlad_glPushDebugGroupKHR (PFNGLPUSHDEBUGGROUPKHRPROC)
-pub static MJGLAD_GLPUSHDEBUGGROUPKHR: std::sync::LazyLock<std::sync::Mutex<[u8; 8]>> = std::sync::LazyLock::new(|| std::sync::Mutex::new([0u8; 8]));
+pub static MJGLAD_GLPUSHDEBUGGROUPKHR: std::sync::LazyLock<std::sync::Mutex<PFNGLPUSHDEBUGGROUPKHRPROC>> = std::sync::LazyLock::new(|| std::sync::Mutex::new(unsafe { std::mem::zeroed() }));
 
 /// C static: mjGlad_glPushMatrix (PFNGLPUSHMATRIXPROC)
-pub static MJGLAD_GLPUSHMATRIX: std::sync::LazyLock<std::sync::Mutex<[u8; 8]>> = std::sync::LazyLock::new(|| std::sync::Mutex::new([0u8; 8]));
+pub static MJGLAD_GLPUSHMATRIX: std::sync::LazyLock<std::sync::Mutex<PFNGLPUSHMATRIXPROC>> = std::sync::LazyLock::new(|| std::sync::Mutex::new(unsafe { std::mem::zeroed() }));
 
 /// C static: mjGlad_glPushName (PFNGLPUSHNAMEPROC)
-pub static MJGLAD_GLPUSHNAME: std::sync::LazyLock<std::sync::Mutex<[u8; 8]>> = std::sync::LazyLock::new(|| std::sync::Mutex::new([0u8; 8]));
+pub static MJGLAD_GLPUSHNAME: std::sync::LazyLock<std::sync::Mutex<PFNGLPUSHNAMEPROC>> = std::sync::LazyLock::new(|| std::sync::Mutex::new(unsafe { std::mem::zeroed() }));
 
 /// C static: mjGlad_glRasterPos2d (PFNGLRASTERPOS2DPROC)
-pub static MJGLAD_GLRASTERPOS2D: std::sync::LazyLock<std::sync::Mutex<[u8; 8]>> = std::sync::LazyLock::new(|| std::sync::Mutex::new([0u8; 8]));
+pub static MJGLAD_GLRASTERPOS2D: std::sync::LazyLock<std::sync::Mutex<PFNGLRASTERPOS2DPROC>> = std::sync::LazyLock::new(|| std::sync::Mutex::new(unsafe { std::mem::zeroed() }));
 
 /// C static: mjGlad_glRasterPos2dv (PFNGLRASTERPOS2DVPROC)
-pub static MJGLAD_GLRASTERPOS2DV: std::sync::LazyLock<std::sync::Mutex<[u8; 8]>> = std::sync::LazyLock::new(|| std::sync::Mutex::new([0u8; 8]));
+pub static MJGLAD_GLRASTERPOS2DV: std::sync::LazyLock<std::sync::Mutex<PFNGLRASTERPOS2DVPROC>> = std::sync::LazyLock::new(|| std::sync::Mutex::new(unsafe { std::mem::zeroed() }));
 
 /// C static: mjGlad_glRasterPos2f (PFNGLRASTERPOS2FPROC)
-pub static MJGLAD_GLRASTERPOS2F: std::sync::LazyLock<std::sync::Mutex<[u8; 8]>> = std::sync::LazyLock::new(|| std::sync::Mutex::new([0u8; 8]));
+pub static MJGLAD_GLRASTERPOS2F: std::sync::LazyLock<std::sync::Mutex<PFNGLRASTERPOS2FPROC>> = std::sync::LazyLock::new(|| std::sync::Mutex::new(unsafe { std::mem::zeroed() }));
 
 /// C static: mjGlad_glRasterPos2fv (PFNGLRASTERPOS2FVPROC)
-pub static MJGLAD_GLRASTERPOS2FV: std::sync::LazyLock<std::sync::Mutex<[u8; 8]>> = std::sync::LazyLock::new(|| std::sync::Mutex::new([0u8; 8]));
+pub static MJGLAD_GLRASTERPOS2FV: std::sync::LazyLock<std::sync::Mutex<PFNGLRASTERPOS2FVPROC>> = std::sync::LazyLock::new(|| std::sync::Mutex::new(unsafe { std::mem::zeroed() }));
 
 /// C static: mjGlad_glRasterPos2i (PFNGLRASTERPOS2IPROC)
-pub static MJGLAD_GLRASTERPOS2I: std::sync::LazyLock<std::sync::Mutex<[u8; 8]>> = std::sync::LazyLock::new(|| std::sync::Mutex::new([0u8; 8]));
+pub static MJGLAD_GLRASTERPOS2I: std::sync::LazyLock<std::sync::Mutex<PFNGLRASTERPOS2IPROC>> = std::sync::LazyLock::new(|| std::sync::Mutex::new(unsafe { std::mem::zeroed() }));
 
 /// C static: mjGlad_glRasterPos2iv (PFNGLRASTERPOS2IVPROC)
-pub static MJGLAD_GLRASTERPOS2IV: std::sync::LazyLock<std::sync::Mutex<[u8; 8]>> = std::sync::LazyLock::new(|| std::sync::Mutex::new([0u8; 8]));
+pub static MJGLAD_GLRASTERPOS2IV: std::sync::LazyLock<std::sync::Mutex<PFNGLRASTERPOS2IVPROC>> = std::sync::LazyLock::new(|| std::sync::Mutex::new(unsafe { std::mem::zeroed() }));
 
 /// C static: mjGlad_glRasterPos2s (PFNGLRASTERPOS2SPROC)
-pub static MJGLAD_GLRASTERPOS2S: std::sync::LazyLock<std::sync::Mutex<[u8; 8]>> = std::sync::LazyLock::new(|| std::sync::Mutex::new([0u8; 8]));
+pub static MJGLAD_GLRASTERPOS2S: std::sync::LazyLock<std::sync::Mutex<PFNGLRASTERPOS2SPROC>> = std::sync::LazyLock::new(|| std::sync::Mutex::new(unsafe { std::mem::zeroed() }));
 
 /// C static: mjGlad_glRasterPos2sv (PFNGLRASTERPOS2SVPROC)
-pub static MJGLAD_GLRASTERPOS2SV: std::sync::LazyLock<std::sync::Mutex<[u8; 8]>> = std::sync::LazyLock::new(|| std::sync::Mutex::new([0u8; 8]));
+pub static MJGLAD_GLRASTERPOS2SV: std::sync::LazyLock<std::sync::Mutex<PFNGLRASTERPOS2SVPROC>> = std::sync::LazyLock::new(|| std::sync::Mutex::new(unsafe { std::mem::zeroed() }));
 
 /// C static: mjGlad_glRasterPos3d (PFNGLRASTERPOS3DPROC)
-pub static MJGLAD_GLRASTERPOS3D: std::sync::LazyLock<std::sync::Mutex<[u8; 8]>> = std::sync::LazyLock::new(|| std::sync::Mutex::new([0u8; 8]));
+pub static MJGLAD_GLRASTERPOS3D: std::sync::LazyLock<std::sync::Mutex<PFNGLRASTERPOS3DPROC>> = std::sync::LazyLock::new(|| std::sync::Mutex::new(unsafe { std::mem::zeroed() }));
 
 /// C static: mjGlad_glRasterPos3dv (PFNGLRASTERPOS3DVPROC)
-pub static MJGLAD_GLRASTERPOS3DV: std::sync::LazyLock<std::sync::Mutex<[u8; 8]>> = std::sync::LazyLock::new(|| std::sync::Mutex::new([0u8; 8]));
+pub static MJGLAD_GLRASTERPOS3DV: std::sync::LazyLock<std::sync::Mutex<PFNGLRASTERPOS3DVPROC>> = std::sync::LazyLock::new(|| std::sync::Mutex::new(unsafe { std::mem::zeroed() }));
 
 /// C static: mjGlad_glRasterPos3f (PFNGLRASTERPOS3FPROC)
-pub static MJGLAD_GLRASTERPOS3F: std::sync::LazyLock<std::sync::Mutex<[u8; 8]>> = std::sync::LazyLock::new(|| std::sync::Mutex::new([0u8; 8]));
+pub static MJGLAD_GLRASTERPOS3F: std::sync::LazyLock<std::sync::Mutex<PFNGLRASTERPOS3FPROC>> = std::sync::LazyLock::new(|| std::sync::Mutex::new(unsafe { std::mem::zeroed() }));
 
 /// C static: mjGlad_glRasterPos3fv (PFNGLRASTERPOS3FVPROC)
-pub static MJGLAD_GLRASTERPOS3FV: std::sync::LazyLock<std::sync::Mutex<[u8; 8]>> = std::sync::LazyLock::new(|| std::sync::Mutex::new([0u8; 8]));
+pub static MJGLAD_GLRASTERPOS3FV: std::sync::LazyLock<std::sync::Mutex<PFNGLRASTERPOS3FVPROC>> = std::sync::LazyLock::new(|| std::sync::Mutex::new(unsafe { std::mem::zeroed() }));
 
 /// C static: mjGlad_glRasterPos3i (PFNGLRASTERPOS3IPROC)
-pub static MJGLAD_GLRASTERPOS3I: std::sync::LazyLock<std::sync::Mutex<[u8; 8]>> = std::sync::LazyLock::new(|| std::sync::Mutex::new([0u8; 8]));
+pub static MJGLAD_GLRASTERPOS3I: std::sync::LazyLock<std::sync::Mutex<PFNGLRASTERPOS3IPROC>> = std::sync::LazyLock::new(|| std::sync::Mutex::new(unsafe { std::mem::zeroed() }));
 
 /// C static: mjGlad_glRasterPos3iv (PFNGLRASTERPOS3IVPROC)
-pub static MJGLAD_GLRASTERPOS3IV: std::sync::LazyLock<std::sync::Mutex<[u8; 8]>> = std::sync::LazyLock::new(|| std::sync::Mutex::new([0u8; 8]));
+pub static MJGLAD_GLRASTERPOS3IV: std::sync::LazyLock<std::sync::Mutex<PFNGLRASTERPOS3IVPROC>> = std::sync::LazyLock::new(|| std::sync::Mutex::new(unsafe { std::mem::zeroed() }));
 
 /// C static: mjGlad_glRasterPos3s (PFNGLRASTERPOS3SPROC)
-pub static MJGLAD_GLRASTERPOS3S: std::sync::LazyLock<std::sync::Mutex<[u8; 8]>> = std::sync::LazyLock::new(|| std::sync::Mutex::new([0u8; 8]));
+pub static MJGLAD_GLRASTERPOS3S: std::sync::LazyLock<std::sync::Mutex<PFNGLRASTERPOS3SPROC>> = std::sync::LazyLock::new(|| std::sync::Mutex::new(unsafe { std::mem::zeroed() }));
 
 /// C static: mjGlad_glRasterPos3sv (PFNGLRASTERPOS3SVPROC)
-pub static MJGLAD_GLRASTERPOS3SV: std::sync::LazyLock<std::sync::Mutex<[u8; 8]>> = std::sync::LazyLock::new(|| std::sync::Mutex::new([0u8; 8]));
+pub static MJGLAD_GLRASTERPOS3SV: std::sync::LazyLock<std::sync::Mutex<PFNGLRASTERPOS3SVPROC>> = std::sync::LazyLock::new(|| std::sync::Mutex::new(unsafe { std::mem::zeroed() }));
 
 /// C static: mjGlad_glRasterPos4d (PFNGLRASTERPOS4DPROC)
-pub static MJGLAD_GLRASTERPOS4D: std::sync::LazyLock<std::sync::Mutex<[u8; 8]>> = std::sync::LazyLock::new(|| std::sync::Mutex::new([0u8; 8]));
+pub static MJGLAD_GLRASTERPOS4D: std::sync::LazyLock<std::sync::Mutex<PFNGLRASTERPOS4DPROC>> = std::sync::LazyLock::new(|| std::sync::Mutex::new(unsafe { std::mem::zeroed() }));
 
 /// C static: mjGlad_glRasterPos4dv (PFNGLRASTERPOS4DVPROC)
-pub static MJGLAD_GLRASTERPOS4DV: std::sync::LazyLock<std::sync::Mutex<[u8; 8]>> = std::sync::LazyLock::new(|| std::sync::Mutex::new([0u8; 8]));
+pub static MJGLAD_GLRASTERPOS4DV: std::sync::LazyLock<std::sync::Mutex<PFNGLRASTERPOS4DVPROC>> = std::sync::LazyLock::new(|| std::sync::Mutex::new(unsafe { std::mem::zeroed() }));
 
 /// C static: mjGlad_glRasterPos4f (PFNGLRASTERPOS4FPROC)
-pub static MJGLAD_GLRASTERPOS4F: std::sync::LazyLock<std::sync::Mutex<[u8; 8]>> = std::sync::LazyLock::new(|| std::sync::Mutex::new([0u8; 8]));
+pub static MJGLAD_GLRASTERPOS4F: std::sync::LazyLock<std::sync::Mutex<PFNGLRASTERPOS4FPROC>> = std::sync::LazyLock::new(|| std::sync::Mutex::new(unsafe { std::mem::zeroed() }));
 
 /// C static: mjGlad_glRasterPos4fv (PFNGLRASTERPOS4FVPROC)
-pub static MJGLAD_GLRASTERPOS4FV: std::sync::LazyLock<std::sync::Mutex<[u8; 8]>> = std::sync::LazyLock::new(|| std::sync::Mutex::new([0u8; 8]));
+pub static MJGLAD_GLRASTERPOS4FV: std::sync::LazyLock<std::sync::Mutex<PFNGLRASTERPOS4FVPROC>> = std::sync::LazyLock::new(|| std::sync::Mutex::new(unsafe { std::mem::zeroed() }));
 
 /// C static: mjGlad_glRasterPos4i (PFNGLRASTERPOS4IPROC)
-pub static MJGLAD_GLRASTERPOS4I: std::sync::LazyLock<std::sync::Mutex<[u8; 8]>> = std::sync::LazyLock::new(|| std::sync::Mutex::new([0u8; 8]));
+pub static MJGLAD_GLRASTERPOS4I: std::sync::LazyLock<std::sync::Mutex<PFNGLRASTERPOS4IPROC>> = std::sync::LazyLock::new(|| std::sync::Mutex::new(unsafe { std::mem::zeroed() }));
 
 /// C static: mjGlad_glRasterPos4iv (PFNGLRASTERPOS4IVPROC)
-pub static MJGLAD_GLRASTERPOS4IV: std::sync::LazyLock<std::sync::Mutex<[u8; 8]>> = std::sync::LazyLock::new(|| std::sync::Mutex::new([0u8; 8]));
+pub static MJGLAD_GLRASTERPOS4IV: std::sync::LazyLock<std::sync::Mutex<PFNGLRASTERPOS4IVPROC>> = std::sync::LazyLock::new(|| std::sync::Mutex::new(unsafe { std::mem::zeroed() }));
 
 /// C static: mjGlad_glRasterPos4s (PFNGLRASTERPOS4SPROC)
-pub static MJGLAD_GLRASTERPOS4S: std::sync::LazyLock<std::sync::Mutex<[u8; 8]>> = std::sync::LazyLock::new(|| std::sync::Mutex::new([0u8; 8]));
+pub static MJGLAD_GLRASTERPOS4S: std::sync::LazyLock<std::sync::Mutex<PFNGLRASTERPOS4SPROC>> = std::sync::LazyLock::new(|| std::sync::Mutex::new(unsafe { std::mem::zeroed() }));
 
 /// C static: mjGlad_glRasterPos4sv (PFNGLRASTERPOS4SVPROC)
-pub static MJGLAD_GLRASTERPOS4SV: std::sync::LazyLock<std::sync::Mutex<[u8; 8]>> = std::sync::LazyLock::new(|| std::sync::Mutex::new([0u8; 8]));
+pub static MJGLAD_GLRASTERPOS4SV: std::sync::LazyLock<std::sync::Mutex<PFNGLRASTERPOS4SVPROC>> = std::sync::LazyLock::new(|| std::sync::Mutex::new(unsafe { std::mem::zeroed() }));
 
 /// C static: mjGlad_glReadBuffer (PFNGLREADBUFFERPROC)
-pub static MJGLAD_GLREADBUFFER: std::sync::LazyLock<std::sync::Mutex<[u8; 8]>> = std::sync::LazyLock::new(|| std::sync::Mutex::new([0u8; 8]));
+pub static MJGLAD_GLREADBUFFER: std::sync::LazyLock<std::sync::Mutex<PFNGLREADBUFFERPROC>> = std::sync::LazyLock::new(|| std::sync::Mutex::new(unsafe { std::mem::zeroed() }));
 
 /// C static: mjGlad_glReadPixels (PFNGLREADPIXELSPROC)
-pub static MJGLAD_GLREADPIXELS: std::sync::LazyLock<std::sync::Mutex<[u8; 8]>> = std::sync::LazyLock::new(|| std::sync::Mutex::new([0u8; 8]));
+pub static MJGLAD_GLREADPIXELS: std::sync::LazyLock<std::sync::Mutex<PFNGLREADPIXELSPROC>> = std::sync::LazyLock::new(|| std::sync::Mutex::new(unsafe { std::mem::zeroed() }));
 
 /// C static: mjGlad_glRectd (PFNGLRECTDPROC)
-pub static MJGLAD_GLRECTD: std::sync::LazyLock<std::sync::Mutex<[u8; 8]>> = std::sync::LazyLock::new(|| std::sync::Mutex::new([0u8; 8]));
+pub static MJGLAD_GLRECTD: std::sync::LazyLock<std::sync::Mutex<PFNGLRECTDPROC>> = std::sync::LazyLock::new(|| std::sync::Mutex::new(unsafe { std::mem::zeroed() }));
 
 /// C static: mjGlad_glRectdv (PFNGLRECTDVPROC)
-pub static MJGLAD_GLRECTDV: std::sync::LazyLock<std::sync::Mutex<[u8; 8]>> = std::sync::LazyLock::new(|| std::sync::Mutex::new([0u8; 8]));
+pub static MJGLAD_GLRECTDV: std::sync::LazyLock<std::sync::Mutex<PFNGLRECTDVPROC>> = std::sync::LazyLock::new(|| std::sync::Mutex::new(unsafe { std::mem::zeroed() }));
 
 /// C static: mjGlad_glRectf (PFNGLRECTFPROC)
-pub static MJGLAD_GLRECTF: std::sync::LazyLock<std::sync::Mutex<[u8; 8]>> = std::sync::LazyLock::new(|| std::sync::Mutex::new([0u8; 8]));
+pub static MJGLAD_GLRECTF: std::sync::LazyLock<std::sync::Mutex<PFNGLRECTFPROC>> = std::sync::LazyLock::new(|| std::sync::Mutex::new(unsafe { std::mem::zeroed() }));
 
 /// C static: mjGlad_glRectfv (PFNGLRECTFVPROC)
-pub static MJGLAD_GLRECTFV: std::sync::LazyLock<std::sync::Mutex<[u8; 8]>> = std::sync::LazyLock::new(|| std::sync::Mutex::new([0u8; 8]));
+pub static MJGLAD_GLRECTFV: std::sync::LazyLock<std::sync::Mutex<PFNGLRECTFVPROC>> = std::sync::LazyLock::new(|| std::sync::Mutex::new(unsafe { std::mem::zeroed() }));
 
 /// C static: mjGlad_glRecti (PFNGLRECTIPROC)
-pub static MJGLAD_GLRECTI: std::sync::LazyLock<std::sync::Mutex<[u8; 8]>> = std::sync::LazyLock::new(|| std::sync::Mutex::new([0u8; 8]));
+pub static MJGLAD_GLRECTI: std::sync::LazyLock<std::sync::Mutex<PFNGLRECTIPROC>> = std::sync::LazyLock::new(|| std::sync::Mutex::new(unsafe { std::mem::zeroed() }));
 
 /// C static: mjGlad_glRectiv (PFNGLRECTIVPROC)
-pub static MJGLAD_GLRECTIV: std::sync::LazyLock<std::sync::Mutex<[u8; 8]>> = std::sync::LazyLock::new(|| std::sync::Mutex::new([0u8; 8]));
+pub static MJGLAD_GLRECTIV: std::sync::LazyLock<std::sync::Mutex<PFNGLRECTIVPROC>> = std::sync::LazyLock::new(|| std::sync::Mutex::new(unsafe { std::mem::zeroed() }));
 
 /// C static: mjGlad_glRects (PFNGLRECTSPROC)
-pub static MJGLAD_GLRECTS: std::sync::LazyLock<std::sync::Mutex<[u8; 8]>> = std::sync::LazyLock::new(|| std::sync::Mutex::new([0u8; 8]));
+pub static MJGLAD_GLRECTS: std::sync::LazyLock<std::sync::Mutex<PFNGLRECTSPROC>> = std::sync::LazyLock::new(|| std::sync::Mutex::new(unsafe { std::mem::zeroed() }));
 
 /// C static: mjGlad_glRectsv (PFNGLRECTSVPROC)
-pub static MJGLAD_GLRECTSV: std::sync::LazyLock<std::sync::Mutex<[u8; 8]>> = std::sync::LazyLock::new(|| std::sync::Mutex::new([0u8; 8]));
+pub static MJGLAD_GLRECTSV: std::sync::LazyLock<std::sync::Mutex<PFNGLRECTSVPROC>> = std::sync::LazyLock::new(|| std::sync::Mutex::new(unsafe { std::mem::zeroed() }));
 
 /// C static: mjGlad_glRenderMode (PFNGLRENDERMODEPROC)
-pub static MJGLAD_GLRENDERMODE: std::sync::LazyLock<std::sync::Mutex<[u8; 8]>> = std::sync::LazyLock::new(|| std::sync::Mutex::new([0u8; 8]));
+pub static MJGLAD_GLRENDERMODE: std::sync::LazyLock<std::sync::Mutex<PFNGLRENDERMODEPROC>> = std::sync::LazyLock::new(|| std::sync::Mutex::new(unsafe { std::mem::zeroed() }));
 
 /// C static: mjGlad_glRenderbufferStorage (PFNGLRENDERBUFFERSTORAGEPROC)
-pub static MJGLAD_GLRENDERBUFFERSTORAGE: std::sync::LazyLock<std::sync::Mutex<[u8; 8]>> = std::sync::LazyLock::new(|| std::sync::Mutex::new([0u8; 8]));
+pub static MJGLAD_GLRENDERBUFFERSTORAGE: std::sync::LazyLock<std::sync::Mutex<PFNGLRENDERBUFFERSTORAGEPROC>> = std::sync::LazyLock::new(|| std::sync::Mutex::new(unsafe { std::mem::zeroed() }));
 
 /// C static: mjGlad_glRenderbufferStorageMultisample (PFNGLRENDERBUFFERSTORAGEMULTISAMPLEPROC)
-pub static MJGLAD_GLRENDERBUFFERSTORAGEMULTISAMPLE: std::sync::LazyLock<std::sync::Mutex<[u8; 8]>> = std::sync::LazyLock::new(|| std::sync::Mutex::new([0u8; 8]));
+pub static MJGLAD_GLRENDERBUFFERSTORAGEMULTISAMPLE: std::sync::LazyLock<std::sync::Mutex<PFNGLRENDERBUFFERSTORAGEMULTISAMPLEPROC>> = std::sync::LazyLock::new(|| std::sync::Mutex::new(unsafe { std::mem::zeroed() }));
 
 /// C static: mjGlad_glRotated (PFNGLROTATEDPROC)
-pub static MJGLAD_GLROTATED: std::sync::LazyLock<std::sync::Mutex<[u8; 8]>> = std::sync::LazyLock::new(|| std::sync::Mutex::new([0u8; 8]));
+pub static MJGLAD_GLROTATED: std::sync::LazyLock<std::sync::Mutex<PFNGLROTATEDPROC>> = std::sync::LazyLock::new(|| std::sync::Mutex::new(unsafe { std::mem::zeroed() }));
 
 /// C static: mjGlad_glRotatef (PFNGLROTATEFPROC)
-pub static MJGLAD_GLROTATEF: std::sync::LazyLock<std::sync::Mutex<[u8; 8]>> = std::sync::LazyLock::new(|| std::sync::Mutex::new([0u8; 8]));
+pub static MJGLAD_GLROTATEF: std::sync::LazyLock<std::sync::Mutex<PFNGLROTATEFPROC>> = std::sync::LazyLock::new(|| std::sync::Mutex::new(unsafe { std::mem::zeroed() }));
 
 /// C static: mjGlad_glSampleCoverage (PFNGLSAMPLECOVERAGEPROC)
-pub static MJGLAD_GLSAMPLECOVERAGE: std::sync::LazyLock<std::sync::Mutex<[u8; 8]>> = std::sync::LazyLock::new(|| std::sync::Mutex::new([0u8; 8]));
+pub static MJGLAD_GLSAMPLECOVERAGE: std::sync::LazyLock<std::sync::Mutex<PFNGLSAMPLECOVERAGEPROC>> = std::sync::LazyLock::new(|| std::sync::Mutex::new(unsafe { std::mem::zeroed() }));
 
 /// C static: mjGlad_glScaled (PFNGLSCALEDPROC)
-pub static MJGLAD_GLSCALED: std::sync::LazyLock<std::sync::Mutex<[u8; 8]>> = std::sync::LazyLock::new(|| std::sync::Mutex::new([0u8; 8]));
+pub static MJGLAD_GLSCALED: std::sync::LazyLock<std::sync::Mutex<PFNGLSCALEDPROC>> = std::sync::LazyLock::new(|| std::sync::Mutex::new(unsafe { std::mem::zeroed() }));
 
 /// C static: mjGlad_glScalef (PFNGLSCALEFPROC)
-pub static MJGLAD_GLSCALEF: std::sync::LazyLock<std::sync::Mutex<[u8; 8]>> = std::sync::LazyLock::new(|| std::sync::Mutex::new([0u8; 8]));
+pub static MJGLAD_GLSCALEF: std::sync::LazyLock<std::sync::Mutex<PFNGLSCALEFPROC>> = std::sync::LazyLock::new(|| std::sync::Mutex::new(unsafe { std::mem::zeroed() }));
 
 /// C static: mjGlad_glScissor (PFNGLSCISSORPROC)
-pub static MJGLAD_GLSCISSOR: std::sync::LazyLock<std::sync::Mutex<[u8; 8]>> = std::sync::LazyLock::new(|| std::sync::Mutex::new([0u8; 8]));
+pub static MJGLAD_GLSCISSOR: std::sync::LazyLock<std::sync::Mutex<PFNGLSCISSORPROC>> = std::sync::LazyLock::new(|| std::sync::Mutex::new(unsafe { std::mem::zeroed() }));
 
 /// C static: mjGlad_glSecondaryColor3b (PFNGLSECONDARYCOLOR3BPROC)
-pub static MJGLAD_GLSECONDARYCOLOR3B: std::sync::LazyLock<std::sync::Mutex<[u8; 8]>> = std::sync::LazyLock::new(|| std::sync::Mutex::new([0u8; 8]));
+pub static MJGLAD_GLSECONDARYCOLOR3B: std::sync::LazyLock<std::sync::Mutex<PFNGLSECONDARYCOLOR3BPROC>> = std::sync::LazyLock::new(|| std::sync::Mutex::new(unsafe { std::mem::zeroed() }));
 
 /// C static: mjGlad_glSecondaryColor3bv (PFNGLSECONDARYCOLOR3BVPROC)
-pub static MJGLAD_GLSECONDARYCOLOR3BV: std::sync::LazyLock<std::sync::Mutex<[u8; 8]>> = std::sync::LazyLock::new(|| std::sync::Mutex::new([0u8; 8]));
+pub static MJGLAD_GLSECONDARYCOLOR3BV: std::sync::LazyLock<std::sync::Mutex<PFNGLSECONDARYCOLOR3BVPROC>> = std::sync::LazyLock::new(|| std::sync::Mutex::new(unsafe { std::mem::zeroed() }));
 
 /// C static: mjGlad_glSecondaryColor3d (PFNGLSECONDARYCOLOR3DPROC)
-pub static MJGLAD_GLSECONDARYCOLOR3D: std::sync::LazyLock<std::sync::Mutex<[u8; 8]>> = std::sync::LazyLock::new(|| std::sync::Mutex::new([0u8; 8]));
+pub static MJGLAD_GLSECONDARYCOLOR3D: std::sync::LazyLock<std::sync::Mutex<PFNGLSECONDARYCOLOR3DPROC>> = std::sync::LazyLock::new(|| std::sync::Mutex::new(unsafe { std::mem::zeroed() }));
 
 /// C static: mjGlad_glSecondaryColor3dv (PFNGLSECONDARYCOLOR3DVPROC)
-pub static MJGLAD_GLSECONDARYCOLOR3DV: std::sync::LazyLock<std::sync::Mutex<[u8; 8]>> = std::sync::LazyLock::new(|| std::sync::Mutex::new([0u8; 8]));
+pub static MJGLAD_GLSECONDARYCOLOR3DV: std::sync::LazyLock<std::sync::Mutex<PFNGLSECONDARYCOLOR3DVPROC>> = std::sync::LazyLock::new(|| std::sync::Mutex::new(unsafe { std::mem::zeroed() }));
 
 /// C static: mjGlad_glSecondaryColor3f (PFNGLSECONDARYCOLOR3FPROC)
-pub static MJGLAD_GLSECONDARYCOLOR3F: std::sync::LazyLock<std::sync::Mutex<[u8; 8]>> = std::sync::LazyLock::new(|| std::sync::Mutex::new([0u8; 8]));
+pub static MJGLAD_GLSECONDARYCOLOR3F: std::sync::LazyLock<std::sync::Mutex<PFNGLSECONDARYCOLOR3FPROC>> = std::sync::LazyLock::new(|| std::sync::Mutex::new(unsafe { std::mem::zeroed() }));
 
 /// C static: mjGlad_glSecondaryColor3fv (PFNGLSECONDARYCOLOR3FVPROC)
-pub static MJGLAD_GLSECONDARYCOLOR3FV: std::sync::LazyLock<std::sync::Mutex<[u8; 8]>> = std::sync::LazyLock::new(|| std::sync::Mutex::new([0u8; 8]));
+pub static MJGLAD_GLSECONDARYCOLOR3FV: std::sync::LazyLock<std::sync::Mutex<PFNGLSECONDARYCOLOR3FVPROC>> = std::sync::LazyLock::new(|| std::sync::Mutex::new(unsafe { std::mem::zeroed() }));
 
 /// C static: mjGlad_glSecondaryColor3i (PFNGLSECONDARYCOLOR3IPROC)
-pub static MJGLAD_GLSECONDARYCOLOR3I: std::sync::LazyLock<std::sync::Mutex<[u8; 8]>> = std::sync::LazyLock::new(|| std::sync::Mutex::new([0u8; 8]));
+pub static MJGLAD_GLSECONDARYCOLOR3I: std::sync::LazyLock<std::sync::Mutex<PFNGLSECONDARYCOLOR3IPROC>> = std::sync::LazyLock::new(|| std::sync::Mutex::new(unsafe { std::mem::zeroed() }));
 
 /// C static: mjGlad_glSecondaryColor3iv (PFNGLSECONDARYCOLOR3IVPROC)
-pub static MJGLAD_GLSECONDARYCOLOR3IV: std::sync::LazyLock<std::sync::Mutex<[u8; 8]>> = std::sync::LazyLock::new(|| std::sync::Mutex::new([0u8; 8]));
+pub static MJGLAD_GLSECONDARYCOLOR3IV: std::sync::LazyLock<std::sync::Mutex<PFNGLSECONDARYCOLOR3IVPROC>> = std::sync::LazyLock::new(|| std::sync::Mutex::new(unsafe { std::mem::zeroed() }));
 
 /// C static: mjGlad_glSecondaryColor3s (PFNGLSECONDARYCOLOR3SPROC)
-pub static MJGLAD_GLSECONDARYCOLOR3S: std::sync::LazyLock<std::sync::Mutex<[u8; 8]>> = std::sync::LazyLock::new(|| std::sync::Mutex::new([0u8; 8]));
+pub static MJGLAD_GLSECONDARYCOLOR3S: std::sync::LazyLock<std::sync::Mutex<PFNGLSECONDARYCOLOR3SPROC>> = std::sync::LazyLock::new(|| std::sync::Mutex::new(unsafe { std::mem::zeroed() }));
 
 /// C static: mjGlad_glSecondaryColor3sv (PFNGLSECONDARYCOLOR3SVPROC)
-pub static MJGLAD_GLSECONDARYCOLOR3SV: std::sync::LazyLock<std::sync::Mutex<[u8; 8]>> = std::sync::LazyLock::new(|| std::sync::Mutex::new([0u8; 8]));
+pub static MJGLAD_GLSECONDARYCOLOR3SV: std::sync::LazyLock<std::sync::Mutex<PFNGLSECONDARYCOLOR3SVPROC>> = std::sync::LazyLock::new(|| std::sync::Mutex::new(unsafe { std::mem::zeroed() }));
 
 /// C static: mjGlad_glSecondaryColor3ub (PFNGLSECONDARYCOLOR3UBPROC)
-pub static MJGLAD_GLSECONDARYCOLOR3UB: std::sync::LazyLock<std::sync::Mutex<[u8; 8]>> = std::sync::LazyLock::new(|| std::sync::Mutex::new([0u8; 8]));
+pub static MJGLAD_GLSECONDARYCOLOR3UB: std::sync::LazyLock<std::sync::Mutex<PFNGLSECONDARYCOLOR3UBPROC>> = std::sync::LazyLock::new(|| std::sync::Mutex::new(unsafe { std::mem::zeroed() }));
 
 /// C static: mjGlad_glSecondaryColor3ubv (PFNGLSECONDARYCOLOR3UBVPROC)
-pub static MJGLAD_GLSECONDARYCOLOR3UBV: std::sync::LazyLock<std::sync::Mutex<[u8; 8]>> = std::sync::LazyLock::new(|| std::sync::Mutex::new([0u8; 8]));
+pub static MJGLAD_GLSECONDARYCOLOR3UBV: std::sync::LazyLock<std::sync::Mutex<PFNGLSECONDARYCOLOR3UBVPROC>> = std::sync::LazyLock::new(|| std::sync::Mutex::new(unsafe { std::mem::zeroed() }));
 
 /// C static: mjGlad_glSecondaryColor3ui (PFNGLSECONDARYCOLOR3UIPROC)
-pub static MJGLAD_GLSECONDARYCOLOR3UI: std::sync::LazyLock<std::sync::Mutex<[u8; 8]>> = std::sync::LazyLock::new(|| std::sync::Mutex::new([0u8; 8]));
+pub static MJGLAD_GLSECONDARYCOLOR3UI: std::sync::LazyLock<std::sync::Mutex<PFNGLSECONDARYCOLOR3UIPROC>> = std::sync::LazyLock::new(|| std::sync::Mutex::new(unsafe { std::mem::zeroed() }));
 
 /// C static: mjGlad_glSecondaryColor3uiv (PFNGLSECONDARYCOLOR3UIVPROC)
-pub static MJGLAD_GLSECONDARYCOLOR3UIV: std::sync::LazyLock<std::sync::Mutex<[u8; 8]>> = std::sync::LazyLock::new(|| std::sync::Mutex::new([0u8; 8]));
+pub static MJGLAD_GLSECONDARYCOLOR3UIV: std::sync::LazyLock<std::sync::Mutex<PFNGLSECONDARYCOLOR3UIVPROC>> = std::sync::LazyLock::new(|| std::sync::Mutex::new(unsafe { std::mem::zeroed() }));
 
 /// C static: mjGlad_glSecondaryColor3us (PFNGLSECONDARYCOLOR3USPROC)
-pub static MJGLAD_GLSECONDARYCOLOR3US: std::sync::LazyLock<std::sync::Mutex<[u8; 8]>> = std::sync::LazyLock::new(|| std::sync::Mutex::new([0u8; 8]));
+pub static MJGLAD_GLSECONDARYCOLOR3US: std::sync::LazyLock<std::sync::Mutex<PFNGLSECONDARYCOLOR3USPROC>> = std::sync::LazyLock::new(|| std::sync::Mutex::new(unsafe { std::mem::zeroed() }));
 
 /// C static: mjGlad_glSecondaryColor3usv (PFNGLSECONDARYCOLOR3USVPROC)
-pub static MJGLAD_GLSECONDARYCOLOR3USV: std::sync::LazyLock<std::sync::Mutex<[u8; 8]>> = std::sync::LazyLock::new(|| std::sync::Mutex::new([0u8; 8]));
+pub static MJGLAD_GLSECONDARYCOLOR3USV: std::sync::LazyLock<std::sync::Mutex<PFNGLSECONDARYCOLOR3USVPROC>> = std::sync::LazyLock::new(|| std::sync::Mutex::new(unsafe { std::mem::zeroed() }));
 
 /// C static: mjGlad_glSecondaryColorPointer (PFNGLSECONDARYCOLORPOINTERPROC)
-pub static MJGLAD_GLSECONDARYCOLORPOINTER: std::sync::LazyLock<std::sync::Mutex<[u8; 8]>> = std::sync::LazyLock::new(|| std::sync::Mutex::new([0u8; 8]));
+pub static MJGLAD_GLSECONDARYCOLORPOINTER: std::sync::LazyLock<std::sync::Mutex<PFNGLSECONDARYCOLORPOINTERPROC>> = std::sync::LazyLock::new(|| std::sync::Mutex::new(unsafe { std::mem::zeroed() }));
 
 /// C static: mjGlad_glSelectBuffer (PFNGLSELECTBUFFERPROC)
-pub static MJGLAD_GLSELECTBUFFER: std::sync::LazyLock<std::sync::Mutex<[u8; 8]>> = std::sync::LazyLock::new(|| std::sync::Mutex::new([0u8; 8]));
+pub static MJGLAD_GLSELECTBUFFER: std::sync::LazyLock<std::sync::Mutex<PFNGLSELECTBUFFERPROC>> = std::sync::LazyLock::new(|| std::sync::Mutex::new(unsafe { std::mem::zeroed() }));
 
 /// C static: mjGlad_glShadeModel (PFNGLSHADEMODELPROC)
-pub static MJGLAD_GLSHADEMODEL: std::sync::LazyLock<std::sync::Mutex<[u8; 8]>> = std::sync::LazyLock::new(|| std::sync::Mutex::new([0u8; 8]));
+pub static MJGLAD_GLSHADEMODEL: std::sync::LazyLock<std::sync::Mutex<PFNGLSHADEMODELPROC>> = std::sync::LazyLock::new(|| std::sync::Mutex::new(unsafe { std::mem::zeroed() }));
 
 /// C static: mjGlad_glStencilFunc (PFNGLSTENCILFUNCPROC)
-pub static MJGLAD_GLSTENCILFUNC: std::sync::LazyLock<std::sync::Mutex<[u8; 8]>> = std::sync::LazyLock::new(|| std::sync::Mutex::new([0u8; 8]));
+pub static MJGLAD_GLSTENCILFUNC: std::sync::LazyLock<std::sync::Mutex<PFNGLSTENCILFUNCPROC>> = std::sync::LazyLock::new(|| std::sync::Mutex::new(unsafe { std::mem::zeroed() }));
 
 /// C static: mjGlad_glStencilMask (PFNGLSTENCILMASKPROC)
-pub static MJGLAD_GLSTENCILMASK: std::sync::LazyLock<std::sync::Mutex<[u8; 8]>> = std::sync::LazyLock::new(|| std::sync::Mutex::new([0u8; 8]));
+pub static MJGLAD_GLSTENCILMASK: std::sync::LazyLock<std::sync::Mutex<PFNGLSTENCILMASKPROC>> = std::sync::LazyLock::new(|| std::sync::Mutex::new(unsafe { std::mem::zeroed() }));
 
 /// C static: mjGlad_glStencilOp (PFNGLSTENCILOPPROC)
-pub static MJGLAD_GLSTENCILOP: std::sync::LazyLock<std::sync::Mutex<[u8; 8]>> = std::sync::LazyLock::new(|| std::sync::Mutex::new([0u8; 8]));
+pub static MJGLAD_GLSTENCILOP: std::sync::LazyLock<std::sync::Mutex<PFNGLSTENCILOPPROC>> = std::sync::LazyLock::new(|| std::sync::Mutex::new(unsafe { std::mem::zeroed() }));
 
 /// C static: mjGlad_glTexCoord1d (PFNGLTEXCOORD1DPROC)
-pub static MJGLAD_GLTEXCOORD1D: std::sync::LazyLock<std::sync::Mutex<[u8; 8]>> = std::sync::LazyLock::new(|| std::sync::Mutex::new([0u8; 8]));
+pub static MJGLAD_GLTEXCOORD1D: std::sync::LazyLock<std::sync::Mutex<PFNGLTEXCOORD1DPROC>> = std::sync::LazyLock::new(|| std::sync::Mutex::new(unsafe { std::mem::zeroed() }));
 
 /// C static: mjGlad_glTexCoord1dv (PFNGLTEXCOORD1DVPROC)
-pub static MJGLAD_GLTEXCOORD1DV: std::sync::LazyLock<std::sync::Mutex<[u8; 8]>> = std::sync::LazyLock::new(|| std::sync::Mutex::new([0u8; 8]));
+pub static MJGLAD_GLTEXCOORD1DV: std::sync::LazyLock<std::sync::Mutex<PFNGLTEXCOORD1DVPROC>> = std::sync::LazyLock::new(|| std::sync::Mutex::new(unsafe { std::mem::zeroed() }));
 
 /// C static: mjGlad_glTexCoord1f (PFNGLTEXCOORD1FPROC)
-pub static MJGLAD_GLTEXCOORD1F: std::sync::LazyLock<std::sync::Mutex<[u8; 8]>> = std::sync::LazyLock::new(|| std::sync::Mutex::new([0u8; 8]));
+pub static MJGLAD_GLTEXCOORD1F: std::sync::LazyLock<std::sync::Mutex<PFNGLTEXCOORD1FPROC>> = std::sync::LazyLock::new(|| std::sync::Mutex::new(unsafe { std::mem::zeroed() }));
 
 /// C static: mjGlad_glTexCoord1fv (PFNGLTEXCOORD1FVPROC)
-pub static MJGLAD_GLTEXCOORD1FV: std::sync::LazyLock<std::sync::Mutex<[u8; 8]>> = std::sync::LazyLock::new(|| std::sync::Mutex::new([0u8; 8]));
+pub static MJGLAD_GLTEXCOORD1FV: std::sync::LazyLock<std::sync::Mutex<PFNGLTEXCOORD1FVPROC>> = std::sync::LazyLock::new(|| std::sync::Mutex::new(unsafe { std::mem::zeroed() }));
 
 /// C static: mjGlad_glTexCoord1i (PFNGLTEXCOORD1IPROC)
-pub static MJGLAD_GLTEXCOORD1I: std::sync::LazyLock<std::sync::Mutex<[u8; 8]>> = std::sync::LazyLock::new(|| std::sync::Mutex::new([0u8; 8]));
+pub static MJGLAD_GLTEXCOORD1I: std::sync::LazyLock<std::sync::Mutex<PFNGLTEXCOORD1IPROC>> = std::sync::LazyLock::new(|| std::sync::Mutex::new(unsafe { std::mem::zeroed() }));
 
 /// C static: mjGlad_glTexCoord1iv (PFNGLTEXCOORD1IVPROC)
-pub static MJGLAD_GLTEXCOORD1IV: std::sync::LazyLock<std::sync::Mutex<[u8; 8]>> = std::sync::LazyLock::new(|| std::sync::Mutex::new([0u8; 8]));
+pub static MJGLAD_GLTEXCOORD1IV: std::sync::LazyLock<std::sync::Mutex<PFNGLTEXCOORD1IVPROC>> = std::sync::LazyLock::new(|| std::sync::Mutex::new(unsafe { std::mem::zeroed() }));
 
 /// C static: mjGlad_glTexCoord1s (PFNGLTEXCOORD1SPROC)
-pub static MJGLAD_GLTEXCOORD1S: std::sync::LazyLock<std::sync::Mutex<[u8; 8]>> = std::sync::LazyLock::new(|| std::sync::Mutex::new([0u8; 8]));
+pub static MJGLAD_GLTEXCOORD1S: std::sync::LazyLock<std::sync::Mutex<PFNGLTEXCOORD1SPROC>> = std::sync::LazyLock::new(|| std::sync::Mutex::new(unsafe { std::mem::zeroed() }));
 
 /// C static: mjGlad_glTexCoord1sv (PFNGLTEXCOORD1SVPROC)
-pub static MJGLAD_GLTEXCOORD1SV: std::sync::LazyLock<std::sync::Mutex<[u8; 8]>> = std::sync::LazyLock::new(|| std::sync::Mutex::new([0u8; 8]));
+pub static MJGLAD_GLTEXCOORD1SV: std::sync::LazyLock<std::sync::Mutex<PFNGLTEXCOORD1SVPROC>> = std::sync::LazyLock::new(|| std::sync::Mutex::new(unsafe { std::mem::zeroed() }));
 
 /// C static: mjGlad_glTexCoord2d (PFNGLTEXCOORD2DPROC)
-pub static MJGLAD_GLTEXCOORD2D: std::sync::LazyLock<std::sync::Mutex<[u8; 8]>> = std::sync::LazyLock::new(|| std::sync::Mutex::new([0u8; 8]));
+pub static MJGLAD_GLTEXCOORD2D: std::sync::LazyLock<std::sync::Mutex<PFNGLTEXCOORD2DPROC>> = std::sync::LazyLock::new(|| std::sync::Mutex::new(unsafe { std::mem::zeroed() }));
 
 /// C static: mjGlad_glTexCoord2dv (PFNGLTEXCOORD2DVPROC)
-pub static MJGLAD_GLTEXCOORD2DV: std::sync::LazyLock<std::sync::Mutex<[u8; 8]>> = std::sync::LazyLock::new(|| std::sync::Mutex::new([0u8; 8]));
+pub static MJGLAD_GLTEXCOORD2DV: std::sync::LazyLock<std::sync::Mutex<PFNGLTEXCOORD2DVPROC>> = std::sync::LazyLock::new(|| std::sync::Mutex::new(unsafe { std::mem::zeroed() }));
 
 /// C static: mjGlad_glTexCoord2f (PFNGLTEXCOORD2FPROC)
-pub static MJGLAD_GLTEXCOORD2F: std::sync::LazyLock<std::sync::Mutex<[u8; 8]>> = std::sync::LazyLock::new(|| std::sync::Mutex::new([0u8; 8]));
+pub static MJGLAD_GLTEXCOORD2F: std::sync::LazyLock<std::sync::Mutex<PFNGLTEXCOORD2FPROC>> = std::sync::LazyLock::new(|| std::sync::Mutex::new(unsafe { std::mem::zeroed() }));
 
 /// C static: mjGlad_glTexCoord2fv (PFNGLTEXCOORD2FVPROC)
-pub static MJGLAD_GLTEXCOORD2FV: std::sync::LazyLock<std::sync::Mutex<[u8; 8]>> = std::sync::LazyLock::new(|| std::sync::Mutex::new([0u8; 8]));
+pub static MJGLAD_GLTEXCOORD2FV: std::sync::LazyLock<std::sync::Mutex<PFNGLTEXCOORD2FVPROC>> = std::sync::LazyLock::new(|| std::sync::Mutex::new(unsafe { std::mem::zeroed() }));
 
 /// C static: mjGlad_glTexCoord2i (PFNGLTEXCOORD2IPROC)
-pub static MJGLAD_GLTEXCOORD2I: std::sync::LazyLock<std::sync::Mutex<[u8; 8]>> = std::sync::LazyLock::new(|| std::sync::Mutex::new([0u8; 8]));
+pub static MJGLAD_GLTEXCOORD2I: std::sync::LazyLock<std::sync::Mutex<PFNGLTEXCOORD2IPROC>> = std::sync::LazyLock::new(|| std::sync::Mutex::new(unsafe { std::mem::zeroed() }));
 
 /// C static: mjGlad_glTexCoord2iv (PFNGLTEXCOORD2IVPROC)
-pub static MJGLAD_GLTEXCOORD2IV: std::sync::LazyLock<std::sync::Mutex<[u8; 8]>> = std::sync::LazyLock::new(|| std::sync::Mutex::new([0u8; 8]));
+pub static MJGLAD_GLTEXCOORD2IV: std::sync::LazyLock<std::sync::Mutex<PFNGLTEXCOORD2IVPROC>> = std::sync::LazyLock::new(|| std::sync::Mutex::new(unsafe { std::mem::zeroed() }));
 
 /// C static: mjGlad_glTexCoord2s (PFNGLTEXCOORD2SPROC)
-pub static MJGLAD_GLTEXCOORD2S: std::sync::LazyLock<std::sync::Mutex<[u8; 8]>> = std::sync::LazyLock::new(|| std::sync::Mutex::new([0u8; 8]));
+pub static MJGLAD_GLTEXCOORD2S: std::sync::LazyLock<std::sync::Mutex<PFNGLTEXCOORD2SPROC>> = std::sync::LazyLock::new(|| std::sync::Mutex::new(unsafe { std::mem::zeroed() }));
 
 /// C static: mjGlad_glTexCoord2sv (PFNGLTEXCOORD2SVPROC)
-pub static MJGLAD_GLTEXCOORD2SV: std::sync::LazyLock<std::sync::Mutex<[u8; 8]>> = std::sync::LazyLock::new(|| std::sync::Mutex::new([0u8; 8]));
+pub static MJGLAD_GLTEXCOORD2SV: std::sync::LazyLock<std::sync::Mutex<PFNGLTEXCOORD2SVPROC>> = std::sync::LazyLock::new(|| std::sync::Mutex::new(unsafe { std::mem::zeroed() }));
 
 /// C static: mjGlad_glTexCoord3d (PFNGLTEXCOORD3DPROC)
-pub static MJGLAD_GLTEXCOORD3D: std::sync::LazyLock<std::sync::Mutex<[u8; 8]>> = std::sync::LazyLock::new(|| std::sync::Mutex::new([0u8; 8]));
+pub static MJGLAD_GLTEXCOORD3D: std::sync::LazyLock<std::sync::Mutex<PFNGLTEXCOORD3DPROC>> = std::sync::LazyLock::new(|| std::sync::Mutex::new(unsafe { std::mem::zeroed() }));
 
 /// C static: mjGlad_glTexCoord3dv (PFNGLTEXCOORD3DVPROC)
-pub static MJGLAD_GLTEXCOORD3DV: std::sync::LazyLock<std::sync::Mutex<[u8; 8]>> = std::sync::LazyLock::new(|| std::sync::Mutex::new([0u8; 8]));
+pub static MJGLAD_GLTEXCOORD3DV: std::sync::LazyLock<std::sync::Mutex<PFNGLTEXCOORD3DVPROC>> = std::sync::LazyLock::new(|| std::sync::Mutex::new(unsafe { std::mem::zeroed() }));
 
 /// C static: mjGlad_glTexCoord3f (PFNGLTEXCOORD3FPROC)
-pub static MJGLAD_GLTEXCOORD3F: std::sync::LazyLock<std::sync::Mutex<[u8; 8]>> = std::sync::LazyLock::new(|| std::sync::Mutex::new([0u8; 8]));
+pub static MJGLAD_GLTEXCOORD3F: std::sync::LazyLock<std::sync::Mutex<PFNGLTEXCOORD3FPROC>> = std::sync::LazyLock::new(|| std::sync::Mutex::new(unsafe { std::mem::zeroed() }));
 
 /// C static: mjGlad_glTexCoord3fv (PFNGLTEXCOORD3FVPROC)
-pub static MJGLAD_GLTEXCOORD3FV: std::sync::LazyLock<std::sync::Mutex<[u8; 8]>> = std::sync::LazyLock::new(|| std::sync::Mutex::new([0u8; 8]));
+pub static MJGLAD_GLTEXCOORD3FV: std::sync::LazyLock<std::sync::Mutex<PFNGLTEXCOORD3FVPROC>> = std::sync::LazyLock::new(|| std::sync::Mutex::new(unsafe { std::mem::zeroed() }));
 
 /// C static: mjGlad_glTexCoord3i (PFNGLTEXCOORD3IPROC)
-pub static MJGLAD_GLTEXCOORD3I: std::sync::LazyLock<std::sync::Mutex<[u8; 8]>> = std::sync::LazyLock::new(|| std::sync::Mutex::new([0u8; 8]));
+pub static MJGLAD_GLTEXCOORD3I: std::sync::LazyLock<std::sync::Mutex<PFNGLTEXCOORD3IPROC>> = std::sync::LazyLock::new(|| std::sync::Mutex::new(unsafe { std::mem::zeroed() }));
 
 /// C static: mjGlad_glTexCoord3iv (PFNGLTEXCOORD3IVPROC)
-pub static MJGLAD_GLTEXCOORD3IV: std::sync::LazyLock<std::sync::Mutex<[u8; 8]>> = std::sync::LazyLock::new(|| std::sync::Mutex::new([0u8; 8]));
+pub static MJGLAD_GLTEXCOORD3IV: std::sync::LazyLock<std::sync::Mutex<PFNGLTEXCOORD3IVPROC>> = std::sync::LazyLock::new(|| std::sync::Mutex::new(unsafe { std::mem::zeroed() }));
 
 /// C static: mjGlad_glTexCoord3s (PFNGLTEXCOORD3SPROC)
-pub static MJGLAD_GLTEXCOORD3S: std::sync::LazyLock<std::sync::Mutex<[u8; 8]>> = std::sync::LazyLock::new(|| std::sync::Mutex::new([0u8; 8]));
+pub static MJGLAD_GLTEXCOORD3S: std::sync::LazyLock<std::sync::Mutex<PFNGLTEXCOORD3SPROC>> = std::sync::LazyLock::new(|| std::sync::Mutex::new(unsafe { std::mem::zeroed() }));
 
 /// C static: mjGlad_glTexCoord3sv (PFNGLTEXCOORD3SVPROC)
-pub static MJGLAD_GLTEXCOORD3SV: std::sync::LazyLock<std::sync::Mutex<[u8; 8]>> = std::sync::LazyLock::new(|| std::sync::Mutex::new([0u8; 8]));
+pub static MJGLAD_GLTEXCOORD3SV: std::sync::LazyLock<std::sync::Mutex<PFNGLTEXCOORD3SVPROC>> = std::sync::LazyLock::new(|| std::sync::Mutex::new(unsafe { std::mem::zeroed() }));
 
 /// C static: mjGlad_glTexCoord4d (PFNGLTEXCOORD4DPROC)
-pub static MJGLAD_GLTEXCOORD4D: std::sync::LazyLock<std::sync::Mutex<[u8; 8]>> = std::sync::LazyLock::new(|| std::sync::Mutex::new([0u8; 8]));
+pub static MJGLAD_GLTEXCOORD4D: std::sync::LazyLock<std::sync::Mutex<PFNGLTEXCOORD4DPROC>> = std::sync::LazyLock::new(|| std::sync::Mutex::new(unsafe { std::mem::zeroed() }));
 
 /// C static: mjGlad_glTexCoord4dv (PFNGLTEXCOORD4DVPROC)
-pub static MJGLAD_GLTEXCOORD4DV: std::sync::LazyLock<std::sync::Mutex<[u8; 8]>> = std::sync::LazyLock::new(|| std::sync::Mutex::new([0u8; 8]));
+pub static MJGLAD_GLTEXCOORD4DV: std::sync::LazyLock<std::sync::Mutex<PFNGLTEXCOORD4DVPROC>> = std::sync::LazyLock::new(|| std::sync::Mutex::new(unsafe { std::mem::zeroed() }));
 
 /// C static: mjGlad_glTexCoord4f (PFNGLTEXCOORD4FPROC)
-pub static MJGLAD_GLTEXCOORD4F: std::sync::LazyLock<std::sync::Mutex<[u8; 8]>> = std::sync::LazyLock::new(|| std::sync::Mutex::new([0u8; 8]));
+pub static MJGLAD_GLTEXCOORD4F: std::sync::LazyLock<std::sync::Mutex<PFNGLTEXCOORD4FPROC>> = std::sync::LazyLock::new(|| std::sync::Mutex::new(unsafe { std::mem::zeroed() }));
 
 /// C static: mjGlad_glTexCoord4fv (PFNGLTEXCOORD4FVPROC)
-pub static MJGLAD_GLTEXCOORD4FV: std::sync::LazyLock<std::sync::Mutex<[u8; 8]>> = std::sync::LazyLock::new(|| std::sync::Mutex::new([0u8; 8]));
+pub static MJGLAD_GLTEXCOORD4FV: std::sync::LazyLock<std::sync::Mutex<PFNGLTEXCOORD4FVPROC>> = std::sync::LazyLock::new(|| std::sync::Mutex::new(unsafe { std::mem::zeroed() }));
 
 /// C static: mjGlad_glTexCoord4i (PFNGLTEXCOORD4IPROC)
-pub static MJGLAD_GLTEXCOORD4I: std::sync::LazyLock<std::sync::Mutex<[u8; 8]>> = std::sync::LazyLock::new(|| std::sync::Mutex::new([0u8; 8]));
+pub static MJGLAD_GLTEXCOORD4I: std::sync::LazyLock<std::sync::Mutex<PFNGLTEXCOORD4IPROC>> = std::sync::LazyLock::new(|| std::sync::Mutex::new(unsafe { std::mem::zeroed() }));
 
 /// C static: mjGlad_glTexCoord4iv (PFNGLTEXCOORD4IVPROC)
-pub static MJGLAD_GLTEXCOORD4IV: std::sync::LazyLock<std::sync::Mutex<[u8; 8]>> = std::sync::LazyLock::new(|| std::sync::Mutex::new([0u8; 8]));
+pub static MJGLAD_GLTEXCOORD4IV: std::sync::LazyLock<std::sync::Mutex<PFNGLTEXCOORD4IVPROC>> = std::sync::LazyLock::new(|| std::sync::Mutex::new(unsafe { std::mem::zeroed() }));
 
 /// C static: mjGlad_glTexCoord4s (PFNGLTEXCOORD4SPROC)
-pub static MJGLAD_GLTEXCOORD4S: std::sync::LazyLock<std::sync::Mutex<[u8; 8]>> = std::sync::LazyLock::new(|| std::sync::Mutex::new([0u8; 8]));
+pub static MJGLAD_GLTEXCOORD4S: std::sync::LazyLock<std::sync::Mutex<PFNGLTEXCOORD4SPROC>> = std::sync::LazyLock::new(|| std::sync::Mutex::new(unsafe { std::mem::zeroed() }));
 
 /// C static: mjGlad_glTexCoord4sv (PFNGLTEXCOORD4SVPROC)
-pub static MJGLAD_GLTEXCOORD4SV: std::sync::LazyLock<std::sync::Mutex<[u8; 8]>> = std::sync::LazyLock::new(|| std::sync::Mutex::new([0u8; 8]));
+pub static MJGLAD_GLTEXCOORD4SV: std::sync::LazyLock<std::sync::Mutex<PFNGLTEXCOORD4SVPROC>> = std::sync::LazyLock::new(|| std::sync::Mutex::new(unsafe { std::mem::zeroed() }));
 
 /// C static: mjGlad_glTexCoordPointer (PFNGLTEXCOORDPOINTERPROC)
-pub static MJGLAD_GLTEXCOORDPOINTER: std::sync::LazyLock<std::sync::Mutex<[u8; 8]>> = std::sync::LazyLock::new(|| std::sync::Mutex::new([0u8; 8]));
+pub static MJGLAD_GLTEXCOORDPOINTER: std::sync::LazyLock<std::sync::Mutex<PFNGLTEXCOORDPOINTERPROC>> = std::sync::LazyLock::new(|| std::sync::Mutex::new(unsafe { std::mem::zeroed() }));
 
 /// C static: mjGlad_glTexEnvf (PFNGLTEXENVFPROC)
-pub static MJGLAD_GLTEXENVF: std::sync::LazyLock<std::sync::Mutex<[u8; 8]>> = std::sync::LazyLock::new(|| std::sync::Mutex::new([0u8; 8]));
+pub static MJGLAD_GLTEXENVF: std::sync::LazyLock<std::sync::Mutex<PFNGLTEXENVFPROC>> = std::sync::LazyLock::new(|| std::sync::Mutex::new(unsafe { std::mem::zeroed() }));
 
 /// C static: mjGlad_glTexEnvfv (PFNGLTEXENVFVPROC)
-pub static MJGLAD_GLTEXENVFV: std::sync::LazyLock<std::sync::Mutex<[u8; 8]>> = std::sync::LazyLock::new(|| std::sync::Mutex::new([0u8; 8]));
+pub static MJGLAD_GLTEXENVFV: std::sync::LazyLock<std::sync::Mutex<PFNGLTEXENVFVPROC>> = std::sync::LazyLock::new(|| std::sync::Mutex::new(unsafe { std::mem::zeroed() }));
 
 /// C static: mjGlad_glTexEnvi (PFNGLTEXENVIPROC)
-pub static MJGLAD_GLTEXENVI: std::sync::LazyLock<std::sync::Mutex<[u8; 8]>> = std::sync::LazyLock::new(|| std::sync::Mutex::new([0u8; 8]));
+pub static MJGLAD_GLTEXENVI: std::sync::LazyLock<std::sync::Mutex<PFNGLTEXENVIPROC>> = std::sync::LazyLock::new(|| std::sync::Mutex::new(unsafe { std::mem::zeroed() }));
 
 /// C static: mjGlad_glTexEnviv (PFNGLTEXENVIVPROC)
-pub static MJGLAD_GLTEXENVIV: std::sync::LazyLock<std::sync::Mutex<[u8; 8]>> = std::sync::LazyLock::new(|| std::sync::Mutex::new([0u8; 8]));
+pub static MJGLAD_GLTEXENVIV: std::sync::LazyLock<std::sync::Mutex<PFNGLTEXENVIVPROC>> = std::sync::LazyLock::new(|| std::sync::Mutex::new(unsafe { std::mem::zeroed() }));
 
 /// C static: mjGlad_glTexGend (PFNGLTEXGENDPROC)
-pub static MJGLAD_GLTEXGEND: std::sync::LazyLock<std::sync::Mutex<[u8; 8]>> = std::sync::LazyLock::new(|| std::sync::Mutex::new([0u8; 8]));
+pub static MJGLAD_GLTEXGEND: std::sync::LazyLock<std::sync::Mutex<PFNGLTEXGENDPROC>> = std::sync::LazyLock::new(|| std::sync::Mutex::new(unsafe { std::mem::zeroed() }));
 
 /// C static: mjGlad_glTexGendv (PFNGLTEXGENDVPROC)
-pub static MJGLAD_GLTEXGENDV: std::sync::LazyLock<std::sync::Mutex<[u8; 8]>> = std::sync::LazyLock::new(|| std::sync::Mutex::new([0u8; 8]));
+pub static MJGLAD_GLTEXGENDV: std::sync::LazyLock<std::sync::Mutex<PFNGLTEXGENDVPROC>> = std::sync::LazyLock::new(|| std::sync::Mutex::new(unsafe { std::mem::zeroed() }));
 
 /// C static: mjGlad_glTexGenf (PFNGLTEXGENFPROC)
-pub static MJGLAD_GLTEXGENF: std::sync::LazyLock<std::sync::Mutex<[u8; 8]>> = std::sync::LazyLock::new(|| std::sync::Mutex::new([0u8; 8]));
+pub static MJGLAD_GLTEXGENF: std::sync::LazyLock<std::sync::Mutex<PFNGLTEXGENFPROC>> = std::sync::LazyLock::new(|| std::sync::Mutex::new(unsafe { std::mem::zeroed() }));
 
 /// C static: mjGlad_glTexGenfv (PFNGLTEXGENFVPROC)
-pub static MJGLAD_GLTEXGENFV: std::sync::LazyLock<std::sync::Mutex<[u8; 8]>> = std::sync::LazyLock::new(|| std::sync::Mutex::new([0u8; 8]));
+pub static MJGLAD_GLTEXGENFV: std::sync::LazyLock<std::sync::Mutex<PFNGLTEXGENFVPROC>> = std::sync::LazyLock::new(|| std::sync::Mutex::new(unsafe { std::mem::zeroed() }));
 
 /// C static: mjGlad_glTexGeni (PFNGLTEXGENIPROC)
-pub static MJGLAD_GLTEXGENI: std::sync::LazyLock<std::sync::Mutex<[u8; 8]>> = std::sync::LazyLock::new(|| std::sync::Mutex::new([0u8; 8]));
+pub static MJGLAD_GLTEXGENI: std::sync::LazyLock<std::sync::Mutex<PFNGLTEXGENIPROC>> = std::sync::LazyLock::new(|| std::sync::Mutex::new(unsafe { std::mem::zeroed() }));
 
 /// C static: mjGlad_glTexGeniv (PFNGLTEXGENIVPROC)
-pub static MJGLAD_GLTEXGENIV: std::sync::LazyLock<std::sync::Mutex<[u8; 8]>> = std::sync::LazyLock::new(|| std::sync::Mutex::new([0u8; 8]));
+pub static MJGLAD_GLTEXGENIV: std::sync::LazyLock<std::sync::Mutex<PFNGLTEXGENIVPROC>> = std::sync::LazyLock::new(|| std::sync::Mutex::new(unsafe { std::mem::zeroed() }));
 
 /// C static: mjGlad_glTexImage1D (PFNGLTEXIMAGE1DPROC)
-pub static MJGLAD_GLTEXIMAGE1D: std::sync::LazyLock<std::sync::Mutex<[u8; 8]>> = std::sync::LazyLock::new(|| std::sync::Mutex::new([0u8; 8]));
+pub static MJGLAD_GLTEXIMAGE1D: std::sync::LazyLock<std::sync::Mutex<PFNGLTEXIMAGE1DPROC>> = std::sync::LazyLock::new(|| std::sync::Mutex::new(unsafe { std::mem::zeroed() }));
 
 /// C static: mjGlad_glTexImage2D (PFNGLTEXIMAGE2DPROC)
-pub static MJGLAD_GLTEXIMAGE2D: std::sync::LazyLock<std::sync::Mutex<[u8; 8]>> = std::sync::LazyLock::new(|| std::sync::Mutex::new([0u8; 8]));
+pub static MJGLAD_GLTEXIMAGE2D: std::sync::LazyLock<std::sync::Mutex<PFNGLTEXIMAGE2DPROC>> = std::sync::LazyLock::new(|| std::sync::Mutex::new(unsafe { std::mem::zeroed() }));
 
 /// C static: mjGlad_glTexImage3D (PFNGLTEXIMAGE3DPROC)
-pub static MJGLAD_GLTEXIMAGE3D: std::sync::LazyLock<std::sync::Mutex<[u8; 8]>> = std::sync::LazyLock::new(|| std::sync::Mutex::new([0u8; 8]));
+pub static MJGLAD_GLTEXIMAGE3D: std::sync::LazyLock<std::sync::Mutex<PFNGLTEXIMAGE3DPROC>> = std::sync::LazyLock::new(|| std::sync::Mutex::new(unsafe { std::mem::zeroed() }));
 
 /// C static: mjGlad_glTexParameterf (PFNGLTEXPARAMETERFPROC)
-pub static MJGLAD_GLTEXPARAMETERF: std::sync::LazyLock<std::sync::Mutex<[u8; 8]>> = std::sync::LazyLock::new(|| std::sync::Mutex::new([0u8; 8]));
+pub static MJGLAD_GLTEXPARAMETERF: std::sync::LazyLock<std::sync::Mutex<PFNGLTEXPARAMETERFPROC>> = std::sync::LazyLock::new(|| std::sync::Mutex::new(unsafe { std::mem::zeroed() }));
 
 /// C static: mjGlad_glTexParameterfv (PFNGLTEXPARAMETERFVPROC)
-pub static MJGLAD_GLTEXPARAMETERFV: std::sync::LazyLock<std::sync::Mutex<[u8; 8]>> = std::sync::LazyLock::new(|| std::sync::Mutex::new([0u8; 8]));
+pub static MJGLAD_GLTEXPARAMETERFV: std::sync::LazyLock<std::sync::Mutex<PFNGLTEXPARAMETERFVPROC>> = std::sync::LazyLock::new(|| std::sync::Mutex::new(unsafe { std::mem::zeroed() }));
 
 /// C static: mjGlad_glTexParameteri (PFNGLTEXPARAMETERIPROC)
-pub static MJGLAD_GLTEXPARAMETERI: std::sync::LazyLock<std::sync::Mutex<[u8; 8]>> = std::sync::LazyLock::new(|| std::sync::Mutex::new([0u8; 8]));
+pub static MJGLAD_GLTEXPARAMETERI: std::sync::LazyLock<std::sync::Mutex<PFNGLTEXPARAMETERIPROC>> = std::sync::LazyLock::new(|| std::sync::Mutex::new(unsafe { std::mem::zeroed() }));
 
 /// C static: mjGlad_glTexParameteriv (PFNGLTEXPARAMETERIVPROC)
-pub static MJGLAD_GLTEXPARAMETERIV: std::sync::LazyLock<std::sync::Mutex<[u8; 8]>> = std::sync::LazyLock::new(|| std::sync::Mutex::new([0u8; 8]));
+pub static MJGLAD_GLTEXPARAMETERIV: std::sync::LazyLock<std::sync::Mutex<PFNGLTEXPARAMETERIVPROC>> = std::sync::LazyLock::new(|| std::sync::Mutex::new(unsafe { std::mem::zeroed() }));
 
 /// C static: mjGlad_glTexSubImage1D (PFNGLTEXSUBIMAGE1DPROC)
-pub static MJGLAD_GLTEXSUBIMAGE1D: std::sync::LazyLock<std::sync::Mutex<[u8; 8]>> = std::sync::LazyLock::new(|| std::sync::Mutex::new([0u8; 8]));
+pub static MJGLAD_GLTEXSUBIMAGE1D: std::sync::LazyLock<std::sync::Mutex<PFNGLTEXSUBIMAGE1DPROC>> = std::sync::LazyLock::new(|| std::sync::Mutex::new(unsafe { std::mem::zeroed() }));
 
 /// C static: mjGlad_glTexSubImage2D (PFNGLTEXSUBIMAGE2DPROC)
-pub static MJGLAD_GLTEXSUBIMAGE2D: std::sync::LazyLock<std::sync::Mutex<[u8; 8]>> = std::sync::LazyLock::new(|| std::sync::Mutex::new([0u8; 8]));
+pub static MJGLAD_GLTEXSUBIMAGE2D: std::sync::LazyLock<std::sync::Mutex<PFNGLTEXSUBIMAGE2DPROC>> = std::sync::LazyLock::new(|| std::sync::Mutex::new(unsafe { std::mem::zeroed() }));
 
 /// C static: mjGlad_glTexSubImage3D (PFNGLTEXSUBIMAGE3DPROC)
-pub static MJGLAD_GLTEXSUBIMAGE3D: std::sync::LazyLock<std::sync::Mutex<[u8; 8]>> = std::sync::LazyLock::new(|| std::sync::Mutex::new([0u8; 8]));
+pub static MJGLAD_GLTEXSUBIMAGE3D: std::sync::LazyLock<std::sync::Mutex<PFNGLTEXSUBIMAGE3DPROC>> = std::sync::LazyLock::new(|| std::sync::Mutex::new(unsafe { std::mem::zeroed() }));
 
 /// C static: mjGlad_glTranslated (PFNGLTRANSLATEDPROC)
-pub static MJGLAD_GLTRANSLATED: std::sync::LazyLock<std::sync::Mutex<[u8; 8]>> = std::sync::LazyLock::new(|| std::sync::Mutex::new([0u8; 8]));
+pub static MJGLAD_GLTRANSLATED: std::sync::LazyLock<std::sync::Mutex<PFNGLTRANSLATEDPROC>> = std::sync::LazyLock::new(|| std::sync::Mutex::new(unsafe { std::mem::zeroed() }));
 
 /// C static: mjGlad_glTranslatef (PFNGLTRANSLATEFPROC)
-pub static MJGLAD_GLTRANSLATEF: std::sync::LazyLock<std::sync::Mutex<[u8; 8]>> = std::sync::LazyLock::new(|| std::sync::Mutex::new([0u8; 8]));
+pub static MJGLAD_GLTRANSLATEF: std::sync::LazyLock<std::sync::Mutex<PFNGLTRANSLATEFPROC>> = std::sync::LazyLock::new(|| std::sync::Mutex::new(unsafe { std::mem::zeroed() }));
 
 /// C static: mjGlad_glUnmapBuffer (PFNGLUNMAPBUFFERPROC)
-pub static MJGLAD_GLUNMAPBUFFER: std::sync::LazyLock<std::sync::Mutex<[u8; 8]>> = std::sync::LazyLock::new(|| std::sync::Mutex::new([0u8; 8]));
+pub static MJGLAD_GLUNMAPBUFFER: std::sync::LazyLock<std::sync::Mutex<PFNGLUNMAPBUFFERPROC>> = std::sync::LazyLock::new(|| std::sync::Mutex::new(unsafe { std::mem::zeroed() }));
 
 /// C static: mjGlad_glUnmapBufferARB (PFNGLUNMAPBUFFERARBPROC)
-pub static MJGLAD_GLUNMAPBUFFERARB: std::sync::LazyLock<std::sync::Mutex<[u8; 8]>> = std::sync::LazyLock::new(|| std::sync::Mutex::new([0u8; 8]));
+pub static MJGLAD_GLUNMAPBUFFERARB: std::sync::LazyLock<std::sync::Mutex<PFNGLUNMAPBUFFERARBPROC>> = std::sync::LazyLock::new(|| std::sync::Mutex::new(unsafe { std::mem::zeroed() }));
 
 /// C static: mjGlad_glVertex2d (PFNGLVERTEX2DPROC)
-pub static MJGLAD_GLVERTEX2D: std::sync::LazyLock<std::sync::Mutex<[u8; 8]>> = std::sync::LazyLock::new(|| std::sync::Mutex::new([0u8; 8]));
+pub static MJGLAD_GLVERTEX2D: std::sync::LazyLock<std::sync::Mutex<PFNGLVERTEX2DPROC>> = std::sync::LazyLock::new(|| std::sync::Mutex::new(unsafe { std::mem::zeroed() }));
 
 /// C static: mjGlad_glVertex2dv (PFNGLVERTEX2DVPROC)
-pub static MJGLAD_GLVERTEX2DV: std::sync::LazyLock<std::sync::Mutex<[u8; 8]>> = std::sync::LazyLock::new(|| std::sync::Mutex::new([0u8; 8]));
+pub static MJGLAD_GLVERTEX2DV: std::sync::LazyLock<std::sync::Mutex<PFNGLVERTEX2DVPROC>> = std::sync::LazyLock::new(|| std::sync::Mutex::new(unsafe { std::mem::zeroed() }));
 
 /// C static: mjGlad_glVertex2f (PFNGLVERTEX2FPROC)
-pub static MJGLAD_GLVERTEX2F: std::sync::LazyLock<std::sync::Mutex<[u8; 8]>> = std::sync::LazyLock::new(|| std::sync::Mutex::new([0u8; 8]));
+pub static MJGLAD_GLVERTEX2F: std::sync::LazyLock<std::sync::Mutex<PFNGLVERTEX2FPROC>> = std::sync::LazyLock::new(|| std::sync::Mutex::new(unsafe { std::mem::zeroed() }));
 
 /// C static: mjGlad_glVertex2fv (PFNGLVERTEX2FVPROC)
-pub static MJGLAD_GLVERTEX2FV: std::sync::LazyLock<std::sync::Mutex<[u8; 8]>> = std::sync::LazyLock::new(|| std::sync::Mutex::new([0u8; 8]));
+pub static MJGLAD_GLVERTEX2FV: std::sync::LazyLock<std::sync::Mutex<PFNGLVERTEX2FVPROC>> = std::sync::LazyLock::new(|| std::sync::Mutex::new(unsafe { std::mem::zeroed() }));
 
 /// C static: mjGlad_glVertex2i (PFNGLVERTEX2IPROC)
-pub static MJGLAD_GLVERTEX2I: std::sync::LazyLock<std::sync::Mutex<[u8; 8]>> = std::sync::LazyLock::new(|| std::sync::Mutex::new([0u8; 8]));
+pub static MJGLAD_GLVERTEX2I: std::sync::LazyLock<std::sync::Mutex<PFNGLVERTEX2IPROC>> = std::sync::LazyLock::new(|| std::sync::Mutex::new(unsafe { std::mem::zeroed() }));
 
 /// C static: mjGlad_glVertex2iv (PFNGLVERTEX2IVPROC)
-pub static MJGLAD_GLVERTEX2IV: std::sync::LazyLock<std::sync::Mutex<[u8; 8]>> = std::sync::LazyLock::new(|| std::sync::Mutex::new([0u8; 8]));
+pub static MJGLAD_GLVERTEX2IV: std::sync::LazyLock<std::sync::Mutex<PFNGLVERTEX2IVPROC>> = std::sync::LazyLock::new(|| std::sync::Mutex::new(unsafe { std::mem::zeroed() }));
 
 /// C static: mjGlad_glVertex2s (PFNGLVERTEX2SPROC)
-pub static MJGLAD_GLVERTEX2S: std::sync::LazyLock<std::sync::Mutex<[u8; 8]>> = std::sync::LazyLock::new(|| std::sync::Mutex::new([0u8; 8]));
+pub static MJGLAD_GLVERTEX2S: std::sync::LazyLock<std::sync::Mutex<PFNGLVERTEX2SPROC>> = std::sync::LazyLock::new(|| std::sync::Mutex::new(unsafe { std::mem::zeroed() }));
 
 /// C static: mjGlad_glVertex2sv (PFNGLVERTEX2SVPROC)
-pub static MJGLAD_GLVERTEX2SV: std::sync::LazyLock<std::sync::Mutex<[u8; 8]>> = std::sync::LazyLock::new(|| std::sync::Mutex::new([0u8; 8]));
+pub static MJGLAD_GLVERTEX2SV: std::sync::LazyLock<std::sync::Mutex<PFNGLVERTEX2SVPROC>> = std::sync::LazyLock::new(|| std::sync::Mutex::new(unsafe { std::mem::zeroed() }));
 
 /// C static: mjGlad_glVertex3d (PFNGLVERTEX3DPROC)
-pub static MJGLAD_GLVERTEX3D: std::sync::LazyLock<std::sync::Mutex<[u8; 8]>> = std::sync::LazyLock::new(|| std::sync::Mutex::new([0u8; 8]));
+pub static MJGLAD_GLVERTEX3D: std::sync::LazyLock<std::sync::Mutex<PFNGLVERTEX3DPROC>> = std::sync::LazyLock::new(|| std::sync::Mutex::new(unsafe { std::mem::zeroed() }));
 
 /// C static: mjGlad_glVertex3dv (PFNGLVERTEX3DVPROC)
-pub static MJGLAD_GLVERTEX3DV: std::sync::LazyLock<std::sync::Mutex<[u8; 8]>> = std::sync::LazyLock::new(|| std::sync::Mutex::new([0u8; 8]));
+pub static MJGLAD_GLVERTEX3DV: std::sync::LazyLock<std::sync::Mutex<PFNGLVERTEX3DVPROC>> = std::sync::LazyLock::new(|| std::sync::Mutex::new(unsafe { std::mem::zeroed() }));
 
 /// C static: mjGlad_glVertex3f (PFNGLVERTEX3FPROC)
-pub static MJGLAD_GLVERTEX3F: std::sync::LazyLock<std::sync::Mutex<[u8; 8]>> = std::sync::LazyLock::new(|| std::sync::Mutex::new([0u8; 8]));
+pub static MJGLAD_GLVERTEX3F: std::sync::LazyLock<std::sync::Mutex<PFNGLVERTEX3FPROC>> = std::sync::LazyLock::new(|| std::sync::Mutex::new(unsafe { std::mem::zeroed() }));
 
 /// C static: mjGlad_glVertex3fv (PFNGLVERTEX3FVPROC)
-pub static MJGLAD_GLVERTEX3FV: std::sync::LazyLock<std::sync::Mutex<[u8; 8]>> = std::sync::LazyLock::new(|| std::sync::Mutex::new([0u8; 8]));
+pub static MJGLAD_GLVERTEX3FV: std::sync::LazyLock<std::sync::Mutex<PFNGLVERTEX3FVPROC>> = std::sync::LazyLock::new(|| std::sync::Mutex::new(unsafe { std::mem::zeroed() }));
 
 /// C static: mjGlad_glVertex3i (PFNGLVERTEX3IPROC)
-pub static MJGLAD_GLVERTEX3I: std::sync::LazyLock<std::sync::Mutex<[u8; 8]>> = std::sync::LazyLock::new(|| std::sync::Mutex::new([0u8; 8]));
+pub static MJGLAD_GLVERTEX3I: std::sync::LazyLock<std::sync::Mutex<PFNGLVERTEX3IPROC>> = std::sync::LazyLock::new(|| std::sync::Mutex::new(unsafe { std::mem::zeroed() }));
 
 /// C static: mjGlad_glVertex3iv (PFNGLVERTEX3IVPROC)
-pub static MJGLAD_GLVERTEX3IV: std::sync::LazyLock<std::sync::Mutex<[u8; 8]>> = std::sync::LazyLock::new(|| std::sync::Mutex::new([0u8; 8]));
+pub static MJGLAD_GLVERTEX3IV: std::sync::LazyLock<std::sync::Mutex<PFNGLVERTEX3IVPROC>> = std::sync::LazyLock::new(|| std::sync::Mutex::new(unsafe { std::mem::zeroed() }));
 
 /// C static: mjGlad_glVertex3s (PFNGLVERTEX3SPROC)
-pub static MJGLAD_GLVERTEX3S: std::sync::LazyLock<std::sync::Mutex<[u8; 8]>> = std::sync::LazyLock::new(|| std::sync::Mutex::new([0u8; 8]));
+pub static MJGLAD_GLVERTEX3S: std::sync::LazyLock<std::sync::Mutex<PFNGLVERTEX3SPROC>> = std::sync::LazyLock::new(|| std::sync::Mutex::new(unsafe { std::mem::zeroed() }));
 
 /// C static: mjGlad_glVertex3sv (PFNGLVERTEX3SVPROC)
-pub static MJGLAD_GLVERTEX3SV: std::sync::LazyLock<std::sync::Mutex<[u8; 8]>> = std::sync::LazyLock::new(|| std::sync::Mutex::new([0u8; 8]));
+pub static MJGLAD_GLVERTEX3SV: std::sync::LazyLock<std::sync::Mutex<PFNGLVERTEX3SVPROC>> = std::sync::LazyLock::new(|| std::sync::Mutex::new(unsafe { std::mem::zeroed() }));
 
 /// C static: mjGlad_glVertex4d (PFNGLVERTEX4DPROC)
-pub static MJGLAD_GLVERTEX4D: std::sync::LazyLock<std::sync::Mutex<[u8; 8]>> = std::sync::LazyLock::new(|| std::sync::Mutex::new([0u8; 8]));
+pub static MJGLAD_GLVERTEX4D: std::sync::LazyLock<std::sync::Mutex<PFNGLVERTEX4DPROC>> = std::sync::LazyLock::new(|| std::sync::Mutex::new(unsafe { std::mem::zeroed() }));
 
 /// C static: mjGlad_glVertex4dv (PFNGLVERTEX4DVPROC)
-pub static MJGLAD_GLVERTEX4DV: std::sync::LazyLock<std::sync::Mutex<[u8; 8]>> = std::sync::LazyLock::new(|| std::sync::Mutex::new([0u8; 8]));
+pub static MJGLAD_GLVERTEX4DV: std::sync::LazyLock<std::sync::Mutex<PFNGLVERTEX4DVPROC>> = std::sync::LazyLock::new(|| std::sync::Mutex::new(unsafe { std::mem::zeroed() }));
 
 /// C static: mjGlad_glVertex4f (PFNGLVERTEX4FPROC)
-pub static MJGLAD_GLVERTEX4F: std::sync::LazyLock<std::sync::Mutex<[u8; 8]>> = std::sync::LazyLock::new(|| std::sync::Mutex::new([0u8; 8]));
+pub static MJGLAD_GLVERTEX4F: std::sync::LazyLock<std::sync::Mutex<PFNGLVERTEX4FPROC>> = std::sync::LazyLock::new(|| std::sync::Mutex::new(unsafe { std::mem::zeroed() }));
 
 /// C static: mjGlad_glVertex4fv (PFNGLVERTEX4FVPROC)
-pub static MJGLAD_GLVERTEX4FV: std::sync::LazyLock<std::sync::Mutex<[u8; 8]>> = std::sync::LazyLock::new(|| std::sync::Mutex::new([0u8; 8]));
+pub static MJGLAD_GLVERTEX4FV: std::sync::LazyLock<std::sync::Mutex<PFNGLVERTEX4FVPROC>> = std::sync::LazyLock::new(|| std::sync::Mutex::new(unsafe { std::mem::zeroed() }));
 
 /// C static: mjGlad_glVertex4i (PFNGLVERTEX4IPROC)
-pub static MJGLAD_GLVERTEX4I: std::sync::LazyLock<std::sync::Mutex<[u8; 8]>> = std::sync::LazyLock::new(|| std::sync::Mutex::new([0u8; 8]));
+pub static MJGLAD_GLVERTEX4I: std::sync::LazyLock<std::sync::Mutex<PFNGLVERTEX4IPROC>> = std::sync::LazyLock::new(|| std::sync::Mutex::new(unsafe { std::mem::zeroed() }));
 
 /// C static: mjGlad_glVertex4iv (PFNGLVERTEX4IVPROC)
-pub static MJGLAD_GLVERTEX4IV: std::sync::LazyLock<std::sync::Mutex<[u8; 8]>> = std::sync::LazyLock::new(|| std::sync::Mutex::new([0u8; 8]));
+pub static MJGLAD_GLVERTEX4IV: std::sync::LazyLock<std::sync::Mutex<PFNGLVERTEX4IVPROC>> = std::sync::LazyLock::new(|| std::sync::Mutex::new(unsafe { std::mem::zeroed() }));
 
 /// C static: mjGlad_glVertex4s (PFNGLVERTEX4SPROC)
-pub static MJGLAD_GLVERTEX4S: std::sync::LazyLock<std::sync::Mutex<[u8; 8]>> = std::sync::LazyLock::new(|| std::sync::Mutex::new([0u8; 8]));
+pub static MJGLAD_GLVERTEX4S: std::sync::LazyLock<std::sync::Mutex<PFNGLVERTEX4SPROC>> = std::sync::LazyLock::new(|| std::sync::Mutex::new(unsafe { std::mem::zeroed() }));
 
 /// C static: mjGlad_glVertex4sv (PFNGLVERTEX4SVPROC)
-pub static MJGLAD_GLVERTEX4SV: std::sync::LazyLock<std::sync::Mutex<[u8; 8]>> = std::sync::LazyLock::new(|| std::sync::Mutex::new([0u8; 8]));
+pub static MJGLAD_GLVERTEX4SV: std::sync::LazyLock<std::sync::Mutex<PFNGLVERTEX4SVPROC>> = std::sync::LazyLock::new(|| std::sync::Mutex::new(unsafe { std::mem::zeroed() }));
 
 /// C static: mjGlad_glVertexPointer (PFNGLVERTEXPOINTERPROC)
-pub static MJGLAD_GLVERTEXPOINTER: std::sync::LazyLock<std::sync::Mutex<[u8; 8]>> = std::sync::LazyLock::new(|| std::sync::Mutex::new([0u8; 8]));
+pub static MJGLAD_GLVERTEXPOINTER: std::sync::LazyLock<std::sync::Mutex<PFNGLVERTEXPOINTERPROC>> = std::sync::LazyLock::new(|| std::sync::Mutex::new(unsafe { std::mem::zeroed() }));
 
 /// C static: mjGlad_glViewport (PFNGLVIEWPORTPROC)
-pub static MJGLAD_GLVIEWPORT: std::sync::LazyLock<std::sync::Mutex<[u8; 8]>> = std::sync::LazyLock::new(|| std::sync::Mutex::new([0u8; 8]));
+pub static MJGLAD_GLVIEWPORT: std::sync::LazyLock<std::sync::Mutex<PFNGLVIEWPORTPROC>> = std::sync::LazyLock::new(|| std::sync::Mutex::new(unsafe { std::mem::zeroed() }));
 
 /// C static: mjGlad_glWindowPos2d (PFNGLWINDOWPOS2DPROC)
-pub static MJGLAD_GLWINDOWPOS2D: std::sync::LazyLock<std::sync::Mutex<[u8; 8]>> = std::sync::LazyLock::new(|| std::sync::Mutex::new([0u8; 8]));
+pub static MJGLAD_GLWINDOWPOS2D: std::sync::LazyLock<std::sync::Mutex<PFNGLWINDOWPOS2DPROC>> = std::sync::LazyLock::new(|| std::sync::Mutex::new(unsafe { std::mem::zeroed() }));
 
 /// C static: mjGlad_glWindowPos2dv (PFNGLWINDOWPOS2DVPROC)
-pub static MJGLAD_GLWINDOWPOS2DV: std::sync::LazyLock<std::sync::Mutex<[u8; 8]>> = std::sync::LazyLock::new(|| std::sync::Mutex::new([0u8; 8]));
+pub static MJGLAD_GLWINDOWPOS2DV: std::sync::LazyLock<std::sync::Mutex<PFNGLWINDOWPOS2DVPROC>> = std::sync::LazyLock::new(|| std::sync::Mutex::new(unsafe { std::mem::zeroed() }));
 
 /// C static: mjGlad_glWindowPos2f (PFNGLWINDOWPOS2FPROC)
-pub static MJGLAD_GLWINDOWPOS2F: std::sync::LazyLock<std::sync::Mutex<[u8; 8]>> = std::sync::LazyLock::new(|| std::sync::Mutex::new([0u8; 8]));
+pub static MJGLAD_GLWINDOWPOS2F: std::sync::LazyLock<std::sync::Mutex<PFNGLWINDOWPOS2FPROC>> = std::sync::LazyLock::new(|| std::sync::Mutex::new(unsafe { std::mem::zeroed() }));
 
 /// C static: mjGlad_glWindowPos2fv (PFNGLWINDOWPOS2FVPROC)
-pub static MJGLAD_GLWINDOWPOS2FV: std::sync::LazyLock<std::sync::Mutex<[u8; 8]>> = std::sync::LazyLock::new(|| std::sync::Mutex::new([0u8; 8]));
+pub static MJGLAD_GLWINDOWPOS2FV: std::sync::LazyLock<std::sync::Mutex<PFNGLWINDOWPOS2FVPROC>> = std::sync::LazyLock::new(|| std::sync::Mutex::new(unsafe { std::mem::zeroed() }));
 
 /// C static: mjGlad_glWindowPos2i (PFNGLWINDOWPOS2IPROC)
-pub static MJGLAD_GLWINDOWPOS2I: std::sync::LazyLock<std::sync::Mutex<[u8; 8]>> = std::sync::LazyLock::new(|| std::sync::Mutex::new([0u8; 8]));
+pub static MJGLAD_GLWINDOWPOS2I: std::sync::LazyLock<std::sync::Mutex<PFNGLWINDOWPOS2IPROC>> = std::sync::LazyLock::new(|| std::sync::Mutex::new(unsafe { std::mem::zeroed() }));
 
 /// C static: mjGlad_glWindowPos2iv (PFNGLWINDOWPOS2IVPROC)
-pub static MJGLAD_GLWINDOWPOS2IV: std::sync::LazyLock<std::sync::Mutex<[u8; 8]>> = std::sync::LazyLock::new(|| std::sync::Mutex::new([0u8; 8]));
+pub static MJGLAD_GLWINDOWPOS2IV: std::sync::LazyLock<std::sync::Mutex<PFNGLWINDOWPOS2IVPROC>> = std::sync::LazyLock::new(|| std::sync::Mutex::new(unsafe { std::mem::zeroed() }));
 
 /// C static: mjGlad_glWindowPos2s (PFNGLWINDOWPOS2SPROC)
-pub static MJGLAD_GLWINDOWPOS2S: std::sync::LazyLock<std::sync::Mutex<[u8; 8]>> = std::sync::LazyLock::new(|| std::sync::Mutex::new([0u8; 8]));
+pub static MJGLAD_GLWINDOWPOS2S: std::sync::LazyLock<std::sync::Mutex<PFNGLWINDOWPOS2SPROC>> = std::sync::LazyLock::new(|| std::sync::Mutex::new(unsafe { std::mem::zeroed() }));
 
 /// C static: mjGlad_glWindowPos2sv (PFNGLWINDOWPOS2SVPROC)
-pub static MJGLAD_GLWINDOWPOS2SV: std::sync::LazyLock<std::sync::Mutex<[u8; 8]>> = std::sync::LazyLock::new(|| std::sync::Mutex::new([0u8; 8]));
+pub static MJGLAD_GLWINDOWPOS2SV: std::sync::LazyLock<std::sync::Mutex<PFNGLWINDOWPOS2SVPROC>> = std::sync::LazyLock::new(|| std::sync::Mutex::new(unsafe { std::mem::zeroed() }));
 
 /// C static: mjGlad_glWindowPos3d (PFNGLWINDOWPOS3DPROC)
-pub static MJGLAD_GLWINDOWPOS3D: std::sync::LazyLock<std::sync::Mutex<[u8; 8]>> = std::sync::LazyLock::new(|| std::sync::Mutex::new([0u8; 8]));
+pub static MJGLAD_GLWINDOWPOS3D: std::sync::LazyLock<std::sync::Mutex<PFNGLWINDOWPOS3DPROC>> = std::sync::LazyLock::new(|| std::sync::Mutex::new(unsafe { std::mem::zeroed() }));
 
 /// C static: mjGlad_glWindowPos3dv (PFNGLWINDOWPOS3DVPROC)
-pub static MJGLAD_GLWINDOWPOS3DV: std::sync::LazyLock<std::sync::Mutex<[u8; 8]>> = std::sync::LazyLock::new(|| std::sync::Mutex::new([0u8; 8]));
+pub static MJGLAD_GLWINDOWPOS3DV: std::sync::LazyLock<std::sync::Mutex<PFNGLWINDOWPOS3DVPROC>> = std::sync::LazyLock::new(|| std::sync::Mutex::new(unsafe { std::mem::zeroed() }));
 
 /// C static: mjGlad_glWindowPos3f (PFNGLWINDOWPOS3FPROC)
-pub static MJGLAD_GLWINDOWPOS3F: std::sync::LazyLock<std::sync::Mutex<[u8; 8]>> = std::sync::LazyLock::new(|| std::sync::Mutex::new([0u8; 8]));
+pub static MJGLAD_GLWINDOWPOS3F: std::sync::LazyLock<std::sync::Mutex<PFNGLWINDOWPOS3FPROC>> = std::sync::LazyLock::new(|| std::sync::Mutex::new(unsafe { std::mem::zeroed() }));
 
 /// C static: mjGlad_glWindowPos3fv (PFNGLWINDOWPOS3FVPROC)
-pub static MJGLAD_GLWINDOWPOS3FV: std::sync::LazyLock<std::sync::Mutex<[u8; 8]>> = std::sync::LazyLock::new(|| std::sync::Mutex::new([0u8; 8]));
+pub static MJGLAD_GLWINDOWPOS3FV: std::sync::LazyLock<std::sync::Mutex<PFNGLWINDOWPOS3FVPROC>> = std::sync::LazyLock::new(|| std::sync::Mutex::new(unsafe { std::mem::zeroed() }));
 
 /// C static: mjGlad_glWindowPos3i (PFNGLWINDOWPOS3IPROC)
-pub static MJGLAD_GLWINDOWPOS3I: std::sync::LazyLock<std::sync::Mutex<[u8; 8]>> = std::sync::LazyLock::new(|| std::sync::Mutex::new([0u8; 8]));
+pub static MJGLAD_GLWINDOWPOS3I: std::sync::LazyLock<std::sync::Mutex<PFNGLWINDOWPOS3IPROC>> = std::sync::LazyLock::new(|| std::sync::Mutex::new(unsafe { std::mem::zeroed() }));
 
 /// C static: mjGlad_glWindowPos3iv (PFNGLWINDOWPOS3IVPROC)
-pub static MJGLAD_GLWINDOWPOS3IV: std::sync::LazyLock<std::sync::Mutex<[u8; 8]>> = std::sync::LazyLock::new(|| std::sync::Mutex::new([0u8; 8]));
+pub static MJGLAD_GLWINDOWPOS3IV: std::sync::LazyLock<std::sync::Mutex<PFNGLWINDOWPOS3IVPROC>> = std::sync::LazyLock::new(|| std::sync::Mutex::new(unsafe { std::mem::zeroed() }));
 
 /// C static: mjGlad_glWindowPos3s (PFNGLWINDOWPOS3SPROC)
-pub static MJGLAD_GLWINDOWPOS3S: std::sync::LazyLock<std::sync::Mutex<[u8; 8]>> = std::sync::LazyLock::new(|| std::sync::Mutex::new([0u8; 8]));
+pub static MJGLAD_GLWINDOWPOS3S: std::sync::LazyLock<std::sync::Mutex<PFNGLWINDOWPOS3SPROC>> = std::sync::LazyLock::new(|| std::sync::Mutex::new(unsafe { std::mem::zeroed() }));
 
 /// C static: mjGlad_glWindowPos3sv (PFNGLWINDOWPOS3SVPROC)
-pub static MJGLAD_GLWINDOWPOS3SV: std::sync::LazyLock<std::sync::Mutex<[u8; 8]>> = std::sync::LazyLock::new(|| std::sync::Mutex::new([0u8; 8]));
+pub static MJGLAD_GLWINDOWPOS3SV: std::sync::LazyLock<std::sync::Mutex<PFNGLWINDOWPOS3SVPROC>> = std::sync::LazyLock::new(|| std::sync::Mutex::new(unsafe { std::mem::zeroed() }));
 
 /// C static: mjGlad_libGL (void *)
-pub static MJGLAD_LIBGL: std::sync::LazyLock<std::sync::Mutex<[u8; 8]>> = std::sync::LazyLock::new(|| std::sync::Mutex::new([0u8; 8]));
+pub static MJGLAD_LIBGL: std::sync::LazyLock<std::sync::Mutex<*mut ()>> = std::sync::LazyLock::new(|| std::sync::Mutex::new(std::ptr::null_mut()));
 
 /// C static: mjGlad_max_loaded_major (int)
-pub static MJGLAD_MAX_LOADED_MAJOR: std::sync::LazyLock<std::sync::Mutex<[u8; 4]>> = std::sync::LazyLock::new(|| std::sync::Mutex::new([0u8; 4]));
+pub static MJGLAD_MAX_LOADED_MAJOR: std::sync::LazyLock<std::sync::Mutex<i32>> = std::sync::LazyLock::new(|| std::sync::Mutex::new(0));
 
 /// C static: mjGlad_max_loaded_minor (int)
-pub static MJGLAD_MAX_LOADED_MINOR: std::sync::LazyLock<std::sync::Mutex<[u8; 4]>> = std::sync::LazyLock::new(|| std::sync::Mutex::new([0u8; 4]));
+pub static MJGLAD_MAX_LOADED_MINOR: std::sync::LazyLock<std::sync::Mutex<i32>> = std::sync::LazyLock::new(|| std::sync::Mutex::new(0));
 
 /// C static: mjGlad_num_exts_i (int)
-pub static MJGLAD_NUM_EXTS_I: std::sync::LazyLock<std::sync::Mutex<[u8; 4]>> = std::sync::LazyLock::new(|| std::sync::Mutex::new([0u8; 4]));
+pub static MJGLAD_NUM_EXTS_I: std::sync::LazyLock<std::sync::Mutex<i32>> = std::sync::LazyLock::new(|| std::sync::Mutex::new(0));
 
 /// C static: mjLABELSTRING (const char *[17])
-pub static MJLABELSTRING: std::sync::LazyLock<std::sync::Mutex<[u8; 136]>> = std::sync::LazyLock::new(|| std::sync::Mutex::new([0u8; 136]));
+pub static MJLABELSTRING: std::sync::LazyLock<std::sync::Mutex<[*const i8; 17]>> = std::sync::LazyLock::new(|| std::sync::Mutex::new(unsafe { std::mem::zeroed() }));
 
 /// C static: mjMINMASS (const double)
-pub static MJMINMASS: std::sync::LazyLock<std::sync::Mutex<[u8; 8]>> = std::sync::LazyLock::new(|| std::sync::Mutex::new([0u8; 8]));
+pub static MJMINMASS: std::sync::LazyLock<std::sync::Mutex<f64>> = std::sync::LazyLock::new(|| std::sync::Mutex::new(0.0));
 
 /// C static: mjRAYDATA_SIZE (const int[6])
-pub static MJRAYDATA_SIZE: std::sync::LazyLock<std::sync::Mutex<[u8; 24]>> = std::sync::LazyLock::new(|| std::sync::Mutex::new([0u8; 24]));
+pub static MJRAYDATA_SIZE: std::sync::LazyLock<std::sync::Mutex<[i32; 6]>> = std::sync::LazyLock::new(|| std::sync::Mutex::new(unsafe { std::mem::zeroed() }));
 
 /// C static: mjRNDSTRING (const char *[11][3])
-pub static MJRNDSTRING: std::sync::LazyLock<std::sync::Mutex<[u8; 264]>> = std::sync::LazyLock::new(|| std::sync::Mutex::new([0u8; 264]));
+pub static MJRNDSTRING: std::sync::LazyLock<std::sync::Mutex<[[*const i8; 3]; 11]>> = std::sync::LazyLock::new(|| std::sync::Mutex::new(unsafe { std::mem::zeroed() }));
 
 /// C static: mjTIMERSTRING (const char *[15])
-pub static MJTIMERSTRING: std::sync::LazyLock<std::sync::Mutex<[u8; 120]>> = std::sync::LazyLock::new(|| std::sync::Mutex::new([0u8; 120]));
+pub static MJTIMERSTRING: std::sync::LazyLock<std::sync::Mutex<[*const i8; 15]>> = std::sync::LazyLock::new(|| std::sync::Mutex::new(unsafe { std::mem::zeroed() }));
 
 /// C static: mjTOPICSTRING (const char *[3])
-pub static MJTOPICSTRING: std::sync::LazyLock<std::sync::Mutex<[u8; 24]>> = std::sync::LazyLock::new(|| std::sync::Mutex::new([0u8; 24]));
+pub static MJTOPICSTRING: std::sync::LazyLock<std::sync::Mutex<[*const i8; 3]>> = std::sync::LazyLock::new(|| std::sync::Mutex::new(unsafe { std::mem::zeroed() }));
 
 /// C static: mjVISSTRING (const char *[31][3])
-pub static MJVISSTRING: std::sync::LazyLock<std::sync::Mutex<[u8; 744]>> = std::sync::LazyLock::new(|| std::sync::Mutex::new([0u8; 744]));
+pub static MJVISSTRING: std::sync::LazyLock<std::sync::Mutex<[[*const i8; 3]; 31]>> = std::sync::LazyLock::new(|| std::sync::Mutex::new(unsafe { std::mem::zeroed() }));
 
 /// C static: mj_nesterov_momentum (int)
-pub static MJ_NESTEROV_MOMENTUM: std::sync::LazyLock<std::sync::Mutex<[u8; 4]>> = std::sync::LazyLock::new(|| std::sync::Mutex::new([0u8; 4]));
+pub static MJ_NESTEROV_MOMENTUM: std::sync::LazyLock<std::sync::Mutex<i32>> = std::sync::LazyLock::new(|| std::sync::Mutex::new(0));
 
 /// C static: mjcb_act_bias (mjfAct)
-pub static MJCB_ACT_BIAS: std::sync::LazyLock<std::sync::Mutex<[u8; 8]>> = std::sync::LazyLock::new(|| std::sync::Mutex::new([0u8; 8]));
+pub static MJCB_ACT_BIAS: std::sync::LazyLock<std::sync::Mutex<mjfAct>> = std::sync::LazyLock::new(|| std::sync::Mutex::new(unsafe { std::mem::zeroed() }));
 
 /// C static: mjcb_act_dyn (mjfAct)
-pub static MJCB_ACT_DYN: std::sync::LazyLock<std::sync::Mutex<[u8; 8]>> = std::sync::LazyLock::new(|| std::sync::Mutex::new([0u8; 8]));
+pub static MJCB_ACT_DYN: std::sync::LazyLock<std::sync::Mutex<mjfAct>> = std::sync::LazyLock::new(|| std::sync::Mutex::new(unsafe { std::mem::zeroed() }));
 
 /// C static: mjcb_act_gain (mjfAct)
-pub static MJCB_ACT_GAIN: std::sync::LazyLock<std::sync::Mutex<[u8; 8]>> = std::sync::LazyLock::new(|| std::sync::Mutex::new([0u8; 8]));
+pub static MJCB_ACT_GAIN: std::sync::LazyLock<std::sync::Mutex<mjfAct>> = std::sync::LazyLock::new(|| std::sync::Mutex::new(unsafe { std::mem::zeroed() }));
 
 /// C static: mjcb_contactfilter (mjfConFilt)
-pub static MJCB_CONTACTFILTER: std::sync::LazyLock<std::sync::Mutex<[u8; 8]>> = std::sync::LazyLock::new(|| std::sync::Mutex::new([0u8; 8]));
+pub static MJCB_CONTACTFILTER: std::sync::LazyLock<std::sync::Mutex<mjfConFilt>> = std::sync::LazyLock::new(|| std::sync::Mutex::new(unsafe { std::mem::zeroed() }));
 
 /// C static: mjcb_control (mjfGeneric)
-pub static MJCB_CONTROL: std::sync::LazyLock<std::sync::Mutex<[u8; 8]>> = std::sync::LazyLock::new(|| std::sync::Mutex::new([0u8; 8]));
+pub static MJCB_CONTROL: std::sync::LazyLock<std::sync::Mutex<mjfGeneric>> = std::sync::LazyLock::new(|| std::sync::Mutex::new(unsafe { std::mem::zeroed() }));
 
 /// C static: mjcb_passive (mjfGeneric)
-pub static MJCB_PASSIVE: std::sync::LazyLock<std::sync::Mutex<[u8; 8]>> = std::sync::LazyLock::new(|| std::sync::Mutex::new([0u8; 8]));
+pub static MJCB_PASSIVE: std::sync::LazyLock<std::sync::Mutex<mjfGeneric>> = std::sync::LazyLock::new(|| std::sync::Mutex::new(unsafe { std::mem::zeroed() }));
 
 /// C static: mjcb_sensor (mjfSensor)
-pub static MJCB_SENSOR: std::sync::LazyLock<std::sync::Mutex<[u8; 8]>> = std::sync::LazyLock::new(|| std::sync::Mutex::new([0u8; 8]));
+pub static MJCB_SENSOR: std::sync::LazyLock<std::sync::Mutex<mjfSensor>> = std::sync::LazyLock::new(|| std::sync::Mutex::new(unsafe { std::mem::zeroed() }));
 
 /// C static: mjcb_time (mjfTime)
-pub static MJCB_TIME: std::sync::LazyLock<std::sync::Mutex<[u8; 8]>> = std::sync::LazyLock::new(|| std::sync::Mutex::new([0u8; 8]));
+pub static MJCB_TIME: std::sync::LazyLock<std::sync::Mutex<mjfTime>> = std::sync::LazyLock::new(|| std::sync::Mutex::new(unsafe { std::mem::zeroed() }));
 
 /// C static: mju_user_error (void (*)(const char *))
-pub static MJU_USER_ERROR: std::sync::LazyLock<std::sync::Mutex<[u8; 8]>> = std::sync::LazyLock::new(|| std::sync::Mutex::new([0u8; 8]));
+pub static MJU_USER_ERROR: std::sync::LazyLock<std::sync::Mutex<Option<unsafe extern "C" fn(*const i8)>>> = std::sync::LazyLock::new(|| std::sync::Mutex::new(None));
 
 /// C static: mju_user_free (void (*)(void *))
-pub static MJU_USER_FREE: std::sync::LazyLock<std::sync::Mutex<[u8; 8]>> = std::sync::LazyLock::new(|| std::sync::Mutex::new([0u8; 8]));
+pub static MJU_USER_FREE: std::sync::LazyLock<std::sync::Mutex<Option<unsafe extern "C" fn(*mut ())>>> = std::sync::LazyLock::new(|| std::sync::Mutex::new(None));
 
 /// C static: mju_user_malloc (void *(*)(size_t))
-pub static MJU_USER_MALLOC: std::sync::LazyLock<std::sync::Mutex<[u8; 8]>> = std::sync::LazyLock::new(|| std::sync::Mutex::new([0u8; 8]));
+pub static MJU_USER_MALLOC: std::sync::LazyLock<std::sync::Mutex<Option<unsafe extern "C" fn(usize) -> *mut ()>>> = std::sync::LazyLock::new(|| std::sync::Mutex::new(None));
 
 /// C static: mju_user_warning (void (*)(const char *))
-pub static MJU_USER_WARNING: std::sync::LazyLock<std::sync::Mutex<[u8; 8]>> = std::sync::LazyLock::new(|| std::sync::Mutex::new([0u8; 8]));
+pub static MJU_USER_WARNING: std::sync::LazyLock<std::sync::Mutex<Option<unsafe extern "C" fn(*const i8)>>> = std::sync::LazyLock::new(|| std::sync::Mutex::new(None));
 
 /// C static: nPOS (const int[4])
-pub static NPOS: std::sync::LazyLock<std::sync::Mutex<[u8; 16]>> = std::sync::LazyLock::new(|| std::sync::Mutex::new([0u8; 16]));
+pub static NPOS: std::sync::LazyLock<std::sync::Mutex<[i32; 4]>> = std::sync::LazyLock::new(|| std::sync::Mutex::new(unsafe { std::mem::zeroed() }));
 
 /// C static: nVEL (const int[4])
-pub static NVEL: std::sync::LazyLock<std::sync::Mutex<[u8; 16]>> = std::sync::LazyLock::new(|| std::sync::Mutex::new([0u8; 16]));
+pub static NVEL: std::sync::LazyLock<std::sync::Mutex<[i32; 4]>> = std::sync::LazyLock::new(|| std::sync::Mutex::new(unsafe { std::mem::zeroed() }));
 
 /// C static: precision (int)
-pub static PRECISION: std::sync::LazyLock<std::sync::Mutex<[u8; 4]>> = std::sync::LazyLock::new(|| std::sync::Mutex::new([0u8; 4]));
+pub static PRECISION: std::sync::LazyLock<std::sync::Mutex<i32>> = std::sync::LazyLock::new(|| std::sync::Mutex::new(0));
 
 /// C static: projection_sz (const int)
-pub static PROJECTION_SZ: std::sync::LazyLock<std::sync::Mutex<[u8; 4]>> = std::sync::LazyLock::new(|| std::sync::Mutex::new([0u8; 4]));
+pub static PROJECTION_SZ: std::sync::LazyLock<std::sync::Mutex<i32>> = std::sync::LazyLock::new(|| std::sync::Mutex::new(0));
 
 /// C static: reduce_sz (const int)
-pub static REDUCE_SZ: std::sync::LazyLock<std::sync::Mutex<[u8; 4]>> = std::sync::LazyLock::new(|| std::sync::Mutex::new([0u8; 4]));
+pub static REDUCE_SZ: std::sync::LazyLock<std::sync::Mutex<i32>> = std::sync::LazyLock::new(|| std::sync::Mutex::new(0));
 
 /// C static: rotEPS (const mjtNum)
-pub static ROTEPS: std::sync::LazyLock<std::sync::Mutex<[u8; 8]>> = std::sync::LazyLock::new(|| std::sync::Mutex::new([0u8; 8]));
+pub static ROTEPS: std::sync::LazyLock<std::sync::Mutex<f64>> = std::sync::LazyLock::new(|| std::sync::Mutex::new(0.0));
 
 /// C static: shape_map (const mjMap[4])
-pub static SHAPE_MAP: std::sync::LazyLock<std::sync::Mutex<[u8; 64]>> = std::sync::LazyLock::new(|| std::sync::Mutex::new([0u8; 64]));
+pub static SHAPE_MAP: std::sync::LazyLock<std::sync::Mutex<[mjMap; 4]>> = std::sync::LazyLock::new(|| std::sync::Mutex::new(unsafe { std::mem::zeroed() }));
 
 /// C static: solver_sz (const int)
-pub static SOLVER_SZ: std::sync::LazyLock<std::sync::Mutex<[u8; 4]>> = std::sync::LazyLock::new(|| std::sync::Mutex::new([0u8; 4]));
+pub static SOLVER_SZ: std::sync::LazyLock<std::sync::Mutex<i32>> = std::sync::LazyLock::new(|| std::sync::Mutex::new(0));
 
 /// C static: stage_sz (const int)
-pub static STAGE_SZ: std::sync::LazyLock<std::sync::Mutex<[u8; 4]>> = std::sync::LazyLock::new(|| std::sync::Mutex::new([0u8; 4]));
+pub static STAGE_SZ: std::sync::LazyLock<std::sync::Mutex<i32>> = std::sync::LazyLock::new(|| std::sync::Mutex::new(0));
 
 /// C static: subD00 (const mjtNum[88])
-pub static SUBD00: std::sync::LazyLock<std::sync::Mutex<[u8; 704]>> = std::sync::LazyLock::new(|| std::sync::Mutex::new([0u8; 704]));
+pub static SUBD00: std::sync::LazyLock<std::sync::Mutex<[f64; 88]>> = std::sync::LazyLock::new(|| std::sync::Mutex::new(unsafe { std::mem::zeroed() }));
 
 /// C static: subD01 (const mjtNum[88])
-pub static SUBD01: std::sync::LazyLock<std::sync::Mutex<[u8; 704]>> = std::sync::LazyLock::new(|| std::sync::Mutex::new([0u8; 704]));
+pub static SUBD01: std::sync::LazyLock<std::sync::Mutex<[f64; 88]>> = std::sync::LazyLock::new(|| std::sync::Mutex::new(unsafe { std::mem::zeroed() }));
 
 /// C static: subD02 (const mjtNum[88])
-pub static SUBD02: std::sync::LazyLock<std::sync::Mutex<[u8; 704]>> = std::sync::LazyLock::new(|| std::sync::Mutex::new([0u8; 704]));
+pub static SUBD02: std::sync::LazyLock<std::sync::Mutex<[f64; 88]>> = std::sync::LazyLock::new(|| std::sync::Mutex::new(unsafe { std::mem::zeroed() }));
 
 /// C static: subD10 (const mjtNum[88])
-pub static SUBD10: std::sync::LazyLock<std::sync::Mutex<[u8; 704]>> = std::sync::LazyLock::new(|| std::sync::Mutex::new([0u8; 704]));
+pub static SUBD10: std::sync::LazyLock<std::sync::Mutex<[f64; 88]>> = std::sync::LazyLock::new(|| std::sync::Mutex::new(unsafe { std::mem::zeroed() }));
 
 /// C static: subD11 (const mjtNum[88])
-pub static SUBD11: std::sync::LazyLock<std::sync::Mutex<[u8; 704]>> = std::sync::LazyLock::new(|| std::sync::Mutex::new([0u8; 704]));
+pub static SUBD11: std::sync::LazyLock<std::sync::Mutex<[f64; 88]>> = std::sync::LazyLock::new(|| std::sync::Mutex::new(unsafe { std::mem::zeroed() }));
 
 /// C static: subD12 (const mjtNum[88])
-pub static SUBD12: std::sync::LazyLock<std::sync::Mutex<[u8; 704]>> = std::sync::LazyLock::new(|| std::sync::Mutex::new([0u8; 704]));
+pub static SUBD12: std::sync::LazyLock<std::sync::Mutex<[f64; 88]>> = std::sync::LazyLock::new(|| std::sync::Mutex::new(unsafe { std::mem::zeroed() }));
 
 /// C static: subD20 (const mjtNum[88])
-pub static SUBD20: std::sync::LazyLock<std::sync::Mutex<[u8; 704]>> = std::sync::LazyLock::new(|| std::sync::Mutex::new([0u8; 704]));
+pub static SUBD20: std::sync::LazyLock<std::sync::Mutex<[f64; 88]>> = std::sync::LazyLock::new(|| std::sync::Mutex::new(unsafe { std::mem::zeroed() }));
 
 /// C static: subD21 (const mjtNum[88])
-pub static SUBD21: std::sync::LazyLock<std::sync::Mutex<[u8; 704]>> = std::sync::LazyLock::new(|| std::sync::Mutex::new([0u8; 704]));
+pub static SUBD21: std::sync::LazyLock<std::sync::Mutex<[f64; 88]>> = std::sync::LazyLock::new(|| std::sync::Mutex::new(unsafe { std::mem::zeroed() }));
 
 /// C static: subD22 (const mjtNum[88])
-pub static SUBD22: std::sync::LazyLock<std::sync::Mutex<[u8; 704]>> = std::sync::LazyLock::new(|| std::sync::Mutex::new([0u8; 704]));
+pub static SUBD22: std::sync::LazyLock<std::sync::Mutex<[f64; 88]>> = std::sync::LazyLock::new(|| std::sync::Mutex::new(unsafe { std::mem::zeroed() }));
 
 /// C static: subW (const mjtNum[256])
-pub static SUBW: std::sync::LazyLock<std::sync::Mutex<[u8; 2048]>> = std::sync::LazyLock::new(|| std::sync::Mutex::new([0u8; 2048]));
+pub static SUBW: std::sync::LazyLock<std::sync::Mutex<[f64; 256]>> = std::sync::LazyLock::new(|| std::sync::Mutex::new(unsafe { std::mem::zeroed() }));
 
 /// C static: texrole_sz (const int)
-pub static TEXROLE_SZ: std::sync::LazyLock<std::sync::Mutex<[u8; 4]>> = std::sync::LazyLock::new(|| std::sync::Mutex::new([0u8; 4]));
+pub static TEXROLE_SZ: std::sync::LazyLock<std::sync::Mutex<i32>> = std::sync::LazyLock::new(|| std::sync::Mutex::new(0));
 
 /// C static: texture_sz (const int)
-pub static TEXTURE_SZ: std::sync::LazyLock<std::sync::Mutex<[u8; 4]>> = std::sync::LazyLock::new(|| std::sync::Mutex::new([0u8; 4]));
+pub static TEXTURE_SZ: std::sync::LazyLock<std::sync::Mutex<i32>> = std::sync::LazyLock::new(|| std::sync::Mutex::new(0));
 
 /// C static: themeColor0 (const mjuiThemeColor)
-pub static THEMECOLOR0: std::sync::LazyLock<std::sync::Mutex<[u8; 336]>> = std::sync::LazyLock::new(|| std::sync::Mutex::new([0u8; 336]));
+pub static THEMECOLOR0: std::sync::LazyLock<std::sync::Mutex<mjuiThemeColor>> = std::sync::LazyLock::new(|| std::sync::Mutex::new(unsafe { std::mem::zeroed() }));
 
 /// C static: themeColor1 (const mjuiThemeColor)
-pub static THEMECOLOR1: std::sync::LazyLock<std::sync::Mutex<[u8; 336]>> = std::sync::LazyLock::new(|| std::sync::Mutex::new([0u8; 336]));
+pub static THEMECOLOR1: std::sync::LazyLock<std::sync::Mutex<mjuiThemeColor>> = std::sync::LazyLock::new(|| std::sync::Mutex::new(unsafe { std::mem::zeroed() }));
 
 /// C static: themeColor2 (const mjuiThemeColor)
-pub static THEMECOLOR2: std::sync::LazyLock<std::sync::Mutex<[u8; 336]>> = std::sync::LazyLock::new(|| std::sync::Mutex::new([0u8; 336]));
+pub static THEMECOLOR2: std::sync::LazyLock<std::sync::Mutex<mjuiThemeColor>> = std::sync::LazyLock::new(|| std::sync::Mutex::new(unsafe { std::mem::zeroed() }));
 
 /// C static: themeColor3 (const mjuiThemeColor)
-pub static THEMECOLOR3: std::sync::LazyLock<std::sync::Mutex<[u8; 336]>> = std::sync::LazyLock::new(|| std::sync::Mutex::new([0u8; 336]));
+pub static THEMECOLOR3: std::sync::LazyLock<std::sync::Mutex<mjuiThemeColor>> = std::sync::LazyLock::new(|| std::sync::Mutex::new(unsafe { std::mem::zeroed() }));
 
 /// C static: themeSpacing0 (const mjuiThemeSpacing)
-pub static THEMESPACING0: std::sync::LazyLock<std::sync::Mutex<[u8; 52]>> = std::sync::LazyLock::new(|| std::sync::Mutex::new([0u8; 52]));
+pub static THEMESPACING0: std::sync::LazyLock<std::sync::Mutex<mjuiThemeSpacing>> = std::sync::LazyLock::new(|| std::sync::Mutex::new(unsafe { std::mem::zeroed() }));
 
 /// C static: themeSpacing1 (const mjuiThemeSpacing)
-pub static THEMESPACING1: std::sync::LazyLock<std::sync::Mutex<[u8; 52]>> = std::sync::LazyLock::new(|| std::sync::Mutex::new([0u8; 52]));
+pub static THEMESPACING1: std::sync::LazyLock<std::sync::Mutex<mjuiThemeSpacing>> = std::sync::LazyLock::new(|| std::sync::Mutex::new(unsafe { std::mem::zeroed() }));
 
 /// C static: tolerance (const mjtNum)
-pub static TOLERANCE: std::sync::LazyLock<std::sync::Mutex<[u8; 8]>> = std::sync::LazyLock::new(|| std::sync::Mutex::new([0u8; 8]));
+pub static TOLERANCE: std::sync::LazyLock<std::sync::Mutex<f64>> = std::sync::LazyLock::new(|| std::sync::Mutex::new(0.0));
 
 /// C static: tolplanemesh (const mjtNum)
-pub static TOLPLANEMESH: std::sync::LazyLock<std::sync::Mutex<[u8; 8]>> = std::sync::LazyLock::new(|| std::sync::Mutex::new([0u8; 8]));
+pub static TOLPLANEMESH: std::sync::LazyLock<std::sync::Mutex<f64>> = std::sync::LazyLock::new(|| std::sync::Mutex::new(0.0));
 
 /// C static: urJoint_map (const mjMap[7])
-pub static URJOINT_MAP: std::sync::LazyLock<std::sync::Mutex<[u8; 112]>> = std::sync::LazyLock::new(|| std::sync::Mutex::new([0u8; 112]));
+pub static URJOINT_MAP: std::sync::LazyLock<std::sync::Mutex<[mjMap; 7]>> = std::sync::LazyLock::new(|| std::sync::Mutex::new(unsafe { std::mem::zeroed() }));
 
 /// C static: urJoint_sz (const int)
-pub static URJOINT_SZ: std::sync::LazyLock<std::sync::Mutex<[u8; 4]>> = std::sync::LazyLock::new(|| std::sync::Mutex::new([0u8; 4]));
+pub static URJOINT_SZ: std::sync::LazyLock<std::sync::Mutex<i32>> = std::sync::LazyLock::new(|| std::sync::Mutex::new(0));
 
 /// C static: warningtext (char[500])
-pub static WARNINGTEXT: std::sync::LazyLock<std::sync::Mutex<[u8; 500]>> = std::sync::LazyLock::new(|| std::sync::Mutex::new([0u8; 500]));
+pub static WARNINGTEXT: std::sync::LazyLock<std::sync::Mutex<[i8; 500]>> = std::sync::LazyLock::new(|| std::sync::Mutex::new(unsafe { std::mem::zeroed() }));
 
 /// C static (override): mjCModel::Delete
 pub static MJ_C_MODEL_DELETE: std::sync::LazyLock<std::sync::Mutex<Option<unsafe extern "C" fn()>>> = std::sync::LazyLock::new(|| std::sync::Mutex::new(None));

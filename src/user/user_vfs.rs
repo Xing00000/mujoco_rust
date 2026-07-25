@@ -1,5 +1,5 @@
 //! Port of: user/user_vfs.cc
-//! IR hash: 3fb6da908ad9d71c
+//! IR hash: 190f29be1f1f223b
 //! CODEGEN: signatures locked. Only fill todo!() bodies.
 
 use crate::types::*;
@@ -76,14 +76,14 @@ pub fn buffer_provider_mount(vfs: *mut mjVFS, args: Args) -> i32 {
 /// Calls: BufferProvider::Mount
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_add_file_vfs(vfs: *mut mjVFS, directory: *const i8, filename: *const i8) -> i32 {
-    todo!("mj_addFileVFS depends on C++ BufferProvider::Mount class method. Cannot translate without C++ class infrastructure.")
+    todo!() // mj_addFileVFS
 }
 
 /// C: mj_addBufferVFS (user/user_vfs.cc:503)
 /// Calls: BufferProvider::Mount
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_add_buffer_vfs(vfs: *mut mjVFS, name: *const i8, buffer: *const (), nbuffer: i32) -> i32 {
-    todo!("mj_addBufferVFS depends on C++ BufferProvider::Mount class method. Cannot translate without C++ class infrastructure.")
+    todo!() // mj_addBufferVFS
 }
 
 /// C: mj_deleteFileVFS (user/user_vfs.cc:508)

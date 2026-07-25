@@ -1,5 +1,5 @@
 //! Port of: engine/engine_util_solve.c
-//! IR hash: 3fb6da908ad9d71c
+//! IR hash: 190f29be1f1f223b
 //! CODEGEN: signatures locked. Only fill todo!() bodies.
 
 use crate::types::*;

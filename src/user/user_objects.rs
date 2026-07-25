@@ -1,5 +1,5 @@
 //! Port of: user/user_objects.cc
-//! IR hash: 3fb6da908ad9d71c
+//! IR hash: 190f29be1f1f223b
 //! CODEGEN: signatures locked. Only fill todo!() bodies.
 
 use crate::types::*;
@@ -909,7 +909,7 @@ pub fn mj_c_base_release(self_ptr: *mut mjCBase) {
 
 /// C: mjCBase::SetUserValue (user/user_objects.h:411)
 #[allow(unused_variables, non_snake_case)]
-pub fn mj_c_base_set_user_value(self_ptr: *mut mjCBase, key: std__string_view, data: *const (), cleanup: Option<unsafe extern "C" fn()>) {
+pub fn mj_c_base_set_user_value(self_ptr: *mut mjCBase, key: std__string_view, data: *const (), cleanup: Option<unsafe extern "C" fn(*const ())>) {
     todo!() // mjCBase::SetUserValue
 }
 

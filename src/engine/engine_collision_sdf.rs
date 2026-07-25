@@ -1,5 +1,5 @@
 //! Port of: engine/engine_collision_sdf.c
-//! IR hash: 3fb6da908ad9d71c
+//! IR hash: 190f29be1f1f223b
 //! CODEGEN: signatures locked. Only fill todo!() bodies.
 
 use crate::types::*;
@@ -1033,7 +1033,7 @@ pub fn mjc_mesh_sdf(m: *const mjModel, d: *mut mjData, con: *mut mjPreContact, g
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjc_sdf(m: *const mjModel, d: *mut mjData, con: *mut mjPreContact, g1: i32, g2: i32, margin: f64) -> i32 {
-    todo!("mjc_SDF requires calling plugin function pointers (reset, compute) through opaque mjpPlugin struct with transmuted signatures, plus mjSDF.type is stored as [u8;8] opaque bytes. Needs typed plugin bindings.")
+    todo!() // mjc_SDF
 }
 
 /// C: mjc_FlexSDF (engine/engine_collision_sdf.h:48)

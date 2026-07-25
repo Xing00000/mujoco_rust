@@ -1,11 +1,10 @@
 //! Port of: user/user_resolver.cc
-//! IR hash: 3fb6da908ad9d71c
+//! IR hash: 190f29be1f1f223b
 //! CODEGEN: signatures locked. Only fill todo!() bodies.
 
 use crate::types::*;
 
-/// Type alias for codegen test compatibility.
-pub type Resolver = mujoco___anonymous_namespace___Resolver;
+# [doc = " Type alias for codegen test compatibility."] pub type Resolver = mujoco___anonymous_namespace___Resolver ;
 
 /// C: fmtVal (user/user_resolver.cc:34)
 #[allow(unused_variables, non_snake_case)]

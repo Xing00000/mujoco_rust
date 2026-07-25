@@ -1,5 +1,5 @@
 //! Port of: user/user_api.cc
-//! IR hash: 3fb6da908ad9d71c
+//! IR hash: 190f29be1f1f223b
 //! CODEGEN: signatures locked. Only fill todo!() bodies.
 
 use crate::types::*;
@@ -1735,7 +1735,7 @@ pub fn mjs_set_user_value(element: *mut mjsElement, key: *const i8, data: *const
 /// C: mjs_setUserValueWithCleanup (user/user_api.h:457)
 /// Calls: mjCBase::SetUserValue
 #[allow(unused_variables, non_snake_case)]
-pub fn mjs_set_user_value_with_cleanup(element: *mut mjsElement, key: *const i8, data: *const (), cleanup: Option<unsafe extern "C" fn()>) {
+pub fn mjs_set_user_value_with_cleanup(element: *mut mjsElement, key: *const i8, data: *const (), cleanup: Option<unsafe extern "C" fn(*const ())>) {
     todo!() // mjs_setUserValueWithCleanup
 }
 

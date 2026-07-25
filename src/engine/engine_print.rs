@@ -1,5 +1,5 @@
 //! Port of: engine/engine_print.c
-//! IR hash: 3fb6da908ad9d71c
+//! IR hash: 190f29be1f1f223b
 //! CODEGEN: signatures locked. Only fill todo!() bodies.
 
 use crate::types::*;
@@ -651,7 +651,7 @@ pub fn mj_print_model(m: *const mjModel, filename: *const i8) {
 /// Calls: memorySize, mj_contactForce, mj_id2name, mj_isDual, mj_isSparse, mj_printBlockSparsity, mj_printSparsity, mju_isZero, mju_message, mju_warning, printArray2d, printArray2dInt, printBlockArray, printDelayBuffer, printInertia, printSparse, printVector, validateFloatFormat
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_print_formatted_data(m: *const mjModel, d: *const mjData, filename: *const i8, float_format: *const i8) {
-    todo!("mj_printFormattedData depends on MJDATA_SCALAR and MJDATA_POINTERS X-macro expansion to iterate all fields. Cannot translate without codegen support.")
+    todo!() // mj_printFormattedData
 }
 
 /// C: mj_printData (engine/engine_print.h:44)
@@ -722,6 +722,6 @@ pub fn mj_print_scene(s: *const mjvScene, filename: *const i8) {
 /// Calls: mju_warning, printArr, printInt, printNum, printStr, validateFloatFormat
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_print_formatted_scene(s: *const mjvScene, filename: *const i8, float_format: *const i8) {
-    todo!("mj_printFormattedScene references mjRNDSTRING and mjNRNDFLAG constants not available in Rust types. Requires codegen support for string table constants.")
+    todo!() // mj_printFormattedScene
 }
 
