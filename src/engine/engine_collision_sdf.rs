@@ -1139,14 +1139,16 @@ pub fn mjc_sdf(m: *const mjModel, d: *mut mjData, con: *mut mjPreContact, g1: i3
         }
 
         // copy into sdf
-        let mut sdf: mjSDF = std::mem::zeroed();
         instance[0] = if instance[0] == -1 { *(*m).geom_dataid.add(g2 as usize) } else { instance[0] };
         instance[1] = if instance[1] == -1 { *(*m).geom_dataid.add(g1 as usize) } else { instance[1] };
-        sdf.id = instance.as_mut_ptr();
-        sdf.relpos = offset21.as_mut_ptr();
-        sdf.relmat = rotation21.as_mut_ptr();
-        sdf.plugin = sdf_ptr.as_ptr() as *const *mut mjpPlugin;
-        sdf.geomtype = geomtypes.as_mut_ptr();
+        let mut sdf = mjSDF {
+            id:       instance.as_mut_ptr(),
+            relpos:   offset21.as_mut_ptr(),
+            relmat:   rotation21.as_mut_ptr(),
+            plugin:   sdf_ptr.as_ptr() as *const *mut mjpPlugin,
+            geomtype: geomtypes.as_mut_ptr(),
+            r#type:   [0u8; 8],  // written per-iteration via ptr cast
+        };
 
         // minimize sdf intersection
         let mut contacts: [f64; 3 * 50] = [0.0; 3 * 50]; // mjMAXCONPAIR = 50
