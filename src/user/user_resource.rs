@@ -85,7 +85,26 @@ pub fn mju_get_resource_dir(resource: *mut mjResource, dir: *const *mut i8, ndir
 /// C: mju_isModifiedResource (user/user_resource.cc:105)
 #[allow(unused_variables, non_snake_case)]
 pub fn mju_is_modified_resource(resource: *const mjResource, timestamp: *const i8) -> i32 {
-    todo!("mju_isModifiedResource accesses resource->provider->modified which is through an opaque struct_mjpResourceProvider type. Cannot translate without typed provider struct.")
+    // SAFETY: resource may be null (checked). provider is accessed through mjResource.provider field.
+    // The mjpResourceProvider C struct has 'modified' function pointer at offset 48:
+    //   prefix(8) + open(8) + read(8) + close(8) + mount(8) + unmount(8) = 48
+    // modified type: int (*)(const mjResource*, const char*)
+    unsafe {
+        if resource.is_null() {
+            return 1;
+        }
+        let provider = (*resource).provider as *const u8;
+        if provider.is_null() {
+            return 1;
+        }
+        // read the 'modified' function pointer at offset 48
+        let modified_fn_ptr = *(provider.add(48)
+            as *const Option<unsafe extern "C" fn(*const mjResource, *const i8) -> i32>);
+        if let Some(modified) = modified_fn_ptr {
+            return modified(resource, timestamp);
+        }
+        1 // default: assume modified
+    }
 }
 
 /// C: mju_decodeResource (user/user_resource.cc:112)

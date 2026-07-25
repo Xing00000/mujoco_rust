@@ -574,7 +574,25 @@ pub fn findselect(it: *const mjuiItem, ui: *const mjUI, ins: *const mjuiState, c
 /// Calls: SCL, mju_round
 #[allow(unused_variables, non_snake_case)]
 pub fn scrollrect(rect: mjrRect, ui: *const mjUI, con: *const mjrContext, bar: *mut mjrRect, thumb: *mut mjrRect) {
-    todo!() // scrollrect
+    // SAFETY: ui, con, bar, thumb are valid pointers (caller contract)
+    unsafe {
+        let spacing_ptr = (*ui).spacing.as_ptr() as *const i32;
+        let w_scroll: i32 = scl(*spacing_ptr.add(1), con); // spacing.scroll
+
+        // bar
+        *bar = rect;
+        (*bar).left = rect.left + rect.width - w_scroll;
+        (*bar).width = w_scroll;
+
+        // thumb
+        let tstart: f64 = (*ui).scroll as f64 / (*ui).height as f64;
+        let tend: f64 = ((*ui).scroll + rect.height) as f64 / (*ui).height as f64;
+        *thumb = *bar;
+        (*thumb).bottom = rect.bottom + crate::engine::engine_util_misc::mju_round(
+            rect.height as f64 * (1.0 - tend));
+        (*thumb).height = crate::engine::engine_util_misc::mju_round(
+            rect.height as f64 * (tend - tstart));
+    }
 }
 
 /// C: inside (ui/ui_main.c:716)
@@ -1451,6 +1469,140 @@ pub fn mjui_event(ui: *mut mjUI, state: *mut mjuiState, con: *const mjrContext) 
 /// Calls: SCL, drawtext, findselect, initOpenGL, mjr_blitAux, mjr_rectangle, scrollrect
 #[allow(unused_variables, non_snake_case)]
 pub fn mjui_render(ui: *mut mjUI, state: *const mjuiState, con: *const mjrContext) {
-    todo!() // mjui_render
+    // SAFETY: ui, state, con are valid pointers (caller contract).
+    // state.rect is a [u8; 404] containing 25 mjrRect (16 bytes each).
+    // ui.color is [u8; 340], fields are [f32;3] packed consecutively.
+    // ui.spacing is [u8; 52], fields are i32 packed consecutively.
+    unsafe {
+        // get ui rectangle: state->rect[ui->rectid]
+        let rect_base = (*state).rect.as_ptr() as *const mjrRect;
+        let rect: mjrRect = *rect_base.add((*ui).rectid as usize);
+
+        // color field pointers
+        let color_ptr = (*ui).color.as_ptr();
+        let color_master = color_ptr as *const f32;             // offset 0
+        let color_thumb = color_ptr.add(12) as *const f32;     // offset 12
+        let color_sectpane = color_ptr.add(120) as *const f32; // offset 120
+        let color_fontactive = color_ptr.add(168) as *const f32; // offset 168
+        let color_select = color_ptr.add(252) as *const f32;   // offset 252
+        let color_select2 = color_ptr.add(264) as *const f32;  // offset 264
+
+        // clear entire rectangle
+        crate::render::classic::render_gl2::mjr_rectangle(
+            rect, *color_master.add(0), *color_master.add(1), *color_master.add(2), 1.0);
+
+        // adjust scroll
+        if (*ui).scroll > 0 && (*ui).height - (*ui).scroll < rect.height {
+            (*ui).scroll = if 0 > (*ui).height - rect.height { 0 } else { (*ui).height - rect.height };
+        }
+
+        // blit to current buffer
+        let raux_bottom = if 0 > (*ui).height - (*ui).scroll - rect.height {
+            0
+        } else {
+            (*ui).height - (*ui).scroll - rect.height
+        };
+        let raux_height_raw = rect.height;
+        let raux_height_cand = (*ui).height - (*ui).scroll;
+        let raux_height = if raux_height_raw < raux_height_cand { raux_height_raw } else { raux_height_cand };
+        let raux = mjrRect {
+            left: 0,
+            bottom: raux_bottom,
+            width: (*ui).width,
+            height: raux_height,
+        };
+        let blit_bottom = rect.bottom + (if 0 > rect.height - (*ui).height + (*ui).scroll {
+            0
+        } else {
+            rect.height - (*ui).height + (*ui).scroll
+        });
+        crate::render::classic::render_gl2::mjr_blit_aux(
+            (*ui).auxid, raux, rect.left, blit_bottom, con);
+
+        // draw scrollbar over blit if needed
+        if (*ui).height > rect.height {
+            let mut bar: mjrRect = mjrRect { left: 0, bottom: 0, width: 0, height: 0 };
+            let mut thumb: mjrRect = mjrRect { left: 0, bottom: 0, width: 0, height: 0 };
+            scrollrect(rect, ui, con, &mut bar, &mut thumb);
+            crate::render::classic::render_gl2::mjr_rectangle(
+                thumb, *color_thumb.add(0), *color_thumb.add(1), *color_thumb.add(2), 1.0);
+        }
+
+        // draw selection box tracking over blit if needed
+        if (*ui).mousesect > 0 && (*ui).mouseitem >= 0 {
+            let sect_idx = ((*ui).mousesect - 1) as usize;
+            let it: *const mjuiItem = (*ui).sect[sect_idx].item.as_ptr()
+                .add((*ui).mouseitem as usize);
+
+            const MJ_ITEM_SELECT: i32 = 7;
+            if (*it).r#type == MJ_ITEM_SELECT {
+                let spacing_ptr = (*ui).spacing.as_ptr() as *const i32;
+                let g_texthor: i32 = scl(*spacing_ptr.add(9), con);   // spacing.texthor
+                let g_textver: i32 = scl(*spacing_ptr.add(10), con);  // spacing.textver
+                let g_itemside: i32 = scl(*spacing_ptr.add(6), con);  // spacing.itemside
+                let cellheight: i32 = (*con).charHeight + 2 * g_textver;
+
+                // offset for scroll position
+                let offset: i32 = (if 0 > rect.height - (*ui).height + (*ui).scroll {
+                    0
+                } else {
+                    rect.height - (*ui).height + (*ui).scroll
+                }) - (if 0 > (*ui).height - (*ui).scroll - rect.height {
+                    0
+                } else {
+                    (*ui).height - (*ui).scroll - rect.height
+                });
+
+                // multi.nelem at offset 0 in the union
+                let nelem: i32 = *((*it).__anon_7._data.as_ptr() as *const i32);
+
+                // margin rectangle
+                let mut r = (*it).rect;
+                r.left -= g_itemside;
+                r.width += 2 * g_itemside;
+                r.height = nelem * cellheight + g_itemside;
+                r.bottom -= r.height;
+                r.bottom += offset;
+                r.left += rect.left;
+                crate::render::classic::render_gl2::mjr_rectangle(
+                    r, *color_sectpane.add(0), *color_sectpane.add(1), *color_sectpane.add(2), 1.0);
+
+                // box rectangle
+                r = (*it).rect;
+                r.height = nelem * cellheight;
+                r.bottom -= r.height;
+                r.bottom += offset;
+                r.left += rect.left;
+                crate::render::classic::render_gl2::mjr_rectangle(
+                    r, *color_select2.add(0), *color_select2.add(1), *color_select2.add(2), 1.0);
+
+                // highlight row under mouse
+                let k = findselect(it, ui, state, con);
+                if k >= 0 {
+                    let mut r1 = r;
+                    r1.bottom = r.bottom + (nelem - 1 - k) * cellheight;
+                    r1.height = cellheight;
+                    crate::render::classic::render_gl2::mjr_rectangle(
+                        r1, *color_select.add(0), *color_select.add(1), *color_select.add(2), 1.0);
+                }
+
+                // text values
+                init_open_gl(&rect, con);
+                // multi.name starts at offset 4 in union, each name is 40 bytes
+                let names_base = (*it).__anon_7._data.as_ptr().add(4) as *const i8;
+                for k in 0..nelem {
+                    let name_ptr = names_base.add((k as usize) * 40);
+                    drawtext(
+                        name_ptr,
+                        r.left + g_texthor - rect.left,
+                        r.bottom + g_textver + (nelem - 1 - k) * cellheight,
+                        r.width - 2 * g_texthor,
+                        color_fontactive,
+                        con,
+                    );
+                }
+            }
+        }
+    }
 }
 

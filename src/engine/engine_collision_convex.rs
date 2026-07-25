@@ -392,7 +392,30 @@ pub fn mjc_hillclimb_support(res: *mut f64, obj: *mut mjCCDObj, dir: *const f64)
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjc_prism_support(res: *mut f64, obj: *mut mjCCDObj, dir: *const f64) {
-    todo!("mjc_prism_support accesses obj->data.hfield.prism which is inside an opaque 160-byte union. Cannot translate without typed union member layout.")
+    // SAFETY: obj is a valid mjCCDObj pointer, data.hfield.prism is at offset 0 in the union,
+    // stored as mjtNum[6][3] = 6 rows of 3 f64 values. dir[3] and res[3] are valid.
+    unsafe {
+        // hfield.prism is at offset 0 of the union data blob
+        let prism = (*obj).data._data.as_ptr() as *const f64;
+
+        // find best vertex in halfspace determined by dir.z
+        let istart: i32 = if *dir.add(2) < 0.0 { 0 } else { 3 };
+        let mut ibest: i32 = istart;
+        let mut best: f64 = crate::engine::engine_util_blas::mju_dot3(
+            prism.add((istart * 3) as usize), dir);
+
+        for i in 1..3_i32 {
+            let tmp = crate::engine::engine_util_blas::mju_dot3(
+                prism.add(((istart + i) * 3) as usize), dir);
+            if tmp > best {
+                ibest = istart + i;
+                best = tmp;
+            }
+        }
+
+        // copy best point
+        crate::engine::engine_inline::mji_copy3(res, prism.add((ibest * 3) as usize));
+    }
 }
 
 /// C: mjc_flexSupport (engine/engine_collision_convex.c:458)
@@ -404,7 +427,58 @@ pub fn mjc_prism_support(res: *mut f64, obj: *mut mjCCDObj, dir: *const f64) {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjc_flex_support(res: *mut f64, obj: *mut mjCCDObj, dir: *const f64) {
-    todo!("mjc_flexSupport accesses obj->data.flex.* which is inside an opaque 160-byte union. Cannot translate without typed union member layout.")
+    // SAFETY: obj valid, dir[3] valid, res[3] valid. Flex union fields accessed via raw offsets:
+    //   elem: *const i32 at offset 0, dim: *const i32 at offset 8,
+    //   elemdataadr: *const i32 at offset 32, vert_xpos: *const f64 at offset 40,
+    //   vertadr: *const i32 at offset 48, xradius: *const f64 at offset 56
+    unsafe {
+        let f = (*obj).flex;
+        let data_ptr = (*obj).data._data.as_ptr();
+
+        // flex union field pointers
+        let flex_elem = *(data_ptr.add(0) as *const *const i32);
+        let flex_dim = *(data_ptr.add(8) as *const *const i32);
+        let flex_elemdataadr = *(data_ptr.add(32) as *const *const i32);
+        let flex_vert_xpos = *(data_ptr.add(40) as *const *const f64);
+        let flex_vertadr = *(data_ptr.add(48) as *const *const i32);
+        let flex_xradius = *(data_ptr.add(56) as *const *const f64);
+
+        let dim = *flex_dim.add(f as usize);
+
+        // flex element
+        if (*obj).elem >= 0 {
+            let e = (*obj).elem;
+            let edata = flex_elem.add(
+                *flex_elemdataadr.add(f as usize) as usize + (e * (dim + 1)) as usize
+            );
+            let vert = flex_vert_xpos.add(3 * *flex_vertadr.add(f as usize) as usize);
+
+            // find element vertex with largest projection along dir
+            crate::engine::engine_inline::mji_copy3(res, vert.add(3 * *edata.add(0) as usize));
+            let mut best = crate::engine::engine_util_blas::mju_dot3(res, dir);
+
+            for i in 1..=dim {
+                let dot = crate::engine::engine_util_blas::mju_dot3(
+                    vert.add(3 * *edata.add(i as usize) as usize), dir);
+                if dot > best {
+                    best = dot;
+                    crate::engine::engine_inline::mji_copy3(
+                        res, vert.add(3 * *edata.add(i as usize) as usize));
+                }
+            }
+
+            // add radius and margin/2
+            crate::engine::engine_inline::mji_add_to_scl3(
+                res, dir, *flex_xradius.add(f as usize) + 0.5 * (*obj).margin);
+            return;
+        }
+
+        // flex vertex
+        let vert = flex_vert_xpos.add(
+            3 * (*flex_vertadr.add(f as usize) + (*obj).vert) as usize);
+        crate::engine::engine_inline::mji_add_scl3(
+            res, vert, dir, *flex_xradius.add(f as usize) + 0.5 * (*obj).margin);
+    }
 }
 
 /// C: mjc_setCCDObjFlex (engine/engine_collision_convex.c:790)
@@ -847,7 +921,52 @@ pub fn mjc_init_ccd_obj(obj: *mut mjCCDObj, m: *const mjModel, d: *const mjData,
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjc_center(res: *mut f64, obj: *const mjCCDObj) {
-    todo!("mjc_center accesses obj->data.hfield.prism and obj->data.flex.* which are inside an opaque 160-byte union. Cannot translate without typed union member layout.")
+    // SAFETY: obj valid, res[3] valid. Union data accessed via raw offsets.
+    // hfield.prism at offset 0: mjtNum[6][3]. flex.aabb at offset 16, flex.elemadr at offset 24,
+    // flex.vert_xpos at offset 40, flex.vertadr at offset 48.
+    unsafe {
+        let g = (*obj).geom;
+        let f = (*obj).flex;
+        let e = (*obj).elem;
+        let v = (*obj).vert;
+
+        const MJ_GEOM_HFIELD: i32 = 1;
+        if (*obj).geom_type == MJ_GEOM_HFIELD {
+            crate::engine::engine_util_blas::mju_zero3(res);
+            let prism = (*obj).data._data.as_ptr() as *const f64;
+            for i in 0..6_i32 {
+                crate::engine::engine_inline::mji_add_to3(res, prism.add((i * 3) as usize));
+            }
+            crate::engine::engine_util_blas::mju_scl3(res, res, 1.0 / 6.0);
+            return;
+        }
+
+        // return geom position
+        if g >= 0 {
+            crate::engine::engine_inline::mji_copy3(res, (*obj).pos.as_ptr());
+            return;
+        }
+
+        // return flex element position
+        if e >= 0 {
+            let data_ptr = (*obj).data._data.as_ptr();
+            let flex_aabb = *(data_ptr.add(16) as *const *const f64);
+            let flex_elemadr = *(data_ptr.add(24) as *const *const i32);
+            crate::engine::engine_inline::mji_copy3(
+                res, flex_aabb.add(6 * (*flex_elemadr.add(f as usize) + e) as usize));
+            return;
+        }
+
+        // return flex vertex position
+        if f >= 0 {
+            let data_ptr = (*obj).data._data.as_ptr();
+            let flex_vert_xpos = *(data_ptr.add(40) as *const *const f64);
+            let flex_vertadr = *(data_ptr.add(48) as *const *const i32);
+            crate::engine::engine_inline::mji_copy3(
+                res, flex_vert_xpos.add(3 * (*flex_vertadr.add(f as usize) + v) as usize));
+            return;
+        }
+    }
 }
 
 /// C: mjccd_center (engine/engine_collision_convex.h:100)
