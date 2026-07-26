@@ -9201,35 +9201,54 @@ pub fn mj_make_raw_data(dest: *mut *mut mjData, m: *const mjModel) {
 /// Calls: mj_copyDataVisual
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_copy_data(dest: *mut mjData, m: *const mjModel, src: *const mjData) -> *mut mjData {
-    todo!() // mj_copyData
+    mj_copy_data_visual(dest, m, src, 1)
 }
 
 /// C: mjv_copyData (engine/engine_io.h:123)
 /// Calls: mj_copyDataVisual
 #[allow(unused_variables, non_snake_case)]
 pub fn mjv_copy_data(dest: *mut mjData, m: *const mjModel, src: *const mjData) -> *mut mjData {
-    todo!() // mjv_copyData
+    mj_copy_data_visual(dest, m, src, 0)
 }
 
 /// C: mj_resetData (engine/engine_io.h:126)
 /// Calls: _resetData, mj_logTimingDiagnostics
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_reset_data(m: *const mjModel, d: *mut mjData) {
-    todo!() // mj_resetData
+    mj_log_timing_diagnostics(d as *const mjData);
+    reset_data(m, d, 0);
 }
 
 /// C: mj_resetDataDebug (engine/engine_io.h:129)
 /// Calls: _resetData
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_reset_data_debug(m: *const mjModel, d: *mut mjData, debug_value: u8) {
-    todo!() // mj_resetDataDebug
+    reset_data(m, d, debug_value);
 }
 
 /// C: mj_resetDataKeyframe (engine/engine_io.h:132)
 /// Calls: _resetData, mju_copy
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_reset_data_keyframe(m: *const mjModel, d: *mut mjData, key: i32) {
-    todo!() // mj_resetDataKeyframe
+    reset_data(m, d, 0);
+    // SAFETY: m, d valid; key bounds checked below; field sizes follow model.
+    unsafe {
+        if key >= 0 && (key as i64) < (*m).nkey {
+            let k = key as usize;
+            (*d).time = *(*m).key_time.add(k);
+            let nq = (*m).nq as i32;
+            let nv = (*m).nv as i32;
+            let na = (*m).na as i32;
+            let nmocap = (*m).nmocap as i32;
+            let nu = (*m).nu as i32;
+            crate::engine::engine_util_blas::mju_copy((*d).qpos, (*m).key_qpos.add(k * nq as usize), nq);
+            crate::engine::engine_util_blas::mju_copy((*d).qvel, (*m).key_qvel.add(k * nv as usize), nv);
+            crate::engine::engine_util_blas::mju_copy((*d).act,  (*m).key_act.add(k * na as usize), na);
+            crate::engine::engine_util_blas::mju_copy((*d).mocap_pos,  (*m).key_mpos.add(k * 3 * nmocap as usize), 3 * nmocap);
+            crate::engine::engine_util_blas::mju_copy((*d).mocap_quat, (*m).key_mquat.add(k * 4 * nmocap as usize), 4 * nmocap);
+            crate::engine::engine_util_blas::mju_copy((*d).ctrl, (*m).key_ctrl.add(k * nu as usize), nu);
+        }
+    }
 }
 
 /// C: mj_initPlugin (engine/engine_io.h:135)
@@ -9264,6 +9283,10 @@ pub fn mj_init_plugin(m: *const mjModel, d: *mut mjData) {
 /// Calls: freeDataBuffers, mju_free, mju_threadpool
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_delete_data(d: *mut mjData) {
-    todo!() // mj_deleteData
+    if !d.is_null() {
+        crate::engine::engine_thread::mju_threadpool(d, 0);
+        free_data_buffers(d);
+        crate::engine::engine_util_errmem::mju_free(d as *mut ());
+    }
 }
 
