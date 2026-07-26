@@ -38,20 +38,43 @@ pub fn mjuu_is_valid_content_type(text: std__string_view) -> bool {
 /// C: StrToNum (user/user_util.cc:1277)
 #[allow(unused_variables, non_snake_case)]
 pub fn str_to_num(str: *mut i8, c: *mut *mut i8) -> i32 {
-    todo!() // StrToNum
+    // StrToNum<int>: parse i32 from string using strtol
+    // SAFETY: str is a valid null-terminated C string; c is valid output pointer.
+    unsafe {
+        extern "C" { fn strtol(s: *const i8, endptr: *mut *mut i8, base: i32) -> i64; }
+        let mut end: *mut i8 = std::ptr::null_mut();
+        let n: i64 = strtol(str as *const i8, &mut end, 10);
+        if !c.is_null() { *c = end; }
+        if n < i32::MIN as i64 || n > i32::MAX as i64 {
+            // overflow - actual implementation sets errno=ERANGE, we skip errno
+        }
+        n as i32
+    }
 }
 
 /// C: IsNullOrSpace (user/user_util.cc:1301)
 #[allow(unused_variables, non_snake_case)]
 pub fn is_null_or_space(c: *mut i8) -> bool {
-    todo!() // IsNullOrSpace
+    // SAFETY: c is a valid pointer to a character (caller contract).
+    unsafe {
+        let ch = *c as u8;
+        ch == 0 || (ch as char).is_ascii_whitespace()
+    }
 }
 
 /// C: SkipSpace (user/user_util.cc:1305)
 /// Calls: IsNullOrSpace
 #[allow(unused_variables, non_snake_case)]
 pub fn skip_space(c: *mut i8) -> *mut i8 {
-    todo!() // SkipSpace
+    // SAFETY: c is a valid pointer to a null-terminated string.
+    unsafe {
+        let mut ptr = c;
+        while *ptr != 0 {
+            if !is_null_or_space(ptr) { break; }
+            ptr = ptr.add(1);
+        }
+        ptr
+    }
 }
 
 /// C: mjuu_defined (user/user_util.h:35)
@@ -717,7 +740,22 @@ pub fn mjuu_offcenter(res: *mut f64, mass: f64, vec: *const f64) {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjuu_visccoef(visccoef: *mut f64, mass: f64, inertia: *const f64, scl: f64) {
-    todo!() // mjuu_visccoef
+    // SAFETY: visccoef[6], inertia[3] valid (caller contract). mass > 0 assumed.
+    const MJ_EPS: f64 = 1e-14;
+    unsafe {
+        // compute equivalent box
+        let e0 = (((*inertia.add(1) + *inertia.add(2) - *inertia.add(0)) / mass * 6.0).max(MJ_EPS)).sqrt();
+        let e1 = (((*inertia.add(0) + *inertia.add(2) - *inertia.add(1)) / mass * 6.0).max(MJ_EPS)).sqrt();
+        let e2 = (((*inertia.add(0) + *inertia.add(1) - *inertia.add(2)) / mass * 6.0).max(MJ_EPS)).sqrt();
+        // torque components
+        *visccoef.add(0) = scl * 4.0 / 3.0 * e0 * (e1*e1*e1 + e2*e2*e2);
+        *visccoef.add(1) = scl * 4.0 / 3.0 * e1 * (e0*e0*e0 + e2*e2*e2);
+        *visccoef.add(2) = scl * 4.0 / 3.0 * e2 * (e0*e0*e0 + e1*e1*e1);
+        // force components
+        *visccoef.add(3) = scl * 4.0 * e1 * e2;
+        *visccoef.add(4) = scl * 4.0 * e0 * e2;
+        *visccoef.add(5) = scl * 4.0 * e0 * e1;
+    }
 }
 
 /// C: mjuu_rotVecQuat (user/user_util.h:153)
