@@ -90,7 +90,57 @@ pub fn mj_state_elem_const_ptr(m: *const mjModel, d: *const mjData, sig: u32) ->
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_geom_distance_ccd(m: *const mjModel, d: *mut mjData, g1: i32, g2: i32, distmax: f64, fromto: *mut f64) -> f64 {
-    todo!() // mj_geomDistanceCCD
+    // mjCCDConfig layout (40 bytes, align 8):
+    //   max_iterations: i32 at offset 0
+    //   (pad 4)
+    //   tolerance: f64 at offset 8
+    //   max_contacts: i32 at offset 16
+    //   (pad 4)
+    //   dist_cutoff: f64 at offset 24
+    //   buffer: *mut () at offset 32
+    // mjCCDStatus layout: x1 at offset 8, x2 at 1208, nx at 2408
+
+    // SAFETY: m, d are valid. CCD operates on freshly initialized stack memory.
+    unsafe {
+        crate::engine::engine_memory::mj_mark_stack(d);
+
+        // build config on stack as [u8; 40]
+        let mut config_buf = [0u8; 40];
+        *(config_buf.as_mut_ptr().add(0) as *mut i32) = (*m).opt.ccd_iterations;
+        *(config_buf.as_mut_ptr().add(8) as *mut f64) = (*m).opt.ccd_tolerance;
+        *(config_buf.as_mut_ptr().add(16) as *mut i32) = 1;   // max_contacts = 1
+        *(config_buf.as_mut_ptr().add(24) as *mut f64) = distmax;  // dist_cutoff
+
+        let buf_size = crate::engine::engine_collision_gjk::mjc_ccd_size((*m).opt.ccd_iterations);
+        let buf_ptr = crate::engine::engine_memory::mj_stack_alloc_byte(d, buf_size, std::mem::align_of::<f64>());
+        *(config_buf.as_mut_ptr().add(32) as *mut *mut ()) = buf_ptr;
+        let config = config_buf.as_mut_ptr() as *mut crate::types::mjCCDConfig;
+
+        let mut obj1_buf = [0u8; std::mem::size_of::<crate::types::mjCCDObj>()];
+        let obj1 = obj1_buf.as_mut_ptr() as *mut crate::types::mjCCDObj;
+        let mut obj2_buf = [0u8; std::mem::size_of::<crate::types::mjCCDObj>()];
+        let obj2 = obj2_buf.as_mut_ptr() as *mut crate::types::mjCCDObj;
+        crate::engine::engine_collision_convex::mjc_init_ccd_obj(obj1, m, d as *const _, g1, 0.0);
+        crate::engine::engine_collision_convex::mjc_init_ccd_obj(obj2, m, d as *const _, g2, 0.0);
+
+        // build status on stack
+        let mut status_buf = [0u8; 2780];
+        let status = status_buf.as_mut_ptr() as *mut crate::types::mjCCDStatus;
+
+        let dist = crate::engine::engine_collision_gjk::mjc_ccd(config as *const _, status, obj1, obj2);
+        crate::engine::engine_memory::mj_free_stack(d);
+
+        // witness points computed if dist <= distmax
+        let nx = *(status_buf.as_ptr().add(2408) as *const i32);
+        if !fromto.is_null() && nx > 0 {
+            let x1 = status_buf.as_ptr().add(8) as *const f64;
+            let x2 = status_buf.as_ptr().add(1208) as *const f64;
+            crate::engine::engine_util_blas::mju_copy3(fromto, x1);
+            crate::engine::engine_util_blas::mju_copy3(fromto.add(3), x2);
+        }
+
+        if dist < distmax { dist } else { distmax }
+    }
 }
 
 /// C: mj_stateSize (engine/engine_support.h:41)
