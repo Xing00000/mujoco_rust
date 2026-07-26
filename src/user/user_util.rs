@@ -1052,7 +1052,39 @@ pub fn mjuu_trn_vec_pose(res: *mut f64, pos: *const f64, quat: *const f64, vec: 
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjuu_full_inertia(quat: *mut f64, inertia: *mut f64, fullinertia: *const f64) -> *const i8 {
-    todo!() // mjuu_fullInertia
+    const MJ_EPS: f64 = 1e-14;
+
+    // SAFETY: quat[4], inertia[3], fullinertia[6] valid (caller contract, may be null).
+    unsafe {
+        if !mjuu_defined(*fullinertia) {
+            return std::ptr::null();
+        }
+
+        let mut eigval = [0.0f64; 3];
+        let mut eigvec = [0.0f64; 9];
+        let mut quattmp = [0.0f64; 4];
+        let full: [f64; 9] = [
+            *fullinertia.add(0), *fullinertia.add(3), *fullinertia.add(4),
+            *fullinertia.add(3), *fullinertia.add(1), *fullinertia.add(5),
+            *fullinertia.add(4), *fullinertia.add(5), *fullinertia.add(2),
+        ];
+
+        mjuu_eig3(eigval.as_mut_ptr(), eigvec.as_mut_ptr(), quattmp.as_mut_ptr(), full.as_ptr());
+
+        // check minimal eigenvalue
+        if eigval[2] < MJ_EPS {
+            return b"inertia must have positive eigenvalues\0".as_ptr() as *const i8;
+        }
+
+        if !quat.is_null() {
+            mjuu_copyvec(quat as *mut T1, quattmp.as_ptr() as *const T2, 4);
+        }
+        if !inertia.is_null() {
+            mjuu_copyvec(inertia as *mut T1, eigval.as_ptr() as *const T2, 3);
+        }
+
+        std::ptr::null()
+    }
 }
 
 /// C: FilePath::IsAbs (user/user_util.h:191)
