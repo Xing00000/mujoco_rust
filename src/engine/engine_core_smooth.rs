@@ -86,7 +86,142 @@ pub fn mju_mul_mat_mat322(C: *mut f64, A: *const f64, B: *const f64) {
 /// Calls: mji_addTo3, mji_addToScl3, mji_axisAngle2Quat, mji_copy3, mji_copy4, mji_mulMatVec3, mji_mulQuat, mji_rotVecQuat, mji_sub3, mju_message, mju_mulQuat, mju_normalize4, mju_quat2Mat, mju_unit4, mju_zero, mju_zero3
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_kinematics1(m: *const mjModel, d: *mut mjData) {
-    todo!() // mj_kinematics1
+    use crate::types::*;
+    const MJ_JNT_FREE: i32 = mjtJoint_mjJNT_FREE as i32;
+    const MJ_JNT_SLIDE: i32 = mjtJoint_mjJNT_SLIDE as i32;
+    const MJ_JNT_BALL: i32 = mjtJoint_mjJNT_BALL as i32;
+    const MJ_JNT_HINGE: i32 = mjtJoint_mjJNT_HINGE as i32;
+    const MJ_ENBL_SLEEP: i32 = mjtEnableBit_mjENBL_SLEEP as i32;
+    const MJ_S_STATIC: i32 = mjtSleepState_mjS_STATIC as i32;
+    const MJ_S_ASLEEP: i32 = mjtSleepState_mjS_ASLEEP as i32;
+
+    // SAFETY: m and d are valid model/data pointers. All field accesses follow known types.
+    unsafe {
+        let nbody = (*m).nbody as usize;
+
+        // set world position and orientation
+        crate::engine::engine_inline::mji_zero3((*d).xpos);
+        crate::engine::engine_util_blas::mju_unit4((*d).xquat);
+        crate::engine::engine_inline::mji_zero3((*d).xipos);
+        crate::engine::engine_util_blas::mju_zero((*d).xmat, 9);
+        crate::engine::engine_util_blas::mju_zero((*d).ximat, 9);
+        *(*d).xmat.add(0) = 1.0; *(*d).xmat.add(4) = 1.0; *(*d).xmat.add(8) = 1.0;
+        *(*d).ximat.add(0) = 1.0; *(*d).ximat.add(4) = 1.0; *(*d).ximat.add(8) = 1.0;
+
+        let sleep_filter = ((*m).opt.enableflags & MJ_ENBL_SLEEP) != 0;
+
+        for i in 1..nbody {
+            // skip static bodies
+            if sleep_filter && *(*d).body_awake.add(i) == MJ_S_STATIC {
+                continue;
+            }
+
+            let mut xpos = [0.0f64; 3];
+            let mut xquat = [0.0f64; 4];
+
+            let jntadr = *(*m).body_jntadr.add(i) as usize;
+            let jntnum = *(*m).body_jntnum.add(i);
+
+            // free joint
+            if jntnum == 1 && *(*m).jnt_type.add(jntadr) == MJ_JNT_FREE {
+                let qadr = *(*m).jnt_qposadr.add(jntadr) as usize;
+                crate::engine::engine_inline::mji_copy3(xpos.as_mut_ptr(), (*d).qpos.add(qadr));
+                crate::engine::engine_inline::mji_copy4(xquat.as_mut_ptr(), (*d).qpos.add(qadr + 3));
+                crate::engine::engine_util_blas::mju_normalize4(xquat.as_mut_ptr());
+                crate::engine::engine_inline::mji_copy3((*d).xanchor.add(3 * jntadr), xpos.as_ptr());
+                crate::engine::engine_inline::mji_copy3((*d).xaxis.add(3 * jntadr), (*m).jnt_axis.add(3 * jntadr));
+            } else {
+                let pid = *(*m).body_parentid.add(i) as usize;
+
+                // get body pos and quat
+                let (bodypos, bodyquat): (*const f64, *const f64);
+                let mut quat_buf = [0.0f64; 4];
+                if *(*m).body_mocapid.add(i) >= 0 {
+                    let mocapid = *(*m).body_mocapid.add(i) as usize;
+                    bodypos = (*d).mocap_pos.add(3 * mocapid);
+                    crate::engine::engine_inline::mji_copy4(quat_buf.as_mut_ptr(), (*d).mocap_quat.add(4 * mocapid));
+                    crate::engine::engine_util_blas::mju_normalize4(quat_buf.as_mut_ptr());
+                    bodyquat = quat_buf.as_ptr();
+                } else {
+                    bodypos = (*m).body_pos.add(3 * i);
+                    bodyquat = (*m).body_quat.add(4 * i);
+                }
+
+                // apply fixed translation/rotation relative to parent
+                if pid > 0 {
+                    crate::engine::engine_inline::mji_mul_mat_vec3(xpos.as_mut_ptr(), (*d).xmat.add(9 * pid), bodypos);
+                    crate::engine::engine_inline::mji_add_to3(xpos.as_mut_ptr(), (*d).xpos.add(3 * pid));
+                    crate::engine::engine_inline::mji_mul_quat(xquat.as_mut_ptr(), (*d).xquat.add(4 * pid), bodyquat);
+                } else {
+                    crate::engine::engine_inline::mji_copy3(xpos.as_mut_ptr(), bodypos);
+                    crate::engine::engine_inline::mji_copy4(xquat.as_mut_ptr(), bodyquat);
+                }
+
+                // accumulate joints
+                for j in 0..jntnum as usize {
+                    let jid = jntadr + j;
+                    let qadr = *(*m).jnt_qposadr.add(jid) as usize;
+                    let jtype = *(*m).jnt_type.add(jid);
+
+                    let mut xaxis = [0.0f64; 3];
+                    let mut xanchor = [0.0f64; 3];
+
+                    // axis in global frame
+                    crate::engine::engine_inline::mji_rot_vec_quat(xaxis.as_mut_ptr(), (*m).jnt_axis.add(3 * jid), xquat.as_ptr());
+
+                    // anchor in global frame
+                    crate::engine::engine_inline::mji_rot_vec_quat(xanchor.as_mut_ptr(), (*m).jnt_pos.add(3 * jid), xquat.as_ptr());
+                    crate::engine::engine_inline::mji_add_to3(xanchor.as_mut_ptr(), xpos.as_ptr());
+
+                    // apply joint transformation
+                    if jtype == MJ_JNT_SLIDE {
+                        let disp = *(*d).qpos.add(qadr) - *(*m).qpos0.add(qadr);
+                        crate::engine::engine_inline::mji_add_to_scl3(xpos.as_mut_ptr(), xaxis.as_ptr(), disp);
+                    } else if jtype == MJ_JNT_BALL || jtype == MJ_JNT_HINGE {
+                        let mut qloc = [0.0f64; 4];
+                        if jtype == MJ_JNT_BALL {
+                            crate::engine::engine_inline::mji_copy4(qloc.as_mut_ptr(), (*d).qpos.add(qadr));
+                            crate::engine::engine_util_blas::mju_normalize4(qloc.as_mut_ptr());
+                        } else {
+                            let angle = *(*d).qpos.add(qadr) - *(*m).qpos0.add(qadr);
+                            crate::engine::engine_inline::mji_axis_angle2quat(qloc.as_mut_ptr(), (*m).jnt_axis.add(3 * jid), angle);
+                        }
+                        crate::engine::engine_util_spatial::mju_mul_quat(xquat.as_mut_ptr(), xquat.as_ptr(), qloc.as_ptr());
+                        let mut vec = [0.0f64; 3];
+                        crate::engine::engine_inline::mji_rot_vec_quat(vec.as_mut_ptr(), (*m).jnt_pos.add(3 * jid), xquat.as_ptr());
+                        crate::engine::engine_inline::mji_sub3(xpos.as_mut_ptr(), xanchor.as_ptr(), vec.as_ptr());
+                    } else {
+                        crate::engine::engine_util_errmem::mju_error(
+                            b"mj_kinematics1: unknown joint type\0".as_ptr() as *const i8);
+                    }
+
+                    crate::engine::engine_inline::mji_copy3((*d).xanchor.add(3 * jid), xanchor.as_ptr());
+                    crate::engine::engine_inline::mji_copy3((*d).xaxis.add(3 * jid), xaxis.as_ptr());
+                }
+            }
+
+            // normalize quaternion
+            crate::engine::engine_util_blas::mju_normalize4(xquat.as_mut_ptr());
+
+            // sleeping body: check for mismatch
+            if sleep_filter && jntnum > 0 && *(*d).body_awake.add(i) == MJ_S_ASLEEP {
+                let pos = (*d).xpos.add(3 * i);
+                let xq = (*d).xquat.add(4 * i);
+                let matched = xpos[0] == *pos.add(0) && xpos[1] == *pos.add(1) && xpos[2] == *pos.add(2)
+                    && xquat[0] == *xq.add(0) && xquat[1] == *xq.add(1)
+                    && xquat[2] == *xq.add(2) && xquat[3] == *xq.add(3);
+                if matched { continue; }
+                else {
+                    *(*d).tree_awake.add(*(*m).body_treeid.add(i) as usize) = 1;
+                }
+            }
+
+            // assign xquat, xpos, xmat
+            crate::engine::engine_inline::mji_copy4((*d).xquat.add(4 * i), xquat.as_ptr());
+            crate::engine::engine_inline::mji_copy3((*d).xpos.add(3 * i), xpos.as_ptr());
+            crate::engine::engine_util_spatial::mju_quat2mat((*d).xmat.add(9 * i), xquat.as_ptr());
+        }
+    }
 }
 
 /// C: mj_kinematics2 (engine/engine_core_smooth.h:32)
