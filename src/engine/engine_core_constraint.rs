@@ -1737,7 +1737,91 @@ pub fn compute_y_backsub(Y: *mut f64, Y_rownnz: *const i32, Y_rowadr: *const i32
 /// Calls: computeY_backsub, computeY_fill, computeY_precount, mj_arenaAllocByte, mj_clearEfc, mj_freeStack, mj_isSparse, mj_markStack, mj_solveM2, mj_stackAllocInfo, mj_warning, mju_dot
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_make_y(m: *const mjModel, d: *mut mjData, flg_diagexact: i32) {
-    todo!() // mj_makeY
+    use crate::types::*;
+    const MJ_WARN_CNSTRFULL: i32 = mjtWarning_mjWARN_CNSTRFULL as i32;
+
+    // SAFETY: m, d are valid model/data pointers. Arena alloc may return null on failure.
+    unsafe {
+        let nefc = (*d).nefc;
+        let nv = (*m).nv as i32;
+
+        crate::engine::engine_memory::mj_mark_stack(d);
+
+        // inverse square root of D from LDL decomposition
+        let sqrtInvD = crate::engine::engine_memory::mj_stack_alloc_info(
+            d, nv as usize * 8, 8, std::ptr::null(), 0) as *mut f64;
+        for i in 0..nv as usize {
+            let diag = (*(*m).M_rowadr.add(i) + *(*m).M_rownnz.add(i) - 1) as usize;
+            *sqrtInvD.add(i) = 1.0 / (*(*d).qLD.add(diag)).sqrt();
+        }
+
+        if crate::engine::engine_core_util::mj_is_sparse(m) != 0 {
+            (*d).efc_Y_rownnz = crate::engine::engine_memory::mj_arena_alloc_byte(
+                d, 4 * nefc as usize, 4) as *mut i32;
+            (*d).efc_Y_rowadr = crate::engine::engine_memory::mj_arena_alloc_byte(
+                d, 4 * nefc as usize, 4) as *mut i32;
+            if (*d).efc_Y_rownnz.is_null() || (*d).efc_Y_rowadr.is_null() {
+                crate::engine::engine_core_util::mj_warning(d, MJ_WARN_CNSTRFULL, (*d).narena as i32);
+                crate::engine::engine_memory::mj_clear_efc(d);
+                (*d).parena = (*d).ncon as usize * std::mem::size_of::<mjContact>();
+                crate::engine::engine_memory::mj_free_stack(d);
+                return;
+            }
+            let marker = crate::engine::engine_memory::mj_stack_alloc_info(
+                d, nv as usize * 4, 4, std::ptr::null(), 0) as *mut i32;
+            (*d).nY = compute_y_precount(
+                (*d).efc_Y_rownnz, (*d).efc_Y_rowadr, nefc, nv,
+                (*d).efc_J_rownnz as *const i32, (*d).efc_J_rowadr as *const i32, (*d).efc_J_colind as *const i32,
+                (*m).M_rownnz as *const i32, (*m).M_rowadr as *const i32, (*m).M_colind as *const i32, marker);
+            (*d).efc_Y = crate::engine::engine_memory::mj_arena_alloc_byte(
+                d, 8 * (*d).nY as usize, 8) as *mut f64;
+            (*d).efc_Y_colind = crate::engine::engine_memory::mj_arena_alloc_byte(
+                d, 4 * (*d).nY as usize, 4) as *mut i32;
+            if (*d).efc_Y.is_null() || (*d).efc_Y_colind.is_null() {
+                crate::engine::engine_core_util::mj_warning(d, MJ_WARN_CNSTRFULL, (*d).narena as i32);
+                crate::engine::engine_memory::mj_clear_efc(d);
+                (*d).parena = (*d).ncon as usize * std::mem::size_of::<mjContact>();
+                crate::engine::engine_memory::mj_free_stack(d);
+                return;
+            }
+            compute_y_fill((*d).efc_Y, (*d).efc_Y_colind,
+                (*d).efc_Y_rownnz as *const i32, (*d).efc_Y_rowadr as *const i32, nefc,
+                (*d).efc_J as *const f64, (*d).efc_J_rownnz as *const i32, (*d).efc_J_rowadr as *const i32,
+                (*d).efc_J_colind as *const i32, (*m).dof_parentid as *const i32);
+            compute_y_backsub((*d).efc_Y, (*d).efc_Y_rownnz as *const i32, (*d).efc_Y_rowadr as *const i32,
+                (*d).efc_Y_colind as *const i32, nefc, (*d).qLD as *const f64,
+                (*m).M_rownnz as *const i32, (*m).M_rowadr as *const i32, (*m).M_colind as *const i32,
+                sqrtInvD as *const f64);
+            if flg_diagexact != 0 {
+                for i in 0..nefc as usize {
+                    let adr = *(*d).efc_Y_rowadr.add(i) as usize;
+                    let nnz = *(*d).efc_Y_rownnz.add(i);
+                    *(*d).efc_diagA.add(i) = crate::engine::engine_util_blas::mju_dot(
+                        (*d).efc_Y.add(adr), (*d).efc_Y.add(adr), nnz);
+                }
+            }
+        } else {
+            (*d).nY = nefc * nv;
+            (*d).efc_Y = crate::engine::engine_memory::mj_arena_alloc_byte(
+                d, 8 * (*d).nY as usize, 8) as *mut f64;
+            if (*d).efc_Y.is_null() {
+                crate::engine::engine_core_util::mj_warning(d, MJ_WARN_CNSTRFULL, (*d).narena as i32);
+                crate::engine::engine_memory::mj_clear_efc(d);
+                (*d).parena = (*d).ncon as usize * std::mem::size_of::<mjContact>();
+                crate::engine::engine_memory::mj_free_stack(d);
+                return;
+            }
+            crate::engine::engine_core_smooth::mj_solve_m2(m, d, (*d).efc_Y,
+                (*d).efc_J as *const f64, sqrtInvD as *const f64, nefc);
+            if flg_diagexact != 0 {
+                for i in 0..nefc as usize {
+                    *(*d).efc_diagA.add(i) = crate::engine::engine_util_blas::mju_dot(
+                        (*d).efc_Y.add(i * nv as usize), (*d).efc_Y.add(i * nv as usize), nv);
+                }
+            }
+        }
+        crate::engine::engine_memory::mj_free_stack(d);
+    }
 }
 
 /// C: mj_makeAR (engine/engine_core_constraint.c:2999)

@@ -286,7 +286,14 @@ pub fn mj_kinematics2(m: *const mjModel, d: *mut mjData) {
 /// Calls: mj_kinematics1, mj_kinematics2, mj_updateSleep, mj_wake
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_kinematics(m: *const mjModel, d: *mut mjData) {
-    todo!() // mj_kinematics
+    // SAFETY: m, d are valid model/data pointers.
+    unsafe {
+        mj_kinematics1(m, d);
+        if crate::engine::engine_sleep::mj_wake(m, d) != 0 {
+            crate::engine::engine_sleep::mj_update_sleep(m, d);
+        }
+        mj_kinematics2(m, d);
+    }
 }
 
 /// C: mj_comPos (engine/engine_core_smooth.h:38)
