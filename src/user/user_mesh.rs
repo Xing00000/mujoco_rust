@@ -565,7 +565,29 @@ pub fn compute_bending(bending: *mut f64, pos: *mut f64, v: *const i32, mu: f64,
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn quadrature_gauss_legendre(points: *mut f64, weights: *mut f64, order: i32, a: f64, b: f64) {
-    todo!() // quadratureGaussLegendre
+    // Gauss-Legendre quadrature on [a,b] mapped from [-1,1].
+    // SAFETY: points and weights are valid arrays sized appropriately for order.
+    unsafe {
+        if order > 3 {
+            crate::engine::engine_util_errmem::mju_error(
+                b"Integration order > 3 not yet supported.\0".as_ptr() as *const i8);
+        }
+        let p0 = (a + b) / 2.0;
+        let dpdx = (b - a) / 2.0;
+        if order == 2 {
+            *points.add(0) = -dpdx / (3.0f64).sqrt() + p0;
+            *points.add(1) =  dpdx / (3.0f64).sqrt() + p0;
+            *weights.add(0) = dpdx;
+            *weights.add(1) = dpdx;
+        } else {
+            *points.add(0) = p0;
+            *points.add(1) = -dpdx / (3.0f64 / 5.0).sqrt() + p0;
+            *points.add(2) =  dpdx / (3.0f64 / 5.0).sqrt() + p0;
+            *weights.add(0) = 8.0 / 9.0 * dpdx;
+            *weights.add(1) = 5.0 / 9.0 * dpdx;
+            *weights.add(2) = 5.0 / 9.0 * dpdx;
+        }
+    }
 }
 
 /// C: phi (user/user_mesh.cc:3752)
