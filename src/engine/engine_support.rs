@@ -652,7 +652,69 @@ pub fn mj_xfrc_accumulate(m: *const mjModel, d: *mut mjData, qfrc: *mut f64) {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_geom_distance(m: *const mjModel, d: *mut mjData, geom1: i32, geom2: i32, distmax: f64, fromto: *mut f64) -> f64 {
-    todo!() // mj_geomDistance
+    use crate::types::*;
+    const MJ_DSBL_NATIVECCD: i32 = mjtDisableBit_mjDSBL_NATIVECCD as i32;
+    const MJ_MAXCONPAIR: usize = 50;
+
+    // SAFETY: m, d are valid pointers. con array is stack-local.
+    unsafe {
+        let mut con_buf = [0u8; MJ_MAXCONPAIR * std::mem::size_of::<mjPreContact>()];
+        let con = con_buf.as_mut_ptr() as *mut mjPreContact;
+        let mut dist = distmax;
+        if !fromto.is_null() {
+            crate::engine::engine_util_blas::mju_zero(fromto, 6);
+        }
+
+        // flip geom order if required
+        let flip = *(*m).geom_type.add(geom1 as usize) > *(*m).geom_type.add(geom2 as usize);
+        let (g1, g2) = if flip { (geom2, geom1) } else { (geom1, geom2) };
+        let type1 = *(*m).geom_type.add(g1 as usize) as usize;
+        let type2 = *(*m).geom_type.add(g2 as usize) as usize;
+
+        // get collision function from table
+        let guard = crate::types::MJCOLLISIONFUNC.lock().unwrap();
+        let func = guard[type1][type2];
+        drop(guard);
+
+        if func.is_none() {
+            return dist;
+        }
+        let func_fn = func.unwrap();
+        // Compare function pointer addresses using pointer equality
+        let convex_fn = crate::engine::engine_collision_convex::mjc_convex as *const ();
+        let boxbox_fn = crate::engine::engine_collision_primitive::mjc_box_box as *const ();
+        let func_ptr = func_fn as *const ();
+
+        // use nativeccd if enabled and function is convex/box-box
+        if ((*m).opt.disableflags & MJ_DSBL_NATIVECCD) == 0 {
+            if func_ptr == convex_fn || func_ptr == boxbox_fn {
+                return mj_geom_distance_ccd(m, d, geom1, geom2, distmax, fromto);
+            }
+        }
+
+        // call collision function with distmax as margin
+        let num = func_fn(m, d, con, g1, g2, distmax);
+
+        // find smallest distance
+        let mut smallest: i32 = -1;
+        for i in 0..num as usize {
+            let dist_i = (*con.add(i)).dist;
+            if dist_i < dist {
+                dist = dist_i;
+                smallest = i as i32;
+            }
+        }
+
+        // write fromto if given and collision found
+        if !fromto.is_null() && smallest >= 0 {
+            let c = con.add(smallest as usize);
+            let sign: f64 = if flip { -1.0 } else { 1.0 };
+            crate::engine::engine_util_blas::mju_add_scl3(fromto, (*c).pos.as_ptr(), (*c).normal.as_ptr(), -0.5 * sign * dist);
+            crate::engine::engine_util_blas::mju_add_scl3(fromto.add(3), (*c).pos.as_ptr(), (*c).normal.as_ptr(), 0.5 * sign * dist);
+        }
+
+        dist
+    }
 }
 
 /// C: mj_differentiatePos (engine/engine_support.h:94)
