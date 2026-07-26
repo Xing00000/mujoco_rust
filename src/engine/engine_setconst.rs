@@ -684,7 +684,25 @@ pub fn set_stat(m: *mut mjModel, d: *mut mjData) {
 /// Calls: mj_comPos, mj_kinematics, mj_tendon, mj_transmission, mju_copy
 #[allow(unused_variables, non_snake_case)]
 pub fn set_spring(m: *mut mjModel, d: *mut mjData) {
-    todo!() // setSpring
+    // SAFETY: m, d are valid model/data pointers. All callee functions are safe to call.
+    unsafe {
+        // run computations in qpos_spring
+        crate::engine::engine_util_blas::mju_copy((*d).qpos, (*m).qpos_spring as *const f64, (*m).nq as i32);
+        crate::engine::engine_core_smooth::mj_kinematics(m as *const _, d);
+        crate::engine::engine_core_smooth::mj_com_pos(m as *const _, d);
+        crate::engine::engine_core_smooth::mj_tendon(m as *const _, d);
+        crate::engine::engine_core_smooth::mj_transmission(m as *const _, d);
+
+        // copy if model spring length is -1
+        for i in 0..(*m).ntendon as usize {
+            if *(*m).tendon_lengthspring.add(2 * i) == -1.0
+                && *(*m).tendon_lengthspring.add(2 * i + 1) == -1.0
+            {
+                *(*m).tendon_lengthspring.add(2 * i) = *(*d).ten_length.add(i);
+                *(*m).tendon_lengthspring.add(2 * i + 1) = *(*d).ten_length.add(i);
+            }
+        }
+    }
 }
 
 /// C: evalAct (engine/engine_setconst.c:1235)
