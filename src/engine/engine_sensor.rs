@@ -670,7 +670,338 @@ pub fn fill_raydata(ptr: *mut f64, dataspec: i32, dist: f64, origin: *const f64,
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_compute_sensor_pos(m: *const mjModel, d: *mut mjData, i: i32, sensordata: *mut f64) {
-    todo!() // mj_computeSensorPos
+    use crate::types::*;
+    const MJ_SENS_MAGNETOMETER: u32 = mjtSensor_mjSENS_MAGNETOMETER;
+    const MJ_SENS_CAMPROJECTION: u32 = mjtSensor_mjSENS_CAMPROJECTION;
+    const MJ_SENS_RANGEFINDER: u32 = mjtSensor_mjSENS_RANGEFINDER;
+    const MJ_SENS_JOINTPOS: u32 = mjtSensor_mjSENS_JOINTPOS;
+    const MJ_SENS_TENDONPOS: u32 = mjtSensor_mjSENS_TENDONPOS;
+    const MJ_SENS_ACTUATORPOS: u32 = mjtSensor_mjSENS_ACTUATORPOS;
+    const MJ_SENS_BALLQUAT: u32 = mjtSensor_mjSENS_BALLQUAT;
+    const MJ_SENS_JOINTLIMITPOS: u32 = mjtSensor_mjSENS_JOINTLIMITPOS;
+    const MJ_SENS_TENDONLIMITPOS: u32 = mjtSensor_mjSENS_TENDONLIMITPOS;
+    const MJ_SENS_FRAMEPOS: u32 = mjtSensor_mjSENS_FRAMEPOS;
+    const MJ_SENS_FRAMEXAXIS: u32 = mjtSensor_mjSENS_FRAMEXAXIS;
+    const MJ_SENS_FRAMEYAXIS: u32 = mjtSensor_mjSENS_FRAMEYAXIS;
+    const MJ_SENS_FRAMEZAXIS: u32 = mjtSensor_mjSENS_FRAMEZAXIS;
+    const MJ_SENS_FRAMEQUAT: u32 = mjtSensor_mjSENS_FRAMEQUAT;
+    const MJ_SENS_SUBTREECOM: u32 = mjtSensor_mjSENS_SUBTREECOM;
+    const MJ_SENS_INSIDESITE: u32 = mjtSensor_mjSENS_INSIDESITE;
+    const MJ_SENS_GEOMDIST: u32 = mjtSensor_mjSENS_GEOMDIST;
+    const MJ_SENS_GEOMNORMAL: u32 = mjtSensor_mjSENS_GEOMNORMAL;
+    const MJ_SENS_GEOMFROMTO: u32 = mjtSensor_mjSENS_GEOMFROMTO;
+    const MJ_SENS_E_POTENTIAL: u32 = mjtSensor_mjSENS_E_POTENTIAL;
+    const MJ_SENS_E_KINETIC: u32 = mjtSensor_mjSENS_E_KINETIC;
+    const MJ_SENS_CLOCK: u32 = mjtSensor_mjSENS_CLOCK;
+    const MJ_CNSTR_LIMIT_JOINT: i32 = mjtConstraint_mjCNSTR_LIMIT_JOINT as i32;
+    const MJ_CNSTR_LIMIT_TENDON: i32 = mjtConstraint_mjCNSTR_LIMIT_TENDON as i32;
+    const MJ_OBJ_BODY: u32 = mjtObj_mjOBJ_BODY;
+    const MJ_OBJ_SITE: u32 = mjtObj_mjOBJ_SITE;
+    const MJ_PROJ_PERSPECTIVE: i32 = mjtProjection_mjPROJ_PERSPECTIVE as i32;
+    const MJ_RAYDATA_NORMAL: i32 = mjtRayDataField_mjRAYDATA_NORMAL as i32;
+    const MJ_NSENS: usize = 3;
+    const MJ_MINVAL: f64 = 1e-15;
+
+    // SAFETY: m, d are valid pointers. sensordata has sufficient storage for this sensor type.
+    unsafe {
+        let ne = (*d).ne;
+        let nf = (*d).nf;
+        let _nefc = (*d).nefc;
+        let sensor_i = i as usize;
+        let sensor_type = *(*m).sensor_type.add(sensor_i) as u32;
+        let objtype = *(*m).sensor_objtype.add(sensor_i) as u32;
+        let objid = *(*m).sensor_objid.add(sensor_i) as usize;
+        let refid = *(*m).sensor_refid.add(sensor_i);
+        let reftype = *(*m).sensor_reftype.add(sensor_i) as u32;
+
+        let mut rvec = [0.0f64; 3];
+        let mut xpos: *mut f64 = std::ptr::null_mut();
+        let mut xmat: *mut f64 = std::ptr::null_mut();
+        let mut xpos_ref: *mut f64 = std::ptr::null_mut();
+        let mut xmat_ref: *mut f64 = std::ptr::null_mut();
+
+        match sensor_type {
+            t if t == MJ_SENS_MAGNETOMETER => {
+                crate::engine::engine_util_blas::mju_mul_mat_t_vec(
+                    sensordata, (*d).site_xmat.add(9 * objid),
+                    (*m).opt.magnetic.as_ptr(), 3, 3);
+            }
+
+            t if t == MJ_SENS_CAMPROJECTION => {
+                cam_project(sensordata,
+                    (*d).site_xpos.add(3 * objid),
+                    (*d).cam_xpos.add(3 * refid as usize),
+                    (*d).cam_xmat.add(9 * refid as usize),
+                    (*m).cam_resolution.add(2 * refid as usize),
+                    *(*m).cam_fovy.add(refid as usize),
+                    (*m).cam_intrinsic.add(4 * refid as usize),
+                    (*m).cam_sensorsize.add(2 * refid as usize));
+            }
+
+            t if t == MJ_SENS_RANGEFINDER => {
+                let dataspec = *(*m).sensor_intprm.add(sensor_i * MJ_NSENS);
+                if objtype == MJ_OBJ_SITE {
+                    rvec[0] = *(*d).site_xmat.add(9 * objid + 2);
+                    rvec[1] = *(*d).site_xmat.add(9 * objid + 5);
+                    rvec[2] = *(*d).site_xmat.add(9 * objid + 8);
+                    let origin = (*d).site_xpos.add(3 * objid);
+                    let mut geomid: i32 = -1;
+                    let mut normal = [0.0f64; 3];
+                    let p_normal: *mut f64 = if dataspec & (1 << MJ_RAYDATA_NORMAL) != 0 {
+                        normal.as_mut_ptr()
+                    } else {
+                        std::ptr::null_mut()
+                    };
+                    let dist = crate::engine::engine_ray::mj_ray(m, d as *const _, origin,
+                        rvec.as_ptr(), std::ptr::null(), true,
+                        *(*m).site_bodyid.add(objid), &mut geomid, p_normal);
+                    fill_raydata(sensordata, dataspec, dist, origin, rvec.as_ptr(),
+                        normal.as_ptr(), std::ptr::null(), std::ptr::null());
+                } else {
+                    let width = *(*m).cam_resolution.add(2 * objid) as usize;
+                    let height = *(*m).cam_resolution.add(2 * objid + 1) as usize;
+                    let bodyexclude = *(*m).cam_bodyid.add(objid);
+                    let cam_xpos = (*d).cam_xpos.add(3 * objid);
+                    let cam_xmat = (*d).cam_xmat.add(9 * objid);
+                    let projection = *(*m).cam_projection.add(objid);
+                    let cam_z = [*cam_xmat.add(2), *cam_xmat.add(5), *cam_xmat.add(8)];
+                    let mut fx = 0.0f64; let mut fy = 0.0f64;
+                    let mut cx = 0.0f64; let mut cy = 0.0f64;
+                    let mut ortho_extent = 0.0f64;
+                    crate::engine::engine_support::mju_cam_intrinsics(m, objid as i32,
+                        &mut fx, &mut fy, &mut cx, &mut cy, &mut ortho_extent);
+
+                    if projection == MJ_PROJ_PERSPECTIVE {
+                        let npixel = width * height;
+                        crate::engine::engine_memory::mj_mark_stack(d);
+                        let vec_ptr = crate::engine::engine_memory::mj_stack_alloc_info(
+                            d, 3 * npixel * 8, 8, std::ptr::null(), 0) as *mut f64;
+                        let geomid_ptr = crate::engine::engine_memory::mj_stack_alloc_info(
+                            d, npixel * 4, 4, std::ptr::null(), 0) as *mut i32;
+                        let dist_ptr = crate::engine::engine_memory::mj_stack_alloc_info(
+                            d, npixel * 8, 8, std::ptr::null(), 0) as *mut f64;
+                        let has_normal = dataspec & (1 << MJ_RAYDATA_NORMAL) != 0;
+                        let normals_ptr = if has_normal {
+                            crate::engine::engine_memory::mj_stack_alloc_info(
+                                d, 3 * npixel * 8, 8, std::ptr::null(), 0) as *mut f64
+                        } else { std::ptr::null_mut() };
+
+                        for row in 0..height {
+                            for col in 0..width {
+                                let idx = row * width + col;
+                                let mut _origin = [0.0f64; 3];
+                                crate::engine::engine_util_misc::mju_cam_pixel_ray(
+                                    _origin.as_mut_ptr(), vec_ptr.add(3 * idx),
+                                    cam_xpos, cam_xmat,
+                                    col as i32, row as i32, fx, fy, cx, cy,
+                                    projection, ortho_extent);
+                            }
+                        }
+                        crate::engine::engine_ray::mj_multi_ray(m, d, cam_xpos, vec_ptr as *const _,
+                            std::ptr::null(), true, bodyexclude,
+                            geomid_ptr, dist_ptr, normals_ptr, npixel as i32, f64::MAX);
+
+                        let mut ptr = sensordata;
+                        for row in 0..height {
+                            for col in 0..width {
+                                let idx = row * width + col;
+                                let normal_ptr = if !normals_ptr.is_null() {
+                                    normals_ptr.add(3 * idx)
+                                } else { std::ptr::null_mut() };
+                                ptr = fill_raydata(ptr, dataspec, *dist_ptr.add(idx),
+                                    cam_xpos, vec_ptr.add(3 * idx), normal_ptr as *const _,
+                                    cam_xpos, cam_z.as_ptr());
+                            }
+                        }
+                        crate::engine::engine_memory::mj_free_stack(d);
+                    } else {
+                        let mut ptr = sensordata;
+                        for row in 0..height {
+                            for col in 0..width {
+                                let mut origin = [0.0f64; 3];
+                                let mut direction = [0.0f64; 3];
+                                crate::engine::engine_util_misc::mju_cam_pixel_ray(
+                                    origin.as_mut_ptr(), direction.as_mut_ptr(),
+                                    cam_xpos, cam_xmat,
+                                    col as i32, row as i32, fx, fy, cx, cy,
+                                    projection, ortho_extent);
+                                let mut geomid: i32 = -1;
+                                let mut normal = [0.0f64; 3];
+                                let dist = crate::engine::engine_ray::mj_ray(m, d as *const _,
+                                    origin.as_ptr(), direction.as_ptr(),
+                                    std::ptr::null(), true, bodyexclude,
+                                    &mut geomid, normal.as_mut_ptr());
+                                ptr = fill_raydata(ptr, dataspec, dist, origin.as_ptr(),
+                                    direction.as_ptr(), normal.as_ptr(), cam_xpos, cam_z.as_ptr());
+                            }
+                        }
+                    }
+                }
+            }
+
+            t if t == MJ_SENS_JOINTPOS => {
+                *sensordata = *(*d).qpos.add(*(*m).jnt_qposadr.add(objid) as usize);
+            }
+
+            t if t == MJ_SENS_TENDONPOS => {
+                *sensordata = *(*d).ten_length.add(objid);
+            }
+
+            t if t == MJ_SENS_ACTUATORPOS => {
+                *sensordata = *(*d).actuator_length.add(objid);
+            }
+
+            t if t == MJ_SENS_BALLQUAT => {
+                crate::engine::engine_util_blas::mju_copy4(sensordata,
+                    (*d).qpos.add(*(*m).jnt_qposadr.add(objid) as usize));
+                crate::engine::engine_util_blas::mju_normalize4(sensordata);
+            }
+
+            t if t == MJ_SENS_JOINTLIMITPOS => {
+                *sensordata = 0.0;
+                for j in (ne + nf)..(*d).nefc {
+                    if *(*d).efc_type.add(j as usize) == MJ_CNSTR_LIMIT_JOINT
+                        && *(*d).efc_id.add(j as usize) == objid as i32
+                    {
+                        *sensordata = *(*d).efc_pos.add(j as usize) - *(*d).efc_margin.add(j as usize);
+                        break;
+                    }
+                }
+            }
+
+            t if t == MJ_SENS_TENDONLIMITPOS => {
+                *sensordata = 0.0;
+                for j in (ne + nf)..(*d).nefc {
+                    if *(*d).efc_type.add(j as usize) == MJ_CNSTR_LIMIT_TENDON
+                        && *(*d).efc_id.add(j as usize) == objid as i32
+                    {
+                        *sensordata = *(*d).efc_pos.add(j as usize) - *(*d).efc_margin.add(j as usize);
+                        break;
+                    }
+                }
+            }
+
+            t if t == MJ_SENS_FRAMEPOS || t == MJ_SENS_FRAMEXAXIS || t == MJ_SENS_FRAMEYAXIS || t == MJ_SENS_FRAMEZAXIS => {
+                get_xpos_xmat(d as *const _, objtype, objid as i32, i, &mut xpos, &mut xmat);
+                if refid == -1 {
+                    if sensor_type == MJ_SENS_FRAMEPOS {
+                        crate::engine::engine_util_blas::mju_copy3(sensordata, xpos);
+                    } else {
+                        let offset = (sensor_type - MJ_SENS_FRAMEXAXIS) as usize;
+                        *sensordata.add(0) = *xmat.add(offset);
+                        *sensordata.add(1) = *xmat.add(offset + 3);
+                        *sensordata.add(2) = *xmat.add(offset + 6);
+                    }
+                } else {
+                    get_xpos_xmat(d as *const _, reftype, refid, i, &mut xpos_ref, &mut xmat_ref);
+                    if sensor_type == MJ_SENS_FRAMEPOS {
+                        crate::engine::engine_util_blas::mju_sub3(rvec.as_mut_ptr(), xpos, xpos_ref);
+                        crate::engine::engine_util_blas::mju_mul_mat_t_vec3(sensordata, xmat_ref, rvec.as_ptr());
+                    } else {
+                        let offset = (sensor_type - MJ_SENS_FRAMEXAXIS) as usize;
+                        let axis = [*xmat.add(offset), *xmat.add(offset + 3), *xmat.add(offset + 6)];
+                        crate::engine::engine_util_blas::mju_mul_mat_t_vec3(sensordata, xmat_ref, axis.as_ptr());
+                    }
+                }
+            }
+
+            t if t == MJ_SENS_FRAMEQUAT => {
+                let mut objquat = [0.0f64; 4];
+                get_xquat(m, d as *const _, objtype, objid as i32, i, objquat.as_mut_ptr());
+                if refid == -1 {
+                    crate::engine::engine_util_blas::mju_copy4(sensordata, objquat.as_ptr());
+                } else {
+                    let mut refquat = [0.0f64; 4];
+                    get_xquat(m, d as *const _, reftype, refid, i, refquat.as_mut_ptr());
+                    crate::engine::engine_util_spatial::mju_neg_quat(refquat.as_mut_ptr(), refquat.as_ptr());
+                    crate::engine::engine_util_spatial::mju_mul_quat(sensordata, refquat.as_ptr(), objquat.as_ptr());
+                }
+            }
+
+            t if t == MJ_SENS_SUBTREECOM => {
+                crate::engine::engine_util_blas::mju_copy3(sensordata, (*d).subtree_com.add(3 * objid));
+            }
+
+            t if t == MJ_SENS_INSIDESITE => {
+                get_xpos_xmat(d as *const _, objtype, objid as i32, i, &mut xpos, &mut xmat);
+                if objtype == MJ_OBJ_BODY && objid > 0
+                    && *(*m).body_mass.add(objid) < MJ_MINVAL
+                    && *(*m).body_subtreemass.add(objid) >= MJ_MINVAL
+                {
+                    xpos = (*d).subtree_com.add(3 * objid);
+                }
+                *sensordata = crate::engine::engine_util_misc::mju_inside_geom(
+                    (*d).site_xpos.add(3 * refid as usize),
+                    (*d).site_xmat.add(9 * refid as usize),
+                    (*m).site_size.add(3 * refid as usize),
+                    *(*m).site_type.add(refid as usize) as u32,
+                    xpos) as f64;
+            }
+
+            t if t == MJ_SENS_GEOMDIST || t == MJ_SENS_GEOMNORMAL || t == MJ_SENS_GEOMFROMTO => {
+                let cutoff = *(*m).sensor_cutoff.add(sensor_i);
+                let mut dist = cutoff;
+                let mut fromto = [0.0f64; 6];
+                let (n1, id1) = if objtype == MJ_OBJ_BODY {
+                    (*(*m).body_geomnum.add(objid), *(*m).body_geomadr.add(objid))
+                } else {
+                    (1, objid as i32)
+                };
+                let (n2, id2) = if reftype == MJ_OBJ_BODY {
+                    (*(*m).body_geomnum.add(refid as usize), *(*m).body_geomadr.add(refid as usize))
+                } else {
+                    (1, refid)
+                };
+                for geom1 in id1..(id1 + n1) {
+                    for geom2 in id2..(id2 + n2) {
+                        let mut fromto_new = [0.0f64; 6];
+                        let dist_new = crate::engine::engine_support::mj_geom_distance(m, d, geom1, geom2, cutoff, fromto_new.as_mut_ptr());
+                        if dist_new < dist {
+                            dist = dist_new;
+                            fromto.copy_from_slice(&fromto_new);
+                        }
+                    }
+                }
+                if sensor_type == MJ_SENS_GEOMDIST {
+                    *sensordata = dist;
+                } else if sensor_type == MJ_SENS_GEOMNORMAL {
+                    let normal = [fromto[3]-fromto[0], fromto[4]-fromto[1], fromto[5]-fromto[2]];
+                    if normal[0] != 0.0 || normal[1] != 0.0 || normal[2] != 0.0 {
+                        let mut n = normal;
+                        crate::engine::engine_util_blas::mju_normalize3(n.as_mut_ptr());
+                        crate::engine::engine_util_blas::mju_copy3(sensordata, n.as_ptr());
+                    } else {
+                        crate::engine::engine_util_blas::mju_copy3(sensordata, normal.as_ptr());
+                    }
+                } else {
+                    crate::engine::engine_util_blas::mju_copy(sensordata, fromto.as_ptr(), 6);
+                }
+            }
+
+            t if t == MJ_SENS_E_POTENTIAL => {
+                if !(*d).flg_energypos {
+                    mj_energy_pos(m, d);
+                }
+                *sensordata = (*d).energy[0];
+            }
+
+            t if t == MJ_SENS_E_KINETIC => {
+                if !(*d).flg_energyvel {
+                    mj_energy_vel(m, d);
+                }
+                *sensordata = (*d).energy[1];
+            }
+
+            t if t == MJ_SENS_CLOCK => {
+                *sensordata = (*d).time;
+            }
+
+            _ => {
+                crate::engine::engine_util_errmem::mju_error(
+                    b"invalid sensor type in POS stage\0".as_ptr() as *const i8);
+            }
+        }
+    }
 }
 
 /// C: mj_computeSensorVel (engine/engine_sensor.c:839)
