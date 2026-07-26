@@ -1584,7 +1584,53 @@ pub fn mj_nc(m: *const mjModel, d: *mut mjData, nnz: *mut i32) -> i32 {
 /// Calls: mju_fillInt
 #[allow(unused_variables, non_snake_case)]
 pub fn compute_y_precount(Y_rownnz: *mut i32, Y_rowadr: *mut i32, nefc: i32, nv: i32, J_rownnz: *const i32, J_rowadr: *const i32, J_colind: *const i32, M_rownnz: *const i32, M_rowadr: *const i32, M_colind: *const i32, marker: *mut i32) -> i32 {
-    todo!() // computeY_precount
+    // SAFETY: All pointer args are valid arrays with proper bounds (caller contract).
+    unsafe {
+        crate::engine::engine_util_misc::mju_fill_int(marker, -1, nv);
+
+        *Y_rowadr.add(0) = 0;
+        for r in 0..nefc as usize {
+            let mut nnz: i32 = 0;
+
+            // traverse row r of J in reverse, count unique nonzeros
+            let start = *J_rowadr.add(r) as usize;
+            let end = start + *J_rownnz.add(r) as usize;
+            let mut i = end as i32 - 1;
+            while i >= start as i32 {
+                let j = *J_colind.add(i as usize) as usize;
+
+                // if dof j is marked, already counted by a child dof
+                if *marker.add(j) == r as i32 {
+                    i -= 1;
+                    continue;
+                }
+
+                // traverse row j of M, marking new unique nonzeros
+                let nnz_m = *M_rownnz.add(j) as usize;
+                let adr_m = *M_rowadr.add(j) as usize;
+                for k in 0..nnz_m {
+                    let c = *M_colind.add(adr_m + k) as usize;
+                    if *marker.add(c) != r as i32 {
+                        *marker.add(c) = r as i32;
+                        nnz += 1;
+                    }
+                }
+                i -= 1;
+            }
+
+            *Y_rownnz.add(r) = nnz;
+            if r < (nefc as usize) - 1 {
+                *Y_rowadr.add(r + 1) = *Y_rowadr.add(r) + nnz;
+            }
+        }
+
+        // total non-zeros in Y
+        if nefc > 0 {
+            *Y_rowadr.add((nefc - 1) as usize) + *Y_rownnz.add((nefc - 1) as usize)
+        } else {
+            0
+        }
+    }
 }
 
 /// C: computeY_fill (engine/engine_core_constraint.c:2734)

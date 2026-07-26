@@ -406,6 +406,199 @@ pub fn mj_flood_fill(island: *mut i32, nr: i32, rownnz: *const i32, rowadr: *con
 /// Calls: arenaAllocIsland, findEdges, mj_floodFill, mj_freeStack, mj_markStack, mj_stackAllocInfo, mju_compare, mju_copyInt, mju_gather, mju_gatherInt, mju_message, mju_zeroInt
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_island(m: *const mjModel, d: *mut mjData) {
-    todo!() // mj_island
+    use crate::types::*;
+    const MJ_DSBL_ISLAND: i32 = mjtDisableBit_mjDSBL_ISLAND as i32;
+    const MJ_CNSTR_EQUALITY: i32 = mjtConstraint_mjCNSTR_EQUALITY as i32;
+    const MJ_CNSTR_FRICTION_DOF: i32 = mjtConstraint_mjCNSTR_FRICTION_DOF as i32;
+    const MJ_CNSTR_FRICTION_TENDON: i32 = mjtConstraint_mjCNSTR_FRICTION_TENDON as i32;
+
+    // SAFETY: m, d are valid model/data pointers. All arena/stack allocations bounded.
+    unsafe {
+        let nv   = (*m).nv as i32;
+        let nefc = (*d).nefc;
+        let ntree = (*m).ntree as i32;
+
+        // no constraints or islands disabled: quick return
+        if ((*m).opt.disableflags & MJ_DSBL_ISLAND) != 0 || nefc == 0 {
+            (*d).nisland = 0;
+            (*d).nidof = 0;
+            return;
+        }
+
+        crate::engine::engine_memory::mj_mark_stack(d);
+
+        let ntree2 = ntree * ntree;
+
+        // dense tree-tree adjacency matrix
+        let tree_tree = crate::engine::engine_memory::mj_stack_alloc_info(
+            d, ntree2 as usize * std::mem::size_of::<u8>(), std::mem::align_of::<u8>(),
+            std::ptr::null(), 0) as *mut u8;
+        std::ptr::write_bytes(tree_tree, 0, ntree2 as usize);
+
+        // CSR representation (uncompressed)
+        let colind = crate::engine::engine_memory::mj_stack_alloc_info(
+            d, ntree2 as usize * 4, 4, std::ptr::null(), 0) as *mut i32;
+        let rownnz = crate::engine::engine_memory::mj_stack_alloc_info(
+            d, ntree as usize * 4, 4, std::ptr::null(), 0) as *mut i32;
+        let rowadr = crate::engine::engine_memory::mj_stack_alloc_info(
+            d, ntree as usize * 4, 4, std::ptr::null(), 0) as *mut i32;
+        for r in 0..ntree as usize {
+            *rowadr.add(r) = r as i32 * ntree;
+        }
+
+        // first non-negative tree index of each constraint
+        let efc_tree = crate::engine::engine_memory::mj_stack_alloc_info(
+            d, nefc as usize * 4, 4, std::ptr::null(), 0) as *mut i32;
+
+        let nnz = find_edges(m, d, rownnz, colind, tree_tree, efc_tree, ntree);
+
+        // discover islands
+        let tree_island = crate::engine::engine_memory::mj_stack_alloc_info(
+            d, ntree as usize * 4, 4, std::ptr::null(), 0) as *mut i32;
+        let stack = crate::engine::engine_memory::mj_stack_alloc_info(
+            d, nnz as usize * 4, 4, std::ptr::null(), 0) as *mut i32;
+
+        (*d).nisland = mj_flood_fill(tree_island, ntree, rownnz, rowadr, colind, stack);
+
+        if (*d).nisland == 0 {
+            (*d).nidof = 0;
+            crate::engine::engine_memory::mj_free_stack(d);
+            return;
+        }
+
+        // count nidof
+        let mut nidof: i32 = 0;
+        for i in 0..ntree as usize {
+            if *tree_island.add(i) >= 0 {
+                nidof += *(*m).tree_dofnum.add(i);
+            }
+        }
+        (*d).nidof = nidof;
+
+        if arena_alloc_island(m, d) == 0 {
+            crate::engine::engine_memory::mj_free_stack(d);
+            return;
+        }
+
+        let nisland = (*d).nisland as usize;
+
+        // copy tree_island to arena
+        crate::engine::engine_util_misc::mju_copy_int((*d).tree_island, tree_island as *const i32, ntree);
+
+        // compute island_ntree
+        crate::engine::engine_util_misc::mju_zero_int((*d).island_ntree, nisland as i32);
+        for i in 0..ntree as usize {
+            let island = *tree_island.add(i);
+            if island >= 0 {
+                *(*d).island_ntree.add(island as usize) += 1;
+            }
+        }
+
+        // compute island_itreeadr (cumsum)
+        *(*d).island_itreeadr.add(0) = 0;
+        for i in 1..nisland {
+            *(*d).island_itreeadr.add(i) = *(*d).island_itreeadr.add(i - 1) + *(*d).island_ntree.add(i - 1);
+        }
+        let last_tree = *(*d).island_itreeadr.add(nisland - 1) + *(*d).island_ntree.add(nisland - 1);
+
+        // compute map_itree2tree
+        let island_ntree2 = crate::engine::engine_memory::mj_stack_alloc_info(
+            d, (nisland + 1) * 4, 4, std::ptr::null(), 0) as *mut i32;
+        crate::engine::engine_util_misc::mju_zero_int(island_ntree2, (nisland + 1) as i32);
+        for i in 0..ntree as usize {
+            let island = *tree_island.add(i);
+            if island >= 0 {
+                let idx = *(*d).island_itreeadr.add(island as usize) + *island_ntree2.add(island as usize);
+                *(*d).map_itree2tree.add(idx as usize) = i as i32;
+                *island_ntree2.add(island as usize) += 1;
+            } else {
+                let idx = last_tree + *island_ntree2.add(nisland);
+                *(*d).map_itree2tree.add(idx as usize) = i as i32;
+                *island_ntree2.add(nisland) += 1;
+            }
+        }
+
+        // compute dof_island, island_nv
+        crate::engine::engine_util_misc::mju_zero_int((*d).island_nv, nisland as i32);
+        for i in 0..nv as usize {
+            let tree_id = *(*m).dof_treeid.add(i);
+            let island = *tree_island.add(tree_id as usize);
+            *(*d).dof_island.add(i) = island;
+            if island >= 0 {
+                *(*d).island_nv.add(island as usize) += 1;
+            }
+        }
+
+        // compute island_idofadr (cumsum)
+        *(*d).island_idofadr.add(0) = 0;
+        for i in 1..nisland {
+            *(*d).island_idofadr.add(i) = *(*d).island_idofadr.add(i - 1) + *(*d).island_nv.add(i - 1);
+        }
+
+        // compute dof <-> idof maps
+        let island_nv2 = crate::engine::engine_memory::mj_stack_alloc_info(
+            d, (nisland + 1) * 4, 4, std::ptr::null(), 0) as *mut i32;
+        crate::engine::engine_util_misc::mju_zero_int(island_nv2, (nisland + 1) as i32);
+        for dof in 0..nv as usize {
+            let island = *(*d).dof_island.add(dof);
+            let idof = if island >= 0 {
+                let v = *(*d).island_idofadr.add(island as usize) + *island_nv2.add(island as usize);
+                *island_nv2.add(island as usize) += 1;
+                v
+            } else {
+                let v = nidof + *island_nv2.add(nisland);
+                *island_nv2.add(nisland) += 1;
+                v
+            };
+            *(*d).map_dof2idof.add(dof) = idof;
+            *(*d).map_idof2dof.add(idof as usize) = dof as i32;
+        }
+
+        // compute island_dofadr
+        for i in 0..nisland {
+            *(*d).island_dofadr.add(i) = *(*d).map_idof2dof.add(*(*d).island_idofadr.add(i) as usize);
+        }
+
+        // compute efc_island, island_{ne,nf,nefc}
+        crate::engine::engine_util_misc::mju_zero_int((*d).island_ne, nisland as i32);
+        crate::engine::engine_util_misc::mju_zero_int((*d).island_nf, nisland as i32);
+        crate::engine::engine_util_misc::mju_zero_int((*d).island_nefc, nisland as i32);
+        for i in 0..nefc as usize {
+            let island = *tree_island.add(*efc_tree.add(i) as usize);
+            *(*d).efc_island.add(i) = island;
+            *(*d).island_nefc.add(island as usize) += 1;
+            let efc_t = *(*d).efc_type.add(i);
+            if efc_t == MJ_CNSTR_EQUALITY {
+                *(*d).island_ne.add(island as usize) += 1;
+            } else if efc_t == MJ_CNSTR_FRICTION_DOF || efc_t == MJ_CNSTR_FRICTION_TENDON {
+                *(*d).island_nf.add(island as usize) += 1;
+            }
+        }
+
+        // compute island_iefcadr
+        *(*d).island_iefcadr.add(0) = 0;
+        for i in 1..nisland {
+            *(*d).island_iefcadr.add(i) = *(*d).island_iefcadr.add(i - 1) + *(*d).island_nefc.add(i - 1);
+        }
+
+        // compute efc <-> iefc maps
+        crate::engine::engine_util_misc::mju_zero_int(island_nv2, nisland as i32);
+        for c in 0..nefc as usize {
+            let island = *(*d).efc_island.add(c);
+            let ic = *(*d).island_iefcadr.add(island as usize) + *island_nv2.add(island as usize);
+            *island_nv2.add(island as usize) += 1;
+            *(*d).map_efc2iefc.add(c) = ic;
+            *(*d).map_iefc2efc.add(ic as usize) = c as i32;
+        }
+
+        // copy position-dependent efc vectors
+        crate::engine::engine_util_misc::mju_gather_int((*d).iefc_type, (*d).efc_type as *const i32, (*d).map_iefc2efc as *const i32, nefc);
+        crate::engine::engine_util_misc::mju_gather_int((*d).iefc_id, (*d).efc_id as *const i32, (*d).map_iefc2efc as *const i32, nefc);
+        crate::engine::engine_util_misc::mju_gather((*d).iefc_frictionloss, (*d).efc_frictionloss as *const f64, (*d).map_iefc2efc as *const i32, nefc);
+        crate::engine::engine_util_misc::mju_gather((*d).iefc_D, (*d).efc_D as *const f64, (*d).map_iefc2efc as *const i32, nefc);
+        crate::engine::engine_util_misc::mju_gather((*d).iefc_R, (*d).efc_R as *const f64, (*d).map_iefc2efc as *const i32, nefc);
+
+        crate::engine::engine_memory::mj_free_stack(d);
+    }
 }
 
