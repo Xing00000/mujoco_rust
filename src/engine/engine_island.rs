@@ -110,14 +110,153 @@ pub fn arena_alloc_island(m: *const mjModel, d: *mut mjData) -> i32 {
 /// Calls: mj_isSparse
 #[allow(unused_variables, non_snake_case)]
 pub fn tree_next(m: *const mjModel, d: *const mjData, i: i32, iter: *mut mjTreeIter) -> i32 {
-    todo!() // treeNext
+    // mjTreeIter layout (16 bytes): trees[2] at 0, jac_idx at 8, tree_prev at 12
+    // SAFETY: m, d are valid; iter is valid mjTreeIter pointer.
+    unsafe {
+        let iter_base = iter as *mut i32;
+        let trees_0 = *iter_base.add(0);
+
+        // handle special cases: pre-calculated trees
+        if trees_0 != -2 {
+            // get first tree, queue up second tree, return first tree
+            let tree = trees_0;
+            *iter_base.add(0) = *iter_base.add(1);  // trees[0] = trees[1]
+            *iter_base.add(1) = -2;                   // trees[1] = -2 (sentinel)
+            return tree;
+        }
+
+        let jac_idx = *iter_base.add(2);
+
+        // special case mode complete
+        if jac_idx == -1 {
+            return -2;
+        }
+
+        // generic scan mode
+        let mut j = jac_idx;
+        let mut tree_next_val: i32 = -2;
+        let tree_prev = *iter_base.add(3);
+
+        if crate::engine::engine_core_util::mj_is_sparse(m) != 0 {
+            // sparse
+            let rownnz = *(*d).efc_J_rownnz.add(i as usize);
+            let colind = (*d).efc_J_colind.add(*(*d).efc_J_rowadr.add(i as usize) as usize);
+            while j < rownnz {
+                let tree_j = *(*m).dof_treeid.add(*colind.add(j as usize) as usize);
+                if tree_j != tree_prev {
+                    tree_next_val = tree_j;
+                    break;
+                }
+                j += 1;
+            }
+        } else {
+            // dense
+            let nv = (*m).nv as i32;
+            let J = (*d).efc_J.add(nv as usize * i as usize);
+            while j < nv {
+                if *J.add(j as usize) != 0.0 {
+                    let tree_j = *(*m).dof_treeid.add(j as usize);
+                    if tree_j != tree_prev {
+                        tree_next_val = tree_j;
+                        break;
+                    }
+                    // skip to end of tree's dof block
+                    j = *(*m).tree_dofadr.add(tree_j as usize) + *(*m).tree_dofnum.add(tree_j as usize) - 1;
+                }
+                j += 1;
+            }
+        }
+
+        // update iterator state
+        *iter_base.add(2) = j;  // jac_idx = j
+        if tree_next_val != -2 {
+            *iter_base.add(3) = tree_next_val;  // tree_prev = tree_next
+        }
+
+        tree_next_val
+    }
 }
 
 /// C: treeIterInit (engine/engine_island.c:212)
 /// Calls: mju_message
 #[allow(unused_variables, non_snake_case)]
 pub fn tree_iter_init(m: *const mjModel, d: *const mjData, i: i32, iter: *mut mjTreeIter) {
-    todo!() // treeIterInit
+    // mjTreeIter layout (16 bytes, align 4):
+    //   trees[2]: i32 at offset 0 (sentinel -2 = empty)
+    //   jac_idx:  i32 at offset 8 (-1 = disabled)
+    //   tree_prev: i32 at offset 12
+    use crate::types::*;
+
+    // SAFETY: m, d are valid model/data pointers. i is a valid constraint index.
+    //         iter is a valid mjTreeIter pointer (16 bytes).
+    unsafe {
+        let iter_base = iter as *mut i32;
+        // iter->trees[0] = -2; iter->trees[1] = -2; iter->jac_idx = -1; iter->tree_prev = -1;
+        *iter_base.add(0) = -2;
+        *iter_base.add(1) = -2;
+        *iter_base.add(2) = -1;  // jac_idx
+        *iter_base.add(3) = -1;  // tree_prev
+
+        let efc_type = *(*d).efc_type.add(i as usize);
+        let efc_id   = *(*d).efc_id.add(i as usize);
+
+        // joint friction
+        if efc_type == mjtConstraint_mjCNSTR_FRICTION_DOF as i32 {
+            *iter_base.add(0) = *(*m).dof_treeid.add(efc_id as usize);
+        }
+        // joint limit
+        else if efc_type == mjtConstraint_mjCNSTR_LIMIT_JOINT as i32 {
+            let dofadr = *(*m).jnt_dofadr.add(efc_id as usize);
+            *iter_base.add(0) = *(*m).dof_treeid.add(dofadr as usize);
+        }
+        // contact
+        else if efc_type == mjtConstraint_mjCNSTR_CONTACT_FRICTIONLESS as i32
+            || efc_type == mjtConstraint_mjCNSTR_CONTACT_PYRAMIDAL as i32
+            || efc_type == mjtConstraint_mjCNSTR_CONTACT_ELLIPTIC as i32
+        {
+            let contact = &*(*d).contact.add(efc_id as usize);
+            let g1 = contact.geom[0];
+            let g2 = contact.geom[1];
+
+            // geom-geom contact
+            if g1 >= 0 && g2 >= 0 {
+                *iter_base.add(0) = *(*m).body_treeid.add(*(*m).geom_bodyid.add(g1 as usize) as usize);
+                *iter_base.add(1) = *(*m).body_treeid.add(*(*m).geom_bodyid.add(g2 as usize) as usize);
+                if *iter_base.add(0) < 0 && *iter_base.add(1) < 0 {
+                    crate::engine::engine_util_errmem::mju_error(
+                        b"contact is between two static bodies\0".as_ptr() as *const i8);
+                }
+            } else {
+                // no shortcut for flex contacts: enable generic scan
+                *iter_base.add(2) = 0;  // jac_idx = 0
+            }
+        }
+        // connect or weld constraints
+        else if efc_type == mjtConstraint_mjCNSTR_EQUALITY as i32
+            && (*(*m).eq_type.add(efc_id as usize) == mjtEq_mjEQ_CONNECT as i32
+                || *(*m).eq_type.add(efc_id as usize) == mjtEq_mjEQ_WELD as i32)
+        {
+            let mut b1 = *(*m).eq_obj1id.add(efc_id as usize);
+            let mut b2 = *(*m).eq_obj2id.add(efc_id as usize);
+
+            // get body ids if using site semantics
+            if *(*m).eq_objtype.add(efc_id as usize) == mjtObj_mjOBJ_SITE as i32 {
+                b1 = *(*m).site_bodyid.add(b1 as usize);
+                b2 = *(*m).site_bodyid.add(b2 as usize);
+            }
+
+            *iter_base.add(0) = *(*m).body_treeid.add(b1 as usize);
+            *iter_base.add(1) = *(*m).body_treeid.add(b2 as usize);
+            if *iter_base.add(0) < 0 && *iter_base.add(1) < 0 {
+                crate::engine::engine_util_errmem::mju_error(
+                    b"equality is between two static bodies\0".as_ptr() as *const i8);
+            }
+        }
+        // otherwise enable generic scan
+        else {
+            *iter_base.add(2) = 0;  // jac_idx = 0
+        }
+    }
 }
 
 /// C: findEdges (engine/engine_island.c:317)

@@ -742,7 +742,48 @@ pub fn addplanemesh(con: *mut mjPreContact, vertex: *const f32, pos1: *const f64
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn add_vert(obj: *mut mjCCDObj, x: f64, y: f64, z: f64) {
-    todo!() // addVert
+    // addVert: shift prism rows down and add new vertex at position [2] and [5].
+    // obj->data is a union; hfield.prism is [mjtNum; 18] at offset 0 of the data field.
+    // prism[i] in C is a mjtNum[3] row, so prism[i][j] == flat_prism[i*3 + j].
+    //
+    // C code:
+    //   mji_copy3(prism[0], prism[1]);  -- prism[0..3]  = prism[3..6]
+    //   mji_copy3(prism[1], prism[2]);  -- prism[3..6]  = prism[6..9]
+    //   mji_copy3(prism[3], prism[4]);  -- prism[9..12] = prism[12..15]
+    //   mji_copy3(prism[4], prism[5]);  -- prism[12..15]= prism[15..18]
+    //   prism[2][0] = prism[5][0] = x;
+    //   prism[2][1] = prism[5][1] = y;
+    //   prism[5][2] = z;
+
+    // SAFETY: obj is a valid mjCCDObj pointer; data._data is a [u8; ...] union blob
+    //         large enough to hold [f64; 18] = 144 bytes at offset 0.
+    unsafe {
+        let prism = (*obj).data._data.as_mut_ptr() as *mut f64;
+        // mji_copy3(prism[0], prism[1])
+        *prism.add(0) = *prism.add(3);
+        *prism.add(1) = *prism.add(4);
+        *prism.add(2) = *prism.add(5);
+        // mji_copy3(prism[1], prism[2])
+        *prism.add(3) = *prism.add(6);
+        *prism.add(4) = *prism.add(7);
+        *prism.add(5) = *prism.add(8);
+        // mji_copy3(prism[3], prism[4])
+        *prism.add(9)  = *prism.add(12);
+        *prism.add(10) = *prism.add(13);
+        *prism.add(11) = *prism.add(14);
+        // mji_copy3(prism[4], prism[5])
+        *prism.add(12) = *prism.add(15);
+        *prism.add(13) = *prism.add(16);
+        *prism.add(14) = *prism.add(17);
+        // prism[2][0] = prism[5][0] = x
+        *prism.add(6)  = x;
+        *prism.add(15) = x;
+        // prism[2][1] = prism[5][1] = y
+        *prism.add(7)  = y;
+        *prism.add(16) = y;
+        // prism[5][2] = z
+        *prism.add(17) = z;
+    }
 }
 
 /// C: addPrismVert (engine/engine_collision_convex.c:1100)
@@ -766,7 +807,85 @@ pub fn add_prism_vert(obj: *mut mjCCDObj, r: i32, c: i32, i: i32, dx: f64, dy: f
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjc_ellipsoid_inside(nrm: *mut f64, pos: *const f64, size: *const f64) -> i32 {
-    todo!() // mjc_ellipsoidInside
+    // Compute normal for point outside ellipsoid, using ray-projection SQP.
+    // Returns 0 if pos is already outside (C > 0), 1 if inside and normal computed.
+
+    // SAFETY: nrm[3], pos[3], size[3] are valid pointers (caller contract)
+    unsafe {
+        // algorithm constants
+        let maxiter: i32 = 30;
+        let tolerance: f64 = 1e-6;
+
+        // precompute quantities
+        let s0 = *size.add(0);
+        let s1 = *size.add(1);
+        let s2 = *size.add(2);
+        let S2inv: [f64; 3] = [1.0 / (s0 * s0), 1.0 / (s1 * s1), 1.0 / (s2 * s2)];
+
+        let p0 = *pos.add(0);
+        let p1 = *pos.add(1);
+        let p2 = *pos.add(2);
+        let C = p0 * p0 * S2inv[0] + p1 * p1 * S2inv[1] + p2 * p2 * S2inv[2] - 1.0;
+
+        if C > 0.0 {
+            return 0;
+        }
+
+        // normalize initial normal (just in case)
+        crate::engine::engine_util_blas::mju_normalize3(nrm);
+
+        // main iteration
+        let mut iter: i32 = 0;
+        while iter < maxiter {
+            let n0 = *nrm.add(0);
+            let n1 = *nrm.add(1);
+            let n2 = *nrm.add(2);
+
+            // coefficients and determinant of quadratic
+            let A = n0 * n0 * S2inv[0] + n1 * n1 * S2inv[1] + n2 * n2 * S2inv[2];
+            let B = p0 * n0 * S2inv[0] + p1 * n1 * S2inv[1] + p2 * n2 * S2inv[2];
+            let det = B * B - A * C;
+
+            if det < 1e-15_f64 || A < 1e-15_f64 {
+                return if iter > 0 { 1 } else { 0 };
+            }
+
+            // ray intersection with ellipse: pos + x*nrm, x>=0
+            let x = (-B + det.sqrt()) / A;
+            if x < 0.0 {
+                return if iter > 0 { 1 } else { 0 };
+            }
+
+            // new point on ellipsoid: pnt = pos + x*nrm
+            let pnt: [f64; 3] = [
+                p0 + x * n0,
+                p1 + x * n1,
+                p2 + x * n2,
+            ];
+
+            // normal at new point (gradient of ellipsoid equation)
+            let mut newnrm: [f64; 3] = [
+                pnt[0] * S2inv[0],
+                pnt[1] * S2inv[1],
+                pnt[2] * S2inv[2],
+            ];
+            crate::engine::engine_util_blas::mju_normalize3(newnrm.as_mut_ptr());
+
+            // save change and assign
+            let change = crate::engine::engine_util_blas::mju_dist3(nrm, newnrm.as_ptr());
+            *nrm.add(0) = newnrm[0];
+            *nrm.add(1) = newnrm[1];
+            *nrm.add(2) = newnrm[2];
+
+            // terminate if converged
+            if change < tolerance {
+                break;
+            }
+            iter += 1;
+        }
+
+        1
+    }
 }
 
 /// C: mjc_ellipsoidOutside (engine/engine_collision_convex.c:1337)
@@ -1506,7 +1625,136 @@ pub fn mjc_h_field_elem(m: *const mjModel, d: *mut mjData, con: *mut mjPreContac
 /// Calls: mjc_ellipsoidInside, mjc_ellipsoidOutside, mji_copy3, mji_mulMatVec3, mji_scl3, mji_sub3, mju_mulMatTVec3, mju_norm, mju_normalize3, mju_sub3
 #[allow(unused_variables, non_snake_case)]
 pub fn mjc_fix_normal(m: *const mjModel, d: *const mjData, con: *mut mjPreContact, g1: i32, g2: i32) {
-    todo!() // mjc_fixNormal
+    use crate::types::*;
+    const MJ_GEOM_SPHERE: i32 = mjtGeom_mjGEOM_SPHERE as i32;
+    const MJ_GEOM_CAPSULE: i32 = mjtGeom_mjGEOM_CAPSULE as i32;
+    const MJ_GEOM_ELLIPSOID: i32 = mjtGeom_mjGEOM_ELLIPSOID as i32;
+    const MJ_GEOM_CYLINDER: i32 = mjtGeom_mjGEOM_CYLINDER as i32;
+    const MJ_GEOM_NONE: i32 = mjtGeom_mjGEOM_NONE as i32;
+    const MJ_MINVAL: f64 = 1e-15_f64;
+
+    // SAFETY: m, d, con are valid pointers. g1, g2 are valid geom indices or < 0.
+    unsafe {
+        let gid: [i32; 2] = [g1, g2];
+        let mut geom_type: [i32; 2] = [MJ_GEOM_NONE; 2];
+
+        for i in 0..2 {
+            if gid[i] < 0 {
+                geom_type[i] = MJ_GEOM_NONE;
+            } else {
+                geom_type[i] = *(*m).geom_type.add(gid[i] as usize);
+            }
+            // set to mjGEOM_NONE if type cannot be processed
+            if geom_type[i] != MJ_GEOM_SPHERE && geom_type[i] != MJ_GEOM_CAPSULE
+                && geom_type[i] != MJ_GEOM_ELLIPSOID && geom_type[i] != MJ_GEOM_CYLINDER
+            {
+                geom_type[i] = MJ_GEOM_NONE;
+            }
+        }
+
+        // neither type can be processed: nothing to do
+        if geom_type[0] == MJ_GEOM_NONE && geom_type[1] == MJ_GEOM_NONE {
+            return;
+        }
+
+        // init normals
+        let mut normal: [[f64; 3]; 2] = [
+            [(*con).normal[0],  (*con).normal[1],  (*con).normal[2]],
+            [-(*con).normal[0], -(*con).normal[1], -(*con).normal[2]],
+        ];
+
+        let mut processed: [i32; 2] = [0; 2];
+
+        for i in 0..2 {
+            if geom_type[i] != MJ_GEOM_NONE {
+                let mat  = (*d).geom_xmat.add(9 * gid[i] as usize);
+                let size = (*m).geom_size.add(3 * gid[i] as usize);
+
+                // map contact point and normal to local frame
+                let mut dif  = [0.0f64; 3];
+                let mut pos1 = [0.0f64; 3];
+                let mut nrm  = [0.0f64; 3];
+                let geom_xpos_i = (*d).geom_xpos.add(3 * gid[i] as usize);
+                crate::engine::engine_util_blas::mju_sub3(dif.as_mut_ptr(), (*con).pos.as_ptr(), geom_xpos_i);
+                crate::engine::engine_util_blas::mju_mul_mat_t_vec3(pos1.as_mut_ptr(), mat, dif.as_ptr());
+                crate::engine::engine_util_blas::mju_mul_mat_t_vec3(nrm.as_mut_ptr(), mat, normal[i].as_ptr());
+
+                match geom_type[i] {
+                    t if t == MJ_GEOM_SPHERE => {
+                        crate::engine::engine_inline::mji_copy3(nrm.as_mut_ptr(), pos1.as_ptr());
+                        processed[i] = 1;
+                    }
+                    t if t == MJ_GEOM_CAPSULE => {
+                        if pos1[2] < -(*size.add(1)) {
+                            nrm[2] = pos1[2] + (*size.add(1));
+                        } else if pos1[2] > *size.add(1) {
+                            nrm[2] = pos1[2] - (*size.add(1));
+                        } else {
+                            nrm[2] = 0.0;
+                        }
+                        nrm[0] = pos1[0];
+                        nrm[1] = pos1[1];
+                        processed[i] = 1;
+                    }
+                    t if t == MJ_GEOM_ELLIPSOID => {
+                        let s0 = *size.add(0);
+                        let s1 = *size.add(1);
+                        let s2 = *size.add(2);
+                        if s0 < MJ_MINVAL || s1 < MJ_MINVAL || s2 < MJ_MINVAL {
+                            // guard invalid ellipsoid size
+                        } else {
+                            let dst1 = pos1[0]*pos1[0]/(s0*s0)
+                                + pos1[1]*pos1[1]/(s1*s1)
+                                + pos1[2]*pos1[2]/(s2*s2);
+                            processed[i] = if dst1 <= 1.0 {
+                                mjc_ellipsoid_inside(nrm.as_mut_ptr(), pos1.as_ptr(), size)
+                            } else {
+                                mjc_ellipsoid_outside(nrm.as_mut_ptr(), pos1.as_ptr(), size)
+                            };
+                        }
+                    }
+                    t if t == MJ_GEOM_CYLINDER => {
+                        let sz1 = *size.add(1);
+                        let sz0 = *size.add(0);
+                        // skip if within 5% length of flat wall
+                        if pos1[2].abs() > 0.95 * sz1 {
+                            // do nothing
+                        } else {
+                            let dst1 = (sz1 - pos1[2].abs()).abs();
+                            let norm2 = (pos1[0]*pos1[0] + pos1[1]*pos1[1]).sqrt();
+                            let dst2 = (sz0 - norm2).abs();
+                            // require 4x closer to round than flat wall
+                            if dst1 < 0.25 * dst2 {
+                                // do nothing
+                            } else {
+                                nrm[0] = pos1[0];
+                                nrm[1] = pos1[1];
+                                nrm[2] = 0.0;
+                                processed[i] = 1;
+                            }
+                        }
+                    }
+                    _ => {}
+                }
+
+                // normalize and map normal to global frame
+                if processed[i] != 0 {
+                    crate::engine::engine_util_blas::mju_normalize3(nrm.as_mut_ptr());
+                    crate::engine::engine_inline::mji_mul_mat_vec3(normal[i].as_mut_ptr(), mat, nrm.as_ptr());
+                }
+            }
+        }
+
+        // both processed: average
+        if processed[0] != 0 && processed[1] != 0 {
+            crate::engine::engine_inline::mji_sub3((*con).normal.as_mut_ptr(), normal[0].as_ptr(), normal[1].as_ptr());
+            crate::engine::engine_util_blas::mju_normalize3((*con).normal.as_mut_ptr());
+        } else if processed[0] != 0 {
+            crate::engine::engine_inline::mji_copy3((*con).normal.as_mut_ptr(), normal[0].as_ptr());
+        } else if processed[1] != 0 {
+            crate::engine::engine_inline::mji_scl3((*con).normal.as_mut_ptr(), normal[1].as_ptr(), -1.0);
+        }
+    }
 }
 
 /// C: mjc_setCCDBuffer (engine/engine_collision_convex.h:128)

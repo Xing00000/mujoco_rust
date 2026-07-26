@@ -18,9 +18,6 @@ pub fn mju_close_resource(resource: *mut mjResource) {
     // SAFETY: resource is a valid pointer (caller contract); vfs field checked before deref
     unsafe {
         if !resource.is_null() && !(*resource).vfs.is_null() {
-            // VFS::Upcast(resource->vfs)->Close(resource)
-            // The C++ code calls through a VFS vtable. This requires C++ vtable dispatch
-            // which is not available in pure Rust translation.
             todo!("requires C++ VFS vtable dispatch: VFS::Upcast(resource->vfs)->Close(resource)")
         }
     }
@@ -33,11 +30,9 @@ pub fn mju_read_resource(resource: *mut mjResource, buffer: *const *mut ()) -> i
     // SAFETY: resource is a valid pointer (caller contract); vfs field checked before deref
     unsafe {
         if !resource.is_null() && !(*resource).vfs.is_null() {
-            // VFS::Upcast(resource->vfs)->Read(resource, buffer)
-            // The C++ code calls through a VFS vtable. This requires C++ vtable dispatch.
             todo!("requires C++ VFS vtable dispatch: VFS::Upcast(resource->vfs)->Read(resource, buffer)")
         }
-        -1 // default (error reading bytes)
+        -1 // default (error reading bytes) when vfs is null
     }
 }
 

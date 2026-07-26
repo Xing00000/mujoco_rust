@@ -234,7 +234,48 @@ pub fn mesh_polygon_normal(self_ptr: *mut MeshPolygon) -> *const f64 {
 /// C: MeshPolygon::CombineIslands (user/user_mesh.cc:2698)
 #[allow(unused_variables, non_snake_case)]
 pub fn mesh_polygon_combine_islands(self_ptr: *mut MeshPolygon, island1: *mut i32, island2: *mut i32) {
-    todo!() // MeshPolygon::CombineIslands
+    // MeshPolygon::CombineIslands renumbers islands_ vector entries.
+    // islands_ is a std::vector<int> at byte offset 24 in MeshPolygon (size 24 bytes).
+    // std::vector layout (libc++/libstdc++ ABI): { data_ptr, end_ptr, cap_ptr } (3 x *i32)
+    // size = (end_ptr - data_ptr) / sizeof(int)
+
+    // SAFETY: self_ptr, island1, island2 are valid (caller contract).
+    // All pointer arithmetic uses verified std::vector ABI layout.
+    unsafe {
+        let v1 = *island1;
+        let v2 = *island2;
+
+        // pick the smaller island
+        let (i1, i2) = if v2 < v1 {
+            *island1 = v2;
+            *island2 = v1;
+            (v2, v1)
+        } else {
+            (v1, v2)
+        };
+
+        // islands_ std::vector at offset 24 of MeshPolygon
+        // data_ptr at offset 24, end_ptr at offset 32
+        let islands_base = (self_ptr as *mut u8).add(24);
+        let data_ptr = *(islands_base as *const *mut i32);   // start iterator
+        let end_ptr  = *(islands_base.add(8) as *const *mut i32); // past-end iterator
+
+        if data_ptr.is_null() {
+            return; // empty vector
+        }
+
+        let n = ((end_ptr as usize) - (data_ptr as usize)) / std::mem::size_of::<i32>();
+
+        // renumber the islands
+        for k in 0..n {
+            let val = data_ptr.add(k);
+            if *val == i2 {
+                *val = i1;
+            } else if *val > i2 {
+                *val -= 1;
+            }
+        }
+    }
 }
 
 /// C: MeshPolygonKey (user/user_mesh.cc:2701)
@@ -447,7 +488,72 @@ pub fn cot(x: *const f64, v0: i32, v1: i32, v2: i32) -> f64 {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn compute_bending(bending: *mut f64, pos: *mut f64, v: *const i32, mu: f64, thickness: f64) {
-    todo!() // ComputeBending
+    // Template instantiated with kNumVerts = 4 (quad elements).
+    // Uses cotangent operator from Wardetzky et al., "Discrete Quadratic Curvature Energies".
+
+    // SAFETY: bending[17], pos[3*max_v], v[4] are valid (caller contract).
+    unsafe {
+        let v0 = *v.add(0);
+        let v1 = *v.add(1);
+        let v2 = *v.add(2);
+        let v3 = *v.add(3);
+
+        // skip boundary edges
+        if v3 == -1 {
+            return;
+        }
+
+        let vadj: [i32; 3] = [v1, v0, v3];
+
+        // cotangent coefficients
+        let a01 = cot(pos, v0, v1, v2);
+        let a02 = cot(pos, v0, v3, v1);
+        let a03 = cot(pos, v1, v2, v0);
+        let a04 = cot(pos, v1, v0, v3);
+        let c: [f64; 4] = [a03 + a04, a01 + a02, -(a01 + a03), -(a02 + a04)];
+
+        let vol1 = compute_volume(pos, v);
+        let vol2 = compute_volume(pos, vadj.as_ptr());
+        let volume = vol1 + vol2;
+        let stiffness = 3.0 * mu * thickness.powi(3) / (24.0 * volume);
+
+        // edge vectors
+        let p0 = pos.add(3 * v0 as usize);
+        let p1 = pos.add(3 * v1 as usize);
+        let p2 = pos.add(3 * v2 as usize);
+        let p3 = pos.add(3 * v3 as usize);
+        let e0: [f64; 3] = [*p1 - *p0, *p1.add(1) - *p0.add(1), *p1.add(2) - *p0.add(2)];
+        let e1: [f64; 3] = [*p2 - *p0, *p2.add(1) - *p0.add(1), *p2.add(2) - *p0.add(2)];
+        let e2: [f64; 3] = [*p3 - *p0, *p3.add(1) - *p0.add(1), *p3.add(2) - *p0.add(2)];
+        let e3: [f64; 3] = [*p2 - *p1, *p2.add(1) - *p1.add(1), *p2.add(2) - *p1.add(2)];
+        let e4: [f64; 3] = [*p3 - *p1, *p3.add(1) - *p1.add(1), *p3.add(2) - *p1.add(2)];
+
+        let t0: [f64; 3] = [
+            -(a03 * e1[0] + a01 * e3[0]),
+            -(a03 * e1[1] + a01 * e3[1]),
+            -(a03 * e1[2] + a01 * e3[2]),
+        ];
+        let t1: [f64; 3] = [
+            -(a04 * e2[0] + a02 * e4[0]),
+            -(a04 * e2[1] + a02 * e4[1]),
+            -(a04 * e2[2] + a02 * e4[2]),
+        ];
+
+        let sqr = crate::user::user_util::mjuu_dot3(e0.as_ptr(), e0.as_ptr());
+        let cos_theta = -crate::user::user_util::mjuu_dot3(t0.as_ptr(), t1.as_ptr()) / sqr;
+
+        // kNumVerts = 4
+        for vi1 in 0..4usize {
+            for vi2 in 0..4usize {
+                *bending.add(4 * vi1 + vi2) += c[vi1] * c[vi2] * cos_theta * stiffness;
+            }
+        }
+
+        let mut n: [f64; 3] = [0.0; 3];
+        crate::user::user_util::mjuu_crossvec(n.as_mut_ptr(), e0.as_ptr(), e1.as_ptr());
+        *bending.add(16) = crate::user::user_util::mjuu_dot3(n.as_ptr(), e2.as_ptr())
+            * (a01 - a03) * (a04 - a02) * stiffness / (sqr * sqr.sqrt());
+    }
 }
 
 /// C: quadratureGaussLegendre (user/user_mesh.cc:3727)

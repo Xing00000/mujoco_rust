@@ -944,7 +944,85 @@ pub fn mjuu_eig3(eigval: *mut f64, eigvec: *mut f64, quat: *mut f64, mat: *const
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjuu_eigendecompose(mat: *mut f64, eigval: *mut f64, eigvec: *mut f64, n: i32) -> i32 {
-    todo!() // mjuu_eigendecompose
+    // Jacobi eigendecomposition of a symmetric matrix.
+    // SAFETY: mat[n*n], eigval[n], eigvec[n*n] are valid pointers (caller contract).
+    unsafe {
+        let n = n as usize;
+
+        // initialize eigvec to identity
+        for k in 0..(n * n) {
+            *eigvec.add(k) = 0.0;
+        }
+        for i in 0..n {
+            *eigvec.add(i * n + i) = 1.0;
+        }
+
+        let max_sweeps: i32 = 200;
+        let tol: f64 = 1e-12;
+
+        let mut sweep: i32 = 0;
+        while sweep < max_sweeps {
+            // check convergence: sum of squared off-diagonal elements
+            let mut off_diag: f64 = 0.0;
+            for i in 0..n {
+                for j in (i + 1)..n {
+                    let v = *mat.add(i * n + j);
+                    off_diag += v * v;
+                }
+            }
+            if off_diag < tol * tol { break; }
+
+            // sweep over all off-diagonal pairs
+            for p in 0..n {
+                for q in (p + 1)..n {
+                    let apq = *mat.add(p * n + q);
+                    if apq.abs() < tol * 1e-3 { continue; }
+
+                    let app = *mat.add(p * n + p);
+                    let aqq = *mat.add(q * n + q);
+                    let tau = (aqq - app) / (2.0 * apq);
+                    let t = (if tau >= 0.0 { 1.0 } else { -1.0 })
+                        / (tau.abs() + (1.0 + tau * tau).sqrt());
+                    let c = 1.0 / (1.0 + t * t).sqrt();
+                    let s = t * c;
+
+                    // update matrix (Jacobi rotation)
+                    *mat.add(p * n + p) -= t * apq;
+                    *mat.add(q * n + q) += t * apq;
+                    *mat.add(p * n + q) = 0.0;
+                    *mat.add(q * n + p) = 0.0;
+
+                    for r in 0..n {
+                        if r == p || r == q { continue; }
+                        let mrp = *mat.add(r * n + p);
+                        let mrq = *mat.add(r * n + q);
+                        let new_rp = c * mrp - s * mrq;
+                        let new_rq = s * mrp + c * mrq;
+                        *mat.add(r * n + p) = new_rp;
+                        *mat.add(p * n + r) = new_rp;
+                        *mat.add(r * n + q) = new_rq;
+                        *mat.add(q * n + r) = new_rq;
+                    }
+
+                    // accumulate eigenvectors
+                    for r in 0..n {
+                        let vrp = *eigvec.add(r * n + p);
+                        let vrq = *eigvec.add(r * n + q);
+                        *eigvec.add(r * n + p) = c * vrp - s * vrq;
+                        *eigvec.add(r * n + q) = s * vrp + c * vrq;
+                    }
+                }
+            }
+            sweep += 1;
+        }
+
+        // extract eigenvalues from diagonal
+        for i in 0..n {
+            *eigval.add(i) = *mat.add(i * n + i);
+        }
+
+        sweep
+    }
 }
 
 /// C: mjuu_trnVecPose (user/user_util.h:169)

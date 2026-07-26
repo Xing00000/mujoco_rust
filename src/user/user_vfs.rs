@@ -41,14 +41,14 @@ pub fn strip_path_and_lower(path: std__string) -> std__string {
 /// Calls: mju_error
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_default_vfs(vfs: *mut mjVFS) {
-    todo!() // mj_defaultVFS
+    todo!("requires C++ VFS constructor: new mujoco::user::VFS(vfs); needs C++ bridge")
 }
 
 /// C: mj_deleteVFS (user/user_vfs.cc:363)
 /// Calls: VFS::Upcast
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_delete_vfs(vfs: *mut mjVFS) {
-    todo!() // mj_deleteVFS
+    todo!("requires C++ VFS destructor: delete mujoco::user::VFS::Upcast(vfs); needs C++ bridge")
 }
 
 /// C: mj_mountVFS (user/user_vfs.cc:371)

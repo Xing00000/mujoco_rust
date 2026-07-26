@@ -33,21 +33,127 @@ pub fn get_stack_info_from_data(d: *const mjData) -> mjStackInfo {
 /// Calls: fastmod, mju_error
 #[allow(unused_variables, non_snake_case)]
 pub fn stackallocinternal(d: *mut mjData, stack_info: *mut mjStackInfo, size: usize, alignment: usize, caller: *const i8, line: i32) -> *mut () {
-    todo!() // stackallocinternal
+    // mjREDZONE = 0 in non-ASAN builds (no ADDRESS_SANITIZER support in Rust port)
+    const MJ_REDZONE: usize = 0;
+
+    // SAFETY: d is a valid mjData pointer, stack_info is a valid mjStackInfo pointer.
+    // Pointer arithmetic follows the documented C stack layout.
+    unsafe {
+        // return NULL if empty
+        if size == 0 {
+            return std::ptr::null_mut();
+        }
+
+        // start of the memory to be allocated to the buffer
+        let start_ptr: usize = (*stack_info).top - (size + MJ_REDZONE);
+
+        // align the pointer
+        let start_ptr: usize = start_ptr - fastmod(start_ptr, alignment);
+
+        // new top of the stack
+        let new_top_ptr: usize = start_ptr - MJ_REDZONE;
+
+        // exclude red zone from stack usage statistics
+        let current_alloc_usage: usize = (*stack_info).top - new_top_ptr - 2 * MJ_REDZONE;
+        let usage: usize = current_alloc_usage + ((*stack_info).bottom - (*stack_info).top);
+
+        // check size
+        let stack_available_bytes: usize = (*stack_info).top - (*stack_info).limit;
+        let stack_required_bytes: usize = (*stack_info).top - new_top_ptr;
+        if stack_required_bytes > stack_available_bytes {
+            crate::engine::engine_util_errmem::mju_error(
+                b"mj_stackAlloc: out of memory, stack overflow\0".as_ptr() as *const i8);
+        }
+
+        // update max usage statistics
+        (*stack_info).top = new_top_ptr;
+        if usage as i64 > (*d).maxuse_stack {
+            (*d).maxuse_stack = usage as i64;
+        }
+        let arena_usage = usage as i64 + (*d).parena as i64;
+        if arena_usage > (*d).maxuse_arena {
+            (*d).maxuse_arena = arena_usage;
+        }
+
+        start_ptr as *mut ()
+    }
 }
 
 /// C: stackalloc (engine/engine_memory.c:208)
 /// Calls: fastmod, get_stack_info_from_data, mju_error, stackallocinternal
 #[allow(unused_variables, non_snake_case)]
 pub fn stackalloc(d: *mut mjData, size: usize, alignment: usize, caller: *const i8, line: i32) -> *mut () {
-    todo!() // stackalloc
+    // mjREDZONE = 0 in non-ASAN builds
+    const MJ_REDZONE: usize = 0;
+
+    // SAFETY: d is a valid mjData pointer (caller contract).
+    unsafe {
+        // size zero: no-op
+        if size == 0 {
+            return std::ptr::null_mut();
+        }
+
+        // call in mju_dispatch: atomically reserve space on the stack
+        if (*d).threadlock {
+            let alloc_size = size + alignment - 1 + 2 * MJ_REDZONE;
+            // atomic fetch_add on d->pstack (usize field)
+            let old_pstack = {
+                let ptr = &(*d).pstack as *const usize as *const std::sync::atomic::AtomicUsize;
+                (*ptr).fetch_add(alloc_size, std::sync::atomic::Ordering::Relaxed)
+            };
+
+            // check for stack overflow
+            let stack_available_bytes = (*d).narena as usize - (*d).parena as usize;
+            if old_pstack + alloc_size > stack_available_bytes {
+                crate::engine::engine_util_errmem::mju_error(
+                    b"mj_stackAlloc: out of memory, stack overflow (threadlock)\0".as_ptr() as *const i8);
+            }
+
+            let bottom = (*d).arena as usize + (*d).narena as usize;
+            let mut start_ptr = bottom - old_pstack - size - MJ_REDZONE;
+            start_ptr -= fastmod(start_ptr, alignment);
+            return start_ptr as *mut ();
+        }
+
+        // non-threaded case
+        let mut stack_info = get_stack_info_from_data(d as *const mjData);
+        let result = stackallocinternal(d, &mut stack_info, size, alignment, caller, line);
+        (*d).pstack = stack_info.bottom - stack_info.top;
+        result
+    }
 }
 
 /// C: markstackinternal (engine/engine_memory.c:256)
 /// Calls: stackallocinternal
 #[allow(unused_variables, non_snake_case)]
 pub fn markstackinternal(d: *mut mjData, stack_info: *mut mjStackInfo) {
-    todo!() // markstackinternal
+    // mjStackFrame layout (24 bytes, align 8): { pbase: usize, pstack: usize, pc: *mut () }
+    // Non-ASAN build: pc is unused.
+    const SIZEOF_MJSTACKFRAME: usize = 24;
+    const ALIGNOF_MJSTACKFRAME: usize = 8;
+
+    // SAFETY: d is valid mjData pointer, stack_info is valid mjStackInfo pointer.
+    // stackallocinternal returns a valid pointer sized for mjStackFrame.
+    unsafe {
+        let top_old: usize = (*stack_info).top;
+        let s = stackallocinternal(
+            d,
+            stack_info,
+            SIZEOF_MJSTACKFRAME,
+            ALIGNOF_MJSTACKFRAME,
+            std::ptr::null(),
+            0,
+        ) as *mut usize;
+
+        // s->pbase = stack_info->stack_base
+        *s.add(0) = (*stack_info).stack_base;
+        // s->pstack = top_old (= old top before alloc)
+        *s.add(1) = top_old;
+        // s->pc is not set (non-ASAN build)
+
+        // update stack_base to point to this frame
+        (*stack_info).stack_base = s as usize;
+    }
 }
 
 /// C: freestackinternal (engine/engine_memory.c:292)
