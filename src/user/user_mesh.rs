@@ -681,7 +681,92 @@ pub fn compute_linear_stiffness2d(K: *const (), pos: *const f64, E: f64, nu: f64
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn compute_warp_mode(warp: *mut f64, pos: *const f64, npe: i32, order: i32, normal_axis: i32) {
-    todo!() // ComputeWarpMode
+    // Uses a dynamic-size rigid matrix. Max npe in practice is ~25 (order=4).
+    // ndof = 3*npe, rigid matrix = 6*ndof.
+    // SAFETY: warp[3*npe], pos[3*npe] are valid (caller contract).
+    unsafe {
+        let npe = npe as usize;
+        let ndof = 3 * npe;
+        let nbasis = (order + 1) as usize;
+
+        // zero out warp
+        for k in 0..ndof { *warp.add(k) = 0.0; }
+
+        // evaluate warp pattern at each node
+        for b0 in 0..nbasis {
+            for b1 in 0..nbasis {
+                let node = b0 * nbasis + b1;
+                let s = b0 as f64 / (nbasis as f64 - 1.0);
+                let t = b1 as f64 / (nbasis as f64 - 1.0);
+                *warp.add(3 * node + normal_axis as usize) = (1.0 - 2.0 * s) * (1.0 - 2.0 * t);
+            }
+        }
+
+        // compute centroid
+        let mut centroid = [0.0f64; 3];
+        for n in 0..npe {
+            for k in 0..3 {
+                centroid[k] += *pos.add(3 * n + k);
+            }
+        }
+        for k in 0..3 { centroid[k] /= npe as f64; }
+
+        // build rigid body modes (6 * ndof)
+        let mut rigid = vec![0.0f64; 6 * ndof];
+
+        // translations
+        for n in 0..npe {
+            rigid[0 * ndof + 3 * n + 0] = 1.0;
+            rigid[1 * ndof + 3 * n + 1] = 1.0;
+            rigid[2 * ndof + 3 * n + 2] = 1.0;
+        }
+
+        // rotations about centroid
+        for n in 0..npe {
+            let rx = *pos.add(3 * n + 0) - centroid[0];
+            let ry = *pos.add(3 * n + 1) - centroid[1];
+            let rz = *pos.add(3 * n + 2) - centroid[2];
+            rigid[3 * ndof + 3 * n + 1] = -rz;
+            rigid[3 * ndof + 3 * n + 2] =  ry;
+            rigid[4 * ndof + 3 * n + 0] =  rz;
+            rigid[4 * ndof + 3 * n + 2] = -rx;
+            rigid[5 * ndof + 3 * n + 0] = -ry;
+            rigid[5 * ndof + 3 * n + 1] =  rx;
+        }
+
+        // orthonormalize rigid modes via modified Gram-Schmidt
+        for i in 0..6 {
+            let ri_start = i * ndof;
+            for j in 0..i {
+                let rj_start = j * ndof;
+                let mut dot = 0.0f64;
+                for k in 0..ndof { dot += rigid[ri_start + k] * rigid[rj_start + k]; }
+                for k in 0..ndof { rigid[ri_start + k] -= dot * rigid[rj_start + k]; }
+            }
+            let mut norm2 = 0.0f64;
+            for k in 0..ndof { norm2 += rigid[ri_start + k] * rigid[ri_start + k]; }
+            if norm2 > 1e-20 {
+                let inv_norm = 1.0 / norm2.sqrt();
+                for k in 0..ndof { rigid[ri_start + k] *= inv_norm; }
+            }
+        }
+
+        // project warp against rigid modes
+        for i in 0..6 {
+            let ri_start = i * ndof;
+            let mut dot = 0.0f64;
+            for k in 0..ndof { dot += *warp.add(k) * rigid[ri_start + k]; }
+            for k in 0..ndof { *warp.add(k) -= dot * rigid[ri_start + k]; }
+        }
+
+        // normalize
+        let mut norm2 = 0.0f64;
+        for k in 0..ndof { norm2 += *warp.add(k) * *warp.add(k); }
+        if norm2 > 1e-20 {
+            let inv_norm = 1.0 / norm2.sqrt();
+            for k in 0..ndof { *warp.add(k) *= inv_norm; }
+        }
+    }
 }
 
 /// C: ComputeWarpStiffness (user/user_mesh.cc:4104)
@@ -692,7 +777,18 @@ pub fn compute_warp_mode(warp: *mut f64, pos: *const f64, npe: i32, order: i32, 
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn compute_warp_stiffness(pos: *const f64, npe: i32, normal_axis: i32, E: f64, nu: f64, thickness: f64) -> f64 {
-    todo!() // ComputeWarpStiffness
+    // SAFETY: pos is a valid f64 array of length 3*npe, npe >= 2 (caller contract).
+    unsafe {
+        let axis0 = ((normal_axis + 1) % 3) as usize;
+        let axis1 = ((normal_axis + 2) % 3) as usize;
+        let d0 = (*pos.add(3 * (npe as usize - 1) + axis0) - *pos.add(axis0)).abs();
+        let d1 = (*pos.add(3 * (npe as usize - 1) + axis1) - *pos.add(axis1)).abs();
+        if d0 < 1e-30 || d1 < 1e-30 { return 0.0; }
+        // plate bending rigidity: D = E*t³ / (12*(1-ν²))
+        let D = E * thickness * thickness * thickness / (12.0 * (1.0 - nu * nu));
+        // warp stiffness: D*(1-ν)*4 / (d0*d1)
+        D * (1.0 - nu) * 4.0 / (d0 * d1)
+    }
 }
 
 /// C: EigendecomposeStiffness (user/user_mesh.cc:4130)
@@ -704,7 +800,43 @@ pub fn compute_warp_stiffness(pos: *const f64, npe: i32, normal_axis: i32, E: f6
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn eigendecompose_stiffness(K_cell_data: *const f64, out: *mut f64, ndof: i32) -> i32 {
-    todo!() // EigendecomposeStiffness
+    // SAFETY: K_cell_data[ndof*ndof], out[1+ndof*ndof] are valid (caller contract).
+    unsafe {
+        let ndof = ndof as usize;
+        let n2 = ndof * ndof;
+
+        // copy K_cell for in-place decomposition
+        let mut mat = vec![0.0f64; n2];
+        std::ptr::copy_nonoverlapping(K_cell_data, mat.as_mut_ptr(), n2);
+        let mut eigval = vec![0.0f64; ndof];
+        let mut eigvec = vec![0.0f64; n2];
+
+        crate::user::user_util::mjuu_eigendecompose(mat.as_mut_ptr(), eigval.as_mut_ptr(), eigvec.as_mut_ptr(), ndof as i32);
+
+        // K_stored = -K_physical, so physical eigenvalue = -eigval[i]
+        let mut max_eigval: f64 = 0.0;
+        for i in 0..ndof {
+            let abs_v = eigval[i].abs();
+            if abs_v > max_eigval { max_eigval = abs_v; }
+        }
+        let threshold = max_eigval * 1e-8;
+
+        let mut neig: i32 = 0;
+        for i in 0..ndof {
+            let lambda_phys = -eigval[i];
+            if lambda_phys > threshold {
+                let scale = lambda_phys.sqrt();
+                let w = out.add(1 + neig as usize * ndof);
+                for j in 0..ndof {
+                    *w.add(j) = scale * eigvec[j * ndof + i];
+                }
+                neig += 1;
+            }
+        }
+
+        *out.add(0) = neig as f64;
+        neig
+    }
 }
 
 /// C: ComputeInterpBending (user/user_mesh.cc:4391)

@@ -834,7 +834,53 @@ pub fn mj_compute_sensor_acc(m: *const mjModel, d: *mut mjData, i: i32, sensorda
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn compute_or_read_sensor(m: *const mjModel, d: *mut mjData, i: i32, sensordata: *mut f64) {
-    todo!() // compute_or_read_sensor
+    // SAFETY: m, d are valid model/data pointers; i is a valid sensor index.
+    unsafe {
+        let nsample = *(*m).sensor_history.add(2 * i as usize);
+
+        // no history: compute directly
+        if nsample <= 0 {
+            mj_compute_sensor(m, d, i, sensordata);
+            return;
+        }
+
+        let delay = *(*m).sensor_delay.add(i as usize);
+        let dim   = *(*m).sensor_dim.add(i as usize);
+
+        // delay > 0: read delayed value from buffer
+        if delay > 0.0 {
+            let interp = *(*m).sensor_history.add(2 * i as usize + 1);
+            let ptr = crate::engine::engine_support::mj_read_sensor(m, d as *const mjData, i, (*d).time, sensordata, interp);
+            if !ptr.is_null() {
+                crate::engine::engine_util_blas::mju_copy(sensordata, ptr, dim);
+            }
+            return;
+        }
+
+        // interval > 0: compute if interval satisfied, else read from buffer
+        let interval = *(*m).sensor_interval.add(2 * i as usize);
+        if interval > 0.0 {
+            let historyadr = *(*m).sensor_historyadr.add(i as usize);
+            let buf = (*d).history.add(historyadr as usize);
+            let time_prev = *buf;  // first slot stores time_prev
+
+            if time_prev + interval <= (*d).time {
+                // interval condition satisfied: compute new value
+                mj_compute_sensor(m, d, i, sensordata);
+            } else {
+                // interval not satisfied: read from buffer
+                let interp = *(*m).sensor_history.add(2 * i as usize + 1);
+                let ptr = crate::engine::engine_support::mj_read_sensor(m, d as *const mjData, i, (*d).time, sensordata, interp);
+                if !ptr.is_null() {
+                    crate::engine::engine_util_blas::mju_copy(sensordata, ptr, dim);
+                }
+            }
+            return;
+        }
+
+        // history only, no delay or interval: compute directly
+        mj_compute_sensor(m, d, i, sensordata);
+    }
 }
 
 /// C: compute_user_sensors (engine/engine_sensor.c:1432)

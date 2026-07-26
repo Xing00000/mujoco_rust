@@ -90,7 +90,91 @@ pub fn set_fixed(m: *mut mjModel, d: *mut mjData) {
 /// Calls: mju_zeroInt
 #[allow(unused_variables, non_snake_case)]
 pub fn make_tendon_sparse(m: *mut mjModel) {
-    todo!() // makeTendonSparse
+    use crate::types::*;
+    const MJ_WRAP_JOINT: i32 = mjtWrap_mjWRAP_JOINT as i32;
+    const MJ_WRAP_SITE: i32 = mjtWrap_mjWRAP_SITE as i32;
+    const MJ_WRAP_SPHERE: i32 = mjtWrap_mjWRAP_SPHERE as i32;
+    const MJ_WRAP_CYLINDER: i32 = mjtWrap_mjWRAP_CYLINDER as i32;
+
+    // SAFETY: m is a valid mjModel pointer. All field accesses follow the struct layout.
+    unsafe {
+        let ntendon = (*m).ntendon as i32;
+        if ntendon == 0 { return; }
+
+        let rownnz = (*m).ten_J_rownnz;
+        let rowadr = (*m).ten_J_rowadr;
+        let colind = (*m).ten_J_colind;
+
+        crate::engine::engine_util_misc::mju_zero_int(rownnz, ntendon);
+        crate::engine::engine_util_misc::mju_zero_int(rowadr, ntendon);
+
+        for i in 0..ntendon as usize {
+            *rowadr.add(i) = if i > 0 {
+                *rowadr.add(i - 1) + *rownnz.add(i - 1)
+            } else { 0 };
+
+            let adr = *(*m).tendon_adr.add(i) as usize;
+            let num = *(*m).tendon_num.add(i) as usize;
+
+            // joint tendon: each wrap object is a joint, colind is its dofadr
+            if *(*m).wrap_type.add(adr) == MJ_WRAP_JOINT {
+                for j in 0..num {
+                    let jnt_id = *(*m).wrap_objid.add(adr + j) as usize;
+                    *colind.add(*rowadr.add(i) as usize + j) = *(*m).jnt_dofadr.add(jnt_id);
+                }
+                *rownnz.add(i) = num as i32;
+            } else {
+                // spatial tendon: collect used dofs from wrap object bodies
+                let mut nnz: i32 = 0;
+                for j in 0..num {
+                    let wrap_t = *(*m).wrap_type.add(adr + j);
+                    let obj_id = *(*m).wrap_objid.add(adr + j) as usize;
+
+                    let bodyid = if wrap_t == MJ_WRAP_SITE {
+                        *(*m).site_bodyid.add(obj_id)
+                    } else if wrap_t == MJ_WRAP_SPHERE || wrap_t == MJ_WRAP_CYLINDER {
+                        *(*m).geom_bodyid.add(obj_id)
+                    } else {
+                        -1
+                    };
+
+                    if bodyid > 0 {
+                        let mut bid = bodyid;
+                        while bid > 0 {
+                            let bdofadr = *(*m).body_dofadr.add(bid as usize);
+                            let bdofnum = *(*m).body_dofnum.add(bid as usize);
+                            for k in 0..bdofnum {
+                                let dof = bdofadr + k;
+                                let base = *rowadr.add(i) as usize;
+                                let mut found = false;
+                                for l in 0..nnz as usize {
+                                    if *colind.add(base + l) == dof { found = true; break; }
+                                }
+                                if !found {
+                                    *colind.add(base + nnz as usize) = dof;
+                                    nnz += 1;
+                                }
+                            }
+                            bid = *(*m).body_parentid.add(bid as usize);
+                        }
+                    }
+                }
+                *rownnz.add(i) = nnz;
+
+                // bubble sort colind for this tendon
+                let base = *rowadr.add(i) as usize;
+                for j in 0..(nnz as usize - 1).saturating_add(1) {
+                    for k in (j + 1)..(nnz as usize) {
+                        if *colind.add(base + k) < *colind.add(base + j) {
+                            let tmp = *colind.add(base + j);
+                            *colind.add(base + j) = *colind.add(base + k);
+                            *colind.add(base + k) = tmp;
+                        }
+                    }
+                }
+            }
+        }
+    }
 }
 
 /// C: makeFlexSparse (engine/engine_setconst.c:424)

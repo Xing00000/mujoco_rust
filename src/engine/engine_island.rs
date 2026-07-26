@@ -263,7 +263,103 @@ pub fn tree_iter_init(m: *const mjModel, d: *const mjData, i: i32, iter: *mut mj
 /// Calls: addEdge, mju_message, mju_zeroInt, treeIterInit, treeNext
 #[allow(unused_variables, non_snake_case)]
 pub fn find_edges(m: *const mjModel, d: *const mjData, rownnz: *mut i32, colind: *mut i32, tree_tree: *mut u8, efc_tree: *mut i32, ntree: i32) -> i32 {
-    todo!() // findEdges
+    use crate::types::*;
+    const MJ_CNSTR_EQUALITY: i32 = mjtConstraint_mjCNSTR_EQUALITY as i32;
+    const MJ_EQ_FLEX: i32 = mjtEq_mjEQ_FLEX as i32;
+    const MJ_EQ_FLEXVERT: i32 = mjtEq_mjEQ_FLEXVERT as i32;
+    const MJ_EQ_FLEXSTRAIN: i32 = mjtEq_mjEQ_FLEXSTRAIN as i32;
+
+    // SAFETY: m, d are valid model/data pointers. All pointer accesses bounded.
+    unsafe {
+        let nefc = (*d).nefc;
+        let mut nnz: i32 = 0;
+        let mut prev_efc_type: i32 = -1;
+        let mut prev_efc_id: i32 = -1;
+
+        // clear row nonzeros
+        crate::engine::engine_util_misc::mju_zero_int(rownnz, ntree);
+
+        // inline addEdge: adds edge(s) between tree1 and tree2, returns count
+        let add_edge = |rownnz: *mut i32, colind: *mut i32, tree_tree: *mut u8,
+                        ntree: i32, mut t1: i32, mut t2: i32| -> i32 {
+            if t1 == -1 && t2 == -1 {
+                crate::engine::engine_util_errmem::mju_error(
+                    b"findEdges: self-edge of the static tree\0".as_ptr() as *const i8);
+                return 0;
+            }
+            if t1 == -1 { t1 = t2; }
+            if t2 == -1 { t2 = t1; }
+            // skip if edge already present
+            if *tree_tree.add((t1 * ntree + t2) as usize) != 0 {
+                return 0;
+            }
+            *tree_tree.add((t1 * ntree + t2) as usize) = 1;
+            let rnz = rownnz.add(t1 as usize);
+            *colind.add((t1 * ntree + *rnz) as usize) = t2;
+            *rnz += 1;
+            if t1 != t2 {
+                *tree_tree.add((t2 * ntree + t1) as usize) = 1;
+                let rnz2 = rownnz.add(t2 as usize);
+                *colind.add((t2 * ntree + *rnz2) as usize) = t1;
+                *rnz2 += 1;
+                return 2;
+            }
+            1
+        };
+
+        for i in 0..nefc as usize {
+            let cur_type = *(*d).efc_type.add(i);
+            let cur_id   = *(*d).efc_id.add(i);
+
+            // same constraint row: skip unless flex equality
+            if cur_type == prev_efc_type && cur_id == prev_efc_id {
+                let is_flex_eq = cur_type == MJ_CNSTR_EQUALITY
+                    && (*(*m).eq_type.add(cur_id as usize) == MJ_EQ_FLEX
+                        || *(*m).eq_type.add(cur_id as usize) == MJ_EQ_FLEXVERT
+                        || *(*m).eq_type.add(cur_id as usize) == MJ_EQ_FLEXSTRAIN);
+                if !is_flex_eq {
+                    *efc_tree.add(i) = *efc_tree.add(i - 1);
+                    continue;
+                }
+            }
+            prev_efc_type = cur_type;
+            prev_efc_id   = cur_id;
+
+            // initialize tree iterator
+            let mut iter_buf = [0i32; 4];  // mjTreeIter: 4 x i32 = 16 bytes
+            let iter = iter_buf.as_mut_ptr() as *mut mjTreeIter;
+            tree_iter_init(m, d, i as i32, iter);
+
+            let tree1 = tree_next(m, d, i as i32, iter);
+            if tree1 != -2 {
+                let tree2 = tree_next(m, d, i as i32, iter);
+
+                // assign tree to constraint
+                *efc_tree.add(i) = if tree1 >= 0 { tree1 } else { tree2 };
+                if *efc_tree.add(i) < 0 {
+                    crate::engine::engine_util_errmem::mju_error(
+                        b"findEdges: no tree found for constraint\0".as_ptr() as *const i8);
+                }
+
+                if tree2 == -2 {
+                    nnz += add_edge(rownnz, colind, tree_tree, ntree, tree1, -1);
+                } else {
+                    let mut t1 = tree1;
+                    let mut t2 = tree2;
+                    while t2 != -2 {
+                        nnz += add_edge(rownnz, colind, tree_tree, ntree, t1, t2);
+                        t1 = t2;
+                        t2 = tree_next(m, d, i as i32, iter);
+                    }
+                }
+            } else {
+                crate::engine::engine_util_errmem::mju_error(
+                    b"findEdges: no tree found for constraint\0".as_ptr() as *const i8);
+            }
+        }
+
+        nnz
+    }
 }
 
 /// C: mj_floodFill (engine/engine_island.h:28)

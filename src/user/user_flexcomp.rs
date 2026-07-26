@@ -7,13 +7,39 @@ use crate::types::*;
 /// C: ReadFromBuffer (user/user_flexcomp.cc:56)
 #[allow(unused_variables, non_snake_case)]
 pub fn read_from_buffer(dst: *mut T, src: *const i8) {
-    todo!() // ReadFromBuffer
+    // C: std::memcpy(dst, src, sizeof(T))
+    // T is a template type emitted as ZST (size 0), so this is a no-op.
+    // SAFETY: With sizeof(T)=0, no bytes are copied; both pointers are unused.
+    unsafe {
+        let size = std::mem::size_of::<T>();
+        if size > 0 {
+            std::ptr::copy_nonoverlapping(src as *const u8, dst as *mut u8, size);
+        }
+    }
 }
 
 /// C: ReadStrFromBuffer (user/user_flexcomp.cc:61)
 #[allow(unused_variables, non_snake_case)]
 pub fn read_str_from_buffer(dest: *mut i8, src: *const i8, maxlen: i32) {
-    todo!() // ReadStrFromBuffer
+    // C: std::strncpy(dest, src, maxlen)
+    // SAFETY: dest and src are valid pointers; maxlen bounds the copy.
+    unsafe {
+        if maxlen <= 0 { return; }
+        let n = maxlen as usize;
+        let mut i = 0usize;
+        // strncpy: copy up to maxlen chars, padding with null if shorter
+        while i < n {
+            let c = *src.add(i);
+            *dest.add(i) = c;
+            if c == 0 { i += 1; break; }
+            i += 1;
+        }
+        // pad remaining with null
+        while i < n {
+            *dest.add(i) = 0;
+            i += 1;
+        }
+    }
 }
 
 /// C: IsValidElementOrNodeHeader22 (user/user_flexcomp.cc:65)

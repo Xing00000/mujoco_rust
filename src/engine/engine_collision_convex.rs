@@ -795,7 +795,55 @@ pub fn add_vert(obj: *mut mjCCDObj, x: f64, y: f64, z: f64) {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn add_prism_vert(obj: *mut mjCCDObj, r: i32, c: i32, i: i32, dx: f64, dy: f64, margin: f64) {
-    todo!() // addPrismVert
+    // Similar to add_vert but uses hfield data for z-coordinate.
+    // HfieldData layout in data._data (160 bytes):
+    //   prism: [f64; 18] at offset 0 (6 rows of [x, y, z])
+    //   hfield_data: *const f32 at offset 144
+    //   hfield_nrow: i32 at offset 152
+    //   hfield_ncol: i32 at offset 156
+
+    // SAFETY: obj is valid. data._data has HfieldData layout at offset 0.
+    unsafe {
+        let prism = (*obj).data._data.as_mut_ptr() as *mut f64;
+        // mji_copy3(prism[0], prism[1])
+        *prism.add(0) = *prism.add(3);
+        *prism.add(1) = *prism.add(4);
+        *prism.add(2) = *prism.add(5);
+        // mji_copy3(prism[1], prism[2])
+        *prism.add(3) = *prism.add(6);
+        *prism.add(4) = *prism.add(7);
+        *prism.add(5) = *prism.add(8);
+        // mji_copy3(prism[3], prism[4])
+        *prism.add(9)  = *prism.add(12);
+        *prism.add(10) = *prism.add(13);
+        *prism.add(11) = *prism.add(14);
+        // mji_copy3(prism[4], prism[5])
+        *prism.add(12) = *prism.add(15);
+        *prism.add(13) = *prism.add(16);
+        *prism.add(14) = *prism.add(17);
+
+        let dr = 1 - i;  // = 1 when i=0, = 0 when i=1
+
+        // new vertex x = dx*c - obj->size[0]
+        let x = dx * c as f64 - (*obj).size[0];
+        // new vertex y = dy*(r + dr) - obj->size[1]
+        let y = dy * (r + dr) as f64 - (*obj).size[1];
+
+        // prism[2][0] = prism[5][0] = x
+        *prism.add(6)  = x;
+        *prism.add(15) = x;
+        // prism[2][1] = prism[5][1] = y
+        *prism.add(7)  = y;
+        *prism.add(16) = y;
+
+        // prism[5][2] = hfield_data[(r+dr)*hfield_ncol + c] * size[2] + margin
+        let data_base = (*obj).data._data.as_ptr();
+        let hfield_data_ptr = *(data_base.add(144) as *const *const f32);
+        let hfield_ncol = *(data_base.add(156) as *const i32);
+        let idx = (r + dr) * hfield_ncol + c;
+        let z = *hfield_data_ptr.add(idx as usize) as f64 * (*obj).size[2] + margin;
+        *prism.add(17) = z;
+    }
 }
 
 /// C: mjc_ellipsoidInside (engine/engine_collision_convex.c:1282)
