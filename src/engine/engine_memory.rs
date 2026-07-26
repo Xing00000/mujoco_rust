@@ -428,6 +428,82 @@ pub fn mj_stack_alloc_int(d: *mut mjData, size: usize) -> *mut i32 {
 /// Calls: mjCActuator::act
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_clear_efc(d: *mut mjData) {
-    todo!() // mj_clearEfc
+    // mj_clearEfc: set all arena pointer fields to NULL, reset counts, set contact = arena
+    // Implements the MJDATA_ARENA_POINTERS X-macro expansion.
+    // SAFETY: d is a valid mjData pointer with all fields accessible.
+    unsafe {
+        // MJDATA_ARENA_POINTERS_CONTACT
+        (*d).contact = (*d).arena as *mut crate::types::mjContact;
+        // MJDATA_ARENA_POINTERS_SOLVER
+        (*d).efc_type = std::ptr::null_mut();
+        (*d).efc_id = std::ptr::null_mut();
+        (*d).efc_J_rownnz = std::ptr::null_mut();
+        (*d).efc_J_rowadr = std::ptr::null_mut();
+        (*d).efc_J_rowsuper = std::ptr::null_mut();
+        (*d).efc_J_colind = std::ptr::null_mut();
+        (*d).efc_J = std::ptr::null_mut();
+        (*d).efc_pos = std::ptr::null_mut();
+        (*d).efc_margin = std::ptr::null_mut();
+        (*d).efc_frictionloss = std::ptr::null_mut();
+        (*d).efc_diagA = std::ptr::null_mut();
+        (*d).efc_KBIP = std::ptr::null_mut();
+        (*d).efc_D = std::ptr::null_mut();
+        (*d).efc_R = std::ptr::null_mut();
+        (*d).tendon_efcadr = std::ptr::null_mut();
+        (*d).efc_vel = std::ptr::null_mut();
+        (*d).efc_aref = std::ptr::null_mut();
+        (*d).efc_b = std::ptr::null_mut();
+        (*d).efc_state = std::ptr::null_mut();
+        (*d).efc_force = std::ptr::null_mut();
+        // MJDATA_ARENA_POINTERS_DUAL
+        (*d).efc_Y_rownnz = std::ptr::null_mut();
+        (*d).efc_Y_rowadr = std::ptr::null_mut();
+        (*d).efc_Y_colind = std::ptr::null_mut();
+        (*d).efc_Y = std::ptr::null_mut();
+        (*d).efc_AR_rownnz = std::ptr::null_mut();
+        (*d).efc_AR_rowadr = std::ptr::null_mut();
+        (*d).efc_AR_colind = std::ptr::null_mut();
+        (*d).efc_AR = std::ptr::null_mut();
+        // MJDATA_ARENA_POINTERS_ISLAND
+        (*d).tree_island = std::ptr::null_mut();
+        (*d).island_ntree = std::ptr::null_mut();
+        (*d).island_itreeadr = std::ptr::null_mut();
+        (*d).map_itree2tree = std::ptr::null_mut();
+        (*d).dof_island = std::ptr::null_mut();
+        (*d).island_nv = std::ptr::null_mut();
+        (*d).island_idofadr = std::ptr::null_mut();
+        (*d).island_dofadr = std::ptr::null_mut();
+        (*d).map_dof2idof = std::ptr::null_mut();
+        (*d).map_idof2dof = std::ptr::null_mut();
+        (*d).ifrc_smooth = std::ptr::null_mut();
+        (*d).iacc_smooth = std::ptr::null_mut();
+        (*d).iacc = std::ptr::null_mut();
+        (*d).efc_island = std::ptr::null_mut();
+        (*d).island_ne = std::ptr::null_mut();
+        (*d).island_nf = std::ptr::null_mut();
+        (*d).island_nefc = std::ptr::null_mut();
+        (*d).island_iefcadr = std::ptr::null_mut();
+        (*d).map_efc2iefc = std::ptr::null_mut();
+        (*d).map_iefc2efc = std::ptr::null_mut();
+        (*d).iefc_type = std::ptr::null_mut();
+        (*d).iefc_id = std::ptr::null_mut();
+        (*d).iefc_frictionloss = std::ptr::null_mut();
+        (*d).iefc_D = std::ptr::null_mut();
+        (*d).iefc_R = std::ptr::null_mut();
+        (*d).iefc_aref = std::ptr::null_mut();
+        (*d).iefc_state = std::ptr::null_mut();
+        (*d).iefc_force = std::ptr::null_mut();
+        (*d).ifrc_constraint = std::ptr::null_mut();
+        // Scalars
+        (*d).nefc = 0;
+        (*d).nisland = 0;
+        (*d).nJ = 0;
+        (*d).nY = 0;
+        (*d).nA = 0;
+        // contact efc_address
+        for i in 0..(*d).ncon as usize {
+            (*(*d).contact.add(i)).efc_address = -1;
+        }
+    }
 }
 
