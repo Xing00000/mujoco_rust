@@ -1,44 +1,12 @@
 //! Port of: user/user_resource.cc
-//! IR hash: 73393814548a07d1
-//! CODEGEN: signatures locked. Only fill todo!() bodies.
+//! IR hash: 9343293228317031
+//! CODEGEN: source paths, owners, and callable names are locked.
 
 use crate::types::*;
 
-/// C: mju_openResource (user/user_resource.cc:34)
-/// Calls: VFS::Open, VFS::SetToSelfDestruct, VFS::Upcast, mj_defaultVFS, mj_deleteVFS, mju_free, mju_malloc
-#[allow(unused_variables, non_snake_case)]
-pub fn mju_open_resource(dir: *const i8, name: *const i8, vfs: *const mjVFS, error: *mut i8, nerror: usize) -> *mut mjResource {
-    todo!() // mju_openResource
-}
-
-/// C: mju_closeResource (user/user_resource.cc:69)
-/// Calls: VFS::Close, VFS::Upcast
-#[allow(unused_variables, non_snake_case)]
-pub fn mju_close_resource(resource: *mut mjResource) {
-    // SAFETY: resource is a valid pointer (caller contract); vfs field checked before deref
-    unsafe {
-        if !resource.is_null() && !(*resource).vfs.is_null() {
-            todo!("requires C++ VFS vtable dispatch: VFS::Upcast(resource->vfs)->Close(resource)")
-        }
-    }
-}
-
-/// C: mju_readResource (user/user_resource.cc:75)
-/// Calls: VFS::Read, VFS::Upcast
-#[allow(unused_variables, non_snake_case)]
-pub fn mju_read_resource(resource: *mut mjResource, buffer: *const *mut ()) -> i32 {
-    // SAFETY: resource is a valid pointer (caller contract); vfs field checked before deref
-    unsafe {
-        if !resource.is_null() && !(*resource).vfs.is_null() {
-            todo!("requires C++ VFS vtable dispatch: VFS::Upcast(resource->vfs)->Read(resource, buffer)")
-        }
-        -1 // default (error reading bytes) when vfs is null
-    }
-}
-
 /// C: mju_getResourceDir (user/user_resource.cc:82)
 #[allow(unused_variables, non_snake_case)]
-pub fn mju_get_resource_dir(resource: *mut mjResource, dir: *const *mut i8, ndir: *mut i32) {
+pub fn mju_getResourceDir(resource: *mut mjResource, dir: *const *mut i8, ndir: *mut i32) {
     // SAFETY: resource, dir, ndir are valid pointers (caller contract)
     unsafe {
         *(dir as *mut *const i8) = std::ptr::null();
@@ -79,7 +47,7 @@ pub fn mju_get_resource_dir(resource: *mut mjResource, dir: *const *mut i8, ndir
 
 /// C: mju_isModifiedResource (user/user_resource.cc:105)
 #[allow(unused_variables, non_snake_case)]
-pub fn mju_is_modified_resource(resource: *const mjResource, timestamp: *const i8) -> i32 {
+pub fn mju_isModifiedResource(resource: *const mjResource, timestamp: *const i8) -> i32 {
     // SAFETY: resource may be null (checked). provider is accessed through mjResource.provider field.
     // The mjpResourceProvider C struct has 'modified' function pointer at offset 48:
     //   prefix(8) + open(8) + read(8) + close(8) + mount(8) + unmount(8) = 48
@@ -100,12 +68,5 @@ pub fn mju_is_modified_resource(resource: *const mjResource, timestamp: *const i
         }
         1 // default: assume modified
     }
-}
-
-/// C: mju_decodeResource (user/user_resource.cc:112)
-/// Calls: mjp_findDecoder, mju_warning, mjuu_extToContentType
-#[allow(unused_variables, non_snake_case)]
-pub fn mju_decode_resource(resource: *mut mjResource, content_type: *const i8, vfs: *const mjVFS) -> *mut mjSpec {
-    todo!() // mju_decodeResource
 }
 

@@ -1,99 +1,12 @@
 //! Port of: engine/engine_util_errmem.c
-//! IR hash: 73393814548a07d1
-//! CODEGEN: signatures locked. Only fill todo!() bodies.
+//! IR hash: 9343293228317031
+//! CODEGEN: source paths, owners, and callable names are locked.
 
 use crate::types::*;
 
-/// C: mju_defaultLogHandler (engine/engine_util_errmem.c:34)
-/// Calls: mju_fprint_message, mju_getLogConfigPtr, mju_isTopicEnabled, mju_legacy_text, mju_localTimeStr
-#[allow(unused_variables, non_snake_case)]
-pub fn mju_default_log_handler(msg: *const mjLogMessage) {
-    const MJ_LOG_DEBUG: i32 = 0;
-    const MJ_LOG_INFO: i32 = 1;
-    const MJ_LOG_WARNING: i32 = 2;
-    const MJ_LOG_ERROR: i32 = 3;
-
-    extern "C" {
-        fn fopen(filename: *const i8, mode: *const i8) -> *mut FILE;
-        fn fclose(stream: *mut FILE) -> i32;
-        fn exit(status: i32) -> !;
-        static stderr: *mut FILE;
-        static stdout: *mut FILE;
-    }
-    const EXIT_FAILURE: i32 = 1;
-
-    // SAFETY: msg is a valid pointer (caller contract)
-    unsafe {
-        let cfg = mju_get_log_config_ptr();
-
-        // topic filtering for INFO/DEBUG
-        if ((*msg).level == MJ_LOG_INFO || (*msg).level == MJ_LOG_DEBUG)
-            && !mju_is_topic_enabled((*msg).topic)
-        {
-            return;
-        }
-
-        // legacy error handler compat
-        if (*msg).level == MJ_LOG_ERROR {
-            let guard = crate::types::MJU_USER_ERROR.lock().unwrap();
-            let ptr_val = usize::from_ne_bytes(*guard);
-            if ptr_val != 0 {
-                let handler: unsafe extern "C" fn(*const i8) = std::mem::transmute(ptr_val);
-                let mut buf = [0i8; 2048];
-                let text = mju_legacy_text(msg, buf.as_mut_ptr(), 2048);
-                drop(guard);
-                handler(text);
-                return;
-            }
-            drop(guard);
-        }
-
-        // legacy warning handler compat
-        if (*msg).level == MJ_LOG_WARNING {
-            let guard = crate::types::MJU_USER_WARNING.lock().unwrap();
-            let ptr_val = usize::from_ne_bytes(*guard);
-            if ptr_val != 0 {
-                let handler: unsafe extern "C" fn(*const i8) = std::mem::transmute(ptr_val);
-                let mut buf = [0i8; 2048];
-                let text = mju_legacy_text(msg, buf.as_mut_ptr(), 2048);
-                drop(guard);
-                handler(text);
-                return;
-            }
-            drop(guard);
-        }
-
-        let mut timestr = [0i8; 64];
-        if (*msg).timestamp || ((*cfg).logto_file && (*cfg).logfile[0] != 0) {
-            mju_local_time_str(timestr.as_mut_ptr(), 64);
-        }
-
-        // file output
-        if (*cfg).logto_file && (*cfg).logfile[0] != 0 {
-            let fp = fopen((*cfg).logfile.as_ptr() as *const i8, b"a+t\0".as_ptr() as *const i8);
-            if !fp.is_null() {
-                mju_fprint_message(fp, timestr.as_ptr(), msg);
-                fclose(fp);
-            }
-        }
-
-        // console output
-        if (*cfg).logto_console {
-            let stream = if (*msg).level >= MJ_LOG_WARNING { stderr } else { stdout };
-            let ts = if (*msg).timestamp { timestr.as_ptr() } else { b"\0".as_ptr() as *const i8 };
-            mju_fprint_message(stream, ts, msg);
-        }
-
-        // exit on error
-        if (*msg).level == MJ_LOG_ERROR {
-            exit(EXIT_FAILURE);
-        }
-    }
-}
-
 /// C: mju_alignedMalloc (engine/engine_util_errmem.c:44)
 #[allow(unused_variables, non_snake_case)]
-pub fn mju_aligned_malloc(size: usize, align: usize) -> *mut () {
+pub fn mju_alignedMalloc(size: usize, align: usize) -> *mut () {
     // SAFETY: align must be a power of two and size must be a multiple of align (C aligned_alloc contract).
     // Layout::from_size_align_unchecked is fine here because the C caller guarantees valid args.
     unsafe {
@@ -104,7 +17,7 @@ pub fn mju_aligned_malloc(size: usize, align: usize) -> *mut () {
 
 /// C: mju_alignedFree (engine/engine_util_errmem.c:53)
 #[allow(unused_variables, non_snake_case)]
-pub fn mju_aligned_free(ptr: *mut ()) {
+pub fn mju_alignedFree(ptr: *mut ()) {
     if ptr.is_null() {
         return;
     }
@@ -118,7 +31,7 @@ pub fn mju_aligned_free(ptr: *mut ()) {
 
 /// C: mju_initLogTopicsFromEnv (engine/engine_util_errmem.c:111)
 #[allow(unused_variables, non_snake_case)]
-pub fn mju_init_log_topics_from_env() {
+pub fn mju_initLogTopicsFromEnv() {
     extern "C" {
         fn getenv(name: *const i8) -> *const i8;
         fn strcasecmp(s1: *const i8, s2: *const i8) -> i32;
@@ -198,9 +111,9 @@ pub fn mju_init_log_topics_from_env() {
 }
 
 /// C: mju_getLogConfigPtr (engine/engine_util_errmem.c:145)
-/// Calls: mju_initLogTopicsFromEnv
+/// Calls: cxx-internal:engine_util_errmem.c.o:_mju_initLogTopicsFromEnv
 #[allow(unused_variables, non_snake_case)]
-pub fn mju_get_log_config_ptr() -> *const mjLogConfig {
+pub fn mju_getLogConfigPtr() -> *const mjLogConfig {
     // SAFETY: Accesses file-scope statics env_checked and log_config via Mutex.
     // Returns pointer to log_config's internal buffer (stable because LazyLock).
     unsafe {
@@ -208,7 +121,7 @@ pub fn mju_get_log_config_ptr() -> *const mjLogConfig {
         let checked = std::ptr::read(env_guard.as_ptr() as *const u8);
         if checked == 0 {
             drop(env_guard);
-            mju_init_log_topics_from_env();
+            mju_initLogTopicsFromEnv();
             env_guard = ENV_CHECKED.lock().unwrap();
             std::ptr::write(env_guard.as_mut_ptr() as *mut u8, 1);
         }
@@ -220,7 +133,7 @@ pub fn mju_get_log_config_ptr() -> *const mjLogConfig {
 
 /// C: mju_localTimeStr (engine/engine_util_errmem.c:195)
 #[allow(unused_variables, non_snake_case)]
-pub fn mju_local_time_str(buf: *mut i8, buf_sz: i32) {
+pub fn mju_localTimeStr(buf: *mut i8, buf_sz: i32) {
     #[repr(C)]
     struct Tm {
         tm_sec: i32, tm_min: i32, tm_hour: i32, tm_mday: i32,
@@ -243,55 +156,6 @@ pub fn mju_local_time_str(buf: *mut i8, buf_sz: i32) {
         time(&mut rawtime as *mut i64);
         localtime_r(&rawtime as *const i64, timeinfo.as_mut_ptr());
         strftime(buf, buf_sz as usize, b"%c\0".as_ptr() as *const i8, timeinfo.as_ptr());
-    }
-}
-
-/// C: mju_fprint_message (engine/engine_util_errmem.c:214)
-/// Calls: BaseName
-#[allow(unused_variables, non_snake_case)]
-pub fn mju_fprint_message(stream: *mut FILE, timestr: *const i8, msg: *const mjLogMessage) {
-    const MJ_LOG_DEBUG: i32 = 0;
-    const MJ_LOG_INFO: i32 = 1;
-    const MJ_LOG_WARNING: i32 = 2;
-    const MJ_LOG_ERROR: i32 = 3;
-
-    extern "C" {
-        fn fprintf(stream: *mut FILE, fmt: *const i8, ...) -> i32;
-    }
-
-    // SAFETY: stream, timestr, msg are valid pointers (caller contract)
-    unsafe {
-        let level = (*msg).level;
-        let type_str = if level == MJ_LOG_ERROR {
-            b"ERROR\0".as_ptr() as *const i8
-        } else if level == MJ_LOG_WARNING {
-            b"WARNING\0".as_ptr() as *const i8
-        } else if level == MJ_LOG_INFO {
-            b"INFO\0".as_ptr() as *const i8
-        } else {
-            b"DEBUG\0".as_ptr() as *const i8
-        };
-
-        fprintf(stream, b"%s\0".as_ptr() as *const i8, type_str);
-        if !(*msg).func.is_null() {
-            fprintf(stream, b" %s\0".as_ptr() as *const i8, (*msg).func);
-        }
-        if !(*msg).file.is_null() && (*msg).line != 0 {
-            fprintf(stream, b" (%s:%d)\0".as_ptr() as *const i8,
-                    base_name((*msg).file), (*msg).line);
-        }
-        if *timestr != 0 {
-            fprintf(stream, b" %s\0".as_ptr() as *const i8, timestr);
-        }
-        fprintf(stream, b": %s\n\0".as_ptr() as *const i8, (*msg).subject.as_ptr());
-        if !(*msg).body.is_null() {
-            fprintf(stream, b"%s\n\0".as_ptr() as *const i8, (*msg).body);
-        }
-
-        // add blank line after message except for DEBUG, for compactness
-        if level != MJ_LOG_DEBUG {
-            fprintf(stream, b"\n\0".as_ptr() as *const i8);
-        }
     }
 }
 
@@ -320,7 +184,7 @@ pub fn mju_legacy_text(msg: *const mjLogMessage, buf: *mut i8, bufsz: i32) -> *c
 
 /// C: mju_activeHandler (engine/engine_util_errmem.c:292)
 #[allow(unused_variables, non_snake_case)]
-pub fn mju_active_handler() -> mjfLogHandler {
+pub fn mju_activeHandler() -> mjfLogHandler {
     use crate::types::{_MJPRIVATE_TLS_LOG_HANDLER, GLOBAL_LOG_HANDLER};
 
     // SAFETY: reading function pointer bytes from mutex-protected storage
@@ -341,7 +205,7 @@ pub fn mju_active_handler() -> mjfLogHandler {
 }
 
 /// C: mju_malloc (engine/engine_util_errmem.h:43)
-/// Calls: mju_alignedMalloc, mju_error
+/// Calls: cxx-internal:/Users/xing/Desktop/projects/c2rust_bitexact/projects/mujoco/src/engine/engine_util_errmem.c:_mju_alignedMalloc, cxx:_mju_error
 #[allow(unused_variables, non_snake_case)]
 pub fn mju_malloc(size: usize) -> *mut () {
     type MallocFn = unsafe extern "C" fn(usize) -> *mut ();
@@ -369,7 +233,7 @@ pub fn mju_malloc(size: usize) -> *mut () {
                 aligned_size += 64 - (aligned_size % 64);
             }
             if aligned_size > 0 {
-                ptr = mju_aligned_malloc(aligned_size, 64);
+                ptr = mju_alignedMalloc(aligned_size, 64);
             }
         }
 
@@ -382,51 +246,28 @@ pub fn mju_malloc(size: usize) -> *mut () {
 }
 
 /// C: mju_free (engine/engine_util_errmem.h:46)
-/// Calls: mju_alignedFree
+/// Calls: cxx-internal:/Users/xing/Desktop/projects/c2rust_bitexact/projects/mujoco/src/engine/engine_util_errmem.c:_mju_alignedFree
 #[allow(unused_variables, non_snake_case)]
 pub fn mju_free(ptr: *mut ()) {
     if ptr.is_null() {
         return;
     }
-    mju_aligned_free(ptr);
-}
-
-/// C: mju_setLogHandler (engine/engine_util_errmem.h:57)
-#[allow(unused_variables, non_snake_case)]
-pub fn mju_set_log_handler(handler: mjfLogHandler) -> mjfLogHandler {
-    use crate::types::GLOBAL_LOG_HANDLER;
-
-    // SAFETY: reading and writing function pointer bytes from mutex-protected storage
-    let mut global_guard = GLOBAL_LOG_HANDLER.lock().unwrap();
-    let prev = mjfLogHandler { _data: *global_guard };
-
-    // check if handler is null (all zeros = null function pointer)
-    let handler_val = usize::from_ne_bytes(handler._data);
-    if handler_val != 0 {
-        *global_guard = handler._data;
-    } else {
-        // set to mju_defaultLogHandler — store the fn pointer
-        let default_fn: unsafe fn(*const mjLogMessage) = mju_default_log_handler;
-        let ptr_bytes = (default_fn as usize).to_ne_bytes();
-        *global_guard = ptr_bytes;
-    }
-
-    prev
+    mju_alignedFree(ptr);
 }
 
 /// C: mju_getLogConfig (engine/engine_util_errmem.h:60)
-/// Calls: mju_getLogConfigPtr
+/// Calls: cxx-internal:/Users/xing/Desktop/projects/c2rust_bitexact/projects/mujoco/src/engine/engine_util_errmem.c:_mju_getLogConfigPtr
 #[allow(unused_variables, non_snake_case)]
-pub fn mju_get_log_config() -> mjLogConfig {
+pub fn mju_getLogConfig() -> mjLogConfig {
     // SAFETY: mju_get_log_config_ptr returns a valid pointer to static log_config
     unsafe {
-        *mju_get_log_config_ptr()
+        *mju_getLogConfigPtr()
     }
 }
 
 /// C: mju_setLogConfig (engine/engine_util_errmem.h:61)
 #[allow(unused_variables, non_snake_case)]
-pub fn mju_set_log_config(config: mjLogConfig) {
+pub fn mju_setLogConfig(config: mjLogConfig) {
     use crate::types::{ENV_CHECKED, LOG_CONFIG};
 
     {
@@ -444,9 +285,9 @@ pub fn mju_set_log_config(config: mjLogConfig) {
 }
 
 /// C: mju_clearHandlers (engine/engine_util_errmem.h:64)
-/// Calls: mju_initLogTopicsFromEnv
+/// Calls: cxx-internal:engine_util_errmem.c.o:_mju_initLogTopicsFromEnv
 #[allow(unused_variables, non_snake_case)]
-pub fn mju_clear_handlers() {
+pub fn mju_clearHandlers() {
     use crate::types::{ENV_CHECKED, GLOBAL_LOG_HANDLER, LOG_CONFIG, MJU_USER_ERROR, MJU_USER_WARNING, MJU_USER_MALLOC, MJU_USER_FREE};
 
     // SAFETY: writing to global statics through Mutex guards
@@ -474,7 +315,7 @@ pub fn mju_clear_handlers() {
         for b in guard.iter_mut() { *b = 0; }
     }
 
-    mju_init_log_topics_from_env();
+    mju_initLogTopicsFromEnv();
 
     {
         let mut guard = MJU_USER_ERROR.lock().unwrap();
@@ -495,7 +336,7 @@ pub fn mju_clear_handlers() {
 }
 
 /// C: mju_error (engine/engine_util_errmem.h:74)
-/// Calls: mju_error_v
+/// Calls: cxx:_mju_error_v
 #[allow(unused_variables, non_snake_case)]
 pub fn mju_error(msg: *const i8) {
     // C: mju_error is variadic, but Rust signature takes only msg (no va_args).
@@ -522,7 +363,7 @@ pub fn mju_error(msg: *const i8) {
 }
 
 /// C: mju_error_v (engine/engine_util_errmem.h:75)
-/// Calls: mju_message
+/// Calls: cxx:_mju_message
 #[allow(unused_variables, non_snake_case)]
 pub fn mju_error_v(msg: *const i8, args: *mut i8) {
     extern "C" {
@@ -547,7 +388,7 @@ pub fn mju_error_v(msg: *const i8, args: *mut i8) {
 }
 
 /// C: mju_warning (engine/engine_util_errmem.h:78)
-/// Calls: mju_message
+/// Calls: cxx:_mju_message
 #[allow(unused_variables, non_snake_case)]
 pub fn mju_warning(msg: *const i8) {
     // C: mju_warning is variadic, but Rust signature takes only msg.
@@ -573,7 +414,7 @@ pub fn mju_warning(msg: *const i8) {
 }
 
 /// C: mju_info (engine/engine_util_errmem.h:81)
-/// Calls: mju_message
+/// Calls: cxx:_mju_message
 #[allow(unused_variables, non_snake_case)]
 pub fn mju_info(topic: i32, msg: *const i8) {
     // C: mju_info is variadic, but Rust signature takes only topic + msg.
@@ -599,7 +440,7 @@ pub fn mju_info(topic: i32, msg: *const i8) {
 }
 
 /// C: mju_message (engine/engine_util_errmem.h:84)
-/// Calls: mju_activeHandler
+/// Calls: cxx-internal:/Users/xing/Desktop/projects/c2rust_bitexact/projects/mujoco/src/engine/engine_util_errmem.c:_mju_activeHandler
 #[allow(unused_variables, non_snake_case)]
 pub fn mju_message(msg: *const mjLogMessage) {
     // C: mju_activeHandler dispatches TLS > global log handler
@@ -660,9 +501,9 @@ pub fn mju_message(msg: *const mjLogMessage) {
 }
 
 /// C: mju_writeLog (engine/engine_util_errmem.h:87)
-/// Calls: mju_localTimeStr
+/// Calls: cxx-internal:/Users/xing/Desktop/projects/c2rust_bitexact/projects/mujoco/src/engine/engine_util_errmem.c:_mju_localTimeStr
 #[allow(unused_variables, non_snake_case)]
-pub fn mju_write_log(r#type: *const i8, msg: *const i8) {
+pub fn mju_writeLog(r#type: *const i8, msg: *const i8) {
     extern "C" {
         fn fopen(filename: *const i8, mode: *const i8) -> *mut FILE;
         fn fprintf(stream: *mut FILE, fmt: *const i8, ...) -> i32;
@@ -673,7 +514,7 @@ pub fn mju_write_log(r#type: *const i8, msg: *const i8) {
 
     // SAFETY: timestr is a valid stack buffer; fopen/fprintf/fclose are standard C I/O
     unsafe {
-        mju_local_time_str(timestr.as_mut_ptr(), 64);
+        mju_localTimeStr(timestr.as_mut_ptr(), 64);
         let fp = fopen(
             b"MUJOCO_LOG.TXT\0".as_ptr() as *const i8,
             b"a+t\0".as_ptr() as *const i8,
@@ -691,40 +532,17 @@ pub fn mju_write_log(r#type: *const i8, msg: *const i8) {
     }
 }
 
-/// C: _mjPRIVATE_setTlsLogHandler (engine/engine_util_errmem.h:93)
-#[allow(unused_variables, non_snake_case)]
-pub fn mj_private_set_tls_log_handler(handler: mjfLogHandler) -> mjfLogHandler {
-    use crate::types::_MJPRIVATE_TLS_LOG_HANDLER;
-
-    let mut guard = _MJPRIVATE_TLS_LOG_HANDLER.lock().unwrap();
-    let prev = mjfLogHandler { _data: *guard };
-    *guard = handler._data;
-    prev
-}
-
-/// C: _mjPRIVATE_getGlobalLogHandler (engine/engine_util_errmem.h:96)
-#[allow(unused_variables, non_snake_case)]
-pub fn mj_private_get_global_log_handler() -> mjfLogHandler {
-    todo ! ()
-}
-
 /// C: mju_isTopicEnabled (engine/engine_util_errmem.h:99)
-/// Calls: mju_getLogConfigPtr
+/// Calls: cxx-internal:/Users/xing/Desktop/projects/c2rust_bitexact/projects/mujoco/src/engine/engine_util_errmem.c:_mju_getLogConfigPtr
 #[allow(unused_variables, non_snake_case)]
-pub fn mju_is_topic_enabled(topic: i32) -> bool {
+pub fn mju_isTopicEnabled(topic: i32) -> bool {
     if topic == 0 {
         return true;
     }
     // SAFETY: mju_get_log_config_ptr returns a valid pointer to the static log config
     unsafe {
-        let cfg = mju_get_log_config_ptr();
+        let cfg = mju_getLogConfigPtr();
         ((*cfg).topics & (1 << (topic - 1))) != 0
     }
-}
-
-/// C: BaseName (engine/engine_util_errmem.h:102)
-#[allow(unused_variables, non_snake_case)]
-pub fn base_name(path: *const i8) -> *const i8 {
-    todo!() // BaseName
 }
 

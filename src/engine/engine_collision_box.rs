@@ -1,18 +1,18 @@
 //! Port of: engine/engine_collision_box.c
-//! IR hash: 73393814548a07d1
-//! CODEGEN: signatures locked. Only fill todo!() bodies.
+//! IR hash: 9343293228317031
+//! CODEGEN: source paths, owners, and callable names are locked.
 
 use crate::types::*;
 
 /// C: mju_clampVec (engine/engine_collision_box.c:23)
-/// Calls: mju_clip
+/// Calls: cxx:_mju_clip
 /// ⚠️ BITEXACT RULES:
 ///   1. Copy exact C accumulation order (no iter().sum())
 ///   2. No f64::mul_add() (FMA changes precision)
 ///   3. No algebraic simplification
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
-pub fn mju_clamp_vec(vec: *mut f64, limit: *const f64, n: i32) {
+pub fn mju_clampVec(vec: *mut f64, limit: *const f64, n: i32) {
     use crate::engine::engine_util_misc::{mju_max, mju_min};
     // SAFETY: caller guarantees vec has at least n elements, limit has at least 2*n elements
     unsafe {
@@ -23,14 +23,14 @@ pub fn mju_clamp_vec(vec: *mut f64, limit: *const f64, n: i32) {
 }
 
 /// C: mjraw_SphereBox (engine/engine_collision_box.c:34)
-/// Calls: mji_add3, mji_addToScl3, mji_copy3, mji_mulMatTVec3, mji_mulMatVec3, mji_sub3, mji_zero3, mju_clampVec, mju_normalize3, mju_zero3
+/// Calls: cxx-internal:/Users/xing/Desktop/projects/c2rust_bitexact/projects/mujoco/src/engine/engine_collision_box.c:_mju_clampVec, cxx-internal:/Users/xing/Desktop/projects/c2rust_bitexact/projects/mujoco/src/engine/engine_inline.h:_mji_add3, cxx-internal:/Users/xing/Desktop/projects/c2rust_bitexact/projects/mujoco/src/engine/engine_inline.h:_mji_addToScl3, cxx-internal:/Users/xing/Desktop/projects/c2rust_bitexact/projects/mujoco/src/engine/engine_inline.h:_mji_copy3, cxx-internal:/Users/xing/Desktop/projects/c2rust_bitexact/projects/mujoco/src/engine/engine_inline.h:_mji_mulMatVec3, cxx-internal:/Users/xing/Desktop/projects/c2rust_bitexact/projects/mujoco/src/engine/engine_inline.h:_mji_sub3, cxx-internal:/Users/xing/Desktop/projects/c2rust_bitexact/projects/mujoco/src/engine/engine_inline.h:_mji_zero3, cxx-internal:engine_collision_box.c.o:_mji_mulMatTVec3, cxx:_mju_normalize3, cxx:_mju_zero3
 /// ⚠️ BITEXACT RULES:
 ///   1. Copy exact C accumulation order (no iter().sum())
 ///   2. No f64::mul_add() (FMA changes precision)
 ///   3. No algebraic simplification
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
-pub fn mjraw_sphere_box(con: *mut mjPreContact, margin: f64, pos1: *const f64, mat1: *const f64, size1: *const f64, pos2: *const f64, mat2: *const f64, size2: *const f64) -> i32 {
+pub fn mjraw_SphereBox(con: *mut mjPreContact, margin: f64, pos1: *const f64, mat1: *const f64, size1: *const f64, pos2: *const f64, mat2: *const f64, size2: *const f64) -> i32 {
     const MJ_MINVAL: f64 = 1E-15;
     // SAFETY: caller guarantees all pointers are valid and arrays properly sized
     unsafe {
@@ -41,10 +41,10 @@ pub fn mjraw_sphere_box(con: *mut mjPreContact, margin: f64, pos1: *const f64, m
         let mut pos: [f64; 3] = [0.0; 3];
 
         crate::engine::engine_inline::mji_sub3(tmp.as_mut_ptr(), pos1, pos2);
-        crate::engine::engine_inline::mji_mul_mat_t_vec3(center.as_mut_ptr(), mat2, tmp.as_ptr());
+        crate::engine::engine_inline::mji_mulMatTVec3(center.as_mut_ptr(), mat2, tmp.as_ptr());
 
         crate::engine::engine_inline::mji_copy3(clamped.as_mut_ptr(), center.as_ptr());
-        mju_clamp_vec(clamped.as_mut_ptr(), size2, 3);
+        mju_clampVec(clamped.as_mut_ptr(), size2, 3);
 
         crate::engine::engine_inline::mji_copy3(deepest.as_mut_ptr(), center.as_ptr());
         crate::engine::engine_inline::mji_sub3(tmp.as_mut_ptr(), clamped.as_ptr(), center.as_ptr());
@@ -72,18 +72,18 @@ pub fn mjraw_sphere_box(con: *mut mjPreContact, margin: f64, pos1: *const f64, m
             nearest[k / 2] = if k % 2 != 0 { -1.0 } else { 1.0 };
 
             crate::engine::engine_inline::mji_copy3(pos.as_mut_ptr(), center.as_ptr());
-            crate::engine::engine_inline::mji_add_to_scl3(pos.as_mut_ptr(), nearest.as_ptr(), (*size1.add(0) - closest) / 2.0);
-            crate::engine::engine_inline::mji_mul_mat_vec3((*con).normal.as_mut_ptr(), mat2, nearest.as_ptr());
+            crate::engine::engine_inline::mji_addToScl3(pos.as_mut_ptr(), nearest.as_ptr(), (*size1.add(0) - closest) / 2.0);
+            crate::engine::engine_inline::mji_mulMatVec3((*con).normal.as_mut_ptr(), mat2, nearest.as_ptr());
             dist = -closest;
         } else {
-            crate::engine::engine_inline::mji_add_to_scl3(deepest.as_mut_ptr(), tmp.as_ptr(), *size1.add(0));
+            crate::engine::engine_inline::mji_addToScl3(deepest.as_mut_ptr(), tmp.as_ptr(), *size1.add(0));
             crate::engine::engine_util_blas::mju_zero3(pos.as_mut_ptr());
-            crate::engine::engine_inline::mji_add_to_scl3(pos.as_mut_ptr(), clamped.as_ptr(), 0.5);
-            crate::engine::engine_inline::mji_add_to_scl3(pos.as_mut_ptr(), deepest.as_ptr(), 0.5);
-            crate::engine::engine_inline::mji_mul_mat_vec3((*con).normal.as_mut_ptr(), mat2, tmp.as_ptr());
+            crate::engine::engine_inline::mji_addToScl3(pos.as_mut_ptr(), clamped.as_ptr(), 0.5);
+            crate::engine::engine_inline::mji_addToScl3(pos.as_mut_ptr(), deepest.as_ptr(), 0.5);
+            crate::engine::engine_inline::mji_mulMatVec3((*con).normal.as_mut_ptr(), mat2, tmp.as_ptr());
         }
 
-        crate::engine::engine_inline::mji_mul_mat_vec3(tmp.as_mut_ptr(), mat2, pos.as_ptr());
+        crate::engine::engine_inline::mji_mulMatVec3(tmp.as_mut_ptr(), mat2, pos.as_ptr());
         crate::engine::engine_inline::mji_add3((*con).pos.as_mut_ptr(), tmp.as_ptr(), pos2);
         (*con).dist = dist - *size1.add(0);
         crate::engine::engine_inline::mji_zero3((*con).tangent.as_mut_ptr());
@@ -91,15 +91,8 @@ pub fn mjraw_sphere_box(con: *mut mjPreContact, margin: f64, pos1: *const f64, m
     }
 }
 
-/// C: _boxbox (engine/engine_collision_box.c:605)
-/// Calls: mji_add3, mji_addTo3, mji_addToScl3, mji_copy3, mji_mulMatTVec3, mji_mulMatVec3, mji_scl3, mji_sub3, mji_zero3, mju_copy3, mju_dot3, mju_mulMatMatT3, mju_mulMatTMat3, mju_normalize3, mju_scl3, mju_transpose, mju_zero, mju_zero3
-/// ⚠️ BITEXACT RULES:
-///   1. Copy exact C accumulation order (no iter().sum())
-///   2. No f64::mul_add() (FMA changes precision)
-///   3. No algebraic simplification
-///   4. No iter().sum()/product() (order undefined)
-#[allow(unused_variables, non_snake_case)]
-pub fn boxbox(M: *const mjModel, D: *const mjData, con: *mut mjPreContact, g1: i32, g2: i32, margin: f64) -> i32 {
+pub fn boxbox (M : * const mjModel , D : * const mjData , con : * mut mjPreContact , g1 : i32 , g2 : i32 , margin : f64) -> i32
+{
     const MJ_MAXCONPAIR: usize = 50;
     const MJ_MINVAL: f64 = 1E-15;
     // SAFETY: caller guarantees M, D, con valid
@@ -147,19 +140,19 @@ pub fn boxbox(M: *const mjModel, D: *const mjData, con: *mut mjPreContact, g1: i
         let mut in_flag: i32 = 0;
 
         crate::engine::engine_inline::mji_sub3(tmp1.as_mut_ptr(), pos2, pos1);
-        crate::engine::engine_inline::mji_mul_mat_t_vec3(pos21.as_mut_ptr(), mat1, tmp1.as_ptr());
+        crate::engine::engine_inline::mji_mulMatTVec3(pos21.as_mut_ptr(), mat1, tmp1.as_ptr());
 
         crate::engine::engine_inline::mji_sub3(tmp1.as_mut_ptr(), pos1, pos2);
-        crate::engine::engine_inline::mji_mul_mat_t_vec3(pos12.as_mut_ptr(), mat2, tmp1.as_ptr());
+        crate::engine::engine_inline::mji_mulMatTVec3(pos12.as_mut_ptr(), mat2, tmp1.as_ptr());
 
-        crate::engine::engine_util_blas::mju_mul_mat_t_mat3(rot.as_mut_ptr(), mat1, mat2);
+        crate::engine::engine_util_blas::mju_mulMatTMat3(rot.as_mut_ptr(), mat1, mat2);
         crate::engine::engine_util_blas::mju_transpose(rott.as_mut_ptr(), rot.as_ptr(), 3, 3);
 
         for i in 0..9 { rotabs[i] = rot[i].abs(); }
         for i in 0..9 { rottabs[i] = rott[i].abs(); }
 
-        crate::engine::engine_inline::mji_mul_mat_vec3(plen2.as_mut_ptr(), rotabs.as_ptr(), size2);
-        crate::engine::engine_inline::mji_mul_mat_t_vec3(plen1.as_mut_ptr(), rotabs.as_ptr(), size1);
+        crate::engine::engine_inline::mji_mulMatVec3(plen2.as_mut_ptr(), rotabs.as_ptr(), size2);
+        crate::engine::engine_inline::mji_mulMatTVec3(plen1.as_mut_ptr(), rotabs.as_ptr(), size1);
 
         let mut penetration: f64 = margin;
         for i in 0..3usize {
@@ -267,7 +260,7 @@ pub fn boxbox(M: *const mjModel, D: *const mjData, con: *mut mjPreContact, g1: i
             } }
 
             if q2 != 0 {
-                crate::engine::engine_util_blas::mju_mul_mat_mat_t3(r.as_mut_ptr(), rotmore.as_ptr(), rot.as_ptr());
+                crate::engine::engine_util_blas::mju_mulMatMatT3(r.as_mut_ptr(), rotmore.as_ptr(), rot.as_ptr());
                 rotaxis!(p, pos12);
                 rotaxis!(tmp1, std::slice::from_raw_parts(size2, 3));
                 crate::engine::engine_inline::mji_copy3(s.as_mut_ptr(), size1);
@@ -291,9 +284,9 @@ pub fn boxbox(M: *const mjModel, D: *const mjData, con: *mut mjPreContact, g1: i
             let mut clcorner: i32 = 0;
             for i in 0..3usize { if r[6+i] < 0.0 { clcorner += 1 << i; } }
 
-            crate::engine::engine_inline::mji_add_to_scl3(lp.as_mut_ptr(), rt.as_ptr().add(0), s[0] * if clcorner & 1 != 0 { 1.0 } else { -1.0 });
-            crate::engine::engine_inline::mji_add_to_scl3(lp.as_mut_ptr(), rt.as_ptr().add(3), s[1] * if clcorner & 2 != 0 { 1.0 } else { -1.0 });
-            crate::engine::engine_inline::mji_add_to_scl3(lp.as_mut_ptr(), rt.as_ptr().add(6), s[2] * if clcorner & 4 != 0 { 1.0 } else { -1.0 });
+            crate::engine::engine_inline::mji_addToScl3(lp.as_mut_ptr(), rt.as_ptr().add(0), s[0] * if clcorner & 1 != 0 { 1.0 } else { -1.0 });
+            crate::engine::engine_inline::mji_addToScl3(lp.as_mut_ptr(), rt.as_ptr().add(3), s[1] * if clcorner & 2 != 0 { 1.0 } else { -1.0 });
+            crate::engine::engine_inline::mji_addToScl3(lp.as_mut_ptr(), rt.as_ptr().add(6), s[2] * if clcorner & 4 != 0 { 1.0 } else { -1.0 });
 
             let mut m_count: i32 = 0;
             let mut k_count: i32 = 0;
@@ -345,7 +338,7 @@ pub fn boxbox(M: *const mjModel, D: *const mjData, con: *mut mjPreContact, g1: i
                             if c2.abs() > ss[1-q] { continue; }
                             if (n as usize) < MJ_MAXCONPAIR {
                                 crate::engine::engine_inline::mji_copy3(points[n as usize].as_mut_ptr(), lines[i].as_ptr());
-                                crate::engine::engine_inline::mji_add_to_scl3(points[n as usize].as_mut_ptr(), lines[i].as_ptr().add(3), c1);
+                                crate::engine::engine_inline::mji_addToScl3(points[n as usize].as_mut_ptr(), lines[i].as_ptr().add(3), c1);
                                 n += 1;
                             }
                         }
@@ -399,7 +392,7 @@ pub fn boxbox(M: *const mjModel, D: *const mjData, con: *mut mjPreContact, g1: i
             }
 
             // transform to global frame
-            crate::engine::engine_util_blas::mju_mul_mat_mat_t3(r.as_mut_ptr(), if q2 != 0 { mat2 } else { mat1 }, rotmore.as_ptr());
+            crate::engine::engine_util_blas::mju_mulMatMatT3(r.as_mut_ptr(), if q2 != 0 { mat2 } else { mat1 }, rotmore.as_ptr());
             crate::engine::engine_util_blas::mju_copy3(p.as_mut_ptr(), if q2 != 0 { pos2 } else { pos1 });
 
             tmp2[0] = (if q2 != 0 { -1.0 } else { 1.0 }) * r[2];
@@ -412,7 +405,7 @@ pub fn boxbox(M: *const mjModel, D: *const mjData, con: *mut mjPreContact, g1: i
             for i in 0..n as usize {
                 (*con.add(i)).dist = 2.0 * points[i][2];
                 points[i][2] += hz;
-                crate::engine::engine_inline::mji_mul_mat_vec3(tmp2.as_mut_ptr(), r.as_ptr(), points[i].as_ptr());
+                crate::engine::engine_inline::mji_mulMatVec3(tmp2.as_mut_ptr(), r.as_ptr(), points[i].as_ptr());
                 crate::engine::engine_inline::mji_add3((*con.add(i)).pos.as_mut_ptr(), tmp2.as_ptr(), p.as_ptr());
                 if i > 0 {
                     crate::engine::engine_inline::mji_copy3((*con.add(i)).normal.as_mut_ptr(), (*con).normal.as_ptr());
@@ -475,7 +468,7 @@ pub fn boxbox(M: *const mjModel, D: *const mjData, con: *mut mjPreContact, g1: i
         crate::engine::engine_inline::mji_scl3(r.as_mut_ptr().add(3), rot.as_ptr().add(i1*3), f1);
         crate::engine::engine_inline::mji_scl3(r.as_mut_ptr().add(6), rot.as_ptr().add(i2*3), f2);
 
-        crate::engine::engine_inline::mji_mul_mat_t_vec3(tmp1.as_mut_ptr(), rotmore.as_ptr(), size1);
+        crate::engine::engine_inline::mji_mulMatTVec3(tmp1.as_mut_ptr(), rotmore.as_ptr(), size1);
         for i in 0..3usize { s[i] = tmp1[i].abs(); }
 
         crate::engine::engine_util_blas::mju_transpose(rt.as_mut_ptr(), r.as_ptr(), 3, 3);
@@ -486,18 +479,18 @@ pub fn boxbox(M: *const mjModel, D: *const mjData, con: *mut mjPreContact, g1: i
         n = 0;
         // Build edge segment points
         crate::engine::engine_inline::mji_copy3(points[0].as_mut_ptr(), p.as_ptr());
-        crate::engine::engine_inline::mji_add_to_scl3(points[0].as_mut_ptr(), rt.as_ptr().add(3*ax1), *size2.add(ax1) * if cle2 & (1 << ax1 as i32) != 0 { 1.0 } else { -1.0 });
-        crate::engine::engine_inline::mji_add_to_scl3(points[0].as_mut_ptr(), rt.as_ptr().add(3*ax2), *size2.add(ax2) * if cle2 & (1 << ax2 as i32) != 0 { 1.0 } else { -1.0 });
+        crate::engine::engine_inline::mji_addToScl3(points[0].as_mut_ptr(), rt.as_ptr().add(3*ax1), *size2.add(ax1) * if cle2 & (1 << ax1 as i32) != 0 { 1.0 } else { -1.0 });
+        crate::engine::engine_inline::mji_addToScl3(points[0].as_mut_ptr(), rt.as_ptr().add(3*ax2), *size2.add(ax2) * if cle2 & (1 << ax2 as i32) != 0 { 1.0 } else { -1.0 });
         crate::engine::engine_inline::mji_copy3(points[1].as_mut_ptr(), points[0].as_ptr());
-        crate::engine::engine_inline::mji_add_to_scl3(points[0].as_mut_ptr(), rt.as_ptr().add(3*q2_ee as usize), *size2.add(q2_ee as usize));
-        crate::engine::engine_inline::mji_add_to_scl3(points[1].as_mut_ptr(), rt.as_ptr().add(3*q2_ee as usize), -*size2.add(q2_ee as usize));
+        crate::engine::engine_inline::mji_addToScl3(points[0].as_mut_ptr(), rt.as_ptr().add(3*q2_ee as usize), *size2.add(q2_ee as usize));
+        crate::engine::engine_inline::mji_addToScl3(points[1].as_mut_ptr(), rt.as_ptr().add(3*q2_ee as usize), -*size2.add(q2_ee as usize));
 
         crate::engine::engine_inline::mji_copy3(points[2].as_mut_ptr(), p.as_ptr());
-        crate::engine::engine_inline::mji_add_to_scl3(points[2].as_mut_ptr(), rt.as_ptr().add(3*ax1), *size2.add(ax1) * if cle2 & (1 << ax1 as i32) != 0 { -1.0 } else { 1.0 });
-        crate::engine::engine_inline::mji_add_to_scl3(points[2].as_mut_ptr(), rt.as_ptr().add(3*ax2), *size2.add(ax2) * if cle2 & (1 << ax2 as i32) != 0 { 1.0 } else { -1.0 });
+        crate::engine::engine_inline::mji_addToScl3(points[2].as_mut_ptr(), rt.as_ptr().add(3*ax1), *size2.add(ax1) * if cle2 & (1 << ax1 as i32) != 0 { -1.0 } else { 1.0 });
+        crate::engine::engine_inline::mji_addToScl3(points[2].as_mut_ptr(), rt.as_ptr().add(3*ax2), *size2.add(ax2) * if cle2 & (1 << ax2 as i32) != 0 { 1.0 } else { -1.0 });
         crate::engine::engine_inline::mji_copy3(points[3].as_mut_ptr(), points[2].as_ptr());
-        crate::engine::engine_inline::mji_add_to_scl3(points[2].as_mut_ptr(), rt.as_ptr().add(3*q2_ee as usize), *size2.add(q2_ee as usize));
-        crate::engine::engine_inline::mji_add_to_scl3(points[3].as_mut_ptr(), rt.as_ptr().add(3*q2_ee as usize), -*size2.add(q2_ee as usize));
+        crate::engine::engine_inline::mji_addToScl3(points[2].as_mut_ptr(), rt.as_ptr().add(3*q2_ee as usize), *size2.add(q2_ee as usize));
+        crate::engine::engine_inline::mji_addToScl3(points[3].as_mut_ptr(), rt.as_ptr().add(3*q2_ee as usize), -*size2.add(q2_ee as usize));
 
         crate::engine::engine_inline::mji_copy3(axi[0].as_mut_ptr(), points[0].as_ptr());
         crate::engine::engine_inline::mji_sub3(axi[1].as_mut_ptr(), points[1].as_ptr(), points[0].as_ptr());
@@ -509,7 +502,7 @@ pub fn boxbox(M: *const mjModel, D: *const mjData, con: *mut mjPreContact, g1: i
         for i in 0..4usize {
             let c1 = -points[i][2] / rnorm[2];
             crate::engine::engine_inline::mji_copy3(pu[i].as_mut_ptr(), points[i].as_ptr());
-            crate::engine::engine_inline::mji_add_to_scl3(points[i].as_mut_ptr(), rnorm.as_ptr(), c1);
+            crate::engine::engine_inline::mji_addToScl3(points[i].as_mut_ptr(), rnorm.as_ptr(), c1);
             ppts2[i][0] = points[i][0];
             ppts2[i][1] = points[i][1];
         }
@@ -568,7 +561,7 @@ pub fn boxbox(M: *const mjModel, D: *const mjData, con: *mut mjPreContact, g1: i
                             if (linesu[i][2] + linesu[i][5] * c1) * innorm > margin { continue; }
 
                             crate::engine::engine_inline::mji_scl3(points[n as usize].as_mut_ptr(), linesu[i].as_ptr(), 0.5);
-                            crate::engine::engine_inline::mji_add_to_scl3(points[n as usize].as_mut_ptr(), linesu[i].as_ptr().add(3), 0.5 * c1);
+                            crate::engine::engine_inline::mji_addToScl3(points[n as usize].as_mut_ptr(), linesu[i].as_ptr().add(3), 0.5 * c1);
                             points[n as usize][0+q] += 0.5 * l;
                             points[n as usize][1-q] += 0.5 * c2;
                             depth[n as usize] = points[n as usize][2] * innorm * 2.0;
@@ -602,15 +595,15 @@ pub fn boxbox(M: *const mjModel, D: *const mjData, con: *mut mjPreContact, g1: i
                 let v = if v < 0.0 { 0.0 } else if v > 1.0 { 1.0 } else { v };
 
                 crate::engine::engine_inline::mji_scl3(tmp1.as_mut_ptr(), pu[0].as_ptr(), 1.0 - u - v);
-                crate::engine::engine_inline::mji_add_to_scl3(tmp1.as_mut_ptr(), pu[1].as_ptr(), u);
-                crate::engine::engine_inline::mji_add_to_scl3(tmp1.as_mut_ptr(), pu[2].as_ptr(), v);
+                crate::engine::engine_inline::mji_addToScl3(tmp1.as_mut_ptr(), pu[1].as_ptr(), u);
+                crate::engine::engine_inline::mji_addToScl3(tmp1.as_mut_ptr(), pu[2].as_ptr(), v);
 
                 points[n as usize][0] = llx; points[n as usize][1] = lly; points[n as usize][2] = 0.0;
                 crate::engine::engine_inline::mji_sub3(tmp2.as_mut_ptr(), points[n as usize].as_ptr(), tmp1.as_ptr());
                 let c1_sq = crate::engine::engine_util_blas::mju_dot3(tmp2.as_ptr(), tmp2.as_ptr());
                 if tmp1[2] > 0.0 { if c1_sq > margin2 { continue; } }
 
-                crate::engine::engine_inline::mji_add_to3(points[n as usize].as_mut_ptr(), tmp1.as_ptr());
+                crate::engine::engine_inline::mji_addTo3(points[n as usize].as_mut_ptr(), tmp1.as_ptr());
                 crate::engine::engine_util_blas::mju_scl3(points[n as usize].as_mut_ptr(), points[n as usize].as_ptr(), 0.5);
                 depth[n as usize] = c1_sq.sqrt() * if tmp1[2] < 0.0 { -1.0 } else { 1.0 };
                 n += 1;
@@ -644,7 +637,7 @@ pub fn boxbox(M: *const mjModel, D: *const mjData, con: *mut mjPreContact, g1: i
                     if ppts2[i][j] < -s[j] { tmp1[j] = -s[j] * 0.5; }
                     else if ppts2[i][j] > s[j] { tmp1[j] = s[j] * 0.5; }
                 }
-                crate::engine::engine_inline::mji_add_to_scl3(tmp1.as_mut_ptr(), pu[i].as_ptr(), 0.5);
+                crate::engine::engine_inline::mji_addToScl3(tmp1.as_mut_ptr(), pu[i].as_ptr(), 0.5);
                 crate::engine::engine_inline::mji_copy3(points[n as usize].as_mut_ptr(), tmp1.as_ptr());
                 depth[n as usize] = c1_sq.sqrt() * if pu[i][2] < 0.0 { -1.0 } else { 1.0 };
                 n += 1;
@@ -652,15 +645,15 @@ pub fn boxbox(M: *const mjModel, D: *const mjData, con: *mut mjPreContact, g1: i
         }
 
         // transform to global
-        crate::engine::engine_util_blas::mju_mul_mat_mat_t3(r.as_mut_ptr(), mat1, rotmore.as_ptr());
-        crate::engine::engine_inline::mji_mul_mat_vec3(tmp1.as_mut_ptr(), r.as_ptr(), rnorm.as_ptr());
+        crate::engine::engine_util_blas::mju_mulMatMatT3(r.as_mut_ptr(), mat1, rotmore.as_ptr());
+        crate::engine::engine_inline::mji_mulMatVec3(tmp1.as_mut_ptr(), r.as_ptr(), rnorm.as_ptr());
         crate::engine::engine_inline::mji_scl3((*con).normal.as_mut_ptr(), tmp1.as_ptr(), if in_flag != 0 { -1.0 } else { 1.0 });
         crate::engine::engine_inline::mji_zero3((*con).tangent.as_mut_ptr());
 
         for i in 0..n as usize {
             (*con.add(i)).dist = depth[i];
             points[i][2] += hz;
-            crate::engine::engine_inline::mji_mul_mat_vec3(tmp2.as_mut_ptr(), r.as_ptr(), points[i].as_ptr());
+            crate::engine::engine_inline::mji_mulMatVec3(tmp2.as_mut_ptr(), r.as_ptr(), points[i].as_ptr());
             crate::engine::engine_inline::mji_add3((*con.add(i)).pos.as_mut_ptr(), tmp2.as_ptr(), pos1);
             crate::engine::engine_inline::mji_copy3((*con.add(i)).normal.as_mut_ptr(), (*con).normal.as_ptr());
             crate::engine::engine_inline::mji_zero3((*con.add(i)).tangent.as_mut_ptr());

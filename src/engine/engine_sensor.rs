@@ -1,12 +1,12 @@
 //! Port of: engine/engine_sensor.c
-//! IR hash: 73393814548a07d1
-//! CODEGEN: signatures locked. Only fill todo!() bodies.
+//! IR hash: 9343293228317031
+//! CODEGEN: source paths, owners, and callable names are locked.
 
 use crate::types::*;
 
 /// C: ContactInfoCompare (engine/engine_sensor.c:52)
 #[allow(unused_variables, non_snake_case)]
-pub fn contact_info_compare(a: *const ContactInfo, b: *const ContactInfo, context: *mut ()) -> i32 {
+pub fn ContactInfoCompare(a: *const ContactInfo, b: *const ContactInfo, context: *mut ()) -> i32 {
     // SAFETY: a and b point to valid ContactInfo structs with layout {criterion: f64, id: i32, flip: i32}
     unsafe {
         #[repr(C)]
@@ -28,189 +28,8 @@ pub fn contact_info_compare(a: *const ContactInfo, b: *const ContactInfo, contex
     }
 }
 
-/// C: ContactSelect (engine/engine_sensor.c:61)
-/// Calls: ContactInfoCompare
-#[allow(unused_variables, non_snake_case)]
-pub fn contact_select(arr: *mut ContactInfo, buf: *mut ContactInfo, n: i32, k: i32, context: *mut ()) {
-    todo!() // ContactSelect
-}
-
-/// C: tactile_taxel_batch (engine/engine_sensor.c:80)
-/// Calls: mjc_distance, mjc_getSDF, mju_addTo3, mju_dot3, mju_max, mju_min, mju_mulMatTVec3, mju_mulMatVec3, mju_quat2Mat, mju_rotVecQuat, mju_sub3, mju_transformSpatial
-#[allow(unused_variables, non_snake_case)]
-pub fn tactile_taxel_batch(m: *const mjModel, d: *mut mjData, args: *mut ()) -> *mut () {
-    // Local struct matching C mjTactileTaskArgs
-    #[repr(C)]
-    struct TactileTaskArgs {
-        sensor_id: i32,
-        mesh_id: i32,
-        geom_id: i32,
-        parent_weld: i32,
-        ncontact: i32,
-        nchannel: i32,
-        contact_geom_ids: *mut i32,
-        start_taxel: i32,
-        end_taxel: i32,
-        forcesT: *mut f64,
-    }
-
-    // SAFETY: m, d are valid. args points to a valid mjTactileTaskArgs struct (caller contract).
-    unsafe {
-        let t = args as *mut TactileTaskArgs;
-        let mesh_id = (*t).mesh_id;
-        let geom_id = (*t).geom_id;
-        let parent_weld = (*t).parent_weld;
-        let ncon = *(*m).mesh_vertnum.add(mesh_id as usize);
-
-        let geom_pos = (*d).geom_xpos.add(3 * geom_id as usize);
-        let geom_mat = (*d).geom_xmat.add(9 * geom_id as usize);
-        let mesh_vert = (*m).mesh_vert.add(3 * *(*m).mesh_vertadr.add(mesh_id as usize) as usize);
-        let mesh_normal = (*m).mesh_normal.add(3 * *(*m).mesh_normaladr.add(mesh_id as usize) as usize);
-
-        let has_frame = (*(*m).mesh_normalnum.add(mesh_id as usize) == 3 * *(*m).mesh_vertnum.add(mesh_id as usize)) as i32;
-        let normal_stride = if has_frame != 0 { 9 } else { 3 };
-
-        // process taxels in [start_taxel, end_taxel)
-        for j in (*t).start_taxel..(*t).end_taxel {
-            let mut pos: [f64; 3] = [
-                *mesh_vert.add((3 * j) as usize) as f64,
-                *mesh_vert.add((3 * j + 1) as usize) as f64,
-                *mesh_vert.add((3 * j + 2) as usize) as f64,
-            ];
-
-            let mut xpos: [f64; 3] = [0.0; 3];
-            crate::engine::engine_util_blas::mju_mul_mat_vec3(xpos.as_mut_ptr(), geom_mat, pos.as_ptr());
-            crate::engine::engine_util_blas::mju_add_to3(xpos.as_mut_ptr(), geom_pos);
-
-            // iterate over colliding geoms
-            for g in 0..(*t).ncontact {
-                let geom = *(*t).contact_geom_ids.add(g as usize);
-                let body = *(*m).geom_bodyid.add(geom as usize);
-
-                // set up SDF for this contact geom
-                let mut sdf_instance: [i32; 2] = [-1, -1];
-                let mut geomtype: [u32; 2] = [8, 4]; // mjGEOM_SDF=8, mjGEOM_SPHERE=4
-                let mut sdf_ptr: [*const mjpPlugin; 2] = [std::ptr::null(), std::ptr::null()];
-                let geom_type_val = *(*m).geom_type.add(geom as usize) as u32;
-
-                if geom_type_val == 8 { // mjGEOM_SDF
-                    sdf_instance[0] = *(*m).geom_plugin.add(geom as usize);
-                    sdf_ptr[0] = crate::engine::engine_collision_sdf::mjc_get_sdf(m, geom);
-                } else if geom_type_val == 7 { // mjGEOM_MESH
-                    sdf_instance[0] = *(*m).geom_dataid.add(geom as usize);
-                    geomtype[0] = geom_type_val;
-                } else {
-                    sdf_instance[0] = geom;
-                    geomtype[0] = geom_type_val;
-                }
-
-                // skip mesh geoms not having an octree
-                if geomtype[0] == 7 &&
-                   *(*m).mesh_octadr.add(*(*m).geom_dataid.add(geom as usize) as usize) == -1 {
-                    continue;
-                }
-
-                let mut geom_sdf = mjSDF {
-                    id: sdf_instance.as_mut_ptr(),
-                    r#type: [0u8; 8], // mjSDFTYPE_SINGLE
-                    plugin: sdf_ptr.as_ptr() as *const *mut mjpPlugin,
-                    geomtype: geomtype.as_mut_ptr(),
-                    relpos: std::ptr::null_mut(),
-                    relmat: std::ptr::null_mut(),
-                };
-
-                // position in other geom frame
-                let mut tmp: [f64; 3] = [0.0; 3];
-                let mut lpos: [f64; 3] = [0.0; 3];
-                crate::engine::engine_util_blas::mju_sub3(tmp.as_mut_ptr(), xpos.as_ptr(), (*d).geom_xpos.add(3 * geom as usize));
-                crate::engine::engine_util_blas::mju_mul_mat_t_vec3(lpos.as_mut_ptr(), (*d).geom_xmat.add(9 * geom as usize), tmp.as_ptr());
-
-                // SDF plugins are in the original mesh frame
-                if !sdf_ptr[0].is_null() {
-                    let mut mesh_mat: [f64; 9] = [0.0; 9];
-                    crate::engine::engine_util_spatial::mju_quat2mat(mesh_mat.as_mut_ptr(), (*m).mesh_quat.add(4 * *(*m).geom_dataid.add(geom as usize) as usize));
-                    crate::engine::engine_util_blas::mju_mul_mat_vec3(lpos.as_mut_ptr(), mesh_mat.as_ptr(), lpos.as_ptr());
-                    crate::engine::engine_util_blas::mju_add_to3(lpos.as_mut_ptr(), (*m).mesh_pos.add(3 * *(*m).geom_dataid.add(geom as usize) as usize));
-                }
-
-                // compute distance
-                let depth = crate::engine::engine_util_misc::mju_min(
-                    crate::engine::engine_collision_sdf::mjc_distance(m, d as *const mjData, &geom_sdf, lpos.as_ptr()),
-                    0.0,
-                );
-                if depth == 0.0 {
-                    continue;
-                }
-
-                // get velocity in global frame
-                let mut vel_sensor: [f64; 6] = [0.0; 6];
-                let mut vel_other: [f64; 6] = [0.0; 6];
-                let mut vel_rel: [f64; 3] = [0.0; 3];
-                crate::engine::engine_util_spatial::mju_transform_spatial(
-                    vel_sensor.as_mut_ptr(), (*d).cvel.add(6 * parent_weld as usize), 0,
-                    xpos.as_ptr(),
-                    (*d).subtree_com.add(3 * *(*m).body_rootid.add(parent_weld as usize) as usize),
-                    std::ptr::null_mut(),
-                );
-                crate::engine::engine_util_spatial::mju_transform_spatial(
-                    vel_other.as_mut_ptr(), (*d).cvel.add(6 * body as usize), 0,
-                    (*d).geom_xpos.add(3 * geom as usize),
-                    (*d).subtree_com.add(3 * *(*m).body_rootid.add(body as usize) as usize),
-                    std::ptr::null_mut(),
-                );
-                crate::engine::engine_util_blas::mju_sub3(vel_rel.as_mut_ptr(), vel_sensor.as_ptr().add(3), vel_other.as_ptr().add(3));
-
-                // get normal
-                let mut normal: [f64; 3] = [
-                    *mesh_normal.add((normal_stride * j) as usize) as f64,
-                    *mesh_normal.add((normal_stride * j + 1) as usize) as f64,
-                    *mesh_normal.add((normal_stride * j + 2) as usize) as f64,
-                ];
-                crate::engine::engine_util_spatial::mju_rot_vec_quat(
-                    normal.as_mut_ptr(), normal.as_ptr(), (*m).mesh_quat.add(4 * mesh_id as usize),
-                );
-
-                // take max penetration depth (SDF distance is negative; negate for positive output)
-                let cur = *(*t).forcesT.add((0 * ncon as i32 + j) as usize);
-                *(*t).forcesT.add((0 * ncon as i32 + j) as usize) = crate::engine::engine_util_misc::mju_max(cur, -depth);
-
-                if has_frame != 0 {
-                    let mut tang1: [f64; 3] = [
-                        *mesh_normal.add((normal_stride * j + 3) as usize) as f64,
-                        *mesh_normal.add((normal_stride * j + 4) as usize) as f64,
-                        *mesh_normal.add((normal_stride * j + 5) as usize) as f64,
-                    ];
-                    let mut tang2: [f64; 3] = [
-                        *mesh_normal.add((normal_stride * j + 6) as usize) as f64,
-                        *mesh_normal.add((normal_stride * j + 7) as usize) as f64,
-                        *mesh_normal.add((normal_stride * j + 8) as usize) as f64,
-                    ];
-                    crate::engine::engine_util_spatial::mju_rot_vec_quat(
-                        tang1.as_mut_ptr(), tang1.as_ptr(), (*m).mesh_quat.add(4 * mesh_id as usize),
-                    );
-                    crate::engine::engine_util_spatial::mju_rot_vec_quat(
-                        tang2.as_mut_ptr(), tang2.as_ptr(), (*m).mesh_quat.add(4 * mesh_id as usize),
-                    );
-                    *(*t).forcesT.add((1 * ncon as i32 + j) as usize) +=
-                        (crate::engine::engine_util_blas::mju_dot3(vel_rel.as_ptr(), tang1.as_ptr())).abs();
-                    *(*t).forcesT.add((2 * ncon as i32 + j) as usize) +=
-                        (crate::engine::engine_util_blas::mju_dot3(vel_rel.as_ptr(), tang2.as_ptr())).abs();
-                }
-            }
-        }
-        std::ptr::null_mut()
-    }
-}
-
-/// C: tactileTask (engine/engine_sensor.c:191)
-/// Calls: tactile_taxel_batch
-#[allow(unused_variables, non_snake_case)]
-pub fn tactile_task(m: *const mjModel, d: *mut mjData, arg: *mut (), thread_id: i32, task_id: i32) {
-    todo!() // tactileTask
-}
-
 /// C: apply_cutoff (engine/engine_sensor.c:198)
-/// Calls: mju_clip, mju_min
+/// Calls: cxx:_mju_clip, cxx:_mju_min
 /// ⚠️ BITEXACT RULES:
 ///   1. Copy exact C accumulation order (no iter().sum())
 ///   2. No f64::mul_add() (FMA changes precision)
@@ -247,7 +66,7 @@ pub fn apply_cutoff(m: *const mjModel, i: i32, data: *mut f64) {
 }
 
 /// C: get_xpos_xmat (engine/engine_sensor.c:227)
-/// Calls: mju_message
+/// Calls: cxx:_mju_message
 /// ⚠️ BITEXACT RULES:
 ///   1. Copy exact C accumulation order (no iter().sum())
 ///   2. No f64::mul_add() (FMA changes precision)
@@ -287,7 +106,7 @@ pub fn get_xpos_xmat(d: *const mjData, r#type: u32, id: i32, sensor_id: i32, xpo
 }
 
 /// C: get_xquat (engine/engine_sensor.c:257)
-/// Calls: mju_copy4, mju_message, mju_mulQuat
+/// Calls: cxx:_mju_copy4, cxx:_mju_message, cxx:_mju_mulQuat
 /// ⚠️ BITEXACT RULES:
 ///   1. Copy exact C accumulation order (no iter().sum())
 ///   2. No f64::mul_add() (FMA changes precision)
@@ -302,23 +121,23 @@ pub fn get_xquat(m: *const mjModel, d: *const mjData, r#type: u32, id: i32, sens
                 crate::engine::engine_util_blas::mju_copy4(quat, (*d).xquat.add(4 * id as usize));
             }
             mjtObj_mjOBJ_BODY => {
-                crate::engine::engine_util_spatial::mju_mul_quat(
+                crate::engine::engine_util_spatial::mju_mulQuat(
                     quat, (*d).xquat.add(4 * id as usize), (*m).body_iquat.add(4 * id as usize));
             }
             mjtObj_mjOBJ_GEOM => {
-                crate::engine::engine_util_spatial::mju_mul_quat(
+                crate::engine::engine_util_spatial::mju_mulQuat(
                     quat,
                     (*d).xquat.add(4 * *(*m).geom_bodyid.add(id as usize) as usize),
                     (*m).geom_quat.add(4 * id as usize));
             }
             mjtObj_mjOBJ_SITE => {
-                crate::engine::engine_util_spatial::mju_mul_quat(
+                crate::engine::engine_util_spatial::mju_mulQuat(
                     quat,
                     (*d).xquat.add(4 * *(*m).site_bodyid.add(id as usize) as usize),
                     (*m).site_quat.add(4 * id as usize));
             }
             mjtObj_mjOBJ_CAMERA => {
-                crate::engine::engine_util_spatial::mju_mul_quat(
+                crate::engine::engine_util_spatial::mju_mulQuat(
                     quat,
                     (*d).xquat.add(4 * *(*m).cam_bodyid.add(id as usize) as usize),
                     (*m).cam_quat.add(4 * id as usize));
@@ -332,7 +151,7 @@ pub fn get_xquat(m: *const mjModel, d: *const mjData, r#type: u32, id: i32, sens
 }
 
 /// C: cam_project (engine/engine_sensor.c:281)
-/// Calls: mju_max, mju_min, mju_mulMatTVec, mju_sub3
+/// Calls: cxx:_mju_max, cxx:_mju_min, cxx:_mju_mulMatTVec, cxx:_mju_sub3
 /// ⚠️ BITEXACT RULES:
 ///   1. Copy exact C accumulation order (no iter().sum())
 ///   2. No f64::mul_add() (FMA changes precision)
@@ -340,7 +159,7 @@ pub fn get_xquat(m: *const mjModel, d: *const mjData, r#type: u32, id: i32, sens
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn cam_project(sensordata: *mut f64, target_xpos: *const f64, cam_xpos: *const f64, cam_xmat: *const f64, cam_res: *const i32, cam_fovy: f64, cam_intrinsic: *const f32, cam_sensorsize: *const f32) {
-    use crate::engine::engine_util_blas::{mju_sub3, mju_mul_mat_t_vec};
+    use crate::engine::engine_util_blas::{mju_sub3, mju_mulMatTVec};
 
     const MJ_MINVAL: f64 = 1e-15;
     const MJ_PI: f64 = std::f64::consts::PI;
@@ -363,7 +182,7 @@ pub fn cam_project(sensordata: *mut f64, target_xpos: *const f64, cam_xpos: *con
         mju_sub3(relative_pos.as_mut_ptr(), target_xpos, cam_xpos);
 
         let mut cam_pos: [f64; 3] = [0.0; 3];
-        mju_mul_mat_t_vec(cam_pos.as_mut_ptr(), cam_xmat, relative_pos.as_ptr(), 3, 3);
+        mju_mulMatTVec(cam_pos.as_mut_ptr(), cam_xmat, relative_pos.as_ptr(), 3, 3);
 
         let mut denom: f64 = cam_pos[2];
         if f64::abs(denom) < MJ_MINVAL {
@@ -380,9 +199,8 @@ pub fn cam_project(sensordata: *mut f64, target_xpos: *const f64, cam_xpos: *con
 }
 
 /// C: checkMatch (engine/engine_sensor.c:320)
-/// Calls: mjCMesh::tree
 #[allow(unused_variables, non_snake_case)]
-pub fn check_match(m: *const mjModel, body: i32, geom: i32, r#type: u32, id: i32) -> i32 {
+pub fn checkMatch(m: *const mjModel, body: i32, geom: i32, r#type: u32, id: i32) -> i32 {
     // SAFETY: m is valid mjModel pointer (caller contract)
     unsafe {
         if r#type == 0 { return 1; }     // mjOBJ_UNKNOWN
@@ -402,9 +220,9 @@ pub fn check_match(m: *const mjModel, body: i32, geom: i32, r#type: u32, id: i32
 }
 
 /// C: matchContact (engine/engine_sensor.c:339)
-/// Calls: checkMatch, mj_flexBody, mju_insideGeom
+/// Calls: cxx-internal:/Users/xing/Desktop/projects/c2rust_bitexact/projects/mujoco/src/engine/engine_sensor.c:_checkMatch, cxx:_mj_flexBody, cxx:_mju_insideGeom
 #[allow(unused_variables, non_snake_case)]
-pub fn match_contact(m: *const mjModel, d: *const mjData, conid: i32, type1: u32, id1: i32, type2: u32, id2: i32) -> i32 {
+pub fn matchContact(m: *const mjModel, d: *const mjData, conid: i32, type1: u32, id1: i32, type2: u32, id2: i32) -> i32 {
     // SAFETY: m, d are valid model/data pointers; array accesses are within model bounds
     unsafe {
         // no criterion: quick match
@@ -414,7 +232,7 @@ pub fn match_contact(m: *const mjModel, d: *const mjData, conid: i32, type1: u32
 
         // site filter
         if type1 == mjtObj_mjOBJ_SITE {
-            if crate::engine::engine_util_misc::mju_inside_geom(
+            if crate::engine::engine_util_misc::mju_insideGeom(
                 (*d).site_xpos.add(3 * id1 as usize),
                 (*d).site_xmat.add(9 * id1 as usize),
                 (*m).site_size.add(3 * id1 as usize),
@@ -432,19 +250,19 @@ pub fn match_contact(m: *const mjModel, d: *const mjData, conid: i32, type1: u32
         let body1 = if geom1 >= 0 {
             *(*m).geom_bodyid.add(geom1 as usize)
         } else {
-            crate::engine::engine_sleep::mj_flex_body(m, contact as *const mjContact, 0)
+            crate::engine::engine_sleep::mj_flexBody(m, contact as *const mjContact, 0)
         };
         let body2 = if geom2 >= 0 {
             *(*m).geom_bodyid.add(geom2 as usize)
         } else {
-            crate::engine::engine_sleep::mj_flex_body(m, contact as *const mjContact, 1)
+            crate::engine::engine_sleep::mj_flexBody(m, contact as *const mjContact, 1)
         };
 
         // check match of sensor objects with contact objects
-        let match11 = check_match(m, body1, geom1, type1, id1);
-        let match12 = check_match(m, body2, geom2, type1, id1);
-        let match21 = check_match(m, body1, geom1, type2, id2);
-        let match22 = check_match(m, body2, geom2, type2, id2);
+        let match11 = checkMatch(m, body1, geom1, type1, id1);
+        let match12 = checkMatch(m, body2, geom2, type1, id1);
+        let match21 = checkMatch(m, body1, geom1, type2, id2);
+        let match22 = checkMatch(m, body2, geom2, type2, id2);
 
         // if a sensor object is specified, it must be involved in the contact
         if match11 == 0 && match12 == 0 { return 0; }
@@ -468,16 +286,16 @@ pub fn match_contact(m: *const mjModel, d: *const mjData, conid: i32, type1: u32
 }
 
 /// C: copySensorData (engine/engine_sensor.c:398)
-/// Calls: mj_contactForce, mju_copy3, mju_scl3
+/// Calls: cxx:_mj_contactForce, cxx:_mju_copy3, cxx:_mju_scl3
 /// ⚠️ BITEXACT RULES:
 ///   1. Copy exact C accumulation order (no iter().sum())
 ///   2. No f64::mul_add() (FMA changes precision)
 ///   3. No algebraic simplification
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
-pub fn copy_sensor_data(m: *const mjModel, d: *const mjData, data: *mut *mut f64, id: i32, flg_flip: i32, nfound: i32) {
+pub fn copySensorData(m: *const mjModel, d: *const mjData, data: *mut *mut f64, id: i32, flg_flip: i32, nfound: i32) {
     use crate::engine::engine_util_blas::{mju_copy3, mju_scl3};
-    use crate::engine::engine_core_util::mj_contact_force;
+    use crate::engine::engine_core_util::mj_contactForce;
 
     const mjCONDATA_FOUND: usize = 0;
     const mjCONDATA_FORCE: usize = 1;
@@ -497,7 +315,7 @@ pub fn copy_sensor_data(m: *const mjModel, d: *const mjData, data: *mut *mut f64
         // contact force and torque
         if !(*data.add(mjCONDATA_FORCE)).is_null() || !(*data.add(mjCONDATA_TORQUE)).is_null() {
             let mut forcetorque: [f64; 6] = [0.0; 6];
-            mj_contact_force(m, d, id, forcetorque.as_mut_ptr());
+            mj_contactForce(m, d, id, forcetorque.as_mut_ptr());
             if !(*data.add(mjCONDATA_FORCE)).is_null() {
                 mju_copy3(*data.add(mjCONDATA_FORCE), forcetorque.as_ptr());
                 if flg_flip != 0 {
@@ -541,7 +359,7 @@ pub fn copy_sensor_data(m: *const mjModel, d: *const mjData, data: *mut *mut f64
 }
 
 /// C: total_wrench (engine/engine_sensor.c:442)
-/// Calls: mju_addTo3, mju_cross, mju_mulMatTVec3, mju_sub3, mju_zero3
+/// Calls: cxx:_mju_addTo3, cxx:_mju_cross, cxx:_mju_mulMatTVec3, cxx:_mju_sub3, cxx:_mju_zero3
 /// ⚠️ BITEXACT RULES:
 ///   1. Copy exact C accumulation order (no iter().sum())
 ///   2. No f64::mul_add() (FMA changes precision)
@@ -549,7 +367,7 @@ pub fn copy_sensor_data(m: *const mjModel, d: *const mjData, data: *mut *mut f64
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn total_wrench(force: *mut f64, torque: *mut f64, point: *const f64, n: i32, wrench: *const f64, pos: *const f64, frame: *const f64) {
-    use crate::engine::engine_util_blas::{mju_zero3, mju_add_to3, mju_sub3, mju_mul_mat_t_vec3};
+    use crate::engine::engine_util_blas::{mju_zero3, mju_addTo3, mju_sub3, mju_mulMatTVec3};
     use crate::engine::engine_util_spatial::mju_cross;
 
     // SAFETY: all pointers are valid arrays with sizes guaranteed by caller contract
@@ -561,25 +379,25 @@ pub fn total_wrench(force: *mut f64, torque: *mut f64, point: *const f64, n: i32
             // rotate force, torque from contact frame to global frame
             let mut force_j: [f64; 3] = [0.0; 3];
             let mut torque_j: [f64; 3] = [0.0; 3];
-            mju_mul_mat_t_vec3(force_j.as_mut_ptr(), frame.add(9 * j), wrench.add(6 * j));
-            mju_mul_mat_t_vec3(torque_j.as_mut_ptr(), frame.add(9 * j), wrench.add(6 * j + 3));
+            mju_mulMatTVec3(force_j.as_mut_ptr(), frame.add(9 * j), wrench.add(6 * j));
+            mju_mulMatTVec3(torque_j.as_mut_ptr(), frame.add(9 * j), wrench.add(6 * j + 3));
 
             // add to total force, torque
-            mju_add_to3(force, force_j.as_ptr());
-            mju_add_to3(torque, torque_j.as_ptr());
+            mju_addTo3(force, force_j.as_ptr());
+            mju_addTo3(torque, torque_j.as_ptr());
 
             // add induced moment: torque += (pos - point) x force
             let mut diff: [f64; 3] = [0.0; 3];
             mju_sub3(diff.as_mut_ptr(), pos.add(3 * j), point);
             let mut induced_torque: [f64; 3] = [0.0; 3];
             mju_cross(induced_torque.as_mut_ptr(), diff.as_ptr(), force_j.as_ptr());
-            mju_add_to3(torque, induced_torque.as_ptr());
+            mju_addTo3(torque, induced_torque.as_ptr());
         }
     }
 }
 
 /// C: fill_raydata (engine/engine_sensor.c:470)
-/// Calls: mju_addScl3, mju_copy3, mju_dot3, mju_sub3, mju_zero3
+/// Calls: cxx:_mju_addScl3, cxx:_mju_copy3, cxx:_mju_dot3, cxx:_mju_sub3, cxx:_mju_zero3
 /// ⚠️ BITEXACT RULES:
 ///   1. Copy exact C accumulation order (no iter().sum())
 ///   2. No f64::mul_add() (FMA changes precision)
@@ -587,7 +405,7 @@ pub fn total_wrench(force: *mut f64, torque: *mut f64, point: *const f64, n: i32
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn fill_raydata(ptr: *mut f64, dataspec: i32, dist: f64, origin: *const f64, direction: *const f64, normal: *const f64, cam_xpos: *const f64, cam_z: *const f64) -> *mut f64 {
-    use crate::engine::engine_util_blas::{mju_copy3, mju_zero3, mju_add_scl3, mju_sub3, mju_dot3};
+    use crate::engine::engine_util_blas::{mju_copy3, mju_zero3, mju_addScl3, mju_sub3, mju_dot3};
 
     const RAYDATA_DIST: i32 = 0;
     const RAYDATA_DIR: i32 = 1;
@@ -622,7 +440,7 @@ pub fn fill_raydata(ptr: *mut f64, dataspec: i32, dist: f64, origin: *const f64,
         let mut point: [f64; 3] = [0.0, 0.0, 0.0];
         if ((dataspec & (1 << RAYDATA_POINT)) != 0) || ((dataspec & (1 << RAYDATA_DEPTH)) != 0) {
             if hit != 0 {
-                mju_add_scl3(point.as_mut_ptr(), origin, direction, dist);
+                mju_addScl3(point.as_mut_ptr(), origin, direction, dist);
             }
         }
 
@@ -661,358 +479,15 @@ pub fn fill_raydata(ptr: *mut f64, dataspec: i32, dist: f64, origin: *const f64,
     }
 }
 
-/// C: mj_computeSensorPos (engine/engine_sensor.c:525)
-/// Calls: cam_project, fill_raydata, get_xpos_xmat, get_xquat, mj_energyPos, mj_energyVel, mj_freeStack, mj_geomDistance, mj_markStack, mj_multiRay, mj_ray, mj_stackAllocInfo, mju_camIntrinsics, mju_camPixelRay, mju_copy, mju_copy3, mju_copy4, mju_insideGeom, mju_message, mju_mulMatTVec, mju_mulMatTVec3, mju_mulQuat, mju_negQuat, mju_normalize3, mju_normalize4, mju_sub3
-/// ⚠️ BITEXACT RULES:
-///   1. Copy exact C accumulation order (no iter().sum())
-///   2. No f64::mul_add() (FMA changes precision)
-///   3. No algebraic simplification
-///   4. No iter().sum()/product() (order undefined)
-#[allow(unused_variables, non_snake_case)]
-pub fn mj_compute_sensor_pos(m: *const mjModel, d: *mut mjData, i: i32, sensordata: *mut f64) {
-    use crate::types::*;
-    const MJ_SENS_MAGNETOMETER: u32 = mjtSensor_mjSENS_MAGNETOMETER;
-    const MJ_SENS_CAMPROJECTION: u32 = mjtSensor_mjSENS_CAMPROJECTION;
-    const MJ_SENS_RANGEFINDER: u32 = mjtSensor_mjSENS_RANGEFINDER;
-    const MJ_SENS_JOINTPOS: u32 = mjtSensor_mjSENS_JOINTPOS;
-    const MJ_SENS_TENDONPOS: u32 = mjtSensor_mjSENS_TENDONPOS;
-    const MJ_SENS_ACTUATORPOS: u32 = mjtSensor_mjSENS_ACTUATORPOS;
-    const MJ_SENS_BALLQUAT: u32 = mjtSensor_mjSENS_BALLQUAT;
-    const MJ_SENS_JOINTLIMITPOS: u32 = mjtSensor_mjSENS_JOINTLIMITPOS;
-    const MJ_SENS_TENDONLIMITPOS: u32 = mjtSensor_mjSENS_TENDONLIMITPOS;
-    const MJ_SENS_FRAMEPOS: u32 = mjtSensor_mjSENS_FRAMEPOS;
-    const MJ_SENS_FRAMEXAXIS: u32 = mjtSensor_mjSENS_FRAMEXAXIS;
-    const MJ_SENS_FRAMEYAXIS: u32 = mjtSensor_mjSENS_FRAMEYAXIS;
-    const MJ_SENS_FRAMEZAXIS: u32 = mjtSensor_mjSENS_FRAMEZAXIS;
-    const MJ_SENS_FRAMEQUAT: u32 = mjtSensor_mjSENS_FRAMEQUAT;
-    const MJ_SENS_SUBTREECOM: u32 = mjtSensor_mjSENS_SUBTREECOM;
-    const MJ_SENS_INSIDESITE: u32 = mjtSensor_mjSENS_INSIDESITE;
-    const MJ_SENS_GEOMDIST: u32 = mjtSensor_mjSENS_GEOMDIST;
-    const MJ_SENS_GEOMNORMAL: u32 = mjtSensor_mjSENS_GEOMNORMAL;
-    const MJ_SENS_GEOMFROMTO: u32 = mjtSensor_mjSENS_GEOMFROMTO;
-    const MJ_SENS_E_POTENTIAL: u32 = mjtSensor_mjSENS_E_POTENTIAL;
-    const MJ_SENS_E_KINETIC: u32 = mjtSensor_mjSENS_E_KINETIC;
-    const MJ_SENS_CLOCK: u32 = mjtSensor_mjSENS_CLOCK;
-    const MJ_CNSTR_LIMIT_JOINT: i32 = mjtConstraint_mjCNSTR_LIMIT_JOINT as i32;
-    const MJ_CNSTR_LIMIT_TENDON: i32 = mjtConstraint_mjCNSTR_LIMIT_TENDON as i32;
-    const MJ_OBJ_BODY: u32 = mjtObj_mjOBJ_BODY;
-    const MJ_OBJ_SITE: u32 = mjtObj_mjOBJ_SITE;
-    const MJ_PROJ_PERSPECTIVE: i32 = mjtProjection_mjPROJ_PERSPECTIVE as i32;
-    const MJ_RAYDATA_NORMAL: i32 = mjtRayDataField_mjRAYDATA_NORMAL as i32;
-    const MJ_NSENS: usize = 3;
-    const MJ_MINVAL: f64 = 1e-15;
-
-    // SAFETY: m, d are valid pointers. sensordata has sufficient storage for this sensor type.
-    unsafe {
-        let ne = (*d).ne;
-        let nf = (*d).nf;
-        let _nefc = (*d).nefc;
-        let sensor_i = i as usize;
-        let sensor_type = *(*m).sensor_type.add(sensor_i) as u32;
-        let objtype = *(*m).sensor_objtype.add(sensor_i) as u32;
-        let objid = *(*m).sensor_objid.add(sensor_i) as usize;
-        let refid = *(*m).sensor_refid.add(sensor_i);
-        let reftype = *(*m).sensor_reftype.add(sensor_i) as u32;
-
-        let mut rvec = [0.0f64; 3];
-        let mut xpos: *mut f64 = std::ptr::null_mut();
-        let mut xmat: *mut f64 = std::ptr::null_mut();
-        let mut xpos_ref: *mut f64 = std::ptr::null_mut();
-        let mut xmat_ref: *mut f64 = std::ptr::null_mut();
-
-        match sensor_type {
-            t if t == MJ_SENS_MAGNETOMETER => {
-                crate::engine::engine_util_blas::mju_mul_mat_t_vec(
-                    sensordata, (*d).site_xmat.add(9 * objid),
-                    (*m).opt.magnetic.as_ptr(), 3, 3);
-            }
-
-            t if t == MJ_SENS_CAMPROJECTION => {
-                cam_project(sensordata,
-                    (*d).site_xpos.add(3 * objid),
-                    (*d).cam_xpos.add(3 * refid as usize),
-                    (*d).cam_xmat.add(9 * refid as usize),
-                    (*m).cam_resolution.add(2 * refid as usize),
-                    *(*m).cam_fovy.add(refid as usize),
-                    (*m).cam_intrinsic.add(4 * refid as usize),
-                    (*m).cam_sensorsize.add(2 * refid as usize));
-            }
-
-            t if t == MJ_SENS_RANGEFINDER => {
-                let dataspec = *(*m).sensor_intprm.add(sensor_i * MJ_NSENS);
-                if objtype == MJ_OBJ_SITE {
-                    rvec[0] = *(*d).site_xmat.add(9 * objid + 2);
-                    rvec[1] = *(*d).site_xmat.add(9 * objid + 5);
-                    rvec[2] = *(*d).site_xmat.add(9 * objid + 8);
-                    let origin = (*d).site_xpos.add(3 * objid);
-                    let mut geomid: i32 = -1;
-                    let mut normal = [0.0f64; 3];
-                    let p_normal: *mut f64 = if dataspec & (1 << MJ_RAYDATA_NORMAL) != 0 {
-                        normal.as_mut_ptr()
-                    } else {
-                        std::ptr::null_mut()
-                    };
-                    let dist = crate::engine::engine_ray::mj_ray(m, d as *const _, origin,
-                        rvec.as_ptr(), std::ptr::null(), true,
-                        *(*m).site_bodyid.add(objid), &mut geomid, p_normal);
-                    fill_raydata(sensordata, dataspec, dist, origin, rvec.as_ptr(),
-                        normal.as_ptr(), std::ptr::null(), std::ptr::null());
-                } else {
-                    let width = *(*m).cam_resolution.add(2 * objid) as usize;
-                    let height = *(*m).cam_resolution.add(2 * objid + 1) as usize;
-                    let bodyexclude = *(*m).cam_bodyid.add(objid);
-                    let cam_xpos = (*d).cam_xpos.add(3 * objid);
-                    let cam_xmat = (*d).cam_xmat.add(9 * objid);
-                    let projection = *(*m).cam_projection.add(objid);
-                    let cam_z = [*cam_xmat.add(2), *cam_xmat.add(5), *cam_xmat.add(8)];
-                    let mut fx = 0.0f64; let mut fy = 0.0f64;
-                    let mut cx = 0.0f64; let mut cy = 0.0f64;
-                    let mut ortho_extent = 0.0f64;
-                    crate::engine::engine_support::mju_cam_intrinsics(m, objid as i32,
-                        &mut fx, &mut fy, &mut cx, &mut cy, &mut ortho_extent);
-
-                    if projection == MJ_PROJ_PERSPECTIVE {
-                        let npixel = width * height;
-                        crate::engine::engine_memory::mj_mark_stack(d);
-                        let vec_ptr = crate::engine::engine_memory::mj_stack_alloc_info(
-                            d, 3 * npixel * 8, 8, std::ptr::null(), 0) as *mut f64;
-                        let geomid_ptr = crate::engine::engine_memory::mj_stack_alloc_info(
-                            d, npixel * 4, 4, std::ptr::null(), 0) as *mut i32;
-                        let dist_ptr = crate::engine::engine_memory::mj_stack_alloc_info(
-                            d, npixel * 8, 8, std::ptr::null(), 0) as *mut f64;
-                        let has_normal = dataspec & (1 << MJ_RAYDATA_NORMAL) != 0;
-                        let normals_ptr = if has_normal {
-                            crate::engine::engine_memory::mj_stack_alloc_info(
-                                d, 3 * npixel * 8, 8, std::ptr::null(), 0) as *mut f64
-                        } else { std::ptr::null_mut() };
-
-                        for row in 0..height {
-                            for col in 0..width {
-                                let idx = row * width + col;
-                                let mut _origin = [0.0f64; 3];
-                                crate::engine::engine_util_misc::mju_cam_pixel_ray(
-                                    _origin.as_mut_ptr(), vec_ptr.add(3 * idx),
-                                    cam_xpos, cam_xmat,
-                                    col as i32, row as i32, fx, fy, cx, cy,
-                                    projection, ortho_extent);
-                            }
-                        }
-                        crate::engine::engine_ray::mj_multi_ray(m, d, cam_xpos, vec_ptr as *const _,
-                            std::ptr::null(), true, bodyexclude,
-                            geomid_ptr, dist_ptr, normals_ptr, npixel as i32, f64::MAX);
-
-                        let mut ptr = sensordata;
-                        for row in 0..height {
-                            for col in 0..width {
-                                let idx = row * width + col;
-                                let normal_ptr = if !normals_ptr.is_null() {
-                                    normals_ptr.add(3 * idx)
-                                } else { std::ptr::null_mut() };
-                                ptr = fill_raydata(ptr, dataspec, *dist_ptr.add(idx),
-                                    cam_xpos, vec_ptr.add(3 * idx), normal_ptr as *const _,
-                                    cam_xpos, cam_z.as_ptr());
-                            }
-                        }
-                        crate::engine::engine_memory::mj_free_stack(d);
-                    } else {
-                        let mut ptr = sensordata;
-                        for row in 0..height {
-                            for col in 0..width {
-                                let mut origin = [0.0f64; 3];
-                                let mut direction = [0.0f64; 3];
-                                crate::engine::engine_util_misc::mju_cam_pixel_ray(
-                                    origin.as_mut_ptr(), direction.as_mut_ptr(),
-                                    cam_xpos, cam_xmat,
-                                    col as i32, row as i32, fx, fy, cx, cy,
-                                    projection, ortho_extent);
-                                let mut geomid: i32 = -1;
-                                let mut normal = [0.0f64; 3];
-                                let dist = crate::engine::engine_ray::mj_ray(m, d as *const _,
-                                    origin.as_ptr(), direction.as_ptr(),
-                                    std::ptr::null(), true, bodyexclude,
-                                    &mut geomid, normal.as_mut_ptr());
-                                ptr = fill_raydata(ptr, dataspec, dist, origin.as_ptr(),
-                                    direction.as_ptr(), normal.as_ptr(), cam_xpos, cam_z.as_ptr());
-                            }
-                        }
-                    }
-                }
-            }
-
-            t if t == MJ_SENS_JOINTPOS => {
-                *sensordata = *(*d).qpos.add(*(*m).jnt_qposadr.add(objid) as usize);
-            }
-
-            t if t == MJ_SENS_TENDONPOS => {
-                *sensordata = *(*d).ten_length.add(objid);
-            }
-
-            t if t == MJ_SENS_ACTUATORPOS => {
-                *sensordata = *(*d).actuator_length.add(objid);
-            }
-
-            t if t == MJ_SENS_BALLQUAT => {
-                crate::engine::engine_util_blas::mju_copy4(sensordata,
-                    (*d).qpos.add(*(*m).jnt_qposadr.add(objid) as usize));
-                crate::engine::engine_util_blas::mju_normalize4(sensordata);
-            }
-
-            t if t == MJ_SENS_JOINTLIMITPOS => {
-                *sensordata = 0.0;
-                for j in (ne + nf)..(*d).nefc {
-                    if *(*d).efc_type.add(j as usize) == MJ_CNSTR_LIMIT_JOINT
-                        && *(*d).efc_id.add(j as usize) == objid as i32
-                    {
-                        *sensordata = *(*d).efc_pos.add(j as usize) - *(*d).efc_margin.add(j as usize);
-                        break;
-                    }
-                }
-            }
-
-            t if t == MJ_SENS_TENDONLIMITPOS => {
-                *sensordata = 0.0;
-                for j in (ne + nf)..(*d).nefc {
-                    if *(*d).efc_type.add(j as usize) == MJ_CNSTR_LIMIT_TENDON
-                        && *(*d).efc_id.add(j as usize) == objid as i32
-                    {
-                        *sensordata = *(*d).efc_pos.add(j as usize) - *(*d).efc_margin.add(j as usize);
-                        break;
-                    }
-                }
-            }
-
-            t if t == MJ_SENS_FRAMEPOS || t == MJ_SENS_FRAMEXAXIS || t == MJ_SENS_FRAMEYAXIS || t == MJ_SENS_FRAMEZAXIS => {
-                get_xpos_xmat(d as *const _, objtype, objid as i32, i, &mut xpos, &mut xmat);
-                if refid == -1 {
-                    if sensor_type == MJ_SENS_FRAMEPOS {
-                        crate::engine::engine_util_blas::mju_copy3(sensordata, xpos);
-                    } else {
-                        let offset = (sensor_type - MJ_SENS_FRAMEXAXIS) as usize;
-                        *sensordata.add(0) = *xmat.add(offset);
-                        *sensordata.add(1) = *xmat.add(offset + 3);
-                        *sensordata.add(2) = *xmat.add(offset + 6);
-                    }
-                } else {
-                    get_xpos_xmat(d as *const _, reftype, refid, i, &mut xpos_ref, &mut xmat_ref);
-                    if sensor_type == MJ_SENS_FRAMEPOS {
-                        crate::engine::engine_util_blas::mju_sub3(rvec.as_mut_ptr(), xpos, xpos_ref);
-                        crate::engine::engine_util_blas::mju_mul_mat_t_vec3(sensordata, xmat_ref, rvec.as_ptr());
-                    } else {
-                        let offset = (sensor_type - MJ_SENS_FRAMEXAXIS) as usize;
-                        let axis = [*xmat.add(offset), *xmat.add(offset + 3), *xmat.add(offset + 6)];
-                        crate::engine::engine_util_blas::mju_mul_mat_t_vec3(sensordata, xmat_ref, axis.as_ptr());
-                    }
-                }
-            }
-
-            t if t == MJ_SENS_FRAMEQUAT => {
-                let mut objquat = [0.0f64; 4];
-                get_xquat(m, d as *const _, objtype, objid as i32, i, objquat.as_mut_ptr());
-                if refid == -1 {
-                    crate::engine::engine_util_blas::mju_copy4(sensordata, objquat.as_ptr());
-                } else {
-                    let mut refquat = [0.0f64; 4];
-                    get_xquat(m, d as *const _, reftype, refid, i, refquat.as_mut_ptr());
-                    crate::engine::engine_util_spatial::mju_neg_quat(refquat.as_mut_ptr(), refquat.as_ptr());
-                    crate::engine::engine_util_spatial::mju_mul_quat(sensordata, refquat.as_ptr(), objquat.as_ptr());
-                }
-            }
-
-            t if t == MJ_SENS_SUBTREECOM => {
-                crate::engine::engine_util_blas::mju_copy3(sensordata, (*d).subtree_com.add(3 * objid));
-            }
-
-            t if t == MJ_SENS_INSIDESITE => {
-                get_xpos_xmat(d as *const _, objtype, objid as i32, i, &mut xpos, &mut xmat);
-                if objtype == MJ_OBJ_BODY && objid > 0
-                    && *(*m).body_mass.add(objid) < MJ_MINVAL
-                    && *(*m).body_subtreemass.add(objid) >= MJ_MINVAL
-                {
-                    xpos = (*d).subtree_com.add(3 * objid);
-                }
-                *sensordata = crate::engine::engine_util_misc::mju_inside_geom(
-                    (*d).site_xpos.add(3 * refid as usize),
-                    (*d).site_xmat.add(9 * refid as usize),
-                    (*m).site_size.add(3 * refid as usize),
-                    *(*m).site_type.add(refid as usize) as u32,
-                    xpos) as f64;
-            }
-
-            t if t == MJ_SENS_GEOMDIST || t == MJ_SENS_GEOMNORMAL || t == MJ_SENS_GEOMFROMTO => {
-                let cutoff = *(*m).sensor_cutoff.add(sensor_i);
-                let mut dist = cutoff;
-                let mut fromto = [0.0f64; 6];
-                let (n1, id1) = if objtype == MJ_OBJ_BODY {
-                    (*(*m).body_geomnum.add(objid), *(*m).body_geomadr.add(objid))
-                } else {
-                    (1, objid as i32)
-                };
-                let (n2, id2) = if reftype == MJ_OBJ_BODY {
-                    (*(*m).body_geomnum.add(refid as usize), *(*m).body_geomadr.add(refid as usize))
-                } else {
-                    (1, refid)
-                };
-                for geom1 in id1..(id1 + n1) {
-                    for geom2 in id2..(id2 + n2) {
-                        let mut fromto_new = [0.0f64; 6];
-                        let dist_new = crate::engine::engine_support::mj_geom_distance(m, d, geom1, geom2, cutoff, fromto_new.as_mut_ptr());
-                        if dist_new < dist {
-                            dist = dist_new;
-                            fromto.copy_from_slice(&fromto_new);
-                        }
-                    }
-                }
-                if sensor_type == MJ_SENS_GEOMDIST {
-                    *sensordata = dist;
-                } else if sensor_type == MJ_SENS_GEOMNORMAL {
-                    let normal = [fromto[3]-fromto[0], fromto[4]-fromto[1], fromto[5]-fromto[2]];
-                    if normal[0] != 0.0 || normal[1] != 0.0 || normal[2] != 0.0 {
-                        let mut n = normal;
-                        crate::engine::engine_util_blas::mju_normalize3(n.as_mut_ptr());
-                        crate::engine::engine_util_blas::mju_copy3(sensordata, n.as_ptr());
-                    } else {
-                        crate::engine::engine_util_blas::mju_copy3(sensordata, normal.as_ptr());
-                    }
-                } else {
-                    crate::engine::engine_util_blas::mju_copy(sensordata, fromto.as_ptr(), 6);
-                }
-            }
-
-            t if t == MJ_SENS_E_POTENTIAL => {
-                if !(*d).flg_energypos {
-                    mj_energy_pos(m, d);
-                }
-                *sensordata = (*d).energy[0];
-            }
-
-            t if t == MJ_SENS_E_KINETIC => {
-                if !(*d).flg_energyvel {
-                    mj_energy_vel(m, d);
-                }
-                *sensordata = (*d).energy[1];
-            }
-
-            t if t == MJ_SENS_CLOCK => {
-                *sensordata = (*d).time;
-            }
-
-            _ => {
-                crate::engine::engine_util_errmem::mju_error(
-                    b"invalid sensor type in POS stage\0".as_ptr() as *const i8);
-            }
-        }
-    }
-}
-
 /// C: mj_computeSensorVel (engine/engine_sensor.c:839)
-/// Calls: get_xpos_xmat, mj_objectVelocity, mj_subtreeVel, mju_addTo3, mju_copy3, mju_cross, mju_message, mju_mulMatTVec3, mju_sub, mju_sub3
+/// Calls: cxx-internal:/Users/xing/Desktop/projects/c2rust_bitexact/projects/mujoco/src/engine/engine_sensor.c:_get_xpos_xmat, cxx:_mj_objectVelocity, cxx:_mj_subtreeVel, cxx:_mju_addTo3, cxx:_mju_copy3, cxx:_mju_cross, cxx:_mju_message, cxx:_mju_mulMatTVec3, cxx:_mju_sub, cxx:_mju_sub3
 /// ⚠️ BITEXACT RULES:
 ///   1. Copy exact C accumulation order (no iter().sum())
 ///   2. No f64::mul_add() (FMA changes precision)
 ///   3. No algebraic simplification
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
-pub fn mj_compute_sensor_vel(m: *const mjModel, d: *mut mjData, i: i32, sensordata: *mut f64) {
+pub fn mj_computeSensorVel(m: *const mjModel, d: *mut mjData, i: i32, sensordata: *mut f64) {
     // Sensor type enum values
     const mjSENS_VELOCIMETER: i32 = 2;
     const mjSENS_GYRO: i32 = 3;
@@ -1047,16 +522,16 @@ pub fn mj_compute_sensor_vel(m: *const mjModel, d: *mut mjData, i: i32, sensorda
         if !(*d).flg_subtreevel
             && (sensor_type == mjSENS_SUBTREELINVEL || sensor_type == mjSENS_SUBTREEANGMOM)
         {
-            crate::engine::engine_core_smooth::mj_subtree_vel(m, d);
+            crate::engine::engine_core_smooth::mj_subtreeVel(m, d);
         }
 
         // process according to type
         if sensor_type == mjSENS_VELOCIMETER {
-            crate::engine::engine_core_util::mj_object_velocity(
+            crate::engine::engine_core_util::mj_objectVelocity(
                 m, d as *const crate::types::mjData, mjOBJ_SITE, objid, xvel.as_mut_ptr(), 1);
             crate::engine::engine_util_blas::mju_copy3(sensordata, xvel.as_ptr().add(3));
         } else if sensor_type == mjSENS_GYRO {
-            crate::engine::engine_core_util::mj_object_velocity(
+            crate::engine::engine_core_util::mj_objectVelocity(
                 m, d as *const crate::types::mjData, mjOBJ_SITE, objid, xvel.as_mut_ptr(), 1);
             crate::engine::engine_util_blas::mju_copy3(sensordata, xvel.as_ptr());
         } else if sensor_type == mjSENS_JOINTVEL {
@@ -1090,7 +565,7 @@ pub fn mj_compute_sensor_vel(m: *const mjModel, d: *mut mjData, i: i32, sensorda
             }
         } else if sensor_type == mjSENS_FRAMELINVEL || sensor_type == mjSENS_FRAMEANGVEL {
             // xvel = 6D object velocity, in global frame
-            crate::engine::engine_core_util::mj_object_velocity(
+            crate::engine::engine_core_util::mj_objectVelocity(
                 m, d as *const crate::types::mjData, objtype, objid, xvel.as_mut_ptr(), 0);
 
             if refid > -1 {
@@ -1108,7 +583,7 @@ pub fn mj_compute_sensor_vel(m: *const mjModel, d: *mut mjData, i: i32, sensorda
                     &mut xpos as *mut *mut f64, &mut xmat as *mut *mut f64);
                 get_xpos_xmat(d as *const crate::types::mjData, reftype as u32, refid, i,
                     &mut xpos_ref as *mut *mut f64, &mut xmat_ref as *mut *mut f64);
-                crate::engine::engine_core_util::mj_object_velocity(
+                crate::engine::engine_core_util::mj_objectVelocity(
                     m, d as *const crate::types::mjData, reftype, refid, xvel_ref.as_mut_ptr(), 0);
 
                 // subtract velocities
@@ -1118,11 +593,11 @@ pub fn mj_compute_sensor_vel(m: *const mjModel, d: *mut mjData, i: i32, sensorda
                 // linear velocity: add correction due to rotating reference frame
                 crate::engine::engine_util_blas::mju_sub3(rvec.as_mut_ptr(), xpos as *const f64, xpos_ref as *const f64);
                 crate::engine::engine_util_spatial::mju_cross(cross.as_mut_ptr(), rvec.as_ptr(), xvel_ref.as_ptr());
-                crate::engine::engine_util_blas::mju_add_to3(rel_vel.as_mut_ptr().add(3), cross.as_ptr());
+                crate::engine::engine_util_blas::mju_addTo3(rel_vel.as_mut_ptr().add(3), cross.as_ptr());
 
                 // project into reference frame
-                crate::engine::engine_util_blas::mju_mul_mat_t_vec3(xvel.as_mut_ptr(), xmat_ref as *const f64, rel_vel.as_ptr());
-                crate::engine::engine_util_blas::mju_mul_mat_t_vec3(xvel.as_mut_ptr().add(3), xmat_ref as *const f64, rel_vel.as_ptr().add(3));
+                crate::engine::engine_util_blas::mju_mulMatTVec3(xvel.as_mut_ptr(), xmat_ref as *const f64, rel_vel.as_ptr());
+                crate::engine::engine_util_blas::mju_mulMatTVec3(xvel.as_mut_ptr().add(3), xmat_ref as *const f64, rel_vel.as_ptr().add(3));
             }
 
             // copy linear or angular component
@@ -1144,78 +619,8 @@ pub fn mj_compute_sensor_vel(m: *const mjModel, d: *mut mjData, i: i32, sensorda
     }
 }
 
-/// C: mj_computeSensorAcc (engine/engine_sensor.c:958)
-/// Calls: ContactSelect, copySensorData, matchContact, mj_contactForce, mj_flexBody, mj_freeStack, mj_markStack, mj_objectAcceleration, mj_rnePostConstraint, mj_stackAllocInfo, mj_stackAllocInt, mj_stackAllocNum, mju_addTo, mju_addToScl3, mju_condataSize, mju_copy3, mju_copy9, mju_dispatch, mju_dot3, mju_isZero, mju_message, mju_min, mju_norm3, mju_normalize3, mju_numThread, mju_rayGeom, mju_scl, mju_scl3, mju_transformSpatial, mju_zero, tactile_taxel_batch, total_wrench
-/// ⚠️ BITEXACT RULES:
-///   1. Copy exact C accumulation order (no iter().sum())
-///   2. No f64::mul_add() (FMA changes precision)
-///   3. No algebraic simplification
-///   4. No iter().sum()/product() (order undefined)
-#[allow(unused_variables, non_snake_case)]
-pub fn mj_compute_sensor_acc(m: *const mjModel, d: *mut mjData, i: i32, sensordata: *mut f64) {
-    todo!() // mj_computeSensorAcc
-}
-
-/// C: compute_or_read_sensor (engine/engine_sensor.c:1387)
-/// Calls: mj_computeSensor, mj_readSensor, mju_copy
-/// ⚠️ BITEXACT RULES:
-///   1. Copy exact C accumulation order (no iter().sum())
-///   2. No f64::mul_add() (FMA changes precision)
-///   3. No algebraic simplification
-///   4. No iter().sum()/product() (order undefined)
-#[allow(unused_variables, non_snake_case)]
-pub fn compute_or_read_sensor(m: *const mjModel, d: *mut mjData, i: i32, sensordata: *mut f64) {
-    // SAFETY: m, d are valid model/data pointers; i is a valid sensor index.
-    unsafe {
-        let nsample = *(*m).sensor_history.add(2 * i as usize);
-
-        // no history: compute directly
-        if nsample <= 0 {
-            mj_compute_sensor(m, d, i, sensordata);
-            return;
-        }
-
-        let delay = *(*m).sensor_delay.add(i as usize);
-        let dim   = *(*m).sensor_dim.add(i as usize);
-
-        // delay > 0: read delayed value from buffer
-        if delay > 0.0 {
-            let interp = *(*m).sensor_history.add(2 * i as usize + 1);
-            let ptr = crate::engine::engine_support::mj_read_sensor(m, d as *const mjData, i, (*d).time, sensordata, interp);
-            if !ptr.is_null() {
-                crate::engine::engine_util_blas::mju_copy(sensordata, ptr, dim);
-            }
-            return;
-        }
-
-        // interval > 0: compute if interval satisfied, else read from buffer
-        let interval = *(*m).sensor_interval.add(2 * i as usize);
-        if interval > 0.0 {
-            let historyadr = *(*m).sensor_historyadr.add(i as usize);
-            let buf = (*d).history.add(historyadr as usize);
-            let time_prev = *buf;  // first slot stores time_prev
-
-            if time_prev + interval <= (*d).time {
-                // interval condition satisfied: compute new value
-                mj_compute_sensor(m, d, i, sensordata);
-            } else {
-                // interval not satisfied: read from buffer
-                let interp = *(*m).sensor_history.add(2 * i as usize + 1);
-                let ptr = crate::engine::engine_support::mj_read_sensor(m, d as *const mjData, i, (*d).time, sensordata, interp);
-                if !ptr.is_null() {
-                    crate::engine::engine_util_blas::mju_copy(sensordata, ptr, dim);
-                }
-            }
-            return;
-        }
-
-        // history only, no delay or interval: compute directly
-        mj_compute_sensor(m, d, i, sensordata);
-    }
-}
-
 /// C: compute_user_sensors (engine/engine_sensor.c:1432)
-/// Calls: apply_cutoff
+/// Calls: cxx-internal:/Users/xing/Desktop/projects/c2rust_bitexact/projects/mujoco/src/engine/engine_sensor.c:_apply_cutoff
 #[allow(unused_variables, non_snake_case)]
 pub fn compute_user_sensors(m: *const mjModel, d: *mut mjData, stage: u32) {
     // SAFETY: accessing global callback pointer and model/data fields, matching C semantics
@@ -1239,300 +644,10 @@ pub fn compute_user_sensors(m: *const mjModel, d: *mut mjData, stage: u32) {
     }
 }
 
-/// C: compute_plugin_sensors (engine/engine_sensor.c:1447)
-/// Calls: apply_cutoff, mj_rnePostConstraint, mj_subtreeVel, mjp_getPluginAtSlotUnsafe, mjp_pluginCount, mju_message
-#[allow(unused_variables, non_snake_case)]
-pub fn compute_plugin_sensors(m: *const mjModel, d: *mut mjData, stage: u32) {
-    const mjPLUGIN_SENSOR: i32 = 1 << 1;
-    const mjSTAGE_NONE: u32 = 0;
-    const mjSTAGE_POS: u32 = 1;
-    const mjSTAGE_VEL: u32 = 2;
-    const mjSTAGE_ACC: u32 = 3;
-    const mjSENS_PLUGIN: i32 = 47;
-
-    // SAFETY: m, d are valid pointers (caller contract).
-    unsafe {
-        if (*m).nplugin == 0 {
-            return;
-        }
-
-        let nslot = crate::engine::engine_plugin::mjp_plugin_count();
-        for i in 0..(*m).nplugin as i32 {
-            let slot = *(*m).plugin.add(i as usize);
-            let plugin = crate::engine::engine_plugin::mjp_get_plugin_at_slot_unsafe(slot, nslot);
-            if plugin.is_null() {
-                crate::engine::engine_util_errmem::mju_error(
-                    b"invalid plugin slot: %d\0".as_ptr() as *const i8);
-            }
-
-            // check if plugin is a sensor plugin matching this stage
-            if ((*plugin).capabilityflags & mjPLUGIN_SENSOR) == 0 {
-                continue;
-            }
-            // match if needstage equals stage, OR stage is POS and needstage is NONE
-            let matches_stage = ((*plugin).needstage as u32 == stage)
-                || (stage == mjSTAGE_POS && (*plugin).needstage as u32 == mjSTAGE_NONE);
-            if !matches_stage {
-                continue;
-            }
-
-            if (*plugin).compute.is_none() {
-                crate::engine::engine_util_errmem::mju_error(
-                    b"`compute` is a null function pointer for plugin at slot %d\0".as_ptr() as *const i8);
-            }
-
-            // call stage-specific preparation if needed
-            if stage == mjSTAGE_VEL && !(*d).flg_subtreevel {
-                crate::engine::engine_core_smooth::mj_subtree_vel(m, d);
-            } else if stage == mjSTAGE_ACC && !(*d).flg_rnepost {
-                crate::engine::engine_core_smooth::mj_rne_post_constraint(m, d);
-            }
-
-            // SAFETY: plugin->compute has signature (m, d, plugin_id, capability) per mujoco API
-            let compute_fn: unsafe extern "C" fn(*const crate::types::mjModel, *mut crate::types::mjData, i32, i32) =
-                std::mem::transmute((*plugin).compute.unwrap());
-            compute_fn(m, d, i, mjPLUGIN_SENSOR);
-
-            // apply cutoff to all sensors attached to this plugin
-            for j in 0..(*m).nsensor as i32 {
-                if *(*m).sensor_type.add(j as usize) == mjSENS_PLUGIN
-                    && *(*m).sensor_plugin.add(j as usize) == i
-                    && *(*m).sensor_needstage.add(j as usize) as u32 == stage
-                {
-                    apply_cutoff(m, j, (*d).sensordata.add(*(*m).sensor_adr.add(j as usize) as usize));
-                }
-            }
-        }
-    }
-}
-
-/// C: mj_computeSensor (engine/engine_sensor.h:29)
-/// Calls: apply_cutoff, mj_computeSensorAcc, mj_computeSensorPos, mj_computeSensorVel, mju_message
-/// ⚠️ BITEXACT RULES:
-///   1. Copy exact C accumulation order (no iter().sum())
-///   2. No f64::mul_add() (FMA changes precision)
-///   3. No algebraic simplification
-///   4. No iter().sum()/product() (order undefined)
-#[allow(unused_variables, non_snake_case)]
-pub fn mj_compute_sensor(m: *const mjModel, d: *mut mjData, i: i32, sensordata: *mut f64) {
-    const MJ_STAGE_POS: i32 = 1;
-    const MJ_STAGE_VEL: i32 = 2;
-    const MJ_STAGE_ACC: i32 = 3;
-
-    // SAFETY: m, d, sensordata are valid pointers (caller contract).
-    unsafe {
-        let stage = *(*m).sensor_needstage.add(i as usize);
-        if stage == MJ_STAGE_POS {
-            mj_compute_sensor_pos(m, d, i, sensordata);
-        } else if stage == MJ_STAGE_VEL {
-            mj_compute_sensor_vel(m, d, i, sensordata);
-        } else if stage == MJ_STAGE_ACC {
-            mj_compute_sensor_acc(m, d, i, sensordata);
-        } else {
-            crate::engine::engine_util_errmem::mju_error(
-                b"invalid sensor stage\0".as_ptr() as *const i8);
-        }
-
-        // apply cutoff
-        apply_cutoff(m, i, sensordata);
-    }
-}
-
-/// C: mj_sensorPos (engine/engine_sensor.h:32)
-/// Calls: compute_or_read_sensor, compute_plugin_sensors, compute_user_sensors, mj_sleepState, mju_zero
-#[allow(unused_variables, non_snake_case)]
-pub fn mj_sensor_pos(m: *const mjModel, d: *mut mjData) {
-    const MJ_DSBL_SENSOR: i32 = 1 << 13;
-    const MJ_ENBL_SLEEP: i32 = 1 << 4;
-    const MJ_OBJ_SENSOR: u32 = 20;
-    const MJ_S_ASLEEP: i32 = 0;
-    const MJ_STAGE_POS: i32 = 1;
-    const MJ_SENS_PLUGIN: i32 = 47;
-    const MJ_SENS_USER: i32 = 48;
-
-    // SAFETY: m, d are valid pointers (caller contract).
-    unsafe {
-        let nsensor = (*m).nsensor as i32;
-
-        // disabled sensors: return
-        if ((*m).opt.disableflags & MJ_DSBL_SENSOR) != 0 {
-            return;
-        }
-
-        // sleep filtering
-        let sleep_filter = ((*m).opt.enableflags & MJ_ENBL_SLEEP) != 0
-            && ((*d).nbody_awake as i64) < (*m).nbody;
-
-        let mut nusersensor: i32 = 0;
-
-        // process sensors matching stage
-        for i in 0..nsensor {
-            let sensor_type = *(*m).sensor_type.add(i as usize);
-
-            // skip sleeping sensor
-            if sleep_filter
-                && crate::engine::engine_sleep::mj_sleep_state(
-                    m, d as *const mjData, MJ_OBJ_SENSOR, i) == MJ_S_ASLEEP
-            {
-                continue;
-            }
-
-            // skip sensor plugins
-            if sensor_type == MJ_SENS_PLUGIN {
-                continue;
-            }
-
-            if *(*m).sensor_needstage.add(i as usize) == MJ_STAGE_POS {
-                let adr = *(*m).sensor_adr.add(i as usize);
-                let sensordata = (*d).sensordata.add(adr as usize);
-
-                if sensor_type == MJ_SENS_USER {
-                    // clear result, compute later
-                    crate::engine::engine_util_blas::mju_zero(
-                        sensordata, *(*m).sensor_dim.add(i as usize));
-                    nusersensor += 1;
-                } else {
-                    compute_or_read_sensor(m, d, i, sensordata);
-                }
-            }
-        }
-
-        // fill in user sensors if detected
-        if nusersensor != 0 {
-            compute_user_sensors(m, d, MJ_STAGE_POS as u32);
-        }
-
-        // compute plugin sensor values
-        compute_plugin_sensors(m, d, MJ_STAGE_POS as u32);
-    }
-}
-
-/// C: mj_sensorVel (engine/engine_sensor.h:35)
-/// Calls: compute_or_read_sensor, compute_plugin_sensors, compute_user_sensors, mj_sleepState, mj_subtreeVel, mju_zero
-#[allow(unused_variables, non_snake_case)]
-pub fn mj_sensor_vel(m: *const mjModel, d: *mut mjData) {
-    const MJ_DSBL_SENSOR: i32 = 1 << 13;
-    const MJ_ENBL_SLEEP: i32 = 1 << 4;
-    const MJ_OBJ_SENSOR: u32 = 20;
-    const MJ_S_ASLEEP: i32 = 0;
-    const MJ_STAGE_VEL: i32 = 2;
-    const MJ_SENS_PLUGIN: i32 = 47;
-    const MJ_SENS_USER: i32 = 48;
-
-    // SAFETY: m, d are valid pointers (caller contract).
-    unsafe {
-        let nsensor = (*m).nsensor as i32;
-
-        if ((*m).opt.disableflags & MJ_DSBL_SENSOR) != 0 {
-            return;
-        }
-
-        let sleep_filter = ((*m).opt.enableflags & MJ_ENBL_SLEEP) != 0
-            && ((*d).nbody_awake as i64) < (*m).nbody;
-
-        let mut nusersensor: i32 = 0;
-
-        for i in 0..nsensor {
-            let sensor_type = *(*m).sensor_type.add(i as usize);
-
-            if sleep_filter
-                && crate::engine::engine_sleep::mj_sleep_state(
-                    m, d as *const mjData, MJ_OBJ_SENSOR, i) == MJ_S_ASLEEP
-            {
-                continue;
-            }
-
-            if sensor_type == MJ_SENS_PLUGIN {
-                continue;
-            }
-
-            if *(*m).sensor_needstage.add(i as usize) == MJ_STAGE_VEL {
-                let adr = *(*m).sensor_adr.add(i as usize);
-                let sensordata = (*d).sensordata.add(adr as usize);
-
-                if sensor_type == MJ_SENS_USER {
-                    crate::engine::engine_util_blas::mju_zero(
-                        sensordata, *(*m).sensor_dim.add(i as usize));
-                    nusersensor += 1;
-                } else {
-                    compute_or_read_sensor(m, d, i, sensordata);
-                }
-            }
-        }
-
-        if nusersensor != 0 {
-            compute_user_sensors(m, d, MJ_STAGE_VEL as u32);
-        }
-
-        compute_plugin_sensors(m, d, MJ_STAGE_VEL as u32);
-    }
-}
-
-/// C: mj_sensorAcc (engine/engine_sensor.h:38)
-/// Calls: compute_or_read_sensor, compute_plugin_sensors, compute_user_sensors, mj_rnePostConstraint, mj_sleepState, mju_zero
-#[allow(unused_variables, non_snake_case)]
-pub fn mj_sensor_acc(m: *const mjModel, d: *mut mjData) {
-    const MJ_DSBL_SENSOR: i32 = 1 << 13;
-    const MJ_ENBL_SLEEP: i32 = 1 << 4;
-    const MJ_OBJ_SENSOR: u32 = 20;
-    const MJ_S_ASLEEP: i32 = 0;
-    const MJ_STAGE_ACC: i32 = 3;
-    const MJ_SENS_PLUGIN: i32 = 47;
-    const MJ_SENS_USER: i32 = 48;
-
-    // SAFETY: m, d are valid pointers (caller contract).
-    unsafe {
-        let nsensor = (*m).nsensor as i32;
-
-        if ((*m).opt.disableflags & MJ_DSBL_SENSOR) != 0 {
-            return;
-        }
-
-        let sleep_filter = ((*m).opt.enableflags & MJ_ENBL_SLEEP) != 0
-            && ((*d).nbody_awake as i64) < (*m).nbody;
-
-        let mut nusersensor: i32 = 0;
-
-        for i in 0..nsensor {
-            let sensor_type = *(*m).sensor_type.add(i as usize);
-
-            if sleep_filter
-                && crate::engine::engine_sleep::mj_sleep_state(
-                    m, d as *const mjData, MJ_OBJ_SENSOR, i) == MJ_S_ASLEEP
-            {
-                continue;
-            }
-
-            if sensor_type == MJ_SENS_PLUGIN {
-                continue;
-            }
-
-            if *(*m).sensor_needstage.add(i as usize) == MJ_STAGE_ACC {
-                let adr = *(*m).sensor_adr.add(i as usize);
-                let sensordata = (*d).sensordata.add(adr as usize);
-
-                if sensor_type == MJ_SENS_USER {
-                    crate::engine::engine_util_blas::mju_zero(
-                        sensordata, *(*m).sensor_dim.add(i as usize));
-                    nusersensor += 1;
-                } else {
-                    compute_or_read_sensor(m, d, i, sensordata);
-                }
-            }
-        }
-
-        if nusersensor != 0 {
-            compute_user_sensors(m, d, MJ_STAGE_ACC as u32);
-        }
-
-        compute_plugin_sensors(m, d, MJ_STAGE_ACC as u32);
-    }
-}
-
 /// C: mj_energyPos (engine/engine_sensor.h:44)
-/// Calls: mj_sleepState, mju_copy4, mju_dot3, mju_isZero, mju_norm3, mju_normalize4, mju_polyPotential, mju_sub3, mju_subQuat
+/// Calls: cxx:_mj_sleepState, cxx:_mju_copy4, cxx:_mju_dot3, cxx:_mju_isZero, cxx:_mju_norm3, cxx:_mju_normalize4, cxx:_mju_polyPotential, cxx:_mju_sub3, cxx:_mju_subQuat
 #[allow(unused_variables, non_snake_case)]
-pub fn mj_energy_pos(m: *const mjModel, d: *mut mjData) {
+pub fn mj_energyPos(m: *const mjModel, d: *mut mjData) {
     const mjDSBL_GRAVITY: i32 = 1 << 7;
     const mjDSBL_SPRING: i32 = 1 << 5;
     const mjENBL_SLEEP: i32 = 1 << 4;
@@ -1577,7 +692,7 @@ pub fn mj_energy_pos(m: *const mjModel, d: *mut mjData) {
                     let stiffness = *(*m).jnt_stiffness.add(j as usize);
                     let poly: *const f64 = (*m).jnt_stiffnesspoly.add((mjNPOLY * j) as usize);
                     if stiffness == 0.0
-                        && crate::engine::engine_util_misc::mju_is_zero(poly, mjNPOLY) != 0
+                        && crate::engine::engine_util_misc::mju_isZero(poly, mjNPOLY) != 0
                     {
                         continue;
                     }
@@ -1591,35 +706,35 @@ pub fn mj_energy_pos(m: *const mjModel, d: *mut mjData) {
                             (*d).qpos.add(padr as usize),
                             (*m).qpos_spring.add(padr as usize));
                         let x = crate::engine::engine_util_blas::mju_norm3(dif.as_ptr());
-                        (*d).energy[0] += crate::engine::engine_util_misc::mju_poly_potential(
+                        (*d).energy[0] += crate::engine::engine_util_misc::mju_polyPotential(
                             stiffness, poly, x, mjNPOLY, 0);
                         padr += 3;
                         // fallthrough to BALL case
                         crate::engine::engine_util_blas::mju_copy4(
                             quat.as_mut_ptr(), (*d).qpos.add(padr as usize));
                         crate::engine::engine_util_blas::mju_normalize4(quat.as_mut_ptr());
-                        crate::engine::engine_util_spatial::mju_sub_quat(
+                        crate::engine::engine_util_spatial::mju_subQuat(
                             dif.as_mut_ptr(),
                             (*d).qpos.add(padr as usize),
                             (*m).qpos_spring.add(padr as usize));
                         let x = crate::engine::engine_util_blas::mju_norm3(dif.as_ptr());
-                        (*d).energy[0] += crate::engine::engine_util_misc::mju_poly_potential(
+                        (*d).energy[0] += crate::engine::engine_util_misc::mju_polyPotential(
                             stiffness, poly, x, mjNPOLY, 0);
                     } else if jnt_type == mjJNT_BALL {
                         crate::engine::engine_util_blas::mju_copy4(
                             quat.as_mut_ptr(), (*d).qpos.add(padr as usize));
                         crate::engine::engine_util_blas::mju_normalize4(quat.as_mut_ptr());
-                        crate::engine::engine_util_spatial::mju_sub_quat(
+                        crate::engine::engine_util_spatial::mju_subQuat(
                             dif.as_mut_ptr(),
                             (*d).qpos.add(padr as usize),
                             (*m).qpos_spring.add(padr as usize));
                         let x = crate::engine::engine_util_blas::mju_norm3(dif.as_ptr());
-                        (*d).energy[0] += crate::engine::engine_util_misc::mju_poly_potential(
+                        (*d).energy[0] += crate::engine::engine_util_misc::mju_polyPotential(
                             stiffness, poly, x, mjNPOLY, 0);
                     } else if jnt_type == mjJNT_SLIDE || jnt_type == mjJNT_HINGE {
                         let x = *(*d).qpos.add(padr as usize)
                             - *(*m).qpos_spring.add(padr as usize);
-                        (*d).energy[0] += crate::engine::engine_util_misc::mju_poly_potential(
+                        (*d).energy[0] += crate::engine::engine_util_misc::mju_polyPotential(
                             stiffness, poly, x, mjNPOLY, 0);
                     }
                 }
@@ -1631,7 +746,7 @@ pub fn mj_energy_pos(m: *const mjModel, d: *mut mjData) {
             for i in 0..(*m).ntendon as i32 {
                 // skip sleeping or static tendon
                 if sleep_filter
-                    && crate::engine::engine_sleep::mj_sleep_state(
+                    && crate::engine::engine_sleep::mj_sleepState(
                         m, d as *const crate::types::mjData, mjOBJ_TENDON, i)
                         != mjS_AWAKE
                 {
@@ -1654,7 +769,7 @@ pub fn mj_energy_pos(m: *const mjModel, d: *mut mjData) {
                 };
 
                 // add potential energy
-                (*d).energy[0] += crate::engine::engine_util_misc::mju_poly_potential(
+                (*d).energy[0] += crate::engine::engine_util_misc::mju_polyPotential(
                     stiffness, poly, x, mjNPOLY, 0);
             }
         }
@@ -1689,20 +804,20 @@ pub fn mj_energy_pos(m: *const mjModel, d: *mut mjData) {
 }
 
 /// C: mj_energyVel (engine/engine_sensor.h:47)
-/// Calls: mj_freeStack, mj_markStack, mj_mulM, mj_stackAllocInfo, mju_dot
+/// Calls: cxx:_mj_freeStack, cxx:_mj_markStack, cxx:_mj_mulM, cxx:_mj_stackAllocInfo, cxx:_mju_dot
 #[allow(unused_variables, non_snake_case)]
-pub fn mj_energy_vel(m: *const mjModel, d: *mut mjData) {
+pub fn mj_energyVel(m: *const mjModel, d: *mut mjData) {
     // SAFETY: m, d are valid pointers (caller contract).
     unsafe {
-        crate::engine::engine_memory::mj_mark_stack(d);
-        let vec = crate::engine::engine_memory::mj_stack_alloc_num(d, (*m).nv as usize);
+        crate::engine::engine_memory::mj_markStack(d);
+        let vec = crate::engine::engine_memory::mj_stackAllocNum(d, (*m).nv as usize);
 
         // kinetic energy: 0.5 * qvel' * M * qvel
-        crate::engine::engine_support::mj_mul_m(m, d as *const mjData, vec, (*d).qvel);
+        crate::engine::engine_support::mj_mulM(m, d as *const mjData, vec, (*d).qvel);
         (*d).energy[1] = 0.5 * crate::engine::engine_util_blas::mju_dot(
             vec, (*d).qvel, (*m).nv as i32);
 
-        crate::engine::engine_memory::mj_free_stack(d);
+        crate::engine::engine_memory::mj_freeStack(d);
 
         // mark as computed
         (*d).flg_energyvel = true;

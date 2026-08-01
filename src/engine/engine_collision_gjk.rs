@@ -1,18 +1,17 @@
 //! Port of: engine/engine_collision_gjk.c
-//! IR hash: 73393814548a07d1
-//! CODEGEN: signatures locked. Only fill todo!() bodies.
+//! IR hash: 9343293228317031
+//! CODEGEN: source paths, owners, and callable names are locked.
 
 use crate::types::*;
 
 /// C: align8 (engine/engine_collision_gjk.c:49)
-/// Calls: FilePath::size
 #[allow(unused_variables, non_snake_case)]
 pub fn align8(size: usize) -> usize {
     (size + 7) & !7
 }
 
 /// C: subdistance (engine/engine_collision_gjk.c:56)
-/// Calls: S1D, S2D, S3D
+/// Calls: cxx-internal:/Users/xing/Desktop/projects/c2rust_bitexact/projects/mujoco/src/engine/engine_collision_gjk.c:_S3D, cxx-internal:engine_collision_gjk.c.o:_S1D, cxx-internal:engine_collision_gjk.c.o:_S2D
 /// ⚠️ BITEXACT RULES:
 ///   1. Copy exact C accumulation order (no iter().sum())
 ///   2. No f64::mul_add() (FMA changes precision)
@@ -36,23 +35,23 @@ pub fn subdistance(lambda: *mut f64, n: i32, simplex: *const Vertex) {
         let s4 = base.add(3 * SIZEOF_VERTEX) as *const f64;
 
         match n {
-            4 => s3d(lambda, s1, s2, s3, s4),
-            3 => s2d(lambda, s1, s2, s3),
-            2 => s1d(lambda, s1, s2),
+            4 => S3D(lambda, s1, s2, s3, s4),
+            3 => S2D(lambda, s1, s2, s3),
+            2 => S1D(lambda, s1, s2),
             _ => *lambda.add(0) = 1.0,
         }
     }
 }
 
 /// C: S3D (engine/engine_collision_gjk.c:60)
-/// Calls: S2D, det3, dot3, lincomb, sameSign2
+/// Calls: cxx-internal:/Users/xing/Desktop/projects/c2rust_bitexact/projects/mujoco/src/engine/engine_collision_gjk.c:_det3, cxx-internal:/Users/xing/Desktop/projects/c2rust_bitexact/projects/mujoco/src/engine/engine_collision_gjk.c:_dot3, cxx-internal:/Users/xing/Desktop/projects/c2rust_bitexact/projects/mujoco/src/engine/engine_collision_gjk.c:_sameSign2, cxx-internal:engine_collision_gjk.c.o:_S2D, cxx-internal:engine_collision_gjk.c.o:_lincomb
 /// ⚠️ BITEXACT RULES:
 ///   1. Copy exact C accumulation order (no iter().sum())
 ///   2. No f64::mul_add() (FMA changes precision)
 ///   3. No algebraic simplification
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
-pub fn s3d(lambda: *mut f64, s1: *const f64, s2: *const f64, s3: *const f64, s4: *const f64) {
+pub fn S3D(lambda: *mut f64, s1: *const f64, s2: *const f64, s3: *const f64, s4: *const f64) {
     // SAFETY: caller guarantees lambda[4], s1[3], s2[3], s3[3], s4[3] are valid
     unsafe {
         // compute cofactors to find det(M)
@@ -63,10 +62,10 @@ pub fn s3d(lambda: *mut f64, s1: *const f64, s2: *const f64, s3: *const f64, s4:
 
         let m_det: f64 = C41 + C42 + C43 + C44;
 
-        let comp1 = same_sign2(m_det, C41);
-        let comp2 = same_sign2(m_det, C42);
-        let comp3 = same_sign2(m_det, C43);
-        let comp4 = same_sign2(m_det, C44);
+        let comp1 = sameSign2(m_det, C41);
+        let comp2 = sameSign2(m_det, C42);
+        let comp3 = sameSign2(m_det, C43);
+        let comp4 = sameSign2(m_det, C44);
 
         // if all signs are the same then the origin is inside the simplex
         if comp1 != 0 && comp2 != 0 && comp3 != 0 && comp4 != 0 {
@@ -83,7 +82,7 @@ pub fn s3d(lambda: *mut f64, s1: *const f64, s2: *const f64, s3: *const f64, s4:
         if comp1 == 0 {
             let mut lambda_2d: [f64; 3] = [0.0; 3];
             let mut x: [f64; 3] = [0.0; 3];
-            s2d(lambda_2d.as_mut_ptr(), s2, s3, s4);
+            S2D(lambda_2d.as_mut_ptr(), s2, s3, s4);
             lincomb(x.as_mut_ptr(), lambda_2d.as_ptr(), 3, s2, s3, s4, std::ptr::null());
             let d = dot3(x.as_ptr(), x.as_ptr());
             *lambda.add(0) = 0.0;
@@ -96,7 +95,7 @@ pub fn s3d(lambda: *mut f64, s1: *const f64, s2: *const f64, s3: *const f64, s4:
         if comp2 == 0 {
             let mut lambda_2d: [f64; 3] = [0.0; 3];
             let mut x: [f64; 3] = [0.0; 3];
-            s2d(lambda_2d.as_mut_ptr(), s1, s3, s4);
+            S2D(lambda_2d.as_mut_ptr(), s1, s3, s4);
             lincomb(x.as_mut_ptr(), lambda_2d.as_ptr(), 3, s1, s3, s4, std::ptr::null());
             let d = dot3(x.as_ptr(), x.as_ptr());
             if d < dmin {
@@ -111,7 +110,7 @@ pub fn s3d(lambda: *mut f64, s1: *const f64, s2: *const f64, s3: *const f64, s4:
         if comp3 == 0 {
             let mut lambda_2d: [f64; 3] = [0.0; 3];
             let mut x: [f64; 3] = [0.0; 3];
-            s2d(lambda_2d.as_mut_ptr(), s1, s2, s4);
+            S2D(lambda_2d.as_mut_ptr(), s1, s2, s4);
             lincomb(x.as_mut_ptr(), lambda_2d.as_ptr(), 3, s1, s2, s4, std::ptr::null());
             let d = dot3(x.as_ptr(), x.as_ptr());
             if d < dmin {
@@ -126,7 +125,7 @@ pub fn s3d(lambda: *mut f64, s1: *const f64, s2: *const f64, s3: *const f64, s4:
         if comp4 == 0 {
             let mut lambda_2d: [f64; 3] = [0.0; 3];
             let mut x: [f64; 3] = [0.0; 3];
-            s2d(lambda_2d.as_mut_ptr(), s1, s2, s3);
+            S2D(lambda_2d.as_mut_ptr(), s1, s2, s3);
             lincomb(x.as_mut_ptr(), lambda_2d.as_ptr(), 3, s1, s2, s3, std::ptr::null());
             let d = dot3(x.as_ptr(), x.as_ptr());
             if d < dmin {
@@ -140,20 +139,20 @@ pub fn s3d(lambda: *mut f64, s1: *const f64, s2: *const f64, s3: *const f64, s4:
 }
 
 /// C: S2D (engine/engine_collision_gjk.c:62)
-/// Calls: S1D, dot3, lincomb, projectOriginPlane, sameSign2
+/// Calls: cxx-internal:/Users/xing/Desktop/projects/c2rust_bitexact/projects/mujoco/src/engine/engine_collision_gjk.c:_dot3, cxx-internal:/Users/xing/Desktop/projects/c2rust_bitexact/projects/mujoco/src/engine/engine_collision_gjk.c:_sameSign2, cxx-internal:engine_collision_gjk.c.o:_S1D, cxx-internal:engine_collision_gjk.c.o:_lincomb, cxx-internal:engine_collision_gjk.c.o:_projectOriginPlane
 /// ⚠️ BITEXACT RULES:
 ///   1. Copy exact C accumulation order (no iter().sum())
 ///   2. No f64::mul_add() (FMA changes precision)
 ///   3. No algebraic simplification
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
-pub fn s2d(lambda: *mut f64, s1: *const f64, s2: *const f64, s3: *const f64) {
+pub fn S2D(lambda: *mut f64, s1: *const f64, s2: *const f64, s3: *const f64) {
     // SAFETY: caller guarantees lambda[3], s1[3], s2[3], s3[3] are valid
     unsafe {
         // project origin onto affine hull of the simplex
         let mut p_o: [f64; 3] = [0.0; 3];
-        if project_origin_plane(p_o.as_mut_ptr(), s1, s2, s3) != 0 {
-            s1d(lambda, s1, s2);
+        if projectOriginPlane(p_o.as_mut_ptr(), s1, s2, s3) != 0 {
+            S1D(lambda, s1, s2);
             *lambda.add(2) = 0.0;
             return;
         }
@@ -224,9 +223,9 @@ pub fn s2d(lambda: *mut f64, s1: *const f64, s2: *const f64, s3: *const f64) {
         let C33: f64 = p_o_2D[0] * s1_2D[1] + p_o_2D[1] * s2_2D[0] + s1_2D[0] * s2_2D[1]
                      - p_o_2D[0] * s2_2D[1] - p_o_2D[1] * s1_2D[0] - s2_2D[0] * s1_2D[1];
 
-        let comp1: i32 = same_sign2(M_max, C31);
-        let comp2: i32 = same_sign2(M_max, C32);
-        let comp3: i32 = same_sign2(M_max, C33);
+        let comp1: i32 = sameSign2(M_max, C31);
+        let comp2: i32 = sameSign2(M_max, C32);
+        let comp3: i32 = sameSign2(M_max, C33);
 
         // all the same sign, p_o is inside the 2-simplex
         if comp1 != 0 && comp2 != 0 && comp3 != 0 {
@@ -242,7 +241,7 @@ pub fn s2d(lambda: *mut f64, s1: *const f64, s2: *const f64, s3: *const f64) {
         if comp1 == 0 {
             let mut lambda_1d: [f64; 2] = [0.0; 2];
             let mut x: [f64; 3] = [0.0; 3];
-            s1d(lambda_1d.as_mut_ptr(), s2, s3);
+            S1D(lambda_1d.as_mut_ptr(), s2, s3);
             lincomb(x.as_mut_ptr(), lambda_1d.as_ptr(), 2, s2, s3, std::ptr::null(), std::ptr::null());
             let d: f64 = dot3(x.as_ptr(), x.as_ptr());
             *lambda.add(0) = 0.0;
@@ -254,7 +253,7 @@ pub fn s2d(lambda: *mut f64, s1: *const f64, s2: *const f64, s3: *const f64) {
         if comp2 == 0 {
             let mut lambda_1d: [f64; 2] = [0.0; 2];
             let mut x: [f64; 3] = [0.0; 3];
-            s1d(lambda_1d.as_mut_ptr(), s1, s3);
+            S1D(lambda_1d.as_mut_ptr(), s1, s3);
             lincomb(x.as_mut_ptr(), lambda_1d.as_ptr(), 2, s1, s3, std::ptr::null(), std::ptr::null());
             let d: f64 = dot3(x.as_ptr(), x.as_ptr());
             if d < dmin {
@@ -268,7 +267,7 @@ pub fn s2d(lambda: *mut f64, s1: *const f64, s2: *const f64, s3: *const f64) {
         if comp3 == 0 {
             let mut lambda_1d: [f64; 2] = [0.0; 2];
             let mut x: [f64; 3] = [0.0; 3];
-            s1d(lambda_1d.as_mut_ptr(), s1, s2);
+            S1D(lambda_1d.as_mut_ptr(), s1, s2);
             lincomb(x.as_mut_ptr(), lambda_1d.as_ptr(), 2, s1, s2, std::ptr::null(), std::ptr::null());
             let d: f64 = dot3(x.as_ptr(), x.as_ptr());
             if d < dmin {
@@ -281,18 +280,18 @@ pub fn s2d(lambda: *mut f64, s1: *const f64, s2: *const f64, s3: *const f64) {
 }
 
 /// C: S1D (engine/engine_collision_gjk.c:63)
-/// Calls: projectOriginLine, sameSign2
+/// Calls: cxx-internal:/Users/xing/Desktop/projects/c2rust_bitexact/projects/mujoco/src/engine/engine_collision_gjk.c:_projectOriginLine, cxx-internal:/Users/xing/Desktop/projects/c2rust_bitexact/projects/mujoco/src/engine/engine_collision_gjk.c:_sameSign2
 /// ⚠️ BITEXACT RULES:
 ///   1. Copy exact C accumulation order (no iter().sum())
 ///   2. No f64::mul_add() (FMA changes precision)
 ///   3. No algebraic simplification
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
-pub fn s1d(lambda: *mut f64, s1: *const f64, s2: *const f64) {
+pub fn S1D(lambda: *mut f64, s1: *const f64, s2: *const f64) {
     // SAFETY: caller guarantees lambda[2], s1[3], s2[3] are valid
     unsafe {
         let mut p_o: [f64; 3] = [0.0; 3];
-        project_origin_line(p_o.as_mut_ptr(), s1, s2);
+        projectOriginLine(p_o.as_mut_ptr(), s1, s2);
 
         let mut mu: f64 = *s1.add(0) - *s2.add(0);
         let mut mu_max: f64 = mu;
@@ -313,7 +312,7 @@ pub fn s1d(lambda: *mut f64, s1: *const f64, s2: *const f64) {
         let c1: f64 = p_o[index] - *s2.add(index);
         let c2: f64 = *s1.add(index) - p_o[index];
 
-        let same: bool = same_sign2(mu_max, c1) != 0 && same_sign2(mu_max, c2) != 0;
+        let same: bool = sameSign2(mu_max, c1) != 0 && sameSign2(mu_max, c2) != 0;
 
         *lambda.add(0) = if same { c1 / mu_max } else { 0.0 };
         *lambda.add(1) = if same { c2 / mu_max } else { 1.0 };
@@ -321,14 +320,14 @@ pub fn s1d(lambda: *mut f64, s1: *const f64, s2: *const f64) {
 }
 
 /// C: gjkSupport (engine/engine_collision_gjk.c:66)
-/// Calls: scl3, support
+/// Calls: cxx-internal:/Users/xing/Desktop/projects/c2rust_bitexact/projects/mujoco/src/engine/engine_collision_gjk.c:_scl3, cxx-internal:/Users/xing/Desktop/projects/c2rust_bitexact/projects/mujoco/src/engine/engine_collision_gjk.c:_support
 /// ⚠️ BITEXACT RULES:
 ///   1. Copy exact C accumulation order (no iter().sum())
 ///   2. No f64::mul_add() (FMA changes precision)
 ///   3. No algebraic simplification
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
-pub fn gjk_support(v: *mut Vertex, obj1: *mut mjCCDObj, obj2: *mut mjCCDObj, x_k: *const f64, x_norm: f64) {
+pub fn gjkSupport(v: *mut Vertex, obj1: *mut mjCCDObj, obj2: *mut mjCCDObj, x_k: *const f64, x_norm: f64) {
     let mut dir: [f64; 3] = [0.0; 3];
     let mut dir_neg: [f64; 3] = [0.0; 3];
 
@@ -375,14 +374,14 @@ pub fn lincomb(res: *mut f64, coef: *const f64, n: i32, v1: *const f64, v2: *con
 }
 
 /// C: epaSupport (engine/engine_collision_gjk.c:108)
-/// Calls: scl3, support
+/// Calls: cxx-internal:/Users/xing/Desktop/projects/c2rust_bitexact/projects/mujoco/src/engine/engine_collision_gjk.c:_scl3, cxx-internal:/Users/xing/Desktop/projects/c2rust_bitexact/projects/mujoco/src/engine/engine_collision_gjk.c:_support
 /// ⚠️ BITEXACT RULES:
 ///   1. Copy exact C accumulation order (no iter().sum())
 ///   2. No f64::mul_add() (FMA changes precision)
 ///   3. No algebraic simplification
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
-pub fn epa_support(pt: *mut Polytope, obj1: *mut mjCCDObj, obj2: *mut mjCCDObj, d: *const f64, dnorm: f64) -> i32 {
+pub fn epaSupport(pt: *mut Polytope, obj1: *mut mjCCDObj, obj2: *mut mjCCDObj, d: *const f64, dnorm: f64) -> i32 {
     // Polytope layout (104 bytes):
     //   Vertex* verts;     offset 0
     //   int nverts;        offset 8
@@ -426,7 +425,7 @@ pub fn epa_support(pt: *mut Polytope, obj1: *mut mjCCDObj, obj2: *mut mjCCDObj, 
 
 /// C: insertVertex (engine/engine_collision_gjk.c:112)
 #[allow(unused_variables, non_snake_case)]
-pub fn insert_vertex(pt: *mut Polytope, v: *const Vertex) -> i32 {
+pub fn insertVertex(pt: *mut Polytope, v: *const Vertex) -> i32 {
     const VERTS_OFFSET: usize = 0;
     const NVERTS_OFFSET: usize = 8;
     const SIZEOF_VERTEX: usize = 80;
@@ -446,14 +445,14 @@ pub fn insert_vertex(pt: *mut Polytope, v: *const Vertex) -> i32 {
 }
 
 /// C: attachFace (engine/engine_collision_gjk.c:115)
-/// Calls: dot3, projectOriginPlane, scl3, sub3
+/// Calls: cxx-internal:/Users/xing/Desktop/projects/c2rust_bitexact/projects/mujoco/src/engine/engine_collision_gjk.c:_dot3, cxx-internal:/Users/xing/Desktop/projects/c2rust_bitexact/projects/mujoco/src/engine/engine_collision_gjk.c:_scl3, cxx-internal:/Users/xing/Desktop/projects/c2rust_bitexact/projects/mujoco/src/engine/engine_collision_gjk.c:_sub3, cxx-internal:engine_collision_gjk.c.o:_projectOriginPlane
 /// ⚠️ BITEXACT RULES:
 ///   1. Copy exact C accumulation order (no iter().sum())
 ///   2. No f64::mul_add() (FMA changes precision)
 ///   3. No algebraic simplification
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
-pub fn attach_face(pt: *mut Polytope, v1: i32, v2: i32, v3: i32, adj1: i32, adj2: i32, adj3: i32) -> f64 {
+pub fn attachFace(pt: *mut Polytope, v1: i32, v2: i32, v3: i32, adj1: i32, adj2: i32, adj3: i32) -> f64 {
     // Polytope layout (C struct):
     //   Vertex* verts;    offset 0
     //   int nverts;       offset 8
@@ -509,7 +508,7 @@ pub fn attach_face(pt: *mut Polytope, v1: i32, v2: i32, v3: i32, adj1: i32, adj2
         let v2_vert = verts_ptr.add(v2 as usize * SIZEOF_VERTEX) as *const f64;
         let v1_vert = verts_ptr.add(v1 as usize * SIZEOF_VERTEX) as *const f64;
 
-        let ret = project_origin_plane(face_v, v3_vert, v2_vert, v1_vert);
+        let ret = projectOriginPlane(face_v, v3_vert, v2_vert, v1_vert);
         if ret != 0 {
             return 0.0;
         }
@@ -533,9 +532,9 @@ pub fn attach_face(pt: *mut Polytope, v1: i32, v2: i32, v3: i32, adj1: i32, adj2
 }
 
 /// C: gjkIntersect (engine/engine_collision_gjk.c:119)
-/// Calls: dot3, gjkIntersectSupport, signedDistance
+/// Calls: cxx-internal:/Users/xing/Desktop/projects/c2rust_bitexact/projects/mujoco/src/engine/engine_collision_gjk.c:_dot3, cxx-internal:/Users/xing/Desktop/projects/c2rust_bitexact/projects/mujoco/src/engine/engine_collision_gjk.c:_gjkIntersectSupport, cxx-internal:/Users/xing/Desktop/projects/c2rust_bitexact/projects/mujoco/src/engine/engine_collision_gjk.c:_signedDistance
 #[allow(unused_variables, non_snake_case)]
-pub fn gjk_intersect(status: *mut mjCCDStatus, obj1: *mut mjCCDObj, obj2: *mut mjCCDObj) -> i32 {
+pub fn gjkIntersect(status: *mut mjCCDStatus, obj1: *mut mjCCDObj, obj2: *mut mjCCDObj) -> i32 {
     // mjCCDStatus layout:
     //   dist:            f64,  offset 0
     //   x1[150]:         f64[], offset 8  (3*50 doubles)
@@ -587,10 +586,10 @@ pub fn gjk_intersect(status: *mut mjCCDStatus, obj1: *mut mjCCDObj, obj2: *mut m
                 simplex.add(s[i] as usize * SIZEOF_VERTEX) as *const Vertex
             };
 
-            dist[0] = signed_distance(normals.as_mut_ptr().add(0),  sv(2), sv(1), sv(3));
-            dist[1] = signed_distance(normals.as_mut_ptr().add(3),  sv(0), sv(2), sv(3));
-            dist[2] = signed_distance(normals.as_mut_ptr().add(6),  sv(1), sv(0), sv(3));
-            dist[3] = signed_distance(normals.as_mut_ptr().add(9),  sv(0), sv(1), sv(2));
+            dist[0] = signedDistance(normals.as_mut_ptr().add(0),  sv(2), sv(1), sv(3));
+            dist[1] = signedDistance(normals.as_mut_ptr().add(3),  sv(0), sv(2), sv(3));
+            dist[2] = signedDistance(normals.as_mut_ptr().add(6),  sv(1), sv(0), sv(3));
+            dist[3] = signedDistance(normals.as_mut_ptr().add(9),  sv(0), sv(1), sv(2));
 
             // if origin is on any affine hull, convergence will fail
             if dist[3] == 0.0 || dist[2] == 0.0 || dist[1] == 0.0 || dist[0] == 0.0 {
@@ -620,7 +619,7 @@ pub fn gjk_intersect(status: *mut mjCCDStatus, obj1: *mut mjCCDObj, obj2: *mut m
 
             // replace worst vertex with new candidate
             let sv_index = simplex.add(s[index] as usize * SIZEOF_VERTEX) as *mut Vertex;
-            gjk_intersect_support(sv_index, obj1, obj2, normals.as_ptr().add(3 * index));
+            gjkIntersectSupport(sv_index, obj1, obj2, normals.as_ptr().add(3 * index));
 
             // found origin outside Minkowski difference → no collision
             let vert_ptr = (simplex.add(s[index] as usize * SIZEOF_VERTEX)) as *const f64;
@@ -644,7 +643,7 @@ pub fn gjk_intersect(status: *mut mjCCDStatus, obj1: *mut mjCCDObj, obj2: *mut m
 }
 
 /// C: polytope2 (engine/engine_collision_gjk.c:122)
-/// Calls: add3, attachFace, cross3, epaSupport, insertVertex, mju_mulMatVec3, norm3, polytope3, rayTriangle, replaceSimplex3, rotmat, scl3, sub3
+/// Calls: cxx-internal:/Users/xing/Desktop/projects/c2rust_bitexact/projects/mujoco/src/engine/engine_collision_gjk.c:_add3, cxx-internal:/Users/xing/Desktop/projects/c2rust_bitexact/projects/mujoco/src/engine/engine_collision_gjk.c:_cross3, cxx-internal:/Users/xing/Desktop/projects/c2rust_bitexact/projects/mujoco/src/engine/engine_collision_gjk.c:_insertVertex, cxx-internal:/Users/xing/Desktop/projects/c2rust_bitexact/projects/mujoco/src/engine/engine_collision_gjk.c:_norm3, cxx-internal:/Users/xing/Desktop/projects/c2rust_bitexact/projects/mujoco/src/engine/engine_collision_gjk.c:_replaceSimplex3, cxx-internal:/Users/xing/Desktop/projects/c2rust_bitexact/projects/mujoco/src/engine/engine_collision_gjk.c:_rotmat, cxx-internal:/Users/xing/Desktop/projects/c2rust_bitexact/projects/mujoco/src/engine/engine_collision_gjk.c:_scl3, cxx-internal:/Users/xing/Desktop/projects/c2rust_bitexact/projects/mujoco/src/engine/engine_collision_gjk.c:_sub3, cxx-internal:engine_collision_gjk.c.o:_attachFace, cxx-internal:engine_collision_gjk.c.o:_epaSupport, cxx-internal:engine_collision_gjk.c.o:_polytope3, cxx-internal:engine_collision_gjk.c.o:_rayTriangle, cxx:_mju_mulMatVec3
 #[allow(unused_variables, non_snake_case)]
 pub fn polytope2(pt: *mut Polytope, status: *mut mjCCDStatus, obj1: *mut mjCCDObj, obj2: *mut mjCCDObj) -> i32 {
     // EPA return codes
@@ -703,47 +702,47 @@ pub fn polytope2(pt: *mut Polytope, status: *mut mjCCDStatus, obj1: *mut mjCCDOb
 
         let mut d2 = [0.0f64; 3];
         let mut d3 = [0.0f64; 3];
-        crate::engine::engine_util_blas::mju_mul_mat_vec3(d2.as_mut_ptr(), R.as_ptr(), d1.as_ptr());
-        crate::engine::engine_util_blas::mju_mul_mat_vec3(d3.as_mut_ptr(), R.as_ptr(), d2.as_ptr());
+        crate::engine::engine_util_blas::mju_mulMatVec3(d2.as_mut_ptr(), R.as_ptr(), d1.as_ptr());
+        crate::engine::engine_util_blas::mju_mulMatVec3(d3.as_mut_ptr(), R.as_ptr(), d2.as_ptr());
 
-        let v1i = insert_vertex(pt, simplex_base as *const Vertex);
-        let v2i = insert_vertex(pt, simplex_base.add(SIZEOF_VERTEX) as *const Vertex);
-        let v3i = epa_support(pt, obj1, obj2, d1.as_ptr(), norm3(d1.as_ptr()));
-        let v4i = epa_support(pt, obj1, obj2, d2.as_ptr(), norm3(d2.as_ptr()));
-        let v5i = epa_support(pt, obj1, obj2, d3.as_ptr(), norm3(d3.as_ptr()));
+        let v1i = insertVertex(pt, simplex_base as *const Vertex);
+        let v2i = insertVertex(pt, simplex_base.add(SIZEOF_VERTEX) as *const Vertex);
+        let v3i = epaSupport(pt, obj1, obj2, d1.as_ptr(), norm3(d1.as_ptr()));
+        let v4i = epaSupport(pt, obj1, obj2, d2.as_ptr(), norm3(d2.as_ptr()));
+        let v5i = epaSupport(pt, obj1, obj2, d3.as_ptr(), norm3(d3.as_ptr()));
 
         let v3 = ((*p).verts as *const u8).add(v3i as usize * SIZEOF_VERTEX) as *const f64;
         let v4 = ((*p).verts as *const u8).add(v4i as usize * SIZEOF_VERTEX) as *const f64;
         let v5 = ((*p).verts as *const u8).add(v5i as usize * SIZEOF_VERTEX) as *const f64;
 
         // build hexahedron
-        if attach_face(pt, v1i, v3i, v4i, 1, 3, 2) < MJ_MINDIST2 {
-            replace_simplex3(pt, status, v1i, v3i, v4i);
+        if attachFace(pt, v1i, v3i, v4i, 1, 3, 2) < MJ_MINDIST2 {
+            replaceSimplex3(pt, status, v1i, v3i, v4i);
             return polytope3(pt, status, obj1, obj2);
         }
-        if attach_face(pt, v1i, v5i, v3i, 2, 4, 0) < MJ_MINDIST2 {
-            replace_simplex3(pt, status, v1i, v5i, v3i);
+        if attachFace(pt, v1i, v5i, v3i, 2, 4, 0) < MJ_MINDIST2 {
+            replaceSimplex3(pt, status, v1i, v5i, v3i);
             return polytope3(pt, status, obj1, obj2);
         }
-        if attach_face(pt, v1i, v4i, v5i, 0, 5, 1) < MJ_MINDIST2 {
-            replace_simplex3(pt, status, v1i, v4i, v5i);
+        if attachFace(pt, v1i, v4i, v5i, 0, 5, 1) < MJ_MINDIST2 {
+            replaceSimplex3(pt, status, v1i, v4i, v5i);
             return polytope3(pt, status, obj1, obj2);
         }
-        if attach_face(pt, v2i, v4i, v3i, 5, 0, 4) < MJ_MINDIST2 {
-            replace_simplex3(pt, status, v2i, v4i, v3i);
+        if attachFace(pt, v2i, v4i, v3i, 5, 0, 4) < MJ_MINDIST2 {
+            replaceSimplex3(pt, status, v2i, v4i, v3i);
             return polytope3(pt, status, obj1, obj2);
         }
-        if attach_face(pt, v2i, v3i, v5i, 3, 1, 5) < MJ_MINDIST2 {
-            replace_simplex3(pt, status, v2i, v3i, v5i);
+        if attachFace(pt, v2i, v3i, v5i, 3, 1, 5) < MJ_MINDIST2 {
+            replaceSimplex3(pt, status, v2i, v3i, v5i);
             return polytope3(pt, status, obj1, obj2);
         }
-        if attach_face(pt, v2i, v5i, v4i, 4, 2, 3) < MJ_MINDIST2 {
-            replace_simplex3(pt, status, v2i, v5i, v4i);
+        if attachFace(pt, v2i, v5i, v4i, 4, 2, 3) < MJ_MINDIST2 {
+            replaceSimplex3(pt, status, v2i, v5i, v4i);
             return polytope3(pt, status, obj1, obj2);
         }
 
         // check hexahedron is convex
-        if ray_triangle(v1 as *const f64, v2 as *const f64, v3, v4, v5) == 0 {
+        if rayTriangle(v1 as *const f64, v2 as *const f64, v3, v4, v5) == 0 {
             return MJ_EPA_P2_NONCONVEX;
         }
 
@@ -759,7 +758,7 @@ pub fn polytope2(pt: *mut Polytope, status: *mut mjCCDStatus, obj1: *mut mjCCDOb
 }
 
 /// C: polytope3 (engine/engine_collision_gjk.c:123)
-/// Calls: add3, attachFace, cross3, epaSupport, insertVertex, norm3, scl3, sub3, testTetra, triPointIntersect
+/// Calls: cxx-internal:/Users/xing/Desktop/projects/c2rust_bitexact/projects/mujoco/src/engine/engine_collision_gjk.c:_add3, cxx-internal:/Users/xing/Desktop/projects/c2rust_bitexact/projects/mujoco/src/engine/engine_collision_gjk.c:_cross3, cxx-internal:/Users/xing/Desktop/projects/c2rust_bitexact/projects/mujoco/src/engine/engine_collision_gjk.c:_insertVertex, cxx-internal:/Users/xing/Desktop/projects/c2rust_bitexact/projects/mujoco/src/engine/engine_collision_gjk.c:_norm3, cxx-internal:/Users/xing/Desktop/projects/c2rust_bitexact/projects/mujoco/src/engine/engine_collision_gjk.c:_scl3, cxx-internal:/Users/xing/Desktop/projects/c2rust_bitexact/projects/mujoco/src/engine/engine_collision_gjk.c:_sub3, cxx-internal:/Users/xing/Desktop/projects/c2rust_bitexact/projects/mujoco/src/engine/engine_collision_gjk.c:_triPointIntersect, cxx-internal:engine_collision_gjk.c.o:_attachFace, cxx-internal:engine_collision_gjk.c.o:_epaSupport, cxx-internal:engine_collision_gjk.c.o:_testTetra
 #[allow(unused_variables, non_snake_case)]
 pub fn polytope3(pt: *mut Polytope, status: *mut mjCCDStatus, obj1: *mut mjCCDObj, obj2: *mut mjCCDObj) -> i32 {
     // EPA return codes
@@ -822,34 +821,34 @@ pub fn polytope3(pt: *mut Polytope, status: *mut mjCCDStatus, obj1: *mut mjCCDOb
         scl3(n_neg.as_mut_ptr(), n.as_ptr(), -1.0);
 
         // save vertices and get indices
-        let v1i = insert_vertex(pt, simplex_base as *const Vertex);
-        let v2i = insert_vertex(pt, simplex_base.add(SIZEOF_VERTEX) as *const Vertex);
-        let v3i = insert_vertex(pt, simplex_base.add(2 * SIZEOF_VERTEX) as *const Vertex);
-        let v5i = epa_support(pt, obj1, obj2, n_neg.as_ptr(), n_norm);
-        let v4i = epa_support(pt, obj1, obj2, n.as_ptr(), n_norm);
+        let v1i = insertVertex(pt, simplex_base as *const Vertex);
+        let v2i = insertVertex(pt, simplex_base.add(SIZEOF_VERTEX) as *const Vertex);
+        let v3i = insertVertex(pt, simplex_base.add(2 * SIZEOF_VERTEX) as *const Vertex);
+        let v5i = epaSupport(pt, obj1, obj2, n_neg.as_ptr(), n_norm);
+        let v4i = epaSupport(pt, obj1, obj2, n.as_ptr(), n_norm);
         let v4 = ((*p).verts as *const u8).add(v4i as usize * SIZEOF_VERTEX) as *const f64;
         let v5 = ((*p).verts as *const u8).add(v5i as usize * SIZEOF_VERTEX) as *const f64;
 
         // check v4 not contained in 2-simplex
-        if tri_point_intersect(v1, v2, v3, v4) != 0 {
+        if triPointIntersect(v1, v2, v3, v4) != 0 {
             return MJ_EPA_P3_INVALID_V4;
         }
-        if tri_point_intersect(v1, v2, v3, v5) != 0 {
+        if triPointIntersect(v1, v2, v3, v5) != 0 {
             return MJ_EPA_P3_INVALID_V5;
         }
 
         let dist = *(sb.add(STATUS_DIST_OFFSET) as *const f64);
-        if dist > 10.0 * MJ_MINVAL && test_tetra(v1, v2, v3, v4) == 0 && test_tetra(v1, v2, v3, v5) == 0 {
+        if dist > 10.0 * MJ_MINVAL && testTetra(v1, v2, v3, v4) == 0 && testTetra(v1, v2, v3, v5) == 0 {
             return MJ_EPA_P3_MISSING_ORIGIN;
         }
 
         // create hexahedron for EPA (6 faces)
-        if attach_face(pt, v4i, v1i, v2i, 1, 3, 2) < MJ_MINDIST3 { return MJ_EPA_P3_ORIGIN_ON_FACE; }
-        if attach_face(pt, v4i, v3i, v1i, 2, 4, 0) < MJ_MINDIST3 { return MJ_EPA_P3_ORIGIN_ON_FACE; }
-        if attach_face(pt, v4i, v2i, v3i, 0, 5, 1) < MJ_MINDIST3 { return MJ_EPA_P3_ORIGIN_ON_FACE; }
-        if attach_face(pt, v5i, v2i, v1i, 5, 0, 4) < MJ_MINDIST3 { return MJ_EPA_P3_ORIGIN_ON_FACE; }
-        if attach_face(pt, v5i, v1i, v3i, 3, 1, 5) < MJ_MINDIST3 { return MJ_EPA_P3_ORIGIN_ON_FACE; }
-        if attach_face(pt, v5i, v3i, v2i, 4, 2, 3) < MJ_MINDIST3 { return MJ_EPA_P3_ORIGIN_ON_FACE; }
+        if attachFace(pt, v4i, v1i, v2i, 1, 3, 2) < MJ_MINDIST3 { return MJ_EPA_P3_ORIGIN_ON_FACE; }
+        if attachFace(pt, v4i, v3i, v1i, 2, 4, 0) < MJ_MINDIST3 { return MJ_EPA_P3_ORIGIN_ON_FACE; }
+        if attachFace(pt, v4i, v2i, v3i, 0, 5, 1) < MJ_MINDIST3 { return MJ_EPA_P3_ORIGIN_ON_FACE; }
+        if attachFace(pt, v5i, v2i, v1i, 5, 0, 4) < MJ_MINDIST3 { return MJ_EPA_P3_ORIGIN_ON_FACE; }
+        if attachFace(pt, v5i, v1i, v3i, 3, 1, 5) < MJ_MINDIST3 { return MJ_EPA_P3_ORIGIN_ON_FACE; }
+        if attachFace(pt, v5i, v3i, v2i, 4, 2, 3) < MJ_MINDIST3 { return MJ_EPA_P3_ORIGIN_ON_FACE; }
 
         // populate face map
         let faces_base = (*p).faces as *mut FaceRepr;
@@ -863,7 +862,7 @@ pub fn polytope3(pt: *mut Polytope, status: *mut mjCCDStatus, obj1: *mut mjCCDOb
 }
 
 /// C: polytope4 (engine/engine_collision_gjk.c:124)
-/// Calls: add3, attachFace, insertVertex, polytope3, replaceSimplex3, scl3, testTetra
+/// Calls: cxx-internal:/Users/xing/Desktop/projects/c2rust_bitexact/projects/mujoco/src/engine/engine_collision_gjk.c:_add3, cxx-internal:/Users/xing/Desktop/projects/c2rust_bitexact/projects/mujoco/src/engine/engine_collision_gjk.c:_insertVertex, cxx-internal:/Users/xing/Desktop/projects/c2rust_bitexact/projects/mujoco/src/engine/engine_collision_gjk.c:_replaceSimplex3, cxx-internal:/Users/xing/Desktop/projects/c2rust_bitexact/projects/mujoco/src/engine/engine_collision_gjk.c:_scl3, cxx-internal:engine_collision_gjk.c.o:_attachFace, cxx-internal:engine_collision_gjk.c.o:_polytope3, cxx-internal:engine_collision_gjk.c.o:_testTetra
 #[allow(unused_variables, non_snake_case)]
 pub fn polytope4(pt: *mut Polytope, status: *mut mjCCDStatus, obj1: *mut mjCCDObj, obj2: *mut mjCCDObj) -> i32 {
     const MJ_EPA_P4_MISSING_ORIGIN: i32 = 9;  // mjEPA_P4_MISSING_ORIGIN
@@ -887,10 +886,10 @@ pub fn polytope4(pt: *mut Polytope, status: *mut mjCCDStatus, obj1: *mut mjCCDOb
         let p = pt as *mut PolytopeRepr;
         let simplex_base = sb.add(STATUS_SIMPLEX_OFFSET);
 
-        let v1 = insert_vertex(pt, simplex_base as *const Vertex);
-        let v2 = insert_vertex(pt, simplex_base.add(SIZEOF_VERTEX) as *const Vertex);
-        let v3 = insert_vertex(pt, simplex_base.add(2 * SIZEOF_VERTEX) as *const Vertex);
-        let v4 = insert_vertex(pt, simplex_base.add(3 * SIZEOF_VERTEX) as *const Vertex);
+        let v1 = insertVertex(pt, simplex_base as *const Vertex);
+        let v2 = insertVertex(pt, simplex_base.add(SIZEOF_VERTEX) as *const Vertex);
+        let v3 = insertVertex(pt, simplex_base.add(2 * SIZEOF_VERTEX) as *const Vertex);
+        let v4 = insertVertex(pt, simplex_base.add(3 * SIZEOF_VERTEX) as *const Vertex);
 
         // set polytope center = (verts[v1] + verts[v2] + verts[v3] + verts[v4]) / 4
         let vert_base = (*p).verts as *const u8;
@@ -904,25 +903,25 @@ pub fn polytope4(pt: *mut Polytope, status: *mut mjCCDStatus, obj1: *mut mjCCDOb
         scl3((*p).center.as_mut_ptr(), (*p).center.as_ptr(), 0.25);
 
         // if origin is on a face, replace with 2-simplex
-        if attach_face(pt, v1, v2, v3, 1, 3, 2) < MJ_MINDIST4 {
-            replace_simplex3(pt, status, v1, v2, v3);
+        if attachFace(pt, v1, v2, v3, 1, 3, 2) < MJ_MINDIST4 {
+            replaceSimplex3(pt, status, v1, v2, v3);
             return polytope3(pt, status, obj1, obj2);
         }
-        if attach_face(pt, v1, v4, v2, 2, 3, 0) < MJ_MINDIST4 {
-            replace_simplex3(pt, status, v1, v4, v2);
+        if attachFace(pt, v1, v4, v2, 2, 3, 0) < MJ_MINDIST4 {
+            replaceSimplex3(pt, status, v1, v4, v2);
             return polytope3(pt, status, obj1, obj2);
         }
-        if attach_face(pt, v1, v3, v4, 0, 3, 1) < MJ_MINDIST4 {
-            replace_simplex3(pt, status, v1, v3, v4);
+        if attachFace(pt, v1, v3, v4, 0, 3, 1) < MJ_MINDIST4 {
+            replaceSimplex3(pt, status, v1, v3, v4);
             return polytope3(pt, status, obj1, obj2);
         }
-        if attach_face(pt, v4, v3, v2, 2, 0, 1) < MJ_MINDIST4 {
-            replace_simplex3(pt, status, v4, v3, v2);
+        if attachFace(pt, v4, v3, v2, 2, 0, 1) < MJ_MINDIST4 {
+            replaceSimplex3(pt, status, v4, v3, v2);
             return polytope3(pt, status, obj1, obj2);
         }
 
         // verify origin inside tetrahedron
-        if test_tetra(p1, p2, p3, p4) == 0 {
+        if testTetra(p1, p2, p3, p4) == 0 {
             return MJ_EPA_P4_MISSING_ORIGIN;
         }
 
@@ -938,7 +937,7 @@ pub fn polytope4(pt: *mut Polytope, status: *mut mjCCDStatus, obj1: *mut mjCCDOb
 }
 
 /// C: epa (engine/engine_collision_gjk.c:128)
-/// Calls: attachFace, discreteGeoms, dot3, epaSupport, epaWitness, horizon, maxFaces, mju_warning
+/// Calls: cxx-internal:/Users/xing/Desktop/projects/c2rust_bitexact/projects/mujoco/src/engine/engine_collision_gjk.c:_discreteGeoms, cxx-internal:/Users/xing/Desktop/projects/c2rust_bitexact/projects/mujoco/src/engine/engine_collision_gjk.c:_dot3, cxx-internal:/Users/xing/Desktop/projects/c2rust_bitexact/projects/mujoco/src/engine/engine_collision_gjk.c:_epaWitness, cxx-internal:/Users/xing/Desktop/projects/c2rust_bitexact/projects/mujoco/src/engine/engine_collision_gjk.c:_horizon, cxx-internal:/Users/xing/Desktop/projects/c2rust_bitexact/projects/mujoco/src/engine/engine_collision_gjk.c:_maxFaces, cxx-internal:engine_collision_gjk.c.o:_attachFace, cxx-internal:engine_collision_gjk.c.o:_epaSupport, cxx:_mju_warning
 #[allow(unused_variables, non_snake_case)]
 pub fn epa(status: *mut mjCCDStatus, pt: *mut Polytope, obj1: *mut mjCCDObj, obj2: *mut mjCCDObj) -> *mut Face {
     // mjCCDStatus layout (relevant fields):
@@ -1000,7 +999,7 @@ pub fn epa(status: *mut mjCCDStatus, pt: *mut Polytope, obj1: *mut mjCCDObj, obj
         let mut face: *mut FaceRepr = std::ptr::null_mut();
         let mut pface: *mut FaceRepr;
 
-        let discrete = discrete_geoms(obj1, obj2);
+        let discrete = discreteGeoms(obj1, obj2);
         let tolerance = if discrete != 0 {
             MJ_MINEPATOK
         } else {
@@ -1039,7 +1038,7 @@ pub fn epa(status: *mut mjCCDStatus, pt: *mut Polytope, obj1: *mut mjCCDObj, obj
 
             // compute support point w from closest face's normal
             let lower = lower2.sqrt();
-            let wi = epa_support(pt, obj1, obj2, (*face).v.as_ptr(), lower);
+            let wi = epaSupport(pt, obj1, obj2, (*face).v.as_ptr(), lower);
             let w = ((*p).verts as *const u8).add(wi as usize * SIZEOF_VERTEX);
             let w_vert = w as *const f64; // vert[3] at offset 0
             let upper_k = dot3((*face).v.as_ptr(), w_vert) / lower;
@@ -1100,7 +1099,7 @@ pub fn epa(status: *mut mjCCDStatus, pt: *mut Polytope, obj1: *mut mjCCDObj, obj
             let nedges = *nedges_ptr;
 
             // check if there's enough memory to store new faces
-            if nedges > max_faces(pt) {
+            if nedges > maxFaces(pt) {
                 crate::engine::engine_util_errmem::mju_warning(
                     b"EPA: out of memory for faces on expanding polytope\0".as_ptr() as *const i8);
                 break;
@@ -1127,7 +1126,7 @@ pub fn epa(status: *mut mjCCDStatus, pt: *mut Polytope, obj1: *mut mjCCDObj, obj
             let v1_0 = hzn_verts_0[hzn_edge_0 as usize];
             let v2_0 = hzn_verts_0[(hzn_edge_0 as usize + 1) % 3];
             (*hzn_face_0).adj[hzn_edge_0 as usize] = nfaces_saved;
-            let dist2_0 = attach_face(pt, wi, v2_0, v1_0, nfaces_saved + nedges - 1, hzn_index_0, nfaces_saved + 1);
+            let dist2_0 = attachFace(pt, wi, v2_0, v1_0, nfaces_saved + nedges - 1, hzn_index_0, nfaces_saved + 1);
 
             // unrecoverable numerical issue
             if dist2_0 == 0.0 {
@@ -1163,7 +1162,7 @@ pub fn epa(status: *mut mjCCDStatus, pt: *mut Polytope, obj1: *mut mjCCDObj, obj
                 let v1_i = hzn_verts_i[hzn_edge_i as usize];
                 let v2_i = hzn_verts_i[(hzn_edge_i as usize + 1) % 3];
                 (*hzn_face_i).adj[hzn_edge_i as usize] = cur;
-                let dist2_i = attach_face(pt, wi, v2_i, v1_i, cur - 1, hzn_index_i, next);
+                let dist2_i = attachFace(pt, wi, v2_i, v1_i, cur - 1, hzn_index_i, next);
 
                 // unrecoverable numerical issue
                 if dist2_i == 0.0 {
@@ -1201,7 +1200,7 @@ pub fn epa(status: *mut mjCCDStatus, pt: *mut Polytope, obj1: *mut mjCCDObj, obj
         if !face.is_null() {
             let x1 = status_base.add(STATUS_X1_OFFSET) as *mut f64;
             let x2 = status_base.add(STATUS_X2_OFFSET) as *mut f64;
-            let dist = epa_witness(pt as *const Polytope, face as *const Face, x1, x2);
+            let dist = epaWitness(pt as *const Polytope, face as *const Face, x1, x2);
             *(status_base.add(STATUS_DIST_OFFSET) as *mut f64) = dist;
             *(status_base.add(STATUS_NX_OFFSET) as *mut i32) = 1;
         } else {
@@ -1281,7 +1280,7 @@ pub fn dot3(v1: *const f64, v2: *const f64) -> f64 {
 }
 
 /// C: norm3 (engine/engine_collision_gjk.c:155)
-/// Calls: dot3
+/// Calls: cxx-internal:/Users/xing/Desktop/projects/c2rust_bitexact/projects/mujoco/src/engine/engine_collision_gjk.c:_dot3
 /// ⚠️ BITEXACT RULES:
 ///   1. Copy exact C accumulation order (no iter().sum())
 ///   2. No f64::mul_add() (FMA changes precision)
@@ -1358,7 +1357,7 @@ pub fn det3(v1: *const f64, v2: *const f64, v3: *const f64) -> f64 {
 
 /// C: discreteGeoms (engine/engine_collision_gjk.c:188)
 #[allow(unused_variables, non_snake_case)]
-pub fn discrete_geoms(obj1: *mut mjCCDObj, obj2: *mut mjCCDObj) -> i32 {
+pub fn discreteGeoms(obj1: *mut mjCCDObj, obj2: *mut mjCCDObj) -> i32 {
     const MJ_GEOM_MESH: i32 = 7;
     const MJ_GEOM_BOX: i32 = 6;
     const MJ_GEOM_HFIELD: i32 = 1;
@@ -1383,7 +1382,7 @@ pub fn discrete_geoms(obj1: *mut mjCCDObj, obj2: *mut mjCCDObj) -> i32 {
 }
 
 /// C: gjk (engine/engine_collision_gjk.c:200)
-/// Calls: copy3, discreteGeoms, dot3, equal3, gjkIntersect, gjkSupport, lincomb, sub3, subdistance
+/// Calls: cxx-internal:/Users/xing/Desktop/projects/c2rust_bitexact/projects/mujoco/src/engine/engine_collision_gjk.c:_copy3, cxx-internal:/Users/xing/Desktop/projects/c2rust_bitexact/projects/mujoco/src/engine/engine_collision_gjk.c:_discreteGeoms, cxx-internal:/Users/xing/Desktop/projects/c2rust_bitexact/projects/mujoco/src/engine/engine_collision_gjk.c:_dot3, cxx-internal:/Users/xing/Desktop/projects/c2rust_bitexact/projects/mujoco/src/engine/engine_collision_gjk.c:_equal3, cxx-internal:/Users/xing/Desktop/projects/c2rust_bitexact/projects/mujoco/src/engine/engine_collision_gjk.c:_gjkIntersect, cxx-internal:/Users/xing/Desktop/projects/c2rust_bitexact/projects/mujoco/src/engine/engine_collision_gjk.c:_gjkSupport, cxx-internal:/Users/xing/Desktop/projects/c2rust_bitexact/projects/mujoco/src/engine/engine_collision_gjk.c:_sub3, cxx-internal:/Users/xing/Desktop/projects/c2rust_bitexact/projects/mujoco/src/engine/engine_collision_gjk.c:_subdistance, cxx-internal:engine_collision_gjk.c.o:_lincomb
 #[allow(unused_variables, non_snake_case)]
 pub fn gjk(status: *mut mjCCDStatus, obj1: *mut mjCCDObj, obj2: *mut mjCCDObj) {
     // mjCCDStatus field offsets (same as gjk_intersect / epa):
@@ -1421,8 +1420,8 @@ pub fn gjk(status: *mut mjCCDStatus, obj1: *mut mjCCDObj, obj2: *mut mjCCDObj) {
         let tol2 = tolerance * tolerance;
 
         // if both geoms are discrete, finite convergence is guaranteed; set tolerance to 0
-        let epsilon = if discrete_geoms(obj1, obj2) != 0 { 0.0 } else { 0.5 * tol2 };
-        let min_norm2 = if discrete_geoms(obj1, obj2) != 0 { MJ_MINVAL2 } else { tol2 };
+        let epsilon = if discreteGeoms(obj1, obj2) != 0 { 0.0 } else { 0.5 * tol2 };
+        let min_norm2 = if discreteGeoms(obj1, obj2) != 0 { MJ_MINVAL2 } else { tol2 };
 
         // set initial guess: x_k = x1_k - x2_k
         sub3(x_k.as_mut_ptr(), x1_k, x2_k);
@@ -1440,7 +1439,7 @@ pub fn gjk(status: *mut mjCCDStatus, obj1: *mut mjCCDObj, obj2: *mut mjCCDObj) {
 
             // compute the kth support point
             let sv_n = (simplex as *mut u8).add(n as usize * SIZEOF_VERTEX) as *mut Vertex;
-            gjk_support(sv_n, obj1, obj2, x_k.as_ptr(), x_norm);
+            gjkSupport(sv_n, obj1, obj2, x_k.as_ptr(), x_norm);
             let s_k = sv_n as *const f64; // vert field at offset 0
 
             // stopping criteria: Frank-Wolfe duality gap
@@ -1475,7 +1474,7 @@ pub fn gjk(status: *mut mjCCDStatus, obj1: *mut mjCCDObj, obj2: *mut mjCCDObj) {
             // tetrahedron: fallback to gjkIntersect
             if n == 3 && backup_gjk {
                 *(sb.add(STATUS_GJK_ITER_OFFSET) as *mut i32) = k;
-                let ret = gjk_intersect(status, obj1, obj2);
+                let ret = gjkIntersect(status, obj1, obj2);
                 if ret != -1 {
                     *(sb.add(STATUS_NX_OFFSET) as *mut i32) = 0;
                     *(sb.add(STATUS_DIST_OFFSET) as *mut f64) = if ret > 0 { 0.0 } else { MJ_MAX_LIMIT };
@@ -1555,7 +1554,7 @@ pub fn gjk(status: *mut mjCCDStatus, obj1: *mut mjCCDObj, obj2: *mut mjCCDObj) {
 }
 
 /// C: support (engine/engine_collision_gjk.c:334)
-/// Calls: sub3
+/// Calls: cxx-internal:/Users/xing/Desktop/projects/c2rust_bitexact/projects/mujoco/src/engine/engine_collision_gjk.c:_sub3
 /// ⚠️ BITEXACT RULES:
 ///   1. Copy exact C accumulation order (no iter().sum())
 ///   2. No f64::mul_add() (FMA changes precision)
@@ -1617,14 +1616,14 @@ pub fn support(v: *mut Vertex, obj1: *mut mjCCDObj, obj2: *mut mjCCDObj, dir: *c
 }
 
 /// C: gjkIntersectSupport (engine/engine_collision_gjk.c:396)
-/// Calls: support
+/// Calls: cxx-internal:/Users/xing/Desktop/projects/c2rust_bitexact/projects/mujoco/src/engine/engine_collision_gjk.c:_support
 /// ⚠️ BITEXACT RULES:
 ///   1. Copy exact C accumulation order (no iter().sum())
 ///   2. No f64::mul_add() (FMA changes precision)
 ///   3. No algebraic simplification
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
-pub fn gjk_intersect_support(v: *mut Vertex, obj1: *mut mjCCDObj, obj2: *mut mjCCDObj, dir: *const f64) {
+pub fn gjkIntersectSupport(v: *mut Vertex, obj1: *mut mjCCDObj, obj2: *mut mjCCDObj, dir: *const f64) {
     // SAFETY: dir is a valid f64[3] pointer (caller contract)
     let dir_neg: [f64; 3] = unsafe {[
         -*dir.add(0),
@@ -1635,14 +1634,14 @@ pub fn gjk_intersect_support(v: *mut Vertex, obj1: *mut mjCCDObj, obj2: *mut mjC
 }
 
 /// C: signedDistance (engine/engine_collision_gjk.c:404)
-/// Calls: cross3, dot3, scl3, sub3
+/// Calls: cxx-internal:/Users/xing/Desktop/projects/c2rust_bitexact/projects/mujoco/src/engine/engine_collision_gjk.c:_cross3, cxx-internal:/Users/xing/Desktop/projects/c2rust_bitexact/projects/mujoco/src/engine/engine_collision_gjk.c:_dot3, cxx-internal:/Users/xing/Desktop/projects/c2rust_bitexact/projects/mujoco/src/engine/engine_collision_gjk.c:_scl3, cxx-internal:/Users/xing/Desktop/projects/c2rust_bitexact/projects/mujoco/src/engine/engine_collision_gjk.c:_sub3
 /// ⚠️ BITEXACT RULES:
 ///   1. Copy exact C accumulation order (no iter().sum())
 ///   2. No f64::mul_add() (FMA changes precision)
 ///   3. No algebraic simplification
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
-pub fn signed_distance(normal: *mut f64, v1: *const Vertex, v2: *const Vertex, v3: *const Vertex) -> f64 {
+pub fn signedDistance(normal: *mut f64, v1: *const Vertex, v2: *const Vertex, v3: *const Vertex) -> f64 {
     // Vertex layout: vert[3] at offset 0
     const MJ_MINVAL2: f64 = 1E-15_f64 * 1E-15_f64;
     const MJ_MAXVAL2: f64 = 1E+10_f64 * 1E+10_f64;
@@ -1666,14 +1665,14 @@ pub fn signed_distance(normal: *mut f64, v1: *const Vertex, v2: *const Vertex, v
 }
 
 /// C: projectOriginPlane (engine/engine_collision_gjk.c:507)
-/// Calls: cross3, dot3, scl3, sub3
+/// Calls: cxx-internal:/Users/xing/Desktop/projects/c2rust_bitexact/projects/mujoco/src/engine/engine_collision_gjk.c:_cross3, cxx-internal:/Users/xing/Desktop/projects/c2rust_bitexact/projects/mujoco/src/engine/engine_collision_gjk.c:_dot3, cxx-internal:/Users/xing/Desktop/projects/c2rust_bitexact/projects/mujoco/src/engine/engine_collision_gjk.c:_scl3, cxx-internal:/Users/xing/Desktop/projects/c2rust_bitexact/projects/mujoco/src/engine/engine_collision_gjk.c:_sub3
 /// ⚠️ BITEXACT RULES:
 ///   1. Copy exact C accumulation order (no iter().sum())
 ///   2. No f64::mul_add() (FMA changes precision)
 ///   3. No algebraic simplification
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
-pub fn project_origin_plane(res: *mut f64, v1: *const f64, v2: *const f64, v3: *const f64) -> i32 {
+pub fn projectOriginPlane(res: *mut f64, v1: *const f64, v2: *const f64, v3: *const f64) -> i32 {
     const MJ_MINVAL: f64 = 1E-15_f64;
     let mut diff21: [f64; 3] = [0.0; 3];
     let mut diff31: [f64; 3] = [0.0; 3];
@@ -1717,14 +1716,14 @@ pub fn project_origin_plane(res: *mut f64, v1: *const f64, v2: *const f64, v3: *
 }
 
 /// C: projectOriginLine (engine/engine_collision_gjk.c:544)
-/// Calls: dot3, sub3
+/// Calls: cxx-internal:/Users/xing/Desktop/projects/c2rust_bitexact/projects/mujoco/src/engine/engine_collision_gjk.c:_dot3, cxx-internal:/Users/xing/Desktop/projects/c2rust_bitexact/projects/mujoco/src/engine/engine_collision_gjk.c:_sub3
 /// ⚠️ BITEXACT RULES:
 ///   1. Copy exact C accumulation order (no iter().sum())
 ///   2. No f64::mul_add() (FMA changes precision)
 ///   3. No algebraic simplification
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
-pub fn project_origin_line(res: *mut f64, v1: *const f64, v2: *const f64) {
+pub fn projectOriginLine(res: *mut f64, v1: *const f64, v2: *const f64) {
     let mut diff: [f64; 3] = [0.0; 3];
     sub3(diff.as_mut_ptr(), v2, v1);
     let scl = -(dot3(v2, diff.as_ptr()) / dot3(diff.as_ptr(), diff.as_ptr()));
@@ -1743,7 +1742,7 @@ pub fn project_origin_line(res: *mut f64, v1: *const f64, v2: *const f64) {
 ///   3. No algebraic simplification
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
-pub fn same_sign2(a: f64, b: f64) -> i32 {
+pub fn sameSign2(a: f64, b: f64) -> i32 {
     if a > 0.0 && b > 0.0 {
         return 1;
     }
@@ -1755,7 +1754,7 @@ pub fn same_sign2(a: f64, b: f64) -> i32 {
 
 /// C: replaceSimplex3 (engine/engine_collision_gjk.c:849)
 #[allow(unused_variables, non_snake_case)]
-pub fn replace_simplex3(pt: *mut Polytope, status: *mut mjCCDStatus, v1: i32, v2: i32, v3: i32) {
+pub fn replaceSimplex3(pt: *mut Polytope, status: *mut mjCCDStatus, v1: i32, v2: i32, v3: i32) {
     // Polytope layout:
     //   Vertex* verts;   offset 0
     //   int nverts;      offset 8
@@ -1817,14 +1816,14 @@ pub fn replace_simplex3(pt: *mut Polytope, status: *mut mjCCDStatus, v1: i32, v2
 }
 
 /// C: sameSide (engine/engine_collision_gjk.c:864)
-/// Calls: cross3, dot3, scl3, sub3
+/// Calls: cxx-internal:/Users/xing/Desktop/projects/c2rust_bitexact/projects/mujoco/src/engine/engine_collision_gjk.c:_cross3, cxx-internal:/Users/xing/Desktop/projects/c2rust_bitexact/projects/mujoco/src/engine/engine_collision_gjk.c:_dot3, cxx-internal:/Users/xing/Desktop/projects/c2rust_bitexact/projects/mujoco/src/engine/engine_collision_gjk.c:_scl3, cxx-internal:/Users/xing/Desktop/projects/c2rust_bitexact/projects/mujoco/src/engine/engine_collision_gjk.c:_sub3
 /// ⚠️ BITEXACT RULES:
 ///   1. Copy exact C accumulation order (no iter().sum())
 ///   2. No f64::mul_add() (FMA changes precision)
 ///   3. No algebraic simplification
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
-pub fn same_side(p0: *const f64, p1: *const f64, p2: *const f64, p3: *const f64) -> i32 {
+pub fn sameSide(p0: *const f64, p1: *const f64, p2: *const f64, p3: *const f64) -> i32 {
     let mut diff1: [f64; 3] = [0.0; 3];
     let mut diff2: [f64; 3] = [0.0; 3];
     let mut diff3: [f64; 3] = [0.0; 3];
@@ -1847,18 +1846,18 @@ pub fn same_side(p0: *const f64, p1: *const f64, p2: *const f64, p3: *const f64)
 }
 
 /// C: testTetra (engine/engine_collision_gjk.c:883)
-/// Calls: sameSide
+/// Calls: cxx-internal:/Users/xing/Desktop/projects/c2rust_bitexact/projects/mujoco/src/engine/engine_collision_gjk.c:_sameSide
 /// ⚠️ BITEXACT RULES:
 ///   1. Copy exact C accumulation order (no iter().sum())
 ///   2. No f64::mul_add() (FMA changes precision)
 ///   3. No algebraic simplification
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
-pub fn test_tetra(p0: *const f64, p1: *const f64, p2: *const f64, p3: *const f64) -> i32 {
-    if same_side(p0, p1, p2, p3) != 0
-        && same_side(p1, p2, p3, p0) != 0
-        && same_side(p2, p3, p0, p1) != 0
-        && same_side(p3, p0, p1, p2) != 0
+pub fn testTetra(p0: *const f64, p1: *const f64, p2: *const f64, p3: *const f64) -> i32 {
+    if sameSide(p0, p1, p2, p3) != 0
+        && sameSide(p1, p2, p3, p0) != 0
+        && sameSide(p2, p3, p0, p1) != 0
+        && sameSide(p3, p0, p1, p2) != 0
     {
         1
     } else {
@@ -1867,7 +1866,7 @@ pub fn test_tetra(p0: *const f64, p1: *const f64, p2: *const f64, p3: *const f64
 }
 
 /// C: rotmat (engine/engine_collision_gjk.c:893)
-/// Calls: norm3
+/// Calls: cxx-internal:/Users/xing/Desktop/projects/c2rust_bitexact/projects/mujoco/src/engine/engine_collision_gjk.c:_norm3
 /// ⚠️ BITEXACT RULES:
 ///   1. Copy exact C accumulation order (no iter().sum())
 ///   2. No f64::mul_add() (FMA changes precision)
@@ -1896,14 +1895,14 @@ pub fn rotmat(R: *mut f64, axis: *const f64) {
 }
 
 /// C: rayTriangle (engine/engine_collision_gjk.c:911)
-/// Calls: det3, sub3
+/// Calls: cxx-internal:/Users/xing/Desktop/projects/c2rust_bitexact/projects/mujoco/src/engine/engine_collision_gjk.c:_det3, cxx-internal:/Users/xing/Desktop/projects/c2rust_bitexact/projects/mujoco/src/engine/engine_collision_gjk.c:_sub3
 /// ⚠️ BITEXACT RULES:
 ///   1. Copy exact C accumulation order (no iter().sum())
 ///   2. No f64::mul_add() (FMA changes precision)
 ///   3. No algebraic simplification
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
-pub fn ray_triangle(v1: *const f64, v2: *const f64, v3: *const f64, v4: *const f64, v5: *const f64) -> i32 {
+pub fn rayTriangle(v1: *const f64, v2: *const f64, v3: *const f64, v4: *const f64, v5: *const f64) -> i32 {
     // SAFETY: v1..v5 are valid pointers to [f64;3] arrays (caller contract)
     unsafe {
         let mut diff12: [f64; 3] = [0.0; 3];
@@ -1932,7 +1931,7 @@ pub fn ray_triangle(v1: *const f64, v2: *const f64, v3: *const f64, v4: *const f
 ///   3. No algebraic simplification
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
-pub fn tri_affine_coord(lambda: *mut f64, v1: *const f64, v2: *const f64, v3: *const f64, p: *const f64) {
+pub fn triAffineCoord(lambda: *mut f64, v1: *const f64, v2: *const f64, v3: *const f64, p: *const f64) {
     // SAFETY: lambda is a valid f64[3] output, v1/v2/v3/p are valid f64[3] pointers.
     unsafe {
         // compute minors as in S2D
@@ -1988,17 +1987,17 @@ pub fn tri_affine_coord(lambda: *mut f64, v1: *const f64, v2: *const f64, v3: *c
 }
 
 /// C: triPointIntersect (engine/engine_collision_gjk.c:1061)
-/// Calls: norm3, sub3, triAffineCoord
+/// Calls: cxx-internal:/Users/xing/Desktop/projects/c2rust_bitexact/projects/mujoco/src/engine/engine_collision_gjk.c:_norm3, cxx-internal:/Users/xing/Desktop/projects/c2rust_bitexact/projects/mujoco/src/engine/engine_collision_gjk.c:_sub3, cxx-internal:engine_collision_gjk.c.o:_triAffineCoord
 /// ⚠️ BITEXACT RULES:
 ///   1. Copy exact C accumulation order (no iter().sum())
 ///   2. No f64::mul_add() (FMA changes precision)
 ///   3. No algebraic simplification
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
-pub fn tri_point_intersect(v1: *const f64, v2: *const f64, v3: *const f64, p: *const f64) -> i32 {
+pub fn triPointIntersect(v1: *const f64, v2: *const f64, v3: *const f64, p: *const f64) -> i32 {
     const MJ_MINVAL: f64 = 1E-15_f64;
     let mut lambda: [f64; 3] = [0.0; 3];
-    tri_affine_coord(lambda.as_mut_ptr(), v1, v2, v3, p);
+    triAffineCoord(lambda.as_mut_ptr(), v1, v2, v3, p);
     if lambda[0] < 0.0 || lambda[1] < 0.0 || lambda[2] < 0.0 {
         return 0;
     }
@@ -2016,7 +2015,7 @@ pub fn tri_point_intersect(v1: *const f64, v2: *const f64, v3: *const f64, p: *c
 
 /// C: deleteFace (engine/engine_collision_gjk.c:1216)
 #[allow(unused_variables, non_snake_case)]
-pub fn delete_face(pt: *mut Polytope, face: *mut Face) {
+pub fn deleteFace(pt: *mut Polytope, face: *mut Face) {
     // Polytope layout:
     //   Face** map;  offset 56
     //   int nmap;    offset 64
@@ -2053,7 +2052,7 @@ pub fn delete_face(pt: *mut Polytope, face: *mut Face) {
 
 /// C: maxFaces (engine/engine_collision_gjk.c:1226)
 #[allow(unused_variables, non_snake_case)]
-pub fn max_faces(pt: *mut Polytope) -> i32 {
+pub fn maxFaces(pt: *mut Polytope) -> i32 {
     // Polytope layout:
     //   int nfaces;   offset 24
     //   int maxfaces; offset 28
@@ -2069,7 +2068,7 @@ pub fn max_faces(pt: *mut Polytope) -> i32 {
 
 /// C: addEdge (engine/engine_collision_gjk.c:1263)
 #[allow(unused_variables, non_snake_case)]
-pub fn add_edge(pt: *mut Polytope, index: i32, edge: i32) {
+pub fn addEdge(pt: *mut Polytope, index: i32, edge: i32) {
     // SAFETY: pt is a valid Polytope pointer with horizon sub-struct (caller contract from EPA)
     unsafe {
         // Polytope.horizon is at a fixed offset; access fields via raw pointer arithmetic
@@ -2125,7 +2124,7 @@ pub fn add_edge(pt: *mut Polytope, index: i32, edge: i32) {
 
 /// C: getEdge (engine/engine_collision_gjk.c:1270)
 #[allow(unused_variables, non_snake_case)]
-pub fn get_edge(face: *mut Face, vertex: i32) -> i32 {
+pub fn getEdge(face: *mut Face, vertex: i32) -> i32 {
     #[repr(C)]
     struct FaceRepr {
         verts: i32,
@@ -2152,9 +2151,9 @@ pub fn get_edge(face: *mut Face, vertex: i32) -> i32 {
 }
 
 /// C: horizonRec (engine/engine_collision_gjk.c:1279)
-/// Calls: addEdge, deleteFace, dot3, getEdge
+/// Calls: cxx-internal:/Users/xing/Desktop/projects/c2rust_bitexact/projects/mujoco/src/engine/engine_collision_gjk.c:_addEdge, cxx-internal:/Users/xing/Desktop/projects/c2rust_bitexact/projects/mujoco/src/engine/engine_collision_gjk.c:_deleteFace, cxx-internal:/Users/xing/Desktop/projects/c2rust_bitexact/projects/mujoco/src/engine/engine_collision_gjk.c:_dot3, cxx-internal:/Users/xing/Desktop/projects/c2rust_bitexact/projects/mujoco/src/engine/engine_collision_gjk.c:_getEdge
 #[allow(unused_variables, non_snake_case)]
-pub fn horizon_rec(pt: *mut Polytope, face: *mut Face, e: i32) -> i32 {
+pub fn horizonRec(pt: *mut Polytope, face: *mut Face, e: i32) -> i32 {
     // Face layout (C struct):
     //   int verts;        offset 0
     //   int adj[3];       offset 4
@@ -2213,7 +2212,7 @@ pub fn horizon_rec(pt: *mut Polytope, face: *mut Face, e: i32) -> i32 {
                 (verts_packed >> 20) & 0x3FF,
             ];
 
-            delete_face(pt, face);
+            deleteFace(pt, face);
 
             // recursively search the adjacent faces on the next two edges
             for k in 1..3_i32 {
@@ -2224,9 +2223,9 @@ pub fn horizon_rec(pt: *mut Polytope, face: *mut Face, e: i32) -> i32 {
                 let adj_face_repr = faces_base.add(adj_idx as usize);
 
                 if (*adj_face_repr).index > -2 {
-                    let adj_edge = get_edge(adj_face_ptr, verts[(i + 1) % 3]);
-                    if horizon_rec(pt, adj_face_ptr, adj_edge) == 0 {
-                        add_edge(pt, adj_idx, adj_edge);
+                    let adj_edge = getEdge(adj_face_ptr, verts[(i + 1) % 3]);
+                    if horizonRec(pt, adj_face_ptr, adj_edge) == 0 {
+                        addEdge(pt, adj_idx, adj_edge);
                     }
                 }
             }
@@ -2237,7 +2236,7 @@ pub fn horizon_rec(pt: *mut Polytope, face: *mut Face, e: i32) -> i32 {
 }
 
 /// C: horizon (engine/engine_collision_gjk.c:1303)
-/// Calls: addEdge, deleteFace, getEdge, horizonRec
+/// Calls: cxx-internal:/Users/xing/Desktop/projects/c2rust_bitexact/projects/mujoco/src/engine/engine_collision_gjk.c:_addEdge, cxx-internal:/Users/xing/Desktop/projects/c2rust_bitexact/projects/mujoco/src/engine/engine_collision_gjk.c:_deleteFace, cxx-internal:/Users/xing/Desktop/projects/c2rust_bitexact/projects/mujoco/src/engine/engine_collision_gjk.c:_getEdge, cxx-internal:engine_collision_gjk.c.o:_horizonRec
 #[allow(unused_variables, non_snake_case)]
 pub fn horizon(pt: *mut Polytope, face: *mut Face) {
     #[repr(C)]
@@ -2269,7 +2268,7 @@ pub fn horizon(pt: *mut Polytope, face: *mut Face) {
         let p = pt as *mut PolytopeRepr;
         let f = face as *mut FaceRepr;
 
-        delete_face(pt, face);
+        deleteFace(pt, face);
 
         let verts_packed = (*f).verts;
         let verts = [
@@ -2282,38 +2281,38 @@ pub fn horizon(pt: *mut Polytope, face: *mut Face) {
 
         // first edge
         let adj_face = faces_base.add((*f).adj[0] as usize) as *mut Face;
-        let adj_edge = get_edge(adj_face, verts[1]);
-        if horizon_rec(pt, adj_face, adj_edge) == 0 {
-            add_edge(pt, (*f).adj[0], adj_edge);
+        let adj_edge = getEdge(adj_face, verts[1]);
+        if horizonRec(pt, adj_face, adj_edge) == 0 {
+            addEdge(pt, (*f).adj[0], adj_edge);
         }
 
         // second edge
         let adj_face = faces_base.add((*f).adj[1] as usize) as *mut Face;
         let adj_face_repr = faces_base.add((*f).adj[1] as usize);
-        let adj_edge = get_edge(adj_face, verts[2]);
-        if (*adj_face_repr).index > -2 && horizon_rec(pt, adj_face, adj_edge) == 0 {
-            add_edge(pt, (*f).adj[1], adj_edge);
+        let adj_edge = getEdge(adj_face, verts[2]);
+        if (*adj_face_repr).index > -2 && horizonRec(pt, adj_face, adj_edge) == 0 {
+            addEdge(pt, (*f).adj[1], adj_edge);
         }
 
         // third edge
         let adj_face = faces_base.add((*f).adj[2] as usize) as *mut Face;
         let adj_face_repr = faces_base.add((*f).adj[2] as usize);
-        let adj_edge = get_edge(adj_face, verts[0]);
-        if (*adj_face_repr).index > -2 && horizon_rec(pt, adj_face, adj_edge) == 0 {
-            add_edge(pt, (*f).adj[2], adj_edge);
+        let adj_edge = getEdge(adj_face, verts[0]);
+        if (*adj_face_repr).index > -2 && horizonRec(pt, adj_face, adj_edge) == 0 {
+            addEdge(pt, (*f).adj[2], adj_edge);
         }
     }
 }
 
 /// C: epaWitness (engine/engine_collision_gjk.c:1331)
-/// Calls: lincomb, triAffineCoord
+/// Calls: cxx-internal:engine_collision_gjk.c.o:_lincomb, cxx-internal:engine_collision_gjk.c.o:_triAffineCoord
 /// ⚠️ BITEXACT RULES:
 ///   1. Copy exact C accumulation order (no iter().sum())
 ///   2. No f64::mul_add() (FMA changes precision)
 ///   3. No algebraic simplification
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
-pub fn epa_witness(pt: *const Polytope, face: *const Face, x1: *mut f64, x2: *mut f64) -> f64 {
+pub fn epaWitness(pt: *const Polytope, face: *const Face, x1: *mut f64, x2: *mut f64) -> f64 {
     // Vertex: { vert[3]: f64, vert1[3]: f64, vert2[3]: f64, index1: i32, index2: i32 } = 80 bytes
     const SIZEOF_VERTEX: usize = 80;
 
@@ -2372,7 +2371,7 @@ pub fn epa_witness(pt: *const Polytope, face: *const Face, x1: *mut f64, x2: *mu
 
         // compute affine coordinates for witness points on plane defined by face
         let mut lambda: [f64; 3] = [0.0; 3];
-        tri_affine_coord(lambda.as_mut_ptr(), v1_vert, v2_vert, v3_vert, (*f).v.as_ptr());
+        triAffineCoord(lambda.as_mut_ptr(), v1_vert, v2_vert, v3_vert, (*f).v.as_ptr());
 
         // witness point on geom 1
         lincomb(x1, lambda.as_ptr(), 3, v1_vert1, v2_vert1, v3_vert1, std::ptr::null());
@@ -2385,7 +2384,7 @@ pub fn epa_witness(pt: *const Polytope, face: *const Face, x1: *mut f64, x2: *mu
 }
 
 /// C: area4 (engine/engine_collision_gjk.c:1505)
-/// Calls: add3, cross3, norm3
+/// Calls: cxx-internal:/Users/xing/Desktop/projects/c2rust_bitexact/projects/mujoco/src/engine/engine_collision_gjk.c:_add3, cxx-internal:/Users/xing/Desktop/projects/c2rust_bitexact/projects/mujoco/src/engine/engine_collision_gjk.c:_cross3, cxx-internal:/Users/xing/Desktop/projects/c2rust_bitexact/projects/mujoco/src/engine/engine_collision_gjk.c:_norm3
 /// ⚠️ BITEXACT RULES:
 ///   1. Copy exact C accumulation order (no iter().sum())
 ///   2. No f64::mul_add() (FMA changes precision)
@@ -2425,107 +2424,15 @@ pub fn area4(a: *const f64, b: *const f64, c: *const f64, d: *const f64) -> f64 
     }
 }
 
-/// C: next (engine/engine_collision_gjk.c:1520)
-/// Calls: mjCMesh::nvert
-/// ⚠️ BITEXACT RULES:
-///   1. Copy exact C accumulation order (no iter().sum())
-///   2. No f64::mul_add() (FMA changes precision)
-///   3. No algebraic simplification
-///   4. No iter().sum()/product() (order undefined)
-#[allow(unused_variables, non_snake_case)]
-pub fn next(polygon: *mut f64, nvert: i32, curr: *mut f64) -> *mut f64 {
-    // SAFETY: caller guarantees polygon points to nvert*3 f64 array, curr is within bounds
-    unsafe {
-        if curr == polygon.add(3 * (nvert as usize - 1)) {
-            polygon
-        } else {
-            curr.add(3)
-        }
-    }
-}
-
-/// C: polygonQuad (engine/engine_collision_gjk.c:1529)
-/// Calls: area4, next
-/// ⚠️ BITEXACT RULES:
-///   1. Copy exact C accumulation order (no iter().sum())
-///   2. No f64::mul_add() (FMA changes precision)
-///   3. No algebraic simplification
-///   4. No iter().sum()/product() (order undefined)
-#[allow(unused_variables, non_snake_case)]
-pub fn polygon_quad(res: *mut *mut f64, polygon: *mut f64, nvert: i32) {
-    // SAFETY: caller guarantees polygon[nvert*3], res[4] valid, nvert >= 4
-    unsafe {
-        let mut a = polygon;
-        let mut b = polygon.add(3);
-        let mut c = polygon.add(6);
-        let mut d = polygon.add(9);
-        *res.add(0) = a;
-        *res.add(1) = b;
-        *res.add(2) = c;
-        *res.add(3) = d;
-        let mut m = area4(a, b, c, d);
-        let end = polygon.add(3 * nvert as usize);
-
-        while a < end {
-            loop {
-                let m_next = area4(a, b, c, next(polygon, nvert, d));
-                if m_next <= m {
-                    break;
-                }
-                m = m_next;
-                d = next(polygon, nvert, d);
-                *res.add(0) = a;
-                *res.add(1) = b;
-                *res.add(2) = c;
-                *res.add(3) = d;
-                loop {
-                    let m_next2 = area4(a, b, next(polygon, nvert, c), d);
-                    if m_next2 <= m {
-                        break;
-                    }
-                    m = m_next2;
-                    c = next(polygon, nvert, c);
-                    *res.add(0) = a;
-                    *res.add(1) = b;
-                    *res.add(2) = c;
-                    *res.add(3) = d;
-                }
-                loop {
-                    let m_next3 = area4(a, next(polygon, nvert, b), c, d);
-                    if m_next3 <= m {
-                        break;
-                    }
-                    m = m_next3;
-                    b = next(polygon, nvert, b);
-                    *res.add(0) = a;
-                    *res.add(1) = b;
-                    *res.add(2) = c;
-                    *res.add(3) = d;
-                }
-            }
-            if b == a {
-                b = next(polygon, nvert, b);
-                if c == b {
-                    c = next(polygon, nvert, c);
-                    if d == c {
-                        d = next(polygon, nvert, d);
-                    }
-                }
-            }
-            a = a.add(3);
-        }
-    }
-}
-
 /// C: planeNormal (engine/engine_collision_gjk.c:1577)
-/// Calls: add3, cross3, dot3, mju_normalize3, sub3
+/// Calls: cxx-internal:/Users/xing/Desktop/projects/c2rust_bitexact/projects/mujoco/src/engine/engine_collision_gjk.c:_add3, cxx-internal:/Users/xing/Desktop/projects/c2rust_bitexact/projects/mujoco/src/engine/engine_collision_gjk.c:_cross3, cxx-internal:/Users/xing/Desktop/projects/c2rust_bitexact/projects/mujoco/src/engine/engine_collision_gjk.c:_dot3, cxx-internal:/Users/xing/Desktop/projects/c2rust_bitexact/projects/mujoco/src/engine/engine_collision_gjk.c:_sub3, cxx:_mju_normalize3
 /// ⚠️ BITEXACT RULES:
 ///   1. Copy exact C accumulation order (no iter().sum())
 ///   2. No f64::mul_add() (FMA changes precision)
 ///   3. No algebraic simplification
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
-pub fn plane_normal(res: *mut f64, v1: *const f64, v2: *const f64, n: *const f64) -> f64 {
+pub fn planeNormal(res: *mut f64, v1: *const f64, v2: *const f64, n: *const f64) -> f64 {
     // SAFETY: res[3], v1[3], v2[3], n[3] are valid pointers from caller
     unsafe {
         let mut v3: [f64; 3] = [0.0; 3];
@@ -2543,7 +2450,7 @@ pub fn plane_normal(res: *mut f64, v1: *const f64, v2: *const f64, n: *const f64
 }
 
 /// C: halfspace (engine/engine_collision_gjk.c:1592)
-/// Calls: dot3
+/// Calls: cxx-internal:/Users/xing/Desktop/projects/c2rust_bitexact/projects/mujoco/src/engine/engine_collision_gjk.c:_dot3
 /// ⚠️ BITEXACT RULES:
 ///   1. Copy exact C accumulation order (no iter().sum())
 ///   2. No f64::mul_add() (FMA changes precision)
@@ -2564,14 +2471,14 @@ pub fn halfspace(a: *const f64, n: *const f64, p: *const f64) -> i32 {
 }
 
 /// C: planeIntersect (engine/engine_collision_gjk.c:1599)
-/// Calls: dot3, sub3
+/// Calls: cxx-internal:/Users/xing/Desktop/projects/c2rust_bitexact/projects/mujoco/src/engine/engine_collision_gjk.c:_dot3, cxx-internal:/Users/xing/Desktop/projects/c2rust_bitexact/projects/mujoco/src/engine/engine_collision_gjk.c:_sub3
 /// ⚠️ BITEXACT RULES:
 ///   1. Copy exact C accumulation order (no iter().sum())
 ///   2. No f64::mul_add() (FMA changes precision)
 ///   3. No algebraic simplification
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
-pub fn plane_intersect(res: *mut f64, pn: *const f64, pd: f64, a: *const f64, b: *const f64) -> f64 {
+pub fn planeIntersect(res: *mut f64, pn: *const f64, pd: f64, a: *const f64, b: *const f64) -> f64 {
     const MJ_MAX_LIMIT: f64 = f64::MAX;
     // SAFETY: res[3], pn[3], a[3], b[3] are valid pointers from caller
     unsafe {
@@ -2588,140 +2495,6 @@ pub fn plane_intersect(res: *mut f64, pn: *const f64, pd: f64, a: *const f64, b:
             *res.add(2) = *a.add(2) + t * ab[2];
         }
         t
-    }
-}
-
-/// C: polygonClip (engine/engine_collision_gjk.c:1616)
-/// Calls: copy3, dot3, halfspace, planeIntersect, planeNormal, polygonQuad, sub3
-/// ⚠️ BITEXACT RULES:
-///   1. Copy exact C accumulation order (no iter().sum())
-///   2. No f64::mul_add() (FMA changes precision)
-///   3. No algebraic simplification
-///   4. No iter().sum()/product() (order undefined)
-#[allow(unused_variables, non_snake_case)]
-pub fn polygon_clip(status: *mut mjCCDStatus, face1: *const f64, nface1: i32, face2: *const f64, nface2: i32, n: *const f64, dir: *const f64) {
-    const MJ_MAX_POLYVERT: usize = 150;
-    const MJ_MAX_CONPAIR: i32 = 50;
-    const STATUS_X1_OFFSET: usize = 8;
-    const STATUS_X2_OFFSET: usize = 1208;
-    const STATUS_NX_OFFSET: usize = 2408;
-    const STATUS_MAX_CONTACTS_OFFSET: usize = 2424;
-
-    // SAFETY: All pointer args are valid (caller contract). Stack arrays bounded by MJ_MAX_POLYVERT.
-    unsafe {
-        if nface1 < 3 { return; }
-
-        let sb = status as *mut u8;
-        let mut pn = [0.0f64; 3 * MJ_MAX_POLYVERT];
-        let mut pd = [0.0f64; MJ_MAX_POLYVERT];
-
-        for i in 0..(nface1 as usize - 1) {
-            pd[i] = plane_normal(pn.as_mut_ptr().add(3 * i), face1.add(3 * i), face1.add(3 * i + 3), n);
-        }
-        let last = (nface1 as usize) - 1;
-        pd[last] = plane_normal(pn.as_mut_ptr().add(3 * last), face1.add(3 * last), face1, n);
-
-        let mut polygon1 = [0.0f64; 6 * MJ_MAX_POLYVERT];
-        let mut polygon2 = [0.0f64; 6 * MJ_MAX_POLYVERT];
-        let mut npolygon = nface2 as usize;
-        let mut use_poly1 = true;
-
-        for i in 0..nface2 as usize {
-            polygon1[3 * i] = *face2.add(3 * i);
-            polygon1[3 * i + 1] = *face2.add(3 * i + 1);
-            polygon1[3 * i + 2] = *face2.add(3 * i + 2);
-        }
-
-        let mut e = 0usize;
-        while e < (3 * nface1 as usize) {
-            let mut nclipped: usize = 0;
-            let (polygon, clipped) = if use_poly1 {
-                (polygon1.as_mut_ptr(), polygon2.as_mut_ptr())
-            } else {
-                (polygon2.as_mut_ptr(), polygon1.as_mut_ptr())
-            };
-
-            for i in 0..npolygon {
-                let p_ptr = polygon.add(3 * i);
-                let q_ptr = if i < npolygon - 1 { polygon.add(3 * (i + 1)) } else { polygon };
-                let inside1 = halfspace(face1.add(e), pn.as_ptr().add(e), p_ptr);
-                let inside2 = halfspace(face1.add(e), pn.as_ptr().add(e), q_ptr);
-                if inside1 == 0 && inside2 == 0 { continue; }
-                if inside1 != 0 && inside2 != 0 {
-                    copy3(clipped.add(3 * nclipped), q_ptr);
-                    nclipped += 1;
-                    continue;
-                }
-                let t = plane_intersect(clipped.add(3 * nclipped), pn.as_ptr().add(e), pd[e / 3], p_ptr, q_ptr);
-                if (0.0..=1.0).contains(&t) {
-                    nclipped += 1;
-                }
-                if inside2 != 0 {
-                    copy3(clipped.add(3 * nclipped), q_ptr);
-                    nclipped += 1;
-                }
-            }
-            use_poly1 = !use_poly1;
-            npolygon = nclipped;
-            e += 3;
-        }
-
-        if npolygon < 1 { return; }
-
-        let polygon = if !use_poly1 { polygon1.as_mut_ptr() } else { polygon2.as_mut_ptr() };
-        let x1_k = sb.add(STATUS_X1_OFFSET) as *mut f64;
-        let x2_k = sb.add(STATUS_X2_OFFSET) as *mut f64;
-        let max_contacts = *(sb.add(STATUS_MAX_CONTACTS_OFFSET) as *const i32);
-
-        if max_contacts < 5 && npolygon > 4 {
-            *(sb.add(STATUS_NX_OFFSET) as *mut i32) = 4;
-            let mut rect: [*mut f64; 4] = [std::ptr::null_mut(); 4];
-            polygon_quad(rect.as_mut_ptr(), polygon, npolygon as i32);
-            for i in 0..4 {
-                copy3(x2_k.add(3 * i), rect[i]);
-                sub3(x1_k.add(3 * i), x2_k.add(3 * i), dir);
-            }
-            return;
-        }
-
-        if npolygon > MJ_MAX_CONPAIR as usize {
-            *(sb.add(STATUS_NX_OFFSET) as *mut i32) = MJ_MAX_CONPAIR;
-            let mut i = 0usize;
-            while i < (3 * MJ_MAX_CONPAIR as usize) {
-                copy3(x2_k.add(i), polygon.add(i));
-                sub3(x1_k.add(i), x2_k.add(i), dir);
-                i += 3;
-            }
-            return;
-        }
-
-        if nface2 == 2 && npolygon > 2 {
-            let mut best1 = 0usize;
-            let mut best2 = 1usize;
-            let mut d = 0.0f64;
-            for i in 0..npolygon {
-                for j in (i + 1)..npolygon {
-                    let mut diff: [f64; 3] = [0.0; 3];
-                    sub3(diff.as_mut_ptr(), polygon.add(3 * j), polygon.add(3 * i));
-                    let d2 = dot3(diff.as_ptr(), diff.as_ptr());
-                    if d2 > d { d = d2; best1 = i; best2 = j; }
-                }
-            }
-            copy3(x2_k, polygon.add(3 * best1));
-            sub3(x1_k, x2_k, dir);
-            copy3(x2_k.add(3), polygon.add(3 * best2));
-            sub3(x1_k.add(3), x2_k.add(3), dir);
-            *(sb.add(STATUS_NX_OFFSET) as *mut i32) = 2;
-            return;
-        }
-
-        let mut i = 0usize;
-        while i < (3 * npolygon) {
-            copy3(x2_k.add(i), polygon.add(i));
-            sub3(x1_k.add(i), x2_k.add(i), dir);
-            i += 3;
-        }
-        *(sb.add(STATUS_NX_OFFSET) as *mut i32) = npolygon as i32;
     }
 }
 
@@ -2747,137 +2520,15 @@ pub fn globalcoord(res: *mut f64, mat: *const f64, pos: *const f64, l1: f64, l2:
     }
 }
 
-/// C: intersect (engine/engine_collision_gjk.c:1759)
-/// Calls: GlobalTable::count
-#[allow(unused_variables, non_snake_case)]
-pub fn intersect(res: *mut i32, arr1: *const i32, arr2: *const i32, n: i32, m: i32) -> i32 {
-    // SAFETY: caller guarantees arr1[n], arr2[m], res[2] are valid
-    unsafe {
-        let mut count: i32 = 0;
-        for i in 0..n as usize {
-            for j in 0..m as usize {
-                if *arr1.add(i) == *arr2.add(j) {
-                    *res.add(count as usize) = *arr1.add(i);
-                    count += 1;
-                    if count == 2 {
-                        return 2;
-                    }
-                }
-            }
-        }
-        count
-    }
-}
-
-/// C: meshNormals (engine/engine_collision_gjk.c:1774)
-/// Calls: globalcoord, intersect
-/// ⚠️ BITEXACT RULES:
-///   1. Copy exact C accumulation order (no iter().sum())
-///   2. No f64::mul_add() (FMA changes precision)
-///   3. No algebraic simplification
-///   4. No iter().sum()/product() (order undefined)
-#[allow(unused_variables, non_snake_case)]
-pub fn mesh_normals(res: *mut f64, resind: *mut i32, dim: i32, obj: *mut mjCCDObj, v1: i32, v2: i32, v3: i32) -> i32 {
-    const MJ_MAX_POLYVERT: i32 = 150;
-
-    #[repr(C)]
-    struct MeshData {
-        nvert: i32,
-        mesh_polynum: i32,
-        vert: *const f32,
-        mpolymapadr: *const i32,
-        mpolymapnum: *const i32,
-        polymap: *const i32,
-        polyvertadr: *const i32,
-        polyvertnum: *const i32,
-        polyvert: *const i32,
-        polynormal: *const f64,
-        graph: *const i32,
-    }
-
-    // SAFETY: res[3*n], resind[n], obj are valid pointers from caller contract
-    unsafe {
-        let mesh_ptr = &(*obj).data as *const _ as *const MeshData;
-        let polymap = (*mesh_ptr).polymap;
-        let polynormal = (*mesh_ptr).polynormal;
-        let mat = (*obj).mat.as_ptr();
-
-        if dim == 3 {
-            let v1_adr = *(*mesh_ptr).mpolymapadr.add(v1 as usize);
-            let v1_num = *(*mesh_ptr).mpolymapnum.add(v1 as usize);
-
-            let v2_adr = *(*mesh_ptr).mpolymapadr.add(v2 as usize);
-            let v2_num = *(*mesh_ptr).mpolymapnum.add(v2 as usize);
-
-            let v3_adr = *(*mesh_ptr).mpolymapadr.add(v3 as usize);
-            let v3_num = *(*mesh_ptr).mpolymapnum.add(v3 as usize);
-
-            let mut edgeset = [0i32; 2];
-            let mut faceset = [0i32; 2];
-            let n = intersect(edgeset.as_mut_ptr(), polymap.add(v1_adr as usize),
-                              polymap.add(v2_adr as usize), v1_num, v2_num);
-            if n == 0 { return 0; }
-            let n = intersect(faceset.as_mut_ptr(), edgeset.as_ptr(),
-                              polymap.add(v3_adr as usize), n, v3_num);
-            if n == 0 { return 0; }
-
-            // three vertices on mesh define a unique face
-            let normal = polynormal.add(3 * faceset[0] as usize);
-            globalcoord(res, mat, std::ptr::null(), *normal.add(0), *normal.add(1), *normal.add(2));
-            *resind.add(0) = faceset[0];
-            return 1;
-        }
-
-        if dim == 2 {
-            let v1_adr = *(*mesh_ptr).mpolymapadr.add(v1 as usize);
-            let v1_num = *(*mesh_ptr).mpolymapnum.add(v1 as usize);
-
-            let v2_adr = *(*mesh_ptr).mpolymapadr.add(v2 as usize);
-            let v2_num = *(*mesh_ptr).mpolymapnum.add(v2 as usize);
-
-            // up to two faces as vertices on mesh define an edge
-            let mut edgeset = [0i32; 2];
-            let n = intersect(edgeset.as_mut_ptr(), polymap.add(v1_adr as usize),
-                              polymap.add(v2_adr as usize), v1_num, v2_num);
-            if n == 0 { return 0; }
-            for i in 0..n as usize {
-                let normal = polynormal.add(3 * edgeset[i] as usize);
-                globalcoord(res.add(3 * i), mat, std::ptr::null(),
-                            *normal.add(0), *normal.add(1), *normal.add(2));
-                *resind.add(i) = edgeset[i];
-            }
-            return n;
-        }
-
-        if dim == 1 {
-            let v1_adr = *(*mesh_ptr).mpolymapadr.add(v1 as usize);
-            let mut v1_num = *(*mesh_ptr).mpolymapnum.add(v1 as usize);
-
-            // cap number of possible faces intersecting at a vertex
-            if v1_num > MJ_MAX_POLYVERT { v1_num = MJ_MAX_POLYVERT; }
-            for i in 0..v1_num as usize {
-                let index = *polymap.add(v1_adr as usize + i);
-                let normal = polynormal.add(3 * index as usize);
-                globalcoord(res.add(3 * i), mat, std::ptr::null(),
-                            *normal.add(0), *normal.add(1), *normal.add(2));
-                *resind.add(i) = index;
-            }
-            return v1_num;
-        }
-
-        0
-    }
-}
-
 /// C: meshEdgeNormals (engine/engine_collision_gjk.c:1840)
-/// Calls: copy3, globalcoord, mju_normalize3, sub3
+/// Calls: cxx-internal:/Users/xing/Desktop/projects/c2rust_bitexact/projects/mujoco/src/engine/engine_collision_gjk.c:_copy3, cxx-internal:/Users/xing/Desktop/projects/c2rust_bitexact/projects/mujoco/src/engine/engine_collision_gjk.c:_globalcoord, cxx-internal:/Users/xing/Desktop/projects/c2rust_bitexact/projects/mujoco/src/engine/engine_collision_gjk.c:_sub3, cxx:_mju_normalize3
 /// ⚠️ BITEXACT RULES:
 ///   1. Copy exact C accumulation order (no iter().sum())
 ///   2. No f64::mul_add() (FMA changes precision)
 ///   3. No algebraic simplification
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
-pub fn mesh_edge_normals(res: *mut f64, endverts: *mut f64, dim: i32, obj: *mut mjCCDObj, v1: *const f64, v2: *const f64, v1i: i32, v2i: i32) -> i32 {
+pub fn meshEdgeNormals(res: *mut f64, endverts: *mut f64, dim: i32, obj: *mut mjCCDObj, v1: *const f64, v2: *const f64, v1i: i32, v2i: i32) -> i32 {
     const MJ_MAX_POLYVERT: i32 = 150;
 
     #[repr(C)]
@@ -2943,14 +2594,14 @@ pub fn mesh_edge_normals(res: *mut f64, endverts: *mut f64, dim: i32, obj: *mut 
 }
 
 /// C: boxNormals2 (engine/engine_collision_gjk.c:1885)
-/// Calls: dot3, globalcoord, scl3
+/// Calls: cxx-internal:/Users/xing/Desktop/projects/c2rust_bitexact/projects/mujoco/src/engine/engine_collision_gjk.c:_dot3, cxx-internal:/Users/xing/Desktop/projects/c2rust_bitexact/projects/mujoco/src/engine/engine_collision_gjk.c:_globalcoord, cxx-internal:/Users/xing/Desktop/projects/c2rust_bitexact/projects/mujoco/src/engine/engine_collision_gjk.c:_scl3
 /// ⚠️ BITEXACT RULES:
 ///   1. Copy exact C accumulation order (no iter().sum())
 ///   2. No f64::mul_add() (FMA changes precision)
 ///   3. No algebraic simplification
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
-pub fn box_normals2(res: *mut f64, resind: *mut i32, mat: *const f64, n: *const f64) -> i32 {
+pub fn boxNormals2(res: *mut f64, resind: *mut i32, mat: *const f64, n: *const f64) -> i32 {
     const MJ_FACE_TOL: f64 = 0.99999872;
     // SAFETY: res[9], resind[3], mat[9], n[3] are valid pointers from caller
     unsafe {
@@ -2982,14 +2633,14 @@ pub fn box_normals2(res: *mut f64, resind: *mut i32, mat: *const f64, n: *const 
 }
 
 /// C: boxNormals (engine/engine_collision_gjk.c:1911)
-/// Calls: boxNormals2, globalcoord
+/// Calls: cxx-internal:/Users/xing/Desktop/projects/c2rust_bitexact/projects/mujoco/src/engine/engine_collision_gjk.c:_globalcoord, cxx-internal:engine_collision_gjk.c.o:_boxNormals2
 /// ⚠️ BITEXACT RULES:
 ///   1. Copy exact C accumulation order (no iter().sum())
 ///   2. No f64::mul_add() (FMA changes precision)
 ///   3. No algebraic simplification
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
-pub fn box_normals(res: *mut f64, resind: *mut i32, dim: i32, obj: *mut mjCCDObj, v1: i32, v2: i32, v3: i32, dir: *const f64) -> i32 {
+pub fn boxNormals(res: *mut f64, resind: *mut i32, dim: i32, obj: *mut mjCCDObj, v1: i32, v2: i32, v3: i32, dir: *const f64) -> i32 {
     // SAFETY: res[9], resind[3], obj, dir are valid pointers from caller
     unsafe {
         let mat = (*obj).mat.as_ptr();
@@ -3007,7 +2658,7 @@ pub fn box_normals(res: *mut f64, resind: *mut i32, dim: i32, obj: *mut mjCCDObj
             if y != 0 { *resind.add(c) = 2; c += 1; }
             if z != 0 { *resind.add(c) = 4; c += 1; }
             if sgn == -1 { *resind.add(0) += 1; }
-            return if c == 1 { 1 } else { box_normals2(res, resind, mat, dir) };
+            return if c == 1 { 1 } else { boxNormals2(res, resind, mat, dir) };
         }
 
         if dim == 2 {
@@ -3033,7 +2684,7 @@ pub fn box_normals(res: *mut f64, resind: *mut i32, dim: i32, obj: *mut mjCCDObj
                 *resind.add(c) = if z > 0 { 4 } else { 5 };
                 c += 1;
             }
-            return if c == 2 { 2 } else { box_normals2(res, resind, mat, dir) };
+            return if c == 2 { 2 } else { boxNormals2(res, resind, mat, dir) };
         }
 
         if dim == 1 {
@@ -3053,14 +2704,14 @@ pub fn box_normals(res: *mut f64, resind: *mut i32, dim: i32, obj: *mut mjCCDObj
 }
 
 /// C: boxEdgeNormals (engine/engine_collision_gjk.c:1965)
-/// Calls: copy3, globalcoord, mju_normalize3, sub3
+/// Calls: cxx-internal:/Users/xing/Desktop/projects/c2rust_bitexact/projects/mujoco/src/engine/engine_collision_gjk.c:_copy3, cxx-internal:/Users/xing/Desktop/projects/c2rust_bitexact/projects/mujoco/src/engine/engine_collision_gjk.c:_globalcoord, cxx-internal:/Users/xing/Desktop/projects/c2rust_bitexact/projects/mujoco/src/engine/engine_collision_gjk.c:_sub3, cxx:_mju_normalize3
 /// ⚠️ BITEXACT RULES:
 ///   1. Copy exact C accumulation order (no iter().sum())
 ///   2. No f64::mul_add() (FMA changes precision)
 ///   3. No algebraic simplification
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
-pub fn box_edge_normals(res: *mut f64, endverts: *mut f64, dim: i32, obj: *mut mjCCDObj, v1: *const f64, v2: *const f64, v1i: i32, v2i: i32) -> i32 {
+pub fn boxEdgeNormals(res: *mut f64, endverts: *mut f64, dim: i32, obj: *mut mjCCDObj, v1: *const f64, v2: *const f64, v1i: i32, v2i: i32) -> i32 {
     // SAFETY: res[9], endverts[9], obj, v1[3], v2[3] are valid pointers from caller
     unsafe {
         let mat = (*obj).mat.as_ptr();
@@ -3098,14 +2749,14 @@ pub fn box_edge_normals(res: *mut f64, endverts: *mut f64, dim: i32, obj: *mut m
 }
 
 /// C: boxFace (engine/engine_collision_gjk.c:2002)
-/// Calls: globalcoord
+/// Calls: cxx-internal:/Users/xing/Desktop/projects/c2rust_bitexact/projects/mujoco/src/engine/engine_collision_gjk.c:_globalcoord
 /// ⚠️ BITEXACT RULES:
 ///   1. Copy exact C accumulation order (no iter().sum())
 ///   2. No f64::mul_add() (FMA changes precision)
 ///   3. No algebraic simplification
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
-pub fn box_face(res: *mut f64, obj: *mut mjCCDObj, idx: i32) -> i32 {
+pub fn boxFace(res: *mut f64, obj: *mut mjCCDObj, idx: i32) -> i32 {
     // SAFETY: res[12], obj are valid pointers from caller
     unsafe {
         let mat = (*obj).mat.as_ptr();
@@ -3162,14 +2813,14 @@ pub fn box_face(res: *mut f64, obj: *mut mjCCDObj, idx: i32) -> i32 {
 }
 
 /// C: meshFace (engine/engine_collision_gjk.c:2052)
-/// Calls: globalcoord
+/// Calls: cxx-internal:/Users/xing/Desktop/projects/c2rust_bitexact/projects/mujoco/src/engine/engine_collision_gjk.c:_globalcoord
 /// ⚠️ BITEXACT RULES:
 ///   1. Copy exact C accumulation order (no iter().sum())
 ///   2. No f64::mul_add() (FMA changes precision)
 ///   3. No algebraic simplification
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
-pub fn mesh_face(res: *mut f64, obj: *mut mjCCDObj, idx: i32) -> i32 {
+pub fn meshFace(res: *mut f64, obj: *mut mjCCDObj, idx: i32) -> i32 {
     const MJ_MAX_POLYVERT: i32 = 150;
 
     #[repr(C)]
@@ -3211,54 +2862,6 @@ pub fn mesh_face(res: *mut f64, obj: *mut mjCCDObj, idx: i32) -> i32 {
     }
 }
 
-/// C: alignedFaces (engine/engine_collision_gjk.c:2072)
-/// Calls: dot3
-/// ⚠️ BITEXACT RULES:
-///   1. Copy exact C accumulation order (no iter().sum())
-///   2. No f64::mul_add() (FMA changes precision)
-///   3. No algebraic simplification
-///   4. No iter().sum()/product() (order undefined)
-#[allow(unused_variables, non_snake_case)]
-pub fn aligned_faces(res: *mut i32, v: *const f64, nv: i32, w: *const f64, nw: i32) -> i32 {
-    // SAFETY: caller guarantees res points to [2], v to [nv*3], w to [nw*3]
-    unsafe {
-        for i in 0..nv as usize {
-            for j in 0..nw as usize {
-                if dot3(v.add(3 * i), w.add(3 * j)) < -0.99999872 {
-                    *res.add(0) = i as i32;
-                    *res.add(1) = j as i32;
-                    return 1;
-                }
-            }
-        }
-        0
-    }
-}
-
-/// C: alignedFaceEdge (engine/engine_collision_gjk.c:2088)
-/// Calls: dot3
-/// ⚠️ BITEXACT RULES:
-///   1. Copy exact C accumulation order (no iter().sum())
-///   2. No f64::mul_add() (FMA changes precision)
-///   3. No algebraic simplification
-///   4. No iter().sum()/product() (order undefined)
-#[allow(unused_variables, non_snake_case)]
-pub fn aligned_face_edge(res: *mut i32, edge: *const f64, nedge: i32, face: *const f64, nface: i32) -> i32 {
-    // SAFETY: caller guarantees res points to [2], edge to [nedge*3], face to [nface*3]
-    unsafe {
-        for i in 0..nface as usize {
-            for j in 0..nedge as usize {
-                if dot3(edge.add(3 * j), face.add(3 * i)).abs() < 0.00159999931 {
-                    *res.add(0) = j as i32;
-                    *res.add(1) = i as i32;
-                    return 1;
-                }
-            }
-        }
-        0
-    }
-}
-
 /// C: simplexDim (engine/engine_collision_gjk.c:2104)
 /// ⚠️ BITEXACT RULES:
 ///   1. Copy exact C accumulation order (no iter().sum())
@@ -3266,7 +2869,7 @@ pub fn aligned_face_edge(res: *mut i32, edge: *const f64, nedge: i32, face: *con
 ///   3. No algebraic simplification
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
-pub fn simplex_dim(v1i: *mut i32, v2i: *mut i32, v3i: *mut i32, v1: *mut *mut f64, v2: *mut *mut f64, v3: *mut *mut f64) -> i32 {
+pub fn simplexDim(v1i: *mut i32, v2i: *mut i32, v3i: *mut i32, v1: *mut *mut f64, v2: *mut *mut f64, v3: *mut *mut f64) -> i32 {
     // SAFETY: all pointers are valid and dereferenceable.
     unsafe {
         let val1 = *v1i;
@@ -3285,15 +2888,8 @@ pub fn simplex_dim(v1i: *mut i32, v2i: *mut i32, v3i: *mut i32, v1: *mut *mut f6
     }
 }
 
-/// C: multicontact (engine/engine_collision_gjk.c:2122)
-/// Calls: alignedFaceEdge, alignedFaces, boxEdgeNormals, boxFace, boxNormals, copy3, meshEdgeNormals, meshFace, meshNormals, norm3, polygonClip, scl3, simplexDim, sub3
-#[allow(unused_variables, non_snake_case)]
-pub fn multicontact(pt: *mut Polytope, face: *mut Face, status: *mut mjCCDStatus, obj1: *mut mjCCDObj, obj2: *mut mjCCDObj) {
-    todo!() // multicontact
-}
-
 /// C: inflate (engine/engine_collision_gjk.c:2264)
-/// Calls: mju_normalize3, sub3
+/// Calls: cxx-internal:/Users/xing/Desktop/projects/c2rust_bitexact/projects/mujoco/src/engine/engine_collision_gjk.c:_sub3, cxx:_mju_normalize3
 /// ⚠️ BITEXACT RULES:
 ///   1. Copy exact C accumulation order (no iter().sum())
 ///   2. No f64::mul_add() (FMA changes precision)
@@ -3337,9 +2933,9 @@ pub fn inflate(status: *mut mjCCDStatus, margin1: f64, margin2: f64) {
 }
 
 /// C: mjc_ccdSize (engine/engine_collision_gjk.h:105)
-/// Calls: align8
+/// Calls: cxx-internal:/Users/xing/Desktop/projects/c2rust_bitexact/projects/mujoco/src/engine/engine_collision_gjk.c:_align8
 #[allow(unused_variables, non_snake_case)]
-pub fn mjc_ccd_size(iterations: i32) -> usize {
+pub fn mjc_ccdSize(iterations: i32) -> usize {
     // C struct sizes (double precision, 64-bit):
     //   Vertex: 3*mjtNum[3] + 2*int = 72 + 8 = 80 bytes
     //   Face: int + int[3] + mjtNum[3] + mjtNum + int + padding = 56 bytes
@@ -3354,17 +2950,5 @@ pub fn mjc_ccd_size(iterations: i32) -> usize {
         + align8(SIZEOF_FACE_PTR * 6 * n) // map in polytope
         + align8(SIZEOF_INT * 24)         // horizon indices
         + align8(SIZEOF_INT * 24)         // horizon edges
-}
-
-/// C: mjc_ccd (engine/engine_collision_gjk.h:108)
-/// Calls: align8, epa, gjk, inflate, multicontact, polytope2, polytope3, polytope4
-/// ⚠️ BITEXACT RULES:
-///   1. Copy exact C accumulation order (no iter().sum())
-///   2. No f64::mul_add() (FMA changes precision)
-///   3. No algebraic simplification
-///   4. No iter().sum()/product() (order undefined)
-#[allow(unused_variables, non_snake_case)]
-pub fn mjc_ccd(config: *const mjCCDConfig, status: *mut mjCCDStatus, obj1: *mut mjCCDObj, obj2: *mut mjCCDObj) -> f64 {
-    todo!() // mjc_ccd
 }
 

@@ -1,6 +1,6 @@
 //! Port of: engine/engine_collision_convex.c
-//! IR hash: 73393814548a07d1
-//! CODEGEN: signatures locked. Only fill todo!() bodies.
+//! IR hash: 9343293228317031
+//! CODEGEN: source paths, owners, and callable names are locked.
 
 use crate::types::*;
 
@@ -16,140 +16,6 @@ pub fn prism_firstdir(o1: *const (), o2: *const (), vec: *mut ccd_vec3_t) {
     }
 }
 
-/// C: _libccd_wrapper (engine/engine_collision_convex.c:52)
-/// Calls: mji_copy3, mji_zero3
-/// ⚠️ BITEXACT RULES:
-///   1. Copy exact C accumulation order (no iter().sum())
-///   2. No f64::mul_add() (FMA changes precision)
-///   3. No algebraic simplification
-///   4. No iter().sum()/product() (order undefined)
-#[allow(unused_variables, non_snake_case)]
-pub fn libccd_wrapper(m: *const mjModel, obj1: *mut mjCCDObj, obj2: *mut mjCCDObj, con: *mut mjPreContact, margin: f64) -> i32 {
-    // C source (engine/engine_collision_convex.c:52-88):
-    // Calls ccdMPRPenetration via our C bridge which handles ccd_t setup.
-    //
-    // Rust trampolines adapt mjccd_support/mjccd_center to the bridge's
-    // double[3] callback ABI.
-
-    // Bridge callback trampolines: adapt ccd_vec3_t (double[3]) ↔ ccd_vec3_t
-    // The bridge passes dir/vec as *const double[3] / *mut double[3] (same layout).
-    unsafe extern "C" fn support_trampoline(obj: *const core::ffi::c_void,
-                                             dir: *const f64, vec: *mut f64) {
-        // SAFETY: bridge guarantees dir and vec point to 3 f64 each.
-        // We reconstruct a ccd_vec3_t on the stack for the existing Rust impl.
-        let mut ccd_dir = crate::types::ccd_vec3_t { v: [0u8; 24] };
-        let mut ccd_vec = crate::types::ccd_vec3_t { v: [0u8; 24] };
-        (ccd_dir.v.as_mut_ptr() as *mut f64).copy_from_nonoverlapping(dir, 3);
-        crate::engine::engine_collision_convex::mjccd_support(
-            obj as *const (),
-            &ccd_dir as *const crate::types::ccd_vec3_t,
-            &mut ccd_vec as *mut crate::types::ccd_vec3_t,
-        );
-        (vec as *mut f64).copy_from_nonoverlapping(
-            ccd_vec.v.as_ptr() as *const f64, 3);
-    }
-
-    unsafe extern "C" fn center_trampoline(obj: *const core::ffi::c_void,
-                                            center: *mut f64) {
-        // SAFETY: bridge guarantees center points to 3 f64.
-        let mut ccd_center = crate::types::ccd_vec3_t { v: [0u8; 24] };
-        crate::engine::engine_collision_convex::mjccd_center(
-            obj as *const (),
-            &mut ccd_center as *mut crate::types::ccd_vec3_t,
-        );
-        (center as *mut f64).copy_from_nonoverlapping(
-            ccd_center.v.as_ptr() as *const f64, 3);
-    }
-
-    // SAFETY: m, obj1, obj2, con are valid pointers from caller.
-    unsafe {
-        // use_prism_dir = 1 if either geom is hfield
-        let use_prism = ((*obj1).geom_type == mjtGeom_mjGEOM_HFIELD as i32
-            || (*obj2).geom_type == mjtGeom_mjGEOM_HFIELD as i32) as i32;
-
-        // FFI call to libccd_bridge
-        extern "C" {
-            fn c2rust_ccd_mpr_penetration(
-                obj1: *const core::ffi::c_void,
-                obj2: *const core::ffi::c_void,
-                mpr_tolerance: f64,
-                epa_tolerance: f64,
-                max_iterations: u64,
-                support1: unsafe extern "C" fn(*const core::ffi::c_void, *const f64, *mut f64),
-                support2: unsafe extern "C" fn(*const core::ffi::c_void, *const f64, *mut f64),
-                center1: unsafe extern "C" fn(*const core::ffi::c_void, *mut f64),
-                center2: unsafe extern "C" fn(*const core::ffi::c_void, *mut f64),
-                use_prism_dir: i32,
-                result: *mut CcdResult,
-            );
-        }
-
-        #[repr(C)]
-        struct CcdResult {
-            status: i32,
-            dir_is_origin: i32,
-            depth: f64,
-            dir: [f64; 3],
-            pos: [f64; 3],
-        }
-
-        let mut result = CcdResult {
-            status: -1,
-            dir_is_origin: 0,
-            depth: 0.0,
-            dir: [0.0; 3],
-            pos: [0.0; 3],
-        };
-
-        c2rust_ccd_mpr_penetration(
-            obj1 as *const core::ffi::c_void,
-            obj2 as *const core::ffi::c_void,
-            (*m).opt.ccd_tolerance,
-            (*m).opt.ccd_tolerance,
-            (*m).opt.ccd_iterations as u64,
-            support_trampoline,
-            support_trampoline,
-            center_trampoline,
-            center_trampoline,
-            use_prism,
-            &mut result as *mut CcdResult,
-        );
-
-        if result.status != 0 {
-            return 0;
-        }
-        if result.dir_is_origin != 0 {
-            return 0;
-        }
-
-        // Fill contact — exact C order
-        (*con).dist = margin - result.depth;
-        (*con).normal[0] = result.dir[0];
-        (*con).normal[1] = result.dir[1];
-        (*con).normal[2] = result.dir[2];
-        (*con).pos[0] = result.pos[0];
-        (*con).pos[1] = result.pos[1];
-        (*con).pos[2] = result.pos[2];
-        (*con).tangent[0] = 0.0;
-        (*con).tangent[1] = 0.0;
-        (*con).tangent[2] = 0.0;
-
-        1
-    }
-}
-
-/// C: mjc_penetration (engine/engine_collision_convex.c:87)
-/// Calls: _libccd_wrapper, mj_freeStack, mj_markStack, mj_stackAllocByte, mjc_ccd, mjc_ccdSize, mji_sub3, mji_zero3, mju_normalize3
-/// ⚠️ BITEXACT RULES:
-///   1. Copy exact C accumulation order (no iter().sum())
-///   2. No f64::mul_add() (FMA changes precision)
-///   3. No algebraic simplification
-///   4. No iter().sum()/product() (order undefined)
-#[allow(unused_variables, non_snake_case)]
-pub fn mjc_penetration(m: *const mjModel, d: *mut mjData, obj1: *mut mjCCDObj, obj2: *mut mjCCDObj, con: *mut mjPreContact, ncon: i32, margin: f64) -> i32 {
-    todo!() // mjc_penetration
-}
-
 /// C: mulMatTVec3 (engine/engine_collision_convex.c:174)
 /// ⚠️ BITEXACT RULES:
 ///   1. Copy exact C accumulation order (no iter().sum())
@@ -157,7 +23,7 @@ pub fn mjc_penetration(m: *const mjModel, d: *mut mjData, obj1: *mut mjCCDObj, o
 ///   3. No algebraic simplification
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
-pub fn mul_mat_t_vec3(res: *mut f64, mat: *const f64, dir: *const f64) {
+pub fn mulMatTVec3(res: *mut f64, mat: *const f64, dir: *const f64) {
     // SAFETY: caller guarantees res[3], mat[9], dir[3] are valid
     unsafe {
         *res.add(0) = *mat.add(0) * *dir.add(0) + *mat.add(3) * *dir.add(1) + *mat.add(6) * *dir.add(2);
@@ -173,7 +39,7 @@ pub fn mul_mat_t_vec3(res: *mut f64, mat: *const f64, dir: *const f64) {
 ///   3. No algebraic simplification
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
-pub fn local_to_global(res: *mut f64, mat: *const f64, dir: *const f64, pos: *const f64) {
+pub fn localToGlobal(res: *mut f64, mat: *const f64, dir: *const f64, pos: *const f64) {
     // SAFETY: caller guarantees res[3], mat[9], dir[3], pos[3] are valid
     unsafe {
         *res.add(0) = *mat.add(0) * *dir.add(0) + *mat.add(1) * *dir.add(1) + *mat.add(2) * *dir.add(2);
@@ -186,14 +52,13 @@ pub fn local_to_global(res: *mut f64, mat: *const f64, dir: *const f64, pos: *co
 }
 
 /// C: mjc_sphereSupport (engine/engine_collision_convex.c:202)
-/// Calls: sphere
 /// ⚠️ BITEXACT RULES:
 ///   1. Copy exact C accumulation order (no iter().sum())
 ///   2. No f64::mul_add() (FMA changes precision)
 ///   3. No algebraic simplification
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
-pub fn mjc_sphere_support(res: *mut f64, obj: *mut mjCCDObj, dir: *const f64) {
+pub fn mjc_sphereSupport(res: *mut f64, obj: *mut mjCCDObj, dir: *const f64) {
     // SAFETY: res points to 3 f64, obj is a valid mjCCDObj pointer, dir points to 3 f64 (caller contract)
     unsafe {
         let pos = (*obj).pos.as_ptr();
@@ -206,14 +71,14 @@ pub fn mjc_sphere_support(res: *mut f64, obj: *mut mjCCDObj, dir: *const f64) {
 }
 
 /// C: mjc_capsuleSupport (engine/engine_collision_convex.c:231)
-/// Calls: localToGlobal, mulMatTVec3
+/// Calls: cxx-internal:/Users/xing/Desktop/projects/c2rust_bitexact/projects/mujoco/src/engine/engine_collision_convex.c:_localToGlobal, cxx-internal:/Users/xing/Desktop/projects/c2rust_bitexact/projects/mujoco/src/engine/engine_collision_convex.c:_mulMatTVec3
 /// ⚠️ BITEXACT RULES:
 ///   1. Copy exact C accumulation order (no iter().sum())
 ///   2. No f64::mul_add() (FMA changes precision)
 ///   3. No algebraic simplification
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
-pub fn mjc_capsule_support(res: *mut f64, obj: *mut mjCCDObj, dir: *const f64) {
+pub fn mjc_capsuleSupport(res: *mut f64, obj: *mut mjCCDObj, dir: *const f64) {
     // SAFETY: res points to 3 f64, obj is a valid mjCCDObj pointer, dir points to 3 f64 (caller contract)
     unsafe {
         let mat = (*obj).mat.as_ptr();
@@ -224,7 +89,7 @@ pub fn mjc_capsule_support(res: *mut f64, obj: *mut mjCCDObj, dir: *const f64) {
         // rotate dir to geom local frame
         let mut local_dir: [f64; 3] = [0.0; 3];
         let mut local_supp: [f64; 3] = [0.0; 3];
-        mul_mat_t_vec3(local_dir.as_mut_ptr(), mat, dir);
+        mulMatTVec3(local_dir.as_mut_ptr(), mat, dir);
 
         // start with sphere
         local_supp[0] = local_dir[0] * radius;
@@ -235,19 +100,19 @@ pub fn mjc_capsule_support(res: *mut f64, obj: *mut mjCCDObj, dir: *const f64) {
         local_supp[2] += if local_dir[2] >= 0.0 { length } else { -length };
 
         // transform result to global frame
-        local_to_global(res, mat, local_supp.as_ptr(), pos);
+        localToGlobal(res, mat, local_supp.as_ptr(), pos);
     }
 }
 
 /// C: mjc_ellipsoidSupport (engine/engine_collision_convex.c:256)
-/// Calls: localToGlobal, mulMatTVec3
+/// Calls: cxx-internal:/Users/xing/Desktop/projects/c2rust_bitexact/projects/mujoco/src/engine/engine_collision_convex.c:_localToGlobal, cxx-internal:/Users/xing/Desktop/projects/c2rust_bitexact/projects/mujoco/src/engine/engine_collision_convex.c:_mulMatTVec3
 /// ⚠️ BITEXACT RULES:
 ///   1. Copy exact C accumulation order (no iter().sum())
 ///   2. No f64::mul_add() (FMA changes precision)
 ///   3. No algebraic simplification
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
-pub fn mjc_ellipsoid_support(res: *mut f64, obj: *mut mjCCDObj, dir: *const f64) {
+pub fn mjc_ellipsoidSupport(res: *mut f64, obj: *mut mjCCDObj, dir: *const f64) {
     const MJ_MINVAL2: f64 = 1E-15_f64 * 1E-15_f64;
 
     // SAFETY: res[3], obj valid, dir[3] valid (caller contract)
@@ -259,7 +124,7 @@ pub fn mjc_ellipsoid_support(res: *mut f64, obj: *mut mjCCDObj, dir: *const f64)
         // rotate dir to geom local frame
         let mut local_dir: [f64; 3] = [0.0; 3];
         let mut local_supp: [f64; 3] = [0.0; 3];
-        mul_mat_t_vec3(local_dir.as_mut_ptr(), mat, dir);
+        mulMatTVec3(local_dir.as_mut_ptr(), mat, dir);
 
         // find support point on unit sphere: scale dir by ellipsoid sizes
         local_supp[0] = local_dir[0] * *size.add(0);
@@ -285,19 +150,19 @@ pub fn mjc_ellipsoid_support(res: *mut f64, obj: *mut mjCCDObj, dir: *const f64)
         local_supp[2] *= norm_inv * *size.add(2);
 
         // transform result to global frame
-        local_to_global(res, mat, local_supp.as_ptr(), pos);
+        localToGlobal(res, mat, local_supp.as_ptr(), pos);
     }
 }
 
 /// C: mjc_cylinderSupport (engine/engine_collision_convex.c:293)
-/// Calls: localToGlobal, mulMatTVec3
+/// Calls: cxx-internal:/Users/xing/Desktop/projects/c2rust_bitexact/projects/mujoco/src/engine/engine_collision_convex.c:_localToGlobal, cxx-internal:/Users/xing/Desktop/projects/c2rust_bitexact/projects/mujoco/src/engine/engine_collision_convex.c:_mulMatTVec3
 /// ⚠️ BITEXACT RULES:
 ///   1. Copy exact C accumulation order (no iter().sum())
 ///   2. No f64::mul_add() (FMA changes precision)
 ///   3. No algebraic simplification
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
-pub fn mjc_cylinder_support(res: *mut f64, obj: *mut mjCCDObj, dir: *const f64) {
+pub fn mjc_cylinderSupport(res: *mut f64, obj: *mut mjCCDObj, dir: *const f64) {
     const MJ_MINVAL: f64 = 1E-15;
     const MJ_MINVAL2: f64 = MJ_MINVAL * MJ_MINVAL;
 
@@ -310,7 +175,7 @@ pub fn mjc_cylinder_support(res: *mut f64, obj: *mut mjCCDObj, dir: *const f64) 
         // rotate dir to geom local frame
         let mut local_dir: [f64; 3] = [0.0; 3];
         let mut local_supp: [f64; 3] = [0.0; 3];
-        mul_mat_t_vec3(local_dir.as_mut_ptr(), mat, dir);
+        mulMatTVec3(local_dir.as_mut_ptr(), mat, dir);
 
         let n2 = local_dir[0] * local_dir[0] + local_dir[1] * local_dir[1];
         let scl = if n2 >= MJ_MINVAL2 { *size.add(0) / f64::sqrt(n2) } else { 0.0 };
@@ -321,19 +186,19 @@ pub fn mjc_cylinder_support(res: *mut f64, obj: *mut mjCCDObj, dir: *const f64) 
         local_supp[2] = if local_dir[2] >= 0.0 { *size.add(1) } else { -*size.add(1) };
 
         // transform result to global frame
-        local_to_global(res, mat, local_supp.as_ptr(), pos);
+        localToGlobal(res, mat, local_supp.as_ptr(), pos);
     }
 }
 
 /// C: mjc_boxSupport (engine/engine_collision_convex.c:317)
-/// Calls: localToGlobal, mulMatTVec3
+/// Calls: cxx-internal:/Users/xing/Desktop/projects/c2rust_bitexact/projects/mujoco/src/engine/engine_collision_convex.c:_localToGlobal, cxx-internal:/Users/xing/Desktop/projects/c2rust_bitexact/projects/mujoco/src/engine/engine_collision_convex.c:_mulMatTVec3
 /// ⚠️ BITEXACT RULES:
 ///   1. Copy exact C accumulation order (no iter().sum())
 ///   2. No f64::mul_add() (FMA changes precision)
 ///   3. No algebraic simplification
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
-pub fn mjc_box_support(res: *mut f64, obj: *mut mjCCDObj, dir: *const f64) {
+pub fn mjc_boxSupport(res: *mut f64, obj: *mut mjCCDObj, dir: *const f64) {
     // SAFETY: res points to 3 f64, obj is a valid mjCCDObj pointer, dir points to 3 f64 (caller contract)
     unsafe {
         let mat = (*obj).mat.as_ptr();
@@ -343,7 +208,7 @@ pub fn mjc_box_support(res: *mut f64, obj: *mut mjCCDObj, dir: *const f64) {
         // rotate dir to geom local frame
         let mut local_dir: [f64; 3] = [0.0; 3];
         let mut local_supp: [f64; 3] = [0.0; 3];
-        mul_mat_t_vec3(local_dir.as_mut_ptr(), mat, dir);
+        mulMatTVec3(local_dir.as_mut_ptr(), mat, dir);
 
         // find support point in local frame
         local_supp[0] = if local_dir[0] >= 0.0 { *size.add(0) } else { -*size.add(0) };
@@ -356,7 +221,7 @@ pub fn mjc_box_support(res: *mut f64, obj: *mut mjCCDObj, dir: *const f64) {
             | (if local_supp[2] > 0.0 { 4 } else { 0 });
 
         // transform support point to global frame
-        local_to_global(res, mat, local_supp.as_ptr(), pos);
+        localToGlobal(res, mat, local_supp.as_ptr(), pos);
     }
 }
 
@@ -375,14 +240,14 @@ pub fn dot3f(a: *const f64, b: *const f32) -> f64 {
 }
 
 /// C: mjc_meshSupport (engine/engine_collision_convex.c:349)
-/// Calls: dot3f, localToGlobal, mulMatTVec3
+/// Calls: cxx-internal:/Users/xing/Desktop/projects/c2rust_bitexact/projects/mujoco/src/engine/engine_collision_convex.c:_dot3f, cxx-internal:/Users/xing/Desktop/projects/c2rust_bitexact/projects/mujoco/src/engine/engine_collision_convex.c:_localToGlobal, cxx-internal:/Users/xing/Desktop/projects/c2rust_bitexact/projects/mujoco/src/engine/engine_collision_convex.c:_mulMatTVec3
 /// ⚠️ BITEXACT RULES:
 ///   1. Copy exact C accumulation order (no iter().sum())
 ///   2. No f64::mul_add() (FMA changes precision)
 ///   3. No algebraic simplification
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
-pub fn mjc_mesh_support(res: *mut f64, obj: *mut mjCCDObj, dir: *const f64) {
+pub fn mjc_meshSupport(res: *mut f64, obj: *mut mjCCDObj, dir: *const f64) {
     // SAFETY: res[3], obj valid, dir[3] valid; data.mesh fields accessed via raw offsets (caller contract)
     unsafe {
         let mat = (*obj).mat.as_ptr();
@@ -394,7 +259,7 @@ pub fn mjc_mesh_support(res: *mut f64, obj: *mut mjCCDObj, dir: *const f64) {
         let verts = *(data_ptr.add(8) as *const *const f32);
 
         let mut local_dir: [f64; 3] = [0.0; 3];
-        mul_mat_t_vec3(local_dir.as_mut_ptr(), mat, dir);
+        mulMatTVec3(local_dir.as_mut_ptr(), mat, dir);
 
         let mut max: f64 = -f32::MAX as f64;
         let mut imax: i32 = 0;
@@ -424,19 +289,19 @@ pub fn mjc_mesh_support(res: *mut f64, obj: *mut mjCCDObj, dir: *const f64) {
         local_dir[2] = *verts.add(3 * imax as usize + 2) as f64;
 
         // transform result to global frame
-        local_to_global(res, mat, local_dir.as_ptr(), pos);
+        localToGlobal(res, mat, local_dir.as_ptr(), pos);
     }
 }
 
 /// C: mjc_hillclimbSupport (engine/engine_collision_convex.c:391)
-/// Calls: dot3f, localToGlobal, mulMatTVec3
+/// Calls: cxx-internal:/Users/xing/Desktop/projects/c2rust_bitexact/projects/mujoco/src/engine/engine_collision_convex.c:_dot3f, cxx-internal:/Users/xing/Desktop/projects/c2rust_bitexact/projects/mujoco/src/engine/engine_collision_convex.c:_localToGlobal, cxx-internal:/Users/xing/Desktop/projects/c2rust_bitexact/projects/mujoco/src/engine/engine_collision_convex.c:_mulMatTVec3
 /// ⚠️ BITEXACT RULES:
 ///   1. Copy exact C accumulation order (no iter().sum())
 ///   2. No f64::mul_add() (FMA changes precision)
 ///   3. No algebraic simplification
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
-pub fn mjc_hillclimb_support(res: *mut f64, obj: *mut mjCCDObj, dir: *const f64) {
+pub fn mjc_hillclimbSupport(res: *mut f64, obj: *mut mjCCDObj, dir: *const f64) {
     // SAFETY: res[3], obj valid, dir[3] valid; data.mesh fields accessed via raw offsets (caller contract)
     unsafe {
         let mat = (*obj).mat.as_ptr();
@@ -454,7 +319,7 @@ pub fn mjc_hillclimb_support(res: *mut f64, obj: *mut mjCCDObj, dir: *const f64)
 
         // rotate dir to geom local frame
         let mut local_dir: [f64; 3] = [0.0; 3];
-        mul_mat_t_vec3(local_dir.as_mut_ptr(), mat, dir);
+        mulMatTVec3(local_dir.as_mut_ptr(), mat, dir);
 
         let mut max: f64 = -f32::MAX as f64;
         let mut prev: i32 = -1;
@@ -489,12 +354,12 @@ pub fn mjc_hillclimb_support(res: *mut f64, obj: *mut mjCCDObj, dir: *const f64)
         local_dir[2] = *verts.add(3 * global_id as usize + 2) as f64;
 
         // transform result to global frame
-        local_to_global(res, mat, local_dir.as_ptr(), pos);
+        localToGlobal(res, mat, local_dir.as_ptr(), pos);
     }
 }
 
 /// C: mjc_prism_support (engine/engine_collision_convex.c:436)
-/// Calls: mji_copy3, mju_dot3
+/// Calls: cxx-internal:/Users/xing/Desktop/projects/c2rust_bitexact/projects/mujoco/src/engine/engine_inline.h:_mji_copy3, cxx:_mju_dot3
 /// ⚠️ BITEXACT RULES:
 ///   1. Copy exact C accumulation order (no iter().sum())
 ///   2. No f64::mul_add() (FMA changes precision)
@@ -529,14 +394,14 @@ pub fn mjc_prism_support(res: *mut f64, obj: *mut mjCCDObj, dir: *const f64) {
 }
 
 /// C: mjc_flexSupport (engine/engine_collision_convex.c:458)
-/// Calls: mji_addScl3, mji_addToScl3, mji_copy3, mju_dot3
+/// Calls: cxx-internal:/Users/xing/Desktop/projects/c2rust_bitexact/projects/mujoco/src/engine/engine_inline.h:_mji_addScl3, cxx-internal:/Users/xing/Desktop/projects/c2rust_bitexact/projects/mujoco/src/engine/engine_inline.h:_mji_addToScl3, cxx-internal:/Users/xing/Desktop/projects/c2rust_bitexact/projects/mujoco/src/engine/engine_inline.h:_mji_copy3, cxx:_mju_dot3
 /// ⚠️ BITEXACT RULES:
 ///   1. Copy exact C accumulation order (no iter().sum())
 ///   2. No f64::mul_add() (FMA changes precision)
 ///   3. No algebraic simplification
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
-pub fn mjc_flex_support(res: *mut f64, obj: *mut mjCCDObj, dir: *const f64) {
+pub fn mjc_flexSupport(res: *mut f64, obj: *mut mjCCDObj, dir: *const f64) {
     // SAFETY: obj valid, dir[3] valid, res[3] valid. Flex union fields accessed via raw offsets:
     //   elem: *const i32 at offset 0, dim: *const i32 at offset 8,
     //   elemdataadr: *const i32 at offset 32, vert_xpos: *const f64 at offset 40,
@@ -578,7 +443,7 @@ pub fn mjc_flex_support(res: *mut f64, obj: *mut mjCCDObj, dir: *const f64) {
             }
 
             // add radius and margin/2
-            crate::engine::engine_inline::mji_add_to_scl3(
+            crate::engine::engine_inline::mji_addToScl3(
                 res, dir, *flex_xradius.add(f as usize) + 0.5 * (*obj).margin);
             return;
         }
@@ -586,14 +451,14 @@ pub fn mjc_flex_support(res: *mut f64, obj: *mut mjCCDObj, dir: *const f64) {
         // flex vertex
         let vert = flex_vert_xpos.add(
             3 * (*flex_vertadr.add(f as usize) + (*obj).vert) as usize);
-        crate::engine::engine_inline::mji_add_scl3(
+        crate::engine::engine_inline::mji_addScl3(
             res, vert, dir, *flex_xradius.add(f as usize) + 0.5 * (*obj).margin);
     }
 }
 
 /// C: mjc_setCCDObjFlex (engine/engine_collision_convex.c:790)
 #[allow(unused_variables, non_snake_case)]
-pub fn mjc_set_ccd_obj_flex(obj: *mut mjCCDObj, flex: i32, elem: i32, vert: i32) {
+pub fn mjc_setCCDObjFlex(obj: *mut mjCCDObj, flex: i32, elem: i32, vert: i32) {
     // SAFETY: obj is a valid mjCCDObj pointer (caller contract)
     unsafe {
         (*obj).flex = flex;
@@ -603,14 +468,14 @@ pub fn mjc_set_ccd_obj_flex(obj: *mut mjCCDObj, flex: i32, elem: i32, vert: i32)
 }
 
 /// C: mjc_isDistinctContact (engine/engine_collision_convex.c:798)
-/// Calls: mju_dist3
+/// Calls: cxx:_mju_dist3
 /// ⚠️ BITEXACT RULES:
 ///   1. Copy exact C accumulation order (no iter().sum())
 ///   2. No f64::mul_add() (FMA changes precision)
 ///   3. No algebraic simplification
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
-pub fn mjc_is_distinct_contact(con: *const mjPreContact, ncon: i32, tolerance: f64) -> i32 {
+pub fn mjc_isDistinctContact(con: *const mjPreContact, ncon: i32, tolerance: f64) -> i32 {
     // SAFETY: con points to array of ncon mjPreContact elements (caller contract)
     unsafe {
         let last_pos = (*con.add((ncon - 1) as usize)).pos.as_ptr();
@@ -628,14 +493,14 @@ pub fn mjc_is_distinct_contact(con: *const mjPreContact, ncon: i32, tolerance: f
 }
 
 /// C: mju_rotateFrame (engine/engine_collision_convex.c:810)
-/// Calls: mji_sub3, mji_subFrom3, mju_copy, mju_mulMatMat3, mju_mulMatVec3, mju_subFrom3
+/// Calls: cxx-internal:/Users/xing/Desktop/projects/c2rust_bitexact/projects/mujoco/src/engine/engine_inline.h:_mji_sub3, cxx-internal:/Users/xing/Desktop/projects/c2rust_bitexact/projects/mujoco/src/engine/engine_inline.h:_mji_subFrom3, cxx:_mju_copy, cxx:_mju_mulMatMat3, cxx:_mju_mulMatVec3, cxx:_mju_subFrom3
 /// ⚠️ BITEXACT RULES:
 ///   1. Copy exact C accumulation order (no iter().sum())
 ///   2. No f64::mul_add() (FMA changes precision)
 ///   3. No algebraic simplification
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
-pub fn mju_rotate_frame(origin: *const f64, rot: *const f64, xmat: *mut f64, xpos: *mut f64) {
+pub fn mju_rotateFrame(origin: *const f64, rot: *const f64, xmat: *mut f64, xpos: *mut f64) {
     // SAFETY: origin[3], rot[9], xmat[9], xpos[3] are valid (caller contract).
     unsafe {
         let mut mat: [f64; 9] = [0.0; 9];
@@ -643,24 +508,24 @@ pub fn mju_rotate_frame(origin: *const f64, rot: *const f64, xmat: *mut f64, xpo
         let mut rel: [f64; 3] = [0.0; 3];
 
         // rotate frame: xmat = rot*xmat
-        crate::engine::engine_util_blas::mju_mul_mat_mat3(mat.as_mut_ptr(), rot, xmat);
+        crate::engine::engine_util_blas::mju_mulMatMat3(mat.as_mut_ptr(), rot, xmat);
         crate::engine::engine_util_blas::mju_copy(xmat, mat.as_ptr(), 9);
 
         // vector to rotation origin: rel = origin - xpos
         crate::engine::engine_inline::mji_sub3(rel.as_mut_ptr(), origin, xpos);
 
         // displacement of origin due to rotation: vec = rot*rel - rel
-        crate::engine::engine_util_blas::mju_mul_mat_vec3(vec.as_mut_ptr(), rot, rel.as_ptr());
-        crate::engine::engine_util_blas::mju_sub_from3(vec.as_mut_ptr(), rel.as_ptr());
+        crate::engine::engine_util_blas::mju_mulMatVec3(vec.as_mut_ptr(), rot, rel.as_ptr());
+        crate::engine::engine_util_blas::mju_subFrom3(vec.as_mut_ptr(), rel.as_ptr());
 
         // correct xpos by subtracting displacement: xpos = xpos - vec
-        crate::engine::engine_inline::mji_sub_from3(xpos, vec.as_ptr());
+        crate::engine::engine_inline::mji_subFrom3(xpos, vec.as_ptr());
     }
 }
 
 /// C: maxContacts (engine/engine_collision_convex.c:831)
 #[allow(unused_variables, non_snake_case)]
-pub fn max_contacts(m: *const mjModel, obj1: *const mjCCDObj, obj2: *const mjCCDObj) -> i32 {
+pub fn maxContacts(m: *const mjModel, obj1: *const mjCCDObj, obj2: *const mjCCDObj) -> i32 {
     const mjGEOM_BOX: i32 = 6;
     const mjGEOM_MESH: i32 = 7;
     const mjDSBL_MULTICCD: i32 = 1 << 19;
@@ -692,7 +557,7 @@ pub fn max_contacts(m: *const mjModel, obj1: *const mjCCDObj, obj2: *const mjCCD
 }
 
 /// C: addplanemesh (engine/engine_collision_convex.c:946)
-/// Calls: mji_addToScl3, mji_copy3, mji_sub3, mji_zero3, mju_addTo3, mju_dist3, mju_dot3, mju_mulMatVec3
+/// Calls: cxx-internal:/Users/xing/Desktop/projects/c2rust_bitexact/projects/mujoco/src/engine/engine_inline.h:_mji_addToScl3, cxx-internal:/Users/xing/Desktop/projects/c2rust_bitexact/projects/mujoco/src/engine/engine_inline.h:_mji_copy3, cxx-internal:/Users/xing/Desktop/projects/c2rust_bitexact/projects/mujoco/src/engine/engine_inline.h:_mji_sub3, cxx-internal:/Users/xing/Desktop/projects/c2rust_bitexact/projects/mujoco/src/engine/engine_inline.h:_mji_zero3, cxx:_mju_addTo3, cxx:_mju_dist3, cxx:_mju_dot3, cxx:_mju_mulMatVec3
 /// ⚠️ BITEXACT RULES:
 ///   1. Copy exact C accumulation order (no iter().sum())
 ///   2. No f64::mul_add() (FMA changes precision)
@@ -706,8 +571,8 @@ pub fn addplanemesh(con: *mut mjPreContact, vertex: *const f32, pos1: *const f64
         // compute point in global coordinates
         let mut pnt: [f64; 3] = [0.0; 3];
         let v: [f64; 3] = [*vertex.add(0) as f64, *vertex.add(1) as f64, *vertex.add(2) as f64];
-        crate::engine::engine_util_blas::mju_mul_mat_vec3(pnt.as_mut_ptr(), mat2, v.as_ptr());
-        crate::engine::engine_util_blas::mju_add_to3(pnt.as_mut_ptr(), pos2);
+        crate::engine::engine_util_blas::mju_mulMatVec3(pnt.as_mut_ptr(), mat2, v.as_ptr());
+        crate::engine::engine_util_blas::mju_addTo3(pnt.as_mut_ptr(), pos2);
 
         // skip if too close to first contact
         if crate::engine::engine_util_blas::mju_dist3(pnt.as_ptr(), first) < TOLPLANEMESH * rbound {
@@ -723,7 +588,7 @@ pub fn addplanemesh(con: *mut mjPreContact, vertex: *const f32, pos1: *const f64
 
         // set position
         crate::engine::engine_inline::mji_copy3((*con).pos.as_mut_ptr(), pnt.as_ptr());
-        crate::engine::engine_inline::mji_add_to_scl3((*con).pos.as_mut_ptr(), normal1, -0.5 * (*con).dist);
+        crate::engine::engine_inline::mji_addToScl3((*con).pos.as_mut_ptr(), normal1, -0.5 * (*con).dist);
 
         // set frame
         crate::engine::engine_inline::mji_copy3((*con).normal.as_mut_ptr(), normal1);
@@ -734,14 +599,14 @@ pub fn addplanemesh(con: *mut mjPreContact, vertex: *const f32, pos1: *const f64
 }
 
 /// C: addVert (engine/engine_collision_convex.c:1085)
-/// Calls: mji_copy3
+/// Calls: cxx-internal:/Users/xing/Desktop/projects/c2rust_bitexact/projects/mujoco/src/engine/engine_inline.h:_mji_copy3
 /// ⚠️ BITEXACT RULES:
 ///   1. Copy exact C accumulation order (no iter().sum())
 ///   2. No f64::mul_add() (FMA changes precision)
 ///   3. No algebraic simplification
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
-pub fn add_vert(obj: *mut mjCCDObj, x: f64, y: f64, z: f64) {
+pub fn addVert(obj: *mut mjCCDObj, x: f64, y: f64, z: f64) {
     // addVert: shift prism rows down and add new vertex at position [2] and [5].
     // obj->data is a union; hfield.prism is [mjtNum; 18] at offset 0 of the data field.
     // prism[i] in C is a mjtNum[3] row, so prism[i][j] == flat_prism[i*3 + j].
@@ -787,14 +652,14 @@ pub fn add_vert(obj: *mut mjCCDObj, x: f64, y: f64, z: f64) {
 }
 
 /// C: addPrismVert (engine/engine_collision_convex.c:1100)
-/// Calls: mji_copy3
+/// Calls: cxx-internal:/Users/xing/Desktop/projects/c2rust_bitexact/projects/mujoco/src/engine/engine_inline.h:_mji_copy3
 /// ⚠️ BITEXACT RULES:
 ///   1. Copy exact C accumulation order (no iter().sum())
 ///   2. No f64::mul_add() (FMA changes precision)
 ///   3. No algebraic simplification
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
-pub fn add_prism_vert(obj: *mut mjCCDObj, r: i32, c: i32, i: i32, dx: f64, dy: f64, margin: f64) {
+pub fn addPrismVert(obj: *mut mjCCDObj, r: i32, c: i32, i: i32, dx: f64, dy: f64, margin: f64) {
     // Similar to add_vert but uses hfield data for z-coordinate.
     // HfieldData layout in data._data (160 bytes):
     //   prism: [f64; 18] at offset 0 (6 rows of [x, y, z])
@@ -847,14 +712,14 @@ pub fn add_prism_vert(obj: *mut mjCCDObj, r: i32, c: i32, i: i32, dx: f64, dy: f
 }
 
 /// C: mjc_ellipsoidInside (engine/engine_collision_convex.c:1282)
-/// Calls: mji_addScl3, mji_copy3, mju_dist3, mju_normalize3
+/// Calls: cxx-internal:/Users/xing/Desktop/projects/c2rust_bitexact/projects/mujoco/src/engine/engine_inline.h:_mji_addScl3, cxx-internal:/Users/xing/Desktop/projects/c2rust_bitexact/projects/mujoco/src/engine/engine_inline.h:_mji_copy3, cxx:_mju_dist3, cxx:_mju_normalize3
 /// ⚠️ BITEXACT RULES:
 ///   1. Copy exact C accumulation order (no iter().sum())
 ///   2. No f64::mul_add() (FMA changes precision)
 ///   3. No algebraic simplification
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
-pub fn mjc_ellipsoid_inside(nrm: *mut f64, pos: *const f64, size: *const f64) -> i32 {
+pub fn mjc_ellipsoidInside(nrm: *mut f64, pos: *const f64, size: *const f64) -> i32 {
     // Compute normal for point outside ellipsoid, using ray-projection SQP.
     // Returns 0 if pos is already outside (C > 0), 1 if inside and normal computed.
 
@@ -937,14 +802,14 @@ pub fn mjc_ellipsoid_inside(nrm: *mut f64, pos: *const f64, size: *const f64) ->
 }
 
 /// C: mjc_ellipsoidOutside (engine/engine_collision_convex.c:1337)
-/// Calls: mju_normalize3
+/// Calls: cxx:_mju_normalize3
 /// ⚠️ BITEXACT RULES:
 ///   1. Copy exact C accumulation order (no iter().sum())
 ///   2. No f64::mul_add() (FMA changes precision)
 ///   3. No algebraic simplification
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
-pub fn mjc_ellipsoid_outside(nrm: *mut f64, pos: *const f64, size: *const f64) -> i32 {
+pub fn mjc_ellipsoidOutside(nrm: *mut f64, pos: *const f64, size: *const f64) -> i32 {
     const MJ_MINVAL: f64 = 1E-15_f64;
 
     // SAFETY: caller guarantees nrm[3], pos[3], size[3] are valid
@@ -1013,14 +878,14 @@ pub fn mjc_ellipsoid_outside(nrm: *mut f64, pos: *const f64, size: *const f64) -
 }
 
 /// C: mjc_initCCDObj (engine/engine_collision_convex.h:94)
-/// Calls: mju_copy, mju_zero4
+/// Calls: cxx:_mju_copy, cxx:_mju_zero4
 /// ⚠️ BITEXACT RULES:
 ///   1. Copy exact C accumulation order (no iter().sum())
 ///   2. No f64::mul_add() (FMA changes precision)
 ///   3. No algebraic simplification
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
-pub fn mjc_init_ccd_obj(obj: *mut mjCCDObj, m: *const mjModel, d: *const mjData, g: i32, margin: f64) {
+pub fn mjc_initCCDObj(obj: *mut mjCCDObj, m: *const mjModel, d: *const mjData, g: i32, margin: f64) {
     const mjGEOM_HFIELD: i32 = 1;
     const mjGEOM_SPHERE: i32 = 2;
     const mjGEOM_CAPSULE: i32 = 3;
@@ -1109,7 +974,7 @@ pub fn mjc_init_ccd_obj(obj: *mut mjCCDObj, m: *const mjModel, d: *const mjData,
 
             match (*obj).geom_type {
                 mjGEOM_ELLIPSOID => {
-                    (*obj).support = Some(unsafe { std::mem::transmute(mjc_ellipsoid_support as *const ()) });
+                    (*obj).support = Some(unsafe { std::mem::transmute(mjc_ellipsoidSupport as *const ()) });
                 }
                 mjGEOM_MESH | mjGEOM_SDF => {
                     let dataid = *(*m).geom_dataid.add(g as usize) as usize;
@@ -1121,10 +986,10 @@ pub fn mjc_init_ccd_obj(obj: *mut mjCCDObj, m: *const mjModel, d: *const mjData,
 
                     if graphadr < 0 || *(*m).mesh_vertnum.add(dataid) < mjMESH_HILLCLIMB_MIN {
                         (*mesh_ptr).graph = std::ptr::null();
-                        (*obj).support = Some(unsafe { std::mem::transmute(mjc_mesh_support as *const ()) });
+                        (*obj).support = Some(unsafe { std::mem::transmute(mjc_meshSupport as *const ()) });
                     } else {
                         (*mesh_ptr).graph = (*m).mesh_graph.add(graphadr as usize);
-                        (*obj).support = Some(unsafe { std::mem::transmute(mjc_hillclimb_support as *const ()) });
+                        (*obj).support = Some(unsafe { std::mem::transmute(mjc_hillclimbSupport as *const ()) });
                     }
 
                     (*mesh_ptr).vert = (*m).mesh_vert.add(3 * vertadr as usize);
@@ -1139,16 +1004,16 @@ pub fn mjc_init_ccd_obj(obj: *mut mjCCDObj, m: *const mjModel, d: *const mjData,
                     (*mesh_ptr).mesh_polynum = *(*m).mesh_polynum.add(dataid);
                 }
                 mjGEOM_SPHERE => {
-                    (*obj).support = Some(unsafe { std::mem::transmute(mjc_sphere_support as *const ()) });
+                    (*obj).support = Some(unsafe { std::mem::transmute(mjc_sphereSupport as *const ()) });
                 }
                 mjGEOM_CAPSULE => {
-                    (*obj).support = Some(unsafe { std::mem::transmute(mjc_capsule_support as *const ()) });
+                    (*obj).support = Some(unsafe { std::mem::transmute(mjc_capsuleSupport as *const ()) });
                 }
                 mjGEOM_CYLINDER => {
-                    (*obj).support = Some(unsafe { std::mem::transmute(mjc_cylinder_support as *const ()) });
+                    (*obj).support = Some(unsafe { std::mem::transmute(mjc_cylinderSupport as *const ()) });
                 }
                 mjGEOM_BOX => {
-                    (*obj).support = Some(unsafe { std::mem::transmute(mjc_box_support as *const ()) });
+                    (*obj).support = Some(unsafe { std::mem::transmute(mjc_boxSupport as *const ()) });
                 }
                 mjGEOM_HFIELD => {
                     (*obj).center = Some(unsafe { std::mem::transmute(mjc_center as *const ()) });
@@ -1177,7 +1042,7 @@ pub fn mjc_init_ccd_obj(obj: *mut mjCCDObj, m: *const mjModel, d: *const mjData,
 
             let flex_ptr = &mut (*obj).data as *mut _ as *mut FlexData;
             (*flex_ptr).dim = (*m).flex_dim;
-            (*obj).support = Some(unsafe { std::mem::transmute(mjc_flex_support as *const ()) });
+            (*obj).support = Some(unsafe { std::mem::transmute(mjc_flexSupport as *const ()) });
             (*flex_ptr).aabb = (*d).flexelem_aabb;
             (*flex_ptr).elemadr = (*m).flex_elemadr;
             (*flex_ptr).vert_xpos = (*d).flexvert_xpos;
@@ -1190,7 +1055,7 @@ pub fn mjc_init_ccd_obj(obj: *mut mjCCDObj, m: *const mjModel, d: *const mjData,
 }
 
 /// C: mjc_center (engine/engine_collision_convex.h:97)
-/// Calls: mji_addTo3, mji_copy3, mju_scl3, mju_zero3
+/// Calls: cxx-internal:/Users/xing/Desktop/projects/c2rust_bitexact/projects/mujoco/src/engine/engine_inline.h:_mji_addTo3, cxx-internal:/Users/xing/Desktop/projects/c2rust_bitexact/projects/mujoco/src/engine/engine_inline.h:_mji_copy3, cxx:_mju_scl3, cxx:_mju_zero3
 /// ⚠️ BITEXACT RULES:
 ///   1. Copy exact C accumulation order (no iter().sum())
 ///   2. No f64::mul_add() (FMA changes precision)
@@ -1212,7 +1077,7 @@ pub fn mjc_center(res: *mut f64, obj: *const mjCCDObj) {
             crate::engine::engine_util_blas::mju_zero3(res);
             let prism = (*obj).data._data.as_ptr() as *const f64;
             for i in 0..6_i32 {
-                crate::engine::engine_inline::mji_add_to3(res, prism.add((i * 3) as usize));
+                crate::engine::engine_inline::mji_addTo3(res, prism.add((i * 3) as usize));
             }
             crate::engine::engine_util_blas::mju_scl3(res, res, 1.0 / 6.0);
             return;
@@ -1247,7 +1112,7 @@ pub fn mjc_center(res: *mut f64, obj: *const mjCCDObj) {
 }
 
 /// C: mjccd_center (engine/engine_collision_convex.h:100)
-/// Calls: mjc_center
+/// Calls: cxx:_mjc_center
 #[allow(unused_variables, non_snake_case)]
 pub fn mjccd_center(obj: *const (), center: *mut ccd_vec3_t) {
     // SAFETY: obj is actually a *const mjCCDObj. center.v is [u8;24] but represents [f64;3].
@@ -1258,7 +1123,7 @@ pub fn mjccd_center(obj: *const (), center: *mut ccd_vec3_t) {
 }
 
 /// C: mjccd_support (engine/engine_collision_convex.h:103)
-/// Calls: mjc_prism_support, mji_addScl3, mji_addTo3, mji_addToScl3, mji_copy3, mji_scl3, mju_dot3, mju_message, mju_mulMatTVec3, mju_mulMatVec3, mju_normalize3, mju_sign, mju_warning, mju_zero3
+/// Calls: cxx-internal:/Users/xing/Desktop/projects/c2rust_bitexact/projects/mujoco/src/engine/engine_inline.h:_mji_addScl3, cxx-internal:/Users/xing/Desktop/projects/c2rust_bitexact/projects/mujoco/src/engine/engine_inline.h:_mji_addTo3, cxx-internal:/Users/xing/Desktop/projects/c2rust_bitexact/projects/mujoco/src/engine/engine_inline.h:_mji_addToScl3, cxx-internal:/Users/xing/Desktop/projects/c2rust_bitexact/projects/mujoco/src/engine/engine_inline.h:_mji_copy3, cxx-internal:/Users/xing/Desktop/projects/c2rust_bitexact/projects/mujoco/src/engine/engine_inline.h:_mji_scl3, cxx-internal:engine_collision_convex.c.o:_mjc_prism_support, cxx:_mju_dot3, cxx:_mju_message, cxx:_mju_mulMatTVec3, cxx:_mju_mulMatVec3, cxx:_mju_normalize3, cxx:_mju_sign, cxx:_mju_warning, cxx:_mju_zero3
 #[allow(unused_variables, non_snake_case)]
 pub fn mjccd_support(obj: *const (), dir: *const ccd_vec3_t, vec: *mut ccd_vec3_t) {
     // SAFETY: obj is actually *mut mjCCDObj. dir.v and vec.v are [u8;24] representing [f64;3].
@@ -1309,7 +1174,7 @@ pub fn mjccd_support(obj: *const (), dir: *const ccd_vec3_t, vec: *mut ccd_vec3_
                             res, vert.add(3 * *edata.add(i as usize) as usize));
                     }
                 }
-                crate::engine::engine_inline::mji_add_to_scl3(
+                crate::engine::engine_inline::mji_addToScl3(
                     res, dir, *flex_xradius.add(f as usize) + 0.5 * (*obj).margin);
                 return;
             }
@@ -1317,7 +1182,7 @@ pub fn mjccd_support(obj: *const (), dir: *const ccd_vec3_t, vec: *mut ccd_vec3_
             else {
                 let vert = flex_vert_xpos.add(
                     3 * (*flex_vertadr.add(f as usize) + (*obj).vert) as usize);
-                crate::engine::engine_inline::mji_add_scl3(
+                crate::engine::engine_inline::mji_addScl3(
                     res, vert, dir, *flex_xradius.add(f as usize) + 0.5 * (*obj).margin);
                 return;
             }
@@ -1327,7 +1192,7 @@ pub fn mjccd_support(obj: *const (), dir: *const ccd_vec3_t, vec: *mut ccd_vec3_
         let mut local_dir: [f64; 3] = [0.0; 3];
 
         // rotate dir to geom local frame
-        crate::engine::engine_util_blas::mju_mul_mat_t_vec3(
+        crate::engine::engine_util_blas::mju_mulMatTVec3(
             local_dir.as_mut_ptr(), (*obj).mat.as_ptr(), dir);
 
         // compute result according to geom type
@@ -1453,22 +1318,22 @@ pub fn mjccd_support(obj: *const (), dir: *const ccd_vec3_t, vec: *mut ccd_vec3_
         }
 
         // rotate result to global frame
-        crate::engine::engine_util_blas::mju_mul_mat_vec3(res, (*obj).mat.as_ptr(), res);
+        crate::engine::engine_util_blas::mju_mulMatVec3(res, (*obj).mat.as_ptr(), res);
 
         // add geom position
-        crate::engine::engine_inline::mji_add_to3(res, (*obj).pos.as_ptr());
+        crate::engine::engine_inline::mji_addTo3(res, (*obj).pos.as_ptr());
     }
 }
 
 /// C: mjc_pointSupport (engine/engine_collision_convex.h:106)
-/// Calls: mji_copy3
+/// Calls: cxx-internal:/Users/xing/Desktop/projects/c2rust_bitexact/projects/mujoco/src/engine/engine_inline.h:_mji_copy3
 /// ⚠️ BITEXACT RULES:
 ///   1. Copy exact C accumulation order (no iter().sum())
 ///   2. No f64::mul_add() (FMA changes precision)
 ///   3. No algebraic simplification
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
-pub fn mjc_point_support(res: *mut f64, obj: *mut mjCCDObj, dir: *const f64) {
+pub fn mjc_pointSupport(res: *mut f64, obj: *mut mjCCDObj, dir: *const f64) {
     // SAFETY: res points to 3 f64, obj is a valid mjCCDObj pointer (caller contract)
     unsafe {
         *res.add(0) = (*obj).pos[0];
@@ -1484,7 +1349,7 @@ pub fn mjc_point_support(res: *mut f64, obj: *mut mjCCDObj, dir: *const f64) {
 ///   3. No algebraic simplification
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
-pub fn mjc_line_support(res: *mut f64, obj: *mut mjCCDObj, dir: *const f64) {
+pub fn mjc_lineSupport(res: *mut f64, obj: *mut mjCCDObj, dir: *const f64) {
     // SAFETY: res, obj, dir are valid pointers from caller
     unsafe {
         let mat = (*obj).mat.as_ptr();
@@ -1500,179 +1365,10 @@ pub fn mjc_line_support(res: *mut f64, obj: *mut mjCCDObj, dir: *const f64) {
     }
 }
 
-/// C: mjc_PlaneConvex (engine/engine_collision_convex.h:112)
-/// Calls: addplanemesh, mjc_initCCDObj, mjccd_support, mji_addToScl3, mji_copy3, mji_sub3, mji_zero3, mju_dot3, mju_mulMatTVec3
-/// ⚠️ BITEXACT RULES:
-///   1. Copy exact C accumulation order (no iter().sum())
-///   2. No f64::mul_add() (FMA changes precision)
-///   3. No algebraic simplification
-///   4. No iter().sum()/product() (order undefined)
-#[allow(unused_variables, non_snake_case)]
-pub fn mjc_plane_convex(m: *const mjModel, d: *mut mjData, con: *mut mjPreContact, g1: i32, g2: i32, margin: f64) -> i32 {
-    const MAXPLANEMESH: i32 = 3;
-
-    // SAFETY: m, d, con valid pointers. All field accesses follow C layout exactly.
-    unsafe {
-        let pos1 = (*d).geom_xpos.add(3 * g1 as usize);
-        let mat1 = (*d).geom_xmat.add(9 * g1 as usize);
-        let pos2 = (*d).geom_xpos.add(3 * g2 as usize);
-        let mat2 = (*d).geom_xmat.add(9 * g2 as usize);
-
-        let mut dif: [f64; 3] = [0.0; 3];
-        let normal: [f64; 3] = [*mat1.add(2), *mat1.add(5), *mat1.add(8)];
-
-        let mut ccd_dir = ccd_vec3_t { v: [0u8; 24] };
-        let mut ccd_vec = ccd_vec3_t { v: [0u8; 24] };
-        let mut obj_bytes: [u8; std::mem::size_of::<mjCCDObj>()] = [0xAA; std::mem::size_of::<mjCCDObj>()];
-        let obj_ptr: *mut mjCCDObj = obj_bytes.as_mut_ptr() as *mut mjCCDObj;
-        mjc_init_ccd_obj(obj_ptr, m, d as *const mjData, g2, 0.0);
-
-        // get support point in -normal direction: ccdVec3Set(&ccd_dir, -mat1[2], -mat1[5], -mat1[8])
-        let dir_v = ccd_dir.v.as_mut_ptr() as *mut f64;
-        *dir_v.add(0) = -*mat1.add(2);
-        *dir_v.add(1) = -*mat1.add(5);
-        *dir_v.add(2) = -*mat1.add(8);
-        mjccd_support(obj_ptr as *const mjCCDObj as *const (), &ccd_dir, &mut ccd_vec);
-
-        // compute normal distance, return if too far
-        let vec_v = ccd_vec.v.as_ptr() as *const f64;
-        crate::engine::engine_inline::mji_sub3(dif.as_mut_ptr(), vec_v, pos1);
-        (*con.add(0)).dist = crate::engine::engine_util_blas::mju_dot3(
-            normal.as_ptr(), dif.as_ptr());
-        if (*con.add(0)).dist > margin {
-            return 0;
-        }
-
-        // fill in contact data
-        crate::engine::engine_inline::mji_copy3((*con.add(0)).pos.as_mut_ptr(), vec_v);
-        crate::engine::engine_inline::mji_add_to_scl3(
-            (*con.add(0)).pos.as_mut_ptr(), normal.as_ptr(), -0.5 * (*con.add(0)).dist);
-        crate::engine::engine_inline::mji_copy3((*con.add(0)).normal.as_mut_ptr(), normal.as_ptr());
-        crate::engine::engine_inline::mji_zero3((*con.add(0)).tangent.as_mut_ptr());
-
-        // add all/connected vertices below margin
-        let mut count: i32 = 1;
-        let g = g2;
-
-        // g is an ellipsoid: no need for further mesh-specific processing
-        if *(*m).geom_dataid.add(g as usize) == -1 {
-            return count;
-        }
-
-        // init
-        let vertdata: *const f32 = (*m).mesh_vert.add(
-            3 * *(*m).mesh_vertadr.add(*(*m).geom_dataid.add(g as usize) as usize) as usize);
-
-        // express dir in geom local frame
-        let mut locdir: [f64; 3] = [0.0; 3];
-        crate::engine::engine_util_blas::mju_mul_mat_t_vec3(
-            locdir.as_mut_ptr(), (*d).geom_xmat.add(9 * g as usize),
-            ccd_dir.v.as_ptr() as *const f64);
-
-        // inclusion threshold along locdir, relative to geom2 center
-        crate::engine::engine_inline::mji_sub3(dif.as_mut_ptr(), pos2, pos1);
-        let threshold: f64 = crate::engine::engine_util_blas::mju_dot3(
-            normal.as_ptr(), dif.as_ptr()) - margin;
-
-        // no graph data: exhaustive search
-        let dataid = *(*m).geom_dataid.add(g as usize) as usize;
-        if *(*m).mesh_graphadr.add(dataid) < 0 {
-            let nvert = *(*m).mesh_vertnum.add(dataid);
-            for i in 0..nvert {
-                if count >= MAXPLANEMESH { break; }
-                let vdot: f64 = locdir[0] * *vertdata.add(3 * i as usize) as f64
-                              + locdir[1] * *vertdata.add(3 * i as usize + 1) as f64
-                              + locdir[2] * *vertdata.add(3 * i as usize + 2) as f64;
-                if vdot > threshold && i != (*obj_ptr).meshindex {
-                    count += addplanemesh(
-                        con.add(count as usize), vertdata.add(3 * i as usize),
-                        pos1, normal.as_ptr(), pos2, mat2,
-                        (*con.add(0)).pos.as_ptr(), *(*m).geom_rbound.add(g2 as usize));
-                }
-            }
-        }
-        // use graph data
-        else if (*obj_ptr).meshindex >= 0 {
-            let graphadr = *(*m).mesh_graphadr.add(dataid) as usize;
-            let numvert = *(*m).mesh_graph.add(graphadr);
-            let vert_edgeadr = (*m).mesh_graph.add(graphadr + 2);
-            let vert_globalid = (*m).mesh_graph.add(graphadr + 2 + numvert as usize);
-            let edge_localid = (*m).mesh_graph.add(graphadr + 2 + 2 * numvert as usize);
-
-            let mut i = *vert_edgeadr.add((*obj_ptr).meshindex as usize);
-            loop {
-                let locid = *edge_localid.add(i as usize);
-                if locid < 0 || count >= MAXPLANEMESH { break; }
-                let vdot: f64 = locdir[0] * *vertdata.add(3 * *vert_globalid.add(locid as usize) as usize) as f64
-                              + locdir[1] * *vertdata.add(3 * *vert_globalid.add(locid as usize) as usize + 1) as f64
-                              + locdir[2] * *vertdata.add(3 * *vert_globalid.add(locid as usize) as usize + 2) as f64;
-                if vdot > threshold {
-                    count += addplanemesh(
-                        con.add(count as usize),
-                        vertdata.add(3 * *vert_globalid.add(locid as usize) as usize),
-                        pos1, normal.as_ptr(), pos2, mat2,
-                        (*con.add(0)).pos.as_ptr(), *(*m).geom_rbound.add(g2 as usize));
-                }
-                i += 1;
-            }
-        }
-
-        count
-    }
-}
-
-/// C: mjc_ConvexHField (engine/engine_collision_convex.h:113)
-/// Calls: addPrismVert, mjc_fixNormal, mjc_initCCDObj, mjc_penetration, mji_addTo3, mji_copy3, mji_copy9, mji_mulMatTMat3, mji_mulMatVec3, mju_mulMatTVec3
-/// ⚠️ BITEXACT RULES:
-///   1. Copy exact C accumulation order (no iter().sum())
-///   2. No f64::mul_add() (FMA changes precision)
-///   3. No algebraic simplification
-///   4. No iter().sum()/product() (order undefined)
-#[allow(unused_variables, non_snake_case)]
-pub fn mjc_convex_h_field(m: *const mjModel, d: *mut mjData, con: *mut mjPreContact, g1: i32, g2: i32, margin: f64) -> i32 {
-    todo!() // mjc_ConvexHField
-}
-
-/// C: mjc_Convex (engine/engine_collision_convex.h:114)
-/// Calls: maxContacts, mjc_fixNormal, mjc_initCCDObj, mjc_isDistinctContact, mjc_penetration, mji_axisAngle2Quat, mji_copy3, mji_copy9, mju_makeFrame, mju_min, mju_quat2Mat, mju_rotateFrame, mju_transpose, mju_zero
-/// ⚠️ BITEXACT RULES:
-///   1. Copy exact C accumulation order (no iter().sum())
-///   2. No f64::mul_add() (FMA changes precision)
-///   3. No algebraic simplification
-///   4. No iter().sum()/product() (order undefined)
-#[allow(unused_variables, non_snake_case)]
-pub fn mjc_convex(m: *const mjModel, d: *mut mjData, con: *mut mjPreContact, g1: i32, g2: i32, margin: f64) -> i32 {
-    todo!() // mjc_Convex
-}
-
-/// C: mjc_ConvexElem (engine/engine_collision_convex.h:117)
-/// Calls: mjc_fixNormal, mjc_initCCDObj, mjc_penetration, mjc_setCCDObjFlex
-/// ⚠️ BITEXACT RULES:
-///   1. Copy exact C accumulation order (no iter().sum())
-///   2. No f64::mul_add() (FMA changes precision)
-///   3. No algebraic simplification
-///   4. No iter().sum()/product() (order undefined)
-#[allow(unused_variables, non_snake_case)]
-pub fn mjc_convex_elem(m: *const mjModel, d: *mut mjData, con: *mut mjPreContact, g1: i32, f1: i32, e1: i32, v1: i32, f2: i32, e2: i32, margin: f64) -> i32 {
-    todo!() // mjc_ConvexElem
-}
-
-/// C: mjc_HFieldElem (engine/engine_collision_convex.h:121)
-/// Calls: addVert, mjc_initCCDObj, mjc_penetration, mjc_setCCDObjFlex, mji_addTo3, mji_copy3, mji_mulMatTVec3, mji_sub3, mji_zero3, mju_max, mju_min, mju_mulMatVec3
-/// ⚠️ BITEXACT RULES:
-///   1. Copy exact C accumulation order (no iter().sum())
-///   2. No f64::mul_add() (FMA changes precision)
-///   3. No algebraic simplification
-///   4. No iter().sum()/product() (order undefined)
-#[allow(unused_variables, non_snake_case)]
-pub fn mjc_h_field_elem(m: *const mjModel, d: *mut mjData, con: *mut mjPreContact, g: i32, f: i32, e: i32, margin: f64) -> i32 {
-    todo!() // mjc_HFieldElem
-}
-
 /// C: mjc_fixNormal (engine/engine_collision_convex.h:125)
-/// Calls: mjc_ellipsoidInside, mjc_ellipsoidOutside, mji_copy3, mji_mulMatVec3, mji_scl3, mji_sub3, mju_mulMatTVec3, mju_norm, mju_normalize3, mju_sub3
+/// Calls: cxx-internal:/Users/xing/Desktop/projects/c2rust_bitexact/projects/mujoco/src/engine/engine_collision_convex.c:_mjc_ellipsoidInside, cxx-internal:/Users/xing/Desktop/projects/c2rust_bitexact/projects/mujoco/src/engine/engine_collision_convex.c:_mjc_ellipsoidOutside, cxx-internal:/Users/xing/Desktop/projects/c2rust_bitexact/projects/mujoco/src/engine/engine_inline.h:_mji_copy3, cxx-internal:/Users/xing/Desktop/projects/c2rust_bitexact/projects/mujoco/src/engine/engine_inline.h:_mji_mulMatVec3, cxx-internal:/Users/xing/Desktop/projects/c2rust_bitexact/projects/mujoco/src/engine/engine_inline.h:_mji_scl3, cxx-internal:/Users/xing/Desktop/projects/c2rust_bitexact/projects/mujoco/src/engine/engine_inline.h:_mji_sub3, cxx:_mju_mulMatTVec3, cxx:_mju_norm, cxx:_mju_normalize3, cxx:_mju_sub3
 #[allow(unused_variables, non_snake_case)]
-pub fn mjc_fix_normal(m: *const mjModel, d: *const mjData, con: *mut mjPreContact, g1: i32, g2: i32) {
+pub fn mjc_fixNormal(m: *const mjModel, d: *const mjData, con: *mut mjPreContact, g1: i32, g2: i32) {
     use crate::types::*;
     const MJ_GEOM_SPHERE: i32 = mjtGeom_mjGEOM_SPHERE as i32;
     const MJ_GEOM_CAPSULE: i32 = mjtGeom_mjGEOM_CAPSULE as i32;
@@ -1724,8 +1420,8 @@ pub fn mjc_fix_normal(m: *const mjModel, d: *const mjData, con: *mut mjPreContac
                 let mut nrm  = [0.0f64; 3];
                 let geom_xpos_i = (*d).geom_xpos.add(3 * gid[i] as usize);
                 crate::engine::engine_util_blas::mju_sub3(dif.as_mut_ptr(), (*con).pos.as_ptr(), geom_xpos_i);
-                crate::engine::engine_util_blas::mju_mul_mat_t_vec3(pos1.as_mut_ptr(), mat, dif.as_ptr());
-                crate::engine::engine_util_blas::mju_mul_mat_t_vec3(nrm.as_mut_ptr(), mat, normal[i].as_ptr());
+                crate::engine::engine_util_blas::mju_mulMatTVec3(pos1.as_mut_ptr(), mat, dif.as_ptr());
+                crate::engine::engine_util_blas::mju_mulMatTVec3(nrm.as_mut_ptr(), mat, normal[i].as_ptr());
 
                 match geom_type[i] {
                     t if t == MJ_GEOM_SPHERE => {
@@ -1755,9 +1451,9 @@ pub fn mjc_fix_normal(m: *const mjModel, d: *const mjData, con: *mut mjPreContac
                                 + pos1[1]*pos1[1]/(s1*s1)
                                 + pos1[2]*pos1[2]/(s2*s2);
                             processed[i] = if dst1 <= 1.0 {
-                                mjc_ellipsoid_inside(nrm.as_mut_ptr(), pos1.as_ptr(), size)
+                                mjc_ellipsoidInside(nrm.as_mut_ptr(), pos1.as_ptr(), size)
                             } else {
-                                mjc_ellipsoid_outside(nrm.as_mut_ptr(), pos1.as_ptr(), size)
+                                mjc_ellipsoidOutside(nrm.as_mut_ptr(), pos1.as_ptr(), size)
                             };
                         }
                     }
@@ -1788,7 +1484,7 @@ pub fn mjc_fix_normal(m: *const mjModel, d: *const mjData, con: *mut mjPreContac
                 // normalize and map normal to global frame
                 if processed[i] != 0 {
                     crate::engine::engine_util_blas::mju_normalize3(nrm.as_mut_ptr());
-                    crate::engine::engine_inline::mji_mul_mat_vec3(normal[i].as_mut_ptr(), mat, nrm.as_ptr());
+                    crate::engine::engine_inline::mji_mulMatVec3(normal[i].as_mut_ptr(), mat, nrm.as_ptr());
                 }
             }
         }
@@ -1807,12 +1503,127 @@ pub fn mjc_fix_normal(m: *const mjModel, d: *const mjData, con: *mut mjPreContac
 
 /// C: mjc_setCCDBuffer (engine/engine_collision_convex.h:128)
 #[allow(unused_variables, non_snake_case)]
-pub fn mjc_set_ccd_buffer(buffer: *mut ()) {
+pub fn mjc_setCCDBuffer(buffer: *mut ()) {
     // SAFETY: storing the raw pointer value as bytes into the mutex-protected CCD_BUFFER
     unsafe {
         let bytes = (buffer as usize).to_ne_bytes();
         let mut guard = CCD_BUFFER.lock().unwrap();
         guard.copy_from_slice(&bytes);
+    }
+}
+
+pub fn libccd_wrapper (m : * const mjModel , obj1 : * mut mjCCDObj , obj2 : * mut mjCCDObj , con : * mut mjPreContact , margin : f64) -> i32
+{
+    // C source (engine/engine_collision_convex.c:52-88):
+    // Calls ccdMPRPenetration via our C bridge which handles ccd_t setup.
+    //
+    // Rust trampolines adapt mjccd_support/mjccd_center to the bridge's
+    // double[3] callback ABI.
+
+    // Bridge callback trampolines: adapt ccd_vec3_t (double[3]) ↔ ccd_vec3_t
+    // The bridge passes dir/vec as *const double[3] / *mut double[3] (same layout).
+    unsafe extern "C" fn support_trampoline(obj: *const core::ffi::c_void,
+                                             dir: *const f64, vec: *mut f64) {
+        // SAFETY: bridge guarantees dir and vec point to 3 f64 each.
+        // We reconstruct a ccd_vec3_t on the stack for the existing Rust impl.
+        let mut ccd_dir = crate::types::ccd_vec3_t { v: [0u8; 24] };
+        let mut ccd_vec = crate::types::ccd_vec3_t { v: [0u8; 24] };
+        (ccd_dir.v.as_mut_ptr() as *mut f64).copy_from_nonoverlapping(dir, 3);
+        crate::engine::engine_collision_convex::mjccd_support(
+            obj as *const (),
+            &ccd_dir as *const crate::types::ccd_vec3_t,
+            &mut ccd_vec as *mut crate::types::ccd_vec3_t,
+        );
+        (vec as *mut f64).copy_from_nonoverlapping(
+            ccd_vec.v.as_ptr() as *const f64, 3);
+    }
+
+    unsafe extern "C" fn center_trampoline(obj: *const core::ffi::c_void,
+                                            center: *mut f64) {
+        // SAFETY: bridge guarantees center points to 3 f64.
+        let mut ccd_center = crate::types::ccd_vec3_t { v: [0u8; 24] };
+        crate::engine::engine_collision_convex::mjccd_center(
+            obj as *const (),
+            &mut ccd_center as *mut crate::types::ccd_vec3_t,
+        );
+        (center as *mut f64).copy_from_nonoverlapping(
+            ccd_center.v.as_ptr() as *const f64, 3);
+    }
+
+    // SAFETY: m, obj1, obj2, con are valid pointers from caller.
+    unsafe {
+        // use_prism_dir = 1 if either geom is hfield
+        let use_prism = ((*obj1).geom_type == mjtGeom_mjGEOM_HFIELD as i32
+            || (*obj2).geom_type == mjtGeom_mjGEOM_HFIELD as i32) as i32;
+
+        // FFI call to libccd_bridge
+        extern "C" {
+            fn c2rust_ccd_mpr_penetration(
+                obj1: *const core::ffi::c_void,
+                obj2: *const core::ffi::c_void,
+                mpr_tolerance: f64,
+                epa_tolerance: f64,
+                max_iterations: u64,
+                support1: unsafe extern "C" fn(*const core::ffi::c_void, *const f64, *mut f64),
+                support2: unsafe extern "C" fn(*const core::ffi::c_void, *const f64, *mut f64),
+                center1: unsafe extern "C" fn(*const core::ffi::c_void, *mut f64),
+                center2: unsafe extern "C" fn(*const core::ffi::c_void, *mut f64),
+                use_prism_dir: i32,
+                result: *mut CcdResult,
+            );
+        }
+
+        #[repr(C)]
+        struct CcdResult {
+            status: i32,
+            dir_is_origin: i32,
+            depth: f64,
+            dir: [f64; 3],
+            pos: [f64; 3],
+        }
+
+        let mut result = CcdResult {
+            status: -1,
+            dir_is_origin: 0,
+            depth: 0.0,
+            dir: [0.0; 3],
+            pos: [0.0; 3],
+        };
+
+        c2rust_ccd_mpr_penetration(
+            obj1 as *const core::ffi::c_void,
+            obj2 as *const core::ffi::c_void,
+            (*m).opt.ccd_tolerance,
+            (*m).opt.ccd_tolerance,
+            (*m).opt.ccd_iterations as u64,
+            support_trampoline,
+            support_trampoline,
+            center_trampoline,
+            center_trampoline,
+            use_prism,
+            &mut result as *mut CcdResult,
+        );
+
+        if result.status != 0 {
+            return 0;
+        }
+        if result.dir_is_origin != 0 {
+            return 0;
+        }
+
+        // Fill contact — exact C order
+        (*con).dist = margin - result.depth;
+        (*con).normal[0] = result.dir[0];
+        (*con).normal[1] = result.dir[1];
+        (*con).normal[2] = result.dir[2];
+        (*con).pos[0] = result.pos[0];
+        (*con).pos[1] = result.pos[1];
+        (*con).pos[2] = result.pos[2];
+        (*con).tangent[0] = 0.0;
+        (*con).tangent[1] = 0.0;
+        (*con).tangent[2] = 0.0;
+
+        1
     }
 }
 

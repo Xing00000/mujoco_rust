@@ -1,6 +1,6 @@
 //! Port of: engine/engine_util_misc.c
-//! IR hash: 73393814548a07d1
-//! CODEGEN: signatures locked. Only fill todo!() bodies.
+//! IR hash: 9343293228317031
+//! CODEGEN: source paths, owners, and callable names are locked.
 
 use crate::types::*;
 
@@ -33,7 +33,7 @@ pub fn is_intersect(p1: *const f64, p2: *const f64, p3: *const f64, p4: *const f
 }
 
 /// C: length_circle (engine/engine_util_misc.c:55)
-/// Calls: mju_dot, mju_normalize
+/// Calls: cxx:_mju_dot, cxx:_mju_normalize
 /// ⚠️ BITEXACT RULES:
 ///   1. Copy exact C accumulation order (no iter().sum())
 ///   2. No f64::mul_add() (FMA changes precision)
@@ -65,7 +65,7 @@ pub fn length_circle(p0: *const f64, p1: *const f64, ind: i32, radius: f64) -> f
 }
 
 /// C: wrap_circle (engine/engine_util_misc.c:78)
-/// Calls: is_intersect, length_circle, mju_add, mju_dot, mju_normalize, mju_sub
+/// Calls: cxx-internal:/Users/xing/Desktop/projects/c2rust_bitexact/projects/mujoco/src/engine/engine_util_misc.c:_is_intersect, cxx-internal:/Users/xing/Desktop/projects/c2rust_bitexact/projects/mujoco/src/engine/engine_util_misc.c:_length_circle, cxx:_mju_add, cxx:_mju_dot, cxx:_mju_normalize, cxx:_mju_sub
 /// ⚠️ BITEXACT RULES:
 ///   1. Copy exact C accumulation order (no iter().sum())
 ///   2. No f64::mul_add() (FMA changes precision)
@@ -160,7 +160,7 @@ pub fn wrap_circle(pnt: *mut f64, end: *const f64, side: *const f64, radius: f64
 }
 
 /// C: wrap_inside (engine/engine_util_misc.c:158)
-/// Calls: mju_addScl, mju_copy, mju_max, mju_norm, mju_normalize, mju_scl
+/// Calls: cxx:_mju_addScl, cxx:_mju_copy, cxx:_mju_max, cxx:_mju_norm, cxx:_mju_normalize, cxx:_mju_scl
 /// ⚠️ BITEXACT RULES:
 ///   1. Copy exact C accumulation order (no iter().sum())
 ///   2. No f64::mul_add() (FMA changes precision)
@@ -168,7 +168,7 @@ pub fn wrap_circle(pnt: *mut f64, end: *const f64, side: *const f64, radius: f64
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn wrap_inside(pnt: *mut f64, end: *const f64, radius: f64) -> f64 {
-    use crate::engine::engine_util_blas::{mju_add_scl, mju_copy, mju_norm, mju_normalize, mju_scl};
+    use crate::engine::engine_util_blas::{mju_addScl, mju_copy, mju_norm, mju_normalize, mju_scl};
     const MJ_MINVAL: f64 = 1E-15_f64;
 
     // SAFETY: caller guarantees pnt[4], end[4] are valid
@@ -197,7 +197,7 @@ pub fn wrap_inside(pnt: *mut f64, end: *const f64, radius: f64) -> f64 {
             // in segment
             if a > 0.0 && a < 1.0 {
                 let mut tmp: [f64; 2] = [0.0; 2];
-                mju_add_scl(tmp.as_mut_ptr(), end, dif.as_ptr(), a, 2);
+                mju_addScl(tmp.as_mut_ptr(), end, dif.as_ptr(), a, 2);
                 if mju_norm(tmp.as_ptr(), 2) <= radius {
                     return -1.0;
                 }
@@ -290,40 +290,6 @@ pub fn wrap_inside(pnt: *mut f64, end: *const f64, radius: f64) -> f64 {
     }
 }
 
-/// C: flexInterpRotation (engine/engine_util_misc.c:694)
-/// Calls: mju_defGradient, mju_mat2Rot, mju_negQuat
-/// ⚠️ BITEXACT RULES:
-///   1. Copy exact C accumulation order (no iter().sum())
-///   2. No f64::mul_add() (FMA changes precision)
-///   3. No algebraic simplification
-///   4. No iter().sum()/product() (order undefined)
-#[allow(unused_variables, non_snake_case)]
-pub fn flex_interp_rotation(order: i32, xpos_c: *const f64, local: *const f64, quat: *mut f64) {
-    use crate::engine::engine_util_spatial::{mju_mat2rot, mju_neg_quat};
-
-    // SAFETY: caller guarantees xpos_c, local[3], quat[4] are valid
-    unsafe {
-        let mut mat: [f64; 9] = [0.0; 9];
-
-        if order > 0 {
-            mju_def_gradient(mat.as_mut_ptr(), local, xpos_c, order);
-        } else {
-            // order 0: fallback to identity matrix
-            mat[0] = 1.0;
-            mat[4] = 1.0;
-            mat[8] = 1.0;
-        }
-
-        // find rotation
-        *quat.add(0) = 1.0;
-        *quat.add(1) = 0.0;
-        *quat.add(2) = 0.0;
-        *quat.add(3) = 0.0;
-        mju_mat2rot(quat, mat.as_ptr());
-        mju_neg_quat(quat, quat);
-    }
-}
-
 /// C: nodeAt (engine/engine_util_misc.c:902)
 /// ⚠️ BITEXACT RULES:
 ///   1. Copy exact C accumulation order (no iter().sum())
@@ -331,7 +297,7 @@ pub fn flex_interp_rotation(order: i32, xpos_c: *const f64, local: *const f64, q
 ///   3. No algebraic simplification
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
-pub fn node_at(nodexpos: *const f64, ny: i32, nz: i32, i: i32, j: i32, k: i32) -> *const f64 {
+pub fn nodeAt(nodexpos: *const f64, ny: i32, nz: i32, i: i32, j: i32, k: i32) -> *const f64 {
     // SAFETY: caller guarantees nodexpos has sufficient extent for the index computation
     unsafe {
         nodexpos.add(3 * (i as usize * ny as usize * nz as usize + j as usize * nz as usize + k as usize))
@@ -345,7 +311,7 @@ pub fn node_at(nodexpos: *const f64, ny: i32, nz: i32, i: i32, j: i32, k: i32) -
 ///   3. No algebraic simplification
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
-pub fn add_weight(nb: *mut i32, body: *mut i32, bweight: *mut f64, b: i32, w: f64) {
+pub fn addWeight(nb: *mut i32, body: *mut i32, bweight: *mut f64, b: i32, w: f64) {
     // SAFETY: caller guarantees nb, body, bweight valid; body/bweight have sufficient capacity
     unsafe {
         for i in 0..*nb as usize {
@@ -364,47 +330,25 @@ pub fn add_weight(nb: *mut i32, body: *mut i32, bweight: *mut f64, b: i32, w: f6
     }
 }
 
-/// C: _decode (engine/engine_util_misc.c:1217)
-#[allow(unused_variables, non_snake_case)]
-pub fn decode(ch: i8) -> u32 {
-    let ch = ch as u8 as char;
-    if ch >= 'A' && ch <= 'Z' {
-        return (ch as u32) - ('A' as u32);
-    }
-    if ch >= 'a' && ch <= 'z' {
-        return (ch as u32) - ('a' as u32) + 26;
-    }
-    if ch >= '0' && ch <= '9' {
-        return (ch as u32) - ('0' as u32) + 52;
-    }
-    if ch == '+' {
-        return 62;
-    }
-    if ch == '/' {
-        return 63;
-    }
-    0
-}
-
 /// C: historyPhysicalIndex (engine/engine_util_misc.c:1359)
 #[allow(unused_variables, non_snake_case)]
-pub fn history_physical_index(cursor: i32, n: i32, logical: i32) -> i32 {
+pub fn historyPhysicalIndex(cursor: i32, n: i32, logical: i32) -> i32 {
     (cursor + 1 + logical) % n
 }
 
 /// C: historyFindIndex (engine/engine_util_misc.c:1367)
-/// Calls: historyPhysicalIndex
+/// Calls: cxx-internal:/Users/xing/Desktop/projects/c2rust_bitexact/projects/mujoco/src/engine/engine_util_misc.c:_historyPhysicalIndex
 /// ⚠️ BITEXACT RULES:
 ///   1. Copy exact C accumulation order (no iter().sum())
 ///   2. No f64::mul_add() (FMA changes precision)
 ///   3. No algebraic simplification
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
-pub fn history_find_index(times: *const f64, n: i32, cursor: i32, t: f64) -> i32 {
+pub fn historyFindIndex(times: *const f64, n: i32, cursor: i32, t: f64) -> i32 {
     // SAFETY: caller guarantees times[n] is valid
     unsafe {
-        let oldest_phys = history_physical_index(cursor, n, 0);
-        let newest_phys = history_physical_index(cursor, n, n - 1);
+        let oldest_phys = historyPhysicalIndex(cursor, n, 0);
+        let newest_phys = historyPhysicalIndex(cursor, n, n - 1);
         let t_oldest = *times.add(oldest_phys as usize);
         let t_newest = *times.add(newest_phys as usize);
 
@@ -423,7 +367,7 @@ pub fn history_find_index(times: *const f64, n: i32, cursor: i32, t: f64) -> i32
         let mut hi: i32 = n - 1;
         while hi - lo > 1 {
             let mid = (lo + hi) / 2;
-            let mid_phys = history_physical_index(cursor, n, mid);
+            let mid_phys = historyPhysicalIndex(cursor, n, mid);
             if *times.add(mid_phys as usize) < t {
                 lo = mid;
             } else {
@@ -436,7 +380,7 @@ pub fn history_find_index(times: *const f64, n: i32, cursor: i32, t: f64) -> i32
 }
 
 /// C: mju_wrap (engine/engine_util_misc.h:32)
-/// Calls: mju_addTo3, mju_copy3, mju_cross, mju_dot3, mju_message, mju_mulMatTVec3, mju_mulMatVec3, mju_norm3, mju_normalize, mju_normalize3, mju_scl, mju_scl3, mju_sub3, wrap_circle, wrap_inside
+/// Calls: cxx-internal:/Users/xing/Desktop/projects/c2rust_bitexact/projects/mujoco/src/engine/engine_util_misc.c:_wrap_circle, cxx-internal:/Users/xing/Desktop/projects/c2rust_bitexact/projects/mujoco/src/engine/engine_util_misc.c:_wrap_inside, cxx:_mju_addTo3, cxx:_mju_copy3, cxx:_mju_cross, cxx:_mju_dot3, cxx:_mju_message, cxx:_mju_mulMatTVec3, cxx:_mju_mulMatVec3, cxx:_mju_norm3, cxx:_mju_normalize, cxx:_mju_normalize3, cxx:_mju_scl, cxx:_mju_scl3, cxx:_mju_sub3
 /// ⚠️ BITEXACT RULES:
 ///   1. Copy exact C accumulation order (no iter().sum())
 ///   2. No f64::mul_add() (FMA changes precision)
@@ -445,8 +389,8 @@ pub fn history_find_index(times: *const f64, n: i32, cursor: i32, t: f64) -> i32
 #[allow(unused_variables, non_snake_case)]
 pub fn mju_wrap(wpnt: *mut f64, x0: *const f64, x1: *const f64, xpos: *const f64, xmat: *const f64, radius: f64, r#type: i32, side: *const f64) -> f64 {
     use crate::engine::engine_util_blas::{
-        mju_sub3, mju_mul_mat_t_vec3, mju_mul_mat_vec3, mju_norm3,
-        mju_copy3, mju_normalize3, mju_scl3, mju_add_to3,
+        mju_sub3, mju_mulMatTVec3, mju_mulMatVec3, mju_norm3,
+        mju_copy3, mju_normalize3, mju_scl3, mju_addTo3,
         mju_dot3, mju_dot, mju_normalize, mju_scl, mju_norm,
     };
     use crate::engine::engine_util_spatial::mju_cross;
@@ -466,9 +410,9 @@ pub fn mju_wrap(wpnt: *mut f64, x0: *const f64, x1: *const f64, xpos: *const f64
         let mut tmp: [f64; 3] = [0.0; 3];
         mju_sub3(tmp.as_mut_ptr(), x0, xpos);
         let mut p: [[f64; 3]; 2] = [[0.0; 3]; 2];
-        mju_mul_mat_t_vec3(p[0].as_mut_ptr(), xmat, tmp.as_ptr());
+        mju_mulMatTVec3(p[0].as_mut_ptr(), xmat, tmp.as_ptr());
         mju_sub3(tmp.as_mut_ptr(), x1, xpos);
-        mju_mul_mat_t_vec3(p[1].as_mut_ptr(), xmat, tmp.as_ptr());
+        mju_mulMatTVec3(p[1].as_mut_ptr(), xmat, tmp.as_ptr());
 
         // too close to origin: return
         if mju_norm3(p[0].as_ptr()) < MJ_MINVAL || mju_norm3(p[1].as_ptr()) < MJ_MINVAL {
@@ -541,7 +485,7 @@ pub fn mju_wrap(wpnt: *mut f64, x0: *const f64, x1: *const f64, xpos: *const f64
         if !side.is_null() {
             // side point: apply same projection as x0, x1
             mju_sub3(tmp.as_mut_ptr(), side, xpos);
-            mju_mul_mat_t_vec3(s.as_mut_ptr(), xmat, tmp.as_ptr());
+            mju_mulMatTVec3(s.as_mut_ptr(), xmat, tmp.as_ptr());
 
             // side point: project and rescale
             sd[0] = mju_dot3(s.as_ptr(), axis[0].as_ptr());
@@ -575,7 +519,7 @@ pub fn mju_wrap(wpnt: *mut f64, x0: *const f64, x1: *const f64, xpos: *const f64
             // res = axis0*d0 + axis1*d1
             mju_scl3(res.as_mut_ptr().add(3 * i), axis[0].as_ptr(), pnt[2 * i]);
             mju_scl3(tmp.as_mut_ptr(), axis[1].as_ptr(), pnt[2 * i + 1]);
-            mju_add_to3(res.as_mut_ptr().add(3 * i), tmp.as_ptr());
+            mju_addTo3(res.as_mut_ptr().add(3 * i), tmp.as_ptr());
         }
 
         // cylinder: correct along z
@@ -597,10 +541,10 @@ pub fn mju_wrap(wpnt: *mut f64, x0: *const f64, x1: *const f64, xpos: *const f64
         }
 
         // map back to global frame: wpnt
-        mju_mul_mat_vec3(wpnt, xmat, res.as_ptr());
-        mju_mul_mat_vec3(wpnt.add(3), xmat, res.as_ptr().add(3));
-        mju_add_to3(wpnt, xpos);
-        mju_add_to3(wpnt.add(3), xpos);
+        mju_mulMatVec3(wpnt, xmat, res.as_ptr());
+        mju_mulMatVec3(wpnt.add(3), xmat, res.as_ptr().add(3));
+        mju_addTo3(wpnt, xpos);
+        mju_addTo3(wpnt.add(3), xpos);
 
         wlen
     }
@@ -613,7 +557,7 @@ pub fn mju_wrap(wpnt: *mut f64, x0: *const f64, x1: *const f64, xpos: *const f64
 ///   3. No algebraic simplification
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
-pub fn mju_muscle_gain_length(length: f64, lmin: f64, lmax: f64) -> f64 {
+pub fn mju_muscleGainLength(length: f64, lmin: f64, lmax: f64) -> f64 {
     const MJ_MINVAL: f64 = 1E-15_f64;
 
     if lmin <= length && length <= lmax {
@@ -639,14 +583,14 @@ pub fn mju_muscle_gain_length(length: f64, lmin: f64, lmax: f64) -> f64 {
 }
 
 /// C: mju_muscleGain (engine/engine_util_misc.h:39)
-/// Calls: mju_muscleGainLength
+/// Calls: cxx:_mju_muscleGainLength
 /// ⚠️ BITEXACT RULES:
 ///   1. Copy exact C accumulation order (no iter().sum())
 ///   2. No f64::mul_add() (FMA changes precision)
 ///   3. No algebraic simplification
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
-pub fn mju_muscle_gain(len: f64, vel: f64, lengthrange: *const f64, acc0: f64, prm: *const f64) -> f64 {
+pub fn mju_muscleGain(len: f64, vel: f64, lengthrange: *const f64, acc0: f64, prm: *const f64) -> f64 {
     const MJ_MINVAL: f64 = 1E-15_f64;
 
     // SAFETY: caller guarantees lengthrange[2] and prm[9] are valid
@@ -674,7 +618,7 @@ pub fn mju_muscle_gain(len: f64, vel: f64, lengthrange: *const f64, acc0: f64, p
         let V = vel / f64::max(MJ_MINVAL, L0 * vmax);
 
         // length curve
-        let FL = mju_muscle_gain_length(L, lmin, lmax);
+        let FL = mju_muscleGainLength(L, lmin, lmax);
 
         // velocity curve
         let FV: f64;
@@ -701,7 +645,7 @@ pub fn mju_muscle_gain(len: f64, vel: f64, lengthrange: *const f64, acc0: f64, p
 ///   3. No algebraic simplification
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
-pub fn mju_muscle_bias(len: f64, lengthrange: *const f64, acc0: f64, prm: *const f64) -> f64 {
+pub fn mju_muscleBias(len: f64, lengthrange: *const f64, acc0: f64, prm: *const f64) -> f64 {
     const MJ_MINVAL: f64 = 1E-15_f64;
 
     // SAFETY: caller guarantees lengthrange[2] and prm[9] are valid
@@ -740,14 +684,14 @@ pub fn mju_muscle_bias(len: f64, lengthrange: *const f64, acc0: f64, prm: *const
 }
 
 /// C: mju_muscleDynamicsTimescale (engine/engine_util_misc.h:47)
-/// Calls: mju_sigmoid
+/// Calls: cxx:_mju_sigmoid
 /// ⚠️ BITEXACT RULES:
 ///   1. Copy exact C accumulation order (no iter().sum())
 ///   2. No f64::mul_add() (FMA changes precision)
 ///   3. No algebraic simplification
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
-pub fn mju_muscle_dynamics_timescale(dctrl: f64, tau_act: f64, tau_deact: f64, smoothing_width: f64) -> f64 {
+pub fn mju_muscleDynamicsTimescale(dctrl: f64, tau_act: f64, tau_deact: f64, smoothing_width: f64) -> f64 {
     const MJ_MINVAL: f64 = 1E-15_f64;
 
     // hard switching
@@ -761,14 +705,14 @@ pub fn mju_muscle_dynamics_timescale(dctrl: f64, tau_act: f64, tau_deact: f64, s
 }
 
 /// C: mju_muscleDynamics (engine/engine_util_misc.h:51)
-/// Calls: mju_clip, mju_muscleDynamicsTimescale
+/// Calls: cxx:_mju_clip, cxx:_mju_muscleDynamicsTimescale
 /// ⚠️ BITEXACT RULES:
 ///   1. Copy exact C accumulation order (no iter().sum())
 ///   2. No f64::mul_add() (FMA changes precision)
 ///   3. No algebraic simplification
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
-pub fn mju_muscle_dynamics(ctrl: f64, act: f64, prm: *const f64) -> f64 {
+pub fn mju_muscleDynamics(ctrl: f64, act: f64, prm: *const f64) -> f64 {
     const MJ_MINVAL: f64 = 1E-15_f64;
 
     // SAFETY: caller guarantees prm points to at least 3 f64
@@ -785,7 +729,7 @@ pub fn mju_muscle_dynamics(ctrl: f64, act: f64, prm: *const f64) -> f64 {
         let smoothing_width = *prm.add(2);
         let dctrl = ctrlclamp - act;
 
-        let tau = mju_muscle_dynamics_timescale(dctrl, tau_act, tau_deact, smoothing_width);
+        let tau = mju_muscleDynamicsTimescale(dctrl, tau_act, tau_deact, smoothing_width);
 
         // filter output
         dctrl / f64::max(MJ_MINVAL, tau)
@@ -793,14 +737,14 @@ pub fn mju_muscle_dynamics(ctrl: f64, act: f64, prm: *const f64) -> f64 {
 }
 
 /// C: mj_lugreStribeck (engine/engine_util_misc.h:54)
-/// Calls: mju_max
+/// Calls: cxx:_mju_max
 /// ⚠️ BITEXACT RULES:
 ///   1. Copy exact C accumulation order (no iter().sum())
 ///   2. No f64::mul_add() (FMA changes precision)
 ///   3. No algebraic simplification
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
-pub fn mj_lugre_stribeck(velocity: f64, F_C: f64, F_S: f64, v_S: f64) -> f64 {
+pub fn mj_lugreStribeck(velocity: f64, F_C: f64, F_S: f64, v_S: f64) -> f64 {
     const MJ_MINVAL: f64 = 1E-15_f64;
 
     // SAFETY: pure math, no pointer dereference
@@ -815,7 +759,7 @@ pub fn mj_lugre_stribeck(velocity: f64, F_C: f64, F_S: f64, v_S: f64) -> f64 {
 ///   3. No algebraic simplification
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
-pub fn mj_dcmotor_slots(dynprm: *const f64, gainprm: *const f64) -> mjDCMotorSlots {
+pub fn mj_dcmotorSlots(dynprm: *const f64, gainprm: *const f64) -> mjDCMotorSlots {
     // SAFETY: dynprm and gainprm point to valid parameter arrays (caller contract)
     unsafe {
         let mut s = mjDCMotorSlots {
@@ -843,7 +787,7 @@ pub fn mj_dcmotor_slots(dynprm: *const f64, gainprm: *const f64) -> mjDCMotorSlo
 ///   3. No algebraic simplification
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
-pub fn mju_geom_semi_axes(semiaxes: *mut f64, size: *const f64, r#type: u32) {
+pub fn mju_geomSemiAxes(semiaxes: *mut f64, size: *const f64, r#type: u32) {
     const GEOM_SPHERE: u32 = 2;
     const GEOM_CAPSULE: u32 = 3;
     const GEOM_CYLINDER: u32 = 5;
@@ -876,15 +820,15 @@ pub fn mju_geom_semi_axes(semiaxes: *mut f64, size: *const f64, r#type: u32) {
 }
 
 /// C: mju_insideGeom (engine/engine_util_misc.h:74)
-/// Calls: mju_clip, mju_dot3, mju_mulMatTVec3, mju_sub3
+/// Calls: cxx:_mju_clip, cxx:_mju_dot3, cxx:_mju_mulMatTVec3, cxx:_mju_sub3
 /// ⚠️ BITEXACT RULES:
 ///   1. Copy exact C accumulation order (no iter().sum())
 ///   2. No f64::mul_add() (FMA changes precision)
 ///   3. No algebraic simplification
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
-pub fn mju_inside_geom(pos: *const f64, mat: *const f64, size: *const f64, r#type: u32, point: *const f64) -> i32 {
-    use crate::engine::engine_util_blas::{mju_sub3, mju_dot3, mju_mul_mat_t_vec3};
+pub fn mju_insideGeom(pos: *const f64, mat: *const f64, size: *const f64, r#type: u32, point: *const f64) -> i32 {
+    use crate::engine::engine_util_blas::{mju_sub3, mju_dot3, mju_mulMatTVec3};
 
     const GEOM_PLANE: u32 = 0;
     const GEOM_SPHERE: u32 = 2;
@@ -906,7 +850,7 @@ pub fn mju_inside_geom(pos: *const f64, mat: *const f64, size: *const f64, r#typ
 
         // rotate into local frame
         let mut plocal: [f64; 3] = [0.0; 3];
-        mju_mul_mat_t_vec3(plocal.as_mut_ptr(), mat, vec.as_ptr());
+        mju_mulMatTVec3(plocal.as_mut_ptr(), mat, vec.as_ptr());
 
         match r#type {
             GEOM_CAPSULE => {
@@ -938,14 +882,14 @@ pub fn mju_inside_geom(pos: *const f64, mat: *const f64, size: *const f64, r#typ
 }
 
 /// C: mju_camPixelRay (engine/engine_util_misc.h:79)
-/// Calls: mju_add3, mju_copy3, mju_mulMatVec3, mju_normalize3
+/// Calls: cxx:_mju_add3, cxx:_mju_copy3, cxx:_mju_mulMatVec3, cxx:_mju_normalize3
 /// ⚠️ BITEXACT RULES:
 ///   1. Copy exact C accumulation order (no iter().sum())
 ///   2. No f64::mul_add() (FMA changes precision)
 ///   3. No algebraic simplification
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
-pub fn mju_cam_pixel_ray(origin: *mut f64, direction: *mut f64, cam_xpos: *const f64, cam_xmat: *const f64, col: i32, row: i32, fx: f64, fy: f64, cx: f64, cy: f64, projection: i32, ortho_extent: f64) {
+pub fn mju_camPixelRay(origin: *mut f64, direction: *mut f64, cam_xpos: *const f64, cam_xmat: *const f64, col: i32, row: i32, fx: f64, fy: f64, cx: f64, cy: f64, projection: i32, ortho_extent: f64) {
     // SAFETY: caller guarantees origin[3], direction[3], cam_xpos[3], cam_xmat[9] are valid
     unsafe {
         // pixel center (row 0 = top of image)
@@ -958,7 +902,7 @@ pub fn mju_cam_pixel_ray(origin: *mut f64, direction: *mut f64, cam_xpos: *const
 
             // direction in camera frame: (x/fx, -y/fy, -1), then normalized
             let mut dir_cam: [f64; 3] = [px / fx, -py / fy, -1.0];
-            crate::engine::engine_util_blas::mju_mul_mat_vec3(direction, cam_xmat, dir_cam.as_ptr());
+            crate::engine::engine_util_blas::mju_mulMatVec3(direction, cam_xmat, dir_cam.as_ptr());
             crate::engine::engine_util_blas::mju_normalize3(direction);
         } else {
             // orthographic: parallel rays, direction is -Z in camera frame
@@ -970,7 +914,7 @@ pub fn mju_cam_pixel_ray(origin: *mut f64, direction: *mut f64, cam_xpos: *const
             let half_extent: f64 = ortho_extent / 2.0;
             let mut offset_cam: [f64; 3] = [px / fx * half_extent, -py / fy * half_extent, 0.0];
             let mut offset_world: [f64; 3] = [0.0; 3];
-            crate::engine::engine_util_blas::mju_mul_mat_vec3(
+            crate::engine::engine_util_blas::mju_mulMatVec3(
                 offset_world.as_mut_ptr(), cam_xmat, offset_cam.as_ptr(),
             );
             crate::engine::engine_util_blas::mju_add3(origin, cam_xpos, offset_world.as_ptr());
@@ -978,132 +922,15 @@ pub fn mju_cam_pixel_ray(origin: *mut f64, direction: *mut f64, cam_xpos: *const
     }
 }
 
-/// C: mju_defGradient (engine/engine_util_misc.h:87)
-/// Calls: mju_flexDphi, mju_flexPhi, mju_zero
-/// ⚠️ BITEXACT RULES:
-///   1. Copy exact C accumulation order (no iter().sum())
-///   2. No f64::mul_add() (FMA changes precision)
-///   3. No algebraic simplification
-///   4. No iter().sum()/product() (order undefined)
-#[allow(unused_variables, non_snake_case)]
-pub fn mju_def_gradient(res: *mut f64, p: *const f64, dof: *const f64, order: i32) {
-    // SAFETY: caller guarantees res[9], p[3], dof[3*(order+1)^3] are valid
-    unsafe {
-        crate::engine::engine_util_blas::mju_zero(res, 9);
-        let mut idx: usize = 0;
-        let mut gradient: [f64; 3] = [0.0; 3];
-        for i in 0..=order {
-            for j in 0..=order {
-                for k in 0..=order {
-                    gradient[0] = mju_flex_dphi(*p.add(0), i, order)
-                                * mju_flex_phi(*p.add(1), j, order)
-                                * mju_flex_phi(*p.add(2), k, order);
-                    gradient[1] = mju_flex_phi(*p.add(0), i, order)
-                                * mju_flex_dphi(*p.add(1), j, order)
-                                * mju_flex_phi(*p.add(2), k, order);
-                    gradient[2] = mju_flex_phi(*p.add(0), i, order)
-                                * mju_flex_phi(*p.add(1), j, order)
-                                * mju_flex_dphi(*p.add(2), k, order);
-                    *res.add(0) += *dof.add(3 * idx + 0) * gradient[0];
-                    *res.add(1) += *dof.add(3 * idx + 0) * gradient[1];
-                    *res.add(2) += *dof.add(3 * idx + 0) * gradient[2];
-                    *res.add(3) += *dof.add(3 * idx + 1) * gradient[0];
-                    *res.add(4) += *dof.add(3 * idx + 1) * gradient[1];
-                    *res.add(5) += *dof.add(3 * idx + 1) * gradient[2];
-                    *res.add(6) += *dof.add(3 * idx + 2) * gradient[0];
-                    *res.add(7) += *dof.add(3 * idx + 2) * gradient[1];
-                    *res.add(8) += *dof.add(3 * idx + 2) * gradient[2];
-                    idx += 1;
-                }
-            }
-        }
-    }
-}
-
-/// C: mju_evalBasis (engine/engine_util_misc.h:90)
-/// Calls: mju_flexPhi
-/// ⚠️ BITEXACT RULES:
-///   1. Copy exact C accumulation order (no iter().sum())
-///   2. No f64::mul_add() (FMA changes precision)
-///   3. No algebraic simplification
-///   4. No iter().sum()/product() (order undefined)
-#[allow(unused_variables, non_snake_case)]
-pub fn mju_eval_basis(x: *const f64, i: i32, order: i32) -> f64 {
-    // SAFETY: caller guarantees x points to at least 3 f64
-    unsafe {
-        if order == 1 {
-            return mju_flex_phi(*x.add(2), i & 1, order)
-                 * mju_flex_phi(*x.add(1), (i >> 1) & 1, order)
-                 * mju_flex_phi(*x.add(0), (i >> 2) & 1, order);
-        } else if order == 2 {
-            return mju_flex_phi(*x.add(2), i % 3, order)
-                 * mju_flex_phi(*x.add(1), (i / 3) % 3, order)
-                 * mju_flex_phi(*x.add(0), i / 9, order);
-        } else {
-            return -1.0;
-        }
-    }
-}
-
-/// C: mju_evalBasisArray (engine/engine_util_misc.h:93)
-/// Calls: mju_evalBasis, mju_flexPhi
-/// ⚠️ BITEXACT RULES:
-///   1. Copy exact C accumulation order (no iter().sum())
-///   2. No f64::mul_add() (FMA changes precision)
-///   3. No algebraic simplification
-///   4. No iter().sum()/product() (order undefined)
-#[allow(unused_variables, non_snake_case)]
-pub fn mju_eval_basis_array(basis: *mut f64, x: *const f64, order: i32) {
-    // SAFETY: caller guarantees x[3] valid, basis has space for (order+1)^3 elements
-    unsafe {
-        if order == 1 {
-            let p: [[f64; 2]; 3] = [
-                [1.0 - *x.add(0), *x.add(0)],
-                [1.0 - *x.add(1), *x.add(1)],
-                [1.0 - *x.add(2), *x.add(2)],
-            ];
-            let mut j: usize = 0;
-            for i0 in 0..2 {
-                let w0 = p[0][i0];
-                for i1 in 0..2 {
-                    let w01 = w0 * p[1][i1];
-                    for i2 in 0..2 {
-                        *basis.add(j) = w01 * p[2][i2];
-                        j += 1;
-                    }
-                }
-            }
-        } else if order == 2 {
-            let mut p: [[f64; 3]; 3] = [[0.0; 3]; 3];
-            for d in 0..3 {
-                for i in 0..3 {
-                    p[d][i] = mju_flex_phi(*x.add(d), i as i32, 2);
-                }
-            }
-            let mut j: usize = 0;
-            for i0 in 0..3 {
-                let w0 = p[0][i0];
-                for i1 in 0..3 {
-                    let w01 = w0 * p[1][i1];
-                    for i2 in 0..3 {
-                        *basis.add(j) = w01 * p[2][i2];
-                        j += 1;
-                    }
-                }
-            }
-        }
-    }
-}
-
 /// C: mju_cellLookup (engine/engine_util_misc.h:96)
-/// Calls: mju_clip
+/// Calls: cxx:_mju_clip
 /// ⚠️ BITEXACT RULES:
 ///   1. Copy exact C accumulation order (no iter().sum())
 ///   2. No f64::mul_add() (FMA changes precision)
 ///   3. No algebraic simplification
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
-pub fn mju_cell_lookup(coord: *const f64, cellnum: *const i32, order: i32, local: *mut f64, nodeindices: *mut i32) -> i32 {
+pub fn mju_cellLookup(coord: *const f64, cellnum: *const i32, order: i32, local: *mut f64, nodeindices: *mut i32) -> i32 {
     // SAFETY: caller guarantees coord[3], cellnum[3], local[3] are valid; nodeindices may be null
     unsafe {
         let cx: i32 = *cellnum.add(0);
@@ -1151,306 +978,15 @@ pub fn mju_cell_lookup(coord: *const f64, cellnum: *const i32, order: i32, local
     }
 }
 
-/// C: mju_interpolate3D (engine/engine_util_misc.h:100)
-/// Calls: mju_addToScl3, mju_evalBasis, mju_evalBasisArray
-/// ⚠️ BITEXACT RULES:
-///   1. Copy exact C accumulation order (no iter().sum())
-///   2. No f64::mul_add() (FMA changes precision)
-///   3. No algebraic simplification
-///   4. No iter().sum()/product() (order undefined)
-#[allow(unused_variables, non_snake_case)]
-pub fn mju_interpolate3d(res: *mut f64, x: *const f64, coeff: *const f64, order: i32, nodeindices: *const i32) {
-    use crate::engine::engine_util_blas::mju_add_to_scl3;
-
-    let npoint: i32 = (order + 1) * (order + 1) * (order + 1);
-
-    // SAFETY: caller guarantees res[3], x[3], coeff[3*N], nodeindices[npoint] are valid
-    unsafe {
-        if npoint > 27 {
-            for j in 0..npoint {
-                let idx = if !nodeindices.is_null() { *nodeindices.add(j as usize) } else { j };
-                mju_add_to_scl3(res, coeff.add(3 * idx as usize), mju_eval_basis(x, j, order));
-            }
-            return;
-        }
-
-        let mut basis: [f64; 27] = [0.0; 27];
-        mju_eval_basis_array(basis.as_mut_ptr(), x, order);
-
-        for j in 0..npoint {
-            let idx = if !nodeindices.is_null() { *nodeindices.add(j as usize) } else { j };
-            mju_add_to_scl3(res, coeff.add(3 * idx as usize), basis[j as usize]);
-        }
-    }
-}
-
-/// C: mju_flexGatherCellState (engine/engine_util_misc.h:104)
-/// Calls: flexInterpRotation, mju_copy3
-/// ⚠️ BITEXACT RULES:
-///   1. Copy exact C accumulation order (no iter().sum())
-///   2. No f64::mul_add() (FMA changes precision)
-///   3. No algebraic simplification
-///   4. No iter().sum()/product() (order undefined)
-#[allow(unused_variables, non_snake_case)]
-pub fn mju_flex_gather_cell_state(order: i32, cy: i32, cz: i32, ci: i32, cj: i32, ck: i32, xpos_g: *const f64, vel_g: *const f64, xpos0_g: *const f64, xpos_c: *mut f64, vel_c: *mut f64, xpos0_c: *mut f64, nodeindices: *mut i32, quat: *mut f64) {
-    use crate::engine::engine_util_blas::mju_copy3;
-
-    // SAFETY: caller guarantees all non-null pointers have sufficient extent
-    unsafe {
-        let ny_g: i32 = cy * order + 1;
-        let nz_g: i32 = cz * order + 1;
-
-        let mut local_idx: usize = 0;
-        for li in 0..=order {
-            for lj in 0..=order {
-                for lk in 0..=order {
-                    let gi: i32 = ci * order + li;
-                    let gj: i32 = cj * order + lj;
-                    let gk: i32 = ck * order + lk;
-                    let gidx: i32 = gi * ny_g * nz_g + gj * nz_g + gk;
-
-                    if !xpos_c.is_null() && !xpos_g.is_null() {
-                        mju_copy3(xpos_c.add(3 * local_idx), xpos_g.add(3 * gidx as usize));
-                    }
-                    if !vel_c.is_null() && !vel_g.is_null() {
-                        mju_copy3(vel_c.add(3 * local_idx), vel_g.add(3 * gidx as usize));
-                    }
-                    if !xpos0_c.is_null() && !xpos0_g.is_null() {
-                        mju_copy3(xpos0_c.add(3 * local_idx), xpos0_g.add(3 * gidx as usize));
-                    }
-                    if !nodeindices.is_null() {
-                        *nodeindices.add(local_idx) = gidx;
-                    }
-
-                    local_idx += 1;
-                }
-            }
-        }
-
-        if !quat.is_null() && !xpos_c.is_null() {
-            let p: [f64; 3] = [0.5, 0.5, 0.5];
-            flex_interp_rotation(order, xpos_c, p.as_ptr(), quat);
-        }
-    }
-}
-
-/// C: mju_flexGatherFaceState (engine/engine_util_misc.h:110)
-/// Calls: mju_copy3, mju_flexInterpRotation2D
-/// ⚠️ BITEXACT RULES:
-///   1. Copy exact C accumulation order (no iter().sum())
-///   2. No f64::mul_add() (FMA changes precision)
-///   3. No algebraic simplification
-///   4. No iter().sum()/product() (order undefined)
-#[allow(unused_variables, non_snake_case)]
-pub fn mju_flex_gather_face_state(order: i32, cx: i32, cy: i32, cz: i32, face_elem_idx: i32, xpos_g: *const f64, vel_g: *const f64, xpos0_g: *const f64, xpos_f: *mut f64, vel_f: *mut f64, xpos0_f: *mut f64, nodeindices: *mut i32, quat: *mut f64) {
-    use crate::engine::engine_util_blas::mju_copy3;
-
-    // SAFETY: caller guarantees all non-null pointers have sufficient extent
-    unsafe {
-        let ny_g: i32 = cy * order + 1;
-        let nz_g: i32 = cz * order + 1;
-        let npe: i32 = (order + 1) * (order + 1);
-
-        // face sizes and properties
-        let face_sizes: [i32; 6] = [cy * cz, cy * cz, cx * cz, cx * cz, cx * cy, cx * cy];
-        let face_normal: [i32; 6] = [0, 0, 1, 1, 2, 2];
-        let face_count1: [i32; 6] = [cz, cz, cx, cx, cy, cy];
-        let face_fixed_vals: [i32; 6] = [0, cx * order, 0, cy * order, 0, cz * order];
-
-        // determine which face and quad within face
-        let mut face_id: usize = 0;
-        let mut within_face: i32 = face_elem_idx;
-        let mut cumul: i32 = 0;
-        for f in 0..6 {
-            if face_elem_idx < cumul + face_sizes[f] {
-                face_id = f;
-                within_face = face_elem_idx - cumul;
-                break;
-            }
-            cumul += face_sizes[f];
-        }
-
-        let normal_axis: i32 = face_normal[face_id];
-        let na0: i32 = (normal_axis + 1) % 3;  // slow in-plane axis
-        let na1: i32 = (normal_axis + 2) % 3;  // fast in-plane axis
-        let c1: i32 = face_count1[face_id];
-        let g_fixed: i32 = face_fixed_vals[face_id];
-        let q0: i32 = within_face / c1;
-        let q1: i32 = within_face % c1;
-
-        // gather nodes
-        let mut local_idx: usize = 0;
-        for l0 in 0..=order {
-            for l1 in 0..=order {
-                let mut g: [i32; 3] = [0; 3];
-                g[normal_axis as usize] = g_fixed;
-                g[na0 as usize] = q0 * order + l0;
-                g[na1 as usize] = q1 * order + l1;
-                let gidx: i32 = g[0] * ny_g * nz_g + g[1] * nz_g + g[2];
-
-                if !xpos_f.is_null() && !xpos_g.is_null() {
-                    mju_copy3(xpos_f.add(3 * local_idx), xpos_g.add(3 * gidx as usize));
-                }
-                if !vel_f.is_null() && !vel_g.is_null() {
-                    mju_copy3(vel_f.add(3 * local_idx), vel_g.add(3 * gidx as usize));
-                }
-                if !xpos0_f.is_null() && !xpos0_g.is_null() {
-                    mju_copy3(xpos0_f.add(3 * local_idx), xpos0_g.add(3 * gidx as usize));
-                }
-                if !nodeindices.is_null() {
-                    *nodeindices.add(local_idx) = gidx;
-                }
-
-                local_idx += 1;
-            }
-        }
-
-        if !quat.is_null() && !xpos_f.is_null() {
-            let p: [f64; 2] = [0.5, 0.5];
-            mju_flex_interp_rotation2d(order, xpos_f, npe, na0, na1, normal_axis, p.as_ptr(), quat);
-        }
-    }
-}
-
-/// C: mju_flexInterpRotation2D (engine/engine_util_misc.h:118)
-/// Calls: mju_cross, mju_flexDphi, mju_flexPhi, mju_mat2Rot, mju_negQuat
-/// ⚠️ BITEXACT RULES:
-///   1. Copy exact C accumulation order (no iter().sum())
-///   2. No f64::mul_add() (FMA changes precision)
-///   3. No algebraic simplification
-///   4. No iter().sum()/product() (order undefined)
-#[allow(unused_variables, non_snake_case)]
-pub fn mju_flex_interp_rotation2d(order: i32, xpos_f: *const f64, npe: i32, axis0: i32, axis1: i32, normal_axis: i32, local: *const f64, quat: *mut f64) {
-    use crate::engine::engine_util_spatial::{mju_cross, mju_mat2rot, mju_neg_quat};
-
-    // SAFETY: caller guarantees xpos_f[3*npe], local[2], quat[4] are valid
-    unsafe {
-        // compute 3x2 deformation gradient F at parametric point local
-        let mut t1: [f64; 3] = [0.0, 0.0, 0.0];
-        let mut t2: [f64; 3] = [0.0, 0.0, 0.0];
-        let mut idx: usize = 0;
-        for l0 in 0..=order {
-            for l1 in 0..=order {
-                let grad0: f64 = mju_flex_dphi(*local.add(0), l0, order)
-                               * mju_flex_phi(*local.add(1), l1, order);
-                let grad1: f64 = mju_flex_phi(*local.add(0), l0, order)
-                               * mju_flex_dphi(*local.add(1), l1, order);
-                for d in 0..3 {
-                    t1[d] += *xpos_f.add(3 * idx + d) * grad0;
-                    t2[d] += *xpos_f.add(3 * idx + d) * grad1;
-                }
-                idx += 1;
-            }
-        }
-
-        // normal = t1 x t2
-        let mut normal: [f64; 3] = [0.0; 3];
-        mju_cross(normal.as_mut_ptr(), t1.as_ptr(), t2.as_ptr());
-
-        // build 3x3 matrix with columns assigned to canonical axes (row-major)
-        let mut vecs: [*const f64; 3] = [std::ptr::null(); 3];
-        vecs[axis0 as usize] = t1.as_ptr();
-        vecs[axis1 as usize] = t2.as_ptr();
-        vecs[normal_axis as usize] = normal.as_ptr();
-
-        let mut mat: [f64; 9] = [0.0; 9];
-        for col in 0..3 {
-            mat[0 * 3 + col] = *vecs[col].add(0);
-            mat[1 * 3 + col] = *vecs[col].add(1);
-            mat[2 * 3 + col] = *vecs[col].add(2);
-        }
-
-        // extract rotation via polar decomposition
-        *quat.add(0) = 1.0;
-        *quat.add(1) = 0.0;
-        *quat.add(2) = 0.0;
-        *quat.add(3) = 0.0;
-        mju_mat2rot(quat, mat.as_ptr());
-        mju_neg_quat(quat, quat);
-    }
-}
-
-/// C: mju_flexFaceNormal2D (engine/engine_util_misc.h:124)
-/// Calls: mju_cross, mju_flexDphi, mju_flexPhi, mju_zero3
-/// ⚠️ BITEXACT RULES:
-///   1. Copy exact C accumulation order (no iter().sum())
-///   2. No f64::mul_add() (FMA changes precision)
-///   3. No algebraic simplification
-///   4. No iter().sum()/product() (order undefined)
-#[allow(unused_variables, non_snake_case)]
-pub fn mju_flex_face_normal2d(normal: *mut f64, t1: *mut f64, t2: *mut f64, order: i32, xpos_f: *const f64, local: *const f64) {
-    use crate::engine::engine_util_blas::mju_zero3;
-    use crate::engine::engine_util_spatial::mju_cross;
-
-    // SAFETY: caller guarantees normal[3], t1[3], t2[3], xpos_f[3*npe], local[2] are valid
-    unsafe {
-        mju_zero3(t1);
-        mju_zero3(t2);
-        let mut idx: usize = 0;
-        for l0 in 0..=order {
-            for l1 in 0..=order {
-                let grad0: f64 = mju_flex_dphi(*local.add(0), l0, order)
-                               * mju_flex_phi(*local.add(1), l1, order);
-                let grad1: f64 = mju_flex_phi(*local.add(0), l0, order)
-                               * mju_flex_dphi(*local.add(1), l1, order);
-                for d in 0..3 {
-                    *t1.add(d) += *xpos_f.add(3 * idx + d) * grad0;
-                    *t2.add(d) += *xpos_f.add(3 * idx + d) * grad1;
-                }
-                idx += 1;
-            }
-        }
-        mju_cross(normal, t1, t2);
-    }
-}
-
-/// C: mju_flexPhi (engine/engine_util_misc.h:130)
-/// ⚠️ BITEXACT RULES:
-///   1. Copy exact C accumulation order (no iter().sum())
-///   2. No f64::mul_add() (FMA changes precision)
-///   3. No algebraic simplification
-///   4. No iter().sum()/product() (order undefined)
-#[allow(unused_variables, non_snake_case)]
-pub fn mju_flex_phi(s: f64, i: i32, order: i32) -> f64 {
-    if order == 1 {
-        return if i == 0 { 1.0 - s } else { s };
-    }
-    match i {
-        0 => 2.0 * s * s - 3.0 * s + 1.0,
-        1 => 4.0 * (s - s * s),
-        2 => 2.0 * s * s - s,
-        _ => 0.0,
-    }
-}
-
-/// C: mju_flexDphi (engine/engine_util_misc.h:141)
-/// ⚠️ BITEXACT RULES:
-///   1. Copy exact C accumulation order (no iter().sum())
-///   2. No f64::mul_add() (FMA changes precision)
-///   3. No algebraic simplification
-///   4. No iter().sum()/product() (order undefined)
-#[allow(unused_variables, non_snake_case)]
-pub fn mju_flex_dphi(s: f64, i: i32, order: i32) -> f64 {
-    if order == 1 {
-        return if i == 0 { -1.0 } else { 1.0 };
-    }
-    match i {
-        0 => 4.0 * s - 3.0,
-        1 => 4.0 * (1.0 - 2.0 * s),
-        2 => 4.0 * s - 1.0,
-        _ => 0.0,
-    }
-}
-
 /// C: mju_shellTrackInterior (engine/engine_util_misc.h:151)
-/// Calls: mju_copy3, nodeAt
+/// Calls: cxx-internal:/Users/xing/Desktop/projects/c2rust_bitexact/projects/mujoco/src/engine/engine_util_misc.c:_nodeAt, cxx:_mju_copy3
 /// ⚠️ BITEXACT RULES:
 ///   1. Copy exact C accumulation order (no iter().sum())
 ///   2. No f64::mul_add() (FMA changes precision)
 ///   3. No algebraic simplification
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
-pub fn mju_shell_track_interior(nodexpos: *mut f64, nx: i32, ny: i32, nz: i32) {
+pub fn mju_shellTrackInterior(nodexpos: *mut f64, nx: i32, ny: i32, nz: i32) {
     // need at least 3 nodes in each direction to have interior nodes
     if nx < 3 || ny < 3 || nz < 3 {
         return;
@@ -1471,53 +1007,53 @@ pub fn mju_shell_track_interior(nodexpos: *mut f64, nx: i32, ny: i32, nz: i32) {
                     // --- face contributions (bilinear interpolation on each face pair) ---
                     // x-faces: i=0 and i=nx-1
                     for d in 0..3 {
-                        *result.as_mut_ptr().add(d) += (1.0 - s) * *node_at(nodexpos, ny, nz, 0, j, k).add(d)
-                                                     + s * *node_at(nodexpos, ny, nz, nx - 1, j, k).add(d);
+                        *result.as_mut_ptr().add(d) += (1.0 - s) * *nodeAt(nodexpos, ny, nz, 0, j, k).add(d)
+                                                     + s * *nodeAt(nodexpos, ny, nz, nx - 1, j, k).add(d);
                     }
                     // y-faces: j=0 and j=ny-1
                     for d in 0..3 {
-                        *result.as_mut_ptr().add(d) += (1.0 - t) * *node_at(nodexpos, ny, nz, i, 0, k).add(d)
-                                                     + t * *node_at(nodexpos, ny, nz, i, ny - 1, k).add(d);
+                        *result.as_mut_ptr().add(d) += (1.0 - t) * *nodeAt(nodexpos, ny, nz, i, 0, k).add(d)
+                                                     + t * *nodeAt(nodexpos, ny, nz, i, ny - 1, k).add(d);
                     }
                     // z-faces: k=0 and k=nz-1
                     for d in 0..3 {
-                        *result.as_mut_ptr().add(d) += (1.0 - u) * *node_at(nodexpos, ny, nz, i, j, 0).add(d)
-                                                     + u * *node_at(nodexpos, ny, nz, i, j, nz - 1).add(d);
+                        *result.as_mut_ptr().add(d) += (1.0 - u) * *nodeAt(nodexpos, ny, nz, i, j, 0).add(d)
+                                                     + u * *nodeAt(nodexpos, ny, nz, i, j, nz - 1).add(d);
                     }
 
                     // --- edge corrections (subtract 12 edges, each linearly interpolated) ---
                     // edges along x (4 edges: (j,k) at corners of y-z face)
                     for d in 0..3 {
-                        result[d] -= (1.0 - t) * (1.0 - u) * *node_at(nodexpos, ny, nz, i, 0, 0).add(d);
-                        result[d] -= (1.0 - t) * u * *node_at(nodexpos, ny, nz, i, 0, nz - 1).add(d);
-                        result[d] -= t * (1.0 - u) * *node_at(nodexpos, ny, nz, i, ny - 1, 0).add(d);
-                        result[d] -= t * u * *node_at(nodexpos, ny, nz, i, ny - 1, nz - 1).add(d);
+                        result[d] -= (1.0 - t) * (1.0 - u) * *nodeAt(nodexpos, ny, nz, i, 0, 0).add(d);
+                        result[d] -= (1.0 - t) * u * *nodeAt(nodexpos, ny, nz, i, 0, nz - 1).add(d);
+                        result[d] -= t * (1.0 - u) * *nodeAt(nodexpos, ny, nz, i, ny - 1, 0).add(d);
+                        result[d] -= t * u * *nodeAt(nodexpos, ny, nz, i, ny - 1, nz - 1).add(d);
                     }
                     // edges along y (4 edges: (i,k) at corners of x-z face)
                     for d in 0..3 {
-                        result[d] -= (1.0 - s) * (1.0 - u) * *node_at(nodexpos, ny, nz, 0, j, 0).add(d);
-                        result[d] -= (1.0 - s) * u * *node_at(nodexpos, ny, nz, 0, j, nz - 1).add(d);
-                        result[d] -= s * (1.0 - u) * *node_at(nodexpos, ny, nz, nx - 1, j, 0).add(d);
-                        result[d] -= s * u * *node_at(nodexpos, ny, nz, nx - 1, j, nz - 1).add(d);
+                        result[d] -= (1.0 - s) * (1.0 - u) * *nodeAt(nodexpos, ny, nz, 0, j, 0).add(d);
+                        result[d] -= (1.0 - s) * u * *nodeAt(nodexpos, ny, nz, 0, j, nz - 1).add(d);
+                        result[d] -= s * (1.0 - u) * *nodeAt(nodexpos, ny, nz, nx - 1, j, 0).add(d);
+                        result[d] -= s * u * *nodeAt(nodexpos, ny, nz, nx - 1, j, nz - 1).add(d);
                     }
                     // edges along z (4 edges: (i,j) at corners of x-y face)
                     for d in 0..3 {
-                        result[d] -= (1.0 - s) * (1.0 - t) * *node_at(nodexpos, ny, nz, 0, 0, k).add(d);
-                        result[d] -= (1.0 - s) * t * *node_at(nodexpos, ny, nz, 0, ny - 1, k).add(d);
-                        result[d] -= s * (1.0 - t) * *node_at(nodexpos, ny, nz, nx - 1, 0, k).add(d);
-                        result[d] -= s * t * *node_at(nodexpos, ny, nz, nx - 1, ny - 1, k).add(d);
+                        result[d] -= (1.0 - s) * (1.0 - t) * *nodeAt(nodexpos, ny, nz, 0, 0, k).add(d);
+                        result[d] -= (1.0 - s) * t * *nodeAt(nodexpos, ny, nz, 0, ny - 1, k).add(d);
+                        result[d] -= s * (1.0 - t) * *nodeAt(nodexpos, ny, nz, nx - 1, 0, k).add(d);
+                        result[d] -= s * t * *nodeAt(nodexpos, ny, nz, nx - 1, ny - 1, k).add(d);
                     }
 
                     // --- corner corrections (add 8 corners back) ---
                     for d in 0..3 {
-                        result[d] += (1.0 - s) * (1.0 - t) * (1.0 - u) * *node_at(nodexpos, ny, nz, 0, 0, 0).add(d);
-                        result[d] += (1.0 - s) * (1.0 - t) * u * *node_at(nodexpos, ny, nz, 0, 0, nz - 1).add(d);
-                        result[d] += (1.0 - s) * t * (1.0 - u) * *node_at(nodexpos, ny, nz, 0, ny - 1, 0).add(d);
-                        result[d] += (1.0 - s) * t * u * *node_at(nodexpos, ny, nz, 0, ny - 1, nz - 1).add(d);
-                        result[d] += s * (1.0 - t) * (1.0 - u) * *node_at(nodexpos, ny, nz, nx - 1, 0, 0).add(d);
-                        result[d] += s * (1.0 - t) * u * *node_at(nodexpos, ny, nz, nx - 1, 0, nz - 1).add(d);
-                        result[d] += s * t * (1.0 - u) * *node_at(nodexpos, ny, nz, nx - 1, ny - 1, 0).add(d);
-                        result[d] += s * t * u * *node_at(nodexpos, ny, nz, nx - 1, ny - 1, nz - 1).add(d);
+                        result[d] += (1.0 - s) * (1.0 - t) * (1.0 - u) * *nodeAt(nodexpos, ny, nz, 0, 0, 0).add(d);
+                        result[d] += (1.0 - s) * (1.0 - t) * u * *nodeAt(nodexpos, ny, nz, 0, 0, nz - 1).add(d);
+                        result[d] += (1.0 - s) * t * (1.0 - u) * *nodeAt(nodexpos, ny, nz, 0, ny - 1, 0).add(d);
+                        result[d] += (1.0 - s) * t * u * *nodeAt(nodexpos, ny, nz, 0, ny - 1, nz - 1).add(d);
+                        result[d] += s * (1.0 - t) * (1.0 - u) * *nodeAt(nodexpos, ny, nz, nx - 1, 0, 0).add(d);
+                        result[d] += s * (1.0 - t) * u * *nodeAt(nodexpos, ny, nz, nx - 1, 0, nz - 1).add(d);
+                        result[d] += s * t * (1.0 - u) * *nodeAt(nodexpos, ny, nz, nx - 1, ny - 1, 0).add(d);
+                        result[d] += s * t * u * *nodeAt(nodexpos, ny, nz, nx - 1, ny - 1, nz - 1).add(d);
                     }
 
                     // write result to interior node
@@ -1532,14 +1068,14 @@ pub fn mju_shell_track_interior(nodexpos: *mut f64, nx: i32, ny: i32, nz: i32) {
 }
 
 /// C: mju_shellTFIWeights (engine/engine_util_misc.h:154)
-/// Calls: addWeight
+/// Calls: cxx-internal:/Users/xing/Desktop/projects/c2rust_bitexact/projects/mujoco/src/engine/engine_util_misc.c:_addWeight
 /// ⚠️ BITEXACT RULES:
 ///   1. Copy exact C accumulation order (no iter().sum())
 ///   2. No f64::mul_add() (FMA changes precision)
 ///   3. No algebraic simplification
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
-pub fn mju_shell_tfi_weights(nx: i32, ny: i32, nz: i32, i: i32, j: i32, k: i32, w: f64, nb: *mut i32, body: *mut i32, bweight: *mut f64, nodebodyid: *const i32, nstart: i32) {
+pub fn mju_shellTFIWeights(nx: i32, ny: i32, nz: i32, i: i32, j: i32, k: i32, w: f64, nb: *mut i32, body: *mut i32, bweight: *mut f64, nodebodyid: *const i32, nstart: i32) {
     // SAFETY: caller guarantees all pointers valid, nodebodyid indexed by nstart + grid offsets
     unsafe {
         let s: f64 = i as f64 / (nx - 1) as f64;
@@ -1557,47 +1093,46 @@ pub fn mju_shell_tfi_weights(nx: i32, ny: i32, nz: i32, i: i32, j: i32, k: i32, 
         let nz1 = (nz - 1) as usize;
 
         // face contributions
-        add_weight(nb, body, bweight, *nodebodyid.add(nstart + 0 * ny_uz * nz_uz + j_uz * nz_uz + k_uz), w * (1.0 - s));
-        add_weight(nb, body, bweight, *nodebodyid.add(nstart + nx1 * ny_uz * nz_uz + j_uz * nz_uz + k_uz), w * s);
+        addWeight(nb, body, bweight, *nodebodyid.add(nstart + 0 * ny_uz * nz_uz + j_uz * nz_uz + k_uz), w * (1.0 - s));
+        addWeight(nb, body, bweight, *nodebodyid.add(nstart + nx1 * ny_uz * nz_uz + j_uz * nz_uz + k_uz), w * s);
 
-        add_weight(nb, body, bweight, *nodebodyid.add(nstart + i_uz * ny_uz * nz_uz + 0 * nz_uz + k_uz), w * (1.0 - t));
-        add_weight(nb, body, bweight, *nodebodyid.add(nstart + i_uz * ny_uz * nz_uz + ny1 * nz_uz + k_uz), w * t);
+        addWeight(nb, body, bweight, *nodebodyid.add(nstart + i_uz * ny_uz * nz_uz + 0 * nz_uz + k_uz), w * (1.0 - t));
+        addWeight(nb, body, bweight, *nodebodyid.add(nstart + i_uz * ny_uz * nz_uz + ny1 * nz_uz + k_uz), w * t);
 
-        add_weight(nb, body, bweight, *nodebodyid.add(nstart + i_uz * ny_uz * nz_uz + j_uz * nz_uz + 0), w * (1.0 - u));
-        add_weight(nb, body, bweight, *nodebodyid.add(nstart + i_uz * ny_uz * nz_uz + j_uz * nz_uz + nz1), w * u);
+        addWeight(nb, body, bweight, *nodebodyid.add(nstart + i_uz * ny_uz * nz_uz + j_uz * nz_uz + 0), w * (1.0 - u));
+        addWeight(nb, body, bweight, *nodebodyid.add(nstart + i_uz * ny_uz * nz_uz + j_uz * nz_uz + nz1), w * u);
 
         // edge corrections
-        add_weight(nb, body, bweight, *nodebodyid.add(nstart + i_uz * ny_uz * nz_uz + 0 * nz_uz + 0), -w * (1.0 - t) * (1.0 - u));
-        add_weight(nb, body, bweight, *nodebodyid.add(nstart + i_uz * ny_uz * nz_uz + 0 * nz_uz + nz1), -w * (1.0 - t) * u);
-        add_weight(nb, body, bweight, *nodebodyid.add(nstart + i_uz * ny_uz * nz_uz + ny1 * nz_uz + 0), -w * t * (1.0 - u));
-        add_weight(nb, body, bweight, *nodebodyid.add(nstart + i_uz * ny_uz * nz_uz + ny1 * nz_uz + nz1), -w * t * u);
+        addWeight(nb, body, bweight, *nodebodyid.add(nstart + i_uz * ny_uz * nz_uz + 0 * nz_uz + 0), -w * (1.0 - t) * (1.0 - u));
+        addWeight(nb, body, bweight, *nodebodyid.add(nstart + i_uz * ny_uz * nz_uz + 0 * nz_uz + nz1), -w * (1.0 - t) * u);
+        addWeight(nb, body, bweight, *nodebodyid.add(nstart + i_uz * ny_uz * nz_uz + ny1 * nz_uz + 0), -w * t * (1.0 - u));
+        addWeight(nb, body, bweight, *nodebodyid.add(nstart + i_uz * ny_uz * nz_uz + ny1 * nz_uz + nz1), -w * t * u);
 
-        add_weight(nb, body, bweight, *nodebodyid.add(nstart + 0 * ny_uz * nz_uz + j_uz * nz_uz + 0), -w * (1.0 - s) * (1.0 - u));
-        add_weight(nb, body, bweight, *nodebodyid.add(nstart + 0 * ny_uz * nz_uz + j_uz * nz_uz + nz1), -w * (1.0 - s) * u);
-        add_weight(nb, body, bweight, *nodebodyid.add(nstart + nx1 * ny_uz * nz_uz + j_uz * nz_uz + 0), -w * s * (1.0 - u));
-        add_weight(nb, body, bweight, *nodebodyid.add(nstart + nx1 * ny_uz * nz_uz + j_uz * nz_uz + nz1), -w * s * u);
+        addWeight(nb, body, bweight, *nodebodyid.add(nstart + 0 * ny_uz * nz_uz + j_uz * nz_uz + 0), -w * (1.0 - s) * (1.0 - u));
+        addWeight(nb, body, bweight, *nodebodyid.add(nstart + 0 * ny_uz * nz_uz + j_uz * nz_uz + nz1), -w * (1.0 - s) * u);
+        addWeight(nb, body, bweight, *nodebodyid.add(nstart + nx1 * ny_uz * nz_uz + j_uz * nz_uz + 0), -w * s * (1.0 - u));
+        addWeight(nb, body, bweight, *nodebodyid.add(nstart + nx1 * ny_uz * nz_uz + j_uz * nz_uz + nz1), -w * s * u);
 
-        add_weight(nb, body, bweight, *nodebodyid.add(nstart + 0 * ny_uz * nz_uz + 0 * nz_uz + k_uz), -w * (1.0 - s) * (1.0 - t));
-        add_weight(nb, body, bweight, *nodebodyid.add(nstart + 0 * ny_uz * nz_uz + ny1 * nz_uz + k_uz), -w * (1.0 - s) * t);
-        add_weight(nb, body, bweight, *nodebodyid.add(nstart + nx1 * ny_uz * nz_uz + 0 * nz_uz + k_uz), -w * s * (1.0 - t));
-        add_weight(nb, body, bweight, *nodebodyid.add(nstart + nx1 * ny_uz * nz_uz + ny1 * nz_uz + k_uz), -w * s * t);
+        addWeight(nb, body, bweight, *nodebodyid.add(nstart + 0 * ny_uz * nz_uz + 0 * nz_uz + k_uz), -w * (1.0 - s) * (1.0 - t));
+        addWeight(nb, body, bweight, *nodebodyid.add(nstart + 0 * ny_uz * nz_uz + ny1 * nz_uz + k_uz), -w * (1.0 - s) * t);
+        addWeight(nb, body, bweight, *nodebodyid.add(nstart + nx1 * ny_uz * nz_uz + 0 * nz_uz + k_uz), -w * s * (1.0 - t));
+        addWeight(nb, body, bweight, *nodebodyid.add(nstart + nx1 * ny_uz * nz_uz + ny1 * nz_uz + k_uz), -w * s * t);
 
         // corner corrections
-        add_weight(nb, body, bweight, *nodebodyid.add(nstart + 0 * ny_uz * nz_uz + 0 * nz_uz + 0), w * (1.0 - s) * (1.0 - t) * (1.0 - u));
-        add_weight(nb, body, bweight, *nodebodyid.add(nstart + 0 * ny_uz * nz_uz + 0 * nz_uz + nz1), w * (1.0 - s) * (1.0 - t) * u);
-        add_weight(nb, body, bweight, *nodebodyid.add(nstart + 0 * ny_uz * nz_uz + ny1 * nz_uz + 0), w * (1.0 - s) * t * (1.0 - u));
-        add_weight(nb, body, bweight, *nodebodyid.add(nstart + 0 * ny_uz * nz_uz + ny1 * nz_uz + nz1), w * (1.0 - s) * t * u);
-        add_weight(nb, body, bweight, *nodebodyid.add(nstart + nx1 * ny_uz * nz_uz + 0 * nz_uz + 0), w * s * (1.0 - t) * (1.0 - u));
-        add_weight(nb, body, bweight, *nodebodyid.add(nstart + nx1 * ny_uz * nz_uz + 0 * nz_uz + nz1), w * s * (1.0 - t) * u);
-        add_weight(nb, body, bweight, *nodebodyid.add(nstart + nx1 * ny_uz * nz_uz + ny1 * nz_uz + 0), w * s * t * (1.0 - u));
-        add_weight(nb, body, bweight, *nodebodyid.add(nstart + nx1 * ny_uz * nz_uz + ny1 * nz_uz + nz1), w * s * t * u);
+        addWeight(nb, body, bweight, *nodebodyid.add(nstart + 0 * ny_uz * nz_uz + 0 * nz_uz + 0), w * (1.0 - s) * (1.0 - t) * (1.0 - u));
+        addWeight(nb, body, bweight, *nodebodyid.add(nstart + 0 * ny_uz * nz_uz + 0 * nz_uz + nz1), w * (1.0 - s) * (1.0 - t) * u);
+        addWeight(nb, body, bweight, *nodebodyid.add(nstart + 0 * ny_uz * nz_uz + ny1 * nz_uz + 0), w * (1.0 - s) * t * (1.0 - u));
+        addWeight(nb, body, bweight, *nodebodyid.add(nstart + 0 * ny_uz * nz_uz + ny1 * nz_uz + nz1), w * (1.0 - s) * t * u);
+        addWeight(nb, body, bweight, *nodebodyid.add(nstart + nx1 * ny_uz * nz_uz + 0 * nz_uz + 0), w * s * (1.0 - t) * (1.0 - u));
+        addWeight(nb, body, bweight, *nodebodyid.add(nstart + nx1 * ny_uz * nz_uz + 0 * nz_uz + nz1), w * s * (1.0 - t) * u);
+        addWeight(nb, body, bweight, *nodebodyid.add(nstart + nx1 * ny_uz * nz_uz + ny1 * nz_uz + 0), w * s * t * (1.0 - u));
+        addWeight(nb, body, bweight, *nodebodyid.add(nstart + nx1 * ny_uz * nz_uz + ny1 * nz_uz + nz1), w * s * t * u);
     }
 }
 
 /// C: mju_encodeBase64 (engine/engine_util_misc.h:163)
-/// Calls: next
 #[allow(unused_variables, non_snake_case)]
-pub fn mju_encode_base64(buf: *mut i8, data: *const u8, ndata: usize) -> usize {
+pub fn mju_encodeBase64(buf: *mut i8, data: *const u8, ndata: usize) -> usize {
     const TABLE: &[u8; 64] = b"ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
 
     // SAFETY: buf points to a buffer large enough for base64 output, data points to ndata bytes
@@ -1649,7 +1184,7 @@ pub fn mju_encode_base64(buf: *mut i8, data: *const u8, ndata: usize) -> usize {
 
 /// C: mju_isValidBase64 (engine/engine_util_misc.h:167)
 #[allow(unused_variables, non_snake_case)]
-pub fn mju_is_valid_base64(s: *const i8) -> usize {
+pub fn mju_isValidBase64(s: *const i8) -> usize {
     // SAFETY: caller guarantees s is a valid null-terminated string
     unsafe {
         let mut i: usize = 0;
@@ -1685,9 +1220,9 @@ pub fn mju_is_valid_base64(s: *const i8) -> usize {
 }
 
 /// C: mju_decodeBase64 (engine/engine_util_misc.h:171)
-/// Calls: _decode
+/// Calls: cxx-internal:/Users/xing/Desktop/projects/c2rust_bitexact/projects/mujoco/src/engine/engine_util_misc.c:__decode
 #[allow(unused_variables, non_snake_case)]
-pub fn mju_decode_base64(buf: *mut u8, s: *const i8) -> usize {
+pub fn mju_decodeBase64(buf: *mut u8, s: *const i8) -> usize {
     // SAFETY: caller guarantees buf has enough space and s is a valid null-terminated base64 string
     unsafe {
         // inline base64 char decoder
@@ -1735,14 +1270,14 @@ pub fn mju_decode_base64(buf: *mut u8, s: *const i8) -> usize {
 }
 
 /// C: mju_historyInit (engine/engine_util_misc.h:184)
-/// Calls: mju_copy, mju_message
+/// Calls: cxx:_mju_copy, cxx:_mju_message
 /// ⚠️ BITEXACT RULES:
 ///   1. Copy exact C accumulation order (no iter().sum())
 ///   2. No f64::mul_add() (FMA changes precision)
 ///   3. No algebraic simplification
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
-pub fn mju_history_init(buf: *mut f64, n: i32, dim: i32, times: *const f64, values: *const f64, user: f64) {
+pub fn mju_historyInit(buf: *mut f64, n: i32, dim: i32, times: *const f64, values: *const f64, user: f64) {
     const MJ_MINVAL: f64 = 1E-15_f64;
 
     // SAFETY: caller guarantees buf[2 + n*(1+dim)], times[n], values[n*dim] are valid
@@ -1771,14 +1306,14 @@ pub fn mju_history_init(buf: *mut f64, n: i32, dim: i32, times: *const f64, valu
 }
 
 /// C: mju_historyInsert (engine/engine_util_misc.h:189)
-/// Calls: historyFindIndex, historyPhysicalIndex, mju_copy
+/// Calls: cxx-internal:/Users/xing/Desktop/projects/c2rust_bitexact/projects/mujoco/src/engine/engine_util_misc.c:_historyFindIndex, cxx-internal:/Users/xing/Desktop/projects/c2rust_bitexact/projects/mujoco/src/engine/engine_util_misc.c:_historyPhysicalIndex, cxx:_mju_copy
 /// ⚠️ BITEXACT RULES:
 ///   1. Copy exact C accumulation order (no iter().sum())
 ///   2. No f64::mul_add() (FMA changes precision)
 ///   3. No algebraic simplification
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
-pub fn mju_history_insert(buf: *mut f64, n: i32, dim: i32, t: f64) -> *mut f64 {
+pub fn mju_historyInsert(buf: *mut f64, n: i32, dim: i32, t: f64) -> *mut f64 {
     const MJ_MINVAL: f64 = 1E-15_f64;
 
     // SAFETY: caller guarantees buf has layout [user(1), cursor(1), times(n), values(n*dim)]
@@ -1789,11 +1324,11 @@ pub fn mju_history_insert(buf: *mut f64, n: i32, dim: i32, t: f64) -> *mut f64 {
         let values = buf.add(2 + n as usize);
 
         // find logical insertion index: times[i-1] < t <= times[i]
-        let i = history_find_index(times, n, cursor, t);
+        let i = historyFindIndex(times, n, cursor, t);
 
         // exact match at logical i: return pointer to existing slot
         if i < n {
-            let phys_i = history_physical_index(cursor, n, i);
+            let phys_i = historyPhysicalIndex(cursor, n, i);
             if f64::abs(t - *times.add(phys_i as usize)) < MJ_MINVAL {
                 return values.add((phys_i as usize) * (dim as usize));
             }
@@ -1801,7 +1336,7 @@ pub fn mju_history_insert(buf: *mut f64, n: i32, dim: i32, t: f64) -> *mut f64 {
 
         // logical i == 0: new sample is older than oldest, replace oldest slot
         if i == 0 {
-            let oldest_phys = history_physical_index(cursor, n, 0);
+            let oldest_phys = historyPhysicalIndex(cursor, n, 0);
             *times.add(oldest_phys as usize) = t;
             return values.add((oldest_phys as usize) * (dim as usize));
         }
@@ -1816,8 +1351,8 @@ pub fn mju_history_insert(buf: *mut f64, n: i32, dim: i32, t: f64) -> *mut f64 {
 
         // 0 < i < n: out-of-order insertion, shift [1, i-1] left (dropping 0), insert at i-1
         for j in 0..i - 1 {
-            let src_phys = history_physical_index(cursor, n, j + 1);
-            let dst_phys = history_physical_index(cursor, n, j);
+            let src_phys = historyPhysicalIndex(cursor, n, j + 1);
+            let dst_phys = historyPhysicalIndex(cursor, n, j);
             *times.add(dst_phys as usize) = *times.add(src_phys as usize);
             crate::engine::engine_util_blas::mju_copy(
                 values.add((dst_phys as usize) * (dim as usize)),
@@ -1825,21 +1360,21 @@ pub fn mju_history_insert(buf: *mut f64, n: i32, dim: i32, t: f64) -> *mut f64 {
                 dim,
             );
         }
-        let insert_phys = history_physical_index(cursor, n, i - 1);
+        let insert_phys = historyPhysicalIndex(cursor, n, i - 1);
         *times.add(insert_phys as usize) = t;
         values.add((insert_phys as usize) * (dim as usize))
     }
 }
 
 /// C: mju_historyRead (engine/engine_util_misc.h:194)
-/// Calls: historyFindIndex, historyPhysicalIndex
+/// Calls: cxx-internal:/Users/xing/Desktop/projects/c2rust_bitexact/projects/mujoco/src/engine/engine_util_misc.c:_historyFindIndex, cxx-internal:/Users/xing/Desktop/projects/c2rust_bitexact/projects/mujoco/src/engine/engine_util_misc.c:_historyPhysicalIndex
 /// ⚠️ BITEXACT RULES:
 ///   1. Copy exact C accumulation order (no iter().sum())
 ///   2. No f64::mul_add() (FMA changes precision)
 ///   3. No algebraic simplification
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
-pub fn mju_history_read(buf: *const f64, n: i32, dim: i32, res: *mut f64, t: f64, interp: i32) -> *const f64 {
+pub fn mju_historyRead(buf: *const f64, n: i32, dim: i32, res: *mut f64, t: f64, interp: i32) -> *const f64 {
     const MJ_MINVAL: f64 = 1E-15_f64;
 
     // SAFETY: caller guarantees buf has layout [capacity, cursor, times[n], values[n*dim]]
@@ -1849,8 +1384,8 @@ pub fn mju_history_read(buf: *const f64, n: i32, dim: i32, res: *mut f64, t: f64
         let times = buf.add(2);
         let values = buf.add(2 + n as usize);
 
-        let oldest_phys = history_physical_index(cursor, n, 0);
-        let newest_phys = history_physical_index(cursor, n, n - 1);
+        let oldest_phys = historyPhysicalIndex(cursor, n, 0);
+        let newest_phys = historyPhysicalIndex(cursor, n, n - 1);
         let t_oldest = *times.add(oldest_phys as usize);
         let t_newest = *times.add(newest_phys as usize);
 
@@ -1865,8 +1400,8 @@ pub fn mju_history_read(buf: *const f64, n: i32, dim: i32, res: *mut f64, t: f64
         }
 
         // find bracketing logical index: times[i-1] < t <= times[i]
-        let i = history_find_index(times, n, cursor, t);
-        let phys_i = history_physical_index(cursor, n, i);
+        let i = historyFindIndex(times, n, cursor, t);
+        let phys_i = historyPhysicalIndex(cursor, n, i);
 
         // check for exact match at i
         if (t - *times.add(phys_i as usize)).abs() < MJ_MINVAL {
@@ -1874,7 +1409,7 @@ pub fn mju_history_read(buf: *const f64, n: i32, dim: i32, res: *mut f64, t: f64
         }
 
         // lo = i-1, hi = i (we know i > 0 because t > t_oldest)
-        let phys_lo = history_physical_index(cursor, n, i - 1);
+        let phys_lo = historyPhysicalIndex(cursor, n, i - 1);
         let phys_hi = phys_i;
 
         // zero-order hold: return pointer to lo (most recent sample <= t)
@@ -1905,7 +1440,7 @@ pub fn mju_history_read(buf: *const f64, n: i32, dim: i32, res: *mut f64, t: f64
                 // finite differenced catmull-rom slopes, 0 at endpoints
                 let mut m_lo: f64 = 0.0;
                 if i > 1 {
-                    let phys_lo_prev = history_physical_index(cursor, n, i - 2);
+                    let phys_lo_prev = historyPhysicalIndex(cursor, n, i - 2);
                     let dt_lo = *times.add(phys_hi as usize) - *times.add(phys_lo_prev as usize);
                     m_lo = (*values.add((phys_hi as usize) * (dim as usize) + d)
                         - *values.add((phys_lo_prev as usize) * (dim as usize) + d))
@@ -1914,7 +1449,7 @@ pub fn mju_history_read(buf: *const f64, n: i32, dim: i32, res: *mut f64, t: f64
 
                 let mut m_hi: f64 = 0.0;
                 if i < n - 1 {
-                    let phys_hi_next = history_physical_index(cursor, n, i + 1);
+                    let phys_hi_next = historyPhysicalIndex(cursor, n, i + 1);
                     let dt_hi = *times.add(phys_hi_next as usize) - *times.add(phys_lo as usize);
                     m_hi = (*values.add((phys_hi_next as usize) * (dim as usize) + d)
                         - *values.add((phys_lo as usize) * (dim as usize) + d))
@@ -1933,14 +1468,14 @@ pub fn mju_history_read(buf: *const f64, n: i32, dim: i32, res: *mut f64, t: f64
 }
 
 /// C: mju_encodePyramid (engine/engine_util_misc.h:200)
-/// Calls: mju_min
+/// Calls: cxx:_mju_min
 /// ⚠️ BITEXACT RULES:
 ///   1. Copy exact C accumulation order (no iter().sum())
 ///   2. No f64::mul_add() (FMA changes precision)
 ///   3. No algebraic simplification
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
-pub fn mju_encode_pyramid(pyramid: *mut f64, force: *const f64, mu: *const f64, dim: i32) {
+pub fn mju_encodePyramid(pyramid: *mut f64, force: *const f64, mu: *const f64, dim: i32) {
     // SAFETY: caller guarantees pyramid, force, mu point to valid arrays of appropriate size
     unsafe {
         let a = *force.add(0) / ((dim - 1) as f64);
@@ -1960,7 +1495,7 @@ pub fn mju_encode_pyramid(pyramid: *mut f64, force: *const f64, mu: *const f64, 
 ///   3. No algebraic simplification
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
-pub fn mju_decode_pyramid(force: *mut f64, pyramid: *const f64, mu: *const f64, dim: i32) {
+pub fn mju_decodePyramid(force: *mut f64, pyramid: *const f64, mu: *const f64, dim: i32) {
     // NOTE: signature changed from previous IR version
     // Previous params: (force : * mut f64, pyramid : * const f64, mu : * const f64, dim : i32)
     // Previous return: ()
@@ -1987,7 +1522,7 @@ pub fn mju_decode_pyramid(force: *mut f64, pyramid: *const f64, mu: *const f64, 
 ///   3. No algebraic simplification
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
-pub fn mju_spring_damper(pos0: f64, vel0: f64, Kp: f64, Kv: f64, dt: f64) -> f64 {
+pub fn mju_springDamper(pos0: f64, vel0: f64, Kp: f64, Kv: f64, dt: f64) -> f64 {
     const MJ_MINVAL: f64 = 1E-15_f64;
 
     // determinant of characteristic equation
@@ -2018,15 +1553,15 @@ pub fn mju_spring_damper(pos0: f64, vel0: f64, Kp: f64, Kv: f64, dt: f64) -> f64
 }
 
 /// C: mju_outsideBox (engine/engine_util_misc.h:213)
-/// Calls: mju_message, mju_mulMatTVec3, mju_scl3
+/// Calls: cxx:_mju_message, cxx:_mju_mulMatTVec3, cxx:_mju_scl3
 /// ⚠️ BITEXACT RULES:
 ///   1. Copy exact C accumulation order (no iter().sum())
 ///   2. No f64::mul_add() (FMA changes precision)
 ///   3. No algebraic simplification
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
-pub fn mju_outside_box(point: *const f64, pos: *const f64, mat: *const f64, size: *const f64, inflate: f64) -> i32 {
-    use crate::engine::engine_util_blas::{mju_mul_mat_t_vec3, mju_scl3};
+pub fn mju_outsideBox(point: *const f64, pos: *const f64, mat: *const f64, size: *const f64, inflate: f64) -> i32 {
+    use crate::engine::engine_util_blas::{mju_mulMatTVec3, mju_scl3};
 
     // check inflation coefficient
     if inflate < 1.0 {
@@ -2041,7 +1576,7 @@ pub fn mju_outside_box(point: *const f64, pos: *const f64, mat: *const f64, size
             *point.add(1) - *pos.add(1),
             *point.add(2) - *pos.add(2),
         ];
-        mju_mul_mat_t_vec3(vec.as_mut_ptr(), mat, vec.as_ptr());
+        mju_mulMatTVec3(vec.as_mut_ptr(), mat, vec.as_ptr());
 
         // big: inflated box
         let mut big: [f64; 3] = [*size.add(0), *size.add(1), *size.add(2)];
@@ -2087,7 +1622,7 @@ pub fn mju_outside_box(point: *const f64, pos: *const f64, mat: *const f64, size
 ///   3. No algebraic simplification
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
-pub fn mju_print_mat(mat: *const f64, nr: i32, nc: i32) {
+pub fn mju_printMat(mat: *const f64, nr: i32, nc: i32) {
     extern "C" { fn printf(fmt: *const i8, ...) -> i32; }
     // SAFETY: mat points to nr*nc contiguous f64 values, caller guarantees valid pointer
     unsafe {
@@ -2108,7 +1643,7 @@ pub fn mju_print_mat(mat: *const f64, nr: i32, nc: i32) {
 ///   3. No algebraic simplification
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
-pub fn mju_print_mat_sparse(mat: *const f64, nr: i32, rownnz: *const i32, rowadr: *const i32, colind: *const i32) {
+pub fn mju_printMatSparse(mat: *const f64, nr: i32, rownnz: *const i32, rowadr: *const i32, colind: *const i32) {
     extern "C" { fn printf(fmt: *const i8, ...) -> i32; }
     // SAFETY: mat, rownnz, rowadr, colind are valid pointers from caller
     unsafe {
@@ -2188,7 +1723,7 @@ pub fn mju_round(x: f64) -> i32 {
 
 /// C: mju_type2Str (engine/engine_util_misc.h:240)
 #[allow(unused_variables, non_snake_case)]
-pub fn mju_type2str(r#type: i32) -> *const i8 {
+pub fn mju_type2Str(r#type: i32) -> *const i8 {
     // SAFETY: Return static C string pointer based on type enum
     match r#type {
         1 => b"body\0".as_ptr() as *const i8,
@@ -2223,7 +1758,7 @@ pub fn mju_type2str(r#type: i32) -> *const i8 {
 
 /// C: mju_str2Type (engine/engine_util_misc.h:243)
 #[allow(unused_variables, non_snake_case)]
-pub fn mju_str2type(str: *const i8) -> i32 {
+pub fn mju_str2Type(str: *const i8) -> i32 {
     unsafe {
         // SAFETY: Compare C string against known type names
         let s = str;
@@ -2267,7 +1802,7 @@ pub fn mju_str2type(str: *const i8) -> i32 {
 
 /// C: mju_writeNumBytes (engine/engine_util_misc.h:246)
 #[allow(unused_variables, non_snake_case)]
-pub fn mju_write_num_bytes(nbytes: usize) -> *const i8 {
+pub fn mju_writeNumBytes(nbytes: usize) -> *const i8 {
     thread_local! {
         static MESSAGE: std::cell::RefCell<[u8; 20]> = std::cell::RefCell::new([0u8; 20]);
     }
@@ -2308,9 +1843,9 @@ pub fn mju_write_num_bytes(nbytes: usize) -> *const i8 {
 }
 
 /// C: mju_warningText (engine/engine_util_misc.h:249)
-/// Calls: mju_writeNumBytes
+/// Calls: cxx:_mju_writeNumBytes
 #[allow(unused_variables, non_snake_case)]
-pub fn mju_warning_text(warning: i32, info: usize) -> *const i8 {
+pub fn mju_warningText(warning: i32, info: usize) -> *const i8 {
     // thread-local buffer for warning string
     thread_local! {
         static STR: std::cell::RefCell<[u8; 1000]> = std::cell::RefCell::new([0u8; 1000]);
@@ -2345,7 +1880,7 @@ pub fn mju_warning_text(warning: i32, info: usize) -> *const i8 {
                         info);
                 }
                 mjWARN_CNSTRFULL => {
-                    let bytes_str = mju_write_num_bytes(info);
+                    let bytes_str = mju_writeNumBytes(info);
                     snprintf(ptr, 1000,
                         b"Insufficient arena memory for the number of constraints generated. Increase arena memory allocation above %s bytes.\0".as_ptr() as *const i8,
                         bytes_str);
@@ -2388,7 +1923,7 @@ pub fn mju_warning_text(warning: i32, info: usize) -> *const i8 {
 ///   3. No algebraic simplification
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
-pub fn mju_is_bad(x: f64) -> i32 {
+pub fn mju_isBad(x: f64) -> i32 {
     const MJ_MAXVAL: f64 = 1E10_f64;
     if x.is_nan() || x > MJ_MAXVAL || x < -MJ_MAXVAL {
         1
@@ -2404,7 +1939,7 @@ pub fn mju_is_bad(x: f64) -> i32 {
 ///   3. No algebraic simplification
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
-pub fn mju_is_zero(vec: *const f64, n: i32) -> i32 {
+pub fn mju_isZero(vec: *const f64, n: i32) -> i32 {
     // SAFETY: caller guarantees vec points to valid array of at least n f64
     unsafe {
         for i in 0..n as usize {
@@ -2418,7 +1953,7 @@ pub fn mju_is_zero(vec: *const f64, n: i32) -> i32 {
 
 /// C: mju_isZeroByte (engine/engine_util_misc.h:258)
 #[allow(unused_variables, non_snake_case)]
-pub fn mju_is_zero_byte(vec: *const u8, n: i32) -> i32 {
+pub fn mju_isZeroByte(vec: *const u8, n: i32) -> i32 {
     // SAFETY: caller guarantees vec points to valid array of at least n bytes
     unsafe {
         if n == 0 {
@@ -2439,21 +1974,21 @@ pub fn mju_is_zero_byte(vec: *const u8, n: i32) -> i32 {
 
 /// C: mju_zeroInt (engine/engine_util_misc.h:261)
 #[allow(unused_variables, non_snake_case)]
-pub fn mju_zero_int(res: *mut i32, n: i32) {
+pub fn mju_zeroInt(res: *mut i32, n: i32) {
     // SAFETY: caller guarantees res points to valid array of at least n i32 elements
     unsafe { std::ptr::write_bytes(res, 0, n as usize); }
 }
 
 /// C: mju_copyInt (engine/engine_util_misc.h:264)
 #[allow(unused_variables, non_snake_case)]
-pub fn mju_copy_int(res: *mut i32, vec: *const i32, n: i32) {
+pub fn mju_copyInt(res: *mut i32, vec: *const i32, n: i32) {
     // SAFETY: caller guarantees res and vec point to valid arrays of at least n i32 elements
     unsafe { std::ptr::copy_nonoverlapping(vec, res, n as usize); }
 }
 
 /// C: mju_fillInt (engine/engine_util_misc.h:267)
 #[allow(unused_variables, non_snake_case)]
-pub fn mju_fill_int(res: *mut i32, val: i32, n: i32) {
+pub fn mju_fillInt(res: *mut i32, val: i32, n: i32) {
     // NOTE: signature changed from previous IR version
     // Previous params: (res : * mut i32, val : i32, n : i32)
     // Previous return: ()
@@ -2472,7 +2007,7 @@ pub fn mju_fill_int(res: *mut i32, val: i32, n: i32) {
 ///   3. No algebraic simplification
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
-pub fn mju_standard_normal(num2: *mut f64) -> f64 {
+pub fn mju_standardNormal(num2: *mut f64) -> f64 {
     extern "C" { fn rand() -> i32; }
     const RAND_MAX: f64 = 2147483647.0;
     let scale: f64 = 2.0 / RAND_MAX;
@@ -2567,7 +2102,7 @@ pub fn mju_n2d(res: *mut f64, vec: *const f64, n: i32) {
 }
 
 /// C: mju_gather (engine/engine_util_misc.h:285)
-/// Calls: mju_copy
+/// Calls: cxx:_mju_copy
 /// ⚠️ BITEXACT RULES:
 ///   1. Copy exact C accumulation order (no iter().sum())
 ///   2. No f64::mul_add() (FMA changes precision)
@@ -2595,7 +2130,7 @@ pub fn mju_gather(res: *mut f64, vec: *const f64, ind: *const i32, n: i32) {
 ///   3. No algebraic simplification
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
-pub fn mju_gather_masked(res: *mut f64, vec: *const f64, ind: *const i32, n: i32) {
+pub fn mju_gatherMasked(res: *mut f64, vec: *const f64, ind: *const i32, n: i32) {
     // SAFETY: res, vec, ind point to valid arrays of length >= n per caller contract
     unsafe {
         for i in 0..n as usize {
@@ -2606,7 +2141,7 @@ pub fn mju_gather_masked(res: *mut f64, vec: *const f64, ind: *const i32, n: i32
 }
 
 /// C: mju_scatter (engine/engine_util_misc.h:291)
-/// Calls: mju_copy
+/// Calls: cxx:_mju_copy
 /// ⚠️ BITEXACT RULES:
 ///   1. Copy exact C accumulation order (no iter().sum())
 ///   2. No f64::mul_add() (FMA changes precision)
@@ -2628,7 +2163,7 @@ pub fn mju_scatter(res: *mut f64, vec: *const f64, ind: *const i32, n: i32) {
 
 /// C: mju_gatherInt (engine/engine_util_misc.h:294)
 #[allow(unused_variables, non_snake_case)]
-pub fn mju_gather_int(res: *mut i32, vec: *const i32, ind: *const i32, n: i32) {
+pub fn mju_gatherInt(res: *mut i32, vec: *const i32, ind: *const i32, n: i32) {
     // SAFETY: caller guarantees all pointers valid for n elements
     unsafe {
         for i in 0..n as usize {
@@ -2639,7 +2174,7 @@ pub fn mju_gather_int(res: *mut i32, vec: *const i32, ind: *const i32, n: i32) {
 
 /// C: mju_scatterInt (engine/engine_util_misc.h:297)
 #[allow(unused_variables, non_snake_case)]
-pub fn mju_scatter_int(res: *mut i32, vec: *const i32, ind: *const i32, n: i32) {
+pub fn mju_scatterInt(res: *mut i32, vec: *const i32, ind: *const i32, n: i32) {
     // SAFETY: caller guarantees all pointers valid for n elements
     unsafe {
         for i in 0..n as usize {
@@ -2650,7 +2185,7 @@ pub fn mju_scatter_int(res: *mut i32, vec: *const i32, ind: *const i32, n: i32) 
 
 /// C: mju_sparseMap (engine/engine_util_misc.h:300)
 #[allow(unused_variables, non_snake_case)]
-pub fn mju_sparse_map(map: *mut i32, nr: i32, res_rowadr: *const i32, res_rownnz: *const i32, res_colind: *const i32, src_rowadr: *const i32, src_rownnz: *const i32, src_colind: *const i32) {
+pub fn mju_sparseMap(map: *mut i32, nr: i32, res_rowadr: *const i32, res_rownnz: *const i32, res_colind: *const i32, src_rowadr: *const i32, src_rownnz: *const i32, src_colind: *const i32) {
     // SAFETY: caller guarantees all pointers are valid for the sparse matrix dimensions
     unsafe {
         for i in 0..nr as usize {
@@ -2673,9 +2208,9 @@ pub fn mju_sparse_map(map: *mut i32, nr: i32, res_rowadr: *const i32, res_rownnz
 }
 
 /// C: mju_lower2SymMap (engine/engine_util_misc.h:306)
-/// Calls: mju_fillInt
+/// Calls: cxx:_mju_fillInt
 #[allow(unused_variables, non_snake_case)]
-pub fn mju_lower2sym_map(map: *mut i32, nr: i32, res_rowadr: *const i32, res_rownnz: *const i32, res_colind: *const i32, src_rowadr: *const i32, src_rownnz: *const i32, src_colind: *const i32, cursor: *mut i32) {
+pub fn mju_lower2SymMap(map: *mut i32, nr: i32, res_rowadr: *const i32, res_rownnz: *const i32, res_colind: *const i32, src_rowadr: *const i32, src_rownnz: *const i32, src_colind: *const i32, cursor: *mut i32) {
     if nr == 0 {
         return;
     }
@@ -2684,7 +2219,7 @@ pub fn mju_lower2sym_map(map: *mut i32, nr: i32, res_rowadr: *const i32, res_row
     unsafe {
         // default all map entries to "no source"
         let nnz: i32 = *res_rowadr.add((nr - 1) as usize) + *res_rownnz.add((nr - 1) as usize);
-        mju_fill_int(map, -1, nnz);
+        mju_fillInt(map, -1, nnz);
 
         // initialize per-row cursor
         for i in 0..nr as usize {
@@ -2753,7 +2288,7 @@ pub fn mju_lower2sym_map(map: *mut i32, nr: i32, res_rowadr: *const i32, res_row
 ///   3. No algebraic simplification
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
-pub fn mju_insertion_sort(list: *mut f64, n: i32) {
+pub fn mju_insertionSort(list: *mut f64, n: i32) {
     // SAFETY: caller guarantees list points to a valid array of n elements
     unsafe {
         for i in 1..n as usize {
@@ -2770,7 +2305,7 @@ pub fn mju_insertion_sort(list: *mut f64, n: i32) {
 
 /// C: mju_insertionSortInt (engine/engine_util_misc.h:315)
 #[allow(unused_variables, non_snake_case)]
-pub fn mju_insertion_sort_int(list: *mut i32, n: i32) {
+pub fn mju_insertionSortInt(list: *mut i32, n: i32) {
     // SAFETY: caller guarantees list points to a valid array of n elements
     unsafe {
         for i in 1..n as usize {
@@ -2792,7 +2327,7 @@ pub fn mju_insertion_sort_int(list: *mut i32, n: i32) {
 ///   3. No algebraic simplification
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
-pub fn mju_halton(index: i32, base: i32) -> f64 {
+pub fn mju_Halton(index: i32, base: i32) -> f64 {
     // NOTE: signature changed from previous IR version
     // Previous params: (index : i32, base : i32)
     // Previous return: f64
@@ -2830,7 +2365,7 @@ pub fn mju_strncpy(dst: *mut i8, src: *const i8, n: i32) -> *mut i8 {
 ///   3. No algebraic simplification
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
-pub fn mju_poly_force(linear: f64, poly: *const f64, x: f64, n: i32, flg_odd: i32) -> f64 {
+pub fn mju_polyForce(linear: f64, poly: *const f64, x: f64, n: i32, flg_odd: i32) -> f64 {
     // SAFETY: poly points to at least n f64 (caller contract)
     unsafe {
         let x = if flg_odd != 0 { f64::abs(x) } else { x };
@@ -2853,7 +2388,7 @@ pub fn mju_poly_force(linear: f64, poly: *const f64, x: f64, n: i32, flg_odd: i3
 ///   3. No algebraic simplification
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
-pub fn mjd_x_poly_force(linear: f64, poly: *const f64, x: f64, n: i32, flg_odd: i32) -> f64 {
+pub fn mjd_xPolyForce(linear: f64, poly: *const f64, x: f64, n: i32, flg_odd: i32) -> f64 {
     // SAFETY: poly points to at least n f64 (caller contract)
     unsafe {
         let x = if flg_odd != 0 { f64::abs(x) } else { x };
@@ -2876,7 +2411,7 @@ pub fn mjd_x_poly_force(linear: f64, poly: *const f64, x: f64, n: i32, flg_odd: 
 ///   3. No algebraic simplification
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
-pub fn mju_poly_potential(linear: f64, poly: *const f64, x: f64, n: i32, flg_odd: i32) -> f64 {
+pub fn mju_polyPotential(linear: f64, poly: *const f64, x: f64, n: i32, flg_odd: i32) -> f64 {
     // SAFETY: caller guarantees poly points to valid array of at least n f64
     unsafe {
         let x = if flg_odd != 0 { x.abs() } else { x };
@@ -2909,5 +2444,26 @@ pub fn mju_sigmoid(x: f64) -> f64 {
     }
     // sigmoid: f(x) = 6*x^5 - 15*x^4 + 10*x^3
     x * x * x * (3.0 * x * (2.0 * x - 5.0) + 10.0)
+}
+
+pub fn decode (ch : i8) -> u32
+{
+    let ch = ch as u8 as char;
+    if ch >= 'A' && ch <= 'Z' {
+        return (ch as u32) - ('A' as u32);
+    }
+    if ch >= 'a' && ch <= 'z' {
+        return (ch as u32) - ('a' as u32) + 26;
+    }
+    if ch >= '0' && ch <= '9' {
+        return (ch as u32) - ('0' as u32) + 52;
+    }
+    if ch == '+' {
+        return 62;
+    }
+    if ch == '/' {
+        return 63;
+    }
+    0
 }
 

@@ -1,11 +1,10 @@
 //! Port of: engine/engine_memory.c
-//! IR hash: 73393814548a07d1
-//! CODEGEN: signatures locked. Only fill todo!() bodies.
+//! IR hash: 9343293228317031
+//! CODEGEN: source paths, owners, and callable names are locked.
 
 use crate::types::*;
 
 /// C: fastmod (engine/engine_memory.c:52)
-/// Calls: power
 #[allow(unused_variables, non_snake_case)]
 pub fn fastmod(a: usize, b: usize) -> usize {
     if (b & (b - 1)) == 0 {
@@ -30,7 +29,7 @@ pub fn get_stack_info_from_data(d: *const mjData) -> mjStackInfo {
 }
 
 /// C: stackallocinternal (engine/engine_memory.c:144)
-/// Calls: fastmod, mju_error
+/// Calls: cxx-internal:/Users/xing/Desktop/projects/c2rust_bitexact/projects/mujoco/src/engine/engine_memory.c:_fastmod, cxx:_mju_error
 #[allow(unused_variables, non_snake_case)]
 pub fn stackallocinternal(d: *mut mjData, stack_info: *mut mjStackInfo, size: usize, alignment: usize, caller: *const i8, line: i32) -> *mut () {
     // mjREDZONE = 0 in non-ASAN builds (no ADDRESS_SANITIZER support in Rust port)
@@ -80,7 +79,7 @@ pub fn stackallocinternal(d: *mut mjData, stack_info: *mut mjStackInfo, size: us
 }
 
 /// C: stackalloc (engine/engine_memory.c:208)
-/// Calls: fastmod, get_stack_info_from_data, mju_error, stackallocinternal
+/// Calls: cxx-internal:/Users/xing/Desktop/projects/c2rust_bitexact/projects/mujoco/src/engine/engine_memory.c:_fastmod, cxx-internal:/Users/xing/Desktop/projects/c2rust_bitexact/projects/mujoco/src/engine/engine_memory.c:_get_stack_info_from_data, cxx-internal:/Users/xing/Desktop/projects/c2rust_bitexact/projects/mujoco/src/engine/engine_memory.c:_stackallocinternal, cxx:_mju_error
 #[allow(unused_variables, non_snake_case)]
 pub fn stackalloc(d: *mut mjData, size: usize, alignment: usize, caller: *const i8, line: i32) -> *mut () {
     // mjREDZONE = 0 in non-ASAN builds
@@ -124,7 +123,7 @@ pub fn stackalloc(d: *mut mjData, size: usize, alignment: usize, caller: *const 
 }
 
 /// C: markstackinternal (engine/engine_memory.c:256)
-/// Calls: stackallocinternal
+/// Calls: cxx-internal:/Users/xing/Desktop/projects/c2rust_bitexact/projects/mujoco/src/engine/engine_memory.c:_stackallocinternal
 #[allow(unused_variables, non_snake_case)]
 pub fn markstackinternal(d: *mut mjData, stack_info: *mut mjStackInfo) {
     // mjStackFrame layout (24 bytes, align 8): { pbase: usize, pstack: usize, pc: *mut () }
@@ -157,7 +156,6 @@ pub fn markstackinternal(d: *mut mjData, stack_info: *mut mjStackInfo) {
 }
 
 /// C: freestackinternal (engine/engine_memory.c:292)
-/// Calls: mj_freeStack
 #[allow(unused_variables, non_snake_case)]
 pub fn freestackinternal(stack_info: *mut mjStackInfo) {
     // SAFETY: stack_info is a valid pointer to mjStackInfo (caller contract).
@@ -178,9 +176,9 @@ pub fn freestackinternal(stack_info: *mut mjStackInfo) {
 }
 
 /// C: mj_arenaAllocByte (engine/engine_memory.h:35)
-/// Calls: fastmod
+/// Calls: cxx-internal:/Users/xing/Desktop/projects/c2rust_bitexact/projects/mujoco/src/engine/engine_memory.c:_fastmod
 #[allow(unused_variables, non_snake_case)]
-pub fn mj_arena_alloc_byte(d: *mut mjData, bytes: usize, alignment: usize) -> *mut () {
+pub fn mj_arenaAllocByte(d: *mut mjData, bytes: usize, alignment: usize) -> *mut () {
     // SAFETY: d is a valid mjData pointer with arena memory (caller contract)
     unsafe {
         let misalignment = fastmod((*d).parena as usize, alignment);
@@ -207,9 +205,9 @@ pub fn mj_arena_alloc_byte(d: *mut mjData, bytes: usize, alignment: usize) -> *m
 }
 
 /// C: mj_markStack (engine/engine_memory.h:40)
-/// Calls: get_stack_info_from_data, markstackinternal
+/// Calls: cxx-internal:/Users/xing/Desktop/projects/c2rust_bitexact/projects/mujoco/src/engine/engine_memory.c:_get_stack_info_from_data, cxx-internal:/Users/xing/Desktop/projects/c2rust_bitexact/projects/mujoco/src/engine/engine_memory.c:_markstackinternal
 #[allow(unused_variables, non_snake_case)]
-pub fn mj_mark_stack(d: *mut mjData) {
+pub fn mj_markStack(d: *mut mjData) {
     // SAFETY: d is a valid pointer (caller contract).
     unsafe {
         // no-op if called from mju_dispatch
@@ -256,9 +254,9 @@ pub fn mj_mark_stack(d: *mut mjData) {
 }
 
 /// C: mj_freeStack (engine/engine_memory.h:43)
-/// Calls: freestackinternal, get_stack_info_from_data
+/// Calls: cxx-internal:/Users/xing/Desktop/projects/c2rust_bitexact/projects/mujoco/src/engine/engine_memory.c:_freestackinternal, cxx-internal:/Users/xing/Desktop/projects/c2rust_bitexact/projects/mujoco/src/engine/engine_memory.c:_get_stack_info_from_data
 #[allow(unused_variables, non_snake_case)]
-pub fn mj_free_stack(d: *mut mjData) {
+pub fn mj_freeStack(d: *mut mjData) {
     // SAFETY: d is a valid pointer (caller contract).
     unsafe {
         // no-op if called from mju_dispatch
@@ -285,9 +283,9 @@ pub fn mj_free_stack(d: *mut mjData) {
 }
 
 /// C: mj_stackAllocByte (engine/engine_memory.h:53)
-/// Calls: stackalloc
+/// Calls: cxx-internal:engine_memory.c.o:_stackalloc
 #[allow(unused_variables, non_snake_case)]
-pub fn mj_stack_alloc_byte(d: *mut mjData, bytes: usize, alignment: usize) -> *mut () {
+pub fn mj_stackAllocByte(d: *mut mjData, bytes: usize, alignment: usize) -> *mut () {
     // SAFETY: d is a valid pointer (caller contract).
     unsafe {
         if bytes == 0 {
@@ -325,23 +323,23 @@ pub fn mj_stack_alloc_byte(d: *mut mjData, bytes: usize, alignment: usize) -> *m
 }
 
 /// C: mj_stackAllocInfo (engine/engine_memory.h:56)
-/// Calls: stackalloc
+/// Calls: cxx-internal:engine_memory.c.o:_stackalloc
 #[allow(unused_variables, non_snake_case)]
-pub fn mj_stack_alloc_info(d: *mut mjData, bytes: usize, alignment: usize, caller: *const i8, line: i32) -> *mut () {
+pub fn mj_stackAllocInfo(d: *mut mjData, bytes: usize, alignment: usize, caller: *const i8, line: i32) -> *mut () {
     // SAFETY: d is a valid pointer (caller contract). caller may be null.
     // This is just stackalloc with debug info — same behavior without ASAN.
-    mj_stack_alloc_byte(d, bytes, alignment)
+    mj_stackAllocByte(d, bytes, alignment)
 }
 
 /// C: mj_stackAllocNum (engine/engine_memory.h:64)
-/// Calls: mju_message, stackalloc
+/// Calls: cxx-internal:engine_memory.c.o:_stackalloc, cxx:_mju_message
 /// ⚠️ BITEXACT RULES:
 ///   1. Copy exact C accumulation order (no iter().sum())
 ///   2. No f64::mul_add() (FMA changes precision)
 ///   3. No algebraic simplification
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
-pub fn mj_stack_alloc_num(d: *mut mjData, size: usize) -> *mut f64 {
+pub fn mj_stackAllocNum(d: *mut mjData, size: usize) -> *mut f64 {
     // SAFETY: d is a valid pointer (caller contract).
     unsafe {
         if size == 0 {
@@ -382,9 +380,9 @@ pub fn mj_stack_alloc_num(d: *mut mjData, size: usize) -> *mut f64 {
 }
 
 /// C: mj_stackAllocInt (engine/engine_memory.h:67)
-/// Calls: mju_message, stackalloc
+/// Calls: cxx-internal:engine_memory.c.o:_stackalloc, cxx:_mju_message
 #[allow(unused_variables, non_snake_case)]
-pub fn mj_stack_alloc_int(d: *mut mjData, size: usize) -> *mut i32 {
+pub fn mj_stackAllocInt(d: *mut mjData, size: usize) -> *mut i32 {
     // SAFETY: d is a valid pointer (caller contract).
     unsafe {
         if size == 0 {
@@ -421,89 +419,6 @@ pub fn mj_stack_alloc_int(d: *mut mjData, size: usize) -> *mut i32 {
         }
 
         start_ptr as *mut i32
-    }
-}
-
-/// C: mj_clearEfc (engine/engine_memory.h:70)
-/// Calls: mjCActuator::act
-#[allow(unused_variables, non_snake_case)]
-pub fn mj_clear_efc(d: *mut mjData) {
-    // mj_clearEfc: set all arena pointer fields to NULL, reset counts, set contact = arena
-    // Implements the MJDATA_ARENA_POINTERS X-macro expansion.
-    // SAFETY: d is a valid mjData pointer with all fields accessible.
-    unsafe {
-        // MJDATA_ARENA_POINTERS_CONTACT
-        (*d).contact = (*d).arena as *mut crate::types::mjContact;
-        // MJDATA_ARENA_POINTERS_SOLVER
-        (*d).efc_type = std::ptr::null_mut();
-        (*d).efc_id = std::ptr::null_mut();
-        (*d).efc_J_rownnz = std::ptr::null_mut();
-        (*d).efc_J_rowadr = std::ptr::null_mut();
-        (*d).efc_J_rowsuper = std::ptr::null_mut();
-        (*d).efc_J_colind = std::ptr::null_mut();
-        (*d).efc_J = std::ptr::null_mut();
-        (*d).efc_pos = std::ptr::null_mut();
-        (*d).efc_margin = std::ptr::null_mut();
-        (*d).efc_frictionloss = std::ptr::null_mut();
-        (*d).efc_diagA = std::ptr::null_mut();
-        (*d).efc_KBIP = std::ptr::null_mut();
-        (*d).efc_D = std::ptr::null_mut();
-        (*d).efc_R = std::ptr::null_mut();
-        (*d).tendon_efcadr = std::ptr::null_mut();
-        (*d).efc_vel = std::ptr::null_mut();
-        (*d).efc_aref = std::ptr::null_mut();
-        (*d).efc_b = std::ptr::null_mut();
-        (*d).efc_state = std::ptr::null_mut();
-        (*d).efc_force = std::ptr::null_mut();
-        // MJDATA_ARENA_POINTERS_DUAL
-        (*d).efc_Y_rownnz = std::ptr::null_mut();
-        (*d).efc_Y_rowadr = std::ptr::null_mut();
-        (*d).efc_Y_colind = std::ptr::null_mut();
-        (*d).efc_Y = std::ptr::null_mut();
-        (*d).efc_AR_rownnz = std::ptr::null_mut();
-        (*d).efc_AR_rowadr = std::ptr::null_mut();
-        (*d).efc_AR_colind = std::ptr::null_mut();
-        (*d).efc_AR = std::ptr::null_mut();
-        // MJDATA_ARENA_POINTERS_ISLAND
-        (*d).tree_island = std::ptr::null_mut();
-        (*d).island_ntree = std::ptr::null_mut();
-        (*d).island_itreeadr = std::ptr::null_mut();
-        (*d).map_itree2tree = std::ptr::null_mut();
-        (*d).dof_island = std::ptr::null_mut();
-        (*d).island_nv = std::ptr::null_mut();
-        (*d).island_idofadr = std::ptr::null_mut();
-        (*d).island_dofadr = std::ptr::null_mut();
-        (*d).map_dof2idof = std::ptr::null_mut();
-        (*d).map_idof2dof = std::ptr::null_mut();
-        (*d).ifrc_smooth = std::ptr::null_mut();
-        (*d).iacc_smooth = std::ptr::null_mut();
-        (*d).iacc = std::ptr::null_mut();
-        (*d).efc_island = std::ptr::null_mut();
-        (*d).island_ne = std::ptr::null_mut();
-        (*d).island_nf = std::ptr::null_mut();
-        (*d).island_nefc = std::ptr::null_mut();
-        (*d).island_iefcadr = std::ptr::null_mut();
-        (*d).map_efc2iefc = std::ptr::null_mut();
-        (*d).map_iefc2efc = std::ptr::null_mut();
-        (*d).iefc_type = std::ptr::null_mut();
-        (*d).iefc_id = std::ptr::null_mut();
-        (*d).iefc_frictionloss = std::ptr::null_mut();
-        (*d).iefc_D = std::ptr::null_mut();
-        (*d).iefc_R = std::ptr::null_mut();
-        (*d).iefc_aref = std::ptr::null_mut();
-        (*d).iefc_state = std::ptr::null_mut();
-        (*d).iefc_force = std::ptr::null_mut();
-        (*d).ifrc_constraint = std::ptr::null_mut();
-        // Scalars
-        (*d).nefc = 0;
-        (*d).nisland = 0;
-        (*d).nJ = 0;
-        (*d).nY = 0;
-        (*d).nA = 0;
-        // contact efc_address
-        for i in 0..(*d).ncon as usize {
-            (*(*d).contact.add(i)).efc_address = -1;
-        }
     }
 }
 

@@ -1,38 +1,12 @@
 //! Port of: render/classic/render_gl2.c
-//! IR hash: 73393814548a07d1
-//! CODEGEN: signatures locked. Only fill todo!() bodies.
+//! IR hash: 9343293228317031
+//! CODEGEN: source paths, owners, and callable names are locked.
 
 use crate::types::*;
 
-/// C: warnAboutARBClipControl (render/classic/render_gl2.c:97)
-/// Calls: mju_warning
-#[allow(unused_variables, non_snake_case)]
-pub fn warn_about_arb_clip_control() {
-    todo ! ()
-}
-
-/// C: warnAboutARBDepthBuffer (render/classic/render_gl2.c:110)
-/// Calls: mju_warning
-#[allow(unused_variables, non_snake_case)]
-pub fn warn_about_arb_depth_buffer() {
-    todo ! ()
-}
-
-/// C: flipDepthIfRequired (render/classic/render_gl2.c:122)
-/// Calls: warnAboutARBClipControl, warnAboutARBDepthBuffer
-/// ⚠️ BITEXACT RULES:
-///   1. Copy exact C accumulation order (no iter().sum())
-///   2. No f64::mul_add() (FMA changes precision)
-///   3. No algebraic simplification
-///   4. No iter().sum()/product() (order undefined)
-#[allow(unused_variables, non_snake_case)]
-pub fn flip_depth_if_required(depth: *mut f32, viewport: mjrRect, con: *const mjrContext) {
-    todo!() // flipDepthIfRequired
-}
-
 /// C: init2D (render/classic/render_gl2.c:407)
 #[allow(unused_variables, non_snake_case)]
-pub fn init2d() {
+pub fn init2D() {
     const GL_NORMALIZE: u32 = 0x0BA1;
     const GL_DEPTH_TEST: u32 = 0x0B71;
     const GL_FLAT: u32 = 0x1D00;
@@ -79,7 +53,7 @@ pub fn init2d() {
 }
 
 /// C: draw_overlay (render/classic/render_gl2.c:476)
-/// Calls: mjr_textActual
+/// Calls: cxx:_mjr_textActual
 /// ⚠️ BITEXACT RULES:
 ///   1. Copy exact C accumulation order (no iter().sum())
 ///   2. No f64::mul_add() (FMA changes precision)
@@ -217,7 +191,7 @@ pub fn draw_overlay(font: i32, viewport: mjrRect, skip: i32, gridpos: i32, red: 
                     text[pos as usize] = *overlay.offset(i as isize);
                     text[pos as usize + 1] = 0;
                 }
-                mjr_text_actual(font, text.as_ptr(), con, 3.0, (H - nr) as f32, 0.0, red, green, blue);
+                mjr_textActual(font, text.as_ptr(), con, 3.0, (H - nr) as f32, 0.0, red, green, blue);
 
                 nr += PAD + if flg_big != 0 { (*con).charHeightBig } else { (*con).charHeight };
                 pos = 0;
@@ -296,12 +270,6 @@ pub fn textwidth(con: *const mjrContext, text: *const i8) -> i32 {
     }
 }
 
-/// C: mjr_restoreBuffer (render/classic/render_gl2.h:27)
-#[allow(unused_variables, non_snake_case)]
-pub fn mjr_restore_buffer(con: *const mjrContext) {
-    todo!() // mjr_restoreBuffer
-}
-
 /// C: mjr_textActual (render/classic/render_gl2.h:30)
 /// ⚠️ BITEXACT RULES:
 ///   1. Copy exact C accumulation order (no iter().sum())
@@ -309,7 +277,7 @@ pub fn mjr_restore_buffer(con: *const mjrContext) {
 ///   3. No algebraic simplification
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
-pub fn mjr_text_actual(font: i32, txt: *const i8, con: *const mjrContext, x: f32, y: f32, z: f32, r: f32, g: f32, b: f32) {
+pub fn mjr_textActual(font: i32, txt: *const i8, con: *const mjrContext, x: f32, y: f32, z: f32, r: f32, g: f32, b: f32) {
     const mjFONT_SHADOW: i32 = 0;
     const mjFONT_BIG: i32 = 2;
     const GL_UNSIGNED_BYTE: u32 = 0x1401;
@@ -353,71 +321,8 @@ pub fn mjr_text_actual(font: i32, txt: *const i8, con: *const mjrContext, x: f32
     }
 }
 
-/// C: mjr_setBuffer (render/classic/render_gl2.h:35)
-/// Calls: mju_error
-#[allow(unused_variables, non_snake_case)]
-pub fn mjr_set_buffer(framebuffer: i32, con: *mut mjrContext) {
-    todo!() // mjr_setBuffer
-}
-
-/// C: mjr_readPixels (render/classic/render_gl2.h:39)
-/// Calls: flipDepthIfRequired, mjr_restoreBuffer
-/// ⚠️ BITEXACT RULES:
-///   1. Copy exact C accumulation order (no iter().sum())
-///   2. No f64::mul_add() (FMA changes precision)
-///   3. No algebraic simplification
-///   4. No iter().sum()/product() (order undefined)
-#[allow(unused_variables, non_snake_case)]
-pub fn mjr_read_pixels(rgb: *mut u8, depth: *mut f32, viewport: mjrRect, con: *const mjrContext) {
-    todo!() // mjr_readPixels
-}
-
-/// C: mjr_drawPixels (render/classic/render_gl2.h:44)
-/// ⚠️ BITEXACT RULES:
-///   1. Copy exact C accumulation order (no iter().sum())
-///   2. No f64::mul_add() (FMA changes precision)
-///   3. No algebraic simplification
-///   4. No iter().sum()/product() (order undefined)
-#[allow(unused_variables, non_snake_case)]
-pub fn mjr_draw_pixels(rgb: *const u8, depth: *const f32, viewport: mjrRect, con: *const mjrContext) {
-    todo!() // mjr_drawPixels
-}
-
-/// C: mjr_blitBuffer (render/classic/render_gl2.h:49)
-/// Calls: mjr_restoreBuffer
-#[allow(unused_variables, non_snake_case)]
-pub fn mjr_blit_buffer(src: mjrRect, dst: mjrRect, flg_color: i32, flg_depth: i32, con: *const mjrContext) {
-    todo!() // mjr_blitBuffer
-}
-
-/// C: mjr_setAux (render/classic/render_gl2.h:53)
-/// Calls: mju_error
-#[allow(unused_variables, non_snake_case)]
-pub fn mjr_set_aux(index: i32, con: *const mjrContext) {
-    todo!() // mjr_setAux
-}
-
-/// C: mjr_blitAux (render/classic/render_gl2.h:56)
-/// Calls: mjr_restoreBuffer, mju_error
-#[allow(unused_variables, non_snake_case)]
-pub fn mjr_blit_aux(index: i32, src: mjrRect, left: i32, bottom: i32, con: *const mjrContext) {
-    todo!() // mjr_blitAux
-}
-
-/// C: mjr_text (render/classic/render_gl2.h:60)
-/// Calls: init2D, mjr_textActual
-/// ⚠️ BITEXACT RULES:
-///   1. Copy exact C accumulation order (no iter().sum())
-///   2. No f64::mul_add() (FMA changes precision)
-///   3. No algebraic simplification
-///   4. No iter().sum()/product() (order undefined)
-#[allow(unused_variables, non_snake_case)]
-pub fn mjr_text(font: i32, txt: *const i8, con: *const mjrContext, x: f32, y: f32, r: f32, g: f32, b: f32) {
-    todo!() // mjr_text
-}
-
 /// C: mjr_overlay (render/classic/render_gl2.h:64)
-/// Calls: draw_overlay, init2D
+/// Calls: cxx-internal:/Users/xing/Desktop/projects/c2rust_bitexact/projects/mujoco/src/render/classic/render_gl2.c:_init2D, cxx-internal:render_gl2.c.o:_draw_overlay
 #[allow(unused_variables, non_snake_case)]
 pub fn mjr_overlay(font: i32, gridpos: i32, viewport: mjrRect, overlay: *const i8, overlay2: *const i8, con: *const mjrContext) {
     const mjGRID_TOPLEFT: i32 = 0;
@@ -429,7 +334,7 @@ pub fn mjr_overlay(font: i32, gridpos: i32, viewport: mjrRect, overlay: *const i
     }
 
     // init OpenGL once per overlay, set viewport later
-    init2d();
+    init2D();
 
     // SAFETY: overlay, overlay2, con are valid pointers per caller contract.
     // draw_overlay handles all GL calls internally.
@@ -456,14 +361,8 @@ pub fn mjr_overlay(font: i32, gridpos: i32, viewport: mjrRect, overlay: *const i
     }
 }
 
-/// C: mjr_maxViewport (render/classic/render_gl2.h:68)
-#[allow(unused_variables, non_snake_case)]
-pub fn mjr_max_viewport(con: *const mjrContext) -> mjrRect {
-    todo!() // mjr_maxViewport
-}
-
 /// C: mjr_rectangle (render/classic/render_gl2.h:71)
-/// Calls: init2D
+/// Calls: cxx-internal:/Users/xing/Desktop/projects/c2rust_bitexact/projects/mujoco/src/render/classic/render_gl2.c:_init2D
 /// ⚠️ BITEXACT RULES:
 ///   1. Copy exact C accumulation order (no iter().sum())
 ///   2. No f64::mul_add() (FMA changes precision)
@@ -490,7 +389,7 @@ pub fn mjr_rectangle(viewport: mjrRect, r: f32, g: f32, b: f32, a: f32) {
     }
 
     // init OpenGL, set viewport
-    init2d();
+    init2D();
 
     // SAFETY: GL state-setting and draw calls. viewport fields are plain i32. Linked from mujoco C library.
     unsafe {
@@ -619,7 +518,7 @@ pub fn mjr_label(viewport: mjrRect, font: i32, txt: *const i8, r: f32, g: f32, b
 }
 
 /// C: mjr_figure (render/classic/render_gl2.h:79)
-/// Calls: init2D, maketext, mjr_textActual, textwidth
+/// Calls: cxx-internal:/Users/xing/Desktop/projects/c2rust_bitexact/projects/mujoco/src/render/classic/render_gl2.c:_init2D, cxx-internal:/Users/xing/Desktop/projects/c2rust_bitexact/projects/mujoco/src/render/classic/render_gl2.c:_maketext, cxx-internal:/Users/xing/Desktop/projects/c2rust_bitexact/projects/mujoco/src/render/classic/render_gl2.c:_textwidth, cxx:_mjr_textActual
 #[allow(unused_variables, non_snake_case)]
 pub fn mjr_figure(viewport: mjrRect, fig: *mut mjvFigure, con: *const mjrContext) {
     const GL_BLEND: u32 = 0x0BE2;
@@ -685,7 +584,7 @@ pub fn mjr_figure(viewport: mjrRect, fig: *mut mjvFigure, con: *const mjrContext
         let mut datatxt: [i8; STRING_BUFSIZE] = [0; STRING_BUFSIZE];
 
         // init OpenGL, set viewport
-        init2d();
+        init2D();
         glViewport(viewport.left, viewport.bottom, viewport.width, viewport.height);
 
         // clear background and blend
@@ -885,7 +784,7 @@ pub fn mjr_figure(viewport: mjrRect, fig: *mut mjvFigure, con: *const mjrContext
             sy_label = (*con).charHeight;
 
             // render xlabel
-            mjr_text_actual(mjFONT_NORMAL, (*fig).xlabel.as_ptr(), con,
+            mjr_textActual(mjFONT_NORMAL, (*fig).xlabel.as_ptr(), con,
                            (if 0 > viewport.width / 2 - sx_label / 2 { 0 } else { viewport.width / 2 - sx_label / 2 }) as f32,
                            PAD as f32, 0.0,
                            (*fig).textrgb[0], (*fig).textrgb[1], (*fig).textrgb[2]);
@@ -956,7 +855,7 @@ pub fn mjr_figure(viewport: mjrRect, fig: *mut mjvFigure, con: *const mjrContext
                     let w: i32 = textwidth(con, txt.as_ptr());
 
                     // draw
-                    mjr_text_actual(mjFONT_NORMAL, txt.as_ptr(), con,
+                    mjr_textActual(mjFONT_NORMAL, txt.as_ptr(), con,
                                    (PAD + ytick_width +
                                     (if i == 0 { 0 } else if i == n - 1 { -w } else { -w / 2 }) +
                                     ((viewport.width - 2 * PAD - ytick_width) as f32 * i as f32 / (n - 1) as f32) as i32) as f32,
@@ -980,7 +879,7 @@ pub fn mjr_figure(viewport: mjrRect, fig: *mut mjvFigure, con: *const mjrContext
                     let w: i32 = textwidth(con, txt.as_ptr());
 
                     // draw
-                    mjr_text_actual(mjFONT_NORMAL, txt.as_ptr(), con,
+                    mjr_textActual(mjFONT_NORMAL, txt.as_ptr(), con,
                                    (ytick_width - w) as f32,
                                    (PAD + xtick_height - (*con).charHeight / 2 +
                                     ((viewport.height - 2 * PAD - xtick_height) as f32 * i as f32 / (n - 1) as f32) as i32) as f32,
@@ -1168,7 +1067,7 @@ pub fn mjr_figure(viewport: mjrRect, fig: *mut mjvFigure, con: *const mjrContext
                     let lr = *linergb_ptr.add((n as usize) * 3 + 0);
                     let lg = *linergb_ptr.add((n as usize) * 3 + 1);
                     let lb = *linergb_ptr.add((n as usize) * 3 + 2);
-                    mjr_text_actual(mjFONT_SHADOW, (*fig).linename[n as usize].as_ptr(), con,
+                    mjr_textActual(mjFONT_SHADOW, (*fig).linename[n as usize].as_ptr(), con,
                                    (viewport.width - PAD - width) as f32,
                                    (viewport.height - PAD - (cnt + 1) * (*con).charHeight) as f32,
                                    0.0, lr, lg, lb);
@@ -1228,7 +1127,7 @@ pub fn mjr_figure(viewport: mjrRect, fig: *mut mjvFigure, con: *const mjrContext
                 snprintf(datatxt.as_mut_ptr(), STRING_BUFSIZE,
                          b"( %.4g : %.4g )\0".as_ptr() as *const i8,
                          xdata as f64, ydata as f64);
-                mjr_text_actual(mjFONT_SHADOW, datatxt.as_ptr(), con,
+                mjr_textActual(mjFONT_SHADOW, datatxt.as_ptr(), con,
                                0.9 * range[0][0] + 0.1 * range[0][1],
                                0.9 * range[1][0] + 0.1 * range[1][1],
                                0.0,

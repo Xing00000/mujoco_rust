@@ -1,25 +1,25 @@
 //! Port of: engine/engine_collision_driver.c
-//! IR hash: 73393814548a07d1
-//! CODEGEN: signatures locked. Only fill todo!() bodies.
+//! IR hash: 9343293228317031
+//! CODEGEN: source paths, owners, and callable names are locked.
 
 use crate::types::*;
 
 /// C: getMargin (engine/engine_collision_driver.c:161)
-/// Calls: mj_assignMargin
+/// Calls: cxx:_mj_assignMargin
 /// ⚠️ BITEXACT RULES:
 ///   1. Copy exact C accumulation order (no iter().sum())
 ///   2. No f64::mul_add() (FMA changes precision)
 ///   3. No algebraic simplification
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
-pub fn get_margin(m: *const mjModel, g1: i32, g2: i32, ipair: i32) -> f64 {
+pub fn getMargin(m: *const mjModel, g1: i32, g2: i32, ipair: i32) -> f64 {
     // SAFETY: m is a valid pointer to mjModel; g1, g2, ipair are valid indices (caller contract)
     unsafe {
         if ipair >= 0 {
-            return crate::engine::engine_core_constraint::mj_assign_margin(
+            return crate::engine::engine_core_constraint::mj_assignMargin(
                 m, *(*m).pair_margin.add(ipair as usize));
         }
-        crate::engine::engine_core_constraint::mj_assign_margin(
+        crate::engine::engine_core_constraint::mj_assignMargin(
             m, *(*m).geom_margin.add(g1 as usize) + *(*m).geom_margin.add(g2 as usize))
     }
 }
@@ -31,7 +31,7 @@ pub fn get_margin(m: *const mjModel, g1: i32, g2: i32, ipair: i32) -> f64 {
 ///   3. No algebraic simplification
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
-pub fn get_gap(m: *const mjModel, g1: i32, g2: i32, ipair: i32) -> f64 {
+pub fn getGap(m: *const mjModel, g1: i32, g2: i32, ipair: i32) -> f64 {
     // SAFETY: m is a valid pointer to mjModel; g1, g2, ipair are valid indices (caller contract)
     unsafe {
         if ipair >= 0 {
@@ -43,7 +43,7 @@ pub fn get_gap(m: *const mjModel, g1: i32, g2: i32, ipair: i32) -> f64 {
 
 /// C: resetArena (engine/engine_collision_driver.c:179)
 #[allow(unused_variables, non_snake_case)]
-pub fn reset_arena(d: *mut mjData) {
+pub fn resetArena(d: *mut mjData) {
     // SAFETY: d is a valid pointer to mjData (caller contract)
     unsafe {
         (*d).parena = (*d).ncon as usize * std::mem::size_of::<mjContact>();
@@ -52,7 +52,7 @@ pub fn reset_arena(d: *mut mjData) {
 
 /// C: alignArena (engine/engine_collision_driver.c:189)
 #[allow(unused_variables, non_snake_case)]
-pub fn align_arena(d: *mut mjData, alignment: usize) -> usize {
+pub fn alignArena(d: *mut mjData, alignment: usize) -> usize {
     // SAFETY: caller guarantees d is a valid pointer to mjData
     unsafe {
         let misalignment = (*d).parena % alignment;
@@ -64,14 +64,14 @@ pub fn align_arena(d: *mut mjData, alignment: usize) -> usize {
 }
 
 /// C: planeGeomDist (engine/engine_collision_driver.c:199)
-/// Calls: mju_dot3, mju_sub3
+/// Calls: cxx:_mju_dot3, cxx:_mju_sub3
 /// ⚠️ BITEXACT RULES:
 ///   1. Copy exact C accumulation order (no iter().sum())
 ///   2. No f64::mul_add() (FMA changes precision)
 ///   3. No algebraic simplification
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
-pub fn plane_geom_dist(m: *const mjModel, d: *mut mjData, g1: i32, g2: i32) -> f64 {
+pub fn planeGeomDist(m: *const mjModel, d: *mut mjData, g1: i32, g2: i32) -> f64 {
     // SAFETY: m, d are valid pointers; g1, g2 are valid geom indices (caller contract)
     unsafe {
         let mat1 = (*d).geom_xmat.add(9 * g1 as usize);
@@ -89,7 +89,7 @@ pub fn plane_geom_dist(m: *const mjModel, d: *mut mjData, g1: i32, g2: i32) -> f
 
 /// C: hasPlane (engine/engine_collision_driver.c:210)
 #[allow(unused_variables, non_snake_case)]
-pub fn has_plane(m: *const mjModel, body: i32) -> i32 {
+pub fn hasPlane(m: *const mjModel, body: i32) -> i32 {
     // SAFETY: m is a valid pointer to mjModel; body is a valid body index (caller contract)
     unsafe {
         const mjGEOM_PLANE: i32 = 0;
@@ -110,7 +110,7 @@ pub fn has_plane(m: *const mjModel, body: i32) -> i32 {
 
 /// C: filterBitmask (engine/engine_collision_driver.c:227)
 #[allow(unused_variables, non_snake_case)]
-pub fn filter_bitmask(contype1: i32, conaffinity1: i32, contype2: i32, conaffinity2: i32) -> i32 {
+pub fn filterBitmask(contype1: i32, conaffinity1: i32, contype2: i32, conaffinity2: i32) -> i32 {
     if (contype1 & conaffinity2) == 0 && (contype2 & conaffinity1) == 0 {
         1
     } else {
@@ -125,7 +125,7 @@ pub fn filter_bitmask(contype1: i32, conaffinity1: i32, contype2: i32, conaffini
 ///   3. No algebraic simplification
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
-pub fn filter_box(aabb1: *const f64, aabb2: *const f64, margin: f64) -> i32 {
+pub fn filterBox(aabb1: *const f64, aabb2: *const f64, margin: f64) -> i32 {
     // SAFETY: aabb1 and aabb2 point to arrays of 6 f64 from caller contract
     unsafe {
         if *aabb1.add(0) + *aabb1.add(3) + margin < *aabb2.add(0) - *aabb2.add(3) { return 1; }
@@ -145,7 +145,7 @@ pub fn filter_box(aabb1: *const f64, aabb2: *const f64, margin: f64) -> i32 {
 ///   3. No algebraic simplification
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
-pub fn filter_sphere_box(s: *const f64, bound: f64, aabb: *const f64) -> i32 {
+pub fn filterSphereBox(s: *const f64, bound: f64, aabb: *const f64) -> i32 {
     // SAFETY: s points to array of 3 f64, aabb points to array of 6 f64 from caller contract
     unsafe {
         if *s.add(0) + bound < *aabb.add(0) - *aabb.add(3) { return 1; }
@@ -165,7 +165,7 @@ pub fn filter_sphere_box(s: *const f64, bound: f64, aabb: *const f64) -> i32 {
 ///   3. No algebraic simplification
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
-pub fn filter_sphere(pos1: *const f64, pos2: *const f64, bound: f64) -> i32 {
+pub fn filterSphere(pos1: *const f64, pos2: *const f64, bound: f64) -> i32 {
     // SAFETY: pos1 and pos2 point to arrays of 3 f64 from caller contract
     unsafe {
         let dif0 = *pos1.add(0) - *pos2.add(0);
@@ -177,14 +177,14 @@ pub fn filter_sphere(pos1: *const f64, pos2: *const f64, bound: f64) -> i32 {
 }
 
 /// C: mj_filterSphere (engine/engine_collision_driver.c:267)
-/// Calls: filterSphere, planeGeomDist
+/// Calls: cxx-internal:/Users/xing/Desktop/projects/c2rust_bitexact/projects/mujoco/src/engine/engine_collision_driver.c:_filterSphere, cxx-internal:/Users/xing/Desktop/projects/c2rust_bitexact/projects/mujoco/src/engine/engine_collision_driver.c:_planeGeomDist
 /// ⚠️ BITEXACT RULES:
 ///   1. Copy exact C accumulation order (no iter().sum())
 ///   2. No f64::mul_add() (FMA changes precision)
 ///   3. No algebraic simplification
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
-pub fn mj_filter_sphere(m: *const mjModel, d: *mut mjData, g1: i32, g2: i32, margin: f64) -> i32 {
+pub fn mj_filterSphere(m: *const mjModel, d: *mut mjData, g1: i32, g2: i32, margin: f64) -> i32 {
     // SAFETY: caller guarantees m, d are valid; g1, g2 are valid geom indices
     unsafe {
         const mjGEOM_PLANE: i32 = 0;
@@ -193,7 +193,7 @@ pub fn mj_filter_sphere(m: *const mjModel, d: *mut mjData, g1: i32, g2: i32, mar
         if *(*m).geom_rbound.add(g1 as usize) > 0.0
             && *(*m).geom_rbound.add(g2 as usize) > 0.0
         {
-            return filter_sphere(
+            return filterSphere(
                 (*d).geom_xpos.add(3 * g1 as usize),
                 (*d).geom_xpos.add(3 * g2 as usize),
                 *(*m).geom_rbound.add(g1 as usize) + *(*m).geom_rbound.add(g2 as usize) + margin,
@@ -203,13 +203,13 @@ pub fn mj_filter_sphere(m: *const mjModel, d: *mut mjData, g1: i32, g2: i32, mar
         // one geom is a plane
         if *(*m).geom_type.add(g1 as usize) == mjGEOM_PLANE
             && *(*m).geom_rbound.add(g2 as usize) > 0.0
-            && plane_geom_dist(m, d, g1, g2) > margin + *(*m).geom_rbound.add(g2 as usize)
+            && planeGeomDist(m, d, g1, g2) > margin + *(*m).geom_rbound.add(g2 as usize)
         {
             return 1;
         }
         if *(*m).geom_type.add(g2 as usize) == mjGEOM_PLANE
             && *(*m).geom_rbound.add(g1 as usize) > 0.0
-            && plane_geom_dist(m, d, g2, g1) > margin + *(*m).geom_rbound.add(g1 as usize)
+            && planeGeomDist(m, d, g2, g1) > margin + *(*m).geom_rbound.add(g1 as usize)
         {
             return 1;
         }
@@ -219,7 +219,7 @@ pub fn mj_filter_sphere(m: *const mjModel, d: *mut mjData, g1: i32, g2: i32, mar
 
 /// C: filterBodyPair (engine/engine_collision_driver.c:288)
 #[allow(unused_variables, non_snake_case)]
-pub fn filter_body_pair(weldbody1: i32, weldparent1: i32, asleep1: i32, weldbody2: i32, weldparent2: i32, asleep2: i32, dsbl_filterparent: i32) -> i32 {
+pub fn filterBodyPair(weldbody1: i32, weldparent1: i32, asleep1: i32, weldbody2: i32, weldparent2: i32, asleep2: i32, dsbl_filterparent: i32) -> i32 {
     if weldbody1 == weldbody2 { return 1; }
     if asleep1 != 0 && asleep2 != 0 { return 1; }
     if (asleep1 != 0 && weldbody2 == 0) || (asleep2 != 0 && weldbody1 == 0) { return 1; }
@@ -230,7 +230,7 @@ pub fn filter_body_pair(weldbody1: i32, weldparent1: i32, asleep1: i32, weldbody
 
 /// C: canCollide (engine/engine_collision_driver.c:318)
 #[allow(unused_variables, non_snake_case)]
-pub fn can_collide(m: *const mjModel, bf: i32) -> i32 {
+pub fn canCollide(m: *const mjModel, bf: i32) -> i32 {
     // SAFETY: caller guarantees m is a valid pointer to mjModel with valid array fields
     unsafe {
         if (bf as usize) < (*m).nbody as usize {
@@ -251,9 +251,9 @@ pub fn can_collide(m: *const mjModel, bf: i32) -> i32 {
 }
 
 /// C: canCollide2 (engine/engine_collision_driver.c:329)
-/// Calls: filterBitmask
+/// Calls: cxx-internal:/Users/xing/Desktop/projects/c2rust_bitexact/projects/mujoco/src/engine/engine_collision_driver.c:_filterBitmask
 #[allow(unused_variables, non_snake_case)]
-pub fn can_collide2(m: *const mjModel, bf1: i32, bf2: i32) -> i32 {
+pub fn canCollide2(m: *const mjModel, bf1: i32, bf2: i32) -> i32 {
     // SAFETY: caller guarantees m is a valid pointer to mjModel with valid array fields
     unsafe {
         let nbody = (*m).nbody as usize;
@@ -286,105 +286,6 @@ pub fn can_collide2(m: *const mjModel, bf1: i32, bf2: i32) -> i32 {
             0
         }
     }
-}
-
-/// C: mj_collideTree (engine/engine_collision_driver.c:361)
-/// Calls: canCollide2, filterBitmask, filterBox, filterCollisionPair, filterSphereBox, mj_assignMargin, mj_collideElems, mj_collideGeomElem, mj_collideOBB, mj_collidePlaneFlex, mj_collideSdfFlex, mj_filterSphere, mj_freeStack, mj_markStack, mj_narrowphase, mj_stackAllocInfo, mju_error, mju_message
-#[allow(unused_variables, non_snake_case)]
-pub fn mj_collide_tree(m: *const mjModel, d: *mut mjData, bf1: i32, bf2: i32, merged: i32, startadr: i32, pairadr: i32) {
-    todo!() // mj_collideTree
-}
-
-/// C: mj_narrowphase (engine/engine_collision_driver.c:367)
-/// Calls: getGap, getMargin, mj_arenaAllocByte, mj_contactParam, mj_freeStack, mj_markStack, mj_maxContact, mj_setContact, mj_stackAllocByte, mj_stackAllocInfo, mj_stackAllocInt, mj_warning, mjc_ccdSize, mji_copy3, mju_copy, mju_dispatch, mju_numThread
-#[allow(unused_variables, non_snake_case)]
-pub fn mj_narrowphase(m: *const mjModel, d: *mut mjData, buffer: *const mjcPair, npair: i32, parena: usize) {
-    todo!() // mj_narrowphase
-}
-
-/// C: mj_collidePlaneFlex (engine/engine_collision_driver.c:371)
-/// Calls: mj_addContact, mj_assignMargin, mj_contactParam, mj_setContact, mju_addScl3, mju_copy3, mju_dot3, mju_zero3
-#[allow(unused_variables, non_snake_case)]
-pub fn mj_collide_plane_flex(m: *const mjModel, d: *mut mjData, g: i32, f: i32) {
-    const MJNREF: i32 = 2;
-    const MJNIMP: i32 = 5;
-
-    // SAFETY: m, d are valid pointers; g is geom index, f is flex index (caller contract)
-    unsafe {
-        let mut con_buf = [0u8; std::mem::size_of::<mjContact>()];
-        let con = &mut *(con_buf.as_mut_ptr() as *mut mjContact);
-        let radius = *(*m).flex_radius.add(f as usize);
-        let pos = (*d).geom_xpos.add(3 * g as usize);
-        let mat = (*d).geom_xmat.add(9 * g as usize);
-        let nrm: [f64; 3] = [*mat.add(2), *mat.add(5), *mat.add(8)];
-
-        // prepare contact parameters
-        let margin = crate::engine::engine_core_constraint::mj_assign_margin(
-            m, *(*m).geom_margin.add(g as usize) + *(*m).flex_margin.add(f as usize));
-        let mut condim: i32 = 0;
-        let flex_vertnum = *(*m).flex_vertnum.add(f as usize);
-        let gap = *(*m).geom_gap.add(g as usize) + *(*m).flex_gap.add(f as usize);
-        let mut solref: [f64; 2] = [0.0; 2];
-        let mut solimp: [f64; 5] = [0.0; 5];
-        let mut friction: [f64; 5] = [0.0; 5];
-        let solreffriction: [f64; 2] = [0.0; 2];
-        mj_contact_param(m, &mut condim, solref.as_mut_ptr(), solimp.as_mut_ptr(),
-                         friction.as_mut_ptr(), g, -1, -1, f);
-
-        // collide all flex vertices with plane
-        for i in 0..flex_vertnum {
-            let v = (*d).flexvert_xpos.add(3 * (*(*m).flex_vertadr.add(f as usize) + i) as usize);
-
-            // distance from plane to vertex
-            let dif: [f64; 3] = [*v.add(0) - *pos.add(0), *v.add(1) - *pos.add(1), *v.add(2) - *pos.add(2)];
-            let dist = crate::engine::engine_util_blas::mju_dot3(dif.as_ptr(), nrm.as_ptr());
-
-            // no contact
-            if dist > margin + gap + radius {
-                continue;
-            }
-
-            // create contact
-            con.dist = dist - radius;
-            crate::engine::engine_util_blas::mju_add_scl3(
-                con.pos.as_mut_ptr(), v, nrm.as_ptr(), -con.dist * 0.5 - radius);
-            crate::engine::engine_util_blas::mju_copy3(con.frame.as_mut_ptr(), nrm.as_ptr());
-            crate::engine::engine_util_blas::mju_zero3(con.frame.as_mut_ptr().add(3));
-
-            // set contact ids
-            con.geom[0] = g;
-            con.geom[1] = -1;
-            con.flex[0] = -1;
-            con.flex[1] = f;
-            con.elem[0] = -1;
-            con.elem[1] = -1;
-            con.vert[0] = -1;
-            con.vert[1] = i;
-
-            // set remaining contact parameters
-            mj_set_contact(m, con as *mut mjContact, condim, margin, solref.as_ptr(),
-                          solreffriction.as_ptr(), solimp.as_ptr(), friction.as_ptr());
-
-            // add to mjData, abort if too many
-            if crate::engine::engine_core_constraint::mj_add_contact(m, d, con as *const mjContact) != 0 {
-                return;
-            }
-        }
-    }
-}
-
-/// C: mj_collideSdfFlex (engine/engine_collision_driver.c:374)
-/// Calls: mj_addContact, mj_assignMargin, mj_contactParam, mj_freeStack, mj_markStack, mj_setContact, mj_stackAllocInfo, mjc_FlexSDF, mju_copy3
-#[allow(unused_variables, non_snake_case)]
-pub fn mj_collide_sdf_flex(m: *const mjModel, d: *mut mjData, g: i32, f: i32) {
-    todo!() // mj_collideSdfFlex
-}
-
-/// C: mj_collideFlexInternal (engine/engine_collision_driver.c:377)
-/// Calls: mj_addContact, mj_collideElemVert, mj_contactParam, mj_setContact, mju_copy3, planeVertex
-#[allow(unused_variables, non_snake_case)]
-pub fn mj_collide_flex_internal(m: *const mjModel, d: *mut mjData, f: i32) {
-    todo!() // mj_collideFlexInternal
 }
 
 /// C: contactcompare (engine/engine_collision_driver.c:380)
@@ -432,17 +333,10 @@ pub fn contactcompare(c1: *const mjContact, c2: *const mjContact, context: *mut 
     }
 }
 
-/// C: contactSort (engine/engine_collision_driver.c:413)
-/// Calls: contactcompare
-#[allow(unused_variables, non_snake_case)]
-pub fn contact_sort(arr: *mut mjContact, buf: *mut mjContact, n: i32, context: *mut ()) {
-    todo!() // contactSort
-}
-
 /// C: filterFlexContacts (engine/engine_collision_driver.c:417)
-/// Calls: mj_freeStack, mj_markStack, mj_stackAllocInfo, resetArena
+/// Calls: cxx-internal:/Users/xing/Desktop/projects/c2rust_bitexact/projects/mujoco/src/engine/engine_collision_driver.c:_resetArena, cxx:_mj_freeStack, cxx:_mj_markStack, cxx:_mj_stackAllocInfo
 #[allow(unused_variables, non_snake_case)]
-pub fn filter_flex_contacts(d: *mut mjData, ncon_before: i32) {
+pub fn filterFlexContacts(d: *mut mjData, ncon_before: i32) {
     const MJ_MAX_CON_PAIR: i32 = 50;
     const MJ_MAX_VAL: f64 = 1e10;
 
@@ -455,9 +349,9 @@ pub fn filter_flex_contacts(d: *mut mjData, ncon_before: i32) {
 
         let contacts: *mut crate::types::mjContact = (*d).contact.add(ncon_before as usize);
 
-        crate::engine::engine_memory::mj_mark_stack(d);
-        let selected: *mut u8 = crate::engine::engine_memory::mj_stack_alloc_byte(d, n as usize, 1) as *mut u8;
-        let min_dist: *mut f64 = crate::engine::engine_memory::mj_stack_alloc_num(d, n as usize);
+        crate::engine::engine_memory::mj_markStack(d);
+        let selected: *mut u8 = crate::engine::engine_memory::mj_stackAllocByte(d, n as usize, 1) as *mut u8;
+        let min_dist: *mut f64 = crate::engine::engine_memory::mj_stackAllocNum(d, n as usize);
         std::ptr::write_bytes(selected, 0, n as usize);
 
         for i in 0..n {
@@ -513,17 +407,17 @@ pub fn filter_flex_contacts(d: *mut mjData, ncon_before: i32) {
             best = nextbest;
         }
 
-        crate::engine::engine_memory::mj_free_stack(d);
+        crate::engine::engine_memory::mj_freeStack(d);
 
         (*d).ncon = ncon_before + nselected;
-        reset_arena(d);
+        resetArena(d);
     }
 }
 
 /// C: pushPairArena (engine/engine_collision_driver.c:489)
-/// Calls: mj_arenaAllocByte, mju_message
+/// Calls: cxx:_mj_arenaAllocByte, cxx:_mju_message
 #[allow(unused_variables, non_snake_case)]
-pub fn push_pair_arena(m: *const mjModel, d: *mut mjData, g1: i32, g2: i32, ipair: i32) {
+pub fn pushPairArena(m: *const mjModel, d: *mut mjData, g1: i32, g2: i32, ipair: i32) {
     // mjcPair layout: { g1: i32, g2: i32, ipair: i32 } = 12 bytes, align 4
     const SIZEOF_MJCPAIR: usize = 12;
     const ALIGNOF_MJCPAIR: usize = 4;
@@ -531,7 +425,7 @@ pub fn push_pair_arena(m: *const mjModel, d: *mut mjData, g1: i32, g2: i32, ipai
     // SAFETY: m is a valid mjModel, d is a valid mjData (caller contract)
     unsafe {
         // allocate geom pair on the arena
-        let pair = crate::engine::engine_memory::mj_arena_alloc_byte(
+        let pair = crate::engine::engine_memory::mj_arenaAllocByte(
             d, SIZEOF_MJCPAIR, ALIGNOF_MJCPAIR) as *mut i32;
         if pair.is_null() {
             crate::engine::engine_util_errmem::mju_error(
@@ -551,9 +445,9 @@ pub fn push_pair_arena(m: *const mjModel, d: *mut mjData, g1: i32, g2: i32, ipai
 }
 
 /// C: filterCollisionPair (engine/engine_collision_driver.c:508)
-/// Calls: filterBitmask, getGap, getMargin, mj_filterSphere
+/// Calls: cxx-internal:/Users/xing/Desktop/projects/c2rust_bitexact/projects/mujoco/src/engine/engine_collision_driver.c:_filterBitmask, cxx-internal:/Users/xing/Desktop/projects/c2rust_bitexact/projects/mujoco/src/engine/engine_collision_driver.c:_getGap, cxx-internal:/Users/xing/Desktop/projects/c2rust_bitexact/projects/mujoco/src/engine/engine_collision_driver.c:_getMargin, cxx-internal:engine_collision_driver.c.o:_mj_filterSphere
 #[allow(unused_variables, non_snake_case)]
-pub fn filter_collision_pair(m: *const mjModel, d: *mut mjData, g1: i32, g2: i32, ipair: i32, merged: i32, startadr: i32, pairadr: i32) -> i32 {
+pub fn filterCollisionPair(m: *const mjModel, d: *mut mjData, g1: i32, g2: i32, ipair: i32, merged: i32, startadr: i32, pairadr: i32) -> i32 {
     const mjENBL_SLEEP: i32 = 1 << 4;
     const mjS_AWAKE: i32 = 1;
 
@@ -590,7 +484,7 @@ pub fn filter_collision_pair(m: *const mjModel, d: *mut mjData, g1: i32, g2: i32
                 if filter_fn(m, d, g1, g2) != 0 {
                     return 0;
                 }
-            } else if filter_bitmask(
+            } else if filterBitmask(
                 *(*m).geom_contype.add(g1 as usize),
                 *(*m).geom_conaffinity.add(g1 as usize),
                 *(*m).geom_contype.add(g2 as usize),
@@ -602,9 +496,9 @@ pub fn filter_collision_pair(m: *const mjModel, d: *mut mjData, g1: i32, g2: i32
         }
 
         // bounding sphere filter
-        let margin = get_margin(m, g1, g2, ipair);
-        let gap = get_gap(m, g1, g2, ipair);
-        if mj_filter_sphere(m, d, g1, g2, margin + gap) != 0 {
+        let margin = getMargin(m, g1, g2, ipair);
+        let gap = getGap(m, g1, g2, ipair);
+        if mj_filterSphere(m, d, g1, g2, margin + gap) != 0 {
             return 0;
         }
 
@@ -622,14 +516,14 @@ pub fn filter_collision_pair(m: *const mjModel, d: *mut mjData, g1: i32, g2: i32
 }
 
 /// C: makeAAMM (engine/engine_collision_driver.c:1211)
-/// Calls: mji_mulMatVec3, mji_transpose3, mju_addTo3, mju_copy, mju_copy3, mju_dot3, mju_max, mju_min, mju_mulMatVec
+/// Calls: cxx-internal:/Users/xing/Desktop/projects/c2rust_bitexact/projects/mujoco/src/engine/engine_inline.h:_mji_mulMatVec3, cxx-internal:/Users/xing/Desktop/projects/c2rust_bitexact/projects/mujoco/src/engine/engine_inline.h:_mji_transpose3, cxx:_mju_addTo3, cxx:_mju_copy, cxx:_mju_copy3, cxx:_mju_dot3, cxx:_mju_max, cxx:_mju_min, cxx:_mju_mulMatVec
 /// ⚠️ BITEXACT RULES:
 ///   1. Copy exact C accumulation order (no iter().sum())
 ///   2. No f64::mul_add() (FMA changes precision)
 ///   3. No algebraic simplification
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
-pub fn make_aamm(m: *const mjModel, d: *mut mjData, x_min: *mut f64, y_min: *mut f64, z_min: *mut f64, x_max: *mut f64, y_max: *mut f64, z_max: *mut f64, bf: i32, frame: *const f64) {
+pub fn makeAAMM(m: *const mjModel, d: *mut mjData, x_min: *mut f64, y_min: *mut f64, z_min: *mut f64, x_max: *mut f64, y_max: *mut f64, z_max: *mut f64, bf: i32, frame: *const f64) {
     const MJ_ENBL_OVERRIDE: i32 = 1 << 0;
     // SAFETY: caller guarantees m, d, frame valid; output pointers valid
     unsafe {
@@ -661,8 +555,8 @@ pub fn make_aamm(m: *const mjModel, d: *mut mjData, x_min: *mut f64, y_min: *mut
 
                 // compute center in global coordinates
                 let mut pos: [f64; 3] = [0.0; 3];
-                crate::engine::engine_inline::mji_mul_mat_vec3(pos.as_mut_ptr(), xmat, aabb);
-                crate::engine::engine_util_blas::mju_add_to3(pos.as_mut_ptr(), xpos);
+                crate::engine::engine_inline::mji_mulMatVec3(pos.as_mut_ptr(), xmat, aabb);
+                crate::engine::engine_util_blas::mju_addTo3(pos.as_mut_ptr(), xpos);
 
                 let mut axis: [f64; 9] = [0.0; 9];
                 crate::engine::engine_inline::mji_transpose3(axis.as_mut_ptr(), xmat);
@@ -699,7 +593,7 @@ pub fn make_aamm(m: *const mjModel, d: *mut mjData, x_min: *mut f64, y_min: *mut
 
             for i in 0..flex_vertnum as usize {
                 let mut v: [f64; 3] = [0.0; 3];
-                crate::engine::engine_util_blas::mju_mul_mat_vec(
+                crate::engine::engine_util_blas::mju_mulMatVec(
                     v.as_mut_ptr(), frame, vbase.add(3 * i), 3, 3);
 
                 if i == 0 {
@@ -739,7 +633,7 @@ pub fn make_aamm(m: *const mjModel, d: *mut mjData, x_min: *mut f64, y_min: *mut
 }
 
 /// C: add_pair (engine/engine_collision_driver.c:1315)
-/// Calls: mju_message
+/// Calls: cxx:_mju_message
 #[allow(unused_variables, non_snake_case)]
 pub fn add_pair(m: *const mjModel, bf1: i32, bf2: i32, npair: *mut i32, pair: *mut i32, maxpair: i32) {
     // SAFETY: m may be null (skip filtering); npair/pair valid arrays (caller contract)
@@ -812,7 +706,7 @@ pub fn add_pair(m: *const mjModel, bf1: i32, bf2: i32, npair: *mut i32, pair: *m
 
 /// C: SAPcmp (engine/engine_collision_driver.c:1383)
 #[allow(unused_variables, non_snake_case)]
-pub fn sa_pcmp(obj1: *mut mjtSAP, obj2: *mut mjtSAP, context: *mut ()) -> i32 {
+pub fn SAPcmp(obj1: *mut mjtSAP, obj2: *mut mjtSAP, context: *mut ()) -> i32 {
     // SAFETY: obj1, obj2 are valid mjtSAP pointers (caller contract)
     unsafe {
         if (*obj1).value < (*obj2).value {
@@ -826,9 +720,9 @@ pub fn sa_pcmp(obj1: *mut mjtSAP, obj2: *mut mjtSAP, context: *mut ()) -> i32 {
 }
 
 /// C: SAPsort (engine/engine_collision_driver.c:1394)
-/// Calls: SAPcmp
+/// Calls: cxx-internal:/Users/xing/Desktop/projects/c2rust_bitexact/projects/mujoco/src/engine/engine_collision_driver.c:_SAPcmp
 #[allow(unused_variables, non_snake_case)]
-pub fn sa_psort(arr: *mut mjtSAP, buf: *mut mjtSAP, n: i32, context: *mut ()) {
+pub fn SAPsort(arr: *mut mjtSAP, buf: *mut mjtSAP, n: i32, context: *mut ()) {
     const RUN_SIZE: i32 = 32;
 
     // SAFETY: arr and buf point to valid arrays of at least n mjtSAP elements (caller contract).
@@ -904,14 +798,14 @@ pub fn sa_psort(arr: *mut mjtSAP, buf: *mut mjtSAP, n: i32, context: *mut ()) {
 }
 
 /// C: mj_SAP (engine/engine_collision_driver.c:1400)
-/// Calls: SAPsort, mj_stackAllocInfo
+/// Calls: cxx-internal:/Users/xing/Desktop/projects/c2rust_bitexact/projects/mujoco/src/engine/engine_collision_driver.c:_SAPsort, cxx:_mj_stackAllocInfo
 /// ⚠️ BITEXACT RULES:
 ///   1. Copy exact C accumulation order (no iter().sum())
 ///   2. No f64::mul_add() (FMA changes precision)
 ///   3. No algebraic simplification
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
-pub fn mj_sap(d: *mut mjData, aamm: *const f64, n: i32, axis_x: i32, pair: *mut i32, maxpair: i32) -> i32 {
+pub fn mj_SAP(d: *mut mjData, aamm: *const f64, n: i32, axis_x: i32, pair: *mut i32, maxpair: i32) -> i32 {
     // SAFETY: d is valid for stack alloc. aamm has 6*n elements. pair has maxpair capacity.
     unsafe {
         // check inputs
@@ -920,10 +814,10 @@ pub fn mj_sap(d: *mut mjData, aamm: *const f64, n: i32, axis_x: i32, pair: *mut 
         }
 
         // allocate sort buffer (mjtSAP = 8 bytes, align 4)
-        crate::engine::engine_memory::mj_mark_stack(d);
-        let sortbuf: *mut mjtSAP = crate::engine::engine_memory::mj_stack_alloc_byte(
+        crate::engine::engine_memory::mj_markStack(d);
+        let sortbuf: *mut mjtSAP = crate::engine::engine_memory::mj_stackAllocByte(
             d, (2 * n as usize) * std::mem::size_of::<mjtSAP>(), std::mem::align_of::<mjtSAP>()) as *mut mjtSAP;
-        let activebuf: *mut mjtSAP = crate::engine::engine_memory::mj_stack_alloc_byte(
+        let activebuf: *mut mjtSAP = crate::engine::engine_memory::mj_stackAllocByte(
             d, (2 * n as usize) * std::mem::size_of::<mjtSAP>(), std::mem::align_of::<mjtSAP>()) as *mut mjtSAP;
 
         // get AAMM pointers for primary "x" axis
@@ -939,9 +833,9 @@ pub fn mj_sap(d: *mut mjData, aamm: *const f64, n: i32, axis_x: i32, pair: *mut 
         }
 
         // sort along specified axis
-        let buf: *mut mjtSAP = crate::engine::engine_memory::mj_stack_alloc_byte(
+        let buf: *mut mjtSAP = crate::engine::engine_memory::mj_stackAllocByte(
             d, (2 * n as usize) * std::mem::size_of::<mjtSAP>(), std::mem::align_of::<mjtSAP>()) as *mut mjtSAP;
-        sa_psort(sortbuf, buf, 2 * n, std::ptr::null_mut());
+        SAPsort(sortbuf, buf, 2 * n, std::ptr::null_mut());
 
         // define the other two axes
         let (axis_y, axis_z) = if axis_x == 0 {
@@ -981,7 +875,7 @@ pub fn mj_sap(d: *mut mjData, aamm: *const f64, n: i32, axis_x: i32, pair: *mut 
                     *pair.add(npair as usize) = (id1 << 16) + id2;
                     npair += 1;
                     if npair >= maxpair {
-                        crate::engine::engine_memory::mj_free_stack(d);
+                        crate::engine::engine_memory::mj_freeStack(d);
                         return maxpair;
                     }
                 }
@@ -1008,7 +902,7 @@ pub fn mj_sap(d: *mut mjData, aamm: *const f64, n: i32, axis_x: i32, pair: *mut 
             }
         }
 
-        crate::engine::engine_memory::mj_free_stack(d);
+        crate::engine::engine_memory::mj_freeStack(d);
         npair
     }
 }
@@ -1020,7 +914,7 @@ pub fn mj_sap(d: *mut mjData, aamm: *const f64, n: i32, axis_x: i32, pair: *mut 
 ///   3. No algebraic simplification
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
-pub fn update_cov(cov: *mut f64, vec: *const f64, cen: *const f64) {
+pub fn updateCov(cov: *mut f64, vec: *const f64, cen: *const f64) {
     // SAFETY: cov points to 9 f64 (3x3 matrix), vec and cen point to 3 f64 each (caller contract)
     unsafe {
         let dif: [f64; 3] = [
@@ -1063,22 +957,15 @@ pub fn uintcmp(i: *mut i32, j: *mut i32, context: *mut ()) -> i32 {
     }
 }
 
-/// C: bfsort (engine/engine_collision_driver.c:1529)
-/// Calls: uintcmp
-#[allow(unused_variables, non_snake_case)]
-pub fn bfsort(arr: *mut i32, buf: *mut i32, n: i32, context: *mut ()) {
-    todo!() // bfsort
-}
-
 /// C: mj_contactParam (engine/engine_collision_driver.c:1694)
-/// Calls: mju_copy, mju_max, mju_message, mju_min
+/// Calls: cxx:_mju_copy, cxx:_mju_max, cxx:_mju_message, cxx:_mju_min
 /// ⚠️ BITEXACT RULES:
 ///   1. Copy exact C accumulation order (no iter().sum())
 ///   2. No f64::mul_add() (FMA changes precision)
 ///   3. No algebraic simplification
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
-pub fn mj_contact_param(m: *const mjModel, condim: *mut i32, solref: *mut f64, solimp: *mut f64, friction: *mut f64, g1: i32, g2: i32, f1: i32, f2: i32) {
+pub fn mj_contactParam(m: *const mjModel, condim: *mut i32, solref: *mut f64, solimp: *mut f64, friction: *mut f64, g1: i32, g2: i32, f1: i32, f2: i32) {
     const MJNREF: i32 = 2;
     const MJNIMP: i32 = 5;
     const MJMINVAL: f64 = 1e-15;
@@ -1176,29 +1063,29 @@ pub fn mj_contact_param(m: *const mjModel, condim: *mut i32, solref: *mut f64, s
 }
 
 /// C: mj_setContact (engine/engine_collision_driver.c:1786)
-/// Calls: mj_assignFriction, mj_assignImp, mj_assignRef, mju_makeFrame, mju_zero
+/// Calls: cxx:_mj_assignFriction, cxx:_mj_assignImp, cxx:_mj_assignRef, cxx:_mju_makeFrame, cxx:_mju_zero
 /// ⚠️ BITEXACT RULES:
 ///   1. Copy exact C accumulation order (no iter().sum())
 ///   2. No f64::mul_add() (FMA changes precision)
 ///   3. No algebraic simplification
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
-pub fn mj_set_contact(m: *const mjModel, con: *mut mjContact, condim: i32, includemargin: f64, solref: *const f64, solreffriction: *const f64, solimp: *const f64, friction: *const f64) {
+pub fn mj_setContact(m: *const mjModel, con: *mut mjContact, condim: i32, includemargin: f64, solref: *const f64, solreffriction: *const f64, solimp: *const f64, friction: *const f64) {
     // SAFETY: caller guarantees m, con are valid; array pointers are valid
     unsafe {
         // set parameters
         (*con).dim = condim;
         (*con).includemargin = includemargin;
-        crate::engine::engine_core_constraint::mj_assign_ref(m, (*con).solref.as_mut_ptr(), solref);
-        crate::engine::engine_core_constraint::mj_assign_ref(m, (*con).solreffriction.as_mut_ptr(), solreffriction);
-        crate::engine::engine_core_constraint::mj_assign_imp(m, (*con).solimp.as_mut_ptr(), solimp);
-        crate::engine::engine_core_constraint::mj_assign_friction(m, (*con).friction.as_mut_ptr(), friction);
+        crate::engine::engine_core_constraint::mj_assignRef(m, (*con).solref.as_mut_ptr(), solref);
+        crate::engine::engine_core_constraint::mj_assignRef(m, (*con).solreffriction.as_mut_ptr(), solreffriction);
+        crate::engine::engine_core_constraint::mj_assignImp(m, (*con).solimp.as_mut_ptr(), solimp);
+        crate::engine::engine_core_constraint::mj_assignFriction(m, (*con).friction.as_mut_ptr(), friction);
 
         // exclude in gap
         (*con).exclude = ((*con).dist >= includemargin) as i32;
 
         // complete frame
-        crate::engine::engine_util_spatial::mju_make_frame((*con).frame.as_mut_ptr());
+        crate::engine::engine_util_spatial::mju_makeFrame((*con).frame.as_mut_ptr());
 
         // clear fields that are computed later
         (*con).efc_address = -1;
@@ -1212,14 +1099,14 @@ pub fn mj_set_contact(m: *const mjModel, con: *mut mjContact, condim: i32, inclu
 }
 
 /// C: mj_makeCapsule (engine/engine_collision_driver.c:1816)
-/// Calls: mju_add3, mju_normalize3, mju_quat2Mat, mju_quatZ2Vec, mju_scl3
+/// Calls: cxx:_mju_add3, cxx:_mju_normalize3, cxx:_mju_quat2Mat, cxx:_mju_quatZ2Vec, cxx:_mju_scl3
 /// ⚠️ BITEXACT RULES:
 ///   1. Copy exact C accumulation order (no iter().sum())
 ///   2. No f64::mul_add() (FMA changes precision)
 ///   3. No algebraic simplification
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
-pub fn mj_make_capsule(m: *const mjModel, d: *mut mjData, f: i32, vid: *const i32, pos: *mut f64, mat: *mut f64, size: *mut f64) {
+pub fn mj_makeCapsule(m: *const mjModel, d: *mut mjData, f: i32, vid: *const i32, pos: *mut f64, mat: *mut f64, size: *mut f64) {
     // SAFETY: caller guarantees m, d valid; vid points to [2] array; pos[3], mat[9], size[2]
     unsafe {
         // get vertex positions
@@ -1243,15 +1130,15 @@ pub fn mj_make_capsule(m: *const mjModel, d: *mut mjData, f: i32, vid: *const i3
         crate::engine::engine_util_blas::mju_scl3(pos, pos, 0.5);
 
         let mut quat: [f64; 4] = [0.0; 4];
-        crate::engine::engine_util_spatial::mju_quat_z2vec(quat.as_mut_ptr(), dif.as_ptr());
-        crate::engine::engine_util_spatial::mju_quat2mat(mat, quat.as_ptr());
+        crate::engine::engine_util_spatial::mju_quatZ2Vec(quat.as_mut_ptr(), dif.as_ptr());
+        crate::engine::engine_util_spatial::mju_quat2Mat(mat, quat.as_ptr());
     }
 }
 
 /// C: collisionTask (engine/engine_collision_driver.c:1849)
-/// Calls: getGap, getMargin, mjc_setCCDBuffer, mju_message
+/// Calls: cxx-internal:/Users/xing/Desktop/projects/c2rust_bitexact/projects/mujoco/src/engine/engine_collision_driver.c:_getGap, cxx-internal:/Users/xing/Desktop/projects/c2rust_bitexact/projects/mujoco/src/engine/engine_collision_driver.c:_getMargin, cxx:_mjc_setCCDBuffer, cxx:_mju_message
 #[allow(unused_variables, non_snake_case)]
-pub fn collision_task(m: *const mjModel, d: *mut mjData, arg: *mut (), thread_id: i32, idx: i32) {
+pub fn collisionTask(m: *const mjModel, d: *mut mjData, arg: *mut (), thread_id: i32, idx: i32) {
     // mjContactArg is a file-local C struct (engine_collision_driver.c:1837-1846):
     // typedef struct {
     //   mjPreContact* conbuffer;
@@ -1291,7 +1178,7 @@ pub fn collision_task(m: *const mjModel, d: *mut mjData, arg: *mut (), thread_id
 
         // Set CCD buffer for this thread (stored as bytes in CCD_BUFFER)
         let epa_ptr = epabuffer.add((thread_id * (*conargs).ccd_size) as usize) as *mut ();
-        crate::engine::engine_collision_convex::mjc_set_ccd_buffer(epa_ptr);
+        crate::engine::engine_collision_convex::mjc_setCCDBuffer(epa_ptr);
 
         let guard = crate::types::MJCOLLISIONFUNC.lock().unwrap();
 
@@ -1304,8 +1191,8 @@ pub fn collision_task(m: *const mjModel, d: *mut mjData, arg: *mut (), thread_id
             let t1 = *(*m).geom_type.add(g1 as usize);
             let t2 = *(*m).geom_type.add(g2 as usize);
             let collision_func = guard[t1 as usize][t2 as usize];
-            let margin = get_margin(m, g1, g2, ipair);
-            let gap = get_gap(m, g1, g2, ipair);
+            let margin = getMargin(m, g1, g2, ipair);
+            let gap = getGap(m, g1, g2, ipair);
 
             if let Some(f) = collision_func {
                 *ncon.add(i as usize) = f(m, d, conbuffer.add(conpos as usize), g1, g2, margin + gap);
@@ -1328,19 +1215,19 @@ pub fn collision_task(m: *const mjModel, d: *mut mjData, arg: *mut (), thread_id
 
         // drop the guard before calling set_ccd_buffer(NULL)
         drop(guard);
-        crate::engine::engine_collision_convex::mjc_set_ccd_buffer(std::ptr::null_mut());
+        crate::engine::engine_collision_convex::mjc_setCCDBuffer(std::ptr::null_mut());
     }
 }
 
 /// C: planeVertex (engine/engine_collision_driver.c:2129)
-/// Calls: mju_addScl3, mju_cross, mju_dot3, mju_normalize3, mju_scl3, mju_sub3, mju_zero3
+/// Calls: cxx:_mju_addScl3, cxx:_mju_cross, cxx:_mju_dot3, cxx:_mju_normalize3, cxx:_mju_scl3, cxx:_mju_sub3, cxx:_mju_zero3
 /// ⚠️ BITEXACT RULES:
 ///   1. Copy exact C accumulation order (no iter().sum())
 ///   2. No f64::mul_add() (FMA changes precision)
 ///   3. No algebraic simplification
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
-pub fn plane_vertex(con: *mut mjPreContact, pos: *const f64, rad: f64, t0: i32, t1: i32, t2: i32, v: i32) -> i32 {
+pub fn planeVertex(con: *mut mjPreContact, pos: *const f64, rad: f64, t0: i32, t1: i32, t2: i32, v: i32) -> i32 {
     // SAFETY: con is valid mjPreContact pointer; pos points to vertex array (3 f64 per vertex);
     // t0, t1, t2, v are valid vertex indices (caller contract)
     unsafe {
@@ -1367,14 +1254,14 @@ pub fn plane_vertex(con: *mut mjPreContact, pos: *const f64, rad: f64, t0: i32, 
         (*con).dist = -dst - 2.0 * rad;
         crate::engine::engine_util_blas::mju_scl3((*con).normal.as_mut_ptr(), nrm.as_ptr(), -1.0);
         crate::engine::engine_util_blas::mju_zero3((*con).tangent.as_mut_ptr());
-        crate::engine::engine_util_blas::mju_add_scl3((*con).pos.as_mut_ptr(), pos.add(3 * v as usize), nrm.as_ptr(), -0.5 * dst);
+        crate::engine::engine_util_blas::mju_addScl3((*con).pos.as_mut_ptr(), pos.add(3 * v as usize), nrm.as_ptr(), -0.5 * dst);
         1
     }
 }
 
 /// C: mj_maxContact (engine/engine_collision_driver.h:33)
 #[allow(unused_variables, non_snake_case)]
-pub fn mj_max_contact(m: *const mjModel, g1: i32, g2: i32, has_margin: i32) -> i32 {
+pub fn mj_maxContact(m: *const mjModel, g1: i32, g2: i32, has_margin: i32) -> i32 {
     const mjGEOM_PLANE: i32 = 0;
     const mjGEOM_HFIELD: i32 = 1;
     const mjGEOM_SPHERE: i32 = 2;
@@ -1484,22 +1371,15 @@ pub fn mj_max_contact(m: *const mjModel, g1: i32, g2: i32, has_margin: i32) -> i
     }
 }
 
-/// C: mj_collision (engine/engine_collision_driver.h:36)
-/// Calls: alignArena, canCollide2, contactSort, filterBitmask, filterCollisionPair, filterFlexContacts, mj_broadphase, mj_clearEfc, mj_collideElems, mj_collideFlexInternal, mj_collideFlexSAP, mj_collideGeomElem, mj_collidePlaneFlex, mj_collideSdfFlex, mj_collideTree, mj_freeStack, mj_isElemActive, mj_markStack, mj_narrowphase, mj_sleepState, mj_stackAllocInfo, pushPairArena, resetArena
-#[allow(unused_variables, non_snake_case)]
-pub fn mj_collision(m: *const mjModel, d: *mut mjData) {
-    todo!() // mj_collision
-}
-
 /// C: mj_collideOBB (engine/engine_collision_driver.h:39)
-/// Calls: mju_addTo3, mju_copy3, mju_dot3, mju_mulMatVec3
+/// Calls: cxx:_mju_addTo3, cxx:_mju_copy3, cxx:_mju_dot3, cxx:_mju_mulMatVec3
 /// ⚠️ BITEXACT RULES:
 ///   1. Copy exact C accumulation order (no iter().sum())
 ///   2. No f64::mul_add() (FMA changes precision)
 ///   3. No algebraic simplification
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
-pub fn mj_collide_obb(aabb1: *const f64, aabb2: *const f64, xpos1: *const f64, xmat1: *const f64, xpos2: *const f64, xmat2: *const f64, margin: f64, product: *mut f64, offset: *mut f64, initialize: *mut bool) -> i32 {
+pub fn mj_collideOBB(aabb1: *const f64, aabb2: *const f64, xpos1: *const f64, xmat1: *const f64, xpos2: *const f64, xmat2: *const f64, margin: f64, product: *mut f64, offset: *mut f64, initialize: *mut bool) -> i32 {
     const MJ_MAXVAL: f64 = 1E10;
     // SAFETY: caller guarantees all pointers valid with proper sizes
     unsafe {
@@ -1533,13 +1413,13 @@ pub fn mj_collide_obb(aabb1: *const f64, aabb2: *const f64, xpos1: *const f64, x
         if product.is_null() {
             for i in 0..2usize {
                 if !xmat[i].is_null() {
-                    crate::engine::engine_util_blas::mju_mul_mat_vec3(
+                    crate::engine::engine_util_blas::mju_mulMatVec3(
                         xcenter[i].as_mut_ptr(), xmat[i], aabb[i]);
                 } else {
                     crate::engine::engine_util_blas::mju_copy3(xcenter[i].as_mut_ptr(), aabb[i]);
                 }
                 if !xpos[i].is_null() {
-                    crate::engine::engine_util_blas::mju_add_to3(xcenter[i].as_mut_ptr(), xpos[i]);
+                    crate::engine::engine_util_blas::mju_addTo3(xcenter[i].as_mut_ptr(), xpos[i]);
                 }
             }
         }
@@ -1619,7 +1499,7 @@ pub fn mj_collide_obb(aabb1: *const f64, aabb2: *const f64, xpos1: *const f64, x
 
 /// C: mj_isElemActive (engine/engine_collision_driver.h:45)
 #[allow(unused_variables, non_snake_case)]
-pub fn mj_is_elem_active(m: *const mjModel, f: i32, e: i32) -> i32 {
+pub fn mj_isElemActive(m: *const mjModel, f: i32, e: i32) -> i32 {
     // SAFETY: m is a valid mjModel pointer; f is a valid flex index, e is a valid elem index
     unsafe {
         if *(*m).flex_dim.add(f as usize) < 3 {
@@ -1633,223 +1513,5 @@ pub fn mj_is_elem_active(m: *const mjModel, f: i32, e: i32) -> i32 {
             }
         }
     }
-}
-
-/// C: mj_broadphase (engine/engine_collision_driver.h:48)
-/// Calls: add_pair, bfsort, canCollide, filterBodyPair, hasPlane, makeAAMM, mj_SAP, mj_freeStack, mj_markStack, mj_sleepState, mj_stackAllocInfo, mju_addTo3, mju_eig3, mju_message, mju_scl, mju_scl3, mju_zero, mju_zero3, updateCov
-#[allow(unused_variables, non_snake_case)]
-pub fn mj_broadphase(m: *const mjModel, d: *mut mjData, bfpair: *mut i32, maxpair: i32) -> i32 {
-    const mjDSBL_FILTERPARENT: i32 = 1 << 10;
-    const mjENBL_SLEEP: i32 = 1 << 4;
-    const mjS_ASLEEP: i32 = 0;
-    const mjS_AWAKE: i32 = 1;
-    const mjOBJ_FLEX: u32 = 9;
-
-    // SAFETY: m, d, bfpair are valid pointers (caller contract).
-    unsafe {
-        let mut npair: i32 = 0;
-        let nbody = (*m).nbody as i32;
-        let ngeom = (*m).ngeom as i32;
-        let nvert = (*m).nflexvert as i32;
-        let nflex = (*m).nflex as i32;
-        let nbodyflex = nbody + nflex;
-        let dsbl_filterparent = if ((*m).opt.disableflags & mjDSBL_FILTERPARENT) != 0 { 1 } else { 0 };
-        let sleep_filter = (((*m).opt.enableflags & mjENBL_SLEEP) != 0)
-            && ((*d).nbody_awake < nbody);
-        let mut cov: [f64; 9] = [0.0; 9];
-        let mut cen: [f64; 3] = [0.0; 3];
-        let mut eigval: [f64; 3] = [0.0; 3];
-        let mut frame: [f64; 9] = [0.0; 9];
-        let mut quat: [f64; 4] = [0.0; 4];
-
-        // init with pairs involving always-colliding bodies
-        for b1 in 0..nbody {
-            // cannot collide
-            if can_collide(m, b1) == 0 {
-                continue;
-            }
-
-            // b1 is world body with geoms, or world-welded body with plane
-            if (b1 == 0 && *(*m).body_geomnum.add(b1 as usize) > 0)
-                || (*(*m).body_weldid.add(b1 as usize) == 0 && has_plane(m, b1) != 0)
-            {
-                // add b1:b2 pairs that are not welded together
-                for b2 in 0..nbody {
-                    if can_collide(m, b2) == 0 {
-                        continue;
-                    }
-
-                    let weld2 = *(*m).body_weldid.add(b2 as usize);
-                    let parent_weld2 = *(*m).body_weldid.add(*(*m).body_parentid.add(weld2 as usize) as usize);
-                    let asleep2 = if sleep_filter { if *(*d).body_awake.add(b2 as usize) == mjS_ASLEEP { 1 } else { 0 } } else { 0 };
-                    if filter_body_pair(0, 0, 1, weld2, parent_weld2, asleep2, dsbl_filterparent) != 0 {
-                        continue;
-                    }
-
-                    add_pair(m, b1, b2, &mut npair as *mut i32, bfpair, maxpair);
-                }
-
-                // add body:flex pairs, skip if flex asleep
-                for f in 0..nflex {
-                    if sleep_filter && crate::engine::engine_sleep::mj_sleep_state(
-                        m, d as *const crate::types::mjData, mjOBJ_FLEX, f) == mjS_ASLEEP {
-                        continue;
-                    }
-                    add_pair(m, b1, nbody + f, &mut npair as *mut i32, bfpair, maxpair);
-                }
-            }
-        }
-
-        // find center of non-world geoms and flex vertices; return if none
-        let mut cnt: i32 = 0;
-        crate::engine::engine_util_blas::mju_zero3(cen.as_mut_ptr());
-        for i in 0..ngeom {
-            if *(*m).geom_bodyid.add(i as usize) != 0 {
-                crate::engine::engine_util_blas::mju_add_to3(cen.as_mut_ptr(), (*d).geom_xpos.add((3 * i) as usize));
-                cnt += 1;
-            }
-        }
-        for i in 0..nvert {
-            if *(*m).flex_vertbodyid.add(i as usize) != 0 {
-                crate::engine::engine_util_blas::mju_add_to3(cen.as_mut_ptr(), (*d).flexvert_xpos.add((3 * i) as usize));
-                cnt += 1;
-            }
-        }
-        if cnt == 0 {
-            return npair;
-        }
-        crate::engine::engine_util_blas::mju_scl3(cen.as_mut_ptr(), cen.as_ptr(), 1.0 / cnt as f64);
-
-        // compute covariance
-        crate::engine::engine_util_blas::mju_zero(cov.as_mut_ptr(), 9);
-        for i in 0..ngeom {
-            if *(*m).geom_bodyid.add(i as usize) != 0 {
-                update_cov(cov.as_mut_ptr(), (*d).geom_xpos.add((3 * i) as usize), cen.as_ptr());
-            }
-        }
-        for i in 0..nvert {
-            if *(*m).flex_vertbodyid.add(i as usize) != 0 {
-                update_cov(cov.as_mut_ptr(), (*d).flexvert_xpos.add((3 * i) as usize), cen.as_ptr());
-            }
-        }
-        crate::engine::engine_util_blas::mju_scl(cov.as_mut_ptr(), cov.as_ptr(), 1.0 / cnt as f64, 9);
-
-        // construct covariance-aligned 3D frame
-        crate::engine::engine_util_solve::mju_eig3(
-            eigval.as_mut_ptr(), frame.as_mut_ptr(), quat.as_mut_ptr(), cov.as_ptr());
-
-        // allocate collidable bodyflex ids, construct list
-        crate::engine::engine_memory::mj_mark_stack(d);
-        let bfid: *mut i32 = crate::engine::engine_memory::mj_stack_alloc_int(d, nbodyflex as usize);
-        let mut ncollide: i32 = 0;
-        for i in 1..nbodyflex {
-            if can_collide(m, i) != 0 {
-                *bfid.add(ncollide as usize) = i;
-                ncollide += 1;
-            }
-        }
-
-        if ncollide > 1 {
-            // allocate and construct AAMMs for collidable only
-            let aamm: *mut f64 = crate::engine::engine_memory::mj_stack_alloc_num(d, (6 * ncollide) as usize);
-            for i in 0..ncollide {
-                make_aamm(m, d,
-                    aamm.add((0 * ncollide + i) as usize),
-                    aamm.add((1 * ncollide + i) as usize),
-                    aamm.add((2 * ncollide + i) as usize),
-                    aamm.add((3 * ncollide + i) as usize),
-                    aamm.add((4 * ncollide + i) as usize),
-                    aamm.add((5 * ncollide + i) as usize),
-                    *bfid.add(i as usize), frame.as_ptr());
-            }
-
-            // call SAP
-            let maxsappair = ncollide * (ncollide - 1) / 2;
-            let sappair: *mut i32 = crate::engine::engine_memory::mj_stack_alloc_int(d, maxsappair as usize);
-            let nsappair = mj_sap(d, aamm as *const f64, ncollide, 0, sappair, maxsappair);
-            if nsappair < 0 {
-                crate::engine::engine_util_errmem::mju_error(
-                    b"SAP failed\0".as_ptr() as *const i8);
-            }
-
-            // filter SAP pairs, convert to bodyflex pairs
-            for i in 0..nsappair {
-                let bf1 = *bfid.add((*sappair.add(i as usize) >> 16) as usize);
-                let bf2 = *bfid.add((*sappair.add(i as usize) & 0xFFFF) as usize);
-
-                // body pair: prune based on sleep filter and weld filter
-                if bf1 < nbody && bf2 < nbody {
-                    let asleep1 = if sleep_filter { if *(*d).body_awake.add(bf1 as usize) == mjS_ASLEEP { 1 } else { 0 } } else { 0 };
-                    let asleep2 = if sleep_filter { if *(*d).body_awake.add(bf2 as usize) == mjS_ASLEEP { 1 } else { 0 } } else { 0 };
-                    let weld1 = *(*m).body_weldid.add(bf1 as usize);
-                    let weld2 = *(*m).body_weldid.add(bf2 as usize);
-                    let parent_weld1 = *(*m).body_weldid.add(*(*m).body_parentid.add(weld1 as usize) as usize);
-                    let parent_weld2 = *(*m).body_weldid.add(*(*m).body_parentid.add(weld2 as usize) as usize);
-
-                    if filter_body_pair(weld1, parent_weld1, asleep1,
-                                       weld2, parent_weld2, asleep2,
-                                       dsbl_filterparent) != 0 {
-                        continue;
-                    }
-                }
-                // flex pair: skip if neither side is dynamically awake
-                else if sleep_filter {
-                    let awake1 = if bf1 >= nbody {
-                        if crate::engine::engine_sleep::mj_sleep_state(m, d as *const crate::types::mjData, mjOBJ_FLEX, bf1 - nbody) == mjS_AWAKE { 1 } else { 0 }
-                    } else {
-                        if *(*d).body_awake.add(bf1 as usize) == mjS_AWAKE && *(*m).body_treeid.add(bf1 as usize) >= 0 { 1 } else { 0 }
-                    };
-                    let awake2 = if bf2 >= nbody {
-                        if crate::engine::engine_sleep::mj_sleep_state(m, d as *const crate::types::mjData, mjOBJ_FLEX, bf2 - nbody) == mjS_AWAKE { 1 } else { 0 }
-                    } else {
-                        if *(*d).body_awake.add(bf2 as usize) == mjS_AWAKE && *(*m).body_treeid.add(bf2 as usize) >= 0 { 1 } else { 0 }
-                    };
-                    if awake1 == 0 && awake2 == 0 {
-                        continue;
-                    }
-                }
-
-                // add bodyflex pair if there is room in buffer
-                add_pair(m, bf1, bf2, &mut npair as *mut i32, bfpair, maxpair);
-            }
-        }
-
-        // sort bodyflex pairs by signature
-        if npair > 1 {
-            let buf: *mut i32 = crate::engine::engine_memory::mj_stack_alloc_int(d, npair as usize);
-            bfsort(bfpair, buf, npair, std::ptr::null_mut());
-        }
-
-        crate::engine::engine_memory::mj_free_stack(d);
-        npair
-    }
-}
-
-/// C: mj_collideFlexSAP (engine/engine_collision_driver.h:51)
-/// Calls: mj_SAP, mj_collideElems, mj_freeStack, mj_isElemActive, mj_markStack, mj_stackAllocInfo, mju_message
-#[allow(unused_variables, non_snake_case)]
-pub fn mj_collide_flex_sap(m: *const mjModel, d: *mut mjData, f: i32) {
-    todo!() // mj_collideFlexSAP
-}
-
-/// C: mj_collideGeomElem (engine/engine_collision_driver.h:54)
-/// Calls: filterSphereBox, mj_arenaAllocByte, mj_assignMargin, mj_contactParam, mj_freeStack, mj_makeCapsule, mj_markStack, mj_setContact, mj_stackAllocInfo, mj_warning, mjc_ConvexElem, mjc_HFieldElem, mjraw_BoxTriangle, mjraw_CapsuleBox, mjraw_CapsuleCapsule, mjraw_CapsuleTriangle, mjraw_SphereCapsule, mjraw_SphereTriangle, mju_copy3, mju_scl3
-#[allow(unused_variables, non_snake_case)]
-pub fn mj_collide_geom_elem(m: *const mjModel, d: *mut mjData, g: i32, f: i32, e: i32) {
-    todo!() // mj_collideGeomElem
-}
-
-/// C: mj_collideElems (engine/engine_collision_driver.h:57)
-/// Calls: filterBox, mj_arenaAllocByte, mj_assignMargin, mj_contactParam, mj_freeStack, mj_makeCapsule, mj_markStack, mj_setContact, mj_stackAllocInfo, mj_warning, mjc_ConvexElem, mjraw_CapsuleCapsule, mju_copy3
-#[allow(unused_variables, non_snake_case)]
-pub fn mj_collide_elems(m: *const mjModel, d: *mut mjData, f1: i32, e1: i32, f2: i32, e2: i32) {
-    todo!() // mj_collideElems
-}
-
-/// C: mj_collideElemVert (engine/engine_collision_driver.h:60)
-/// Calls: mj_arenaAllocByte, mj_assignMargin, mj_contactParam, mj_freeStack, mj_makeCapsule, mj_markStack, mj_setContact, mj_stackAllocInfo, mj_warning, mjc_ConvexElem, mjraw_SphereCapsule, mjraw_SphereTriangle, mju_copy3
-#[allow(unused_variables, non_snake_case)]
-pub fn mj_collide_elem_vert(m: *const mjModel, d: *mut mjData, f: i32, e: i32, v: i32) {
-    todo!() // mj_collideElemVert
 }
 

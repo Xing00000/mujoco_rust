@@ -1,6 +1,6 @@
 //! Port of: engine/engine_callback.h
-//! IR hash: 73393814548a07d1
-//! CODEGEN: signatures locked. Only fill todo!() bodies.
+//! IR hash: 9343293228317031
+//! CODEGEN: source paths, owners, and callable names are locked.
 
 use crate::types::*;
 
@@ -15,7 +15,7 @@ use crate::types::*;
 
 /// C: mj_resetCallbacks (engine/engine_callback.h:37)
 #[allow(unused_variables, non_snake_case)]
-pub fn mj_reset_callbacks() {
+pub fn mj_resetCallbacks() {
     // SAFETY: single-threaded access to global callback pointers, matching C semantics.
     // All callbacks are set to null (None) exactly as C sets them to 0.
     unsafe {

@@ -1,18 +1,17 @@
 //! Port of: engine/engine_util_sparse.h
-//! IR hash: 73393814548a07d1
-//! CODEGEN: signatures locked. Only fill todo!() bodies.
+//! IR hash: 9343293228317031
+//! CODEGEN: source paths, owners, and callable names are locked.
 
 use crate::types::*;
 
 /// C: mju_dotSparse2 (engine/engine_util_sparse.h:32)
-/// Calls: FilePath::empty
 /// ⚠️ BITEXACT RULES:
 ///   1. Copy exact C accumulation order (no iter().sum())
 ///   2. No f64::mul_add() (FMA changes precision)
 ///   3. No algebraic simplification
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
-pub fn mju_dot_sparse2(vec1: *const f64, ind1: *const i32, nnz1: i32, vec2: *const f64, ind2: *const i32, nnz2: i32) -> f64 {
+pub fn mju_dotSparse2(vec1: *const f64, ind1: *const i32, nnz1: i32, vec2: *const f64, ind2: *const i32, nnz2: i32) -> f64 {
     // SAFETY: vec1/ind1 have nnz1 elements, vec2/ind2 have nnz2 elements per caller contract
     unsafe {
         let mut i1: i32 = 0;
@@ -50,7 +49,7 @@ pub fn mju_dot_sparse2(vec1: *const f64, ind1: *const i32, nnz1: i32, vec2: *con
 ///   3. No algebraic simplification
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
-pub fn mju_dot_sparse_x3(res0: *mut f64, res1: *mut f64, res2: *mut f64, vec10: *const f64, vec11: *const f64, vec12: *const f64, vec2: *const f64, nnz1: i32, ind1: *const i32) {
+pub fn mju_dotSparseX3(res0: *mut f64, res1: *mut f64, res2: *mut f64, vec10: *const f64, vec11: *const f64, vec12: *const f64, vec2: *const f64, nnz1: i32, ind1: *const i32) {
     // SAFETY: all pointers valid for nnz1 elements per caller contract
     unsafe {
         let mut RES0: f64 = 0.0;
@@ -116,7 +115,7 @@ pub fn mju_dense2sparse(res: *mut f64, mat: *const f64, nr: i32, nc: i32, rownnz
 }
 
 /// C: mju_sparse2dense (engine/engine_util_sparse.h:46)
-/// Calls: mju_zero
+/// Calls: cxx:_mju_zero
 /// ⚠️ BITEXACT RULES:
 ///   1. Copy exact C accumulation order (no iter().sum())
 ///   2. No f64::mul_add() (FMA changes precision)
@@ -140,7 +139,7 @@ pub fn mju_sparse2dense(res: *mut f64, mat: *const f64, nr: i32, nc: i32, rownnz
 }
 
 /// C: mju_sym2dense (engine/engine_util_sparse.h:50)
-/// Calls: mju_zero
+/// Calls: cxx:_mju_zero
 /// ⚠️ BITEXACT RULES:
 ///   1. Copy exact C accumulation order (no iter().sum())
 ///   2. No f64::mul_add() (FMA changes precision)
@@ -167,14 +166,14 @@ pub fn mju_sym2dense(res: *mut f64, mat: *const f64, n: i32, rownnz: *const i32,
 }
 
 /// C: mju_copySparse (engine/engine_util_sparse.h:54)
-/// Calls: mju_copy
+/// Calls: cxx:_mju_copy
 /// ⚠️ BITEXACT RULES:
 ///   1. Copy exact C accumulation order (no iter().sum())
 ///   2. No f64::mul_add() (FMA changes precision)
 ///   3. No algebraic simplification
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
-pub fn mju_copy_sparse(res: *mut f64, mat: *const f64, rownnz: *const i32, rowadr: *const i32, row: *const i32, nrow: i32) {
+pub fn mju_copySparse(res: *mut f64, mat: *const f64, rownnz: *const i32, rowadr: *const i32, row: *const i32, nrow: i32) {
     // SAFETY: caller guarantees all pointers valid
     unsafe {
         for i in 0..nrow as usize {
@@ -189,14 +188,14 @@ pub fn mju_copy_sparse(res: *mut f64, mat: *const f64, rownnz: *const i32, rowad
 }
 
 /// C: mju_zeroSparse (engine/engine_util_sparse.h:58)
-/// Calls: mju_zero
+/// Calls: cxx:_mju_zero
 /// ⚠️ BITEXACT RULES:
 ///   1. Copy exact C accumulation order (no iter().sum())
 ///   2. No f64::mul_add() (FMA changes precision)
 ///   3. No algebraic simplification
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
-pub fn mju_zero_sparse(res: *mut f64, rownnz: *const i32, rowadr: *const i32, row: *const i32, nrow: i32) {
+pub fn mju_zeroSparse(res: *mut f64, rownnz: *const i32, rowadr: *const i32, row: *const i32, nrow: i32) {
     // SAFETY: caller guarantees all pointers valid
     unsafe {
         for i in 0..nrow as usize {
@@ -210,18 +209,18 @@ pub fn mju_zero_sparse(res: *mut f64, rownnz: *const i32, rowadr: *const i32, ro
 }
 
 /// C: mju_mulMatVecSparse (engine/engine_util_sparse.h:61)
-/// Calls: mju_dotSparse
+/// Calls: cxx-internal:/Users/xing/Desktop/projects/c2rust_bitexact/projects/mujoco/src/engine/engine_util_sparse.h:_mju_dotSparse
 /// ⚠️ BITEXACT RULES:
 ///   1. Copy exact C accumulation order (no iter().sum())
 ///   2. No f64::mul_add() (FMA changes precision)
 ///   3. No algebraic simplification
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
-pub fn mju_mul_mat_vec_sparse(res: *mut f64, mat: *const f64, vec: *const f64, nr: i32, rownnz: *const i32, rowadr: *const i32, colind: *const i32, rowsuper: *const i32) {
+pub fn mju_mulMatVecSparse(res: *mut f64, mat: *const f64, vec: *const f64, nr: i32, rownnz: *const i32, rowadr: *const i32, colind: *const i32, rowsuper: *const i32) {
     // SAFETY: caller guarantees all pointers valid for their dimensions
     unsafe {
         for r in 0..nr as usize {
-            *res.add(r) = mju_dot_sparse(
+            *res.add(r) = mju_dotSparse(
                 mat.add(*rowadr.add(r) as usize),
                 vec,
                 *rownnz.add(r),
@@ -232,14 +231,14 @@ pub fn mju_mul_mat_vec_sparse(res: *mut f64, mat: *const f64, vec: *const f64, n
 }
 
 /// C: mju_mulMatTVecSparse (engine/engine_util_sparse.h:66)
-/// Calls: mju_zero
+/// Calls: cxx:_mju_zero
 /// ⚠️ BITEXACT RULES:
 ///   1. Copy exact C accumulation order (no iter().sum())
 ///   2. No f64::mul_add() (FMA changes precision)
 ///   3. No algebraic simplification
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
-pub fn mju_mul_mat_t_vec_sparse(res: *mut f64, mat: *const f64, vec: *const f64, nr: i32, nc: i32, rownnz: *const i32, rowadr: *const i32, colind: *const i32) {
+pub fn mju_mulMatTVecSparse(res: *mut f64, mat: *const f64, vec: *const f64, nr: i32, nc: i32, rownnz: *const i32, rowadr: *const i32, colind: *const i32) {
     // SAFETY: caller guarantees all pointers valid for their dimensions
     unsafe {
         // clear res
@@ -266,18 +265,18 @@ pub fn mju_mul_mat_t_vec_sparse(res: *mut f64, mat: *const f64, vec: *const f64,
 }
 
 /// C: mju_addToMatSparse (engine/engine_util_sparse.h:70)
-/// Calls: mju_combineSparse
+/// Calls: cxx-internal:/Users/xing/Desktop/projects/c2rust_bitexact/projects/mujoco/src/engine/engine_util_sparse.h:_mju_combineSparse
 /// ⚠️ BITEXACT RULES:
 ///   1. Copy exact C accumulation order (no iter().sum())
 ///   2. No f64::mul_add() (FMA changes precision)
 ///   3. No algebraic simplification
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
-pub fn mju_add_to_mat_sparse(dst: *mut f64, rownnz: *mut i32, rowadr: *mut i32, colind: *mut i32, nr: i32, M: *const f64, M_rownnz: *const i32, M_rowadr: *const i32, M_colind: *const i32) {
+pub fn mju_addToMatSparse(dst: *mut f64, rownnz: *mut i32, rowadr: *mut i32, colind: *mut i32, nr: i32, M: *const f64, M_rownnz: *const i32, M_rowadr: *const i32, M_colind: *const i32) {
     // SAFETY: caller guarantees all pointers valid for sparse matrix dimensions
     unsafe {
         for i in 0..nr as usize {
-            *rownnz.add(i) = mju_combine_sparse(
+            *rownnz.add(i) = mju_combineSparse(
                 dst.add(*rowadr.add(i) as usize),
                 M.add(*M_rowadr.add(i) as usize),
                 1.0,
@@ -298,7 +297,7 @@ pub fn mju_add_to_mat_sparse(dst: *mut f64, rownnz: *mut i32, rowadr: *mut i32, 
 ///   3. No algebraic simplification
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
-pub fn mju_add_to_sym_sparse(res: *mut f64, mat: *const f64, n: i32, rownnz: *const i32, rowadr: *const i32, colind: *const i32, flg_upper: i32) {
+pub fn mju_addToSymSparse(res: *mut f64, mat: *const f64, n: i32, rownnz: *const i32, rowadr: *const i32, colind: *const i32, flg_upper: i32) {
     // SAFETY: caller guarantees all pointers valid for the sparse matrix dimensions
     unsafe {
         for i in 0..n as usize {
@@ -324,14 +323,14 @@ pub fn mju_add_to_sym_sparse(res: *mut f64, mat: *const f64, n: i32, rownnz: *co
 }
 
 /// C: mju_mulSymVecSparse (engine/engine_util_sparse.h:81)
-/// Calls: mju_zero
+/// Calls: cxx:_mju_zero
 /// ⚠️ BITEXACT RULES:
 ///   1. Copy exact C accumulation order (no iter().sum())
 ///   2. No f64::mul_add() (FMA changes precision)
 ///   3. No algebraic simplification
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
-pub fn mju_mul_sym_vec_sparse(res: *mut f64, mat: *const f64, vec: *const f64, n: i32, rownnz: *const i32, rowadr: *const i32, colind: *const i32) {
+pub fn mju_mulSymVecSparse(res: *mut f64, mat: *const f64, vec: *const f64, n: i32, rownnz: *const i32, rowadr: *const i32, colind: *const i32) {
     // SAFETY: caller guarantees all pointers valid for their dimensions
     unsafe {
         // clear res
@@ -367,7 +366,7 @@ pub fn mju_mul_sym_vec_sparse(res: *mut f64, mat: *const f64, vec: *const f64, n
 ///   3. No algebraic simplification
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
-pub fn mju_compress_sparse(mat: *mut f64, nr: i32, nc: i32, rownnz: *mut i32, rowadr: *mut i32, colind: *mut i32, minval: f64) -> i32 {
+pub fn mju_compressSparse(mat: *mut f64, nr: i32, nc: i32, rownnz: *mut i32, rowadr: *mut i32, colind: *mut i32, minval: f64) -> i32 {
     // SAFETY: caller guarantees all pointers valid for sparse matrix dimensions
     unsafe {
         let remove_small = minval >= 0.0;
@@ -407,9 +406,8 @@ pub fn mju_compress_sparse(mat: *mut f64, nr: i32, nc: i32, rownnz: *mut i32, ro
 }
 
 /// C: mju_combineSparseCount (engine/engine_util_sparse.h:89)
-/// Calls: GlobalTable::count
 #[allow(unused_variables, non_snake_case)]
-pub fn mju_combine_sparse_count(a_nnz: i32, b_nnz: i32, a_ind: *const i32, b_ind: *const i32) -> i32 {
+pub fn mju_combineSparseCount(a_nnz: i32, b_nnz: i32, a_ind: *const i32, b_ind: *const i32) -> i32 {
     // SAFETY: a_ind[a_nnz] and b_ind[b_nnz] valid per caller contract
     unsafe {
         let mut a: i32 = 0;
@@ -434,20 +432,20 @@ pub fn mju_combine_sparse_count(a_nnz: i32, b_nnz: i32, a_ind: *const i32, b_ind
 }
 
 /// C: mju_combineSparseInc (engine/engine_util_sparse.h:92)
-/// Calls: mju_addToSclScl, mju_compare, mju_scl
+/// Calls: cxx-internal:/Users/xing/Desktop/projects/c2rust_bitexact/projects/mujoco/src/engine/engine_util_sparse.h:_mju_addToSclScl, cxx-internal:/Users/xing/Desktop/projects/c2rust_bitexact/projects/mujoco/src/engine/engine_util_sparse.h:_mju_compare, cxx:_mju_scl
 /// ⚠️ BITEXACT RULES:
 ///   1. Copy exact C accumulation order (no iter().sum())
 ///   2. No f64::mul_add() (FMA changes precision)
 ///   3. No algebraic simplification
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
-pub fn mju_combine_sparse_inc(dst: *mut f64, src: *const f64, n: i32, a: f64, b: f64, dst_nnz: i32, src_nnz: i32, dst_ind: *const i32, src_ind: *const i32) {
+pub fn mju_combineSparseInc(dst: *mut f64, src: *const f64, n: i32, a: f64, b: f64, dst_nnz: i32, src_nnz: i32, dst_ind: *const i32, src_ind: *const i32) {
     // SAFETY: caller guarantees all pointers valid for their dimensions
     unsafe {
         // check for identical pattern
         if dst_nnz == src_nnz {
             if mju_compare(dst_ind, src_ind, dst_nnz) != 0 {
-                mju_add_to_scl_scl(dst, src, a, b, dst_nnz);
+                mju_addToSclScl(dst, src, a, b, dst_nnz);
                 return;
             }
         }
@@ -489,7 +487,7 @@ pub fn mju_combine_sparse_inc(dst: *mut f64, src: *const f64, n: i32, a: f64, b:
 ///   3. No algebraic simplification
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
-pub fn mju_add_to_scl_sparse_inc(dst: *mut f64, src: *const f64, nnzdst: i32, inddst: *const i32, nnzsrc: i32, indsrc: *const i32, scl: f64) {
+pub fn mju_addToSclSparseInc(dst: *mut f64, src: *const f64, nnzdst: i32, inddst: *const i32, nnzsrc: i32, indsrc: *const i32, scl: f64) {
     if nnzdst == 0 || nnzsrc == 0 {
         return;
     }
@@ -515,14 +513,14 @@ pub fn mju_add_to_scl_sparse_inc(dst: *mut f64, src: *const f64, nnzdst: i32, in
 }
 
 /// C: mju_addToSparseMat (engine/engine_util_sparse.h:101)
-/// Calls: mju_addToScl, mju_compare, mju_copyInt, mju_transpose
+/// Calls: cxx-internal:/Users/xing/Desktop/projects/c2rust_bitexact/projects/mujoco/src/engine/engine_util_sparse.h:_mju_compare, cxx:_mju_addToScl, cxx:_mju_copyInt, cxx:_mju_transpose
 /// ⚠️ BITEXACT RULES:
 ///   1. Copy exact C accumulation order (no iter().sum())
 ///   2. No f64::mul_add() (FMA changes precision)
 ///   3. No algebraic simplification
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
-pub fn mju_add_to_sparse_mat(dst: *mut f64, src: *const f64, n: i32, nrow: i32, scl: f64, dst_nnz: i32, src_nnz: i32, dst_ind: *mut i32, src_ind: *const i32, buf: *mut f64, buf_ind: *mut i32) -> i32 {
+pub fn mju_addToSparseMat(dst: *mut f64, src: *const f64, n: i32, nrow: i32, scl: f64, dst_nnz: i32, src_nnz: i32, dst_ind: *mut i32, src_ind: *const i32, buf: *mut f64, buf_ind: *mut i32) -> i32 {
     // SAFETY: caller guarantees all pointers valid for their dimensions
     unsafe {
         // check for identical pattern
@@ -531,7 +529,7 @@ pub fn mju_add_to_sparse_mat(dst: *mut f64, src: *const f64, n: i32, nrow: i32, 
                 return 0;
             }
             if mju_compare(dst_ind as *const i32, src_ind, dst_nnz) != 0 {
-                crate::engine::engine_util_blas::mju_add_to_scl(dst, src, scl, nrow * dst_nnz);
+                crate::engine::engine_util_blas::mju_addToScl(dst, src, scl, nrow * dst_nnz);
                 return dst_nnz;
             }
         }
@@ -580,16 +578,16 @@ pub fn mju_add_to_sparse_mat(dst: *mut f64, src: *const f64, n: i32, nrow: i32, 
 
         // copy transposed buf into dst
         crate::engine::engine_util_blas::mju_transpose(dst, buf as *const f64, nnz, nrow);
-        crate::engine::engine_util_misc::mju_copy_int(dst_ind, buf_ind as *const i32, nnz);
+        crate::engine::engine_util_misc::mju_copyInt(dst_ind, buf_ind as *const i32, nnz);
 
         nnz
     }
 }
 
 /// C: mju_addChains (engine/engine_util_sparse.h:106)
-/// Calls: mju_compare, mju_copyInt
+/// Calls: cxx-internal:/Users/xing/Desktop/projects/c2rust_bitexact/projects/mujoco/src/engine/engine_util_sparse.h:_mju_compare, cxx:_mju_copyInt
 #[allow(unused_variables, non_snake_case)]
-pub fn mju_add_chains(res: *mut i32, n: i32, NV1: i32, NV2: i32, chain1: *const i32, chain2: *const i32) -> i32 {
+pub fn mju_addChains(res: *mut i32, n: i32, NV1: i32, NV2: i32, chain1: *const i32, chain2: *const i32) -> i32 {
     // SAFETY: caller guarantees all pointers valid
     unsafe {
         // check for identical pattern
@@ -598,7 +596,7 @@ pub fn mju_add_chains(res: *mut i32, n: i32, NV1: i32, NV2: i32, chain1: *const 
                 return 0;
             }
             if mju_compare(chain1, chain2, NV1) != 0 {
-                crate::engine::engine_util_misc::mju_copy_int(res, chain1, NV1);
+                crate::engine::engine_util_misc::mju_copyInt(res, chain1, NV1);
                 return NV1;
             }
         }
@@ -637,14 +635,14 @@ pub fn mju_add_chains(res: *mut i32, n: i32, NV1: i32, NV2: i32, chain1: *const 
 }
 
 /// C: mju_transposeSparse (engine/engine_util_sparse.h:110)
-/// Calls: mju_zeroInt
+/// Calls: cxx:_mju_zeroInt
 /// ⚠️ BITEXACT RULES:
 ///   1. Copy exact C accumulation order (no iter().sum())
 ///   2. No f64::mul_add() (FMA changes precision)
 ///   3. No algebraic simplification
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
-pub fn mju_transpose_sparse(res: *mut f64, mat: *const f64, nr: i32, nc: i32, res_rownnz: *mut i32, res_rowadr: *mut i32, res_colind: *mut i32, res_rowsuper: *mut i32, rownnz: *const i32, rowadr: *const i32, colind: *const i32) {
+pub fn mju_transposeSparse(res: *mut f64, mat: *const f64, nr: i32, nc: i32, res_rownnz: *mut i32, res_rowadr: *mut i32, res_colind: *mut i32, res_rowsuper: *mut i32, rownnz: *const i32, rowadr: *const i32, colind: *const i32) {
     // SAFETY: caller guarantees all pointers valid for their dimensions
     unsafe {
         if nr == 0 || nc == 0 {
@@ -652,7 +650,7 @@ pub fn mju_transpose_sparse(res: *mut f64, mat: *const f64, nr: i32, nc: i32, re
         }
 
         // clear number of non-zeros for each row of transposed
-        crate::engine::engine_util_misc::mju_zero_int(res_rownnz, nc);
+        crate::engine::engine_util_misc::mju_zeroInt(res_rownnz, nc);
 
         // handle the case where the first row of mat is nonzero (offset wrt the base pointers)
         let row_offset = *rowadr.add(0);
@@ -722,9 +720,9 @@ pub fn mju_transpose_sparse(res: *mut f64, mat: *const f64, nr: i32, nc: i32, re
 }
 
 /// C: mju_superSparse (engine/engine_util_sparse.h:115)
-/// Calls: mju_compare
+/// Calls: cxx-internal:/Users/xing/Desktop/projects/c2rust_bitexact/projects/mujoco/src/engine/engine_util_sparse.h:_mju_compare
 #[allow(unused_variables, non_snake_case)]
-pub fn mju_super_sparse(nr: i32, rowsuper: *mut i32, rownnz: *const i32, rowadr: *const i32, colind: *const i32) {
+pub fn mju_superSparse(nr: i32, rowsuper: *mut i32, rownnz: *const i32, rowadr: *const i32, colind: *const i32) {
     // SAFETY: caller guarantees all pointers valid
     unsafe {
         // no rows: nothing to do
@@ -758,19 +756,19 @@ pub fn mju_super_sparse(nr: i32, rowsuper: *mut i32, rownnz: *const i32, rowadr:
 }
 
 /// C: mju_sqrMatTDSparse (engine/engine_util_sparse.h:119)
-/// Calls: mj_freeStack, mj_markStack, mj_stackAllocInfo, mju_dot, mju_zeroInt
+/// Calls: cxx:_mj_freeStack, cxx:_mj_markStack, cxx:_mj_stackAllocInfo, cxx:_mju_dot, cxx:_mju_zeroInt
 /// ⚠️ BITEXACT RULES:
 ///   1. Copy exact C accumulation order (no iter().sum())
 ///   2. No f64::mul_add() (FMA changes precision)
 ///   3. No algebraic simplification
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
-pub fn mju_sqr_mat_td_sparse(res: *mut f64, mat: *const f64, matT: *const f64, diag: *const f64, nr: i32, nc: i32, res_rownnz: *mut i32, res_rowadr: *const i32, res_colind: *mut i32, rownnz: *const i32, rowadr: *const i32, colind: *const i32, rowsuper: *const i32, rownnzT: *const i32, rowadrT: *const i32, colindT: *const i32, rowsuperT: *const i32, d: *mut mjData, diagind: *mut i32) {
+pub fn mju_sqrMatTDSparse(res: *mut f64, mat: *const f64, matT: *const f64, diag: *const f64, nr: i32, nc: i32, res_rownnz: *mut i32, res_rowadr: *const i32, res_colind: *mut i32, rownnz: *const i32, rowadr: *const i32, colind: *const i32, rowsuper: *const i32, rownnzT: *const i32, rowadrT: *const i32, colindT: *const i32, rowsuperT: *const i32, d: *mut mjData, diagind: *mut i32) {
     const MJ_MAX_SUPER: usize = 8;
 
     // SAFETY: all pointers are valid arrays of appropriate sizes (caller contract)
     unsafe {
-        crate::engine::engine_memory::mj_mark_stack(d);
+        crate::engine::engine_memory::mj_markStack(d);
 
         // reinterpret transposed matrices as compressed sparse column
         let mat_csc = matT;
@@ -784,21 +782,21 @@ pub fn mju_sqr_mat_td_sparse(res: *mut f64, mat: *const f64, matT: *const f64, d
         let rowindT = colind;
 
         // marker[i] = 1 if row i is set in current column
-        let marker = crate::engine::engine_memory::mj_stack_alloc_int(d, nc as usize);
-        crate::engine::engine_util_misc::mju_zero_int(marker, nc);
+        let marker = crate::engine::engine_memory::mj_stackAllocInt(d, nc as usize);
+        crate::engine::engine_util_misc::mju_zeroInt(marker, nc);
 
         // dense buffer (column-major) containing up to mjMAXSUPER columns
-        let buffer = crate::engine::engine_memory::mj_stack_alloc_num(d, nc as usize * MJ_MAX_SUPER);
+        let buffer = crate::engine::engine_memory::mj_stackAllocNum(d, nc as usize * MJ_MAX_SUPER);
 
         // dense index vector of the current column (unsorted)
-        let buffer_idx = crate::engine::engine_memory::mj_stack_alloc_int(d, nc as usize);
+        let buffer_idx = crate::engine::engine_memory::mj_stackAllocInt(d, nc as usize);
 
         // rowstart[i]: address of first row in column mat'[:, i] with index > current column
-        let rowstart = crate::engine::engine_memory::mj_stack_alloc_int(d, nr as usize);
-        crate::engine::engine_util_misc::mju_zero_int(rowstart, nr);
+        let rowstart = crate::engine::engine_memory::mj_stackAllocInt(d, nr as usize);
+        crate::engine::engine_util_misc::mju_zeroInt(rowstart, nr);
 
         // clear res_rownnz
-        crate::engine::engine_util_misc::mju_zero_int(res_rownnz, nc);
+        crate::engine::engine_util_misc::mju_zeroInt(res_rownnz, nc);
 
         // construct res[lower+diagonal], by column
         let mut c: i32 = 0;
@@ -962,28 +960,28 @@ pub fn mju_sqr_mat_td_sparse(res: *mut f64, mat: *const f64, matT: *const f64, d
             }
         }
 
-        crate::engine::engine_memory::mj_free_stack(d);
+        crate::engine::engine_memory::mj_freeStack(d);
     }
 }
 
 /// C: mju_sqrMatTDSparse_row (engine/engine_util_sparse.h:129)
-/// Calls: mj_freeStack, mj_markStack, mj_stackAllocInfo, mju_copyInt
+/// Calls: cxx:_mj_freeStack, cxx:_mj_markStack, cxx:_mj_stackAllocInfo, cxx:_mju_copyInt
 /// ⚠️ BITEXACT RULES:
 ///   1. Copy exact C accumulation order (no iter().sum())
 ///   2. No f64::mul_add() (FMA changes precision)
 ///   3. No algebraic simplification
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
-pub fn mju_sqr_mat_td_sparse_row(res: *mut f64, mat: *const f64, matT: *const f64, diag: *const f64, nr: i32, nc: i32, res_rownnz: *mut i32, res_rowadr: *const i32, res_colind: *mut i32, rownnz: *const i32, rowadr: *const i32, colind: *const i32, rowsuper: *const i32, rownnzT: *const i32, rowadrT: *const i32, colindT: *const i32, rowsuperT: *const i32, d: *mut mjData, diagind: *mut i32) {
+pub fn mju_sqrMatTDSparse_row(res: *mut f64, mat: *const f64, matT: *const f64, diag: *const f64, nr: i32, nc: i32, res_rownnz: *mut i32, res_rowadr: *const i32, res_colind: *mut i32, rownnz: *const i32, rowadr: *const i32, colind: *const i32, rowsuper: *const i32, rownnzT: *const i32, rowadrT: *const i32, colindT: *const i32, rowsuperT: *const i32, d: *mut mjData, diagind: *mut i32) {
     // SAFETY: all pointers are valid arrays of appropriate sizes (caller contract)
     unsafe {
-        crate::engine::engine_memory::mj_mark_stack(d);
+        crate::engine::engine_memory::mj_markStack(d);
 
         // a dense row buffer that stores the current row in the resulting matrix
-        let buffer = crate::engine::engine_memory::mj_stack_alloc_num(d, nc as usize);
+        let buffer = crate::engine::engine_memory::mj_stackAllocNum(d, nc as usize);
 
         // markers for currently set columns in the dense row buffer
-        let markers = crate::engine::engine_memory::mj_stack_alloc_int(d, nc as usize);
+        let markers = crate::engine::engine_memory::mj_stackAllocInt(d, nc as usize);
 
         for i in 0..nc as usize {
             let rowadr_i = *res_rowadr.add(i);
@@ -996,7 +994,7 @@ pub fn mju_sqr_mat_td_sparse_row(res: *mut f64, mat: *const f64, matT: *const f6
             // if rowsuper, use the previous row sparsity structure
             if !rowsuperT.is_null() && i > 0 && *rowsuperT.add(i - 1) != 0 {
                 *res_rownnz.add(i) = *res_rownnz.add(i - 1);
-                crate::engine::engine_util_misc::mju_copy_int(
+                crate::engine::engine_util_misc::mju_copyInt(
                     cols, res_colind.add(*res_rowadr.add(i - 1) as usize), *res_rownnz.add(i));
             }
 
@@ -1119,41 +1117,27 @@ pub fn mju_sqr_mat_td_sparse_row(res: *mut f64, mat: *const f64, matT: *const f6
             }
         }
 
-        crate::engine::engine_memory::mj_free_stack(d);
+        crate::engine::engine_memory::mj_freeStack(d);
     }
 }
 
-/// C: mju_sqrMatTDSparseCount (engine/engine_util_sparse.h:139)
-/// Calls: mj_freeStack, mj_markStack, mj_stackAllocInfo
-#[allow(unused_variables, non_snake_case)]
-pub fn mju_sqr_mat_td_sparse_count(res_rownnz: *mut i32, res_rowadr: *mut i32, nr: i32, rownnz: *const i32, rowadr: *const i32, colind: *const i32, rownnzT: *const i32, rowadrT: *const i32, colindT: *const i32, rowsuperT: *const i32, d: *mut mjData, flg_upper: i32) -> i32 {
-    todo!() // mju_sqrMatTDSparseCount
-}
-
-/// C: mju_sqrMatTDSparseSymbolic (engine/engine_util_sparse.h:148)
-/// Calls: mj_freeStack, mj_markStack, mj_stackAllocInfo, mju_copyInt, mju_zeroInt
-#[allow(unused_variables, non_snake_case)]
-pub fn mju_sqr_mat_td_sparse_symbolic(res_rownnz: *mut i32, res_rowadr: *mut i32, res_colind: *mut i32, res_diagind: *mut i32, nr: i32, nc: i32, rownnz: *const i32, rowadr: *const i32, colind: *const i32, rownnzT: *const i32, rowadrT: *const i32, colindT: *const i32, rowsuperT: *const i32, d: *mut mjData) -> i32 {
-    todo!() // mju_sqrMatTDSparseSymbolic
-}
-
 /// C: mju_sqrMatTDSparseNumeric (engine/engine_util_sparse.h:155)
-/// Calls: mj_freeStack, mj_markStack, mj_stackAllocInfo, mju_zero
+/// Calls: cxx:_mj_freeStack, cxx:_mj_markStack, cxx:_mj_stackAllocInfo, cxx:_mju_zero
 /// ⚠️ BITEXACT RULES:
 ///   1. Copy exact C accumulation order (no iter().sum())
 ///   2. No f64::mul_add() (FMA changes precision)
 ///   3. No algebraic simplification
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
-pub fn mju_sqr_mat_td_sparse_numeric(res: *mut f64, nc: i32, res_rownnz: *const i32, res_rowadr: *const i32, res_colind: *const i32, res_diagind: *const i32, mat: *const f64, rownnz: *const i32, rowadr: *const i32, colind: *const i32, matT: *const f64, rownnzT: *const i32, rowadrT: *const i32, colindT: *const i32, rowsuperT: *const i32, diag: *const f64, d: *mut mjData) {
+pub fn mju_sqrMatTDSparseNumeric(res: *mut f64, nc: i32, res_rownnz: *const i32, res_rowadr: *const i32, res_colind: *const i32, res_diagind: *const i32, mat: *const f64, rownnz: *const i32, rowadr: *const i32, colind: *const i32, matT: *const f64, rownnzT: *const i32, rowadrT: *const i32, colindT: *const i32, rowsuperT: *const i32, diag: *const f64, d: *mut mjData) {
     const MJ_MAX_SUPER: i32 = 8;
 
     // SAFETY: All pointers are valid arrays (caller contract). d is valid for stack alloc.
     unsafe {
-        crate::engine::engine_memory::mj_mark_stack(d);
+        crate::engine::engine_memory::mj_markStack(d);
 
         // dense accumulator for current result row (or batch of rows)
-        let buffer: *mut f64 = crate::engine::engine_memory::mj_stack_alloc_num(d, (nc * MJ_MAX_SUPER) as usize);
+        let buffer: *mut f64 = crate::engine::engine_memory::mj_stackAllocNum(d, (nc * MJ_MAX_SUPER) as usize);
         crate::engine::engine_util_blas::mju_zero(buffer, nc * MJ_MAX_SUPER);
 
         // process result rows
@@ -1274,7 +1258,7 @@ pub fn mju_sqr_mat_td_sparse_numeric(res: *mut f64, nc: i32, res_rownnz: *const 
         // fill upper triangle: mirror values from lower triangle
         if !res_diagind.is_null() {
             // initialize write positions after diagonal
-            let upper_pos: *mut i32 = crate::engine::engine_memory::mj_stack_alloc_int(d, nc as usize);
+            let upper_pos: *mut i32 = crate::engine::engine_memory::mj_stackAllocInt(d, nc as usize);
             for r2 in 0..nc {
                 *upper_pos.add(r2 as usize) = *res_diagind.add(r2 as usize) + 1;
             }
@@ -1294,13 +1278,13 @@ pub fn mju_sqr_mat_td_sparse_numeric(res: *mut f64, nc: i32, res_rownnz: *const 
             }
         }
 
-        crate::engine::engine_memory::mj_free_stack(d);
+        crate::engine::engine_memory::mj_freeStack(d);
     }
 }
 
 /// C: mju_sqrMatTDUncompressedInit (engine/engine_util_sparse.h:163)
 #[allow(unused_variables, non_snake_case)]
-pub fn mju_sqr_mat_td_uncompressed_init(res_rowadr: *mut i32, nc: i32) {
+pub fn mju_sqrMatTDUncompressedInit(res_rowadr: *mut i32, nc: i32) {
     // SAFETY: caller guarantees res_rowadr[nc] is valid
     unsafe {
         for r in 0..nc as usize {
@@ -1310,7 +1294,7 @@ pub fn mju_sqr_mat_td_uncompressed_init(res_rowadr: *mut i32, nc: i32) {
 }
 
 /// C: mju_block (engine/engine_util_sparse.h:166)
-/// Calls: mju_gather
+/// Calls: cxx:_mju_gather
 /// ⚠️ BITEXACT RULES:
 ///   1. Copy exact C accumulation order (no iter().sum())
 ///   2. No f64::mul_add() (FMA changes precision)
@@ -1329,14 +1313,14 @@ pub fn mju_block(res: *mut f64, mat: *const f64, nc_mat: i32, nc_res: i32, nr: i
 }
 
 /// C: mju_blockDiag (engine/engine_util_sparse.h:170)
-/// Calls: mju_block
+/// Calls: cxx:_mju_block
 /// ⚠️ BITEXACT RULES:
 ///   1. Copy exact C accumulation order (no iter().sum())
 ///   2. No f64::mul_add() (FMA changes precision)
 ///   3. No algebraic simplification
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
-pub fn mju_block_diag(res: *mut f64, mat: *const f64, nc_mat: i32, nc_res: i32, nb: i32, perm_r: *const i32, perm_c: *const i32, block_nr: *const i32, block_nc: *const i32, block_r: *const i32, block_c: *const i32) {
+pub fn mju_blockDiag(res: *mut f64, mat: *const f64, nc_mat: i32, nc_res: i32, nb: i32, perm_r: *const i32, perm_c: *const i32, block_nr: *const i32, block_nc: *const i32, block_r: *const i32, block_c: *const i32) {
     // SAFETY: caller guarantees all pointers are valid for their respective dimensions
     unsafe {
         for b in 0..nb as usize {
@@ -1355,14 +1339,14 @@ pub fn mju_block_diag(res: *mut f64, mat: *const f64, nc_mat: i32, nc_res: i32, 
 }
 
 /// C: mju_blockSparse (engine/engine_util_sparse.h:176)
-/// Calls: mju_copy
+/// Calls: cxx:_mju_copy
 /// ⚠️ BITEXACT RULES:
 ///   1. Copy exact C accumulation order (no iter().sum())
 ///   2. No f64::mul_add() (FMA changes precision)
 ///   3. No algebraic simplification
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
-pub fn mju_block_sparse(res: *mut f64, res_rownnz: *mut i32, res_rowadr: *mut i32, res_colind: *mut i32, mat: *const f64, rownnz: *const i32, rowadr: *const i32, colind: *const i32, nr: i32, perm_r: *const i32, perm_c: *const i32, col_offset: i32, res_offset: i32, res2: *mut f64, mat2: *const f64) {
+pub fn mju_blockSparse(res: *mut f64, res_rownnz: *mut i32, res_rowadr: *mut i32, res_colind: *mut i32, mat: *const f64, rownnz: *const i32, rowadr: *const i32, colind: *const i32, nr: i32, perm_r: *const i32, perm_c: *const i32, col_offset: i32, res_offset: i32, res2: *mut f64, mat2: *const f64) {
     // SAFETY: caller guarantees all pointers valid for their dimensions
     unsafe {
         for r in 0..nr as usize {
@@ -1401,14 +1385,14 @@ pub fn mju_block_sparse(res: *mut f64, res_rownnz: *mut i32, res_rowadr: *mut i3
 }
 
 /// C: mju_blockDiagSparse (engine/engine_util_sparse.h:185)
-/// Calls: mju_blockSparse
+/// Calls: cxx:_mju_blockSparse
 /// ⚠️ BITEXACT RULES:
 ///   1. Copy exact C accumulation order (no iter().sum())
 ///   2. No f64::mul_add() (FMA changes precision)
 ///   3. No algebraic simplification
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
-pub fn mju_block_diag_sparse(res: *mut f64, res_rownnz: *mut i32, res_rowadr: *mut i32, res_colind: *mut i32, mat: *const f64, rownnz: *const i32, rowadr: *const i32, colind: *const i32, nr: i32, nb: i32, perm_r: *const i32, perm_c: *const i32, block_r: *const i32, block_c: *const i32, res2: *mut f64, mat2: *const f64) {
+pub fn mju_blockDiagSparse(res: *mut f64, res_rownnz: *mut i32, res_rowadr: *mut i32, res_colind: *mut i32, mat: *const f64, rownnz: *const i32, rowadr: *const i32, colind: *const i32, nr: i32, nb: i32, perm_r: *const i32, perm_c: *const i32, block_r: *const i32, block_c: *const i32, res2: *mut f64, mat2: *const f64) {
     // SAFETY: caller guarantees all pointers valid for their dimensions
     unsafe {
         for b in 0..nb as usize {
@@ -1423,7 +1407,7 @@ pub fn mju_block_diag_sparse(res: *mut f64, res_rownnz: *mut i32, res_rowadr: *m
 
             let res2_ptr = if res2.is_null() { std::ptr::null_mut() } else { res2.add(res_adr as usize) };
 
-            mju_block_sparse(
+            mju_blockSparse(
                 res.add(res_adr as usize),
                 res_rownnz.add(block_r_b),
                 res_rowadr.add(block_r_b),
@@ -1451,7 +1435,7 @@ pub fn mju_block_diag_sparse(res: *mut f64, res_rownnz: *mut i32, res_rowadr: *m
 ///   3. No algebraic simplification
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
-pub fn mju_dot_sparse(vec1: *const f64, vec2: *const f64, nnz1: i32, ind1: *const i32) -> f64 {
+pub fn mju_dotSparse(vec1: *const f64, vec2: *const f64, nnz1: i32, ind1: *const i32) -> f64 {
     // SAFETY: vec1[nnz1], vec2[*], ind1[nnz1] valid per caller contract
     unsafe {
         let mut i: usize = 0;
@@ -1494,9 +1478,9 @@ pub fn mju_compare(vec1: *const i32, vec2: *const i32, n: i32) -> i32 {
 }
 
 /// C: mj_mergeSorted (engine/engine_util_sparse.h:243)
-/// Calls: mju_compare
+/// Calls: cxx-internal:/Users/xing/Desktop/projects/c2rust_bitexact/projects/mujoco/src/engine/engine_util_sparse.h:_mju_compare
 #[allow(unused_variables, non_snake_case)]
-pub fn mj_merge_sorted(merge: *mut i32, chain1: *const i32, n1: i32, chain2: *const i32, n2: i32) -> i32 {
+pub fn mj_mergeSorted(merge: *mut i32, chain1: *const i32, n1: i32, chain2: *const i32, n2: i32) -> i32 {
     // SAFETY: caller guarantees merge is large enough, chain1[n1], chain2[n2] valid
     unsafe {
         // special case: one or both empty
@@ -1561,7 +1545,7 @@ pub fn mj_merge_sorted(merge: *mut i32, chain1: *const i32, n1: i32, chain2: *co
 ///   3. No algebraic simplification
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
-pub fn mju_add_to_scl_scl(res: *mut f64, vec: *const f64, scl1: f64, scl2: f64, n: i32) {
+pub fn mju_addToSclScl(res: *mut f64, vec: *const f64, scl1: f64, scl2: f64, n: i32) {
     // SAFETY: res[n] and vec[n] valid per caller contract
     unsafe {
         for i in 0..n as usize {
@@ -1571,26 +1555,26 @@ pub fn mju_add_to_scl_scl(res: *mut f64, vec: *const f64, scl1: f64, scl2: f64, 
 }
 
 /// C: mju_combineSparse (engine/engine_util_sparse.h:311)
-/// Calls: mju_addToSclScl, mju_combineSparseCount, mju_compare
+/// Calls: cxx-internal:/Users/xing/Desktop/projects/c2rust_bitexact/projects/mujoco/src/engine/engine_util_sparse.h:_mju_addToSclScl, cxx-internal:/Users/xing/Desktop/projects/c2rust_bitexact/projects/mujoco/src/engine/engine_util_sparse.h:_mju_compare, cxx:_mju_combineSparseCount
 /// ⚠️ BITEXACT RULES:
 ///   1. Copy exact C accumulation order (no iter().sum())
 ///   2. No f64::mul_add() (FMA changes precision)
 ///   3. No algebraic simplification
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
-pub fn mju_combine_sparse(dst: *mut f64, src: *const f64, a: f64, b: f64, dst_nnz: i32, src_nnz: i32, dst_ind: *mut i32, src_ind: *const i32) -> i32 {
+pub fn mju_combineSparse(dst: *mut f64, src: *const f64, a: f64, b: f64, dst_nnz: i32, src_nnz: i32, dst_ind: *mut i32, src_ind: *const i32) -> i32 {
     // SAFETY: caller guarantees all pointers valid, dst has enough space for merged result
     unsafe {
         // check for identical pattern
         if dst_nnz == src_nnz {
             if mju_compare(dst_ind as *const i32, src_ind, dst_nnz) != 0 {
-                mju_add_to_scl_scl(dst, src, a, b, dst_nnz);
+                mju_addToSclScl(dst, src, a, b, dst_nnz);
                 return dst_nnz;
             }
         }
 
         // compute total nnz of result
-        let nnz = mju_combine_sparse_count(dst_nnz, src_nnz, dst_ind as *const i32, src_ind);
+        let nnz = mju_combineSparseCount(dst_nnz, src_nnz, dst_ind as *const i32, src_ind);
 
         // set up read/write pointers at end of arrays
         let mut bi = dst_nnz - 1;

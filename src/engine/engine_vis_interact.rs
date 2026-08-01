@@ -1,18 +1,18 @@
 //! Port of: engine/engine_vis_interact.c
-//! IR hash: 73393814548a07d1
-//! CODEGEN: signatures locked. Only fill todo!() bodies.
+//! IR hash: 9343293228317031
+//! CODEGEN: source paths, owners, and callable names are locked.
 
 use crate::types::*;
 
 /// C: convert2D (engine/engine_vis_interact.c:270)
-/// Calls: mju_message, mjv_alignToCamera
+/// Calls: cxx:_mju_message, cxx:_mjv_alignToCamera
 /// ⚠️ BITEXACT RULES:
 ///   1. Copy exact C accumulation order (no iter().sum())
 ///   2. No f64::mul_add() (FMA changes precision)
 ///   3. No algebraic simplification
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
-pub fn convert2d(res: *mut f64, action: i32, dx: f64, dy: f64, forward: *const f64) {
+pub fn convert2D(res: *mut f64, action: i32, dx: f64, dy: f64, forward: *const f64) {
     // mjtMouse enum: ROTATE_V=1, ROTATE_H=2, MOVE_V=3, MOVE_H=4, ZOOM=5, MOVE_V_REL=6, MOVE_H_REL=7
     let mut vec = [0.0f64; 3];
 
@@ -47,11 +47,11 @@ pub fn convert2d(res: *mut f64, action: i32, dx: f64, dy: f64, forward: *const f
     }
 
     // call 3D converter
-    mjv_align_to_camera(res, vec.as_ptr(), forward);
+    mjv_alignToCamera(res, vec.as_ptr(), forward);
 }
 
 /// C: mjv_room2model (engine/engine_vis_interact.h:28)
-/// Calls: mju_copy3, mju_copy4, mju_f2n, mju_message, mju_mulPose, mju_negPose, mju_scl3
+/// Calls: cxx:_mju_copy3, cxx:_mju_copy4, cxx:_mju_f2n, cxx:_mju_message, cxx:_mju_mulPose, cxx:_mju_negPose, cxx:_mju_scl3
 /// ⚠️ BITEXACT RULES:
 ///   1. Copy exact C accumulation order (no iter().sum())
 ///   2. No f64::mul_add() (FMA changes precision)
@@ -83,12 +83,12 @@ pub fn mjv_room2model(modelpos: *mut f64, modelquat: *mut f64, roompos: *const f
                 rotate.as_mut_ptr(), (*scn).rotate.as_ptr(), 4);
 
             // invert model pose (without scale)
-            crate::engine::engine_util_spatial::mju_neg_pose(
+            crate::engine::engine_util_spatial::mju_negPose(
                 invpos.as_mut_ptr(), invquat.as_mut_ptr(),
                 translate.as_ptr(), rotate.as_ptr());
 
             // map from room to model space
-            crate::engine::engine_util_spatial::mju_mul_pose(
+            crate::engine::engine_util_spatial::mju_mulPose(
                 modelpos, modelquat,
                 invpos.as_ptr(), invquat.as_ptr(), roompos, roomquat);
 
@@ -105,7 +105,7 @@ pub fn mjv_room2model(modelpos: *mut f64, modelquat: *mut f64, roompos: *const f
 }
 
 /// C: mjv_model2room (engine/engine_vis_interact.h:32)
-/// Calls: mju_copy3, mju_copy4, mju_f2n, mju_message, mju_mulPose, mju_scl3
+/// Calls: cxx:_mju_copy3, cxx:_mju_copy4, cxx:_mju_f2n, cxx:_mju_message, cxx:_mju_mulPose, cxx:_mju_scl3
 /// ⚠️ BITEXACT RULES:
 ///   1. Copy exact C accumulation order (no iter().sum())
 ///   2. No f64::mul_add() (FMA changes precision)
@@ -135,7 +135,7 @@ pub fn mjv_model2room(roompos: *mut f64, roomquat: *mut f64, modelpos: *const f6
                 rotate.as_mut_ptr(), (*scn).rotate.as_ptr(), 4);
 
             // map from model to room space
-            crate::engine::engine_util_spatial::mju_mul_pose(
+            crate::engine::engine_util_spatial::mju_mulPose(
                 roompos, roomquat,
                 translate.as_ptr(), rotate.as_ptr(), modelpos, modelquat);
 
@@ -152,14 +152,14 @@ pub fn mjv_model2room(roompos: *mut f64, roomquat: *mut f64, modelpos: *const f6
 }
 
 /// C: mjv_cameraInModel (engine/engine_vis_interact.h:36)
-/// Calls: mju_addToScl3, mju_cross, mju_f2n, mju_mat2Quat, mju_message, mju_normalize3, mju_quat2Mat, mju_zero3, mjv_room2model
+/// Calls: cxx:_mju_addToScl3, cxx:_mju_cross, cxx:_mju_f2n, cxx:_mju_mat2Quat, cxx:_mju_message, cxx:_mju_normalize3, cxx:_mju_quat2Mat, cxx:_mju_zero3, cxx:_mjv_room2model
 /// ⚠️ BITEXACT RULES:
 ///   1. Copy exact C accumulation order (no iter().sum())
 ///   2. No f64::mul_add() (FMA changes precision)
 ///   3. No algebraic simplification
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
-pub fn mjv_camera_in_model(headpos: *mut f64, forward: *mut f64, up: *mut f64, scn: *const mjvScene) {
+pub fn mjv_cameraInModel(headpos: *mut f64, forward: *mut f64, up: *mut f64, scn: *const mjvScene) {
     const MJMINVAL: f64 = 1e-15;
 
     // SAFETY: scn is a valid pointer (caller contract). headpos, forward, up may be null.
@@ -215,18 +215,18 @@ pub fn mjv_camera_in_model(headpos: *mut f64, forward: *mut f64, up: *mut f64, s
                 left[1], u[1], fwd[1],
                 left[2], u[2], fwd[2],
             ];
-            crate::engine::engine_util_spatial::mju_mat2quat(quat.as_mut_ptr(), mat.as_ptr());
+            crate::engine::engine_util_spatial::mju_mat2Quat(quat.as_mut_ptr(), mat.as_ptr());
 
             // convert to model space, make orientation matrix
             mjv_room2model(
                 modelpos.as_mut_ptr(), modelquat.as_mut_ptr(),
                 pos.as_ptr(), quat.as_ptr(), scn);
-            crate::engine::engine_util_spatial::mju_quat2mat(
+            crate::engine::engine_util_spatial::mju_quat2Mat(
                 modelmat.as_mut_ptr(), modelquat.as_ptr());
 
             // finalize results
             if !headpos.is_null() {
-                crate::engine::engine_util_blas::mju_add_to_scl3(headpos, modelpos.as_ptr(), 0.5);
+                crate::engine::engine_util_blas::mju_addToScl3(headpos, modelpos.as_ptr(), 0.5);
             }
             if !forward.is_null() {
                 *forward.add(0) += 0.5 * modelmat[2];
@@ -251,14 +251,14 @@ pub fn mjv_camera_in_model(headpos: *mut f64, forward: *mut f64, up: *mut f64, s
 }
 
 /// C: mjv_cameraInRoom (engine/engine_vis_interact.h:40)
-/// Calls: mju_addToScl3, mju_f2n, mju_message, mju_normalize3, mju_zero3
+/// Calls: cxx:_mju_addToScl3, cxx:_mju_f2n, cxx:_mju_message, cxx:_mju_normalize3, cxx:_mju_zero3
 /// ⚠️ BITEXACT RULES:
 ///   1. Copy exact C accumulation order (no iter().sum())
 ///   2. No f64::mul_add() (FMA changes precision)
 ///   3. No algebraic simplification
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
-pub fn mjv_camera_in_room(headpos: *mut f64, forward: *mut f64, up: *mut f64, scn: *const mjvScene) {
+pub fn mjv_cameraInRoom(headpos: *mut f64, forward: *mut f64, up: *mut f64, scn: *const mjvScene) {
     const MJMINVAL: f64 = 1e-15;
 
     // SAFETY: scn is a valid pointer (caller contract). headpos, forward, up may be null.
@@ -298,13 +298,13 @@ pub fn mjv_camera_in_room(headpos: *mut f64, forward: *mut f64, up: *mut f64, sc
 
             // finalize results
             if !headpos.is_null() {
-                crate::engine::engine_util_blas::mju_add_to_scl3(headpos, pos.as_ptr(), 0.5);
+                crate::engine::engine_util_blas::mju_addToScl3(headpos, pos.as_ptr(), 0.5);
             }
             if !forward.is_null() {
-                crate::engine::engine_util_blas::mju_add_to_scl3(forward, fwd.as_ptr(), 0.5);
+                crate::engine::engine_util_blas::mju_addToScl3(forward, fwd.as_ptr(), 0.5);
             }
             if !up.is_null() {
-                crate::engine::engine_util_blas::mju_add_to_scl3(up, u.as_ptr(), 0.5);
+                crate::engine::engine_util_blas::mju_addToScl3(up, u.as_ptr(), 0.5);
             }
         }
 
@@ -319,14 +319,14 @@ pub fn mjv_camera_in_room(headpos: *mut f64, forward: *mut f64, up: *mut f64, sc
 }
 
 /// C: mjv_frustumHeight (engine/engine_vis_interact.h:44)
-/// Calls: mju_message
+/// Calls: cxx:_mju_message
 /// ⚠️ BITEXACT RULES:
 ///   1. Copy exact C accumulation order (no iter().sum())
 ///   2. No f64::mul_add() (FMA changes precision)
 ///   3. No algebraic simplification
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
-pub fn mjv_frustum_height(scn: *const mjvScene) -> f64 {
+pub fn mjv_frustumHeight(scn: *const mjvScene) -> f64 {
     const MJMINVAL: f64 = 1e-15;
 
     // SAFETY: scn is a valid pointer (caller contract).
@@ -363,14 +363,14 @@ pub fn mjv_frustum_height(scn: *const mjvScene) -> f64 {
 }
 
 /// C: mjv_alignToCamera (engine/engine_vis_interact.h:47)
-/// Calls: mju_copy, mju_normalize
+/// Calls: cxx:_mju_copy, cxx:_mju_normalize
 /// ⚠️ BITEXACT RULES:
 ///   1. Copy exact C accumulation order (no iter().sum())
 ///   2. No f64::mul_add() (FMA changes precision)
 ///   3. No algebraic simplification
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
-pub fn mjv_align_to_camera(res: *mut f64, vec: *const f64, forward: *const f64) {
+pub fn mjv_alignToCamera(res: *mut f64, vec: *const f64, forward: *const f64) {
     // SAFETY: res[3], vec[3], forward[3] valid (caller contract)
     unsafe {
         // forward-aligned y-axis
@@ -388,14 +388,14 @@ pub fn mjv_align_to_camera(res: *mut f64, vec: *const f64, forward: *const f64) 
 }
 
 /// C: mjv_moveCamera (engine/engine_vis_interact.h:50)
-/// Calls: convert2D, mju_addToScl3, mju_cross, mju_dot3, mju_message, mju_sub3, mjv_cameraInModel, mjv_frustumHeight
+/// Calls: cxx-internal:engine_vis_interact.c.o:_convert2D, cxx:_mju_addToScl3, cxx:_mju_cross, cxx:_mju_dot3, cxx:_mju_message, cxx:_mju_sub3, cxx:_mjv_cameraInModel, cxx:_mjv_frustumHeight
 /// ⚠️ BITEXACT RULES:
 ///   1. Copy exact C accumulation order (no iter().sum())
 ///   2. No f64::mul_add() (FMA changes precision)
 ///   3. No algebraic simplification
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
-pub fn mjv_move_camera(m: *const mjModel, action: i32, reldx: f64, reldy: f64, scn: *const mjvScene, cam: *mut mjvCamera) {
+pub fn mjv_moveCamera(m: *const mjModel, action: i32, reldx: f64, reldy: f64, scn: *const mjvScene, cam: *mut mjvCamera) {
     const MJ_CAMERA_FIXED: i32 = 2;
     const MJ_CAMERA_TRACKING: i32 = 1;
     const MJ_MOUSE_ROTATE_V: i32 = 1;
@@ -427,13 +427,13 @@ pub fn mjv_move_camera(m: *const mjModel, action: i32, reldx: f64, reldy: f64, s
             let mut forward: [f64; 3] = [0.0; 3];
             let mut vec: [f64; 3] = [0.0; 3];
             let mut dif: [f64; 3] = [0.0; 3];
-            mjv_camera_in_model(headpos.as_mut_ptr(), forward.as_mut_ptr(), std::ptr::null_mut(), scn);
-            convert2d(vec.as_mut_ptr(), action, reldx, reldy, forward.as_ptr());
+            mjv_cameraInModel(headpos.as_mut_ptr(), forward.as_mut_ptr(), std::ptr::null_mut(), scn);
+            convert2D(vec.as_mut_ptr(), action, reldx, reldy, forward.as_ptr());
 
             // compute scaling
             crate::engine::engine_util_blas::mju_sub3(
                 dif.as_mut_ptr(), (*cam).lookat.as_ptr(), headpos.as_ptr());
-            let mut scl = mjv_frustum_height(scn)
+            let mut scl = mjv_frustumHeight(scn)
                 * crate::engine::engine_util_blas::mju_dot3(dif.as_ptr(), forward.as_ptr());
 
             // mystery coefficient
@@ -442,7 +442,7 @@ pub fn mjv_move_camera(m: *const mjModel, action: i32, reldx: f64, reldy: f64, s
             }
 
             // move lookat point in opposite direction
-            crate::engine::engine_util_blas::mju_add_to_scl3(
+            crate::engine::engine_util_blas::mju_addToScl3(
                 (*cam).lookat.as_mut_ptr(), vec.as_ptr(), -scl);
         } else if action == MJ_MOUSE_ZOOM {
             (*cam).distance -= f64::ln(1.0 + (*cam).distance / (*m).stat.extent / 3.0)
@@ -457,7 +457,7 @@ pub fn mjv_move_camera(m: *const mjModel, action: i32, reldx: f64, reldy: f64, s
             let mut forward: [f64; 3] = [0.0; 3];
             let mut up: [f64; 3] = [0.0; 3];
             let mut right: [f64; 3] = [0.0; 3];
-            mjv_camera_in_model(
+            mjv_cameraInModel(
                 headpos.as_mut_ptr(), forward.as_mut_ptr(), up.as_mut_ptr(), scn);
             crate::engine::engine_util_spatial::mju_cross(
                 right.as_mut_ptr(), forward.as_ptr(), up.as_ptr());
@@ -468,9 +468,9 @@ pub fn mjv_move_camera(m: *const mjModel, action: i32, reldx: f64, reldy: f64, s
             } else {
                 forward.as_ptr()
             };
-            crate::engine::engine_util_blas::mju_add_to_scl3(
+            crate::engine::engine_util_blas::mju_addToScl3(
                 (*cam).lookat.as_mut_ptr(), y_vec, reldy);
-            crate::engine::engine_util_blas::mju_add_to_scl3(
+            crate::engine::engine_util_blas::mju_addToScl3(
                 (*cam).lookat.as_mut_ptr(), right.as_ptr(), reldx);
         } else {
             crate::engine::engine_util_errmem::mju_error(
@@ -499,27 +499,15 @@ pub fn mjv_move_camera(m: *const mjModel, action: i32, reldx: f64, reldy: f64, s
     }
 }
 
-/// C: mjv_movePerturb (engine/engine_vis_interact.h:54)
-/// Calls: convert2D, mju_addToScl3, mju_axisAngle2Quat, mju_max, mju_message, mju_min, mju_mulMatVec3, mju_mulQuat, mju_negQuat, mju_normalize3, mju_normalize4, mju_quat2Vel, mjv_cameraInModel
-/// ⚠️ BITEXACT RULES:
-///   1. Copy exact C accumulation order (no iter().sum())
-///   2. No f64::mul_add() (FMA changes precision)
-///   3. No algebraic simplification
-///   4. No iter().sum()/product() (order undefined)
-#[allow(unused_variables, non_snake_case)]
-pub fn mjv_move_perturb(m: *const mjModel, d: *const mjData, action: i32, reldx: f64, reldy: f64, scn: *const mjvScene, pert: *mut mjvPerturb) {
-    todo!() // mjv_movePerturb
-}
-
 /// C: mjv_moveModel (engine/engine_vis_interact.h:58)
-/// Calls: mju_addScl3, mju_axisAngle2Quat, mju_cross, mju_dot3, mju_f2n, mju_message, mju_mulQuat, mju_n2f, mju_normalize3, mju_normalize4, mjv_cameraInRoom
+/// Calls: cxx:_mju_addScl3, cxx:_mju_axisAngle2Quat, cxx:_mju_cross, cxx:_mju_dot3, cxx:_mju_f2n, cxx:_mju_message, cxx:_mju_mulQuat, cxx:_mju_n2f, cxx:_mju_normalize3, cxx:_mju_normalize4, cxx:_mjv_cameraInRoom
 /// ⚠️ BITEXACT RULES:
 ///   1. Copy exact C accumulation order (no iter().sum())
 ///   2. No f64::mul_add() (FMA changes precision)
 ///   3. No algebraic simplification
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
-pub fn mjv_move_model(m: *const mjModel, action: i32, reldx: f64, reldy: f64, roomup: *const f64, scn: *mut mjvScene) {
+pub fn mjv_moveModel(m: *const mjModel, action: i32, reldx: f64, reldy: f64, roomup: *const f64, scn: *mut mjvScene) {
     const MJ_MOUSE_ROTATE_V: i32 = 1;
     const MJ_MOUSE_ROTATE_H: i32 = 2;
     const MJ_MOUSE_MOVE_V: i32 = 3;
@@ -538,11 +526,11 @@ pub fn mjv_move_model(m: *const mjModel, action: i32, reldx: f64, reldy: f64, ro
 
         // get camera forward in room space
         let mut camforward: [f64; 3] = [0.0; 3];
-        mjv_camera_in_room(std::ptr::null_mut(), camforward.as_mut_ptr(), std::ptr::null_mut(), scn);
+        mjv_cameraInRoom(std::ptr::null_mut(), camforward.as_mut_ptr(), std::ptr::null_mut(), scn);
 
         // make orthogonal to roomright
         let mut roomforward: [f64; 3] = [0.0; 3];
-        crate::engine::engine_util_blas::mju_add_scl3(
+        crate::engine::engine_util_blas::mju_addScl3(
             roomforward.as_mut_ptr(), camforward.as_ptr(), roomup,
             -crate::engine::engine_util_blas::mju_dot3(camforward.as_ptr(), roomup));
         crate::engine::engine_util_blas::mju_normalize3(roomforward.as_mut_ptr());
@@ -568,7 +556,7 @@ pub fn mjv_move_model(m: *const mjModel, action: i32, reldx: f64, reldy: f64, ro
             // make quaternion from angle-axis
             let scl = crate::engine::engine_util_blas::mju_normalize3(vec.as_mut_ptr());
             let mut quat: [f64; 4] = [0.0; 4];
-            crate::engine::engine_util_spatial::mju_axis_angle2quat(
+            crate::engine::engine_util_spatial::mju_axisAngle2Quat(
                 quat.as_mut_ptr(), vec.as_ptr(), scl * MJ_PI);
 
             // get current model rotation
@@ -578,7 +566,7 @@ pub fn mjv_move_model(m: *const mjModel, action: i32, reldx: f64, reldy: f64, ro
 
             // compose rotation, normalize and set
             let mut result: [f64; 4] = [0.0; 4];
-            crate::engine::engine_util_spatial::mju_mul_quat(
+            crate::engine::engine_util_spatial::mju_mulQuat(
                 result.as_mut_ptr(), quat.as_ptr(), rotate.as_ptr());
             crate::engine::engine_util_blas::mju_normalize4(result.as_mut_ptr());
             crate::engine::engine_util_misc::mju_n2f(
@@ -607,86 +595,10 @@ pub fn mjv_move_model(m: *const mjModel, action: i32, reldx: f64, reldy: f64, ro
     }
 }
 
-/// C: mjv_initPerturb (engine/engine_vis_interact.h:62)
-/// Calls: mj_freeStack, mj_jac, mj_markStack, mj_solveM2, mj_stackAllocInfo, mju_addTo3, mju_copy3, mju_dot, mju_dot3, mju_max, mju_mulMatVec3, mju_mulQuat, mju_sub3, mjv_cameraInModel, mjv_frustumHeight
-#[allow(unused_variables, non_snake_case)]
-pub fn mjv_init_perturb(m: *const mjModel, d: *mut mjData, scn: *const mjvScene, pert: *mut mjvPerturb) {
-    const MJ_MINVAL: f64 = 1e-15;
-
-    // SAFETY: m, d, scn, pert are valid pointers (caller contract)
-    unsafe {
-        crate::engine::engine_memory::mj_mark_stack(d);
-
-        let nv = (*m).nv as i32;
-        let sel = (*pert).select;
-        let mut headpos = [0.0f64; 3];
-        let mut forward = [0.0f64; 3];
-        let mut dif = [0.0f64; 3];
-
-        let jac = crate::engine::engine_memory::mj_stack_alloc_num(d, (3 * nv) as usize);
-        let jacM2 = crate::engine::engine_memory::mj_stack_alloc_num(d, (3 * nv) as usize);
-        let sqrtInvD = crate::engine::engine_memory::mj_stack_alloc_num(d, nv as usize);
-
-        // invalid selected body: return
-        if sel <= 0 || sel as i64 >= (*m).nbody {
-            crate::engine::engine_memory::mj_free_stack(d);
-            return;
-        }
-
-        // compute selection point in world coordinates
-        let mut selpos = [0.0f64; 3];
-        crate::engine::engine_util_blas::mju_mul_mat_vec3(
-            selpos.as_mut_ptr(), (*d).xmat.add(9 * sel as usize), (*pert).localpos.as_ptr());
-        crate::engine::engine_util_blas::mju_add_to3(
-            selpos.as_mut_ptr(), (*d).xpos.add(3 * sel as usize));
-
-        // compute average spatial inertia at selection point
-        for i in 0..nv as usize {
-            *sqrtInvD.add(i) = (*(*d).qLDiagInv.add(i)).sqrt();
-        }
-        crate::engine::engine_core_util::mj_jac(m, d as *const mjData, jac, std::ptr::null_mut(), selpos.as_ptr(), sel);
-        crate::engine::engine_core_smooth::mj_solve_m2(m, d, jacM2, jac, sqrtInvD, 3);
-        let invmass = crate::engine::engine_util_blas::mju_dot(jacM2, jacM2, nv)
-            + crate::engine::engine_util_blas::mju_dot(jacM2.add(nv as usize), jacM2.add(nv as usize), nv)
-            + crate::engine::engine_util_blas::mju_dot(jacM2.add(2 * nv as usize), jacM2.add(2 * nv as usize), nv);
-        (*pert).localmass = if invmass == 0.0 { 1.0 } else { 3.0 / crate::engine::engine_util_misc::mju_max(invmass, MJ_MINVAL) };
-
-        // scale localmass with flex average number of edges per vertex
-        if (*pert).flexselect >= 0 && !*(*m).flex_rigid.add((*pert).flexselect as usize) {
-            (*pert).localmass *= (2.0 * *(*m).flex_edgenum.add((*pert).flexselect as usize) as f64)
-                / *(*m).flex_vertnum.add((*pert).flexselect as usize) as f64;
-        }
-
-        // copy
-        crate::engine::engine_util_blas::mju_copy3(
-            (*pert).refpos.as_mut_ptr(), (*d).xipos.add(3 * sel as usize));
-        crate::engine::engine_util_spatial::mju_mul_quat(
-            (*pert).refquat.as_mut_ptr(), (*d).xquat.add(4 * sel as usize), (*m).body_iquat.add(4 * sel as usize));
-        crate::engine::engine_util_blas::mju_copy3(
-            (*pert).refselpos.as_mut_ptr(), selpos.as_ptr());
-
-        // get camera info
-        mjv_camera_in_model(headpos.as_mut_ptr(), forward.as_mut_ptr(), std::ptr::null_mut(), scn);
-
-        // compute scaling
-        crate::engine::engine_util_blas::mju_sub3(
-            dif.as_mut_ptr(), (*pert).refselpos.as_ptr(), headpos.as_ptr());
-        (*pert).scale = mjv_frustum_height(scn) * crate::engine::engine_util_blas::mju_dot3(
-            dif.as_ptr(), forward.as_ptr());
-
-        // multiply by mystery coefficient
-        if (*scn).camera[0].orthographic != 0 {
-            (*pert).scale *= 0.15;
-        }
-
-        crate::engine::engine_memory::mj_free_stack(d);
-    }
-}
-
 /// C: mjv_applyPerturbPose (engine/engine_vis_interact.h:66)
-/// Calls: mju_copy3, mju_copy4, mju_mulPose, mju_negPose
+/// Calls: cxx:_mju_copy3, cxx:_mju_copy4, cxx:_mju_mulPose, cxx:_mju_negPose
 #[allow(unused_variables, non_snake_case)]
-pub fn mjv_apply_perturb_pose(m: *const mjModel, d: *mut mjData, pert: *const mjvPerturb, flg_paused: i32) {
+pub fn mjv_applyPerturbPose(m: *const mjModel, d: *mut mjData, pert: *const mjvPerturb, flg_paused: i32) {
     // SAFETY: m, d, pert are valid pointers (caller contract)
     unsafe {
         let sel = (*pert).select;
@@ -706,10 +618,10 @@ pub fn mjv_apply_perturb_pose(m: *const mjModel, d: *mut mjData, pert: *const mj
         let rootid = *(*m).body_rootid.add(sel as usize) as usize;
 
         // transform refpos,refquat from I-frame to X-frame of body[sel]
-        crate::engine::engine_util_spatial::mju_neg_pose(
+        crate::engine::engine_util_spatial::mju_negPose(
             pos1.as_mut_ptr(), quat1.as_mut_ptr(),
             (*m).body_ipos.add(3 * sel as usize), (*m).body_iquat.add(4 * sel as usize));
-        crate::engine::engine_util_spatial::mju_mul_pose(
+        crate::engine::engine_util_spatial::mju_mulPose(
             refpos.as_mut_ptr(), refquat.as_mut_ptr(),
             (*pert).refpos.as_ptr(), (*pert).refquat.as_ptr(),
             pos1.as_ptr(), quat1.as_ptr());
@@ -746,12 +658,12 @@ pub fn mjv_apply_perturb_pose(m: *const mjModel, d: *mut mjData, pert: *const mj
             let Cquat = (*d).xquat.add(4 * sel as usize);
 
             // set root <- ref*neg(child)*root
-            crate::engine::engine_util_spatial::mju_neg_pose(
+            crate::engine::engine_util_spatial::mju_negPose(
                 pos1.as_mut_ptr(), quat1.as_mut_ptr(), Cpos, Cquat);  // neg(child)
-            crate::engine::engine_util_spatial::mju_mul_pose(
+            crate::engine::engine_util_spatial::mju_mulPose(
                 pos2.as_mut_ptr(), quat2.as_mut_ptr(),
                 pos1.as_ptr(), quat1.as_ptr(), Rpos, Rquat);          // neg(child)*root
-            crate::engine::engine_util_spatial::mju_mul_pose(
+            crate::engine::engine_util_spatial::mju_mulPose(
                 Rpos, Rquat,
                 refpos.as_ptr(), refquat.as_ptr(), pos2.as_ptr(), quat2.as_ptr());  // ref*neg(child)*root
         }
@@ -759,9 +671,9 @@ pub fn mjv_apply_perturb_pose(m: *const mjModel, d: *mut mjData, pert: *const mj
 }
 
 /// C: mjv_applyPerturbForce (engine/engine_vis_interact.h:70)
-/// Calls: mj_objectVelocity, mju_addTo3, mju_addToScl3, mju_copy3, mju_cross, mju_dot3, mju_max, mju_mulMatVec3, mju_mulQuat, mju_negQuat, mju_normalize3, mju_quat2Vel, mju_scl3, mju_sub3
+/// Calls: cxx:_mj_objectVelocity, cxx:_mju_addTo3, cxx:_mju_addToScl3, cxx:_mju_copy3, cxx:_mju_cross, cxx:_mju_dot3, cxx:_mju_max, cxx:_mju_mulMatVec3, cxx:_mju_mulQuat, cxx:_mju_negQuat, cxx:_mju_normalize3, cxx:_mju_quat2Vel, cxx:_mju_scl3, cxx:_mju_sub3
 #[allow(unused_variables, non_snake_case)]
-pub fn mjv_apply_perturb_force(m: *const mjModel, d: *mut mjData, pert: *const mjvPerturb) {
+pub fn mjv_applyPerturbForce(m: *const mjModel, d: *mut mjData, pert: *const mjvPerturb) {
     const MJ_MINVAL: f64 = 1e-15;
     const MJ_PERT_TRANSLATE: i32 = 1;
     const MJ_PERT_ROTATE: i32 = 2;
@@ -781,7 +693,7 @@ pub fn mjv_apply_perturb_force(m: *const mjModel, d: *mut mjData, pert: *const m
 
         // pointers to global selbody velocity, linear and rotational
         let mut bvel = [0.0f64; 6];
-        crate::engine::engine_core_util::mj_object_velocity(
+        crate::engine::engine_core_util::mj_objectVelocity(
             m, d as *const mjData, mjtObj_mjOBJ_BODY as i32, sel, bvel.as_mut_ptr(), 0);
         let body_linvel = bvel.as_ptr().add(3);
         let body_rotvel = bvel.as_ptr();
@@ -804,9 +716,9 @@ pub fn mjv_apply_perturb_force(m: *const mjModel, d: *mut mjData, pert: *const m
 
             // compute selection point in world coordinates
             let mut selpos = [0.0f64; 3];
-            crate::engine::engine_util_blas::mju_mul_mat_vec3(
+            crate::engine::engine_util_blas::mju_mulMatVec3(
                 selpos.as_mut_ptr(), (*d).xmat.add(9 * sel as usize), (*pert).localpos.as_ptr());
-            crate::engine::engine_util_blas::mju_add_to3(
+            crate::engine::engine_util_blas::mju_addTo3(
                 selpos.as_mut_ptr(), (*d).xpos.add(3 * sel as usize));
 
             // displacement of selection point from reference point
@@ -827,10 +739,10 @@ pub fn mjv_apply_perturb_force(m: *const mjModel, d: *mut mjData, pert: *const m
             let mut svel = [0.0f64; 3];
             crate::engine::engine_util_spatial::mju_cross(
                 svel.as_mut_ptr(), body_rotvel, moment_arm.as_ptr());
-            crate::engine::engine_util_blas::mju_add_to3(svel.as_mut_ptr(), body_linvel);
+            crate::engine::engine_util_blas::mju_addTo3(svel.as_mut_ptr(), body_linvel);
 
             // add critical damping force of selection point
-            crate::engine::engine_util_blas::mju_add_to_scl3(
+            crate::engine::engine_util_blas::mju_addToScl3(
                 force, svel.as_ptr(), -stiffness.sqrt() * (*pert).localmass);
 
             // torque on body com due to force
@@ -839,7 +751,7 @@ pub fn mjv_apply_perturb_force(m: *const mjModel, d: *mut mjData, pert: *const m
             // add critically damped torsional torque along displacement axis
             let stiffnessrot = stiffnessrot_map;
             crate::engine::engine_util_blas::mju_normalize3(diff.as_mut_ptr());
-            crate::engine::engine_util_blas::mju_add_to_scl3(
+            crate::engine::engine_util_blas::mju_addToScl3(
                 torque, diff.as_ptr(),
                 -stiffnessrot.sqrt() * inertia * crate::engine::engine_util_blas::mju_dot3(
                     diff.as_ptr(), body_rotvel));
@@ -850,23 +762,23 @@ pub fn mjv_apply_perturb_force(m: *const mjModel, d: *mut mjData, pert: *const m
             let stiffnessrot = stiffnessrot_map;
             let mut xiquat = [0.0f64; 4];
             let mut difquat = [0.0f64; 4];
-            crate::engine::engine_util_spatial::mju_mul_quat(
+            crate::engine::engine_util_spatial::mju_mulQuat(
                 xiquat.as_mut_ptr(), (*d).xquat.add(4 * sel as usize), (*m).body_iquat.add(4 * sel as usize));
-            crate::engine::engine_util_spatial::mju_neg_quat(xiquat.as_mut_ptr(), xiquat.as_ptr());
-            crate::engine::engine_util_spatial::mju_mul_quat(
+            crate::engine::engine_util_spatial::mju_negQuat(xiquat.as_mut_ptr(), xiquat.as_ptr());
+            crate::engine::engine_util_spatial::mju_mulQuat(
                 difquat.as_mut_ptr(), (*pert).refquat.as_ptr(), xiquat.as_ptr());
-            crate::engine::engine_util_spatial::mju_quat2vel(
+            crate::engine::engine_util_spatial::mju_quat2Vel(
                 torque, difquat.as_ptr(), 1.0 / (stiffnessrot * inertia));
-            crate::engine::engine_util_blas::mju_add_to_scl3(
+            crate::engine::engine_util_blas::mju_addToScl3(
                 torque, body_rotvel, -stiffnessrot.sqrt() * inertia);
         }
     }
 }
 
 /// C: mjv_averageCamera (engine/engine_vis_interact.h:73)
-/// Calls: mju_add3, mju_addToScl3, mju_dot3, mju_f2n, mju_message, mju_n2f, mju_normalize3, mju_scl3
+/// Calls: cxx:_mju_add3, cxx:_mju_addToScl3, cxx:_mju_dot3, cxx:_mju_f2n, cxx:_mju_message, cxx:_mju_n2f, cxx:_mju_normalize3, cxx:_mju_scl3
 #[allow(unused_variables, non_snake_case)]
-pub fn mjv_average_camera(cam1: *const mjvGLCamera, cam2: *const mjvGLCamera) -> mjvGLCamera {
+pub fn mjv_averageCamera(cam1: *const mjvGLCamera, cam2: *const mjvGLCamera) -> mjvGLCamera {
     // SAFETY: cam1, cam2 are valid pointers (caller contract).
     unsafe {
         let mut pos: [f64; 3] = [0.0; 3];
@@ -892,7 +804,7 @@ pub fn mjv_average_camera(cam1: *const mjvGLCamera, cam2: *const mjvGLCamera) ->
         crate::engine::engine_util_misc::mju_f2n(tmp2.as_mut_ptr(), (*cam2).up.as_ptr(), 3);
         crate::engine::engine_util_blas::mju_add3(up.as_mut_ptr(), tmp1.as_ptr(), tmp2.as_ptr());
         let projection = crate::engine::engine_util_blas::mju_dot3(up.as_ptr(), forward.as_ptr());
-        crate::engine::engine_util_blas::mju_add_to_scl3(up.as_mut_ptr(), forward.as_ptr(), -projection);
+        crate::engine::engine_util_blas::mju_addToScl3(up.as_mut_ptr(), forward.as_ptr(), -projection);
         crate::engine::engine_util_blas::mju_normalize3(up.as_mut_ptr());
 
         // build result camera
@@ -928,85 +840,6 @@ pub fn mjv_average_camera(cam1: *const mjvGLCamera, cam2: *const mjvGLCamera) ->
         }
 
         cam
-    }
-}
-
-/// C: mjv_select (engine/engine_vis_interact.h:76)
-/// Calls: mj_ray, mj_rayFlex, mju_addScl3, mju_addToScl3, mju_copy3, mju_cross, mju_f2n, mju_normalize3, mju_raySkin, mju_scl3, mjv_averageCamera, mjv_cameraInModel, mjv_flexBodyId
-/// ⚠️ BITEXACT RULES:
-///   1. Copy exact C accumulation order (no iter().sum())
-///   2. No f64::mul_add() (FMA changes precision)
-///   3. No algebraic simplification
-///   4. No iter().sum()/product() (order undefined)
-#[allow(unused_variables, non_snake_case)]
-pub fn mjv_select(m: *const mjModel, d: *const mjData, vopt: *const mjvOption, aspectratio: f64, relx: f64, rely: f64, scn: *const mjvScene, selpnt: *mut f64, geomid: *mut i32, flexid: *mut i32, skinid: *mut i32) -> i32 {
-    todo!() // mjv_select
-}
-
-/// C: mjv_flexBodyId (engine/engine_vis_interact.h:82)
-/// Calls: mju_addTo3, mju_cellLookup, mju_copy3, mju_evalBasis, mju_mulMatVec3
-/// ⚠️ BITEXACT RULES:
-///   1. Copy exact C accumulation order (no iter().sum())
-///   2. No f64::mul_add() (FMA changes precision)
-///   3. No algebraic simplification
-///   4. No iter().sum()/product() (order undefined)
-#[allow(unused_variables, non_snake_case)]
-pub fn mjv_flex_body_id(m: *const mjModel, d: *const mjData, flexid: i32, vertid: i32, flexpnt: *mut f64) -> i32 {
-    // SAFETY: m, d, flexpnt are valid pointers; flexid, vertid are in bounds (caller contract)
-    unsafe {
-        let mut flexbodyid: i32 = -1;
-        let fi = flexid as usize;
-        let vi = vertid as usize;
-
-        if *(*m).flex_interp.add(fi) != 0 {
-            let coord = (*m).flex_vert0.add(3 * (*(*m).flex_vertadr.add(fi) as usize + vi));
-            let mut order = *(*m).flex_interp.add(fi);
-            if order < 0 { order = -order; }
-            let npc = (order + 1) * (order + 1) * (order + 1);
-
-            // cell lookup: get local coords and node indices
-            let mut loc = [0.0f64; 3];
-            let mut nodeindices = [0i32; 27]; // max npc for quadratic: 3^3 = 27
-            crate::engine::engine_util_misc::mju_cell_lookup(
-                coord, (*m).flex_cellnum.add(3 * fi), order,
-                loc.as_mut_ptr(), nodeindices.as_mut_ptr());
-
-            // find node with largest weight in this cell
-            let nstart = *(*m).flex_nodeadr.add(fi) as usize;
-            let mut nodeid: i32 = -1;
-            let mut w: f64 = 0.0;
-            let shell_mode = *(*m).flex_interp.add(fi) < 0;
-            for j in 0..npc as usize {
-                let ww = crate::engine::engine_util_misc::mju_eval_basis(
-                    loc.as_ptr(), j as i32, order);
-                let nid = nodeindices[j] as usize;
-                // skip interior nodes in shell mode (they map to worldbody)
-                if shell_mode && *(*m).body_dofnum.add(*(*m).flex_nodebodyid.add(nstart + nid) as usize) == 0 {
-                    continue;
-                }
-                if ww > w {
-                    w = ww;
-                    nodeid = nid as i32;
-                }
-            }
-            flexbodyid = *(*m).flex_nodebodyid.add(nstart + nodeid as usize);
-            if *(*m).flex_centered.add(fi) {
-                crate::engine::engine_util_blas::mju_copy3(
-                    flexpnt, (*d).xpos.add(3 * flexbodyid as usize));
-            } else {
-                crate::engine::engine_util_blas::mju_mul_mat_vec3(
-                    flexpnt,
-                    (*d).xmat.add(9 * flexbodyid as usize),
-                    (*m).flex_node.add(3 * (nstart + nodeid as usize)));
-                crate::engine::engine_util_blas::mju_add_to3(
-                    flexpnt, (*d).xpos.add(3 * flexbodyid as usize));
-            }
-        } else {
-            flexbodyid = *(*m).flex_vertbodyid.add(*(*m).flex_vertadr.add(fi) as usize + vi);
-            crate::engine::engine_util_blas::mju_copy3(
-                flexpnt, (*d).flexvert_xpos.add(3 * (*(*m).flex_vertadr.add(fi) as usize + vi)));
-        }
-        flexbodyid
     }
 }
 

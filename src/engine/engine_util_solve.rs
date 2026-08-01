@@ -1,18 +1,18 @@
 //! Port of: engine/engine_util_solve.c
-//! IR hash: 73393814548a07d1
-//! CODEGEN: signatures locked. Only fill todo!() bodies.
+//! IR hash: 9343293228317031
+//! CODEGEN: source paths, owners, and callable names are locked.
 
 use crate::types::*;
 
 /// C: mulVecMatVecSym (engine/engine_util_solve.c:1400)
-/// Calls: mju_dot
+/// Calls: cxx:_mju_dot
 /// ⚠️ BITEXACT RULES:
 ///   1. Copy exact C accumulation order (no iter().sum())
 ///   2. No f64::mul_add() (FMA changes precision)
 ///   3. No algebraic simplification
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
-pub fn mul_vec_mat_vec_sym(vec: *const f64, mat: *const f64, n: i32) -> f64 {
+pub fn mulVecMatVecSym(vec: *const f64, mat: *const f64, n: i32) -> f64 {
     // SAFETY: caller guarantees vec[n], mat[n*n] are valid
     unsafe {
         let mut res: f64 = 0.0;
@@ -28,14 +28,14 @@ pub fn mul_vec_mat_vec_sym(vec: *const f64, mat: *const f64, n: i32) -> f64 {
 }
 
 /// C: mulSymVec (engine/engine_util_solve.c:1412)
-/// Calls: mju_addToScl, mju_dot
+/// Calls: cxx:_mju_addToScl, cxx:_mju_dot
 /// ⚠️ BITEXACT RULES:
 ///   1. Copy exact C accumulation order (no iter().sum())
 ///   2. No f64::mul_add() (FMA changes precision)
 ///   3. No algebraic simplification
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
-pub fn mul_sym_vec(res: *mut f64, mat: *const f64, vec: *const f64, n: i32) {
+pub fn mulSymVec(res: *mut f64, mat: *const f64, vec: *const f64, n: i32) {
     // SAFETY: caller guarantees res[n], mat[n*n], vec[n] are valid, res != vec
     unsafe {
         for i in 0..n as usize {
@@ -45,21 +45,21 @@ pub fn mul_sym_vec(res: *mut f64, mat: *const f64, vec: *const f64, n: i32) {
                     mat.add(n as usize * i), vec, i as i32);
 
             // strict upper mirror contribution
-            crate::engine::engine_util_blas::mju_add_to_scl(
+            crate::engine::engine_util_blas::mju_addToScl(
                 res, mat.add(n as usize * i), *vec.add(i), i as i32);
         }
     }
 }
 
 /// C: mju_cholFactor (engine/engine_util_solve.h:27)
-/// Calls: mju_dot
+/// Calls: cxx:_mju_dot
 /// ⚠️ BITEXACT RULES:
 ///   1. Copy exact C accumulation order (no iter().sum())
 ///   2. No f64::mul_add() (FMA changes precision)
 ///   3. No algebraic simplification
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
-pub fn mju_chol_factor(mat: *mut f64, n: i32, mindiag: f64) -> i32 {
+pub fn mju_cholFactor(mat: *mut f64, n: i32, mindiag: f64) -> i32 {
     // SAFETY: caller guarantees mat[n*n] is valid
     unsafe {
         let mut rank: i32 = n;
@@ -97,14 +97,14 @@ pub fn mju_chol_factor(mat: *mut f64, n: i32, mindiag: f64) -> i32 {
 }
 
 /// C: mju_cholSolve (engine/engine_util_solve.h:30)
-/// Calls: mju_copy, mju_dot
+/// Calls: cxx:_mju_copy, cxx:_mju_dot
 /// ⚠️ BITEXACT RULES:
 ///   1. Copy exact C accumulation order (no iter().sum())
 ///   2. No f64::mul_add() (FMA changes precision)
 ///   3. No algebraic simplification
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
-pub fn mju_chol_solve(res: *mut f64, mat: *const f64, vec: *const f64, n: i32) {
+pub fn mju_cholSolve(res: *mut f64, mat: *const f64, vec: *const f64, n: i32) {
     // SAFETY: caller guarantees res[n], mat[n*n], vec[n] are valid
     unsafe {
         // copy if source and destination are different
@@ -143,7 +143,7 @@ pub fn mju_chol_solve(res: *mut f64, mat: *const f64, vec: *const f64, n: i32) {
 ///   3. No algebraic simplification
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
-pub fn mju_chol_update(mat: *mut f64, x: *mut f64, n: i32, flg_plus: i32) -> i32 {
+pub fn mju_cholUpdate(mat: *mut f64, x: *mut f64, n: i32, flg_plus: i32) -> i32 {
     const MJ_MINVAL: f64 = 1E-15_f64;
 
     // SAFETY: caller guarantees mat[n*n] and x[n] are valid
@@ -193,14 +193,14 @@ pub fn mju_chol_update(mat: *mut f64, x: *mut f64, n: i32, flg_plus: i32) -> i32
 }
 
 /// C: mju_cholFactorSparse (engine/engine_util_solve.h:37)
-/// Calls: mju_combineSparse
+/// Calls: cxx-internal:/Users/xing/Desktop/projects/c2rust_bitexact/projects/mujoco/src/engine/engine_util_sparse.h:_mju_combineSparse
 /// ⚠️ BITEXACT RULES:
 ///   1. Copy exact C accumulation order (no iter().sum())
 ///   2. No f64::mul_add() (FMA changes precision)
 ///   3. No algebraic simplification
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
-pub fn mju_chol_factor_sparse(mat: *mut f64, n: i32, mindiag: f64, rownnz: *mut i32, rowadr: *const i32, colind: *mut i32, d: *mut mjData) -> i32 {
+pub fn mju_cholFactorSparse(mat: *mut f64, n: i32, mindiag: f64, rownnz: *mut i32, rowadr: *const i32, colind: *mut i32, d: *mut mjData) -> i32 {
     // SAFETY: caller guarantees sparse matrix pointers are valid. d is unused.
     unsafe {
         let mut rank: i32 = n;
@@ -231,7 +231,7 @@ pub fn mju_chol_factor_sparse(mat: *mut f64, n: i32, mindiag: f64, rownnz: *mut 
                 let c = *colind.add(adr + i) as usize;
 
                 // mat(c,0:c) = mat(c,0:c) - mat(r,c) * mat(r,0:c)
-                let nnz_c = crate::engine::engine_util_sparse::mju_combine_sparse(
+                let nnz_c = crate::engine::engine_util_sparse::mju_combineSparse(
                     mat.add(*rowadr.add(c) as usize),
                     mat.add(*rowadr.add(r) as usize),
                     1.0,
@@ -252,22 +252,22 @@ pub fn mju_chol_factor_sparse(mat: *mut f64, n: i32, mindiag: f64, rownnz: *mut 
 }
 
 /// C: mju_cholFactorSymbolic (engine/engine_util_solve.h:45)
-/// Calls: mj_freeStack, mj_markStack, mj_stackAllocInfo
+/// Calls: cxx:_mj_freeStack, cxx:_mj_markStack, cxx:_mj_stackAllocInfo
 #[allow(unused_variables, non_snake_case)]
-pub fn mju_chol_factor_symbolic(L_colind: *mut i32, L_rownnz: *mut i32, L_rowadr: *mut i32, LT_colind: *mut i32, LT_rownnz: *mut i32, LT_rowadr: *mut i32, LT_map: *mut i32, rownnz: *const i32, rowadr: *const i32, colind: *const i32, n: i32, d: *mut mjData) -> i32 {
+pub fn mju_cholFactorSymbolic(L_colind: *mut i32, L_rownnz: *mut i32, L_rowadr: *mut i32, LT_colind: *mut i32, LT_rownnz: *mut i32, LT_rowadr: *mut i32, LT_map: *mut i32, rownnz: *const i32, rowadr: *const i32, colind: *const i32, n: i32, d: *mut mjData) -> i32 {
     // SAFETY: All pointers are valid arrays of at least n elements (caller contract).
     // d is a valid mjData pointer for stack allocation.
     unsafe {
-        crate::engine::engine_memory::mj_mark_stack(d);
-        let parent: *mut i32 = crate::engine::engine_memory::mj_stack_alloc_int(d, n as usize);
-        let flag: *mut i32 = crate::engine::engine_memory::mj_stack_alloc_int(d, n as usize);
+        crate::engine::engine_memory::mj_markStack(d);
+        let parent: *mut i32 = crate::engine::engine_memory::mj_stackAllocInt(d, n as usize);
+        let flag: *mut i32 = crate::engine::engine_memory::mj_stackAllocInt(d, n as usize);
         let mut cursor: *mut i32 = std::ptr::null_mut();
         let mut LT_write: *mut i32 = std::ptr::null_mut();
 
         // filling phase: initialize write positions
         if !L_colind.is_null() {
-            cursor = crate::engine::engine_memory::mj_stack_alloc_int(d, n as usize);
-            LT_write = crate::engine::engine_memory::mj_stack_alloc_int(d, n as usize);
+            cursor = crate::engine::engine_memory::mj_stackAllocInt(d, n as usize);
+            LT_write = crate::engine::engine_memory::mj_stackAllocInt(d, n as usize);
             for r in 0..n {
                 *cursor.add(r as usize) = *L_rowadr.add(r as usize) + *L_rownnz.add(r as usize) - 2;
                 *LT_write.add(r as usize) = *LT_rowadr.add(r as usize);
@@ -332,7 +332,7 @@ pub fn mju_chol_factor_symbolic(L_colind: *mut i32, L_rownnz: *mut i32, L_rowadr
             }
         }
 
-        crate::engine::engine_memory::mj_free_stack(d);
+        crate::engine::engine_memory::mj_freeStack(d);
 
         // counting phase: compute row addresses, add up total non-zeros
         let mut nnz: i32 = 0;
@@ -352,21 +352,21 @@ pub fn mju_chol_factor_symbolic(L_colind: *mut i32, L_rownnz: *mut i32, L_rowadr
 }
 
 /// C: mju_cholFactorNumeric (engine/engine_util_solve.h:53)
-/// Calls: mj_freeStack, mj_markStack, mj_stackAllocInfo, mju_scatter, mju_zero
+/// Calls: cxx:_mj_freeStack, cxx:_mj_markStack, cxx:_mj_stackAllocInfo, cxx:_mju_scatter, cxx:_mju_zero
 /// ⚠️ BITEXACT RULES:
 ///   1. Copy exact C accumulation order (no iter().sum())
 ///   2. No f64::mul_add() (FMA changes precision)
 ///   3. No algebraic simplification
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
-pub fn mju_chol_factor_numeric(L: *mut f64, n: i32, mindiag: f64, L_rownnz: *const i32, L_rowadr: *const i32, L_colind: *const i32, LT_rownnz: *const i32, LT_rowadr: *const i32, LT_colind: *const i32, LT_map: *const i32, H: *const f64, H_rownnz: *const i32, H_rowadr: *const i32, H_colind: *const i32, d: *mut mjData) -> i32 {
+pub fn mju_cholFactorNumeric(L: *mut f64, n: i32, mindiag: f64, L_rownnz: *const i32, L_rowadr: *const i32, L_colind: *const i32, LT_rownnz: *const i32, LT_rowadr: *const i32, LT_colind: *const i32, LT_map: *const i32, H: *const f64, H_rownnz: *const i32, H_rowadr: *const i32, H_colind: *const i32, d: *mut mjData) -> i32 {
     // SAFETY: All pointers are valid arrays (caller contract). d is valid for stack alloc.
     unsafe {
         let mut rank: i32 = n;
 
         // single-row dense accumulator
-        crate::engine::engine_memory::mj_mark_stack(d);
-        let dense: *mut f64 = crate::engine::engine_memory::mj_stack_alloc_num(d, n as usize);
+        crate::engine::engine_memory::mj_markStack(d);
+        let dense: *mut f64 = crate::engine::engine_memory::mj_stackAllocNum(d, n as usize);
         crate::engine::engine_util_blas::mju_zero(dense, n);
 
         // backpass over rows
@@ -422,20 +422,20 @@ pub fn mju_chol_factor_numeric(L: *mut f64, n: i32, mindiag: f64, L_rownnz: *con
             }
         }
 
-        crate::engine::engine_memory::mj_free_stack(d);
+        crate::engine::engine_memory::mj_freeStack(d);
         rank
     }
 }
 
 /// C: mju_cholSolveSparse (engine/engine_util_solve.h:61)
-/// Calls: mju_copy, mju_dotSparse
+/// Calls: cxx-internal:/Users/xing/Desktop/projects/c2rust_bitexact/projects/mujoco/src/engine/engine_util_sparse.h:_mju_dotSparse, cxx:_mju_copy
 /// ⚠️ BITEXACT RULES:
 ///   1. Copy exact C accumulation order (no iter().sum())
 ///   2. No f64::mul_add() (FMA changes precision)
 ///   3. No algebraic simplification
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
-pub fn mju_chol_solve_sparse(res: *mut f64, mat: *const f64, vec: *const f64, n: i32, rownnz: *const i32, rowadr: *const i32, colind: *const i32) {
+pub fn mju_cholSolveSparse(res: *mut f64, mat: *const f64, vec: *const f64, n: i32, rownnz: *const i32, rowadr: *const i32, colind: *const i32) {
     // SAFETY: caller guarantees all sparse matrix pointers are valid
     unsafe {
         // copy input into result
@@ -465,7 +465,7 @@ pub fn mju_chol_solve_sparse(res: *mut f64, mat: *const f64, vec: *const f64, n:
 
             // x(i) -= sum_j L(i,j)*x(j), j=0:i-1
             if nnz > 1 {
-                *res.add(i) -= crate::engine::engine_util_sparse::mju_dot_sparse(
+                *res.add(i) -= crate::engine::engine_util_sparse::mju_dotSparse(
                     mat.add(adr), res, (nnz - 1) as i32, colind.add(adr));
             }
 
@@ -476,14 +476,14 @@ pub fn mju_chol_solve_sparse(res: *mut f64, mat: *const f64, vec: *const f64, n:
 }
 
 /// C: mju_cholUpdateSparse (engine/engine_util_solve.h:66)
-/// Calls: mj_freeStack, mj_markStack, mj_stackAllocInfo, mju_scatter, mju_zero
+/// Calls: cxx:_mj_freeStack, cxx:_mj_markStack, cxx:_mj_stackAllocInfo, cxx:_mju_scatter, cxx:_mju_zero
 /// ⚠️ BITEXACT RULES:
 ///   1. Copy exact C accumulation order (no iter().sum())
 ///   2. No f64::mul_add() (FMA changes precision)
 ///   3. No algebraic simplification
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
-pub fn mju_chol_update_sparse(mat: *mut f64, x: *const f64, n: i32, flg_plus: i32, rownnz: *const i32, rowadr: *const i32, colind: *const i32, x_nnz: i32, x_ind: *const i32, d: *mut mjData) -> i32 {
+pub fn mju_cholUpdateSparse(mat: *mut f64, x: *const f64, n: i32, flg_plus: i32, rownnz: *const i32, rowadr: *const i32, colind: *const i32, x_nnz: i32, x_ind: *const i32, d: *mut mjData) -> i32 {
     const MJ_MINVAL: f64 = 1e-15;
 
     // SAFETY: All pointers are valid arrays (caller contract). d is valid for stack alloc.
@@ -497,8 +497,8 @@ pub fn mju_chol_update_sparse(mat: *mut f64, x: *const f64, n: i32, flg_plus: i3
         let start = *x_ind.add((x_nnz - 1) as usize);
 
         // allocate dense accumulator for x
-        crate::engine::engine_memory::mj_mark_stack(d);
-        let dense: *mut f64 = crate::engine::engine_memory::mj_stack_alloc_num(d, (start + 1) as usize);
+        crate::engine::engine_memory::mj_markStack(d);
+        let dense: *mut f64 = crate::engine::engine_memory::mj_stackAllocNum(d, (start + 1) as usize);
         crate::engine::engine_util_blas::mju_zero(dense, start + 1);
 
         // scatter x into dense
@@ -544,20 +544,20 @@ pub fn mju_chol_update_sparse(mat: *mut f64, x: *const f64, n: i32, flg_plus: i3
             }
         }
 
-        crate::engine::engine_memory::mj_free_stack(d);
+        crate::engine::engine_memory::mj_freeStack(d);
         rank
     }
 }
 
 /// C: mju_cholFactorBand (engine/engine_util_solve.h:76)
-/// Calls: mju_dot
+/// Calls: cxx:_mju_dot
 /// ⚠️ BITEXACT RULES:
 ///   1. Copy exact C accumulation order (no iter().sum())
 ///   2. No f64::mul_add() (FMA changes precision)
 ///   3. No algebraic simplification
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
-pub fn mju_chol_factor_band(mat: *mut f64, ntotal: i32, nband: i32, ndense: i32, diagadd: f64, diagmul: f64) -> f64 {
+pub fn mju_cholFactorBand(mat: *mut f64, ntotal: i32, nband: i32, ndense: i32, diagadd: f64, diagmul: f64) -> f64 {
     const MJ_MINVAL: f64 = 1E-15_f64;
 
     // SAFETY: caller guarantees mat is valid banded matrix storage
@@ -684,14 +684,14 @@ pub fn mju_chol_factor_band(mat: *mut f64, ntotal: i32, nband: i32, ndense: i32,
 }
 
 /// C: mju_cholSolveBand (engine/engine_util_solve.h:80)
-/// Calls: mju_copy, mju_dot
+/// Calls: cxx:_mju_copy, cxx:_mju_dot
 /// ⚠️ BITEXACT RULES:
 ///   1. Copy exact C accumulation order (no iter().sum())
 ///   2. No f64::mul_add() (FMA changes precision)
 ///   3. No algebraic simplification
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
-pub fn mju_chol_solve_band(res: *mut f64, mat: *const f64, vec: *const f64, ntotal: i32, nband: i32, ndense: i32) {
+pub fn mju_cholSolveBand(res: *mut f64, mat: *const f64, vec: *const f64, ntotal: i32, nband: i32, ndense: i32) {
     // NOTE: signature changed from previous IR version
     // Previous params: (res : * mut f64, mat : * const f64, vec : * const f64, ntotal : i32, nband : i32, ndense : i32)
     // Previous return: ()
@@ -772,14 +772,14 @@ pub fn mju_chol_solve_band(res: *mut f64, mat: *const f64, vec: *const f64, ntot
 }
 
 /// C: mju_band2Dense (engine/engine_util_solve.h:84)
-/// Calls: mju_copy, mju_zero
+/// Calls: cxx:_mju_copy, cxx:_mju_zero
 /// ⚠️ BITEXACT RULES:
 ///   1. Copy exact C accumulation order (no iter().sum())
 ///   2. No f64::mul_add() (FMA changes precision)
 ///   3. No algebraic simplification
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
-pub fn mju_band2dense(res: *mut f64, mat: *const f64, ntotal: i32, nband: i32, ndense: i32, flg_sym: bool) {
+pub fn mju_band2Dense(res: *mut f64, mat: *const f64, ntotal: i32, nband: i32, ndense: i32, flg_sym: bool) {
     // SAFETY: res, mat are valid pointers (caller contract).
     unsafe {
         let nsparse = ntotal - ndense;
@@ -821,14 +821,14 @@ pub fn mju_band2dense(res: *mut f64, mat: *const f64, ntotal: i32, nband: i32, n
 }
 
 /// C: mju_dense2Band (engine/engine_util_solve.h:88)
-/// Calls: mju_copy
+/// Calls: cxx:_mju_copy
 /// ⚠️ BITEXACT RULES:
 ///   1. Copy exact C accumulation order (no iter().sum())
 ///   2. No f64::mul_add() (FMA changes precision)
 ///   3. No algebraic simplification
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
-pub fn mju_dense2band(res: *mut f64, mat: *const f64, ntotal: i32, nband: i32, ndense: i32) {
+pub fn mju_dense2Band(res: *mut f64, mat: *const f64, ntotal: i32, nband: i32, ndense: i32) {
     // SAFETY: caller guarantees res and mat are valid for their dimensions
     unsafe {
         let nsparse = ntotal - ndense;
@@ -858,14 +858,14 @@ pub fn mju_dense2band(res: *mut f64, mat: *const f64, ntotal: i32, nband: i32, n
 }
 
 /// C: mju_bandMulMatVec (engine/engine_util_solve.h:91)
-/// Calls: mju_addToScl, mju_dot
+/// Calls: cxx:_mju_addToScl, cxx:_mju_dot
 /// ⚠️ BITEXACT RULES:
 ///   1. Copy exact C accumulation order (no iter().sum())
 ///   2. No f64::mul_add() (FMA changes precision)
 ///   3. No algebraic simplification
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
-pub fn mju_band_mul_mat_vec(res: *mut f64, mat: *const f64, vec: *const f64, ntotal: i32, nband: i32, ndense: i32, nvec: i32, flg_sym: bool) {
+pub fn mju_bandMulMatVec(res: *mut f64, mat: *const f64, vec: *const f64, ntotal: i32, nband: i32, ndense: i32, nvec: i32, flg_sym: bool) {
     // SAFETY: all pointers are valid arrays of appropriate sizes (caller contract)
     unsafe {
         let nsparse = ntotal - ndense;
@@ -885,7 +885,7 @@ pub fn mju_band_mul_mat_vec(res: *mut f64, mat: *const f64, vec: *const f64, nto
                     mat.add(adr as usize), vec_j.add(offset as usize), width);
                 if flg_sym {
                     // strict upper triangle
-                    crate::engine::engine_util_blas::mju_add_to_scl(
+                    crate::engine::engine_util_blas::mju_addToScl(
                         res_j.add(offset as usize), mat.add(adr as usize), *vec_j.add(i), width - 1);
                 }
             }
@@ -897,7 +897,7 @@ pub fn mju_band_mul_mat_vec(res: *mut f64, mat: *const f64, vec: *const f64, nto
                     mat.add(adr), vec_j, i as i32 + 1);
                 if flg_sym {
                     // strict upper triangle
-                    crate::engine::engine_util_blas::mju_add_to_scl(
+                    crate::engine::engine_util_blas::mju_addToScl(
                         res_j, mat.add(adr), *vec_j.add(i), i as i32);
                 }
             }
@@ -907,7 +907,7 @@ pub fn mju_band_mul_mat_vec(res: *mut f64, mat: *const f64, vec: *const f64, nto
 
 /// C: mju_bandDiag (engine/engine_util_solve.h:95)
 #[allow(unused_variables, non_snake_case)]
-pub fn mju_band_diag(i: i32, ntotal: i32, nband: i32, ndense: i32) -> i32 {
+pub fn mju_bandDiag(i: i32, ntotal: i32, nband: i32, ndense: i32) -> i32 {
     let nsparse = ntotal - ndense;
 
     // sparse part
@@ -927,7 +927,7 @@ pub fn mju_band_diag(i: i32, ntotal: i32, nband: i32, ndense: i32) -> i32 {
 ///   3. No algebraic simplification
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
-pub fn mju_factor_lu(A: *mut f64, n: i32, pivot: *mut i32) -> i32 {
+pub fn mju_factorLU(A: *mut f64, n: i32, pivot: *mut i32) -> i32 {
     const MJ_MINVAL: f64 = 1E-15_f64;
 
     // SAFETY: A points to n*n matrix, pivot points to n ints per caller contract
@@ -978,14 +978,14 @@ pub fn mju_factor_lu(A: *mut f64, n: i32, pivot: *mut i32) -> i32 {
 }
 
 /// C: mju_solveLU (engine/engine_util_solve.h:105)
-/// Calls: mju_copy
+/// Calls: cxx:_mju_copy
 /// ⚠️ BITEXACT RULES:
 ///   1. Copy exact C accumulation order (no iter().sum())
 ///   2. No f64::mul_add() (FMA changes precision)
 ///   3. No algebraic simplification
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
-pub fn mju_solve_lu(x: *mut f64, LU: *const f64, b: *const f64, pivot: *const i32, n: i32) {
+pub fn mju_solveLU(x: *mut f64, LU: *const f64, b: *const f64, pivot: *const i32, n: i32) {
     // SAFETY: caller guarantees x[n], LU[n*n], b[n], pivot[n] are valid
     unsafe {
         // copy b into x
@@ -1017,14 +1017,14 @@ pub fn mju_solve_lu(x: *mut f64, LU: *const f64, b: *const f64, pivot: *const i3
 }
 
 /// C: mju_factorLUSparse (engine/engine_util_solve.h:109)
-/// Calls: mju_copyInt, mju_message
+/// Calls: cxx:_mju_copyInt, cxx:_mju_message
 /// ⚠️ BITEXACT RULES:
 ///   1. Copy exact C accumulation order (no iter().sum())
 ///   2. No f64::mul_add() (FMA changes precision)
 ///   3. No algebraic simplification
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
-pub fn mju_factor_lu_sparse(LU: *mut f64, n: i32, scratch: *mut i32, rownnz: *const i32, rowadr: *const i32, colind: *const i32, index: *const i32) {
+pub fn mju_factorLUSparse(LU: *mut f64, n: i32, scratch: *mut i32, rownnz: *const i32, rowadr: *const i32, colind: *const i32, index: *const i32) {
     const MJ_MINVAL: f64 = 1E-15_f64;
 
     // SAFETY: caller guarantees all pointers valid for sparse matrix dimensions
@@ -1037,7 +1037,7 @@ pub fn mju_factor_lu_sparse(LU: *mut f64, n: i32, scratch: *mut i32, rownnz: *co
                 *remaining.add(i) = *rownnz.add(*index.add(i) as usize);
             }
         } else {
-            crate::engine::engine_util_misc::mju_copy_int(remaining, rownnz, n);
+            crate::engine::engine_util_misc::mju_copyInt(remaining, rownnz, n);
         }
 
         // diagonal elements (i,i)
@@ -1085,14 +1085,14 @@ pub fn mju_factor_lu_sparse(LU: *mut f64, n: i32, scratch: *mut i32, rownnz: *co
 }
 
 /// C: mju_solveLUSparse (engine/engine_util_solve.h:113)
-/// Calls: mju_dotSparse
+/// Calls: cxx-internal:/Users/xing/Desktop/projects/c2rust_bitexact/projects/mujoco/src/engine/engine_util_sparse.h:_mju_dotSparse
 /// ⚠️ BITEXACT RULES:
 ///   1. Copy exact C accumulation order (no iter().sum())
 ///   2. No f64::mul_add() (FMA changes precision)
 ///   3. No algebraic simplification
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
-pub fn mju_solve_lu_sparse(res: *mut f64, LU: *const f64, vec: *const f64, n: i32, rownnz: *const i32, rowadr: *const i32, diag: *const i32, colind: *const i32, index: *const i32) {
+pub fn mju_solveLUSparse(res: *mut f64, LU: *const f64, vec: *const f64, n: i32, rownnz: *const i32, rowadr: *const i32, diag: *const i32, colind: *const i32, index: *const i32) {
     // SAFETY: caller guarantees all sparse matrix pointers valid
     unsafe {
         // solve (U+I)*res = vec
@@ -1106,7 +1106,7 @@ pub fn mju_solve_lu_sparse(res: *mut f64, LU: *const f64, vec: *const f64, n: i3
             let nnz = *rownnz.add(i) as usize - d1;
             if nnz > 0 {
                 let adr = *rowadr.add(i) as usize + d1;
-                *res.add(i) -= crate::engine::engine_util_sparse::mju_dot_sparse(
+                *res.add(i) -= crate::engine::engine_util_sparse::mju_dotSparse(
                     LU.add(adr), res as *const f64, nnz as i32, colind.add(adr));
             }
         }
@@ -1119,7 +1119,7 @@ pub fn mju_solve_lu_sparse(res: *mut f64, LU: *const f64, vec: *const f64, n: i3
             let d = *diag.add(i) as usize;
             let adr = *rowadr.add(i) as usize;
             if d > 0 {
-                *res.add(i) -= crate::engine::engine_util_sparse::mju_dot_sparse(
+                *res.add(i) -= crate::engine::engine_util_sparse::mju_dotSparse(
                     LU.add(adr), res as *const f64, d as i32, colind.add(adr));
             }
 
@@ -1168,7 +1168,7 @@ pub fn mju_solve3(x: *mut f64, A: *const f64, b: *const f64) {
 }
 
 /// C: mju_eig3 (engine/engine_util_solve.h:121)
-/// Calls: mji_mulMatMat3, mji_mulMatTMat3, mju_mulQuat, mju_normalize4, mju_quat2Mat
+/// Calls: cxx-internal:/Users/xing/Desktop/projects/c2rust_bitexact/projects/mujoco/src/engine/engine_inline.h:_mji_mulMatMat3, cxx-internal:engine_collision_convex.c.o:_mji_mulMatTMat3, cxx:_mju_mulQuat, cxx:_mju_normalize4, cxx:_mju_quat2Mat
 /// ⚠️ BITEXACT RULES:
 ///   1. Copy exact C accumulation order (no iter().sum())
 ///   2. No f64::mul_add() (FMA changes precision)
@@ -1193,9 +1193,9 @@ pub fn mju_eig3(eigval: *mut f64, eigvec: *mut f64, quat: *mut f64, mat: *const 
         let mut iter: i32 = 0;
         while iter < 500 {
             // make quaternion matrix eigvec, compute D = eigvec'*mat*eigvec
-            crate::engine::engine_util_spatial::mju_quat2mat(eigvec, quat);
-            crate::engine::engine_inline::mji_mul_mat_t_mat3(tmp.as_mut_ptr(), eigvec, mat);
-            crate::engine::engine_inline::mji_mul_mat_mat3(D.as_mut_ptr(), tmp.as_ptr(), eigvec);
+            crate::engine::engine_util_spatial::mju_quat2Mat(eigvec, quat);
+            crate::engine::engine_inline::mji_mulMatTMat3(tmp.as_mut_ptr(), eigvec, mat);
+            crate::engine::engine_inline::mji_mulMatMat3(D.as_mut_ptr(), tmp.as_ptr(), eigvec);
 
             // assign eigenvalues
             *eigval.add(0) = D[0];
@@ -1257,7 +1257,7 @@ pub fn mju_eig3(eigval: *mut f64, eigvec: *mut f64, quat: *mut f64, mat: *const 
             quat_copy[1] = *quat.add(1);
             quat_copy[2] = *quat.add(2);
             quat_copy[3] = *quat.add(3);
-            crate::engine::engine_util_spatial::mju_mul_quat(quat, quat_copy.as_ptr(), tmp.as_ptr());
+            crate::engine::engine_util_spatial::mju_mulQuat(quat, quat_copy.as_ptr(), tmp.as_ptr());
             crate::engine::engine_util_blas::mju_normalize4(quat);
 
             iter += 1;
@@ -1285,27 +1285,26 @@ pub fn mju_eig3(eigval: *mut f64, eigvec: *mut f64, quat: *mut f64, mat: *const 
                 quat_copy[1] = *quat.add(1);
                 quat_copy[2] = *quat.add(2);
                 quat_copy[3] = *quat.add(3);
-                crate::engine::engine_util_spatial::mju_mul_quat(quat, quat_copy.as_ptr(), tmp.as_ptr());
+                crate::engine::engine_util_spatial::mju_mulQuat(quat, quat_copy.as_ptr(), tmp.as_ptr());
                 crate::engine::engine_util_blas::mju_normalize4(quat);
             }
         }
 
         // recompute eigvec
-        crate::engine::engine_util_spatial::mju_quat2mat(eigvec, quat);
+        crate::engine::engine_util_spatial::mju_quat2Mat(eigvec, quat);
 
         iter
     }
 }
 
 /// C: mju_QCQP2 (engine/engine_util_solve.h:126)
-/// Calls: inside
 /// ⚠️ BITEXACT RULES:
 ///   1. Copy exact C accumulation order (no iter().sum())
 ///   2. No f64::mul_add() (FMA changes precision)
 ///   3. No algebraic simplification
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
-pub fn mju_qcqp2(res: *mut f64, Ain: *const f64, bin: *const f64, d: *const f64, r: f64) -> i32 {
+pub fn mju_QCQP2(res: *mut f64, Ain: *const f64, bin: *const f64, d: *const f64, r: f64) -> i32 {
     // SAFETY: caller guarantees res[2], Ain[4], bin[2], d[2] are valid
     unsafe {
         // scale A,b so that constraint becomes x'*x <= r*r
@@ -1370,14 +1369,13 @@ pub fn mju_qcqp2(res: *mut f64, Ain: *const f64, bin: *const f64, d: *const f64,
 }
 
 /// C: mju_QCQP3 (engine/engine_util_solve.h:131)
-/// Calls: inside
 /// ⚠️ BITEXACT RULES:
 ///   1. Copy exact C accumulation order (no iter().sum())
 ///   2. No f64::mul_add() (FMA changes precision)
 ///   3. No algebraic simplification
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
-pub fn mju_qcqp3(res: *mut f64, Ain: *const f64, bin: *const f64, d: *const f64, r: f64) -> i32 {
+pub fn mju_QCQP3(res: *mut f64, Ain: *const f64, bin: *const f64, d: *const f64, r: f64) -> i32 {
     // SAFETY: caller guarantees res[3], Ain[9], bin[3], d[3] are valid
     unsafe {
         // scale A,b so that constraint becomes x'*x <= r*r
@@ -1464,14 +1462,14 @@ pub fn mju_qcqp3(res: *mut f64, Ain: *const f64, bin: *const f64, d: *const f64,
 }
 
 /// C: mju_QCQP (engine/engine_util_solve.h:136)
-/// Calls: mju_cholFactor, mju_cholSolve, mju_copy, mju_dot, mju_message, mju_scl, mju_zero
+/// Calls: cxx:_mju_cholFactor, cxx:_mju_cholSolve, cxx:_mju_copy, cxx:_mju_dot, cxx:_mju_message, cxx:_mju_scl, cxx:_mju_zero
 /// ⚠️ BITEXACT RULES:
 ///   1. Copy exact C accumulation order (no iter().sum())
 ///   2. No f64::mul_add() (FMA changes precision)
 ///   3. No algebraic simplification
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
-pub fn mju_qcqp(res: *mut f64, Ain: *const f64, bin: *const f64, d: *const f64, r: f64, n: i32) -> i32 {
+pub fn mju_QCQP(res: *mut f64, Ain: *const f64, bin: *const f64, d: *const f64, r: f64, n: i32) -> i32 {
     // SAFETY: caller guarantees res[n], Ain[n*n], bin[n], d[n] are valid, n <= 5
     unsafe {
         let mut A: [f64; 25] = [0.0; 25];
@@ -1504,13 +1502,13 @@ pub fn mju_qcqp(res: *mut f64, Ain: *const f64, bin: *const f64, d: *const f64, 
             }
 
             // factorize, check rank with 1e-10 threshold
-            if mju_chol_factor(Ala.as_mut_ptr(), n, 1e-10) < n {
+            if mju_cholFactor(Ala.as_mut_ptr(), n, 1e-10) < n {
                 crate::engine::engine_util_blas::mju_zero(res, n);
                 return 0;
             }
 
             // set res = -Ala \ b
-            mju_chol_solve(res, Ala.as_ptr(), b.as_ptr(), n);
+            mju_cholSolve(res, Ala.as_ptr(), b.as_ptr(), n);
             crate::engine::engine_util_blas::mju_scl(res, res as *const f64, -1.0, n);
 
             // val = res'*res - r*r
@@ -1522,7 +1520,7 @@ pub fn mju_qcqp(res: *mut f64, Ain: *const f64, bin: *const f64, d: *const f64, 
             }
 
             // deriv = -2 * res' * Ala^-1 * res
-            mju_chol_solve(tmp.as_mut_ptr(), Ala.as_ptr(), res as *const f64, n);
+            mju_cholSolve(tmp.as_mut_ptr(), Ala.as_ptr(), res as *const f64, n);
             let deriv = -2.0 * crate::engine::engine_util_blas::mju_dot(
                 res as *const f64, tmp.as_ptr(), n);
 
@@ -1546,34 +1544,34 @@ pub fn mju_qcqp(res: *mut f64, Ain: *const f64, bin: *const f64, d: *const f64, 
 }
 
 /// C: mju_boxQP (engine/engine_util_solve.h:141)
-/// Calls: mju_boxQPoption
+/// Calls: cxx:_mju_boxQPoption
 /// ⚠️ BITEXACT RULES:
 ///   1. Copy exact C accumulation order (no iter().sum())
 ///   2. No f64::mul_add() (FMA changes precision)
 ///   3. No algebraic simplification
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
-pub fn mju_box_qp(res: *mut f64, R: *mut f64, index: *mut i32, H: *const f64, g: *const f64, n: i32, lower: *const f64, upper: *const f64) -> i32 {
+pub fn mju_boxQP(res: *mut f64, R: *mut f64, index: *mut i32, H: *const f64, g: *const f64, n: i32, lower: *const f64, upper: *const f64) -> i32 {
     let maxiter: i32 = 100;
     let mingrad: f64 = 1E-16;
     let backtrack: f64 = 0.5;
     let minstep: f64 = 1E-22;
     let armijo: f64 = 0.1;
 
-    mju_box_q_poption(res, R, index, H, g, n, lower, upper,
+    mju_boxQPoption(res, R, index, H, g, n, lower, upper,
                       maxiter, mingrad, backtrack, minstep, armijo,
                       std::ptr::null_mut(), 0)
 }
 
 /// C: mju_boxQPmalloc (engine/engine_util_solve.h:146)
-/// Calls: mju_malloc
+/// Calls: cxx:_mju_malloc
 /// ⚠️ BITEXACT RULES:
 ///   1. Copy exact C accumulation order (no iter().sum())
 ///   2. No f64::mul_add() (FMA changes precision)
 ///   3. No algebraic simplification
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
-pub fn mju_box_q_pmalloc(res: *mut *mut f64, R: *mut *mut f64, index: *mut *mut i32, H: *mut *mut f64, g: *mut *mut f64, n: i32, lower: *mut *mut f64, upper: *mut *mut f64) {
+pub fn mju_boxQPmalloc(res: *mut *mut f64, R: *mut *mut f64, index: *mut *mut i32, H: *mut *mut f64, g: *mut *mut f64, n: i32, lower: *mut *mut f64, upper: *mut *mut f64) {
     // SAFETY: caller guarantees all double-pointer arguments are valid
     unsafe {
         let n_u = n as usize;
@@ -1595,14 +1593,14 @@ pub fn mju_box_q_pmalloc(res: *mut *mut f64, R: *mut *mut f64, index: *mut *mut 
 }
 
 /// C: mju_boxQPoption (engine/engine_util_solve.h:151)
-/// Calls: mju_addTo, mju_cholFactor, mju_cholSolve, mju_copy, mju_dot, mju_max, mju_message, mju_min, mju_scl, mju_zero, mulSymVec, mulVecMatVecSym
+/// Calls: cxx-internal:/Users/xing/Desktop/projects/c2rust_bitexact/projects/mujoco/src/engine/engine_util_solve.c:_mulSymVec, cxx-internal:/Users/xing/Desktop/projects/c2rust_bitexact/projects/mujoco/src/engine/engine_util_solve.c:_mulVecMatVecSym, cxx:_mju_addTo, cxx:_mju_cholFactor, cxx:_mju_cholSolve, cxx:_mju_copy, cxx:_mju_dot, cxx:_mju_max, cxx:_mju_message, cxx:_mju_min, cxx:_mju_scl, cxx:_mju_zero
 /// ⚠️ BITEXACT RULES:
 ///   1. Copy exact C accumulation order (no iter().sum())
 ///   2. No f64::mul_add() (FMA changes precision)
 ///   3. No algebraic simplification
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
-pub fn mju_box_q_poption(res: *mut f64, R: *mut f64, index: *mut i32, H: *const f64, g: *const f64, n: i32, lower: *const f64, upper: *const f64, maxiter: i32, mingrad: f64, backtrack: f64, minstep: f64, armijo: f64, log: *mut i8, logsz: i32) -> i32 {
+pub fn mju_boxQPoption(res: *mut f64, R: *mut f64, index: *mut i32, H: *const f64, g: *const f64, n: i32, lower: *const f64, upper: *const f64, maxiter: i32, mingrad: f64, backtrack: f64, minstep: f64, armijo: f64, log: *mut i8, logsz: i32) -> i32 {
     const MJ_MINVAL: f64 = 1E-15_f64;
 
     // SAFETY: caller guarantees all pointers valid for n-dimensional QP
@@ -1634,9 +1632,9 @@ pub fn mju_box_q_poption(res: *mut f64, R: *mut f64, index: *mut i32, H: *const 
         // no bounds: return Newton point
         if lower.is_null() && upper.is_null() {
             crate::engine::engine_util_blas::mju_copy(R, H, n * n);
-            let rank = mju_chol_factor(R, n, MJ_MINVAL);
+            let rank = mju_cholFactor(R, n, MJ_MINVAL);
             if rank == n {
-                mju_chol_solve(res, R as *const f64, g, n);
+                mju_cholSolve(res, R as *const f64, g, n);
                 crate::engine::engine_util_blas::mju_scl(res, res as *const f64, -1.0, n);
                 nfactor = 1;
                 status = 4; // mjBOXQP_UNBOUNDED
@@ -1668,14 +1666,14 @@ pub fn mju_box_q_poption(res: *mut f64, R: *mut f64, index: *mut i32, H: *const 
             }
 
             // compute objective: value = 0.5*res'*H*res + res'*g
-            value = 0.5 * mul_vec_mat_vec_sym(res as *const f64, H, n)
+            value = 0.5 * mulVecMatVecSym(res as *const f64, H, n)
                 + crate::engine::engine_util_blas::mju_dot(res as *const f64, g, n);
 
             let oldvalue = value;
 
             // compute gradient
-            mul_sym_vec(grad, H, res as *const f64, n);
-            crate::engine::engine_util_blas::mju_add_to(grad, g, n);
+            mulSymVec(grad, H, res as *const f64, n);
+            crate::engine::engine_util_blas::mju_addTo(grad, g, n);
 
             // find clamped dimensions
             for i in 0..n as usize {
@@ -1719,8 +1717,8 @@ pub fn mju_box_q_poption(res: *mut f64, R: *mut f64, index: *mut i32, H: *const 
             for i in 0..n as usize {
                 *temp.add(i) = if *clamped.add(i) != 0 { *res.add(i) } else { 0.0 };
             }
-            mul_sym_vec(search, H, temp as *const f64, n);
-            crate::engine::engine_util_blas::mju_add_to(search, g, n);
+            mulSymVec(search, H, temp as *const f64, n);
+            crate::engine::engine_util_blas::mju_addTo(search, g, n);
 
             // search = compress_free(search)
             for i in 0..nfree as usize {
@@ -1738,7 +1736,7 @@ pub fn mju_box_q_poption(res: *mut f64, R: *mut f64, index: *mut i32, H: *const 
             }
 
             // re-factorize
-            let rank = if factorize != 0 { mju_chol_factor(R, nfree, MJ_MINVAL) } else { nfree };
+            let rank = if factorize != 0 { mju_cholFactor(R, nfree, MJ_MINVAL) } else { nfree };
             nfactor += factorize;
 
             // abort if factorization failed
@@ -1748,7 +1746,7 @@ pub fn mju_box_q_poption(res: *mut f64, R: *mut f64, index: *mut i32, H: *const 
             }
 
             // temp = H_free,free \ search_free
-            mju_chol_solve(temp, R as *const f64, search as *const f64, nfree);
+            mju_cholSolve(temp, R as *const f64, search as *const f64, nfree);
 
             // search_free = expand_free(-temp) - x_free
             crate::engine::engine_util_blas::mju_zero(search, n);
@@ -1780,7 +1778,7 @@ pub fn mju_box_q_poption(res: *mut f64, R: *mut f64, index: *mut i32, H: *const 
             loop {
                 // candidate = clamp(x + step*search)
                 crate::engine::engine_util_blas::mju_scl(candidate, search as *const f64, step, n);
-                crate::engine::engine_util_blas::mju_add_to(candidate, res as *const f64, n);
+                crate::engine::engine_util_blas::mju_addTo(candidate, res as *const f64, n);
                 for i in 0..n as usize {
                     if !lower.is_null() && *candidate.add(i) < *lower.add(i) {
                         *candidate.add(i) = *lower.add(i);
@@ -1790,7 +1788,7 @@ pub fn mju_box_q_poption(res: *mut f64, R: *mut f64, index: *mut i32, H: *const 
                 }
 
                 // new objective value
-                value = 0.5 * mul_vec_mat_vec_sym(candidate as *const f64, H, n)
+                value = 0.5 * mulVecMatVecSym(candidate as *const f64, H, n)
                     + crate::engine::engine_util_blas::mju_dot(candidate as *const f64, g, n);
 
                 // increment and break if step is too small

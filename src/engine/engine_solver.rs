@@ -1,6 +1,6 @@
 //! Port of: engine/engine_solver.c
-//! IR hash: 73393814548a07d1
-//! CODEGEN: signatures locked. Only fill todo!() bodies.
+//! IR hash: 9343293228317031
+//! CODEGEN: source paths, owners, and callable names are locked.
 
 use crate::types::*;
 
@@ -11,7 +11,7 @@ use crate::types::*;
 ///   3. No algebraic simplification
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
-pub fn save_stats(m: *const mjModel, d: *mut mjData, island: i32, iter: i32, improvement: f64, gradient: f64, lineslope: f64, nactive: i32, nchange: i32, neval: i32, nupdate: i32) {
+pub fn saveStats(m: *const mjModel, d: *mut mjData, island: i32, iter: i32, improvement: f64, gradient: f64, lineslope: f64, nactive: i32, nchange: i32, neval: i32, nupdate: i32) {
     const MJ_NISLAND: i32 = 20;
     const MJ_NSOLVER: i32 = 200;
 
@@ -57,30 +57,30 @@ pub fn save_stats(m: *const mjModel, d: *mut mjData, island: i32, iter: i32, imp
 }
 
 /// C: dualFinish (engine/engine_solver.c:71)
-/// Calls: mj_mulJacTVec, mj_solveM, mju_addTo
+/// Calls: cxx:_mj_mulJacTVec, cxx:_mj_solveM, cxx:_mju_addTo
 #[allow(unused_variables, non_snake_case)]
-pub fn dual_finish(m: *const mjModel, d: *mut mjData) {
+pub fn dualFinish(m: *const mjModel, d: *mut mjData) {
     // SAFETY: caller guarantees m, d are valid pointers to initialized model/data
     unsafe {
         // map constraint force to joint space
-        crate::engine::engine_core_constraint::mj_mul_jac_t_vec(m, d, (*d).qfrc_constraint, (*d).efc_force);
+        crate::engine::engine_core_constraint::mj_mulJacTVec(m, d, (*d).qfrc_constraint, (*d).efc_force);
 
         // compute constrained acceleration in joint space
-        crate::engine::engine_core_smooth::mj_solve_m(m, d, (*d).qacc, (*d).qfrc_constraint, 1);
-        crate::engine::engine_util_blas::mju_add_to((*d).qacc, (*d).qacc_smooth, (*m).nv as i32);
+        crate::engine::engine_core_smooth::mj_solveM(m, d, (*d).qacc, (*d).qfrc_constraint, 1);
+        crate::engine::engine_util_blas::mju_addTo((*d).qacc, (*d).qacc_smooth, (*m).nv as i32);
     }
 }
 
 /// C: ARdiaginv (engine/engine_solver.c:90)
-/// Calls: mj_isSparse, mju_max
+/// Calls: cxx:_mj_isSparse, cxx:_mju_max
 /// ⚠️ BITEXACT RULES:
 ///   1. Copy exact C accumulation order (no iter().sum())
 ///   2. No f64::mul_add() (FMA changes precision)
 ///   3. No algebraic simplification
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
-pub fn a_rdiaginv(m: *const mjModel, d: *const mjData, res: *mut f64, nefc: i32, efclist: *const i32, flg_subR: i32) {
-    use crate::engine::engine_core_util::mj_is_sparse;
+pub fn ARdiaginv(m: *const mjModel, d: *const mjData, res: *mut f64, nefc: i32, efclist: *const i32, flg_subR: i32) {
+    use crate::engine::engine_core_util::mj_isSparse;
     use crate::engine::engine_util_misc::mju_max;
     const MJ_MINVAL: f64 = 1E-15_f64;
 
@@ -91,7 +91,7 @@ pub fn a_rdiaginv(m: *const mjModel, d: *const mjData, res: *mut f64, nefc: i32,
         let AR = (*d).efc_AR;
         let R = (*d).efc_R;
 
-        if mj_is_sparse(m) != 0 {
+        if mj_isSparse(m) != 0 {
             let rowadr = (*d).efc_AR_rowadr;
             let rownnz = (*d).efc_AR_rownnz;
             let colind = (*d).efc_AR_colind;
@@ -128,21 +128,21 @@ pub fn a_rdiaginv(m: *const mjModel, d: *const mjData, res: *mut f64, nefc: i32,
 }
 
 /// C: extractBlock (engine/engine_solver.c:127)
-/// Calls: mj_isSparse, mju_copy, mju_max, mju_message
+/// Calls: cxx:_mj_isSparse, cxx:_mju_copy, cxx:_mju_max, cxx:_mju_message
 /// ⚠️ BITEXACT RULES:
 ///   1. Copy exact C accumulation order (no iter().sum())
 ///   2. No f64::mul_add() (FMA changes precision)
 ///   3. No algebraic simplification
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
-pub fn extract_block(m: *const mjModel, d: *const mjData, Ac: *mut f64, start: i32, n: i32, flg_subR: i32) {
+pub fn extractBlock(m: *const mjModel, d: *const mjData, Ac: *mut f64, start: i32, n: i32, flg_subR: i32) {
     // SAFETY: m, d, Ac are valid pointers; start+n within efc bounds (caller contract)
     unsafe {
         let nefc = (*d).nefc;
         let AR = (*d).efc_AR;
 
         // sparse
-        if crate::engine::engine_core_util::mj_is_sparse(m) != 0 {
+        if crate::engine::engine_core_util::mj_isSparse(m) != 0 {
             let rownnz = (*d).efc_AR_rownnz;
             let rowadr = (*d).efc_AR_rowadr;
             let colind = (*d).efc_AR_colind;
@@ -193,7 +193,7 @@ pub fn extract_block(m: *const mjModel, d: *const mjData, Ac: *mut f64, start: i
 }
 
 /// C: residual (engine/engine_solver.c:186)
-/// Calls: mj_isSparse, mju_dot, mju_dotSparse
+/// Calls: cxx-internal:/Users/xing/Desktop/projects/c2rust_bitexact/projects/mujoco/src/engine/engine_util_sparse.h:_mju_dotSparse, cxx:_mj_isSparse, cxx:_mju_dot
 /// ⚠️ BITEXACT RULES:
 ///   1. Copy exact C accumulation order (no iter().sum())
 ///   2. No f64::mul_add() (FMA changes precision)
@@ -206,11 +206,11 @@ pub fn residual(m: *const mjModel, d: *const mjData, res: *mut f64, i: i32, dim:
         let nefc = (*d).nefc;
 
         // sparse
-        if crate::engine::engine_core_util::mj_is_sparse(m) != 0 {
+        if crate::engine::engine_core_util::mj_isSparse(m) != 0 {
             for j in 0..dim {
                 let idx = (i + j) as usize;
                 *res.add(j as usize) = *(*d).efc_b.add(idx)
-                    + crate::engine::engine_util_sparse::mju_dot_sparse(
+                    + crate::engine::engine_util_sparse::mju_dotSparse(
                         (*d).efc_AR.add(*(*d).efc_AR_rowadr.add(idx) as usize),
                         (*d).efc_force,
                         *(*d).efc_AR_rownnz.add(idx),
@@ -241,15 +241,15 @@ pub fn residual(m: *const mjModel, d: *const mjData, res: *mut f64, i: i32, dim:
 }
 
 /// C: costChange (engine/engine_solver.c:215)
-/// Calls: mju_copy, mju_dot, mju_mulVecMatVec, mju_sub
+/// Calls: cxx:_mju_copy, cxx:_mju_dot, cxx:_mju_mulVecMatVec, cxx:_mju_sub
 /// ⚠️ BITEXACT RULES:
 ///   1. Copy exact C accumulation order (no iter().sum())
 ///   2. No f64::mul_add() (FMA changes precision)
 ///   3. No algebraic simplification
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
-pub fn cost_change(A: *const f64, force: *mut f64, oldforce: *const f64, res: *const f64, dim: i32) -> f64 {
-    use crate::engine::engine_util_blas::{mju_sub, mju_dot, mju_copy, mju_mul_vec_mat_vec};
+pub fn costChange(A: *const f64, force: *mut f64, oldforce: *const f64, res: *const f64, dim: i32) -> f64 {
+    use crate::engine::engine_util_blas::{mju_sub, mju_dot, mju_copy, mju_mulVecMatVec};
 
     // SAFETY: all pointers are valid arrays of at least `dim` elements (caller contract)
     unsafe {
@@ -261,7 +261,7 @@ pub fn cost_change(A: *const f64, force: *mut f64, oldforce: *const f64, res: *c
         } else {
             let mut delta: [f64; 6] = [0.0; 6];
             mju_sub(delta.as_mut_ptr(), force, oldforce, dim);
-            change = 0.5 * mju_mul_vec_mat_vec(delta.as_ptr(), A, delta.as_ptr(), dim)
+            change = 0.5 * mju_mulVecMatVec(delta.as_ptr(), A, delta.as_ptr(), dim)
                    + mju_dot(delta.as_ptr(), res, dim);
         }
 
@@ -292,7 +292,7 @@ pub fn pcg32_next(rng: *mut pcg32_state) -> u32 {
 }
 
 /// C: shuffle_int (engine/engine_solver.c:257)
-/// Calls: pcg32_next
+/// Calls: cxx-internal:/Users/xing/Desktop/projects/c2rust_bitexact/projects/mujoco/src/engine/engine_solver.c:_pcg32_next
 #[allow(unused_variables, non_snake_case)]
 pub fn shuffle_int(array: *mut i32, n: i32, rng: *mut pcg32_state) {
     // SAFETY: array has at least n elements; rng is valid pcg32_state.
@@ -309,11 +309,11 @@ pub fn shuffle_int(array: *mut i32, n: i32, rng: *mut pcg32_state) {
 }
 
 /// C: dualState (engine/engine_solver.c:269)
-/// Calls: mju_fillInt, mju_norm
+/// Calls: cxx:_mju_fillInt, cxx:_mju_norm
 #[allow(unused_variables, non_snake_case)]
-pub fn dual_state(d: *const mjData, state: *mut i32, ne: i32, nf: i32, nefc: i32, efclist: *const i32) -> i32 {
+pub fn dualState(d: *const mjData, state: *mut i32, ne: i32, nf: i32, nefc: i32, efclist: *const i32) -> i32 {
     use crate::engine::engine_util_blas::mju_norm;
-    use crate::engine::engine_util_misc::mju_fill_int;
+    use crate::engine::engine_util_misc::mju_fillInt;
 
     const mjCNSTRSTATE_SATISFIED: i32 = 0;
     const mjCNSTRSTATE_QUADRATIC: i32 = 1;
@@ -400,7 +400,7 @@ pub fn dual_state(d: *const mjData, state: *mut i32, ne: i32, nf: i32, nefc: i32
                 }
 
                 // replicate state in all cone dimensions
-                mju_fill_int(state.add(i as usize), result, dim);
+                mju_fillInt(state.add(i as usize), result, dim);
 
                 // advance
                 c += dim - 1;
@@ -414,9 +414,9 @@ pub fn dual_state(d: *const mjData, state: *mut i32, ne: i32, nf: i32, nefc: i32
 }
 
 /// C: dualStateChange (engine/engine_solver.c:356)
-/// Calls: dualState
+/// Calls: cxx-internal:engine_solver.c.o:_dualState
 #[allow(unused_variables, non_snake_case)]
-pub fn dual_state_change(d: *const mjData, state: *mut i32, oldstate: *mut i32, ne: i32, nf: i32, nefc: i32, efclist: *const i32, nchange: *mut i32) -> i32 {
+pub fn dualStateChange(d: *const mjData, state: *mut i32, oldstate: *mut i32, ne: i32, nf: i32, nefc: i32, efclist: *const i32, nchange: *mut i32) -> i32 {
     // SAFETY: d is valid mjData pointer. state, oldstate have at least nefc elements.
     // efclist (if non-null) has at least nefc elements.
     unsafe {
@@ -427,7 +427,7 @@ pub fn dual_state_change(d: *const mjData, state: *mut i32, oldstate: *mut i32, 
         }
 
         // update state
-        let nactive = dual_state(d, state, ne, nf, nefc, efclist);
+        let nactive = dualState(d, state, ne, nf, nefc, efclist);
 
         // count state changes
         *nchange = 0;
@@ -441,14 +441,14 @@ pub fn dual_state_change(d: *const mjData, state: *mut i32, oldstate: *mut i32, 
 }
 
 /// C: projectEllipsoid (engine/engine_solver.c:383)
-/// Calls: mju_max
+/// Calls: cxx:_mju_max
 /// ⚠️ BITEXACT RULES:
 ///   1. Copy exact C accumulation order (no iter().sum())
 ///   2. No f64::mul_add() (FMA changes precision)
 ///   3. No algebraic simplification
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
-pub fn project_ellipsoid(friction: *mut f64, normal: f64, mu: *const f64, dim: i32, feasible: i32) {
+pub fn projectEllipsoid(friction: *mut f64, normal: f64, mu: *const f64, dim: i32, feasible: i32) {
     use crate::engine::engine_util_misc::mju_max;
     const MJ_MINVAL: f64 = 1E-15_f64;
 
@@ -471,14 +471,14 @@ pub fn project_ellipsoid(friction: *mut f64, normal: f64, mu: *const f64, dim: i
 }
 
 /// C: solveQCQP (engine/engine_solver.c:401)
-/// Calls: mju_QCQP, mju_QCQP2, mju_QCQP3, mju_copy, projectEllipsoid
+/// Calls: cxx-internal:/Users/xing/Desktop/projects/c2rust_bitexact/projects/mujoco/src/engine/engine_solver.c:_projectEllipsoid, cxx:_mju_QCQP, cxx:_mju_QCQP2, cxx:_mju_QCQP3, cxx:_mju_copy
 /// ⚠️ BITEXACT RULES:
 ///   1. Copy exact C accumulation order (no iter().sum())
 ///   2. No f64::mul_add() (FMA changes precision)
 ///   3. No algebraic simplification
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
-pub fn solve_qcqp(force: *mut f64, i: i32, dim: i32, Ac: *mut f64, bc: *mut f64, mu: *const f64) {
+pub fn solveQCQP(force: *mut f64, i: i32, dim: i32, Ac: *mut f64, bc: *mut f64, mu: *const f64) {
     // SAFETY: caller guarantees all pointers valid and arrays properly sized
     unsafe {
         let mut v: [f64; 6] = [0.0; 6];
@@ -486,20 +486,20 @@ pub fn solve_qcqp(force: *mut f64, i: i32, dim: i32, Ac: *mut f64, bc: *mut f64,
 
         // solve
         if dim == 3 {
-            flg_active = crate::engine::engine_util_solve::mju_qcqp2(
+            flg_active = crate::engine::engine_util_solve::mju_QCQP2(
                 v.as_mut_ptr(), Ac, bc, mu, *force.add(i as usize));
         } else if dim == 4 {
-            flg_active = crate::engine::engine_util_solve::mju_qcqp3(
+            flg_active = crate::engine::engine_util_solve::mju_QCQP3(
                 v.as_mut_ptr(), Ac, bc, mu, *force.add(i as usize));
         } else {
             // dim == 5
-            flg_active = crate::engine::engine_util_solve::mju_qcqp(
+            flg_active = crate::engine::engine_util_solve::mju_QCQP(
                 v.as_mut_ptr(), Ac, bc, mu, *force.add(i as usize), dim - 1);
         }
 
         // on constraint: put v on ellipsoid, in case QCQP is approximate
         if flg_active != 0 {
-            project_ellipsoid(v.as_mut_ptr(), *force.add(i as usize), mu, dim, 0);
+            projectEllipsoid(v.as_mut_ptr(), *force.add(i as usize), mu, dim, 0);
         }
 
         // assign
@@ -508,14 +508,14 @@ pub fn solve_qcqp(force: *mut f64, i: i32, dim: i32, Ac: *mut f64, bc: *mut f64,
 }
 
 /// C: projectCone (engine/engine_solver.c:426)
-/// Calls: mju_zero, projectEllipsoid
+/// Calls: cxx-internal:/Users/xing/Desktop/projects/c2rust_bitexact/projects/mujoco/src/engine/engine_solver.c:_projectEllipsoid, cxx:_mju_zero
 /// ⚠️ BITEXACT RULES:
 ///   1. Copy exact C accumulation order (no iter().sum())
 ///   2. No f64::mul_add() (FMA changes precision)
 ///   3. No algebraic simplification
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
-pub fn project_cone(force: *mut f64, mu: *const f64, dim: i32, r#type: i32) {
+pub fn projectCone(force: *mut f64, mu: *const f64, dim: i32, r#type: i32) {
     use crate::engine::engine_util_blas::mju_zero;
     const MJ_CNSTR_CONTACT_ELLIPTIC: i32 = 7;
 
@@ -527,7 +527,7 @@ pub fn project_cone(force: *mut f64, mu: *const f64, dim: i32, r#type: i32) {
             if *force.add(0) < 0.0 {
                 mju_zero(force, dim);
             } else {
-                project_ellipsoid(force.add(1), *force.add(0), mu, dim, 1);
+                projectEllipsoid(force.add(1), *force.add(0), mu, dim, 1);
             }
         }
         // pyramidal or scalar: clamp to non-negative
@@ -540,9 +540,9 @@ pub fn project_cone(force: *mut f64, mu: *const f64, dim: i32, r#type: i32) {
 }
 
 /// C: solPGS (engine/engine_solver.c:456)
-/// Calls: ARdiaginv, costChange, dualState, dualStateChange, extractBlock, mj_freeStack, mj_isSparse, mj_markStack, mj_stackAllocInfo, mju_clip, mju_copy, mju_dot, mju_gather, mju_mulMatVec, mju_zero, pcg32_next, projectCone, residual, saveStats, shuffle_int, solveQCQP
+/// Calls: cxx-internal:/Users/xing/Desktop/projects/c2rust_bitexact/projects/mujoco/src/engine/engine_solver.c:_ARdiaginv, cxx-internal:/Users/xing/Desktop/projects/c2rust_bitexact/projects/mujoco/src/engine/engine_solver.c:_costChange, cxx-internal:/Users/xing/Desktop/projects/c2rust_bitexact/projects/mujoco/src/engine/engine_solver.c:_extractBlock, cxx-internal:/Users/xing/Desktop/projects/c2rust_bitexact/projects/mujoco/src/engine/engine_solver.c:_pcg32_next, cxx-internal:/Users/xing/Desktop/projects/c2rust_bitexact/projects/mujoco/src/engine/engine_solver.c:_projectCone, cxx-internal:/Users/xing/Desktop/projects/c2rust_bitexact/projects/mujoco/src/engine/engine_solver.c:_residual, cxx-internal:/Users/xing/Desktop/projects/c2rust_bitexact/projects/mujoco/src/engine/engine_solver.c:_saveStats, cxx-internal:/Users/xing/Desktop/projects/c2rust_bitexact/projects/mujoco/src/engine/engine_solver.c:_shuffle_int, cxx-internal:/Users/xing/Desktop/projects/c2rust_bitexact/projects/mujoco/src/engine/engine_solver.c:_solveQCQP, cxx-internal:engine_solver.c.o:_dualState, cxx-internal:engine_solver.c.o:_dualStateChange, cxx:_mj_freeStack, cxx:_mj_isSparse, cxx:_mj_markStack, cxx:_mj_stackAllocInfo, cxx:_mju_clip, cxx:_mju_copy, cxx:_mju_dot, cxx:_mju_gather, cxx:_mju_mulMatVec, cxx:_mju_zero
 #[allow(unused_variables, non_snake_case)]
-pub fn sol_pgs(m: *const mjModel, d: *mut mjData, island: i32, ne: i32, nf: i32, nefc: i32, efclist: *const i32, maxiter: i32) {
+pub fn solPGS(m: *const mjModel, d: *mut mjData, island: i32, ne: i32, nf: i32, nefc: i32, efclist: *const i32, maxiter: i32) {
     const MJMINVAL: f64 = 1e-15;
     const MJ_CNSTR_CONTACT_ELLIPTIC: i32 = 7;
     const MJ_NISLAND: i32 = 20;
@@ -552,9 +552,9 @@ pub fn sol_pgs(m: *const mjModel, d: *mut mjData, island: i32, ne: i32, nf: i32,
         let floss = (*d).efc_frictionloss;
         let force = (*d).efc_force;
 
-        crate::engine::engine_memory::mj_mark_stack(d);
-        let ARinv = crate::engine::engine_memory::mj_stack_alloc_num(d, nefc as usize);
-        let oldstate_mem = crate::engine::engine_memory::mj_stack_alloc_int(d, (2 * nefc) as usize);
+        crate::engine::engine_memory::mj_markStack(d);
+        let ARinv = crate::engine::engine_memory::mj_stackAllocNum(d, nefc as usize);
+        let oldstate_mem = crate::engine::engine_memory::mj_stackAllocInt(d, (2 * nefc) as usize);
         let blockstart = oldstate_mem.add(nefc as usize);
 
         // Nesterov momentum
@@ -565,8 +565,8 @@ pub fn sol_pgs(m: *const mjModel, d: *mut mjData, island: i32, ne: i32, nf: i32,
         let mut force_prev: *mut f64 = std::ptr::null_mut();
         let mut force_momentum: *mut f64 = std::ptr::null_mut();
         if nesterov != 0 {
-            force_prev = crate::engine::engine_memory::mj_stack_alloc_num(d, nefc as usize);
-            force_momentum = crate::engine::engine_memory::mj_stack_alloc_num(d, nefc as usize);
+            force_prev = crate::engine::engine_memory::mj_stackAllocNum(d, nefc as usize);
+            force_momentum = crate::engine::engine_memory::mj_stackAllocNum(d, nefc as usize);
             crate::engine::engine_util_misc::mju_gather(force_prev, force, efclist, nefc);
         }
 
@@ -575,10 +575,10 @@ pub fn sol_pgs(m: *const mjModel, d: *mut mjData, island: i32, ne: i32, nf: i32,
         let scale: f64 = 1.0 / ((*m).stat.meaninertia * (if 1 > nv_val { 1 } else { nv_val }) as f64);
 
         // precompute inverse diagonal of AR
-        a_rdiaginv(m, d as *const mjData, ARinv, nefc, efclist, 0);
+        ARdiaginv(m, d as *const mjData, ARinv, nefc, efclist, 0);
 
         // initial constraint state
-        dual_state(d as *const mjData, (*d).efc_state, ne, nf, nefc, efclist);
+        dualState(d as *const mjData, (*d).efc_state, ne, nf, nefc, efclist);
 
         // build block-index array: one entry per constraint block
         let mut nblocks: i32 = 0;
@@ -639,7 +639,7 @@ pub fn sol_pgs(m: *const mjModel, d: *mut mjData, island: i32, ne: i32, nf: i32,
                             mu = (*(*d).contact.add(*(*d).efc_id.add(i as usize) as usize)).friction.as_ptr();
                         }
 
-                        project_cone(force.add(i as usize), mu, dim, typ);
+                        projectCone(force.add(i as usize), mu, dim, typ);
                         c += dim;
                     }
                 } else {
@@ -704,7 +704,7 @@ pub fn sol_pgs(m: *const mjModel, d: *mut mjData, island: i32, ne: i32, nf: i32,
                     let mu = (*(*d).contact.add(*(*d).efc_id.add(i as usize) as usize)).friction.as_mut_ptr();
 
                     // Athis = AR(this,this)
-                    extract_block(m, d as *const mjData, Athis.as_mut_ptr(), i, dim, 0);
+                    extractBlock(m, d as *const mjData, Athis.as_mut_ptr(), i, dim, 0);
 
                     // normal force too small: normal update
                     if *force.add(i as usize) < MJMINVAL {
@@ -727,7 +727,7 @@ pub fn sol_pgs(m: *const mjModel, d: *mut mjData, island: i32, ne: i32, nf: i32,
 
                         // denom = v' * AR(this,this) * v
                         let mut v1: [f64; 6] = [0.0; 6];
-                        crate::engine::engine_util_blas::mju_mul_mat_vec(
+                        crate::engine::engine_util_blas::mju_mulMatVec(
                             v1.as_mut_ptr(), Athis.as_ptr(), v.as_ptr(), dim, dim,
                         );
                         let denom = crate::engine::engine_util_blas::mju_dot(v.as_ptr(), v1.as_ptr(), dim);
@@ -774,7 +774,7 @@ pub fn sol_pgs(m: *const mjModel, d: *mut mjData, island: i32, ne: i32, nf: i32,
                     }
                     // QCQP
                     else {
-                        solve_qcqp(force, i, dim, Ac.as_mut_ptr(), bc.as_mut_ptr(), mu);
+                        solveQCQP(force, i, dim, Ac.as_mut_ptr(), bc.as_mut_ptr(), mu);
                     }
                 }
 
@@ -782,20 +782,20 @@ pub fn sol_pgs(m: *const mjModel, d: *mut mjData, island: i32, ne: i32, nf: i32,
                 if dim == 1 {
                     Athis[0] = 1.0 / *ARinv.add(c as usize);
                 }
-                improvement -= cost_change(
+                improvement -= costChange(
                     Athis.as_ptr(), force.add(i as usize), oldforce.as_ptr(), res.as_ptr(), dim,
                 );
             }
 
             // update constraint state
             let mut nchange: i32 = 0;
-            let nactive = dual_state_change(
+            let nactive = dualStateChange(
                 d as *const mjData, (*d).efc_state, oldstate_mem, ne, nf, nefc, efclist, &mut nchange,
             );
 
             // scale improvement, save stats
             improvement *= scale;
-            save_stats(m, d, island_stat, iter, improvement, 0.0, 0.0, nactive, nchange, 0, 0);
+            saveStats(m, d, island_stat, iter, improvement, 0.0, 0.0, nactive, nchange, 0, 0);
 
             // Nesterov gradient restart
             if nesterov != 0 {
@@ -831,7 +831,7 @@ pub fn sol_pgs(m: *const mjModel, d: *mut mjData, island: i32, ne: i32, nf: i32,
         if island_stat < MJ_NISLAND {
             (*d).solver_niter[island_stat as usize] += iter;
 
-            if crate::engine::engine_core_util::mj_is_sparse(m) != 0 {
+            if crate::engine::engine_core_util::mj_isSparse(m) != 0 {
                 (*d).solver_nnz[island_stat as usize] = 0;
                 for c in 0..nefc {
                     (*d).solver_nnz[island_stat as usize] +=
@@ -842,14 +842,14 @@ pub fn sol_pgs(m: *const mjModel, d: *mut mjData, island: i32, ne: i32, nf: i32,
             }
         }
 
-        crate::engine::engine_memory::mj_free_stack(d);
+        crate::engine::engine_memory::mj_freeStack(d);
     }
 }
 
 /// C: solNoSlip (engine/engine_solver.c:766)
-/// Calls: ARdiaginv, costChange, dualState, dualStateChange, extractBlock, mj_freeStack, mj_markStack, mj_stackAllocInfo, mju_copy, mju_dot, mju_zero, residual, saveStats, solveQCQP
+/// Calls: cxx-internal:/Users/xing/Desktop/projects/c2rust_bitexact/projects/mujoco/src/engine/engine_solver.c:_ARdiaginv, cxx-internal:/Users/xing/Desktop/projects/c2rust_bitexact/projects/mujoco/src/engine/engine_solver.c:_costChange, cxx-internal:/Users/xing/Desktop/projects/c2rust_bitexact/projects/mujoco/src/engine/engine_solver.c:_extractBlock, cxx-internal:/Users/xing/Desktop/projects/c2rust_bitexact/projects/mujoco/src/engine/engine_solver.c:_residual, cxx-internal:/Users/xing/Desktop/projects/c2rust_bitexact/projects/mujoco/src/engine/engine_solver.c:_saveStats, cxx-internal:/Users/xing/Desktop/projects/c2rust_bitexact/projects/mujoco/src/engine/engine_solver.c:_solveQCQP, cxx-internal:engine_solver.c.o:_dualState, cxx-internal:engine_solver.c.o:_dualStateChange, cxx:_mj_freeStack, cxx:_mj_markStack, cxx:_mj_stackAllocInfo, cxx:_mju_copy, cxx:_mju_dot, cxx:_mju_zero
 #[allow(unused_variables, non_snake_case)]
-pub fn sol_no_slip(m: *const mjModel, d: *mut mjData, island: i32, ne: i32, nf: i32, nefc: i32, efclist: *const i32, maxiter: i32) {
+pub fn solNoSlip(m: *const mjModel, d: *mut mjData, island: i32, ne: i32, nf: i32, nefc: i32, efclist: *const i32, maxiter: i32) {
     const MJMINVAL: f64 = 1e-15;
     const MJ_CNSTR_CONTACT_PYRAMIDAL: i32 = 6;
     const MJ_CNSTR_CONTACT_ELLIPTIC: i32 = 7;
@@ -860,19 +860,19 @@ pub fn sol_no_slip(m: *const mjModel, d: *mut mjData, island: i32, ne: i32, nf: 
         let floss = (*d).efc_frictionloss;
         let force = (*d).efc_force;
 
-        crate::engine::engine_memory::mj_mark_stack(d);
-        let ARinv = crate::engine::engine_memory::mj_stack_alloc_num(d, nefc as usize);
-        let oldstate = crate::engine::engine_memory::mj_stack_alloc_int(d, nefc as usize);
+        crate::engine::engine_memory::mj_markStack(d);
+        let ARinv = crate::engine::engine_memory::mj_stackAllocNum(d, nefc as usize);
+        let oldstate = crate::engine::engine_memory::mj_stackAllocInt(d, nefc as usize);
 
         let island_stat = if 0 > island { 0 } else { island };
         let nv_val = (*m).nv as i32;
         let scale = 1.0 / ((*m).stat.meaninertia * (if 1 > nv_val { 1 } else { nv_val }) as f64);
 
         // precompute inverse diagonal of A
-        a_rdiaginv(m, d as *const mjData, ARinv, nefc, efclist, 1);
+        ARdiaginv(m, d as *const mjData, ARinv, nefc, efclist, 1);
 
         // initial constraint state
-        dual_state(d as *const mjData, (*d).efc_state, ne, nf, nefc, efclist);
+        dualState(d as *const mjData, (*d).efc_state, ne, nf, nefc, efclist);
 
         let mut iter = 0;
         while iter < maxiter {
@@ -936,7 +936,7 @@ pub fn sol_no_slip(m: *const mjModel, d: *mut mjData, island: i32, ne: i32, nf: 
 
                         // Ac = AR-submatrix
                         let mut Ac: [f64; 25] = [0.0; 25];
-                        extract_block(m, d as *const mjData, Ac.as_mut_ptr(), j, 2, 1);
+                        extractBlock(m, d as *const mjData, Ac.as_mut_ptr(), j, 2, 1);
 
                         // bc = b-subvector + Ac,rest * f_rest
                         let mut bc: [f64; 5] = [0.0; 5];
@@ -978,7 +978,7 @@ pub fn sol_no_slip(m: *const mjModel, d: *mut mjData, island: i32, ne: i32, nf: 
                         }
 
                         // accumulate improvement
-                        improvement -= cost_change(
+                        improvement -= costChange(
                             Ac.as_ptr(), force.add(j as usize), oldforce.as_ptr(), res.as_ptr(), 2,
                         );
 
@@ -1004,7 +1004,7 @@ pub fn sol_no_slip(m: *const mjModel, d: *mut mjData, island: i32, ne: i32, nf: 
 
                     // Ac = AR-submatrix
                     let mut Ac: [f64; 25] = [0.0; 25];
-                    extract_block(m, d as *const mjData, Ac.as_mut_ptr(), i + 1, dim - 1, 1);
+                    extractBlock(m, d as *const mjData, Ac.as_mut_ptr(), i + 1, dim - 1, 1);
 
                     // bc = b-subvector + Ac,rest * f_rest
                     let mut bc: [f64; 5] = [0.0; 5];
@@ -1023,11 +1023,11 @@ pub fn sol_no_slip(m: *const mjModel, d: *mut mjData, island: i32, ne: i32, nf: 
                         );
                     } else {
                         // QCQP
-                        solve_qcqp(force, i, dim, Ac.as_mut_ptr(), bc.as_mut_ptr(), mu);
+                        solveQCQP(force, i, dim, Ac.as_mut_ptr(), bc.as_mut_ptr(), mu);
                     }
 
                     // accumulate improvement
-                    improvement -= cost_change(
+                    improvement -= costChange(
                         Ac.as_ptr(), force.add((i + 1) as usize), oldforce.as_ptr(), res.as_ptr(), dim - 1,
                     );
 
@@ -1039,7 +1039,7 @@ pub fn sol_no_slip(m: *const mjModel, d: *mut mjData, island: i32, ne: i32, nf: 
 
             // update constraint state
             let mut nchange: i32 = 0;
-            let nactive = dual_state_change(
+            let nactive = dualStateChange(
                 d as *const mjData, (*d).efc_state, oldstate, ne, nf, nefc, efclist, &mut nchange,
             );
 
@@ -1049,7 +1049,7 @@ pub fn sol_no_slip(m: *const mjModel, d: *mut mjData, island: i32, ne: i32, nf: 
             // save noslip stats
             if island_stat < MJ_NISLAND {
                 let stats_iter = iter + (*d).solver_niter[island_stat as usize];
-                save_stats(m, d, island_stat, stats_iter, improvement, 0.0, 0.0, nactive, nchange, 0, 0);
+                saveStats(m, d, island_stat, stats_iter, improvement, 0.0, 0.0, nactive, nchange, 0, 0);
             }
 
             iter += 1;
@@ -1065,15 +1065,15 @@ pub fn sol_no_slip(m: *const mjModel, d: *mut mjData, island: i32, ne: i32, nf: 
             (*d).solver_niter[island_stat as usize] += iter;
         }
 
-        crate::engine::engine_memory::mj_free_stack(d);
+        crate::engine::engine_memory::mj_freeStack(d);
     }
 }
 
 /// C: PrimalPointers (engine/engine_solver.c:1087)
-/// Calls: mj_isSparse
+/// Calls: cxx:_mj_isSparse
 #[allow(unused_variables, non_snake_case)]
-pub fn primal_pointers(m: *const mjModel, d: *const mjData, ctx: *mut mjPrimalContext, island: i32) {
-    use crate::engine::engine_core_util::mj_is_sparse;
+pub fn PrimalPointers(m: *const mjModel, d: *const mjData, ctx: *mut mjPrimalContext, island: i32) {
+    use crate::engine::engine_core_util::mj_isSparse;
 
     // Local shadow struct matching the C layout of mjPrimalContext.
     // Only the fields written by PrimalPointers are needed at their correct offsets.
@@ -1136,7 +1136,7 @@ pub fn primal_pointers(m: *const mjModel, d: *const mjData, ctx: *mut mjPrimalCo
         std::ptr::write_bytes(ctx as *mut u8, 0, std::mem::size_of::<PrimalCtx>());
 
         // globals
-        (*c).is_sparse = mj_is_sparse(m);
+        (*c).is_sparse = mj_isSparse(m);
         (*c).is_elliptic = ((*m).opt.cone == MJ_CONE_ELLIPTIC) as i32;
         (*c).contact = (*d).contact;
         (*c).island = island;
@@ -1212,296 +1212,10 @@ pub fn primal_pointers(m: *const mjModel, d: *const mjData, ctx: *mut mjPrimalCo
     }
 }
 
-/// C: PrimalAllocate (engine/engine_solver.c:1171)
-/// Calls: mj_stackAllocInfo, mju_block, mju_blockSparse, mju_gather, mju_superSparse, mju_transposeSparse
-#[allow(unused_variables, non_snake_case)]
-pub fn primal_allocate(m: *const mjModel, d: *mut mjData, ctx: *mut mjPrimalContext, flg_Newton: i32) {
-    #[repr(C)]
-    #[allow(non_snake_case)]
-    struct PrimalCtx {
-        is_sparse: i32,
-        is_elliptic: i32,
-        island: i32,
-        nv: i32,
-        ne: i32,
-        nf: i32,
-        nefc: i32,
-        nJ: i32,
-        contact: *mut mjContact,
-        qfrc_smooth: *const f64,
-        qacc_smooth: *const f64,
-        qfrc_constraint: *mut f64,
-        qacc: *mut f64,
-        M_rownnz: *mut i32,
-        M_rowadr: *mut i32,
-        M_colind: *mut i32,
-        M: *mut f64,
-        qLD: *mut f64,
-        qLDiagInv: *mut f64,
-        efc_D: *const f64,
-        efc_R: *const f64,
-        efc_frictionloss: *const f64,
-        efc_aref: *const f64,
-        efc_id: *const i32,
-        efc_type: *const i32,
-        efc_force: *mut f64,
-        efc_state: *mut i32,
-        J_rownnz: *mut i32,
-        J_rowadr: *mut i32,
-        J_rowsuper: *mut i32,
-        J_colind: *mut i32,
-        J: *mut f64,
-        JT_rownnz: *mut i32,
-        JT_rowadr: *mut i32,
-        JT_rowsuper: *mut i32,
-        JT_colind: *mut i32,
-        JT: *mut f64,
-        Jaref: *mut f64,
-        Jv: *mut f64,
-        Ma: *mut f64,
-        Mv: *mut f64,
-        grad: *mut f64,
-        Mgrad: *mut f64,
-        search: *mut f64,
-        quad: *mut f64,
-        oldstate: *mut i32,
-        gradold: *mut f64,
-        Mgradold: *mut f64,
-        graddif: *mut f64,
-        Mgraddif: *mut f64,
-        D_newton: *mut f64,
-        cholupd: *mut f64,
-        LTJ: *mut f64,
-        H_rowadr: *mut i32,
-        H_rownnz: *mut i32,
-        HT_rownnz: *mut i32,
-        HT_rowadr: *mut i32,
-        L_rownnz: *mut i32,
-        L_rowadr: *mut i32,
-        LT_rownnz: *mut i32,
-        LT_rowadr: *mut i32,
-        nH: i32,
-        _pad0: i32,
-        H_colind: *mut i32,
-        HT_colind: *mut i32,
-        H: *mut f64,
-        nL: i32,
-        _pad1: i32,
-        L_colind: *mut i32,
-        LT_colind: *mut i32,
-        LT_map: *mut i32,
-        L: *mut f64,
-        Lcone: *mut f64,
-        cost: f64,
-        quadGauss: [f64; 3],
-        scale: f64,
-        nactive: i32,
-        ncone: i32,
-        nupdate: i32,
-        LSiter: i32,
-        LSresult: i32,
-        _pad2: i32,
-        LSslope: f64,
-    }
-
-    // SAFETY: m, d, ctx are valid pointers (caller contract).
-    // ctx points to a mjPrimalContext with the same layout as PrimalCtx.
-    // mj_{mark/free}Stack is handled by calling function.
-    unsafe {
-        let c = ctx as *mut PrimalCtx;
-
-        // local sizes and flags
-        let nv = (*c).nv;
-        let nefc = (*c).nefc;
-        let is_sparse = (*c).is_sparse;
-        let is_elliptic = (*c).is_elliptic;
-        let mut nJ: i32 = if is_sparse != 0 { (*d).nJ } else { 0 };
-
-        // compute island matrix sizes if needed
-        let mut nC: i32 = 0;
-        if (*c).island >= 0 {
-            let island = (*c).island;
-            let idofadr = *(*d).island_idofadr.add(island as usize);
-            for i in 0..nv {
-                let dof = *(*d).map_idof2dof.add((idofadr + i) as usize);
-                nC += *(*m).M_rownnz.add(dof as usize);
-            }
-
-            if is_sparse != 0 {
-                nJ = 0;
-                let iefcadr = *(*d).island_iefcadr.add(island as usize);
-                for i in 0..nefc {
-                    let efc = *(*d).map_iefc2efc.add((iefcadr + i) as usize);
-                    nJ += *(*d).efc_J_rownnz.add(efc as usize);
-                }
-            } else {
-                nJ = nefc * nv;
-            }
-            (*c).nJ = nJ;
-        }
-
-        // compute mjtNum block size
-        let mut nNum: usize = (5 * nefc + 5 * nv) as usize;
-        if is_sparse != 0 {
-            nNum += nJ as usize;
-        }
-        if flg_Newton != 0 {
-            nNum += (nefc + nv) as usize;
-            if is_elliptic != 0 {
-                nNum += (6 * nv) as usize;
-            }
-            if is_sparse == 0 {
-                nNum += (nv * nv) as usize;
-                if is_elliptic != 0 {
-                    nNum += (nv * nv) as usize;
-                }
-            }
-        } else {
-            nNum += (4 * nv) as usize;
-        }
-        if (*c).island >= 0 {
-            nNum += (2 * nC + nv + nJ) as usize;
-        }
-
-        // compute int block size
-        let mut nInt: usize = nefc as usize;
-        if is_sparse != 0 {
-            nInt += (3 * nv + nJ) as usize;
-            if flg_Newton != 0 {
-                nInt += (8 * nv) as usize;
-            }
-        }
-        if (*c).island >= 0 {
-            nInt += (2 * nv + nC) as usize;
-            if is_sparse != 0 {
-                nInt += (3 * nefc + nJ) as usize;
-            }
-        }
-
-        // allocate mjtNum and int blocks
-        let mut numblock = crate::engine::engine_memory::mj_stack_alloc_num(d, nNum);
-        let mut intblock = crate::engine::engine_memory::mj_stack_alloc_int(d, nInt);
-
-        // populate island matrices if needed
-        if (*c).island >= 0 {
-            let island = (*c).island;
-            let idofadr = *(*d).island_idofadr.add(island as usize);
-            let iefcadr = *(*d).island_iefcadr.add(island as usize);
-
-            (*c).M_rownnz = intblock; intblock = intblock.add(nv as usize);
-            (*c).M_rowadr = intblock; intblock = intblock.add(nv as usize);
-            (*c).M_colind = intblock; intblock = intblock.add(nC as usize);
-
-            (*c).M = numblock; numblock = numblock.add(nC as usize);
-            (*c).qLD = numblock; numblock = numblock.add(nC as usize);
-            (*c).qLDiagInv = numblock; numblock = numblock.add(nv as usize);
-
-            // SAFETY: all pointers are valid stack-allocated regions
-            crate::engine::engine_util_sparse::mju_block_sparse(
-                (*c).qLD, (*c).M_rownnz, (*c).M_rowadr, (*c).M_colind,
-                (*d).qLD, (*m).M_rownnz, (*m).M_rowadr, (*m).M_colind,
-                nv, (*d).map_idof2dof.add(idofadr as usize), (*d).map_dof2idof,
-                *(*d).island_idofadr.add(island as usize), 0, (*c).M, (*d).M,
-            );
-            crate::engine::engine_util_misc::mju_gather(
-                (*c).qLDiagInv, (*d).qLDiagInv, (*d).map_idof2dof.add(idofadr as usize), nv,
-            );
-
-            (*c).J = numblock; numblock = numblock.add(nJ as usize);
-            if is_sparse == 0 {
-                crate::engine::engine_util_sparse::mju_block(
-                    (*c).J, (*d).efc_J, (*m).nv as i32, nv, nefc,
-                    (*d).map_iefc2efc.add(iefcadr as usize),
-                    (*d).map_idof2dof.add(idofadr as usize),
-                );
-            } else {
-                (*c).J_rownnz = intblock; intblock = intblock.add(nefc as usize);
-                (*c).J_rowadr = intblock; intblock = intblock.add(nefc as usize);
-                (*c).J_rowsuper = intblock; intblock = intblock.add(nefc as usize);
-                (*c).J_colind = intblock; intblock = intblock.add(nJ as usize);
-
-                crate::engine::engine_util_sparse::mju_block_sparse(
-                    (*c).J, (*c).J_rownnz, (*c).J_rowadr, (*c).J_colind,
-                    (*d).efc_J, (*d).efc_J_rownnz, (*d).efc_J_rowadr, (*d).efc_J_colind,
-                    nefc, (*d).map_iefc2efc.add(iefcadr as usize), (*d).map_dof2idof,
-                    *(*d).island_idofadr.add(island as usize), 0,
-                    std::ptr::null_mut(), std::ptr::null_mut(),
-                );
-
-                crate::engine::engine_util_sparse::mju_super_sparse(
-                    nefc, (*c).J_rowsuper, (*c).J_rownnz, (*c).J_rowadr, (*c).J_colind,
-                );
-            }
-        }
-
-        // carve mjtNum block
-        (*c).Jaref  = numblock; numblock = numblock.add(nefc as usize);
-        (*c).Jv     = numblock; numblock = numblock.add(nefc as usize);
-        (*c).Ma     = numblock; numblock = numblock.add(nv as usize);
-        (*c).Mv     = numblock; numblock = numblock.add(nv as usize);
-        (*c).grad   = numblock; numblock = numblock.add(nv as usize);
-        (*c).Mgrad  = numblock; numblock = numblock.add(nv as usize);
-        (*c).search = numblock; numblock = numblock.add(nv as usize);
-        (*c).quad   = numblock; numblock = numblock.add((3 * nefc) as usize);
-        if is_sparse != 0 {
-            (*c).JT = numblock; numblock = numblock.add(nJ as usize);
-        }
-        if flg_Newton != 0 {
-            (*c).D_newton = numblock; numblock = numblock.add(nefc as usize);
-            (*c).cholupd  = numblock; numblock = numblock.add(nv as usize);
-            if is_elliptic != 0 {
-                (*c).LTJ = numblock; numblock = numblock.add((6 * nv) as usize);
-            }
-            if is_sparse == 0 {
-                (*c).nL = nv * nv;
-                (*c).L = numblock; numblock = numblock.add((*c).nL as usize);
-                (*c).Lcone = if is_elliptic != 0 { numblock } else { std::ptr::null_mut() };
-                if is_elliptic != 0 {
-                    numblock = numblock.add((*c).nL as usize);
-                }
-            }
-        } else {
-            (*c).gradold  = numblock; numblock = numblock.add(nv as usize);
-            (*c).Mgradold = numblock; numblock = numblock.add(nv as usize);
-            (*c).graddif  = numblock; numblock = numblock.add(nv as usize);
-            (*c).Mgraddif = numblock; numblock = numblock.add(nv as usize);
-        }
-
-        // carve int block
-        (*c).oldstate = intblock; intblock = intblock.add(nefc as usize);
-        if is_sparse != 0 {
-            (*c).JT_rownnz   = intblock; intblock = intblock.add(nv as usize);
-            (*c).JT_rowadr   = intblock; intblock = intblock.add(nv as usize);
-            (*c).JT_rowsuper = intblock; intblock = intblock.add(nv as usize);
-            (*c).JT_colind   = intblock; intblock = intblock.add(nJ as usize);
-        }
-        if flg_Newton != 0 && is_sparse != 0 {
-            (*c).H_rowadr  = intblock; intblock = intblock.add(nv as usize);
-            (*c).H_rownnz  = intblock; intblock = intblock.add(nv as usize);
-            (*c).HT_rownnz = intblock; intblock = intblock.add(nv as usize);
-            (*c).HT_rowadr = intblock; intblock = intblock.add(nv as usize);
-            (*c).L_rownnz  = intblock; intblock = intblock.add(nv as usize);
-            (*c).L_rowadr  = intblock; intblock = intblock.add(nv as usize);
-            (*c).LT_rownnz = intblock; intblock = intblock.add(nv as usize);
-            (*c).LT_rowadr = intblock; intblock = intblock.add(nv as usize);
-        }
-
-        // sparse: compute Jacobian transpose
-        if is_sparse != 0 {
-            let offset = *(*c).J_rowadr.add(0);
-            crate::engine::engine_util_sparse::mju_transpose_sparse(
-                (*c).JT, (*c).J.add(offset as usize), nefc, nv,
-                (*c).JT_rownnz, (*c).JT_rowadr, (*c).JT_colind, (*c).JT_rowsuper,
-                (*c).J_rownnz, (*c).J_rowadr, (*c).J_colind.add(offset as usize),
-            );
-        }
-    }
-}
-
 /// C: PrimalUpdateConstraint (engine/engine_solver.c:1343)
-/// Calls: mj_constraintUpdate_impl, mju_mulMatTVec, mju_mulMatVecSparse
+/// Calls: cxx:_mj_constraintUpdate_impl, cxx:_mju_mulMatTVec, cxx:_mju_mulMatVecSparse
 #[allow(unused_variables, non_snake_case)]
-pub fn primal_update_constraint(ctx: *mut mjPrimalContext, flg_HessianCone: i32) {
+pub fn PrimalUpdateConstraint(ctx: *mut mjPrimalContext, flg_HessianCone: i32) {
     #[repr(C)]
     #[allow(non_snake_case)]
     struct PrimalCtx {
@@ -1600,7 +1314,7 @@ pub fn primal_update_constraint(ctx: *mut mjPrimalContext, flg_HessianCone: i32)
         let nv = (*c).nv;
 
         // update constraints
-        crate::engine::engine_core_constraint::mj_constraint_update_impl(
+        crate::engine::engine_core_constraint::mj_constraintUpdate_impl(
             (*c).ne, (*c).nf, (*c).nefc, (*c).efc_D, (*c).efc_R,
             (*c).efc_frictionloss, (*c).Jaref, (*c).efc_type, (*c).efc_id,
             (*c).contact, (*c).efc_state, (*c).efc_force,
@@ -1609,11 +1323,11 @@ pub fn primal_update_constraint(ctx: *mut mjPrimalContext, flg_HessianCone: i32)
 
         // compute qfrc_constraint (dense or sparse)
         if (*c).is_sparse == 0 {
-            crate::engine::engine_util_blas::mju_mul_mat_t_vec(
+            crate::engine::engine_util_blas::mju_mulMatTVec(
                 (*c).qfrc_constraint, (*c).J, (*c).efc_force, nefc, nv,
             );
         } else {
-            crate::engine::engine_util_sparse::mju_mul_mat_vec_sparse(
+            crate::engine::engine_util_sparse::mju_mulMatVecSparse(
                 (*c).qfrc_constraint, (*c).JT, (*c).efc_force, nv,
                 (*c).JT_rownnz, (*c).JT_rowadr, (*c).JT_colind, (*c).JT_rowsuper,
             );
@@ -1640,9 +1354,9 @@ pub fn primal_update_constraint(ctx: *mut mjPrimalContext, flg_HessianCone: i32)
 }
 
 /// C: PrimalUpdateGradient (engine/engine_solver.c:1380)
-/// Calls: mj_solveLD, mju_cholSolve, mju_cholSolveSparse, mju_copy
+/// Calls: cxx:_mj_solveLD, cxx:_mju_cholSolve, cxx:_mju_cholSolveSparse, cxx:_mju_copy
 #[allow(unused_variables, non_snake_case)]
-pub fn primal_update_gradient(ctx: *mut mjPrimalContext, flg_Newton: i32) {
+pub fn PrimalUpdateGradient(ctx: *mut mjPrimalContext, flg_Newton: i32) {
     #[repr(C)]
     #[allow(non_snake_case)]
     struct PrimalCtx {
@@ -1747,13 +1461,13 @@ pub fn primal_update_gradient(ctx: *mut mjPrimalContext, flg_Newton: i32) {
         if flg_Newton != 0 {
             if (*c).is_sparse != 0 {
                 let L_ptr = if (*c).ncone != 0 { (*c).Lcone } else { (*c).L };
-                crate::engine::engine_util_solve::mju_chol_solve_sparse(
+                crate::engine::engine_util_solve::mju_cholSolveSparse(
                     (*c).Mgrad, L_ptr, (*c).grad, nv,
                     (*c).L_rownnz, (*c).L_rowadr, (*c).L_colind,
                 );
             } else {
                 let L_ptr = if (*c).ncone != 0 { (*c).Lcone } else { (*c).L };
-                crate::engine::engine_util_solve::mju_chol_solve(
+                crate::engine::engine_util_solve::mju_cholSolve(
                     (*c).Mgrad, L_ptr, (*c).grad, nv,
                 );
             }
@@ -1761,7 +1475,7 @@ pub fn primal_update_gradient(ctx: *mut mjPrimalContext, flg_Newton: i32) {
         // CG: Mgrad = M \ grad
         else {
             crate::engine::engine_util_blas::mju_copy((*c).Mgrad, (*c).grad, nv);
-            crate::engine::engine_core_smooth::mj_solve_ld(
+            crate::engine::engine_core_smooth::mj_solveLD(
                 (*c).Mgrad, (*c).qLD, (*c).qLDiagInv, nv, 1,
                 (*c).M_rownnz, (*c).M_rowadr, (*c).M_colind, std::ptr::null(),
             );
@@ -1770,9 +1484,9 @@ pub fn primal_update_gradient(ctx: *mut mjPrimalContext, flg_Newton: i32) {
 }
 
 /// C: PrimalPrepare (engine/engine_solver.c:1408)
-/// Calls: mju_dot
+/// Calls: cxx:_mju_dot
 #[allow(unused_variables, non_snake_case)]
-pub fn primal_prepare(ctx: *mut mjPrimalContext) {
+pub fn PrimalPrepare(ctx: *mut mjPrimalContext) {
     use crate::engine::engine_util_blas::mju_dot;
 
     // Local shadow struct matching the C layout of mjPrimalContext.
@@ -1961,7 +1675,7 @@ pub fn primal_prepare(ctx: *mut mjPrimalContext) {
 ///   3. No algebraic simplification
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
-pub fn friction_cost(x: f64, f: f64, Rf: f64, D: f64) -> f64 {
+pub fn frictionCost(x: f64, f: f64, Rf: f64, D: f64) -> f64 {
     // -bound < x < bound : quadratic
     if -Rf < x && x < Rf {
         0.5 * D * x * x
@@ -1977,14 +1691,14 @@ pub fn friction_cost(x: f64, f: f64, Rf: f64, D: f64) -> f64 {
 }
 
 /// C: frictionCostDif (engine/engine_solver.c:1506)
-/// Calls: frictionCost
+/// Calls: cxx-internal:/Users/xing/Desktop/projects/c2rust_bitexact/projects/mujoco/src/engine/engine_solver.c:_frictionCost
 /// ⚠️ BITEXACT RULES:
 ///   1. Copy exact C accumulation order (no iter().sum())
 ///   2. No f64::mul_add() (FMA changes precision)
 ///   3. No algebraic simplification
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
-pub fn friction_cost_dif(start: f64, x: f64, f: f64, Rf: f64, D: f64) -> f64 {
+pub fn frictionCostDif(start: f64, x: f64, f: f64, Rf: f64, D: f64) -> f64 {
     let state_start: i32 = if -Rf < start && start < Rf { 0 } else if start <= -Rf { -1 } else { 1 };
     let state_x: i32 = if -Rf < x && x < Rf { 0 } else if x <= -Rf { -1 } else { 1 };
 
@@ -2004,7 +1718,7 @@ pub fn friction_cost_dif(start: f64, x: f64, f: f64, Rf: f64, D: f64) -> f64 {
     }
 
     // otherwise different zones: compute absolute costs and subtract
-    friction_cost(x, f, Rf, D) - friction_cost(start, f, Rf, D)
+    frictionCost(x, f, Rf, D) - frictionCost(start, f, Rf, D)
 }
 
 /// C: ellipticCost (engine/engine_solver.c:1531)
@@ -2014,7 +1728,7 @@ pub fn friction_cost_dif(start: f64, x: f64, f: f64, Rf: f64, D: f64) -> f64 {
 ///   3. No algebraic simplification
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
-pub fn elliptic_cost(quad: *const f64, alpha: f64, mu: f64, Dm: f64) -> f64 {
+pub fn ellipticCost(quad: *const f64, alpha: f64, mu: f64, Dm: f64) -> f64 {
     // SAFETY: quad has at least 8 elements (indices 0..7)
     unsafe {
         let U0: f64 = *quad.add(3);
@@ -2055,14 +1769,14 @@ pub fn elliptic_cost(quad: *const f64, alpha: f64, mu: f64, Dm: f64) -> f64 {
 }
 
 /// C: ellipticCostDif (engine/engine_solver.c:1569)
-/// Calls: ellipticCost
+/// Calls: cxx-internal:/Users/xing/Desktop/projects/c2rust_bitexact/projects/mujoco/src/engine/engine_solver.c:_ellipticCost
 /// ⚠️ BITEXACT RULES:
 ///   1. Copy exact C accumulation order (no iter().sum())
 ///   2. No f64::mul_add() (FMA changes precision)
 ///   3. No algebraic simplification
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
-pub fn elliptic_cost_dif(quad: *const f64, alpha: f64, mu: f64, Dm: f64) -> f64 {
+pub fn ellipticCostDif(quad: *const f64, alpha: f64, mu: f64, Dm: f64) -> f64 {
     // SAFETY: quad has at least 8 elements (indices 0..7)
     unsafe {
         let U0: f64 = *quad.add(3);
@@ -2124,14 +1838,14 @@ pub fn elliptic_cost_dif(quad: *const f64, alpha: f64, mu: f64, Dm: f64) -> f64 
         }
 
         // otherwise different zones: compute absolute costs and subtract
-        elliptic_cost(quad, alpha, mu, Dm) - elliptic_cost(quad, 0.0, mu, Dm)
+        ellipticCost(quad, alpha, mu, Dm) - ellipticCost(quad, 0.0, mu, Dm)
     }
 }
 
 /// C: PrimalEval (engine/engine_solver.c:1631)
-/// Calls: ellipticCostDif, frictionCostDif, mju_warning
+/// Calls: cxx-internal:/Users/xing/Desktop/projects/c2rust_bitexact/projects/mujoco/src/engine/engine_solver.c:_ellipticCostDif, cxx-internal:/Users/xing/Desktop/projects/c2rust_bitexact/projects/mujoco/src/engine/engine_solver.c:_frictionCostDif, cxx:_mju_warning
 #[allow(unused_variables, non_snake_case)]
-pub fn primal_eval(ctx: *mut mjPrimalContext, p: *mut mjPrimalPnt) {
+pub fn PrimalEval(ctx: *mut mjPrimalContext, p: *mut mjPrimalPnt) {
     #[repr(C)]
     #[allow(non_snake_case)]
     struct PrimalCtx {
@@ -2260,7 +1974,7 @@ pub fn primal_eval(ctx: *mut mjPrimalContext, p: *mut mjPrimalPnt) {
                 let Rf = *(*c).efc_R.add(i as usize) * f;
 
                 // cost delta
-                cost += friction_cost_dif(start, x, f, Rf, D);
+                cost += frictionCostDif(start, x, f, Rf, D);
 
                 // -bound < x < bound : quadratic
                 if -Rf < x && x < Rf {
@@ -2296,7 +2010,7 @@ pub fn primal_eval(ctx: *mut mjPrimalContext, p: *mut mjPrimalPnt) {
                 let Dm = *quad_ptr.add(8);
 
                 // shifted cost
-                cost += elliptic_cost_dif(quad_ptr, alpha, mu, Dm);
+                cost += ellipticCostDif(quad_ptr, alpha, mu, Dm);
 
                 // compute N, Tsqr for derivatives
                 let N = U0 + alpha * V0;
@@ -2378,9 +2092,9 @@ pub fn primal_eval(ctx: *mut mjPrimalContext, p: *mut mjPrimalPnt) {
 }
 
 /// C: updateBracket (engine/engine_solver.c:1782)
-/// Calls: PrimalEval
+/// Calls: cxx-internal:engine_solver.c.o:_PrimalEval
 #[allow(unused_variables, non_snake_case)]
-pub fn update_bracket(ctx: *mut mjPrimalContext, p: *mut mjPrimalPnt, candidates: *const mjPrimalPnt, pnext: *mut mjPrimalPnt) -> i32 {
+pub fn updateBracket(ctx: *mut mjPrimalContext, p: *mut mjPrimalPnt, candidates: *const mjPrimalPnt, pnext: *mut mjPrimalPnt) -> i32 {
     // SAFETY: ctx is valid mjPrimalContext, p/pnext are valid mjPrimalPnt pointers,
     // candidates points to array of 3 mjPrimalPnt.
     unsafe {
@@ -2402,7 +2116,7 @@ pub fn update_bracket(ctx: *mut mjPrimalContext, p: *mut mjPrimalPnt, candidates
         // compute next point if updated
         if flag != 0 {
             (*pnext).alpha = (*p).alpha - (*p).deriv[0] / (*p).deriv[1];
-            primal_eval(ctx, pnext);
+            PrimalEval(ctx, pnext);
         }
 
         flag
@@ -2410,14 +2124,14 @@ pub fn update_bracket(ctx: *mut mjPrimalContext, p: *mut mjPrimalPnt, candidates
 }
 
 /// C: PrimalSearch (engine/engine_solver.c:1812)
-/// Calls: PrimalEval, PrimalPrepare, mju_mulMatVec, mju_mulMatVecSparse, mju_mulSymVecSparse, mju_norm, updateBracket
+/// Calls: cxx-internal:/Users/xing/Desktop/projects/c2rust_bitexact/projects/mujoco/src/engine/engine_solver.c:_PrimalPrepare, cxx-internal:/Users/xing/Desktop/projects/c2rust_bitexact/projects/mujoco/src/engine/engine_solver.c:_updateBracket, cxx-internal:engine_solver.c.o:_PrimalEval, cxx:_mju_mulMatVec, cxx:_mju_mulMatVecSparse, cxx:_mju_mulSymVecSparse, cxx:_mju_norm
 /// ⚠️ BITEXACT RULES:
 ///   1. Copy exact C accumulation order (no iter().sum())
 ///   2. No f64::mul_add() (FMA changes precision)
 ///   3. No algebraic simplification
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
-pub fn primal_search(ctx: *mut mjPrimalContext, tolerance: f64, ls_iterations: f64, improvement: *mut f64) -> f64 {
+pub fn PrimalSearch(ctx: *mut mjPrimalContext, tolerance: f64, ls_iterations: f64, improvement: *mut f64) -> f64 {
     const MJMINVAL: f64 = 1e-15;
 
     #[repr(C)]
@@ -2532,18 +2246,18 @@ pub fn primal_search(ctx: *mut mjPrimalContext, tolerance: f64, ls_iterations: f
         let slopescl = (*c).scale / snorm;
 
         // compute Mv = M * v
-        crate::engine::engine_util_sparse::mju_mul_sym_vec_sparse(
+        crate::engine::engine_util_sparse::mju_mulSymVecSparse(
             (*c).Mv, (*c).M as *const f64, (*c).search as *const f64, nv,
             (*c).M_rownnz as *const i32, (*c).M_rowadr as *const i32, (*c).M_colind as *const i32,
         );
 
         // compute Jv = J * search (dense or sparse)
         if (*c).is_sparse == 0 {
-            crate::engine::engine_util_blas::mju_mul_mat_vec(
+            crate::engine::engine_util_blas::mju_mulMatVec(
                 (*c).Jv, (*c).J as *const f64, (*c).search as *const f64, nefc, nv,
             );
         } else {
-            crate::engine::engine_util_sparse::mju_mul_mat_vec_sparse(
+            crate::engine::engine_util_sparse::mju_mulMatVecSparse(
                 (*c).Jv, (*c).J as *const f64, (*c).search as *const f64, nefc,
                 (*c).J_rownnz as *const i32, (*c).J_rowadr as *const i32,
                 (*c).J_colind as *const i32, (*c).J_rowsuper as *const i32,
@@ -2551,15 +2265,15 @@ pub fn primal_search(ctx: *mut mjPrimalContext, tolerance: f64, ls_iterations: f
         }
 
         // prepare quadratics and cones
-        primal_prepare(ctx);
+        PrimalPrepare(ctx);
 
         // init at alpha = 0, save
         let mut p0 = mjPrimalPnt { alpha: 0.0, cost: 0.0, deriv: [0.0; 2] };
-        primal_eval(ctx, &mut p0 as *mut mjPrimalPnt);
+        PrimalEval(ctx, &mut p0 as *mut mjPrimalPnt);
 
         // always attempt one Newton step
         let mut p1 = mjPrimalPnt { alpha: p0.alpha - p0.deriv[0] / p0.deriv[1], cost: 0.0, deriv: [0.0; 2] };
-        primal_eval(ctx, &mut p1 as *mut mjPrimalPnt);
+        PrimalEval(ctx, &mut p1 as *mut mjPrimalPnt);
 
         // check for initial convergence
         if p1.deriv[0].abs() < gtol {
@@ -2585,7 +2299,7 @@ pub fn primal_search(ctx: *mut mjPrimalContext, tolerance: f64, ls_iterations: f
 
             // move to Newton point w.r.t current
             p1.alpha -= p1.deriv[0] / p1.deriv[1];
-            primal_eval(ctx, &mut p1 as *mut mjPrimalPnt);
+            PrimalEval(ctx, &mut p1 as *mut mjPrimalPnt);
 
             // check for convergence
             if p1.deriv[0].abs() < gtol {
@@ -2614,13 +2328,13 @@ pub fn primal_search(ctx: *mut mjPrimalContext, tolerance: f64, ls_iterations: f
         // compute next-points for bracket
         let mut p2next = p1;
         let mut p1next = mjPrimalPnt { alpha: p1.alpha - p1.deriv[0] / p1.deriv[1], cost: 0.0, deriv: [0.0; 2] };
-        primal_eval(ctx, &mut p1next as *mut mjPrimalPnt);
+        PrimalEval(ctx, &mut p1next as *mut mjPrimalPnt);
 
         // bracketed search
         while (*c).LSiter < ls_iterations as i32 {
             // evaluate at midpoint
             let mut pmid = mjPrimalPnt { alpha: 0.5 * (p1.alpha + p2.alpha), cost: 0.0, deriv: [0.0; 2] };
-            primal_eval(ctx, &mut pmid as *mut mjPrimalPnt);
+            PrimalEval(ctx, &mut pmid as *mut mjPrimalPnt);
 
             // make list of candidates
             let mut candidates: [mjPrimalPnt; 3] = [p1next, p2next, pmid];
@@ -2643,8 +2357,8 @@ pub fn primal_search(ctx: *mut mjPrimalContext, tolerance: f64, ls_iterations: f
             }
 
             // update brackets
-            let b1 = update_bracket(ctx, &mut p1 as *mut mjPrimalPnt, candidates.as_ptr(), &mut p1next as *mut mjPrimalPnt);
-            let b2 = update_bracket(ctx, &mut p2 as *mut mjPrimalPnt, candidates.as_ptr(), &mut p2next as *mut mjPrimalPnt);
+            let b1 = updateBracket(ctx, &mut p1 as *mut mjPrimalPnt, candidates.as_ptr(), &mut p1next as *mut mjPrimalPnt);
+            let b2 = updateBracket(ctx, &mut p2 as *mut mjPrimalPnt, candidates.as_ptr(), &mut p2next as *mut mjPrimalPnt);
 
             // no update possible: numerical accuracy reached, use midpoint
             if b1 == 0 && b2 == 0 {
@@ -2677,17 +2391,10 @@ pub fn primal_search(ctx: *mut mjPrimalContext, tolerance: f64, ls_iterations: f
     }
 }
 
-/// C: MakeHessian (engine/engine_solver.c:2010)
-/// Calls: mj_stackAllocInfo, mju_addToMatSparse, mju_addToSymSparse, mju_cholFactorSymbolic, mju_sqrMatTDSparseNumeric, mju_sqrMatTDSparseSymbolic, mju_sqrMatTD_impl, mju_transposeSparse
-#[allow(unused_variables, non_snake_case)]
-pub fn make_hessian(d: *mut mjData, ctx: *mut mjPrimalContext) {
-    todo!() // MakeHessian
-}
-
 /// C: HessianCone (engine/engine_solver.c:2099)
-/// Calls: mju_addToScl, mju_cholFactor, mju_cholUpdate, mju_cholUpdateSparse, mju_copy, mju_zero
+/// Calls: cxx:_mju_addToScl, cxx:_mju_cholFactor, cxx:_mju_cholUpdate, cxx:_mju_cholUpdateSparse, cxx:_mju_copy, cxx:_mju_zero
 #[allow(unused_variables, non_snake_case)]
-pub fn hessian_cone(d: *mut mjData, ctx: *mut mjPrimalContext) {
+pub fn HessianCone(d: *mut mjData, ctx: *mut mjPrimalContext) {
     const MJMINVAL: f64 = 1e-15;
     const MJ_CNSTRSTATE_CONE: i32 = 4;
 
@@ -2802,7 +2509,7 @@ pub fn hessian_cone(d: *mut mjData, ctx: *mut mjPrimalContext) {
                 crate::engine::engine_util_blas::mju_copy(
                     local.as_mut_ptr(), (*con).H.as_ptr(), dim * dim,
                 );
-                crate::engine::engine_util_solve::mju_chol_factor(
+                crate::engine::engine_util_solve::mju_cholFactor(
                     local.as_mut_ptr(), dim, MJMINVAL,
                 );
 
@@ -2816,7 +2523,7 @@ pub fn hessian_cone(d: *mut mjData, ctx: *mut mjPrimalContext) {
                     for r in 0..dim {
                         for cc in 0..=r {
                             // SAFETY: J_rowadr[i+r] gives valid offset into J array
-                            crate::engine::engine_util_blas::mju_add_to_scl(
+                            crate::engine::engine_util_blas::mju_addToScl(
                                 LTJ.add((cc * nnz) as usize),
                                 (*c).J.add(*(*c).J_rowadr.add((i + r) as usize) as usize),
                                 local[(r * dim + cc) as usize],
@@ -2827,7 +2534,7 @@ pub fn hessian_cone(d: *mut mjData, ctx: *mut mjPrimalContext) {
 
                     // update
                     for r in 0..dim {
-                        crate::engine::engine_util_solve::mju_chol_update_sparse(
+                        crate::engine::engine_util_solve::mju_cholUpdateSparse(
                             (*c).Lcone,
                             LTJ.add((r * nnz) as usize),
                             nv, 1,
@@ -2843,7 +2550,7 @@ pub fn hessian_cone(d: *mut mjData, ctx: *mut mjPrimalContext) {
                     for r in 0..dim {
                         for cc in 0..=r {
                             // SAFETY: J is nefc*nv dense, row (i+r) is valid
-                            crate::engine::engine_util_blas::mju_add_to_scl(
+                            crate::engine::engine_util_blas::mju_addToScl(
                                 LTJ.add((cc * nv) as usize),
                                 (*c).J.add(((i + r) * nv) as usize),
                                 local[(r * dim + cc) as usize],
@@ -2854,7 +2561,7 @@ pub fn hessian_cone(d: *mut mjData, ctx: *mut mjPrimalContext) {
 
                     // update
                     for r in 0..dim {
-                        crate::engine::engine_util_solve::mju_chol_update(
+                        crate::engine::engine_util_solve::mju_cholUpdate(
                             (*c).Lcone,
                             LTJ.add((r * nv) as usize),
                             nv, 1,
@@ -2873,107 +2580,58 @@ pub fn hessian_cone(d: *mut mjData, ctx: *mut mjPrimalContext) {
     }
 }
 
-/// C: FactorizeHessian (engine/engine_solver.c:2102)
-/// Calls: HessianCone, mju_addToMatSparse, mju_addToSymSparse, mju_cholFactor, mju_cholFactorNumeric, mju_message, mju_sqrMatTDSparseNumeric, mju_sqrMatTDSparseSymbolic, mju_sqrMatTD_impl
-#[allow(unused_variables, non_snake_case)]
-pub fn factorize_hessian(d: *mut mjData, ctx: *mut mjPrimalContext, flg_recompute: i32) {
-    todo!() // FactorizeHessian
-}
-
-/// C: HessianIncremental (engine/engine_solver.c:2238)
-/// Calls: FactorizeHessian, HessianCone, mju_cholUpdate, mju_cholUpdateSparse, mju_scl
-#[allow(unused_variables, non_snake_case)]
-pub fn hessian_incremental(d: *mut mjData, ctx: *mut mjPrimalContext, oldstate: *const i32) {
-    todo!() // HessianIncremental
-}
-
-/// C: mj_solPrimal (engine/engine_solver.c:2297)
-/// Calls: FactorizeHessian, HessianIncremental, MakeHessian, PrimalAllocate, PrimalPointers, PrimalSearch, PrimalUpdateConstraint, PrimalUpdateGradient, mj_freeStack, mj_isSparse, mj_markStack, mju_addToScl, mju_copy, mju_copyInt, mju_dot, mju_max, mju_min, mju_mulMatVec, mju_mulMatVecSparse, mju_mulSymVecSparse, mju_norm, mju_scl, mju_sub, mju_subFrom, saveStats
-#[allow(unused_variables, non_snake_case)]
-pub fn mj_sol_primal(m: *const mjModel, d: *mut mjData, island: i32, maxiter: i32, flg_Newton: i32) {
-    todo!() // mj_solPrimal
-}
-
 /// C: mj_solPGS (engine/engine_solver.h:24)
-/// Calls: solPGS
+/// Calls: cxx-internal:engine_solver.c.o:_solPGS
 #[allow(unused_variables, non_snake_case)]
-pub fn mj_sol_pgs(m: *const mjModel, d: *mut mjData, maxiter: i32) {
+pub fn mj_solPGS(m: *const mjModel, d: *mut mjData, maxiter: i32) {
     // SAFETY: m, d are valid pointers (caller contract).
     unsafe {
-        sol_pgs(m, d, -1, (*d).ne, (*d).nf, (*d).nefc, std::ptr::null(), maxiter);
+        solPGS(m, d, -1, (*d).ne, (*d).nf, (*d).nefc, std::ptr::null(), maxiter);
     }
 }
 
 /// C: mj_solNoSlip (engine/engine_solver.h:27)
-/// Calls: solNoSlip
+/// Calls: cxx-internal:engine_solver.c.o:_solNoSlip
 #[allow(unused_variables, non_snake_case)]
-pub fn mj_sol_no_slip(m: *const mjModel, d: *mut mjData, maxiter: i32) {
+pub fn mj_solNoSlip(m: *const mjModel, d: *mut mjData, maxiter: i32) {
     // SAFETY: m, d are valid pointers (caller contract).
     unsafe {
-        sol_no_slip(m, d, -1, (*d).ne, (*d).nf, (*d).nefc, std::ptr::null(), maxiter);
+        solNoSlip(m, d, -1, (*d).ne, (*d).nf, (*d).nefc, std::ptr::null(), maxiter);
     }
 }
 
-/// C: mj_solCG (engine/engine_solver.h:30)
-/// Calls: mj_solPrimal
-#[allow(unused_variables, non_snake_case)]
-pub fn mj_sol_cg(m: *const mjModel, d: *mut mjData, maxiter: i32) {
-    mj_sol_primal(m, d, -1, maxiter, 0);
-}
-
-/// C: mj_solNewton (engine/engine_solver.h:33)
-/// Calls: mj_solPrimal
-#[allow(unused_variables, non_snake_case)]
-pub fn mj_sol_newton(m: *const mjModel, d: *mut mjData, maxiter: i32) {
-    mj_sol_primal(m, d, -1, maxiter, 1);
-}
-
 /// C: mj_solPGS_island (engine/engine_solver.h:39)
-/// Calls: solPGS
+/// Calls: cxx-internal:engine_solver.c.o:_solPGS
 #[allow(unused_variables, non_snake_case)]
-pub fn mj_sol_pgs_island(m: *const mjModel, d: *mut mjData, island: i32, maxiter: i32) {
+pub fn mj_solPGS_island(m: *const mjModel, d: *mut mjData, island: i32, maxiter: i32) {
     // SAFETY: m, d are valid pointers (caller contract).
     unsafe {
         let ne = *(*d).island_ne.add(island as usize);
         let nf = *(*d).island_nf.add(island as usize);
         let nefc = *(*d).island_nefc.add(island as usize);
         let iefcadr = *(*d).island_iefcadr.add(island as usize);
-        sol_pgs(m, d, island, ne, nf, nefc, (*d).map_iefc2efc.add(iefcadr as usize), maxiter);
+        solPGS(m, d, island, ne, nf, nefc, (*d).map_iefc2efc.add(iefcadr as usize), maxiter);
     }
 }
 
 /// C: mj_solNoSlip_island (engine/engine_solver.h:42)
-/// Calls: solNoSlip
+/// Calls: cxx-internal:engine_solver.c.o:_solNoSlip
 #[allow(unused_variables, non_snake_case)]
-pub fn mj_sol_no_slip_island(m: *const mjModel, d: *mut mjData, island: i32, maxiter: i32) {
+pub fn mj_solNoSlip_island(m: *const mjModel, d: *mut mjData, island: i32, maxiter: i32) {
     // SAFETY: m, d are valid pointers (caller contract).
     unsafe {
         let ne = *(*d).island_ne.add(island as usize);
         let nf = *(*d).island_nf.add(island as usize);
         let nefc = *(*d).island_nefc.add(island as usize);
         let iefcadr = *(*d).island_iefcadr.add(island as usize);
-        sol_no_slip(m, d, island, ne, nf, nefc, (*d).map_iefc2efc.add(iefcadr as usize), maxiter);
+        solNoSlip(m, d, island, ne, nf, nefc, (*d).map_iefc2efc.add(iefcadr as usize), maxiter);
     }
 }
 
-/// C: mj_solCG_island (engine/engine_solver.h:45)
-/// Calls: mj_solPrimal
-#[allow(unused_variables, non_snake_case)]
-pub fn mj_sol_cg_island(m: *const mjModel, d: *mut mjData, island: i32, maxiter: i32) {
-    mj_sol_primal(m, d, island, maxiter, 0);
-}
-
-/// C: mj_solNewton_island (engine/engine_solver.h:48)
-/// Calls: mj_solPrimal
-#[allow(unused_variables, non_snake_case)]
-pub fn mj_sol_newton_island(m: *const mjModel, d: *mut mjData, island: i32, maxiter: i32) {
-    mj_sol_primal(m, d, island, maxiter, 1);
-}
-
 /// C: mj_dualFinish (engine/engine_solver.h:51)
-/// Calls: dualFinish
+/// Calls: cxx-internal:/Users/xing/Desktop/projects/c2rust_bitexact/projects/mujoco/src/engine/engine_solver.c:_dualFinish
 #[allow(unused_variables, non_snake_case)]
-pub fn mj_dual_finish(m: *const mjModel, d: *mut mjData) {
-    dual_finish(m, d);
+pub fn mj_dualFinish(m: *const mjModel, d: *mut mjData) {
+    dualFinish(m, d);
 }
 

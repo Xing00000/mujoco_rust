@@ -1,12 +1,12 @@
 //! Port of: render/classic/glad/glad.c
-//! IR hash: 73393814548a07d1
-//! CODEGEN: signatures locked. Only fill todo!() bodies.
+//! IR hash: 9343293228317031
+//! CODEGEN: source paths, owners, and callable names are locked.
 
 use crate::types::*;
 
 /// C: mjGlad_get_proc (render/classic/glad/glad.c:58)
 #[allow(unused_variables, non_snake_case)]
-pub fn mj_glad_get_proc(namez: *const i8) -> *mut () {
+pub fn mjGlad_get_proc(namez: *const i8) -> *mut () {
     // SAFETY: Accesses module-level static mjGlad_libGL (pointer stored as [u8;8]).
     // On macOS (__APPLE__): no mjGladGetProcAddressPtr, just dlsym on libGL handle.
     unsafe {
@@ -25,7 +25,7 @@ pub fn mj_glad_get_proc(namez: *const i8) -> *mut () {
 
 /// C: mjGlad_open_gl (render/classic/glad/glad.c:230)
 #[allow(unused_variables, non_snake_case)]
-pub fn mj_glad_open_gl(get_proc_address: *mut ()) -> i32 {
+pub fn mjGlad_open_gl(get_proc_address: *mut ()) -> i32 {
     // SAFETY: macOS version: tries dlopen on known OpenGL framework paths.
     // Stores handle in mjGlad_libGL static.
     unsafe {
@@ -56,7 +56,7 @@ pub fn mj_glad_open_gl(get_proc_address: *mut ()) -> i32 {
 
 /// C: mjGlad_close_gl (render/classic/glad/glad.c:252)
 #[allow(unused_variables, non_snake_case)]
-pub fn mj_glad_close_gl() {
+pub fn mjGlad_close_gl() {
     // SAFETY: Closes the OpenGL framework handle and sets mjGlad_libGL to NULL.
     unsafe {
         extern "C" { fn dlclose(handle: *mut std::ffi::c_void) -> i32; }
@@ -72,7 +72,7 @@ pub fn mj_glad_close_gl() {
 
 /// C: mjGlad_get_exts (render/classic/glad/glad.c:294)
 #[allow(unused_variables, non_snake_case)]
-pub fn mj_glad_get_exts() -> i32 {
+pub fn mjGlad_get_exts() -> i32 {
     // SAFETY: Reads glGetString fn ptr from static, calls it with GL_EXTENSIONS,
     // stores result in MJGLAD_EXTS static.
     // _GLAD_IS_SOME_NEW_VERSION is not defined, so only the simple path applies.
@@ -96,7 +96,7 @@ pub fn mj_glad_get_exts() -> i32 {
 
 /// C: mjGlad_free_exts (render/classic/glad/glad.c:328)
 #[allow(unused_variables, non_snake_case)]
-pub fn mj_glad_free_exts() {
+pub fn mjGlad_free_exts() {
     // SAFETY: Frees the extension string array allocated in mjGlad_get_exts.
     // Reads mjGlad_exts_i (char**) and mjGlad_num_exts_i (int) from statics.
     unsafe {
@@ -123,7 +123,7 @@ pub fn mj_glad_free_exts() {
 
 /// C: mjGlad_has_ext (render/classic/glad/glad.c:339)
 #[allow(unused_variables, non_snake_case)]
-pub fn mj_glad_has_ext(ext: *const i8) -> i32 {
+pub fn mjGlad_has_ext(ext: *const i8) -> i32 {
     // SAFETY: Searches for an extension string in the loaded extensions list.
     // On macOS (GL < 3 path): linear search in mjGlad_exts string.
     // On GL >= 3 path: search in mjGlad_exts_i array.
@@ -190,122 +190,59 @@ pub fn mj_glad_has_ext(ext: *const i8) -> i32 {
     }
 }
 
-/// C: mjGlad_load_GL_VERSION_1_0 (render/classic/glad/glad.c:898)
-#[allow(unused_variables, non_snake_case)]
-pub fn mj_glad_load_gl_version_1_0(load: GLADloadproc) {
-    todo!() // mjGlad_load_GL_VERSION_1_0
-}
-
-/// C: mjGlad_load_GL_VERSION_1_1 (render/classic/glad/glad.c:1207)
-/// Calls: mjCModel::Textures
-#[allow(unused_variables, non_snake_case)]
-pub fn mj_glad_load_gl_version_1_1(load: GLADloadproc) {
-    todo!() // mjGlad_load_GL_VERSION_1_1
-}
-
-/// C: mjGlad_load_GL_VERSION_1_2 (render/classic/glad/glad.c:1240)
-#[allow(unused_variables, non_snake_case)]
-pub fn mj_glad_load_gl_version_1_2(load: GLADloadproc) {
-    todo!() // mjGlad_load_GL_VERSION_1_2
-}
-
-/// C: mjGlad_load_GL_VERSION_1_3 (render/classic/glad/glad.c:1247)
-#[allow(unused_variables, non_snake_case)]
-pub fn mj_glad_load_gl_version_1_3(load: GLADloadproc) {
-    todo!() // mjGlad_load_GL_VERSION_1_3
-}
-
-/// C: mjGlad_load_GL_VERSION_1_4 (render/classic/glad/glad.c:1296)
-#[allow(unused_variables, non_snake_case)]
-pub fn mj_glad_load_gl_version_1_4(load: GLADloadproc) {
-    todo!() // mjGlad_load_GL_VERSION_1_4
-}
-
-/// C: mjGlad_load_GL_VERSION_1_5 (render/classic/glad/glad.c:1346)
-/// Calls: mjCAsset::Data
-#[allow(unused_variables, non_snake_case)]
-pub fn mj_glad_load_gl_version_1_5(load: GLADloadproc) {
-    todo!() // mjGlad_load_GL_VERSION_1_5
-}
-
-/// C: mjGlad_load_GL_ARB_clip_control (render/classic/glad/glad.c:1368)
-#[allow(unused_variables, non_snake_case)]
-pub fn mj_glad_load_gl_arb_clip_control(load: GLADloadproc) {
-    todo!() // mjGlad_load_GL_ARB_clip_control
-}
-
-/// C: mjGlad_load_GL_ARB_framebuffer_object (render/classic/glad/glad.c:1372)
-#[allow(unused_variables, non_snake_case)]
-pub fn mj_glad_load_gl_arb_framebuffer_object(load: GLADloadproc) {
-    todo!() // mjGlad_load_GL_ARB_framebuffer_object
-}
-
-/// C: mjGlad_load_GL_ARB_vertex_buffer_object (render/classic/glad/glad.c:1395)
-#[allow(unused_variables, non_snake_case)]
-pub fn mj_glad_load_gl_arb_vertex_buffer_object(load: GLADloadproc) {
-    todo!() // mjGlad_load_GL_ARB_vertex_buffer_object
-}
-
-/// C: mjGlad_load_GL_KHR_debug (render/classic/glad/glad.c:1409)
-/// Calls: mjCCache::Insert
-#[allow(unused_variables, non_snake_case)]
-pub fn mj_glad_load_gl_khr_debug(load: GLADloadproc) {
-    todo!() // mjGlad_load_GL_KHR_debug
-}
-
 /// C: mjGlad_find_extensionsGL (render/classic/glad/glad.c:1434)
-/// Calls: mjGlad_free_exts, mjGlad_get_exts, mjGlad_has_ext
+/// Calls: cxx-internal:/Users/xing/Desktop/projects/c2rust_bitexact/projects/mujoco/src/render/classic/glad/glad.c:_mjGlad_free_exts, cxx-internal:/Users/xing/Desktop/projects/c2rust_bitexact/projects/mujoco/src/render/classic/glad/glad.c:_mjGlad_get_exts, cxx-internal:/Users/xing/Desktop/projects/c2rust_bitexact/projects/mujoco/src/render/classic/glad/glad.c:_mjGlad_has_ext
 #[allow(unused_variables, non_snake_case)]
-pub fn mj_glad_find_extensions_gl() -> i32 {
-    if mj_glad_get_exts() == 0 {
+pub fn mjGlad_find_extensionsGL() -> i32 {
+    if mjGlad_get_exts() == 0 {
         return 0;
     }
 
     // SAFETY: Writing i32 results from mj_glad_has_ext into the extension statics.
     unsafe {
-        let val = mj_glad_has_ext(b"GL_ARB_clip_control\0".as_ptr() as *const i8);
+        let val = mjGlad_has_ext(b"GL_ARB_clip_control\0".as_ptr() as *const i8);
         let mut g = MJGLAD_GL_ARB_CLIP_CONTROL.lock().unwrap();
         std::ptr::write(g.as_mut_ptr() as *mut i32, val);
         drop(g);
 
-        let val = mj_glad_has_ext(b"GL_ARB_depth_buffer_float\0".as_ptr() as *const i8);
+        let val = mjGlad_has_ext(b"GL_ARB_depth_buffer_float\0".as_ptr() as *const i8);
         let mut g = MJGLAD_GL_ARB_DEPTH_BUFFER_FLOAT.lock().unwrap();
         std::ptr::write(g.as_mut_ptr() as *mut i32, val);
         drop(g);
 
-        let val = mj_glad_has_ext(b"GL_ARB_framebuffer_object\0".as_ptr() as *const i8);
+        let val = mjGlad_has_ext(b"GL_ARB_framebuffer_object\0".as_ptr() as *const i8);
         let mut g = MJGLAD_GL_ARB_FRAMEBUFFER_OBJECT.lock().unwrap();
         std::ptr::write(g.as_mut_ptr() as *mut i32, val);
         drop(g);
 
-        let val = mj_glad_has_ext(b"GL_ARB_seamless_cube_map\0".as_ptr() as *const i8);
+        let val = mjGlad_has_ext(b"GL_ARB_seamless_cube_map\0".as_ptr() as *const i8);
         let mut g = MJGLAD_GL_ARB_SEAMLESS_CUBE_MAP.lock().unwrap();
         std::ptr::write(g.as_mut_ptr() as *mut i32, val);
         drop(g);
 
-        let val = mj_glad_has_ext(b"GL_ARB_vertex_buffer_object\0".as_ptr() as *const i8);
+        let val = mjGlad_has_ext(b"GL_ARB_vertex_buffer_object\0".as_ptr() as *const i8);
         let mut g = MJGLAD_GL_ARB_VERTEX_BUFFER_OBJECT.lock().unwrap();
         std::ptr::write(g.as_mut_ptr() as *mut i32, val);
         drop(g);
 
-        let val = mj_glad_has_ext(b"GL_EXT_texture_sRGB\0".as_ptr() as *const i8);
+        let val = mjGlad_has_ext(b"GL_EXT_texture_sRGB\0".as_ptr() as *const i8);
         let mut g = MJGLAD_GL_EXT_TEXTURE_SRGB.lock().unwrap();
         std::ptr::write(g.as_mut_ptr() as *mut i32, val);
         drop(g);
 
-        let val = mj_glad_has_ext(b"GL_KHR_debug\0".as_ptr() as *const i8);
+        let val = mjGlad_has_ext(b"GL_KHR_debug\0".as_ptr() as *const i8);
         let mut g = MJGLAD_GL_KHR_DEBUG.lock().unwrap();
         std::ptr::write(g.as_mut_ptr() as *mut i32, val);
         drop(g);
     }
 
-    mj_glad_free_exts();
+    mjGlad_free_exts();
     1
 }
 
 /// C: mjGlad_find_coreGL (render/classic/glad/glad.c:1447)
 #[allow(unused_variables, non_snake_case)]
-pub fn mj_glad_find_core_gl() {
+pub fn mjGlad_find_coreGL() {
     // SAFETY: Calls glGetString(GL_VERSION), parses version, sets statics.
     unsafe {
         extern "C" {
@@ -409,19 +346,5 @@ pub fn mj_glad_find_core_gl() {
             drop(min_guard);
         }
     }
-}
-
-/// C: mjGladLoadGL (render/classic/glad/glad.h:115)
-/// Calls: mjGladLoadGLUnsafe
-#[allow(unused_variables, non_snake_case)]
-pub fn mj_glad_load_gl() -> i32 {
-    todo ! ()
-}
-
-/// C: mjGladLoadGLUnsafe (render/classic/glad/glad.h:117)
-/// Calls: mjGlad_close_gl, mjGlad_find_coreGL, mjGlad_find_extensionsGL, mjGlad_get_proc, mjGlad_load_GL_ARB_clip_control, mjGlad_load_GL_ARB_framebuffer_object, mjGlad_load_GL_ARB_vertex_buffer_object, mjGlad_load_GL_KHR_debug, mjGlad_load_GL_VERSION_1_0, mjGlad_load_GL_VERSION_1_1, mjGlad_load_GL_VERSION_1_2, mjGlad_load_GL_VERSION_1_3, mjGlad_load_GL_VERSION_1_4, mjGlad_load_GL_VERSION_1_5, mjGlad_open_gl
-#[allow(unused_variables, non_snake_case)]
-pub fn mj_glad_load_gl_unsafe(arg0: *mut ()) -> i32 {
-    todo!() // mjGladLoadGLUnsafe
 }
 

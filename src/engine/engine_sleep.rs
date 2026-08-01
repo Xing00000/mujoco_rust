@@ -1,18 +1,18 @@
 //! Port of: engine/engine_sleep.c
-//! IR hash: 73393814548a07d1
-//! CODEGEN: signatures locked. Only fill todo!() bodies.
+//! IR hash: 9343293228317031
+//! CODEGEN: source paths, owners, and callable names are locked.
 
 use crate::types::*;
 
 /// C: isSmaller (engine/engine_sleep.c:110)
-/// Calls: mju_max
+/// Calls: cxx:_mju_max
 /// ⚠️ BITEXACT RULES:
 ///   1. Copy exact C accumulation order (no iter().sum())
 ///   2. No f64::mul_add() (FMA changes precision)
 ///   3. No algebraic simplification
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
-pub fn is_smaller(vec: *const f64, weight: *const f64, n: i32, tol: f64) -> i32 {
+pub fn isSmaller(vec: *const f64, weight: *const f64, n: i32, tol: f64) -> i32 {
     // SAFETY: vec and weight point to at least n f64 elements (caller contract)
     unsafe {
         let mut max: f64 = 0.0;
@@ -28,14 +28,14 @@ pub fn is_smaller(vec: *const f64, weight: *const f64, n: i32, tol: f64) -> i32 
 }
 
 /// C: treeCanSleep (engine/engine_sleep.c:123)
-/// Calls: isSmaller, mju_isZeroByte
+/// Calls: cxx-internal:/Users/xing/Desktop/projects/c2rust_bitexact/projects/mujoco/src/engine/engine_sleep.c:_isSmaller, cxx:_mju_isZeroByte
 /// ⚠️ BITEXACT RULES:
 ///   1. Copy exact C accumulation order (no iter().sum())
 ///   2. No f64::mul_add() (FMA changes precision)
 ///   3. No algebraic simplification
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
-pub fn tree_can_sleep(m: *const mjModel, d: *const mjData, i: i32, tol: f64) -> i32 {
+pub fn treeCanSleep(m: *const mjModel, d: *const mjData, i: i32, tol: f64) -> i32 {
     const mjSLEEP_NEVER: i32 = 3;
     const mjSLEEP_AUTO_NEVER: i32 = 1;
 
@@ -51,7 +51,7 @@ pub fn tree_can_sleep(m: *const mjModel, d: *const mjData, i: i32, tol: f64) -> 
         // check xfrc_applied
         let mut adr = *(*m).tree_bodyadr.add(i as usize);
         let mut num = *(*m).tree_bodynum.add(i as usize);
-        if crate::engine::engine_util_misc::mju_is_zero_byte(
+        if crate::engine::engine_util_misc::mju_isZeroByte(
             (*d).xfrc_applied.add(6 * adr as usize) as *const u8,
             6 * num * (core::mem::size_of::<f64>() as i32),
         ) == 0
@@ -62,7 +62,7 @@ pub fn tree_can_sleep(m: *const mjModel, d: *const mjData, i: i32, tol: f64) -> 
         // check qfrc_applied
         adr = *(*m).tree_dofadr.add(i as usize);
         num = *(*m).tree_dofnum.add(i as usize);
-        if crate::engine::engine_util_misc::mju_is_zero_byte(
+        if crate::engine::engine_util_misc::mju_isZeroByte(
             (*d).qfrc_applied.add(adr as usize) as *const u8,
             num * (core::mem::size_of::<f64>() as i32),
         ) == 0
@@ -72,9 +72,9 @@ pub fn tree_can_sleep(m: *const mjModel, d: *const mjData, i: i32, tol: f64) -> 
 
         // check qvel
         if tol != 0.0 {
-            is_smaller((*d).qvel.add(adr as usize), (*m).dof_length.add(adr as usize), num, tol)
+            isSmaller((*d).qvel.add(adr as usize), (*m).dof_length.add(adr as usize), num, tol)
         } else {
-            crate::engine::engine_util_misc::mju_is_zero_byte(
+            crate::engine::engine_util_misc::mju_isZeroByte(
                 (*d).qvel.add(adr as usize) as *const u8,
                 num * (core::mem::size_of::<f64>() as i32),
             )
@@ -93,9 +93,9 @@ pub fn plural(n: i32) -> *const i8 {
 }
 
 /// C: mj_sleepTrees (engine/engine_sleep.c:522)
-/// Calls: mju_isTopicEnabled, mju_message, mju_strncpy, mju_zero, plural
+/// Calls: cxx-internal:/Users/xing/Desktop/projects/c2rust_bitexact/projects/mujoco/src/engine/engine_sleep.c:_plural, cxx:_mju_isTopicEnabled, cxx:_mju_message, cxx:_mju_strncpy, cxx:_mju_zero
 #[allow(unused_variables, non_snake_case)]
-pub fn mj_sleep_trees(m: *const mjModel, d: *mut mjData, tree: *const i32, n: i32) {
+pub fn mj_sleepTrees(m: *const mjModel, d: *mut mjData, tree: *const i32, n: i32) {
     extern "C" {
         fn snprintf(buf: *mut i8, size: usize, fmt: *const i8, ...) -> i32;
     }
@@ -123,7 +123,7 @@ pub fn mj_sleep_trees(m: *const mjModel, d: *mut mjData, tree: *const i32, n: i3
         }
 
         // debug tracing
-        if crate::engine::engine_util_errmem::mju_is_topic_enabled(3) {
+        if crate::engine::engine_util_errmem::mju_isTopicEnabled(3) {
             // mjTOPIC_SLEEP = 3 (mjLOG_INFO topics are 1-indexed after compile)
             let mut buf = [0i8; 1024];
             let mut pos = snprintf(buf.as_mut_ptr(), 1024,
@@ -154,7 +154,7 @@ pub fn mj_sleep_trees(m: *const mjModel, d: *mut mjData, tree: *const i32, n: i3
 
 /// C: mj_tendonSleepState (engine/engine_sleep.c:634)
 #[allow(unused_variables, non_snake_case)]
-pub fn mj_tendon_sleep_state(m: *const mjModel, d: *const mjData, i: i32) -> i32 {
+pub fn mj_tendonSleepState(m: *const mjModel, d: *const mjData, i: i32) -> i32 {
     const mjS_STATIC: i32 = -1;
     const mjS_ASLEEP: i32 = 0;
     const mjS_AWAKE: i32 = 1;
@@ -189,9 +189,9 @@ pub fn mj_tendon_sleep_state(m: *const mjModel, d: *const mjData, i: i32) -> i32
 }
 
 /// C: mj_actuatorSleepState (engine/engine_sleep.c:659)
-/// Calls: mj_sleepState, mj_tendonSleepState
+/// Calls: cxx-internal:engine_sleep.c.o:_mj_tendonSleepState, cxx:_mj_sleepState
 #[allow(unused_variables, non_snake_case)]
-pub fn mj_actuator_sleep_state(m: *const mjModel, d: *const mjData, i: i32) -> i32 {
+pub fn mj_actuatorSleepState(m: *const mjModel, d: *const mjData, i: i32) -> i32 {
     const MJ_TRN_JOINT: i32 = 0;
     const MJ_TRN_JOINTINPARENT: i32 = 1;
     const MJ_TRN_SLIDERCRANK: i32 = 2;
@@ -211,21 +211,21 @@ pub fn mj_actuator_sleep_state(m: *const mjModel, d: *const mjData, i: i32) -> i
         let trntype = *(*m).actuator_trntype.add(i as usize);
 
         if trntype == MJ_TRN_JOINT || trntype == MJ_TRN_JOINTINPARENT {
-            return mj_sleep_state(m, d, MJ_OBJ_JOINT, trnid);
+            return mj_sleepState(m, d, MJ_OBJ_JOINT, trnid);
         }
         if trntype == MJ_TRN_SLIDERCRANK {
-            let s1 = mj_sleep_state(m, d, MJ_OBJ_SITE, trnid);
-            let s2 = mj_sleep_state(m, d, MJ_OBJ_SITE, *(*m).actuator_trnid.add(i as usize * 2 + 1));
+            let s1 = mj_sleepState(m, d, MJ_OBJ_SITE, trnid);
+            let s2 = mj_sleepState(m, d, MJ_OBJ_SITE, *(*m).actuator_trnid.add(i as usize * 2 + 1));
             return if s1 == MJ_S_AWAKE || s2 == MJ_S_AWAKE { MJ_S_AWAKE } else { MJ_S_ASLEEP };
         }
         if trntype == MJ_TRN_TENDON {
-            return mj_tendon_sleep_state(m, d, trnid);
+            return mj_tendonSleepState(m, d, trnid);
         }
         if trntype == MJ_TRN_SITE {
-            return mj_sleep_state(m, d, MJ_OBJ_SITE, trnid);
+            return mj_sleepState(m, d, MJ_OBJ_SITE, trnid);
         }
         if trntype == MJ_TRN_BODY {
-            return mj_sleep_state(m, d, MJ_OBJ_BODY, trnid);
+            return mj_sleepState(m, d, MJ_OBJ_BODY, trnid);
         }
 
         MJ_S_AWAKE
@@ -233,9 +233,9 @@ pub fn mj_actuator_sleep_state(m: *const mjModel, d: *const mjData, i: i32) -> i
 }
 
 /// C: mj_equalitySleepState (engine/engine_sleep.c:691)
-/// Calls: mj_sleepState
+/// Calls: cxx:_mj_sleepState
 #[allow(unused_variables, non_snake_case)]
-pub fn mj_equality_sleep_state(m: *const mjModel, d: *const mjData, i: i32) -> i32 {
+pub fn mj_equalitySleepState(m: *const mjModel, d: *const mjData, i: i32) -> i32 {
     const MJ_EQ_CONNECT: i32 = 0;
     const MJ_EQ_WELD: i32 = 1;
     const MJ_EQ_JOINT: i32 = 2;
@@ -268,8 +268,8 @@ pub fn mj_equality_sleep_state(m: *const mjModel, d: *const mjData, i: i32) -> i
 
         let id1 = *(*m).eq_obj1id.add(i as usize);
         let id2 = *(*m).eq_obj2id.add(i as usize);
-        let s1 = if id1 >= 0 { mj_sleep_state(m, d, objtype, id1) } else { MJ_S_STATIC };
-        let s2 = if id2 >= 0 { mj_sleep_state(m, d, objtype, id2) } else { MJ_S_STATIC };
+        let s1 = if id1 >= 0 { mj_sleepState(m, d, objtype, id1) } else { MJ_S_STATIC };
+        let s2 = if id2 >= 0 { mj_sleepState(m, d, objtype, id2) } else { MJ_S_STATIC };
 
         // return ASLEEP if both objects are asleep or static, AWAKE otherwise
         let neither_awake = s1 != MJ_S_AWAKE && s2 != MJ_S_AWAKE;
@@ -278,9 +278,9 @@ pub fn mj_equality_sleep_state(m: *const mjModel, d: *const mjData, i: i32) -> i
 }
 
 /// C: mj_sensorSleepState (engine/engine_sleep.c:727)
-/// Calls: mj_sleepState
+/// Calls: cxx:_mj_sleepState
 #[allow(unused_variables, non_snake_case)]
-pub fn mj_sensor_sleep_state(m: *const mjModel, d: *const mjData, i: i32) -> i32 {
+pub fn mj_sensorSleepState(m: *const mjModel, d: *const mjData, i: i32) -> i32 {
     const MJ_SENS_USER: i32 = 48;
     const MJ_SENS_PLUGIN: i32 = 47;
     const MJ_SENS_CONTACT: i32 = 44;
@@ -310,8 +310,8 @@ pub fn mj_sensor_sleep_state(m: *const mjModel, d: *const mjData, i: i32) -> i32
         }
 
         // get sleep state of the primary and reference objects
-        let s_obj = mj_sleep_state(m, d, objtype, *(*m).sensor_objid.add(i as usize));
-        let s_ref = mj_sleep_state(m, d, reftype, *(*m).sensor_refid.add(i as usize));
+        let s_obj = mj_sleepState(m, d, objtype, *(*m).sensor_objid.add(i as usize));
+        let s_ref = mj_sleepState(m, d, reftype, *(*m).sensor_refid.add(i as usize));
 
         // if both are UNKNOWN, return AWAKE
         if objtype == MJ_OBJ_UNKNOWN && reftype == MJ_OBJ_UNKNOWN {
@@ -337,9 +337,8 @@ pub fn mj_sensor_sleep_state(m: *const mjModel, d: *const mjData, i: i32) -> i32
 }
 
 /// C: mj_updateSleepInit (engine/engine_sleep.h:28)
-/// Calls: mjCMesh::tree
 #[allow(unused_variables, non_snake_case)]
-pub fn mj_update_sleep_init(m: *const mjModel, d: *mut mjData, flg_staticawake: i32) {
+pub fn mj_updateSleepInit(m: *const mjModel, d: *mut mjData, flg_staticawake: i32) {
     // SAFETY: m and d are valid pointers to mjModel and mjData provided by the caller.
     // All array accesses are within bounds guaranteed by the model structure.
     unsafe {
@@ -431,16 +430,15 @@ pub fn mj_update_sleep_init(m: *const mjModel, d: *mut mjData, flg_staticawake: 
 }
 
 /// C: mj_updateSleep (engine/engine_sleep.h:31)
-/// Calls: mj_updateSleepInit
+/// Calls: cxx:_mj_updateSleepInit
 #[allow(unused_variables, non_snake_case)]
-pub fn mj_update_sleep(m: *const mjModel, d: *mut mjData) {
-    mj_update_sleep_init(m, d, 0);
+pub fn mj_updateSleep(m: *const mjModel, d: *mut mjData) {
+    mj_updateSleepInit(m, d, 0);
 }
 
 /// C: mj_sleepCycle (engine/engine_sleep.h:34)
-/// Calls: GlobalTable::count, next
 #[allow(unused_variables, non_snake_case)]
-pub fn mj_sleep_cycle(tree_asleep: *const i32, ntree: i32, i: i32) -> i32 {
+pub fn mj_sleepCycle(tree_asleep: *const i32, ntree: i32, i: i32) -> i32 {
     // SAFETY: caller guarantees tree_asleep[ntree] is valid
     unsafe {
         if i < 0 || i >= ntree {
@@ -479,14 +477,14 @@ pub fn mj_sleep_cycle(tree_asleep: *const i32, ntree: i32, i: i32) -> i32 {
 }
 
 /// C: mj_wakeIsland (engine/engine_sleep.h:37)
-/// Calls: mju_isTopicEnabled, mju_message, mju_strncpy, plural
+/// Calls: cxx-internal:/Users/xing/Desktop/projects/c2rust_bitexact/projects/mujoco/src/engine/engine_sleep.c:_plural, cxx:_mju_isTopicEnabled, cxx:_mju_message, cxx:_mju_strncpy
 /// ⚠️ BITEXACT RULES:
 ///   1. Copy exact C accumulation order (no iter().sum())
 ///   2. No f64::mul_add() (FMA changes precision)
 ///   3. No algebraic simplification
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
-pub fn mj_wake_island(tree_asleep: *mut i32, ntree: i32, i: i32, wakeval: i32, reason: *const i8, time: f64) -> i32 {
+pub fn mj_wakeIsland(tree_asleep: *mut i32, ntree: i32, i: i32, wakeval: i32, reason: *const i8, time: f64) -> i32 {
     // SAFETY: tree_asleep is a valid array of ntree elements (caller contract)
     unsafe {
         let mut nwoke: i32 = 0;
@@ -542,7 +540,7 @@ pub fn mj_wake_island(tree_asleep: *mut i32, ntree: i32, i: i32, wakeval: i32, r
 }
 
 /// C: mj_wake (engine/engine_sleep.h:41)
-/// Calls: mj_wakeIsland, mju_fillInt, treeCanSleep
+/// Calls: cxx-internal:/Users/xing/Desktop/projects/c2rust_bitexact/projects/mujoco/src/engine/engine_sleep.c:_treeCanSleep, cxx:_mj_wakeIsland, cxx:_mju_fillInt
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_wake(m: *const mjModel, d: *mut mjData) -> i32 {
     const K_AWAKE: i32 = -(1 + 10);  // -(1+mjMINAWAKE)
@@ -557,7 +555,7 @@ pub fn mj_wake(m: *const mjModel, d: *mut mjData) -> i32 {
         if (*m).opt.enableflags & MJENBL_SLEEP == 0 {
             // sleep disabled but some trees still asleep: wake all
             if (*d).ntree_awake < ntree {
-                crate::engine::engine_util_misc::mju_fill_int((*d).tree_asleep, K_AWAKE, ntree);
+                crate::engine::engine_util_misc::mju_fillInt((*d).tree_asleep, K_AWAKE, ntree);
             }
             return ntree - (*d).ntree_awake;
         }
@@ -572,8 +570,8 @@ pub fn mj_wake(m: *const mjModel, d: *mut mjData) -> i32 {
             }
 
             // if qpos mismatch or cannot sleep: wake up
-            if *(*d).tree_awake.add(i as usize) != 0 || tree_can_sleep(m, d as *const mjData, i, 0.0) == 0 {
-                nwoke += mj_wake_island((*d).tree_asleep, ntree, i, K_AWAKE,
+            if *(*d).tree_awake.add(i as usize) != 0 || treeCanSleep(m, d as *const mjData, i, 0.0) == 0 {
+                nwoke += mj_wakeIsland((*d).tree_asleep, ntree, i, K_AWAKE,
                     b"perturbation\0".as_ptr() as *const i8, (*d).time);
             }
         }
@@ -583,9 +581,9 @@ pub fn mj_wake(m: *const mjModel, d: *mut mjData) -> i32 {
 }
 
 /// C: mj_wakeCollision (engine/engine_sleep.h:44)
-/// Calls: mj_flexBody, mj_wakeIsland, mju_message
+/// Calls: cxx:_mj_flexBody, cxx:_mj_wakeIsland, cxx:_mju_message
 #[allow(unused_variables, non_snake_case)]
-pub fn mj_wake_collision(m: *const mjModel, d: *mut mjData) -> i32 {
+pub fn mj_wakeCollision(m: *const mjModel, d: *mut mjData) -> i32 {
     const MJENBL_SLEEP: i32 = 1 << 4;
 
     // SAFETY: m, d are valid model/data pointers (caller contract)
@@ -606,12 +604,12 @@ pub fn mj_wake_collision(m: *const mjModel, d: *mut mjData) -> i32 {
             let b1 = if (*con).geom[0] >= 0 {
                 *(*m).geom_bodyid.add((*con).geom[0] as usize)
             } else {
-                mj_flex_body(m, con, 0)
+                mj_flexBody(m, con, 0)
             };
             let b2 = if (*con).geom[1] >= 0 {
                 *(*m).geom_bodyid.add((*con).geom[1] as usize)
             } else {
-                mj_flex_body(m, con, 1)
+                mj_flexBody(m, con, 1)
             };
 
             let tree1 = *(*m).body_treeid.add(b1 as usize);
@@ -643,7 +641,7 @@ pub fn mj_wake_collision(m: *const mjModel, d: *mut mjData) -> i32 {
             } else {
                 *(*d).tree_asleep.add(tree2 as usize)
             };
-            nwoke += mj_wake_island((*d).tree_asleep, ntree, sleeping_tree, wakeval,
+            nwoke += mj_wakeIsland((*d).tree_asleep, ntree, sleeping_tree, wakeval,
                 b"contact\0".as_ptr() as *const i8, (*d).time);
         }
 
@@ -652,9 +650,9 @@ pub fn mj_wake_collision(m: *const mjModel, d: *mut mjData) -> i32 {
 }
 
 /// C: mj_wakeTendon (engine/engine_sleep.h:47)
-/// Calls: mj_wakeIsland, tendonLimit
+/// Calls: cxx:_mj_wakeIsland, cxx:_tendonLimit
 #[allow(unused_variables, non_snake_case)]
-pub fn mj_wake_tendon(m: *const mjModel, d: *mut mjData) -> i32 {
+pub fn mj_wakeTendon(m: *const mjModel, d: *mut mjData) -> i32 {
     const MJENBL_SLEEP: i32 = 1 << 4;
 
     // SAFETY: m, d are valid model/data pointers (caller contract)
@@ -669,7 +667,7 @@ pub fn mj_wake_tendon(m: *const mjModel, d: *mut mjData) -> i32 {
         // sweep over tendons, wake trees if required
         for i in 0..ntendon {
             if *(*m).tendon_treenum.add(i as usize) != 2 ||
-               crate::engine::engine_core_util::tendon_limit(m, (*d).ten_length, i) == 0 {
+               crate::engine::engine_core_util::tendonLimit(m, (*d).ten_length, i) == 0 {
                 continue;
             }
 
@@ -685,7 +683,7 @@ pub fn mj_wake_tendon(m: *const mjModel, d: *mut mjData) -> i32 {
                 } else {
                     *(*d).tree_asleep.add(tree2 as usize)
                 };
-                nwoke += mj_wake_island((*d).tree_asleep, (*m).ntree as i32, sleeping_tree, wakeval,
+                nwoke += mj_wakeIsland((*d).tree_asleep, (*m).ntree as i32, sleeping_tree, wakeval,
                     b"tendon constraint\0".as_ptr() as *const i8, (*d).time);
             }
         }
@@ -695,9 +693,9 @@ pub fn mj_wake_tendon(m: *const mjModel, d: *mut mjData) -> i32 {
 }
 
 /// C: mj_wakeEquality (engine/engine_sleep.h:50)
-/// Calls: mj_sleepCycle, mj_wakeIsland, mju_message
+/// Calls: cxx:_mj_sleepCycle, cxx:_mj_wakeIsland, cxx:_mju_message
 #[allow(unused_variables, non_snake_case)]
-pub fn mj_wake_equality(m: *const mjModel, d: *mut mjData) -> i32 {
+pub fn mj_wakeEquality(m: *const mjModel, d: *mut mjData) -> i32 {
     const MJENBL_SLEEP: i32 = 1 << 4;
     const K_AWAKE: i32 = -(1 + 10);  // -(1+mjMINAWAKE)
     // mjEQ: CONNECT=0, WELD=1, JOINT=2, TENDON=3, FLEX=4, FLEXVERT=5, FLEXSTRAIN=6
@@ -774,7 +772,7 @@ pub fn mj_wake_equality(m: *const mjModel, d: *mut mjData) -> i32 {
                         for j in 0..num {
                             let treeid = *(*m).body_treeid.add(*bodyid.add((adr + j) as usize) as usize);
                             if treeid >= 0 && *(*d).tree_awake.add(treeid as usize) == 0 {
-                                nwoke += mj_wake_island((*d).tree_asleep, (*m).ntree as i32, treeid, wakeval,
+                                nwoke += mj_wakeIsland((*d).tree_asleep, (*m).ntree as i32, treeid, wakeval,
                                     b"flex equality\0".as_ptr() as *const i8, (*d).time);
                                 break;
                             }
@@ -806,12 +804,12 @@ pub fn mj_wake_equality(m: *const mjModel, d: *mut mjData) -> i32 {
 
             // both asleep, wake if in different islands
             if s1 == 0 && s2 == 0 {
-                let cycle1 = mj_sleep_cycle((*d).tree_asleep, (*m).ntree as i32, tree1);
-                let cycle2 = mj_sleep_cycle((*d).tree_asleep, (*m).ntree as i32, tree2);
+                let cycle1 = mj_sleepCycle((*d).tree_asleep, (*m).ntree as i32, tree1);
+                let cycle2 = mj_sleepCycle((*d).tree_asleep, (*m).ntree as i32, tree2);
                 if cycle1 != cycle2 {
-                    let nwoke1 = mj_wake_island((*d).tree_asleep, (*m).ntree as i32, tree1, K_AWAKE,
+                    let nwoke1 = mj_wakeIsland((*d).tree_asleep, (*m).ntree as i32, tree1, K_AWAKE,
                         b"equality\0".as_ptr() as *const i8, (*d).time);
-                    let nwoke2 = mj_wake_island((*d).tree_asleep, (*m).ntree as i32, tree2, K_AWAKE,
+                    let nwoke2 = mj_wakeIsland((*d).tree_asleep, (*m).ntree as i32, tree2, K_AWAKE,
                         b"equality\0".as_ptr() as *const i8, (*d).time);
                     nwoke += nwoke1 + nwoke2;
                 }
@@ -820,7 +818,7 @@ pub fn mj_wake_equality(m: *const mjModel, d: *mut mjData) -> i32 {
 
             // one asleep and one awake, wake sleeping tree
             let sleeping_tree = if s1 == 0 { tree1 } else { tree2 };
-            nwoke += mj_wake_island((*d).tree_asleep, (*m).ntree as i32, sleeping_tree, K_AWAKE,
+            nwoke += mj_wakeIsland((*d).tree_asleep, (*m).ntree as i32, sleeping_tree, K_AWAKE,
                 b"equality\0".as_ptr() as *const i8, (*d).time);
         }
 
@@ -829,7 +827,7 @@ pub fn mj_wake_equality(m: *const mjModel, d: *mut mjData) -> i32 {
 }
 
 /// C: mj_sleep (engine/engine_sleep.h:53)
-/// Calls: mj_sleepTrees, mju_message, treeCanSleep
+/// Calls: cxx-internal:/Users/xing/Desktop/projects/c2rust_bitexact/projects/mujoco/src/engine/engine_sleep.c:_treeCanSleep, cxx-internal:engine_sleep.c.o:_mj_sleepTrees, cxx:_mju_message
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_sleep(m: *const mjModel, d: *mut mjData) -> i32 {
     const MJENBL_SLEEP: i32 = 1 << 4;
@@ -859,7 +857,7 @@ pub fn mj_sleep(m: *const mjModel, d: *mut mjData) -> i32 {
             }
 
             // increment if can sleep, otherwise wake up
-            if tree_can_sleep(m, d as *const mjData, i, (*m).opt.sleep_tolerance) != 0 {
+            if treeCanSleep(m, d as *const mjData, i, (*m).opt.sleep_tolerance) != 0 {
                 if *(*d).tree_asleep.add(i as usize) < -1 {
                     *(*d).tree_asleep.add(i as usize) += 1;
                 }
@@ -888,7 +886,7 @@ pub fn mj_sleep(m: *const mjModel, d: *mut mjData) -> i32 {
             if can_sleep != 0 {
                 let tree = (*d).map_itree2tree.add(start as usize);
                 let n = *(*d).island_ntree.add(i as usize);
-                mj_sleep_trees(m, d, tree, n);
+                mj_sleepTrees(m, d, tree, n);
                 nslept += n;
             }
         }
@@ -900,7 +898,7 @@ pub fn mj_sleep(m: *const mjModel, d: *mut mjData) -> i32 {
         for j in start..ntree {
             let i = if nisland > 0 { *(*d).map_itree2tree.add(j as usize) } else { j };
             if *(*d).tree_asleep.add(i as usize) == -1 {
-                mj_sleep_trees(m, d, &i as *const i32, 1);
+                mj_sleepTrees(m, d, &i as *const i32, 1);
                 nslept += 1;
             }
         }
@@ -910,9 +908,8 @@ pub fn mj_sleep(m: *const mjModel, d: *mut mjData) -> i32 {
 }
 
 /// C: mj_flexBody (engine/engine_sleep.h:56)
-/// Calls: mjCActuator::act
 #[allow(unused_variables, non_snake_case)]
-pub fn mj_flex_body(m: *const mjModel, con: *const mjContact, side: i32) -> i32 {
+pub fn mj_flexBody(m: *const mjModel, con: *const mjContact, side: i32) -> i32 {
     // SAFETY: caller guarantees m, con are valid; side is 0 or 1
     unsafe {
         let f = (*con).flex[side as usize];
@@ -946,9 +943,9 @@ pub fn mj_flex_body(m: *const mjModel, con: *const mjContact, side: i32) -> i32 
 }
 
 /// C: mj_sleepState (engine/engine_sleep.h:59)
-/// Calls: mj_actuatorSleepState, mj_equalitySleepState, mj_sensorSleepState, mj_tendonSleepState, mju_message, mju_type2Str
+/// Calls: cxx-internal:/Users/xing/Desktop/projects/c2rust_bitexact/projects/mujoco/src/engine/engine_sleep.c:_mj_actuatorSleepState, cxx-internal:/Users/xing/Desktop/projects/c2rust_bitexact/projects/mujoco/src/engine/engine_sleep.c:_mj_equalitySleepState, cxx-internal:/Users/xing/Desktop/projects/c2rust_bitexact/projects/mujoco/src/engine/engine_sleep.c:_mj_sensorSleepState, cxx-internal:engine_sleep.c.o:_mj_tendonSleepState, cxx:_mju_message, cxx:_mju_type2Str
 #[allow(unused_variables, non_snake_case)]
-pub fn mj_sleep_state(m: *const mjModel, d: *const mjData, r#type: u32, i: i32) -> i32 {
+pub fn mj_sleepState(m: *const mjModel, d: *const mjData, r#type: u32, i: i32) -> i32 {
     const MJ_OBJ_UNKNOWN: u32 = 0;
     const MJ_OBJ_BODY: u32 = 1;
     const MJ_OBJ_XBODY: u32 = 2;
@@ -990,16 +987,16 @@ pub fn mj_sleep_state(m: *const mjModel, d: *const mjData, r#type: u32, i: i32) 
             return *(*d).body_awake.add(*(*m).light_bodyid.add(i as usize) as usize);
         }
         if r#type == MJ_OBJ_EQUALITY {
-            return mj_equality_sleep_state(m, d, i);
+            return mj_equalitySleepState(m, d, i);
         }
         if r#type == MJ_OBJ_TENDON {
-            return mj_tendon_sleep_state(m, d, i);
+            return mj_tendonSleepState(m, d, i);
         }
         if r#type == MJ_OBJ_ACTUATOR {
-            return mj_actuator_sleep_state(m, d, i);
+            return mj_actuatorSleepState(m, d, i);
         }
         if r#type == MJ_OBJ_SENSOR {
-            return mj_sensor_sleep_state(m, d, i);
+            return mj_sensorSleepState(m, d, i);
         }
         if r#type == MJ_OBJ_FLEX {
             // all dynamic bodies share sleep state: find and check the first one

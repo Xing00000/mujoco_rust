@@ -1,13 +1,13 @@
 //! Port of: engine/engine_support.c
-//! IR hash: 73393814548a07d1
-//! CODEGEN: signatures locked. Only fill todo!() bodies.
+//! IR hash: 9343293228317031
+//! CODEGEN: source paths, owners, and callable names are locked.
 
 use crate::types::*;
 
 /// C: mj_stateElemSize (engine/engine_support.c:138)
-/// Calls: mju_message
+/// Calls: cxx:_mju_message
 #[allow(unused_variables, non_snake_case)]
-pub fn mj_state_elem_size(m: *const mjModel, sig: u32) -> i32 {
+pub fn mj_stateElemSize(m: *const mjModel, sig: u32) -> i32 {
     // SAFETY: m is a valid mjModel pointer (caller contract)
     unsafe {
         match sig {
@@ -35,14 +35,14 @@ pub fn mj_state_elem_size(m: *const mjModel, sig: u32) -> i32 {
 }
 
 /// C: mj_stateElemPtr (engine/engine_support.c:162)
-/// Calls: mju_message
+/// Calls: cxx:_mju_message
 /// ⚠️ BITEXACT RULES:
 ///   1. Copy exact C accumulation order (no iter().sum())
 ///   2. No f64::mul_add() (FMA changes precision)
 ///   3. No algebraic simplification
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
-pub fn mj_state_elem_ptr(m: *const mjModel, d: *mut mjData, sig: u32) -> *mut f64 {
+pub fn mj_stateElemPtr(m: *const mjModel, d: *mut mjData, sig: u32) -> *mut f64 {
     // SAFETY: m, d are valid pointers (caller contract)
     unsafe {
         match sig {
@@ -69,84 +69,22 @@ pub fn mj_state_elem_ptr(m: *const mjModel, d: *mut mjData, sig: u32) -> *mut f6
 }
 
 /// C: mj_stateElemConstPtr (engine/engine_support.c:184)
-/// Calls: mj_stateElemPtr
+/// Calls: cxx-internal:/Users/xing/Desktop/projects/c2rust_bitexact/projects/mujoco/src/engine/engine_support.c:_mj_stateElemPtr
 /// ⚠️ BITEXACT RULES:
 ///   1. Copy exact C accumulation order (no iter().sum())
 ///   2. No f64::mul_add() (FMA changes precision)
 ///   3. No algebraic simplification
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
-pub fn mj_state_elem_const_ptr(m: *const mjModel, d: *const mjData, sig: u32) -> *const f64 {
+pub fn mj_stateElemConstPtr(m: *const mjModel, d: *const mjData, sig: u32) -> *const f64 {
     // SAFETY: discards const qualifier from d, same as C implementation
-    mj_state_elem_ptr(m, d as *mut mjData, sig) as *const f64
-}
-
-/// C: mj_geomDistanceCCD (engine/engine_support.c:519)
-/// Calls: mj_freeStack, mj_markStack, mj_stackAllocByte, mjc_ccd, mjc_ccdSize, mjc_initCCDObj, mju_copy3
-/// ⚠️ BITEXACT RULES:
-///   1. Copy exact C accumulation order (no iter().sum())
-///   2. No f64::mul_add() (FMA changes precision)
-///   3. No algebraic simplification
-///   4. No iter().sum()/product() (order undefined)
-#[allow(unused_variables, non_snake_case)]
-pub fn mj_geom_distance_ccd(m: *const mjModel, d: *mut mjData, g1: i32, g2: i32, distmax: f64, fromto: *mut f64) -> f64 {
-    // mjCCDConfig layout (40 bytes, align 8):
-    //   max_iterations: i32 at offset 0
-    //   (pad 4)
-    //   tolerance: f64 at offset 8
-    //   max_contacts: i32 at offset 16
-    //   (pad 4)
-    //   dist_cutoff: f64 at offset 24
-    //   buffer: *mut () at offset 32
-    // mjCCDStatus layout: x1 at offset 8, x2 at 1208, nx at 2408
-
-    // SAFETY: m, d are valid. CCD operates on freshly initialized stack memory.
-    unsafe {
-        crate::engine::engine_memory::mj_mark_stack(d);
-
-        // build config on stack as [u8; 40]
-        let mut config_buf = [0u8; 40];
-        *(config_buf.as_mut_ptr().add(0) as *mut i32) = (*m).opt.ccd_iterations;
-        *(config_buf.as_mut_ptr().add(8) as *mut f64) = (*m).opt.ccd_tolerance;
-        *(config_buf.as_mut_ptr().add(16) as *mut i32) = 1;   // max_contacts = 1
-        *(config_buf.as_mut_ptr().add(24) as *mut f64) = distmax;  // dist_cutoff
-
-        let buf_size = crate::engine::engine_collision_gjk::mjc_ccd_size((*m).opt.ccd_iterations);
-        let buf_ptr = crate::engine::engine_memory::mj_stack_alloc_byte(d, buf_size, std::mem::align_of::<f64>());
-        *(config_buf.as_mut_ptr().add(32) as *mut *mut ()) = buf_ptr;
-        let config = config_buf.as_mut_ptr() as *mut crate::types::mjCCDConfig;
-
-        let mut obj1_buf = [0u8; std::mem::size_of::<crate::types::mjCCDObj>()];
-        let obj1 = obj1_buf.as_mut_ptr() as *mut crate::types::mjCCDObj;
-        let mut obj2_buf = [0u8; std::mem::size_of::<crate::types::mjCCDObj>()];
-        let obj2 = obj2_buf.as_mut_ptr() as *mut crate::types::mjCCDObj;
-        crate::engine::engine_collision_convex::mjc_init_ccd_obj(obj1, m, d as *const _, g1, 0.0);
-        crate::engine::engine_collision_convex::mjc_init_ccd_obj(obj2, m, d as *const _, g2, 0.0);
-
-        // build status on stack
-        let mut status_buf = [0u8; 2780];
-        let status = status_buf.as_mut_ptr() as *mut crate::types::mjCCDStatus;
-
-        let dist = crate::engine::engine_collision_gjk::mjc_ccd(config as *const _, status, obj1, obj2);
-        crate::engine::engine_memory::mj_free_stack(d);
-
-        // witness points computed if dist <= distmax
-        let nx = *(status_buf.as_ptr().add(2408) as *const i32);
-        if !fromto.is_null() && nx > 0 {
-            let x1 = status_buf.as_ptr().add(8) as *const f64;
-            let x2 = status_buf.as_ptr().add(1208) as *const f64;
-            crate::engine::engine_util_blas::mju_copy3(fromto, x1);
-            crate::engine::engine_util_blas::mju_copy3(fromto.add(3), x2);
-        }
-
-        if dist < distmax { dist } else { distmax }
-    }
+    mj_stateElemPtr(m, d as *mut mjData, sig) as *const f64
 }
 
 /// C: mj_stateSize (engine/engine_support.h:41)
-/// Calls: mj_stateElemSize, mju_message
+/// Calls: cxx-internal:/Users/xing/Desktop/projects/c2rust_bitexact/projects/mujoco/src/engine/engine_support.c:_mj_stateElemSize, cxx:_mju_message
 #[allow(unused_variables, non_snake_case)]
-pub fn mj_state_size(m: *const mjModel, sig: i32) -> i32 {
+pub fn mj_stateSize(m: *const mjModel, sig: i32) -> i32 {
     const MJ_NSTATE: i32 = 14;
 
     // SAFETY: m is a valid pointer (caller contract).
@@ -167,7 +105,7 @@ pub fn mj_state_size(m: *const mjModel, sig: i32) -> i32 {
         for i in 0..MJ_NSTATE {
             let element: u32 = 1 << i;
             if (element as i32 & sig) != 0 {
-                size += mj_state_elem_size(m, element);
+                size += mj_stateElemSize(m, element);
             }
         }
 
@@ -176,14 +114,14 @@ pub fn mj_state_size(m: *const mjModel, sig: i32) -> i32 {
 }
 
 /// C: mj_getState (engine/engine_support.h:44)
-/// Calls: mj_stateElemConstPtr, mj_stateElemSize, mju_copy, mju_message
+/// Calls: cxx-internal:/Users/xing/Desktop/projects/c2rust_bitexact/projects/mujoco/src/engine/engine_support.c:_mj_stateElemConstPtr, cxx-internal:/Users/xing/Desktop/projects/c2rust_bitexact/projects/mujoco/src/engine/engine_support.c:_mj_stateElemSize, cxx:_mju_copy, cxx:_mju_message
 /// ⚠️ BITEXACT RULES:
 ///   1. Copy exact C accumulation order (no iter().sum())
 ///   2. No f64::mul_add() (FMA changes precision)
 ///   3. No algebraic simplification
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
-pub fn mj_get_state(m: *const mjModel, d: *const mjData, state: *mut f64, sig: i32) {
+pub fn mj_getState(m: *const mjModel, d: *const mjData, state: *mut f64, sig: i32) {
     const MJ_NSTATE: i32 = 14;
     const MJ_STATE_EQ_ACTIVE: u32 = 1 << 9;
 
@@ -205,7 +143,7 @@ pub fn mj_get_state(m: *const mjModel, d: *const mjData, state: *mut f64, sig: i
         for i in 0..MJ_NSTATE {
             let element: u32 = 1 << i;
             if (element as i32 & sig) != 0 {
-                let size = mj_state_elem_size(m, element);
+                let size = mj_stateElemSize(m, element);
 
                 // special handling of eq_active (mjtBool)
                 if element == MJ_STATE_EQ_ACTIVE {
@@ -217,7 +155,7 @@ pub fn mj_get_state(m: *const mjModel, d: *const mjData, state: *mut f64, sig: i
                 }
                 // regular state components (mjtNum)
                 else {
-                    let ptr = mj_state_elem_const_ptr(m, d, element);
+                    let ptr = mj_stateElemConstPtr(m, d, element);
                     crate::engine::engine_util_blas::mju_copy(state.add(adr as usize), ptr, size);
                     adr += size;
                 }
@@ -227,14 +165,14 @@ pub fn mj_get_state(m: *const mjModel, d: *const mjData, state: *mut f64, sig: i
 }
 
 /// C: mj_extractState (engine/engine_support.h:47)
-/// Calls: mj_stateElemSize, mju_copy, mju_message
+/// Calls: cxx-internal:/Users/xing/Desktop/projects/c2rust_bitexact/projects/mujoco/src/engine/engine_support.c:_mj_stateElemSize, cxx:_mju_copy, cxx:_mju_message
 /// ⚠️ BITEXACT RULES:
 ///   1. Copy exact C accumulation order (no iter().sum())
 ///   2. No f64::mul_add() (FMA changes precision)
 ///   3. No algebraic simplification
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
-pub fn mj_extract_state(m: *const mjModel, src: *const f64, srcsig: i32, dst: *mut f64, dstsig: i32) {
+pub fn mj_extractState(m: *const mjModel, src: *const f64, srcsig: i32, dst: *mut f64, dstsig: i32) {
     const MJ_NSTATE: i32 = 14;
 
     // SAFETY: m, src, dst are valid pointers (caller contract).
@@ -262,7 +200,7 @@ pub fn mj_extract_state(m: *const mjModel, src: *const f64, srcsig: i32, dst: *m
         for i in 0..MJ_NSTATE {
             let element: u32 = 1 << i;
             if (element as i32 & srcsig) != 0 {
-                let size = mj_state_elem_size(m, element);
+                let size = mj_stateElemSize(m, element);
                 if (element as i32 & dstsig) != 0 {
                     crate::engine::engine_util_blas::mju_copy(
                         dst.add(dst_off as usize), src.add(src_off as usize), size);
@@ -275,14 +213,14 @@ pub fn mj_extract_state(m: *const mjModel, src: *const f64, srcsig: i32, dst: *m
 }
 
 /// C: mj_setState (engine/engine_support.h:51)
-/// Calls: mj_stateElemPtr, mj_stateElemSize, mju_copy, mju_message
+/// Calls: cxx-internal:/Users/xing/Desktop/projects/c2rust_bitexact/projects/mujoco/src/engine/engine_support.c:_mj_stateElemPtr, cxx-internal:/Users/xing/Desktop/projects/c2rust_bitexact/projects/mujoco/src/engine/engine_support.c:_mj_stateElemSize, cxx:_mju_copy, cxx:_mju_message
 /// ⚠️ BITEXACT RULES:
 ///   1. Copy exact C accumulation order (no iter().sum())
 ///   2. No f64::mul_add() (FMA changes precision)
 ///   3. No algebraic simplification
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
-pub fn mj_set_state(m: *const mjModel, d: *mut mjData, state: *const f64, sig: i32) {
+pub fn mj_setState(m: *const mjModel, d: *mut mjData, state: *const f64, sig: i32) {
     const MJ_NSTATE: i32 = 14;
     const MJ_STATE_EQ_ACTIVE: u32 = 1 << 9;
 
@@ -304,7 +242,7 @@ pub fn mj_set_state(m: *const mjModel, d: *mut mjData, state: *const f64, sig: i
         for i in 0..MJ_NSTATE {
             let element: u32 = 1 << i;
             if (element as i32 & sig) != 0 {
-                let size = mj_state_elem_size(m, element);
+                let size = mj_stateElemSize(m, element);
 
                 // special handling of eq_active (mjtBool)
                 if element == MJ_STATE_EQ_ACTIVE {
@@ -316,7 +254,7 @@ pub fn mj_set_state(m: *const mjModel, d: *mut mjData, state: *const f64, sig: i
                 }
                 // regular state components (mjtNum)
                 else {
-                    let ptr = mj_state_elem_ptr(m, d, element);
+                    let ptr = mj_stateElemPtr(m, d, element);
                     crate::engine::engine_util_blas::mju_copy(ptr, state.add(adr as usize), size);
                     adr += size;
                 }
@@ -326,9 +264,9 @@ pub fn mj_set_state(m: *const mjModel, d: *mut mjData, state: *const f64, sig: i
 }
 
 /// C: mj_copyState (engine/engine_support.h:54)
-/// Calls: mj_stateElemConstPtr, mj_stateElemPtr, mj_stateElemSize, mju_copy, mju_message
+/// Calls: cxx-internal:/Users/xing/Desktop/projects/c2rust_bitexact/projects/mujoco/src/engine/engine_support.c:_mj_stateElemConstPtr, cxx-internal:/Users/xing/Desktop/projects/c2rust_bitexact/projects/mujoco/src/engine/engine_support.c:_mj_stateElemPtr, cxx-internal:/Users/xing/Desktop/projects/c2rust_bitexact/projects/mujoco/src/engine/engine_support.c:_mj_stateElemSize, cxx:_mju_copy, cxx:_mju_message
 #[allow(unused_variables, non_snake_case)]
-pub fn mj_copy_state(m: *const mjModel, src: *const mjData, dst: *mut mjData, sig: i32) {
+pub fn mj_copyState(m: *const mjModel, src: *const mjData, dst: *mut mjData, sig: i32) {
     const MJ_NSTATE: i32 = 14;
     const MJ_STATE_EQ_ACTIVE: u32 = 1 << 9;
 
@@ -349,7 +287,7 @@ pub fn mj_copy_state(m: *const mjModel, src: *const mjData, dst: *mut mjData, si
         for i in 0..MJ_NSTATE {
             let element: u32 = 1 << i;
             if (element as i32 & sig) != 0 {
-                let size = mj_state_elem_size(m, element);
+                let size = mj_stateElemSize(m, element);
 
                 // special handling of eq_active (mjtBool)
                 if element == MJ_STATE_EQ_ACTIVE {
@@ -360,8 +298,8 @@ pub fn mj_copy_state(m: *const mjModel, src: *const mjData, dst: *mut mjData, si
                 }
                 // regular state components (mjtNum)
                 else {
-                    let dst_ptr = mj_state_elem_ptr(m, dst, element);
-                    let src_ptr = mj_state_elem_const_ptr(m, src, element);
+                    let dst_ptr = mj_stateElemPtr(m, dst, element);
+                    let src_ptr = mj_stateElemConstPtr(m, src, element);
                     crate::engine::engine_util_blas::mju_copy(dst_ptr, src_ptr, size);
                 }
             }
@@ -370,9 +308,9 @@ pub fn mj_copy_state(m: *const mjModel, src: *const mjData, dst: *mut mjData, si
 }
 
 /// C: mj_setKeyframe (engine/engine_support.h:57)
-/// Calls: mju_copy, mju_message
+/// Calls: cxx:_mju_copy, cxx:_mju_message
 #[allow(unused_variables, non_snake_case)]
-pub fn mj_set_keyframe(m: *mut mjModel, d: *const mjData, k: i32) {
+pub fn mj_setKeyframe(m: *mut mjModel, d: *const mjData, k: i32) {
     // SAFETY: m, d are valid pointers (caller contract).
     unsafe {
         // check keyframe index
@@ -411,14 +349,14 @@ pub fn mj_set_keyframe(m: *mut mjModel, d: *const mjData, k: i32) {
 }
 
 /// C: mj_fullM (engine/engine_support.h:62)
-/// Calls: mju_sym2dense
+/// Calls: cxx:_mju_sym2dense
 /// ⚠️ BITEXACT RULES:
 ///   1. Copy exact C accumulation order (no iter().sum())
 ///   2. No f64::mul_add() (FMA changes precision)
 ///   3. No algebraic simplification
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
-pub fn mj_full_m(m: *const mjModel, d: *const mjData, dst: *mut f64) {
+pub fn mj_fullM(m: *const mjModel, d: *const mjData, dst: *mut f64) {
     // SAFETY: m, d, dst valid. Calls mju_sym2dense with sparse M from mjData.
     //   mjModel: nv at 8, M_rownnz at 5424, M_rowadr at 5432, M_colind at 5440
     //   mjData: M at 161120
@@ -436,14 +374,14 @@ pub fn mj_full_m(m: *const mjModel, d: *const mjData, dst: *mut f64) {
 }
 
 /// C: mj_mulM (engine/engine_support.h:65)
-/// Calls: mju_mulSymVecSparse
+/// Calls: cxx:_mju_mulSymVecSparse
 /// ⚠️ BITEXACT RULES:
 ///   1. Copy exact C accumulation order (no iter().sum())
 ///   2. No f64::mul_add() (FMA changes precision)
 ///   3. No algebraic simplification
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
-pub fn mj_mul_m(m: *const mjModel, d: *const mjData, res: *mut f64, vec: *const f64) {
+pub fn mj_mulM(m: *const mjModel, d: *const mjData, res: *mut f64, vec: *const f64) {
     // SAFETY: m, d, res, vec valid. Calls mju_mulSymVecSparse.
     //   mjModel: nv at 8, M_rownnz at 5424, M_rowadr at 5432, M_colind at 5440
     //   mjData: M at 161120
@@ -456,19 +394,19 @@ pub fn mj_mul_m(m: *const mjModel, d: *const mjData, res: *mut f64, vec: *const 
         let M_colind = *(m_ptr.add(5440) as *const *const i32);
         let M = *(d_ptr.add(161120) as *const *const f64);
 
-        crate::engine::engine_util_sparse::mju_mul_sym_vec_sparse(res, M, vec, nv, M_rownnz, M_rowadr, M_colind);
+        crate::engine::engine_util_sparse::mju_mulSymVecSparse(res, M, vec, nv, M_rownnz, M_rowadr, M_colind);
     }
 }
 
 /// C: mj_mulM2 (engine/engine_support.h:68)
-/// Calls: mju_dotSparse, mju_zero
+/// Calls: cxx-internal:/Users/xing/Desktop/projects/c2rust_bitexact/projects/mujoco/src/engine/engine_util_sparse.h:_mju_dotSparse, cxx:_mju_zero
 /// ⚠️ BITEXACT RULES:
 ///   1. Copy exact C accumulation order (no iter().sum())
 ///   2. No f64::mul_add() (FMA changes precision)
 ///   3. No algebraic simplification
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
-pub fn mj_mul_m2(m: *const mjModel, d: *const mjData, res: *mut f64, vec: *const f64) {
+pub fn mj_mulM2(m: *const mjModel, d: *const mjData, res: *mut f64, vec: *const f64) {
     // SAFETY: m, d, res, vec are valid pointers (caller contract). Arrays are nv-sized.
     unsafe {
         let nv = (*m).nv as i32;
@@ -484,7 +422,7 @@ pub fn mj_mul_m2(m: *const mjModel, d: *const mjData, res: *mut f64, vec: *const
             // non-simple: add off-diagonals
             if *(*m).dof_simplenum.add(i as usize) == 0 {
                 let adr = *(*m).M_rowadr.add(i as usize);
-                *res.add(i as usize) += crate::engine::engine_util_sparse::mju_dot_sparse(
+                *res.add(i as usize) += crate::engine::engine_util_sparse::mju_dotSparse(
                     qLD.add(adr as usize),
                     vec,
                     *(*m).M_rownnz.add(i as usize) - 1,
@@ -502,230 +440,41 @@ pub fn mj_mul_m2(m: *const mjModel, d: *const mjData, res: *mut f64, vec: *const
 }
 
 /// C: mj_addM (engine/engine_support.h:72)
-/// Calls: mju_addToMatSparse, mju_addToSymSparse
+/// Calls: cxx:_mju_addToMatSparse, cxx:_mju_addToSymSparse
 /// ⚠️ BITEXACT RULES:
 ///   1. Copy exact C accumulation order (no iter().sum())
 ///   2. No f64::mul_add() (FMA changes precision)
 ///   3. No algebraic simplification
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
-pub fn mj_add_m(m: *const mjModel, d: *mut mjData, dst: *mut f64, rownnz: *mut i32, rowadr: *mut i32, colind: *mut i32) {
+pub fn mj_addM(m: *const mjModel, d: *mut mjData, dst: *mut f64, rownnz: *mut i32, rowadr: *mut i32, colind: *mut i32) {
     // SAFETY: m, d, dst are valid pointers (caller contract)
     unsafe {
         let nv = (*m).nv as i32;
 
         // sparse
         if !rownnz.is_null() && !rowadr.is_null() && !colind.is_null() {
-            crate::engine::engine_util_sparse::mju_add_to_mat_sparse(
+            crate::engine::engine_util_sparse::mju_addToMatSparse(
                 dst, rownnz, rowadr, colind, nv,
                 (*d).M, (*m).M_rownnz, (*m).M_rowadr, (*m).M_colind);
         }
         // dense
         else {
-            crate::engine::engine_util_sparse::mju_add_to_sym_sparse(
+            crate::engine::engine_util_sparse::mju_addToSymSparse(
                 dst, (*d).M, nv, (*m).M_rownnz, (*m).M_rowadr, (*m).M_colind, 0);
         }
     }
 }
 
-/// C: mj_applyFT (engine/engine_support.h:79)
-/// Calls: mj_bodyChain, mj_freeStack, mj_isSparse, mj_jac, mj_jacSparse, mj_markStack, mj_stackAllocInfo, mju_addTo, mju_message, mju_mulMatTVec
-/// ⚠️ BITEXACT RULES:
-///   1. Copy exact C accumulation order (no iter().sum())
-///   2. No f64::mul_add() (FMA changes precision)
-///   3. No algebraic simplification
-///   4. No iter().sum()/product() (order undefined)
-#[allow(unused_variables, non_snake_case)]
-pub fn mj_apply_ft(m: *const mjModel, d: *mut mjData, force: *const f64, torque: *const f64, point: *const f64, body: i32, qfrc_target: *mut f64) {
-    // SAFETY: m, d are valid pointers. force, torque may be null.
-    // point[3] valid. body is a valid body index. qfrc_target[nv] valid.
-    unsafe {
-        let nv = (*m).nv as i32;
-
-        // allocate local variables
-        crate::engine::engine_memory::mj_mark_stack(d);
-        let jacp: *mut f64 = if !force.is_null() {
-            crate::engine::engine_memory::mj_stack_alloc_num(d, (3 * nv) as usize)
-        } else {
-            std::ptr::null_mut()
-        };
-        let jacr: *mut f64 = if !torque.is_null() {
-            crate::engine::engine_memory::mj_stack_alloc_num(d, (3 * nv) as usize)
-        } else {
-            std::ptr::null_mut()
-        };
-        let qforce: *mut f64 = crate::engine::engine_memory::mj_stack_alloc_num(d, nv as usize);
-
-        // make sure body is in range
-        if body < 0 || body >= (*m).nbody as i32 {
-            crate::engine::engine_util_errmem::mju_error(
-                b"invalid body\0".as_ptr() as *const i8);
-        }
-
-        // sparse case
-        if crate::engine::engine_core_util::mj_is_sparse(m) != 0 {
-            // construct chain and sparse Jacobians
-            let chain: *mut i32 = crate::engine::engine_memory::mj_stack_alloc_int(d, nv as usize);
-            let NV = crate::engine::engine_core_util::mj_body_chain(m, body, chain);
-            crate::engine::engine_core_util::mj_jac_sparse(
-                m, d as *const mjData, jacp, jacr, point, body, NV, chain, 0);
-
-            // compute J'*f and accumulate
-            if !force.is_null() {
-                crate::engine::engine_util_blas::mju_mul_mat_t_vec(qforce, jacp, force, 3, NV);
-                for i in 0..NV {
-                    *qfrc_target.add(*chain.add(i as usize) as usize) += *qforce.add(i as usize);
-                }
-            }
-            if !torque.is_null() {
-                crate::engine::engine_util_blas::mju_mul_mat_t_vec(qforce, jacr, torque, 3, NV);
-                for i in 0..NV {
-                    *qfrc_target.add(*chain.add(i as usize) as usize) += *qforce.add(i as usize);
-                }
-            }
-        }
-        // dense case
-        else {
-            // compute Jacobians
-            crate::engine::engine_core_util::mj_jac(
-                m, d as *const mjData, jacp, jacr, point, body);
-
-            // compute J'*f and accumulate
-            if !force.is_null() {
-                crate::engine::engine_util_blas::mju_mul_mat_t_vec(qforce, jacp, force, 3, nv);
-                crate::engine::engine_util_blas::mju_add_to(qfrc_target, qforce, nv);
-            }
-            if !torque.is_null() {
-                crate::engine::engine_util_blas::mju_mul_mat_t_vec(qforce, jacr, torque, 3, nv);
-                crate::engine::engine_util_blas::mju_add_to(qfrc_target, qforce, nv);
-            }
-        }
-
-        crate::engine::engine_memory::mj_free_stack(d);
-    }
-}
-
-/// C: mj_xfrcAccumulate (engine/engine_support.h:84)
-/// Calls: mj_applyFT, mju_isZero, mju_isZeroByte
-/// ⚠️ BITEXACT RULES:
-///   1. Copy exact C accumulation order (no iter().sum())
-///   2. No f64::mul_add() (FMA changes precision)
-///   3. No algebraic simplification
-///   4. No iter().sum()/product() (order undefined)
-#[allow(unused_variables, non_snake_case)]
-pub fn mj_xfrc_accumulate(m: *const mjModel, d: *mut mjData, qfrc: *mut f64) {
-    // SAFETY: m, d, qfrc are valid pointers (caller contract).
-    unsafe {
-        let nbody = (*m).nbody as i32;
-        let xfrc = (*d).xfrc_applied;
-
-        // quick return if identically zero (efficient memcmp implementation)
-        if crate::engine::engine_util_misc::mju_is_zero_byte(
-            xfrc.add(6) as *const u8,
-            (6 * (nbody - 1) as usize * std::mem::size_of::<f64>()) as i32,
-        ) != 0 {
-            return;
-        }
-
-        // some non-zero wrenches, apply them
-        for i in 1..nbody {
-            if crate::engine::engine_util_misc::mju_is_zero(xfrc.add(6 * i as usize), 6) == 0 {
-                mj_apply_ft(
-                    m, d,
-                    xfrc.add(6 * i as usize),
-                    xfrc.add(6 * i as usize + 3),
-                    (*d).xipos.add(3 * i as usize),
-                    i,
-                    qfrc,
-                );
-            }
-        }
-    }
-}
-
-/// C: mj_geomDistance (engine/engine_support.h:90)
-/// Calls: mj_geomDistanceCCD, mju_addScl3, mju_zero
-/// ⚠️ BITEXACT RULES:
-///   1. Copy exact C accumulation order (no iter().sum())
-///   2. No f64::mul_add() (FMA changes precision)
-///   3. No algebraic simplification
-///   4. No iter().sum()/product() (order undefined)
-#[allow(unused_variables, non_snake_case)]
-pub fn mj_geom_distance(m: *const mjModel, d: *mut mjData, geom1: i32, geom2: i32, distmax: f64, fromto: *mut f64) -> f64 {
-    use crate::types::*;
-    const MJ_DSBL_NATIVECCD: i32 = mjtDisableBit_mjDSBL_NATIVECCD as i32;
-    const MJ_MAXCONPAIR: usize = 50;
-
-    // SAFETY: m, d are valid pointers. con array is stack-local.
-    unsafe {
-        let mut con_buf = [0u8; MJ_MAXCONPAIR * std::mem::size_of::<mjPreContact>()];
-        let con = con_buf.as_mut_ptr() as *mut mjPreContact;
-        let mut dist = distmax;
-        if !fromto.is_null() {
-            crate::engine::engine_util_blas::mju_zero(fromto, 6);
-        }
-
-        // flip geom order if required
-        let flip = *(*m).geom_type.add(geom1 as usize) > *(*m).geom_type.add(geom2 as usize);
-        let (g1, g2) = if flip { (geom2, geom1) } else { (geom1, geom2) };
-        let type1 = *(*m).geom_type.add(g1 as usize) as usize;
-        let type2 = *(*m).geom_type.add(g2 as usize) as usize;
-
-        // get collision function from table
-        let guard = crate::types::MJCOLLISIONFUNC.lock().unwrap();
-        let func = guard[type1][type2];
-        drop(guard);
-
-        if func.is_none() {
-            return dist;
-        }
-        let func_fn = func.unwrap();
-        // Compare function pointer addresses using pointer equality
-        let convex_fn = crate::engine::engine_collision_convex::mjc_convex as *const ();
-        let boxbox_fn = crate::engine::engine_collision_primitive::mjc_box_box as *const ();
-        let func_ptr = func_fn as *const ();
-
-        // use nativeccd if enabled and function is convex/box-box
-        if ((*m).opt.disableflags & MJ_DSBL_NATIVECCD) == 0 {
-            if func_ptr == convex_fn || func_ptr == boxbox_fn {
-                return mj_geom_distance_ccd(m, d, geom1, geom2, distmax, fromto);
-            }
-        }
-
-        // call collision function with distmax as margin
-        let num = func_fn(m, d, con, g1, g2, distmax);
-
-        // find smallest distance
-        let mut smallest: i32 = -1;
-        for i in 0..num as usize {
-            let dist_i = (*con.add(i)).dist;
-            if dist_i < dist {
-                dist = dist_i;
-                smallest = i as i32;
-            }
-        }
-
-        // write fromto if given and collision found
-        if !fromto.is_null() && smallest >= 0 {
-            let c = con.add(smallest as usize);
-            let sign: f64 = if flip { -1.0 } else { 1.0 };
-            crate::engine::engine_util_blas::mju_add_scl3(fromto, (*c).pos.as_ptr(), (*c).normal.as_ptr(), -0.5 * sign * dist);
-            crate::engine::engine_util_blas::mju_add_scl3(fromto.add(3), (*c).pos.as_ptr(), (*c).normal.as_ptr(), 0.5 * sign * dist);
-        }
-
-        dist
-    }
-}
-
 /// C: mj_differentiatePos (engine/engine_support.h:94)
-/// Calls: mju_scl3, mju_subQuat
+/// Calls: cxx:_mju_scl3, cxx:_mju_subQuat
 /// ⚠️ BITEXACT RULES:
 ///   1. Copy exact C accumulation order (no iter().sum())
 ///   2. No f64::mul_add() (FMA changes precision)
 ///   3. No algebraic simplification
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
-pub fn mj_differentiate_pos(m: *const mjModel, qvel: *mut f64, dt: f64, qpos1: *const f64, qpos2: *const f64) {
+pub fn mj_differentiatePos(m: *const mjModel, qvel: *mut f64, dt: f64, qpos1: *const f64, qpos2: *const f64) {
     const MJ_JNT_FREE: i32 = 0;
     const MJ_JNT_BALL: i32 = 1;
     const MJ_JNT_HINGE: i32 = 3;
@@ -746,12 +495,12 @@ pub fn mj_differentiate_pos(m: *const mjModel, qvel: *mut f64, dt: f64, qpos1: *
                     vadr += 3;
                     padr += 3;
                     // fallthrough to ball
-                    crate::engine::engine_util_spatial::mju_sub_quat(
+                    crate::engine::engine_util_spatial::mju_subQuat(
                         qvel.add(vadr), qpos2.add(padr), qpos1.add(padr));
                     crate::engine::engine_util_blas::mju_scl3(qvel.add(vadr), qvel.add(vadr), 1.0 / dt);
                 }
                 MJ_JNT_BALL => {
-                    crate::engine::engine_util_spatial::mju_sub_quat(
+                    crate::engine::engine_util_spatial::mju_subQuat(
                         qvel.add(vadr), qpos2.add(padr), qpos1.add(padr));
                     crate::engine::engine_util_blas::mju_scl3(qvel.add(vadr), qvel.add(vadr), 1.0 / dt);
                 }
@@ -765,14 +514,14 @@ pub fn mj_differentiate_pos(m: *const mjModel, qvel: *mut f64, dt: f64, qpos1: *
 }
 
 /// C: mj_integratePosInd (engine/engine_support.h:98)
-/// Calls: mju_quatIntegrate
+/// Calls: cxx:_mju_quatIntegrate
 /// ⚠️ BITEXACT RULES:
 ///   1. Copy exact C accumulation order (no iter().sum())
 ///   2. No f64::mul_add() (FMA changes precision)
 ///   3. No algebraic simplification
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
-pub fn mj_integrate_pos_ind(m: *const mjModel, qpos: *mut f64, qvel: *const f64, dt: f64, index: *const i32, nbody: i32) {
+pub fn mj_integratePosInd(m: *const mjModel, qpos: *mut f64, qvel: *const f64, dt: f64, index: *const i32, nbody: i32) {
     const MJ_JNT_FREE: i32 = 0;
     const MJ_JNT_BALL: i32 = 1;
     const MJ_JNT_HINGE: i32 = 3;
@@ -798,11 +547,11 @@ pub fn mj_integrate_pos_ind(m: *const mjModel, qpos: *mut f64, qvel: *const f64,
                         padr += 3;
                         vadr += 3;
                         // fallthrough to ball quaternion update
-                        crate::engine::engine_util_spatial::mju_quat_integrate(
+                        crate::engine::engine_util_spatial::mju_quatIntegrate(
                             qpos.add(padr), qvel.add(vadr), dt);
                     }
                     MJ_JNT_BALL => {
-                        crate::engine::engine_util_spatial::mju_quat_integrate(
+                        crate::engine::engine_util_spatial::mju_quatIntegrate(
                             qpos.add(padr), qvel.add(vadr), dt);
                     }
                     MJ_JNT_HINGE | MJ_JNT_SLIDE => {
@@ -816,29 +565,29 @@ pub fn mj_integrate_pos_ind(m: *const mjModel, qpos: *mut f64, qvel: *const f64,
 }
 
 /// C: mj_integratePos (engine/engine_support.h:102)
-/// Calls: mj_integratePosInd
+/// Calls: cxx:_mj_integratePosInd
 /// ⚠️ BITEXACT RULES:
 ///   1. Copy exact C accumulation order (no iter().sum())
 ///   2. No f64::mul_add() (FMA changes precision)
 ///   3. No algebraic simplification
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
-pub fn mj_integrate_pos(m: *const mjModel, qpos: *mut f64, qvel: *const f64, dt: f64) {
+pub fn mj_integratePos(m: *const mjModel, qpos: *mut f64, qvel: *const f64, dt: f64) {
     // SAFETY: m is a valid mjModel pointer (caller contract)
     unsafe {
-        mj_integrate_pos_ind(m, qpos, qvel, dt, std::ptr::null(), (*m).nbody as i32);
+        mj_integratePosInd(m, qpos, qvel, dt, std::ptr::null(), (*m).nbody as i32);
     }
 }
 
 /// C: mj_normalizeQuat (engine/engine_support.h:105)
-/// Calls: mju_normalize4
+/// Calls: cxx:_mju_normalize4
 /// ⚠️ BITEXACT RULES:
 ///   1. Copy exact C accumulation order (no iter().sum())
 ///   2. No f64::mul_add() (FMA changes precision)
 ///   3. No algebraic simplification
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
-pub fn mj_normalize_quat(m: *const mjModel, qpos: *mut f64) {
+pub fn mj_normalizeQuat(m: *const mjModel, qpos: *mut f64) {
     // SAFETY: m is valid mjModel, qpos is valid qpos array. Access fields via byte offsets:
     //   njnt: usize at offset 72
     //   jnt_type: *const i32 at offset 2048
@@ -864,7 +613,7 @@ pub fn mj_normalize_quat(m: *const mjModel, qpos: *mut f64) {
 
 /// C: mj_actuatorDisabled (engine/engine_support.h:108)
 #[allow(unused_variables, non_snake_case)]
-pub fn mj_actuator_disabled(m: *const mjModel, i: i32) -> i32 {
+pub fn mj_actuatorDisabled(m: *const mjModel, i: i32) -> i32 {
     // SAFETY: m is a valid mjModel pointer; actuator_group ptr at offset 4696, opt.disableactuator i32 at offset 1024
     unsafe {
         let m_ptr = m as *const u8;
@@ -879,14 +628,14 @@ pub fn mj_actuator_disabled(m: *const mjModel, i: i32) -> i32 {
 }
 
 /// C: mj_nextActivation (engine/engine_support.h:111)
-/// Calls: mj_dcmotorSlots, mj_lugreStribeck, mju_clip, mju_max
+/// Calls: cxx:_mj_dcmotorSlots, cxx:_mj_lugreStribeck, cxx:_mju_clip, cxx:_mju_max
 /// ⚠️ BITEXACT RULES:
 ///   1. Copy exact C accumulation order (no iter().sum())
 ///   2. No f64::mul_add() (FMA changes precision)
 ///   3. No algebraic simplification
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
-pub fn mj_next_activation(m: *const mjModel, d: *const mjData, actuator_id: i32, act_adr: i32, act_dot: f64) -> f64 {
+pub fn mj_nextActivation(m: *const mjModel, d: *const mjData, actuator_id: i32, act_adr: i32, act_dot: f64) -> f64 {
     const MJNDYN: i32 = 10;
     const MJNGAIN: i32 = 10;
     const MJNBIAS: i32 = 10;
@@ -907,7 +656,7 @@ pub fn mj_next_activation(m: *const mjModel, d: *const mjData, actuator_id: i32,
         } else if dyntype == MJDYN_DCMOTOR {
             let dynprm = (*m).actuator_dynprm.add((actuator_id * MJNDYN) as usize);
             let gainprm = (*m).actuator_gainprm.add((actuator_id * MJNGAIN) as usize);
-            let slots = crate::engine::engine_util_misc::mj_dcmotor_slots(dynprm, gainprm);
+            let slots = crate::engine::engine_util_misc::mj_dcmotorSlots(dynprm, gainprm);
 
             let offset = act_adr - *(*m).actuator_actadr.add(actuator_id as usize);
 
@@ -924,7 +673,7 @@ pub fn mj_next_activation(m: *const mjModel, d: *const mjData, actuator_id: i32,
                 let v_S = *biasprm.add(5);
                 let sigma0 = *dynprm.add(5);
                 let velocity = *(*d).actuator_velocity.add(actuator_id as usize);
-                let g = crate::engine::engine_util_misc::mj_lugre_stribeck(velocity, F_C, F_S, v_S);
+                let g = crate::engine::engine_util_misc::mj_lugreStribeck(velocity, F_C, F_S, v_S);
 
                 let a = -sigma0 * velocity.abs() / (if g > MJMINVAL { g } else { MJMINVAL });
                 let h = (*m).opt.timestep;
@@ -964,7 +713,7 @@ pub fn mj_next_activation(m: *const mjModel, d: *const mjData, actuator_id: i32,
 ///   3. No algebraic simplification
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
-pub fn mj_get_totalmass(m: *const mjModel) -> f64 {
+pub fn mj_getTotalmass(m: *const mjModel) -> f64 {
     // SAFETY: m is valid mjModel. Access fields via byte offsets:
     //   nbody: usize at offset 32
     //   body_mass: *const f64 at offset 1888
@@ -982,14 +731,14 @@ pub fn mj_get_totalmass(m: *const mjModel) -> f64 {
 }
 
 /// C: mj_setTotalmass (engine/engine_support.h:118)
-/// Calls: mj_getTotalmass, mju_max
+/// Calls: cxx:_mj_getTotalmass, cxx:_mju_max
 /// ⚠️ BITEXACT RULES:
 ///   1. Copy exact C accumulation order (no iter().sum())
 ///   2. No f64::mul_add() (FMA changes precision)
 ///   3. No algebraic simplification
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
-pub fn mj_set_totalmass(m: *mut mjModel, newmass: f64) {
+pub fn mj_setTotalmass(m: *mut mjModel, newmass: f64) {
     const MJ_MINVAL: f64 = 1E-15_f64;
     // SAFETY: m is valid mutable mjModel. Access fields via byte offsets:
     //   nbody: usize at offset 32
@@ -1002,7 +751,7 @@ pub fn mj_set_totalmass(m: *mut mjModel, newmass: f64) {
         let body_inertia = *(m_ptr.add(1904) as *const *mut f64);
 
         // compute scale factor
-        let current = mj_get_totalmass(m);
+        let current = mj_getTotalmass(m);
         let scale = f64::max(MJ_MINVAL, newmass / f64::max(MJ_MINVAL, current));
 
         // scale all masses and inertias
@@ -1023,15 +772,14 @@ pub fn mj_version() -> i32 {
 
 /// C: mj_versionString (engine/engine_support.h:124)
 #[allow(unused_variables, non_snake_case)]
-pub fn mj_version_string() -> *const i8 {
+pub fn mj_versionString() -> *const i8 {
     // SAFETY: returns pointer to static null-terminated string
     b"3.10.1\0".as_ptr() as *const i8
 }
 
 /// C: mju_condataSize (engine/engine_support.h:127)
-/// Calls: FilePath::size
 #[allow(unused_variables, non_snake_case)]
-pub fn mju_condata_size(dataSpec: i32) -> i32 {
+pub fn mju_condataSize(dataSpec: i32) -> i32 {
     // mjNCONDATA = 7, mjCONDATA_SIZE = [1, 3, 3, 1, 3, 3, 3]
     const MJ_NCONDATA: i32 = 7;
     const MJ_CONDATA_SIZE: [i32; 7] = [1, 3, 3, 1, 3, 3, 3];
@@ -1048,9 +796,8 @@ pub fn mju_condata_size(dataSpec: i32) -> i32 {
 }
 
 /// C: mju_raydataSize (engine/engine_support.h:130)
-/// Calls: FilePath::size
 #[allow(unused_variables, non_snake_case)]
-pub fn mju_raydata_size(dataspec: i32) -> i32 {
+pub fn mju_raydataSize(dataspec: i32) -> i32 {
     // mjNRAYDATA = 6, mjRAYDATA_SIZE = [1, 3, 3, 3, 3, 1]
     const MJ_NRAYDATA: i32 = 6;
     const MJ_RAYDATA_SIZE: [i32; 6] = [1, 3, 3, 3, 3, 1];
@@ -1073,7 +820,7 @@ pub fn mju_raydata_size(dataspec: i32) -> i32 {
 ///   3. No algebraic simplification
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
-pub fn mju_cam_intrinsics(m: *const mjModel, camid: i32, fx: *mut f64, fy: *mut f64, cx: *mut f64, cy: *mut f64, ortho_extent: *mut f64) {
+pub fn mju_camIntrinsics(m: *const mjModel, camid: i32, fx: *mut f64, fy: *mut f64, cx: *mut f64, cy: *mut f64, ortho_extent: *mut f64) {
     // SAFETY: m valid mjModel. Byte offsets:
     //   cam_projection: *const i32 at 2704
     //   cam_fovy: *const f64 at 2712
@@ -1132,14 +879,14 @@ pub fn mju_cam_intrinsics(m: *const mjModel, camid: i32, fx: *mut f64, fy: *mut 
 }
 
 /// C: mj_readCtrl (engine/engine_support.h:141)
-/// Calls: mju_historyRead, mju_message
+/// Calls: cxx:_mju_historyRead, cxx:_mju_message
 /// ⚠️ BITEXACT RULES:
 ///   1. Copy exact C accumulation order (no iter().sum())
 ///   2. No f64::mul_add() (FMA changes precision)
 ///   3. No algebraic simplification
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
-pub fn mj_read_ctrl(m: *const mjModel, d: *const mjData, id: i32, time: f64, interp: i32) -> f64 {
+pub fn mj_readCtrl(m: *const mjModel, d: *const mjData, id: i32, time: f64, interp: i32) -> f64 {
     // SAFETY: m, d are valid model/data pointers; id validated below (caller contract)
     unsafe {
         // validate actuator id
@@ -1165,21 +912,21 @@ pub fn mj_read_ctrl(m: *const mjModel, d: *const mjData, id: i32, time: f64, int
         let delay = *(*m).actuator_delay.add(id as usize);
         let buf = (*d).history.add(*(*m).actuator_historyadr.add(id as usize) as usize);
         let mut res: f64 = 0.0;
-        let ptr = crate::engine::engine_util_misc::mju_history_read(
+        let ptr = crate::engine::engine_util_misc::mju_historyRead(
             buf, nsample, 1, &mut res, time - delay, interp);
         if !ptr.is_null() { *ptr } else { res }
     }
 }
 
 /// C: mj_readSensor (engine/engine_support.h:147)
-/// Calls: mju_historyRead, mju_message
+/// Calls: cxx:_mju_historyRead, cxx:_mju_message
 /// ⚠️ BITEXACT RULES:
 ///   1. Copy exact C accumulation order (no iter().sum())
 ///   2. No f64::mul_add() (FMA changes precision)
 ///   3. No algebraic simplification
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
-pub fn mj_read_sensor(m: *const mjModel, d: *const mjData, id: i32, time: f64, result: *mut f64, interp: i32) -> *const f64 {
+pub fn mj_readSensor(m: *const mjModel, d: *const mjData, id: i32, time: f64, result: *mut f64, interp: i32) -> *const f64 {
     // SAFETY: m, d are valid; result may be null for non-history case (caller contract)
     unsafe {
         // validate sensor id
@@ -1205,20 +952,20 @@ pub fn mj_read_sensor(m: *const mjModel, d: *const mjData, id: i32, time: f64, r
         let dim = *(*m).sensor_dim.add(id as usize);
         let delay = *(*m).sensor_delay.add(id as usize);
         let buf = (*d).history.add(*(*m).sensor_historyadr.add(id as usize) as usize);
-        crate::engine::engine_util_misc::mju_history_read(
+        crate::engine::engine_util_misc::mju_historyRead(
             buf, nsample, dim, result, time - delay, interp)
     }
 }
 
 /// C: mj_initCtrlHistory (engine/engine_support.h:152)
-/// Calls: mju_historyInit, mju_message
+/// Calls: cxx:_mju_historyInit, cxx:_mju_message
 /// ⚠️ BITEXACT RULES:
 ///   1. Copy exact C accumulation order (no iter().sum())
 ///   2. No f64::mul_add() (FMA changes precision)
 ///   3. No algebraic simplification
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
-pub fn mj_init_ctrl_history(m: *const mjModel, d: *mut mjData, id: i32, times: *const f64, values: *const f64) {
+pub fn mj_initCtrlHistory(m: *const mjModel, d: *mut mjData, id: i32, times: *const f64, values: *const f64) {
     // SAFETY: m, d are valid pointers (caller contract). times and values may be null.
     unsafe {
         // validate actuator id
@@ -1246,19 +993,19 @@ pub fn mj_init_ctrl_history(m: *const mjModel, d: *mut mjData, id: i32, times: *
         let user = *buf.add(0);
 
         // initialize history buffer
-        crate::engine::engine_util_misc::mju_history_init(buf, nsample, 1, buf_times, values, user);
+        crate::engine::engine_util_misc::mju_historyInit(buf, nsample, 1, buf_times, values, user);
     }
 }
 
 /// C: mj_initSensorHistory (engine/engine_support.h:158)
-/// Calls: mju_historyInit, mju_message
+/// Calls: cxx:_mju_historyInit, cxx:_mju_message
 /// ⚠️ BITEXACT RULES:
 ///   1. Copy exact C accumulation order (no iter().sum())
 ///   2. No f64::mul_add() (FMA changes precision)
 ///   3. No algebraic simplification
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
-pub fn mj_init_sensor_history(m: *const mjModel, d: *mut mjData, id: i32, times: *const f64, values: *const f64, phase: f64) {
+pub fn mj_initSensorHistory(m: *const mjModel, d: *mut mjData, id: i32, times: *const f64, values: *const f64, phase: f64) {
     // SAFETY: m, d are valid pointers (caller contract). times and values may be null.
     unsafe {
         // validate sensor id
@@ -1284,7 +1031,7 @@ pub fn mj_init_sensor_history(m: *const mjModel, d: *mut mjData, id: i32, times:
         let buf_times: *const f64 = if !times.is_null() { times } else { buf.add(2) as *const f64 };
 
         // initialize history buffer with provided phase
-        crate::engine::engine_util_misc::mju_history_init(buf, nsample, dim, buf_times, values, phase);
+        crate::engine::engine_util_misc::mju_historyInit(buf, nsample, dim, buf_times, values, phase);
     }
 }
 

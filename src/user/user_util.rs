@@ -1,8 +1,27 @@
 //! Port of: user/user_util.cc
-//! IR hash: 73393814548a07d1
-//! CODEGEN: signatures locked. Only fill todo!() bodies.
+//! IR hash: 9343293228317031
+//! CODEGEN: source paths, owners, and callable names are locked.
 
 use crate::types::*;
+
+/// C: mjuu_offcenter (user/user_util.cc:531)
+/// ⚠️ BITEXACT RULES:
+///   1. Copy exact C accumulation order (no iter().sum())
+///   2. No f64::mul_add() (FMA changes precision)
+///   3. No algebraic simplification
+///   4. No iter().sum()/product() (order undefined)
+#[allow(unused_variables, non_snake_case)]
+pub fn mjuu_offcenter(res: *mut f64, mass: f64, vec: *const f64) {
+    // SAFETY: res[6], vec[3] valid (caller contract)
+    unsafe {
+        *res.add(0) = mass * (*vec.add(1) * *vec.add(1) + *vec.add(2) * *vec.add(2));
+        *res.add(1) = mass * (*vec.add(0) * *vec.add(0) + *vec.add(2) * *vec.add(2));
+        *res.add(2) = mass * (*vec.add(0) * *vec.add(0) + *vec.add(1) * *vec.add(1));
+        *res.add(3) = -mass * *vec.add(0) * *vec.add(1);
+        *res.add(4) = -mass * *vec.add(0) * *vec.add(2);
+        *res.add(5) = -mass * *vec.add(1) * *vec.add(2);
+    }
+}
 
 /// C: mjuu_axisAngle2Quat (user/user_util.cc:564)
 /// ⚠️ BITEXACT RULES:
@@ -11,7 +30,7 @@ use crate::types::*;
 ///   3. No algebraic simplification
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
-pub fn mjuu_axis_angle2quat(res: *mut f64, axis: *const f64, angle: f64) {
+pub fn mjuu_axisAngle2Quat(res: *mut f64, axis: *const f64, angle: f64) {
     // SAFETY: res[4], axis[3] valid (caller contract)
     unsafe {
         if angle == 0.0 {
@@ -26,54 +45,6 @@ pub fn mjuu_axis_angle2quat(res: *mut f64, axis: *const f64, angle: f64) {
             *res.add(2) = *axis.add(1) * s;
             *res.add(3) = *axis.add(2) * s;
         }
-    }
-}
-
-/// C: mjuu_isValidContentType (user/user_util.cc:973)
-#[allow(unused_variables, non_snake_case)]
-pub fn mjuu_is_valid_content_type(text: std__string_view) -> bool {
-    todo!() // mjuu_isValidContentType
-}
-
-/// C: StrToNum (user/user_util.cc:1277)
-#[allow(unused_variables, non_snake_case)]
-pub fn str_to_num(str: *mut i8, c: *mut *mut i8) -> i32 {
-    // StrToNum<int>: parse i32 from string using strtol
-    // SAFETY: str is a valid null-terminated C string; c is valid output pointer.
-    unsafe {
-        extern "C" { fn strtol(s: *const i8, endptr: *mut *mut i8, base: i32) -> i64; }
-        let mut end: *mut i8 = std::ptr::null_mut();
-        let n: i64 = strtol(str as *const i8, &mut end, 10);
-        if !c.is_null() { *c = end; }
-        if n < i32::MIN as i64 || n > i32::MAX as i64 {
-            // overflow - actual implementation sets errno=ERANGE, we skip errno
-        }
-        n as i32
-    }
-}
-
-/// C: IsNullOrSpace (user/user_util.cc:1301)
-#[allow(unused_variables, non_snake_case)]
-pub fn is_null_or_space(c: *mut i8) -> bool {
-    // SAFETY: c is a valid pointer to a character (caller contract).
-    unsafe {
-        let ch = *c as u8;
-        ch == 0 || (ch as char).is_ascii_whitespace()
-    }
-}
-
-/// C: SkipSpace (user/user_util.cc:1305)
-/// Calls: IsNullOrSpace
-#[allow(unused_variables, non_snake_case)]
-pub fn skip_space(c: *mut i8) -> *mut i8 {
-    // SAFETY: c is a valid pointer to a null-terminated string.
-    unsafe {
-        let mut ptr = c;
-        while *ptr != 0 {
-            if !is_null_or_space(ptr) { break; }
-            ptr = ptr.add(1);
-        }
-        ptr
     }
 }
 
@@ -99,38 +70,6 @@ pub fn mjuu_matadr(g1: i32, g2: i32, n: i32) -> i32 {
     g1 * n + g2
 }
 
-/// C: mjuu_setvec (user/user_util.h:42)
-/// ⚠️ BITEXACT RULES:
-///   1. Copy exact C accumulation order (no iter().sum())
-///   2. No f64::mul_add() (FMA changes precision)
-///   3. No algebraic simplification
-///   4. No iter().sum()/product() (order undefined)
-#[allow(unused_variables, non_snake_case)]
-pub fn mjuu_setvec(dest: *mut f64, x: f64, y: f64, z: f64, w: f64) {
-    // SAFETY: dest points to at least 4 f64 (caller contract)
-    unsafe {
-        *dest.add(0) = x;
-        *dest.add(1) = y;
-        *dest.add(2) = z;
-        *dest.add(3) = w;
-    }
-}
-
-/// C: mjuu_copyvec (user/user_util.h:54)
-#[allow(unused_variables, non_snake_case)]
-pub fn mjuu_copyvec(dest: *mut T1, src: *const T2, n: i32) {
-    // SAFETY: caller guarantees dest and src point to at least n f64 elements
-    unsafe {
-        let d = dest as *mut f64;
-        let s = src as *const f64;
-        let mut i: i32 = 0;
-        while i < n {
-            *d.offset(i as isize) = *s.offset(i as isize);
-            i += 1;
-        }
-    }
-}
-
 /// C: mjuu_addtovec (user/user_util.h:59)
 /// ⚠️ BITEXACT RULES:
 ///   1. Copy exact C accumulation order (no iter().sum())
@@ -146,22 +85,6 @@ pub fn mjuu_addtovec(dest: *mut f64, src: *const f64, n: i32) {
             *dest.offset(i as isize) += *src.offset(i as isize);
             i += 1;
         }
-    }
-}
-
-/// C: mjuu_zerovec (user/user_util.h:62)
-/// ⚠️ BITEXACT RULES:
-///   1. Copy exact C accumulation order (no iter().sum())
-///   2. No f64::mul_add() (FMA changes precision)
-///   3. No algebraic simplification
-///   4. No iter().sum()/product() (order undefined)
-#[allow(unused_variables, non_snake_case)]
-pub fn mjuu_zerovec(dest: *mut f64, n: i32) {
-    let mut i: i32 = 0;
-    while i < n {
-        // SAFETY: caller guarantees dest points to at least n doubles
-        unsafe { *dest.offset(i as isize) = 0.0; }
-        i += 1;
     }
 }
 
@@ -204,7 +127,7 @@ pub fn mjuu_dist3(a: *const f64, b: *const f64) -> f64 {
 ///   3. No algebraic simplification
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
-pub fn mjuu_l1(a: *const f64, b: *const f64, n: i32) -> f64 {
+pub fn mjuu_L1(a: *const f64, b: *const f64, n: i32) -> f64 {
     // SAFETY: caller guarantees a and b point to at least n f64
     unsafe {
         let mut res: f64 = 0.0;
@@ -214,38 +137,6 @@ pub fn mjuu_l1(a: *const f64, b: *const f64, n: i32) -> f64 {
             i += 1;
         }
         res
-    }
-}
-
-/// C: mjuu_normvec (user/user_util.h:78)
-/// ⚠️ BITEXACT RULES:
-///   1. Copy exact C accumulation order (no iter().sum())
-///   2. No f64::mul_add() (FMA changes precision)
-///   3. No algebraic simplification
-///   4. No iter().sum()/product() (order undefined)
-#[allow(unused_variables, non_snake_case)]
-pub fn mjuu_normvec(vec: *mut f64, n: i32) -> f64 {
-    const MJEPS: f64 = 1e-14;
-    // SAFETY: caller guarantees vec points to at least n f64
-    unsafe {
-        let mut nrm: f64 = 0.0;
-        let mut i: i32 = 0;
-        while i < n {
-            nrm += *vec.offset(i as isize) * *vec.offset(i as isize);
-            i += 1;
-        }
-        if nrm < MJEPS {
-            return 0.0;
-        }
-        nrm = nrm.sqrt();
-        if (nrm - 1.0).abs() > MJEPS {
-            i = 0;
-            while i < n {
-                *vec.offset(i as isize) /= nrm;
-                i += 1;
-            }
-        }
-        nrm
     }
 }
 
@@ -314,31 +205,6 @@ pub fn mjuu_quat2mat(res: *mut f64, quat: *const f64) {
     }
 }
 
-/// C: mjuu_mulquat (user/user_util.h:88)
-/// Calls: mjuu_copyvec, mjuu_normvec
-/// ⚠️ BITEXACT RULES:
-///   1. Copy exact C accumulation order (no iter().sum())
-///   2. No f64::mul_add() (FMA changes precision)
-///   3. No algebraic simplification
-///   4. No iter().sum()/product() (order undefined)
-#[allow(unused_variables, non_snake_case)]
-pub fn mjuu_mulquat(res: *mut f64, qa: *const f64, qb: *const f64) {
-    // SAFETY: res[4], qa[4], qb[4] valid (caller contract)
-    unsafe {
-        let mut tmp: [f64; 4] = [0.0; 4];
-        tmp[0] = *qa.add(0) * *qb.add(0) - *qa.add(1) * *qb.add(1) - *qa.add(2) * *qb.add(2) - *qa.add(3) * *qb.add(3);
-        tmp[1] = *qa.add(0) * *qb.add(1) + *qa.add(1) * *qb.add(0) + *qa.add(2) * *qb.add(3) - *qa.add(3) * *qb.add(2);
-        tmp[2] = *qa.add(0) * *qb.add(2) - *qa.add(1) * *qb.add(3) + *qa.add(2) * *qb.add(0) + *qa.add(3) * *qb.add(1);
-        tmp[3] = *qa.add(0) * *qb.add(3) + *qa.add(1) * *qb.add(2) - *qa.add(2) * *qb.add(1) + *qa.add(3) * *qb.add(0);
-        mjuu_normvec(tmp.as_mut_ptr(), 4);
-        // copyvec: res = tmp
-        *res.add(0) = tmp[0];
-        *res.add(1) = tmp[1];
-        *res.add(2) = tmp[2];
-        *res.add(3) = tmp[3];
-    }
-}
-
 /// C: mjuu_mulvecmat (user/user_util.h:91)
 /// ⚠️ BITEXACT RULES:
 ///   1. Copy exact C accumulation order (no iter().sum())
@@ -365,7 +231,7 @@ pub fn mjuu_mulvecmat(res: *mut f64, vec: *const f64, mat: *const f64) {
 ///   3. No algebraic simplification
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
-pub fn mjuu_mulvecmat_t(res: *mut f64, vec: *const f64, mat: *const f64) {
+pub fn mjuu_mulvecmatT(res: *mut f64, vec: *const f64, mat: *const f64) {
     // SAFETY: res[3], vec[3], mat[9] valid (caller contract)
     unsafe {
         let tmp0 = *mat.add(0) * *vec.add(0) + *mat.add(3) * *vec.add(1) + *mat.add(6) * *vec.add(2);
@@ -384,7 +250,7 @@ pub fn mjuu_mulvecmat_t(res: *mut f64, vec: *const f64, mat: *const f64) {
 ///   3. No algebraic simplification
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
-pub fn mjuu_mul_rmrt(res: *mut f64, R: *const f64, M: *const f64) {
+pub fn mjuu_mulRMRT(res: *mut f64, R: *const f64, M: *const f64) {
     // SAFETY: res[9], R[9], M[9] valid (caller contract)
     unsafe {
         // tmp = R*M
@@ -412,53 +278,8 @@ pub fn mjuu_mul_rmrt(res: *mut f64, R: *const f64, M: *const f64) {
     }
 }
 
-/// C: mjuu_mulmat (user/user_util.h:100)
-/// Calls: mjuu_copyvec
-/// ⚠️ BITEXACT RULES:
-///   1. Copy exact C accumulation order (no iter().sum())
-///   2. No f64::mul_add() (FMA changes precision)
-///   3. No algebraic simplification
-///   4. No iter().sum()/product() (order undefined)
-#[allow(unused_variables, non_snake_case)]
-pub fn mjuu_mulmat(res: *mut f64, A: *const f64, B: *const f64) {
-    // SAFETY: res[9], A[9], B[9] valid (caller contract). Use tmp for aliasing safety.
-    unsafe {
-        let mut tmp: [f64; 9] = [0.0; 9];
-        tmp[0] = *A.add(0) * *B.add(0) + *A.add(1) * *B.add(3) + *A.add(2) * *B.add(6);
-        tmp[1] = *A.add(0) * *B.add(1) + *A.add(1) * *B.add(4) + *A.add(2) * *B.add(7);
-        tmp[2] = *A.add(0) * *B.add(2) + *A.add(1) * *B.add(5) + *A.add(2) * *B.add(8);
-        tmp[3] = *A.add(3) * *B.add(0) + *A.add(4) * *B.add(3) + *A.add(5) * *B.add(6);
-        tmp[4] = *A.add(3) * *B.add(1) + *A.add(4) * *B.add(4) + *A.add(5) * *B.add(7);
-        tmp[5] = *A.add(3) * *B.add(2) + *A.add(4) * *B.add(5) + *A.add(5) * *B.add(8);
-        tmp[6] = *A.add(6) * *B.add(0) + *A.add(7) * *B.add(3) + *A.add(8) * *B.add(6);
-        tmp[7] = *A.add(6) * *B.add(1) + *A.add(7) * *B.add(4) + *A.add(8) * *B.add(7);
-        tmp[8] = *A.add(6) * *B.add(2) + *A.add(7) * *B.add(5) + *A.add(8) * *B.add(8);
-        std::ptr::copy_nonoverlapping(tmp.as_ptr(), res, 9);
-    }
-}
-
-/// C: mjuu_transposemat (user/user_util.h:103)
-/// Calls: mjuu_copyvec
-/// ⚠️ BITEXACT RULES:
-///   1. Copy exact C accumulation order (no iter().sum())
-///   2. No f64::mul_add() (FMA changes precision)
-///   3. No algebraic simplification
-///   4. No iter().sum()/product() (order undefined)
-#[allow(unused_variables, non_snake_case)]
-pub fn mjuu_transposemat(res: *mut f64, mat: *const f64) {
-    // SAFETY: res[9], mat[9] valid (caller contract). Use tmp for aliasing safety.
-    unsafe {
-        let tmp: [f64; 9] = [
-            *mat.add(0), *mat.add(3), *mat.add(6),
-            *mat.add(1), *mat.add(4), *mat.add(7),
-            *mat.add(2), *mat.add(5), *mat.add(8),
-        ];
-        std::ptr::copy_nonoverlapping(tmp.as_ptr(), res, 9);
-    }
-}
-
 /// C: mjuu_localaxis (user/user_util.h:106)
-/// Calls: mjuu_mulvecmat, mjuu_quat2mat
+/// Calls: cxx:__Z13mjuu_quat2matPdPKd, cxx:__Z14mjuu_mulvecmatPdPKdS1_
 /// ⚠️ BITEXACT RULES:
 ///   1. Copy exact C accumulation order (no iter().sum())
 ///   2. No f64::mul_add() (FMA changes precision)
@@ -476,7 +297,7 @@ pub fn mjuu_localaxis(al: *mut f64, ag: *const f64, quat: *const f64) {
 }
 
 /// C: mjuu_localpos (user/user_util.h:109)
-/// Calls: mjuu_localaxis
+/// Calls: cxx:__Z14mjuu_localaxisPdPKdS1_
 /// ⚠️ BITEXACT RULES:
 ///   1. Copy exact C accumulation order (no iter().sum())
 ///   2. No f64::mul_add() (FMA changes precision)
@@ -492,27 +313,6 @@ pub fn mjuu_localpos(pl: *mut f64, pg: *const f64, pos: *const f64, quat: *const
             *pg.add(2) - *pos.add(2),
         ];
         mjuu_localaxis(pl, a.as_ptr(), quat);
-    }
-}
-
-/// C: mjuu_localquat (user/user_util.h:112)
-/// Calls: mjuu_mulquat
-/// ⚠️ BITEXACT RULES:
-///   1. Copy exact C accumulation order (no iter().sum())
-///   2. No f64::mul_add() (FMA changes precision)
-///   3. No algebraic simplification
-///   4. No iter().sum()/product() (order undefined)
-#[allow(unused_variables, non_snake_case)]
-pub fn mjuu_localquat(local: *mut f64, child: *const f64, parent: *const f64) {
-    // SAFETY: local[4], child[4], parent[4] are valid arrays (caller contract)
-    unsafe {
-        let pneg: [f64; 4] = [
-            *parent.add(0),
-            -*parent.add(1),
-            -*parent.add(2),
-            -*parent.add(3),
-        ];
-        mjuu_mulquat(local, pneg.as_ptr(), child);
     }
 }
 
@@ -532,67 +332,8 @@ pub fn mjuu_crossvec(a: *mut f64, b: *const f64, c: *const f64) {
     }
 }
 
-/// C: mjuu_makenormal (user/user_util.h:118)
-/// Calls: mjuu_crossvec, mjuu_dot3
-/// ⚠️ BITEXACT RULES:
-///   1. Copy exact C accumulation order (no iter().sum())
-///   2. No f64::mul_add() (FMA changes precision)
-///   3. No algebraic simplification
-///   4. No iter().sum()/product() (order undefined)
-#[allow(unused_variables, non_snake_case)]
-pub fn mjuu_makenormal(normal: *mut f64, a: *const type_parameter_0_0, b: *const type_parameter_0_0, c: *const type_parameter_0_0) -> f64 {
-    todo!() // mjuu_makenormal
-}
-
-/// C: mjuu_z2quat (user/user_util.h:122)
-/// Calls: mjuu_crossvec, mjuu_normvec
-/// ⚠️ BITEXACT RULES:
-///   1. Copy exact C accumulation order (no iter().sum())
-///   2. No f64::mul_add() (FMA changes precision)
-///   3. No algebraic simplification
-///   4. No iter().sum()/product() (order undefined)
-#[allow(unused_variables, non_snake_case)]
-pub fn mjuu_z2quat(quat: *mut f64, vec: *const f64) {
-    // SAFETY: caller guarantees quat[4] and vec[3] are valid
-    unsafe {
-        let z: [f64; 3] = [0.0, 0.0, 1.0];
-        mjuu_crossvec(quat.add(1), z.as_ptr(), vec);
-        let s = mjuu_normvec(quat.add(1), 3);
-        if s < 1E-10 {
-            *quat.add(1) = 1.0;
-            *quat.add(2) = 0.0;
-            *quat.add(3) = 0.0;
-        }
-        let ang = f64::atan2(s, *vec.add(2));
-        *quat.add(0) = f64::cos(ang / 2.0);
-        *quat.add(1) *= f64::sin(ang / 2.0);
-        *quat.add(2) *= f64::sin(ang / 2.0);
-        *quat.add(3) *= f64::sin(ang / 2.0);
-    }
-}
-
-/// C: mjuu_frame2quat (user/user_util.h:125)
-/// Calls: mjuu_normvec
-/// ⚠️ BITEXACT RULES:
-///   1. Copy exact C accumulation order (no iter().sum())
-///   2. No f64::mul_add() (FMA changes precision)
-///   3. No algebraic simplification
-///   4. No iter().sum()/product() (order undefined)
-#[allow(unused_variables, non_snake_case)]
-pub fn mjuu_frame2quat(quat: *mut f64, x: *const f64, y: *const f64, z: *const f64) {
-    // SAFETY: quat[4], x[3], y[3], z[3] valid (caller contract)
-    unsafe {
-        let mat: [f64; 9] = [
-            *x.add(0), *y.add(0), *z.add(0),
-            *x.add(1), *y.add(1), *z.add(1),
-            *x.add(2), *y.add(2), *z.add(2),
-        ];
-        crate::engine::engine_util_spatial::mju_mat2quat(quat, mat.as_ptr());
-    }
-}
-
 /// C: mjuu_frameinvert (user/user_util.h:128)
-/// Calls: mjuu_localaxis
+/// Calls: cxx:__Z14mjuu_localaxisPdPKdS1_
 /// ⚠️ BITEXACT RULES:
 ///   1. Copy exact C accumulation order (no iter().sum())
 ///   2. No f64::mul_add() (FMA changes precision)
@@ -616,78 +357,8 @@ pub fn mjuu_frameinvert(newpos: *mut f64, newquat: *mut f64, oldpos: *const f64,
     }
 }
 
-/// C: mjuu_frameaccum (user/user_util.h:132)
-/// Calls: mjuu_copyvec, mjuu_mulquat, mjuu_mulvecmat, mjuu_quat2mat
-/// ⚠️ BITEXACT RULES:
-///   1. Copy exact C accumulation order (no iter().sum())
-///   2. No f64::mul_add() (FMA changes precision)
-///   3. No algebraic simplification
-///   4. No iter().sum()/product() (order undefined)
-#[allow(unused_variables, non_snake_case)]
-pub fn mjuu_frameaccum(pos: *mut f64, quat: *mut f64, childpos: *const f64, childquat: *const f64) {
-    // SAFETY: caller guarantees pos[3], quat[4], childpos[3], childquat[4] valid
-    unsafe {
-        let mut mat: [f64; 9] = [0.0; 9];
-        let mut vec: [f64; 3] = [0.0; 3];
-        let mut qtmp: [f64; 4] = [0.0; 4];
-        mjuu_quat2mat(mat.as_mut_ptr(), quat);
-        mjuu_mulvecmat(vec.as_mut_ptr(), childpos, mat.as_ptr());
-        *pos.add(0) += vec[0];
-        *pos.add(1) += vec[1];
-        *pos.add(2) += vec[2];
-        mjuu_mulquat(qtmp.as_mut_ptr(), quat, childquat);
-        mjuu_copyvec(quat as *mut crate::types::T1, qtmp.as_ptr() as *const crate::types::T2, 4);
-    }
-}
-
-/// C: mjuu_frameaccumChild (user/user_util.h:136)
-/// Calls: mjuu_copyvec, mjuu_frameaccum
-/// ⚠️ BITEXACT RULES:
-///   1. Copy exact C accumulation order (no iter().sum())
-///   2. No f64::mul_add() (FMA changes precision)
-///   3. No algebraic simplification
-///   4. No iter().sum()/product() (order undefined)
-#[allow(unused_variables, non_snake_case)]
-pub fn mjuu_frameaccum_child(pos: *const f64, quat: *const f64, childpos: *mut f64, childquat: *mut f64) {
-    // SAFETY: caller guarantees pos[3], quat[4], childpos[3], childquat[4] valid
-    unsafe {
-        let mut p: [f64; 3] = [*pos.add(0), *pos.add(1), *pos.add(2)];
-        let mut q: [f64; 4] = [*quat.add(0), *quat.add(1), *quat.add(2), *quat.add(3)];
-        mjuu_frameaccum(p.as_mut_ptr(), q.as_mut_ptr(), childpos, childquat);
-        mjuu_copyvec(childpos as *mut crate::types::T1, p.as_ptr() as *const crate::types::T2, 3);
-        mjuu_copyvec(childquat as *mut crate::types::T1, q.as_ptr() as *const crate::types::T2, 4);
-    }
-}
-
-/// C: mjuu_frameaccuminv (user/user_util.h:140)
-/// Calls: mjuu_copyvec, mjuu_mulquat, mjuu_mulvecmat, mjuu_quat2mat
-/// ⚠️ BITEXACT RULES:
-///   1. Copy exact C accumulation order (no iter().sum())
-///   2. No f64::mul_add() (FMA changes precision)
-///   3. No algebraic simplification
-///   4. No iter().sum()/product() (order undefined)
-#[allow(unused_variables, non_snake_case)]
-pub fn mjuu_frameaccuminv(pos: *mut f64, quat: *mut f64, childpos: *const f64, childquat: *const f64) {
-    // SAFETY: pos[3], quat[4], childpos[3], childquat[4] are valid arrays (caller contract)
-    unsafe {
-        let mut mat = [0.0f64; 9];
-        let mut vec = [0.0f64; 3];
-        let mut qtmp = [0.0f64; 4];
-        let qneg = [*childquat.add(0), -*childquat.add(1), -*childquat.add(2), -*childquat.add(3)];
-
-        mjuu_mulquat(qtmp.as_mut_ptr(), quat, qneg.as_ptr());
-        // copy qtmp -> quat (4 doubles)
-        std::ptr::copy_nonoverlapping(qtmp.as_ptr(), quat, 4);
-        mjuu_quat2mat(mat.as_mut_ptr(), quat);
-        mjuu_mulvecmat(vec.as_mut_ptr(), childpos, mat.as_ptr());
-        *pos.add(0) -= vec[0];
-        *pos.add(1) -= vec[1];
-        *pos.add(2) -= vec[2];
-    }
-}
-
 /// C: mjuu_globalinertia (user/user_util.h:144)
-/// Calls: mjuu_quat2mat
+/// Calls: cxx:__Z13mjuu_quat2matPdPKd
 /// ⚠️ BITEXACT RULES:
 ///   1. Copy exact C accumulation order (no iter().sum())
 ///   2. No f64::mul_add() (FMA changes precision)
@@ -710,25 +381,6 @@ pub fn mjuu_globalinertia(global: *mut f64, local: *const f64, quat: *const f64)
         *global.add(3) = mat[0] * tmp[1] + mat[1] * tmp[4] + mat[2] * tmp[7];
         *global.add(4) = mat[0] * tmp[2] + mat[1] * tmp[5] + mat[2] * tmp[8];
         *global.add(5) = mat[3] * tmp[2] + mat[4] * tmp[5] + mat[5] * tmp[8];
-    }
-}
-
-/// C: mjuu_offcenter (user/user_util.h:147)
-/// ⚠️ BITEXACT RULES:
-///   1. Copy exact C accumulation order (no iter().sum())
-///   2. No f64::mul_add() (FMA changes precision)
-///   3. No algebraic simplification
-///   4. No iter().sum()/product() (order undefined)
-#[allow(unused_variables, non_snake_case)]
-pub fn mjuu_offcenter(res: *mut f64, mass: f64, vec: *const f64) {
-    // SAFETY: res[6], vec[3] valid (caller contract)
-    unsafe {
-        *res.add(0) = mass * (*vec.add(1) * *vec.add(1) + *vec.add(2) * *vec.add(2));
-        *res.add(1) = mass * (*vec.add(0) * *vec.add(0) + *vec.add(2) * *vec.add(2));
-        *res.add(2) = mass * (*vec.add(0) * *vec.add(0) + *vec.add(1) * *vec.add(1));
-        *res.add(3) = -mass * *vec.add(0) * *vec.add(1);
-        *res.add(4) = -mass * *vec.add(0) * *vec.add(2);
-        *res.add(5) = -mass * *vec.add(1) * *vec.add(2);
     }
 }
 
@@ -755,222 +407,6 @@ pub fn mjuu_visccoef(visccoef: *mut f64, mass: f64, inertia: *const f64, scl: f6
         *visccoef.add(3) = scl * 4.0 * e1 * e2;
         *visccoef.add(4) = scl * 4.0 * e0 * e2;
         *visccoef.add(5) = scl * 4.0 * e0 * e1;
-    }
-}
-
-/// C: mjuu_rotVecQuat (user/user_util.h:153)
-/// Calls: mjuu_copyvec
-/// ⚠️ BITEXACT RULES:
-///   1. Copy exact C accumulation order (no iter().sum())
-///   2. No f64::mul_add() (FMA changes precision)
-///   3. No algebraic simplification
-///   4. No iter().sum()/product() (order undefined)
-#[allow(unused_variables, non_snake_case)]
-pub fn mjuu_rot_vec_quat(res: *mut f64, vec: *const f64, quat: *const f64) {
-    // SAFETY: res[3], vec[3], quat[4] valid (caller contract)
-    unsafe {
-        // zero vec: zero res
-        if *vec.add(0) == 0.0 && *vec.add(1) == 0.0 && *vec.add(2) == 0.0 {
-            *res.add(0) = 0.0;
-            *res.add(1) = 0.0;
-            *res.add(2) = 0.0;
-        }
-        // null quat: copy vec
-        else if *quat.add(0) == 1.0 && *quat.add(1) == 0.0 && *quat.add(2) == 0.0 && *quat.add(3) == 0.0 {
-            std::ptr::copy_nonoverlapping(vec, res, 3);
-        }
-        // regular processing
-        else {
-            // tmp = q_w * v + cross(q_xyz, v)
-            let tmp0 = *quat.add(0) * *vec.add(0) + *quat.add(2) * *vec.add(2) - *quat.add(3) * *vec.add(1);
-            let tmp1 = *quat.add(0) * *vec.add(1) + *quat.add(3) * *vec.add(0) - *quat.add(1) * *vec.add(2);
-            let tmp2 = *quat.add(0) * *vec.add(2) + *quat.add(1) * *vec.add(1) - *quat.add(2) * *vec.add(0);
-
-            // res = v + 2 * cross(q_xyz, t)
-            *res.add(0) = *vec.add(0) + 2.0 * (*quat.add(2) * tmp2 - *quat.add(3) * tmp1);
-            *res.add(1) = *vec.add(1) + 2.0 * (*quat.add(3) * tmp0 - *quat.add(1) * tmp2);
-            *res.add(2) = *vec.add(2) + 2.0 * (*quat.add(1) * tmp1 - *quat.add(2) * tmp0);
-        }
-    }
-}
-
-/// C: mjuu_updateFrame (user/user_util.h:156)
-/// Calls: mjuu_axisAngle2Quat, mjuu_copyvec, mjuu_crossvec, mjuu_dot3, mjuu_frame2quat, mjuu_normvec, mjuu_rotVecQuat
-/// ⚠️ BITEXACT RULES:
-///   1. Copy exact C accumulation order (no iter().sum())
-///   2. No f64::mul_add() (FMA changes precision)
-///   3. No algebraic simplification
-///   4. No iter().sum()/product() (order undefined)
-#[allow(unused_variables, non_snake_case)]
-pub fn mjuu_update_frame(quat: *mut f64, normal: *mut f64, edge: *const f64, tprv: *const f64, tnxt: *const f64, first: i32) -> f64 {
-    // SAFETY: quat[4], normal[3], edge[3], tprv[3], tnxt[3] valid (caller contract)
-    unsafe {
-        let mut tangent: [f64; 3] = [0.0; 3];
-        let mut binormal: [f64; 3] = [0.0; 3];
-
-        // normalize tangent
-        for i in 0..3 {
-            tangent[i] = *edge.add(i);
-        }
-        mjuu_normvec(tangent.as_mut_ptr(), 3);
-
-        // compute moving frame
-        if first != 0 {
-            // use the first vertex binormal for the first edge
-            mjuu_crossvec(binormal.as_mut_ptr(), tangent.as_ptr(), tnxt);
-            mjuu_normvec(binormal.as_mut_ptr(), 3);
-
-            // compute edge normal given tangent and binormal
-            mjuu_crossvec(normal, binormal.as_ptr(), tangent.as_ptr());
-            mjuu_normvec(normal, 3);
-        } else {
-            let mut darboux: [f64; 4] = [0.0; 4];
-
-            // rotate edge normal about the vertex binormal
-            mjuu_crossvec(binormal.as_mut_ptr(), tprv, tangent.as_ptr());
-            let angle = f64::atan2(
-                mjuu_normvec(binormal.as_mut_ptr(), 3),
-                mjuu_dot3(tprv, tangent.as_ptr()),
-            );
-            mjuu_axis_angle2quat(darboux.as_mut_ptr(), binormal.as_ptr(), angle);
-            mjuu_rot_vec_quat(normal, normal, darboux.as_ptr());
-            mjuu_normvec(normal, 3);
-
-            // compute edge binormal given tangent and normal
-            mjuu_crossvec(binormal.as_mut_ptr(), tangent.as_ptr(), normal);
-            mjuu_normvec(binormal.as_mut_ptr(), 3);
-        }
-
-        // global orientation of the frame
-        mjuu_frame2quat(quat, tangent.as_ptr(), normal, binormal.as_ptr());
-
-        // return edge length
-        f64::sqrt(mjuu_dot3(edge, edge))
-    }
-}
-
-/// C: mjuu_eig3 (user/user_util.h:160)
-/// Calls: mjuu_mulmat, mjuu_mulquat, mjuu_normvec, mjuu_quat2mat, mjuu_transposemat
-/// ⚠️ BITEXACT RULES:
-///   1. Copy exact C accumulation order (no iter().sum())
-///   2. No f64::mul_add() (FMA changes precision)
-///   3. No algebraic simplification
-///   4. No iter().sum()/product() (order undefined)
-#[allow(unused_variables, non_snake_case)]
-pub fn mjuu_eig3(eigval: *mut f64, eigvec: *mut f64, quat: *mut f64, mat: *const f64) -> i32 {
-    // SAFETY: eigval[3], eigvec[9], quat[4], mat[9] valid (caller contract)
-    unsafe {
-        const K_EIG_EPS: f64 = 1e-12;
-        let mut d: [f64; 9] = [0.0; 9];
-        let mut tmp: [f64; 9] = [0.0; 9];
-        let mut tmp2: [f64; 9] = [0.0; 9];
-
-        // initialize with unit quaternion
-        *quat.add(0) = 1.0;
-        *quat.add(1) = 0.0;
-        *quat.add(2) = 0.0;
-        *quat.add(3) = 0.0;
-
-        // Jacobi iteration
-        let mut iter: i32 = 0;
-        while iter < 500 {
-            // make quaternion matrix eigvec, compute D = eigvec'*mat*eigvec
-            mjuu_quat2mat(eigvec, quat);
-            mjuu_transposemat(tmp2.as_mut_ptr(), eigvec);
-            mjuu_mulmat(tmp.as_mut_ptr(), tmp2.as_ptr(), mat);
-            mjuu_mulmat(d.as_mut_ptr(), tmp.as_ptr(), eigvec);
-
-            // assign eigenvalues
-            *eigval.add(0) = d[0];
-            *eigval.add(1) = d[4];
-            *eigval.add(2) = d[8];
-
-            // find max off-diagonal element, set indices
-            let (rk, ck, rotk): (usize, usize, usize);
-            if f64::abs(d[1]) > f64::abs(d[2]) && f64::abs(d[1]) > f64::abs(d[5]) {
-                rk = 0;
-                ck = 1;
-                rotk = 2;
-            } else if f64::abs(d[2]) > f64::abs(d[5]) {
-                rk = 0;
-                ck = 2;
-                rotk = 1;
-            } else {
-                rk = 1;
-                ck = 2;
-                rotk = 0;
-            }
-
-            // terminate if max off-diagonal element too small
-            if f64::abs(d[3 * rk + ck]) < K_EIG_EPS {
-                break;
-            }
-
-            // 2x2 symmetric Schur decomposition
-            let tau = (d[4 * ck] - d[4 * rk]) / (2.0 * d[3 * rk + ck]);
-            let t: f64;
-            if tau >= 0.0 {
-                t = 1.0 / (tau + f64::sqrt(1.0 + tau * tau));
-            } else {
-                t = -1.0 / (-tau + f64::sqrt(1.0 + tau * tau));
-            }
-            let c = 1.0 / f64::sqrt(1.0 + t * t);
-
-            // terminate if cosine too close to 1
-            if c > 1.0 - K_EIG_EPS {
-                break;
-            }
-
-            // express rotation as quaternion
-            let mut q_rot: [f64; 4] = [0.0; 4];
-            q_rot[1] = 0.0;
-            q_rot[2] = 0.0;
-            q_rot[3] = 0.0;
-            q_rot[rotk + 1] = if tau >= 0.0 {
-                -f64::sqrt(0.5 - 0.5 * c)
-            } else {
-                f64::sqrt(0.5 - 0.5 * c)
-            };
-            if rotk == 1 {
-                q_rot[rotk + 1] = -q_rot[rotk + 1];
-            }
-            q_rot[0] = f64::sqrt(1.0 - q_rot[rotk + 1] * q_rot[rotk + 1]);
-            mjuu_normvec(q_rot.as_mut_ptr(), 4);
-
-            // accumulate quaternion rotation
-            mjuu_mulquat(quat, quat, q_rot.as_ptr());
-            mjuu_normvec(quat, 4);
-
-            iter += 1;
-        }
-
-        // sort eigenvalues in decreasing order (bubblesort: 0, 1, 0)
-        for j in 0..3i32 {
-            let j1 = (j % 2) as usize;
-
-            // only swap if the eigenvalues are different
-            if *eigval.add(j1) + K_EIG_EPS < *eigval.add(j1 + 1) {
-                // swap eigenvalues
-                let t_swap = *eigval.add(j1);
-                *eigval.add(j1) = *eigval.add(j1 + 1);
-                *eigval.add(j1 + 1) = t_swap;
-
-                // rotate quaternion
-                let mut q_swap: [f64; 4] = [0.0; 4];
-                q_swap[0] = 0.707106781186548;
-                q_swap[1] = 0.0;
-                q_swap[2] = 0.0;
-                q_swap[3] = 0.0;
-                q_swap[(j1 + 2) % 3 + 1] = q_swap[0];
-                mjuu_mulquat(quat, quat, q_swap.as_ptr());
-                mjuu_normvec(quat, 4);
-            }
-        }
-
-        // recompute eigvec
-        mjuu_quat2mat(eigvec, quat);
-
-        iter
     }
 }
 
@@ -1061,237 +497,6 @@ pub fn mjuu_eigendecompose(mat: *mut f64, eigval: *mut f64, eigvec: *mut f64, n:
 
         sweep
     }
-}
-
-/// C: mjuu_trnVecPose (user/user_util.h:169)
-/// Calls: mjuu_rotVecQuat
-/// ⚠️ BITEXACT RULES:
-///   1. Copy exact C accumulation order (no iter().sum())
-///   2. No f64::mul_add() (FMA changes precision)
-///   3. No algebraic simplification
-///   4. No iter().sum()/product() (order undefined)
-#[allow(unused_variables, non_snake_case)]
-pub fn mjuu_trn_vec_pose(res: *mut f64, pos: *const f64, quat: *const f64, vec: *const f64) {
-    // SAFETY: res[3], pos[3], quat[4], vec[3] valid (caller contract)
-    unsafe {
-        mjuu_rot_vec_quat(res, vec, quat);
-        *res.add(0) += *pos.add(0);
-        *res.add(1) += *pos.add(1);
-        *res.add(2) += *pos.add(2);
-    }
-}
-
-/// C: mjuu_fullInertia (user/user_util.h:172)
-/// Calls: mjuu_copyvec, mjuu_defined, mjuu_eig3
-/// ⚠️ BITEXACT RULES:
-///   1. Copy exact C accumulation order (no iter().sum())
-///   2. No f64::mul_add() (FMA changes precision)
-///   3. No algebraic simplification
-///   4. No iter().sum()/product() (order undefined)
-#[allow(unused_variables, non_snake_case)]
-pub fn mjuu_full_inertia(quat: *mut f64, inertia: *mut f64, fullinertia: *const f64) -> *const i8 {
-    const MJ_EPS: f64 = 1e-14;
-
-    // SAFETY: quat[4], inertia[3], fullinertia[6] valid (caller contract, may be null).
-    unsafe {
-        if !mjuu_defined(*fullinertia) {
-            return std::ptr::null();
-        }
-
-        let mut eigval = [0.0f64; 3];
-        let mut eigvec = [0.0f64; 9];
-        let mut quattmp = [0.0f64; 4];
-        let full: [f64; 9] = [
-            *fullinertia.add(0), *fullinertia.add(3), *fullinertia.add(4),
-            *fullinertia.add(3), *fullinertia.add(1), *fullinertia.add(5),
-            *fullinertia.add(4), *fullinertia.add(5), *fullinertia.add(2),
-        ];
-
-        mjuu_eig3(eigval.as_mut_ptr(), eigvec.as_mut_ptr(), quattmp.as_mut_ptr(), full.as_ptr());
-
-        // check minimal eigenvalue
-        if eigval[2] < MJ_EPS {
-            return b"inertia must have positive eigenvalues\0".as_ptr() as *const i8;
-        }
-
-        if !quat.is_null() {
-            mjuu_copyvec(quat as *mut T1, quattmp.as_ptr() as *const T2, 4);
-        }
-        if !inertia.is_null() {
-            mjuu_copyvec(inertia as *mut T1, eigval.as_ptr() as *const T2, 3);
-        }
-
-        std::ptr::null()
-    }
-}
-
-/// C: FilePath::IsAbs (user/user_util.h:191)
-/// Calls: FilePath::AbsPrefix
-#[allow(unused_variables, non_snake_case)]
-pub fn file_path_is_abs(self_ptr: *mut anonymous_namespace___FilePath) -> bool {
-    todo!() // FilePath::IsAbs
-}
-
-/// C: FilePath::AbsPrefix (user/user_util.h:195)
-#[allow(unused_variables, non_snake_case)]
-pub fn file_path_abs_prefix(self_ptr: *mut anonymous_namespace___FilePath) -> std__string {
-    todo!() // FilePath::AbsPrefix
-}
-
-/// C: FilePath::Str (user/user_util.h:198)
-#[allow(unused_variables, non_snake_case)]
-pub fn file_path_str(self_ptr: *mut anonymous_namespace___FilePath) -> *const std__string {
-    todo!() // FilePath::Str
-}
-
-/// C: FilePath::StrLower (user/user_util.h:202)
-#[allow(unused_variables, non_snake_case)]
-pub fn file_path_str_lower(self_ptr: *mut anonymous_namespace___FilePath) -> std__string {
-    todo!() // FilePath::StrLower
-}
-
-/// C: FilePath::Ext (user/user_util.h:205)
-#[allow(unused_variables, non_snake_case)]
-pub fn file_path_ext(self_ptr: *mut anonymous_namespace___FilePath) -> std__string {
-    todo!() // FilePath::Ext
-}
-
-/// C: FilePath::StripExt (user/user_util.h:211)
-/// Calls: FilePath::FilePathFast
-#[allow(unused_variables, non_snake_case)]
-pub fn file_path_strip_ext(self_ptr: *mut anonymous_namespace___FilePath) -> mujoco__user__FilePath {
-    todo!() // FilePath::StripExt
-}
-
-/// C: FilePath::StripPath (user/user_util.h:214)
-/// Calls: FilePath::FilePathFast
-#[allow(unused_variables, non_snake_case)]
-pub fn file_path_strip_path(self_ptr: *mut anonymous_namespace___FilePath) -> mujoco__user__FilePath {
-    todo!() // FilePath::StripPath
-}
-
-/// C: FilePath::Lower (user/user_util.h:217)
-/// Calls: FilePath::FilePathFast, FilePath::StrLower
-#[allow(unused_variables, non_snake_case)]
-pub fn file_path_lower(self_ptr: *mut anonymous_namespace___FilePath) -> mujoco__user__FilePath {
-    todo!() // FilePath::Lower
-}
-
-/// C: FilePath::size (user/user_util.h:220)
-#[allow(unused_variables, non_snake_case)]
-pub fn file_path_size(self_ptr: *mut anonymous_namespace___FilePath) -> u64 {
-    todo!() // FilePath::size
-}
-
-/// C: FilePath::c_str (user/user_util.h:221)
-#[allow(unused_variables, non_snake_case)]
-pub fn file_path_c_str(self_ptr: *mut anonymous_namespace___FilePath) -> *const i8 {
-    todo!() // FilePath::c_str
-}
-
-/// C: FilePath::empty (user/user_util.h:222)
-#[allow(unused_variables, non_snake_case)]
-pub fn file_path_empty(self_ptr: *mut anonymous_namespace___FilePath) -> bool {
-    todo!() // FilePath::empty
-}
-
-/// C: FilePath::PathReduce (user/user_util.h:227)
-/// Calls: FilePath::AbsPrefix, FilePath::IsSeparator
-#[allow(unused_variables, non_snake_case)]
-pub fn file_path_path_reduce(str: *const std__string) -> std__string {
-    todo!() // FilePath::PathReduce
-}
-
-/// C: FilePath::IsSeparator (user/user_util.h:228)
-#[allow(unused_variables, non_snake_case)]
-pub fn file_path_is_separator(c: i8) -> bool {
-    todo!() // FilePath::IsSeparator
-}
-
-/// C: FilePath::Combine (user/user_util.h:231)
-/// Calls: FilePath::AbsPrefix
-#[allow(unused_variables, non_snake_case)]
-pub fn file_path_combine(s1: *const std__string, s2: *const std__string) -> std__string {
-    todo!() // FilePath::Combine
-}
-
-/// C: FilePath::FilePathFast (user/user_util.h:234)
-#[allow(unused_variables, non_snake_case)]
-pub fn file_path_file_path_fast(str: *const std__string) -> mujoco__user__FilePath {
-    todo!() // FilePath::FilePathFast
-}
-
-/// C: FileToMemory (user/user_util.h:259)
-/// Calls: mju_warning
-#[allow(unused_variables, non_snake_case)]
-pub fn file_to_memory(filename: *const i8) -> *const () {
-    todo!() // FileToMemory
-}
-
-/// C: VectorToString (user/user_util.h:262)
-#[allow(unused_variables, non_snake_case)]
-pub fn vector_to_string(v: *const ()) -> std__string {
-    todo!() // VectorToString
-}
-
-/// C: StringToVector (user/user_util.h:265)
-/// Calls: IsNullOrSpace, SkipSpace
-#[allow(unused_variables, non_snake_case)]
-pub fn string_to_vector(cs: *mut i8) -> *const () {
-    todo!() // StringToVector
-}
-
-/// C: mjuu_strippath (user/user_util.h:273)
-#[allow(unused_variables, non_snake_case)]
-pub fn mjuu_strippath(filename: std__string) -> std__string {
-    todo!() // mjuu_strippath
-}
-
-/// C: mjuu_stripext (user/user_util.h:276)
-#[allow(unused_variables, non_snake_case)]
-pub fn mjuu_stripext(filename: std__string) -> std__string {
-    todo!() // mjuu_stripext
-}
-
-/// C: mjuu_getext (user/user_util.h:279)
-#[allow(unused_variables, non_snake_case)]
-pub fn mjuu_getext(filename: std__string_view) -> std__string {
-    todo!() // mjuu_getext
-}
-
-/// C: mjuu_isabspath (user/user_util.h:282)
-/// Calls: mjp_getResourceProvider
-#[allow(unused_variables, non_snake_case)]
-pub fn mjuu_isabspath(path: std__string) -> bool {
-    todo!() // mjuu_isabspath
-}
-
-/// C: mjuu_combinePaths (user/user_util.h:285)
-/// Calls: mjuu_isabspath
-#[allow(unused_variables, non_snake_case)]
-pub fn mjuu_combine_paths(path1: *const std__string, path2: *const std__string) -> std__string {
-    todo!() // mjuu_combinePaths
-}
-
-/// C: mjuu_parseContentTypeAttrType (user/user_util.h:290)
-/// Calls: mjuu_isValidContentType
-#[allow(unused_variables, non_snake_case)]
-pub fn mjuu_parse_content_type_attr_type(text: std__string_view) -> *const () {
-    todo!() // mjuu_parseContentTypeAttrType
-}
-
-/// C: mjuu_parseContentTypeAttrSubtype (user/user_util.h:293)
-/// Calls: mjuu_isValidContentType
-#[allow(unused_variables, non_snake_case)]
-pub fn mjuu_parse_content_type_attr_subtype(text: std__string_view) -> *const () {
-    todo!() // mjuu_parseContentTypeAttrSubtype
-}
-
-/// C: mjuu_extToContentType (user/user_util.h:296)
-/// Calls: mjuu_getext
-#[allow(unused_variables, non_snake_case)]
-pub fn mjuu_ext_to_content_type(filename: std__string_view) -> std__string {
-    todo!() // mjuu_extToContentType
 }
 
 /// C: mjuu_dirnamelen (user/user_util.h:299)

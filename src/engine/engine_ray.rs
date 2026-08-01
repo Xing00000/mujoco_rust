@@ -1,6 +1,6 @@
 //! Port of: engine/engine_ray.c
-//! IR hash: 73393814548a07d1
-//! CODEGEN: signatures locked. Only fill todo!() bodies.
+//! IR hash: 9343293228317031
+//! CODEGEN: source paths, owners, and callable names are locked.
 
 use crate::types::*;
 
@@ -140,7 +140,7 @@ pub fn ray_quad(a: f64, b: f64, c: f64, x: *mut f64) -> f64 {
 }
 
 /// C: ray_plane (engine/engine_ray.c:204)
-/// Calls: mju_zero3, ray_map
+/// Calls: cxx-internal:/Users/xing/Desktop/projects/c2rust_bitexact/projects/mujoco/src/engine/engine_ray.c:_ray_map, cxx:_mju_zero3
 /// ⚠️ BITEXACT RULES:
 ///   1. Copy exact C accumulation order (no iter().sum())
 ///   2. No f64::mul_add() (FMA changes precision)
@@ -186,7 +186,7 @@ pub fn ray_plane(pos: *const f64, mat: *const f64, size: *const f64, pnt: *const
 }
 
 /// C: ray_sphere (engine/engine_ray.c:242)
-/// Calls: mju_addScl3, mju_normalize3, mju_sub3, mju_zero3, ray_quad
+/// Calls: cxx-internal:/Users/xing/Desktop/projects/c2rust_bitexact/projects/mujoco/src/engine/engine_ray.c:_ray_quad, cxx:_mju_addScl3, cxx:_mju_normalize3, cxx:_mju_sub3, cxx:_mju_zero3
 /// ⚠️ BITEXACT RULES:
 ///   1. Copy exact C accumulation order (no iter().sum())
 ///   2. No f64::mul_add() (FMA changes precision)
@@ -212,7 +212,7 @@ pub fn ray_sphere(pos: *const f64, mat: *const f64, dist_sqr: f64, pnt: *const f
                 crate::engine::engine_util_blas::mju_zero3(normal);
             } else {
                 let mut s: [f64; 3] = [0.0; 3];
-                crate::engine::engine_util_blas::mju_add_scl3(s.as_mut_ptr(), pnt, vec, x);
+                crate::engine::engine_util_blas::mju_addScl3(s.as_mut_ptr(), pnt, vec, x);
                 crate::engine::engine_util_blas::mju_sub3(normal, s.as_ptr(), pos);
                 crate::engine::engine_util_blas::mju_normalize3(normal);
             }
@@ -223,7 +223,7 @@ pub fn ray_sphere(pos: *const f64, mat: *const f64, dist_sqr: f64, pnt: *const f
 }
 
 /// C: ray_capsule (engine/engine_ray.c:272)
-/// Calls: mju_mulMatVec3, mju_normalize3, mju_zero3, ray_map, ray_quad, ray_sphere
+/// Calls: cxx-internal:/Users/xing/Desktop/projects/c2rust_bitexact/projects/mujoco/src/engine/engine_ray.c:_ray_map, cxx-internal:/Users/xing/Desktop/projects/c2rust_bitexact/projects/mujoco/src/engine/engine_ray.c:_ray_quad, cxx-internal:engine_ray.c.o:_ray_sphere, cxx:_mju_mulMatVec3, cxx:_mju_normalize3, cxx:_mju_zero3
 /// ⚠️ BITEXACT RULES:
 ///   1. Copy exact C accumulation order (no iter().sum())
 ///   2. No f64::mul_add() (FMA changes precision)
@@ -311,7 +311,7 @@ pub fn ray_capsule(pos: *const f64, mat: *const f64, size: *const f64, pnt: *con
 
                 // normalize, rotate into global frame
                 crate::engine::engine_util_blas::mju_normalize3(normal);
-                crate::engine::engine_util_blas::mju_mul_mat_vec3(normal, mat, normal);
+                crate::engine::engine_util_blas::mju_mulMatVec3(normal, mat, normal);
             }
         }
 
@@ -320,7 +320,7 @@ pub fn ray_capsule(pos: *const f64, mat: *const f64, size: *const f64, pnt: *con
 }
 
 /// C: ray_ellipsoid (engine/engine_ray.c:358)
-/// Calls: mju_addScl3, mju_mulMatVec3, mju_normalize3, mju_zero3, ray_map, ray_quad
+/// Calls: cxx-internal:/Users/xing/Desktop/projects/c2rust_bitexact/projects/mujoco/src/engine/engine_ray.c:_ray_map, cxx-internal:/Users/xing/Desktop/projects/c2rust_bitexact/projects/mujoco/src/engine/engine_ray.c:_ray_quad, cxx:_mju_addScl3, cxx:_mju_mulMatVec3, cxx:_mju_normalize3, cxx:_mju_zero3
 /// ⚠️ BITEXACT RULES:
 ///   1. Copy exact C accumulation order (no iter().sum())
 ///   2. No f64::mul_add() (FMA changes precision)
@@ -357,7 +357,7 @@ pub fn ray_ellipsoid(pos: *const f64, mat: *const f64, size: *const f64, pnt: *c
             } else {
                 // surface intersection (local frame)
                 let mut l: [f64; 3] = [0.0; 3];
-                crate::engine::engine_util_blas::mju_add_scl3(l.as_mut_ptr(), lpnt.as_ptr(), lvec.as_ptr(), x);
+                crate::engine::engine_util_blas::mju_addScl3(l.as_mut_ptr(), lpnt.as_ptr(), lvec.as_ptr(), x);
 
                 // gradient of ellipsoid function
                 *normal.add(0) = s[0] * l[0];
@@ -366,7 +366,7 @@ pub fn ray_ellipsoid(pos: *const f64, mat: *const f64, size: *const f64, pnt: *c
 
                 // normalize, rotate into global frame
                 crate::engine::engine_util_blas::mju_normalize3(normal);
-                crate::engine::engine_util_blas::mju_mul_mat_vec3(normal, mat, normal);
+                crate::engine::engine_util_blas::mju_mulMatVec3(normal, mat, normal);
             }
         }
 
@@ -375,7 +375,7 @@ pub fn ray_ellipsoid(pos: *const f64, mat: *const f64, size: *const f64, pnt: *c
 }
 
 /// C: ray_cylinder (engine/engine_ray.c:401)
-/// Calls: mju_mulMatVec3, mju_normalize3, mju_zero3, ray_map, ray_quad, ray_sphere
+/// Calls: cxx-internal:/Users/xing/Desktop/projects/c2rust_bitexact/projects/mujoco/src/engine/engine_ray.c:_ray_map, cxx-internal:/Users/xing/Desktop/projects/c2rust_bitexact/projects/mujoco/src/engine/engine_ray.c:_ray_quad, cxx-internal:engine_ray.c.o:_ray_sphere, cxx:_mju_mulMatVec3, cxx:_mju_normalize3, cxx:_mju_zero3
 /// ⚠️ BITEXACT RULES:
 ///   1. Copy exact C accumulation order (no iter().sum())
 ///   2. No f64::mul_add() (FMA changes precision)
@@ -463,7 +463,7 @@ pub fn ray_cylinder(pos: *const f64, mat: *const f64, size: *const f64, pnt: *co
                 }
 
                 // rotate into global frame
-                crate::engine::engine_util_blas::mju_mul_mat_vec3(normal, mat, normal);
+                crate::engine::engine_util_blas::mju_mulMatVec3(normal, mat, normal);
             }
         }
 
@@ -472,7 +472,7 @@ pub fn ray_cylinder(pos: *const f64, mat: *const f64, size: *const f64, pnt: *co
 }
 
 /// C: ray_box (engine/engine_ray.c:490)
-/// Calls: mju_mulMatVec3, mju_zero3, ray_map, ray_sphere
+/// Calls: cxx-internal:/Users/xing/Desktop/projects/c2rust_bitexact/projects/mujoco/src/engine/engine_ray.c:_ray_map, cxx-internal:engine_ray.c.o:_ray_sphere, cxx:_mju_mulMatVec3, cxx:_mju_zero3
 /// ⚠️ BITEXACT RULES:
 ///   1. Copy exact C accumulation order (no iter().sum())
 ///   2. No f64::mul_add() (FMA changes precision)
@@ -548,7 +548,7 @@ pub fn ray_box(pos: *const f64, mat: *const f64, size: *const f64, pnt: *const f
         if !normal.is_null() && x >= 0.0 {
             let mut n_local: [f64; 3] = [0.0, 0.0, 0.0];
             n_local[face_axis as usize] = face_side as f64;
-            crate::engine::engine_util_blas::mju_mul_mat_vec3(normal, mat, n_local.as_ptr());
+            crate::engine::engine_util_blas::mju_mulMatVec3(normal, mat, n_local.as_ptr());
         }
 
         x
@@ -556,14 +556,14 @@ pub fn ray_box(pos: *const f64, mat: *const f64, size: *const f64, pnt: *const f
 }
 
 /// C: mju_raySlab (engine/engine_ray.c:743)
-/// Calls: ray_map
+/// Calls: cxx-internal:/Users/xing/Desktop/projects/c2rust_bitexact/projects/mujoco/src/engine/engine_ray.c:_ray_map
 /// ⚠️ BITEXACT RULES:
 ///   1. Copy exact C accumulation order (no iter().sum())
 ///   2. No f64::mul_add() (FMA changes precision)
 ///   3. No algebraic simplification
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
-pub fn mju_ray_slab(aabb: *const f64, xpos: *const f64, xmat: *const f64, pnt: *const f64, vec: *const f64) -> i32 {
+pub fn mju_raySlab(aabb: *const f64, xpos: *const f64, xmat: *const f64, pnt: *const f64, vec: *const f64) -> i32 {
     // SAFETY: all pointers valid arrays of documented sizes (caller contract)
     unsafe {
         let mut tmin: f64 = 0.0;
@@ -602,14 +602,14 @@ pub fn mju_ray_slab(aabb: *const f64, xpos: *const f64, xmat: *const f64, pnt: *
 }
 
 /// C: mju_rayTree (engine/engine_ray.c:771)
-/// Calls: mju_addScl3, mju_copy3, mju_cross, mju_dot3, mju_message, mju_mulMatVec3, mju_normalize3, mju_raySlab, mju_zero3, ray_map, ray_triangle
+/// Calls: cxx-internal:/Users/xing/Desktop/projects/c2rust_bitexact/projects/mujoco/src/engine/engine_ray.c:_ray_map, cxx:_mju_addScl3, cxx:_mju_copy3, cxx:_mju_cross, cxx:_mju_dot3, cxx:_mju_message, cxx:_mju_mulMatVec3, cxx:_mju_normalize3, cxx:_mju_raySlab, cxx:_mju_zero3, cxx:_ray_triangle
 /// ⚠️ BITEXACT RULES:
 ///   1. Copy exact C accumulation order (no iter().sum())
 ///   2. No f64::mul_add() (FMA changes precision)
 ///   3. No algebraic simplification
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
-pub fn mju_ray_tree(m: *const mjModel, d: *const mjData, id: i32, pnt: *const f64, vec: *const f64, normal: *mut f64) -> f64 {
+pub fn mju_rayTree(m: *const mjModel, d: *const mjData, id: i32, pnt: *const f64, vec: *const f64, normal: *mut f64) -> f64 {
     const MJ_MAXTREEDEPTH: usize = 256;
 
     // SAFETY: m, d, pnt, vec are valid. normal may be null. id indexes valid geom.
@@ -658,7 +658,7 @@ pub fn mju_ray_tree(m: *const mjModel, d: *const mjData, id: i32, pnt: *const f6
         }
         let dot_lvec_b0 = crate::engine::engine_util_blas::mju_dot3(lvec.as_ptr(), b0.as_ptr());
         let dot_lvec_lvec = crate::engine::engine_util_blas::mju_dot3(lvec.as_ptr(), lvec.as_ptr());
-        crate::engine::engine_util_blas::mju_add_scl3(
+        crate::engine::engine_util_blas::mju_addScl3(
             b1.as_mut_ptr(), b0.as_ptr(), lvec.as_ptr(), -dot_lvec_b0 / dot_lvec_lvec,
         );
         crate::engine::engine_util_blas::mju_normalize3(b1.as_mut_ptr());
@@ -675,7 +675,7 @@ pub fn mju_ray_tree(m: *const mjModel, d: *const mjData, id: i32, pnt: *const f6
             let node = stack[nstack as usize];
 
             // intersection test
-            let intersect = mju_ray_slab(
+            let intersect = mju_raySlab(
                 bvh.add(6 * node as usize),
                 (*d).geom_xpos.add(3 * id as usize),
                 (*d).geom_xmat.add(9 * id as usize),
@@ -737,7 +737,7 @@ pub fn mju_ray_tree(m: *const mjModel, d: *const mjData, id: i32, pnt: *const f6
 
         // rotate normal to global frame
         if !normal.is_null() && x >= 0.0 {
-            crate::engine::engine_util_blas::mju_mul_mat_vec3(
+            crate::engine::engine_util_blas::mju_mulMatVec3(
                 normal, (*d).geom_xmat.add(9 * id as usize), normal as *const f64,
             );
         }
@@ -746,110 +746,8 @@ pub fn mju_ray_tree(m: *const mjModel, d: *const mjData, id: i32, pnt: *const f6
     }
 }
 
-/// C: mj_raySdf (engine/engine_ray.c:885)
-/// Calls: mjc_distance, mjc_getSDF, mjc_gradient, mju_addScl3, mju_mulMatVec3, mju_normalize3, mju_zero3, ray_box, ray_map
-/// ⚠️ BITEXACT RULES:
-///   1. Copy exact C accumulation order (no iter().sum())
-///   2. No f64::mul_add() (FMA changes precision)
-///   3. No algebraic simplification
-///   4. No iter().sum()/product() (order undefined)
-#[allow(unused_variables, non_snake_case)]
-pub fn mj_ray_sdf(m: *const mjModel, d: *const mjData, g: i32, pnt: *const f64, vec: *const f64, normal: *mut f64) -> f64 {
-    // SAFETY: m, d, pnt, vec valid; normal may be null (caller contract)
-    unsafe {
-        if !normal.is_null() {
-            crate::engine::engine_util_blas::mju_zero3(normal);
-        }
-
-        let mut distance_total: f64 = 0.0;
-        let k_min_dist: f64 = 1e-7;
-
-        // exclude using bounding box
-        if ray_box((*d).geom_xpos.add(3 * g as usize), (*d).geom_xmat.add(9 * g as usize),
-                   (*m).geom_size.add(3 * g as usize), pnt, vec,
-                   std::ptr::null_mut(), std::ptr::null_mut()) < 0.0 {
-            return -1.0;
-        }
-
-        // get sdf plugin
-        let mut instance = *(*m).geom_plugin.add(g as usize);
-        let sdf_ptr: *const mjpPlugin = if instance != -1 {
-            crate::engine::engine_collision_sdf::mjc_get_sdf(m, g)
-        } else {
-            std::ptr::null()
-        };
-        if instance == -1 {
-            instance = *(*m).geom_dataid.add(g as usize);
-        }
-        let mut geomtype: u32 = 8;  // mjGEOM_SDF
-
-        // construct sdf struct on stack (48 bytes, zero-init)
-        let mut sdf_buf = [0u8; 48];
-        let sdf = &mut *(sdf_buf.as_mut_ptr() as *mut mjSDF);
-        sdf.id = &mut instance as *mut i32;
-        // type field: write 0 (mjSDFTYPE_SINGLE) as i32 at offset 0 of the [u8;8]
-        *(sdf.r#type.as_mut_ptr() as *mut i32) = 0;
-        sdf.plugin = &sdf_ptr as *const *const mjpPlugin as *const *mut mjpPlugin;
-        sdf.geomtype = &mut geomtype as *mut u32;
-
-        // reset counter
-        if !sdf_ptr.is_null() {
-            let reset_fn: unsafe extern "C" fn(*const mjModel, *mut f64, *mut (), i32) =
-                std::mem::transmute((*sdf_ptr).reset);
-            reset_fn(m, std::ptr::null_mut(),
-                     *(*d).plugin_data.add(instance as usize) as *mut (),
-                     instance);
-        }
-
-        // map to local frame
-        let mut lpnt: [f64; 3] = [0.0; 3];
-        let mut lvec: [f64; 3] = [0.0; 3];
-        ray_map((*d).geom_xpos.add(3 * g as usize), (*d).geom_xmat.add(9 * g as usize),
-                pnt, vec, lpnt.as_mut_ptr(), lvec.as_mut_ptr());
-
-        // unit direction
-        crate::engine::engine_util_blas::mju_normalize3(lvec.as_mut_ptr());
-
-        // ray marching
-        let mut p: [f64; 3] = [0.0; 3];
-        for _iter in 0..40 {
-            crate::engine::engine_util_blas::mju_add_scl3(
-                p.as_mut_ptr(), lpnt.as_ptr(), lvec.as_ptr(), distance_total);
-            let distance = crate::engine::engine_collision_sdf::mjc_distance(
-                m, d, sdf as *const mjSDF, p.as_ptr()).abs();
-            distance_total += distance;
-            if distance < k_min_dist {
-                if !normal.is_null() {
-                    crate::engine::engine_util_blas::mju_add_scl3(
-                        p.as_mut_ptr(), lpnt.as_ptr(), lvec.as_ptr(), distance_total);
-                    crate::engine::engine_collision_sdf::mjc_gradient(
-                        m, d, sdf as *const mjSDF, normal, p.as_ptr());
-                    crate::engine::engine_util_blas::mju_normalize3(normal);
-                    crate::engine::engine_util_blas::mju_mul_mat_vec3(
-                        normal, (*d).geom_xmat.add(9 * g as usize), normal as *const f64);
-                }
-                return distance_total;
-            }
-            if distance > 1e6 {
-                break;
-            }
-        }
-
-        // reset counter
-        if !sdf_ptr.is_null() {
-            let reset_fn: unsafe extern "C" fn(*const mjModel, *mut f64, *mut (), i32) =
-                std::mem::transmute((*sdf_ptr).reset);
-            reset_fn(m, std::ptr::null_mut(),
-                     *(*d).plugin_data.add(instance as usize) as *mut (),
-                     instance);
-        }
-
-        -1.0
-    }
-}
-
 /// C: point_in_box (engine/engine_ray.c:1283)
-/// Calls: mju_mulMatTVec3, mju_sub3, mju_subFrom3
+/// Calls: cxx:_mju_mulMatTVec3, cxx:_mju_sub3, cxx:_mju_subFrom3
 /// ⚠️ BITEXACT RULES:
 ///   1. Copy exact C accumulation order (no iter().sum())
 ///   2. No f64::mul_add() (FMA changes precision)
@@ -863,8 +761,8 @@ pub fn point_in_box(aabb: *const f64, xpos: *const f64, xmat: *const f64, pnt: *
 
         // compute point in local coordinates of the box
         crate::engine::engine_util_blas::mju_sub3(point.as_mut_ptr(), pnt, xpos);
-        crate::engine::engine_util_blas::mju_mul_mat_t_vec3(point.as_mut_ptr(), xmat, point.as_ptr());
-        crate::engine::engine_util_blas::mju_sub_from3(point.as_mut_ptr(), aabb);
+        crate::engine::engine_util_blas::mju_mulMatTVec3(point.as_mut_ptr(), xmat, point.as_ptr());
+        crate::engine::engine_util_blas::mju_subFrom3(point.as_mut_ptr(), aabb);
 
         // check intersections
         for j in 0..3 {
@@ -877,144 +775,15 @@ pub fn point_in_box(aabb: *const f64, xpos: *const f64, xmat: *const f64, pnt: *
     }
 }
 
-/// C: mju_singleRay (engine/engine_ray.c:1457)
-/// Calls: latitude, longitude, mj_rayHfield, mj_rayMesh, mj_raySdf, mju_add3, mju_copy3, mju_rayGeom, mju_zero3, ray_sphere
-/// ⚠️ BITEXACT RULES:
-///   1. Copy exact C accumulation order (no iter().sum())
-///   2. No f64::mul_add() (FMA changes precision)
-///   3. No algebraic simplification
-///   4. No iter().sum()/product() (order undefined)
-#[allow(unused_variables, non_snake_case)]
-pub fn mju_single_ray(m: *const mjModel, d: *mut mjData, pnt: *const f64, vec: *const f64, ray_eliminate: *mut i32, geom_ba: *mut f64, geomid: *mut i32, normal: *mut f64) -> f64 {
-    const MJ_PI: f64 = std::f64::consts::PI;
-    const MJGEOM_MESH: i32 = 7;
-    const MJGEOM_HFIELD: i32 = 5;
-    const MJGEOM_SDF: i32 = 8;
-
-    // SAFETY: m, d, pnt, vec are valid pointers (caller contract).
-    // ray_eliminate and geom_ba have ngeom elements. geomid and normal may be null.
-    unsafe {
-        let mut dist: f64;
-        let mut newdist: f64;
-        let mut normal_local: [f64; 3] = [0.0; 3];
-        let p_normal: *mut f64 = if !normal.is_null() {
-            normal_local.as_mut_ptr()
-        } else {
-            std::ptr::null_mut()
-        };
-
-        // clear result
-        dist = -1.0;
-        if !geomid.is_null() {
-            *geomid = -1;
-        }
-        if !normal.is_null() {
-            crate::engine::engine_util_blas::mju_zero3(normal);
-        }
-
-        // get ray spherical coordinates
-        let azimuth = longitude(vec);
-        let elevation = latitude(vec);
-
-        // loop over bodies not eliminated by bodyexclude
-        for b in 0..(*m).nbody {
-            // exclude body using bounding sphere test
-            if *(*m).body_bvhadr.add(b as usize) != -1 {
-                let pos = (*m).bvh_aabb.add(6 * *(*m).body_bvhadr.add(b as usize) as usize);
-                let mut center: [f64; 3] = [0.0; 3];
-                let size = pos.add(3);
-                let ssz = *size.add(0) * *size.add(0)
-                    + *size.add(1) * *size.add(1)
-                    + *size.add(2) * *size.add(2);
-                crate::engine::engine_util_blas::mju_add3(
-                    center.as_mut_ptr(),
-                    pos,
-                    (*d).xipos.add(3 * b as usize),
-                );
-                if ray_sphere(center.as_ptr(), std::ptr::null(), ssz, pnt, vec, std::ptr::null_mut()) < 0.0 {
-                    continue;
-                }
-            }
-
-            // loop over geoms if bounding sphere test fails
-            for g in 0..*(*m).body_geomnum.add(b as usize) {
-                let i = *(*m).body_geomadr.add(b as usize) + g;
-                if *ray_eliminate.add(i as usize) != 0 {
-                    continue;
-                }
-
-                // exclude geom using bounding angles
-                if *(*m).body_bvhadr.add(b as usize) != -1 {
-                    let az_min = *geom_ba.add(4 * i as usize + 0);
-                    let az_max = *geom_ba.add(4 * i as usize + 2);
-                    let el_min = *geom_ba.add(4 * i as usize + 1);
-                    let el_max = *geom_ba.add(4 * i as usize + 3);
-
-                    // check elevation
-                    if elevation < el_min || elevation > el_max {
-                        continue;
-                    }
-
-                    // check azimuth with wraparound
-                    let az_center = (az_min + az_max) * 0.5;
-                    let az_half_width = (az_max - az_min) * 0.5;
-                    let mut az_diff = azimuth - az_center;
-                    if az_diff > MJ_PI {
-                        az_diff -= 2.0 * MJ_PI;
-                    } else if az_diff < -MJ_PI {
-                        az_diff += 2.0 * MJ_PI;
-                    }
-                    if az_diff.abs() > az_half_width {
-                        continue;
-                    }
-                }
-
-                // dispatch to type-specific ray function
-                let geom_type = *(*m).geom_type.add(i as usize) as i32;
-                if geom_type == MJGEOM_MESH {
-                    newdist = mj_ray_mesh(m, d as *const mjData, i, pnt, vec, p_normal);
-                } else if geom_type == MJGEOM_HFIELD {
-                    newdist = mj_ray_hfield(m, d as *const mjData, i, pnt, vec, p_normal);
-                } else if geom_type == MJGEOM_SDF {
-                    newdist = mj_ray_sdf(m, d as *const mjData, i, pnt, vec, p_normal);
-                } else {
-                    newdist = mju_ray_geom(
-                        (*d).geom_xpos.add(3 * i as usize),
-                        (*d).geom_xmat.add(9 * i as usize),
-                        (*m).geom_size.add(3 * i as usize),
-                        pnt,
-                        vec,
-                        geom_type,
-                        p_normal,
-                    );
-                }
-
-                // update if closer intersection found
-                if newdist >= 0.0 && (newdist < dist || dist < 0.0) {
-                    dist = newdist;
-                    if !geomid.is_null() {
-                        *geomid = i;
-                    }
-                    if !normal.is_null() {
-                        crate::engine::engine_util_blas::mju_copy3(normal, normal_local.as_ptr());
-                    }
-                }
-            }
-        }
-
-        dist
-    }
-}
-
 /// C: mju_multiRayPrepare (engine/engine_ray.h:26)
-/// Calls: latitude, longitude, mju_addTo3, mju_copy, mju_dist3, mju_max, mju_message, mju_min, mju_mulMatVec3, mju_sub3, point_in_box, ray_eliminate
+/// Calls: cxx-internal:/Users/xing/Desktop/projects/c2rust_bitexact/projects/mujoco/src/engine/engine_ray.c:_latitude, cxx-internal:/Users/xing/Desktop/projects/c2rust_bitexact/projects/mujoco/src/engine/engine_ray.c:_longitude, cxx-internal:/Users/xing/Desktop/projects/c2rust_bitexact/projects/mujoco/src/engine/engine_ray.c:_point_in_box, cxx-internal:/Users/xing/Desktop/projects/c2rust_bitexact/projects/mujoco/src/engine/engine_ray.c:_ray_eliminate, cxx:_mju_addTo3, cxx:_mju_copy, cxx:_mju_dist3, cxx:_mju_max, cxx:_mju_message, cxx:_mju_min, cxx:_mju_mulMatVec3, cxx:_mju_sub3
 /// ⚠️ BITEXACT RULES:
 ///   1. Copy exact C accumulation order (no iter().sum())
 ///   2. No f64::mul_add() (FMA changes precision)
 ///   3. No algebraic simplification
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
-pub fn mju_multi_ray_prepare(m: *const mjModel, d: *const mjData, pnt: *const f64, ray_xmat: *const f64, geomgroup: *const u8, flg_static: bool, bodyexclude: i32, cutoff: f64, geom_ba: *mut f64, geom_eliminate: *mut i32) {
+pub fn mju_multiRayPrepare(m: *const mjModel, d: *const mjData, pnt: *const f64, ray_xmat: *const f64, geomgroup: *const u8, flg_static: bool, bodyexclude: i32, cutoff: f64, geom_ba: *mut f64, geom_eliminate: *mut i32) {
     const MJ_MAXVAL: f64 = 1e10;
     const MJ_PI: f64 = std::f64::consts::PI;
     const MJ_MINVAL: f64 = 1e-15;
@@ -1075,8 +844,8 @@ pub fn mju_multi_ray_prepare(m: *const mjModel, d: *const mjData, pnt: *const f6
                     vert[2] = if v & 4 != 0 { *aabb.add(2) + *aabb.add(5) } else { *aabb.add(2) - *aabb.add(5) };
 
                     // rotate to the world frame
-                    crate::engine::engine_util_blas::mju_mul_mat_vec3(bx.as_mut_ptr(), xmat, vert.as_ptr());
-                    crate::engine::engine_util_blas::mju_add_to3(bx.as_mut_ptr(), xpos);
+                    crate::engine::engine_util_blas::mju_mulMatVec3(bx.as_mut_ptr(), xmat, vert.as_ptr());
+                    crate::engine::engine_util_blas::mju_addTo3(bx.as_mut_ptr(), xpos);
 
                     // spherical coordinates
                     crate::engine::engine_util_blas::mju_sub3(vert.as_mut_ptr(), bx.as_ptr(), pnt);
@@ -1126,147 +895,15 @@ pub fn mju_multi_ray_prepare(m: *const mjModel, d: *const mjData, pnt: *const f6
     }
 }
 
-/// C: mj_multiRay (engine/engine_ray.h:34)
-/// Calls: mj_freeStack, mj_markStack, mj_stackAllocInfo, mju_dot3, mju_multiRayPrepare, mju_singleRay
-/// ⚠️ BITEXACT RULES:
-///   1. Copy exact C accumulation order (no iter().sum())
-///   2. No f64::mul_add() (FMA changes precision)
-///   3. No algebraic simplification
-///   4. No iter().sum()/product() (order undefined)
-#[allow(unused_variables, non_snake_case)]
-pub fn mj_multi_ray(m: *const mjModel, d: *mut mjData, pnt: *const f64, vec: *const f64, geomgroup: *const u8, flg_static: bool, bodyexclude: i32, geomid: *mut i32, dist: *mut f64, normal: *mut f64, nray: i32, cutoff: f64) {
-    const MJ_MINVAL: f64 = 1e-15;
-
-    // SAFETY: All pointers are valid arrays (caller contract). d is valid for stack alloc.
-    unsafe {
-        crate::engine::engine_memory::mj_mark_stack(d);
-
-        // allocate source
-        let geom_ba: *mut f64 = crate::engine::engine_memory::mj_stack_alloc_num(
-            d, (4 * (*m).ngeom) as usize);
-        let geom_eliminate: *mut i32 = crate::engine::engine_memory::mj_stack_alloc_int(
-            d, (*m).ngeom as usize);
-
-        // initialize source
-        mju_multi_ray_prepare(m, d as *const crate::types::mjData, pnt,
-            std::ptr::null(), geomgroup, flg_static, bodyexclude,
-            cutoff, geom_ba, geom_eliminate);
-
-        // loop over rays
-        for i in 0..nray {
-            if crate::engine::engine_util_blas::mju_dot3(
-                vec.add((3 * i) as usize), vec.add((3 * i) as usize)) < MJ_MINVAL
-            {
-                *dist.add(i as usize) = -1.0;
-            } else {
-                let p_geomid: *mut i32 = if !geomid.is_null() {
-                    geomid.add(i as usize)
-                } else {
-                    std::ptr::null_mut()
-                };
-                *dist.add(i as usize) = mju_single_ray(
-                    m, d, pnt, vec.add((3 * i) as usize),
-                    geom_eliminate, geom_ba, p_geomid,
-                    if !normal.is_null() { normal.add((3 * i) as usize) }
-                    else { std::ptr::null_mut() });
-            }
-        }
-
-        crate::engine::engine_memory::mj_free_stack(d);
-    }
-}
-
-/// C: mj_ray (engine/engine_ray.h:42)
-/// Calls: mj_rayHfield, mj_rayMesh, mj_raySdf, mju_copy3, mju_message, mju_norm3, mju_rayGeom, mju_zero3, ray_eliminate
-/// ⚠️ BITEXACT RULES:
-///   1. Copy exact C accumulation order (no iter().sum())
-///   2. No f64::mul_add() (FMA changes precision)
-///   3. No algebraic simplification
-///   4. No iter().sum()/product() (order undefined)
-#[allow(unused_variables, non_snake_case)]
-pub fn mj_ray(m: *const mjModel, d: *const mjData, pnt: *const f64, vec: *const f64, geomgroup: *const u8, flg_static: bool, bodyexclude: i32, geomid: *mut i32, normal: *mut f64) -> f64 {
-    const MJMINVAL: f64 = 1e-15;
-    const MJGEOM_MESH: i32 = 7;
-    const MJGEOM_HFIELD: i32 = 5;
-    const MJGEOM_SDF: i32 = 8;
-
-    // SAFETY: m, d, pnt, vec are valid pointers (caller contract).
-    // geomid and normal may be null. geomgroup may be null.
-    unsafe {
-        let ngeom = (*m).ngeom;
-        let mut dist: f64;
-        let mut newdist: f64;
-        let mut normal_local: [f64; 3] = [0.0; 3];
-        let p_normal: *mut f64 = if !normal.is_null() {
-            normal_local.as_mut_ptr()
-        } else {
-            std::ptr::null_mut()
-        };
-
-        // check vector length
-        if crate::engine::engine_util_blas::mju_norm3(vec) < MJMINVAL {
-            crate::engine::engine_util_errmem::mju_error(
-                b"vector length is too small\0".as_ptr() as *const i8,
-            );
-        }
-
-        // clear result
-        dist = -1.0;
-        if !geomid.is_null() {
-            *geomid = -1;
-        }
-        if !normal.is_null() {
-            crate::engine::engine_util_blas::mju_zero3(normal);
-        }
-
-        // loop over geoms not eliminated by mask and bodyexclude
-        for i in 0..ngeom as i32 {
-            if ray_eliminate(m, d, i, geomgroup, flg_static, bodyexclude) == 0 {
-                let geom_type = *(*m).geom_type.add(i as usize) as i32;
-                if geom_type == MJGEOM_MESH {
-                    newdist = mj_ray_mesh(m, d, i, pnt, vec, p_normal);
-                } else if geom_type == MJGEOM_HFIELD {
-                    newdist = mj_ray_hfield(m, d, i, pnt, vec, p_normal);
-                } else if geom_type == MJGEOM_SDF {
-                    newdist = mj_ray_sdf(m, d, i, pnt, vec, p_normal);
-                } else {
-                    newdist = mju_ray_geom(
-                        (*d).geom_xpos.add(3 * i as usize),
-                        (*d).geom_xmat.add(9 * i as usize),
-                        (*m).geom_size.add(3 * i as usize),
-                        pnt,
-                        vec,
-                        geom_type,
-                        p_normal,
-                    );
-                }
-
-                // update if closer intersection found
-                if newdist >= 0.0 && (newdist < dist || dist < 0.0) {
-                    dist = newdist;
-                    if !geomid.is_null() {
-                        *geomid = i;
-                    }
-                    if !normal.is_null() {
-                        crate::engine::engine_util_blas::mju_copy3(normal, normal_local.as_ptr());
-                    }
-                }
-            }
-        }
-
-        dist
-    }
-}
-
 /// C: mj_rayHfield (engine/engine_ray.h:47)
-/// Calls: mju_addScl3, mju_copy3, mju_cross, mju_dot3, mju_message, mju_mulMatTVec3, mju_mulMatVec3, mju_normalize3, mju_round, mju_zero3, ray_box, ray_map, ray_triangle
+/// Calls: cxx-internal:/Users/xing/Desktop/projects/c2rust_bitexact/projects/mujoco/src/engine/engine_ray.c:_ray_map, cxx-internal:engine_ray.c.o:_ray_box, cxx:_mju_addScl3, cxx:_mju_copy3, cxx:_mju_cross, cxx:_mju_dot3, cxx:_mju_message, cxx:_mju_mulMatTVec3, cxx:_mju_mulMatVec3, cxx:_mju_normalize3, cxx:_mju_round, cxx:_mju_zero3, cxx:_ray_triangle
 /// ⚠️ BITEXACT RULES:
 ///   1. Copy exact C accumulation order (no iter().sum())
 ///   2. No f64::mul_add() (FMA changes precision)
 ///   3. No algebraic simplification
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
-pub fn mj_ray_hfield(m: *const mjModel, d: *const mjData, geomid: i32, pnt: *const f64, vec: *const f64, normal: *mut f64) -> f64 {
+pub fn mj_rayHfield(m: *const mjModel, d: *const mjData, geomid: i32, pnt: *const f64, vec: *const f64, normal: *mut f64) -> f64 {
     // SAFETY: m, d, pnt, vec valid. normal may be null. geomid indexes a valid hfield geom.
     unsafe {
         // clear normal if given
@@ -1344,7 +981,7 @@ pub fn mj_ray_hfield(m: *const mjModel, d: *const mjData, geomid: i32, pnt: *con
         }
         let dot_lvec_b0 = crate::engine::engine_util_blas::mju_dot3(lvec.as_ptr(), b0.as_ptr());
         let dot_lvec_lvec = crate::engine::engine_util_blas::mju_dot3(lvec.as_ptr(), lvec.as_ptr());
-        crate::engine::engine_util_blas::mju_add_scl3(
+        crate::engine::engine_util_blas::mju_addScl3(
             b1.as_mut_ptr(), b0.as_ptr(), lvec.as_ptr(), -dot_lvec_b0 / dot_lvec_lvec,
         );
         crate::engine::engine_util_blas::mju_normalize3(b1.as_mut_ptr());
@@ -1383,7 +1020,7 @@ pub fn mj_ray_hfield(m: *const mjModel, d: *const mjData, geomid: i32, pnt: *con
         // local normal
         let mut normal_local: [f64; 3] = [0.0; 3];
         if !normal.is_null() && x >= 0.0 {
-            crate::engine::engine_util_blas::mju_mul_mat_t_vec3(
+            crate::engine::engine_util_blas::mju_mulMatTVec3(
                 normal_local.as_mut_ptr(), xmat, normal_base.as_ptr(),
             );
         }
@@ -1480,7 +1117,7 @@ pub fn mj_ray_hfield(m: *const mjModel, d: *const mjData, geomid: i32, pnt: *con
 
         // rotate normal to global frame
         if !normal.is_null() && x >= 0.0 {
-            crate::engine::engine_util_blas::mju_mul_mat_vec3(normal, xmat, normal_local.as_ptr());
+            crate::engine::engine_util_blas::mju_mulMatVec3(normal, xmat, normal_local.as_ptr());
         }
 
         x
@@ -1488,7 +1125,7 @@ pub fn mj_ray_hfield(m: *const mjModel, d: *const mjData, geomid: i32, pnt: *con
 }
 
 /// C: ray_triangle (engine/engine_ray.h:51)
-/// Calls: mju_copy3, mju_cross, mju_dot3, mju_normalize3, mju_sub3, mju_zero3
+/// Calls: cxx:_mju_copy3, cxx:_mju_cross, cxx:_mju_dot3, cxx:_mju_normalize3, cxx:_mju_sub3, cxx:_mju_zero3
 /// ⚠️ BITEXACT RULES:
 ///   1. Copy exact C accumulation order (no iter().sum())
 ///   2. No f64::mul_add() (FMA changes precision)
@@ -1573,14 +1210,14 @@ pub fn ray_triangle(v: *mut [f64; 3], lpnt: *const f64, lvec: *const f64, b0: *c
 }
 
 /// C: mj_rayMesh (engine/engine_ray.h:55)
-/// Calls: mju_message, mju_rayTree, mju_zero3, ray_box
+/// Calls: cxx-internal:engine_ray.c.o:_ray_box, cxx:_mju_message, cxx:_mju_rayTree, cxx:_mju_zero3
 /// ⚠️ BITEXACT RULES:
 ///   1. Copy exact C accumulation order (no iter().sum())
 ///   2. No f64::mul_add() (FMA changes precision)
 ///   3. No algebraic simplification
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
-pub fn mj_ray_mesh(m: *const mjModel, d: *const mjData, geomid: i32, pnt: *const f64, vec: *const f64, normal: *mut f64) -> f64 {
+pub fn mj_rayMesh(m: *const mjModel, d: *const mjData, geomid: i32, pnt: *const f64, vec: *const f64, normal: *mut f64) -> f64 {
     // SAFETY: m, d, pnt, vec valid. normal may be null. geomid indexes a valid geom.
     unsafe {
         // clear normal if given
@@ -1605,19 +1242,19 @@ pub fn mj_ray_mesh(m: *const mjModel, d: *const mjData, geomid: i32, pnt: *const
             return -1.0;
         }
 
-        mju_ray_tree(m, d, geomid, pnt, vec, normal)
+        mju_rayTree(m, d, geomid, pnt, vec, normal)
     }
 }
 
 /// C: mju_rayGeom (engine/engine_ray.h:59)
-/// Calls: mju_message, ray_box, ray_capsule, ray_cylinder, ray_ellipsoid, ray_plane, ray_sphere
+/// Calls: cxx-internal:/Users/xing/Desktop/projects/c2rust_bitexact/projects/mujoco/src/engine/engine_ray.c:_ray_capsule, cxx-internal:/Users/xing/Desktop/projects/c2rust_bitexact/projects/mujoco/src/engine/engine_ray.c:_ray_cylinder, cxx-internal:/Users/xing/Desktop/projects/c2rust_bitexact/projects/mujoco/src/engine/engine_ray.c:_ray_ellipsoid, cxx-internal:/Users/xing/Desktop/projects/c2rust_bitexact/projects/mujoco/src/engine/engine_ray.c:_ray_plane, cxx-internal:engine_ray.c.o:_ray_box, cxx-internal:engine_ray.c.o:_ray_sphere, cxx:_mju_message
 /// ⚠️ BITEXACT RULES:
 ///   1. Copy exact C accumulation order (no iter().sum())
 ///   2. No f64::mul_add() (FMA changes precision)
 ///   3. No algebraic simplification
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
-pub fn mju_ray_geom(pos: *const f64, mat: *const f64, size: *const f64, pnt: *const f64, vec: *const f64, geomtype: i32, normal: *mut f64) -> f64 {
+pub fn mju_rayGeom(pos: *const f64, mat: *const f64, size: *const f64, pnt: *const f64, vec: *const f64, geomtype: i32, normal: *mut f64) -> f64 {
     // SAFETY: all pointers valid arrays of documented sizes (caller contract)
     unsafe {
         match geomtype {
@@ -1643,347 +1280,6 @@ pub fn mju_ray_geom(pos: *const f64, mat: *const f64, size: *const f64, pnt: *co
                 -1.0
             }
         }
-    }
-}
-
-/// C: mj_rayFlex (engine/engine_ray.h:64)
-/// Calls: mju_add3, mju_addScl3, mju_copy3, mju_cross, mju_dist3, mju_dot3, mju_normalize3, mju_quat2Mat, mju_quatZ2Vec, mju_rayGeom, mju_scl3, mju_zero3, ray_box, ray_triangle
-/// ⚠️ BITEXACT RULES:
-///   1. Copy exact C accumulation order (no iter().sum())
-///   2. No f64::mul_add() (FMA changes precision)
-///   3. No algebraic simplification
-///   4. No iter().sum()/product() (order undefined)
-#[allow(unused_variables, non_snake_case)]
-pub fn mj_ray_flex(m: *const mjModel, d: *const mjData, flex_layer: i32, flg_vert: bool, flg_edge: bool, flg_face: bool, flg_skin: bool, flexid: i32, pnt: *const f64, vec: *const f64, vertid: *mut i32, normal: *mut f64) -> f64 {
-    const MJ_GEOM_CAPSULE: i32 = 3;
-    const MJ_GEOM_SPHERE: i32 = 2;
-
-    // SAFETY: all pointers are valid; flexid is in bounds (caller contract)
-    unsafe {
-        let fi = flexid as usize;
-        let dim = *(*m).flex_dim.add(fi);
-
-        // clear normal if given
-        if !normal.is_null() {
-            crate::engine::engine_util_blas::mju_zero3(normal);
-        }
-
-        // compute bounding box
-        let mut box_: [[f64; 2]; 3] = [[0.0; 2]; 3];
-        let vert = (*d).flexvert_xpos.add(3 * *(*m).flex_vertadr.add(fi) as usize);
-        let nvert = *(*m).flex_vertnum.add(fi);
-        for i in 0..nvert as usize {
-            for j in 0..3usize {
-                if box_[j][0] > *vert.add(3 * i + j) || i == 0 {
-                    box_[j][0] = *vert.add(3 * i + j);
-                }
-                if box_[j][1] < *vert.add(3 * i + j) || i == 0 {
-                    box_[j][1] = *vert.add(3 * i + j);
-                }
-            }
-        }
-
-        // adjust box for radius
-        let radius = *(*m).flex_radius.add(fi);
-        for j in 0..3usize {
-            box_[j][0] -= radius;
-            box_[j][1] += radius;
-        }
-
-        // construct box geom
-        let mut pos = [0.0f64; 3];
-        let mut size = [0.0f64; 3];
-        let mut mat = [1.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 1.0f64];
-        for j in 0..3usize {
-            pos[j] = 0.5 * (box_[j][0] + box_[j][1]);
-            size[j] = 0.5 * (box_[j][1] - box_[j][0]);
-        }
-
-        // apply bounding-box filter
-        if ray_box(pos.as_ptr(), mat.as_ptr(), size.as_ptr(), pnt, vec,
-                   std::ptr::null_mut(), std::ptr::null_mut()) < 0.0 {
-            return -1.0;
-        }
-
-        // construct basis vectors of normal plane
-        let mut b0 = [1.0f64, 1.0, 1.0];
-        let mut b1 = [0.0f64; 3];
-        if (*vec.add(0)).abs() >= (*vec.add(1)).abs() && (*vec.add(0)).abs() >= (*vec.add(2)).abs() {
-            b0[0] = 0.0;
-        } else if (*vec.add(1)).abs() >= (*vec.add(2)).abs() {
-            b0[1] = 0.0;
-        } else {
-            b0[2] = 0.0;
-        }
-        let dot_vec_b0 = crate::engine::engine_util_blas::mju_dot3(vec, b0.as_ptr());
-        let dot_vec_vec = crate::engine::engine_util_blas::mju_dot3(vec, vec);
-        crate::engine::engine_util_blas::mju_add_to_scl3(b1.as_mut_ptr(), b0.as_ptr(), 1.0);
-        // b1 = b0 + vec * (-dot_vec_b0/dot_vec_vec)
-        b1[0] = b0[0] + *vec.add(0) * (-dot_vec_b0 / dot_vec_vec);
-        b1[1] = b0[1] + *vec.add(1) * (-dot_vec_b0 / dot_vec_vec);
-        b1[2] = b0[2] + *vec.add(2) * (-dot_vec_b0 / dot_vec_vec);
-        crate::engine::engine_util_blas::mju_normalize3(b1.as_mut_ptr());
-        crate::engine::engine_util_spatial::mju_cross(b0.as_mut_ptr(), b1.as_ptr(), vec);
-        crate::engine::engine_util_blas::mju_normalize3(b0.as_mut_ptr());
-
-        // init solution
-        let mut x: f64 = -1.0;
-        let mut normal_local = [0.0f64; 3];
-
-        // check edges if rendered, or if skin
-        if flg_edge || (dim > 1 && flg_skin) {
-            let edge_end = *(*m).flex_edgeadr.add(fi) + *(*m).flex_edgenum.add(fi);
-            let mut e = *(*m).flex_edgeadr.add(fi);
-            while e < edge_end {
-                // get vertices for this edge
-                let v1 = (*d).flexvert_xpos.add(3 * (*(*m).flex_vertadr.add(fi) + *(*m).flex_edge.add(2 * e as usize)) as usize);
-                let v2 = (*d).flexvert_xpos.add(3 * (*(*m).flex_vertadr.add(fi) + *(*m).flex_edge.add(2 * e as usize + 1)) as usize);
-
-                // construct capsule geom
-                crate::engine::engine_util_blas::mju_add3(pos.as_mut_ptr(), v1, v2);
-                crate::engine::engine_util_blas::mju_scl3(pos.as_mut_ptr(), pos.as_ptr(), 0.5);
-                let dif = [*v2.add(0) - *v1.add(0), *v2.add(1) - *v1.add(1), *v2.add(2) - *v1.add(2)];
-                size[0] = radius;
-                let mut dif_mut = dif;
-                size[1] = 0.5 * crate::engine::engine_util_blas::mju_normalize3(dif_mut.as_mut_ptr());
-                let mut quat = [0.0f64; 4];
-                crate::engine::engine_util_spatial::mju_quat_z2vec(quat.as_mut_ptr(), dif_mut.as_ptr());
-                crate::engine::engine_util_spatial::mju_quat2mat(mat.as_mut_ptr(), quat.as_ptr());
-
-                // intersect ray with capsule
-                let sol = mju_ray_geom(pos.as_ptr(), mat.as_ptr(), size.as_ptr(), pnt, vec,
-                    MJ_GEOM_CAPSULE, if !normal.is_null() { normal_local.as_mut_ptr() } else { std::ptr::null_mut() });
-
-                // update
-                if sol >= 0.0 && (x < 0.0 || sol < x) {
-                    x = sol;
-                    if !normal.is_null() { crate::engine::engine_util_blas::mju_copy3(normal, normal_local.as_ptr()); }
-
-                    // find nearest vertex
-                    if !vertid.is_null() {
-                        let mut intersect = [0.0f64; 3];
-                        crate::engine::engine_util_blas::mju_add_to_scl3(intersect.as_mut_ptr(), pnt, 1.0);
-                        intersect[0] = *pnt.add(0) + *vec.add(0) * sol;
-                        intersect[1] = *pnt.add(1) + *vec.add(1) * sol;
-                        intersect[2] = *pnt.add(2) + *vec.add(2) * sol;
-                        if crate::engine::engine_util_blas::mju_dist3(v1, intersect.as_ptr())
-                            < crate::engine::engine_util_blas::mju_dist3(v2, intersect.as_ptr()) {
-                            *vertid = *(*m).flex_edge.add(2 * e as usize);
-                        } else {
-                            *vertid = *(*m).flex_edge.add(2 * e as usize + 1);
-                        }
-                    }
-                }
-                e += 1;
-            }
-        }
-        // check vertices if rendered (and edges not checked)
-        else if flg_vert && !(dim > 1 && flg_skin) {
-            for v in 0..nvert as usize {
-                let vpos = (*d).flexvert_xpos.add(3 * (*(*m).flex_vertadr.add(fi) as usize + v));
-                size[0] = radius;
-
-                let sol = mju_ray_geom(vpos, std::ptr::null(), size.as_ptr(), pnt, vec,
-                    MJ_GEOM_SPHERE, if !normal.is_null() { normal_local.as_mut_ptr() } else { std::ptr::null_mut() });
-
-                if sol >= 0.0 && (x < 0.0 || sol < x) {
-                    x = sol;
-                    if !normal.is_null() { crate::engine::engine_util_blas::mju_copy3(normal, normal_local.as_ptr()); }
-                    if !vertid.is_null() { *vertid = v as i32; }
-                }
-            }
-        }
-
-        // check faces if rendered
-        if dim > 1 && (flg_face || flg_skin) {
-            for e in 0..*(*m).flex_elemnum.add(fi) as usize {
-                // skip if 3D element is not visible
-                let elayer = *(*m).flex_elemlayer.add(*(*m).flex_elemadr.add(fi) as usize + e);
-                if dim == 3 && ((flg_skin && elayer > 0) || (!flg_skin && elayer != flex_layer)) {
-                    continue;
-                }
-
-                // get element data
-                let edata = (*m).flex_elem.add(*(*m).flex_elemdataadr.add(fi) as usize + e * (dim as usize + 1));
-                let vadr = *(*m).flex_vertadr.add(fi) as usize;
-                let v1 = (*d).flexvert_xpos.add(3 * (vadr + *edata.add(0) as usize));
-                let v2 = (*d).flexvert_xpos.add(3 * (vadr + *edata.add(1) as usize));
-                let v3 = (*d).flexvert_xpos.add(3 * (vadr + *edata.add(2) as usize));
-
-                let nfaces = if dim == 2 { 1 } else { 4 };
-
-                // for 3D, also get v4
-                let v4 = if dim == 3 {
-                    (*d).flexvert_xpos.add(3 * (vadr + *edata.add(3) as usize))
-                } else {
-                    std::ptr::null_mut()
-                };
-
-                // vertex pointer arrays for each face
-                let vptr: [[*const f64; 3]; 4] = [
-                    [v1, v2, v3],
-                    [v1, v2, v4],
-                    [v1, v3, v4],
-                    [v2, v3, v4],
-                ];
-                let vid: [[i32; 3]; 4] = [
-                    [0, 1, 2],
-                    [0, 1, 3],
-                    [0, 2, 3],
-                    [1, 2, 3],
-                ];
-
-                for i in 0..nfaces {
-                    // copy vertices into triangle representation
-                    let mut v_tri: [[f64; 3]; 3] = [[0.0; 3]; 3];
-                    for j in 0..3usize {
-                        crate::engine::engine_util_blas::mju_copy3(
-                            v_tri[j].as_mut_ptr(), vptr[i][j]);
-                    }
-
-                    // intersect ray with triangle
-                    let sol = ray_triangle(
-                        v_tri.as_mut_ptr(), pnt, vec, b0.as_ptr(), b1.as_ptr(),
-                        if !normal.is_null() { normal_local.as_mut_ptr() } else { std::ptr::null_mut() });
-
-                    // update
-                    if sol >= 0.0 && (x < 0.0 || sol < x) {
-                        x = sol;
-                        if !normal.is_null() { crate::engine::engine_util_blas::mju_copy3(normal, normal_local.as_ptr()); }
-
-                        if !vertid.is_null() {
-                            // construct intersection point
-                            let intersect = [
-                                *pnt.add(0) + *vec.add(0) * sol,
-                                *pnt.add(1) + *vec.add(1) * sol,
-                                *pnt.add(2) + *vec.add(2) * sol,
-                            ];
-                            // find nearest vertex
-                            let dist = [
-                                crate::engine::engine_util_blas::mju_dist3(v_tri[0].as_ptr(), intersect.as_ptr()),
-                                crate::engine::engine_util_blas::mju_dist3(v_tri[1].as_ptr(), intersect.as_ptr()),
-                                crate::engine::engine_util_blas::mju_dist3(v_tri[2].as_ptr(), intersect.as_ptr()),
-                            ];
-                            if dist[0] <= dist[1] && dist[0] <= dist[2] {
-                                *vertid = *edata.add(vid[i][0] as usize);
-                            } else if dist[1] <= dist[2] {
-                                *vertid = *edata.add(vid[i][1] as usize);
-                            } else {
-                                *vertid = *edata.add(vid[i][2] as usize);
-                            }
-                        }
-                    }
-                }
-            }
-        }
-
-        x
-    }
-}
-
-/// C: mju_raySkin (engine/engine_ray.h:70)
-/// Calls: mju_addScl3, mju_cross, mju_dist3, mju_dot3, mju_normalize3, ray_box, ray_triangle
-/// ⚠️ BITEXACT RULES:
-///   1. Copy exact C accumulation order (no iter().sum())
-///   2. No f64::mul_add() (FMA changes precision)
-///   3. No algebraic simplification
-///   4. No iter().sum()/product() (order undefined)
-#[allow(unused_variables, non_snake_case)]
-pub fn mju_ray_skin(nface: i32, nvert: i32, face: *const i32, vert: *const f32, pnt: *const f64, vec: *const f64, vertid: *mut i32) -> f64 {
-    // SAFETY: all pointers valid arrays of documented sizes (caller contract)
-    unsafe {
-        // compute bounding box
-        let mut box_: [[f64; 2]; 3] = [[0.0; 2]; 3];
-        for i in 0..nvert as usize {
-            for j in 0..3 {
-                let val = *vert.add(3*i + j) as f64;
-                if box_[j][0] > val || i == 0 {
-                    box_[j][0] = val;
-                }
-                if box_[j][1] < val || i == 0 {
-                    box_[j][1] = val;
-                }
-            }
-        }
-
-        // construct box geom
-        let mut pos: [f64; 3] = [0.0; 3];
-        let mut size: [f64; 3] = [0.0; 3];
-        let mat: [f64; 9] = [1.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 1.0];
-        for j in 0..3 {
-            pos[j] = 0.5 * (box_[j][0] + box_[j][1]);
-            size[j] = 0.5 * (box_[j][1] - box_[j][0]);
-        }
-
-        // apply bounding-box filter
-        if ray_box(pos.as_ptr(), mat.as_ptr(), size.as_ptr(), pnt, vec, std::ptr::null_mut(), std::ptr::null_mut()) < 0.0 {
-            return -1.0;
-        }
-
-        // construct basis vectors of normal plane
-        let mut b0: [f64; 3] = [1.0, 1.0, 1.0];
-        let mut b1: [f64; 3] = [0.0; 3];
-        if f64::abs(*vec.add(0)) >= f64::abs(*vec.add(1)) && f64::abs(*vec.add(0)) >= f64::abs(*vec.add(2)) {
-            b0[0] = 0.0;
-        } else if f64::abs(*vec.add(1)) >= f64::abs(*vec.add(2)) {
-            b0[1] = 0.0;
-        } else {
-            b0[2] = 0.0;
-        }
-        let dot_lvec_b0 = crate::engine::engine_util_blas::mju_dot3(vec, b0.as_ptr());
-        let dot_lvec_lvec = crate::engine::engine_util_blas::mju_dot3(vec, vec);
-        crate::engine::engine_util_blas::mju_add_scl3(b1.as_mut_ptr(), b0.as_ptr(), vec, -dot_lvec_b0 / dot_lvec_lvec);
-        crate::engine::engine_util_blas::mju_normalize3(b1.as_mut_ptr());
-        crate::engine::engine_util_spatial::mju_cross(b0.as_mut_ptr(), b1.as_ptr(), vec);
-        crate::engine::engine_util_blas::mju_normalize3(b0.as_mut_ptr());
-
-        // init solution
-        let mut x: f64 = -1.0;
-
-        // process all faces
-        for i in 0..nface as usize {
-            // get float vertices
-            let vf0 = vert.add(3 * (*face.add(3*i + 0) as usize));
-            let vf1 = vert.add(3 * (*face.add(3*i + 1) as usize));
-            let vf2 = vert.add(3 * (*face.add(3*i + 2) as usize));
-
-            // convert to mjtNum
-            let mut v: [[f64; 3]; 3] = [[0.0; 3]; 3];
-            for k in 0..3 {
-                v[0][k] = *vf0.add(k) as f64;
-                v[1][k] = *vf1.add(k) as f64;
-                v[2][k] = *vf2.add(k) as f64;
-            }
-
-            // solve
-            let sol = ray_triangle(v.as_mut_ptr(), pnt, vec, b0.as_ptr(), b1.as_ptr(), std::ptr::null_mut());
-
-            // update
-            if sol >= 0.0 && (x < 0.0 || sol < x) {
-                x = sol;
-
-                // construct intersection point
-                let mut intersect: [f64; 3] = [0.0; 3];
-                crate::engine::engine_util_blas::mju_add_scl3(intersect.as_mut_ptr(), pnt, vec, sol);
-
-                // find nearest vertex
-                let mut dist = crate::engine::engine_util_blas::mju_dist3(intersect.as_ptr(), v[0].as_ptr());
-                if !vertid.is_null() {
-                    *vertid = *face.add(3*i);
-                }
-                for j in 1..3 {
-                    let newdist = crate::engine::engine_util_blas::mju_dist3(intersect.as_ptr(), v[j].as_ptr());
-                    if newdist < dist {
-                        dist = newdist;
-                        if !vertid.is_null() {
-                            *vertid = *face.add(3*i + j);
-                        }
-                    }
-                }
-            }
-        }
-
-        x
     }
 }
 

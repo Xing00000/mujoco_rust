@@ -1,6 +1,6 @@
 //! Port of: render/classic/render_gl3.c
-//! IR hash: 73393814548a07d1
-//! CODEGEN: signatures locked. Only fill todo!() bodies.
+//! IR hash: 9343293228317031
+//! CODEGEN: source paths, owners, and callable names are locked.
 
 use crate::types::*;
 
@@ -11,7 +11,7 @@ use crate::types::*;
 ///   3. No algebraic simplification
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
-pub fn is_behind(headpos: *const f32, pos: *const f32, mat: *const f32) -> i32 {
+pub fn isBehind(headpos: *const f32, pos: *const f32, mat: *const f32) -> i32 {
     // SAFETY: caller guarantees headpos[3], pos[3], mat[9] are valid
     unsafe {
         if (*headpos.add(0) - *pos.add(0)) * *mat.add(2)
@@ -26,7 +26,7 @@ pub fn is_behind(headpos: *const f32, pos: *const f32, mat: *const f32) -> i32 {
 
 /// C: isReflective (render/classic/render_gl3.c:45)
 #[allow(unused_variables, non_snake_case)]
-pub fn is_reflective(geom: *const mjvGeom) -> i32 {
+pub fn isReflective(geom: *const mjvGeom) -> i32 {
     // SAFETY: caller guarantees geom is a valid pointer to mjvGeom
     unsafe {
         if ((*geom).r#type == 0 || (*geom).r#type == 6)  // mjGEOM_PLANE or mjGEOM_BOX
@@ -40,7 +40,7 @@ pub fn is_reflective(geom: *const mjvGeom) -> i32 {
 }
 
 /// C: settexture (render/classic/render_gl3.c:62)
-/// Calls: mjr_setf4, mju_max
+/// Calls: cxx:_mjr_setf4, cxx:_mju_max
 #[allow(unused_variables, non_snake_case)]
 pub fn settexture(r#type: i32, state: i32, con: *const mjrContext, geom: *const mjvGeom) {
     const mjtexSHADOW: i32 = 0;
@@ -201,40 +201,9 @@ pub fn settexture(r#type: i32, state: i32, con: *const mjrContext, geom: *const 
     }
 }
 
-/// C: renderGeom (render/classic/render_gl3.c:217)
-/// Calls: isBehind, mjr_setf4, mju_Halton, mju_negQuat, mju_normalize3, mju_quat2Mat, mju_quatZ2Vec, settexture
-/// ⚠️ BITEXACT RULES:
-///   1. Copy exact C accumulation order (no iter().sum())
-///   2. No f64::mul_add() (FMA changes precision)
-///   3. No algebraic simplification
-///   4. No iter().sum()/product() (order undefined)
-#[allow(unused_variables, non_snake_case)]
-pub fn render_geom(geom: *const mjvGeom, mode: i32, headpos: *const f32, scn: *const mjvScene, con: *const mjrContext) {
-    todo!() // renderGeom
-}
-
-/// C: renderGeomReflection (render/classic/render_gl3.c:590)
-/// Calls: renderGeom
-/// ⚠️ BITEXACT RULES:
-///   1. Copy exact C accumulation order (no iter().sum())
-///   2. No f64::mul_add() (FMA changes precision)
-///   3. No algebraic simplification
-///   4. No iter().sum()/product() (order undefined)
-#[allow(unused_variables, non_snake_case)]
-pub fn render_geom_reflection(id: i32, reflectance: f32, headpos: *mut f32, scn: *mut mjvScene, con: *const mjrContext) {
-    todo!() // renderGeomReflection
-}
-
-/// C: initGL3 (render/classic/render_gl3.c:614)
-/// Calls: PNGImage::Width, mjCMesh::Face
-#[allow(unused_variables, non_snake_case)]
-pub fn init_gl3(scn: *const mjvScene, con: *const mjrContext) {
-    todo!() // initGL3
-}
-
 /// C: initLights (render/classic/render_gl3.c:662)
 #[allow(unused_variables, non_snake_case)]
-pub fn init_lights(scn: *mut mjvScene) {
+pub fn initLights(scn: *mut mjvScene) {
     const GL_LIGHT_MODEL_AMBIENT: u32 = 0x0B53;
     const GL_LIGHT_MODEL_TWO_SIDE: u32 = 0x0B52;
     const GL_LIGHT_MODEL_LOCAL_VIEWER: u32 = 0x0B51;
@@ -305,18 +274,6 @@ pub fn init_lights(scn: *mut mjvScene) {
     }
 }
 
-/// C: setView (render/classic/render_gl3.c:711)
-/// Calls: mjr_lookAt, mjr_transform, mjv_averageCamera
-/// ⚠️ BITEXACT RULES:
-///   1. Copy exact C accumulation order (no iter().sum())
-///   2. No f64::mul_add() (FMA changes precision)
-///   3. No algebraic simplification
-///   4. No iter().sum()/product() (order undefined)
-#[allow(unused_variables, non_snake_case)]
-pub fn set_view(view: i32, viewport: mjrRect, scn: *const mjvScene, con: *const mjrContext, camProject: *mut f32, camView: *mut f32) {
-    todo!() // setView
-}
-
 /// C: geomcmp (render/classic/render_gl3.c:778)
 #[allow(unused_variables, non_snake_case)]
 pub fn geomcmp(i: *mut i32, j: *mut i32, context: *mut ()) -> i32 {
@@ -336,17 +293,10 @@ pub fn geomcmp(i: *mut i32, j: *mut i32, context: *mut ()) -> i32 {
     }
 }
 
-/// C: geomSort (render/classic/render_gl3.c:793)
-/// Calls: geomcmp
-#[allow(unused_variables, non_snake_case)]
-pub fn geom_sort(arr: *mut i32, buf: *mut i32, n: i32, context: *mut ()) {
-    todo!() // geomSort
-}
-
 /// C: adjustLight (render/classic/render_gl3.c:798)
-/// Calls: mjr_setf4
+/// Calls: cxx:_mjr_setf4
 #[allow(unused_variables, non_snake_case)]
-pub fn adjust_light(thislight: *const mjvLight, n: i32) {
+pub fn adjustLight(thislight: *const mjvLight, n: i32) {
     const GL_LIGHT0: u32 = 0x4000;
     const GL_POSITION: u32 = 0x1203;
     const GL_SPOT_DIRECTION: u32 = 0x1204;
@@ -380,24 +330,5 @@ pub fn adjust_light(thislight: *const mjvLight, n: i32) {
             glLightfv(GL_LIGHT0 + n as u32, GL_POSITION, temp.as_ptr());
         }
     }
-}
-
-/// C: mjr_render (render/classic/render_gl3.h:27)
-/// Calls: adjustLight, geomSort, initGL3, initLights, isBehind, isReflective, mjr_getrow4, mjr_lookAt, mjr_mulMat44, mjr_orthoVec, mjr_perspective, mjr_reflect, mjr_restoreBuffer, mjr_textActual, mju_error, mju_free, mju_malloc, mju_min, mju_n2f, mjv_averageCamera, mjv_cameraInModel, mjv_rbound, renderGeom, renderGeomReflection, setView, settexture
-#[allow(unused_variables, non_snake_case)]
-pub fn mjr_render(viewport: mjrRect, scn: *mut mjvScene, con: *const mjrContext) {
-    todo!() // mjr_render
-}
-
-/// C: mjr_finish (render/classic/render_gl3.h:30)
-#[allow(unused_variables, non_snake_case)]
-pub fn mjr_finish() {
-    todo ! ()
-}
-
-/// C: mjr_getError (render/classic/render_gl3.h:33)
-#[allow(unused_variables, non_snake_case)]
-pub fn mjr_get_error() -> i32 {
-    todo ! ()
 }
 

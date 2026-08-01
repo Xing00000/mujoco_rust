@@ -1,6 +1,6 @@
 //! Port of: engine/engine_init.c
-//! IR hash: 73393814548a07d1
-//! CODEGEN: signatures locked. Only fill todo!() bodies.
+//! IR hash: 9343293228317031
+//! CODEGEN: source paths, owners, and callable names are locked.
 
 use crate::types::*;
 
@@ -11,7 +11,7 @@ use crate::types::*;
 ///   3. No algebraic simplification
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
-pub fn mj_default_sol_ref_imp(solref: *mut f64, solimp: *mut f64) {
+pub fn mj_defaultSolRefImp(solref: *mut f64, solimp: *mut f64) {
     if !solref.is_null() {
         // SAFETY: solref points to at least 2 f64 (caller contract)
         unsafe {
@@ -32,9 +32,9 @@ pub fn mj_default_sol_ref_imp(solref: *mut f64, solimp: *mut f64) {
 }
 
 /// C: mj_defaultOption (engine/engine_init.c:51)
-/// Calls: mj_defaultSolRefImp
+/// Calls: cxx:_mj_defaultSolRefImp
 #[allow(unused_variables, non_snake_case)]
-pub fn mj_default_option(opt: *mut mjOption) {
+pub fn mj_defaultOption(opt: *mut mjOption) {
     const mjINT_EULER: i32 = 0;
     const mjCONE_PYRAMIDAL: i32 = 0;
     const mjJAC_AUTO: i32 = 2;
@@ -73,7 +73,7 @@ pub fn mj_default_option(opt: *mut mjOption) {
 
         // solver overrides
         (*opt).o_margin = 0.0;
-        mj_default_sol_ref_imp((*opt).o_solref.as_mut_ptr(), (*opt).o_solimp.as_mut_ptr());
+        mj_defaultSolRefImp((*opt).o_solref.as_mut_ptr(), (*opt).o_solimp.as_mut_ptr());
         (*opt).o_friction[0] = 1.0;
         (*opt).o_friction[1] = 1.0;
         (*opt).o_friction[2] = 0.005;
@@ -117,9 +117,9 @@ pub fn setf4(rgba: *mut f32, r: f32, g: f32, b: f32, a: f32) {
 }
 
 /// C: mj_defaultVisual (engine/engine_init.c:133)
-/// Calls: setf4
+/// Calls: cxx-internal:/Users/xing/Desktop/projects/c2rust_bitexact/projects/mujoco/src/engine/engine_init.c:_setf4
 #[allow(unused_variables, non_snake_case)]
-pub fn mj_default_visual(vis: *mut mjVisual) {
+pub fn mj_defaultVisual(vis: *mut mjVisual) {
     // SAFETY: caller guarantees vis is a valid, aligned, writable pointer to mjVisual
     unsafe {
         std::ptr::write_bytes(vis as *mut u8, 0, std::mem::size_of::<mjVisual>());
@@ -154,7 +154,7 @@ pub fn mj_default_visual(vis: *mut mjVisual) {
 
         // headlight — opaque struct (40 bytes)
         // Layout: ambient[3](f32) diffuse[3](f32) specular[3](f32) active(i32)
-        let h = (*vis).headlight._data.as_mut_ptr();
+        let h = (*vis).headlight.as_mut_ptr();
         *(h.add(0) as *mut f32) = 0.1;         // ambient[0]
         *(h.add(4) as *mut f32) = 0.1;         // ambient[1]
         *(h.add(8) as *mut f32) = 0.1;         // ambient[2]
@@ -210,7 +210,7 @@ pub fn mj_default_visual(vis: *mut mjVisual) {
 
         // rgba — opaque struct (400 bytes = 25 colors × 4 floats × 4 bytes)
         // Use setf4 helper for each color
-        let rgba = (*vis).rgba._data.as_mut_ptr();
+        let rgba = (*vis).rgba.as_mut_ptr();
         let mut offset: usize = 0;
         // fog
         setf4(rgba.add(offset) as *mut f32, 0.0, 0.0, 0.0, 1.0); offset += 16;
@@ -267,7 +267,7 @@ pub fn mj_default_visual(vis: *mut mjVisual) {
 
 /// C: mj_defaultLROpt (engine/engine_init.c:234)
 #[allow(unused_variables, non_snake_case)]
-pub fn mj_default_lr_opt(opt: *mut mjLROpt) {
+pub fn mj_defaultLROpt(opt: *mut mjLROpt) {
     // SAFETY: opt is a valid pointer to mjLROpt (caller contract)
     unsafe {
         (*opt).mode = 1; // mjLRMODE_MUSCLE
@@ -285,9 +285,9 @@ pub fn mj_default_lr_opt(opt: *mut mjLROpt) {
 }
 
 /// C: mj_defaultStatistic (engine/engine_init.h:30)
-/// Calls: mju_zero3
+/// Calls: cxx:_mju_zero3
 #[allow(unused_variables, non_snake_case)]
-pub fn mj_default_statistic(stat: *mut mjStatistic) {
+pub fn mj_defaultStatistic(stat: *mut mjStatistic) {
     // SAFETY: stat is a valid mjStatistic pointer (caller contract).
     unsafe {
         crate::engine::engine_util_blas::mju_zero3((*stat).center.as_mut_ptr());

@@ -1,18 +1,18 @@
 //! Port of: engine/engine_collision_sdf.c
-//! IR hash: 73393814548a07d1
-//! CODEGEN: signatures locked. Only fill todo!() bodies.
+//! IR hash: 9343293228317031
+//! CODEGEN: source paths, owners, and callable names are locked.
 
 use crate::types::*;
 
 /// C: boxProjection (engine/engine_collision_sdf.c:35)
-/// Calls: mju_max
+/// Calls: cxx:_mju_max
 /// ⚠️ BITEXACT RULES:
 ///   1. Copy exact C accumulation order (no iter().sum())
 ///   2. No f64::mul_add() (FMA changes precision)
 ///   3. No algebraic simplification
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
-pub fn box_projection(point: *mut f64, r#box: *const f64) -> f64 {
+pub fn boxProjection(point: *mut f64, r#box: *const f64) -> f64 {
     // SAFETY: point is a mutable array of 3 f64, box is an array of 6 f64 (caller contract)
     unsafe {
         let r: [f64; 3] = [
@@ -51,14 +51,14 @@ pub fn box_projection(point: *mut f64, r#box: *const f64) -> f64 {
 }
 
 /// C: findOct (engine/engine_collision_sdf.c:69)
-/// Calls: mju_error
+/// Calls: cxx:_mju_error
 /// ⚠️ BITEXACT RULES:
 ///   1. Copy exact C accumulation order (no iter().sum())
 ///   2. No f64::mul_add() (FMA changes precision)
 ///   3. No algebraic simplification
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
-pub fn find_oct(w: *mut f64, dw: *mut [f64; 3], oct_aabb: *const f64, oct_child: *const i32, p: *const f64) -> i32 {
+pub fn findOct(w: *mut f64, dw: *mut [f64; 3], oct_aabb: *const f64, oct_child: *const i32, p: *const f64) -> i32 {
     // SAFETY: oct_aabb, oct_child are valid arrays from mjModel.mesh_octaabb/octchild,
     //         p is a valid f64[3] pointer, w and dw may be null (optional outputs)
     unsafe {
@@ -140,7 +140,7 @@ pub fn find_oct(w: *mut f64, dw: *mut [f64; 3], oct_aabb: *const f64, oct_child:
 }
 
 /// C: oct_distance (engine/engine_collision_sdf.c:138)
-/// Calls: boxProjection, findOct, mju_message
+/// Calls: cxx-internal:engine_collision_sdf.c.o:_findOct, cxx:_boxProjection, cxx:_mju_message
 /// ⚠️ BITEXACT RULES:
 ///   1. Copy exact C accumulation order (no iter().sum())
 ///   2. No f64::mul_add() (FMA changes precision)
@@ -163,8 +163,8 @@ pub fn oct_distance(m: *const mjModel, p: *const f64, meshid: i32) -> f64 {
 
         let mut w: [f64; 8] = [0.0; 8];
         let mut point: [f64; 3] = [*p.add(0), *p.add(1), *p.add(2)];
-        let box_dist = box_projection(point.as_mut_ptr(), oct_aabb);
-        let node = find_oct(w.as_mut_ptr(), std::ptr::null_mut(), oct_aabb, oct_child, point.as_ptr());
+        let box_dist = boxProjection(point.as_mut_ptr(), oct_aabb);
+        let node = findOct(w.as_mut_ptr(), std::ptr::null_mut(), oct_aabb, oct_child, point.as_ptr());
 
         let mut sdf: f64 = 0.0;
         for i in 0..8 {
@@ -176,7 +176,7 @@ pub fn oct_distance(m: *const mjModel, p: *const f64, meshid: i32) -> f64 {
 }
 
 /// C: oct_gradient (engine/engine_collision_sdf.c:162)
-/// Calls: boxProjection, findOct, mju_message, mju_zero3, oct_distance
+/// Calls: cxx-internal:engine_collision_sdf.c.o:_findOct, cxx:_boxProjection, cxx:_mju_message, cxx:_mju_zero3, cxx:_oct_distance
 /// ⚠️ BITEXACT RULES:
 ///   1. Copy exact C accumulation order (no iter().sum())
 ///   2. No f64::mul_add() (FMA changes precision)
@@ -200,9 +200,9 @@ pub fn oct_gradient(m: *const mjModel, grad: *mut f64, point: *const f64, meshid
         }
 
         // analytic in the interior
-        if box_projection(p.as_mut_ptr(), oct_aabb) <= 0.0 {
+        if boxProjection(p.as_mut_ptr(), oct_aabb) <= 0.0 {
             let mut dw: [[f64; 3]; 8] = [[0.0; 3]; 8];
-            let node = find_oct(std::ptr::null_mut(), dw.as_mut_ptr(), oct_aabb, oct_child, p.as_ptr());
+            let node = findOct(std::ptr::null_mut(), dw.as_mut_ptr(), oct_aabb, oct_child, p.as_ptr());
             for j in 0..8 {
                 *grad.add(0) += dw[j][0] * *oct_coeff.add(8 * node as usize + j);
                 *grad.add(1) += dw[j][1] * *oct_coeff.add(8 * node as usize + j);
@@ -228,14 +228,14 @@ pub fn oct_gradient(m: *const mjModel, grad: *mut f64, point: *const f64, meshid
 }
 
 /// C: radialField3d (engine/engine_collision_sdf.c:205)
-/// Calls: mju_normalize3
+/// Calls: cxx:_mju_normalize3
 /// ⚠️ BITEXACT RULES:
 ///   1. Copy exact C accumulation order (no iter().sum())
 ///   2. No f64::mul_add() (FMA changes precision)
 ///   3. No algebraic simplification
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
-pub fn radial_field3d(field: *mut f64, a: *const f64, x: *const f64, size: *const f64) {
+pub fn radialField3d(field: *mut f64, a: *const f64, x: *const f64, size: *const f64) {
     // SAFETY: caller guarantees field, a, x, size point to at least 3 valid f64 elements
     unsafe {
         *field.add(0) = -*size.add(0) / *a.add(0);
@@ -257,14 +257,14 @@ pub fn radial_field3d(field: *mut f64, a: *const f64, x: *const f64, size: *cons
 }
 
 /// C: geomDistance (engine/engine_collision_sdf.c:218)
-/// Calls: mju_clip, mju_max, mju_message, mju_min, mju_norm, mju_norm3, oct_distance, radialField3d
+/// Calls: cxx-internal:/Users/xing/Desktop/projects/c2rust_bitexact/projects/mujoco/src/engine/engine_collision_sdf.c:_radialField3d, cxx:_mju_clip, cxx:_mju_max, cxx:_mju_message, cxx:_mju_min, cxx:_mju_norm, cxx:_mju_norm3, cxx:_oct_distance
 /// ⚠️ BITEXACT RULES:
 ///   1. Copy exact C accumulation order (no iter().sum())
 ///   2. No f64::mul_add() (FMA changes precision)
 ///   3. No algebraic simplification
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
-pub fn geom_distance(m: *const mjModel, d: *const mjData, p: *const mjpPlugin, i: i32, x: *const f64, r#type: u32) -> f64 {
+pub fn geomDistance(m: *const mjModel, d: *const mjData, p: *const mjpPlugin, i: i32, x: *const f64, r#type: u32) -> f64 {
     // SAFETY: m, d, x are valid pointers; i is valid geom index (caller contract)
     unsafe {
         let size = (*m).geom_size.add(3 * i as usize);
@@ -292,7 +292,7 @@ pub fn geom_distance(m: *const mjModel, d: *const mjData, p: *const mjpPlugin, i
                     let min_part = if max_a < 0.0 { max_a } else { 0.0 };
                     return crate::engine::engine_util_blas::mju_norm3(b.as_ptr()) + min_part;
                 }
-                radial_field3d(b.as_mut_ptr(), a.as_ptr(), x, size);
+                radialField3d(b.as_mut_ptr(), a.as_ptr(), x, size);
                 let mut t: [f64; 3] = [0.0; 3];
                 t[0] = -a[0] / b[0].abs();
                 t[1] = -a[1] / b[1].abs();
@@ -366,14 +366,14 @@ pub fn geom_distance(m: *const mjModel, d: *const mjData, p: *const mjpPlugin, i
 }
 
 /// C: geomGradient (engine/engine_collision_sdf.c:295)
-/// Calls: mju_clip, mju_copy3, mju_max, mju_message, mju_norm, mju_norm3, mju_normalize3, mju_zero3, oct_gradient, radialField3d
+/// Calls: cxx-internal:/Users/xing/Desktop/projects/c2rust_bitexact/projects/mujoco/src/engine/engine_collision_sdf.c:_radialField3d, cxx:_mju_clip, cxx:_mju_copy3, cxx:_mju_max, cxx:_mju_message, cxx:_mju_norm, cxx:_mju_norm3, cxx:_mju_normalize3, cxx:_mju_zero3, cxx:_oct_gradient
 /// ⚠️ BITEXACT RULES:
 ///   1. Copy exact C accumulation order (no iter().sum())
 ///   2. No f64::mul_add() (FMA changes precision)
 ///   3. No algebraic simplification
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
-pub fn geom_gradient(gradient: *mut f64, m: *const mjModel, d: *const mjData, p: *const mjpPlugin, i: i32, x: *const f64, r#type: u32) {
+pub fn geomGradient(gradient: *mut f64, m: *const mjModel, d: *const mjData, p: *const mjpPlugin, i: i32, x: *const f64, r#type: u32) {
     // SAFETY: gradient is f64[3], m/d/x valid pointers (caller contract)
     unsafe {
         let size = (*m).geom_size.add(3 * i as usize);
@@ -401,7 +401,7 @@ pub fn geom_gradient(gradient: *mut f64, m: *const mjModel, d: *const mjData, p:
                 let k = if a[0] > a[1] { 0 } else { 1 };
                 let l = if a[2] > a[k] { 2 } else { k };
                 if a[l] < 0.0 {
-                    radial_field3d(gradient, a.as_ptr(), x, size);
+                    radialField3d(gradient, a.as_ptr(), x, size);
                 } else {
                     let mut b: [f64; 3] = [0.0; 3];
                     b[0] = if a[0] > 0.0 { a[0] } else { 0.0 };
@@ -508,15 +508,15 @@ pub fn geom_gradient(gradient: *mut f64, m: *const mjModel, d: *const mjData, p:
 }
 
 /// C: mapPose (engine/engine_collision_sdf.c:519)
-/// Calls: mju_mulPose, mju_negPose, mju_quat2Mat
+/// Calls: cxx:_mju_mulPose, cxx:_mju_negPose, cxx:_mju_quat2Mat
 /// ⚠️ BITEXACT RULES:
 ///   1. Copy exact C accumulation order (no iter().sum())
 ///   2. No f64::mul_add() (FMA changes precision)
 ///   3. No algebraic simplification
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
-pub fn map_pose(xpos1: *const f64, xquat1: *const f64, xpos2: *const f64, xquat2: *const f64, pos12: *mut f64, mat12: *mut f64) {
-    use crate::engine::engine_util_spatial::{mju_neg_pose, mju_mul_pose, mju_quat2mat};
+pub fn mapPose(xpos1: *const f64, xquat1: *const f64, xpos2: *const f64, xquat2: *const f64, pos12: *mut f64, mat12: *mut f64) {
+    use crate::engine::engine_util_spatial::{mju_negPose, mju_mulPose, mju_quat2Mat};
 
     // SAFETY: all pointers are valid arrays of appropriate size (caller contract)
     unsafe {
@@ -524,14 +524,14 @@ pub fn map_pose(xpos1: *const f64, xquat1: *const f64, xpos2: *const f64, xquat2
         let mut negquat: [f64; 4] = [0.0; 4];
         let mut quat12: [f64; 4] = [0.0; 4];
 
-        mju_neg_pose(negpos.as_mut_ptr(), negquat.as_mut_ptr(), xpos2, xquat2);
-        mju_mul_pose(pos12, quat12.as_mut_ptr(), negpos.as_ptr(), negquat.as_ptr(), xpos1, xquat1);
-        mju_quat2mat(mat12, quat12.as_ptr());
+        mju_negPose(negpos.as_mut_ptr(), negquat.as_mut_ptr(), xpos2, xquat2);
+        mju_mulPose(pos12, quat12.as_mut_ptr(), negpos.as_ptr(), negquat.as_ptr(), xpos1, xquat1);
+        mju_quat2Mat(mat12, quat12.as_ptr());
     }
 }
 
 /// C: isknown (engine/engine_collision_sdf.c:532)
-/// Calls: mju_dist3
+/// Calls: cxx:_mju_dist3
 /// ⚠️ BITEXACT RULES:
 ///   1. Copy exact C accumulation order (no iter().sum())
 ///   2. No f64::mul_add() (FMA changes precision)
@@ -552,14 +552,14 @@ pub fn isknown(points: *const f64, x: *const f64, cnt: i32) -> i32 {
 }
 
 /// C: addPreContact (engine/engine_collision_sdf.c:545)
-/// Calls: isknown, mjc_gradient, mju_addTo3, mju_copy3, mju_normalize3, mju_rotVecQuat, mju_scl3, mju_zero3
+/// Calls: cxx-internal:/Users/xing/Desktop/projects/c2rust_bitexact/projects/mujoco/src/engine/engine_collision_sdf.c:_isknown, cxx:_mjc_gradient, cxx:_mju_addTo3, cxx:_mju_copy3, cxx:_mju_normalize3, cxx:_mju_rotVecQuat, cxx:_mju_scl3, cxx:_mju_zero3
 /// ⚠️ BITEXACT RULES:
 ///   1. Copy exact C accumulation order (no iter().sum())
 ///   2. No f64::mul_add() (FMA changes precision)
 ///   3. No algebraic simplification
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
-pub fn add_pre_contact(points: *mut f64, con: *mut mjPreContact, x: *const f64, pos2: *const f64, quat2: *const f64, dist: f64, cnt: i32, m: *const mjModel, s: *const mjSDF, d: *const mjData, flipNormal: i32) -> i32 {
+pub fn addPreContact(points: *mut f64, con: *mut mjPreContact, x: *const f64, pos2: *const f64, quat2: *const f64, dist: f64, cnt: i32, m: *const mjModel, s: *const mjSDF, d: *const mjData, flipNormal: i32) -> i32 {
     const MJMINVAL: f64 = 1e-15;
 
     // SAFETY: all pointers valid (caller contract)
@@ -588,26 +588,26 @@ pub fn add_pre_contact(points: *mut f64, con: *mut mjPreContact, x: *const f64, 
 
         // construct contact
         (*con).dist = dist;
-        crate::engine::engine_util_spatial::mju_rot_vec_quat((*con).normal.as_mut_ptr(), norm.as_ptr(), quat2);
+        crate::engine::engine_util_spatial::mju_rotVecQuat((*con).normal.as_mut_ptr(), norm.as_ptr(), quat2);
         crate::engine::engine_util_blas::mju_scl3(vec.as_mut_ptr(), (*con).normal.as_ptr(), -0.5 * dist);
-        crate::engine::engine_util_spatial::mju_rot_vec_quat((*con).pos.as_mut_ptr(), x, quat2);
+        crate::engine::engine_util_spatial::mju_rotVecQuat((*con).pos.as_mut_ptr(), x, quat2);
         crate::engine::engine_util_blas::mju_zero3((*con).tangent.as_mut_ptr());
-        crate::engine::engine_util_blas::mju_add_to3((*con).pos.as_mut_ptr(), pos2);
-        crate::engine::engine_util_blas::mju_add_to3((*con).pos.as_mut_ptr(), vec.as_ptr());
+        crate::engine::engine_util_blas::mju_addTo3((*con).pos.as_mut_ptr(), pos2);
+        crate::engine::engine_util_blas::mju_addTo3((*con).pos.as_mut_ptr(), vec.as_ptr());
 
         cnt + 1
     }
 }
 
 /// C: stepFrankWolfe (engine/engine_collision_sdf.c:585)
-/// Calls: mjc_distance, mjc_gradient, mju_addToScl3, mju_copy3, mju_dot3, mju_subFrom3
+/// Calls: cxx:_mjc_distance, cxx:_mjc_gradient, cxx:_mju_addToScl3, cxx:_mju_copy3, cxx:_mju_dot3, cxx:_mju_subFrom3
 /// ⚠️ BITEXACT RULES:
 ///   1. Copy exact C accumulation order (no iter().sum())
 ///   2. No f64::mul_add() (FMA changes precision)
 ///   3. No algebraic simplification
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
-pub fn step_frank_wolfe(x: *mut f64, corners: *const f64, ncorners: i32, m: *const mjModel, sdf: *const mjSDF, d: *const mjData) -> f64 {
+pub fn stepFrankWolfe(x: *mut f64, corners: *const f64, ncorners: i32, m: *const mjModel, sdf: *const mjSDF, d: *const mjData) -> f64 {
     const MJ_MAXVAL: f64 = 1e10;
 
     // SAFETY: x[3], corners[3*ncorners], m, sdf, d are valid (caller contract).
@@ -634,8 +634,8 @@ pub fn step_frank_wolfe(x: *mut f64, corners: *const f64, ncorners: i32, m: *con
             }
 
             // update collision point
-            crate::engine::engine_util_blas::mju_sub_from3(s.as_mut_ptr(), x);
-            crate::engine::engine_util_blas::mju_add_to_scl3(
+            crate::engine::engine_util_blas::mju_subFrom3(s.as_mut_ptr(), x);
+            crate::engine::engine_util_blas::mju_addToScl3(
                 x, s.as_ptr(), 2.0 / (step as f64 + 2.0));
         }
 
@@ -645,14 +645,14 @@ pub fn step_frank_wolfe(x: *mut f64, corners: *const f64, ncorners: i32, m: *con
 }
 
 /// C: stepGradient (engine/engine_collision_sdf.c:615)
-/// Calls: mjc_distance, mjc_gradient, mju_addScl3, mju_dot3
+/// Calls: cxx:_mjc_distance, cxx:_mjc_gradient, cxx:_mju_addScl3, cxx:_mju_dot3
 /// ⚠️ BITEXACT RULES:
 ///   1. Copy exact C accumulation order (no iter().sum())
 ///   2. No f64::mul_add() (FMA changes precision)
 ///   3. No algebraic simplification
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
-pub fn step_gradient(x: *mut f64, m: *const mjModel, s: *const mjSDF, d: *const mjData, niter: i32) -> f64 {
+pub fn stepGradient(x: *mut f64, m: *const mjModel, s: *const mjSDF, d: *const mjData, niter: i32) -> f64 {
     const MJ_MAXVAL: f64 = 1e10;
 
     // SAFETY: x[3], m, s, d are valid pointers (caller contract).
@@ -689,7 +689,7 @@ pub fn step_gradient(x: *mut f64, m: *const mjModel, s: *const mjSDF, d: *const 
             loop {
                 alpha *= rho;
                 wolfe *= rho;
-                crate::engine::engine_util_blas::mju_add_scl3(x, x0.as_ptr(), grad.as_ptr(), -alpha);
+                crate::engine::engine_util_blas::mju_addScl3(x, x0.as_ptr(), grad.as_ptr(), -alpha);
                 dist = mjc_distance(m, d, s, x);
                 if !(alpha > amin && dist - dist0 > wolfe) {
                     break;
@@ -706,34 +706,22 @@ pub fn step_gradient(x: *mut f64, m: *const mjModel, s: *const mjSDF, d: *const 
     }
 }
 
-/// C: triangleIntersect (engine/engine_collision_sdf.c:665)
-/// Calls: mjc_distance, mju_addTo3, mju_addToScl3, mju_cross, mju_dist3, mju_dot3, mju_max, mju_norm3, mju_normalize3, mju_scl3, mju_sub3
-/// ⚠️ BITEXACT RULES:
-///   1. Copy exact C accumulation order (no iter().sum())
-///   2. No f64::mul_add() (FMA changes precision)
-///   3. No algebraic simplification
-///   4. No iter().sum()/product() (order undefined)
-#[allow(unused_variables, non_snake_case)]
-pub fn triangle_intersect(triangle: *const f64, m: *const mjModel, sdf: *const mjSDF, d: *const mjData) -> i32 {
-    todo!() // triangleIntersect
-}
-
 /// C: boxIntersect (engine/engine_collision_sdf.c:737)
-/// Calls: mjc_distance, mju_addTo3, mju_mulMatVec3, mju_norm3
+/// Calls: cxx:_mjc_distance, cxx:_mju_addTo3, cxx:_mju_mulMatVec3, cxx:_mju_norm3
 /// ⚠️ BITEXACT RULES:
 ///   1. Copy exact C accumulation order (no iter().sum())
 ///   2. No f64::mul_add() (FMA changes precision)
 ///   3. No algebraic simplification
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
-pub fn box_intersect(bvh: *const f64, offset: *const f64, rotation: *const f64, m: *const mjModel, s: *const mjSDF, d: *const mjData) -> i32 {
+pub fn boxIntersect(bvh: *const f64, offset: *const f64, rotation: *const f64, m: *const mjModel, s: *const mjSDF, d: *const mjData) -> i32 {
     // SAFETY: bvh is f64[6] (center[3]+halfsize[3]), offset is f64[3], rotation is f64[9] (caller contract)
     unsafe {
         let mut candidate: [f64; 3] = [0.0; 3];
         let r = crate::engine::engine_util_blas::mju_norm3(bvh.add(3));
 
-        crate::engine::engine_util_blas::mju_mul_mat_vec3(candidate.as_mut_ptr(), rotation, bvh);
-        crate::engine::engine_util_blas::mju_add_to3(candidate.as_mut_ptr(), offset);
+        crate::engine::engine_util_blas::mju_mulMatVec3(candidate.as_mut_ptr(), rotation, bvh);
+        crate::engine::engine_util_blas::mju_addTo3(candidate.as_mut_ptr(), offset);
 
         // check if inside bounding box
         (mjc_distance(m, d, s, candidate.as_ptr()) < r) as i32
@@ -741,14 +729,13 @@ pub fn box_intersect(bvh: *const f64, offset: *const f64, rotation: *const f64, 
 }
 
 /// C: selectFPS (engine/engine_collision_sdf.c:752)
-/// Calls: next
 /// ⚠️ BITEXACT RULES:
 ///   1. Copy exact C accumulation order (no iter().sum())
 ///   2. No f64::mul_add() (FMA changes precision)
 ///   3. No algebraic simplification
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
-pub fn select_fps(candidate: *const f64, dist: *const f64, ncandidate: i32, selected_indices: *mut i32, max_select: i32) -> i32 {
+pub fn selectFPS(candidate: *const f64, dist: *const f64, ncandidate: i32, selected_indices: *mut i32, max_select: i32) -> i32 {
     const MJ_MAXCONPAIR: i32 = 50;
     const MJ_MAXVAL: f64 = 1E10;
     // SAFETY: caller guarantees candidate[ncandidate*3], dist[ncandidate], selected_indices[max_select] valid
@@ -806,34 +793,15 @@ pub fn select_fps(candidate: *const f64, dist: *const f64, ncandidate: i32, sele
     }
 }
 
-/// C: processSdfCorners (engine/engine_collision_sdf.c:808)
-/// Calls: mju_Halton, mju_copy3, stepFrankWolfe, triangleIntersect
-/// ⚠️ BITEXACT RULES:
-///   1. Copy exact C accumulation order (no iter().sum())
-///   2. No f64::mul_add() (FMA changes precision)
-///   3. No algebraic simplification
-///   4. No iter().sum()/product() (order undefined)
-#[allow(unused_variables, non_snake_case)]
-pub fn process_sdf_corners(corners: *const f64, m: *const mjModel, d: *const mjData, sdf: *const mjSDF, nstartpts: i32, candidate: *mut f64, dist: *mut f64, ncandidate: *mut i32) {
-    todo!() // processSdfCorners
-}
-
-/// C: processOneFace (engine/engine_collision_sdf.c:866)
-/// Calls: mju_addTo3, mju_mulMatVec3, processSdfCorners
-#[allow(unused_variables, non_snake_case)]
-pub fn process_one_face(faceid: i32, bvh_active: *mut bool, node: i32, ctx: *mut MeshSDFContext) {
-    todo!() // processOneFace
-}
-
 /// C: traverseBVH (engine/engine_collision_sdf.c:903)
-/// Calls: boxIntersect, mju_message
+/// Calls: cxx-internal:/Users/xing/Desktop/projects/c2rust_bitexact/projects/mujoco/src/engine/engine_collision_sdf.c:_boxIntersect, cxx:_mju_message
 /// ⚠️ BITEXACT RULES:
 ///   1. Copy exact C accumulation order (no iter().sum())
 ///   2. No f64::mul_add() (FMA changes precision)
 ///   3. No algebraic simplification
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
-pub fn traverse_bvh(bvh: *const f64, nodeid: *const i32, child: *const i32, bvh_active: *mut bool, offset: *const f64, rotation: *const f64, m: *const mjModel, d: *const mjData, sdf: *const mjSDF, callback: BVHLeafCallback, ctx: *mut ()) {
+pub fn traverseBVH(bvh: *const f64, nodeid: *const i32, child: *const i32, bvh_active: *mut bool, offset: *const f64, rotation: *const f64, m: *const mjModel, d: *const mjData, sdf: *const mjSDF, callback: BVHLeafCallback, ctx: *mut ()) {
     // BVHLeafCallback is a function pointer typedef: int (*)(int leaf_id, int node, void* ctx)
     // The codegen emitted it as a zero-sized opaque struct; casting to fn ptr via raw pointer.
     // In practice the callback IS passed as a pointer on the C stack at the call site.
@@ -857,7 +825,7 @@ pub fn traverse_bvh(bvh: *const f64, nodeid: *const i32, child: *const i32, bvh_
 
             // leaf node: call callback if box intersects
             if *nodeid.add(node as usize) != -1 {
-                if box_intersect(bvh.add((6 * node) as usize), offset, rotation, m, sdf, d) != 0 {
+                if boxIntersect(bvh.add((6 * node) as usize), offset, rotation, m, sdf, d) != 0 {
                     // callback is a function pointer passed as ZST; recover via pointer transmute
                     // In normal C-called context, the fn ptr is at the memory address of `callback`
                     let cb_ptr = &callback as *const BVHLeafCallback as usize;
@@ -873,7 +841,7 @@ pub fn traverse_bvh(bvh: *const f64, nodeid: *const i32, child: *const i32, bvh_
             }
 
             // intermediate node: check bounding box
-            if box_intersect(bvh.add((6 * node) as usize), offset, rotation, m, sdf, d) == 0 {
+            if boxIntersect(bvh.add((6 * node) as usize), offset, rotation, m, sdf, d) == 0 {
                 continue;
             }
 
@@ -897,44 +865,8 @@ pub fn traverse_bvh(bvh: *const f64, nodeid: *const i32, child: *const i32, bvh_
     }
 }
 
-/// C: meshFaceCallback (engine/engine_collision_sdf.c:943)
-/// Calls: processOneFace
-#[allow(unused_variables, non_snake_case)]
-pub fn mesh_face_callback(face_id: i32, node: i32, ctx: *mut ()) -> i32 {
-    todo!() // meshFaceCallback
-}
-
-/// C: flexElemCallback (engine/engine_collision_sdf.c:1198)
-/// Calls: mju_addTo3, mju_copy3, mju_mulMatVec3, processSdfCorners
-#[allow(unused_variables, non_snake_case)]
-pub fn flex_elem_callback(elem_idx: i32, node: i32, ctx: *mut ()) -> i32 {
-    todo!() // flexElemCallback
-}
-
-/// C: mjc_getSDF (engine/engine_collision_sdf.h:29)
-/// Calls: mjp_getPluginAtSlotUnsafe, mjp_pluginCount, mju_message
-#[allow(unused_variables, non_snake_case)]
-pub fn mjc_get_sdf(m: *const mjModel, id: i32) -> *const mjpPlugin {
-    // SAFETY: m is a valid mjModel pointer, id is a valid geom index
-    unsafe {
-        let instance = *(*m).geom_plugin.add(id as usize);
-        let nslot = crate::engine::engine_plugin::mjp_plugin_count();
-        let slot = *(*m).plugin.add(instance as usize);
-        let sdf = crate::engine::engine_plugin::mjp_get_plugin_at_slot_unsafe(slot, nslot);
-        if sdf.is_null() {
-            crate::engine::engine_util_errmem::mju_error(
-                b"invalid plugin slot: %d\0".as_ptr() as *const i8);
-        }
-        if (*sdf).capabilityflags & (1 << 3) == 0 {  // mjPLUGIN_SDF = 1<<3
-            crate::engine::engine_util_errmem::mju_error(
-                b"Plugin is not a signed distance field at slot %d\0".as_ptr() as *const i8);
-        }
-        sdf
-    }
-}
-
 /// C: mjc_distance (engine/engine_collision_sdf.h:32)
-/// Calls: geomDistance, mju_addTo3, mju_max, mju_message, mju_mulMatVec3
+/// Calls: cxx-internal:engine_collision_sdf.c.o:_geomDistance, cxx:_mju_addTo3, cxx:_mju_max, cxx:_mju_message, cxx:_mju_mulMatVec3
 /// ⚠️ BITEXACT RULES:
 ///   1. Copy exact C accumulation order (no iter().sum())
 ///   2. No f64::mul_add() (FMA changes precision)
@@ -947,33 +879,33 @@ pub fn mjc_distance(m: *const mjModel, d: *const mjData, s: *const mjSDF, x: *co
     // SAFETY: s is a valid mjSDF pointer, x is f64[3] (caller contract)
     unsafe {
         let mut y: [f64; 3] = [0.0; 3];
-        let sdf_type = *((*s).r#type.as_ptr() as *const i32);
+        let sdf_type = *(std::ptr::addr_of!((*s).r#type) as *const i32);
 
         match sdf_type {
             0 => {  // SINGLE
-                geom_distance(m, d, *(*s).plugin.add(0), *(*s).id.add(0), x, *(*s).geomtype.add(0))
+                geomDistance(m, d, *(*s).plugin.add(0), *(*s).id.add(0), x, *(*s).geomtype.add(0))
             }
 
             1 => {  // INTERSECTION
-                crate::engine::engine_util_blas::mju_mul_mat_vec3(y.as_mut_ptr(), (*s).relmat, x);
-                crate::engine::engine_util_blas::mju_add_to3(y.as_mut_ptr(), (*s).relpos);
-                let d0 = geom_distance(m, d, *(*s).plugin.add(0), *(*s).id.add(0), x, *(*s).geomtype.add(0));
-                let d1 = geom_distance(m, d, *(*s).plugin.add(1), *(*s).id.add(1), y.as_ptr(), *(*s).geomtype.add(1));
+                crate::engine::engine_util_blas::mju_mulMatVec3(y.as_mut_ptr(), (*s).relmat, x);
+                crate::engine::engine_util_blas::mju_addTo3(y.as_mut_ptr(), (*s).relpos);
+                let d0 = geomDistance(m, d, *(*s).plugin.add(0), *(*s).id.add(0), x, *(*s).geomtype.add(0));
+                let d1 = geomDistance(m, d, *(*s).plugin.add(1), *(*s).id.add(1), y.as_ptr(), *(*s).geomtype.add(1));
                 if d0 > d1 { d0 } else { d1 }
             }
 
             2 => {  // MIDSURFACE
-                crate::engine::engine_util_blas::mju_mul_mat_vec3(y.as_mut_ptr(), (*s).relmat, x);
-                crate::engine::engine_util_blas::mju_add_to3(y.as_mut_ptr(), (*s).relpos);
-                geom_distance(m, d, *(*s).plugin.add(0), *(*s).id.add(0), x, *(*s).geomtype.add(0)) -
-                geom_distance(m, d, *(*s).plugin.add(1), *(*s).id.add(1), y.as_ptr(), *(*s).geomtype.add(1))
+                crate::engine::engine_util_blas::mju_mulMatVec3(y.as_mut_ptr(), (*s).relmat, x);
+                crate::engine::engine_util_blas::mju_addTo3(y.as_mut_ptr(), (*s).relpos);
+                geomDistance(m, d, *(*s).plugin.add(0), *(*s).id.add(0), x, *(*s).geomtype.add(0)) -
+                geomDistance(m, d, *(*s).plugin.add(1), *(*s).id.add(1), y.as_ptr(), *(*s).geomtype.add(1))
             }
 
             3 => {  // COLLISION
-                crate::engine::engine_util_blas::mju_mul_mat_vec3(y.as_mut_ptr(), (*s).relmat, x);
-                crate::engine::engine_util_blas::mju_add_to3(y.as_mut_ptr(), (*s).relpos);
-                let a = geom_distance(m, d, *(*s).plugin.add(0), *(*s).id.add(0), x, *(*s).geomtype.add(0));
-                let b = geom_distance(m, d, *(*s).plugin.add(1), *(*s).id.add(1), y.as_ptr(), *(*s).geomtype.add(1));
+                crate::engine::engine_util_blas::mju_mulMatVec3(y.as_mut_ptr(), (*s).relmat, x);
+                crate::engine::engine_util_blas::mju_addTo3(y.as_mut_ptr(), (*s).relpos);
+                let a = geomDistance(m, d, *(*s).plugin.add(0), *(*s).id.add(0), x, *(*s).geomtype.add(0));
+                let b = geomDistance(m, d, *(*s).plugin.add(1), *(*s).id.add(1), y.as_ptr(), *(*s).geomtype.add(1));
                 let max_ab = if a > b { a } else { b };
                 a + b + max_ab.abs()
             }
@@ -988,7 +920,7 @@ pub fn mjc_distance(m: *const mjModel, d: *const mjData, s: *const mjSDF, x: *co
 }
 
 /// C: mjc_gradient (engine/engine_collision_sdf.h:35)
-/// Calls: geomDistance, geomGradient, mju_addTo3, mju_addToScl3, mju_max, mju_message, mju_mulMatTVec3, mju_mulMatVec3, mju_normalize3, mju_sub3
+/// Calls: cxx-internal:engine_collision_sdf.c.o:_geomDistance, cxx-internal:engine_collision_sdf.c.o:_geomGradient, cxx:_mju_addTo3, cxx:_mju_addToScl3, cxx:_mju_max, cxx:_mju_message, cxx:_mju_mulMatTVec3, cxx:_mju_mulMatVec3, cxx:_mju_normalize3, cxx:_mju_sub3
 /// ⚠️ BITEXACT RULES:
 ///   1. Copy exact C accumulation order (no iter().sum())
 ///   2. No f64::mul_add() (FMA changes precision)
@@ -1001,53 +933,53 @@ pub fn mjc_gradient(m: *const mjModel, d: *const mjData, s: *const mjSDF, gradie
         let mut y: [f64; 3] = [0.0; 3];
         let mut grad1: [f64; 3] = [0.0; 3];
         let mut grad2: [f64; 3] = [0.0; 3];
-        let sdf_type = *((*s).r#type.as_ptr() as *const i32);
+        let sdf_type = *(std::ptr::addr_of!((*s).r#type) as *const i32);
 
         match sdf_type {
             1 => {  // INTERSECTION
-                crate::engine::engine_util_blas::mju_mul_mat_vec3(y.as_mut_ptr(), (*s).relmat, x);
-                crate::engine::engine_util_blas::mju_add_to3(y.as_mut_ptr(), (*s).relpos);
-                let d0 = geom_distance(m, d, *(*s).plugin.add(0), *(*s).id.add(0), x, *(*s).geomtype.add(0));
-                let d1 = geom_distance(m, d, *(*s).plugin.add(1), *(*s).id.add(1), y.as_ptr(), *(*s).geomtype.add(1));
+                crate::engine::engine_util_blas::mju_mulMatVec3(y.as_mut_ptr(), (*s).relmat, x);
+                crate::engine::engine_util_blas::mju_addTo3(y.as_mut_ptr(), (*s).relpos);
+                let d0 = geomDistance(m, d, *(*s).plugin.add(0), *(*s).id.add(0), x, *(*s).geomtype.add(0));
+                let d1 = geomDistance(m, d, *(*s).plugin.add(1), *(*s).id.add(1), y.as_ptr(), *(*s).geomtype.add(1));
                 let i = if d0 > d1 { 0 } else { 1 };
                 let point_i = if i == 0 { x } else { y.as_ptr() };
-                geom_gradient(gradient, m, d, *(*s).plugin.add(i), *(*s).id.add(i), point_i, *(*s).geomtype.add(i));
+                geomGradient(gradient, m, d, *(*s).plugin.add(i), *(*s).id.add(i), point_i, *(*s).geomtype.add(i));
                 if i == 1 {
-                    crate::engine::engine_util_blas::mju_mul_mat_t_vec3(gradient, (*s).relmat, gradient as *const f64);
+                    crate::engine::engine_util_blas::mju_mulMatTVec3(gradient, (*s).relmat, gradient as *const f64);
                 }
             }
 
             2 => {  // MIDSURFACE
-                crate::engine::engine_util_blas::mju_mul_mat_vec3(y.as_mut_ptr(), (*s).relmat, x);
-                crate::engine::engine_util_blas::mju_add_to3(y.as_mut_ptr(), (*s).relpos);
-                geom_gradient(grad1.as_mut_ptr(), m, d, *(*s).plugin.add(0), *(*s).id.add(0), x, *(*s).geomtype.add(0));
+                crate::engine::engine_util_blas::mju_mulMatVec3(y.as_mut_ptr(), (*s).relmat, x);
+                crate::engine::engine_util_blas::mju_addTo3(y.as_mut_ptr(), (*s).relpos);
+                geomGradient(grad1.as_mut_ptr(), m, d, *(*s).plugin.add(0), *(*s).id.add(0), x, *(*s).geomtype.add(0));
                 crate::engine::engine_util_blas::mju_normalize3(grad1.as_mut_ptr());
-                geom_gradient(grad2.as_mut_ptr(), m, d, *(*s).plugin.add(1), *(*s).id.add(1), y.as_ptr(), *(*s).geomtype.add(1));
-                crate::engine::engine_util_blas::mju_mul_mat_t_vec3(grad2.as_mut_ptr(), (*s).relmat, grad2.as_ptr());
+                geomGradient(grad2.as_mut_ptr(), m, d, *(*s).plugin.add(1), *(*s).id.add(1), y.as_ptr(), *(*s).geomtype.add(1));
+                crate::engine::engine_util_blas::mju_mulMatTVec3(grad2.as_mut_ptr(), (*s).relmat, grad2.as_ptr());
                 crate::engine::engine_util_blas::mju_normalize3(grad2.as_mut_ptr());
                 crate::engine::engine_util_blas::mju_sub3(gradient, grad1.as_ptr(), grad2.as_ptr());
                 crate::engine::engine_util_blas::mju_normalize3(gradient);
             }
 
             3 => {  // COLLISION
-                crate::engine::engine_util_blas::mju_mul_mat_vec3(y.as_mut_ptr(), (*s).relmat, x);
-                crate::engine::engine_util_blas::mju_add_to3(y.as_mut_ptr(), (*s).relpos);
-                let a = geom_distance(m, d, *(*s).plugin.add(0), *(*s).id.add(0), x, *(*s).geomtype.add(0));
-                let b = geom_distance(m, d, *(*s).plugin.add(1), *(*s).id.add(1), y.as_ptr(), *(*s).geomtype.add(1));
-                geom_gradient(grad1.as_mut_ptr(), m, d, *(*s).plugin.add(0), *(*s).id.add(0), x, *(*s).geomtype.add(0));
-                geom_gradient(grad2.as_mut_ptr(), m, d, *(*s).plugin.add(1), *(*s).id.add(1), y.as_ptr(), *(*s).geomtype.add(1));
-                crate::engine::engine_util_blas::mju_mul_mat_t_vec3(grad2.as_mut_ptr(), (*s).relmat, grad2.as_ptr());
+                crate::engine::engine_util_blas::mju_mulMatVec3(y.as_mut_ptr(), (*s).relmat, x);
+                crate::engine::engine_util_blas::mju_addTo3(y.as_mut_ptr(), (*s).relpos);
+                let a = geomDistance(m, d, *(*s).plugin.add(0), *(*s).id.add(0), x, *(*s).geomtype.add(0));
+                let b = geomDistance(m, d, *(*s).plugin.add(1), *(*s).id.add(1), y.as_ptr(), *(*s).geomtype.add(1));
+                geomGradient(grad1.as_mut_ptr(), m, d, *(*s).plugin.add(0), *(*s).id.add(0), x, *(*s).geomtype.add(0));
+                geomGradient(grad2.as_mut_ptr(), m, d, *(*s).plugin.add(1), *(*s).id.add(1), y.as_ptr(), *(*s).geomtype.add(1));
+                crate::engine::engine_util_blas::mju_mulMatTVec3(grad2.as_mut_ptr(), (*s).relmat, grad2.as_ptr());
                 *gradient.add(0) = grad1[0] + grad2[0];
                 *gradient.add(1) = grad1[1] + grad2[1];
                 *gradient.add(2) = grad1[2] + grad2[2];
                 let max_ab = if a > b { a } else { b };
                 let scl = if max_ab > 0.0 { 1.0 } else { -1.0 };
                 let extra = if a > b { grad1.as_ptr() } else { grad2.as_ptr() };
-                crate::engine::engine_util_blas::mju_add_to_scl3(gradient, extra, scl);
+                crate::engine::engine_util_blas::mju_addToScl3(gradient, extra, scl);
             }
 
             0 => {  // SINGLE
-                geom_gradient(gradient, m, d, *(*s).plugin.add(0), *(*s).id.add(0), x, *(*s).geomtype.add(0));
+                geomGradient(gradient, m, d, *(*s).plugin.add(0), *(*s).id.add(0), x, *(*s).geomtype.add(0));
             }
 
             _ => {
@@ -1059,225 +991,16 @@ pub fn mjc_gradient(m: *const mjModel, d: *const mjData, s: *const mjSDF, gradie
 }
 
 /// C: mjc_HFieldSDF (engine/engine_collision_sdf.h:39)
-/// Calls: mju_warning
+/// Calls: cxx:_mju_warning
 /// ⚠️ BITEXACT RULES:
 ///   1. Copy exact C accumulation order (no iter().sum())
 ///   2. No f64::mul_add() (FMA changes precision)
 ///   3. No algebraic simplification
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
-pub fn mjc_h_field_sdf(m: *const mjModel, d: *mut mjData, con: *mut mjPreContact, g1: i32, g2: i32, margin: f64) -> i32 {
+pub fn mjc_HFieldSDF(m: *const mjModel, d: *mut mjData, con: *mut mjPreContact, g1: i32, g2: i32, margin: f64) -> i32 {
     crate::engine::engine_util_errmem::mju_warning(
         b"HField vs SDF collision not yet supported!\0".as_ptr() as *const i8);
     0
-}
-
-/// C: mjc_MeshSDF (engine/engine_collision_sdf.h:42)
-/// Calls: addPreContact, mapPose, mjc_getSDF, mju_mat2Quat, mju_max, selectFPS, traverseBVH
-/// ⚠️ BITEXACT RULES:
-///   1. Copy exact C accumulation order (no iter().sum())
-///   2. No f64::mul_add() (FMA changes precision)
-///   3. No algebraic simplification
-///   4. No iter().sum()/product() (order undefined)
-#[allow(unused_variables, non_snake_case)]
-pub fn mjc_mesh_sdf(m: *const mjModel, d: *mut mjData, con: *mut mjPreContact, g1: i32, g2: i32, margin: f64) -> i32 {
-    todo!() // mjc_MeshSDF
-}
-
-/// C: mjc_SDF (engine/engine_collision_sdf.h:45)
-/// Calls: addPreContact, mapPose, mjc_getSDF, mju_Halton, mju_addTo3, mju_mat2Quat, mju_max, mju_message, mju_min, mju_mulMatVec3, stepGradient
-/// ⚠️ BITEXACT RULES:
-///   1. Copy exact C accumulation order (no iter().sum())
-///   2. No f64::mul_add() (FMA changes precision)
-///   3. No algebraic simplification
-///   4. No iter().sum()/product() (order undefined)
-#[allow(unused_variables, non_snake_case)]
-pub fn mjc_sdf(m: *const mjModel, d: *mut mjData, con: *mut mjPreContact, g1: i32, g2: i32, margin: f64) -> i32 {
-    // SAFETY: m, d, con are valid pointers from caller. g1, g2 are valid geom indices.
-    unsafe {
-        let pos1  = (*d).geom_xpos.add(3 * g1 as usize);
-        let mat1  = (*d).geom_xmat.add(9 * g1 as usize);
-        let pos2  = (*d).geom_xpos.add(3 * g2 as usize);
-        let mat2  = (*d).geom_xmat.add(9 * g2 as usize);
-        let size1 = (*m).geom_aabb.add(6 * g1 as usize);
-        let size2 = (*m).geom_aabb.add(6 * g2 as usize);
-
-        let mut cnt: i32 = 0;
-        let mut x: [f64; 3] = [0.0; 3];
-        let mut y: [f64; 3] = [0.0; 3];
-        let mut dist2: f64;
-        let mut vec1: [f64; 3] = [0.0; 3];
-        let mut vec2: [f64; 3] = [0.0; 3];
-        let mjMAXVAL: f64 = 1E+10;
-        let mut aabb1: [f64; 6] = [mjMAXVAL, mjMAXVAL, mjMAXVAL, -mjMAXVAL, -mjMAXVAL, -mjMAXVAL];
-        let mut aabb2: [f64; 6] = [mjMAXVAL, mjMAXVAL, mjMAXVAL, -mjMAXVAL, -mjMAXVAL, -mjMAXVAL];
-        let mut aabb:  [f64; 6] = [mjMAXVAL, mjMAXVAL, mjMAXVAL, -mjMAXVAL, -mjMAXVAL, -mjMAXVAL];
-
-        // second geom must be an SDF
-        if *(*m).geom_type.add(g2 as usize) != mjtGeom_mjGEOM_SDF as i32 {
-            panic!("geom is not an SDF");
-        }
-
-        // compute transformations from/to g1 to/from g2
-        let mut quat1: [f64; 4] = [0.0; 4];
-        let mut quat2: [f64; 4] = [0.0; 4];
-        let mut offset21: [f64; 3] = [0.0; 3];
-        let mut rotation21: [f64; 9] = [0.0; 9];
-        let mut rotation12: [f64; 9] = [0.0; 9];
-        let mut offset12: [f64; 3] = [0.0; 3];
-        let mut offset2: [f64; 3] = [0.0; 3];
-        let mut rotation2: [f64; 9] = [0.0; 9];
-
-        crate::engine::engine_util_spatial::mju_mat2quat(quat1.as_mut_ptr(), mat1);
-        crate::engine::engine_util_spatial::mju_mat2quat(quat2.as_mut_ptr(), mat2);
-        map_pose(pos1, quat1.as_ptr(), pos1, quat1.as_ptr(), offset2.as_mut_ptr(), rotation2.as_mut_ptr());
-        map_pose(pos2, quat2.as_ptr(), pos1, quat1.as_ptr(), offset21.as_mut_ptr(), rotation21.as_mut_ptr());
-        map_pose(pos1, quat1.as_ptr(), pos2, quat2.as_ptr(), offset12.as_mut_ptr(), rotation12.as_mut_ptr());
-
-        // axis-aligned bounding boxes in g1 frame
-        for i in 0..8i32 {
-            vec1[0] = if i & 1 != 0 { *size1.add(0) + *size1.add(3) } else { *size1.add(0) - *size1.add(3) };
-            vec1[1] = if i & 2 != 0 { *size1.add(1) + *size1.add(4) } else { *size1.add(1) - *size1.add(4) };
-            vec1[2] = if i & 4 != 0 { *size1.add(2) + *size1.add(5) } else { *size1.add(2) - *size1.add(5) };
-
-            vec2[0] = if i & 1 != 0 { *size2.add(0) + *size2.add(3) } else { *size2.add(0) - *size2.add(3) };
-            vec2[1] = if i & 2 != 0 { *size2.add(1) + *size2.add(4) } else { *size2.add(1) - *size2.add(4) };
-            vec2[2] = if i & 4 != 0 { *size2.add(2) + *size2.add(5) } else { *size2.add(2) - *size2.add(5) };
-
-            crate::engine::engine_util_blas::mju_mul_mat_vec3(vec2.as_mut_ptr(), rotation21.as_ptr(), vec2.as_ptr());
-            crate::engine::engine_util_blas::mju_add_to3(vec2.as_mut_ptr(), offset21.as_ptr());
-
-            for k in 0..3 {
-                aabb1[0 + k] = crate::engine::engine_util_misc::mju_min(aabb1[0 + k], vec1[k]);
-                aabb1[3 + k] = crate::engine::engine_util_misc::mju_max(aabb1[3 + k], vec1[k]);
-                aabb2[0 + k] = crate::engine::engine_util_misc::mju_min(aabb2[0 + k], vec2[k]);
-                aabb2[3 + k] = crate::engine::engine_util_misc::mju_max(aabb2[3 + k], vec2[k]);
-            }
-        }
-
-        // intersection of aabbs
-        for k in 0..3 {
-            aabb[0 + k] = crate::engine::engine_util_misc::mju_max(aabb1[0 + k], aabb2[0 + k]);
-            aabb[3 + k] = crate::engine::engine_util_misc::mju_min(aabb1[3 + k], aabb2[3 + k]);
-        }
-
-        // no intersection if max < min
-        if aabb[3] < aabb[0] || aabb[4] < aabb[1] || aabb[5] < aabb[2] {
-            return cnt;
-        }
-
-        // create sdf pointers
-        let mut instance: [i32; 2] = [0; 2];
-        let mut sdf_ptr: [*const mjpPlugin; 2] = [std::ptr::null(); 2];
-        let mut geomtypes: [u32; 2] = [
-            *(*m).geom_type.add(g2 as usize) as u32,
-            *(*m).geom_type.add(g1 as usize) as u32,
-        ];
-
-        instance[0] = *(*m).geom_plugin.add(g2 as usize);
-        sdf_ptr[0] = if instance[0] == -1 { std::ptr::null() } else { mjc_get_sdf(m, g2) };
-
-        // get sdf plugins
-        if *(*m).geom_type.add(g1 as usize) == mjtGeom_mjGEOM_SDF as i32 {
-            instance[1] = *(*m).geom_plugin.add(g1 as usize);
-            sdf_ptr[1] = if instance[1] == -1 { std::ptr::null() } else { mjc_get_sdf(m, g1) };
-        } else {
-            instance[1] = g1;
-            sdf_ptr[1] = std::ptr::null();
-        }
-
-        // reset visualization count
-        if !sdf_ptr[0].is_null() {
-            if let Some(reset_fn) = (*sdf_ptr[0]).reset {
-                reset_fn(
-                    m,
-                    std::ptr::null_mut(),
-                    *(*d).plugin_data.add(instance[0] as usize) as *mut (),
-                    instance[0],
-                );
-            }
-        }
-
-        // copy into sdf
-        instance[0] = if instance[0] == -1 { *(*m).geom_dataid.add(g2 as usize) } else { instance[0] };
-        instance[1] = if instance[1] == -1 { *(*m).geom_dataid.add(g1 as usize) } else { instance[1] };
-        let mut sdf = mjSDF {
-            id:       instance.as_mut_ptr(),
-            relpos:   offset21.as_mut_ptr(),
-            relmat:   rotation21.as_mut_ptr(),
-            plugin:   sdf_ptr.as_ptr() as *const *mut mjpPlugin,
-            geomtype: geomtypes.as_mut_ptr(),
-            r#type:   [0u8; 8],  // written per-iteration via ptr cast
-        };
-
-        // minimize sdf intersection
-        let mut contacts: [f64; 3 * 50] = [0.0; 3 * 50]; // mjMAXCONPAIR = 50
-
-        let mut i: i32 = 0;
-        let mut j: i32 = 0;
-        while i < (*m).opt.sdf_initpoints {
-            x[0] = aabb[0] + (aabb[3] - aabb[0]) * crate::engine::engine_util_misc::mju_halton(j, 2);
-            x[1] = aabb[1] + (aabb[4] - aabb[1]) * crate::engine::engine_util_misc::mju_halton(j, 3);
-            x[2] = aabb[2] + (aabb[5] - aabb[2]) * crate::engine::engine_util_misc::mju_halton(j, 5);
-
-            crate::engine::engine_util_blas::mju_mul_mat_vec3(y.as_mut_ptr(), rotation2.as_ptr(), x.as_ptr());
-            crate::engine::engine_util_blas::mju_add_to3(y.as_mut_ptr(), offset2.as_ptr());
-
-            crate::engine::engine_util_blas::mju_mul_mat_vec3(x.as_mut_ptr(), rotation12.as_ptr(), y.as_ptr());
-            crate::engine::engine_util_blas::mju_add_to3(x.as_mut_ptr(), offset12.as_ptr());
-
-            j += 1;
-            i += 1;
-
-            // start counters
-            if !sdf_ptr[0].is_null() {
-                if let Some(compute_fn) = (*sdf_ptr[0]).compute {
-                    compute_fn(m, d, instance[0], mjPLUGIN_SDF as i32);
-                }
-            }
-
-            // gradient descent
-            // write mjSDFTYPE_COLLISION=3 into sdf.type (stored as [u8; 8])
-            (sdf.r#type.as_mut_ptr() as *mut u32).write(mjtSDFType_mjSDFTYPE_COLLISION);
-            dist2 = step_gradient(x.as_mut_ptr(), m, &sdf as *const mjSDF, d, (*m).opt.sdf_iterations);
-
-            (sdf.r#type.as_mut_ptr() as *mut u32).write(mjtSDFType_mjSDFTYPE_INTERSECTION);
-            dist2 = step_gradient(x.as_mut_ptr(), m, &sdf as *const mjSDF, d, 1);
-
-            (sdf.r#type.as_mut_ptr() as *mut u32).write(mjtSDFType_mjSDFTYPE_MIDSURFACE);
-            cnt = add_pre_contact(
-                contacts.as_mut_ptr(),
-                con.add(cnt as usize),
-                x.as_ptr(),
-                pos2,
-                quat2.as_ptr(),
-                dist2,
-                cnt,
-                m,
-                &sdf as *const mjSDF,
-                d as *const mjData,
-                0,
-            );
-
-            // SHOULD NOT OCCUR
-            if cnt > 50 { // mjMAXCONPAIR
-                panic!("too many contact points");
-            }
-        }
-
-        cnt
-    }
-}
-
-/// C: mjc_FlexSDF (engine/engine_collision_sdf.h:48)
-/// Calls: addPreContact, mapPose, mjc_getSDF, mju_addTo3, mju_copy3, mju_mat2Quat, mju_max, mju_mulMatVec3, processSdfCorners, selectFPS, traverseBVH
-/// ⚠️ BITEXACT RULES:
-///   1. Copy exact C accumulation order (no iter().sum())
-///   2. No f64::mul_add() (FMA changes precision)
-///   3. No algebraic simplification
-///   4. No iter().sum()/product() (order undefined)
-#[allow(unused_variables, non_snake_case)]
-pub fn mjc_flex_sdf(m: *const mjModel, d: *const mjData, con: *mut mjPreContact, elem: *mut i32, g: i32, f: i32, margin: f64) -> i32 {
-    todo!() // mjc_FlexSDF
 }
 

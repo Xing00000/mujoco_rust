@@ -3,11 +3,6 @@
 
 #![allow(non_camel_case_types, non_snake_case)]
 
-/// Opaque C struct: Args (unsized, pointer-only)
-#[repr(C)]
-#[derive(Clone, Copy)]
-pub struct Args { _opaque: [u8; 0] }
-
 /// Opaque C struct: BVHLeafCallback (unsized, pointer-only)
 #[repr(C)]
 #[derive(Clone, Copy)]
@@ -17,16 +12,6 @@ pub struct BVHLeafCallback { _opaque: [u8; 0] }
 #[repr(C)]
 #[derive(Clone, Copy)]
 pub struct ContactInfo { _opaque: [u8; 0] }
-
-/// Opaque C struct: DynArray_char__20 (unsized, pointer-only)
-#[repr(C)]
-#[derive(Clone, Copy)]
-pub struct DynArray_char__20 { _opaque: [u8; 0] }
-
-/// Opaque C struct: DynArray_const_char____10_Ref (unsized, pointer-only)
-#[repr(C)]
-#[derive(Clone, Copy)]
-pub struct DynArray_const_char____10_Ref { _opaque: [u8; 0] }
 
 /// Opaque C struct: Face (unsized, pointer-only)
 #[repr(C)]
@@ -47,11 +32,6 @@ pub struct Matrix { _opaque: [u8; 0] }
 #[repr(C)]
 #[derive(Clone, Copy)]
 pub struct MeshSDFContext { _opaque: [u8; 0] }
-
-/// Opaque C struct: Mutex (unsized, pointer-only)
-#[repr(C)]
-#[derive(Clone, Copy)]
-pub struct Mutex { _opaque: [u8; 0] }
 
 /// Opaque C struct: PFNGLACCUMPROC (unsized, pointer-only)
 #[repr(C)]
@@ -2583,26 +2563,6 @@ pub struct PFNGLWINDOWPOS3SVPROC { _opaque: [u8; 0] }
 #[derive(Clone, Copy)]
 pub struct Polytope { pub _data: [u8; 104] }
 
-/// Opaque C struct: T (unsized, pointer-only)
-#[repr(C)]
-#[derive(Clone, Copy)]
-pub struct T { _opaque: [u8; 0] }
-
-/// Opaque C struct: T1 (unsized, pointer-only)
-#[repr(C)]
-#[derive(Clone, Copy)]
-pub struct T1 { _opaque: [u8; 0] }
-
-/// Opaque C struct: T2 (unsized, pointer-only)
-#[repr(C)]
-#[derive(Clone, Copy)]
-pub struct T2 { _opaque: [u8; 0] }
-
-/// Opaque C struct: TableBlock_mjpPlugin (unsized, pointer-only)
-#[repr(C)]
-#[derive(Clone, Copy)]
-pub struct TableBlock_mjpPlugin { _opaque: [u8; 0] }
-
 /// Opaque C struct: Triangle (unsized, pointer-only)
 #[repr(C)]
 #[derive(Clone, Copy)]
@@ -2612,11 +2572,6 @@ pub struct Triangle { _opaque: [u8; 0] }
 #[repr(C)]
 #[derive(Clone, Copy)]
 pub struct Vertex { _opaque: [u8; 0] }
-
-/// Opaque C struct: XMLElement_Ref (unsized, pointer-only)
-#[repr(C)]
-#[derive(Clone, Copy)]
-pub struct XMLElement_Ref { _opaque: [u8; 0] }
 
 /// Opaque C struct: anonymous_namespace___RewriteMap (unsized, pointer-only)
 #[repr(C)]
@@ -2628,16 +2583,6 @@ pub struct anonymous_namespace___RewriteMap { _opaque: [u8; 0] }
 #[derive(Clone, Copy)]
 pub struct anonymous_namespace___string { pub _data: [u8; 24] }
 
-/// Opaque C struct: bool_1 (unsized, pointer-only)
-#[repr(C)]
-#[derive(Clone, Copy)]
-pub struct bool_1 { _opaque: [u8; 0] }
-
-/// Opaque C struct: bool_64 (unsized, pointer-only)
-#[repr(C)]
-#[derive(Clone, Copy)]
-pub struct bool_64 { _opaque: [u8; 0] }
-
 /// Opaque C struct: ccd_real_t (unsized, pointer-only)
 #[repr(C)]
 #[derive(Clone, Copy)]
@@ -2648,35 +2593,20 @@ pub struct ccd_real_t { _opaque: [u8; 0] }
 #[derive(Clone, Copy)]
 pub struct char__const { _opaque: [u8; 0] }
 
-/// Opaque C struct: double_3 (unsized, pointer-only)
+/// Opaque C struct: double (unsized, pointer-only)
 #[repr(C)]
 #[derive(Clone, Copy)]
-pub struct double_3 { _opaque: [u8; 0] }
+pub struct double { _opaque: [u8; 0] }
 
-/// Opaque C struct: double_4 (unsized, pointer-only)
+/// Opaque C struct: float (unsized, pointer-only)
 #[repr(C)]
 #[derive(Clone, Copy)]
-pub struct double_4 { _opaque: [u8; 0] }
+pub struct float { _opaque: [u8; 0] }
 
-/// Opaque C struct: float_4 (unsized, pointer-only)
+/// Opaque C struct: int (unsized, pointer-only)
 #[repr(C)]
 #[derive(Clone, Copy)]
-pub struct float_4 { _opaque: [u8; 0] }
-
-/// Opaque C struct: int_3 (unsized, pointer-only)
-#[repr(C)]
-#[derive(Clone, Copy)]
-pub struct int_3 { _opaque: [u8; 0] }
-
-/// Sized opaque C struct: libcpp_mutex_t (64 bytes, align 8)
-#[repr(C, align(8))]
-#[derive(Clone, Copy)]
-pub struct libcpp_mutex_t { pub _data: [u8; 64] }
-
-/// Opaque C struct: locale_t (unsized, pointer-only)
-#[repr(C)]
-#[derive(Clone, Copy)]
-pub struct locale_t { _opaque: [u8; 0] }
+pub struct int { _opaque: [u8; 0] }
 
 /// Sized opaque C struct: mjByteVec (24 bytes, align 8)
 #[repr(C, align(8))]
@@ -2697,11 +2627,6 @@ pub struct mjCCDStatus { _opaque: [u8; 0] }
 #[repr(C)]
 #[derive(Clone, Copy)]
 pub struct mjCDataFunc { _opaque: [u8; 0] }
-
-/// Opaque C struct: mjCDef_1 (unsized, pointer-only)
-#[repr(C)]
-#[derive(Clone, Copy)]
-pub struct mjCDef_1 { _opaque: [u8; 0] }
 
 /// Opaque C struct: mjDoubleVec (unsized, pointer-only)
 #[repr(C)]
@@ -2758,10 +2683,10 @@ pub struct mjString { _opaque: [u8; 0] }
 #[derive(Clone, Copy)]
 pub struct mjStringVec { _opaque: [u8; 0] }
 
-/// Opaque C struct: mjTaskFunc (unsized, pointer-only)
-#[repr(C)]
+/// Sized opaque C struct: mjTaskFunc (8 bytes, align 8)
+#[repr(C, align(8))]
 #[derive(Clone, Copy)]
-pub struct mjTaskFunc { _opaque: [u8; 0] }
+pub struct mjTaskFunc { pub _data: [u8; 8] }
 
 /// Opaque C struct: mjTimerStat (unsized, pointer-only)
 #[repr(C)]
@@ -2873,90 +2798,60 @@ pub struct mjfTime { _opaque: [u8; 0] }
 #[derive(Clone, Copy)]
 pub struct mjfUnmountResource { pub _data: [u8; 8] }
 
-/// Sized opaque C struct: mjsAuthored (72 bytes, align 8)
+/// Opaque C struct: mjtCompShape (unsized, pointer-only)
+#[repr(C)]
+#[derive(Clone, Copy)]
+pub struct mjtCompShape { _opaque: [u8; 0] }
+
+/// Sized opaque C struct: mjtCompType (4 bytes, align 8)
 #[repr(C, align(8))]
 #[derive(Clone, Copy)]
-pub struct mjsAuthored { pub _data: [u8; 72] }
+pub struct mjtCompType { pub _data: [u8; 4] }
 
-/// Sized opaque C struct: mjsExclude (32 bytes, align 8)
+/// Sized opaque C struct: mjtDof (4 bytes, align 8)
 #[repr(C, align(8))]
 #[derive(Clone, Copy)]
-pub struct mjsExclude { pub _data: [u8; 32] }
+pub struct mjtDof { pub _data: [u8; 4] }
 
-/// Opaque C struct: mjtCompShape_3 (unsized, pointer-only)
-#[repr(C)]
+/// Sized opaque C struct: mjtFcompType (4 bytes, align 8)
+#[repr(C, align(8))]
 #[derive(Clone, Copy)]
-pub struct mjtCompShape_3 { _opaque: [u8; 0] }
-
-/// Opaque C struct: mjtCompType (unsized, pointer-only)
-#[repr(C)]
-#[derive(Clone, Copy)]
-pub struct mjtCompType { _opaque: [u8; 0] }
-
-/// Opaque C struct: mjtDof (unsized, pointer-only)
-#[repr(C)]
-#[derive(Clone, Copy)]
-pub struct mjtDof { _opaque: [u8; 0] }
-
-/// Opaque C struct: mjtFcompType (unsized, pointer-only)
-#[repr(C)]
-#[derive(Clone, Copy)]
-pub struct mjtFcompType { _opaque: [u8; 0] }
+pub struct mjtFcompType { pub _data: [u8; 4] }
 
 /// Sized opaque C struct: mjuiItem____anonymous_union_at__Users_xing_Desktop_projects_c2rust_bitexact_projects_mujoco_include_mujoco_mjui_h_256_3 (1408 bytes, align 8)
 #[repr(C, align(8))]
 #[derive(Clone, Copy)]
 pub struct mjuiItem____anonymous_union_at__Users_xing_Desktop_projects_c2rust_bitexact_projects_mujoco_include_mujoco_mjui_h_256_3 { pub _data: [u8; 1408] }
 
-/// Opaque C struct: mujoco__GlobalTable__ErrorMessage (unsized, pointer-only)
-#[repr(C)]
-#[derive(Clone, Copy)]
-pub struct mujoco__GlobalTable__ErrorMessage { _opaque: [u8; 0] }
-
-/// Opaque C struct: mujoco__Mutex (unsized, pointer-only)
-#[repr(C)]
-#[derive(Clone, Copy)]
-pub struct mujoco__Mutex { _opaque: [u8; 0] }
-
 /// Opaque C struct: mujoco__user__VFS__ResourcePtr (unsized, pointer-only)
 #[repr(C)]
 #[derive(Clone, Copy)]
 pub struct mujoco__user__VFS__ResourcePtr { _opaque: [u8; 0] }
 
-/// Opaque C struct: mz_zip_archive (unsized, pointer-only)
-#[repr(C)]
+/// Sized opaque C struct: mz_zip_archive (112 bytes, align 8)
+#[repr(C, align(8))]
 #[derive(Clone, Copy)]
-pub struct mz_zip_archive { _opaque: [u8; 0] }
+pub struct mz_zip_archive { pub _data: [u8; 112] }
 
 /// Opaque C struct: pcg32_state (unsized, pointer-only)
 #[repr(C)]
 #[derive(Clone, Copy)]
 pub struct pcg32_state { _opaque: [u8; 0] }
 
-/// Opaque C struct: std__atomic_int (unsized, pointer-only)
-#[repr(C)]
+/// Sized opaque C struct: std__atomic_int (4 bytes, align 8)
+#[repr(C, align(8))]
 #[derive(Clone, Copy)]
-pub struct std__atomic_int { _opaque: [u8; 0] }
+pub struct std__atomic_int { pub _data: [u8; 4] }
 
-/// Opaque C struct: std__condition_variable (unsized, pointer-only)
-#[repr(C)]
+/// Sized opaque C struct: std__condition_variable (48 bytes, align 8)
+#[repr(C, align(8))]
 #[derive(Clone, Copy)]
-pub struct std__condition_variable { _opaque: [u8; 0] }
+pub struct std__condition_variable { pub _data: [u8; 48] }
 
 /// Opaque C struct: std__jmp_buf (unsized, pointer-only)
 #[repr(C)]
 #[derive(Clone, Copy)]
 pub struct std__jmp_buf { _opaque: [u8; 0] }
-
-/// Opaque C struct: std__map_std__string__std__vector_mjsMesh_Ref (unsized, pointer-only)
-#[repr(C)]
-#[derive(Clone, Copy)]
-pub struct std__map_std__string__std__vector_mjsMesh_Ref { _opaque: [u8; 0] }
-
-/// Opaque C struct: std__queue_std__function_void (unsized, pointer-only)
-#[repr(C)]
-#[derive(Clone, Copy)]
-pub struct std__queue_std__function_void { _opaque: [u8; 0] }
 
 /// Sized opaque C struct: std__string (24 bytes, align 8)
 #[repr(C, align(8))]
@@ -2973,36 +2868,6 @@ pub struct std__string_view { _opaque: [u8; 0] }
 #[derive(Clone, Copy)]
 pub struct std__stringstream { _opaque: [u8; 0] }
 
-/// Opaque C struct: std__unordered_map_mjtCompKind__std__vector_mjCDef (unsized, pointer-only)
-#[repr(C)]
-#[derive(Clone, Copy)]
-pub struct std__unordered_map_mjtCompKind__std__vector_mjCDef { _opaque: [u8; 0] }
-
-/// Opaque C struct: std__unordered_map_std__string__FileInfo (unsized, pointer-only)
-#[repr(C)]
-#[derive(Clone, Copy)]
-pub struct std__unordered_map_std__string__FileInfo { _opaque: [u8; 0] }
-
-/// Opaque C struct: std__unordered_set_std__string (unsized, pointer-only)
-#[repr(C)]
-#[derive(Clone, Copy)]
-pub struct std__unordered_set_std__string { _opaque: [u8; 0] }
-
-/// Opaque C struct: std__vector_mjRGBA (unsized, pointer-only)
-#[repr(C)]
-#[derive(Clone, Copy)]
-pub struct std__vector_mjRGBA { _opaque: [u8; 0] }
-
-/// Opaque C struct: std__vector_std__thread (unsized, pointer-only)
-#[repr(C)]
-#[derive(Clone, Copy)]
-pub struct std__vector_std__thread { _opaque: [u8; 0] }
-
-/// Opaque C struct: std__vector_std__uint8_t (unsized, pointer-only)
-#[repr(C)]
-#[derive(Clone, Copy)]
-pub struct std__vector_std__uint8_t { _opaque: [u8; 0] }
-
 /// Sized opaque C struct: string_type (24 bytes, align 8)
 #[repr(C, align(8))]
 #[derive(Clone, Copy)]
@@ -3012,11 +2877,6 @@ pub struct string_type { pub _data: [u8; 24] }
 #[repr(C)]
 #[derive(Clone, Copy)]
 pub struct struct___sFILEX { _opaque: [u8; 0] }
-
-/// Sized opaque C struct: struct___sbuf (16 bytes, align 8)
-#[repr(C, align(8))]
-#[derive(Clone, Copy)]
-pub struct struct___sbuf { pub _data: [u8; 16] }
 
 /// Opaque C struct: struct__mjCCDObj (unsized, pointer-only)
 #[repr(C)]
@@ -3058,30 +2918,10 @@ pub struct struct__unnamed_at__Users_xing_Desktop_projects_c2rust_bitexact_proje
 #[derive(Clone, Copy)]
 pub struct struct_gladGLversionStruct { _opaque: [u8; 0] }
 
-/// Opaque C struct: struct_mjpResourceProvider (unsized, pointer-only)
-#[repr(C)]
-#[derive(Clone, Copy)]
-pub struct struct_mjpResourceProvider { _opaque: [u8; 0] }
-
-/// Opaque C struct: type_parameter_0_0 (unsized, pointer-only)
-#[repr(C)]
-#[derive(Clone, Copy)]
-pub struct type_parameter_0_0 { _opaque: [u8; 0] }
-
 /// Sized opaque C struct: union__unnamed_at__Users_xing_Desktop_projects_c2rust_bitexact_projects_mujoco_src_engine_engine_collision_convex_h_52_3 (160 bytes, align 8)
 #[repr(C, align(8))]
 #[derive(Clone, Copy)]
 pub struct union__unnamed_at__Users_xing_Desktop_projects_c2rust_bitexact_projects_mujoco_src_engine_engine_collision_convex_h_52_3 { pub _data: [u8; 160] }
-
-/// Opaque C struct: unsigned_char_64 (unsized, pointer-only)
-#[repr(C)]
-#[derive(Clone, Copy)]
-pub struct unsigned_char_64 { _opaque: [u8; 0] }
-
-/// Opaque C struct: void_____T____const_char (unsized, pointer-only)
-#[repr(C)]
-#[derive(Clone, Copy)]
-pub struct void_____T____const_char { _opaque: [u8; 0] }
 
 /// Opaque C struct: void__const (unsized, pointer-only)
 #[repr(C)]
@@ -4433,8 +4273,9 @@ pub struct BufferProvider {
     pub unmount: mjfUnmountResource,
     pub modified: mjfResourceModified,
     pub data: *mut (),
-    pub path_: anonymous_namespace___FilePath,
-    pub contents_: [u8; 24],
+    pub path_: mujoco__user__FilePath,
+    pub contents_: *const (),
+    pub _pad_0: [u8; 16],
     pub hash_: u64,
 }
 const _: () = assert!(std::mem::size_of::<BufferProvider>() == 120);
@@ -4469,31 +4310,22 @@ pub struct FILE {
 }
 const _: () = assert!(std::mem::size_of::<FILE>() == 152);
 
-/// C struct: GlobalTable (2560 bytes, align 256)
-#[repr(C, align(256))]
+/// C struct: GlobalModel (16 bytes, align 8)
+#[repr(C, align(8))]
 #[derive(Clone, Copy)]
-pub struct GlobalTable {
-    pub first_block_: [u8; 2304],
-    pub count_: [u8; 8],
-    pub mutex_: [u8; 248],
+pub struct GlobalModel {
+    pub mutex_: *mut std__mutex,
+    pub spec_: *mut mjSpec,
 }
-const _: () = assert!(std::mem::size_of::<GlobalTable>() == 2560);
+const _: () = assert!(std::mem::size_of::<GlobalModel>() == 16);
 
 /// C struct: LocaleOverride (8 bytes, align 8)
 #[repr(C, align(8))]
 #[derive(Clone, Copy)]
 pub struct LocaleOverride {
-    pub old_locale_: [u8; 8],
+    pub old_locale_: *mut xlocale,
 }
 const _: () = assert!(std::mem::size_of::<LocaleOverride>() == 8);
-
-/// C struct: tinyxml2::MemPool (8 bytes, align 8)
-#[repr(C, align(8))]
-#[derive(Clone, Copy)]
-pub struct MemPool {
-    pub _vtable: *mut (),
-}
-const _: () = assert!(std::mem::size_of::<MemPool>() == 8);
 
 /// C struct: MeshPolygon (80 bytes, align 8)
 #[repr(C, align(8))]
@@ -4505,9 +4337,17 @@ pub struct MeshPolygon {
     pub _pad_1: [u8; 16],
     pub nisland_: i32,
     pub _pad_2: [u8; 4],
-    pub normal_: [u8; 24],
+    pub normal_: [f64; 3],
 }
 const _: () = assert!(std::mem::size_of::<MeshPolygon>() == 80);
+
+/// C struct: Mutex (64 bytes, align 8)
+#[repr(C, align(8))]
+#[derive(Clone, Copy)]
+pub struct Mutex {
+    pub __m_: libcpp_mutex_t,
+}
+const _: () = assert!(std::mem::size_of::<Mutex>() == 64);
 
 /// C struct: OctNode (192 bytes, align 8)
 #[repr(C, align(8))]
@@ -4538,39 +4378,28 @@ pub struct OctreeTask {
 }
 const _: () = assert!(std::mem::size_of::<OctreeTask>() == 40);
 
+/// C struct: PNGImage (40 bytes, align 8)
+#[repr(C, align(8))]
+#[derive(Clone, Copy)]
+pub struct PNGImage {
+    pub width_: i32,
+    pub height_: i32,
+    pub is_srgb_: bool,
+    pub _pad_0: [u8; 3],
+    pub color_type_: u32,
+    pub data_: mjByteVec,
+}
+const _: () = assert!(std::mem::size_of::<PNGImage>() == 40);
+
 /// C struct: Reader (40 bytes, align 8)
 #[repr(C, align(8))]
 #[derive(Clone, Copy)]
 pub struct Reader {
-    pub xml_node_: [u8; 8],
+    pub xml_node_: *mut tinyxml2__XMLElement,
     pub elem_: *const (),
     pub text_: std__string,
 }
 const _: () = assert!(std::mem::size_of::<Reader>() == 40);
-
-/// C struct: tinyxml2::StrPair (24 bytes, align 8)
-#[repr(C, align(8))]
-#[derive(Clone, Copy)]
-pub struct StrPair {
-    pub _flags: i32,
-    pub _pad_0: [u8; 4],
-    pub _start: *mut i8,
-    pub _end: *mut i8,
-}
-const _: () = assert!(std::mem::size_of::<StrPair>() == 24);
-
-/// C struct: ThreadPool (240 bytes, align 8)
-#[repr(C, align(8))]
-#[derive(Clone, Copy)]
-pub struct ThreadPool {
-    pub threads_: [u8; 24],
-    pub m_: std__mutex,
-    pub cv_in_: [u8; 48],
-    pub cv_ext_: [u8; 48],
-    pub queue_: [u8; 48],
-    pub ctr_: u64,
-}
-const _: () = assert!(std::mem::size_of::<ThreadPool>() == 240);
 
 /// C struct: ThreadPoolContext (128 bytes, align 64)
 #[repr(C, align(64))]
@@ -4578,109 +4407,16 @@ const _: () = assert!(std::mem::size_of::<ThreadPool>() == 240);
 pub struct ThreadPoolContext {
     pub model_: *const mjModel,
     pub data_: *mut mjData,
-    pub func_: [u8; 8],
+    pub func_: mjTaskFunc,
     pub arg_: *mut (),
     pub ntask_: i32,
     pub next_: [u8; 28],
     pub ndone_: [u8; 4],
     pub signal_: [u8; 4],
-    pub threads_: [u8; 56],
+    pub threads_: *const (),
+    pub _pad_0: [u8; 48],
 }
 const _: () = assert!(std::mem::size_of::<ThreadPoolContext>() == 128);
-
-/// C struct: tinyxml2::XMLAttribute (80 bytes, align 8)
-#[repr(C, align(8))]
-#[derive(Clone, Copy)]
-pub struct XMLAttribute {
-    pub _vtable: *mut (),
-    pub _name: StrPair,
-    pub _value: StrPair,
-    pub _parseLineNum: i32,
-    pub _pad_0: [u8; 4],
-    pub _next: *mut XMLAttribute,
-    pub _memPool: *mut MemPool,
-}
-const _: () = assert!(std::mem::size_of::<XMLAttribute>() == 80);
-
-/// C struct: tinyxml2::XMLDocument (880 bytes, align 8)
-#[repr(C, align(8))]
-#[derive(Clone, Copy)]
-pub struct XMLDocument {
-    pub _vtable: *mut (),
-    pub _document: *mut XMLDocument,
-    pub _parent: *mut XMLNode,
-    pub _value: StrPair,
-    pub _parseLineNum: i32,
-    pub _pad_0: [u8; 4],
-    pub _firstChild: *mut XMLNode,
-    pub _lastChild: *mut XMLNode,
-    pub _prev: *mut XMLNode,
-    pub _next: *mut XMLNode,
-    pub _userData: *mut (),
-    pub _memPool: *mut MemPool,
-    pub _writeBOM: bool,
-    pub _processEntities: bool,
-    pub _pad_1: [u8; 2],
-    pub _errorID: [u8; 4],
-    pub _whitespaceMode: [u8; 8],
-    pub _errorStr: StrPair,
-    pub _errorLineNum: i32,
-    pub _pad_2: [u8; 4],
-    pub _charBuffer: *mut i8,
-    pub _parseCurLineNum: i32,
-    pub _parsingDepth: i32,
-    pub _unlinked: *const (),
-    pub _pad_3: [u8; 96],
-    pub _elementPool: *const (),
-    pub _pad_4: [u8; 144],
-    pub _attributePool: *const (),
-    pub _pad_5: [u8; 144],
-    pub _textPool: *const (),
-    pub _pad_6: [u8; 144],
-    pub _commentPool: *const (),
-    pub _pad_7: [u8; 144],
-}
-const _: () = assert!(std::mem::size_of::<XMLDocument>() == 880);
-
-/// C struct: tinyxml2::XMLElement (120 bytes, align 8)
-#[repr(C, align(8))]
-#[derive(Clone, Copy)]
-pub struct XMLElement {
-    pub _vtable: *mut (),
-    pub _document: *mut XMLDocument,
-    pub _parent: *mut XMLNode,
-    pub _value: StrPair,
-    pub _parseLineNum: i32,
-    pub _pad_0: [u8; 4],
-    pub _firstChild: *mut XMLNode,
-    pub _lastChild: *mut XMLNode,
-    pub _prev: *mut XMLNode,
-    pub _next: *mut XMLNode,
-    pub _userData: *mut (),
-    pub _memPool: *mut MemPool,
-    pub _closingType: [u8; 8],
-    pub _rootAttribute: *mut XMLAttribute,
-}
-const _: () = assert!(std::mem::size_of::<XMLElement>() == 120);
-
-/// C struct: tinyxml2::XMLNode (104 bytes, align 8)
-#[repr(C, align(8))]
-#[derive(Clone, Copy)]
-pub struct XMLNode {
-    pub _vtable: *mut (),
-    pub _document: *mut XMLDocument,
-    pub _parent: *mut XMLNode,
-    pub _value: StrPair,
-    pub _parseLineNum: i32,
-    pub _pad_0: [u8; 4],
-    pub _firstChild: *mut XMLNode,
-    pub _lastChild: *mut XMLNode,
-    pub _prev: *mut XMLNode,
-    pub _next: *mut XMLNode,
-    pub _userData: *mut (),
-    pub _memPool: *mut MemPool,
-}
-const _: () = assert!(std::mem::size_of::<XMLNode>() == 104);
 
 /// C struct: ZipArchiveProvider (352 bytes, align 8)
 #[repr(C, align(8))]
@@ -4696,104 +4432,14 @@ pub struct ZipArchiveProvider {
     pub data: *mut (),
     pub name_: std__string,
     pub root_model_: std__string,
-    pub archive_: [u8; 112],
+    pub archive_: mz_zip_archive,
     pub buffer_: *const (),
     pub _pad_0: [u8; 16],
-    pub files_: [u8; 40],
+    pub files_: *const (),
+    pub _pad_1: [u8; 32],
     pub mutex_: std__mutex,
 }
 const _: () = assert!(std::mem::size_of::<ZipArchiveProvider>() == 352);
-
-/// C struct: mujoco::user::FilePath (24 bytes, align 8)
-#[repr(C, align(8))]
-#[derive(Clone, Copy)]
-pub struct anonymous_namespace___FilePath {
-    pub path_: std__string,
-}
-const _: () = assert!(std::mem::size_of::<anonymous_namespace___FilePath>() == 24);
-
-/// C struct: GlobalModel (16 bytes, align 8)
-#[repr(C, align(8))]
-#[derive(Clone, Copy)]
-pub struct anonymous_namespace___GlobalModel {
-    pub mutex_: *mut std__mutex,
-    pub spec_: *mut mjSpec,
-}
-const _: () = assert!(std::mem::size_of::<anonymous_namespace___GlobalModel>() == 16);
-
-/// C struct: PNGImage (40 bytes, align 8)
-#[repr(C, align(8))]
-#[derive(Clone, Copy)]
-pub struct anonymous_namespace___PNGImage {
-    pub width_: i32,
-    pub height_: i32,
-    pub is_srgb_: bool,
-    pub _pad_0: [u8; 3],
-    pub color_type_: [u8; 4],
-    pub data_: mjByteVec,
-}
-const _: () = assert!(std::mem::size_of::<anonymous_namespace___PNGImage>() == 40);
-
-/// C struct: tinyxml2::XMLDocument (880 bytes, align 8)
-#[repr(C, align(8))]
-#[derive(Clone, Copy)]
-pub struct anonymous_namespace___XMLDocument {
-    pub _vtable: *mut (),
-    pub _document: *mut XMLDocument,
-    pub _parent: *mut XMLNode,
-    pub _value: StrPair,
-    pub _parseLineNum: i32,
-    pub _pad_0: [u8; 4],
-    pub _firstChild: *mut XMLNode,
-    pub _lastChild: *mut XMLNode,
-    pub _prev: *mut XMLNode,
-    pub _next: *mut XMLNode,
-    pub _userData: *mut (),
-    pub _memPool: *mut MemPool,
-    pub _writeBOM: bool,
-    pub _processEntities: bool,
-    pub _pad_1: [u8; 2],
-    pub _errorID: [u8; 4],
-    pub _whitespaceMode: [u8; 8],
-    pub _errorStr: StrPair,
-    pub _errorLineNum: i32,
-    pub _pad_2: [u8; 4],
-    pub _charBuffer: *mut i8,
-    pub _parseCurLineNum: i32,
-    pub _parsingDepth: i32,
-    pub _unlinked: *const (),
-    pub _pad_3: [u8; 96],
-    pub _elementPool: *const (),
-    pub _pad_4: [u8; 144],
-    pub _attributePool: *const (),
-    pub _pad_5: [u8; 144],
-    pub _textPool: *const (),
-    pub _pad_6: [u8; 144],
-    pub _commentPool: *const (),
-    pub _pad_7: [u8; 144],
-}
-const _: () = assert!(std::mem::size_of::<anonymous_namespace___XMLDocument>() == 880);
-
-/// C struct: tinyxml2::XMLElement (120 bytes, align 8)
-#[repr(C, align(8))]
-#[derive(Clone, Copy)]
-pub struct anonymous_namespace___XMLElement {
-    pub _vtable: *mut (),
-    pub _document: *mut XMLDocument,
-    pub _parent: *mut XMLNode,
-    pub _value: StrPair,
-    pub _parseLineNum: i32,
-    pub _pad_0: [u8; 4],
-    pub _firstChild: *mut XMLNode,
-    pub _lastChild: *mut XMLNode,
-    pub _prev: *mut XMLNode,
-    pub _next: *mut XMLNode,
-    pub _userData: *mut (),
-    pub _memPool: *mut MemPool,
-    pub _closingType: [u8; 8],
-    pub _rootAttribute: *mut XMLAttribute,
-}
-const _: () = assert!(std::mem::size_of::<anonymous_namespace___XMLElement>() == 120);
 
 /// C struct: ccd_vec3_t (24 bytes, align 8)
 #[repr(C, align(8))]
@@ -4812,15 +4458,25 @@ pub struct gladGLversionStruct {
 }
 const _: () = assert!(std::mem::size_of::<gladGLversionStruct>() == 8);
 
+/// C struct: __libcpp_mutex_t (64 bytes, align 8)
+#[repr(C, align(8))]
+#[derive(Clone, Copy)]
+pub struct libcpp_mutex_t {
+    pub __sig: i64,
+    pub __opaque: [i8; 56],
+}
+const _: () = assert!(std::mem::size_of::<libcpp_mutex_t>() == 64);
+
 /// C struct: mjCActuator (1688 bytes, align 8)
 #[repr(C, align(8))]
 #[derive(Clone, Copy)]
 pub struct mjCActuator {
     pub _vtable: *mut (),
-    pub elemtype: [u8; 8],
+    pub elemtype: u32,
+    pub _pad_0: [u8; 4],
     pub signature: u64,
     pub id: i32,
-    pub _pad_0: [u8; 4],
+    pub _pad_1: [u8; 4],
     pub name: std__string,
     pub classname: std__string,
     pub info: std__string,
@@ -4830,39 +4486,43 @@ pub struct mjCActuator {
     pub model: *mut mjCModel,
     pub compiler: *mut mjsCompiler,
     pub refcount: i32,
-    pub _pad_1: [u8; 4],
+    pub _pad_2: [u8; 4],
     pub user_payload_: *const (),
-    pub _pad_2: [u8; 32],
+    pub _pad_3: [u8; 32],
     pub trnid: [i32; 2],
     pub actadr_: i32,
     pub actdim_: i32,
     pub act_: *const (),
-    pub _pad_3: [u8; 16],
-    pub ctrl_: *const (),
     pub _pad_4: [u8; 16],
+    pub ctrl_: *const (),
+    pub _pad_5: [u8; 16],
     pub plugin_name: std__string,
     pub plugin_instance_name: std__string,
     pub target_: std__string,
     pub slidersite_: std__string,
     pub refsite_: std__string,
     pub userdata_: *const (),
-    pub _pad_5: [u8; 16],
+    pub _pad_6: [u8; 16],
     pub spec_target_: std__string,
     pub spec_slidersite_: std__string,
     pub spec_refsite_: std__string,
     pub spec_userdata_: *const (),
-    pub _pad_6: [u8; 16],
+    pub _pad_7: [u8; 16],
     pub element: *mut mjsElement,
-    pub gaintype: [u8; 8],
+    pub gaintype: u32,
+    pub _pad_8: [u8; 4],
     pub gainprm: [f64; 10],
-    pub biastype: [u8; 8],
+    pub biastype: u32,
+    pub _pad_9: [u8; 4],
     pub biasprm: [f64; 10],
-    pub dyntype: [u8; 8],
+    pub dyntype: u32,
+    pub _pad_10: [u8; 4],
     pub dynprm: [f64; 10],
     pub actdim: i32,
     pub actearly: u8,
-    pub _pad_7: [u8; 3],
-    pub trntype: [u8; 8],
+    pub _pad_11: [u8; 3],
+    pub trntype: u32,
+    pub _pad_12: [u8; 4],
     pub gear: [f64; 6],
     pub target: *mut mjString,
     pub refsite: *mut mjString,
@@ -4873,18 +4533,18 @@ pub struct mjCActuator {
     pub damping: [f64; 3],
     pub armature: f64,
     pub ctrllimited: i32,
-    pub _pad_8: [u8; 4],
+    pub _pad_13: [u8; 4],
     pub ctrlrange: [f64; 2],
     pub forcelimited: i32,
-    pub _pad_9: [u8; 4],
+    pub _pad_14: [u8; 4],
     pub forcerange: [f64; 2],
     pub actlimited: i32,
-    pub _pad_10: [u8; 4],
+    pub _pad_15: [u8; 4],
     pub actrange: [f64; 2],
     pub group: i32,
     pub nsample: i32,
     pub interp: i32,
-    pub _pad_11: [u8; 4],
+    pub _pad_16: [u8; 4],
     pub delay: f64,
     pub userdata: *mut mjDoubleVec,
     pub plugin: mjsPlugin,
@@ -4915,10 +4575,11 @@ const _: () = assert!(std::mem::size_of::<mjCAsset>() == 112);
 #[derive(Clone, Copy)]
 pub struct mjCBase {
     pub _vtable: *mut (),
-    pub elemtype: [u8; 8],
+    pub elemtype: u32,
+    pub _pad_0: [u8; 4],
     pub signature: u64,
     pub id: i32,
-    pub _pad_0: [u8; 4],
+    pub _pad_1: [u8; 4],
     pub name: std__string,
     pub classname: std__string,
     pub info: std__string,
@@ -4928,9 +4589,9 @@ pub struct mjCBase {
     pub model: *mut mjCModel,
     pub compiler: *mut mjsCompiler,
     pub refcount: i32,
-    pub _pad_1: [u8; 4],
+    pub _pad_2: [u8; 4],
     pub user_payload_: *const (),
-    pub _pad_2: [u8; 32],
+    pub _pad_3: [u8; 32],
 }
 const _: () = assert!(std::mem::size_of::<mjCBase>() == 224);
 
@@ -4939,10 +4600,11 @@ const _: () = assert!(std::mem::size_of::<mjCBase>() == 224);
 #[derive(Clone, Copy)]
 pub struct mjCBody {
     pub _vtable: *mut (),
-    pub elemtype: [u8; 8],
+    pub elemtype: u32,
+    pub _pad_0: [u8; 4],
     pub signature: u64,
     pub id: i32,
-    pub _pad_0: [u8; 4],
+    pub _pad_1: [u8; 4],
     pub name: std__string,
     pub classname: std__string,
     pub info: std__string,
@@ -4952,16 +4614,16 @@ pub struct mjCBody {
     pub model: *mut mjCModel,
     pub compiler: *mut mjsCompiler,
     pub refcount: i32,
-    pub _pad_1: [u8; 4],
+    pub _pad_2: [u8; 4],
     pub user_payload_: *const (),
-    pub _pad_2: [u8; 32],
+    pub _pad_3: [u8; 32],
     pub parent: *mut mjCBody,
     pub weldid: i32,
     pub dofnum: i32,
     pub mocapid: i32,
     pub contype: i32,
     pub conaffinity: i32,
-    pub _pad_3: [u8; 4],
+    pub _pad_4: [u8; 4],
     pub margin: f64,
     pub xpos0: [f64; 3],
     pub xquat0: [f64; 4],
@@ -4971,13 +4633,13 @@ pub struct mjCBody {
     pub plugin_name: std__string,
     pub plugin_instance_name: std__string,
     pub userdata_: *const (),
-    pub _pad_4: [u8; 16],
-    pub spec_userdata_: *const (),
     pub _pad_5: [u8; 16],
-    pub mpos_: *const (),
+    pub spec_userdata_: *const (),
     pub _pad_6: [u8; 16],
-    pub mquat_: *const (),
+    pub mpos_: *const (),
     pub _pad_7: [u8; 16],
+    pub mquat_: *const (),
+    pub _pad_8: [u8; 16],
     pub element: *mut mjsElement,
     pub childclass: *mut mjString,
     pub pos: [f64; 3],
@@ -4990,30 +4652,31 @@ pub struct mjCBody {
     pub ialt: mjsOrientation,
     pub fullinertia: [f64; 6],
     pub mocap: u8,
-    pub _pad_8: [u8; 7],
+    pub _pad_9: [u8; 7],
     pub gravcomp: f64,
-    pub sleep: [u8; 8],
+    pub sleep: u32,
+    pub _pad_10: [u8; 4],
     pub userdata: *mut mjDoubleVec,
     pub explicitinertial: u8,
-    pub _pad_9: [u8; 7],
+    pub _pad_11: [u8; 7],
     pub plugin: mjsPlugin,
     pub info_1: *mut mjString,
     pub spec: mjsBody,
     pub last_attached: *mut mjsFrame,
     pub bodies: *const (),
-    pub _pad_10: [u8; 16],
-    pub geoms: *const (),
-    pub _pad_11: [u8; 16],
-    pub frames: *const (),
     pub _pad_12: [u8; 16],
-    pub joints: *const (),
+    pub geoms: *const (),
     pub _pad_13: [u8; 16],
-    pub sites: *const (),
+    pub frames: *const (),
     pub _pad_14: [u8; 16],
-    pub cameras: *const (),
+    pub joints: *const (),
     pub _pad_15: [u8; 16],
-    pub lights: *const (),
+    pub sites: *const (),
     pub _pad_16: [u8; 16],
+    pub cameras: *const (),
+    pub _pad_17: [u8; 16],
+    pub lights: *const (),
+    pub _pad_18: [u8; 16],
 }
 const _: () = assert!(std::mem::size_of::<mjCBody>() == 2016);
 
@@ -5022,10 +4685,11 @@ const _: () = assert!(std::mem::size_of::<mjCBody>() == 2016);
 #[derive(Clone, Copy)]
 pub struct mjCBodyPair {
     pub _vtable: *mut (),
-    pub elemtype: [u8; 8],
+    pub elemtype: u32,
+    pub _pad_0: [u8; 4],
     pub signature: u64,
     pub id: i32,
-    pub _pad_0: [u8; 4],
+    pub _pad_1: [u8; 4],
     pub name: std__string,
     pub classname: std__string,
     pub info: std__string,
@@ -5035,13 +4699,13 @@ pub struct mjCBodyPair {
     pub model: *mut mjCModel,
     pub compiler: *mut mjsCompiler,
     pub refcount: i32,
-    pub _pad_1: [u8; 4],
+    pub _pad_2: [u8; 4],
     pub user_payload_: *const (),
-    pub _pad_2: [u8; 32],
+    pub _pad_3: [u8; 32],
     pub body1: i32,
     pub body2: i32,
     pub signature_1: i32,
-    pub _pad_3: [u8; 4],
+    pub _pad_4: [u8; 4],
     pub bodyname1_: std__string,
     pub bodyname2_: std__string,
     pub spec_bodyname1_: std__string,
@@ -5142,10 +4806,11 @@ const _: () = assert!(std::mem::size_of::<mjCCache>() == 192);
 #[derive(Clone, Copy)]
 pub struct mjCCamera {
     pub _vtable: *mut (),
-    pub elemtype: [u8; 8],
+    pub elemtype: u32,
+    pub _pad_0: [u8; 4],
     pub signature: u64,
     pub id: i32,
-    pub _pad_0: [u8; 4],
+    pub _pad_1: [u8; 4],
     pub name: std__string,
     pub classname: std__string,
     pub info: std__string,
@@ -5155,25 +4820,26 @@ pub struct mjCCamera {
     pub model: *mut mjCModel,
     pub compiler: *mut mjsCompiler,
     pub refcount: i32,
-    pub _pad_1: [u8; 4],
+    pub _pad_2: [u8; 4],
     pub user_payload_: *const (),
-    pub _pad_2: [u8; 32],
+    pub _pad_3: [u8; 32],
     pub body: *mut mjCBody,
     pub targetbodyid: i32,
-    pub _pad_3: [u8; 4],
+    pub _pad_4: [u8; 4],
     pub targetbody_: std__string,
     pub spec_targetbody_: std__string,
     pub userdata_: *const (),
-    pub _pad_4: [u8; 16],
-    pub spec_userdata_: *const (),
     pub _pad_5: [u8; 16],
+    pub spec_userdata_: *const (),
+    pub _pad_6: [u8; 16],
     pub element: *mut mjsElement,
     pub pos: [f64; 3],
     pub quat: [f64; 4],
     pub alt: mjsOrientation,
-    pub mode: [u8; 8],
+    pub mode: u32,
+    pub _pad_7: [u8; 4],
     pub targetbody: *mut mjString,
-    pub proj: [u8; 4],
+    pub proj: u32,
     pub resolution: [i32; 2],
     pub output: i32,
     pub fovy: f64,
@@ -5196,13 +4862,13 @@ const _: () = assert!(std::mem::size_of::<mjCCamera>() == 976);
 pub struct mjCComposite {
     pub prefix: std__string,
     pub r#type: [u8; 4],
-    pub count: [u8; 12],
-    pub offset: [u8; 24],
-    pub quat: [u8; 32],
+    pub count: [i32; 3],
+    pub offset: [f64; 3],
+    pub quat: [f64; 4],
     pub initial: std__string,
     pub uservert: *const (),
     pub _pad_0: [u8; 16],
-    pub size: [u8; 24],
+    pub size: [f64; 3],
     pub curve: [u8; 16],
     pub frame: *mut mjsFrame,
     pub username: *const (),
@@ -5214,29 +4880,31 @@ pub struct mjCComposite {
     pub skintexcoord: bool,
     pub _pad_2: [u8; 6],
     pub skinmaterial: std__string,
-    pub skinrgba: [u8; 16],
+    pub skinrgba: [f32; 4],
     pub skininflate: f32,
     pub skinsubgrid: i32,
     pub skingroup: i32,
-    pub add: [u8; 4],
-    pub def: [u8; 14184],
-    pub defjoint: [u8; 40],
+    pub add: [bool; 1],
+    pub _pad_3: [u8; 3],
+    pub def: [mjCDef; 1],
+    pub defjoint: *const (),
+    pub _pad_4: [u8; 32],
     pub dim: i32,
-    pub _pad_3: [u8; 4],
+    pub _pad_5: [u8; 4],
     pub face: *const (),
-    pub _pad_4: [u8; 16],
-    pub vert: *const (),
-    pub _pad_5: [u8; 16],
-    pub bindpos: *const (),
     pub _pad_6: [u8; 16],
-    pub bindquat: *const (),
+    pub vert: *const (),
     pub _pad_7: [u8; 16],
-    pub texcoord: *const (),
+    pub bindpos: *const (),
     pub _pad_8: [u8; 16],
-    pub vertid: *const (),
+    pub bindquat: *const (),
     pub _pad_9: [u8; 16],
-    pub vertweight: *const (),
+    pub texcoord: *const (),
     pub _pad_10: [u8; 16],
+    pub vertid: *const (),
+    pub _pad_11: [u8; 16],
+    pub vertweight: *const (),
+    pub _pad_12: [u8; 16],
 }
 const _: () = assert!(std::mem::size_of::<mjCComposite>() == 14768);
 
@@ -5244,14 +4912,15 @@ const _: () = assert!(std::mem::size_of::<mjCComposite>() == 14768);
 #[repr(C, align(8))]
 #[derive(Clone, Copy)]
 pub struct mjCDef {
-    pub elemtype: [u8; 8],
+    pub elemtype: u32,
+    pub _pad_0: [u8; 4],
     pub signature: u64,
     pub name: std__string,
     pub id: i32,
-    pub _pad_0: [u8; 4],
+    pub _pad_1: [u8; 4],
     pub parent: *mut mjCDef,
     pub child: *const (),
-    pub _pad_1: [u8; 16],
+    pub _pad_2: [u8; 16],
     pub spec: mjsDefault,
     pub model: *mut mjCModel,
     pub joint_: mjCJoint,
@@ -5274,10 +4943,11 @@ const _: () = assert!(std::mem::size_of::<mjCDef>() == 14184);
 #[derive(Clone, Copy)]
 pub struct mjCEquality {
     pub _vtable: *mut (),
-    pub elemtype: [u8; 8],
+    pub elemtype: u32,
+    pub _pad_0: [u8; 4],
     pub signature: u64,
     pub id: i32,
-    pub _pad_0: [u8; 4],
+    pub _pad_1: [u8; 4],
     pub name: std__string,
     pub classname: std__string,
     pub info: std__string,
@@ -5287,9 +4957,9 @@ pub struct mjCEquality {
     pub model: *mut mjCModel,
     pub compiler: *mut mjsCompiler,
     pub refcount: i32,
-    pub _pad_1: [u8; 4],
+    pub _pad_2: [u8; 4],
     pub user_payload_: *const (),
-    pub _pad_2: [u8; 32],
+    pub _pad_3: [u8; 32],
     pub obj1id: i32,
     pub obj2id: i32,
     pub name1_: std__string,
@@ -5297,13 +4967,15 @@ pub struct mjCEquality {
     pub spec_name1_: std__string,
     pub spec_name2_: std__string,
     pub element: *mut mjsElement,
-    pub r#type: [u8; 8],
+    pub r#type: u32,
+    pub _pad_4: [u8; 4],
     pub data: [f64; 11],
     pub active: u8,
-    pub _pad_3: [u8; 7],
+    pub _pad_5: [u8; 7],
     pub name1: *mut mjString,
     pub name2: *mut mjString,
-    pub objtype: [u8; 8],
+    pub objtype: u32,
+    pub _pad_6: [u8; 4],
     pub solref: [f64; 2],
     pub solimp: [f64; 5],
     pub info_1: *mut mjString,
@@ -5324,10 +4996,11 @@ const _: () = assert!(std::mem::size_of::<mjCError>() == 500);
 #[derive(Clone, Copy)]
 pub struct mjCFlex {
     pub _vtable: *mut (),
-    pub elemtype: [u8; 8],
+    pub elemtype: u32,
+    pub _pad_0: [u8; 4],
     pub signature: u64,
     pub id: i32,
-    pub _pad_0: [u8; 4],
+    pub _pad_1: [u8; 4],
     pub name: std__string,
     pub classname: std__string,
     pub info: std__string,
@@ -5337,9 +5010,9 @@ pub struct mjCFlex {
     pub model: *mut mjCModel,
     pub compiler: *mut mjsCompiler,
     pub refcount: i32,
-    pub _pad_1: [u8; 4],
+    pub _pad_2: [u8; 4],
     pub user_payload_: *const (),
-    pub _pad_2: [u8; 32],
+    pub _pad_3: [u8; 32],
     pub nvert: i32,
     pub nnode: i32,
     pub nedge: i32,
@@ -5348,68 +5021,68 @@ pub struct mjCFlex {
     pub rigid: bool,
     pub centered: bool,
     pub interpolated: bool,
-    pub _pad_3: [u8; 1],
+    pub _pad_4: [u8; 1],
     pub vertbodyid: *const (),
-    pub _pad_4: [u8; 16],
-    pub nodebodyid: *const (),
     pub _pad_5: [u8; 16],
-    pub edge: *const (),
+    pub nodebodyid: *const (),
     pub _pad_6: [u8; 16],
-    pub shell: *const (),
+    pub edge: *const (),
     pub _pad_7: [u8; 16],
-    pub elemlayer: *const (),
+    pub shell: *const (),
     pub _pad_8: [u8; 16],
-    pub evpair: *const (),
+    pub elemlayer: *const (),
     pub _pad_9: [u8; 16],
-    pub flaps: *const (),
+    pub evpair: *const (),
     pub _pad_10: [u8; 16],
-    pub vertxpos: *const (),
+    pub flaps: *const (),
     pub _pad_11: [u8; 16],
+    pub vertxpos: *const (),
+    pub _pad_12: [u8; 16],
     pub tree: mjCBoundingVolumeHierarchy,
     pub elemaabb_: *const (),
-    pub _pad_12: [u8; 16],
-    pub edgeidx_: *const (),
     pub _pad_13: [u8; 16],
-    pub stiffness: *const (),
+    pub edgeidx_: *const (),
     pub _pad_14: [u8; 16],
-    pub bending: *const (),
+    pub stiffness: *const (),
     pub _pad_15: [u8; 16],
+    pub bending: *const (),
+    pub _pad_16: [u8; 16],
     pub has_strain_eq: bool,
-    pub _pad_16: [u8; 7],
+    pub _pad_17: [u8; 7],
     pub cell_empty: *const (),
-    pub _pad_17: [u8; 16],
-    pub vertbody_: *const (),
     pub _pad_18: [u8; 16],
-    pub nodebody_: *const (),
+    pub vertbody_: *const (),
     pub _pad_19: [u8; 16],
-    pub vert_: *const (),
+    pub nodebody_: *const (),
     pub _pad_20: [u8; 16],
-    pub node_: *const (),
+    pub vert_: *const (),
     pub _pad_21: [u8; 16],
-    pub elem_: *const (),
+    pub node_: *const (),
     pub _pad_22: [u8; 16],
-    pub texcoord_: *const (),
+    pub elem_: *const (),
     pub _pad_23: [u8; 16],
-    pub elemtexcoord_: *const (),
+    pub texcoord_: *const (),
     pub _pad_24: [u8; 16],
+    pub elemtexcoord_: *const (),
+    pub _pad_25: [u8; 16],
     pub material_: std__string,
     pub spec_material_: std__string,
     pub spec_vertbody_: *const (),
-    pub _pad_25: [u8; 16],
-    pub spec_nodebody_: *const (),
     pub _pad_26: [u8; 16],
-    pub spec_vert_: *const (),
+    pub spec_nodebody_: *const (),
     pub _pad_27: [u8; 16],
-    pub spec_node_: *const (),
+    pub spec_vert_: *const (),
     pub _pad_28: [u8; 16],
-    pub spec_elem_: *const (),
+    pub spec_node_: *const (),
     pub _pad_29: [u8; 16],
-    pub spec_texcoord_: *const (),
+    pub spec_elem_: *const (),
     pub _pad_30: [u8; 16],
-    pub spec_elemtexcoord_: *const (),
+    pub spec_texcoord_: *const (),
     pub _pad_31: [u8; 16],
-    pub cached_stiffness_: *const (),
+    pub spec_elemtexcoord_: *const (),
     pub _pad_32: [u8; 16],
+    pub cached_stiffness_: *const (),
+    pub _pad_33: [u8; 16],
     pub element: *mut mjsElement,
     pub contype: i32,
     pub conaffinity: i32,
@@ -5422,17 +5095,17 @@ pub struct mjCFlex {
     pub margin: f64,
     pub gap: f64,
     pub dim: i32,
-    pub _pad_33: [u8; 4],
+    pub _pad_34: [u8; 4],
     pub radius: f64,
     pub size: [f64; 3],
     pub internal: u8,
     pub flatskin: u8,
-    pub _pad_34: [u8; 2],
+    pub _pad_35: [u8; 2],
     pub selfcollide: i32,
     pub passive: i32,
     pub activelayers: i32,
     pub group: i32,
-    pub _pad_35: [u8; 4],
+    pub _pad_36: [u8; 4],
     pub edgestiffness: f64,
     pub edgedamping: f64,
     pub rgba: [f32; 4],
@@ -5444,7 +5117,7 @@ pub struct mjCFlex {
     pub elastic2d: i32,
     pub cellcount: [i32; 3],
     pub order: i32,
-    pub _pad_36: [u8; 4],
+    pub _pad_37: [u8; 4],
     pub nodebody: *mut mjStringVec,
     pub vertbody: *mut mjStringVec,
     pub node: *mut mjDoubleVec,
@@ -5455,9 +5128,9 @@ pub struct mjCFlex {
     pub info_1: *mut mjString,
     pub spec: mjsFlex,
     pub vert0_: *const (),
-    pub _pad_37: [u8; 16],
-    pub node0_: *const (),
     pub _pad_38: [u8; 16],
+    pub node0_: *const (),
+    pub _pad_39: [u8; 16],
 }
 const _: () = assert!(std::mem::size_of::<mjCFlex>() == 1960);
 
@@ -5467,17 +5140,17 @@ const _: () = assert!(std::mem::size_of::<mjCFlex>() == 1960);
 pub struct mjCFlexcomp {
     pub name: std__string,
     pub r#type: [u8; 4],
-    pub count: [u8; 12],
+    pub count: [i32; 3],
     pub cellcount: [u8; 16],
-    pub spacing: [u8; 24],
-    pub scale: [u8; 24],
-    pub origin: [u8; 24],
+    pub spacing: [f64; 3],
+    pub scale: [f64; 3],
+    pub origin: [f64; 3],
     pub mass: f64,
     pub inertiabox: f64,
     pub equality: i32,
     pub _pad_0: [u8; 4],
     pub file: std__string,
-    pub doftype: [u8; 8],
+    pub doftype: mjtDof,
     pub pinid: *const (),
     pub _pad_1: [u8; 16],
     pub pinrange: *const (),
@@ -5487,8 +5160,8 @@ pub struct mjCFlexcomp {
     pub pingridrange: *const (),
     pub _pad_4: [u8; 16],
     pub def: mjCDef,
-    pub pos: [u8; 24],
-    pub quat: [u8; 32],
+    pub pos: [f64; 3],
+    pub quat: [f64; 4],
     pub alt: mjsOrientation,
     pub rigid: bool,
     pub centered: bool,
@@ -5516,10 +5189,11 @@ const _: () = assert!(std::mem::size_of::<mjCFlexcomp>() == 14896);
 #[derive(Clone, Copy)]
 pub struct mjCFrame {
     pub _vtable: *mut (),
-    pub elemtype: [u8; 8],
+    pub elemtype: u32,
+    pub _pad_0: [u8; 4],
     pub signature: u64,
     pub id: i32,
-    pub _pad_0: [u8; 4],
+    pub _pad_1: [u8; 4],
     pub name: std__string,
     pub classname: std__string,
     pub info: std__string,
@@ -5529,11 +5203,11 @@ pub struct mjCFrame {
     pub model: *mut mjCModel,
     pub compiler: *mut mjsCompiler,
     pub refcount: i32,
-    pub _pad_1: [u8; 4],
+    pub _pad_2: [u8; 4],
     pub user_payload_: *const (),
-    pub _pad_2: [u8; 32],
+    pub _pad_3: [u8; 32],
     pub compiled: bool,
-    pub _pad_3: [u8; 7],
+    pub _pad_4: [u8; 7],
     pub element: *mut mjsElement,
     pub childclass: *mut mjString,
     pub pos: [f64; 3],
@@ -5551,10 +5225,11 @@ const _: () = assert!(std::mem::size_of::<mjCFrame>() == 680);
 #[derive(Clone, Copy)]
 pub struct mjCGeom {
     pub _vtable: *mut (),
-    pub elemtype: [u8; 8],
+    pub elemtype: u32,
+    pub _pad_0: [u8; 4],
     pub signature: u64,
     pub id: i32,
-    pub _pad_0: [u8; 4],
+    pub _pad_1: [u8; 4],
     pub name: std__string,
     pub classname: std__string,
     pub info: std__string,
@@ -5564,12 +5239,12 @@ pub struct mjCGeom {
     pub model: *mut mjCModel,
     pub compiler: *mut mjsCompiler,
     pub refcount: i32,
-    pub _pad_1: [u8; 4],
+    pub _pad_2: [u8; 4],
     pub user_payload_: *const (),
-    pub _pad_2: [u8; 32],
+    pub _pad_3: [u8; 32],
     pub inferinertia: bool,
     pub visual_: bool,
-    pub _pad_3: [u8; 2],
+    pub _pad_4: [u8; 2],
     pub matid: i32,
     pub mesh: *mut mjCMesh,
     pub hfield: *mut mjCHField,
@@ -5584,14 +5259,15 @@ pub struct mjCGeom {
     pub meshname_: std__string,
     pub material_: std__string,
     pub userdata_: *const (),
-    pub _pad_4: [u8; 16],
+    pub _pad_5: [u8; 16],
     pub spec_hfieldname_: std__string,
     pub spec_meshname_: std__string,
     pub spec_material_: std__string,
     pub spec_userdata_: *const (),
-    pub _pad_5: [u8; 16],
+    pub _pad_6: [u8; 16],
     pub element: *mut mjsElement,
-    pub r#type: [u8; 8],
+    pub r#type: u32,
+    pub _pad_7: [u8; 4],
     pub pos: [f64; 3],
     pub quat: [f64; 4],
     pub alt: mjsOrientation,
@@ -5609,13 +5285,14 @@ pub struct mjCGeom {
     pub gap: f64,
     pub mass: f64,
     pub density: f64,
-    pub typeinertia: [u8; 8],
+    pub typeinertia: u32,
+    pub _pad_8: [u8; 4],
     pub fluid_ellipsoid: f64,
     pub fluid_coefs: [f64; 5],
     pub material: *mut mjString,
     pub rgba: [f32; 4],
     pub group: i32,
-    pub _pad_6: [u8; 4],
+    pub _pad_9: [u8; 4],
     pub hfieldname: *mut mjString,
     pub meshname: *mut mjString,
     pub fitscale: f64,
@@ -5631,10 +5308,11 @@ const _: () = assert!(std::mem::size_of::<mjCGeom>() == 1840);
 #[derive(Clone, Copy)]
 pub struct mjCHField {
     pub _vtable: *mut (),
-    pub elemtype: [u8; 8],
+    pub elemtype: u32,
+    pub _pad_0: [u8; 4],
     pub signature: u64,
     pub id: i32,
-    pub _pad_0: [u8; 4],
+    pub _pad_1: [u8; 4],
     pub name: std__string,
     pub classname: std__string,
     pub info: std__string,
@@ -5644,19 +5322,19 @@ pub struct mjCHField {
     pub model: *mut mjCModel,
     pub compiler: *mut mjsCompiler,
     pub refcount: i32,
-    pub _pad_1: [u8; 4],
+    pub _pad_2: [u8; 4],
     pub user_payload_: *const (),
-    pub _pad_2: [u8; 32],
+    pub _pad_3: [u8; 32],
     pub data: *const (),
-    pub _pad_3: [u8; 16],
+    pub _pad_4: [u8; 16],
     pub file_: std__string,
     pub content_type_: std__string,
     pub userdata_: *const (),
-    pub _pad_4: [u8; 16],
+    pub _pad_5: [u8; 16],
     pub spec_file_: std__string,
     pub spec_content_type_: std__string,
     pub spec_userdata_: *const (),
-    pub _pad_5: [u8; 16],
+    pub _pad_6: [u8; 16],
     pub element: *mut mjsElement,
     pub content_type: *mut mjString,
     pub file: *mut mjString,
@@ -5674,10 +5352,11 @@ const _: () = assert!(std::mem::size_of::<mjCHField>() == 552);
 #[derive(Clone, Copy)]
 pub struct mjCJoint {
     pub _vtable: *mut (),
-    pub elemtype: [u8; 8],
+    pub elemtype: u32,
+    pub _pad_0: [u8; 4],
     pub signature: u64,
     pub id: i32,
-    pub _pad_0: [u8; 4],
+    pub _pad_1: [u8; 4],
     pub name: std__string,
     pub classname: std__string,
     pub info: std__string,
@@ -5687,36 +5366,37 @@ pub struct mjCJoint {
     pub model: *mut mjCModel,
     pub compiler: *mut mjsCompiler,
     pub refcount: i32,
-    pub _pad_1: [u8; 4],
+    pub _pad_2: [u8; 4],
     pub user_payload_: *const (),
-    pub _pad_2: [u8; 32],
+    pub _pad_3: [u8; 32],
     pub body: *mut mjCBody,
     pub qpos_: *const (),
-    pub _pad_3: [u8; 16],
-    pub qvel_: *const (),
     pub _pad_4: [u8; 16],
-    pub userdata_: *const (),
+    pub qvel_: *const (),
     pub _pad_5: [u8; 16],
-    pub spec_userdata_: *const (),
+    pub userdata_: *const (),
     pub _pad_6: [u8; 16],
+    pub spec_userdata_: *const (),
+    pub _pad_7: [u8; 16],
     pub element: *mut mjsElement,
-    pub r#type: [u8; 8],
+    pub r#type: u32,
+    pub _pad_8: [u8; 4],
     pub pos: [f64; 3],
     pub axis: [f64; 3],
     pub r#ref: f64,
     pub align: i32,
-    pub _pad_7: [u8; 4],
+    pub _pad_9: [u8; 4],
     pub stiffness: [f64; 3],
     pub springref: f64,
     pub springdamper: [f64; 2],
     pub limited: i32,
-    pub _pad_8: [u8; 4],
+    pub _pad_10: [u8; 4],
     pub range: [f64; 2],
     pub margin: f64,
     pub solref_limit: [f64; 2],
     pub solimp_limit: [f64; 5],
     pub actfrclimited: i32,
-    pub _pad_9: [u8; 4],
+    pub _pad_11: [u8; 4],
     pub actfrcrange: [f64; 2],
     pub armature: f64,
     pub damping: [f64; 3],
@@ -5725,7 +5405,7 @@ pub struct mjCJoint {
     pub solimp_friction: [f64; 5],
     pub group: i32,
     pub actgravcomp: u8,
-    pub _pad_10: [u8; 3],
+    pub _pad_12: [u8; 3],
     pub userdata: *mut mjDoubleVec,
     pub info_1: *mut mjString,
     pub spec: mjsJoint,
@@ -5739,10 +5419,11 @@ const _: () = assert!(std::mem::size_of::<mjCJoint>() == 1056);
 #[derive(Clone, Copy)]
 pub struct mjCKey {
     pub _vtable: *mut (),
-    pub elemtype: [u8; 8],
+    pub elemtype: u32,
+    pub _pad_0: [u8; 4],
     pub signature: u64,
     pub id: i32,
-    pub _pad_0: [u8; 4],
+    pub _pad_1: [u8; 4],
     pub name: std__string,
     pub classname: std__string,
     pub info: std__string,
@@ -5752,33 +5433,33 @@ pub struct mjCKey {
     pub model: *mut mjCModel,
     pub compiler: *mut mjsCompiler,
     pub refcount: i32,
-    pub _pad_1: [u8; 4],
+    pub _pad_2: [u8; 4],
     pub user_payload_: *const (),
-    pub _pad_2: [u8; 32],
+    pub _pad_3: [u8; 32],
     pub qpos_: *const (),
-    pub _pad_3: [u8; 16],
-    pub qvel_: *const (),
     pub _pad_4: [u8; 16],
-    pub act_: *const (),
+    pub qvel_: *const (),
     pub _pad_5: [u8; 16],
-    pub mpos_: *const (),
+    pub act_: *const (),
     pub _pad_6: [u8; 16],
-    pub mquat_: *const (),
+    pub mpos_: *const (),
     pub _pad_7: [u8; 16],
-    pub ctrl_: *const (),
+    pub mquat_: *const (),
     pub _pad_8: [u8; 16],
-    pub spec_qpos_: *const (),
+    pub ctrl_: *const (),
     pub _pad_9: [u8; 16],
-    pub spec_qvel_: *const (),
+    pub spec_qpos_: *const (),
     pub _pad_10: [u8; 16],
-    pub spec_act_: *const (),
+    pub spec_qvel_: *const (),
     pub _pad_11: [u8; 16],
-    pub spec_mpos_: *const (),
+    pub spec_act_: *const (),
     pub _pad_12: [u8; 16],
-    pub spec_mquat_: *const (),
+    pub spec_mpos_: *const (),
     pub _pad_13: [u8; 16],
-    pub spec_ctrl_: *const (),
+    pub spec_mquat_: *const (),
     pub _pad_14: [u8; 16],
+    pub spec_ctrl_: *const (),
+    pub _pad_15: [u8; 16],
     pub element: *mut mjsElement,
     pub time: f64,
     pub qpos: *mut mjDoubleVec,
@@ -5797,10 +5478,11 @@ const _: () = assert!(std::mem::size_of::<mjCKey>() == 656);
 #[derive(Clone, Copy)]
 pub struct mjCLight {
     pub _vtable: *mut (),
-    pub elemtype: [u8; 8],
+    pub elemtype: u32,
+    pub _pad_0: [u8; 4],
     pub signature: u64,
     pub id: i32,
-    pub _pad_0: [u8; 4],
+    pub _pad_1: [u8; 4],
     pub name: std__string,
     pub classname: std__string,
     pub info: std__string,
@@ -5810,9 +5492,9 @@ pub struct mjCLight {
     pub model: *mut mjCModel,
     pub compiler: *mut mjsCompiler,
     pub refcount: i32,
-    pub _pad_1: [u8; 4],
+    pub _pad_2: [u8; 4],
     pub user_payload_: *const (),
-    pub _pad_2: [u8; 32],
+    pub _pad_3: [u8; 32],
     pub body: *mut mjCBody,
     pub targetbodyid: i32,
     pub texid: i32,
@@ -5823,14 +5505,15 @@ pub struct mjCLight {
     pub element: *mut mjsElement,
     pub pos: [f64; 3],
     pub dir: [f64; 3],
-    pub mode: [u8; 8],
+    pub mode: u32,
+    pub _pad_4: [u8; 4],
     pub targetbody: *mut mjString,
     pub active: u8,
-    pub _pad_3: [u8; 3],
-    pub r#type: [u8; 4],
+    pub _pad_5: [u8; 3],
+    pub r#type: u32,
     pub texture: *mut mjString,
     pub castshadow: u8,
-    pub _pad_4: [u8; 3],
+    pub _pad_6: [u8; 3],
     pub bulbradius: f32,
     pub intensity: f32,
     pub range: f32,
@@ -5850,10 +5533,11 @@ const _: () = assert!(std::mem::size_of::<mjCLight>() == 672);
 #[derive(Clone, Copy)]
 pub struct mjCMaterial {
     pub _vtable: *mut (),
-    pub elemtype: [u8; 8],
+    pub elemtype: u32,
+    pub _pad_0: [u8; 4],
     pub signature: u64,
     pub id: i32,
-    pub _pad_0: [u8; 4],
+    pub _pad_1: [u8; 4],
     pub name: std__string,
     pub classname: std__string,
     pub info: std__string,
@@ -5863,18 +5547,18 @@ pub struct mjCMaterial {
     pub model: *mut mjCModel,
     pub compiler: *mut mjsCompiler,
     pub refcount: i32,
-    pub _pad_1: [u8; 4],
+    pub _pad_2: [u8; 4],
     pub user_payload_: *const (),
-    pub _pad_2: [u8; 32],
+    pub _pad_3: [u8; 32],
     pub texid: [i32; 10],
     pub textures_: *const (),
-    pub _pad_3: [u8; 16],
-    pub spec_textures_: *const (),
     pub _pad_4: [u8; 16],
+    pub spec_textures_: *const (),
+    pub _pad_5: [u8; 16],
     pub element: *mut mjsElement,
     pub textures: *mut mjStringVec,
     pub texuniform: u8,
-    pub _pad_5: [u8; 3],
+    pub _pad_6: [u8; 3],
     pub texrepeat: [f32; 2],
     pub emission: f32,
     pub specular: f32,
@@ -5893,10 +5577,11 @@ const _: () = assert!(std::mem::size_of::<mjCMaterial>() == 472);
 #[derive(Clone, Copy)]
 pub struct mjCMesh {
     pub _vtable: *mut (),
-    pub elemtype: [u8; 8],
+    pub elemtype: u32,
+    pub _pad_0: [u8; 4],
     pub signature: u64,
     pub id: i32,
-    pub _pad_0: [u8; 4],
+    pub _pad_1: [u8; 4],
     pub name: std__string,
     pub classname: std__string,
     pub info: std__string,
@@ -5906,50 +5591,50 @@ pub struct mjCMesh {
     pub model: *mut mjCModel,
     pub compiler: *mut mjsCompiler,
     pub refcount: i32,
-    pub _pad_1: [u8; 4],
+    pub _pad_2: [u8; 4],
     pub user_payload_: *const (),
-    pub _pad_2: [u8; 32],
+    pub _pad_3: [u8; 32],
     pub plugin_name: std__string,
     pub plugin_instance_name: std__string,
     pub content_type_: std__string,
     pub file_: std__string,
     pub resource_: *mut mjResource,
     pub vert_: *const (),
-    pub _pad_3: [u8; 16],
-    pub normal_: *const (),
     pub _pad_4: [u8; 16],
-    pub texcoord_: *const (),
+    pub normal_: *const (),
     pub _pad_5: [u8; 16],
-    pub face_: *const (),
+    pub texcoord_: *const (),
     pub _pad_6: [u8; 16],
-    pub facenormal_: *const (),
+    pub face_: *const (),
     pub _pad_7: [u8; 16],
-    pub facetexcoord_: *const (),
+    pub facenormal_: *const (),
     pub _pad_8: [u8; 16],
+    pub facetexcoord_: *const (),
+    pub _pad_9: [u8; 16],
     pub material_: std__string,
     pub spec_content_type_: std__string,
     pub spec_file_: std__string,
     pub spec_vert_: *const (),
-    pub _pad_9: [u8; 16],
-    pub spec_normal_: *const (),
     pub _pad_10: [u8; 16],
-    pub spec_texcoord_: *const (),
+    pub spec_normal_: *const (),
     pub _pad_11: [u8; 16],
-    pub spec_face_: *const (),
+    pub spec_texcoord_: *const (),
     pub _pad_12: [u8; 16],
-    pub spec_facenormal_: *const (),
+    pub spec_face_: *const (),
     pub _pad_13: [u8; 16],
-    pub spec_facetexcoord_: *const (),
+    pub spec_facenormal_: *const (),
     pub _pad_14: [u8; 16],
+    pub spec_facetexcoord_: *const (),
+    pub _pad_15: [u8; 16],
     pub spec_material_: std__string,
     pub needreorient_: bool,
     pub visual_: bool,
-    pub _pad_15: [u8; 6],
+    pub _pad_16: [u8; 6],
     pub halfedge_: *const (),
-    pub _pad_16: [u8; 16],
+    pub _pad_17: [u8; 16],
     pub processed_: bool,
     pub transformed_: bool,
-    pub _pad_17: [u8; 6],
+    pub _pad_18: [u8; 6],
     pub pos_: [f64; 3],
     pub quat_: [f64; 4],
     pub boxsz_: [f64; 3],
@@ -5958,12 +5643,12 @@ pub struct mjCMesh {
     pub surface_: f64,
     pub szgraph_: i32,
     pub needhull_: bool,
-    pub _pad_18: [u8; 3],
+    pub _pad_19: [u8; 3],
     pub maxhullvert_: i32,
-    pub _pad_19: [u8; 4],
+    pub _pad_20: [u8; 4],
     pub tree_: mjCBoundingVolumeHierarchy,
     pub face_aabb_: *const (),
-    pub _pad_20: [u8; 16],
+    pub _pad_21: [u8; 16],
     pub octree_: mjCOctree,
     pub mesh_timer_: [f64; 9],
     pub element: *mut mjsElement,
@@ -5972,12 +5657,12 @@ pub struct mjCMesh {
     pub refpos: [f64; 3],
     pub refquat: [f64; 4],
     pub scale: [f64; 3],
-    pub inertia: [u8; 4],
+    pub inertia: u32,
     pub smoothnormal: u8,
     pub needsdf: u8,
-    pub _pad_21: [u8; 2],
+    pub _pad_22: [u8; 2],
     pub maxhullvert: i32,
-    pub _pad_22: [u8; 4],
+    pub _pad_23: [u8; 4],
     pub uservert: *mut mjFloatVec,
     pub usernormal: *mut mjFloatVec,
     pub usertexcoord: *mut mjFloatVec,
@@ -5987,17 +5672,17 @@ pub struct mjCMesh {
     pub plugin: mjsPlugin,
     pub material: *mut mjString,
     pub octree_maxdepth: i32,
-    pub _pad_23: [u8; 4],
+    pub _pad_24: [u8; 4],
     pub info_1: *mut mjString,
     pub spec: mjsMesh,
     pub center_: *mut f64,
     pub graph_: *mut i32,
     pub polygons_: *const (),
-    pub _pad_24: [u8; 16],
-    pub polygon_normals_: *const (),
     pub _pad_25: [u8; 16],
-    pub polygon_map_: *const (),
+    pub polygon_normals_: *const (),
     pub _pad_26: [u8; 16],
+    pub polygon_map_: *const (),
+    pub _pad_27: [u8; 16],
 }
 const _: () = assert!(std::mem::size_of::<mjCMesh>() == 1968);
 
@@ -6005,12 +5690,13 @@ const _: () = assert!(std::mem::size_of::<mjCMesh>() == 1968);
 #[repr(C, align(8))]
 #[derive(Clone, Copy)]
 pub struct mjCModel {
-    pub elemtype: [u8; 8],
+    pub elemtype: u32,
+    pub _pad_0: [u8; 4],
     pub signature: u64,
     pub prefix: std__string,
     pub suffix: std__string,
     pub compiled: bool,
-    pub _pad_0: [u8; 7],
+    pub _pad_1: [u8; 7],
     pub nbody: i64,
     pub njnt: i64,
     pub ngeom: i64,
@@ -6091,11 +5777,11 @@ pub struct mjCModel {
     pub extent_auto: f64,
     pub center_auto: [f64; 3],
     pub qpos0: *const (),
-    pub _pad_1: [u8; 16],
-    pub body_pos0: *const (),
     pub _pad_2: [u8; 16],
-    pub body_quat0: *const (),
+    pub body_pos0: *const (),
     pub _pad_3: [u8; 16],
+    pub body_quat0: *const (),
+    pub _pad_4: [u8; 16],
     pub comment_: std__string,
     pub modelfiledir_: std__string,
     pub modelname_: std__string,
@@ -6108,7 +5794,7 @@ pub struct mjCModel {
     pub modelname: *mut mjString,
     pub compiler: mjsCompiler,
     pub strippath: u8,
-    pub _pad_4: [u8; 7],
+    pub _pad_5: [u8; 7],
     pub option: mjOption,
     pub visual: mjVisual,
     pub stat: mjStatistic,
@@ -6126,91 +5812,91 @@ pub struct mjCModel {
     pub nkey: i32,
     pub njmax: i32,
     pub nconmax: i32,
-    pub _pad_5: [u8; 4],
+    pub _pad_6: [u8; 4],
     pub nstack: i64,
     pub comment: *mut mjString,
     pub modelfiledir: *mut mjString,
     pub hasImplicitPluginElem: u8,
-    pub _pad_6: [u8; 7],
+    pub _pad_7: [u8; 7],
     pub authored: mjsAuthored,
     pub spec: mjSpec,
     pub timer: [f64; 9],
     pub def_map: *const (),
-    pub _pad_7: [u8; 32],
+    pub _pad_8: [u8; 32],
     pub refcount: i32,
-    pub _pad_8: [u8; 4],
+    pub _pad_9: [u8; 4],
     pub defaults_: *const (),
-    pub _pad_9: [u8; 16],
-    pub active_plugins_: *const (),
     pub _pad_10: [u8; 16],
-    pub flexes_: *const (),
+    pub active_plugins_: *const (),
     pub _pad_11: [u8; 16],
-    pub meshes_: *const (),
+    pub flexes_: *const (),
     pub _pad_12: [u8; 16],
-    pub skins_: *const (),
+    pub meshes_: *const (),
     pub _pad_13: [u8; 16],
-    pub hfields_: *const (),
+    pub skins_: *const (),
     pub _pad_14: [u8; 16],
-    pub textures_: *const (),
+    pub hfields_: *const (),
     pub _pad_15: [u8; 16],
-    pub materials_: *const (),
+    pub textures_: *const (),
     pub _pad_16: [u8; 16],
-    pub pairs_: *const (),
+    pub materials_: *const (),
     pub _pad_17: [u8; 16],
-    pub excludes_: *const (),
+    pub pairs_: *const (),
     pub _pad_18: [u8; 16],
-    pub equalities_: *const (),
+    pub excludes_: *const (),
     pub _pad_19: [u8; 16],
-    pub tendons_: *const (),
+    pub equalities_: *const (),
     pub _pad_20: [u8; 16],
-    pub actuators_: *const (),
+    pub tendons_: *const (),
     pub _pad_21: [u8; 16],
-    pub sensors_: *const (),
+    pub actuators_: *const (),
     pub _pad_22: [u8; 16],
-    pub numerics_: *const (),
+    pub sensors_: *const (),
     pub _pad_23: [u8; 16],
-    pub texts_: *const (),
+    pub numerics_: *const (),
     pub _pad_24: [u8; 16],
-    pub tuples_: *const (),
+    pub texts_: *const (),
     pub _pad_25: [u8; 16],
-    pub keys_: *const (),
+    pub tuples_: *const (),
     pub _pad_26: [u8; 16],
-    pub plugins_: *const (),
+    pub keys_: *const (),
     pub _pad_27: [u8; 16],
-    pub specs_: *const (),
+    pub plugins_: *const (),
     pub _pad_28: [u8; 16],
-    pub bodies_: *const (),
+    pub specs_: *const (),
     pub _pad_29: [u8; 16],
-    pub joints_: *const (),
+    pub bodies_: *const (),
     pub _pad_30: [u8; 16],
-    pub geoms_: *const (),
+    pub joints_: *const (),
     pub _pad_31: [u8; 16],
-    pub sites_: *const (),
+    pub geoms_: *const (),
     pub _pad_32: [u8; 16],
-    pub cameras_: *const (),
+    pub sites_: *const (),
     pub _pad_33: [u8; 16],
-    pub lights_: *const (),
+    pub cameras_: *const (),
     pub _pad_34: [u8; 16],
-    pub frames_: *const (),
+    pub lights_: *const (),
     pub _pad_35: [u8; 16],
+    pub frames_: *const (),
+    pub _pad_36: [u8; 16],
     pub object_lists_: *const (),
-    pub _pad_36: [u8; 200],
+    pub _pad_37: [u8; 200],
     pub ids: mjListKeyMap,
     pub errInfo: [u8; 504],
     pub warnings_: *const (),
-    pub _pad_37: [u8; 16],
+    pub _pad_38: [u8; 16],
     pub num_attach_warnings_: i32,
     pub compiling_: bool,
-    pub _pad_38: [u8; 3],
+    pub _pad_39: [u8; 3],
     pub key_pending_: *const (),
-    pub _pad_39: [u8; 16],
+    pub _pad_40: [u8; 16],
     pub deepcopy_: bool,
     pub attached_: bool,
-    pub _pad_40: [u8; 6],
+    pub _pad_41: [u8; 6],
     pub compiler2spec_: *const (),
-    pub _pad_41: [u8; 32],
+    pub _pad_42: [u8; 32],
     pub detached_: *const (),
-    pub _pad_42: [u8; 16],
+    pub _pad_43: [u8; 16],
 }
 const _: () = assert!(std::mem::size_of::<mjCModel>() == 5920);
 
@@ -6219,10 +5905,11 @@ const _: () = assert!(std::mem::size_of::<mjCModel>() == 5920);
 #[derive(Clone, Copy)]
 pub struct mjCNumeric {
     pub _vtable: *mut (),
-    pub elemtype: [u8; 8],
+    pub elemtype: u32,
+    pub _pad_0: [u8; 4],
     pub signature: u64,
     pub id: i32,
-    pub _pad_0: [u8; 4],
+    pub _pad_1: [u8; 4],
     pub name: std__string,
     pub classname: std__string,
     pub info: std__string,
@@ -6232,17 +5919,17 @@ pub struct mjCNumeric {
     pub model: *mut mjCModel,
     pub compiler: *mut mjsCompiler,
     pub refcount: i32,
-    pub _pad_1: [u8; 4],
+    pub _pad_2: [u8; 4],
     pub user_payload_: *const (),
-    pub _pad_2: [u8; 32],
+    pub _pad_3: [u8; 32],
     pub data_: *const (),
-    pub _pad_3: [u8; 16],
-    pub spec_data_: *const (),
     pub _pad_4: [u8; 16],
+    pub spec_data_: *const (),
+    pub _pad_5: [u8; 16],
     pub element: *mut mjsElement,
     pub data: *mut mjDoubleVec,
     pub size: i32,
-    pub _pad_5: [u8; 4],
+    pub _pad_6: [u8; 4],
     pub info_1: *mut mjString,
     pub spec: mjsNumeric,
 }
@@ -6276,10 +5963,11 @@ const _: () = assert!(std::mem::size_of::<mjCOctree>() == 176);
 #[derive(Clone, Copy)]
 pub struct mjCPair {
     pub _vtable: *mut (),
-    pub elemtype: [u8; 8],
+    pub elemtype: u32,
+    pub _pad_0: [u8; 4],
     pub signature: u64,
     pub id: i32,
-    pub _pad_0: [u8; 4],
+    pub _pad_1: [u8; 4],
     pub name: std__string,
     pub classname: std__string,
     pub info: std__string,
@@ -6289,11 +5977,11 @@ pub struct mjCPair {
     pub model: *mut mjCModel,
     pub compiler: *mut mjsCompiler,
     pub refcount: i32,
-    pub _pad_1: [u8; 4],
+    pub _pad_2: [u8; 4],
     pub user_payload_: *const (),
-    pub _pad_2: [u8; 32],
+    pub _pad_3: [u8; 32],
     pub signature_1: i32,
-    pub _pad_3: [u8; 4],
+    pub _pad_4: [u8; 4],
     pub geomname1_: std__string,
     pub geomname2_: std__string,
     pub spec_geomname1_: std__string,
@@ -6302,7 +5990,7 @@ pub struct mjCPair {
     pub geomname1: *mut mjString,
     pub geomname2: *mut mjString,
     pub condim: i32,
-    pub _pad_4: [u8; 4],
+    pub _pad_5: [u8; 4],
     pub solref: [f64; 2],
     pub solreffriction: [f64; 2],
     pub solimp: [f64; 5],
@@ -6321,10 +6009,11 @@ const _: () = assert!(std::mem::size_of::<mjCPair>() == 680);
 #[derive(Clone, Copy)]
 pub struct mjCPlugin {
     pub _vtable: *mut (),
-    pub elemtype: [u8; 8],
+    pub elemtype: u32,
+    pub _pad_0: [u8; 4],
     pub signature: u64,
     pub id: i32,
-    pub _pad_0: [u8; 4],
+    pub _pad_1: [u8; 4],
     pub name: std__string,
     pub classname: std__string,
     pub info: std__string,
@@ -6334,20 +6023,20 @@ pub struct mjCPlugin {
     pub model: *mut mjCModel,
     pub compiler: *mut mjsCompiler,
     pub refcount: i32,
-    pub _pad_1: [u8; 4],
+    pub _pad_2: [u8; 4],
     pub user_payload_: *const (),
-    pub _pad_2: [u8; 32],
+    pub _pad_3: [u8; 32],
     pub nstate: i32,
-    pub _pad_3: [u8; 4],
+    pub _pad_4: [u8; 4],
     pub config_attribs: *const (),
-    pub _pad_4: [u8; 16],
-    pub flattened_attributes: *const (),
     pub _pad_5: [u8; 16],
+    pub flattened_attributes: *const (),
+    pub _pad_6: [u8; 16],
     pub plugin_name: std__string,
     pub spec: mjsPlugin,
     pub parent: *mut mjCBase,
     pub plugin_slot: i32,
-    pub _pad_6: [u8; 4],
+    pub _pad_7: [u8; 4],
 }
 const _: () = assert!(std::mem::size_of::<mjCPlugin>() == 360);
 
@@ -6356,10 +6045,11 @@ const _: () = assert!(std::mem::size_of::<mjCPlugin>() == 360);
 #[derive(Clone, Copy)]
 pub struct mjCSensor {
     pub _vtable: *mut (),
-    pub elemtype: [u8; 8],
+    pub elemtype: u32,
+    pub _pad_0: [u8; 4],
     pub signature: u64,
     pub id: i32,
-    pub _pad_0: [u8; 4],
+    pub _pad_1: [u8; 4],
     pub name: std__string,
     pub classname: std__string,
     pub info: std__string,
@@ -6369,28 +6059,29 @@ pub struct mjCSensor {
     pub model: *mut mjCModel,
     pub compiler: *mut mjsCompiler,
     pub refcount: i32,
-    pub _pad_1: [u8; 4],
+    pub _pad_2: [u8; 4],
     pub user_payload_: *const (),
-    pub _pad_2: [u8; 32],
+    pub _pad_3: [u8; 32],
     pub plugin_name: std__string,
     pub plugin_instance_name: std__string,
     pub objname_: std__string,
     pub refname_: std__string,
     pub userdata_: *const (),
-    pub _pad_3: [u8; 16],
+    pub _pad_4: [u8; 16],
     pub spec_objname_: std__string,
     pub spec_refname_: std__string,
     pub spec_userdata_: *const (),
-    pub _pad_4: [u8; 16],
+    pub _pad_5: [u8; 16],
     pub element: *mut mjsElement,
-    pub r#type: [u8; 4],
-    pub objtype: [u8; 4],
+    pub r#type: u32,
+    pub objtype: u32,
     pub objname: *mut mjString,
-    pub reftype: [u8; 8],
+    pub reftype: u32,
+    pub _pad_6: [u8; 4],
     pub refname: *mut mjString,
     pub intprm: [i32; 3],
-    pub datatype: [u8; 4],
-    pub needstage: [u8; 4],
+    pub datatype: u32,
+    pub needstage: u32,
     pub dim: i32,
     pub cutoff: f64,
     pub noise: f64,
@@ -6412,10 +6103,11 @@ const _: () = assert!(std::mem::size_of::<mjCSensor>() == 768);
 #[derive(Clone, Copy)]
 pub struct mjCSite {
     pub _vtable: *mut (),
-    pub elemtype: [u8; 8],
+    pub elemtype: u32,
+    pub _pad_0: [u8; 4],
     pub signature: u64,
     pub id: i32,
-    pub _pad_0: [u8; 4],
+    pub _pad_1: [u8; 4],
     pub name: std__string,
     pub classname: std__string,
     pub info: std__string,
@@ -6425,25 +6117,26 @@ pub struct mjCSite {
     pub model: *mut mjCModel,
     pub compiler: *mut mjsCompiler,
     pub refcount: i32,
-    pub _pad_1: [u8; 4],
+    pub _pad_2: [u8; 4],
     pub user_payload_: *const (),
-    pub _pad_2: [u8; 32],
+    pub _pad_3: [u8; 32],
     pub material_: std__string,
     pub userdata_: *const (),
-    pub _pad_3: [u8; 16],
+    pub _pad_4: [u8; 16],
     pub spec_material_: std__string,
     pub spec_userdata_: *const (),
-    pub _pad_4: [u8; 16],
+    pub _pad_5: [u8; 16],
     pub body: *mut mjCBody,
     pub matid: i32,
-    pub _pad_5: [u8; 4],
+    pub _pad_6: [u8; 4],
     pub element: *mut mjsElement,
     pub pos: [f64; 3],
     pub quat: [f64; 4],
     pub alt: mjsOrientation,
     pub fromto: [f64; 6],
     pub size: [f64; 3],
-    pub r#type: [u8; 8],
+    pub r#type: u32,
+    pub _pad_7: [u8; 4],
     pub material: *mut mjString,
     pub group: i32,
     pub rgba: [u8; 20],
@@ -6458,10 +6151,11 @@ const _: () = assert!(std::mem::size_of::<mjCSite>() == 992);
 #[derive(Clone, Copy)]
 pub struct mjCSkin {
     pub _vtable: *mut (),
-    pub elemtype: [u8; 8],
+    pub elemtype: u32,
+    pub _pad_0: [u8; 4],
     pub signature: u64,
     pub id: i32,
-    pub _pad_0: [u8; 4],
+    pub _pad_1: [u8; 4],
     pub name: std__string,
     pub classname: std__string,
     pub info: std__string,
@@ -6471,49 +6165,49 @@ pub struct mjCSkin {
     pub model: *mut mjCModel,
     pub compiler: *mut mjsCompiler,
     pub refcount: i32,
-    pub _pad_1: [u8; 4],
+    pub _pad_2: [u8; 4],
     pub user_payload_: *const (),
-    pub _pad_2: [u8; 32],
+    pub _pad_3: [u8; 32],
     pub file_: std__string,
     pub material_: std__string,
     pub vert_: *const (),
-    pub _pad_3: [u8; 16],
-    pub texcoord_: *const (),
     pub _pad_4: [u8; 16],
-    pub face_: *const (),
+    pub texcoord_: *const (),
     pub _pad_5: [u8; 16],
-    pub bodyname_: *const (),
+    pub face_: *const (),
     pub _pad_6: [u8; 16],
-    pub bindpos_: *const (),
+    pub bodyname_: *const (),
     pub _pad_7: [u8; 16],
-    pub bindquat_: *const (),
+    pub bindpos_: *const (),
     pub _pad_8: [u8; 16],
-    pub vertid_: *const (),
+    pub bindquat_: *const (),
     pub _pad_9: [u8; 16],
-    pub vertweight_: *const (),
+    pub vertid_: *const (),
     pub _pad_10: [u8; 16],
+    pub vertweight_: *const (),
+    pub _pad_11: [u8; 16],
     pub spec_file_: std__string,
     pub spec_material_: std__string,
     pub spec_vert_: *const (),
-    pub _pad_11: [u8; 16],
-    pub spec_texcoord_: *const (),
     pub _pad_12: [u8; 16],
-    pub spec_face_: *const (),
+    pub spec_texcoord_: *const (),
     pub _pad_13: [u8; 16],
-    pub spec_bodyname_: *const (),
+    pub spec_face_: *const (),
     pub _pad_14: [u8; 16],
-    pub spec_bindpos_: *const (),
+    pub spec_bodyname_: *const (),
     pub _pad_15: [u8; 16],
-    pub spec_bindquat_: *const (),
+    pub spec_bindpos_: *const (),
     pub _pad_16: [u8; 16],
-    pub spec_vertid_: *const (),
+    pub spec_bindquat_: *const (),
     pub _pad_17: [u8; 16],
-    pub spec_vertweight_: *const (),
+    pub spec_vertid_: *const (),
     pub _pad_18: [u8; 16],
+    pub spec_vertweight_: *const (),
+    pub _pad_19: [u8; 16],
     pub matid: i32,
-    pub _pad_19: [u8; 4],
+    pub _pad_20: [u8; 4],
     pub bodyid: *const (),
-    pub _pad_20: [u8; 16],
+    pub _pad_21: [u8; 16],
     pub element: *mut mjsElement,
     pub file: *mut mjString,
     pub material: *mut mjString,
@@ -6538,10 +6232,11 @@ const _: () = assert!(std::mem::size_of::<mjCSkin>() == 976);
 #[derive(Clone, Copy)]
 pub struct mjCTendon {
     pub _vtable: *mut (),
-    pub elemtype: [u8; 8],
+    pub elemtype: u32,
+    pub _pad_0: [u8; 4],
     pub signature: u64,
     pub id: i32,
-    pub _pad_0: [u8; 4],
+    pub _pad_1: [u8; 4],
     pub name: std__string,
     pub classname: std__string,
     pub info: std__string,
@@ -6551,17 +6246,17 @@ pub struct mjCTendon {
     pub model: *mut mjCModel,
     pub compiler: *mut mjsCompiler,
     pub refcount: i32,
-    pub _pad_1: [u8; 4],
+    pub _pad_2: [u8; 4],
     pub user_payload_: *const (),
-    pub _pad_2: [u8; 32],
+    pub _pad_3: [u8; 32],
     pub matid: i32,
-    pub _pad_3: [u8; 4],
+    pub _pad_4: [u8; 4],
     pub material_: std__string,
     pub spec_material_: std__string,
     pub userdata_: *const (),
-    pub _pad_4: [u8; 16],
-    pub spec_userdata_: *const (),
     pub _pad_5: [u8; 16],
+    pub spec_userdata_: *const (),
+    pub _pad_6: [u8; 16],
     pub element: *mut mjsElement,
     pub stiffness: [f64; 3],
     pub springlength: [f64; 2],
@@ -6581,12 +6276,12 @@ pub struct mjCTendon {
     pub width: f64,
     pub rgba: [f32; 4],
     pub group: i32,
-    pub _pad_6: [u8; 4],
+    pub _pad_7: [u8; 4],
     pub userdata: *mut mjDoubleVec,
     pub info_1: *mut mjString,
     pub spec: mjsTendon,
     pub path: *const (),
-    pub _pad_7: [u8; 16],
+    pub _pad_8: [u8; 16],
 }
 const _: () = assert!(std::mem::size_of::<mjCTendon>() == 960);
 
@@ -6595,10 +6290,11 @@ const _: () = assert!(std::mem::size_of::<mjCTendon>() == 960);
 #[derive(Clone, Copy)]
 pub struct mjCText {
     pub _vtable: *mut (),
-    pub elemtype: [u8; 8],
+    pub elemtype: u32,
+    pub _pad_0: [u8; 4],
     pub signature: u64,
     pub id: i32,
-    pub _pad_0: [u8; 4],
+    pub _pad_1: [u8; 4],
     pub name: std__string,
     pub classname: std__string,
     pub info: std__string,
@@ -6608,9 +6304,9 @@ pub struct mjCText {
     pub model: *mut mjCModel,
     pub compiler: *mut mjsCompiler,
     pub refcount: i32,
-    pub _pad_1: [u8; 4],
+    pub _pad_2: [u8; 4],
     pub user_payload_: *const (),
-    pub _pad_2: [u8; 32],
+    pub _pad_3: [u8; 32],
     pub data_: std__string,
     pub spec_data_: std__string,
     pub element: *mut mjsElement,
@@ -6625,10 +6321,11 @@ const _: () = assert!(std::mem::size_of::<mjCText>() == 320);
 #[derive(Clone, Copy)]
 pub struct mjCTexture {
     pub _vtable: *mut (),
-    pub elemtype: [u8; 8],
+    pub elemtype: u32,
+    pub _pad_0: [u8; 4],
     pub signature: u64,
     pub id: i32,
-    pub _pad_0: [u8; 4],
+    pub _pad_1: [u8; 4],
     pub name: std__string,
     pub classname: std__string,
     pub info: std__string,
@@ -6638,22 +6335,22 @@ pub struct mjCTexture {
     pub model: *mut mjCModel,
     pub compiler: *mut mjsCompiler,
     pub refcount: i32,
-    pub _pad_1: [u8; 4],
+    pub _pad_2: [u8; 4],
     pub user_payload_: *const (),
-    pub _pad_2: [u8; 32],
+    pub _pad_3: [u8; 32],
     pub data_: *const (),
-    pub _pad_3: [u8; 16],
+    pub _pad_4: [u8; 16],
     pub file_: std__string,
     pub content_type_: std__string,
     pub cubefiles_: *const (),
-    pub _pad_4: [u8; 16],
+    pub _pad_5: [u8; 16],
     pub spec_file_: std__string,
     pub spec_content_type_: std__string,
     pub spec_cubefiles_: *const (),
-    pub _pad_5: [u8; 16],
+    pub _pad_6: [u8; 16],
     pub element: *mut mjsElement,
-    pub r#type: [u8; 4],
-    pub colorspace: [u8; 4],
+    pub r#type: u32,
+    pub colorspace: u32,
     pub builtin: i32,
     pub mark: i32,
     pub rgb1: [f64; 3],
@@ -6663,7 +6360,7 @@ pub struct mjCTexture {
     pub height: i32,
     pub width: i32,
     pub nchannel: i32,
-    pub _pad_6: [u8; 4],
+    pub _pad_7: [u8; 4],
     pub content_type: *mut mjString,
     pub file: *mut mjString,
     pub gridsize: [i32; 2],
@@ -6672,12 +6369,12 @@ pub struct mjCTexture {
     pub data: *mut mjByteVec,
     pub hflip: u8,
     pub vflip: u8,
-    pub _pad_7: [u8; 6],
+    pub _pad_8: [u8; 6],
     pub info_1: *mut mjString,
     pub spec: mjsTexture,
     pub texture_time_: f64,
     pub clear_data_: bool,
-    pub _pad_8: [u8; 7],
+    pub _pad_9: [u8; 7],
 }
 const _: () = assert!(std::mem::size_of::<mjCTexture>() == 792);
 
@@ -6686,10 +6383,11 @@ const _: () = assert!(std::mem::size_of::<mjCTexture>() == 792);
 #[derive(Clone, Copy)]
 pub struct mjCTuple {
     pub _vtable: *mut (),
-    pub elemtype: [u8; 8],
+    pub elemtype: u32,
+    pub _pad_0: [u8; 4],
     pub signature: u64,
     pub id: i32,
-    pub _pad_0: [u8; 4],
+    pub _pad_1: [u8; 4],
     pub name: std__string,
     pub classname: std__string,
     pub info: std__string,
@@ -6699,23 +6397,23 @@ pub struct mjCTuple {
     pub model: *mut mjCModel,
     pub compiler: *mut mjsCompiler,
     pub refcount: i32,
-    pub _pad_1: [u8; 4],
+    pub _pad_2: [u8; 4],
     pub user_payload_: *const (),
-    pub _pad_2: [u8; 32],
+    pub _pad_3: [u8; 32],
     pub obj: *const (),
-    pub _pad_3: [u8; 16],
-    pub objtype_: *const (),
     pub _pad_4: [u8; 16],
-    pub objname_: *const (),
+    pub objtype_: *const (),
     pub _pad_5: [u8; 16],
-    pub objprm_: *const (),
+    pub objname_: *const (),
     pub _pad_6: [u8; 16],
-    pub spec_objtype_: *const (),
+    pub objprm_: *const (),
     pub _pad_7: [u8; 16],
-    pub spec_objname_: *const (),
+    pub spec_objtype_: *const (),
     pub _pad_8: [u8; 16],
-    pub spec_objprm_: *const (),
+    pub spec_objname_: *const (),
     pub _pad_9: [u8; 16],
+    pub spec_objprm_: *const (),
+    pub _pad_10: [u8; 16],
     pub element: *mut mjsElement,
     pub objtype: *mut mjIntVec,
     pub objname: *mut mjStringVec,
@@ -6730,10 +6428,11 @@ const _: () = assert!(std::mem::size_of::<mjCTuple>() == 472);
 #[derive(Clone, Copy)]
 pub struct mjCWrap {
     pub _vtable: *mut (),
-    pub elemtype: [u8; 8],
+    pub elemtype: u32,
+    pub _pad_0: [u8; 4],
     pub signature: u64,
     pub id: i32,
-    pub _pad_0: [u8; 4],
+    pub _pad_1: [u8; 4],
     pub name: std__string,
     pub classname: std__string,
     pub info: std__string,
@@ -6743,15 +6442,16 @@ pub struct mjCWrap {
     pub model: *mut mjCModel,
     pub compiler: *mut mjsCompiler,
     pub refcount: i32,
-    pub _pad_1: [u8; 4],
+    pub _pad_2: [u8; 4],
     pub user_payload_: *const (),
-    pub _pad_2: [u8; 32],
+    pub _pad_3: [u8; 32],
     pub sideid: i32,
-    pub _pad_3: [u8; 4],
+    pub _pad_4: [u8; 4],
     pub prm: f64,
     pub sidesite: std__string,
     pub element: *mut mjsElement,
-    pub r#type: [u8; 8],
+    pub r#type: u32,
+    pub _pad_5: [u8; 4],
     pub info_1: *mut mjString,
     pub spec: mjsWrap,
     pub obj: *mut mjCBase,
@@ -6807,7 +6507,7 @@ pub struct mjDCMotorSlots {
 }
 const _: () = assert!(std::mem::size_of::<mjDCMotorSlots>() == 24);
 
-/// C struct: mjData (161872 bytes, align 8)
+/// C struct: mjData_ (161872 bytes, align 8)
 #[repr(C, align(8))]
 #[derive(Clone, Copy)]
 pub struct mjData {
@@ -7037,7 +6737,7 @@ pub struct mjLogConfig {
 }
 const _: () = assert!(std::mem::size_of::<mjLogConfig>() == 1032);
 
-/// C struct: mjLogMessage (1064 bytes, align 8)
+/// C struct: mjLogMessage_ (1064 bytes, align 8)
 #[repr(C, align(8))]
 #[derive(Clone, Copy)]
 pub struct mjLogMessage {
@@ -7675,7 +7375,7 @@ pub struct mjOption {
 }
 const _: () = assert!(std::mem::size_of::<mjOption>() == 304);
 
-/// C struct: mjPreContact (80 bytes, align 8)
+/// C struct: mjPreContact_ (80 bytes, align 8)
 #[repr(C, align(8))]
 #[derive(Clone, Copy)]
 pub struct mjPreContact {
@@ -7714,7 +7414,8 @@ const _: () = assert!(std::mem::size_of::<mjResource>() == 544);
 pub struct mjSDF {
     pub plugin: *const *mut mjpPlugin,
     pub id: *mut i32,
-    pub r#type: [u8; 8],
+    pub r#type: u32,
+    pub _pad_0: [u8; 4],
     pub relpos: *mut f64,
     pub relmat: *mut f64,
     pub geomtype: *mut u32,
@@ -7784,7 +7485,7 @@ const _: () = assert!(std::mem::size_of::<mjStatistic>() == 56);
 #[repr(C, align(8))]
 #[derive(Clone, Copy)]
 pub struct mjUI {
-    pub spacing: [u8; 52],
+    pub spacing: mjuiThemeSpacing,
     pub color: [u8; 340],
     pub predicate: mjfItemEnable,
     pub userdata: *mut (),
@@ -7826,10 +7527,10 @@ const _: () = assert!(std::mem::size_of::<mjVFS>() == 8);
 pub struct mjVisual {
     pub global: [u8; 52],
     pub quality: [u8; 20],
-    pub headlight: struct__unnamed_at__Users_xing_Desktop_projects_c2rust_bitexact_projects_mujoco_include_mujoco_mjmodel_h_156_3,
+    pub headlight: [u8; 40],
     pub map: [u8; 52],
     pub scale: [u8; 68],
-    pub rgba: struct__unnamed_at__Users_xing_Desktop_projects_c2rust_bitexact_projects_mujoco_include_mujoco_mjmodel_h_199_3,
+    pub rgba: [u8; 400],
 }
 const _: () = assert!(std::mem::size_of::<mjVisual>() == 632);
 
@@ -7889,9 +7590,12 @@ pub struct mjXURDF {
     pub _pad_2: [u8; 16],
     pub urMat: *const (),
     pub _pad_3: [u8; 16],
-    pub urRGBA: [u8; 24],
-    pub urGeomNames: [u8; 40],
-    pub meshes: [u8; 24],
+    pub urRGBA: *const (),
+    pub _pad_4: [u8; 16],
+    pub urGeomNames: *const (),
+    pub _pad_5: [u8; 32],
+    pub meshes: *const (),
+    pub _pad_6: [u8; 16],
     pub urPrefix: std__string,
 }
 const _: () = assert!(std::mem::size_of::<mjXURDF>() == 224);
@@ -7923,17 +7627,19 @@ pub struct mj_XMLPrinter {
     pub _vtable: *mut (),
     pub _elementJustOpened: bool,
     pub _pad_0: [u8; 7],
-    pub _stack: [u8; 104],
+    pub _stack: *const (),
+    pub _pad_1: [u8; 96],
     pub _firstElement: bool,
-    pub _pad_1: [u8; 7],
+    pub _pad_2: [u8; 7],
     pub _fp: *mut FILE,
     pub _depth: i32,
     pub _textDepth: i32,
     pub _processEntities: bool,
     pub _compactMode: bool,
-    pub _entityFlag: [u8; 64],
+    pub _entityFlag: [bool; 64],
     pub _restrictedEntityFlag: [u8; 70],
-    pub _buffer: [u8; 48],
+    pub _buffer: *const (),
+    pub _pad_3: [u8; 40],
 }
 const _: () = assert!(std::mem::size_of::<mj_XMLPrinter>() == 328);
 
@@ -7959,7 +7665,7 @@ pub struct mjpEncoder {
 }
 const _: () = assert!(std::mem::size_of::<mjpEncoder>() == 32);
 
-/// C struct: mjpPlugin_ (152 bytes, align 8)
+/// C struct: mjpPlugin (152 bytes, align 8)
 #[repr(C, align(8))]
 #[derive(Clone, Copy)]
 pub struct mjpPlugin {
@@ -8086,16 +7792,20 @@ const _: () = assert!(std::mem::size_of::<mjrRect>() == 16);
 #[derive(Clone, Copy)]
 pub struct mjsActuator {
     pub element: *mut mjsElement,
-    pub gaintype: [u8; 8],
+    pub gaintype: u32,
+    pub _pad_0: [u8; 4],
     pub gainprm: [f64; 10],
-    pub biastype: [u8; 8],
+    pub biastype: u32,
+    pub _pad_1: [u8; 4],
     pub biasprm: [f64; 10],
-    pub dyntype: [u8; 8],
+    pub dyntype: u32,
+    pub _pad_2: [u8; 4],
     pub dynprm: [f64; 10],
     pub actdim: i32,
     pub actearly: u8,
-    pub _pad_0: [u8; 3],
-    pub trntype: [u8; 8],
+    pub _pad_3: [u8; 3],
+    pub trntype: u32,
+    pub _pad_4: [u8; 4],
     pub gear: [f64; 6],
     pub target: *mut mjString,
     pub refsite: *mut mjString,
@@ -8106,24 +7816,42 @@ pub struct mjsActuator {
     pub damping: [f64; 3],
     pub armature: f64,
     pub ctrllimited: i32,
-    pub _pad_1: [u8; 4],
+    pub _pad_5: [u8; 4],
     pub ctrlrange: [f64; 2],
     pub forcelimited: i32,
-    pub _pad_2: [u8; 4],
+    pub _pad_6: [u8; 4],
     pub forcerange: [f64; 2],
     pub actlimited: i32,
-    pub _pad_3: [u8; 4],
+    pub _pad_7: [u8; 4],
     pub actrange: [f64; 2],
     pub group: i32,
     pub nsample: i32,
     pub interp: i32,
-    pub _pad_4: [u8; 4],
+    pub _pad_8: [u8; 4],
     pub delay: f64,
     pub userdata: *mut mjDoubleVec,
     pub plugin: mjsPlugin,
     pub info: *mut mjString,
 }
 const _: () = assert!(std::mem::size_of::<mjsActuator>() == 576);
+
+/// C struct: mjsAuthored (72 bytes, align 8)
+#[repr(C, align(8))]
+#[derive(Clone, Copy)]
+pub struct mjsAuthored {
+    pub option: u64,
+    pub disableflags: i32,
+    pub enableflags: i32,
+    pub disableactuator: i32,
+    pub _pad_0: [u8; 4],
+    pub visual_global: u64,
+    pub visual_quality: u64,
+    pub visual_headlight: u64,
+    pub visual_map: u64,
+    pub visual_scale: u64,
+    pub visual_rgba: u64,
+}
+const _: () = assert!(std::mem::size_of::<mjsAuthored>() == 72);
 
 /// C struct: mjsBody (568 bytes, align 8)
 #[repr(C, align(8))]
@@ -8143,10 +7871,11 @@ pub struct mjsBody {
     pub mocap: u8,
     pub _pad_0: [u8; 7],
     pub gravcomp: f64,
-    pub sleep: [u8; 8],
+    pub sleep: u32,
+    pub _pad_1: [u8; 4],
     pub userdata: *mut mjDoubleVec,
     pub explicitinertial: u8,
-    pub _pad_1: [u8; 7],
+    pub _pad_2: [u8; 7],
     pub plugin: mjsPlugin,
     pub info: *mut mjString,
 }
@@ -8160,9 +7889,10 @@ pub struct mjsCamera {
     pub pos: [f64; 3],
     pub quat: [f64; 4],
     pub alt: mjsOrientation,
-    pub mode: [u8; 8],
+    pub mode: u32,
+    pub _pad_0: [u8; 4],
     pub targetbody: *mut mjString,
-    pub proj: [u8; 4],
+    pub proj: u32,
     pub resolution: [i32; 2],
     pub output: i32,
     pub fovy: f64,
@@ -8233,7 +7963,8 @@ const _: () = assert!(std::mem::size_of::<mjsDefault>() == 104);
 #[repr(C, align(8))]
 #[derive(Clone, Copy)]
 pub struct mjsElement {
-    pub elemtype: [u8; 8],
+    pub elemtype: u32,
+    pub _pad_0: [u8; 4],
     pub signature: u64,
 }
 const _: () = assert!(std::mem::size_of::<mjsElement>() == 16);
@@ -8243,18 +7974,31 @@ const _: () = assert!(std::mem::size_of::<mjsElement>() == 16);
 #[derive(Clone, Copy)]
 pub struct mjsEquality {
     pub element: *mut mjsElement,
-    pub r#type: [u8; 8],
+    pub r#type: u32,
+    pub _pad_0: [u8; 4],
     pub data: [f64; 11],
     pub active: u8,
-    pub _pad_0: [u8; 7],
+    pub _pad_1: [u8; 7],
     pub name1: *mut mjString,
     pub name2: *mut mjString,
-    pub objtype: [u8; 8],
+    pub objtype: u32,
+    pub _pad_2: [u8; 4],
     pub solref: [f64; 2],
     pub solimp: [f64; 5],
     pub info: *mut mjString,
 }
 const _: () = assert!(std::mem::size_of::<mjsEquality>() == 200);
+
+/// C struct: mjsExclude (32 bytes, align 8)
+#[repr(C, align(8))]
+#[derive(Clone, Copy)]
+pub struct mjsExclude {
+    pub element: *mut mjsElement,
+    pub bodyname1: *mut mjString,
+    pub bodyname2: *mut mjString,
+    pub info: *mut mjString,
+}
+const _: () = assert!(std::mem::size_of::<mjsExclude>() == 32);
 
 /// C struct: mjsFlex (352 bytes, align 8)
 #[repr(C, align(8))]
@@ -8324,7 +8068,8 @@ const _: () = assert!(std::mem::size_of::<mjsFrame>() == 216);
 #[derive(Clone, Copy)]
 pub struct mjsGeom {
     pub element: *mut mjsElement,
-    pub r#type: [u8; 8],
+    pub r#type: u32,
+    pub _pad_0: [u8; 4],
     pub pos: [f64; 3],
     pub quat: [f64; 4],
     pub alt: mjsOrientation,
@@ -8342,13 +8087,14 @@ pub struct mjsGeom {
     pub gap: f64,
     pub mass: f64,
     pub density: f64,
-    pub typeinertia: [u8; 8],
+    pub typeinertia: u32,
+    pub _pad_1: [u8; 4],
     pub fluid_ellipsoid: f64,
     pub fluid_coefs: [f64; 5],
     pub material: *mut mjString,
     pub rgba: [f32; 4],
     pub group: i32,
-    pub _pad_0: [u8; 4],
+    pub _pad_2: [u8; 4],
     pub hfieldname: *mut mjString,
     pub meshname: *mut mjString,
     pub fitscale: f64,
@@ -8378,23 +8124,24 @@ const _: () = assert!(std::mem::size_of::<mjsHField>() == 80);
 #[derive(Clone, Copy)]
 pub struct mjsJoint {
     pub element: *mut mjsElement,
-    pub r#type: [u8; 8],
+    pub r#type: u32,
+    pub _pad_0: [u8; 4],
     pub pos: [f64; 3],
     pub axis: [f64; 3],
     pub r#ref: f64,
     pub align: i32,
-    pub _pad_0: [u8; 4],
+    pub _pad_1: [u8; 4],
     pub stiffness: [f64; 3],
     pub springref: f64,
     pub springdamper: [f64; 2],
     pub limited: i32,
-    pub _pad_1: [u8; 4],
+    pub _pad_2: [u8; 4],
     pub range: [f64; 2],
     pub margin: f64,
     pub solref_limit: [f64; 2],
     pub solimp_limit: [f64; 5],
     pub actfrclimited: i32,
-    pub _pad_2: [u8; 4],
+    pub _pad_3: [u8; 4],
     pub actfrcrange: [f64; 2],
     pub armature: f64,
     pub damping: [f64; 3],
@@ -8403,7 +8150,7 @@ pub struct mjsJoint {
     pub solimp_friction: [f64; 5],
     pub group: i32,
     pub actgravcomp: u8,
-    pub _pad_3: [u8; 3],
+    pub _pad_4: [u8; 3],
     pub userdata: *mut mjDoubleVec,
     pub info: *mut mjString,
 }
@@ -8432,14 +8179,15 @@ pub struct mjsLight {
     pub element: *mut mjsElement,
     pub pos: [f64; 3],
     pub dir: [f64; 3],
-    pub mode: [u8; 8],
+    pub mode: u32,
+    pub _pad_0: [u8; 4],
     pub targetbody: *mut mjString,
     pub active: u8,
-    pub _pad_0: [u8; 3],
-    pub r#type: [u8; 4],
+    pub _pad_1: [u8; 3],
+    pub r#type: u32,
     pub texture: *mut mjString,
     pub castshadow: u8,
-    pub _pad_1: [u8; 3],
+    pub _pad_2: [u8; 3],
     pub bulbradius: f32,
     pub intensity: f32,
     pub range: f32,
@@ -8483,7 +8231,7 @@ pub struct mjsMesh {
     pub refpos: [f64; 3],
     pub refquat: [f64; 4],
     pub scale: [f64; 3],
-    pub inertia: [u8; 4],
+    pub inertia: u32,
     pub smoothnormal: u8,
     pub needsdf: u8,
     pub _pad_0: [u8; 2],
@@ -8519,7 +8267,8 @@ const _: () = assert!(std::mem::size_of::<mjsNumeric>() == 32);
 #[repr(C, align(8))]
 #[derive(Clone, Copy)]
 pub struct mjsOrientation {
-    pub r#type: [u8; 8],
+    pub r#type: u32,
+    pub _pad_0: [u8; 4],
     pub axisangle: [f64; 4],
     pub xyaxes: [f64; 6],
     pub zaxis: [f64; 3],
@@ -8564,14 +8313,15 @@ const _: () = assert!(std::mem::size_of::<mjsPlugin>() == 40);
 #[derive(Clone, Copy)]
 pub struct mjsSensor {
     pub element: *mut mjsElement,
-    pub r#type: [u8; 4],
-    pub objtype: [u8; 4],
+    pub r#type: u32,
+    pub objtype: u32,
     pub objname: *mut mjString,
-    pub reftype: [u8; 8],
+    pub reftype: u32,
+    pub _pad_0: [u8; 4],
     pub refname: *mut mjString,
     pub intprm: [i32; 3],
-    pub datatype: [u8; 4],
-    pub needstage: [u8; 4],
+    pub datatype: u32,
+    pub needstage: u32,
     pub dim: i32,
     pub cutoff: f64,
     pub noise: f64,
@@ -8595,7 +8345,8 @@ pub struct mjsSite {
     pub alt: mjsOrientation,
     pub fromto: [f64; 6],
     pub size: [f64; 3],
-    pub r#type: [u8; 8],
+    pub r#type: u32,
+    pub _pad_0: [u8; 4],
     pub material: *mut mjString,
     pub group: i32,
     pub rgba: [u8; 20],
@@ -8670,8 +8421,8 @@ const _: () = assert!(std::mem::size_of::<mjsText>() == 24);
 #[derive(Clone, Copy)]
 pub struct mjsTexture {
     pub element: *mut mjsElement,
-    pub r#type: [u8; 4],
-    pub colorspace: [u8; 4],
+    pub r#type: u32,
+    pub colorspace: u32,
     pub builtin: i32,
     pub mark: i32,
     pub rgb1: [f64; 3],
@@ -8712,7 +8463,8 @@ const _: () = assert!(std::mem::size_of::<mjsTuple>() == 40);
 #[derive(Clone, Copy)]
 pub struct mjsWrap {
     pub element: *mut mjsElement,
-    pub r#type: [u8; 8],
+    pub r#type: u32,
+    pub _pad_0: [u8; 4],
     pub info: *mut mjString,
 }
 const _: () = assert!(std::mem::size_of::<mjsWrap>() == 24);
@@ -8810,7 +8562,7 @@ pub struct mjuiState {
 }
 const _: () = assert!(std::mem::size_of::<mjuiState>() == 544);
 
-/// C struct: mjuiThemeColor_ (336 bytes, align 4)
+/// C struct: mjuiThemeColor (336 bytes, align 4)
 #[repr(C, align(4))]
 #[derive(Clone, Copy)]
 pub struct mjuiThemeColor {
@@ -8845,7 +8597,7 @@ pub struct mjuiThemeColor {
 }
 const _: () = assert!(std::mem::size_of::<mjuiThemeColor>() == 336);
 
-/// C struct: mjuiThemeSpacing_ (52 bytes, align 4)
+/// C struct: mjuiThemeSpacing (52 bytes, align 4)
 #[repr(C, align(4))]
 #[derive(Clone, Copy)]
 pub struct mjuiThemeSpacing {
@@ -9078,6 +8830,17 @@ pub struct mjvScene {
 }
 const _: () = assert!(std::mem::size_of::<mjvScene>() == 11184);
 
+/// C struct: mujoco::GlobalTable (2560 bytes, align 256)
+#[repr(C, align(256))]
+#[derive(Clone, Copy)]
+pub struct mujoco__GlobalTable {
+    pub first_block_: *const (),
+    pub _pad_0: [u8; 2296],
+    pub count_: std__atomic_int,
+    pub mutex_: [u8; 248],
+}
+const _: () = assert!(std::mem::size_of::<mujoco__GlobalTable>() == 2560);
+
 /// C struct: mujoco::ReentrantWriteLock (8 bytes, align 8)
 #[repr(C, align(8))]
 #[derive(Clone, Copy)]
@@ -9089,18 +8852,19 @@ const _: () = assert!(std::mem::size_of::<mujoco__ReentrantWriteLock>() == 8);
 /// C struct: mujoco::Resolver (96 bytes, align 8)
 #[repr(C, align(8))]
 #[derive(Clone, Copy)]
-pub struct mujoco___anonymous_namespace___Resolver {
-    pub mode: [u8; 8],
+pub struct mujoco__Resolver {
+    pub mode: u32,
+    pub _pad_0: [u8; 4],
     pub parent: *mut mjSpec,
     pub child: *const mjSpec,
     pub errs: *const (),
-    pub _pad_0: [u8; 16],
-    pub warnings: *const (),
     pub _pad_1: [u8; 16],
-    pub ops: *const (),
+    pub warnings: *const (),
     pub _pad_2: [u8; 16],
+    pub ops: *const (),
+    pub _pad_3: [u8; 16],
 }
-const _: () = assert!(std::mem::size_of::<mujoco___anonymous_namespace___Resolver>() == 96);
+const _: () = assert!(std::mem::size_of::<mujoco__Resolver>() == 96);
 
 /// C struct: mujoco::user::FilePath (24 bytes, align 8)
 #[repr(C, align(8))]
@@ -9109,6 +8873,21 @@ pub struct mujoco__user__FilePath {
     pub path_: std__string,
 }
 const _: () = assert!(std::mem::size_of::<mujoco__user__FilePath>() == 24);
+
+/// C struct: mujoco::user::ThreadPool (240 bytes, align 8)
+#[repr(C, align(8))]
+#[derive(Clone, Copy)]
+pub struct mujoco__user__ThreadPool {
+    pub threads_: *const (),
+    pub _pad_0: [u8; 16],
+    pub m_: std__mutex,
+    pub cv_in_: std__condition_variable,
+    pub cv_ext_: std__condition_variable,
+    pub queue_: *const (),
+    pub _pad_1: [u8; 40],
+    pub ctr_: u64,
+}
+const _: () = assert!(std::mem::size_of::<mujoco__user__ThreadPool>() == 240);
 
 /// C struct: mujoco::user::VFS (792 bytes, align 8)
 #[repr(C, align(8))]
@@ -9151,26 +8930,156 @@ pub struct std__mutex {
 }
 const _: () = assert!(std::mem::size_of::<std__mutex>() == 64);
 
+/// C struct: struct __sbuf (16 bytes, align 8)
+#[repr(C, align(8))]
+#[derive(Clone, Copy)]
+pub struct struct___sbuf {
+    pub _base: *mut u8,
+    pub _size: i32,
+    pub _pad_0: [u8; 4],
+}
+const _: () = assert!(std::mem::size_of::<struct___sbuf>() == 16);
+
+/// C struct: struct mjpResourceProvider (64 bytes, align 8)
+#[repr(C, align(8))]
+#[derive(Clone, Copy)]
+pub struct struct_mjpResourceProvider {
+    pub prefix: *const i8,
+    pub open: mjfOpenResource,
+    pub read: mjfReadResource,
+    pub close: mjfCloseResource,
+    pub mount: mjfMountResource,
+    pub unmount: mjfUnmountResource,
+    pub modified: mjfResourceModified,
+    pub data: *mut (),
+}
+const _: () = assert!(std::mem::size_of::<struct_mjpResourceProvider>() == 64);
+
+/// C struct: struct vertbuf (40 bytes, align 4)
+#[repr(C, align(4))]
+#[derive(Clone, Copy)]
+pub struct struct_vertbuf {
+    pub nvert: i32,
+    pub vert1: [f32; 3],
+    pub vert2: [f32; 3],
+    pub vert3: [f32; 3],
+}
+const _: () = assert!(std::mem::size_of::<struct_vertbuf>() == 40);
+
+/// C struct: tinyxml2::MemPool (8 bytes, align 8)
+#[repr(C, align(8))]
+#[derive(Clone, Copy)]
+pub struct tinyxml2__MemPool {
+    pub _vtable: *mut (),
+}
+const _: () = assert!(std::mem::size_of::<tinyxml2__MemPool>() == 8);
+
+/// C struct: tinyxml2::StrPair (24 bytes, align 8)
+#[repr(C, align(8))]
+#[derive(Clone, Copy)]
+pub struct tinyxml2__StrPair {
+    pub _flags: i32,
+    pub _pad_0: [u8; 4],
+    pub _start: *mut i8,
+    pub _end: *mut i8,
+}
+const _: () = assert!(std::mem::size_of::<tinyxml2__StrPair>() == 24);
+
+/// C struct: tinyxml2::XMLAttribute (80 bytes, align 8)
+#[repr(C, align(8))]
+#[derive(Clone, Copy)]
+pub struct tinyxml2__XMLAttribute {
+    pub _vtable: *mut (),
+    pub _name: tinyxml2__StrPair,
+    pub _value: tinyxml2__StrPair,
+    pub _parseLineNum: i32,
+    pub _pad_0: [u8; 4],
+    pub _next: *mut tinyxml2__XMLAttribute,
+    pub _memPool: *mut tinyxml2__MemPool,
+}
+const _: () = assert!(std::mem::size_of::<tinyxml2__XMLAttribute>() == 80);
+
+/// C struct: tinyxml2::XMLDocument (880 bytes, align 8)
+#[repr(C, align(8))]
+#[derive(Clone, Copy)]
+pub struct tinyxml2__XMLDocument {
+    pub _vtable: *mut (),
+    pub _document: *mut tinyxml2__XMLDocument,
+    pub _parent: *mut tinyxml2__XMLNode,
+    pub _value: tinyxml2__StrPair,
+    pub _parseLineNum: i32,
+    pub _pad_0: [u8; 4],
+    pub _firstChild: *mut tinyxml2__XMLNode,
+    pub _lastChild: *mut tinyxml2__XMLNode,
+    pub _prev: *mut tinyxml2__XMLNode,
+    pub _next: *mut tinyxml2__XMLNode,
+    pub _userData: *mut (),
+    pub _memPool: *mut tinyxml2__MemPool,
+    pub _writeBOM: bool,
+    pub _processEntities: bool,
+    pub _pad_1: [u8; 2],
+    pub _errorID: u32,
+    pub _whitespaceMode: u32,
+    pub _pad_2: [u8; 4],
+    pub _errorStr: tinyxml2__StrPair,
+    pub _errorLineNum: i32,
+    pub _pad_3: [u8; 4],
+    pub _charBuffer: *mut i8,
+    pub _parseCurLineNum: i32,
+    pub _parsingDepth: i32,
+    pub _unlinked: *const (),
+    pub _pad_4: [u8; 96],
+    pub _elementPool: *const (),
+    pub _pad_5: [u8; 144],
+    pub _attributePool: *const (),
+    pub _pad_6: [u8; 144],
+    pub _textPool: *const (),
+    pub _pad_7: [u8; 144],
+    pub _commentPool: *const (),
+    pub _pad_8: [u8; 144],
+}
+const _: () = assert!(std::mem::size_of::<tinyxml2__XMLDocument>() == 880);
+
 /// C struct: tinyxml2::XMLElement (120 bytes, align 8)
 #[repr(C, align(8))]
 #[derive(Clone, Copy)]
 pub struct tinyxml2__XMLElement {
     pub _vtable: *mut (),
-    pub _document: *mut XMLDocument,
-    pub _parent: *mut XMLNode,
-    pub _value: StrPair,
+    pub _document: *mut tinyxml2__XMLDocument,
+    pub _parent: *mut tinyxml2__XMLNode,
+    pub _value: tinyxml2__StrPair,
     pub _parseLineNum: i32,
     pub _pad_0: [u8; 4],
-    pub _firstChild: *mut XMLNode,
-    pub _lastChild: *mut XMLNode,
-    pub _prev: *mut XMLNode,
-    pub _next: *mut XMLNode,
+    pub _firstChild: *mut tinyxml2__XMLNode,
+    pub _lastChild: *mut tinyxml2__XMLNode,
+    pub _prev: *mut tinyxml2__XMLNode,
+    pub _next: *mut tinyxml2__XMLNode,
     pub _userData: *mut (),
-    pub _memPool: *mut MemPool,
-    pub _closingType: [u8; 8],
-    pub _rootAttribute: *mut XMLAttribute,
+    pub _memPool: *mut tinyxml2__MemPool,
+    pub _closingType: u32,
+    pub _pad_1: [u8; 4],
+    pub _rootAttribute: *mut tinyxml2__XMLAttribute,
 }
 const _: () = assert!(std::mem::size_of::<tinyxml2__XMLElement>() == 120);
+
+/// C struct: tinyxml2::XMLNode (104 bytes, align 8)
+#[repr(C, align(8))]
+#[derive(Clone, Copy)]
+pub struct tinyxml2__XMLNode {
+    pub _vtable: *mut (),
+    pub _document: *mut tinyxml2__XMLDocument,
+    pub _parent: *mut tinyxml2__XMLNode,
+    pub _value: tinyxml2__StrPair,
+    pub _parseLineNum: i32,
+    pub _pad_0: [u8; 4],
+    pub _firstChild: *mut tinyxml2__XMLNode,
+    pub _lastChild: *mut tinyxml2__XMLNode,
+    pub _prev: *mut tinyxml2__XMLNode,
+    pub _next: *mut tinyxml2__XMLNode,
+    pub _userData: *mut (),
+    pub _memPool: *mut tinyxml2__MemPool,
+}
+const _: () = assert!(std::mem::size_of::<tinyxml2__XMLNode>() == 104);
 
 // ═══════════════════════════════════════════════════════════
 // Static variables (class statics / file-scope globals)
@@ -9465,7 +9374,7 @@ pub static MESHBUILTIN_SZ: std::sync::LazyLock<std::sync::Mutex<[u8; 4]>> = std:
 pub static MJCFLEX_KNUMEDGES: std::sync::LazyLock<std::sync::Mutex<[u8; 12]>> = std::sync::LazyLock::new(|| std::sync::Mutex::new([0u8; 12]));
 
 /// C static: mjCOLLISIONFUNC (mjfCollision[9][9])
-pub static MJCOLLISIONFUNC: std::sync::LazyLock<std::sync::Mutex<[[Option<unsafe extern "C" fn(*const mjModel, *mut mjData, *mut mjPreContact, i32, i32, f64) -> i32>; 9]; 9]>> = std::sync::LazyLock::new(|| std::sync::Mutex::new(unsafe { std::mem::zeroed() }));
+pub static MJCOLLISIONFUNC: std::sync::LazyLock<std::sync::Mutex<[[Option<unsafe extern "C" fn(*const mjModel, *mut mjData, *mut mjPreContact, i32, i32, f64) -> i32>; 9]; 9]>> = std::sync::LazyLock::new(|| std::sync::Mutex::new([[None; 9]; 9]));
 
 /// C static: mjCONDATA_SIZE (const int[7])
 pub static MJCONDATA_SIZE: std::sync::LazyLock<std::sync::Mutex<[u8; 28]>> = std::sync::LazyLock::new(|| std::sync::Mutex::new([0u8; 28]));

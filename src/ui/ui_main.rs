@@ -1,13 +1,13 @@
 //! Port of: ui/ui_main.c
-//! IR hash: 73393814548a07d1
-//! CODEGEN: signatures locked. Only fill todo!() bodies.
+//! IR hash: 9343293228317031
+//! CODEGEN: source paths, owners, and callable names are locked.
 
 use crate::types::*;
 
 /// C: SCL (ui/ui_main.c:200)
-/// Calls: mju_round
+/// Calls: cxx:_mju_round
 #[allow(unused_variables, non_snake_case)]
-pub fn scl(sz: i32, con: *const mjrContext) -> i32 {
+pub fn SCL(sz: i32, con: *const mjrContext) -> i32 {
     // SAFETY: caller guarantees con is a valid pointer to mjrContext
     unsafe {
         let val = crate::engine::engine_util_misc::mju_round(sz as f64 * 0.01 * (*con).fontScale as f64);
@@ -17,7 +17,7 @@ pub fn scl(sz: i32, con: *const mjrContext) -> i32 {
 
 /// C: initOpenGL (ui/ui_main.c:207)
 #[allow(unused_variables, non_snake_case)]
-pub fn init_open_gl(r: *const mjrRect, con: *const mjrContext) {
+pub fn initOpenGL(r: *const mjrRect, con: *const mjrContext) {
     const GL_NORMALIZE: u32 = 0x0BA1;
     const GL_DEPTH_TEST: u32 = 0x0B71;
     const GL_CULL_FACE: u32 = 0x0B44;
@@ -101,37 +101,8 @@ pub fn drawtext(txt: *const i8, x: i32, y: i32, maxwidth: i32, rgb: *const f32, 
     }
 }
 
-/// C: drawtextrect (ui/ui_main.c:274)
-/// Calls: drawtext, textwidth
-/// ⚠️ BITEXACT RULES:
-///   1. Copy exact C accumulation order (no iter().sum())
-///   2. No f64::mul_add() (FMA changes precision)
-///   3. No algebraic simplification
-///   4. No iter().sum()/product() (order undefined)
-#[allow(unused_variables, non_snake_case)]
-pub fn drawtextrect(rect: mjrRect, txt: *const i8, rgb: *const f32, con: *const mjrContext) {
-    // SAFETY: txt is a valid C string; con is valid mjrContext pointer; rgb is valid f32[3] (caller contract)
-    unsafe {
-        // inline textwidth(txt, con, -1): sum all char widths
-        let mut tw: i32 = 0;
-        let mut i: usize = 0;
-        while *txt.add(i) != 0 {
-            tw += (*con).charWidth[*txt.add(i) as u8 as usize];
-            i += 1;
-        }
-
-        let dy = (rect.height - (*con).charHeight) / 2;
-        let mut dx = (rect.width - tw) / 2;
-        if dx < 0 {
-            dx = 0;
-        }
-
-        drawtext(txt, rect.left + dx, rect.bottom + dy, rect.width - dx, rgb, con);
-    }
-}
-
 /// C: drawrectangle (ui/ui_main.c:286)
-/// Calls: SCL
+/// Calls: cxx-internal:/Users/xing/Desktop/projects/c2rust_bitexact/projects/mujoco/src/ui/ui_main.c:_SCL
 /// ⚠️ BITEXACT RULES:
 ///   1. Copy exact C accumulation order (no iter().sum())
 ///   2. No f64::mul_add() (FMA changes precision)
@@ -161,7 +132,7 @@ pub fn drawrectangle(rect: mjrRect, rgb: *const f32, rgbback: *const f32, con: *
 
         // inside
         if !rgbback.is_null() {
-            let margin: i32 = scl(2, con);
+            let margin: i32 = SCL(2, con);
             glColor3fv(rgbback);
             glBegin(GL_QUADS);
             glVertex2i(rect.left + margin, rect.bottom + margin);
@@ -188,7 +159,7 @@ pub fn roundcorner(rect: mjrRect, flg_skipbottom: i32, flg_separator: i32, ui: *
     // SAFETY: ui and con are valid pointers (caller contract); GL functions linked from mujoco
     unsafe {
         // get rounding from theme, exit if disabled
-        let spacing_ptr = (*ui).spacing.as_ptr() as *const i32;
+        let spacing_ptr = std::ptr::addr_of!((*ui).spacing) as *const i32;
         let cornerspec: i32 = if flg_separator != 0 {
             *spacing_ptr.add(5) // spacing.cornersep
         } else {
@@ -262,7 +233,7 @@ pub fn roundcorner(rect: mjrRect, flg_skipbottom: i32, flg_separator: i32, ui: *
 }
 
 /// C: drawoval (ui/ui_main.c:375)
-/// Calls: SCL
+/// Calls: cxx-internal:/Users/xing/Desktop/projects/c2rust_bitexact/projects/mujoco/src/ui/ui_main.c:_SCL
 /// ⚠️ BITEXACT RULES:
 ///   1. Copy exact C accumulation order (no iter().sum())
 ///   2. No f64::mul_add() (FMA changes precision)
@@ -311,7 +282,7 @@ pub fn drawoval(rect: mjrRect, rgb: *const f32, rgbback: *const f32, con: *const
 
         // inside
         if !rgbback.is_null() {
-            let margin: i32 = scl(2, con);
+            let margin: i32 = SCL(2, con);
             let radius_inner: f64 = radius - margin as f64;
 
             glColor3fv(rgbback);
@@ -334,7 +305,7 @@ pub fn drawoval(rect: mjrRect, rgb: *const f32, rgbback: *const f32, con: *const
 }
 
 /// C: drawsymbol (ui/ui_main.c:434)
-/// Calls: SCL, mju_round
+/// Calls: cxx-internal:/Users/xing/Desktop/projects/c2rust_bitexact/projects/mujoco/src/ui/ui_main.c:_SCL, cxx:_mju_round
 #[allow(unused_variables, non_snake_case)]
 pub fn drawsymbol(rect: mjrRect, flg_open: i32, r#type: i32, ui: *const mjUI, con: *const mjrContext) {
     const GL_TRIANGLES: u32 = 0x0004;
@@ -351,8 +322,8 @@ pub fn drawsymbol(rect: mjrRect, flg_open: i32, r#type: i32, ui: *const mjUI, co
     // SAFETY: ui and con are valid pointers (caller contract); GL functions linked from mujoco
     unsafe {
         // access spacing.texthor (offset 36 in spacing byte array)
-        let spacing_ptr = (*ui).spacing.as_ptr() as *const i32;
-        let texthor: i32 = scl(*spacing_ptr.add(9), con);
+        let spacing_ptr = std::ptr::addr_of!((*ui).spacing) as *const i32;
+        let texthor: i32 = SCL(*spacing_ptr.add(9), con);
 
         // access color.sectsymbol (offset 108 in color byte array)
         let color_ptr = (*ui).color.as_ptr();
@@ -443,15 +414,15 @@ pub fn drawsymbol(rect: mjrRect, flg_open: i32, r#type: i32, ui: *const mjUI, co
 }
 
 /// C: radioelement (ui/ui_main.c:516)
-/// Calls: SCL
+/// Calls: cxx-internal:/Users/xing/Desktop/projects/c2rust_bitexact/projects/mujoco/src/ui/ui_main.c:_SCL
 #[allow(unused_variables, non_snake_case)]
 pub fn radioelement(it: *const mjuiItem, n: i32, ui: *const mjUI, con: *const mjrContext) -> mjrRect {
     // SAFETY: it, ui, con are valid pointers (caller contract)
     unsafe {
         // scale sizes from theme
-        let spacing_ptr = (*ui).spacing.as_ptr() as *const i32;
-        let g_itemmid: i32 = scl(*spacing_ptr.add(7), con);
-        let g_textver: i32 = scl(*spacing_ptr.add(10), con);
+        let spacing_ptr = std::ptr::addr_of!((*ui).spacing) as *const i32;
+        let g_itemmid: i32 = SCL(*spacing_ptr.add(7), con);
+        let g_textver: i32 = SCL(*spacing_ptr.add(10), con);
         let ncol: i32 = if (*ui).radiocol != 0 { (*ui).radiocol } else { 2 };
 
         // access multi.nelem from the union (offset 0 in __anon_7)
@@ -481,103 +452,14 @@ pub fn radioelement(it: *const mjuiItem, n: i32, ui: *const mjUI, con: *const mj
     }
 }
 
-/// C: mouseinui (ui/ui_main.c:549)
-/// Calls: mjCActuator::act
-#[allow(unused_variables, non_snake_case)]
-pub fn mouseinui(ui: *const mjUI, ins: *const mjuiState, x: *mut i32, y: *mut i32) {
-    todo!() // mouseinui
-}
-
-/// C: mouseinrect (ui/ui_main.c:568)
-/// Calls: mouseinui
-/// ⚠️ BITEXACT RULES:
-///   1. Copy exact C accumulation order (no iter().sum())
-///   2. No f64::mul_add() (FMA changes precision)
-///   3. No algebraic simplification
-///   4. No iter().sum()/product() (order undefined)
-#[allow(unused_variables, non_snake_case)]
-pub fn mouseinrect(rect: mjrRect, ui: *const mjUI, ins: *const mjuiState, rx: *mut f64, ry: *mut f64) {
-    todo!() // mouseinrect
-}
-
-/// C: findradio (ui/ui_main.c:582)
-/// Calls: mouseinrect
-#[allow(unused_variables, non_snake_case)]
-pub fn findradio(it: *const mjuiItem, ui: *const mjUI, ins: *const mjuiState, con: *const mjrContext) -> i32 {
-    todo!() // findradio
-}
-
-/// C: makeradioline (ui/ui_main.c:613)
-/// Calls: mju_round, textwidth
-#[allow(unused_variables, non_snake_case)]
-pub fn makeradioline(it: *const mjuiItem, con: *const mjrContext, sep: *mut i32) {
-    const mjMAXUIMULTI: usize = 35;
-    const mjMAXUINAME: usize = 40;
-
-    // SAFETY: it, con, sep are valid pointers (caller contract)
-    unsafe {
-        // access multi.nelem from union (offset 0)
-        let nelem: i32 = *((*it).__anon_7._data.as_ptr() as *const i32);
-        let mut totwid: i32 = 0;
-        let mut elwid: [i32; 35] = [0; 35]; // mjMAXUIMULTI
-
-        // no elements
-        if nelem == 0 {
-            return;
-        }
-
-        // compute element widths
-        // multi.name starts at offset 4 in the union, each name is 40 bytes
-        let names_base = (*it).__anon_7._data.as_ptr().add(4) as *const i8;
-        for i in 0..nelem as usize {
-            let name_ptr = names_base.add(i * mjMAXUINAME);
-            // inline textwidth(name, con, -1)
-            let mut w: i32 = 0;
-            let mut j: usize = 0;
-            while *name_ptr.add(j) != 0 {
-                w += (*con).charWidth[*name_ptr.add(j) as u8 as usize];
-                j += 1;
-            }
-            elwid[i] = w;
-            totwid += elwid[i];
-        }
-
-        // compute per-element extra space
-        let extra: f64 = ((*it).rect.width - totwid) as f64 / nelem as f64;
-
-        // compute separators
-        *sep.add(0) = 0;
-        for i in 0..nelem as usize {
-            *sep.add(i + 1) = *sep.add(i) + elwid[i]
-                + crate::engine::engine_util_misc::mju_round((i as i32 + 1) as f64 * extra)
-                - crate::engine::engine_util_misc::mju_round(i as f64 * extra);
-        }
-        *sep.add(nelem as usize) = (*it).rect.width;
-    }
-}
-
-/// C: findradioline (ui/ui_main.c:642)
-/// Calls: makeradioline, mju_round, mouseinrect
-#[allow(unused_variables, non_snake_case)]
-pub fn findradioline(it: *const mjuiItem, ui: *const mjUI, ins: *const mjuiState, con: *const mjrContext) -> i32 {
-    todo!() // findradioline
-}
-
-/// C: findselect (ui/ui_main.c:667)
-/// Calls: SCL, mouseinrect
-#[allow(unused_variables, non_snake_case)]
-pub fn findselect(it: *const mjuiItem, ui: *const mjUI, ins: *const mjuiState, con: *const mjrContext) -> i32 {
-    todo!() // findselect
-}
-
 /// C: scrollrect (ui/ui_main.c:696)
-/// Calls: SCL, mju_round
+/// Calls: cxx-internal:/Users/xing/Desktop/projects/c2rust_bitexact/projects/mujoco/src/ui/ui_main.c:_SCL, cxx:_mju_round
 #[allow(unused_variables, non_snake_case)]
 pub fn scrollrect(rect: mjrRect, ui: *const mjUI, con: *const mjrContext, bar: *mut mjrRect, thumb: *mut mjrRect) {
     // SAFETY: ui, con, bar, thumb are valid pointers (caller contract)
     unsafe {
-        let spacing_ptr = (*ui).spacing.as_ptr() as *const i32;
-        let w_scroll: i32 = scl(*spacing_ptr.add(1), con); // spacing.scroll
+        let spacing_ptr = std::ptr::addr_of!((*ui).spacing) as *const i32;
+        let w_scroll: i32 = SCL(*spacing_ptr.add(1), con); // spacing.scroll
 
         // bar
         *bar = rect;
@@ -602,7 +484,7 @@ pub fn inside(x: i32, y: i32, r: mjrRect) -> i32 {
 }
 
 /// C: insideoval (ui/ui_main.c:723)
-/// Calls: inside
+/// Calls: cxx-internal:/Users/xing/Desktop/projects/c2rust_bitexact/projects/mujoco/src/ui/ui_main.c:_inside
 #[allow(unused_variables, non_snake_case)]
 pub fn insideoval(x: i32, y: i32, r: mjrRect) -> i32 {
     // exclude if not in rectangle
@@ -630,41 +512,6 @@ pub fn insideoval(x: i32, y: i32, r: mjrRect) -> i32 {
     }
 
     0
-}
-
-/// C: findmouse (ui/ui_main.c:757)
-/// Calls: inside, insideoval, mouseinui, scrollrect
-#[allow(unused_variables, non_snake_case)]
-pub fn findmouse(ui: *const mjUI, ins: *const mjuiState, con: *const mjrContext, sect: *mut i32, item: *mut i32) {
-    todo!() // findmouse
-}
-
-/// C: setslider (ui/ui_main.c:841)
-/// Calls: mju_clip, mju_round, mouseinrect
-#[allow(unused_variables, non_snake_case)]
-pub fn setslider(it: *mut mjuiItem, ui: *mut mjUI, ins: *const mjuiState, con: *const mjrContext) {
-    todo!() // setslider
-}
-
-/// C: checkedit (ui/ui_main.c:868)
-/// Calls: mju_error
-#[allow(unused_variables, non_snake_case)]
-pub fn checkedit(text: *const i8, it: *const mjuiItem) -> i32 {
-    todo!() // checkedit
-}
-
-/// C: text2array (ui/ui_main.c:914)
-/// Calls: mju_error
-#[allow(unused_variables, non_snake_case)]
-pub fn text2array(text: *const i8, it: *const mjuiItem) -> i32 {
-    todo!() // text2array
-}
-
-/// C: array2text (ui/ui_main.c:982)
-/// Calls: mju_error
-#[allow(unused_variables, non_snake_case)]
-pub fn array2text(text: *mut i8, it: *const mjuiItem) {
-    todo!() // array2text
 }
 
 /// C: validkey (ui/ui_main.c:1017)
@@ -763,7 +610,7 @@ pub fn validkey(key: i32, sz: i32, r#type: i32, state: *const mjuiState) -> i32 
 }
 
 /// C: revealcursor (ui/ui_main.c:1098)
-/// Calls: SCL
+/// Calls: cxx-internal:/Users/xing/Desktop/projects/c2rust_bitexact/projects/mujoco/src/ui/ui_main.c:_SCL
 #[allow(unused_variables, non_snake_case)]
 pub fn revealcursor(r: mjrRect, ui: *mut mjUI, con: *const mjrContext) {
     // SAFETY: ui and con are valid pointers (caller contract)
@@ -775,9 +622,9 @@ pub fn revealcursor(r: mjrRect, ui: *mut mjUI, con: *const mjrContext) {
         }
 
         // width of available text area
-        let spacing_ptr = (*ui).spacing.as_ptr() as *const i32;
+        let spacing_ptr = std::ptr::addr_of!((*ui).spacing) as *const i32;
         let texthor: i32 = *spacing_ptr.add(9); // spacing.texthor
-        let mut width: i32 = r.width - 2 * scl(texthor, con);
+        let mut width: i32 = r.width - 2 * SCL(texthor, con);
 
         // scan backwards
         let mut i: i32 = (*ui).editcursor;
@@ -791,20 +638,6 @@ pub fn revealcursor(r: mjrRect, ui: *mut mjUI, con: *const mjrContext) {
             (*ui).editscroll = i + 1;
         }
     }
-}
-
-/// C: setcursor (ui/ui_main.c:1124)
-/// Calls: SCL, mju_round, mouseinrect, revealcursor
-#[allow(unused_variables, non_snake_case)]
-pub fn setcursor(r: mjrRect, ui: *mut mjUI, ins: *const mjuiState, con: *const mjrContext) {
-    todo!() // setcursor
-}
-
-/// C: parseshortcut (ui/ui_main.c:1169)
-/// Calls: mju_error
-#[allow(unused_variables, non_snake_case)]
-pub fn parseshortcut(text: *const i8, r#mod: *mut i32, key: *mut i32) {
-    todo!() // parseshortcut
 }
 
 /// C: matchshortcut (ui/ui_main.c:1222)
@@ -859,7 +692,7 @@ pub fn setitemskip(s: *mut mjuiSection, pass: i32) {
 }
 
 /// C: tryresize (ui/ui_main.c:1528)
-/// Calls: SCL, setitemskip
+/// Calls: cxx-internal:/Users/xing/Desktop/projects/c2rust_bitexact/projects/mujoco/src/ui/ui_main.c:_SCL, cxx-internal:/Users/xing/Desktop/projects/c2rust_bitexact/projects/mujoco/src/ui/ui_main.c:_setitemskip
 #[allow(unused_variables, non_snake_case)]
 pub fn tryresize(ui: *mut mjUI, con: *const mjrContext) {
     const mjITEM_SEPARATOR: i32 = 0;
@@ -875,15 +708,15 @@ pub fn tryresize(ui: *mut mjUI, con: *const mjrContext) {
     // SAFETY: ui, con are valid pointers (caller contract)
     unsafe {
         // scale theme sizes
-        let spacing_ptr = (*ui).spacing.as_ptr() as *const i32;
-        let w_master: i32 = scl(*spacing_ptr.add(0), con);   // spacing.total
-        let w_scroll: i32 = scl(*spacing_ptr.add(1), con);   // spacing.scroll
-        let g_section: i32 = scl(*spacing_ptr.add(3), con);  // spacing.section
-        let g_itemside: i32 = scl(*spacing_ptr.add(6), con); // spacing.itemside
-        let g_itemmid: i32 = scl(*spacing_ptr.add(7), con);  // spacing.itemmid
-        let g_itemver: i32 = scl(*spacing_ptr.add(8), con);  // spacing.itemver
-        let g_textver: i32 = scl(*spacing_ptr.add(10), con); // spacing.textver
-        let g_label: i32 = scl(*spacing_ptr.add(2), con);    // spacing.label
+        let spacing_ptr = std::ptr::addr_of!((*ui).spacing) as *const i32;
+        let w_master: i32 = SCL(*spacing_ptr.add(0), con);   // spacing.total
+        let w_scroll: i32 = SCL(*spacing_ptr.add(1), con);   // spacing.scroll
+        let g_section: i32 = SCL(*spacing_ptr.add(3), con);  // spacing.section
+        let g_itemside: i32 = SCL(*spacing_ptr.add(6), con); // spacing.itemside
+        let g_itemmid: i32 = SCL(*spacing_ptr.add(7), con);  // spacing.itemmid
+        let g_itemver: i32 = SCL(*spacing_ptr.add(8), con);  // spacing.itemver
+        let g_textver: i32 = SCL(*spacing_ptr.add(10), con); // spacing.textver
+        let g_label: i32 = SCL(*spacing_ptr.add(2), con);    // spacing.label
 
         // text element height, with gap above and below
         let textheight: i32 = (*con).charHeight + 2 * g_textver;
@@ -1073,13 +906,6 @@ pub fn tryresize(ui: *mut mjUI, con: *const mjrContext) {
     }
 }
 
-/// C: insertionsortgroup (ui/ui_main.c:1717)
-/// Calls: mju_error
-#[allow(unused_variables, non_snake_case)]
-pub fn insertionsortgroup(list: *mut i32, num: i32, stride: i32) {
-    todo!() // insertionsortgroup
-}
-
 /// C: evalpredicate (ui/ui_main.c:1823)
 #[allow(unused_variables, non_snake_case)]
 pub fn evalpredicate(state: i32, predicate: mjfItemEnable, userdata: *mut ()) -> i32 {
@@ -1099,150 +925,9 @@ pub fn evalpredicate(state: i32, predicate: mjfItemEnable, userdata: *mut ()) ->
     }
 }
 
-/// C: shortcuthelp (ui/ui_main.c:1836)
-/// Calls: SCL, drawrectangle, drawtext, mju_strncpy, textwidth
-#[allow(unused_variables, non_snake_case)]
-pub fn shortcuthelp(r: mjrRect, modifier: i32, shortcut: i32, ui: *const mjUI, con: *const mjrContext) {
-    const mjKEY_ESCAPE: i32 = 256;
-    const mjKEY_ENTER: i32 = 257;
-    const mjKEY_TAB: i32 = 258;
-    const mjKEY_BACKSPACE: i32 = 259;
-    const mjKEY_INSERT: i32 = 260;
-    const mjKEY_DELETE: i32 = 261;
-    const mjKEY_RIGHT: i32 = 262;
-    const mjKEY_LEFT: i32 = 263;
-    const mjKEY_DOWN: i32 = 264;
-    const mjKEY_UP: i32 = 265;
-    const mjKEY_PAGE_UP: i32 = 266;
-    const mjKEY_PAGE_DOWN: i32 = 267;
-    const mjKEY_HOME: i32 = 268;
-    const mjKEY_END: i32 = 269;
-    const mjKEY_F1: i32 = 290;
-    const mjKEY_F2: i32 = 291;
-    const mjKEY_F3: i32 = 292;
-    const mjKEY_F4: i32 = 293;
-    const mjKEY_F5: i32 = 294;
-    const mjKEY_F6: i32 = 295;
-    const mjKEY_F7: i32 = 296;
-    const mjKEY_F8: i32 = 297;
-    const mjKEY_F9: i32 = 298;
-    const mjKEY_F10: i32 = 299;
-    const mjKEY_F11: i32 = 300;
-    const mjKEY_F12: i32 = 301;
-    const NMAP: usize = 27;
-
-    // SAFETY: ui, con are valid pointers (caller contract)
-    unsafe {
-        // map of key codes and corresponding names
-        let keymap: [(i32, &[u8]); NMAP] = [
-            (32,              b"Space\0"),
-            (mjKEY_ESCAPE,    b"Esc\0"),
-            (mjKEY_ENTER,     b"Enter\0"),
-            (mjKEY_TAB,       b"Tab\0"),
-            (mjKEY_BACKSPACE, b"BackSpace\0"),
-            (mjKEY_INSERT,    b"Ins\0"),
-            (mjKEY_DELETE,    b"Del\0"),
-            (mjKEY_RIGHT,     b"Right\0"),
-            (mjKEY_LEFT,      b"Left\0"),
-            (mjKEY_DOWN,      b"Down\0"),
-            (mjKEY_UP,        b"Up\0"),
-            (mjKEY_PAGE_UP,   b"PgUp\0"),
-            (mjKEY_PAGE_DOWN, b"PgDn\0"),
-            (mjKEY_HOME,      b"Home\0"),
-            (mjKEY_END,       b"End\0"),
-            (mjKEY_F1,        b"F1\0"),
-            (mjKEY_F2,        b"F2\0"),
-            (mjKEY_F3,        b"F3\0"),
-            (mjKEY_F4,        b"F4\0"),
-            (mjKEY_F5,        b"F5\0"),
-            (mjKEY_F6,        b"F6\0"),
-            (mjKEY_F7,        b"F7\0"),
-            (mjKEY_F8,        b"F8\0"),
-            (mjKEY_F9,        b"F9\0"),
-            (mjKEY_F10,       b"F10\0"),
-            (mjKEY_F11,       b"F11\0"),
-            (mjKEY_F12,       b"F12\0"),
-        ];
-
-        // key: ascii or decode map
-        let mut key: [i8; 10] = [0; 10];
-        if shortcut > 32 && shortcut <= 126 {
-            key[0] = shortcut as i8;
-            key[1] = 0;
-        } else {
-            for i in 0..NMAP {
-                if keymap[i].0 == shortcut {
-                    crate::engine::engine_util_misc::mju_strncpy(
-                        key.as_mut_ptr(),
-                        keymap[i].1.as_ptr() as *const i8,
-                        10,
-                    );
-                    break;
-                }
-            }
-        }
-
-        // modifier
-        let mut text: [i8; 50] = [0; 50];
-        if modifier == 1 {
-            crate::engine::engine_util_misc::mju_strncpy(text.as_mut_ptr(), b"Ctrl \0".as_ptr() as *const i8, 50);
-        } else if modifier == 2 {
-            crate::engine::engine_util_misc::mju_strncpy(text.as_mut_ptr(), b"Shift \0".as_ptr() as *const i8, 50);
-        } else if modifier == 4 {
-            crate::engine::engine_util_misc::mju_strncpy(text.as_mut_ptr(), b"Alt \0".as_ptr() as *const i8, 50);
-        }
-
-        // combine: strcat(text, key)
-        let mut tlen: usize = 0;
-        while text[tlen] != 0 {
-            tlen += 1;
-        }
-        let mut ki: usize = 0;
-        while key[ki] != 0 && tlen < 49 {
-            text[tlen] = key[ki];
-            tlen += 1;
-            ki += 1;
-        }
-        text[tlen] = 0;
-
-        // make rectangle for shortcut
-        let spacing_ptr = (*ui).spacing.as_ptr() as *const i32;
-        let g_textver: i32 = scl(*spacing_ptr.add(10), con);
-
-        // inline textwidth(text, con, -1)
-        let mut tw: i32 = 0;
-        let mut ti: usize = 0;
-        while text[ti] != 0 {
-            tw += (*con).charWidth[text[ti] as u8 as usize];
-            ti += 1;
-        }
-        let width: i32 = tw + 2 * g_textver;
-
-        let mut r = r;
-        r.left += r.width - width;
-        r.width = width;
-        r.bottom += g_textver;
-        r.height -= 2 * g_textver;
-
-        // render
-        let color_ptr = (*ui).color.as_ptr();
-        let shortcut_color = color_ptr.add(156) as *const f32; // color.shortcut
-        let fontactive_color = color_ptr.add(168) as *const f32; // color.fontactive
-        drawrectangle(r, shortcut_color, std::ptr::null(), con);
-        drawtext(
-            text.as_ptr(),
-            r.left + g_textver,
-            r.bottom,
-            r.width,
-            fontactive_color,
-            con,
-        );
-    }
-}
-
 /// C: mjui_themeSpacing (ui/ui_main.h:26)
 #[allow(unused_variables, non_snake_case)]
-pub fn mjui_theme_spacing(ind: i32) -> mjuiThemeSpacing {
+pub fn mjui_themeSpacing(ind: i32) -> mjuiThemeSpacing {
     // C: if (ind == 0) return themeSpacing0; else return themeSpacing1;
     // Named field init — exact values from ui_main.c:29-62
     if ind == 0 {
@@ -1282,7 +967,7 @@ pub fn mjui_theme_spacing(ind: i32) -> mjuiThemeSpacing {
 
 /// C: mjui_themeColor (ui/ui_main.h:29)
 #[allow(unused_variables, non_snake_case)]
-pub fn mjui_theme_color(ind: i32) -> mjuiThemeColor {
+pub fn mjui_themeColor(ind: i32) -> mjuiThemeColor {
     // C: if (ind == 0) return themeColor0; ... else return themeColor3;
     // Values from ui_main.c:65-196. Named field init — no unsafe, no zeroed().
     match ind {
@@ -1350,182 +1035,6 @@ pub fn mjui_theme_color(ind: i32) -> mjuiThemeColor {
             slider2: [0.3, 0.3, 0.3], edit: [0.3, 0.3, 0.3],
             edit2: [0.8, 0.2, 0.2], cursor: [0.8, 0.8, 0.8],
         },
-    }
-}
-
-/// C: mjui_add (ui/ui_main.h:32)
-/// Calls: mju_error, mju_round, mju_strncpy, parseshortcut
-#[allow(unused_variables, non_snake_case)]
-pub fn mjui_add(ui: *mut mjUI, def: *const mjuiDef) {
-    todo!() // mjui_add
-}
-
-/// C: mjui_addToSection (ui/ui_main.h:35)
-/// Calls: mjui_add
-#[allow(unused_variables, non_snake_case)]
-pub fn mjui_add_to_section(ui: *mut mjUI, sect: i32, def: *const mjuiDef) {
-    todo!() // mjui_addToSection
-}
-
-/// C: mjui_resize (ui/ui_main.h:38)
-/// Calls: SCL, insertionsortgroup, mju_error, tryresize
-#[allow(unused_variables, non_snake_case)]
-pub fn mjui_resize(ui: *mut mjUI, con: *const mjrContext) {
-    todo!() // mjui_resize
-}
-
-/// C: mjui_update (ui/ui_main.h:41)
-/// Calls: SCL, array2text, checkedit, drawoval, drawrectangle, drawsymbol, drawtext, drawtextrect, evalpredicate, findmouse, initOpenGL, makeradioline, mjr_restoreBuffer, mjr_setAux, mju_error, mju_round, radioelement, roundcorner, shortcuthelp, textwidth
-#[allow(unused_variables, non_snake_case)]
-pub fn mjui_update(section: i32, item: i32, ui: *const mjUI, state: *const mjuiState, con: *const mjrContext) {
-    todo!() // mjui_update
-}
-
-/// C: mjui_event (ui/ui_main.h:45)
-/// Calls: SCL, array2text, evalpredicate, findmouse, findradio, findradioline, findselect, matchshortcut, mju_round, mjui_resize, mjui_update, revealcursor, setcursor, setslider, text2array, validkey
-#[allow(unused_variables, non_snake_case)]
-pub fn mjui_event(ui: *mut mjUI, state: *mut mjuiState, con: *const mjrContext) -> *mut mjuiItem {
-    todo!() // mjui_event
-}
-
-/// C: mjui_render (ui/ui_main.h:48)
-/// Calls: SCL, drawtext, findselect, initOpenGL, mjr_blitAux, mjr_rectangle, scrollrect
-#[allow(unused_variables, non_snake_case)]
-pub fn mjui_render(ui: *mut mjUI, state: *const mjuiState, con: *const mjrContext) {
-    // SAFETY: ui, state, con are valid pointers (caller contract).
-    // state.rect is a [u8; 404] containing 25 mjrRect (16 bytes each).
-    // ui.color is [u8; 340], fields are [f32;3] packed consecutively.
-    // ui.spacing is [u8; 52], fields are i32 packed consecutively.
-    unsafe {
-        // get ui rectangle: state->rect[ui->rectid]
-        let rect_base = (*state).rect.as_ptr() as *const mjrRect;
-        let rect: mjrRect = *rect_base.add((*ui).rectid as usize);
-
-        // color field pointers
-        let color_ptr = (*ui).color.as_ptr();
-        let color_master = color_ptr as *const f32;             // offset 0
-        let color_thumb = color_ptr.add(12) as *const f32;     // offset 12
-        let color_sectpane = color_ptr.add(120) as *const f32; // offset 120
-        let color_fontactive = color_ptr.add(168) as *const f32; // offset 168
-        let color_select = color_ptr.add(252) as *const f32;   // offset 252
-        let color_select2 = color_ptr.add(264) as *const f32;  // offset 264
-
-        // clear entire rectangle
-        crate::render::classic::render_gl2::mjr_rectangle(
-            rect, *color_master.add(0), *color_master.add(1), *color_master.add(2), 1.0);
-
-        // adjust scroll
-        if (*ui).scroll > 0 && (*ui).height - (*ui).scroll < rect.height {
-            (*ui).scroll = if 0 > (*ui).height - rect.height { 0 } else { (*ui).height - rect.height };
-        }
-
-        // blit to current buffer
-        let raux_bottom = if 0 > (*ui).height - (*ui).scroll - rect.height {
-            0
-        } else {
-            (*ui).height - (*ui).scroll - rect.height
-        };
-        let raux_height_raw = rect.height;
-        let raux_height_cand = (*ui).height - (*ui).scroll;
-        let raux_height = if raux_height_raw < raux_height_cand { raux_height_raw } else { raux_height_cand };
-        let raux = mjrRect {
-            left: 0,
-            bottom: raux_bottom,
-            width: (*ui).width,
-            height: raux_height,
-        };
-        let blit_bottom = rect.bottom + (if 0 > rect.height - (*ui).height + (*ui).scroll {
-            0
-        } else {
-            rect.height - (*ui).height + (*ui).scroll
-        });
-        crate::render::classic::render_gl2::mjr_blit_aux(
-            (*ui).auxid, raux, rect.left, blit_bottom, con);
-
-        // draw scrollbar over blit if needed
-        if (*ui).height > rect.height {
-            let mut bar: mjrRect = mjrRect { left: 0, bottom: 0, width: 0, height: 0 };
-            let mut thumb: mjrRect = mjrRect { left: 0, bottom: 0, width: 0, height: 0 };
-            scrollrect(rect, ui, con, &mut bar, &mut thumb);
-            crate::render::classic::render_gl2::mjr_rectangle(
-                thumb, *color_thumb.add(0), *color_thumb.add(1), *color_thumb.add(2), 1.0);
-        }
-
-        // draw selection box tracking over blit if needed
-        if (*ui).mousesect > 0 && (*ui).mouseitem >= 0 {
-            let sect_idx = ((*ui).mousesect - 1) as usize;
-            let it: *const mjuiItem = (*ui).sect[sect_idx].item.as_ptr()
-                .add((*ui).mouseitem as usize);
-
-            const MJ_ITEM_SELECT: i32 = 7;
-            if (*it).r#type == MJ_ITEM_SELECT {
-                let spacing_ptr = (*ui).spacing.as_ptr() as *const i32;
-                let g_texthor: i32 = scl(*spacing_ptr.add(9), con);   // spacing.texthor
-                let g_textver: i32 = scl(*spacing_ptr.add(10), con);  // spacing.textver
-                let g_itemside: i32 = scl(*spacing_ptr.add(6), con);  // spacing.itemside
-                let cellheight: i32 = (*con).charHeight + 2 * g_textver;
-
-                // offset for scroll position
-                let offset: i32 = (if 0 > rect.height - (*ui).height + (*ui).scroll {
-                    0
-                } else {
-                    rect.height - (*ui).height + (*ui).scroll
-                }) - (if 0 > (*ui).height - (*ui).scroll - rect.height {
-                    0
-                } else {
-                    (*ui).height - (*ui).scroll - rect.height
-                });
-
-                // multi.nelem at offset 0 in the union
-                let nelem: i32 = *((*it).__anon_7._data.as_ptr() as *const i32);
-
-                // margin rectangle
-                let mut r = (*it).rect;
-                r.left -= g_itemside;
-                r.width += 2 * g_itemside;
-                r.height = nelem * cellheight + g_itemside;
-                r.bottom -= r.height;
-                r.bottom += offset;
-                r.left += rect.left;
-                crate::render::classic::render_gl2::mjr_rectangle(
-                    r, *color_sectpane.add(0), *color_sectpane.add(1), *color_sectpane.add(2), 1.0);
-
-                // box rectangle
-                r = (*it).rect;
-                r.height = nelem * cellheight;
-                r.bottom -= r.height;
-                r.bottom += offset;
-                r.left += rect.left;
-                crate::render::classic::render_gl2::mjr_rectangle(
-                    r, *color_select2.add(0), *color_select2.add(1), *color_select2.add(2), 1.0);
-
-                // highlight row under mouse
-                let k = findselect(it, ui, state, con);
-                if k >= 0 {
-                    let mut r1 = r;
-                    r1.bottom = r.bottom + (nelem - 1 - k) * cellheight;
-                    r1.height = cellheight;
-                    crate::render::classic::render_gl2::mjr_rectangle(
-                        r1, *color_select.add(0), *color_select.add(1), *color_select.add(2), 1.0);
-                }
-
-                // text values
-                init_open_gl(&rect, con);
-                // multi.name starts at offset 4 in union, each name is 40 bytes
-                let names_base = (*it).__anon_7._data.as_ptr().add(4) as *const i8;
-                for k in 0..nelem {
-                    let name_ptr = names_base.add((k as usize) * 40);
-                    drawtext(
-                        name_ptr,
-                        r.left + g_texthor - rect.left,
-                        r.bottom + g_textver + (nelem - 1 - k) * cellheight,
-                        r.width - 2 * g_texthor,
-                        color_fontactive,
-                        con,
-                    );
-                }
-            }
-        }
     }
 }
 
