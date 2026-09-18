@@ -733,7 +733,18 @@ pub fn mju_muscle_bias(len: f64, lengthrange: *const f64, acc0: f64, prm: *const
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mju_muscle_dynamics_timescale(dctrl: f64, tau_act: f64, tau_deact: f64, smoothing_width: f64) -> f64 {
-    todo!() // cxx:_mju_muscleDynamicsTimescale
+    // C: mju_muscleDynamicsTimescale
+    const MJ_MINVAL: f64 = 1e-15;
+    
+    // hard switching
+    if smoothing_width < MJ_MINVAL {
+        if dctrl > 0.0 { tau_act } else { tau_deact }
+    }
+    // smooth switching
+    else {
+        // scale by width, center around 0.5 midpoint, rescale to bounds
+        tau_deact + (tau_act - tau_deact) * mju_sigmoid(dctrl / smoothing_width + 0.5)
+    }
 }
 
 /// C: mju_muscleDynamics (engine/engine_util_misc.c:1174)
@@ -757,7 +768,11 @@ pub fn mju_muscle_dynamics(ctrl: f64, act: f64, prm: *const f64) -> f64 {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_lugre_stribeck(velocity: f64, F_C: f64, F_S: f64, v_S: f64) -> f64 {
-    todo!() // cxx:_mj_lugreStribeck
+    // C: mjtNum ratio = velocity / mju_max(mjMINVAL, v_S);
+    //    return F_C + (F_S - F_C) * mju_exp(-ratio*ratio);
+    const MJ_MINVAL: f64 = 1e-15;
+    let ratio = velocity / mju_max(MJ_MINVAL, v_S);
+    F_C + (F_S - F_C) * (-ratio * ratio).exp()
 }
 
 /// C: mj_dcmotorSlots (engine/engine_util_misc.c:1202)
@@ -897,8 +912,63 @@ pub fn mju_decode_pyramid(force: *mut f64, pyramid: *const f64, mu: *const f64, 
 ///   3. No algebraic simplification
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
-pub fn mju_spring_damper(pos0: f64, vel0: f64, Kp: f64, Kv: f64, dt: f64) -> f64 {
-    todo!() // cxx:_mju_springDamper
+pub fn mju_spring_damper(pos0: f64, vel0: f64, k: f64, b: f64, t: f64) -> f64 {
+    // C: mju_springDamper - spring-damper dynamics
+    const MJ_MINVAL: f64 = 1e-15;
+    
+    // determinant of characteristic equation
+    let det = b * b - 4.0 * k;
+    
+    // scale tolerance with determinant terms to make regime selection invariant to time units
+    let det_tol = MJ_MINVAL * mju_max(b * b, 4.0 * k.abs());
+    
+    // overdamping
+    //  pos(t) = c1*exp(r1*t) + c2*exp(r2*t);  r12 = (-b +- sqrt(det))/2
+    if det > det_tol {
+        // compute w = sqrt(det)/2
+        let w = det.sqrt() / 2.0;
+        
+        // avoid cancellation: compute the root of larger magnitude, then use r1*r2 = k
+        let (r1, r2) = if b >= 0.0 {
+            let r2 = -b / 2.0 - w;
+            let r1 = k / r2;
+            (r1, r2)
+        } else {
+            let r1 = -b / 2.0 + w;
+            let r2 = k / r1;
+            (r1, r2)
+        };
+        
+        // compute coefficients
+        let c1 = (pos0 * r2 - vel0) / (r2 - r1);
+        let c2 = (pos0 * r1 - vel0) / (r1 - r2);
+        
+        // evaluate result
+        c1 * (r1 * t).exp() + c2 * (r2 * t).exp()
+    }
+    // critical damping
+    //  pos(t) = exp(-b*t/2) * (c1 + c2*t)
+    else if det >= -det_tol {
+        // compute coefficients
+        let c1 = pos0;
+        let c2 = vel0 + b * c1 / 2.0;
+        
+        // evaluate result
+        (-b * t / 2.0).exp() * (c1 + c2 * t)
+    }
+    // underdamping
+    //  pos(t) = exp(-b*t/2) * (c1*cos(w*t) + c2*sin(w*t));  w = sqrt(abs(det))/2
+    else {
+        // compute w
+        let w = det.abs().sqrt() / 2.0;
+        
+        // compute coefficients
+        let c1 = pos0;
+        let c2 = (vel0 + b * c1 / 2.0) / w;
+        
+        // evaluate result
+        (-b * t / 2.0).exp() * (c1 * (w * t).cos() + c2 * (w * t).sin())
+    }
 }
 
 /// C: mju_outsideBox (engine/engine_util_misc.c:1668)
@@ -987,9 +1057,20 @@ pub fn mju_sign(x: f64) -> f64 {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mju_round(x: f64) -> i32 {
-    let lower = x.floor();
-    let upper = x.ceil();
-    if x - lower < upper - x { lower as i32 } else { upper as i32 }
+    // C: int mju_round(mjtNum x) {
+    //      double d = (double)x;
+    //      if (d > INT_MAX) return INT_MAX;
+    //      if (d < INT_MIN) return INT_MIN;
+    //      return (int)round(d);
+    //    }
+    let d = x;
+    if d > i32::MAX as f64 {
+        return i32::MAX;
+    }
+    if d < i32::MIN as f64 {
+        return i32::MIN;
+    }
+    d.round() as i32
 }
 
 /// C: mju_type2Str (engine/engine_util_misc.c:1769)
@@ -1050,25 +1131,54 @@ pub fn mju_is_zero(vec: *const f64, n: i32) -> i32 {
 /// C: mju_isZeroByte (engine/engine_util_misc.c:2048)
 #[allow(unused_variables, non_snake_case)]
 pub fn mju_is_zero_byte(vec: *const u8, n: i32) -> i32 {
-    todo!() // cxx:_mju_isZeroByte
+    // C: if (!n || *vec) return !n;
+    //    return memcmp(vec, vec + 1, n - 1) == 0;
+    // SAFETY: caller guarantees vec points to valid memory of at least n bytes
+    unsafe {
+        if n == 0 || *vec != 0 {
+            return if n == 0 { 1 } else { 0 };
+        }
+        // Compare vec[0..n-1] with vec[1..n]
+        // All bytes are 0 iff vec[0] == 0 and all subsequent bytes equal vec[0]
+        for i in 1..n as usize {
+            if *vec.add(i) != *vec {
+                return 0;
+            }
+        }
+        1
+    }
 }
 
 /// C: mju_zeroInt (engine/engine_util_misc.c:2055)
 #[allow(unused_variables, non_snake_case)]
 pub fn mju_zero_int(res: *mut i32, n: i32) {
-    todo!() // cxx:_mju_zeroInt
+    // C: memset(res, 0, n*sizeof(int));
+    // SAFETY: caller guarantees res points to valid memory of at least n i32 elements
+    unsafe {
+        std::ptr::write_bytes(res, 0, n as usize);
+    }
 }
 
 /// C: mju_copyInt (engine/engine_util_misc.c:2061)
 #[allow(unused_variables, non_snake_case)]
 pub fn mju_copy_int(res: *mut i32, vec: *const i32, n: i32) {
-    todo!() // cxx:_mju_copyInt
+    // C: memcpy(res, vec, n*sizeof(int));
+    // SAFETY: caller guarantees res and vec point to valid memory of at least n i32 elements
+    unsafe {
+        std::ptr::copy_nonoverlapping(vec, res, n as usize);
+    }
 }
 
 /// C: mju_fillInt (engine/engine_util_misc.c:2066)
 #[allow(unused_variables, non_snake_case)]
 pub fn mju_fill_int(res: *mut i32, val: i32, n: i32) {
-    todo!() // cxx:_mju_fillInt
+    // C: for (int i = 0; i < n; i++) { res[i] = val; }
+    // SAFETY: caller guarantees res points to valid memory of at least n i32 elements
+    unsafe {
+        for i in 0..n as usize {
+            *res.add(i) = val;
+        }
+    }
 }
 
 /// C: mju_standardNormal (engine/engine_util_misc.c:2073)

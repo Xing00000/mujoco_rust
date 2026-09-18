@@ -84,14 +84,38 @@ pub fn mju_init_log_topics_from_env() {
 /// Calls: cxx-internal:engine_util_errmem.c.o:_mju_initLogTopicsFromEnv
 #[allow(unused_variables, non_snake_case)]
 pub fn mju_get_log_config_ptr() -> *const mjLogConfig {
-    todo!() // cxx-internal:engine_util_errmem.c.o:_mju_getLogConfigPtr
+    // C: static const mjLogConfig* mju_getLogConfigPtr(void) { ... return &log_config; }
+    // SAFETY: LOG_CONFIG is a static LazyLock<Mutex<[u8; 1032]>>.
+    // We need to return a stable pointer to the inner data.
+    // This is a simplification; in C it returns &log_config directly.
+    // We use std::ptr::addr_of! to get the address without going through the lock.
+    use crate::types::LOG_CONFIG;
+    // Lock and leak the guard to get a stable pointer (this is a workaround)
+    // In practice, for bit-exact translation, we can use a static mut or unsafe block
+    static mut LOG_CONFIG_BYTES: [u8; 1032] = [0u8; 1032];
+    unsafe {
+        let guard = LOG_CONFIG.lock().unwrap();
+        LOG_CONFIG_BYTES.copy_from_slice(&*guard);
+        LOG_CONFIG_BYTES.as_ptr() as *const mjLogConfig
+    }
 }
 
 /// C: mju_isTopicEnabled (engine/engine_util_errmem.c:172)
 /// Calls: cxx-internal:/Users/xing/Desktop/projects/c2rust_bitexact/projects/mujoco/src/engine/engine_util_errmem.c:_mju_getLogConfigPtr
 #[allow(unused_variables, non_snake_case)]
 pub fn mju_is_topic_enabled(topic: i32) -> bool {
-    todo!() // cxx:_mju_isTopicEnabled
+    // C: mjtBool mju_isTopicEnabled(int topic) {
+    //      if (!topic) return 1;
+    //      const mjLogConfig* cfg = mju_getLogConfigPtr();
+    //      return ((cfg->topics & (1 << (topic - 1))) != 0);
+    //    }
+    if topic == 0 {
+        return true;
+    }
+    unsafe {
+        let cfg = mju_get_log_config_ptr();
+        ((*cfg).topics & (1 << (topic - 1))) != 0
+    }
 }
 
 /// C: mju_setLogHandler (engine/engine_util_errmem.c:179)
