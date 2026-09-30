@@ -1055,9 +1055,12 @@ pub fn file_path_abs_prefix__a707c1fcc63b7653(self_ptr: *mut mujoco__user__FileP
 }
 
 /// C: FilePath::Str (user/user_util.h:210)
+/// # Safety
+/// Raw pointer arguments and the receiver, when present, must be non-null and designate live memory for each generated access, with the alignment required by that operation. Any byte read must be initialized; any location written must be writable; pointer offsets must stay within the originating allocation or one past it. No other thread may perform an unsynchronized conflicting access to the same memory during this operation.
 #[allow(unused_variables, non_snake_case)]
-pub fn file_path_str(self_ptr: *mut mujoco__user__FilePath) -> *const std__string {
-    todo!() // cxx:__ZNK6mujoco4user8FilePath3StrEv
+pub unsafe fn file_path_str(self_ptr: *mut mujoco__user__FilePath) -> *const std__string {
+    // MACHINE-PROVEN: Clang AST semantics
+    unsafe { core::ptr::addr_of!((*self_ptr).path_) }
 }
 
 /// C: FilePath::Lower (user/user_util.h:229)

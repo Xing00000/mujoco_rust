@@ -1817,10 +1817,12 @@ pub fn mj_c_model_set_error(self_ptr: *mut mjCModel, error: *const mjCError) {
 }
 
 /// C: mjCModel::GetWarnings (user/user_model.h:263)
+/// # Safety
+/// Raw pointer arguments and the receiver, when present, must be non-null and designate live memory for each generated access, with the alignment required by that operation. Any byte read must be initialized; any location written must be writable; pointer offsets must stay within the originating allocation or one past it. No other thread may perform an unsynchronized conflicting access to the same memory during this operation.
 #[allow(unused_variables, non_snake_case)]
-pub fn mj_c_model_get_warnings(self_ptr: *mut mjCModel) -> *const () {
+pub unsafe fn mj_c_model_get_warnings(self_ptr: *mut mjCModel) -> *const () {
     // MACHINE-PROVEN: Clang AST semantics
-    unsafe { (*self_ptr).warnings_ }
+    unsafe { (core::ptr::addr_of!((*self_ptr).warnings_)).cast::<()>() }
 }
 
 /// C: mjCModel::ClearWarnings (user/user_model.h:266)
@@ -1866,148 +1868,190 @@ pub fn mj_c_model_num_defaults(self_ptr: *mut mjCModel) -> i32 {
 }
 
 /// C: mjCModel::ActivePlugins (user/user_model.h:295)
+/// # Safety
+/// Raw pointer arguments and the receiver, when present, must be non-null and designate live memory for each generated access, with the alignment required by that operation. Any byte read must be initialized; any location written must be writable; pointer offsets must stay within the originating allocation or one past it. No other thread may perform an unsynchronized conflicting access to the same memory during this operation.
 #[allow(unused_variables, non_snake_case)]
-pub fn mj_c_model_active_plugins(self_ptr: *mut mjCModel) -> *const () {
+pub unsafe fn mj_c_model_active_plugins(self_ptr: *mut mjCModel) -> *const () {
     // MACHINE-PROVEN: Clang AST semantics
-    unsafe { (*self_ptr).active_plugins_ }
+    unsafe { (core::ptr::addr_of!((*self_ptr).active_plugins_)).cast::<()>() }
 }
 
 /// C: mjCModel::Flexes (user/user_model.h:299)
+/// # Safety
+/// Raw pointer arguments and the receiver, when present, must be non-null and designate live memory for each generated access, with the alignment required by that operation. Any byte read must be initialized; any location written must be writable; pointer offsets must stay within the originating allocation or one past it. No other thread may perform an unsynchronized conflicting access to the same memory during this operation.
 #[allow(unused_variables, non_snake_case)]
-pub fn mj_c_model_flexes(self_ptr: *mut mjCModel) -> *const () {
+pub unsafe fn mj_c_model_flexes(self_ptr: *mut mjCModel) -> *const () {
     // MACHINE-PROVEN: Clang AST semantics
-    unsafe { (*self_ptr).flexes_ }
+    unsafe { (core::ptr::addr_of!((*self_ptr).flexes_)).cast::<()>() }
 }
 
 /// C: mjCModel::Meshes (user/user_model.h:300)
+/// # Safety
+/// Raw pointer arguments and the receiver, when present, must be non-null and designate live memory for each generated access, with the alignment required by that operation. Any byte read must be initialized; any location written must be writable; pointer offsets must stay within the originating allocation or one past it. No other thread may perform an unsynchronized conflicting access to the same memory during this operation.
 #[allow(unused_variables, non_snake_case)]
-pub fn mj_c_model_meshes(self_ptr: *mut mjCModel) -> *const () {
+pub unsafe fn mj_c_model_meshes(self_ptr: *mut mjCModel) -> *const () {
     // MACHINE-PROVEN: Clang AST semantics
-    unsafe { (*self_ptr).meshes_ }
+    unsafe { (core::ptr::addr_of!((*self_ptr).meshes_)).cast::<()>() }
 }
 
 /// C: mjCModel::Skins (user/user_model.h:301)
+/// # Safety
+/// Raw pointer arguments and the receiver, when present, must be non-null and designate live memory for each generated access, with the alignment required by that operation. Any byte read must be initialized; any location written must be writable; pointer offsets must stay within the originating allocation or one past it. No other thread may perform an unsynchronized conflicting access to the same memory during this operation.
 #[allow(unused_variables, non_snake_case)]
-pub fn mj_c_model_skins(self_ptr: *mut mjCModel) -> *const () {
+pub unsafe fn mj_c_model_skins(self_ptr: *mut mjCModel) -> *const () {
     // MACHINE-PROVEN: Clang AST semantics
-    unsafe { (*self_ptr).skins_ }
+    unsafe { (core::ptr::addr_of!((*self_ptr).skins_)).cast::<()>() }
 }
 
 /// C: mjCModel::HFields (user/user_model.h:302)
+/// # Safety
+/// Raw pointer arguments and the receiver, when present, must be non-null and designate live memory for each generated access, with the alignment required by that operation. Any byte read must be initialized; any location written must be writable; pointer offsets must stay within the originating allocation or one past it. No other thread may perform an unsynchronized conflicting access to the same memory during this operation.
 #[allow(unused_variables, non_snake_case)]
-pub fn mj_c_model_h_fields(self_ptr: *mut mjCModel) -> *const () {
+pub unsafe fn mj_c_model_h_fields(self_ptr: *mut mjCModel) -> *const () {
     // MACHINE-PROVEN: Clang AST semantics
-    unsafe { (*self_ptr).hfields_ }
+    unsafe { (core::ptr::addr_of!((*self_ptr).hfields_)).cast::<()>() }
 }
 
 /// C: mjCModel::Textures (user/user_model.h:303)
+/// # Safety
+/// Raw pointer arguments and the receiver, when present, must be non-null and designate live memory for each generated access, with the alignment required by that operation. Any byte read must be initialized; any location written must be writable; pointer offsets must stay within the originating allocation or one past it. No other thread may perform an unsynchronized conflicting access to the same memory during this operation.
 #[allow(unused_variables, non_snake_case)]
-pub fn mj_c_model_textures(self_ptr: *mut mjCModel) -> *const () {
+pub unsafe fn mj_c_model_textures(self_ptr: *mut mjCModel) -> *const () {
     // MACHINE-PROVEN: Clang AST semantics
-    unsafe { (*self_ptr).textures_ }
+    unsafe { (core::ptr::addr_of!((*self_ptr).textures_)).cast::<()>() }
 }
 
 /// C: mjCModel::Materials (user/user_model.h:304)
+/// # Safety
+/// Raw pointer arguments and the receiver, when present, must be non-null and designate live memory for each generated access, with the alignment required by that operation. Any byte read must be initialized; any location written must be writable; pointer offsets must stay within the originating allocation or one past it. No other thread may perform an unsynchronized conflicting access to the same memory during this operation.
 #[allow(unused_variables, non_snake_case)]
-pub fn mj_c_model_materials(self_ptr: *mut mjCModel) -> *const () {
+pub unsafe fn mj_c_model_materials(self_ptr: *mut mjCModel) -> *const () {
     // MACHINE-PROVEN: Clang AST semantics
-    unsafe { (*self_ptr).materials_ }
+    unsafe { (core::ptr::addr_of!((*self_ptr).materials_)).cast::<()>() }
 }
 
 /// C: mjCModel::Pairs (user/user_model.h:305)
+/// # Safety
+/// Raw pointer arguments and the receiver, when present, must be non-null and designate live memory for each generated access, with the alignment required by that operation. Any byte read must be initialized; any location written must be writable; pointer offsets must stay within the originating allocation or one past it. No other thread may perform an unsynchronized conflicting access to the same memory during this operation.
 #[allow(unused_variables, non_snake_case)]
-pub fn mj_c_model_pairs(self_ptr: *mut mjCModel) -> *const () {
+pub unsafe fn mj_c_model_pairs(self_ptr: *mut mjCModel) -> *const () {
     // MACHINE-PROVEN: Clang AST semantics
-    unsafe { (*self_ptr).pairs_ }
+    unsafe { (core::ptr::addr_of!((*self_ptr).pairs_)).cast::<()>() }
 }
 
 /// C: mjCModel::Excludes (user/user_model.h:306)
+/// # Safety
+/// Raw pointer arguments and the receiver, when present, must be non-null and designate live memory for each generated access, with the alignment required by that operation. Any byte read must be initialized; any location written must be writable; pointer offsets must stay within the originating allocation or one past it. No other thread may perform an unsynchronized conflicting access to the same memory during this operation.
 #[allow(unused_variables, non_snake_case)]
-pub fn mj_c_model_excludes(self_ptr: *mut mjCModel) -> *const () {
+pub unsafe fn mj_c_model_excludes(self_ptr: *mut mjCModel) -> *const () {
     // MACHINE-PROVEN: Clang AST semantics
-    unsafe { (*self_ptr).excludes_ }
+    unsafe { (core::ptr::addr_of!((*self_ptr).excludes_)).cast::<()>() }
 }
 
 /// C: mjCModel::Equalities (user/user_model.h:307)
+/// # Safety
+/// Raw pointer arguments and the receiver, when present, must be non-null and designate live memory for each generated access, with the alignment required by that operation. Any byte read must be initialized; any location written must be writable; pointer offsets must stay within the originating allocation or one past it. No other thread may perform an unsynchronized conflicting access to the same memory during this operation.
 #[allow(unused_variables, non_snake_case)]
-pub fn mj_c_model_equalities(self_ptr: *mut mjCModel) -> *const () {
+pub unsafe fn mj_c_model_equalities(self_ptr: *mut mjCModel) -> *const () {
     // MACHINE-PROVEN: Clang AST semantics
-    unsafe { (*self_ptr).equalities_ }
+    unsafe { (core::ptr::addr_of!((*self_ptr).equalities_)).cast::<()>() }
 }
 
 /// C: mjCModel::Tendons (user/user_model.h:308)
+/// # Safety
+/// Raw pointer arguments and the receiver, when present, must be non-null and designate live memory for each generated access, with the alignment required by that operation. Any byte read must be initialized; any location written must be writable; pointer offsets must stay within the originating allocation or one past it. No other thread may perform an unsynchronized conflicting access to the same memory during this operation.
 #[allow(unused_variables, non_snake_case)]
-pub fn mj_c_model_tendons(self_ptr: *mut mjCModel) -> *const () {
+pub unsafe fn mj_c_model_tendons(self_ptr: *mut mjCModel) -> *const () {
     // MACHINE-PROVEN: Clang AST semantics
-    unsafe { (*self_ptr).tendons_ }
+    unsafe { (core::ptr::addr_of!((*self_ptr).tendons_)).cast::<()>() }
 }
 
 /// C: mjCModel::Actuators (user/user_model.h:309)
+/// # Safety
+/// Raw pointer arguments and the receiver, when present, must be non-null and designate live memory for each generated access, with the alignment required by that operation. Any byte read must be initialized; any location written must be writable; pointer offsets must stay within the originating allocation or one past it. No other thread may perform an unsynchronized conflicting access to the same memory during this operation.
 #[allow(unused_variables, non_snake_case)]
-pub fn mj_c_model_actuators(self_ptr: *mut mjCModel) -> *const () {
+pub unsafe fn mj_c_model_actuators(self_ptr: *mut mjCModel) -> *const () {
     // MACHINE-PROVEN: Clang AST semantics
-    unsafe { (*self_ptr).actuators_ }
+    unsafe { (core::ptr::addr_of!((*self_ptr).actuators_)).cast::<()>() }
 }
 
 /// C: mjCModel::Sensors (user/user_model.h:310)
+/// # Safety
+/// Raw pointer arguments and the receiver, when present, must be non-null and designate live memory for each generated access, with the alignment required by that operation. Any byte read must be initialized; any location written must be writable; pointer offsets must stay within the originating allocation or one past it. No other thread may perform an unsynchronized conflicting access to the same memory during this operation.
 #[allow(unused_variables, non_snake_case)]
-pub fn mj_c_model_sensors(self_ptr: *mut mjCModel) -> *const () {
+pub unsafe fn mj_c_model_sensors(self_ptr: *mut mjCModel) -> *const () {
     // MACHINE-PROVEN: Clang AST semantics
-    unsafe { (*self_ptr).sensors_ }
+    unsafe { (core::ptr::addr_of!((*self_ptr).sensors_)).cast::<()>() }
 }
 
 /// C: mjCModel::Numerics (user/user_model.h:311)
+/// # Safety
+/// Raw pointer arguments and the receiver, when present, must be non-null and designate live memory for each generated access, with the alignment required by that operation. Any byte read must be initialized; any location written must be writable; pointer offsets must stay within the originating allocation or one past it. No other thread may perform an unsynchronized conflicting access to the same memory during this operation.
 #[allow(unused_variables, non_snake_case)]
-pub fn mj_c_model_numerics(self_ptr: *mut mjCModel) -> *const () {
+pub unsafe fn mj_c_model_numerics(self_ptr: *mut mjCModel) -> *const () {
     // MACHINE-PROVEN: Clang AST semantics
-    unsafe { (*self_ptr).numerics_ }
+    unsafe { (core::ptr::addr_of!((*self_ptr).numerics_)).cast::<()>() }
 }
 
 /// C: mjCModel::Texts (user/user_model.h:312)
+/// # Safety
+/// Raw pointer arguments and the receiver, when present, must be non-null and designate live memory for each generated access, with the alignment required by that operation. Any byte read must be initialized; any location written must be writable; pointer offsets must stay within the originating allocation or one past it. No other thread may perform an unsynchronized conflicting access to the same memory during this operation.
 #[allow(unused_variables, non_snake_case)]
-pub fn mj_c_model_texts(self_ptr: *mut mjCModel) -> *const () {
+pub unsafe fn mj_c_model_texts(self_ptr: *mut mjCModel) -> *const () {
     // MACHINE-PROVEN: Clang AST semantics
-    unsafe { (*self_ptr).texts_ }
+    unsafe { (core::ptr::addr_of!((*self_ptr).texts_)).cast::<()>() }
 }
 
 /// C: mjCModel::Tuples (user/user_model.h:313)
+/// # Safety
+/// Raw pointer arguments and the receiver, when present, must be non-null and designate live memory for each generated access, with the alignment required by that operation. Any byte read must be initialized; any location written must be writable; pointer offsets must stay within the originating allocation or one past it. No other thread may perform an unsynchronized conflicting access to the same memory during this operation.
 #[allow(unused_variables, non_snake_case)]
-pub fn mj_c_model_tuples(self_ptr: *mut mjCModel) -> *const () {
+pub unsafe fn mj_c_model_tuples(self_ptr: *mut mjCModel) -> *const () {
     // MACHINE-PROVEN: Clang AST semantics
-    unsafe { (*self_ptr).tuples_ }
+    unsafe { (core::ptr::addr_of!((*self_ptr).tuples_)).cast::<()>() }
 }
 
 /// C: mjCModel::Keys (user/user_model.h:314)
+/// # Safety
+/// Raw pointer arguments and the receiver, when present, must be non-null and designate live memory for each generated access, with the alignment required by that operation. Any byte read must be initialized; any location written must be writable; pointer offsets must stay within the originating allocation or one past it. No other thread may perform an unsynchronized conflicting access to the same memory during this operation.
 #[allow(unused_variables, non_snake_case)]
-pub fn mj_c_model_keys(self_ptr: *mut mjCModel) -> *const () {
+pub unsafe fn mj_c_model_keys(self_ptr: *mut mjCModel) -> *const () {
     // MACHINE-PROVEN: Clang AST semantics
-    unsafe { (*self_ptr).keys_ }
+    unsafe { (core::ptr::addr_of!((*self_ptr).keys_)).cast::<()>() }
 }
 
 /// C: mjCModel::Plugins (user/user_model.h:315)
+/// # Safety
+/// Raw pointer arguments and the receiver, when present, must be non-null and designate live memory for each generated access, with the alignment required by that operation. Any byte read must be initialized; any location written must be writable; pointer offsets must stay within the originating allocation or one past it. No other thread may perform an unsynchronized conflicting access to the same memory during this operation.
 #[allow(unused_variables, non_snake_case)]
-pub fn mj_c_model_plugins(self_ptr: *mut mjCModel) -> *const () {
+pub unsafe fn mj_c_model_plugins(self_ptr: *mut mjCModel) -> *const () {
     // MACHINE-PROVEN: Clang AST semantics
-    unsafe { (*self_ptr).plugins_ }
+    unsafe { (core::ptr::addr_of!((*self_ptr).plugins_)).cast::<()>() }
 }
 
 /// C: mjCModel::Bodies (user/user_model.h:316)
+/// # Safety
+/// Raw pointer arguments and the receiver, when present, must be non-null and designate live memory for each generated access, with the alignment required by that operation. Any byte read must be initialized; any location written must be writable; pointer offsets must stay within the originating allocation or one past it. No other thread may perform an unsynchronized conflicting access to the same memory during this operation.
 #[allow(unused_variables, non_snake_case)]
-pub fn mj_c_model_bodies(self_ptr: *mut mjCModel) -> *const () {
+pub unsafe fn mj_c_model_bodies(self_ptr: *mut mjCModel) -> *const () {
     // MACHINE-PROVEN: Clang AST semantics
-    unsafe { (*self_ptr).bodies_ }
+    unsafe { (core::ptr::addr_of!((*self_ptr).bodies_)).cast::<()>() }
 }
 
 /// C: mjCModel::Geoms (user/user_model.h:317)
+/// # Safety
+/// Raw pointer arguments and the receiver, when present, must be non-null and designate live memory for each generated access, with the alignment required by that operation. Any byte read must be initialized; any location written must be writable; pointer offsets must stay within the originating allocation or one past it. No other thread may perform an unsynchronized conflicting access to the same memory during this operation.
 #[allow(unused_variables, non_snake_case)]
-pub fn mj_c_model_geoms(self_ptr: *mut mjCModel) -> *const () {
+pub unsafe fn mj_c_model_geoms(self_ptr: *mut mjCModel) -> *const () {
     // MACHINE-PROVEN: Clang AST semantics
-    unsafe { (*self_ptr).geoms_ }
+    unsafe { (core::ptr::addr_of!((*self_ptr).geoms_)).cast::<()>() }
 }
 
 /// C: mjCModel::SetDeepCopy (user/user_model.h:365)
+/// # Safety
+/// Raw pointer arguments and the receiver, when present, must be non-null and designate live memory for each generated access, with the alignment required by that operation. Any byte read must be initialized; any location written must be writable; pointer offsets must stay within the originating allocation or one past it. No other thread may perform an unsynchronized conflicting access to the same memory during this operation.
 #[allow(unused_variables, non_snake_case)]
-pub fn mj_c_model_set_deep_copy(self_ptr: *mut mjCModel, deepcopy: bool) {
+pub unsafe fn mj_c_model_set_deep_copy(self_ptr: *mut mjCModel, deepcopy: bool) {
     // MACHINE-PROVEN: Clang AST semantics
     unsafe { (*self_ptr).deepcopy_ = deepcopy; }
 }

@@ -97,27 +97,37 @@ pub fn mj_c_cache_trim(self_ptr: *mut mjCCache) {
 }
 
 /// C: mjCAsset::Timestamp (user/user_cache.h:58)
+/// # Safety
+/// Raw pointer arguments and the receiver, when present, must be non-null and designate live memory for each generated access, with the alignment required by that operation. Any byte read must be initialized; any location written must be writable; pointer offsets must stay within the originating allocation or one past it. No other thread may perform an unsynchronized conflicting access to the same memory during this operation.
 #[allow(unused_variables, non_snake_case)]
-pub fn mj_c_asset_timestamp(self_ptr: *mut mjCAsset) -> *const std__string {
-    todo!() // cxx:__ZNK8mjCAsset9TimestampEv
+pub unsafe fn mj_c_asset_timestamp(self_ptr: *mut mjCAsset) -> *const std__string {
+    // MACHINE-PROVEN: Clang AST semantics
+    unsafe { core::ptr::addr_of!((*self_ptr).timestamp_) }
 }
 
 /// C: mjCAsset::Id (user/user_cache.h:59)
+/// # Safety
+/// Raw pointer arguments and the receiver, when present, must be non-null and designate live memory for each generated access, with the alignment required by that operation. Any byte read must be initialized; any location written must be writable; pointer offsets must stay within the originating allocation or one past it. No other thread may perform an unsynchronized conflicting access to the same memory during this operation.
 #[allow(unused_variables, non_snake_case)]
-pub fn mj_c_asset_id(self_ptr: *mut mjCAsset) -> *const std__string {
-    todo!() // cxx:__ZNK8mjCAsset2IdEv
+pub unsafe fn mj_c_asset_id(self_ptr: *mut mjCAsset) -> *const std__string {
+    // MACHINE-PROVEN: Clang AST semantics
+    unsafe { core::ptr::addr_of!((*self_ptr).id_) }
 }
 
 /// C: mjCAsset::InsertNum (user/user_cache.h:60)
+/// # Safety
+/// Raw pointer arguments and the receiver, when present, must be non-null and designate live memory for each generated access, with the alignment required by that operation. Any byte read must be initialized; any location written must be writable; pointer offsets must stay within the originating allocation or one past it. No other thread may perform an unsynchronized conflicting access to the same memory during this operation.
 #[allow(unused_variables, non_snake_case)]
-pub fn mj_c_asset_insert_num(self_ptr: *mut mjCAsset) -> u64 {
+pub unsafe fn mj_c_asset_insert_num(self_ptr: *mut mjCAsset) -> u64 {
     // MACHINE-PROVEN: Clang AST semantics
     unsafe { (*self_ptr).insert_num_ }
 }
 
 /// C: mjCAsset::AccessCount (user/user_cache.h:61)
+/// # Safety
+/// Raw pointer arguments and the receiver, when present, must be non-null and designate live memory for each generated access, with the alignment required by that operation. Any byte read must be initialized; any location written must be writable; pointer offsets must stay within the originating allocation or one past it. No other thread may perform an unsynchronized conflicting access to the same memory during this operation.
 #[allow(unused_variables, non_snake_case)]
-pub fn mj_c_asset_access_count(self_ptr: *mut mjCAsset) -> u64 {
+pub unsafe fn mj_c_asset_access_count(self_ptr: *mut mjCAsset) -> u64 {
     // MACHINE-PROVEN: Clang AST semantics
     unsafe { (*self_ptr).access_count_ }
 }
@@ -159,9 +169,12 @@ pub fn mj_c_asset_increment_access(self_ptr: *mut mjCAsset) {
 }
 
 /// C: mjCAsset::SetInsertNum (user/user_cache.h:86)
+/// # Safety
+/// Raw pointer arguments and the receiver, when present, must be non-null and designate live memory for each generated access, with the alignment required by that operation. Any byte read must be initialized; any location written must be writable; pointer offsets must stay within the originating allocation or one past it. No other thread may perform an unsynchronized conflicting access to the same memory during this operation.
 #[allow(unused_variables, non_snake_case)]
-pub fn mj_c_asset_set_insert_num(self_ptr: *mut mjCAsset, num: u64) {
-    todo!() // cxx:__ZN8mjCAsset12SetInsertNumEm
+pub unsafe fn mj_c_asset_set_insert_num(self_ptr: *mut mjCAsset, num: u64) {
+    // MACHINE-PROVEN: Clang AST semantics
+    unsafe { (*self_ptr).insert_num_ = num; }
 }
 
 /// C: mjCAsset::SetTimestamp (user/user_cache.h:87)
@@ -171,8 +184,10 @@ pub fn mj_c_asset_set_timestamp(self_ptr: *mut mjCAsset, timestamp: std__string)
 }
 
 /// C: mjCAsset::BytesCount (user/user_cache.h:90)
+/// # Safety
+/// Raw pointer arguments and the receiver, when present, must be non-null and designate live memory for each generated access, with the alignment required by that operation. Any byte read must be initialized; any location written must be writable; pointer offsets must stay within the originating allocation or one past it. No other thread may perform an unsynchronized conflicting access to the same memory during this operation.
 #[allow(unused_variables, non_snake_case)]
-pub fn mj_c_asset_bytes_count(self_ptr: *mut mjCAsset) -> u64 {
+pub unsafe fn mj_c_asset_bytes_count(self_ptr: *mut mjCAsset) -> u64 {
     // MACHINE-PROVEN: Clang AST semantics
     unsafe { (*self_ptr).size_ }
 }
@@ -184,9 +199,11 @@ pub fn mj_c_asset_data(self_ptr: *mut mjCAsset) -> *const () {
 }
 
 /// C: mjCAsset::References (user/user_cache.h:92)
+/// # Safety
+/// Raw pointer arguments and the receiver, when present, must be non-null and designate live memory for each generated access, with the alignment required by that operation. Any byte read must be initialized; any location written must be writable; pointer offsets must stay within the originating allocation or one past it. No other thread may perform an unsynchronized conflicting access to the same memory during this operation.
 #[allow(unused_variables, non_snake_case)]
-pub fn mj_c_asset_references(self_ptr: *mut mjCAsset) -> *const () {
+pub unsafe fn mj_c_asset_references(self_ptr: *mut mjCAsset) -> *const () {
     // MACHINE-PROVEN: Clang AST semantics
-    unsafe { (*self_ptr).references_ }
+    unsafe { (core::ptr::addr_of!((*self_ptr).references_)).cast::<()>() }
 }
 

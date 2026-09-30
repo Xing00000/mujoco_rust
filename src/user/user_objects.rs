@@ -703,52 +703,66 @@ pub fn mj_c_body_find_object(self_ptr: *mut mjCBody, r#type: u32, name: *const s
 }
 
 /// C: mjCBody::GetList (user/user_objects.cc:2223)
+/// # Safety
+/// Raw pointer arguments and the receiver, when present, must be non-null and designate live memory for each generated access, with the alignment required by that operation. Any byte read must be initialized; any location written must be writable; pointer offsets must stay within the originating allocation or one past it. No other thread may perform an unsynchronized conflicting access to the same memory during this operation.
 #[allow(unused_variables, non_snake_case)]
-pub fn mj_c_body_get_list__975cf469c2eb9cdf(self_ptr: *mut mjCBody) -> *const () {
+pub unsafe fn mj_c_body_get_list_975cf469(self_ptr: *mut mjCBody) -> *const () {
     // MACHINE-PROVEN: Clang AST semantics
-    unsafe { (*self_ptr).bodies }
+    unsafe { (core::ptr::addr_of!((*self_ptr).bodies)).cast::<()>() }
 }
 
 /// C: mjCBody::GetList (user/user_objects.cc:2228)
+/// # Safety
+/// Raw pointer arguments and the receiver, when present, must be non-null and designate live memory for each generated access, with the alignment required by that operation. Any byte read must be initialized; any location written must be writable; pointer offsets must stay within the originating allocation or one past it. No other thread may perform an unsynchronized conflicting access to the same memory during this operation.
 #[allow(unused_variables, non_snake_case)]
-pub fn mj_c_body_get_list__367a34b7b6ac3342(self_ptr: *mut mjCBody) -> *const () {
+pub unsafe fn mj_c_body_get_list_367a34b7(self_ptr: *mut mjCBody) -> *const () {
     // MACHINE-PROVEN: Clang AST semantics
-    unsafe { (*self_ptr).joints }
+    unsafe { (core::ptr::addr_of!((*self_ptr).joints)).cast::<()>() }
 }
 
 /// C: mjCBody::GetList (user/user_objects.cc:2233)
+/// # Safety
+/// Raw pointer arguments and the receiver, when present, must be non-null and designate live memory for each generated access, with the alignment required by that operation. Any byte read must be initialized; any location written must be writable; pointer offsets must stay within the originating allocation or one past it. No other thread may perform an unsynchronized conflicting access to the same memory during this operation.
 #[allow(unused_variables, non_snake_case)]
-pub fn mj_c_body_get_list__a51bce796e18c18d(self_ptr: *mut mjCBody) -> *const () {
+pub unsafe fn mj_c_body_get_list_a51bce79(self_ptr: *mut mjCBody) -> *const () {
     // MACHINE-PROVEN: Clang AST semantics
-    unsafe { (*self_ptr).geoms }
+    unsafe { (core::ptr::addr_of!((*self_ptr).geoms)).cast::<()>() }
 }
 
 /// C: mjCBody::GetList (user/user_objects.cc:2238)
+/// # Safety
+/// Raw pointer arguments and the receiver, when present, must be non-null and designate live memory for each generated access, with the alignment required by that operation. Any byte read must be initialized; any location written must be writable; pointer offsets must stay within the originating allocation or one past it. No other thread may perform an unsynchronized conflicting access to the same memory during this operation.
 #[allow(unused_variables, non_snake_case)]
-pub fn mj_c_body_get_list__9e70d65d8d0d1c48(self_ptr: *mut mjCBody) -> *const () {
+pub unsafe fn mj_c_body_get_list_9e70d65d(self_ptr: *mut mjCBody) -> *const () {
     // MACHINE-PROVEN: Clang AST semantics
-    unsafe { (*self_ptr).sites }
+    unsafe { (core::ptr::addr_of!((*self_ptr).sites)).cast::<()>() }
 }
 
 /// C: mjCBody::GetList (user/user_objects.cc:2243)
+/// # Safety
+/// Raw pointer arguments and the receiver, when present, must be non-null and designate live memory for each generated access, with the alignment required by that operation. Any byte read must be initialized; any location written must be writable; pointer offsets must stay within the originating allocation or one past it. No other thread may perform an unsynchronized conflicting access to the same memory during this operation.
 #[allow(unused_variables, non_snake_case)]
-pub fn mj_c_body_get_list__81e628945d5100cf(self_ptr: *mut mjCBody) -> *const () {
+pub unsafe fn mj_c_body_get_list_81e62894(self_ptr: *mut mjCBody) -> *const () {
     // MACHINE-PROVEN: Clang AST semantics
-    unsafe { (*self_ptr).cameras }
+    unsafe { (core::ptr::addr_of!((*self_ptr).cameras)).cast::<()>() }
 }
 
 /// C: mjCBody::GetList (user/user_objects.cc:2248)
+/// # Safety
+/// Raw pointer arguments and the receiver, when present, must be non-null and designate live memory for each generated access, with the alignment required by that operation. Any byte read must be initialized; any location written must be writable; pointer offsets must stay within the originating allocation or one past it. No other thread may perform an unsynchronized conflicting access to the same memory during this operation.
 #[allow(unused_variables, non_snake_case)]
-pub fn mj_c_body_get_list__975841557671111b(self_ptr: *mut mjCBody) -> *const () {
+pub unsafe fn mj_c_body_get_list_97584155(self_ptr: *mut mjCBody) -> *const () {
     // MACHINE-PROVEN: Clang AST semantics
-    unsafe { (*self_ptr).lights }
+    unsafe { (core::ptr::addr_of!((*self_ptr).lights)).cast::<()>() }
 }
 
 /// C: mjCBody::GetList (user/user_objects.cc:2253)
+/// # Safety
+/// Raw pointer arguments and the receiver, when present, must be non-null and designate live memory for each generated access, with the alignment required by that operation. Any byte read must be initialized; any location written must be writable; pointer offsets must stay within the originating allocation or one past it. No other thread may perform an unsynchronized conflicting access to the same memory during this operation.
 #[allow(unused_variables, non_snake_case)]
-pub fn mj_c_body_get_list__7100ea1c5c87a8e7(self_ptr: *mut mjCBody) -> *const () {
+pub unsafe fn mj_c_body_get_list_7100ea1c(self_ptr: *mut mjCBody) -> *const () {
     // MACHINE-PROVEN: Clang AST semantics
-    unsafe { (*self_ptr).frames }
+    unsafe { (core::ptr::addr_of!((*self_ptr).frames)).cast::<()>() }
 }
 
 /// C: GetNext (user/user_objects.cc:2260)
