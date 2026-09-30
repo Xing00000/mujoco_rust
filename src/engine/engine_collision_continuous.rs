@@ -12,7 +12,8 @@ use crate::types::*;
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn min2(a: f64, b: f64) -> f64 {
-    todo!() // cxx-internal:/Users/xing/Desktop/projects/c2rust_bitexact/projects/mujoco/src/engine/engine_collision_continuous.c:_min2
+    // MACHINE-PROVEN: Clang AST semantics
+    unsafe { if (a < b) { a } else { b } }
 }
 
 /// C: mjc_PtTri (engine/engine_collision_continuous.c:39)
@@ -95,7 +96,8 @@ pub fn mjc_geom_edges(m: *const mjModel, gi: i32, gpos: *const f64, gmat: *const
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjc_standoff(band: f64, cap: f64) -> f64 {
-    todo!() // cxx:_mjc_standoff
+    // MACHINE-PROVEN: Clang AST semantics
+    unsafe { if (band < cap) { band } else { cap } }
 }
 
 /// C: gapNormal (engine/engine_collision_continuous.c:447)
