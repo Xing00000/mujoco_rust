@@ -90,8 +90,10 @@ pub fn aux_s(omega: f64, m: f64) -> f64 {
 ///   2. No f64::mul_add() (FMA changes precision)
 ///   3. No algebraic simplification
 ///   4. No iter().sum()/product() (order undefined)
+/// # Safety
+/// `v1`, `v2`, and `v3` must each point to three initialized, aligned `f64` values. If `center` is non-null, it must point to three writable, aligned `f64` values. If `normal` is non-null, it must point to three writable, aligned `f64` values. No other thread may make unsynchronized conflicting accesses to these memory locations during the call.
 #[allow(unused_variables, non_snake_case)]
-pub fn triangle(normal: *mut f64, center: *mut f64, v1: *const f64, v2: *const f64, v3: *const f64) -> f64 {
+pub unsafe fn triangle(normal: *mut f64, center: *mut f64, v1: *const f64, v2: *const f64, v3: *const f64) -> f64 {
     const MJ_MINVAL: f64 = 1e-15;
 
     // SAFETY: v1, v2, v3 are valid f64[3] pointers from mujoco mesh data
@@ -845,8 +847,10 @@ pub fn create_flap_stencil(flaps: *const (), simplex: *const (), edgeidx: *const
 ///   2. No f64::mul_add() (FMA changes precision)
 ///   3. No algebraic simplification
 ///   4. No iter().sum()/product() (order undefined)
+/// # Safety
+/// `x` must point to an initialized, aligned vertex array, and `v0`, `v1`, and `v2` must be nonnegative indices whose three-coordinate ranges lie within that array. No other thread may make unsynchronized conflicting accesses to the array during the call.
 #[allow(unused_variables, non_snake_case)]
-pub fn cot(x: *const f64, v0: i32, v1: i32, v2: i32) -> f64 {
+pub unsafe fn cot(x: *const f64, v0: i32, v1: i32, v2: i32) -> f64 {
     // SAFETY: caller guarantees x points to vertex array with valid indices v0, v1, v2
     unsafe {
         let mut normal: [f64; 3] = [0.0; 3];
