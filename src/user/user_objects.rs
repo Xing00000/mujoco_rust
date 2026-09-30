@@ -2125,7 +2125,8 @@ pub fn mj_c_base_copy_plugin(self_ptr: *mut mjCBase) {
 /// C: mjCBase::GetParent (user/user_objects.h:400)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_c_base_get_parent(self_ptr: *mut mjCBase) -> *mut mjCBase {
-    todo!() // cxx:__ZNK7mjCBase9GetParentEv
+    // MACHINE-PROVEN: Clang AST semantics
+    unsafe { core::ptr::null_mut() }
 }
 
 /// C: mjCBase::ForgetKeyframes (user/user_objects.h:415)

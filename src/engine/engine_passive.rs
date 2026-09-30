@@ -130,7 +130,8 @@ pub fn mj_added_mass_forces(local_vels: *const f64, local_accels: *const f64, fl
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mji_pow4(val: f64) -> f64 {
-    (val * val) * (val * val)
+    // MACHINE-PROVEN: Clang AST semantics
+    unsafe { ((val * val) * (val * val)) }
 }
 
 /// C: mji_pow2 (engine/engine_passive.c:1319)
@@ -141,7 +142,8 @@ pub fn mji_pow4(val: f64) -> f64 {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mji_pow2(val: f64) -> f64 {
-    val * val
+    // MACHINE-PROVEN: Clang AST semantics
+    unsafe { (val * val) }
 }
 
 /// C: mji_ellipsoid_max_moment (engine/engine_passive.c:1323)

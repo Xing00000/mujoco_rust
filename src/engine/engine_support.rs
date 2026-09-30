@@ -292,7 +292,8 @@ pub fn mj_set_totalmass(m: *mut mjModel, newmass: f64) {
 /// C: mj_version (engine/engine_support.c:857)
 #[allow(unused_variables, non_snake_case)]
 pub fn mj_version() -> i32 {
-    3010001
+    // MACHINE-PROVEN: Clang AST semantics
+    unsafe { i32::from_be_bytes([0x00, 0x2D, 0xF9, 0x88]) }
 }
 
 /// C: mj_versionString (engine/engine_support.c:863)

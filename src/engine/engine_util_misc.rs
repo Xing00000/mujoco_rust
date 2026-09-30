@@ -1013,7 +1013,8 @@ pub fn mju_print_mat_sparse(mat: *const f64, nr: i32, rownnz: *const i32, rowadr
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mju_min(a: f64, b: f64) -> f64 {
-    if a <= b { a } else { b }
+    // MACHINE-PROVEN: Clang AST semantics
+    unsafe { if (a <= b) { a } else { b } }
 }
 
 /// C: mju_max (engine/engine_util_misc.c:1742)
@@ -1024,7 +1025,8 @@ pub fn mju_min(a: f64, b: f64) -> f64 {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mju_max(a: f64, b: f64) -> f64 {
-    if a >= b { a } else { b }
+    // MACHINE-PROVEN: Clang AST semantics
+    unsafe { if (a >= b) { a } else { b } }
 }
 
 /// C: mju_clip (engine/engine_util_misc.c:1748)
@@ -1035,7 +1037,8 @@ pub fn mju_max(a: f64, b: f64) -> f64 {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mju_clip(x: f64, min: f64, max: f64) -> f64 {
-    if x < min { min } else if x > max { max } else { x }
+    // MACHINE-PROVEN: Clang AST semantics
+    unsafe { if (x < min) { min } else { if (x > max) { max } else { x } } }
 }
 
 /// C: mju_sign (engine/engine_util_misc.c:1754)

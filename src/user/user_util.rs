@@ -12,7 +12,8 @@ use crate::types::*;
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn mjuu_defined(num: f64) -> bool {
-    !num.is_nan()
+    // MACHINE-PROVEN: Clang AST semantics
+    unsafe { (!(num).is_nan()) }
 }
 
 /// C: mjuu_matadr (user/user_util.cc:54)

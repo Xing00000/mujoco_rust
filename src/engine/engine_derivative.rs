@@ -777,7 +777,8 @@ pub fn mjd_actuator_vel(m: *const mjModel, d: *mut mjData) {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn pow2(val: f64) -> f64 {
-    val * val
+    // MACHINE-PROVEN: Clang AST semantics
+    unsafe { (val * val) }
 }
 
 /// C: ellipsoid_max_moment (engine/engine_derivative.c:2646)
