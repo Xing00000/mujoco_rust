@@ -1164,7 +1164,13 @@ pub fn project_origin_line(res: *mut f64, v1: *const f64, v2: *const f64) {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn same_sign2(a: f64, b: f64) -> i32 {
-    todo!() // cxx-internal:engine_collision_gjk.c.o:_sameSign2
+    if a > 0.0 && b > 0.0 {
+        1
+    } else if a < 0.0 && b < 0.0 {
+        -1
+    } else {
+        0
+    }
 }
 
 /// C: replaceSimplex3 (engine/engine_collision_gjk.c:855)
