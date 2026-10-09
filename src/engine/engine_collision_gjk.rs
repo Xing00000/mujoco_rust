@@ -8,7 +8,17 @@ use crate::types::*;
 /// Calls: cxx:__ZNK6mujoco4user8FilePath4sizeEv
 #[allow(unused_variables, non_snake_case)]
 pub fn align8(size: usize) -> usize {
-    (size + 7) & !7
+    size.wrapping_add(7) / 8 * 8
+}
+
+#[cfg(test)]
+mod align8_tests {
+    use super::align8;
+
+    #[test]
+    fn matches_c_size_t_wrap_at_maximum_input() {
+        assert_eq!(align8(usize::MAX), 0);
+    }
 }
 
 /// C: subdistance (engine/engine_collision_gjk.c:56)
@@ -1699,7 +1709,97 @@ pub fn inflate(status: *mut mjCCDStatus, margin1: f64, margin2: f64) {
 /// Calls: cxx-internal:/Users/xing/Desktop/projects/c2rust_bitexact/projects/mujoco/src/engine/engine_collision_gjk.c:_align8
 #[allow(unused_variables, non_snake_case)]
 pub fn mjc_ccd_size(npolygonmax: i32, nmeshdegmax: i32, iterations: i32) -> usize {
-    todo!() // cxx:_mjc_ccdSize
+    #[repr(C)]
+    struct VertexLayout {
+        _vertices: [[f64; 3]; 3],
+        _indices: [i32; 2],
+    }
+
+    #[repr(C)]
+    struct FaceLayout {
+        _verts: i32,
+        _adj: [i32; 3],
+        _v: [f64; 3],
+        _dist2: f64,
+        _index: i32,
+    }
+
+    let mut epa_size = align8(
+        std::mem::size_of::<VertexLayout>()
+            .wrapping_mul(5i32.wrapping_add(iterations) as usize),
+    );
+    epa_size = epa_size.wrapping_add(align8(
+        std::mem::size_of::<FaceLayout>()
+            .wrapping_mul(6)
+            .wrapping_mul(iterations as usize),
+    ));
+    epa_size = epa_size.wrapping_add(align8(
+        std::mem::size_of::<*mut Face>()
+            .wrapping_mul(6)
+            .wrapping_mul(iterations as usize),
+    ));
+    epa_size = epa_size.wrapping_add(align8(std::mem::size_of::<i32>().wrapping_mul(24)));
+    epa_size = epa_size.wrapping_add(align8(std::mem::size_of::<i32>().wrapping_mul(24)));
+
+    let npolygonmax = npolygonmax.max(16) as usize;
+    let nmeshdegmax = nmeshdegmax.max(3) as usize;
+    let mut multiccd_size = align8(
+        std::mem::size_of::<f64>()
+            .wrapping_mul(3)
+            .wrapping_mul(2)
+            .wrapping_mul(npolygonmax),
+    );
+    multiccd_size = multiccd_size.wrapping_add(align8(
+        std::mem::size_of::<f64>()
+            .wrapping_mul(3)
+            .wrapping_mul(2)
+            .wrapping_mul(npolygonmax),
+    ));
+    multiccd_size = multiccd_size.wrapping_add(align8(
+        std::mem::size_of::<f64>()
+            .wrapping_mul(3)
+            .wrapping_mul(npolygonmax),
+    ));
+    multiccd_size = multiccd_size.wrapping_add(align8(
+        std::mem::size_of::<f64>().wrapping_mul(npolygonmax),
+    ));
+    multiccd_size = multiccd_size.wrapping_add(align8(
+        std::mem::size_of::<i32>().wrapping_mul(nmeshdegmax),
+    ));
+    multiccd_size = multiccd_size.wrapping_add(align8(
+        std::mem::size_of::<i32>().wrapping_mul(nmeshdegmax),
+    ));
+    multiccd_size = multiccd_size.wrapping_add(align8(
+        std::mem::size_of::<f64>()
+            .wrapping_mul(3)
+            .wrapping_mul(nmeshdegmax),
+    ));
+    multiccd_size = multiccd_size.wrapping_add(align8(
+        std::mem::size_of::<f64>()
+            .wrapping_mul(3)
+            .wrapping_mul(nmeshdegmax),
+    ));
+    multiccd_size = multiccd_size.wrapping_add(align8(
+        std::mem::size_of::<f64>()
+            .wrapping_mul(3)
+            .wrapping_mul(nmeshdegmax),
+    ));
+    multiccd_size = multiccd_size.wrapping_add(align8(
+        std::mem::size_of::<f64>()
+            .wrapping_mul(3)
+            .wrapping_mul(npolygonmax),
+    ));
+    multiccd_size = multiccd_size.wrapping_add(align8(
+        std::mem::size_of::<f64>()
+            .wrapping_mul(3)
+            .wrapping_mul(npolygonmax),
+    ));
+
+    if epa_size > multiccd_size {
+        epa_size
+    } else {
+        multiccd_size
+    }
 }
 
 /// C: mjc_ccd (engine/engine_collision_gjk.c:2381)
