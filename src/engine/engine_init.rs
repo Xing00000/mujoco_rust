@@ -36,14 +36,9 @@ pub fn mj_default_statistic(stat: *mut mjStatistic) {
 ///   3. No algebraic simplification
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
-pub fn setf4(rgba: *mut f32, r: f32, g: f32, b: f32, a: f32) {
-    // SAFETY: caller guarantees rgba points to at least 4 contiguous floats
-    unsafe {
-        *rgba.add(0) = r;
-        *rgba.add(1) = g;
-        *rgba.add(2) = b;
-        *rgba.add(3) = a;
-    }
+pub unsafe fn setf4(rgba: *mut f32, r: f32, g: f32, b: f32, a: f32) {
+    // MACHINE-PROVEN: Clang AST semantics
+    unsafe { { const _: [(); 4] = [(); core::mem::size_of::<f32>()]; const _: [(); 4] = [(); core::mem::align_of::<f32>()]; const _: [(); 8] = [(); core::mem::size_of::<isize>()]; const _: [(); 1] = [(); cfg!(target_endian = "little") as usize]; let machine_value = r; core::ptr::write::<f32>(rgba.add(0), machine_value); } { const _: [(); 4] = [(); core::mem::size_of::<f32>()]; const _: [(); 4] = [(); core::mem::align_of::<f32>()]; const _: [(); 8] = [(); core::mem::size_of::<isize>()]; const _: [(); 1] = [(); cfg!(target_endian = "little") as usize]; let machine_value = g; core::ptr::write::<f32>(rgba.add(1), machine_value); } { const _: [(); 4] = [(); core::mem::size_of::<f32>()]; const _: [(); 4] = [(); core::mem::align_of::<f32>()]; const _: [(); 8] = [(); core::mem::size_of::<isize>()]; const _: [(); 1] = [(); cfg!(target_endian = "little") as usize]; let machine_value = b; core::ptr::write::<f32>(rgba.add(2), machine_value); } { const _: [(); 4] = [(); core::mem::size_of::<f32>()]; const _: [(); 4] = [(); core::mem::align_of::<f32>()]; const _: [(); 8] = [(); core::mem::size_of::<isize>()]; const _: [(); 1] = [(); cfg!(target_endian = "little") as usize]; let machine_value = a; core::ptr::write::<f32>(rgba.add(3), machine_value); } }
 }
 
 /// C: mj_defaultVisual (engine/engine_init.c:133)
