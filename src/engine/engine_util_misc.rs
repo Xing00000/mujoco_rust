@@ -830,7 +830,7 @@ pub fn mju_decode_base64(buf: *mut u8, s: *const i8) -> usize {
 /// C: historyPhysicalIndex (engine/engine_util_misc.c:1359)
 #[allow(unused_variables, non_snake_case)]
 pub fn history_physical_index(cursor: i32, n: i32, logical: i32) -> i32 {
-    todo!() // cxx-internal:engine_util_misc.c.o:_historyPhysicalIndex
+    (cursor + 1 + logical) % n
 }
 
 /// C: historyFindIndex (engine/engine_util_misc.c:1367)
@@ -912,7 +912,8 @@ pub fn mju_decode_pyramid(force: *mut f64, pyramid: *const f64, mu: *const f64, 
 ///   3. No algebraic simplification
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
-pub fn mju_spring_damper(pos0: f64, vel0: f64, k: f64, b: f64, t: f64) -> f64 {
+pub fn mju_spring_damper(pos0: f64, vel0: f64, Kp: f64, Kv: f64, dt: f64) -> f64 {
+    let (k, b, t) = (Kp, Kv, dt);
     // C: mju_springDamper - spring-damper dynamics
     const MJ_MINVAL: f64 = 1e-15;
     
@@ -948,7 +949,7 @@ pub fn mju_spring_damper(pos0: f64, vel0: f64, k: f64, b: f64, t: f64) -> f64 {
     }
     // critical damping
     //  pos(t) = exp(-b*t/2) * (c1 + c2*t)
-    else if det >= -det_tol {
+    else if det <= det_tol && det >= -det_tol {
         // compute coefficients
         let c1 = pos0;
         let c2 = vel0 + b * c1 / 2.0;

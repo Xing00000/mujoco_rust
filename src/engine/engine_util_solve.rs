@@ -121,7 +121,12 @@ pub fn mju_chol_solve_band(res: *mut f64, mat: *const f64, vec: *const f64, ntot
 /// C: mju_bandDiag (engine/engine_util_solve.c:662)
 #[allow(unused_variables, non_snake_case)]
 pub fn mju_band_diag(i: i32, ntotal: i32, nband: i32, ndense: i32) -> i32 {
-    todo!() // cxx:_mju_bandDiag
+    let nsparse = ntotal - ndense;
+    if i < nsparse {
+        i * nband + nband - 1
+    } else {
+        nsparse * nband + (i - nsparse) * ntotal + i
+    }
 }
 
 /// C: mju_band2Dense (engine/engine_util_solve.c:679)
