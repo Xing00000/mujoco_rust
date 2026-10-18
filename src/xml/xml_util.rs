@@ -363,7 +363,11 @@ pub fn isint(x: f64) -> bool {
 ///   4. No iter().sum()/product() (order undefined)
 #[allow(unused_variables, non_snake_case)]
 pub fn round(x: f64) -> i32 {
-    todo!() // cxx-internal:xml_util.cc.o:__ZL5Roundd
+    if (x - x.floor()).abs() < (x - x.ceil()).abs() {
+        x.floor() as i32
+    } else {
+        x.ceil() as i32
+    }
 }
 
 /// C: mjXUtil::WriteAttr (xml/xml_util.cc:1063)
