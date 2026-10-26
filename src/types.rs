@@ -3340,3 +3340,14 @@ const _: () = assert!(std::mem::align_of::<mjCSensor>() == 8);
 const _: () = assert!(std::mem::size_of::<mjsSensor>() == 168);
 
 const _: () = assert!(std::mem::align_of::<mjsSensor>() == 8);
+
+/// C struct: ccd_vec3_t (24 bytes, align 8)
+#[repr(C, align(8))]
+#[derive(Clone, Copy)]
+pub struct ccd_vec3_t {
+    pub v: [f64; 3],
+}
+
+const _: () = assert!(std::mem::size_of::<ccd_vec3_t>() == 24);
+
+const _: () = assert!(std::mem::align_of::<ccd_vec3_t>() == 8);
