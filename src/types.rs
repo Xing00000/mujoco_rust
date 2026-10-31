@@ -865,15 +865,15 @@ const _: () = assert!(std::mem::size_of::<mjCModel>() == 5936);
 #[derive(Clone, Copy)]
 pub struct mjDoubleVec { _opaque: [u8; 0] }
 
-/// Opaque C struct: mjFloatVec (unsized, pointer-only)
-#[repr(C)]
+/// Sized opaque C struct: mjFloatVec (24 bytes, align 8)
+#[repr(C, align(8))]
 #[derive(Clone, Copy)]
-pub struct mjFloatVec { _opaque: [u8; 0] }
+pub struct mjFloatVec { pub _data: [u8; 24] }
 
-/// Opaque C struct: mjIntVec (unsized, pointer-only)
-#[repr(C)]
+/// Sized opaque C struct: mjIntVec (24 bytes, align 8)
+#[repr(C, align(8))]
 #[derive(Clone, Copy)]
-pub struct mjIntVec { _opaque: [u8; 0] }
+pub struct mjIntVec { pub _data: [u8; 24] }
 
 /// C struct: mjResource (552 bytes, align 8)
 #[repr(C, align(8))]
@@ -1271,20 +1271,20 @@ pub struct mjCSite {
 
 const _: () = assert!(std::mem::size_of::<mjCSite>() == 1064);
 
-/// Opaque C struct: mjFloatVecVec (unsized, pointer-only)
-#[repr(C)]
+/// Sized opaque C struct: mjFloatVecVec (24 bytes, align 8)
+#[repr(C, align(8))]
 #[derive(Clone, Copy)]
-pub struct mjFloatVecVec { _opaque: [u8; 0] }
+pub struct mjFloatVecVec { pub _data: [u8; 24] }
 
-/// Opaque C struct: mjIntVecVec (unsized, pointer-only)
-#[repr(C)]
+/// Sized opaque C struct: mjIntVecVec (24 bytes, align 8)
+#[repr(C, align(8))]
 #[derive(Clone, Copy)]
-pub struct mjIntVecVec { _opaque: [u8; 0] }
+pub struct mjIntVecVec { pub _data: [u8; 24] }
 
-/// Opaque C struct: mjStringVec (unsized, pointer-only)
-#[repr(C)]
+/// Sized opaque C struct: mjStringVec (24 bytes, align 8)
+#[repr(C, align(8))]
 #[derive(Clone, Copy)]
-pub struct mjStringVec { _opaque: [u8; 0] }
+pub struct mjStringVec { pub _data: [u8; 24] }
 
 /// C struct: mjsSkin (120 bytes, align 8)
 #[repr(C, align(8))]
@@ -3351,3 +3351,62 @@ pub struct ccd_vec3_t {
 const _: () = assert!(std::mem::size_of::<ccd_vec3_t>() == 24);
 
 const _: () = assert!(std::mem::align_of::<ccd_vec3_t>() == 8);
+
+/// C struct: mjCBodyPair (400 bytes, align 8)
+#[repr(C, align(8))]
+#[derive(Clone, Copy)]
+pub struct mjCBodyPair {
+    pub _vtable: *mut (),
+    pub _pad_0: [u8; 216],
+    pub body1: i32,
+    pub body2: i32,
+    pub signature: i32,
+    pub _pad_1: [u8; 4],
+    pub bodyname1_: std__string,
+    pub bodyname2_: std__string,
+    pub spec_bodyname1_: std__string,
+    pub spec_bodyname2_: std__string,
+    pub element: *mut mjsElement,
+    pub bodyname1: *mut mjString,
+    pub bodyname2: *mut mjString,
+    pub info: *mut mjString,
+    pub spec: mjsExclude,
+}
+
+const _: () = assert!(std::mem::size_of::<mjCBodyPair>() == 400);
+
+const _: () = assert!(std::mem::align_of::<mjCBodyPair>() == 8);
+
+/// C struct: mjsExclude (32 bytes, align 8)
+#[repr(C, align(8))]
+#[derive(Clone, Copy)]
+pub struct mjsExclude {
+    pub element: *mut mjsElement,
+    pub bodyname1: *mut mjString,
+    pub bodyname2: *mut mjString,
+    pub info: *mut mjString,
+}
+
+const _: () = assert!(std::mem::size_of::<mjsExclude>() == 32);
+
+const _: () = assert!(std::mem::align_of::<mjsExclude>() == 8);
+
+const _: () = assert!(std::mem::size_of::<mjFloatVec>() == 24);
+
+const _: () = assert!(std::mem::align_of::<mjFloatVec>() == 8);
+
+const _: () = assert!(std::mem::size_of::<mjFloatVecVec>() == 24);
+
+const _: () = assert!(std::mem::align_of::<mjFloatVecVec>() == 8);
+
+const _: () = assert!(std::mem::size_of::<mjIntVec>() == 24);
+
+const _: () = assert!(std::mem::align_of::<mjIntVec>() == 8);
+
+const _: () = assert!(std::mem::size_of::<mjIntVecVec>() == 24);
+
+const _: () = assert!(std::mem::align_of::<mjIntVecVec>() == 8);
+
+const _: () = assert!(std::mem::size_of::<mjStringVec>() == 24);
+
+const _: () = assert!(std::mem::align_of::<mjStringVec>() == 8);
