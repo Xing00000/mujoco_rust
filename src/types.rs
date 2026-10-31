@@ -860,10 +860,10 @@ const _: () = assert!(std::mem::size_of::<mjCError>() == 500);
 
 const _: () = assert!(std::mem::size_of::<mjCModel>() == 5936);
 
-/// Opaque C struct: mjDoubleVec (unsized, pointer-only)
-#[repr(C)]
+/// Sized opaque C struct: mjDoubleVec (24 bytes, align 8)
+#[repr(C, align(8))]
 #[derive(Clone, Copy)]
-pub struct mjDoubleVec { _opaque: [u8; 0] }
+pub struct mjDoubleVec { pub _data: [u8; 24] }
 
 /// Sized opaque C struct: mjFloatVec (24 bytes, align 8)
 #[repr(C, align(8))]
@@ -3410,3 +3410,7 @@ const _: () = assert!(std::mem::align_of::<mjIntVecVec>() == 8);
 const _: () = assert!(std::mem::size_of::<mjStringVec>() == 24);
 
 const _: () = assert!(std::mem::align_of::<mjStringVec>() == 8);
+
+const _: () = assert!(std::mem::size_of::<mjDoubleVec>() == 24);
+
+const _: () = assert!(std::mem::align_of::<mjDoubleVec>() == 8);
