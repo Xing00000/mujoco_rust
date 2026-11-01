@@ -90,3 +90,12 @@ pub unsafe fn mj_c_sensor_get_objname(self_ptr: *mut mjCSensor) -> *const std__s
     // MACHINE-PROVEN: Clang AST semantics
     unsafe { core::ptr::addr_of!((*self_ptr).spec_objname_) }
 }
+
+/// C: mjCSkin::get_face (user/user_objects.h:1384)
+/// # Safety
+/// Raw pointer arguments and the receiver, when present, must be non-null and designate live memory for each generated access, with the alignment required by that operation. Any byte read must be initialized; any location written must be writable; pointer offsets must stay within the originating allocation or one past it. No other thread may perform an unsynchronized conflicting access to the same memory during this operation.
+#[allow(unused_variables, non_snake_case)]
+pub unsafe fn mj_c_skin_get_face(self_ptr: *mut mjCSkin) -> *const std__vector_int {
+    // MACHINE-PROVEN: Clang AST semantics
+    unsafe { core::ptr::addr_of!((*self_ptr).face_) }
+}
