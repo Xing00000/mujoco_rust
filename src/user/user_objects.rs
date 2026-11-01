@@ -99,3 +99,12 @@ pub unsafe fn mj_c_skin_get_face(self_ptr: *mut mjCSkin) -> *const std__vector_i
     // MACHINE-PROVEN: Clang AST semantics
     unsafe { core::ptr::addr_of!((*self_ptr).face_) }
 }
+
+/// C: mjCMesh::octree (user/user_objects.h:1237)
+/// # Safety
+/// Raw pointer arguments and the receiver, when present, must be non-null and designate live memory for each generated access, with the alignment required by that operation. Any byte read must be initialized; any location written must be writable; pointer offsets must stay within the originating allocation or one past it. No other thread may perform an unsynchronized conflicting access to the same memory during this operation.
+#[allow(unused_variables, non_snake_case)]
+pub unsafe fn mj_c_mesh_octree(self_ptr: *mut mjCMesh) -> *const mjCOctree {
+    // MACHINE-PROVEN: Clang AST semantics
+    unsafe { core::ptr::addr_of!((*self_ptr).octree_) }
+}
