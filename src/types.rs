@@ -3414,3 +3414,12 @@ const _: () = assert!(std::mem::align_of::<mjStringVec>() == 8);
 const _: () = assert!(std::mem::size_of::<mjDoubleVec>() == 24);
 
 const _: () = assert!(std::mem::align_of::<mjDoubleVec>() == 8);
+
+/// Sized opaque C struct: mujoco__user__FilePath (24 bytes, align 8)
+#[repr(C, align(8))]
+#[derive(Clone, Copy)]
+pub struct mujoco__user__FilePath { pub _data: [u8; 24] }
+
+const _: () = assert!(std::mem::size_of::<mujoco__user__FilePath>() == 24);
+
+const _: () = assert!(std::mem::align_of::<mujoco__user__FilePath>() == 8);

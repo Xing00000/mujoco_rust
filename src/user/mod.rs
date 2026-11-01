@@ -6,3 +6,5 @@ pub mod user_model;
 pub mod user_objects;
 
 pub mod user_api;
+
+pub mod user_util;
