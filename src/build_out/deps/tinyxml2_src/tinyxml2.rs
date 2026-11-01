@@ -48,3 +48,7 @@ pub unsafe fn xml_comment_to_comment(self_ptr: *mut tinyxml2__XMLComment) -> *mu
     // MACHINE-PROVEN: Clang AST semantics
     self_ptr as *mut tinyxml2__XMLComment
 }
+
+pub fn xml_util_is_utf8continuation(p: i8) -> bool {
+    ((p as i32) & 0x80) != 0
+}
