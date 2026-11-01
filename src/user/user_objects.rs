@@ -81,3 +81,12 @@ pub unsafe fn mj_c_skin_get_bindquat(self_ptr: *mut mjCSkin) -> *const std__vect
     // MACHINE-PROVEN: Clang AST semantics
     unsafe { core::ptr::addr_of!((*self_ptr).bindquat_) }
 }
+
+/// C: mjCSensor::get_objname (user/user_objects.h:1921)
+/// # Safety
+/// Raw pointer arguments and the receiver, when present, must be non-null and designate live memory for each generated access, with the alignment required by that operation. Any byte read must be initialized; any location written must be writable; pointer offsets must stay within the originating allocation or one past it. No other thread may perform an unsynchronized conflicting access to the same memory during this operation.
+#[allow(unused_variables, non_snake_case)]
+pub unsafe fn mj_c_sensor_get_objname(self_ptr: *mut mjCSensor) -> *const std__string {
+    // MACHINE-PROVEN: Clang AST semantics
+    unsafe { core::ptr::addr_of!((*self_ptr).spec_objname_) }
+}
