@@ -32,3 +32,31 @@ pub unsafe fn file_path_file_path_mujoco__user__filepath_ptr_d3b46433(self_ptr: 
 }
 }
 
+
+/// C: FilePath::FilePath (user/user_util.h:191)
+/// # Safety
+/// Raw pointer arguments and the receiver, when present, must be non-null and designate live memory for each generated access, with the alignment required by that operation. Any byte read must be initialized; any location written must be writable; pointer offsets must stay within the originating allocation or one past it. No other thread may perform an unsynchronized conflicting access to the same memory during this operation.
+#[allow(unused_variables, non_snake_case)]
+pub unsafe fn file_path_file_path_eb21f780(self_ptr: *mut mujoco__user__FilePath) {
+    // MACHINE-PROVEN: Clang AST semantics
+    unsafe {
+    extern "C" {
+        fn c2rust_std_string_default_3e5e6fdcd038ed0533613ebbd6a8e90cfbd0d827be99afbb5de16179224d81c2(destination: *mut core::ffi::c_void);
+    }
+    c2rust_std_string_default_3e5e6fdcd038ed0533613ebbd6a8e90cfbd0d827be99afbb5de16179224d81c2((self_ptr as *mut u8).add(0) as *mut core::ffi::c_void);
+}
+}
+
+/// C: FilePath::FilePath (user/user_util.h:191)
+/// # Safety
+/// Raw pointer arguments and the receiver, when present, must be non-null and designate live memory for each generated access, with the alignment required by that operation. Any byte read must be initialized; any location written must be writable; pointer offsets must stay within the originating allocation or one past it. No other thread may perform an unsynchronized conflicting access to the same memory during this operation.
+#[allow(unused_variables, non_snake_case)]
+pub unsafe fn file_path_file_path_ece6002f(self_ptr: *mut mujoco__user__FilePath) {
+    // MACHINE-PROVEN: Clang AST semantics
+    unsafe {
+    extern "C" {
+        fn c2rust_std_string_default_3e5e6fdcd038ed0533613ebbd6a8e90cfbd0d827be99afbb5de16179224d81c2(destination: *mut core::ffi::c_void);
+    }
+    c2rust_std_string_default_3e5e6fdcd038ed0533613ebbd6a8e90cfbd0d827be99afbb5de16179224d81c2((self_ptr as *mut u8).add(0) as *mut core::ffi::c_void);
+}
+}
