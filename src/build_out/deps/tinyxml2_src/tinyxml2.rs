@@ -52,3 +52,12 @@ pub unsafe fn xml_comment_to_comment(self_ptr: *mut tinyxml2__XMLComment) -> *mu
 pub fn xml_util_is_utf8continuation(p: i8) -> bool {
     ((p as i32) & 0x80) != 0
 }
+
+/// C: XMLNode::NoChildren (build_out/_deps/tinyxml2-src/tinyxml2.h:765)
+/// # Safety
+/// Raw pointer arguments and the receiver, when present, must be non-null and designate live memory for each generated access, with the alignment required by that operation. Any byte read must be initialized; any location written must be writable; pointer offsets must stay within the originating allocation or one past it. No other thread may perform an unsynchronized conflicting access to the same memory during this operation.
+#[allow(unused_variables, non_snake_case)]
+pub unsafe fn xml_node_no_children(self_ptr: *mut tinyxml2__XMLNode) -> bool {
+    // MACHINE-PROVEN: Clang AST semantics
+    unsafe { ((*self_ptr)._firstChild == ::core::ptr::null_mut()) }
+}
