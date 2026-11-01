@@ -82,3 +82,17 @@ pub unsafe fn mji_add_scl3(res: *mut f64, vec1: *const f64, vec2: *const f64, sc
 #[doc(hidden)]
 #[doc = "c2rust-bitexact: generated function alias"]
 pub use self::mji_add_scl3 as mji_addScl3;
+
+/// C: mji_zero3 (engine/engine_inline.h:46)
+/// # Safety
+/// Raw pointer arguments and the receiver, when present, must be non-null and designate live memory for each generated access, with the alignment required by that operation. Any byte read must be initialized; any location written must be writable; pointer offsets must stay within the originating allocation or one past it. No other thread may perform an unsynchronized conflicting access to the same memory during this operation.
+/// ⚠️ BITEXACT RULES:
+///   1. Copy exact C accumulation order (no iter().sum())
+///   2. No f64::mul_add() (FMA changes precision)
+///   3. No algebraic simplification
+///   4. No iter().sum()/product() (order undefined)
+#[allow(unused_variables, non_snake_case)]
+pub unsafe fn mji_zero3(res: *mut f64) {
+    // MACHINE-PROVEN: Clang AST semantics
+    unsafe { { const _: [(); 8] = [(); core::mem::size_of::<f64>()]; const _: [(); 8] = [(); core::mem::align_of::<f64>()]; const _: [(); 8] = [(); core::mem::size_of::<isize>()]; const _: [(); 1] = [(); cfg!(target_endian = "little") as usize]; let machine_value = f64::from_bits(0x0000000000000000); core::ptr::write::<f64>(res.add(0), machine_value); } { const _: [(); 8] = [(); core::mem::size_of::<f64>()]; const _: [(); 8] = [(); core::mem::align_of::<f64>()]; const _: [(); 8] = [(); core::mem::size_of::<isize>()]; const _: [(); 1] = [(); cfg!(target_endian = "little") as usize]; let machine_value = f64::from_bits(0x0000000000000000); core::ptr::write::<f64>(res.add(1), machine_value); } { const _: [(); 8] = [(); core::mem::size_of::<f64>()]; const _: [(); 8] = [(); core::mem::align_of::<f64>()]; const _: [(); 8] = [(); core::mem::size_of::<isize>()]; const _: [(); 1] = [(); cfg!(target_endian = "little") as usize]; let machine_value = f64::from_bits(0x0000000000000000); core::ptr::write::<f64>(res.add(2), machine_value); } }
+}
