@@ -122,3 +122,21 @@ pub unsafe fn mj_c_flex_get_vert(self_ptr: *mut mjCFlex) -> *const std__vector_d
     // MACHINE-PROVEN: Clang AST semantics
     unsafe { core::ptr::addr_of!((*self_ptr).vert_) }
 }
+
+/// C: mjCBase::UserValue::UserValue (user/user_objects.h:444)
+/// # Safety
+/// Raw pointer arguments and the receiver, when present, must be non-null and designate live memory for each generated access, with the alignment required by that operation. Any byte read must be initialized; any location written must be writable; pointer offsets must stay within the originating allocation or one past it. No other thread may perform an unsynchronized conflicting access to the same memory during this operation.
+#[allow(unused_variables, non_snake_case)]
+pub unsafe fn mj_c_base_user_value_user_value_6b313e7c(self_ptr: *mut mjCBase__UserValue) {
+    // MACHINE-PROVEN: Clang AST semantics
+    unsafe { core::ptr::write(core::ptr::addr_of_mut!((*self_ptr).value), ::core::ptr::null()); core::ptr::write(core::ptr::addr_of_mut!((*self_ptr).cleanup), ::core::option::Option::None); }
+}
+
+/// C: mjCBase::UserValue::UserValue (user/user_objects.h:444)
+/// # Safety
+/// Raw pointer arguments and the receiver, when present, must be non-null and designate live memory for each generated access, with the alignment required by that operation. Any byte read must be initialized; any location written must be writable; pointer offsets must stay within the originating allocation or one past it. No other thread may perform an unsynchronized conflicting access to the same memory during this operation.
+#[allow(unused_variables, non_snake_case)]
+pub unsafe fn mj_c_base_user_value_user_value_87331a34(self_ptr: *mut mjCBase__UserValue) {
+    // MACHINE-PROVEN: Clang AST semantics
+    unsafe { core::ptr::write(core::ptr::addr_of_mut!((*self_ptr).value), ::core::ptr::null()); core::ptr::write(core::ptr::addr_of_mut!((*self_ptr).cleanup), ::core::option::Option::None); }
+}

@@ -3423,3 +3423,15 @@ pub struct mujoco__user__FilePath { pub _data: [u8; 24] }
 const _: () = assert!(std::mem::size_of::<mujoco__user__FilePath>() == 24);
 
 const _: () = assert!(std::mem::align_of::<mujoco__user__FilePath>() == 8);
+
+/// C struct: mjCBase::UserValue (16 bytes, align 8)
+#[repr(C, align(8))]
+#[derive(Clone, Copy)]
+pub struct mjCBase__UserValue {
+    pub value: *const (),
+    pub cleanup: Option<unsafe extern "C" fn(*const ())>,
+}
+
+const _: () = assert!(std::mem::size_of::<mjCBase__UserValue>() == 16);
+
+const _: () = assert!(std::mem::align_of::<mjCBase__UserValue>() == 8);
