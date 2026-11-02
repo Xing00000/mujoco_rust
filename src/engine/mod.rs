@@ -10,3 +10,5 @@ pub mod engine_inline;
 pub mod engine_util_misc;
 
 pub mod engine_util_blas;
+
+pub mod engine_derivative_fd;
