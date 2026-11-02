@@ -140,3 +140,12 @@ pub unsafe fn mj_c_base_user_value_user_value_87331a34(self_ptr: *mut mjCBase__U
     // MACHINE-PROVEN: Clang AST semantics
     unsafe { core::ptr::write(core::ptr::addr_of_mut!((*self_ptr).value), ::core::ptr::null()); core::ptr::write(core::ptr::addr_of_mut!((*self_ptr).cleanup), ::core::option::Option::None); }
 }
+
+/// C: mjCDef::Camera (user/user_objects.h:2101)
+/// # Safety
+/// Raw pointer arguments and the receiver, when present, must be non-null and designate live memory for each generated access, with the alignment required by that operation. Any byte read must be initialized; any location written must be writable; pointer offsets must stay within the originating allocation or one past it. No other thread may perform an unsynchronized conflicting access to the same memory during this operation.
+#[allow(unused_variables, non_snake_case)]
+pub unsafe fn mj_c_def_camera(self_ptr: *mut mjCDef) -> *mut mjCCamera {
+    // MACHINE-PROVEN: Clang AST semantics
+    unsafe { core::ptr::addr_of_mut!((*self_ptr).camera_) }
+}
