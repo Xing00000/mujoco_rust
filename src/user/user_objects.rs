@@ -194,3 +194,17 @@ pub unsafe fn mj_c_def_tendon(self_ptr: *mut mjCDef) -> *mut mjCTendon {
     // MACHINE-PROVEN: Clang AST semantics
     unsafe { core::ptr::addr_of_mut!((*self_ptr).tendon_) }
 }
+
+/// C: mjCJoint::get_range (user/user_objects.h:723)
+/// # Safety
+/// Raw pointer arguments and the receiver, when present, must be non-null and designate live memory for each generated access, with the alignment required by that operation. Any byte read must be initialized; any location written must be writable; pointer offsets must stay within the originating allocation or one past it. No other thread may perform an unsynchronized conflicting access to the same memory during this operation.
+/// ⚠️ BITEXACT RULES:
+///   1. Copy exact C accumulation order (no iter().sum())
+///   2. No f64::mul_add() (FMA changes precision)
+///   3. No algebraic simplification
+///   4. No iter().sum()/product() (order undefined)
+#[allow(unused_variables, non_snake_case)]
+pub unsafe fn mj_c_joint_get_range(self_ptr: *mut mjCJoint) -> *const f64 {
+    // MACHINE-PROVEN: Clang AST semantics
+    unsafe { core::ptr::addr_of!((*self_ptr).range).cast::<f64>() }
+}
