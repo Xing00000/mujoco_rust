@@ -4039,3 +4039,12 @@ pub struct mjModel {
 const _: () = assert!(std::mem::size_of::<mjModel>() == 5696);
 
 const _: () = assert!(std::mem::align_of::<mjModel>() == 8);
+
+/// Sized opaque C struct: tinyxml2__XMLUnknown (104 bytes, align 8)
+#[repr(C, align(8))]
+#[derive(Clone, Copy)]
+pub struct tinyxml2__XMLUnknown { pub _data: [u8; 104] }
+
+const _: () = assert!(std::mem::size_of::<tinyxml2__XMLUnknown>() == 104);
+
+const _: () = assert!(std::mem::align_of::<tinyxml2__XMLUnknown>() == 8);
