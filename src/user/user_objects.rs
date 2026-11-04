@@ -208,3 +208,18 @@ pub unsafe fn mj_c_joint_get_range(self_ptr: *mut mjCJoint) -> *const f64 {
     // MACHINE-PROVEN: Clang AST semantics
     unsafe { core::ptr::addr_of!((*self_ptr).range).cast::<f64>() }
 }
+
+#[allow(unused_variables, non_snake_case)]
+pub fn mj_c_frame_is_ancestor(self_ptr: *mut mjCFrame, child: *const mjCFrame) -> bool {
+    let mut cursor = child;
+    while !cursor.is_null() {
+        if core::ptr::eq(cursor, self_ptr as *const mjCFrame) {
+            return true;
+        }
+        // Compiler-proven mjCBase::frame storage in the current target IR.
+        cursor = unsafe {
+            core::ptr::read_unaligned(cursor.cast::<u8>().add(152).cast::<*mut mjCFrame>()) as *const mjCFrame
+        };
+    }
+    false
+}
