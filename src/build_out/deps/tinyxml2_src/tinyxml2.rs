@@ -115,3 +115,10 @@ pub unsafe fn xml_handle_xml_handle_tinyxml2__xmlnode_ptr_af481ba9(self_ptr: *mu
     // MACHINE-PROVEN: Clang AST semantics
     unsafe { core::ptr::write(core::ptr::addr_of_mut!((*self_ptr)._node), node); }
 }
+
+/// C: XMLDocument::ShallowClone (build_out/_deps/tinyxml2-src/tinyxml2.h:1925)
+#[allow(unused_variables, non_snake_case)]
+pub fn xml_document_shallow_clone(self_ptr: *mut tinyxml2__XMLDocument, arg0: *mut tinyxml2__XMLDocument) -> *mut tinyxml2__XMLNode {
+    // MACHINE-PROVEN: Clang AST semantics
+    unsafe { ::core::ptr::null_mut() }
+}
