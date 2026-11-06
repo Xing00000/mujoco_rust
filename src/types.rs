@@ -4048,3 +4048,14 @@ pub struct tinyxml2__XMLUnknown { pub _data: [u8; 104] }
 const _: () = assert!(std::mem::size_of::<tinyxml2__XMLUnknown>() == 104);
 
 const _: () = assert!(std::mem::align_of::<tinyxml2__XMLUnknown>() == 8);
+
+/// C struct: tinyxml2::XMLHandle (8 bytes, align 8)
+#[repr(C, align(8))]
+#[derive(Clone, Copy)]
+pub struct tinyxml2__XMLHandle {
+    pub _node: *mut tinyxml2__XMLNode,
+}
+
+const _: () = assert!(std::mem::size_of::<tinyxml2__XMLHandle>() == 8);
+
+const _: () = assert!(std::mem::align_of::<tinyxml2__XMLHandle>() == 8);
