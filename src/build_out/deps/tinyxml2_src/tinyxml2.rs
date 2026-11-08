@@ -122,3 +122,10 @@ pub fn xml_document_shallow_clone(self_ptr: *mut tinyxml2__XMLDocument, arg0: *m
     // MACHINE-PROVEN: Clang AST semantics
     unsafe { ::core::ptr::null_mut() }
 }
+
+/// C: XMLPrinter::VisitExit (build_out/_deps/tinyxml2-src/tinyxml2.h:2297)
+#[allow(unused_variables, non_snake_case)]
+pub fn xml_printer_visit_exit(self_ptr: *mut tinyxml2__XMLPrinter, arg0: *const tinyxml2__XMLDocument) -> bool {
+    // MACHINE-PROVEN: Clang AST semantics
+    unsafe { true }
+}
