@@ -277,3 +277,12 @@ pub unsafe fn __c2rust_mj_c_skin_get_vertweight_6485a88149c0ec2a47290cb727349e21
     // MACHINE-PROVEN: Clang AST semantics
     unsafe { core::ptr::addr_of!((*self_ptr).vertweight_) }
 }
+
+/// C: mjCPair::GetSignature (user/user_objects.h:1594)
+/// # Safety
+/// Raw pointer arguments and the receiver, when present, must be non-null and designate live memory for each generated access, with the alignment required by that operation. Any byte read must be initialized; any location written must be writable; pointer offsets must stay within the originating allocation or one past it. No other thread may perform an unsynchronized conflicting access to the same memory during this operation.
+#[allow(unused_variables, non_snake_case)]
+pub unsafe fn __c2rust_mj_c_pair_get_signature_78b831a250274ba68de7897e1007d1e6a0e9886963a37876c7c544deaa0cc6fa(self_ptr: *mut mjCPair) -> i32 {
+    // MACHINE-PROVEN: Clang AST semantics
+    unsafe { (*self_ptr).signature }
+}
