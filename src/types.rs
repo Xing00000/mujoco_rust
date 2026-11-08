@@ -4059,3 +4059,40 @@ pub struct tinyxml2__XMLHandle {
 const _: () = assert!(std::mem::size_of::<tinyxml2__XMLHandle>() == 8);
 
 const _: () = assert!(std::mem::align_of::<tinyxml2__XMLHandle>() == 8);
+
+/// C struct: mjCWrap (328 bytes, align 8)
+#[repr(C, align(8))]
+#[derive(Clone, Copy)]
+pub struct mjCWrap {
+    pub _vtable: *mut (),
+    pub _pad_0: [u8; 216],
+    pub sideid: i32,
+    pub _pad_1: [u8; 4],
+    pub prm: f64,
+    pub sidesite: std__string,
+    pub element: *mut mjsElement,
+    pub r#type: u32,
+    pub _pad_2: [u8; 4],
+    pub info: *mut mjString,
+    pub spec: mjsWrap,
+    pub obj: *mut mjCBase,
+    pub tendon: *mut mjCTendon,
+}
+
+/// C struct: mjsWrap (24 bytes, align 8)
+#[repr(C, align(8))]
+#[derive(Clone, Copy)]
+pub struct mjsWrap {
+    pub element: *mut mjsElement,
+    pub r#type: u32,
+    pub _pad_0: [u8; 4],
+    pub info: *mut mjString,
+}
+
+const _: () = assert!(std::mem::size_of::<mjCWrap>() == 328);
+
+const _: () = assert!(std::mem::align_of::<mjCWrap>() == 8);
+
+const _: () = assert!(std::mem::size_of::<mjsWrap>() == 24);
+
+const _: () = assert!(std::mem::align_of::<mjsWrap>() == 8);
