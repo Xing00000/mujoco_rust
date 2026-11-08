@@ -4105,3 +4105,12 @@ pub struct tinyxml2__XMLPrinter { pub _data: [u8; 328] }
 const _: () = assert!(std::mem::size_of::<tinyxml2__XMLPrinter>() == 328);
 
 const _: () = assert!(std::mem::align_of::<tinyxml2__XMLPrinter>() == 8);
+
+/// Sized opaque C struct: tinyxml2__XMLVisitor (8 bytes, align 8)
+#[repr(C, align(8))]
+#[derive(Clone, Copy)]
+pub struct tinyxml2__XMLVisitor { pub _data: [u8; 8] }
+
+const _: () = assert!(std::mem::size_of::<tinyxml2__XMLVisitor>() == 8);
+
+const _: () = assert!(std::mem::align_of::<tinyxml2__XMLVisitor>() == 8);

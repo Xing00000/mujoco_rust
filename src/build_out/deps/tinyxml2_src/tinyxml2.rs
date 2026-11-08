@@ -129,3 +129,10 @@ pub fn xml_printer_visit_exit(self_ptr: *mut tinyxml2__XMLPrinter, arg0: *const 
     // MACHINE-PROVEN: Clang AST semantics
     unsafe { true }
 }
+
+/// C: XMLVisitor::Visit (build_out/_deps/tinyxml2-src/tinyxml2.h:512)
+#[allow(unused_variables, non_snake_case)]
+pub fn xml_visitor_visit(self_ptr: *mut tinyxml2__XMLVisitor, arg0: *const tinyxml2__XMLUnknown) -> bool {
+    // MACHINE-PROVEN: Clang AST semantics
+    unsafe { true }
+}
