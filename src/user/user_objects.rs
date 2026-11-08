@@ -286,3 +286,17 @@ pub unsafe fn __c2rust_mj_c_pair_get_signature_78b831a250274ba68de7897e1007d1e6a
     // MACHINE-PROVEN: Clang AST semantics
     unsafe { (*self_ptr).signature }
 }
+
+/// C: mjCJoint::get_range (user/user_objects.h:723)
+/// # Safety
+/// Raw pointer arguments and the receiver, when present, must be non-null and designate live memory for each generated access, with the alignment required by that operation. Any byte read must be initialized; any location written must be writable; pointer offsets must stay within the originating allocation or one past it. No other thread may perform an unsynchronized conflicting access to the same memory during this operation.
+/// ⚠️ BITEXACT RULES:
+///   1. Copy exact C accumulation order (no iter().sum())
+///   2. No f64::mul_add() (FMA changes precision)
+///   3. No algebraic simplification
+///   4. No iter().sum()/product() (order undefined)
+#[allow(unused_variables, non_snake_case)]
+pub unsafe fn __c2rust_mj_c_joint_get_range_322485281a705ffd490bf6ffcbc54f82f2c2b24d7a101c1a69a0fb1758c63372(self_ptr: *mut mjCJoint) -> *const f64 {
+    // MACHINE-PROVEN: Clang AST semantics
+    unsafe { core::ptr::addr_of!((*self_ptr).range).cast::<f64>() }
+}
