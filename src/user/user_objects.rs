@@ -300,3 +300,12 @@ pub unsafe fn __c2rust_mj_c_joint_get_range_322485281a705ffd490bf6ffcbc54f82f2c2
     // MACHINE-PROVEN: Clang AST semantics
     unsafe { core::ptr::addr_of!((*self_ptr).range).cast::<f64>() }
 }
+
+/// C: mjCMesh::mutable_octree (user/user_objects.h:1238)
+/// # Safety
+/// Raw pointer arguments and the receiver, when present, must be non-null and designate live memory for each generated access, with the alignment required by that operation. Any byte read must be initialized; any location written must be writable; pointer offsets must stay within the originating allocation or one past it. No other thread may perform an unsynchronized conflicting access to the same memory during this operation.
+#[allow(unused_variables, non_snake_case)]
+pub unsafe fn __c2rust_mj_c_mesh_mutable_octree_b4985a9ccc531ec155b6ff9512ef44314c36a37490bc3486a0d5aa61bebea161(self_ptr: *mut mjCMesh) -> *mut mjCOctree {
+    // MACHINE-PROVEN: Clang AST semantics
+    unsafe { core::ptr::addr_of_mut!((*self_ptr).octree_) }
+}

@@ -2360,59 +2360,59 @@ const _: () = assert!(std::mem::size_of::<std__vector_std__vector_int>() == 24);
 
 const _: () = assert!(std::mem::align_of::<std__vector_std__vector_int>() == 8);
 
-/// Sized opaque C struct: struct__unnamed_at__Users_xing_Desktop_projects_c2rust_bitexact_projects_mujoco_include_mujoco_mjmodel_h_130_3 (52 bytes, align 8)
-#[repr(C, align(8))]
+/// Sized opaque C struct: struct__unnamed_at__Users_xing_Desktop_projects_c2rust_bitexact_projects_mujoco_include_mujoco_mjmodel_h_130_3 (52 bytes, align 4)
+#[repr(C, align(4))]
 #[derive(Clone, Copy)]
 pub struct struct__unnamed_at__Users_xing_Desktop_projects_c2rust_bitexact_projects_mujoco_include_mujoco_mjmodel_h_130_3 { pub _data: [u8; 52] }
 
 const _: () = assert!(std::mem::size_of::<struct__unnamed_at__Users_xing_Desktop_projects_c2rust_bitexact_projects_mujoco_include_mujoco_mjmodel_h_130_3>() == 52);
 
-const _: () = assert!(std::mem::align_of::<struct__unnamed_at__Users_xing_Desktop_projects_c2rust_bitexact_projects_mujoco_include_mujoco_mjmodel_h_130_3>() == 8);
+const _ : () = assert ! (std :: mem :: align_of ::< struct__unnamed_at__Users_xing_Desktop_projects_c2rust_bitexact_projects_mujoco_include_mujoco_mjmodel_h_130_3 > () == 4) ;
 
-/// Sized opaque C struct: struct__unnamed_at__Users_xing_Desktop_projects_c2rust_bitexact_projects_mujoco_include_mujoco_mjmodel_h_146_3 (20 bytes, align 8)
-#[repr(C, align(8))]
+/// Sized opaque C struct: struct__unnamed_at__Users_xing_Desktop_projects_c2rust_bitexact_projects_mujoco_include_mujoco_mjmodel_h_146_3 (20 bytes, align 4)
+#[repr(C, align(4))]
 #[derive(Clone, Copy)]
 pub struct struct__unnamed_at__Users_xing_Desktop_projects_c2rust_bitexact_projects_mujoco_include_mujoco_mjmodel_h_146_3 { pub _data: [u8; 20] }
 
 const _: () = assert!(std::mem::size_of::<struct__unnamed_at__Users_xing_Desktop_projects_c2rust_bitexact_projects_mujoco_include_mujoco_mjmodel_h_146_3>() == 20);
 
-const _: () = assert!(std::mem::align_of::<struct__unnamed_at__Users_xing_Desktop_projects_c2rust_bitexact_projects_mujoco_include_mujoco_mjmodel_h_146_3>() == 8);
+const _ : () = assert ! (std :: mem :: align_of ::< struct__unnamed_at__Users_xing_Desktop_projects_c2rust_bitexact_projects_mujoco_include_mujoco_mjmodel_h_146_3 > () == 4) ;
 
-/// Sized opaque C struct: struct__unnamed_at__Users_xing_Desktop_projects_c2rust_bitexact_projects_mujoco_include_mujoco_mjmodel_h_154_3 (40 bytes, align 8)
-#[repr(C, align(8))]
+/// Sized opaque C struct: struct__unnamed_at__Users_xing_Desktop_projects_c2rust_bitexact_projects_mujoco_include_mujoco_mjmodel_h_154_3 (40 bytes, align 4)
+#[repr(C, align(4))]
 #[derive(Clone, Copy)]
 pub struct struct__unnamed_at__Users_xing_Desktop_projects_c2rust_bitexact_projects_mujoco_include_mujoco_mjmodel_h_154_3 { pub _data: [u8; 40] }
 
 const _: () = assert!(std::mem::size_of::<struct__unnamed_at__Users_xing_Desktop_projects_c2rust_bitexact_projects_mujoco_include_mujoco_mjmodel_h_154_3>() == 40);
 
-const _: () = assert!(std::mem::align_of::<struct__unnamed_at__Users_xing_Desktop_projects_c2rust_bitexact_projects_mujoco_include_mujoco_mjmodel_h_154_3>() == 8);
+const _ : () = assert ! (std :: mem :: align_of ::< struct__unnamed_at__Users_xing_Desktop_projects_c2rust_bitexact_projects_mujoco_include_mujoco_mjmodel_h_154_3 > () == 4) ;
 
-/// Sized opaque C struct: struct__unnamed_at__Users_xing_Desktop_projects_c2rust_bitexact_projects_mujoco_include_mujoco_mjmodel_h_161_3 (52 bytes, align 8)
-#[repr(C, align(8))]
+/// Sized opaque C struct: struct__unnamed_at__Users_xing_Desktop_projects_c2rust_bitexact_projects_mujoco_include_mujoco_mjmodel_h_161_3 (52 bytes, align 4)
+#[repr(C, align(4))]
 #[derive(Clone, Copy)]
 pub struct struct__unnamed_at__Users_xing_Desktop_projects_c2rust_bitexact_projects_mujoco_include_mujoco_mjmodel_h_161_3 { pub _data: [u8; 52] }
 
 const _: () = assert!(std::mem::size_of::<struct__unnamed_at__Users_xing_Desktop_projects_c2rust_bitexact_projects_mujoco_include_mujoco_mjmodel_h_161_3>() == 52);
 
-const _: () = assert!(std::mem::align_of::<struct__unnamed_at__Users_xing_Desktop_projects_c2rust_bitexact_projects_mujoco_include_mujoco_mjmodel_h_161_3>() == 8);
+const _ : () = assert ! (std :: mem :: align_of ::< struct__unnamed_at__Users_xing_Desktop_projects_c2rust_bitexact_projects_mujoco_include_mujoco_mjmodel_h_161_3 > () == 4) ;
 
-/// Sized opaque C struct: struct__unnamed_at__Users_xing_Desktop_projects_c2rust_bitexact_projects_mujoco_include_mujoco_mjmodel_h_177_3 (68 bytes, align 8)
-#[repr(C, align(8))]
+/// Sized opaque C struct: struct__unnamed_at__Users_xing_Desktop_projects_c2rust_bitexact_projects_mujoco_include_mujoco_mjmodel_h_177_3 (68 bytes, align 4)
+#[repr(C, align(4))]
 #[derive(Clone, Copy)]
 pub struct struct__unnamed_at__Users_xing_Desktop_projects_c2rust_bitexact_projects_mujoco_include_mujoco_mjmodel_h_177_3 { pub _data: [u8; 68] }
 
 const _: () = assert!(std::mem::size_of::<struct__unnamed_at__Users_xing_Desktop_projects_c2rust_bitexact_projects_mujoco_include_mujoco_mjmodel_h_177_3>() == 68);
 
-const _: () = assert!(std::mem::align_of::<struct__unnamed_at__Users_xing_Desktop_projects_c2rust_bitexact_projects_mujoco_include_mujoco_mjmodel_h_177_3>() == 8);
+const _ : () = assert ! (std :: mem :: align_of ::< struct__unnamed_at__Users_xing_Desktop_projects_c2rust_bitexact_projects_mujoco_include_mujoco_mjmodel_h_177_3 > () == 4) ;
 
-/// Sized opaque C struct: struct__unnamed_at__Users_xing_Desktop_projects_c2rust_bitexact_projects_mujoco_include_mujoco_mjmodel_h_197_3 (400 bytes, align 8)
-#[repr(C, align(8))]
+/// Sized opaque C struct: struct__unnamed_at__Users_xing_Desktop_projects_c2rust_bitexact_projects_mujoco_include_mujoco_mjmodel_h_197_3 (400 bytes, align 4)
+#[repr(C, align(4))]
 #[derive(Clone, Copy)]
 pub struct struct__unnamed_at__Users_xing_Desktop_projects_c2rust_bitexact_projects_mujoco_include_mujoco_mjmodel_h_197_3 { pub _data: [u8; 400] }
 
 const _: () = assert!(std::mem::size_of::<struct__unnamed_at__Users_xing_Desktop_projects_c2rust_bitexact_projects_mujoco_include_mujoco_mjmodel_h_197_3>() == 400);
 
-const _: () = assert!(std::mem::align_of::<struct__unnamed_at__Users_xing_Desktop_projects_c2rust_bitexact_projects_mujoco_include_mujoco_mjmodel_h_197_3>() == 8);
+const _ : () = assert ! (std :: mem :: align_of ::< struct__unnamed_at__Users_xing_Desktop_projects_c2rust_bitexact_projects_mujoco_include_mujoco_mjmodel_h_197_3 > () == 4) ;
 
 /// C struct: mjCActuator (1848 bytes, align 8)
 #[repr(C, align(8))]
@@ -4114,3 +4114,12 @@ pub struct tinyxml2__XMLVisitor { pub _data: [u8; 8] }
 const _: () = assert!(std::mem::size_of::<tinyxml2__XMLVisitor>() == 8);
 
 const _: () = assert!(std::mem::align_of::<tinyxml2__XMLVisitor>() == 8);
+
+/// Sized opaque C struct: mjCAsset (112 bytes, align 8)
+#[repr(C, align(8))]
+#[derive(Clone, Copy)]
+pub struct mjCAsset { pub _data: [u8; 112] }
+
+const _: () = assert!(std::mem::size_of::<mjCAsset>() == 112);
+
+const _: () = assert!(std::mem::align_of::<mjCAsset>() == 8);

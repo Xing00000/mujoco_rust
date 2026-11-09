@@ -8,3 +8,5 @@ pub mod user_objects;
 pub mod user_api;
 
 pub mod user_util;
+
+pub mod user_cache;
