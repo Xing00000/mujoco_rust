@@ -49,3 +49,16 @@ pub unsafe fn mj_c_model_materials(self_ptr: *mut mjCModel) -> *const std__vecto
     // MACHINE-PROVEN: Clang AST semantics
     unsafe { core::ptr::addr_of!((*self_ptr).materials_) }
 }
+
+/// C: mjCModel::ClearCompileWarnings (user/user_model.h:270)
+/// # Safety
+/// Raw pointer arguments and the receiver, when present, must be non-null and designate live memory for each generated access, with the alignment required by that operation. Any byte read must be initialized; any location written must be writable; pointer offsets must stay within the originating allocation or one past it. No other thread may perform an unsynchronized conflicting access to the same memory during this operation.
+#[allow(unused_variables, non_snake_case)]
+pub unsafe fn mj_c_model_clear_compile_warnings(self_ptr: *mut mjCModel) {
+    // MACHINE-PROVEN: Clang AST semantics
+    unsafe {
+ extern "C" { fn c2rust_std_vector_resize_8f1c9706ea78d4d1de943336881115c26054c2c00c5e0421a0513475c6150d5d(sequence: *mut core::ffi::c_void, count: usize); }
+ let length = core::ptr::read_unaligned((self_ptr as *const u8).add(5832) as *const i32) as u64;
+ c2rust_std_vector_resize_8f1c9706ea78d4d1de943336881115c26054c2c00c5e0421a0513475c6150d5d((self_ptr as *mut u8).add(5808) as *mut core::ffi::c_void, length as usize);
+}
+}
