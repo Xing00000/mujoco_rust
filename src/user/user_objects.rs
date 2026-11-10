@@ -309,3 +309,15 @@ pub unsafe fn __c2rust_mj_c_mesh_mutable_octree_b4985a9ccc531ec155b6ff9512ef4431
     // MACHINE-PROVEN: Clang AST semantics
     unsafe { core::ptr::addr_of_mut!((*self_ptr).octree_) }
 }
+
+/// C: mjCTendon::del_material (user/user_objects.h:1713)
+/// # Safety
+/// Raw pointer arguments and the receiver, when present, must be non-null and designate live memory for each generated access, with the alignment required by that operation. Any byte read must be initialized; any location written must be writable; pointer offsets must stay within the originating allocation or one past it. No other thread may perform an unsynchronized conflicting access to the same memory during this operation.
+#[allow(unused_variables, non_snake_case)]
+pub unsafe fn __c2rust_mj_c_tendon_del_material_b52ea103de51e31d34af678e24e97ebbfdcc90d38b41a406f4f8bd11ce8daefb(self_ptr: *mut mjCTendon) {
+    // MACHINE-PROVEN: Clang AST semantics
+    unsafe {
+ extern "C" { fn c2rust_std_sequence_clear_3dea22fa08fbcc13870d4a29fcc48faa48ee7858bb2ec82fa493826dfa532a2c(sequence: *mut core::ffi::c_void); }
+ c2rust_std_sequence_clear_3dea22fa08fbcc13870d4a29fcc48faa48ee7858bb2ec82fa493826dfa532a2c((self_ptr as *mut u8).add(232) as *mut core::ffi::c_void);
+}
+}
