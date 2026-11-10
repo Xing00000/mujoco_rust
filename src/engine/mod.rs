@@ -14,3 +14,5 @@ pub mod engine_util_blas;
 pub mod engine_derivative_fd;
 
 pub mod engine_collision_continuous;
+
+pub mod engine_collision_gjk;

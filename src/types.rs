@@ -4123,3 +4123,107 @@ pub struct mjCAsset { pub _data: [u8; 112] }
 const _: () = assert!(std::mem::size_of::<mjCAsset>() == 112);
 
 const _: () = assert!(std::mem::align_of::<mjCAsset>() == 8);
+
+/// C struct: Polytope (104 bytes, align 8)
+#[repr(C, align(8))]
+#[derive(Clone, Copy)]
+pub struct Polytope {
+    pub verts: *mut Vertex,
+    pub nverts: i32,
+    pub _pad_0: [u8; 4],
+    pub faces: *mut Face,
+    pub nfaces: i32,
+    pub maxfaces: i32,
+    pub center: [f64; 3],
+    pub map: *mut *mut Face,
+    pub nmap: i32,
+    pub _pad_1: [u8; 4],
+    pub horizon: struct_Horizon,
+}
+
+/// C struct: mjCCDStatus (3184 bytes, align 8)
+#[repr(C, align(8))]
+#[derive(Clone, Copy)]
+pub struct mjCCDStatus {
+    pub separated: i32,
+    pub _pad_0: [u8; 4],
+    pub dist: [f64; 50],
+    pub x1: [f64; 150],
+    pub x2: [f64; 150],
+    pub nx: i32,
+    pub max_iterations: i32,
+    pub tolerance: f64,
+    pub max_contacts: i32,
+    pub _pad_1: [u8; 4],
+    pub dist_cutoff: f64,
+    pub gjk_iterations: i32,
+    pub epa_iterations: i32,
+    pub epa_status: mjEPAStatus,
+    pub _pad_2: [u8; 4],
+    pub simplex: [Vertex; 4],
+    pub nsimplex: i32,
+    pub _pad_3: [u8; 4],
+}
+
+const _: () = assert!(std::mem::size_of::<Polytope>() == 104);
+
+const _: () = assert!(std::mem::align_of::<Polytope>() == 8);
+
+/// Sized opaque C struct: mjEPAStatus (4 bytes, align 4)
+#[repr(C, align(4))]
+#[derive(Clone, Copy)]
+pub struct mjEPAStatus { pub _data: [u8; 4] }
+
+/// C struct: Face (56 bytes, align 8)
+#[repr(C, align(8))]
+#[derive(Clone, Copy)]
+pub struct Face {
+    pub verts: i32,
+    pub adj: [i32; 3],
+    pub v: [f64; 3],
+    pub dist2: f64,
+    pub index: i32,
+    pub _pad_0: [u8; 4],
+}
+
+/// C struct: Vertex (80 bytes, align 8)
+#[repr(C, align(8))]
+#[derive(Clone, Copy)]
+pub struct Vertex {
+    pub vert: [f64; 3],
+    pub vert1: [f64; 3],
+    pub vert2: [f64; 3],
+    pub index1: i32,
+    pub index2: i32,
+}
+
+/// C struct: struct Horizon (32 bytes, align 8)
+#[repr(C, align(8))]
+#[derive(Clone, Copy)]
+pub struct struct_Horizon {
+    pub indices: *mut i32,
+    pub edges: *mut i32,
+    pub nedges: i32,
+    pub _pad_0: [u8; 4],
+    pub w: *const f64,
+}
+
+const _: () = assert!(std::mem::size_of::<Face>() == 56);
+
+const _: () = assert!(std::mem::align_of::<Face>() == 8);
+
+const _: () = assert!(std::mem::size_of::<Vertex>() == 80);
+
+const _: () = assert!(std::mem::align_of::<Vertex>() == 8);
+
+const _: () = assert!(std::mem::size_of::<mjCCDStatus>() == 3184);
+
+const _: () = assert!(std::mem::align_of::<mjCCDStatus>() == 8);
+
+const _: () = assert!(std::mem::size_of::<mjEPAStatus>() == 4);
+
+const _: () = assert!(std::mem::align_of::<mjEPAStatus>() == 4);
+
+const _: () = assert!(std::mem::size_of::<struct_Horizon>() == 32);
+
+const _: () = assert!(std::mem::align_of::<struct_Horizon>() == 8);
