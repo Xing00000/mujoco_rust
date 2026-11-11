@@ -321,3 +321,12 @@ pub unsafe fn __c2rust_mj_c_tendon_del_material_b52ea103de51e31d34af678e24e97ebb
  c2rust_std_sequence_clear_3dea22fa08fbcc13870d4a29fcc48faa48ee7858bb2ec82fa493826dfa532a2c((self_ptr as *mut u8).add(232) as *mut core::ffi::c_void);
 }
 }
+
+/// C: mjCBodyPair::get_bodyname1 (user/user_objects.h)
+/// # Safety
+/// Raw pointer arguments and the receiver, when present, must be non-null and designate live memory for each generated access, with the alignment required by that operation. Any byte read must be initialized; any location written must be writable; pointer offsets must stay within the originating allocation or one past it. No other thread may perform an unsynchronized conflicting access to the same memory during this operation.
+pub unsafe fn __c2rust_mj_c_body_pair_get_bodyname1_c02f32c2dc50de4250ad1b8548b354b1ea3ca4fca91c006827db339a70120a0f(c2rust_result_out: *mut std__string, self_ptr: *mut mjCBodyPair) -> () {
+    extern "C" { fn c2rust_std_string_copy_77903c6aa15af5bc136f5cc42a00618cfcce78616b72abc2bb6f1e34fd95fbce(destination: *mut core::ffi::c_void, source: *const core::ffi::c_void); }
+    let source_ptr = (self_ptr as *const u8).add(240).cast::<core::ffi::c_void>();
+    c2rust_std_string_copy_77903c6aa15af5bc136f5cc42a00618cfcce78616b72abc2bb6f1e34fd95fbce(c2rust_result_out.cast::<core::ffi::c_void>(), source_ptr);
+}

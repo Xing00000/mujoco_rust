@@ -270,10 +270,10 @@ pub struct mjStatistic {
     pub center: [f64; 3],
 }
 
-/// Opaque C struct: mjString (unsized, pointer-only)
-#[repr(C)]
+/// Sized opaque C struct: mjString (24 bytes, align 8)
+#[repr(C, align(8))]
 #[derive(Clone, Copy)]
-pub struct mjString { _opaque: [u8; 0] }
+pub struct mjString { pub _data: [u8; 24] }
 
 /// C struct: mjVisual (632 bytes, align 4)
 #[repr(C, align(4))]
@@ -4315,3 +4315,7 @@ const _: () = assert!(std::mem::align_of::<mjvGeom>() == 4);
 const _: () = assert!(std::mem::size_of::<mjvScene>() == 11584);
 
 const _: () = assert!(std::mem::align_of::<mjvScene>() == 8);
+
+const _: () = assert!(std::mem::size_of::<mjString>() == 24);
+
+const _: () = assert!(std::mem::align_of::<mjString>() == 8);
