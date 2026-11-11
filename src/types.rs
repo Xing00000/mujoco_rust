@@ -4229,3 +4229,89 @@ const _: () = assert!(std::mem::align_of::<mjEPAStatus>() == 4);
 const _: () = assert!(std::mem::size_of::<struct_Horizon>() == 32);
 
 const _: () = assert!(std::mem::align_of::<struct_Horizon>() == 8);
+
+/// C struct: mjvGeom (252 bytes, align 4)
+#[repr(C, align(4))]
+#[derive(Clone, Copy)]
+pub struct mjvGeom {
+    pub r#type: i32,
+    pub dataid: i32,
+    pub objtype: i32,
+    pub objid: i32,
+    pub category: i32,
+    pub matid: i32,
+    pub texid: i32,
+    pub texuniform: i32,
+    pub texcoord: i32,
+    pub segid: i32,
+    pub size: [f32; 3],
+    pub pos: [f32; 3],
+    pub mat: [f32; 9],
+    pub rgba: [f32; 4],
+    pub emission: f32,
+    pub specular: f32,
+    pub shininess: f32,
+    pub reflectance: f32,
+    pub texrepeat: [f32; 2],
+    pub label: [i8; 100],
+    pub camdist: f32,
+    pub modelrbound: f32,
+    pub transparent: u8,
+    pub _pad_0: [u8; 3],
+}
+
+/// C struct: mjvScene (11584 bytes, align 8)
+#[repr(C, align(8))]
+#[derive(Clone, Copy)]
+pub struct mjvScene {
+    pub maxgeom: i32,
+    pub ngeom: i32,
+    pub geoms: *mut mjvGeom,
+    pub geomorder: *mut i32,
+    pub nflex: i32,
+    pub _pad_0: [u8; 4],
+    pub flexedgeadr: *mut i32,
+    pub flexedgenum: *mut i32,
+    pub flexvertadr: *mut i32,
+    pub flexvertnum: *mut i32,
+    pub flexfaceadr: *mut i32,
+    pub flexfacenum: *mut i32,
+    pub flexfaceused: *mut i32,
+    pub flexedge: *mut i32,
+    pub flexvert: *mut f32,
+    pub flexface: *mut f32,
+    pub flexnormal: *mut f32,
+    pub flextexcoord: *mut f32,
+    pub flexvertopt: u8,
+    pub flexedgeopt: u8,
+    pub flexfaceopt: u8,
+    pub flexskinopt: u8,
+    pub nskin: i32,
+    pub skinfacenum: *mut i32,
+    pub skinvertadr: *mut i32,
+    pub skinvertnum: *mut i32,
+    pub skinvert: *mut f32,
+    pub skinnormal: *mut f32,
+    pub nlight: i32,
+    pub lights: [u8; 11200],
+    pub camera: [u8; 128],
+    pub enabletransform: u8,
+    pub _pad_1: [u8; 3],
+    pub translate: [f32; 3],
+    pub rotate: [f32; 4],
+    pub scale: f32,
+    pub stereo: i32,
+    pub flags: [u8; 12],
+    pub framewidth: i32,
+    pub framergb: [f32; 3],
+    pub status: i32,
+    pub _pad_2: [u8; 4],
+}
+
+const _: () = assert!(std::mem::size_of::<mjvGeom>() == 252);
+
+const _: () = assert!(std::mem::align_of::<mjvGeom>() == 4);
+
+const _: () = assert!(std::mem::size_of::<mjvScene>() == 11584);
+
+const _: () = assert!(std::mem::align_of::<mjvScene>() == 8);
