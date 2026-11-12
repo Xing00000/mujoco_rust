@@ -57,8 +57,8 @@ pub unsafe fn mj_c_model_materials(self_ptr: *mut mjCModel) -> *const std__vecto
 pub unsafe fn mj_c_model_clear_compile_warnings(self_ptr: *mut mjCModel) {
     // MACHINE-PROVEN: Clang AST semantics
     unsafe {
- extern "C" { fn c2rust_std_vector_resize_8f1c9706ea78d4d1de943336881115c26054c2c00c5e0421a0513475c6150d5d(sequence: *mut core::ffi::c_void, count: usize); }
+ extern "C" { fn c2rust_std_sequence_resize_e236d82e964305831c6167fa951b9fb7ac3f9bfe4efc68e6f954626866c201a1(sequence: *mut core::ffi::c_void, count: usize); }
  let length = core::ptr::read_unaligned((self_ptr as *const u8).add(5832) as *const i32) as u64;
- c2rust_std_vector_resize_8f1c9706ea78d4d1de943336881115c26054c2c00c5e0421a0513475c6150d5d((self_ptr as *mut u8).add(5808) as *mut core::ffi::c_void, length as usize);
+ c2rust_std_sequence_resize_e236d82e964305831c6167fa951b9fb7ac3f9bfe4efc68e6f954626866c201a1((self_ptr as *mut u8).add(5808) as *mut core::ffi::c_void, length as usize);
 }
 }
