@@ -4365,3 +4365,55 @@ const _: () = assert!(std::mem::align_of::<std__array_double__4>() == 8);
 const _: () = assert!(std::mem::size_of::<std__array_double__6>() == 48);
 
 const _: () = assert!(std::mem::align_of::<std__array_double__6>() == 8);
+
+/// Sized opaque C struct: std__condition_variable (48 bytes, align 8)
+#[repr(C, align(8))]
+#[derive(Clone, Copy)]
+pub struct std__condition_variable { pub _data: [u8; 48] }
+
+/// Sized opaque C struct: std__mutex (64 bytes, align 8)
+#[repr(C, align(8))]
+#[derive(Clone, Copy)]
+pub struct std__mutex { pub _data: [u8; 64] }
+
+/// Sized opaque C struct: std__queue_std__function_void (48 bytes, align 8)
+#[repr(C, align(8))]
+#[derive(Clone, Copy)]
+pub struct std__queue_std__function_void { pub _data: [u8; 48] }
+
+/// Sized opaque C struct: std__vector_std__thread (24 bytes, align 8)
+#[repr(C, align(8))]
+#[derive(Clone, Copy)]
+pub struct std__vector_std__thread { pub _data: [u8; 24] }
+
+/// C struct: mujoco::user::ThreadPool (240 bytes, align 8)
+#[repr(C, align(8))]
+#[derive(Clone, Copy)]
+pub struct mujoco__user__ThreadPool {
+    pub threads_: std__vector_std__thread,
+    pub m_: std__mutex,
+    pub cv_in_: std__condition_variable,
+    pub cv_ext_: std__condition_variable,
+    pub queue_: std__queue_std__function_void,
+    pub ctr_: u64,
+}
+
+const _: () = assert!(std::mem::size_of::<mujoco__user__ThreadPool>() == 240);
+
+const _: () = assert!(std::mem::align_of::<mujoco__user__ThreadPool>() == 8);
+
+const _: () = assert!(std::mem::size_of::<std__condition_variable>() == 48);
+
+const _: () = assert!(std::mem::align_of::<std__condition_variable>() == 8);
+
+const _: () = assert!(std::mem::size_of::<std__mutex>() == 64);
+
+const _: () = assert!(std::mem::align_of::<std__mutex>() == 8);
+
+const _: () = assert!(std::mem::size_of::<std__queue_std__function_void>() == 48);
+
+const _: () = assert!(std::mem::align_of::<std__queue_std__function_void>() == 8);
+
+const _: () = assert!(std::mem::size_of::<std__vector_std__thread>() == 24);
+
+const _: () = assert!(std::mem::align_of::<std__vector_std__thread>() == 8);
