@@ -330,3 +330,41 @@ pub unsafe fn __c2rust_mj_c_body_pair_get_bodyname1_c02f32c2dc50de4250ad1b8548b3
     let source_ptr = (self_ptr as *const u8).add(240).cast::<core::ffi::c_void>();
     c2rust_std_string_copy_77903c6aa15af5bc136f5cc42a00618cfcce78616b72abc2bb6f1e34fd95fbce(c2rust_result_out.cast::<core::ffi::c_void>(), source_ptr);
 }
+
+/// C: mjCBoundingVolume::mjCBoundingVolume(const int* id, int contype, int conaffinity, const double pos[3], const double quat[4], const double aabb[6]) (user/user_objects.h:110) [C1 complete-object constructor]
+/// # Safety
+/// Raw pointer arguments and the receiver, when present, must be non-null and designate live memory for each generated access, with the alignment required by that operation. Any byte read must be initialized; any location written must be writable; pointer offsets must stay within the originating allocation or one past it. No other thread may perform an unsynchronized conflicting access to the same memory during this operation.
+#[allow(unused_variables, non_snake_case)]
+pub unsafe fn __c2rust_mj_c_bounding_volume_mj_c_bounding_volume_e150b31568c6a55f8202faa65eef46ba63b6c0269592293b00459c2ce1085e24(self_ptr: *mut mjCBoundingVolume, id: *const i32, contype: i32, conaffinity: i32, pos: *const f64, quat: *const f64, aabb: *const f64) -> () {
+    unsafe {
+        (*self_ptr).contype_ = contype;
+        (*self_ptr).conaffinity_ = conaffinity;
+        (*self_ptr).id_ = id;
+        core::ptr::copy_nonoverlapping(aabb, core::ptr::addr_of_mut!((*self_ptr).aabb_) as *mut f64, 6);
+        core::ptr::copy_nonoverlapping(pos, core::ptr::addr_of_mut!((*self_ptr).pos_) as *mut f64, 3);
+        let quat_set = !quat.is_null();
+        (*self_ptr).quat_set_ = quat_set;
+        if quat_set {
+            core::ptr::copy_nonoverlapping(quat, core::ptr::addr_of_mut!((*self_ptr).quat_) as *mut f64, 4);
+        }
+    }
+}
+
+/// C: mjCBoundingVolume::mjCBoundingVolume(const int* id, int contype, int conaffinity, const double pos[3], const double quat[4], const double aabb[6]) (user/user_objects.h:110) [C2 base-object constructor]
+/// # Safety
+/// Raw pointer arguments and the receiver, when present, must be non-null and designate live memory for each generated access, with the alignment required by that operation. Any byte read must be initialized; any location written must be writable; pointer offsets must stay within the originating allocation or one past it. No other thread may perform an unsynchronized conflicting access to the same memory during this operation.
+#[allow(unused_variables, non_snake_case)]
+pub unsafe fn __c2rust_mj_c_bounding_volume_mj_c_bounding_volume_520aaa174964aec1f5333844152b6b8111e5e428db922d0b23161a58fb95bc44(self_ptr: *mut mjCBoundingVolume, id: *const i32, contype: i32, conaffinity: i32, pos: *const f64, quat: *const f64, aabb: *const f64) -> () {
+    unsafe {
+        (*self_ptr).contype_ = contype;
+        (*self_ptr).conaffinity_ = conaffinity;
+        (*self_ptr).id_ = id;
+        core::ptr::copy_nonoverlapping(aabb, core::ptr::addr_of_mut!((*self_ptr).aabb_) as *mut f64, 6);
+        core::ptr::copy_nonoverlapping(pos, core::ptr::addr_of_mut!((*self_ptr).pos_) as *mut f64, 3);
+        let quat_set = !quat.is_null();
+        (*self_ptr).quat_set_ = quat_set;
+        if quat_set {
+            core::ptr::copy_nonoverlapping(quat, core::ptr::addr_of_mut!((*self_ptr).quat_) as *mut f64, 4);
+        }
+    }
+}
