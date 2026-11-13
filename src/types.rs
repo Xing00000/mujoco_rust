@@ -4319,3 +4319,49 @@ const _: () = assert!(std::mem::align_of::<mjvScene>() == 8);
 const _: () = assert!(std::mem::size_of::<mjString>() == 24);
 
 const _: () = assert!(std::mem::align_of::<mjString>() == 8);
+
+/// Sized opaque C struct: std__array_double__3 (24 bytes, align 8)
+#[repr(C, align(8))]
+#[derive(Clone, Copy)]
+pub struct std__array_double__3 { pub _data: [u8; 24] }
+
+/// Sized opaque C struct: std__array_double__4 (32 bytes, align 8)
+#[repr(C, align(8))]
+#[derive(Clone, Copy)]
+pub struct std__array_double__4 { pub _data: [u8; 32] }
+
+/// Sized opaque C struct: std__array_double__6 (48 bytes, align 8)
+#[repr(C, align(8))]
+#[derive(Clone, Copy)]
+pub struct std__array_double__6 { pub _data: [u8; 48] }
+
+/// C struct: mjCBoundingVolume (128 bytes, align 8)
+#[repr(C, align(8))]
+#[derive(Clone, Copy)]
+pub struct mjCBoundingVolume {
+    pub contype_: i32,
+    pub conaffinity_: i32,
+    pub aabb_: std__array_double__6,
+    pub pos_: std__array_double__3,
+    pub quat_: std__array_double__4,
+    pub quat_set_: bool,
+    pub _pad_0: [u8; 3],
+    pub idval_: i32,
+    pub id_: *const i32,
+}
+
+const _: () = assert!(std::mem::size_of::<mjCBoundingVolume>() == 128);
+
+const _: () = assert!(std::mem::align_of::<mjCBoundingVolume>() == 8);
+
+const _: () = assert!(std::mem::size_of::<std__array_double__3>() == 24);
+
+const _: () = assert!(std::mem::align_of::<std__array_double__3>() == 8);
+
+const _: () = assert!(std::mem::size_of::<std__array_double__4>() == 32);
+
+const _: () = assert!(std::mem::align_of::<std__array_double__4>() == 8);
+
+const _: () = assert!(std::mem::size_of::<std__array_double__6>() == 48);
+
+const _: () = assert!(std::mem::align_of::<std__array_double__6>() == 8);
