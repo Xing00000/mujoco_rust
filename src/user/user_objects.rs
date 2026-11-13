@@ -335,7 +335,7 @@ pub unsafe fn __c2rust_mj_c_body_pair_get_bodyname1_c02f32c2dc50de4250ad1b8548b3
 /// # Safety
 /// Raw pointer arguments and the receiver, when present, must be non-null and designate live memory for each generated access, with the alignment required by that operation. Any byte read must be initialized; any location written must be writable; pointer offsets must stay within the originating allocation or one past it. No other thread may perform an unsynchronized conflicting access to the same memory during this operation.
 #[allow(unused_variables, non_snake_case)]
-pub unsafe fn __c2rust_mj_c_bounding_volume_mj_c_bounding_volume_e150b31568c6a55f8202faa65eef46ba63b6c0269592293b00459c2ce1085e24(self_ptr: *mut mjCBoundingVolume, id: *const i32, contype: i32, conaffinity: i32, pos: *const f64, quat: *const f64, aabb: *const f64) -> () {
+pub fn __c2rust_mj_c_bounding_volume_mj_c_bounding_volume_e150b31568c6a55f8202faa65eef46ba63b6c0269592293b00459c2ce1085e24(self_ptr: *mut mjCBoundingVolume, id: *const i32, contype: i32, conaffinity: i32, pos: *const f64, quat: *const f64, aabb: *const f64) -> () {
     unsafe {
         (*self_ptr).contype_ = contype;
         (*self_ptr).conaffinity_ = conaffinity;
@@ -354,7 +354,7 @@ pub unsafe fn __c2rust_mj_c_bounding_volume_mj_c_bounding_volume_e150b31568c6a55
 /// # Safety
 /// Raw pointer arguments and the receiver, when present, must be non-null and designate live memory for each generated access, with the alignment required by that operation. Any byte read must be initialized; any location written must be writable; pointer offsets must stay within the originating allocation or one past it. No other thread may perform an unsynchronized conflicting access to the same memory during this operation.
 #[allow(unused_variables, non_snake_case)]
-pub unsafe fn __c2rust_mj_c_bounding_volume_mj_c_bounding_volume_520aaa174964aec1f5333844152b6b8111e5e428db922d0b23161a58fb95bc44(self_ptr: *mut mjCBoundingVolume, id: *const i32, contype: i32, conaffinity: i32, pos: *const f64, quat: *const f64, aabb: *const f64) -> () {
+pub fn __c2rust_mj_c_bounding_volume_mj_c_bounding_volume_520aaa174964aec1f5333844152b6b8111e5e428db922d0b23161a58fb95bc44(self_ptr: *mut mjCBoundingVolume, id: *const i32, contype: i32, conaffinity: i32, pos: *const f64, quat: *const f64, aabb: *const f64) -> () {
     unsafe {
         (*self_ptr).contype_ = contype;
         (*self_ptr).conaffinity_ = conaffinity;
