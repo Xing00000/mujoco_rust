@@ -368,3 +368,15 @@ pub fn __c2rust_mj_c_bounding_volume_mj_c_bounding_volume_520aaa174964aec1f53338
         }
     }
 }
+
+/// C: mjCMesh::npolygon (user/user_objects.h:1218)
+/// # Safety
+/// Raw pointer arguments and the receiver, when present, must be non-null and designate live memory for each generated access, with the alignment required by that operation. Any byte read must be initialized; any location written must be writable; pointer offsets must stay within the originating allocation or one past it. No other thread may perform an unsynchronized conflicting access to the same memory during this operation.
+#[allow(unused_variables, non_snake_case)]
+pub unsafe fn __c2rust_mj_c_mesh_npolygon_38703406cfa30fe6fca31c55aeb354eefb32c0e01736d4baac052e72b354ebe3(self_ptr: *mut mjCMesh) -> i32 {
+    // MACHINE-PROVEN: Clang AST semantics
+    unsafe {
+ extern "C" { fn c2rust_std_sequence_size_1ee4741d6c3759c772c72dad425dd7cdc523c30841bd445c2c2acee687392421(sequence: *const core::ffi::c_void) -> usize; }
+ c2rust_std_sequence_size_1ee4741d6c3759c772c72dad425dd7cdc523c30841bd445c2c2acee687392421((self_ptr as *const u8).add(1896) as *const core::ffi::c_void) as i32
+}
+}
