@@ -506,3 +506,21 @@ pub unsafe fn __c2rust_mj_c_body_bodies_1bd0878dc47fd5da4d4c00990b6c5926cd63b5cd
         c2rust_std_vector_copy_29c3661029124a84279c385a72327eb594a4169750aa46b827b2e1d257e0e2aa(c2rust_result_out.cast(), self_ptr.cast::<u8>().add(1848).cast());
     }
 }
+
+/// # Safety
+/// The caller must provide exclusive access to a live, aligned receiver with no concurrent access.
+#[allow(unused_variables, non_snake_case)]
+pub unsafe fn __c2rust_mj_c_octree_clear_656c2112cd52b6e0407e21ee9b5d61bb9baf945d3e829041782bb2fb87a8a980(self_ptr: *mut mjCOctree) -> () {
+    unsafe {
+        extern "C" {
+            fn c2rust_reset_vector_994d2a3792ac22ec73b688649c48110f2936bddf1c2f9776d4f8cb2b1446a910(field: *mut core::ffi::c_void);
+            fn c2rust_reset_vector_391c02457ce5e435f6558afda60f5d21286ba5dc5901152fd589437e27a99a10(field: *mut core::ffi::c_void);
+            fn c2rust_reset_vector_458b05151b2d1028918f191d2ac587c5b794f164335d42c7f3fee2241f9b4aea(field: *mut core::ffi::c_void);
+        }
+        self_ptr.cast::<u8>().add(0).cast::<i32>().write(0);
+        self_ptr.cast::<u8>().add(4).cast::<i32>().write(0);
+        c2rust_reset_vector_994d2a3792ac22ec73b688649c48110f2936bddf1c2f9776d4f8cb2b1446a910(self_ptr.cast::<u8>().add(16).cast());
+        c2rust_reset_vector_391c02457ce5e435f6558afda60f5d21286ba5dc5901152fd589437e27a99a10(self_ptr.cast::<u8>().add(64).cast());
+        c2rust_reset_vector_458b05151b2d1028918f191d2ac587c5b794f164335d42c7f3fee2241f9b4aea(self_ptr.cast::<u8>().add(88).cast());
+    }
+}
