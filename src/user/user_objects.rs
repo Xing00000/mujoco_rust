@@ -388,3 +388,23 @@ pub unsafe fn __c2rust_mj_c_mesh_npolygon_38703406cfa30fe6fca31c55aeb354eefb32c0
  c2rust_std_sequence_size_1ee4741d6c3759c772c72dad425dd7cdc523c30841bd445c2c2acee687392421((self_ptr as *const u8).add(1896) as *const core::ffi::c_void) as i32
 }
 }
+
+pub unsafe fn __c2rust_mj_c_bounding_volume_mj_c_bounding_volume_af1bd0171d72ea49ca45b06f7ae24a20e52123659cbf817dc510f1e766fe3bd2(self_ptr: *mut mjCBoundingVolume, id: i32, contype: i32, conaffinity: i32, pos: *const f64, quat: *const f64, aabb: *const f64) -> () {
+    unsafe { __c2rust_mj_c_bounding_volume_mj_c_bounding_volume_449138050b23981f27f7abcc2fce6ac48a8e32249a89d336ff66f8d3a5c323f5(self_ptr, id, contype, conaffinity, pos, quat, aabb); }
+}
+
+pub unsafe fn __c2rust_mj_c_bounding_volume_mj_c_bounding_volume_449138050b23981f27f7abcc2fce6ac48a8e32249a89d336ff66f8d3a5c323f5(self_ptr: *mut mjCBoundingVolume, id: i32, contype: i32, conaffinity: i32, pos: *const f64, quat: *const f64, aabb: *const f64) -> () {
+    unsafe {
+        core::ptr::addr_of_mut!((*self_ptr).contype_).write(contype);
+        core::ptr::addr_of_mut!((*self_ptr).conaffinity_).write(conaffinity);
+        core::ptr::addr_of_mut!((*self_ptr).idval_).write(id);
+        core::ptr::addr_of_mut!((*self_ptr).id_).write(core::ptr::null());
+        core::ptr::copy(pos, core::ptr::addr_of_mut!((*self_ptr).pos_).cast::<f64>(), 3);
+        core::ptr::copy(aabb, core::ptr::addr_of_mut!((*self_ptr).aabb_).cast::<f64>(), 6);
+        let quat_set = !quat.is_null();
+        core::ptr::addr_of_mut!((*self_ptr).quat_set_).write(quat_set);
+        if quat_set {
+            core::ptr::copy(quat, core::ptr::addr_of_mut!((*self_ptr).quat_).cast::<f64>(), 4);
+        }
+    }
+}
