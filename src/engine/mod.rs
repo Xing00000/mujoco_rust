@@ -20,3 +20,5 @@ pub mod engine_collision_gjk;
 pub mod engine_setconst;
 
 pub mod engine_vis_init;
+
+pub mod engine_plugin;

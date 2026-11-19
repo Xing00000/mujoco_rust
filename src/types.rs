@@ -4507,3 +4507,86 @@ pub struct anonymous_namespace___RewriteKey { _opaque: [u8; 0] }
 const _: () = assert!(std::mem::size_of::<RewriteKeyHash>() == 1);
 
 const _: () = assert!(std::mem::align_of::<RewriteKeyHash>() == 1);
+
+/// Opaque C struct: mjData (unsized, pointer-only)
+#[repr(C)]
+#[derive(Clone, Copy)]
+pub struct mjData { _opaque: [u8; 0] }
+
+/// Opaque C struct: mjtNum (unsized, pointer-only)
+#[repr(C)]
+#[derive(Clone, Copy)]
+pub struct mjtNum { _opaque: [u8; 0] }
+
+/// Opaque C struct: mjvOption (unsized, pointer-only)
+#[repr(C)]
+#[derive(Clone, Copy)]
+pub struct mjvOption { _opaque: [u8; 0] }
+
+/// Sized opaque C struct: std__atomic_int (4 bytes, align 4)
+#[repr(C, align(4))]
+#[derive(Clone, Copy)]
+pub struct std__atomic_int { pub _data: [u8; 4] }
+
+/// C struct: mjpPlugin (152 bytes, align 8)
+#[repr(C, align(8))]
+#[derive(Clone, Copy)]
+pub struct mjpPlugin {
+    pub name: *const i8,
+    pub nattribute: i32,
+    pub _pad_0: [u8; 4],
+    pub attributes: *const *const i8,
+    pub capabilityflags: i32,
+    pub needstage: i32,
+    pub nstate: Option<unsafe extern "C" fn(*const mjModel, i32) -> i32>,
+    pub nsensordata: Option<unsafe extern "C" fn(*const mjModel, i32, i32) -> i32>,
+    pub init: Option<unsafe extern "C" fn(*const mjModel, *mut mjData, i32) -> i32>,
+    pub destroy: Option<unsafe extern "C" fn(*mut mjData, i32)>,
+    pub copy: Option<unsafe extern "C" fn(*mut mjData, *const mjModel, *const mjData, i32)>,
+    pub reset: Option<unsafe extern "C" fn(*const mjModel, *mut mjtNum, *mut (), i32)>,
+    pub compute: Option<unsafe extern "C" fn(*const mjModel, *mut mjData, i32, i32)>,
+    pub advance: Option<unsafe extern "C" fn(*const mjModel, *mut mjData, i32)>,
+    pub visualize: Option<unsafe extern "C" fn(*const mjModel, *mut mjData, *const mjvOption, *mut mjvScene, i32)>,
+    pub actuator_act_dot: Option<unsafe extern "C" fn(*const mjModel, *mut mjData, i32)>,
+    pub sdf_distance: Option<unsafe extern "C" fn(*const mjtNum, *const mjData, i32) -> mjtNum>,
+    pub sdf_gradient: Option<unsafe extern "C" fn(*mut mjtNum, *const mjtNum, *const mjData, i32)>,
+    pub sdf_staticdistance: Option<unsafe extern "C" fn(*const mjtNum, *const mjtNum) -> mjtNum>,
+    pub sdf_attribute: Option<unsafe extern "C" fn(*mut mjtNum, *mut *const i8, *mut *const i8)>,
+    pub sdf_aabb: Option<unsafe extern "C" fn(*mut mjtNum, *const mjtNum)>,
+}
+
+/// C struct: mujoco::GlobalTable<mjpPlugin_> (2560 bytes, align 256)
+#[repr(C, align(256))]
+#[derive(Clone, Copy)]
+pub struct mujoco__GlobalTable_mjpPlugin {
+    pub first_block_: mujoco__TableBlock_mjpPlugin,
+    pub count_: std__atomic_int,
+    pub _pad_0: [u8; 4],
+    pub mutex_: [u8; 64],
+    pub _pad_1: [u8; 184],
+}
+
+/// C struct: mujoco::TableBlock<mjpPlugin_> (2304 bytes, align 256)
+#[repr(C, align(256))]
+#[derive(Clone, Copy)]
+pub struct mujoco__TableBlock_mjpPlugin {
+    pub objects: [mjpPlugin; 15],
+    pub next: *mut mujoco__TableBlock_mjpPlugin,
+    pub _pad_0: [u8; 16],
+}
+
+const _: () = assert!(std::mem::size_of::<mjpPlugin>() == 152);
+
+const _: () = assert!(std::mem::align_of::<mjpPlugin>() == 8);
+
+const _: () = assert!(std::mem::size_of::<mujoco__GlobalTable_mjpPlugin>() == 2560);
+
+const _: () = assert!(std::mem::align_of::<mujoco__GlobalTable_mjpPlugin>() == 256);
+
+const _: () = assert!(std::mem::size_of::<mujoco__TableBlock_mjpPlugin>() == 2304);
+
+const _: () = assert!(std::mem::align_of::<mujoco__TableBlock_mjpPlugin>() == 256);
+
+const _: () = assert!(std::mem::size_of::<std__atomic_int>() == 4);
+
+const _: () = assert!(std::mem::align_of::<std__atomic_int>() == 4);
