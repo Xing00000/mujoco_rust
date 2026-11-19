@@ -4417,3 +4417,9 @@ const _: () = assert!(std::mem::align_of::<std__queue_std__function_void>() == 8
 const _: () = assert!(std::mem::size_of::<std__vector_std__thread>() == 24);
 
 const _: () = assert!(std::mem::align_of::<std__vector_std__thread>() == 8);
+
+/// C static: mjGlad_libGL (void *)
+pub(crate) static mut c2rust_static_61630855e0d688d9985a42844ad04cc83f9befafc9aae305b12decf8522f52f1: *mut () = { let _: [(); 8] = [(); ::core::mem::size_of::<*mut ()>()]; ::core::ptr::null_mut() };
+
+#[doc(hidden)]
+pub fn c2rust_static_61630855e0d688d9985a42844ad04cc83f9befafc9aae305b12decf8522f52f1_address() -> *mut *mut () { ::core::ptr::addr_of_mut!(c2rust_static_61630855e0d688d9985a42844ad04cc83f9befafc9aae305b12decf8522f52f1) }

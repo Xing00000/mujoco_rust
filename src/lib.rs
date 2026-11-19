@@ -12,3 +12,5 @@ pub mod engine;
 pub mod user;
 
 pub mod build_out;
+
+pub mod render;
