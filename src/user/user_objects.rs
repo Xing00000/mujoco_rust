@@ -492,3 +492,17 @@ pub unsafe fn __c2rust_mj_c_def_joint_d2e40d606e268fd09d03ad7f0690f7b8fd78897deb
     // MACHINE-PROVEN: Clang AST semantics
     unsafe { core::ptr::addr_of_mut!((*self_ptr).joint_) }
 }
+
+/// # Safety
+/// The receiver and its member must be live. The result storage must be uninitialized,
+/// properly aligned, and disjoint from the receiver and its member. There must be no
+/// concurrent access conflicts. The caller owns observation and destruction of the result.
+#[allow(unused_variables, non_snake_case)]
+pub unsafe fn __c2rust_mj_c_body_bodies_1bd0878dc47fd5da4d4c00990b6c5926cd63b5cdfc1593fe8a3271d24573b8ef(c2rust_result_out: *mut std__vector_mjCBody, self_ptr: *mut mjCBody) -> () {
+    unsafe {
+        extern "C" {
+            fn c2rust_std_vector_copy_29c3661029124a84279c385a72327eb594a4169750aa46b827b2e1d257e0e2aa(destination: *mut core::ffi::c_void, source: *const core::ffi::c_void);
+        }
+        c2rust_std_vector_copy_29c3661029124a84279c385a72327eb594a4169750aa46b827b2e1d257e0e2aa(c2rust_result_out.cast(), self_ptr.cast::<u8>().add(1848).cast());
+    }
+}
