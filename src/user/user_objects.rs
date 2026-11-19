@@ -408,3 +408,17 @@ pub unsafe fn __c2rust_mj_c_bounding_volume_mj_c_bounding_volume_449138050b23981
         }
     }
 }
+
+pub unsafe fn __c2rust_mj_c_body_pair_get_bodyname2_8028eae404c42d965253924f318910fece22b9d9eaaf216d781b65471155dd53(c2rust_result_out: *mut std__string, self_ptr: *mut mjCBodyPair) -> () {
+    extern "C" {
+        fn c2rust_std_string_copy_77903c6aa15af5bc136f5cc42a00618cfcce78616b72abc2bb6f1e34fd95fbce(destination: *mut core::ffi::c_void, source: *const core::ffi::c_void);
+    }
+
+    unsafe {
+        let source_ptr = self_ptr.cast::<u8>().add(264).cast::<core::ffi::c_void>() as *const core::ffi::c_void;
+        c2rust_std_string_copy_77903c6aa15af5bc136f5cc42a00618cfcce78616b72abc2bb6f1e34fd95fbce(
+            c2rust_result_out.cast::<core::ffi::c_void>(),
+            source_ptr,
+        );
+    }
+}
