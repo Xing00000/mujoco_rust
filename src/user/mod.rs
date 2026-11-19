@@ -14,3 +14,5 @@ pub mod user_cache;
 pub mod user_threadpool;
 
 pub mod user_mesh;
+
+pub mod user_resolver;
