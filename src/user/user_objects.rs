@@ -469,3 +469,17 @@ pub unsafe fn __c2rust_mj_c_material_del_textures_514d82294d7eb55b47953e59ffb68a
         for index in 0..count { c2rust_std_sequence_clear_elements_045bf4587bb924f5fcf4463b7c5ec2ecc77923b392497a2580afe7386563e0d8_clear_at(sequence, index); }
     }
 }
+
+/// C: mjCTendon::get_range (user/user_objects.h:1728)
+/// # Safety
+/// Raw pointer arguments and the receiver, when present, must be non-null and designate live memory for each generated access, with the alignment required by that operation. Any byte read must be initialized; any location written must be writable; pointer offsets must stay within the originating allocation or one past it. No other thread may perform an unsynchronized conflicting access to the same memory during this operation.
+/// ⚠️ BITEXACT RULES:
+///   1. Copy exact C accumulation order (no iter().sum())
+///   2. No f64::mul_add() (FMA changes precision)
+///   3. No algebraic simplification
+///   4. No iter().sum()/product() (order undefined)
+#[allow(unused_variables, non_snake_case)]
+pub unsafe fn __c2rust_mj_c_tendon_get_range_28aebf78174d78d6d8e9be5364189a1592eae46781404cab9e89368614e98522(self_ptr: *mut mjCTendon) -> *const f64 {
+    // MACHINE-PROVEN: Clang AST semantics
+    unsafe { core::ptr::addr_of!((*self_ptr).range).cast::<f64>() }
+}
