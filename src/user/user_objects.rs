@@ -483,3 +483,12 @@ pub unsafe fn __c2rust_mj_c_tendon_get_range_28aebf78174d78d6d8e9be5364189a1592e
     // MACHINE-PROVEN: Clang AST semantics
     unsafe { core::ptr::addr_of!((*self_ptr).range).cast::<f64>() }
 }
+
+/// C: mjCDef::Joint (user/user_objects.h:2098)
+/// # Safety
+/// Raw pointer arguments and the receiver, when present, must be non-null and designate live memory for each generated access, with the alignment required by that operation. Any byte read must be initialized; any location written must be writable; pointer offsets must stay within the originating allocation or one past it. No other thread may perform an unsynchronized conflicting access to the same memory during this operation.
+#[allow(unused_variables, non_snake_case)]
+pub unsafe fn __c2rust_mj_c_def_joint_d2e40d606e268fd09d03ad7f0690f7b8fd78897deb73fbcca2fc4646046036a9(self_ptr: *mut mjCDef) -> *mut mjCJoint {
+    // MACHINE-PROVEN: Clang AST semantics
+    unsafe { core::ptr::addr_of_mut!((*self_ptr).joint_) }
+}
