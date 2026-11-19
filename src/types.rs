@@ -4493,3 +4493,17 @@ const _: () = assert!(std::mem::align_of::<std__set_std__string>() == 8);
 const _: () = assert!(std::mem::size_of::<std__shared_ptr_const_void>() == 16);
 
 const _: () = assert!(std::mem::align_of::<std__shared_ptr_const_void>() == 8);
+
+/// Sized opaque C struct: RewriteKeyHash (1 bytes, align 1)
+#[repr(C)]
+#[derive(Clone, Copy)]
+pub struct RewriteKeyHash { pub _data: [u8; 1] }
+
+/// Opaque C struct: anonymous_namespace___RewriteKey (unsized, pointer-only)
+#[repr(C)]
+#[derive(Clone, Copy)]
+pub struct anonymous_namespace___RewriteKey { _opaque: [u8; 0] }
+
+const _: () = assert!(std::mem::size_of::<RewriteKeyHash>() == 1);
+
+const _: () = assert!(std::mem::align_of::<RewriteKeyHash>() == 1);

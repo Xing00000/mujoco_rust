@@ -14,3 +14,5 @@ pub mod user;
 pub mod build_out;
 
 pub mod render;
+
+pub mod xml;
