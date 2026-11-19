@@ -85,3 +85,19 @@ pub unsafe fn __c2rust_file_path_c_str_9cd542d8bdefdcc019e84b4087a215e8998e8f0f3
  c2rust_std_sequence_c_str_cf0dd7bb32677fbf276b677a81a85667f44cf51108ff9d002f3cf9b9d8076838((self_ptr as *const u8).add(0).cast())
 }
 }
+
+/// Copies the `FilePath` value from `arg0` into `self_ptr` and returns `self_ptr`.
+///
+/// # Safety
+/// The live destination and source objects may alias, and require no other competing access.
+#[allow(unused_variables, non_snake_case)]
+pub unsafe fn __c2rust_file_path_operator_fcdf56958064a38ae8961e8fe0852947f2b3c9d12617105a7527e08f304c342e(self_ptr: *mut mujoco__user__FilePath, arg0: *const mujoco__user__FilePath) -> *mut mujoco__user__FilePath {
+    extern "C" {
+        fn c2rust_std_string_assign_fcdf56958064a38ae8961e8fe0852947f2b3c9d12617105a7527e08f304c342e(destination: *mut core::ffi::c_void, source: *const core::ffi::c_void);
+    }
+
+    unsafe {
+        c2rust_std_string_assign_fcdf56958064a38ae8961e8fe0852947f2b3c9d12617105a7527e08f304c342e(self_ptr.cast::<u8>().add(0).cast::<core::ffi::c_void>(), arg0.cast::<u8>().add(0).cast::<core::ffi::c_void>());
+    }
+    self_ptr
+}
