@@ -452,3 +452,20 @@ pub unsafe fn __c2rust_mj_c_tendon_get_userdata_55bf0f65f3db8d6bf88a6020ed6e5f2a
     // MACHINE-PROVEN: Clang AST semantics
     unsafe { core::ptr::addr_of!((*self_ptr).userdata_) }
 }
+
+#[allow(unused_variables, non_snake_case)]
+/// Clears every texture in the material.
+///
+/// # Safety
+/// The caller must provide a live exclusive receiver.
+pub unsafe fn __c2rust_mj_c_material_del_textures_514d82294d7eb55b47953e59ffb68a5919b424b987fbdf6a7fb7d1696095f537(self_ptr: *mut mjCMaterial) -> () {
+    extern "C" {
+        fn c2rust_std_sequence_clear_elements_045bf4587bb924f5fcf4463b7c5ec2ecc77923b392497a2580afe7386563e0d8_size(sequence: *const core::ffi::c_void) -> usize;
+        fn c2rust_std_sequence_clear_elements_045bf4587bb924f5fcf4463b7c5ec2ecc77923b392497a2580afe7386563e0d8_clear_at(sequence: *mut core::ffi::c_void, index: usize);
+    }
+    unsafe {
+        let sequence = self_ptr.cast::<u8>().add(264).cast::<core::ffi::c_void>();
+        let count = c2rust_std_sequence_clear_elements_045bf4587bb924f5fcf4463b7c5ec2ecc77923b392497a2580afe7386563e0d8_size(sequence);
+        for index in 0..count { c2rust_std_sequence_clear_elements_045bf4587bb924f5fcf4463b7c5ec2ecc77923b392497a2580afe7386563e0d8_clear_at(sequence, index); }
+    }
+}
