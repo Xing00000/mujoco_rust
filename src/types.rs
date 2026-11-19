@@ -4117,10 +4117,18 @@ const _: () = assert!(std::mem::size_of::<tinyxml2__XMLVisitor>() == 8);
 
 const _: () = assert!(std::mem::align_of::<tinyxml2__XMLVisitor>() == 8);
 
-/// Sized opaque C struct: mjCAsset (112 bytes, align 8)
+/// C struct: mjCAsset (112 bytes, align 8)
 #[repr(C, align(8))]
 #[derive(Clone, Copy)]
-pub struct mjCAsset { pub _data: [u8; 112] }
+pub struct mjCAsset {
+    pub id_: std__string,
+    pub timestamp_: std__string,
+    pub insert_num_: u64,
+    pub access_count_: u64,
+    pub size_: u64,
+    pub data_: std__shared_ptr_const_void,
+    pub references_: std__set_std__string,
+}
 
 const _: () = assert!(std::mem::size_of::<mjCAsset>() == 112);
 
@@ -4423,3 +4431,65 @@ pub(crate) static mut c2rust_static_61630855e0d688d9985a42844ad04cc83f9befafc9aa
 
 #[doc(hidden)]
 pub fn c2rust_static_61630855e0d688d9985a42844ad04cc83f9befafc9aae305b12decf8522f52f1_address() -> *mut *mut () { ::core::ptr::addr_of_mut!(c2rust_static_61630855e0d688d9985a42844ad04cc83f9befafc9aae305b12decf8522f52f1) }
+
+/// Sized opaque C struct: std__set_mjCAsset____mjCAssetCompare (24 bytes, align 8)
+#[repr(C, align(8))]
+#[derive(Clone, Copy)]
+pub struct std__set_mjCAsset____mjCAssetCompare { pub _data: [u8; 24] }
+
+/// Sized opaque C struct: std__unordered_map_std__string__mjCAsset (40 bytes, align 8)
+#[repr(C, align(8))]
+#[derive(Clone, Copy)]
+pub struct std__unordered_map_std__string__mjCAsset { pub _data: [u8; 40] }
+
+/// Sized opaque C struct: std__unordered_map_std__string__std__unordered_set_mjCAsset (40 bytes, align 8)
+#[repr(C, align(8))]
+#[derive(Clone, Copy)]
+pub struct std__unordered_map_std__string__std__unordered_set_mjCAsset { pub _data: [u8; 40] }
+
+/// C struct: mjCCache (192 bytes, align 8)
+#[repr(C, align(8))]
+#[derive(Clone, Copy)]
+pub struct mjCCache {
+    pub mutex_: std__mutex,
+    pub insert_num_: u64,
+    pub size_: u64,
+    pub capacity_: u64,
+    pub lookup_: std__unordered_map_std__string__mjCAsset,
+    pub entries_: std__set_mjCAsset____mjCAssetCompare,
+    pub models_: std__unordered_map_std__string__std__unordered_set_mjCAsset,
+}
+
+const _: () = assert!(std::mem::size_of::<mjCCache>() == 192);
+
+const _: () = assert!(std::mem::align_of::<mjCCache>() == 8);
+
+const _: () = assert!(std::mem::size_of::<std__set_mjCAsset____mjCAssetCompare>() == 24);
+
+const _: () = assert!(std::mem::align_of::<std__set_mjCAsset____mjCAssetCompare>() == 8);
+
+const _: () = assert!(std::mem::size_of::<std__unordered_map_std__string__mjCAsset>() == 40);
+
+const _: () = assert!(std::mem::align_of::<std__unordered_map_std__string__mjCAsset>() == 8);
+
+const _: () = assert!(std::mem::size_of::<std__unordered_map_std__string__std__unordered_set_mjCAsset>() == 40);
+
+const _: () = assert!(std::mem::align_of::<std__unordered_map_std__string__std__unordered_set_mjCAsset>() == 8);
+
+/// Sized opaque C struct: std__set_std__string (24 bytes, align 8)
+#[repr(C, align(8))]
+#[derive(Clone, Copy)]
+pub struct std__set_std__string { pub _data: [u8; 24] }
+
+/// Sized opaque C struct: std__shared_ptr_const_void (16 bytes, align 8)
+#[repr(C, align(8))]
+#[derive(Clone, Copy)]
+pub struct std__shared_ptr_const_void { pub _data: [u8; 16] }
+
+const _: () = assert!(std::mem::size_of::<std__set_std__string>() == 24);
+
+const _: () = assert!(std::mem::align_of::<std__set_std__string>() == 8);
+
+const _: () = assert!(std::mem::size_of::<std__shared_ptr_const_void>() == 16);
+
+const _: () = assert!(std::mem::align_of::<std__shared_ptr_const_void>() == 8);
