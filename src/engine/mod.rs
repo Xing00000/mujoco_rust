@@ -22,3 +22,5 @@ pub mod engine_setconst;
 pub mod engine_vis_init;
 
 pub mod engine_plugin;
+
+pub mod engine_util_sparse;
