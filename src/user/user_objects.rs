@@ -210,7 +210,11 @@ pub unsafe fn mj_c_joint_get_range(self_ptr: *mut mjCJoint) -> *const f64 {
 }
 
 #[allow(unused_variables, non_snake_case)]
-pub fn mj_c_frame_is_ancestor(self_ptr: *mut mjCFrame, child: *const mjCFrame) -> bool {
+/// # Safety
+/// Pointer arguments read by this function must designate live, initialized, aligned storage.
+/// Storage written by this function must be aligned, writable, and free of unsynchronized conflicting accesses.
+/// The derived pointer must stay in its originating live array or one past its end.
+pub unsafe fn mj_c_frame_is_ancestor(self_ptr: *mut mjCFrame, child: *const mjCFrame) -> bool {
     let mut cursor = child;
     while !cursor.is_null() {
         if core::ptr::eq(cursor, self_ptr as *const mjCFrame) {
