@@ -438,3 +438,17 @@ pub unsafe fn __c2rust_mj_c_mesh_nnormal_e67acb2cd453cde6a21a38023b72fa26c6812d1
  (c2rust_std_sequence_size_2435b07452a39ca59c527882cb7937c59937652c7a11e421e2530d830a8f1879((self_ptr as *const u8).add(352) as *const core::ffi::c_void) / 3usize) as i32
 }
 }
+
+/// C: mjCTendon::get_userdata (user/user_objects.h:1727)
+/// # Safety
+/// Raw pointer arguments and the receiver, when present, must be non-null and designate live memory for each generated access, with the alignment required by that operation. Any byte read must be initialized; any location written must be writable; pointer offsets must stay within the originating allocation or one past it. No other thread may perform an unsynchronized conflicting access to the same memory during this operation.
+/// ⚠️ BITEXACT RULES:
+///   1. Copy exact C accumulation order (no iter().sum())
+///   2. No f64::mul_add() (FMA changes precision)
+///   3. No algebraic simplification
+///   4. No iter().sum()/product() (order undefined)
+#[allow(unused_variables, non_snake_case)]
+pub unsafe fn __c2rust_mj_c_tendon_get_userdata_55bf0f65f3db8d6bf88a6020ed6e5f2a13bba05ae05c0f13333f488b4c161f23(self_ptr: *mut mjCTendon) -> *const std__vector_double {
+    // MACHINE-PROVEN: Clang AST semantics
+    unsafe { core::ptr::addr_of!((*self_ptr).userdata_) }
+}
