@@ -62,3 +62,12 @@ pub unsafe fn mj_c_model_clear_compile_warnings(self_ptr: *mut mjCModel) {
  c2rust_std_sequence_resize_e236d82e964305831c6167fa951b9fb7ac3f9bfe4efc68e6f954626866c201a1((self_ptr as *mut u8).add(5808) as *mut core::ffi::c_void, length as usize);
 }
 }
+
+/// C: mjCModel::Keys (user/user_model.h:314)
+/// # Safety
+/// Raw pointer arguments and the receiver, when present, must be non-null and designate live memory for each generated access, with the alignment required by that operation. Any byte read must be initialized; any location written must be writable; pointer offsets must stay within the originating allocation or one past it. No other thread may perform an unsynchronized conflicting access to the same memory during this operation.
+#[allow(unused_variables, non_snake_case)]
+pub unsafe fn __c2rust_mj_c_model_keys_5f3b94e0317ba018356aca6a1707169ab614af7e4c44166893063252275be553(self_ptr: *mut mjCModel) -> *const std__vector_mjCKey {
+    // MACHINE-PROVEN: Clang AST semantics
+    unsafe { core::ptr::addr_of!((*self_ptr).keys_) }
+}
