@@ -22,3 +22,16 @@ pub fn mju_flex_dphi(s: f64, i: i32, order: i32) -> f64 {
         _ => 0.0,
     }
 }
+
+#[allow(unused_variables, non_snake_case)]
+pub fn __c2rust_mju_flex_dphi_03023421067f2166df72bf42140336b696fcae5b2b2c183f5975de709f37c56e(s: f64, i: i32, order: i32) -> f64 {
+    if order == 1 {
+        return if i == 0 { -1.0 } else { 1.0 };
+    }
+    match i {
+        0 => 4.0 * s - 3.0,
+        1 => 4.0 * (1.0 - 2.0 * s),
+        2 => 4.0 * s - 1.0,
+        _ => 0.0,
+    }
+}
