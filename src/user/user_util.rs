@@ -73,3 +73,15 @@ pub unsafe fn __c2rust_file_path_operator_d22bb1cddad335851b475abf92d927cbe931e8
  c2rust_std_sequence_index_c810b1bf9b0c7552628d9a3527f8029f1cda51a54edbd88cacc95badc69679df((self_ptr as *const u8).add(0) as *const core::ffi::c_void, index)
 }
 }
+
+/// C: FilePath::c_str (user/user_util.h:233)
+/// # Safety
+/// Raw pointer arguments and the receiver, when present, must be non-null and designate live memory for each generated access, with the alignment required by that operation. Any byte read must be initialized; any location written must be writable; pointer offsets must stay within the originating allocation or one past it. No other thread may perform an unsynchronized conflicting access to the same memory during this operation.
+#[allow(unused_variables, non_snake_case)]
+pub unsafe fn __c2rust_file_path_c_str_9cd542d8bdefdcc019e84b4087a215e8998e8f0f3adb3f10549c312fc4a04d2f(self_ptr: *mut mujoco__user__FilePath) -> *const i8 {
+    // MACHINE-PROVEN: Clang AST semantics
+    unsafe {
+ extern "C" { fn c2rust_std_sequence_c_str_cf0dd7bb32677fbf276b677a81a85667f44cf51108ff9d002f3cf9b9d8076838(sequence: *const core::ffi::c_void) -> *const i8; }
+ c2rust_std_sequence_c_str_cf0dd7bb32677fbf276b677a81a85667f44cf51108ff9d002f3cf9b9d8076838((self_ptr as *const u8).add(0).cast())
+}
+}
