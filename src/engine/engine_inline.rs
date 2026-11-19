@@ -132,3 +132,27 @@ pub unsafe fn mji_add_to3(res: *mut f64, vec: *const f64) {
 #[doc(hidden)]
 #[doc = "c2rust-bitexact: generated function alias"]
 pub use self::mji_add_to3 as mji_addTo3;
+
+/// # Safety
+/// The caller must provide one live range containing three initialized, aligned,
+/// writable `f64` values, with no concurrent access.
+#[allow(unused_variables, non_snake_case)]
+pub unsafe fn __c2rust_mji_normalize3_4f5c8339c7d8f57dd6c4d1934c0ad3162782573ede59da036a298d2834fc9734(vec: *mut f64) -> f64 {
+    unsafe {
+        let a = vec.read();
+        let b = vec.add(1).read();
+        let c = vec.add(2).read();
+        let norm = ((a * a + b * b) + c * c).sqrt();
+        if norm < 1.0e-15 {
+            vec.write(1.0);
+            vec.add(1).write(0.0);
+            vec.add(2).write(0.0);
+        } else {
+            let inverse = 1.0 / norm;
+            vec.write(a * inverse);
+            vec.add(1).write(b * inverse);
+            vec.add(2).write(c * inverse);
+        }
+        norm
+    }
+}
